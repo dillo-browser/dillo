@@ -402,7 +402,8 @@ private:
    public:
       Group (FltkRadioButtonResource *radioButtonResource);
 
-      inline lout::container::typed::Iterator <FltkRadioButtonResource> iterator ()
+      inline lout::container::typed::Iterator <FltkRadioButtonResource>
+                                              iterator ()
       {
          return list->iterator ();
       }

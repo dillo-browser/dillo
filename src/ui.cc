@@ -320,13 +320,8 @@ static void location_cb(Fl_Widget *wid, void *data)
    UI *ui = (UI*)data;
 
    _MSG("location_cb()\n");
-   /* This test is necessary because WHEN_ENTER_KEY also includes
-    * other events we're not interested in. For instance pressing
-    * The Back or Forward, buttons, or the first click on a rendered
-    * page. BUG: this must be investigated and reported to FLTK2 team */
-   if (Fl::event_key() == FL_Enter) {
-      a_UIcmd_open_urlstr(a_UIcmd_get_bw_by_widget(i), i->value());
-   }
+   a_UIcmd_open_urlstr(a_UIcmd_get_bw_by_widget(i), i->value());
+
    if (ui->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS) {
       ui->set_panelmode(UI_HIDDEN);
    }
@@ -596,6 +591,7 @@ void UI::make_panel(int ww)
    current(0);
    if (PanelSize == P_tiny) {
       NavBar = new CustGroupHorizontal(0,0,ww,nh);
+      NavBar->box(FL_NO_BOX);
       NavBar->begin();
        make_toolbar(ww,bh);
        make_filemenu_button();
@@ -627,6 +623,7 @@ void UI::make_panel(int ww)
           TopGroup->insert(*LocBar,1);
        } else {
           LocBar = new CustGroupHorizontal(0,0,ww,lh);
+          LocBar->box(FL_NO_BOX);
           LocBar->begin();
            p_xpos = 0;
            make_filemenu_button();
@@ -640,6 +637,7 @@ void UI::make_panel(int ww)
        // Toolbar
        p_ypos = 0;
        NavBar = new CustGroupHorizontal(0,0,ww,bh);
+       NavBar->box(FL_NO_BOX);
        NavBar->begin();
         make_toolbar(ww,bh);
         w = new Fl_Box(p_xpos,0,ww-p_xpos-2*pw,bh);
@@ -664,6 +662,7 @@ void UI::make_status_bar(int ww, int wh)
 {
    const int bm_w = 20;
    StatusBar = new CustGroupHorizontal(0, wh-sh, ww, sh);
+   StatusBar->box(FL_NO_BOX);
 
     // Status box
     StatusOutput = new Fl_Output(0, wh-sh, ww-bm_w, sh);
