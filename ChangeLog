@@ -1,0 +1,1416 @@
+=============================================================================
+Dillo project
+=============================================================================
+
+dillo-fltk2
+
+ - Ported Dillo from GTK1 to FLTK2.
+ - Ported a susbstantial part of the code from C to C++ (FLTK2 is in C++).
+ - Wrote a new library: Dlib. With "Dlib" Dillo doesn't need glib anymore.
+ - Ported all the code to Dlib.
+ - Fixed Http_must_use_proxy() to be case insensitive.
+ - Fixed some leaks and bugs in the cookies dpi.
+ - Made Dillo's UI Control Panel resizable on-the-fly.
+ - Implemented a new, simpler, dillorc parser.
+ - Added handling of "localhost" in file URIs.
+ - Fix: recognize "http://foo" and "http://foo/" as the same URL (BUG#497).
+ - Reimplemented the Concomitant Callback chains into a uniform scheme!
+   (two query branches and a single answer branch). It simplifies a lot the
+   former CCC paths and allows for easier error control.
+ - Added a new method for internally-generated urls: a_Cache_entry_inject().
+ - Switched the cache to use Dlib's Dstr for its data storage.
+ - Removed threads from IO. Now it only uses select-based watches.
+ - Reimplemented IO.c and dpi.c to use Dlib's Dstr as its main buffer.
+ - Turned Klist into a sorted list.
+ - Removed one data-copy stage in Html_write_raw().
+ - Switched gcc's "fmt..." syntax to ISO C __VA_ARGS__.
+ - Fixed Dillo and its dpis to work from "/tmp" (for easy device unmount).
+ - Simplified http.c by reusing the new non-blocking writes in IO.
+ - Reworked the capi API so cache is only accessable from capi.
+ - Rewrote the CCC's OpAbort handling.
+ - Rewrote the DNS API and the Dpid start code inside Dillo.
+ - Implemented Stop button to not only stop rendering but also networking.
+   Patches: Jorge Arellano
+
+
+ TODO:
+
+ - test no_proxy (set a list in dillorc).
+
+-----------------------------------------------------------------------------
+
+
+0.8.5-pre-dw-redesign-1 [internal]
+- Prototype
+
+dillo-0.8.3-pre-dw-redesign-3 [Aug 30, 2004]
+ - * Fixed bug GtkDwViewport, which caused some redraws to be ignored.
+   * Added GdkDwPreview.
+   Patches: Sebastian Geerken
+
+        
+dillo-0.8.3-pre-dw-redesign-2 [Aug 28, 2004]
+ - * Added images to the current state of the redesign.
+     - New module Imgbuf, see doc/Imgbuf.txt for details.
+   Patch: Sebastian Geerken
+
+        
+dillo-0.8.3-pre-dw-redesign-1 [Aug 25, 2004]
+ - * Introduced an abstraction layer between Dw and Gtk+. See README-port and
+     doc/DwRender.txt for more details.
+   Patch: Sebastian Geerken
+
+
+=============================================================================
+Dillo project
+=============================================================================
+
+
+dillo-0.8.6 [Apr 26, 2006]
+
+ - * Designed and implemented a dpi protocol library (libDpip.a in /dpip).
+   * Added a couple of new dpip commands.
+   * Fixed and uniformed the escaping of values inside dpip tags.
+   * Ported the bookmarks, download, file, https, ftp and hello plugins,
+     plus the dpid daemon and the rest of the source tree to use it.
+   * Improved the dpi buffer reception to handle split buffers (This was
+     required for handling arbitrary data streams with dpip).
+   * Fixed a bug in Cache_entry_remove_raw.
+   * Added a couple of "const" and C++ wrappers to dpiutil's API.
+   * Fixed a serious bug with the FTP plugin that led to two downloads of the
+     same file when left-clicking a non-viewable file.
+   * Added MIME/type detection to the FTP plugin, and removed popen().
+   * Set the dpi daemon (dpid) not to exit when the downloads dpi is running.
+   * Improved the accuracy of the illegal-character error reporting for URLs.
+   * Now save dialog replaces %20 and ' ' with '_' in the Filename suggestion.
+   * Made URL ADT automatically count and strip illegal characters from URLs.
+   * Added dpi/downloads.cc (Default FLTK2-based GUI for downloads dpi).
+   * Added "./configure --disable-dlgui" to build without FLTK2-GUI downloads.
+   * Fixed dpip's tag syntax and its parsing to accept any value string.
+   * Added DOCTYPE parsing (for better bug-meter error messages).
+   * Added a DOCTYPE type declaration tag to dpi-generated HTML.
+   * Fixed bookmarks dpi to escape ' in URLs and &<>"' in titles (BUG#655).
+   * Added a check for malicious image sizes in IMG tags.
+   * Made the parser aware of buggy pages with multiple BODY and HTML elements.
+   * Fixed a bug in MIME content/type detection.
+   * Check HTTP Content-Type against real data (a security procedure).
+   Patches: Jorge Arellano
+ - * Added a datauri dpi to handle "data:" URIs (RFC-2397).
+   Patch: Jorge Arellano, Ben Wiley Sittler
+ - * Moved the cookies management into a dpi server: cookies.dpi.
+   * Removed the restriction of only one dillo with cookies enabled!
+   * Fixed a bug with cookies for sites with self-signed certificate.
+   * Updated the cookies documentation.
+   * Made the downloads plugin dillo-cookie aware.
+   * Ported the cookies dpi to libDpip.a.
+   * Merged the new dpip code into the source tree.
+   Patches: Diego Sáenz, Jorge Arellano
+ - * Added "./configure --disable-threaded-dns" (for some non reentrant BSDs).
+   Patch: Jorge Arellano, Francis Daly
+ - * Fixed a bug with roman literals divisible by 10 (BUG#700).
+   * Fixed a bug with long alphabetically ordered lists (BUG#704).
+   Patch: Glyn Kennington
+ - * Fixed a file descriptor leak in the dpi protocol library.
+   * Fixed a subtle segfault bug with malformed URLs in cookies.c.
+   Patch: Francis Daly
+
+
+dillo-0.8.5 [Jun 15, 2005]
+
+ - * Set "file:" to work as URI for current directory.
+   Patch: Diego Sáenz
+ - * Added a "small" dillorc option for panel size (medium without labels).
+   Patch: Eugeniy, Jorge Arellano
+ - * Fixed the shell escaping code in the ftp plugin.
+   * Added some checks for sane values in html.c.
+   * Added URL filtering to the ftp and downloads dpis to avoid SMTP hacks.
+   * Fixed the file dpi to react to the DpiBye command.
+   Patches: Jorge Arellano
+
+
+dillo-0.8.4 [Jan 11, 2005]
+
+ - * Fixed a possible attack (program abortion) by malicious web pages, which
+     contain huge values for <table> attributes "colspan" and "rowspan".
+   * Changed anchors, they are now tested to be unique, and removed properly,
+     when a widget tree is changed (e.g. another page is visited). Also added
+     HTML warnings.
+   Patches: Sebastian Geerken
+ - * Fixed two minor memory leaks (IO's Buf1Start & html's SPCBuf).
+   * Fixed handling of XML's "/>" tag-closing (e.g. <script ... />). BUG#514
+   * Removed obsolete code from IO/file.c.
+   * Added a few missing EINTR handlers in dpi.c.
+   * Orthogonalized the generic parser:
+       - Fixes memory leaks and widget state when recovering from bad HTML.
+       - Improves error detection and validation (needed by XHTML).
+       - Makes DOC tree generation possible (needed by CSS).
+       - Cleaner design of handling routines for bad HTML.
+       - Orthodox treatment of double optional elements (HTML, HEAD, BODY).
+       - Lots of minor code cleanups.
+   * Switched the dpi file server's design to pthreads (fixes a critical race).
+   * Avoided a crash when indexed GIF images lack a color map (BUG#647).
+   * Fixed a bug when the remote HTTP server sends no Content-Type and
+     the TCP packetizing splits the header from data (BUG#650).
+   * Returned the parser to the old whitespace "collapsing" mode
+     (this can be changed with the SGML_SPCDEL define in html.c).
+   * Fixed a memory leak for DwStyle (there was one leak per page).
+   Patches: Jorge Arellano
+ - * Fixed a large memory leak of thread specific resources. --Very important
+   Patch: Jorge Arellano, Livio Baldini
+ - * Removed warnings for pointer arithmetic and strict prototypes all
+     around the code (now it works under LP64 architectures).
+   * Made miscelaneous cleanups for LP64 architectures.
+   Patches: Jorge Arellano, Dieter Baron
+ - * Changed dpid's umask to 0077.
+   Patch: Jorge Arellano, Richard Zidlicky
+ - * Switched to g_vsnprintf (instead of vsnprintf).
+   Patch: Frank Wille
+ - * Updated a bit the README file.
+   Patch: Dieter Baron
+ - * Made a grammatical and typographical review of the whole documentation
+     in doc/. Also added some clarifications.
+   * Fixed a libpng detection problem (e.g., on CYGWIN). BUG#651
+   Patches: Roberto Sanchez
+ - * Fixed "id" and "name" attributes parsing logic.
+   * Improved the parsing algorithm for character entities. BUG#605
+   Patches: Matthias Franz
+ - * Fixed a security bug with uncertain data and a_Interface_msg().
+     CAN-2005-0012.
+   Patch: Tavis Ormandy
+
+
+dillo-0.8.3 [Oct 27, 2004]
+
+ - * Added a missing error handler for unreachable host in http.c.
+   Patch: Dennis Schneider, Jorge Arellano
+ - * Added fragment (aka anchor) decoding before it is set by Dw.
+   Patch: Matthias Franz, Jorge Arellano
+ - * Fixed dpid to work even when a dpi directory is empty.
+   Patch: George Georgiev, Jorge Arellano
+ - * Made the search dialog's URL go encoded in the query.
+   Patch: Matthias Franz
+ - * Fixed the width of sized text entry widgets within FORMS.
+   Patch: Thorben Thuermer
+ -(*)Made a library-based https dpi prototype, with certificate authentication!
+   * Separated the code in dpi/ so the common base now lies in dpiutil.c.
+   Patches: Garrett Kajmowicz
+ - * Added SSL library detection code to configure.in.
+   Patch: Garrett Kajmowicz, Thomas-Martin Seck
+ - * Fixed the wrong image-URL after cancelling a link-image popup (BUG#580).
+   * Improved the transfer speed for the bookmarks dpi when using 2.6.x linux.
+   * Fixed the downloads dpi to work when there're "'" characters in the URL.
+   * Fixed " and ' characters stuffing in capi and interface for dpip commands.
+  (*)Added a "dialog" command to the dpi protocol (dpip). It allows any dpi to
+     make GUI choice-questions trough Dillo by using simple dpi tags.
+   * Merged some dialog-generating code in interface.c and fixed a bug with
+     the FORM repost dialog.
+   * Designed and implemented a unified API for handling data streams inside
+     dillo plugins. Servers and filters can use it.
+   * Converted the bookmarks, ftp, file, hello and the https prototype dpis
+     to the new dpiutil API.
+   * Replaced the old 'force_visited_color' dillorc option with the new
+     'contrast_visited_color' (using a renewed color-choosing algorithm).
+   * Added some 'undefined ASCII' to latin1 character conversions.
+   * Added the "w3c_plus_heuristics" option to dillorc.
+   * Removed a segfault bug on oversized images (rare case).
+   * Removed a CPU-hog on 302 redirections with cookies.
+   * Made HTTP's 302 redirections non-cacheable (incomplete).
+   * Implemented a new scheme for detecting redirection loops.
+   * Fixed cookies to accept four legacy old-date formats for "Expires".
+   Patches: Jorge Arellano
+ - * Introduced a light-weight heuristic algorithm over the W3C parsing
+     scheme (allows for slightly better rendering: w3c_plus_heuristics=YES).
+   Patch: Rubén Fernández
+ - * Moved the internal support for "file:" URIs into a dpi (server plugin).
+   * Added TABLE-based rendering of directory listings to the new file dpi.
+   Patches: Jorge Arellano, Jörgen Viksell
+ - * Removed DwWidget::realize and DwWidget::unrealize.
+   * Made all signals expect events to abstract methods.
+   * Renamed a_Dw_widget_{size_request|get_extremes|size_allocate|set_*} to
+     p_*, they should not be used outside of Dw.
+   Patches: Sebastian Geerken
+ - * Fixed the meta refresh warning to not switch from IN_HEAD to IN_BODY.
+   Patch: Björn Brill
+
+
+dillo-0.8.2 [Jul 06, 2004]
+
+ - * Made PgUp/PgDn scroll by a full page, instead of a half (BUG#418).
+   * Added new Gtk+ widgets GtkExtButton, GtkExtMenu, and GtkExtMenuItem.
+     - Used GtkExtButton to enhance the button 3 menu of the forward button,
+       backward button and bug meter buutton.
+     - GtkExtMenu and GtkExtMenuItem are used to make handling button 2
+       in the history menus cleaner.
+   * Made bug meter button react on high-level "clicked" signal, instead of
+     "button-press-event".
+   * New widget GtkMenuTitle, used for nicer titles in menus.
+   Patches: Sebastian Geerken
+ - * Added a small handler for javascript links (BUG#546).
+   * Made the parser ignore white space immediately after an open tag, and
+     immediately before a close tag.
+   * Fixed handling of redirection answers with unviewable MIME type (BUG#563).
+   * Fixed the history-stack handling after redirection chains.
+   * Fixed the character escaping logic in directory listings (BUG#564).
+   * Added a small hack to view UTF-8 encoded quotation marks.
+   * Added a "start_page" option to dillorc (to override the splash screen).
+   * Tuned the buffering scheme for local directory listings (more speed).
+   * Set some initial socket-buffering for dpis (in dpid).
+   * Disallowed the "about:" method on non-root URLs (BUG#573).
+   * Made the rendered area keep its focus after a form submition.
+   * Fixed some include files in src/IO/.
+   Patches: Jorge Arellano
+ - * Added hints (icons and tooltip text) to buttons featuring a right-click
+     context menu.
+   * Now you can copy & paste an URL into the "Clear URL" button.
+   Patch: Jorge Arellano, Sebastian Geerken
+ - * Made the save and open file dialogs remember the last directory (BUG#211).
+   Patch: Diego Sáenz
+
+
+dillo-0.8.1 [May 14, 2004]
+
+ - * Fixed dirent.h includes inside dpid.
+   Patch: Joseph Myers
+ - * Fixed a slippery bug with certain interlaced gif images (BUG#500).
+   Patch: Andreas Mueller
+ - * Fixed libpng-1.2.4 detection in configure.in.
+   Patch: Rubén Helguera
+ - * Added proxy authentication support through the "http_proxyuser" option
+     in dillorc (the password is asked at run time).
+   Patch: Ivan Daniluk, Jorge Arellano, Francis Daly
+ - * Moved tooltips to DwStyle, tooltip event handling to DwPage, and applied
+     this also to the TITLE attribute of <a> and <abbr>.
+   Patch: Jörgen Viksell, Sebastian Geerken
+ - * Fixed a bug related to spaces after anchors and breaks.
+   Patch: Sebastian Geerken
+ - * Removed two "type punning" gcc warnings (dw_gtk_viewport.c).
+   * Added some missing "static" qualifiers.
+   * Improved a_Strbuf_chars() so no list reversion is required.
+   * Removed an unused data list (dns.c), and redundant code (selection.c).
+   * Switch one realloc() call to g_realloc(), to match g_free() (dpi.c).
+   * Removed unnecessary NULL-checks and NULL initializations.
+   * Added Html_get_attr_wdef(), it lets providing a default return value.
+   Patches: Jörgen Viksell
+ - * Fixed configure.in so pthreads are only linked where needed.
+   Patch: Jörgen Viksell, Jorge Arellano
+ - * Modified a_Misc_stuff_chars for simplicity and removed a memory leak.
+   * Made the dpi framework send the HTTP query to the https dpi
+     (this allows for an SSL-lib dpi and for easier session caching).
+   * Cleaned up the int2void and void2int casts in CCC parameters.
+   * Added container|inline model information to the HTML element table, and
+     made the bug-meter and the parser aware of it. This both improves bug
+     detection and rendering. 
+   * Fixed newly detected HTML bugs in bookmarks dpi and file.c.
+   * Fixed opening files with a ':' character in its name (again).
+   * Added binaryconst.h (allows for binary constants in C).
+   * Fixed The ladder effect with lists (BUG#534).
+   * Made the bug-meter detect tags lacking a closing '>' (BUG#532).
+   * Made the bug-meter detect excluded inline elements from <PRE>.
+   * Eliminated a segfault source with tricky <input> tags (BUG#552).
+   * Fixed <address> to render as a block element (BUG#527).
+   * Added a content test for "name" and "id" attribute values (BUG#536).
+   * Fixed the URL resolver handling of the "//" sequence in <path> (BUG#535).
+   * Added "show_extra_warnings" and removed "use_old_parser" (dillorc).
+   * Added minor support for the deprecated <MENU> element.
+   * Eliminated a race condition that produced segfaults when a dpi transfer
+     was cancelled before the contents were sent (a very rare case).
+   * Added a test for socklen_t in configure.in.
+   * Fixed the downloads dpi to handle both new savenames and target directory.
+   * GdkRgb: fixed handling of not usable system default visual and colormap.
+   * Made dillo recognize unhandled MIME types, and offer a download dialog!
+   Patches: Jorge Arellano
+
+
+dillo-0.8.0 [Feb 08, 2004]
+
+ - * Added a right-mouse-button popup for images!
+   Patch: Frank de Lange, Eric Gaudet, Jorge Arellano
+ - * Made main document window grab focus on startup, fullwindow,
+     and after open url (BUG#330)
+   * Set Ctrl-U to focus the location entry,
+     Ctrl-R to reload, and Ctrl-H to hide controls.
+   Patches: Johan Hovold, Jorge Arellano, Stephan Goetter
+ - * Added a missing handler for broken-connection condition.
+   Patch: Jorge Arellano, Phil Pennock
+ - * Introduced a new way of handling dillo plugins! Now the
+   communications and managing is done by a daemon: dpid.
+   This comes with a lot of advantages described in Dpid.txt.
+   Patch: Programming: Ferdi Franceschini; Design: Jorge Arellano
+ - * Wrote documentation for dpid (Dpid.txt).
+   * Removed a memory leak in Get_line().
+   Patches: Jorge Arellano, Ferdi Franceschini
+ - * Developed a plugin for downloads. It uses wget and can handle several
+   connections at the same time.
+   * Developed stress tests for both dpid and the downloads dpi.
+   Patches: Ferdi Franceschini
+ - * Adapted dpi.c to manage plugins through dpid.
+   * Improved the incoming dpi-stream processing to accept images from a dpi.
+   * Added/updated lots of dpi-related comments.
+   * Updated the dpi1 spec.
+   * Removed the forced end-to-end reload that was set upon dpis. Now,
+     dpi-generated pages can be cached.
+   * Made dillo able to handle multiple plugins (still lacks a dynamic API)
+   * Wrote bare bones plugins for handling: FTP and HTTPS.
+   * Wrote an example plugin: HELLO  --kind of "Hello world".
+   * Made all the bindings to make it work (fully commented).
+   * Added code for automatical and non-blocking dpid start!
+   * Added an extensible secondary URL convenience for popup menus.
+   * Attached the image popup to the link menu (when the link is an image).
+   * Removed a memory leak in the selection code (commands.c).
+   * Cleaned up memory handling when reusing the GioChannel for IPv6.
+   * Removed a race-condition-polling-CPU-hog bug in IO! (hairy... ;)
+   * Adapted the generic parser to make HTML error detection, providing
+     the line number and a hint (expected tag) in the error message!
+   * Added a bug-meter button that shows the count of detected HTML errors
+     (left click shows the errors, right click offers a validation menu).
+   * Added information about optional, required and forbidden end tags.
+   * Modified the parser's handling of closing tags to account for elements
+     with an optional close tag, and for more accurate diagnosis messages.
+   * Added 'use_old_parser' option to dillorc (boolean).
+   * Fixed the handling of HEAD and BODY elements to account for their
+     double optional condition (both open and close tags are optional).
+   * Added the MSG() macro to msg.h and replaced g_print() with it.
+   * Added the "show_msg" dillorc option to disable MSG().
+   * Increased the number of warning messages reported by gcc.
+   * Solved a lot of signed/unsigned problems.
+   * Made the necessary cleanups/bug-removals for the new warning level.
+   * Connected the dpi stream to the cache using the CCC!
+   * Fixed the cache API by introducing the new call a_Capi_get_buf().
+   * Fixed a race condition and a multiple request problem.
+   * Cleaned up the code for the progressbar widgets.
+   * Standarized unix domain sockets with AF_LOCAL for portability.
+   * Minor cleanups for a smooth compile on older systems (libc5).
+   * Fixed the handling of P element for the HTML nesting checks.
+   * Set Ctrl-B for bookmarks shortcut (instead of Alt-B).
+   Patches: Jorge Arellano
+ - * Enhanced the speed of the actual selection of text.
+   * Added command line option --debug-rendering.
+   * Added "button_sensitive" attribute to DwWidget, which is needed to
+     make <BUTTON>'s accessable at all. (They were inaccessable since the
+     introduction of text selection!)
+   * Changed behaviour of DwButton, see NOTE at beginning of dw_button.c.
+   * Added "collapsing margins" to DwPage.
+   * Added CSS "list-style-type" and "display" equivalents to DwStyle, changed
+     definition of "font", replaced "nowrap" by "white-space", and renamed
+     "link" to "x_link".
+   * DwBullet now uses DwStyle for the bullet type, made necessary changes
+     in HTML parser.
+   * Changed DwStyleLength, now only pixel values and percentages are
+     supported. (For CSS, anything else will be done elsewhere.)
+   * Added word backgrounds to DwPage (not yet used.)
+   * Added the possibility to clip widget drawings (new function
+     p_Dw_widget_will_clip).
+   * Made images showing the ALT text as long as no image data has been
+     retrieved.
+   * Cleaned up event handling and related code: "link_*" signals now return
+     gboolean, and DwWidget events are signals.
+   * Moved DwRectangle and related to dw.c.
+   * Rewrote idle drawing, fixed BUG#202.
+   * Removed p_Dw_widget_queue_clear*.
+   * Added --enable-rtfl option to configure.
+   * Fixed a bug in findtext (wrong highlighting).
+   * Many changes in scrolling: added x coordinate (except for anchors), and
+     DW_[VH]POS_INTO_VIEW position. Added x coordinate also to DilloUrl.
+   Patches: Sebastian Geerken
+ - * Fixed bug in DwImage::link_clicked signal.
+   Patch: Stephan Goetter, Frank de Lange (simultaneously and independent :-)
+ - * Fixed memory leak in Html_tag_open_isindex.
+   * Added numerical keypad cursor keys navigation.
+   * Changed return values of Dw event methods from gint to gboolean.
+   * Cleaned up debug message generation by using glib wrappers.
+   * Replaced DwStyle::SubSup by new DwStyleVAlignType values, and
+     DwStyle::uline and DwPage::strike by new DwStyle::text_decorations.
+   * Added new convenience macros DW_WIDGET_HEIGHT, DW_WIDGET_CONTENT_HEIGHT,
+     and DW_WIDGET_CONTENT_WIDTH.
+   * Added configure options to disable either: png, jpeg or gif.
+   * Fixed configure.in for proper library linking for dpis and dpid.
+   * Improved libpng detection.
+   Patches: Jörgen Viksell
+ - * Fixed wrong handling of coordinates in ISMAP and USEMAP images.
+   * Added a hand-shaped cursor to input controls of type image.
+   * Fixed a off-by-one memory leak in Dw(Ext)Iterator.
+   * Fixed NULL result handling of p_Dw_widget_text_iterator() in DwBullet,
+     DwHRuler and DwImage.
+   * Made dpid/Makefile.am aware of $(DESTDIR).
+   * Fixed wrong return value of a_Findtext_search for widget == NULL.
+   Patches: Frank de Lange
+ - * Fixed a bug in Dw cursor code.
+   Patch: Frank de Lange, Sebastian Geerken
+ - * Corrected marshal functions for DwWidget signals.
+   Patch: Anders Gavare, Sebastian Geerken
+ - * Added support for anchors using the "id" attribute (BUG#495).
+   * Defined dillo's version-string in one place only: configure.in.
+   Patch: Francis Daly
+ - * Removed a segfault source with corrupted MIME types in HTTP (BUG#501).
+   * Made SPAM-safe URLs aware of image buttons (BUG#508).
+   Patch: Francis Daly, Jorge Arellano
+ - * Added a web search dialog (with toolbar icon, shortcut: Ctrl-S).
+     The search engine can be set in dillorc (defaults to google).
+   Patch: Johan Hovold, Jorge Arellano
+ - * Fixed a problem with libpng options detection (configure.in).
+   Patch: Rubén Fernández
+ - * Added "pthreads" (with an "s") detection to configure.in.
+   Patch: Andreas Schweitzer
+ - * Added the "-geometry" switch to the CLI.
+   Patch: Jorge Arellano, Jan Dittmer
+
+
+dillo-0.7.3 [Aug 03, 2003]
+
+ - * Some more selection goodies:
+     - Redesign of the selection state model, now the selection is preserved
+       as long as possible.
+     - Highlighted text is now drawn inverse (new DwWidget::bg_color).
+     - Selection of images, list bullets and hrulers (as text), with a common
+       text iterator for the respective widgets.
+   * Borders may now be drawn inverse (needed for selection).
+   * Improved the speed when selecting large areas. (BUG#450)
+   * Fixed a bug in DwPage extremes.
+   * Fixed a wrong implementation of incremental resizing for DwPage.
+     (Affected functions: Dw_page_rewrap and a_Dw_page_add_widget)
+   * Fixed a bug in a_Dw_widget_size_allocate.
+   * Made jumping to anchors faster (removes CPU hog).
+   * Fixed a bug in Dw_page_get_extremes().
+   * Made (invalid) <li>'s without <ol> or <ul> defined, and independent of
+     each other.
+   * Fixed rendering of <frameset>.
+   Patches: Sebastian Geerken
+ - * Made a new set of toolbar icons!
+   Patch: John Grantham (http://www.grantham.de/)
+ - * Added support for the hspace and vspace attributes of the IMG tag.
+   * Made only left button activate the image input type (BUG#367,#451).
+   * Fixed SELECT with "multiple" but without "size" (BUG#469).
+   Patches: Jörgen Viksell
+ - * Added titles to bookmark server's html pages.
+   Patch: Kelson Vibber
+ - * Made IFRAME to be handled like FRAME (shows link).
+   Patch: Nikita Borodikhin, Jorge Arellano
+ - * Fixed a bug in 'a_Misc_stristr' that permeated findtext. (BUG#447)
+   Patch: Jorge Arellano, "squirrelblue"
+ - * Finished handling of single and double quotes inside dpi tags.
+   * Fixed a bug for named-entities' character codes greater than 255.
+   * Introduced a small UCS to Latin1 converter to help rendering.
+   * Added a check for Unix98's "socklen_t" (BUG#466).
+   * Added the missing EINTR handlers in IO.c and file.c.
+   * Fixed the problem of adding garbage anchors.
+   Patches: Jorge Arellano
+
+
+dillo-0.7.2 [Apr 30, 2003]
+
+ - * Implemented text selection! (aka: Copy&Paste) (BUG#59)
+   Patch: Sebastian Geerken, Eric Gaudet
+ - * Fixed IPv6 support when the unthreaded server is used.
+   Patch: Damien Couderc, Jorge Arellano
+ - * Fixed the IPv6 socket connection code for *BSD.
+   Patch: Daniel Hartmeier, Jorge Arellano
+ - * Made the URL_SpamSafe flag be inherited by the BASE element.
+   Patch: Melvin Hadasht
+ - * Switched configure.in to use AC_CANONICAL_SYSTEM instead of 'uname'.
+   Patch: Patrice Mandin
+ - * Added "image/x-png" to MIME types (obsolete, but should be recognized).
+   Patch: Paolo P.
+ - * Fixed the code that handled the installation of "dillorc".
+   Patch: Andreas Schweitzer
+ - * Fixed a lot of glitches in configure.in: notably libpng and libjpeg
+   detection, enabling and disabling. (BUG#: 386, 407, 392, 349)!
+   Patches: Andreas Schweitzer
+ - * Fixed two leaks in Dw(Ext)Iterator.
+   Patches: Jörgen Viksell
+ - * Repaired some minor misbehaviours in the cookie-strings parser.
+   Patches: Jörgen Viksell, Jorge Arellano
+ - * Enabled entities parsing in HTML-given hidden and password values.
+   Patch: Jorge Arellano, Francis Daly
+ - * Implemented character stuffing in dpi (Fix bookmarks with quotes) BUG#434.
+   * Added a HTML warning message for META outside HEAD.
+   * Removed a segfault source when the server doesn't send content/type info.
+   * Added file type detection for filenames without extension.
+   * Removed the warnings detected with gcc 3.2.2.
+   * Fixed the VERBATIM parsing mode and replaced the SCRIPT mode with it.
+   * Fixed the problem with CR handling in TEXTAREA (BUG#318).
+   * Fixed initial value parsing within TEXTAREA tags (BUG#400).
+   * Fixed loading files with spaces in the name (command line) BUG#437.
+   Patches: Jorge Arellano
+
+
+dillo-0.7.1.2 [Mar 11, 2003]
+
+ - * Fixed a bug in the bugfix that used uninitialized memory contents
+     causing all kind of undesirable side effects.
+   Patch: Andreas Schweitzer
+
+
+dillo-0.7.1 [Mar 10, 2003]                      -- bugfix release
+
+ - * Fixed the setting of the FD_CLOEXEC flag.
+   Patch: Raphael Barabas
+ - * Added an automatic file-locking alternative for systems lacking flock().
+   Patch: Yang Guilong
+ - * Fixed a memory leak with pixmaps.
+   Patch: Keith Packard
+ - * Fixed the link color switch with scroll wheel mouses (BUG#348)
+   Patch: Stephen Lewis
+ - * Made the bookmarks server keep a backup file: bm.txt.bak.
+   * Fixed not loading the bookmarks file (and erasing the bookmarks).
+   * Added some missing EINTR handlers.
+   * Added a handler for unresponsive dpi sockets!
+   * Restricted dpi-requests to dpi-generated pages only.
+   * Used -1 instead of WAIT_ANY (some systems don't have it). (BUG#413)
+   * Fixed a source bug when G_DNS_THREADED is not defined. (BUG#421)
+   * Switched sprintf to g_snprintf which is safer.
+   Patches: Jorge Arellano
+
+
+dillo-0.7.0 [Feb 17, 2003]
+
+ - * Added IPv6 support! [./configure --enable-ipv6] (BUG#351)
+   Patch: Philip Blundell
+ - * Fixing char escaping/encoding problems with file URIs (BUG#321)
+   * Fixing buffer overflow sources in file.c.
+   * Switched the image tooltip from "alt" to "title" attribute.
+   Patch: Francis Daly, Jorge Arellano
+ - * Added code so that tooltips stay within the screen.
+   Patch: Pekka Lampila, Sebastian Geerken
+ - * Fixed a problem occurring when scrolling with the "b" key.
+   Patch: Livio Baldini
+ - * Fixed a memory leak in DwAlignedPage.
+   Patch: Jörgen Viksell, Sebastian Geerken
+ - * Moved stuff into remove_cookie() and add_cookie() functions.
+   * Made cookies sort once in add_cookie().
+   * Removed some unneeded casts and calls in cookies.
+   * Repairing some minor misbehaviours in Cookies_parse_string().
+   Patches: Jörgen Viksell, Jorge Arellano, Madis Janson
+ - * Fixed a bug in Dw_widget_mouse_event.
+   Patch: Jörgen Viksell
+ - * Fixed a bug in DwPage ("height" argument).
+   Patch: Pekka Lampila
+ - * Removed a segfault source in http.c
+   Patch: Madis Janson
+ - * Removed space around tables.
+   * Implemented the <button> tag! (BUG#276)
+   * Added iterators (DwItetator, DwExtItetator, DwWordItetator).
+     - Rewrote findtext, added highlighting and "case sensitive" option.
+     - Improved findtext dialog placement too!
+   * Implemented "ALIGN = {LEFT|RIGHT|CENTER}" for <table>, and
+     "ALIGN = {LEFT|RIGHT|CENTER|JUSTIFY}" for <tr>.
+   * Implemented character alignment, applied it on ALIGN=CHAR and CHAR for
+     <tr>, <td> and <th>.
+     - New widget DwTableCell.
+     - Some smaller changes in DwAlignedPage and DwPage (virtual word_wrap,
+       ignore_line1_offset_sometimes).
+   * Implemented vertical alignment of table cells.
+     - Changed behavior of Dw_page_size_allocate.
+     - Applied it on "VALIGN={TOP|BOTTOM|MIDDLE|BASELINE}" for <tr>, <td> and
+       <th>.
+     - Fixed splash screen.
+   * Set the height of <BR>'s in non-empty lines to zero.
+   * Moved some code from html.c to a_Dw_page_change_link_color.
+   * Made bullets size depending on the font size.
+   * Fixed too wide widgets in lists (e.g. nested lists).
+   Patches: Sebastian Geerken
+ - * Added support for <input type=image...> (BUG#313)
+   Patch: Madis Janson, Sebastian Geerken, Jorge Arellano
+ - * Made a better EAGAIN handler, and enabled FreeIOVec operation in IOWrite.
+   Patch: Jorge Arellano, Livio Baldini
+ - * Fixed include directives for config.h
+   Patch: Jorge Arellano, Claude Marinier
+ - * Made lots of minor cleanups.
+   Patches: Lex Hider, Jorge Arellano, Rudmer van Dijk
+ - * Added a simple command line interface, and enabled some options (BUG#372).
+   * Added full-window option in command line and dillorc.
+   * Added an option to set offline URLs from CLI.
+   * Made dillo embeddable into other GTK applications.
+   Patches: Jorge Arellano, Melvin Hadasht
+ - * Made drafts for dillo plugins protocol (dpi1)
+   Work: Jorge Arellano, Eric Gaudet
+ - * Avoided a file lock when cookiesrc disables cookies (BUG#358).
+   * Fixed scroll-jumping between widgets when pressing Up&Dn arrows.
+   * Added a tiny warning/handler for meta refresh.
+   * Concomitant Control Chain (CCC):
+     - Extended the theory to allow bidirectional message passing.
+     - Renewed the API.
+     - Improved the debugging code.
+     - Redesigned the old CCCs, and made a new one for plugins (dpi).
+     - Reimplemented dillo's core with the new chains.
+   * Input/Output engine (IO):
+     - Extended the functionallity with a threaded operation that
+       allows buffered writes of small chunks on the same FD.
+     - Created a new IO API, and adapted dillo to it.
+   * Used the new CCC and IO to implement dillo plugins! (dpi).
+   * Implemented the internal support for a bookmarks dpi.
+   * Wrote a dpi-program for bookmarks.
+   * Created capi.c, a meta module for cache.c.
+   * Restructured Html_write so custom HTML can be inserted.
+   * Set BackSpace and Shift+BackSpace to work as Back/Forward buttons.
+   * Set the escape key as a dialog closing shortcut.
+   * Removed a segfault in find text with a string of spaces (BUG#393)
+   * Added wrappers/whitespace filtering for pasted/typed/CLI URLs. (RFC-2396)
+   * Added an HTML warning message for illegal characters inside URLs.
+   * Made dpi communication go through unix domain sockets.
+   * Enabled dillo to launch the bookmarks plugin!
+   * Made some cleanups in IO/.
+   Patches: Jorge Arellano
+
+
+dillo-0.6.6 [May 30, 2002]
+
+ - * Added a few canonical casts to fix some obvious 64bit issues.
+   Patch: pvalchev
+ - * Fixed a bug with cookies path parsing.
+   * Fixed persistent-cookies obliteration (BUG#312, BUG#314)
+   * Set max 20 persistent cookies for each domain.
+   Patches: Jörgen Viksell
+ - * Switched flock to lockf.
+   Patch: Andreas Schweitzer
+ - * Made a little bugfix in doc/Makefile.am.
+   Patch: Grigory Bakunov
+ - * Removed the < 256 hostname length restraint from http queries.
+   * Made a date-parser that copes with three HTTP date-syntaxes (BUG#335)
+   * Made the HTML parser a bit more robust with bad HTML (BUG#325, BUG#326)
+   Patches: Jorge Arellano
+
+
+dillo-0.6.5 [Apr 26, 2002]
+
+ - * Improved a bit table rendering speed.
+   Patch: Mark Schreiber
+ - * Extended Dw crossing events.
+   Patch: Sebastian Geerken
+ - * Added code to autoresize the "View source" window (BUG#198).
+   Patch: Andreas Schweitzer
+ - * Improved *BSD detection code at './configure' time.
+   Patch: Andreas Schweitzer, Jorge Arellano
+ - * Added a (pthread_t) cast in dns.c
+   * Fixed a problem with #fragment hash-lookup (in anchors_table).
+   * Added code to install/test usr/local/etc/dillorc (BUG#287)
+   * Added control-character filtering for pasted/typed URLs.
+   * Replaced the old cache list with a hash table!
+   Patches: Livio Baldini
+ - * Fixed a momentous memory leak in png decoding.
+   * Fixed a segfault source in GIF colormap handling.
+   Patch: Livio Baldini, Jorge Arellano
+ - * Added fontname selection to dillorc.
+   Patch: Arvind Narayanan
+ - * Removed a segfault source under G_IO_ERR conditions in IO.c.
+   Patch: Madis Janson
+ - * Removed a wild deallocation chance in klist.c
+   Patch: Pekka Lampila
+ - * Fixed saving of pages that result from POST.
+   Patch: Nikita Borodikhin
+ - * Fixed a tiny bug with dillorc parsing on certain locales (BUG#301)
+   Patch: Lars Clausen, Jorge Arellano
+ - * Added support for cookies! RFC-2965 (BUG#82)
+   Patch: Jörgen Viksell, Lars Clausen, Jorge Arellano
+ - * Added code to detect redirect-loops (BUG#260)
+   Patch: Jorge Arellano, Chet Murthy
+ - * Added support for missing Content-Type in HTTP headers (BUG#216)
+   * Added support for a bare '>' inside attribute values (BUG#306)
+   Patch: Jorge Arellano, Andreas Schweitzer
+ - * Allowed enter to submit forms when there's a single text entry.
+   * Added 'generate_submit' and 'enterpress_forces_submit' to dillorc.
+   Patch: Jorge Arellano, Mark Schreiber.
+ - * Added support for rendering adjacent <BR>, Tabs in <PRE>, and linebreak
+     handling (BUG#244, BUG#179, BUG#291).
+   Patch: Jorge Arellano, Mark Schreiber, Sebastian Geerken.
+ - * Switched a_List_* methods to three parameters (and wiped BUG#286)
+   * Fixed two little bugs within url.c (BUG#294)
+   * Created an API for nav_stack usage (a handy cleanup).
+   * Set the attribute parser to trim leading and trailing white space.
+   * Fixed a problem with NULL requests to the dns (BUG#296).
+   * Added Tru64(tm) detection code at './configure' time.
+   * Fixed the parser to skip <style> and <script> contents (BUG#316).
+   * Bound the space key to PgDn, and 'b' | 'B' to PgUp.
+   * Allowed 'query' and 'fragment' in POST submitions (BUG#284).
+   * Changed the url module API (the URL_* macros), and updated the calling
+     modules, removing several potential bugs at the same time --toilsome.
+   Patches: Jorge Arellano
+
+
+dillo-0.6.4 [Jan 29, 2002]
+
+ - * Implemented remembering of page-scrolling-position! (BUG#219)
+   Patch: Jorge Arellano, Livio Baldini
+ - * Moved jpeg's include directory from CFLAGS to CPPFLAGS in configure.in
+   Patch: John L. Utz, Lionel Ulmer
+ - * Made a standarization cleanup to every *.h
+   * Cleaned some casts to use the GPOINTER_TO_INT and GINT_TO_POINTER macros.
+   * Added the 'static' qualifier to some module-internal variables.
+   * Added the 'static' qualifier to module-internal functions!
+   Patches: Jörgen Viksell
+ - * New widget DwAlignedPage for alignment of vertical arrays.
+     - New widget DwListItem for nicer list items (based on some extensions
+       of DwPage) BUG#271.
+   * Implemented text alignments (except CHAR).
+     - Extension of DwStyle and DwPage.
+     - Applied it on "ALIGN = {LEFT|RIGHT|CENTER}" for <hr>, and
+       "ALIGN = {LEFT|RIGHT|CENTER|JUSTIFY}" for <p>, <hN>, <div>, <td> and
+       <th>. Implemented <center> --BUGs #215, #189.
+   * Small change in DwPageWord (space_style), fixes problems with spaces and
+     underlining (BUG#278).
+   Patches: Sebastian Geerken
+ - * Added 'force_visited_colors' to dillorc. It asserts a different color
+   on visited links, regardless of the author's setting.
+   Patch: Jorge Arellano, Sebastian Geerken
+ - * Updated and improved several #include directives inside *.c
+   * Added history.c for linear history and scroll-position tracking.
+     Now the navigation-stack references linear history and nav-expect
+     holds a DilloUrl (history.c provides an API).
+   * Fixed a rare data-integrity race-condition with popups (BUG#225)
+   * Made small icons a bit narrower.
+   * Fixed a problem with image-maps handling code (BUG#277)
+   * Added support for several domains in dillorc's 'no_proxy' variable.
+   * Fixed a small boundary-bug in named-colors parsing.
+   * Implemented IOs validity-test with klist (avoids a rare segfault source).
+   Patches: Jorge Arellano
+
+
+dillo-0.6.3 [Dec 23, 2001]
+
+ - * Removed a_Dw_widget_set_usize.
+   * Removed *_indent in DwStyle, this is now done by nested widgets.
+   * List items are now single widgets, this fixes bug #78.
+   * Extended queue_resize and related code, removed fast resizing.
+     - Applied these changes on DwPage (many changes!).
+   * Changes in requisition of DwPage.
+   * Added a nice indenter to the pagemarks! ("Jump to..." menu).
+   Patches: Sebastian Geerken
+ - * Reworked the dicache to use a hash table and use image versions.
+   * Wiped some dicache glitches, and added a dillorc option turn it off!
+     (reducing memory usage significatively).
+   Patches: Livio Baldini
+ - * Added support for OSes that use a slightly different 'struct sockaddr'.
+   Patch: Johan Danielsson
+ - * Removed a cache leak when reloading (BUG#257).
+   Patch: Livio Baldini, Jorge Arellano
+ - * Added full-screen mode! (left double-click toggles it).
+   Patch: Jorge Arellano, Sebastian Geerken
+ - * Extended interface customization options in dillorc (a must for iPAQ).
+   Patch: Jorge Arellano, Sam Engström
+ - * Rewrote the whole tag-parsing code with a new scheme (single pass FSM!)
+     (BUG#190, BUG#197, BUG#207, BUG#228, BUG#239) --Big work here.
+   Patch: Jorge Arellano, Jörgen Viksell
+ - * Set form encoding to escape everything but alphanumeric and -_.* (BUG#236)
+   * Rewrote Html_tag_open_input.
+   * Extended BACK and FWD key shortcuts to: {ALT | MOD*} + {, | .}    :-)
+   * Fixed URI fragment parsing (BUG#247).
+   * Centered FindText and OpenUrl dialog windows.
+   * Structured dillorc (now it's more readable! ;)
+   * Added a dillorc option to force transient_dialogs.
+   * Fixed a subtle bug with HTTP end-to-end reload (BUG#234).
+   * Fixed form submition when action has <query> or <fragment> (BUG#255)
+   * Added fast URL resolving methods! (96% rfc2396 compliant by now) BUG#256
+   * Switched form-urlencoded CR to be sent as CR LF pair (BUG#266).
+   * Fixed leaving open FDs when the socket connection fails (BUG#268).
+   Patches: Jorge Arellano
+
+
+dillo-0.6.2 [Oct 17, 2001]
+
+ - * Added code to parse away <?...> tags (BUG#203).
+   Patch: Sebastian Geerken
+ - * Made an explicit ISO8859-1 requirement in font loading (BUG#193).
+   Patch: Karsten M. Self
+ - * Added a temporary handler for frames! (lynx/w3m like).
+   Patch: Livio Baldini
+ - * Added gtk_set_locale to dillo's init sequence (BUG#173).
+   Patch: Eric Gaudet, Martynas Jocius
+ - * Added support for <big> and <small> tags (BUG#221).
+   Patch: Livio Baldini, Jorge Arellano
+ - * Added back and forward history popup menus! (BUG#227)
+   Patch: Jorge Arellano, Eric Gaudet, Olaf Dietsche
+ - * Removed anchors from to-proxy queries (also added some checks, BUG#210).
+   * Removed a leak in url.c
+   * Fixed a bug with command-line HTML files that reference images (BUG#217).
+   * Improved status-bar messages a bit, modified toolbar pixmaps and
+     reduced the number of a_Url_dup calls.
+   * Set Ctrl-Q to close window and Alt-Q to quit.
+   * Devised an abstract model for parsing, wrote it into HtmlParser.txt and
+     made dillo compliant with it!
+   * Fixed CR/LF entities parsing inside <PRE> (BUG#188)
+   * Added an error message for unsupported protocols (BUG#226)
+   * Removed some warnings detected with different gcc versions.
+   Patches: Jorge Arellano
+
+
+dillo-0.6.1 [Sep 13, 2001]
+
+ - * Changed calculation of shaded colors.
+   * Eliminated redundant code when drawing background colors.
+   * Fixed a bug in DwStyle drawing functions.
+   * Fixed a bug in Dw_page_calc_widget_size.
+   * Some changes for <hr> (also BUG#168).
+   * Added <tr> backgrounds.
+   Patches: Sebastian Geerken
+ - * Added support for hexadecimal character references, as &#xA1; (BUG#183)
+   Patch: Liam Quinn
+ - * Replaced atoi(3) calls with strtol(3).
+   * Made path comparison case sensitive in a_Url_cmp.
+   Patches: Livio Baldini
+ - * Added a tiny handler for <DIV>
+   Patch: Robert J. Thomson
+ - * Fixed a segfault source in color parsing, and extended it a bit.
+   Patch: Scott Cooper, Jorge Arellano
+ - * Removed a leak with the DilloImage structure (when image is not found).
+   * Fixed (and made faster) Url_str_resolve_relative (BUG#194)
+   Patch: Jorge Arellano, Livio Baldini
+ - * Added parsing support for %HexHex escape sequences in file URIs
+   Patch: Jorge Arellano, Livio Baldini, Agustín Ferrín :)
+ - * Implemented Ctrl-W (close window) (BUG#87)
+   Patch: Jorge Arellano, Martynas Jocius
+ - * Fixed a segfault when dillo cannot access ~/.dillo for some reason.
+   Patch: Jorge Arellano, Amit Vainsencher
+ - * Fixed the segfault from untrue Content-Length in HTTP header (BUG#187)
+   * Fixed closing an active browser window from the window manager (bug#91)
+   * Eliminated anchors from HTTP queries (BUG#195)
+   * Fixed the repeated reload segfault (BUG#69)
+   * Updated some docs in doc/ dir.
+   * Added a keyed-list ADT (klist.[ch])
+   * Removed a segfault source in dns.c.
+   * Massive changes in Cache module: redesigned the external and internal API,
+     implemented new methods, changed several algorithms, removed transitory
+     and obsoleted code, removed a segfault source and improved CCC operations.
+   * Changes in Http module: extended error handling, improved abort sequences,
+     and added code that's aware of race conditions (based on klist ADT).
+   * Uniformed CCC start operation in IO, http and cache modules.
+   Patches: Jorge Arellano
+
+
+dillo-0.6.0 [July 31, 2001]
+
+ - * Fixed a bunch of memory leaks!
+   * Fixed links on pages with only one line, tuned text-entries size and
+     fixed the HTTP header problem (BUG#180)
+   Patches: Jörgen Viksell
+ - * Improved dialogs handling: find_text, view_source, open_url, open_file,
+     save_link and save_page (also removed a leak here).
+   Patches: Jorge Arellano, Jörgen Viksell
+ - * Modified GtkDwScrolledWindow and GtkDwViewport, now scrollbars work much
+     better. This also fixes of the wrong viewport length (BUG#137).
+   * Implemented tables! (incomplete)
+     - Changes in Dw: DwTable and DwWidget::get_extremes.
+     - html.c: extended DilloHtmlState, added code for table parsing, moved
+       some attributes from DwPage into the HTML linkblock.
+   * Restructured code for image maps (works now with tables).
+   * Removed "alt" attribute from <a> tag (no standard).
+   * Fixed a bug in a_Url_dup.
+   * Extended Dw events: leave_notify_event is now called for more widgets.
+   * Extended DwPage and DwImage signal "link_entered".
+   * Extended DwStyle by CSS-style boxes, background colors and border_spacing:
+     - Implemented borders around image links (BUG#169).
+   * Fixed the wrong PNG background? (BUG#172)
+   * Corrected handling of styles by the html parser.
+   * Added alternative, "fast" resizing method.
+   * Added a simple possibility to scroll long option menus (BUG#158)
+   * Added backing pixmap, this prevents flickering (BUG#174).
+   * Changes and extensions in handling lenghts, see doc/DwStyle.txt.
+   * Added option "limit_text_width".
+   Patches: Sebastian Geerken
+ - * Added nowrap attribute to DwStyle, and applied it to <pre> (BUG#134),
+     <td> and <th>.
+   Patch: Jörgen Viksell, Sebastian Geerken
+ - * Added a_List_resize to list.h methods.
+   * Added debug.h to standarize debugging messages.
+   Patches: Sebastian Geerken, Jorge Arellano
+ - * Added file selection while saving pages or links.
+   Patch: Livio Baldini
+ - * Added a few 'const', a missing header and some strength reductions.
+   Patch: Aaron Lehmann
+ - * Made dillo to also check '/etc/dillorc' for options.
+   Patch: Eduardo Marcel Maçan, Jorge Arellano
+ - * Made a help page, and linked it to 'about:help' (BUG#72)
+   Patch: Jorge Arellano, Kristian A. Rink
+ - * Added an "alt" camp to DilloUrl
+   * Fixed the linkblock memory-leak (BUG#163)
+   * Fixed local file loading from the command line (BUG#164)
+   * Fixed server-side image maps support (BUG#165)
+   * Added code for accel-keys on toolbar buttons
+   * Fixed the segfault with unconnected servers (BUG#170)
+   * Fixed the open HTTP-sockets problem (BUG#171)
+   * Reimplemented the low-level file descriptor handling with GIOChannels
+     (and dillo became even faster!)
+   * Made reload-button to request an end-to-end reload (BUG#64)
+   * Fixed the multiple-POST problem, and added a confirmation dialog (BUG#175)
+   * Finished fixing the repeated link-click problem (BUG#74)
+   * Misc: rewrote the 'about:splash' method, tuned DwPage for minimal
+     memory usage, improved a_Color_parse and Html_read_coords, cleaned-up
+     popup-menus and linkblock initialization, eliminated a lock-source in
+     Html_parse_length.
+   * Added DEBUG_HTML_MSG macro for invalid HTML messages.
+   * Fixed the nav-stack (and multiple #anchors) problem (BUG#177)
+   * Added code to avoid segfaults with unhandled MIME types.
+   * Fixed dns.c from solving the same address on different channels (BUG#178)
+   * Improved error handling and extended the CCC scope! (mainly HTTP).
+   * Fixed a Dw-leak that was affecting: hr, bullets, images, tables (&pages)!
+   * Made several cleanups and added/fixed comments in various places.
+   * Reimplemented find-text with a faster algorithm and extended semantics!!
+   * Fixed some oddities with our autoconf stuff.
+   Patches: Jorge Arellano
+
+
+dillo-0.5.1 [May 30, 2001]
+
+ - * Designed a new URL handling scheme, and integrated it throughout the code!
+   Patch: Livio Baldini, Jorge Arellano
+ - * Removed a significative memory leak in dw_page.
+   * Added support for EAGAIN in IO.c
+   Patches: Livio Baldini
+ - * Removed 6 memory leaks! (of varying significance)
+   Patches: Jörgen Viksell
+ - * Fixed a bug in DwPage (BUG#162, crash when clicking on links).
+   * Removed a_Dw_gtk_viewport_queue_anchor and related code (becomes obsolete
+     with the new URL handling scheme).
+   * Speed-optimized key moving in GtkDwScrolledFrame (no more blocking).
+   * Fixed two memory leaks, in Dw_style_color_remove, and
+     Dw_style_font_remove.
+   Patches: Sebastian Geerken
+ - * Implemented the splash screen with "about:" (No more splash-file saving!)
+   * Set all pthreads to run in detached state.
+   * Reworked dillo's interface so now there're six options; available by
+     changing 'panel_size' and the new 'small_icons' in dillorc.
+   * Removed a minor leak in dns.c and a wild-deallocation source.
+   Patches: Jorge Arellano
+
+
+dillo-0.5.0 [May 10, 2001]
+
+ - * Implemented <IMG> ALT as tooltip.
+   * Fixed bug #135 (incorrect update of statusbar when leaving "ismap" img).
+   Patches: Livio Baldini, Sebastian Geerken
+ - * Completed image scaling (BUG#75).
+   Patch: Sebastian Geerken, Jorge Arellano
+ - * Fixed proxy support (BUG#150).
+   Patch: Livio Baldini
+ - * Fixed two bugs in the Dw event handling.
+   * Fixed bugs in DwEmbedGtk and GtkDwViewport: idle functions are now
+     removed properly.
+   * Fixed bug in DwEmbedGtk (added call of parent_class->destroy).
+   * Moved DwPageAttr into a new submodule (DwStyle).
+     - Applied DwStyle to DwBullet (BUG#146).
+     - Implemented immediate changing of link color provisionally (BUG#152).
+   * Fixed positioning of headers (half of BUG#118).
+   * Fixed rendering of <b><i> and <i><b> (BUG#145).
+   * Fixed unrecognized dillorc text_color setting (BUG#151).
+   Patches: Sebastian Geerken
+ - * Changed word/line structure of DwPage
+   * Improved FORM sending (standar name/value submits) and processing;
+     added READONLY, SIZE, MAXLENGTH attributes, type=BUTTON and some cleanups
+   * Fixed VERBATIM parsing mode (BUG#130)
+   * Fixed a bug in calculating the page width (BUG#136)
+   Patches: Jörgen Viksell
+ - * Added a dillorc option to set the location entry within the menu bar.
+   Patch: Eric Gaudet
+ - * Integrated some modifications to ease compiling on GNU Darwin.
+   * Added support for leading whitespaces in HREF (BUG#120)
+   * Fixed anchor's hash_table and a few more quirks (were warnings on Alpha)
+   * Fixed entities parsing in URI attributes (BUG#114)
+   * Fixed stop button's sensitivity on plain files (BUG#142)
+   * Made filesize more accurate on directory listings (BUG#143)
+   * Introduced the new Concomitant Control Chain (CCC) design!
+     - All the way in the quering branch
+     - Halfway in the answering branch
+     - Introduced more error handling and status messages
+     - Started implementing error control using the CCC!
+     - Fixed too much caching (BUG#84)
+     - Fixed a CPU hog error condition (BUG#144)
+     - Eliminated the segfault from outdated dns answers (BUG#140)
+     - Fixed repeated Back (faster than rendering) segfault.
+   * Cleaned the header include files
+   * Incremented the valid-charset for dillorc identifiers (BUG#149)
+   * Added support for unterminated quotation of attribute values (BUG#155)
+   Patches: Jorge Arellano
+
+
+dillo-0.4.0 [March 3, 2001]
+
+ - * Rewrote most of the Dw module from scratch:
+    - Page widget: ported, added support for relative sizes of widgets, and
+      changed behaviour for pressing button 2 on a link.
+    - Removed the now unnecessary event boxes for check and radio buttons.
+    - Modified the code outside to use new Dw.
+   * Started to implement relative sizes for images (in html.c)
+   * Implemented attributes WIDTH, SIZE and NOSHADE of the <hr> tag.
+   * Added focus adjustment for selection lists (<SELECT>)
+   * Implemented TAB, Shift+TAB navigation in FORMS (BUG#86)
+   Patches: Sebastian Geerken
+ - * Included a scaling font_factor into dillorc!
+   Patch: Bruno Widmann
+ - * Fixed bugs #125 and #129 (menu item focus and radio reset in forms)
+   Patch: Jörgen Viksell
+ - * Added code to ignore anything inside STYLE tags.
+   Patch: Mark McLoughlin
+ - * Implemented image rendering based on GdkRGB and DwImage!
+   * Fixed 4 bit color planes support, cleaned the image code,
+     removed a few leaks and added documentation (Images.txt).
+   * Ported every patch from 0.3.2 to 0.4.0
+   Patches: Jorge Arellano
+
+
+dillo-0.3.2 [February 22, 2001]
+
+ - * Added the option to use oblique font instead of italic (dillorc)
+   Patch: Eric Gaudet, Sebastian Geerken, Jorge Arellano
+ - * Changed Dw_page_find_line_index to use a binary search
+   Patch: Eric Gaudet, Jorge Arellano
+ - * Added a visual hint for visited links (BUG#117)
+   * Repaired the dillorc parser to skip unknown symbols (BUG#119)
+   Patch: Eric Gaudet
+ - * Fixed the segfault for controls outside FORM and SELECT elements (BUG#121)
+   Patch: Eric Gaudet, Jörgen Viksell
+ - * Added support for SUB and SUP tags (BUG#115)
+   Patch: Jörgen Viksell
+ - * Added a geometry directive to dillorc (sets initial browser size)
+   Patch: Livio Baldini, Jorge Arellano
+ - * Fixed bookmarks loading in new browser windows (BUG#110)
+   * Included a workaround for BUG#71
+   Patch: Livio Baldini
+ - * Fixed a CPU hog when clicking ftp URLs (BUG#123)
+   * Set a 64 bytes threshold on pagemark headers
+   Patch: Jorge Arellano
+ - * Added check for negative image sizes.
+   Patch: Livio Baldini, Sebastian Geerken
+
+
+dillo-0.3.1 [December 22, 2000]
+
+ - * Implemented basic Find-text functionality
+   Patch: Sam Dennis, Sebastian Geerken, Allan Clark and Jorge Arellano :-)
+ - * Implemented "Pagemarks" (Kind of a headings-based page index!)
+   Patch: Sebastian Geerken and Eric Gaudet
+ - * Fixed nested-lists numbering, and added support for "type" (BUG#76)
+   * Added support for image maps, both usemap and ismap! (BUG#27)
+   * Set "on" as default value for check boxes
+   Patch: Eric Gaudet, Jorge Arellano
+ - * Added "Copy link location" to the link menu
+   Patch: Eric Gaudet
+ - * Removed redundant functions from misc.c
+   * Added support for BASE, CODE, DFN, KBD, SAMP and VAR tags (BUG#106)
+   * Added support for TAB characters in plain text files (BUG#112)
+   Patches: Jörgen Viksell, Jorge Arellano
+ - * Fixed a_Url_squeeze (BUG#100)
+   Patch: Livio Baldini, Jorge Arellano
+ - * Added gamma support and basic transparency for PNG images (BUG#60)
+   * Moved menu_popup into the 'bw' structure (BUG#96)
+   * Fixed the gif decoder to get image size from the right place (BUG#98)
+   * Made the new browser window size the same as the parent (BUG#55)
+   Patch: Livio Baldini
+ - * Added support for ISINDEX method (BUG#15)
+   Patch: Sam Dennis
+ - * Added support for bare '<' character parsing
+   * Removed every sign-conflict warnings given by gcc with '-W -Wall'
+   * Fixed several identation problems (rendering)
+   * Implemented "Save link as" (link menu)
+   * Removed the subtle bug that used to segfault when deleting and processing
+     queue clients at the same time (BUG#111).
+   * + Some comments, cleanups, size reductions, minor optimizations etc.
+   Patches: Jorge Arellano Cid
+
+
+dillo-0.3.0 [November 13, 2000]
+(Lots of patches are pending!)
+
+ - * Added support for <strike>, <s>, <del> and <u> tags.
+   Patch: Jörgen Viksell
+ - * Fixed a bug in #anchors code
+   Patch: Sebastian Geerken
+ - * Parsed text between script tags, out of the rendering part.
+   * Added support for decimal entities that start with 0.
+   * Added some comments to html.c
+   Patches: Sean 'Shaleh' Perry
+ - * Added support for corrupted png images (avoids segfaults!)
+   Patch: Eric Gaudet, Jorge Arellano
+ - * Fixed empty title bookmarking (BUG#85 and #88)
+   Patch: Livio
+ - * Fixed view-source to take its URL from the right place.
+   Patch: Sam Dennis
+ - * Added font support for the compaq iPaq linux distribution.
+   Patch: Eric Christianson
+ - * Fixed spaced attribute parsing (BUG#79).
+   * Fixed concurrent save and downloading!
+   * Added alpha support for external (simple) plugins.
+ ? * Added a workaround (maybe a bug fix) for BUG#77 (No segfault).
+   * Introduced a new design layer between the IO and Dw:
+    - The imgsink stuff was completely removed.
+    - The dicache was rewritten from scratch and integrated
+      into the normal cache.
+    - A single client queue is being used for both caches.
+    - The file descriptors were replaced by cache keys that serve
+      as connection handlers.
+    - The image data structure and related sources got changed.
+    - Every decoder (png, gif, jpeg) was adapted to the new scheme.
+   * Fixed the file-images caching problem and the associated memory-leaks.
+   * Improved progress bar accuracy for images.
+   * Added progress bar functionality for plain text (+comments +cleanups)
+   * Fixed the right-click-over-plain-text segfault (BUG#80).
+   * Started improving the right-mouse-button menus.
+   Patches: Jorge Arellano Cid
+
+
+dillo-0.2.4 [August 21, 2000]
+
+ - * Fixed the white square bug with PNG images (BUG #4)
+   Patch: Luca Rota
+ - * Added support for #anchors! (BUG #10)
+   * Added support for resolving relative #anchors (BUG #65)
+   Patches: Sebastian Geerken
+ - * Fixed a segfault-source that produced BUG #61.
+   * Made several cleanups and standarizations in html.c
+   * Extended entity-parsing scope, and the list of supported entities.
+   * Rearranged TagInfo data into a new structure.
+   * Added the base for refresh support in META tags.
+   Patches: Sean 'Shaleh' Perry
+ - * Added support for TEXTAREA tags!
+   Patch: Jörgen Viksell
+ - * Improved and fixed Html_parse_entities.
+   * Reimplemented the Stash buffer with a GString.
+   * Fixed a bug with \r\n-terminated HTML lines.
+   * Added redirection support for relative URLs (BUG #73).
+   * Added some comments and minor fixes to patches.
+   Patches: Jorge Arellano Cid
+ - * Linked "open link in new window" to mouse button #2 (#3 also works)
+   Patch: Eric Gaudet
+
+
+dillo-0.2.3 [August 4, 2000]
+
+ - * Removed "search.h" include in http.c (freeBSD compatibility).
+   Patch: Kurt J. Lidl
+ - * Removed several memory leaks that were sprinkled through the code.
+   Patches: Jörgen Viksell
+ - * Fixed a segfault crash when hitting PgDn in the URL box (BUG #54).
+   * Removed a segfault source in commands.c
+   * Made some minor fixes to Dw and added more comments to the code.
+   * Made changes in dw_gtk_view.c, and fixed the rendering problem that
+     arise when changing from a scrolled page into another (BUG #58).
+   * Changes in hruler dynamic resize --not finished though.
+   * Removed a floating point exception bug in image handling code (image.c)
+   * Dramatically improved rendering speed!!! Most notably long HTML pages
+     with lots of links; Improvement ranges from 2 to 5 times faster! (aprox.)
+   * Fixed misplaced rendering of small pages (BUG #35)
+   * Fixed the bookmark bug with empty title strings (BUG #57, #67)
+   * Completed support for "\r", "\n" and "\r\n" in PRE tags.
+   * Fixed text rendering between multiple selection boxes (BUG #56)
+   * Added several minor enhancements (comments, formatting, speed, etc)
+   * Added extensive documentation! (IO.txt, DilloWidget.txt and Dw.txt)
+   Patches: Jorge Arellano Cid
+
+
+dillo-0.2.2 [July 9, 2000]
+
+ - * Added a gtk_window_set_wmclass to all windows to prevent dialogs
+     from having the same size as the main window. (Ex: with Sawfish)
+   * Made some width and height changes to the SELECT-stuff
+   * Added "submit" to submit buttons without a value.
+   Patches: Jörgen Viksell
+ - * Fixed a segfault when calling "about:" method
+   Patch: Dominic Wong
+ - * Added an option to force dillorc-defined colors (Try it with slashdot!)
+   * Fixed display of encoded-URL-links on the status bar
+   Patches: Adam Sampson
+ - * Removed several compiler dependencies
+     (detected with lcc on a 64 bit machine)
+   * Modified mime.c and Url.c to use list.h, and eliminated hdlr.c
+   * Standarized unsigned types to glib all around the code
+   * Added some includes for libc5 compatibility
+   * Modified IO_callback to avoid a CPU-hog (it happened in some systems).
+   * Fixed a bug that added a trailing ampersand to GET and POST queries.
+   * FIxed attribute parsing. It had nasty side effects; as providing
+     wrong attribute values to POST and GET methods.
+   * Joined Url.c and url.c into a single module.
+   * Reimplemented URL resolving functions.
+   * Implemented a new parser for "file:" URLs  (Try "file:" & "file:.").
+   * Removed child_linkblock and changed the HTML stack handling
+     (both changes result in a simpler, easier to understand code).
+   * Modified and removed a segfault source in Html_lb_new.
+   * Modified forms handling to be more tolerant with messy HTML.
+   * Linked "image/pjpeg" in MIME types (progressive jpeg)
+   * Fixed form submittion when there's no submit button (bug #49)
+     Now dillo can search on freshmeat, altavista, etc!
+   Patches: Jorge Arellano Cid
+
+
+dillo-0.2.1 [June 17, 2000]
+
+ - * Modified the pixmaps for better interface perception ;)
+   * Modified Dw_gtk_view_adjustment_value_changed to update the visible
+     rectangle even though the widget is not realized; it seems to work!
+   * Implemented the horizontal ruler as a Dw  --dw_hruler.[ch]
+     Fixed its expose problems (Bug #13). (todo: resizing).
+   * Changed Dw_gtk_progressbar module to "progressbar" --naming stuff
+   * Added Content-length in file headers (avoids reallocations)
+   * Modified form submittion and encoding to use dynamic memory allocation
+   * Eliminated a dns.c hack that passed an int as a void* ;)
+   * Updated the documentation with an extensive IO description.
+   Patches: Jorge Arellano Cid
+ - * Added some functionality to reload button (not complete yet)
+   Patch: Luca Rota , Jorge Arellano Cid
+ - * Fixed hash handling within URL parsing. (Bug #9)
+   Patch: Marcos Ramírez , Jorge Arellano Cid
+
+
+dillo-0.2.0 [June 2, 2000]
+*** THIS IS A HALF-NEW BROWSER ***
+
+ - * Finally reimplemented the whole networking process (***BIG changes***)
+        Rewrote from scratch: IO, cache, web, http, socket, ...
+        Modified: gif, png, jpeg, html, nav, plain, ... (Every client)
+     All the querying, retrieving, caching and delivering is NEW!!!
+   * Eliminated CPU-hogging while waiting for a DNS query to complete
+   * Eliminated CPU-hogging when facing redirections
+   * Implemented basic redirection functionality
+   * Eliminated several segmentation fault bugs
+   * Modified autoconf stuff
+   * Modified source-code tree and libraries
+   * Reduced binary size
+   * Eliminated a memory leak in socket connections
+   * Created a new socket connection scheme
+   * Implemented Cache as the main networking abstraction layer
+   * Joined almost every URL-retrieving module into libDio
+   * Set the basis for save-link-as functionality (see save function)
+   * Modified the navigation stack to a cleaner design
+   * Improved status bar messages when connecting
+   * Changed some function names
+   * Created new pixmaps for the toolbar!
+   * Added a "new" button near the URL to clear the entry!
+   * Added a_List_remove to list.h
+   * Updated documentation in doc/
+     (README, Cache.txt, store.txt, Dillo.txt, Images.txt and IO.txt)
+   Patches: Jorge Arellano Cid
+ - * Added a workaround patch for BUG #35 (page expose problems)
+   Patch: Andrew McPherson
+
+
+dillo-0.1.0 [Mar 30, 2000]
+
+ - * Fixed a bug that used to lock hostname queries.
+     ('DNS can't resolve name' mesg.)
+   * Fixed the wrong parent link when browsing directory contents
+   * Changed the file/directory HTML-output-layout
+   * Finally rewrote the whole file.c module :-)
+   * Made Http_query buffer overflow-safe
+   * Commented and cleaned web.c
+   * Changed the licence to GPL. (Raph agreed on that)
+   * Fixed a tag-search bug in html.c; it produced rendering problems.
+   * Fixed a parsing problem with tags that were split on different lines
+   * Fixed the after-tables parsing problem
+   * Added a startup page
+   Patches: Jorge Arellano Cid
+ - * Fixed a bug with http queries that sometimes produced infinite loops
+   Patch: Marcos Ramírez
+
+
+dillo-0.0.6 [Mar 9, 2000]
+
+ - * Readded an old, wiped-by-mistake, bug fix.
+   * Added preferences settings using a readable config (dillorc)
+   * Added a page-title trimmer facility (39 chars) to bookmarks saving.
+   Patch: Luca Rota
+ - * Fixed three memory leaks in bookmarks reading
+   * Added 'Open link in a new window' within the right button pop-up-menu
+   Patch: Sammy Mannaert
+ - * Fixed a bug that used to put two slashes on directory file anchors
+   * Actualized plugin.txt to current code base (and a bit of fix)
+   * Changed "fprintf(stderr..." to "g_print(..."
+   * Improved list.h
+   * Fixed image URLs both for HTTP and local files!
+   * Fixed tag attribute parsing (The trimmed-text-inside-buttons bug)
+   * Wrote several documentation files (placed them in doc/)
+   * Fixed transparent image rendering
+   * Implemented a binary search for HTML tags (just a bit faster)
+   * Small leak fixes and some corrections to http.c
+   * Made style fixes, added function comments and things like that.
+   Patches: Jorge Arellano Cid
+
+
+dillo-0.0.5 [Feb 3, 2000]
+
+ - * Added progress bars (to be improved)
+   Patch: James McCollough, Jorge Arellano Cid
+ - * Rearranged, changed and commented the decompressed image cache code
+   * Fixed autoconf stuff to include zlib
+   * Added memory deallocating functions to cache, dicache, socket, http & dns
+   * Fixed memory leaks in jpeg.c, png.c and gif.c
+   * Made several changes in dw_page.c and dw_image.c
+   * Introduced 'list.h' source, and standarized the whole code to use it
+   * Fixed image rendering (Fixed algorithms and data structures) BIG CHANGES
+   * Removed some false comments and added true ones (I hope ;)
+   * Made several "standarizing" changes all over the code and
+   * some other changes (not worth listing)
+   Patches: Jorge Arellano Cid
+ - * Added support for 'text' and 'link' colors inside <BODY> tags
+   * Standarized all memory management to glib functions
+   * Fixed the plugin API to work again (forked)
+   * Removed a warning (remove not implemented for Dw_view and Dw_scroller)
+   * Solved the page-without-title bug in bookmarks.
+   Patches: Luca Rota
+
+
+dillo-0.0.4 [Jan 4, 2000]
+
+ - * Removed the test widget
+   * Added a jpeg image decoder error-handler
+   Patches: Sammy Mannaert
+ - * Changed some ADTs to glib to be compatible with newer glibc2 systems
+   * Added background color alternative when bg. is white (or not specified)
+   * Improved connecting time status messages
+   Patches: Jorge Arellano Cid
+ - * Added background color support.
+   Patch: Luca Rota, James McCollough
+ - * Added support for <OL></OL> tags
+   * Added view-source and view-bookmarks functionality
+   * Improved PgUP/PgDown and Up/Down response. (No need to grab focus!)
+   * Fixed openfile gtk run-time warning
+   * Fixed the focus problem with text camps
+   * Fixed the title-linger bug with pages that don't specify title.
+   * Added a preliminary right button menu
+   * Added POST method support
+   Patches: Luca Rota
+ - * Added PNG image support.
+   Source Code: Geoff Lane, Patch: Jorge Arellano
+
+
+dillo-0.0.3.tar.gz [Dec 18, 1999]
+
+ - * Finished the whole Naming&Coding effort!!!
+   Stage 2 worked by: Luca Rota and Jorge Arellano
+ - * Removed all compile time warnings (at least with gcc 2.7.2.3)
+   * Added more documentation inside the code
+   * Removed the '~/.dillo' directory creation bug.
+   * Integrated a patch for menu module
+   * Renamed menus.c to menu.c
+   * And some other minor things...
+   Patches: Jorge Arellano Cid
+
+
+dillo-0.0.2.tar.gz [Dec, 1999  --Does anyone remember the day?]
+
+ - * Finished stage one of the naming&coding design (Hey, it's 1.3 Mb of code!)
+   Worked by: Jorge Arellano, Sammy Mannaert, James McCollough and Luca Rota
+ - * Removed some bugs and renamed the source files.
+   * Heavily rearranged URL/ an IO/ files for better understanding & debugging
+   * Added more documentation within the sources
+   * Recoded automake stuff
+   * Integrated some queued patches
+   * (And several things that I have no time to write now! :-)
+   Patches: Jorge Arellano Cid
+
+
+dillo-0.0.1.tar.gz [Dec, 1999]
+
+ - * Halfway release, amidst stage one of the naming&coding effort.
+   Worked by: Jorge Arellano, Sammy Mannaert, James McCollough and Luca Rota
+
+
+dillo-0.0.0.tar.gz [Dec, 1999]
+
+ - * Applied a cleanning patch to menus.[ch]
+   Patch: Sammy Mannaert
+ - * Made a threaded DNS scheme (several improvements: now it works with gdb)
+   * Bug fix on TMP_FAILURE_RETRY
+   * Bug fix on links not been followed (Url parsing)
+   * Changed the default pixmaps
+   * Maked automake, autoconf, autoheader, changes
+   * Changed binary name
+   Patches: Jorge Arellano Cid
+
+
+

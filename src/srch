@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+# Find a token within source files ( *.[ch] )
+# Enjoy!
+# Jorge.-
+
+if [ $# = 1 ]; then
+  FLAGS="-H"
+elif [ $# = 2 ]; then
+  FLAGS="-H $1"
+  shift 1
+else
+  echo "Usage:"
+  echo "   srch [-options] <token>"
+  exit 0
+fi
+
+#  find "./" -name "*.[ch]" -print -exec grep $1 {} \;
+egrep $FLAGS "$1" *.[ch][ch]
+egrep $FLAGS "$1" *.[ch]
+egrep $FLAGS "$1" IO/*.[ch][ch]*
+egrep $FLAGS "$1" IO/*.[ch]
+egrep $FLAGS "$1" ../dpi/*.[ch]
+egrep $FLAGS "$1" ../dpi/*.[ch][ch]
+egrep $FLAGS "$1" ../dpid/*.[ch]
+egrep $FLAGS "$1" ../dpip/*.[ch]
+egrep $FLAGS "$1" ../dlib/*.[ch]
+
+#egrep $FLAGS "$1" dw/*[ch]
+#egrep $FLAGS "$1" lout/*[ch]
+egrep $FLAGS "$1" ../../dw-testbed/dw/*[ch]
+egrep $FLAGS "$1" ../../dw-testbed/lout/*[ch]
+

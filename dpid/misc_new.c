@@ -1,0 +1,172 @@
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <fcntl.h>
+#include "d_size.h"
+#include "misc_new.h"
+#include "dpid_common.h"
+
+#include "misc_new.h"  /* for function prototypes */
+
+
+/*
+ * Close a FD handling EINTR.
+ */
+int a_Misc_close_fd(int fd)
+{
+   int st;
+
+   do {
+      st = close(fd);
+   } while (st < 0 && errno == EINTR);
+   return st;
+}
+
+/*! Reads a dpi tag from a socket
+ * \li Continues after a signal interrupt
+ * \Return
+ * Dstr pointer to tag on success, NULL on failure
+ * \important Caller is responsible for freeing the returned Dstr *
+ */
+Dstr *a_Misc_rdtag(int socket)
+{
+   char c = '\0';
+   ssize_t rdlen;
+   Dstr *tag;
+
+   tag = dStr_sized_new(64);
+
+   errno = 0;
+
+   do {
+      rdlen = read(socket, &c, 1);
+      if (rdlen == -1 && errno != EINTR)
+         break;
+      dStr_append_c(tag, c);
+   } while (c != '>');
+
+   if (rdlen == -1) {
+      perror("a_Misc_rdtag");
+      dStr_free(tag, TRUE);
+      return (NULL);
+   }
+   return (tag);
+}
+
+/*!
+ * Read a dpi tag from sock
+ * \return
+ * pointer to dynamically allocated request tag
+ */
+char *a_Misc_readtag(int sock)
+{
+   char *tag, c, buf[10];
+   size_t buflen, i;
+   size_t taglen = 0, tagmem = 10;
+   ssize_t rdln = 1;
+
+   tag = NULL;
+   buf[0] = '\0';
+   buflen = sizeof(buf) / sizeof(buf[0]);
+   // new start
+   tag = (char *) dMalloc(tagmem + 1);
+   for (i = 0; (rdln = read(sock, &c, 1)) != 0; i++) {
+      if (i == tagmem) {
+         tagmem += tagmem;
+         tag = (char *) dRealloc(tag, tagmem + 1);
+      }
+      tag[i] = c;
+      taglen += rdln;
+      if (c == '>') {
+         tag[i + 1] = '\0';
+         break;
+      }
+   }
+   // new end
+   if (rdln == -1) {
+      ERRMSG("a_Misc_readtag", "read", errno);
+   }
+
+   return (tag);
+}
+
+/*! Reads a dpi tag from a socket without hanging on read.
+ * \li Continues after a signal interrupt
+ * \Return
+ * \li 1 on success
+ * \li 0 if input is not available within timeout microseconds.
+ * \li -1 on failure
+ * \important Caller is responsible for freeing the returned Dstr *
+ */
+/* Is this useful?
+int a_Misc_nohang_rdtag(int socket, int timeout, Dstr **tag)
+{
+   int n_fd;
+   fd_set sock_set, select_set;
+   struct timeval tout;
+
+   FD_ZERO(&sock_set);
+   FD_SET(socket, &sock_set);
+
+   errno = 0;
+   do {
+      select_set = sock_set;
+      tout.tv_sec = 0;
+      tout.tv_usec = timeout;
+      n_fd = select(socket + 1, &select_set, NULL, NULL, &tout);
+   } while (n_fd == -1 && errno == EINTR);
+
+   if (n_fd == -1) {
+      MSG_ERR("%s:%d: a_Misc_nohang_rdtag: %s\n",
+              __FILE__, __LINE__, dStrerror(errno));
+      return(-1);
+   }
+   if (n_fd == 0) {
+      return(0);
+   } else {
+      *tag = a_Misc_rdtag(socket);
+      return(1);
+   }
+}
+*/
+
+/*
+ * Alternative to mkdtemp().
+ * Not as strong as mkdtemp, but enough for creating a directory.
+ * (adapted from dietlibc)
+ */
+char *a_Misc_mkdtemp(char *template)
+{
+   char *tmp = template + strlen(template) - 6;
+   int i;
+   unsigned int random;
+
+   if (tmp < template)
+      goto error;
+   for (i = 0; i < 6; ++i)
+      if (tmp[i] != 'X') {
+       error:
+         errno = EINVAL;
+         return 0;
+      }
+   srand((uint_t)(time(0) ^ getpid()));
+   for (;;) {
+      random = (unsigned) rand();
+      for (i = 0; i < 6; ++i) {
+         int hexdigit = (random >> (i * 5)) & 0x1f;
+
+         tmp[i] = hexdigit > 9 ? hexdigit + 'a' - 10 : hexdigit + '0';
+      }
+      if (mkdir(template, 0700) == 0)
+         break;
+      if (errno == EEXIST)
+         continue;
+      return 0;
+   }
+   return template;
+}

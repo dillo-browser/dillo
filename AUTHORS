@@ -1,0 +1,68 @@
+
+     _________________________________________________________________
+   
+                              Dillo project's team
+     _________________________________________________________________
+   
+   Project maintainer:
+          * Jorge Arellano Cid 
+          
+   Core Developers:
+          * Jorge Arellano Cid 
+          * Sebastian Geerken 
+          
+   Steady developers:
+          * Livio Baldini
+          * Eric Gaudet 
+          * Jörgen Viksell 
+          
+   Contributors:
+          * Lars Clausen
+          * Geoff Lane 
+          * Sammy Mannaert 
+          * James McCollough 
+          
+   Patches:
+          * Philip Blundell
+          * Francis Daly
+          * Sam Dennis 
+          * Melvin Hadasht
+          * Madis Janson
+          * Andrew McPherson 
+          * Sean 'Shaleh' Perry
+          * Marcos Ramírez
+          * Adam Sampson
+          * Andreas Schweitzer
+          * Dominic Wong 
+     _________________________________________________________________
+   
+   Web site logo:
+          * Eric Gaudet
+          * Jarrod Henry 
+          
+   Gzilla author:
+          * Raph Levien 
+     _________________________________________________________________
+
+
+
+
+-------------------
+Up to gzilla-0.1.7:
+-------------------
+
+Raph Levien <raph@acm.org> is the author of gzilla.
+
+Christoph Thompson <obituary@freshmeat.net> and Tomas O"gren <stric@ing.umu.se>
+ added pixmaps for the buttons and the code encessary to make them work.
+ They also reorganized the source tree and gave general advice and tips.
+ (Tomas will be pleased to find that my personal bookmarks file is no longer
+ hard-coded into Gzilla. :))
+
+Ian Main <slow@intergate.bc.ca> did the bookmarks.
+
+Thanks to Otto Hammersmith, David Mosberger-Tang, and Peter Mattis for
+patches.
+
+Contributions are always welcome!
+

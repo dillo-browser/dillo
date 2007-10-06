@@ -1,0 +1,185 @@
+ June 2000, --Jcid
+ Last update: Oct 2004
+
+                              -------
+                               CACHE
+                              -------
+
+   The  cache  module  is  the  main  abstraction  layer  between
+rendering and networking.
+
+   The  capi module acts as a discriminating wrapper which either
+calls  the  cache  or  the  dpi routines depending on the type of
+request.
+
+   Every  URL  must be requested using a_Capi_open_url, no matter
+if  it is a http, file, dpi or whatever type of request. The capi
+asks  the  dpi  module  for dpi URLs and the Cache for everything
+else.
+
+   Here we'll document non dpi requests.
+
+   The  cache,  at its turn, sends the requested-data from memory
+(if  cached),  or opens a new network connection (if not cached).
+
+   This  means  that  no  mattering whether the answer comes from
+memory  or  the  net,  the  client  requests  it through the capi
+wrapper, in a single uniform way.
+
+
+                         ----------------
+                         CACHE PHILOSOPHY
+                         ----------------
+
+   Dillo's  cache  is  very  simple, every single resource that's
+retrieved  (URL)  is  kept  in  memory. NOTHING is saved. This is
+mainly for three reasons:
+
+   - Dillo encourages personal privacy and it assures there'll be
+no recorded tracks of the sites you visited.
+
+   -  The Network is full of intermediate transparent proxys that
+serve as caches.
+
+   -  If  you still want to have cached stuff, you can install an
+external cache server (as WWWOFFLE), and benefit from it.
+
+
+                         ---------------
+                         CACHE STRUCTURE
+                         ---------------
+
+   Currently, dillo's cache code is spread in different sources:
+mainly  in  cache.[ch],  dicache.[ch]  and  it  uses  some  other
+functions from mime.c, Url.c and web.c.
+
+   Cache.c  is  the  principal  source,  and  it also is the main
+responsible  for  processing  cache-clients  (held  in  a queue).
+Dicache.c  is  the  "decompressed  image  cache" and it holds the
+original    data   and   its   corresponding   decompressed   RGB
+representation (more on this subject in Images.txt).
+
+   Url.c,  mime.c  and  web.c  are  used  for secondary tasks; as
+assigning the right "viewer" or "decoder" for a given URL.
+
+
+----------------
+A bit of history
+----------------
+
+   Some  time  ago,  the  cache  functions,  URL  retrieving  and
+external  protocols  were  a whole mess of mixed code, and it was
+getting  REALLY hard to fix, improve or extend the functionality.
+The  main  idea  of  this  "layering" is to make code-portions as
+independent  as  possible  so  they  can  be  understood,  fixed,
+improved or replaced without affecting the rest of the browser.
+
+   An  interesting  part of the process is that, as resources are
+retrieved,  the  client  (dillo  in  this  case) doesn't know the
+Content-Type  of the resource at request-time. It only gets known
+when  the  resource  header  is retrieved (think of http), and it
+happens  when  the  cache  has the control so, the cache sets the
+proper  viewer for it! (unless the Callback function is specified
+with the URL request).
+
+   You'll find a good example in http.c.
+
+   Note:  Files  don't have a header, but the file handler inside
+dillo  tries  to  determine the Content-Type and sends it back in
+HTTP form!
+
+
+-------------
+Cache clients
+-------------
+
+   Cache clients MUST use a_Cache_open_url to request an URL. The
+client structure and the callback-function prototype are defined,
+in cache.h, as follows:
+
+struct _CacheClient {
+   gint Key;                /* Primary Key for this client */
+   const char *Url;         /* Pointer to a cache entry Url */
+   guchar *Buf;             /* Pointer to cache-data */
+   guint BufSize;           /* Valid size of cache-data */
+   CA_Callback_t Callback;  /* Client function */
+   void *CbData;            /* Client function data */
+   void *Web;               /* Pointer to the Web structure of our client */
+};
+
+typedef void (*CA_Callback_t)(int Op, CacheClient_t *Client);
+
+
+   Notes:
+
+   * Op is the operation that the callback is asked to perform
+   by the cache. { CA_Send | CA_Close | CA_Abort }.
+
+   * Client: The Client structure that originated the request.
+
+
+
+--------------------------
+Key-functions descriptions
+--------------------------
+
+································································
+int a_Cache_open_url(const char *Url, CA_Callback_t Call, void *CbData)
+
+   if Url is not cached
+      Create a cache-entry for that URL
+      Send client to cache queue
+      Initiate a new connection
+   else
+      Feed our client with cached data
+
+································································
+ChainFunction_t a_Url_get_ccc_funct(const char *Url)
+
+   Scan the Url handlers for a handler that matches
+   If found
+      Return the CCC function for it
+   else
+      Return NULL
+
+   *  Ex:  If  Url is an http request, a_Http_ccc is the matching
+handler.
+
+································································
+
+----------------------
+Redirections mechanism
+ (HTTP 30x answers)
+----------------------
+
+  This is by no means complete. It's a work in progress.
+
+  Whenever  an  URL is served under an HTTP 30x header, its cache
+entry  is  flagged  with 'CA_Redirect'. If it's a 301 answer, the
+additional  'CA_ForceRedirect'  flag  is  also set, if it's a 302
+answer,  'CA_TempRedirect'  is  also set (this happens inside the
+Cache_parse_header() function).
+
+  Later  on,  in Cache_process_queue(), when the entry is flagged
+with 'CA_Redirect' Cache_redirect() is called.
+
+
+
+
+
+
+
+-----------
+Notes
+-----------
+
+   The  whole  process is asynchronous and very complex. I'll try
+to document it in more detail later (source is commented).
+   Currently  I  have  a drawing to understand it; hope the ASCII
+translation serves the same as the original.
+   If  you're  planning to understand the cache process troughly,
+write  me  a  note,  just  to assign a higher priority on further
+improving of this doc.
+   Hope this helps!
+
+

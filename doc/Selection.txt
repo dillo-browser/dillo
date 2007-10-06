@@ -1,0 +1,149 @@
+Apr 2003, S.Geerken@ping.de
+Last update: Dec 2004
+
+=========
+Selection
+=========
+
+The selection module (selection.[ch]) handles selections, as well as
+activation of links, which is closely related.
+
+
+General Overview
+================
+
+The selection module defines a structure "Selection", which is
+associated to GtkDwViewport, and so to a widget tree. The selection
+state is controlled by "abstract events", which are sent by single
+widgets by calling one of the following functions:
+
+   a_Selection_button_press    for button press events,
+   a_Selection_button_release  for button release events, and
+   a_Selection_button_motion   for motion events (with pressed mouse
+                               button).
+
+The widget must construct simple iterators (DwIterator), which will be
+transferred to extended iterators (DwExtIterator), see below for more
+details. All event handling functions have the same signature, the
+arguments in detail are:
+ 
+    - DwIterator *it           the iterator pointing on the item under
+                               the mouse pointer,
+    - gint char_pos            the exact (character) position within
+                               the iterator,
+    - gint link                if this item is associated with a link,
+                               its number (see DwImage, section
+                               "signals" for the meaning), otherwise
+                                -1,
+    - GdkEventButton *event    the event itself; only the button is
+                               used,
+    - gboolean within_content  TRUE, if there is some selectable
+                               content unter the mouse cursor; if set
+                               to FALSE, the "full screen" feature is
+                               used on double click.
+
+In some cases, char_pos would be difficult to determine. E.g., when
+the DwPage widget decides that the user is pointing on a position
+_at_the_end_ of an image (DwImage), it constructs a simple iterator
+pointing on this image widget. In a simple iterator, that fact that
+the pointer is at the end, would be represented by char_pos == 1. But
+when transferring this simple iterator into an extended iterator, this
+simple iterator is discarded and instead the stack has an iterator
+pointing to text at the top. As a result, only the first letter of the
+ALT text would be copied.
+
+To avoid this problem, widgets should in this case pass SELECTION_EOW
+(end of word) as char_pos, which is then automatically reduced to the
+actual length of the extended(!) iterator.
+
+The return value is the same as in DwWidget event handling methods.
+I.e., in most cases, they should simply return it. The events
+"link_pressed", "link_released" and "link_clicked" (but not
+"link_entered") are emitted by these functions, so that widgets which
+let the selection module handle links, should only emit "link_entered"
+for themselves. (See DwImage.txt for a description of this.)
+
+
+Selection State
+===============
+
+Selection interferes with handling the activation of links, so the
+latter is also handled by the selection module. Details are based on
+following guidelines:
+
+   1. It should be simple to select links and to start selection in
+      links. The rule to distinguish between link activation and
+      selection is that the selection starts as soon as the user leaves
+      the link. (This is, IMO, a useful feature. Even after drag and
+      drop has been implemented in dillo, this should be somehow
+      preserved.)
+
+   2. The selection should stay as long as possible, i.e., the old
+      selection is only cleared when a new selection is started.
+
+The latter leads to a model with two states: the selection state and
+the link handling state.
+
+The general selection works, for events not pointing on links, like
+this (numbers in parantheses after the event denote the button, "n"
+means arbitrary button):
+
+                                  motion(1)
+                                  ,-----.
+                                  |     |
+          press(1) on non-link    V     |
+   NONE -----------------------> SELECTING <----------------.
+    ^                                |                      |
+    |                                | release(1)           |
+    |                                |                      | press(1)
+    |                    no          V           yes        |
+    `----------------------- Anything selected? --------> SELECTED
+
+The selected region is represented by two DwExtIterators.
+
+Links are handled by a different state machine:
+
+    ,-----------------------------.
+    |                             |
+    |                   Switch to selection
+    |                 (SELECTING) for n == 1.
+    |                             ^
+    |                             | no
+    |                             |            yes
+    |                    Still the same link? --.
+    |                             ^             |
+    |                             |             |
+    |                             | motion(n)   |
+    V     press(n) on links       |             |
+   NONE ---------------------> PRESSED(n) <-----'
+    ^                             |
+    |                             | release(n)
+    |                             |
+    |                             V            yes
+    |                    Still the same link? -----------------.
+    |                             |                            |
+    |                             | no                         V
+    |                             V                Send "clicked" signal.
+    |                  Switch to selection                     |
+    |                 (SELECTED) for n == 1.                   |
+    |                             |                            |
+    |`----------------------------'                            |
+    |                                                          |
+    `----------------------------------------------------------'
+
+Switching to selection simply means that the selection state will
+eventually be SELECTED/SELECTING, with the original and the actual
+position making up the selection region. This happens for button 1,
+events with buttons other than 1 do not affect selection at all.
+
+
+TODO
+====
+
+* a_Selection_button_motion currently always assumes that button 1 has
+  been pressed (since otherwise it would not do anything). This should
+  be made a bit cleaner.
+
+* The selection should be cleared, when the user selects something
+  somewhere else (perhaps switched into "non-active" mode, as some
+  Gtk+ widgets do).

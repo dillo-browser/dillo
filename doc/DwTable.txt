@@ -1,0 +1,205 @@
+May 2001, S.Geerken@ping.de
+Last update: Dec 2004
+
+=======
+DwTable
+=======
+
+A container widget for rendering tables.
+
+
+The DwTable Widget
+==================
+
+DwTable is a container widget for rendering tables. It aligns other
+DwWidgets (normally DwPage), according to the following rules:
+
+   1. All columns have have the same width W, except:
+
+         - W is less than the minimal column width, or
+         - W is greater than the maximal column width.
+
+      Furthermore, W is
+
+         - less than all minimal widths of columns not having W as
+           width, and
+         - greater than all maximal widths of columns not having W as
+           width.
+
+   2. The table tries to use exactly the whole available width, except
+      if it is not possible, because the it is less/greater than the
+      minimal/maximal table width.
+
+This is simple to implement for columns with COLSPAN == 1, using
+a_Dw_get_extremes for getting the minimal and maximal widths. For
+arbitrary COLSPAN values, an approach described in "Subtables" is
+used to get optimal results (as described above) in most cases, while
+the rendering remains fast.
+
+
+Subtables
+=========
+
+A table is divided into subtables, which do not (in most cases) share
+spanning cells, until single columns are left. Cells spanning the
+whole width are removed before dividing further. Example:
+
+                          +---+-------+---+
+                          | A |   B   | C |
+                          +---+-------+---+
+                          |     D     | E |
+                          +---+-------+---+
+                          | F |   G   | H |
+                          +---+-------+---+
+                         '           ' `   `
+                        '           '   `   `
+                       +---+-------+     +---+
+                       | A |   B   |     | C |
+                       +---+-------+     +---+
+           removed --> |     D     |     | E |
+                       +---+-------+     +---+
+                       | F |   G   |     | H |
+                       +---+-------+     +---+
+                      '   ' `       `    final
+                     '   '   `       `
+                    +---+     +-------+
+                    | A |     |   B   | <-.
+                    +---+     +-------+    >- removed
+                    | F |     |   G   | <-' 
+                    +---+     +-------+
+                    final    '   ' `   `
+                            '   '   `   `
+                          [empty]   [empty]
+                           final     final
+
+There is a structure, DwTableSub, for holding all the information. It
+is rebuilt when new cells are added. Do not confuse this with nested
+tables, these are represented by the Dw widget hierarchy.
+
+If table cells overlap horizontally, they are (virtually) divided. The
+minimal and maximal widths are apportioned to the other columns
+(resulting in a non optimal layout):
+
+                            +-------+---+---+
+                            |   A   | B | C |
+                            +---+---+---+---+
+                            | D |     E     |
+                            +---+-----------+
+                           '       ' `       `
+                          '       '   `       `
+                         +-------+     +---+---+
+                         |   A   |     | B | C |
+                         +---+---+     +---+---+
+                         | D |1/3|     | 2/3 E |
+                         |   | E |     |       |
+                         +---+---+     +-------+
+
+Example for a non-optimal case
+------------------------------
+The HTML document fragment
+
+   <table>
+     <tr>
+       <td colspan="2">Text
+       <td>LongText
+     <tr>
+       <td>Text
+       <td colspan="2">LongText
+   </table>
+
+will result in:
+
+                    |  0   |  1   |    2    |
+
+                    +------------+----------+
+                    | Text       | LongText |
+                    +------+-----+----------+
+                    | Text | LongText       |
+                    +------+----------------+
+
+The width of column 1 is determined by the half of the minimal width
+of the LongText. An optimal rendering would be something like:
+
+                            ,- 1
+                    |  0   ||    2     |
+
+                    +-------+----------+
+                    | Text  | LongText |
+                    +------++----------+
+                    | Text | LongText  |
+                    +------+-----------+
+
+
+Algorithms
+==========
+
+Calculating extremes
+--------------------
+The extremes of all subtables are calculated by
+Dw_table_sub_get_extremes and stored in DwTableSub:
+
+   minimal/maximal width (sub table) =
+      - for single column: maximum of all minimal/maximal widths
+      - otherwise: maximum of
+                      1. all minimal/maximal widths of cells spanning
+                         the whole width, and
+                      2. the sum of the minimal/maximal widths of the
+                         sub-subtables
+
+        In step 1, the width argument is used to adjust the maximum
+        and minimum width of the whole subtable and mark it as fixed.
+
+todo: describe percentages.
+
+Calculating column widths
+-------------------------
+The calculation is based on a fixed width, which is, at the top, the
+width set by a_Dw_widget_set_width. This is corrected by the minimal and
+maximal width of the whole table, and, if given, the width attribute
+of the table. At each level, the available width is always between the
+minimal and the maximal width of the subtable.
+
+For single columns, the width is the passed fixed width. Otherwise:
+
+   1. Calculate relative widths, they effect the minimal and maximal
+      widths. (Temporally, not permanently!)
+
+   2. The sum of these corrected minima may be greater as the fixed
+      width of the subtable. In this case, decrease them again to
+      match exactly the fixed width, then use them as sub-subtable
+      fixed widths and finish. Otherwise, continue:
+
+   3. If the extremes of the spanning widths of the subtable are
+      greater than the sum of sub-subtables extremes, adjust the
+      extremes of sub-subtables which are not fixed, i.e., where no
+      width argument (either percentage or fixed) freezes the width.
+
+   4. Use an iteration on the subtables, to determine the column
+      widths, see Dw_table_sub_calc_col_widths for details.
+
+   5. After this, apply this recursively on all subtables and pass the
+      subtable width as fixed width.
+
+
+Borders, Paddings, Spacing
+==========================
+
+Currently, DwTable supports only the separated borders model (see CSS
+specification). Borders, paddings, spacing is done by creating DwStyle
+structures with values equivalent to following CSS:
+
+   TABLE {
+     border:           outset <table-border>;
+     border-collapse:  separate;
+     border-spacing:   <table-cellspacing>
+     background-color: <table-bgcolor>
+   }
+    
+   TD TH {
+     border:           inset <table-border>;
+     padding:          <table-cellspacing>
+     background-color: <td/th-bgcolor>
+   }
+
+Here, <foo-bar> refers to the attribute bar of the tag foo. See
+Html_open_table and Html_open_table_cell for more details.

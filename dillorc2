@@ -1,0 +1,194 @@
+# dillorc
+# Sample dillo initialization file.
+# Lines that start with a '#' are comments.
+
+
+#-------------------------------------------------------------------------
+#                             FIRST SECTION                             :)
+#-------------------------------------------------------------------------
+
+# Set the desired initial browser size
+#geometry=820x650
+#geometry=650x545
+geometry=725x545
+
+# Dicache is where the Decompressed Images are cached (not the original ones).
+# If you have a lot of memory and a slow CPU, use YES, otherwise use NO
+use_dicache=NO
+
+
+#-------------------------------------------------------------------------
+#                           RENDERING SECTION
+#-------------------------------------------------------------------------
+
+# Fontname for variable width rendering (most of the text).
+#   - some fonts may slow down rendering, some others not!
+#   - try to tune a fontname/font_factor combination.
+# Ex. {helvetica, lucida, times, "new century schoolbook", utopia, ...}
+#vw_fontname="new century schoolbook"
+#vw_fontname="helvetica"
+#vw_fontname="times"
+#vw_fontname="Bitstream vera Serif"
+#vw_fontname="arial"
+vw_fontname="DejaVu Sans"
+
+# Fontname for fixed width rendering (mainly text quoted with <pre>)
+#fw_fontname=courier
+#fw_fontname="Bitstream Vera Sans Mono"
+#fw_fontname="Andale Mono"
+fw_fontname="DejaVu Sans Mono"
+
+# All fontsizes are scaled by this value (default is 1.0)
+#font_factor=1.2
+font_factor=1.5
+
+# If you prefer oblique over italic fonts, uncoment next line
+#use_oblique=YES
+
+# Show tooltip popup for images?
+# Note: We use the "title" attribute and not "alt".
+#       More info at: http://bugzilla.mozilla.org/show_bug.cgi?id=25537
+show_tooltip=YES
+
+# Set this to YES, if you want to limit the word wrap width to the vieport
+# width (may be useful for iPAQ)
+limit_text_width=NO
+
+
+#-------------------------------------------------------------------------
+#                            PARSING SECTION
+#-------------------------------------------------------------------------
+
+# If you prefer more accurate HTML bug diagnose, over better rendering
+# (page authors and webmasters) set the following to "NO".
+#
+w3c_plus_heuristics=YES
+
+
+#-------------------------------------------------------------------------
+#                            NETWORK SECTION
+#-------------------------------------------------------------------------
+
+# Set the start page.
+# Uncomment if you want to override the default start page.
+#start_page="file:/home/jcid/Thinkpad385XD.html"
+
+# Set the home location
+#home="http://dillo.cipsga.org.br/"
+home="file:/home/jcid/HomePage/Home.html"
+
+# Set search url to use with "s <keywords>".
+# %s is replaced with keywords separated by '+'.
+#search_url="http://search.lycos.com/default.asp?query=%s"
+#search_url="http://www.alltheweb.com/search?cat=web&query=%s"
+search_url="http://www.google.com/search?q=%s"
+
+# Set the proxy information for http
+#http_proxy=http://localhost:8080/
+
+# if you need to provide a  user/password pair for the proxy,
+# set the proxy user name here and Dillo will ask for the password later.
+#http_proxyuser="joe"
+
+# Set the domains to access without proxy
+#no_proxy = ".hola.com .mynet.cl .hi.de"
+
+
+#-------------------------------------------------------------------------
+#                            COLORS SECTION
+#-------------------------------------------------------------------------
+
+# Here we can use the HTML color names or C syntax.
+
+# Set the background color
+# bg_color=gray
+# bg_color=0xd6d6c0
+bg_color=0xdcd1ba
+
+# Set the text color
+text_color=black
+
+# Set the link color
+link_color=blue
+
+# If your eyes don't suffer with white backgrounds, or you need
+# high contrast to see sharply, uncomment next line.
+allow_white_bg=NO
+
+# Use the same colors with all documents?
+#force_my_colors=YES
+
+# When set to YES, visited links always have a characteristic color,
+# independent of the author's setting.                        
+contrast_visited_color=YES
+
+
+#-------------------------------------------------------------------------
+#                        USER INTERFACE SECTION
+#-------------------------------------------------------------------------
+
+# Size of dillo panel (used to enlarge the browsing area)
+# tiny   :  recommended for iPAQ (with small_icons)
+# small  :  very nice! (it's "medium" without icon titles)
+# medium :  nice!
+# large  :  Traditional
+#panel_size=tiny
+panel_size=small
+#panel_size=medium
+#panel_size=large
+small_icons=NO
+
+# Here you can choose to hide some widgets of the dillo panel...
+#show_back=NO
+#show_forw=NO
+#show_home=NO   
+#show_reload=NO
+#show_save=NO
+#show_stop=NO
+#show_bookmarks=NO
+show_menubar=YES
+#show_clear_url=NO
+#show_url=NO
+#show_search=NO
+#show_progress_box=NO
+
+# Start dillo windows with a hidden panel?
+fullwindow_start=NO
+
+# Enabling this will restrain OpenUrl and FindText, but may be required
+# for the ION window manager.
+transient_dialogs=NO
+
+# When filling forms, our default behaviour is to submit on enterpress,
+# but only when there's a single text entry (to avoid incomplete submits).
+# OTOH, if you have to fill the same form lots of times, you may find
+# useful to keep away from the mouse by forcing enter to submit.
+enterpress_forces_submit=NO
+
+# Some forms lack a submit button, and dillo can generate a custom one
+# internally. Unfortunately there's no guarantee for it to work. :(
+# (my experience is that forms that lack a submit rely on Javascript)
+generate_submit=NO
+
+#-------------------------------------------------------------------------
+#                        DEBUG MESSAGES SECTION
+#-------------------------------------------------------------------------
+
+# Soon we should add the "show_debug_messages=NO" option...
+
+# Generic messsages (mainly for debugging specific parts)
+# Uncomment the following line to disable them.
+#show_msg=NO
+
+
+#-------------------------------------------------------------------------
+#                        HTML BUG MESSAGES SECTION
+#-------------------------------------------------------------------------
+
+# Accepted by the W3C validator but "strongly discouraged" by the SPEC.
+# (As "TAB character inside <PRE>").
+#show_extra_warnings=YES
+
+
+# -----------------------------------------------------------------------
+# dillorc ends here.

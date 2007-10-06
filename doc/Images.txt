@@ -1,0 +1,114 @@
+ February 2001, --Jcid
+
+                              ------
+                              IMAGES
+                              ------
+
+* When a image tag is found within a HTML page, Html_tag_open_img
+handles it by:
+
+   - Parsing & getting attribute values.
+   - Creating a new image structure (DilloImage) and its
+     associated widget (DwImage).
+     i.e. If 'Image' is the var for the structure, then
+          'Image->dw' is the widget.
+   - Requesting the image to be feeded by the cache.
+   - Sending some info to the browser interface.
+
+* The  cache  can  either request the image data from the net, or
+feed it directly from the dicache (decompressed image cache).
+
+*  Both  processes  are  somewhat different because the first one
+requires to decode the image data into RGB format, and the second
+one has the whole data already decoded.
+
+*  Regardless of the RGB-data feeding method, the decoded data is
+passed  to the widget (DwImage) and drawn by GdkRGB in a streamed
+way.
+   Note that INDEXED images are also decoded into RGB format.
+
+
+---------------------
+Fetching from the net
+---------------------
+
+*  a_Cache_open_url  initiates  the  resource  request,  and when
+finally  the answer arrives, the HTTP header is examined for MIME
+type  and  either the GIF or PNG or JPEG decoder is set to handle
+the incoming data stream.
+   Decoding functions: a_Gif_image, a_Jpeg_image and a_Png_image.
+
+*  The  decoding  function calls the following dicache methods as
+the data is processed (listed in order):
+
+   a_Dicache_set_parms
+   a_Dicache_set_cmap (only for indexed-GIF images)
+   a_Dicache_write
+   a_Dicache_close
+
+*  The  dicache  methods  call the necessary functions to connect
+with the widget code. This is done by calling image.c functions:
+
+   a_Image_set_parms
+   a_Image_set_cmap
+   a_Image_write
+   a_Image_close
+   
+*  The  functions  in  image.c  make  the required a_Dw_image_...
+calls. 
+
+
+-------------------------
+Fetching from the dicache
+-------------------------
+
+*  a_Cache_open_url  tests  the cache for the image, and directly
+enqueues  a  cache  client for it, without asking the network for
+the  data.  When the client queue is processed (a bit later), the
+decoder is selected based on the cache entry Type.
+
+* When the decoder is called, it tests the dicache for the image;
+if  the  image  is  found, then it sets a_Dicache_callback as the
+handling  function  and gets out of the way (no image decoding is
+needed).
+
+*   Later  on,  the  DwImage  buffer  is  set  to  reference  the
+dicache-entry's  buffer  and  the  rest of the functions calls is
+driven by a_Dicache_callback.
+
+
+-----------
+Misc. notes
+-----------
+
+*  Repeated  images  generate  new cache clients, but only one of
+them  (the first) is handled with a_Dicache_* functions, the rest
+is done with a_Dicache_callback..
+
+*  The  cache-client callback is set when the Content-type of the
+image is got. It can be: a_Png_image, a_Gif_image or a_Jpeg_image
+Those  are  called  'decoders'  because their main function is to
+translate the original data into RGB format.
+
+*  Later  on,  the decoder can substitute itself, if it finds the
+image has been already decoded, with a_Dicache_callback function.
+This avoids decoding it twice.
+
+*  The dicache-entry and the Image structure hold bit arrays that
+represent which rows had been decoded.
+
+* The image processing can be found in the following sources:
+
+  - image.[ch]
+  - dicache.[ch]
+  - gif.[ch], png.[ch], jpeg.[ch]
+  - dw_image.[ch]
+
+* Bear  in  mind  that  there are three data structures for image
+code:
+
+  - DilloImage (image.h)
+  - DwImage (dw_image.h)
+  - DICacheEntry (dicache.h)
+
+

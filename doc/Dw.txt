@@ -1,0 +1,383 @@
+Jan 2001, S.Geerken@ping.de
+Last update: Dec 2004
+
+================
+Dw: Dillo Widget
+================
+
+NOTE (Aug 2004): The rendering has changed quite much, and many other
+documents are out of date, in ways described in DwRendering.txt. They
+will be updated some day.
+
+Dw is mainly the module for rendering HTML. It provides a framework
+for widgets, based on the Gtk+ object framework, and is very similar
+to Gtk+, so that experiences in using and extending Gtk+ help very
+much in understanding Dw. There is some documentation at www.gtk.org
+(and probably on your local harddisk, somewhere in /usr/doc/*gtk*),
+you should especially have read the chapter "Writing Your Own
+Widgets" in the tutorial.
+
+
+Why Not Gtk+?
+=============
+
+There are two reasons for designing a new model instead of simply
+using Gtk+ objects:
+
+  1. Most important, Gtk+ widgets are limited in size, because X
+     windows are so.
+  2. There are a few extensions which are due to the different needs
+     for HTML rendering compared to GUI's. (Of course, this could
+     have been solved by defining a new object derived from
+     GtkWidget.)
+
+
+Notes On Naming
+===============
+
+According to the naming standards, functions beginning with "a_Dw_"
+may be used outside of Dw, while, as an extention, functions used
+within Dw (e.g.  p_Dw_widget_queue_resize) are prefixed with "p_Dw_".
+[todo: This could be included in NC_design.txt.]
+
+Non-static functions beginning with "Dw_" are only used between
+GtkDwViewport and DwWidget (e.g. Dw_gtk_viewport_remove_dw), they
+belong to the core of Dw. And, of course, functions only used within a
+sub-module (e.g. a specific widget) start with "Dw_" and are static
+(e.g. Dw_page_find_line_index).
+
+Dw widgets and some other structures have the prefix "Dw", while Gtk+
+widgets in Dw have the prefix "GtkDw", but functions of them begin
+with "Dw_gtk_" or "a_Dw_gtk", respectively.
+
+
+Basic Overview
+==============
+
+Dw widgets are objects derived from DwWidget, which itself derives
+from GtkObject. DwWidget is quite similar to GtkWidget, the main
+difference is that Dw widgets are always windowless and that they are
+presented in a viewport, so there is no need to limit the size. Much
+of the functionality normally provided by the X server is simulated
+by Dw.
+
+The interface between Gtk+ and Dw is the Gtk+ widget GtkDwViewport,
+which contains (at most) one top-level Dw widget.
+
+A Few Definitions:
+
+  - world coordinates: coordinates relative to the upper left corner
+    of the whole scrolled area ("the world")
+  - viewport coordinates: coordinates relative to the upper left
+    corner of the visible area
+  - widget coordinates: coordinates relative to the upper left corner
+    of the widget
+
+Dw widgets draw into the viewport window, and must adhere to
+*viewport coordinates*: the "world" is only an abstract term, there
+is no window for it. When GtkDwViewport processes expose events, they
+are automatically delivered to the Dw widgets. Redrawing requests due
+to scrolling of the viewport is done by the base object GtkLayout,
+you will not find any code for this in Dw.
+
+Mouse events also contain viewport coordinates. Dw will try to find
+the right Dw widget to deliver the event to.
+
+Resizing the GtkDwViewport will not resize the top-level Dw widget,
+but the latter will get some hints, so that, e.g., the page widget
+rewraps the lines at the appropriate width.
+
+See DwWidget.txt for more details.
+
+
+Embedding Gtk+ Widgets In Dw
+----------------------------
+Dw Widgets may embed Gtk+ widgets, this is done by the Dw widget
+DwEmbedGtk. For Gtk+, these embedded Gtk+ widgets are themselves
+children of the GtkDwViewport, since Gtk+ does not care about Dw.
+
+Of course, embedded Gtk+ widgets are again limited in size, but but
+in position: GtkDwViewport is derived from GtkLayout which is exactly
+designed for positioning widgets in an infinite scrolled area.
+
+
+How To Get The Top-Level Dw Widget From A BrowserWindow
+-------------------------------------------------------
+The member "docwin" of BrowserWindow points on a GtkDwScrolledWindow,
+which contains a GtkDwScrolledFrame, which contains a GtkDwViewport.
+The member "child" of the latter points on the top-level Dw widget,
+or may be NULL. The top-level Dw is (currently) a DwPage (HTML and
+plain text documents) or a DwImage (images).
+
+There is a function a_Dw_gtk_scrolled_window_get_dw for this.
+
+
+Sizes
+-----
+A feature adapted from the old Dw are baselines. As well DwAllocation
+as DwRequisition do not have a height member, but instead ascent and
+descent, both positive or zero. (Originally I removed this, but there
+will be a few widgets in future depending on this, e.g., math
+formulas.)
+
+Unlike in Gtk, sizes of zero are allowed. The upper limit for the
+size of a widget is 2^31 (this will be enough to show the contents of
+a small library in a web page).
+
+
+Resizing
+========
+
+From outside: When writing a new widget, you should implement the
+signal "size_request". When the widget changes its size, it should
+call p_Dw_widget_queue_resize, as in a_Dw_image_size. See "Incremental
+Resizing" below for a way to increase the speed.
+
+Even if the implementation of "size_request" gets quite expensive,
+you do not have to check whether the size has changed, this is done
+by a_Dw_widget_size_request.
+
+Inside: q_Dw_widget_queue_resize will set the DW_NEEDS_RESIZE flag, a
+further call of a_Dw_widget_size_request will only then emit the
+"size_request" signal. Furthermore, mark_size_change and
+mark_extremes_change are called (see below). After that, the resizing
+is done in an idle loop, this prevents too many size requests. The
+algorithm is quite simple: any widget with a child which needs
+resizing, needs resizing, thus all parents up to top-level widget are
+marked.
+
+Incremental Resizing
+---------------------
+A widget may calculate its size based on size calculations already
+done before. In this case, a widget must exactly know the reasons, why
+a call of size_request is necessary. To make use of this, a widget
+must implement the following:
+
+   1. There is a member in DwWidget, called parent_ref, which is
+      totally under control of the parent widget (and so sometimes not
+      used at all). It is necessary to define how parent_ref is used
+      by a specific parent widget, and it has to be set to the correct
+      value whenever necessary.
+
+   2. The widget must implement mark_size_change and
+      mark_extremes_change, these methods are called in two cases:
+
+         a) directly after q_Dw_widget_queue_resize, with the argument
+            ref was passed to q_Dw_widget_queue_resize, and
+         b) if a child widget has called q_Dw_widget_queue_resize,
+            with the value of the parent_ref member of this child.
+
+This way, a widget can exactly keep track on size changes, and so
+implement resizing in a faster way. A good example on how to use this
+is the DwPage widget, see DwPage.txt for details.
+
+
+Anchors and Scrolling
+=====================
+
+Anchors
+-------
+todo: This section is out of sync with the actual code.
+
+To set the anchor a page is viewed at, you can use one of the
+following functions:
+
+  - void a_Dw_gtk_viewport_set_anchor (GtkDwViewport *viewport,
+                                       gchar *anchor)
+
+      Scroll directly to an anchor. The anchor does not need to exist
+      already, see below.
+
+  - void a_Dw_gtk_viewport_queue_anchor (GtkDwViewport *viewport,
+                                         gchar *anchor)
+
+      Set the anchor for the next top-level DwWidget (the next call
+      of a_Dw_gtk_viewport_add_dw).
+
+There are wrappers, a_Dw_gtk_scrolled_window_queue_anchor and
+a_Dw_gtk_scrolled_window_set_anchor.
+
+After a_Dw_gtk_viewport_set_anchor has been called (indirectly by
+Nav_open_url, or by a_Dw_gtk_viewport_add_dw), changes of anchor
+positions (e.g., if widgets change there size or the anchor was not
+known before) will correct the viewport adjustment (in function
+p_Dw_gtk_viewport_update_anchor), but only as long as the user did not
+change it directly. Look at Dw_gtk_scrolled_window_init for details
+about the latter.
+
+Use p_Dw_widget_set_anchor to add anchors to a widget, see
+DwWidget.txt.
+
+Scrolling
+---------
+Here is an overview on more functions for scrolling:
+
+   - To scroll to a given position, there are two possibilities:
+     a_Dw_gtk_viewport_set_scrolling_position simply scrolls to this
+     position, while Dw_gtk_viewport_scroll_to has more facilities:
+     you specify a rectangle you want to see, and the way how it is
+     seen (at the border, centered, or just scroll as much as
+     necessary, that it is seen). If you have a widget, you can also
+     use Dw_widget_scroll_to. There is also a wrapper for
+     GtkDwScrolledWindow,
+     a_Dw_gtk_scrolled_window_set_scrolling_position, and two
+     functions for getting the position,
+     a_Dw_gtk_scrolled_window_get_scrolling_position_x, and
+     a_Dw_gtk_scrolled_window_get_scrolling_position_y.
+
+   - If you have a region, and want to display it, use
+     a_Dw_iterator_scroll_to. For example, the findtext module makes
+     use of it. There are equivalents for DwExtIterator and
+     DwWordIterator. See comments on and in the function for more
+     informations.
+
+   - If you just want to determine where some content is allocated,
+     represented by an iterator, you can use
+     a_Dw_iterator_get_allocation. There are equivalents for
+     DwExtIterator and DwWordIterator.
+
+
+The Objects
+===========
+
+This is the hierarchy of all objects of Dw:
+
+    (GtkObject)
+     +-DwWidget
+     |     +----DwBullet
+     |     +----DwContainer
+     |     |     `----DwPage
+     |     +----DwEmbedGtk
+     |     +----DwHruler
+     |     `----DwImage
+     `----(GtkWidget)
+           `----(GtkContainer)
+                 +----(GtkBin)
+                 |     +----(GtkScrolledWindow)
+                 |     |     `----GtkDwScrolledWindow
+                 |     `----GtkDwScrolledFrame
+                 `----(GtkLayout)
+                       `----GtkDwViewport
+
+Objects in parentheses are part of Gtk+, not of Dw.
+
+
+DwBullet
+--------
+Simple widget used for unnumbered list (<ul>).
+
+
+DwContainer
+-----------
+The base object for Dw widgets which contain other Dw widgets. As in
+Gtk+, containers are responsible for storing the children, there is
+no common data structure. There are a few signals:
+
+  - void add (DwContainer *container,
+              DwWidget *child);
+
+      Currently not used, but may be in future.
+
+  - void remove (DwContainer *container,
+                 DwWidget *widget);
+
+      *Recognize* that a widget is destroyed, i.e., an implementation
+      should remove *the pointer* from the list or so, but not
+      destroy the child widget. It is called by Dw_widget_shutdown.
+
+  - void forall (DwContainer *container,
+                 DwCallback callback,
+                 gpointer callback_data);
+
+      Process callback for all children, in the form
+      (*callback)(child, callback_data).
+
+      The include_internals of the Gtk+ equivalent was not adapted,
+      since it is used for more sophisticated purposes not needed in
+      Dw.
+
+
+DwEmbedGtk
+----------
+This Dw widget is used to embed Gtk+ widgets into Dw container
+widgets. The Gtk+ widget is set by a_Dw_embed_gtk_add_gtk, and can
+simply be removed by destroying it.
+
+If the DwEmbedGtk contains no Gtk+ widget, it always returns 0x0x0 as
+size, so, for speed reasons, first add the Gtk+ widget into the
+DwEmbedGtk, and then the DwEmbedGtk into the other Dw widget, as at
+the end of Html_tag_open_input.
+
+
+DwHruler
+--------
+Simple widget used for the <hr> tag.
+
+
+DwImage
+-------
+Widget for displaying image. See DwImage.txt for details.
+
+
+DwPage
+------
+A widget for displaying texts. See DwPage.txt for details.
+
+
+DwTable
+-------
+A container widget for rendering tables. See DwTable.txt for details.
+
+
+DwWidget
+--------
+The base object for all Dw widgets. See DwWidget.txt for details.
+
+
+GtkDwScrolledWindow
+-------------------
+Adds a few functionalities to GtkScrolledWindow: it creates the
+GtkDwScrolledFrame and the GtkDwViewport, connects some signals, and
+provides some wrappers for using the GtkDwViewport.
+
+  
+GtkDwScrolledFrame
+------------------
+General purpose scrolled widget containing another scrolled widget,
+adding a border and a focus frame. Furthermore, it processes key
+presses and mouse drags (button 2, as in Gimp) to move the viewport.
+
+There are two signals (except "set_scroll_adjustments"),
+"user_hchanged" and "user_vchanged", which are emitted when the user
+changed the viewport adjustments horizontally/vertically by using the
+keys or button 2 dragging.
+
+
+GtkDwViewport
+-------------
+The interface between Gtk+ and Dw. It is responsible for displaying
+Dw Widgets and processing their events. It is derived from GtkLayout,
+to make embedding Gtk+ widgets into Dw widgets simpler, see the
+documentation of GtkLayout in the Gtk+ tutorial for details.
+
+GtkDwViewport contains at most one top-level Dw Widget, if it exists.
+The Gtk+ methods of GtkDwViewport are more or less mapped on the
+methods of the DwWidget. In detail:
+
+  - Dw_gtk_viewport_size_allocate will call a_Dw_widget_set_width,
+    a_Dw_widget_set_ascent (with allocation->height) and
+    a_Dw_widget_set_descent (with zero as argument), and then allocate
+    the Dw widget at the size returned by a_Dw_widget_size_request.
+
+  - Dw_gtk_viewport_draw and Dw_gtk_viewport_expose will call
+    a_Dw_widget_draw, which will emit the "draw" signal.
+
+  - Handling of mouse events is mostly done in Dw_widget_mouse_event,
+    see DwWidget.txt for details. Note that the functions return
+    FALSE, if the event was not processed, so that they are delivered
+    to the parent widget(s) of the GtkDwViewport, this scheme e.g.
+    prevents dragging of the viewport (done by GtkScrolledFrame) when
+    pressing mouse button 2 on a link.
+
+You may call gtk_container_set_border_width for a border around the
+scrolled area.

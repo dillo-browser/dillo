@@ -1,0 +1,76 @@
+=======
+ Dillo
+=======
+
+  This  is  an  alpha release of the next generation of the Dillo
+web  browser.  The  code  underwent  a major rewrite: significant
+parts  of  the  codebase  were  ported  to C++, and the rendering
+engine now uses the FLTK2 library instead of GTK1.
+
+  With  regard to Dillo 0.8.6, dillo-f15f has some advantages (as
+antialiasing and utf-8), and some disadvantages. The problems are
+simple  to  solve and only need some man months to complete. When
+we're  there,  dillo-f15f  will be easily regarded as better than
+the former series.
+
+  This is release should be regarded as alpha.
+
+
+  Here's a list of some well known problems:
+
+    * no iteration inside simple lists
+    * image links haven't been hooked yet
+    * you may experience crashes from "assert" statements from
+      unfinished code.
+    * the scrolling position is not yet updated (when following a
+      link, the former scroll position is kept).
+    * viewport scrolling is not yet optimized (takes lots of CPU)
+    * context menus are not yet completely hooked or activated
+
+    * no FRAMES rendering
+    * no https            -- read the FAQ to enable a protoype.
+
+
+------------
+Dpi programs
+------------
+
+  These  are  installed by "make install". If you don't have root
+access,  copy  "dillo"  and "dpid" to some directory in your path
+and  install  the  dpis by running "./install-dpi-local" from the
+top directory (they will be installed under ~/.dillo).
+
+
+----
+*BSD
+----
+
+  Dillo  may  compile on *BSD systems; please report on this.
+Please note that you'll need GNU make.
+
+  From  OpenBSD  >=  3.3,  gethost* calls are not thread safe. If
+your dillo crashes or locks at times, just use:
+
+    ./configure --disable-threaded-dns
+
+  so dillo uses a single thread for name resolving.
+
+
+-------
+Solaris
+-------
+
+  Dillo may compile and run OK on Solaris but (please report):
+
+    * use gmake (a symbolic link make -> gmake works OK)
+
+  Solaris is very inconsistent so you may need to add/remove:
+
+  -lrt -lposix4
+
+  at link time.
+
+    
+Jorge.-
+(jcid@dillo.org)
+Sep 30, 2007

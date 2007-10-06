@@ -1,0 +1,201 @@
+Jan 2001, S.Geerken@ping.de
+Last update: Dec 2004
+
+=======
+DwImage
+=======
+
+A widget for displaying images and handling image maps.
+
+
+Image Maps
+==========
+
+Client Side Image Maps
+----------------------
+You must first create a list of image maps: Allocate a DwImageMapList,
+and initialize it by calling a_Dw_image_map_list_init. Adding a map is
+done by a_Dw_image_map_list_add_map. a_Dw_image_map_list_add_shape
+adds a shape to the last map. For the meaning of the link argument,
+see Section "Signals".
+
+Image maps are referred by a URL (not only by a name). But currently,
+the image map list is stored in DilloHtmlLB and there is no
+possibility to parse documents without rendering, so images can only
+use maps defined in the same document.
+
+To use a map in an image, call a_Dw_image_set_usemap with the image,
+the map list, and the URL of the map. Passing the whole list makes it
+possible to use maps parsed after the image is created.
+
+
+Server Side Image Maps
+----------------------
+To use images for server side image maps, you must call
+a_Dw_image_set_ismap and the style must contain a valid link
+element. See section "Signals" for more details.
+
+
+Signals
+=======
+
+There are five signals, which can be connected to process actions with
+links. All have at least three arguments:
+
+   - link is the link element of the DwStyle (server side image maps)
+     or DwImageMapShape (client side image maps). The value is an
+     integer, which is currently only used for hypertext links. But
+     generally, it depends on the signal callback how this value is
+     used.
+
+   - x and y are, when server side image maps are used, the relative
+     coordinates of the mouse pointer, otherwise always -1.
+
+Note that, unlike by DwPage before, no cursors are set. Instead, the
+signal callback function has to do this.
+
+The signals:
+
+   - void link_entered (DwImage *image,
+                        gint link, gint x, gint y)
+
+     Emitted when the link the mouse pointer is over has
+     changed. "Changed" includes link, x and y, so this signal is also
+     emitted each time the pointer is moved within a server side image
+     map. If the pointer is outside of a link, all arguments have the
+     value -1.
+
+
+   - void link_pressed (DwImage *image,
+                        gint link, gint x, gint y,
+                        GdkEventButton *event)
+
+     Emitted when the user presses a mouse button _inside_ a link,
+     this signal is never emitted with link = -1. You can use the
+     event to get information about the button, shift keys, etc.
+
+
+   - void link_released (DwImage *image,
+                         gint link, gint x, gint y,
+                         GdkEventButton *event)
+
+   - void link_clicked (DwImage *image,
+                        gint link, gint x, gint y,
+                        GdkEventButton *event)
+
+     Analogue to link_pressed.
+
+   - void void (*image_pressed) (DwImage *page,
+			         GdkEventButton *event)
+
+     Emitted when the user presses the mouse button on an image which
+     has no related map. In some cases, it may be neccessary to
+     suppress event processing by a_Dw_widget_set_button_sensitive().
+
+
+Future Extentions
+=================
+
+(See also Imgbuf.txt, what is named DilloImageBuffer here, has been
+implemented under the name Imgbuf.)
+
+These are some ideas for a different design, which will solve several
+problems (image transparency, memory usage when implementing a global
+size factor):
+
+1. Instead of a guchar array, a new data type, DilloImageBuffer,
+   should be used (DICacheEntry::ImageBuffer and DwImage::buffer). Any
+   access is done by function calls. Copying the lines (in
+   a_Image_write) is done by a_Image_buffer_copy_line, etc. The call to
+   Image_line becomes obsolete, since DilloImageBuffer will deal with
+   different types: indexed, RGB, gray, RGBA, gray-alpha(?). This may
+   be useful for a more efficient implementation of DilloImageBuffer.
+
+2. The modules Png, Jpeg, Gif, Image and DICache deal with the
+   original image size (read by the decoders), while DwImage gets the
+   "viewed" size (original size, multiplied by the global image
+   scaling factor) from DilloImageBuffer.
+
+3. For DwImage, there are further methods which replace the current
+   direct access. Note to worth:
+
+   - Scaled buffers are shared, reference counters are used. Copying
+     rows will automatically also affect the related scaled buffers.
+
+   - There are two methods for drawing, one called after expose events
+     (Dw_image_draw) and another called by a_Dw_image_draw_row. The
+     exact rules, how the buffer is scaled (this can, e.g., differ by a
+     pixel or so), is hidden by DilloImageBuffer.
+
+   - As noted above, all DwImage code is based on the viewed size.
+
+4. The global image scaling factor is used in two places. The HTML
+   parser must apply it on the WIDTH and HEIGHT attributes of the
+   <IMG> tag and DilloImageBuffer must use it to scale the inherent
+   size of an image. There are two modes, which the user can switch
+   by a dillorc option:
+
+   (i) The original image data is preserved, and an additional scaled
+       buffer is created:
+
+          +-------+             +------------------+     additional
+          | Image | -- copy --> | DilloImageBuffer | --> scaled
+          +-------+    rows     | (original size)  |     buffers
+                                +------------------+
+                                    |          ^
+                                    |          |
+                                  scale     requests
+                                each row   for scaled
+                                    |       buffers
+                                    |          |
+                                    v          |
+                                +------------------+
+                                | DilloImageBuffer |
+                                | (viewed size)    |
+                                +------------------+
+                                         ^
+                                         |
+                                    +---------+
+                                    | DwImage |
+                                    +---------+
+
+   (ii) The original data gets lost just after scaling:
+
+          +-------+             +------------------+
+          | Image | -- copy --> | DilloImageBuffer | --> scaled
+          +-------+    rows     | (viewed size)    |     buffers
+                                +------------------+
+                                         ^
+                                         |
+                                    +---------+
+                                    | DwImage |
+                                    +---------+
+
+   (ii) uses generally less memory, while in some cases leads to a
+   lower rendering quality, as in this example:
+
+   "foo.png" has a size of 100x100 pixels, the image scaling factor is
+   50%, and the following HTML sniplet is rendered:
+
+      <img src="foo.png">
+      <img src="foo.png" width=200 height=200>
+
+   The first image is displayed at a size of 50x50, the second at
+   100x100. (i) will, for the second, use the original buffer, but
+   (ii) will enlarge the buffer, which was scaled down before, so
+   resulting in a "pixelized" image.
+
+5. Any implementation of DilloImageBuffer will handle transparency
+   independent of the background, i.e., the background colour will not
+   be used anymore. The first implementation may be based on GdkRGB
+   and (when needed) dithered clipping bitmaps. Better implementations
+   may then be developed in the future.
+
+6. Background images: The modules Image and DICache do no longer
+   access the DwImage directly, all calls are replaced by an
+   Interface, which is then implemented by DwImage and an appropriate
+   structure for background images (part of DwStyle). The interface is
+   in C realized by a struct of function pointers, and a generic
+   pointer on DwImage, etc.
+
+7. If someone really needs it, animated GIF's may be considered.

@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# Install the dpi framework programs inside the user's account.
+#
+
+BASE="$HOME/.dillo"
+BASE2="$BASE/dpi"
+
+if [ -r $BASE/dpi_socket_dir ] ; then
+   rm -r `cat $BASE/dpi_socket_dir`
+   rm $BASE/dpi_socket_dir
+fi
+
+if [ ! -x dpid/dpid ] ; then
+   echo "You MUST run this script after make."
+   exit 1
+fi
+
+if [ ! -d $BASE ] ; then
+  mkdir $BASE
+fi
+if [ ! -d $BASE2 ] ; then
+  mkdir $BASE2
+fi
+
+cp dpid/dpid dpid/dpidc $BASE
+strip $BASE/dpid
+
+cd dpi
+for F in *.dpi ; do
+   D="`echo $F | sed 's/\..*$//'`"
+   if [ ! -d $BASE2/$D ] ; then
+      mkdir $BASE2/$D
+   fi
+   cp $F $BASE2/$D
+   strip $BASE2/$D/$F
+done
+cd ..
+

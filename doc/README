@@ -1,0 +1,53 @@
+README: Last update Oct 2007  --jcid
+
+ This documents need a review. They were current with dillo1 and
+now, with dillo2, most of them are obsolete, specially Dw*txt, but
+Dw2 is fully documented in html using doxygen.
+
+ The other documents will be reviewed when I have some time. They
+will give you an overview of what's going on but take them with a
+pinch of salt.
+
+ Of course I'd like to have these as doxygen files too!
+If somebody wants to make this convertion, please let me know
+to assign higher priority to updating these docs.
+
+--
+Jorge.-
+
+ --------------------------------------------------------------------------
+       FILE                    DESCRIPTION                   STATE
+ --------------------------------------------------------------------------
+   NC_design.txt       Naming&Coding design (Be sure to     Current
+                       read it before any other doc)
+   Dillo.txt           General overview of the program      Current
+   IO.txt              Extensive introduction               Current
+   Cache.txt           Informative description              Current
+   Images.txt          Image handling and processing        Current
+   HtmlParser.txt      A versatile parser                   Current
+   Dw.txt              The New Dillo Widget (Overview)      Current
+   DwRendering.txt     Dw Rendering Abstraction             Current
+   DwWidget.txt        The base object of Dw                Current
+   DwImage.txt         Dillo Widget image handling          Incomplete
+   DwPage.txt          Dillo Widget page (shortly)          Incomplete
+   DwStyle.txt         Styles of Dillo Widgets              Pending
+   DwTable.txt         Tables in dillo                      Current
+   Imgbuf.txt          Image buffers                        Pending
+   Selection.txt       Selections, and link activation      Current (?)
+   Cookies.txt         Explains how to enable cookies       Current
+   Dpid.txt            Dillo plugin daemon                  Current
+ --------------------------------------------------------------------------
+ [This documents cover dillo's internal working. They're NOT a user manual]
+ --------------------------------------------------------------------------
+
+
+ * Ah!, there's a small program (srch) within the src/ dir. It searches
+ tokens within the whole code (*.[ch]). It has proven very useful.
+ Ex:  ./srch a_Image_write
+      ./srch todo:
+
+ * Please submit your patches with 'diff -pru'.
+
+
+ Happy coding!  
+ --Jcid

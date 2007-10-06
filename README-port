@@ -1,0 +1,145 @@
+==============================
+ Porting Dw to Other Toolkits
+==============================
+
+This is a pre-release, which only contains a small test-program to
+test Dw with new new rendering abstraction. This rendering
+abstraction, which is described in doc/DwRender.txt, will make Dw
+portable at all, by implementing several interfaces, which are defined
+in src/dw_render.h.
+
+Currently, the new rendering abstraction is incomplete, and so not
+able to be integrated into dillo. There will be several pre-releases,
+with the version number 0.8.3-pre-dw-redesign-<n>.
+
+Actual Porting
+==============
+
+You will not have to read the whole "DwRender.txt", in order to port
+Dw to another platform, instead, here is a description of what to do.
+
+Gtk Dependencies
+----------------
+The current version must still be linked to Gtk+, since the Gtk+
+object model is used for class inheritance (especially the DwWidget
+hierarchy). I have been careful to limit the dependencies to a
+minimum, there is a script, src/search-gdk-refs, which detects all Gdk
+dependencies (which are generally not allowed), as well as those Gtk+
+dependencies, which do not refer to the Gtk+ object model.
+
+Glib is also used, there are currently no limitations for the usage.
+
+These dependencies will be removed in the future, so it is recommended
+not to use Gtk+ at all for the code, which is necessary for new
+platform.
+
+Test Program
+------------
+For the Gtk+ version of Dw, there is a test program dw-test in the src
+directory. This should be rewritten by a version, which uses the newly
+written platform specific implementations.
+
+Interfaces
+----------
+Since Dw is (currently) written in C, interfaces become a bit
+tricky. Generally, there are two structures, one for the object
+itself, which implements the interface, and one static structure,
+which contains static stuff related to the implementing object, mostly
+methods.
+
+For example, a_Dw_render_layout_new expects two arguments, one for a
+newly allcoated implementation the platform interface (as void*), and
+another (static) instance of DwRenderPlatformClass. In the test
+program, this is Dw_gtk_platform_class, which is defined in
+dw_gtk_platform.c. Notice, that the first argument is destroyed, when
+the layout is destroyed, while the second one is not touched.
+
+Methods are simply implemented as function pointers, which first
+parameter is void*. When such a method is called, the first argument
+is the object, in this case, what has been passed as first argument to
+a_Dw_render_layout_new. In some cases, such an interface structure may
+contain other members, such as DwRenderViewClass::class_id.
+
+When implementing an interface in C, you should look at
+dw_gtk_platform.[ch] for an example. When using C++, it is probably
+the best to put static methods into the *Class structures, which will
+delegate to non-static methods.
+
+What to Implement
+-----------------
+There are two interfaces, which must at least be implemented,
+DwRenderPlatform and DwRenderView. For details, see the comments in
+dw_render.h. DwRenderPlatform is relatively simple, it provides some
+(nearly) static, platform-specific properties. DwRenderView is rather
+abstract, read DwRender.txt for possible implementations. However,
+most important is a viewport implementation, this is also the only
+current (Gtk+) implementation.
+
+Important note: Coordinates in the implementation of DwRenderView are
+always world coordinates, so it may be to convert them into viewport
+coordinates, when the implementation uses a small window for the
+viewport (which is recommended for reasons immediately
+following). Also, world coordinates are 32 bits, since 16 bits would
+not be enough for the dimensions of a typical web page.
+
+The following functions will have to be called by the view, see the
+comments in dw_render.c for details:
+
+   p_Dw_render_layout_expose
+   p_Dw_render_layout_button_press
+   p_Dw_render_layout_button_release
+   p_Dw_render_layout_motion_notify
+   p_Dw_render_layout_enter_notify
+   p_Dw_render_layout_leave_notify
+   p_Dw_render_layout_scroll_pos_changed
+   p_Dw_render_layout_viewport_size_changed
+
+The first argument is always the layout, which has been passed to the
+view in DwRenderView::set_layout.
+
+
+Dw_style and Dw_tooltip
+=======================
+
+These two modules are still bound to the Gtk+ platform, and so must be
+re-implemented, which should, per se, not cause many problems. The
+interfaces of these modules are kept in a way, which makes
+toolkit-independant usage, e.g. whithin implementations of DwWidget
+possible, e.g. by some simple typedef's (GdkGC -> DwGC
+etc.). Dw_style_draw itself is independant of the toolkit.
+
+(This approach is possible on the long term, but will make it
+impossible, to use multiple platforms at one time, see DwRender.txt
+for details.)
+
+
+UI Widgets
+==========
+
+Embedding UI Widgets (buttons, entries, ...) into the Dw tree is
+completly platform specific, see DwRender.txt, section "UI
+Widgets". The Gtk+ implementation will reuse Gtk+ widgets, which are
+embedded via a special Dw widget. This approach should be preferred in
+other implementations.
+
+At least in Gtk+, embedding Gtk+ widgets is rather tricky, because the
+world coordinates are represented by 32 bits. In Gtk+, this is solved
+by using the widget GtkLayout as a base for the viewport, which does
+some weird stuff like event filtering. An alternative implementation
+should deal with this problem in a very early stage of development.
+
+
+Images
+======
+
+There is another module, which has to be replaced, Imgbuf, which is
+described in doc/Imgbuf.txt. Most of its interface should remain, the
+only exception is a_Imgbuf_draw, which is only used by GtkDwViewport.
+
+A view must implement the method draw_image(), which will typically be
+delegated to the image buffer (see Dw_gtk_viewport_draw_image() as an
+example). The Gtk+ implementation does not use the passed DwGC, but
+for portability, this remains in the platform independant part.
+
+DwImage should remain platform independant, all platform specific code
+has been moved into Imgbuf.

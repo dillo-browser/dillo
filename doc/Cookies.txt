@@ -1,0 +1,85 @@
+Jan 2002, Jörgen Viksell - jorgen.viksell@telia.com,
+          Jorge Arellano Cid --
+Last update: Dec 2004
+
+
+==================
+ Cookies in Dillo
+==================
+
+ The cookie support in Dillo aims to support cookies of the old
+original Netscape style, as well as the kind specified in RFC 2109.
+ Between sessions, the cookies get saved to ~/.dillo/cookies.
+At the moment the only enforcements on the amount of cookies to
+save to disk is max 20 per domain.
+ There's also a file for controlling cookies: ~/.dillo/cookiesrc. Dillo
+initially sets it to ignore (reject) all cookies, so if you want to use
+cookies, change it to meet your needs.
+
+ If you don't want cookies at all, you have two options:
+
+1.- Delete ~/.dillo/cookiesrc (or leave it just as dillo creates it).
+2. Configure Dillo with ./configure --disable-cookies. Then all the
+   cookie stuff will be skipped at compilation.
+
+
+=====================
+ Controlling cookies
+=====================
+
+ There is a small and simple way to restrict urls from setting cookies
+in Dillo. In the file ~/.dillo/cookiesrc You may specify rules
+for different domains. The syntax looks something like this:
+
+DEFAULT       DENY
+slashdot.org  ACCEPT
+.host.com     ACCEPT_SESSION
+
+ The first line says that we should deny all cookies from all domains
+by default.
+ The second one tells Dillo to save all cookies from slashdot.org
+across sessions, until it expires.
+ And finally, the third says that all subdomains of host.com should be
+allowed to set cookies. But these cookies will only be saved in
+memory until you exit.
+
+
+===================
+ Cookies & Privacy
+===================
+
+ Cookies can be a severe threat to personal privacy. The pages you
+visit can be tracked, logged, and associated to a peronal data-record,
+allowing the possibility of building a detailed profile of your
+browsing habits.
+
+ This data is sold to companies that profit from direct use of such
+information (SPAM, Spying, etc).
+
+ If this data is cross-referenced with other databases, they can end up
+with more information than you have about yourself.
+
+ Some people may tell you this is "paranoid". But please, take my words
+as those of someone that has written a web browser, a cookies implementation,
+and that has deep understanding of HTTP (RFC-2068) and cookies (RFC-2965).
+
+ Non technical persons may like to read:
+   http://www.junkbusters.com/cookies.html
+   http://www.newsfactor.com/perl/story/16455.html (about user-spying)
+
+ The dillo project is especially concerned about privacy and security
+issues. Our advice is to avoid cookies whenever possible and at most set
+ACCEPT_SESSION to specific, trusted sites.  -- You have been warned.
+
+
+==============
+ Restrictions
+==============
+
+ If you use a single dillo with multiple windows, then there's no
+problem, but if you launch different dillos the latter ones will
+have cookies disabled.
+
+
+
+Thats all folks!

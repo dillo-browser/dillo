@@ -1,0 +1,620 @@
+Aug 2004, S.Geerken@ping.de
+
+===========================
+   Dw Render Abstraction
+===========================
+
+This document describes the rendering abstraction used in Dw. At the
+time this document was written, some other documents about Dw were out
+of date, and have to be rewritten.
+
+Sometimes, you will find remarks about the old design (with one
+concrete Gtk+ widget instead of the layout/multiple rendering views);
+those are useful for those, who are already familiar with the old
+design. Furthermore, it makes the explanation often simpler, because
+the new design is a bit more complex.
+
+Naming
+------
+As stated in "Dw.txt", the prefix "p_Dw_" is used for functions used
+within the whole Dw module, but not outside. Typically, these are
+protected functions, which are called by inherited classes. E.g., a
+specific widget will have to call p_Dw_widget_queue_resize(), but this
+function should not called outside from Dw.
+
+The "Dw_" prefix is not only used for functions, which use is
+restricted to a sub-module, but also for functions used only within
+the core of Dw. The distinction between both can simply made, whether
+the function is declared as static or not. The core of Dw consists of
+the modules Dw_widget and Dw_render, anything else is inherited from
+these two modules (widgets, platforms, views). As an example,
+Dw_gtk_viewport_queue_resize() is only called in the Dw_widget module,
+it should not be called by a widget implementation.
+
+
+Overview
+========
+
+Rendering of Dw is done in a way resembling the model-view pattern, at
+least formally.  Actually, the counterpart of the model, the layout
+(DwRenderLayout), does a bit more than a typical model, namely
+calculating the layout, and the views do a bit less than a typical
+view, i.e. only the actual drawing.
+
+Additionally, there is a structure representing common properties of
+the platform, views generally work only together with one specific
+platform. A platform is typically related to the underlying UI
+toolkit, but other uses may be thought of.
+
+The general structure looks like this:
+
+                             1 +------------------+
+                         .---->| DwRenderPlatform |
+   +----------------+ 1 /      +------------------+
+   | DwRenderLayout |--<               ^ 1
+   +----------------+   \              | *
+          1 ^   | 1      \      +--------------+
+            |   |         `---->| DwRenderView |
+            |   |             * +--------------+
+            |   | 
+     layout |   | toplevel_dw
+            |   | 
+          * |   V 0..1
+        +----------+ 0..1
+        | DwWidget |--. parent
+        +----------+  | 
+            * |       |
+              `-------'
+               (children)
+
+(This is a bit simplified, actually, only DwContainer has child
+widgets, and the relation is only defined in an abstract way).
+
+DwRenderLayout and DwWidget (including sub classes) are platform and
+view independant, i.e., it should be possible to adopt them into
+another platform, after suitable implementations of DwRenderPlatform
+and DwRenderView have been developed.
+
+(The only exception is DwEmbedGtk, a widget which, in the old design,
+embeds Gtk+ widgets into the DwWidget tree. This will still remain a
+platform specific widget, see notes in the section "UI Widgets".
+
+Furthermore, this design does not yet cover DwStyle, which is still
+bound to the Gtk+ platform. It may be simply replaced for other
+platforms, but this will lose the possibility to have multiple
+implementations of DwRenderPlatform running within the same program.
+The same aplies to DwTooltip and Imgbuf.)
+
+This new design helps to archieve two important goals:
+
+   1. Abstraction of the actual rendering. Currently, we only have the
+      normal viewport, but a list of planned implementations can be
+      found below in this text.
+
+   2. It makes different views of the same document simple, e.g. the
+      normal viewport and the preview window.
+
+   3. It makes portability simpler.
+
+Vieports are handles by this design, but only in a rather abstract
+way, and may be removed completely, i.e., they will be only part of
+specific view implementations. This also means, that the distinction
+between world coordinates and viewport coordinates vanishes from most
+parts of Dw.
+
+
+World
+=====
+
+The world is the whole area, in which content is rendered. For a view
+without a viewport, this is the whole itself. A view with a viewport
+provides a way, so that the user may see some part of the world within
+a (in most cases) smaller window, the viewport.
+
+The world may have a base line, so that the worls size is described by
+three numbers, width, ascent and descent.
+
+Any view must implement the method set_world_size(), which is called,
+whenever the world size changes. For viewports, this will change
+scroll bars etc., for views without viewport, this will normally
+change the size of the view itself. (Although on this level, "view
+size" is not defined. This should not be confused with the viewport
+size!)
+
+
+Drawing
+=======
+
+A view must implement several drawing methods, which work on the whole
+world. If it is neccesary to convert them (e.g. in DwGtkViewport),
+this is done in a way fully transparent to DwWidget and
+DwRenderingLayout, instead, this is done by the view implementation.
+
+There exist following situations:
+
+   - A view gets an expose event: It will delegate this to the
+     rendering layout, which will then pass it to the widgets, with
+     the view as a parameter. Eventually, the widgets will call
+     drawing methods of the view.
+
+   - A widget requests a redraw: In this case, the widget will
+     delegate this to the layout. The drawing requests are queued, and
+     compressed. in an this idle function, DwWidget::draw is called
+     for the toplevel widget, for each view.
+
+     (This is still something to consider, the queueing may be moved
+     again into the view implementations.)
+
+If the draw method of a widget is implemented in a way that it may
+draw outside of the widget's allocation, it should draw into a
+clipping view. A clipping view is a rendering view related to the
+actual rendering view, which guarantees that the parts drawn outside
+are discarded. At the end, the clipping view is merged into the actual
+view. Sample code for widget DwFoo:
+
+   void Dw_foo_draw (DwWidget *widget,
+                     DwRenderView *view,
+                     DwRectangle *area)
+   {
+      DwRenderView *clip_view;
+
+      /* 1. Create a clipping view. */
+      clip_view =
+         p_Dw_render_view_get_clipping_view (view,
+                                             widget->allocation.x,
+                                             widget->allocation.y,
+                                             widget->allocation.width
+                                             DW_WIDGET_HEIGHT (widget));
+
+      /* 2. Draw into clip_view. */
+      Dw_render_view_do_some_drawing (clip_view, ...);
+
+      /* 3. Draw the children, they receive the clipping view as argument. */
+      for (<all relevant children>) {
+         if (p_Dw_widget_intersect (button->child, area, &child_area))
+            p_Dw_widget_draw (child, clip_view, child_area);
+      }
+
+      p_Dw_render_view_merge_clipping_view (view, clip_view);
+   }
+
+A drawing process is always embedded into calls of
+DwRenderView::start_drawing() and DwRenderView::finish_drawing(). An
+implementation of this are backing pixmaps, to prevent flickering.
+
+
+Viewports and Scrolling Positions
+=================================
+
+Although the design implies that the usage of viewports should be
+fully transparent to the Dw_render module, this cannot be fully
+archived, for the following reasons:
+
+   1. Some features, which are used on the level of DwWidget,
+      e.g. anchors, refer to scrolling positions.
+
+   2. Some code in DwWidget is currently tightly bound to viewports.
+      This may be change, by delegating some of this functionality to
+      viewports, and defining scrolling positions in a more abstract
+      way.
+
+Therefor, DwRenderLayout keeps track of the viewport size, the
+viewport position, and even the thickness of the scrollbars (or,
+generally, "viewport marker"), they are relevant, see below. These
+sizes are always equal in all views. However, a given view may not use
+viewports at all, and there may be the case, that no view related to a
+layout uses viewports, in this case, the viewport size is not defined
+at all.
+
+Unlike world sized, viewports are not considered to have a base line,
+i.e., they are described by only two numbers, width and height.
+
+Viewport Size
+-------------
+All viewport sizes and positions are the same in all views, which uses
+viewports. There are two cases, in which the viewport size changes:
+
+   1. As an reaction on a user event, e.g. when the user changes the
+      window size. In this case, the affected view delegates this
+      change to the layout, by calling
+      p_Dw_render_layout_vieport_size_changed(). All other views are
+      told about this, by calling DwRenderView::set_viewport_size().
+
+   2. The viewport size may also depend on the visibility of UI
+      widgets, which depend on the world size, e.g scrollbars,
+      generally called "viewport markers". This is described in an own
+      section.
+
+After the creation of the layout, the viewport size is undefined. When
+a view is attached to a layout, and this view is already to be able to
+define its viewport size, it may already call
+p_Dw_render_layout_vieport_size_changed() within the implementation of
+set_layout. If not, it may do this, as soon as the viewport size gets
+known.
+
+Each call of p_Dw_render_layout_vieport_size_changed() will change the
+viewport size of all other views, which use viewports, so this
+function has to be called with care.
+
+If there is no view attached, which used viewports, the viewport size
+remains undefined.
+
+Viewport Markers
+----------------
+Viewport markers are UI widgets, which display to the user the
+relation of the world size and the widget size. Most commonly,
+scrollbars will be used.
+
+When they are not needed, they are hidden, as in the following figure:
+
+
+              +--------------------+
+              | This is only a     |
+              | very short text.   |
+              |                    |
+              |                    |
+              |                    |
+              +--------------------+
+
+but shown, as soon as the world size exceeds the viewport size:
+
+              +------------------+-+
+              | In this example, |^|
+              | there is some    |#|
+              | more text, so    |#|
+              | that the         | |
+              | vertical         |v|
+              +------------------+-+
+
+A view using viewports must provide, how large the differences
+are. Generally, there are four cases, from the combinations of whether
+the world width is smaller (-) or greater (+) than the viewport width,
+and whether the world height is smaller (-) or greater (+) than the
+viewport height. So there are eight numbers, the horizontal difference
+dh, and the vertical difference dv, for the cases --, -+, +-, and ++.
+
+For scrollbars, the values are rather simple:
+
+   - dh is 0 for the cases -- and -+, and the thickness of the
+     vertical scrollbar in the cases +- and ++.
+
+   - dv is 0 for the cases -- and +-, and the thickness of the
+     horizontal scrollbar in the cases -+ and ++.
+
+For any view implementation, the following rules must be fullfeeded
+(dx means either dh or dv):
+
+         - dx(-+) >= d(--)
+         - dx(++) >= d(+-)
+         - dx(+-) >= d(--)
+         - dx(++) >= d(-+)
+
+In short, when smaller world dimensions (-) grow (switch to +), the
+differences may not become less.
+
+The sizes of viewport markers are part of the viewport size, the
+method DwRenderView::set_viewport_size() has four parameters:
+
+    - two for the size of the viewport, *including* the markers
+      (i.e. the markers never change the size), and
+
+    - two, which denote the differences between the above and the
+      actual viewport size, caused by the markers. If a value of these
+      is 0, the respective marker is hidden, if it is greater than 0,
+      it is shown. In the latter case, the maximun is calculated, and
+      passed to all views.
+
+(Actually, the decision, whether the markers are visible or not, is a
+bit more complicated, since the vieport size also defines the size
+hints for the topmost widget, which may affect the widget size, and so
+the world size. Handling this problem is done within DwRenderLayout,
+look at the comments there.)
+
+Scrolling Positions
+-------------------
+The scrolling position is the world position at the upper left corner
+of the viewport. Views using viewports must
+
+   1. change this value on request, and
+   2. tell other changes to the layout, e.g. caused by user events.
+
+Applications of scrolling positions (anchors, test search etc.) are
+handled by the layout, in a way fully transparent to the views.
+
+
+An Example with Nested Views
+============================
+The following example refers to graphical plugins, which are not yet
+realized (I have some working proof-of-concept code), but which will
+most likely follow the design, which is here shortly described, as
+needed to understand the example (since there is no specification of
+graphical plugins yet). I included this, to demonstrate, how nested
+layouts can be used.
+
+Graphical plugins will communicate with dillo via two protocols, dpi1
+(for anything not directly related to rendering), and a new protocol,
+which is an extension of the XEmbed protocol (see somewhere at
+http://freedesktop.org, this is the protocol, which GtkPlug and
+GtkSocket use). Within dillo, a socket window will be created, which
+window id will be (via dpi1?) passed to the plugin. The plugin will
+then create a plugin window, in which the contents of a web recource
+is shown, which dillo cannot show natively.
+
+XEmbed will be extended, so that the plugins may make use of the
+extensions, which the Dw size model adds to the XEmbed size
+model. Such a plugin behaves (on an abstract level) like a DwWidget,
+so following extensions are necessary:
+
+   - a plugin may not simply have a size, but instead distinguish
+     between ascent and descent,
+   - a plugin may return width extremes, and
+   - it is possible to send size hints to the plugin.
+
+Within Dw, the socket will be realized by a special plugin,
+DwSocketGtk (or a respective widget for other platforms), which is a
+sub class of DwEmbedGtk, and embeds another UI widget, which will
+provide the socket window (for Gtk+, either GtkSocket, or a sub class
+of this).
+
+The plugins may be implemented independently of Dw, they either do not
+support the extensions to XEmbed (then, the respective features behave
+in a default way), or they may contain there own implementation.
+However, Dw may be extracted from dillo, to become an own library. A
+plugin using this library may then use a special type of view,
+GtkDwFlatView (for plugins based on Gtk+, actually, the UI toolkit for
+dillo and the plugin must not be the same, since the protocol will be
+UI toolkit independant.)
+
+This will lead to a structure like this:
+
+        top_layout:DwRenderLayout ----- top_page:DwPage
+              /        \                |
+   :GtkDwPlatform   top_view:GtkDwView  `- table:DwTable
+                                            |
+                                            `- cell:DwTableCell
+                                               |
+                                               `- socket:DwSocketGtk
+                                                          |
+    DILLO                                         gtk_socket:GtkSocket
+                                                          .
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - . (extension of
+                                                          .   XEmbed)
+    PLUGIN                                          
+           plugin_layout:DwRenderLayout ----- dw_flat_view:GtkDwFlatView
+                                   \
+                                    `------- foo:DwFoo
+
+GtkDwFlatView is both an extension of GtkSocket, as well as an
+implementation of DwRenderView.
+
+This case must be equivalent to the case, that the widget "foo" is a
+direct child of the widget "cell", since all objects between them only
+delegate all functionality. Size hints must so sent as in the
+following scenario:
+
+    1. The view "top_view" receieves an event, which will change the
+       viewport size, and delegates this to the layout.
+
+    2. The layout will make size hints of this viewport size, i.e., it
+       calls the set_* methods of the widget "top_page".
+
+    3. DwPage::set_* will queue a resize request, which is delegated
+       to the layout.
+
+    4. Handling the resize request is done within a idle loop. Here,
+       size_request is called for the widget "top_page", to determine
+       the preferred size.
+
+    5. DwPage::size_request will depend on the size hints, especially,
+       it will use the hinted size to determine the word wrap width.
+       Within DwPage::size_request, size hints will be sent to the
+       child widgets. The size hints sent to the children are those
+       sent to the page, minus the respective border widths (margins,
+       borders, paddings). (How the ascent and descent hints should
+       generally be delegated to the children, is still a matter of
+       consideration, and may change.)
+
+    6. DwTable::size_request, which is called within this context, has
+       a different way to delegate the size hints to the children:
+       ascent and descent are handled the same way, but the widths are
+       calculated from the column widths, which are calculated within
+       DwTable::size_request.
+
+    7. Via the widget "cell", finally the widget "socket" receives
+       appropriate size hints. These must be (equally) delegated to
+       the widget "foo", this is done in a way described in the
+       following steps.
+
+    8. The size hints are transmitted via the protocol extending
+       XEmbed. The Gtk+ widget "dw_flat_view" receives them (via the
+       widget "gtk_socket"), and delegates them to the respective
+       layout "plugin_layout". (TODO: How is this done? What has to be
+       done is to send the size hints to the toplevel widget, but a
+       view has no access to it.)
+
+    9. The layout "plugin_layout" will then delegate this (what ever
+       "this" means), as size hints, to the widget "foo".
+
+   10. The widget "foo" will queue a size_request, which is delegated
+       to the layout. In the idle function handling this request, the
+       recalculation of the widget size will change the world size,
+       which is delegated to the view "dw_flat_view".
+
+   11. For GtkDwFlatView, the world size is the view size. For this
+       reason, it changes its size, to fit the world size. This size
+       is send to the DwSocket, which will then request a size
+       request.
+
+
+UI Widgets
+==========
+A note before: This chapter refers often to Gtk+ as base UI toolkit,
+just to make naming simpler, For other UI toolkits, the same, mostly
+only with other names, applies.
+
+In some cases, it is necessary to embed widgets from the UI toolkit
+into the view, e.g. to realize HTML forms in dillo. 
+
+The Dw_render module provides no interface at all, instead, this is
+completely left to the platform implementations. Below, two design
+approaches are discussed, which have following in common:
+
+   1. There is a special Dw widget, which embeds something related to
+      the UI widgets (below called DwEmbedGtk).
+
+   2. This Dw widget, the platform, and the views are tightly bound,
+      beyond the methods, which the respective interfaces provide. The
+      Dw widget can simply refer to the platform by
+      (DwWidget::render_layout->platform, and the platform may refer
+      to the views, when DwPlatform::attach_view and
+      DwPlatform::detach_view are implemented.
+
+General Problems
+----------------
+For most UI toolkits, there have to be multiple instances of widgets
+in different views. Furthermore, there may be, on the same platform,
+different classes for the same widgets. Consider this simple example:
+
+               :DwRenderLayout ------------------- :DwPage
+                    /    \                            |
+              ,----'      `----.                dw:DwEmbedGtk
+             /                  \
+   view1:GtkDwViewport  view2:GtkDwViewport
+             |                   |
+       gtk1:GtkButton     gtk2:GtkButton
+
+This structure represents a page with one button in it, which is, in
+the DwWidget tree, represented by the DwEmbedGtk "dw", and, in the
+views "view1" and "view2", by the Gtk+ widgets "gtk1" and "gtk2",
+respectively. The old approach, where the UI widget (in this case
+GtkButton) is not directly applicable, since there must be multiple
+instances of this UI widget.
+
+Here is a more complex example:
+
+               :DwRenderLayout ------------------- :DwPage
+                    /    \                            |
+              ,----'      `----.                dw:DwEmbedGtk
+             /                  \
+    view1:GtkDwFooView  view2:GtkDwBarView
+             |                   |
+     gtk1:GtkFooButton   gtk2:GtkBarButton
+
+In this case, the different views GtkDwFooView and GtkDwBarView deal
+with different classes for buttons, GtkFooButton and GtkBarButton.
+
+Simple Approach
+---------------
+Within dillo, the following limitations are reasonable:
+
+   1. There is only one view instance, which actually needs UI widgets
+      (GtkDwViewport for Gtk+). There may be multiple views, but these
+      additional views do not need instances of widgets, e.g. in the
+      preview, a UI widget is simply shown as a grey box.
+
+   2. There is only one type of UI widget, i.e. normal Gtk+ widgets.
+
+Because of these limitations, the implementation of UI widgets is
+currently quite simple in dillo. As before, the widget DwEmbedGtk
+refers to an instance of a concrete Gtk+ widget. This Gtk+ widget is
+told to the platform, of which DwEmbedGtk knows, that it is an
+instance of GtkDwPlatform.  GtkDwPlatform will add this Gtk+ widget to
+the single view, which needs it, and DwEmbedGtk will be responsible of
+allocating etc. of the Gtk+ widget.
+
+Advanced Approach
+-----------------
+This is a short overview of an approach, which will overcome the
+limitations of the simple approach, but with the costs of a greater
+complexity. It will be detailed, in the case, that it is implemented.
+
+    +------------+  factory   +---------------------+
+    | DwEmbedGtk | ---------> | DwGtkWidgetFactory  |
+    +------------+ 1        1 +---------------------+
+                              | create_foo_widget() |
+                              | create_bar_widget() |
+                              +---------------------+
+                                 .       .       .
+                                /_\     /_\     /_\
+                                 |       |       |
+                    - - - - - - -         - -     - - - - - - - - .
+                   |                         |                     
+        +---------------------+    +---------------------+        |
+        | DwGtkButtonFactory  |    | DwGtkListFactoty    |    (other ...)
+        +---------------------+    +---------------------+
+        | create_foo_widget() |    | create_foo_widget() |
+        | create_bar_widget() |    | create_bar_widget() |
+        +---------------------+    | add_list_item(...)  |
+                                   +---------------------+
+
+DwEmbedGtk refers to a factory, which creates the UI widgets for each
+view. For each general widget type (e.g. button, list, ...), there is
+an implementation of this interface.
+
+This interface DwGtkWidgetFactory contains different method for
+different views. E.g., when a button is shown, and so DwEmbedGtk
+refers to a DwGtkButtonFactoty, GtkDwFooView may need a GtkFooButton,
+which is created by create_foo_widget(), while GtkDwBarView may call
+create_bar_widget(), to get a GtkBarButton. (This design still makes
+it hard to add new views, which then need, say, GtkBazButtons.)
+
+The concrete factories may contain additional methods, in the diagram
+above, DwGtkListFactory must provide a function to add items to the
+lists. This method will add a item to all list widget, which were
+created by this factory.
+
+
+More Ideas for View Implementations
+===================================
+
+Preview Window
+--------------
+The status bar gets a new button, on which the user may click to get a
+small image of the small page, in which he can select the viewport
+position by dragging a rubber-band rectangle. The actual scaling
+factor will probably depend on the aspect ratio of the page.
+
+(This has already been implemented for Gtk+, as GtkDwPreview and
+GtkDwPreviewButton.)
+
+Graphical Plugin
+----------------
+See section "An Example with Nested Views" for explanations.
+
+======================================================================
+
+Alternative design for handling UI widgets:
+
+- There is a platform *independant* widget, the platform dependencies
+  are within the factories.
+
+     DwEmbedUI::draw
+  -> DwRenderView::draw_ui_widget(..., factory)
+
+Implementation of "draw_ui_widget" in a preview view:
+  -> draw some gray boxes etc.
+
+Implementation of "draw_ui_widget" in a normal "bar" view (for platform "foo"):
+  -> determine that is is a factory for a "baz" widget?
+  -> (BarFactory*)factory->get_foo_bar_widget(this)
+
+This method either returns an already created widget, or creates one
+with the current state of the factory. "This" is taken as a key.
+
+----
+
+                      | general          | widget specific
+----------------------+------------------+------------------------
+ platform independant | nothing?         | e.g. adding list items
+----------------------+------------------+------------------------
+ platform dependant   | e.g. creating a  | ???
+                      | widget, or       |
+                      | informations     |
+                      | about drawing in |
+                      | a preview        |
+
+======================================================================
+
+Abstraction of DwStyle
+----------------------
+structures needed:

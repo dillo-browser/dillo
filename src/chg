@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Shell script for name changing source code
+#
+
+if [ ! $# = 3 ]; then
+   echo "Usage: chg <source> <old_word> <new_word>"
+   echo "       (this script changes <source> directly)"
+   exit 1
+fi
+
+if [ ! -r $1 ]; then
+   echo "source file ->$1<- doesn't exist..."
+   exit 1
+fi
+
+if [ ! -r $1.BAK ]; then
+   echo "creating backup file: $1.BAK"
+   cp $1 $1.BAK
+fi
+
+sed "s/$2/$3/g" $1 > out
+#sed s/$2/$3/ $1 > out
+rm $1
+mv out $1
+echo "done!"
+
+

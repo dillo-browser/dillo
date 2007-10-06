@@ -1,0 +1,32 @@
+Todo List
+
+ File dpi_service.c
+ This module should be removed because its original functions
+ have been removed or modified. Put these functions in dpid.c
+
+ File dpi_service.h
+ This module should be removed because its original functions
+ have been removed or modified. Put these functions in dpid.c
+
+ Add other file types, but first we need to add files associated
+ with a dpi to the design.
+
+ Global SRS_NAME
+ Should read this from dillorc
+
+ File dpid_common.h
+ The dpid error codes will be used in the next patch
+
+ Global main()
+ + add new plugins when they become available
+ __________________________________________________________
+
+Remove global variables.
+
+Use a singly linked list for dpi_attr_list
+
+Allow dpis to be registered one at a time
+
+Only run dpis listed in users dillorc
+
+MAYBE Have dpid accept all connections to dpis (fixes inf loop if dpi crashes before accept)
