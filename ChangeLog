@@ -31,7 +31,8 @@ dillo-fltk2
  - Rewrote the DNS API and the Dpid start code inside Dillo.
  - Implemented Stop button to not only stop rendering but also networking.
    Patches: Jorge Arellano
-
+ - Connected signals to <li> elements
+   Patch: place
 
  TODO:
 

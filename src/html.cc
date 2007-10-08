@@ -2918,6 +2918,8 @@ static void Html_tag_open_li(DilloHtml *html, char *tag, int tagsize)
    *ref_list_item = list_item;
    S_TOP(html)->textblock = html->dw = list_item;
    item_style->unref();
+   /* Handle it when the user clicks on a link */
+   Html_connect_signals(html, list_item);
 
    switch (S_TOP(html)->list_type) {
    case HTML_LIST_ORDERED:
