@@ -46,6 +46,8 @@ dillo-fltk2
  - Improved scrolling performance on large pages by copying screen data
     instead of rendering.
    Patches: Johannes Hofmann
++- Improved FLTK library detection at configure time.
+   Patch: Frank Gevaerts
 
  TODO:
 

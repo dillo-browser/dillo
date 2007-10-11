@@ -1,3 +1,6 @@
+AM_CFLAGS = @LIBFLTK_CFLAGS@
+AM_CXXFLAGS = @LIBFLTK_CXXFLAGS@
+
 noinst_LIBRARIES = libDiof.a
 
 libDiof_a_SOURCES = \

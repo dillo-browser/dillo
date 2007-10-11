@@ -147,10 +147,12 @@ AC_MSG_CHECKING([FLTK2])
 if sh -c "fltk2-config --version" >/dev/null 2>&1
 then AC_MSG_RESULT(yes)
      LIBFLTK_CXXFLAGS=`fltk2-config --cxxflags`
+     LIBFLTK_CFLAGS=`fltk2-config --cflags`
      LIBFLTK_LIBS=`fltk2-config --use-images --ldflags`
 else if sh -c "fltk-config --version" >/dev/null 2>&1
      then AC_MSG_RESULT(yes)
           LIBFLTK_CXXFLAGS=`fltk-config --cxxflags`
+          LIBFLTK_CFLAGS=`fltk-config --cflags`
           LIBFLTK_LIBS=`fltk-config --ldflags`
      else AC_MSG_RESULT(no)
           AC_ERROR(FLTK2 must be installed!)
@@ -467,6 +469,7 @@ AC_SUBST(LIBSSL_LIBS)
 AC_SUBST(LIBPTHREAD_LIBS)
 AC_SUBST(LIBPTHREAD_LDFLAGS)
 AC_SUBST(LIBFLTK_CXXFLAGS)
+AC_SUBST(LIBFLTK_CFLAGS)
 AC_SUBST(LIBFLTK_LIBS)
 AC_SUBST(datadir)
 AC_SUBST(src doc)
