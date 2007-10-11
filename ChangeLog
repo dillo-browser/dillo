@@ -34,6 +34,7 @@ dillo-fltk2
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text and background color-choice in preferences.
  - Enabled clicking over image links.
+ - Improved notification upon leaving links.
    Patches: place
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
    Patch: Vincent Thomasset
