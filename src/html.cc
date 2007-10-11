@@ -2423,8 +2423,9 @@ static DilloImage *Html_add_new_image(DilloHtml *html, char *tag,
    /* Add a new image widget to this page */
    Image = a_Image_new(0, 0, alt_ptr, S_TOP(html)->current_bg_color);
    if (add) {
-      Html_add_widget(html, (Widget*)Image->dw,
-                      width_ptr, height_ptr, style_attrs);
+      Widget *w = (Widget*)Image->dw;
+      Html_add_widget(html, w, width_ptr, height_ptr, style_attrs);
+      Html_connect_signals(html, w);
    }
 
    dFree(width_ptr);

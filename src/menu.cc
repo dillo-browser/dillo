@@ -57,8 +57,10 @@ public:
  * TODO: erase the URL on popup close.
  */
 void NewItem::draw() {
+   DilloUrl *url;
+
    if (flags() & SELECTED) {
-      DilloUrl *url = a_History_get_url(history_list[((int)user_data())-1]);
+      url = a_History_get_url(history_list[(VOIDP2INT(user_data()))-1]);
       a_UIcmd_set_msg(popup_bw, "%s", URL_STR(url));
    }
    Item::draw();
@@ -170,7 +172,7 @@ static void Menu_bugmeter_about_cb(Widget* )
 static void Menu_history_cb(Widget *wid, void *data)
 {
    int k = event_button();
-   int offset = history_direction * (int)data;
+   int offset = history_direction * VOIDP2INT(data);
 
    if (k == 2) {
       /* middle button, open in a new window */

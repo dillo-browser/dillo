@@ -255,7 +255,7 @@ static int IO_callback(int fd, IOData_t *io)
  */
 static void IO_fd_read_cb(int fd, void *data)
 {
-   int io_key = (int)data;
+   int io_key = VOIDP2INT(data);
    IOData_t *io = IO_get(io_key);
 
    /* There should be no more events on already closed FDs  --Jcid */
@@ -274,7 +274,7 @@ static void IO_fd_read_cb(int fd, void *data)
  */
 static void IO_fd_write_cb(int fd, void *data)
 {
-   int io_key = (int)data;
+   int io_key = VOIDP2INT(data);
    IOData_t *io = IO_get(io_key);
 
    if (io == NULL) {

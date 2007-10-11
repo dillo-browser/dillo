@@ -4,7 +4,7 @@ Dillo project
 
 dillo-fltk2
 
- - Ported Dillo from GTK1 to FLTK2.
++- Ported Dillo from GTK1 to FLTK2.
  - Ported a susbstantial part of the code from C to C++ (FLTK2 is in C++).
  - Wrote a new library: Dlib. With "Dlib" Dillo doesn't need glib anymore.
  - Ported all the code to Dlib.
@@ -31,8 +31,20 @@ dillo-fltk2
  - Rewrote the DNS API and the Dpid start code inside Dillo.
  - Implemented Stop button to not only stop rendering but also networking.
    Patches: Jorge Arellano
- - Connected signals to <li> elements
-   Patch: place
++- Connected signals to <li> elements (fixes links within lists).
+ - Enabled text and background color-choice in preferences.
+ - Enabled clicking over image links.
+   Patches: place
++- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
+   Patch: Vincent Thomasset
++- Fixed void to int conversions for 64bit-arch.
+   Patch: Jorge Arellano, higuita
++- Added a strndup() replacement in dw2
+   Patch: Alexander Becher, Johannes Hofmann, Jorge Arellano
++- Fixed calcHashValue() to only return non-negative numbers (was SEGFAULT).
+ - Improved scrolling performance on large pages by copying screen data
+    instead of rendering.
+   Patches: Johannes Hofmann
 
  TODO:
 

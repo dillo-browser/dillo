@@ -124,9 +124,9 @@ static DilloPlain *Plain_new(BrowserWindow *bw)
    styleAttrs.initValues ();
    styleAttrs.margin.setVal (5);
    styleAttrs.font = style::Font::create (layout, &fontAttrs);
-   styleAttrs.color = style::Color::createSimple (layout, 0x0000ff);
+   styleAttrs.color = style::Color::createSimple (layout, prefs.text_color);
    styleAttrs.backgroundColor = 
-      style::Color::createSimple (layout, 0xdcd1ba);
+      style::Color::createSimple (layout, prefs.bg_color);
    plain->widgetStyle = style::Style::create (layout, &styleAttrs);
 
    /* The context menu */

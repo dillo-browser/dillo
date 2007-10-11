@@ -33,7 +33,8 @@ extern "C" {
  *-- Casts -------------------------------------------------------------------
  */
 /* TODO: include a void* size test in configure.in */
-#define VOIDP2INT(p)    ((int)(p))
+/* (long) works for both 32bit and 64bit */
+#define VOIDP2INT(p)    ((long)(p))
 #define INT2VOIDP(i)    ((void*)(i))
 
 /*

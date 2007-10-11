@@ -85,7 +85,7 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
       styleAttrs.font = style::Font::create (layout, &fontAttrs);
       styleAttrs.color = style::Color::createSimple (layout, 0xff0000);
       styleAttrs.backgroundColor = 
-         style::Color::createSimple (layout, 0xdcd1ba);
+         style::Color::createSimple (layout, prefs.bg_color);
       widgetStyle = style::Style::create (layout, &styleAttrs);
       dw->setStyle (widgetStyle);
       widgetStyle->unref ();

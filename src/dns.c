@@ -498,7 +498,7 @@ static void Dns_assign_channels(void)
  */
 static void Dns_timeout_client(void *data)
 {
-   int channel = (int)data;
+   int channel = VOIDP2INT(data);
    DnsServer *srv = &dns_server[channel];
 
    if (srv->ip_ready) {

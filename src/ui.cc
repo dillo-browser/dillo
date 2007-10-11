@@ -232,7 +232,7 @@ void location_cb(Widget *wid, void *data)
  */
 void b1_cb(Widget *wid, void *cb_data)
 {
-   int bn = (int)cb_data;
+   int bn = VOIDP2INT(cb_data);
    int k = event_key();
    if (k && k <= 7) {
       _MSG("[%s], mouse button %d was pressed\n", button_names[bn], k);
