@@ -32,7 +32,7 @@ dillo-fltk2
  - Implemented Stop button to not only stop rendering but also networking.
    Patches: Jorge Arellano
 +- Connected signals to <li> elements (fixes links within lists).
- - Enabled text and background color-choice in preferences.
+ - Enabled text, background color and geometry in preferences.
  - Enabled clicking over image links.
  - Improved notification upon leaving links.
    Patches: place

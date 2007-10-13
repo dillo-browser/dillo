@@ -60,9 +60,9 @@ using namespace fltk;
 BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh)
 {
    if (ww <= 0 || wh <= 0) {
-      // TODO: set default geometry from dillorc.
-      ww = 780;
-      wh = 580;
+      // Set default geometry from dillorc.
+      ww = prefs.width;
+      wh = prefs.height;
    }
 
    // Create and set the UI
