@@ -37,6 +37,8 @@ dillo-fltk2
  - Improved notification upon leaving links.
  - Implemented image-link URL showing in status bar.
    Patches: place
++- Fixed a problem with locally-installed dpis.
+   Patch: place, Jorge Arellano
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
    Patch: Vincent Thomasset
 +- Fixed void to int conversions for 64bit-arch.

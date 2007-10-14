@@ -228,7 +228,7 @@ int get_dpi_attr(char *dpi_dir, char *service, struct dp *dpi_attr)
    } else if ((dir_stream = opendir(service_dir)) == NULL) {
       ERRMSG("get_dpi_attr", "opendir", errno);
    } else {
-      /* Scan the directory loking for dpi files.
+      /* Scan the directory looking for dpi files.
        * (currently there's only the dpi program, but in the future
        *  there may also be helper scripts.) */
       while ( (dir_entry = readdir(dir_stream)) != NULL) {
@@ -330,7 +330,6 @@ int register_all(struct dp **attlist)
 {
    DIR *user_dir_stream, *sys_dir_stream;
    char *user_dpidir = NULL, *sys_dpidir = NULL, *dpidrc = NULL;
-   char *basename=NULL;
    struct dirent *user_dirent, *sys_dirent;
    int j, st, not_in_user_list;
    int snum, usr_srv_num;
@@ -387,8 +386,7 @@ int register_all(struct dp **attlist)
            continue;
          not_in_user_list = 1;
          for (j = 0; j < usr_srv_num; j++) {
-            basename = get_basename((*attlist)[j].path);
-            if (strcmp(sys_dirent->d_name, basename) == 0) {
+            if (strcmp(sys_dirent->d_name, (*attlist)[j].id) == 0) {
                not_in_user_list = 0;
                break;
             }
