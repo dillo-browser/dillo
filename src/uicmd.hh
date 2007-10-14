@@ -10,7 +10,7 @@ extern "C" {
 
 BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh);
 void a_UIcmd_open_urlstr(void *vbw, const char *urlstr);
-void a_UIcmd_open_url_nw(BrowserWindow *bw, DilloUrl *url);
+void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_back(void *vbw);
 void a_UIcmd_back_popup(void *vbw);
 void a_UIcmd_forw(void *vbw);
@@ -24,11 +24,11 @@ void a_UIcmd_open_file(void *vbw);
 void a_UIcmd_open_url_dialog(void *vbw);
 void a_UIcmd_search_dialog(void *vbw);
 void a_UIcmd_book(void *vbw);
-void a_UIcmd_add_bookmark(BrowserWindow *bw, DilloUrl *url);
+void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
-void a_UIcmd_page_popup(void *vbw, DilloUrl *url, const char *bugs_txt);
-void a_UIcmd_link_popup(void *vbw, DilloUrl *url);
-void a_UIcmd_view_page_source(DilloUrl *url);
+void a_UIcmd_page_popup(void *vbw, const DilloUrl *url, const char *bugs_txt);
+void a_UIcmd_link_popup(void *vbw, const DilloUrl *url);
+void a_UIcmd_view_page_source(const DilloUrl *url);
 void a_UIcmd_view_page_bugs(void *vbw);
 void a_UIcmd_bugmeter_popup(void *vbw);
 int *a_UIcmd_get_history(BrowserWindow *bw, int direction);

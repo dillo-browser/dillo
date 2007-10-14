@@ -181,7 +181,7 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
 /*
  * Open a new URL in the given browser window
  */
-void a_UIcmd_open_url_nw(BrowserWindow *bw, DilloUrl *url)
+void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
 {
    a_Nav_push_nw(bw, url);
 }
@@ -426,7 +426,7 @@ void a_UIcmd_book(void *vbw)
 /*
  * Add a bookmark for a certain URL
  */
-void a_UIcmd_add_bookmark(BrowserWindow *bw, DilloUrl *url)
+void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url)
 {
    a_Bookmarks_add(bw, url);
 }
@@ -435,7 +435,7 @@ void a_UIcmd_add_bookmark(BrowserWindow *bw, DilloUrl *url)
 /*
  * Popup the page menu
  */
-void a_UIcmd_page_popup(void *vbw, DilloUrl *url, const char *bugs_txt)
+void a_UIcmd_page_popup(void *vbw, const DilloUrl *url, const char *bugs_txt)
 {
    a_Menu_page_popup((BrowserWindow*)vbw, url, bugs_txt);
 }
@@ -443,7 +443,7 @@ void a_UIcmd_page_popup(void *vbw, DilloUrl *url, const char *bugs_txt)
 /*
  * Popup the link menu
  */
-void a_UIcmd_link_popup(void *vbw, DilloUrl *url)
+void a_UIcmd_link_popup(void *vbw, const DilloUrl *url)
 {
    a_Menu_link_popup((BrowserWindow*)vbw, url);
 }
@@ -451,7 +451,7 @@ void a_UIcmd_link_popup(void *vbw, DilloUrl *url)
 /*
  * Show a text window with the URL's source
  */
-void a_UIcmd_view_page_source(DilloUrl *url)
+void a_UIcmd_view_page_source(const DilloUrl *url)
 {
    char *buf;
    int buf_size;

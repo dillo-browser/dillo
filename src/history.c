@@ -92,7 +92,7 @@ const char *a_History_get_title(int idx, int force)
  * Return the title camp (by url)
  * ('force' returns URL_STR when there's no title)
  */
-const char *a_History_get_title_by_url(DilloUrl *url, int force)
+const char *a_History_get_title_by_url(const DilloUrl *url, int force)
 {
    int i;
 

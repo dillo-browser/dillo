@@ -31,7 +31,7 @@ using namespace fltk;
 // (This data can be encapsulated inside a class for each popup, but
 //  as popups are modal, there's no need).
 // Weak reference to the popup's URL
-static DilloUrl *popup_url = NULL;
+static const DilloUrl *popup_url = NULL;
 // Weak reference to the popup's bw
 static BrowserWindow *popup_bw = NULL;
 // Weak reference to the page's HTML bugs
@@ -68,7 +68,7 @@ void NewItem::draw() {
 
 
 //--------------------------------------------------------------------------
-static void Menu_link_cb(Widget* , void *v_url)
+static void Menu_link_cb(Widget* )
 {
    printf("Menu_link_cb: click! :-)\n");
 }
@@ -185,7 +185,7 @@ static void Menu_history_cb(Widget *wid, void *data)
 /*
  * Page popup menu (construction & popup)
  */
-void a_Menu_page_popup(BrowserWindow *bw, DilloUrl *url, const char *bugs_txt)
+void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url, const char *bugs_txt)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
@@ -234,7 +234,7 @@ void a_Menu_page_popup(BrowserWindow *bw, DilloUrl *url, const char *bugs_txt)
 /*
  * Link popup menu (construction & popup)
  */
-void a_Menu_link_popup(BrowserWindow *bw, DilloUrl *url)
+void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
@@ -251,7 +251,7 @@ void a_Menu_link_popup(BrowserWindow *bw, DilloUrl *url)
        i = new Item("Bookmark this Link");
        i->callback(Menu_add_bookmark_cb);
        i = new Item("Copy Link location");
-       i->callback(Menu_link_cb, url);
+       i->callback(Menu_link_cb);
        i->deactivate();
        new Divider();    
        i = new Item("Save Link As...");
@@ -270,7 +270,7 @@ void a_Menu_link_popup(BrowserWindow *bw, DilloUrl *url)
 /*
  * Bugmeter popup menu (construction & popup)
  */
-void a_Menu_bugmeter_popup(BrowserWindow *bw, DilloUrl *url)
+void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;

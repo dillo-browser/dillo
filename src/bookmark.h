@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-void a_Bookmarks_add(BrowserWindow *bw, DilloUrl *url);
+void a_Bookmarks_add(BrowserWindow *bw, const DilloUrl *url);
 
 /* todo: this is for testing purposes */
 void a_Bookmarks_chat_add(BrowserWindow *Bw, char *Cmd, char *answer);

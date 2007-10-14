@@ -71,7 +71,7 @@ void a_Bookmarks_chat_add(BrowserWindow *Bw, char *Cmd, char *answer)
 /*
  * Add the new bookmark through the bookmarks server
  */
-void a_Bookmarks_add(BrowserWindow *bw, DilloUrl *url)
+void a_Bookmarks_add(BrowserWindow *bw, const DilloUrl *url)
 {
    const char *title;
    char *cmd;

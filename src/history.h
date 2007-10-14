@@ -13,7 +13,7 @@ int a_History_add_url(DilloUrl *url);
 int a_History_set_title(int idx, const char *title);
 DilloUrl *a_History_get_url(int idx);
 const char *a_History_get_title(int idx, int force);
-const char *a_History_get_title_by_url(DilloUrl *url, int force);
+const char *a_History_get_title_by_url(const DilloUrl *url, int force);
 void a_History_free(void);
 
 
