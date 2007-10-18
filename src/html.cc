@@ -63,7 +63,7 @@ using namespace dw::core;
 using namespace dw::core::ui;
 using namespace dw::core::style;
 
-typedef void (*TagOpenFunct) (DilloHtml *Html, char *Tag, int Tagsize);
+typedef void (*TagOpenFunct) (DilloHtml *Html, const char *Tag, int Tagsize);
 typedef void (*TagCloseFunct) (DilloHtml *Html, int TagIdx);
 
 #define TAB_SIZE 8
@@ -109,7 +109,7 @@ static void Html_write(DilloHtml *html, char *Buf, int BufSize, int Eof);
 static void Html_close(DilloHtml *html, int ClientKey);
 static void Html_callback(int Op, CacheClient_t *Client);
 static DilloHtml *Html_new(BrowserWindow *bw, const DilloUrl *url);
-static void Html_tag_open_input(DilloHtml *html, char *tag, int tagsize);
+static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize);
 static void Html_add_input(DilloHtmlForm *form,
                            DilloHtmlInputType type,
                            Widget *widget,
@@ -133,7 +133,7 @@ static const int FontSizesBase = 2;
 
 /* Parsing table structure */
 typedef struct {
-   char *name;           /* element name */
+   const char *name;           /* element name */
    unsigned char Flags;   /* flags (explained near the table data) */
    char EndTag;          /* Is it Required, Optional or Forbidden */
    uchar_t TagLevel;       /* Used to heuristically parse bad HTML  */
@@ -511,7 +511,7 @@ static int Html_form_new(DilloHtmlLB *html_lb,
  * Set the font at the top of the stack. BImask specifies which
  * attributes in BI should be changed.
  */
-static void Html_set_top_font(DilloHtml *html, char *name, int size,
+static void Html_set_top_font(DilloHtml *html, const char *name, int size,
                               int BI, int BImask)
 {
    FontAttrs font_attrs;
@@ -537,7 +537,7 @@ static void Html_set_top_font(DilloHtml *html, char *name, int size,
  * Evaluates the ALIGN attribute (left|center|right|justify) and
  * sets the style at the top of the stack.
  */
-static void Html_tag_set_align_attr(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *align, *charattr;
 
@@ -573,7 +573,7 @@ static void Html_tag_set_align_attr(DilloHtml *html, char *tag, int tagsize)
  * Evaluates the VALIGN attribute (top|bottom|middle|baseline) and
  * sets the style in style_attrs. Returns TRUE when set.
  */
-static bool_t Html_tag_set_valign_attr(DilloHtml *html, char *tag,
+static bool_t Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
                                          int tagsize, StyleAttrs *style_attrs)
 {
    const char *attr;
@@ -797,7 +797,7 @@ static void Html_stash_init(DilloHtml *html)
 
 /* Entities list from the HTML 4.01 DTD */
 typedef struct {
-   char *entity;
+   const char *entity;
    int isocode;
 } Ent_t;
 
@@ -1000,9 +1000,9 @@ static int Html_parse_entity(DilloHtml *html, const char *token,
  * a token and its length, and returns a newly allocated string.
  */
 static char *
- Html_parse_entities(DilloHtml *html, char *token, int toksize)
+ Html_parse_entities(DilloHtml *html, const char *token, int toksize)
 {
-   char *esc_set = "&\xE2\xC2";
+   const char *esc_set = "&\xE2\xC2";
    char *new_str, buf[4];
    int i, j, k, n, isocode, entsize;
 
@@ -1034,7 +1034,7 @@ static char *
 /*
  * Parse spaces
  */
-static void Html_process_space(DilloHtml *html, char *space, int spacesize)
+static void Html_process_space(DilloHtml *html, const char *space, int spacesize)
 {
    int i, offset;
    DilloHtmlParseMode parse_mode = S_TOP(html)->parse_mode;
@@ -1106,7 +1106,7 @@ static void Html_process_space(DilloHtml *html, char *space, int spacesize)
  *
  * Entities are parsed (or not) according to parse_mode.
  */
-static void Html_process_word(DilloHtml *html, char *word, int size)
+static void Html_process_word(DilloHtml *html, const char *word, int size)
 {
    int i, j, start;
    char *Pword;
@@ -1443,18 +1443,18 @@ static int
  *
  * This is not a full DOCTYPE parser, just enough for what Dillo uses.
  */
-static void Html_parse_doctype(DilloHtml *html, char *tag, int tagsize)
+static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
 {
-   char *HTML_sig    = "<!DOCTYPE HTML PUBLIC ";
-   char *HTML20      = "-//IETF//DTD HTML//EN";
-   char *HTML32      = "-//W3C//DTD HTML 3.2";
-   char *HTML40      = "-//W3C//DTD HTML 4.0";
-   char *HTML401     = "-//W3C//DTD HTML 4.01";
-   char *HTML401_url = "http://www.w3.org/TR/html4/";
-   char *XHTML1      = "-//W3C//DTD XHTML 1.0";
-   char *XHTML1_url  = "http://www.w3.org/TR/xhtml1/DTD/";
-   char *XHTML11      = "-//W3C//DTD XHTML 1.1";
-   char *XHTML11_url  = "http://www.w3.org/TR/xhtml11/DTD/";
+   static const char HTML_sig   [] = "<!DOCTYPE HTML PUBLIC ";
+   static const char HTML20     [] = "-//IETF//DTD HTML//EN";
+   static const char HTML32     [] = "-//W3C//DTD HTML 3.2";
+   static const char HTML40     [] = "-//W3C//DTD HTML 4.0";
+   static const char HTML401    [] = "-//W3C//DTD HTML 4.01";
+   static const char HTML401_url[] = "http://www.w3.org/TR/html4/";
+   static const char XHTML1     [] = "-//W3C//DTD XHTML 1.0";
+   static const char XHTML1_url [] = "http://www.w3.org/TR/xhtml1/DTD/";
+   static const char XHTML11    [] = "-//W3C//DTD XHTML 1.1";
+   static const char XHTML11_url[] = "http://www.w3.org/TR/xhtml11/DTD/";
 
    int i, quote;
    char *p, *ntag = dStrndup(tag, tagsize);
@@ -1513,7 +1513,7 @@ static void Html_parse_doctype(DilloHtml *html, char *tag, int tagsize)
 /*
  * Handle open HTML element
  */
-static void Html_tag_open_html(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_html(DilloHtml *html, const char *tag, int tagsize)
 {
    if (!(html->InFlags & IN_HTML))
       html->InFlags |= IN_HTML;
@@ -1540,7 +1540,7 @@ static void Html_tag_close_html(DilloHtml *html, int TagIdx)
 /*
  * Handle open HEAD element
  */
-static void Html_tag_open_head(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_head(DilloHtml *html, const char *tag, int tagsize)
 {
    if (html->InFlags & IN_BODY) {
       MSG_HTML("HEAD element must go before the BODY section\n");
@@ -1577,7 +1577,7 @@ static void Html_tag_close_head(DilloHtml *html, int TagIdx)
  * Handle open TITLE
  * calls stash init, where the title string will be stored
  */
-static void Html_tag_open_title(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_title(DilloHtml *html, const char *tag, int tagsize)
 {
    ++html->Num_TITLE;
    Html_stash_init(html);
@@ -1604,7 +1604,7 @@ static void Html_tag_close_title(DilloHtml *html, int TagIdx)
  * initializes stash, where the embedded code will be stored.
  * MODE_VERBATIM is used because MODE_STASH catches entities.
  */
-static void Html_tag_open_script(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_script(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_stash_init(html);
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
@@ -1624,7 +1624,7 @@ static void Html_tag_close_script(DilloHtml *html, int TagIdx)
  * store the contents to the stash where (in the future) the style
  * sheet interpreter can get it.
  */
-static void Html_tag_open_style(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_stash_init(html);
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
@@ -1642,7 +1642,7 @@ static void Html_tag_close_style(DilloHtml *html, int TagIdx)
 /*
  * <BODY>
  */
-static void Html_tag_open_body(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    Textblock *textblock;
@@ -1725,7 +1725,7 @@ static void Html_tag_close_body(DilloHtml *html, int TagIdx)
  * todo: what's the point between adding the parbreak before and
  *       after the push?
  */
-static void Html_tag_open_p(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    Html_tag_set_align_attr (html, tag, tagsize);
@@ -1734,7 +1734,7 @@ static void Html_tag_open_p(DilloHtml *html, char *tag, int tagsize)
 /*
  * <TABLE>
  */
-static void Html_tag_open_table(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 {
 #ifdef USE_TABLES
    Widget *table;
@@ -1829,7 +1829,7 @@ static void Html_tag_open_table(DilloHtml *html, char *tag, int tagsize)
 /*
  * used by <TD> and <TH>
  */
-static void Html_tag_open_table_cell(DilloHtml *html, char *tag, int tagsize,
+static void Html_tag_open_table_cell(DilloHtml *html, const char *tag, int tagsize,
                                      TextAlignType text_align)
 {
 #ifdef USE_TABLES
@@ -1935,7 +1935,7 @@ static void Html_tag_open_table_cell(DilloHtml *html, char *tag, int tagsize,
 /*
  * <TD>
  */
-static void Html_tag_open_td(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_td(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_tag_open_table_cell (html, tag, tagsize, TEXT_ALIGN_LEFT);
 }
@@ -1944,7 +1944,7 @@ static void Html_tag_open_td(DilloHtml *html, char *tag, int tagsize)
 /*
  * <TH>
  */
-static void Html_tag_open_th(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, NULL, 0, 1, 1);
    Html_tag_open_table_cell (html, tag, tagsize, TEXT_ALIGN_CENTER);
@@ -1954,7 +1954,7 @@ static void Html_tag_open_th(DilloHtml *html, char *tag, int tagsize)
 /*
  * <TR>
  */
-static void Html_tag_open_tr(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    StyleAttrs style_attrs;
@@ -2021,7 +2021,7 @@ static void Html_tag_open_tr(DilloHtml *html, char *tag, int tagsize)
  * todo: This is just a temporary fix while real frame support
  *       isn't finished. Imitates lynx/w3m's frames.
  */
-static void Html_tag_open_frame (DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    char *src, *buf;
@@ -2091,7 +2091,7 @@ static void Html_tag_open_frame (DilloHtml *html, char *tag, int tagsize)
  * todo: This is just a temporary fix while real frame support
  *       isn't finished. Imitates lynx/w3m's frames.
  */
-static void Html_tag_open_frameset (DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_frameset (DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    DW2TB(html->dw)->addText(dStrdup("--FRAME--"),
@@ -2102,7 +2102,7 @@ static void Html_tag_open_frameset (DilloHtml *html, char *tag, int tagsize)
 /*
  * <H1> | <H2> | <H3> | <H4> | <H5> | <H6>
  */
-static void Html_tag_open_h(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
 
@@ -2134,7 +2134,7 @@ static void Html_tag_close_h(DilloHtml *html, int TagIdx)
 /*
  * <BIG> | <SMALL>
  */
-static void Html_tag_open_big_small(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_big_small(DilloHtml *html, const char *tag, int tagsize)
 {
    int level;
 
@@ -2147,7 +2147,7 @@ static void Html_tag_open_big_small(DilloHtml *html, char *tag, int tagsize)
 /*
  * <BR>
  */
-static void Html_tag_open_br(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_br(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addLinebreak (S_TOP(html)->style);
 }
@@ -2155,7 +2155,7 @@ static void Html_tag_open_br(DilloHtml *html, char *tag, int tagsize)
 /*
  * <BUTTON>
  */
-static void Html_tag_open_button(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 {
 // // AL
 // /*
@@ -2237,7 +2237,7 @@ static void Html_tag_open_button(DilloHtml *html, char *tag, int tagsize)
 /*
  * <FONT>
  */
-static void Html_tag_open_font(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
 {
 #if 1
    StyleAttrs style_attrs;
@@ -2280,7 +2280,7 @@ static void Html_tag_open_font(DilloHtml *html, char *tag, int tagsize)
 /*
  * <ABBR>
  */
-static void Html_tag_open_abbr(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
 {
 // DwTooltip *tooltip;
 // const char *attrbuf;
@@ -2294,7 +2294,7 @@ static void Html_tag_open_abbr(DilloHtml *html, char *tag, int tagsize)
 /*
  * <B>
  */
-static void Html_tag_open_b(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_b(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, NULL, 0, 1, 1);
 }
@@ -2302,7 +2302,7 @@ static void Html_tag_open_b(DilloHtml *html, char *tag, int tagsize)
 /*
  * <STRONG>
  */
-static void Html_tag_open_strong(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_strong(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, NULL, 0, 1, 1);
 }
@@ -2310,7 +2310,7 @@ static void Html_tag_open_strong(DilloHtml *html, char *tag, int tagsize)
 /*
  * <I>
  */
-static void Html_tag_open_i(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_i(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, NULL, 0, 2, 2);
 }
@@ -2318,7 +2318,7 @@ static void Html_tag_open_i(DilloHtml *html, char *tag, int tagsize)
 /*
  * <EM>
  */
-static void Html_tag_open_em(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_em(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, NULL, 0, 2, 2);
 }
@@ -2326,7 +2326,7 @@ static void Html_tag_open_em(DilloHtml *html, char *tag, int tagsize)
 /*
  * <CITE>
  */
-static void Html_tag_open_cite(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_cite(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, NULL, 0, 2, 2);
 }
@@ -2334,7 +2334,7 @@ static void Html_tag_open_cite(DilloHtml *html, char *tag, int tagsize)
 /*
  * <CENTER>
  */
-static void Html_tag_open_center(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_center(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (0, S_TOP(html)->style);
    HTML_SET_TOP_ATTR(html, textAlign, TEXT_ALIGN_CENTER);
@@ -2343,7 +2343,7 @@ static void Html_tag_open_center(DilloHtml *html, char *tag, int tagsize)
 /*
  * <ADDRESS>
  */
-static void Html_tag_open_address(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_address(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    Html_set_top_font(html, NULL, 0, 2, 2);
@@ -2352,7 +2352,7 @@ static void Html_tag_open_address(DilloHtml *html, char *tag, int tagsize)
 /*
  * <TT>
  */
-static void Html_tag_open_tt(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_tt(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
@@ -2361,7 +2361,7 @@ static void Html_tag_open_tt(DilloHtml *html, char *tag, int tagsize)
  * Read image-associated tag attributes,
  * create new image and add it to the html page (if add is TRUE).
  */
-static DilloImage *Html_add_new_image(DilloHtml *html, char *tag,
+static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
                                       int tagsize, StyleAttrs *style_attrs,
                                       bool_t add)
 {
@@ -2458,7 +2458,7 @@ static void Html_load_image(DilloHtml *html, DilloUrl *url, DilloImage *Image)
  * (If it either hits or misses, is not relevant here; that's up to the
  *  cache functions)
  */
-static void Html_tag_open_img(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloImage *Image;
    DilloUrl *url, *usemap_url;
@@ -2538,7 +2538,7 @@ static void Html_tag_open_img(DilloHtml *html, char *tag, int tagsize)
 /*
  * <map>
  */
-static void Html_tag_open_map(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_map(DilloHtml *html, const char *tag, int tagsize)
 {
    char *hash_name;
    const char *attrbuf;
@@ -2570,7 +2570,7 @@ static void Html_tag_close_map(DilloHtml *html, int TagIdx)
 /*
  * <AREA>
  */
-static void Html_tag_open_area(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
 {
 // // AL
 // /* todo: point must be a dynamic array */
@@ -2663,7 +2663,7 @@ static void Html_add_anchor(DilloHtml *html, const char *name)
 /*
  * <A>
  */
-static void Html_tag_open_a(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 {
    StyleAttrs style_attrs;
    Style *old_style;
@@ -2736,7 +2736,7 @@ static void Html_tag_close_a(DilloHtml *html, int TagIdx)
 /*
  * Insert underlined text in the page.
  */
-static void Html_tag_open_u(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_u(DilloHtml *html, const char *tag, int tagsize)
 {
    Style *style;
    StyleAttrs style_attrs;
@@ -2752,7 +2752,7 @@ static void Html_tag_open_u(DilloHtml *html, char *tag, int tagsize)
 /*
  * Insert strike-through text. Used by <S>, <STRIKE> and <DEL>.
  */
-static void Html_tag_open_strike(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_strike(DilloHtml *html, const char *tag, int tagsize)
 {
    Style *style;
    StyleAttrs style_attrs;
@@ -2768,7 +2768,7 @@ static void Html_tag_open_strike(DilloHtml *html, char *tag, int tagsize)
 /*
  * <BLOCKQUOTE>
  */
-static void Html_tag_open_blockquote(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_blockquote(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    Html_add_indented(html, 40, 40, 9);
@@ -2777,7 +2777,7 @@ static void Html_tag_open_blockquote(DilloHtml *html, char *tag, int tagsize)
 /*
  * Handle the <UL> tag.
  */
-static void Html_tag_open_ul(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    ListStyleType list_style_type;
@@ -2831,7 +2831,7 @@ static void Html_tag_open_ul(DilloHtml *html, char *tag, int tagsize)
  * Handle the <MENU> tag.
  * (Deprecated and almost the same as <UL>)
  */
-static void Html_tag_open_menu(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_menu(DilloHtml *html, const char *tag, int tagsize)
 {
    ListStyleType list_style_type = LIST_STYLE_TYPE_DISC;
 
@@ -2849,7 +2849,7 @@ static void Html_tag_open_menu(DilloHtml *html, char *tag, int tagsize)
 /*
  * Handle the <OL> tag.
  */
-static void Html_tag_open_ol(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    ListStyleType list_style_type;
@@ -2888,7 +2888,7 @@ static void Html_tag_open_ol(DilloHtml *html, char *tag, int tagsize)
 /*
  * Handle the <LI> tag.
  */
-static void Html_tag_open_li(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
 {
    StyleAttrs style_attrs;
    Style *item_style, *word_style;
@@ -2957,7 +2957,7 @@ static void Html_tag_close_li(DilloHtml *html, int TagIdx)
 /*
  * <HR>
  */
-static void Html_tag_open_hr(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
 {
    Widget *hruler;
    StyleAttrs style_attrs;
@@ -3018,7 +3018,7 @@ static void Html_tag_open_hr(DilloHtml *html, char *tag, int tagsize)
 /*
  * <DL>
  */
-static void Html_tag_open_dl(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_dl(DilloHtml *html, const char *tag, int tagsize)
 {
    /* may want to actually do some stuff here. */
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
@@ -3027,7 +3027,7 @@ static void Html_tag_open_dl(DilloHtml *html, char *tag, int tagsize)
 /*
  * <DT>
  */
-static void Html_tag_open_dt(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    Html_set_top_font(html, NULL, 0, 1, 1);
@@ -3036,7 +3036,7 @@ static void Html_tag_open_dt(DilloHtml *html, char *tag, int tagsize)
 /*
  * <DD>
  */
-static void Html_tag_open_dd(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    Html_add_indented(html, 40, 40, 9);
@@ -3045,7 +3045,7 @@ static void Html_tag_open_dd(DilloHtml *html, char *tag, int tagsize)
 /*
  * <PRE>
  */
-static void Html_tag_open_pre(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
@@ -3074,7 +3074,7 @@ static void Html_tag_close_pre(DilloHtml *html, int TagIdx)
  */
 static int Html_tag_pre_excludes(int tag_idx)
 {
-   char *es_set[] = {"img", "object", "applet", "big", "small", "sub", "sup",
+   const char *es_set[] = {"img", "object", "applet", "big", "small", "sub", "sup",
                      "font", "basefont", NULL};
    static int ei_set[10], i;
 
@@ -3092,7 +3092,7 @@ static int Html_tag_pre_excludes(int tag_idx)
 /*
  * Handle <FORM> tag
  */
-static void Html_tag_open_form(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloUrl *action;
    DilloHtmlMethod method;
@@ -3127,7 +3127,7 @@ static void Html_tag_open_form(DilloHtml *html, char *tag, int tagsize)
 
 static void Html_tag_close_form(DilloHtml *html, int TagIdx)
 {
-   static char *SubmitTag =
+   static const char *SubmitTag =
       "<input type='submit' value='?Submit?' alt='dillo-generated-button'>";
    DilloHtmlForm *form;
 // int i;
@@ -3182,9 +3182,9 @@ static void Html_tag_close_form(DilloHtml *html, int TagIdx)
  * is a hackish way to put the message. A much cleaner approach is to
  * build a custom widget for it.
  */
-static void Html_tag_open_meta(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 {
-   const char *meta_template =
+   const char meta_template[] =
 "<table width='100%%'><tr><td bgcolor='#ee0000'>Warning:</td>\n"
 " <td bgcolor='#8899aa' width='100%%'>\n"
 " This page uses the NON-STANDARD meta refresh tag.<br> The HTML 4.01 SPEC\n"
@@ -3620,7 +3620,7 @@ void a_Html_form_event_handler(void *data,
 /*
  * Create input image for the form
  */
-static Widget *Html_input_image(DilloHtml *html, char *tag, int tagsize,
+static Widget *Html_input_image(DilloHtml *html, const char *tag, int tagsize,
                                 DilloHtmlLB *html_lb, DilloUrl *action)
 {
 // // AL
@@ -3662,7 +3662,7 @@ static Widget *Html_input_image(DilloHtml *html, char *tag, int tagsize,
 /*
  * Add a new input to current form
  */
-static void Html_tag_open_input(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloHtmlForm *form;
    DilloHtmlInputType inp_type;
@@ -3826,7 +3826,7 @@ static void Html_tag_open_input(DilloHtml *html, char *tag, int tagsize)
  * The ISINDEX tag is just a deprecated form of <INPUT type=text> with
  * implied FORM, afaics.
  */
-static void Html_tag_open_isindex(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
 {
 // // AL
 // DilloHtmlForm *form;
@@ -3920,7 +3920,7 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
  * The textarea tag
  * (todo: It doesn't support wrapping).
  */
-static void Html_tag_open_textarea(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 {
 // // AL
 // DilloHtmlLB *html_lb;
@@ -3999,7 +3999,7 @@ static void Html_tag_open_textarea(DilloHtml *html, char *tag, int tagsize)
  * <SELECT>
  */
 /* The select tag is quite tricky, because of gorpy html syntax. */
-static void Html_tag_open_select(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 {
 // DilloHtmlForm *form;
 // DilloHtmlSelect *Select;
@@ -4108,7 +4108,7 @@ static void Html_option_finish(DilloHtml *html)
 /*
  * <OPTION>
  */
-static void Html_tag_open_option(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
 {
 // DilloHtmlForm *form;
 // DilloHtmlInput *input;
@@ -4216,7 +4216,7 @@ static void Html_tag_close_select(DilloHtml *html, int TagIdx)
 /*
  * Set the Document Base URI
  */
-static void Html_tag_open_base(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    DilloUrl *BaseUrl;
@@ -4243,7 +4243,7 @@ static void Html_tag_open_base(DilloHtml *html, char *tag, int tagsize)
 /*
  * <CODE>
  */
-static void Html_tag_open_code(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_code(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
@@ -4251,7 +4251,7 @@ static void Html_tag_open_code(DilloHtml *html, char *tag, int tagsize)
 /*
  * <DFN>
  */
-static void Html_tag_open_dfn(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_dfn(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, NULL, 0, 2, 3);
 }
@@ -4259,7 +4259,7 @@ static void Html_tag_open_dfn(DilloHtml *html, char *tag, int tagsize)
 /*
  * <KBD>
  */
-static void Html_tag_open_kbd(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_kbd(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
@@ -4267,7 +4267,7 @@ static void Html_tag_open_kbd(DilloHtml *html, char *tag, int tagsize)
 /*
  * <SAMP>
  */
-static void Html_tag_open_samp(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_samp(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
@@ -4275,7 +4275,7 @@ static void Html_tag_open_samp(DilloHtml *html, char *tag, int tagsize)
 /*
  * <VAR>
  */
-static void Html_tag_open_var(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_var(DilloHtml *html, const char *tag, int tagsize)
 {
    Html_set_top_font(html, NULL, 0, 2, 2);
 }
@@ -4283,7 +4283,7 @@ static void Html_tag_open_var(DilloHtml *html, char *tag, int tagsize)
 /*
  * <SUB>
  */
-static void Html_tag_open_sub(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_sub(DilloHtml *html, const char *tag, int tagsize)
 {
    HTML_SET_TOP_ATTR (html, valign, VALIGN_SUB);
 }
@@ -4291,7 +4291,7 @@ static void Html_tag_open_sub(DilloHtml *html, char *tag, int tagsize)
 /*
  * <SUP>
  */
-static void Html_tag_open_sup(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_sup(DilloHtml *html, const char *tag, int tagsize)
 {
    HTML_SET_TOP_ATTR (html, valign, VALIGN_SUPER);
 }
@@ -4299,7 +4299,7 @@ static void Html_tag_open_sup(DilloHtml *html, char *tag, int tagsize)
 /*
  * <DIV> (todo: make a complete implementation)
  */
-static void Html_tag_open_div(DilloHtml *html, char *tag, int tagsize)
+static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (0, S_TOP(html)->style);
    Html_tag_set_align_attr (html, tag, tagsize);
@@ -4352,7 +4352,7 @@ static void Html_tag_close_par(DilloHtml *html, int TagIdx)
  *       (flow have both set)
  */
 struct _TagInfo{
-   char *name;
+   const char *name;
    unsigned char Flags;
    char EndTag;
    uchar_t TagLevel;
@@ -4605,7 +4605,7 @@ static void Html_stack_cleanup_at_open(DilloHtml *html, int new_idx)
  */
 static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
 {
-   char *tag;
+   const char *tag;
    int tag_idx;
 
    if (!(html->InFlags & IN_HTML) && html->DocType == DT_NONE)

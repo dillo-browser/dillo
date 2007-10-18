@@ -40,6 +40,7 @@ dillo-fltk2
 +- Fixed a problem with locally-installed dpis.
    Patch: place, Jorge Arellano
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
+   Added const declarations in html parser.
    Patch: Vincent Thomasset
 +- Fixed void to int conversions for 64bit-arch.
    Patch: Jorge Arellano, higuita
