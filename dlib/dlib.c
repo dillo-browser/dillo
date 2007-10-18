@@ -348,7 +348,7 @@ void dStr_vsprintfa (Dstr *ds, const char *format, va_list argp)
       va_list argp2;         /* Needed in case of looping on non-32bit arch */
       while (1) {
          va_copy(argp2, argp);
-         n = vsnprintf(ds->str + ds->len, ds->sz - ds->len, format, argp);
+         n = vsnprintf(ds->str + ds->len, ds->sz - ds->len, format, argp2);
          va_end(argp2);
          if (n > -1 && n < ds->sz - ds->len) {
             ds->len += n;      /* Success! */
