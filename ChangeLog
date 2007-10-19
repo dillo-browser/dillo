@@ -49,6 +49,7 @@ dillo-fltk2
 +- Fixed calcHashValue() to only return non-negative numbers (was SEGFAULT).
  - Improved scrolling performance on large pages by copying screen data
     instead of rendering.
+ - Updated configure.in to check only for fltk2-config.
    Patches: Johannes Hofmann
 +- Improved FLTK library detection at configure time.
    Patch: Frank Gevaerts
