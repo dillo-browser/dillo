@@ -93,17 +93,17 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
       /* This method frees the old dw if any */
       layout->setWidget(dw);
 
-    if (URL_POSX(Web->url) || URL_POSY(Web->url)) {
-       layout->scrollTo(HPOS_LEFT, VPOS_TOP,
-                        URL_POSX(Web->url), URL_POSY(Web->url),
-                        0, 0);
-    } else {
-       char *pf = a_Url_decode_hex_str(URL_FRAGMENT_(Web->url));
-       if (pf) {
-          layout->setAnchor(pf);
-          dFree(pf);
-       }
-    }
+      /* Scroll to were we were in this page */
+      layout->scrollTo(HPOS_LEFT, VPOS_TOP,
+                       URL_POSX(Web->url), URL_POSY(Web->url), 0, 0);
+      /* If we're at the origin and there's a fragment, go there instead */
+      if (URL_POSX(Web->url) == 0 && URL_POSY(Web->url) == 0) {
+         char *f = a_Url_decode_hex_str(URL_FRAGMENT_(Web->url));
+         if (f) {
+            layout->setAnchor(f);
+            dFree(f);
+         }
+      }
 
       /* Clear the title bar for pages without a <TITLE> tag */
       a_UIcmd_set_page_title(Web->bw, "");

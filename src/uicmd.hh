@@ -44,6 +44,7 @@ void a_UIcmd_set_save_dir(const char *dir);
 // UI binding functions -------------------------------------------------------
 
 void a_UIcmd_get_wh(BrowserWindow *bw, int *w, int *h);
+void a_UIcmd_get_scroll_xy(BrowserWindow *bw, int *x, int *y);
 char *a_UIcmd_get_location_text(BrowserWindow *bw);
 void a_UIcmd_set_location_text(void *vbw, const char *text);
 void a_UIcmd_set_page_prog(BrowserWindow *bw, size_t nbytes, int cmd);

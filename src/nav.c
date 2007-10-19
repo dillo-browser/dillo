@@ -135,7 +135,7 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 {
    DilloUrl *old_url = NULL;
    bool_t MustLoad;
-   int ClientKey;
+   int x, y, ClientKey;
    DilloWeb *Web;
    char *loc_text;
    bool_t ForceReload = (URL_FLAGS(url) & URL_E2EReload);
@@ -149,17 +149,10 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
    /* Record current scrolling position
     * (the strcmp check is necessary because of redirections) */
    loc_text = a_UIcmd_get_location_text(bw);
-   if (old_url &&
-       !strcmp(URL_STR(old_url), loc_text)) {
-
-      //old_url->scrolling_position_x =
-      //  a_Dw_gtk_scrolled_window_get_scrolling_position_x(
-      //     GTK_DW_SCROLLED_WINDOW(bw->docwin));
-      //old_url->scrolling_position_y =
-      //  a_Dw_gtk_scrolled_window_get_scrolling_position_y(
-      //     GTK_DW_SCROLLED_WINDOW(bw->docwin));
-
-      a_Url_set_pos(old_url, 0, 0);
+   if (old_url && !strcmp(URL_STR(old_url), loc_text)) {
+      a_UIcmd_get_scroll_xy(bw, &x, &y);
+      _MSG("NAV: ScrollPosXY: x=%d y=%d\n",x,y);
+      a_Url_set_pos(old_url, x, y);
    }
 
    /* Update navigation-stack-pointer (offset may be zero) */

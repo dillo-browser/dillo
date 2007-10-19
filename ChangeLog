@@ -30,6 +30,7 @@ dillo-fltk2
  - Rewrote the CCC's OpAbort handling.
  - Rewrote the DNS API and the Dpid start code inside Dillo.
  - Implemented Stop button to not only stop rendering but also networking.
+ - Fixed the problem of scrolling position (remember position in a page).
    Patches: Jorge Arellano
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color and geometry in preferences.

@@ -533,6 +533,19 @@ void a_UIcmd_get_wh(BrowserWindow *bw, int *w, int *h)
 }
 
 /*
+ * Get the scroll position (x, y offset pair)
+ */
+void a_UIcmd_get_scroll_xy(BrowserWindow *bw, int *x, int *y)
+{
+   Layout *layout = (Layout*)bw->render_layout;
+
+   if (layout) {
+     *x = layout->getScrollPosX();
+     *y = layout->getScrollPosY();
+   }
+}
+
+/*
  * Get location's text
  */
 char *a_UIcmd_get_location_text(BrowserWindow *bw)
