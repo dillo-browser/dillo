@@ -52,6 +52,7 @@ dillo-fltk2
     instead of rendering.
  - Updated configure.in to check only for fltk2-config.
  - Implemented drag-scrolling with the mouse's middle button.
+ - Disabled double buffering (good for debugging redraws).
    Patches: Johannes Hofmann
 +- Improved FLTK library detection at configure time.
    Patch: Frank Gevaerts

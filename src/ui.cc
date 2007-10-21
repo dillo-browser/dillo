@@ -580,6 +580,7 @@ UI::UI(int win_w, int win_h, const char* label) :
 {
    int s_h = 20;
    resizable(this);
+   clear_double_buffer();
    begin();
      TopGroup = this;
 
