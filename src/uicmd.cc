@@ -482,7 +482,7 @@ void a_UIcmd_bugmeter_popup(void *vbw)
 {
    BrowserWindow *bw = (BrowserWindow*)vbw;
 
-   a_Menu_bugmeter_popup(bw, a_History_get_url(NAV_TOP(bw)));
+   a_Menu_bugmeter_popup(bw, a_History_get_url(NAV_TOP_UIDX(bw)));
 }
 
 /*
@@ -503,7 +503,7 @@ int *a_UIcmd_get_history(BrowserWindow *bw, int direction)
    // Fill the list
    i = a_Nav_stack_ptr(bw) + direction;
    for (j = 0 ; i >= 0 && i < a_Nav_stack_size(bw); i+=direction, j += 1) {
-      hlist[j] = NAV_IDX(bw,i);
+      hlist[j] = NAV_UIDX(bw,i);
    }
    hlist[j] = -1;
 
@@ -542,6 +542,30 @@ void a_UIcmd_get_scroll_xy(BrowserWindow *bw, int *x, int *y)
    if (layout) {
      *x = layout->getScrollPosX();
      *y = layout->getScrollPosY();
+   }
+}
+
+/*
+ * Set the scroll position ({x, y} offset pair)
+ */
+void a_UIcmd_set_scroll_xy(BrowserWindow *bw, int x, int y)
+{
+   Layout *layout = (Layout*)bw->render_layout;
+
+   if (layout) {
+      layout->scrollTo(HPOS_LEFT, VPOS_TOP, x, y, 0, 0);
+   }
+}
+
+/*
+ * Set the scroll position by fragment (from URL)
+ */
+void a_UIcmd_set_scroll_by_fragment(BrowserWindow *bw, const char *f)
+{
+   Layout *layout = (Layout*)bw->render_layout;
+
+   if (layout && f) {
+      layout->setAnchor(f);
    }
 }
 

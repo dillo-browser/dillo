@@ -15,8 +15,10 @@
 
 #define MSG(...)                                   \
    D_STMT_START {                                  \
-      if (prefs.show_msg)                          \
+      if (prefs.show_msg){                         \
          printf(__VA_ARGS__);                      \
+         fflush (stdout);                          \
+      }                                            \
    } D_STMT_END
 
 #define MSG_WARN(...)                              \

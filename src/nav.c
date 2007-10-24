@@ -34,6 +34,8 @@ static void Nav_reload(BrowserWindow *bw);
 
 /*
  * Free memory used by this module
+ * TODO: this may be removed or called by a_Bw_free().
+  *      Currently is not called from anywhere.
  */
 void a_Nav_free(BrowserWindow *bw)
 {
@@ -53,6 +55,26 @@ int a_Nav_stack_ptr(BrowserWindow *bw)
 }
 
 /*
+ * Return the url index of i-th element in the stack. [-1 = Error]
+ */
+int a_Nav_get_uidx(BrowserWindow *bw, int i)
+{
+   nav_stack_item *nsi = dList_nth_data (bw->nav_stack, i);
+   return (nsi) ? nsi->url_idx : -1;
+}
+
+/*
+ * Return the url index of the top element in the stack.
+ */
+int a_Nav_get_top_uidx(BrowserWindow *bw)
+{
+   nav_stack_item *nsi;
+
+   nsi = dList_nth_data (bw->nav_stack, a_Nav_stack_size(bw) - 1);
+   return (nsi) ? nsi->url_idx : -1;
+}
+
+/*
  * Move the nav_stack pointer
  */
 static void Nav_stack_move_ptr(BrowserWindow *bw, int offset)
@@ -62,7 +84,7 @@ static void Nav_stack_move_ptr(BrowserWindow *bw, int offset)
    dReturn_if_fail (bw != NULL);
    if (offset != 0) {
       nptr = bw->nav_stack_ptr + offset;
-      dReturn_if_fail (nptr >= 0 && nptr < bw->nav_stack_size);
+      dReturn_if_fail (nptr >= 0 && nptr < a_Nav_stack_size(bw));
       bw->nav_stack_ptr = nptr;
    }
 }
@@ -72,39 +94,59 @@ static void Nav_stack_move_ptr(BrowserWindow *bw, int offset)
  */
 int a_Nav_stack_size(BrowserWindow *bw)
 {
-   return bw->nav_stack_size;
+   return dList_length(bw->nav_stack);
 }
 
 /*
- * Add an URL-index in the navigation stack.
+ * Add a nav_stack_item into the stack.
+ * If idx is not at the top, the stack is truncated at idx before adding.
  */
-static void Nav_stack_add(BrowserWindow *bw, int idx)
+static void Nav_stack_add(BrowserWindow *bw, int url_idx, int posx, int posy)
 {
+   int j;
+   void *data;
+   nav_stack_item *nsi;
+
    dReturn_if_fail (bw != NULL);
 
-   ++bw->nav_stack_ptr;
-   if (bw->nav_stack_ptr == bw->nav_stack_size) {
-      a_List_add(bw->nav_stack, bw->nav_stack_size, bw->nav_stack_size_max);
-      ++bw->nav_stack_size;
-   } else {
-      bw->nav_stack_size = bw->nav_stack_ptr + 1;
+   j = ++bw->nav_stack_ptr;
+   while (j < dList_length(bw->nav_stack)) {
+      data = dList_nth_data(bw->nav_stack, j);
+      dList_remove_fast (bw->nav_stack, data);
    }
-   bw->nav_stack[bw->nav_stack_ptr] = idx;
+   nsi = dNew(nav_stack_item, 1);
+   nsi->url_idx = url_idx;
+   nsi->posx = posx;
+   nsi->posy = posy;
+   dList_append (bw->nav_stack, nsi);
 }
 
 /*
- * Remove an URL-index from the navigation stack.
+ * Get the scrolling position of the current page.
  */
-static void Nav_stack_remove(BrowserWindow *bw, int idx)
+static void Nav_get_scroll_pos(BrowserWindow *bw, int *posx, int *posy)
 {
-   int sz = a_Nav_stack_size(bw);
+   nav_stack_item *nsi;
 
-   dReturn_if_fail (bw != NULL && idx >=0 && idx < sz);
+   if ((nsi = dList_nth_data (bw->nav_stack, a_Nav_stack_ptr(bw)))) {
+      *posx = nsi->posx;
+      *posy = nsi->posy;
+   } else {
+      *posx = *posy = 0;
+   }
+}
 
-   for (  ; idx < sz - 1; ++idx)
-      bw->nav_stack[idx] = bw->nav_stack[idx + 1];
-   if (bw->nav_stack_ptr == --bw->nav_stack_size)
-      --bw->nav_stack_ptr;
+/*
+ * Set the scrolling position of the current page.
+ */
+static void Nav_set_scroll_pos(BrowserWindow *bw, int idx, int posx, int posy)
+{
+   nav_stack_item *nsi;
+
+   if ((nsi = dList_nth_data (bw->nav_stack, idx))) {
+      nsi->posx = posx;
+      nsi->posy = posy;
+   }
 }
 
 /*
@@ -118,8 +160,11 @@ static void Nav_stack_clean(BrowserWindow *bw)
    dReturn_if_fail (bw != NULL);
 
    if ((i = a_Nav_stack_size(bw)) >= 2 &&
-       bw->nav_stack[i-2] == bw->nav_stack[i-1])
-         Nav_stack_remove(bw, i - 1);
+       NAV_UIDX(bw,i - 2) == NAV_UIDX(bw,i -1)) {
+      void *data = dList_nth_data (bw->nav_stack, i - 1);
+      dList_remove_fast (bw->nav_stack, data);
+      dFree(data);
+   }
 }
 
 
@@ -133,26 +178,23 @@ static void Nav_stack_clean(BrowserWindow *bw)
  */
 static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 {
-   DilloUrl *old_url = NULL;
+   DilloUrl *old_url;
    bool_t MustLoad;
-   int x, y, ClientKey;
+   int x, y, idx, ClientKey;
    DilloWeb *Web;
-   char *loc_text;
    bool_t ForceReload = (URL_FLAGS(url) & URL_E2EReload);
 
-   MSG("Nav_open_url: Url=>%s<\n", URL_STR_(url));
+   MSG("Nav_open_url: new url='%s'\n", URL_STR_(url));
 
    /* Get the url of the current page */
-   if (a_Nav_stack_ptr(bw) != -1)
-      old_url = a_History_get_url(NAV_TOP(bw));
-
-   /* Record current scrolling position
-    * (the strcmp check is necessary because of redirections) */
-   loc_text = a_UIcmd_get_location_text(bw);
-   if (old_url && !strcmp(URL_STR(old_url), loc_text)) {
+   idx = a_Nav_stack_ptr(bw);
+   old_url = a_History_get_url(idx);
+   /* Record current scrolling position */
+   if (old_url) {
       a_UIcmd_get_scroll_xy(bw, &x, &y);
-      _MSG("NAV: ScrollPosXY: x=%d y=%d\n",x,y);
-      a_Url_set_pos(old_url, x, y);
+      Nav_set_scroll_pos(bw, idx, x, y);
+      MSG("Nav_open_url: set scroll of '%s' to x=%d y=%d\n",
+          URL_STR(old_url), x, y);
    }
 
    /* Update navigation-stack-pointer (offset may be zero) */
@@ -164,7 +206,6 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
       MustLoad |= (a_Url_cmp(old_url, url) != 0);
       MustLoad |= strcmp(URL_STR(old_url), a_UIcmd_get_location_text(bw));
    }
-   dFree(loc_text);
 
    if (MustLoad) {
       a_Bw_stop_clients(bw, BW_Root + BW_Img);
@@ -181,13 +222,13 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
       }
    }
 
-   /* Jump to #anchor position */
-   if (URL_FRAGMENT_(url)) {
-      /* todo: push on stack */
-      char *pf = a_Url_decode_hex_str(URL_FRAGMENT_(url));
-      //a_Dw_render_layout_set_anchor(bw->render_layout, pf);
-      dFree(pf);
-   }
+   // /* Jump to #anchor position */
+   // if (URL_FRAGMENT_(url)) {
+   //    /* todo: push on stack */
+   //    char *pf = a_Url_decode_hex_str(URL_FRAGMENT_(url));
+   //    //a_Dw_render_layout_set_anchor(bw->render_layout, pf);
+   //    dFree(pf);
+   // }
 }
 
 /*
@@ -210,8 +251,9 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
  */
 void a_Nav_expect_done(BrowserWindow *bw)
 {
-   int idx;
+   int url_idx, posx, posy;
    DilloUrl *url;
+   char *f;
 
    dReturn_if_fail(bw != NULL);
 
@@ -219,15 +261,28 @@ void a_Nav_expect_done(BrowserWindow *bw)
       url = bw->nav_expect_url;
       /* unset E2EReload before adding this url to history */
       a_Url_set_flags(url, URL_FLAGS(url) & ~URL_E2EReload);
-      idx = a_History_add_url(url);
-      Nav_stack_add(bw, idx);
-
+      url_idx = a_History_add_url(url);
+      Nav_stack_add(bw, url_idx, 0, 0);
+      /* Scroll to the origin unless there's a fragment part */
+      f = a_Url_decode_hex_str(URL_FRAGMENT_(url));
+      if (!f) {
+         a_UIcmd_set_scroll_xy(bw, 0, 0);
+      } else {
+         a_UIcmd_set_scroll_by_fragment(bw, f);
+         dFree(f);
+      }
       a_Url_free(url);
       bw->nav_expect_url = NULL;
       bw->nav_expecting = FALSE;
+   } else {
+      /* Scroll to were we were in this page */
+      Nav_get_scroll_pos(bw, &posx, &posy);
+      a_UIcmd_set_scroll_xy(bw, posx, posy);
+      MSG("Nav: expect_done scrolling to x=%d y=%d\n", posx, posy);
    }
    Nav_stack_clean(bw);
    a_UIcmd_set_buttons_sens(bw);
+   _MSG("Nav: a_Nav_expect_done\n");
 }
 
 /*
@@ -281,7 +336,7 @@ void a_Nav_back(BrowserWindow *bw)
    a_Nav_cancel_expect(bw);
    if (--idx >= 0){
       a_UIcmd_set_msg(bw, "");
-      Nav_open_url(bw, a_History_get_url(NAV_IDX(bw,idx)), -1);
+      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), -1);
    }
 }
 
@@ -295,7 +350,7 @@ void a_Nav_forw(BrowserWindow *bw)
    a_Nav_cancel_expect(bw);
    if (++idx < a_Nav_stack_size(bw)) {
       a_UIcmd_set_msg(bw, "");
-      Nav_open_url(bw, a_History_get_url(NAV_IDX(bw,idx)), +1);
+      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), +1);
    }
 }
 
@@ -316,8 +371,8 @@ static void Nav_reload(BrowserWindow *bw)
 
    a_Nav_cancel_expect(bw);
    if (a_Nav_stack_size(bw)) {
-      url = a_History_get_url(NAV_TOP(bw));
-      ReqURL = a_Url_dup(a_History_get_url(NAV_TOP(bw)));
+      url = a_History_get_url(NAV_TOP_UIDX(bw));
+      ReqURL = a_Url_dup(a_History_get_url(NAV_TOP_UIDX(bw)));
       /* Let's make reload be end-to-end */
       a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_E2EReload);
       /* This is an explicit reload, so clear the SpamSafe flag */
@@ -338,7 +393,7 @@ void a_Nav_reload(BrowserWindow *bw)
 
    a_Nav_cancel_expect(bw);
    if (a_Nav_stack_size(bw)) {
-      url = a_History_get_url(NAV_TOP(bw));
+      url = a_History_get_url(NAV_TOP_UIDX(bw));
       if (URL_FLAGS(url) & URL_Post) {
          /* Attempt to repost data, let's confirm... */
          choice = a_Dialog_choice3("Repost form data?",
@@ -362,10 +417,10 @@ void a_Nav_jump(BrowserWindow *bw, int offset, int new_bw)
    int idx = a_Nav_stack_ptr(bw) + offset;
 
    if (new_bw) {
-      a_Nav_push_nw(bw, a_History_get_url(NAV_IDX(bw,idx)));
+      a_Nav_push_nw(bw, a_History_get_url(NAV_UIDX(bw,idx)));
    } else {
       a_Nav_cancel_expect(bw);
-      Nav_open_url(bw, a_History_get_url(NAV_IDX(bw,idx)), offset);
+      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), offset);
       a_UIcmd_set_buttons_sens(bw);
    }
 }

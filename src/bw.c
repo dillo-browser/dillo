@@ -50,10 +50,10 @@ BrowserWindow *a_Bw_new(int width, int height, uint32_t xid)
    bws[num_bws++] = bw;
 
    /* Initialize nav_stack */
-   bw->nav_stack_size = 0;
-   bw->nav_stack_size_max = 16;
-   bw->nav_stack = NULL;
+   bw->nav_stack = dList_new(8);
    bw->nav_stack_ptr = -1;
+
+   /* Init expect */
    bw->nav_expecting = FALSE;
    bw->nav_expect_url = NULL;
 
@@ -101,7 +101,10 @@ void a_Bw_free(BrowserWindow *bw)
             a_Url_free(dList_nth_data(bw->PageUrls, j));
          dList_free(bw->PageUrls);
 
-         dFree(bw->nav_stack);
+         for (j = 0; j < dList_length(bw->nav_stack); ++j)
+            dFree(dList_nth_data(bw->nav_stack, j));
+         dList_free(bw->nav_stack);
+
          dStr_free(bw->page_bugs, 1);
          dFree(bw);
          break;

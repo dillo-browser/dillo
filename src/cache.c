@@ -831,7 +831,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
 
    /* Trigger cleanup when there're no cache clients */
    if (dList_length(ClientQueue) == 0) {
-      MSG("  a_Dicache_cleanup()\n");
+      _MSG("  a_Dicache_cleanup()\n");
       a_Dicache_cleanup();
    }
 

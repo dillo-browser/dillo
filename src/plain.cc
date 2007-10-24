@@ -73,7 +73,7 @@ static void Plain_callback(int Op, CacheClient_t *Client);
 //                         BrowserWindow *bw)
 //{
 //   if (event->button == 3) {
-//      a_Menu_popup_set_url(bw, a_History_get_url(NAV_TOP(bw)));
+//      a_Menu_popup_set_url(bw, a_History_get_url(NAV_TOP_UIDX(bw)));
 //      gtk_menu_popup(GTK_MENU(bw->menu_popup.over_page), NULL, NULL,
 //                     NULL, NULL, event->button, event->time);
 //      return TRUE;

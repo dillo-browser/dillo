@@ -231,7 +231,7 @@ bool DilloHtmlLB::HtmlLinkReceiver::enter (Widget *widget, int link,
 {
    BrowserWindow *bw = this->lb->bw;
 
-   MSG(" ** ");
+   _MSG(" ** ");
    if (link == -1 && x == -1 && y == -1) {
       _MSG(" Link  LEAVE  notify...\n");
       a_UIcmd_set_msg(bw, "");
@@ -537,7 +537,8 @@ static void Html_set_top_font(DilloHtml *html, const char *name, int size,
  * Evaluates the ALIGN attribute (left|center|right|justify) and
  * sets the style at the top of the stack.
  */
-static void Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_set_align_attr(DilloHtml *html, const char *tag, 
+                                    int tagsize)
 {
    const char *align, *charattr;
 
@@ -1034,7 +1035,8 @@ static char *
 /*
  * Parse spaces
  */
-static void Html_process_space(DilloHtml *html, const char *space, int spacesize)
+static void Html_process_space(DilloHtml *html, const char *space, 
+                               int spacesize)
 {
    int i, offset;
    DilloHtmlParseMode parse_mode = S_TOP(html)->parse_mode;
@@ -1592,7 +1594,7 @@ static void Html_tag_close_title(DilloHtml *html, int TagIdx)
    if (html->InFlags & IN_HEAD) {
       /* title is only valid inside HEAD */
       a_UIcmd_set_page_title(html->linkblock->bw, html->Stash->str);
-      a_History_set_title(NAV_TOP(html->linkblock->bw), html->Stash->str);
+      a_History_set_title(NAV_TOP_UIDX(html->linkblock->bw),html->Stash->str);
    } else {
       MSG_HTML("the TITLE element must be inside the HEAD section\n");
    }
@@ -1829,7 +1831,8 @@ static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 /*
  * used by <TD> and <TH>
  */
-static void Html_tag_open_table_cell(DilloHtml *html, const char *tag, int tagsize,
+static void Html_tag_open_table_cell(DilloHtml *html,
+                                     const char *tag, int tagsize,
                                      TextAlignType text_align)
 {
 #ifdef USE_TABLES
@@ -2091,7 +2094,8 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
  * todo: This is just a temporary fix while real frame support
  *       isn't finished. Imitates lynx/w3m's frames.
  */
-static void Html_tag_open_frameset (DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_frameset (DilloHtml *html,
+                                    const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    DW2TB(html->dw)->addText(dStrdup("--FRAME--"),
@@ -2134,7 +2138,8 @@ static void Html_tag_close_h(DilloHtml *html, int TagIdx)
 /*
  * <BIG> | <SMALL>
  */
-static void Html_tag_open_big_small(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_big_small(DilloHtml *html,
+                                    const char *tag, int tagsize)
 {
    int level;
 
@@ -2343,7 +2348,8 @@ static void Html_tag_open_center(DilloHtml *html, const char *tag, int tagsize)
 /*
  * <ADDRESS>
  */
-static void Html_tag_open_address(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_address(DilloHtml *html,
+                                  const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    Html_set_top_font(html, NULL, 0, 2, 2);
@@ -2768,7 +2774,8 @@ static void Html_tag_open_strike(DilloHtml *html, const char *tag, int tagsize)
 /*
  * <BLOCKQUOTE>
  */
-static void Html_tag_open_blockquote(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_blockquote(DilloHtml *html, 
+                                     const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    Html_add_indented(html, 40, 40, 9);
@@ -3074,8 +3081,8 @@ static void Html_tag_close_pre(DilloHtml *html, int TagIdx)
  */
 static int Html_tag_pre_excludes(int tag_idx)
 {
-   const char *es_set[] = {"img", "object", "applet", "big", "small", "sub", "sup",
-                     "font", "basefont", NULL};
+   const char *es_set[] = {"img", "object", "applet", "big", "small", "sub",
+                           "sup", "font", "basefont", NULL};
    static int ei_set[10], i;
 
    /* initialize array */
@@ -3826,7 +3833,8 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
  * The ISINDEX tag is just a deprecated form of <INPUT type=text> with
  * implied FORM, afaics.
  */
-static void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_isindex(DilloHtml *html,
+                                  const char *tag, int tagsize)
 {
 // // AL
 // DilloHtmlForm *form;
@@ -3920,7 +3928,8 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
  * The textarea tag
  * (todo: It doesn't support wrapping).
  */
-static void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_textarea(DilloHtml *html,
+                                   const char *tag, int tagsize)
 {
 // // AL
 // DilloHtmlLB *html_lb;

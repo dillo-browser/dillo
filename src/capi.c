@@ -216,7 +216,7 @@ static int Capi_dpi_verify_request(DilloWeb *web)
        (strchr(URL_STR(web->url), '?') || URL_DATA_(web->url))) {
       /* only allow dpi requests from dpi-generated urls */
       if (a_Nav_stack_size(web->bw)) {
-         referer = a_History_get_url(NAV_TOP(web->bw));
+         referer = a_History_get_url(NAV_TOP_UIDX(web->bw));
          if (dStrcasecmp(URL_SCHEME(referer), "dpi") == 0) {
             allow = TRUE;
          }

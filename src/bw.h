@@ -39,14 +39,12 @@ struct _BrowserWindow
    Dlist *PageUrls;
 
    /* The navigation stack (holds indexes to history list) */
-   int *nav_stack;
-   int nav_stack_size;       /* [1 based] */
-   int nav_stack_size_max;
+   Dlist *nav_stack;
    /* 'nav_stack_ptr' refers to what's being displayed */
-   int nav_stack_ptr;        /* [0 based] */
+   int nav_stack_ptr;        /* [0 based; -1 = empty] */
    /* When the user clicks a link, the URL isn't pushed directly to history;
     * nav_expect_url holds it until the first answer-bytes are got. Only then
-    * it is sent to history and referenced in 'nav_stack[++nav_stack_ptr]' */
+    * it is sent to history and referenced at the top of nav_stack */
    DilloUrl *nav_expect_url;
    /* 'nav_expecting' is true if the last URL is being loaded for
     * the first time and has not gotten the dw yet. */
