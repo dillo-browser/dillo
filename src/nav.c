@@ -188,12 +188,13 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 
    /* Get the url of the current page */
    idx = a_Nav_stack_ptr(bw);
-   old_url = a_History_get_url(idx);
+   old_url = a_History_get_url(NAV_UIDX(bw, idx));
+   MSG("Nav_open_url:  idx=%d old_url='%s'\n", idx, URL_STR(old_url));
    /* Record current scrolling position */
    if (old_url) {
       a_UIcmd_get_scroll_xy(bw, &x, &y);
       Nav_set_scroll_pos(bw, idx, x, y);
-      MSG("Nav_open_url: set scroll of '%s' to x=%d y=%d\n",
+      MSG("Nav_open_url:  saved scroll of '%s' at x=%d y=%d\n",
           URL_STR(old_url), x, y);
    }
 
