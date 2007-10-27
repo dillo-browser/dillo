@@ -39,6 +39,7 @@ dillo-fltk2
  - Enabled clicking over image links.
  - Improved notification upon leaving links.
  - Implemented image-link URL showing in status bar.
+ - Added missing size-parsing for the <hr> element.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
    Patch: place, Jorge Arellano

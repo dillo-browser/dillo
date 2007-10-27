@@ -2973,10 +2973,12 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
    int32_t size = 0;
   
-   width_ptr = Html_get_attr_wdef(html, tag, tagsize, "width", "100%");
-  
    style_attrs = *S_TOP(html)->style;
-  
+
+   width_ptr = Html_get_attr_wdef(html, tag, tagsize, "width", "100%");
+   style_attrs.width = Html_parse_length (html, width_ptr);
+   dFree(width_ptr);
+
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "size")))
       size = strtol(attrbuf, NULL, 10);
   
@@ -3009,17 +3011,16 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.borderWidth.left = (size + 1) / 2;
    style_attrs.borderWidth.bottom =
       style_attrs.borderWidth.right = size / 2;
-  style = Style::create (HT2LT(html), &style_attrs);
+   style = Style::create (HT2LT(html), &style_attrs);
 
    DW2TB(html->dw)->addParbreak (5, S_TOP(html)->style);
    hruler = new Ruler();
-  hruler->setStyle (style);
-  DW2TB(html->dw)->addWidget (hruler, style);
-  style->unref ();
+   hruler->setStyle (style);
+   DW2TB(html->dw)->addWidget (hruler, style);
+   style->unref ();
 
    //DW2TB(html->dw)->addWidget (hruler, S_TOP(html)->style);
    DW2TB(html->dw)->addParbreak (5, S_TOP(html)->style);
-   dFree(width_ptr);
 }
 
 /*
