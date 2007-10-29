@@ -147,7 +147,8 @@ int global_event_handler(int e, Window *win)
          }
       }
 
-      if (event_state(ALT) && event_key() == 'q') {
+      _MSG("global_event_handler: Alt_R=%d\n", event_key_state(RightAltKey));
+      if (event_key_state(LeftAltKey) && event_key() == 'q') {
          a_UIcmd_close_all_bw();
       }
    }
