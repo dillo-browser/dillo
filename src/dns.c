@@ -316,7 +316,7 @@ static void Dns_blocking_server(void)
 {
    int channel = 0;
    struct hostent *host = NULL;
-   dList *hosts = dList_new(2);
+   Dlist *hosts = dList_new(2);
 #ifdef LIBC5
    int h_err;
 #endif
