@@ -320,7 +320,7 @@ static int Http_connect_socket(ChainLink *Info)
       break;
    }
 #endif
-   }
+   }/*switch*/
 
    MSG_BW(S->web, 1, "Contacting host...");
    status = connect(S->SockFD, (struct sockaddr *)&name, socket_len);

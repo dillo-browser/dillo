@@ -18,6 +18,7 @@
  * remains with the caller.
  */
 
+#include "msg.h"
 #include "klist.h"
 
 
@@ -27,6 +28,14 @@
 static int Klist_node_by_key_cmp(const void *Node, const void *key)
 {
    return ((KlistNode_t *)Node)->Key - VOIDP2INT(key);
+}
+
+/*
+ * Compare function for searching data by node
+ */
+static int Klist_node_by_node_cmp(const void *Node1, const void *Node2)
+{
+   return ((KlistNode_t *)Node1)->Key - ((KlistNode_t *)Node2)->Key;
 }
 
 /*
@@ -68,7 +77,7 @@ int a_Klist_insert(Klist_t **Klist, void *Data)
    Node = dNew(KlistNode_t, 1);
    Node->Key  = (*Klist)->Counter;
    Node->Data = Data;
-   dList_insert_sorted((*Klist)->List, Node, Klist_node_by_key_cmp);
+   dList_insert_sorted((*Klist)->List, Node, Klist_node_by_node_cmp);
    return (*Klist)->Counter;
 }
 

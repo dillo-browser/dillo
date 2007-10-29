@@ -33,6 +33,7 @@ dillo-fltk2
  - Fixed the problem of scrolling position (remember position in a page).
  - Implemented a new scheme of scroll-position remembering. This is one per
    visited page intead of one per url (this is more standard).
+ - Fixed a subtle bug in klist that was affecting IO.
    Patches: Jorge Arellano
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color and geometry in preferences.

@@ -94,6 +94,8 @@ static void IO_ins(IOData_t *io)
    if (io->Key == 0) {
       io->Key = a_Klist_insert(&ValidIOs, io);
    }
+   _MSG("IO_ins: io->Key=%d, Klist_length=%d\n",
+       io->Key, a_Klist_length(ValidIOs));
 }
 
 /*
@@ -298,7 +300,7 @@ static void IO_submit(IOData_t *r_io)
    IO_ins(r_io);
 
    _MSG("IO_submit:: (%s) FD = %d\n",
-        (io->Op == IORead) ? "IORead" : "IOWrite", io->FD);
+        (r_io->Op == IORead) ? "IORead" : "IOWrite", r_io->FD);
 
    /* Set FD to background and to close on exec. */
    fcntl(r_io->FD, F_SETFL, O_NONBLOCK | fcntl(r_io->FD, F_GETFL));
