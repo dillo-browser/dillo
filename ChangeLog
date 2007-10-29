@@ -40,6 +40,10 @@ dillo-fltk2
  - Improved notification upon leaving links.
  - Implemented image-link URL showing in status bar.
  - Added missing size-parsing for the <hr> element.
+ - Hooked "Activate" to the form_receiver.
+ - Connected the plain page context menu.
+ - Added code for the image menu (not hooked yet though).
+ - Added a image-loading toggle button to the UI (not functional yet).
    Patches: place
 +- Fixed a problem with locally-installed dpis.
    Patch: place, Jorge Arellano

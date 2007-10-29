@@ -2483,7 +2483,6 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 
    textblock = DW2TB(html->dw);
 
-
    usemap_url = NULL;
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "usemap")))
       /* todo: usemap URLs outside of the document are not used. */
@@ -3789,6 +3788,7 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
        //HT2LT(html)->getResourceFactory()->createEntryResource (15, false);
          HT2LT(html)->getResourceFactory()->createEntryResource (10, false);
       widget = embed = new Embed (entryResource);
+      entryResource->connectActivate (form->form_receiver);
       init_str = (value) ? value : NULL;
    } else {
       /* Unknown input type */

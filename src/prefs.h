@@ -36,6 +36,7 @@ typedef enum {
    DRC_TOKEN_HOME,
    DRC_TOKEN_LIMIT_TEXT_WIDTH,
    DRC_TOKEN_LINK_COLOR,
+   DRC_TOKEN_LOAD_IMAGES,
    DRC_TOKEN_NOPROXY,
    DRC_TOKEN_PANEL_SIZE,
    DRC_TOKEN_PROXY,
@@ -107,6 +108,7 @@ struct _DilloPrefs {
    bool_t show_search;
    bool_t show_progress_box;
    bool_t fullwindow_start;
+   bool_t load_images;
    bool_t transient_dialogs;
    char *vw_fontname;
    char *fw_fontname;

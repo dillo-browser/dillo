@@ -307,6 +307,19 @@ void bugmeter_cb(Widget *w, void *data)
 }
 
 /*
+ * Callback for the image loading button.
+ */
+void imageload_cb(Widget *w, void *data)
+{
+   int k = event_key();
+   if (k && k <= 7)
+      MSG("[ImageLoad], mouse button %d was pressed\n", k);
+   if (k == 1) {
+      ((UI*)data)->imageload_toggle();
+   }
+}
+
+/*
  * File menu item callback.
  */
 void menu_cb(Widget* w, void*)
@@ -610,14 +623,29 @@ UI::UI(int win_w, int win_h, const char* label) :
      StatusPanel = new Group(0, win_h-s_h, win_w, s_h, 0);
      StatusPanel->begin();
       // Status box
+      int il_w = 16;
       int bm_w = 16;
-      Status = new Output(0, 0, win_w-bm_w, s_h, 0);
+      Status = new Output(0, 0, win_w-bm_w-il_w, s_h, 0);
       Status->value("");
       //Status->box(UP_BOX);
       Status->box(THIN_DOWN_BOX);
       Status->clear_click_to_focus();
       Status->clear_tab_to_focus();
       //Status->throw_focus();
+
+      // Image loading indicator
+      ImageLoad = new HighlightButton(win_w-il_w-bm_w,0,il_w,s_h,0);
+      ImgImageLoadOn = new xpmImage(imgload_on_xpm);
+      ImgImageLoadOff = new xpmImage(imgload_off_xpm);
+      if (prefs.load_images) {
+         ImageLoad->image(ImgImageLoadOn);
+      } else {
+         ImageLoad->image(ImgImageLoadOff);
+      }
+      ImageLoad->box(THIN_DOWN_BOX);
+      ImageLoad->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
+      ImageLoad->tooltip("Click me to toggle image loading.");
+      ImageLoad->callback(imageload_cb, (void *)this);
 
       // Bug Meter
       BugMeter = new HighlightButton(win_w-bm_w,0,bm_w,s_h,0);
@@ -764,7 +792,9 @@ void UI::set_bug_prog(int n_bug)
       BugMeter->redraw_label();
       new_w = strlen(str)*8 + 20;
    }
-   Status->resize(0,0,StatusPanel->w()-new_w,Status->h());
+   Status->resize(0,0,StatusPanel->w()-ImageLoad->w()-new_w,Status->h());
+   ImageLoad->resize(StatusPanel->w()-ImageLoad->w()-new_w, 0, ImageLoad->w(),
+                     ImageLoad->h());
    BugMeter->resize(StatusPanel->w()-new_w, 0, new_w, BugMeter->h());
    StatusPanel->init_sizes();
 }
@@ -850,6 +880,19 @@ void UI::fullscreen_cb_i()
       TopGroup->init_sizes();
    }
 #endif
+}
+
+/*
+ * Toggle image loading
+ */
+void UI::imageload_toggle()
+{
+   prefs.load_images = !prefs.load_images;
+   if (prefs.load_images) {
+      ImageLoad->image(ImgImageLoadOn);
+   } else {
+      ImageLoad->image(ImgImageLoadOff);
+   }
 }
 
 /*

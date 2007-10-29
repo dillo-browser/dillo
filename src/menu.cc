@@ -18,6 +18,7 @@
 #include <fltk/Item.h>
 #include <fltk/Divider.h>
 
+#include "msg.h"
 #include "menu.hh"
 #include "uicmd.hh"
 #include "history.h"
@@ -68,9 +69,27 @@ void NewItem::draw() {
 
 
 //--------------------------------------------------------------------------
-static void Menu_link_cb(Widget* )
+static void Menu_unimplemented_cb(Widget*)
 {
-   printf("Menu_link_cb: click! :-)\n");
+   MSG("Menu_unimplemented_cb: click! :-)\n");
+}
+
+static void Menu_link_cb(Widget*, void *user_data)
+{
+   DilloUrl *url = (DilloUrl *) user_data ;
+   MSG("Menu_link_cb: click! :-)\n");
+
+   if (url)
+      a_Menu_link_popup(popup_bw, url);
+}
+
+/* 
+ * Open URL
+ */
+static void Menu_open_url_cb(Widget* )
+{
+   MSG("Open URL cb: click! :-)\n");
+   a_UIcmd_open_url(popup_bw, popup_url);
 }
 
 /* 
@@ -78,7 +97,7 @@ static void Menu_link_cb(Widget* )
  */
 static void Menu_open_url_nw_cb(Widget* )
 {
-   printf("Open URL in new window cb: click! :-)\n");
+   MSG("Open URL in new window cb: click! :-)\n");
    a_UIcmd_open_url_nw(popup_bw, popup_url);
 }
 
@@ -185,7 +204,8 @@ static void Menu_history_cb(Widget *wid, void *data)
 /*
  * Page popup menu (construction & popup)
  */
-void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url, const char *bugs_txt)
+void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url, 
+                       const char *bugs_txt)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
@@ -251,7 +271,7 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
        i = new Item("Bookmark this Link");
        i->callback(Menu_add_bookmark_cb);
        i = new Item("Copy Link location");
-       i->callback(Menu_link_cb);
+       i->callback(Menu_unimplemented_cb);
        i->deactivate();
        new Divider();    
        i = new Item("Save Link As...");
@@ -261,6 +281,58 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
       pm->end();
    }
 
+   // Make the popup a child of the calling UI object
+   ((Group *)bw->ui)->add(pm);
+
+   pm->popup();
+}
+
+/*
+ * Image popup menu (construction & popup)
+ */
+void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
+                        DilloUrl *link_url)
+{
+   // One menu for every browser window
+   static PopupMenu *pm = 0;
+   Widget *link_menuitem;
+
+   popup_bw = bw;
+   popup_url = url;
+   
+   if (!pm) {
+      Item *i;
+      pm = new PopupMenu(0,0,0,0,"&IMAGE OPTIONS");
+      pm->begin();
+       i = new Item("Isolate Image");                     // 0
+       i->callback(Menu_open_url_cb);
+       i = new Item("Open Image in New Window");          // 1
+       i->callback(Menu_open_url_nw_cb);
+       i = new Item("Bookmark this Image");               // 2
+       i->callback(Menu_add_bookmark_cb);
+       i = new Item("Copy Image location");               // 3
+       i->callback(Menu_unimplemented_cb);
+       i->deactivate();
+       new Divider();                                     // 4
+       i = new Item("Save Image As...");                  // 5
+       i->callback(Menu_save_link_cb);
+       new Divider();                                     // 6
+       i = new Item("Link menu");                         // 7
+       i->callback(Menu_link_cb);
+
+      pm->type(PopupMenu::POPUP123);
+      pm->end();
+   }
+
+   link_menuitem = pm->child(7);                          // 7
+
+   if (link_url) {
+      link_menuitem->user_data(link_url);
+      link_menuitem->activate();
+   } else {
+      link_menuitem->deactivate();
+   }
+ 
    // Make the popup a child of the calling UI object
    ((Group *)bw->ui)->add(pm);
 

@@ -181,6 +181,14 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
 /*
  * Open a new URL in the given browser window
  */
+void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
+{
+   a_Nav_push(bw, url);
+}
+
+/*
+ * Open a new URL in the given browser window
+ */
 void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
 {
    a_Nav_push_nw(bw, url);
@@ -446,6 +454,14 @@ void a_UIcmd_page_popup(void *vbw, const DilloUrl *url, const char *bugs_txt)
 void a_UIcmd_link_popup(void *vbw, const DilloUrl *url)
 {
    a_Menu_link_popup((BrowserWindow*)vbw, url);
+}
+
+/*
+ * Pop up the image menu
+ */
+void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, DilloUrl *link_url)
+{
+   a_Menu_image_popup((BrowserWindow*)vbw, url, link_url);
 }
 
 /*

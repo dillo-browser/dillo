@@ -33,12 +33,33 @@
 using namespace dw;
 using namespace dw::core;
 
+typedef struct _DilloPlainED DilloPlainED;
+
+struct _DilloPlainED {
+   class PlainEventReceiver: public dw::core::Widget::EventReceiver
+   {
+   private:
+      DilloPlainED *ed;
+
+   public:
+      inline PlainEventReceiver (DilloPlainED *ed) { this->ed = ed; }
+
+      bool buttonPress(dw::core::Widget *widget, dw::core::EventButton *event);
+   };
+
+   // Since DilloPlain is a struct, not a class, a simple
+   // "PlainEventReceiver eventReceiver" (see signal documentation) would not
+   // work, therefore the pointer.
+   PlainEventReceiver *eventReceiver;
+
+   BrowserWindow *bw;
+   DilloUrl *url;
+};
 
 typedef struct _DilloPlain {
-   //DwWidget *dw;
    Widget *dw;
+   DilloPlainED *eventdata;
    size_t Start_Ofs;    /* Offset of where to start reading next */
-   //DwStyle *style;
    style::Style *widgetStyle;
    BrowserWindow *bw;
    int state;
@@ -64,32 +85,52 @@ void *a_Plain_text(const char *type, void *P, CA_Callback_t *Call,void **Data);
 static void Plain_write(DilloPlain *plain, void *Buf, uint_t BufSize, int Eof);
 static void Plain_callback(int Op, CacheClient_t *Client);
 
+/*
+ * Create the plain event-data structure (analog to linkblock in HTML).
+ */
+static DilloPlainED *Plain_ed_new(BrowserWindow *bw, const DilloUrl *url)
+{
+   DilloPlainED *plain_ed = dNew(DilloPlainED, 1);
 
+   plain_ed->eventReceiver = new DilloPlainED::PlainEventReceiver (plain_ed);
+   plain_ed->bw = bw;
+   plain_ed->url = a_Url_dup(url);
+
+   return plain_ed;
+}
 
 /*
- * Popup the page menu ("button_press_event" callback of the viewport)
+ * Free memory used by the eventdata structure
  */
-//static int Plain_page_menu(GtkWidget *viewport, GdkEventButton *event,
-//                         BrowserWindow *bw)
-//{
-//   if (event->button == 3) {
-//      a_Menu_popup_set_url(bw, a_History_get_url(NAV_TOP_UIDX(bw)));
-//      gtk_menu_popup(GTK_MENU(bw->menu_popup.over_page), NULL, NULL,
-//                     NULL, NULL, event->button, event->time);
-//      return TRUE;
-//   } else
-//      return FALSE;
-//}
+static void Plain_ed_free(void *ed)
+{
+   DilloPlainED *plain_ed = (DilloPlainED *)ed;
+
+   delete plain_ed->eventReceiver;
+   a_Url_free(plain_ed->url);
+
+   dFree(plain_ed);
+}
+
+/*
+ * Receive the mouse button press event
+ */
+bool DilloPlainED::PlainEventReceiver::buttonPress (Widget *widget,
+                                                    EventButton *event)
+{
+   if (event->button == 3) {
+      a_UIcmd_page_popup(ed->bw, ed->url, NULL);
+      return true;
+   }
+   return false;
+}
 
 /*
  * Create and initialize a new DilloPlain structure.
  */
-static DilloPlain *Plain_new(BrowserWindow *bw)
+static DilloPlain *Plain_new(BrowserWindow *bw, const DilloUrl *url)
 {
    DilloPlain *plain;
-   //DwPage *page;
-   //DwStyle style_attrs;
-   //DwStyleFont font_attrs;
    Textblock *textblock;
    style::StyleAttrs styleAttrs;
    style::FontAttrs fontAttrs;
@@ -98,28 +139,18 @@ static DilloPlain *Plain_new(BrowserWindow *bw)
    plain->state = ST_SeekingEol;
    plain->Start_Ofs = 0;
    plain->bw = bw;
-   //plain->dw = a_Dw_page_new();
-   //page = (DwPage *) plain->dw;
    textblock = new Textblock (false);
    plain->dw = (Widget*) textblock;
 
+   // BUG: event receiver is never freed.
+   plain->eventdata = Plain_ed_new(bw, url);
+
    /* Create the font and attribute for the page. */
-   //font_attrs.name = prefs.fw_fontname;
-   //font_attrs.size = rint(12.0 * prefs.font_factor);
-   //font_attrs.weight = 400;
-   //font_attrs.style = DW_STYLE_FONT_STYLE_NORMAL;
    fontAttrs.name = "Courier";
    fontAttrs.size = (int) rint(12.0 * prefs.font_factor);
    fontAttrs.weight = 400;
    fontAttrs.style = style::FONT_STYLE_NORMAL;
 
-   //a_Dw_style_init_values (&style_attrs);
-   //style_attrs.font =
-   //   a_Dw_style_font_new (plain->bw->render_layout, &font_attrs);
-   //style_attrs.color =
-   //   a_Dw_style_color_new (plain->bw->render_layout, prefs.text_color);
-   //plain->style = a_Dw_style_new (plain->bw->render_layout, &style_attrs);
-   //a_Dw_widget_set_style (plain->dw, plain->style);
    Layout *layout = (Layout*)bw->render_layout;
    styleAttrs.initValues ();
    styleAttrs.margin.setVal (5);
@@ -130,10 +161,7 @@ static DilloPlain *Plain_new(BrowserWindow *bw)
    plain->widgetStyle = style::Style::create (layout, &styleAttrs);
 
    /* The context menu */
-// gtk_signal_connect_while_alive
-//    (GTK_OBJECT(GTK_BIN(plain->bw->render_main_scroll)->child),
-//     "button_press_event", GTK_SIGNAL_FUNC(Plain_page_menu),
-//     plain->bw, GTK_OBJECT (page));
+   textblock->connectEvent (plain->eventdata->eventReceiver);
 
    return plain;
 }
@@ -144,7 +172,7 @@ static DilloPlain *Plain_new(BrowserWindow *bw)
 void *a_Plain_text(const char *type, void *P, CA_Callback_t *Call, void **Data)
 {
    DilloWeb *web = (DilloWeb*)P;
-   DilloPlain *plain = Plain_new(web->bw);
+   DilloPlain *plain = Plain_new(web->bw, web->url);
 
    *Call = (CA_Callback_t)Plain_callback;
    *Data = (void*)plain;
@@ -169,7 +197,6 @@ static void Plain_callback(int Op, CacheClient_t *Client)
       /* set progress bar insensitive */
       a_UIcmd_set_page_prog(plain->bw, 0, 0);
 
-      //a_Dw_style_unref (plain->bw->render_layout, plain->style);
       plain->widgetStyle->unref();
       dFree(plain);
    } else {
@@ -185,7 +212,6 @@ static void Plain_callback(int Op, CacheClient_t *Client)
  */
 static void Plain_write(DilloPlain *plain, void *Buf, uint_t BufSize, int Eof)
 {
-   //DwPage *page = (DwPage *)plain->dw;
    Textblock *textblock = (Textblock*)plain->dw;
    char *Start;
    char *data;
@@ -205,8 +231,6 @@ static void Plain_write(DilloPlain *plain, void *Buf, uint_t BufSize, int Eof)
          break;
       case ST_Eol:
          data = dStrndup(Start + i - len, len);
-         //a_Dw_page_add_text(page, a_Misc_expand_tabs(data), plain->style);
-         //a_Dw_page_add_parbreak(page, 0, plain->style);
          textblock->addText(a_Misc_expand_tabs(data), plain->widgetStyle);
          textblock->addParbreak(0, plain->widgetStyle);
          dFree(data);
@@ -220,8 +244,6 @@ static void Plain_write(DilloPlain *plain, void *Buf, uint_t BufSize, int Eof)
    plain->Start_Ofs += i - len;
    if (Eof && len) {
       data = dStrndup(Start + i - len, len);
-      //a_Dw_page_add_text(page, a_Misc_expand_tabs(data), plain->style);
-      //a_Dw_page_add_parbreak(page, 0, plain->style);
       textblock->addText(a_Misc_expand_tabs(data), plain->widgetStyle);
       textblock->addParbreak(0, plain->widgetStyle);
       dFree(data);

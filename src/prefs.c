@@ -63,6 +63,7 @@ SymNode_t symbols[] = {
    { "http_proxyuser", DRC_TOKEN_PROXYUSER },
    { "limit_text_width", DRC_TOKEN_LIMIT_TEXT_WIDTH },
    { "link_color", DRC_TOKEN_LINK_COLOR },
+   { "load_images", DRC_TOKEN_LOAD_IMAGES },
    { "no_proxy", DRC_TOKEN_NOPROXY },
    { "panel_size", DRC_TOKEN_PANEL_SIZE },
    { "search_url", DRC_TOKEN_SEARCH_URL },
@@ -282,6 +283,9 @@ static int Prefs_parse_pair(char *name, char *value)
    case DRC_TOKEN_FULLWINDOW_START:
       prefs.fullwindow_start = (strcmp(value, "YES") == 0);
       break;
+   case DRC_TOKEN_LOAD_IMAGES:
+      prefs.load_images = (strcmp(value, "YES") == 0);
+      break;
    case DRC_TOKEN_TRANSIENT_DIALOGS:
       prefs.transient_dialogs = (strcmp(value, "YES") == 0);
       break;
@@ -397,6 +401,7 @@ void a_Prefs_init(void)
    prefs.show_search=TRUE;
    prefs.show_progress_box=TRUE;
    prefs.fullwindow_start=FALSE;
+   prefs.load_images=TRUE;
    prefs.transient_dialogs=FALSE;
    prefs.vw_fontname = dStrdup("helvetica");
    prefs.fw_fontname = dStrdup("courier");

@@ -9,11 +9,12 @@ namespace form {
 /**
  * \brief Handles HTML form data.
  *
- * Add resources by calling the respective add...Resource method. Furtermore,
- * this class impelements dw::core::ui::ButtonResource::ClickedReceiver, the
- * form data is printed to stdout, when the "clicked" signal is received.
+ * Add resources by calling the respective add...Resource method. Furthermore,
+ * this class implements dw::core::ui::ButtonResource::ClickedReceiver and
+ * dw::core::ui::Resource::ActivateReceiver.
  */
-class Form: public dw::core::ui::ButtonResource::ClickedReceiver
+class Form: public dw::core::ui::ButtonResource::ClickedReceiver,
+            public dw::core::ui::Resource::ActivateReceiver
 {
 private:
    /**
@@ -79,6 +80,7 @@ public:
    Form (void *p);
    ~Form ();
    void clicked (dw::core::ui::ButtonResource *resource, int buttonNo);
+   void activate (dw::core::ui::Resource *resource);
 
 };
 

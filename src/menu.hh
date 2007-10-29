@@ -10,6 +10,8 @@ extern "C" {
 void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
                        const char *bugs_txt);
 void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url);
+void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
+                        DilloUrl *link_url);
 void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url);
 void a_Menu_history_popup(BrowserWindow *bw, int direction);
 

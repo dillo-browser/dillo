@@ -34,12 +34,12 @@ typedef enum {
 class UI : public fltk::Window {
    Group *TopGroup;
    Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks,
-          *Clear, *Search, *FullScreen, *BugMeter;
+          *Clear, *Search, *FullScreen, *ImageLoad, *BugMeter;
    Input  *Location;
    Widget *PProg, *IProg;
    Image *ImgLeftIns, *ImgLeftSens, *ImgRightIns, *ImgRightSens,
          *ImgStopIns, *ImgStopSens, *ImgFullScreenOn, *ImgFullScreenOff,
-         *ImgMeterOK, *ImgMeterBug;
+         *ImgImageLoadOn, *ImgImageLoadOff, *ImgMeterOK, *ImgMeterBug;
    Group *Panel, *StatusPanel;
    Widget *Main;
    Output *Status;
@@ -104,6 +104,7 @@ public:
    void color_change_cb_i();
    void toggle_cb_i();
    void fullscreen_cb_i();
+   void imageload_toggle();
 };
 
 #endif // __UI_HH__

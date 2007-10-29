@@ -95,4 +95,9 @@ void Form::clicked (ButtonResource *resource, int buttonNo)
    a_Html_form_event_handler(ext_data, this, (Resource*)resource);
 }
 
+void Form::activate (Resource *resource)
+{
+   a_Html_form_event_handler(ext_data, this, (Resource*)resource);
+}
+
 } // namespace form
