@@ -105,6 +105,8 @@ static void Html_add_widget(DilloHtml *html, Widget *widget,
                             char *width_str, char *height_str,
                             StyleAttrs *style_attrs);
 static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof);
+static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
+                            DilloImage *image);
 static void Html_write(DilloHtml *html, char *Buf, int BufSize, int Eof);
 static void Html_close(DilloHtml *html, int ClientKey);
 static void Html_callback(int Op, CacheClient_t *Client);
@@ -226,7 +228,20 @@ void *a_Html_text(const char *Type, void *P, CA_Callback_t *Call, void **Data)
    return (void*) html->dw;
 }
 
-bool DilloHtmlLB::HtmlLinkReceiver::enter (Widget *widget, int link,
+static void Html_load_images (DilloHtmlLB *lb, const DilloUrl *pattern)
+{
+   for (int i = 0; i < lb->images->size(); i++) {
+      if (lb->images->get(i)->image) {
+         if ((!pattern) || (!a_Url_cmp(lb->images->get(i)->url, pattern))) {
+            Html_load_image(lb->bw, lb->images->get(i)->url,
+                            lb->images->get(i)->image);
+            lb->images->get(i)->image = NULL;  // web owns it now
+         }
+      }
+   }
+}
+
+bool DilloHtmlLB::HtmlLinkReceiver::enter (Widget *widget, int link, int img,
                                            int x, int y)
 {
    BrowserWindow *bw = this->lb->bw;
@@ -242,52 +257,94 @@ bool DilloHtmlLB::HtmlLinkReceiver::enter (Widget *widget, int link,
    return true;
 }
 
-bool DilloHtmlLB::HtmlLinkReceiver::press (Widget *widget, int link,
+bool DilloHtmlLB::HtmlLinkReceiver::press (Widget *widget, int link, int img,
                                            int x, int y, EventButton *event)
 {
+   BrowserWindow *bw = lb->bw;
    int ret = false;
 
    _MSG("pressed button %d\n", event->button);
    if (event->button == 3) {
-      a_UIcmd_page_popup(lb->bw, lb->links->get(link),
-                         lb->bw->num_page_bugs ? lb->bw->page_bugs->str:NULL);
-      //a_UIcmd_link_popup(lb->bw, lb->links->get(link));
-      //a_UIcmd_bugmeter_popup(lb->bw);
-      ret = true;
+      // popup menus
+      if (img != -1) {
+         // image menu
+         DilloUrl *linkurl;
+         if (link == -1)
+            linkurl = NULL;
+         else
+            linkurl = lb->links->get(link);
+
+         a_UIcmd_image_popup(lb->bw,lb->images->get(img)->url, linkurl);
+         ret = true;
+      } else {
+         if (link == -1) {
+            a_UIcmd_page_popup(bw, lb->base_url,
+                               bw->num_page_bugs ? bw->page_bugs->str:NULL);
+            ret = true;
+         } else {
+            a_UIcmd_link_popup(bw, lb->links->get(link));
+            ret = true;
+         }
+      }
    }
    return ret;
 }
 
-bool DilloHtmlLB::HtmlLinkReceiver::click (Widget *widget, int link,
+bool DilloHtmlLB::HtmlLinkReceiver::click (Widget *widget, int link, int img,
                                            int x, int y, EventButton *event)
 {
-   DilloUrl *url = lb->links->get(link);
-   _MSG("clicked on URL %d: %s\n", link, a_Url_str (url));
+   BrowserWindow *bw = lb->bw;
 
+   if (img != -1) {
+      DilloUrl *pattern;
 
-   if (x != -1) {
-      char data[64];
-      snprintf(data, 64, "?%d,%d", x, y);
-      a_Url_set_ismap_coords(url, data);
+      if (lb->images->get(img)->image) {
+         // has not already been loaded
+         if (event->button == 1){
+            // load all instances of this image
+            pattern = lb->images->get(img)->url;
+         } else {
+            if (event->button == 2){
+               // load all images
+               pattern = NULL;
+            } else {
+               return false;
+            }
+         }
+
+         Html_load_images(lb, pattern);
+      }
+      return true;
    }
 
-   if (event->button == 1) {
-      a_Nav_push(lb->bw, url);
-   } else if (event->button == 2) {
-      a_Nav_push_nw(lb->bw, url);
-   } else {
-      return false;
-   }
+   if (link != -1) {
+      DilloUrl *url = lb->links->get(link);
+      _MSG("clicked on URL %d: %s\n", link, a_Url_str (url));
 
-   /* Change the link color to "visited" as visual feedback */
-   for (Widget *w = widget; w; w = w->getParent()) {
-      _MSG("  ->%s\n", w->getClassName());
-      if (w->instanceOf(dw::Textblock::CLASS_ID)) {
-         ((Textblock*)w)->changeLinkColor (link, lb->visited_color);
-         break;
+
+      if (x != -1) {
+         char data[64];
+         snprintf(data, 64, "?%d,%d", x, y);
+         a_Url_set_ismap_coords(url, data);
+      }
+
+      if (event->button == 1) {
+         a_Nav_push(bw, url);
+      } else if (event->button == 2) {
+         a_Nav_push_nw(bw, url);
+      } else {
+         return false;
+      }
+
+      /* Change the link color to "visited" as visual feedback */
+      for (Widget *w = widget; w; w = w->getParent()) {
+         _MSG("  ->%s\n", w->getClassName());
+         if (w->instanceOf(dw::Textblock::CLASS_ID)) {
+            ((Textblock*)w)->changeLinkColor (link, lb->visited_color);
+            break;
+         }
       }
    }
-
    return true;
 }
 
@@ -306,6 +363,8 @@ static DilloHtmlLB *Html_lb_new(BrowserWindow *bw, const DilloUrl *url)
    html_lb->forms = new misc::SimpleVector <DilloHtmlForm> (1);
 
    html_lb->links = new misc::SimpleVector <DilloUrl*> (64);
+
+   html_lb->images = new misc::SimpleVector <DilloLinkImage*> (16);
 
    //a_Dw_image_map_list_init(&html_lb->maps);
 
@@ -357,6 +416,15 @@ static void Html_lb_free(void *lb)
          a_Url_free(html_lb->links->get(i));
    delete (html_lb->links);
 
+   for (i = 0; i < html_lb->images->size(); i++) {
+      DilloLinkImage *li = html_lb->images->get(i);
+      a_Url_free(li->url);
+      if (li->image)
+         a_Image_unref(li->image);
+      dFree(li);
+   }
+   delete (html_lb->images);
+
    //a_Dw_image_map_list_free(&html_lb->maps);
 
    dFree(html_lb);
@@ -376,70 +444,6 @@ static void Html_lb_free(void *lb)
 //      a_Url_set_ismap_coords(lb->links->get(link), data);
 //   }
 //}
-
-///*
-// * Handle the status function generated by the dw scroller,
-// * and show the url in the browser status-bar.
-// */
-//static void Html_handle_status(Widget *widget, int link, int x, int y,
-//                               DilloHtmlLB *lb)
-//{
-//   DilloUrl *url;
-//
-//   url = (link == -1) ? NULL : lb->links->get(link);
-//   if (url) {
-//      Html_set_link_coordinates(lb, link, x, y);
-//      a_UIcmd_set_msg(lb->bw, "%s",
-//                         URL_ALT_(url) ? URL_ALT_(url) : URL_STR_(url));
-//      lb->bw->status_is_link = 1;
-//
-//   } else {
-//      if (lb->bw->status_is_link)
-//         a_UIcmd_set_msg(lb->bw, "");
-//   }
-//}
-
-///*
-// * Activate a link ("link_clicked" callback of the page)
-// */
-//static bool_t Html_link_clicked(Widget *widget, int link, int x, int y,
-//                                  EventButton *event, DilloHtmlLB *lb)
-//{
-//   Html_set_link_coordinates(lb, link, x, y);
-//   if (event->button == 1)
-//      a_Nav_push(lb->bw, lb->links->get(link));
-//   else if (event->button == 2) {
-//      a_Nav_push_nw(lb->bw, lb->links->get(link));
-//   } else {
-//      return FALSE;
-//   }
-//
-//   if (widget->instanceOf (Textblock::CLASS_ID))
-//      ((Textblock*)widget)->changeLinkColor (link, lb->visited_color);
-//
-//   return TRUE;
-//}
-
-/*
- * Popup the image menu ("button_press_event" callback of image)
- */
-static bool_t Html_image_menu(Widget *widget,
-                                EventButton *event,
-                                BrowserWindow *bw)
-{
-// Image *image = (Image*)widget;
-//:AL
-// if (event->button == 3 && image->url) {
-//    a_Menu_popup_set_url(bw, image->url);
-//    a_Menu_popup_clear_url2(bw->menu_popup.over_image);
-//
-//    gtk_menu_popup(GTK_MENU(bw->menu_popup.over_image), NULL, NULL,
-//                   NULL, NULL, event->button, ((DwMouseEvent*)event)->time);
-//    return TRUE;
-// }
-
-   return FALSE;
-}
 
 /*
  * Connect all signals of a textblock or an image.
@@ -462,6 +466,21 @@ static int Html_set_new_link(DilloHtml *html, DilloUrl **url)
    return nl;
 }
 
+/*
+ * Add a new image to the linkblock.
+ */
+static int Html_add_new_linkimage(DilloHtml *html,
+                                  DilloUrl *url, DilloImage *image)
+{
+   DilloLinkImage *li = dNew(DilloLinkImage, 1);
+   li->url = url;
+   li->image = image;
+
+   int ni = html->linkblock->images->size();
+   html->linkblock->images->increase();
+   html->linkblock->images->set(ni, li);
+   return ni;
+}
 
 /*
  * Allocate and insert form information into the Html linkblock
@@ -709,11 +728,6 @@ static void Html_set_dwpage(DilloHtml *html)
    html->bw->num_page_bugs = 0;
    dStr_truncate(html->bw->page_bugs, 0);
 
-// gtk_signal_connect_while_alive (
-//    GTK_OBJECT(GTK_BIN(html->bw->render_main_scroll)->child),
-//    "button_press_event", GTK_SIGNAL_FUNC(Html_page_menu),
-//    html->bw, GTK_OBJECT (page));
-//
 // /* Destroy the linkblock when the DwPage is destroyed */
 // gtk_signal_connect_object(GTK_OBJECT(page), "destroy",
 //                           GTK_SIGNAL_FUNC(Html_lb_free),
@@ -2368,8 +2382,8 @@ static void Html_tag_open_tt(DilloHtml *html, const char *tag, int tagsize)
  * create new image and add it to the html page (if add is TRUE).
  */
 static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
-                                      int tagsize, StyleAttrs *style_attrs,
-                                      bool_t add)
+                                      int tagsize, DilloUrl *url,
+                                      StyleAttrs *style_attrs, bool_t add)
 {
    const int MAX_W = 6000, MAX_H = 6000;
 
@@ -2429,9 +2443,8 @@ static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
    /* Add a new image widget to this page */
    Image = a_Image_new(0, 0, alt_ptr, S_TOP(html)->current_bg_color);
    if (add) {
-      Widget *w = (Widget*)Image->dw;
-      Html_add_widget(html, w, width_ptr, height_ptr, style_attrs);
-      Html_connect_signals(html, w);
+      Html_add_widget(html, (Widget*)Image->dw, width_ptr, height_ptr,
+                      style_attrs);
    }
 
    dFree(width_ptr);
@@ -2443,19 +2456,20 @@ static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
 /*
  * Tell cache to retrieve image
  */
-static void Html_load_image(DilloHtml *html, DilloUrl *url, DilloImage *Image)
+static void Html_load_image(BrowserWindow *bw, DilloUrl *url, 
+                            DilloImage *Image)
 {
    DilloWeb *Web;
    int ClientKey;
    /* Fill a Web structure for the cache query */
    Web = a_Web_new(url);
-   Web->bw = html->bw;
+   Web->bw = bw;
    Web->Image = Image;
    Web->flags |= WEB_Image;
    /* Request image data from the cache */
    if ((ClientKey = a_Capi_open_url(Web, NULL, NULL)) != 0) {
-      a_Bw_add_client(html->bw, ClientKey, 0);
-      a_Bw_add_url(html->bw, url);
+      a_Bw_add_client(bw, ClientKey, 0);
+      a_Bw_add_url(bw, url);
    }
 }
 
@@ -2471,7 +2485,8 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
    Textblock *textblock;
    StyleAttrs style_attrs;
    const char *attrbuf;
-   int border;
+   int border, load_now;
+   char *buf; int buf_size; /* solely for the sake of the cache test */
 
    /* This avoids loading images. Useful for viewing suspicious HTML email. */
    if (URL_FLAGS(html->linkblock->base_url) & URL_SpamSafe)
@@ -2488,8 +2503,8 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
       /* todo: usemap URLs outside of the document are not used. */
       usemap_url = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
 
+   /* Set the style attributes for this image */
    style_attrs = *S_TOP(html)->style;
-
    if (S_TOP(html)->style->x_link != -1 ||
        usemap_url != NULL) {
       /* Images within links */
@@ -2510,11 +2525,15 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.setBorderStyle (BORDER_SOLID);
       style_attrs.borderWidth.setVal (border);
    }
+   /* x_img is an index to a list of {url,image} pairs.
+    * we know Html_add_new_linkimage() will use size() as its next index */
+   style_attrs.x_img = html->linkblock->images->size();
 
-   Image = Html_add_new_image(html, tag, tagsize, &style_attrs, TRUE);
-   // Html_connect_signals(html, GTK_OBJECT(Image->dw));
-// gtk_signal_connect_after(GTK_OBJECT(Image->dw), "button_press_event",
-//                          GTK_SIGNAL_FUNC(Html_image_menu), html->bw);
+   load_now = (prefs.load_images || a_Capi_get_buf(url,&buf, &buf_size));
+   Image = Html_add_new_image(html, tag, tagsize, url, &style_attrs, TRUE);
+   Html_add_new_linkimage(html, url, load_now ? NULL : Image);
+   if (load_now)
+      Html_load_image(html->bw, url, Image);
 
 #if 0
    /* Image maps */
@@ -2536,8 +2555,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
    }
 #endif
 
-   Html_load_image(html, url, Image);
-   a_Url_free(url);
+   Html_connect_signals(html, (Widget*)Image->dw);
 }
 
 /*
@@ -3017,8 +3035,6 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
    hruler->setStyle (style);
    DW2TB(html->dw)->addWidget (hruler, style);
    style->unref ();
-
-   //DW2TB(html->dw)->addWidget (hruler, S_TOP(html)->style);
    DW2TB(html->dw)->addParbreak (5, S_TOP(html)->style);
 }
 
@@ -3655,7 +3671,7 @@ static Widget *Html_input_image(DilloHtml *html, const char *tag, int tagsize,
 //       IM2DW(Image->dw)->setStyle (S_TOP(html)->style);
 //       a_Dw_container_add(DW_CONTAINER(button), IM2DW(Image->dw));
 //       IM2DW(Image->dw)->setCursor (CURSOR_HAND);
-//       Html_load_image(html, url, Image);
+//       Html_load_image(html->bw, url, Image);
 //       a_Url_free(url);
 //       return button;
 //    }

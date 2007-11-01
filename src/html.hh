@@ -8,6 +8,7 @@
 #include "lout/misc.hh"        // For SimpleVector
 
 //#include "dw_image.h"        // for DwImageMapList
+#include "image.hh"            // DilloImage for HtmlLinkImageReceiver
 
 #include "form.hh"             // For receiving the "clicked" signal
 
@@ -23,6 +24,7 @@ extern "C" {
  */
 
 typedef struct _DilloHtmlLB      DilloHtmlLB;
+typedef struct _DilloLinkImage   DilloLinkImage;
 
 typedef struct _DilloHtml        DilloHtml;
 typedef struct _DilloHtmlClass   DilloHtmlClass;
@@ -33,6 +35,11 @@ typedef struct _DilloHtmlSelect  DilloHtmlSelect;
 typedef struct _DilloHtmlInput   DilloHtmlInput;
 
 
+struct _DilloLinkImage {
+   DilloUrl *url;
+   DilloImage *image;
+};
+
 struct _DilloHtmlLB {
    class HtmlLinkReceiver: public dw::core::Widget::LinkReceiver
    {
@@ -42,10 +49,10 @@ struct _DilloHtmlLB {
    public:
       inline HtmlLinkReceiver (DilloHtmlLB *lb) { this->lb = lb; }
 
-      bool enter (dw::core::Widget *widget, int link, int x, int y);
-      bool press (dw::core::Widget *widget, int link, int x, int y,
+      bool enter (dw::core::Widget *widget, int link, int img, int x, int y);
+      bool press (dw::core::Widget *widget, int link, int img, int x, int y,
                   dw::core::EventButton *event);
-      bool click (dw::core::Widget *widget, int link, int x, int y,
+      bool click (dw::core::Widget *widget, int link, int img, int x, int y,
                   dw::core::EventButton *event);
    };
 
@@ -60,6 +67,8 @@ struct _DilloHtmlLB {
    misc::SimpleVector<DilloHtmlForm> *forms;
 
    misc::SimpleVector<DilloUrl*> *links;
+
+   misc::SimpleVector<DilloLinkImage*> *images;
 
    //DwImageMapList maps;
 

@@ -34,6 +34,7 @@ dillo-fltk2
  - Implemented a new scheme of scroll-position remembering. This is one per
    visited page intead of one per url (this is more standard).
  - Fixed a subtle bug in klist that was affecting IO.
+ - Fixed the position of the Bug Meter popup menu.
    Patches: Jorge Arellano
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color and geometry in preferences.
@@ -43,10 +44,12 @@ dillo-fltk2
  - Added missing size-parsing for the <hr> element.
  - Hooked "Activate" to the form_receiver.
  - Connected the plain page context menu.
- - Added code for the image menu (not hooked yet though).
+ - Added code for the image menu and hooked it to dw2 signals.
+ - Hooked the page and link menus.
  - Added a image-loading toggle button to the UI (not functional yet).
    Patches: place
 +- Fixed a problem with locally-installed dpis.
+ - Added code for optional image loading (nice interface) very advanced!
    Patch: place, Jorge Arellano
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
    Added const declarations in html parser.

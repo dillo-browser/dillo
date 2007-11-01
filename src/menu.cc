@@ -360,13 +360,12 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
        new Divider();    
        i = new Item("About Bug Meter...");
        i->callback(Menu_bugmeter_about_cb);
-
       pm->type(PopupMenu::POPUP123);
       pm->end();
    }
 
    // Make the popup a child of the calling UI object
-   ((Group *)bw->ui)->add(pm);
+   //((Group *)bw->ui)->add(pm);
 
    pm->popup();
 }
