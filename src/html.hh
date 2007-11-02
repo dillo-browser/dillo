@@ -252,9 +252,9 @@ struct _DilloHtml {
    Dstr *Stash;
    bool_t StashSpace;
 
-   char *SPCBuf;           /* Buffer for white space */
+   char *SPCBuf;          /* Buffer for white space */
 
-   int pre_column;         /* current column, used in PRE tags with tabs */
+   int pre_column;        /* current column, used in PRE tags with tabs */
    bool_t PreFirstChar;   /* used to skip the first CR or CRLF in PRE tags */
    bool_t PrevWasCR;      /* Flag to help parsing of "\r\n" in PRE tags */
    bool_t PrevWasOpenTag; /* Flag to help deferred parsing of white space */
@@ -263,7 +263,7 @@ struct _DilloHtml {
    bool_t ReqTagClose;    /* Flag to help handling bad-formed HTML */
    bool_t CloseOneTag;    /* Flag to help Html_tag_cleanup_at_close() */
    bool_t TagSoup;        /* Flag to enable the parser's cleanup functions */
-   char *NameVal;          /* used for validation of "NAME" and "ID" in <A> */
+   char *NameVal;         /* used for validation of "NAME" and "ID" in <A> */
 
    /* element counters: used for validation purposes */
    uchar_t Num_HTML, Num_HEAD, Num_BODY, Num_TITLE;

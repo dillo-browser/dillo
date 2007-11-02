@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <math.h>       /* for rint */
 #include <fltk/Widget.h>
 
 #include "dir.h"
@@ -82,6 +83,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh)
     FltkViewport *viewport = new FltkViewport (0, p_h, ww, wh-p_h-s_h);
     layout->attachView (viewport);
     //viewport->addGadget(new_ui->fullscreen_button());
+    viewport->setScrollStep((int) rint(12.0 * prefs.font_factor));
    new_ui->set_render_layout_end();
    // This was the original code.
    // Set the render_layout widget into the UI

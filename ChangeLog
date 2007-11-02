@@ -35,6 +35,7 @@ dillo-fltk2
    visited page intead of one per url (this is more standard).
  - Fixed a subtle bug in klist that was affecting IO.
  - Fixed the position of the Bug Meter popup menu.
+ - Hooked vertical scrolling to the mouse wheel.
    Patches: Jorge Arellano
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color and geometry in preferences.
