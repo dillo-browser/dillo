@@ -70,7 +70,7 @@ int a_Nav_get_top_uidx(BrowserWindow *bw)
 {
    nav_stack_item *nsi;
 
-   nsi = dList_nth_data (bw->nav_stack, a_Nav_stack_size(bw) - 1);
+   nsi = dList_nth_data (bw->nav_stack, a_Nav_stack_ptr(bw));
    return (nsi) ? nsi->url_idx : -1;
 }
 
