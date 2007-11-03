@@ -189,12 +189,12 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
    /* Get the url of the current page */
    idx = a_Nav_stack_ptr(bw);
    old_url = a_History_get_url(NAV_UIDX(bw, idx));
-   MSG("Nav_open_url:  idx=%d old_url='%s'\n", idx, URL_STR(old_url));
+   _MSG("Nav_open_url:  idx=%d old_url='%s'\n", idx, URL_STR(old_url));
    /* Record current scrolling position */
    if (old_url) {
       a_UIcmd_get_scroll_xy(bw, &x, &y);
       Nav_set_scroll_pos(bw, idx, x, y);
-      MSG("Nav_open_url:  saved scroll of '%s' at x=%d y=%d\n",
+      _MSG("Nav_open_url:  saved scroll of '%s' at x=%d y=%d\n",
           URL_STR(old_url), x, y);
    }
 
@@ -279,7 +279,7 @@ void a_Nav_expect_done(BrowserWindow *bw)
       /* Scroll to were we were in this page */
       Nav_get_scroll_pos(bw, &posx, &posy);
       a_UIcmd_set_scroll_xy(bw, posx, posy);
-      MSG("Nav: expect_done scrolling to x=%d y=%d\n", posx, posy);
+      _MSG("Nav: expect_done scrolling to x=%d y=%d\n", posx, posy);
    }
    Nav_stack_clean(bw);
    a_UIcmd_set_buttons_sens(bw);

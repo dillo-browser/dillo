@@ -237,7 +237,7 @@ void b1_cb(Widget *wid, void *cb_data)
    int k = event_key();
    if (k && k <= 7) {
       _MSG("[%s], mouse button %d was pressed\n", button_names[bn], k);
-      MSG("mouse button %d was pressed\n", k);
+      _MSG("mouse button %d was pressed\n", k);
    }
    switch (bn) {
    case UI_BACK:

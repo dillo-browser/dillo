@@ -295,25 +295,23 @@ bool DilloHtmlLB::HtmlLinkReceiver::click (Widget *widget, int link, int img,
 {
    BrowserWindow *bw = lb->bw;
 
-   if (img != -1) {
+   if ((img != -1) && (lb->images->get(img)->image)) {
+      // clicked an image that has not already been loaded
       DilloUrl *pattern;
 
-      if (lb->images->get(img)->image) {
-         // has not already been loaded
-         if (event->button == 1){
-            // load all instances of this image
-            pattern = lb->images->get(img)->url;
+      if (event->button == 1){
+         // load all instances of this image
+         pattern = lb->images->get(img)->url;
+      } else {
+         if (event->button == 2){
+            // load all images
+            pattern = NULL;
          } else {
-            if (event->button == 2){
-               // load all images
-               pattern = NULL;
-            } else {
-               return false;
-            }
+            return false;
          }
-
-         Html_load_images(lb, pattern);
       }
+
+      Html_load_images(lb, pattern);
       return true;
    }
 
