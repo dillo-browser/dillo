@@ -67,7 +67,7 @@ dillo-fltk2
  - Updated configure.in to check only for fltk2-config.
  - Implemented drag-scrolling with the mouse's middle button.
  - Disabled double buffering (good for debugging redraws).
- - Switched dns.c from gethostbyname* to getaddrinfo.
+ - Switched dns.c from gethostbyname* to getaddrinfo (& removed libc5 code).
    Patches: Johannes Hofmann
 +- Improved FLTK library detection at configure time.
    Patch: Frank Gevaerts

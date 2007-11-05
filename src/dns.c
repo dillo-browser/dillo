@@ -40,11 +40,6 @@
  */
 /* #undef D_DNS_THREADED */
 
-/*
- * Uncomment the following line for libc5 optimization
- */
-/* #define LIBC5 */
-
 
 /* Maximum dns resolving threads */
 #ifdef D_DNS_THREADED
@@ -224,22 +219,8 @@ void a_Dns_init(void)
 /*
  * Allocate a host structure and add it to the list
  */
-static void Dns_note_hosts(Dlist *list, int af, struct hostent *host)
-{
-   int i;
 
-   if (host->h_length > DILLO_ADDR_MAX)
-      return;
-   for (i = 0; host->h_addr_list[i]; i++) {
-      DilloHost *dh = dNew0(DilloHost, 1);
-      dh->af = af;
-      dh->alen = host->h_length;
-      memcpy(&dh->data[0], host->h_addr_list[i], (size_t)host->h_length);
-      dList_append(list, dh);
-   }
-}
-
-static void Dns_note_hosts2(Dlist *list, struct addrinfo *res0)
+static void Dns_note_hosts(Dlist *list, struct addrinfo *res0)
 {
    struct addrinfo *res;
    DilloHost *dh;
@@ -282,7 +263,6 @@ static void Dns_note_hosts2(Dlist *list, struct addrinfo *res0)
    }
 }
 
-#ifdef D_DNS_THREADED
 /*
  *  Server function (runs on its own thread)
  */
@@ -314,7 +294,7 @@ static void *Dns_server(void *data)
 	  else if (h_errno == EAI_FAIL)
 		  MSG("DNS error: NO_RECOVERY\n");
    } else {
-      Dns_note_hosts2(hosts, res0);
+      Dns_note_hosts(hosts, res0);
       dns_server[channel].status = 0;
       freeaddrinfo(res0);
    }
@@ -334,67 +314,7 @@ static void *Dns_server(void *data)
 
    return NULL;                 /* (avoids a compiler warning) */
 }
-#endif
 
-#ifndef D_DNS_THREADED
-/*
- *  Blocking server-function (it doesn't use threads)
- */
-static void Dns_blocking_server(void)
-{
-   int channel = 0;
-   struct hostent *host = NULL;
-   Dlist *hosts = dList_new(2);
-#ifdef LIBC5
-   int h_err;
-#endif
-
-   DEBUG_MSG(3, "Dns_blocking_server: starting...\n");
-   DEBUG_MSG(3, "Dns_blocking_server: dns_server[%d].hostname = %s\n",
-             channel, dns_server[channel].hostname);
-
-#ifdef ENABLE_IPV6
-   if (ipv6_enabled) {
-      host = gethostbyname2(dns_server[channel].hostname, AF_INET6);
-      if (host) {
-         Dns_note_hosts(hosts, AF_INET6, host);
-      }
-   }
-#endif
-
-#ifdef LIBC5
-   host = gethostbyname_r(dns_server[channel].hostname, &sh, buff,
-                          sizeof(buff), &h_err);
-#else
-   host = gethostbyname(dns_server[channel].hostname);
-#endif
-
-   if (!host) {
-#ifdef LIBC5
-      dns_server[channel].status = h_err;
-#else
-      dns_server[channel].status = h_errno;
-#endif
-   } else {
-      Dns_note_hosts(hosts, AF_INET, host);
-   }
-   if (dList_length(hosts) > 0) {
-      /* at least one entry on the list is ok */
-      dns_server[channel].status = 0;
-   } else {
-      dList_free(hosts);
-      hosts = NULL;
-   }
-
-   /* write IP to server data channel */
-   DEBUG_MSG(3, "Dns_blocking_server: IP of %s is %p\n",
-             dns_server[channel].hostname, hosts);
-   dns_server[channel].addr_list = hosts;
-   dns_server[channel].ip_ready = TRUE;
-
-   DEBUG_MSG(3, "Dns_blocking_server: leaving...\n");
-}
-#endif
 
 /*
  *  Request function (spawn a server and let it handle the request)
@@ -426,7 +346,7 @@ static void Dns_server_req(int channel, const char *hostname)
    pthread_create(&dns_server[channel].th1, &thrATTR, Dns_server,
                   INT2VOIDP(dns_server[channel].channel));
 #else
-   Dns_blocking_server();
+   Dns_server(0);
 #endif
 }
 
