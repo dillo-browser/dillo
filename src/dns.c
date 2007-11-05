@@ -239,58 +239,86 @@ static void Dns_note_hosts(Dlist *list, int af, struct hostent *host)
    }
 }
 
+static void Dns_note_hosts2(Dlist *list, struct addrinfo *res0)
+{
+   struct addrinfo *res;
+   DilloHost *dh;
+
+   for (res = res0; res; res = res->ai_next) {
+
+      if (res->ai_family == AF_INET) {
+         struct sockaddr_in *in_addr;
+
+         if (res->ai_addrlen < sizeof(struct sockaddr_in)) {
+            continue;
+         }
+
+         dh = dNew0(DilloHost, 1);
+         dh->af = AF_INET;
+
+         in_addr = (struct sockaddr_in*) res->ai_addr;
+         dh->alen = sizeof (struct in_addr);
+         memcpy(&dh->data[0], &in_addr->sin_addr.s_addr, dh->alen);
+
+         dList_append(list, dh);
+#ifdef ENABLE_IPV6
+      } else if (res->ai_family == AF_INET6) {
+         struct sockaddr_in6 *in6_addr;
+
+         if (res->ai_addrlen < sizeof(struct sockaddr_in6)) {
+            continue;
+         }
+
+         dh = dNew0(DilloHost, 1);
+         dh->af = AF_INET6;
+
+         in6_addr = (struct sockaddr_in6*) res->ai_addr;
+         dh->alen = sizeof (struct in6_addr);
+         memcpy(&dh->data[0], &in6_addr->sin6_addr.s6_addr, dh->alen);
+
+         dList_append(list, dh);
+#endif
+      }
+   }
+}
+
 #ifdef D_DNS_THREADED
 /*
  *  Server function (runs on its own thread)
  */
 static void *Dns_server(void *data)
 {
-   struct hostent *host;
    int channel = VOIDP2INT(data);
-#ifdef LIBC5
-   int h_err;
-   char buff[1024];
-   struct hostent sh;
-#endif
+   struct addrinfo hints, *res0;
+   int error;
+
+   memset(&hints, 0, sizeof(hints));
+   hints.ai_family = PF_INET;
+   hints.ai_socktype = SOCK_STREAM;
+
    Dlist *hosts = dList_new(2);
 
    DEBUG_MSG(3, "Dns_server: starting...\n ch: %d host: %s\n",
              channel, dns_server[channel].hostname);
 
-#ifdef ENABLE_IPV6
-   if (ipv6_enabled) {
-      host = gethostbyname2(dns_server[channel].hostname, AF_INET6);
-      if (host) {
-         Dns_note_hosts(hosts, AF_INET6, host);
-      }
-   }
-#endif
+   error = getaddrinfo(dns_server[channel].hostname, NULL, &hints, &res0);
 
-#ifdef LIBC5
-   host = gethostbyname_r(dns_server[channel].hostname, &sh, buff,
-                          sizeof(buff), &h_err);
-#else
-   host = gethostbyname(dns_server[channel].hostname);
-#endif
-
-   if (!host) {
-#ifdef LIBC5
-      dns_server[channel].status = h_err;
-#else
-      dns_server[channel].status = h_errno;
-      if (h_errno == HOST_NOT_FOUND)
+   if (error != 0) {
+      dns_server[channel].status = error;
+      if (error == EAI_NONAME)
          MSG("DNS error: HOST_NOT_FOUND\n");
-      else if (h_errno == TRY_AGAIN)
+      else if (error == EAI_AGAIN)
          MSG("DNS error: TRY_AGAIN\n");
-      else if (h_errno == NO_RECOVERY)
-         MSG("DNS error: NO_RECOVERY\n");
-      else if (h_errno == NO_ADDRESS)
+      else if (error == EAI_NODATA)
          MSG("DNS error: NO_ADDRESS\n");
-#endif
+	  else if (h_errno == EAI_FAIL)
+		  MSG("DNS error: NO_RECOVERY\n");
    } else {
+      Dns_note_hosts2(hosts, res0);
       dns_server[channel].status = 0;
-      Dns_note_hosts(hosts, AF_INET, host);
+      freeaddrinfo(res0);
    }
+
    if (dList_length(hosts) > 0) {
       dns_server[channel].status = 0;
    } else {
