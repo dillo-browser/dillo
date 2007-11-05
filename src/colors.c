@@ -1,7 +1,7 @@
 /*
  * File: colors.c
  *
- * Copyright (C) 2000-2005 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -322,7 +322,8 @@ static int Color_distance3(long c1, long c2)
  *   if candidate has good contrast with C_txt, C_lnk and C_bg  -> candidate
  *   else another color (from the internal list)
  */
-int32_t a_Color_vc(int32_t candidate, int32_t C_txt, int32_t C_lnk, int32_t C_bg)
+int32_t a_Color_vc(int32_t candidate,
+                   int32_t C_txt, int32_t C_lnk, int32_t C_bg)
 {
                     /* candidate purple    darkcyan  darkmagenta olive   */
   static int32_t v[] = {0x000000, 0x800080, 0x008b8b, 0x8b008b, 0x808000,

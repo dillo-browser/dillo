@@ -1,7 +1,7 @@
 /*
  * File: klist.c
  *
- * Copyright 2001 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2001-2007 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

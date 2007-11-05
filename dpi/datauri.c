@@ -1,7 +1,7 @@
 /*
  * File: datauri.c
  *
- * Copyright (C) 2006 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2006-2007 Jorge Arellano Cid <jcid@dillo.org>
  *
  * Filter dpi for the "data:" URI scheme (RFC 2397).
  *

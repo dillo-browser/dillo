@@ -1,7 +1,7 @@
 /*
  * File: dns.c
  *
- * Copyright (C) 1999-2006 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 1999-2007 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -291,8 +291,8 @@ static void *Dns_server(void *data)
          MSG("DNS error: TRY_AGAIN\n");
       else if (error == EAI_NODATA)
          MSG("DNS error: NO_ADDRESS\n");
-	  else if (h_errno == EAI_FAIL)
-		  MSG("DNS error: NO_RECOVERY\n");
+          else if (h_errno == EAI_FAIL)
+                  MSG("DNS error: NO_RECOVERY\n");
    } else {
       Dns_note_hosts(hosts, res0);
       dns_server[channel].status = 0;

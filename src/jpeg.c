@@ -2,7 +2,7 @@
  * File: jpeg.c
  *
  * Copyright (C) 1997 Raph Levien <raph@acm.org>
- * Copyright (C) 2000-2006 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

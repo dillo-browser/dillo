@@ -1,8 +1,8 @@
 /*
  * File: image.cc
  *
- * Copyright (C) 2005 Jorge Arellano Cid <jcid@dillo.org>,
- *                    Sebastian Geerken  <sgeerken@dillo.org>
+ * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>,
+ *                         Sebastian Geerken  <sgeerken@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
