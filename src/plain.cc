@@ -31,6 +31,9 @@
 #include "dw/core.hh"
 #include "dw/textblock.hh"
 
+// Dw to Textblock
+#define DW2TB(dw)  ((Textblock*)dw)
+
 using namespace dw;
 using namespace dw::core;
 
@@ -85,7 +88,6 @@ void a_Plain_free(void *data);
  */
 DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
 {
-   Textblock *textblock;
    style::StyleAttrs styleAttrs;
    style::FontAttrs fontAttrs;
 
@@ -95,8 +97,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
    /* Init internal variables */
    bw = p_bw;
    url = a_Url_dup(p_url);
-   textblock = new Textblock (false);
-   dw = (Widget*) textblock;
+   dw = new Textblock (false);
    Start_Ofs = 0;
    state = ST_SeekingEol;
 
@@ -116,7 +117,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
    widgetStyle = style::Style::create (layout, &styleAttrs);
 
    /* The context menu */
-   textblock->connectEvent (&plainReceiver);
+   DW2TB(dw)->connectEvent (&plainReceiver);
 
    /* Hook destructor to the dw delete call */
    dw->setDeleteCallback(a_Plain_free, this);
@@ -152,7 +153,6 @@ bool DilloPlain::PlainEventReceiver::buttonPress (Widget *widget,
  */
 void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
 {
-   Textblock *textblock = (Textblock*)dw;
    char *Start;
    char *data;
    uint_t i, len, MaxBytes;
@@ -171,8 +171,8 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
          break;
       case ST_Eol:
          data = dStrndup(Start + i - len, len);
-         textblock->addText(a_Misc_expand_tabs(data), widgetStyle);
-         textblock->addParbreak(0, widgetStyle);
+         DW2TB(dw)->addText(a_Misc_expand_tabs(data), widgetStyle);
+         DW2TB(dw)->addParbreak(0, widgetStyle);
          dFree(data);
          if (Start[i] == '\r' && Start[i + 1] == '\n') ++i;
          if (i < MaxBytes) ++i;
@@ -184,13 +184,13 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
    Start_Ofs += i - len;
    if (Eof && len) {
       data = dStrndup(Start + i - len, len);
-      textblock->addText(a_Misc_expand_tabs(data), widgetStyle);
-      textblock->addParbreak(0, widgetStyle);
+      DW2TB(dw)->addText(a_Misc_expand_tabs(data), widgetStyle);
+      DW2TB(dw)->addParbreak(0, widgetStyle);
       dFree(data);
       Start_Ofs += len;
    }
 
-   textblock->flush();
+   DW2TB(dw)->flush();
 
    if (bw)
       a_UIcmd_set_page_prog(bw, Start_Ofs, 1);
