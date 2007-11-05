@@ -101,7 +101,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
    state = ST_SeekingEol;
 
    /* Create the font and attribute for the page. */
-   fontAttrs.name = "Courier";
+   fontAttrs.name = prefs.fw_fontname;
    fontAttrs.size = (int) rint(12.0 * prefs.font_factor);
    fontAttrs.weight = 400;
    fontAttrs.style = style::FONT_STYLE_NORMAL;

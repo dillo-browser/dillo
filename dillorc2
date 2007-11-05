@@ -10,7 +10,7 @@
 # Set the desired initial browser size
 #geometry=820x650
 #geometry=650x545
-geometry=725x545
+geometry=780x580
 
 # Dicache is where the Decompressed Images are cached (not the original ones).
 # If you have a lot of memory and a slow CPU, use YES, otherwise use NO
@@ -43,7 +43,7 @@ fw_fontname="DejaVu Sans Mono"
 
 # All fontsizes are scaled by this value (default is 1.0)
 #font_factor=1.2
-font_factor=1.5
+#font_factor=1.5
 
 # If you prefer oblique over italic fonts, uncoment next line
 #use_oblique=YES
