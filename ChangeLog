@@ -48,7 +48,8 @@ dillo-fltk2
  - Connected the plain page context menu.
  - Added code for the image menu and hooked it to dw2 signals.
  - Hooked the page and link menus.
- - Added a image-loading toggle button to the UI (not functional yet).
+ - Added a image-loading toggle button to the UI.
+ - Enabled hiding widgets of the control panel from dillorc2.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

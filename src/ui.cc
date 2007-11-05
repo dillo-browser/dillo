@@ -440,8 +440,8 @@ PackedGroup *UI::make_location()
  */
 PackedGroup *UI::make_progress_bars(int wide, int thin_up)
 {
-   PackedGroup *pg = new PackedGroup(0,0,0,0);
-   pg->begin();
+   ProgBox = new PackedGroup(0,0,0,0);
+   ProgBox->begin();
     // Images
     IProg = new InvisibleBox(0,0,pr_w,0,
                              wide ? "Images\n0 of 0" : "0 of 0");
@@ -453,10 +453,10 @@ PackedGroup *UI::make_progress_bars(int wide, int thin_up)
     PProg->box(thin_up ? THIN_UP_BOX : EMBOSSED_BOX);
     PProg->labelcolor(GRAY10);
 
-   pg->type(PackedGroup::ALL_CHILDREN_VERTICAL);
-   pg->end();
+   ProgBox->type(PackedGroup::ALL_CHILDREN_VERTICAL);
+   ProgBox->end();
 
-   return pg;
+   return ProgBox;
 }
 
 /*
@@ -674,6 +674,8 @@ UI::UI(int win_w, int win_h, const char* label) :
 
    add_event_handler(global_event_handler);
 
+   customize(0);
+
    //show();
 }
 
@@ -805,7 +807,32 @@ void UI::set_bug_prog(int n_bug)
  */
 void UI::customize(int flags)
 {
-   Save->hide();
+   // flags argument not currently used
+
+   if ( !prefs.show_menubar )
+      MSG("show_menubar preference ignored\n");
+   if ( !prefs.show_back )
+      Back->hide();
+   if ( !prefs.show_forw )
+      Forw->hide();
+   if ( !prefs.show_home )
+      Home->hide();
+   if ( !prefs.show_reload )
+      Reload->hide();
+   if ( !prefs.show_save )
+      Save->hide();
+   if ( !prefs.show_stop )
+      Stop->hide();
+   if ( !prefs.show_bookmarks )
+      Bookmarks->hide();
+   if ( !prefs.show_clear_url )
+      Clear->hide();
+   if ( !prefs.show_url )
+      Location->hide();
+   if ( !prefs.show_search )
+      Search->hide();
+   if ( !prefs.show_progress_box )
+      ProgBox->hide();
 }
 
 /*
@@ -821,6 +848,8 @@ void UI::panel_cb_i()
    TopGroup->replace(*Panel, *NewPanel);
    delete(Panel);
    Panel = NewPanel;
+   customize(0);
+
    // Scale the viewport
    int p_h = Panel->h();
    Main->resize(0, p_h, TopGroup->w(), TopGroup->h() - p_h - Status->h());

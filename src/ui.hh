@@ -36,6 +36,7 @@ class UI : public fltk::Window {
    Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks,
           *Clear, *Search, *FullScreen, *ImageLoad, *BugMeter;
    Input  *Location;
+   PackedGroup *ProgBox;
    Widget *PProg, *IProg;
    Image *ImgLeftIns, *ImgLeftSens, *ImgRightIns, *ImgRightSens,
          *ImgStopIns, *ImgStopSens, *ImgFullScreenOn, *ImgFullScreenOff,
