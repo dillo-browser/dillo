@@ -1,4 +1,5 @@
 #ifndef __DIALOG_HH__
+#define __DIALOG_HH__
 
 #ifdef __cplusplus
 extern "C" {
