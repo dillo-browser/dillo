@@ -53,11 +53,10 @@ top directory (they will be installed under ~/.dillo).
 *BSD
 ----
 
-  Dillo  may  compile on *BSD systems; please report on this.
-Please note that you'll need GNU make.
+  Dillo   compiles on *BSD systems; please report on this anyway,
+and note that you'll need GNU make.
 
-  From  OpenBSD  >=  3.3,  gethost* calls are not thread safe. If
-your dillo crashes or locks at times, just use:
+  If your dillo crashes or locks at times, just use:
 
     ./configure --disable-threaded-dns
 
