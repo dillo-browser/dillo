@@ -16,17 +16,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/*
- * First, the html linkblock. For now, this mostly has forms, although
- * pointers to actual links will go here soon, if for no other reason
- * than to implement history-sensitive link colors. Also, it seems
- * likely that imagemaps will go here.
- */
-
-typedef struct _DilloHtmlLB      DilloHtmlLB;
 typedef struct _DilloLinkImage   DilloLinkImage;
 
-typedef struct _DilloHtml        DilloHtml;
 typedef struct _DilloHtmlClass   DilloHtmlClass;
 typedef struct _DilloHtmlState   DilloHtmlState;
 typedef struct _DilloHtmlForm    DilloHtmlForm;
@@ -38,42 +29,6 @@ typedef struct _DilloHtmlInput   DilloHtmlInput;
 struct _DilloLinkImage {
    DilloUrl *url;
    DilloImage *image;
-};
-
-struct _DilloHtmlLB {
-   class HtmlLinkReceiver: public dw::core::Widget::LinkReceiver
-   {
-   private:
-      DilloHtmlLB *lb;
-
-   public:
-      inline HtmlLinkReceiver (DilloHtmlLB *lb) { this->lb = lb; }
-
-      bool enter (dw::core::Widget *widget, int link, int img, int x, int y);
-      bool press (dw::core::Widget *widget, int link, int img, int x, int y,
-                  dw::core::EventButton *event);
-      bool click (dw::core::Widget *widget, int link, int img, int x, int y,
-                  dw::core::EventButton *event);
-   };
-
-   // Since DilloHtmlLB is a struct, not a class, a simple
-   // "HtmlLinkReceiver linkReceiver" (see signal documentation) would not
-   // work, therefore the pointer.
-   HtmlLinkReceiver *linkReceiver;
-
-   BrowserWindow *bw;
-   DilloUrl *base_url;
-
-   misc::SimpleVector<DilloHtmlForm> *forms;
-
-   misc::SimpleVector<DilloUrl*> *links;
-
-   misc::SimpleVector<DilloLinkImage*> *images;
-
-   //DwImageMapList maps;
-
-   int32_t link_color;
-   int32_t visited_color;
 };
 
 
@@ -233,10 +188,29 @@ struct _DilloHtmlInput {
    bool_t init_val;   /* only meaningful for buttons */
 };
 
-struct _DilloHtml {
-   dw::core::Widget *dw;    /* this is duplicated in the stack (page) */
+class DilloHtml {
+private:
+   class HtmlLinkReceiver: public dw::core::Widget::LinkReceiver {
+   public:
+      DilloHtml *html;
 
-   DilloHtmlLB *linkblock;
+      bool enter (dw::core::Widget *widget, int link, int img, int x, int y);
+      bool press (dw::core::Widget *widget, int link, int img, int x, int y,
+                  dw::core::EventButton *event);
+      bool click (dw::core::Widget *widget, int link, int img, int x, int y,
+                  dw::core::EventButton *event);
+   };
+   HtmlLinkReceiver linkReceiver;
+
+public:  //BUG: for now everything is public
+
+   BrowserWindow *bw;
+   DilloUrl *base_url;
+   dw::core::Widget *dw;    /* this is duplicated in the stack */
+
+   /* -------------------------------------------------------------------*/
+   /* Variables required at parsing time                                 */
+   /* -------------------------------------------------------------------*/
    char *Start_Buf;
    size_t Start_Ofs;
    size_t CurrTagOfs;
@@ -247,7 +221,7 @@ struct _DilloHtml {
 
    misc::SimpleVector<DilloHtmlState> *stack;
 
-   int InFlags; /* tracks which tags we are in */
+   int InFlags; /* tracks which elements we are in */
 
    Dstr *Stash;
    bool_t StashSpace;
@@ -268,9 +242,31 @@ struct _DilloHtml {
    /* element counters: used for validation purposes */
    uchar_t Num_HTML, Num_HEAD, Num_BODY, Num_TITLE;
 
-   Dstr *attr_data;
+   Dstr *attr_data;       /* Buffer for attribute value */
 
-   BrowserWindow *bw;
+   /* -------------------------------------------------------------------*/
+   /* Variables required after parsing (for page functionality)          */
+   /* -------------------------------------------------------------------*/
+   misc::SimpleVector<DilloHtmlForm> *forms;
+   misc::SimpleVector<DilloUrl*> *links;
+   misc::SimpleVector<DilloLinkImage*> *images;
+   //DwImageMapList maps;
+
+   int32_t link_color;
+   int32_t visited_color;
+
+private:
+   void initDw();  /* Used by the constructor */
+
+public:
+   DilloHtml(BrowserWindow *bw, const DilloUrl *url);
+   ~DilloHtml();
+   void connectSignals(dw::core::Widget *dw);
+   void write(char *Buf, int BufSize, int Eof);
+   void closeParser(int ClientKey);
+   int formNew(DilloHtmlMethod method, const DilloUrl *action,
+               DilloHtmlEnc enc);
+   void loadImages (const DilloUrl *pattern);
 };
 
 /*

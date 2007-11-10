@@ -91,7 +91,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
    style::StyleAttrs styleAttrs;
    style::FontAttrs fontAttrs;
 
-   /* init event receiver */
+   /* Init event receiver */
    plainReceiver.plain = this;
 
    /* Init internal variables */
@@ -128,6 +128,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
  */
 DilloPlain::~DilloPlain()
 {
+   MSG("::~DilloPlain()\n");
    a_Url_free(url);
    widgetStyle->unref();
 }
@@ -136,7 +137,7 @@ DilloPlain::~DilloPlain()
  * Receive the mouse button press event
  */
 bool DilloPlain::PlainEventReceiver::buttonPress (Widget *widget,
-                                               EventButton *event)
+                                                  EventButton *event)
 {
    _MSG("DilloPlain::PlainEventReceiver::buttonPress\n");
 

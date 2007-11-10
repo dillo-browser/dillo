@@ -37,6 +37,8 @@ dillo-fltk2
  - Fixed the position of the Bug Meter popup menu.
  - Hooked vertical scrolling to the mouse wheel.
  - Reimplemented plain.cc using a class, and hooked memory-release.
+ - Reimplemented html.cc using a class, removed the linkblock,
+   and hooked memory-release to dw destruction.
    Patches: Jorge Arellano
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color and geometry in preferences.
