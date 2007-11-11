@@ -221,7 +221,9 @@ void location_cb(Widget *wid, void *data)
    Input *i = (Input*)wid;
 
    /* This test is necessary because WHEN_ENTER_KEY also includes
-    * other events we're not interested in */
+    * other events we're not interested in. For instance pressing
+    * The Back or Forward, buttons, or the first click on a rendered
+    * page. BUG: this must be investigated and reported to FLTK2 team */
    if (event_key() == ReturnKey) {
       a_UIcmd_open_urlstr(i->window()->user_data(), i->value());
    }
