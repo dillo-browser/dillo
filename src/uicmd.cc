@@ -409,8 +409,7 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
    const char *name;
    char *SuggestedName;
 
-   // BUG: this should be set by preferences.
-   a_UIcmd_set_save_dir("/tmp/k/");
+   a_UIcmd_set_save_dir(prefs.save_dir);
 
    SuggestedName = UIcmd_make_save_filename(URL_STR(url));
    name = a_Dialog_save_file("Save Link as File", NULL, SuggestedName);
