@@ -52,6 +52,7 @@ dillo-fltk2
  - Hooked the page and link menus.
  - Added a image-loading toggle button to the UI.
  - Enabled hiding widgets of the control panel from dillorc2.
+ - Added a save-directory preference (save_dir in dillorc2).
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

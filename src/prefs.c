@@ -66,6 +66,7 @@ SymNode_t symbols[] = {
    { "load_images", DRC_TOKEN_LOAD_IMAGES },
    { "no_proxy", DRC_TOKEN_NOPROXY },
    { "panel_size", DRC_TOKEN_PANEL_SIZE },
+   { "save_dir", DRC_TOKEN_SAVE_DIR },
    { "search_url", DRC_TOKEN_SEARCH_URL },
    { "show_back", DRC_TOKEN_SHOW_BACK },
    { "show_bookmarks", DRC_TOKEN_SHOW_BOOKMARKS },
@@ -307,6 +308,9 @@ static int Prefs_parse_pair(char *name, char *value)
       dFree(prefs.search_url);
       prefs.search_url = dStrdup(value);
       break;
+   case DRC_TOKEN_SAVE_DIR:
+      dFree(prefs.save_dir);
+      prefs.save_dir = dStrdup(value);
    case DRC_TOKEN_SHOW_MSG:
       prefs.show_msg = (strcmp(value, "YES") == 0);
       break;
@@ -408,6 +412,7 @@ void a_Prefs_init(void)
    prefs.generate_submit = FALSE;
    prefs.enterpress_forces_submit = FALSE;
    prefs.search_url = dStrdup("http://www.google.com/search?q=%s");
+   prefs.save_dir = dStrdup("/tmp/");
    prefs.show_msg = TRUE;
    prefs.show_extra_warnings = FALSE;
 
@@ -436,4 +441,5 @@ void a_Prefs_freeall(void)
    a_Url_free(prefs.start_page);
    a_Url_free(prefs.home);
    dFree(prefs.search_url);
+   dFree(prefs.save_dir);
 }

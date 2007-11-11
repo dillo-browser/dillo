@@ -20,6 +20,9 @@ use_dicache=NO
 # (there's a toggle button near the bug meter to change this on-the-fly)
 #load_images=NO
 
+# Set your default directory for download/save operations
+#save_dir=/tmp
+
 #-------------------------------------------------------------------------
 #                           RENDERING SECTION
 #-------------------------------------------------------------------------

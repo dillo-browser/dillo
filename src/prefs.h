@@ -41,6 +41,7 @@ typedef enum {
    DRC_TOKEN_PANEL_SIZE,
    DRC_TOKEN_PROXY,
    DRC_TOKEN_PROXYUSER,
+   DRC_TOKEN_SAVE_DIR,
    DRC_TOKEN_SEARCH_URL,
    DRC_TOKEN_SHOW_BACK,
    DRC_TOKEN_SHOW_BOOKMARKS,
@@ -115,6 +116,7 @@ struct _DilloPrefs {
    bool_t generate_submit;
    bool_t enterpress_forces_submit;
    char *search_url;
+   char *save_dir;
    bool_t show_msg;
    bool_t show_extra_warnings;
 };

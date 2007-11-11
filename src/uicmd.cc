@@ -245,21 +245,21 @@ void a_UIcmd_reload(void *vbw)
 }
 
 /*
- * Return a suitable filename for a given URL.
+ * Return a suitable filename for a given URL path.
  */
-char *UIcmd_make_save_filename(const char *urlstr)
+char *UIcmd_make_save_filename(const char *pathstr)
 {
    size_t MaxLen = 64;
    char *FileName, *name;
    const char *dir = a_UIcmd_get_save_dir();
 
-   if ((name = strrchr(urlstr, '/'))) {
+   if ((name = strrchr(pathstr, '/'))) {
       if (strlen(++name) > MaxLen) {
          name = name + strlen(name) - MaxLen;
       }
       FileName = dStrconcat(dir ? dir : "", name, NULL);
    } else {
-      FileName = dStrconcat(dir ? dir : "", urlstr, NULL);
+      FileName = dStrconcat(dir ? dir : "", pathstr, NULL);
    }
    return FileName;
 }
@@ -295,12 +295,11 @@ void a_UIcmd_save(void *vbw)
    char *SuggestedName, *urlstr;
    DilloUrl *url;
 
-   // BUG: this should be set by preferences.
-   a_UIcmd_set_save_dir("/tmp/k/");
+   a_UIcmd_set_save_dir(prefs.save_dir);
 
    urlstr = a_UIcmd_get_location_text((BrowserWindow*)vbw);
    url = a_Url_new(urlstr, NULL, 0, 0, 0);
-   SuggestedName = UIcmd_make_save_filename(urlstr);
+   SuggestedName = UIcmd_make_save_filename(URL_PATH(url));
    name = a_Dialog_save_file("Save Page as File", NULL, SuggestedName);
    MSG("a_UIcmd_save: %s\n", name);
    dFree(SuggestedName);
