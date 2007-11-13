@@ -758,7 +758,7 @@ bool DilloHtml::HtmlLinkReceiver::press (Widget *widget, int link, int img,
          ret = true;
       } else {
          if (link == -1) {
-            a_UIcmd_page_popup(bw, html->base_url,
+            a_UIcmd_page_popup(bw, a_History_get_url(NAV_TOP_UIDX(bw)),
                                bw->num_page_bugs ? bw->page_bugs->str:NULL);
             ret = true;
          } else {
