@@ -654,8 +654,8 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
 }
 
 /*
- * Finish parsing a HTML page (free parsing data).
- * i.e. Free html struct, close the client and update the page progress bar.
+ * Finish parsing a HTML page.
+ * i.e. Free parsing data, close the client and update the page progress bar.
  * The class is not deleted here, it remains until the widget is destroyed.
  */
 void DilloHtml::closeParser(int ClientKey)
