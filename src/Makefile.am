@@ -60,6 +60,8 @@ dillo_fltk_SOURCES = \
 	nav.h \
 	cache.c \
 	cache.h \
+	decode.c \
+	decode.h \
 	dicache.c \
 	dicache.h \
 	capi.c \

@@ -32,6 +32,7 @@
 #include "cookies.h"
 #include "misc.h"
 #include "capi.h"
+#include "decode.h"
 
 #include "timeout.hh"
 #include "uicmd.hh"
@@ -57,6 +58,7 @@ typedef struct {
    Dstr *Header;             /* HTTP header */
    const DilloUrl *Location; /* New URI for redirects */
    Dstr *Data;               /* Pointer to raw data */
+   Decode *Decoder;          /* Data decoder */
    int TotalSize;            /* Goal size of the whole data (0 if unknown) */
    uint_t Flags;             /* Look Flag Defines in cache.h */
 } CacheEntry_t;
@@ -202,6 +204,7 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->Header = dStr_new("");
    NewEntry->Location = NULL;
    NewEntry->Data = dStr_sized_new(8*1024);
+   NewEntry->Decoder = NULL;
    NewEntry->TotalSize = 0;
    NewEntry->Flags = 0;
 }
@@ -455,7 +458,8 @@ static void Cache_parse_header(CacheEntry_t *entry,
                                const char *buf, size_t buf_size, int HdrLen)
 {
    char *header = entry->Header->str;
-   char *Length, *Type, *location_str;
+   char *Length, *Type, *location_str, *encoding;
+   Dstr *decodedBuf;
 #ifndef DISABLE_COOKIES
    Dlist *Cookies;
    void *data;
@@ -502,6 +506,16 @@ static void Cache_parse_header(CacheEntry_t *entry,
    }
 #endif /* !DISABLE_COOKIES */
 
+   /*
+    * Get Content-Encoding and initialize decoder
+    */
+   encoding = Cache_parse_field(header, "Content-Encoding");
+   entry->Decoder = a_Decode_content_init(encoding);
+   dFree(encoding);
+
+   decodedBuf = a_Decode_process(entry->Decoder, buf + HdrLen,
+                                 buf_size - HdrLen);
+
    if (entry->TotalSize > 0) {
       if (entry->TotalSize > HUGE_FILESIZE) {
          entry->Flags |= CA_HugeFile;
@@ -512,7 +526,8 @@ static void Cache_parse_header(CacheEntry_t *entry,
       dStr_free(entry->Data, 1);
       entry->Data = dStr_sized_new(MIN(entry->TotalSize+1, MAX_INIT_BUF));
    }
-   dStr_append_l(entry->Data, buf + HdrLen, (int)buf_size - HdrLen);
+   dStr_append_l(entry->Data, decodedBuf->str, decodedBuf->len);
+   dStr_free(decodedBuf, 1);
 
    /* Get Content-Type */
    if ((Type = Cache_parse_field(header, "Content-Type")) == NULL) {
@@ -568,19 +583,27 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
 {
    int len;
    CacheEntry_t *entry = Cache_entry_search(Url);
+   Dstr *decodedBuf;
 
    /* Assert a valid entry (not aborted) */
-   if (!entry)
-      return;
+   dReturn_if_fail (entry != NULL);
 
    if (Op == IOClose) {
       if (entry->Flags & CA_GotLength && entry->TotalSize != entry->Data->len){
          MSG_HTTP("Content-Length does NOT match message body,\n"
                   " at: %s\n", URL_STR_(entry->Url));
+         _MSG("entry->TotalSize = %d, entry->Data->len = %d\n",
+             entry->TotalSize, entry->Data->len);
+// Doesn't work. I could make TotalSize into something like BytesRemaining,
+// seeing whether it goes precisely to 0.
       }
       entry->Flags |= CA_GotData;
       entry->Flags &= ~CA_Stopped;          /* it may catch up! */
       entry->TotalSize = entry->Data->len;
+      if (entry->Decoder) {
+         a_Decode_free(entry->Decoder);
+         entry->Decoder = NULL;
+      }
       dStr_fit(entry->Data);                /* fit buffer size! */
       Cache_process_queue(entry);
       return;
@@ -602,7 +625,16 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
       return;
    }
 
-   dStr_append_l(entry->Data, buf, (int)buf_size);
+   /* Assert we have a Decoder.
+    * BUG: this is a workaround, more study and a proper design
+    * for handling redirects is required */
+   if (entry->Decoder != NULL) {
+      decodedBuf = a_Decode_process(entry->Decoder, buf, buf_size);
+      dStr_append_l(entry->Data, decodedBuf->str, decodedBuf->len);
+      dStr_free(decodedBuf, 1);
+   } else {
+      dStr_append_l(entry->Data, buf, buf_size);
+   }
    Cache_process_queue(entry);
 }
 

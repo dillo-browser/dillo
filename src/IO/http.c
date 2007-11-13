@@ -190,6 +190,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Host: %s%s\r\n"
          "%s"
          "User-Agent: Dillo/%s\r\n"
+         "Accept-Encoding: gzip\r\n"
          "Cookie2: $Version=\"1\"\r\n"
          "%s"
          "Content-type: application/x-www-form-urlencoded\r\n"
@@ -210,6 +211,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Host: %s%s\r\n"
          "%s"
          "User-Agent: Dillo/%s\r\n"
+         "Accept-Encoding: gzip\r\n"
          "Cookie2: $Version=\"1\"\r\n"
          "%s"
          "\r\n",

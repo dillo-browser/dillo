@@ -56,6 +56,7 @@ dillo-fltk2
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
+ - Added an experimental gzip decoder! 
    Patch: place, Jorge Arellano
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
    Added const declarations in html parser.
