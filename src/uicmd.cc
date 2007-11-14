@@ -443,9 +443,10 @@ void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url)
 /*
  * Popup the page menu
  */
-void a_UIcmd_page_popup(void *vbw, const DilloUrl *url, const char *bugs_txt)
+void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
+                        const char *bugs_txt, int prefs_load_images)
 {
-   a_Menu_page_popup((BrowserWindow*)vbw, url, bugs_txt);
+   a_Menu_page_popup((BrowserWindow*)vbw, url, bugs_txt, prefs_load_images);
 }
 
 /*

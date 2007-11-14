@@ -71,6 +71,7 @@ BrowserWindow *a_Bw_new(int width, int height, uint32_t xid)
    bw->NumImages = 0;
    bw->NumImagesGot = 0;
    bw->PageUrls = dList_new(8);
+   bw->Docs = dList_new(8);
 
    bw->question_dialog_data = NULL;
 
@@ -96,6 +97,7 @@ void a_Bw_free(BrowserWindow *bw)
 
          dList_free(bw->RootClients);
          dList_free(bw->ImageClients);
+         dList_free(bw->Docs);
 
          for (j = 0; j < dList_length(bw->PageUrls); ++j)
             a_Url_free(dList_nth_data(bw->PageUrls, j));
@@ -194,7 +196,7 @@ void a_Bw_stop_clients(BrowserWindow *bw, int flags)
    }
 }
 
-/*- PageUrls ---------------------------------------------------------------*/
+/*- Page -------------------------------------------------------------------*/
 /*
  * Add an URL to the browser window's list.
  * This helps us keep track of page-requested URLs so that it's
@@ -206,6 +208,28 @@ void a_Bw_add_url(BrowserWindow *bw, const DilloUrl *Url)
 
    if (!dList_find_custom(bw->PageUrls, Url, (dCompareFunc)a_Url_cmp)) {
       dList_append(bw->PageUrls, a_Url_dup(Url));
+   }
+}
+
+/*
+ * Add a document to the browser window's list.
+ */
+void a_Bw_add_doc(BrowserWindow *bw, void *vdoc)
+{
+   dReturn_if_fail ( bw != NULL && vdoc != NULL);
+
+   dList_append(bw->Docs, vdoc);
+}
+
+/*
+ * Remove a document from the bw's list
+ */
+void a_Bw_remove_doc(BrowserWindow *bw, void *vdoc)
+{
+   void *data;
+
+   if ((data = dList_find(bw->Docs, vdoc))) {
+      dList_remove_fast(bw->Docs, data);
    }
 }
 

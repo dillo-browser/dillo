@@ -13,14 +13,9 @@
  * Dillo HTML parsing routines
  */
 
-/* Undefine if you want to unroll tables. For instance for PDAs */
-#define USE_TABLES
-
-/* Define to 1 to ignore white space immediately after an open tag,
- * and immediately before a close tag. */
-#define SGML_SPCDEL 0
-
-
+/*-----------------------------------------------------------------------------
+ * Includes
+ *---------------------------------------------------------------------------*/
 #include <ctype.h>      /* for isspace and tolower */
 #include <string.h>     /* for memcpy and memmove */
 #include <stdlib.h>
@@ -33,22 +28,20 @@
 #define DEBUG_LEVEL 10
 #include "debug.h"
 
+#include "bw.h"         /* for BrowserWindow */
 #include "msg.h"
 #include "binaryconst.h"
 #include "colors.h"
 
 #include "uicmd.hh"
-
-#define dillo_dbg_rendering 0
-
 #include "history.h"
 #include "nav.h"
 #include "menu.hh"
 #include "prefs.h"
 #include "misc.h"
 #include "capi.h"
-
 #include "html.hh"
+
 #include "dw/textblock.hh"
 #include "dw/bullet.hh"
 #include "dw/table.hh"
@@ -57,16 +50,18 @@
 #include "dw/image.hh"
 #include "dw/ruler.hh"
 
+/*-----------------------------------------------------------------------------
+ * Defines 
+ *---------------------------------------------------------------------------*/
+/* Undefine if you want to unroll tables. For instance for PDAs */
+#define USE_TABLES
 
-using namespace dw;
-using namespace dw::core;
-using namespace dw::core::ui;
-using namespace dw::core::style;
-
-typedef void (*TagOpenFunct) (DilloHtml *Html, const char *Tag, int Tagsize);
-typedef void (*TagCloseFunct) (DilloHtml *Html, int TagIdx);
+/* Define to 1 to ignore white space immediately after an open tag,
+ * and immediately before a close tag. */
+#define SGML_SPCDEL 0
 
 #define TAB_SIZE 8
+#define dillo_dbg_rendering 0
 
 // Dw to Textblock
 #define DW2TB(dw)  ((Textblock*)dw)
@@ -77,6 +72,276 @@ typedef void (*TagCloseFunct) (DilloHtml *Html, int TagIdx);
 // Top of the parsing stack
 #define S_TOP(html)  (html->stack->getRef(html->stack->size()-1))
 
+/*-----------------------------------------------------------------------------
+ * Name spaces
+ *---------------------------------------------------------------------------*/
+using namespace dw;
+using namespace dw::core;
+using namespace dw::core::ui;
+using namespace dw::core::style;
+
+/*-----------------------------------------------------------------------------
+ * Typedefs
+ *---------------------------------------------------------------------------*/
+class DilloHtml;
+typedef void (*TagOpenFunct) (DilloHtml *Html, const char *Tag, int Tagsize);
+typedef void (*TagCloseFunct) (DilloHtml *Html, int TagIdx);
+typedef struct _DilloLinkImage   DilloLinkImage;
+typedef struct _DilloHtmlClass   DilloHtmlClass;
+typedef struct _DilloHtmlState   DilloHtmlState;
+typedef struct _DilloHtmlForm    DilloHtmlForm;
+typedef struct _DilloHtmlOption  DilloHtmlOption;
+typedef struct _DilloHtmlSelect  DilloHtmlSelect;
+typedef struct _DilloHtmlInput   DilloHtmlInput;
+
+typedef enum {
+   DT_NONE,           
+   DT_HTML,           
+   DT_XHTML
+} DilloHtmlDocumentType;
+
+typedef enum {
+   DILLO_HTML_PARSE_MODE_INIT = 0,
+   DILLO_HTML_PARSE_MODE_STASH,
+   DILLO_HTML_PARSE_MODE_STASH_AND_BODY,
+   DILLO_HTML_PARSE_MODE_VERBATIM,
+   DILLO_HTML_PARSE_MODE_BODY,
+   DILLO_HTML_PARSE_MODE_PRE
+} DilloHtmlParseMode;
+
+typedef enum {
+   SEEK_ATTR_START,
+   MATCH_ATTR_NAME,
+   SEEK_TOKEN_START,
+   SEEK_VALUE_START,
+   SKIP_VALUE,
+   GET_VALUE,
+   FINISHED
+} DilloHtmlTagParsingState;
+
+typedef enum {
+   HTML_LeftTrim      = 1 << 0,
+   HTML_RightTrim     = 1 << 1,
+   HTML_ParseEntities = 1 << 2
+} DilloHtmlTagParsingFlags;
+
+typedef enum {
+   DILLO_HTML_TABLE_MODE_NONE,  /* no table at all */
+   DILLO_HTML_TABLE_MODE_TOP,   /* outside of <tr> */
+   DILLO_HTML_TABLE_MODE_TR,    /* inside of <tr>, outside of <td> */
+   DILLO_HTML_TABLE_MODE_TD     /* inside of <td> */
+} DilloHtmlTableMode;
+
+typedef enum {
+   HTML_LIST_NONE,
+   HTML_LIST_UNORDERED,
+   HTML_LIST_ORDERED
+} DilloHtmlListMode;
+
+typedef enum {
+   DILLO_HTML_METHOD_UNKNOWN,
+   DILLO_HTML_METHOD_GET,
+   DILLO_HTML_METHOD_POST
+} DilloHtmlMethod;
+
+typedef enum {
+   DILLO_HTML_ENC_URLENCODING
+} DilloHtmlEnc;
+
+typedef enum {
+   DILLO_HTML_INPUT_UNKNOWN,
+   DILLO_HTML_INPUT_TEXT,
+   DILLO_HTML_INPUT_PASSWORD,
+   DILLO_HTML_INPUT_CHECKBOX,
+   DILLO_HTML_INPUT_RADIO,
+   DILLO_HTML_INPUT_IMAGE,
+   DILLO_HTML_INPUT_FILE,
+   DILLO_HTML_INPUT_BUTTON,
+   DILLO_HTML_INPUT_HIDDEN,
+   DILLO_HTML_INPUT_SUBMIT,
+   DILLO_HTML_INPUT_RESET,
+   DILLO_HTML_INPUT_BUTTON_SUBMIT,
+   DILLO_HTML_INPUT_BUTTON_RESET,
+   DILLO_HTML_INPUT_SELECT,
+   DILLO_HTML_INPUT_SEL_LIST,
+   DILLO_HTML_INPUT_TEXTAREA,
+   DILLO_HTML_INPUT_INDEX
+} DilloHtmlInputType;
+
+typedef enum {
+   IN_NONE        = 0,
+   IN_HTML        = 1 << 0,
+   IN_HEAD        = 1 << 1,
+   IN_BODY        = 1 << 2,
+   IN_FORM        = 1 << 3,
+   IN_SELECT      = 1 << 4,
+   IN_TEXTAREA    = 1 << 5,
+   IN_MAP         = 1 << 6,
+   IN_PRE         = 1 << 7,
+   IN_BUTTON      = 1 << 8
+} DilloHtmlProcessingState;
+
+/*-----------------------------------------------------------------------------
+ * Data Structures
+ *---------------------------------------------------------------------------*/
+struct _DilloLinkImage {
+   DilloUrl *url;
+   DilloImage *image;
+};
+
+struct _DilloHtmlState {
+   char *tag_name;
+   //DwStyle *style, *table_cell_style;
+   dw::core::style::Style *style, *table_cell_style;
+   DilloHtmlParseMode parse_mode;
+   DilloHtmlTableMode table_mode;
+   bool_t cell_text_align_set;
+   DilloHtmlListMode list_type;
+   int list_number;
+
+   /* TagInfo index for the tag that's being processed */
+   int tag_idx;
+
+   dw::core::Widget *textblock, *table;
+
+   /* This is used to align list items (especially in enumerated lists) */
+   dw::core::Widget *ref_list_item;
+
+   /* This makes image processing faster than a function
+      a_Dw_widget_get_background_color. */
+   int32_t current_bg_color;
+
+   /* This is used for list items etc; if it is set to TRUE, breaks
+      have to be "handed over" (see Html_add_indented and
+      Html_eventually_pop_dw). */
+   bool_t hand_over_break;
+};
+
+struct _DilloHtmlForm {
+   DilloHtmlMethod method;
+   DilloUrl *action;
+   DilloHtmlEnc enc;
+
+   misc::SimpleVector<DilloHtmlInput> *inputs;
+
+   int num_entry_fields;
+   int num_submit_buttons;
+
+   form::Form *form_receiver;
+};
+
+struct _DilloHtmlOption {
+   //GtkWidget *menuitem;
+   char *value;
+   bool_t init_val;
+};
+
+struct _DilloHtmlSelect {
+   //GtkWidget *menu;
+   int size;
+
+   DilloHtmlOption *options;
+   int num_options;
+   int num_options_max;
+};
+
+struct _DilloHtmlInput {
+   DilloHtmlInputType type;
+   void *widget;      /* May be a FLTKWidget or a Dw Widget. */
+   void *embed;       /* May be NULL */
+   char *name;
+   char *init_str;    /* note: some overloading - for buttons, init_str
+                         is simply the value of the button; for text
+                         entries, it is the initial value */
+   DilloHtmlSelect *select;
+   bool_t init_val;   /* only meaningful for buttons */
+};
+
+/*-----------------------------------------------------------------------------
+ * Classes
+ *---------------------------------------------------------------------------*/
+class DilloHtml {
+private:
+   class HtmlLinkReceiver: public dw::core::Widget::LinkReceiver {
+   public:
+      DilloHtml *html;
+
+      bool enter (dw::core::Widget *widget, int link, int img, int x, int y);
+      bool press (dw::core::Widget *widget, int link, int img, int x, int y,
+                  dw::core::EventButton *event);
+      bool click (dw::core::Widget *widget, int link, int img, int x, int y,
+                  dw::core::EventButton *event);
+   };
+   HtmlLinkReceiver linkReceiver;
+
+public:  //BUG: for now everything is public
+
+   BrowserWindow *bw;
+   DilloUrl *base_url;
+   dw::core::Widget *dw;    /* this is duplicated in the stack */
+
+   /* -------------------------------------------------------------------*/
+   /* Variables required at parsing time                                 */
+   /* -------------------------------------------------------------------*/
+   char *Start_Buf;
+   size_t Start_Ofs;
+   size_t CurrTagOfs;
+   size_t OldTagOfs, OldTagLine;
+
+   DilloHtmlDocumentType DocType; /* as given by DOCTYPE tag */
+   float DocTypeVersion;          /* HTML or XHTML version number */
+
+   misc::SimpleVector<DilloHtmlState> *stack;
+
+   int InFlags; /* tracks which elements we are in */
+
+   Dstr *Stash;
+   bool_t StashSpace;
+
+   char *SPCBuf;          /* Buffer for white space */
+
+   int pre_column;        /* current column, used in PRE tags with tabs */
+   bool_t PreFirstChar;   /* used to skip the first CR or CRLF in PRE tags */
+   bool_t PrevWasCR;      /* Flag to help parsing of "\r\n" in PRE tags */
+   bool_t PrevWasOpenTag; /* Flag to help deferred parsing of white space */
+   bool_t SPCPending;     /* Flag to help deferred parsing of white space */
+   bool_t InVisitedLink;  /* used to 'contrast_visited_colors' */
+   bool_t ReqTagClose;    /* Flag to help handling bad-formed HTML */
+   bool_t CloseOneTag;    /* Flag to help Html_tag_cleanup_at_close() */
+   bool_t TagSoup;        /* Flag to enable the parser's cleanup functions */
+   char *NameVal;         /* used for validation of "NAME" and "ID" in <A> */
+
+   /* element counters: used for validation purposes */
+   uchar_t Num_HTML, Num_HEAD, Num_BODY, Num_TITLE;
+
+   Dstr *attr_data;       /* Buffer for attribute value */
+
+   /* -------------------------------------------------------------------*/
+   /* Variables required after parsing (for page functionality)          */
+   /* -------------------------------------------------------------------*/
+   misc::SimpleVector<DilloHtmlForm> *forms;
+   misc::SimpleVector<DilloUrl*> *links;
+   misc::SimpleVector<DilloLinkImage*> *images;
+   //DwImageMapList maps;
+
+   int32_t link_color;
+   int32_t visited_color;
+
+private:
+   void initDw();  /* Used by the constructor */
+
+public:
+   DilloHtml(BrowserWindow *bw, const DilloUrl *url);
+   ~DilloHtml();
+   void connectSignals(dw::core::Widget *dw);
+   void write(char *Buf, int BufSize, int Eof);
+   void closeParser(int ClientKey);
+   int formNew(DilloHtmlMethod method, const DilloUrl *action,
+               DilloHtmlEnc enc);
+   void loadImages (const DilloUrl *pattern);
+};
+
+
 /*
  * Exported function with C linkage.
  */
@@ -84,9 +349,9 @@ extern "C" {
 void *a_Html_text(const char *type, void *P, CA_Callback_t *Call,void **Data);
 }
 
-/*
+/*-----------------------------------------------------------------------------
  * Forward declarations
- */
+ *---------------------------------------------------------------------------*/
 static const char *Html_get_attr(DilloHtml *html,
                                  const char *tag,
                                  int tagsize,
@@ -121,11 +386,9 @@ static void Html_add_input(DilloHtmlForm *form,
 static int Html_tag_index(const char *tag);
 static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
 
-
-/*
+/*-----------------------------------------------------------------------------
  * Local Data
- */
-
+ *---------------------------------------------------------------------------*/
 /* The following array of font sizes has to be _strictly_ crescent */
 static const int FontSizes[] = {8, 10, 12, 14, 18, 24};
 static const int FontSizesNum = 6;
@@ -141,6 +404,13 @@ typedef struct {
    TagCloseFunct close;   /* Close function */
 } TagInfo;
 extern const TagInfo Tags[];
+
+
+/*-----------------------------------------------------------------------------
+ *-----------------------------------------------------------------------------
+ * Main Code
+ *-----------------------------------------------------------------------------
+ *---------------------------------------------------------------------------*/
 
 /*
  * Return the line number of the tag being processed by the parser.
@@ -232,6 +502,15 @@ void a_Html_free(void *data)
    delete ((DilloHtml*)data);
 }
 
+/*
+ * Used bye the "Load images" page menuitem.
+ */ 
+void a_Html_load_images(void *v_html, DilloUrl *pattern)
+{
+   DilloHtml *html = (DilloHtml*)v_html;
+
+   html->loadImages(pattern);
+}
 
 /*
  * Set the URL data for image maps.
@@ -476,6 +755,8 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url)
    base_url = a_Url_dup(url);
    dw = NULL;
 
+   a_Bw_add_doc(p_bw, this);
+
    /* Init for-parsing variables */
    Start_Buf = NULL;
    Start_Ofs = 0;
@@ -583,6 +864,8 @@ DilloHtml::~DilloHtml()
    DilloHtmlInput *input_j;
 
    MSG("::~DilloHtml()\n");
+
+   a_Bw_remove_doc(bw, this);
 
    a_Url_free(base_url);
 
@@ -759,7 +1042,8 @@ bool DilloHtml::HtmlLinkReceiver::press (Widget *widget, int link, int img,
       } else {
          if (link == -1) {
             a_UIcmd_page_popup(bw, a_History_get_url(NAV_TOP_UIDX(bw)),
-                               bw->num_page_bugs ? bw->page_bugs->str:NULL);
+                               bw->num_page_bugs ? bw->page_bugs->str:NULL,
+                               prefs.load_images);
             ret = true;
          } else {
             a_UIcmd_link_popup(bw, html->links->get(link));

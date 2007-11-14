@@ -27,7 +27,8 @@ void a_UIcmd_search_dialog(void *vbw);
 void a_UIcmd_book(void *vbw);
 void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
-void a_UIcmd_page_popup(void *vbw, const DilloUrl *url, const char *bugs_txt);
+void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
+                        const char *bugs_txt, int prefs_load_images);
 void a_UIcmd_link_popup(void *vbw, const DilloUrl *url);
 void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, DilloUrl *link_url);
 void a_UIcmd_view_page_source(const DilloUrl *url);

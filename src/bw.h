@@ -24,8 +24,11 @@ struct _BrowserWindow
 
    /* All the rendering is done by this.
     * It is defined as a void pointer to avoid C++ in this structure.
-    * C++ sources have to include browser.h and cast it into an object. */
+    * C++ sources have to include "dw/core.hh" and cast it into an object. */
    void *render_layout;
+
+   /* Root document(s). Currently only used by DilloHtml */
+   Dlist *Docs;
 
    /* A list of active cache clients in the window (The primary Key) */
    Dlist *RootClients;
@@ -82,6 +85,8 @@ void a_Bw_add_client(BrowserWindow *bw, int Key, int Root);
 int a_Bw_remove_client(BrowserWindow *bw, int ClientKey);
 void a_Bw_close_client(BrowserWindow *bw, int ClientKey);
 void a_Bw_stop_clients(BrowserWindow *bw, int flags);
+void a_Bw_add_doc(BrowserWindow *bw, void *vdoc);
+void a_Bw_remove_doc(BrowserWindow *bw, void *vdoc);
 void a_Bw_add_url(BrowserWindow *bw, const DilloUrl *Url);
 void a_Bw_cleanup(BrowserWindow *bw);
 

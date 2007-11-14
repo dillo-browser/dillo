@@ -22,6 +22,7 @@
 #include "menu.hh"
 #include "uicmd.hh"
 #include "history.h"
+#include "html.hh"
 
 using namespace fltk;
 
@@ -149,6 +150,24 @@ static void Menu_view_page_bugs_cb(Widget* )
    a_UIcmd_view_page_bugs(popup_bw);
 }
 
+/*
+ * Load images on current page that match URL pattern
+ *
+ * BUG: assumes that the document is a DilloHtml.
+ */
+static void Menu_load_images_cb(Widget*, void *user_data)
+{
+   DilloUrl *pattern = (DilloUrl *) user_data ;
+
+   if (popup_bw && popup_bw->Docs) {
+      int i, n;
+      n = dList_length(popup_bw->Docs);
+      for (i = 0; i < n; i++) {
+         a_Html_load_images(dList_nth_data(popup_bw->Docs, i), pattern);
+      }
+   }
+}
+
 /* 
  * Validate URL with the W3C
  */
@@ -205,16 +224,18 @@ static void Menu_history_cb(Widget *wid, void *data)
  * Page popup menu (construction & popup)
  */
 void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url, 
-                       const char *bugs_txt)
+                       const char *bugs_txt, int prefs_load_images)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
    // Active/inactive control.
    static Item *view_page_bugs_item = 0;
+   static Item *load_images_item = 0;
 
    popup_bw = bw;
    popup_url = url;
    popup_bugs = bugs_txt;
+
    if (!pm) {
       Item *i;
       pm = new PopupMenu(0,0,0,0,"&PAGE OPTIONS");
@@ -224,6 +245,8 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
        //i->shortcut(CTRL+'n');
        i = view_page_bugs_item = new Item("View page Bugs");
        i->callback(Menu_view_page_bugs_cb);
+       i = load_images_item = new Item("Load images");
+       i->callback(Menu_load_images_cb);
        i = new Item("Bookmark this page");
        i->callback(Menu_add_bookmark_cb);
        new Divider();    
@@ -241,9 +264,17 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    }
 
    if (bugs_txt == NULL)
-       view_page_bugs_item->deactivate();
+      view_page_bugs_item->deactivate();
    else
-       view_page_bugs_item->activate();
+      view_page_bugs_item->activate();
+
+   if (prefs_load_images == 1)
+      load_images_item->deactivate();
+   else
+      load_images_item->activate();
+
+   // NULL is wildcard
+   load_images_item->user_data(NULL);
 
    // Make the popup a child of the calling UI object
    ((Group *)bw->ui)->add(pm);
@@ -295,7 +326,11 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
-   Widget *link_menuitem;
+   // Active/inactive control.
+   static Item *link_menuitem = 0;
+   static Item *load_menuitem = 0;
+
+   DilloUrl *userdata_url = a_Url_dup(url);
 
    popup_bw = bw;
    popup_url = url;
@@ -304,27 +339,30 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
       Item *i;
       pm = new PopupMenu(0,0,0,0,"&IMAGE OPTIONS");
       pm->begin();
-       i = new Item("Isolate Image");                     // 0
+       i = new Item("Isolate Image");
        i->callback(Menu_open_url_cb);
-       i = new Item("Open Image in New Window");          // 1
+       i = new Item("Open Image in New Window");
        i->callback(Menu_open_url_nw_cb);
-       i = new Item("Bookmark this Image");               // 2
+       i = load_menuitem = new Item("Load image");
+       i->callback(Menu_load_images_cb);
+       i = new Item("Bookmark this Image");
        i->callback(Menu_add_bookmark_cb);
-       i = new Item("Copy Image location");               // 3
+       i = new Item("Copy Image location");
        i->callback(Menu_unimplemented_cb);
        i->deactivate();
-       new Divider();                                     // 4
-       i = new Item("Save Image As...");                  // 5
+       new Divider();
+       i = new Item("Save Image As...");
        i->callback(Menu_save_link_cb);
-       new Divider();                                     // 6
-       i = new Item("Link menu");                         // 7
+       new Divider();
+       i = link_menuitem = new Item("Link menu");
        i->callback(Menu_link_cb);
 
       pm->type(PopupMenu::POPUP123);
       pm->end();
    }
 
-   link_menuitem = pm->child(7);                          // 7
+   // point to this item initially
+   pm->item(load_menuitem);
 
    if (link_url) {
       link_menuitem->user_data(link_url);
@@ -332,11 +370,15 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
    } else {
       link_menuitem->deactivate();
    }
+
+   load_menuitem->user_data(userdata_url);
  
    // Make the popup a child of the calling UI object
    ((Group *)bw->ui)->add(pm);
 
    pm->popup();
+
+   a_Url_free(userdata_url);
 }
 
 /*
