@@ -59,7 +59,8 @@ typedef struct {
    const DilloUrl *Location; /* New URI for redirects */
    Dstr *Data;               /* Pointer to raw data */
    Decode *Decoder;          /* Data decoder */
-   int TotalSize;            /* Goal size of the whole data (0 if unknown) */
+   int ExpectedSize;         /* Goal size of the HTTP transfer (0 if unknown)*/
+   int TransferSize;         /* Actual length of the HTTP transfer */
    uint_t Flags;             /* Look Flag Defines in cache.h */
 } CacheEntry_t;
 
@@ -205,7 +206,8 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->Location = NULL;
    NewEntry->Data = dStr_sized_new(8*1024);
    NewEntry->Decoder = NULL;
-   NewEntry->TotalSize = 0;
+   NewEntry->ExpectedSize = 0;
+   NewEntry->TransferSize = 0;
    NewEntry->Flags = 0;
 }
 
@@ -250,7 +252,7 @@ void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds)
    dStr_truncate(entry->Data, 0);
    dStr_append_l(entry->Data, data_ds->str, data_ds->len);
    dStr_fit(entry->Data);
-   entry->TotalSize = entry->Data->len;
+   entry->ExpectedSize = entry->TransferSize = entry->Data->len;
 }
 
 /*
@@ -487,9 +489,7 @@ static void Cache_parse_header(CacheEntry_t *entry,
 
    if ((Length = Cache_parse_field(header, "Content-Length")) != NULL) {
       entry->Flags |= CA_GotLength;
-      entry->TotalSize = strtol(Length, NULL, 10);
-      if (entry->TotalSize < 0)
-         entry->TotalSize = 0;
+      entry->ExpectedSize = MAX(strtol(Length, NULL, 10), 0);
       dFree(Length);
    }
 
@@ -516,15 +516,15 @@ static void Cache_parse_header(CacheEntry_t *entry,
    decodedBuf = a_Decode_process(entry->Decoder, buf + HdrLen,
                                  buf_size - HdrLen);
 
-   if (entry->TotalSize > 0) {
-      if (entry->TotalSize > HUGE_FILESIZE) {
+   if (entry->ExpectedSize > 0) {
+      if (entry->ExpectedSize > HUGE_FILESIZE) {
          entry->Flags |= CA_HugeFile;
       }
       /* Avoid some reallocs. With MAX_INIT_BUF we avoid a SEGFAULT
        * with huge files (e.g. iso files).
        * Note: the buffer grows automatically. */
       dStr_free(entry->Data, 1);
-      entry->Data = dStr_sized_new(MIN(entry->TotalSize+1, MAX_INIT_BUF));
+      entry->Data = dStr_sized_new(MIN(entry->ExpectedSize+1, MAX_INIT_BUF));
    }
    dStr_append_l(entry->Data, decodedBuf->str, decodedBuf->len);
    dStr_free(decodedBuf, 1);
@@ -589,17 +589,15 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
    dReturn_if_fail (entry != NULL);
 
    if (Op == IOClose) {
-      if (entry->Flags & CA_GotLength && entry->TotalSize != entry->Data->len){
+      if ((entry->Flags & CA_GotLength) &&
+          (entry->ExpectedSize != entry->TransferSize)) {
          MSG_HTTP("Content-Length does NOT match message body,\n"
                   " at: %s\n", URL_STR_(entry->Url));
-         _MSG("entry->TotalSize = %d, entry->Data->len = %d\n",
-             entry->TotalSize, entry->Data->len);
-// Doesn't work. I could make TotalSize into something like BytesRemaining,
-// seeing whether it goes precisely to 0.
+         MSG("entry->ExpectedSize = %d, entry->TransferSize = %d\n",
+             entry->ExpectedSize, entry->TransferSize);
       }
       entry->Flags |= CA_GotData;
       entry->Flags &= ~CA_Stopped;          /* it may catch up! */
-      entry->TotalSize = entry->Data->len;
       if (entry->Decoder) {
          a_Decode_free(entry->Decoder);
          entry->Decoder = NULL;
@@ -617,6 +615,7 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
       /* Haven't got the whole header yet */
       len = Cache_get_header(entry, buf, buf_size);
       if (entry->Flags & CA_GotHeader) {
+         entry->TransferSize = buf_size - len;  /* body */
          /* Let's scan, allocate, and set things according to header info */
          Cache_parse_header(entry, buf, buf_size, len);
          /* Now that we have it parsed, let's update our clients */
@@ -624,6 +623,8 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
       }
       return;
    }
+
+   entry->TransferSize += buf_size;
 
    /* Assert we have a Decoder.
     * BUG: this is a workaround, more study and a proper design
@@ -789,7 +790,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
             }
             if (entry->Flags & CA_HugeFile) {
                a_UIcmd_set_msg(Client_bw,"Huge file! (%dMB)",
-                               entry->TotalSize / (1024*1024));
+                               entry->ExpectedSize / (1024*1024));
                AbortEntry = OfferDownload = TRUE;
             }
          } else {
