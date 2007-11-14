@@ -32,10 +32,10 @@ static Dstr *Decode_gzip(Decode *dc, const char *inData, int inLen)
    Dstr *output = dStr_new("");
 
    while ((rc == Z_OK) && (inputConsumed < inLen)) {
-      zs->next_in = (char *)inData + inputConsumed;
+      zs->next_in = (Bytef *)inData + inputConsumed;
       zs->avail_in = inLen - inputConsumed;
 
-      zs->next_out = dc->buffer;
+      zs->next_out = (Bytef *)dc->buffer;
       zs->avail_out = bufsize;
 
       rc = inflate(zs, Z_SYNC_FLUSH);
@@ -69,7 +69,7 @@ static Dstr *Decode_charset(Decode *dc, const char *inData, int inLen)
 
    Dstr *input, *output;
    char *inPtr, *outPtr;
-   int inLeft, outRoom;
+   size_t inLeft, outRoom;
 
    output = dStr_new("");
 
