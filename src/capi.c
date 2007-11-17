@@ -237,7 +237,7 @@ static int Capi_dpi_verify_request(DilloWeb *web)
 /*
  * If the url belongs to a dpi server, return its name.
  */
-int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
+static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
 {
    char *p, *server = NULL, *url_str = URL_STR(url);
 

@@ -123,7 +123,7 @@ int NewHighlightButton::handle(int e)
 //
 // Global event handler function ---------------------------------------------
 //
-int global_event_handler(int e, Window *win)
+static int global_event_handler(int e, Window *win)
 {
    int ret = 0;
 
@@ -162,7 +162,7 @@ int global_event_handler(int e, Window *win)
 /*
  * Callback handler for the close window event.
  */
-void close_window_cb(Widget *wid, void *data)
+static void close_window_cb(Widget *wid, void *data)
 {
    a_UIcmd_close_bw(data);
 }
@@ -188,7 +188,7 @@ static void search_cb(Widget *wid, void *data)
 /*
  * Callback for the location's clear-button.
  */
-void clear_cb(Widget *w, void *data)
+static void clear_cb(Widget *w, void *data)
 {
    UI *ui = (UI*)data;
 
@@ -216,7 +216,7 @@ static void color_change_cb(Widget *wid, void *data)
 /*
  * Send the browser to the new URL in the location.
  */
-void location_cb(Widget *wid, void *data)
+static void location_cb(Widget *wid, void *data)
 {
    Input *i = (Input*)wid;
 
@@ -233,7 +233,7 @@ void location_cb(Widget *wid, void *data)
 /*
  * Callback handler for button press on the panel
  */
-void b1_cb(Widget *wid, void *cb_data)
+static void b1_cb(Widget *wid, void *cb_data)
 {
    int bn = VOIDP2INT(cb_data);
    int k = event_key();
@@ -289,7 +289,7 @@ void b1_cb(Widget *wid, void *cb_data)
 /*
  * Callback handler for fullscreen button press
  */
-void fullscreen_cb(Widget *wid, void *data)
+static void fullscreen_cb(Widget *wid, void *data)
 {
    ((UI*)data)->fullscreen_cb_i();
 }
@@ -297,7 +297,7 @@ void fullscreen_cb(Widget *wid, void *data)
 /*
  * Callback for the bug meter button.
  */
-void bugmeter_cb(Widget *w, void *data)
+static void bugmeter_cb(Widget *w, void *data)
 {
    int k = event_key();
    if (k && k <= 7)
@@ -312,7 +312,7 @@ void bugmeter_cb(Widget *w, void *data)
 /*
  * Callback for the image loading button.
  */
-void imageload_cb(Widget *w, void *data)
+static void imageload_cb(Widget *w, void *data)
 {
    int k = event_key();
    if (k && k <= 7)
@@ -325,7 +325,7 @@ void imageload_cb(Widget *w, void *data)
 /*
  * File menu item callback.
  */
-void menu_cb(Widget* w, void*)
+static void menu_cb(Widget* w, void*)
 {
   Menu* menu = (Menu*)w;
   Widget* item = menu->get_item();

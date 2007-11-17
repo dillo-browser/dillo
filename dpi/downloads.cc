@@ -654,7 +654,7 @@ void DLItem::child_finished(int status)
 /*
  * Convert seconds into human readable [hour]:[min]:[sec] string.
  */
-void secs2timestr(int et, char *str)
+static void secs2timestr(int et, char *str)
 {
    int eh, em, es;
 
@@ -743,13 +743,13 @@ void DLItem::update()
 
 /*! SIGCHLD handler
  */
-void raw_sigchld(int)
+static void raw_sigchld(int)
 {          
    caught_sigchld = 1;
 }
 
 /*! Establish SIGCHLD handler */
-void est_sigchld(void)
+static void est_sigchld(void)
 {
    struct sigaction sigact;
    sigset_t set;
@@ -767,7 +767,7 @@ void est_sigchld(void)
 /*
  * Timeout function to check wget's exit status.
  */
-void cleanup_cb(void *data)
+static void cleanup_cb(void *data)
 {
    DLItemList *list = (DLItemList *)data;
 
@@ -793,7 +793,7 @@ void cleanup_cb(void *data)
  * Timeout function to update the widget indicators,
  * also remove widgets marked "done".
  */
-void update_cb(void *data)
+static void update_cb(void *data)
 {
    static int cb_used = 0;
 

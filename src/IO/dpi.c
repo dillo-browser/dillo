@@ -130,7 +130,7 @@ static void Dpi_conn_free(dpi_conn_t *conn)
  * Check whether a conn is still valid.
  * Return: 1 if found, 0 otherwise
  */
-int Dpi_conn_valid(int key)
+static int Dpi_conn_valid(int key)
 {
    return (a_Klist_get_data(ValidConns, key)) ? 1 : 0;
 }

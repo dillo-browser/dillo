@@ -54,6 +54,7 @@ dillo-fltk2
  - Enabled hiding widgets of the control panel from dillorc2.
  - Added a save-directory preference (save_dir in dillorc2).
  - Fixed page-popup-menu to use the stack's top URL instead of base_url.
+ - Added the "static" qualifier where missing.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

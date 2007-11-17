@@ -274,7 +274,7 @@ static void Cache_entry_free(CacheEntry_t *entry)
  * All the entry clients are removed too! (it may stop rendering of this
  * same resource on other windows, but nothing more).
  */
-void Cache_entry_remove(CacheEntry_t *entry, DilloUrl *url)
+static void Cache_entry_remove(CacheEntry_t *entry, DilloUrl *url)
 {
    int i;
    CacheClient_t *Client;
@@ -691,7 +691,7 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
  * Check whether a URL scheme is downloadable.
  * Return: 1 enabled, 0 disabled.
  */
-int Cache_download_enabled(const DilloUrl *url)
+static int Cache_download_enabled(const DilloUrl *url)
 {
    if (!dStrcasecmp(URL_SCHEME(url), "http") ||
        !dStrcasecmp(URL_SCHEME(url), "https") ||

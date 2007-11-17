@@ -876,7 +876,7 @@ static void *File_serve_clients(void *client)
  * Check a fd for activity, with a max timeout.
  * return value: 0 if timeout, 1 if input available, -1 if error.
  */
-int File_check_fd(int filedes, unsigned int seconds)
+static int File_check_fd(int filedes, unsigned int seconds)
 {
   int st;
   fd_set set;

@@ -159,7 +159,7 @@ static int Cookies_cmp(const void *a, const void *b);
 /*
  * Compare function for searching a cookie node
  */
-int Cookie_node_cmp(const void *v1, const void *v2)
+static int Cookie_node_cmp(const void *v1, const void *v2)
 {
    const CookieNode *n1 = v1, *n2 = v2;
 
@@ -169,7 +169,7 @@ int Cookie_node_cmp(const void *v1, const void *v2)
 /*
  * Compare function for searching a cookie node by domain
  */
-int Cookie_node_by_domain_cmp(const void *v1, const void *v2)
+static int Cookie_node_by_domain_cmp(const void *v1, const void *v2)
 {
    const CookieNode *node = v1;
    const char *domain = v2;
@@ -223,7 +223,7 @@ static void Cookies_free_cookie(CookieData_t *cookie)
  * Initialize the cookies module
  * (The 'disabled' variable is writable only within Cookies_init)
  */
-void Cookies_init()
+static void Cookies_init()
 {
    CookieData_t *cookie;
    char *filename;
@@ -417,7 +417,7 @@ void Cookies_init()
 /*
  * Flush cookies to disk and free all the memory allocated.
  */
-void Cookies_save_and_free()
+static void Cookies_save_and_free()
 {
    int i, fd;
    CookieNode *node;
@@ -1045,8 +1045,8 @@ static char *Cookies_strip_path(const char *path)
 /*
  * Set the value corresponding to the cookie string
  */
-void Cookies_set(char *cookie_string, char *url_host,
-                 char *url_path, int url_port)
+static void Cookies_set(char *cookie_string, char *url_host,
+                        char *url_path, int url_port)
 {
    CookieControlAction action;
    CookieData_t *cookie;
@@ -1113,8 +1113,8 @@ static bool_t Cookies_match(CookieData_t *cookie, int port,
 /*
  * Return a string that contains all relevant cookies as headers.
  */
-char *Cookies_get(char *url_host, char *url_path,
-                  char *url_scheme, int url_port)
+static char *Cookies_get(char *url_host, char *url_path,
+                         char *url_scheme, int url_port)
 {
    char *domain_str, *q, *str, *path;
    CookieData_t *cookie;

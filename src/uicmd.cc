@@ -250,7 +250,7 @@ void a_UIcmd_reload(void *vbw)
 /*
  * Return a suitable filename for a given URL path.
  */
-char *UIcmd_make_save_filename(const char *pathstr)
+static char *UIcmd_make_save_filename(const char *pathstr)
 {
    size_t MaxLen = 64;
    char *FileName, *name;
@@ -363,7 +363,7 @@ void a_UIcmd_open_url_dialog(void *vbw)
  * a string of keywords (separarated by blanks) and prefs.search_url.
  * The search string is urlencoded.
  */
-char *UIcmd_make_search_str(const char *str)
+static char *UIcmd_make_search_str(const char *str)
 {
    char *keys = a_Url_encode_hex_str(str), *c = prefs.search_url;
    Dstr *ds = dStr_sized_new(128);
