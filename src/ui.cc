@@ -120,40 +120,6 @@ int NewHighlightButton::handle(int e)
 //   "Clear", "Search"
 //};
 
-//
-// Global event handler function ---------------------------------------------
-//
-static int global_event_handler(int e, Window *win)
-{
-   int ret = 0;
-
-   if (e == SHORTCUT) {
-      if (event_state(CTRL)) {
-         if (event_key() == 'l') {
-            a_UIcmd_open_url_dialog(win->user_data());
-            ret = 1;
-         } else if (event_key() == 'n') {
-            a_UIcmd_browser_window_new(win->w(), win->h());
-            ret = 1;
-         } else if (event_key() == 'o') {
-            a_UIcmd_open_file(win->user_data());
-            ret = 1;
-         } else if (event_key() == 'q') {
-            a_UIcmd_close_bw(win->user_data());
-            ret = 1;
-         } else if (event_key() == 's') {
-            a_UIcmd_search_dialog(win->user_data());
-            ret = 1;
-         }
-      }
-
-      _MSG("global_event_handler: Alt_R=%d\n", event_key_state(RightAltKey));
-      if (event_key_state(LeftAltKey) && event_key() == 'q') {
-         a_UIcmd_close_all_bw();
-      }
-   }
-   return ret;
-}
 
 //
 // Callback functions --------------------------------------------------------
@@ -674,8 +640,6 @@ UI::UI(int win_w, int win_h, const char* label) :
    FullScreen->tooltip("Hide Controls");
    FullScreen->callback(fullscreen_cb, (void *)this);
 
-   add_event_handler(global_event_handler);
-
    customize(0);
 
    //show();
@@ -686,12 +650,38 @@ UI::UI(int win_w, int win_h, const char* label) :
  */
 int UI::handle(int event)
 {
-   if (event == KEY || event == KEYUP) {
-      _MSG ("UI::handle %s key=%d\n",
-            event == KEY ? "KEY" : "KEYUP", event_key());
-      return 0;
+   int ret = 0;
+
+   if (event == SHORTCUT) {
+      if (event_state(CTRL)) {
+         if (event_key() == 'l') {
+            a_UIcmd_open_url_dialog(user_data());
+            ret = 1;
+         } else if (event_key() == 'n') {
+            a_UIcmd_browser_window_new(w(), h());
+            ret = 1;
+         } else if (event_key() == 'o') {
+            a_UIcmd_open_file(user_data());
+            ret = 1;
+         } else if (event_key() == 'q') {
+            a_UIcmd_close_bw(user_data());
+            ret = 1;
+         } else if (event_key() == 's') {
+            a_UIcmd_search_dialog(user_data());
+            ret = 1;
+         }
+      }
+
+      if (event_key_state(LeftAltKey) && event_key() == 'q') {
+         a_UIcmd_close_all_bw();
+         ret = 1;
+      }
    }
-   return Window::handle(event);
+
+   if (ret == 0) {
+      ret = Window::handle(event);
+   }
+   return ret;
 }
 
 
