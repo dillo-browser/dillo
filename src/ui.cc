@@ -676,6 +676,17 @@ int UI::handle(int event)
          a_UIcmd_close_all_bw();
          ret = 1;
       }
+
+      // Back and Forward shortcuts
+      if ((!event_state(SHIFT) && event_key() == BackSpaceKey) ||
+          event_key() == ',') {
+         a_UIcmd_back(user_data());
+         ret = 1;
+      } else if ((event_state(SHIFT) && event_key() == BackSpaceKey) ||
+                 event_key() == '.') {
+         a_UIcmd_forw(user_data());
+         ret = 1;
+      }
    }
 
    if (ret == 0) {
