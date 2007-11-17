@@ -56,7 +56,7 @@
 
 /*
  * Return the url as a string.
- * (initializing 'url_string' camp if necessary)
+ * (initializing 'url_string' field if necessary)
  */
 char *a_Url_str(const DilloUrl *u)
 {
@@ -87,7 +87,7 @@ char *a_Url_str(const DilloUrl *u)
 
 /*
  * Return the hostname as a string.
- * (initializing 'hostname' and 'port' camps if necessary)
+ * (initializing 'hostname' and 'port' fields if necessary)
  * Note: a similar approach can be taken for user:password auth.
  */
 const char *a_Url_hostname(const DilloUrl *u)
@@ -440,13 +440,13 @@ int a_Url_cmp(const DilloUrl *A, const DilloUrl *B)
    dReturn_val_if_fail(A && B, 1);
 
    if (A == B ||
-       ((st = URL_STRCAMP_I_CMP(A->authority, B->authority)) == 0 &&
+       ((st = URL_STR_FIELD_I_CMP(A->authority, B->authority)) == 0 &&
         (st = strcmp(A->path ? A->path + (*A->path == '/') : "",
                      B->path ? B->path + (*B->path == '/') : "")) == 0 &&
-        //(st = URL_STRCAMP_CMP(A->path, B->path)) == 0 &&
-        (st = URL_STRCAMP_CMP(A->query, B->query)) == 0 &&
-        (st = URL_STRCAMP_CMP(A->data, B->data)) == 0 &&
-        (st = URL_STRCAMP_I_CMP(A->scheme, B->scheme) == 0)))
+        //(st = URL_STR_FIELD_CMP(A->path, B->path)) == 0 &&
+        (st = URL_STR_FIELD_CMP(A->query, B->query)) == 0 &&
+        (st = URL_STR_FIELD_CMP(A->data, B->data)) == 0 &&
+        (st = URL_STR_FIELD_I_CMP(A->scheme, B->scheme) == 0)))
       return 0;
    return st;
 }

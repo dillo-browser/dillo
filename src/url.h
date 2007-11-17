@@ -87,10 +87,10 @@
 #define URL_ILLEGAL_CHARS_SPC(u)    URL_ILLEGAL_CHARS_SPC_(u)
 
 
-/* URL-camp compare methods */
-#define URL_STRCAMP_CMP(s1,s2) \
+/* URL-field compare methods */
+#define URL_STR_FIELD_CMP(s1,s2) \
    (s1) && (s2) ? strcmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
-#define URL_STRCAMP_I_CMP(s1,s2) \
+#define URL_STR_FIELD_I_CMP(s1,s2) \
    (s1) && (s2) ? dStrcasecmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
 
 

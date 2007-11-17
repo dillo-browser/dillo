@@ -881,7 +881,9 @@ void UI::color_change_cb_i()
 void UI::fullscreen_cb_i()
 {
 #if 0
-   // Works, but for unknown reasons it resizes hidden widgets on "Maximize"
+   // BUG:
+   // Works, but for unknown reasons it resizes hidden-widgets upon "Maximize"
+   // i.e. hide panel -> maximize window -> unhide panel == larger panel
    if (Panel->visible_r()) {
       Panel->hide();
       Status->hide();

@@ -63,7 +63,7 @@ int a_History_set_title(int idx, const char *title)
 }
 
 /*
- * Return the DilloUrl camp (by index)
+ * Return the DilloUrl field (by index)
  */
 DilloUrl *a_History_get_url(int idx)
 {
@@ -73,7 +73,7 @@ DilloUrl *a_History_get_url(int idx)
 }
 
 /*
- * Return the title camp (by index)
+ * Return the title field (by index)
  * ('force' returns URL_STR when there's no title)
  */
 const char *a_History_get_title(int idx, int force)
@@ -89,7 +89,7 @@ const char *a_History_get_title(int idx, int force)
 }
 
 /*
- * Return the title camp (by url)
+ * Return the title field (by url)
  * ('force' returns URL_STR when there's no title)
  */
 const char *a_History_get_title_by_url(const DilloUrl *url, int force)

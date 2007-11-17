@@ -498,7 +498,6 @@ void *a_Html_text(const char *Type, void *P, CA_Callback_t *Call, void **Data)
 
 void a_Html_free(void *data)
 {
-   MSG("a_Html_free! %p\n", data);
    delete ((DilloHtml*)data);
 }
 
@@ -863,7 +862,7 @@ DilloHtml::~DilloHtml()
    DilloHtmlForm *form;
    DilloHtmlInput *input_j;
 
-   MSG("::~DilloHtml()\n");
+   MSG("::~DilloHtml(this=%p)\n", this);
 
    a_Bw_remove_doc(bw, this);
 
@@ -4003,7 +4002,7 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    int input_idx;
   
    if (!(html->InFlags & IN_FORM)) {
-      MSG_HTML("input camp outside <form>\n");
+      MSG_HTML("<input> element outside <form>\n");
       return;
    }
   
@@ -4653,7 +4652,7 @@ static void Html_tag_close_par(DilloHtml *html, int TagIdx)
  * Function index for the open and close functions for each tag
  * (Alphabetically sorted for a binary search)
  *
- * Explanation for the 'Flags' camp:
+ * Explanation for the 'Flags' field:
  *
  *   {"address", B8(010110), ...}
  *                  |||||`- inline element

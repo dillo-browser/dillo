@@ -144,7 +144,7 @@ static int Cache_client_make_key(void)
 
 /*
  * Add a client to ClientQueue.
- *  - Every client-camp is just a reference (except 'Web').
+ *  - Every client-field is just a reference (except 'Web').
  *  - Return a unique number for identifying the client.
  */
 static int Cache_client_enqueue(const DilloUrl *Url, DilloWeb *Web,
