@@ -80,6 +80,8 @@ dillo-fltk2
    Patches: Johannes Hofmann
 +- Improved FLTK library detection at configure time.
    Patch: Frank Gevaerts
++- Bound Ctrl-R to reload.
+   Patch: Jeremy Henty
 
  TODO:
 

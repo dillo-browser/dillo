@@ -56,7 +56,8 @@ public:
 };
 
 /*
- * Disable: UpKey, DownKey, PageUpKey, PageDownKey and CTRL+{o,HomeKey,EndKey}
+ * Disable: UpKey, DownKey, PageUpKey, PageDownKey and 
+ * CTRL+{o,r,HomeKey,EndKey}
  */
 int NewInput::handle(int e)
 {
@@ -64,7 +65,7 @@ int NewInput::handle(int e)
    bool ctrl = event_state(CTRL);
 
    _MSG("NewInput::handle event=%d", e);
-   if (ctrl && (k == 'o' || k == HomeKey || k == EndKey))
+   if (ctrl && (k == 'o' || k == 'r' || k == HomeKey || k == EndKey))
       return 0;
    if ((e == KEY || e == KEYUP) &&
        k == UpKey || k == DownKey || k == PageUpKey || k == PageDownKey) {
@@ -665,6 +666,9 @@ int UI::handle(int event)
             ret = 1;
          } else if (event_key() == 'q') {
             a_UIcmd_close_bw(user_data());
+            ret = 1;
+         } else if (event_key() == 'r') {
+            a_UIcmd_reload(user_data());
             ret = 1;
          } else if (event_key() == 's') {
             a_UIcmd_search_dialog(user_data());
