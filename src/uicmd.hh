@@ -31,6 +31,7 @@ void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
                         const char *bugs_txt, int prefs_load_images);
 void a_UIcmd_link_popup(void *vbw, const DilloUrl *url);
 void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, DilloUrl *link_url);
+void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr);
 void a_UIcmd_view_page_source(const DilloUrl *url);
 void a_UIcmd_view_page_bugs(void *vbw);
 void a_UIcmd_bugmeter_popup(void *vbw);

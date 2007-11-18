@@ -70,9 +70,10 @@ void NewItem::draw() {
 
 
 //--------------------------------------------------------------------------
-static void Menu_unimplemented_cb(Widget*)
+static void Menu_copy_urlstr_cb(Widget *)
 {
-   MSG("Menu_unimplemented_cb: click! :-)\n");
+   if (popup_url)
+      a_UIcmd_copy_urlstr(popup_bw, URL_STR(popup_url));
 }
 
 static void Menu_link_cb(Widget*, void *user_data)
@@ -302,8 +303,7 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
        i = new Item("Bookmark this Link");
        i->callback(Menu_add_bookmark_cb);
        i = new Item("Copy Link location");
-       i->callback(Menu_unimplemented_cb);
-       i->deactivate();
+       i->callback(Menu_copy_urlstr_cb);
        new Divider();    
        i = new Item("Save Link As...");
        i->callback(Menu_save_link_cb);
@@ -348,8 +348,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
        i = new Item("Bookmark this Image");
        i->callback(Menu_add_bookmark_cb);
        i = new Item("Copy Image location");
-       i->callback(Menu_unimplemented_cb);
-       i->deactivate();
+       i->callback(Menu_copy_urlstr_cb);
        new Divider();
        i = new Item("Save Image As...");
        i->callback(Menu_save_link_cb);

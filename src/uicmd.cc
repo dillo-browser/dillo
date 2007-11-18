@@ -469,6 +469,15 @@ void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, DilloUrl *link_url)
 }
 
 /*
+ * Copy url string to paste buffer
+ */
+void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr)
+{
+   Layout *layout = (Layout*)bw->render_layout;
+   layout->copySelection(urlstr);
+}
+
+/*
  * Show a text window with the URL's source
  */
 void a_UIcmd_view_page_source(const DilloUrl *url)

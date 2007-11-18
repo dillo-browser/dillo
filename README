@@ -26,9 +26,9 @@ Advanced * viewport scrolling is not yet optimized (takes lots of CPU)
          * you may experience crashes from "assert" statements from
            unfinished code.
 Fixed    * context menus are not yet completely hooked or activated
-         * Selecting text with the mouse is half hooked. This is, you
+Fixed    * Selecting text with the mouse is half hooked. This is, you
            can see the selected text in the terminal but can't paste.
-         * Searching for text is not yet hooked. Look in test/ directory
+Advanced * Searching for text is not yet hooked. Look in test/ directory
            of dw2 for an example of find text.
 Advanced * Form elements are not yet hooked/implemented. You can look
            in dw2' test/dw_ui_test.cc to see what's already done.
