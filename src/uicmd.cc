@@ -708,3 +708,43 @@ void a_UIcmd_fullscreen_toggle(BrowserWindow *bw)
    BW2UI(bw)->fullscreen_toggle();
 }
 
+/*
+ * Open the text search dialog.
+ */
+void a_UIcmd_findtext_dialog(BrowserWindow *bw)
+{
+   a_Dialog_findtext(bw);
+}
+
+/*
+ * Search for next occurrence of key.
+ */
+void a_UIcmd_findtext_search(BrowserWindow *bw, const char *key, int case_sens)
+{
+   Layout *l = (Layout *)bw->render_layout;
+   
+   switch (l->search(key, case_sens)) {
+      case FindtextState::RESTART:
+         a_UIcmd_set_msg(bw, "No further occurrences of \"%s\". "
+                             "Restarting from the top.", key);
+         break;
+      case FindtextState::NOT_FOUND:
+         a_UIcmd_set_msg(bw, "\"%s\" not found.", key);
+         break;
+      case FindtextState::SUCCESS:
+      default:
+         a_UIcmd_set_msg(bw, "");
+   }
+}
+
+/*
+ * Reset text search state.
+ */
+void a_UIcmd_findtext_reset(BrowserWindow *bw)
+{
+   Layout *l = (Layout *)bw->render_layout;
+   l->resetSearch();
+
+   a_UIcmd_set_msg(bw, "");
+}
+

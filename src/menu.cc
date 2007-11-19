@@ -116,7 +116,8 @@ static void Menu_add_bookmark_cb(Widget* )
  */
 static void Menu_find_text_cb(Widget* )
 {
-   a_UIcmd_fullscreen_toggle(popup_bw);
+// a_UIcmd_fullscreen_toggle(popup_bw);
+   a_UIcmd_findtext_dialog(popup_bw);
 }
 
 /* 

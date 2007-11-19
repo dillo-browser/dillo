@@ -673,6 +673,9 @@ int UI::handle(int event)
          } else if (event_key() == 's') {
             a_UIcmd_search_dialog(user_data());
             ret = 1;
+         } else if (event_key() == ' ') {
+            fullscreen_cb_i();
+            ret = 1;
          }
       }
 

@@ -11,22 +11,26 @@
 
 // UI dialogs
 
+#include <fltk/events.h> // for the unfortunate (temporary?) event key testing
 #include <fltk/Window.h>
 #include <fltk/ask.h>
 #include <fltk/file_chooser.h>
 #include <fltk/TextBuffer.h>
+#include <fltk/Input.h>
+#include <fltk/CheckButton.h>
 #include <fltk/ReturnButton.h>
 #include <fltk/TextDisplay.h>
 
 #include "dialog.hh"
 #include "misc.h"
+#include "uicmd.hh"
 
 using namespace fltk;
 
 /*
- * Callback for the text window dialog.
+ * Close dialog window.
  */
-void text_window_cb(Widget *, void *vwin)
+static void window_close_cb(Widget *, void *vwin)
 {
    Window *window = (Window*)vwin;
 
@@ -107,10 +111,91 @@ void a_Dialog_text_window(const char *txt, const char *title)
     td->buffer(text_buf);
 
     ReturnButton *b = new ReturnButton (0, wh-bh, ww, bh, "Close");
-    b->callback(text_window_cb, window);
+    b->callback(window_close_cb, window);
 
    window->resizable(window);
    window->end();
    window->show();
 }
 
+/*
+ * Dialog to find text in page.
+ */
+class TextFinder : public Window {
+public:
+   TextFinder(int ww, int wh, BrowserWindow *bw);
+   BrowserWindow *bw;
+   Input *i;
+   CheckButton *cb;
+   ReturnButton *findb;
+   Button *clrb;
+   Button *clsb;
+};
+
+/*
+ * Find next occurrence of input key
+ */
+static void findtext_search_cb(Widget *, void *vtf)
+{
+   TextFinder *tf = (TextFinder *)vtf;
+   const char *key = tf->i->value();
+   bool case_sens = tf->cb->value();
+
+   /*
+    * Somehow fltk even regards the first loss of focus for the
+    * window as a WHEN_ENTER_KEY_ALWAYS event.
+    */ 
+   int e = event_key();
+   if ((e != ReturnKey) && (e != LeftButton))
+      return;
+
+   if (key[0] != '\0')
+      a_UIcmd_findtext_search(tf->bw, key, case_sens);
+      
+}
+
+/*
+ * Reset search state
+ */
+static void findtext_clear_cb(Widget *, void *vtf)
+{
+   TextFinder *tf = (TextFinder *)vtf;
+   tf->i->value("");
+   a_UIcmd_findtext_reset(tf->bw);
+}
+
+/*
+ * Construct text search window
+ */
+TextFinder::TextFinder(int ww, int wh, BrowserWindow *bw) :
+                      Window(ww, wh, "unwanted title")
+{
+   int button_width = 70, ih = 35, bh = 30, gap = 10;
+
+   this->bw = bw;
+
+   begin();
+    i = new Input(0, 0, ww, ih);
+    i->when(WHEN_ENTER_KEY_ALWAYS);
+    i->callback(findtext_search_cb, this);
+
+    cb = new CheckButton(0, ih, ww, wh-ih-bh, "Case-sensitive");
+
+    findb = new ReturnButton(gap, wh-bh, button_width, bh, "Find");
+    findb->callback(findtext_search_cb, this);
+
+    clrb = new Button(button_width+2*gap, wh-bh, button_width, bh, "Clear");
+    clrb->callback(findtext_clear_cb, this);
+
+    clsb = new Button(2*button_width+3*gap, wh-bh, button_width, bh, "Close");
+    clsb->callback(window_close_cb, this);
+   end();
+
+   hotspot(i);         // place input widget beneath the cursor
+}
+
+void a_Dialog_findtext(BrowserWindow *bw)
+{
+   TextFinder *tf = new TextFinder(250, 90, bw);
+   tf->show();
+}

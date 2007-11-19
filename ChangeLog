@@ -40,6 +40,7 @@ dillo-fltk2
  - Reimplemented html.cc using a class, removed the linkblock,
    and hooked memory-release to dw destruction.
  - Switched UI shortcuts from a global event handler to UI::handle.
+ - Bound Ctrl+Space to fullscreen toggle.
    Patches: Jorge Arellano
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color and geometry in preferences.
@@ -57,6 +58,7 @@ dillo-fltk2
  - Fixed page-popup-menu to use the stack's top URL instead of base_url.
  - Added the "static" qualifier where missing.
  - Bound "Copy link location".
+ - Bound preliminar find text support.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
