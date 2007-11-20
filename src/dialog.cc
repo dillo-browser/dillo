@@ -101,6 +101,7 @@ char *a_Dialog_open_file(const char *msg,
 void a_Dialog_text_window(const char *txt, const char *title)
 {
    int wh = 500, ww = 480, bh = 30;
+   int lines, line_num_width;
    TextBuffer *text_buf = new TextBuffer();
    text_buf->text(txt);
  
@@ -109,6 +110,15 @@ void a_Dialog_text_window(const char *txt, const char *title)
  
     TextDisplay *td = new TextDisplay(0,0,ww, wh-bh);
     td->buffer(text_buf);
+    /* enable wrapping lines; text uses entire width of window */
+    td->wrap_mode(true, 0);
+
+    lines = td->total_lines();
+    line_num_width = 2;
+    while (lines /= 10)
+       ++line_num_width;
+    line_num_width = (int)(line_num_width * fltk::getwidth("0"));
+    td->linenumber_width(line_num_width);
 
     ReturnButton *b = new ReturnButton (0, wh-bh, ww, bh, "Close");
     b->callback(window_close_cb, window);
