@@ -26,7 +26,7 @@ extern "C" {
 #define CA_FreeData       (16)  /* Free the cache Data on close */
 #define CA_Redirect       (32)  /* Data actually points to a redirect */
 #define CA_ForceRedirect  (64)  /* Unconditional redirect */
-#define CA_TempRedirect  (128)  /* Temporal redirect */
+#define CA_TempRedirect  (128)  /* Temporary redirect */
 #define CA_NotFound      (256)  /* True if remote server didn't find the URL */
 #define CA_Stopped       (512)  /* True if the entry has been stopped */
 #define CA_MsgErased    (1024)  /* Used to erase the bw's status bar */

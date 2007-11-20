@@ -468,23 +468,22 @@ static void Cache_parse_header(CacheEntry_t *entry,
    int i;
 #endif
 
-   if (HdrLen < 12) {
-      /* Not enough info. */
+   if (HdrLen > 12) {
+      if (header[9] == '3' && header[10] == '0') {
+         /* 30x: URL redirection */
+         entry->Flags |= CA_Redirect;
+         if (header[11] == '1')
+            entry->Flags |= CA_ForceRedirect;  /* 301 Moved Permanently */
+         else if (header[11] == '2')
+            entry->Flags |= CA_TempRedirect;   /* 302 Temporary Redirect */
+   
+         location_str = Cache_parse_field(header, "Location");
+         entry->Location = a_Url_new(location_str, URL_STR_(entry->Url), 0, 0, 0);
+         dFree(location_str);
 
-   } if (header[9] == '3' && header[10] == '0') {
-      /* 30x: URL redirection */
-      entry->Flags |= CA_Redirect;
-      if (header[11] == '1')
-         entry->Flags |= CA_ForceRedirect;  /* 301 Moved Permanently */
-      else if (header[11] == '2')
-         entry->Flags |= CA_TempRedirect;   /* 302 Temporal Redirect */
-
-      location_str = Cache_parse_field(header, "Location");
-      entry->Location = a_Url_new(location_str, URL_STR_(entry->Url), 0, 0, 0);
-      dFree(location_str);
-
-   } else if (strncmp(header + 9, "404", 3) == 0) {
-      entry->Flags |= CA_NotFound;
+      } else if (strncmp(header + 9, "404", 3) == 0) {
+         entry->Flags |= CA_NotFound;
+      }
    }
 
    if ((Length = Cache_parse_field(header, "Content-Length")) != NULL) {
