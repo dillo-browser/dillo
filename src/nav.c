@@ -201,11 +201,11 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
    /* Update navigation-stack-pointer (offset may be zero) */
    Nav_stack_move_ptr(bw, offset);
 
-   /* Page must be reloaded, if old and new url (without anchor) differ */
+   /* Page must be reloaded, if old and new url (considering anchor) differ */
    MustLoad = ForceReload || !old_url;
    if (old_url){
-      MustLoad |= (a_Url_cmp(old_url, url) != 0);
-      MustLoad |= strcmp(URL_STR(old_url), a_UIcmd_get_location_text(bw));
+      MustLoad |= (a_Url_cmp(old_url, url) ||
+                   strcmp(URL_FRAGMENT(old_url), URL_FRAGMENT(url)));
    }
 
    if (MustLoad) {

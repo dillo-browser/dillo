@@ -64,7 +64,7 @@ int NewInput::handle(int e)
    int k = event_key();
    bool ctrl = event_state(CTRL);
 
-   _MSG("NewInput::handle event=%d", e);
+   _MSG("NewInput::handle event=%d\n", e);
    if (ctrl && (k == 'o' || k == 'r' || k == HomeKey || k == EndKey))
       return 0;
    if ((e == KEY || e == KEYUP) &&
@@ -653,6 +653,15 @@ int UI::handle(int event)
 {
    int ret = 0;
 
+   _MSG("UI::handle event=%d\n", event);
+
+   // Let FLTK pass these events to child widgets.
+   if (event == KEY) {
+      if (event_key() == UpKey || event_key() == DownKey)
+         return 0;
+   }
+
+   // Handle these shortcuts here.
    if (event == SHORTCUT) {
       if (event_state(CTRL)) {
          if (event_key() == 'l') {

@@ -38,7 +38,8 @@ int a_History_add_url(DilloUrl *url)
    int i, idx;
 
    for (i = 0; i < history_size; ++i)
-      if (a_Url_cmp(history[i].url, url) == 0)
+      if (!a_Url_cmp(history[i].url, url) &&
+          !strcmp(URL_FRAGMENT(history[i].url), URL_FRAGMENT(url)))
          return i;
 
    idx = history_size;

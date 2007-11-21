@@ -478,7 +478,7 @@ static void Cache_parse_header(CacheEntry_t *entry,
             entry->Flags |= CA_TempRedirect;   /* 302 Temporary Redirect */
    
          location_str = Cache_parse_field(header, "Location");
-         entry->Location = a_Url_new(location_str, URL_STR_(entry->Url), 0, 0, 0);
+         entry->Location = a_Url_new(location_str,URL_STR_(entry->Url),0,0,0);
          dFree(location_str);
 
       } else if (strncmp(header + 9, "404", 3) == 0) {
