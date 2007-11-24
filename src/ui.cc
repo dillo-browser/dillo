@@ -651,56 +651,55 @@ UI::UI(int win_w, int win_h, const char* label) :
  */
 int UI::handle(int event)
 {
-   int ret = 0;
+   int ret = 0, k = event_key();
 
    _MSG("UI::handle event=%d\n", event);
 
    // Let FLTK pass these events to child widgets.
    if (event == KEY) {
-      if (event_key() == UpKey || event_key() == DownKey ||
-          event_key() == SpaceKey)
+      if (k == UpKey || k == DownKey || k == SpaceKey ||
+          k == LeftKey || k == RightKey)
          return 0;
    }
 
    // Handle these shortcuts here.
    if (event == SHORTCUT) {
       if (event_state(CTRL)) {
-         if (event_key() == 'l') {
+         if (k == 'l') {
             a_UIcmd_open_url_dialog(user_data());
             ret = 1;
-         } else if (event_key() == 'n') {
+         } else if (k == 'n') {
             a_UIcmd_browser_window_new(w(), h());
             ret = 1;
-         } else if (event_key() == 'o') {
+         } else if (k == 'o') {
             a_UIcmd_open_file(user_data());
             ret = 1;
-         } else if (event_key() == 'q') {
+         } else if (k == 'q') {
             a_UIcmd_close_bw(user_data());
             ret = 1;
-         } else if (event_key() == 'r') {
+         } else if (k == 'r') {
             a_UIcmd_reload(user_data());
             ret = 1;
-         } else if (event_key() == 's') {
+         } else if (k == 's') {
             a_UIcmd_search_dialog(user_data());
             ret = 1;
-         } else if (event_key() == ' ') {
+         } else if (k == ' ') {
             fullscreen_cb_i();
             ret = 1;
          }
       }
 
-      if (event_key_state(LeftAltKey) && event_key() == 'q') {
+      if (event_key_state(LeftAltKey) && k == 'q') {
          a_UIcmd_close_all_bw();
          ret = 1;
       }
 
       // Back and Forward navigation shortcuts
-      if ((!event_state(SHIFT) && event_key() == BackSpaceKey) ||
-          event_key() == ',') {
+      if ((!event_state(SHIFT) && k == BackSpaceKey) ||
+          k == ',') {
          a_UIcmd_back(user_data());
          ret = 1;
-      } else if ((event_state(SHIFT) && event_key() == BackSpaceKey) ||
-                 event_key() == '.') {
+      } else if ((event_state(SHIFT) && k == BackSpaceKey) || k == '.') {
          a_UIcmd_forw(user_data());
          ret = 1;
       }
