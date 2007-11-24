@@ -657,7 +657,8 @@ int UI::handle(int event)
 
    // Let FLTK pass these events to child widgets.
    if (event == KEY) {
-      if (event_key() == UpKey || event_key() == DownKey)
+      if (event_key() == UpKey || event_key() == DownKey ||
+          event_key() == SpaceKey)
          return 0;
    }
 
@@ -693,7 +694,7 @@ int UI::handle(int event)
          ret = 1;
       }
 
-      // Back and Forward shortcuts
+      // Back and Forward navigation shortcuts
       if ((!event_state(SHIFT) && event_key() == BackSpaceKey) ||
           event_key() == ',') {
          a_UIcmd_back(user_data());
