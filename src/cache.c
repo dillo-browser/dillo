@@ -366,7 +366,7 @@ int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
 
       /* Test for a redirection loop */
       if (entry->Flags & CA_RedirectLoop || i == 3) {
-         MSG_WARN("Redirect loop for URL: >%s<\n", URL_STR_(Url));
+         _MSG_WARN("Redirect loop for URL: >%s<\n", URL_STR_(Url));
          break;
       }
       /* Test for a working redirection */
@@ -461,7 +461,7 @@ static void Cache_parse_header(CacheEntry_t *entry,
 {
    char *header = entry->Header->str;
    char *Length, *Type, *location_str, *encoding;
-   Dstr *decodedBuf;
+   Dstr *dbuf;
 #ifndef DISABLE_COOKIES
    Dlist *Cookies;
    void *data;
@@ -512,8 +512,10 @@ static void Cache_parse_header(CacheEntry_t *entry,
    entry->Decoder = a_Decode_content_init(encoding);
    dFree(encoding);
 
-   decodedBuf = a_Decode_process(entry->Decoder, buf + HdrLen,
-                                 buf_size - HdrLen);
+   dbuf = dStr_sized_new(buf_size - HdrLen);
+   dStr_append_l(dbuf, buf + HdrLen, buf_size - HdrLen);
+
+   dbuf = a_Decode_process(entry->Decoder, dbuf);
 
    if (entry->ExpectedSize > 0) {
       if (entry->ExpectedSize > HUGE_FILESIZE) {
@@ -525,8 +527,8 @@ static void Cache_parse_header(CacheEntry_t *entry,
       dStr_free(entry->Data, 1);
       entry->Data = dStr_sized_new(MIN(entry->ExpectedSize+1, MAX_INIT_BUF));
    }
-   dStr_append_l(entry->Data, decodedBuf->str, decodedBuf->len);
-   dStr_free(decodedBuf, 1);
+   dStr_append_l(entry->Data, dbuf->str, dbuf->len);
+   dStr_free(dbuf, 1);
 
    /* Get Content-Type */
    if ((Type = Cache_parse_field(header, "Content-Type")) == NULL) {
@@ -582,7 +584,7 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
 {
    int len;
    CacheEntry_t *entry = Cache_entry_search(Url);
-   Dstr *decodedBuf;
+   Dstr *dbuf;
 
    /* Assert a valid entry (not aborted) */
    dReturn_if_fail (entry != NULL);
@@ -625,16 +627,18 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
 
    entry->TransferSize += buf_size;
 
+   dbuf = dStr_sized_new(buf_size);
+   dStr_append_l(dbuf, buf, buf_size);
+
    /* Assert we have a Decoder.
     * BUG: this is a workaround, more study and a proper design
     * for handling redirects is required */
    if (entry->Decoder != NULL) {
-      decodedBuf = a_Decode_process(entry->Decoder, buf, buf_size);
-      dStr_append_l(entry->Data, decodedBuf->str, decodedBuf->len);
-      dStr_free(decodedBuf, 1);
-   } else {
-      dStr_append_l(entry->Data, buf, buf_size);
+      dbuf = a_Decode_process(entry->Decoder, dbuf);
    }
+   dStr_append_l(entry->Data, dbuf->str, dbuf->len);
+   dStr_free(dbuf, 1);
+
    Cache_process_queue(entry);
 }
 

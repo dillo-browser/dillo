@@ -7,22 +7,24 @@
 #include "msg.h"
 
 
-const int bufsize = 8*1024;
+static const int bufsize = 8*1024;
 
-
-static Dstr *Decode_null(Decode *dc, const char *inData, int inLen)
+/*
+ * null ("identity") decoding
+ */
+static Dstr *Decode_null(Decode *dc, Dstr *input)
 {
-   Dstr *d = dStr_new("");
-   dStr_append_l(d, inData, inLen);
-   return d;
+   return input;
 }
 
 static void Decode_null_free(Decode *dc)
 {
 }
 
-
-static Dstr *Decode_gzip(Decode *dc, const char *inData, int inLen)
+/*
+ * Decode gzipped data
+ */
+static Dstr *Decode_gzip(Decode *dc, Dstr *input)
 {
    int rc = Z_OK;
 
@@ -31,9 +33,9 @@ static Dstr *Decode_gzip(Decode *dc, const char *inData, int inLen)
    int inputConsumed = 0;
    Dstr *output = dStr_new("");
 
-   while ((rc == Z_OK) && (inputConsumed < inLen)) {
-      zs->next_in = (Bytef *)inData + inputConsumed;
-      zs->avail_in = inLen - inputConsumed;
+   while ((rc == Z_OK) && (inputConsumed < input->len)) {
+      zs->next_in = (Bytef *)input->str + inputConsumed;
+      zs->avail_in = input->len - inputConsumed;
 
       zs->next_out = (Bytef *)dc->buffer;
       zs->avail_out = bufsize;
@@ -52,6 +54,7 @@ static Dstr *Decode_gzip(Decode *dc, const char *inData, int inLen)
       }
    }
 
+   dStr_free(input, 1);
    return output;
 }
 
@@ -62,19 +65,23 @@ static void Decode_gzip_free(Decode *dc)
    dFree(dc->buffer);
 }
 
-
-static Dstr *Decode_charset(Decode *dc, const char *inData, int inLen)
+/*
+ * Translate to desired character set (UTF-8)
+ */
+static Dstr *Decode_charset(Decode *dc, Dstr *input)
 {
    int rc = 0;
 
-   Dstr *input, *output;
+   Dstr *output;
    char *inPtr, *outPtr;
    size_t inLeft, outRoom;
 
    output = dStr_new("");
 
+   dStr_append_l(dc->leftover, input->str, input->len);
+   dStr_free(input, 1);
    input = dc->leftover;
-   dStr_append_l(input, inData, inLen);
+
    inPtr = input->str;
    inLeft = input->len;
 
@@ -103,6 +110,7 @@ static Dstr *Decode_charset(Decode *dc, const char *inData, int inLen)
           *        unknown or unrepresentable in Unicode."
           */
           //dStr_append(output, "\ufffd");
+          // \uxxxx is C99. UTF-8-specific:
           dStr_append_c(output, 0xEF);
           dStr_append_c(output, 0xBF);
           dStr_append_c(output, 0xBD);
@@ -123,7 +131,12 @@ static void Decode_charset_free(Decode *dc)
    dStr_free(dc->leftover, 1);
 }
 
-
+/*
+ * Initialize content decoder. Currently handles gzip.
+ *
+ * zlib is also capable of handling "deflate"/zlib-encoded data, but web
+ * servers have not standardized on whether to send such data with a header.
+ */
 Decode *a_Decode_content_init(const char *format)
 {
    Decode *dc = (Decode *)dMalloc(sizeof(Decode));
@@ -158,19 +171,9 @@ Decode *a_Decode_content_init(const char *format)
    return dc;      
 }
 
-static int Decode_is_latin1(const char *str)
-{
-   return (!(dStrcasecmp(str, "ISO-8859-1") ||
-             dStrcasecmp(str, "latin1") ||
-             dStrcasecmp(str, "ISO_8859-1:1987") ||
-             dStrcasecmp(str, "ISO_8859-1") ||
-             dStrcasecmp(str, "iso-ir-100") ||
-             dStrcasecmp(str, "l1") ||
-             dStrcasecmp(str, "IBM819") ||
-             dStrcasecmp(str, "CP819") ||
-             dStrcasecmp(str, "csISOLatin1")));
-}
-
+/*
+ * Legal names for the ASCII character set
+ */
 static int Decode_is_ascii(const char *str)
 {
    return (!(dStrcasecmp(str, "ASCII") ||
@@ -186,6 +189,13 @@ static int Decode_is_ascii(const char *str)
              dStrcasecmp(str, "ISO646-US")));
 }
 
+/*
+ * Initialize decoder to translate from any character set known to iconv()
+ * to UTF-8.
+ *
+ * GNU iconv(1) will provide a list of known character sets if invoked with
+ * the "--list" flag.
+ */
 Decode *a_Decode_charset_init(const char *format)
 {
    Decode *dc = (Decode *)dMalloc(sizeof(Decode));
@@ -193,7 +203,6 @@ Decode *a_Decode_charset_init(const char *format)
    if (format &&
        strlen(format) &&
        dStrcasecmp(format,"UTF-8") &&
-       !Decode_is_latin1(format) &&
        !Decode_is_ascii(format)) {
 
       iconv_t ic;
@@ -216,11 +225,20 @@ Decode *a_Decode_charset_init(const char *format)
    return dc;      
 }
 
-Dstr *a_Decode_process(Decode *dc, const char *inData, int inLen)
+/*
+ * Filter data using our decoder.
+ *
+ * The input string should not be used after this call. The decoder will
+ * free it if necessary.
+ */
+Dstr *a_Decode_process(Decode *dc, Dstr *input)
 {
-   return dc->decode(dc, inData, inLen);
+   return dc->decode(dc, input);
 }
 
+/*
+ * free our decoder
+ */
 void a_Decode_free(Decode *dc)
 {
    dc->free(dc);

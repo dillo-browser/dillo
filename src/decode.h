@@ -13,13 +13,13 @@ struct _Decode {
    char *buffer;
    Dstr *leftover;
    void *state;
-   Dstr *(*decode) (Decode *dc, const char *inData, int inLen);
+   Dstr *(*decode) (Decode *dc, Dstr *input);
    void (*free) (Decode *dc);
 };
 
 Decode *a_Decode_content_init(const char *format);
 Decode *a_Decode_charset_init(const char *format);
-Dstr *a_Decode_process(Decode *dc, const char *inData, int inLen);
+Dstr *a_Decode_process(Decode *dc, Dstr *input);
 void a_Decode_free(Decode *dc);
 
 #ifdef __cplusplus
