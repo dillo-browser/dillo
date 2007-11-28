@@ -2,6 +2,7 @@
 #include <zlib.h>
 #include <iconv.h>
 #include <errno.h>
+#include <stdlib.h>     /* strtol */
 
 #include "decode.h"
 #include "msg.h"
@@ -19,6 +20,75 @@ static Dstr *Decode_null(Decode *dc, Dstr *input)
 
 static void Decode_null_free(Decode *dc)
 {
+}
+
+/*
+ * Decode chunked data
+ */
+static Dstr *Decode_chunked(Decode *dc, Dstr *input)
+{
+   char *inputPtr, *eol;
+   int inputRemaining;
+   int chunkRemaining = *((int *)dc->state);
+   Dstr *output = dStr_sized_new(input->len);
+
+   dStr_append_l(dc->leftover, input->str, input->len);
+   dStr_free(input, 1);
+   input = dc->leftover;
+   inputPtr = input->str;
+   inputRemaining = input->len;
+
+   while (inputRemaining > 0) {
+      if (chunkRemaining > 2) {
+         /* chunk body to copy */
+         int copylen = MIN(chunkRemaining - 2, inputRemaining);
+         dStr_append_l(output, inputPtr, copylen);
+         chunkRemaining -= copylen;
+         inputRemaining -= copylen;
+         inputPtr += copylen;
+      }
+
+      if ((chunkRemaining == 2) && (inputRemaining > 0)) {
+         /* CR to discard */
+         chunkRemaining--;
+         inputRemaining--;
+         inputPtr++;
+      }
+      if ((chunkRemaining == 1) && (inputRemaining > 0)) {
+         /* LF to discard */
+         chunkRemaining--;
+         inputRemaining--;
+         inputPtr++;
+      }
+
+      /*
+       * A chunk has a one-line header that begins with the chunk length
+       * in hexadecimal.
+       */
+      if (!(eol = (char *)memchr(inputPtr, '\n', inputRemaining))) {
+         break;   /* We don't have the whole line yet. */
+      }
+
+      if (!(chunkRemaining = strtol(inputPtr, NULL, 0x10))) {
+         break;   /* A chunk length of 0 means we're done! */
+      }
+      inputRemaining -= (eol - inputPtr) + 1;
+      inputPtr = eol + 1;
+      chunkRemaining += 2; /* CRLF at the end of every chunk */
+   }
+
+   /* If we have a partial chunk header, save it for next time. */
+   dc->leftover = input;
+   dStr_erase(dc->leftover, 0, inputPtr - input->str);
+
+   *(int *)dc->state = chunkRemaining;
+   return output;
+}
+
+static void Decode_chunked_free(Decode *dc)
+{
+   dFree(dc->state);
+   dStr_free(dc->leftover, 1);
 }
 
 /*
@@ -129,6 +199,33 @@ static void Decode_charset_free(Decode *dc)
 
    dFree(dc->buffer);
    dStr_free(dc->leftover, 1);
+}
+
+/*
+ * Initialize transfer decoder. Currently handles "chunked".
+ */
+Decode *a_Decode_transfer_init(const char *format)
+{
+   Decode *dc = (Decode *)dMalloc(sizeof(Decode));
+
+   /* not used */
+   dc->buffer = NULL;
+
+   dc->leftover = dStr_new("");
+
+   if (format && !dStrncasecmp(format, "chunked", 7)) {
+      int *chunk_remaining = (int *)dMalloc(sizeof(int));
+      *chunk_remaining = 0;
+      dc->state = chunk_remaining;
+      dc->decode = Decode_chunked;
+      dc->free = Decode_chunked_free;
+      MSG("chunked!\n");
+   } else {
+      dc->state = NULL;
+      dc->decode = Decode_null;
+      dc->free = Decode_null_free;
+   }
+   return dc;
 }
 
 /*

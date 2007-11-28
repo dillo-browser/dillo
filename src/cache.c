@@ -58,7 +58,8 @@ typedef struct {
    Dstr *Header;             /* HTTP header */
    const DilloUrl *Location; /* New URI for redirects */
    Dstr *Data;               /* Pointer to raw data */
-   Decode *Decoder;          /* Data decoder */
+   Decode *TransferDecoder;  /* Transfer decoder (e.g., chunked) */
+   Decode *ContentDecoder;   /* Data decoder (e.g., gzip) */
    int ExpectedSize;         /* Goal size of the HTTP transfer (0 if unknown)*/
    int TransferSize;         /* Actual length of the HTTP transfer */
    uint_t Flags;             /* Look Flag Defines in cache.h */
@@ -205,7 +206,8 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->Header = dStr_new("");
    NewEntry->Location = NULL;
    NewEntry->Data = dStr_sized_new(8*1024);
-   NewEntry->Decoder = NULL;
+   NewEntry->TransferDecoder = NULL;
+   NewEntry->ContentDecoder = NULL;
    NewEntry->ExpectedSize = 0;
    NewEntry->TransferSize = 0;
    NewEntry->Flags = 0;
@@ -469,6 +471,14 @@ static void Cache_parse_header(CacheEntry_t *entry,
 #endif
 
    if (HdrLen > 12) {
+      if (header[9] == '1' && header[10] == '0' && header[11] == '0') {
+         /* 100: Continue. The "real" header has not come yet. */
+         MSG("An actual 100 Continue header!\n");
+         entry->Flags &= ~CA_GotHeader;
+         dStr_free(entry->Header, 1);
+         entry->Header = dStr_new("");
+         return;
+      }
       if (header[9] == '3' && header[10] == '0') {
          /* 30x: URL redirection */
          entry->Flags |= CA_Redirect;
@@ -487,8 +497,19 @@ static void Cache_parse_header(CacheEntry_t *entry,
    }
 
    if ((Length = Cache_parse_field(header, "Content-Length")) != NULL) {
-      entry->Flags |= CA_GotLength;
-      entry->ExpectedSize = MAX(strtol(Length, NULL, 10), 0);
+      char *tmp;
+      if ((tmp = Cache_parse_field(header, "Transfer-Encoding"))) {
+         /*
+          * BUG: Should test for _presence_ of headers, not whether they
+          * have content.
+          */
+         MSG_HTTP("Both Content-Length and Transfer-Encoding headers"
+                  " received.\n");
+         dFree(tmp);
+      } else {
+         entry->Flags |= CA_GotLength;
+         entry->ExpectedSize = MAX(strtol(Length, NULL, 10), 0);
+      }
       dFree(Length);
    }
 
@@ -506,16 +527,24 @@ static void Cache_parse_header(CacheEntry_t *entry,
 #endif /* !DISABLE_COOKIES */
 
    /*
+    * Get Transfer-Encoding and initialize decoder
+    */
+   encoding = Cache_parse_field(header, "Transfer-Encoding");
+   entry->TransferDecoder = a_Decode_transfer_init(encoding);
+   dFree(encoding);
+
+   /*
     * Get Content-Encoding and initialize decoder
     */
    encoding = Cache_parse_field(header, "Content-Encoding");
-   entry->Decoder = a_Decode_content_init(encoding);
+   entry->ContentDecoder = a_Decode_content_init(encoding);
    dFree(encoding);
 
    dbuf = dStr_sized_new(buf_size - HdrLen);
    dStr_append_l(dbuf, buf + HdrLen, buf_size - HdrLen);
 
-   dbuf = a_Decode_process(entry->Decoder, dbuf);
+   dbuf = a_Decode_process(entry->TransferDecoder, dbuf);
+   dbuf = a_Decode_process(entry->ContentDecoder, dbuf);
 
    if (entry->ExpectedSize > 0) {
       if (entry->ExpectedSize > HUGE_FILESIZE) {
@@ -582,6 +611,7 @@ static int Cache_get_header(CacheEntry_t *entry,
 void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
                           const DilloUrl *Url)
 {
+   int start = 0;
    int len;
    CacheEntry_t *entry = Cache_entry_search(Url);
    Dstr *dbuf;
@@ -599,9 +629,13 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
       }
       entry->Flags |= CA_GotData;
       entry->Flags &= ~CA_Stopped;          /* it may catch up! */
-      if (entry->Decoder) {
-         a_Decode_free(entry->Decoder);
-         entry->Decoder = NULL;
+      if (entry->TransferDecoder) {
+         a_Decode_free(entry->TransferDecoder);
+         entry->TransferDecoder = NULL;
+      }
+      if (entry->ContentDecoder) {
+         a_Decode_free(entry->ContentDecoder);
+         entry->ContentDecoder = NULL;
       }
       dStr_fit(entry->Data);                /* fit buffer size! */
       Cache_process_queue(entry);
@@ -612,15 +646,23 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
       return;
    }
 
+   /*
+    * Cache_get_header() will set CA_GotHeader if it has a full header, and
+    * Cache_parse_header() will unset it if the header turns out to have been
+    * merely an informational response from the server (i.e., 100 Continue)
+    */
    if (!(entry->Flags & CA_GotHeader)) {
-      /* Haven't got the whole header yet */
-      len = Cache_get_header(entry, buf, buf_size);
-      if (entry->Flags & CA_GotHeader) {
-         entry->TransferSize = buf_size - len;  /* body */
+      while ((len = Cache_get_header(entry, buf + start, buf_size - start))) {
+
          /* Let's scan, allocate, and set things according to header info */
-         Cache_parse_header(entry, buf, buf_size, len);
-         /* Now that we have it parsed, let's update our clients */
-         Cache_process_queue(entry);
+         Cache_parse_header(entry, buf + start, buf_size - start, len);
+         start += len;
+         if (entry->Flags & CA_GotHeader) {
+            entry->TransferSize = buf_size - start;  /* body */
+            /* Now that we have it parsed, let's update our clients */
+            Cache_process_queue(entry);
+            return;
+         }
       }
       return;
    }
@@ -633,9 +675,13 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
    /* Assert we have a Decoder.
     * BUG: this is a workaround, more study and a proper design
     * for handling redirects is required */
-   if (entry->Decoder != NULL) {
-      dbuf = a_Decode_process(entry->Decoder, dbuf);
+   if (entry->TransferDecoder != NULL) {
+      dbuf = a_Decode_process(entry->TransferDecoder, dbuf);
    }
+   if (entry->ContentDecoder != NULL) {
+      dbuf = a_Decode_process(entry->ContentDecoder, dbuf);
+   }
+
    dStr_append_l(entry->Data, dbuf->str, dbuf->len);
    dStr_free(dbuf, 1);
 

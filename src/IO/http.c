@@ -185,7 +185,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
    if (URL_FLAGS(url) & URL_Post) {
       dStr_sprintfa(
          query,
-         "POST %s HTTP/1.0\r\n"
+         "POST %s HTTP/1.1\r\n"
          "Accept-Charset: utf-8, iso-8859-1\r\n"
          "Host: %s%s\r\n"
          "%s"
@@ -195,6 +195,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "%s"
          "Content-type: application/x-www-form-urlencoded\r\n"
          "Content-length: %ld\r\n"
+         "Connection: close\r\n"
          "\r\n"
          "%s",
          full_path->str, URL_HOST(url), s_port->str,
@@ -205,7 +206,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
    } else {
       dStr_sprintfa(
          query,
-         "GET %s HTTP/1.0\r\n"
+         "GET %s HTTP/1.1\r\n"
          "%s"
          "Accept-Charset: utf-8, iso-8859-1\r\n"
          "Host: %s%s\r\n"
@@ -213,6 +214,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "User-Agent: Dillo/%s\r\n"
          "Accept-Encoding: gzip\r\n"
          "Cookie2: $Version=\"1\"\r\n"
+         "Connection: close\r\n"
          "%s"
          "\r\n",
          full_path->str,

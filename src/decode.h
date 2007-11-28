@@ -17,6 +17,7 @@ struct _Decode {
    void (*free) (Decode *dc);
 };
 
+Decode *a_Decode_transfer_init(const char *format);
 Decode *a_Decode_content_init(const char *format);
 Decode *a_Decode_charset_init(const char *format);
 Dstr *a_Decode_process(Decode *dc, Dstr *input);
