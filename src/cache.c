@@ -653,7 +653,6 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
     */
    if (!(entry->Flags & CA_GotHeader)) {
       while ((len = Cache_get_header(entry, buf + start, buf_size - start))) {
-
          /* Let's scan, allocate, and set things according to header info */
          Cache_parse_header(entry, buf + start, buf_size - start, len);
          start += len;

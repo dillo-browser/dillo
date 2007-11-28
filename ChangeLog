@@ -61,6 +61,7 @@ dillo-fltk2
  - Bound "Copy link location".
  - Bound preliminar find text support.
  - Added line numbers and enabled wrapping in the "View Source" window.
+ - Added HTTP-1.1's chunked transfer support!
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
