@@ -458,19 +458,17 @@ static Dlist *Cache_parse_multiple_fields(const char *header,
  * Scan, allocate, and set things according to header info.
  * (This function needs the whole header to work)
  */
-static void Cache_parse_header(CacheEntry_t *entry,
-                               const char *buf, size_t buf_size, int HdrLen)
+static void Cache_parse_header(CacheEntry_t *entry)
 {
    char *header = entry->Header->str;
    char *Length, *Type, *location_str, *encoding;
-   Dstr *dbuf;
 #ifndef DISABLE_COOKIES
    Dlist *Cookies;
    void *data;
    int i;
 #endif
 
-   if (HdrLen > 12) {
+   if (entry->Header->len > 12) {
       if (header[9] == '1' && header[10] == '0' && header[11] == '0') {
          /* 100: Continue. The "real" header has not come yet. */
          MSG("An actual 100 Continue header!\n");
@@ -540,12 +538,6 @@ static void Cache_parse_header(CacheEntry_t *entry,
    entry->ContentDecoder = a_Decode_content_init(encoding);
    dFree(encoding);
 
-   dbuf = dStr_sized_new(buf_size - HdrLen);
-   dStr_append_l(dbuf, buf + HdrLen, buf_size - HdrLen);
-
-   dbuf = a_Decode_process(entry->TransferDecoder, dbuf);
-   dbuf = a_Decode_process(entry->ContentDecoder, dbuf);
-
    if (entry->ExpectedSize > 0) {
       if (entry->ExpectedSize > HUGE_FILESIZE) {
          entry->Flags |= CA_HugeFile;
@@ -556,8 +548,6 @@ static void Cache_parse_header(CacheEntry_t *entry,
       dStr_free(entry->Data, 1);
       entry->Data = dStr_sized_new(MIN(entry->ExpectedSize+1, MAX_INIT_BUF));
    }
-   dStr_append_l(entry->Data, dbuf->str, dbuf->len);
-   dStr_free(dbuf, 1);
 
    /* Get Content-Type */
    if ((Type = Cache_parse_field(header, "Content-Type")) == NULL) {
@@ -611,7 +601,7 @@ static int Cache_get_header(CacheEntry_t *entry,
 void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
                           const DilloUrl *Url)
 {
-   int start = 0;
+   int offset = 0;
    int len;
    CacheEntry_t *entry = Cache_entry_search(Url);
    Dstr *dbuf;
@@ -651,25 +641,20 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
     * Cache_parse_header() will unset it if the header turns out to have been
     * merely an informational response from the server (i.e., 100 Continue)
     */
-   if (!(entry->Flags & CA_GotHeader)) {
-      while ((len = Cache_get_header(entry, buf + start, buf_size - start))) {
-         /* Let's scan, allocate, and set things according to header info */
-         Cache_parse_header(entry, buf + start, buf_size - start, len);
-         start += len;
-         if (entry->Flags & CA_GotHeader) {
-            entry->TransferSize = buf_size - start;  /* body */
-            /* Now that we have it parsed, let's update our clients */
-            Cache_process_queue(entry);
-            return;
-         }
-      }
-      return;
+   while (!(entry->Flags & CA_GotHeader) &&
+          (len = Cache_get_header(entry, buf + offset, buf_size - offset))) {
+      offset += len;
+      /* Let's scan, allocate, and set things according to header info */
+      Cache_parse_header(entry);
    }
 
-   entry->TransferSize += buf_size;
+   if (!(entry->Flags & CA_GotHeader))
+      return;
 
-   dbuf = dStr_sized_new(buf_size);
-   dStr_append_l(dbuf, buf, buf_size);
+   entry->TransferSize += buf_size - offset;
+
+   dbuf = dStr_sized_new(buf_size - offset);
+   dStr_append_l(dbuf, buf + offset, buf_size - offset);
 
    /* Assert we have a Decoder.
     * BUG: this is a workaround, more study and a proper design

@@ -68,6 +68,7 @@ dillo-fltk2
  - Added an experimental gzip decoder! 
  - Implemented "Load Images" in the page menu and cleaned up html.hh.
  - Added shortcuts: PgDn=Spc PgUp=b Back=BackSpace|, Forw=Shift+Backspace|.
+ - Made a cleanup in cache's parse header code.
    Patch: place, Jorge Arellano
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
    Added const declarations in html parser.

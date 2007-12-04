@@ -2065,7 +2065,7 @@ static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 #ifdef USE_TABLES
    Widget *table;
    StyleAttrs style_attrs;
-   Style *tstyle, *old_style;
+   Style *cell_style, *old_style;
    const char *attrbuf;
    int32_t border = 0, cellspacing = 1, cellpadding = 2, bgcolor;
 #endif
@@ -2120,9 +2120,8 @@ static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       }
    }
 
-   tstyle = Style::create (HT2LT(html), &style_attrs);
-
    /* The style for the cells */
+   cell_style = Style::create (HT2LT(html), &style_attrs);
    style_attrs = *S_TOP(html)->style;
    /* When dillo was started with the --debug-rendering option, there
     * is always a border around the cells. */
@@ -2130,9 +2129,8 @@ static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.borderWidth.setVal (1);
    else
       style_attrs.borderWidth.setVal (border ? 1 : 0);
-
    style_attrs.padding.setVal(cellpadding);
-   style_attrs.setBorderColor (tstyle->borderColor.top);
+   style_attrs.setBorderColor (cell_style->borderColor.top);
    style_attrs.setBorderStyle (BORDER_INSET);
 
    old_style = S_TOP(html)->table_cell_style;
@@ -2142,8 +2140,8 @@ static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       old_style->unref ();
 
    table = new Table(false);
-   DW2TB(html->dw)->addWidget (table, tstyle);
-   tstyle->unref ();
+   DW2TB(html->dw)->addWidget (table, cell_style);
+   cell_style->unref ();
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TOP;
    S_TOP(html)->cell_text_align_set = FALSE;

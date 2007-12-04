@@ -34,9 +34,8 @@ Advanced * Form elements are not yet hooked/implemented. You can look
            in dw2' test/dw_ui_test.cc to see what's already done.
 Fixed    * Sometimes pages don't load giving a warning on an already
            closed IO. I'll try to look at this one soon.
-
-    * no FRAMES rendering
-    * no https            -- read the FAQ to enable a protoype.
+         * no FRAMES rendering
+         * no https (there's a barebones prototype).
 
 
 ------------
@@ -80,4 +79,4 @@ Solaris
     
 Jorge.-
 (jcid@dillo.org)
-Sep 30, 2007
+Dec 03, 2007
