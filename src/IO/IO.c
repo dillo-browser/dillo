@@ -158,6 +158,7 @@ static bool_t IO_read(IOData_t *io)
    char Buf[IOBufLen];
    ssize_t St;
    bool_t ret = FALSE;
+   int io_key = io->Key;
 
    DEBUG_MSG(3, "  IO_read\n");
 
@@ -190,8 +191,14 @@ static bool_t IO_read(IOData_t *io)
       a_IO_ccc(OpSend, 2, FWD, io->Info, io, NULL);
    }
    if (St == 0) {
-      /* All data read (EOF) */
-      a_IO_ccc(OpEnd, 2, FWD, io->Info, io, NULL);
+      /* TODO: design a general way to avoid reentrancy problems with CCC. */
+
+      /* The following check is necessary because the above CCC operation
+       * may abort the whole Chain. */
+      if ((io = IO_get(io_key))) {
+         /* All data read (EOF) */
+         a_IO_ccc(OpEnd, 2, FWD, io->Info, io, NULL);
+      }
    }
    return ret;
 }

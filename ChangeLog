@@ -42,6 +42,7 @@ dillo-fltk2
  - Switched UI shortcuts from a global event handler to UI::handle.
  - Bound Ctrl+Space to toggle fullscreen mode.
  - Switched dillo to push a URL with fragment (anchor) into the stack.
+ - Added a workaround for a CCC reentrancy segfault.
    Patches: Jorge Arellano Cid
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color and geometry in preferences.
