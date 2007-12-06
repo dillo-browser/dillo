@@ -45,6 +45,13 @@ struct dp {
    int filter;
 };
 
+/*! bind dpi with service
+ */
+struct service {
+   char *name;
+   int dp_index;
+};
+
 /*! Number of available plugins */
 int numdpis;
 
@@ -53,6 +60,9 @@ int numsocks;
 
 /*! State information for each plugin. */
 struct dp *dpi_attr_list;
+
+/*! service served for each plugin  */
+Dlist *services_list;
 
 /*! Set of sockets watched for connections */
 fd_set sock_set;
@@ -70,6 +80,8 @@ void free_dpi_attr(struct dp *dpi_attr);
 
 void free_plugin_list(struct dp **dpi_attr_list_ptr, int numdpis);
 
+void free_services_list(Dlist *s_list);
+
 enum file_type get_file_type(char *file_name);
 
 int get_dpi_attr(char *dpi_dir, char *service, struct dp *dpi_attr);
@@ -77,6 +89,8 @@ int get_dpi_attr(char *dpi_dir, char *service, struct dp *dpi_attr);
 int register_service(struct dp *dpi_attr, char *service);
 
 int register_all(struct dp **attlist);
+
+int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list);
 
 int init_srs_socket(char *sockdir);
 
@@ -97,6 +111,8 @@ void ignore_dpi_sockets(struct dp *dpi_attr_list, int numdpis);
 int register_all_cmd(char *sockdir);
 
 char *get_message(int sock, char *dpi_tag);
+
+int service_match(const struct service *A, const char *B);
 
 void send_sockpath(int sock, char * dpi_tag, struct dp *dpi_attr_list);
 

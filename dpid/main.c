@@ -228,6 +228,7 @@ int main(void)
    fd_set selected_set;
 
    dpi_attr_list = NULL;
+   services_list = NULL;
    //daemon(0,0); /* Use 0,1 for feedback */
    /* todo: call setsid() ?? */
 
@@ -257,6 +258,9 @@ int main(void)
       MSG_ERR("Failed to create socket directory\n");
       exit(1);
    }
+
+   /* Init and get services list */
+   fill_services_list(dpi_attr_list, numdpis, &services_list);
 
    /* Remove any sockets that may have been leftover from a crash */
    cleanup(sockdir);

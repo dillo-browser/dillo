@@ -144,6 +144,11 @@ void dList_insert_sorted (Dlist *lp, void *data, dCompareFunc func);
 void *dList_find_sorted (Dlist *lp, const void *data, dCompareFunc func);
 
 /*
+ *- Parse function ------------------------------------------------------------
+ */
+int dParser_get_rc_pair(char **line, char **name, char **value);
+
+/*
  *- Misc utility functions ----------------------------------------------------
  */
 char *dGetcwd ();

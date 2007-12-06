@@ -138,6 +138,20 @@ void free_plugin_list(struct dp **dpi_attr_list_ptr, int numdpis)
    *dpi_attr_list_ptr = NULL;
 }
 
+/*! Free memory used by the services list
+ */
+void free_services_list(Dlist *s_list)
+{
+   int i = 0;
+   struct service *s;
+
+   for (i=0; i < dList_length(s_list) ; i++) {
+      s = dList_nth_data(s_list, i);
+      dFree(s->name);
+   }
+   dList_free(s_list);
+}
+
 /*! \todo
  * Remove terminator and est_terminator unless we really want to clean up
  * on abnormal exit.
@@ -331,7 +345,7 @@ int register_all(struct dp **attlist)
    DIR *user_dir_stream, *sys_dir_stream;
    char *user_dpidir = NULL, *sys_dpidir = NULL, *dpidrc = NULL;
    struct dirent *user_dirent, *sys_dirent;
-   int j, st, not_in_user_list;
+   int st;
    int snum, usr_srv_num;
    size_t dp_sz = sizeof(struct dp);
 
@@ -384,19 +398,10 @@ int register_all(struct dp **attlist)
       while ((sys_dirent = readdir(sys_dir_stream)) != NULL) {
          if (sys_dirent->d_name[0] == '.')
            continue;
-         not_in_user_list = 1;
-         for (j = 0; j < usr_srv_num; j++) {
-            if (strcmp(sys_dirent->d_name, (*attlist)[j].id) == 0) {
-               not_in_user_list = 0;
-               break;
-            }
-         }
-         if (not_in_user_list) {
-            *attlist = (struct dp *) dRealloc(*attlist, (snum + 1) * dp_sz);
-            st=get_dpi_attr(sys_dpidir, sys_dirent->d_name, &(*attlist)[snum]);
-            if (st == 0)
-               snum++;
-         }
+         *attlist = (struct dp *) dRealloc(*attlist, (snum + 1) * dp_sz);
+         st=get_dpi_attr(sys_dpidir, sys_dirent->d_name, &(*attlist)[snum]);
+         if (st == 0)
+            snum++;
       }
       closedir(sys_dir_stream);
    }
@@ -407,6 +412,112 @@ int register_all(struct dp **attlist)
    /* todo: do we consider snum == 0 an error?
     *       (if so, we should return -1 )       */
    return (snum);
+}
+
+/*
+ * Compare two struct service pointers
+ * This function is used for sorting services
+ */
+static int services_alpha_comp(const struct service *s1,
+                               const struct service *s2)
+{
+   return -strcmp(s1->name, s2->name);
+}
+
+/*! Add services reading a dpidrc file                                         
+ * each non empty or commented line has the form                               
+ * service = path_relative_to_dpidir                                           
+ * \Return:                                                                    
+ * \li Returns number of available services on success                         
+ * \li -1 on failure                                                           
+ */                                                                            
+int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
+{
+   FILE *dpidrc_stream;
+   char *p, *line = NULL;
+   char *service, *path;
+   int i;
+   struct service *s;
+   char *user_dpidir = NULL, *sys_dpidir = NULL, *dpidrc = NULL;
+
+   user_dpidir = dStrconcat(dGethomedir(), "/", dotDILLO_DPI, NULL);
+   if (access(user_dpidir, F_OK) == -1) {
+      /* no dpis in user's space */
+      dFree(user_dpidir);
+      user_dpidir = NULL;
+   }
+   dpidrc = dStrconcat(dGethomedir(), "/", dotDILLO_DPIDRC, NULL);
+   if (access(dpidrc, F_OK) == -1) {
+      dFree(dpidrc);
+      dpidrc = dStrdup(DPIDRC_SYS);
+      if (access(dpidrc, F_OK) == -1) {
+         dFree(dpidrc);
+         dpidrc = NULL;
+      }
+   }
+   if (!dpidrc || (sys_dpidir = get_dpi_dir(dpidrc)) == NULL)
+      sys_dpidir = NULL;
+
+   if (!user_dpidir && !sys_dpidir) {
+      ERRMSG("fill_services_list", "Fatal error ", 0);
+      MSG_ERR("\n - Can't find the directory for dpis.\n");
+      exit(1);
+   }
+
+   if ((dpidrc_stream = fopen(dpidrc, "r")) == NULL) {
+      ERRMSG("fill_services_list", "popen failed", errno);
+      dFree(dpidrc);
+      dFree(sys_dpidir);
+      dFree(user_dpidir);
+      return (-1);
+   }
+
+   if (*services_list != NULL) {
+      ERRMSG("fill_services_list", "services_list parameter is not NULL", 0);
+      return -1;
+   }
+   *services_list = dList_new(8);
+
+   /* dpidrc parser loop */
+   while ((line = dGetline(dpidrc_stream)) != NULL) {
+
+      if (dParser_get_rc_pair(&line, &service, &path) == -1) {
+         if (line[0] && line[0] != '#' && (!service || !path)) {
+            MSG_ERR("Syntax error in %s: service=\"%s\" path=\"%s\"\n",
+                    dpidrc, service, path);
+         }
+         continue;
+      }
+
+      /* ignore dpi_dir silently */
+      if (strcmp(service, "dpi_dir") == 0)
+         continue;
+
+      s = dNew(struct service, 1);
+      /* init services list entry */
+      s->name = dStrdup(service);
+      s->dp_index = -1;
+
+      dList_append(*services_list, s);
+      /* search the dpi for a service by its path */
+      for (i = 0; i < numdpis; i++)
+          if ((p = strstr(attlist[i].path, path)) && *(p - 1) == '/' &&
+              strlen(p) == strlen(path))
+             break;
+      /* if the dpi exist bind service and dpi */
+      if (i < numdpis)
+         s->dp_index = i;
+      dFree(line);
+   }
+   fclose(dpidrc_stream); 
+
+   dList_sort(*services_list, (dCompareFunc)services_alpha_comp);
+
+   dFree(dpidrc);
+   dFree(sys_dpidir);
+   dFree(user_dpidir);
+
+   return (dList_length(*services_list));
 }
 
 /*! Initialise the service request socket
@@ -496,7 +607,8 @@ int init_dpi_socket(struct dp *dpi_attr, char *sockdir)
    dpi_attr->sa.sun_family = AF_LOCAL;
    dpi_nm = get_basename(dpi_attr->path);
 
-   dpi_attr->sockpath = dStrconcat(sockdir, "/", dpi_nm, NULL);
+   dpi_attr->sockpath = dStrconcat(sockdir, "/", dpi_nm, "-XXXXXX", NULL);
+   mktemp(dpi_attr->sockpath);
    if (strlen(dpi_attr->sockpath) > sp_len) {
       ERRMSG("init_all_dpi_sockets", "socket path is too long", 0);
       MSG_ERR("\n - it should be <= %lu chars", (ulong_t)sp_len);
@@ -668,11 +780,14 @@ int register_all_cmd(char *sockdir)
    stop_active_dpis(dpi_attr_list, numdpis);
    rm_dpi_sockets(dpi_attr_list, numdpis);
    free_plugin_list(&dpi_attr_list, numdpis);
+   free_services_list(services_list);
+   services_list = NULL;
    numdpis = 0;
    numsocks = 1;                /* the srs socket */
    FD_ZERO(&sock_set);
    FD_SET(srs, &sock_set);
    numdpis = register_all(&dpi_attr_list);
+   fill_services_list(dpi_attr_list, numdpis, &services_list);
    numsocks = init_all_dpi_sockets(dpi_attr_list, sockdir);
    return (numdpis);
 }
@@ -697,6 +812,24 @@ char *get_message(int sock, char *dpi_tag)
    return (msg);
 }
 
+/*
+ * Compare a struct service pointer and a service name
+ * This function is used for searching services by name
+ */
+int service_match(const struct service *A, const char *B)
+{
+   int A_len, B_len, len;
+
+   A_len = strlen(A->name);
+   B_len = strlen(B);
+   len = MAX (A_len, B_len);
+
+   if (A->name[A_len - 1] == '*')
+      len = A_len - 1;
+
+   return(dStrncasecmp(A->name, B, len));
+}
+
 /*!
  * Send socket path that matches dpi_id to client
  */
@@ -705,12 +838,18 @@ void send_sockpath(int sock, char *dpi_tag, struct dp *dpi_attr_list)
    int i;
    char *dpi_id;
    char *d_cmd;
+   struct service *serv;
 
    dReturn_if_fail((dpi_id = get_message(sock, dpi_tag)) != NULL);
 
-   for (i = 0; i < numdpis; i++)
-      if (strstr(dpi_attr_list[i].id, dpi_id))
-         break;
+   serv = dList_find_custom(services_list,dpi_id,(dCompareFunc)service_match);
+
+   if (serv == NULL || (i = serv->dp_index) == -1)
+      for (i = 0; i < numdpis; i++)
+         if (!strncmp(dpi_attr_list[i].id, dpi_id,
+        dpi_attr_list[i].id - strchr(dpi_attr_list[i].id, '.')))
+            break;
+
    if (i < numdpis) {
       /* found */
       if (access(dpi_attr_list[i].path, F_OK) == -1) {

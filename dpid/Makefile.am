@@ -24,3 +24,8 @@ dpid_SOURCES = \
 install-data-local :
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
 	echo dpi_dir=$(libdir)/dillo/dpi > $(DESTDIR)$(sysconfdir)/dpidrc
+	echo >> $(DESTDIR)$(sysconfdir)/dpidrc
+	echo "proto.file=file/file.dpi" >> $(DESTDIR)$(sysconfdir)/dpidrc
+	echo "proto.ftp=ftp/ftp.filter.dpi" >> $(DESTDIR)$(sysconfdir)/dpidrc
+	echo "proto.https=https/https.filter.dpi" >> $(DESTDIR)$(sysconfdir)/dpidrc
+	echo "proto.data=datauri/datauri.filter.dpi" >> $(DESTDIR)$(sysconfdir)/dpidrc

@@ -682,6 +682,50 @@ void *dList_find_sorted (Dlist *lp, const void *data, dCompareFunc func)
 }
 
 /*
+ *- Parse function ------------------------------------------------------------
+ */
+
+/*
+ * Take a dillo rc line and return 'name' and 'value' pointers to it.
+ * Notes:
+ *    - line is modified!
+ *    - it skips blank lines and lines starting with '#'
+ *
+ * Return value: 0 on successful value/pair, -1 otherwise
+ */
+int dParser_get_rc_pair(char **line, char **name, char **value)
+{
+   char *eq, *p;
+   int len, ret = -1;
+
+   dReturn_val_if_fail(*line, ret);
+
+   *name = NULL;
+   *value = NULL;
+   dStrstrip(*line);
+   if (*line[0] != '#' && (eq = strchr(*line, '='))) {
+      /* get name */
+      for (p = *line; *p && *p != '=' && !isspace(*p); ++p);
+      *p = 0;
+      *name = *line;
+
+      /* get value */
+      if (p == eq) {
+         for (++p; isspace(*p); ++p);
+         len = strlen(p);
+         if (len >= 2 && *p == '"' && p[len-1] == '"') {
+            p[len-1] = 0;
+            ++p;
+         }
+         *value = p;
+         ret = 0;
+      }
+   }
+
+   return ret;
+}
+
+/*
  *- Misc utility functions ----------------------------------------------------
  */
 

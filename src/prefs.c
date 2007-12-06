@@ -109,50 +109,6 @@ static int Prefs_symbol_cmp(const void *a, const void *b)
 }
 
 /*
- * Take a dillo rc line and return 'name' and 'value' pointers to it.
- * Notes:
- *    - line is modified!
- *    - it skips blank lines and lines starting with '#'
- *
- * Return value: 0 on successful value/pair, -1 otherwise
- */
-static int Prefs_get_pair(char **line, char **name, char **value)
-{
-   char *eq, *p;
-   int len, ret = -1;
-
-   dReturn_val_if_fail(*line, ret);
-
-   *name = NULL;
-   *value = NULL;
-   dStrstrip(*line);
-   if (*line[0] != '#' && (eq = strchr(*line, '='))) {
-      /* get name */
-      for (p = *line; *p && *p != '=' && !isspace(*p); ++p);
-      *p = 0;
-      *name = *line;
-
-      /* get value */
-      if (p == eq) {
-         for (++p; isspace(*p); ++p);
-         len = strlen(p);
-         if (len >= 2 && *p == '"' && p[len-1] == '"') {
-            p[len-1] = 0;
-            ++p;
-         }
-         *value = p;
-         ret = 0;
-      }
-   }
-
-   if (*line[0] && *line[0] != '#' && (!*name || !*value)) {
-      MSG("prefs: Syntax error in %s: name=\"%s\" value=\"%s\"\n",
-          RCNAME, *name, *value);
-   }
-   return ret;
-}
-
-/*
  * Parse a name/value pair and set preferences accordingly.
  */
 static int Prefs_parse_pair(char *name, char *value)
@@ -348,9 +304,12 @@ static int Prefs_parse_dillorc(void)
    if (F_in) {
       /* scan dillorc line by line */
       while ((line = dGetline(F_in)) != NULL) {
-         if (Prefs_get_pair(&line, &name, &value) == 0){
+         if (dParser_get_rc_pair(&line, &name, &value) == 0) {
             _MSG("{%s}, {%s}\n", name, value);
             Prefs_parse_pair(name, value);
+         } else if (line[0] && line[0] != '#' && (!name || !value)) {
+            MSG("prefs: Syntax error in %s: name=\"%s\" value=\"%s\"\n",
+                RCNAME, name, value);
          }
          dFree(line);
       }

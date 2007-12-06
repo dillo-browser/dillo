@@ -171,6 +171,10 @@ dillo-0.8.6 [Apr 26, 2006]
  - * Fixed a file descriptor leak in the dpi protocol library.
    * Fixed a subtle segfault bug with malformed URLs in cookies.c.
    Patch: Francis Daly
+ - * Improved the dpi framework. Now dpi-programs can be specified in dpidrc,
+   and there's no need to touch dillo's sources to add new dpi services.
+   Just make your dpi program, add a dpidrc line and play with it!
+   Patch: Diego Sáenz, Jorge Arellano
 
 
 dillo-0.8.5 [Jun 15, 2005]

@@ -240,8 +240,12 @@ static int Capi_dpi_verify_request(DilloWeb *web)
 static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
 {
    char *p, *server = NULL, *url_str = URL_STR(url);
+   Dstr *tmp;
 
-   if (dStrncasecmp(url_str, "dpi:/", 5) == 0) {
+   if ((dStrncasecmp(url_str, "http:", 5) == 0) ||
+       (dStrncasecmp(url_str, "about:", 6) == 0)) {
+      /* URL doesn't use dpi (server = NULL) */
+   } else if (dStrncasecmp(url_str, "dpi:/", 5) == 0) {
       /* dpi prefix, get this server's name */
       if ((p = strchr(url_str + 5, '/')) != NULL) {
          server = dStrndup(url_str + 5, (uint_t)(p - url_str - 5));
@@ -252,16 +256,11 @@ static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
          dFree(server);
          server = dStrdup("bookmarks");
       }
-
-   } else if (dStrncasecmp(url_str, "ftp:/", 5) == 0) {
-      server = dStrdup("ftp");
-
-   } else if (dStrncasecmp(url_str, "https:/", 7) == 0) {
-      server = dStrdup("https");
-   } else if (dStrncasecmp(url_str, "file:", 5) == 0) {
-      server = dStrdup("file");
-   } else if (dStrncasecmp(url_str, "data:", 5) == 0) {
-      server = dStrdup("datauri");
+   } else if ((p = strchr(url_str, ':')) != NULL) {
+      tmp = dStr_new("proto.");
+      dStr_append_l(tmp, url_str, p - url_str);
+      server = tmp->str;
+      dStr_free(tmp, 0);
    }
 
    return ((*server_ptr = server) ? 1 : 0);
