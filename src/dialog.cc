@@ -123,7 +123,7 @@ void a_Dialog_text_window(const char *txt, const char *title)
     ReturnButton *b = new ReturnButton (0, wh-bh, ww, bh, "Close");
     b->callback(window_close_cb, window);
 
-   window->resizable(window);
+   window->resizable(td);
    window->end();
    window->show();
 }
