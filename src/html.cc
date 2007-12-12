@@ -4993,10 +4993,20 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       Html_test_section(html, ni, IsCloseTag);
 
    /* White space handling */
-   if (html->SPCPending && (!SGML_SPCDEL || !IsCloseTag))
-      /* SGML_SPCDEL requires space pending and open tag */
-      DW2TB(html->dw)->addSpace(S_TOP(html)->style);
-   html->SPCPending = FALSE;
+   if (html->SPCPending) {
+      if (SGML_SPCDEL) {
+         /* SGML_SPCDEL requires space pending and open tag */
+         if (!IsCloseTag)
+            DW2TB(html->dw)->addSpace(S_TOP(html)->style);
+         html->SPCPending = FALSE;
+      } else {
+         /* custom space handling: preserve pending space past close tags */
+         if (!IsCloseTag) {
+            DW2TB(html->dw)->addSpace(S_TOP(html)->style);
+            html->SPCPending = FALSE;
+         }
+      }
+   }
 
    /* Tag processing */
    ci = S_TOP(html)->tag_idx;

@@ -135,6 +135,8 @@ void a_Bw_add_client(BrowserWindow *bw, int Key, int Root)
       /* --Images progress-bar stuff-- */
       a_UIcmd_set_img_prog(bw, bw->NumImagesGot, bw->NumImages, 1);
    }
+   if (dList_length(bw->RootClients) + dList_length(bw->ImageClients) == 1)
+      a_UIcmd_set_buttons_sens(bw);
 }
 
 /*

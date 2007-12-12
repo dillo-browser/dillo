@@ -63,6 +63,7 @@ dillo-fltk2
  - Bound preliminar find text support.
  - Added line numbers and enabled wrapping in the "View Source" window.
  - Added HTTP-1.1's chunked transfer support!
+ - Made the stop button sensitive when loading an image.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
