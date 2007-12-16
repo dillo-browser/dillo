@@ -72,14 +72,14 @@ dillo-fltk2
  - Implemented "Load Images" in the page menu and cleaned up html.hh.
  - Added shortcuts: PgDn=Spc PgUp=b Back=BackSpace|, Forw=Shift+Backspace|.
  - Made a cleanup in cache's parse header code.
-   Patch: place, Jorge Arellano
+   Patch: place, Jorge Arellano Cid
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
    Added const declarations in html parser.
    Patch: Vincent Thomasset
 +- Fixed void to int conversions for 64bit-arch.
-   Patch: Jorge Arellano, higuita
+   Patch: Jorge Arellano Cid, higuita
 +- Added a strndup() replacement in dw2
-   Patch: Alexander Becher, Johannes Hofmann, Jorge Arellano
+   Patch: Alexander Becher, Johannes Hofmann, Jorge Arellano Cid
 +- Fixed calcHashValue() to only return non-negative numbers (was SEGFAULT).
  - Improved scrolling performance on large pages by copying screen data
     instead of rendering.
@@ -87,6 +87,7 @@ dillo-fltk2
  - Implemented drag-scrolling with the mouse's middle button.
  - Disabled double buffering (good for debugging redraws).
  - Switched dns.c from gethostbyname* to getaddrinfo (& removed libc5 code).
+ - Made "New browser window" inherit the panel style of its parent.
    Patches: Johannes Hofmann
 +- Improved FLTK library detection at configure time.
    Patch: Frank Gevaerts
@@ -154,7 +155,7 @@ dillo-0.8.6 [Apr 26, 2006]
    * Made the parser aware of buggy pages with multiple BODY and HTML elements.
    * Fixed a bug in MIME content/type detection.
    * Check HTTP Content-Type against real data (a security procedure).
-   Patches: Jorge Arellano
+   Patches: Jorge Arellano Cid
  - * Added a datauri dpi to handle "data:" URIs (RFC-2397).
    Patch: Jorge Arellano, Ben Wiley Sittler
  - * Moved the cookies management into a dpi server: cookies.dpi.

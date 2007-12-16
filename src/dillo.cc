@@ -93,7 +93,7 @@ int main(int argc, char **argv)
    a_Cookies_init();
 
    // Create a new UI/bw pair
-   BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0);
+   BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, NULL);
 
    if (argc == 2) {
       DilloUrl *url = Dillo_make_start_url(argv[1]);

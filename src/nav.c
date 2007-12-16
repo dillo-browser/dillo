@@ -315,7 +315,7 @@ void a_Nav_push_nw(BrowserWindow *bw, const DilloUrl *url)
    BrowserWindow *newbw;
 
    a_UIcmd_get_wh(bw, &w, &h);
-   newbw = a_UIcmd_browser_window_new(w, h);
+   newbw = a_UIcmd_browser_window_new(w, h, bw->ui);
    a_Nav_push(newbw, url);
 }
 

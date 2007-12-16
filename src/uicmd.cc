@@ -57,8 +57,9 @@ using namespace fltk;
 
 /*
  * Create a new UI and its associated BrowserWindow data structure.
+ * Use style from v_ui. If non-NULL it must be of type UI*.
  */
-BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh)
+BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_ui)
 {
    if (ww <= 0 || wh <= 0) {
       // Set default geometry from dillorc.
@@ -67,7 +68,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh)
    }
 
    // Create and set the UI
-   UI *new_ui = new UI(ww, wh, "Dillo: UI");
+   UI *new_ui = new UI(ww, wh, "Dillo: UI", (UI*) v_ui);
    new_ui->set_status("http://www.dillo.org/");
    //new_ui->set_location("http://dillo.org/");
    //new_ui->customize(12);

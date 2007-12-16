@@ -558,10 +558,21 @@ Group *UI::make_panel(int ww)
 /*
  * User Interface constructor
  */ 
-UI::UI(int win_w, int win_h, const char* label) : 
+UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
   Window(win_w, win_h, label)
 {
    int s_h = 20;
+
+   if (cur_ui) {
+      PanelSize = cur_ui->PanelSize;
+      CuteColor = cur_ui->CuteColor;
+      Small_Icons = cur_ui->Small_Icons;
+   } else {
+     // Set some default values
+     //PanelSize = P_tiny, CuteColor = 26, Small_Icons = 0;
+     PanelSize = P_medium, CuteColor = 206, Small_Icons = 0;
+   }
+
    resizable(this);
    clear_double_buffer();
    begin();
@@ -570,10 +581,6 @@ UI::UI(int win_w, int win_h, const char* label) :
      // Set handler for the close window event
      // (the argument is set later via user_data())
      TopGroup->callback(close_window_cb);
-
-     // Set some default values
-     //PanelSize = P_tiny, CuteColor = 26, Small_Icons = 0;
-     PanelSize = P_medium, CuteColor = 206, Small_Icons = 0;
 
      // Control panel
      Panel = make_panel(win_w);
@@ -643,6 +650,10 @@ UI::UI(int win_w, int win_h, const char* label) :
 
    customize(0);
 
+   if (cur_ui && cur_ui->Panel->w() == 0) {
+      fullscreen_cb_i();
+   }
+
    //show();
 }
 
@@ -669,7 +680,7 @@ int UI::handle(int event)
             a_UIcmd_open_url_dialog(user_data());
             ret = 1;
          } else if (k == 'n') {
-            a_UIcmd_browser_window_new(w(), h());
+            a_UIcmd_browser_window_new(w(), h(), this);
             ret = 1;
          } else if (k == 'o') {
             a_UIcmd_open_file(user_data());

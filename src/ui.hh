@@ -62,7 +62,7 @@ class UI : public fltk::Window {
 
 public:
 
-   UI(int w, int h, const char* label = 0);
+   UI(int w, int h, const char* label = 0, const UI *cur_ui = NULL);
    ~UI() {} // TODO: implement destructor
 
    // To manage what events to catch and which to let pass
