@@ -4206,6 +4206,7 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
 {
    char *str;
    DilloHtmlForm *form;
+   Widget *widget;
    int i;
 
    if (html->InFlags & IN_FORM && html->InFlags & IN_TEXTAREA) {
@@ -4231,9 +4232,9 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
    
       form = html->forms->getRef (html->forms->size() - 1);
       form->inputs->get(form->inputs->size() - 1).init_str = str;
-//    gtk_text_insert(GTK_TEXT(form->inputs[form->inputs->size() - 1].widget),
-//                    NULL, NULL, NULL, str, -1);
-   
+      widget = (Widget*)(form->inputs->get(form->inputs->size() - 1).widget);
+      ((MultiLineTextResource *)widget)->setText(str);
+
       html->InFlags &= ~IN_TEXTAREA;
    }
    Html_pop_tag(html, TagIdx);
@@ -4246,42 +4247,55 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
 static void Html_tag_open_textarea(DilloHtml *html,
                                    const char *tag, int tagsize)
 {
-// // AL
-// DilloHtmlForm *form;
-// GtkWidget *widget;
-// GtkWidget *scroll;
-// Widget *embed_gtk;
-// char *name;
-// const char *attrbuf;
-// int cols, rows;
-//
-// /* We can't push a new <FORM> because the 'action' URL is unknown */
-// if (!(html->InFlags & IN_FORM)) {
-//    MSG_HTML("<textarea> outside <form>\n");
-//    html->ReqTagClose = TRUE;
-//    return;
-// }
-// if (html->InFlags & IN_TEXTAREA) {
-//    MSG_HTML("nested <textarea>\n");
-//    html->ReqTagClose = TRUE;
-//    return;
-// }
-//
-// html->InFlags |= IN_TEXTAREA;
-// form = forms->getRef (forms->size() - 1);
-// Html_stash_init(html);
-// S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
-//
-// cols = 20;
-// if ((attrbuf = Html_get_attr(html, tag, tagsize, "cols")))
-//    cols = strtol(attrbuf, NULL, 10);
-// rows = 10;
-// if ((attrbuf = Html_get_attr(html, tag, tagsize, "rows")))
-//    rows = strtol(attrbuf, NULL, 10);
-// name = NULL;
-// if ((attrbuf = Html_get_attr(html, tag, tagsize, "name")))
-//    name = dStrdup(attrbuf);
-//
+   DilloHtmlForm *form;
+   char *name;
+   const char *attrbuf;
+   int cols, rows;
+  
+   /* We can't push a new <FORM> because the 'action' URL is unknown */
+   if (!(html->InFlags & IN_FORM)) {
+      MSG_HTML("<textarea> outside <form>\n");
+      html->ReqTagClose = TRUE;
+      return;
+   }
+   if (html->InFlags & IN_TEXTAREA) {
+      MSG_HTML("nested <textarea>\n");
+      html->ReqTagClose = TRUE;
+      return;
+   }
+  
+   html->InFlags |= IN_TEXTAREA;
+   form = html->forms->getRef (html->forms->size() - 1);
+   Html_stash_init(html);
+   S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
+  
+   cols = 20;
+   if ((attrbuf = Html_get_attr(html, tag, tagsize, "cols")))
+      cols = strtol(attrbuf, NULL, 10);
+   rows = 10;
+   if ((attrbuf = Html_get_attr(html, tag, tagsize, "rows")))
+      rows = strtol(attrbuf, NULL, 10);
+   name = NULL;
+   if ((attrbuf = Html_get_attr(html, tag, tagsize, "name")))
+      name = dStrdup(attrbuf);
+
+   MultiLineTextResource *textres =
+      HT2LT(html)->getResourceFactory()->createMultiLineTextResource ();
+
+   Widget *widget;
+   Embed *embed;
+   widget = (Widget*)textres;
+   embed = new Embed(textres);
+   EntryResource *entryres = (EntryResource*)embed->getResource();
+   /* Readonly or not? */
+   if (Html_get_attr(html, tag, tagsize, "readonly"))
+      entryres->setEditable(false);
+
+   Html_add_input(form, DILLO_HTML_INPUT_TEXTAREA, widget, embed, name,
+                  NULL, NULL, false);
+
+   DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+
 // widget = gtk_text_new(NULL, NULL);
 // /* compare <input type=text> */
 // gtk_signal_connect_after(GTK_OBJECT(widget), "button_press_event",
