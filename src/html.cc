@@ -3626,10 +3626,11 @@ static void Html_reset_input(DilloHtmlInput *input)
       break;
    case DILLO_HTML_INPUT_TEXTAREA:
       if (input->init_str != NULL) {
-//       int pos = 0;
-//       gtk_editable_delete_text(GTK_EDITABLE(input->widget), 0, -1);
-//       gtk_editable_insert_text(GTK_EDITABLE(input->widget), input->init_str,
-//                                strlen(input->init_str), &pos);
+         MultiLineTextResource *textres;
+         textres =
+            (MultiLineTextResource*)
+            ((Embed*)input->widget)->getResource();
+         textres->setText(input->init_str ? input->init_str : "");
       }
       break;
    default:
