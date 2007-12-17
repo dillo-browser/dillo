@@ -3785,6 +3785,11 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
             entryres = (EntryResource*)((Embed*)input->widget)->getResource();
             Html_append_input(DataStr, input->name, entryres->getText());
             break;
+         case DILLO_HTML_INPUT_TEXTAREA:
+            MultiLineTextResource *textres;
+            textres = (MultiLineTextResource*)((Embed*)input->widget)->getResource();
+            Html_append_input(DataStr, input->name, textres->getText());
+            break;
          case DILLO_HTML_INPUT_CHECKBOX:
          case DILLO_HTML_INPUT_RADIO:
             ToggleButtonResource *cb_r;
@@ -4233,7 +4238,7 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
       form = html->forms->getRef (html->forms->size() - 1);
       form->inputs->get(form->inputs->size() - 1).init_str = str;
       widget = (Widget*)(form->inputs->get(form->inputs->size() - 1).widget);
-      ((MultiLineTextResource *)widget)->setText(str);
+      ((MultiLineTextResource *)((Embed *)widget)->getResource ())->setText(str);
 
       html->InFlags &= ~IN_TEXTAREA;
    }
@@ -4280,16 +4285,15 @@ static void Html_tag_open_textarea(DilloHtml *html,
       name = dStrdup(attrbuf);
 
    MultiLineTextResource *textres =
-      HT2LT(html)->getResourceFactory()->createMultiLineTextResource ();
+      HT2LT(html)->getResourceFactory()->createMultiLineTextResource (cols,
+                                                                      rows);
 
    Widget *widget;
    Embed *embed;
-   widget = (Widget*)textres;
-   embed = new Embed(textres);
-   EntryResource *entryres = (EntryResource*)embed->getResource();
+   widget = embed = new Embed(textres);
    /* Readonly or not? */
    if (Html_get_attr(html, tag, tagsize, "readonly"))
-      entryres->setEditable(false);
+      textres->setEditable(false);
 
    Html_add_input(form, DILLO_HTML_INPUT_TEXTAREA, widget, embed, name,
                   NULL, NULL, false);
