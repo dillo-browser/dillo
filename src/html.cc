@@ -3788,7 +3788,8 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
             break;
          case DILLO_HTML_INPUT_TEXTAREA:
             MultiLineTextResource *textres;
-            textres = (MultiLineTextResource*)((Embed*)input->widget)->getResource();
+            textres = (MultiLineTextResource*)((Embed*)input->widget)
+                         ->getResource();
             Html_append_input(DataStr, input->name, textres->getText());
             break;
          case DILLO_HTML_INPUT_CHECKBOX:
@@ -4235,11 +4236,11 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
    
       /* The HTML3.2 spec says it can have "text and character entities". */
       str = Html_parse_entities(html, html->Stash->str, html->Stash->len);
-   
       form = html->forms->getRef (html->forms->size() - 1);
       form->inputs->get(form->inputs->size() - 1).init_str = str;
       widget = (Widget*)(form->inputs->get(form->inputs->size() - 1).widget);
-      ((MultiLineTextResource *)((Embed *)widget)->getResource ())->setText(str);
+      ((MultiLineTextResource *)((Embed *)widget)->getResource ())
+         ->setText(str);
 
       html->InFlags &= ~IN_TEXTAREA;
    }

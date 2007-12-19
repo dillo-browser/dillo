@@ -174,10 +174,10 @@ char *mainpage_sections_item =
 
 char *modifypage_sections_item =
 "    <tr><td>\n"
-"     <table width='100%%' bgcolor='#b4b4b4'cellspacing='0' cellpadding='0'>\n"
+"     <table width='100%%'>\n"
 "      <tr align='center'>"
-"       <td width='1%%'><input type='checkbox' name='s%d'></td>\n"
-"       <td><a href='#s%d'>%s</a></td></tr></table></td></tr>\n";
+"       <td><input type='checkbox' name='s%d'></td>\n"
+"       <td width='100%%'><a href='#s%d'>%s</a></td></tr></table></td></tr>\n";
 
 char *mainpage_sections_footer =
 "   </table>\n";
