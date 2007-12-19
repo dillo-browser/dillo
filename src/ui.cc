@@ -113,6 +113,30 @@ int NewHighlightButton::handle(int e)
    return HighlightButton::handle(e);
 }
 
+//----------------------------------------------------------------------------
+
+/*
+ * Used to resize the progress boxes automatically.
+ */
+class NewProgressBox : public InvisibleBox {
+public:
+   NewProgressBox(int x, int y, int w, int h, const char *l=0) :
+      InvisibleBox(x,y,w,h,l) {};
+   void update_label(const char *lbl) {
+      static int padding = 0;
+      int w,h;
+      if (!padding) {
+         copy_label("W");
+         measure_label(w, h);
+         padding = w > 2 ? w/2 : 1;
+      }
+      copy_label(lbl);
+      measure_label(w,h);
+      resize(w+padding,h);
+      redraw_label();
+   }
+};
+
 //
 // Toolbar buttons -----------------------------------------------------------
 //
@@ -412,16 +436,15 @@ PackedGroup *UI::make_progress_bars(int wide, int thin_up)
    ProgBox = new PackedGroup(0,0,0,0);
    ProgBox->begin();
     // Images
-    IProg = new InvisibleBox(0,0,pr_w,0,
-                             wide ? "Images\n0 of 0" : "0 of 0");
+    IProg = new NewProgressBox(0,0,0,0);
     IProg->box(thin_up ? THIN_UP_BOX : EMBOSSED_BOX);
     IProg->labelcolor(GRAY10);
+    IProg->update_label(wide ? "Images\n0 of 0" : "0 of 0");
     // Page
-    PProg = new InvisibleBox(0,0,pr_w,0,
-                             wide ? "Page\n0.0KB" : "0.0KB");
+    PProg = new NewProgressBox(0,0,0,0);
     PProg->box(thin_up ? THIN_UP_BOX : EMBOSSED_BOX);
     PProg->labelcolor(GRAY10);
-
+    PProg->update_label(wide ? "Page\n0.0KB" : "0.0KB");
    ProgBox->type(PackedGroup::ALL_CHILDREN_VERTICAL);
    ProgBox->end();
 
@@ -471,24 +494,24 @@ Group *UI::make_panel(int ww)
    
    if (PanelSize == P_tiny) {
       if (Small_Icons)
-         xpos = 0, bw = 22, bh = 22, fh = 0, lh = 22, lbl = 0, pr_w = 45;
+         xpos = 0, bw = 22, bh = 22, fh = 0, lh = 22, lbl = 0;
       else
-         xpos = 0, bw = 28, bh = 28, fh = 0, lh = 28, lbl = 0, pr_w = 45;
+         xpos = 0, bw = 28, bh = 28, fh = 0, lh = 28, lbl = 0;
    } else if (PanelSize == P_small) {
       if (Small_Icons)
-         xpos = 0, bw = 20, bh = 20, fh = 0, lh = 20, lbl = 0, pr_w = 45;
+         xpos = 0, bw = 20, bh = 20, fh = 0, lh = 20, lbl = 0;
       else
-         xpos = 0, bw = 28, bh = 28, fh = 0, lh = 28, lbl = 0, pr_w = 45;
+         xpos = 0, bw = 28, bh = 28, fh = 0, lh = 28, lbl = 0;
    } else if (PanelSize == P_medium) {
       if (Small_Icons)
-         xpos = 0, bw = 42, bh = 36, fh = 0, lh = 22, lbl = 1, pr_w = 60;
+         xpos = 0, bw = 42, bh = 36, fh = 0, lh = 22, lbl = 1;
       else
-         xpos = 0, bw = 45, bh = 45, fh = 0, lh = 28, lbl = 1, pr_w = 60;
+         xpos = 0, bw = 45, bh = 45, fh = 0, lh = 28, lbl = 1;
    } else {   // P_large
       if (Small_Icons)
-         xpos = 0, bw = 42, bh = 36, fh = 22, lh = 22, lbl = 1, pr_w = 60;
+         xpos = 0, bw = 42, bh = 36, fh = 22, lh = 22, lbl = 1;
       else
-         xpos = 0, bw = 45, bh = 45, fh = 28, lh = 28, lbl = 1, pr_w = 60;
+         xpos = 0, bw = 45, bh = 45, fh = 28, lh = 28, lbl = 1;
    }
 
    if (PanelSize == P_tiny) {
@@ -778,8 +801,7 @@ void UI::set_page_prog(size_t nbytes, int cmd)
       } else if (cmd == 2) {
          str[0] = '\0';
       }
-      PProg->copy_label(str);
-      PProg->redraw_label();
+      PProg->update_label(str);
    }
 }
 
@@ -801,8 +823,7 @@ void UI::set_img_prog(int n_img, int t_img, int cmd)
       } else if (cmd == 2) {
          str[0] = '\0';
       }
-      IProg->copy_label(str);
-      IProg->redraw_label();
+      IProg->update_label(str);
    }
 }
 

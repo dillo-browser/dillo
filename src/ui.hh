@@ -28,6 +28,9 @@ typedef enum {
    UI_SEARCH
 } UIButton;
 
+// Private class 
+class NewProgressBox;
+
 //
 // UI class definition -------------------------------------------------------
 //
@@ -37,7 +40,7 @@ class UI : public fltk::Window {
           *Clear, *Search, *FullScreen, *ImageLoad, *BugMeter;
    Input  *Location;
    PackedGroup *ProgBox;
-   Widget *PProg, *IProg;
+   NewProgressBox *PProg, *IProg;
    Image *ImgLeftIns, *ImgLeftSens, *ImgRightIns, *ImgRightSens,
          *ImgStopIns, *ImgStopSens, *ImgFullScreenOn, *ImgFullScreenOff,
          *ImgImageLoadOn, *ImgImageLoadOff, *ImgMeterOK, *ImgMeterBug;
@@ -48,7 +51,7 @@ class UI : public fltk::Window {
    int MainIdx;
    // Panel customization variables
    int PanelSize, CuteColor, Small_Icons;
-   int xpos, bw, bh, fh, lh, lbl, pr_w;
+   int xpos, bw, bh, fh, lh, lbl;
 
    // TODO: Hack for fullscreen mode
    int Panel_h, Status_h;
