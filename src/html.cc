@@ -2179,9 +2179,9 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    case DILLO_HTML_TABLE_MODE_TD:
       /* todo: check errors? */
       if ((attrbuf = Html_get_attr(html, tag, tagsize, "colspan")))
-         colspan = strtol (attrbuf, NULL, 10);
+         colspan = MAX(1, strtol (attrbuf, NULL, 10));
       if ((attrbuf = Html_get_attr(html, tag, tagsize, "rowspan")))
-         rowspan = strtol (attrbuf, NULL, 10);
+         rowspan = MAX(1, strtol (attrbuf, NULL, 10));
 
       /* text style */
       old_style = S_TOP(html)->style;
@@ -2239,8 +2239,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       } else
          col_tb->setStyle (S_TOP(html)->table_cell_style);
 
-      ((Table*)S_TOP(html)->table)->addCell (
-         col_tb, colspan, rowspan);
+      ((Table*)S_TOP(html)->table)->addCell (col_tb, colspan, rowspan);
       S_TOP(html)->textblock = html->dw = col_tb;
 
       /* Handle it when the user clicks on a link */
@@ -2731,7 +2730,6 @@ static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
    /* Spacing to the left and right */
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "hspace"))) {
       space = strtol(attrbuf, NULL, 10);
-
       if (space > 0)
          style_attrs->margin.left = style_attrs->margin.right = space;
    }
@@ -2739,7 +2737,6 @@ static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
    /* Spacing at the top and bottom */
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "vspace"))) {
       space = strtol(attrbuf, NULL, 10);
-
       if (space > 0)
          style_attrs->margin.top = style_attrs->margin.bottom = space;
    }
