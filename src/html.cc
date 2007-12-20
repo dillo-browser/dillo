@@ -3822,11 +3822,6 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
 //             }
 //          }
 //          break;
-//       case DILLO_HTML_INPUT_TEXTAREA:
-//          text = gtk_editable_get_chars(GTK_EDITABLE (input->widget),0,-1);
-//          Html_append_input(DataStr, input->name, text);
-//          dFree(text);
-//          break;
 //       case DILLO_HTML_INPUT_INDEX:
 //          Html_urlencode_append(DataStr,
 //             gtk_entry_get_text(GTK_ENTRY(input->widget)));
@@ -4023,7 +4018,7 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    if (!dStrcasecmp(type, "password")) {
       inp_type = DILLO_HTML_INPUT_PASSWORD;
       EntryResource *entryResource =
-         HT2LT(html)->getResourceFactory()->createEntryResource (15, true);
+         HT2LT(html)->getResourceFactory()->createEntryResource (10, true);
       embed = new Embed (entryResource);
       widget = embed;
       init_str = (value) ? value : NULL;
@@ -4109,7 +4104,6 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       /* Text input, which also is the default */
       inp_type = DILLO_HTML_INPUT_TEXT;
       EntryResource *entryResource =
-       //HT2LT(html)->getResourceFactory()->createEntryResource (15, false);
          HT2LT(html)->getResourceFactory()->createEntryResource (10, false);
       widget = embed = new Embed (entryResource);
       entryResource->connectActivate (form->form_receiver);
