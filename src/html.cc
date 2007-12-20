@@ -2091,10 +2091,10 @@ static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.borderWidth.setVal (border);
 
    style_attrs.setBorderColor (
-      Color::createShaded (HT2LT(html),
-                           S_TOP(html)->current_bg_color));
+      Color::createShaded (HT2LT(html), S_TOP(html)->current_bg_color));
    style_attrs.setBorderStyle (BORDER_OUTSET);
    style_attrs.hBorderSpacing = cellspacing;
+   style_attrs.vBorderSpacing = cellspacing;
 
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "width")))
       style_attrs.width = Html_parse_length (html, attrbuf);
