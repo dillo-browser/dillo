@@ -862,7 +862,7 @@ DilloHtml::~DilloHtml()
    DilloHtmlForm *form;
    DilloHtmlInput *input_j;
 
-   MSG("::~DilloHtml(this=%p)\n", this);
+   _MSG("::~DilloHtml(this=%p)\n", this);
 
    a_Bw_remove_doc(bw, this);
 
@@ -2816,12 +2816,10 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
       if (S_TOP(html)->style->x_link != -1) {
          /* In this case we can use the text color */
          style_attrs.setBorderColor (
-            Color::createShaded (HT2LT(html),
-                                 style_attrs.color->getColor()));
+            Color::createShaded (HT2LT(html), style_attrs.color->getColor()));
       } else {
          style_attrs.setBorderColor (
-            Color::createShaded (HT2LT(html),
-                                 html->link_color));
+            Color::createShaded (HT2LT(html), html->link_color));
       }
       style_attrs.setBorderStyle (BORDER_SOLID);
       style_attrs.borderWidth.setVal (border);

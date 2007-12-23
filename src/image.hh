@@ -39,14 +39,14 @@ struct _DilloImage {
    uint_t height;
 
    const uchar_t *cmap;     /* Color map (only for indexed) */
-   DilloImgType in_type;   /* Image Type */
+   DilloImgType in_type;    /* Image Type */
    int32_t bg_color;        /* Background color */
 
-   int ProcessedBytes;    /* Amount of bytes already decoded */
-   bitvec_t *BitVec;       /* Bit vector for decoded rows */
-   ImageState State;
+   int ProcessedBytes;      /* Amount of bytes already decoded */
+   bitvec_t *BitVec;        /* Bit vector for decoded rows */
+   ImageState State;        /* Processing status */
 
-   int RefCount;          /* Reference counter */
+   int RefCount;            /* Reference counter */
 };
 
 

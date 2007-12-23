@@ -1,4 +1,4 @@
- February 2001, --Jcid
+ December 2007, --Jcid
 
                               ------
                               IMAGES
@@ -23,9 +23,15 @@ requires to decode the image data into RGB format, and the second
 one has the whole data already decoded.
 
 *  Regardless of the RGB-data feeding method, the decoded data is
-passed  to the widget (DwImage) and drawn by GdkRGB in a streamed
-way.
+passed to the widget (DwImage) and drawn in a streamed way.
    Note that INDEXED images are also decoded into RGB format.
+
+   Html_tag_open_img    // IMG element processing
+     Html_add_new_image // Reat attributes, create image, add to HTML page
+     Html_load_image    // Tells cache to retrieve image
+       a_Image_new      // Create a 'DilloImage' data structure, to coordinate
+                        // decoded image-data transfer to an 'Imgbuf'.
+       Html_add_widget  // Adds the dw::Image to the page
 
 
 ---------------------
@@ -99,16 +105,16 @@ represent which rows had been decoded.
 
 * The image processing can be found in the following sources:
 
-  - image.[ch]
+  - image.{cc,hh}
   - dicache.[ch]
   - gif.[ch], png.[ch], jpeg.[ch]
-  - dw_image.[ch]
+  - dw/image.{cc,hh}
 
-* Bear  in  mind  that  there are three data structures for image
-code:
+*  Bear  in  mind  that  there are four data structures for image
+code: 
 
-  - DilloImage (image.h)
-  - DwImage (dw_image.h)
+  - DilloImage (image.hh)
   - DICacheEntry (dicache.h)
-
+  - dw::Image (class Image in dw/image.hh)
+  - core::Imgbuf (imgbuf.hh)
 
