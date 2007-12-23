@@ -11,6 +11,8 @@
 
 // UI dialogs
 
+#include <math.h> // for rint() 
+
 #include <fltk/events.h> // for the unfortunate (temporary?) event key testing
 #include <fltk/Window.h>
 #include <fltk/ask.h>
@@ -24,6 +26,7 @@
 #include "dialog.hh"
 #include "misc.h"
 #include "uicmd.hh"
+#include "prefs.h"
 
 using namespace fltk;
 
@@ -112,6 +115,10 @@ void a_Dialog_text_window(const char *txt, const char *title)
     td->buffer(text_buf);
     /* enable wrapping lines; text uses entire width of window */
     td->wrap_mode(true, 0);
+
+    /* 11.0 instead of 12.0 because the dialog's font is a bit bigger */
+    td->textsize((int) rint(11.0 * prefs.font_factor));
+    fltk::setfont(td->textfont(), td->textsize());
 
     lines = td->total_lines();
     line_num_width = 2;
