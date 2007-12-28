@@ -13,9 +13,6 @@
 
 using namespace fltk;
 
-// Panel sizes
-enum { P_tiny = 0, P_small, P_medium, P_large };
-
 typedef enum {
    UI_BACK = 0,
    UI_FORW,

@@ -46,7 +46,7 @@ dillo-fltk2
  - Bound FltkMultiLineTextResource to the html parser (TEXTAREA).
    Patches: Jorge Arellano Cid
 +- Connected signals to <li> elements (fixes links within lists).
- - Enabled text, background-color and geometry in preferences.
+ - Enabled text, background-color, panel_size and geometry in preferences.
  - Enabled clicking over image links.
  - Improved notification upon leaving links.
  - Implemented image-link URL showing in status bar.

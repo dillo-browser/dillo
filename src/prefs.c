@@ -167,13 +167,13 @@ static int Prefs_parse_pair(char *name, char *value)
       break;
    case DRC_TOKEN_PANEL_SIZE:
       if (!dStrcasecmp(value, "tiny"))
-         prefs.panel_size = 1;
+         prefs.panel_size = P_tiny;
       else if (!dStrcasecmp(value, "small"))
-         prefs.panel_size = 2;
+         prefs.panel_size = P_small;
       else if (!dStrcasecmp(value, "medium"))
-         prefs.panel_size = 3;
+         prefs.panel_size = P_medium;
       else /* default to "large" */
-         prefs.panel_size = 4;
+         prefs.panel_size = P_large;
       break;
    case DRC_TOKEN_SMALL_ICONS:
       prefs.small_icons = (strcmp(value, "YES") == 0);
@@ -345,7 +345,7 @@ void a_Prefs_init(void)
    prefs.force_my_colors = FALSE;
    prefs.contrast_visited_color = FALSE;
    prefs.show_tooltip = FALSE;
-   prefs.panel_size = 1;
+   prefs.panel_size = P_tiny;
    prefs.small_icons = FALSE;
    prefs.limit_text_width = FALSE;
    prefs.w3c_plus_heuristics = TRUE;

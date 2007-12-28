@@ -593,7 +593,9 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    } else {
      // Set some default values
      //PanelSize = P_tiny, CuteColor = 26, Small_Icons = 0;
-     PanelSize = P_medium, CuteColor = 206, Small_Icons = 0;
+     PanelSize = prefs.panel_size;
+     Small_Icons = prefs.small_icons;
+     CuteColor = 206;
    }
 
    resizable(this);

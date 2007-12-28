@@ -20,6 +20,8 @@ extern "C" {
 #define DW_COLOR_DEFAULT_PURPLE 0x800080
 #define DW_COLOR_DEFAULT_BGND   0xd6d6c0
 
+/* Panel sizes */
+enum { P_tiny = 0, P_small, P_medium, P_large };
 
 /* define enumeration values to be returned for specific symbols */
 typedef enum {
