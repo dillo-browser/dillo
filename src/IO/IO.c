@@ -24,7 +24,6 @@
 #include "../msg.h"
 #include "../chain.h"
 #include "../klist.h"
-#include "../list.h"
 #include "IO.h"
 #include "iowatch.hh"
 

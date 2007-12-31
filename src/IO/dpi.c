@@ -38,7 +38,6 @@
 #include "../klist.h"
 #include "IO.h"
 #include "Url.h"
-#include "../misc.h"
 #include "../../dpip/dpip.h"
 
 /* #define DEBUG_LEVEL 2 */

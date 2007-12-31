@@ -18,7 +18,6 @@
  * remains with the caller.
  */
 
-#include "msg.h"
 #include "klist.h"
 
 

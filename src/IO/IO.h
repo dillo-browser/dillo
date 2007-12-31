@@ -7,7 +7,6 @@
 #include "d_size.h"
 #include "../../dlib/dlib.h"
 #include "../chain.h"
-#include "iowatch.hh"
 
 /*
  * IO Operations

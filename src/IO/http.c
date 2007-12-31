@@ -31,7 +31,6 @@
 #include "../msg.h"
 #include "../klist.h"
 #include "../dns.h"
-#include "../cache.h"
 #include "../web.hh"
 #include "../cookies.h"
 #include "../prefs.h"

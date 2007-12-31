@@ -14,7 +14,7 @@
 #define __PIXMAPS_H__
 
 /* XPM
-static char * history_xpm[] = {
+static const char *const history_xpm[] = {
 "11 20 6 1",
 "       c None",
 ".      c #000000000000",
@@ -44,7 +44,7 @@ static char * history_xpm[] = {
 "           "};
 */
 /* XPM */
-static char * left_xpm[] = {
+static const char *const left_xpm[] = {
 "22 22 46 1",
 "       c None",
 ".      c #000000",
@@ -115,7 +115,7 @@ static char * left_xpm[] = {
 "                   .  ",
 "                      "};
 /* XPM */
-static char * right_xpm[] = {
+static const char *const right_xpm[] = {
 "22 22 46 1",
 "       c None",
 ".      c #000000",
@@ -186,7 +186,7 @@ static char * right_xpm[] = {
 "                   .  ",
 "                      "};
 /* XPM */
-static char * reload_xpm[] = {
+static const char *const reload_xpm[] = {
 "22 22 147 2",
 "       c None",
 ".      c #000000",
@@ -358,7 +358,7 @@ static char * reload_xpm[] = {
 "      . k.l.m.j j n.[.o.h.p.3 3 3 3 3 3 { . ",
 "          . . . . . . . . . . . . . . . . . "};
 /* XPM */
-static char * home_xpm[] = {
+static const char *const home_xpm[] = {
 "22 22 106 2",
 "       c None",
 ".      c #190E0B",
@@ -489,7 +489,7 @@ static char * home_xpm[] = {
 "        # # # # # # # # # # # # # #         ",
 "                                            "};
 /* XPM */
-static char * save_xpm[] = {
+static const char *const save_xpm[] = {
 "22 22 59 1",
 "       c None",
 ".      c #000000",
@@ -574,7 +574,7 @@ static char * save_xpm[] = {
 "                      "};
 
 /* XPM */
-static char * stop_xpm[] = {
+static const char *const stop_xpm[] = {
 "22 22 77 1",
 "       c None",
 ".      c #000000",
@@ -676,7 +676,7 @@ static char * stop_xpm[] = {
 "      .........       ",
 "                      "};
 /* XPM */
-static char * bm_xpm[] = {
+static const char *const bm_xpm[] = {
 "22 22 86 1",
 "       c None",
 ".      c #000000",
@@ -790,7 +790,7 @@ static char * bm_xpm[] = {
 /* Small icons here */
 
 /* XPM */
-static char * left_s_xpm[] = {
+static const char *const left_s_xpm[] = {
 "16 16 33 1",
 "       c None",
 ".      c #000000",
@@ -842,7 +842,7 @@ static char * left_s_xpm[] = {
 "      ..    .;. ",
 "             .  "};
 /* XPM */
-static char * right_s_xpm[] = {
+static const char *const right_s_xpm[] = {
 "16 16 56 1",
 "       c None",
 ".      c #000000",
@@ -917,7 +917,7 @@ static char * right_s_xpm[] = {
 "        ..  .>. ",
 "             .  "};
 /* XPM */
-static char * home_s_xpm[] = {
+static const char *const home_s_xpm[] = {
 "16 16 54 1",
 "       c None",
 ".      c #170E0B",
@@ -990,7 +990,7 @@ static char * home_s_xpm[] = {
 "  +lm+n+mmmml+  ",
 "  ++++o+++++++  "};
 /* XPM */
-static char * reload_s_xpm[] = {
+static const char *const reload_s_xpm[] = {
 "16 16 74 1",
 "       c None",
 ".      c #000000",
@@ -1083,7 +1083,7 @@ static char * reload_s_xpm[] = {
 "   .GHI%%IHG.   ",
 "     ......     "};
 /* XPM */
-static char * save_s_xpm[] = {
+static const char *const save_s_xpm[] = {
 "16 16 51 1",
 "       c None",
 ".      c #000000",
@@ -1153,7 +1153,7 @@ static char * save_s_xpm[] = {
 ".h.iiijkkkkkl.. ",
 " .............  "};
 /* XPM */
-static char * stop_s_xpm[] = {
+static const char *const stop_s_xpm[] = {
 "16 16 65 1",
 "       c None",
 ".      c #000000",
@@ -1238,7 +1238,7 @@ static char * stop_s_xpm[] = {
 "    ........    "};
 
 /* XPM */
-static char * bm_s_xpm[] = {
+static const char *const bm_s_xpm[] = {
 "16 16 63 1",
 "       c None",
 ".      c #000000",
@@ -1321,7 +1321,7 @@ static char * bm_s_xpm[] = {
 "      .v. wx.   "};
 
 /* XPM */
-static char * new_s_xpm[] = {
+static const char *const new_s_xpm[] = {
 "11 11 35 1",
 "       c None",
 ".      c #000000",
@@ -1371,7 +1371,7 @@ static char * new_s_xpm[] = {
 "  .     .  "};
 
 /* XPM */
-static char * search_xpm[] = {
+static const char *const search_xpm[] = {
 "14 16 11 1",
 "       c None",
 ".      c #000000",
@@ -1402,7 +1402,7 @@ static char * search_xpm[] = {
 "         11   "};
 
 /* XPM */
-static char * full_screen_on_xpm[] = {
+static const char *const full_screen_on_xpm[] = {
 "13 15 2 1",
 "       c None",
 ".      c #000000",
@@ -1423,7 +1423,7 @@ static char * full_screen_on_xpm[] = {
 "             "};
 
 /* XPM */
-static char * full_screen_off_xpm[] = {
+static const char *const full_screen_off_xpm[] = {
 "13 15 2 1",
 "       c None",
 ".      c #000000",
@@ -1444,7 +1444,7 @@ static char * full_screen_off_xpm[] = {
 "             "};
 
 /* XPM */
-static char * mini_bug_xpm[] = {
+static const char *const mini_bug_xpm[] = {
 "15 16 6 1",
 "       c None",
 ".      c #000000000000",
@@ -1470,7 +1470,7 @@ static char * mini_bug_xpm[] = {
 "            .  "};
 
 /* XPM */
-static char * mini_ok_xpm[] = {
+static const char *const mini_ok_xpm[] = {
 "15 15 5 1",
 "@ c #000000",
 "a c #808080",
@@ -1495,7 +1495,7 @@ static char * mini_ok_xpm[] = {
 };
 
 /* XPM */
-static char * imgload_on_xpm[] = {
+static const char *const imgload_on_xpm[] = {
 "15 15 2 1",
 " 	c #FFFFFFFFFFFF",
 ".	c #00000000CF3C",
@@ -1516,7 +1516,7 @@ static char * imgload_on_xpm[] = {
 "               "};
 
 /* XPM */
-static char * imgload_off_xpm[] = {
+static const char *const imgload_off_xpm[] = {
 "15 15 2 1",
 " 	c #FFFFFFFFFFFF",
 ".	c #CF3C00000000",
@@ -1537,7 +1537,7 @@ static char * imgload_off_xpm[] = {
 "               "};
 
 /* XPM */
-static char *left_i_xpm[] = {
+static const char *const left_i_xpm[] = {
 "22 22 3 1",
 "  c None",
 ". c #000000",
@@ -1566,7 +1566,7 @@ static char *left_i_xpm[] = {
 "                      "};
 
 /* XPM */
-static char *right_i_xpm[] = {
+static const char *const right_i_xpm[] = {
 "22 22 3 1",
 "  c None",
 ". c #000000",
@@ -1595,7 +1595,7 @@ static char *right_i_xpm[] = {
 "                      "};
 
 /* XPM */
-static char *stop_i_xpm[] = {
+static const char *const stop_i_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "22 22 2 1",
 "       c None",
@@ -1626,7 +1626,7 @@ static char *stop_i_xpm[] = {
 };
 
 /* XPM */
-static char * stop_si_xpm[] = {
+static const char *const stop_si_xpm[] = {
 "16 16 2 1",
 "       c None",
 "@      c gray70",
@@ -1648,7 +1648,7 @@ static char * stop_si_xpm[] = {
 "    @@@@@@@@    "};
 
 /* XPM */
-static char * left_si_xpm[] = {
+static const char *const left_si_xpm[] = {
 "16 16 2 1",
 "       c None",
 "@      c gray70",
@@ -1670,7 +1670,7 @@ static char * left_si_xpm[] = {
 "             @  "};
 
 /* XPM */
-static char * right_si_xpm[] = {
+static const char *const right_si_xpm[] = {
 "16 16 2 1",
 "       c None",
 "@      c gray70",

@@ -38,7 +38,6 @@
 #include "nav.h"
 #include "menu.hh"
 #include "prefs.h"
-#include "misc.h"
 #include "capi.h"
 #include "html.hh"
 
@@ -90,9 +89,9 @@ typedef struct _DilloLinkImage   DilloLinkImage;
 typedef struct _DilloHtmlClass   DilloHtmlClass;
 typedef struct _DilloHtmlState   DilloHtmlState;
 typedef struct _DilloHtmlForm    DilloHtmlForm;
-typedef struct _DilloHtmlOption  DilloHtmlOption;
-typedef struct _DilloHtmlSelect  DilloHtmlSelect;
 typedef struct _DilloHtmlInput   DilloHtmlInput;
+typedef struct _DilloHtmlSelect  DilloHtmlSelect;
+typedef struct _DilloHtmlOption  DilloHtmlOption;
 
 typedef enum {
    DT_NONE,           
@@ -175,10 +174,11 @@ typedef enum {
    IN_BODY        = 1 << 2,
    IN_FORM        = 1 << 3,
    IN_SELECT      = 1 << 4,
-   IN_TEXTAREA    = 1 << 5,
-   IN_MAP         = 1 << 6,
-   IN_PRE         = 1 << 7,
-   IN_BUTTON      = 1 << 8
+   IN_OPTION      = 1 << 5,
+   IN_TEXTAREA    = 1 << 6,
+   IN_MAP         = 1 << 7,
+   IN_PRE         = 1 << 8,
+   IN_BUTTON      = 1 << 9,
 } DilloHtmlProcessingState;
 
 /*-----------------------------------------------------------------------------
@@ -231,18 +231,12 @@ struct _DilloHtmlForm {
 };
 
 struct _DilloHtmlOption {
-   //GtkWidget *menuitem;
-   char *value;
-   bool_t init_val;
+   char *value, *content;
+   bool selected, enabled;
 };
 
 struct _DilloHtmlSelect {
-   //GtkWidget *menu;
-   int size;
-
-   DilloHtmlOption *options;
-   int num_options;
-   int num_options_max;
+   misc::SimpleVector<DilloHtmlOption *> *options;
 };
 
 struct _DilloHtmlInput {
@@ -858,31 +852,33 @@ void DilloHtml::initDw()
  */
 DilloHtml::~DilloHtml()
 {
-   int i, j, k;
-   DilloHtmlForm *form;
-   DilloHtmlInput *input_j;
-
    _MSG("::~DilloHtml(this=%p)\n", this);
 
    a_Bw_remove_doc(bw, this);
 
    a_Url_free(base_url);
 
-   for (i = 0; i < forms->size(); i++) {
-      form = forms->getRef(i);
+   for (int i = 0; i < forms->size(); i++) {
+      DilloHtmlForm *form = forms->getRef(i);
       a_Url_free(form->action);
-      for (j = 0; j < form->inputs->size(); j++) {
-         input_j = form->inputs->getRef(j);
-         dFree(input_j->name);
-         dFree(input_j->init_str);
+      for (int j = 0; j < form->inputs->size(); j++) {
+         DilloHtmlInput *input = form->inputs->getRef(j);
+         dFree(input->name);
+         dFree(input->init_str);
 
-         if (input_j->type == DILLO_HTML_INPUT_SELECT ||
-            input_j->type == DILLO_HTML_INPUT_SEL_LIST) {
-            for (k = 0; k < input_j->select->num_options; k++) {
-               dFree(input_j->select->options[k].value);
+         if (input->type == DILLO_HTML_INPUT_SELECT ||
+             input->type == DILLO_HTML_INPUT_SEL_LIST) {
+
+            int size = input->select->options->size ();
+            for (int k = 0; k < size; k++) {
+               DilloHtmlOption *option =
+                  input->select->options->get (k);
+               dFree(option->value);
+               dFree(option->content);
+               delete(option);
             }
-            dFree(input_j->select->options);
-            dFree(input_j->select);
+            delete(input->select->options);
+            delete(input->select);
          }
       }
       delete(form->inputs);
@@ -890,12 +886,12 @@ DilloHtml::~DilloHtml()
    }
    delete(forms);
 
-   for (i = 0; i < links->size(); i++)
+   for (int i = 0; i < links->size(); i++)
       if (links->get(i))
          a_Url_free(links->get(i));
    delete (links);
 
-   for (i = 0; i < images->size(); i++) {
+   for (int i = 0; i < images->size(); i++) {
       DilloLinkImage *li = images->get(i);
       a_Url_free(li->url);
       if (li->image)
@@ -3428,6 +3424,9 @@ static void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
       return;
    }
    html->InFlags |= IN_FORM;
+   html->InFlags &= ~IN_SELECT;
+   html->InFlags &= ~IN_OPTION;
+   html->InFlags &= ~IN_TEXTAREA;
 
    method = DILLO_HTML_METHOD_GET;
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "method"))) {
@@ -3484,9 +3483,12 @@ static void Html_tag_close_form(DilloHtml *html, int TagIdx)
 //       }
 //    }
    }
+
    html->InFlags &= ~IN_FORM;
    html->InFlags &= ~IN_SELECT;
+   html->InFlags &= ~IN_OPTION;
    html->InFlags &= ~IN_TEXTAREA;
+
    Html_pop_tag(html, TagIdx);
 }
 
@@ -3574,8 +3576,6 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_reset_input(DilloHtmlInput *input)
 {
-   int i;
-
    switch (input->type) {
    case DILLO_HTML_INPUT_TEXT:
    case DILLO_HTML_INPUT_PASSWORD:
@@ -3594,20 +3594,20 @@ static void Html_reset_input(DilloHtmlInput *input)
          /* this is in reverse order so that, in case more than one was
           * selected, we get the last one, which is consistent with handling
           * of multiple selected options in the layout code. */
-         for (i = input->select->num_options - 1; i >= 0; i--) {
-            if (input->select->options[i].init_val) {
+//       for (i = input->select->num_options - 1; i >= 0; i--) {
+//          if (input->select->options[i].init_val) {
 //             gtk_menu_item_activate(GTK_MENU_ITEM
 //                                    (input->select->options[i].menuitem));
 //             Html_select_set_history(input);
-               break;
-            }
-         }
+//             break;
+//          }
+//       }
       }
       break;
    case DILLO_HTML_INPUT_SEL_LIST:
       if (!input->select)
          break;
-      for (i = 0; i < input->select->num_options; i++) {
+//    for (i = 0; i < input->select->num_options; i++) {
 //       if (input->select->options[i].init_val) {
 //          if (input->select->options[i].menuitem->state == GTK_STATE_NORMAL)
 //             gtk_list_select_child(GTK_LIST(input->select->menu),
@@ -3617,7 +3617,7 @@ static void Html_reset_input(DilloHtmlInput *input)
 //             gtk_list_unselect_child(GTK_LIST(input->select->menu),
 //                                     input->select->options[i].menuitem);
 //       }
-      }
+//    }
       break;
    case DILLO_HTML_INPUT_TEXTAREA:
       if (input->init_str != NULL) {
@@ -3798,25 +3798,21 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
          case DILLO_HTML_INPUT_HIDDEN:
             Html_append_input(DataStr, input->name, input->init_str);
             break;
-//       case DILLO_HTML_INPUT_SELECT:
-//          for (i = 0; i < input->select->num_options; i++) {
-//             if (GTK_CHECK_MENU_ITEM(input->select->options[i].menuitem)->
-//                 active) {
-//                Html_append_input(DataStr, input->name,
-//                                  input->select->options[i].value);
-//                break;
-//             }
-//          }
-//          break;
-//       case DILLO_HTML_INPUT_SEL_LIST:
-//          for (i = 0; i < input->select->num_options; i++) {
-//             if (input->select->options[i].menuitem->state ==
-//                 GTK_STATE_SELECTED) {
-//                Html_append_input(DataStr, input->name,
-//                                  input->select->options[i].value);
-//             }
-//          }
-//          break;
+         case DILLO_HTML_INPUT_SELECT:
+         case DILLO_HTML_INPUT_SEL_LIST:
+         {  // brackets for compiler happiness.
+            SelectionResource *sel_res =
+               (SelectionResource*)((Embed*)input->widget)->getResource();
+            int size = input->select->options->size ();
+            for (int i = 0; i < size; i++) {
+               if (sel_res->isSelected(i)) {
+                  DilloHtmlOption *option =
+                     input->select->options->get (i);
+                  Html_append_input(DataStr, input->name, option->value);
+               }
+            }
+            break;
+         }
 //       case DILLO_HTML_INPUT_INDEX:
 //          Html_urlencode_append(DataStr,
 //             gtk_entry_get_text(GTK_ENTRY(input->widget)));
@@ -4205,7 +4201,8 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
    Widget *widget;
    int i;
 
-   if (html->InFlags & IN_FORM && html->InFlags & IN_TEXTAREA) {
+   if (html->InFlags & IN_FORM &&
+       html->InFlags & IN_TEXTAREA) {
       /* Remove the line ending that follows the opening tag */
       if (html->Stash->str[0] == '\r')
          dStr_erase(html->Stash, 0, 1);
@@ -4332,28 +4329,29 @@ static void Html_tag_open_textarea(DilloHtml *html,
 /* The select tag is quite tricky, because of gorpy html syntax. */
 static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 {
-// DilloHtmlForm *form;
-// DilloHtmlSelect *Select;
-// GtkWidget *widget, *menu;
-// char *name;
 // const char *attrbuf;
 // int size, type, multi;
-//
-// if (!(html->InFlags & IN_FORM)) {
-//    MSG_HTML("<select> outside <form>\n");
-//    return;
-// }
-// if (html->InFlags & IN_SELECT) {
-//    MSG_HTML("nested <select>\n");
-//    return;
-// }
-// html->InFlags |= IN_SELECT;
-//
-//
-// form = forms->getRef (forms->size() - 1);
-//
-// name = Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
-//
+
+   if (!(html->InFlags & IN_FORM)) {
+      MSG_HTML("<select> outside <form>\n");
+      return;
+   }
+   if (html->InFlags & IN_SELECT) {
+      MSG_HTML("nested <select>\n");
+      return;
+   }
+   html->InFlags |= IN_SELECT;
+   html->InFlags &= ~IN_OPTION;
+
+   DilloHtmlForm *form = html->forms->getRef (html->forms->size() - 1);
+   char *name = Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
+   OptionMenuResource *res =
+      HT2LT(html)->getResourceFactory()->createOptionMenuResource ();
+   Widget *widget;
+   Embed *embed;
+   widget = embed = new Embed(res);
+   DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+
 // size = 0;
 // if ((attrbuf = Html_get_attr(html, tag, tagsize, "size")))
 //    size = strtol(attrbuf, NULL, 10);
@@ -4373,17 +4371,13 @@ static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 //       gtk_list_set_selection_mode(GTK_LIST(menu), GTK_SELECTION_MULTIPLE);
 //    type = DILLO_HTML_INPUT_SEL_LIST;
 // }
-//
-// Select = dNew(DilloHtmlSelect, 1);
-// Select->menu = menu;
-// Select->size = size;
-// Select->num_options = 0;
-// Select->num_options_max = 8;
-// Select->options = dNew(DilloHtmlOption, Select->num_options_max);
-//
-// Html_add_input(form, type, widget, name, NULL, Select, FALSE);
-// Html_stash_init(html);
-// dFree(name);
+
+   DilloHtmlSelect *select = new DilloHtmlSelect;
+   select->options = new misc::SimpleVector<DilloHtmlOption *> (4);
+   Html_add_input(form, DILLO_HTML_INPUT_SELECT, widget, embed, name,
+                  NULL, select, false);
+   Html_stash_init(html);
+   dFree(name);
 }
 
 /*
@@ -4391,47 +4385,19 @@ static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_option_finish(DilloHtml *html)
 {
-// DilloHtmlForm *form;
-// DilloHtmlInput *input;
-// GtkWidget *menuitem;
-// GSList *group;
-// DilloHtmlSelect *select;
-//
-// if (!(html->InFlags & IN_FORM))
-//    return;
-//
-// form = html->forms->getRef (html->forms->size() - 1);
-// input = form->inputs->getRef (form->inputs->size() - 1);
-// if (input->select->num_options <= 0)
-//    return;
-//
-// select = input->select;
-// if (input->type == DILLO_HTML_INPUT_SELECT ) {
-//    if (select->num_options == 1)
-//       group = NULL;
-//    else
-//       group = gtk_radio_menu_item_group(GTK_RADIO_MENU_ITEM
-//                                 (select->options[0].menuitem));
-//    menuitem = gtk_radio_menu_item_new_with_label(group, html->Stash->str);
-//    select->options[select->num_options - 1].menuitem = menuitem;
-//    if (select->options[select->num_options - 1].value == NULL)
-//       select->options[select->num_options - 1].value =
-//           dStrdup(html->Stash->str);
-//    gtk_menu_append(GTK_MENU(select->menu), menuitem);
-//    if (select->options[select->num_options - 1].init_val)
-//       gtk_menu_item_activate(GTK_MENU_ITEM(menuitem));
-//    gtk_widget_show(menuitem);
-// } else if (input->type == DILLO_HTML_INPUT_SEL_LIST) {
-//    menuitem = gtk_list_item_new_with_label(html->Stash->str);
-//    select->options[select->num_options - 1].menuitem = menuitem;
-//    if (select->options[select->num_options - 1].value == NULL)
-//       select->options[select->num_options - 1].value =
-//           dStrdup(html->Stash->str);
-//    gtk_container_add(GTK_CONTAINER(select->menu), menuitem);
-//    if (select->options[select->num_options - 1].init_val)
-//       gtk_list_select_child(GTK_LIST(select->menu), menuitem);
-//    gtk_widget_show(menuitem);
-// }
+   DilloHtmlForm *form =
+      html->forms->getRef (html->forms->size() - 1);
+   DilloHtmlInput *input =
+      form->inputs->getRef (form->inputs->size() - 1);
+   if (input->type == DILLO_HTML_INPUT_SELECT ||
+       input->type == DILLO_HTML_INPUT_SEL_LIST) {
+      DilloHtmlSelect *select =
+         input->select;
+      DilloHtmlOption *option =
+         select->options->get (select->options->size() - 1);
+      option->content =
+         Html_parse_entities(html, html->Stash->str, html->Stash->len);
+   }
 }
 
 /*
@@ -4439,28 +4405,36 @@ static void Html_option_finish(DilloHtml *html)
  */
 static void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
 {
-// DilloHtmlForm *form;
-// DilloHtmlInput *input;
-// int no;
-//
-// if (!(html->InFlags & IN_SELECT))
-//    return;
-//
-// form = forms->getRef (forms->size() - 1);
-// input = form->inputs->getRef (form->inputs->size() - 1);
-// if (input->type == DILLO_HTML_INPUT_SELECT ||
-//     input->type == DILLO_HTML_INPUT_SEL_LIST) {
-//    Html_option_finish(html);
-//    no = input->select->num_options;
-//    a_List_add(input->select->options, no, input->select->num_options_max);
-//    input->select->options[no].menuitem = NULL;
-//    input->select->options[no].value = Html_get_attr_wdef(html, tag, tagsize,
-//                                                         "value", NULL);
-//    input->select->options[no].init_val =
-//       (Html_get_attr(html, tag, tagsize, "selected") != NULL);
-//    input->select->num_options++;
-// }
-// Html_stash_init(html);
+   if (!(html->InFlags & IN_FORM &&
+         html->InFlags & IN_SELECT ))
+      return;
+   if (html->InFlags & IN_OPTION)
+      Html_option_finish(html);
+   html->InFlags |= IN_OPTION;
+
+   DilloHtmlForm *form =
+      html->forms->getRef (html->forms->size() - 1);
+   DilloHtmlInput *input =
+      form->inputs->getRef (form->inputs->size() - 1);
+
+   if (input->type == DILLO_HTML_INPUT_SELECT ||
+       input->type == DILLO_HTML_INPUT_SEL_LIST) {
+
+      DilloHtmlOption *option = new DilloHtmlOption;
+      option->value =
+         Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
+      option->content = NULL;
+      option->selected =
+         (Html_get_attr(html, tag, tagsize, "selected") != NULL);
+      option->enabled =
+         (Html_get_attr(html, tag, tagsize, "disabled") == NULL);
+
+      int size = input->select->options->size ();
+      input->select->options->increase ();
+      input->select->options->set (size, option);
+   }
+
+   Html_stash_init(html);
 }
 
 /*
@@ -4468,71 +4442,49 @@ static void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_select(DilloHtml *html, int TagIdx)
 {
-// // AL
-// DilloHtmlForm *form;
-// DilloHtmlInput *input;
-// GtkWidget *scrolledwindow;
-// Widget *embed_gtk;
-// GtkRequisition req;
-// int height;
-//
-// if (html->InFlags & IN_SELECT) {
-//    html->InFlags &= ~IN_SELECT;
-//
-//    form = forms->getRef (forms->size() - 1);
-//    input = form->inputs->getRef (form->inputs->size() - 1);
-//    if (input->type == DILLO_HTML_INPUT_SELECT) {
-//       Html_option_finish(html);
-//
-//       gtk_option_menu_set_menu(GTK_OPTION_MENU(input->widget),
-//                                input->select->menu);
-//       Html_select_set_history(input);
-//
-//       // gtk_option_menu_set_history(GTK_OPTION_MENU(input->widget), 1);
-//
-//       gtk_widget_show(input->widget);
-//
-//       embed_gtk = a_Dw_embed_gtk_new ();
-//       a_Dw_embed_gtk_add_gtk (DW_EMBED_GTK (embed_gtk), input->widget);
-//       DW2TB(html->dw)->addWidget (embed_gtk,
-//                                   S_TOP(html)->style);
-//    } else if (input->type == DILLO_HTML_INPUT_SEL_LIST) {
-//       Html_option_finish(html);
-//
-//       if (input->select->size < input->select->num_options) {
-//          scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
-//          gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwindow),
-//                                         GTK_POLICY_NEVER,
-//                                         GTK_POLICY_AUTOMATIC);
-//          gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW
-//                                                (scrolledwindow),
-//                                                input->widget);
-//
-//          gtk_container_set_focus_vadjustment
-//             (GTK_CONTAINER (input->widget),
-//              gtk_scrolled_window_get_vadjustment
-//              (GTK_SCROLLED_WINDOW(scrolledwindow)));
-//
-//          /* Calculate the height of the scrolled window */
-//          gtk_widget_size_request(input->select->options[0].menuitem, &req);
-//          height = input->select->size * req.height +
-//             2 * scrolledwindow->style->klass->ythickness;
-//          gtk_widget_set_usize(scrolledwindow, -1, height);
-//
-//          gtk_widget_show(input->widget);
-//          input->widget = scrolledwindow;
-//       }
-//       gtk_widget_show(input->widget);
-//
-//       /* note: In this next call, scrolledwindows get a warning from
-//        * gdkwindow.c:422. I'm not really going to sweat it now - the
-//        * embedded widget stuff is going to get massively redone anyway. */
-//       embed_gtk = a_Dw_embed_gtk_new ();
-//       a_Dw_embed_gtk_add_gtk (DW_EMBED_GTK (embed_gtk), input->widget);
-//       DW2TB(html->dw)->addWidget (embed_gtk,
-//                                   S_TOP(html)->style);
-//    }
-// }
+   if (html->InFlags & IN_FORM &&
+       html->InFlags & IN_SELECT) {
+      if (html->InFlags & IN_OPTION)
+         Html_option_finish(html);
+      html->InFlags &= ~IN_SELECT;
+      html->InFlags &= ~IN_OPTION;
+
+      DilloHtmlForm *form =
+         html->forms->getRef (html->forms->size() - 1);
+      DilloHtmlInput *input =
+         form->inputs->getRef (form->inputs->size() - 1);
+      SelectionResource *res =
+         (SelectionResource*)((Embed*)input->widget)->getResource();
+
+      int size = input->select->options->size ();
+      if (size > 0) {
+         // is anything selected? 
+         bool some_selected = false;
+         for (int i = 0; i < size; i++) {
+            DilloHtmlOption *option =
+               input->select->options->get (i);
+            if (option->selected) {
+               some_selected = true;
+               break;
+            }
+         }
+
+         // select the first if nothing else is selected 
+         // BUG(?): should not do this for MULTI selections 
+         if (! some_selected)
+            input->select->options->get (0)->selected = true;
+
+         // add the items to the resource 
+         for (int i = 0; i < size; i++) {
+            DilloHtmlOption *option =
+               input->select->options->get (i);
+            bool enabled = option->enabled;
+            bool selected = option->selected;
+            res->addItem(option->content,enabled,selected);
+         }
+      }
+   }
+
    Html_pop_tag(html, TagIdx);
 }
 

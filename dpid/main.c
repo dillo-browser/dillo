@@ -185,7 +185,7 @@ static int get_command(int sock, char *dpi_tag, struct dp *dpi_attr_list)
 /*
  * Check whether a dpi server is running
  */
-int server_is_running(char *server_id)
+static int server_is_running(char *server_id)
 {
    int i;
 

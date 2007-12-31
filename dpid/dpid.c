@@ -38,7 +38,7 @@ volatile sig_atomic_t caught_sigchld = 0;
 
 /*! Return the basename of a filename
  */
-char *get_basename(char *filename)
+static char *get_basename(char *filename)
 {
    char *p;
 

@@ -22,9 +22,6 @@
 #include "bw.h"
 #include "web.hh"
 #include "misc.h"
-#include "history.h"
-#include "nav.h"
-#include "menu.hh"
 
 #include "uicmd.hh"
 

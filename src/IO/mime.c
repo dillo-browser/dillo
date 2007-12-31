@@ -10,7 +10,6 @@
  */
 
 #include "mime.h"
-#include "../msg.h"
 #include "../list.h"
 
 

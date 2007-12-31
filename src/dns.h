@@ -3,8 +3,6 @@
 
 #include <netinet/in.h>
 
-#include "chain.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

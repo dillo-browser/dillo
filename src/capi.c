@@ -25,7 +25,6 @@
 #include "list.h"
 #include "history.h"
 #include "nav.h"
-#include "misc.h"
 #include "dpiapi.h"
 #include "uicmd.hh"
 #include "../dpip/dpip.h"

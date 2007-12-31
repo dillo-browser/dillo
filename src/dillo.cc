@@ -27,9 +27,8 @@
 #include "dir.h"
 #include "uicmd.hh"
 
-#include "msg.h"
+#include "prefs.h"
 #include "bw.h"
-#include "bookmark.h"
 #include "misc.h"
 #include "nav.h"
 

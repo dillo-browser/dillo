@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include "msg.h"
-#include "list.h"
 #include "nav.h"
 #include "history.h"
 #include "web.hh"
