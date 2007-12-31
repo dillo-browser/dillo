@@ -95,8 +95,8 @@ dillo-fltk2
 +- Improved FLTK library detection at configure time.
    Patch: Frank Gevaerts
 +- Bound Ctrl-R to reload.
-   Made dialogs use font_factor (e.g. view source).
-   Implemented the SELECT element in FORMS!
+ - Made dialogs use font_factor (e.g. view source).
+ - Implemented the SELECT element in FORMS!
    Patches: Jeremy Henty
 
  TODO:
