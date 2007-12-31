@@ -65,6 +65,7 @@ dillo-fltk2
  - Added line numbers and enabled wrapping in the "View Source" window.
  - Added HTTP-1.1's chunked transfer support!
  - Made the stop button sensitive when loading an image.
+ - Added more statics in dpi, const in pixmaps, and removed redundant includes.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

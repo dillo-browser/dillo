@@ -95,7 +95,7 @@ static int MODIFY_PAGE_NUM = 1;
 
 /* -- HTML templates ------------------------------------------------------- */
 
-char *mainpage_header =
+static const char *mainpage_header =
 DOCTYPE
 "<html>\n"
 "<head>\n"
@@ -114,7 +114,7 @@ DOCTYPE
 "</table>\n"
 "<br>\n";
 
-char *modifypage_header =
+static const char *modifypage_header =
 DOCTYPE
 "<html>\n"
 "<head>\n"
@@ -150,7 +150,7 @@ DOCTYPE
 "  </table></td></tr>\n"
 "</table>\n";
 
-char *mainpage_sections_header =
+static const char *mainpage_sections_header =
 "<table border='1' cellpadding='0' cellspacing='20' width='100%'>\n"
 " <tr valign='top'>\n"
 "  <td>\n"
@@ -159,7 +159,7 @@ char *mainpage_sections_header =
 "     <table width='100%' bgcolor='#b4b4b4'>\n"
 "      <tr><td><small>Sections:</small></td></tr></table></td></tr>\n";
 
-char *modifypage_sections_header =
+static const char *modifypage_sections_header =
 "<table border='1' cellpadding='0' cellspacing='20' width='100%'>\n"
 " <tr valign='top'>\n"
 "  <td>\n"
@@ -168,32 +168,32 @@ char *modifypage_sections_header =
 "     <table width='100%' bgcolor='#b4b4b4'>\n"
 "      <tr><td><small>Sections:</small></td></tr></table></td></tr>\n";
 
-char *mainpage_sections_item =
+static const char *mainpage_sections_item =
 "    <tr><td align='center'>\n"
 "      <a href='#s%d'>%s</a></td></tr>\n";
 
-char *modifypage_sections_item =
+static const char *modifypage_sections_item =
 "    <tr><td>\n"
 "     <table width='100%%'>\n"
 "      <tr align='center'>"
 "       <td><input type='checkbox' name='s%d'></td>\n"
 "       <td width='100%%'><a href='#s%d'>%s</a></td></tr></table></td></tr>\n";
 
-char *mainpage_sections_footer =
+static const char *mainpage_sections_footer =
 "   </table>\n";
 
-char *modifypage_sections_footer =
+static const char *modifypage_sections_footer =
 "   </table>\n";
 
-char *mainpage_middle1 =
+static const char *mainpage_middle1 =
 "  </td>\n"
 "  <td width='100%'>\n";
 
-char *modifypage_middle1 =
+static const char *modifypage_middle1 =
 "  </td>\n"
 "  <td width='100%'>\n";
 
-char *mainpage_section_card_header =
+static const char *mainpage_section_card_header =
 "   <a name='s%d'></a>\n"
 "   <table bgcolor='#bfbfbf' width='100%%' cellspacing='2'>\n"
 "    <tr>\n"
@@ -201,7 +201,7 @@ char *mainpage_section_card_header =
 "      &nbsp;&nbsp;&nbsp;%s&nbsp;&nbsp;&nbsp;</b></font></td>\n"
 "     <td bgcolor='white' width='100%%'>&nbsp;</td></tr>\n";
 
-char *modifypage_section_card_header =
+static const char *modifypage_section_card_header =
 "   <a name='s%d'></a>\n"
 "   <table bgcolor='#bfbfbf' width='100%%' cellspacing='2'>\n"
 "    <tr>\n"
@@ -209,31 +209,31 @@ char *modifypage_section_card_header =
 "      &nbsp;&nbsp;&nbsp;%s&nbsp;&nbsp;&nbsp;</b></font></td>\n"
 "     <td bgcolor='white' width='100%%'>&nbsp;</td></tr>\n";
 
-char *mainpage_section_card_item =
+static const char *mainpage_section_card_item =
 "    <tr><td colspan='2'>\n"
 "      <a href='%s'>%s</a> </td></tr>\n";
 
-char *modifypage_section_card_item =
+static const char *modifypage_section_card_item =
 "    <tr>\n"
 "     <td colspan='2'><input type='checkbox' name='url%d'>\n"
 "      <a href='%s'>%s</a></td></tr>\n";
 
-char *mainpage_section_card_footer =
+static const char *mainpage_section_card_footer =
 "   </table>\n"
 "   <hr>\n";
 
-char *modifypage_section_card_footer =
+static const char *modifypage_section_card_footer =
 "   </table>\n"
 "   <hr>\n";
 
-char *mainpage_footer =
+static const char *mainpage_footer =
 "  </td>\n"
 " </tr>\n"
 "</table>\n"
 "</body>\n"
 "</html>\n";
 
-char *modifypage_footer =
+static const char *modifypage_footer =
 "  </td>\n"
 " </tr>\n"
 "</table>\n"
@@ -242,7 +242,7 @@ char *modifypage_footer =
 "</html>\n";
 
 /* ------------------------------------------------------------------------- */
-char *modifypage_add_section_page =
+static const char *modifypage_add_section_page =
 DOCTYPE
 "<html>\n"
 "<head>\n"
@@ -282,7 +282,7 @@ DOCTYPE
 "\n";
 
 /* ------------------------------------------------------------------------- */
-char *modifypage_update_header =
+static const char *modifypage_update_header =
 DOCTYPE
 "<html>\n"
 "<head>\n"
@@ -299,17 +299,17 @@ DOCTYPE
 "<form>\n"
 "<input type='hidden' name='operation' value='modify2'>\n";
 
-char *modifypage_update_title =
+static const char *modifypage_update_title =
 "<table border='1' width='100%%'>\n"
 " <tr>\n"
 "  <td bgcolor='olive'><b>%s</b></td>\n"
 "  <td bgcolor='white' width='100%%'></td></tr>\n"
 "</table>\n";
 
-char *modifypage_update_item_header =
+static const char *modifypage_update_item_header =
 "<table width='100%' cellpadding='10'>\n";
 
-char *modifypage_update_item =
+static const char *modifypage_update_item =
 "<tr><td>\n"
 " <table width='100%%' bgcolor='teal'>\n"
 "  <tr>\n"
@@ -322,7 +322,7 @@ char *modifypage_update_item =
 " </table>\n"
 " </td></tr>\n";
 
-char *modifypage_update_item2 =
+static const char *modifypage_update_item2 =
 "<tr><td>\n"
 " <table width='100%%' bgcolor='teal'>\n"
 "  <tr>\n"
@@ -332,10 +332,10 @@ char *modifypage_update_item2 =
 " </table>\n"
 " </td></tr>\n";
 
-char *modifypage_update_item_footer =
+static const char *modifypage_update_item_footer =
 "</table>\n";
 
-char *modifypage_update_footer =
+static const char *modifypage_update_footer =
 "<table width='100%' cellpadding='4' border='0'>\n"
 "<tr><td bgcolor='#a0a0a0'>\n"
 " <input type='submit' name='submit' value='submit.'></td></tr>\n"
@@ -345,7 +345,7 @@ char *modifypage_update_footer =
 "</html>\n";
 
 /* ------------------------------------------------------------------------- */
-char *modifypage_add_url =
+static const char *modifypage_add_url =
 DOCTYPE
 "<html>\n"
 "<head>\n"

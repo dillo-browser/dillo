@@ -55,7 +55,7 @@
  * Global variables
  */
 static SockHandler *sh = NULL;
-char **dl_argv = NULL;
+static char **dl_argv = NULL;
 
 /*---------------------------------------------------------------------------*/
 
@@ -85,7 +85,7 @@ static const ContentType_t MimeTypes[] = {
  *
  * Return value: (0 on success, 1 on doubt, 2 on lack of data).
  */
-int a_Misc_get_content_type_from_data(void *Data, size_t Size,
+static int a_Misc_get_content_type_from_data(void *Data, size_t Size,
                                       const char **PT)
 {
    int st = 1;      /* default to "doubt' */
