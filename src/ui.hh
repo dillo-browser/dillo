@@ -50,8 +50,7 @@ class UI : public fltk::Window {
    int PanelSize, CuteColor, Small_Icons;
    int xpos, bw, bh, fh, lh, lbl;
 
-   // TODO: Hack for fullscreen mode
-   int Panel_h, Status_h;
+   bool Fullscreen;
 
    PackedGroup *make_toolbar(int tw, int th);
    PackedGroup *make_location();
@@ -81,22 +80,6 @@ public:
    void button_set_sens(UIButton btn, int sens);
    void paste_url();
 
-   // Workaround functions for a non-working replace() in FLTK2
-   void set_render_layout_begin() {
-      TopGroup->remove(MainIdx);
-      TopGroup->remove(TopGroup->find(StatusPanel));
-      delete(Main);
-      Main = NULL;
-      TopGroup->begin();
-   }
-   void set_render_layout_end() {
-      TopGroup->resizable(TopGroup->child(MainIdx));
-      Main = TopGroup->child(MainIdx);
-      TopGroup->add(*StatusPanel);
-      TopGroup->end();
-   }
-   int panel_h() { return Panel->h(); };
-   int status_h() { return Status->h(); };
    Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
 

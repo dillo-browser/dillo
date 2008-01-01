@@ -585,84 +585,91 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
   Window(win_w, win_h, label)
 {
    int s_h = 20;
+   clear_double_buffer();
 
+   TopGroup = new PackedGroup(0, 0, win_w, win_h);
+   add(TopGroup);
+   resizable(TopGroup);
+   
    if (cur_ui) {
       PanelSize = cur_ui->PanelSize;
       CuteColor = cur_ui->CuteColor;
       Small_Icons = cur_ui->Small_Icons;
+      Fullscreen = cur_ui->Fullscreen;
    } else {
      // Set some default values
      //PanelSize = P_tiny, CuteColor = 26, Small_Icons = 0;
      PanelSize = prefs.panel_size;
      Small_Icons = prefs.small_icons;
      CuteColor = 206;
+     Fullscreen = false;
    }
 
-   resizable(this);
-   clear_double_buffer();
-   begin();
-     TopGroup = this;
 
-     // Set handler for the close window event
-     // (the argument is set later via user_data())
-     TopGroup->callback(close_window_cb);
+   // Set handler for the close window event
+   // (the argument is set later via user_data())
+   TopGroup->callback(close_window_cb);
 
-     // Control panel
-     Panel = make_panel(win_w);
+   // Control panel
+   Panel = make_panel(win_w);
+   TopGroup->add(Panel);
 
-     // Render area
-     Main = new Widget(0,Panel->h(),win_w,win_h-Panel->h()-s_h,"Welcome...");
-     Main->box(FLAT_BOX);
-     Main->color(GRAY15);
-     Main->labelfont(HELVETICA_BOLD_ITALIC);
-     Main->labelsize(36);
-     Main->labeltype(SHADOW_LABEL);
-     Main->labelcolor(WHITE);
-     TopGroup->resizable(Main);
-     MainIdx = TopGroup->find(Main);
- 
-     // Status Panel
-     StatusPanel = new Group(0, win_h-s_h, win_w, s_h, 0);
-     StatusPanel->begin();
-      // Status box
-      int il_w = 16;
-      int bm_w = 16;
-      Status = new Output(0, 0, win_w-bm_w-il_w, s_h, 0);
-      Status->value("");
-      //Status->box(UP_BOX);
-      Status->box(THIN_DOWN_BOX);
-      Status->clear_click_to_focus();
-      Status->clear_tab_to_focus();
-      //Status->throw_focus();
 
-      // Image loading indicator
-      ImageLoad = new HighlightButton(win_w-il_w-bm_w,0,il_w,s_h,0);
-      ImgImageLoadOn = new xpmImage(imgload_on_xpm);
-      ImgImageLoadOff = new xpmImage(imgload_off_xpm);
-      if (prefs.load_images) {
-         ImageLoad->image(ImgImageLoadOn);
-      } else {
-         ImageLoad->image(ImgImageLoadOff);
-      }
-      ImageLoad->box(THIN_DOWN_BOX);
-      ImageLoad->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
-      ImageLoad->tooltip("Click me to toggle image loading.");
-      ImageLoad->callback(imageload_cb, (void *)this);
+   // Render area
+   Main = new Widget(0,0,1,1,"Welcome...");
+   Main->box(FLAT_BOX);
+   Main->color(GRAY15);
+   Main->labelfont(HELVETICA_BOLD_ITALIC);
+   Main->labelsize(36);
+   Main->labeltype(SHADOW_LABEL);
+   Main->labelcolor(WHITE);
+   TopGroup->add(Main);
+   TopGroup->resizable(Main);
+   MainIdx = TopGroup->find(Main);
 
-      // Bug Meter
-      BugMeter = new HighlightButton(win_w-bm_w,0,bm_w,s_h,0);
-      ImgMeterOK = new xpmImage(mini_ok_xpm);
-      ImgMeterBug = new xpmImage(mini_bug_xpm);
-      BugMeter->image(ImgMeterOK);
-      BugMeter->box(THIN_DOWN_BOX);
-      BugMeter->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
-      BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
-      BugMeter->callback(bugmeter_cb, (void *)this);
+   // Status Panel
+   StatusPanel = new Group(0, 0, win_w, s_h, 0);
+   // Status box
+   int il_w = 16;
+   int bm_w = 16;
+   Status = new Output(0, 0, win_w-bm_w-il_w, s_h, 0);
+   Status->value("");
+   //Status->box(UP_BOX);
+   Status->box(THIN_DOWN_BOX);
+   Status->clear_click_to_focus();
+   Status->clear_tab_to_focus();
+   StatusPanel->add(Status);
+   //Status->throw_focus();
 
-     StatusPanel->resizable(Status);
-     StatusPanel->end();
-  
-   end();
+   // Image loading indicator
+   ImageLoad = new HighlightButton(win_w-il_w-bm_w,0,il_w,s_h,0);
+   ImgImageLoadOn = new xpmImage(imgload_on_xpm);
+   ImgImageLoadOff = new xpmImage(imgload_off_xpm);
+   if (prefs.load_images) {
+      ImageLoad->image(ImgImageLoadOn);
+   } else {
+      ImageLoad->image(ImgImageLoadOff);
+   }
+   ImageLoad->box(THIN_DOWN_BOX);
+   ImageLoad->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
+   ImageLoad->tooltip("Click me to toggle image loading.");
+   ImageLoad->callback(imageload_cb, (void *)this);
+   StatusPanel->add(ImageLoad);
+
+   // Bug Meter
+   BugMeter = new HighlightButton(win_w-bm_w,0,bm_w,s_h,0);
+   ImgMeterOK = new xpmImage(mini_ok_xpm);
+   ImgMeterBug = new xpmImage(mini_bug_xpm);
+   BugMeter->image(ImgMeterOK);
+   BugMeter->box(THIN_DOWN_BOX);
+   BugMeter->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
+   BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
+   BugMeter->callback(bugmeter_cb, (void *)this);
+   StatusPanel->add(BugMeter);
+
+   StatusPanel->resizable(Status);
+
+   TopGroup->add(StatusPanel); 
 
    // Make the full screen button (to be attached to the viewport later)
    // TODO: attach to the viewport
@@ -675,8 +682,9 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
 
    customize(0);
 
-   if (cur_ui && cur_ui->Panel->w() == 0) {
-      fullscreen_cb_i();
+   if (Fullscreen) {
+      Panel->hide();
+      StatusPanel->hide();
    }
 
    //show();
@@ -903,11 +911,6 @@ void UI::panel_cb_i()
    Panel = NewPanel;
    customize(0);
 
-   // Scale the viewport
-   int p_h = Panel->h();
-   Main->resize(0, p_h, TopGroup->w(), TopGroup->h() - p_h - Status->h());
-   TopGroup->init_sizes();
-
    Location->take_focus();
 }
 
@@ -931,40 +934,15 @@ void UI::color_change_cb_i()
  */
 void UI::fullscreen_cb_i()
 {
-#if 0
-   // BUG:
-   // Works, but for unknown reasons it resizes hidden-widgets upon "Maximize"
-   // i.e. hide panel -> maximize window -> unhide panel == larger panel
-   if (Panel->visible_r()) {
+   if (!Fullscreen) {
       Panel->hide();
-      Status->hide();
-      // Scale the viewport
-      Main->resize(0, 0, TopGroup->w(), TopGroup->h());
-      TopGroup->init_sizes();
+      StatusPanel->hide();
+      Fullscreen = true;
    } else {
-      // Scale the viewport
-      int p_h = Panel->h();
-      Main->resize(0, p_h, TopGroup->w(), TopGroup->h() - p_h - Status->h());
       Panel->show();
-      Status->show();
-      TopGroup->init_sizes();
+      StatusPanel->show();
+      Fullscreen = false;
    }
-#else
-   if (Panel->w() != 0) {
-      Panel_h = Panel->h();
-      Status_h = Status->h();
-      Panel->resize(0, 0);
-      StatusPanel->resize(0, 0);
-      // Scale the viewport
-      Main->resize(0, 0, TopGroup->w(), TopGroup->h());
-      TopGroup->init_sizes();
-   } else {
-      Panel->resize(TopGroup->w(), Panel_h);
-      Main->resize(0,Panel_h,TopGroup->w(),TopGroup->h()-Panel_h-Status_h);
-      StatusPanel->resize(0,TopGroup->h()-Status_h, TopGroup->w(), Status_h);
-      TopGroup->init_sizes();
-   }
-#endif
 }
 
 /*
@@ -990,7 +968,6 @@ void UI::set_render_layout(Widget &nw)
    // scrollbar without events.
    //
    // We'll use a workaround in a_UIcmd_browser_window_new() instead.
-
    TopGroup->replace(MainIdx, nw);
    delete(Main);
    Main = &nw;

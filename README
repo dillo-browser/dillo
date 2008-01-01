@@ -35,7 +35,7 @@ Advanced * Form elements are not yet hooked/implemented. You can look
 Fixed    * Sometimes pages don't load giving a warning on an already
            closed IO. I'll try to look at this one soon.
          * No image maps.
-         * The SELECT element inside FORMS is not implemented.
+Fixed    * The SELECT element inside FORMS is not implemented.
          * no FRAMES rendering
          * no https (there's a barebones prototype).
 

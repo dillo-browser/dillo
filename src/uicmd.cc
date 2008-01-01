@@ -77,19 +77,10 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_ui)
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
 
-   int p_h = new_ui->panel_h();
-   int s_h = new_ui->status_h();
-   // BUG: This is a workaround for FLTK's non-working replace().
-   new_ui->set_render_layout_begin();
-    FltkViewport *viewport = new FltkViewport (0, p_h, ww, wh-p_h-s_h);
-    layout->attachView (viewport);
-    //viewport->addGadget(new_ui->fullscreen_button());
-   new_ui->set_render_layout_end();
-   // This was the original code.
-   // Set the render_layout widget into the UI
-   //FltkViewport *viewport = new FltkViewport (0, p_h, ww, wh-p_h-s_h);
-   //layout->attachView (viewport);
-   //new_ui->set_render_layout(*viewport);
+   FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
+   
+   layout->attachView (viewport);
+   new_ui->set_render_layout(*viewport);
 
    viewport->setScrollStep((int) rint(12.0 * prefs.font_factor));
 
