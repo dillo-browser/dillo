@@ -9,7 +9,7 @@
 
 # Set the desired initial browser size
 #geometry=820x650
-#geometry=650x545
+#geometry=650x545+0+20
 geometry=780x580
 
 # Dicache is where the Decompressed Images are cached (not the original ones).

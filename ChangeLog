@@ -67,6 +67,7 @@ dillo-fltk2
  - Made the stop button sensitive when loading an image.
  - Added more statics in dpi, const in pixmaps, and removed redundant includes.
  - Made cleanups in prefs (hiding local data/defs/symbols).
+ - Enabled the geometry offset part (dillorc2).
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

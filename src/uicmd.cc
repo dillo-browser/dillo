@@ -73,6 +73,14 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_ui)
    //new_ui->set_location("http://dillo.org/");
    //new_ui->customize(12);
 
+   if (v_ui == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
+      // position the first window according to preferences
+      fltk::Rectangle r;
+      new_ui->borders(&r);
+      // borders() gives x and y border sizes as negative values
+      new_ui->position(prefs.xpos - r.x(), prefs.ypos - r.y());
+   }
+
    // Now create the Dw render layout and viewport
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
