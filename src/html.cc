@@ -3232,7 +3232,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
 
    DW2TB(html->dw)->addParbreak (2, word_style);
 
-   list_item = new ListItem ((ListItem *)*ref_list_item,prefs.limit_text_width);
+   list_item = new ListItem ((ListItem*)*ref_list_item,prefs.limit_text_width);
    DW2TB(html->dw)->addWidget (list_item, item_style);
    DW2TB(html->dw)->addParbreak (2, word_style);
    *ref_list_item = list_item;

@@ -124,6 +124,7 @@ void a_UIcmd_close_bw(void *vbw)
    Layout *layout = (Layout*)bw->render_layout;
 
    MSG("a_UIcmd_close_bw\n");
+   a_Bw_stop_clients(bw, BW_Root + BW_Img + Bw_Force);
    ui->destroy();
    delete(layout);
    a_Bw_free(bw);
