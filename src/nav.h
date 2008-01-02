@@ -9,18 +9,6 @@
 #define NAV_UIDX(bw, i)       a_Nav_get_uidx(bw, i)
 #define NAV_TOP_UIDX(bw)      a_Nav_get_top_uidx(bw)
 
-/*
- * For back and forward navigation, each bw keeps an url index,
- * and its scroll position.
- */
-typedef struct _nav_stack_item nav_stack_item;
-struct _nav_stack_item
-{
-   int url_idx;
-   int posx, posy;
-};
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

@@ -26,6 +26,17 @@
 #include "debug.h"
 
 /*
+ * For back and forward navigation, each bw keeps an url index,
+ * and its scroll position.
+ */
+typedef struct _nav_stack_item nav_stack_item;
+struct _nav_stack_item
+{
+   int url_idx;
+   int posx, posy;
+};
+
+/*
  * Forward declarations
  */
 static void Nav_reload(BrowserWindow *bw);

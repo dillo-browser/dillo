@@ -77,7 +77,8 @@ w3c_plus_heuristics=YES
 
 # Set the start page.
 # Uncomment if you want to override the default start page.
-#start_page="file:/home/jcid/Thinkpad385XD.html"
+#start_page="about:blank"
+#start_page="file:/home/jcid/custom_page.html"
 
 # Set the home location
 #home="http://dillo.cipsga.org.br/"
