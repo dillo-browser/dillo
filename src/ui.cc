@@ -307,8 +307,8 @@ static void bugmeter_cb(Widget *w, void *data)
 static void imageload_cb(Widget *w, void *data)
 {
    int k = event_key();
-   if (k && k <= 7)
-      MSG("[ImageLoad], mouse button %d was pressed\n", k);
+   //if (k && k <= 7)
+   //   MSG("[ImageLoad], mouse button %d was pressed\n", k);
    if (k == 1) {
       ((UI*)data)->imageload_toggle();
    }
