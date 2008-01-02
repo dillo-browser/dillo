@@ -33,11 +33,80 @@
 
 #define RCNAME "dillorc2"
 
+#define DILLO_START_PAGE "about:splash"
+#define DILLO_HOME "http://www.dillo.org/"
+#define D_GEOMETRY_DEFAULT_WIDTH   640
+#define D_GEOMETRY_DEFAULT_HEIGHT  550
+#define D_GEOMETRY_DEFAULT_XPOS  -9999
+#define D_GEOMETRY_DEFAULT_YPOS  -9999
 
-/*
+#define D_VW_FONTNAME "helvetica"
+#define D_FW_FONTNAME "courier"
+#define D_SEARCH_URL "http://www.google.com/search?q=%s"
+#define D_SAVE_DIR "/tmp/"
+
+#define DW_COLOR_DEFAULT_GREY   0xd6d6d6
+#define DW_COLOR_DEFAULT_BLACK  0x000000
+#define DW_COLOR_DEFAULT_BLUE   0x0000ff
+#define DW_COLOR_DEFAULT_PURPLE 0x800080
+#define DW_COLOR_DEFAULT_BGND   0xd6d6c0
+
+/*-----------------------------------------------------------------------------
  * Global Data
- */
+ *---------------------------------------------------------------------------*/
 DilloPrefs prefs;
+
+/*-----------------------------------------------------------------------------
+ * Local types
+ *---------------------------------------------------------------------------*/
+
+/* define enumeration values to be returned for specific symbols */
+typedef enum {
+   DRC_TOKEN_ALLOW_WHITE_BG,
+   DRC_TOKEN_BG_COLOR,
+   DRC_TOKEN_CONTRAST_VISITED_COLOR,
+   DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT,
+   DRC_TOKEN_FONT_FACTOR,
+   DRC_TOKEN_FORCE_MY_COLORS,
+   DRC_TOKEN_FULLWINDOW_START,
+   DRC_TOKEN_FW_FONT,
+   DRC_TOKEN_GENERATE_SUBMIT,
+   DRC_TOKEN_GEOMETRY,
+   DRC_TOKEN_HOME,
+   DRC_TOKEN_LIMIT_TEXT_WIDTH,
+   DRC_TOKEN_LINK_COLOR,
+   DRC_TOKEN_LOAD_IMAGES,
+   DRC_TOKEN_NOPROXY,
+   DRC_TOKEN_PANEL_SIZE,
+   DRC_TOKEN_PROXY,
+   DRC_TOKEN_PROXYUSER,
+   DRC_TOKEN_SAVE_DIR,
+   DRC_TOKEN_SEARCH_URL,
+   DRC_TOKEN_SHOW_BACK,
+   DRC_TOKEN_SHOW_BOOKMARKS,
+   DRC_TOKEN_SHOW_CLEAR_URL,
+   DRC_TOKEN_SHOW_EXTRA_WARNINGS,
+   DRC_TOKEN_SHOW_FORW,
+   DRC_TOKEN_SHOW_HOME,
+   DRC_TOKEN_SHOW_MENUBAR,
+   DRC_TOKEN_SHOW_MSG,
+   DRC_TOKEN_SHOW_PROGRESS_BOX,
+   DRC_TOKEN_SHOW_RELOAD,
+   DRC_TOKEN_SHOW_SAVE,
+   DRC_TOKEN_SHOW_SEARCH,
+   DRC_TOKEN_SHOW_STOP,
+   DRC_TOKEN_SHOW_TOOLTIP,
+   DRC_TOKEN_SHOW_URL,
+   DRC_TOKEN_SMALL_ICONS,
+   DRC_TOKEN_START_PAGE,
+   DRC_TOKEN_TEXT_COLOR,
+   DRC_TOKEN_TRANSIENT_DIALOGS,
+   DRC_TOKEN_USE_DICACHE,
+   DRC_TOKEN_USE_OBLIQUE,
+   DRC_TOKEN_VISITED_COLOR,
+   DRC_TOKEN_VW_FONT,
+   DRC_TOKEN_W3C_PLUS_HEURISTICS
+} RcToken_t;
 
 typedef struct SymNode_ SymNode_t;
 
@@ -46,8 +115,12 @@ struct SymNode_ {
    RcToken_t token;
 };
 
+/*-----------------------------------------------------------------------------
+ * Local data
+ *---------------------------------------------------------------------------*/
+
 /* Symbol array, sorted alphabetically */
-SymNode_t symbols[] = {
+static const SymNode_t symbols[] = {
    { "allow_white_bg", DRC_TOKEN_ALLOW_WHITE_BG },
    { "bg_color", DRC_TOKEN_BG_COLOR },
    { "contrast_visited_color", DRC_TOKEN_CONTRAST_VISITED_COLOR },
@@ -366,12 +439,12 @@ void a_Prefs_init(void)
    prefs.fullwindow_start=FALSE;
    prefs.load_images=TRUE;
    prefs.transient_dialogs=FALSE;
-   prefs.vw_fontname = dStrdup("helvetica");
-   prefs.fw_fontname = dStrdup("courier");
+   prefs.vw_fontname = dStrdup(D_VW_FONTNAME);
+   prefs.fw_fontname = dStrdup(D_FW_FONTNAME);
    prefs.generate_submit = FALSE;
    prefs.enterpress_forces_submit = FALSE;
-   prefs.search_url = dStrdup("http://www.google.com/search?q=%s");
-   prefs.save_dir = dStrdup("/tmp/");
+   prefs.search_url = dStrdup(D_SEARCH_URL);
+   prefs.save_dir = dStrdup(D_SAVE_DIR);
    prefs.show_msg = TRUE;
    prefs.show_extra_warnings = FALSE;
 
