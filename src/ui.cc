@@ -603,7 +603,7 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
      PanelSize = prefs.panel_size;
      Small_Icons = prefs.small_icons;
      CuteColor = 206;
-     Fullscreen = false;
+     Fullscreen = prefs.fullwindow_start;
    }
 
 

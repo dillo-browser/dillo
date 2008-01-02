@@ -46,7 +46,8 @@ dillo-fltk2
  - Bound FltkMultiLineTextResource to the html parser (TEXTAREA).
    Patches: Jorge Arellano Cid
 +- Connected signals to <li> elements (fixes links within lists).
- - Enabled text, background-color, panel_size and geometry in preferences.
+ - Enabled text, background-color, panel_size, geometry, fullscreen,
+   start_page and geometry offset in preferences (dillorc2).
  - Enabled clicking over image links.
  - Improved notification upon leaving links.
  - Implemented image-link URL showing in status bar.
@@ -67,7 +68,6 @@ dillo-fltk2
  - Made the stop button sensitive when loading an image.
  - Added more statics in dpi, const in pixmaps, and removed redundant includes.
  - Made cleanups in prefs (hiding local data/defs/symbols).
- - Enabled the geometry offset part (dillorc2).
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

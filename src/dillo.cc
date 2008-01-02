@@ -100,7 +100,7 @@ int main(int argc, char **argv)
       a_Url_free(url);
    } else {
       /* Send startup screen */
-      //a_Nav_push(bw, prefs.start_page);
+      a_Nav_push(bw, prefs.start_page);
    }
 
    return fltk::run();
