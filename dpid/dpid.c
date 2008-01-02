@@ -608,7 +608,7 @@ int init_dpi_socket(struct dp *dpi_attr, char *sockdir)
    dpi_nm = get_basename(dpi_attr->path);
 
    dpi_attr->sockpath = dStrconcat(sockdir, "/", dpi_nm, "-XXXXXX", NULL);
-   mktemp(dpi_attr->sockpath);
+   a_Misc_mkfname(dpi_attr->sockpath);
    if (strlen(dpi_attr->sockpath) > sp_len) {
       ERRMSG("init_all_dpi_sockets", "socket path is too long", 0);
       MSG_ERR("\n - it should be <= %lu chars", (ulong_t)sp_len);

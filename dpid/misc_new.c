@@ -138,13 +138,29 @@ int a_Misc_nohang_rdtag(int socket, int timeout, Dstr **tag)
 /*
  * Alternative to mkdtemp().
  * Not as strong as mkdtemp, but enough for creating a directory.
- * (adapted from dietlibc)
  */
 char *a_Misc_mkdtemp(char *template)
+{
+   for (;;) {
+      if (a_Misc_mkfname(template) && mkdir(template, 0700) == 0)
+         break;
+      if (errno == EEXIST)
+         continue;
+      return 0;
+   }
+   return template;
+}
+
+/*
+ * Return a new, non-existent file name from a template
+ * (adapted from dietlibc; alternative to mkdtemp())
+ */
+char *a_Misc_mkfname(char *template)
 {
    char *tmp = template + strlen(template) - 6;
    int i;
    unsigned int random;
+   struct stat stat_buf;
 
    if (tmp < template)
       goto error;
@@ -155,6 +171,7 @@ char *a_Misc_mkdtemp(char *template)
          return 0;
       }
    srand((uint_t)(time(0) ^ getpid()));
+
    for (;;) {
       random = (unsigned) rand();
       for (i = 0; i < 6; ++i) {
@@ -162,11 +179,9 @@ char *a_Misc_mkdtemp(char *template)
 
          tmp[i] = hexdigit > 9 ? hexdigit + 'a' - 10 : hexdigit + '0';
       }
-      if (mkdir(template, 0700) == 0)
-         break;
-      if (errno == EEXIST)
-         continue;
-      return 0;
+      if (stat(template, &stat_buf) == -1 && errno == ENOENT)
+         return template;
+
+      MSG_ERR("a_Misc_mkfname: another round for %s \n", template);
    }
-   return template;
 }
