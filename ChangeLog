@@ -90,6 +90,7 @@ dillo-fltk2
  - Switched dns.c from gethostbyname* to getaddrinfo (& removed libc5 code).
  - Made "New browser window" inherit the panel style of its parent.
  - Made TopGroup a PackedGroup, simplifying UI code and removing workarounds.
+ - Added a redraw(DAMAGE_HIGHLIGHT) call to Back, Forw and Stop buttons.
    Patches: Johannes Hofmann
 +- Made progress bars resize automatically.
    Patches: Johannes Hofmann, Jorge Arellano Cid

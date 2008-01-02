@@ -21,6 +21,7 @@
 #include <fltk/Input.h>
 #include <fltk/Output.h>
 #include <fltk/run.h>
+#include <fltk/damage.h>
 #include <fltk/BarGroup.h>
 #include <fltk/PackedGroup.h>
 #include <fltk/xpmImage.h>
@@ -996,12 +997,15 @@ void UI::button_set_sens(UIButton btn, int sens)
    switch (btn) {
    case UI_BACK:
       (sens) ? Back->activate() : Back->deactivate();
+      Back->redraw(DAMAGE_HIGHLIGHT);
       break;
    case UI_FORW:
       (sens) ? Forw->activate() : Forw->deactivate();
+      Forw->redraw(DAMAGE_HIGHLIGHT);
       break;
    case UI_STOP:
       (sens) ? Stop->activate() : Stop->deactivate();
+      Stop->redraw(DAMAGE_HIGHLIGHT);
       break;
    default:
       break;
