@@ -94,7 +94,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
    /* Init internal variables */
    bw = p_bw;
    url = a_Url_dup(p_url);
-   dw = new Textblock (false);
+   dw = new Textblock (prefs.limit_text_width);
    Start_Ofs = 0;
    state = ST_SeekingEol;
 

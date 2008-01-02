@@ -699,7 +699,7 @@ static void Html_add_indented_widget(DilloHtml *html, Widget *textblock,
  */
 static void Html_add_indented(DilloHtml *html, int left, int right, int space)
 {
-   Textblock *textblock = new Textblock (false);
+   Textblock *textblock = new Textblock (prefs.limit_text_width);
    Html_add_indented_widget (html, textblock, left, right, space);
 }
 
@@ -825,7 +825,7 @@ void DilloHtml::initDw()
    dReturn_if_fail (dw == NULL);
 
    /* Create the main widget */
-   dw = stack->getRef(0)->textblock = new Textblock (false);
+   dw = stack->getRef(0)->textblock = new Textblock (prefs.limit_text_width);
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = prefs.vw_fontname;
@@ -2135,7 +2135,7 @@ static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    if (old_style)
       old_style->unref ();
 
-   table = new Table(false);
+   table = new Table(prefs.limit_text_width);
    DW2TB(html->dw)->addWidget (table, cell_style);
    cell_style->unref ();
 
@@ -2224,9 +2224,9 @@ static void Html_tag_open_table_cell(DilloHtml *html,
           == TEXT_ALIGN_STRING)
          col_tb = new TableCell (
              ((Table*)S_TOP(html)->table)->getCellRef (),
-             false);
+             prefs.limit_text_width);
       else
-         col_tb = new Textblock (false);
+         col_tb = new Textblock (prefs.limit_text_width);
 
       if (new_style) {
          style = Style::create (HT2LT(html), &style_attrs);
@@ -2510,7 +2510,7 @@ static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 //
 // style_attrs.margin.setVal (5);
 // style = Style::create (HT2LT(html), &style_attrs);
-// page = new Textblock (false);
+// page = new Textblock (prefs.limit_text_width);
 // page->setStyle (style);
 // style->unref ();
 // a_Dw_container_add (DW_CONTAINER (button), page);
@@ -3232,7 +3232,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
 
    DW2TB(html->dw)->addParbreak (2, word_style);
 
-   list_item = new ListItem ((ListItem *)*ref_list_item, false);
+   list_item = new ListItem ((ListItem *)*ref_list_item,prefs.limit_text_width);
    DW2TB(html->dw)->addWidget (list_item, item_style);
    DW2TB(html->dw)->addParbreak (2, word_style);
    *ref_list_item = list_item;
