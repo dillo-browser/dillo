@@ -14,20 +14,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <fltk/Window.h>
-#include <fltk/Widget.h>
-#include <fltk/Button.h>
 #include <fltk/HighlightButton.h>
-#include <fltk/Input.h>
-#include <fltk/Output.h>
 #include <fltk/run.h>
 #include <fltk/damage.h>
-#include <fltk/BarGroup.h>
-#include <fltk/PackedGroup.h>
 #include <fltk/xpmImage.h>
 #include <fltk/MultiImage.h>
 #include <fltk/events.h>        // for mouse buttons
-#include <fltk/Box.h>
 #include <fltk/InvisibleBox.h>
 #include <fltk/PopupMenu.h>
 #include <fltk/Item.h>

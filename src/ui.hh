@@ -9,7 +9,7 @@
 #include <fltk/Input.h>
 #include <fltk/PackedGroup.h>
 #include <fltk/Output.h>
-#include <fltk/xpmImage.h>
+#include <fltk/Image.h>
 
 using namespace fltk;
 
