@@ -417,7 +417,6 @@ static char *Cache_parse_field(const char *header, const char *fieldname)
    return NULL;
 }
 
-#ifndef DISABLE_COOKIES
 /*
  * Extract multiple fields from the header.
  */
@@ -451,7 +450,6 @@ static Dlist *Cache_parse_multiple_fields(const char *header,
    }
    return fields;
 }
-#endif /* !DISABLE_COOKIES */
 
 /*
  * Scan, allocate, and set things according to header info.
@@ -463,9 +461,10 @@ static void Cache_parse_header(CacheEntry_t *entry)
    char *Length, *Type, *location_str, *encoding;
 #ifndef DISABLE_COOKIES
    Dlist *Cookies;
+#endif
+   Dlist *warnings;
    void *data;
    int i;
-#endif
 
    if (entry->Header->len > 12) {
       if (header[9] == '1' && header[10] == '0' && header[11] == '0') {
@@ -491,6 +490,14 @@ static void Cache_parse_header(CacheEntry_t *entry)
       } else if (strncmp(header + 9, "404", 3) == 0) {
          entry->Flags |= CA_NotFound;
       }
+   }
+
+   if ((warnings = Cache_parse_multiple_fields(header, "Warning"))) {
+      for (i = 0; (data = dList_nth_data(warnings, i)); ++i) {
+         MSG_HTTP("%s\n", (char *)data);
+         dFree(data);
+      }
+      dList_free(warnings);
    }
 
    if ((Length = Cache_parse_field(header, "Content-Length")) != NULL) {
