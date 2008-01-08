@@ -3808,7 +3808,8 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
                if (sel_res->isSelected(i)) {
                   DilloHtmlOption *option =
                      input->select->options->get (i);
-                  Html_append_input(DataStr, input->name, option->value);
+                  char *val = option->value ? option->value : option->content;
+                  Html_append_input(DataStr, input->name, val);
                }
             }
             break;
