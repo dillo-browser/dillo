@@ -101,8 +101,10 @@ static FILE *Cookies_fopen(const char *filename, char *init_str)
       }
    }
 
-   /* set close on exec */
-   fcntl(fileno(F_in), F_SETFD, FD_CLOEXEC | fcntl(fileno(F_in), F_GETFD));
+   if (F_in) {
+      /* set close on exec */
+      fcntl(fileno(F_in), F_SETFD, FD_CLOEXEC | fcntl(fileno(F_in), F_GETFD));
+   }
 
    return F_in;
 }
