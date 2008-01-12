@@ -70,6 +70,7 @@ dillo-fltk2
  - Made cleanups in prefs (hiding local data/defs/symbols).
  - Fixed a segfault in cookies.c when no .dillo directory exists.
  - Added a MSG_HTTP for HTTP/1.1's warning headers.
+ - Added support for multi-line header fields.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
