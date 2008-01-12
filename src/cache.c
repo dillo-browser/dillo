@@ -386,7 +386,7 @@ int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
  * Extract a single field from the header, allocating and storing the value
  * in 'field'. ('fieldname' must not include the trailing ':')
  * Return a new string with the field-content if found (NULL on error)
- * (This function expects a '\r' stripped header)
+ * (This function expects a '\r'-stripped header, with one-line header fields)
  */
 static char *Cache_parse_field(const char *header, const char *fieldname)
 {
@@ -408,7 +408,7 @@ static char *Cache_parse_field(const char *header, const char *fieldname)
       while (header[i] == ' ') i++;
       if (header[i] == ':') {
         /* Field found! */
-        while (header[++i] == ' ');
+        while (header[++i] == ' ' || header[i] == '\t');
         for (j = 0; header[i + j] != '\n'; j++);
         field = dStrndup(header + i, j);
         return field;
@@ -442,7 +442,7 @@ static Dlist *Cache_parse_multiple_fields(const char *header,
       for ( ; header[i] == ' '; i++);
       if (header[i] == ':') {
          /* Field found! */
-         while (header[++i] == ' ');
+         while (header[++i] == ' ' || header[i] == '\t');
          for (j = 0; header[i + j] != '\n'; j++);
          field = dStrndup(header + i, j);
          dList_append(fields, field);
@@ -557,7 +557,10 @@ static void Cache_parse_header(CacheEntry_t *entry)
 
    /* Get Content-Type */
    if ((Type = Cache_parse_field(header, "Content-Type")) == NULL) {
-      MSG_HTTP("Server didn't send Content-Type in header.\n");
+      if (!((entry->Flags & CA_GotLength) && (entry->ExpectedSize == 0))) {
+         /* unless the server sent Content-Length: 0 */
+         MSG_HTTP("Server didn't send Content-Type in header.\n");
+      }
    } else {
       entry->TypeHdr = Type;
       /* This Content-Type is not trusted. It's checked against real data
@@ -568,7 +571,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
 
 /*
  * Consume bytes until the whole header is got (up to a "\r\n\r\n" sequence)
- * (Also strip '\r' chars from header)
+ * (Also unfold multi-line fields and strip '\r' chars from header)
  */
 static int Cache_get_header(CacheEntry_t *entry,
                             const char *buf, size_t buf_size)
@@ -581,6 +584,11 @@ static int Cache_get_header(CacheEntry_t *entry,
    for (i = 0; i < buf_size && N < 2; ++i) {
       if (buf[i] == '\r' || !buf[i])
          continue;
+      if (N == 1 && (buf[i] == ' ' || buf[i] == '\t')) {
+         /* unfold multiple-line header */
+         MSG("Multiple-line header!\n");
+         dStr_erase(hdr, hdr->len - 1, 1);
+      }
       N = (buf[i] == '\n') ? N + 1 : 0;
       dStr_append_c(hdr, buf[i]);
    }
