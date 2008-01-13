@@ -71,6 +71,7 @@ dillo-fltk2
  - Fixed a segfault in cookies.c when no .dillo directory exists.
  - Added a MSG_HTTP for HTTP/1.1's warning headers.
  - Added support for multi-line header fields.
+ - Added support for "charset" in the HTTP header field for Content-Type.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

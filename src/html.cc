@@ -33,6 +33,7 @@
 #include "binaryconst.h"
 #include "colors.h"
 
+#include "decode.h"
 #include "uicmd.hh"
 #include "history.h"
 #include "nav.h"
@@ -277,8 +278,11 @@ public:  //BUG: for now everything is public
    /* -------------------------------------------------------------------*/
    /* Variables required at parsing time                                 */
    /* -------------------------------------------------------------------*/
-   char *Start_Buf;
-   size_t Start_Ofs;
+   size_t Buf_Consumed; /* amount of source from cache consumed */
+   Dstr *Local_Buf;    /* source converted to displayable encoding (UTF-8) */
+   int Local_Ofs;
+   Decode *decoder;
+
    size_t CurrTagOfs;
    size_t OldTagOfs, OldTagLine;
 
@@ -325,7 +329,7 @@ private:
    void initDw();  /* Used by the constructor */
 
 public:
-   DilloHtml(BrowserWindow *bw, const DilloUrl *url);
+   DilloHtml(BrowserWindow *bw, const DilloUrl *url, const char *charset);
    ~DilloHtml();
    void connectSignals(dw::core::Widget *dw);
    void write(char *Buf, int BufSize, int Eof);
@@ -412,7 +416,7 @@ extern const TagInfo Tags[];
 static int Html_get_line_number(DilloHtml *html)
 {
    int i, ofs, line;
-   const char *p = html->Start_Buf;
+   const char *p = html->Local_Buf->str;
 
    dReturn_val_if_fail(p != NULL, -1);
 
@@ -477,12 +481,39 @@ static DilloUrl *Html_url_new(DilloHtml *html,
 }
 
 /*
+ * Get charset string from HTTP Content-Type string.
+ */
+char *Html_get_charset(const char *ct)
+{
+   const char key[] = "charset";
+   const char terminators[] = " ;\t";
+   char *start;
+   size_t len;
+
+   if ((start = dStristr(ct, "charset")) &&
+       (start == ct || strchr(terminators, start[-1]))) {
+      start += sizeof(key) - 1;
+      for ( ; *start == ' ' || *start == '\t'; ++start);
+      if (*start == '=') {
+         for (++start; *start == ' ' || *start == '\t'; ++start);
+         _MSG("Html_get_charset: %s\n", start);
+         if ((len = strcspn(start, terminators)))
+            return dStrndup(start, len);
+      }
+   }
+   return NULL;
+}
+
+/*
  * Set callback function and callback data for the "html/text" MIME type.
  */
 void *a_Html_text(const char *Type, void *P, CA_Callback_t *Call, void **Data)
 {
    DilloWeb *web = (DilloWeb*)P;
-   DilloHtml *html = new DilloHtml(web->bw, web->url);
+   char *charset = Html_get_charset(Type);
+   DilloHtml *html = new DilloHtml(web->bw, web->url, charset);
+
+   dFree(charset);
 
    *Data = (void*)html;
    *Call = (CA_Callback_t)Html_callback;
@@ -738,7 +769,8 @@ static int Html_level_to_fontsize(int level)
 /*
  * Create and initialize a new DilloHtml class
  */
-DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url)
+DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
+                     const char *charset)
 {
    /* Init event receiver */
    linkReceiver.html = this;
@@ -751,8 +783,15 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url)
    a_Bw_add_doc(p_bw, this);
 
    /* Init for-parsing variables */
-   Start_Buf = NULL;
-   Start_Ofs = 0;
+   Buf_Consumed = 0;
+   Local_Buf = dStr_new("");
+   Local_Ofs = 0;
+
+   if (charset) {
+      MSG("HTTP Content-Type gave charset as: %s\n", charset);
+   }
+   decoder = a_Decode_charset_init(charset);
+
    CurrTagOfs = 0;
    OldTagOfs = 0;
    OldTagLine = 1;
@@ -858,6 +897,8 @@ DilloHtml::~DilloHtml()
 
    a_Url_free(base_url);
 
+   dStr_free(Local_Buf, 1);
+
    for (int i = 0; i < forms->size(); i++) {
       DilloHtmlForm *form = forms->getRef(i);
       a_Url_free(form->action);
@@ -918,17 +959,29 @@ void DilloHtml::connectSignals(Widget *dw)
 void DilloHtml::write(char *Buf, int BufSize, int Eof)
 {
    int token_start;
-   char *buf = Buf + Start_Ofs;
-   int bufsize = BufSize - Start_Ofs;
+   Dstr *new_text;
 
    dReturn_if_fail (dw != NULL);
 
-   Start_Buf = Buf;
-   token_start = Html_write_raw(this, buf, bufsize, Eof);
-   Start_Ofs += token_start;
+   new_text = dStr_sized_new(BufSize - Buf_Consumed);
+   dStr_append_l(new_text, Buf + Buf_Consumed, BufSize - Buf_Consumed);
+
+   /* decode to target charset (UTF-8) */
+   new_text = a_Decode_process(decoder, new_text);
+   dStr_append_l(Local_Buf, new_text->str, new_text->len);
+   dStr_free(new_text, 1);
+
+
+   token_start = Html_write_raw(this, Local_Buf->str + Local_Ofs,
+                    Local_Buf->len - Local_Ofs, Eof);
+   Buf_Consumed = BufSize;
+   Local_Ofs += token_start;
 
    if (bw)
-      a_UIcmd_set_page_prog(bw, Start_Ofs, 1);
+      a_UIcmd_set_page_prog(bw, BufSize, 1);
+
+   if (Eof)
+      a_Decode_free(decoder);
 }
 
 /*
@@ -954,6 +1007,9 @@ void DilloHtml::closeParser(int ClientKey)
    dStr_free(Stash, TRUE);
    dFree(SPCBuf);
    dStr_free(attr_data, TRUE);
+
+   /* Fit the UTF-8 buffer */
+   dStr_fit(Local_Buf);
 
    /* Remove this client from our active list */
    a_Bw_close_client(bw, ClientKey);
@@ -3495,7 +3551,7 @@ static void Html_tag_close_form(DilloHtml *html, int TagIdx)
 /*
  * Handle <META>
  * We do not support http-equiv=refresh because it's non standard,
- * (the HTML 4.01 SPEC recommends explicitily to avoid it), and it
+ * (the HTML 4.01 SPEC recommends explicitly to avoid it), and it
  * can be easily abused!
  *
  * More info at:
@@ -3526,33 +3582,42 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
       return;
    }
 
-   if ((equiv = Html_get_attr(html, tag, tagsize, "http-equiv")) &&
-       !dStrcasecmp(equiv, "refresh") &&
+   if ((equiv = Html_get_attr(html, tag, tagsize, "http-equiv"))) {
+      if (!dStrcasecmp(equiv, "refresh") &&
        (content = Html_get_attr(html, tag, tagsize, "content"))) {
 
-      /* Get delay, if present, and make a message with it */
-      if ((delay = strtol(content, NULL, 0)))
-         snprintf(delay_str, 64, " after %d second%s.",
-                    delay, (delay > 1) ? "s" : "");
-      else
-         sprintf(delay_str, ".");
+         /* Get delay, if present, and make a message with it */
+         if ((delay = strtol(content, NULL, 0)))
+            snprintf(delay_str, 64, " after %d second%s.",
+                       delay, (delay > 1) ? "s" : "");
+         else
+            sprintf(delay_str, ".");
 
-      /* Skip to anything after "URL=" */
-      while (*content && *(content++) != '=');
+         /* Skip to anything after "URL=" */
+         while (*content && *(content++) != '=');
 
-      /* Send a custom HTML message
-       * todo: this is a hairy hack, It'd be much better to build a widget. */
-      ds_msg = dStr_sized_new(256);
-      dStr_sprintf(ds_msg, meta_template, content, delay_str);
-      {
-         int SaveFlags = html->InFlags;
-         html->InFlags = IN_BODY;
-         html->TagSoup = FALSE;
-         Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
-         html->TagSoup = TRUE;
-         html->InFlags = SaveFlags;
-      }
-      dStr_free(ds_msg, 1);
+         /* Send a custom HTML message.
+          * todo: This is a hairy hack,
+          *       It'd be much better to build a widget. */
+         ds_msg = dStr_sized_new(256);
+         dStr_sprintf(ds_msg, meta_template, content, delay_str);
+         {
+            int SaveFlags = html->InFlags;
+            html->InFlags = IN_BODY;
+            html->TagSoup = FALSE;
+            Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
+            html->TagSoup = TRUE;
+            html->InFlags = SaveFlags;
+         }
+         dStr_free(ds_msg, 1);
+      } else {
+         if ((!dStrcasecmp(equiv, "content-type")) &&
+             (content = Html_get_attr(html, tag, tagsize, "content"))) {
+            char *charset = Html_get_charset(content);
+            MSG("META Content-Type would set charset to: %s\n", charset);
+            dFree(charset);
+         }
+      }   
    }
 }
 
@@ -5289,7 +5354,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
                buf_index = bufsize;
          } else {
             /* Tag: search end of tag (skipping over quoted strings) */
-            html->CurrTagOfs = html->Start_Ofs + token_start;
+            html->CurrTagOfs = html->Local_Ofs + token_start;
 
             while ( buf_index < bufsize ) {
                buf_index++;
