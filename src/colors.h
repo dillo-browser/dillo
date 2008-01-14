@@ -1,6 +1,15 @@
 #ifndef __COLORS_H__
 #define __COLORS_H__
 
+#include "config.h"
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#else
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

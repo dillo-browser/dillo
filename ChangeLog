@@ -107,6 +107,8 @@ dillo-fltk2
  - Made dialogs use font_factor (e.g. view source).
  - Implemented the SELECT element in FORMS!
    Patches: Jeremy Henty
++- Added an int32_t include-test, and an EAI_NODATA check for FreeBSD.
+   Patch: Thomas-Martin Seck
 
  TODO:
 
