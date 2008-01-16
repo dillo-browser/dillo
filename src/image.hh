@@ -44,6 +44,7 @@ struct _DilloImage {
 
    int ProcessedBytes;      /* Amount of bytes already decoded */
    bitvec_t *BitVec;        /* Bit vector for decoded rows */
+   uint_t ScanNumber;       /* Current decoding scan */
    ImageState State;        /* Processing status */
 
    int RefCount;            /* Reference counter */
@@ -62,6 +63,7 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
                        int version, uint_t width, uint_t height,
                        DilloImgType type);
 void a_Image_set_cmap(DilloImage *Image, const uchar_t *cmap);
+void a_Image_new_scan(DilloImage *image, void *v_imgbuf);
 void a_Image_write(DilloImage *Image, void *v_imgbuf,
                    const uchar_t *buf, uint_t y, int decode);
 void a_Image_close(DilloImage *Image);

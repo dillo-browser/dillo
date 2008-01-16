@@ -21,6 +21,7 @@ bitvec_t *a_Bitvec_new(int bits);
 void a_Bitvec_free(bitvec_t *bvec);
 int a_Bitvec_get_bit(bitvec_t *bvec, int pos);
 void a_Bitvec_set_bit(bitvec_t *bvec, int pos);
+void a_Bitvec_clear(bitvec_t *bvec);
 
 /*
 #define a_Bitvec_get_bit(bvec,pos) \

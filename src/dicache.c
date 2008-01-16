@@ -84,6 +84,7 @@ static DICacheEntry *Dicache_entry_new(void)
    entry->RefCount = 1;
    entry->TotalSize = 0;
    entry->Y = 0;
+   entry->ScanNumber = 0;
    entry->BitVec = NULL;
    entry->State = DIC_Empty;
    entry->version = 0;
@@ -263,7 +264,7 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
 
    dReturn_if_fail ( DicEntry != NULL );
 
-   /* when the data stream is not an image 'v_imgbuf' keeps NULL */
+   /* when the data stream is not an image 'v_imgbuf' remains NULL */
    if (Op == CA_Send && DicEntry->v_imgbuf) {
       if (Image->height == 0 && DicEntry->State >= DIC_SetParms) {
          /* Set parms */
@@ -273,11 +274,25 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
             DicEntry->type);
       }
       if (DicEntry->State == DIC_Write) {
-         for (i = 0; i < DicEntry->height; ++i)
-            if (a_Bitvec_get_bit(DicEntry->BitVec, (int)i) &&
-                !a_Bitvec_get_bit(Image->BitVec, (int)i) )
-               a_Image_write(Image, DicEntry->v_imgbuf,
-                             DicEntry->linebuf, i, FALSE);
+         if (DicEntry->ScanNumber == Image->ScanNumber) {
+            for (i = 0; i < DicEntry->height; ++i)
+               if (a_Bitvec_get_bit(DicEntry->BitVec, (int)i) &&
+                   !a_Bitvec_get_bit(Image->BitVec, (int)i) )
+                  a_Image_write(Image, DicEntry->v_imgbuf,
+                                DicEntry->linebuf, i, FALSE);
+         } else {
+            for (i = 0; i < DicEntry->height; ++i) {
+               if (a_Bitvec_get_bit(DicEntry->BitVec, (int)i) ||
+                   !a_Bitvec_get_bit(Image->BitVec, (int)i)   ||
+                   DicEntry->ScanNumber > Image->ScanNumber + 1) {
+                  a_Image_write(Image, DicEntry->v_imgbuf,
+                                DicEntry->linebuf, i, FALSE);
+               }
+               if (!a_Bitvec_get_bit(DicEntry->BitVec, (int)i))
+                  a_Bitvec_clear_bit(Image->BitVec, (int)i);
+            }
+            Image->ScanNumber = DicEntry->ScanNumber;
+         }
       }
    } else if (Op == CA_Close || Op == CA_Abort) {
       a_Image_close(Web->Image);
@@ -350,6 +365,22 @@ void a_Dicache_set_cmap(DilloUrl *url, int version, DilloImage *Image,
 
    a_Image_set_cmap(Image, DicEntry->cmap);
    DicEntry->State = DIC_SetCmap;
+}
+
+/*
+ * Reset for a new scan from a multiple-scan image.
+ */
+void a_Dicache_new_scan(DilloImage *image, const DilloUrl *url, int version)
+{
+   DICacheEntry *DicEntry;
+
+   dReturn_if_fail ( url != NULL );
+   DicEntry = Dicache_get_entry_version(url, version);
+   dReturn_if_fail ( DicEntry != NULL );
+
+   a_Bitvec_clear(DicEntry->BitVec);
+   DicEntry->ScanNumber++;
+   a_Image_new_scan(image, DicEntry->v_imgbuf);
 }
 
 /*

@@ -30,6 +30,14 @@ bitvec_t *a_Bitvec_new(int num_bits)
 }
 
 /*
+ * Clear a bitvec
+ */
+void a_Bitvec_clear(bitvec_t *bvec)
+{
+   memset(bvec->vec, 0, sizeof(uchar_t) * bvec->len/BVEC_SIZE + 1);
+}
+
+/*
  * Free a bitvec
  */
 void a_Bitvec_free(bitvec_t *bvec)

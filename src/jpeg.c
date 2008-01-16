@@ -42,7 +42,9 @@
 typedef enum {
    DILLO_JPEG_INIT,
    DILLO_JPEG_STARTING,
-   DILLO_JPEG_READING,
+   DILLO_JPEG_READ_BEGIN_SCAN,
+   DILLO_JPEG_READ_IN_SCAN,
+   DILLO_JPEG_READ_END_SCAN,
    DILLO_JPEG_DONE,
    DILLO_JPEG_ERROR
 } DilloJpegState;
@@ -139,10 +141,7 @@ void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
 static void Jpeg_close(DilloJpeg *jpeg, CacheClient_t *Client)
 {
    a_Dicache_close(jpeg->url, jpeg->version, Client);
-
-   if (jpeg->state != DILLO_JPEG_DONE) {
-      jpeg_destroy_decompress(&(jpeg->cinfo));
-   }
+   jpeg_destroy_decompress(&(jpeg->cinfo));
    dFree(jpeg);
 }
 
@@ -288,6 +287,15 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
          else
             DEBUG_MSG(5, "jpeg: can't handle %d component images\n",
                       jpeg->cinfo.num_components);
+
+         /*
+          * TODO: The multiple-scan jpeg code is valuable at download time
+          * when an image arrives slowly, but should not be used to redisplay
+          * cached images.
+          */
+         if (jpeg_has_multiple_scans(&jpeg->cinfo))
+            jpeg->cinfo.buffered_image = TRUE;
+
          a_Dicache_set_parms(jpeg->url, jpeg->version, jpeg->Image,
                              (uint_t)jpeg->cinfo.image_width,
                              (uint_t)jpeg->cinfo.image_height,
@@ -301,33 +309,93 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
       /* decompression step 5 (see libjpeg.doc) */
       if (jpeg_start_decompress(&(jpeg->cinfo))) {
          jpeg->y = 0;
-         jpeg->state = DILLO_JPEG_READING;
+         jpeg->state = jpeg_has_multiple_scans(&jpeg->cinfo) ?
+                          DILLO_JPEG_READ_BEGIN_SCAN : DILLO_JPEG_READ_IN_SCAN;
       }
    }
-   if (jpeg->state == DILLO_JPEG_READING) {
+
+   /*
+    * A progressive jpeg contains multiple scans that can be used to display
+    * an increasingly sharp image as it is being received. The reading of each
+    * scan must be surrounded by jpeg_start_output()/jpeg_finish_output().
+    */
+
+   if (jpeg->state == DILLO_JPEG_READ_END_SCAN) {
+      if (jpeg_finish_output(&jpeg->cinfo)) {
+         if (jpeg_input_complete(&jpeg->cinfo)) {
+            jpeg->state = DILLO_JPEG_DONE;
+         } else {
+            jpeg->state = DILLO_JPEG_READ_BEGIN_SCAN;
+         }
+      }
+   }
+
+   if (jpeg->state == DILLO_JPEG_READ_BEGIN_SCAN) {
+      if (jpeg_start_output(&jpeg->cinfo, jpeg->cinfo.input_scan_number)) {
+         a_Dicache_new_scan(jpeg->Image, jpeg->url, jpeg->version);
+         jpeg->state = DILLO_JPEG_READ_IN_SCAN;
+      }
+   }
+
+   if (jpeg->state == DILLO_JPEG_READ_IN_SCAN) {
       linebuf = dMalloc(jpeg->cinfo.image_width *
                          jpeg->cinfo.num_components);
       array[0] = linebuf;
-      while (jpeg->y < jpeg->cinfo.image_height) {
+
+      while (1) {
          num_read = jpeg_read_scanlines(&(jpeg->cinfo), array, 1);
-         if (num_read == 0)
+         if (num_read == 0) {
+            /* out of input */
             break;
+         }
          a_Dicache_write(jpeg->Image, jpeg->url, jpeg->version,
                          linebuf, 0, jpeg->y);
 
          jpeg->y++;
-      }
-      if (jpeg->y == jpeg->cinfo.image_height) {
-         DEBUG_MSG(5, "height achieved\n");
 
-         jpeg_destroy_decompress(&(jpeg->cinfo));
-         jpeg->state = DILLO_JPEG_DONE;
+         if (jpeg->y == jpeg->cinfo.image_height) {
+            /* end of scan */
+            if (!jpeg_has_multiple_scans(&jpeg->cinfo)) {
+               jpeg->state = DILLO_JPEG_DONE;
+               break;
+            } else {
+               jpeg->y = 0;
+               if (jpeg_input_complete(&jpeg->cinfo)) {
+                  if (jpeg->cinfo.input_scan_number ==
+                      jpeg->cinfo.output_scan_number) {
+                     jpeg->state = DILLO_JPEG_DONE;
+                     break;
+                  } else {
+                       /* one final loop through the scanlines */
+                       jpeg_finish_output(&jpeg->cinfo);
+                       jpeg_start_output(&jpeg->cinfo,
+                                         jpeg->cinfo.input_scan_number);
+                       continue;
+                  }
+               }
+               jpeg->state = DILLO_JPEG_READ_END_SCAN;
+               if (!jpeg_finish_output(&jpeg->cinfo)) {
+                  /* out of input */
+                  break;
+               } else {
+                  if (jpeg_input_complete(&jpeg->cinfo)) {
+                     jpeg->state = DILLO_JPEG_DONE;
+                     break;
+                  } else {
+                     jpeg->state = DILLO_JPEG_READ_BEGIN_SCAN;
+                  }
+               }
+               if (!jpeg_start_output(&jpeg->cinfo,
+                                      jpeg->cinfo.input_scan_number)) {
+                  /* out of input */
+                  break;
+               }
+               a_Dicache_new_scan(jpeg->Image, jpeg->url, jpeg->version);
+               jpeg->state = DILLO_JPEG_READ_IN_SCAN;
+            }
+         }
       }
       dFree(linebuf);
-   }
-   if (jpeg->state == DILLO_JPEG_ERROR) {
-      jpeg_destroy_decompress(&(jpeg->cinfo));
-      jpeg->state = DILLO_JPEG_DONE;
    }
 }
 

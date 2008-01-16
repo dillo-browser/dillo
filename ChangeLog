@@ -72,6 +72,8 @@ dillo-fltk2
  - Added a MSG_HTTP for HTTP/1.1's warning headers.
  - Added support for multi-line header fields.
  - Added support for "charset" in the HTTP header field for Content-Type.
+ - Added support for progressive display of progressive jpegs.
+ - Fixed progressive display of interlaced pngs.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

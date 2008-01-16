@@ -79,6 +79,7 @@ struct _DilloPng {
    uchar_t **row_pointers;       /* pntr to row starts    */
    jmp_buf jmpbuf;              /* png error processing */
    int error;                  /* error flag */
+   png_uint_32 previous_row;
    int rowbytes;               /* No. bytes in image row */
    short passes;
    short channels;              /* No. image channels */
@@ -229,6 +230,11 @@ static void
    png = png_get_progressive_ptr(png_ptr);
 
    png_progressive_combine_row(png_ptr, png->row_pointers[row_num], new_row);
+
+   if (row_num < png->previous_row) {
+      a_Dicache_new_scan(png->Image, png->url, png->version);
+   }
+   png->previous_row = row_num;
 
    switch (png->channels) {
    case 3:
@@ -419,6 +425,7 @@ static DilloPng *Png_new(DilloImage *Image, DilloUrl *url, int version)
    png->linebuf = NULL;
    png->image_data = NULL;
    png->row_pointers = NULL;
+   png->previous_row = 0;
 
    return png;
 }

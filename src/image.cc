@@ -55,6 +55,7 @@ DilloImage *a_Image_new(int width,
    Image->in_type = DILLO_IMG_TYPE_NOTSET;
    Image->bg_color = bg_color;
    Image->ProcessedBytes = 0;
+   Image->ScanNumber = 0;
    Image->BitVec = NULL;
    Image->State = IMG_Empty;
 
@@ -152,6 +153,16 @@ void a_Image_set_cmap(DilloImage *Image, const uchar_t *cmap)
 {
    Image->cmap = cmap;
    Image->State = IMG_SetCmap;
+}
+
+/*
+ * Begin a new scan for a multiple-scan image
+ */
+void a_Image_new_scan(DilloImage *Image, void *v_imgbuf)
+{
+   a_Bitvec_clear(Image->BitVec);
+   Image->ScanNumber++;
+   ((Imgbuf*)v_imgbuf)->newScan();
 }
 
 /*

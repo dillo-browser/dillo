@@ -31,6 +31,7 @@ struct _DICacheEntry {
    void *v_imgbuf;         /* Void pointer to an Imgbuf object */
    size_t TotalSize;       /* Amount of memory the image takes up */
    int Y;                  /* Current decoding row */
+   uint_t ScanNumber;      /* Current decoding scan */
    bitvec_t *BitVec;       /* Bit vector for decoded rows */
    DicEntryState State;    /* Current status for this entry */
    int RefCount;           /* Reference Counter */
@@ -53,6 +54,7 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
 void a_Dicache_set_cmap(DilloUrl *url, int version, DilloImage *Image,
                         const uchar_t *cmap, uint_t num_colors,
                         int num_colors_max, int bg_index);
+void a_Dicache_new_scan(DilloImage *image, const DilloUrl *url, int version);
 void a_Dicache_write(DilloImage *Image, DilloUrl *url, int version,
                      const uchar_t *buf, int x, uint_t Y);
 void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client);
