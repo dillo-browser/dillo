@@ -191,7 +191,7 @@ const char *AboutSplash=
 "     <tr><td>&nbsp;&nbsp;\n"
 "     <td><a href='http://www.violence.de'>Peace&amp;Violence</a>\n"
 "     <tr><td>&nbsp;&nbsp;\n"
-"     <td><a href='http://www.fsf.org/philosophy/right-to-read.html'>"
+"     <td><a href='http://www.gnu.org/philosophy/right-to-read.html'>"
 "      Right to Read</a>\n"
 "     </table>\n"
 "     </table>\n"

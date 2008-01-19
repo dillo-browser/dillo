@@ -44,6 +44,7 @@ dillo-fltk2
  - Switched dillo to push a URL with fragment (anchor) into the stack.
  - Added a workaround for a CCC reentrancy segfault.
  - Bound FltkMultiLineTextResource to the html parser (TEXTAREA).
+ - Added code to ignore the first <P> after <LI>.
    Patches: Jorge Arellano Cid
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color, panel_size, geometry, fullscreen,

@@ -180,6 +180,7 @@ typedef enum {
    IN_MAP         = 1 << 7,
    IN_PRE         = 1 << 8,
    IN_BUTTON      = 1 << 9,
+   IN_LI          = 1 << 10,
 } DilloHtmlProcessingState;
 
 /*-----------------------------------------------------------------------------
@@ -306,6 +307,7 @@ public:  //BUG: for now everything is public
    bool_t InVisitedLink;  /* used to 'contrast_visited_colors' */
    bool_t ReqTagClose;    /* Flag to help handling bad-formed HTML */
    bool_t CloseOneTag;    /* Flag to help Html_tag_cleanup_at_close() */
+   bool_t WordAfterLI;    /* Flag to help ignoring the 1st <P> after <LI> */
    bool_t TagSoup;        /* Flag to enable the parser's cleanup functions */
    char *NameVal;         /* used for validation of "NAME" and "ID" in <A> */
 
@@ -1546,6 +1548,8 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
 
    html->PrevWasOpenTag = FALSE;
    html->SPCPending = FALSE;
+   if (html->InFlags & IN_LI)
+      html->WordAfterLI = TRUE;
 }
 
 /*
@@ -2105,7 +2109,12 @@ static void Html_tag_close_body(DilloHtml *html, int TagIdx)
  */
 static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
 {
-   DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
+   if ((html->InFlags & IN_LI) && !html->WordAfterLI) {
+      /* ignore first parbreak after an empty <LI> */
+      html->WordAfterLI = TRUE;
+   } else {
+      DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
+   }
    Html_tag_set_align_attr (html, tag, tagsize);
 }
 
@@ -3273,6 +3282,9 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
    char buf[16];
 
+   html->InFlags |= IN_LI;
+   html->WordAfterLI = FALSE;
+
    /* Get our parent tag's variables (used as state storage) */
    list_number = &html->stack->getRef(html->stack->size()-2)->list_number;
    ref_list_item = &html->stack->getRef(html->stack->size()-2)->ref_list_item;
@@ -3325,6 +3337,8 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_li(DilloHtml *html, int TagIdx)
 {
+   html->InFlags &= ~IN_LI;
+   html->WordAfterLI = FALSE;
    ((ListItem *)html->dw)->flush ();
    Html_pop_tag(html, TagIdx);
 }
