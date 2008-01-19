@@ -14,7 +14,7 @@ dillo_fltk_LDADD = \
 	../../dw-testbed/dw/libDw-fltk.a \
 	../../dw-testbed/dw/libDw-core.a \
 	../../dw-testbed/lout/liblout.a \
-	@LIBJPEG_LIBS@ @LIBPNG_LIBS@ @LIBFLTK_LIBS@ @LIBZ_LIBS@
+	@LIBJPEG_LIBS@ @LIBPNG_LIBS@ @LIBFLTK_LIBS@ @LIBZ_LIBS@ @LIBICONV_LIBS@
 
 dillo_fltk_SOURCES = \
 	dillo.cc \

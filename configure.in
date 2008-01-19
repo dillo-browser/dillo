@@ -300,6 +300,17 @@ if test "x$ssl_ok" = "xyes"; then
   AC_DEFINE([ENABLE_SSL], [], [Enable SSL support])
 fi
 
+dnl ----------------------
+dnl Test for iconv functionality in libc or for libiconv usability
+dnl ----------------------
+AC_CHECK_HEADER(iconv.h, iconv_ok=yes, iconv_ok=no)
+if test "x$iconv_ok" = "xyes"; then
+  AC_CHECK_LIB(c, iconv_open, LIBICONV_LIBS="",
+    AC_CHECK_LIB(iconv, iconv_open, LIBICONV_LIBS="-liconv", iconv_ok=no))
+fi
+if test "x$iconv_ok" = "xno"; then
+  AC_ERROR(libiconv must be installed!)
+fi
 
 dnl ----------------------
 dnl Test for POSIX threads
@@ -465,6 +476,7 @@ AC_SUBST(LIBPTHREAD_LDFLAGS)
 AC_SUBST(LIBFLTK_CXXFLAGS)
 AC_SUBST(LIBFLTK_CFLAGS)
 AC_SUBST(LIBFLTK_LIBS)
+AC_SUBST(LIBICONV_LIBS)
 AC_SUBST(datadir)
 AC_SUBST(src doc)
 
