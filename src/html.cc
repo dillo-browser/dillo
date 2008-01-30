@@ -2238,9 +2238,13 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       /* continues */
    case DILLO_HTML_TABLE_MODE_TR:
    case DILLO_HTML_TABLE_MODE_TD:
+      if ((attrbuf = Html_get_attr(html, tag, tagsize, "colspan"))) {
+         char *invalid;
+         colspan = strtol(attrbuf, &invalid, 10);
+         if ((colspan < 0) || (attrbuf == invalid))
+            colspan = 1;
+      }
       /* todo: check errors? */
-      if ((attrbuf = Html_get_attr(html, tag, tagsize, "colspan")))
-         colspan = MAX(1, strtol (attrbuf, NULL, 10));
       if ((attrbuf = Html_get_attr(html, tag, tagsize, "rowspan")))
          rowspan = MAX(1, strtol (attrbuf, NULL, 10));
 

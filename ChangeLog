@@ -75,6 +75,7 @@ dillo-fltk2
  - Added support for "charset" in the HTTP header field for Content-Type.
  - Added support for progressive display of progressive jpegs.
  - Fixed progressive display of interlaced pngs.
+ - Enabled colspan=0 in tables parsing.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
