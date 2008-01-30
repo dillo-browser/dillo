@@ -300,14 +300,20 @@ if test "x$ssl_ok" = "xyes"; then
   AC_DEFINE([ENABLE_SSL], [], [Enable SSL support])
 fi
 
-dnl ----------------------
+dnl --------------------------------------------------------------
 dnl Test for iconv functionality in libc or for libiconv usability
-dnl ----------------------
+dnl --------------------------------------------------------------
 AC_CHECK_HEADER(iconv.h, iconv_ok=yes, iconv_ok=no)
 if test "x$iconv_ok" = "xyes"; then
   AC_CHECK_LIB(c, iconv_open, LIBICONV_LIBS="",
     AC_CHECK_LIB(iconv, iconv_open, LIBICONV_LIBS="-liconv", iconv_ok=no))
 fi
+if test "x$iconv_ok" = "xno"; then
+  dnl Test for OpenBSD
+  AC_TRY_COMPILE([#include <iconv.h>],[iconv_open("","");],
+                 iconv_ok=yes, iconv_ok=no)
+fi
+
 if test "x$iconv_ok" = "xno"; then
   AC_ERROR(libiconv must be installed!)
 fi
