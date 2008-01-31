@@ -468,15 +468,16 @@ static DilloUrl *Html_url_new(DilloHtml *html,
       const char *suffix = (n_ic) > 1 ? "s" : "";
       n_ic_spc = URL_ILLEGAL_CHARS_SPC(url);
       if (n_ic == n_ic_spc) {
-         MSG_HTML("URL has %d illegal character%s [%d space%s]\n",
+         MSG_HTML("URL has %d illegal character%s (%d space%s)\n",
                    n_ic, suffix, n_ic_spc, suffix);
       } else if (n_ic_spc == 0) {
-         MSG_HTML("URL has %d illegal character%s [%d in (00-1F or 7F)]\n",
+         MSG_HTML("URL has %d illegal character%s (%d in {00-1F, 7F} range)\n",
                    n_ic, suffix, n_ic);
       } else {
-         MSG_HTML("URL has %d illegal character%s "
-                  "[%d space%s and %d in (00-1F or 7F)]\n",
-                  n_ic, suffix, n_ic_spc, n_ic_spc ? "s" : "", n_ic-n_ic_spc);
+         MSG_HTML("URL has %d illegal character%s: "
+                  "%d space%s, and %d in {00-1F, 7F} range\n",
+                  n_ic, suffix,
+                  n_ic_spc, n_ic_spc > 1 ? "s" : "", n_ic-n_ic_spc);
       }
    }
    return url;

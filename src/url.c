@@ -53,6 +53,8 @@
 //#define DEBUG_LEVEL 2
 #include "debug.h"
 
+static const char *HEX = "0123456789ABCDEF";
+
 
 /*
  * Return the url as a string.
@@ -358,12 +360,17 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url,
       n_ic += (*p != ' ' && *p > 0x1F && *p != 0x7F) ? 0 : 1;
    }
    if (n_ic) {
-      /* Strip illegal characters (they could also be encoded).
-       * There's no standard for illegal chars; we chose to strip. */
-      p = str1 = dNew(char, strlen(url_str));  /* Yes, enough memory! */
+      /* Encode illegal characters (they could also be stripped).
+       * There's no standard for illegal chars; we chose to encode. */
+      p = str1 = dNew(char, strlen(url_str) + 2*n_ic + 1);
       for (i = 0; url_str[i]; ++i)
          if (url_str[i] > 0x1F && url_str[i] != 0x7F && url_str[i] != ' ')
             *p++ = url_str[i];
+         else  {
+           *p++ = '%';
+           *p++ = HEX[(url_str[i] >> 4) & 15];
+           *p++ = HEX[url_str[i] & 15];
+         }
       *p = 0;
       urlstr = str1;
    }
@@ -572,7 +579,6 @@ char *a_Url_decode_hex_str(const char *str)
 char *a_Url_encode_hex_str(const char *str)
 {
    static const char *verbatim = "-_.*";
-   static const char *hex = "0123456789ABCDEF";
    char *newstr, *c;
 
    if (!str)
@@ -595,8 +601,8 @@ char *a_Url_encode_hex_str(const char *str)
          *c++ = 'A';
       } else {
          *c++ = '%';
-         *c++ = hex[(*str >> 4) & 15];
-         *c++ = hex[*str & 15];
+         *c++ = HEX[(*str >> 4) & 15];
+         *c++ = HEX[*str & 15];
       }
    *c = 0;
 

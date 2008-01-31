@@ -89,6 +89,8 @@ dillo-fltk2
    Patch: Vincent Thomasset
 +- Fixed void to int conversions for 64bit-arch.
    Patch: Jorge Arellano Cid, higuita
++- Set the url resolver to escape illegal chars instead of stripping.
+   Patch: Jorge Arellano Cid, Jeremy Henty
 +- Added a strndup() replacement in dw2
    Patch: Alexander Becher, Johannes Hofmann, Jorge Arellano Cid
 +- Fixed calcHashValue() to only return non-negative numbers (was SEGFAULT).
