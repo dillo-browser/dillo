@@ -4073,7 +4073,7 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    Widget *widget = NULL;
    Embed *embed = NULL;
    char *value, *name, *type, *init_str;
-// const char *attrbuf, *label;
+   const char *attrbuf, *label;
    bool_t init_val = FALSE;
    int input_idx;
   
@@ -4145,29 +4145,30 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 //    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
 //    gtk_signal_connect(GTK_OBJECT(widget), "clicked",
 //                       GTK_SIGNAL_FUNC(Html_reset_form), html_lb);
-// } else if (!dStrcasecmp(type, "image")) {
-//    if (URL_FLAGS(html->base_url) & URL_SpamSafe) {
-//       /* Don't request the image, make a text submit button instead */
-//       inp_type = DILLO_HTML_INPUT_SUBMIT;
-//       attrbuf = Html_get_attr(html, tag, tagsize, "alt");
-//       label = attrbuf ? attrbuf : value ? value : name ? name : "Submit";
-//       init_str = dStrdup(label);
-//       widget = gtk_button_new_with_label(init_str);
+   } else if (!dStrcasecmp(type, "image")) {
+      if (URL_FLAGS(html->base_url) & URL_SpamSafe) {
+         /* Don't request the image; make a text submit button instead */
+         inp_type = DILLO_HTML_INPUT_SUBMIT;
+         attrbuf = Html_get_attr(html, tag, tagsize, "alt");
+         label = attrbuf ? attrbuf : value ? value : name ? name : "Submit";
+         init_str = dStrdup(label);
+         LabelButtonResource *label_b_r = HT2LT(html)->getResourceFactory()
+            ->createLabelButtonResource(init_str);
+         widget = embed = new Embed (label_b_r);
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
-//       gtk_signal_connect(GTK_OBJECT(widget), "clicked",
-//                          GTK_SIGNAL_FUNC(Html_submit_form), html_lb);
+         label_b_r->connectClicked (form->form_receiver);
 //    } else {
 //       inp_type = DILLO_HTML_INPUT_IMAGE;
 //       /* use a dw_image widget */
 //       widget = (GtkWidget*) Html_input_image(html, tag, tagsize,
 //                                              html_lb, form->action);
 //       init_str = value;
-//    }
-// } else if (!dStrcasecmp(type, "file")) {
-//    /* todo: implement it! */
+      }
+   } else if (!dStrcasecmp(type, "file")) {
+      /* todo: implement it! */
 //    inp_type = DILLO_HTML_INPUT_FILE;
 //    init_str = (value) ? value : NULL;
-//    MSG("An input of the type \"file\" wasn't rendered!\n");
+      MSG("An input of the type \"file\" wasn't rendered!\n");
    } else if (!dStrcasecmp(type, "button")) {
       inp_type = DILLO_HTML_INPUT_BUTTON;
       if (value) {
