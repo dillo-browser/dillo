@@ -2767,6 +2767,10 @@ static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
 //    style_attrs->x_tooltip = a_Dw_tooltip_new_no_ref(attrbuf);
 
    alt_ptr = Html_get_attr_wdef(html, tag, tagsize, "alt", NULL);
+   if (!prefs.load_images && (!alt_ptr || !*alt_ptr)) {
+      dFree(alt_ptr);
+      alt_ptr = strdup("[IMG]"); // Place holder for img_off mode
+   }
    width_ptr = Html_get_attr_wdef(html, tag, tagsize, "width", NULL);
    height_ptr = Html_get_attr_wdef(html, tag, tagsize, "height", NULL);
    // Check for malicious values
