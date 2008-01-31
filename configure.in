@@ -310,8 +310,14 @@ if test "x$iconv_ok" = "xyes"; then
 fi
 if test "x$iconv_ok" = "xno"; then
   dnl Test for OpenBSD
+  old_libs="$LIBS"
+  LIBS="$old_libs -liconv"
   AC_TRY_COMPILE([#include <iconv.h>],[iconv_open("","");],
                  iconv_ok=yes, iconv_ok=no)
+  LIBS="$old_libs"
+  if test "x$iconv_ok" = "xyes"; then
+     LIBICONV_LIBS="-liconv"
+  fi
 fi
 
 if test "x$iconv_ok" = "xno"; then
