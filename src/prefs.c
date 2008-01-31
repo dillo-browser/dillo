@@ -80,6 +80,7 @@ typedef enum {
    DRC_TOKEN_PANEL_SIZE,
    DRC_TOKEN_PROXY,
    DRC_TOKEN_PROXYUSER,
+   DRC_TOKEN_REFERER,
    DRC_TOKEN_SAVE_DIR,
    DRC_TOKEN_SEARCH_URL,
    DRC_TOKEN_SHOW_BACK,
@@ -134,6 +135,7 @@ static const SymNode_t symbols[] = {
    { "home", DRC_TOKEN_HOME },
    { "http_proxy", DRC_TOKEN_PROXY },
    { "http_proxyuser", DRC_TOKEN_PROXYUSER },
+   { "http_referer", DRC_TOKEN_REFERER },
    { "limit_text_width", DRC_TOKEN_LIMIT_TEXT_WIDTH },
    { "link_color", DRC_TOKEN_LINK_COLOR },
    { "load_images", DRC_TOKEN_LOAD_IMAGES },
@@ -209,6 +211,10 @@ static int Prefs_parse_pair(char *name, char *value)
    case DRC_TOKEN_PROXYUSER:
       dFree(prefs.http_proxyuser);
       prefs.http_proxyuser = dStrdup(value);
+      break;
+   case DRC_TOKEN_REFERER:
+      dFree(prefs.http_referer);
+      prefs.http_referer = dStrdup(value);
       break;
    case DRC_TOKEN_NOPROXY:
       dFree(prefs.no_proxy);
@@ -406,6 +412,7 @@ void a_Prefs_init(void)
    prefs.ypos = D_GEOMETRY_DEFAULT_YPOS;
    prefs.http_proxy = NULL;
    prefs.http_proxyuser = NULL;
+   prefs.http_referer = strdup("host");
    prefs.no_proxy = NULL;
    prefs.link_color = DW_COLOR_DEFAULT_BLUE;
    prefs.visited_color = DW_COLOR_DEFAULT_PURPLE;
@@ -466,6 +473,7 @@ void a_Prefs_init(void)
 void a_Prefs_freeall(void)
 {
    dFree(prefs.http_proxyuser);
+   dFree(prefs.http_referer);
    dFree(prefs.no_proxy);
    a_Url_free(prefs.http_proxy);
    dFree(prefs.fw_fontname);

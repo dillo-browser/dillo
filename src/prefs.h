@@ -19,6 +19,7 @@ struct _DilloPrefs {
    int ypos;
    DilloUrl *http_proxy;
    char *http_proxyuser;
+   char *http_referer;
    char *no_proxy;
    DilloUrl *start_page;
    DilloUrl *home;

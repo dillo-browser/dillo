@@ -100,6 +100,13 @@ search_url="http://www.google.com/search?q=%s"
 # Set the domains to access without proxy
 #no_proxy = ".hola.com .mynet.cl .hi.de"
 
+# Set the HTTP Referer information (WARNING: affects privacy)
+# We use the same URI, not the refering page (to avoid cross-site tracking).
+# none  : No referer at all (full privacy).
+# host  : Default value. Send same URI's hostname (no sensible info is sent).
+# path  : same URI is sent (NO PRIVACY).
+http_referer=host
+
 
 #-------------------------------------------------------------------------
 #                            COLORS SECTION

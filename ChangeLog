@@ -45,6 +45,7 @@ dillo-fltk2
  - Added a workaround for a CCC reentrancy segfault.
  - Bound FltkMultiLineTextResource to the html parser (TEXTAREA).
  - Added code to ignore the first <P> after <LI>.
+ - Added a http_referer preference. See details in dillorc2.
    Patches: Jorge Arellano Cid
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color, panel_size, geometry, fullscreen,

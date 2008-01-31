@@ -149,11 +149,33 @@ static void Http_socket_close(SocketData_t *S)
 }
 
 /*
+ * Make the HTTP header's Referer line according to preferences
+ * (default is "host" i.e. "scheme://hostname/" )
+ */
+static char *Http_get_referer(const DilloUrl *url)
+{
+   char *referer = NULL;
+
+   if (!strcmp(prefs.http_referer, "host")) {
+      referer = dStrconcat("Referer: ", URL_SCHEME(url), "://",
+                           URL_AUTHORITY(url), "/", NULL);
+   } else if (!strcmp(prefs.http_referer, "path")) {
+      referer = dStrconcat("Referer: ", URL_SCHEME(url), "://",
+                           URL_AUTHORITY(url),
+                           URL_PATH_(url) ? URL_PATH(url) : "/", NULL);
+   }
+   if (!referer)
+      referer = strdup("");
+   _MSG("http, referer='%s'\n", referer);
+   return referer;
+}
+
+/*
  * Make the http query string
  */
 char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
 {
-   char *str, *ptr, *cookies;
+   char *str, *ptr, *cookies, *referer;
    Dstr *s_port     = dStr_new(""),
         *query      = dStr_new(""),
         *full_path  = dStr_new(""),
@@ -181,12 +203,14 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
    }
 
    cookies = a_Cookies_get(url);
+   referer = Http_get_referer(url);
    if (URL_FLAGS(url) & URL_Post) {
       dStr_sprintfa(
          query,
          "POST %s HTTP/1.1\r\n"
          "Accept-Charset: utf-8, iso-8859-1\r\n"
          "Host: %s%s\r\n"
+         "%s"
          "%s"
          "User-Agent: Dillo/%s\r\n"
          "Accept-Encoding: gzip\r\n"
@@ -198,7 +222,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "\r\n"
          "%s",
          full_path->str, URL_HOST(url), s_port->str,
-         proxy_auth->str, VERSION, cookies,
+         proxy_auth->str, referer, VERSION, cookies,
          (long)strlen(URL_DATA(url)),
          URL_DATA(url));
 
@@ -210,6 +234,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Accept-Charset: utf-8, iso-8859-1\r\n"
          "Host: %s%s\r\n"
          "%s"
+         "%s"
          "User-Agent: Dillo/%s\r\n"
          "Accept-Encoding: gzip\r\n"
          "Cookie2: $Version=\"1\"\r\n"
@@ -220,10 +245,9 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          (URL_FLAGS(url) & URL_E2EReload) ?
             "Cache-Control: no-cache\r\nPragma: no-cache\r\n" : "",
          URL_HOST(url), s_port->str,
-         proxy_auth->str,
-         VERSION,
-         cookies);
+         proxy_auth->str, referer, VERSION, cookies);
    }
+   dFree(referer);
    dFree(cookies);
 
    str = query->str;
