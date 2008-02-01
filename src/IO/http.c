@@ -158,11 +158,11 @@ static char *Http_get_referer(const DilloUrl *url)
 
    if (!strcmp(prefs.http_referer, "host")) {
       referer = dStrconcat("Referer: ", URL_SCHEME(url), "://",
-                           URL_AUTHORITY(url), "/", NULL);
+                           URL_AUTHORITY(url), "/", "\r\n", NULL);
    } else if (!strcmp(prefs.http_referer, "path")) {
       referer = dStrconcat("Referer: ", URL_SCHEME(url), "://",
                            URL_AUTHORITY(url),
-                           URL_PATH_(url) ? URL_PATH(url) : "/", NULL);
+                           URL_PATH_(url) ? URL_PATH(url) : "/", "\r\n", NULL);
    }
    if (!referer)
       referer = strdup("");
