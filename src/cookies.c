@@ -198,6 +198,7 @@ char *a_Cookies_get(const DilloUrl *request_url)
    dFree(cmd);
 
    if (dpip_tag != NULL) {
+      dFree(cookie);
       cookie = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cookie");
       dFree(dpip_tag);
    }

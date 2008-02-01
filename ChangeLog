@@ -78,6 +78,7 @@ dillo-fltk2
  - Added support for progressive display of progressive jpegs.
  - Fixed progressive display of interlaced pngs.
  - Enabled colspan=0 in tables parsing.
+ - Fixed a memory leak in cookies.c
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
