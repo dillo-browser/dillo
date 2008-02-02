@@ -136,6 +136,11 @@ allow_white_bg=NO
 # independent of the author's setting.                        
 contrast_visited_color=YES
 
+# Colors for widgets inside forms.
+# YES = toolkit's default colors, NO = use page's text and background color.
+# ("NO" looks less traditional but more stylish).
+standard_widget_colors=NO
+
 
 #-------------------------------------------------------------------------
 #                        USER INTERFACE SECTION

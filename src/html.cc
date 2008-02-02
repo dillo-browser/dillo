@@ -193,7 +193,6 @@ struct _DilloLinkImage {
 
 struct _DilloHtmlState {
    char *tag_name;
-   //DwStyle *style, *table_cell_style;
    dw::core::style::Style *style, *table_cell_style;
    DilloHtmlParseMode parse_mode;
    DilloHtmlTableMode table_mode;
@@ -208,10 +207,6 @@ struct _DilloHtmlState {
 
    /* This is used to align list items (especially in enumerated lists) */
    dw::core::Widget *ref_list_item;
-
-   /* This makes image processing faster than a function
-      a_Dw_widget_get_background_color. */
-   int32_t current_bg_color;
 
    /* This is used for list items etc; if it is set to TRUE, breaks
       have to be "handed over" (see Html_add_indented and
@@ -816,7 +811,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    stack->getRef(0)->textblock = NULL;
    stack->getRef(0)->table = NULL;
    stack->getRef(0)->ref_list_item = NULL;
-   stack->getRef(0)->current_bg_color = prefs.bg_color;
    stack->getRef(0)->hand_over_break = FALSE;
 
    InFlags = IN_NONE;
@@ -878,6 +872,8 @@ void DilloHtml::initDw()
    style_attrs.initValues ();
    style_attrs.font = Font::create (HT2LT(this), &font_attrs);
    style_attrs.color = Color::createSimple (HT2LT(this), prefs.text_color);
+   style_attrs.backgroundColor =
+                        Color::createShaded (HT2LT(this), prefs.bg_color);
    stack->getRef(0)->style = Style::create (HT2LT(this), &style_attrs);
 
    stack->getRef(0)->table_cell_style = NULL;
@@ -2052,17 +2048,16 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    if (!prefs.force_my_colors) {
       if ((attrbuf = Html_get_attr(html, tag, tagsize, "bgcolor"))) {
          color = Html_color_parse(html, attrbuf, prefs.bg_color);
-         if ((color == 0xffffff && !prefs.allow_white_bg) ||
-             prefs.force_my_colors)
+         if (color == 0xffffff && !prefs.allow_white_bg)
             color = prefs.bg_color;
 
          style_attrs = *html->dw->getStyle ();
-         style_attrs.backgroundColor =
-            Color::createSimple (HT2LT(html), color);
+         style_attrs.backgroundColor = Color::createShaded(HT2LT(html), color);
          style = Style::create (HT2LT(html), &style_attrs);
          html->dw->setStyle (style);
          style->unref ();
-         S_TOP(html)->current_bg_color = color;
+         HTML_SET_TOP_ATTR (html, backgroundColor,
+                            Color::createShaded (HT2LT(html), color));
       }
 
       if ((attrbuf = Html_get_attr(html, tag, tagsize, "text"))) {
@@ -2084,7 +2079,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
             a_Color_vc(html->visited_color,
                        S_TOP(html)->style->color->getColor(),
                        html->link_color,
-                       S_TOP(html)->current_bg_color);
+                       S_TOP(html)->style->backgroundColor->getColor());
       }
    }
 
@@ -2153,7 +2148,7 @@ static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.borderWidth.setVal (border);
 
    style_attrs.setBorderColor (
-      Color::createShaded (HT2LT(html), S_TOP(html)->current_bg_color));
+    Color::createShaded(HT2LT(html), style_attrs.backgroundColor->getColor()));
    style_attrs.setBorderStyle (BORDER_OUTSET);
    style_attrs.hBorderSpacing = cellspacing;
    style_attrs.vBorderSpacing = cellspacing;
@@ -2176,9 +2171,10 @@ static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       if (bgcolor != -1) {
          if (bgcolor == 0xffffff && !prefs.allow_white_bg)
             bgcolor = prefs.bg_color;
-         S_TOP(html)->current_bg_color = bgcolor;
          style_attrs.backgroundColor =
-            Color::createSimple (HT2LT(html), bgcolor);
+            Color::createShaded (HT2LT(html), bgcolor);
+         HTML_SET_TOP_ATTR (html, backgroundColor,
+                            Color::createShaded (HT2LT(html), bgcolor));
       }
    }
 
@@ -2285,8 +2281,9 @@ static void Html_tag_open_table_cell(DilloHtml *html,
 
             new_style = TRUE;
             style_attrs.backgroundColor =
-               Color::createSimple (HT2LT(html), bgcolor);
-            S_TOP(html)->current_bg_color = bgcolor;
+               Color::createShaded (HT2LT(html), bgcolor);
+            HTML_SET_TOP_ATTR (html, backgroundColor,
+                               Color::createShaded (HT2LT(html), bgcolor));
          }
       }
 
@@ -2371,9 +2368,10 @@ static void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 
             style_attrs = *S_TOP(html)->style;
             style_attrs.backgroundColor =
-               Color::createSimple (HT2LT(html), bgcolor);
+               Color::createShaded (HT2LT(html), bgcolor);
             style = Style::create (HT2LT(html), &style_attrs);
-            S_TOP(html)->current_bg_color = bgcolor;
+            HTML_SET_TOP_ATTR (html, backgroundColor,
+                               Color::createShaded (HT2LT(html), bgcolor));
          }
       }
 
@@ -2387,15 +2385,15 @@ static void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
       }
 
       style_attrs = *S_TOP(html)->table_cell_style;
-      if (Html_tag_set_valign_attr (html, tag, tagsize, &style_attrs)) {
-         old_style = S_TOP(html)->table_cell_style;
-         S_TOP(html)->table_cell_style =
-            Style::create (HT2LT(html), &style_attrs);
-         old_style->unref ();
-      } else
-
+      Html_tag_set_valign_attr (html, tag, tagsize, &style_attrs);
+      style_attrs.backgroundColor =
+         Color::createShaded (HT2LT(html),
+                              S_TOP(html)->style->backgroundColor->getColor());
+      old_style = S_TOP(html)->table_cell_style;
+      S_TOP(html)->table_cell_style =
+         Style::create (HT2LT(html), &style_attrs);
+      old_style->unref ();
       break;
-
    default:
       break;
    }
@@ -2812,7 +2810,7 @@ static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
    }
 
    /* Add a new image widget to this page */
-   Image = a_Image_new(0, 0, alt_ptr, S_TOP(html)->current_bg_color);
+   Image = a_Image_new(0, 0, alt_ptr, style_attrs->backgroundColor->getColor());
    if (add) {
       Html_add_widget(html, (Widget*)Image->dw, width_ptr, height_ptr,
                       style_attrs);
@@ -3087,7 +3085,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
             a_Color_vc(html->visited_color,
                        S_TOP(html)->style->color->getColor(),
                        html->link_color,
-                       S_TOP(html)->current_bg_color),
+                       S_TOP(html)->style->backgroundColor->getColor()),
 */
             );
       } else {
@@ -3301,7 +3299,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
    /* set the item style */
    word_style = S_TOP(html)->style;
    style_attrs = *word_style;
- //style_attrs.backgroundColor = Color::createSimple (HT2LT(html), 0xffff40);
+ //style_attrs.backgroundColor = Color::createShaded (HT2LT(html), 0xffff40);
  //style_attrs.setBorderColor (Color::createSimple (HT2LT(html), 0x000000));
  //style_attrs.setBorderStyle (BORDER_SOLID);
  //style_attrs.borderWidth.setVal (1);
@@ -3391,9 +3389,9 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
          size = 1;
    } else {
       style_attrs.setBorderStyle (BORDER_INSET);
-      style_attrs.setBorderColor (
-         Color::createShaded (HT2LT(html),
-                              (S_TOP(html)->current_bg_color)));
+      style_attrs.setBorderColor
+         (Color::createShaded (HT2LT(html),
+                               style_attrs.backgroundColor->getColor()));
       if (size < 2)
          size = 2;
    }
@@ -4219,6 +4217,10 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 //                                   strtol(attrbuf, NULL, 10));
       }
 
+      if (prefs.standard_widget_colors) {
+         HTML_SET_TOP_ATTR(html, color, NULL);
+         HTML_SET_TOP_ATTR(html, backgroundColor, NULL);
+      }
       DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
    }
   
@@ -4440,6 +4442,10 @@ static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    Widget *widget;
    Embed *embed;
    widget = embed = new Embed(res);
+   if (prefs.standard_widget_colors) {
+      HTML_SET_TOP_ATTR(html, color, NULL);
+      HTML_SET_TOP_ATTR(html, backgroundColor, NULL);
+   }
    DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
 
 // size = 0;

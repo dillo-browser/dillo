@@ -99,6 +99,7 @@ typedef enum {
    DRC_TOKEN_SHOW_TOOLTIP,
    DRC_TOKEN_SHOW_URL,
    DRC_TOKEN_SMALL_ICONS,
+   DRC_TOKEN_STANDARD_WIDGET_COLORS,
    DRC_TOKEN_START_PAGE,
    DRC_TOKEN_TEXT_COLOR,
    DRC_TOKEN_TRANSIENT_DIALOGS,
@@ -159,6 +160,7 @@ static const SymNode_t symbols[] = {
    { "show_tooltip", DRC_TOKEN_SHOW_TOOLTIP },
    { "show_url", DRC_TOKEN_SHOW_URL },
    { "small_icons", DRC_TOKEN_SMALL_ICONS },
+   { "standard_widget_colors", DRC_TOKEN_STANDARD_WIDGET_COLORS },
    { "start_page", DRC_TOKEN_START_PAGE },
    { "text_color", DRC_TOKEN_TEXT_COLOR },
    { "transient_dialogs", DRC_TOKEN_TRANSIENT_DIALOGS },
@@ -240,6 +242,9 @@ static int Prefs_parse_pair(char *name, char *value)
       break;
    case DRC_TOKEN_CONTRAST_VISITED_COLOR:
       prefs.contrast_visited_color = (strcmp(value, "YES") == 0);
+      break;
+   case DRC_TOKEN_STANDARD_WIDGET_COLORS:
+      prefs.standard_widget_colors = (strcmp(value, "YES") == 0);
       break;
    case DRC_TOKEN_USE_OBLIQUE:
       prefs.use_oblique = (strcmp(value, "YES") == 0);
@@ -424,6 +429,7 @@ void a_Prefs_init(void)
    prefs.allow_white_bg = TRUE;
    prefs.force_my_colors = FALSE;
    prefs.contrast_visited_color = FALSE;
+   prefs.standard_widget_colors = TRUE;
    prefs.show_tooltip = FALSE;
    prefs.panel_size = P_tiny;
    prefs.small_icons = FALSE;

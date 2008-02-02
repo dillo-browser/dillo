@@ -31,6 +31,7 @@ struct _DilloPrefs {
    bool_t use_oblique;
    bool_t force_my_colors;
    bool_t contrast_visited_color;
+   bool_t standard_widget_colors;
    bool_t show_tooltip;
    int panel_size;
    bool_t small_icons;

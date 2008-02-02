@@ -79,6 +79,7 @@ dillo-fltk2
  - Fixed progressive display of interlaced pngs.
  - Enabled colspan=0 in tables parsing.
  - Fixed a memory leak in cookies.c
+ - Added "standard_widget_colors" preference. It allows a more stylish look.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
