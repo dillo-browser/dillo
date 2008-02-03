@@ -448,6 +448,11 @@ static Dlist *Cache_parse_multiple_fields(const char *header,
          dList_append(fields, field);
       }
    }
+
+   if (dList_length(fields) == 0) {
+      dList_free(fields);
+      fields = NULL;
+   }
    return fields;
 }
 
