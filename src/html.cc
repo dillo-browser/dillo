@@ -1576,7 +1576,7 @@ static void Html_eventually_pop_dw(DilloHtml *html, bool_t hand_over_break)
    if (html->dw != S_TOP(html)->textblock) {
       if (hand_over_break)
          DW2TB(html->dw)->handOverBreak (S_TOP(html)->style);
-      DW2TB(html->dw)->flush ();
+      DW2TB(html->dw)->flush (false);
       html->dw = S_TOP(html)->textblock;
    }
 }
@@ -1665,8 +1665,9 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
           ((w3c_mode &&
             Tags[html->stack->getRef(stack_idx)->tag_idx].EndTag == 'O') ||
            (!w3c_mode &&
-            Tags[html->stack->getRef(stack_idx)->tag_idx].TagLevel <
-            Tags[new_idx].TagLevel))) {
+            (Tags[html->stack->getRef(stack_idx)->tag_idx].EndTag == 'O') ||
+             Tags[html->stack->getRef(stack_idx)->tag_idx].TagLevel <
+             Tags[new_idx].TagLevel))) {
       --stack_idx;
    }
 
@@ -2810,7 +2811,7 @@ static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
    }
 
    /* Add a new image widget to this page */
-   Image = a_Image_new(0, 0, alt_ptr, style_attrs->backgroundColor->getColor());
+   Image = a_Image_new(0,0,alt_ptr,style_attrs->backgroundColor->getColor());
    if (add) {
       Html_add_widget(html, (Widget*)Image->dw, width_ptr, height_ptr,
                       style_attrs);
@@ -3334,9 +3335,6 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
       list_item->addSpace (word_style);
       break;
    }
-
-   // list_item->flush (); Looks like there's no need to flush.
-   // If it MUST be done, it could be inside Html_tag_close_li().
 }
 
 /*
@@ -3346,7 +3344,7 @@ static void Html_tag_close_li(DilloHtml *html, int TagIdx)
 {
    html->InFlags &= ~IN_LI;
    html->WordAfterLI = FALSE;
-   ((ListItem *)html->dw)->flush ();
+   ((ListItem *)html->dw)->flush (false);
    Html_pop_tag(html, TagIdx);
 }
 
@@ -5444,7 +5442,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
       }
    }/*while*/
 
-   textblock->flush ();
+   textblock->flush (Eof ? true : false);
 
    return token_start;
 }

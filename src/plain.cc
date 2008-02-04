@@ -188,7 +188,7 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
       Start_Ofs += len;
    }
 
-   DW2TB(dw)->flush();
+   DW2TB(dw)->flush(false);
 
    if (bw)
       a_UIcmd_set_page_prog(bw, Start_Ofs, 1);
