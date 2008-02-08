@@ -155,6 +155,8 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
    char *data;
    uint_t i, len, MaxBytes;
 
+   _MSG("DilloPlain::write Eof=%d\n", Eof);
+
    Start = (char*)Buf + Start_Ofs;
    MaxBytes = BufSize - Start_Ofs;
    i = len = 0;
@@ -188,7 +190,7 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
       Start_Ofs += len;
    }
 
-   DW2TB(dw)->flush(false);
+   DW2TB(dw)->flush(Eof ? true : false);
 
    if (bw)
       a_UIcmd_set_page_prog(bw, Start_Ofs, 1);
@@ -223,8 +225,7 @@ static void Plain_callback(int Op, CacheClient_t *Client)
 
    if (Op) {
       /* Do the last line: */
-      if (plain->Start_Ofs < Client->BufSize)
-         plain->write(Client->Buf, Client->BufSize, 1);
+      plain->write(Client->Buf, Client->BufSize, 1);
       /* remove this client from our active list */
       a_Bw_close_client(plain->bw, Client->Key);
       /* set progress bar insensitive */

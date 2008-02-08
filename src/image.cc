@@ -132,7 +132,8 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
 {
    _MSG("a_Image_set_parms: width=%d height=%d\n", width, height);
 
-   OI(Image)->setBuffer((Imgbuf*)v_imgbuf);
+   bool resize = (Image->width != width || Image->height != height);
+   OI(Image)->setBuffer((Imgbuf*)v_imgbuf, resize);
 
    if (!Image->BitVec)
       Image->BitVec = a_Bitvec_new(height);
