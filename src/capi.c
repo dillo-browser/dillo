@@ -502,7 +502,10 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             /* remove the cache entry for this URL */
             a_Cache_entry_remove_by_url(conn->url);
             if (Data2 && !strcmp(Data2, "DpidERROR"))
-               a_UIcmd_set_msg(conn->bw, "ERROR: can't start dpid daemon!");
+               a_UIcmd_set_msg(conn->bw,
+                               "ERROR: can't start dpid daemon "
+                               "(URL scheme = '%s')!", 
+                               URL_SCHEME(conn->url));
             /* finish conn */
             Capi_conn_unref(conn);
             dFree(Info);
