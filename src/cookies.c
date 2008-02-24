@@ -168,23 +168,21 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
 }
 
 /*
- * Return a string that contains all relevant cookies as headers.
+ * Return a string containing cookie data for an HTTP query.
  */
-char *a_Cookies_get(const DilloUrl *request_url)
+char *a_Cookies_get_query(const DilloUrl *request_url)
 {
-   char *cmd, *dpip_tag, *cookie, numstr[16];
+   char *cmd, *dpip_tag, *query, numstr[16];
    const char *path;
    CookieControlAction action;
 
-   cookie = dStrdup("");
-
    if (disabled)
-      return cookie;
+      return dStrdup("");
 
    action = Cookies_control_check(request_url);
    if (action == COOKIE_DENY) {
       DEBUG_MSG(5, "Cookies: denied GET for %s\n", URL_HOST_(request_url));
-      return cookie;
+      return dStrdup("");
    }
    path = URL_PATH_(request_url);
 
@@ -197,12 +195,15 @@ char *a_Cookies_get(const DilloUrl *request_url)
    dpip_tag = a_Dpi_send_blocking_cmd("cookies", cmd);
    dFree(cmd);
 
+   query = dStrdup("Cookie2: $Version=\"1\"\r\n");
+
    if (dpip_tag != NULL) {
-      dFree(cookie);
-      cookie = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cookie");
+      char *cookie = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cookie");
       dFree(dpip_tag);
+      query = dStrconcat(query, cookie, NULL);
+      dFree(cookie);
    }
-   return cookie;
+   return query;
 }
 
 /* -------------------------------------------------------------

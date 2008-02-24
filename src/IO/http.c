@@ -202,7 +202,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
                     (URL_PATH_(url) || URL_QUERY_(url)) ? "" : "/");
    }
 
-   cookies = a_Cookies_get(url);
+   cookies = a_Cookies_get_query(url);
    referer = Http_get_referer(url);
    if (URL_FLAGS(url) & URL_Post) {
       dStr_sprintfa(
@@ -214,7 +214,6 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "%s"
          "User-Agent: Dillo/%s\r\n"
          "Accept-Encoding: gzip\r\n"
-         "Cookie2: $Version=\"1\"\r\n"
          "%s"
          "Content-type: application/x-www-form-urlencoded\r\n"
          "Content-length: %ld\r\n"
@@ -237,7 +236,6 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "%s"
          "User-Agent: Dillo/%s\r\n"
          "Accept-Encoding: gzip\r\n"
-         "Cookie2: $Version=\"1\"\r\n"
          "Connection: close\r\n"
          "%s"
          "\r\n",
