@@ -171,6 +171,32 @@ static char *Http_get_referer(const DilloUrl *url)
 }
 
 /*
+ * Generate Content-Type header value for a POST query.
+ */
+Dstr *Http_get_content_type(const DilloUrl *url)
+{
+   Dstr *dstr;
+
+   if (URL_FLAGS(url) & URL_MultipartEnc) {
+      MSG("submitting multipart/form-data!\n");
+      dstr = dStr_new("multipart/form-data; boundary=\"");
+      if (strlen(URL_DATA(url)) > 2) {
+         /* boundary lines have "--" prepended. Skip that. */
+         const char *start = URL_DATA(url) + 2;
+         char *eol = strchr(start, '\n');
+         if (eol)
+            dStr_append_l(dstr, start, eol - start);
+      } else {
+         /* If there are zero parts, should a boundary be specified anyway? */
+      }
+      dStr_append_c(dstr,'"');
+   } else {
+      dstr = dStr_new("application/x-www-form-urlencoded");
+   }
+   return dstr;
+}
+
+/*
  * Make the http query string
  */
 char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
@@ -205,6 +231,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
    cookies = a_Cookies_get_query(url);
    referer = Http_get_referer(url);
    if (URL_FLAGS(url) & URL_Post) {
+      Dstr *content_type = Http_get_content_type(url);
       dStr_sprintfa(
          query,
          "POST %s HTTP/1.1\r\n"
@@ -215,16 +242,16 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "User-Agent: Dillo/%s\r\n"
          "Accept-Encoding: gzip\r\n"
          "%s"
-         "Content-type: application/x-www-form-urlencoded\r\n"
+         "Content-type: %s\r\n"
          "Content-length: %ld\r\n"
          "Connection: close\r\n"
          "\r\n"
          "%s",
          full_path->str, URL_HOST(url), s_port->str,
          proxy_auth->str, referer, VERSION, cookies,
-         (long)strlen(URL_DATA(url)),
+         content_type->str, (long)strlen(URL_DATA(url)),
          URL_DATA(url));
-
+      dStr_free(content_type, TRUE);
    } else {
       dStr_sprintfa(
          query,

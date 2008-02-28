@@ -42,6 +42,8 @@
 #define URL_ReloadIncomplete    (1 << 9)
 #define URL_SpamSafe            (1 << 10)
 
+#define URL_MultipartEnc        (1 << 11)
+
 /*
  * Access methods to fields inside DilloURL.
  * (non '_'-ended macros MUST use these for initialization sake)

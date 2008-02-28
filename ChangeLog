@@ -81,12 +81,13 @@ dillo-fltk2
  - Fixed a memory leak in cookies.c
  - Added "standard_widget_colors" preference. It allows a more stylish look.
  - Fixed the return value of Cache_parse_multiple_field.
+ - Added multipart/form-data encoding for form submission.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
  - Added an experimental gzip decoder! 
  - Implemented "Load Images" in the page menu and cleaned up html.hh.
- - Added shortcuts: PgDn=Spc PgUp=b Back=BackSpace|, Forw=Shift+Backspace|.
+ - Added shortcuts: PgDn=Spc, PgUp=b, Back=BackSpace, Forw=Shift+Backspace.
  - Made a cleanup in cache's parse header code.
    Patch: place, Jorge Arellano Cid
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().

@@ -145,7 +145,8 @@ typedef enum {
 } DilloHtmlMethod;
 
 typedef enum {
-   DILLO_HTML_ENC_URLENCODING
+   DILLO_HTML_ENC_URLENCODING,
+   DILLO_HTML_ENC_MULTIPART
 } DilloHtmlEnc;
 
 typedef enum {
@@ -3514,8 +3515,10 @@ static void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    else
       action = a_Url_dup(html->base_url);
    enc = DILLO_HTML_ENC_URLENCODING;
-   if ((attrbuf = Html_get_attr(html, tag, tagsize, "encoding"))) {
-      /* todo: maybe deal with unknown encodings? */
+   if ((method == DILLO_HTML_METHOD_POST) &&
+       ((attrbuf = Html_get_attr(html, tag, tagsize, "enctype")))) {
+      if (!dStrcasecmp(attrbuf, "multipart/form-data"))
+         enc = DILLO_HTML_ENC_MULTIPART;
    }
    html->formNew(method, action, enc);
    a_Url_free(action);
@@ -3808,16 +3811,39 @@ static void Html_urlencode_append(Dstr *str, const char *val)
 
 /*
  * Append a name-value pair to an existing url.
- * (name and value are urlencoded before appending them)
  */
 static void
- Html_append_input(Dstr *url, const char *name, const char *value)
+ Html_append_input(DilloHtmlEnc encoding, Dstr *url, const char *name,
+                   const char *value)
 {
+   /*
+    *  RFC2046:    boundary := 0*69<bchars> bcharsnospace
+    *              bchars := bcharsnospace / " "
+    *              bcharsnospace := DIGIT / ALPHA / "'" / "(" / ")" /
+    *                   "+" / "_" / "," / "-" / "." / "/" / ":" / "=" / "?"
+    */
+   const char *const boundary = "o_JOU,-LJU:ylnyp'Lyf0RUoh4P(8THlfd98?575p0";
+
    if (name != NULL) {
-      Html_urlencode_append(url, name);
-      dStr_append_c(url, '=');
-      Html_urlencode_append(url, value);
-      dStr_append_c(url, '&');
+      if (encoding == DILLO_HTML_ENC_MULTIPART) {
+         if (url->len == 0) {
+            dStr_append(url, "--");
+            dStr_append(url, boundary);
+         }
+         dStr_sprintfa(url,
+                       "\n"
+                       "Content-Disposition: form-data; name=\"%s\"\n"
+                       "\n"
+                       "%s\n"
+                       "--%s",
+                       name, value, boundary);
+      } else {
+         // URL encoding
+         Html_urlencode_append(url, name);
+         dStr_append_c(url, '=');
+         Html_urlencode_append(url, value);
+         dStr_append_c(url, '&');
+      }
    }
 }
 
@@ -3863,24 +3889,28 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
          case DILLO_HTML_INPUT_PASSWORD:
             EntryResource *entryres;
             entryres = (EntryResource*)((Embed*)input->widget)->getResource();
-            Html_append_input(DataStr, input->name, entryres->getText());
+            Html_append_input(form->enc, DataStr, input->name,
+                              entryres->getText());
             break;
          case DILLO_HTML_INPUT_TEXTAREA:
             MultiLineTextResource *textres;
             textres = (MultiLineTextResource*)((Embed*)input->widget)
                          ->getResource();
-            Html_append_input(DataStr, input->name, textres->getText());
+            Html_append_input(form->enc, DataStr, input->name,
+                              textres->getText());
             break;
          case DILLO_HTML_INPUT_CHECKBOX:
          case DILLO_HTML_INPUT_RADIO:
             ToggleButtonResource *cb_r;
             cb_r=(ToggleButtonResource*)((Embed*)input->widget)->getResource();
             if (input->name && input->init_str && cb_r->isActivated()) {
-               Html_append_input(DataStr, input->name, input->init_str);
+               Html_append_input(form->enc, DataStr, input->name,
+                                 input->init_str);
             }
             break;
          case DILLO_HTML_INPUT_HIDDEN:
-            Html_append_input(DataStr, input->name, input->init_str);
+            Html_append_input(form->enc, DataStr, input->name,
+                              input->init_str);
             break;
          case DILLO_HTML_INPUT_SELECT:
          case DILLO_HTML_INPUT_SEL_LIST:
@@ -3893,7 +3923,7 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
                   DilloHtmlOption *option =
                      input->select->options->get (i);
                   char *val = option->value ? option->value : option->content;
-                  Html_append_input(DataStr, input->name, val);
+                  Html_append_input(form->enc, DataStr, input->name, val);
                }
             }
             break;
@@ -3904,22 +3934,34 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
 //          break;
 //       case DILLO_HTML_INPUT_IMAGE:
 //          if (input->widget == submit) {
+// will have to be modified for handle enctype="multipart/form-data"
 //             Html_append_input(DataStr, input->name, input->init_str);
 //             Html_append_clickpos(DataStr, input->name, click_x, click_y);
 //          }
 //          break;
+         case DILLO_HTML_INPUT_FILE:
+            MSG("Data from file input not submitted\n");
+            // If multiple files are submitted, multipart/mixed should be used.
+            break;
          case DILLO_HTML_INPUT_SUBMIT:
          case DILLO_HTML_INPUT_BUTTON_SUBMIT:
             if (input_idx == e_input_idx && form->num_submit_buttons > 0)
-               Html_append_input(DataStr, input->name, input->init_str);
+               Html_append_input(form->enc, DataStr, input->name,
+                                 input->init_str);
             break;
          default:
             break;
          } /* switch */
       } /* for (inputs) */
-  
-      if (DataStr->str[DataStr->len - 1] == '&')
-         dStr_truncate(DataStr, DataStr->len - 1);
+
+      if (DataStr->len > 0) {
+         if (form->enc == DILLO_HTML_ENC_URLENCODING) {  
+            if (DataStr->str[DataStr->len - 1] == '&')
+               dStr_truncate(DataStr, DataStr->len - 1);
+         } else if (form->enc == DILLO_HTML_ENC_MULTIPART) {
+            dStr_append(DataStr, "--");
+         }
+      }
   
       /* form->action was previously resolved against base URL */
       action_str = dStrdup(URL_STR(form->action));
@@ -3928,6 +3970,9 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
          new_url = a_Url_new(action_str, NULL, 0, 0, 0);
          a_Url_set_data(new_url, DataStr->str);
          a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Post);
+         if (form->enc == DILLO_HTML_ENC_MULTIPART) {
+            a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_MultipartEnc);
+         }
       } else {
          /* remove <fragment> and <query> sections if present */
          if ((p = strchr(action_str, '#')))
@@ -4166,9 +4211,17 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       }
    } else if (!dStrcasecmp(type, "file")) {
       /* todo: implement it! */
-//    inp_type = DILLO_HTML_INPUT_FILE;
-//    init_str = (value) ? value : NULL;
-      MSG("An input of the type \"file\" wasn't rendered!\n");
+      if (form->method != DILLO_HTML_METHOD_POST) {
+         /*
+          * The letter of the spec only states that file inputs "should" be
+          * used with enctype multipart/form-data (only meaningful with POST).
+          */
+         MSG("File input ignored in form not using HTTP POST method\n");
+      } else {
+//       inp_type = DILLO_HTML_INPUT_FILE;
+//       init_str = (value) ? value : NULL;
+         MSG("An input of the type \"file\" wasn't rendered!\n");
+      }
    } else if (!dStrcasecmp(type, "button")) {
       inp_type = DILLO_HTML_INPUT_BUTTON;
       if (value) {
