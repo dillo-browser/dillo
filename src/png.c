@@ -362,6 +362,7 @@ static void Png_callback(int Op, CacheClient_t *Client)
          /* check the image signature - DON'T update ipbufstart! */
          if (!png_check_sig(png->ipbuf, DATASIZE)) {
             /* you lied to me about it being a PNG image */
+            MSG_WARN("\"%s\" is not a PNG file.\n", URL_STR(png->url));
             png->state = IS_finished;
             break;
          }
