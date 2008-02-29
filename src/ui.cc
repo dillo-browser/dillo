@@ -702,7 +702,13 @@ int UI::handle(int event)
    // Handle these shortcuts here.
    if (event == SHORTCUT) {
       if (event_state(CTRL)) {
-         if (k == 'l') {
+         if (k == 'b') {
+            a_UIcmd_book(user_data());
+            ret = 1;
+         } else if (k == 'f') {
+            a_UIcmd_findtext_dialog((BrowserWindow*) user_data());
+            ret = 1;
+         } else if (k == 'l') {
             a_UIcmd_open_url_dialog(user_data());
             ret = 1;
          } else if (k == 'n') {
