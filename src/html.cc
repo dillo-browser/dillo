@@ -3520,6 +3520,7 @@ static void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
       if (!dStrcasecmp(attrbuf, "multipart/form-data"))
          enc = DILLO_HTML_ENC_MULTIPART;
    }
+   // todo: handle accept-charset attr
    html->formNew(method, action, enc);
    a_Url_free(action);
 }
@@ -3813,23 +3814,16 @@ static void Html_urlencode_append(Dstr *str, const char *val)
  * Append a name-value pair to an existing url.
  */
 static void
- Html_append_input(DilloHtmlEnc encoding, Dstr *url, const char *name,
-                   const char *value)
+ Html_append_input(DilloHtmlEnc encoding, const char *boundary, Dstr *url,
+                   const char *name, const char *value)
 {
-   /*
-    *  RFC2046:    boundary := 0*69<bchars> bcharsnospace
-    *              bchars := bcharsnospace / " "
-    *              bcharsnospace := DIGIT / ALPHA / "'" / "(" / ")" /
-    *                   "+" / "_" / "," / "-" / "." / "/" / ":" / "=" / "?"
-    */
-   const char *const boundary = "o_JOU,-LJU:ylnyp'Lyf0RUoh4P(8THlfd98?575p0";
-
    if (name != NULL) {
       if (encoding == DILLO_HTML_ENC_MULTIPART) {
          if (url->len == 0) {
             dStr_append(url, "--");
             dStr_append(url, boundary);
          }
+         // todo: encode name (RFC 2231) [coming soon]
          dStr_sprintfa(url,
                        "\n"
                        "Content-Disposition: form-data; name=\"%s\"\n"
@@ -3862,6 +3856,75 @@ static void
 //}
 
 /*
+ * Get the values for a "successful control".
+ */
+static void Html_get_input_values(const DilloHtmlInput *input,
+                                  bool active_submit, Dlist *values) 
+{
+   switch (input->type) {
+   case DILLO_HTML_INPUT_TEXT:
+   case DILLO_HTML_INPUT_PASSWORD:
+      EntryResource *entryres;
+      entryres = (EntryResource*)((Embed*)input->widget)->getResource();
+      dList_append(values, dStr_new(entryres->getText()));
+      break;
+   case DILLO_HTML_INPUT_TEXTAREA:
+      MultiLineTextResource *textres;
+      textres = (MultiLineTextResource*)((Embed*)input->widget)->getResource();
+      dList_append(values, dStr_new(textres->getText()));
+      break;
+   case DILLO_HTML_INPUT_CHECKBOX:
+   case DILLO_HTML_INPUT_RADIO:
+      ToggleButtonResource *cb_r;
+      cb_r = (ToggleButtonResource*)((Embed*)input->widget)->getResource();
+      if (input->name && input->init_str && cb_r->isActivated()) {
+         dList_append(values, dStr_new(input->init_str));
+      }
+      break;
+   case DILLO_HTML_INPUT_SUBMIT:
+   case DILLO_HTML_INPUT_BUTTON_SUBMIT:
+      if (active_submit)
+         dList_append(values, dStr_new(input->init_str));
+      break;
+   case DILLO_HTML_INPUT_HIDDEN:
+      dList_append(values, dStr_new(input->init_str));
+      break;
+   case DILLO_HTML_INPUT_SELECT:
+   case DILLO_HTML_INPUT_SEL_LIST:
+   {  // brackets for compiler happiness.
+      SelectionResource *sel_res =
+         (SelectionResource*)((Embed*)input->widget)->getResource();
+      int size = input->select->options->size ();
+      for (int i = 0; i < size; i++) {
+         if (sel_res->isSelected(i)) {
+            DilloHtmlOption *option = input->select->options->get(i);
+            char *val = option->value ? option->value : option->content;
+            dList_append(values, dStr_new(val));
+         }
+      }
+      break;
+   }
+// case DILLO_HTML_INPUT_INDEX:
+//    success = Html_urlencode_append(DataStr,
+//       gtk_entry_get_text(GTK_ENTRY(input->widget)));
+//    break;
+// case DILLO_HTML_INPUT_IMAGE:
+//    if (input->widget == submit) {
+//    dList_append(dStr_new(input->init_str));
+// will have to be modified to handle enctype="multipart/form-data"
+// Html_append_clickpos(DataStr, input->name, click_x, click_y);
+//    }
+//    break;
+   case DILLO_HTML_INPUT_FILE:
+      MSG("Data from file input not submitted\n");
+      // If multiple files are submitted, use multipart/mixed.
+      break;
+   default:
+      break;
+   }
+}
+
+/*
  * Submit the form containing the submit input by making a new query URL
  * and sending it with a_Nav_push.
  * (Called by GTK+)
@@ -3879,80 +3942,77 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
    if ((form->method == DILLO_HTML_METHOD_GET) ||
        (form->method == DILLO_HTML_METHOD_POST)) {
       Dstr *DataStr = dStr_sized_new(4096);
+      Dstr *boundary;
+      int i;
+      bool success = true;
   
       _MSG("Html_submit_form2: form->action=%s\n",URL_STR_(form->action));
-  
-      for (input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
-         input = form->inputs->getRef (input_idx);
-         switch (input->type) {
-         case DILLO_HTML_INPUT_TEXT:
-         case DILLO_HTML_INPUT_PASSWORD:
-            EntryResource *entryres;
-            entryres = (EntryResource*)((Embed*)input->widget)->getResource();
-            Html_append_input(form->enc, DataStr, input->name,
-                              entryres->getText());
-            break;
-         case DILLO_HTML_INPUT_TEXTAREA:
-            MultiLineTextResource *textres;
-            textres = (MultiLineTextResource*)((Embed*)input->widget)
-                         ->getResource();
-            Html_append_input(form->enc, DataStr, input->name,
-                              textres->getText());
-            break;
-         case DILLO_HTML_INPUT_CHECKBOX:
-         case DILLO_HTML_INPUT_RADIO:
-            ToggleButtonResource *cb_r;
-            cb_r=(ToggleButtonResource*)((Embed*)input->widget)->getResource();
-            if (input->name && input->init_str && cb_r->isActivated()) {
-               Html_append_input(form->enc, DataStr, input->name,
-                                 input->init_str);
+
+      if (form->enc == DILLO_HTML_ENC_MULTIPART) {
+         /* choose a boundary string */
+         const int max_tries = 10;
+         Dlist *values = dList_new(5);
+         success = false;
+
+         /* fill DataStr with names and values */
+         for (input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
+            bool active_submit;
+            input = form->inputs->getRef (input_idx);
+            active_submit = (e_input_idx == input_idx) &&
+                            (form->num_submit_buttons > 0) &&
+                            ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
+                             (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT));
+            Html_get_input_values(input, active_submit, values);
+
+            if (input->name)
+               dStr_append(DataStr, input->name);
+            for (i = 0; i < dList_length(values); i++) {
+               Dstr *val = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, val);
+               dStr_append(DataStr, val->str);
+               dStr_free(val, 1);
             }
-            break;
-         case DILLO_HTML_INPUT_HIDDEN:
-            Html_append_input(form->enc, DataStr, input->name,
-                              input->init_str);
-            break;
-         case DILLO_HTML_INPUT_SELECT:
-         case DILLO_HTML_INPUT_SEL_LIST:
-         {  // brackets for compiler happiness.
-            SelectionResource *sel_res =
-               (SelectionResource*)((Embed*)input->widget)->getResource();
-            int size = input->select->options->size ();
-            for (int i = 0; i < size; i++) {
-               if (sel_res->isSelected(i)) {
-                  DilloHtmlOption *option =
-                     input->select->options->get (i);
-                  char *val = option->value ? option->value : option->content;
-                  Html_append_input(form->enc, DataStr, input->name, val);
-               }
-            }
-            break;
          }
-//       case DILLO_HTML_INPUT_INDEX:
-//          Html_urlencode_append(DataStr,
-//             gtk_entry_get_text(GTK_ENTRY(input->widget)));
-//          break;
-//       case DILLO_HTML_INPUT_IMAGE:
-//          if (input->widget == submit) {
-// will have to be modified for handle enctype="multipart/form-data"
-//             Html_append_input(DataStr, input->name, input->init_str);
-//             Html_append_clickpos(DataStr, input->name, click_x, click_y);
-//          }
-//          break;
-         case DILLO_HTML_INPUT_FILE:
-            MSG("Data from file input not submitted\n");
-            // If multiple files are submitted, multipart/mixed should be used.
-            break;
-         case DILLO_HTML_INPUT_SUBMIT:
-         case DILLO_HTML_INPUT_BUTTON_SUBMIT:
-            if (input_idx == e_input_idx && form->num_submit_buttons > 0)
-               Html_append_input(form->enc, DataStr, input->name,
-                                 input->init_str);
-            break;
-         default:
-            break;
-         } /* switch */
-      } /* for (inputs) */
+
+         /* generate a boundary that is not contained within the data */
+         boundary = dStr_sized_new(80);
+         for (i = 0; i < max_tries && !success; i++) {
+            // Firefox-style boundary
+            dStr_sprintf(boundary, "---------------------------%d%d%d",
+                         rand(), rand(), rand());
+            dStr_truncate(boundary, 70);
+            success = !strstr(DataStr->str, boundary->str);
+         }
+         dList_free(values);
+         dStr_truncate(DataStr, 0);
+      }
+
+      if (success) {
+         /* build query data string */
+         Dlist *values = dList_new(5);
+         for (input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
+            bool active_submit;
+            input = form->inputs->getRef (input_idx);
+            active_submit = (e_input_idx == input_idx) &&
+                            (form->num_submit_buttons > 0) &&
+                            ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
+                             (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT));
+            Html_get_input_values(input, active_submit, values);
+
+            for (i = 0; i < dList_length(values); i++) {
+               Dstr *val = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, val);
+               Html_append_input(form->enc, boundary->str, DataStr,
+                                 input->name, val->str);
+               dStr_free(val, 1);
+            }
+         }
+         dList_free(values);
+      } else {
+         // can only be a bug or a weakness that allows the boundary string
+         // to be predicted.
+         MSG_ERR("Html_submit_form2: cannot construct data string.\n");
+      }
 
       if (DataStr->len > 0) {
          if (form->enc == DILLO_HTML_ENC_URLENCODING) {  
@@ -3962,6 +4022,9 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
             dStr_append(DataStr, "--");
          }
       }
+
+      if (form->enc == DILLO_HTML_ENC_MULTIPART)
+         dStr_free(boundary, 1);
   
       /* form->action was previously resolved against base URL */
       action_str = dStrdup(URL_STR(form->action));

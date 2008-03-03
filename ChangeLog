@@ -81,7 +81,7 @@ dillo-fltk2
  - Fixed a memory leak in cookies.c
  - Added "standard_widget_colors" preference. It allows a more stylish look.
  - Fixed the return value of Cache_parse_multiple_field.
- - Added multipart/form-data encoding for form submission.
+ - Added the multipart/form-data encoding method to form submission.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
