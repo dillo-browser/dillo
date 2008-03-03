@@ -187,7 +187,8 @@ Dstr *Http_get_content_type(const DilloUrl *url)
          if (eol)
             dStr_append_l(dstr, start, eol - start);
       } else {
-         /* If there are zero parts, should a boundary be specified anyway? */
+         /* Zero parts; arbitrary boundary */
+         dStr_append_c(dstr, '0');
       }
       dStr_append_c(dstr,'"');
    } else {
