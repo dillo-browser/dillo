@@ -3942,7 +3942,7 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
    if ((form->method == DILLO_HTML_METHOD_GET) ||
        (form->method == DILLO_HTML_METHOD_POST)) {
       Dstr *DataStr = dStr_sized_new(4096);
-      Dstr *boundary;
+      Dstr *boundary = dStr_sized_new(80);
       int i;
       bool success = true;
   
@@ -3975,7 +3975,6 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
          }
 
          /* generate a boundary that is not contained within the data */
-         boundary = dStr_sized_new(80);
          for (i = 0; i < max_tries && !success; i++) {
             // Firefox-style boundary
             dStr_sprintf(boundary, "---------------------------%d%d%d",
@@ -4023,9 +4022,6 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
          }
       }
 
-      if (form->enc == DILLO_HTML_ENC_MULTIPART)
-         dStr_free(boundary, 1);
-  
       /* form->action was previously resolved against base URL */
       action_str = dStrdup(URL_STR(form->action));
   
@@ -4051,6 +4047,7 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
   
       a_Nav_push(html->bw, new_url);
       dFree(action_str);
+      dStr_free(boundary, 1);
       dStr_free(DataStr, TRUE);
       a_Url_free(new_url);
    } else {
