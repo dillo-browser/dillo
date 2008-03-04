@@ -219,6 +219,7 @@ struct _DilloHtmlForm {
    DilloHtmlMethod method;
    DilloUrl *action;
    DilloHtmlEnc enc;
+   char *submit_charset;
 
    misc::SimpleVector<DilloHtmlInput> *inputs;
 
@@ -278,6 +279,7 @@ public:  //BUG: for now everything is public
    size_t Buf_Consumed; /* amount of source from cache consumed */
    Dstr *Local_Buf;    /* source converted to displayable encoding (UTF-8) */
    int Local_Ofs;
+   char *charset;
    Decode *decoder;
 
    size_t CurrTagOfs;
@@ -333,7 +335,7 @@ public:
    void write(char *Buf, int BufSize, int Eof);
    void closeParser(int ClientKey);
    int formNew(DilloHtmlMethod method, const DilloUrl *action,
-               DilloHtmlEnc enc);
+               DilloHtmlEnc enc, const char *charset);
    void loadImages (const DilloUrl *pattern);
 };
 
@@ -790,6 +792,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
       MSG("HTTP Content-Type gave charset as: %s\n", charset);
    }
    decoder = a_Decode_charset_init(charset);
+   this->charset = dStrdup(charset);
 
    CurrTagOfs = 0;
    OldTagOfs = 0;
@@ -898,10 +901,12 @@ DilloHtml::~DilloHtml()
    a_Url_free(base_url);
 
    dStr_free(Local_Buf, 1);
+   dFree(charset);
 
    for (int i = 0; i < forms->size(); i++) {
       DilloHtmlForm *form = forms->getRef(i);
       a_Url_free(form->action);
+      dFree(form->submit_charset);
       for (int j = 0; j < form->inputs->size(); j++) {
          DilloHtmlInput *input = form->inputs->getRef(j);
          dFree(input->name);
@@ -1022,7 +1027,7 @@ void DilloHtml::closeParser(int ClientKey)
  * Allocate and insert form information.
  */
 int DilloHtml::formNew(DilloHtmlMethod method, const DilloUrl *action,
-                       DilloHtmlEnc enc)
+                       DilloHtmlEnc enc, const char *charset)
 {
    DilloHtmlForm *form;
 
@@ -1031,6 +1036,7 @@ int DilloHtml::formNew(DilloHtmlMethod method, const DilloUrl *action,
    form->method = method;
    form->action = a_Url_dup(action);
    form->enc = enc;
+   form->submit_charset = dStrdup(charset);
    form->inputs = new misc::SimpleVector <DilloHtmlInput> (4);
    form->num_entry_fields = 0;
    form->num_submit_buttons = 0;
@@ -3491,6 +3497,7 @@ static void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    DilloUrl *action;
    DilloHtmlMethod method;
    DilloHtmlEnc enc;
+   char *charset;
    const char *attrbuf;
 
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
@@ -3520,8 +3527,27 @@ static void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
       if (!dStrcasecmp(attrbuf, "multipart/form-data"))
          enc = DILLO_HTML_ENC_MULTIPART;
    }
-   // todo: handle accept-charset attr
-   html->formNew(method, action, enc);
+   charset = NULL;
+   if ((attrbuf = Html_get_attr(html, tag, tagsize, "accept-charset"))) {
+      /* a list of acceptable charsets, separated by commas or spaces */
+      char *first = dStrdup(attrbuf);
+      char *ptr = first;
+      while (ptr && !charset) {
+         char *curr = dStrsep(&ptr, " ,");
+         if (!strcasecmp(curr, "utf-8")) {
+            charset = curr;
+         } else if (!strcasecmp(curr, "UNKNOWN")) {
+            /* defined to be whatever encoding the document is in */
+            charset = html->charset;
+         }
+      }
+      if (!charset)
+         charset = first;
+      dFree(first);
+   }
+   if (!charset)
+      charset = html->charset;
+   html->formNew(method, action, enc, charset);
    a_Url_free(action);
 }
 
@@ -3636,9 +3662,9 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
       } else {
          if ((!dStrcasecmp(equiv, "content-type")) &&
              (content = Html_get_attr(html, tag, tagsize, "content"))) {
-            char *charset = Html_get_charset(content);
-            MSG("META Content-Type would set charset to: %s\n", charset);
-            dFree(charset);
+            dFree(html->charset);
+            html->charset = Html_get_charset(content);
+            MSG("META Content-Type would set charset to: %s\n", html->charset);
          }
       }   
    }
@@ -4363,7 +4389,7 @@ static void Html_tag_open_isindex(DilloHtml *html,
 //    action = a_Url_dup(html->base_url);
 //
 // html->formNew(DILLO_HTML_METHOD_GET, action,
-//               DILLO_HTML_ENC_URLENCODING);
+//               DILLO_HTML_ENC_URLENCODING, html->charset);
 //
 // form = html->forms->getRef (html_lb->forms->size() - 1);
 //
