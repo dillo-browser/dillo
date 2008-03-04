@@ -273,16 +273,16 @@ Decode *a_Decode_content_init(const char *format)
  */
 static int Decode_is_ascii(const char *str)
 {
-   return (!(dStrcasecmp(str, "ASCII") ||
-             dStrcasecmp(str, "US-ASCII") ||
-             dStrcasecmp(str, "us") ||
-             dStrcasecmp(str, "IBM367") ||
-             dStrcasecmp(str, "cp367") ||
-             dStrcasecmp(str, "csASCII") ||
-             dStrcasecmp(str, "ANSI_X3.4-1968") ||
-             dStrcasecmp(str, "iso-ir-6") ||
-             dStrcasecmp(str, "ANSI_X3.4-1986") ||
-             dStrcasecmp(str, "ISO_646.irv:1991") ||
+   return (!(dStrcasecmp(str, "ASCII") &&
+             dStrcasecmp(str, "US-ASCII") &&
+             dStrcasecmp(str, "us") &&
+             dStrcasecmp(str, "IBM367") &&
+             dStrcasecmp(str, "cp367") &&
+             dStrcasecmp(str, "csASCII") &&
+             dStrcasecmp(str, "ANSI_X3.4-1968") &&
+             dStrcasecmp(str, "iso-ir-6") &&
+             dStrcasecmp(str, "ANSI_X3.4-1986") &&
+             dStrcasecmp(str, "ISO_646.irv:1991") &&
              dStrcasecmp(str, "ISO646-US")));
 }
 
