@@ -3497,7 +3497,7 @@ static void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    DilloUrl *action;
    DilloHtmlMethod method;
    DilloHtmlEnc enc;
-   char *charset;
+   char *charset, *first;
    const char *attrbuf;
 
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
@@ -3528,10 +3528,10 @@ static void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
          enc = DILLO_HTML_ENC_MULTIPART;
    }
    charset = NULL;
+   first = NULL;
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "accept-charset"))) {
       /* a list of acceptable charsets, separated by commas or spaces */
-      char *first = dStrdup(attrbuf);
-      char *ptr = first;
+      char *ptr = first = dStrdup(attrbuf);
       while (ptr && !charset) {
          char *curr = dStrsep(&ptr, " ,");
          if (!strcasecmp(curr, "utf-8")) {
@@ -3543,11 +3543,11 @@ static void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
       }
       if (!charset)
          charset = first;
-      dFree(first);
    }
    if (!charset)
       charset = html->charset;
    html->formNew(method, action, enc, charset);
+   dFree(first);
    a_Url_free(action);
 }
 
