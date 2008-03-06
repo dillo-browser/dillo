@@ -22,6 +22,7 @@
 #include <stdio.h>      /* for sprintf */
 #include <math.h>       /* for rint */
 #include <errno.h>
+#include <iconv.h>
 
 #include <fltk/utf.h>   /* for utf8encode */
 
@@ -3830,6 +3831,72 @@ static void Html_add_input(DilloHtmlForm *form,
 //}
 
 /*
+ * Pass input text through character set encoder.
+ */
+static Dstr *Html_encode_text(iconv_t encoder, Dstr *input)
+{
+   int rc = 0;
+   Dstr *output;
+   const int bufsize = 128;
+   char *buffer, *inPtr, *outPtr;
+   size_t inLeft, outRoom;
+   bool bad_chars = false;
+
+   if ((encoder == (iconv_t) -1) || input == NULL || input->len == 0)
+      return input;
+
+   output = dStr_new("");
+   inPtr = input->str;
+   inLeft = input->len;
+   buffer = (char *)dMalloc(bufsize);
+
+   while ((rc != EINVAL) && (inLeft > 0)) {
+
+      outPtr = buffer;
+      outRoom = bufsize;
+
+      rc = iconv(encoder, &inPtr, &inLeft, &outPtr, &outRoom);
+
+      // iconv() on success, number of bytes converted
+      //         -1, errno == EILSEQ illegal byte sequence found
+      //                      EINVAL partial character ends source buffer
+      //                      E2BIG  destination buffer is full
+      //
+      // GNU iconv has the undocumented(!) behavior that EILSEQ is also
+      // returned when a character cannot be converted.
+
+      dStr_append_l(output, buffer, bufsize - outRoom);
+
+      if (rc == -1) {
+         rc = errno;
+      }
+      if (rc == EILSEQ){
+         /* count chars? (would be utf-8-specific) */
+         bad_chars = true;
+         inPtr++;
+         inLeft--;
+         dStr_append_c(output, '?');
+      } else if (rc == EINVAL) {
+         MSG_ERR("Html_decode_text: bad source string\n");
+      }
+   }
+
+   if (bad_chars) {
+      /*
+       * It might be friendly to inform the caller, who would know whether
+       * it is safe to display the beginning of the string in a message
+       * (isn't, e.g., a password).
+       */
+      MSG_WARN("String cannot be converted cleanly.\n");
+   }
+
+   dFree(buffer);
+   dStr_free(input, 1);
+
+   return output;
+}
+  
+/*
  * Urlencode 'val' and append it to 'str'
  */
 static void Html_urlencode_append(Dstr *str, const char *val)
@@ -3846,7 +3913,7 @@ static void
  Html_append_input(DilloHtmlEnc encoding, const char *boundary, Dstr *url,
                    const char *name, const char *value)
 {
-   if (name != NULL) {
+   if (name && name[0]) {
       if (encoding == DILLO_HTML_ENC_MULTIPART) {
          if (url->len == 0) {
             dStr_append(url, "--");
@@ -3974,9 +4041,20 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
       Dstr *boundary = dStr_sized_new(80);
       int i;
       bool success = true;
+      iconv_t encoder = (iconv_t) -1;
   
       _MSG("Html_submit_form2: form->action=%s\n",URL_STR_(form->action));
 
+      if (form->submit_charset && dStrcasecmp(form->submit_charset, "UTF-8")) {
+         encoder = iconv_open(form->submit_charset, "UTF-8");
+         if (encoder == (iconv_t) -1) {
+            MSG_WARN("Cannot convert to character encoding '%s'\n",
+                     form->submit_charset);
+         } else {
+            MSG("Form character encoding: '%s'\n", form->submit_charset);
+         }
+      }
+            
       if (form->enc == DILLO_HTML_ENC_MULTIPART) {
          /* choose a boundary string */
          const int max_tries = 10;
@@ -3986,6 +4064,7 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
          /* fill DataStr with names and values */
          for (input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
             bool active_submit;
+            Dstr *dstr;
             input = form->inputs->getRef (input_idx);
             active_submit = (e_input_idx == input_idx) &&
                             (form->num_submit_buttons > 0) &&
@@ -3993,13 +4072,19 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
                              (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT));
             Html_get_input_values(input, active_submit, values);
 
-            if (input->name)
-               dStr_append(DataStr, input->name);
+            if (input->name) {
+               dstr = dStr_new(input->name);
+               dstr = Html_encode_text(encoder, dstr);
+               dStr_append(DataStr, dstr->str);
+               dStr_free(dstr, 1);
+            }
             for (i = 0; i < dList_length(values); i++) {
-               Dstr *val = (Dstr *) dList_nth_data(values, 0);
-               dList_remove(values, val);
-               dStr_append(DataStr, val->str);
-               dStr_free(val, 1);
+               dstr = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, dstr);
+               if (input->type != DILLO_HTML_INPUT_FILE)
+                  dstr = Html_encode_text(encoder, dstr);
+               dStr_append(DataStr, dstr->str);
+               dStr_free(dstr, 1);
             }
          }
 
@@ -4020,7 +4105,10 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
          Dlist *values = dList_new(5);
          for (input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
             bool active_submit;
+            Dstr *name;
             input = form->inputs->getRef (input_idx);
+            name = dStr_new(input->name);
+            name = Html_encode_text(encoder, name);
             active_submit = (e_input_idx == input_idx) &&
                             (form->num_submit_buttons > 0) &&
                             ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
@@ -4030,10 +4118,13 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
             for (i = 0; i < dList_length(values); i++) {
                Dstr *val = (Dstr *) dList_nth_data(values, 0);
                dList_remove(values, val);
+               if (input->type != DILLO_HTML_INPUT_FILE)
+                  val = Html_encode_text(encoder, val);
                Html_append_input(form->enc, boundary->str, DataStr,
-                                 input->name, val->str);
+                                 name->str, val->str);
                dStr_free(val, 1);
             }
+            dStr_free(name, 1);
          }
          dList_free(values);
       } else {
@@ -4078,6 +4169,8 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
       dFree(action_str);
       dStr_free(boundary, 1);
       dStr_free(DataStr, TRUE);
+      if (encoder != (iconv_t) -1)
+         (void)iconv_close(encoder);
       a_Url_free(new_url);
    } else {
       MSG("Html_submit_form2: Method unknown\n");
