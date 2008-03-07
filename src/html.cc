@@ -1350,7 +1350,7 @@ static int Html_parse_entity(DilloHtml *html, const char *token,
 
    } else if (isalpha(*s)) {
       /* character entity reference */
-      while (isalnum(*++s) || strchr(":_.-", *s));
+      while (*++s && (isalnum(*s) || strchr(":_.-", *s)));
       c = *s;
       *s = 0;
 

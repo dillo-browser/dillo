@@ -82,6 +82,7 @@ dillo-fltk2
  - Added "standard_widget_colors" preference. It allows a more stylish look.
  - Fixed the return value of Cache_parse_multiple_field.
  - Added the multipart/form-data encoding method to form submission.
+ - Fixed a bug in Html_parse_entity.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
