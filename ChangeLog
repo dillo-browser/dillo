@@ -75,6 +75,7 @@ dillo-fltk2
  - Added a MSG_HTTP for HTTP/1.1's warning headers.
  - Added support for multi-line header fields.
  - Added support for "charset" in the HTTP header field for Content-Type.
+ - Added partial support for "charset" in the META element.
  - Added support for progressive display of progressive jpegs.
  - Fixed progressive display of interlaced pngs.
  - Enabled colspan=0 in tables parsing.

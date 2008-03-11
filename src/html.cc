@@ -3665,9 +3665,13 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
              (content = Html_get_attr(html, tag, tagsize, "content"))) {
             char *charset = Html_get_charset(content);
             if (charset) {
+               if (!html->charset || dStrcasecmp(charset, html->charset)) {
+                  MSG("META Content-Type changes charset to: %s\n", charset);
+                  a_Decode_free(html->decoder);
+                  html->decoder = a_Decode_charset_init(charset);
+               }
                dFree(html->charset);
                html->charset = charset;
-               MSG("META Content-Type would set charset to: %s\n", charset);
             }
          }
       }   
