@@ -244,7 +244,6 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
       pm->begin();
        i = new Item("View page Source");
        i->callback(Menu_view_page_source_cb);
-       //i->shortcut(CTRL+'n');
        i = view_page_bugs_item = new Item("View page Bugs");
        i->callback(Menu_view_page_bugs_cb);
        i = load_images_item = new Item("Load images");
@@ -252,9 +251,8 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
        i = new Item("Bookmark this page");
        i->callback(Menu_add_bookmark_cb);
        new Divider();    
-       i = new Item("&Find Text");
+       i = new Item("Find Text");
        i->callback(Menu_find_text_cb);
-       i->shortcut(CTRL+'f');
        i = new Item("Jump to...");
        i->deactivate();
        new Divider();    
