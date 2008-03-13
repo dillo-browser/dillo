@@ -417,6 +417,7 @@ static int Http_must_use_proxy(const DilloUrl *url)
 /*
  * Callback function for the DNS resolver.
  * Continue connecting the socket, or abort upon error condition.
+ * S->web is checked to assert the operation wasn't aborted while waiting.
  */
 void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
 {
@@ -425,7 +426,12 @@ void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
 
    S = a_Klist_get_data(ValidSocks, SKey);
    if (S) {
-      if (Status == 0 && addr_list) {
+      if (!a_Web_valid(S->web)) {
+         a_Chain_fcb(OpAbort, S->Info, NULL, NULL);
+         dFree(S->Info);
+         Http_socket_free(SKey);
+
+      } else if (Status == 0 && addr_list) {
          /* Successful DNS answer; save the IP */
          S->addr_list = addr_list;
          /* start connecting the socket */

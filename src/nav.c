@@ -21,6 +21,7 @@
 #include "dialog.hh"
 #include "prefs.h"
 #include "capi.h"
+#include "timeout.hh"
 
 //#define DEBUG_LEVEL 3
 #include "debug.h"
@@ -192,7 +193,8 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
    bool_t MustLoad;
    int x, y, idx, ClientKey;
    DilloWeb *Web;
-   bool_t ForceReload = (URL_FLAGS(url) & URL_E2EReload);
+   bool_t ForceReload = (URL_FLAGS(url) &
+                         (URL_E2EReload + URL_ReloadFromCache));
 
    MSG("Nav_open_url: new url='%s'\n", URL_STR_(url));
 
@@ -272,6 +274,8 @@ void a_Nav_expect_done(BrowserWindow *bw)
       url = bw->nav_expect_url;
       /* unset E2EReload before adding this url to history */
       a_Url_set_flags(url, URL_FLAGS(url) & ~URL_E2EReload);
+      /* unset ReloadFromCache before adding this url to history */
+      a_Url_set_flags(url, URL_FLAGS(url) & ~URL_ReloadFromCache);
       url_idx = a_History_add_url(url);
       Nav_stack_add(bw, url_idx, 0, 0);
       /* Scroll to the origin unless there's a fragment part */
@@ -314,6 +318,40 @@ void a_Nav_push(BrowserWindow *bw, const DilloUrl *url)
    bw->nav_expect_url = a_Url_dup(url);
    bw->nav_expecting = TRUE;
    Nav_open_url(bw, url, 0);
+}
+
+/*
+ * This one does a_Nav_repush's job.
+ */
+static void Nav_repush(BrowserWindow *bw)
+{
+   DilloUrl *ReqURL;
+
+   a_Nav_cancel_expect(bw);
+   if (a_Nav_stack_size(bw)) {
+      ReqURL = a_Url_dup(a_History_get_url(NAV_TOP_UIDX(bw)));
+      /* Let's make reload be from Cache */
+      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_ReloadFromCache);
+      Nav_open_url(bw, ReqURL, 0);
+      a_Url_free(ReqURL);
+   }
+}
+
+static void Nav_repush_callback(void *data)
+{
+   Nav_repush(data);
+   a_Timeout_remove();
+}
+
+/*
+ * Repush current URL: not an end-to-end reload but from cache.
+ * - Currently used to switch to a charset decoder given by the META element.
+ * - Delayed to let dillo finish the call flow into a known state.
+ */
+void a_Nav_repush(BrowserWindow *bw)
+{
+   dReturn_if_fail (bw != NULL);
+   a_Timeout_add(0.0, Nav_repush_callback, (void*)bw);
 }
 
 /*
@@ -378,11 +416,10 @@ void a_Nav_home(BrowserWindow *bw)
  */
 static void Nav_reload(BrowserWindow *bw)
 {
-   DilloUrl *url, *ReqURL;
+   DilloUrl *ReqURL;
 
    a_Nav_cancel_expect(bw);
    if (a_Nav_stack_size(bw)) {
-      url = a_History_get_url(NAV_TOP_UIDX(bw));
       ReqURL = a_Url_dup(a_History_get_url(NAV_TOP_UIDX(bw)));
       /* Let's make reload be end-to-end */
       a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_E2EReload);

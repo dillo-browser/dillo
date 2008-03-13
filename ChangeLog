@@ -75,7 +75,6 @@ dillo-fltk2
  - Added a MSG_HTTP for HTTP/1.1's warning headers.
  - Added support for multi-line header fields.
  - Added support for "charset" in the HTTP header field for Content-Type.
- - Added partial support for "charset" in the META element.
  - Added support for progressive display of progressive jpegs.
  - Fixed progressive display of interlaced pngs.
  - Enabled colspan=0 in tables parsing.
@@ -91,6 +90,7 @@ dillo-fltk2
  - Implemented "Load Images" in the page menu and cleaned up html.hh.
  - Added shortcuts: PgDn=Spc, PgUp=b, Back=BackSpace, Forw=Shift+Backspace.
  - Made a cleanup in cache's parse header code.
+ - Added support for "charset" in the META element.
    Patch: place, Jorge Arellano Cid
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
    Added const declarations in html parser.

@@ -404,6 +404,10 @@ typedef struct {
 } TagInfo;
 extern const TagInfo Tags[];
 
+/* todo: implement this as an URL/charset pair in a DList.
+ * chances of this bare-bones implementation to fail are minimal though:
+ * two ROOT pages using meta-charset, parsing HEAD section at the same time */
+static char *meta_charset = NULL;
 
 /*-----------------------------------------------------------------------------
  *-----------------------------------------------------------------------------
@@ -792,8 +796,17 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    if (charset) {
       MSG("HTTP Content-Type gave charset as: %s\n", charset);
    }
-   decoder = a_Decode_charset_init(charset);
-   this->charset = dStrdup(charset);
+   if (meta_charset) {
+      MSG("META Content-Type gave charset as: %s\n", meta_charset);
+   }
+   if (meta_charset) {
+      decoder = a_Decode_charset_init(meta_charset);
+      this->charset = meta_charset;
+      meta_charset = NULL;
+   } else {
+      decoder = a_Decode_charset_init(charset);
+      this->charset = dStrdup(charset);
+   }
 
    CurrTagOfs = 0;
    OldTagOfs = 0;
@@ -3667,12 +3680,12 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
             if (charset) {
                if (!html->charset || dStrcasecmp(charset, html->charset)) {
                   MSG("META Content-Type changes charset to: %s\n", charset);
-                  a_Decode_free(html->decoder);
-                  html->decoder = a_Decode_charset_init(charset);
+                  dFree(meta_charset);
+                  meta_charset = dStrdup(charset);
+                  a_Nav_repush(html->bw);
                }
-               dFree(html->charset);
-               html->charset = charset;
             }
+            dFree(charset);
          }
       }   
    }
