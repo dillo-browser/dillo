@@ -236,35 +236,35 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
       dStr_sprintfa(
          query,
          "POST %s HTTP/1.1\r\n"
+         "Connection: close\r\n"
          "Accept-Charset: utf-8, iso-8859-1\r\n"
+         "Accept-Encoding: gzip\r\n"
          "Host: %s%s\r\n"
          "%s"
          "%s"
          "User-Agent: Dillo/%s\r\n"
-         "Accept-Encoding: gzip\r\n"
+         "Content-Length: %ld\r\n"
+         "Content-Type: %s\r\n"
          "%s"
-         "Content-type: %s\r\n"
-         "Content-length: %ld\r\n"
-         "Connection: close\r\n"
          "\r\n"
          "%s",
          full_path->str, URL_HOST(url), s_port->str,
-         proxy_auth->str, referer, VERSION, cookies,
-         content_type->str, (long)strlen(URL_DATA(url)),
-         URL_DATA(url));
+         proxy_auth->str, referer, VERSION,
+         (long)strlen(URL_DATA(url)), content_type->str,
+         cookies, URL_DATA(url));
       dStr_free(content_type, TRUE);
    } else {
       dStr_sprintfa(
          query,
          "GET %s HTTP/1.1\r\n"
          "%s"
+         "Connection: close\r\n"
          "Accept-Charset: utf-8, iso-8859-1\r\n"
+         "Accept-Encoding: gzip\r\n"
          "Host: %s%s\r\n"
          "%s"
          "%s"
          "User-Agent: Dillo/%s\r\n"
-         "Accept-Encoding: gzip\r\n"
-         "Connection: close\r\n"
          "%s"
          "\r\n",
          full_path->str,
