@@ -296,8 +296,6 @@ public:  //BUG: for now everything is public
    Dstr *Stash;
    bool_t StashSpace;
 
-   char *SPCBuf;          /* Buffer for white space */
-
    int pre_column;        /* current column, used in PRE tags with tabs */
    bool_t PreFirstChar;   /* used to skip the first CR or CRLF in PRE tags */
    bool_t PrevWasCR;      /* Flag to help parsing of "\r\n" in PRE tags */
@@ -836,8 +834,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    Stash = dStr_new("");
    StashSpace = FALSE;
 
-   SPCBuf = NULL;
-
    pre_column = 0;
    PreFirstChar = FALSE;
    PrevWasCR = FALSE;
@@ -1024,7 +1020,6 @@ void DilloHtml::closeParser(int ClientKey)
    delete (stack);
 
    dStr_free(Stash, TRUE);
-   dFree(SPCBuf);
    dStr_free(attr_data, TRUE);
 
    /* Fit the UTF-8 buffer */
@@ -1443,9 +1438,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
       html->SPCPending = FALSE;
 
    } else if (parse_mode == DILLO_HTML_PARSE_MODE_VERBATIM) {
-      char *Pword = dStrndup(space, spacesize);
-      dStr_append(html->Stash, Pword);
-      dFree(Pword);
+      dStr_append_l(html->Stash, space, spacesize);
       html->SPCPending = FALSE;
 
    } else if (parse_mode == DILLO_HTML_PARSE_MODE_PRE) {
@@ -1488,8 +1481,6 @@ static void Html_process_space(DilloHtml *html, const char *space,
          /* SGML_SPCDEL ignores white space inmediately after an open tag */
          html->SPCPending = FALSE;
       } else {
-         dFree(html->SPCBuf);
-         html->SPCBuf = dStrndup(space, spacesize);
          html->SPCPending = TRUE;
       }
 
@@ -1523,9 +1514,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
 
    } else if (parse_mode == DILLO_HTML_PARSE_MODE_VERBATIM) {
       /* word goes in untouched, it is not processed here. */
-      Pword = dStrndup(word, size);
-      dStr_append(html->Stash, Pword);
-      dFree(Pword);
+      dStr_append_l(html->Stash, word, size);
    }
 
    if (parse_mode == DILLO_HTML_PARSE_MODE_STASH  ||
