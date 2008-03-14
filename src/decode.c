@@ -143,7 +143,8 @@ static Dstr *Decode_charset(Decode *dc, Dstr *input)
    int rc = 0;
 
    Dstr *output;
-   char *inPtr, *outPtr;
+   inbuf_t *inPtr;
+   char *outPtr;
    size_t inLeft, outRoom;
 
    output = dStr_new("");

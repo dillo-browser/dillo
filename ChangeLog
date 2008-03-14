@@ -99,6 +99,8 @@ dillo-fltk2
    Patch: Jorge Arellano Cid, higuita
 +- Set the url resolver to escape illegal chars instead of stripping.
    Patch: Jorge Arellano Cid, Jeremy Henty
++- Added suport for old iconv() (const char** as 2nd arg).
+   Patch: Jorge Arellano Cid, Christian Kellermann
 +- Added a strndup() replacement in dw2
    Patch: Alexander Becher, Johannes Hofmann, Jorge Arellano Cid
 +- Fixed calcHashValue() to only return non-negative numbers (was SEGFAULT).

@@ -3844,7 +3844,8 @@ static Dstr *Html_encode_text(iconv_t encoder, Dstr *input)
    int rc = 0;
    Dstr *output;
    const int bufsize = 128;
-   char *buffer, *inPtr, *outPtr;
+   inbuf_t *inPtr;
+   char *buffer, *outPtr;
    size_t inLeft, outRoom;
    bool bad_chars = false;
 

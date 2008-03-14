@@ -102,5 +102,8 @@
 /* Version number of package */
 #undef VERSION
 
+/* Use char pointers for newer libiconv */
+#undef inbuf_t
+
 /* Define the real type of socklen_t */
 #undef socklen_t
