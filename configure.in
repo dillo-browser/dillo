@@ -344,7 +344,7 @@ if test "x$iconv_ok" = "xyes"; then
 ],
 iconv_old=yes,iconv_old=no)
   LIBS="$old_libs"
-  CLFAGS="$old_cflags"
+  CFLAGS="$old_cflags"
 
   if test "x$iconv_old" = "xyes"; then
     AC_DEFINE([inbuf_t], [const char], [Use const char pointers for older libiconv])
@@ -373,7 +373,7 @@ if test "x$iconv_ok" = "xyes"; then
 ],
 iconv_old=yes,iconv_old=no)
   LIBS="$old_libs"
-  CLFAGS="$old_cflags"
+  CFLAGS="$old_cflags"
 
   if test "x$iconv_old" = "xyes"; then
     AC_DEFINE([inbuf_t], [const char], [Use const char pointers for older libiconv])
