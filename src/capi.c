@@ -273,7 +273,7 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 {
    char *cmd, *http_query;
 
-   if (strcmp(server, "https") == 0) {
+   if (strcmp(server, "proto.https") == 0) {
       /* Let's be kind and make the HTTP query string for the dpi */
       http_query = a_Http_make_query_str(web->url, FALSE);
       cmd = a_Dpip_build_cmd("cmd=%s url=%s query=%s",
