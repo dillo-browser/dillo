@@ -762,12 +762,9 @@ static int Gif_check_sig(DilloGif *gif, const uchar_t *ibuf, int ibsize)
    /* at beginning of file - read magic number */
    if (ibsize < 6)
       return 0;
-   if (memcmp(ibuf, "GIF", 3) != 0) {
-      gif->state = 999;
-      return 6;
-   }
-   if (memcmp(ibuf + 3, "87a", 3) != 0 &&
-       memcmp(ibuf + 3, "89a", 3) != 0) {
+   if (memcmp(ibuf, "GIF87a", 6) != 0 &&
+       memcmp(ibuf, "GIF89a", 6) != 0) {
+      MSG_WARN("\"%s\" is not a GIF file.\n", URL_STR(gif->url));
       gif->state = 999;
       return 6;
    }
