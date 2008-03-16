@@ -194,7 +194,6 @@ struct _DilloLinkImage {
 };
 
 struct _DilloHtmlState {
-   char *tag_name;
    dw::core::style::Style *style, *table_cell_style;
    DilloHtmlParseMode parse_mode;
    DilloHtmlTableMode table_mode;
@@ -818,7 +817,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    stack = new misc::SimpleVector <DilloHtmlState> (16);
    stack->increase();
-   stack->getRef(0)->tag_name = dStrdup("none");
    stack->getRef(0)->style = NULL;
    stack->getRef(0)->table_cell_style = NULL;
    stack->getRef(0)->parse_mode = DILLO_HTML_PARSE_MODE_INIT;
@@ -1017,7 +1015,6 @@ void DilloHtml::closeParser(int ClientKey)
          Html_tag_cleanup_at_close(this, stack->getRef(si)->tag_idx);
       }
    }
-   dFree(stack->getRef(0)->tag_name);    /* "none" */
    (stack->getRef(0)->style)->unref ();  /* template style */
 
    delete (stack);
@@ -1599,18 +1596,13 @@ static void Html_eventually_pop_dw(DilloHtml *html, bool_t hand_over_break)
  */
 static void Html_push_tag(DilloHtml *html, int tag_idx)
 {
-   char *tagstr;
    int n_items;
-
-   /* Save the element's name (no parameters) into tagstr. */
-   tagstr = dStrdup(Tags[tag_idx].name);
 
    n_items = html->stack->size ();
    html->stack->increase ();
    /* We'll copy the former stack item and just change the tag and its index
     * instead of copying all fields except for tag.  --Jcid */
    *html->stack->getRef(n_items) = *html->stack->getRef(n_items - 1);
-   html->stack->getRef(n_items)->tag_name = tagstr;
    html->stack->getRef(n_items)->tag_idx = tag_idx;
    /* proper memory management, may be unref'd later */
    (S_TOP(html)->style)->ref ();
@@ -1638,7 +1630,6 @@ static void Html_real_pop_tag(DilloHtml *html)
    (S_TOP(html)->style)->unref ();
    if (S_TOP(html)->table_cell_style)
       (S_TOP(html)->table_cell_style)->unref ();
-   dFree(S_TOP(html)->tag_name);
    hand_over_break = S_TOP(html)->hand_over_break;
    html->stack->setSize (html->stack->size() - 1);
    Html_eventually_pop_dw(html, hand_over_break);
@@ -1701,8 +1692,13 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
       }
 
    } else {
-      MSG_HTML("unexpected closing tag: </%s>. -- expected </%s>\n",
-               Tags[new_idx].name, html->stack->getRef(stack_idx)->tag_name);
+      if (stack_idx == 0) {
+         MSG_HTML("unexpected closing tag: </%s>.\n", Tags[new_idx].name);
+      } else {
+         MSG_HTML("unexpected closing tag: </%s>. -- expected </%s>\n",
+                  Tags[new_idx].name,
+                  Tags[html->stack->getRef(stack_idx)->tag_idx].name);
+      }
    }
 }
 
@@ -5585,7 +5581,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
           DILLO_HTML_PARSE_MODE_VERBATIM) {
          /* Non HTML code here, let's skip until closing tag */
          do {
-            char *tag = S_TOP(html)->tag_name;
+            const char *tag = Tags[S_TOP(html)->tag_idx].name;
             buf_index += strcspn(buf + buf_index, "<");
             if (buf_index + (int)strlen(tag) + 3 > bufsize) {
                buf_index = bufsize;
