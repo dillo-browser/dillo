@@ -281,6 +281,7 @@ public:  //BUG: for now everything is public
    Dstr *Local_Buf;    /* source converted to displayable encoding (UTF-8) */
    int Local_Ofs;
    char *charset;
+   bool using_meta_charset; /* to handle multiple meta_charset tags */
    Decode *decoder;
 
    size_t CurrTagOfs;
@@ -800,10 +801,12 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    if (meta_charset) {
       decoder = a_Decode_charset_init(meta_charset);
       this->charset = meta_charset;
+      using_meta_charset = true;
       meta_charset = NULL;
    } else {
       decoder = a_Decode_charset_init(charset);
       this->charset = dStrdup(charset);
+      using_meta_charset = false;
    }
 
    CurrTagOfs = 0;
@@ -3662,20 +3665,20 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
             html->InFlags = SaveFlags;
          }
          dStr_free(ds_msg, 1);
-      } else {
-         if ((!dStrcasecmp(equiv, "content-type")) &&
-             (content = Html_get_attr(html, tag, tagsize, "content"))) {
-            char *charset = Html_get_charset(content);
-            if (charset) {
-               if (!html->charset || dStrcasecmp(charset, html->charset)) {
-                  MSG("META Content-Type changes charset to: %s\n", charset);
-                  dFree(meta_charset);
-                  meta_charset = dStrdup(charset);
-                  a_Nav_repush(html->bw);
-               }
+
+      } else if (!html->using_meta_charset &&
+                 !dStrcasecmp(equiv, "content-type") &&
+                 (content = Html_get_attr(html, tag, tagsize, "content"))) {
+         char *charset = Html_get_charset(content);
+         if (charset) {
+            if (!html->charset || dStrcasecmp(charset, html->charset)) {
+               MSG("META Content-Type changes charset to: %s\n", charset);
+               dFree(meta_charset);
+               meta_charset = dStrdup(charset);
+               a_Nav_repush(html->bw);
             }
-            dFree(charset);
          }
+         dFree(charset);
       }   
    }
 }
@@ -3844,8 +3847,7 @@ static Dstr *Html_encode_text(iconv_t encoder, Dstr *input)
    int rc = 0;
    Dstr *output;
    const int bufsize = 128;
-   inbuf_t *inPtr;
-   char *buffer, *outPtr;
+   char *buffer, *inPtr, *outPtr;
    size_t inLeft, outRoom;
    bool bad_chars = false;
 
