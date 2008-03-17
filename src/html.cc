@@ -1397,13 +1397,14 @@ static char *
 {
    const char *esc_set = "&\xE2\xC2";
    char *new_str, buf[4];
-   int i, j, k, n, isocode, entsize;
+   int i, j, k, n, s, isocode, entsize;
 
    new_str = dStrndup(token, toksize);
-   if (new_str[strcspn(new_str, esc_set)] == 0)
+   s = strcspn(new_str, esc_set);
+   if (new_str[s] == 0)
       return new_str;
 
-   for (i = j = 0; i < toksize; i++) {
+   for (i = j = s; i < toksize; i++) {
       if (token[i] == '&' &&
           (isocode = Html_parse_entity(html, token+i,
                                        toksize-i, &entsize)) >= 0) {
