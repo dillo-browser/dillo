@@ -3927,10 +3927,10 @@ static void
          }
          // todo: encode name (RFC 2231) [coming soon]
          dStr_sprintfa(url,
-                       "\n"
-                       "Content-Disposition: form-data; name=\"%s\"\n"
-                       "\n"
-                       "%s\n"
+                       "\r\n"
+                       "Content-Disposition: form-data; name=\"%s\"\r\n"
+                       "\r\n"
+                       "%s\r\n"
                        "--%s",
                        name, value, boundary);
       } else {

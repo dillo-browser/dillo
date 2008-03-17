@@ -173,7 +173,7 @@ static char *Http_get_referer(const DilloUrl *url)
 /*
  * Generate Content-Type header value for a POST query.
  */
-Dstr *Http_get_content_type(const DilloUrl *url)
+Dstr *Http_make_content_type(const DilloUrl *url)
 {
    Dstr *dstr;
 
@@ -183,7 +183,7 @@ Dstr *Http_get_content_type(const DilloUrl *url)
       if (strlen(URL_DATA(url)) > 2) {
          /* boundary lines have "--" prepended. Skip that. */
          const char *start = URL_DATA(url) + 2;
-         char *eol = strchr(start, '\n');
+         char *eol = strchr(start, '\r');
          if (eol)
             dStr_append_l(dstr, start, eol - start);
       } else {
@@ -232,7 +232,7 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
    cookies = a_Cookies_get_query(url);
    referer = Http_get_referer(url);
    if (URL_FLAGS(url) & URL_Post) {
-      Dstr *content_type = Http_get_content_type(url);
+      Dstr *content_type = Http_make_content_type(url);
       dStr_sprintfa(
          query,
          "POST %s HTTP/1.1\r\n"
