@@ -990,7 +990,7 @@ void a_Cache_stop_client(int Key)
                                    Cache_client_by_key_cmp))) {
       Cache_client_dequeue(Client, NULLKey);
    } else {
-      _MSG("WARNING: Cache_stop_client, inexistent client\n");
+      _MSG("WARNING: Cache_stop_client, nonexistent client\n");
    }
 }
 

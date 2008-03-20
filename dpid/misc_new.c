@@ -152,7 +152,7 @@ char *a_Misc_mkdtemp(char *template)
 }
 
 /*
- * Return a new, non-existent file name from a template
+ * Return a new, nonexistent file name from a template
  * (adapted from dietlibc; alternative to mkdtemp())
  */
 char *a_Misc_mkfname(char *template)
