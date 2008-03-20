@@ -289,11 +289,12 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
                       jpeg->cinfo.num_components);
 
          /*
-          * TODO: The multiple-scan jpeg code is valuable at download time
-          * when an image arrives slowly, but should not be used to redisplay
-          * cached images.
+          * Display multiple-scan images progressively if the amount of data is
+          * small (it is likely coming over a network). If the source of a
+          * multiple-scan image is the cache or local filesystem, let libjpeg
+          * decode the entire image first and provide output in a single scan.
           */
-         if (jpeg_has_multiple_scans(&jpeg->cinfo))
+         if ((BufSize < 2048) && jpeg_has_multiple_scans(&jpeg->cinfo))
             jpeg->cinfo.buffered_image = TRUE;
 
          a_Dicache_set_parms(jpeg->url, jpeg->version, jpeg->Image,
@@ -309,7 +310,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
       /* decompression step 5 (see libjpeg.doc) */
       if (jpeg_start_decompress(&(jpeg->cinfo))) {
          jpeg->y = 0;
-         jpeg->state = jpeg_has_multiple_scans(&jpeg->cinfo) ?
+         jpeg->state = jpeg->cinfo.buffered_image ?
                           DILLO_JPEG_READ_BEGIN_SCAN : DILLO_JPEG_READ_IN_SCAN;
       }
    }
@@ -355,7 +356,8 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
 
          if (jpeg->y == jpeg->cinfo.image_height) {
             /* end of scan */
-            if (!jpeg_has_multiple_scans(&jpeg->cinfo)) {
+            if (!jpeg->cinfo.buffered_image) {
+               /* single scan */
                jpeg->state = DILLO_JPEG_DONE;
                break;
             } else {
