@@ -4082,7 +4082,7 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
             if (input->name) {
                dstr = dStr_new(input->name);
                dstr = Html_encode_text(encoder, dstr);
-               dStr_append(DataStr, dstr->str);
+               dStr_append_l(DataStr, dstr->str, dstr->len);
                dStr_free(dstr, 1);
             }
             for (i = 0; i < dList_length(values); i++) {
@@ -4090,7 +4090,7 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
                dList_remove(values, dstr);
                if (input->type != DILLO_HTML_INPUT_FILE)
                   dstr = Html_encode_text(encoder, dstr);
-               dStr_append(DataStr, dstr->str);
+               dStr_append_l(DataStr, dstr->str, dstr->len);
                dStr_free(dstr, 1);
             }
          }

@@ -337,7 +337,6 @@ static void Cookies_init()
 
    filename = dStrconcat(dGethomedir(), "/.dillo/cookies", NULL);
    if ((old_cookies_file_stream = fopen(filename, "r")) != NULL) {
-      dFree(filename);
       MSG("WARNING: Reading old cookies file ~/.dillo/cookies too\n");
 
       /* Get all lines in the file */
@@ -407,11 +406,9 @@ static void Cookies_init()
             Cookies_add_cookie(cookie);
          }
       }
-   fclose(old_cookies_file_stream);
-   } else {
-      dFree(filename);
+      fclose(old_cookies_file_stream);
    }
-
+   dFree(filename);
 }
 
 /*
