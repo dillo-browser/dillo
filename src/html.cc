@@ -1639,7 +1639,7 @@ static void Html_real_pop_tag(DilloHtml *html)
 /*
  * Default close function for tags.
  * (conditional cleanup of the stack)
- * There're several ways of doing it. Considering the HTML 4.01 spec
+ * There are several ways of doing it. Considering the HTML 4.01 spec
  * which defines optional close tags, and the will to deliver useful diagnose
  * messages for bad-formed HTML, it'll go as follows:
  *   1.- Search the stack for the first tag that requires a close tag.

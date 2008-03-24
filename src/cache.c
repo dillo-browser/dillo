@@ -914,7 +914,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
       a_Url_free(url);
    }
 
-   /* Trigger cleanup when there're no cache clients */
+   /* Trigger cleanup when there are no cache clients */
    if (dList_length(ClientQueue) == 0) {
       _MSG("  a_Dicache_cleanup()\n");
       a_Dicache_cleanup();

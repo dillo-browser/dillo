@@ -163,7 +163,7 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
  *  0,  if they match
  *  -1, if a mismatch is detected
  *
- * There're many MIME types Dillo doesn't know, they're handled
+ * There are many MIME types Dillo doesn't know, they're handled
  * as "application/octet-stream" (as the SPEC says).
  *
  * A mismatch happens when receiving a binary stream as
