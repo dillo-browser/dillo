@@ -91,6 +91,7 @@ dillo-fltk2
  - Added shortcuts: PgDn=Spc, PgUp=b, Back=BackSpace, Forw=Shift+Backspace.
  - Made a cleanup in cache's parse header code.
  - Added support for "charset" in the META element.
+ - Added a_Capi_get_flags(). It requests a cache entry's status as flags.
    Patch: place, Jorge Arellano Cid
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
    Added const declarations in html parser.

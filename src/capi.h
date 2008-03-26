@@ -10,11 +10,21 @@ extern "C" {
 #include "web.hh"
 
 /*
+ * Flag defines
+ */
+#define CAPI_IsCached       (0x1)
+#define CAPI_IsEmpty        (0x2)
+#define CAPI_InProgress     (0x4)
+#define CAPI_Aborted        (0x8)
+#define CAPI_Completed     (0x10)
+
+/*
  * Function prototypes
  */
 void a_Capi_init(void);
 int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData);
 int a_Capi_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize);
+int a_Capi_get_flags(const DilloUrl *Url);
 int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
                          int flags);
 void a_Capi_stop_client(int Key, int force);

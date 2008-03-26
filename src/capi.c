@@ -303,19 +303,19 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
 {
    capi_conn_t *conn;
-   int buf_size, reload;
-   char *cmd, *server, *buf;
+   int reload;
+   char *cmd, *server;
    const char *scheme = URL_SCHEME(web->url);
    int safe = 0, ret = 0, use_cache = 0;
 
    /* reload test */
-   reload = (!a_Capi_get_buf(web->url, &buf, &buf_size) ||
+   reload = (!(a_Capi_get_flags(web->url) & CAPI_IsCached) ||
              (URL_FLAGS(web->url) & URL_E2EReload));
 
    if (web->flags & WEB_Download) {
-     /* donwload request: if cached save from cache, else
+     /* download request: if cached save from cache, else
       * for http, ftp or https, use the downloads dpi */
-     if (a_Capi_get_buf(web->url, &buf, &buf_size)) {
+     if (a_Capi_get_flags(web->url) & CAPI_IsCached) {
         if (web->filename && (web->stream = fopen(web->filename, "w"))) {
            use_cache = 1;
         }
@@ -370,6 +370,28 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
       a_Web_free(web);
    }
    return ret;
+}
+
+/*
+ * Return status information of an URL's content-transfer process.
+ */
+int a_Capi_get_flags(const DilloUrl *Url)
+{
+   int status = 0;
+   uint_t flags = a_Cache_get_flags(Url);
+
+   if (flags) {
+      status |= CAPI_IsCached;
+      if (flags & CA_IsEmpty)
+         status |= CAPI_IsEmpty;
+      if (flags & CA_GotData)
+         status |= CAPI_Completed;
+      else
+         status |= CAPI_InProgress;
+
+      /* CAPI_Aborted is not yet used/defined */
+   }
+   return status;
 }
 
 /*

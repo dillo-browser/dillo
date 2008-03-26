@@ -35,6 +35,7 @@
 #include "web.hh"
 #include "cache.h"
 #include "dicache.h"
+#include "capi.h"       /* get cache entry status */
 
 #define DEBUG_LEVEL 6
 #include "debug.h"
@@ -289,13 +290,13 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
                       jpeg->cinfo.num_components);
 
          /*
-          * Display multiple-scan images progressively if the amount of data is
-          * small (it is likely coming over a network). If the source of a
-          * multiple-scan image is the cache or local filesystem, let libjpeg
-          * decode the entire image first and provide output in a single scan.
+          * If a multiple-scan image is not completely in cache,
+          * use progressive display, updating as it arrives.
           */
-         if ((BufSize < 2048) && jpeg_has_multiple_scans(&jpeg->cinfo))
+         if (jpeg_has_multiple_scans(&jpeg->cinfo) &&
+             !(a_Capi_get_flags(jpeg->url) & CAPI_Completed))
             jpeg->cinfo.buffered_image = TRUE;
+         printf("jpeg: %s\n", jpeg->cinfo.buffered_image ? "TRUE":"FALSE");
 
          a_Dicache_set_parms(jpeg->url, jpeg->version, jpeg->Image,
                              (uint_t)jpeg->cinfo.image_width,

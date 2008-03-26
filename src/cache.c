@@ -209,7 +209,7 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->ContentDecoder = NULL;
    NewEntry->ExpectedSize = 0;
    NewEntry->TransferSize = 0;
-   NewEntry->Flags = 0;
+   NewEntry->Flags = CA_IsEmpty;
 }
 
 /*
@@ -219,6 +219,30 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
 static CacheEntry_t *Cache_entry_search(const DilloUrl *Url)
 {
    return dList_find_sorted(CachedURLs, Url, Cache_entry_by_url_cmp);
+}
+
+/*
+ * Given a URL, find its cache entry, following redirections.
+ */
+static CacheEntry_t *Cache_entry_search_with_redirect(const DilloUrl *Url)
+{
+   int i;
+   CacheEntry_t *entry;
+
+   for (i = 0; (entry = Cache_entry_search(Url)); ++i) {
+
+      /* Test for a redirection loop */
+      if (entry->Flags & CA_RedirectLoop || i == 3) {
+         _MSG_WARN("Redirect loop for URL: >%s<\n", URL_STR_(Url));
+         break;
+      }
+      /* Test for a working redirection */
+      if (entry && entry->Flags & CA_Redirect && entry->Location) {
+         Url = entry->Location;
+      } else
+         break;
+   }
+   return entry;
 }
 
 /*
@@ -250,6 +274,8 @@ void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds)
    if (!(entry = Cache_entry_search(Url)))
       entry = Cache_entry_add(Url);
    entry->Flags |= CA_GotData + CA_GotHeader + CA_GotLength + CA_InternalUrl;
+   if (data_ds->len)
+      entry->Flags &= ~CA_IsEmpty;
    dStr_truncate(entry->Data, 0);
    dStr_append_l(entry->Data, data_ds->str, data_ds->len);
    dStr_fit(entry->Data);
@@ -355,28 +381,21 @@ int a_Cache_open_url(void *web, CA_Callback_t Call, void *CbData)
 }
 
 /*
+ * Get cache entry status
+ */
+uint_t a_Cache_get_flags(const DilloUrl *url)
+{
+   CacheEntry_t *entry = Cache_entry_search_with_redirect(url);
+   return (entry ? entry->Flags : 0);
+}
+
+/*
  * Get the pointer to the URL document, and its size, from the cache entry.
  * Return: 1 cached, 0 not cached.
  */
 int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
 {
-   int i;
-   CacheEntry_t *entry;
-
-   for (i = 0; (entry = Cache_entry_search(Url)); ++i) {
-
-      /* Test for a redirection loop */
-      if (entry->Flags & CA_RedirectLoop || i == 3) {
-         _MSG_WARN("Redirect loop for URL: >%s<\n", URL_STR_(Url));
-         break;
-      }
-      /* Test for a working redirection */
-      if (entry && entry->Flags & CA_Redirect && entry->Location) {
-         Url = entry->Location;
-      } else
-         break;
-   }
-
+   CacheEntry_t *entry = Cache_entry_search_with_redirect(Url);
    *BufSize = (entry) ? entry->Data->len : 0;
    *PBuf = (entry) ? entry->Data->str : NULL;
    return (entry ? 1 : 0);
@@ -686,6 +705,8 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
    }
 
    dStr_append_l(entry->Data, dbuf->str, dbuf->len);
+   if (entry->Data->len)
+      entry->Flags &= ~CA_IsEmpty;
    dStr_free(dbuf, 1);
 
    Cache_process_queue(entry);

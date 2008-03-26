@@ -2423,13 +2423,12 @@ static void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
-   char *src, *buf;
+   char *src;
    DilloUrl *url;
    Textblock *textblock;
    StyleAttrs style_attrs;
    Style *link_style;
    Widget *bullet;
-   int buf_size;
 
    textblock = DW2TB(html->dw);
 
@@ -2443,7 +2442,7 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
 
    style_attrs = *(S_TOP(html)->style);
 
-   if (a_Capi_get_buf(url, &buf, &buf_size)) { /* visited frame */
+   if (a_Capi_get_flags(url) & CAPI_IsCached) { /* visited frame */
       style_attrs.color =
          Color::createSimple (HT2LT(html), html->visited_color);
    } else {                                    /* unvisited frame */
@@ -2866,7 +2865,6 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
    StyleAttrs style_attrs;
    const char *attrbuf;
    int border, load_now;
-   char *buf; int buf_size; /* solely for the sake of the cache test */
 
    /* This avoids loading images. Useful for viewing suspicious HTML email. */
    if (URL_FLAGS(html->base_url) & URL_SpamSafe)
@@ -2907,7 +2905,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
     * we know Html_add_new_linkimage() will use size() as its next index */
    style_attrs.x_img = html->images->size();
 
-   load_now = (prefs.load_images || a_Capi_get_buf(url,&buf, &buf_size));
+   load_now = (prefs.load_images || (a_Capi_get_flags(url) & CAPI_IsCached));
    Image = Html_add_new_image(html, tag, tagsize, url, &style_attrs, TRUE);
    Html_add_new_linkimage(html, url, load_now ? NULL : Image);
    if (load_now)
@@ -3070,8 +3068,6 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
    Style *old_style;
    DilloUrl *url;
    const char *attrbuf;
-   char *buf;
-   int buf_size;
 
    /* todo: add support for MAP with A HREF */
    Html_tag_open_area(html, tag, tagsize);
@@ -3087,7 +3083,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       old_style = S_TOP(html)->style;
       style_attrs = *old_style;
 
-      if (a_Capi_get_buf(url, &buf, &buf_size)) {
+      if (a_Capi_get_flags(url) & CAPI_IsCached) {
          html->InVisitedLink = TRUE;
          style_attrs.color = Color::createSimple (
             HT2LT(html),
