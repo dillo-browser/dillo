@@ -813,6 +813,7 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
    int num_attr = 0;
    bool_t max_age = FALSE;
    bool_t discard = FALSE;
+   bool_t error = FALSE;
 
    cookie = dNew0(CookieData_t, 1);
    cookie->session_only = TRUE;
@@ -820,6 +821,10 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
    /* Iterate until there is nothing left of the string OR we come
     * across a comma representing the start of another cookie */
    while (*str != '\0' && *str != ',') {
+      if (error) {
+         str++;
+         continue;
+      }
       /* Skip whitespace */
       while (isspace(*str))
          str++;
@@ -827,9 +832,9 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
       /* Get attribute */
       attr = Cookies_parse_attr(&str);
       if (!attr) {
-         MSG("Failed to parse cookie attribute!\n");
-         Cookies_free_cookie(cookie);
-         return NULL;
+         MSG("Cannot parse cookie attribute!\n");
+         error = TRUE;
+         continue;
       }
 
       /* Get the value for the attribute and store it */
@@ -857,9 +862,10 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
                max_age = TRUE;
                dFree(value);
             } else {
-               MSG("Failed to parse cookie value!\n");
-               Cookies_free_cookie(cookie);
-               return NULL;
+               MSG("Cannot parse cookie Max-Age value!\n");
+               dFree(attr);
+               error = TRUE;
+               continue;
             }
          }
       } else if (dStrcasecmp(attr, "Expires") == 0) {
@@ -871,9 +877,10 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
                cookie->session_only = FALSE;
                dFree(value);
             } else {
-               MSG("Failed to parse cookie value!\n");
-               Cookies_free_cookie(cookie);
-               return NULL;
+               MSG("Cannot parse cookie Expires value!\n");
+               dFree(attr);
+               error = TRUE;
+               continue;
             }
          }
       } else if (dStrcasecmp(attr, "Port") == 0) {
@@ -893,18 +900,19 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
             cookie->version = strtol(value, NULL, 10);
             dFree(value);
          } else {
-            MSG("Failed to parse cookie value!\n");
-            Cookies_free_cookie(cookie);
-            return NULL;
+            MSG("Cannot parse cookie Version value!\n");
+            dFree(attr);
+            error = TRUE;
+            continue;
          }
       } else if (dStrcasecmp(attr, "Secure") == 0) {
          cookie->secure = TRUE;
       } else {
          /* Oops! this can't be good... */
-         dFree(attr);
-         Cookies_free_cookie(cookie);
          MSG("Cookie contains illegal attribute!\n");
-         return NULL;
+         dFree(attr);
+         error = TRUE;
+         continue;
       }
 
       dFree(attr);
@@ -913,13 +921,15 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
 
    *cookie_str = (*str == ',') ? str + 1 : str;
 
-   if (cookie->name && cookie->value) {
-      return cookie;
-   } else {
+   if (!error && (!cookie->name || !cookie->value)) {
       MSG("Cookie missing name and/or value!\n");
-      Cookies_free_cookie(cookie);
-      return NULL;
+      error = TRUE;
    }
+   if (error) {
+      Cookies_free_cookie(cookie);
+      cookie = NULL;
+   }
+   return cookie;
 }
 
 /*
@@ -933,7 +943,7 @@ static Dlist *Cookies_parse_string(int url_port, char *cookie_string)
    char *str = cookie_string;
 
    /* The string may contain several cookies separated by comma.
-    * We'll iterate until we've catched them all */
+    * We'll iterate until we've caught them all */
    while (*str) {
       cookie = Cookies_parse_one(url_port, &str);
 
