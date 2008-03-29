@@ -83,6 +83,7 @@ dillo-fltk2
  - Fixed the return value of Cache_parse_multiple_field.
  - Added the multipart/form-data encoding method to form submission.
  - Fixed a bug in Html_parse_entity.
+ - Fixed a bug in a_Url_cmp.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

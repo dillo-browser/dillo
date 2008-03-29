@@ -459,7 +459,7 @@ int a_Url_cmp(const DilloUrl *A, const DilloUrl *B)
         //(st = URL_STR_FIELD_CMP(A->path, B->path)) == 0 &&
         (st = URL_STR_FIELD_CMP(A->query, B->query)) == 0 &&
         (st = dStr_cmp(A->data, B->data)) == 0 &&
-        (st = URL_STR_FIELD_I_CMP(A->scheme, B->scheme) == 0)))
+        (st = URL_STR_FIELD_I_CMP(A->scheme, B->scheme)) == 0))
       return 0;
    return st;
 }
