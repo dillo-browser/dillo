@@ -296,7 +296,6 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
          if (jpeg_has_multiple_scans(&jpeg->cinfo) &&
              !(a_Capi_get_flags(jpeg->url) & CAPI_Completed))
             jpeg->cinfo.buffered_image = TRUE;
-         printf("jpeg: %s\n", jpeg->cinfo.buffered_image ? "TRUE":"FALSE");
 
          a_Dicache_set_parms(jpeg->url, jpeg->version, jpeg->Image,
                              (uint_t)jpeg->cinfo.image_width,
