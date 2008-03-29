@@ -212,7 +212,7 @@ static int Capi_dpi_verify_request(DilloWeb *web)
 
    /* test POST and GET */
    if (dStrcasecmp(URL_SCHEME(web->url), "dpi") == 0 &&
-       (strchr(URL_STR(web->url), '?') || URL_DATA_(web->url))) {
+       URL_FLAGS(web->url) & (URL_Post + URL_Get)) {
       /* only allow dpi requests from dpi-generated urls */
       if (a_Nav_stack_size(web->bw)) {
          referer = a_History_get_url(NAV_TOP_UIDX(web->bw));
@@ -227,8 +227,10 @@ static int Capi_dpi_verify_request(DilloWeb *web)
    if (!allow) {
       MSG("Capi_dpi_verify_request: Permission Denied!\n");
       MSG("  URL_STR : %s\n", URL_STR(web->url));
-      if (URL_DATA_(web->url))
-         MSG("  URL_DATA: %s\n", URL_DATA(web->url));
+      if (URL_FLAGS(web->url) & URL_Post) {
+         /* MSG will fail on embedded NULLs */
+         MSG("  URL_DATA: %s\n", URL_DATA(web->url)->str);
+      }
    }
    return allow;
 }
@@ -271,14 +273,15 @@ static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
  */
 static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 {
-   char *cmd, *http_query;
+   char *cmd;
 
    if (strcmp(server, "proto.https") == 0) {
       /* Let's be kind and make the HTTP query string for the dpi */
-      http_query = a_Http_make_query_str(web->url, FALSE);
+      Dstr *http_query = a_Http_make_query_str(web->url, FALSE);
+      /* BUG: embedded NULLs in query data will truncate message */
       cmd = a_Dpip_build_cmd("cmd=%s url=%s query=%s",
-                             "open_url", URL_STR(web->url), http_query);
-      dFree(http_query);
+                             "open_url", URL_STR(web->url), http_query->str);
+      dStr_free(http_query, 1);
 
    } else if (strcmp(server, "downloads") == 0) {
       /* let the downloads server get it */

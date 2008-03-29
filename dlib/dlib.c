@@ -210,7 +210,7 @@ Dstr *dStr_sized_new (int sz)
 
    Dstr *ds = dNew(Dstr, 1);
    ds->str = NULL;
-   dStr_resize(ds, sz, 0);
+   dStr_resize(ds, sz + 1, 0); /* (sz + 1) for the extra '\0' */
    return ds;
 }
 
@@ -400,6 +400,18 @@ void dStr_sprintfa (Dstr *ds, const char *format, ...)
       dStr_vsprintfa(ds, format, argp);
       va_end(argp);
    }
+}
+
+/*
+ * Compare two dStrs.
+ */
+int dStr_cmp(Dstr *ds1, Dstr *ds2)
+{
+   int ret = 0;
+
+   if (ds1 && ds2)
+      ret = memcmp(ds1->str, ds2->str, MIN(ds1->len+1, ds2->len+1));
+   return ret;
 }
 
 /*

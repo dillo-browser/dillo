@@ -4150,7 +4150,8 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
   
       if (form->method == DILLO_HTML_METHOD_POST) {
          new_url = a_Url_new(action_str, NULL, 0, 0, 0);
-         a_Url_set_data(new_url, DataStr->str);
+         /* new_url keeps the dStr and sets DataStr to NULL */
+         a_Url_set_data(new_url, &DataStr);
          a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Post);
          if (form->enc == DILLO_HTML_ENC_MULTIPART) {
             a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_MultipartEnc);
@@ -4171,7 +4172,7 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
       a_Nav_push(html->bw, new_url);
       dFree(action_str);
       dStr_free(boundary, 1);
-      dStr_free(DataStr, TRUE);
+      dStr_free(DataStr, 1);
       if (encoder != (iconv_t) -1)
          (void)iconv_close(encoder);
       a_Url_free(new_url);

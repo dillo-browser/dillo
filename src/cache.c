@@ -576,7 +576,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
        * with huge files (e.g. iso files).
        * Note: the buffer grows automatically. */
       dStr_free(entry->Data, 1);
-      entry->Data = dStr_sized_new(MIN(entry->ExpectedSize+1, MAX_INIT_BUF));
+      entry->Data = dStr_sized_new(MIN(entry->ExpectedSize, MAX_INIT_BUF));
    }
 
    /* Get Content-Type */

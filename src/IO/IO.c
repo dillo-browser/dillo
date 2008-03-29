@@ -354,6 +354,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          case OpAbort:
             io = Info->LocalKey;
             if (io->Buf->len > 0) {
+               /* MSG can be truncated by embedded NULLs */
                MSG_WARN("IO_write, closing with pending data not sent\n");
                MSG_WARN(" \"%s\"\n", io->Buf->str);
             }

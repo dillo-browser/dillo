@@ -55,6 +55,11 @@
 
 static const char *HEX = "0123456789ABCDEF";
 
+/* URL-field compare methods */
+#define URL_STR_FIELD_CMP(s1,s2) \
+   (s1) && (s2) ? strcmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
+#define URL_STR_FIELD_I_CMP(s1,s2) \
+   (s1) && (s2) ? dStrcasecmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
 
 /*
  * Return the url as a string.
@@ -183,7 +188,7 @@ void a_Url_free(DilloUrl *url)
       if (url->hostname != url->authority)
          dFree((char *)url->hostname);
       dFree((char *)url->buffer);
-      dFree((char *)url->data);
+      dStr_free(url->data, 1);
       dFree((char *)url->alt);
       dFree(url);
    }
@@ -334,7 +339,7 @@ done:
  *     hostname           = "dillo.sf.net"
  *     port               = 8080
  *     flags              = 0
- *     data               = NULL
+ *     data               = Dstr * ("")
  *     alt                = NULL
  *     ismap_url_len      = 0
  *     scrolling_position = 0
@@ -392,6 +397,7 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url,
 
    /* Fill url data */
    url = Url_object_new(SolvedUrl->str);
+   url->data = dStr_new("");
    url->url_string = SolvedUrl;
    url->flags = flags;
    url->scrolling_position_x = posx;
@@ -418,14 +424,14 @@ DilloUrl* a_Url_dup(const DilloUrl *ori)
    url->url_string           = dStr_new(URL_STR(ori));
    url->port                 = ori->port;
    url->flags                = ori->flags;
-   url->data                 = dStrdup(ori->data);
    url->alt                  = dStrdup(ori->alt);
    url->ismap_url_len        = ori->ismap_url_len;
    url->scrolling_position_x = ori->scrolling_position_x;
    url->scrolling_position_y = ori->scrolling_position_y;
    url->illegal_chars        = ori->illegal_chars;
    url->illegal_chars_spc    = ori->illegal_chars_spc;
-
+   url->data                 = dStr_sized_new(URL_DATA(ori)->len);
+   dStr_append_l(url->data, URL_DATA(ori)->str, URL_DATA(ori)->len);
    return url;
 }
 
@@ -452,7 +458,7 @@ int a_Url_cmp(const DilloUrl *A, const DilloUrl *B)
                      B->path ? B->path + (*B->path == '/') : "")) == 0 &&
         //(st = URL_STR_FIELD_CMP(A->path, B->path)) == 0 &&
         (st = URL_STR_FIELD_CMP(A->query, B->query)) == 0 &&
-        (st = URL_STR_FIELD_CMP(A->data, B->data)) == 0 &&
+        (st = dStr_cmp(A->data, B->data)) == 0 &&
         (st = URL_STR_FIELD_I_CMP(A->scheme, B->scheme) == 0)))
       return 0;
    return st;
@@ -470,11 +476,12 @@ void a_Url_set_flags(DilloUrl *u, int flags)
 /*
  * Set DilloUrl data (like POST info, etc.)
  */
-void a_Url_set_data(DilloUrl *u, char *data)
+void a_Url_set_data(DilloUrl *u, Dstr **data)
 {
    if (u) {
-      dFree((char *)u->data);
-      u->data = dStrdup(data);
+      dStr_free(u->data, 1);
+      u->data = *data;
+      *data = NULL;
    }
 }
 

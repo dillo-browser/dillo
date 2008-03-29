@@ -55,9 +55,10 @@
 #define URL_QUERY_(u)               u->query
 #define URL_FRAGMENT_(u)            u->fragment
 #define URL_HOST_(u)                a_Url_hostname(u)
-#define URL_DATA_(u)                u->data
 #define URL_ALT_(u)                 u->alt
 #define URL_STR_(u)                 a_Url_str(u)
+/* this returns a Dstr* */
+#define URL_DATA_(u)                u->data
 /* these return an integer */
 #define URL_PORT_(u)                (URL_HOST(u) ? u->port : u->port)
 #define URL_FLAGS_(u)               u->flags
@@ -67,7 +68,7 @@
 #define URL_ILLEGAL_CHARS_SPC_(u)   url->illegal_chars_spc
 
 /*
- * Access methods that always return a string:
+ * Access methods that never return NULL.
  * When the "empty" and "undefined" concepts of RFC-2396 are irrelevant to
  * the caller, and a string is required, use these methods instead:
  */
@@ -78,7 +79,7 @@
 #define URL_QUERY(u)                NPTR2STR(URL_QUERY_(u))
 #define URL_FRAGMENT(u)             NPTR2STR(URL_FRAGMENT_(u))
 #define URL_HOST(u)                 NPTR2STR(URL_HOST_(u))
-#define URL_DATA(u)                 NPTR2STR(URL_DATA_(u))
+#define URL_DATA(u)                 URL_DATA_(u)
 #define URL_ALT(u)                  NPTR2STR(URL_ALT_(u))
 #define URL_STR(u)                  NPTR2STR(URL_STR_(u))
 #define URL_PORT(u)                 URL_PORT_(u)
@@ -87,13 +88,6 @@
 #define URL_POSY(u)                 URL_POSY_(u)
 #define URL_ILLEGAL_CHARS(u)        URL_ILLEGAL_CHARS_(u)
 #define URL_ILLEGAL_CHARS_SPC(u)    URL_ILLEGAL_CHARS_SPC_(u)
-
-
-/* URL-field compare methods */
-#define URL_STR_FIELD_CMP(s1,s2) \
-   (s1) && (s2) ? strcmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
-#define URL_STR_FIELD_I_CMP(s1,s2) \
-   (s1) && (s2) ? dStrcasecmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
 
 
 typedef struct _DilloUrl DilloUrl;
@@ -113,7 +107,7 @@ struct _DilloUrl {
    const char *hostname;          //
    int port;
    int flags;
-   const char *data;              /* POST */
+   Dstr *data;                    /* POST */
    const char *alt;               /* "alt" text (used by image maps) */
    int ismap_url_len;             /* Used by server side image maps */
    int32_t scrolling_position_x,  /* remember position of visited urls */
@@ -131,7 +125,7 @@ const char *a_Url_hostname(const DilloUrl *u);
 DilloUrl* a_Url_dup(const DilloUrl *u);
 int a_Url_cmp(const DilloUrl *A, const DilloUrl *B);
 void a_Url_set_flags(DilloUrl *u, int flags);
-void a_Url_set_data(DilloUrl *u, char *data);
+void a_Url_set_data(DilloUrl *u, Dstr **data);
 void a_Url_set_alt(DilloUrl *u, const char *alt);
 void a_Url_set_pos(DilloUrl *u, int32_t posx, int32_t posy);
 void a_Url_set_ismap_coords(DilloUrl *u, char *coord_str);

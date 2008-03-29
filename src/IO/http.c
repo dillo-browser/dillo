@@ -180,9 +180,9 @@ Dstr *Http_make_content_type(const DilloUrl *url)
    if (URL_FLAGS(url) & URL_MultipartEnc) {
       MSG("submitting multipart/form-data!\n");
       dstr = dStr_new("multipart/form-data; boundary=\"");
-      if (strlen(URL_DATA(url)) > 2) {
+      if (URL_DATA(url)->len > 2) {
          /* boundary lines have "--" prepended. Skip that. */
-         const char *start = URL_DATA(url) + 2;
+         const char *start = URL_DATA(url)->str + 2;
          char *eol = strchr(start, '\r');
          if (eol)
             dStr_append_l(dstr, start, eol - start);
@@ -200,9 +200,9 @@ Dstr *Http_make_content_type(const DilloUrl *url)
 /*
  * Make the http query string
  */
-char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
+Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
 {
-   char *str, *ptr, *cookies, *referer;
+   char *ptr, *cookies, *referer;
    Dstr *s_port     = dStr_new(""),
         *query      = dStr_new(""),
         *full_path  = dStr_new(""),
@@ -246,12 +246,12 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Content-Length: %ld\r\n"
          "Content-Type: %s\r\n"
          "%s"
-         "\r\n"
-         "%s",
+         "\r\n",
          full_path->str, URL_HOST(url), s_port->str,
          proxy_auth->str, referer, VERSION,
-         (long)strlen(URL_DATA(url)), content_type->str,
-         cookies, URL_DATA(url));
+         URL_DATA(url)->len, content_type->str,
+         cookies);
+      dStr_append_l(query, URL_DATA(url)->str, URL_DATA(url)->len);
       dStr_free(content_type, TRUE);
    } else {
       dStr_sprintfa(
@@ -276,13 +276,12 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
    dFree(referer);
    dFree(cookies);
 
-   str = query->str;
-   dStr_free(query, FALSE);
    dStr_free(s_port, TRUE);
    dStr_free(full_path, TRUE);
    dStr_free(proxy_auth, TRUE);
-   DEBUG_MSG(4, "Query:\n%s", str);
-   return str;
+   /* debug msg will fail on embedded NULLs */
+   DEBUG_MSG(4, "Query:\n%s", query->str);
+   return query;
 }
 
 /*
@@ -290,12 +289,12 @@ char *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
  */
 static void Http_send_query(ChainLink *Info, SocketData_t *S)
 {
-   char *query;
+   Dstr *query;
    DataBuf *dbuf;
 
    /* Create the query */
    query = a_Http_make_query_str(S->Url, S->use_proxy);
-   dbuf = a_Chain_dbuf_new(query, (int)strlen(query), 0);
+   dbuf = a_Chain_dbuf_new(query->str, query->len, 0);
 
    /* actually this message is sent too early.
     * It should go when the socket is ready for writing (i.e. connected) */
@@ -306,7 +305,7 @@ static void Http_send_query(ChainLink *Info, SocketData_t *S)
    a_Chain_bcb(OpStart, Info, &S->SockFD, NULL);
    a_Chain_bcb(OpSend, Info, dbuf, NULL);
    dFree(dbuf);
-   dFree(query);
+   dStr_free(query, 1);
 
    /* Tell the cache to start the receiving CCC for the answer */
    a_Chain_fcb(OpSend, Info, &S->SockFD, "SockFD");
