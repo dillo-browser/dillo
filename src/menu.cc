@@ -276,9 +276,6 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    // NULL is wildcard
    load_images_item->user_data(NULL);
 
-   // Make the popup a child of the calling UI object
-   ((Group *)bw->ui)->add(pm);
-
    pm->popup();
 }
 
@@ -310,9 +307,6 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
       pm->type(PopupMenu::POPUP123);
       pm->end();
    }
-
-   // Make the popup a child of the calling UI object
-   ((Group *)bw->ui)->add(pm);
 
    pm->popup();
 }
@@ -371,9 +365,6 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
 
    load_menuitem->user_data(userdata_url);
  
-   // Make the popup a child of the calling UI object
-   ((Group *)bw->ui)->add(pm);
-
    pm->popup();
 
    a_Url_free(userdata_url);
@@ -403,9 +394,6 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
       pm->type(PopupMenu::POPUP123);
       pm->end();
    }
-
-   // Make the popup a child of the calling UI object
-   //((Group *)bw->ui)->add(pm);
 
    pm->popup();
 }
@@ -448,10 +436,6 @@ void a_Menu_history_popup(BrowserWindow *bw, int direction)
     }
    pm->type(PopupMenu::POPUP123);
    pm->end();
-
-   // Make the popup a child of the calling UI object
-   // I don't know whether this is necessary...
-   ((Group *)bw->ui)->add(pm);
 
    pm->popup();
 }
