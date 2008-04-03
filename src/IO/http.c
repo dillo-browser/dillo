@@ -55,7 +55,6 @@ D_STMT_START {                                                        \
 /* 'Url' and 'web' are just references (no need to deallocate them here). */
 typedef struct {
    int SockFD;
-   const DilloUrl *Url;    /* reference to original URL */
    uint_t port;            /* need a separate port in order to support PROXY */
    bool_t use_proxy;       /* indicates whether to use proxy or not */
    DilloWeb *web;          /* reference to client's web structure */
@@ -293,12 +292,12 @@ static void Http_send_query(ChainLink *Info, SocketData_t *S)
    DataBuf *dbuf;
 
    /* Create the query */
-   query = a_Http_make_query_str(S->Url, S->use_proxy);
+   query = a_Http_make_query_str(S->web->url, S->use_proxy);
    dbuf = a_Chain_dbuf_new(query->str, query->len, 0);
 
    /* actually this message is sent too early.
     * It should go when the socket is ready for writing (i.e. connected) */
-   _MSG_BW(S->web, 1, "Sending query to %s...", URL_HOST_(S->Url));
+   _MSG_BW(S->web, 1, "Sending query to %s...", URL_HOST_(S->web->url));
 
    /* send query */
    a_Chain_link_new(Info, a_Http_ccc, BCK, a_IO_ccc, 1, 1);
@@ -444,7 +443,7 @@ void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
       } else {
          /* DNS wasn't able to resolve the hostname */
          MSG_BW(S->web, 0, "ERROR: Dns can't resolve %s",
-            (S->use_proxy) ? URL_HOST_(HTTP_Proxy) : URL_HOST_(S->Url));
+            (S->use_proxy) ? URL_HOST_(HTTP_Proxy) : URL_HOST_(S->web->url));
          a_Chain_fcb(OpAbort, S->Info, NULL, NULL);
          dFree(S->Info);
          Http_socket_free(SKey);
@@ -467,24 +466,22 @@ static int Http_get(ChainLink *Info, void *Data1)
    S = a_Klist_get_data(ValidSocks, VOIDP2INT(Info->LocalKey));
    /* Reference Web data */
    S->web = Data1;
-   /* Reference URL data */
-   S->Url = S->web->url;
    /* Reference Info data */
    S->Info = Info;
 
    /* Proxy support */
-   if (Http_must_use_proxy(S->Url)) {
+   if (Http_must_use_proxy(S->web->url)) {
       hostname = dStrdup(URL_HOST(HTTP_Proxy));
       S->port = URL_PORT(HTTP_Proxy);
       S->use_proxy = TRUE;
    } else {
-      hostname = dStrdup(URL_HOST(S->Url));
-      S->port = URL_PORT(S->Url);
+      hostname = dStrdup(URL_HOST(S->web->url));
+      S->port = URL_PORT(S->web->url);
       S->use_proxy = FALSE;
    }
 
    /* Let the user know what we'll do */
-   MSG_BW(S->web, 1, "DNS resolving %s", URL_HOST_(S->Url));
+   MSG_BW(S->web, 1, "DNS resolving %s", URL_HOST_(S->web->url));
 
    /* Let the DNS engine resolve the hostname, and when done,
     * we'll try to connect the socket from the callback function */

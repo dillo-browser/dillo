@@ -133,6 +133,7 @@ Dlist *dList_new(int size);
 void dList_free (Dlist *lp);
 void dList_append (Dlist *lp, void *data);
 void dList_prepend (Dlist *lp, void *data);
+void dList_insert_pos (Dlist *lp, void *data, int pos0);
 int  dList_length (Dlist *lp);
 void dList_remove (Dlist *lp, const void *data);
 void dList_remove_fast (Dlist *lp, const void *data);

@@ -109,27 +109,41 @@ int a_Nav_stack_size(BrowserWindow *bw)
 }
 
 /*
- * Add a nav_stack_item into the stack.
- * If idx is not at the top, the stack is truncated at idx before adding.
+ * Truncate the navigation stack including 'pos' and upwards.
  */
-static void Nav_stack_add(BrowserWindow *bw, int url_idx, int posx, int posy)
+static void Nav_stack_truncate(BrowserWindow *bw, int pos)
 {
-   int j;
+   void *data;
+
+   dReturn_if_fail (bw != NULL && pos >= 0);
+
+   while (pos < dList_length(bw->nav_stack)) {
+      data = dList_nth_data(bw->nav_stack, pos);
+      dList_remove_fast (bw->nav_stack, data);
+   }
+}
+
+/*
+ * Insert a nav_stack_item into the stack at a given position.
+ */
+static void Nav_stack_insert(BrowserWindow *bw, int url_idx,
+                             int stack_idx, int posx, int posy)
+{
    void *data;
    nav_stack_item *nsi;
 
    dReturn_if_fail (bw != NULL);
 
-   j = ++bw->nav_stack_ptr;
-   while (j < dList_length(bw->nav_stack)) {
-      data = dList_nth_data(bw->nav_stack, j);
-      dList_remove_fast (bw->nav_stack, data);
-   }
+   /* Free the old element if present */
+   if ((data = dList_nth_data(bw->nav_stack, stack_idx)))
+      dFree(data);
+
+   /* Insert the new element */
    nsi = dNew(nav_stack_item, 1);
    nsi->url_idx = url_idx;
    nsi->posx = posx;
    nsi->posy = posy;
-   dList_append (bw->nav_stack, nsi);
+   dList_insert_pos (bw->nav_stack, nsi, stack_idx);
 }
 
 /*
@@ -148,9 +162,9 @@ static void Nav_get_scroll_pos(BrowserWindow *bw, int *posx, int *posy)
 }
 
 /*
- * Set the scrolling position of the current page.
+ * Save the scrolling position of the current page.
  */
-static void Nav_set_scroll_pos(BrowserWindow *bw, int idx, int posx, int posy)
+static void Nav_save_scroll_pos(BrowserWindow *bw, int idx, int posx, int posy)
 {
    nav_stack_item *nsi;
 
@@ -201,14 +215,14 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
    /* Get the url of the current page */
    idx = a_Nav_stack_ptr(bw);
    old_url = a_History_get_url(NAV_UIDX(bw, idx));
-   _MSG("Nav_open_url:  idx=%d old_url='%s'\n", idx, URL_STR(old_url));
+   MSG("Nav_open_url:  old_url='%s' idx=%d\n", URL_STR(old_url), idx);
    /* Record current scrolling position */
    if (URL_FLAGS(url) & URL_ReloadFromCache) {
       /* Repush operation, don't change scroll position */
    } else if (old_url) {
       a_UIcmd_get_scroll_xy(bw, &x, &y);
-      Nav_set_scroll_pos(bw, idx, x, y);
-      _MSG("Nav_open_url:  saved scroll of '%s' at x=%d y=%d\n",
+      Nav_save_scroll_pos(bw, idx, x, y);
+      MSG("Nav_open_url:  saved scroll of '%s' at x=%d y=%d\n",
           URL_STR(old_url), x, y);
    }
 
@@ -236,14 +250,6 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
          a_Bw_add_url(bw, url);
       }
    }
-
-   // /* Jump to #anchor position */
-   // if (URL_FRAGMENT_(url)) {
-   //    /* todo: push on stack */
-   //    char *pf = a_Url_decode_hex_str(URL_FRAGMENT_(url));
-   //    //a_Dw_render_layout_set_anchor(bw->render_layout, pf);
-   //    dFree(pf);
-   // }
 }
 
 /*
@@ -266,37 +272,50 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
  */
 void a_Nav_expect_done(BrowserWindow *bw)
 {
-   int url_idx, posx, posy;
+   int url_idx, posx, posy, repush, goto_old_scroll = 1;
    DilloUrl *url;
-   char *f;
+   char *fragment = NULL;
 
    dReturn_if_fail(bw != NULL);
 
    if (bw->nav_expecting) {
       url = bw->nav_expect_url;
+      repush = (URL_FLAGS(url) & URL_ReloadFromCache);
+      fragment = a_Url_decode_hex_str(URL_FRAGMENT_(url));
+
       /* unset E2EReload before adding this url to history */
       a_Url_set_flags(url, URL_FLAGS(url) & ~URL_E2EReload);
       /* unset ReloadFromCache before adding this url to history */
       a_Url_set_flags(url, URL_FLAGS(url) & ~URL_ReloadFromCache);
       url_idx = a_History_add_url(url);
-      Nav_stack_add(bw, url_idx, 0, 0);
-      /* Scroll to the origin unless there's a fragment part */
-      f = a_Url_decode_hex_str(URL_FRAGMENT_(url));
-      if (!f) {
-         a_UIcmd_set_scroll_xy(bw, 0, 0);
+
+      Nav_get_scroll_pos(bw, &posx, &posy);
+      if (repush) {
+         MSG("a_Nav_expect_done: repush!\n");
       } else {
-         a_UIcmd_set_scroll_by_fragment(bw, f);
-         dFree(f);
+         Nav_stack_truncate(bw, a_Nav_stack_ptr(bw) + 1);
+         Nav_stack_insert(bw, url_idx, a_Nav_stack_ptr(bw) + 1, 0, 0);
+         Nav_stack_move_ptr(bw, 1);
       }
-      a_Url_free(url);
-      bw->nav_expect_url = NULL;
-      bw->nav_expecting = FALSE;
-   } else {
+      if (fragment && posx == 0 && posy == 0)
+         goto_old_scroll = 0;
+      a_Nav_cancel_expect(bw);
+   }
+
+   if (goto_old_scroll) {
       /* Scroll to were we were in this page */
       Nav_get_scroll_pos(bw, &posx, &posy);
       a_UIcmd_set_scroll_xy(bw, posx, posy);
       _MSG("Nav: expect_done scrolling to x=%d y=%d\n", posx, posy);
+   } else if (fragment) {
+      /* Scroll to fragment */
+      a_UIcmd_set_scroll_by_fragment(bw, fragment);
+   } else {
+      /* Scroll to origin */
+      a_UIcmd_set_scroll_xy(bw, 0, 0);
    }
+
+   dFree(fragment);
    Nav_stack_clean(bw);
    a_UIcmd_set_buttons_sens(bw);
    _MSG("Nav: a_Nav_expect_done\n");
@@ -327,15 +346,17 @@ void a_Nav_push(BrowserWindow *bw, const DilloUrl *url)
  */
 static void Nav_repush(BrowserWindow *bw)
 {
-   DilloUrl *ReqURL;
+   DilloUrl *url;
 
    a_Nav_cancel_expect(bw);
    if (a_Nav_stack_size(bw)) {
-      ReqURL = a_Url_dup(a_History_get_url(NAV_TOP_UIDX(bw)));
+      url = a_Url_dup(a_History_get_url(NAV_TOP_UIDX(bw)));
       /* Let's make reload be from Cache */
-      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_ReloadFromCache);
-      Nav_open_url(bw, ReqURL, 0);
-      a_Url_free(ReqURL);
+      a_Url_set_flags(url, URL_FLAGS(url) | URL_ReloadFromCache);
+      bw->nav_expect_url = a_Url_dup(url);
+      bw->nav_expecting = TRUE;
+      Nav_open_url(bw, url, 0);
+      a_Url_free(url);
    }
 }
 

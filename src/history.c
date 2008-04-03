@@ -13,6 +13,7 @@
  * Linear history (it also provides indexes for the navigation stack)
  */
 
+#include "msg.h"
 #include "list.h"
 #include "history.h"
 
@@ -30,6 +31,19 @@ static int history_size_max = 16;
 
 
 /*
+ * Debug procedure.
+ */
+void History_show()
+{
+   int i;
+
+   MSG("  {");
+   for (i = 0; i < history_size; ++i)
+      MSG(" %s", URL_STR(history[i].url));
+   MSG(" }\n");
+}
+
+/*
  * Add a new H_Item at the end of the history list
  * (taking care of not making a duplicate entry)
  */
@@ -37,16 +51,26 @@ int a_History_add_url(DilloUrl *url)
 {
    int i, idx;
 
+   _MSG("a_History_add_url: '%s' ", URL_STR(url));
    for (i = 0; i < history_size; ++i)
       if (!a_Url_cmp(history[i].url, url) &&
           !strcmp(URL_FRAGMENT(history[i].url), URL_FRAGMENT(url)))
-         return i;
+         break;
 
-   idx = history_size;
-   a_List_add(history, history_size, history_size_max);
-   history[idx].url = a_Url_dup(url);
-   history[idx].title = NULL;
-   ++history_size;
+   if (i < history_size) {
+      idx = i;
+      _MSG("FOUND at idx=%d\n", idx);
+   } else {
+      idx = history_size;
+      a_List_add(history, history_size, history_size_max);
+      history[idx].url = a_Url_dup(url);
+      history[idx].title = NULL;
+      ++history_size;
+      _MSG("ADDED at idx=%d\n", idx);
+   }
+
+   /* History_show(); */
+
    return idx;
 }
 
@@ -68,6 +92,9 @@ int a_History_set_title(int idx, const char *title)
  */
 DilloUrl *a_History_get_url(int idx)
 {
+   _MSG("a_History_get_url: ");
+   /* History_show(); */
+
    dReturn_val_if_fail(idx >= 0 && idx < history_size, NULL);
 
    return history[idx].url;
