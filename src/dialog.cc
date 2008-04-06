@@ -159,17 +159,22 @@ static void findtext_search_cb(Widget *, void *vtf)
    const char *key = tf->i->value();
    bool case_sens = tf->cb->value();
 
+   if (key[0] != '\0')
+      a_UIcmd_findtext_search(tf->bw, key, case_sens);
+      
+}
+
+/*
+ * Find next occurrence of input key
+ */
+static void findtext_search_cb2(Widget *widget, void *vtf)
+{
    /*
     * Somehow fltk even regards the first loss of focus for the
     * window as a WHEN_ENTER_KEY_ALWAYS event.
     */ 
-   int e = event_key();
-   if ((e != ReturnKey) && (e != LeftButton))
-      return;
-
-   if (key[0] != '\0')
-      a_UIcmd_findtext_search(tf->bw, key, case_sens);
-      
+   if (event_key() == ReturnKey)
+      findtext_search_cb(widget, vtf);
 }
 
 /*
@@ -195,7 +200,7 @@ TextFinder::TextFinder(int ww, int wh, BrowserWindow *bw) :
    begin();
     i = new Input(0, 0, ww, ih);
     i->when(WHEN_ENTER_KEY_ALWAYS);
-    i->callback(findtext_search_cb, this);
+    i->callback(findtext_search_cb2, this);
 
     cb = new CheckButton(0, ih, ww, wh-ih-bh, "Case-sensitive");
 
