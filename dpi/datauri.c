@@ -252,11 +252,9 @@ static unsigned char *datauri_get_data(char *url, size_t *p_sz)
 
    if (p) {
       ++p;
+      data = (unsigned char *)a_Url_decode_hex_str(p, p_sz);
       if (is_base64) {
-         data = (unsigned char *)dStrdup(p);
          *p_sz = (size_t) b64decode(data);
-      } else {
-         data = (unsigned char *)a_Url_decode_hex_str(p, p_sz);
       }
    } else {
       data = (unsigned char *)dStrdup("");
@@ -278,7 +276,6 @@ int main(void)
    /* Initialize the SockHandler */
    sh = sock_handler_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
 
-   /* wget may need to write a temporary file... */
    chdir("/tmp");
 
    /* Read the dpi command from STDIN */
