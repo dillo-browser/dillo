@@ -415,6 +415,26 @@ int dStr_cmp(Dstr *ds1, Dstr *ds2)
 }
 
 /*
+ * Return a pointer to the first occurrence of needle in haystack.
+ */
+char *dStr_memmem(Dstr *haystack, Dstr *needle)
+{
+   int i;
+
+   if (needle && haystack) {
+      if (needle->len == 0)
+         return haystack->str;
+
+      for (i = 0; i <= (haystack->len - needle->len); i++) {
+         if (haystack->str[i] == needle->str[0] &&
+             !memcmp(haystack->str + i, needle->str, needle->len))
+            return haystack->str + i;
+      }
+   }
+   return NULL;
+}
+
+/*
  *- dList ---------------------------------------------------------------------
  */
 

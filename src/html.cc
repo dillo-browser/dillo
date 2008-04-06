@@ -4097,7 +4097,7 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
             dStr_sprintf(boundary, "---------------------------%d%d%d",
                          rand(), rand(), rand());
             dStr_truncate(boundary, 70);
-            success = !strstr(DataStr->str, boundary->str);
+            success = (dStr_memmem(DataStr, boundary) == NULL);
          }
          dList_free(values);
          dStr_truncate(DataStr, 0);

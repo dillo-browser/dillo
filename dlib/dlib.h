@@ -107,6 +107,7 @@ void dStr_vsprintf (Dstr *ds, const char *format, va_list argp);
 void dStr_sprintf (Dstr *ds, const char *format, ...);
 void dStr_sprintfa (Dstr *ds, const char *format, ...);
 int  dStr_cmp(Dstr *ds1, Dstr *ds2);
+char *dStr_memmem(Dstr *haystack, Dstr *needle);
 
 /*
  *-- dList --------------------------------------------------------------------
