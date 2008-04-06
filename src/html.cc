@@ -3958,7 +3958,7 @@ static void
  * Get the values for a "successful control".
  */
 static void Html_get_input_values(const DilloHtmlInput *input,
-                                  bool active_submit, Dlist *values) 
+                                  bool is_active_submit, Dlist *values)
 {
    switch (input->type) {
    case DILLO_HTML_INPUT_TEXT:
@@ -3982,7 +3982,7 @@ static void Html_get_input_values(const DilloHtmlInput *input,
       break;
    case DILLO_HTML_INPUT_SUBMIT:
    case DILLO_HTML_INPUT_BUTTON_SUBMIT:
-      if (active_submit)
+      if (is_active_submit)
          dList_append(values, dStr_new(input->init_str));
       break;
    case DILLO_HTML_INPUT_HIDDEN:
@@ -4024,6 +4024,121 @@ static void Html_get_input_values(const DilloHtmlInput *input,
 }
 
 /*
+ * Generate a boundary string for use in separating the parts of a
+ * multipart/form-data submission.
+ */
+static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
+                                          int active_submit)
+{
+   const int max_tries = 10;
+   Dlist *values = dList_new(5);
+   Dstr *DataStr = dStr_new("");
+   Dstr *boundary = dStr_new("");
+   char *ret = NULL;
+
+   /* fill DataStr with names and values */
+   for (int input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
+      Dstr *dstr;
+      DilloHtmlInput *input = form->inputs->getRef (input_idx);
+      bool is_active_submit = (input_idx == active_submit);
+      Html_get_input_values(input, is_active_submit, values);
+
+      if (input->name) {
+         dstr = dStr_new(input->name);
+         dstr = Html_encode_text(encoder, dstr);
+         dStr_append_l(DataStr, dstr->str, dstr->len);
+         dStr_free(dstr, 1);
+      }
+      for (int i = 0; i < dList_length(values); i++) {
+         dstr = (Dstr *) dList_nth_data(values, 0);
+         dList_remove(values, dstr);
+         if (input->type != DILLO_HTML_INPUT_FILE)
+            dstr = Html_encode_text(encoder, dstr);
+         dStr_append_l(DataStr, dstr->str, dstr->len);
+         dStr_free(dstr, 1);
+      }
+   }
+
+   /* generate a boundary that is not contained within the data */
+   for (int i = 0; i < max_tries && !ret; i++) {
+      // Firefox-style boundary
+      dStr_sprintf(boundary, "---------------------------%d%d%d",
+                   rand(), rand(), rand());
+      dStr_truncate(boundary, 70);
+      if (dStr_memmem(DataStr, boundary) == NULL)
+         ret = boundary->str;
+   }
+   dList_free(values);
+   dStr_free(DataStr, 1);
+   dStr_free(boundary, (ret == NULL));
+   return ret;
+}
+
+/*
+ * Construct the data for a query URL
+ */
+static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
+{
+   Dstr *DataStr = NULL;
+   char *boundary = NULL;
+   iconv_t encoder = (iconv_t) -1;
+
+   if (form->submit_charset && dStrcasecmp(form->submit_charset, "UTF-8")) {
+      encoder = iconv_open(form->submit_charset, "UTF-8");
+      if (encoder == (iconv_t) -1) {
+         MSG_WARN("Cannot convert to character encoding '%s'\n",
+                  form->submit_charset);
+      } else {
+         MSG("Form character encoding: '%s'\n", form->submit_charset);
+      }
+   }
+
+   if (form->enc == DILLO_HTML_ENC_MULTIPART) {
+      if (!(boundary = Html_make_multipart_boundary(form, encoder,
+                                                    active_submit)))
+         MSG_ERR("Cannot generate multipart/form-data boundary.\n");
+   }
+
+   if ((form->enc == DILLO_HTML_ENC_URLENCODING) || (boundary != NULL)) {
+      Dlist *values = dList_new(5);
+
+      DataStr = dStr_sized_new(4096);
+      for (int input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
+         DilloHtmlInput *input = form->inputs->getRef (input_idx);
+         Dstr *name = dStr_new(input->name);
+         bool is_active_submit = (input_idx == active_submit);
+
+         name = Html_encode_text(encoder, name);
+         Html_get_input_values(input, is_active_submit, values);
+
+         for (int i = 0; i < dList_length(values); i++) {
+            Dstr *val = (Dstr *) dList_nth_data(values, 0);
+            dList_remove(values, val);
+            if (input->type != DILLO_HTML_INPUT_FILE)
+               val = Html_encode_text(encoder, val);
+            Html_append_input(form->enc, boundary, DataStr, name->str,
+                              val->str);
+            dStr_free(val, 1);
+         }
+         dStr_free(name, 1);
+      }
+      if (DataStr->len > 0) {
+         if (form->enc == DILLO_HTML_ENC_URLENCODING) {
+            if (DataStr->str[DataStr->len - 1] == '&')
+               dStr_truncate(DataStr, DataStr->len - 1);
+         } else if (form->enc == DILLO_HTML_ENC_MULTIPART) {
+            dStr_append(DataStr, "--");
+         }
+      }
+      dList_free(values);
+   }
+   dFree(boundary);
+   if (encoder != (iconv_t) -1)
+      (void)iconv_close(encoder);
+   return DataStr;
+}
+
+/*
  * Submit the form containing the submit input by making a new query URL
  * and sending it with a_Nav_push.
  * (Called by GTK+)
@@ -4033,153 +4148,58 @@ static void Html_get_input_values(const DilloHtmlInput *input,
 static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
                               int e_input_idx)
 {
-   int input_idx;
-   DilloHtmlInput *input;
-   DilloUrl *new_url;
-   char *url_str, *action_str, *p;
-  
    if ((form->method == DILLO_HTML_METHOD_GET) ||
        (form->method == DILLO_HTML_METHOD_POST)) {
-      Dstr *DataStr = dStr_sized_new(4096);
-      Dstr *boundary = dStr_sized_new(80);
-      int i;
-      bool success = true;
-      iconv_t encoder = (iconv_t) -1;
-  
+      Dstr *DataStr;
+      int active_submit = -1;
+
       _MSG("Html_submit_form2: form->action=%s\n",URL_STR_(form->action));
 
-      if (form->submit_charset && dStrcasecmp(form->submit_charset, "UTF-8")) {
-         encoder = iconv_open(form->submit_charset, "UTF-8");
-         if (encoder == (iconv_t) -1) {
-            MSG_WARN("Cannot convert to character encoding '%s'\n",
-                     form->submit_charset);
+      if (form->num_submit_buttons > 0) {
+         DilloHtmlInput *input = form->inputs->getRef(e_input_idx);
+         if ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
+             (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT)) {
+            active_submit = e_input_idx;
+         }
+      }
+
+      DataStr = Html_build_query_data(form, active_submit);
+      if (DataStr) {
+         /* generate the URL and push it */
+         DilloUrl *new_url;
+         /* form->action was previously resolved against base URL */
+         char *action_str = dStrdup(URL_STR(form->action));
+
+         if (form->method == DILLO_HTML_METHOD_POST) {
+            new_url = a_Url_new(action_str, NULL, 0, 0, 0);
+            /* new_url keeps the dStr and sets DataStr to NULL */
+            a_Url_set_data(new_url, &DataStr);
+            a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Post);
+            if (form->enc == DILLO_HTML_ENC_MULTIPART)
+               a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_MultipartEnc);
          } else {
-            MSG("Form character encoding: '%s'\n", form->submit_charset);
+            /* remove <fragment> and <query> sections if present */
+            char *url_str, *p;
+            if ((p = strchr(action_str, '#')))
+               *p = 0;
+            if ((p = strchr(action_str, '?')))
+               *p = 0;
+
+            url_str = dStrconcat(action_str, "?", DataStr->str, NULL);
+            new_url = a_Url_new(url_str, NULL, 0, 0, 0);
+            a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Get);
+            dFree(url_str);
          }
+
+         a_Nav_push(html->bw, new_url);
+         a_Url_free(new_url);
+         dStr_free(DataStr, 1);
+         dFree(action_str);
       }
-            
-      if (form->enc == DILLO_HTML_ENC_MULTIPART) {
-         /* choose a boundary string */
-         const int max_tries = 10;
-         Dlist *values = dList_new(5);
-         success = false;
-
-         /* fill DataStr with names and values */
-         for (input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
-            bool active_submit;
-            Dstr *dstr;
-            input = form->inputs->getRef (input_idx);
-            active_submit = (e_input_idx == input_idx) &&
-                            (form->num_submit_buttons > 0) &&
-                            ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
-                             (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT));
-            Html_get_input_values(input, active_submit, values);
-
-            if (input->name) {
-               dstr = dStr_new(input->name);
-               dstr = Html_encode_text(encoder, dstr);
-               dStr_append_l(DataStr, dstr->str, dstr->len);
-               dStr_free(dstr, 1);
-            }
-            for (i = 0; i < dList_length(values); i++) {
-               dstr = (Dstr *) dList_nth_data(values, 0);
-               dList_remove(values, dstr);
-               if (input->type != DILLO_HTML_INPUT_FILE)
-                  dstr = Html_encode_text(encoder, dstr);
-               dStr_append_l(DataStr, dstr->str, dstr->len);
-               dStr_free(dstr, 1);
-            }
-         }
-
-         /* generate a boundary that is not contained within the data */
-         for (i = 0; i < max_tries && !success; i++) {
-            // Firefox-style boundary
-            dStr_sprintf(boundary, "---------------------------%d%d%d",
-                         rand(), rand(), rand());
-            dStr_truncate(boundary, 70);
-            success = (dStr_memmem(DataStr, boundary) == NULL);
-         }
-         dList_free(values);
-         dStr_truncate(DataStr, 0);
-      }
-
-      if (success) {
-         /* build query data string */
-         Dlist *values = dList_new(5);
-         for (input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
-            bool active_submit;
-            Dstr *name;
-            input = form->inputs->getRef (input_idx);
-            name = dStr_new(input->name);
-            name = Html_encode_text(encoder, name);
-            active_submit = (e_input_idx == input_idx) &&
-                            (form->num_submit_buttons > 0) &&
-                            ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
-                             (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT));
-            Html_get_input_values(input, active_submit, values);
-
-            for (i = 0; i < dList_length(values); i++) {
-               Dstr *val = (Dstr *) dList_nth_data(values, 0);
-               dList_remove(values, val);
-               if (input->type != DILLO_HTML_INPUT_FILE)
-                  val = Html_encode_text(encoder, val);
-               Html_append_input(form->enc, boundary->str, DataStr,
-                                 name->str, val->str);
-               dStr_free(val, 1);
-            }
-            dStr_free(name, 1);
-         }
-         dList_free(values);
-      } else {
-         // can only be a bug or a weakness that allows the boundary string
-         // to be predicted.
-         MSG_ERR("Html_submit_form2: cannot construct data string.\n");
-      }
-
-      if (DataStr->len > 0) {
-         if (form->enc == DILLO_HTML_ENC_URLENCODING) {  
-            if (DataStr->str[DataStr->len - 1] == '&')
-               dStr_truncate(DataStr, DataStr->len - 1);
-         } else if (form->enc == DILLO_HTML_ENC_MULTIPART) {
-            dStr_append(DataStr, "--");
-         }
-      }
-
-      /* form->action was previously resolved against base URL */
-      action_str = dStrdup(URL_STR(form->action));
-  
-      if (form->method == DILLO_HTML_METHOD_POST) {
-         new_url = a_Url_new(action_str, NULL, 0, 0, 0);
-         /* new_url keeps the dStr and sets DataStr to NULL */
-         a_Url_set_data(new_url, &DataStr);
-         a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Post);
-         if (form->enc == DILLO_HTML_ENC_MULTIPART) {
-            a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_MultipartEnc);
-         }
-      } else {
-         /* remove <fragment> and <query> sections if present */
-         if ((p = strchr(action_str, '#')))
-            *p = 0;
-         if ((p = strchr(action_str, '?')))
-            *p = 0;
-  
-         url_str = dStrconcat(action_str, "?", DataStr->str, NULL);
-         new_url = a_Url_new(url_str, NULL, 0, 0, 0);
-         a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Get);
-         dFree(url_str);
-      }
-  
-      a_Nav_push(html->bw, new_url);
-      dFree(action_str);
-      dStr_free(boundary, 1);
-      dStr_free(DataStr, 1);
-      if (encoder != (iconv_t) -1)
-         (void)iconv_close(encoder);
-      a_Url_free(new_url);
    } else {
       MSG("Html_submit_form2: Method unknown\n");
    }
-  
+
 // /* now, make the rendered area have its focus back */
 // gtk_widget_grab_focus(GTK_BIN(html->bw->render_main_scroll)->child);
 }

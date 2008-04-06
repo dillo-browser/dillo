@@ -86,7 +86,7 @@ dillo-fltk2
  - Added the multipart/form-data encoding method to form submission.
  - Fixed a bug in Html_parse_entity.
  - Fixed a bug in a_Url_cmp.
- - Fixed a bug in Cookies_parse_one. Set it to a single return potint too!
+ - Fixed a bug in Cookies_parse_one. Set it to a single return point too!
  - Added dStr_memmem() to dlib.
  - Fixed a decoding bug in the datauri dpi.
    Patches: place
