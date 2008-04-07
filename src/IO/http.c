@@ -278,8 +278,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
    dStr_free(s_port, TRUE);
    dStr_free(full_path, TRUE);
    dStr_free(proxy_auth, TRUE);
-   /* debug msg will fail on embedded NULLs */
-   DEBUG_MSG(4, "Query:\n%s", query->str);
+   DEBUG_MSG(4, "Query:\n%s\n", dStr_printable(query, 8192));
    return query;
 }
 

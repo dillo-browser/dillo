@@ -354,9 +354,8 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          case OpAbort:
             io = Info->LocalKey;
             if (io->Buf->len > 0) {
-               /* MSG can be truncated by embedded NULLs */
                MSG_WARN("IO_write, closing with pending data not sent\n");
-               MSG_WARN(" \"%s\"\n", io->Buf->str);
+               MSG_WARN(" \"%s\"\n", dStr_printable(io->Buf, 2048));
             }
             /* close FD, remove from ValidIOs and remove its watch */
             IO_close_fd(io, IO_StopRdWr);

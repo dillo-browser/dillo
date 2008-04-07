@@ -435,6 +435,40 @@ char *dStr_memmem(Dstr *haystack, Dstr *needle)
 }
 
 /*
+ * Return a printable representation of the provided Dstr, limited to a length
+ * of roughly maxlen.
+ *
+ * This is NOT threadsafe.
+ */
+const char *dStr_printable(Dstr *in, int maxlen)
+{
+   int i;
+   static const char *const HEX = "0123456789ABCDEF";
+   static Dstr *out = NULL;
+
+   if (in == NULL)
+      return NULL;
+
+   if (out)
+      dStr_truncate(out, 0);
+   else
+      out = dStr_sized_new(in->len);
+
+   for (i = 0; (i < in->len) && (out->len < maxlen); ++i) {
+      if (isprint(in->str[i]) || (in->str[i] == '\n')) {
+         dStr_append_c(out, in->str[i]);
+      } else {
+         dStr_append_l(out, "\\x", 2);
+         dStr_append_c(out, HEX[(in->str[i] >> 4) & 15]);
+         dStr_append_c(out, HEX[in->str[i] & 15]);
+      }
+   }
+   if (out->len >= maxlen)
+      dStr_append(out, "...");
+   return out->str;
+}
+
+/*
  *- dList ---------------------------------------------------------------------
  */
 

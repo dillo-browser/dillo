@@ -228,8 +228,7 @@ static int Capi_dpi_verify_request(DilloWeb *web)
       MSG("Capi_dpi_verify_request: Permission Denied!\n");
       MSG("  URL_STR : %s\n", URL_STR(web->url));
       if (URL_FLAGS(web->url) & URL_Post) {
-         /* MSG will fail on embedded NULLs */
-         MSG("  URL_DATA: %s\n", URL_DATA(web->url)->str);
+         MSG("  URL_DATA: %s\n", dStr_printable(URL_DATA(web->url), 1024));
       }
    }
    return allow;
