@@ -60,10 +60,6 @@ struct _BrowserWindow
    /* flag for button sens idle function */
    int sens_idle_up;
 
-   /* TODO: remove me */
-   void *question_dialog_data;
-   void *question_dialog_answer;
-
    /* TODO: maybe this fits better in the linkblock.
     * Although having it here avoids having a signal for handling it. */
    int num_page_bugs;

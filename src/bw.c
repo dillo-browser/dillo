@@ -73,8 +73,6 @@ BrowserWindow *a_Bw_new(int width, int height, uint32_t xid)
    bw->PageUrls = dList_new(8);
    bw->Docs = dList_new(8);
 
-   bw->question_dialog_data = NULL;
-
    bw->num_page_bugs = 0;
    bw->page_bugs = dStr_new("");
 

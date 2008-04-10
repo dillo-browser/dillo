@@ -49,6 +49,7 @@ dillo-fltk2
  - Added a text placeholder: "[IMG]" for img_off mode.
  - Fixed a SEGFAULT bug in http.c (handling of web->url).
  - Fixed handling of #anchors with repush, and other operations.
+ - Implemented a_Dialog_choice5(). May be used by dpis and dillo.
    Patches: Jorge Arellano Cid
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color, panel_size, geometry, fullscreen,

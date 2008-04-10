@@ -15,6 +15,7 @@
 #include "bw.h"
 #include "capi.h"
 #include "dpiapi.h"  /* for prototypes */
+#include "dialog.hh"
 #include "../dpip/dpip.h"
 
 
@@ -29,24 +30,18 @@ static char *dialog_server = NULL;
 /*
  * Generic callback function for dpip dialogs.
  */
-//static void Dpiapi_dialog_answer_cb(BrowserWindow *bw)
-//{
-//   DialogAnswer *answer = bw->question_dialog_answer;
-//   char *cmd, numstr[16];
-//
-//   /* make dpip tag with the answer */
-//   snprintf(numstr, 16, "%d", answer->alt_num);
-//   cmd = a_Dpip_build_cmd("cmd=%s to_cmd=%s msg=%s",
-//                          "answer", "dialog", numstr);
-//
-//   /* Send answer */
-//   a_Capi_dpi_send_cmd(NULL, bw, cmd, dialog_server, 0);
-//
-//   /* cleanup */
-//   bw->question_dialog_data = NULL;
-//   dFree(answer->tthis);
-//   bw->question_dialog_answer = NULL;
-//}
+static void Dpiapi_dialog_answer_cb(BrowserWindow *bw, int answer)
+{
+   char *cmd, numstr[16];
+
+   /* make dpip tag with the answer */
+   snprintf(numstr, 16, "%d", answer);
+   cmd = a_Dpip_build_cmd("cmd=%s to_cmd=%s msg=%s",
+                          "answer", "dialog", numstr);
+
+   /* Send answer */
+   a_Capi_dpi_send_cmd(NULL, bw, cmd, dialog_server, 0);
+}
 
 /*
  * Process a dpip "dialog" command from any dpi.
@@ -55,9 +50,10 @@ void a_Dpiapi_dialog(BrowserWindow *bw, char *server, char *dpip_tag)
 {
    char *question, *alt1, *alt2, *alt3, *alt4, *alt5;
    size_t dpip_tag_len;
+   int ret;
 
-   MSG("a_Dpiapi_dialog:\n");
-   MSG("  dpip_tag: %s\n", dpip_tag);
+   _MSG("a_Dpiapi_dialog:\n");
+   _MSG("  dpip_tag: %s\n", dpip_tag);
 
    /* set the module scoped variable */
    dialog_server = server;
@@ -71,10 +67,9 @@ void a_Dpiapi_dialog(BrowserWindow *bw, char *server, char *dpip_tag)
    alt4 = a_Dpip_get_attr(dpip_tag, dpip_tag_len, "alt4");
    alt5 = a_Dpip_get_attr(dpip_tag, dpip_tag_len, "alt5");
 
-   //a_Dialog_question5(
-   //   bw, question, TRUE,
-   //   alt1, alt2, alt3, alt4, alt5,
-   //   Dpiapi_dialog_answer_cb);
+   ret = a_Dialog_choice5(question, alt1, alt2, alt3, alt4, alt5);
+   /* As choice5 is modal, call the callback function directly. */
+   Dpiapi_dialog_answer_cb(bw, ret);
 
    dFree(alt1); dFree(alt2); dFree(alt3); dFree(alt4); dFree(alt5);
    dFree(question);

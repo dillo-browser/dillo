@@ -22,7 +22,9 @@
 #include <fltk/CheckButton.h>
 #include <fltk/ReturnButton.h>
 #include <fltk/TextDisplay.h>
+#include <fltk/HighlightButton.h>
 
+#include "msg.h"
 #include "dialog.hh"
 #include "misc.h"
 #include "uicmd.hh"
@@ -222,3 +224,64 @@ void a_Dialog_findtext(BrowserWindow *bw)
    TextFinder *tf = new TextFinder(250, 90, bw);
    tf->show();
 }
+
+
+/*--------------------------------------------------------------------------*/
+static int choice5_answer;
+
+void choice5_cb(Widget *button, void *number)
+{
+  choice5_answer = (int)number;
+  _MSG("choice5_cb: %d\n", choice5_answer);
+  button->window()->make_exec_return(true);
+}
+
+/*
+ * Make a question-dialog with a question and some alternatives.
+ * Return value: 0 = dialog was cancelled, 1-5 = selected alternative.
+ */
+int a_Dialog_choice5(const char *QuestionTxt,
+                     const char *alt1, const char *alt2, const char *alt3,
+                     const char *alt4, const char *alt5)
+{
+   choice5_answer = 0;
+
+   int ww = 440, wh = 150, bw = 50, bh = 45, nb = 0;
+   const char *txt[7];
+
+   txt[0] = txt[6] = NULL;
+   txt[1] = alt1; txt[2] = alt2; txt[3] = alt3;
+   txt[4] = alt4; txt[5] = alt5;
+   for (int i=1; txt[i]; ++i, ++nb);
+
+   Window *window = new Window(ww,wh,"Choice5");
+   window->begin();
+    Group* ib = new Group(0,0,window->w(),window->h());
+    ib->begin();
+    window->resizable(ib);
+
+    Widget *box = new Widget(0,0,ww,wh-bh, QuestionTxt);
+    box->box(DOWN_BOX);
+    box->labelfont(HELVETICA_BOLD_ITALIC);
+    box->labelsize(14);
+
+    HighlightButton *b;
+    int xpos = 0, gap = 8;
+    bw = (ww - gap)/nb - gap;
+    xpos += gap;
+    for (int i=1; i <= nb; ++i) {
+       b = new HighlightButton(xpos, wh-bh, bw, bh, txt[i]);
+       b->align(ALIGN_WRAP|ALIGN_CLIP);
+       b->box(UP_BOX);
+       b->callback(choice5_cb, (void*)i);
+       xpos += bw + gap;
+    }
+   window->end();
+
+   window->exec();
+   window->destroy();
+   _MSG("Choice5 answer = %d\n", choice5_answer);
+
+   return choice5_answer;
+}
+
