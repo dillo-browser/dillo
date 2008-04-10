@@ -88,6 +88,7 @@ dillo-fltk2
  - Fixed a bug in a_Url_cmp.
  - Fixed a bug in Cookies_parse_one. Set it to a single return point too!
  - Added dStr_memmem() and dStr_printable() to dlib.
+ - Split Html_append_input() into smaller functions.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

@@ -34,6 +34,7 @@
 #include "binaryconst.h"
 #include "colors.h"
 
+#include "misc.h"
 #include "decode.h"
 #include "uicmd.hh"
 #include "history.h"
@@ -3910,33 +3911,70 @@ static void Html_urlencode_append(Dstr *str, const char *val)
 }
 
 /*
- * Append a name-value pair to an existing url.
+ * Append a name-value pair to url data using url encoding.
  */
-static void
- Html_append_input(DilloHtmlEnc encoding, const char *boundary, Dstr *url,
-                   const char *name, const char *value)
+static void Html_append_input_urlencode(Dstr *data, const char *name,
+                                        const char *value)
 {
    if (name && name[0]) {
-      if (encoding == DILLO_HTML_ENC_MULTIPART) {
-         if (url->len == 0) {
-            dStr_append(url, "--");
-            dStr_append(url, boundary);
-         }
-         // todo: encode name (RFC 2231) [coming soon]
-         dStr_sprintfa(url,
-                       "\r\n"
-                       "Content-Disposition: form-data; name=\"%s\"\r\n"
-                       "\r\n"
-                       "%s\r\n"
-                       "--%s",
-                       name, value, boundary);
-      } else {
-         // URL encoding
-         Html_urlencode_append(url, name);
-         dStr_append_c(url, '=');
-         Html_urlencode_append(url, value);
-         dStr_append_c(url, '&');
+      Html_urlencode_append(data, name);
+      dStr_append_c(data, '=');
+      Html_urlencode_append(data, value);
+      dStr_append_c(data, '&');
+   }
+}
+
+/*
+ * Append files to URL data using multipart encoding.
+ * Currently only accepts one file.
+ */
+static void Html_append_input_multipart_files(Dstr* data, const char *boundary,
+                                              const char *name, Dstr *file,
+                                              const char *filename)
+{
+   if (name && name[0]) {
+      const char *ctype;
+      (void)a_Misc_get_content_type_from_data(file->str, file->len, &ctype);
+
+      if (data->len == 0) {
+         dStr_append(data, "--");
+         dStr_append(data, boundary);
       }
+      // todo: encode name, filename
+      dStr_sprintfa(data,
+                    "\r\n"
+                    "Content-Disposition: form-data; name=\"%s\"; "
+                       "filename=\"%s\"\r\n"
+                    "Content-Type: %s\r\n"
+                    "\r\n", name, filename, ctype);
+
+      dStr_append_l(data, file->str, file->len);
+
+      dStr_sprintfa(data,
+                    "\r\n"
+                    "--%s", boundary);
+   }
+}
+
+/*
+ * Append a name-value pair to url data using multipart encoding.
+ */
+static void Html_append_input_multipart(Dstr *data, const char *boundary,
+                                        const char *name, const char *value)
+{
+   if (name && name[0]) {
+      if (data->len == 0) {
+         dStr_append(data, "--");
+         dStr_append(data, boundary);
+      }
+      // todo: encode name (RFC 2231) [coming soon]
+      dStr_sprintfa(data,
+                    "\r\n"
+                    "Content-Disposition: form-data; name=\"%s\"\r\n"
+                    "\r\n"
+                    "%s\r\n"
+                    "--%s",
+                    name, value, boundary);
    }
 }
 
@@ -4111,14 +4149,21 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
          name = Html_encode_text(encoder, name);
          Html_get_input_values(input, is_active_submit, values);
 
-         for (int i = 0; i < dList_length(values); i++) {
-            Dstr *val = (Dstr *) dList_nth_data(values, 0);
-            dList_remove(values, val);
-            if (input->type != DILLO_HTML_INPUT_FILE)
+         if (input->type == DILLO_HTML_INPUT_FILE &&
+             dList_length(values) > 0) {
+            /* nothing at the moment */
+         } else {
+            for (int i = 0; i < dList_length(values); i++) {
+               Dstr *val = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, val);
                val = Html_encode_text(encoder, val);
-            Html_append_input(form->enc, boundary, DataStr, name->str,
-                              val->str);
-            dStr_free(val, 1);
+               if (form->enc == DILLO_HTML_ENC_URLENCODING)
+                  Html_append_input_urlencode(DataStr, name->str, val->str);
+               else if (form->enc == DILLO_HTML_ENC_MULTIPART)
+                  Html_append_input_multipart(DataStr, boundary, name->str,
+                                              val->str);
+               dStr_free(val, 1);
+            }
          }
          dStr_free(name, 1);
       }
@@ -4418,11 +4463,10 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    } else if (!dStrcasecmp(type, "file")) {
       /* todo: implement it! */
       if (form->method != DILLO_HTML_METHOD_POST) {
-         /*
-          * The letter of the spec only states that file inputs "should" be
-          * used with enctype multipart/form-data (only meaningful with POST).
-          */
          MSG("File input ignored in form not using HTTP POST method\n");
+      } else if (form->enc != DILLO_HTML_ENC_MULTIPART) {
+         MSG("File input ignored in form not using multipart/form-data"
+             " encoding\n");
       } else {
 //       inp_type = DILLO_HTML_INPUT_FILE;
 //       init_str = (value) ? value : NULL;
