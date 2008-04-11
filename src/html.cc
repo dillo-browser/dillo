@@ -4239,7 +4239,7 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
 /*
  * Submit the form containing the submit input by making a new query URL
  * and sending it with a_Nav_push.
- * (Called by GTK+)
+ * (Called by a_Html_form_event_handler())
  * click_x and click_y are used only by input images and are set only when
  * called by Html_image_clicked. GTK+ does NOT give these arguments.
  */
