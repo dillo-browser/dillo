@@ -22,6 +22,7 @@ void a_UIcmd_save(void *vbw);
 void a_UIcmd_stop(void *vbw);
 void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_file(void *vbw);
+const char *a_UIcmd_select_file();
 void a_UIcmd_open_url_dialog(void *vbw);
 void a_UIcmd_search_dialog(void *vbw);
 void a_UIcmd_book(void *vbw);

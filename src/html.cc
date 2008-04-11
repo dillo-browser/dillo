@@ -3749,6 +3749,12 @@ static void Html_reset_input(DilloHtmlInput *input)
          textres->setText(input->init_str ? input->init_str : "");
       }
       break;
+   case DILLO_HTML_INPUT_FILE:
+   {  LabelButtonResource *lbr =
+         (LabelButtonResource *)((Embed*)input->widget)->getResource();
+      lbr->setLabel(input->init_str);
+      break;
+   }
    default:
       break;
    }
@@ -4053,9 +4059,26 @@ static void Html_get_input_values(const DilloHtmlInput *input,
 //    }
 //    break;
    case DILLO_HTML_INPUT_FILE:
-      MSG("Data from file input not submitted\n");
-      // If multiple files are submitted, use multipart/mixed.
+   {  LabelButtonResource *lbr =
+         (LabelButtonResource*)((Embed*)input->widget)->getResource();
+      const char *filename = lbr->getLabel();
+      if (filename[0] && strcmp(filename, input->init_str)) {
+         char *buf;
+         int buf_size;
+         char *escaped_name = a_Misc_escape_chars(filename, "% ");
+         DilloUrl *url = a_Url_new(escaped_name, "file:///", 0, 0, 0);
+         if (a_Capi_get_buf(url, &buf, &buf_size)) {
+            Dstr *file = dStr_sized_new(buf_size);
+            dStr_append_l(file, buf, buf_size);
+            dList_append(values, file);
+         } else {
+            MSG("form file input \"%s\" not loaded.\n", filename);
+         }
+         a_Url_free(url);
+         dFree(escaped_name);
+      }
       break;
+   }
    default:
       break;
    }
@@ -4074,7 +4097,7 @@ static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
    Dstr *boundary = dStr_new("");
    char *ret = NULL;
 
-   /* fill DataStr with names and values */
+   /* fill DataStr with names, filenames, and values */
    for (int input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
       Dstr *dstr;
       DilloHtmlInput *input = form->inputs->getRef (input_idx);
@@ -4086,6 +4109,17 @@ static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
          dstr = Html_encode_text(encoder, dstr);
          dStr_append_l(DataStr, dstr->str, dstr->len);
          dStr_free(dstr, 1);
+      }
+      if (input->type == DILLO_HTML_INPUT_FILE) {
+         LabelButtonResource *lbr =
+            (LabelButtonResource*)((Embed*)input->widget)->getResource();
+         const char *filename = lbr->getLabel();
+         if (filename[0] && strcmp(filename, input->init_str)) {
+            dstr = dStr_new(filename);
+            dstr = Html_encode_text(encoder, dstr);
+            dStr_append_l(DataStr, dstr->str, dstr->len);
+            dStr_free(dstr, 1);
+         }
       }
       for (int i = 0; i < dList_length(values); i++) {
          dstr = (Dstr *) dList_nth_data(values, 0);
@@ -4151,7 +4185,26 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
 
          if (input->type == DILLO_HTML_INPUT_FILE &&
              dList_length(values) > 0) {
-            /* nothing at the moment */
+            if (dList_length(values) > 1)
+               MSG_WARN("multiple files per form control not supported\n");
+            Dstr *file = (Dstr *) dList_nth_data(values, 0);
+            dList_remove(values, file);
+
+            /* Get filename and encode it. Do not encode file contents. */
+            LabelButtonResource *lbr =
+               (LabelButtonResource*)((Embed*)input->widget)->getResource();
+            const char *filename = lbr->getLabel();
+            if (filename[0] && strcmp(filename, input->init_str)) {
+               char *p = strrchr(filename, '/');
+               if (p)
+                  filename = p + 1;     /* don't reveal path */
+               Dstr *dfilename = dStr_new(filename);
+               dfilename = Html_encode_text(encoder, dfilename);
+               Html_append_input_multipart_files(DataStr, boundary,
+                                      name->str, file, dfilename->str);
+               dStr_free(dfilename, 1);
+               dStr_free(file, 1);
+            }
          } else {
             for (int i = 0; i < dList_length(values); i++) {
                Dstr *val = (Dstr *) dList_nth_data(values, 0);
@@ -4250,6 +4303,19 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
 }
 
 /*
+ * Callback used when getting a file for form input.
+ */
+static void Html_get_file_cb(int Op, CacheClient_t *Client)
+{
+   DilloWeb *web = (DilloWeb *)Client->Web;
+   LabelButtonResource *lbr = (LabelButtonResource *)Client->CbData;
+   if (Op) {
+      lbr->setLabel(URL_PATH(Client->Url));
+      a_UIcmd_set_msg(web->bw, "File loaded.");
+   }
+}
+
+/*
  * Handler for events related to forms.
  *
  * TODO: Currently there's "clicked" for buttons, we surely need "enter" for
@@ -4261,6 +4327,7 @@ void a_Html_form_event_handler(void *data,
 {
    int form_index, input_idx = -1, idx;
    DilloHtmlForm *form = NULL;
+   DilloHtmlInput *input;
    DilloHtml *html = (DilloHtml*)data;
 
    MSG("Html_form_event_handler %p %p\n", html, form_receiver);
@@ -4271,7 +4338,7 @@ void a_Html_form_event_handler(void *data,
       if (form->form_receiver == form_receiver) {
          /* form found, let's get the input index for this event */
          for (idx = 0; idx < form->inputs->size(); idx++) {
-            DilloHtmlInput *input = form->inputs->getRef(idx);
+            input = form->inputs->getRef(idx);
             if (input->embed &&
                 v_resource == (void*)((Embed*)input->widget)->getResource()) {
                input_idx = idx;
@@ -4284,7 +4351,24 @@ void a_Html_form_event_handler(void *data,
    if (form_index == html->forms->size()) {
       MSG("a_Html_form_event_handler: ERROR, form not found!\n");
    } else {
-      Html_submit_form2(html, form, input_idx);
+      if (input->type == DILLO_HTML_INPUT_FILE) {
+         /* read the file into cache */
+         const char *filename = a_UIcmd_select_file();
+         if (filename) {
+            LabelButtonResource *lbr =
+               (LabelButtonResource*)((Embed*)input->widget)->getResource();
+            char *escaped_name = a_Misc_escape_chars(filename, "% ");
+            DilloUrl *url = a_Url_new(escaped_name, "file:///", URL_E2EReload,
+                                      0, 0);
+            DilloWeb *web = a_Web_new(url);
+            web->bw = html->bw;
+            a_Capi_open_url(web, Html_get_file_cb, lbr);
+            a_Url_free(url);
+            dFree(escaped_name);
+         }
+      } else {
+         Html_submit_form2(html, form, input_idx);
+      }
    }
 }
 
@@ -4468,9 +4552,13 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          MSG("File input ignored in form not using multipart/form-data"
              " encoding\n");
       } else {
-//       inp_type = DILLO_HTML_INPUT_FILE;
-//       init_str = (value) ? value : NULL;
-         MSG("An input of the type \"file\" wasn't rendered!\n");
+         inp_type = DILLO_HTML_INPUT_FILE;
+         init_str = dStrdup("File selector");
+         LabelButtonResource *lbr =
+            HT2LT(html)->getResourceFactory()->
+               createLabelButtonResource(init_str);
+         widget = embed = new Embed (lbr);
+         lbr->connectClicked(form->form_receiver);
       }
    } else if (!dStrcasecmp(type, "button")) {
       inp_type = DILLO_HTML_INPUT_BUTTON;

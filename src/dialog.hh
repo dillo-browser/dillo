@@ -16,6 +16,8 @@ int a_Dialog_choice5(const char *QuestionTxt,
 const char *a_Dialog_input(const char *msg);
 const char *a_Dialog_save_file(const char *msg,
                                const char *pattern, const char *fname);
+const char *a_Dialog_select_file(const char *msg,
+                                 const char *pattern, const char *fname);
 char *a_Dialog_open_file(const char *msg,
                          const char *pattern, const char *fname);
 void a_Dialog_text_window(const char *txt, const char *title);

@@ -81,6 +81,21 @@ const char *a_Dialog_save_file(const char *msg,
    return file_chooser(msg, pattern, fname);
 }
 
+/*
+ * Show the select file dialog.
+ *
+ * Return: pointer to chosen filename, or NULL on Cancel.
+ */
+const char *a_Dialog_select_file(const char *msg,
+                                 const char *pattern, const char *fname)
+{
+   /*
+    * FileChooser::type(MULTI) appears to allow multiple files to be selected,
+    * but just follow save_file's path for now.
+    */
+   return a_Dialog_save_file(msg, pattern, fname);
+}
+
 //#include <fltk/FileIcon.h>
 /*
  * Show the open file dialog.

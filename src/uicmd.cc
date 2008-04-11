@@ -317,6 +317,14 @@ void a_UIcmd_save(void *vbw)
 }
 
 /*
+ * Select a file
+ */
+const char *a_UIcmd_select_file()
+{
+   return a_Dialog_select_file("Select a File", NULL, NULL);
+}
+
+/*
  * Stop network activity on this bw.
  * The stop button was pressed: stop page (and images) downloads.
  */
