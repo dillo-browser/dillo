@@ -195,14 +195,16 @@ static FILE *Cookies_fopen(const char *filename, char *init_str)
          close(fd);
 
          MSG("Created file: %s\n", filename);
-         F_in = Cookies_fopen(filename, NULL);
+         F_in = fopen(filename, "r+");
       } else {
          MSG("Could not create file: %s!\n", filename);
       }
    }
 
-   /* set close on exec */
-   fcntl(fileno(F_in), F_SETFD, FD_CLOEXEC | fcntl(fileno(F_in), F_GETFD));
+   if (F_in) {
+      /* set close on exec */
+      fcntl(fileno(F_in), F_SETFD, FD_CLOEXEC | fcntl(fileno(F_in), F_GETFD));
+   }
 
    return F_in;
 }
@@ -1327,7 +1329,7 @@ static CookieControlAction Cookies_control_check_domain(const char *domain)
 static int srv_parse_buf(SockHandler *sh, char *Buf, size_t BufSize)
 {
    char *p, *cmd, *cookie, *host, *path, *scheme;
-   int port;
+   int port, ret;
 
    if (!(p = strchr(Buf, '>'))) {
       /* Haven't got a full tag */
@@ -1375,14 +1377,15 @@ static int srv_parse_buf(SockHandler *sh, char *Buf, size_t BufSize)
       cmd = a_Dpip_build_cmd("cmd=%s cookie=%s", "get_cookie_answer", cookie);
 
       if (sock_handler_write_str(sh, 1, cmd)) {
-          dFree(cookie);
-          dFree(cmd);
-          return 1;
+          ret = 1;
+      } else {
+          _MSG("sock_handler_write_str: SUCCESS cmd={%s}\n", cmd);
+          ret = 2;
       }
       dFree(cookie);
       dFree(cmd);
 
-      return 2;
+      return ret;
    }
 
    return 0;
@@ -1455,8 +1458,10 @@ int main (void) {
          code = 1;
          if ((buf = sock_handler_read(sh)) != NULL) {
             /* Let's see what we fished... */
+            _MSG(" buf = {%s}\n", buf);
             code = srv_parse_buf(sh, buf, strlen(buf));
          }
+         _MSG(" code = %d %s\n", code, code == 1 ? "EXIT" : "BREAK");
          if (code == 1)
             exit(1);
          else if (code == 2)
@@ -1468,6 +1473,8 @@ int main (void) {
       sock_handler_free(sh);
 
    }/*while*/
+
+   return 0;
 }
 
 #endif /* !DISABLE_COOKIES */

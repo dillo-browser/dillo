@@ -102,6 +102,9 @@ dillo-fltk2
  - Added a_Capi_get_flags(). It requests a cache entry's status as flags.
  - Switched URL_DATA type from char* to a dStr.
    Patch: place, Jorge Arellano Cid
++- Fixed a cookies-related dillo freeze bug happening at:
+     http://www.fltk.org/newsgroups.php?gfltk.general+v:24912
+   Patch: Andreas Kemnade, Jorge Arellano Cid
 +- Fixed a va_list-related SEGFAULT on 64bit-arch in dStr_vsprintfa().
    Added const declarations in html parser.
    Patch: Vincent Thomasset

@@ -95,7 +95,7 @@ static FILE *Cookies_fopen(const char *filename, char *init_str)
          close(fd);
 
          DEBUG_MSG(10, "Cookies: Created file: %s\n", filename);
-         F_in = Cookies_fopen(filename, NULL);
+         F_in = fopen(filename, "r");
       } else {
          DEBUG_MSG(10, "Cookies: Could not create file: %s!\n", filename);
       }
@@ -141,7 +141,7 @@ void a_Cookies_freeall()
 void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
 {
    CookieControlAction action;
-   char *cmd, *cookie_string, numstr[16];
+   char *cmd, *cookie_string, *dpip_tag, numstr[16];
    const char *path;
    int i;
 
@@ -162,7 +162,13 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
                              path ? path : "/", numstr);
 
       DEBUG_MSG(5, "Cookies.c: a_Cookies_set \n\t \"%s\" \n",cmd );
-      a_Capi_dpi_send_cmd(NULL, NULL, cmd, "cookies", 1);
+      /* This call is commented because it doesn't guarantee the order
+       * in which cookies are set and got. (It may deadlock too) */
+      //a_Capi_dpi_send_cmd(NULL, NULL, cmd, "cookies", 1);
+
+      dpip_tag = a_Dpi_send_blocking_cmd("cookies", cmd);
+      _MSG("a_Cookies_set: dpip_tag = {%s}\n", dpip_tag);
+      dFree(dpip_tag);
       dFree(cmd);
    }
 }
@@ -192,7 +198,9 @@ char *a_Cookies_get_query(const DilloUrl *request_url)
                          URL_HOST(request_url), path ? path : "/", numstr);
 
    /* Get the answer from cookies.dpi */
+   _MSG("cookies.c: a_Dpi_send_blocking_cmd cmd = {%s}\n", cmd);
    dpip_tag = a_Dpi_send_blocking_cmd("cookies", cmd);
+   _MSG("cookies.c: after a_Dpi_send_blocking_cmd resp={%s}\n", dpip_tag);
    dFree(cmd);
 
    query = dStrdup("Cookie2: $Version=\"1\"\r\n");
