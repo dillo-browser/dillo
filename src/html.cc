@@ -380,7 +380,7 @@ static void Html_add_input(DilloHtmlForm *form,
                            const char *init_str,
                            DilloHtmlSelect *select,
                            bool_t init_val);
-//static void Html_reset_form(GtkWidget *reset, DilloHtmlLB *html_lb);
+//static void Html_reset_form(DilloHtmlForm *form);
 static int Html_tag_index(const char *tag);
 static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
 
@@ -3827,17 +3827,13 @@ static void Html_add_input(DilloHtmlForm *form,
  * Reset all inputs in the form containing reset to their initial values.
  * In general, reset is the reset button for the form.
  */
-//static void Html_reset_form(GtkWidget *reset, DilloHtmlLB *html_lb)
-//{
-//   int i, j;
-//   DilloHtmlForm *form;
-//
-//   if ((i = Html_find_form(reset, html_lb)) != -1){
-//      form = html_lb->forms->getRef (i);
-//      for ( j = 0; j < form->inputs->size(); j++)
-//         Html_reset_input(&(form->inputs[j]));
-//   }
-//}
+static void Html_reset_form(DilloHtmlForm *form)
+{
+   int i;
+
+   for (i = 0; i < form->inputs->size(); i++)
+      Html_reset_input(form->inputs->getRef(i));
+}
 
 /*
  * Pass input text through character set encoder.
@@ -4355,25 +4351,24 @@ void a_Html_form_event_handler(void *data,
    }
    if (form_index == html->forms->size()) {
       MSG("a_Html_form_event_handler: ERROR, form not found!\n");
-   } else {
-      if (input->type == DILLO_HTML_INPUT_FILE) {
-         /* read the file into cache */
-         const char *filename = a_UIcmd_select_file();
-         if (filename) {
-            LabelButtonResource *lbr =
-               (LabelButtonResource*)((Embed*)input->widget)->getResource();
-            char *escaped_name = a_Misc_escape_chars(filename, "% ");
-            DilloUrl *url = a_Url_new(escaped_name, "file:///", URL_E2EReload,
-                                      0, 0);
-            DilloWeb *web = a_Web_new(url);
-            web->bw = html->bw;
-            a_Capi_open_url(web, Html_get_file_cb, lbr);
-            a_Url_free(url);
-            dFree(escaped_name);
-         }
-      } else {
-         Html_submit_form2(html, form, input_idx);
+   } else if (input->type == DILLO_HTML_INPUT_FILE) {
+      /* read the file into cache */
+      const char *filename = a_UIcmd_select_file();
+      if (filename) {
+         LabelButtonResource *lbr =
+            (LabelButtonResource*)((Embed*)input->widget)->getResource();
+         char *escaped_name = a_Misc_escape_chars(filename, "% ");
+         DilloUrl *url = a_Url_new(escaped_name, "file:///",URL_E2EReload,0,0);
+         DilloWeb *web = a_Web_new(url);
+         web->bw = html->bw;
+         a_Capi_open_url(web, Html_get_file_cb, lbr);
+         a_Url_free(url);
+         dFree(escaped_name);
       }
+   } else if (input->type == DILLO_HTML_INPUT_RESET) {
+      Html_reset_form(form);
+   } else {
+      Html_submit_form2(html, form, input_idx);
    }
 }
 
@@ -4528,8 +4523,7 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          ->createLabelButtonResource(init_str);
       widget = embed = new Embed (label_b_r);
 //    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
-//    gtk_signal_connect(GTK_OBJECT(widget), "clicked",
-//                       GTK_SIGNAL_FUNC(Html_reset_form), html_lb);
+      label_b_r->connectClicked (form->form_receiver);
    } else if (!dStrcasecmp(type, "image")) {
       if (URL_FLAGS(html->base_url) & URL_SpamSafe) {
          /* Don't request the image; make a text submit button instead */
@@ -4703,7 +4697,7 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
       /* The HTML3.2 spec says it can have "text and character entities". */
       str = Html_parse_entities(html, html->Stash->str, html->Stash->len);
       form = html->forms->getRef (html->forms->size() - 1);
-      form->inputs->get(form->inputs->size() - 1).init_str = str;
+      form->inputs->getRef(form->inputs->size() - 1)->init_str = str;
       widget = (Widget*)(form->inputs->get(form->inputs->size() - 1).widget);
       ((MultiLineTextResource *)((Embed *)widget)->getResource ())
          ->setText(str);
