@@ -3841,8 +3841,10 @@ static void Html_add_input(DilloHtmlForm *form,
 
 /*
  * Pass input text through character set encoder.
+ * Return value: same input Dstr if no encoding is needed.
+                 new Dstr when encoding (input Dstr is freed).
  */
-static Dstr *Html_encode_text(iconv_t encoder, Dstr *input)
+static Dstr *Html_encode_text(iconv_t encoder, Dstr **input)
 {
    int rc = 0;
    Dstr *output;
@@ -3852,12 +3854,12 @@ static Dstr *Html_encode_text(iconv_t encoder, Dstr *input)
    size_t inLeft, outRoom;
    bool bad_chars = false;
 
-   if ((encoder == (iconv_t) -1) || input == NULL || input->len == 0)
-      return input;
+   if ((encoder == (iconv_t) -1) || *input == NULL || (*input)->len == 0)
+      return *input;
 
    output = dStr_new("");
-   inPtr = input->str;
-   inLeft = input->len;
+   inPtr  = (*input)->str;
+   inLeft = (*input)->len;
    buffer = (char *)dMalloc(bufsize);
 
    while ((rc != EINVAL) && (inLeft > 0)) {
@@ -3901,7 +3903,7 @@ static Dstr *Html_encode_text(iconv_t encoder, Dstr *input)
    }
 
    dFree(buffer);
-   dStr_free(input, 1);
+   dStr_free(*input, 1);
 
    return output;
 }
@@ -4103,7 +4105,7 @@ static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
 
       if (input->name) {
          dstr = dStr_new(input->name);
-         dstr = Html_encode_text(encoder, dstr);
+         dstr = Html_encode_text(encoder, &dstr);
          dStr_append_l(DataStr, dstr->str, dstr->len);
          dStr_free(dstr, 1);
       }
@@ -4113,7 +4115,7 @@ static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
          const char *filename = lbr->getLabel();
          if (filename[0] && strcmp(filename, input->init_str)) {
             dstr = dStr_new(filename);
-            dstr = Html_encode_text(encoder, dstr);
+            dstr = Html_encode_text(encoder, &dstr);
             dStr_append_l(DataStr, dstr->str, dstr->len);
             dStr_free(dstr, 1);
          }
@@ -4122,7 +4124,7 @@ static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
          dstr = (Dstr *) dList_nth_data(values, 0);
          dList_remove(values, dstr);
          if (input->type != DILLO_HTML_INPUT_FILE)
-            dstr = Html_encode_text(encoder, dstr);
+            dstr = Html_encode_text(encoder, &dstr);
          dStr_append_l(DataStr, dstr->str, dstr->len);
          dStr_free(dstr, 1);
       }
@@ -4177,7 +4179,7 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
          Dstr *name = dStr_new(input->name);
          bool is_active_submit = (input_idx == active_submit);
 
-         name = Html_encode_text(encoder, name);
+         name = Html_encode_text(encoder, &name);
          Html_get_input_values(input, is_active_submit, values);
 
          if (input->type == DILLO_HTML_INPUT_FILE &&
@@ -4196,23 +4198,23 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
                if (p)
                   filename = p + 1;     /* don't reveal path */
                Dstr *dfilename = dStr_new(filename);
-               dfilename = Html_encode_text(encoder, dfilename);
+               dfilename = Html_encode_text(encoder, &dfilename);
                Html_append_input_multipart_files(DataStr, boundary,
                                       name->str, file, dfilename->str);
                dStr_free(dfilename, 1);
-               dStr_free(file, 1);
             }
+            dStr_free(file, 1);
          } else if (input->type == DILLO_HTML_INPUT_INDEX) {
             Dstr *val = (Dstr *) dList_nth_data(values, 0);
             dList_remove(values, val);
-            val = Html_encode_text(encoder, val);
+            val = Html_encode_text(encoder, &val);
             Html_urlencode_append(DataStr, val->str);
             dStr_free(val, 1);
          } else {
             for (int i = 0; i < dList_length(values); i++) {
                Dstr *val = (Dstr *) dList_nth_data(values, 0);
                dList_remove(values, val);
-               val = Html_encode_text(encoder, val);
+               val = Html_encode_text(encoder, &val);
                if (form->enc == DILLO_HTML_ENC_URLENCODING)
                   Html_append_input_urlencode(DataStr, name->str, val->str);
                else if (form->enc == DILLO_HTML_ENC_MULTIPART)
