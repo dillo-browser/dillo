@@ -4007,6 +4007,7 @@ static void Html_get_input_values(const DilloHtmlInput *input,
    switch (input->type) {
    case DILLO_HTML_INPUT_TEXT:
    case DILLO_HTML_INPUT_PASSWORD:
+   case DILLO_HTML_INPUT_INDEX:
       EntryResource *entryres;
       entryres = (EntryResource*)((Embed*)input->widget)->getResource();
       dList_append(values, dStr_new(entryres->getText()));
@@ -4047,10 +4048,6 @@ static void Html_get_input_values(const DilloHtmlInput *input,
       }
       break;
    }
-// case DILLO_HTML_INPUT_INDEX:
-//    success = Html_urlencode_append(DataStr,
-//       gtk_entry_get_text(GTK_ENTRY(input->widget)));
-//    break;
 // case DILLO_HTML_INPUT_IMAGE:
 //    if (input->widget == submit) {
 //    dList_append(dStr_new(input->init_str));
@@ -4205,6 +4202,12 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
                dStr_free(dfilename, 1);
                dStr_free(file, 1);
             }
+         } else if (input->type == DILLO_HTML_INPUT_INDEX) {
+            Dstr *val = (Dstr *) dList_nth_data(values, 0);
+            dList_remove(values, val);
+            val = Html_encode_text(encoder, val);
+            Html_urlencode_append(DataStr, val->str);
+            dStr_free(val, 1);
          } else {
             for (int i = 0; i < dList_length(values); i++) {
                Dstr *val = (Dstr *) dList_nth_data(values, 0);
@@ -4627,48 +4630,42 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_isindex(DilloHtml *html,
                                   const char *tag, int tagsize)
 {
-// // AL
-// DilloHtmlForm *form;
-// DilloHtmlLB *html_lb;
-// DilloUrl *action;
-// GtkWidget *widget;
-// Widget *embed_gtk;
-// const char *attrbuf;
-//
-// if ((attrbuf = Html_get_attr(html, tag, tagsize, "action")))
-//    action = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
-// else
-//    action = a_Url_dup(html->base_url);
-//
-// html->formNew(DILLO_HTML_METHOD_GET, action,
-//               DILLO_HTML_ENC_URLENCODING, html->charset);
-//
-// form = html->forms->getRef (html_lb->forms->size() - 1);
-//
-// DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
-//
-// if ((attrbuf = Html_get_attr(html, tag, tagsize, "prompt")))
-//    DW2TB(html->dw)->addText(dStrdup(attrbuf),
-//                             S_TOP(html)->style);
-//
-// widget = gtk_entry_new();
-// Html_add_input(form, DILLO_HTML_INPUT_INDEX,
-//                widget, NULL, NULL, NULL, FALSE);
-// gtk_signal_connect(GTK_OBJECT(widget), "activate",
-//                    GTK_SIGNAL_FUNC(Html_enter_submit_form),
-//                    html_lb);
-// gtk_widget_show(widget);
-// /* compare <input type=text> */
-// gtk_signal_connect_after(GTK_OBJECT(widget), "button_press_event",
-//                          GTK_SIGNAL_FUNC(gtk_true),
-//                          NULL);
-//
-// embed_gtk = a_Dw_embed_gtk_new();
-// a_Dw_embed_gtk_add_gtk(DW_EMBED_GTK(embed_gtk), widget);
-// DW2TB(html->dw)->addWidget (embed_gtk,
-//                             S_TOP(html)->style);
-//
-// a_Url_free(action);
+   DilloHtmlForm *form;
+   DilloUrl *action;
+   Widget *widget;
+   Embed *embed;
+   const char *attrbuf;
+
+   if ((attrbuf = Html_get_attr(html, tag, tagsize, "action")))
+      action = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
+   else
+      action = a_Url_dup(html->base_url);
+  
+   html->formNew(DILLO_HTML_METHOD_GET, action, DILLO_HTML_ENC_URLENCODING,
+                 html->charset);
+  
+   form = html->forms->getRef (html->forms->size() - 1);
+  
+   DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
+  
+   if ((attrbuf = Html_get_attr(html, tag, tagsize, "prompt")))
+      DW2TB(html->dw)->addText(dStrdup(attrbuf), S_TOP(html)->style);
+ 
+   EntryResource *entryResource =
+      HT2LT(html)->getResourceFactory()->createEntryResource (10, false);
+   widget = embed = new Embed (entryResource);
+   entryResource->connectActivate (form->form_receiver); 
+
+   Html_add_input(form, DILLO_HTML_INPUT_INDEX,
+                  widget, embed, NULL, NULL, NULL, FALSE);
+
+   if (prefs.standard_widget_colors) {
+      HTML_SET_TOP_ATTR(html, color, NULL);
+      HTML_SET_TOP_ATTR(html, backgroundColor, NULL);
+   }
+   DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+  
+   a_Url_free(action);
 }
 
 /*
