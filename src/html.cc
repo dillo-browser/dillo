@@ -4356,7 +4356,7 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
 {
    int form_index, input_idx = -1, idx;
    DilloHtmlForm *form = NULL;
-   DilloHtmlInput *input;
+   DilloHtmlInput *input = NULL;
    DilloHtml *html = (DilloHtml*)data;
 
    MSG("Html_form_event_handler %p %p\n", html, form_receiver);
@@ -4377,7 +4377,7 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
          break;
       }
    }
-   if (form_index == html->forms->size()) {
+   if (!input) {
       MSG("a_Html_form_event_handler: ERROR, form not found!\n");
    } else if (input->type == DILLO_HTML_INPUT_FILE) {
       /* read the file into cache */
