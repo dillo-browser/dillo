@@ -79,7 +79,8 @@ private:
 public:
    Form (void *p);
    ~Form ();
-   void clicked (dw::core::ui::ButtonResource *resource, int buttonNo);
+   void clicked (dw::core::ui::ButtonResource *resource, int buttonNo,
+                 int x, int y);
    void activate (dw::core::ui::Resource *resource);
 
 };

@@ -77,7 +77,7 @@ Form::~Form ()
    delete resources;
 }
 
-void Form::clicked (ButtonResource *resource, int buttonNo)
+void Form::clicked (ButtonResource *resource, int buttonNo, int x, int y)
 {
 /*
    for (container::typed::Iterator <ResourceDecorator> it =
@@ -90,14 +90,13 @@ void Form::clicked (ButtonResource *resource, int buttonNo)
    }
 */
    printf ("Form::clicked:: Button was clicked\n");
-
    // Let html.cc handle the event
-   a_Html_form_event_handler(ext_data, this, (Resource*)resource);
+   a_Html_form_event_handler(ext_data, this, (Resource*)resource, x, y);
 }
 
 void Form::activate (Resource *resource)
 {
-   a_Html_form_event_handler(ext_data, this, (Resource*)resource);
+   a_Html_form_event_handler(ext_data, this, (Resource*)resource, -1, -1);
 }
 
 } // namespace form

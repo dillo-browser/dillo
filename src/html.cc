@@ -3983,18 +3983,40 @@ static void Html_append_input_multipart(Dstr *data, const char *boundary,
 }
 
 /*
- * Append a image button click position to an existing url.
+ * Append an image button click position to url data using url encoding.
  */
-//static void Html_append_clickpos(Dstr *url, const char *name, int x, int y)
-//{
-//   if (name) {
-//      Html_urlencode_append(url, name);
-//      dStr_sprintfa(url, ".x=%d&", x);
-//      Html_urlencode_append(url, name);
-//      dStr_sprintfa(url, ".y=%d&", y);
-//   } else
-//      dStr_sprintfa(url, "x=%d&y=%d&", x, y);
-//}
+static void Html_append_clickpos_urlencode(Dstr *data, Dstr *name, int x,int y)
+{
+   if (name->len) {
+      Html_urlencode_append(data, name->str);
+      dStr_sprintfa(data, ".x=%d&", x);
+      Html_urlencode_append(data, name->str);
+      dStr_sprintfa(data, ".y=%d&", y);
+   } else
+      dStr_sprintfa(data, "x=%d&y=%d&", x, y);
+}
+
+/*
+ * Append an image button click position to url data using multipart encoding.
+ */
+static void Html_append_clickpos_multipart(Dstr *data, const char *boundary,
+                                           Dstr *name, int x, int y)
+{
+   char posstr[16];
+   int orig_len = name->len;
+
+   if (orig_len)
+      dStr_append_c(name, '.');
+   dStr_append_c(name, 'x');
+
+   snprintf(posstr, 16, "%d", x);
+   Html_append_input_multipart(data, boundary, name->str, posstr);
+   dStr_truncate(name, name->len - 1);
+   dStr_append_c(name, 'y');
+   snprintf(posstr, 16, "%d", y);
+   Html_append_input_multipart(data, boundary, name->str, posstr);
+   dStr_truncate(name, orig_len);
+}
 
 /*
  * Get the values for a "successful control".
@@ -4046,13 +4068,11 @@ static void Html_get_input_values(const DilloHtmlInput *input,
       }
       break;
    }
-// case DILLO_HTML_INPUT_IMAGE:
-//    if (input->widget == submit) {
-//    dList_append(dStr_new(input->init_str));
-// will have to be modified to handle enctype="multipart/form-data"
-// Html_append_clickpos(DataStr, input->name, click_x, click_y);
-//    }
-//    break;
+   case DILLO_HTML_INPUT_IMAGE:
+      if (is_active_submit) {
+         dList_append(values, dStr_new(input->init_str));
+      }
+      break;
    case DILLO_HTML_INPUT_FILE:
    {  LabelButtonResource *lbr =
          (LabelButtonResource*)((Embed*)input->widget)->getResource();
@@ -4144,7 +4164,8 @@ static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
 /*
  * Construct the data for a query URL
  */
-static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
+static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit,
+                                   int x, int y)
 {
    Dstr *DataStr = NULL;
    char *boundary = NULL;
@@ -4207,7 +4228,8 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
             Html_urlencode_append(DataStr, val->str);
             dStr_free(val, 1);
          } else {
-            for (int i = 0; i < dList_length(values); i++) {
+            int i;
+            for (i = 0; i < dList_length(values); i++) {
                Dstr *val = (Dstr *) dList_nth_data(values, 0);
                dList_remove(values, val);
                val = Html_encode_text(encoder, &val);
@@ -4217,6 +4239,13 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
                   Html_append_input_multipart(DataStr, boundary, name->str,
                                               val->str);
                dStr_free(val, 1);
+            }
+            if (i && input->type == DILLO_HTML_INPUT_IMAGE) {
+               /* clickpos to accompany the value just appended */
+               if (form->enc == DILLO_HTML_ENC_URLENCODING)
+                  Html_append_clickpos_urlencode(DataStr, name, x, y);
+               else if (form->enc == DILLO_HTML_ENC_MULTIPART)
+                  Html_append_clickpos_multipart(DataStr, boundary, name, x,y);
             }
          }
          dStr_free(name, 1);
@@ -4241,11 +4270,10 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit)
  * Submit the form containing the submit input by making a new query URL
  * and sending it with a_Nav_push.
  * (Called by a_Html_form_event_handler())
- * click_x and click_y are used only by input images and are set only when
- * called by Html_image_clicked. GTK+ does NOT give these arguments.
+ * click_x and click_y are used only by input images.
  */
 static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
-                              int e_input_idx)
+                              int e_input_idx, int click_x, int click_y)
 {
    if ((form->method == DILLO_HTML_METHOD_GET) ||
        (form->method == DILLO_HTML_METHOD_POST)) {
@@ -4257,12 +4285,13 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
       if (form->num_submit_buttons > 0) {
          DilloHtmlInput *input = form->inputs->getRef(e_input_idx);
          if ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
+             (input->type == DILLO_HTML_INPUT_IMAGE) ||
              (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT)) {
             active_submit = e_input_idx;
          }
       }
 
-      DataStr = Html_build_query_data(form, active_submit);
+      DataStr = Html_build_query_data(form, active_submit, click_x, click_y);
       if (DataStr) {
          /* generate the URL and push it */
          DilloUrl *new_url;
@@ -4322,9 +4351,8 @@ static void Html_get_file_cb(int Op, CacheClient_t *Client)
  * TODO: Currently there's "clicked" for buttons, we surely need "enter" for
  * textentries, and maybe the "mouseover, ...." set for Javascript.
  */
-void a_Html_form_event_handler(void *data,
-                               form::Form *form_receiver,
-                               void *v_resource)
+void a_Html_form_event_handler(void *data, form::Form *form_receiver,
+                               void *v_resource, int click_x, int click_y)
 {
    int form_index, input_idx = -1, idx;
    DilloHtmlForm *form = NULL;
@@ -4368,7 +4396,7 @@ void a_Html_form_event_handler(void *data,
    } else if (input->type == DILLO_HTML_INPUT_RESET) {
       Html_reset_form(form);
    } else {
-      Html_submit_form2(html, form, input_idx);
+      Html_submit_form2(html, form, input_idx, click_x, click_y);
    }
 }
 
@@ -4404,43 +4432,39 @@ void a_Html_form_event_handler(void *data,
 /*
  * Create input image for the form
  */
-static Widget *Html_input_image(DilloHtml *html, const char *tag, int tagsize,
-                                DilloUrl *action)
+static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize,
+                               DilloHtmlForm *form)
 {
-// // AL
-// DilloImage *Image;
-// Widget *button;
-// DilloUrl *url = NULL;
-// Style style_attrs;
-// const char *attrbuf;
-//
-// if ((attrbuf = Html_get_attr(html, tag, tagsize, "src")) &&
-//     (url = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0))) {
-//    button = a_Dw_button_new (0, FALSE);
-//    DW2TB(html->dw)->addWidget (button,
-//                                S_TOP(html)->style);
-//    gtk_signal_connect(GTK_OBJECT(button), "clicked_at",
-//                       GTK_SIGNAL_FUNC(Html_image_clicked), html_lb);
-//    a_Dw_button_set_sensitive(DW_BUTTON(button), FALSE);
-//
-//    /* create new image and add it to the button */
-//    if ((Image = Html_add_new_image(html, tag, tagsize, &style_attrs,
-//                                    FALSE))) {
-//       /* By suppressing the "image_pressed" signal, the events are sent
-//        * to the parent DwButton */
-//       a_Dw_widget_set_button_sensitive (IM2DW(Image->dw), FALSE);
-//       IM2DW(Image->dw)->setStyle (S_TOP(html)->style);
-//       a_Dw_container_add(DW_CONTAINER(button), IM2DW(Image->dw));
-//       IM2DW(Image->dw)->setCursor (CURSOR_HAND);
-//       Html_load_image(html->bw, url, Image);
-//       a_Url_free(url);
-//       return button;
-//    }
-// }
-//
-// DEBUG_MSG(10, "Html_input_image: unable to create image submit.\n");
-// a_Url_free(url);
-   return NULL;
+   const char *attrbuf;
+   StyleAttrs style_attrs;
+   DilloImage *Image;
+   Embed *button = NULL;
+   DilloUrl *url = NULL;
+  
+   if ((attrbuf = Html_get_attr(html, tag, tagsize, "src")) &&
+       (url = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0))) {
+      style_attrs = *S_TOP(html)->style;
+      style_attrs.cursor = CURSOR_POINTER;
+      /* create new image and add it to the button */
+      if ((Image = Html_add_new_image(html, tag, tagsize, url, &style_attrs,
+                                      FALSE))) {
+         Style *style = Style::create (HT2LT(html), &style_attrs);
+         IM2DW(Image)->setStyle (style);
+         ComplexButtonResource *complex_b_r =
+            HT2LT(html)->getResourceFactory()->createComplexButtonResource(
+                                                          IM2DW(Image), false);
+         button = new Embed(complex_b_r);
+         DW2TB(html->dw)->addWidget (button, style);
+//       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
+         style->unref();
+         complex_b_r->connectClicked (form->form_receiver);
+         Html_load_image(html->bw, url, Image);
+      }
+   }
+  
+   DEBUG_MSG(10, "Html_input_image: unable to create image submit.\n");
+   a_Url_free(url);
+   return button;
 }
 
 /*
@@ -4536,18 +4560,19 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          widget = embed = new Embed (label_b_r);
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
          label_b_r->connectClicked (form->form_receiver);
-//    } else {
-//       inp_type = DILLO_HTML_INPUT_IMAGE;
-//       /* use a dw_image widget */
-//       widget = (GtkWidget*) Html_input_image(html, tag, tagsize,
-//                                              html_lb, form->action);
-//       init_str = value;
+      } else {
+         inp_type = DILLO_HTML_INPUT_IMAGE;
+         /* use a dw_image widget */
+         widget = embed = Html_input_image(html, tag, tagsize, form);
+         init_str = value;
       }
    } else if (!dStrcasecmp(type, "file")) {
-      /* todo: implement it! */
       if (form->method != DILLO_HTML_METHOD_POST) {
+         MSG_HTML("Forms with file input MUST use HTTP POST method\n");
          MSG("File input ignored in form not using HTTP POST method\n");
       } else if (form->enc != DILLO_HTML_ENC_MULTIPART) {
+         MSG_HTML("Forms with file input MUST use multipart/form-data"
+                  " encoding\n");
          MSG("File input ignored in form not using multipart/form-data"
              " encoding\n");
       } else {

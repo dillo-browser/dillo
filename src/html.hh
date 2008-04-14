@@ -13,7 +13,8 @@ extern "C" {
  */
 void a_Html_form_event_handler(void *data,
                                form::Form *form_receiver,
-                               void *v_resource);
+                               void *v_resource,
+                               int click_x, int click_y);
 void a_Html_free(void *data);
 void a_Html_load_images(void *v_html, DilloUrl *pattern);
 

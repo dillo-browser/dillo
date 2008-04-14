@@ -587,6 +587,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
       }
    } else {
       entry->TypeHdr = Type;
+      _MSG("Content-Type {%s} {%s}\n", Type, URL_STR(entry->Url));
       /* This Content-Type is not trusted. It's checked against real data
        * in Cache_process_queue(); only then CA_GotContentType becomes true.
        */
