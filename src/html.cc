@@ -3805,28 +3805,6 @@ static void Html_add_input(DilloHtmlForm *form,
    }
 }
 
-
-/*
- * Given a GtkWidget, find the form that contains it.
- * Return value: form_index if successful, -1 otherwise.
- */
-//static int Html_find_form(GtkWidget *reset, DilloHtmlLB *html_lb)
-//{
-// int form_index;
-// int input_idx;
-// DilloHtmlForm *form;
-//
-// for (form_index = 0; form_index < html_lb->forms->size(); form_index++) {
-//    form = html_lb->forms->getRef (form_index);
-//    for (input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
-//       if (form->inputs->get(input_idx).widget == reset) {
-//          return form_index;
-//       }
-//    }
-// }
-// return -1;
-//}
-
 /*
  * Reset all inputs in the form containing reset to their initial values.
  * In general, reset is the reset button for the form.
@@ -4393,35 +4371,6 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
       Html_submit_form2(html, form, input_idx, click_x, click_y);
    }
 }
-
-/*
- * Submit form if it has no submit button.
- * (Called by GTK+ when the user presses enter in a text entry within a form)
- */
-//static void Html_enter_submit_form(GtkWidget *submit, DilloHtmlLB *html_lb)
-//{
-//   int i;
-//
-//   /* Search the form that generated the submit event */
-//   if ((i = Html_find_form(submit, html_lb)) == -1)
-//      return;
-//
-//   /* Submit on enterpress when there's a single text-entry only,
-//    * or if the user set enter to always submit */
-//   if ((html_lb->forms->getRef(i))->.num_entry_fields == 1) ||
-//       prefs.enterpress_forces_submit)
-//      Html_submit_form(submit, html_lb, 1, 1);
-//}
-
-/*
- * Call submit form, when input image has been clicked
- */
-//static void Html_image_clicked(Widget *widget, int x, int y,
-//                               DilloHtmlLB *lb)
-//{
-//   _MSG("Hallo! (%d, %d, %p)\n", x, y, lb);
-//   Html_submit_form((GtkWidget*) widget, lb, x, y);
-//}
 
 /*
  * Create input image for the form
