@@ -4455,8 +4455,9 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize,
          Html_load_image(html->bw, url, Image);
       }
    }
-  
-   DEBUG_MSG(10, "Html_input_image: unable to create image submit.\n");
+
+   if (!button)
+      DEBUG_MSG(10, "Html_input_image: unable to create image submit.\n");
    a_Url_free(url);
    return button;
 }
