@@ -2559,80 +2559,72 @@ static void Html_tag_open_br(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 {
-// // AL
-// /*
-//  * Buttons are rendered on one line, this is (at several levels) a
-//  * bit simpler. May be changed in the future.
-//  */
-// StyleAttrs style_attrs;
-// Style *style;
-// Widget *button, *page;
-// DilloHtmlForm *form;
-// DilloHtmlInputType inp_type;
-// char *name, *value, *type;
-//
-// /* Render the button */
-// style_attrs = *S_TOP(html)->style;
-//
-// style_attrs.margin.setVal (0);
-// style_attrs.borderWidth.setVal (0);
-// style_attrs.padding.setVal(0);
-// style = Style::create (HT2LT(html), &style_attrs);
-// button = a_Dw_button_new (DW_USES_HINTS, TRUE);
-//
-// /* The new button is not set button-insensitive, since nested buttons
-//  * (if they are anyway allowed, todo: search in spec) should all be
-//  * activatable. */
-// a_Dw_widget_set_button_sensitive (button, TRUE);
-//
-// DW2TB(html->dw)->addParbreak (5, style);
-// DW2TB(html->dw)->addWidget (button, style);
-// DW2TB(html->dw)->addParbreak (5, style);
-// style->unref ();
-//
-// style_attrs.margin.setVal (5);
-// style = Style::create (HT2LT(html), &style_attrs);
-// page = new Textblock (prefs.limit_text_width);
-// page->setStyle (style);
-// style->unref ();
-// a_Dw_container_add (DW_CONTAINER (button), page);
-// a_Dw_widget_set_button_sensitive (DW_WIDGET (page), FALSE);
-// style_attrs.margin.setVal (0);
-//
-// a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
-//
-// S_TOP(html)->textblock = html->dw = page;
-//
-// /* Handle it when the user clicks on a link */
-// html->connectSignals(page);
-//
-// /* Connect it to the form */
-// form = forms->getRef (forms->size() - 1);
-//
-// type = Html_get_attr_wdef(html, tag, tagsize, "type", "");
-//
-// if (strcmp(type, "submit") == 0) {
-//    inp_type = DILLO_HTML_INPUT_BUTTON_SUBMIT;
-//    gtk_signal_connect(GTK_OBJECT(button), "clicked",
-//                       GTK_SIGNAL_FUNC(Html_submit_form), html_lb);
-// } else if (strcmp(type, "reset") == 0) {
-//    inp_type = DILLO_HTML_INPUT_BUTTON_RESET;
-//    gtk_signal_connect(GTK_OBJECT(button), "clicked",
-//                       GTK_SIGNAL_FUNC(Html_reset_form), html_lb);
-// } else
-//    return;
-//
-// value = Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
-// name = Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
-//
-// Html_add_input(form, inp_type, (GtkWidget*)button, name, value,
-//                NULL, FALSE);
-//
-// dFree(type);
-// dFree(name);
-// dFree(value);
-}
+   /*
+    * Buttons are rendered on one line, this is (at several levels) a
+    * bit simpler. May be changed in the future.
+    */
+   StyleAttrs style_attrs;
+   Style *style;
+   Widget *button, *page;
+   Embed *embed;
+   DilloHtmlForm *form;
+   DilloHtmlInputType inp_type;
+   char *name, *value, *type;
 
+   if (!(html->InFlags & IN_FORM)) {
+      MSG_HTML("<button> element outside <form>\n");
+      return;
+   }
+  
+   /* Render the button */
+   style_attrs = *S_TOP(html)->style;
+   style_attrs.margin.setVal(0);
+   style_attrs.borderWidth.setVal(0);
+   style_attrs.padding.setVal(0);
+   style = Style::create (HT2LT(html), &style_attrs);
+
+   page = new Textblock (prefs.limit_text_width);
+   page->setStyle (style);
+
+   ComplexButtonResource *complex_b_r =
+     HT2LT(html)->getResourceFactory()->createComplexButtonResource(page,true);
+   button = embed = new Embed(complex_b_r);
+// a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
+
+   DW2TB(html->dw)->addParbreak (5, style);
+   DW2TB(html->dw)->addWidget (button, style);
+   DW2TB(html->dw)->addParbreak (5, style);
+   style->unref ();
+
+   S_TOP(html)->textblock = html->dw = page;
+
+   form = html->forms->getRef (html->forms->size() - 1);
+   type = Html_get_attr_wdef(html, tag, tagsize, "type", "");
+
+   if (!dStrcasecmp(type, "button")) {
+      inp_type = DILLO_HTML_INPUT_BUTTON;
+   } else if (!dStrcasecmp(type, "reset")) {
+      inp_type = DILLO_HTML_INPUT_BUTTON_RESET;
+      complex_b_r->connectClicked (form->form_receiver);
+   } else if (!dStrcasecmp(type, "submit") || !*type) {
+      /* submit button is the default */
+      inp_type = DILLO_HTML_INPUT_BUTTON_SUBMIT;
+      complex_b_r->connectClicked (form->form_receiver);
+   } else {
+      inp_type = DILLO_HTML_INPUT_UNKNOWN;
+      MSG_HTML("Unknown button type: \"%s\"\n", type);
+   }
+
+   if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
+      value = Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
+      name = Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
+
+      Html_add_input(form, inp_type, button, embed, name, value, NULL, FALSE);
+      dFree(name);
+      dFree(value);
+   }
+   dFree(type);
+}
 
 /*
  * <FONT>
@@ -4365,7 +4357,8 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
             a_UIcmd_set_msg(html->bw, "ERROR: can't load: %s", filename);
          }
       }
-   } else if (input->type == DILLO_HTML_INPUT_RESET) {
+   } else if (input->type == DILLO_HTML_INPUT_RESET ||
+              input->type == DILLO_HTML_INPUT_BUTTON_RESET) {
       Html_reset_form(form);
    } else {
       Html_submit_form2(html, form, input_idx, click_x, click_y);

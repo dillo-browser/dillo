@@ -92,6 +92,7 @@ dillo-fltk2
  - Split Html_append_input() into smaller functions.
  - Implemented ISINDEX.
  - Added input image for FORMS.
+ - Added button for FORMS.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
