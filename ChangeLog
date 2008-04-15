@@ -90,7 +90,6 @@ dillo-fltk2
  - Fixed a bug in Cookies_parse_one. Set it to a single return point too!
  - Added dStr_memmem() and dStr_printable() to dlib.
  - Split Html_append_input() into smaller functions.
- - Implemented the file input control for forms (work in progress).
  - Implemented ISINDEX.
  - Added input image for FORMS.
    Patches: place
@@ -103,6 +102,7 @@ dillo-fltk2
  - Added support for "charset" in the META element.
  - Added a_Capi_get_flags(). It requests a cache entry's status as flags.
  - Switched URL_DATA type from char* to a dStr.
+ - Implemented the file input control for forms (work in progress).
    Patch: place, Jorge Arellano Cid
 +- Fixed a cookies-related dillo freeze bug happening at:
      http://www.fltk.org/newsgroups.php?gfltk.general+v:24912

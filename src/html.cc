@@ -249,6 +249,8 @@ struct _DilloHtmlInput {
                          entries, it is the initial value */
    DilloHtmlSelect *select;
    bool_t init_val;   /* only meaningful for buttons */
+   Dstr *file_data;   /* only meaningful for file inputs.
+                         todo: may become a list... */
 };
 
 /*-----------------------------------------------------------------------------
@@ -923,6 +925,7 @@ DilloHtml::~DilloHtml()
          DilloHtmlInput *input = form->inputs->getRef(j);
          dFree(input->name);
          dFree(input->init_str);
+         dStr_free(input->file_data, 1);
 
          if (input->type == DILLO_HTML_INPUT_SELECT ||
              input->type == DILLO_HTML_INPUT_SEL_LIST) {
@@ -3534,9 +3537,9 @@ static void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
       char *ptr = first = dStrdup(attrbuf);
       while (ptr && !charset) {
          char *curr = dStrsep(&ptr, " ,");
-         if (!strcasecmp(curr, "utf-8")) {
+         if (!dStrcasecmp(curr, "utf-8")) {
             charset = curr;
-         } else if (!strcasecmp(curr, "UNKNOWN")) {
+         } else if (!dStrcasecmp(curr, "UNKNOWN")) {
             /* defined to be whatever encoding the document is in */
             charset = html->charset;
          }
@@ -3787,6 +3790,7 @@ static void Html_add_input(DilloHtmlForm *form,
    input->init_str = (init_str) ? dStrdup(init_str) : NULL;
    input->select = select;
    input->init_val = init_val;
+   input->file_data = NULL;
    Html_reset_input(input);
 
    /* some stats */
@@ -3936,9 +3940,16 @@ static void Html_append_input_multipart_files(Dstr* data, const char *boundary,
                                               const char *name, Dstr *file,
                                               const char *filename)
 {
+   const char *ctype, *ext;
+
    if (name && name[0]) {
-      const char *ctype;
       (void)a_Misc_get_content_type_from_data(file->str, file->len, &ctype);
+      /* Heuristic: text/plain with ".htm[l]" extension -> text/html */
+      if ((ext = strrchr(filename, '.')) &&
+          !dStrcasecmp(ctype, "text/plain") &&
+          (!dStrcasecmp(ext, ".html") || !dStrcasecmp(ext, ".htm"))) {
+         ctype = "text/html";
+      }
 
       if (data->len == 0) {
          dStr_append(data, "--");
@@ -4078,19 +4089,13 @@ static void Html_get_input_values(const DilloHtmlInput *input,
          (LabelButtonResource*)((Embed*)input->widget)->getResource();
       const char *filename = lbr->getLabel();
       if (filename[0] && strcmp(filename, input->init_str)) {
-         char *buf;
-         int buf_size;
-         char *escaped_name = a_Misc_escape_chars(filename, "% ");
-         DilloUrl *url = a_Url_new(escaped_name, "file:///", 0, 0, 0);
-         if (a_Capi_get_buf(url, &buf, &buf_size)) {
-            Dstr *file = dStr_sized_new(buf_size);
-            dStr_append_l(file, buf, buf_size);
+         if (input->file_data) {
+            Dstr *file = dStr_sized_new(input->file_data->len);
+            dStr_append_l(file, input->file_data->str, input->file_data->len);
             dList_append(values, file);
          } else {
-            MSG("form file input \"%s\" not loaded.\n", filename);
+            MSG("FORM file input \"%s\" not loaded.\n", filename);
          }
-         a_Url_free(url);
-         dFree(escaped_name);
       }
       break;
    }
@@ -4333,19 +4338,6 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
 }
 
 /*
- * Callback used when getting a file for form input.
- */
-static void Html_get_file_cb(int Op, CacheClient_t *Client)
-{
-   DilloWeb *web = (DilloWeb *)Client->Web;
-   LabelButtonResource *lbr = (LabelButtonResource *)Client->CbData;
-   if (Op) {
-      lbr->setLabel(URL_PATH(Client->Url));
-      a_UIcmd_set_msg(web->bw, "File loaded.");
-   }
-}
-
-/*
  * Handler for events related to forms.
  *
  * TODO: Currently there's "clicked" for buttons, we surely need "enter" for
@@ -4385,13 +4377,15 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
       if (filename) {
          LabelButtonResource *lbr =
             (LabelButtonResource*)((Embed*)input->widget)->getResource();
-         char *escaped_name = a_Misc_escape_chars(filename, "% ");
-         DilloUrl *url = a_Url_new(escaped_name, "file:///",URL_E2EReload,0,0);
-         DilloWeb *web = a_Web_new(url);
-         web->bw = html->bw;
-         a_Capi_open_url(web, Html_get_file_cb, lbr);
-         a_Url_free(url);
-         dFree(escaped_name);
+         a_UIcmd_set_msg(html->bw, "Loading file...");
+         dStr_free(input->file_data, 1);
+         input->file_data = a_Misc_file2dstr(filename);
+         if (input->file_data) {
+            a_UIcmd_set_msg(html->bw, "File loaded.");
+            lbr->setLabel(filename);
+         } else {
+            a_UIcmd_set_msg(html->bw, "ERROR: can't load: %s", filename);
+         }
       }
    } else if (input->type == DILLO_HTML_INPUT_RESET) {
       Html_reset_form(form);

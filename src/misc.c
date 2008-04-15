@@ -269,3 +269,25 @@ char *a_Misc_encode_base64(const char *in)
    out[i] = '\0';
    return out;
 }
+
+/*
+ * Load a local file into a dStr.
+ * Return value: dStr on success, NULL on error.
+ * todo: a filesize threshold may be implemented.
+ */
+Dstr *a_Misc_file2dstr(const char *filename)
+{
+   FILE *F_in;
+   int n;
+   char buf[4096];
+   Dstr *dstr = NULL;
+
+   if ((F_in = fopen(filename, "r"))) {
+      dstr = dStr_sized_new(4096);
+      while ((n = fread (buf, 1, 4096, F_in)) > 0) {
+         dStr_append_l(dstr, buf, n);
+      }
+      fclose(F_in);
+   }
+   return dstr;
+}
