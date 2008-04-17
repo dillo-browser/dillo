@@ -304,6 +304,7 @@ public:  //BUG: for now everything is public
    bool_t PrevWasCR;      /* Flag to help parsing of "\r\n" in PRE tags */
    bool_t PrevWasOpenTag; /* Flag to help deferred parsing of white space */
    bool_t SPCPending;     /* Flag to help deferred parsing of white space */
+   bool_t PrevWasSPC;     /* Flag to help handling collapsing white space */
    bool_t InVisitedLink;  /* used to 'contrast_visited_colors' */
    bool_t ReqTagClose;    /* Flag to help handling bad-formed HTML */
    bool_t CloseOneTag;    /* Flag to help Html_tag_cleanup_at_close() */
@@ -842,6 +843,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    PreFirstChar = FALSE;
    PrevWasCR = FALSE;
    PrevWasOpenTag = FALSE;
+   PrevWasSPC = FALSE;
    SPCPending = FALSE;
    InVisitedLink = FALSE;
    ReqTagClose = FALSE;
@@ -1482,11 +1484,14 @@ static void Html_process_space(DilloHtml *html, const char *space,
       html->SPCPending = FALSE;
 
    } else {
-      if (SGML_SPCDEL && html->PrevWasOpenTag) {
+      if (SGML_SPCDEL) {
          /* SGML_SPCDEL ignores white space inmediately after an open tag */
+         if (html->PrevWasOpenTag)
+            html->SPCPending = FALSE;
+      } else if (!html->PrevWasSPC) {
+         DW2TB(html->dw)->addSpace(S_TOP(html)->style);
          html->SPCPending = FALSE;
-      } else {
-         html->SPCPending = TRUE;
+         html->PrevWasSPC = TRUE;
       }
 
       if (parse_mode == DILLO_HTML_PARSE_MODE_STASH_AND_BODY)
@@ -1544,11 +1549,6 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
       dFree(Pword);
 
    } else {
-      /* add pending space if present */
-      if (html->SPCPending && (!SGML_SPCDEL || !html->PrevWasOpenTag))
-         /* SGML_SPCDEL ignores space after an open tag */
-         DW2TB(html->dw)->addSpace (S_TOP(html)->style);
-
       /* Collapse white-space entities inside the word (except &nbsp;) */
       Pword = Html_parse_entities(html, word, size);
       for (i = 0; Pword[i]; ++i)
@@ -1559,6 +1559,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
    }
 
    html->PrevWasOpenTag = FALSE;
+   html->PrevWasSPC = FALSE;
    html->SPCPending = FALSE;
    if (html->InFlags & IN_LI)
       html->WordAfterLI = TRUE;
@@ -2631,7 +2632,6 @@ static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
 {
-#if 1
    StyleAttrs style_attrs;
    Style *old_style;
    /*Font font;*/
@@ -2665,8 +2665,6 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
          Style::create (HT2LT(html), &style_attrs);
       old_style->unref ();
    }
-
-#endif
 }
 
 /*
@@ -3329,6 +3327,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
       numtostr((*list_number)++, buf, 16, S_TOP(html)->style->listStyleType);
       list_item->initWithText (dStrdup(buf), word_style);
       list_item->addSpace (word_style);
+      html->PrevWasSPC = TRUE;
       break;
    case HTML_LIST_NONE:
       MSG_HTML("<li> outside <ul> or <ol>\n");
@@ -5392,22 +5391,6 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
    /* Handle HTML, HEAD and BODY. Elements with optional open and close */
    if (ni != -1 && !(html->InFlags & IN_BODY) /* && parsing HTML */)
       Html_test_section(html, ni, IsCloseTag);
-
-   /* White space handling */
-   if (html->SPCPending) {
-      if (SGML_SPCDEL) {
-         /* SGML_SPCDEL requires space pending and open tag */
-         if (!IsCloseTag)
-            DW2TB(html->dw)->addSpace(S_TOP(html)->style);
-         html->SPCPending = FALSE;
-      } else {
-         /* custom space handling: preserve pending space past close tags */
-         if (!IsCloseTag) {
-            DW2TB(html->dw)->addSpace(S_TOP(html)->style);
-            html->SPCPending = FALSE;
-         }
-      }
-   }
 
    /* Tag processing */
    ci = S_TOP(html)->tag_idx;

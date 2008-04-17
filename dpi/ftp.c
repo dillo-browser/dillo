@@ -173,7 +173,7 @@ static int try_ftp_transfer(char *url)
 
    ssize_t n;
    int nb, minibuf_sz;
-   const char *mime_type;
+   const char *mime_type = "application/octet-stream";
    char buf[4096], minibuf[MinSZ], *d_cmd;
    pid_t ch_pid;
    int aborted = 0;
