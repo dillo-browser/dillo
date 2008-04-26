@@ -323,7 +323,7 @@ public:  //BUG: for now everything is public
    misc::SimpleVector<DilloHtmlForm> *forms;
    misc::SimpleVector<DilloUrl*> *links;
    misc::SimpleVector<DilloLinkImage*> *images;
-   //DwImageMapList maps;
+   ImageMapsList maps;
 
    int32_t link_color;
    int32_t visited_color;
@@ -2907,7 +2907,6 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
    if (load_now)
       Html_load_image(html->bw, url, Image);
 
-#if 0
    /* Image maps */
    if (Html_get_attr(html, tag, tagsize, "ismap")) {
       /* BUG: if several ISMAP images follow each other without
@@ -2916,17 +2915,17 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 //    a_Dw_image_set_ismap (Image->dw);
       _MSG("  Html_tag_open_img: server-side map (ISMAP)\n");
    } else if (S_TOP(html)->style->x_link != -1 &&
-              usemap_url == NULL)
+              usemap_url == NULL) {
       /* For simple links, we have to suppress the "image_pressed" signal.
        * This is overridden for USEMAP images. */
 //    a_Dw_widget_set_button_sensitive (IM2DW(Image->dw), FALSE);
+   }
 
    if (usemap_url) {
-//    a_Dw_image_set_usemap (Image->dw, &html->maps, usemap_url);
+      ((::dw::Image*)Image->dw)->setUseMap(&html->maps,
+                            new ::object::String(usemap_url->url_string->str));
       a_Url_free (usemap_url);
    }
-#endif
-
    html->connectSignals((Widget*)Image->dw);
 }
 
@@ -2945,7 +2944,7 @@ static void Html_tag_open_map(DilloHtml *html, const char *tag, int tagsize)
       if ((attrbuf = Html_get_attr(html, tag, tagsize, "name"))) {
          hash_name = dStrconcat("#", attrbuf, NULL);
          url = Html_url_new(html, hash_name, NULL, 0, 0, 0, 0);
-         //a_Dw_image_map_list_add_map (&html->maps, url);
+         html->maps.startNewMap(new ::object::String(url->url_string->str));
          a_Url_free (url);
          dFree(hash_name);
       }
@@ -2963,56 +2962,111 @@ static void Html_tag_close_map(DilloHtml *html, int TagIdx)
 }
 
 /*
+ * Read coords in a string, returning a vector of ints.
+ */
+static
+misc::SimpleVector<int> *Html_read_coords(DilloHtml *html, const char *str)
+{
+   int i, coord;
+   const char *tail = str;
+   char *newtail = NULL;
+   misc::SimpleVector<int> *coords = new misc::SimpleVector<int> (4);
+
+   i = 0;
+   while (1) {
+      coord = strtol(tail, &newtail, 10);
+      if (coord == 0 && newtail == tail)
+         break;
+      coords->increase();
+      coords->set(coords->size() - 1, coord);
+      while (isspace(*newtail))
+         newtail++;
+      if (!*newtail)
+         break;
+      if (*newtail != ',') {
+         MSG_HTML("usemap coords MUST be separated by commas.\n");
+      }
+      tail = newtail + 1;
+   }
+
+   return coords;
+}
+
+/*
  * <AREA>
  */
 static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
 {
-// // AL
-// /* todo: point must be a dynamic array */
-// GdkPoint point[1024];
-// DilloUrl* url;
-// const char *attrbuf;
-// int type = DW_IMAGE_MAP_SHAPE_RECT;
-// int nbpoints, link = -1;
-//
-// if ((attrbuf = Html_get_attr(html, tag, tagsize, "shape"))) {
-//    if (dStrcasecmp(attrbuf, "rect") == 0)
-//       type = DW_IMAGE_MAP_SHAPE_RECT;
-//    else if (dStrcasecmp(attrbuf, "circle") == 0)
-//       type = DW_IMAGE_MAP_SHAPE_CIRCLE;
-//    else if (dStrncasecmp(attrbuf, "poly", 4) == 0)
-//       type = DW_IMAGE_MAP_SHAPE_POLY;
-//    else
-//       type = DW_IMAGE_MAP_SHAPE_RECT;
-// }
-// /* todo: add support for coords in % */
-// if ((attrbuf = Html_get_attr(html, tag, tagsize, "coords"))) {
-//    /* Is this a valid poly ?
-//     * rect = x0,y0,x1,y1               => 2
-//     * circle = x,y,r                   => 2
-//     * poly = x0,y0,x1,y1,x2,y2 minimum => 3 */
-//    nbpoints = Html_read_coords(html, attrbuf, point);
-// } else
-//    return;
-//
-// if (Html_get_attr(html, tag, tagsize, "nohref")) {
-//    link = -1;
-//    _MSG("nohref");
-// }
-//
-// if ((attrbuf = Html_get_attr(html, tag, tagsize, "href"))) {
-//    url = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
-//    dReturn_if_fail ( url != NULL );
-//    if ((attrbuf = Html_get_attr(html, tag, tagsize, "alt")))
-//       a_Url_set_alt(url, attrbuf);
-//
-//    link = Html_set_new_link(html, &url);
-// }
-//
-// a_Dw_image_map_list_add_shape(&html->maps, type, link,
-//                               point, nbpoints);
-}
+   misc::SimpleVector<int> *coords;
+   DilloUrl* url;
+   const char *attrbuf;
+   int link = -1;
+   Shape *shape = NULL;
+  
+   if (!(html->InFlags & IN_MAP)) {
+      MSG_HTML("<area> element not inside <map>\n");
+      return;
+   }
 
+   /* todo: add support for coords in % */
+   if ((attrbuf = Html_get_attr(html, tag, tagsize, "coords"))) {
+      coords = Html_read_coords(html, attrbuf);
+   } else
+      return;
+  
+   attrbuf = Html_get_attr(html, tag, tagsize, "shape");
+
+   if (!attrbuf || !*attrbuf || !dStrcasecmp(attrbuf, "rect")) {
+      /* the default shape is a rectangle */
+      if (coords->size() != 4)
+         MSG_HTML("<area> rectangle must have four coordinate values\n");
+      if (coords->size() >= 4)
+         shape = new Rectangle(coords->get(0),
+                               coords->get(1),
+                               coords->get(2) - coords->get(0),
+                               coords->get(3) - coords->get(1));
+   } else if (dStrcasecmp(attrbuf, "default") == 0) {
+      /* "Specifies the entire region." "default" is not the default shape. */
+      MSG("<area> shape=default not implemented.\n");
+   } else if (dStrcasecmp(attrbuf, "circle") == 0) {
+      if (coords->size() != 3)
+         MSG_HTML("<area> circle must have three coordinate values\n");
+      if (coords->size() >= 3)
+         shape = new Circle(coords->get(0), coords->get(1), coords->get(2));
+   } else if (dStrncasecmp(attrbuf, "poly", 4) == 0) {
+      Polygon *poly;
+      int i;
+      if (coords->size() % 2)
+         MSG_HTML("<area> polygon with odd number of coordinates\n");
+      shape = poly = new Polygon();
+      for (i = 0; i < (coords->size() / 2); i++)
+         poly->addPoint(coords->get(2*i), coords->get(2*i + 1));
+      if (i) {
+         /* be sure to close it */
+         poly->addPoint(coords->get(0), coords->get(1));
+      }
+   } else {
+      MSG_HTML("<area> unknown shape: \"%s\"\n", attrbuf);
+   }
+
+   if (shape) {
+      if (Html_get_attr(html, tag, tagsize, "nohref")) {
+         link = -1;
+         _MSG("nohref");
+      }
+      if ((attrbuf = Html_get_attr(html, tag, tagsize, "href"))) {
+         url = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
+         dReturn_if_fail ( url != NULL );
+         if ((attrbuf = Html_get_attr(html, tag, tagsize, "alt")))
+            a_Url_set_alt(url, attrbuf);
+  
+         link = Html_set_new_link(html, &url);
+      }
+      html->maps.addShapeToCurrentMap(shape, link);
+   }
+   if (coords)
+      delete(coords);
+}
 
 /*
  * Test and extract the link from a javascript instruction.
@@ -3066,7 +3120,8 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
 
    /* todo: add support for MAP with A HREF */
-   Html_tag_open_area(html, tag, tagsize);
+   if (html->InFlags & IN_MAP)
+      Html_tag_open_area(html, tag, tagsize);
 
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "href"))) {
       /* if it's a javascript link, extract the reference. */
