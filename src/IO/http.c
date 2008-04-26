@@ -236,7 +236,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          query,
          "POST %s HTTP/1.1\r\n"
          "Connection: close\r\n"
-         "Accept-Charset: utf-8, iso-8859-1\r\n"
+         "Accept-Charset: utf-8,*;q=0.8\r\n"
          "Accept-Encoding: gzip\r\n"
          "Host: %s%s\r\n"
          "%s"
@@ -258,7 +258,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "GET %s HTTP/1.1\r\n"
          "%s"
          "Connection: close\r\n"
-         "Accept-Charset: utf-8, iso-8859-1\r\n"
+         "Accept-Charset: utf-8,*;q=0.8\r\n"
          "Accept-Encoding: gzip\r\n"
          "Host: %s%s\r\n"
          "%s"
