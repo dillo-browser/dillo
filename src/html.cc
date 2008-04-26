@@ -574,10 +574,10 @@ static int Html_set_new_link(DilloHtml *html, DilloUrl **url)
  * Add a new image.
  */
 static int Html_add_new_linkimage(DilloHtml *html,
-                                  DilloUrl *url, DilloImage *image)
+                                  DilloUrl **url, DilloImage *image)
 {
    DilloLinkImage *li = dNew(DilloLinkImage, 1);
-   li->url = url;
+   li->url = *url;
    li->image = image;
 
    int ni = html->images->size();
@@ -2576,6 +2576,7 @@ static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       MSG_HTML("<button> element outside <form>\n");
       return;
    }
+   /* todo: don't create things if button type is unknown */
   
    /* Render the button */
    style_attrs = *S_TOP(html)->style;
@@ -2598,6 +2599,7 @@ static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
    style->unref ();
 
    S_TOP(html)->textblock = html->dw = page;
+   html->connectSignals(page);
 
    form = html->forms->getRef (html->forms->size() - 1);
    type = Html_get_attr_wdef(html, tag, tagsize, "type", "");
@@ -2901,7 +2903,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 
    load_now = (prefs.load_images || (a_Capi_get_flags(url) & CAPI_IsCached));
    Image = Html_add_new_image(html, tag, tagsize, url, &style_attrs, TRUE);
-   Html_add_new_linkimage(html, url, load_now ? NULL : Image);
+   Html_add_new_linkimage(html, &url, load_now ? NULL : Image);
    if (load_now)
       Html_load_image(html->bw, url, Image);
 
@@ -4375,11 +4377,17 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize,
    DilloImage *Image;
    Embed *button = NULL;
    DilloUrl *url = NULL;
+   bool load_now;
   
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "src")) &&
        (url = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0))) {
       style_attrs = *S_TOP(html)->style;
       style_attrs.cursor = CURSOR_POINTER;
+
+      /* x_img is an index to a list of {url,image} pairs.
+       * we know Html_add_new_linkimage() will use size() as its next index */
+      style_attrs.x_img = html->images->size();
+
       /* create new image and add it to the button */
       if ((Image = Html_add_new_image(html, tag, tagsize, url, &style_attrs,
                                       FALSE))) {
@@ -4392,14 +4400,24 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize,
          DW2TB(html->dw)->addWidget (button, style);
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
          style->unref();
+
+         load_now = prefs.load_images ||
+                    (a_Capi_get_flags(url) & CAPI_IsCached);
+         Html_add_new_linkimage(html, &url, load_now ? NULL : Image);
+         if (load_now)
+            Html_load_image(html->bw, url, Image);
+
+         /* the button handles a left button click */
          complex_b_r->connectClicked (form->form_receiver);
-         Html_load_image(html->bw, url, Image);
+         /* and a right button press brings up the image menu */
+         html->connectSignals((Widget*)Image->dw);
+      } else {
+         a_Url_free(url);
       }
    }
 
    if (!button)
       DEBUG_MSG(10, "Html_input_image: unable to create image submit.\n");
-   a_Url_free(url);
    return button;
 }
 
