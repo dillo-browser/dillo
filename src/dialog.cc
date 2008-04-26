@@ -246,7 +246,7 @@ static int choice5_answer;
 
 void choice5_cb(Widget *button, void *number)
 {
-  choice5_answer = (int)number;
+  choice5_answer = VOIDP2INT(number);
   _MSG("choice5_cb: %d\n", choice5_answer);
   button->window()->make_exec_return(true);
 }

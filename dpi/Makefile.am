@@ -25,6 +25,7 @@ cookies_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
 datauri_filter_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
 
 file_dpi_LDFLAGS = @LIBPTHREAD_LDFLAGS@
+downloads_dpi_CXXFLAGS = @LIBFLTK_CXXFLAGS@
 
 bookmarks_dpi_SOURCES = bookmarks.c dpiutil.c dpiutil.h
 downloads_dpi_SOURCES = downloads.cc dpiutil.c dpiutil.h
