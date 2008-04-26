@@ -204,13 +204,13 @@ static void Nav_stack_clean(BrowserWindow *bw)
 static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 {
    DilloUrl *old_url;
-   bool_t MustLoad;
+   bool_t MustLoad, ForceReload;
    int x, y, idx, ClientKey;
    DilloWeb *Web;
-   bool_t ForceReload = (URL_FLAGS(url) &
-                         (URL_E2EReload + URL_ReloadFromCache));
 
    MSG("Nav_open_url: new url='%s'\n", URL_STR_(url));
+
+   ForceReload = (URL_FLAGS(url) & (URL_E2EReload + URL_ReloadFromCache)) != 0;
 
    /* Get the url of the current page */
    idx = a_Nav_stack_ptr(bw);
