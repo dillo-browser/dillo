@@ -2564,43 +2564,14 @@ static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
     * Buttons are rendered on one line, this is (at several levels) a
     * bit simpler. May be changed in the future.
     */
-   StyleAttrs style_attrs;
-   Style *style;
-   Widget *button, *page;
-   Embed *embed;
    DilloHtmlForm *form;
    DilloHtmlInputType inp_type;
-   char *name, *value, *type;
+   char *type;
 
    if (!(html->InFlags & IN_FORM)) {
       MSG_HTML("<button> element outside <form>\n");
       return;
    }
-   /* todo: don't create things if button type is unknown */
-  
-   /* Render the button */
-   style_attrs = *S_TOP(html)->style;
-   style_attrs.margin.setVal(0);
-   style_attrs.borderWidth.setVal(0);
-   style_attrs.padding.setVal(0);
-   style = Style::create (HT2LT(html), &style_attrs);
-
-   page = new Textblock (prefs.limit_text_width);
-   page->setStyle (style);
-
-   ComplexButtonResource *complex_b_r =
-     HT2LT(html)->getResourceFactory()->createComplexButtonResource(page,true);
-   button = embed = new Embed(complex_b_r);
-// a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
-
-   DW2TB(html->dw)->addParbreak (5, style);
-   DW2TB(html->dw)->addWidget (button, style);
-   DW2TB(html->dw)->addParbreak (5, style);
-   style->unref ();
-
-   S_TOP(html)->textblock = html->dw = page;
-   html->connectSignals(page);
-
    form = html->forms->getRef (html->forms->size() - 1);
    type = Html_get_attr_wdef(html, tag, tagsize, "type", "");
 
@@ -2608,17 +2579,51 @@ static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       inp_type = DILLO_HTML_INPUT_BUTTON;
    } else if (!dStrcasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_BUTTON_RESET;
-      complex_b_r->connectClicked (form->form_receiver);
    } else if (!dStrcasecmp(type, "submit") || !*type) {
       /* submit button is the default */
       inp_type = DILLO_HTML_INPUT_BUTTON_SUBMIT;
-      complex_b_r->connectClicked (form->form_receiver);
    } else {
       inp_type = DILLO_HTML_INPUT_UNKNOWN;
       MSG_HTML("Unknown button type: \"%s\"\n", type);
    }
 
    if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
+      /* Render the button */
+      StyleAttrs style_attrs;
+      Style *style;
+      Widget *button, *page;
+      Embed *embed;
+      char *name, *value;
+
+      style_attrs = *S_TOP(html)->style;
+      style_attrs.margin.setVal(0);
+      style_attrs.borderWidth.setVal(0);
+      style_attrs.padding.setVal(0);
+      style = Style::create (HT2LT(html), &style_attrs);
+
+      page = new Textblock (prefs.limit_text_width);
+      page->setStyle (style);
+
+      ComplexButtonResource *complex_b_r = HT2LT(html)->
+                 getResourceFactory()->createComplexButtonResource(page, true);
+      button = embed = new Embed(complex_b_r);
+// a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
+
+      DW2TB(html->dw)->addParbreak (5, style);
+      DW2TB(html->dw)->addWidget (button, style);
+      DW2TB(html->dw)->addParbreak (5, style);
+      style->unref ();
+
+      S_TOP(html)->textblock = html->dw = page;
+
+      if (inp_type == DILLO_HTML_INPUT_BUTTON_SUBMIT ||
+          inp_type == DILLO_HTML_INPUT_BUTTON_RESET) {
+         /* button click to trigger form activity */
+         complex_b_r->connectClicked (form->form_receiver);
+      }
+      /* right button press for menus for button contents */
+      html->connectSignals(page);
+
       value = Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
       name = Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
 
