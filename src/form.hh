@@ -23,7 +23,7 @@ private:
     * This is the abstract base class, sub classes have to be defined to
     * decorate specific sub interfaces of dw::core::ui::Resource.
     */
-   class ResourceDecorator: public object::Object
+   class ResourceDecorator: public lout::object::Object
    {
    private:
       const char *name;
@@ -72,7 +72,7 @@ private:
       const char *getValue ();
    };
 
-   container::typed::List <ResourceDecorator> *resources;
+   lout::container::typed::List <ResourceDecorator> *resources;
 
    void *ext_data;  // external data pointer
 

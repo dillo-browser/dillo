@@ -69,7 +69,7 @@ const char *Form::RadioButtonResourceDecorator::getValue ()
 Form::Form (void *p)
 {
    ext_data = p;
-   resources = new container::typed::List <ResourceDecorator> (true);
+   resources = new lout::container::typed::List <ResourceDecorator> (true);
 }
 
 Form::~Form ()
