@@ -2770,6 +2770,7 @@ static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
    const char *attrbuf;
    Length l_w, l_h;
    int space, w = 0, h = 0;
+   bool load_now;
 
 // if (prefs.show_tooltip &&
 //     (attrbuf = Html_get_attr(html, tag, tagsize, "title")))
@@ -2820,12 +2821,21 @@ static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
          style_attrs->margin.top = style_attrs->margin.bottom = space;
    }
 
+   /* x_img is an index to a list of {url,image} pairs.
+    * We know Html_add_new_linkimage() will use size() as its next index */
+   style_attrs->x_img = html->images->size();
+
    /* Add a new image widget to this page */
    Image = a_Image_new(0,0,alt_ptr,style_attrs->backgroundColor->getColor());
    if (add) {
       Html_add_widget(html, (Widget*)Image->dw, width_ptr, height_ptr,
                       style_attrs);
    }
+
+   load_now = prefs.load_images || (a_Capi_get_flags(url) & CAPI_IsCached);
+   Html_add_new_linkimage(html, &url, load_now ? NULL : Image);
+   if (load_now)
+      Html_load_image(html->bw, url, Image);
 
    dFree(width_ptr);
    dFree(height_ptr);
@@ -2865,7 +2875,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
    Textblock *textblock;
    StyleAttrs style_attrs;
    const char *attrbuf;
-   int border, load_now;
+   int border;
 
    /* This avoids loading images. Useful for viewing suspicious HTML email. */
    if (URL_FLAGS(html->base_url) & URL_SpamSafe)
@@ -2902,15 +2912,8 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.setBorderStyle (BORDER_SOLID);
       style_attrs.borderWidth.setVal (border);
    }
-   /* x_img is an index to a list of {url,image} pairs.
-    * we know Html_add_new_linkimage() will use size() as its next index */
-   style_attrs.x_img = html->images->size();
 
-   load_now = (prefs.load_images || (a_Capi_get_flags(url) & CAPI_IsCached));
    Image = Html_add_new_image(html, tag, tagsize, url, &style_attrs, TRUE);
-   Html_add_new_linkimage(html, &url, load_now ? NULL : Image);
-   if (load_now)
-      Html_load_image(html->bw, url, Image);
 
    /* Image maps */
    if (Html_get_attr(html, tag, tagsize, "ismap")) {
@@ -4438,16 +4441,11 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize,
    DilloImage *Image;
    Embed *button = NULL;
    DilloUrl *url = NULL;
-   bool load_now;
   
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "src")) &&
        (url = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0))) {
       style_attrs = *S_TOP(html)->style;
       style_attrs.cursor = CURSOR_POINTER;
-
-      /* x_img is an index to a list of {url,image} pairs.
-       * we know Html_add_new_linkimage() will use size() as its next index */
-      style_attrs.x_img = html->images->size();
 
       /* create new image and add it to the button */
       if ((Image = Html_add_new_image(html, tag, tagsize, url, &style_attrs,
@@ -4461,12 +4459,6 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize,
          DW2TB(html->dw)->addWidget (button, style);
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
          style->unref();
-
-         load_now = prefs.load_images ||
-                    (a_Capi_get_flags(url) & CAPI_IsCached);
-         Html_add_new_linkimage(html, &url, load_now ? NULL : Image);
-         if (load_now)
-            Html_load_image(html->bw, url, Image);
 
          /* the button handles a left button click */
          complex_b_r->connectClicked (form->form_receiver);
