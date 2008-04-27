@@ -2572,6 +2572,12 @@ static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       MSG_HTML("<button> element outside <form>\n");
       return;
    }
+   if (html->InFlags & IN_BUTTON) {
+      MSG_HTML("nested <button>\n");
+      return;
+   }
+   html->InFlags |= IN_BUTTON;
+
    form = html->forms->getRef (html->forms->size() - 1);
    type = Html_get_attr_wdef(html, tag, tagsize, "type", "");
 
@@ -2632,6 +2638,15 @@ static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       dFree(value);
    }
    dFree(type);
+}
+
+/*
+ * Handle close <BUTTON>
+ */
+static void Html_tag_close_button(DilloHtml *html, int TagIdx)
+{
+   html->InFlags &= ~IN_BUTTON;
+   Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -4492,6 +4507,14 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       MSG_HTML("<input> element outside <form>\n");
       return;
    }
+   if (html->InFlags & IN_SELECT) {
+      MSG_HTML("<input> element inside <select>\n");
+      return;
+   }
+   if (html->InFlags & IN_BUTTON) {
+      MSG_HTML("<input> element inside <button>\n");
+      return;
+   }
   
    form = html->forms->getRef (html->forms->size() - 1);
   
@@ -4663,6 +4686,11 @@ static void Html_tag_open_isindex(DilloHtml *html,
    Widget *widget;
    Embed *embed;
    const char *attrbuf;
+
+   if (html->InFlags & IN_FORM) {
+      MSG("<isindex> inside <form> not handled.\n");
+      return;
+   }
 
    if ((attrbuf = Html_get_attr(html, tag, tagsize, "action")))
       action = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
@@ -5160,7 +5188,7 @@ const TagInfo Tags[] = {
  {"blockquote", B8(011110),'R',2,Html_tag_open_blockquote,Html_tag_close_par},
  {"body", B8(011110),'O',1, Html_tag_open_body, Html_tag_close_body},
  {"br", B8(010001),'F',0, Html_tag_open_br, Html_tag_close_default},
- {"button", B8(011101),'R',2, Html_tag_open_button, Html_tag_close_default},
+ {"button", B8(011101),'R',2, Html_tag_open_button, Html_tag_close_button},
  /* caption */
  {"center", B8(011110),'R',2, Html_tag_open_center, Html_tag_close_div},
  {"cite", B8(010101),'R',2, Html_tag_open_cite, Html_tag_close_default},

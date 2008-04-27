@@ -94,6 +94,7 @@ dillo-fltk2
  - Implemented ISINDEX.
  - Added input image for FORMS.
  - Added button for FORMS.
+ - Added nesting checks for BUTTON, SELECT and FORM.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
