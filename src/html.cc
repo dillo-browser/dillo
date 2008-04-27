@@ -3054,6 +3054,9 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
       MSG_HTML("<area> unknown shape: \"%s\"\n", attrbuf);
    }
 
+   if (coords)
+      delete(coords);
+
    if (shape) {
       if (Html_get_attr(html, tag, tagsize, "nohref")) {
          link = -1;
@@ -3069,8 +3072,6 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
       }
       html->maps.addShapeToCurrentMap(shape, link);
    }
-   if (coords)
-      delete(coords);
 }
 
 /*
