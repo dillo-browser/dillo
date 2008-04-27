@@ -697,10 +697,12 @@ int UI::handle(int event)
       if (k == UpKey || k == DownKey || k == SpaceKey ||
           k == LeftKey || k == RightKey)
          return 0;
-   }
+      // Ignore Escape for main window.
+      if (k == EscapeKey)
+         ret = 1;
 
-   // Handle these shortcuts here.
-   if (event == SHORTCUT) {
+   } else if (event == SHORTCUT) {
+      // Handle these shortcuts here.
       if (event_state(CTRL)) {
          if (k == 'b') {
             a_UIcmd_book(user_data());
@@ -738,8 +740,7 @@ int UI::handle(int event)
       }
 
       // Back and Forward navigation shortcuts
-      if ((!event_state(SHIFT) && k == BackSpaceKey) ||
-          k == ',') {
+      if ((!event_state(SHIFT) && k == BackSpaceKey) || k == ',') {
          a_UIcmd_back(user_data());
          ret = 1;
       } else if ((event_state(SHIFT) && k == BackSpaceKey) || k == '.') {
