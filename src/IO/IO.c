@@ -129,10 +129,16 @@ static void IO_free(IOData_t *io)
 /*
  * Close an open FD, and remove io controls.
  * (This function can be used for Close and Abort operations)
+ * BUG: there's a race condition for Abort. The file descriptor is closed
+ * twice, and it could be reused for something else in between. It's simple
+ * to fix, but it'd be better to design a canonical way to Abort the CCC.
  */
 static void IO_close_fd(IOData_t *io, int CloseCode)
 {
    int st;
+
+   _MSG("====> begin IO close (%d) Key=%d CloseCode=%d Flags=%d ",
+       io->FD, io->Key, CloseCode, io->Flags);
 
    /* With HTTP, if we close the writing part, the reading one also gets
     * closed! (other clients may set 'IOFlag_ForceClose') */
@@ -140,6 +146,8 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
       do
          st = close(io->FD);
       while (st < 0 && errno == EINTR);
+   } else {
+      _MSG(" NOT CLOSING ");
    }
    /* Remove this IOData_t reference, from our ValidIOs list
     * We don't deallocate it here, just remove from the list.*/
@@ -147,6 +155,7 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
 
    /* Stop the polling on this FD */
    a_IOwatch_remove_fd(io->FD, io->events);
+   _MSG(" end IO close (%d) <=====\n", io->FD);
 }
 
 /*
@@ -358,7 +367,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                MSG_WARN(" \"%s\"\n", dStr_printable(io->Buf, 2048));
             }
             /* close FD, remove from ValidIOs and remove its watch */
-            IO_close_fd(io, IO_StopRdWr);
+            IO_close_fd(io, Op == OpEnd ? IO_StopWr : IO_StopRdWr);
             IO_free(io);
             dFree(Info);
             break;

@@ -17,7 +17,7 @@
 #define IOAbort  3
 
 /*
- * IO Flags (unused)
+ * IO Flags
  */
 #define IOFlag_ForceClose  (1 << 1)
 #define IOFlag_SingleWrite (1 << 2)
