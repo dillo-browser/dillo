@@ -2932,10 +2932,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 
    /* Image maps */
    if (Html_get_attr(html, tag, tagsize, "ismap")) {
-      /* BUG: if several ISMAP images follow each other without
-       * being separated with a word, only the first one is ISMAPed
-       */
-//    a_Dw_image_set_ismap (Image->dw);
+      ((::dw::Image*)Image->dw)->setIsMap();
       _MSG("  Html_tag_open_img: server-side map (ISMAP)\n");
    } else if (S_TOP(html)->style->x_link != -1 &&
               usemap_url == NULL) {
