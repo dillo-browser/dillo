@@ -547,16 +547,15 @@ void a_Html_load_images(void *v_html, DilloUrl *pattern)
 /*
  * Set the URL data for image maps.
  */
-//static void Html_set_link_coordinates(DilloHtmlLB *lb,
-//                                      int link, int x, int y)
-//{
-//   char data[64];
-//
-//   if (x != -1) {
-//      snprintf(data, 64, "?%d,%d", x, y);
-//      a_Url_set_ismap_coords(lb->links->get(link), data);
-//   }
-//}
+static void Html_set_link_coordinates(DilloHtml *html, int link, int x, int y)
+{
+   char data[64];
+
+   if (x != -1) {
+      snprintf(data, 64, "?%d,%d", x, y);
+      a_Url_set_ismap_coords(html->links->get(link), data);
+   }
+}
 
 /*
  * Create a new link, set it as the url's parent
@@ -1082,11 +1081,12 @@ bool DilloHtml::HtmlLinkReceiver::enter (Widget *widget, int link, int img,
    BrowserWindow *bw = html->bw;
 
    _MSG(" ** ");
-   if (link == -1 && x == -1 && y == -1) {
+   if (link == -1) {
       _MSG(" Link  LEAVE  notify...\n");
       a_UIcmd_set_msg(bw, "");
    } else {
       _MSG(" Link  ENTER  notify...\n");
+      Html_set_link_coordinates(html, link, x, y);
       a_UIcmd_set_msg(bw, "%s", URL_STR(html->links->get(link)));
    }
    return true;
@@ -1158,11 +1158,7 @@ bool DilloHtml::HtmlLinkReceiver::click (Widget *widget, int link, int img,
       DilloUrl *url = html->links->get(link);
       _MSG("clicked on URL %d: %s\n", link, a_Url_str (url));
 
-      if (x != -1) {
-         char data[64];
-         snprintf(data, 64, "?%d,%d", x, y);
-         a_Url_set_ismap_coords(url, data);
-      }
+      Html_set_link_coordinates(html, link, x, y);
 
       if (event->button == 1) {
          a_Nav_push(bw, url);
