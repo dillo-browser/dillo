@@ -95,6 +95,7 @@ dillo-fltk2
  - Added input image for FORMS.
  - Added button for FORMS.
  - Added nesting checks for BUTTON, SELECT and FORM.
+ - Fix: shape=default is the background in a client-side image map.
    Patches: place
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

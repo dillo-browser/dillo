@@ -3017,7 +3017,9 @@ misc::SimpleVector<int> *Html_read_coords(DilloHtml *html, const char *str)
  */
 static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
 {
-   misc::SimpleVector<int> *coords;
+   enum types {UNKNOWN, RECTANGLE, CIRCLE, POLYGON, BACKGROUND};
+   types type;
+   misc::SimpleVector<int> *coords = NULL;
    DilloUrl* url;
    const char *attrbuf;
    int link = -1;
@@ -3027,56 +3029,58 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
       MSG_HTML("<area> element not inside <map>\n");
       return;
    }
-
-   /* todo: add support for coords in % */
-   if ((attrbuf = Html_get_attr(html, tag, tagsize, "coords"))) {
-      coords = Html_read_coords(html, attrbuf);
-   } else
-      return;
-  
    attrbuf = Html_get_attr(html, tag, tagsize, "shape");
 
    if (!attrbuf || !*attrbuf || !dStrcasecmp(attrbuf, "rect")) {
       /* the default shape is a rectangle */
-      if (coords->size() != 4)
-         MSG_HTML("<area> rectangle must have four coordinate values\n");
-      if (coords->size() >= 4)
-         shape = new Rectangle(coords->get(0),
-                               coords->get(1),
-                               coords->get(2) - coords->get(0),
-                               coords->get(3) - coords->get(1));
+      type = RECTANGLE;
    } else if (dStrcasecmp(attrbuf, "default") == 0) {
-      /* "Specifies the entire region." "default" is not the default shape. */
-      MSG("<area> shape=default not implemented.\n");
+      /* "default" is the background */
+      type = BACKGROUND;
    } else if (dStrcasecmp(attrbuf, "circle") == 0) {
-      if (coords->size() != 3)
-         MSG_HTML("<area> circle must have three coordinate values\n");
-      if (coords->size() >= 3)
-         shape = new Circle(coords->get(0), coords->get(1), coords->get(2));
+      type = CIRCLE;
    } else if (dStrncasecmp(attrbuf, "poly", 4) == 0) {
-      Polygon *poly;
-      int i;
-      if (coords->size() % 2)
-         MSG_HTML("<area> polygon with odd number of coordinates\n");
-      shape = poly = new Polygon();
-      for (i = 0; i < (coords->size() / 2); i++)
-         poly->addPoint(coords->get(2*i), coords->get(2*i + 1));
-      if (i) {
-         /* be sure to close it */
-         poly->addPoint(coords->get(0), coords->get(1));
-      }
+      type = POLYGON;
    } else {
       MSG_HTML("<area> unknown shape: \"%s\"\n", attrbuf);
+      type = UNKNOWN;
    }
+   if (type == RECTANGLE || type == CIRCLE || type == POLYGON) {
+      /* todo: add support for coords in % */
+      if ((attrbuf = Html_get_attr(html, tag, tagsize, "coords"))) {
+         coords = Html_read_coords(html, attrbuf);
 
-   if (coords)
-      delete(coords);
-
-   if (shape) {
-      if (Html_get_attr(html, tag, tagsize, "nohref")) {
-         link = -1;
-         _MSG("nohref");
+         if (type == RECTANGLE) {
+            if (coords->size() != 4)
+               MSG_HTML("<area> rectangle must have four coordinate values\n");
+            if (coords->size() >= 4)
+               shape = new Rectangle(coords->get(0),
+                                     coords->get(1),
+                                     coords->get(2) - coords->get(0),
+                                     coords->get(3) - coords->get(1));
+         } else if (type == CIRCLE) {
+            if (coords->size() != 3)
+               MSG_HTML("<area> circle must have three coordinate values\n");
+            if (coords->size() >= 3)
+               shape = new Circle(coords->get(0), coords->get(1),
+                                  coords->get(2));
+         } else if (type == POLYGON) {
+            Polygon *poly;
+            int i;
+            if (coords->size() % 2)
+               MSG_HTML("<area> polygon with odd number of coordinates\n");
+            shape = poly = new Polygon();
+            for (i = 0; i < (coords->size() / 2); i++)
+               poly->addPoint(coords->get(2*i), coords->get(2*i + 1));
+            if (i) {
+               /* be sure to close it */
+               poly->addPoint(coords->get(0), coords->get(1));
+            }
+         }
+         delete(coords);
       }
+   }
+   if (shape != NULL || type == BACKGROUND) {
       if ((attrbuf = Html_get_attr(html, tag, tagsize, "href"))) {
          url = Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
          dReturn_if_fail ( url != NULL );
@@ -3085,7 +3089,10 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
   
          link = Html_set_new_link(html, &url);
       }
-      html->maps.addShapeToCurrentMap(shape, link);
+      if (type == BACKGROUND)
+         html->maps.setCurrentMapDefaultLink(link);
+      else
+         html->maps.addShapeToCurrentMap(shape, link);
    }
 }
 
