@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
+#include <signal.h>
 
 #include <fltk/Window.h>
 #include <fltk/run.h>
@@ -81,6 +82,9 @@ static DilloUrl *Dillo_make_start_url(char *str)
 int main(int argc, char **argv)
 {
    srand((uint_t)(time(0) ^ getpid()));
+
+   // Some OSes exit dillo without this (not GNU/Linux).
+   signal(SIGPIPE, SIG_IGN);
 
    // Initialize internal modules
    a_Dir_init();
