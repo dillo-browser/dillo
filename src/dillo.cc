@@ -61,6 +61,8 @@ static void Dillo_check_dillorc_dir(void)
          MSG("Dillo: error creating directory %s: %s\n",dir,dStrerror(errno));
       else
          MSG("Dillo: error reading %s: %s\n", dir, dStrerror(errno));
+   } else {
+      MSG("Dillo: creating directory %s.\n", dir);
    }
    dFree(dir);
 }
