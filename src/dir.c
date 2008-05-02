@@ -10,7 +10,10 @@
  */
 
 #include <unistd.h>
+#include <errno.h>
+#include <sys/stat.h>
 
+#include "msg.h"
 #include "../dlib/dlib.h"
 
 
@@ -44,5 +47,29 @@ char *a_Dir_get_owd(void)
 void a_Dir_free(void)
 {
    dFree(OldWorkingDirectory);
+}
+
+/*
+ * Check if '~/.dillo' directory exists.
+ * If not, try to create it.
+ */
+void a_Dir_check_dillorc_directory(void)
+{
+   char *dir;
+   struct stat st;
+
+   dir = dStrconcat(dGethomedir(), "/.dillo", NULL);
+   if (stat(dir, &st) == -1) {
+      if (errno == ENOENT) {
+         MSG("Dillo: creating directory %s.\n", dir);
+         if (mkdir(dir, 0700) < 0) {
+            MSG("Dillo: error creating directory %s: %s\n", dir,
+                dStrerror(errno));
+         }
+      } else {
+         MSG("Dillo: error reading %s: %s\n", dir, dStrerror(errno));
+      }
+   }
+   dFree(dir);
 }
 

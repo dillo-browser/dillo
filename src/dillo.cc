@@ -21,10 +21,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <time.h>
 #include <signal.h>
-#include <sys/stat.h>
 
 #include <fltk/Window.h>
 #include <fltk/run.h>
@@ -46,26 +44,6 @@
 #include "dicache.h"
 #include "cookies.h"
 
-/*
- * Check if '~/.dillo' directory exists.
- * If not, try to create it.
- */
-static void Dillo_check_dillorc_dir(void)
-{
-   char *dir;
-   struct stat st;
-
-   dir = dStrconcat(dGethomedir(), "/.dillo", NULL);
-   if (stat(dir, &st) == -1) {
-      if (errno == ENOENT && mkdir(dir, 0700) < 0)
-         MSG("Dillo: error creating directory %s: %s\n",dir,dStrerror(errno));
-      else
-         MSG("Dillo: error reading %s: %s\n", dir, dStrerror(errno));
-   } else {
-      MSG("Dillo: creating directory %s.\n", dir);
-   }
-   dFree(dir);
-}
 
 /*
  * Given a command line argument, build a DilloUrl for it.
@@ -109,12 +87,10 @@ int main(int argc, char **argv)
    // Some OSes exit dillo without this (not GNU/Linux).
    signal(SIGPIPE, SIG_IGN);
 
-   // Check that ~/.dillo exists, create it if it doesn't.
-   Dillo_check_dillorc_dir();
-
    // Initialize internal modules
    a_Dir_init();
    a_Prefs_init();
+   a_Dir_check_dillorc_directory(); /* and create if not present */
    a_Dpi_init();
    a_Dns_init();
    a_Web_init();
