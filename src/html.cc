@@ -4758,7 +4758,7 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
       str = Html_parse_entities(html, html->Stash->str, html->Stash->len);
       form = html->forms->getRef (html->forms->size() - 1);
       form->inputs->getRef(form->inputs->size() - 1)->init_str = str;
-      widget = (Widget*)(form->inputs->get(form->inputs->size() - 1).widget);
+      widget = (Widget*)(form->inputs->getRef(form->inputs->size()-1)->widget);
       ((MultiLineTextResource *)((Embed *)widget)->getResource ())
          ->setText(str);
 
