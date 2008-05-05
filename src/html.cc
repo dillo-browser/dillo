@@ -4191,7 +4191,8 @@ static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
             dStr_free(dstr, 1);
          }
       }
-      for (int i = 0; i < dList_length(values); i++) {
+      int length = dList_length(values);
+      for (int i = 0; i < length; i++) {
          dstr = (Dstr *) dList_nth_data(values, 0);
          dList_remove(values, dstr);
          if (input->type != DILLO_HTML_INPUT_FILE)
@@ -4283,8 +4284,8 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit,
             Html_urlencode_append(DataStr, val->str);
             dStr_free(val, 1);
          } else {
-            int i;
-            for (i = 0; i < dList_length(values); i++) {
+            int length = dList_length(values), i;
+            for (i = 0; i < length; i++) {
                Dstr *val = (Dstr *) dList_nth_data(values, 0);
                dList_remove(values, val);
                val = Html_encode_text(encoder, &val);
@@ -4879,8 +4880,16 @@ static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 
    DilloHtmlForm *form = html->forms->getRef (html->forms->size() - 1);
    char *name = Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
-   OptionMenuResource *res =
-      HT2LT(html)->getResourceFactory()->createOptionMenuResource ();
+   ResourceFactory *factory = HT2LT(html)->getResourceFactory ();
+   DilloHtmlInputType type;
+   SelectionResource *res;
+   if (Html_get_attr(html, tag, tagsize, "multiple")) {
+      type = DILLO_HTML_INPUT_SEL_LIST;
+      res = factory->createListResource (ListResource::SELECTION_MULTIPLE);
+   } else {
+      type = DILLO_HTML_INPUT_SELECT;
+      res = factory->createOptionMenuResource ();
+   }
    Widget *widget;
    Embed *embed;
    widget = embed = new Embed(res);
@@ -4912,8 +4921,7 @@ static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 
    DilloHtmlSelect *select = new DilloHtmlSelect;
    select->options = new misc::SimpleVector<DilloHtmlOption *> (4);
-   Html_add_input(form, DILLO_HTML_INPUT_SELECT, widget, embed, name,
-                  NULL, select, false);
+   Html_add_input(form, type, widget, embed, name, NULL, select, false);
    Html_stash_init(html);
    dFree(name);
 }

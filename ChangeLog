@@ -143,6 +143,7 @@ dillo-fltk2
 +- Bound Ctrl-R to reload.
  - Made dialogs use font_factor (e.g. view source).
  - Implemented the SELECT element in FORMS!
+ - Implemented MULTIPLE SELECT in FORMS.
    Patches: Jeremy Henty
 +- Added int32_t, EAI_NODATA and iconv tests for FreeBSD.
    Patch: Thomas-Martin Seck
