@@ -37,9 +37,7 @@ using namespace fltk;
  */
 static void window_close_cb(Widget *, void *vwin)
 {
-   Window *window = (Window*)vwin;
-
-   window->destroy();
+   delete (Window*)vwin;
 }
 
 /*
@@ -123,14 +121,13 @@ void a_Dialog_text_window(const char *txt, const char *title)
    //int wh = 600, ww = 650, bh = 30;
    int wh = prefs.height, ww = prefs.width, bh = 30;
    int lines, line_num_width;
-   TextBuffer *text_buf = new TextBuffer();
-   text_buf->text(txt);
  
    Window *window = new Window(ww, wh, title ? title : "Untitled");
+   window->callback(window_close_cb, window);
    window->begin();
  
     TextDisplay *td = new TextDisplay(0,0,ww, wh-bh);
-    td->buffer(text_buf);
+    td->buffer()->text(txt);
     /* enable wrapping lines; text uses entire width of window */
     td->wrap_mode(true, 0);
 
@@ -213,6 +210,7 @@ TextFinder::TextFinder(int ww, int wh, BrowserWindow *bw) :
    int button_width = 70, ih = 35, bh = 30, gap = 10;
 
    this->bw = bw;
+   callback(window_close_cb, this);
 
    begin();
     i = new Input(0, 0, ww, ih);
@@ -294,7 +292,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
    window->end();
 
    window->exec();
-   window->destroy();
+   delete window;
    _MSG("Choice5 answer = %d\n", choice5_answer);
 
    return choice5_answer;
