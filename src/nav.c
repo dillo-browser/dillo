@@ -265,6 +265,8 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
 
 /*
  * We have an answer! Set things accordingly.
+ * Beware: this function is much more complex than it looks
+ *         because URLs with repush pass twice through it.
  */
 void a_Nav_expect_done(BrowserWindow *bw)
 {
