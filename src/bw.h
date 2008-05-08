@@ -49,8 +49,8 @@ struct _BrowserWindow
     * nav_expect_url holds it until the first answer-bytes are got. Only then
     * it is sent to history and referenced at the top of nav_stack */
    DilloUrl *nav_expect_url;
-   /* 'nav_expecting' is true if the last URL is being loaded for
-    * the first time and has not gotten the dw yet. */
+   /* 'nav_expecting' is true while dillo waits for non-cached URL data,
+    * until a dw is assigned to it. */
    bool_t nav_expecting;
 
    /* Counter for the number of hops on a redirection. Used to stop

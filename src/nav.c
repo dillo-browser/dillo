@@ -37,10 +37,6 @@ struct _nav_stack_item
    int posx, posy;
 };
 
-/*
- * Forward declarations
- */
-static void Nav_reload(BrowserWindow *bw);
 
 
 /*
@@ -272,7 +268,7 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
  */
 void a_Nav_expect_done(BrowserWindow *bw)
 {
-   int url_idx, posx, posy, repush, goto_old_scroll = 1;
+   int url_idx, posx, posy, repush, e2ereload, goto_old_scroll = TRUE;
    DilloUrl *url;
    char *fragment = NULL;
 
@@ -281,6 +277,7 @@ void a_Nav_expect_done(BrowserWindow *bw)
    if (bw->nav_expecting) {
       url = bw->nav_expect_url;
       repush = (URL_FLAGS(url) & URL_ReloadFromCache);
+      e2ereload = (URL_FLAGS(url) & URL_E2EReload);
       fragment = a_Url_decode_hex_str(URL_FRAGMENT_(url));
 
       /* unset E2EReload before adding this url to history */
@@ -289,16 +286,25 @@ void a_Nav_expect_done(BrowserWindow *bw)
       a_Url_set_flags(url, URL_FLAGS(url) & ~URL_ReloadFromCache);
       url_idx = a_History_add_url(url);
 
-      Nav_get_scroll_pos(bw, &posx, &posy);
-      if (repush) {
-         MSG("a_Nav_expect_done: repush!\n");
+      if (repush || e2ereload) {
+         MSG("a_Nav_expect_done: %s!\n", repush ? "repush" : "e2ereload");
       } else {
          Nav_stack_truncate(bw, a_Nav_stack_ptr(bw) + 1);
          Nav_stack_insert(bw, url_idx, a_Nav_stack_ptr(bw) + 1, 0, 0);
          Nav_stack_move_ptr(bw, 1);
       }
-      if (fragment && posx == 0 && posy == 0)
-         goto_old_scroll = 0;
+
+      if (fragment) {
+         goto_old_scroll = FALSE;
+         if (repush) {
+            Nav_get_scroll_pos(bw, &posx, &posy);
+            if (posx || posy)
+               goto_old_scroll = TRUE;
+         } else if (e2ereload) {
+            /* Reset scroll, so repush goes to fragment in the next pass */
+            Nav_save_scroll_pos(bw, a_Nav_stack_ptr(bw), 0, 0);
+         }
+      }
       a_Nav_cancel_expect(bw);
    }
 
@@ -448,8 +454,9 @@ static void Nav_reload(BrowserWindow *bw)
       a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_E2EReload);
       /* This is an explicit reload, so clear the SpamSafe flag */
       a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) & ~URL_SpamSafe);
+      bw->nav_expect_url = ReqURL;
+      bw->nav_expecting = TRUE;
       Nav_open_url(bw, ReqURL, 0);
-      a_Url_free(ReqURL);
    }
 }
 
