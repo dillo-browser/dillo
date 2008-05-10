@@ -312,7 +312,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
 
    /* reload test */
    reload = (!(a_Capi_get_flags(web->url) & CAPI_IsCached) ||
-             (URL_FLAGS(web->url) & URL_E2EReload));
+             (URL_FLAGS(web->url) & URL_E2EQuery));
 
    if (web->flags & WEB_Download) {
      /* download request: if cached save from cache, else
@@ -337,7 +337,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
       if ((safe = Capi_dpi_verify_request(web))) {
          if (dStrcasecmp(scheme, "dpi") == 0) {
             /* make "dpi:/" prefixed urls always reload. */
-            a_Url_set_flags(web->url, URL_FLAGS(web->url) | URL_E2EReload);
+            a_Url_set_flags(web->url, URL_FLAGS(web->url) | URL_E2EQuery);
             reload = 1;
          }
          if (reload) {

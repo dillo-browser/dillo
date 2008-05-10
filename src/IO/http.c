@@ -267,7 +267,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "%s"
          "\r\n",
          full_path->str,
-         (URL_FLAGS(url) & URL_E2EReload) ?
+         (URL_FLAGS(url) & URL_E2EQuery) ?
             "Cache-Control: no-cache\r\nPragma: no-cache\r\n" : "",
          URL_HOST(url), s_port->str,
          proxy_auth->str, referer, VERSION, cookies);

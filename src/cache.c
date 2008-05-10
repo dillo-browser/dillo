@@ -360,7 +360,7 @@ int a_Cache_open_url(void *web, CA_Callback_t Call, void *CbData)
    DilloWeb *Web = web;
    DilloUrl *Url = Web->url;
 
-   if (URL_FLAGS(Url) & URL_E2EReload) {
+   if (URL_FLAGS(Url) & URL_E2EQuery) {
       /* remove current entry */
       Cache_entry_remove(NULL, Url);
    }
@@ -746,7 +746,7 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
          NewUrl = a_Url_new(URL_STR_(entry->Location), URL_STR_(entry->Url),
                             0, 0, 0);
          if (entry->Flags & CA_TempRedirect)
-            a_Url_set_flags(NewUrl, URL_FLAGS(NewUrl) | URL_E2EReload);
+            a_Url_set_flags(NewUrl, URL_FLAGS(NewUrl) | URL_E2EQuery);
          a_Nav_push(bw, NewUrl);
          a_Url_free(NewUrl);
       } else {

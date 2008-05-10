@@ -34,7 +34,7 @@
 #define URL_Ismap               (1 << 3)
 #define URL_RealmAccess         (1 << 4)
 
-#define URL_E2EReload           (1 << 5)
+#define URL_E2EQuery            (1 << 5)
 #define URL_ReloadImages        (1 << 6)
 #define URL_ReloadPage          (1 << 7)
 #define URL_ReloadFromCache     (1 << 8)

@@ -206,7 +206,7 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 
    MSG("Nav_open_url: new url='%s'\n", URL_STR_(url));
 
-   ForceReload = (URL_FLAGS(url) & (URL_E2EReload + URL_ReloadFromCache)) != 0;
+   ForceReload = (URL_FLAGS(url) & (URL_E2EQuery + URL_ReloadFromCache)) != 0;
 
    /* Get the url of the current page */
    idx = a_Nav_stack_ptr(bw);
@@ -265,12 +265,13 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
 
 /*
  * We have an answer! Set things accordingly.
+ * This function is called for root URLs only.
  * Beware: this function is much more complex than it looks
  *         because URLs with repush pass twice through it.
  */
 void a_Nav_expect_done(BrowserWindow *bw)
 {
-   int url_idx, posx, posy, repush, e2ereload, goto_old_scroll = TRUE;
+   int url_idx, posx, posy, reload, repush, e2equery, goto_old_scroll = TRUE;
    DilloUrl *url;
    char *fragment = NULL;
 
@@ -278,18 +279,22 @@ void a_Nav_expect_done(BrowserWindow *bw)
 
    if (bw->nav_expecting) {
       url = bw->nav_expect_url;
+      reload = (URL_FLAGS(url) & URL_ReloadPage);
       repush = (URL_FLAGS(url) & URL_ReloadFromCache);
-      e2ereload = (URL_FLAGS(url) & URL_E2EReload);
+      e2equery = (URL_FLAGS(url) & URL_E2EQuery);
       fragment = a_Url_decode_hex_str(URL_FRAGMENT_(url));
 
-      /* unset E2EReload before adding this url to history */
-      a_Url_set_flags(url, URL_FLAGS(url) & ~URL_E2EReload);
-      /* unset ReloadFromCache before adding this url to history */
+      /* Unset E2EQuery, ReloadPage and ReloadFromCache
+       * before adding this url to history */
+      a_Url_set_flags(url, URL_FLAGS(url) & ~URL_E2EQuery);
+      a_Url_set_flags(url, URL_FLAGS(url) & ~URL_ReloadPage);
       a_Url_set_flags(url, URL_FLAGS(url) & ~URL_ReloadFromCache);
       url_idx = a_History_add_url(url);
 
-      if (repush || e2ereload) {
-         MSG("a_Nav_expect_done: %s!\n", repush ? "repush" : "e2ereload");
+      if (repush) {
+         MSG("a_Nav_expect_done: repush!\n");
+      } else if (reload) {
+         MSG("a_Nav_expect_done: reload!\n");
       } else {
          Nav_stack_truncate(bw, a_Nav_stack_ptr(bw) + 1);
          Nav_stack_insert(bw, url_idx, a_Nav_stack_ptr(bw) + 1, 0, 0);
@@ -302,7 +307,7 @@ void a_Nav_expect_done(BrowserWindow *bw)
             Nav_get_scroll_pos(bw, &posx, &posy);
             if (posx || posy)
                goto_old_scroll = TRUE;
-         } else if (e2ereload) {
+         } else if (e2equery) {
             /* Reset scroll, so repush goes to fragment in the next pass */
             Nav_save_scroll_pos(bw, a_Nav_stack_ptr(bw), 0, 0);
          }
@@ -452,8 +457,10 @@ static void Nav_reload(BrowserWindow *bw)
    a_Nav_cancel_expect(bw);
    if (a_Nav_stack_size(bw)) {
       ReqURL = a_Url_dup(a_History_get_url(NAV_TOP_UIDX(bw)));
+      /* Mark URL as reload to differentiate from push */
+      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_ReloadPage);
       /* Let's make reload be end-to-end */
-      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_E2EReload);
+      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_E2EQuery);
       /* This is an explicit reload, so clear the SpamSafe flag */
       a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) & ~URL_SpamSafe);
       bw->nav_expect_url = ReqURL;
