@@ -519,7 +519,6 @@ AC_SUBST(LIBFLTK_CFLAGS)
 AC_SUBST(LIBFLTK_LIBS)
 AC_SUBST(LIBICONV_LIBS)
 AC_SUBST(datadir)
-AC_SUBST(src doc)
 
 AC_OUTPUT(Makefile dlib/Makefile dpip/Makefile dpid/Makefile dpi/Makefile doc/Makefile src/Makefile src/IO/Makefile)
 
