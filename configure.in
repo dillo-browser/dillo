@@ -184,31 +184,29 @@ if test "x$jpeg_ok" = "xyes"; then
   AC_DEFINE([ENABLE_JPEG], [], [Enable JPEG images])
 fi
 
-dnl ------------------------------
-dnl Test for zlib (libpng uses it)
-dnl ------------------------------
+dnl -------------
+dnl Test for zlib
+dnl -------------
 dnl
-if test "x$enable_png" = "xyes"; then
-  AC_CHECK_HEADER(zlib.h, libz_ok=yes, libz_ok=no)
+AC_CHECK_HEADER(zlib.h, libz_ok=yes, libz_ok=no)
 
-  if test "x$libz_ok" = "xyes"; then
-    old_libs="$LIBS"
-    AC_CHECK_LIB(z, zlibVersion, libz_ok=yes, libz_ok=no)
-    LIBS="$old_libs"
-  fi
+if test "x$libz_ok" = "xyes"; then
+  old_libs="$LIBS"
+  AC_CHECK_LIB(z, zlibVersion, libz_ok=yes, libz_ok=no)
+  LIBS="$old_libs"
+fi
 
-  if test "x$libz_ok" = xyes; then
-    LIBZ_LIBS="-lz"
-  else
-    AC_MSG_WARN([*** No libz found. Disabling PNG images ***])
-  fi
+if test "x$libz_ok" = xyes; then
+  LIBZ_LIBS="-lz"
+else
+  AC_ERROR(zlib must be installed!)
 fi
 
 dnl ---------------
 dnl Test for libpng
 dnl ---------------
 dnl
-if test "x$enable_png" = "xyes" && test "x$libz_ok" = "xyes"; then
+if test "x$enable_png" = "xyes"; then
   AC_MSG_CHECKING([for libpng-config])
 
 dnl Check if the user hasn't set the variable $PNG_CONFIG

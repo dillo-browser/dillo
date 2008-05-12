@@ -98,7 +98,8 @@ dillo-fltk2
  - Fix: shape=default is the background in a client-side image map.
  - Enabled client and server-side image maps.
  - Switched Window::destroy to Window::delete, fixing side effects.
-   Patches: place
+ - Made zlib a configure requirement.
+   Patches: place (AKA corvid)
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
  - Added an experimental gzip decoder! 
@@ -108,7 +109,7 @@ dillo-fltk2
  - Added support for "charset" in the META element.
  - Added a_Capi_get_flags(). It requests a cache entry's status as flags.
  - Switched URL_DATA type from char* to a dStr.
- - Implemented the file input control for forms (work in progress).
+ - Implemented the file input control for forms.
    Patch: place, Jorge Arellano Cid
 +- Fixed a cookies-related dillo freeze bug happening at:
      http://www.fltk.org/newsgroups.php?gfltk.general+v:24912
