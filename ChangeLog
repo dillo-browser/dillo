@@ -138,6 +138,7 @@ dillo-fltk2
  - Added a redraw(DAMAGE_HIGHLIGHT) call to Back, Forw and Stop buttons.
  - Fixed a segfault bug when closing a bw under active networking.
  - Removed the unused SPCBuf variable.
+ - Fixed a freeze-bug in IO.c where the IOwatch for reading was not removed.
    Patches: Johannes Hofmann
 +- Made progress bars resize automatically.
    Patches: Johannes Hofmann, Jorge Arellano Cid

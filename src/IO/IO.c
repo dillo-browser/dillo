@@ -35,9 +35,9 @@
  * Symbolic defines for shutdown() function
  * (Not defined in the same header file, for all distros --Jcid)
  */
-#define IO_StopRd   0
-#define IO_StopWr   1
-#define IO_StopRdWr 2
+#define IO_StopRd   1
+#define IO_StopWr   2
+#define IO_StopRdWr (IO_StopRd | IO_StopWr)
 
 
 typedef struct {
@@ -49,7 +49,6 @@ typedef struct {
    Dstr *Buf;             /* Internal buffer */
 
    void *Info;            /* CCC Info structure for this IO */
-   int events;            /* FLTK events for this IO */
 } IOData_t;
 
 
@@ -136,6 +135,7 @@ static void IO_free(IOData_t *io)
 static void IO_close_fd(IOData_t *io, int CloseCode)
 {
    int st;
+   int events = 0;
 
    _MSG("====> begin IO close (%d) Key=%d CloseCode=%d Flags=%d ",
        io->FD, io->Key, CloseCode, io->Flags);
@@ -154,7 +154,15 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
    IO_del(io);
 
    /* Stop the polling on this FD */
-   a_IOwatch_remove_fd(io->FD, io->events);
+   if (CloseCode & IO_StopRd) {
+     events |= DIO_READ;
+   } 
+
+   if (CloseCode & IO_StopWr) {
+     events |= DIO_WRITE;
+   } 
+               
+   a_IOwatch_remove_fd(io->FD, events);
    _MSG(" end IO close (%d) <=====\n", io->FD);
 }
 
@@ -322,13 +330,11 @@ static void IO_submit(IOData_t *r_io)
    fcntl(r_io->FD, F_SETFD, FD_CLOEXEC | fcntl(r_io->FD, F_GETFD));
 
    if (r_io->Op == IORead) {
-      r_io->events = DIO_READ;
-      a_IOwatch_add_fd(r_io->FD, r_io->events,
+      a_IOwatch_add_fd(r_io->FD, DIO_READ,
                        IO_fd_read_cb, (void*)(r_io->Key));
 
    } else if (r_io->Op == IOWrite) {
-      r_io->events = DIO_WRITE;
-      a_IOwatch_add_fd(r_io->FD, r_io->events,
+      a_IOwatch_add_fd(r_io->FD, DIO_WRITE,
                        IO_fd_write_cb, (void*)(r_io->Key));
    }
 }
