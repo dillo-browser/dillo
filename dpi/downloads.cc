@@ -899,7 +899,7 @@ static void read_req_cb(int req_fd, void *)
    _MSG("Received tag={%s}\n", tag->str);
 
    if ((cmd = a_Dpip_get_attr(tag->str, (size_t)tag->len, "cmd")) == NULL) {
-      MSG("Failed to parse 'cmd' in %s\n", tag->str);
+      MSG("Failed to parse 'cmd' in {%s}\n", tag->str);
       goto end;
    }
    if (strcmp(cmd, "DpiBye") == 0) {
@@ -911,11 +911,11 @@ static void read_req_cb(int req_fd, void *)
       goto end;
    }
    if (!(url = a_Dpip_get_attr(tag->str,(size_t)tag->len, "url"))){
-      MSG("Failed to parse 'url' in %s\n", tag->str);
+      MSG("Failed to parse 'url' in {%s}\n", tag->str);
       goto end;
    }
    if (!(dl_dest = a_Dpip_get_attr(tag->str,(size_t)tag->len,"destination"))){
-      MSG("Failed to parse 'destination' in %s\n", tag->str);
+      MSG("Failed to parse 'destination' in {%s}\n", tag->str);
       goto end;
    }
    /* 'dl_dest' may be a directory */

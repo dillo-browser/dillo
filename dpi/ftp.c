@@ -47,8 +47,10 @@
 
 /*
  * Debugging macros
+ * (Set debugging messages to stderr, to see them)
  */
 #define _MSG(...)
+//#define MSG(...)  fprintf(stderr, "[ftp dpi]: " __VA_ARGS__)
 #define MSG(...)  printf("[ftp dpi]: " __VA_ARGS__)
 
 /*
@@ -85,12 +87,13 @@ static const ContentType_t MimeTypes[] = {
  *
  * Return value: (0 on success, 1 on doubt, 2 on lack of data).
  */
-static int a_Misc_get_content_type_from_data(void *Data, size_t Size,
-                                      const char **PT)
+static int a_Misc_get_content_type_from_data2(void *Data, size_t Size,
+                                              const char **PT)
 {
    int st = 1;      /* default to "doubt' */
    int Type = 0;    /* default to "application/octet-stream" */
    char *p = Data;
+   uchar_t ch;
    size_t i, non_ascci;
 
    /* HTML try */
@@ -119,18 +122,21 @@ static int a_Misc_get_content_type_from_data(void *Data, size_t Size,
 
    /* Text */
    } else {
-      /* We'll assume "text/plain" if the set of chars above 127 is <= 10
-       * in a 256-bytes sample.  Better heuristics are welcomed! :-) */
+      /* We'll assume "text/plain" if the set of chars above 127 is <= 10%
+       * of the sample. This helps to catch ASCII, LATIN1 and UTF-8 as text.
+       * Better heuristics are welcomed! :-) */
       non_ascci = 0;
       Size = MIN (Size, 256);
-      for (i = 0; i < Size; i++)
-         if ((uchar_t) p[i] > 127)
+      for (i = 0; i < Size; i++) {
+         ch = (uchar_t) p[i];
+         if ((ch < 32 || ch > 126) && !isspace(ch))
             ++non_ascci;
+      }
       if (Size == 256) {
-         Type = (non_ascci > 10) ? 0 : 2;
+         Type = (non_ascci > Size/10) ? 0 : 2;
          st = 0;
       } else {
-         Type = (non_ascci > 0) ? 0 : 2;
+         Type = (non_ascci > Size/10) ? 0 : 2;
       }
    }
 
@@ -172,9 +178,10 @@ static int try_ftp_transfer(char *url)
 #define MinSZ 256
 
    ssize_t n;
-   int nb, minibuf_sz;
+   int nb, has_mime_type, has_html_header;
    const char *mime_type = "application/octet-stream";
-   char buf[4096], minibuf[MinSZ], *d_cmd;
+   char buf[4096], *d_cmd;
+   Dstr *dbuf = dStr_sized_new(4096);
    pid_t ch_pid;
    int aborted = 0;
    int DataPipe[2];
@@ -204,18 +211,23 @@ static int try_ftp_transfer(char *url)
    }
 
    /* Read/Write the real data */
-   minibuf_sz = 0;
-   for (nb = 0; 1; nb += n) {
+   nb = 0;
+   has_mime_type = 0;
+   has_html_header = 0;
+   do {
       while ((n = read(DataPipe[0], buf, 4096)) < 0 && errno == EINTR);
-      if (n <= 0)
+      if (n > 0) {
+         dStr_append_l(dbuf, buf, n);
+         if (!has_mime_type && dbuf->len < MinSZ)
+            continue;
+      } else if (n < 0)
          break;
 
-      if (minibuf_sz < MinSZ) {
-         memcpy(minibuf + minibuf_sz, buf, MIN(n, MinSZ - minibuf_sz));
-         minibuf_sz += MIN(n, MinSZ - minibuf_sz);
-         if (minibuf_sz < MinSZ)
-            continue;
-         a_Misc_get_content_type_from_data(minibuf, minibuf_sz, &mime_type);
+      if (!has_mime_type) {
+         if (dbuf->len > 0)
+            a_Misc_get_content_type_from_data2(dbuf->str,dbuf->len,&mime_type);
+         has_mime_type = 1;
+
          if (strcmp(mime_type, "application/octet-stream") == 0) {
             /* abort transfer */
             kill(ch_pid, SIGTERM);
@@ -225,7 +237,7 @@ static int try_ftp_transfer(char *url)
          }
       }
 
-      if (nb == 0) {
+      if (!has_html_header && dbuf->len) {
          /* Send dpip tag */
          d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", url);
          sock_handler_write_str(sh, 1, d_cmd);
@@ -235,11 +247,15 @@ static int try_ftp_transfer(char *url)
          sock_handler_write_str(sh, 0, "Content-type: ");
          sock_handler_write_str(sh, 0, mime_type);
          sock_handler_write_str(sh, 1, "\n\n");
+         has_html_header = 1;
       }
 
-      if (!aborted)
-         sock_handler_write(sh, 0, buf, n);
-   }
+      if (!aborted && dbuf->len) {
+         sock_handler_write(sh, 0, dbuf->str, dbuf->len);
+         nb += dbuf->len;
+         dStr_truncate(dbuf, 0);
+      }
+   } while (n > 0 && !aborted);
 
    return nb;
 }
@@ -247,11 +263,15 @@ static int try_ftp_transfer(char *url)
 /*
  *
  */
-int main(void)
+int main(int argc, char **argv)
 {
    char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *url2 = NULL;
    int nb;
    char *p, *d_cmd;
+
+   /* Debugging with a command line argument */
+   if (argc == 2)
+      dpip_tag = dStrdup(argv[1]);
 
    /* Initialize the SockHandler */
    sh = sock_handler_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
@@ -260,7 +280,8 @@ int main(void)
    chdir("/tmp");
 
    /* Read the dpi command from STDIN */
-   dpip_tag = sock_handler_read(sh);
+   if (!dpip_tag)
+      dpip_tag = sock_handler_read(sh);
    MSG("tag=[%s]\n", dpip_tag);
 
    cmd = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cmd");
