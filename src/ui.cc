@@ -601,7 +601,7 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
 
    // Set handler for the close window event
    // (the argument is set later via user_data())
-   TopGroup->callback(close_window_cb);
+   callback(close_window_cb);
 
    // Control panel
    Panel = make_panel(win_w);

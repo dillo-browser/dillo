@@ -125,8 +125,8 @@ void a_UIcmd_close_bw(void *vbw)
 
    MSG("a_UIcmd_close_bw\n");
    a_Bw_stop_clients(bw, BW_Root + BW_Img + Bw_Force);
-   ui->destroy();
    delete(layout);
+   delete(ui);
    a_Bw_free(bw);
 }
 
