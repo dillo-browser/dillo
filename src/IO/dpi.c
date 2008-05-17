@@ -606,7 +606,7 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
    dpi_conn_t *conn;
    int SockFD = -1, st;
 
-   a_Chain_debug_msg("a_Dpi_ccc", Op, Branch, Dir);
+   dReturn_if_fail( a_Chain_check("a_Dpi_ccc", Op, Branch, Dir, Info) );
 
    if (Branch == 1) {
       if (Dir == BCK) {
@@ -638,6 +638,11 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             break;
          case OpEnd:
             a_Chain_bcb(OpEnd, Info, NULL, NULL);
+            dFree(Info->LocalKey);
+            dFree(Info);
+            break;
+         case OpAbort:
+            a_Chain_bcb(OpAbort, Info, NULL, NULL);
             dFree(Info->LocalKey);
             dFree(Info);
             break;

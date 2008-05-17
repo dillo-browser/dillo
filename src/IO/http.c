@@ -498,7 +498,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
 {
    int SKey = VOIDP2INT(Info->LocalKey);
 
-   a_Chain_debug_msg("a_Http_ccc", Op, Branch, Dir);
+   dReturn_if_fail( a_Chain_check("a_Http_ccc", Op, Branch, Dir, Info) );
 
    if (Branch == 1) {
       if (Dir == BCK) {

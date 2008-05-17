@@ -461,7 +461,7 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
 {
    capi_conn_t *conn;
 
-   a_Chain_debug_msg("a_Capi_ccc", Op, Branch, Dir);
+   dReturn_if_fail( a_Chain_check("a_Capi_ccc", Op, Branch, Dir, Info) );
 
    if (Branch == 1) {
       if (Dir == BCK) {

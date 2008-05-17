@@ -16,6 +16,12 @@
 #define OpEnd    4
 #define OpAbort  5
 
+/*
+ * CCC flags
+ */
+#define CCC_Stopped     (1 << 0)
+#define CCC_Ended       (1 << 1)
+#define CCC_Aborted     (1 << 2)
 
 /*
  * Linking direction
@@ -32,6 +38,8 @@ typedef void (*ChainFunction_t)(int Op, int Branch, int Dir, ChainLink *Info,
 /* This is the main data structure for CCC nodes */
 struct _ChainLink {
    void *LocalKey;
+
+   int Flags;
 
    ChainLink *FcbInfo;
    ChainFunction_t Fcb;
@@ -61,9 +69,9 @@ ChainLink *a_Chain_link_new(ChainLink *AInfo, ChainFunction_t AFunc,
 void a_Chain_unlink(ChainLink *Info, int Direction);
 int a_Chain_fcb(int Op, ChainLink *Info, void *Data1, void *Data2);
 int a_Chain_bcb(int Op, ChainLink *Info, void *Data1, void *Data2);
+int a_Chain_check(char *FuncStr, int Op, int Branch, int Dir,
+                  ChainLink *Info);
 
 DataBuf *a_Chain_dbuf_new(void *buf, int size, int code);
-void a_Chain_debug_msg(char *FuncStr, int Op, int Branch, int Dir);
-
 
 #endif /* __CHAIN_H__ */

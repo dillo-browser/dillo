@@ -52,6 +52,8 @@ dillo-fltk2
  - Implemented a_Dialog_choice5(). May be used by dpis and dillo.
  - Improved parsing of collapsing white space.
  - FTP dpi: Fixed algorithm bugs and improved the mime-type detector.
+ - CCC: added reentrancy control to the OpEnd and OpAbort operations.
+ - CCC: enhanced the debug function and implemented OpAbort for dpi.
    Patches: Jorge Arellano Cid
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color, panel_size, geometry, fullscreen,

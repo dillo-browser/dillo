@@ -137,7 +137,7 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
    int st;
    int events = 0;
 
-   _MSG("====> begin IO close (%d) Key=%d CloseCode=%d Flags=%d ",
+   _MSG("====> begin IO_close_fd (%d) Key=%d CloseCode=%d Flags=%d ",
        io->FD, io->Key, CloseCode, io->Flags);
 
    /* With HTTP, if we close the writing part, the reading one also gets
@@ -157,11 +157,9 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
    if (CloseCode & IO_StopRd) {
      events |= DIO_READ;
    } 
-
    if (CloseCode & IO_StopWr) {
      events |= DIO_WRITE;
    } 
-               
    a_IOwatch_remove_fd(io->FD, events);
    _MSG(" end IO close (%d) <=====\n", io->FD);
 }
@@ -213,6 +211,7 @@ static bool_t IO_read(IOData_t *io)
        * may abort the whole Chain. */
       if ((io = IO_get(io_key))) {
          /* All data read (EOF) */
+         _MSG("IO_read: io->Key=%d io_key=%d\n", io->Key, io_key);
          a_IO_ccc(OpEnd, 2, FWD, io->Info, io, NULL);
       }
    }
@@ -349,7 +348,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
    IOData_t *io;
    DataBuf *dbuf;
 
-   a_Chain_debug_msg("a_IO_ccc", Op, Branch, Dir);
+   dReturn_if_fail( a_Chain_check("a_IO_ccc", Op, Branch, Dir, Info) );
 
    if (Branch == 1) {
       if (Dir == BCK) {
@@ -421,7 +420,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             break;
          case OpEnd:
             a_Chain_fcb(OpEnd, Info, NULL, NULL);
-            IO_close_fd(io, IO_StopRdWr);
+            IO_close_fd(io, IO_StopRdWr); /* IO_StopRd would leak FDs */
             IO_free(io);
             dFree(Info);
             break;
