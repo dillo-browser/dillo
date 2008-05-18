@@ -101,7 +101,7 @@ dillo-fltk2
  - Fix: shape=default is the background in a client-side image map.
  - Enabled client and server-side image maps.
  - Switched Window::destroy to Window::delete, fixing side effects.
- - Made zlib a configure requirement.
+ - Made zlib a configure requirement, and cleaned up configure.in.
    Patches: place (AKA corvid)
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

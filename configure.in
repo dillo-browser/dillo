@@ -22,7 +22,6 @@ AC_ARG_ENABLE(insure, [  --enable-insure         Try to compile and run with Ins
 AC_ARG_ENABLE(ansi,   [  --enable-ansi           Try to compile and run with ANSI flags],
                     , enable_ansi=no)
 AC_ARG_ENABLE(ipv6,   [  --enable-ipv6           Build with support for IPv6], , )
-AC_ARG_ENABLE(rtfl,   [  --enable-rtfl           Build with rtfl messages], enable_rtfl=yes)
 AC_ARG_ENABLE(cookies,[  --disable-cookies       Don't compile support for cookies],
                     , enable_cookies=yes)
 AC_ARG_ENABLE(png,    [  --disable-png           Disable support for PNG images],
@@ -449,9 +448,6 @@ fi
 if test "x$enable_insure" = "xyes" ; then
   CC="insure -Zoi \"compiler $CC\""
   LIBS="$LIBS -lstdc++-2-libc6.1-1-2.9.0"
-fi
-if test "x$enable_rtfl" = "xyes" ; then
-  CFLAGS="$CFLAGS -DDBG_RTFL"
 fi
 if test "x$enable_threaded_dns" = "xyes" ; then
   CFLAGS="$CFLAGS -DD_DNS_THREADED"
