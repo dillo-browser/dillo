@@ -25,6 +25,12 @@ typedef enum {
    UI_SEARCH
 } UIButton;
 
+typedef enum {
+   UI_NORMAL = 0,     /* make sure it's compatible with bool */
+   UI_HIDDEN = 1,
+   UI_TEMPORARILY_SHOW_PANELS
+} UIPanelmode;
+
 // Private class 
 class NewProgressBox;
 
@@ -50,7 +56,7 @@ class UI : public fltk::Window {
    int PanelSize, CuteColor, Small_Icons;
    int xpos, bw, bh, fh, lh, lbl;
 
-   bool Fullscreen;
+   UIPanelmode Panelmode;
 
    PackedGroup *make_toolbar(int tw, int th);
    PackedGroup *make_location();
@@ -79,6 +85,8 @@ public:
    void customize(int flags);
    void button_set_sens(UIButton btn, int sens);
    void paste_url();
+   void set_panelmode(UIPanelmode mode);
+   UIPanelmode get_panelmode();
 
    Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
@@ -87,7 +95,7 @@ public:
    void panel_cb_i();
    void color_change_cb_i();
    void toggle_cb_i();
-   void fullscreen_cb_i();
+   void panelmode_cb_i();
    void imageload_toggle();
 };
 

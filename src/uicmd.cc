@@ -356,18 +356,6 @@ void a_UIcmd_open_file(void *vbw)
 }
 
 /*
- * Get an URL from a dialog and open it
- */
-void a_UIcmd_open_url_dialog(void *vbw)
-{
-   const char *urlstr;
-
-   if ((urlstr = a_Dialog_input("Please enter a URL:"))) {
-      a_UIcmd_open_urlstr(vbw, urlstr);
-   }
-}
-
-/*
  * Returns a newly allocated string holding a search url generated from
  * a string of keywords (separarated by blanks) and prefs.search_url.
  * The search string is urlencoded.

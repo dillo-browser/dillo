@@ -153,6 +153,8 @@ dillo-fltk2
    Patches: Jeremy Henty
 +- Added int32_t, EAI_NODATA and iconv tests for FreeBSD.
    Patch: Thomas-Martin Seck
++- Made CTRL-l focus the location bar instead of popping up a dialog.
+   Patch: Justus Winter
 
  TODO:
 

@@ -55,11 +55,16 @@ public:
 int NewInput::handle(int e)
 {
    int k = event_key();
-   bool ctrl = event_state(CTRL);
 
    _MSG("NewInput::handle event=%d\n", e);
-   if (ctrl && (k == 'o' || k == 'r' || k == HomeKey || k == EndKey))
-      return 0;
+   if (event_state(CTRL)) {
+      if (e == KEY && k == 'l') {
+         // Trick to make text selected when already focused.
+         throw_focus(); take_focus();
+         return 0;
+      } else if (k == 'o' || k == 'r' || k == HomeKey || k == EndKey)
+         return 0;
+   }
    if ((e == KEY || e == KEYUP) &&
        k == UpKey || k == DownKey || k == PageUpKey || k == PageDownKey) {
       _MSG(" {Up|Down|PgUp|PgDn} ret = 1\n");
@@ -203,6 +208,7 @@ static void color_change_cb(Widget *wid, void *data)
 static void location_cb(Widget *wid, void *data)
 {
    Input *i = (Input*)wid;
+   UI *ui = (UI*)i->window();
 
    /* This test is necessary because WHEN_ENTER_KEY also includes
     * other events we're not interested in. For instance pressing
@@ -210,6 +216,9 @@ static void location_cb(Widget *wid, void *data)
     * page. BUG: this must be investigated and reported to FLTK2 team */
    if (event_key() == ReturnKey) {
       a_UIcmd_open_urlstr(i->window()->user_data(), i->value());
+   }
+   if (ui->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS) {
+      ui->set_panelmode(UI_HIDDEN);
    }
 }
 
@@ -275,7 +284,9 @@ static void b1_cb(Widget *wid, void *cb_data)
  */
 static void fullscreen_cb(Widget *wid, void *data)
 {
-   ((UI*)data)->fullscreen_cb_i();
+   /* todo: do we want to toggle fullscreen or panelmode?
+            maybe we need to add another button?*/
+   ((UI*)data)->panelmode_cb_i();
 }
 
 /*
@@ -588,14 +599,14 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
       PanelSize = cur_ui->PanelSize;
       CuteColor = cur_ui->CuteColor;
       Small_Icons = cur_ui->Small_Icons;
-      Fullscreen = cur_ui->Fullscreen;
+      Panelmode = cur_ui->Panelmode;
    } else {
      // Set some default values
      //PanelSize = P_tiny, CuteColor = 26, Small_Icons = 0;
      PanelSize = prefs.panel_size;
      Small_Icons = prefs.small_icons;
      CuteColor = 206;
-     Fullscreen = prefs.fullwindow_start;
+     Panelmode = (UIPanelmode) prefs.fullwindow_start;
    }
 
 
@@ -675,7 +686,7 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
 
    customize(0);
 
-   if (Fullscreen) {
+   if (Panelmode) {
       Panel->hide();
       StatusPanel->hide();
    }
@@ -711,7 +722,10 @@ int UI::handle(int event)
             a_UIcmd_findtext_dialog((BrowserWindow*) user_data());
             ret = 1;
          } else if (k == 'l') {
-            a_UIcmd_open_url_dialog(user_data());
+            if (Panelmode == UI_HIDDEN) {
+               set_panelmode(UI_TEMPORARILY_SHOW_PANELS);
+            }
+            focus_location();
             ret = 1;
          } else if (k == 'n') {
             a_UIcmd_browser_window_new(w(), h(), this);
@@ -729,7 +743,7 @@ int UI::handle(int event)
             a_UIcmd_search_dialog(user_data());
             ret = 1;
          } else if (k == ' ') {
-            fullscreen_cb_i();
+            panelmode_cb_i();
             ret = 1;
          }
       }
@@ -930,19 +944,35 @@ void UI::color_change_cb_i()
 }
 
 /*
- * Toggle the Control Panel out of the way
+ * Set or remove the Panelmode flag and update the UI accordingly
  */
-void UI::fullscreen_cb_i()
+void UI::set_panelmode(UIPanelmode mode)
 {
-   if (!Fullscreen) {
+   if (mode == UI_HIDDEN) {
       Panel->hide();
       StatusPanel->hide();
-      Fullscreen = true;
    } else {
+      /* UI_NORMAL or UI_TEMPORARILY_SHOW_PANELS */
       Panel->show();
       StatusPanel->show();
-      Fullscreen = false;
    }
+   Panelmode = mode;
+}
+
+/*
+ * Get the value of the panelmode flag
+ */
+UIPanelmode UI::get_panelmode()
+{
+   return Panelmode;
+}
+
+/*
+ * Toggle the Control Panel out of the way
+ */
+void UI::panelmode_cb_i()
+{
+   set_panelmode((UIPanelmode) !Panelmode);
 }
 
 /*
