@@ -1,6 +1,6 @@
 Jan 2002, Jörgen Viksell - jorgen.viksell@telia.com,
           Jorge Arellano Cid --
-Last update: Dec 2004
+Last update: May 2008
 
 
 ==================
@@ -70,16 +70,6 @@ and that has deep understanding of HTTP (RFC-2068) and cookies (RFC-2965).
  The dillo project is especially concerned about privacy and security
 issues. Our advice is to avoid cookies whenever possible and at most set
 ACCEPT_SESSION to specific, trusted sites.  -- You have been warned.
-
-
-==============
- Restrictions
-==============
-
- If you use a single dillo with multiple windows, then there's no
-problem, but if you launch different dillos the latter ones will
-have cookies disabled.
-
 
 
 Thats all folks!
