@@ -145,7 +145,6 @@ static char *cookies_txt_header_str =
  * Forward declarations
  */
 
-static FILE *Cookies_fopen(const char *file, char *init_str);
 static CookieControlAction Cookies_control_check_domain(const char *domain);
 static int Cookie_control_init(void);
 static void Cookies_parse_ports(int url_port, CookieData_t *cookie,
@@ -181,12 +180,13 @@ static int Cookie_node_by_domain_cmp(const void *v1, const void *v2)
  * Return a file pointer. If the file doesn't exist, try to create it,
  * with the optional 'init_str' as its content.
  */
-static FILE *Cookies_fopen(const char *filename, char *init_str)
+static FILE *Cookies_fopen(const char *filename, const char *mode,
+                           char *init_str)
 {
    FILE *F_in;
    int fd;
 
-   if ((F_in = fopen(filename, "r+")) == NULL) {
+   if ((F_in = fopen(filename, mode)) == NULL) {
       /* Create the file */
       fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
       if (fd != -1) {
@@ -195,7 +195,7 @@ static FILE *Cookies_fopen(const char *filename, char *init_str)
          close(fd);
 
          MSG("Created file: %s\n", filename);
-         F_in = fopen(filename, "r+");
+         F_in = fopen(filename, mode);
       } else {
          MSG("Could not create file: %s!\n", filename);
       }
@@ -246,7 +246,7 @@ static void Cookies_init()
 
    /* Get a stream for the cookies file */
    filename = dStrconcat(dGethomedir(), "/.dillo/cookies.txt", NULL);
-   file_stream = Cookies_fopen(filename, cookies_txt_header_str);
+   file_stream = Cookies_fopen(filename, "r+", cookies_txt_header_str);
 
    dFree(filename);
 
@@ -1225,7 +1225,7 @@ static int Cookie_control_init(void)
 
    /* Get a file pointer */
    filename = dStrconcat(dGethomedir(), "/.dillo/cookiesrc", NULL);
-   stream = Cookies_fopen(filename, "DEFAULT DENY\n");
+   stream = Cookies_fopen(filename, "r", "DEFAULT DENY\n");
    dFree(filename);
 
    if (!stream)
