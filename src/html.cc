@@ -1445,11 +1445,19 @@ static void Html_process_space(DilloHtml *html, const char *space,
       html->SPCPending = FALSE;
 
    } else if (parse_mode == DILLO_HTML_PARSE_MODE_PRE) {
+      int spaceCnt = 0;
+
       /* re-scan the string for characters that cause line breaks */
       for (i = 0; i < spacesize; i++) {
          /* Support for "\r", "\n" and "\r\n" line breaks (skips the first) */
          if (!html->PreFirstChar &&
              (space[i] == '\r' || (space[i] == '\n' && !html->PrevWasCR))) {
+
+            if (spaceCnt) {
+               DW2TB(html->dw)->addText (dStrnfill(spaceCnt, ' '),
+                     S_TOP(html)->style);
+               spaceCnt = 0;
+            }
             DW2TB(html->dw)->addLinebreak (S_TOP(html)->style);
             html->pre_column = 0;
          }
@@ -1464,18 +1472,21 @@ static void Html_process_space(DilloHtml *html, const char *space,
             if (prefs.show_extra_warnings)
                MSG_HTML("TAB character inside <PRE>\n");
             offset = TAB_SIZE - html->pre_column % TAB_SIZE;
-            DW2TB(html->dw)->addText (dStrnfill(offset, ' '),
-                                      S_TOP(html)->style);
+            spaceCnt += offset;
             html->pre_column += offset;
             break;
          default:
-            DW2TB(html->dw)->addText (dStrndup(space + i, 1),
-                                      S_TOP(html)->style);
+            spaceCnt++;
             html->pre_column++;
             break;
          }
 
          html->PrevWasCR = (space[i] == '\r');
+      }
+
+      if (spaceCnt) {
+         DW2TB(html->dw)->addText (dStrnfill(spaceCnt, ' '),
+               S_TOP(html)->style);
       }
       html->SPCPending = FALSE;
 
