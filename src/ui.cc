@@ -59,8 +59,8 @@ int NewInput::handle(int e)
    _MSG("NewInput::handle event=%d\n", e);
    if (event_state(CTRL)) {
       if (e == KEY && k == 'l') {
-         // Trick to make text selected when already focused.
-         throw_focus(); take_focus();
+         // Make text selected when already focused.
+         position(size(), 0);
          return 0;
       } else if (k == 'o' || k == 'r' || k == HomeKey || k == EndKey)
          return 0;
