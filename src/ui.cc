@@ -694,14 +694,18 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    //show();
 }
 
+
 /*
  * FLTK event handler for this window.
  */
 int UI::handle(int event)
 {
+   _MSG("UI::handle event=%d\n", event);
    int ret = 0, k = event_key();
 
-   _MSG("UI::handle event=%d\n", event);
+   // We're only interested in some flags 
+   // (not whether numlock is on for example)
+   unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
 
    // Let FLTK pass these events to child widgets.
    if (event == KEY) {
@@ -714,7 +718,7 @@ int UI::handle(int event)
 
    } else if (event == SHORTCUT) {
       // Handle these shortcuts here.
-      if (event_state(CTRL)) {
+      if (modifier == CTRL) {
          if (k == 'b') {
             a_UIcmd_book(user_data());
             ret = 1;
@@ -748,16 +752,18 @@ int UI::handle(int event)
          }
       }
 
-      if (event_key_state(LeftAltKey) && k == 'q') {
+      if (event_key_state(LeftAltKey) && modifier == ALT && k == 'q') {
          a_UIcmd_close_all_bw();
          ret = 1;
       }
 
       // Back and Forward navigation shortcuts
-      if ((!event_state(SHIFT) && k == BackSpaceKey) || k == ',') {
+      if ((modifier == 0 && k == BackSpaceKey) ||
+          (modifier == 0 && k == ',')) {
          a_UIcmd_back(user_data());
          ret = 1;
-      } else if ((event_state(SHIFT) && k == BackSpaceKey) || k == '.') {
+      } else if ((modifier == SHIFT && k == BackSpaceKey) ||
+                 (modifier == 0 &&k == '.')) {
          a_UIcmd_forw(user_data());
          ret = 1;
       }
