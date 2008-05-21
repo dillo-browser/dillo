@@ -242,7 +242,7 @@ void a_Dialog_findtext(BrowserWindow *bw)
 /*--------------------------------------------------------------------------*/
 static int choice5_answer;
 
-void choice5_cb(Widget *button, void *number)
+static void choice5_cb(Widget *button, void *number)
 {
   choice5_answer = VOIDP2INT(number);
   _MSG("choice5_cb: %d\n", choice5_answer);
@@ -291,6 +291,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
     }
    window->end();
 
+   //window->hotspot(box);
    window->exec();
    delete window;
    _MSG("Choice5 answer = %d\n", choice5_answer);
