@@ -189,8 +189,7 @@ static void dStr_resize(Dstr *ds, int n_sz, int keep)
          ds->str = (Dstr_char_t*) dRealloc (ds->str, n_sz*sizeof(Dstr_char_t));
          ds->sz = n_sz;
       } else {
-         if (ds->str)
-            free(ds->str);
+         dFree(ds->str);
          ds->str = dNew(Dstr_char_t, n_sz);
          ds->sz = n_sz;
          ds->len = 0;
@@ -288,9 +287,9 @@ Dstr *dStr_new (const char *s)
 void dStr_free (Dstr *ds, int all)
 {
    if (ds) {
-      if (all && ds->str)
-         free(ds->str);
-      free(ds);
+      if (all)
+         dFree(ds->str);
+      dFree(ds);
    }
 }
 
