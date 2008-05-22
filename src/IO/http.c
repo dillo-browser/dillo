@@ -164,7 +164,7 @@ static char *Http_get_referer(const DilloUrl *url)
                            URL_PATH_(url) ? URL_PATH(url) : "/", "\r\n", NULL);
    }
    if (!referer)
-      referer = strdup("");
+      referer = dStrdup("");
    _MSG("http, referer='%s'\n", referer);
    return referer;
 }

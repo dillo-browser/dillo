@@ -7,7 +7,7 @@ using namespace dw::core::ui;
 
 Form::ResourceDecorator::ResourceDecorator (const char *name)
 {
-   this->name = strdup (name);
+   this->name = dStrdup (name);
 }
 
 Form::ResourceDecorator::~ResourceDecorator ()
@@ -38,7 +38,7 @@ Form::RadioButtonResourceDecorator::RadioButtonResourceDecorator
       n++;
    this->values = new const char*[n];
    for(int i = 0; i < n; i++)
-      this->values[i] = strdup (values[i]);
+      this->values[i] = dStrdup (values[i]);
    values[n] = 0;
 }
 

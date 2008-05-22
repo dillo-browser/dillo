@@ -417,7 +417,7 @@ void a_Prefs_init(void)
    prefs.ypos = D_GEOMETRY_DEFAULT_YPOS;
    prefs.http_proxy = NULL;
    prefs.http_proxyuser = NULL;
-   prefs.http_referer = strdup("host");
+   prefs.http_referer = dStrdup("host");
    prefs.no_proxy = NULL;
    prefs.link_color = DW_COLOR_DEFAULT_BLUE;
    prefs.visited_color = DW_COLOR_DEFAULT_PURPLE;

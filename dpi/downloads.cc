@@ -301,9 +301,9 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    fcntl(LogPipe[0], F_SETFL,
          O_NONBLOCK | fcntl(LogPipe[0], F_GETFL));
 
-   fullname = strdup(full_filename);
+   fullname = dStrdup(full_filename);
    p = strrchr(fullname, '/');
-   shortname = (p) ? strdup(p + 1) : strdup("??");
+   shortname = (p) ? dStrdup(p + 1) : dStrdup("??");
    p = strrchr(full_filename, '/');
    target_dir= p ? dStrndup(full_filename,p-full_filename+1) : dStrdup("??");
 

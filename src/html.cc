@@ -2801,7 +2801,7 @@ static DilloImage *Html_add_new_image(DilloHtml *html, const char *tag,
    alt_ptr = Html_get_attr_wdef(html, tag, tagsize, "alt", NULL);
    if (!prefs.load_images && (!alt_ptr || !*alt_ptr)) {
       dFree(alt_ptr);
-      alt_ptr = strdup("[IMG]"); // Place holder for img_off mode
+      alt_ptr = dStrdup("[IMG]"); // Place holder for img_off mode
    }
    width_ptr = Html_get_attr_wdef(html, tag, tagsize, "width", NULL);
    height_ptr = Html_get_attr_wdef(html, tag, tagsize, "height", NULL);
@@ -5708,7 +5708,7 @@ static const char *Html_get_attr(DilloHtml *html,
 
 /*
  * "Html_get_attr with default"
- * Call Html_get_attr() and strdup() the returned string.
+ * Call Html_get_attr() and dStrdup() the returned string.
  * If the attribute isn't found a copy of 'def' is returned.
  */
 static char *Html_get_attr_wdef(DilloHtml *html,
