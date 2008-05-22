@@ -84,6 +84,8 @@ dillo_fltk_SOURCES = \
 	menu.cc \
 	dpiapi.c \
 	dpiapi.h \
-	pixmaps.h
+	pixmaps.h \
+	findbar.cc \
+	findbar.hh
 
 EXTRA_DIST = chg srch

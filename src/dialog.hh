@@ -21,7 +21,6 @@ const char *a_Dialog_select_file(const char *msg,
 char *a_Dialog_open_file(const char *msg,
                          const char *pattern, const char *fname);
 void a_Dialog_text_window(const char *txt, const char *title);
-void a_Dialog_findtext(BrowserWindow *bw);
 
 #ifdef __cplusplus
 }

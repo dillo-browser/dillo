@@ -19,7 +19,7 @@
 #include <fltk/damage.h>
 #include <fltk/xpmImage.h>
 #include <fltk/MultiImage.h>
-#include <fltk/events.h>        // for mouse buttons
+#include <fltk/events.h>        // for mouse buttons and keys
 #include <fltk/InvisibleBox.h>
 #include <fltk/PopupMenu.h>
 #include <fltk/Item.h>
@@ -33,7 +33,6 @@ using namespace fltk;
 
 // Include image data
 #include "pixmaps.h"
-
 #include "uicmd.hh"
 
 /*
@@ -631,6 +630,10 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    TopGroup->resizable(Main);
    MainIdx = TopGroup->find(Main);
 
+   // Find text bar
+   findbar = new Findbar(win_w, 30, this);
+   TopGroup->add(findbar); 
+
    // Status Panel
    StatusPanel = new Group(0, 0, win_w, s_h, 0);
    // Status box
@@ -642,6 +645,7 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    Status->box(THIN_DOWN_BOX);
    Status->clear_click_to_focus();
    Status->clear_tab_to_focus();
+   Status->color(GRAY80);
    StatusPanel->add(Status);
    //Status->throw_focus();
 
@@ -723,7 +727,7 @@ int UI::handle(int event)
             a_UIcmd_book(user_data());
             ret = 1;
          } else if (k == 'f') {
-            a_UIcmd_findtext_dialog((BrowserWindow*) user_data());
+            set_findbar_visibility(1);
             ret = 1;
          } else if (k == 'l') {
             if (Panelmode == UI_HIDDEN) {
@@ -1055,3 +1059,14 @@ void UI::paste_url()
    paste(*Clear, false);
 }
 
+/*
+ * Shows or hides the findbar of this window
+ */
+void UI::set_findbar_visibility(bool visible)
+{
+   if (visible) {
+      findbar->show();
+   } else {
+      findbar->hide();
+   }
+}

@@ -706,14 +706,6 @@ void a_UIcmd_fullscreen_toggle(BrowserWindow *bw)
 }
 
 /*
- * Open the text search dialog.
- */
-void a_UIcmd_findtext_dialog(BrowserWindow *bw)
-{
-   a_Dialog_findtext(bw);
-}
-
-/*
  * Search for next occurrence of key.
  */
 void a_UIcmd_findtext_search(BrowserWindow *bw, const char *key, int case_sens)

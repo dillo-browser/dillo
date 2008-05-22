@@ -23,6 +23,7 @@
 #include "uicmd.hh"
 #include "history.h"
 #include "html.hh"
+#include "ui.hh" // for (UI *)
 
 using namespace fltk;
 
@@ -116,8 +117,7 @@ static void Menu_add_bookmark_cb(Widget* )
  */
 static void Menu_find_text_cb(Widget* )
 {
-// a_UIcmd_fullscreen_toggle(popup_bw);
-   a_UIcmd_findtext_dialog(popup_bw);
+   ((UI *)popup_bw->ui)->set_findbar_visibility(1);
 }
 
 /* 

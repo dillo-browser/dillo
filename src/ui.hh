@@ -11,6 +11,8 @@
 #include <fltk/Output.h>
 #include <fltk/Image.h>
 
+#include "findbar.hh"
+
 using namespace fltk;
 
 typedef enum {
@@ -57,6 +59,7 @@ class UI : public fltk::Window {
    int xpos, bw, bh, fh, lh, lbl;
 
    UIPanelmode Panelmode;
+   Findbar *findbar;
 
    PackedGroup *make_toolbar(int tw, int th);
    PackedGroup *make_location();
@@ -87,6 +90,7 @@ public:
    void paste_url();
    void set_panelmode(UIPanelmode mode);
    UIPanelmode get_panelmode();
+   void set_findbar_visibility(bool visible);
 
    Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
