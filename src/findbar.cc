@@ -74,16 +74,6 @@ static void findbar_search_cb2(Widget *widget, void *vfb)
 }
 
 /*
- * Reset search state
- */
-static void findbar_clear_cb(Widget *, void *vfb)
-{
-   Findbar *fb = (Findbar *)vfb;
-   fb->i->value("");
-   a_UIcmd_findtext_reset((BrowserWindow *) fb->ui->user_data());
-}
-
-/*
  * Hide the search bar
  */
 static void findbar_hide_cb(Widget *, void *vfb)
@@ -128,15 +118,6 @@ Findbar::Findbar(int width, int height, UI *ui) :
     findb->add_shortcut(ReturnKey);
     findb->add_shortcut(KeypadEnter);
     findb->callback(findbar_search_cb, this);
-
-    /*
-     * I don't consider this button too useful, but feel free to
-     * reenable it (make sure to adjust the input_width above
-     *
-     * clrb = new Button(x, border, button_width, height, "Clear");
-     * x += button_width + gap;
-     * clrb->callback(findbar_clear_cb, this);
-     */
 
     cb = new CheckButton(x, border, 2*button_width, height, "Case-sensitive");
     x += 2 * button_width + gap;
