@@ -1,8 +1,6 @@
 #ifndef __DIALOG_HH__
 #define __DIALOG_HH__
 
-#include "bw.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

@@ -13,13 +13,10 @@
 
 #include <math.h> // for rint() 
 
-#include <fltk/events.h> // for the unfortunate (temporary?) event key testing
 #include <fltk/Window.h>
 #include <fltk/ask.h>
 #include <fltk/file_chooser.h>
 #include <fltk/TextBuffer.h>
-#include <fltk/Input.h>
-#include <fltk/CheckButton.h>
 #include <fltk/ReturnButton.h>
 #include <fltk/TextDisplay.h>
 #include <fltk/HighlightButton.h>
@@ -27,7 +24,6 @@
 #include "msg.h"
 #include "dialog.hh"
 #include "misc.h"
-#include "uicmd.hh"
 #include "prefs.h"
 
 using namespace fltk;
