@@ -329,6 +329,8 @@ public:  //BUG: for now everything is public
    int32_t visited_color;
 
 private:
+   bool_t parse_finished;
+   void freeParseData();
    void initDw();  /* Used by the constructor */
 
 public:
@@ -336,7 +338,7 @@ public:
    ~DilloHtml();
    void connectSignals(dw::core::Widget *dw);
    void write(char *Buf, int BufSize, int Eof);
-   void closeParser(int ClientKey);
+   void finishParsing(int ClientKey);
    int formNew(DilloHtmlMethod method, const DilloUrl *action,
                DilloHtmlEnc enc, const char *charset);
    void loadImages (const DilloUrl *pattern);
@@ -491,7 +493,7 @@ static DilloUrl *Html_url_new(DilloHtml *html,
 /*
  * Get charset string from HTTP Content-Type string.
  */
-char *Html_get_charset(const char *ct)
+static char *Html_get_charset(const char *ct)
 {
    const char key[] = "charset";
    const char terminators[] = " ;\t";
@@ -854,6 +856,8 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    attr_data = dStr_sized_new(1024);
 
+   parse_finished = FALSE;
+
    /* Init page-handling variables */
    forms = new misc::SimpleVector <DilloHtmlForm> (1);
    links = new misc::SimpleVector <DilloUrl*> (64);
@@ -911,12 +915,14 @@ DilloHtml::~DilloHtml()
 {
    _MSG("::~DilloHtml(this=%p)\n", this);
 
+   if (!parse_finished) {
+      MSG("Parse was not finished\n");
+      freeParseData();
+   }
+
    a_Bw_remove_doc(bw, this);
 
    a_Url_free(base_url);
-
-   dStr_free(Local_Buf, 1);
-   dFree(charset);
 
    for (int i = 0; i < forms->size(); i++) {
       DilloHtmlForm *form = forms->getRef(i);
@@ -1006,11 +1012,24 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
 }
 
 /*
- * Finish parsing a HTML page.
- * i.e. Free parsing data, close the client and update the page progress bar.
+ * Free parsing data.
+ */
+void DilloHtml::freeParseData()
+{
+   (stack->getRef(0)->style)->unref ();  /* template style */
+   delete(stack);
+
+   dStr_free(Stash, TRUE);
+   dStr_free(attr_data, TRUE);
+   dStr_free(Local_Buf, TRUE);
+   dFree(charset);
+}
+
+/*
+ * Finish parsing a HTML page. Close the parser and close the client.
  * The class is not deleted here, it remains until the widget is destroyed.
  */
-void DilloHtml::closeParser(int ClientKey)
+void DilloHtml::finishParsing(int ClientKey)
 {
    int si;
 
@@ -1020,21 +1039,14 @@ void DilloHtml::closeParser(int ClientKey)
          Html_tag_cleanup_at_close(this, stack->getRef(si)->tag_idx);
       }
    }
-   (stack->getRef(0)->style)->unref ();  /* template style */
-
-   delete (stack);
-
-   dStr_free(Stash, TRUE);
-   dStr_free(attr_data, TRUE);
-
-   /* Fit the UTF-8 buffer */
-   dStr_fit(Local_Buf);
-
    /* Remove this client from our active list */
    a_Bw_close_client(bw, ClientKey);
 
    /* Set progress bar insensitive */
    a_UIcmd_set_page_prog(bw, 0, 0);
+
+   freeParseData();
+   parse_finished = TRUE;
 }
 
 /*
@@ -5759,7 +5771,7 @@ static void Html_callback(int Op, CacheClient_t *Client)
 
    if (Op) { /* EOF */
       html->write((char*)Client->Buf, Client->BufSize, 1);
-      html->closeParser(Client->Key);
+      html->finishParsing(Client->Key);
    } else {
       html->write((char*)Client->Buf, Client->BufSize, 0);
    }
