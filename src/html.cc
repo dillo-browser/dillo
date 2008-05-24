@@ -338,6 +338,7 @@ public:
    ~DilloHtml();
    void connectSignals(dw::core::Widget *dw);
    void write(char *Buf, int BufSize, int Eof);
+   int getCurTagLineNumber();
    void finishParsing(int ClientKey);
    int formNew(DilloHtmlMethod method, const DilloUrl *action,
                DilloHtmlEnc enc, const char *charset);
@@ -420,26 +421,6 @@ static char *meta_charset = NULL;
  *---------------------------------------------------------------------------*/
 
 /*
- * Return the line number of the tag being processed by the parser.
- */
-static int Html_get_line_number(DilloHtml *html)
-{
-   int i, ofs, line;
-   const char *p = html->Local_Buf->str;
-
-   dReturn_val_if_fail(p != NULL, -1);
-
-   ofs = html->CurrTagOfs;
-   line = html->OldTagLine;
-   for (i = html->OldTagOfs; i < ofs; ++i)
-      if (p[i] == '\n')
-         ++line;
-   html->OldTagOfs = html->CurrTagOfs;
-   html->OldTagLine = line;
-   return line;
-}
-
-/*
  * Collect HTML error strings.
  */
 static void Html_msg(DilloHtml *html, const char *format, ... )
@@ -448,7 +429,7 @@ static void Html_msg(DilloHtml *html, const char *format, ... )
 
    dStr_sprintfa(html->bw->page_bugs,
                  "HTML warning: line %d, ",
-                 Html_get_line_number(html));
+                 html->getCurTagLineNumber());
    va_start(argp, format);
    dStr_vsprintfa(html->bw->page_bugs, format, argp);
    va_end(argp);
@@ -998,17 +979,42 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
    dStr_append_l(Local_Buf, new_text->str, new_text->len);
    dStr_free(new_text, 1);
 
-
    token_start = Html_write_raw(this, Local_Buf->str + Local_Ofs,
-                    Local_Buf->len - Local_Ofs, Eof);
+                                Local_Buf->len - Local_Ofs, Eof);
    Buf_Consumed = BufSize;
    Local_Ofs += token_start;
 
+   /* update line number and tag offset */
+   getCurTagLineNumber();
+
+   /* don't need anything further back */
+   dStr_erase(Local_Buf, 0, CurrTagOfs);
+   Local_Ofs -= CurrTagOfs;
+   OldTagOfs = CurrTagOfs = 0;
+
    if (bw)
       a_UIcmd_set_page_prog(bw, BufSize, 1);
+}
 
-   if (Eof)
-      a_Decode_free(decoder);
+/*
+ * Return the line number of the tag being processed by the parser.
+ * Also update the offsets.
+ */
+int DilloHtml::getCurTagLineNumber()
+{
+   int i, ofs, line;
+   const char *p = Local_Buf->str;
+
+   dReturn_val_if_fail(p != NULL, -1);
+
+   ofs = CurrTagOfs;
+   line = OldTagLine;
+   for (i = OldTagOfs; i < ofs; ++i)
+      if (p[i] == '\n')
+         ++line;
+   OldTagOfs = CurrTagOfs;
+   OldTagLine = line;
+   return line;
 }
 
 /*
@@ -1021,6 +1027,8 @@ void DilloHtml::freeParseData()
 
    dStr_free(Stash, TRUE);
    dStr_free(attr_data, TRUE);
+
+   a_Decode_free(decoder);
    dStr_free(Local_Buf, TRUE);
    dFree(charset);
 }
