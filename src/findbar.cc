@@ -49,7 +49,7 @@ int MyInput::handle(int e)
 /*
  * Find next occurrence of input key
  */
-static void findbar_search_cb(Widget *, void *vfb)
+void Findbar::search_cb(Widget *, void *vfb)
 {
    Findbar *fb = (Findbar *)vfb;
    const char *key = fb->i->value();
@@ -63,20 +63,20 @@ static void findbar_search_cb(Widget *, void *vfb)
 /*
  * Find next occurrence of input key
  */
-static void findbar_search_cb2(Widget *widget, void *vfb)
+void Findbar::search_cb2(Widget *widget, void *vfb)
 {
    /*
     * Somehow fltk even regards the first loss of focus for the
     * window as a WHEN_ENTER_KEY_ALWAYS event.
     */ 
    if (event_key() == ReturnKey)
-      findbar_search_cb(widget, vfb);
+      search_cb(widget, vfb);
 }
 
 /*
  * Hide the search bar
  */
-static void findbar_hide_cb(Widget *, void *vfb)
+void Findbar::hide_cb(Widget *, void *vfb)
 {
    ((Findbar *)vfb)->hide();
 }
@@ -102,14 +102,14 @@ Findbar::Findbar(int width, int height, UI *ui) :
     hidebutton->image(new xpmImage(new_s_xpm));
     hidebutton->tooltip("Hide");
     x += 16 + gap;
-    hidebutton->callback(findbar_hide_cb, this);
+    hidebutton->callback(hide_cb, this);
 
     i = new MyInput(x, border, input_width, height);
     x += input_width + gap;
     resizable(i);
     i->color(206);
     i->when(WHEN_ENTER_KEY_ALWAYS);
-    i->callback(findbar_search_cb2, this);
+    i->callback(search_cb2, this);
 
     // todo: search previous would be nice
     findb = new HighlightButton(x, border, button_width, height, "&Next");
@@ -117,7 +117,7 @@ Findbar::Findbar(int width, int height, UI *ui) :
     findb->tooltip("Find next occurrence of the search phrase");
     findb->add_shortcut(ReturnKey);
     findb->add_shortcut(KeypadEnter);
-    findb->callback(findbar_search_cb, this);
+    findb->callback(search_cb, this);
 
     cb = new CheckButton(x, border, 2*button_width, height, "Case-sensitive");
     x += 2 * button_width + gap;

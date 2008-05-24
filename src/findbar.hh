@@ -22,13 +22,15 @@ class Findbar : public Group {
    HighlightButton *findb;
    Button *clrb;
    HighlightButton *hidebutton;
-
-public:
-   /* the callback functions need those */
    UI *ui;
    Input *i;
    CheckButton *cb;
+   
+   static void search_cb (Widget *, void *);
+   static void search_cb2 (Widget *, void *);
+   static void hide_cb (Widget *, void *);
 
+public:
    Findbar(int width, int height, UI *ui);
    int handle(int event);
    void show();
