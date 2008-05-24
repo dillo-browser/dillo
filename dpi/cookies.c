@@ -15,7 +15,7 @@
 
 /* Handling of cookies takes place here.
  * This implementation aims to follow RFC 2965:
- * http://www.cis.ohio-state.edu/cs/Services/rfc/rfc-text/rfc2965.txt
+ * http://www.ietf.org/rfc/rfc2965.txt
  */
 
 /*
@@ -137,7 +137,7 @@ static bool_t disabled;
 static FILE *file_stream;
 static char *cookies_txt_header_str =
 "# HTTP Cookie File\n"
-"# http://www.netscape.com/newsref/std/cookie_spec.html\n"
+"# http://wp.netscape.com/newsref/std/cookie_spec.html\n"
 "# This is a generated file!  Do not edit.\n\n";
 
 

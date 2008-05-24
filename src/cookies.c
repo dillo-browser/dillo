@@ -12,7 +12,7 @@
 
 /* Handling of cookies takes place here.
  * This implementation aims to follow RFC 2965:
- * http://www.cis.ohio-state.edu/cs/Services/rfc/rfc-text/rfc2965.txt
+ * http://www.ietf.org/rfc/rfc2965.txt
  */
 
 #define DEBUG_LEVEL 10

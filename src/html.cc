@@ -3710,7 +3710,7 @@ static void Html_tag_close_form(DilloHtml *html, int TagIdx)
  * can be easily abused!
  *
  * More info at:
- *   http://lists.w3.org/Archives/Public/www-html/2000Feb/thread.html#232
+ *   http://lists.w3.org/Archives/Public/www-html/2000Feb/thread.html#msg232
  *
  * todo: Note that we're sending custom HTML while still IN_HEAD. This
  * is a hackish way to put the message. A much cleaner approach is to
