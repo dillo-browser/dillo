@@ -444,7 +444,7 @@ if test "x$enable_efence" = "xyes" ; then
 fi
 if test "x$enable_gprof" = "xyes" ; then
   CFLAGS="$CFLAGS -pg"
-  CFLAGS="$CXXFLAGS -pg"
+  CXXFLAGS="$CXXFLAGS -pg"
 fi
 if test "x$enable_insure" = "xyes" ; then
   CC="insure -Zoi \"compiler $CC\""
