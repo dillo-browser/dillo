@@ -3,7 +3,7 @@
  *
  * This server checks the ftp-URL to be a directory (requires wget).
  * If true, it sends back an html representation of it, and if not
- * a dpip message (which is catched by dillo who redirects the ftp URL
+ * a dpip message (which is caught by dillo who redirects the ftp URL
  * to the downloads server).
  *
  * Feel free to polish!

@@ -37,7 +37,7 @@ int MyInput::handle(int e)
    unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
    if (modifier == 0) {
       if (e == KEY && k == EscapeKey) {
-         _MSG("findbar NewInput: catched EscapeKey\n");
+         _MSG("findbar NewInput: caught EscapeKey\n");
          ret = 0;
       }
    }
@@ -114,7 +114,7 @@ Findbar::Findbar(int width, int height, UI *ui) :
     // todo: search previous would be nice
     findb = new HighlightButton(x, border, button_width, height, "&Next");
     x += button_width + gap;
-    findb->tooltip("Find next occurence of the search phrase");
+    findb->tooltip("Find next occurrence of the search phrase");
     findb->add_shortcut(ReturnKey);
     findb->add_shortcut(KeypadEnter);
     findb->callback(findbar_search_cb, this);
