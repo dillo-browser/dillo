@@ -176,10 +176,12 @@ static void Nav_stack_clean(BrowserWindow *bw)
    dReturn_if_fail (bw != NULL);
 
    if ((i = a_Nav_stack_size(bw)) >= 2 &&
-       NAV_UIDX(bw,i - 2) == NAV_UIDX(bw,i -1)) {
+       NAV_UIDX(bw,i - 2) == NAV_UIDX(bw,i - 1)) {
       void *data = dList_nth_data (bw->nav_stack, i - 1);
       dList_remove_fast (bw->nav_stack, data);
       dFree(data);
+      if (bw->nav_stack_ptr >= a_Nav_stack_size(bw))
+         bw->nav_stack_ptr = a_Nav_stack_size(bw) - 1;
    }
 }
 

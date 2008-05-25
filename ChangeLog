@@ -102,6 +102,7 @@ dillo-fltk2
  - Enabled client and server-side image maps.
  - Switched Window::destroy to Window::delete, fixing side effects.
  - Made zlib a configure requirement, and cleaned up configure.in.
+ - Fixed a segfault bug in Nav.c.
    Patches: place (AKA corvid)
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
