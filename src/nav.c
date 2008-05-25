@@ -116,17 +116,18 @@ static void Nav_stack_truncate(BrowserWindow *bw, int pos)
    while (pos < dList_length(bw->nav_stack)) {
       data = dList_nth_data(bw->nav_stack, pos);
       dList_remove_fast (bw->nav_stack, data);
+      dFree(data);
    }
 }
 
 /*
  * Insert a nav_stack_item into the stack at a given position.
  */
-static void Nav_stack_insert(BrowserWindow *bw, int url_idx,
-                             int stack_idx, int posx, int posy)
+static void Nav_stack_append(BrowserWindow *bw, int url_idx)
 {
    void *data;
    nav_stack_item *nsi;
+   int stack_idx = dList_length (bw->nav_stack);
 
    dReturn_if_fail (bw != NULL);
 
@@ -137,9 +138,9 @@ static void Nav_stack_insert(BrowserWindow *bw, int url_idx,
    /* Insert the new element */
    nsi = dNew(nav_stack_item, 1);
    nsi->url_idx = url_idx;
-   nsi->posx = posx;
-   nsi->posy = posy;
-   dList_insert_pos (bw->nav_stack, nsi, stack_idx);
+   nsi->posx = 0;
+   nsi->posy = 0;
+   dList_append (bw->nav_stack, nsi);
 }
 
 /*
@@ -297,7 +298,7 @@ void a_Nav_expect_done(BrowserWindow *bw)
          MSG("a_Nav_expect_done: reload!\n");
       } else {
          Nav_stack_truncate(bw, a_Nav_stack_ptr(bw) + 1);
-         Nav_stack_insert(bw, url_idx, a_Nav_stack_ptr(bw) + 1, 0, 0);
+         Nav_stack_append(bw, url_idx);
          Nav_stack_move_ptr(bw, 1);
       }
 

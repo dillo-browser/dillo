@@ -150,6 +150,7 @@ dillo-fltk2
  - Made dialogs use font_factor (e.g. view source).
  - Implemented the SELECT element in FORMS!
  - Implemented MULTIPLE SELECT in FORMS.
+ - Fixed a memory leak in nav.c
    Patches: Jeremy Henty
 +- Added int32_t, EAI_NODATA and iconv tests for FreeBSD.
    Patch: Thomas-Martin Seck
