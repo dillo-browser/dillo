@@ -125,15 +125,9 @@ static void Nav_stack_truncate(BrowserWindow *bw, int pos)
  */
 static void Nav_stack_append(BrowserWindow *bw, int url_idx)
 {
-   void *data;
    nav_stack_item *nsi;
-   int stack_idx = dList_length (bw->nav_stack);
 
    dReturn_if_fail (bw != NULL);
-
-   /* Free the old element if present */
-   if ((data = dList_nth_data(bw->nav_stack, stack_idx)))
-      dFree(data);
 
    /* Insert the new element */
    nsi = dNew(nav_stack_item, 1);
