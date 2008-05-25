@@ -48,9 +48,6 @@ fw_fontname="DejaVu Sans Mono"
 #font_factor=1.2
 #font_factor=1.5
 
-# If you prefer oblique over italic fonts, uncoment next line
-#use_oblique=YES
-
 # Show tooltip popup for images?
 # Note: We use the "title" attribute and not "alt".
 #       More info at: http://bugzilla.mozilla.org/show_bug.cgi?id=25537
@@ -173,10 +170,6 @@ show_menubar=YES
 
 # Start dillo windows with a hidden panel?
 fullwindow_start=NO
-
-# Enabling this will restrain OpenUrl and FindText, but may be required
-# for the ION window manager.
-transient_dialogs=NO
 
 # When filling forms, our default behaviour is to submit on enterpress,
 # but only when there's a single text entry (to avoid incomplete submits).

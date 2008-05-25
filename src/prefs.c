@@ -102,9 +102,7 @@ typedef enum {
    DRC_TOKEN_STANDARD_WIDGET_COLORS,
    DRC_TOKEN_START_PAGE,
    DRC_TOKEN_TEXT_COLOR,
-   DRC_TOKEN_TRANSIENT_DIALOGS,
    DRC_TOKEN_USE_DICACHE,
-   DRC_TOKEN_USE_OBLIQUE,
    DRC_TOKEN_VISITED_COLOR,
    DRC_TOKEN_VW_FONT,
    DRC_TOKEN_W3C_PLUS_HEURISTICS
@@ -163,9 +161,7 @@ static const SymNode_t symbols[] = {
    { "standard_widget_colors", DRC_TOKEN_STANDARD_WIDGET_COLORS },
    { "start_page", DRC_TOKEN_START_PAGE },
    { "text_color", DRC_TOKEN_TEXT_COLOR },
-   { "transient_dialogs", DRC_TOKEN_TRANSIENT_DIALOGS },
    { "use_dicache", DRC_TOKEN_USE_DICACHE },
-   { "use_oblique", DRC_TOKEN_USE_OBLIQUE },
    { "visited_color", DRC_TOKEN_VISITED_COLOR, },
    { "vw_fontname", DRC_TOKEN_VW_FONT },
    { "w3c_plus_heuristics", DRC_TOKEN_W3C_PLUS_HEURISTICS }
@@ -246,9 +242,6 @@ static int Prefs_parse_pair(char *name, char *value)
    case DRC_TOKEN_STANDARD_WIDGET_COLORS:
       prefs.standard_widget_colors = (strcmp(value, "YES") == 0);
       break;
-   case DRC_TOKEN_USE_OBLIQUE:
-      prefs.use_oblique = (strcmp(value, "YES") == 0);
-      break;
    case DRC_TOKEN_PANEL_SIZE:
       if (!dStrcasecmp(value, "tiny"))
          prefs.panel_size = P_tiny;
@@ -326,9 +319,6 @@ static int Prefs_parse_pair(char *name, char *value)
       break;
    case DRC_TOKEN_LOAD_IMAGES:
       prefs.load_images = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_TRANSIENT_DIALOGS:
-      prefs.transient_dialogs = (strcmp(value, "YES") == 0);
       break;
    case DRC_TOKEN_FW_FONT:
       dFree(prefs.fw_fontname);
@@ -423,7 +413,6 @@ void a_Prefs_init(void)
    prefs.visited_color = DW_COLOR_DEFAULT_PURPLE;
    prefs.bg_color = DW_COLOR_DEFAULT_BGND;
    prefs.text_color = DW_COLOR_DEFAULT_BLACK;
-   prefs.use_oblique = FALSE;
    prefs.start_page = a_Url_new(DILLO_START_PAGE, NULL, 0, 0, 0);
    prefs.home = a_Url_new(DILLO_HOME, NULL, 0, 0, 0);
    prefs.allow_white_bg = TRUE;
@@ -451,7 +440,6 @@ void a_Prefs_init(void)
    prefs.show_progress_box=TRUE;
    prefs.fullwindow_start=FALSE;
    prefs.load_images=TRUE;
-   prefs.transient_dialogs=FALSE;
    prefs.vw_fontname = dStrdup(D_VW_FONTNAME);
    prefs.fw_fontname = dStrdup(D_FW_FONTNAME);
    prefs.generate_submit = FALSE;

@@ -605,10 +605,7 @@ static void Html_set_top_font(DilloHtml *html, const char *name, int size,
    if (BImask & 1)
       font_attrs.weight = (BI & 1) ? 700 : 400;
    if (BImask & 2)
-      font_attrs.style = (BI & 2) ?
-         (prefs.use_oblique ?
-          FONT_STYLE_OBLIQUE : FONT_STYLE_ITALIC) :
-         FONT_STYLE_NORMAL;
+      font_attrs.style = (BI & 2) ? FONT_STYLE_ITALIC : FONT_STYLE_NORMAL;
 
    HTML_SET_TOP_ATTR (html, font,
                       Font::create (HT2LT(html), &font_attrs));

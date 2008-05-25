@@ -28,7 +28,6 @@ struct _DilloPrefs {
    int32_t bg_color;
    int32_t text_color;
    bool_t allow_white_bg;
-   bool_t use_oblique;
    bool_t force_my_colors;
    bool_t contrast_visited_color;
    bool_t standard_widget_colors;
@@ -53,7 +52,6 @@ struct _DilloPrefs {
    bool_t show_progress_box;
    bool_t fullwindow_start;
    bool_t load_images;
-   bool_t transient_dialogs;
    char *vw_fontname;
    char *fw_fontname;
    bool_t generate_submit;
