@@ -3895,8 +3895,7 @@ static void Html_add_input(DilloHtmlForm *form,
 
    /* some stats */
    if (type == DILLO_HTML_INPUT_PASSWORD ||
-       type == DILLO_HTML_INPUT_TEXT ||
-       type == DILLO_HTML_INPUT_TEXTAREA) {
+       type == DILLO_HTML_INPUT_TEXT) {
       form->num_entry_fields++;
    } else if (type == DILLO_HTML_INPUT_SUBMIT ||
               type == DILLO_HTML_INPUT_BUTTON_SUBMIT ||
@@ -4450,6 +4449,11 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
    }
    if (!input) {
       MSG("a_Html_form_event_handler: ERROR, form not found!\n");
+   } else if (form->num_entry_fields > 1 &&
+              !prefs.enterpress_forces_submit &&
+              (input->type == DILLO_HTML_INPUT_TEXT ||
+               input->type == DILLO_HTML_INPUT_PASSWORD)) {
+      /* do nothing */
    } else if (input->type == DILLO_HTML_INPUT_FILE) {
       /* read the file into cache */
       const char *filename = a_UIcmd_select_file();
@@ -4560,6 +4564,7 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          HT2LT(html)->getResourceFactory()->createEntryResource (10, true);
       embed = new Embed (entryResource);
       widget = embed;
+      entryResource->connectActivate (form->form_receiver);
       init_str = (value) ? value : NULL;
    } else if (!dStrcasecmp(type, "checkbox")) {
       inp_type = DILLO_HTML_INPUT_CHECKBOX;
