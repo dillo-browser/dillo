@@ -270,6 +270,9 @@ private:
    };
    HtmlLinkReceiver linkReceiver;
 
+public:
+   inline DilloHtmlForm *getCurrentForm ();
+
 public:  //BUG: for now everything is public
 
    BrowserWindow *bw;
@@ -1063,7 +1066,7 @@ int DilloHtml::formNew(DilloHtmlMethod method, const DilloUrl *action,
    DilloHtmlForm *form;
 
    forms->increase();
-   form = forms->getRef (forms->size() - 1);
+   form = getCurrentForm ();
    form->method = method;
    form->action = a_Url_dup(action);
    form->enc = enc;
@@ -1075,6 +1078,13 @@ int DilloHtml::formNew(DilloHtmlMethod method, const DilloUrl *action,
 
    _MSG("Html formNew: action=%s nform=%d\n", action, nf);
    return forms->size();
+}
+
+/*
+ * Get the current form.
+ */
+DilloHtmlForm *DilloHtml::getCurrentForm () {
+   return forms->getRef (forms->size() - 1);
 }
 
 /*
@@ -2602,7 +2612,7 @@ static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
    }
    html->InFlags |= IN_BUTTON;
 
-   form = html->forms->getRef (html->forms->size() - 1);
+   form = html->getCurrentForm ();
    type = Html_get_attr_wdef(html, tag, tagsize, "type", "");
 
    if (!dStrcasecmp(type, "button")) {
@@ -3662,7 +3672,7 @@ static void Html_tag_close_form(DilloHtml *html, int TagIdx)
 // int i;
   
    if (html->InFlags & IN_FORM) {
-      form = html->forms->getRef (html->forms->size() - 1);
+      form = html->getCurrentForm ();
       /* If we don't have a submit button and the user desires one,
          let's add a custom one */
       if (form->num_submit_buttons == 0) {
@@ -4549,7 +4559,7 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       return;
    }
   
-   form = html->forms->getRef (html->forms->size() - 1);
+   form = html->getCurrentForm ();
   
    /* Get 'value', 'name' and 'type' */
    value = Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
@@ -4734,7 +4744,7 @@ static void Html_tag_open_isindex(DilloHtml *html,
    html->formNew(DILLO_HTML_METHOD_GET, action, DILLO_HTML_ENC_URLENCODING,
                  html->charset);
   
-   form = html->forms->getRef (html->forms->size() - 1);
+   form = html->getCurrentForm ();
   
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
   
@@ -4790,7 +4800,7 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
    
       /* The HTML3.2 spec says it can have "text and character entities". */
       str = Html_parse_entities(html, html->Stash->str, html->Stash->len);
-      form = html->forms->getRef (html->forms->size() - 1);
+      form = html->getCurrentForm ();
       form->inputs->getRef(form->inputs->size() - 1)->init_str = str;
       widget = (Widget*)(form->inputs->getRef(form->inputs->size()-1)->widget);
       ((MultiLineTextResource *)((Embed *)widget)->getResource ())
@@ -4826,7 +4836,7 @@ static void Html_tag_open_textarea(DilloHtml *html,
    }
   
    html->InFlags |= IN_TEXTAREA;
-   form = html->forms->getRef (html->forms->size() - 1);
+   form = html->getCurrentForm ();
    Html_stash_init(html);
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
   
@@ -4911,7 +4921,7 @@ static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    html->InFlags |= IN_SELECT;
    html->InFlags &= ~IN_OPTION;
 
-   DilloHtmlForm *form = html->forms->getRef (html->forms->size() - 1);
+   DilloHtmlForm *form = html->getCurrentForm ();
    char *name = Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
    ResourceFactory *factory = HT2LT(html)->getResourceFactory ();
    DilloHtmlInputType type;
@@ -4964,8 +4974,7 @@ static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_option_finish(DilloHtml *html)
 {
-   DilloHtmlForm *form =
-      html->forms->getRef (html->forms->size() - 1);
+   DilloHtmlForm *form = html->getCurrentForm ();
    DilloHtmlInput *input =
       form->inputs->getRef (form->inputs->size() - 1);
    if (input->type == DILLO_HTML_INPUT_SELECT ||
@@ -4991,8 +5000,7 @@ static void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
       Html_option_finish(html);
    html->InFlags |= IN_OPTION;
 
-   DilloHtmlForm *form =
-      html->forms->getRef (html->forms->size() - 1);
+   DilloHtmlForm *form = html->getCurrentForm ();
    DilloHtmlInput *input =
       form->inputs->getRef (form->inputs->size() - 1);
 
@@ -5028,8 +5036,7 @@ static void Html_tag_close_select(DilloHtml *html, int TagIdx)
       html->InFlags &= ~IN_SELECT;
       html->InFlags &= ~IN_OPTION;
 
-      DilloHtmlForm *form =
-         html->forms->getRef (html->forms->size() - 1);
+      DilloHtmlForm *form = html->getCurrentForm ();
       DilloHtmlInput *input =
          form->inputs->getRef (form->inputs->size() - 1);
       SelectionResource *res =
