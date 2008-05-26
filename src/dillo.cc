@@ -104,6 +104,15 @@ int main(int argc, char **argv)
    // Create a new UI/bw pair
    BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, NULL);
 
+   if (prefs.http_proxyuser && !a_Http_proxy_auth()) {
+      const char *passwd = a_UIcmd_get_passwd(prefs.http_proxyuser);
+      if (passwd) {
+         a_Http_set_proxy_passwd(passwd);
+      } else {
+         MSG_WARN("Not using proxy authentication.\n");
+      }
+   }
+
    if (argc == 2) {
       DilloUrl *url = Dillo_make_start_url(argv[1]);
       a_UIcmd_open_urlstr(bw, URL_STR(url));

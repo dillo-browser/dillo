@@ -12,6 +12,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
                      const char *alt1, const char *alt2, const char *alt3,
                      const char *alt4, const char *alt5);
 const char *a_Dialog_input(const char *msg);
+const char *a_Dialog_passwd(const char *msg);
 const char *a_Dialog_save_file(const char *msg,
                                const char *pattern, const char *fname);
 const char *a_Dialog_select_file(const char *msg,

@@ -106,7 +106,7 @@ int a_Http_proxy_auth(void)
 /*
  * Activate entered proxy password for HTTP.
  */
-void a_Http_set_proxy_passwd(char *str)
+void a_Http_set_proxy_passwd(const char *str)
 {
    char *http_proxyauth = dStrconcat(prefs.http_proxyuser, ":", str, NULL);
    HTTP_Proxy_Auth_base64 = a_Misc_encode_base64(http_proxyauth);

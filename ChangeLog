@@ -57,7 +57,7 @@ dillo-fltk2
    Patches: Jorge Arellano Cid
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color, panel_size, geometry, fullscreen,
-   start_page, geometry offset and limit_text_width in preferences.
+   start_page, geometry offset, proxy_user and limit_text_width in preferences.
  - Enabled clicking over image links.
  - Improved notification upon leaving links.
  - Implemented image-link URL showing in status bar.

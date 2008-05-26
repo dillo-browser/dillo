@@ -65,6 +65,14 @@ const char *a_Dialog_input(const char *msg)
 }
 
 /*
+ * Dialog for password
+ */
+const char *a_Dialog_passwd(const char *msg)
+{
+   return password("%s", "", msg);
+}
+
+/*
  * Show the save file dialog.
  *
  * Return: pointer to chosen filename, or NULL on Cancel.

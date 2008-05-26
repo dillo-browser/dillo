@@ -24,6 +24,7 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_file(void *vbw);
 const char *a_UIcmd_select_file();
 void a_UIcmd_search_dialog(void *vbw);
+const char *a_UIcmd_get_passwd(const char *user);
 void a_UIcmd_book(void *vbw);
 void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);

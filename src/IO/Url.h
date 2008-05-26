@@ -15,7 +15,7 @@ extern "C" {
 extern void a_Http_freeall(void);
 int a_Http_init(void);
 int a_Http_proxy_auth(void);
-void a_Http_set_proxy_passwd(char *str);
+void a_Http_set_proxy_passwd(const char *str);
 Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy);
 
 void a_Http_ccc (int Op, int Branch, int Dir, ChainLink *Info,

@@ -402,6 +402,18 @@ void a_UIcmd_search_dialog(void *vbw)
 }
 
 /*
+ * Get password for user
+ */
+const char *a_UIcmd_get_passwd(const char *user)
+{
+   const char *passwd;
+   char *prompt = dStrconcat("Password for user \"", user, "\"", NULL);
+   passwd = a_Dialog_passwd(prompt);
+   dFree(prompt);
+   return passwd;
+}
+
+/*
  * Save link URL
  */
 void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
