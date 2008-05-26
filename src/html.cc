@@ -91,7 +91,7 @@ typedef void (*TagCloseFunct) (DilloHtml *Html, int TagIdx);
 typedef struct _DilloLinkImage   DilloLinkImage;
 typedef struct _DilloHtmlClass   DilloHtmlClass;
 typedef struct _DilloHtmlState   DilloHtmlState;
-typedef struct _DilloHtmlForm    DilloHtmlForm;
+class DilloHtmlForm;
 typedef struct _DilloHtmlInput   DilloHtmlInput;
 typedef struct _DilloHtmlSelect  DilloHtmlSelect;
 typedef struct _DilloHtmlOption  DilloHtmlOption;
@@ -216,7 +216,8 @@ struct _DilloHtmlState {
    bool_t hand_over_break;
 };
 
-struct _DilloHtmlForm {
+class DilloHtmlForm {
+public:  //BUG: for now everything is public
    DilloHtmlMethod method;
    DilloUrl *action;
    DilloHtmlEnc enc;
@@ -228,6 +229,11 @@ struct _DilloHtmlForm {
    int num_submit_buttons;
 
    form::Form *form_receiver;
+
+public:
+   DilloHtmlForm (DilloHtmlMethod method, const DilloUrl *action,
+                  DilloHtmlEnc enc, const char *charset);
+   ~DilloHtmlForm ();
 };
 
 struct _DilloHtmlOption {
@@ -323,7 +329,7 @@ public:  //BUG: for now everything is public
    /* -------------------------------------------------------------------*/
    /* Variables required after parsing (for page functionality)          */
    /* -------------------------------------------------------------------*/
-   misc::SimpleVector<DilloHtmlForm> *forms;
+   misc::SimpleVector<DilloHtmlForm*> *forms;
    misc::SimpleVector<DilloUrl*> *links;
    misc::SimpleVector<DilloLinkImage*> *images;
    ImageMapsList maps;
@@ -840,7 +846,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    parse_finished = FALSE;
 
    /* Init page-handling variables */
-   forms = new misc::SimpleVector <DilloHtmlForm> (1);
+   forms = new misc::SimpleVector <DilloHtmlForm*> (1);
    links = new misc::SimpleVector <DilloUrl*> (64);
    images = new misc::SimpleVector <DilloLinkImage*> (16);
    //a_Dw_image_map_list_init(&maps);
@@ -905,34 +911,8 @@ DilloHtml::~DilloHtml()
 
    a_Url_free(base_url);
 
-   for (int i = 0; i < forms->size(); i++) {
-      DilloHtmlForm *form = forms->getRef(i);
-      a_Url_free(form->action);
-      dFree(form->submit_charset);
-      for (int j = 0; j < form->inputs->size(); j++) {
-         DilloHtmlInput *input = form->inputs->getRef(j);
-         dFree(input->name);
-         dFree(input->init_str);
-         dStr_free(input->file_data, 1);
-
-         if (input->type == DILLO_HTML_INPUT_SELECT ||
-             input->type == DILLO_HTML_INPUT_SEL_LIST) {
-
-            int size = input->select->options->size ();
-            for (int k = 0; k < size; k++) {
-               DilloHtmlOption *option =
-                  input->select->options->get (k);
-               dFree(option->value);
-               dFree(option->content);
-               delete(option);
-            }
-            delete(input->select->options);
-            delete(input->select);
-         }
-      }
-      delete(form->inputs);
-      delete(form->form_receiver);
-   }
+   for (int i = 0; i < forms->size(); i++)
+      delete forms->get(i);
    delete(forms);
 
    for (int i = 0; i < links->size(); i++)
@@ -1063,19 +1043,11 @@ void DilloHtml::finishParsing(int ClientKey)
 int DilloHtml::formNew(DilloHtmlMethod method, const DilloUrl *action,
                        DilloHtmlEnc enc, const char *charset)
 {
-   DilloHtmlForm *form;
-
-   forms->increase();
-   form = getCurrentForm ();
-   form->method = method;
-   form->action = a_Url_dup(action);
-   form->enc = enc;
-   form->submit_charset = dStrdup(charset);
-   form->inputs = new misc::SimpleVector <DilloHtmlInput> (4);
-   form->num_entry_fields = 0;
-   form->num_submit_buttons = 0;
-   form->form_receiver = new form::Form(this);
-
+   DilloHtmlForm *form = new DilloHtmlForm (method,action,enc,charset);
+   form->form_receiver = new form::Form (this);
+   int size = forms->size ();
+   forms->increase ();
+   forms->set (size, form);
    _MSG("Html formNew: action=%s nform=%d\n", action, nf);
    return forms->size();
 }
@@ -1083,8 +1055,9 @@ int DilloHtml::formNew(DilloHtmlMethod method, const DilloUrl *action,
 /*
  * Get the current form.
  */
-DilloHtmlForm *DilloHtml::getCurrentForm () {
-   return forms->getRef (forms->size() - 1);
+DilloHtmlForm *DilloHtml::getCurrentForm ()
+{
+   return forms->get (forms->size() - 1);
 }
 
 /*
@@ -1205,6 +1178,57 @@ bool DilloHtml::HtmlLinkReceiver::click (Widget *widget, int link, int img,
       }
    }
    return true;
+}
+
+/*
+ * Create and initialize a new DilloHtmlForm class
+ */
+DilloHtmlForm::DilloHtmlForm (DilloHtmlMethod method2,
+                              const DilloUrl *action2,
+                              DilloHtmlEnc enc2,
+                              const char *charset)
+{
+   method = method2;
+   action = a_Url_dup(action2);
+   enc = enc2;
+   submit_charset = dStrdup(charset);
+   inputs = new misc::SimpleVector <DilloHtmlInput> (4);
+   num_entry_fields = 0;
+   num_submit_buttons = 0;
+   form_receiver = NULL;
+}
+
+/*
+ * Free memory used by the DilloHtmlForm class.
+ */
+DilloHtmlForm::~DilloHtmlForm ()
+{
+   a_Url_free(action);
+   dFree(submit_charset);
+   for (int j = 0; j < inputs->size(); j++) {
+      DilloHtmlInput *input = inputs->getRef(j);
+      dFree(input->name);
+      dFree(input->init_str);
+      dStr_free(input->file_data, 1);
+
+      if (input->type == DILLO_HTML_INPUT_SELECT ||
+          input->type == DILLO_HTML_INPUT_SEL_LIST) {
+
+         int size = input->select->options->size ();
+         for (int k = 0; k < size; k++) {
+            DilloHtmlOption *option =
+               input->select->options->get (k);
+            dFree(option->value);
+            dFree(option->content);
+            delete(option);
+         }
+         delete(input->select->options);
+         delete(input->select);
+      }
+   }
+   delete(inputs);
+   if (form_receiver)
+      delete(form_receiver);
 }
 
 /*
@@ -4443,7 +4467,7 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
 
    /* Search the form that generated the submit event */
    for (form_index = 0; form_index < html->forms->size(); form_index++) {
-      form = html->forms->getRef (form_index);
+      form = html->forms->get (form_index);
       if (form->form_receiver == form_receiver) {
          /* form found, let's get the input index for this event */
          for (idx = 0; idx < form->inputs->size(); idx++) {
