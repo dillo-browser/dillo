@@ -235,6 +235,7 @@ public:
                   DilloHtmlEnc enc, const char *charset);
    ~DilloHtmlForm ();
    inline DilloHtmlInput *getCurrentInput ();
+   void reset ();
 };
 
 struct _DilloHtmlOption {
@@ -269,6 +270,7 @@ public:
                    DilloHtmlSelect *select,
                    bool_t init_val);
    ~DilloHtmlInput ();
+   void reset();
 };
 
 /*-----------------------------------------------------------------------------
@@ -405,7 +407,6 @@ static void Html_add_input(DilloHtmlForm *form,
                            const char *init_str,
                            DilloHtmlSelect *select,
                            bool_t init_val);
-//static void Html_reset_form(DilloHtmlForm *form);
 static int Html_tag_index(const char *tag);
 static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
 
@@ -1231,9 +1232,19 @@ DilloHtmlInput *DilloHtmlForm::getCurrentInput ()
 }
 
 /*
+ * Reset all inputs containing reset to their initial values.  In
+ * general, reset is the reset button for the form.
+ */
+void DilloHtmlForm::reset ()
+{
+   int size = inputs->size();
+   for (int i = 0; i < size; i++)
+      inputs->get(i)->reset();
+}
+
+/*
  * Create and initialize a new DilloHtmlInput class
  */
-static void Html_reset_input(DilloHtmlInput *input);
 DilloHtmlInput::DilloHtmlInput (DilloHtmlInputType type2,
                                 Widget *widget2,
                                 Embed *embed2,
@@ -1250,7 +1261,7 @@ DilloHtmlInput::DilloHtmlInput (DilloHtmlInputType type2,
    select = select2;
    init_val = init_val2;
    file_data = NULL;
-   Html_reset_input(this);
+   reset ();
 }
 
 /*
@@ -1275,6 +1286,74 @@ DilloHtmlInput::~DilloHtmlInput ()
       }
       delete(select->options);
       delete(select);
+   }
+}
+
+/*
+ * Reset to the initial value.
+ */
+void DilloHtmlInput::reset ()
+{
+   switch (type) {
+   case DILLO_HTML_INPUT_TEXT:
+   case DILLO_HTML_INPUT_PASSWORD:
+      EntryResource *entryres;
+      entryres = (EntryResource*)((Embed*)widget)->getResource();
+      entryres->setText(init_str ? init_str : "");
+      break;
+   case DILLO_HTML_INPUT_CHECKBOX:
+   case DILLO_HTML_INPUT_RADIO:
+      ToggleButtonResource *tb_r;
+      tb_r = (ToggleButtonResource*)((Embed*)widget)->getResource();
+      tb_r->setActivated(init_val);
+      break;
+   case DILLO_HTML_INPUT_SELECT:
+      if (select != NULL) {
+         /* this is in reverse order so that, in case more than one was
+          * selected, we get the last one, which is consistent with handling
+          * of multiple selected options in the layout code. */
+//       for (i = select->num_options - 1; i >= 0; i--) {
+//          if (select->options[i].init_val) {
+//             gtk_menu_item_activate(GTK_MENU_ITEM
+//                                    (select->options[i].menuitem));
+//             Html_select_set_history(input);
+//             break;
+//          }
+//       }
+      }
+      break;
+   case DILLO_HTML_INPUT_SEL_LIST:
+      if (!select)
+         break;
+//    for (i = 0; i < select->num_options; i++) {
+//       if (select->options[i].init_val) {
+//          if (select->options[i].menuitem->state == GTK_STATE_NORMAL)
+//             gtk_list_select_child(GTK_LIST(select->menu),
+//                                   select->options[i].menuitem);
+//       } else {
+//          if (select->options[i].menuitem->state==GTK_STATE_SELECTED)
+//             gtk_list_unselect_child(GTK_LIST(select->menu),
+//                                     select->options[i].menuitem);
+//       }
+//    }
+      break;
+   case DILLO_HTML_INPUT_TEXTAREA:
+      if (init_str != NULL) {
+         MultiLineTextResource *textres;
+         textres =
+            (MultiLineTextResource*)
+            ((Embed*)widget)->getResource();
+         textres->setText(init_str ? init_str : "");
+      }
+      break;
+   case DILLO_HTML_INPUT_FILE:
+   {  LabelButtonResource *lbr =
+         (LabelButtonResource *)((Embed*)widget)->getResource();
+      lbr->setLabel(init_str);
+      break;
+   }
+   default:
+      break;
    }
 }
 
@@ -3876,74 +3955,6 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 // }
 //}
 
-/*
- * Reset the input widget to the initial value.
- */
-static void Html_reset_input(DilloHtmlInput *input)
-{
-   switch (input->type) {
-   case DILLO_HTML_INPUT_TEXT:
-   case DILLO_HTML_INPUT_PASSWORD:
-      EntryResource *entryres;
-      entryres = (EntryResource*)((Embed*)input->widget)->getResource();
-      entryres->setText(input->init_str ? input->init_str : "");
-      break;
-   case DILLO_HTML_INPUT_CHECKBOX:
-   case DILLO_HTML_INPUT_RADIO:
-      ToggleButtonResource *tb_r;
-      tb_r = (ToggleButtonResource*)((Embed*)input->widget)->getResource();
-      tb_r->setActivated(input->init_val);
-      break;
-   case DILLO_HTML_INPUT_SELECT:
-      if (input->select != NULL) {
-         /* this is in reverse order so that, in case more than one was
-          * selected, we get the last one, which is consistent with handling
-          * of multiple selected options in the layout code. */
-//       for (i = input->select->num_options - 1; i >= 0; i--) {
-//          if (input->select->options[i].init_val) {
-//             gtk_menu_item_activate(GTK_MENU_ITEM
-//                                    (input->select->options[i].menuitem));
-//             Html_select_set_history(input);
-//             break;
-//          }
-//       }
-      }
-      break;
-   case DILLO_HTML_INPUT_SEL_LIST:
-      if (!input->select)
-         break;
-//    for (i = 0; i < input->select->num_options; i++) {
-//       if (input->select->options[i].init_val) {
-//          if (input->select->options[i].menuitem->state == GTK_STATE_NORMAL)
-//             gtk_list_select_child(GTK_LIST(input->select->menu),
-//                                   input->select->options[i].menuitem);
-//       } else {
-//          if (input->select->options[i].menuitem->state==GTK_STATE_SELECTED)
-//             gtk_list_unselect_child(GTK_LIST(input->select->menu),
-//                                     input->select->options[i].menuitem);
-//       }
-//    }
-      break;
-   case DILLO_HTML_INPUT_TEXTAREA:
-      if (input->init_str != NULL) {
-         MultiLineTextResource *textres;
-         textres =
-            (MultiLineTextResource*)
-            ((Embed*)input->widget)->getResource();
-         textres->setText(input->init_str ? input->init_str : "");
-      }
-      break;
-   case DILLO_HTML_INPUT_FILE:
-   {  LabelButtonResource *lbr =
-         (LabelButtonResource *)((Embed*)input->widget)->getResource();
-      lbr->setLabel(input->init_str);
-      break;
-   }
-   default:
-      break;
-   }
-}
-
 
 /*
  * Add a new input to the form data structure, setting the initial
@@ -3975,18 +3986,6 @@ static void Html_add_input(DilloHtmlForm *form,
               type == DILLO_HTML_INPUT_IMAGE) {
       form->num_submit_buttons++;
    }
-}
-
-/*
- * Reset all inputs in the form containing reset to their initial values.
- * In general, reset is the reset button for the form.
- */
-static void Html_reset_form(DilloHtmlForm *form)
-{
-   int i;
-
-   for (i = 0; i < form->inputs->size(); i++)
-      Html_reset_input(form->inputs->get(i));
 }
 
 /*
@@ -4545,7 +4544,7 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
       }
    } else if (input->type == DILLO_HTML_INPUT_RESET ||
               input->type == DILLO_HTML_INPUT_BUTTON_RESET) {
-      Html_reset_form(form);
+      form->reset();
    } else {
       Html_submit_form2(html, form, input_idx, click_x, click_y);
    }
