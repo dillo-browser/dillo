@@ -7,36 +7,21 @@
 #include "decode.h"
 #include "msg.h"
 
-
 static const int bufsize = 8*1024;
-
-/*
- * null ("identity") decoding
- */
-static Dstr *Decode_null(Decode *dc, Dstr *input)
-{
-   return input;
-}
-
-static void Decode_null_free(Decode *dc)
-{
-}
 
 /*
  * Decode chunked data
  */
-static Dstr *Decode_chunked(Decode *dc, Dstr *input)
+static Dstr *Decode_chunked(Decode *dc, const char *instr, int inlen)
 {
    char *inputPtr, *eol;
    int inputRemaining;
    int chunkRemaining = *((int *)dc->state);
-   Dstr *output = dStr_sized_new(input->len);
+   Dstr *output = dStr_sized_new(inlen);
 
-   dStr_append_l(dc->leftover, input->str, input->len);
-   dStr_free(input, 1);
-   input = dc->leftover;
-   inputPtr = input->str;
-   inputRemaining = input->len;
+   dStr_append_l(dc->leftover, instr, inlen);
+   inputPtr = dc->leftover->str;
+   inputRemaining = dc->leftover->len;
 
    while (inputRemaining > 0) {
       if (chunkRemaining > 2) {
@@ -78,8 +63,7 @@ static Dstr *Decode_chunked(Decode *dc, Dstr *input)
    }
 
    /* If we have a partial chunk header, save it for next time. */
-   dc->leftover = input;
-   dStr_erase(dc->leftover, 0, inputPtr - input->str);
+   dStr_erase(dc->leftover, 0, inputPtr - dc->leftover->str);
 
    *(int *)dc->state = chunkRemaining;
    return output;
@@ -94,7 +78,7 @@ static void Decode_chunked_free(Decode *dc)
 /*
  * Decode gzipped data
  */
-static Dstr *Decode_gzip(Decode *dc, Dstr *input)
+static Dstr *Decode_gzip(Decode *dc, const char *instr, int inlen)
 {
    int rc = Z_OK;
 
@@ -103,9 +87,9 @@ static Dstr *Decode_gzip(Decode *dc, Dstr *input)
    int inputConsumed = 0;
    Dstr *output = dStr_new("");
 
-   while ((rc == Z_OK) && (inputConsumed < input->len)) {
-      zs->next_in = (Bytef *)input->str + inputConsumed;
-      zs->avail_in = input->len - inputConsumed;
+   while ((rc == Z_OK) && (inputConsumed < inlen)) {
+      zs->next_in = (Bytef *)instr + inputConsumed;
+      zs->avail_in = inlen - inputConsumed;
 
       zs->next_out = (Bytef *)dc->buffer;
       zs->avail_out = bufsize;
@@ -123,8 +107,6 @@ static Dstr *Decode_gzip(Decode *dc, Dstr *input)
          zs->total_in = 0;
       }
    }
-
-   dStr_free(input, 1);
    return output;
 }
 
@@ -138,24 +120,18 @@ static void Decode_gzip_free(Decode *dc)
 /*
  * Translate to desired character set (UTF-8)
  */
-static Dstr *Decode_charset(Decode *dc, Dstr *input)
+static Dstr *Decode_charset(Decode *dc, const char *instr, int inlen)
 {
-   int rc = 0;
-
-   Dstr *output;
    inbuf_t *inPtr;
    char *outPtr;
    size_t inLeft, outRoom;
 
-   output = dStr_new("");
+   Dstr *output = dStr_new("");
+   int rc = 0;
 
-   dStr_append_l(dc->leftover, input->str, input->len);
-   dStr_free(input, 1);
-   input = dc->leftover;
-
-   inPtr = input->str;
-   inLeft = input->len;
-
+   dStr_append_l(dc->leftover, instr, inlen);
+   inPtr = dc->leftover->str;
+   inLeft = dc->leftover->len;
 
    while ((rc != EINVAL) && (inLeft > 0)) {
 
@@ -187,8 +163,6 @@ static Dstr *Decode_charset(Decode *dc, Dstr *input)
           dStr_append_c(output, 0xBD);
       }
    }
-
-   dc->leftover = input;
    dStr_erase(dc->leftover, 0, dc->leftover->len - inLeft);
 
    return output;
@@ -207,24 +181,18 @@ static void Decode_charset_free(Decode *dc)
  */
 Decode *a_Decode_transfer_init(const char *format)
 {
-   Decode *dc = (Decode *)dMalloc(sizeof(Decode));
-
-   /* not used */
-   dc->buffer = NULL;
-
-   dc->leftover = dStr_new("");
+   Decode *dc = NULL;
 
    if (format && !dStrncasecmp(format, "chunked", 7)) {
-      int *chunk_remaining = (int *)dMalloc(sizeof(int));
+      int *chunk_remaining = dNew(int, 1);
       *chunk_remaining = 0;
+      dc = dNew(Decode, 1);
+      dc->leftover = dStr_new("");
       dc->state = chunk_remaining;
       dc->decode = Decode_chunked;
       dc->free = Decode_chunked_free;
+      dc->buffer = NULL; /* not used */
       MSG("chunked!\n");
-   } else {
-      dc->state = NULL;
-      dc->decode = Decode_null;
-      dc->free = Decode_null_free;
    }
    return dc;
 }
@@ -237,21 +205,15 @@ Decode *a_Decode_transfer_init(const char *format)
  */
 Decode *a_Decode_content_init(const char *format)
 {
-   Decode *dc = (Decode *)dMalloc(sizeof(Decode));
-
-   dc->buffer = NULL;
-   dc->state = NULL;
-
-   /* not used */
-   dc->leftover = NULL;
+   Decode *dc = NULL;
 
    if (format && !dStrcasecmp(format, "gzip")) {
+      MSG("gzipped data!\n");
 
-      MSG("compressed data! : %s\n", format);
-      
       z_stream *zs;
-      dc->buffer = (char *)dMalloc(bufsize);
-      dc->state = zs = (z_stream *)dMalloc(sizeof(z_stream));
+      dc = dNew(Decode, 1);
+      dc->buffer = dNew(char, bufsize);
+      dc->state = zs = dNew(z_stream, 1);
       zs->zalloc = NULL;
       zs->zfree = NULL;
       zs->next_in = NULL;
@@ -262,9 +224,7 @@ Decode *a_Decode_content_init(const char *format)
 
       dc->decode = Decode_gzip;
       dc->free = Decode_gzip_free;
-   } else {
-      dc->decode = Decode_null;
-      dc->free = Decode_null_free;
+      dc->leftover = NULL; /* not used */
    }
    return dc;      
 }
@@ -296,30 +256,26 @@ static int Decode_is_ascii(const char *str)
  */
 Decode *a_Decode_charset_init(const char *format)
 {
-   Decode *dc = (Decode *)dMalloc(sizeof(Decode));
+   Decode *dc = NULL;
 
    if (format &&
        strlen(format) &&
        dStrcasecmp(format,"UTF-8") &&
        !Decode_is_ascii(format)) {
 
-      iconv_t ic;
-      dc->state = ic = iconv_open("UTF-8", format);
+      iconv_t ic = iconv_open("UTF-8", format);
       if (ic != (iconv_t) -1) {
-           dc->buffer = (char *)dMalloc(bufsize);
+           dc = dNew(Decode, 1);
+           dc->state = ic;
+           dc->buffer = dNew(char, bufsize);
            dc->leftover = dStr_new("");
 
            dc->decode = Decode_charset;
            dc->free = Decode_charset_free;
-           return dc;
       } else {
          MSG("Unable to convert from character encoding: '%s'\n", format);
       }
    }
-   dc->leftover = NULL;
-   dc->buffer = NULL;
-   dc->decode = Decode_null;
-   dc->free = Decode_null_free;
    return dc;      
 }
 
@@ -329,16 +285,18 @@ Decode *a_Decode_charset_init(const char *format)
  * The input string should not be used after this call. The decoder will
  * free it if necessary.
  */
-Dstr *a_Decode_process(Decode *dc, Dstr *input)
+Dstr *a_Decode_process(Decode *dc, const char *instr, int inlen)
 {
-   return dc->decode(dc, input);
+   return dc->decode(dc, instr, inlen);
 }
 
 /*
- * free our decoder
+ * Free the decoder.
  */
 void a_Decode_free(Decode *dc)
 {
-   dc->free(dc);
-   dFree(dc);
+   if (dc) {
+      dc->free(dc);
+      dFree(dc);
+   }
 }

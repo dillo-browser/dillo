@@ -642,8 +642,8 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
 {
    int offset = 0;
    int len;
+   const char *str;
    CacheEntry_t *entry = Cache_entry_search(Url);
-   Dstr *dbuf;
 
    /* Assert a valid entry (not aborted) */
    dReturn_if_fail (entry != NULL);
@@ -690,25 +690,30 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
    if (!(entry->Flags & CA_GotHeader))
       return;
 
-   entry->TransferSize += buf_size - offset;
+   str = buf + offset;
+   len = buf_size - offset;
+   entry->TransferSize += len;
 
-   dbuf = dStr_sized_new(buf_size - offset);
-   dStr_append_l(dbuf, buf + offset, buf_size - offset);
-
-   /* Assert we have a Decoder.
-    * BUG: this is a workaround, more study and a proper design
-    * for handling redirects is required */
-   if (entry->TransferDecoder != NULL) {
-      dbuf = a_Decode_process(entry->TransferDecoder, dbuf);
+   if (entry->TransferDecoder) {
+      Dstr *dbuf = a_Decode_process(entry->TransferDecoder, str, len);
+      str = dbuf->str;
+      len = dbuf->len;
+      dStr_free(dbuf, 0);
    }
-   if (entry->ContentDecoder != NULL) {
-      dbuf = a_Decode_process(entry->ContentDecoder, dbuf);
+   if (entry->ContentDecoder) {
+      Dstr *dbuf = a_Decode_process(entry->ContentDecoder, str, len);
+      if (entry->TransferDecoder)
+         dFree((char *)str);
+      str = dbuf->str;
+      len = dbuf->len;
+      dStr_free(dbuf, 0);
    }
+   dStr_append_l(entry->Data, str, len);
+   if (entry->TransferDecoder || entry->ContentDecoder)
+      dFree((char *)str);
 
-   dStr_append_l(entry->Data, dbuf->str, dbuf->len);
    if (entry->Data->len)
       entry->Flags &= ~CA_IsEmpty;
-   dStr_free(dbuf, 1);
 
    Cache_process_queue(entry);
 }

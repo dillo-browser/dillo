@@ -958,17 +958,22 @@ void DilloHtml::connectSignals(Widget *dw)
 void DilloHtml::write(char *Buf, int BufSize, int Eof)
 {
    int token_start;
-   Dstr *new_text;
+   Dstr *new_text = NULL;
 
    dReturn_if_fail (dw != NULL);
 
-   new_text = dStr_sized_new(BufSize - Buf_Consumed);
-   dStr_append_l(new_text, Buf + Buf_Consumed, BufSize - Buf_Consumed);
+   char *str = Buf + Buf_Consumed;
+   int len = BufSize - Buf_Consumed;
 
    /* decode to target charset (UTF-8) */
-   new_text = a_Decode_process(decoder, new_text);
-   dStr_append_l(Local_Buf, new_text->str, new_text->len);
-   dStr_free(new_text, 1);
+   if (decoder) {
+      new_text = a_Decode_process(decoder, str, len);
+      str = new_text->str;
+      len = new_text->len;
+   }
+   dStr_append_l(Local_Buf, str, len);
+   if (decoder)
+      dStr_free(new_text, 1);
 
    token_start = Html_write_raw(this, Local_Buf->str + Local_Ofs,
                                 Local_Buf->len - Local_Ofs, Eof);
@@ -4009,7 +4014,7 @@ static Dstr *Html_encode_text(iconv_t encoder, Dstr **input)
    output = dStr_new("");
    inPtr  = (*input)->str;
    inLeft = (*input)->len;
-   buffer = (char *)dMalloc(bufsize);
+   buffer = dNew(char, bufsize);
 
    while ((rc != EINVAL) && (inLeft > 0)) {
 
