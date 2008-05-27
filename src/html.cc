@@ -1055,9 +1055,9 @@ int DilloHtml::formNew(DilloHtmlMethod method, const DilloUrl *action,
 {
    DilloHtmlForm *form = new DilloHtmlForm (method,action,enc,charset);
    form->form_receiver = new form::Form (this);
-   int size = forms->size ();
+   int nf = forms->size ();
    forms->increase ();
-   forms->set (size, form);
+   forms->set (nf, form);
    _MSG("Html formNew: action=%s nform=%d\n", action, nf);
    return forms->size();
 }
