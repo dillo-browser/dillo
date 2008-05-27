@@ -2043,7 +2043,7 @@ static void Html_tag_close_html(DilloHtml *html, int TagIdx)
  */
 static void Html_tag_open_head(DilloHtml *html, const char *tag, int tagsize)
 {
-   if (html->InFlags & IN_BODY) {
+   if (html->InFlags & IN_BODY || html->Num_BODY > 0) {
       MSG_HTML("HEAD element must go before the BODY section\n");
       html->ReqTagClose = TRUE;
       return;
