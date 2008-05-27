@@ -92,7 +92,7 @@ typedef struct _DilloLinkImage   DilloLinkImage;
 typedef struct _DilloHtmlClass   DilloHtmlClass;
 typedef struct _DilloHtmlState   DilloHtmlState;
 class DilloHtmlForm;
-typedef struct _DilloHtmlInput   DilloHtmlInput;
+class DilloHtmlInput;
 typedef struct _DilloHtmlSelect  DilloHtmlSelect;
 typedef struct _DilloHtmlOption  DilloHtmlOption;
 
@@ -223,7 +223,7 @@ public:  //BUG: for now everything is public
    DilloHtmlEnc enc;
    char *submit_charset;
 
-   misc::SimpleVector<DilloHtmlInput> *inputs;
+   misc::SimpleVector<DilloHtmlInput*> *inputs;
 
    int num_entry_fields;
    int num_submit_buttons;
@@ -234,6 +234,7 @@ public:
    DilloHtmlForm (DilloHtmlMethod method, const DilloUrl *action,
                   DilloHtmlEnc enc, const char *charset);
    ~DilloHtmlForm ();
+   inline DilloHtmlInput *getCurrentInput ();
 };
 
 struct _DilloHtmlOption {
@@ -245,7 +246,8 @@ struct _DilloHtmlSelect {
    misc::SimpleVector<DilloHtmlOption *> *options;
 };
 
-struct _DilloHtmlInput {
+class DilloHtmlInput {
+public:  //BUG: for now everything is public
    DilloHtmlInputType type;
    void *widget;      /* May be a FLTKWidget or a Dw Widget. */
    void *embed;       /* May be NULL */
@@ -257,6 +259,16 @@ struct _DilloHtmlInput {
    bool_t init_val;   /* only meaningful for buttons */
    Dstr *file_data;   /* only meaningful for file inputs.
                          todo: may become a list... */
+
+public:
+   DilloHtmlInput (DilloHtmlInputType type,
+                   Widget *widget,
+                   Embed *embed,
+                   const char *name,
+                   const char *init_str,
+                   DilloHtmlSelect *select,
+                   bool_t init_val);
+   ~DilloHtmlInput ();
 };
 
 /*-----------------------------------------------------------------------------
@@ -275,9 +287,6 @@ private:
                   dw::core::EventButton *event);
    };
    HtmlLinkReceiver linkReceiver;
-
-public:
-   inline DilloHtmlForm *getCurrentForm ();
 
 public:  //BUG: for now everything is public
 
@@ -351,6 +360,7 @@ public:
    void finishParsing(int ClientKey);
    int formNew(DilloHtmlMethod method, const DilloUrl *action,
                DilloHtmlEnc enc, const char *charset);
+   inline DilloHtmlForm *getCurrentForm ();
    void loadImages (const DilloUrl *pattern);
 };
 
@@ -1192,7 +1202,7 @@ DilloHtmlForm::DilloHtmlForm (DilloHtmlMethod method2,
    action = a_Url_dup(action2);
    enc = enc2;
    submit_charset = dStrdup(charset);
-   inputs = new misc::SimpleVector <DilloHtmlInput> (4);
+   inputs = new misc::SimpleVector <DilloHtmlInput*> (4);
    num_entry_fields = 0;
    num_submit_buttons = 0;
    form_receiver = NULL;
@@ -1205,30 +1215,67 @@ DilloHtmlForm::~DilloHtmlForm ()
 {
    a_Url_free(action);
    dFree(submit_charset);
-   for (int j = 0; j < inputs->size(); j++) {
-      DilloHtmlInput *input = inputs->getRef(j);
-      dFree(input->name);
-      dFree(input->init_str);
-      dStr_free(input->file_data, 1);
-
-      if (input->type == DILLO_HTML_INPUT_SELECT ||
-          input->type == DILLO_HTML_INPUT_SEL_LIST) {
-
-         int size = input->select->options->size ();
-         for (int k = 0; k < size; k++) {
-            DilloHtmlOption *option =
-               input->select->options->get (k);
-            dFree(option->value);
-            dFree(option->content);
-            delete(option);
-         }
-         delete(input->select->options);
-         delete(input->select);
-      }
-   }
+   for (int j = 0; j < inputs->size(); j++)
+      delete inputs->get(j);
    delete(inputs);
    if (form_receiver)
       delete(form_receiver);
+}
+
+/*
+ * Get the current input.
+ */
+DilloHtmlInput *DilloHtmlForm::getCurrentInput ()
+{
+   return inputs->get (inputs->size() - 1);
+}
+
+/*
+ * Create and initialize a new DilloHtmlInput class
+ */
+static void Html_reset_input(DilloHtmlInput *input);
+DilloHtmlInput::DilloHtmlInput (DilloHtmlInputType type2,
+                                Widget *widget2,
+                                Embed *embed2,
+                                const char *name2,
+                                const char *init_str2,
+                                DilloHtmlSelect *select2,
+                                bool_t init_val2)
+{
+   type = type2;
+   widget = widget2;
+   embed = embed2;
+   name = (name2) ? dStrdup(name2) : NULL;
+   init_str = (init_str2) ? dStrdup(init_str2) : NULL;
+   select = select2;
+   init_val = init_val2;
+   file_data = NULL;
+   Html_reset_input(this);
+}
+
+/*
+ * Free memory used by the DilloHtmlInput class.
+ */
+DilloHtmlInput::~DilloHtmlInput ()
+{
+   dFree(name);
+   dFree(init_str);
+   dStr_free(file_data, 1);
+
+   if (type == DILLO_HTML_INPUT_SELECT ||
+       type == DILLO_HTML_INPUT_SEL_LIST) {
+
+      int size = select->options->size ();
+      for (int k = 0; k < size; k++) {
+         DilloHtmlOption *option =
+            select->options->get (k);
+         dFree(option->value);
+         dFree(option->content);
+         delete(option);
+      }
+      delete(select->options);
+      delete(select);
+   }
 }
 
 /*
@@ -3711,7 +3758,7 @@ static void Html_tag_close_form(DilloHtml *html, int TagIdx)
   
 //    /* Make buttons sensitive again */
 //    for (i = 0; i < form->inputs->size(); i++) {
-//       input_i = form->inputs->getRef(i);
+//       input_i = form->inputs->get(i);
 //       /* Check for tricky HTML (e.g. <input type=image>) */
 //       if (!input_i->widget)
 //          continue;
@@ -3911,21 +3958,13 @@ static void Html_add_input(DilloHtmlForm *form,
                            DilloHtmlSelect *select,
                            bool_t init_val)
 {
-   DilloHtmlInput *input;
-
    _MSG("name=[%s] init_str=[%s] init_val=[%d]\n",
         name, init_str, init_val);
-   form->inputs->increase();
-   input = form->inputs->getRef (form->inputs->size() - 1);
-   input->type = type;
-   input->widget = widget;
-   input->embed = embed;
-   input->name = (name) ? dStrdup(name) : NULL;
-   input->init_str = (init_str) ? dStrdup(init_str) : NULL;
-   input->select = select;
-   input->init_val = init_val;
-   input->file_data = NULL;
-   Html_reset_input(input);
+   DilloHtmlInput *input =
+      new DilloHtmlInput (type,widget,embed,name,init_str,select,init_val);
+   int ni = form->inputs->size ();
+   form->inputs->increase ();
+   form->inputs->set (ni,input);
 
    /* some stats */
    if (type == DILLO_HTML_INPUT_PASSWORD ||
@@ -3947,7 +3986,7 @@ static void Html_reset_form(DilloHtmlForm *form)
    int i;
 
    for (i = 0; i < form->inputs->size(); i++)
-      Html_reset_input(form->inputs->getRef(i));
+      Html_reset_input(form->inputs->get(i));
 }
 
 /*
@@ -4231,7 +4270,7 @@ static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
    /* fill DataStr with names, filenames, and values */
    for (int input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
       Dstr *dstr;
-      DilloHtmlInput *input = form->inputs->getRef (input_idx);
+      DilloHtmlInput *input = form->inputs->get (input_idx);
       bool is_active_submit = (input_idx == active_submit);
       Html_get_input_values(input, is_active_submit, values);
 
@@ -4309,7 +4348,7 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit,
 
       DataStr = dStr_sized_new(4096);
       for (int input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
-         DilloHtmlInput *input = form->inputs->getRef (input_idx);
+         DilloHtmlInput *input = form->inputs->get (input_idx);
          Dstr *name = dStr_new(input->name);
          bool is_active_submit = (input_idx == active_submit);
 
@@ -4400,7 +4439,7 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
       _MSG("Html_submit_form2: form->action=%s\n",URL_STR_(form->action));
 
       if (form->num_submit_buttons > 0) {
-         DilloHtmlInput *input = form->inputs->getRef(e_input_idx);
+         DilloHtmlInput *input = form->inputs->get(e_input_idx);
          if ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
              (input->type == DILLO_HTML_INPUT_IMAGE) ||
              (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT)) {
@@ -4471,7 +4510,7 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
       if (form->form_receiver == form_receiver) {
          /* form found, let's get the input index for this event */
          for (idx = 0; idx < form->inputs->size(); idx++) {
-            input = form->inputs->getRef(idx);
+            input = form->inputs->get(idx);
             if (input->embed &&
                 v_resource == (void*)((Embed*)input->widget)->getResource()) {
                input_idx = idx;
@@ -4612,7 +4651,7 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       inp_type = DILLO_HTML_INPUT_RADIO;
       RadioButtonResource *rb_r = NULL;
       for (input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
-         DilloHtmlInput *input = form->inputs->getRef(input_idx);
+         DilloHtmlInput *input = form->inputs->get(input_idx);
          if (input->type == DILLO_HTML_INPUT_RADIO &&
              (input->name && !dStrcasecmp(input->name, name)) ) {
             rb_r =(RadioButtonResource*)((Embed*)input->widget)->getResource();
@@ -4800,6 +4839,7 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
 {
    char *str;
    DilloHtmlForm *form;
+   DilloHtmlInput *input;
    Widget *widget;
    int i;
 
@@ -4825,8 +4865,9 @@ static void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
       /* The HTML3.2 spec says it can have "text and character entities". */
       str = Html_parse_entities(html, html->Stash->str, html->Stash->len);
       form = html->getCurrentForm ();
-      form->inputs->getRef(form->inputs->size() - 1)->init_str = str;
-      widget = (Widget*)(form->inputs->getRef(form->inputs->size()-1)->widget);
+      input = form->getCurrentInput ();
+      input->init_str = str;
+      widget = (Widget*)(input->widget);
       ((MultiLineTextResource *)((Embed *)widget)->getResource ())
          ->setText(str);
 
@@ -4999,8 +5040,7 @@ static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 static void Html_option_finish(DilloHtml *html)
 {
    DilloHtmlForm *form = html->getCurrentForm ();
-   DilloHtmlInput *input =
-      form->inputs->getRef (form->inputs->size() - 1);
+   DilloHtmlInput *input = form->getCurrentInput ();
    if (input->type == DILLO_HTML_INPUT_SELECT ||
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
       DilloHtmlSelect *select =
@@ -5025,8 +5065,7 @@ static void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
    html->InFlags |= IN_OPTION;
 
    DilloHtmlForm *form = html->getCurrentForm ();
-   DilloHtmlInput *input =
-      form->inputs->getRef (form->inputs->size() - 1);
+   DilloHtmlInput *input = form->getCurrentInput ();
 
    if (input->type == DILLO_HTML_INPUT_SELECT ||
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
@@ -5061,8 +5100,7 @@ static void Html_tag_close_select(DilloHtml *html, int TagIdx)
       html->InFlags &= ~IN_OPTION;
 
       DilloHtmlForm *form = html->getCurrentForm ();
-      DilloHtmlInput *input =
-         form->inputs->getRef (form->inputs->size() - 1);
+      DilloHtmlInput *input = form->getCurrentInput ();
       SelectionResource *res =
          (SelectionResource*)((Embed*)input->widget)->getResource();
 
