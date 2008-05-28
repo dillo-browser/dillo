@@ -236,6 +236,15 @@ public:
    ~DilloHtmlForm ();
    inline DilloHtmlInput *getCurrentInput ();
    void reset ();
+   void addInput(DilloHtmlInputType type,
+                 Widget *widget,
+                 Embed *embed,
+                 const char *name,
+                 const char *init_str,
+                 DilloHtmlSelect *select,
+                 bool_t init_val);
+   Dstr *buildQueryData(int active_submit, int x, int y);
+   char *makeMultipartBoundary(iconv_t encoder, int active_submit);
 };
 
 struct _DilloHtmlOption {
@@ -399,14 +408,6 @@ static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
                             DilloImage *image);
 static void Html_callback(int Op, CacheClient_t *Client);
 static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize);
-static void Html_add_input(DilloHtmlForm *form,
-                           DilloHtmlInputType type,
-                           Widget *widget,
-                           Embed *embed,
-                           const char *name,
-                           const char *init_str,
-                           DilloHtmlSelect *select,
-                           bool_t init_val);
 static int Html_tag_index(const char *tag);
 static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
 
@@ -1245,6 +1246,36 @@ void DilloHtmlForm::reset ()
    int size = inputs->size();
    for (int i = 0; i < size; i++)
       inputs->get(i)->reset();
+}
+
+/*
+ * Add a new input, setting the initial values.
+ */
+void DilloHtmlForm::addInput(DilloHtmlInputType type,
+                             Widget *widget,
+                             Embed *embed,
+                             const char *name,
+                             const char *init_str,
+                             DilloHtmlSelect *select,
+                             bool_t init_val)
+{
+   _MSG("name=[%s] init_str=[%s] init_val=[%d]\n",
+        name, init_str, init_val);
+   DilloHtmlInput *input =
+      new DilloHtmlInput (type,widget,embed,name,init_str,select,init_val);
+   int ni = inputs->size ();
+   inputs->increase ();
+   inputs->set (ni,input);
+
+   /* some stats */
+   if (type == DILLO_HTML_INPUT_PASSWORD ||
+       type == DILLO_HTML_INPUT_TEXT) {
+      num_entry_fields++;
+   } else if (type == DILLO_HTML_INPUT_SUBMIT ||
+              type == DILLO_HTML_INPUT_BUTTON_SUBMIT ||
+              type == DILLO_HTML_INPUT_IMAGE) {
+      num_submit_buttons++;
+   }
 }
 
 /*
@@ -2822,7 +2853,7 @@ static void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       value = Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
       name = Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
 
-      Html_add_input(form, inp_type, button, embed, name, value, NULL, FALSE);
+      form->addInput(inp_type, button, embed, name, value, NULL, FALSE);
       dFree(name);
       dFree(value);
    }
@@ -3962,38 +3993,6 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
 
 /*
- * Add a new input to the form data structure, setting the initial
- * values.
- */
-static void Html_add_input(DilloHtmlForm *form,
-                           DilloHtmlInputType type,
-                           Widget *widget,
-                           Embed *embed,
-                           const char *name,
-                           const char *init_str,
-                           DilloHtmlSelect *select,
-                           bool_t init_val)
-{
-   _MSG("name=[%s] init_str=[%s] init_val=[%d]\n",
-        name, init_str, init_val);
-   DilloHtmlInput *input =
-      new DilloHtmlInput (type,widget,embed,name,init_str,select,init_val);
-   int ni = form->inputs->size ();
-   form->inputs->increase ();
-   form->inputs->set (ni,input);
-
-   /* some stats */
-   if (type == DILLO_HTML_INPUT_PASSWORD ||
-       type == DILLO_HTML_INPUT_TEXT) {
-      form->num_entry_fields++;
-   } else if (type == DILLO_HTML_INPUT_SUBMIT ||
-              type == DILLO_HTML_INPUT_BUTTON_SUBMIT ||
-              type == DILLO_HTML_INPUT_IMAGE) {
-      form->num_submit_buttons++;
-   }
-}
-
-/*
  * Pass input text through character set encoder.
  * Return value: same input Dstr if no encoding is needed.
                  new Dstr when encoding (input Dstr is freed).
@@ -4262,8 +4261,8 @@ static void Html_get_input_values(const DilloHtmlInput *input,
  * Generate a boundary string for use in separating the parts of a
  * multipart/form-data submission.
  */
-static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
-                                          int active_submit)
+char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
+                                           int active_submit)
 {
    const int max_tries = 10;
    Dlist *values = dList_new(5);
@@ -4272,9 +4271,9 @@ static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
    char *ret = NULL;
 
    /* fill DataStr with names, filenames, and values */
-   for (int input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
+   for (int input_idx = 0; input_idx < inputs->size(); input_idx++) {
       Dstr *dstr;
-      DilloHtmlInput *input = form->inputs->get (input_idx);
+      DilloHtmlInput *input = inputs->get (input_idx);
       bool is_active_submit = (input_idx == active_submit);
       Html_get_input_values(input, is_active_submit, values);
 
@@ -4324,35 +4323,33 @@ static char *Html_make_multipart_boundary(DilloHtmlForm *form, iconv_t encoder,
 /*
  * Construct the data for a query URL
  */
-static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit,
-                                   int x, int y)
+Dstr *DilloHtmlForm::buildQueryData(int active_submit, int x, int y)
 {
    Dstr *DataStr = NULL;
    char *boundary = NULL;
    iconv_t encoder = (iconv_t) -1;
 
-   if (form->submit_charset && dStrcasecmp(form->submit_charset, "UTF-8")) {
-      encoder = iconv_open(form->submit_charset, "UTF-8");
+   if (submit_charset && dStrcasecmp(submit_charset, "UTF-8")) {
+      encoder = iconv_open(submit_charset, "UTF-8");
       if (encoder == (iconv_t) -1) {
          MSG_WARN("Cannot convert to character encoding '%s'\n",
-                  form->submit_charset);
+                  submit_charset);
       } else {
-         MSG("Form character encoding: '%s'\n", form->submit_charset);
+         MSG("Form character encoding: '%s'\n", submit_charset);
       }
    }
 
-   if (form->enc == DILLO_HTML_ENC_MULTIPART) {
-      if (!(boundary = Html_make_multipart_boundary(form, encoder,
-                                                    active_submit)))
+   if (enc == DILLO_HTML_ENC_MULTIPART) {
+      if (!(boundary = makeMultipartBoundary(encoder, active_submit)))
          MSG_ERR("Cannot generate multipart/form-data boundary.\n");
    }
 
-   if ((form->enc == DILLO_HTML_ENC_URLENCODING) || (boundary != NULL)) {
+   if ((enc == DILLO_HTML_ENC_URLENCODING) || (boundary != NULL)) {
       Dlist *values = dList_new(5);
 
       DataStr = dStr_sized_new(4096);
-      for (int input_idx = 0; input_idx < form->inputs->size(); input_idx++) {
-         DilloHtmlInput *input = form->inputs->get (input_idx);
+      for (int input_idx = 0; input_idx < inputs->size(); input_idx++) {
+         DilloHtmlInput *input = inputs->get (input_idx);
          Dstr *name = dStr_new(input->name);
          bool is_active_submit = (input_idx == active_submit);
 
@@ -4393,28 +4390,28 @@ static Dstr *Html_build_query_data(DilloHtmlForm *form, int active_submit,
                Dstr *val = (Dstr *) dList_nth_data(values, 0);
                dList_remove(values, val);
                val = Html_encode_text(encoder, &val);
-               if (form->enc == DILLO_HTML_ENC_URLENCODING)
+               if (enc == DILLO_HTML_ENC_URLENCODING)
                   Html_append_input_urlencode(DataStr, name->str, val->str);
-               else if (form->enc == DILLO_HTML_ENC_MULTIPART)
+               else if (enc == DILLO_HTML_ENC_MULTIPART)
                   Html_append_input_multipart(DataStr, boundary, name->str,
                                               val->str);
                dStr_free(val, 1);
             }
             if (i && input->type == DILLO_HTML_INPUT_IMAGE) {
                /* clickpos to accompany the value just appended */
-               if (form->enc == DILLO_HTML_ENC_URLENCODING)
+               if (enc == DILLO_HTML_ENC_URLENCODING)
                   Html_append_clickpos_urlencode(DataStr, name, x, y);
-               else if (form->enc == DILLO_HTML_ENC_MULTIPART)
+               else if (enc == DILLO_HTML_ENC_MULTIPART)
                   Html_append_clickpos_multipart(DataStr, boundary, name, x,y);
             }
          }
          dStr_free(name, 1);
       }
       if (DataStr->len > 0) {
-         if (form->enc == DILLO_HTML_ENC_URLENCODING) {
+         if (enc == DILLO_HTML_ENC_URLENCODING) {
             if (DataStr->str[DataStr->len - 1] == '&')
                dStr_truncate(DataStr, DataStr->len - 1);
-         } else if (form->enc == DILLO_HTML_ENC_MULTIPART) {
+         } else if (enc == DILLO_HTML_ENC_MULTIPART) {
             dStr_append(DataStr, "--");
          }
       }
@@ -4451,7 +4448,7 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
          }
       }
 
-      DataStr = Html_build_query_data(form, active_submit, click_x, click_y);
+      DataStr = form->buildQueryData(active_submit, click_x, click_y);
       if (DataStr) {
          /* generate the URL and push it */
          DilloUrl *new_url;
@@ -4747,7 +4744,7 @@ static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    }
 
    if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
-      Html_add_input(form, inp_type, widget, embed, name,
+      form->addInput(inp_type, widget, embed, name,
                      (init_str) ? init_str : "", NULL, init_val);
    }
   
@@ -4823,7 +4820,7 @@ static void Html_tag_open_isindex(DilloHtml *html,
    widget = embed = new Embed (entryResource);
    entryResource->connectActivate (form->form_receiver); 
 
-   Html_add_input(form, DILLO_HTML_INPUT_INDEX,
+   form->addInput(DILLO_HTML_INPUT_INDEX,
                   widget, embed, NULL, NULL, NULL, FALSE);
 
    if (prefs.standard_widget_colors) {
@@ -4930,7 +4927,7 @@ static void Html_tag_open_textarea(DilloHtml *html,
    if (Html_get_attr(html, tag, tagsize, "readonly"))
       textres->setEditable(false);
 
-   Html_add_input(form, DILLO_HTML_INPUT_TEXTAREA, widget, embed, name,
+   form->addInput(DILLO_HTML_INPUT_TEXTAREA, widget, embed, name,
                   NULL, NULL, false);
 
    DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
@@ -4960,7 +4957,7 @@ static void Html_tag_open_textarea(DilloHtml *html,
 // gtk_widget_show(widget);
 // gtk_widget_show(scroll);
 //
-// Html_add_input(form, DILLO_HTML_INPUT_TEXTAREA,
+// form->addInput(DILLO_HTML_INPUT_TEXTAREA,
 //                widget, name, NULL, NULL, FALSE);
 // dFree(name);
 //
@@ -5033,7 +5030,7 @@ static void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 
    DilloHtmlSelect *select = new DilloHtmlSelect;
    select->options = new misc::SimpleVector<DilloHtmlOption *> (4);
-   Html_add_input(form, type, widget, embed, name, NULL, select, false);
+   form->addInput(type, widget, embed, name, NULL, select, false);
    Html_stash_init(html);
    dFree(name);
 }
