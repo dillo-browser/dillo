@@ -243,6 +243,7 @@ public:
                  const char *init_str,
                  DilloHtmlSelect *select,
                  bool_t init_val);
+   DilloUrl *buildQueryUrl(int e_input_idx, int click_x, int click_y);
    Dstr *buildQueryData(int active_submit, int x, int y);
    char *makeMultipartBoundary(iconv_t encoder, int active_submit);
 };
@@ -4388,23 +4389,24 @@ Dstr *DilloHtmlForm::buildQueryData(int active_submit, int x, int y)
 }
 
 /*
- * Submit the form containing the submit input by making a new query URL
- * and sending it with a_Nav_push.
+ * Build a new query URL.
  * (Called by a_Html_form_event_handler())
  * click_x and click_y are used only by input images.
  */
-static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
-                              int e_input_idx, int click_x, int click_y)
+DilloUrl *DilloHtmlForm::buildQueryUrl(int e_input_idx,
+                                       int click_x, int click_y)
 {
-   if ((form->method == DILLO_HTML_METHOD_GET) ||
-       (form->method == DILLO_HTML_METHOD_POST)) {
+   DilloUrl *new_url = NULL;
+
+   if ((method == DILLO_HTML_METHOD_GET) ||
+       (method == DILLO_HTML_METHOD_POST)) {
       Dstr *DataStr;
       int active_submit = -1;
 
-      _MSG("Html_submit_form2: form->action=%s\n",URL_STR_(form->action));
+      _MSG("DilloHtmlForm::buildQueryUrl: action=%s\n",URL_STR_(action));
 
-      if (form->num_submit_buttons > 0) {
-         DilloHtmlInput *input = form->inputs->get(e_input_idx);
+      if (num_submit_buttons > 0) {
+         DilloHtmlInput *input = inputs->get(e_input_idx);
          if ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
              (input->type == DILLO_HTML_INPUT_IMAGE) ||
              (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT)) {
@@ -4412,19 +4414,17 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
          }
       }
 
-      DataStr = form->buildQueryData(active_submit, click_x, click_y);
+      DataStr = buildQueryData(active_submit, click_x, click_y);
       if (DataStr) {
-         /* generate the URL and push it */
-         DilloUrl *new_url;
-         /* form->action was previously resolved against base URL */
-         char *action_str = dStrdup(URL_STR(form->action));
+         /* action was previously resolved against base URL */
+         char *action_str = dStrdup(URL_STR(action));
 
-         if (form->method == DILLO_HTML_METHOD_POST) {
+         if (method == DILLO_HTML_METHOD_POST) {
             new_url = a_Url_new(action_str, NULL, 0, 0, 0);
             /* new_url keeps the dStr and sets DataStr to NULL */
             a_Url_set_data(new_url, &DataStr);
             a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Post);
-            if (form->enc == DILLO_HTML_ENC_MULTIPART)
+            if (enc == DILLO_HTML_ENC_MULTIPART)
                a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_MultipartEnc);
          } else {
             /* remove <fragment> and <query> sections if present */
@@ -4439,18 +4439,14 @@ static void Html_submit_form2(DilloHtml *html, DilloHtmlForm *form,
             a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Get);
             dFree(url_str);
          }
-
-         a_Nav_push(html->bw, new_url);
-         a_Url_free(new_url);
          dStr_free(DataStr, 1);
          dFree(action_str);
       }
    } else {
-      MSG("Html_submit_form2: Method unknown\n");
+      MSG("DilloHtmlForm::buildQueryUrl: Method unknown\n");
    }
 
-// /* now, make the rendered area have its focus back */
-// gtk_widget_grab_focus(GTK_BIN(html->bw->render_main_scroll)->child);
+   return new_url;
 }
 
 /*
@@ -4512,7 +4508,13 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
               input->type == DILLO_HTML_INPUT_BUTTON_RESET) {
       form->reset();
    } else {
-      Html_submit_form2(html, form, input_idx, click_x, click_y);
+      DilloUrl *url = form->buildQueryUrl(input_idx, click_x, click_y);
+      if (url) {
+         a_Nav_push(html->bw, url);
+         a_Url_free(url);
+      }
+      // /* now, make the rendered area have its focus back */
+      // gtk_widget_grab_focus(GTK_BIN(html->bw->render_main_scroll)->child);
    }
 }
 
