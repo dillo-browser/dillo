@@ -22,6 +22,7 @@
 #include "bw.h"
 #include "web.hh"
 #include "misc.h"
+#include "decode.h"
 
 #include "uicmd.hh"
 
@@ -48,12 +49,16 @@ public:
    BrowserWindow *bw;
    DilloUrl *url;
 
+   Decode *decoder;
+   size_t Buf_Consumed;
+   char *content_type, *charset;
+
    Widget *dw;
    style::Style *widgetStyle;
-   size_t Start_Ofs;    /* Offset of where to start reading next */
    int state;
 
-   DilloPlain(BrowserWindow *bw, const DilloUrl *url);
+   DilloPlain(BrowserWindow *bw, const DilloUrl *url,
+              const char *content_type);
    ~DilloPlain();
 
    void write(void *Buf, uint_t BufSize, int Eof);
@@ -83,7 +88,8 @@ void a_Plain_free(void *data);
 /*
  * Diplain constructor.
  */
-DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
+DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url,
+                       const char *content_type)
 {
    style::StyleAttrs styleAttrs;
    style::FontAttrs fontAttrs;
@@ -95,8 +101,15 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
    bw = p_bw;
    url = a_Url_dup(p_url);
    dw = new Textblock (prefs.limit_text_width);
-   Start_Ofs = 0;
    state = ST_SeekingEol;
+
+   MSG("PLAIN content type: %s\n", content_type);
+   this->content_type = dStrdup(content_type);
+   /* get charset */
+   a_Misc_parse_content_type(content_type, NULL, NULL, &charset);
+   /* Initiallize the charset decoder */
+   decoder = a_Decode_charset_init(charset);
+   Buf_Consumed = 0;
 
    /* Create the font and attribute for the page. */
    fontAttrs.name = prefs.fw_fontname;
@@ -127,6 +140,9 @@ DilloPlain::~DilloPlain()
 {
    MSG("::~DilloPlain()\n");
    a_Url_free(url);
+   a_Decode_free(decoder);
+   dFree(content_type);
+   dFree(charset);
    widgetStyle->unref();
 }
 
@@ -153,12 +169,24 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
 {
    char *Start;
    char *data;
+   Dstr *new_text = NULL;
    uint_t i, len, MaxBytes;
 
-   _MSG("DilloPlain::write Eof=%d\n", Eof);
+   _MSG(" DilloPlain::write Buf=%p, BufSize=%d Buf_Consumed=%d Eof=%d\n",
+       Buf, BufSize, Buf_Consumed, Eof);
 
-   Start = (char*)Buf + Start_Ofs;
-   MaxBytes = BufSize - Start_Ofs;
+   char *str = (char*)Buf + Buf_Consumed;
+   int str_len = BufSize - Buf_Consumed;
+
+   /* decode to target charset (UTF-8) */
+   if (decoder) {
+      new_text = a_Decode_process(decoder, str, str_len);
+      str = new_text->str;
+      str_len = new_text->len;
+   }
+
+   Start = str;
+   MaxBytes = str_len;
    i = len = 0;
    while ( i < MaxBytes ) {
       switch ( state ) {
@@ -181,28 +209,28 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
          break;
       }
    }
-   Start_Ofs += i - len;
    if (Eof && len) {
       data = dStrndup(Start + i - len, len);
       DW2TB(dw)->addText(a_Misc_expand_tabs(data), widgetStyle);
       DW2TB(dw)->addParbreak(0, widgetStyle);
       dFree(data);
-      Start_Ofs += len;
+      len = 0;
    }
+   Buf_Consumed = BufSize - len;
+   dStr_free(new_text, 1);
 
    DW2TB(dw)->flush(Eof ? true : false);
-
    if (bw)
-      a_UIcmd_set_page_prog(bw, Start_Ofs, 1);
+      a_UIcmd_set_page_prog(bw, Buf_Consumed, 1);
 }
 
 /*
  * Set callback function and callback data for "text/" MIME major-type.
  */
-void *a_Plain_text(const char *type, void *P, CA_Callback_t *Call, void **Data)
+void *a_Plain_text(const char *Type, void *P, CA_Callback_t *Call, void **Data)
 {
    DilloWeb *web = (DilloWeb*)P;
-   DilloPlain *plain = new DilloPlain(web->bw, web->url);
+   DilloPlain *plain = new DilloPlain(web->bw, web->url, Type);
 
    *Call = (CA_Callback_t)Plain_callback;
    *Data = (void*)plain;

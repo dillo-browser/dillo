@@ -936,8 +936,7 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
       len = new_text->len;
    }
    dStr_append_l(Local_Buf, str, len);
-   if (decoder)
-      dStr_free(new_text, 1);
+   dStr_free(new_text, 1);
 
    token_start = Html_write_raw(this, Local_Buf->str + Local_Ofs,
                                 Local_Buf->len - Local_Ofs, Eof);
