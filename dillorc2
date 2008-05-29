@@ -28,7 +28,7 @@ use_dicache=NO
 #-------------------------------------------------------------------------
 
 # Fontname for variable width rendering (most of the text).
-#   - some fonts may slow down rendering, some others not!
+#   - some fonts may slow down rendering.
 #   - try to tune a fontname/font_factor combination.
 # Ex. {helvetica, lucida, times, "new century schoolbook", utopia, ...}
 #vw_fontname="new century schoolbook"
@@ -53,7 +53,7 @@ fw_fontname="DejaVu Sans Mono"
 #       More info at: http://bugzilla.mozilla.org/show_bug.cgi?id=25537
 show_tooltip=YES
 
-# Set this to YES, if you want to limit the word wrap width to the vieport
+# Set this to YES if you want to limit the word wrap width to the viewport
 # width (may be useful for iPAQ)
 limit_text_width=NO
 
@@ -62,7 +62,7 @@ limit_text_width=NO
 #                            PARSING SECTION
 #-------------------------------------------------------------------------
 
-# If you prefer more accurate HTML bug diagnose, over better rendering
+# If you prefer more accurate HTML bug diagnosis over better rendering
 # (page authors and webmasters) set the following to "NO".
 #
 w3c_plus_heuristics=YES
@@ -87,7 +87,9 @@ home="file:/home/jcid/HomePage/Home.html"
 #search_url="http://www.alltheweb.com/search?cat=web&query=%s"
 search_url="http://www.google.com/search?q=%s"
 
-# Set the proxy information for http
+# Set the proxy information for http.
+# WARNING: dillo uses wget for ftp and https. To use a proxy for those
+# protocols, you will need to configure wget.
 #http_proxy=http://localhost:8080/
 
 # if you need to provide a  user/password pair for the proxy,
@@ -97,11 +99,12 @@ search_url="http://www.google.com/search?q=%s"
 # Set the domains to access without proxy
 #no_proxy = ".hola.com .mynet.cl .hi.de"
 
-# Set the HTTP Referer information (not affecting privacy!)
-# We use the same URI, not the refering page (to avoid cross-site tracking).
-# none  : No referer at all (nothing is sent)
-# host  : Default value. Send same URI's hostname (no new info is sent).
-# path  : same URI, without query part, is sent (no new info is sent).
+# Set the HTTP Referer (sic) header.
+# Note that there is no option to use the actual referring page because it
+# would endanger your privacy.
+# none  : Don't send any Referer header at all.
+# host  : Send the requested URI's hostname.
+# path  : Send the requested URI's host and path.
 http_referer=host
 
 
