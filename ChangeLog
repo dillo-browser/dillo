@@ -103,6 +103,7 @@ dillo-fltk2
  - Switched Window::destroy to Window::delete, fixing side effects.
  - Made zlib a configure requirement, and cleaned up configure.in.
  - Fixed a segfault bug in Nav.c.
+ - Switched from charset to content-type for handling data.
    Patches: place (AKA corvid)
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
@@ -114,6 +115,7 @@ dillo-fltk2
  - Added a_Capi_get_flags(). It requests a cache entry's status as flags.
  - Switched URL_DATA type from char* to a dStr.
  - Implemented the file input control for forms.
+ - Fixed data guesser to detect ASCII, LATIN1, UTF8, KOI8-R, CP-1251 as text.
    Patch: place, Jorge Arellano Cid
 +- Fixed a cookies-related dillo freeze bug happening at:
      http://www.fltk.org/newsgroups.php?gfltk.general+v:24912

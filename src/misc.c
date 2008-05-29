@@ -93,6 +93,15 @@ static const ContentType_t MimeTypes[] = {
    { NULL, 0 }
 };
 
+typedef enum {
+   DT_OCTET_STREAM = 0,
+   DT_TEXT_HTML,
+   DT_TEXT_PLAIN,
+   DT_IMAGE_GIF,
+   DT_IMAGE_PNG,
+   DT_IMAGE_JPG,
+} DetectedContentType;
+
 /*
  * Detects 'Content-Type' from a data stream sample.
  *
@@ -105,10 +114,10 @@ static const ContentType_t MimeTypes[] = {
  */
 int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
 {
-   int st = 1;      /* default to "doubt' */
-   int Type = 0;    /* default to "application/octet-stream" */
+   size_t i, non_ascci, non_ascci_text, bin_chars;
    char *p = Data;
-   size_t i, non_ascci;
+   int st = 1;      /* default to "doubt' */
+   DetectedContentType Type = DT_OCTET_STREAM; /* default to binary */
 
    /* HTML try */
    for (i = 0; i < Size && isspace(p[i]); ++i);
@@ -119,40 +128,139 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
        /* this line is workaround for FTP through the Squid proxy */
        (Size - i >= 17 && !dStrncasecmp(p+i, "<!-- HTML listing", 17))) {
 
-      Type = 1;
+      Type = DT_TEXT_HTML;
       st = 0;
    /* Images */
    } else if (Size >= 4 && !dStrncasecmp(p, "GIF8", 4)) {
-      Type = 3;
+      Type = DT_IMAGE_GIF;
       st = 0;
    } else if (Size >= 4 && !dStrncasecmp(p, "\x89PNG", 4)) {
-      Type = 4;
+      Type = DT_IMAGE_PNG;
       st = 0;
    } else if (Size >= 2 && !dStrncasecmp(p, "\xff\xd8", 2)) {
       /* JPEG has the first 2 bytes set to 0xffd8 in BigEndian - looking
        * at the character representation should be machine independent. */
-      Type = 5;
+      Type = DT_IMAGE_JPG;
       st = 0;
 
    /* Text */
    } else {
-      /* We'll assume "text/plain" if the set of chars above 127 is <= 10
-       * in a 256-bytes sample.  Better heuristics are welcomed! :-) */
-      non_ascci = 0;
+      /* Heuristic for "text/plain"
+       * {ASCII, LATIN1, UTF8, KOI8-R, CP-1251}
+       * All in the above set regard [00-31] as control characters.
+       * LATIN1: [7F-9F] unused
+       * CP-1251 {7F,98} unused (two characters).
+       * 
+       * We'll use [0-31] as indicators of non-text content.
+       * Better heuristics are welcomed! :-) */
+
+      non_ascci = non_ascci_text = bin_chars = 0;
       Size = MIN (Size, 256);
-      for (i = 0; i < Size; i++)
-         if ((uchar_t) p[i] > 127)
+      for (i = 0; i < Size; i++) {
+         int ch = (uchar_t) p[i];
+         if (ch < 32 && !isspace(ch))
+            ++bin_chars;
+         if (ch > 126)
             ++non_ascci;
-      if (Size == 256) {
-         Type = (non_ascci > 10) ? 0 : 2;
-         st = 0;
-      } else {
-         Type = (non_ascci > 0) ? 0 : 2;
+         if (ch > 190)
+            ++non_ascci_text;
       }
+      if (bin_chars == 0) {
+         /* Let's say text: if "rare" chars are <= 10% */
+         if ((non_ascci - non_ascci_text) <= Size/10)
+            Type = DT_TEXT_PLAIN;
+      }
+      if (Size == 256)
+         st = 0;
    }
 
    *PT = MimeTypes[Type].str;
    return st;
+}
+
+/*
+ * Parse Content-Type string, e.g., "text/html; charset=utf-8".
+ */
+void a_Misc_parse_content_type(const char *str, char **major, char **minor,
+                               char **charset)
+{
+   const char *s;
+
+   if (major)
+      *major = NULL;
+   if (minor)
+      *minor = NULL;
+   if (charset)
+      *charset = NULL;
+   if (!str)
+      return;
+
+   for (s = str; isalnum(*s) || (*s == '-'); s++);
+   if (major)
+      *major = dStrndup(str, s - str);
+
+   if (*s == '/') {
+      for (str = ++s; isalnum(*s) || (*s == '-'); s++);
+      if (minor)
+         *minor = dStrndup(str, s - str);
+   }
+
+   if (charset && *s) {
+      const char terminators[] = " ;\t";
+      const char key[] = "charset";
+
+      if ((s = dStristr(str, key)) &&
+          (s == str || strchr(terminators, s[-1]))) {
+         s += sizeof(key) - 1;
+         for ( ; *s == ' ' || *s == '\t'; ++s);
+         if (*s == '=') {
+            size_t len;
+            for (++s; *s == ' ' || *s == '\t'; ++s);
+            if ((len = strcspn(s, terminators))) {
+               if (*s == '"' && s[len-1] == '"' && len > 1) {
+                 /* quoted string */
+                 s++;
+                 len -= 2;
+               }
+               *charset = dStrndup(s, len);
+            }
+         }
+      }
+   }
+}
+
+/*
+ * Compare two Content-Type strings.
+ * Return 0 if they are equivalent, and 1 otherwise.
+ */
+int a_Misc_content_type_cmp(const char *ct1, const char *ct2)
+{
+   char *major1, *major2, *minor1, *minor2, *charset1, *charset2;
+   int ret;
+
+   if ((!ct1 || !*ct1) && (!ct2 || !*ct2))
+      return 0;
+   if ((!ct1 || !*ct1) || (!ct2 || !*ct2))
+      return 1;
+
+   a_Misc_parse_content_type(ct1, &major1, &minor1, &charset1);
+   a_Misc_parse_content_type(ct2, &major2, &minor2, &charset2);
+
+   if (major1 && major2 && !dStrcasecmp(major1, major2) &&
+       minor1 && minor2 && !dStrcasecmp(minor1, minor2) &&
+       ((!charset1 && !charset2) ||
+        (charset1 && charset2 && !dStrcasecmp(charset1, charset2)) ||
+        (!charset1 && charset2 && !dStrcasecmp(charset2, "UTF-8")) ||
+        (charset1 && !charset2 && !dStrcasecmp(charset1, "UTF-8")))) {
+      ret = 0;
+   } else {
+      ret = 1;
+   }
+   dFree(major1); dFree(major2);
+   dFree(minor1); dFree(minor2);
+   dFree(charset1); dFree(charset2);
+
+   return ret;
 }
 
 /*
@@ -177,7 +285,7 @@ int a_Misc_content_type_check(const char *EntryType, const char *DetectedType)
    int i;
    int st = -1;
 
-   _MSG("Type check:  [Srv: %s  Det: %s]\n", EntryType, DetectedType);
+   MSG("Type check:  [Srv: %s  Det: %s]\n", EntryType, DetectedType);
 
    if (!EntryType)
       return 0; /* there's no mismatch without server type */

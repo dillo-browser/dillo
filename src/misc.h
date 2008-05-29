@@ -13,6 +13,9 @@ char *a_Misc_escape_chars(const char *str, char *esc_set);
 char *a_Misc_expand_tabs(const char *str);
 int a_Misc_get_content_type_from_data(void *Data, size_t Size,const char **PT);
 int a_Misc_content_type_check(const char *EntryType, const char *DetectedType);
+void a_Misc_parse_content_type(const char *str, char **major, char **minor,
+                               char **charset);
+int a_Misc_content_type_cmp(const char* ct1, const char *ct2);
 int a_Misc_parse_geometry(char *geom, int *x, int *y, int *w, int *h);
 char *a_Misc_encode_base64(const char *in);
 Dstr *a_Misc_file2dstr(const char *filename);

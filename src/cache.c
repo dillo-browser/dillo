@@ -54,6 +54,7 @@ typedef struct {
    const DilloUrl *Url;      /* Cached Url. Url is used as a primary Key */
    char *TypeDet;            /* MIME type string (detected from data) */
    char *TypeHdr;            /* MIME type string as from the HTTP Header */
+   char *TypeMeta;           /* MIME type string from META HTTP-EQUIV */
    Dstr *Header;             /* HTTP header */
    const DilloUrl *Location; /* New URI for redirects */
    Dstr *Data;               /* Pointer to raw data */
@@ -202,6 +203,7 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->Url = a_Url_dup(Url);
    NewEntry->TypeDet = NULL;
    NewEntry->TypeHdr = NULL;
+   NewEntry->TypeMeta = NULL;
    NewEntry->Header = dStr_new("");
    NewEntry->Location = NULL;
    NewEntry->Data = dStr_sized_new(8*1024);
@@ -290,6 +292,7 @@ static void Cache_entry_free(CacheEntry_t *entry)
    a_Url_free((DilloUrl *)entry->Url);
    dFree(entry->TypeDet);
    dFree(entry->TypeHdr);
+   dFree(entry->TypeMeta);
    dStr_free(entry->Header, TRUE);
    a_Url_free((DilloUrl *)entry->Location);
    dStr_free(entry->Data, 1);
@@ -387,6 +390,47 @@ uint_t a_Cache_get_flags(const DilloUrl *url)
 {
    CacheEntry_t *entry = Cache_entry_search_with_redirect(url);
    return (entry ? entry->Flags : 0);
+}
+
+/*
+ * Get current content type.
+ */
+static const char *Cache_current_content_type(CacheEntry_t *entry)
+{
+   return entry->TypeMeta ? entry->TypeMeta : entry->TypeHdr ? entry->TypeHdr :
+          entry->TypeDet;
+}
+
+/*
+ * Get current Content-Type for cache entry found by URL.
+ */
+const char *a_Cache_get_content_type(const DilloUrl *url)
+{
+   CacheEntry_t *entry = Cache_entry_search_with_redirect(url);
+
+   return (entry) ? Cache_current_content_type(entry) : NULL;
+}
+
+/*
+ * Change Content-Type for cache entry found by url.
+ * Return new content type.
+ */
+const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
+                                     bool_t force)
+{
+   const char *ret;
+   CacheEntry_t *entry = Cache_entry_search_with_redirect(url);
+
+   if (!entry) {
+      ret = NULL;
+   } else {
+      if (force == TRUE || entry->TypeMeta == NULL) {
+         dFree(entry->TypeMeta);
+         entry->TypeMeta = dStrdup(ctype);
+      }
+      ret = entry->TypeMeta;
+   }
+   return ret;
 }
 
 /*
@@ -831,7 +875,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
    if (!(entry->Flags & CA_GotContentType)) {
       st = a_Misc_get_content_type_from_data(
               entry->Data->str, entry->Data->len, &Type);
-      _MSG("Cache: detected Content-Type '%s'\n", Type);
+      MSG("Cache: detected Content-Type '%s'\n", Type);
       if (st == 0 || entry->Flags & CA_GotData) {
          if (a_Misc_content_type_check(entry->TypeHdr, Type) < 0) {
             MSG_HTTP("Content-Type '%s' doesn't match the real data.\n",
@@ -885,9 +929,9 @@ static void Cache_process_queue(CacheEntry_t *entry)
             if (TypeMismatch) {
                AbortEntry = TRUE;
             } else {
-               st = a_Web_dispatch_by_type(
-                       entry->TypeHdr ? entry->TypeHdr : entry->TypeDet,
-                       ClientWeb, &Client->Callback, &Client->CbData);
+               st = a_Web_dispatch_by_type(Cache_current_content_type(entry),
+                                           ClientWeb, &Client->Callback,
+                                           &Client->CbData);
                if (st == -1) {
                   /* MIME type is not viewable */
                   if (ClientWeb->flags & WEB_RootUrl) {

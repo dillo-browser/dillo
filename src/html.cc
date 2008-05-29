@@ -302,7 +302,7 @@ private:
 public:  //BUG: for now everything is public
 
    BrowserWindow *bw;
-   DilloUrl *base_url;
+   DilloUrl *page_url, *base_url;
    dw::core::Widget *dw;    /* this is duplicated in the stack */
 
    /* -------------------------------------------------------------------*/
@@ -311,9 +311,9 @@ public:  //BUG: for now everything is public
    size_t Buf_Consumed; /* amount of source from cache consumed */
    Dstr *Local_Buf;    /* source converted to displayable encoding (UTF-8) */
    int Local_Ofs;
-   char *charset;
-   bool using_meta_charset; /* to handle multiple meta_charset tags */
    Decode *decoder;
+   char *content_type, *charset;
+   bool stop_parser;
 
    size_t CurrTagOfs;
    size_t OldTagOfs, OldTagLine;
@@ -363,7 +363,7 @@ private:
    void initDw();  /* Used by the constructor */
 
 public:
-   DilloHtml(BrowserWindow *bw, const DilloUrl *url, const char *charset);
+   DilloHtml(BrowserWindow *bw, const DilloUrl *url, const char *content_type);
    ~DilloHtml();
    void connectSignals(dw::core::Widget *dw);
    void write(char *Buf, int BufSize, int Eof);
@@ -430,11 +430,6 @@ typedef struct {
 } TagInfo;
 extern const TagInfo Tags[];
 
-/* todo: implement this as an URL/charset pair in a DList.
- * chances of this bare-bones implementation to fail are minimal though:
- * two ROOT pages using meta-charset, parsing HEAD section at the same time */
-static char *meta_charset = NULL;
-
 /*-----------------------------------------------------------------------------
  *-----------------------------------------------------------------------------
  * Main Code
@@ -493,39 +488,12 @@ static DilloUrl *Html_url_new(DilloHtml *html,
 }
 
 /*
- * Get charset string from HTTP Content-Type string.
- */
-static char *Html_get_charset(const char *ct)
-{
-   const char key[] = "charset";
-   const char terminators[] = " ;\t";
-   char *start;
-   size_t len;
-
-   if ((start = dStristr(ct, "charset")) &&
-       (start == ct || strchr(terminators, start[-1]))) {
-      start += sizeof(key) - 1;
-      for ( ; *start == ' ' || *start == '\t'; ++start);
-      if (*start == '=') {
-         for (++start; *start == ' ' || *start == '\t'; ++start);
-         _MSG("Html_get_charset: %s\n", start);
-         if ((len = strcspn(start, terminators)))
-            return dStrndup(start, len);
-      }
-   }
-   return NULL;
-}
-
-/*
  * Set callback function and callback data for the "html/text" MIME type.
  */
 void *a_Html_text(const char *Type, void *P, CA_Callback_t *Call, void **Data)
 {
    DilloWeb *web = (DilloWeb*)P;
-   char *charset = Html_get_charset(Type);
-   DilloHtml *html = new DilloHtml(web->bw, web->url, charset);
-
-   dFree(charset);
+   DilloHtml *html = new DilloHtml(web->bw, web->url, Type);
 
    *Data = (void*)html;
    *Call = (CA_Callback_t)Html_callback;
@@ -778,13 +746,14 @@ static int Html_level_to_fontsize(int level)
  * Create and initialize a new DilloHtml class
  */
 DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
-                     const char *charset)
+                     const char *content_type)
 {
    /* Init event receiver */
    linkReceiver.html = this;
 
    /* Init main variables */
    bw = p_bw;
+   page_url = a_Url_dup(url);
    base_url = a_Url_dup(url);
    dw = NULL;
 
@@ -795,22 +764,14 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    Local_Buf = dStr_new("");
    Local_Ofs = 0;
 
-   if (charset) {
-      MSG("HTTP Content-Type gave charset as: %s\n", charset);
-   }
-   if (meta_charset) {
-      MSG("META Content-Type gave charset as: %s\n", meta_charset);
-   }
-   if (meta_charset) {
-      decoder = a_Decode_charset_init(meta_charset);
-      this->charset = meta_charset;
-      using_meta_charset = true;
-      meta_charset = NULL;
-   } else {
-      decoder = a_Decode_charset_init(charset);
-      this->charset = dStrdup(charset);
-      using_meta_charset = false;
-   }
+   MSG("HTML content type: %s\n", content_type);
+   this->content_type = dStrdup(content_type);
+
+   /* get charset */
+   a_Misc_parse_content_type(content_type, NULL, NULL, &charset);
+
+   decoder = a_Decode_charset_init(charset);
+   stop_parser = false;
 
    CurrTagOfs = 0;
    OldTagOfs = 0;
@@ -921,6 +882,7 @@ DilloHtml::~DilloHtml()
 
    a_Bw_remove_doc(bw, this);
 
+   a_Url_free(page_url);
    a_Url_free(base_url);
 
    for (int i = 0; i < forms->size(); i++)
@@ -1027,6 +989,7 @@ void DilloHtml::freeParseData()
 
    a_Decode_free(decoder);
    dStr_free(Local_Buf, TRUE);
+   dFree(content_type);
    dFree(charset);
 }
 
@@ -3959,19 +3922,20 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          }
          dStr_free(ds_msg, 1);
 
-      } else if (!html->using_meta_charset &&
-                 !dStrcasecmp(equiv, "content-type") &&
+      } else if (!dStrcasecmp(equiv, "content-type") &&
                  (content = Html_get_attr(html, tag, tagsize, "content"))) {
-         char *charset = Html_get_charset(content);
-         if (charset) {
-            if (!html->charset || dStrcasecmp(charset, html->charset)) {
-               MSG("META Content-Type changes charset to: %s\n", charset);
-               dFree(meta_charset);
-               meta_charset = dStrdup(charset);
+         if (a_Misc_content_type_cmp(html->content_type, content)) {
+            const bool_t force = FALSE;
+            const char *new_content =
+               a_Capi_set_content_type(html->page_url, content, force);
+            /* Cannot ask cache whether the content type was changed, as
+             * this code in another bw might have already changed it for us.
+             */
+            if (a_Misc_content_type_cmp(html->content_type, new_content)) {
                a_Nav_repush(html->bw);
+               html->stop_parser = true;
             }
          }
-         dFree(charset);
       }   
    }
 }
@@ -5873,7 +5837,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
     * boundary. Iterate through tokens until end of buffer is reached. */
    buf_index = 0;
    token_start = buf_index;
-   while (buf_index < bufsize) {
+   while ((buf_index < bufsize) && (html->stop_parser == false)) {
       /* invariant: buf_index == bufsize || token_start == buf_index */
 
       if (S_TOP(html)->parse_mode ==

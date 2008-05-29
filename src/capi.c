@@ -406,6 +406,23 @@ int a_Capi_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
 }
 
 /*
+ * Get the Content-Type associated with the URL
+ */
+const char *a_Capi_get_content_type(const DilloUrl *url)
+{
+   return a_Cache_get_content_type(url);
+}
+
+/*
+ * Set the Content-Type for the URL. 
+ */
+const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
+                                        bool_t force)
+{
+   return a_Cache_set_content_type(url, ctype, force);
+}
+
+/*
  * Send a dpi cmd.
  * (For instance: add_bookmark, open_url, send_preferences, ...)
  */
