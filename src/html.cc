@@ -217,6 +217,12 @@ struct _DilloHtmlState {
 };
 
 class DilloHtmlForm {
+   friend void a_Html_form_event_handler(void *data,
+                                         form::Form *form_receiver,
+                                         void *v_resource,
+                                         int click_x, int click_y);
+
+   DilloHtml *html;
 public:  //BUG: for now everything is public
    DilloHtmlMethod method;
    DilloUrl *action;
@@ -231,10 +237,12 @@ public:  //BUG: for now everything is public
    form::Form *form_receiver;
 
 public:
-   DilloHtmlForm (DilloHtmlMethod method, const DilloUrl *action,
+   DilloHtmlForm (DilloHtml *html, 
+                  DilloHtmlMethod method, const DilloUrl *action,
                   DilloHtmlEnc enc, const char *charset);
    ~DilloHtmlForm ();
    inline DilloHtmlInput *getCurrentInput ();
+   DilloHtmlInput *getInput (void *v_resource);
    void reset ();
    void addInput(DilloHtmlInputType type,
                  Widget *widget,
@@ -243,9 +251,9 @@ public:
                  const char *init_str,
                  DilloHtmlSelect *select,
                  bool_t init_val);
-   DilloUrl *buildQueryUrl(int e_input_idx, int click_x, int click_y);
-   Dstr *buildQueryData(int active_submit, int x, int y);
-   char *makeMultipartBoundary(iconv_t encoder, int active_submit);
+   DilloUrl *buildQueryUrl(DilloHtmlInput *input, int click_x, int click_y);
+   Dstr *buildQueryData(DilloHtmlInput *active_submit, int x, int y);
+   char *makeMultipartBoundary(iconv_t encoder, DilloHtmlInput *active_submit);
 };
 
 struct _DilloHtmlOption {
@@ -1023,8 +1031,7 @@ void DilloHtml::finishParsing(int ClientKey)
 int DilloHtml::formNew(DilloHtmlMethod method, const DilloUrl *action,
                        DilloHtmlEnc enc, const char *charset)
 {
-   DilloHtmlForm *form = new DilloHtmlForm (method,action,enc,charset);
-   form->form_receiver = new form::Form (this);
+   DilloHtmlForm *form = new DilloHtmlForm (this,method,action,enc,charset);
    int nf = forms->size ();
    forms->increase ();
    forms->set (nf, form);
@@ -1163,11 +1170,13 @@ bool DilloHtml::HtmlLinkReceiver::click (Widget *widget, int link, int img,
 /*
  * Create and initialize a new DilloHtmlForm class
  */
-DilloHtmlForm::DilloHtmlForm (DilloHtmlMethod method2,
+DilloHtmlForm::DilloHtmlForm (DilloHtml *html2,
+                              DilloHtmlMethod method2,
                               const DilloUrl *action2,
                               DilloHtmlEnc enc2,
                               const char *charset)
 {
+   html = html2;
    method = method2;
    action = a_Url_dup(action2);
    enc = enc2;
@@ -1175,7 +1184,7 @@ DilloHtmlForm::DilloHtmlForm (DilloHtmlMethod method2,
    inputs = new misc::SimpleVector <DilloHtmlInput*> (4);
    num_entry_fields = 0;
    num_submit_buttons = 0;
-   form_receiver = NULL;
+   form_receiver = new form::Form (this);
 }
 
 /*
@@ -4226,7 +4235,7 @@ static void Html_get_input_values(const DilloHtmlInput *input,
  * multipart/form-data submission.
  */
 char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
-                                           int active_submit)
+                                           DilloHtmlInput *active_submit)
 {
    const int max_tries = 10;
    Dlist *values = dList_new(5);
@@ -4238,7 +4247,7 @@ char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
    for (int input_idx = 0; input_idx < inputs->size(); input_idx++) {
       Dstr *dstr;
       DilloHtmlInput *input = inputs->get (input_idx);
-      bool is_active_submit = (input_idx == active_submit);
+      bool is_active_submit = (input == active_submit);
       Html_get_input_values(input, is_active_submit, values);
 
       if (input->name) {
@@ -4287,7 +4296,8 @@ char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
 /*
  * Construct the data for a query URL
  */
-Dstr *DilloHtmlForm::buildQueryData(int active_submit, int x, int y)
+Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit,
+                                    int x, int y)
 {
    Dstr *DataStr = NULL;
    char *boundary = NULL;
@@ -4315,7 +4325,7 @@ Dstr *DilloHtmlForm::buildQueryData(int active_submit, int x, int y)
       for (int input_idx = 0; input_idx < inputs->size(); input_idx++) {
          DilloHtmlInput *input = inputs->get (input_idx);
          Dstr *name = dStr_new(input->name);
-         bool is_active_submit = (input_idx == active_submit);
+         bool is_active_submit = (input == active_submit);
 
          name = Html_encode_text(encoder, &name);
          Html_get_input_values(input, is_active_submit, values);
@@ -4392,7 +4402,7 @@ Dstr *DilloHtmlForm::buildQueryData(int active_submit, int x, int y)
  * (Called by a_Html_form_event_handler())
  * click_x and click_y are used only by input images.
  */
-DilloUrl *DilloHtmlForm::buildQueryUrl(int e_input_idx,
+DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input,
                                        int click_x, int click_y)
 {
    DilloUrl *new_url = NULL;
@@ -4400,16 +4410,15 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(int e_input_idx,
    if ((method == DILLO_HTML_METHOD_GET) ||
        (method == DILLO_HTML_METHOD_POST)) {
       Dstr *DataStr;
-      int active_submit = -1;
+      DilloHtmlInput *active_submit = NULL;
 
       _MSG("DilloHtmlForm::buildQueryUrl: action=%s\n",URL_STR_(action));
 
       if (num_submit_buttons > 0) {
-         DilloHtmlInput *input = inputs->get(e_input_idx);
          if ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
              (input->type == DILLO_HTML_INPUT_IMAGE) ||
              (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT)) {
-            active_submit = e_input_idx;
+            active_submit = input;
          }
       }
 
@@ -4457,31 +4466,14 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(int e_input_idx,
 void a_Html_form_event_handler(void *data, form::Form *form_receiver,
                                void *v_resource, int click_x, int click_y)
 {
-   int form_index, input_idx = -1, idx;
-   DilloHtmlForm *form = NULL;
-   DilloHtmlInput *input = NULL;
-   DilloHtml *html = (DilloHtml*)data;
+   MSG("Html_form_event_handler %p\n", form_receiver);
 
-   MSG("Html_form_event_handler %p %p\n", html, form_receiver);
+   DilloHtmlForm *form = (DilloHtmlForm*)data;
+   DilloHtmlInput *input = form->getInput(v_resource);
+   BrowserWindow *bw = form->html->bw;
 
-   /* Search the form that generated the submit event */
-   for (form_index = 0; form_index < html->forms->size(); form_index++) {
-      form = html->forms->get (form_index);
-      if (form->form_receiver == form_receiver) {
-         /* form found, let's get the input index for this event */
-         for (idx = 0; idx < form->inputs->size(); idx++) {
-            input = form->inputs->get(idx);
-            if (input->embed &&
-                v_resource == (void*)((Embed*)input->widget)->getResource()) {
-               input_idx = idx;
-               break;
-            }
-         }
-         break;
-      }
-   }
    if (!input) {
-      MSG("a_Html_form_event_handler: ERROR, form not found!\n");
+      MSG("a_Html_form_event_handler: ERROR, input not found!\n");
    } else if (form->num_entry_fields > 1 &&
               !prefs.enterpress_forces_submit &&
               (input->type == DILLO_HTML_INPUT_TEXT ||
@@ -4493,28 +4485,42 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
       if (filename) {
          LabelButtonResource *lbr =
             (LabelButtonResource*)((Embed*)input->widget)->getResource();
-         a_UIcmd_set_msg(html->bw, "Loading file...");
+         a_UIcmd_set_msg(bw, "Loading file...");
          dStr_free(input->file_data, 1);
          input->file_data = a_Misc_file2dstr(filename);
          if (input->file_data) {
-            a_UIcmd_set_msg(html->bw, "File loaded.");
+            a_UIcmd_set_msg(bw, "File loaded.");
             lbr->setLabel(filename);
          } else {
-            a_UIcmd_set_msg(html->bw, "ERROR: can't load: %s", filename);
+            a_UIcmd_set_msg(bw, "ERROR: can't load: %s", filename);
          }
       }
    } else if (input->type == DILLO_HTML_INPUT_RESET ||
               input->type == DILLO_HTML_INPUT_BUTTON_RESET) {
       form->reset();
    } else {
-      DilloUrl *url = form->buildQueryUrl(input_idx, click_x, click_y);
+      DilloUrl *url = form->buildQueryUrl(input, click_x, click_y);
       if (url) {
-         a_Nav_push(html->bw, url);
+         a_Nav_push(bw, url);
          a_Url_free(url);
       }
       // /* now, make the rendered area have its focus back */
-      // gtk_widget_grab_focus(GTK_BIN(html->bw->render_main_scroll)->child);
+      // gtk_widget_grab_focus(GTK_BIN(bw->render_main_scroll)->child);
    }
+}
+
+/*
+ * Return the input with a given resource.
+ */
+DilloHtmlInput *DilloHtmlForm::getInput (void *v_resource)
+{
+   for (int idx = 0; idx < inputs->size(); idx++) {
+      DilloHtmlInput *input = inputs->get(idx);
+      if (input->embed &&
+          v_resource == (void*)((Embed*)input->widget)->getResource())
+         return input;
+   }
+   return NULL;
 }
 
 /*
