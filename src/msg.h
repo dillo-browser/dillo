@@ -9,7 +9,6 @@
  */
 #define _MSG(...)
 #define _MSG_WARN(...)
-#define _MSG_HTML(...)
 #define _MSG_HTTP(...)
 
 
@@ -31,11 +30,6 @@
    D_STMT_START {                                  \
       if (prefs.show_msg)                          \
          printf("** ERROR **: " __VA_ARGS__);      \
-   } D_STMT_END
-
-#define MSG_HTML(...)                              \
-   D_STMT_START {                                  \
-         Html_msg(html, __VA_ARGS__);              \
    } D_STMT_END
 
 #define MSG_HTTP(...)                              \
