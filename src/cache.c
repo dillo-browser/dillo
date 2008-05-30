@@ -875,7 +875,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
    if (!(entry->Flags & CA_GotContentType)) {
       st = a_Misc_get_content_type_from_data(
               entry->Data->str, entry->Data->len, &Type);
-      MSG("Cache: detected Content-Type '%s'\n", Type);
+      _MSG("Cache: detected Content-Type '%s'\n", Type);
       if (st == 0 || entry->Flags & CA_GotData) {
          if (a_Misc_content_type_check(entry->TypeHdr, Type) < 0) {
             MSG_HTTP("Content-Type '%s' doesn't match the real data.\n",
