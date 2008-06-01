@@ -98,6 +98,7 @@ typedef struct _DilloLinkImage   DilloLinkImage;
 typedef struct _DilloHtmlClass   DilloHtmlClass;
 typedef struct _DilloHtmlState   DilloHtmlState;
 class DilloHtmlForm;
+class DilloHtmlReceiver;
 class DilloHtmlInput;
 typedef struct _DilloHtmlSelect  DilloHtmlSelect;
 typedef struct _DilloHtmlOption  DilloHtmlOption;
@@ -223,12 +224,11 @@ struct _DilloHtmlState {
 };
 
 class DilloHtmlForm {
-   friend void a_Html_form_event_handler(void *data,
-                                         form::Form *form_receiver,
-                                         void *v_resource,
-                                         int click_x, int click_y);
+   friend class DilloHtmlReceiver;
 
    DilloHtml *html;
+   void eventHandler(Resource *resource, int click_x, int click_y);
+
 public:  //BUG: for now everything is public
    DilloHtmlMethod method;
    DilloUrl *action;
@@ -240,7 +240,7 @@ public:  //BUG: for now everything is public
    int num_entry_fields;
    int num_submit_buttons;
 
-   form::Form *form_receiver;
+   DilloHtmlReceiver *form_receiver;
 
 public:
    DilloHtmlForm (DilloHtml *html, 
@@ -248,7 +248,7 @@ public:
                   DilloHtmlEnc enc, const char *charset);
    ~DilloHtmlForm ();
    inline DilloHtmlInput *getCurrentInput ();
-   DilloHtmlInput *getInput (void *v_resource);
+   DilloHtmlInput *getInput (Resource *resource);
    DilloHtmlInput *getRadioInput (const char *name);
    void reset ();
    void addInput(DilloHtmlInputType type,
@@ -260,6 +260,18 @@ public:
    DilloUrl *buildQueryUrl(DilloHtmlInput *input, int click_x, int click_y);
    Dstr *buildQueryData(DilloHtmlInput *active_submit, int x, int y);
    char *makeMultipartBoundary(iconv_t encoder, DilloHtmlInput *active_submit);
+};
+
+class DilloHtmlReceiver:
+   public Resource::ActivateReceiver,
+   public ButtonResource::ClickedReceiver
+{
+   friend class DilloHtmlForm;
+   DilloHtmlForm* form;
+   DilloHtmlReceiver (DilloHtmlForm* form2) { form = form2; }
+   ~DilloHtmlReceiver () { }
+   void activate (Resource *resource);
+   void clicked (ButtonResource *resource, int buttonNo, int x, int y);
 };
 
 struct _DilloHtmlOption {
@@ -289,7 +301,7 @@ public:  //BUG: for now everything is public
                          todo: may become a list... */
 
 private:
-   void connectTo(form::Form *form_receiver);
+   void connectTo(DilloHtmlReceiver *form_receiver);
 
 public:
    DilloHtmlInput (DilloHtmlInputType type,
@@ -1196,7 +1208,7 @@ DilloHtmlForm::DilloHtmlForm (DilloHtml *html2,
    inputs = new misc::SimpleVector <DilloHtmlInput*> (4);
    num_entry_fields = 0;
    num_submit_buttons = 0;
-   form_receiver = new form::Form (this);
+   form_receiver = new DilloHtmlReceiver (this);
 }
 
 /*
@@ -1310,7 +1322,7 @@ DilloHtmlInput::~DilloHtmlInput ()
 /*
  * Connect to a receiver.
  */
-void DilloHtmlInput::connectTo(form::Form *form_receiver)
+void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
 {
    Resource *resource = NULL;
    if (embed)
@@ -4499,23 +4511,33 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input,
 }
 
 /*
- * Handler for events related to forms.
+ * Handlers for events related to forms.
  *
  * TODO: Currently there's "clicked" for buttons, we surely need "enter" for
  * textentries, and maybe the "mouseover, ...." set for Javascript.
  */
-void a_Html_form_event_handler(void *data, form::Form *form_receiver,
-                               void *v_resource, int click_x, int click_y)
-{
-   MSG("Html_form_event_handler %p\n", form_receiver);
 
-   DilloHtmlForm *form = (DilloHtmlForm*)data;
-   DilloHtmlInput *input = form->getInput(v_resource);
-   BrowserWindow *bw = form->html->bw;
+void DilloHtmlReceiver::activate (Resource *resource)
+{
+   form->eventHandler(resource, -1, -1);
+}
+
+void DilloHtmlReceiver::clicked (ButtonResource *resource,
+                                 int buttonNo, int x, int y)
+{
+   form->eventHandler(resource, x, y);
+}
+
+void DilloHtmlForm::eventHandler(Resource *resource, int click_x, int click_y)
+{
+   MSG("DilloHtmlForm::eventHandler\n");
+
+   DilloHtmlInput *input = getInput(resource);
+   BrowserWindow *bw = html->bw;
 
    if (!input) {
-      MSG("a_Html_form_event_handler: ERROR, input not found!\n");
-   } else if (form->num_entry_fields > 1 &&
+      MSG("DilloHtmlForm::eventHandler: ERROR, input not found!\n");
+   } else if (num_entry_fields > 1 &&
               !prefs.enterpress_forces_submit &&
               (input->type == DILLO_HTML_INPUT_TEXT ||
                input->type == DILLO_HTML_INPUT_PASSWORD)) {
@@ -4538,9 +4560,9 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
       }
    } else if (input->type == DILLO_HTML_INPUT_RESET ||
               input->type == DILLO_HTML_INPUT_BUTTON_RESET) {
-      form->reset();
+      reset();
    } else {
-      DilloUrl *url = form->buildQueryUrl(input, click_x, click_y);
+      DilloUrl *url = buildQueryUrl(input, click_x, click_y);
       if (url) {
          a_Nav_push(bw, url);
          a_Url_free(url);
@@ -4553,12 +4575,12 @@ void a_Html_form_event_handler(void *data, form::Form *form_receiver,
 /*
  * Return the input with a given resource.
  */
-DilloHtmlInput *DilloHtmlForm::getInput (void *v_resource)
+DilloHtmlInput *DilloHtmlForm::getInput (Resource *resource)
 {
    for (int idx = 0; idx < inputs->size(); idx++) {
       DilloHtmlInput *input = inputs->get(idx);
       if (input->embed &&
-          v_resource == (void*)input->embed->getResource())
+          resource == input->embed->getResource())
          return input;
    }
    return NULL;

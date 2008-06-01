@@ -67,8 +67,6 @@ dillo_fltk_SOURCES = \
 	capi.c \
 	capi.h \
 	plain.cc \
-	form.cc \
-	form.hh \
 	html.cc \
 	html.hh \
 	bookmark.c \

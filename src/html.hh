@@ -2,7 +2,6 @@
 #define __HTML_HH__
 
 #include "url.h"               // for DilloUrl
-#include "form.hh"             // for form::Form
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,10 +10,6 @@ extern "C" {
 /*
  * Exported functions
  */
-void a_Html_form_event_handler(void *data,
-                               form::Form *form_receiver,
-                               void *v_resource,
-                               int click_x, int click_y);
 void a_Html_free(void *data);
 void a_Html_load_images(void *v_html, DilloUrl *pattern);
 
