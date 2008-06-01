@@ -5377,7 +5377,7 @@ const TagInfo Tags[] = {
  {"s", B8(010101),'R',2, Html_tag_open_strike, Html_tag_close_default},
  {"samp", B8(010101),'R',2, Html_tag_open_samp, Html_tag_close_default},
  {"script", B8(111001),'R',2, Html_tag_open_script, Html_tag_close_script},
- {"select", B8(011001),'R',2, Html_tag_open_select, Html_tag_close_select},
+ {"select", B8(010101),'R',2, Html_tag_open_select, Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_big_small, Html_tag_close_default},
  /* span 0101 */
  {"strike", B8(010101),'R',2, Html_tag_open_strike, Html_tag_close_default},
