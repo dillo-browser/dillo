@@ -5537,6 +5537,10 @@ static void Html_stack_cleanup_at_open(DilloHtml *html, int new_idx)
       if ((html->InFlags & IN_PRE) &&
           strcmp(Tags[new_idx].name, "hr") == 0)
          break;
+      /* Avoid OPTION closing SELECT */
+      if ((html->InFlags & IN_SELECT) &&
+          strcmp(Tags[new_idx].name,"option") == 0)
+         break;
 
       /* This call closes the top tag only. */
       Html_tag_cleanup_at_close(html, oldtag_idx);
