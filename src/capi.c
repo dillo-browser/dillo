@@ -406,6 +406,14 @@ int a_Capi_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
 }
 
 /*
+ * Unref the cache's buffer when no longer using it.
+ */
+void a_Capi_unref_buf(const DilloUrl *Url)
+{
+   a_Cache_unref_buf(Url);
+}
+
+/*
  * Get the Content-Type associated with the URL
  */
 const char *a_Capi_get_content_type(const DilloUrl *url)

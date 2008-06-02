@@ -495,7 +495,9 @@ void a_UIcmd_view_page_source(const DilloUrl *url)
    int buf_size;
 
    if (a_Nav_get_buf(url, &buf, &buf_size)) {
-      a_Dialog_text_window(buf, "View Page source");
+      void *vWindow = a_Dialog_make_text_window(buf, "View Page source");
+      a_Nav_unref_buf(url);
+      a_Dialog_show_text_window(vWindow);
    }
 }
 
@@ -507,7 +509,9 @@ void a_UIcmd_view_page_bugs(void *vbw)
    BrowserWindow *bw = (BrowserWindow*)vbw;
 
    if (bw->num_page_bugs > 0) {
-      a_Dialog_text_window(bw->page_bugs->str, "Detected HTML errors");
+      void *vWindow = a_Dialog_make_text_window(bw->page_bugs->str,
+                                                "Detected HTML errors");
+      a_Dialog_show_text_window(vWindow);
    } else {
       a_Dialog_msg("Zero detected HTML errors!");
    }

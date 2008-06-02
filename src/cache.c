@@ -58,11 +58,14 @@ typedef struct {
    Dstr *Header;             /* HTTP header */
    const DilloUrl *Location; /* New URI for redirects */
    Dstr *Data;               /* Pointer to raw data */
+   Dstr *UTF8Data;           /* Data after charset translation */
+   int DataRefcount;         /* Reference count */
    Decode *TransferDecoder;  /* Transfer decoder (e.g., chunked) */
    Decode *ContentDecoder;   /* Data decoder (e.g., gzip) */
+   Decode *CharsetDecoder;   /* Translates text to UTF-8 encoding */
    int ExpectedSize;         /* Goal size of the HTTP transfer (0 if unknown)*/
    int TransferSize;         /* Actual length of the HTTP transfer */
-   uint_t Flags;             /* Look Flag Defines in cache.h */
+   uint_t Flags;             /* See Flag Defines in cache.h */
 } CacheEntry_t;
 
 
@@ -207,8 +210,11 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->Header = dStr_new("");
    NewEntry->Location = NULL;
    NewEntry->Data = dStr_sized_new(8*1024);
+   NewEntry->UTF8Data = NULL;
+   NewEntry->DataRefcount = 0;
    NewEntry->TransferDecoder = NULL;
    NewEntry->ContentDecoder = NULL;
+   NewEntry->CharsetDecoder = NULL;
    NewEntry->ExpectedSize = 0;
    NewEntry->TransferSize = 0;
    NewEntry->Flags = CA_IsEmpty;
@@ -296,6 +302,9 @@ static void Cache_entry_free(CacheEntry_t *entry)
    dStr_free(entry->Header, TRUE);
    a_Url_free((DilloUrl *)entry->Location);
    dStr_free(entry->Data, 1);
+   dStr_free(entry->UTF8Data, 1);
+   if (entry->CharsetDecoder)
+      a_Decode_free(entry->CharsetDecoder);
    dFree(entry);
 }
 
@@ -393,6 +402,43 @@ uint_t a_Cache_get_flags(const DilloUrl *url)
 }
 
 /*
+ * Reference the cache data.
+ */
+static void Cache_ref_data(CacheEntry_t *entry)
+{
+   if (entry) {
+      entry->DataRefcount++;
+      _MSG("DataRefcount++: %d\n", entry->DataRefcount);
+      if (entry->CharsetDecoder && entry->DataRefcount == 1) {
+         entry->UTF8Data = a_Decode_process(entry->CharsetDecoder,
+                                            entry->Data->str,
+                                            entry->Data->len);
+      }
+   }
+}
+
+/*
+ * Unreference the cache data.
+ */
+static void Cache_unref_data(CacheEntry_t *entry)
+{
+   if (entry) {
+      entry->DataRefcount--;
+      _MSG("DataRefcount--: %d\n", entry->DataRefcount);
+
+      if (entry->CharsetDecoder) {
+         if (entry->DataRefcount == 0) {
+            dStr_free(entry->UTF8Data, 1);
+            entry->UTF8Data = NULL;
+         } else if (entry->DataRefcount < 0) {
+            MSG_ERR("Cache_unref_data: negative refcount\n");
+            entry->DataRefcount = 0;
+         }
+      }
+   }
+}
+
+/*
  * Get current content type.
  */
 static const char *Cache_current_content_type(CacheEntry_t *entry)
@@ -412,25 +458,54 @@ const char *a_Cache_get_content_type(const DilloUrl *url)
 }
 
 /*
+ * Get pointer to entry's data.
+ */
+static Dstr *Cache_data(CacheEntry_t *entry)
+{
+   return entry->UTF8Data ? entry->UTF8Data : entry->Data;
+}
+
+/*
  * Change Content-Type for cache entry found by url.
  * Return new content type.
  */
 const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
                                      bool_t force)
 {
-   const char *ret;
+   const char *curr;
    CacheEntry_t *entry = Cache_entry_search_with_redirect(url);
 
-   if (!entry) {
-      ret = NULL;
-   } else {
-      if (force == TRUE || entry->TypeMeta == NULL) {
-         dFree(entry->TypeMeta);
-         entry->TypeMeta = dStrdup(ctype);
-      }
-      ret = entry->TypeMeta;
+   if (!entry)
+      return NULL;
+
+   curr = Cache_current_content_type(entry);
+   if (entry->TypeMeta && (force == FALSE)) {
+      /* it's already been set */
+      return curr;
+  }
+
+   if (a_Misc_content_type_cmp(curr, ctype)) {
+      char *charset;
+
+      dFree(entry->TypeMeta);
+      curr = entry->TypeMeta = dStrdup(ctype);
+
+      if (entry->CharsetDecoder)
+         a_Decode_free(entry->CharsetDecoder);
+      a_Misc_parse_content_type(ctype, NULL, NULL, &charset);
+      entry->CharsetDecoder = a_Decode_charset_init(charset);
+      dFree(charset);
+
+      dStr_free(entry->UTF8Data, 1);
+      if (entry->CharsetDecoder && entry->DataRefcount > 0)
+         entry->UTF8Data = a_Decode_process(entry->CharsetDecoder,
+                                            entry->Data->str,
+                                            entry->Data->len);
+      else
+         entry->UTF8Data = NULL;
    }
-   return ret;
+
+   return curr;
 }
 
 /*
@@ -440,10 +515,26 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
 int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
 {
    CacheEntry_t *entry = Cache_entry_search_with_redirect(Url);
-   *BufSize = (entry) ? entry->Data->len : 0;
-   *PBuf = (entry) ? entry->Data->str : NULL;
+   if (entry) {
+      Cache_ref_data(entry);
+      Dstr *data = Cache_data(entry);
+      *PBuf = data->str;
+      *BufSize = data->len;
+   } else {
+      *PBuf = NULL;
+      *BufSize = 0;
+   }
    return (entry ? 1 : 0);
 }
+
+/*
+ * Unreference the data buffer when no longer using it.
+ */
+void a_Cache_unref_buf(const DilloUrl *Url)
+{
+   Cache_unref_data(Cache_entry_search_with_redirect(Url));
+}
+
 
 /*
  * Extract a single field from the header, allocating and storing the value
@@ -526,7 +617,7 @@ static Dlist *Cache_parse_multiple_fields(const char *header,
 static void Cache_parse_header(CacheEntry_t *entry)
 {
    char *header = entry->Header->str;
-   char *Length, *Type, *location_str, *encoding;
+   char *Length, *Type, *location_str, *encoding, *charset;
 #ifndef DISABLE_COOKIES
    Dlist *Cookies;
 #endif
@@ -622,6 +713,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
       dStr_free(entry->Data, 1);
       entry->Data = dStr_sized_new(MIN(entry->ExpectedSize, MAX_INIT_BUF));
    }
+   Cache_ref_data(entry);
 
    /* Get Content-Type */
    if ((Type = Cache_parse_field(header, "Content-Type")) == NULL) {
@@ -635,6 +727,13 @@ static void Cache_parse_header(CacheEntry_t *entry)
       /* This Content-Type is not trusted. It's checked against real data
        * in Cache_process_queue(); only then CA_GotContentType becomes true.
        */
+      a_Misc_parse_content_type(Type, NULL, NULL, &charset);
+      if (charset) {
+         entry->CharsetDecoder = a_Decode_charset_init(charset);
+         if (entry->CharsetDecoder)
+            entry->UTF8Data = dStr_new("");
+         dFree(charset);
+      }
    }
 }
 
@@ -712,6 +811,9 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
       }
       dStr_fit(entry->Data);                /* fit buffer size! */
       Cache_process_queue(entry);
+      if (entry->Flags & CA_GotHeader) {
+         Cache_unref_data(entry);
+      }
       return;
    } else if (Op == IOAbort) {
       /* unused */
@@ -753,6 +855,13 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
       dStr_free(dbuf, 0);
    }
    dStr_append_l(entry->Data, str, len);
+
+   if (entry->UTF8Data) {
+      Dstr *dbuf = a_Decode_process(entry->CharsetDecoder, str, len);
+      dStr_append_l(entry->UTF8Data, dbuf->str, dbuf->len);
+      dStr_free(dbuf, 1);
+   }
+
    if (entry->TransferDecoder || entry->ContentDecoder)
       dFree((char *)str);
 
@@ -860,6 +969,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
    uint_t i;
    int st;
    const char *Type;
+   Dstr *data;
    CacheClient_t *Client;
    DilloWeb *ClientWeb;
    BrowserWindow *Client_bw = NULL;
@@ -954,8 +1064,14 @@ static void Cache_process_queue(CacheEntry_t *entry)
          }
 
          /* Send data to our client */
-         if ((Client->BufSize = entry->Data->len) > 0) {
-            Client->Buf = entry->Data->str;
+         if (ClientWeb->flags & WEB_Download) {
+            /* for download, always provide original data, not translated */
+            data = entry->Data;
+         } else {
+            data = Cache_data(entry);
+         }
+         if ((Client->BufSize = data->len) > 0) {
+            Client->Buf = data->str;
             (Client->Callback)(CA_Send, Client);
          }
 
@@ -1001,10 +1117,12 @@ static void Cache_process_queue(CacheEntry_t *entry)
  */
 static void Cache_delayed_process_queue_callback(void *data)
 {
-   void *entry;
+   CacheEntry_t *entry;
 
-   while ((entry = dList_nth_data(DelayedQueue, 0))) {
-      Cache_process_queue((CacheEntry_t *)entry);
+   while ((entry = (CacheEntry_t *)dList_nth_data(DelayedQueue, 0))) {
+      Cache_ref_data(entry);
+      Cache_process_queue(entry);
+      Cache_unref_data(entry);
       /* note that if Cache_process_queue removes the entry,
        * the following dList_remove has no effect. */
       dList_remove(DelayedQueue, entry);

@@ -557,3 +557,10 @@ int a_Nav_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
    return a_Capi_get_buf(Url, PBuf, BufSize);
 }
 
+/*
+ * Wrapper for a_Capi_unref_buf().
+ */
+void a_Nav_unref_buf(const DilloUrl *Url)
+{
+   return a_Capi_unref_buf(Url);
+}

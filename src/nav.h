@@ -33,6 +33,7 @@ int a_Nav_get_top_uidx(BrowserWindow *bw);
 void a_Nav_save_url(BrowserWindow *bw,
                     const DilloUrl *url, const char *filename);
 int a_Nav_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize);
+void a_Nav_unref_buf(const DilloUrl *Url);
 
 #ifdef __cplusplus
 }

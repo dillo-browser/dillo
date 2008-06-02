@@ -105,6 +105,7 @@ dillo-fltk2
  - Made zlib a configure requirement, and cleaned up configure.in.
  - Fixed a segfault bug in Nav.c.
  - Switched from charset to content-type for handling data.
+ - Moved charset decoding into cache.
    Patches: place (AKA corvid)
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

@@ -118,9 +118,9 @@ char *a_Dialog_open_file(const char *msg,
 }
 
 /*
- * Show a new window with the provided text
+ * Make a new window with the provided text
  */
-void a_Dialog_text_window(const char *txt, const char *title)
+void *a_Dialog_make_text_window(const char *txt, const char *title)
 {
    //int wh = 600, ww = 650, bh = 30;
    int wh = prefs.height, ww = prefs.width, bh = 30;
@@ -151,7 +151,15 @@ void a_Dialog_text_window(const char *txt, const char *title)
 
    window->resizable(td);
    window->end();
-   window->show();
+   return window;
+}
+
+/*
+ * Show a window.
+ */
+void a_Dialog_show_text_window(void *vWindow)
+{
+   ((Window *)vWindow)->show();
 }
 
 /*--------------------------------------------------------------------------*/

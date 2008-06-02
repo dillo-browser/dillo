@@ -341,9 +341,8 @@ public:  //BUG: for now everything is public
    /* Variables required at parsing time                                 */
    /* -------------------------------------------------------------------*/
    size_t Buf_Consumed; /* amount of source from cache consumed */
-   Dstr *Local_Buf;    /* source converted to displayable encoding (UTF-8) */
-   int Local_Ofs;
-   Decode *decoder;
+   char *Start_Buf;
+   int Start_Ofs;
    char *content_type, *charset;
    bool stop_parser;
 
@@ -794,8 +793,8 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    /* Init for-parsing variables */
    Buf_Consumed = 0;
-   Local_Buf = dStr_new("");
-   Local_Ofs = 0;
+   Start_Buf = NULL;
+   Start_Ofs = 0;
 
    MSG("DilloHtml(): content type: %s\n", content_type);
    this->content_type = dStrdup(content_type);
@@ -803,7 +802,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    /* get charset */
    a_Misc_parse_content_type(content_type, NULL, NULL, &charset);
 
-   decoder = a_Decode_charset_init(charset);
    stop_parser = false;
 
    CurrTagOfs = 0;
@@ -954,37 +952,17 @@ void DilloHtml::connectSignals(Widget *dw)
 void DilloHtml::write(char *Buf, int BufSize, int Eof)
 {
    int token_start;
-   Dstr *new_text = NULL;
+   char *buf = Buf + Start_Ofs;
+   int bufsize = BufSize - Start_Ofs;
 
    dReturn_if_fail (dw != NULL);
 
-   char *str = Buf + Buf_Consumed;
-   int len = BufSize - Buf_Consumed;
-
-   /* decode to target charset (UTF-8) */
-   if (decoder) {
-      new_text = a_Decode_process(decoder, str, len);
-      str = new_text->str;
-      len = new_text->len;
-   }
-   dStr_append_l(Local_Buf, str, len);
-   dStr_free(new_text, 1);
-
-   token_start = Html_write_raw(this, Local_Buf->str + Local_Ofs,
-                                Local_Buf->len - Local_Ofs, Eof);
-   Buf_Consumed = BufSize;
-   Local_Ofs += token_start;
-
-   /* update line number and tag offset */
-   getCurTagLineNumber();
-
-   /* don't need anything further back */
-   dStr_erase(Local_Buf, 0, CurrTagOfs);
-   Local_Ofs -= CurrTagOfs;
-   OldTagOfs = CurrTagOfs = 0;
+   Start_Buf = Buf;
+   token_start = Html_write_raw(this, buf, bufsize, Eof);
+   Start_Ofs += token_start;
 
    if (bw)
-      a_UIcmd_set_page_prog(bw, BufSize, 1);
+      a_UIcmd_set_page_prog(bw, Start_Ofs, 1);
 }
 
 /*
@@ -994,7 +972,7 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
 int DilloHtml::getCurTagLineNumber()
 {
    int i, ofs, line;
-   const char *p = Local_Buf->str;
+   const char *p = Start_Buf;
 
    dReturn_val_if_fail(p != NULL, -1);
 
@@ -1018,9 +996,6 @@ void DilloHtml::freeParseData()
 
    dStr_free(Stash, TRUE);
    dStr_free(attr_data, TRUE);
-
-   a_Decode_free(decoder);
-   dStr_free(Local_Buf, TRUE);
    dFree(content_type);
    dFree(charset);
 }
@@ -5945,7 +5920,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
                buf_index = bufsize;
          } else {
             /* Tag: search end of tag (skipping over quoted strings) */
-            html->CurrTagOfs = html->Local_Ofs + token_start;
+            html->CurrTagOfs = html->Start_Ofs + token_start;
 
             while ( buf_index < bufsize ) {
                buf_index++;
