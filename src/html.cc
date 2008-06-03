@@ -442,6 +442,12 @@ static void Html_callback(int Op, CacheClient_t *Client);
 static void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize);
 static int Html_tag_index(const char *tag);
 static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
+static DilloHtmlForm *Html_form_new (DilloHtml *html,
+                                     DilloHtmlMethod method,
+                                     const DilloUrl *action,
+                                     DilloHtmlEnc enc,
+                                     const char *charset);
+static void Html_form_delete (DilloHtmlForm *form);
 
 /*-----------------------------------------------------------------------------
  * Local Data
@@ -917,7 +923,7 @@ DilloHtml::~DilloHtml()
    a_Url_free(base_url);
 
    for (int i = 0; i < forms->size(); i++)
-      delete forms->get(i);
+      Html_form_delete (forms->get(i));
    delete(forms);
 
    for (int i = 0; i < links->size(); i++)
@@ -1030,7 +1036,7 @@ void DilloHtml::finishParsing(int ClientKey)
 int DilloHtml::formNew(DilloHtmlMethod method, const DilloUrl *action,
                        DilloHtmlEnc enc, const char *charset)
 {
-   DilloHtmlForm *form = new DilloHtmlForm (this,method,action,enc,charset);
+   DilloHtmlForm *form = Html_form_new (this,method,action,enc,charset);
    int nf = forms->size ();
    forms->increase ();
    forms->set (nf, form);
@@ -1187,6 +1193,19 @@ DilloHtmlForm::DilloHtmlForm (DilloHtml *html2,
 }
 
 /*
+ * API wrapper for DilloHtmlForm::DilloHtmlForm().
+ */
+
+static DilloHtmlForm *Html_form_new (DilloHtml *html,
+                                     DilloHtmlMethod method,
+                                     const DilloUrl *action,
+                                     DilloHtmlEnc enc,
+                                     const char *charset)
+{
+   return new DilloHtmlForm (html,method,action,enc,charset);
+}
+
+/*
  * Free memory used by the DilloHtmlForm class.
  */
 DilloHtmlForm::~DilloHtmlForm ()
@@ -1198,6 +1217,15 @@ DilloHtmlForm::~DilloHtmlForm ()
    delete(inputs);
    if (form_receiver)
       delete(form_receiver);
+}
+
+/*
+ * API wrapper for DilloHtmlForm::~DilloHtmlForm().
+ */
+
+static void Html_form_delete (DilloHtmlForm *form)
+{
+   delete form;
 }
 
 /*
