@@ -156,7 +156,7 @@ dillo-fltk2
  - Implemented the SELECT element in FORMS!
  - Implemented MULTIPLE SELECT in FORMS.
  - Fixed a memory leak in nav.c
-!- html.cc cleanup (in progress).
+!- html.cc cleanup (in progress). New classes, form API, source split.
    Patches: Jeremy Henty
 +- Added int32_t, EAI_NODATA and iconv tests for FreeBSD.
    Patch: Thomas-Martin Seck

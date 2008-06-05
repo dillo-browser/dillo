@@ -69,6 +69,8 @@ dillo_fltk_SOURCES = \
 	plain.cc \
 	html.cc \
 	html.hh \
+	form.cc \
+	form.hh \
 	bookmark.c \
 	bookmark.h \
 	dns.c \
