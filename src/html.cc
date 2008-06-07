@@ -22,7 +22,6 @@
 #include <stdio.h>      /* for sprintf */
 #include <math.h>       /* for rint */
 #include <errno.h>
-#include <iconv.h>
 
 #include <fltk/utf.h>   /* for utf8encode */
 
@@ -35,7 +34,6 @@
 #include "colors.h"
 
 #include "misc.h"
-#include "decode.h"
 #include "uicmd.hh"
 #include "history.h"
 #include "nav.h"
