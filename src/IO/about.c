@@ -159,7 +159,7 @@ const char *AboutSplash=
 "    <td><a href='http://www.wikipedia.org/'>Wikipedia</a>\n"
 "    <tr>\n"
 "    <td>&nbsp;&nbsp;\n"
-"    <td><a href='http://www.gutenberg.org/'>P. Gutenberg</a>\n"
+"    <td><a href='http://www.gutenberg.org/'>P.&nbsp;Gutenberg</a>\n"
 "    <tr>\n"
 "    <td>&nbsp;&nbsp;\n"
 "    <td><a href='http://freshmeat.net/'>FreshMeat</a>\n"
