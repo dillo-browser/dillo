@@ -7,6 +7,7 @@
 #include "lout/misc.hh"
 #include "dw/core.hh"
 #include "dw/image.hh"
+#include "dw/style.hh"
 
 #include "image.hh"
 
@@ -219,8 +220,37 @@ public:
    void finishParsing(int ClientKey);
    int formNew(DilloHtmlMethod method, const DilloUrl *action,
                DilloHtmlEnc enc, const char *charset);
-   inline DilloHtmlForm *getCurrentForm ();
+   DilloHtmlForm *getCurrentForm ();
    void loadImages (const DilloUrl *pattern);
 };
+
+/*
+ * Parser functions 
+ */
+
+const char *a_Html_get_attr(DilloHtml *html,
+                            const char *tag,
+                            int tagsize,
+                            const char *attrname);
+
+char *a_Html_get_attr_wdef(DilloHtml *html,
+                           const char *tag,
+                           int tagsize,
+                           const char *attrname,
+                           const char *def);
+
+DilloUrl *a_Html_url_new(DilloHtml *html,
+                         const char *url_str, const char *base_url,
+                         int flags, int32_t posx, int32_t posy,
+                         int use_base_url);
+
+DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
+                                 int tagsize, DilloUrl *url,
+                                 dw::core::style::StyleAttrs *style_attrs,
+                                 bool_t add);
+
+char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize);
+void a_Html_pop_tag(DilloHtml *html, int TagIdx);
+void a_Html_stash_init(DilloHtml *html);
 
 #endif /* __HTML_COMMON_HH__ */
