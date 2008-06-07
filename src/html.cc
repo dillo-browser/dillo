@@ -3682,94 +3682,95 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
    int IsCloseTag = (*start == '/');
 
    ni = Html_tag_index(start + IsCloseTag);
-
-   /* todo: doctype parsing is a bit fuzzy, but enough for the time being */
-   if (ni == -1 && !(html->InFlags & IN_HTML)) {
-      if (tagsize > 9 && !dStrncasecmp(tag, "<!doctype", 9))
-         Html_parse_doctype(html, tag, tagsize);
-   }
-
-   if (!(html->InFlags & IN_HTML)) {
-      _MSG("\nDoctype: %f\n\n", html->DocTypeVersion);
+   if (ni == -1) {
+      /* todo: doctype parsing is a bit fuzzy, but enough for the time being */
+      if (!(html->InFlags & IN_HTML)) {
+         if (tagsize > 9 && !dStrncasecmp(tag, "<!doctype", 9))
+            Html_parse_doctype(html, tag, tagsize);
+      }
+      /* Ignore unknown tags */
+      return;
    }
 
    /* Handle HTML, HEAD and BODY. Elements with optional open and close */
-   if (ni != -1 && !(html->InFlags & IN_BODY) /* && parsing HTML */)
+   if (!(html->InFlags & IN_BODY) /* && parsing HTML */)
       Html_test_section(html, ni, IsCloseTag);
 
    /* Tag processing */
    ci = S_TOP(html)->tag_idx;
-   if (ni != -1) {
+   switch (IsCloseTag) {
+   case 0:
+      /* Open function */
 
-      if (!IsCloseTag) {
-         /* Open function */
+      /* Cleanup when opening a block element, or
+       * when openning over an element with optional close */
+      if (Tags[ni].Flags & 2 || (ci != -1 && Tags[ci].EndTag == 'O'))
+         Html_stack_cleanup_at_open(html, ni);
 
-         /* Cleanup when opening a block element, or
-          * when openning over an element with optional close */
-         if (Tags[ni].Flags & 2 || (ci != -1 && Tags[ci].EndTag == 'O'))
-            Html_stack_cleanup_at_open(html, ni);
+      /* todo: this is only raising a warning, take some defined action.
+       * Note: apache uses IMG inside PRE (we could use its "alt"). */
+      if ((html->InFlags & IN_PRE) && Html_tag_pre_excludes(ni))
+         BUG_MSG("<pre> is not allowed to contain <%s>\n", Tags[ni].name);
 
-         /* todo: this is only raising a warning, take some defined action.
-          * Note: apache uses IMG inside PRE (we could use its "alt"). */
-         if ((html->InFlags & IN_PRE) && Html_tag_pre_excludes(ni))
-            BUG_MSG("<pre> is not allowed to contain <%s>\n", Tags[ni].name);
+      /* Push the tag into the stack */
+      Html_push_tag(html, ni);
 
-         /* Push the tag into the stack */
-         Html_push_tag(html, ni);
+      /* Call the open function for this tag */
+      Tags[ni].open (html, tag, tagsize);
+      if (html->stop_parser)
+         break;
 
-         /* Call the open function for this tag */
-         Tags[ni].open (html, tag, tagsize);
-
-         /* Now parse attributes that can appear on any tag */
-         if (tagsize >= 8 &&        /* length of "<t id=i>" */
-             (attrbuf = Html_get_attr2(html, tag, tagsize, "id",
-                                       HTML_LeftTrim | HTML_RightTrim))) {
-            /* According to the SGML declaration of HTML 4, all NAME values
-             * occuring outside entities must be converted to uppercase
-             * (this is what "NAMECASE GENERAL YES" says). But the HTML 4
-             * spec states in Sec. 7.5.2 that anchor ids are case-sensitive.
-             * So we don't do it and hope for better specs in the future ...
-             */
-            Html_check_name_val(html, attrbuf, "id");
-            /* We compare the "id" value with the url-decoded "name" value */
-            if (!html->NameVal || strcmp(html->NameVal, attrbuf)) {
-               if (html->NameVal)
-                  BUG_MSG("'id' and 'name' attribute of <a> tag differ\n");
-               Html_add_anchor(html, attrbuf);
-            }
+      /* Now parse attributes that can appear on any tag */
+      if (tagsize >= 8 &&        /* length of "<t id=i>" */
+          (attrbuf = Html_get_attr2(html, tag, tagsize, "id",
+                                    HTML_LeftTrim | HTML_RightTrim))) {
+         /* According to the SGML declaration of HTML 4, all NAME values
+          * occuring outside entities must be converted to uppercase
+          * (this is what "NAMECASE GENERAL YES" says). But the HTML 4
+          * spec states in Sec. 7.5.2 that anchor ids are case-sensitive.
+          * So we don't do it and hope for better specs in the future ...
+          */
+         Html_check_name_val(html, attrbuf, "id");
+         /* We compare the "id" value with the url-decoded "name" value */
+         if (!html->NameVal || strcmp(html->NameVal, attrbuf)) {
+            if (html->NameVal)
+               BUG_MSG("'id' and 'name' attribute of <a> tag differ\n");
+            Html_add_anchor(html, attrbuf);
          }
-
-         /* Reset NameVal */
-         if (html->NameVal) {
-            dFree(html->NameVal);
-            html->NameVal = NULL;
-         }
-
-         /* let the parser know this was an open tag */
-         html->PrevWasOpenTag = TRUE;
-
-         /* Request inmediate close for elements with forbidden close tag. */
-         /* todo: XHTML always requires close tags. A simple implementation
-          * of the commented clause below will make it work. */
-         if  (/* parsing HTML && */ Tags[ni].EndTag == 'F')
-            html->ReqTagClose = TRUE;
       }
 
-      /* Close function: test for </x>, ReqTagClose, <x /> and <x/> */
+      /* Reset NameVal */
+      if (html->NameVal) {
+         dFree(html->NameVal);
+         html->NameVal = NULL;
+      }
+
+      /* let the parser know this was an open tag */
+      html->PrevWasOpenTag = TRUE;
+
+      /* Request inmediate close for elements with forbidden close tag. */
+      /* todo: XHTML always requires close tags. A simple implementation
+       * of the commented clause below will make it work. */
+      if  (/* parsing HTML && */ Tags[ni].EndTag == 'F')
+         html->ReqTagClose = TRUE;
+
+      /* Don't break! Open tags may also close themselves */
+
+   default:
+      /* Close function */
+
+      /* Test for </x>, ReqTagClose, <x /> and <x/> */
       if (*start == '/' ||                                      /* </x>    */
           html->ReqTagClose ||                                  /* request */
           (tag[tagsize - 2] == '/' &&                           /* XML:    */
            (isspace(tag[tagsize - 3]) ||                        /*  <x />  */
             (size_t)tagsize == strlen(Tags[ni].name) + 3))) {   /*  <x/>   */
-
+   
          Tags[ni].close (html, ni);
          /* This was a close tag */
          html->PrevWasOpenTag = FALSE;
          html->ReqTagClose = FALSE;
       }
-
-   } else {
-      /* tag not working - just ignore it */
    }
 }
 

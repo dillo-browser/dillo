@@ -253,6 +253,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
        new Divider();    
        i = new Item("Find Text");
        i->callback(Menu_find_text_cb);
+       //i->shortcut(CTRL+'f');
        i = new Item("Jump to...");
        i->deactivate();
        new Divider();    
