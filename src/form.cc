@@ -1164,55 +1164,59 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit,
          bool is_active_submit = (input == active_submit);
 
          name = Html_encode_text(encoder, &name);
-         Html_get_input_values(input, is_active_submit, values);
 
-         if (input->type == DILLO_HTML_INPUT_FILE &&
-             dList_length(values) > 0) {
-            if (dList_length(values) > 1)
-               MSG_WARN("multiple files per form control not supported\n");
-            Dstr *file = (Dstr *) dList_nth_data(values, 0);
-            dList_remove(values, file);
-
-            /* Get filename and encode it. Do not encode file contents. */
-            dw::core::ui::LabelButtonResource *lbr =
-               (dw::core::ui::LabelButtonResource*)input->embed->getResource();
-            const char *filename = lbr->getLabel();
-            if (filename[0] && strcmp(filename, input->init_str)) {
-               char *p = strrchr(filename, '/');
-               if (p)
-                  filename = p + 1;     /* don't reveal path */
-               Dstr *dfilename = dStr_new(filename);
-               dfilename = Html_encode_text(encoder, &dfilename);
-               Html_append_input_multipart_files(DataStr, boundary,
-                                      name->str, file, dfilename->str);
-               dStr_free(dfilename, 1);
-            }
-            dStr_free(file, 1);
-         } else if (input->type == DILLO_HTML_INPUT_INDEX) {
-            Dstr *val = (Dstr *) dList_nth_data(values, 0);
-            dList_remove(values, val);
-            val = Html_encode_text(encoder, &val);
-            Html_urlencode_append(DataStr, val->str);
-            dStr_free(val, 1);
-         } else {
-            int length = dList_length(values), i;
-            for (i = 0; i < length; i++) {
-               Dstr *val = (Dstr *) dList_nth_data(values, 0);
-               dList_remove(values, val);
-               val = Html_encode_text(encoder, &val);
-               if (enc == DILLO_HTML_ENC_URLENCODING)
-                  Html_append_input_urlencode(DataStr, name->str, val->str);
-               else if (enc == DILLO_HTML_ENC_MULTIPART)
-                  Html_append_input_multipart(DataStr, boundary, name->str,
-                                              val->str);
-               dStr_free(val, 1);
-            }
-            if (i && input->type == DILLO_HTML_INPUT_IMAGE) {
-               /* clickpos to accompany the value just appended */
+         if (input->type == DILLO_HTML_INPUT_IMAGE) {
+            if (is_active_submit){
                if (enc == DILLO_HTML_ENC_URLENCODING)
                   Html_append_clickpos_urlencode(DataStr, name, x, y);
                else if (enc == DILLO_HTML_ENC_MULTIPART)
                   Html_append_clickpos_multipart(DataStr, boundary, name, x,y);
+            }
+         } else {
+            Html_get_input_values(input, is_active_submit, values);
+
+            if (input->type == DILLO_HTML_INPUT_FILE &&
+                dList_length(values) > 0) {
+               if (dList_length(values) > 1)
+                  MSG_WARN("multiple files per form control not supported\n");
+               Dstr *file = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, file);
+
+               /* Get filename and encode it. Do not encode file contents. */
+               dw::core::ui::LabelButtonResource *lbr =
+                  (dw::core::ui::LabelButtonResource*)
+                  input->embed->getResource();
+               const char *filename = lbr->getLabel();
+               if (filename[0] && strcmp(filename, input->init_str)) {
+                  char *p = strrchr(filename, '/');
+                  if (p)
+                     filename = p + 1;     /* don't reveal path */
+                  Dstr *dfilename = dStr_new(filename);
+                  dfilename = Html_encode_text(encoder, &dfilename);
+                  Html_append_input_multipart_files(DataStr, boundary,
+                                      name->str, file, dfilename->str);
+                  dStr_free(dfilename, 1);
+               }
+               dStr_free(file, 1);
+            } else if (input->type == DILLO_HTML_INPUT_INDEX) {
+               Dstr *val = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, val);
+               val = Html_encode_text(encoder, &val);
+               Html_urlencode_append(DataStr, val->str);
+               dStr_free(val, 1);
+            } else {
+               int length = dList_length(values), i;
+               for (i = 0; i < length; i++) {
+                  Dstr *val = (Dstr *) dList_nth_data(values, 0);
+                  dList_remove(values, val);
+                  val = Html_encode_text(encoder, &val);
+                  if (enc == DILLO_HTML_ENC_URLENCODING)
+                     Html_append_input_urlencode(DataStr, name->str, val->str);
+                  else if (enc == DILLO_HTML_ENC_MULTIPART)
+                     Html_append_input_multipart(DataStr, boundary, name->str,
+                                                 val->str);
+                  dStr_free(val, 1);
+               }
             }
          }
          dStr_free(name, 1);
@@ -1718,11 +1722,6 @@ static void Html_get_input_values(const DilloHtmlInput *input,
                dList_append(values, dStr_new(val));
             }
          }
-      }
-      break;
-   case DILLO_HTML_INPUT_IMAGE:
-      if (is_active_submit) {
-         dList_append(values, dStr_new(input->init_str));
       }
       break;
    case DILLO_HTML_INPUT_FILE:
