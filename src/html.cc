@@ -25,9 +25,6 @@
 
 #include <fltk/utf.h>   /* for utf8encode */
 
-#define DEBUG_LEVEL 10
-#include "debug.h"
-
 #include "bw.h"         /* for BrowserWindow */
 #include "msg.h"
 #include "binaryconst.h"
@@ -212,7 +209,7 @@ void *a_Html_text(const char *Type, void *P, CA_Callback_t *Call, void **Data)
    return (void*)html->dw;
 }
 
-void a_Html_free(void *data)
+static void Html_free(void *data)
 {
    delete ((DilloHtml*)data);
 }
@@ -523,7 +520,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    /* Initialize the main widget */
    initDw();
    /* Hook destructor to the dw delete call */
-   dw->setDeleteCallback(a_Html_free, this);
+   dw->setDeleteCallback(Html_free, this);
 }
 
 /*

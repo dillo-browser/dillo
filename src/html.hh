@@ -10,7 +10,6 @@ extern "C" {
 /*
  * Exported functions
  */
-void a_Html_free(void *data);
 void a_Html_load_images(void *v_html, DilloUrl *pattern);
 
 #ifdef __cplusplus

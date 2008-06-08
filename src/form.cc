@@ -19,9 +19,11 @@
 #include "dw/core.hh"
 #include "dw/textblock.hh"
 
+#define DEBUG_LEVEL 10
+#include "debug.h"
+
 #include "misc.h"
 #include "msg.h"
-#include "debug.h"
 #include "prefs.h"
 #include "nav.h"
 #include "uicmd.hh"
@@ -56,8 +58,7 @@ static void Html_get_input_values(const DilloHtmlInput *input,
                                   bool is_active_submit, Dlist *values);
 
 static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
-                                             const char *tag, int tagsize,
-                                             DilloHtmlForm *form);
+                                             const char *tag, int tagsize);
 
 static void Html_option_finish(DilloHtml *html);
 
@@ -407,7 +408,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       } else {
          inp_type = DILLO_HTML_INPUT_IMAGE;
          /* use a dw_image widget */
-         embed = Html_input_image(html, tag, tagsize, form);
+         embed = Html_input_image(html, tag, tagsize);
          init_str = value;
       }
    } else if (!dStrcasecmp(type, "file")) {
@@ -1749,8 +1750,7 @@ static void Html_get_input_values(const DilloHtmlInput *input,
  * Create input image for the form
  */
 static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
-                                             const char *tag, int tagsize,
-                                             DilloHtmlForm *form)
+                                             const char *tag, int tagsize)
 {
    const char *attrbuf;
    StyleAttrs style_attrs;
