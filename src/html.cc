@@ -565,10 +565,8 @@ DilloHtml::~DilloHtml()
 {
    _MSG("::~DilloHtml(this=%p)\n", this);
 
-   if (!parse_finished) {
-      MSG("Parse was not finished\n");
+   if (!parse_finished)
       freeParseData();
-   }
 
    a_Bw_remove_doc(bw, this);
 
