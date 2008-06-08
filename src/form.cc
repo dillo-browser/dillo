@@ -54,8 +54,6 @@ static void Html_append_clickpos_urlencode(Dstr *data,
                                            Dstr *name, int x,int y);
 static void Html_append_clickpos_multipart(Dstr *data, const char *boundary,
                                            Dstr *name, int x, int y);
-static void Html_get_input_values(const DilloHtmlInput *input,
-                                  bool is_active_submit, Dlist *values);
 
 static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
                                              const char *tag, int tagsize);
@@ -180,6 +178,7 @@ public:
                    DilloHtmlSelect *select,
                    bool_t init_val);
    ~DilloHtmlInput ();
+   void getInputValues(bool is_active_submit, Dlist *values);
    void reset();
 };
 
@@ -1085,7 +1084,7 @@ char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
       Dstr *dstr;
       DilloHtmlInput *input = inputs->get (input_idx);
       bool is_active_submit = (input == active_submit);
-      Html_get_input_values(input, is_active_submit, values);
+      input->getInputValues(is_active_submit, values);
 
       if (input->name) {
          dstr = dStr_new(input->name);
@@ -1174,7 +1173,7 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit,
                   Html_append_clickpos_multipart(DataStr, boundary, name, x,y);
             }
          } else {
-            Html_get_input_values(input, is_active_submit, values);
+            input->getInputValues(is_active_submit, values);
 
             if (input->type == DILLO_HTML_INPUT_FILE &&
                 dList_length(values) > 0) {
@@ -1399,6 +1398,82 @@ void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
       if (resource)
          ((dw::core::ui::ButtonResource *)resource)
             ->connectClicked (form_receiver);
+      break;
+   }
+}
+
+/*
+ * Get the values for a "successful control".
+ */
+void DilloHtmlInput::getInputValues(bool is_active_submit, Dlist *values)
+{
+   switch (type) {
+   case DILLO_HTML_INPUT_TEXT:
+   case DILLO_HTML_INPUT_PASSWORD:
+   case DILLO_HTML_INPUT_INDEX:
+      {
+         dw::core::ui::EntryResource *entryres =
+            (dw::core::ui::EntryResource*)embed->getResource();
+         dList_append(values, dStr_new(entryres->getText()));
+      }
+      break;
+   case DILLO_HTML_INPUT_TEXTAREA:
+      {
+         dw::core::ui::MultiLineTextResource *textres =
+            (dw::core::ui::MultiLineTextResource*)embed->getResource();
+         dList_append(values, dStr_new(textres->getText()));
+      }
+      break;
+   case DILLO_HTML_INPUT_CHECKBOX:
+   case DILLO_HTML_INPUT_RADIO:
+      {
+         dw::core::ui::ToggleButtonResource *cb_r =
+            (dw::core::ui::ToggleButtonResource*)embed->getResource();
+         if (name && init_str && cb_r->isActivated()) {
+            dList_append(values, dStr_new(init_str));
+         }
+      }
+      break;
+   case DILLO_HTML_INPUT_SUBMIT:
+   case DILLO_HTML_INPUT_BUTTON_SUBMIT:
+      if (is_active_submit)
+         dList_append(values, dStr_new(init_str));
+      break;
+   case DILLO_HTML_INPUT_HIDDEN:
+      dList_append(values, dStr_new(init_str));
+      break;
+   case DILLO_HTML_INPUT_SELECT:
+   case DILLO_HTML_INPUT_SEL_LIST:
+      {  // brackets for compiler happiness.
+         dw::core::ui::SelectionResource *sel_res =
+            (dw::core::ui::SelectionResource*)embed->getResource();
+         int size = select->options->size ();
+         for (int i = 0; i < size; i++) {
+            if (sel_res->isSelected(i)) {
+               DilloHtmlOption *option = select->options->get(i);
+               char *val = option->value ? option->value : option->content;
+               dList_append(values, dStr_new(val));
+            }
+         }
+      }
+      break;
+   case DILLO_HTML_INPUT_FILE:
+      {
+         dw::core::ui::LabelButtonResource *lbr =
+            (dw::core::ui::LabelButtonResource*)embed->getResource();
+         const char *filename = lbr->getLabel();
+         if (filename[0] && strcmp(filename, init_str)) {
+            if (file_data) {
+               Dstr *file = dStr_sized_new(file_data->len);
+               dStr_append_l(file, file_data->str, file_data->len);
+               dList_append(values, file);
+            } else {
+               MSG("FORM file input \"%s\" not loaded.\n", filename);
+            }
+         }
+      }
+      break;
+   default:
       break;
    }
 }
@@ -1667,83 +1742,6 @@ static void Html_append_clickpos_multipart(Dstr *data, const char *boundary,
    snprintf(posstr, 16, "%d", y);
    Html_append_input_multipart(data, boundary, name->str, posstr);
    dStr_truncate(name, orig_len);
-}
-
-/*
- * Get the values for a "successful control".
- */
-static void Html_get_input_values(const DilloHtmlInput *input,
-                                  bool is_active_submit, Dlist *values)
-{
-   switch (input->type) {
-   case DILLO_HTML_INPUT_TEXT:
-   case DILLO_HTML_INPUT_PASSWORD:
-   case DILLO_HTML_INPUT_INDEX:
-      {
-         dw::core::ui::EntryResource *entryres =
-            (dw::core::ui::EntryResource*)input->embed->getResource();
-         dList_append(values, dStr_new(entryres->getText()));
-      }
-      break;
-   case DILLO_HTML_INPUT_TEXTAREA:
-      {
-         dw::core::ui::MultiLineTextResource *textres =
-            (dw::core::ui::MultiLineTextResource*)input->embed->getResource();
-         dList_append(values, dStr_new(textres->getText()));
-      }
-      break;
-   case DILLO_HTML_INPUT_CHECKBOX:
-   case DILLO_HTML_INPUT_RADIO:
-      {
-         dw::core::ui::ToggleButtonResource *cb_r =
-            (dw::core::ui::ToggleButtonResource*)input->embed->getResource();
-         if (input->name && input->init_str && cb_r->isActivated()) {
-            dList_append(values, dStr_new(input->init_str));
-         }
-      }
-      break;
-   case DILLO_HTML_INPUT_SUBMIT:
-   case DILLO_HTML_INPUT_BUTTON_SUBMIT:
-      if (is_active_submit)
-         dList_append(values, dStr_new(input->init_str));
-      break;
-   case DILLO_HTML_INPUT_HIDDEN:
-      dList_append(values, dStr_new(input->init_str));
-      break;
-   case DILLO_HTML_INPUT_SELECT:
-   case DILLO_HTML_INPUT_SEL_LIST:
-      {  // brackets for compiler happiness.
-         dw::core::ui::SelectionResource *sel_res =
-            (dw::core::ui::SelectionResource*)input->embed->getResource();
-         int size = input->select->options->size ();
-         for (int i = 0; i < size; i++) {
-            if (sel_res->isSelected(i)) {
-               DilloHtmlOption *option = input->select->options->get(i);
-               char *val = option->value ? option->value : option->content;
-               dList_append(values, dStr_new(val));
-            }
-         }
-      }
-      break;
-   case DILLO_HTML_INPUT_FILE:
-      {
-         dw::core::ui::LabelButtonResource *lbr =
-            (dw::core::ui::LabelButtonResource*)input->embed->getResource();
-         const char *filename = lbr->getLabel();
-         if (filename[0] && strcmp(filename, input->init_str)) {
-            if (input->file_data) {
-               Dstr *file = dStr_sized_new(input->file_data->len);
-               dStr_append_l(file, input->file_data->str, input->file_data->len);
-               dList_append(values, file);
-            } else {
-               MSG("FORM file input \"%s\" not loaded.\n", filename);
-            }
-         }
-      }
-      break;
-   default:
-      break;
-   }
 }
 
 /*
