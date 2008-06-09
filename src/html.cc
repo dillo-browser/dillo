@@ -162,7 +162,7 @@ void DilloHtml::bugMessage(const char *format, ... )
 
 /*
  * Wrapper for a_Url_new that adds an error detection message.
- * (if use_base_url is TRUE, html->base_url is used)
+ * If use_base_url is TRUE, it uses base_url. Otherwise it uses html->base_url.
  */
 DilloUrl *a_Html_url_new(DilloHtml *html,
                          const char *url_str, const char *base_url,
