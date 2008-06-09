@@ -345,7 +345,7 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    WidgetDone = 0;
    WgetStatus = -1;
 
-   gw = 470, gh = 70;
+   gw = 400, gh = 70;
    group = new Group(0,0,gw,gh);
    group->begin();
     prTitle = new Widget(24, 7, 290, 23, shortname);
@@ -414,7 +414,6 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
     prButton->clear_tab_to_focus();
     prButton->callback(prButton_scb, this);
 
-   //group->resizable(group);
    group->box(ROUND_UP_BOX);
    group->end();
 }
@@ -963,7 +962,6 @@ void DLWin::add(const char *full_filename, const char *url, DLAction action)
 {
    DLItem *dl_item = new DLItem(full_filename, url, action);
    mDList->add(dl_item);
-   //mPG->add(*dl_item->get_widget());
    mPG->insert(*dl_item->get_widget(), 0);
 
    _MSG("Child index = %d\n", mPG->find(dl_item->get_widget()));
@@ -1092,8 +1090,9 @@ DLWin::DLWin(int ww, int wh) {
      mPG->end();
      //mPG->spacing(10);
     mScroll->end();
-   mWin->resizable(mWin);
+    mScroll->type(ScrollGroup::VERTICAL);
    mWin->end();
+   mWin->resizable(mPG);
    mWin->callback(dlwin_esc_cb, NULL);
    mWin->show();
 
