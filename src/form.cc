@@ -41,20 +41,6 @@ class DilloHtmlInput;
 typedef struct _DilloHtmlSelect  DilloHtmlSelect;
 typedef struct _DilloHtmlOption  DilloHtmlOption;
 
-static Dstr *Html_encode_text(iconv_t encoder, Dstr **input);
-static void Html_urlencode_append(Dstr *str, const char *val);
-static void Html_append_input_urlencode(Dstr *data, const char *name,
-                                        const char *value);
-static void Html_append_input_multipart_files(Dstr* data, const char *boundary,
-                                              const char *name, Dstr *file,
-                                              const char *filename);
-static void Html_append_input_multipart(Dstr *data, const char *boundary,
-                                        const char *name, const char *value);
-static void Html_append_clickpos_urlencode(Dstr *data,
-                                           Dstr *name, int x,int y);
-static void Html_append_clickpos_multipart(Dstr *data, const char *boundary,
-                                           Dstr *name, int x, int y);
-
 static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
                                              const char *tag, int tagsize);
 
@@ -94,6 +80,25 @@ class DilloHtmlForm {
    DilloHtml *html;
    void eventHandler(dw::core::ui::Resource *resource,
                      int click_x, int click_y);
+   DilloUrl *buildQueryUrl(DilloHtmlInput *input, int click_x, int click_y);
+   Dstr *buildQueryData(DilloHtmlInput *active_submit, int x, int y);
+   char *makeMultipartBoundary(iconv_t encoder, DilloHtmlInput *active_submit);
+   Dstr *encodeText(iconv_t encoder, Dstr **input);
+   void urlencodeAppend(Dstr *str, const char *val);
+   void appendInputUrlencode(Dstr *data,
+                             const char *name, const char *value);
+   void appendInputMultipartFiles(Dstr* data,
+                                  const char *boundary,
+                                  const char *name, Dstr *file,
+                                  const char *filename);
+   void appendInputMultipart(Dstr *data,
+                             const char *boundary,
+                             const char *name,
+                             const char *value);
+   void appendClickposUrlencode(Dstr *data, Dstr *name, int x,int y);
+   void appendClickposMultipart(Dstr *data,
+                                const char *boundary,
+                                Dstr *name, int x, int y);
 
 public:  //BUG: for now everything is public
    DilloHtmlMethod method;
@@ -123,9 +128,6 @@ public:
                  const char *init_str,
                  DilloHtmlSelect *select,
                  bool_t init_val);
-   DilloUrl *buildQueryUrl(DilloHtmlInput *input, int click_x, int click_y);
-   Dstr *buildQueryData(DilloHtmlInput *active_submit, int x, int y);
-   char *makeMultipartBoundary(iconv_t encoder, DilloHtmlInput *active_submit);
 };
 
 class DilloHtmlReceiver:
@@ -944,55 +946,6 @@ DilloHtmlForm::~DilloHtmlForm ()
       delete(form_receiver);
 }
 
-/*
- * Get the current input.
- */
-DilloHtmlInput *DilloHtmlForm::getCurrentInput ()
-{
-   return inputs->get (inputs->size() - 1);
-}
-
-/*
- * Reset all inputs containing reset to their initial values.  In
- * general, reset is the reset button for the form.
- */
-void DilloHtmlForm::reset ()
-{
-   int size = inputs->size();
-   for (int i = 0; i < size; i++)
-      inputs->get(i)->reset();
-}
-
-/*
- * Add a new input, setting the initial values.
- */
-void DilloHtmlForm::addInput(DilloHtmlInputType type,
-                             dw::core::ui::Embed *embed,
-                             const char *name,
-                             const char *init_str,
-                             DilloHtmlSelect *select,
-                             bool_t init_val)
-{
-   _MSG("name=[%s] init_str=[%s] init_val=[%d]\n",
-        name, init_str, init_val);
-   DilloHtmlInput *input =
-      new DilloHtmlInput (type,embed,name,init_str,select,init_val);
-   input->connectTo (form_receiver);
-   int ni = inputs->size ();
-   inputs->increase ();
-   inputs->set (ni,input);
-
-   /* some stats */
-   if (type == DILLO_HTML_INPUT_PASSWORD ||
-       type == DILLO_HTML_INPUT_TEXT) {
-      num_entry_fields++;
-   } else if (type == DILLO_HTML_INPUT_SUBMIT ||
-              type == DILLO_HTML_INPUT_BUTTON_SUBMIT ||
-              type == DILLO_HTML_INPUT_IMAGE) {
-      num_submit_buttons++;
-   }
-}
-
 void DilloHtmlForm::eventHandler(dw::core::ui::Resource *resource,
                                  int click_x, int click_y)
 {
@@ -1036,205 +989,6 @@ void DilloHtmlForm::eventHandler(dw::core::ui::Resource *resource,
       // /* now, make the rendered area have its focus back */
       // gtk_widget_grab_focus(GTK_BIN(bw->render_main_scroll)->child);
    }
-}
-
-/*
- * Return the input with a given resource.
- */
-DilloHtmlInput *DilloHtmlForm::getInput (dw::core::ui::Resource *resource)
-{
-   for (int idx = 0; idx < inputs->size(); idx++) {
-      DilloHtmlInput *input = inputs->get(idx);
-      if (input->embed &&
-          resource == input->embed->getResource())
-         return input;
-   }
-   return NULL;
-}
-
-/*
- * Return a Radio input for the given name.
- */
-DilloHtmlInput *DilloHtmlForm::getRadioInput (const char *name)
-{
-   for (int idx = 0; idx < inputs->size(); idx++) {
-      DilloHtmlInput *input = inputs->get(idx);
-      if (input->type == DILLO_HTML_INPUT_RADIO &&
-          input->name && !dStrcasecmp(input->name, name))
-         return input;
-   }
-   return NULL;
-}
-
-/*
- * Generate a boundary string for use in separating the parts of a
- * multipart/form-data submission.
- */
-char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
-                                           DilloHtmlInput *active_submit)
-{
-   const int max_tries = 10;
-   Dlist *values = dList_new(5);
-   Dstr *DataStr = dStr_new("");
-   Dstr *boundary = dStr_new("");
-   char *ret = NULL;
-
-   /* fill DataStr with names, filenames, and values */
-   for (int input_idx = 0; input_idx < inputs->size(); input_idx++) {
-      Dstr *dstr;
-      DilloHtmlInput *input = inputs->get (input_idx);
-      bool is_active_submit = (input == active_submit);
-      input->getInputValues(is_active_submit, values);
-
-      if (input->name) {
-         dstr = dStr_new(input->name);
-         dstr = Html_encode_text(encoder, &dstr);
-         dStr_append_l(DataStr, dstr->str, dstr->len);
-         dStr_free(dstr, 1);
-      }
-      if (input->type == DILLO_HTML_INPUT_FILE) {
-         dw::core::ui::LabelButtonResource *lbr =
-            (dw::core::ui::LabelButtonResource*)input->embed->getResource();
-         const char *filename = lbr->getLabel();
-         if (filename[0] && strcmp(filename, input->init_str)) {
-            dstr = dStr_new(filename);
-            dstr = Html_encode_text(encoder, &dstr);
-            dStr_append_l(DataStr, dstr->str, dstr->len);
-            dStr_free(dstr, 1);
-         }
-      }
-      int length = dList_length(values);
-      for (int i = 0; i < length; i++) {
-         dstr = (Dstr *) dList_nth_data(values, 0);
-         dList_remove(values, dstr);
-         if (input->type != DILLO_HTML_INPUT_FILE)
-            dstr = Html_encode_text(encoder, &dstr);
-         dStr_append_l(DataStr, dstr->str, dstr->len);
-         dStr_free(dstr, 1);
-      }
-   }
-
-   /* generate a boundary that is not contained within the data */
-   for (int i = 0; i < max_tries && !ret; i++) {
-      // Firefox-style boundary
-      dStr_sprintf(boundary, "---------------------------%d%d%d",
-                   rand(), rand(), rand());
-      dStr_truncate(boundary, 70);
-      if (dStr_memmem(DataStr, boundary) == NULL)
-         ret = boundary->str;
-   }
-   dList_free(values);
-   dStr_free(DataStr, 1);
-   dStr_free(boundary, (ret == NULL));
-   return ret;
-}
-
-/*
- * Construct the data for a query URL
- */
-Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit,
-                                    int x, int y)
-{
-   Dstr *DataStr = NULL;
-   char *boundary = NULL;
-   iconv_t encoder = (iconv_t) -1;
-
-   if (submit_charset && dStrcasecmp(submit_charset, "UTF-8")) {
-      encoder = iconv_open(submit_charset, "UTF-8");
-      if (encoder == (iconv_t) -1) {
-         MSG_WARN("Cannot convert to character encoding '%s'\n",
-                  submit_charset);
-      } else {
-         MSG("Form character encoding: '%s'\n", submit_charset);
-      }
-   }
-
-   if (enc == DILLO_HTML_ENC_MULTIPART) {
-      if (!(boundary = makeMultipartBoundary(encoder, active_submit)))
-         MSG_ERR("Cannot generate multipart/form-data boundary.\n");
-   }
-
-   if ((enc == DILLO_HTML_ENC_URLENCODING) || (boundary != NULL)) {
-      Dlist *values = dList_new(5);
-
-      DataStr = dStr_sized_new(4096);
-      for (int input_idx = 0; input_idx < inputs->size(); input_idx++) {
-         DilloHtmlInput *input = inputs->get (input_idx);
-         Dstr *name = dStr_new(input->name);
-         bool is_active_submit = (input == active_submit);
-
-         name = Html_encode_text(encoder, &name);
-
-         if (input->type == DILLO_HTML_INPUT_IMAGE) {
-            if (is_active_submit){
-               if (enc == DILLO_HTML_ENC_URLENCODING)
-                  Html_append_clickpos_urlencode(DataStr, name, x, y);
-               else if (enc == DILLO_HTML_ENC_MULTIPART)
-                  Html_append_clickpos_multipart(DataStr, boundary, name, x,y);
-            }
-         } else {
-            input->getInputValues(is_active_submit, values);
-
-            if (input->type == DILLO_HTML_INPUT_FILE &&
-                dList_length(values) > 0) {
-               if (dList_length(values) > 1)
-                  MSG_WARN("multiple files per form control not supported\n");
-               Dstr *file = (Dstr *) dList_nth_data(values, 0);
-               dList_remove(values, file);
-
-               /* Get filename and encode it. Do not encode file contents. */
-               dw::core::ui::LabelButtonResource *lbr =
-                  (dw::core::ui::LabelButtonResource*)
-                  input->embed->getResource();
-               const char *filename = lbr->getLabel();
-               if (filename[0] && strcmp(filename, input->init_str)) {
-                  char *p = strrchr(filename, '/');
-                  if (p)
-                     filename = p + 1;     /* don't reveal path */
-                  Dstr *dfilename = dStr_new(filename);
-                  dfilename = Html_encode_text(encoder, &dfilename);
-                  Html_append_input_multipart_files(DataStr, boundary,
-                                      name->str, file, dfilename->str);
-                  dStr_free(dfilename, 1);
-               }
-               dStr_free(file, 1);
-            } else if (input->type == DILLO_HTML_INPUT_INDEX) {
-               Dstr *val = (Dstr *) dList_nth_data(values, 0);
-               dList_remove(values, val);
-               val = Html_encode_text(encoder, &val);
-               Html_urlencode_append(DataStr, val->str);
-               dStr_free(val, 1);
-            } else {
-               int length = dList_length(values), i;
-               for (i = 0; i < length; i++) {
-                  Dstr *val = (Dstr *) dList_nth_data(values, 0);
-                  dList_remove(values, val);
-                  val = Html_encode_text(encoder, &val);
-                  if (enc == DILLO_HTML_ENC_URLENCODING)
-                     Html_append_input_urlencode(DataStr, name->str, val->str);
-                  else if (enc == DILLO_HTML_ENC_MULTIPART)
-                     Html_append_input_multipart(DataStr, boundary, name->str,
-                                                 val->str);
-                  dStr_free(val, 1);
-               }
-            }
-         }
-         dStr_free(name, 1);
-      }
-      if (DataStr->len > 0) {
-         if (enc == DILLO_HTML_ENC_URLENCODING) {
-            if (DataStr->str[DataStr->len - 1] == '&')
-               dStr_truncate(DataStr, DataStr->len - 1);
-         } else if (enc == DILLO_HTML_ENC_MULTIPART) {
-            dStr_append(DataStr, "--");
-         }
-      }
-      dList_free(values);
-   }
-   dFree(boundary);
-   if (encoder != (iconv_t) -1)
-      (void)iconv_close(encoder);
-   return DataStr;
 }
 
 /*
@@ -1295,6 +1049,451 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input,
    }
 
    return new_url;
+}
+
+/*
+ * Construct the data for a query URL
+ */
+Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit,
+                                    int x, int y)
+{
+   Dstr *DataStr = NULL;
+   char *boundary = NULL;
+   iconv_t encoder = (iconv_t) -1;
+
+   if (submit_charset && dStrcasecmp(submit_charset, "UTF-8")) {
+      encoder = iconv_open(submit_charset, "UTF-8");
+      if (encoder == (iconv_t) -1) {
+         MSG_WARN("Cannot convert to character encoding '%s'\n",
+                  submit_charset);
+      } else {
+         MSG("Form character encoding: '%s'\n", submit_charset);
+      }
+   }
+
+   if (enc == DILLO_HTML_ENC_MULTIPART) {
+      if (!(boundary = makeMultipartBoundary(encoder, active_submit)))
+         MSG_ERR("Cannot generate multipart/form-data boundary.\n");
+   }
+
+   if ((enc == DILLO_HTML_ENC_URLENCODING) || (boundary != NULL)) {
+      Dlist *values = dList_new(5);
+
+      DataStr = dStr_sized_new(4096);
+      for (int input_idx = 0; input_idx < inputs->size(); input_idx++) {
+         DilloHtmlInput *input = inputs->get (input_idx);
+         Dstr *name = dStr_new(input->name);
+         bool is_active_submit = (input == active_submit);
+
+         name = encodeText(encoder, &name);
+
+         if (input->type == DILLO_HTML_INPUT_IMAGE) {
+            if (is_active_submit){
+               if (enc == DILLO_HTML_ENC_URLENCODING)
+                  appendClickposUrlencode(DataStr, name, x, y);
+               else if (enc == DILLO_HTML_ENC_MULTIPART)
+                  appendClickposMultipart(DataStr, boundary, name, x,y);
+            }
+         } else {
+            input->getInputValues(is_active_submit, values);
+
+            if (input->type == DILLO_HTML_INPUT_FILE &&
+                dList_length(values) > 0) {
+               if (dList_length(values) > 1)
+                  MSG_WARN("multiple files per form control not supported\n");
+               Dstr *file = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, file);
+
+               /* Get filename and encode it. Do not encode file contents. */
+               dw::core::ui::LabelButtonResource *lbr =
+                  (dw::core::ui::LabelButtonResource*)
+                  input->embed->getResource();
+               const char *filename = lbr->getLabel();
+               if (filename[0] && strcmp(filename, input->init_str)) {
+                  char *p = strrchr(filename, '/');
+                  if (p)
+                     filename = p + 1;     /* don't reveal path */
+                  Dstr *dfilename = dStr_new(filename);
+                  dfilename = encodeText(encoder, &dfilename);
+                  appendInputMultipartFiles(DataStr, boundary, name->str,
+                                            file, dfilename->str);
+                  dStr_free(dfilename, 1);
+               }
+               dStr_free(file, 1);
+            } else if (input->type == DILLO_HTML_INPUT_INDEX) {
+               Dstr *val = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, val);
+               val = encodeText(encoder, &val);
+               urlencodeAppend(DataStr, val->str);
+               dStr_free(val, 1);
+            } else {
+               int length = dList_length(values), i;
+               for (i = 0; i < length; i++) {
+                  Dstr *val = (Dstr *) dList_nth_data(values, 0);
+                  dList_remove(values, val);
+                  val = encodeText(encoder, &val);
+                  if (enc == DILLO_HTML_ENC_URLENCODING)
+                     appendInputUrlencode(DataStr, name->str, val->str);
+                  else if (enc == DILLO_HTML_ENC_MULTIPART)
+                     appendInputMultipart(DataStr, boundary,
+                                          name->str, val->str);
+                  dStr_free(val, 1);
+               }
+            }
+         }
+         dStr_free(name, 1);
+      }
+      if (DataStr->len > 0) {
+         if (enc == DILLO_HTML_ENC_URLENCODING) {
+            if (DataStr->str[DataStr->len - 1] == '&')
+               dStr_truncate(DataStr, DataStr->len - 1);
+         } else if (enc == DILLO_HTML_ENC_MULTIPART) {
+            dStr_append(DataStr, "--");
+         }
+      }
+      dList_free(values);
+   }
+   dFree(boundary);
+   if (encoder != (iconv_t) -1)
+      (void)iconv_close(encoder);
+   return DataStr;
+}
+
+/*
+ * Generate a boundary string for use in separating the parts of a
+ * multipart/form-data submission.
+ */
+char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
+                                           DilloHtmlInput *active_submit)
+{
+   const int max_tries = 10;
+   Dlist *values = dList_new(5);
+   Dstr *DataStr = dStr_new("");
+   Dstr *boundary = dStr_new("");
+   char *ret = NULL;
+
+   /* fill DataStr with names, filenames, and values */
+   for (int input_idx = 0; input_idx < inputs->size(); input_idx++) {
+      Dstr *dstr;
+      DilloHtmlInput *input = inputs->get (input_idx);
+      bool is_active_submit = (input == active_submit);
+      input->getInputValues(is_active_submit, values);
+
+      if (input->name) {
+         dstr = dStr_new(input->name);
+         dstr = encodeText(encoder, &dstr);
+         dStr_append_l(DataStr, dstr->str, dstr->len);
+         dStr_free(dstr, 1);
+      }
+      if (input->type == DILLO_HTML_INPUT_FILE) {
+         dw::core::ui::LabelButtonResource *lbr =
+            (dw::core::ui::LabelButtonResource*)input->embed->getResource();
+         const char *filename = lbr->getLabel();
+         if (filename[0] && strcmp(filename, input->init_str)) {
+            dstr = dStr_new(filename);
+            dstr = encodeText(encoder, &dstr);
+            dStr_append_l(DataStr, dstr->str, dstr->len);
+            dStr_free(dstr, 1);
+         }
+      }
+      int length = dList_length(values);
+      for (int i = 0; i < length; i++) {
+         dstr = (Dstr *) dList_nth_data(values, 0);
+         dList_remove(values, dstr);
+         if (input->type != DILLO_HTML_INPUT_FILE)
+            dstr = encodeText(encoder, &dstr);
+         dStr_append_l(DataStr, dstr->str, dstr->len);
+         dStr_free(dstr, 1);
+      }
+   }
+
+   /* generate a boundary that is not contained within the data */
+   for (int i = 0; i < max_tries && !ret; i++) {
+      // Firefox-style boundary
+      dStr_sprintf(boundary, "---------------------------%d%d%d",
+                   rand(), rand(), rand());
+      dStr_truncate(boundary, 70);
+      if (dStr_memmem(DataStr, boundary) == NULL)
+         ret = boundary->str;
+   }
+   dList_free(values);
+   dStr_free(DataStr, 1);
+   dStr_free(boundary, (ret == NULL));
+   return ret;
+}
+
+/*
+ * Pass input text through character set encoder.
+ * Return value: same input Dstr if no encoding is needed.
+                 new Dstr when encoding (input Dstr is freed).
+ */
+Dstr *DilloHtmlForm::encodeText(iconv_t encoder, Dstr **input)
+{
+   int rc = 0;
+   Dstr *output;
+   const int bufsize = 128;
+   inbuf_t *inPtr;
+   char *buffer, *outPtr;
+   size_t inLeft, outRoom;
+   bool bad_chars = false;
+
+   if ((encoder == (iconv_t) -1) || *input == NULL || (*input)->len == 0)
+      return *input;
+
+   output = dStr_new("");
+   inPtr  = (*input)->str;
+   inLeft = (*input)->len;
+   buffer = dNew(char, bufsize);
+
+   while ((rc != EINVAL) && (inLeft > 0)) {
+
+      outPtr = buffer;
+      outRoom = bufsize;
+
+      rc = iconv(encoder, &inPtr, &inLeft, &outPtr, &outRoom);
+
+      // iconv() on success, number of bytes converted
+      //         -1, errno == EILSEQ illegal byte sequence found
+      //                      EINVAL partial character ends source buffer
+      //                      E2BIG  destination buffer is full
+      //
+      // GNU iconv has the undocumented(!) behavior that EILSEQ is also
+      // returned when a character cannot be converted.
+
+      dStr_append_l(output, buffer, bufsize - outRoom);
+
+      if (rc == -1) {
+         rc = errno;
+      }
+      if (rc == EILSEQ){
+         /* count chars? (would be utf-8-specific) */
+         bad_chars = true;
+         inPtr++;
+         inLeft--;
+         dStr_append_c(output, '?');
+      } else if (rc == EINVAL) {
+         MSG_ERR("Html_decode_text: bad source string\n");
+      }
+   }
+
+   if (bad_chars) {
+      /*
+       * It might be friendly to inform the caller, who would know whether
+       * it is safe to display the beginning of the string in a message
+       * (isn't, e.g., a password).
+       */
+      MSG_WARN("String cannot be converted cleanly.\n");
+   }
+
+   dFree(buffer);
+   dStr_free(*input, 1);
+
+   return output;
+}
+  
+/*
+ * Urlencode 'val' and append it to 'str'
+ */
+void DilloHtmlForm::urlencodeAppend(Dstr *str, const char *val)
+{
+   char *enc_val = a_Url_encode_hex_str(val);
+   dStr_append(str, enc_val);
+   dFree(enc_val);
+}
+
+/*
+ * Append a name-value pair to url data using url encoding.
+ */
+void DilloHtmlForm::appendInputUrlencode(Dstr *data,
+                                         const char *name,
+                                         const char *value)
+{
+   if (name && name[0]) {
+      urlencodeAppend(data, name);
+      dStr_append_c(data, '=');
+      urlencodeAppend(data, value);
+      dStr_append_c(data, '&');
+   }
+}
+
+/*
+ * Append files to URL data using multipart encoding.
+ * Currently only accepts one file.
+ */
+void DilloHtmlForm::appendInputMultipartFiles(Dstr* data,
+                                              const char *boundary,
+                                              const char *name,
+                                              Dstr *file,
+                                              const char *filename)
+{
+   const char *ctype, *ext;
+
+   if (name && name[0]) {
+      (void)a_Misc_get_content_type_from_data(file->str, file->len, &ctype);
+      /* Heuristic: text/plain with ".htm[l]" extension -> text/html */
+      if ((ext = strrchr(filename, '.')) &&
+          !dStrcasecmp(ctype, "text/plain") &&
+          (!dStrcasecmp(ext, ".html") || !dStrcasecmp(ext, ".htm"))) {
+         ctype = "text/html";
+      }
+
+      if (data->len == 0) {
+         dStr_append(data, "--");
+         dStr_append(data, boundary);
+      }
+      // todo: encode name, filename
+      dStr_sprintfa(data,
+                    "\r\n"
+                    "Content-Disposition: form-data; name=\"%s\"; "
+                       "filename=\"%s\"\r\n"
+                    "Content-Type: %s\r\n"
+                    "\r\n", name, filename, ctype);
+
+      dStr_append_l(data, file->str, file->len);
+
+      dStr_sprintfa(data,
+                    "\r\n"
+                    "--%s", boundary);
+   }
+}
+
+/*
+ * Append a name-value pair to url data using multipart encoding.
+ */
+void DilloHtmlForm::appendInputMultipart(Dstr *data,
+                                         const char *boundary,
+                                         const char *name,
+                                         const char *value)
+{
+   if (name && name[0]) {
+      if (data->len == 0) {
+         dStr_append(data, "--");
+         dStr_append(data, boundary);
+      }
+      // todo: encode name (RFC 2231) [coming soon]
+      dStr_sprintfa(data,
+                    "\r\n"
+                    "Content-Disposition: form-data; name=\"%s\"\r\n"
+                    "\r\n"
+                    "%s\r\n"
+                    "--%s",
+                    name, value, boundary);
+   }
+}
+
+/*
+ * Append an image button click position to url data using url encoding.
+ */
+void DilloHtmlForm::appendClickposUrlencode(Dstr *data,
+                                            Dstr *name, int x,int y)
+{
+   if (name->len) {
+      urlencodeAppend(data, name->str);
+      dStr_sprintfa(data, ".x=%d&", x);
+      urlencodeAppend(data, name->str);
+      dStr_sprintfa(data, ".y=%d&", y);
+   } else
+      dStr_sprintfa(data, "x=%d&y=%d&", x, y);
+}
+
+/*
+ * Append an image button click position to url data using multipart encoding.
+ */
+void DilloHtmlForm::appendClickposMultipart(Dstr *data,
+                                            const char *boundary,
+                                            Dstr *name, int x, int y)
+{
+   char posstr[16];
+   int orig_len = name->len;
+
+   if (orig_len)
+      dStr_append_c(name, '.');
+   dStr_append_c(name, 'x');
+
+   snprintf(posstr, 16, "%d", x);
+   appendInputMultipart(data, boundary, name->str, posstr);
+   dStr_truncate(name, name->len - 1);
+   dStr_append_c(name, 'y');
+   snprintf(posstr, 16, "%d", y);
+   appendInputMultipart(data, boundary, name->str, posstr);
+   dStr_truncate(name, orig_len);
+}
+
+/*
+ * Get the current input.
+ */
+DilloHtmlInput *DilloHtmlForm::getCurrentInput ()
+{
+   return inputs->get (inputs->size() - 1);
+}
+
+/*
+ * Reset all inputs containing reset to their initial values.  In
+ * general, reset is the reset button for the form.
+ */
+void DilloHtmlForm::reset ()
+{
+   int size = inputs->size();
+   for (int i = 0; i < size; i++)
+      inputs->get(i)->reset();
+}
+
+/*
+ * Add a new input, setting the initial values.
+ */
+void DilloHtmlForm::addInput(DilloHtmlInputType type,
+                             dw::core::ui::Embed *embed,
+                             const char *name,
+                             const char *init_str,
+                             DilloHtmlSelect *select,
+                             bool_t init_val)
+{
+   _MSG("name=[%s] init_str=[%s] init_val=[%d]\n",
+        name, init_str, init_val);
+   DilloHtmlInput *input =
+      new DilloHtmlInput (type,embed,name,init_str,select,init_val);
+   input->connectTo (form_receiver);
+   int ni = inputs->size ();
+   inputs->increase ();
+   inputs->set (ni,input);
+
+   /* some stats */
+   if (type == DILLO_HTML_INPUT_PASSWORD ||
+       type == DILLO_HTML_INPUT_TEXT) {
+      num_entry_fields++;
+   } else if (type == DILLO_HTML_INPUT_SUBMIT ||
+              type == DILLO_HTML_INPUT_BUTTON_SUBMIT ||
+              type == DILLO_HTML_INPUT_IMAGE) {
+      num_submit_buttons++;
+   }
+}
+
+/*
+ * Return the input with a given resource.
+ */
+DilloHtmlInput *DilloHtmlForm::getInput (dw::core::ui::Resource *resource)
+{
+   for (int idx = 0; idx < inputs->size(); idx++) {
+      DilloHtmlInput *input = inputs->get(idx);
+      if (input->embed &&
+          resource == input->embed->getResource())
+         return input;
+   }
+   return NULL;
+}
+
+/*
+ * Return a Radio input for the given name.
+ */
+DilloHtmlInput *DilloHtmlForm::getRadioInput (const char *name)
+{
+   for (int idx = 0; idx < inputs->size(); idx++) {
+      DilloHtmlInput *input = inputs->get(idx);
+      if (input->type == DILLO_HTML_INPUT_RADIO &&
+          input->name && !dStrcasecmp(input->name, name))
+         return input;
+   }
+   return NULL;
 }
 
 /*
@@ -1552,197 +1751,6 @@ void DilloHtmlInput::reset ()
 /*
  * Utilities 
  */
-
-/*
- * Pass input text through character set encoder.
- * Return value: same input Dstr if no encoding is needed.
-                 new Dstr when encoding (input Dstr is freed).
- */
-static Dstr *Html_encode_text(iconv_t encoder, Dstr **input)
-{
-   int rc = 0;
-   Dstr *output;
-   const int bufsize = 128;
-   inbuf_t *inPtr;
-   char *buffer, *outPtr;
-   size_t inLeft, outRoom;
-   bool bad_chars = false;
-
-   if ((encoder == (iconv_t) -1) || *input == NULL || (*input)->len == 0)
-      return *input;
-
-   output = dStr_new("");
-   inPtr  = (*input)->str;
-   inLeft = (*input)->len;
-   buffer = dNew(char, bufsize);
-
-   while ((rc != EINVAL) && (inLeft > 0)) {
-
-      outPtr = buffer;
-      outRoom = bufsize;
-
-      rc = iconv(encoder, &inPtr, &inLeft, &outPtr, &outRoom);
-
-      // iconv() on success, number of bytes converted
-      //         -1, errno == EILSEQ illegal byte sequence found
-      //                      EINVAL partial character ends source buffer
-      //                      E2BIG  destination buffer is full
-      //
-      // GNU iconv has the undocumented(!) behavior that EILSEQ is also
-      // returned when a character cannot be converted.
-
-      dStr_append_l(output, buffer, bufsize - outRoom);
-
-      if (rc == -1) {
-         rc = errno;
-      }
-      if (rc == EILSEQ){
-         /* count chars? (would be utf-8-specific) */
-         bad_chars = true;
-         inPtr++;
-         inLeft--;
-         dStr_append_c(output, '?');
-      } else if (rc == EINVAL) {
-         MSG_ERR("Html_decode_text: bad source string\n");
-      }
-   }
-
-   if (bad_chars) {
-      /*
-       * It might be friendly to inform the caller, who would know whether
-       * it is safe to display the beginning of the string in a message
-       * (isn't, e.g., a password).
-       */
-      MSG_WARN("String cannot be converted cleanly.\n");
-   }
-
-   dFree(buffer);
-   dStr_free(*input, 1);
-
-   return output;
-}
-  
-/*
- * Urlencode 'val' and append it to 'str'
- */
-static void Html_urlencode_append(Dstr *str, const char *val)
-{
-   char *enc_val = a_Url_encode_hex_str(val);
-   dStr_append(str, enc_val);
-   dFree(enc_val);
-}
-
-/*
- * Append a name-value pair to url data using url encoding.
- */
-static void Html_append_input_urlencode(Dstr *data, const char *name,
-                                        const char *value)
-{
-   if (name && name[0]) {
-      Html_urlencode_append(data, name);
-      dStr_append_c(data, '=');
-      Html_urlencode_append(data, value);
-      dStr_append_c(data, '&');
-   }
-}
-
-/*
- * Append files to URL data using multipart encoding.
- * Currently only accepts one file.
- */
-static void Html_append_input_multipart_files(Dstr* data, const char *boundary,
-                                              const char *name, Dstr *file,
-                                              const char *filename)
-{
-   const char *ctype, *ext;
-
-   if (name && name[0]) {
-      (void)a_Misc_get_content_type_from_data(file->str, file->len, &ctype);
-      /* Heuristic: text/plain with ".htm[l]" extension -> text/html */
-      if ((ext = strrchr(filename, '.')) &&
-          !dStrcasecmp(ctype, "text/plain") &&
-          (!dStrcasecmp(ext, ".html") || !dStrcasecmp(ext, ".htm"))) {
-         ctype = "text/html";
-      }
-
-      if (data->len == 0) {
-         dStr_append(data, "--");
-         dStr_append(data, boundary);
-      }
-      // todo: encode name, filename
-      dStr_sprintfa(data,
-                    "\r\n"
-                    "Content-Disposition: form-data; name=\"%s\"; "
-                       "filename=\"%s\"\r\n"
-                    "Content-Type: %s\r\n"
-                    "\r\n", name, filename, ctype);
-
-      dStr_append_l(data, file->str, file->len);
-
-      dStr_sprintfa(data,
-                    "\r\n"
-                    "--%s", boundary);
-   }
-}
-
-/*
- * Append a name-value pair to url data using multipart encoding.
- */
-static void Html_append_input_multipart(Dstr *data, const char *boundary,
-                                        const char *name, const char *value)
-{
-   if (name && name[0]) {
-      if (data->len == 0) {
-         dStr_append(data, "--");
-         dStr_append(data, boundary);
-      }
-      // todo: encode name (RFC 2231) [coming soon]
-      dStr_sprintfa(data,
-                    "\r\n"
-                    "Content-Disposition: form-data; name=\"%s\"\r\n"
-                    "\r\n"
-                    "%s\r\n"
-                    "--%s",
-                    name, value, boundary);
-   }
-}
-
-/*
- * Append an image button click position to url data using url encoding.
- */
-static void Html_append_clickpos_urlencode(Dstr *data,
-                                           Dstr *name, int x,int y)
-{
-   if (name->len) {
-      Html_urlencode_append(data, name->str);
-      dStr_sprintfa(data, ".x=%d&", x);
-      Html_urlencode_append(data, name->str);
-      dStr_sprintfa(data, ".y=%d&", y);
-   } else
-      dStr_sprintfa(data, "x=%d&y=%d&", x, y);
-}
-
-/*
- * Append an image button click position to url data using multipart encoding.
- */
-static void Html_append_clickpos_multipart(Dstr *data, const char *boundary,
-                                           Dstr *name, int x, int y)
-{
-   char posstr[16];
-   int orig_len = name->len;
-
-   if (orig_len)
-      dStr_append_c(name, '.');
-   dStr_append_c(name, 'x');
-
-   snprintf(posstr, 16, "%d", x);
-   Html_append_input_multipart(data, boundary, name->str, posstr);
-   dStr_truncate(name, name->len - 1);
-   dStr_append_c(name, 'y');
-   snprintf(posstr, 16, "%d", y);
-   Html_append_input_multipart(data, boundary, name->str, posstr);
-   dStr_truncate(name, orig_len);
-}
 
 /*
  * Create input image for the form
