@@ -2910,10 +2910,10 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
- * Handle the <MENU> tag.
+ * Handle the <DIR> or <MENU> tag.
  * (Deprecated and almost the same as <UL>)
  */
-static void Html_tag_open_menu(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_dir(DilloHtml *html, const char *tag, int tagsize)
 {
    ListStyleType list_style_type = LIST_STYLE_TYPE_DISC;
 
@@ -2925,7 +2925,15 @@ static void Html_tag_open_menu(DilloHtml *html, const char *tag, int tagsize)
    S_TOP(html)->ref_list_item = NULL;
 
    if (prefs.show_extra_warnings)
-      BUG_MSG("it is strongly recommended using <UL> instead of <MENU>\n");
+      BUG_MSG("Obsolete list type; use <UL> instead\n");
+}
+
+/*
+ * Handle the <MENU> tag.
+ */
+static void Html_tag_open_menu(DilloHtml *html, const char *tag, int tagsize)
+{
+   Html_tag_open_dir(html, tag, tagsize);
 }
 
 /*
@@ -3442,7 +3450,7 @@ const TagInfo Tags[] = {
  {"dd", B8(011110),'O',1, Html_tag_open_dd, Html_tag_close_par},
  {"del", B8(011101),'R',2, Html_tag_open_strike, Html_tag_close_default},
  {"dfn", B8(010101),'R',2, Html_tag_open_dfn, Html_tag_close_default},
- /* dir 011010 */
+ {"dir", B8(011010),'R',2, Html_tag_open_dir, Html_tag_close_par},
  /* todo: complete <div> support! */
  {"div", B8(011110),'R',2, Html_tag_open_div, Html_tag_close_div},
  {"dl", B8(011010),'R',2, Html_tag_open_dl, Html_tag_close_par},
