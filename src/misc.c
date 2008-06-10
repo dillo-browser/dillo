@@ -285,7 +285,7 @@ int a_Misc_content_type_check(const char *EntryType, const char *DetectedType)
    int i;
    int st = -1;
 
-   MSG("Type check:  [Srv: %s  Det: %s]\n", EntryType, DetectedType);
+   _MSG("Type check:  [Srv: %s  Det: %s]\n", EntryType, DetectedType);
 
    if (!EntryType)
       return 0; /* there's no mismatch without server type */

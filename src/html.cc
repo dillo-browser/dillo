@@ -2653,6 +2653,55 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
+ * <OBJECT>
+ * Simply provide a link if the object is something downloadable.
+ */
+static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
+{
+   StyleAttrs style_attrs;
+   Style *style;
+   DilloUrl *url, *base_url = NULL;
+   const char *attrbuf;
+
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "codebase"))) {
+      base_url = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
+   }
+   
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "data"))) {
+      url = a_Html_url_new(html, attrbuf, URL_STR(base_url), 0, 0, 0,
+                           (base_url != NULL));
+      dReturn_if_fail ( url != NULL );
+
+      style_attrs = *S_TOP(html)->style;
+
+      if (a_Capi_get_flags(url) & CAPI_IsCached) {
+         style_attrs.color = Color::createSimple (
+            HT2LT(html),
+            html->visited_color
+/*
+            a_Color_vc(html->visited_color,
+                       S_TOP(html)->style->color->getColor(),
+                       html->link_color,
+                       S_TOP(html)->style->backgroundColor->getColor()),
+*/
+            );
+      } else {
+         style_attrs.color = Color::createSimple(HT2LT(html),
+                                                 html->link_color);
+      }
+
+      style_attrs.textDecoration |= TEXT_DECORATION_UNDERLINE;
+      style_attrs.x_link = Html_set_new_link(html, &url);
+      style_attrs.cursor = CURSOR_POINTER;
+
+      style = Style::create (HT2LT(html), &style_attrs);
+      DW2TB(html->dw)->addText(dStrdup("[OBJECT]"), style);
+      style->unref ();
+   }
+   a_Url_free(base_url);
+}
+
+/*
  * Test and extract the link from a javascript instruction.
  */
 static const char* Html_get_javascript_link(DilloHtml *html)
@@ -3430,7 +3479,7 @@ const TagInfo Tags[] = {
  {"meta", B8(100001),'F',0, Html_tag_open_meta, Html_tag_close_default},
  /* noframes 1011 */
  /* noscript 1011 */
- /* object 11xxxx */
+ {"object", B8(111101),'R',2, Html_tag_open_object, Html_tag_close_default},
  {"ol", B8(011010),'R',2, Html_tag_open_ol, Html_tag_close_par},
  /* optgroup */
  {"option", B8(010001),'O',1, Html_tag_open_option, Html_tag_close_default},

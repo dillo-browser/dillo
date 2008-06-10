@@ -106,6 +106,7 @@ dillo-fltk2
  - Fixed a segfault bug in Nav.c.
  - Switched from charset to content-type for handling data.
  - Moved charset decoding into cache.
+ - Implemented OBJECT as link (similar to FRAME).
    Patches: place (AKA corvid)
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
