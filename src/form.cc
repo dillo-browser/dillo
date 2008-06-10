@@ -38,8 +38,8 @@ using namespace dw::core::style;
 
 class DilloHtmlReceiver;
 class DilloHtmlInput;
-typedef struct _DilloHtmlSelect  DilloHtmlSelect;
-typedef struct _DilloHtmlOption  DilloHtmlOption;
+class DilloHtmlSelect;
+class DilloHtmlOption;
 
 static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
                                              const char *tag, int tagsize);
@@ -126,7 +126,6 @@ public:
                  dw::core::ui::Embed *embed,
                  const char *name,
                  const char *init_str,
-                 DilloHtmlSelect *select,
                  bool_t init_val);
 };
 
@@ -141,15 +140,6 @@ class DilloHtmlReceiver:
    void activate (dw::core::ui::Resource *resource);
    void clicked (dw::core::ui::ButtonResource *resource,
                  int buttonNo, int x, int y);
-};
-
-struct _DilloHtmlOption {
-   char *value, *content;
-   bool selected, enabled;
-};
-
-struct _DilloHtmlSelect {
-   lout::misc::SimpleVector<DilloHtmlOption *> *options;
 };
 
 class DilloHtmlInput {
@@ -177,11 +167,31 @@ public:
                    dw::core::ui::Embed *embed,
                    const char *name,
                    const char *init_str,
-                   DilloHtmlSelect *select,
                    bool_t init_val);
    ~DilloHtmlInput ();
    void getInputValues(bool is_active_submit, Dlist *values);
    void reset();
+};
+
+class DilloHtmlSelect {
+   friend class DilloHtmlInput;
+public:
+   lout::misc::SimpleVector<DilloHtmlOption *> *options;
+private:
+   DilloHtmlSelect ();
+   ~DilloHtmlSelect ();
+public:
+   void addOption (char *value, bool selected, bool enabled);
+};
+
+class DilloHtmlOption {
+   friend class DilloHtmlSelect;
+public:
+   char *value, *content;
+   bool selected, enabled;
+private:
+   DilloHtmlOption (char *value, bool selected, bool enabled);
+   ~DilloHtmlOption (); 
 };
 
 /*
@@ -452,7 +462,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 
    if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
       form->addInput(inp_type, embed, name,
-                     (init_str) ? init_str : "", NULL, init_val);
+                     (init_str) ? init_str : "", init_val);
    }
   
    if (embed != NULL && inp_type != DILLO_HTML_INPUT_IMAGE && 
@@ -524,7 +534,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    dw::core::ui::EntryResource *entryResource =
       HT2LT(html)->getResourceFactory()->createEntryResource (10, false);
    embed = new dw::core::ui::Embed (entryResource);
-   form->addInput(DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, NULL, FALSE);
+   form->addInput(DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
    if (prefs.standard_widget_colors) {
       HTML_SET_TOP_ATTR(html, color, NULL);
@@ -582,7 +592,7 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    if (a_Html_get_attr(html, tag, tagsize, "readonly"))
       textres->setEditable(false);
 
-   form->addInput(DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, NULL, false);
+   form->addInput(DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
 
    DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
 
@@ -612,7 +622,7 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 // gtk_widget_show(scroll);
 //
 // form->addInput(DILLO_HTML_INPUT_TEXTAREA,
-//                widget, name, NULL, NULL, FALSE);
+//                widget, name, NULL, FALSE);
 // dFree(name);
 //
 // embed_gtk = a_Dw_embed_gtk_new ();
@@ -724,9 +734,7 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 //    type = DILLO_HTML_INPUT_SEL_LIST;
 // }
 
-   DilloHtmlSelect *select = new DilloHtmlSelect;
-   select->options = new misc::SimpleVector<DilloHtmlOption *> (4);
-   form->addInput(type, embed, name, NULL, select, false);
+   form->addInput(type, embed, name, NULL, false);
    a_Html_stash_init(html);
    dFree(name);
 }
@@ -797,19 +805,13 @@ void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
 
    if (input->type == DILLO_HTML_INPUT_SELECT ||
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
-
-      DilloHtmlOption *option = new DilloHtmlOption;
-      option->value =
+      char *value =
          a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
-      option->content = NULL;
-      option->selected =
+      bool selected =
          (a_Html_get_attr(html, tag, tagsize, "selected") != NULL);
-      option->enabled =
+      bool enabled =
          (a_Html_get_attr(html, tag, tagsize, "disabled") == NULL);
-
-      int size = input->select->options->size ();
-      input->select->options->increase ();
-      input->select->options->set (size, option);
+      input->select->addOption(value,selected,enabled);
    }
 
    a_Html_stash_init(html);
@@ -888,7 +890,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
       name = a_Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
 
-      form->addInput(inp_type, embed, name, value, NULL, FALSE);
+      form->addInput(inp_type, embed, name, value, FALSE);
       dFree(name);
       dFree(value);
    }
@@ -1445,13 +1447,12 @@ void DilloHtmlForm::addInput(DilloHtmlInputType type,
                              dw::core::ui::Embed *embed,
                              const char *name,
                              const char *init_str,
-                             DilloHtmlSelect *select,
                              bool_t init_val)
 {
    _MSG("name=[%s] init_str=[%s] init_val=[%d]\n",
         name, init_str, init_val);
    DilloHtmlInput *input =
-      new DilloHtmlInput (type,embed,name,init_str,select,init_val);
+      new DilloHtmlInput (type,embed,name,init_str,init_val);
    input->connectTo (form_receiver);
    int ni = inputs->size ();
    inputs->increase ();
@@ -1525,15 +1526,22 @@ DilloHtmlInput::DilloHtmlInput (DilloHtmlInputType type2,
                                 dw::core::ui::Embed *embed2,
                                 const char *name2,
                                 const char *init_str2,
-                                DilloHtmlSelect *select2,
                                 bool_t init_val2)
 {
    type = type2;
    embed = embed2;
    name = (name2) ? dStrdup(name2) : NULL;
    init_str = (init_str2) ? dStrdup(init_str2) : NULL;
-   select = select2;
    init_val = init_val2;
+   select = NULL;
+   switch (type) {
+   case DILLO_HTML_INPUT_SELECT:
+   case DILLO_HTML_INPUT_SEL_LIST:
+      select = new DilloHtmlSelect;
+      break;
+   default:
+      break;
+   }
    file_data = NULL;
    reset ();
 }
@@ -1546,21 +1554,8 @@ DilloHtmlInput::~DilloHtmlInput ()
    dFree(name);
    dFree(init_str);
    dStr_free(file_data, 1);
-
-   if (type == DILLO_HTML_INPUT_SELECT ||
-       type == DILLO_HTML_INPUT_SEL_LIST) {
-
-      int size = select->options->size ();
-      for (int k = 0; k < size; k++) {
-         DilloHtmlOption *option =
-            select->options->get (k);
-         dFree(option->value);
-         dFree(option->content);
-         delete(option);
-      }
-      delete(select->options);
-      delete(select);
-   }
+   if (select)
+      delete select;
 }
 
 /*
@@ -1746,6 +1741,64 @@ void DilloHtmlInput::reset ()
    default:
       break;
    }
+}
+
+/*
+ * DilloHtmlSelect 
+ */
+
+/*
+ * Constructor 
+ */
+DilloHtmlSelect::DilloHtmlSelect ()
+{
+   options = new misc::SimpleVector<DilloHtmlOption *> (4);
+}
+
+/*
+ * Destructor 
+ */
+DilloHtmlSelect::~DilloHtmlSelect ()
+{
+   int size = options->size ();
+   for (int k = 0; k < size; k++)
+      delete options->get (k);
+   delete options;
+}
+
+void DilloHtmlSelect::addOption (char *value, bool selected, bool enabled)
+{
+   DilloHtmlOption *option =
+      new DilloHtmlOption (value, selected, enabled);
+   int size = options->size ();
+   options->increase ();
+   options->set (size, option);
+}
+
+/*
+ * DilloHtmlOption 
+ */
+
+/*
+ * Constructor 
+ */
+DilloHtmlOption::DilloHtmlOption (char *value2,
+                                  bool selected2,
+                                  bool enabled2)
+{
+   value = value2;
+   content = NULL;
+   selected = selected2;
+   enabled = enabled2;
+}
+
+/*
+ * Destructor 
+ */
+DilloHtmlOption::~DilloHtmlOption ()
+{
+   dFree(value);
+   dFree(content);
 }
 
 /*
