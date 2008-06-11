@@ -76,10 +76,12 @@ typedef enum {
 
 class DilloHtmlForm {
    friend class DilloHtmlReceiver;
+   friend class DilloHtmlInput;
 
    DilloHtml *html;
    void eventHandler(dw::core::ui::Resource *resource,
                      int click_x, int click_y);
+   void submit(DilloHtmlInput *input, int click_x, int click_y);
    DilloUrl *buildQueryUrl(DilloHtmlInput *input, int click_x, int click_y);
    Dstr *buildQueryData(DilloHtmlInput *active_submit, int x, int y);
    char *makeMultipartBoundary(iconv_t encoder, DilloHtmlInput *active_submit);
@@ -161,6 +163,9 @@ public:  //BUG: for now everything is public
 
 private:
    void connectTo(DilloHtmlReceiver *form_receiver);
+   void activate(DilloHtmlForm *form, bool force_submit,
+                 int click_x, int click_y);
+   void readFile(BrowserWindow *bw);
 
 public:
    DilloHtmlInput (DilloHtmlInputType type,
@@ -952,51 +957,37 @@ void DilloHtmlForm::eventHandler(dw::core::ui::Resource *resource,
                                  int click_x, int click_y)
 {
    MSG("DilloHtmlForm::eventHandler\n");
-
    DilloHtmlInput *input = getInput(resource);
-   BrowserWindow *bw = html->bw;
-
-   if (!input) {
-      MSG("DilloHtmlForm::eventHandler: ERROR, input not found!\n");
-   } else if (num_entry_fields > 1 &&
-              !prefs.enterpress_forces_submit &&
-              (input->type == DILLO_HTML_INPUT_TEXT ||
-               input->type == DILLO_HTML_INPUT_PASSWORD)) {
-      /* do nothing */
-   } else if (input->type == DILLO_HTML_INPUT_FILE) {
-      /* read the file into cache */
-      const char *filename = a_UIcmd_select_file();
-      if (filename) {
-         dw::core::ui::LabelButtonResource *lbr =
-            (dw::core::ui::LabelButtonResource*)input->embed->getResource();
-         a_UIcmd_set_msg(bw, "Loading file...");
-         dStr_free(input->file_data, 1);
-         input->file_data = a_Misc_file2dstr(filename);
-         if (input->file_data) {
-            a_UIcmd_set_msg(bw, "File loaded.");
-            lbr->setLabel(filename);
-         } else {
-            a_UIcmd_set_msg(bw, "ERROR: can't load: %s", filename);
-         }
-      }
-   } else if (input->type == DILLO_HTML_INPUT_RESET ||
-              input->type == DILLO_HTML_INPUT_BUTTON_RESET) {
-      reset();
+   if (input) {
+      bool force_submit =
+         prefs.enterpress_forces_submit ||
+         num_entry_fields == 1;
+      input->activate (this, force_submit, click_x, click_y);
    } else {
-      DilloUrl *url = buildQueryUrl(input, click_x, click_y);
-      if (url) {
-         a_Nav_push(bw, url);
-         a_Url_free(url);
-      }
-      // /* now, make the rendered area have its focus back */
-      // gtk_widget_grab_focus(GTK_BIN(bw->render_main_scroll)->child);
+      MSG("DilloHtmlForm::eventHandler: ERROR, input not found!\n");
    }
 }
 
 /*
- * Build a new query URL.
+ * Submit.
  * (Called by eventHandler())
  * click_x and click_y are used only by input images.
+ */
+void DilloHtmlForm::submit(DilloHtmlInput *input,
+                           int click_x, int click_y)
+{
+   DilloUrl *url = buildQueryUrl(input, click_x, click_y);
+   if (url) {
+      a_Nav_push(html->bw, url);
+      a_Url_free(url);
+   }
+   // /* now, make the rendered area have its focus back */
+   // gtk_widget_grab_focus(GTK_BIN(bw->render_main_scroll)->child);
+}
+
+/*
+ * Build a new query URL.
+ * (Called by submit())
  */
 DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input,
                                        int click_x, int click_y)
@@ -1593,6 +1584,52 @@ void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
          ((dw::core::ui::ButtonResource *)resource)
             ->connectClicked (form_receiver);
       break;
+   }
+}
+
+/*
+ * Activate a form 
+ */
+void DilloHtmlInput::activate(DilloHtmlForm *form, bool force_submit,
+                              int click_x, int click_y)
+{
+   switch (type) {
+   case DILLO_HTML_INPUT_TEXT:
+   case DILLO_HTML_INPUT_PASSWORD:
+      if (force_submit)
+         form->submit (this, click_x, click_y);
+      break;
+   case DILLO_HTML_INPUT_FILE:
+      readFile (form->html->bw);
+      break;
+   case DILLO_HTML_INPUT_RESET:
+   case DILLO_HTML_INPUT_BUTTON_RESET:
+      reset ();
+      break;
+   default:
+      form->submit (this, click_x, click_y);
+      break;
+   }
+}
+
+/*
+ * Read a file into cache 
+ */
+void DilloHtmlInput::readFile (BrowserWindow *bw)
+{
+   const char *filename = a_UIcmd_select_file();
+   if (filename) {
+      a_UIcmd_set_msg(bw, "Loading file...");
+      dStr_free(file_data, 1);
+      file_data = a_Misc_file2dstr(filename);
+      if (file_data) {
+         a_UIcmd_set_msg(bw, "File loaded.");
+         dw::core::ui::LabelButtonResource *lbr =
+            (dw::core::ui::LabelButtonResource*)embed->getResource();
+         lbr->setLabel(filename);
+      } else {
+         a_UIcmd_set_msg(bw, "ERROR: can't load: %s", filename);
+      }
    }
 }
 
