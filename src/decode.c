@@ -105,6 +105,8 @@ static Dstr *Decode_gzip(Decode *dc, const char *instr, int inlen)
 
          zs->total_out = 0;
          zs->total_in = 0;
+      } else if (rc == Z_DATA_ERROR) {
+         MSG_ERR("gzip decompression error\n");
       }
    }
    return output;
