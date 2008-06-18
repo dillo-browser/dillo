@@ -251,7 +251,8 @@ static void yes_ssl_support(void)
       /*Send remaining data*/
 
       while ((retval = SSL_read(ssl_connection, buf, 4096)) > 0 ){
-         sock_handler_write(sh, 0, buf, (size_t)retval);
+         /* flush is good for dialup speed */
+         sock_handler_write(sh, 1, buf, (size_t)retval);
       }
    }
 
