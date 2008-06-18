@@ -2104,6 +2104,7 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
    }
    style_attrs.textDecoration |= TEXT_DECORATION_UNDERLINE;
    style_attrs.x_link = Html_set_new_link(html, &url);
+   style_attrs.cursor = CURSOR_POINTER;
    link_style = Style::create (HT2LT(html), &style_attrs);
 
    textblock->addParbreak (5, S_TOP(html)->style);

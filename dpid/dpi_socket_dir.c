@@ -79,7 +79,7 @@ char *mk_sockdir(void)
 {
    char *template, *logname;
 
-   logname = getenv("LOGNAME") ? getenv("LOGNAME") : "joe";
+   logname = getenv("LOGNAME") ? getenv("LOGNAME") : "dillo";
    template = dStrconcat("/tmp/", logname, "-", "XXXXXX", NULL);
    if (a_Misc_mkdtemp(template) == NULL) {
       ERRMSG("mk_sockdir", "a_Misc_mkdtemp", 0);

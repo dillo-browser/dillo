@@ -1,14 +1,12 @@
 #ifndef __FINDBAR_HH__
 #define __FINDBAR_HH__
 
-//#include <fltk/Window.h>
 #include <fltk/Widget.h>
 #include <fltk/HighlightButton.h>
 #include <fltk/Button.h>
 #include <fltk/Input.h>
 #include <fltk/Group.h>
 #include <fltk/CheckButton.h>
-#include <fltk/ReturnButton.h>
 
 // simple declaration to avoid circular include
 class UI;

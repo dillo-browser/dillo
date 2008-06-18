@@ -18,7 +18,6 @@
 #include "web.hh"
 #include "dicache.h"
 #include "cache.h"
-#include "prefs.h"
 
 typedef struct _DICacheNode DICacheNode;
 

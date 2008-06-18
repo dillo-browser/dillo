@@ -37,7 +37,6 @@ struct _DilloPrefs {
    bool_t limit_text_width;
    bool_t w3c_plus_heuristics;
    double font_factor;
-   bool_t use_dicache;
    bool_t show_back;
    bool_t show_forw;
    bool_t show_home;

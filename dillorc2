@@ -12,10 +12,6 @@
 #geometry=650x545+0+20
 geometry=780x580
 
-# Dicache is where the Decompressed Images are cached (not the original ones).
-# If you have a lot of memory and a slow CPU, use YES, otherwise use NO
-use_dicache=NO
-
 # Uncomment if you want to have text-only browsing from the start.
 # (there's a toggle button near the bug meter to change this on-the-fly)
 #load_images=NO

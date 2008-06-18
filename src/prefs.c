@@ -102,7 +102,6 @@ typedef enum {
    DRC_TOKEN_STANDARD_WIDGET_COLORS,
    DRC_TOKEN_START_PAGE,
    DRC_TOKEN_TEXT_COLOR,
-   DRC_TOKEN_USE_DICACHE,
    DRC_TOKEN_VISITED_COLOR,
    DRC_TOKEN_VW_FONT,
    DRC_TOKEN_W3C_PLUS_HEURISTICS
@@ -161,7 +160,6 @@ static const SymNode_t symbols[] = {
    { "standard_widget_colors", DRC_TOKEN_STANDARD_WIDGET_COLORS },
    { "start_page", DRC_TOKEN_START_PAGE },
    { "text_color", DRC_TOKEN_TEXT_COLOR },
-   { "use_dicache", DRC_TOKEN_USE_DICACHE },
    { "visited_color", DRC_TOKEN_VISITED_COLOR, },
    { "vw_fontname", DRC_TOKEN_VW_FONT },
    { "w3c_plus_heuristics", DRC_TOKEN_W3C_PLUS_HEURISTICS }
@@ -274,9 +272,6 @@ static int Prefs_parse_pair(char *name, char *value)
       break;
    case DRC_TOKEN_W3C_PLUS_HEURISTICS:
       prefs.w3c_plus_heuristics = (strcmp(value,"YES") == 0);
-      break;
-   case DRC_TOKEN_USE_DICACHE:
-      prefs.use_dicache = (strcmp(value, "YES") == 0);
       break;
    case DRC_TOKEN_SHOW_BACK:
       prefs.show_back = (strcmp(value, "YES") == 0);
@@ -425,7 +420,6 @@ void a_Prefs_init(void)
    prefs.limit_text_width = FALSE;
    prefs.w3c_plus_heuristics = TRUE;
    prefs.font_factor = 1.0;
-   prefs.use_dicache = FALSE;
    prefs.show_back=TRUE;
    prefs.show_forw=TRUE;
    prefs.show_home=TRUE;
