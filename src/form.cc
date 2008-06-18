@@ -174,7 +174,7 @@ public:
                    const char *init_str,
                    bool_t init_val);
    ~DilloHtmlInput ();
-   void getInputValues(bool is_active_submit, Dlist *values);
+   void appendValuesTo(Dlist *values, bool is_active_submit);
    void reset();
 };
 
@@ -186,7 +186,12 @@ private:
    DilloHtmlSelect ();
    ~DilloHtmlSelect ();
 public:
+   DilloHtmlOption *getCurrentOption ();
    void addOption (char *value, bool selected, bool enabled);
+   void ensureSelection ();
+   void addOptionsTo (dw::core::ui::SelectionResource *res);
+   void appendValuesTo (Dlist *values,
+                        dw::core::ui::SelectionResource *res);
 };
 
 class DilloHtmlOption {
@@ -758,36 +763,14 @@ void Html_tag_close_select(DilloHtml *html, int TagIdx)
 
       DilloHtmlForm *form = html->getCurrentForm ();
       DilloHtmlInput *input = form->getCurrentInput ();
+      DilloHtmlSelect *select = input->select;
+
+      // BUG(?): should not do this for MULTI selections 
+      select->ensureSelection ();
+
       dw::core::ui::SelectionResource *res =
          (dw::core::ui::SelectionResource*)input->embed->getResource();
-
-      int size = input->select->options->size ();
-      if (size > 0) {
-         // is anything selected? 
-         bool some_selected = false;
-         for (int i = 0; i < size; i++) {
-            DilloHtmlOption *option =
-               input->select->options->get (i);
-            if (option->selected) {
-               some_selected = true;
-               break;
-            }
-         }
-
-         // select the first if nothing else is selected 
-         // BUG(?): should not do this for MULTI selections 
-         if (! some_selected)
-            input->select->options->get (0)->selected = true;
-
-         // add the items to the resource 
-         for (int i = 0; i < size; i++) {
-            DilloHtmlOption *option =
-               input->select->options->get (i);
-            bool enabled = option->enabled;
-            bool selected = option->selected;
-            res->addItem(option->content,enabled,selected);
-         }
-      }
+      select->addOptionsTo (res);
    }
 
    a_Html_pop_tag(html, TagIdx);
@@ -1088,7 +1071,7 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit,
                   appendClickposMultipart(DataStr, boundary, name, x,y);
             }
          } else {
-            input->getInputValues(is_active_submit, values);
+            input->appendValuesTo(values, is_active_submit);
 
             if (input->type == DILLO_HTML_INPUT_FILE &&
                 dList_length(values) > 0) {
@@ -1170,7 +1153,7 @@ char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
       Dstr *dstr;
       DilloHtmlInput *input = inputs->get (input_idx);
       bool is_active_submit = (input == active_submit);
-      input->getInputValues(is_active_submit, values);
+      input->appendValuesTo(values, is_active_submit);
 
       if (input->name) {
          dstr = dStr_new(input->name);
@@ -1636,7 +1619,7 @@ void DilloHtmlInput::readFile (BrowserWindow *bw)
 /*
  * Get the values for a "successful control".
  */
-void DilloHtmlInput::getInputValues(bool is_active_submit, Dlist *values)
+void DilloHtmlInput::appendValuesTo(Dlist *values, bool is_active_submit)
 {
    switch (type) {
    case DILLO_HTML_INPUT_TEXT:
@@ -1678,14 +1661,7 @@ void DilloHtmlInput::getInputValues(bool is_active_submit, Dlist *values)
       {  // brackets for compiler happiness.
          dw::core::ui::SelectionResource *sel_res =
             (dw::core::ui::SelectionResource*)embed->getResource();
-         int size = select->options->size ();
-         for (int i = 0; i < size; i++) {
-            if (sel_res->isSelected(i)) {
-               DilloHtmlOption *option = select->options->get(i);
-               char *val = option->value ? option->value : option->content;
-               dList_append(values, dStr_new(val));
-            }
-         }
+         select->appendValuesTo (values, sel_res);
       }
       break;
    case DILLO_HTML_INPUT_FILE:
@@ -1803,6 +1779,11 @@ DilloHtmlSelect::~DilloHtmlSelect ()
    delete options;
 }
 
+DilloHtmlOption *DilloHtmlSelect::getCurrentOption ()
+{
+   return options->get (options->size() - 1);
+}
+
 void DilloHtmlSelect::addOption (char *value, bool selected, bool enabled)
 {
    DilloHtmlOption *option =
@@ -1810,6 +1791,45 @@ void DilloHtmlSelect::addOption (char *value, bool selected, bool enabled)
    int size = options->size ();
    options->increase ();
    options->set (size, option);
+}
+
+/*
+ * Select the first option if nothing else is selected.
+ */
+void DilloHtmlSelect::ensureSelection()
+{
+   int size = options->size ();
+   if (size > 0) {
+      for (int i = 0; i < size; i++) {
+            DilloHtmlOption *option = options->get (i);
+            if (option->selected)
+               return;
+      }
+      DilloHtmlOption *option = options->get (0);
+      option->selected = true;
+   }
+}
+
+void DilloHtmlSelect::addOptionsTo (dw::core::ui::SelectionResource *res)
+{
+   int size = options->size ();
+   for (int i = 0; i < size; i++) {
+      DilloHtmlOption *option = options->get (i);
+      res->addItem(option->content, option->enabled, option->selected);
+   }
+}
+
+void DilloHtmlSelect::appendValuesTo (Dlist *values,
+                                      dw::core::ui::SelectionResource *res)
+{
+   int size = options->size ();
+   for (int i = 0; i < size; i++) {
+      if (res->isSelected (i)) {
+         DilloHtmlOption *option = options->get (i);
+         char *val = option->value ? option->value : option->content;
+         dList_append(values, dStr_new(val));
+      }
+   }
 }
 
 /*
