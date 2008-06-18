@@ -107,6 +107,7 @@ dillo-fltk2
  - Switched from charset to content-type for handling data.
  - Moved charset decoding into cache.
  - Implemented OBJECT as link (similar to FRAME).
+ - Enabled the file dpi to look inside gzipped files.
    Patches: place (AKA corvid)
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

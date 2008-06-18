@@ -597,31 +597,47 @@ static int File_get_file(ClientInfo *Client,
 #define LBUF 16*1024
 
    const char *ct;
-   char buf[LBUF], *d_cmd;
-   int fd, st;
+   const char *unknown_type = "application/octet-stream";
+   char buf[LBUF], *d_cmd, *name;
+   int fd, st, namelen;
+   bool_t gzipped = FALSE;
 
    if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0)
       return FILE_NO_ACCESS;
-
-   /* Content-Type info is based on filename extension. If there's no
-    * known extension, then we do data sniffing. If this doesn't lead
-    * to a conclusion, "application/octet-stream" is sent.
-    */
-   if (!(ct = File_content_type(filename)))
-      ct = "application/octet-stream";
 
    /* Send DPI command */
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", orig_url);
    sock_handler_write_str(Client->sh, 1, d_cmd);
    dFree(d_cmd);
 
-   /* Send HTTP stream */
-   sock_handler_printf(Client->sh, 0,
-      "Content-Type: %s\n"
-      "Content-length: %ld\n\n",
-      ct, sb->st_size);
+   /* Check for gzipped file */
+   namelen = strlen(filename);
+   if (namelen > 3 && !dStrcasecmp(filename + namelen - 3, ".gz")) {
+      gzipped = TRUE;
+      namelen -= 3;
+   }
 
-   /* Send raw file contents */
+   /* Content-Type info is based on filename extension (with ".gz" removed).
+    * If there's no known extension, perform data sniffing.
+    * If this doesn't lead to a conclusion, use "application/octet-stream".
+    */
+   name = dStrndup(filename, namelen);
+   if (!(ct = File_content_type(name)))
+      ct = unknown_type;
+   dFree(name);
+
+   /* Send HTTP headers */
+   if (gzipped) {
+      sock_handler_printf(Client->sh, 0, "Content-Encoding: gzip\n");
+   }
+   if (!gzipped || strcmp(ct, unknown_type)) {
+      sock_handler_printf(Client->sh, 0, "Content-Type: %s\n", ct);
+   } else {
+      /* If we don't know type for gzipped data, let dillo figure it out. */
+   }
+   sock_handler_printf(Client->sh, 0, "Content-Length: %ld\n\n", sb->st_size);
+
+   /* Send body -- raw file contents */
    do {
       if ((st = read(fd, buf, LBUF)) > 0) {
          if (sock_handler_write(Client->sh, 0, buf, (size_t)st) != 0)
