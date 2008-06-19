@@ -127,7 +127,7 @@ struct _DilloHtmlState {
    /* This is used for list items etc; if it is set to TRUE, breaks
       have to be "handed over" (see Html_add_indented and
       Html_eventually_pop_dw). */
-   bool_t hand_over_break;
+   bool hand_over_break;
 };
 
 /*
@@ -247,7 +247,7 @@ DilloUrl *a_Html_url_new(DilloHtml *html,
 DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
                                  int tagsize, DilloUrl *url,
                                  dw::core::style::StyleAttrs *style_attrs,
-                                 bool_t add);
+                                 bool add);
 
 char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize);
 void a_Html_pop_tag(DilloHtml *html, int TagIdx);

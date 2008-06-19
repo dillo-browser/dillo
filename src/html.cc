@@ -330,9 +330,9 @@ static void Html_tag_set_align_attr(DilloHtml *html, const char *tag,
 
 /*
  * Evaluates the VALIGN attribute (top|bottom|middle|baseline) and
- * sets the style in style_attrs. Returns TRUE when set.
+ * sets the style in style_attrs. Returns true when set.
  */
-static bool_t Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
+static bool Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
                                          int tagsize, StyleAttrs *style_attrs)
 {
    const char *attr;
@@ -346,9 +346,9 @@ static bool_t Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
          style_attrs->valign = VALIGN_BASELINE;
       else
          style_attrs->valign = VALIGN_MIDDLE;
-      return TRUE;
+      return true;
    } else
-      return FALSE;
+      return false;
 }
 
 
@@ -385,7 +385,7 @@ static void Html_add_indented_widget(DilloHtml *html, Widget *textblock,
    DW2TB(html->dw)->addWidget (textblock, style);
    DW2TB(html->dw)->addParbreak (space, style);
    S_TOP(html)->textblock = html->dw = textblock;
-   S_TOP(html)->hand_over_break = TRUE;
+   S_TOP(html)->hand_over_break = true;
    style->unref ();
 
    /* Handle it when the user clicks on a link */
@@ -483,7 +483,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    stack->getRef(0)->textblock = NULL;
    stack->getRef(0)->table = NULL;
    stack->getRef(0)->ref_list_item = NULL;
-   stack->getRef(0)->hand_over_break = FALSE;
+   stack->getRef(0)->hand_over_break = false;
 
    InFlags = IN_NONE;
 
@@ -1216,27 +1216,27 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
 
 /*
  * Does the tag in tagstr (e.g. "p") match the tag in the tag, tagsize
- * structure, with the initial < skipped over (e.g. "P align=center>")
+ * structure, with the initial < skipped over (e.g. "P align=center>")?
  */
-static bool_t Html_match_tag(const char *tagstr, char *tag, int tagsize)
+static bool Html_match_tag(const char *tagstr, char *tag, int tagsize)
 {
    int i;
 
    for (i = 0; i < tagsize && tagstr[i] != '\0'; i++) {
       if (tolower(tagstr[i]) != tolower(tag[i]))
-         return FALSE;
+         return false;
    }
    /* The test for '/' is for xml compatibility: "empty/>" will be matched. */
    if (i < tagsize && (isspace(tag[i]) || tag[i] == '>' || tag[i] == '/'))
-      return TRUE;
-   return FALSE;
+      return true;
+   return false;
 }
 
 /*
  * This function is called after popping the stack, to
  * handle nested DwPage widgets.
  */
-static void Html_eventually_pop_dw(DilloHtml *html, bool_t hand_over_break)
+static void Html_eventually_pop_dw(DilloHtml *html, bool hand_over_break)
 {
    if (html->dw != S_TOP(html)->textblock) {
       if (hand_over_break)
@@ -1280,7 +1280,7 @@ static void Html_force_push_tag(DilloHtml *html, int tag_idx)
  */
 static void Html_real_pop_tag(DilloHtml *html)
 {
-   bool_t hand_over_break;
+   bool hand_over_break;
 
    (S_TOP(html)->style)->unref ();
    if (S_TOP(html)->table_cell_style)
@@ -1887,7 +1887,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    StyleAttrs style_attrs;
    Style *style, *old_style;
    int32_t bgcolor;
-   bool_t new_style;
+   bool new_style;
 
    switch (S_TOP(html)->table_mode) {
    case DILLO_HTML_TABLE_MODE_NONE:
@@ -1927,15 +1927,15 @@ static void Html_tag_open_table_cell(DilloHtml *html,
 
       /* cell style */
       style_attrs = *S_TOP(html)->table_cell_style;
-      new_style = FALSE;
+      new_style = false;
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width"))) {
          style_attrs.width = Html_parse_length (html, attrbuf);
-         new_style = TRUE;
+         new_style = true;
       }
 
       if (Html_tag_set_valign_attr (html, tag, tagsize, &style_attrs))
-         new_style = TRUE;
+         new_style = true;
 
       if (!prefs.force_my_colors &&
           (attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
@@ -1944,7 +1944,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
             if (bgcolor == 0xffffff && !prefs.allow_white_bg)
                bgcolor = prefs.bg_color;
 
-            new_style = TRUE;
+            new_style = true;
             style_attrs.backgroundColor =
                Color::createShaded (HT2LT(html), bgcolor);
             HTML_SET_TOP_ATTR (html, backgroundColor,
@@ -2333,7 +2333,7 @@ static void Html_tag_open_tt(DilloHtml *html, const char *tag, int tagsize)
 DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
                                  int tagsize, DilloUrl *url,
                                  dw::core::style::StyleAttrs *style_attrs,
-                                 bool_t add)
+                                 bool add)
 {
    const int MAX_W = 6000, MAX_H = 6000;
 
@@ -2485,7 +2485,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.borderWidth.setVal (border);
    }
 
-   Image = a_Html_add_new_image(html, tag, tagsize, url, &style_attrs, TRUE);
+   Image = a_Html_add_new_image(html, tag, tagsize, url, &style_attrs, true);
 
    /* Image maps */
    if (a_Html_get_attr(html, tag, tagsize, "ismap")) {

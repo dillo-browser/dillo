@@ -1881,7 +1881,7 @@ static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
 
       /* create new image and add it to the button */
       if ((Image = a_Html_add_new_image(html, tag, tagsize, url, &style_attrs,
-                                        FALSE))) {
+                                        false))) {
          Style *style = Style::create (HT2LT(html), &style_attrs);
          IM2DW(Image)->setStyle (style);
          dw::core::ui::ComplexButtonResource *complex_b_r =
