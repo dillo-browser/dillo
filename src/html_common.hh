@@ -112,7 +112,7 @@ struct _DilloHtmlState {
    dw::core::style::Style *style, *table_cell_style;
    DilloHtmlParseMode parse_mode;
    DilloHtmlTableMode table_mode;
-   bool_t cell_text_align_set;
+   bool cell_text_align_set;
    DilloHtmlListMode list_type;
    int list_number;
 
@@ -174,19 +174,18 @@ public:  //BUG: for now everything is public
    int InFlags; /* tracks which elements we are in */
 
    Dstr *Stash;
-   bool_t StashSpace;
+   bool StashSpace;
 
    int pre_column;        /* current column, used in PRE tags with tabs */
-   bool_t PreFirstChar;   /* used to skip the first CR or CRLF in PRE tags */
-   bool_t PrevWasCR;      /* Flag to help parsing of "\r\n" in PRE tags */
-   bool_t PrevWasOpenTag; /* Flag to help deferred parsing of white space */
-   bool_t SPCPending;     /* Flag to help deferred parsing of white space */
-   bool_t PrevWasSPC;     /* Flag to help handling collapsing white space */
-   bool_t InVisitedLink;  /* used to 'contrast_visited_colors' */
-   bool_t ReqTagClose;    /* Flag to help handling bad-formed HTML */
-   bool_t CloseOneTag;    /* Flag to help Html_tag_cleanup_at_close() */
-   bool_t WordAfterLI;    /* Flag to help ignoring the 1st <P> after <LI> */
-   bool_t TagSoup;        /* Flag to enable the parser's cleanup functions */
+   bool PreFirstChar;     /* used to skip the first CR or CRLF in PRE tags */
+   bool PrevWasCR;        /* Flag to help parsing of "\r\n" in PRE tags */
+   bool PrevWasOpenTag;   /* Flag to help deferred parsing of white space */
+   bool PrevWasSPC;       /* Flag to help handling collapsing white space */
+   bool InVisitedLink;    /* used to 'contrast_visited_colors' */
+   bool ReqTagClose;      /* Flag to help handling bad-formed HTML */
+   bool CloseOneTag;      /* Flag to help Html_tag_cleanup_at_close() */
+   bool WordAfterLI;      /* Flag to help ignoring the 1st <P> after <LI> */
+   bool TagSoup;          /* Flag to enable the parser's cleanup functions */
    char *NameVal;         /* used for validation of "NAME" and "ID" in <A> */
 
    /* element counters: used for validation purposes */
@@ -206,7 +205,7 @@ public:  //BUG: for now everything is public
    int32_t visited_color;
 
 private:
-   bool_t parse_finished;
+   bool parse_finished;
    void freeParseData();
    void initDw();  /* Used by the constructor */
 

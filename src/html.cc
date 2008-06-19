@@ -476,7 +476,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    stack->getRef(0)->table_cell_style = NULL;
    stack->getRef(0)->parse_mode = DILLO_HTML_PARSE_MODE_INIT;
    stack->getRef(0)->table_mode = DILLO_HTML_TABLE_MODE_NONE;
-   stack->getRef(0)->cell_text_align_set = FALSE;
+   stack->getRef(0)->cell_text_align_set = false;
    stack->getRef(0)->list_type = HTML_LIST_NONE;
    stack->getRef(0)->list_number = 0;
    stack->getRef(0)->tag_idx = -1;               /* MUST not be used */
@@ -488,25 +488,24 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    InFlags = IN_NONE;
 
    Stash = dStr_new("");
-   StashSpace = FALSE;
+   StashSpace = false;
 
    pre_column = 0;
-   PreFirstChar = FALSE;
-   PrevWasCR = FALSE;
-   PrevWasOpenTag = FALSE;
-   PrevWasSPC = FALSE;
-   SPCPending = FALSE;
-   InVisitedLink = FALSE;
-   ReqTagClose = FALSE;
-   CloseOneTag = FALSE;
-   TagSoup = TRUE;
+   PreFirstChar = false;
+   PrevWasCR = false;
+   PrevWasOpenTag = false;
+   PrevWasSPC = false;
+   InVisitedLink = false;
+   ReqTagClose = false;
+   CloseOneTag = false;
+   TagSoup = true;
    NameVal = NULL;
 
    Num_HTML = Num_HEAD = Num_BODY = Num_TITLE = 0;
 
    attr_data = dStr_sized_new(1024);
 
-   parse_finished = FALSE;
+   parse_finished = false;
 
    /* Init page-handling variables */
    forms = new misc::SimpleVector <DilloHtmlForm*> (1);
@@ -678,7 +677,7 @@ void DilloHtml::finishParsing(int ClientKey)
    a_UIcmd_set_page_prog(bw, 0, 0);
 
    freeParseData();
-   parse_finished = TRUE;
+   parse_finished = true;
 }
 
 /*
@@ -829,7 +828,7 @@ bool DilloHtml::HtmlLinkReceiver::click (Widget *widget, int link, int img,
 void a_Html_stash_init(DilloHtml *html)
 {
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_STASH;
-   html->StashSpace = FALSE;
+   html->StashSpace = false;
    dStr_truncate(html->Stash, 0);
 }
 
@@ -1080,11 +1079,9 @@ static void Html_process_space(DilloHtml *html, const char *space,
 
    if (parse_mode == DILLO_HTML_PARSE_MODE_STASH) {
       html->StashSpace = (html->Stash->len > 0);
-      html->SPCPending = FALSE;
 
    } else if (parse_mode == DILLO_HTML_PARSE_MODE_VERBATIM) {
       dStr_append_l(html->Stash, space, spacesize);
-      html->SPCPending = FALSE;
 
    } else if (parse_mode == DILLO_HTML_PARSE_MODE_PRE) {
       int spaceCnt = 0;
@@ -1103,7 +1100,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
             DW2TB(html->dw)->addLinebreak (S_TOP(html)->style);
             html->pre_column = 0;
          }
-         html->PreFirstChar = FALSE;
+         html->PreFirstChar = false;
 
          /* cr and lf should not be rendered -- they appear as a break */
          switch (space[i]) {
@@ -1130,17 +1127,13 @@ static void Html_process_space(DilloHtml *html, const char *space,
          DW2TB(html->dw)->addText (dStrnfill(spaceCnt, ' '),
                S_TOP(html)->style);
       }
-      html->SPCPending = FALSE;
 
    } else {
       if (SGML_SPCDEL) {
          /* SGML_SPCDEL ignores white space inmediately after an open tag */
-         if (html->PrevWasOpenTag)
-            html->SPCPending = FALSE;
       } else if (!html->PrevWasSPC) {
          DW2TB(html->dw)->addSpace(S_TOP(html)->style);
-         html->SPCPending = FALSE;
-         html->PrevWasSPC = TRUE;
+         html->PrevWasSPC = true;
       }
 
       if (parse_mode == DILLO_HTML_PARSE_MODE_STASH_AND_BODY)
@@ -1165,7 +1158,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
        parse_mode == DILLO_HTML_PARSE_MODE_STASH_AND_BODY) {
       if (html->StashSpace) {
          dStr_append_c(html->Stash, ' ');
-         html->StashSpace = FALSE;
+         html->StashSpace = false;
       }
       Pword = a_Html_parse_entities(html, word, size);
       dStr_append(html->Stash, Pword);
@@ -1193,7 +1186,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
                                dStrndup(Pword + start, i - start),
                                S_TOP(html)->style);
             html->pre_column += i - start;
-            html->PreFirstChar = FALSE;
+            html->PreFirstChar = false;
          }
       dFree(Pword);
 
@@ -1207,11 +1200,10 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
       DW2TB(html->dw)->addText(Pword, S_TOP(html)->style);
    }
 
-   html->PrevWasOpenTag = FALSE;
-   html->PrevWasSPC = FALSE;
-   html->SPCPending = FALSE;
+   html->PrevWasOpenTag = false;
+   html->PrevWasSPC = false;
    if (html->InFlags & IN_LI)
-      html->WordAfterLI = TRUE;
+      html->WordAfterLI = true;
 }
 
 /*
@@ -1313,7 +1305,7 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
 
    if (html->CloseOneTag) {
       Html_real_pop_tag(html);
-      html->CloseOneTag = FALSE;
+      html->CloseOneTag = false;
       return;
    }
 
@@ -1342,7 +1334,7 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
                     Tags[toptag_idx].name);
 
          /* Close this and only this tag */
-         html->CloseOneTag = TRUE;
+         html->CloseOneTag = true;
          Tags[toptag_idx].close (html, toptag_idx);
       }
 
@@ -1589,7 +1581,7 @@ static void Html_tag_open_head(DilloHtml *html, const char *tag, int tagsize)
 {
    if (html->InFlags & IN_BODY || html->Num_BODY > 0) {
       BUG_MSG("HEAD element must go before the BODY section\n");
-      html->ReqTagClose = TRUE;
+      html->ReqTagClose = true;
       return;
    }
 
@@ -1772,7 +1764,7 @@ static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
 {
    if ((html->InFlags & IN_LI) && !html->WordAfterLI) {
       /* ignore first parbreak after an empty <LI> */
-      html->WordAfterLI = TRUE;
+      html->WordAfterLI = true;
    } else {
       DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    }
@@ -1867,7 +1859,7 @@ static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    cell_style->unref ();
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TOP;
-   S_TOP(html)->cell_text_align_set = FALSE;
+   S_TOP(html)->cell_text_align_set = false;
    S_TOP(html)->table = table;
 #endif
 }
@@ -2045,7 +2037,7 @@ static void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
          style->unref ();
 
       if (a_Html_get_attr (html, tag, tagsize, "align")) {
-         S_TOP(html)->cell_text_align_set = TRUE;
+         S_TOP(html)->cell_text_align_set = true;
          Html_tag_set_align_attr (html, tag, tagsize);
       }
 
@@ -2769,7 +2761,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       style_attrs = *old_style;
 
       if (a_Capi_get_flags(url) & CAPI_IsCached) {
-         html->InVisitedLink = TRUE;
+         html->InVisitedLink = true;
          style_attrs.color = Color::createSimple (
             HT2LT(html),
             html->visited_color
@@ -2811,7 +2803,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_a(DilloHtml *html, int TagIdx)
 {
-   html->InVisitedLink = FALSE;
+   html->InVisitedLink = false;
    a_Html_pop_tag(html, TagIdx);
 }
 
@@ -2990,7 +2982,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
    char buf[16];
 
    html->InFlags |= IN_LI;
-   html->WordAfterLI = FALSE;
+   html->WordAfterLI = false;
 
    /* Get our parent tag's variables (used as state storage) */
    list_number = &html->stack->getRef(html->stack->size()-2)->list_number;
@@ -3026,7 +3018,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
       numtostr((*list_number)++, buf, 16, S_TOP(html)->style->listStyleType);
       list_item->initWithText (dStrdup(buf), word_style);
       list_item->addSpace (word_style);
-      html->PrevWasSPC = TRUE;
+      html->PrevWasSPC = true;
       break;
    case HTML_LIST_NONE:
       BUG_MSG("<li> outside <ul> or <ol>\n");
@@ -3043,7 +3035,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_li(DilloHtml *html, int TagIdx)
 {
    html->InFlags &= ~IN_LI;
-   html->WordAfterLI = FALSE;
+   html->WordAfterLI = false;
    ((ListItem *)html->dw)->flush (false);
    a_Html_pop_tag(html, TagIdx);
 }
@@ -3147,7 +3139,7 @@ static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_PRE;
    HTML_SET_TOP_ATTR (html, whiteSpace, WHITE_SPACE_PRE);
    html->pre_column = 0;
-   html->PreFirstChar = TRUE;
+   html->PreFirstChar = true;
    html->InFlags |= IN_PRE;
 }
 
@@ -3238,9 +3230,9 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          {
             int SaveFlags = html->InFlags;
             html->InFlags = IN_BODY;
-            html->TagSoup = FALSE;
+            html->TagSoup = false;
             Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
-            html->TagSoup = TRUE;
+            html->TagSoup = true;
             html->InFlags = SaveFlags;
          }
          dStr_free(ds_msg, 1);
@@ -3797,13 +3789,13 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       }
 
       /* let the parser know this was an open tag */
-      html->PrevWasOpenTag = TRUE;
+      html->PrevWasOpenTag = true;
 
       /* Request inmediate close for elements with forbidden close tag. */
       /* todo: XHTML always requires close tags. A simple implementation
        * of the commented clause below will make it work. */
       if  (/* parsing HTML && */ Tags[ni].EndTag == 'F')
-         html->ReqTagClose = TRUE;
+         html->ReqTagClose = true;
 
       /* Don't break! Open tags may also close themselves */
 
@@ -3819,8 +3811,8 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
    
          Tags[ni].close (html, ni);
          /* This was a close tag */
-         html->PrevWasOpenTag = FALSE;
-         html->ReqTagClose = FALSE;
+         html->PrevWasOpenTag = false;
+         html->ReqTagClose = false;
       }
    }
 }
