@@ -180,9 +180,8 @@ public:
 
 class DilloHtmlSelect {
    friend class DilloHtmlInput;
-public:
-   lout::misc::SimpleVector<DilloHtmlOption *> *options;
 private:
+   lout::misc::SimpleVector<DilloHtmlOption *> *options;
    DilloHtmlSelect ();
    ~DilloHtmlSelect ();
 public:
@@ -1913,10 +1912,8 @@ static void Html_option_finish(DilloHtml *html)
    DilloHtmlInput *input = form->getCurrentInput ();
    if (input->type == DILLO_HTML_INPUT_SELECT ||
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
-      DilloHtmlSelect *select =
-         input->select;
       DilloHtmlOption *option =
-         select->options->get (select->options->size() - 1);
+         input->select->getCurrentOption ();
       option->content =
          a_Html_parse_entities(html, html->Stash->str, html->Stash->len);
    }
