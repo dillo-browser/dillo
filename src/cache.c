@@ -44,7 +44,7 @@
 /* Maximun initial size for the automatically-growing data buffer */
 #define MAX_INIT_BUF  1024*1024
 /* Maximum filesize for a URL, before offering a download */
-#define HUGE_FILESIZE 5*1024*1024
+#define HUGE_FILESIZE 15*1024*1024
 
 /*
  *  Local data types
