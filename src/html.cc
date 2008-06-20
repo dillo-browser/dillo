@@ -1038,7 +1038,7 @@ static int Html_parse_entity(DilloHtml *html, const char *token,
  */
 char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize)
 {
-   const char *esc_set = "&\xE2\xC2";
+   const char *esc_set = "&";
    char *new_str, buf[4];
    int i, j, k, n, s, isocode, entsize;
 
@@ -1074,6 +1074,7 @@ char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize)
 static void Html_process_space(DilloHtml *html, const char *space, 
                                int spacesize)
 {
+   char *spc;
    int i, offset;
    DilloHtmlParseMode parse_mode = S_TOP(html)->parse_mode;
 
@@ -1093,8 +1094,9 @@ static void Html_process_space(DilloHtml *html, const char *space,
              (space[i] == '\r' || (space[i] == '\n' && !html->PrevWasCR))) {
 
             if (spaceCnt) {
-               DW2TB(html->dw)->addText (dStrnfill(spaceCnt, ' '),
-                     S_TOP(html)->style);
+               spc = dStrnfill(spaceCnt, ' ');
+               DW2TB(html->dw)->addText (spc, S_TOP(html)->style);
+               dFree(spc);
                spaceCnt = 0;
             }
             DW2TB(html->dw)->addLinebreak (S_TOP(html)->style);
@@ -1124,8 +1126,9 @@ static void Html_process_space(DilloHtml *html, const char *space,
       }
 
       if (spaceCnt) {
-         DW2TB(html->dw)->addText (dStrnfill(spaceCnt, ' '),
-               S_TOP(html)->style);
+         spc = dStrnfill(spaceCnt, ' ');
+         DW2TB(html->dw)->addText (spc, S_TOP(html)->style);
+         dFree(spc);
       }
 
    } else {
@@ -1147,11 +1150,12 @@ static void Html_process_space(DilloHtml *html, const char *space,
  *  > otherwise it goes through addText()
  *
  * Entities are parsed (or not) according to parse_mode.
+ * 'word' is a '\0'-terminated string.
  */
 static void Html_process_word(DilloHtml *html, const char *word, int size)
 {
    int i, j, start;
-   char *Pword;
+   char *Pword, ch;
    DilloHtmlParseMode parse_mode = S_TOP(html)->parse_mode;
 
    if (parse_mode == DILLO_HTML_PARSE_MODE_STASH ||
@@ -1182,22 +1186,29 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             Html_process_space(html, Pword + start, i - start);
          } else {
             while (Pword[++i] && !isspace(Pword[i]));
-            DW2TB(html->dw)->addText(
-                               dStrndup(Pword + start, i - start),
-                               S_TOP(html)->style);
+            ch = Pword[i];
+            Pword[i] = 0;
+            DW2TB(html->dw)->addText(Pword, S_TOP(html)->style);
+            Pword[i] = ch;
             html->pre_column += i - start;
             html->PreFirstChar = false;
          }
       dFree(Pword);
 
    } else {
-      /* Collapse white-space entities inside the word (except &nbsp;) */
-      Pword = a_Html_parse_entities(html, word, size);
-      for (i = 0; Pword[i]; ++i)
-         if (strchr("\t\f\n\r", Pword[i]))
-            for (j = i; (Pword[j] = Pword[j+1]); ++j);
-
-      DW2TB(html->dw)->addText(Pword, S_TOP(html)->style);
+      if (!memchr(word,'&', size)) {
+         /* No entities */
+         DW2TB(html->dw)->addText(word, S_TOP(html)->style);
+      } else {
+         /* Collapse white-space entities inside the word (except &nbsp;) */
+         Pword = a_Html_parse_entities(html, word, size);
+         for (i = 0; Pword[i]; ++i)
+            if (strchr("\t\f\n\r", Pword[i]))
+               for (j = i; (Pword[j] = Pword[j+1]); ++j);
+   
+         DW2TB(html->dw)->addText(Pword, S_TOP(html)->style);
+         dFree(Pword);
+      }
    }
 
    html->PrevWasOpenTag = false;
@@ -2111,15 +2122,15 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
    if (tolower(tag[1]) == 'i') {
       /* IFRAME usually comes with very long advertising/spying URLS,
        * to not break rendering we will force name="IFRAME" */
-      textblock->addText (dStrdup("IFRAME"), link_style);
+      textblock->addText ("IFRAME", link_style);
 
    } else {
       /* FRAME:
        * If 'name' tag is present use it, if not use 'src' value */
       if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "name"))) {
-         textblock->addText (dStrdup(src), link_style);
+         textblock->addText (src, link_style);
       } else {
-         textblock->addText (dStrdup(attrbuf), link_style);
+         textblock->addText (attrbuf, link_style);
       }
    }
 
@@ -2138,8 +2149,7 @@ static void Html_tag_open_frameset (DilloHtml *html,
                                     const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
-   DW2TB(html->dw)->addText(dStrdup("--FRAME--"),
-                              S_TOP(html)->style);
+   DW2TB(html->dw)->addText("--FRAME--", S_TOP(html)->style);
    Html_add_indented(html, 40, 0, 5);
 }
 
@@ -2688,7 +2698,7 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.cursor = CURSOR_POINTER;
 
       style = Style::create (HT2LT(html), &style_attrs);
-      DW2TB(html->dw)->addText(dStrdup("[OBJECT]"), style);
+      DW2TB(html->dw)->addText("[OBJECT]", style);
       style->unref ();
    }
    a_Url_free(base_url);
@@ -4113,8 +4123,11 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
          }
          if (buf_index < bufsize || Eof) {
             /* successfully found end of token */
+            ch = buf[buf_index];
+            buf[buf_index] = 0;
             Html_process_word(html, buf + token_start,
                               buf_index - token_start);
+            buf[buf_index] = ch;
             token_start = buf_index;
          }
       }

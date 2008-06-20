@@ -539,7 +539,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
   
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "prompt")))
-      DW2TB(html->dw)->addText(dStrdup(attrbuf), S_TOP(html)->style);
+      DW2TB(html->dw)->addText(attrbuf, S_TOP(html)->style);
  
    dw::core::ui::EntryResource *entryResource =
       HT2LT(html)->getResourceFactory()->createEntryResource (10, false);
