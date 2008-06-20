@@ -251,5 +251,16 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
 char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize);
 void a_Html_pop_tag(DilloHtml *html, int TagIdx);
 void a_Html_stash_init(DilloHtml *html);
+int32_t a_Html_color_parse(DilloHtml *html,
+                           const char *subtag, int32_t default_color);
+dw::core::style::Length a_Html_parse_length (DilloHtml *html,
+                                             const char *attr);
+void a_Html_tag_set_align_attr(DilloHtml *html,
+                               const char *tag, int tagsize);
+bool a_Html_tag_set_valign_attr(DilloHtml *html,
+                                const char *tag, int tagsize,
+                                dw::core::style::StyleAttrs *style_attrs);
+void a_Html_set_top_font(DilloHtml *html, const char *name, int size,
+                         int BI, int BImask);
 
 #endif /* __HTML_COMMON_HH__ */

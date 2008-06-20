@@ -39,6 +39,8 @@
 #include "capi.h"
 #include "html.hh"
 #include "html_common.hh"
+#include "form.hh"
+#include "table.hh"
 
 #include "dw/textblock.hh"
 #include "dw/bullet.hh"
@@ -51,15 +53,12 @@
 /*-----------------------------------------------------------------------------
  * Defines 
  *---------------------------------------------------------------------------*/
-/* Undefine if you want to unroll tables. For instance for PDAs */
-#define USE_TABLES
 
 /* Define to 1 to ignore white space immediately after an open tag,
  * and immediately before a close tag. */
 #define SGML_SPCDEL 0
 
 #define TAB_SIZE 8
-#define dillo_dbg_rendering 0
 
 /*-----------------------------------------------------------------------------
  * Name spaces
@@ -265,15 +264,12 @@ static int Html_add_new_linkimage(DilloHtml *html,
    return ni;
 }
 
-
-
-
 /*
  * Set the font at the top of the stack. BImask specifies which
  * attributes in BI should be changed.
  */
-static void Html_set_top_font(DilloHtml *html, const char *name, int size,
-                              int BI, int BImask)
+void a_Html_set_top_font(DilloHtml *html, const char *name, int size,
+                         int BI, int BImask)
 {
    FontAttrs font_attrs;
 
@@ -295,8 +291,8 @@ static void Html_set_top_font(DilloHtml *html, const char *name, int size,
  * Evaluates the ALIGN attribute (left|center|right|justify) and
  * sets the style at the top of the stack.
  */
-static void Html_tag_set_align_attr(DilloHtml *html, const char *tag, 
-                                    int tagsize)
+void a_Html_tag_set_align_attr(DilloHtml *html,
+                               const char *tag, int tagsize)
 {
    const char *align, *charattr;
 
@@ -332,8 +328,8 @@ static void Html_tag_set_align_attr(DilloHtml *html, const char *tag,
  * Evaluates the VALIGN attribute (top|bottom|middle|baseline) and
  * sets the style in style_attrs. Returns true when set.
  */
-static bool Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
-                                         int tagsize, StyleAttrs *style_attrs)
+bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
+                                int tagsize, StyleAttrs *style_attrs)
 {
    const char *attr;
 
@@ -1373,7 +1369,7 @@ void a_Html_pop_tag(DilloHtml *html, int TagIdx)
  */
 
 /*
- * Used by Html_parse_length
+ * Used by a_Html_parse_length
  */
 static Length Html_parse_length_or_multi_length (const char *attr,
                                                  char **endptr)
@@ -1414,7 +1410,7 @@ static Length Html_parse_length_or_multi_length (const char *attr,
  * Returns a length or a percentage, or UNDEF_LENGTH in case
  * of an error, or if attr is NULL.
  */
-static Length Html_parse_length (DilloHtml *html, const char *attr)
+Length a_Html_parse_length (DilloHtml *html, const char *attr)
 {
    Length l;
    char *end;
@@ -1431,7 +1427,7 @@ static Length Html_parse_length (DilloHtml *html, const char *attr)
       }
    }
 
-   _MSG("Html_parse_length: \"%s\" %d\n", attr, absLengthVal(l));
+   _MSG("a_Html_parse_length: \"%s\" %d\n", attr, absLengthVal(l));
    return l;
 }
 
@@ -1439,8 +1435,8 @@ static Length Html_parse_length (DilloHtml *html, const char *attr)
  * Parse a color attribute.
  * Return value: parsed color, or default_color (+ error msg) on error.
  */
-static int32_t
- Html_color_parse(DilloHtml *html, const char *subtag, int32_t default_color)
+int32_t a_Html_color_parse(DilloHtml *html,
+                           const char *subtag, int32_t default_color)
 {
    int err = 1;
    int32_t color = a_Color_parse(subtag, default_color, &err);
@@ -1715,7 +1711,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    if (!prefs.force_my_colors) {
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
-         color = Html_color_parse(html, attrbuf, prefs.bg_color);
+         color = a_Html_color_parse(html, attrbuf, prefs.bg_color);
          if (color == 0xffffff && !prefs.allow_white_bg)
             color = prefs.bg_color;
 
@@ -1729,17 +1725,17 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
       }
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "text"))) {
-         color = Html_color_parse(html, attrbuf, prefs.text_color);
+         color = a_Html_color_parse(html, attrbuf, prefs.text_color);
          HTML_SET_TOP_ATTR (html, color,
                             Color::createSimple (HT2LT(html),color));
       }
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))
-         html->link_color = Html_color_parse(html, attrbuf, prefs.link_color);
+         html->link_color = a_Html_color_parse(html, attrbuf, prefs.link_color);
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink")))
-         html->visited_color = Html_color_parse(html, attrbuf,
-                                                prefs.visited_color);
+         html->visited_color = a_Html_color_parse(html, attrbuf,
+                                                  prefs.visited_color);
 
       if (prefs.contrast_visited_color) {
          /* get a color that has a "safe distance" from text, link and bg */
@@ -1779,297 +1775,7 @@ static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
    } else {
       DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
    }
-   Html_tag_set_align_attr (html, tag, tagsize);
-}
-
-/*
- * <TABLE>
- */
-static void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
-{
-#ifdef USE_TABLES
-   Widget *table;
-   StyleAttrs style_attrs;
-   Style *cell_style, *old_style;
-   const char *attrbuf;
-   int32_t border = 0, cellspacing = 1, cellpadding = 2, bgcolor;
-#endif
-
-   DW2TB(html->dw)->addParbreak (0, S_TOP(html)->style);
-
-#ifdef USE_TABLES
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border")))
-      border = isdigit(attrbuf[0]) ? strtol (attrbuf, NULL, 10) : 1;
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cellspacing")))
-      cellspacing = strtol (attrbuf, NULL, 10);
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cellpadding")))
-      cellpadding = strtol (attrbuf, NULL, 10);
-
-   /* The style for the table */
-   style_attrs = *S_TOP(html)->style;
-
-   /* When dillo was started with the --debug-rendering option, there
-    * is always a border around the table. */
-   if (dillo_dbg_rendering)
-      style_attrs.borderWidth.setVal (MIN (border, 1));
-   else
-      style_attrs.borderWidth.setVal (border);
-
-   style_attrs.setBorderColor (
-    Color::createShaded(HT2LT(html), style_attrs.backgroundColor->getColor()));
-   style_attrs.setBorderStyle (BORDER_OUTSET);
-   style_attrs.hBorderSpacing = cellspacing;
-   style_attrs.vBorderSpacing = cellspacing;
-
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width")))
-      style_attrs.width = Html_parse_length (html, attrbuf);
-
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "align"))) {
-      if (dStrcasecmp (attrbuf, "left") == 0)
-         style_attrs.textAlign = TEXT_ALIGN_LEFT;
-      else if (dStrcasecmp (attrbuf, "right") == 0)
-         style_attrs.textAlign = TEXT_ALIGN_RIGHT;
-      else if (dStrcasecmp (attrbuf, "center") == 0)
-         style_attrs.textAlign = TEXT_ALIGN_CENTER;
-   }
-
-   if (!prefs.force_my_colors &&
-       (attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
-      bgcolor = Html_color_parse(html, attrbuf, -1);
-      if (bgcolor != -1) {
-         if (bgcolor == 0xffffff && !prefs.allow_white_bg)
-            bgcolor = prefs.bg_color;
-         style_attrs.backgroundColor =
-            Color::createShaded (HT2LT(html), bgcolor);
-         HTML_SET_TOP_ATTR (html, backgroundColor,
-                            Color::createShaded (HT2LT(html), bgcolor));
-      }
-   }
-
-   /* The style for the cells */
-   cell_style = Style::create (HT2LT(html), &style_attrs);
-   style_attrs = *S_TOP(html)->style;
-   /* When dillo was started with the --debug-rendering option, there
-    * is always a border around the cells. */
-   if (dillo_dbg_rendering)
-      style_attrs.borderWidth.setVal (1);
-   else
-      style_attrs.borderWidth.setVal (border ? 1 : 0);
-   style_attrs.padding.setVal(cellpadding);
-   style_attrs.setBorderColor (cell_style->borderColor.top);
-   style_attrs.setBorderStyle (BORDER_INSET);
-
-   old_style = S_TOP(html)->table_cell_style;
-   S_TOP(html)->table_cell_style =
-      Style::create (HT2LT(html), &style_attrs);
-   if (old_style)
-      old_style->unref ();
-
-   table = new Table(prefs.limit_text_width);
-   DW2TB(html->dw)->addWidget (table, cell_style);
-   cell_style->unref ();
-
-   S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TOP;
-   S_TOP(html)->cell_text_align_set = false;
-   S_TOP(html)->table = table;
-#endif
-}
-
-
-/*
- * used by <TD> and <TH>
- */
-static void Html_tag_open_table_cell(DilloHtml *html,
-                                     const char *tag, int tagsize,
-                                     TextAlignType text_align)
-{
-#ifdef USE_TABLES
-   Widget *col_tb;
-   int colspan = 1, rowspan = 1;
-   const char *attrbuf;
-   StyleAttrs style_attrs;
-   Style *style, *old_style;
-   int32_t bgcolor;
-   bool new_style;
-
-   switch (S_TOP(html)->table_mode) {
-   case DILLO_HTML_TABLE_MODE_NONE:
-      BUG_MSG("<td> or <th> outside <table>\n");
-      return;
-
-   case DILLO_HTML_TABLE_MODE_TOP:
-      BUG_MSG("<td> or <th> outside <tr>\n");
-      /* a_Dw_table_add_cell takes care that dillo does not crash. */
-      /* continues */
-   case DILLO_HTML_TABLE_MODE_TR:
-   case DILLO_HTML_TABLE_MODE_TD:
-      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "colspan"))) {
-         char *invalid;
-         colspan = strtol(attrbuf, &invalid, 10);
-         if ((colspan < 0) || (attrbuf == invalid))
-            colspan = 1;
-      }
-      /* todo: check errors? */
-      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rowspan")))
-         rowspan = MAX(1, strtol (attrbuf, NULL, 10));
-
-      /* text style */
-      old_style = S_TOP(html)->style;
-      style_attrs = *old_style;
-      if (!S_TOP(html)->cell_text_align_set)
-         style_attrs.textAlign = text_align;
-      if (a_Html_get_attr(html, tag, tagsize, "nowrap"))
-         style_attrs.whiteSpace = WHITE_SPACE_NOWRAP;
-      else
-         style_attrs.whiteSpace = WHITE_SPACE_NORMAL;
-
-      S_TOP(html)->style =
-         Style::create (HT2LT(html), &style_attrs);
-      old_style->unref ();
-      Html_tag_set_align_attr (html, tag, tagsize);
-
-      /* cell style */
-      style_attrs = *S_TOP(html)->table_cell_style;
-      new_style = false;
-
-      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width"))) {
-         style_attrs.width = Html_parse_length (html, attrbuf);
-         new_style = true;
-      }
-
-      if (Html_tag_set_valign_attr (html, tag, tagsize, &style_attrs))
-         new_style = true;
-
-      if (!prefs.force_my_colors &&
-          (attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
-         bgcolor = Html_color_parse(html, attrbuf, -1);
-         if (bgcolor != -1) {
-            if (bgcolor == 0xffffff && !prefs.allow_white_bg)
-               bgcolor = prefs.bg_color;
-
-            new_style = true;
-            style_attrs.backgroundColor =
-               Color::createShaded (HT2LT(html), bgcolor);
-            HTML_SET_TOP_ATTR (html, backgroundColor,
-                               Color::createShaded (HT2LT(html), bgcolor));
-         }
-      }
-
-      if (S_TOP(html)->style->textAlign
-          == TEXT_ALIGN_STRING)
-         col_tb = new TableCell (
-             ((Table*)S_TOP(html)->table)->getCellRef (),
-             prefs.limit_text_width);
-      else
-         col_tb = new Textblock (prefs.limit_text_width);
-
-      if (new_style) {
-         style = Style::create (HT2LT(html), &style_attrs);
-         col_tb->setStyle (style);
-         style->unref ();
-      } else
-         col_tb->setStyle (S_TOP(html)->table_cell_style);
-
-      ((Table*)S_TOP(html)->table)->addCell (col_tb, colspan, rowspan);
-      S_TOP(html)->textblock = html->dw = col_tb;
-
-      /* Handle it when the user clicks on a link */
-      html->connectSignals(col_tb);
-      break;
-
-   default:
-      /* compiler happiness */
-      break;
-   }
-
-   S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TD;
-#endif
-}
-
-
-/*
- * <TD>
- */
-static void Html_tag_open_td(DilloHtml *html, const char *tag, int tagsize)
-{
-   Html_tag_open_table_cell (html, tag, tagsize, TEXT_ALIGN_LEFT);
-}
-
-
-/*
- * <TH>
- */
-static void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize)
-{
-   Html_set_top_font(html, NULL, 0, 1, 1);
-   Html_tag_open_table_cell (html, tag, tagsize, TEXT_ALIGN_CENTER);
-}
-
-
-/*
- * <TR>
- */
-static void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
-{
-   const char *attrbuf;
-   StyleAttrs style_attrs;
-   Style *style, *old_style;
-   int32_t bgcolor;
-
-#ifdef USE_TABLES
-   switch (S_TOP(html)->table_mode) {
-   case DILLO_HTML_TABLE_MODE_NONE:
-      _MSG("Invalid HTML syntax: <tr> outside <table>\n");
-      return;
-
-   case DILLO_HTML_TABLE_MODE_TOP:
-   case DILLO_HTML_TABLE_MODE_TR:
-   case DILLO_HTML_TABLE_MODE_TD:
-      style = NULL;
-
-      if (!prefs.force_my_colors &&
-          (attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
-         bgcolor = Html_color_parse(html, attrbuf, -1);
-         if (bgcolor != -1) {
-            if (bgcolor == 0xffffff && !prefs.allow_white_bg)
-               bgcolor = prefs.bg_color;
-
-            style_attrs = *S_TOP(html)->style;
-            style_attrs.backgroundColor =
-               Color::createShaded (HT2LT(html), bgcolor);
-            style = Style::create (HT2LT(html), &style_attrs);
-            HTML_SET_TOP_ATTR (html, backgroundColor,
-                               Color::createShaded (HT2LT(html), bgcolor));
-         }
-      }
-
-      ((Table*)S_TOP(html)->table)->addRow (style);
-      if (style)
-         style->unref ();
-
-      if (a_Html_get_attr (html, tag, tagsize, "align")) {
-         S_TOP(html)->cell_text_align_set = true;
-         Html_tag_set_align_attr (html, tag, tagsize);
-      }
-
-      style_attrs = *S_TOP(html)->table_cell_style;
-      Html_tag_set_valign_attr (html, tag, tagsize, &style_attrs);
-      style_attrs.backgroundColor =
-         Color::createShaded (HT2LT(html),
-                              S_TOP(html)->style->backgroundColor->getColor());
-      old_style = S_TOP(html)->table_cell_style;
-      S_TOP(html)->table_cell_style =
-         Style::create (HT2LT(html), &style_attrs);
-      old_style->unref ();
-      break;
-   default:
-      break;
-   }
-
-   S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TR;
-#else
-   DW2TB(html->dw)->addParbreak (0, S_TOP(html)->style);
-#endif
+   a_Html_tag_set_align_attr (html, tag, tagsize);
 }
 
 /*
@@ -2161,10 +1867,10 @@ static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
 
    /* todo: combining these two would be slightly faster */
-   Html_set_top_font(html, prefs.vw_fontname,
-                     Html_level_to_fontsize(FontSizesNum - (tag[2] - '0')),
-                     1, 3);
-   Html_tag_set_align_attr (html, tag, tagsize);
+   a_Html_set_top_font(html, prefs.vw_fontname,
+                       Html_level_to_fontsize(FontSizesNum - (tag[2] - '0')),
+                       1, 3);
+   a_Html_tag_set_align_attr (html, tag, tagsize);
 
    /* First finalize unclosed H tags (we test if already named anyway) */
    a_Menu_pagemarks_set_text(html->bw, html->Stash->str);
@@ -2196,7 +1902,7 @@ static void Html_tag_open_big_small(DilloHtml *html,
    level =
       Html_fontsize_to_level(S_TOP(html)->style->font->size) +
       ((dStrncasecmp(tag+1, "big", 3)) ? -1 : 1);
-   Html_set_top_font(html, NULL, Html_level_to_fontsize(level), 0, 0);
+   a_Html_set_top_font(html, NULL, Html_level_to_fontsize(level), 0, 0);
 }
 
 /*
@@ -2227,8 +1933,8 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
             color = html->visited_color;
          } else { 
             /* use the tag-specified color */
-            color = Html_color_parse(
-                       html, attrbuf, style_attrs.color->getColor());
+            color = a_Html_color_parse(html, attrbuf,
+                                       style_attrs.color->getColor());
             style_attrs.color = Color::createSimple (HT2LT(html), color);
          }
       }
@@ -2266,7 +1972,7 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_b(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, NULL, 0, 1, 1);
+   a_Html_set_top_font(html, NULL, 0, 1, 1);
 }
 
 /*
@@ -2274,7 +1980,7 @@ static void Html_tag_open_b(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_strong(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, NULL, 0, 1, 1);
+   a_Html_set_top_font(html, NULL, 0, 1, 1);
 }
 
 /*
@@ -2282,7 +1988,7 @@ static void Html_tag_open_strong(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_i(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, NULL, 0, 2, 2);
+   a_Html_set_top_font(html, NULL, 0, 2, 2);
 }
 
 /*
@@ -2290,7 +1996,7 @@ static void Html_tag_open_i(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_em(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, NULL, 0, 2, 2);
+   a_Html_set_top_font(html, NULL, 0, 2, 2);
 }
 
 /*
@@ -2298,7 +2004,7 @@ static void Html_tag_open_em(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_cite(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, NULL, 0, 2, 2);
+   a_Html_set_top_font(html, NULL, 0, 2, 2);
 }
 
 /*
@@ -2317,7 +2023,7 @@ static void Html_tag_open_address(DilloHtml *html,
                                   const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
-   Html_set_top_font(html, NULL, 0, 2, 2);
+   a_Html_set_top_font(html, NULL, 0, 2, 2);
 }
 
 /*
@@ -2325,7 +2031,7 @@ static void Html_tag_open_address(DilloHtml *html,
  */
 static void Html_tag_open_tt(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
+   a_Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
 
 /*
@@ -2360,11 +2066,11 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    // Check for malicious values
    // TODO: the same for percentage and relative lengths.
    if (width_ptr) {
-      l_w = Html_parse_length (html, width_ptr);
+      l_w = a_Html_parse_length (html, width_ptr);
       w = isAbsLength(l_w) ? absLengthVal(l_w) : 0;
    }
    if (height_ptr) {
-      l_h = Html_parse_length (html, height_ptr);
+      l_h = a_Html_parse_length (html, height_ptr);
       h = isAbsLength(l_h) ? absLengthVal(l_h) : 0;
    }
    if (w < 0 || h < 0 || abs(w*h) > MAX_W * MAX_H) {
@@ -3065,7 +2771,7 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
    style_attrs = *S_TOP(html)->style;
 
    width_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "width", "100%");
-   style_attrs.width = Html_parse_length (html, width_ptr);
+   style_attrs.width = a_Html_parse_length (html, width_ptr);
    dFree(width_ptr);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
@@ -3125,7 +2831,7 @@ static void Html_tag_open_dl(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
-   Html_set_top_font(html, NULL, 0, 1, 1);
+   a_Html_set_top_font(html, NULL, 0, 1, 1);
 }
 
 /*
@@ -3143,7 +2849,7 @@ static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
-   Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
+   a_Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 
    /* Is the placement of this statement right? */
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_PRE;
@@ -3313,7 +3019,7 @@ static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_code(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
+   a_Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
 
 /*
@@ -3321,7 +3027,7 @@ static void Html_tag_open_code(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dfn(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, NULL, 0, 2, 3);
+   a_Html_set_top_font(html, NULL, 0, 2, 3);
 }
 
 /*
@@ -3329,7 +3035,7 @@ static void Html_tag_open_dfn(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_kbd(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
+   a_Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
 
 /*
@@ -3337,7 +3043,7 @@ static void Html_tag_open_kbd(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_samp(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
+   a_Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
 
 /*
@@ -3345,7 +3051,7 @@ static void Html_tag_open_samp(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_var(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_set_top_font(html, NULL, 0, 2, 2);
+   a_Html_set_top_font(html, NULL, 0, 2, 2);
 }
 
 /*
@@ -3370,7 +3076,7 @@ static void Html_tag_open_sup(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (0, S_TOP(html)->style);
-   Html_tag_set_align_attr (html, tag, tagsize);
+   a_Html_tag_set_align_attr (html, tag, tagsize);
 }
 
 /*
@@ -3977,9 +3683,9 @@ static void Html_add_widget(DilloHtml *html,
 
    new_style_attrs = *style_attrs;
    new_style_attrs.width = width_str ?
-      Html_parse_length (html, width_str) : LENGTH_AUTO;
+      a_Html_parse_length (html, width_str) : LENGTH_AUTO;
    new_style_attrs.height = height_str ?
-      Html_parse_length (html, height_str) : LENGTH_AUTO;
+      a_Html_parse_length (html, height_str) : LENGTH_AUTO;
    style = Style::create (HT2LT(html), &new_style_attrs);
    DW2TB(html->dw)->addWidget (widget, style);
    style->unref ();
