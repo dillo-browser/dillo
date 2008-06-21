@@ -44,8 +44,6 @@
 
 #include "dw/textblock.hh"
 #include "dw/bullet.hh"
-#include "dw/table.hh"
-#include "dw/tablecell.hh"
 #include "dw/listitem.hh"
 #include "dw/image.hh"
 #include "dw/ruler.hh"
