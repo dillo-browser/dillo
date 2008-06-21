@@ -1729,7 +1729,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
       }
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))
-         html->link_color = a_Html_color_parse(html, attrbuf, prefs.link_color);
+         html->link_color = a_Html_color_parse(html,attrbuf,prefs.link_color);
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink")))
          html->visited_color = a_Html_color_parse(html, attrbuf,
