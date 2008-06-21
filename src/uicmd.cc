@@ -644,6 +644,10 @@ void a_UIcmd_set_page_prog(BrowserWindow *bw, size_t nbytes, int cmd)
 void a_UIcmd_set_img_prog(BrowserWindow *bw, int n_img, int t_img, int cmd)
 {
    BW2UI(bw)->set_img_prog(n_img, t_img, cmd);
+#if 0
+   if (cmd == 1 && n_img > 0 && n_img == t_img)
+      a_UIcmd_close_bw(bw);
+#endif
 }
 
 /*
