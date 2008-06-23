@@ -711,15 +711,18 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    dw::core::ui::SelectionResource *res;
    if (a_Html_get_attr(html, tag, tagsize, "multiple")) {
       type = DILLO_HTML_INPUT_SEL_LIST;
-      res = factory->createListResource (dw::core::ui::ListResource::SELECTION_MULTIPLE);
+      res = factory->createListResource (
+         dw::core::ui::ListResource::SELECTION_MULTIPLE);
    } else {
       type = DILLO_HTML_INPUT_SELECT;
       res = factory->createOptionMenuResource ();
    }
    dw::core::ui::Embed *embed = new dw::core::ui::Embed(res);
    if (prefs.standard_widget_colors) {
-      HTML_SET_TOP_ATTR(html, color, NULL);
-      HTML_SET_TOP_ATTR(html, backgroundColor, NULL);
+      /* Colors cannot be NULL because SELECT can contain other elements */
+      HTML_SET_TOP_ATTR(html, color, Color::createSimple (HT2LT(html), 0));
+      HTML_SET_TOP_ATTR(html, backgroundColor,
+                        Color::createShaded (HT2LT(html), 0xffffff));
    }
    DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
 
