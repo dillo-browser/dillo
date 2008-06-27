@@ -75,7 +75,7 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
          return -1;
 
       /* Set a style for the widget */
-      fontAttrs.name = "Bitstream Charter";
+      fontAttrs.name = prefs.vw_fontname;
       fontAttrs.size = (int) rint(12.0 * prefs.font_factor);
       fontAttrs.weight = 400;
       fontAttrs.style = style::FONT_STYLE_NORMAL;

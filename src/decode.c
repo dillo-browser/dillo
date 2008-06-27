@@ -194,7 +194,7 @@ Decode *a_Decode_transfer_init(const char *format)
       dc->decode = Decode_chunked;
       dc->free = Decode_chunked_free;
       dc->buffer = NULL; /* not used */
-      MSG("chunked!\n");
+      _MSG("chunked!\n");
    }
    return dc;
 }
@@ -210,7 +210,7 @@ Decode *a_Decode_content_init(const char *format)
    Decode *dc = NULL;
 
    if (format && !dStrcasecmp(format, "gzip")) {
-      MSG("gzipped data!\n");
+      _MSG("gzipped data!\n");
 
       z_stream *zs;
       dc = dNew(Decode, 1);
