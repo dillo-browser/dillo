@@ -69,6 +69,7 @@ dillo_fltk_SOURCES = \
 	plain.cc \
 	html.cc \
 	html.hh \
+	html_common.hh \
 	form.cc \
 	form.hh \
 	table.cc \
