@@ -128,7 +128,7 @@ public:
                  dw::core::ui::Embed *embed,
                  const char *name,
                  const char *init_str,
-                 bool_t init_val);
+                 bool init_val);
 };
 
 class DilloHtmlReceiver:
@@ -157,7 +157,7 @@ public:  //BUG: for now everything is public
                          is simply the value of the button; for text
                          entries, it is the initial value */
    DilloHtmlSelect *select;
-   bool_t init_val;   /* only meaningful for buttons */
+   bool init_val;     /* only meaningful for buttons */
    Dstr *file_data;   /* only meaningful for file inputs.
                          todo: may become a list... */
 
@@ -172,7 +172,7 @@ public:
                    dw::core::ui::Embed *embed,
                    const char *name,
                    const char *init_str,
-                   bool_t init_val);
+                   bool init_val);
    ~DilloHtmlInput ();
    void appendValuesTo(Dlist *values, bool is_active_submit);
    void reset();
@@ -343,7 +343,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    dw::core::ui::Embed *embed = NULL;
    char *value, *name, *type, *init_str;
    const char *attrbuf, *label;
-   bool_t init_val = FALSE;
+   bool init_val = false;
   
    if (!(html->InFlags & IN_FORM)) {
       BUG_MSG("<input> element outside <form>\n");
@@ -1423,7 +1423,7 @@ void DilloHtmlForm::addInput(DilloHtmlInputType type,
                              dw::core::ui::Embed *embed,
                              const char *name,
                              const char *init_str,
-                             bool_t init_val)
+                             bool init_val)
 {
    _MSG("name=[%s] init_str=[%s] init_val=[%d]\n",
         name, init_str, init_val);
@@ -1502,7 +1502,7 @@ DilloHtmlInput::DilloHtmlInput (DilloHtmlInputType type2,
                                 dw::core::ui::Embed *embed2,
                                 const char *name2,
                                 const char *init_str2,
-                                bool_t init_val2)
+                                bool init_val2)
 {
    type = type2;
    embed = embed2;
