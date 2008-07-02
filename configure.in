@@ -396,34 +396,6 @@ case $target in
 esac
 fi
 
-dnl ------------------------------------
-dnl Workaround for nanosleep and solaris
-dnl ------------------------------------
-dnl
-case $target in
-  *-*-solaris*)
-    AC_MSG_CHECKING(whether SunOS has -lrt )
-    LDSAVEFLAGS="$LDFLAGS"
-    LDFLAGS="$LDFLAGS -lrt"
-    AC_TRY_LINK_FUNC(nanosleep, rt_ok=yes, rt_ok=no)
-    if test "x$rt_ok" = "xyes"; then
-      AC_MSG_RESULT(yes)
-    else
-      AC_MSG_RESULT(no)
-      AC_MSG_CHECKING(whether SunOS has -lposix4 )
-      LDFLAGS="$LDSAVEFLAGS -lposix4"
-      AC_TRY_LINK_FUNC(nanosleep, posix_ok=yes, posix_ok=no)
-      if test "x$posix_ok" = "xyes"; then
-        AC_MSG_RESULT(yes)
-      else
-        LDFLAGS=$LDSAVEFLAGS
-        AC_MSG_RESULT(no)
-        AC_MSG_WARN([*** Try setting LIBS or LDFLAGS manually to point to the library with nanosleep()***])
-      fi
-    fi          
-  ;;
-esac
-
 dnl --------------------
 dnl Command line options
 dnl --------------------
