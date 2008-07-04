@@ -18,7 +18,6 @@
 #include <fltk/run.h>
 #include <fltk/damage.h>
 #include <fltk/xpmImage.h>
-#include <fltk/MultiImage.h>
 #include <fltk/events.h>        // for mouse buttons and keys
 #include <fltk/InvisibleBox.h>
 #include <fltk/PopupMenu.h>
@@ -344,14 +343,13 @@ static void menu_cb(Widget* w, void*)
 PackedGroup *UI::make_toolbar(int tw, int th)
 {
    HighlightButton *b;
-   MultiImage *multi;
    PackedGroup *p1=new PackedGroup(0,0,tw,th);
    p1->begin();
     Back = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Back" : 0);
     ImgLeftIns = new xpmImage(Small_Icons ? left_si_xpm : left_i_xpm);
     ImgLeftSens = new xpmImage(Small_Icons ? left_s_xpm : left_xpm);
-    multi = new MultiImage(*ImgLeftSens, INACTIVE_R, *ImgLeftIns);
-    b->image(multi);
+    ImgLeftMulti = new MultiImage(*ImgLeftSens, INACTIVE_R, *ImgLeftIns);
+    b->image(ImgLeftMulti);
     b->tooltip("Previous page");
     b->callback(b1_cb, (void *)UI_BACK);
     HighlightButton::default_style->highlight_color(CuteColor);
@@ -359,36 +357,40 @@ PackedGroup *UI::make_toolbar(int tw, int th)
     Forw = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Forw" : 0);
     ImgRightIns = new xpmImage(Small_Icons ? right_si_xpm : right_i_xpm);
     ImgRightSens = new xpmImage(Small_Icons ? right_s_xpm : right_xpm);
-    multi = new MultiImage(*ImgRightSens, INACTIVE_R, *ImgRightIns);
-    b->image(multi);
+    ImgRightMulti = new MultiImage(*ImgRightSens, INACTIVE_R, *ImgRightIns);
+    b->image(ImgRightMulti);
     b->tooltip("Next page");
     b->callback(b1_cb, (void *)UI_FORW);
   
     Home = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Home" : 0);
-    b->image(new xpmImage(Small_Icons ? home_s_xpm : home_xpm));
+    ImgHome = new xpmImage(Small_Icons ? home_s_xpm : home_xpm);
+    b->image(ImgHome);
     b->tooltip("Go to the Home page");
     b->callback(b1_cb, (void *)UI_HOME);
 
     Reload = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Reload" : 0);
-    b->image(new xpmImage(Small_Icons ? reload_s_xpm : reload_xpm));
+    ImgReload = new xpmImage(Small_Icons ? reload_s_xpm : reload_xpm);
+    b->image(ImgReload);
     b->tooltip("Reload");
     b->callback(b1_cb, (void *)UI_RELOAD);
   
     Save = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Save" : 0);
-    b->image(new xpmImage(Small_Icons ? save_s_xpm : save_xpm));
+    ImgSave = new xpmImage(Small_Icons ? save_s_xpm : save_xpm);
+    b->image(ImgSave);
     b->tooltip("Save this page");
     b->callback(b1_cb, (void *)UI_SAVE);
   
     Stop = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
     ImgStopIns = new xpmImage(Small_Icons ? stop_si_xpm : stop_i_xpm);
     ImgStopSens = new xpmImage(Small_Icons ? stop_s_xpm : stop_xpm);
-    multi = new MultiImage(*ImgStopSens, INACTIVE_R, *ImgStopIns);
-    b->image(multi);
+    ImgStopMulti = new MultiImage(*ImgStopSens, INACTIVE_R, *ImgStopIns);
+    b->image(ImgStopMulti);
     b->tooltip("Stop loading");
     b->callback(b1_cb, (void *)UI_STOP);
 
     Bookmarks = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Book" : 0);
-    b->image(new xpmImage(Small_Icons ? bm_s_xpm : bm_xpm));
+    ImgBook = new xpmImage(Small_Icons ? bm_s_xpm : bm_xpm);
+    b->image(ImgBook);
     b->tooltip("View bookmarks");
     b->callback(b1_cb, (void *)UI_BOOK);
 
@@ -396,6 +398,28 @@ PackedGroup *UI::make_toolbar(int tw, int th)
    p1->end();
 
    return p1;
+}
+
+/*
+ * Delete panel imgs
+ */
+void UI::delete_panel_images()
+{
+   delete ImgLeftIns;
+   delete ImgLeftSens;
+   delete ImgLeftMulti;
+   delete ImgRightIns;
+   delete ImgRightSens;
+   delete ImgRightMulti;
+   delete ImgStopIns;
+   delete ImgStopSens;
+   delete ImgStopMulti;
+   delete ImgHome;
+   delete ImgReload;
+   delete ImgSave;
+   delete ImgBook;
+   delete ImgClear;
+   delete ImgSearch;
 }
 
 /*
@@ -407,7 +431,8 @@ PackedGroup *UI::make_location()
    PackedGroup *pg = new PackedGroup(0,0,0,0);
    pg->begin();
     Clear = b = new NewHighlightButton(2,2,16,22,0);
-    b->image(new xpmImage(new_s_xpm));
+    ImgClear = new xpmImage(new_s_xpm);
+    b->image(ImgClear);
     b->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
     //b->callback(b1_cb, (void *)UI_CLEAR);
     b->callback(clear_cb, (void *)this);
@@ -419,7 +444,8 @@ PackedGroup *UI::make_location()
     i->callback(location_cb, this);
 
     Search = b = new HighlightButton(0,0,16,22,0);
-    b->image(new xpmImage(search_xpm));
+    ImgSearch = new xpmImage(search_xpm);
+    b->image(ImgSearch);
     b->tooltip("Search the Web");
     //b->callback(b1_cb, (void *)UI_SEARCH);
     b->callback(search_cb, (void *)this);
@@ -698,6 +724,27 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    //show();
 }
 
+/*
+ * UI destructor
+ */
+UI::~UI()
+{
+   delete_panel_images();
+   delete_status_panel_images();
+   delete ImgFullScreenOn;
+   delete ImgFullScreenOff;
+}
+
+/*
+ * delete status panel images
+ */
+void UI::delete_status_panel_images()
+{
+   delete ImgImageLoadOn;
+   delete ImgImageLoadOff;
+   delete ImgMeterOK;
+   delete ImgMeterBug;
+}
 
 /*
  * FLTK event handler for this window.
@@ -926,6 +973,8 @@ void UI::customize(int flags)
 void UI::panel_cb_i()
 {
    Group *NewPanel;
+
+   delete_panel_images();
 
    // Create a new Panel
    ++PanelSize;

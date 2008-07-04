@@ -10,6 +10,7 @@
 #include <fltk/PackedGroup.h>
 #include <fltk/Output.h>
 #include <fltk/Image.h>
+#include <fltk/MultiImage.h>
 
 #include "findbar.hh"
 
@@ -48,7 +49,9 @@ class UI : public fltk::Window {
    NewProgressBox *PProg, *IProg;
    Image *ImgLeftIns, *ImgLeftSens, *ImgRightIns, *ImgRightSens,
          *ImgStopIns, *ImgStopSens, *ImgFullScreenOn, *ImgFullScreenOff,
-         *ImgImageLoadOn, *ImgImageLoadOff, *ImgMeterOK, *ImgMeterBug;
+         *ImgImageLoadOn, *ImgImageLoadOff, *ImgMeterOK, *ImgMeterBug,
+         *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgClear, *ImgSearch;
+   MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti;
    Group *Panel, *StatusPanel;
    Widget *Main;
    Output *Status;
@@ -67,11 +70,12 @@ class UI : public fltk::Window {
    Group *make_menu(int tiny);
    Group *make_panel(int ww);
 
-
+   void delete_panel_images();
+   void delete_status_panel_images();
 public:
 
    UI(int w, int h, const char* label = 0, const UI *cur_ui = NULL);
-   ~UI() {} // TODO: implement destructor
+   ~UI();
 
    // To manage what events to catch and which to let pass
    int handle(int event);
