@@ -103,7 +103,7 @@ char *init_sockdir(char *dpi_socket_dir)
 
    if ((sockdir = a_Dpi_rd_dpi_socket_dir(dpi_socket_dir)) == NULL) {
       MSG_ERR("init_sockdir: The dpi_socket_dir file %s does not exist\n",
-              sockdir);
+              dpi_socket_dir);
    } else {
       if ((dir_ok = tst_dir(sockdir)) == 1) {
          MSG_ERR("init_sockdir: The socket directory %s exists and is OK\n",
