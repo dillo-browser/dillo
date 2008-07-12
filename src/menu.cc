@@ -45,14 +45,20 @@ static int history_direction = -1;
 static int *history_list = NULL;
 
 /*
- * Local sub class
- * (Used to add the hint for history popup menus)
+ * Local sub class.
+ * Used to add the hint for history popup menus, and to remember
+ * the mouse button pressed over a menu item.
  */
-
 class NewItem : public Item {
+   int EventButton;
 public:
-   NewItem (const char* label) : Item(label) {};
+   NewItem (const char* label) : Item(label) { EventButton = 0; };
+   int button () { return EventButton; };
    void draw();
+   int handle(int e) {
+      EventButton = event_button();
+      return Item::handle(e);
+   }
 };
 
 /*
@@ -211,10 +217,10 @@ static void Menu_bugmeter_about_cb(Widget* )
  */
 static void Menu_history_cb(Widget *wid, void *data)
 {
-   int k = event_button();
+   int mb = ((NewItem*)wid)->button();
    int offset = history_direction * VOIDP2INT(data);
 
-   if (k == 2) {
+   if (mb == 2) {
       /* middle button, open in a new window */
       a_UIcmd_nav_jump(popup_bw, offset, 1);
    } else {
