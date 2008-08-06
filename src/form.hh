@@ -23,6 +23,7 @@ typedef enum {
  */
 
 class DilloHtmlForm;
+class DilloHtmlInput;
 class DilloHtml;
 
 /*
@@ -36,6 +37,7 @@ DilloHtmlForm *a_Html_form_new(DilloHtml *html,
                                const char *charset);
 
 void a_Html_form_delete(DilloHtmlForm* form);
+void a_Html_input_delete(DilloHtmlInput* input);
 
 /*
  * Form parsing functions 

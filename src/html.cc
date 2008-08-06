@@ -503,6 +503,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    /* Init page-handling variables */
    forms = new misc::SimpleVector <DilloHtmlForm*> (1);
+   inputs_outside_form = new misc::SimpleVector <DilloHtmlInput*> (1);
    links = new misc::SimpleVector <DilloUrl*> (64);
    images = new misc::SimpleVector <DilloLinkImage*> (16);
    //a_Dw_image_map_list_init(&maps);
@@ -569,6 +570,10 @@ DilloHtml::~DilloHtml()
    for (int i = 0; i < forms->size(); i++)
       a_Html_form_delete (forms->get(i));
    delete(forms);
+
+   for (int i = 0; i < inputs_outside_form->size(); i++)
+      a_Html_input_delete(inputs_outside_form->get(i));
+   delete(inputs_outside_form);
 
    for (int i = 0; i < links->size(); i++)
       if (links->get(i))

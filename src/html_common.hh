@@ -197,6 +197,7 @@ public:  //BUG: for now everything is public
    /* Variables required after parsing (for page functionality)          */
    /* -------------------------------------------------------------------*/
    lout::misc::SimpleVector<DilloHtmlForm*> *forms;
+   lout::misc::SimpleVector<DilloHtmlInput*> *inputs_outside_form;
    lout::misc::SimpleVector<DilloUrl*> *links;
    lout::misc::SimpleVector<DilloLinkImage*> *images;
    dw::ImageMapsList maps;

@@ -37,7 +37,6 @@ using namespace dw::core::style;
  */
 
 class DilloHtmlReceiver;
-class DilloHtmlInput;
 class DilloHtmlSelect;
 class DilloHtmlOption;
 
@@ -120,15 +119,10 @@ public:
                   DilloHtmlMethod method, const DilloUrl *action,
                   DilloHtmlEnc enc, const char *charset);
    ~DilloHtmlForm ();
-   DilloHtmlInput *getCurrentInput ();
    DilloHtmlInput *getInput (dw::core::ui::Resource *resource);
    DilloHtmlInput *getRadioInput (const char *name);
    void reset ();
-   void addInput(DilloHtmlInputType type,
-                 dw::core::ui::Embed *embed,
-                 const char *name,
-                 const char *init_str,
-                 bool init_val);
+   void addInput(DilloHtmlInput *input, DilloHtmlInputType type);
 };
 
 class DilloHtmlReceiver:
@@ -221,9 +215,70 @@ void a_Html_form_delete (DilloHtmlForm *form)
    delete form;
 }
 
+void a_Html_input_delete (DilloHtmlInput *input)
+{
+   delete input;
+}
+
 /*
  * Form parsing functions 
  */
+
+/*
+ * Add an HTML control
+ */
+static void Html_add_input(DilloHtml *html, DilloHtmlInputType type,
+                           dw::core::ui::Embed *embed, const char *name,
+                           const char *init_str, bool init_val)
+{
+   _MSG("name=[%s] init_str=[%s] init_val=[%d]\n", name, init_str, init_val);
+   DilloHtmlInput *input = new DilloHtmlInput(type, embed, name, init_str,
+                                              init_val);
+   if (html->InFlags & IN_FORM) {
+      html->getCurrentForm()->addInput(input, type);
+   } else {
+      int ni = html->inputs_outside_form->size();
+      html->inputs_outside_form->increase();
+      html->inputs_outside_form->set(ni, input);
+   }
+}
+
+/*
+ * Find radio input by name
+ */
+static DilloHtmlInput *Html_get_radio_input(DilloHtml *html, const char *name)
+{
+   lout::misc::SimpleVector<DilloHtmlInput*>* inputs;
+
+   if (html->InFlags & IN_FORM)
+      inputs = html->getCurrentForm()->inputs;
+   else
+      inputs = html->inputs_outside_form;
+
+   for (int idx = 0; idx < inputs->size(); idx++) {
+      DilloHtmlInput *input = inputs->get(idx);
+      if (input->type == DILLO_HTML_INPUT_RADIO &&
+          input->name && !dStrcasecmp(input->name, name))
+         return input;
+   }
+   return NULL;
+}
+
+/*
+ * Get the current input.
+ * Note that this _assumes_ that there _is_ a current input.
+ */
+static DilloHtmlInput *Html_get_current_input(DilloHtml *html)
+{
+   lout::misc::SimpleVector<DilloHtmlInput*>* inputs;
+
+   if (html->InFlags & IN_FORM)
+      inputs = html->getCurrentForm()->inputs;
+   else
+      inputs = html->inputs_outside_form;
+
+   return inputs->get (inputs->size() - 1);
+}
 
 /*
  * Handle <FORM> tag
@@ -338,17 +393,12 @@ void Html_tag_close_form(DilloHtml *html, int TagIdx)
  */
 void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 {
-   DilloHtmlForm *form;
    DilloHtmlInputType inp_type;
    dw::core::ui::Embed *embed = NULL;
    char *value, *name, *type, *init_str;
    const char *attrbuf, *label;
    bool init_val = false;
   
-   if (!(html->InFlags & IN_FORM)) {
-      BUG_MSG("<input> element outside <form>\n");
-      return;
-   }
    if (html->InFlags & IN_SELECT) {
       BUG_MSG("<input> element inside <select>\n");
       return;
@@ -357,8 +407,6 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       BUG_MSG("<input> element inside <button>\n");
       return;
    }
-  
-   form = html->getCurrentForm ();
   
    /* Get 'value', 'name' and 'type' */
    value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
@@ -383,7 +431,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    } else if (!dStrcasecmp(type, "radio")) {
       inp_type = DILLO_HTML_INPUT_RADIO;
       dw::core::ui::RadioButtonResource *rb_r = NULL;
-      DilloHtmlInput *input = form->getRadioInput(name);
+      DilloHtmlInput *input = Html_get_radio_input(html, name);
       if (input)
          rb_r =
             (dw::core::ui::RadioButtonResource*)
@@ -432,15 +480,22 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          init_str = value;
       }
    } else if (!dStrcasecmp(type, "file")) {
-      if (form->method != DILLO_HTML_METHOD_POST) {
-         BUG_MSG("Forms with file input MUST use HTTP POST method\n");
-         MSG("File input ignored in form not using HTTP POST method\n");
-      } else if (form->enc != DILLO_HTML_ENC_MULTIPART) {
-         BUG_MSG("Forms with file input MUST use multipart/form-data"
-                 " encoding\n");
-         MSG("File input ignored in form not using multipart/form-data"
-             " encoding\n");
-      } else {
+      bool valid = true;
+      if (html->InFlags & IN_FORM) {
+         DilloHtmlForm *form = html->getCurrentForm();
+         if (form->method != DILLO_HTML_METHOD_POST) {
+            valid = false;
+            BUG_MSG("Forms with file input MUST use HTTP POST method\n");
+            MSG("File input ignored in form not using HTTP POST method\n");
+         } else if (form->enc != DILLO_HTML_ENC_MULTIPART) {
+            valid = false;
+            BUG_MSG("Forms with file input MUST use multipart/form-data"
+                    " encoding\n");
+            MSG("File input ignored in form not using multipart/form-data"
+                " encoding\n");
+         }
+      }
+      if (valid) {
          inp_type = DILLO_HTML_INPUT_FILE;
          init_str = dStrdup("File selector");
          dw::core::ui::LabelButtonResource *lbr =
@@ -470,7 +525,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    }
 
    if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
-      form->addInput(inp_type, embed, name,
+      Html_add_input(html, inp_type, embed, name,
                      (init_str) ? init_str : "", init_val);
    }
   
@@ -515,7 +570,6 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
  */
 void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
 {
-   DilloHtmlForm *form;
    DilloUrl *action;
    dw::core::ui::Embed *embed;
    const char *attrbuf;
@@ -532,8 +586,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
   
    html->formNew(DILLO_HTML_METHOD_GET, action, DILLO_HTML_ENC_URLENCODING,
                  html->charset);
-  
-   form = html->getCurrentForm ();
+   html->InFlags |= IN_FORM;
   
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
   
@@ -543,7 +596,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    dw::core::ui::EntryResource *entryResource =
       HT2LT(html)->getResourceFactory()->createEntryResource (10, false);
    embed = new dw::core::ui::Embed (entryResource);
-   form->addInput(DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
+   Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
    if (prefs.standard_widget_colors) {
       HTML_SET_TOP_ATTR(html, color, NULL);
@@ -552,6 +605,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
   
    a_Url_free(action);
+   html->InFlags &= ~IN_FORM;
 }
 
 /*
@@ -560,17 +614,10 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
  */
 void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 {
-   DilloHtmlForm *form;
    char *name;
    const char *attrbuf;
    int cols, rows;
   
-   /* We can't push a new <FORM> because the 'action' URL is unknown */
-   if (!(html->InFlags & IN_FORM)) {
-      BUG_MSG("<textarea> outside <form>\n");
-      html->ReqTagClose = TRUE;
-      return;
-   }
    if (html->InFlags & IN_TEXTAREA) {
       BUG_MSG("nested <textarea>\n");
       html->ReqTagClose = TRUE;
@@ -578,7 +625,6 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    }
   
    html->InFlags |= IN_TEXTAREA;
-   form = html->getCurrentForm ();
    a_Html_stash_init(html);
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
   
@@ -601,7 +647,7 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    if (a_Html_get_attr(html, tag, tagsize, "readonly"))
       textres->setEditable(false);
 
-   form->addInput(DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
+   Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
 
    DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
 
@@ -630,7 +676,7 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 // gtk_widget_show(widget);
 // gtk_widget_show(scroll);
 //
-// form->addInput(DILLO_HTML_INPUT_TEXTAREA,
+// Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA,
 //                widget, name, NULL, FALSE);
 // dFree(name);
 //
@@ -647,12 +693,10 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
 {
    char *str;
-   DilloHtmlForm *form;
    DilloHtmlInput *input;
    int i;
 
-   if (html->InFlags & IN_FORM &&
-       html->InFlags & IN_TEXTAREA) {
+   if (html->InFlags & IN_TEXTAREA) {
       /* Remove the line ending that follows the opening tag */
       if (html->Stash->str[0] == '\r')
          dStr_erase(html->Stash, 0, 1);
@@ -672,8 +716,7 @@ void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
    
       /* The HTML3.2 spec says it can have "text and character entities". */
       str = a_Html_parse_entities(html, html->Stash->str, html->Stash->len);
-      form = html->getCurrentForm ();
-      input = form->getCurrentInput ();
+      input = Html_get_current_input(html);
       input->init_str = str;
       ((dw::core::ui::MultiLineTextResource *)input->embed->getResource ())
          ->setText(str);
@@ -692,10 +735,6 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 // const char *attrbuf;
 // int size, type, multi;
 
-   if (!(html->InFlags & IN_FORM)) {
-      BUG_MSG("<select> outside <form>\n");
-      return;
-   }
    if (html->InFlags & IN_SELECT) {
       BUG_MSG("nested <select>\n");
       return;
@@ -703,7 +742,6 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    html->InFlags |= IN_SELECT;
    html->InFlags &= ~IN_OPTION;
 
-   DilloHtmlForm *form = html->getCurrentForm ();
    char *name = a_Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
    dw::core::ui::ResourceFactory *factory =
       HT2LT(html)->getResourceFactory ();
@@ -746,7 +784,7 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 //    type = DILLO_HTML_INPUT_SEL_LIST;
 // }
 
-   form->addInput(type, embed, name, NULL, false);
+   Html_add_input(html, type, embed, name, NULL, false);
    a_Html_stash_init(html);
    dFree(name);
 }
@@ -756,15 +794,13 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
  */
 void Html_tag_close_select(DilloHtml *html, int TagIdx)
 {
-   if (html->InFlags & IN_FORM &&
-       html->InFlags & IN_SELECT) {
+   if (html->InFlags & IN_SELECT) {
       if (html->InFlags & IN_OPTION)
          Html_option_finish(html);
       html->InFlags &= ~IN_SELECT;
       html->InFlags &= ~IN_OPTION;
 
-      DilloHtmlForm *form = html->getCurrentForm ();
-      DilloHtmlInput *input = form->getCurrentInput ();
+      DilloHtmlInput *input = Html_get_current_input(html);
       DilloHtmlSelect *select = input->select;
 
       // BUG(?): should not do this for MULTI selections 
@@ -783,15 +819,15 @@ void Html_tag_close_select(DilloHtml *html, int TagIdx)
  */
 void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
 {
-   if (!(html->InFlags & IN_FORM &&
-         html->InFlags & IN_SELECT ))
+   if (!(html->InFlags & IN_SELECT)) {
+      BUG_MSG("<option> element outside <select>\n");
       return;
+   }
    if (html->InFlags & IN_OPTION)
       Html_option_finish(html);
    html->InFlags |= IN_OPTION;
 
-   DilloHtmlForm *form = html->getCurrentForm ();
-   DilloHtmlInput *input = form->getCurrentInput ();
+   DilloHtmlInput *input = Html_get_current_input(html);
 
    if (input->type == DILLO_HTML_INPUT_SELECT ||
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
@@ -816,21 +852,15 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
     * Buttons are rendered on one line, this is (at several levels) a
     * bit simpler. May be changed in the future.
     */
-   DilloHtmlForm *form;
    DilloHtmlInputType inp_type;
    char *type;
 
-   if (!(html->InFlags & IN_FORM)) {
-      BUG_MSG("<button> element outside <form>\n");
-      return;
-   }
    if (html->InFlags & IN_BUTTON) {
       BUG_MSG("nested <button>\n");
       return;
    }
    html->InFlags |= IN_BUTTON;
 
-   form = html->getCurrentForm ();
    type = a_Html_get_attr_wdef(html, tag, tagsize, "type", "");
 
    if (!dStrcasecmp(type, "button")) {
@@ -880,7 +910,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
       name = a_Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
 
-      form->addInput(inp_type, embed, name, value, FALSE);
+      Html_add_input(html, inp_type, embed, name, value, FALSE);
       dFree(name);
       dFree(value);
    }
@@ -1398,14 +1428,6 @@ void DilloHtmlForm::appendClickposMultipart(Dstr *data,
 }
 
 /*
- * Get the current input.
- */
-DilloHtmlInput *DilloHtmlForm::getCurrentInput ()
-{
-   return inputs->get (inputs->size() - 1);
-}
-
-/*
  * Reset all inputs containing reset to their initial values.  In
  * general, reset is the reset button for the form.
  */
@@ -1417,18 +1439,10 @@ void DilloHtmlForm::reset ()
 }
 
 /*
- * Add a new input, setting the initial values.
+ * Add a new input.
  */
-void DilloHtmlForm::addInput(DilloHtmlInputType type,
-                             dw::core::ui::Embed *embed,
-                             const char *name,
-                             const char *init_str,
-                             bool init_val)
+void DilloHtmlForm::addInput(DilloHtmlInput *input, DilloHtmlInputType type)
 {
-   _MSG("name=[%s] init_str=[%s] init_val=[%d]\n",
-        name, init_str, init_val);
-   DilloHtmlInput *input =
-      new DilloHtmlInput (type,embed,name,init_str,init_val);
    input->connectTo (form_receiver);
    int ni = inputs->size ();
    inputs->increase ();
@@ -1911,8 +1925,7 @@ static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
  */
 static void Html_option_finish(DilloHtml *html)
 {
-   DilloHtmlForm *form = html->getCurrentForm ();
-   DilloHtmlInput *input = form->getCurrentInput ();
+   DilloHtmlInput *input = Html_get_current_input(html);
    if (input->type == DILLO_HTML_INPUT_SELECT ||
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
       DilloHtmlOption *option =
