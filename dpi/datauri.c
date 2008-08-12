@@ -296,7 +296,7 @@ int main(void)
    data = datauri_get_data(url, &data_size);
 
    MSG("mime_type: %s\n", mime_type);
-   MSG("data_size: %d\n", data_size);
+   MSG("data_size: %d\n", (int)data_size);
    MSG("data: {%s}\n", data);
 
    if (mime_type && data) {

@@ -69,7 +69,7 @@ void sock_handler_free(SockHandler *sh);
  * Escape URI characters in 'esc_set' as %XX sequences.
  * Return value: New escaped string.
  */
-char *Escape_uri_str(const char *str, char *p_esc_set);
+char *Escape_uri_str(const char *str, const char *p_esc_set);
 
 /*
  * Escape unsafe characters as html entities.

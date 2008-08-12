@@ -23,7 +23,7 @@ char *a_Dpip_build_cmd(const char *format, ...);
  *       (dpip character escaping is removed here)
  * Return value: the attribute value, or NULL if not present or malformed.
  */
-char *a_Dpip_get_attr(char *tag, size_t tagsize, char *attrname);
+char *a_Dpip_get_attr(char *tag, size_t tagsize, const char *attrname);
 
 
 #ifdef __cplusplus

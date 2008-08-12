@@ -9,7 +9,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-char *a_Misc_escape_chars(const char *str, char *esc_set);
+char *a_Misc_escape_chars(const char *str, const char *esc_set);
 char *a_Misc_expand_tabs(const char *str);
 int a_Misc_get_content_type_from_data(void *Data, size_t Size,const char **PT);
 int a_Misc_content_type_check(const char *EntryType, const char *DetectedType);

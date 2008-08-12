@@ -336,7 +336,8 @@ static void Dns_server_req(int channel, const char *hostname)
    dns_server[channel].hostname = dStrdup(hostname);
 
    /* Let's set a timeout client to poll the server channel (5 times/sec) */
-   a_Timeout_add(0.2,Dns_timeout_client,(void*)(dns_server[channel].channel));
+   a_Timeout_add(0.2,Dns_timeout_client,
+                 INT2VOIDP(dns_server[channel].channel));
 
 #ifdef D_DNS_THREADED
    /* set the thread attribute to the detached state */

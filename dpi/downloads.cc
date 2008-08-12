@@ -134,14 +134,14 @@ public:
    void child_init();
    void father_init();
    void update_size(int new_sz);
-   void log_text_add(char *buf, ssize_t st);
+   void log_text_add(const char *buf, ssize_t st);
    void log_text_show();
    void abort_dl();
    void prButton_cb();
    pid_t pid() { return mPid; }
    void pid(pid_t p) { mPid = p; }
    void child_finished(int status);
-   void status_msg(char *msg) { prBar->message(msg); }
+   void status_msg(const char *msg) { prBar->message((char*)msg); }
    Widget *get_widget() { return group; }
    int widget_done() { return WidgetDone; }
    void widget_done(int val) { WidgetDone = val; }
@@ -325,15 +325,15 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
       Filter_smtp_hack(esc_url);
    dl_argv = new char*[8];
    int i = 0;
-   dl_argv[i++] = "wget";
+   dl_argv[i++] = (char*)"wget";
    if (action == DL_CONTINUE) {
       if (stat(fullname, &ss) == 0)
          init_bytesize = (int)ss.st_size;
-      dl_argv[i++] = "-c";
+      dl_argv[i++] = (char*)"-c";
    }
-   dl_argv[i++] = "--load-cookies";
+   dl_argv[i++] = (char*)"--load-cookies";
    dl_argv[i++] = dStrconcat(dGethomedir(), "/.dillo/cookies.txt", NULL);
-   dl_argv[i++] = "-O";
+   dl_argv[i++] = (char*)"-O";
    dl_argv[i++] = fullname;
    dl_argv[i++] = esc_url;
    dl_argv[i++] = NULL;
@@ -481,9 +481,10 @@ void DLItem::update_prSize(int newsize)
    prSize->redraw_label();
 }
 
-void DLItem::log_text_add(char *buf, ssize_t st)
+void DLItem::log_text_add(const char *buf, ssize_t st)
 {
-   char *p, *q, *d, num[64];
+   const char *p;
+   char *q, *d, num[64];
 
    // Make room...
    if (log_len + st >= log_max) {
@@ -941,8 +942,8 @@ end:
  */
 static void dlwin_esc_cb(Widget *, void *)
 {
-   char *msg = "There are running downloads.\n"
-               "ABORT them and EXIT anyway?";
+   const char *msg = "There are running downloads.\n"
+                     "ABORT them and EXIT anyway?";
 
    if (dl_win && dl_win->num_running() > 0) {
       int ch = fltk::choice(msg, "Yes", "*No", "Cancel");

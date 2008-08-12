@@ -24,7 +24,7 @@
  * Escape characters as %XX sequences.
  * Return value: New string.
  */
-char *a_Misc_escape_chars(const char *str, char *esc_set)
+char *a_Misc_escape_chars(const char *str, const char *esc_set)
 {
    static const char *hex = "0123456789ABCDEF";
    char *p = NULL;

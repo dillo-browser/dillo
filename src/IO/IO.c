@@ -330,11 +330,11 @@ static void IO_submit(IOData_t *r_io)
 
    if (r_io->Op == IORead) {
       a_IOwatch_add_fd(r_io->FD, DIO_READ,
-                       IO_fd_read_cb, (void*)(r_io->Key));
+                       IO_fd_read_cb, INT2VOIDP(r_io->Key));
 
    } else if (r_io->Op == IOWrite) {
       a_IOwatch_add_fd(r_io->FD, DIO_WRITE,
-                       IO_fd_write_cb, (void*)(r_io->Key));
+                       IO_fd_write_cb, INT2VOIDP(r_io->Key));
    }
 }
 

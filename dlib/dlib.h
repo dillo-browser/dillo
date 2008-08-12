@@ -35,7 +35,7 @@ extern "C" {
 /* TODO: include a void* size test in configure.in */
 /* (long) works for both 32bit and 64bit */
 #define VOIDP2INT(p)    ((long)(p))
-#define INT2VOIDP(i)    ((void*)(i))
+#define INT2VOIDP(i)    ((void*)((long)(i)))
 
 /*
  *-- Memory -------------------------------------------------------------------
