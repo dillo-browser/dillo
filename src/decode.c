@@ -1,3 +1,13 @@
+/*
+ * File: decode.c
+ *
+ * Copyright 2007-2008 Jorge Arellano Cid <jcid@dillo.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
 
 #include <zlib.h>
 #include <iconv.h>
@@ -282,10 +292,7 @@ Decode *a_Decode_charset_init(const char *format)
 }
 
 /*
- * Filter data using our decoder.
- *
- * The input string should not be used after this call. The decoder will
- * free it if necessary.
+ * Decode data.
  */
 Dstr *a_Decode_process(Decode *dc, const char *instr, int inlen)
 {
