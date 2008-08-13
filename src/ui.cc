@@ -560,7 +560,7 @@ Group *UI::make_panel(int ww)
       g1->end();
 
    } else {
-      g1 = new Group(0,0,ww,fh+lh+bh+lh);
+      g1 = new Group(0,0,ww,fh+lh+bh);
       g1->begin();
        // File menu
        if (PanelSize == P_large) {
@@ -594,14 +594,9 @@ Group *UI::make_panel(int ww)
            w = make_progress_bars(1,0);
         }
         pg->add(w);
-
-       w = new Widget(0,fh+lh+bh,ww,lh,"TABS  P A N E L");
-       //w->box(EMBOSSED_BOX);
-       w->box( PLASTIC_UP_BOX);
-       g1->add(w);
-
-       g3->resizable(pg);
-       //pg->box(BORDER_FRAME);
+   
+       g3->resizable(pg); // Better than 'w3' and it also works
+       pg->box(BORDER_FRAME);
        //g3->box(EMBOSSED_BOX);
        g3->end();
    
