@@ -646,44 +646,9 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    /* Readonly or not? */
    if (a_Html_get_attr(html, tag, tagsize, "readonly"))
       textres->setEditable(false);
-
    Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
-
    DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
-
-// widget = gtk_text_new(NULL, NULL);
-// /* compare <input type=text> */
-// gtk_signal_connect_after(GTK_OBJECT(widget), "button_press_event",
-//                          GTK_SIGNAL_FUNC(gtk_true),
-//                          NULL);
-//
-// /* Calculate the width and height based on the cols and rows
-//  * todo: Get it right... Get the metrics from the font that will be used.
-//  */
-// gtk_widget_set_usize(widget, 6 * cols, 16 * rows);
-//
-// /* If the attribute readonly isn't specified we make the textarea
-//  * editable. If readonly is set we don't have to do anything.
-//  */
-// if (!a_Html_get_attr(html, tag, tagsize, "readonly"))
-//    gtk_text_set_editable(GTK_TEXT(widget), TRUE);
-//
-// scroll = gtk_scrolled_window_new(NULL, NULL);
-// gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-//                                GTK_POLICY_AUTOMATIC,
-//                                GTK_POLICY_AUTOMATIC);
-// gtk_container_add(GTK_CONTAINER(scroll), widget);
-// gtk_widget_show(widget);
-// gtk_widget_show(scroll);
-//
-// Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA,
-//                widget, name, NULL, FALSE);
-// dFree(name);
-//
-// embed_gtk = a_Dw_embed_gtk_new ();
-// a_Dw_embed_gtk_add_gtk (DW_EMBED_GTK (embed_gtk), scroll);
-// DW2TB(html->dw)->addWidget (embed_gtk,
-//                             S_TOP(html)->style);
+   dFree(name);
 }
 
 /*
