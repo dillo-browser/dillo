@@ -304,9 +304,11 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
 
    method = DILLO_HTML_METHOD_GET;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "method"))) {
-      if (!dStrcasecmp(attrbuf, "post"))
+      if (!dStrcasecmp(attrbuf, "post")) {
          method = DILLO_HTML_METHOD_POST;
-      /* todo: maybe deal with unknown methods? */
+      } else if (dStrcasecmp(attrbuf, "get")) {
+         BUG_MSG("Unknown form submission method \"%s\"\n", attrbuf);
+      }
    }
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "action")))
       action = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
