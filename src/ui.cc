@@ -686,7 +686,7 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    }
    ImageLoad->box(THIN_DOWN_BOX);
    ImageLoad->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
-   ImageLoad->tooltip("Click me to toggle image loading.");
+   ImageLoad->tooltip("Toggle image loading");
    ImageLoad->callback(imageload_cb, (void *)this);
    StatusPanel->add(ImageLoad);
 
