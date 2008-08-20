@@ -1570,7 +1570,7 @@ void DilloHtmlInput::activate(DilloHtmlForm *form, bool force_submit,
       break;
    case DILLO_HTML_INPUT_RESET:
    case DILLO_HTML_INPUT_BUTTON_RESET:
-      reset ();
+      form->reset ();
       break;
    default:
       form->submit (this, click_x, click_y);
