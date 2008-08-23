@@ -11,6 +11,7 @@
 #include <fltk/Output.h>
 #include <fltk/Image.h>
 #include <fltk/MultiImage.h>
+#include <fltk/MenuBuild.h>
 
 #include "findbar.hh"
 
@@ -67,7 +68,7 @@ class UI : public fltk::Window {
    PackedGroup *make_toolbar(int tw, int th);
    PackedGroup *make_location();
    PackedGroup *make_progress_bars(int wide, int thin_up);
-   Group *make_menu(int tiny);
+   void make_menubar(int x, int y, int w, int h);
    Group *make_panel(int ww);
 
    void delete_panel_images();

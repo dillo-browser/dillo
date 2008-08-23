@@ -481,30 +481,46 @@ PackedGroup *UI::make_progress_bars(int wide, int thin_up)
 }
 
 /*
- * Create the "File" menu
+ * Static function for menubar callbacks.
  */
-Group *UI::make_menu(int tiny)
+static void menubar_cb(Widget *wid, void *data)
 {
-   Item *i;
+   UI *ui = (UI*)wid->window();
 
-    PopupMenu *pm = new PopupMenu(2,2,30,fh-4, tiny ? "&F" : "&File");
-    pm->callback(menu_cb);
-    pm->begin();
-     i = new Item("&New Browser");
-     i->shortcut(CTRL+'n');
-     i = new Item("&Open File...");
-     i->shortcut(CTRL+'o');
-     i = new Item("Open UR&L...");
-     i->shortcut(CTRL+'l');
-     i = new Item("Close Window");
-     i->shortcut(CTRL+'q');
+   if (strcmp((char*)data, "nb") == 0) {
+      a_UIcmd_browser_window_new(wid->window()->w(), wid->window()->h(), ui);
+   } else if (strcmp((char*)data, "of") == 0) {
+      a_UIcmd_open_file(ui->user_data());
+   } else if (strcmp((char*)data, "ou") == 0) {
+      if (ui->get_panelmode() == UI_HIDDEN) {
+         ui->set_panelmode(UI_TEMPORARILY_SHOW_PANELS);
+      }
+      ui->focus_location();
+   } else if (strcmp((char*)data, "cw") == 0) {
+      a_UIcmd_close_bw(ui->user_data());
+   } else if (strcmp((char*)data, "ed") == 0) {
+      a_UIcmd_close_all_bw();
+   }
+}
+
+/*
+ * Create the menubar ("File" menu only).
+ */
+void UI::make_menubar(int x, int y, int w, int h)
+{
+   MenuBar *mb = new MenuBar(x,y,w,h);
+   mb->begin();
+    ItemGroup *g = new ItemGroup( "&File" );
+    g->begin();
+     new Item("&New Browser", COMMAND + 'n', menubar_cb, (void *)"nb");
+     new Item("&Open File...", COMMAND + 'o', menubar_cb, (void *)"of");
+     new Item("Open UR&L...", COMMAND + 'l', menubar_cb, (void *)"ou");
+     new Item("Close &Window", COMMAND + 'q', menubar_cb, (void *)"cw");
      new Divider();
-     i = new Item("Exit Dillo");
-     i->shortcut(ALT+'q');
-
-    pm->end();
-
-   return pm;
+     new Item("E&xit Dillo", ACCELERATOR + 'q', menubar_cb, (void *)"ed");
+    g->end();
+   mb->box(EMBOSSED_BOX);
+   mb->end();
 }
 
 /*
@@ -564,11 +580,7 @@ Group *UI::make_panel(int ww)
       g1->begin();
        // File menu
        if (PanelSize == P_large) {
-          g2 = new Group(0,0,ww,fh);
-          g2->begin();
-           make_menu(0);
-          g2->box(EMBOSSED_BOX);
-          g2->end();
+          make_menubar(0,0,ww,fh);
        }
 
        // Location
@@ -854,6 +866,8 @@ void UI::set_location(const char *str)
 void UI::focus_location()
 {
    Location->take_focus();
+   // Make text selected when already focused.
+   Location->position(Location->size(), 0);
 }
 
 /*
