@@ -31,25 +31,24 @@
 #include "misc.h"
 #include "msg.h"
 
-#define RCNAME "dillorc2"
+#define RCNAME "dillo2rc"
 
 #define DILLO_START_PAGE "about:splash"
 #define DILLO_HOME "http://www.dillo.org/"
-#define D_GEOMETRY_DEFAULT_WIDTH   640
-#define D_GEOMETRY_DEFAULT_HEIGHT  550
+#define D_GEOMETRY_DEFAULT_WIDTH   780
+#define D_GEOMETRY_DEFAULT_HEIGHT  580
 #define D_GEOMETRY_DEFAULT_XPOS  -9999
 #define D_GEOMETRY_DEFAULT_YPOS  -9999
 
-#define D_VW_FONTNAME "helvetica"
-#define D_FW_FONTNAME "courier"
+#define D_VW_FONTNAME "DejaVu Sans"
+#define D_FW_FONTNAME "DejaVu Sans Mono"
 #define D_SEARCH_URL "http://www.google.com/search?q=%s"
 #define D_SAVE_DIR "/tmp/"
 
-#define DW_COLOR_DEFAULT_GREY   0xd6d6d6
-#define DW_COLOR_DEFAULT_BLACK  0x000000
-#define DW_COLOR_DEFAULT_BLUE   0x0000ff
-#define DW_COLOR_DEFAULT_PURPLE 0x800080
-#define DW_COLOR_DEFAULT_BGND   0xd6d6c0
+#define DW_COLOR_DEFAULT_BGND   0xdcd1ba
+#define DW_COLOR_DEFAULT_TEXT   0x000000
+#define DW_COLOR_DEFAULT_LINK   0x0000ff
+#define DW_COLOR_DEFAULT_VLINK  0x800080
 
 /*-----------------------------------------------------------------------------
  * Global Data
@@ -404,22 +403,22 @@ void a_Prefs_init(void)
    prefs.http_proxyuser = NULL;
    prefs.http_referer = dStrdup("host");
    prefs.no_proxy = NULL;
-   prefs.link_color = DW_COLOR_DEFAULT_BLUE;
-   prefs.visited_color = DW_COLOR_DEFAULT_PURPLE;
+   prefs.link_color = DW_COLOR_DEFAULT_LINK;
+   prefs.visited_color = DW_COLOR_DEFAULT_VLINK;
    prefs.bg_color = DW_COLOR_DEFAULT_BGND;
-   prefs.text_color = DW_COLOR_DEFAULT_BLACK;
+   prefs.text_color = DW_COLOR_DEFAULT_TEXT;
    prefs.start_page = a_Url_new(DILLO_START_PAGE, NULL, 0, 0, 0);
    prefs.home = a_Url_new(DILLO_HOME, NULL, 0, 0, 0);
    prefs.allow_white_bg = TRUE;
    prefs.force_my_colors = FALSE;
-   prefs.contrast_visited_color = FALSE;
-   prefs.standard_widget_colors = TRUE;
-   prefs.show_tooltip = FALSE;
-   prefs.panel_size = P_tiny;
+   prefs.contrast_visited_color = TRUE;
+   prefs.standard_widget_colors = FALSE;
+   prefs.show_tooltip = TRUE;
+   prefs.panel_size = P_large;
    prefs.small_icons = FALSE;
    prefs.limit_text_width = FALSE;
    prefs.w3c_plus_heuristics = TRUE;
-   prefs.font_factor = 1.0;
+   prefs.font_factor = 1.2;
    prefs.show_back=TRUE;
    prefs.show_forw=TRUE;
    prefs.show_home=TRUE;

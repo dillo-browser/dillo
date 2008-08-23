@@ -1,4 +1,4 @@
-AM_CPPFLAGS=-DDILLORC_SYS='"$(sysconfdir)/dillorc2"' @LIBJPEG_CPPFLAGS@
+AM_CPPFLAGS=-DDILLORC_SYS='"$(sysconfdir)/dillo2rc"' @LIBJPEG_CPPFLAGS@
 AM_CFLAGS = -I../../dw-testbed @LIBPNG_CFLAGS@
 AM_CXXFLAGS = -I../../dw-testbed @LIBPNG_CFLAGS@ @LIBFLTK_CXXFLAGS@
 
