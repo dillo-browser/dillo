@@ -616,6 +616,8 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
  */
 void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 {
+   const int MAX_COLS=1024, MAX_ROWS=10000;
+
    char *name;
    const char *attrbuf;
    int cols, rows;
@@ -637,9 +639,19 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    cols = 20;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cols")))
       cols = strtol(attrbuf, NULL, 10);
+   if (cols < 1 || cols > MAX_COLS) {
+      int badCols = cols;
+      cols = (cols < 1 ? 20 : MAX_COLS);
+      BUG_MSG("textarea cols=%d, using cols=%d instead\n", badCols, cols);
+   }
    rows = 10;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rows")))
       rows = strtol(attrbuf, NULL, 10);
+   if (rows < 1 || rows > MAX_ROWS) {
+      int badRows = rows;
+      rows = (rows < 1 ? 2 : MAX_ROWS);
+      BUG_MSG("textarea rows=%d, using rows=%d instead\n", badRows, rows);
+   }
    name = NULL;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name")))
       name = dStrdup(attrbuf);
