@@ -625,6 +625,10 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
       html->ReqTagClose = TRUE;
       return;
    }
+   if (html->InFlags & IN_SELECT) {
+      BUG_MSG("<textarea> element inside <select>\n");
+      return;
+   }
   
    html->InFlags |= IN_TEXTAREA;
    a_Html_stash_init(html);
@@ -824,6 +828,10 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 
    if (html->InFlags & IN_BUTTON) {
       BUG_MSG("nested <button>\n");
+      return;
+   }
+   if (html->InFlags & IN_SELECT) {
+      BUG_MSG("<button> element inside <select>\n");
       return;
    }
    html->InFlags |= IN_BUTTON;
