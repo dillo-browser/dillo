@@ -3753,6 +3753,9 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
             } else
                ++buf_index;
          } while (buf_index < bufsize);
+
+         if (buf_index == bufsize)
+            break;
       }
 
       if (isspace(buf[buf_index])) {
