@@ -275,7 +275,7 @@ void dStr_append (Dstr *ds, const char *s)
 Dstr *dStr_new (const char *s)
 {
    Dstr *ds = dStr_sized_new(0);
-   if (s)
+   if (s && *s)
       dStr_append(ds, s);
    return ds;
 }
