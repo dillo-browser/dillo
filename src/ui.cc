@@ -315,19 +315,6 @@ static void imageload_cb(Widget *w, void *data)
    }
 }
 
-/*
- * File menu item callback.
- */
-static void menu_cb(Widget* w, void*)
-{
-  Menu* menu = (Menu*)w;
-  Widget* item = menu->get_item();
-  MSG("Callback for %s, item is %s\n",
-      menu->label() ? menu->label() : "menu bar",
-      item ? item->label() ? item->label() : "unnamed" : "none");
-  //if (item) item->do_callback();
-  menu->value(-1);
-}
 
 //////////////////////////////////////////////////////////////////////////////
 // UI class methods
