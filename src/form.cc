@@ -1336,9 +1336,20 @@ void DilloHtmlForm::appendInputMultipartFiles(Dstr* data,
       dStr_sprintfa(data,
                     "\r\n"
                     "Content-Disposition: form-data; name=\"%s\"; "
-                       "filename=\"%s\"\r\n"
+                       "filename=\"", name);
+      /*
+       * Servers don't seem to like encoded names yet, but let's at least
+       * replace the characters that are the most likely to damage things.
+       */
+      for (int i = 0; char c = filename[i]; i++) {
+         if (c == '\"' || c == '\r' || c == '\n')
+            c = '_';
+         dStr_append_c(data, c);
+      }
+      dStr_sprintfa(data,
+                    "\"\r\n"
                     "Content-Type: %s\r\n"
-                    "\r\n", name, filename, ctype);
+                    "\r\n", ctype);
 
       dStr_append_l(data, file->str, file->len);
 
@@ -1361,7 +1372,7 @@ void DilloHtmlForm::appendInputMultipart(Dstr *data,
          dStr_append(data, "--");
          dStr_append(data, boundary);
       }
-      // todo: encode name (RFC 2231) [coming soon]
+      // todo: encode name (RFC 2231)
       dStr_sprintfa(data,
                     "\r\n"
                     "Content-Disposition: form-data; name=\"%s\"\r\n"
