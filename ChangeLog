@@ -110,6 +110,7 @@ dillo-fltk2
  - Enabled the file dpi to look inside gzipped files.
  - Allowed form inputs outside the FORM element (it's in the standard).
  - Fixed a segfault bug in VERBATIM mode.
+ - Made image inputs less of a special case by using x,y in ComplexButton.
    Patches: place (AKA corvid)
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

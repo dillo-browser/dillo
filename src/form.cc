@@ -78,11 +78,10 @@ class DilloHtmlForm {
    friend class DilloHtmlInput;
 
    DilloHtml *html;
-   void eventHandler(dw::core::ui::Resource *resource,
-                     int click_x, int click_y);
-   void submit(DilloHtmlInput *input, int click_x, int click_y);
-   DilloUrl *buildQueryUrl(DilloHtmlInput *input, int click_x, int click_y);
-   Dstr *buildQueryData(DilloHtmlInput *active_submit, int x, int y);
+   void eventHandler(dw::core::ui::Resource *resource);
+   void submit(DilloHtmlInput *input);
+   DilloUrl *buildQueryUrl(DilloHtmlInput *input);
+   Dstr *buildQueryData(DilloHtmlInput *active_submit);
    char *makeMultipartBoundary(iconv_t encoder, DilloHtmlInput *active_submit);
    Dstr *encodeText(iconv_t encoder, Dstr **input);
    void urlencodeAppend(Dstr *str, const char *val);
@@ -96,10 +95,9 @@ class DilloHtmlForm {
                              const char *boundary,
                              const char *name,
                              const char *value);
-   void appendClickposUrlencode(Dstr *data, Dstr *name, int x,int y);
-   void appendClickposMultipart(Dstr *data,
-                                const char *boundary,
-                                Dstr *name, int x, int y);
+   void appendClickposUrlencode(Dstr *data, Dstr *name, Dstr *x, Dstr *y);
+   void appendClickposMultipart(Dstr *data, const char *boundary, Dstr *name,
+                                Dstr *x, Dstr *y);
 
 public:  //BUG: for now everything is public
    DilloHtmlMethod method;
@@ -157,8 +155,7 @@ public:  //BUG: for now everything is public
 
 private:
    void connectTo(DilloHtmlReceiver *form_receiver);
-   void activate(DilloHtmlForm *form, bool force_submit,
-                 int click_x, int click_y);
+   void activate(DilloHtmlForm *form, bool force_submit);
    void readFile(BrowserWindow *bw);
 
 public:
@@ -955,8 +952,7 @@ DilloHtmlForm::~DilloHtmlForm ()
       delete(form_receiver);
 }
 
-void DilloHtmlForm::eventHandler(dw::core::ui::Resource *resource,
-                                 int click_x, int click_y)
+void DilloHtmlForm::eventHandler(dw::core::ui::Resource *resource)
 {
    MSG("DilloHtmlForm::eventHandler\n");
    DilloHtmlInput *input = getInput(resource);
@@ -964,7 +960,7 @@ void DilloHtmlForm::eventHandler(dw::core::ui::Resource *resource,
       bool force_submit =
          prefs.enterpress_forces_submit ||
          num_entry_fields == 1;
-      input->activate (this, force_submit, click_x, click_y);
+      input->activate (this, force_submit);
    } else {
       MSG("DilloHtmlForm::eventHandler: ERROR, input not found!\n");
    }
@@ -973,12 +969,10 @@ void DilloHtmlForm::eventHandler(dw::core::ui::Resource *resource,
 /*
  * Submit.
  * (Called by eventHandler())
- * click_x and click_y are used only by input images.
  */
-void DilloHtmlForm::submit(DilloHtmlInput *input,
-                           int click_x, int click_y)
+void DilloHtmlForm::submit(DilloHtmlInput *input)
 {
-   DilloUrl *url = buildQueryUrl(input, click_x, click_y);
+   DilloUrl *url = buildQueryUrl(input);
    if (url) {
       a_Nav_push(html->bw, url);
       a_Url_free(url);
@@ -991,8 +985,7 @@ void DilloHtmlForm::submit(DilloHtmlInput *input,
  * Build a new query URL.
  * (Called by submit())
  */
-DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input,
-                                       int click_x, int click_y)
+DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input)
 {
    DilloUrl *new_url = NULL;
 
@@ -1011,7 +1004,7 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input,
          }
       }
 
-      DataStr = buildQueryData(active_submit, click_x, click_y);
+      DataStr = buildQueryData(active_submit);
       if (DataStr) {
          /* action was previously resolved against base URL */
          char *action_str = dStrdup(URL_STR(action));
@@ -1049,8 +1042,7 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input,
 /*
  * Construct the data for a query URL
  */
-Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit,
-                                    int x, int y)
+Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
 {
    Dstr *DataStr = NULL;
    char *boundary = NULL;
@@ -1082,58 +1074,62 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit,
 
          name = encodeText(encoder, &name);
 
-         if (input->type == DILLO_HTML_INPUT_IMAGE) {
-            if (is_active_submit){
+         input->appendValuesTo(values, is_active_submit);
+
+         if (input->type == DILLO_HTML_INPUT_FILE && dList_length(values) >0) {
+            if (dList_length(values) > 1)
+               MSG_WARN("multiple files per form control not supported\n");
+            Dstr *file = (Dstr *) dList_nth_data(values, 0);
+            dList_remove(values, file);
+
+            /* Get filename and encode it. Do not encode file contents. */
+            dw::core::ui::LabelButtonResource *lbr =
+               (dw::core::ui::LabelButtonResource*)
+               input->embed->getResource();
+            const char *filename = lbr->getLabel();
+            if (filename[0] && strcmp(filename, input->init_str)) {
+               char *p = strrchr(filename, '/');
+               if (p)
+                  filename = p + 1;     /* don't reveal path */
+               Dstr *dfilename = dStr_new(filename);
+               dfilename = encodeText(encoder, &dfilename);
+               appendInputMultipartFiles(DataStr, boundary, name->str,
+                                         file, dfilename->str);
+               dStr_free(dfilename, 1);
+            }
+            dStr_free(file, 1);
+         } else if (input->type == DILLO_HTML_INPUT_INDEX) {
+            Dstr *val = (Dstr *) dList_nth_data(values, 0);
+            dList_remove(values, val);
+            val = encodeText(encoder, &val);
+            urlencodeAppend(DataStr, val->str);
+            dStr_free(val, 1);
+         } else if (input->type == DILLO_HTML_INPUT_IMAGE) {
+            if (dList_length(values) > 0) {
+               Dstr *x, *y;
+               x = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, x);
+               y = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, y);
                if (enc == DILLO_HTML_ENC_URLENCODING)
                   appendClickposUrlencode(DataStr, name, x, y);
                else if (enc == DILLO_HTML_ENC_MULTIPART)
-                  appendClickposMultipart(DataStr, boundary, name, x,y);
+                  appendClickposMultipart(DataStr, boundary, name, x, y);
+               dStr_free(x, 1);
+               dStr_free(y, 1);
             }
          } else {
-            input->appendValuesTo(values, is_active_submit);
-
-            if (input->type == DILLO_HTML_INPUT_FILE &&
-                dList_length(values) > 0) {
-               if (dList_length(values) > 1)
-                  MSG_WARN("multiple files per form control not supported\n");
-               Dstr *file = (Dstr *) dList_nth_data(values, 0);
-               dList_remove(values, file);
-
-               /* Get filename and encode it. Do not encode file contents. */
-               dw::core::ui::LabelButtonResource *lbr =
-                  (dw::core::ui::LabelButtonResource*)
-                  input->embed->getResource();
-               const char *filename = lbr->getLabel();
-               if (filename[0] && strcmp(filename, input->init_str)) {
-                  char *p = strrchr(filename, '/');
-                  if (p)
-                     filename = p + 1;     /* don't reveal path */
-                  Dstr *dfilename = dStr_new(filename);
-                  dfilename = encodeText(encoder, &dfilename);
-                  appendInputMultipartFiles(DataStr, boundary, name->str,
-                                            file, dfilename->str);
-                  dStr_free(dfilename, 1);
-               }
-               dStr_free(file, 1);
-            } else if (input->type == DILLO_HTML_INPUT_INDEX) {
+            int length = dList_length(values), i;
+            for (i = 0; i < length; i++) {
                Dstr *val = (Dstr *) dList_nth_data(values, 0);
                dList_remove(values, val);
                val = encodeText(encoder, &val);
-               urlencodeAppend(DataStr, val->str);
+               if (enc == DILLO_HTML_ENC_URLENCODING)
+                  appendInputUrlencode(DataStr, name->str, val->str);
+               else if (enc == DILLO_HTML_ENC_MULTIPART)
+                  appendInputMultipart(DataStr, boundary,
+                                       name->str, val->str);
                dStr_free(val, 1);
-            } else {
-               int length = dList_length(values), i;
-               for (i = 0; i < length; i++) {
-                  Dstr *val = (Dstr *) dList_nth_data(values, 0);
-                  dList_remove(values, val);
-                  val = encodeText(encoder, &val);
-                  if (enc == DILLO_HTML_ENC_URLENCODING)
-                     appendInputUrlencode(DataStr, name->str, val->str);
-                  else if (enc == DILLO_HTML_ENC_MULTIPART)
-                     appendInputMultipart(DataStr, boundary,
-                                          name->str, val->str);
-                  dStr_free(val, 1);
-               }
             }
          }
          dStr_free(name, 1);
@@ -1379,38 +1375,34 @@ void DilloHtmlForm::appendInputMultipart(Dstr *data,
 /*
  * Append an image button click position to url data using url encoding.
  */
-void DilloHtmlForm::appendClickposUrlencode(Dstr *data,
-                                            Dstr *name, int x,int y)
+void DilloHtmlForm::appendClickposUrlencode(Dstr *data, Dstr *name, Dstr *x,
+                                            Dstr *y)
 {
    if (name->len) {
       urlencodeAppend(data, name->str);
-      dStr_sprintfa(data, ".x=%d&", x);
+      dStr_sprintfa(data, ".x=%s&", x->str);
       urlencodeAppend(data, name->str);
-      dStr_sprintfa(data, ".y=%d&", y);
+      dStr_sprintfa(data, ".y=%s&", y->str);
    } else
-      dStr_sprintfa(data, "x=%d&y=%d&", x, y);
+      dStr_sprintfa(data, "x=%s&y=%s&", x->str, y->str);
 }
 
 /*
  * Append an image button click position to url data using multipart encoding.
  */
-void DilloHtmlForm::appendClickposMultipart(Dstr *data,
-                                            const char *boundary,
-                                            Dstr *name, int x, int y)
+void DilloHtmlForm::appendClickposMultipart(Dstr *data, const char *boundary,
+                                            Dstr *name, Dstr *x, Dstr *y)
 {
-   char posstr[16];
    int orig_len = name->len;
 
    if (orig_len)
       dStr_append_c(name, '.');
    dStr_append_c(name, 'x');
 
-   snprintf(posstr, 16, "%d", x);
-   appendInputMultipart(data, boundary, name->str, posstr);
+   appendInputMultipart(data, boundary, name->str, x->str);
    dStr_truncate(name, name->len - 1);
    dStr_append_c(name, 'y');
-   snprintf(posstr, 16, "%d", y);
-   appendInputMultipart(data, boundary, name->str, posstr);
+   appendInputMultipart(data, boundary, name->str, y->str);
    dStr_truncate(name, orig_len);
 }
 
@@ -1483,13 +1475,13 @@ DilloHtmlInput *DilloHtmlForm::getRadioInput (const char *name)
 
 void DilloHtmlReceiver::activate (dw::core::ui::Resource *resource)
 {
-   form->eventHandler(resource, -1, -1);
+   form->eventHandler(resource);
 }
 
 void DilloHtmlReceiver::clicked (dw::core::ui::ButtonResource *resource,
                                  int buttonNo, int x, int y)
 {
-   form->eventHandler(resource, x, y);
+// form->eventHandler(resource, x, y);
 }
 
 /*
@@ -1557,9 +1549,6 @@ void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
    case DILLO_HTML_INPUT_TEXT:
    case DILLO_HTML_INPUT_PASSWORD:
    case DILLO_HTML_INPUT_INDEX:
-      if (resource)
-         resource->connectActivate (form_receiver);
-      break;
    case DILLO_HTML_INPUT_SUBMIT:
    case DILLO_HTML_INPUT_RESET:
    case DILLO_HTML_INPUT_BUTTON_SUBMIT:
@@ -1567,8 +1556,7 @@ void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
    case DILLO_HTML_INPUT_IMAGE:
    case DILLO_HTML_INPUT_FILE:
       if (resource)
-         ((dw::core::ui::ButtonResource *)resource)
-            ->connectClicked (form_receiver);
+         resource->connectActivate (form_receiver);
       break;
    }
 }
@@ -1576,14 +1564,13 @@ void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
 /*
  * Activate a form 
  */
-void DilloHtmlInput::activate(DilloHtmlForm *form, bool force_submit,
-                              int click_x, int click_y)
+void DilloHtmlInput::activate(DilloHtmlForm *form, bool force_submit)
 {
    switch (type) {
    case DILLO_HTML_INPUT_TEXT:
    case DILLO_HTML_INPUT_PASSWORD:
       if (force_submit)
-         form->submit (this, click_x, click_y);
+         form->submit (this);
       break;
    case DILLO_HTML_INPUT_FILE:
       readFile (form->html->bw);
@@ -1593,7 +1580,7 @@ void DilloHtmlInput::activate(DilloHtmlForm *form, bool force_submit,
       form->reset ();
       break;
    default:
-      form->submit (this, click_x, click_y);
+      form->submit (this);
       break;
    }
 }
@@ -1681,6 +1668,18 @@ void DilloHtmlInput::appendValuesTo(Dlist *values, bool is_active_submit)
                MSG("FORM file input \"%s\" not loaded.\n", filename);
             }
          }
+      }
+      break;
+   case DILLO_HTML_INPUT_IMAGE:
+      if (is_active_submit) {
+         dw::core::ui::ComplexButtonResource *cbr =
+            (dw::core::ui::ComplexButtonResource*)embed->getResource();
+         Dstr *strX = dStr_new("");
+         Dstr *strY = dStr_new("");
+         dStr_sprintf(strX, "%d", cbr->getClickX());
+         dStr_sprintf(strY, "%d", cbr->getClickY());
+         dList_append(values, strX);
+         dList_append(values, strY);
       }
       break;
    default:
