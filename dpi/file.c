@@ -628,7 +628,7 @@ static int File_get_file(ClientInfo *Client,
 
    /* Send HTTP headers */
    if (gzipped) {
-      sock_handler_printf(Client->sh, 0, "Content-Encoding: gzip\n");
+      sock_handler_write_str(Client->sh, 0, "Content-Encoding: gzip\n");
    }
    if (!gzipped || strcmp(ct, unknown_type)) {
       sock_handler_printf(Client->sh, 0, "Content-Type: %s\n", ct);
