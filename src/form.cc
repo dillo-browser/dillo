@@ -132,6 +132,8 @@ class DilloHtmlReceiver:
    DilloHtmlReceiver (DilloHtmlForm* form2) { form = form2; }
    ~DilloHtmlReceiver () { }
    void activate (dw::core::ui::Resource *resource);
+   void enter (dw::core::ui::Resource *resource);
+   void leave (dw::core::ui::Resource *resource);
    void clicked (dw::core::ui::ButtonResource *resource,
                  int buttonNo, int x, int y);
 };
@@ -1487,6 +1489,38 @@ DilloHtmlInput *DilloHtmlForm::getRadioInput (const char *name)
 void DilloHtmlReceiver::activate (dw::core::ui::Resource *resource)
 {
    form->eventHandler(resource);
+}
+
+/*
+ * Enter a form control, as in "onmouseover".
+ * For _pressing_ enter in a text control, see activate().
+ */
+void DilloHtmlReceiver::enter (dw::core::ui::Resource *resource)
+{
+   DilloHtml *html = form->html;
+   DilloHtmlInput *input = form->getInput(resource);
+   const char *msg = "";
+
+   if ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
+       (input->type == DILLO_HTML_INPUT_IMAGE) ||
+       (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT) ||
+       (input->type == DILLO_HTML_INPUT_INDEX) ||
+       ((prefs.enterpress_forces_submit || form->num_entry_fields == 1) &&
+        ((input->type == DILLO_HTML_INPUT_PASSWORD) ||
+         (input->type == DILLO_HTML_INPUT_TEXT)))) {
+      /* The control can submit form. Show action URL. */
+      msg = URL_STR(form->action);
+   }
+   a_UIcmd_set_msg(html->bw, msg);
+}
+
+/*
+ * Leave a form control, or "onmouseout".
+ */
+void DilloHtmlReceiver::leave (dw::core::ui::Resource *resource)
+{
+   DilloHtml *html = form->html;
+   a_UIcmd_set_msg(html->bw, "");
 }
 
 void DilloHtmlReceiver::clicked (dw::core::ui::ButtonResource *resource,
