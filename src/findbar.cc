@@ -9,7 +9,6 @@
  * (at your option) any later version.
  */
 
-#include <fltk/xpmImage.h>
 #include <fltk/events.h>
 #include "findbar.hh"
 
@@ -99,7 +98,8 @@ Findbar::Findbar(int width, int height, UI *ui) :
 
    begin();
     hidebutton = new HighlightButton(x, border, 16, height, 0);
-    hidebutton->image(new xpmImage(new_s_xpm));
+    hideImg = new xpmImage(new_s_xpm);
+    hidebutton->image(hideImg);
     hidebutton->tooltip("Hide");
     x += 16 + gap;
     hidebutton->callback(hide_cb, this);
@@ -123,6 +123,11 @@ Findbar::Findbar(int width, int height, UI *ui) :
     x += 2 * button_width + gap;
 
    end();
+}
+
+Findbar::~Findbar()
+{
+   delete hideImg;
 }
 
 /*

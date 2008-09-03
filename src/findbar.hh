@@ -1,6 +1,7 @@
 #ifndef __FINDBAR_HH__
 #define __FINDBAR_HH__
 
+#include <fltk/xpmImage.h>
 #include <fltk/Widget.h>
 #include <fltk/HighlightButton.h>
 #include <fltk/Button.h>
@@ -20,6 +21,7 @@ class Findbar : public Group {
    HighlightButton *findb;
    Button *clrb;
    HighlightButton *hidebutton;
+   xpmImage *hideImg;
    UI *ui;
    Input *i;
    CheckButton *cb;
@@ -30,6 +32,7 @@ class Findbar : public Group {
 
 public:
    Findbar(int width, int height, UI *ui);
+   ~Findbar();
    int handle(int event);
    void show();
    void hide();
