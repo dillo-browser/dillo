@@ -103,6 +103,7 @@ Findbar::Findbar(int width, int height, UI *ui) :
     hidebutton->tooltip("Hide");
     x += 16 + gap;
     hidebutton->callback(hide_cb, this);
+    hidebutton->clear_tab_to_focus();
 
     i = new MyInput(x, border, input_width, height);
     x += input_width + gap;
