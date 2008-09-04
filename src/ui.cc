@@ -55,6 +55,13 @@ int NewInput::handle(int e)
    int k = event_key();
 
    _MSG("NewInput::handle event=%d\n", e);
+
+   // Don't focus with arrow keys
+   if (e == FOCUS &&
+       (k == UpKey || k == DownKey || k == LeftKey|| k == RightKey)) {
+      return 0;
+   }
+
    if (event_state(CTRL)) {
       if (e == KEY && k == 'l') {
          // Make text selected when already focused.
@@ -62,22 +69,6 @@ int NewInput::handle(int e)
          return 0;
       } else if (k == 'o' || k == 'r' || k == HomeKey || k == EndKey)
          return 0;
-   }
-   if ((e == KEY || e == KEYUP) &&
-       k == UpKey || k == DownKey || k == PageUpKey || k == PageDownKey) {
-      _MSG(" {Up|Down|PgUp|PgDn} ret = 1\n");
-      // todo: one way to handle this is to send(SHORTCUT) to the viewport
-      // and return 1 here. A cleaner approach may be to ignore the event and
-      // only allow the location and render area to take focus.
-      // 
-      // Currently, zero is returned, so the parent gets the event and moves
-      // focus to a button widget that's not interested in these keys;
-      // once this new widget is focused, Up and Down start to work.
-      return 0;
-
-      //this->window()->send(SHORTCUT);
-      //this->window()->send(e);
-      //return 1;
    }
    _MSG("\n");
 
@@ -339,6 +330,7 @@ PackedGroup *UI::make_toolbar(int tw, int th)
     b->image(ImgLeftMulti);
     b->tooltip("Previous page");
     b->callback(b1_cb, (void *)UI_BACK);
+    b->clear_tab_to_focus();
     HighlightButton::default_style->highlight_color(CuteColor);
 
     Forw = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Forw" : 0);
@@ -348,24 +340,28 @@ PackedGroup *UI::make_toolbar(int tw, int th)
     b->image(ImgRightMulti);
     b->tooltip("Next page");
     b->callback(b1_cb, (void *)UI_FORW);
+    b->clear_tab_to_focus();
   
     Home = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Home" : 0);
     ImgHome = new xpmImage(Small_Icons ? home_s_xpm : home_xpm);
     b->image(ImgHome);
     b->tooltip("Go to the Home page");
     b->callback(b1_cb, (void *)UI_HOME);
+    b->clear_tab_to_focus();
 
     Reload = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Reload" : 0);
     ImgReload = new xpmImage(Small_Icons ? reload_s_xpm : reload_xpm);
     b->image(ImgReload);
     b->tooltip("Reload");
     b->callback(b1_cb, (void *)UI_RELOAD);
+    b->clear_tab_to_focus();
   
     Save = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Save" : 0);
     ImgSave = new xpmImage(Small_Icons ? save_s_xpm : save_xpm);
     b->image(ImgSave);
     b->tooltip("Save this page");
     b->callback(b1_cb, (void *)UI_SAVE);
+    b->clear_tab_to_focus();
   
     Stop = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
     ImgStopIns = new xpmImage(Small_Icons ? stop_si_xpm : stop_i_xpm);
@@ -374,12 +370,14 @@ PackedGroup *UI::make_toolbar(int tw, int th)
     b->image(ImgStopMulti);
     b->tooltip("Stop loading");
     b->callback(b1_cb, (void *)UI_STOP);
+    b->clear_tab_to_focus();
 
     Bookmarks = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Book" : 0);
     ImgBook = new xpmImage(Small_Icons ? bm_s_xpm : bm_xpm);
     b->image(ImgBook);
     b->tooltip("View bookmarks");
     b->callback(b1_cb, (void *)UI_BOOK);
+    b->clear_tab_to_focus();
 
    p1->type(PackedGroup::ALL_CHILDREN_VERTICAL);
    p1->end();
@@ -421,21 +419,22 @@ PackedGroup *UI::make_location()
     ImgClear = new xpmImage(new_s_xpm);
     b->image(ImgClear);
     b->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
-    //b->callback(b1_cb, (void *)UI_CLEAR);
     b->callback(clear_cb, (void *)this);
+    b->clear_tab_to_focus();
 
     Input *i = Location = new NewInput(0,0,0,0,0);
     i->tooltip("Location");
     i->color(CuteColor);
     i->when(WHEN_ENTER_KEY);
     i->callback(location_cb, this);
+    b->set_click_to_focus();
 
     Search = b = new HighlightButton(0,0,16,22,0);
     ImgSearch = new xpmImage(search_xpm);
     b->image(ImgSearch);
     b->tooltip("Search the Web");
-    //b->callback(b1_cb, (void *)UI_SEARCH);
     b->callback(search_cb, (void *)this);
+    b->clear_tab_to_focus();
 
    pg->type(PackedGroup::ALL_CHILDREN_VERTICAL);
    pg->resizable(i);
@@ -687,6 +686,7 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    ImageLoad->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
    ImageLoad->tooltip("Toggle image loading");
    ImageLoad->callback(imageload_cb, (void *)this);
+   ImageLoad->clear_tab_to_focus();
    StatusPanel->add(ImageLoad);
 
    // Bug Meter
@@ -698,6 +698,7 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    BugMeter->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
    BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
    BugMeter->callback(bugmeter_cb, (void *)this);
+   BugMeter->clear_tab_to_focus();
    StatusPanel->add(BugMeter);
 
    StatusPanel->resizable(Status);
