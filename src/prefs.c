@@ -418,7 +418,7 @@ void a_Prefs_init(void)
    prefs.small_icons = FALSE;
    prefs.limit_text_width = FALSE;
    prefs.w3c_plus_heuristics = TRUE;
-   prefs.font_factor = 1.2;
+   prefs.font_factor = 1.0;
    prefs.show_back=TRUE;
    prefs.show_forw=TRUE;
    prefs.show_home=TRUE;

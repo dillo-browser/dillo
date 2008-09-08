@@ -44,7 +44,7 @@
 
 # All fontsizes are scaled by this value
 # font_factor=1.5
-#font_factor=1.2
+#font_factor=1.0
 
 # Show tooltip popup for images?
 # Note: We use the "title" attribute and not "alt".

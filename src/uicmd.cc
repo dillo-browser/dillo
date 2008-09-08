@@ -90,7 +90,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_ui)
    layout->attachView (viewport);
    new_ui->set_render_layout(*viewport);
 
-   viewport->setScrollStep((int) rint(12.0 * prefs.font_factor));
+   viewport->setScrollStep((int) rint(14.0 * prefs.font_factor));
 
    // Now, create a new browser window structure
    BrowserWindow *new_bw = a_Bw_new(ww, wh, 0);

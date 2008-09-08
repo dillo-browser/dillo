@@ -135,8 +135,7 @@ void *a_Dialog_make_text_window(const char *txt, const char *title)
     /* enable wrapping lines; text uses entire width of window */
     td->wrap_mode(true, 0);
 
-    /* 11.0 instead of 12.0 because the dialog's font is a bit bigger */
-    td->textsize((int) rint(11.0 * prefs.font_factor));
+    td->textsize((int) rint(13.0 * prefs.font_factor));
     fltk::setfont(td->textfont(), td->textsize());
 
     lines = td->total_lines();

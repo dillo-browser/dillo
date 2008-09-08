@@ -100,7 +100,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
 
    /* Create the font and attribute for the page. */
    fontAttrs.name = prefs.fw_fontname;
-   fontAttrs.size = (int) rint(12.0 * prefs.font_factor);
+   fontAttrs.size = (int) rint(14.0 * prefs.font_factor);
    fontAttrs.weight = 400;
    fontAttrs.style = style::FONT_STYLE_NORMAL;
 
