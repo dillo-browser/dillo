@@ -1039,12 +1039,13 @@ static void Cache_process_queue(CacheEntry_t *entry)
             if (TypeMismatch) {
                AbortEntry = TRUE;
             } else {
-               st = a_Web_dispatch_by_type(Cache_current_content_type(entry),
-                                           ClientWeb, &Client->Callback,
-                                           &Client->CbData);
+               const char *content_type = Cache_current_content_type(entry);
+               st = a_Web_dispatch_by_type(content_type, ClientWeb,
+                                           &Client->Callback, &Client->CbData);
                if (st == -1) {
                   /* MIME type is not viewable */
                   if (ClientWeb->flags & WEB_RootUrl) {
+                     MSG("Content-Type '%s' not viewable.\n", content_type);
                      /* prepare a download offer... */
                      AbortEntry = OfferDownload = TRUE;
                   } else {
