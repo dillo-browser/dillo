@@ -701,6 +701,16 @@ DilloHtmlForm *DilloHtml::getCurrentForm ()
    return forms->get (forms->size() - 1);
 }
 
+bool_t DilloHtml::unloadedImages()
+{
+   for (int i = 0; i < images->size(); i++) {
+      if (images->get(i)->image != NULL) {
+         return TRUE;
+      }
+   }
+   return FALSE;
+}
+
 /*
  * Load images if they were disabled.
  */
@@ -756,7 +766,7 @@ bool DilloHtml::HtmlLinkReceiver::press (Widget *widget, int link, int img,
          if (link == -1) {
             a_UIcmd_page_popup(bw, a_History_get_url(NAV_TOP_UIDX(bw)),
                                bw->num_page_bugs ? bw->page_bugs->str:NULL,
-                               prefs.load_images);
+                               html->unloadedImages());
             ret = true;
          } else {
             a_UIcmd_link_popup(bw, html->links->get(link));

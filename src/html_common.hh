@@ -221,6 +221,7 @@ public:
    int formNew(DilloHtmlMethod method, const DilloUrl *action,
                DilloHtmlEnc enc, const char *charset);
    DilloHtmlForm *getCurrentForm ();
+   bool_t unloadedImages();
    void loadImages (const DilloUrl *pattern);
 };
 

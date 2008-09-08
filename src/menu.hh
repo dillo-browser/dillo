@@ -8,7 +8,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
-                       const char *bugs_txt, int prefs_load_images);
+                       const char *bugs_txt, bool_t unloaded_imgs);
 void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url);
 void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
                         DilloUrl *link_url);

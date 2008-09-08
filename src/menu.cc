@@ -232,7 +232,7 @@ static void Menu_history_cb(Widget *wid, void *data)
  * Page popup menu (construction & popup)
  */
 void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url, 
-                       const char *bugs_txt, int prefs_load_images)
+                       const char *bugs_txt, bool_t unloaded_imgs)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
@@ -275,10 +275,10 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    else
       view_page_bugs_item->activate();
 
-   if (prefs_load_images == 1)
-      load_images_item->deactivate();
-   else
+   if (unloaded_imgs == TRUE)
       load_images_item->activate();
+   else
+      load_images_item->deactivate();
 
    // NULL is wildcard
    load_images_item->user_data(NULL);
