@@ -1253,7 +1253,7 @@ static void Html_eventually_pop_dw(DilloHtml *html, bool hand_over_break)
    if (html->dw != S_TOP(html)->textblock) {
       if (hand_over_break)
          DW2TB(html->dw)->handOverBreak (S_TOP(html)->style);
-      DW2TB(html->dw)->flush (false);
+      DW2TB(html->dw)->flush ();
       html->dw = S_TOP(html)->textblock;
    }
 }
@@ -2765,7 +2765,7 @@ static void Html_tag_close_li(DilloHtml *html, int TagIdx)
 {
    html->InFlags &= ~IN_LI;
    html->WordAfterLI = false;
-   ((ListItem *)html->dw)->flush (false);
+   ((ListItem *)html->dw)->flush ();
    a_Html_pop_tag(html, TagIdx);
 }
 
@@ -3855,7 +3855,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
       }
    }/*while*/
 
-   textblock->flush (Eof ? true : false);
+   textblock->flush ();
 
    return token_start;
 }
