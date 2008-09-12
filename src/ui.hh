@@ -12,6 +12,7 @@
 #include <fltk/Image.h>
 #include <fltk/MultiImage.h>
 #include <fltk/MenuBuild.h>
+#include <fltk/TabGroup.h>
 
 #include "findbar.hh"
 
@@ -36,18 +37,21 @@ typedef enum {
 } UIPanelmode;
 
 // Private class 
-class NewProgressBox;
+class CustProgressBox;
 
 //
 // UI class definition -------------------------------------------------------
 //
-class UI : public fltk::Window {
+class UI : public fltk::Group {
+   void *Bw;
+   TabGroup *Tabs;
+
    Group *TopGroup;
    Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks,
           *Clear, *Search, *FullScreen, *ImageLoad, *BugMeter;
    Input  *Location;
    PackedGroup *ProgBox;
-   NewProgressBox *PProg, *IProg;
+   CustProgressBox *PProg, *IProg;
    Image *ImgLeftIns, *ImgLeftSens, *ImgRightIns, *ImgRightSens,
          *ImgStopIns, *ImgStopSens, *ImgFullScreenOn, *ImgFullScreenOff,
          *ImgImageLoadOn, *ImgImageLoadOff, *ImgMeterOK, *ImgMeterBug,
@@ -84,6 +88,7 @@ public:
    const char *get_location();
    void set_location(const char *str);
    void focus_location();
+   void focus_main();
    void set_status(const char *str);
    void set_page_prog(size_t nbytes, int cmd);
    void set_img_prog(int n_img, int t_img, int cmd);
@@ -96,9 +101,13 @@ public:
    void set_panelmode(UIPanelmode mode);
    UIPanelmode get_panelmode();
    void set_findbar_visibility(bool visible);
-
    Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
+
+   TabGroup *tabs() { return Tabs; }
+   void tabs(TabGroup *tabs) { Tabs = tabs; }
+   void *vbw() { return Bw; }
+   void vbw(void *v_bw) { Bw = v_bw; }
 
    // Hooks to method callbacks
    void panel_cb_i();

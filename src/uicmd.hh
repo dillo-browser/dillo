@@ -31,6 +31,7 @@ void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
 void a_UIcmd_findtext_dialog(BrowserWindow *bw);
 void a_UIcmd_findtext_search(BrowserWindow *bw, const char *key, int case_sens);
 void a_UIcmd_findtext_reset(BrowserWindow *bw);
+void a_UIcmd_focus_main_area(BrowserWindow *bw);
 void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
                         const char *bugs_txt, bool_t unloaded_imgs);
 void a_UIcmd_link_popup(void *vbw, const DilloUrl *url);

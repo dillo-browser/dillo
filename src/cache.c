@@ -1123,10 +1123,12 @@ static void Cache_delayed_process_queue_callback(void *data)
    while ((entry = (CacheEntry_t *)dList_nth_data(DelayedQueue, 0))) {
       Cache_ref_data(entry);
       Cache_process_queue(entry);
-      Cache_unref_data(entry);
-      /* note that if Cache_process_queue removes the entry,
-       * the following dList_remove has no effect. */
-      dList_remove(DelayedQueue, entry);
+      if (entry != dList_nth_data(DelayedQueue, 0)) {
+         /* Cache_process_queue() has removed the entry! */
+      } else {
+         Cache_unref_data(entry);
+         dList_remove(DelayedQueue, entry);
+      }
    }
    DelayedQueueIdleId = 0;
    a_Timeout_remove();
