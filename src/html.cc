@@ -295,30 +295,35 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
    const char *align, *charattr;
 
    if ((align = a_Html_get_attr(html, tag, tagsize, "align"))) {
+      Style *old_style = S_TOP(html)->style;
+      StyleAttrs style_attrs = *old_style;
+
       if (dStrcasecmp (align, "left") == 0)
-         HTML_SET_TOP_ATTR (html, textAlign, TEXT_ALIGN_LEFT);
+         style_attrs.textAlign = TEXT_ALIGN_LEFT;
       else if (dStrcasecmp (align, "right") == 0)
-         HTML_SET_TOP_ATTR (html, textAlign, TEXT_ALIGN_RIGHT);
+         style_attrs.textAlign = TEXT_ALIGN_RIGHT;
       else if (dStrcasecmp (align, "center") == 0)
-         HTML_SET_TOP_ATTR (html, textAlign, TEXT_ALIGN_CENTER);
+         style_attrs.textAlign = TEXT_ALIGN_CENTER;
       else if (dStrcasecmp (align, "justify") == 0)
-         HTML_SET_TOP_ATTR (html, textAlign, TEXT_ALIGN_JUSTIFY);
+         style_attrs.textAlign = TEXT_ALIGN_JUSTIFY;
       else if (dStrcasecmp (align, "char") == 0) {
          /* todo: Actually not supported for <p> etc. */
-         HTML_SET_TOP_ATTR (html, textAlign, TEXT_ALIGN_STRING);
+         style_attrs.textAlign = TEXT_ALIGN_STRING;
          if ((charattr = a_Html_get_attr(html, tag, tagsize, "char"))) {
             if (charattr[0] == 0)
                /* todo: ALIGN=" ", and even ALIGN="&32;" will reult in
                 * an empty string (don't know whether the latter is
                 * correct, has to be clarified with the specs), so
                 * that for empty strings, " " is assumed. */
-               HTML_SET_TOP_ATTR (html, textAlignChar, ' ');
+               style_attrs.textAlignChar = ' ';
             else
-               HTML_SET_TOP_ATTR (html, textAlignChar, charattr[0]);
+               style_attrs.textAlignChar = charattr[0];
          } else
             /* todo: Examine LANG attr of <html>. */
-            HTML_SET_TOP_ATTR (html, textAlignChar, '.');
+            style_attrs.textAlignChar = '.';
       }
+      S_TOP(html)->style = Style::create (HT2LT(html), &style_attrs);
+      old_style->unref ();
    }
 }
 
