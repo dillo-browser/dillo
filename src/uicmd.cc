@@ -16,7 +16,6 @@
 #include <stdarg.h>
 #include <math.h>       /* for rint */
 #include <fltk/Widget.h>
-#include <fltk/TabGroup.h>
 
 #include "dir.h"
 #include "ui.hh"
@@ -33,52 +32,27 @@
 
 #include "nav.h"
 
-// Handy macro
-#define BW2UI(bw) ((UI*)(bw->ui))
-
 // Platform idependent part
 using namespace dw::core;
 // FLTK related
 using namespace dw::fltk;
 
+typedef struct {
+   UI *ui;
+   BrowserWindow *bw;
+} Uibw;
 
 /*
  * Local data
  */
+// A matching table for all open ui/bw pairs
+// BUG: must be dynamic.
+static Uibw uibws[32];
+static int uibws_num = 0, uibws_max = 32;
+
 static char *save_dir = NULL;
 
 using namespace fltk;
-
-//
-// For custom handling of keyboard
-//
-class CustTabGroup : public fltk::TabGroup {
-public:
-   CustTabGroup (int x, int y, int ww, int wh, const char *lbl=0) :
-      TabGroup(x,y,ww,wh,lbl) {};
-   int handle(int e) {
-      // Don't focus with arrow keys
-      printf("CustTabGroup::handle %d\n", e);
-      int k = event_key();
-      // We're only interested in some flags
-      unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
-      if (e == KEY) {
-         if (k == UpKey || k == DownKey || k == TabKey) {
-            return 0;
-         } else if (k == LeftKey || k == RightKey) {
-            if (modifier == SHIFT) {
-               int i = value();
-               if (k == LeftKey) {i = i ? i-1 : children()-1;}
-               else {i++; if (i >= children()) i = 0;}
-               if (value(i)) do_callback();
-               return 1;
-            }
-            return 0;
-         }
-      }
-      return TabGroup::handle(e);
-   }
-};
 
 
 /*
@@ -87,50 +61,24 @@ public:
  */
 BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_ui)
 {
-   static TabGroup *DilloTabs = NULL;
-   BrowserWindow *new_bw = NULL;
-
    if (ww <= 0 || wh <= 0) {
       // Set default geometry from dillorc.
       ww = prefs.width;
       wh = prefs.height;
    }
 
-   if (!DilloTabs) {
-       {Window *o = new Window(ww, wh);
-        o->shortcut(0); // Ignore Escape
-        o->clear_double_buffer();
-        DilloTabs = new CustTabGroup(0, 0, ww, wh);
-        DilloTabs->selection_color(156);
-        //DilloTabs->clear_tab_to_focus();
-        o->add(DilloTabs);
-       }
-       wh -= 20;
-   }
-
-   fltk::Group* o = new fltk::Group(0, 20, ww, wh, "Label1");
-   o->clear_tab_to_focus();
-   o->clear_click_to_focus();
-   DilloTabs->add(o);
-
    // Create and set the UI
-   UI *new_ui = new UI(ww, wh, "", (UI*) v_ui);
+   UI *new_ui = new UI(ww, wh, "Dillo: UI", (UI*) v_ui);
    new_ui->set_status("http://www.dillo.org/");
-   new_ui->tabs(DilloTabs);
    //new_ui->set_location("http://dillo.org/");
    //new_ui->customize(12);
-
-   o->add(new_ui);
-   DilloTabs->resizable(o);
-   DilloTabs->window()->resizable(new_ui);
-   DilloTabs->window()->show();
 
    if (v_ui == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
       // position the first window according to preferences
       fltk::Rectangle r;
-      new_ui->window()->borders(&r);
+      new_ui->borders(&r);
       // borders() gives x and y border sizes as negative values
-      new_ui->window()->position(prefs.xpos - r.x(), prefs.ypos - r.y());
+      new_ui->position(prefs.xpos - r.x(), prefs.ypos - r.y());
    }
 
    // Now create the Dw render layout and viewport
@@ -145,17 +93,23 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_ui)
    viewport->setScrollStep((int) rint(14.0 * prefs.font_factor));
 
    // Now, create a new browser window structure
-   new_bw = a_Bw_new(ww, wh, 0);
+   BrowserWindow *new_bw = a_Bw_new(ww, wh, 0);
 
-   // Store new_bw for callback data inside UI
-   new_ui->vbw(new_bw);
-
+   // Set new_bw as callback data for UI
+   new_ui->user_data(new_bw);
    // Reference the UI from the bw
    new_bw->ui = (void *)new_ui;
    // Copy the layout pointer into the bw data
    new_bw->render_layout = (void*)layout;
 
-   //new_ui->show();
+   // insert the new ui/bw pair in the table
+   if (uibws_num < uibws_max) {
+      uibws[uibws_num].ui = new_ui;
+      uibws[uibws_num].bw = new_bw;
+      uibws_num++;
+   }
+
+   new_ui->show();
 
    return new_bw;
 }
@@ -166,19 +120,12 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_ui)
 void a_UIcmd_close_bw(void *vbw)
 {
    BrowserWindow *bw = (BrowserWindow *)vbw;
-   UI *ui = BW2UI(bw);
+   UI *ui = (UI*)bw->ui;
    Layout *layout = (Layout*)bw->render_layout;
 
    MSG("a_UIcmd_close_bw\n");
    a_Bw_stop_clients(bw, BW_Root + BW_Img + Bw_Force);
    delete(layout);
-   if (ui->tabs()) {
-      ui->tabs()->remove(ui);
-      if (ui->tabs()->value() != -1)
-         ui->tabs()->selected_child()->take_focus();
-      else
-         ui->tabs()->window()->hide();
-   }
    delete(ui);
    a_Bw_free(bw);
 }
@@ -615,6 +562,8 @@ void a_UIcmd_nav_jump(BrowserWindow *bw, int offset, int new_bw)
 
 // UI binding functions -------------------------------------------------------
 
+#define BW2UI(bw) ((UI*)(bw->ui))
+
 /*
  * Return browser window width and height
  */
@@ -806,13 +755,5 @@ void a_UIcmd_findtext_reset(BrowserWindow *bw)
    l->resetSearch();
 
    a_UIcmd_set_msg(bw, "");
-}
-
-/*
- * Focus the rendered area.
- */
-void a_UIcmd_focus_main_area(BrowserWindow *bw)
-{
-   BW2UI(bw)->focus_main();
 }
 

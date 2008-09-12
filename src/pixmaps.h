@@ -1497,8 +1497,8 @@ static const char *const mini_ok_xpm[] = {
 /* XPM */
 static const char *const imgload_on_xpm[] = {
 "15 15 2 1",
-"       c None",
-".      c #00000000CF3C",
+" 	c #FFFFFFFFFFFF",
+".	c #00000000CF3C",
 "               ",
 " . .   .  ...  ",
 " . .. .. .   . ",
@@ -1518,8 +1518,8 @@ static const char *const imgload_on_xpm[] = {
 /* XPM */
 static const char *const imgload_off_xpm[] = {
 "15 15 2 1",
-"       c None",
-".      c #CF3C00000000",
+" 	c #FFFFFFFFFFFF",
+".	c #CF3C00000000",
 "               ",
 " . .   .  ...  ",
 " . .. .. .   . ",

@@ -49,10 +49,10 @@ static int *history_list = NULL;
  * Used to add the hint for history popup menus, and to remember
  * the mouse button pressed over a menu item.
  */
-class CustItem : public Item {
+class NewItem : public Item {
    int EventButton;
 public:
-   CustItem (const char* label) : Item(label) { EventButton = 0; };
+   NewItem (const char* label) : Item(label) { EventButton = 0; };
    int button () { return EventButton; };
    void draw();
    int handle(int e) {
@@ -65,7 +65,7 @@ public:
  * This adds a call to a_UIcmd_set_msg() to show the URL in the status bar
  * TODO: erase the URL on popup close.
  */
-void CustItem::draw() {
+void NewItem::draw() {
    DilloUrl *url;
 
    if (flags() & SELECTED) {
@@ -217,7 +217,7 @@ static void Menu_bugmeter_about_cb(Widget* )
  */
 static void Menu_history_cb(Widget *wid, void *data)
 {
-   int mb = ((CustItem*)wid)->button();
+   int mb = ((NewItem*)wid)->button();
    int offset = history_direction * VOIDP2INT(data);
 
    if (mb == 2) {
@@ -438,7 +438,7 @@ void a_Menu_history_popup(BrowserWindow *bw, int direction)
    pm->begin();
     for (i = 0; history_list[i] != -1; i += 1) {
        // TODO: restrict title size
-       it = new CustItem(a_History_get_title(history_list[i], 1));
+       it = new NewItem(a_History_get_title(history_list[i], 1));
        it->callback(Menu_history_cb, (void*)(i+1));
     }
    pm->type(PopupMenu::POPUP123);

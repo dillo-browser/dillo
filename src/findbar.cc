@@ -10,13 +10,13 @@
  */
 
 #include <fltk/events.h>
-#include <fltk/Window.h>
 #include "findbar.hh"
 
 #include "msg.h"
 #include "pixmaps.h"
 #include "uicmd.hh"
 #include "bw.h"
+#include "ui.hh"
 
 /*
  * Local sub class
@@ -31,12 +31,12 @@ public:
 
 int MyInput::handle(int e)
 {
-   _MSG("findbar MyInput::handle()\n");
+   _MSG("findbar NewInput::handle()\n");
    int ret = 1, k = event_key();
    unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
    if (modifier == 0) {
       if (e == KEY && k == EscapeKey) {
-         _MSG("findbar CustInput: caught EscapeKey\n");
+         _MSG("findbar NewInput: caught EscapeKey\n");
          ret = 0;
       }
    }
@@ -55,7 +55,7 @@ void Findbar::search_cb(Widget *, void *vfb)
    bool case_sens = fb->cb->value();
 
    if (key[0] != '\0')
-      a_UIcmd_findtext_search((BrowserWindow *) fb->window()->user_data(),
+      a_UIcmd_findtext_search((BrowserWindow *) fb->ui->user_data(),
                               key, case_sens);
 }
 
@@ -83,7 +83,7 @@ void Findbar::hide_cb(Widget *, void *vfb)
 /*
  * Construct text search bar
  */
-Findbar::Findbar(int width, int height) :
+Findbar::Findbar(int width, int height, UI *ui) :
    Group(0, 0, width, height)
 {
    int button_width = 70;
@@ -93,7 +93,8 @@ Findbar::Findbar(int width, int height) :
    int x = border;
    height -= 2 * border;
 
-   Group::hide();
+   this->ui = ui;
+   this->hide();
 
    begin();
     hidebutton = new HighlightButton(x, border, 16, height, 0);
@@ -112,7 +113,7 @@ Findbar::Findbar(int width, int height) :
     i->callback(search_cb2, this);
 
     // todo: search previous would be nice
-    findb = new HighlightButton(x, border, button_width, height, "Next");
+    findb = new HighlightButton(x, border, button_width, height, "&Next");
     x += button_width + gap;
     findb->tooltip("Find next occurrence of the search phrase");
     findb->add_shortcut(ReturnKey);
@@ -139,7 +140,7 @@ int Findbar::handle(int event)
    int k = event_key();
    unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
 
-   if (event == KEY && modifier == 0 && k == EscapeKey) {
+   if (modifier == 0 && k == EscapeKey) {
       hide();
       ret = 1;
    }
@@ -169,7 +170,6 @@ void Findbar::hide()
    BrowserWindow *bw;
 
    Group::hide();
-   if ((bw = (BrowserWindow *) this->window()->user_data()))
+   if ((bw = (BrowserWindow *) ui->user_data()))
       a_UIcmd_findtext_reset(bw);
-   a_UIcmd_focus_main_area(bw);
 }
