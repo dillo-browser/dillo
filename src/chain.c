@@ -20,18 +20,19 @@
 /*
  * Show debugging info
  */
+#if VERBOSE
 static void Chain_debug_msg(char *FuncStr, int Op, int Branch, int Dir,
                              ChainLink *Info)
 {
-#if VERBOSE
    const char *StrOps[] = {"", "OpStart", "OpSend",
                             "OpStop", "OpEnd", "OpAbort"};
    MSG("%-*s: %-*s [%d%s] Info=%p Flags=%d\n",
        12, FuncStr, 7, StrOps[Op], Branch, (Dir == 1) ? "F" : "B",
        Info, Info ? Info->Flags : -1);
-#endif
 }
-
+#else
+static void Chain_debug_msg() { }
+#endif
 /*
  * Create and initialize a new chain-link
  */

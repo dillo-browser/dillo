@@ -40,7 +40,7 @@ void a_Bw_init(void)
  * Create a new browser window and return it.
  * (the new window is stored in browser_window[])
  */
-BrowserWindow *a_Bw_new(int width, int height, uint32_t xid)
+BrowserWindow *a_Bw_new()
 {
    BrowserWindow *bw;
 
@@ -56,12 +56,6 @@ BrowserWindow *a_Bw_new(int width, int height, uint32_t xid)
    /* Init expect */
    bw->nav_expecting = FALSE;
    bw->nav_expect_url = NULL;
-
-// if (!xid)
-//     bw->main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-// else
-//     bw->main_window = gtk_plug_new(xid);
-
 
    bw->redirect_level = 0;
    bw->sens_idle_up = 0;

@@ -671,7 +671,8 @@ int init_all_dpi_sockets(struct dp *dpi_attr_list, char *sockdir)
  */
 void dpi_sigchld(int sig)
 {
-   caught_sigchld = 1;
+   if (sig == SIGCHLD)
+      caught_sigchld = 1;
 }
 
 /*! Called by main loop when caught_sigchld == 1 */

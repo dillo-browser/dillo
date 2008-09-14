@@ -387,10 +387,9 @@ void a_Dicache_new_scan(DilloImage *image, const DilloUrl *url, int version)
  * (Write a scan line into the Dicache entry)
  * buf: row buffer
  * Y  : row number
- * x  : horizontal offset? (always zero)
  */
 void a_Dicache_write(DilloImage *Image, DilloUrl *url, int version,
-                     const uchar_t *buf, int x, uint_t Y)
+                     const uchar_t *buf, uint_t Y)
 {
    DICacheEntry *DicEntry;
 

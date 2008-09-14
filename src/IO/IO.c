@@ -259,7 +259,7 @@ static bool_t IO_write(IOData_t *io)
  * Handle background IO for a given FD (reads | writes)
  * (This function gets called when there's activity in the FD)
  */
-static int IO_callback(int fd, IOData_t *io)
+static int IO_callback(IOData_t *io)
 {
    bool_t ret = FALSE;
 
@@ -288,7 +288,7 @@ static void IO_fd_read_cb(int fd, void *data)
       a_IOwatch_remove_fd(fd, DIO_READ);
 
    } else {
-      if (IO_callback(fd, io) == 0)
+      if (IO_callback(io) == 0)
          a_IOwatch_remove_fd(fd, DIO_READ);
    }
 }
@@ -307,7 +307,7 @@ static void IO_fd_write_cb(int fd, void *data)
       a_IOwatch_remove_fd(fd, DIO_WRITE);
 
    } else {
-      if (IO_callback(fd, io) == 0)
+      if (IO_callback(io) == 0)
          a_IOwatch_remove_fd(fd, DIO_WRITE);
    }
 }

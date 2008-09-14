@@ -318,8 +318,7 @@ static void File_print_mtime(ClientInfo *Client, time_t mtime)
 /*
  * Return a HTML-line from file info.
  */
-static void File_info2html(ClientInfo *Client,
-                           FileInfo *finfo, const char *dirname, int n)
+static void File_info2html(ClientInfo *Client, FileInfo *finfo, int n)
 {
    int size;
    char *sizeunits;
@@ -451,7 +450,7 @@ static void File_transfer_dir(ClientInfo *Client,
 
    /* Output entries */
    for (n = 0; n < dList_length(Ddir->flist); ++n) {
-      File_info2html(Client, dList_nth_data(Ddir->flist,n),Ddir->dirname,n+1);
+      File_info2html(Client, dList_nth_data(Ddir->flist,n), n+1);
    }
 
    if (dList_length(Ddir->flist)) {

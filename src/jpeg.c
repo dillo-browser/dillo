@@ -350,7 +350,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
             break;
          }
          a_Dicache_write(jpeg->Image, jpeg->url, jpeg->version,
-                         linebuf, 0, jpeg->y);
+                         linebuf, jpeg->y);
 
          jpeg->y++;
 

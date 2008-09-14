@@ -93,7 +93,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_ui)
    viewport->setScrollStep((int) rint(14.0 * prefs.font_factor));
 
    // Now, create a new browser window structure
-   BrowserWindow *new_bw = a_Bw_new(ww, wh, 0);
+   BrowserWindow *new_bw = a_Bw_new();
 
    // Set new_bw as callback data for UI
    new_ui->user_data(new_bw);

@@ -146,7 +146,7 @@ static char *get_request(int sock)
  * \Return
  * command code on success, -1 on failure
  */
-static int get_command(int sock, char *dpi_tag, struct dp *dpi_attr_list)
+static int get_command(int sock, char *dpi_tag)
 {
    char *cmd, *d_cmd;
    int COMMAND;
@@ -337,7 +337,7 @@ int main(void)
             int command;
 
             req = get_request(sock);
-            command = get_command(sock, req, dpi_attr_list);
+            command = get_command(sock, req);
             switch (command) {
             case BYE_CMD:
                stop_active_dpis(dpi_attr_list, numdpis);

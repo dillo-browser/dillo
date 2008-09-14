@@ -73,7 +73,7 @@ extern "C" {
 
 
 void a_Bw_init(void);
-BrowserWindow *a_Bw_new(int width, int height, uint32_t xid);
+BrowserWindow *a_Bw_new();
 void a_Bw_free(BrowserWindow *bw);
 BrowserWindow *a_Bw_get();
 

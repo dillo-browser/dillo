@@ -240,7 +240,7 @@ static void
    case 3:
       a_Dicache_write(png->Image, png->url, png->version,
                       png->image_data + (row_num * png->rowbytes),
-                      0, (uint_t)row_num);
+                      (uint_t)row_num);
       break;
    case 4:
      {
@@ -277,7 +277,7 @@ static void
            }
         }
         a_Dicache_write(png->Image, png->url, png->version,
-                        png->linebuf, 0, (uint_t)row_num);
+                        png->linebuf, (uint_t)row_num);
         break;
      }
    default:

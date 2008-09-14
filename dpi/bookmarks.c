@@ -1107,7 +1107,7 @@ static int Bmsrv_send_modify_answer(SockHandler *sh, char *url)
  * Parse a delete bms request, delete them, and update bm file.
  * Return code: { 0:OK, 1:Abort }
  */
-static int Bmsrv_modify_delete(SockHandler *sh, char *url)
+static int Bmsrv_modify_delete(char *url)
 {
    char *p;
    int nb, ns, key;
@@ -1153,7 +1153,7 @@ static int Bmsrv_modify_delete(SockHandler *sh, char *url)
  * Parse a move urls request, move and update bm file.
  * Return code: { 0:OK, 1:Abort }
  */
-static int Bmsrv_modify_move(SockHandler *sh, char *url)
+static int Bmsrv_modify_move(char *url)
 {
    char *p;
    int n, section = 0, key;
@@ -1192,7 +1192,7 @@ static int Bmsrv_modify_move(SockHandler *sh, char *url)
  * Parse a modify request: update urls and sections, then save.
  * Return code: { 0:OK, 1:Abort }
  */
-static int Bmsrv_modify_update(SockHandler *sh, char *url)
+static int Bmsrv_modify_update(char *url)
 {
    char *p, *q, *title;
    int i, key;
@@ -1247,7 +1247,7 @@ static int Bmsrv_modify_update(SockHandler *sh, char *url)
  * Parse an "add section" request, and update the bm file.
  * Return code: { 0:OK, 1:Abort }
  */
-static int Bmsrv_modify_add_section(SockHandler *sh, char *url)
+static int Bmsrv_modify_add_section(char *url)
 {
    char *p, *title = NULL;
 
@@ -1400,13 +1400,13 @@ static int Bmsrv_process_modify_request(SockHandler *sh, char *url)
       return 2;
 
    if (strstr(url, "operation=delete&")) {
-      if (Bmsrv_modify_delete(sh, url) == 1)
+      if (Bmsrv_modify_delete(url) == 1)
          return 1;
       if (Bmsrv_send_reload_request(sh, "dpi:/bm/modify") == 1)
          return 1;
 
    } else if (strstr(url, "operation=move&")) {
-      if (Bmsrv_modify_move(sh, url) == 1)
+      if (Bmsrv_modify_move(url) == 1)
          return 1;
       if (Bmsrv_send_reload_request(sh, "dpi:/bm/modify") == 1)
          return 1;
@@ -1419,7 +1419,7 @@ static int Bmsrv_process_modify_request(SockHandler *sh, char *url)
          return 1;
 
    } else if (strstr(url, "operation=modify2&")) {
-      if (Bmsrv_modify_update(sh, url) == 1)
+      if (Bmsrv_modify_update(url) == 1)
          return 1;
       if (Bmsrv_send_reload_request(sh, "dpi:/bm/modify") == 1)
          return 1;
@@ -1431,7 +1431,7 @@ static int Bmsrv_process_modify_request(SockHandler *sh, char *url)
          return 1;
 
    } else if (strstr(url, "operation=add_section&")) {
-      if (Bmsrv_modify_add_section(sh, url) == 1)
+      if (Bmsrv_modify_add_section(url) == 1)
          return 1;
       if (Bmsrv_send_reload_request(sh, "dpi:/bm/modify") == 1)
          return 1;
