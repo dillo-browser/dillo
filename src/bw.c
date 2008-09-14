@@ -91,6 +91,7 @@ void a_Bw_free(BrowserWindow *bw)
          dList_free(bw->ImageClients);
          dList_free(bw->Docs);
 
+         a_Url_free(bw->nav_expect_url);
          for (j = 0; j < dList_length(bw->PageUrls); ++j)
             a_Url_free(dList_nth_data(bw->PageUrls, j));
          dList_free(bw->PageUrls);

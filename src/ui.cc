@@ -271,12 +271,12 @@ static void b1_cb(Widget *wid, void *cb_data)
 /*
  * Callback handler for fullscreen button press
  */
-static void fullscreen_cb(Widget *wid, void *data)
-{
-   /* todo: do we want to toggle fullscreen or panelmode?
-            maybe we need to add another button?*/
-   ((UI*)data)->panelmode_cb_i();
-}
+//static void fullscreen_cb(Widget *wid, void *data)
+//{
+//   /* todo: do we want to toggle fullscreen or panelmode?
+//            maybe we need to add another button?*/
+//   ((UI*)data)->panelmode_cb_i();
+//}
 
 /*
  * Callback for the bug meter button.
@@ -707,12 +707,12 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
 
    // Make the full screen button (to be attached to the viewport later)
    // TODO: attach to the viewport
-   FullScreen = new HighlightButton(0,0,15,15);
+   //FullScreen = new HighlightButton(0,0,15,15);
    ImgFullScreenOn = new xpmImage(full_screen_on_xpm);
    ImgFullScreenOff = new xpmImage(full_screen_off_xpm);
-   FullScreen->image(ImgFullScreenOn);
-   FullScreen->tooltip("Hide Controls");
-   FullScreen->callback(fullscreen_cb, (void *)this);
+   //FullScreen->image(ImgFullScreenOn);
+   //FullScreen->tooltip("Hide Controls");
+   //FullScreen->callback(fullscreen_cb, (void *)this);
 
    customize(0);
 
