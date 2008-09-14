@@ -163,16 +163,13 @@ void DilloHtml::bugMessage(const char *format, ... )
  */
 DilloUrl *a_Html_url_new(DilloHtml *html,
                          const char *url_str, const char *base_url,
-                         int flags, int32_t posx, int32_t posy,
                          int use_base_url)
 {
    DilloUrl *url;
    int n_ic, n_ic_spc;
 
-   url = a_Url_new(
-            url_str,
-            (use_base_url) ? base_url : URL_STR_(html->base_url),
-            flags, posx, posy);
+   url = a_Url_new(url_str,
+                   (use_base_url) ? base_url : URL_STR_(html->base_url));
    if ((n_ic = URL_ILLEGAL_CHARS(url)) != 0) {
       const char *suffix = (n_ic) > 1 ? "s" : "";
       n_ic_spc = URL_ILLEGAL_CHARS_SPC(url);
@@ -1816,7 +1813,7 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "src")))
       return;
 
-   if (!(url = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0)))
+   if (!(url = a_Html_url_new(html, attrbuf, NULL, 0)))
       return;
 
    src = dStrdup(attrbuf);
@@ -2180,7 +2177,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
       return;
 
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) ||
-       !(url = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0)))
+       !(url = a_Html_url_new(html, attrbuf, NULL, 0)))
       return;
 
    textblock = DW2TB(html->dw);
@@ -2188,7 +2185,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
    usemap_url = NULL;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "usemap")))
       /* todo: usemap URLs outside of the document are not used. */
-      usemap_url = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
+      usemap_url = a_Html_url_new(html, attrbuf, NULL, 0);
 
    /* Set the style attributes for this image */
    style_attrs = *S_TOP(html)->style;
@@ -2246,7 +2243,7 @@ static void Html_tag_open_map(DilloHtml *html, const char *tag, int tagsize)
    } else {
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name"))) {
          hash_name = dStrconcat("#", attrbuf, NULL);
-         url = a_Html_url_new(html, hash_name, NULL, 0, 0, 0, 0);
+         url = a_Html_url_new(html, hash_name, NULL, 0);
          html->maps.startNewMap(new ::object::String(url->url_string->str));
          a_Url_free (url);
          dFree(hash_name);
@@ -2365,7 +2362,7 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
    }
    if (shape != NULL || type == BACKGROUND) {
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "href"))) {
-         url = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
+         url = a_Html_url_new(html, attrbuf, NULL, 0);
          dReturn_if_fail ( url != NULL );
          if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "alt")))
             a_Url_set_alt(url, attrbuf);
@@ -2391,12 +2388,12 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "codebase"))) {
-      base_url = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
+      base_url = a_Html_url_new(html, attrbuf, NULL, 0);
    }
    
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "data"))) {
-      url = a_Html_url_new(html, attrbuf, URL_STR(base_url), 0, 0, 0,
-                           (base_url != NULL));
+      url = a_Html_url_new(html, attrbuf,
+                           URL_STR(base_url), (base_url != NULL));
       dReturn_if_fail ( url != NULL );
 
       style_attrs = *S_TOP(html)->style;
@@ -2488,7 +2485,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       if (tolower(attrbuf[0]) == 'j')
          attrbuf = Html_get_javascript_link(html);
 
-      url = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
+      url = a_Html_url_new(html, attrbuf, NULL, 0);
       dReturn_if_fail ( url != NULL );
 
       old_style = S_TOP(html)->style;
@@ -3015,7 +3012,7 @@ static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
 
    if (html->InFlags & IN_HEAD) {
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "href"))) {
-         BaseUrl = a_Html_url_new(html, attrbuf, "", 0, 0, 0, 1);
+         BaseUrl = a_Html_url_new(html, attrbuf, "", 1);
          if (URL_SCHEME_(BaseUrl)) {
             /* Pass the URL_SpamSafe flag to the new base url */
             a_Url_set_flags(

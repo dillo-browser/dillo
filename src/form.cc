@@ -310,7 +310,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
       }
    }
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "action")))
-      action = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
+      action = a_Html_url_new(html, attrbuf, NULL, 0);
    else
       action = a_Url_dup(html->base_url);
    enc = DILLO_HTML_ENC_URLENCODING;
@@ -581,7 +581,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "action")))
-      action = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0);
+      action = a_Html_url_new(html, attrbuf, NULL, 0);
    else
       action = a_Url_dup(html->base_url);
   
@@ -1012,7 +1012,7 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input)
          char *action_str = dStrdup(URL_STR(action));
 
          if (method == DILLO_HTML_METHOD_POST) {
-            new_url = a_Url_new(action_str, NULL, 0, 0, 0);
+            new_url = a_Url_new(action_str, NULL);
             /* new_url keeps the dStr and sets DataStr to NULL */
             a_Url_set_data(new_url, &DataStr);
             a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Post);
@@ -1027,7 +1027,7 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input)
                *p = 0;
 
             url_str = dStrconcat(action_str, "?", DataStr->str, NULL);
-            new_url = a_Url_new(url_str, NULL, 0, 0, 0);
+            new_url = a_Url_new(url_str, NULL);
             a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Get);
             dFree(url_str);
          }
@@ -1922,7 +1922,7 @@ static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
    DilloUrl *url = NULL;
   
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) &&
-       (url = a_Html_url_new(html, attrbuf, NULL, 0, 0, 0, 0))) {
+       (url = a_Html_url_new(html, attrbuf, NULL, 0))) {
       style_attrs = *S_TOP(html)->style;
       style_attrs.cursor = CURSOR_POINTER;
 

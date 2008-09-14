@@ -161,16 +161,16 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
          /* file URI */
          ch = new_urlstr[5];
          if (!ch || ch == '.') {
-            url = a_Url_new(a_Dir_get_owd(), "file:", 0, 0, 0);
+            url = a_Url_new(a_Dir_get_owd(), "file:");
          } else if (ch == '~') {
-            url = a_Url_new(dGethomedir(), "file:", 0, 0, 0);
+            url = a_Url_new(dGethomedir(), "file:");
          } else {
-            url = a_Url_new(new_urlstr, "file:", 0, 0, 0);
+            url = a_Url_new(new_urlstr, "file:");
          }
 
       } else {
          /* common case */
-         url = a_Url_new(new_urlstr, NULL, 0, 0, 0);
+         url = a_Url_new(new_urlstr, NULL);
       }
       dFree(new_urlstr);
 
@@ -302,7 +302,7 @@ void a_UIcmd_save(void *vbw)
    a_UIcmd_set_save_dir(prefs.save_dir);
 
    urlstr = a_UIcmd_get_location_text((BrowserWindow*)vbw);
-   url = a_Url_new(urlstr, NULL, 0, 0, 0);
+   url = a_Url_new(urlstr, NULL);
    SuggestedName = UIcmd_make_save_filename(URL_PATH(url));
    name = a_Dialog_save_file("Save Page as File", NULL, SuggestedName);
    MSG("a_UIcmd_save: %s\n", name);
@@ -348,7 +348,7 @@ void a_UIcmd_open_file(void *vbw)
    name = a_Dialog_open_file("Open File", NULL, "");
 
    if (name) {
-      url = a_Url_new(name, "file:", 0, 0, 0);
+      url = a_Url_new(name, "file:");
       a_Nav_push((BrowserWindow*)vbw, url);
       a_Url_free(url);
       dFree(name);
@@ -438,7 +438,7 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
  */
 void a_UIcmd_book(void *vbw)
 {
-   DilloUrl *url = a_Url_new("dpi:/bm/", NULL, 0, 0, 0);
+   DilloUrl *url = a_Url_new("dpi:/bm/", NULL);
    a_Nav_push((BrowserWindow*)vbw, url);
    a_Url_free(url);
 }

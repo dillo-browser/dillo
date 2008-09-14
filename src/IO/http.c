@@ -81,7 +81,7 @@ int a_Http_init(void)
    char *env_proxy = getenv("http_proxy");
 
    if (env_proxy && strlen(env_proxy))
-      HTTP_Proxy = a_Url_new(env_proxy, NULL, 0, 0, 0);
+      HTTP_Proxy = a_Url_new(env_proxy, NULL);
    if (!HTTP_Proxy && prefs.http_proxy)
       HTTP_Proxy = a_Url_dup(prefs.http_proxy);
 

@@ -242,7 +242,6 @@ char *a_Html_get_attr_wdef(DilloHtml *html,
 
 DilloUrl *a_Html_url_new(DilloHtml *html,
                          const char *url_str, const char *base_url,
-                         int flags, int32_t posx, int32_t posy,
                          int use_base_url);
 
 DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,

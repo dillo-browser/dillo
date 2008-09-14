@@ -68,9 +68,9 @@ static DilloUrl *Dillo_make_start_url(char *str)
    dFree(p);
 
    if (is_file) {
-      start_url = a_Url_new(url_str + 1, "file:/", 0, 0, 0);
+      start_url = a_Url_new(url_str + 1, "file:/");
    } else {
-      start_url = a_Url_new(url_str, NULL, 0, 0, 0);
+      start_url = a_Url_new(url_str, NULL);
    }
    dFree(url_str);
 

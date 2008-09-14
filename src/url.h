@@ -110,15 +110,12 @@ struct _DilloUrl {
    Dstr *data;                    /* POST */
    const char *alt;               /* "alt" text (used by image maps) */
    int ismap_url_len;             /* Used by server side image maps */
-   int32_t scrolling_position_x,  /* remember position of visited urls */
-           scrolling_position_y;
    int illegal_chars;             /* number of illegal chars */
    int illegal_chars_spc;         /* number of illegal space chars */
 };
 
 
-DilloUrl* a_Url_new(const char *url_str, const char *base_url,
-                    int flags, int32_t posx, int32_t posy);
+DilloUrl* a_Url_new(const char *url_str, const char *base_url);
 void a_Url_free(DilloUrl *u);
 char *a_Url_str(const DilloUrl *url);
 const char *a_Url_hostname(const DilloUrl *u);
@@ -127,7 +124,6 @@ int a_Url_cmp(const DilloUrl *A, const DilloUrl *B);
 void a_Url_set_flags(DilloUrl *u, int flags);
 void a_Url_set_data(DilloUrl *u, Dstr **data);
 void a_Url_set_alt(DilloUrl *u, const char *alt);
-void a_Url_set_pos(DilloUrl *u, int32_t posx, int32_t posy);
 void a_Url_set_ismap_coords(DilloUrl *u, char *coord_str);
 char *a_Url_decode_hex_str(const char *str);
 char *a_Url_encode_hex_str(const char *str);

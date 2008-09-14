@@ -124,7 +124,7 @@ void a_Cache_init(void)
 
    /* inject the splash screen in the cache */
    {
-      DilloUrl *url = a_Url_new("about:splash", NULL, 0, 0, 0);
+      DilloUrl *url = a_Url_new("about:splash", NULL);
       Dstr *ds = dStr_new(AboutSplash);
       a_Cache_entry_inject(url, ds);
       dStr_free(ds, 1);
@@ -621,6 +621,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
 #ifndef DISABLE_COOKIES
    Dlist *Cookies;
 #endif
+   DilloUrl *location_url;
    Dlist *warnings;
    void *data;
    int i;
@@ -643,7 +644,17 @@ static void Cache_parse_header(CacheEntry_t *entry)
             entry->Flags |= CA_TempRedirect;   /* 302 Temporary Redirect */
    
          location_str = Cache_parse_field(header, "Location");
-         entry->Location = a_Url_new(location_str,URL_STR_(entry->Url),0,0,0);
+         location_url = a_Url_new(location_str, URL_STR_(entry->Url));
+         if (URL_FLAGS(location_url) & (URL_Post + URL_Get) &&
+             dStrcasecmp(URL_SCHEME(location_url), "dpi") == 0 &&
+             dStrcasecmp(URL_SCHEME(entry->Url), "dpi") != 0) {
+            /* Forbid dpi GET and POST from non dpi-generated urls */
+            MSG("Redirection Denied! '%s' -> '%s'\n",
+                URL_STR(entry->Url), URL_STR(location_url));
+            a_Url_free(location_url);
+         } else {
+            entry->Location = location_url;
+         }
          dFree(location_str);
 
       } else if (strncmp(header + 9, "404", 3) == 0) {
@@ -901,8 +912,7 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
 
       if (Flags & WEB_RootUrl) {
          /* Redirection of the main page */
-         NewUrl = a_Url_new(URL_STR_(entry->Location), URL_STR_(entry->Url),
-                            0, 0, 0);
+         NewUrl = a_Url_new(URL_STR_(entry->Location), URL_STR_(entry->Url));
          if (entry->Flags & CA_TempRedirect)
             a_Url_set_flags(NewUrl, URL_FLAGS(NewUrl) | URL_E2EQuery);
          a_Nav_push(bw, NewUrl);

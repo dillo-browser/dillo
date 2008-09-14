@@ -201,7 +201,7 @@ static int Prefs_parse_pair(char *name, char *value)
       break;
    case DRC_TOKEN_PROXY:
       a_Url_free(prefs.http_proxy);
-      prefs.http_proxy = a_Url_new(value, NULL, 0, 0, 0);
+      prefs.http_proxy = a_Url_new(value, NULL);
       break;
    case DRC_TOKEN_PROXYUSER:
       dFree(prefs.http_proxyuser);
@@ -254,11 +254,11 @@ static int Prefs_parse_pair(char *name, char *value)
       break;
    case DRC_TOKEN_START_PAGE:
       a_Url_free(prefs.start_page);
-      prefs.start_page = a_Url_new(value, NULL, 0, 0, 0);
+      prefs.start_page = a_Url_new(value, NULL);
       break;
    case DRC_TOKEN_HOME:
       a_Url_free(prefs.home);
-      prefs.home = a_Url_new(value, NULL, 0, 0, 0);
+      prefs.home = a_Url_new(value, NULL);
       break;
    case DRC_TOKEN_SHOW_TOOLTIP:
       prefs.show_tooltip = (strcmp(value, "YES") == 0);
@@ -407,8 +407,8 @@ void a_Prefs_init(void)
    prefs.visited_color = DW_COLOR_DEFAULT_VLINK;
    prefs.bg_color = DW_COLOR_DEFAULT_BGND;
    prefs.text_color = DW_COLOR_DEFAULT_TEXT;
-   prefs.start_page = a_Url_new(DILLO_START_PAGE, NULL, 0, 0, 0);
-   prefs.home = a_Url_new(DILLO_HOME, NULL, 0, 0, 0);
+   prefs.start_page = a_Url_new(DILLO_START_PAGE, NULL);
+   prefs.home = a_Url_new(DILLO_HOME, NULL);
    prefs.allow_white_bg = TRUE;
    prefs.force_my_colors = FALSE;
    prefs.contrast_visited_color = TRUE;

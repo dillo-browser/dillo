@@ -167,6 +167,7 @@ static DilloUrl *Url_object_new(const char *uri_str)
       s = p + 1;
       url->query = s;
       p = strpbrk(s, "#");
+      url->flags |= URL_Get;
    }
    if (p && p[0] == '#') {                         /* fragment */
       *p = 0;
@@ -338,17 +339,15 @@ done:
  *     fragment           = "part2"
  *     hostname           = "dillo.sf.net"
  *     port               = 8080
- *     flags              = 0
+ *     flags              = URL_Get
  *     data               = Dstr * ("")
  *     alt                = NULL
  *     ismap_url_len      = 0
- *     scrolling_position = 0
  *  }
  *
  *  Return NULL if URL is badly formed.
  */
-DilloUrl* a_Url_new(const char *url_str, const char *base_url,
-                    int flags, int32_t posx, int32_t posy)
+DilloUrl* a_Url_new(const char *url_str, const char *base_url)
 {
    DilloUrl *url;
    char *urlstr = (char *)url_str;  /* auxiliar variable, don't free */
@@ -399,9 +398,6 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url,
    url = Url_object_new(SolvedUrl->str);
    url->data = dStr_new("");
    url->url_string = SolvedUrl;
-   url->flags = flags;
-   url->scrolling_position_x = posx;
-   url->scrolling_position_y = posy;
    url->illegal_chars = n_ic;
    url->illegal_chars_spc = n_ic_spc;
 
@@ -426,8 +422,6 @@ DilloUrl* a_Url_dup(const DilloUrl *ori)
    url->flags                = ori->flags;
    url->alt                  = dStrdup(ori->alt);
    url->ismap_url_len        = ori->ismap_url_len;
-   url->scrolling_position_x = ori->scrolling_position_x;
-   url->scrolling_position_y = ori->scrolling_position_y;
    url->illegal_chars        = ori->illegal_chars;
    url->illegal_chars_spc    = ori->illegal_chars_spc;
    url->data                 = dStr_sized_new(URL_DATA(ori)->len);
@@ -493,17 +487,6 @@ void a_Url_set_alt(DilloUrl *u, const char *alt)
    if (u) {
       dFree((char *)u->alt);
       u->alt = dStrdup(alt);
-   }
-}
-
-/*
- * Set DilloUrl scrolling position
- */
-void a_Url_set_pos(DilloUrl *u, int32_t posx, int32_t posy)
-{
-   if (u) {
-      u->scrolling_position_x = posx;
-      u->scrolling_position_y = posy;
    }
 }
 

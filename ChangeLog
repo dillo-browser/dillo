@@ -55,6 +55,8 @@ dillo-fltk2
  - CCC: added reentrancy control to the OpEnd and OpAbort operations.
  - CCC: enhanced the debug function and implemented OpAbort for dpi.
  - Hooked a decoder for text/plain with charset.
+ - Forbid dpi GET and POST from non dpi-generated urls.
+ - Cleaned up a_Url_new().
    Patches: Jorge Arellano Cid
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color, panel_size, geometry, fullscreen,
