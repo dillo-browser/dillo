@@ -191,9 +191,6 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
    }
 
    DW2TB(dw)->flush();
-
-   if (bw)
-      a_UIcmd_set_page_prog(bw, Start_Ofs, 1);
 }
 
 /*
@@ -228,8 +225,6 @@ static void Plain_callback(int Op, CacheClient_t *Client)
       plain->write(Client->Buf, Client->BufSize, 1);
       /* remove this client from our active list */
       a_Bw_close_client(plain->bw, Client->Key);
-      /* set progress bar insensitive */
-      a_UIcmd_set_page_prog(plain->bw, 0, 0);
    } else {
       plain->write(Client->Buf, Client->BufSize, 0);
    }

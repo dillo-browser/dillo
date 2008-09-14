@@ -617,9 +617,6 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
    Start_Buf = Buf;
    token_start = Html_write_raw(this, buf, bufsize, Eof);
    Start_Ofs += token_start;
-
-   if (bw)
-      a_UIcmd_set_page_prog(bw, Start_Ofs, 1);
 }
 
 /*
@@ -673,9 +670,6 @@ void DilloHtml::finishParsing(int ClientKey)
    }
    /* Remove this client from our active list */
    a_Bw_close_client(bw, ClientKey);
-
-   /* Set progress bar insensitive */
-   a_UIcmd_set_page_prog(bw, 0, 0);
 
    freeParseData();
    parse_finished = true;

@@ -1084,6 +1084,8 @@ static void Cache_process_queue(CacheEntry_t *entry)
          if ((Client->BufSize = data->len) > 0) {
             Client->Buf = data->str;
             (Client->Callback)(CA_Send, Client);
+            if (ClientWeb->flags & WEB_RootUrl)
+               a_UIcmd_set_page_prog(Client_bw, data->len, 1);
          }
 
          /* Remove client when done */
@@ -1092,6 +1094,8 @@ static void Cache_process_queue(CacheEntry_t *entry)
             int flags = ClientWeb->flags;
             /* We finished sending data, let the client know */
             (Client->Callback)(CA_Close, Client);
+            if (ClientWeb->flags & WEB_RootUrl)
+               a_UIcmd_set_page_prog(Client_bw, 0, 0);
             Cache_client_dequeue(Client, NULLKey);
             --i; /* Keep the index value in the next iteration */
 
