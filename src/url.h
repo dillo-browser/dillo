@@ -60,7 +60,7 @@
 /* this returns a Dstr* */
 #define URL_DATA_(u)                u->data
 /* these return an integer */
-#define URL_PORT_(u)                (URL_HOST(u) ? u->port : u->port)
+#define URL_PORT_(u)                (URL_HOST(u), u->port)
 #define URL_FLAGS_(u)               u->flags
 #define URL_ILLEGAL_CHARS_(u)       url->illegal_chars
 #define URL_ILLEGAL_CHARS_SPC_(u)   url->illegal_chars_spc
