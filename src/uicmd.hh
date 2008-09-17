@@ -8,7 +8,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_ui);
+BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_bw);
 void a_UIcmd_open_urlstr(void *vbw, const char *urlstr);
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url);
@@ -31,6 +31,8 @@ void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
 void a_UIcmd_findtext_dialog(BrowserWindow *bw);
 void a_UIcmd_findtext_search(BrowserWindow *bw, const char *key, int case_sens);
 void a_UIcmd_findtext_reset(BrowserWindow *bw);
+void a_UIcmd_focus_main_area(BrowserWindow *bw);
+void a_UIcmd_focus_location(void *vbw);
 void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
                         const char *bugs_txt, bool_t unloaded_imgs);
 void a_UIcmd_link_popup(void *vbw, const DilloUrl *url);

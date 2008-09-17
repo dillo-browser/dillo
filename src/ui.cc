@@ -39,9 +39,9 @@ using namespace fltk;
  * (Used to avoid certain shortcuts in the location bar)
  */
 
-class NewInput : public Input {
+class CustInput : public Input {
 public:
-   NewInput (int x, int y, int w, int h, const char* l=0) :
+   CustInput (int x, int y, int w, int h, const char* l=0) :
       Input(x,y,w,h,l) {};
    int handle(int e);
 };
@@ -50,25 +50,31 @@ public:
  * Disable: UpKey, DownKey, PageUpKey, PageDownKey and 
  * CTRL+{o,r,HomeKey,EndKey}
  */
-int NewInput::handle(int e)
+int CustInput::handle(int e)
 {
    int k = event_key();
 
-   _MSG("NewInput::handle event=%d\n", e);
+   _MSG("CustInput::handle event=%d\n", e);
+
+   // We're only interested in some flags
+   unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
 
    // Don't focus with arrow keys
    if (e == FOCUS &&
-       (k == UpKey || k == DownKey || k == LeftKey|| k == RightKey)) {
+       (k == UpKey || k == DownKey || k == LeftKey || k == RightKey)) {
       return 0;
-   }
-
-   if (event_state(CTRL)) {
-      if (e == KEY && k == 'l') {
-         // Make text selected when already focused.
-         position(size(), 0);
-         return 0;
-      } else if (k == 'o' || k == 'r' || k == HomeKey || k == EndKey)
-         return 0;
+   } else if (e == KEY) {
+      if (modifier == CTRL) {
+         if (k == 'l') {
+            // Make text selected when already focused.
+            position(size(), 0);
+            return 1;
+         } else if (k == 'o') 
+            return 0;
+      } else if (modifier == SHIFT) {
+         if (k == LeftKey || k == RightKey)
+            return 0;
+      }
    }
    _MSG("\n");
 
@@ -80,14 +86,14 @@ int NewInput::handle(int e)
 /*
  * Used to handle "paste" within the toolbar's Clear button.
  */
-class NewHighlightButton : public HighlightButton {
+class CustHighlightButton : public HighlightButton {
 public:
-   NewHighlightButton(int x, int y, int w, int h, const char *l=0) :
+   CustHighlightButton(int x, int y, int w, int h, const char *l=0) :
       HighlightButton(x,y,w,h,l) {};
    int handle(int e);
 };
 
-int NewHighlightButton::handle(int e)
+int CustHighlightButton::handle(int e)
 {
    if (e == PASTE) {
       const char* t = event_text();
@@ -105,9 +111,9 @@ int NewHighlightButton::handle(int e)
 /*
  * Used to resize the progress boxes automatically.
  */
-class NewProgressBox : public InvisibleBox {
+class CustProgressBox : public InvisibleBox {
 public:
-   NewProgressBox(int x, int y, int w, int h, const char *l=0) :
+   CustProgressBox(int x, int y, int w, int h, const char *l=0) :
       InvisibleBox(x,y,w,h,l) {};
    void update_label(const char *lbl) {
       static int padding = 0;
@@ -136,14 +142,6 @@ public:
 //
 // Callback functions --------------------------------------------------------
 //
-
-/*
- * Callback handler for the close window event.
- */
-static void close_window_cb(Widget *wid, void *data)
-{
-   a_UIcmd_close_bw(data);
-}
 
 /*
  * Callback for the search button.
@@ -197,7 +195,7 @@ static void color_change_cb(Widget *wid, void *data)
 static void location_cb(Widget *wid, void *data)
 {
    Input *i = (Input*)wid;
-   UI *ui = (UI*)i->window();
+   UI *ui = (UI*)data;
 
    /* This test is necessary because WHEN_ENTER_KEY also includes
     * other events we're not interested in. For instance pressing
@@ -281,15 +279,15 @@ static void b1_cb(Widget *wid, void *cb_data)
 /*
  * Callback for the bug meter button.
  */
-static void bugmeter_cb(Widget *w, void *data)
+static void bugmeter_cb(Widget *wid, void *data)
 {
    int k = event_key();
    if (k && k <= 7)
       MSG("[BugMeter], mouse button %d was pressed\n", k);
    if (k == 1) {
-      a_UIcmd_view_page_bugs(((UI*)data)->user_data());
+      a_UIcmd_view_page_bugs(wid->window()->user_data());
    } else if (k == 3) {
-      a_UIcmd_bugmeter_popup(((UI*)data)->user_data());
+      a_UIcmd_bugmeter_popup(wid->window()->user_data());
    }
 }
 
@@ -415,14 +413,14 @@ PackedGroup *UI::make_location()
    Button *b;
    PackedGroup *pg = new PackedGroup(0,0,0,0);
    pg->begin();
-    Clear = b = new NewHighlightButton(2,2,16,22,0);
+    Clear = b = new CustHighlightButton(2,2,16,22,0);
     ImgClear = new xpmImage(new_s_xpm);
     b->image(ImgClear);
     b->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
-    b->callback(clear_cb, (void *)this);
+    b->callback(clear_cb, this);
     b->clear_tab_to_focus();
 
-    Input *i = Location = new NewInput(0,0,0,0,0);
+    Input *i = Location = new CustInput(0,0,0,0,0);
     i->tooltip("Location");
     i->color(CuteColor);
     i->when(WHEN_ENTER_KEY);
@@ -433,7 +431,7 @@ PackedGroup *UI::make_location()
     ImgSearch = new xpmImage(search_xpm);
     b->image(ImgSearch);
     b->tooltip("Search the Web");
-    b->callback(search_cb, (void *)this);
+    b->callback(search_cb, this);
     b->clear_tab_to_focus();
 
    pg->type(PackedGroup::ALL_CHILDREN_VERTICAL);
@@ -451,12 +449,12 @@ PackedGroup *UI::make_progress_bars(int wide, int thin_up)
    ProgBox = new PackedGroup(0,0,0,0);
    ProgBox->begin();
     // Images
-    IProg = new NewProgressBox(0,0,0,0);
+    IProg = new CustProgressBox(0,0,0,0);
     IProg->box(thin_up ? THIN_UP_BOX : EMBOSSED_BOX);
     IProg->labelcolor(GRAY10);
     IProg->update_label(wide ? "Images\n0 of 0" : "0 of 0");
     // Page
-    PProg = new NewProgressBox(0,0,0,0);
+    PProg = new CustProgressBox(0,0,0,0);
     PProg->box(thin_up ? THIN_UP_BOX : EMBOSSED_BOX);
     PProg->labelcolor(GRAY10);
     PProg->update_label(wide ? "Page\n0.0KB" : "0.0KB");
@@ -471,19 +469,15 @@ PackedGroup *UI::make_progress_bars(int wide, int thin_up)
  */
 static void menubar_cb(Widget *wid, void *data)
 {
-   UI *ui = (UI*)wid->window();
-
    if (strcmp((char*)data, "nb") == 0) {
-      a_UIcmd_browser_window_new(wid->window()->w(), wid->window()->h(), ui);
+      a_UIcmd_browser_window_new(wid->window()->w(), wid->window()->h(),
+                                 wid->window()->user_data());
    } else if (strcmp((char*)data, "of") == 0) {
-      a_UIcmd_open_file(ui->user_data());
+      a_UIcmd_open_file(wid->window()->user_data());
    } else if (strcmp((char*)data, "ou") == 0) {
-      if (ui->get_panelmode() == UI_HIDDEN) {
-         ui->set_panelmode(UI_TEMPORARILY_SHOW_PANELS);
-      }
-      ui->focus_location();
+      a_UIcmd_focus_location(wid->window()->user_data());
    } else if (strcmp((char*)data, "cw") == 0) {
-      a_UIcmd_close_bw(ui->user_data());
+      a_UIcmd_close_bw(wid->window()->user_data());
    } else if (strcmp((char*)data, "ed") == 0) {
       a_UIcmd_close_all_bw();
    }
@@ -608,13 +602,14 @@ Group *UI::make_panel(int ww)
 /*
  * User Interface constructor
  */ 
-UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
-  Window(win_w, win_h, label)
+UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
+  Group(x, y, ww, wh, label)
 {
    int s_h = 20;
-   clear_double_buffer();
 
-   TopGroup = new PackedGroup(0, 0, win_w, win_h);
+   Tabs = NULL;
+   TabTooltip = NULL;
+   TopGroup = new PackedGroup(0, 0, ww, wh);
    add(TopGroup);
    resizable(TopGroup);
    
@@ -633,12 +628,8 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    }
 
 
-   // Set handler for the close window event
-   // (the argument is set later via user_data())
-   callback(close_window_cb);
-
    // Control panel
-   Panel = make_panel(win_w);
+   Panel = make_panel(ww);
    TopGroup->add(Panel);
 
 
@@ -655,17 +646,16 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    MainIdx = TopGroup->find(Main);
 
    // Find text bar
-   findbar = new Findbar(win_w, 30, this);
+   findbar = new Findbar(ww, 28);
    TopGroup->add(findbar); 
 
    // Status Panel
-   StatusPanel = new Group(0, 0, win_w, s_h, 0);
+   StatusPanel = new Group(0, 0, ww, s_h, 0);
    // Status box
    int il_w = 16;
    int bm_w = 16;
-   Status = new Output(0, 0, win_w-bm_w-il_w, s_h, 0);
+   Status = new Output(0, 0, ww-bm_w-il_w, s_h, 0);
    Status->value("");
-   //Status->box(UP_BOX);
    Status->box(THIN_DOWN_BOX);
    Status->clear_click_to_focus();
    Status->clear_tab_to_focus();
@@ -674,7 +664,7 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    //Status->throw_focus();
 
    // Image loading indicator
-   ImageLoad = new HighlightButton(win_w-il_w-bm_w,0,il_w,s_h,0);
+   ImageLoad = new HighlightButton(ww-il_w-bm_w,0,il_w,s_h,0);
    ImgImageLoadOn = new xpmImage(imgload_on_xpm);
    ImgImageLoadOff = new xpmImage(imgload_off_xpm);
    if (prefs.load_images) {
@@ -685,19 +675,19 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    ImageLoad->box(THIN_DOWN_BOX);
    ImageLoad->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
    ImageLoad->tooltip("Toggle image loading");
-   ImageLoad->callback(imageload_cb, (void *)this);
+   ImageLoad->callback(imageload_cb, this);
    ImageLoad->clear_tab_to_focus();
    StatusPanel->add(ImageLoad);
 
    // Bug Meter
-   BugMeter = new HighlightButton(win_w-bm_w,0,bm_w,s_h,0);
+   BugMeter = new HighlightButton(ww-bm_w,0,bm_w,s_h,0);
    ImgMeterOK = new xpmImage(mini_ok_xpm);
    ImgMeterBug = new xpmImage(mini_bug_xpm);
    BugMeter->image(ImgMeterOK);
    BugMeter->box(THIN_DOWN_BOX);
    BugMeter->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
    BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
-   BugMeter->callback(bugmeter_cb, (void *)this);
+   BugMeter->callback(bugmeter_cb, this);
    BugMeter->clear_tab_to_focus();
    StatusPanel->add(BugMeter);
 
@@ -712,7 +702,7 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
    ImgFullScreenOff = new xpmImage(full_screen_off_xpm);
    //FullScreen->image(ImgFullScreenOn);
    //FullScreen->tooltip("Hide Controls");
-   //FullScreen->callback(fullscreen_cb, (void *)this);
+   //FullScreen->callback(fullscreen_cb, this);
 
    customize(0);
 
@@ -729,6 +719,8 @@ UI::UI(int win_w, int win_h, const char* label, const UI *cur_ui) :
  */
 UI::~UI()
 {
+   _MSG("UI::~UI()\n");
+   dFree(TabTooltip);
    delete_panel_images();
    delete_status_panel_images();
    delete ImgFullScreenOn;
@@ -751,79 +743,75 @@ void UI::delete_status_panel_images()
  */
 int UI::handle(int event)
 {
-   _MSG("UI::handle event=%d\n", event);
+   _MSG("UI::handle event=%d (%d,%d)\n", event, event_x(), event_y());
+   _MSG("Panel->h()=%d Main->h()=%d\n", Panel->h() , Main->h());
+
    int ret = 0, k = event_key();
 
-   // We're only interested in some flags 
-   // (not whether numlock is on for example)
-   unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
+   // We're only interested in some flags
+   unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
 
-   // Let FLTK pass these events to child widgets.
    if (event == KEY) {
-      if (k == UpKey || k == DownKey || k == SpaceKey ||
-          k == LeftKey || k == RightKey)
-         return 0;
-      // Ignore Escape for main window.
-      if (k == EscapeKey)
-         ret = 1;
+      return 0; // Receive as shortcut
 
    } else if (event == SHORTCUT) {
-      // Handle these shortcuts here.
+      // Handle keyboard shortcuts here.
       if (modifier == CTRL) {
          if (k == 'b') {
-            a_UIcmd_book(user_data());
+            a_UIcmd_book(this->window()->user_data());
             ret = 1;
          } else if (k == 'f') {
             set_findbar_visibility(1);
             ret = 1;
          } else if (k == 'l') {
-            if (Panelmode == UI_HIDDEN) {
-               set_panelmode(UI_TEMPORARILY_SHOW_PANELS);
-            }
             focus_location();
             ret = 1;
          } else if (k == 'n') {
-            a_UIcmd_browser_window_new(w(), h(), this);
+            a_UIcmd_browser_window_new(w(), h(), this->window()->user_data());
             ret = 1;
          } else if (k == 'o') {
-            a_UIcmd_open_file(user_data());
+            a_UIcmd_open_file(this->window()->user_data());
             ret = 1;
          } else if (k == 'q') {
-            a_UIcmd_close_bw(user_data());
+            a_UIcmd_close_bw(this->window()->user_data());
             ret = 1;
          } else if (k == 'r') {
-            a_UIcmd_reload(user_data());
+            a_UIcmd_reload(this->window()->user_data());
             ret = 1;
          } else if (k == 's') {
-            a_UIcmd_search_dialog(user_data());
+            a_UIcmd_search_dialog(this->window()->user_data());
             ret = 1;
          } else if (k == ' ') {
             panelmode_cb_i();
             ret = 1;
          }
+      } else {
+         // Back and Forward navigation shortcuts
+         if (modifier == 0 && (k == BackSpaceKey ||  k == ',')) {
+            a_UIcmd_back(this->window()->user_data());
+            ret = 1;
+         } else if ((modifier == 0 && k == '.') ||
+                    (modifier == SHIFT && k == BackSpaceKey)) {
+            a_UIcmd_forw(this->window()->user_data());
+            ret = 1;
+         }
       }
 
-      if (event_key_state(LeftAltKey) && modifier == ALT && k == 'q') {
-         a_UIcmd_close_all_bw();
-         ret = 1;
-      }
-
-      // Back and Forward navigation shortcuts
-      if ((modifier == 0 && k == BackSpaceKey) ||
-          (modifier == 0 && k == ',')) {
-         a_UIcmd_back(user_data());
-         ret = 1;
-      } else if ((modifier == SHIFT && k == BackSpaceKey) ||
-                 (modifier == 0 &&k == '.')) {
-         a_UIcmd_forw(user_data());
-         ret = 1;
-      }
+   } else if (event == FOCUS_CHANGE) {
+      // The "bw" for this tab is stored in the parent window.
+      // Update "bw" each time we switch tabs.
+      window()->user_data(vbw());
+      ret = 0;
    }
 
-   if (ret == 0) {
-      ret = Window::handle(event);
-   }
+   if (!ret)
+      ret = Group::handle(event);
    return ret;
+
+   // if (event_key_state(LeftAltKey) && modifier == ALT && k == 'q') {
+   //    a_UIcmd_close_all_bw();
+   //    ret = 1;
+   // }
 }
 
 
@@ -850,12 +838,24 @@ void UI::set_location(const char *str)
 
 /*
  * Focus location entry.
+ * If it's not visible, show it until the callback is done.
  */
 void UI::focus_location()
 {
+   if (get_panelmode() == UI_HIDDEN) {
+      set_panelmode(UI_TEMPORARILY_SHOW_PANELS);
+   }
    Location->take_focus();
    // Make text selected when already focused.
    Location->position(Location->size(), 0);
+}
+
+/*
+ * Focus Main area.
+ */
+void UI::focus_main()
+{
+   Main->take_focus();
 }
 
 /*
@@ -1074,9 +1074,25 @@ void UI::set_page_title(const char *label)
 {
    char title[128];
 
+   dReturn_if_fail(label != NULL);
+
    snprintf(title, 128, "Dillo: %s", label);
-   this->copy_label(title);
-   this->redraw_label();
+   this->window()->copy_label(title);
+   this->window()->redraw_label();
+
+   if (tabs() && *label) {
+      const size_t tab_chars = 18;
+      snprintf(title, tab_chars + 1, "%s", label);
+      if (strlen(label) > tab_chars)
+         snprintf(title + tab_chars, 4, "...");
+      this->copy_label(title);
+      this->redraw_label();
+
+      // Disabled because of a bug in fltk::Tabgroup
+      //dFree(TabTooltip);
+      //TabTooltip = dStrdup(label);
+      //this->tooltip(TabTooltip);
+   }
 }
 
 /*

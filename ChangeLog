@@ -57,6 +57,7 @@ dillo-fltk2
  - Hooked a decoder for text/plain with charset.
  - Forbid dpi GET and POST from non dpi-generated urls.
  - Cleaned up a_Url_new().
+ - Implemented tabbed browsing.
    Patches: Jorge Arellano Cid
 +- Connected signals to <li> elements (fixes links within lists).
  - Enabled text, background-color, panel_size, geometry, fullscreen,

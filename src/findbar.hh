@@ -9,9 +9,6 @@
 #include <fltk/Group.h>
 #include <fltk/CheckButton.h>
 
-// simple declaration to avoid circular include
-class UI;
-
 using namespace fltk;
 
 /*
@@ -22,7 +19,6 @@ class Findbar : public Group {
    Button *clrb;
    HighlightButton *hidebutton;
    xpmImage *hideImg;
-   UI *ui;
    Input *i;
    CheckButton *cb;
    
@@ -31,7 +27,7 @@ class Findbar : public Group {
    static void hide_cb (Widget *, void *);
 
 public:
-   Findbar(int width, int height, UI *ui);
+   Findbar(int width, int height);
    ~Findbar();
    int handle(int event);
    void show();
