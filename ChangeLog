@@ -114,6 +114,7 @@ dillo-fltk2
  - Fixed a segfault bug in VERBATIM mode.
  - Made image inputs less of a special case by using x,y in ComplexButton.
  - Made forms show their action URL upon enter/leave mouse events (safety).
+ - Fixed a memory leak in plain.cc.
    Patches: place (AKA corvid)
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!

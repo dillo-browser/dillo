@@ -170,8 +170,8 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
          }
          break;
       case ST_Eol:
-         data = dStrndup(Start + i - len, len);
-         DW2TB(dw)->addText(a_Misc_expand_tabs(data), widgetStyle);
+         data = a_Misc_expand_tabs(Start + i - len, len);
+         DW2TB(dw)->addText(data, widgetStyle);
          DW2TB(dw)->addParbreak(0, widgetStyle);
          dFree(data);
          if (Start[i] == '\r' && Start[i + 1] == '\n') ++i;
@@ -183,8 +183,8 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
    }
    Start_Ofs += i - len;
    if (Eof && len) {
-      data = dStrndup(Start + i - len, len);
-      DW2TB(dw)->addText(a_Misc_expand_tabs(data), widgetStyle);
+      data = a_Misc_expand_tabs(Start + i - len, len);
+      DW2TB(dw)->addText(data, widgetStyle);
       DW2TB(dw)->addParbreak(0, widgetStyle);
       dFree(data);
       Start_Ofs += len;

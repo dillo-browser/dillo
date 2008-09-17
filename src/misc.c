@@ -52,13 +52,13 @@ char *a_Misc_escape_chars(const char *str, const char *esc_set)
 /*
  * Takes a string and converts any tabs to spaces.
  */
-char *a_Misc_expand_tabs(const char *str)
+char *a_Misc_expand_tabs(const char *str, int len)
 {
    Dstr *New = dStr_new("");
-   int len, i, j, pos, old_pos;
+   int i, j, pos, old_pos;
    char *val;
 
-   if ((len = strlen(str))) {
+   if (len) {
       for (pos = 0, i = 0; i < len; i++) {
          if (str[i] == '\t') {
             /* Fill with whitespaces until the next tab. */
