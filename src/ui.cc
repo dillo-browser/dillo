@@ -69,7 +69,7 @@ int CustInput::handle(int e)
             // Make text selected when already focused.
             position(size(), 0);
             return 1;
-         } else if (k == 'o') 
+         } else if (k == 'o' || k == 'r' || k == HomeKey || k == EndKey)
             return 0;
       } else if (modifier == SHIFT) {
          if (k == LeftKey || k == RightKey)
