@@ -78,8 +78,19 @@ public:
       }
       return TabGroup::handle(e);
    }
+
+   void hideLabels() {
+      for (int i = children () - 1; i >= 0; i--)
+         child(i)->resize(x(), y(), w(), h());
+   }
+
+   void showLabels() {
+      for (int i = children () - 1; i >= 0; i--)
+         child(i)->resize(x(), y() + 20, w(), h() - 20);
+   }
 };
 
+static CustTabGroup *DilloTabs = NULL;
 
 /*
  * Create a new UI and its associated BrowserWindow data structure.
@@ -87,7 +98,6 @@ public:
  */
 BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
 {
-   static TabGroup *DilloTabs = NULL;
    BrowserWindow *old_bw = (BrowserWindow*)vbw;
    BrowserWindow *new_bw = NULL;
 
@@ -106,11 +116,10 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
         //DilloTabs->clear_tab_to_focus();
         o->add(DilloTabs);
        }
-       wh -= 20;
    }
 
    // Create and set the UI
-   UI *new_ui = new UI(0, 20, ww, wh, "Label", old_bw ? BW2UI(old_bw) : NULL);
+   UI *new_ui = new UI(0, 0, ww, wh, "Label", old_bw ? BW2UI(old_bw) : NULL);
    new_ui->set_status("http://www.dillo.org/");
    new_ui->tabs(DilloTabs);
    //new_ui->set_location("http://dillo.org/");
@@ -118,6 +127,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
 
    DilloTabs->add(new_ui);
    DilloTabs->resizable(new_ui);
+   if (DilloTabs->children () > 1)
+      DilloTabs->showLabels ();
    DilloTabs->window()->resizable(new_ui);
    DilloTabs->window()->show();
 
@@ -174,6 +185,9 @@ void a_UIcmd_close_bw(void *vbw)
          ui->tabs()->window()->hide();
    }
    delete(ui);
+
+   if (DilloTabs->children() <= 1)
+      DilloTabs->hideLabels();
    a_Bw_free(bw);
 }
 
