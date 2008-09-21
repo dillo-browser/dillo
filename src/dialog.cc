@@ -125,6 +125,7 @@ void *a_Dialog_make_text_window(const char *txt, const char *title)
    //int wh = 600, ww = 650, bh = 30;
    int wh = prefs.height, ww = prefs.width, bh = 30;
    int lines, line_num_width;
+   Font *textfont = font(prefs.fw_fontname, 0);
  
    Window *window = new Window(ww, wh, title ? title : "Untitled");
    window->callback(window_close_cb, window);
@@ -135,6 +136,8 @@ void *a_Dialog_make_text_window(const char *txt, const char *title)
     /* enable wrapping lines; text uses entire width of window */
     td->wrap_mode(true, 0);
 
+    if (textfont)
+       td->textfont(textfont);
     td->textsize((int) rint(13.0 * prefs.font_factor));
     fltk::setfont(td->textfont(), td->textsize());
 

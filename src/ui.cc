@@ -19,6 +19,7 @@
 #include <fltk/damage.h>
 #include <fltk/xpmImage.h>
 #include <fltk/events.h>        // for mouse buttons and keys
+#include <fltk/Font.h>          // UI label font for tabs
 #include <fltk/InvisibleBox.h>
 #include <fltk/PopupMenu.h>
 #include <fltk/Item.h>
@@ -607,6 +608,10 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
 {
    int s_h = 20;
 
+   Font *f = font(prefs.vw_fontname, 0);
+   if (f)
+      this->labelfont(f);
+
    Tabs = NULL;
    TabTooltip = NULL;
    TopGroup = new PackedGroup(0, 0, ww, wh);
@@ -1081,10 +1086,17 @@ void UI::set_page_title(const char *label)
    this->window()->redraw_label();
 
    if (tabs() && *label) {
-      const size_t tab_chars = 18;
+      size_t tab_chars = 18;
       snprintf(title, tab_chars + 1, "%s", label);
-      if (strlen(label) > tab_chars)
+      if (strlen(label) > tab_chars) {
+         while (label[tab_chars] & 0x80 && !(label[tab_chars] & 0x40) &&
+                tab_chars < 23) {
+            // In the middle of a multibyte UTF-8 character.
+            title[tab_chars] = label[tab_chars];
+            tab_chars++;
+         }
          snprintf(title + tab_chars, 4, "...");
+      }
       this->copy_label(title);
       this->redraw_label();
 
