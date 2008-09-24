@@ -28,6 +28,6 @@ egrep $FLAGS "$1" ../dlib/*.[ch]
 
 #egrep $FLAGS "$1" dw/*[ch]
 #egrep $FLAGS "$1" lout/*[ch]
-egrep $FLAGS "$1" ../../dw-testbed/dw/*[ch]
-egrep $FLAGS "$1" ../../dw-testbed/lout/*[ch]
+egrep $FLAGS "$1" ../dw/*[ch]
+egrep $FLAGS "$1" ../lout/*[ch]
 
