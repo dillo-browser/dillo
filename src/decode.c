@@ -219,24 +219,28 @@ Decode *a_Decode_content_init(const char *format)
 {
    Decode *dc = NULL;
 
-   if (format && !dStrcasecmp(format, "gzip")) {
-      _MSG("gzipped data!\n");
+   if (format && *format) {
+      if (!dStrcasecmp(format, "gzip") || !dStrcasecmp(format, "x-gzip")) {
+         _MSG("gzipped data!\n");
 
-      z_stream *zs;
-      dc = dNew(Decode, 1);
-      dc->buffer = dNew(char, bufsize);
-      dc->state = zs = dNew(z_stream, 1);
-      zs->zalloc = NULL;
-      zs->zfree = NULL;
-      zs->next_in = NULL;
-      zs->avail_in = 0;
+         z_stream *zs;
+         dc = dNew(Decode, 1);
+         dc->buffer = dNew(char, bufsize);
+         dc->state = zs = dNew(z_stream, 1);
+         zs->zalloc = NULL;
+         zs->zfree = NULL;
+         zs->next_in = NULL;
+         zs->avail_in = 0;
 
-      /* 16 is a magic number for gzip decoding */
-      inflateInit2(zs, MAX_WBITS+16);
+         /* 16 is a magic number for gzip decoding */
+         inflateInit2(zs, MAX_WBITS+16);
 
-      dc->decode = Decode_gzip;
-      dc->free = Decode_gzip_free;
-      dc->leftover = NULL; /* not used */
+         dc->decode = Decode_gzip;
+         dc->free = Decode_gzip_free;
+         dc->leftover = NULL; /* not used */
+      } else {
+         MSG("Content-Encoding '%s' not recognized.\n", format);
+      }
    }
    return dc;      
 }
