@@ -36,7 +36,7 @@ int MyInput::handle(int e)
    unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
    if (modifier == 0) {
       if (e == KEY && k == EscapeKey) {
-         _MSG("findbar CustInput: caught EscapeKey\n");
+         _MSG("findbar MyInput: caught EscapeKey\n");
          ret = 0;
       }
    }
