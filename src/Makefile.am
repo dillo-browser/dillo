@@ -1,6 +1,6 @@
 AM_CPPFLAGS=-DDILLORC_SYS='"$(sysconfdir)/dillo2rc"' @LIBJPEG_CPPFLAGS@
-AM_CFLAGS = -I../../dw-testbed @LIBPNG_CFLAGS@
-AM_CXXFLAGS = -I../../dw-testbed @LIBPNG_CFLAGS@ @LIBFLTK_CXXFLAGS@
+AM_CFLAGS = @LIBPNG_CFLAGS@
+AM_CXXFLAGS = -I.. @LIBPNG_CFLAGS@ @LIBFLTK_CXXFLAGS@
 
 SUBDIRS = IO
 
@@ -10,10 +10,10 @@ dillo_fltk_LDADD = \
 	../dlib/libDlib.a \
 	../dpip/libDpip.a \
 	IO/libDiof.a \
-	../../dw-testbed/dw/libDw-widgets.a \
-	../../dw-testbed/dw/libDw-fltk.a \
-	../../dw-testbed/dw/libDw-core.a \
-	../../dw-testbed/lout/liblout.a \
+	../dw/libDw-widgets.a \
+	../dw/libDw-fltk.a \
+	../dw/libDw-core.a \
+	../lout/liblout.a \
 	@LIBJPEG_LIBS@ @LIBPNG_LIBS@ @LIBFLTK_LIBS@ @LIBZ_LIBS@ @LIBICONV_LIBS@
 
 dillo_fltk_SOURCES = \

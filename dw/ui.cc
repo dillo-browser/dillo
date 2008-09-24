@@ -1,0 +1,364 @@
+/*
+ * Dillo Widget
+ *
+ * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
+
+
+
+#include "core.hh"
+
+#include <stdio.h>
+
+namespace dw {
+namespace core {
+namespace ui {
+
+using namespace object;
+
+int Embed::CLASS_ID = -1;
+
+Embed::Embed(Resource *resource)
+{
+   registerName ("dw::core::ui::Embed", &CLASS_ID);
+   this->resource = resource;
+   resource->setEmbed (this);
+}
+
+Embed::~Embed()
+{
+   delete resource;
+}
+
+void Embed::sizeRequestImpl (Requisition *requisition)
+{
+   resource->sizeRequest (requisition);
+}
+
+void Embed::getExtremesImpl (Extremes *extremes)
+{
+   resource->getExtremes (extremes);
+}
+
+void Embed::sizeAllocateImpl (Allocation *allocation)
+{
+   resource->sizeAllocate (allocation);
+}
+
+void Embed::enterNotifyImpl (core::EventCrossing *event)
+{
+   resource->emitEnter();
+}
+
+void Embed::leaveNotifyImpl (core::EventCrossing *event)
+{
+   resource->emitLeave();
+}
+
+void Embed::setWidth (int width)
+{
+   resource->setWidth (width);
+}
+
+void Embed::setAscent (int ascent)
+{
+   resource->setAscent (ascent);
+}
+
+void Embed::setDescent (int descent)
+{
+   resource->setDescent (descent);
+}
+
+void Embed::draw (View *view, Rectangle *area)
+{
+   drawWidgetBox (view, area, false);
+   resource->draw (view, area);
+}
+
+Iterator *Embed::iterator (Content::Type mask, bool atEnd)
+{
+   return resource->iterator (mask, atEnd);
+}
+
+void Embed::setStyle (style::Style *style)
+{
+   resource->setStyle (style);
+   Widget::setStyle (style);
+}
+
+// ----------------------------------------------------------------------
+
+bool Resource::ActivateEmitter::emitToReceiver (lout::signal::Receiver
+                                                *receiver,
+                                                int signalNo,
+                                                int argc, Object **argv)
+{
+   ActivateReceiver *ar = (ActivateReceiver*)receiver;
+   Resource *res = (Resource*)((Pointer*)argv[0])->getValue ();
+
+   switch (signalNo) {
+   case 0:
+      ar->activate (res);
+      break;
+   case 1:
+      ar->enter (res);
+      break;
+   case 2:
+      ar->leave (res);
+      break;
+   default:
+      misc::assertNotReached ();
+   }
+   return false;
+}
+
+void Resource::ActivateEmitter::emitActivate (Resource *resource)
+{
+   Pointer p (resource);
+   Object *argv[1] = { &p };
+   emitVoid (0, 1, argv);
+}
+
+void Resource::ActivateEmitter::emitEnter (Resource *resource)
+{
+   Pointer p (resource);
+   Object *argv[1] = { &p };
+   emitVoid (1, 1, argv);
+}
+
+void Resource::ActivateEmitter::emitLeave (Resource *resource)
+{
+   Pointer p (resource);
+   Object *argv[1] = { &p };
+   emitVoid (2, 1, argv);
+}
+
+// ----------------------------------------------------------------------
+
+Resource::~Resource ()
+{
+}
+
+void Resource::setEmbed (Embed *embed)
+{
+   this->embed = embed;
+}
+
+void Resource::getExtremes (Extremes *extremes)
+{
+   /* Simply return the requisition width */
+   Requisition requisition;
+   sizeRequest (&requisition);
+   extremes->minWidth = extremes->maxWidth = requisition.width;
+}
+
+void Resource::sizeAllocate (Allocation *allocation)
+{
+}
+
+void Resource::setWidth (int width)
+{
+}
+
+void Resource::setAscent (int ascent)
+{
+}
+
+void Resource::setDescent (int descent)
+{
+}
+
+void Resource::draw (View *view, Rectangle *area)
+{
+}
+
+void Resource::setStyle (style::Style *style)
+{
+}
+
+void Resource::emitEnter ()
+{
+   activateEmitter.emitEnter(this);
+}
+
+void Resource::emitLeave ()
+{
+   activateEmitter.emitLeave(this);
+}
+
+// ----------------------------------------------------------------------
+
+bool ButtonResource::ClickedEmitter::emitToReceiver (lout::signal::Receiver
+                                                     *receiver,
+                                                     int signalNo,
+                                                     int argc,
+                                                     Object **argv)
+{
+   ((ClickedReceiver*)receiver)
+      ->clicked ((ButtonResource*)((Pointer*)argv[0])->getValue (),
+                 ((Integer*)argv[1])->getValue (),
+                 ((Integer*)argv[2])->getValue (),
+                 ((Integer*)argv[3])->getValue ());
+   return false;
+}
+
+void ButtonResource::ClickedEmitter::emitClicked (ButtonResource *resource,
+                                                  int buttonNo, int x, int y)
+{
+   Integer i1 (buttonNo);
+   Integer i2 (x);
+   Integer i3 (y);
+   Pointer p (resource);
+   Object *argv[4] = { &p, &i1, &i2, &i3 };
+   emitVoid (0, 4, argv);
+}
+
+// ----------------------------------------------------------------------
+
+Iterator *LabelButtonResource::iterator (Content::Type mask, bool atEnd)
+{
+   /** \todo Perhaps in brackets? */
+   // return new TextIterator (getEmbed (), mask, atEnd, getLabel ());
+   /** \bug Not implemented. */
+   return new EmptyIterator (getEmbed (), mask, atEnd);
+}
+
+// ----------------------------------------------------------------------
+
+void ComplexButtonResource::LayoutReceiver::canvasSizeChanged (int width,
+                                                               int ascent,
+                                                               int descent)
+{
+   /**
+    * \todo The argument to queueResize is not always true. (But this works.)
+    */
+   resource->queueResize (true);
+}
+
+ComplexButtonResource::ComplexButtonResource ()
+{
+   layout = NULL;
+   layoutReceiver.resource = this;
+   click_x = click_y = -1;
+}
+
+void ComplexButtonResource::init (Widget *widget)
+{
+   this->widget = widget;
+
+   layout = new Layout (createPlatform ());
+   setLayout (layout);
+   layout->setWidget (widget);
+   layout->connect (&layoutReceiver);
+}
+
+void ComplexButtonResource::setEmbed (Embed *embed)
+{
+   ButtonResource::setEmbed (embed);
+
+   if (widget->usesHints ())
+      embed->setUsesHints ();
+}
+
+ComplexButtonResource::~ComplexButtonResource ()
+{
+   delete layout;
+}
+
+void ComplexButtonResource::sizeRequest (Requisition *requisition)
+{
+   Requisition widgetRequisition;
+   widget->sizeRequest (&widgetRequisition);
+   requisition->width = widgetRequisition.width + 2 * reliefXThickness ();
+   requisition->ascent = widgetRequisition.ascent + reliefYThickness ();
+   requisition->descent = widgetRequisition.descent + reliefYThickness ();
+}
+
+void ComplexButtonResource::getExtremes (Extremes *extremes)
+{
+   Extremes widgetExtremes;
+   widget->getExtremes (&widgetExtremes);
+   extremes->minWidth = widgetExtremes.minWidth + 2 * reliefXThickness ();
+   extremes->maxWidth = widgetExtremes.maxWidth + 2 * reliefXThickness ();
+}
+
+void ComplexButtonResource::sizeAllocate (Allocation *allocation)
+{
+}
+
+void ComplexButtonResource::setWidth (int width)
+{
+   widget->setWidth (width - 2 * reliefXThickness ());
+}
+
+void ComplexButtonResource::setAscent (int ascent)
+{
+   widget->setAscent (ascent - reliefYThickness ());
+}
+
+void ComplexButtonResource::setDescent (int descent)
+{
+   widget->setDescent (descent - reliefYThickness ());
+}
+
+Iterator *ComplexButtonResource::iterator (Content::Type mask, bool atEnd)
+{
+   /**
+    * \bug Implementation.
+    * This is a bit more complicated: We have two layouts here.
+    */
+   return new EmptyIterator (getEmbed (), mask, atEnd);
+}
+
+// ----------------------------------------------------------------------
+
+Iterator *TextResource::iterator (Content::Type mask, bool atEnd)
+{
+   // return new TextIterator (getEmbed (), mask, atEnd, getText ());
+   /** \bug Not implemented. */
+   return new EmptyIterator (getEmbed (), mask, atEnd);
+}
+
+// ----------------------------------------------------------------------
+
+Iterator *CheckButtonResource::iterator (Content::Type mask, bool atEnd)
+{
+   //return new TextIterator (getEmbed (), mask, atEnd,
+   //                         isActivated () ? "[X]" : "[ ]");
+   /** \bug Not implemented. */
+   return new EmptyIterator (getEmbed (), mask, atEnd);
+}
+
+// ----------------------------------------------------------------------
+
+RadioButtonResource::GroupIterator::~GroupIterator ()
+{
+}
+
+Iterator *RadioButtonResource::iterator (Content::Type mask, bool atEnd)
+{
+   //return new TextIterator (getEmbed (), mask, atEnd,
+   //                         isActivated () ? "(*)" : "( )");
+   /** \bug Not implemented. */
+   return new EmptyIterator (getEmbed (), mask, atEnd);
+}
+
+} // namespace ui
+} // namespace core
+} // namespace core
+

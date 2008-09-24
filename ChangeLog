@@ -181,6 +181,135 @@ dillo-fltk2
  - test no_proxy (set a list in dillorc).
 
 -----------------------------------------------------------------------------
+dw
+
+0.0.43
+        - Fixed bug in dw::core::ExtIterator (wrong mask, see also Jorge's
+          patch "createvar.diff" from Nov 08).
+        - Applied Jorge's patch for dw::core::AlignedTextblock
+          ("lists.diff" in mail from Nov 08).
+        - Applied Jorge's patch for dw::core::Textblock ("links.diff" in
+          mail from Nov 08).
+        - Applied Jorge's patch for configure.in ("conf.diff" in mail from
+          Nov 08).
+        - Renamed ExtIterator to DeepIterator.
+        - Implemented CharIterator (as an alternative to word iterators).
+        - Implemented text search (simple KMP based on CharIterator).
+        - Completed scrolling.
+          Patches: Sebastian Geerken
+
+        + Implemented drag scrolling with mouse's middle button.
+        - Enabled commented out partial image redraw, adding some checks.
+        - Enabled clipped redraws (avoids some flickering).
+        - Improvement: avoid complete redraws for child widget updates.
+        - Added code to really delete fltk2 widgets embedded in dw2.
+        - Fixed partial redraws and scrolling interference.
+        - Added combination of drawing rectangles into a larger one.
+        - Bug fix: a newly added rectangle may contain others.
+        - Made draw() check whether a rectangle is visible at drawing time.
+        - The background is now cleared properly on partial redraws.
+        - Made getWidgetAtPoint() a virtual method of widget and implemented a
+          custom one for TextBlock, reducing CPU usage on pages full of links.
+        - Added a style reference and an initialization to mustQueueResize.
+        - Replaced prepareCreateFltkWidget with an explicit call to add().
+        - Fixed an assertion-exit bug in DeepIterator.
+        - Fixed two viewport bugs: in drawing and scrolling.
+        - Made scrollbars really children of FltkViewport.
+        - Avoided multiple redraws when Layout::resizeIdle() queues itself.
+        - Set FltkViewBase::draw to intersect with view area for expose.
+        - Set cursor shape to CURSOR_MOVE on drag. Disabled drag over links.
+        - Added Layout::queueDrawExcept(), it reduces flickering by avoiding
+          a redraw when another rectangle is added.
+        - Fixed a scrollIdleId test to properly compare against -1.
+        - Set FltkPlatform::removeIdle to use removeRef() instead of remove().
+        - Cleaned up scroll code and moved updateCanvasWidgets() out of draw().
+        - Switched begin-end pairs with add() calls (fixes side-effect bugs!).
+        - Fixed checks in adjustScrollPos() to not allow wild values.
+        - Added double buffering for partial redraws!
+        - Implemented ComplexButton.
+        - Fixed find text so it works for phrases and PRE-wrapped text.
+        - Fixed a bug in DeepIterator::prev.
+        - Added the "lout" namespace.
+        - Reduced memory usage in 30% by reusing styles, reducing the size
+          of struct Content, and not preallocating in SimpleVector. !
+        - Made fontsTable and colorsTable static members of Font and Color.
+        - Moved highlighting information from struct Word into Textblock
+          to save memory.
+        - Reduced memory usage 10% with a custom memory handler in Textblock.
+        - Fixed a segfault when searching for single characters.
+        - Fixed memory leaks by s/delete/delete[]/ where necessary.
+        - Fixed three iterator memory leaks in Iterator::scrollTo().
+        - Changed DeepIterator to always clone its parameter (segfault bug).
+        - Implemented selection of multibyte glyphs (UTF-8).
+        - Removed the canvasWidgets list (fltk's children seem enough).
+        - Switched misc:assert() to the standard assert() call.
+          Patches: Johannes Hofmann
+        + Fixed a segfault-on-empty-strings bug in ConstString::hashValue.
+        - Fixed a segfault in reallocChildren (colspan/rowspan related).
+        - Fixed another assertion-exit bug in DeepIterator.
+        - Added the dw::fltk::ui::FltkMultiLineTextResource class.
+        - Implemented TEXTAREA using fltk::TextEditor.
+        - Bugfix: added the missing fltk::setfont calls before ::getwidth.
+        - Bugfix: initialized scrollIdleNotInterrupted variable.
+        - Commented out obsolete DEBUG_MSG lines in widget.cc.
+        - Fixed rowspan apportion when no single rowspan=1 row is found.
+        - Fixed allocateFltkWidget to handle and display FltkListResource.
+        - Fixed a slithery BUG in lout::misc::Stringbuffer.
+        - Implemented multiple item selection in FltkSelectionResource.
+          Patches: Jeremy Henty
+        + Added an extra argument in the link signals
+          (I recommended that instead of an array of image handlers --jcid)
+        - Aded an x_img camp to style (an image array index, like x_link).
+        - Added the same workaround in ui.cc for WHEN_ENTER_KEY_ALWAYS.
+        - Fixed shading (style.cc) and implemented FltkViewBase::drawPolygon().
+        - Implemented Circle and Disk bullet drawing.
+        - Fixed a bug in FltkViewBase::getClippingView.
+        - Made FltkColor::FltkColor use ::fltk::BLACK (bugfix).
+        - Fixed a bug with dissappearing widgets when scrolling with low CPU.
+        - Fixed a bug with the canvas offset of scrolling bars.
+        - Fixed a typo bug in scrollIdle() and a typo in processMouseEvent().
+        - Fixed an offset arithmetic bug with widgets inside textblock.
+        - Fixed RTFL debugging messages.
+        - Switched ComplexButton to use "Activate" instead of "Clicked" signal.
+        - Made the ComplexButton resource remember its click x,y.
+        - Added "enter" and "leave" signals into class Resource.
+          Patches: place
+        + Enabled mouse wheel scrolling. 
+          FltkViewport::setScrollStep() sets how many points at a time.
+        - Added setDeleteCallback(DW_Callback_t func, void *data) to widget.
+          This allows to hook a callback when the widget is destroyed.
+        - Implemented a weighted apportionment algorithm for table rowspan.
+        - Implemented a weighted apportionment algorithm for table colspan.
+        - Implemented percentage widths in tables (better rendering!).
+        - Fixed an initialization bug in hruler.
+        - Fixed a bug in the textblock's wrapping algorithm.
+        - Fixed a bug in table cellpadding.
+        - Fixed a bug in getContentHeight().
+        - Changed the table-apportion algorithms + bug fixes. Big work!
+        - Fixed a mistake in the CSS-box-model PNG image (style-box-model.png).
+        - Added initialization for scrollX and scrollY.
+        - Fixed a typo bug in adjustScrollPos().
+        - Fixed two typo bugs in Textblock::drawLine().
+        - Changed Textblock::addText() to internally allocate its text string,
+          making the memory handling opaque to the caller.
+          Patches: Jorge Arellano Cid
+        + Added actual text selection.
+          Patch: Sebastian Geerken, place
+        + Implemented dw::fltk::ui::FltkOptionMenuResource::isSelected(),
+          added Item::createNewGroupWidget(), Item::createNewWidget().
+          Patch: Jeremy Henty, Johannes Hofmann
+        + Implemented the necessary base for image maps.
+          Patch: Johannes Hofmann, place
+
+0.0.42
+        - Fixed event handling in FLTK views. (Fixes links and several
+          problems with UI resources.)
+        - Implemented clipping views. (dw::Image used this already in
+          version 0.0.41.)
+        - Added "activated" signals to UI resources.
+          Patches: Sebastian Geerken
+
+-----------------------------------------------------------------------------
 
 
 0.8.5-pre-dw-redesign-1 [internal]

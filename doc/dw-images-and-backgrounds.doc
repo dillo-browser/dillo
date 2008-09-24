@@ -1,0 +1,146 @@
+/** \page dw-images-and-backgrounds Images and Backgrounds in Dw
+
+<h2>General</h2>
+
+Representation of the image data is delegated to dw::core::Imgbuf, see
+there for details. Drawing is delegated to dw::core::View
+(dw::core::View::drawImgbuf).
+
+Since dw::core::Imgbuf provides memory management based on reference
+counting, there may be an 1-to-n relation from image renderers (image
+widgets or backgrounds, see below) and dw::core::Imgbuf. Since
+dw::core::Imgbuf does not know about renderers, but just provides
+rendering functionality, the caller must (typically after calling
+dw::core::Imgbuf::copyRow) notify all renderers connected to the
+buffer.
+
+
+<h2>Images</h2>
+
+This is the simplest renderer, displaying an image. For each row to be
+drawn,
+
+<ol>
+<li> first dw::core::Imgbuf::copyRow, and then
+<li> for each dw::Image, dw::Image::drawRow must be called, with the same
+     argument (no scaling is necessary).
+</ol>
+
+dw::Image automatically scales the dw::core::Imgbuf, the root buffer
+should be passed to dw::Image::setBuffer.
+
+\see dw::Image for more details.
+
+<h2>Future Extensions</h2>
+
+(This is not implemented yet.) Rendering itself (image widgets and
+background) will be abstracted, by a new interface
+dw::core::ImageRenderer.  In the current code for image decoding, this
+interface will replace references to dw::Image, which implements
+dw::core::ImageRenderer, in most cases.
+
+<h2>Backgrounds</h2>
+
+(This is based on future extensions described above.) Since background
+are style resources, they are associated with
+dw::core::style::Style. For backgrounds, another level is needed,
+because of the 1-to-n relation from dw::core::style::Style to
+dw::core::Widget:
+
+\dot
+digraph G {
+   node [shape=record, fontname=Helvetica, fontsize=10];
+   edge [arrowhead="open", arrowtail="none", labelfontname=Helvetica,
+         labelfontsize=10, color="#404040", labelfontcolor="#000080"];
+   fontname=Helvetica; fontsize=10;
+
+   "background renderer (as a part of style)" -> "image buffer" [headlabel="*",
+                                                                taillabel="1"];
+   "widget (or a part of it)" -> "background renderer (as a part of style)"
+      [headlabel="*", taillabel="1"];
+}
+\enddot
+
+Unlike dw::Image, dw::core::style::BgRenderer is not associated with a
+certain rectangle on the canvas. Instead, widgets, or parts of widgets
+take this role. This is generally represented by an implementation of
+the interface dw::core::style::BgAllocation, which is implemented by
+dw::core::Widget, but also by all parts of widget implementation,
+which may have an own background image.
+
+The following diagram gives a total overview:
+
+\dot
+digraph G {
+   node [shape=record, fontname=Helvetica, fontsize=10];
+   edge [arrowhead="open", arrowtail="none", labelfontname=Helvetica,
+         labelfontsize=10, color="#404040", labelfontcolor="#000080"];
+   fontname=Helvetica; fontsize=10;
+
+   "DICache Entry";
+
+   subgraph cluster_dw_images {
+      style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
+      label="Dw Images";
+
+      ImageRenderer [URL="\ref dw::core::ImageRenderer", color="#ff8080"];
+      Imgbuf [URL="\ref dw::core::Imgbuf", color="#ff8080"];
+   }
+
+   subgraph cluster_widgets {
+      style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
+      label="Widgets";
+
+      Widget [URL="\ref dw::core::Widget", color="#a0a0a0"];
+      Textblock [URL="\ref dw::Textblock"];
+      "Textblock::Word" [URL="\ref dw::Textblock::Word"];
+      Table [URL="\ref dw::Table"];
+      "Table::Row" [URL="\ref dw::Table::Row"];
+      Image [URL="\ref dw::Image"];
+   }
+
+   subgraph cluster_style {
+      style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
+      label="dw::core::style";
+
+      Style [URL="\ref dw::core::style::Style"];
+      BgRenderer [URL="\ref dw::core::style::BgRenderer"];
+      BgAllocation [URL="\ref dw::core::style::BgAllocation", color="#ff8080"];
+   }
+
+   "DICache Entry" -> ImageRenderer [headlabel="*", taillabel="1"];
+   "DICache Entry" -> Imgbuf [headlabel="1", taillabel="1"]; 
+
+   BgRenderer -> Imgbuf [headlabel="1", taillabel="*"];
+   BgRenderer -> BgAllocation [headlabel="*", taillabel="1"];
+   ImageRenderer -> BgRenderer [arrowhead="none", arrowtail="empty",
+                                style="dashed"];
+   ImageRenderer -> Image [arrowhead="none", arrowtail="empty",
+                           style="dashed"];
+
+   Style -> BgRenderer [headlabel="0..1", taillabel="1"];
+
+   Widget -> Textblock [arrowhead="none", arrowtail="empty"];
+   Textblock -> "Textblock::Word" [headlabel="*", taillabel="1"];
+   Widget -> Table [arrowhead="none", arrowtail="empty"];
+   Table -> "Table::Row" [headlabel="*", taillabel="1"];
+   Widget -> Image [arrowhead="none", arrowtail="empty"];
+
+   BgAllocation -> Widget [arrowhead="none", arrowtail="empty",
+                           style="dashed"];
+   BgAllocation -> "Textblock::Word" [arrowhead="none", arrowtail="empty",
+                                      style="dashed"];
+   BgAllocation -> "Table::Row" [arrowhead="none", arrowtail="empty",
+                                 style="dashed"];
+}
+\enddot
+
+<center>[\ref uml-legend "legend"]</center>
+
+
+<h2>Integration into dillo</h2>
+
+\todo Add some references.
+
+
+*/

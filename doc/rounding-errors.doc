@@ -1,0 +1,24 @@
+/** \page rounding-errors How to Avoid Rounding Errors
+
+(Probably, this is a standard algorithm, so if someone knows the name,
+drop me a note.)
+
+If something like
+
+\f[y_i = {x_i a \over b}\f]
+
+is to be calculated, and all numbers are integers, a naive
+implementation would result in something, for which
+
+\f[\sum y_i \ne {(\sum x_i) a \over b}\f]
+
+because of rounding errors, due to the integer division. This can be
+avoided by transforming the formula into
+
+\f[y_i = {(\sum_{j=0}^{j=i} x_j) a \over b} - \sum_{j=0}^{j=i} y_j\f]
+
+Of corse, when all \f$y_i\f$ are calculated in a sequence,
+\f$\sum_{j=0}^{j=i} x_j\f$ and \f$\sum_{j=0}^{j=i} y_j\f$ can be
+accumulated in the same loop.
+
+*/
