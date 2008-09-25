@@ -36,6 +36,7 @@ struct _DilloPrefs {
    bool_t small_icons;
    bool_t limit_text_width;
    bool_t w3c_plus_heuristics;
+   bool_t focus_new_tab;
    double font_factor;
    bool_t show_back;
    bool_t show_forw;
@@ -55,6 +56,7 @@ struct _DilloPrefs {
    char *fw_fontname;
    bool_t generate_submit;
    bool_t enterpress_forces_submit;
+   bool_t middle_click_opens_new_tab;
    char *search_url;
    char *save_dir;
    bool_t show_msg;

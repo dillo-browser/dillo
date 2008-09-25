@@ -36,15 +36,16 @@ typedef enum {
    UI_TEMPORARILY_SHOW_PANELS
 } UIPanelmode;
 
-// Private class 
+// Private classes
 class CustProgressBox;
+class CustTabGroup;
 
 //
 // UI class definition -------------------------------------------------------
 //
 class UI : public fltk::Group {
    void *Bw;
-   TabGroup *Tabs;
+   CustTabGroup *Tabs;
    char *TabTooltip;
 
    Group *TopGroup;
@@ -105,8 +106,8 @@ public:
    Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
 
-   TabGroup *tabs() { return Tabs; }
-   void tabs(TabGroup *tabs) { Tabs = tabs; }
+   CustTabGroup *tabs() { return Tabs; }
+   void tabs(CustTabGroup *tabs) { Tabs = tabs; }
    void *vbw() { return Bw; }
    void vbw(void *v_bw) { Bw = v_bw; }
 

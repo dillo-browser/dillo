@@ -808,9 +808,14 @@ bool DilloHtml::HtmlLinkReceiver::click (Widget *widget, int link, int img,
       Html_set_link_coordinates(html, link, x, y);
 
       if (event->button == 1) {
-         a_Nav_push(bw, url);
+         a_UIcmd_open_url(bw, url);
       } else if (event->button == 2) {
-         a_Nav_push_nw(bw, url);
+         if (prefs.middle_click_opens_new_tab) {
+            int focus = prefs.focus_new_tab ? 1 : 0;
+            if (event->state == SHIFT_MASK) focus = !focus;
+            a_UIcmd_open_url_nt(bw, url, focus);
+         } else
+            a_UIcmd_open_url_nw(bw, url);
       } else {
          return false;
       }

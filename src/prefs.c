@@ -65,6 +65,7 @@ typedef enum {
    DRC_TOKEN_BG_COLOR,
    DRC_TOKEN_CONTRAST_VISITED_COLOR,
    DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT,
+   DRC_TOKEN_FOCUS_NEW_TAB,
    DRC_TOKEN_FONT_FACTOR,
    DRC_TOKEN_FORCE_MY_COLORS,
    DRC_TOKEN_FULLWINDOW_START,
@@ -75,6 +76,7 @@ typedef enum {
    DRC_TOKEN_LIMIT_TEXT_WIDTH,
    DRC_TOKEN_LINK_COLOR,
    DRC_TOKEN_LOAD_IMAGES,
+   DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB,
    DRC_TOKEN_NOPROXY,
    DRC_TOKEN_PANEL_SIZE,
    DRC_TOKEN_PROXY,
@@ -123,6 +125,7 @@ static const SymNode_t symbols[] = {
    { "bg_color", DRC_TOKEN_BG_COLOR },
    { "contrast_visited_color", DRC_TOKEN_CONTRAST_VISITED_COLOR },
    { "enterpress_forces_submit", DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT },
+   { "focus_new_tab", DRC_TOKEN_FOCUS_NEW_TAB },
    { "font_factor", DRC_TOKEN_FONT_FACTOR },
    { "force_my_colors", DRC_TOKEN_FORCE_MY_COLORS },
    { "fullwindow_start", DRC_TOKEN_FULLWINDOW_START },
@@ -136,6 +139,7 @@ static const SymNode_t symbols[] = {
    { "limit_text_width", DRC_TOKEN_LIMIT_TEXT_WIDTH },
    { "link_color", DRC_TOKEN_LINK_COLOR },
    { "load_images", DRC_TOKEN_LOAD_IMAGES },
+   { "middle_click_opens_new_tab", DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB },
    { "no_proxy", DRC_TOKEN_NOPROXY },
    { "panel_size", DRC_TOKEN_PANEL_SIZE },
    { "save_dir", DRC_TOKEN_SAVE_DIR },
@@ -263,6 +267,9 @@ static int Prefs_parse_pair(char *name, char *value)
    case DRC_TOKEN_SHOW_TOOLTIP:
       prefs.show_tooltip = (strcmp(value, "YES") == 0);
       break;
+   case DRC_TOKEN_FOCUS_NEW_TAB:
+      prefs.focus_new_tab = (strcmp(value, "YES") == 0);
+      break;
    case DRC_TOKEN_FONT_FACTOR:
       prefs.font_factor = strtod(value, NULL);
       break;
@@ -327,6 +334,9 @@ static int Prefs_parse_pair(char *name, char *value)
       break;
    case DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT:
       prefs.enterpress_forces_submit = (strcmp(value, "YES") == 0);
+      break;
+   case DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB:
+      prefs.middle_click_opens_new_tab = (strcmp(value, "YES") == 0);
       break;
    case DRC_TOKEN_SEARCH_URL:
       dFree(prefs.search_url);
@@ -418,6 +428,7 @@ void a_Prefs_init(void)
    prefs.small_icons = FALSE;
    prefs.limit_text_width = FALSE;
    prefs.w3c_plus_heuristics = TRUE;
+   prefs.focus_new_tab = TRUE;
    prefs.font_factor = 1.0;
    prefs.show_back=TRUE;
    prefs.show_forw=TRUE;
@@ -437,6 +448,7 @@ void a_Prefs_init(void)
    prefs.fw_fontname = dStrdup(D_FW_FONTNAME);
    prefs.generate_submit = FALSE;
    prefs.enterpress_forces_submit = FALSE;
+   prefs.middle_click_opens_new_tab = TRUE;
    prefs.search_url = dStrdup(D_SEARCH_URL);
    prefs.save_dir = dStrdup(D_SAVE_DIR);
    prefs.show_msg = TRUE;

@@ -192,6 +192,15 @@
 # (my experience is that forms that lack a submit rely on Javascript)
 #generate_submit=NO
 
+# A mouse's middle click over a link opens a new Tab.
+# If you prefer to open a new Window instead, set it to NO.
+#middle_click_opens_new_tab=YES
+
+# Focus follows new Tabs.
+# You can hold SHIFT to temporarily revert this behaviour.
+#focus_new_tab=YES
+
+
 #-------------------------------------------------------------------------
 #                        DEBUG MESSAGES SECTION
 #-------------------------------------------------------------------------

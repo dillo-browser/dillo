@@ -106,8 +106,18 @@ static void Menu_open_url_cb(Widget* )
  */
 static void Menu_open_url_nw_cb(Widget* )
 {
-   MSG("Open URL in new window cb: click! :-)\n");
+   _MSG("Open URL in new window cb: click! :-)\n");
    a_UIcmd_open_url_nw(popup_bw, popup_url);
+}
+
+/* 
+ * Open URL in new Tab
+ */
+static void Menu_open_url_nt_cb(Widget* )
+{
+   int focus = prefs.focus_new_tab ? 1 : 0;
+   if (event_state(SHIFT)) focus = !focus;
+   a_UIcmd_open_url_nt(popup_bw, popup_url, focus);
 }
 
 /* 
@@ -303,6 +313,9 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
       pm->begin();
        i = new Item("Open Link in New Window");
        i->callback(Menu_open_url_nw_cb);
+       i = new Item("Open Link in New Tab");
+       i->callback(Menu_open_url_nt_cb);
+       new Divider();    
        i = new Item("Bookmark this Link");
        i->callback(Menu_add_bookmark_cb);
        i = new Item("Copy Link location");
@@ -343,6 +356,9 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
        i->callback(Menu_open_url_cb);
        i = new Item("Open Image in New Window");
        i->callback(Menu_open_url_nw_cb);
+       i = new Item("Open Image in New Tab");
+       i->callback(Menu_open_url_nt_cb);
+       new Divider();
        i = load_menuitem = new Item("Load image");
        i->callback(Menu_load_images_cb);
        i = new Item("Bookmark this Image");

@@ -473,6 +473,8 @@ static void menubar_cb(Widget *wid, void *data)
    if (strcmp((char*)data, "nb") == 0) {
       a_UIcmd_browser_window_new(wid->window()->w(), wid->window()->h(),
                                  wid->window()->user_data());
+   } else if (strcmp((char*)data, "nt") == 0) {
+      a_UIcmd_open_url_nt(wid->window()->user_data(), NULL, 1);
    } else if (strcmp((char*)data, "of") == 0) {
       a_UIcmd_open_file(wid->window()->user_data());
    } else if (strcmp((char*)data, "ou") == 0) {
@@ -493,7 +495,9 @@ void UI::make_menubar(int x, int y, int w, int h)
    mb->begin();
     ItemGroup *g = new ItemGroup( "&File" );
     g->begin();
-     new Item("&New Browser", COMMAND + 'n', menubar_cb, (void *)"nb");
+     new Item("&New Window", COMMAND + 'n', menubar_cb, (void *)"nb");
+     new Item("New &Tab", COMMAND + 't', menubar_cb, (void *)"nt");
+     new Divider();
      new Item("&Open File...", COMMAND + 'o', menubar_cb, (void *)"of");
      new Item("Open UR&L...", COMMAND + 'l', menubar_cb, (void *)"ou");
      new Item("Close &Window", COMMAND + 'q', menubar_cb, (void *)"cw");
@@ -785,6 +789,9 @@ int UI::handle(int event)
             ret = 1;
          } else if (k == 's') {
             a_UIcmd_search_dialog(this->window()->user_data());
+            ret = 1;
+         } else if (k == 't') {
+            a_UIcmd_open_url_nt(this->window()->user_data(), NULL, 1);
             ret = 1;
          } else if (k == ' ') {
             panelmode_cb_i();

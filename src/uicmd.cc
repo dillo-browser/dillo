@@ -79,6 +79,25 @@ public:
       return TabGroup::handle(e);
    }
 
+   void remove (Widget *w) {
+      TabGroup::remove (w);
+      /* fixup resizable in case we just removed it */
+      if (resizable () == w)
+         if (children () > 0)
+            resizable (child (children () - 1));
+         else
+            resizable (NULL);
+
+      if (children () < 2)
+         hideLabels ();
+   }
+
+   void add (Widget *w) {
+      TabGroup::add (w);
+      if (children () > 1)
+         showLabels ();
+   }
+
    void hideLabels() {
       for (int i = children () - 1; i >= 0; i--)
          child(i)->resize(x(), y(), w(), h());
@@ -90,7 +109,6 @@ public:
    }
 };
 
-static CustTabGroup *DilloTabs = NULL;
 
 /*
  * Create a new UI and its associated BrowserWindow data structure.
@@ -107,28 +125,20 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
       wh = prefs.height;
    }
 
-   if (!DilloTabs) {
-       {Window *o = new Window(ww, wh);
-        o->shortcut(0); // Ignore Escape
-        o->clear_double_buffer();
-        DilloTabs = new CustTabGroup(0, 0, ww, wh);
-        DilloTabs->selection_color(156);
-        //DilloTabs->clear_tab_to_focus();
-        o->add(DilloTabs);
-       }
-   }
+   Window *win = new Window(ww, wh);
+   win->shortcut(0); // Ignore Escape
+   win->clear_double_buffer();
+   CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);
+   DilloTabs->selection_color(156);
+   win->add(DilloTabs);
 
    // Create and set the UI
    UI *new_ui = new UI(0, 0, ww, wh, "Label", old_bw ? BW2UI(old_bw) : NULL);
    new_ui->set_status("http://www.dillo.org/");
    new_ui->tabs(DilloTabs);
-   //new_ui->set_location("http://dillo.org/");
-   //new_ui->customize(12);
 
    DilloTabs->add(new_ui);
    DilloTabs->resizable(new_ui);
-   if (DilloTabs->children () > 1)
-      DilloTabs->showLabels ();
    DilloTabs->window()->resizable(new_ui);
    DilloTabs->window()->show();
 
@@ -139,6 +149,54 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
       // borders() gives x and y border sizes as negative values
       new_ui->window()->position(prefs.xpos - r.x(), prefs.ypos - r.y());
    }
+
+   // Now create the Dw render layout and viewport
+   FltkPlatform *platform = new FltkPlatform ();
+   Layout *layout = new Layout (platform);
+
+   FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
+   
+   layout->attachView (viewport);
+   new_ui->set_render_layout(*viewport);
+
+   viewport->setScrollStep((int) rint(14.0 * prefs.font_factor));
+
+   // Now, create a new browser window structure
+   new_bw = a_Bw_new();
+
+   // Store new_bw for callback data inside UI
+   new_ui->vbw(new_bw);
+
+   // Reference the UI from the bw
+   new_bw->ui = (void *)new_ui;
+   // Copy the layout pointer into the bw data
+   new_bw->render_layout = (void*)layout;
+
+   return new_bw;
+}
+
+/*
+ * Create a new Tab.
+ * i.e the new UI and its associated BrowserWindow data structure.
+ */
+BrowserWindow *UIcmd_tab_new(const void *vbw)
+{
+   _MSG(" UIcmd_tab_new vbw=%p\n", vbw);
+
+   dReturn_val_if_fail (vbw != NULL, NULL);
+
+   BrowserWindow *new_bw = NULL;
+   BrowserWindow *old_bw = (BrowserWindow*)vbw;
+   UI *ui = BW2UI(old_bw);
+
+   // Create and set the UI
+   UI *new_ui = new UI(0, 0, ui->w(), ui->h(), "Label", ui);
+   new_ui->tabs(ui->tabs());
+
+   new_ui->tabs()->add(new_ui);
+   new_ui->tabs()->resizable(new_ui);
+   new_ui->tabs()->window()->resizable(new_ui);
+   new_ui->tabs()->window()->show();
 
    // Now create the Dw render layout and viewport
    FltkPlatform *platform = new FltkPlatform ();
@@ -186,8 +244,6 @@ void a_UIcmd_close_bw(void *vbw)
    }
    delete(ui);
 
-   if (DilloTabs->children() <= 1)
-      DilloTabs->hideLabels();
    a_Bw_free(bw);
 }
 
@@ -259,6 +315,20 @@ void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
 {
    a_Nav_push_nw(bw, url);
+}
+
+/*
+ * Open a new URL in a new tab in the same browser window
+ */
+void a_UIcmd_open_url_nt(void *vbw, const DilloUrl *url, int focus)
+{
+   BrowserWindow *new_bw = UIcmd_tab_new(vbw);
+   if (url)
+      a_Nav_push(new_bw, url);
+   if (focus) {
+      BW2UI(new_bw)->tabs()->selected_child(BW2UI(new_bw));
+      BW2UI(new_bw)->tabs()->selected_child()->take_focus();
+   }
 }
 
 /*
