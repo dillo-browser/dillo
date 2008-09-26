@@ -229,10 +229,17 @@ static void Menu_history_cb(Widget *wid, void *data)
 {
    int mb = ((CustItem*)wid)->button();
    int offset = history_direction * VOIDP2INT(data);
+   DilloUrl *url = a_History_get_url(history_list[VOIDP2INT(data)-1]);
 
    if (mb == 2) {
-      /* middle button, open in a new window */
-      a_UIcmd_nav_jump(popup_bw, offset, 1);
+      // Middle button, open in a new window/tab
+      if (prefs.middle_click_opens_new_tab) {
+         int focus = prefs.focus_new_tab ? 1 : 0;
+         if (event_state(SHIFT)) focus = !focus;
+         a_UIcmd_open_url_nt(popup_bw, url, focus);
+      } else {
+         a_UIcmd_open_url_nw(popup_bw, url);
+      }
    } else {
       a_UIcmd_nav_jump(popup_bw, offset, 0);
    }
