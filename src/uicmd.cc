@@ -128,6 +128,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    Window *win = new Window(ww, wh);
    win->shortcut(0); // Ignore Escape
    win->clear_double_buffer();
+   win->set_flag(RAW_LABEL);
    CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);
    DilloTabs->selection_color(156);
    win->add(DilloTabs);
