@@ -69,8 +69,8 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    else
       style_attrs.borderWidth.setVal (border);
 
-   style_attrs.setBorderColor (Color::createShaded(HT2LT(html),
-                                                   style_attrs.backgroundColor->getColor()));
+   style_attrs.setBorderColor (
+      Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color));
    style_attrs.setBorderStyle (BORDER_OUTSET);
    style_attrs.hBorderSpacing = cellspacing;
    style_attrs.vBorderSpacing = cellspacing;
@@ -93,10 +93,9 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       if (bgcolor != -1) {
          if (bgcolor == 0xffffff && !prefs.allow_white_bg)
             bgcolor = prefs.bg_color;
+         S_TOP(html)->current_bg_color = bgcolor;
          style_attrs.backgroundColor =
             Color::createShaded (HT2LT(html), bgcolor);
-         HTML_SET_TOP_ATTR (html, backgroundColor,
-                            Color::createShaded (HT2LT(html), bgcolor));
       }
    }
 
@@ -137,7 +136,8 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
    dw::core::style::StyleAttrs style_attrs;
    dw::core::style::Style *style, *old_style;
-   int32_t bgcolor;
+   int32_t bgcolor = -1;
+   bool new_style = false;
 
 #ifdef USE_TABLES
    switch (S_TOP(html)->table_mode) {
@@ -161,8 +161,7 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
             style_attrs.backgroundColor =
                Color::createShaded (HT2LT(html), bgcolor);
             style = Style::create (HT2LT(html), &style_attrs);
-            HTML_SET_TOP_ATTR (html, backgroundColor,
-                               Color::createShaded (HT2LT(html), bgcolor));
+            S_TOP(html)->current_bg_color = bgcolor;
          }
       }
 
@@ -176,14 +175,18 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
       }
 
       style_attrs = *S_TOP(html)->table_cell_style;
-      a_Html_tag_set_valign_attr (html, tag, tagsize, &style_attrs);
-      style_attrs.backgroundColor =
-         Color::createShaded (HT2LT(html),
-                              S_TOP(html)->style->backgroundColor->getColor());
-      old_style = S_TOP(html)->table_cell_style;
-      S_TOP(html)->table_cell_style =
-         Style::create (HT2LT(html), &style_attrs);
-      old_style->unref ();
+      if (bgcolor != -1) {
+         style_attrs.backgroundColor =Color::createShaded(HT2LT(html),bgcolor);
+         new_style = true;
+      }
+      if (a_Html_tag_set_valign_attr (html, tag, tagsize, &style_attrs))
+         new_style = true;
+      if (new_style) {
+         old_style = S_TOP(html)->table_cell_style;
+         S_TOP(html)->table_cell_style =
+            Style::create (HT2LT(html), &style_attrs);
+         old_style->unref ();
+      }
       break;
    default:
       break;
@@ -292,8 +295,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
             new_style = TRUE;
             style_attrs.backgroundColor =
                Color::createShaded (HT2LT(html), bgcolor);
-            HTML_SET_TOP_ATTR (html, backgroundColor,
-                               Color::createShaded (HT2LT(html), bgcolor));
+            S_TOP(html)->current_bg_color = bgcolor;
          }
       }
 

@@ -550,14 +550,15 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 //          gtk_entry_set_max_length(GTK_ENTRY(widget),
 //                                   strtol(attrbuf, NULL, 10));
       }
+      Color *bg;
+      if (prefs.standard_widget_colors)
+         bg = NULL;
+      else
+         bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+      HTML_SET_TOP_ATTR(html, backgroundColor, bg);
 
-      if (prefs.standard_widget_colors) {
-         HTML_SET_TOP_ATTR(html, color, NULL);
-         HTML_SET_TOP_ATTR(html, backgroundColor, NULL);
-      }
       DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
    }
-  
    dFree(type);
    dFree(name);
    if (init_str != value)
@@ -599,12 +600,14 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    embed = new dw::core::ui::Embed (entryResource);
    Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
-   if (prefs.standard_widget_colors) {
-      HTML_SET_TOP_ATTR(html, color, NULL);
-      HTML_SET_TOP_ATTR(html, backgroundColor, NULL);
-   }
+   Color *bg;
+   if (prefs.standard_widget_colors)
+      bg = NULL;
+   else
+      bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+   HTML_SET_TOP_ATTR(html, backgroundColor, bg);
    DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
-  
+
    a_Url_free(action);
    html->InFlags &= ~IN_FORM;
 }
@@ -664,6 +667,14 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    if (a_Html_get_attr(html, tag, tagsize, "readonly"))
       textres->setEditable(false);
    Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
+
+   Color *bg;
+   if (prefs.standard_widget_colors)
+      bg = NULL;
+   else
+      bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+   HTML_SET_TOP_ATTR(html, backgroundColor, bg);
+
    DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
    dFree(name);
 }
@@ -738,12 +749,17 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
       res = factory->createOptionMenuResource ();
    }
    dw::core::ui::Embed *embed = new dw::core::ui::Embed(res);
+
+   int bg;
    if (prefs.standard_widget_colors) {
-      /* Colors cannot be NULL because SELECT can contain other elements */
+      /* Valid colors required; SELECT can contain other elements (BUG) */
       HTML_SET_TOP_ATTR(html, color, Color::createSimple (HT2LT(html), 0));
-      HTML_SET_TOP_ATTR(html, backgroundColor,
-                        Color::createShaded (HT2LT(html), 0xffffff));
+      bg = 0xffffff;
+   } else {
+      bg = S_TOP(html)->current_bg_color;
    }
+   HTML_SET_TOP_ATTR(html, backgroundColor,
+                     Color::createShaded (HT2LT(html), bg));
    DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
 
 // size = 0;
@@ -873,6 +889,8 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.margin.setVal(0);
       style_attrs.borderWidth.setVal(0);
       style_attrs.padding.setVal(0);
+      style_attrs.backgroundColor =
+               Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
       style = Style::create (HT2LT(html), &style_attrs);
 
       page = new Textblock (prefs.limit_text_width);
@@ -1925,6 +1943,8 @@ static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
        (url = a_Html_url_new(html, attrbuf, NULL, 0))) {
       style_attrs = *S_TOP(html)->style;
       style_attrs.cursor = CURSOR_POINTER;
+      style_attrs.backgroundColor =
+        style::Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
 
       /* create new image and add it to the button */
       if ((Image = a_Html_add_new_image(html, tag, tagsize, url, &style_attrs,
