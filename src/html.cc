@@ -755,12 +755,14 @@ bool DilloHtml::HtmlLinkReceiver::press (Widget *widget, int link, int img,
          // image menu
          if (link != -1)
             linkurl = html->links->get(link);
-         a_UIcmd_image_popup(bw, html->images->get(img)->url, linkurl);
+         const bool_t loaded_img = (html->images->get(img)->image == NULL);
+         a_UIcmd_image_popup(
+            bw, html->images->get(img)->url, loaded_img, linkurl);
          ret = true;
       } else {
          if (link == -1) {
             a_UIcmd_page_popup(bw, a_History_get_url(NAV_TOP_UIDX(bw)),
-                               bw->num_page_bugs ? bw->page_bugs->str:NULL,
+                               bw->num_page_bugs != 0,
                                html->unloadedImages());
             ret = true;
          } else {

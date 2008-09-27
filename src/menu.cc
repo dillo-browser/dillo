@@ -24,6 +24,7 @@
 #include "history.h"
 #include "html.hh"
 #include "ui.hh" // for (UI *)
+#include "timeout.hh"
 
 using namespace fltk;
 
@@ -33,12 +34,9 @@ using namespace fltk;
 
 // (This data can be encapsulated inside a class for each popup, but
 //  as popups are modal, there's no need).
-// Weak reference to the popup's URL
-static const DilloUrl *popup_url = NULL;
+static DilloUrl *popup_url = NULL;
 // Weak reference to the popup's bw
 static BrowserWindow *popup_bw = NULL;
-// Weak reference to the page's HTML bugs
-static const char *popup_bugs = NULL;
 // History popup direction (-1 = back, 1 = forward).
 static int history_direction = -1; 
 // History popup, list of URL-indexes.
@@ -246,10 +244,22 @@ static void Menu_history_cb(Widget *wid, void *data)
 }
 
 /*
+ * Manus are popped-up from this timeout callback so the events
+ * associated with the button are gone when it pops. This way we
+ * avoid a segfault when a new page replaces the page that issued
+ * the popup menu.
+ */
+static void Menu_popup_cb(void *data)
+{
+   ((PopupMenu *)data)->popup();
+   a_Timeout_remove();
+}
+
+/*
  * Page popup menu (construction & popup)
  */
 void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url, 
-                       const char *bugs_txt, bool_t unloaded_imgs)
+                       bool_t has_bugs, bool_t unloaded_imgs)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
@@ -258,8 +268,8 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    static Item *load_images_item = 0;
 
    popup_bw = bw;
-   popup_url = url;
-   popup_bugs = bugs_txt;
+   a_Url_free(popup_url);
+   popup_url = a_Url_dup(url);
 
    if (!pm) {
       Item *i;
@@ -287,20 +297,19 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
       pm->end();
    }
 
-   if (bugs_txt == NULL)
-      view_page_bugs_item->deactivate();
-   else
+   if (has_bugs == TRUE)
       view_page_bugs_item->activate();
-
-   if (unloaded_imgs == TRUE)
-      load_images_item->activate();
    else
+      view_page_bugs_item->deactivate();
+
+   if (unloaded_imgs == TRUE) {
+      load_images_item->activate();
+      load_images_item->user_data(NULL); /* wildcard */
+   } else {
       load_images_item->deactivate();
+   }
 
-   // NULL is wildcard
-   load_images_item->user_data(NULL);
-
-   pm->popup();
+   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
 }
 
 /*
@@ -312,7 +321,8 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
    static PopupMenu *pm = 0;
 
    popup_bw = bw;
-   popup_url = url;
+   a_Url_free(popup_url);
+   popup_url = a_Url_dup(url);
    if (!pm) {
       Item *i;
       pm = new PopupMenu(0,0,0,0,"&LINK OPTIONS");
@@ -335,25 +345,27 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
       pm->end();
    }
 
-   pm->popup();
+   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
 }
 
 /*
  * Image popup menu (construction & popup)
  */
 void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
-                        DilloUrl *link_url)
+                        bool_t loaded_img, DilloUrl *link_url)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
    // Active/inactive control.
    static Item *link_menuitem = 0;
-   static Item *load_menuitem = 0;
-
-   DilloUrl *userdata_url = a_Url_dup(url);
+   static Item *load_img_menuitem = 0;
+   static DilloUrl *popup_link_url = NULL;
 
    popup_bw = bw;
-   popup_url = url;
+   a_Url_free(popup_url);
+   popup_url = a_Url_dup(url);
+   a_Url_free(popup_link_url);
+   popup_link_url = a_Url_dup(link_url);
    
    if (!pm) {
       Item *i;
@@ -366,7 +378,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
        i = new Item("Open Image in New Tab");
        i->callback(Menu_open_url_nt_cb);
        new Divider();
-       i = load_menuitem = new Item("Load image");
+       i = load_img_menuitem = new Item("Load image");
        i->callback(Menu_load_images_cb);
        i = new Item("Bookmark this Image");
        i->callback(Menu_add_bookmark_cb);
@@ -383,21 +395,21 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
       pm->end();
    }
 
-   // point to this item initially
-   pm->item(load_menuitem);
+   if (loaded_img) {
+      load_img_menuitem->deactivate();
+   } else {
+      load_img_menuitem->activate();
+      load_img_menuitem->user_data(popup_url);
+   }
 
    if (link_url) {
-      link_menuitem->user_data(link_url);
+      link_menuitem->user_data(popup_link_url);
       link_menuitem->activate();
    } else {
       link_menuitem->deactivate();
    }
 
-   load_menuitem->user_data(userdata_url);
- 
-   pm->popup();
-
-   a_Url_free(userdata_url);
+   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
 }
 
 /*
@@ -409,7 +421,8 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
    static PopupMenu *pm = 0;
 
    popup_bw = bw;
-   popup_url = url;
+   a_Url_free(popup_url);
+   popup_url = a_Url_dup(url);
    if (!pm) {
       Item *i;
       pm = new PopupMenu(0,0,0,0,"&BUG METER OPTIONS");

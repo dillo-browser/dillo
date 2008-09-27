@@ -139,7 +139,7 @@ bool DilloPlain::PlainEventReceiver::buttonPress (Widget *widget,
    _MSG("DilloPlain::PlainEventReceiver::buttonPress\n");
 
    if (event->button == 3) {
-      a_UIcmd_page_popup(plain->bw, plain->url, NULL, 1);
+      a_UIcmd_page_popup(plain->bw, plain->url, FALSE, FALSE);
       return true;
    }
    return false;

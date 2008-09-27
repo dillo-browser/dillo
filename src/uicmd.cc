@@ -588,9 +588,9 @@ void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url)
  * Popup the page menu
  */
 void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
-                        const char *bugs_txt, bool_t unloaded_imgs)
+                        bool_t has_bugs, bool_t unloaded_imgs)
 {
-   a_Menu_page_popup((BrowserWindow*)vbw, url, bugs_txt, unloaded_imgs);
+   a_Menu_page_popup((BrowserWindow*)vbw, url, has_bugs, unloaded_imgs);
 }
 
 /*
@@ -604,9 +604,10 @@ void a_UIcmd_link_popup(void *vbw, const DilloUrl *url)
 /*
  * Pop up the image menu
  */
-void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, DilloUrl *link_url)
+void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
+                         DilloUrl *link_url)
 {
-   a_Menu_image_popup((BrowserWindow*)vbw, url, link_url);
+   a_Menu_image_popup((BrowserWindow*)vbw, url, loaded_img, link_url);
 }
 
 /*

@@ -35,9 +35,10 @@ void a_UIcmd_findtext_reset(BrowserWindow *bw);
 void a_UIcmd_focus_main_area(BrowserWindow *bw);
 void a_UIcmd_focus_location(void *vbw);
 void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
-                        const char *bugs_txt, bool_t unloaded_imgs);
+                        bool_t has_bugs, bool_t unloaded_imgs);
 void a_UIcmd_link_popup(void *vbw, const DilloUrl *url);
-void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, DilloUrl *link_url);
+void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
+                         DilloUrl *link_url);
 void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr);
 void a_UIcmd_view_page_source(const DilloUrl *url);
 void a_UIcmd_view_page_bugs(void *vbw);
