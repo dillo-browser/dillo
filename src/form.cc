@@ -1529,7 +1529,7 @@ void DilloHtmlReceiver::enter (dw::core::ui::Resource *resource)
       /* The control can submit form. Show action URL. */
       msg = URL_STR(form->action);
    }
-   a_UIcmd_set_msg(html->bw, msg);
+   a_UIcmd_set_msg(html->bw, "%s", msg);
 }
 
 /*

@@ -101,6 +101,8 @@ int main(int argc, char **argv)
    a_Bw_init();
    a_Cookies_init();
 
+   // Sets WM_CLASS hint on X11
+   fltk::Window::xclass("dillo");
    // Create a new UI/bw pair
    BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, NULL);
 
