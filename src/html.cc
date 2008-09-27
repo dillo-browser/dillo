@@ -209,7 +209,7 @@ static void Html_free(void *data)
 }
 
 /*
- * Used bye the "Load images" page menuitem.
+ * Used by the "Load images" page menuitem.
  */ 
 void a_Html_load_images(void *v_html, DilloUrl *pattern)
 {
