@@ -75,6 +75,7 @@ void IdentifiableObject::registerName (const char *className, int *classId)
       ConstString *key = new ConstString (className);
       classesByName->put (key, klass);
       classesById->put (klass);
+      *classId = klass->id;
    }
 
    this->classId = klass->id;
