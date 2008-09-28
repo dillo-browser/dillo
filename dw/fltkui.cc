@@ -47,7 +47,7 @@ namespace dw {
 namespace fltk {
 namespace ui {
 
-enum { RELIEF_X_THICKNESS = 5, RELIEF_Y_THICKNESS = 3 };
+enum { RELIEF_X_THICKNESS = 3, RELIEF_Y_THICKNESS = 3 };
 
 using namespace object;
 using namespace container::typed;
@@ -168,8 +168,6 @@ void FltkResource::setStyle (core::style::Style *style)
 void FltkResource::setWidgetStyle (::fltk::Widget *widget,
                                    core::style::Style *style)
 {
-   /** \bug label or text? */
-
    FltkFont *font = (FltkFont*)style->font;
    widget->labelsize (font->size);
    widget->labelfont (font->font);
@@ -194,8 +192,11 @@ void FltkResource::setWidgetStyle (::fltk::Widget *widget,
 
       widget->color(bg->colors[FltkColor::SHADING_NORMAL]);
       widget->buttoncolor(bg->colors[FltkColor::SHADING_NORMAL]);
-      widget->highlight_color(bg->colors[FltkColor::SHADING_LIGHT]);
       widget->selection_textcolor(bg->colors[FltkColor::SHADING_NORMAL]);
+      if (!(widget->type() & (::fltk::Widget::RADIO|::fltk::Widget::TOGGLE))) {
+         /* it looks awful to highlight the buttons */
+         widget->highlight_color(bg->colors[FltkColor::SHADING_LIGHT]);
+      }
    }
 }
    
