@@ -23,9 +23,6 @@
 #include "capi.h"
 #include "timeout.hh"
 
-//#define DEBUG_LEVEL 3
-#include "debug.h"
-
 /*
  * For back and forward navigation, each bw keeps an url index,
  * and its scroll position.
@@ -483,7 +480,7 @@ void a_Nav_reload(BrowserWindow *bw)
          choice = a_Dialog_choice3("Repost form data?",
                                    "Yes", "*No", "Cancel");
          if (choice == 0) { /* "Yes" */
-            DEBUG_MSG(3, "Nav_reload_confirmed\n");
+            _MSG("Nav_reload_confirmed\n");
             Nav_reload(bw);
          }
 

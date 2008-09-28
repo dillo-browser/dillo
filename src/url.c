@@ -49,9 +49,7 @@
 #include <ctype.h>
 
 #include "url.h"
-
-//#define DEBUG_LEVEL 2
-#include "debug.h"
+#include "msg.h"
 
 static const char *HEX = "0123456789ABCDEF";
 
@@ -392,7 +390,7 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
 
    /* Resolve the URL */
    SolvedUrl = Url_resolve_relative(urlstr, NULL, base_url);
-   DEBUG_MSG(2, "SolvedUrl = %s\n", SolvedUrl->str);
+   _MSG("SolvedUrl = %s\n", SolvedUrl->str);
 
    /* Fill url data */
    url = Url_object_new(SolvedUrl->str);

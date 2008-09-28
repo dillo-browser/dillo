@@ -37,7 +37,6 @@ dillo_fltk_SOURCES = \
 	history.c \
 	prefs.c \
 	prefs.h \
-	debug.h \
 	msg.h \
 	list.h \
 	url.c \

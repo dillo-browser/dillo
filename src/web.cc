@@ -25,10 +25,7 @@
 #include "prefs.h"
 #include "web.hh"
 
-#define DEBUG_LEVEL 5
-#include "debug.h"
-
-// Platform idependent part
+// Platform independent part
 using namespace dw::core;
 
 
@@ -61,7 +58,7 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
    style::Style *widgetStyle;
    style::FontAttrs fontAttrs;
 
-   DEBUG_MSG(1, "a_Web_dispatch_by_type\n");
+   _MSG("a_Web_dispatch_by_type\n");
 
    dReturn_val_if_fail(Web->bw != NULL, -1);
 

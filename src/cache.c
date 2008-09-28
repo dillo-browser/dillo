@@ -38,10 +38,7 @@
 
 #define NULLKey 0
 
-#define DEBUG_LEVEL 5
-#include "debug.h"
-
-/* Maximun initial size for the automatically-growing data buffer */
+/* Maximum initial size for the automatically-growing data buffer */
 #define MAX_INIT_BUF  1024*1024
 /* Maximum filesize for a URL, before offering a download */
 #define HUGE_FILESIZE 15*1024*1024
@@ -920,9 +917,9 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
       } else {
          /* Sub entity redirection (most probably an image) */
          if (!entry->Data->len) {
-            DEBUG_MSG(3,">>>Image redirection without entity-content<<<\n");
+            _MSG(">>>Image redirection without entity-content<<<\n");
          } else {
-            DEBUG_MSG(3, ">>>Image redirection with entity-content<<<\n");
+            _MSG(">>>Image redirection with entity-content<<<\n");
          }
       }
    }

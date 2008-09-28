@@ -32,9 +32,6 @@
 /* for testing dpi chat */
 #include "bookmark.h"
 
-#define DEBUG_LEVEL 5
-#include "debug.h"
-
 typedef struct {
    DilloUrl *url;           /* local copy of web->url */
    void *bw;

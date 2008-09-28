@@ -19,9 +19,6 @@
 #include "dw/core.hh"
 #include "dw/textblock.hh"
 
-#define DEBUG_LEVEL 10
-#include "debug.h"
-
 #include "misc.h"
 #include "msg.h"
 #include "prefs.h"
@@ -1967,7 +1964,7 @@ static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
    }
 
    if (!button)
-      DEBUG_MSG(10, "Html_input_image: unable to create image submit.\n");
+      MSG("Html_input_image: unable to create image submit.\n");
    return button;
 }
 
