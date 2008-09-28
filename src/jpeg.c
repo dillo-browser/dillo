@@ -36,9 +36,7 @@
 #include "cache.h"
 #include "dicache.h"
 #include "capi.h"       /* get cache entry status */
-
-#define DEBUG_LEVEL 6
-#include "debug.h"
+#include "msg.h"
 
 typedef enum {
    DILLO_JPEG_INIT,
@@ -154,11 +152,11 @@ static boolean fill_input_buffer(j_decompress_ptr cinfo)
 {
    DilloJpeg *jpeg = ((my_source_mgr *) cinfo->src)->jpeg;
 
-   DEBUG_MSG(5, "fill_input_buffer\n");
+   _MSG("fill_input_buffer\n");
 #if 0
    if (!cinfo->src->bytes_in_buffer) {
-      DEBUG_MSG(5, "fill_input_buffer: %ld bytes in buffer\n",
-                (long)cinfo->src->bytes_in_buffer);
+      _MSG("fill_input_buffer: %ld bytes in buffer\n",
+           (long)cinfo->src->bytes_in_buffer);
 
       jpeg->Start_Ofs = (ulong_t) jpeg->cinfo.src->next_input_byte -
          (ulong_t) jpeg->Data;
@@ -185,10 +183,9 @@ static void skip_input_data(j_decompress_ptr cinfo, long num_bytes)
       return;
    jpeg = ((my_source_mgr *) cinfo->src)->jpeg;
 
-   DEBUG_MSG(5, "skip_input_data: Start_Ofs = %lu, num_bytes = %ld,"
-             " %ld bytes in buffer\n",
-             (ulong_t)jpeg->Start_Ofs, num_bytes,
-             (long)cinfo->src->bytes_in_buffer);
+   _MSG("skip_input_data: Start_Ofs = %lu, num_bytes = %ld,"
+        " %ld bytes in buffer\n",
+        (ulong_t)jpeg->Start_Ofs, num_bytes,(long)cinfo->src->bytes_in_buffer);
 
    cinfo->src->next_input_byte += num_bytes;
    if (num_bytes < (long)cinfo->src->bytes_in_buffer) {
@@ -257,8 +254,8 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
    JSAMPLE *array[1];
    int num_read;
 
-   DEBUG_MSG(5, "Jpeg_write: (%p) Bytes in buff: %ld Ofs: %lu\n", jpeg,
-             (long) BufSize, (ulong_t)jpeg->Start_Ofs);
+   _MSG("Jpeg_write: (%p) Bytes in buff: %ld Ofs: %lu\n", jpeg,
+        (long) BufSize, (ulong_t)jpeg->Start_Ofs);
 
    /* See if we are supposed to skip ahead. */
    if (BufSize <= jpeg->Start_Ofs)
@@ -286,8 +283,8 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
          else if (jpeg->cinfo.num_components == 3)
             type = DILLO_IMG_TYPE_RGB;
          else
-            DEBUG_MSG(5, "jpeg: can't handle %d component images\n",
-                      jpeg->cinfo.num_components);
+            _MSG("jpeg: can't handle %d component images\n",
+                 jpeg->cinfo.num_components);
 
          /*
           * If a multiple-scan image is not completely in cache,

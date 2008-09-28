@@ -40,10 +40,6 @@
 #include "Url.h"
 #include "../../dpip/dpip.h"
 
-/* #define DEBUG_LEVEL 2 */
-#define DEBUG_LEVEL 4
-#include "../debug.h"
-
 /* This one is tricky, some sources state it should include the byte
  * for the terminating NULL, and others say it shouldn't. */
 # define D_SUN_LEN(ptr) ((size_t) (((struct sockaddr_un *) 0)->sun_path) \
@@ -309,7 +305,7 @@ static int Dpi_start_dpid(void)
       if (execl(path1, "dpid", NULL) == -1) {
          dFree(path1);
          if (execlp("dpid", "dpid", NULL) == -1) {
-            DEBUG_MSG(4, "Dpi_start_dpid (child): %s\n", dStrerror(errno));
+            MSG("Dpi_start_dpid (child): %s\n", dStrerror(errno));
             do
                n = write(st_pipe[1], "ERROR", 5);
             while (n == -1 && errno == EINTR);
@@ -319,7 +315,7 @@ static int Dpi_start_dpid(void)
       }
    } else if (pid < 0) {
       /* The fork failed.  Report failure.  */
-      DEBUG_MSG(4, "Dpi_start_dpid: %s\n", dStrerror(errno));
+      MSG("Dpi_start_dpid: %s\n", dStrerror(errno));
       /* close the unused pipe */
       Dpi_close_fd(st_pipe[0]);
       Dpi_close_fd(st_pipe[1]);
@@ -330,11 +326,11 @@ static int Dpi_start_dpid(void)
       do
          n = read(st_pipe[0], buf, 16);
       while (n == -1 && errno == EINTR);
-      DEBUG_MSG(2, "Dpi_start_dpid: n = %d\n", n);
+      _MSG("Dpi_start_dpid: n = %d\n", n);
       if (n != 5) {
          ret = 0;
       } else {
-         DEBUG_MSG(4, "Dpi_start_dpid: %s\n", dStrerror(errno));
+         MSG("Dpi_start_dpid: %s\n", dStrerror(errno));
       }
    }
 
@@ -358,7 +354,7 @@ static int Dpi_check_uds(char *uds_name)
 
       if ((SockFD = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1 ||
           connect(SockFD, (void*)&pun, D_SUN_LEN(&pun)) == -1) {
-         DEBUG_MSG(4, "Dpi_check_uds: %s %s\n", dStrerror(errno), uds_name);
+         MSG("Dpi_check_uds: %s %s\n", dStrerror(errno), uds_name);
       } else {
          Dpi_close_fd(SockFD);
          ret = 0;
@@ -448,8 +444,8 @@ static int Dpi_check_dpid(int num_tries)
    }
 
    dFree(dpid_uds_name);
-   DEBUG_MSG(2, "Dpi_check_dpid:: %s\n",
-             (ret == 0) ? "OK" : (ret == 1 ? "EAGAIN" : "ERROR"));
+   _MSG("Dpi_check_dpid:: %s\n",
+        (ret == 0) ? "OK" : (ret == 1 ? "EAGAIN" : "ERROR"));
    return ret;
 }
 
@@ -485,7 +481,7 @@ static char *Dpi_get_server_uds_name(const char *server_name)
    int st;
 
    dReturn_val_if_fail (server_name != NULL, NULL);
-   DEBUG_MSG(2, "Dpi_get_server_uds_name:: server_name = [%s]\n", server_name);
+   _MSG("Dpi_get_server_uds_name:: server_name = [%s]\n", server_name);
 
    dpid_uds_dir = Dpi_get_dpid_uds_dir();
    if (dpid_uds_dir) {
@@ -505,7 +501,7 @@ static char *Dpi_get_server_uds_name(const char *server_name)
          perror("connect");
       /* ask dpid to check the server plugin and send its UDS name back */
       request = a_Dpip_build_cmd("cmd=%s msg=%s", "check_server", server_name);
-      DEBUG_MSG(2, "[%s]\n", request);
+      _MSG("[%s]\n", request);
       do
          st = write(sock, request, strlen(request));
       while (st < 0 && errno == EINTR);
@@ -532,7 +528,7 @@ static char *Dpi_get_server_uds_name(const char *server_name)
          strncat(rply, buf, (size_t)rdlen);
       }
       Dpi_close_fd(sock);
-      DEBUG_MSG(2, "rply = [%s]\n", rply);
+      _MSG("rply = [%s]\n", rply);
 
       /* Parse reply */
       if (rdlen == 0 && rply) {
@@ -545,7 +541,7 @@ static char *Dpi_get_server_uds_name(const char *server_name)
    }
    dFree(dpid_uds_dir);
    dFree(dpid_uds_name);
-   DEBUG_MSG(2, "Dpi_get_server_uds_name:: %s\n", server_uds_name);
+   _MSG("Dpi_get_server_uds_name:: %s\n", server_uds_name);
    return server_uds_name;
 }
 
@@ -563,7 +559,7 @@ static int Dpi_connect_socket(const char *server_name, int retry)
 
    /* Query dpid for the UDS name for this server */
    server_uds_name = Dpi_get_server_uds_name(server_name);
-   DEBUG_MSG(2, "server_uds_name = [%s]\n", server_uds_name);
+   _MSG("server_uds_name = [%s]\n", server_uds_name);
 
    if (access(server_uds_name, F_OK) != 0) {
       MSG("server socket was NOT found\n");
@@ -726,11 +722,11 @@ void a_Dpi_bye_dpid()
    sa.sun_family = AF_LOCAL;
 
    if ((new_socket = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1) {
-      DEBUG_MSG(4, "a_Dpi_bye_dpid: %s\n", dStrerror(errno));
+      MSG("a_Dpi_bye_dpid: %s\n", dStrerror(errno));
    }
    strncpy(sa.sun_path, srs_name, sizeof (sa.sun_path));
    if (connect(new_socket, (struct sockaddr *) &sa, addr_len) == -1) {
-      DEBUG_MSG(4, "a_Dpi_bye_dpid: %s\n", dStrerror(errno));
+      MSG("a_Dpi_bye_dpid: %s\n", dStrerror(errno));
       MSG("%s\n", sa.sun_path);
    }
    DpiBye_cmd = a_Dpip_build_cmd("cmd=%s", "DpiBye");

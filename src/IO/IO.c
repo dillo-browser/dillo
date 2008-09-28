@@ -27,10 +27,6 @@
 #include "IO.h"
 #include "iowatch.hh"
 
-#define DEBUG_LEVEL 5
-//#define DEBUG_LEVEL 1
-#include "../debug.h"
-
 /*
  * Symbolic defines for shutdown() function
  * (Not defined in the same header file, for all distros --Jcid)
@@ -174,7 +170,7 @@ static bool_t IO_read(IOData_t *io)
    bool_t ret = FALSE;
    int io_key = io->Key;
 
-   DEBUG_MSG(3, "  IO_read\n");
+   _MSG("  IO_read\n");
 
    /* this is a new read-buffer */
    dStr_truncate(io->Buf, 0);
@@ -226,7 +222,7 @@ static bool_t IO_write(IOData_t *io)
    ssize_t St;
    bool_t ret = FALSE;
 
-   DEBUG_MSG(3, "  IO_write\n");
+   _MSG("  IO_write\n");
    io->Status = 0;
 
    while (1) {

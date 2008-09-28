@@ -72,9 +72,6 @@
 #include "dicache.h"
 #include "prefs.h"
 
-#define DEBUG_LEVEL 6
-#include "debug.h"
-
 #define INTERLACE      0x40
 #define LOCALCOLORMAP  0x80
 
@@ -245,7 +242,7 @@ static void Gif_write(DilloGif *gif, void *Buf, uint_t BufSize)
    buf = ((uchar_t *) Buf) + gif->Start_Ofs;
    bufsize = BufSize - gif->Start_Ofs;
 
-   DEBUG_MSG(5, "Gif_write: %u bytes\n", BufSize);
+   _MSG("Gif_write: %u bytes\n", BufSize);
 
    /* Process the bytes in the input buffer. */
    bytes_consumed = Gif_process_bytes(gif, buf, bufsize, Buf);
@@ -254,7 +251,7 @@ static void Gif_write(DilloGif *gif, void *Buf, uint_t BufSize)
       return;
    gif->Start_Ofs += bytes_consumed;
 
-   DEBUG_MSG(5, "exit Gif_write, bufsize=%ld\n", (long)bufsize);
+   _MSG("exit Gif_write, bufsize=%ld\n", (long)bufsize);
 }
 
 /*
@@ -264,7 +261,7 @@ static void Gif_close(DilloGif *gif, CacheClient_t *Client)
 {
    int i;
 
-   DEBUG_MSG(5, "destroy gif %p\n", gif);
+   _MSG("destroy gif %p\n", gif);
 
    a_Dicache_close(gif->url, gif->version, Client);
 
@@ -545,7 +542,7 @@ static void Gif_sequence(DilloGif *gif, uint_t code)
       for (; o_size > 0 && o_index > 0; o_size--) {
          uint_t code_and_byte = gif->code_and_byte[code];
 
-         DEBUG_MSG(5, "%d ", gif->code_and_byte[code] & 255);
+         _MSG("%d ", gif->code_and_byte[code] & 255);
 
          obuf[--o_index] = code_and_byte & 255;
          code = code_and_byte >> 8;
@@ -565,16 +562,16 @@ static void Gif_sequence(DilloGif *gif, uint_t code)
    }
    /* Ok, now we write the first byte of the sequence. */
    /* We are sure that the code is literal. */
-   DEBUG_MSG(5, "%d", code);
+   _MSG("%d", code);
    obuf[--o_index] = code;
    gif->code_and_byte[gif->last_code] |= code;
 
    /* Fix up the output if the original code was last_code. */
    if (orig_code == gif->last_code) {
       *last_byte_ptr = code;
-      DEBUG_MSG(5, " fixed (%d)!", code);
+      _MSG(" fixed (%d)!", code);
    }
-   DEBUG_MSG(5, "\n");
+   _MSG("\n");
 
    /* Output any full lines. */
    if (gif->line_index >= gif->Width) {
@@ -621,7 +618,7 @@ static int Gif_process_code(DilloGif *gif, uint_t code, uint_t clear_code)
     */
    if (code < clear_code) {
       /* a literal code. */
-      DEBUG_MSG(5, "literal\n");
+      _MSG("literal\n");
       Gif_literal(gif, code);
       return 1;
    } else if (code >= clear_code + 2) {
@@ -632,11 +629,11 @@ static int Gif_process_code(DilloGif *gif, uint_t code, uint_t clear_code)
       return 1;
    } else if (code == clear_code) {
       /* clear code. Resets the whole table */
-      DEBUG_MSG(5, "clear\n");
+      _MSG("clear\n");
       return 0;
    } else {
       /* end code. */
-      DEBUG_MSG(5, "end\n");
+      _MSG("end\n");
       return 2;
    }
 }
@@ -694,7 +691,7 @@ static int Gif_decode(DilloGif *gif, const uchar_t *buf, size_t bsize)
              * at the start of the window */
             code = (window >> (32 - bits_in_window)) & code_mask;
 
-            DEBUG_MSG(5, "code = %d, ", code);
+            _MSG("code = %d, ", code);
 
             bits_in_window -= code_size;
             switch (Gif_process_code(gif, code, clear_code)) {
@@ -1042,8 +1039,8 @@ static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *ibuf,
       break;
    }
 
-   DEBUG_MSG(5, "Gif_process_bytes: final state %d, %ld bytes consumed\n",
-             gif->state, (long)(bufsize - tmp_bufsize));
+   _MSG("Gif_process_bytes: final state %d, %ld bytes consumed\n",
+        gif->state, (long)(bufsize - tmp_bufsize));
 
    return bufsize - tmp_bufsize;
 }

@@ -14,8 +14,6 @@
 #include <ctype.h>
 #include "colors.h"
 
-#define DEBUG_LEVEL 5
-#include "debug.h"
 #include "msg.h"
 
 /*
@@ -277,8 +275,8 @@ int32_t a_Color_parse (const char *subtag, int32_t default_color, int *err)
       }
    }
 
-   DEBUG_MSG(3, "subtag: %s\n", subtag);
-   DEBUG_MSG(3, "color :  %X\n", ret_color);
+   _MSG("subtag: %s\n", subtag);
+   _MSG("color :  %X\n", ret_color);
 
    *err = st;
    return ret_color;

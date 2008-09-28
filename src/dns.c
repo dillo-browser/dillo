@@ -31,10 +31,6 @@
 #include "list.h"
 #include "timeout.hh"
 
-#define DEBUG_LEVEL 5
-#include "debug.h"
-
-
 /*
  * Uncomment the following line for debugging or gprof profiling.
  */
@@ -127,8 +123,8 @@ static void Dns_queue_remove(int index)
 {
    int i;
 
-   DEBUG_MSG(2, "Dns_queue_remove: deleting client [%d] [queue_size=%d]\n",
-             index, dns_queue_size);
+   _MSG("Dns_queue_remove: deleting client [%d] [queue_size=%d]\n",
+        index, dns_queue_size);
 
    if (index < dns_queue_size) {
       dFree(dns_queue[index].hostname);
@@ -161,7 +157,7 @@ static void Dns_cache_add(char *hostname, Dlist *addr_list)
    dns_cache[dns_cache_size].hostname = dStrdup(hostname);
    dns_cache[dns_cache_size].addr_list = addr_list;
    ++dns_cache_size;
-   DEBUG_MSG(1, "Cache objects: %d\n", dns_cache_size);
+   _MSG("Cache objects: %d\n", dns_cache_size);
 }
 
 
@@ -173,9 +169,9 @@ void a_Dns_init(void)
    int i;
 
 #ifdef D_DNS_THREADED
-   DEBUG_MSG(5, "dillo_dns_init: Here we go! (threaded)\n");
+   MSG("dillo_dns_init: Here we go! (threaded)\n");
 #else
-   DEBUG_MSG(5, "dillo_dns_init: Here we go! (not threaded)\n");
+   MSG("dillo_dns_init: Here we go! (not threaded)\n");
 #endif
 
    dns_queue_size = 0;
@@ -278,8 +274,8 @@ static void *Dns_server(void *data)
 
    Dlist *hosts = dList_new(2);
 
-   DEBUG_MSG(3, "Dns_server: starting...\n ch: %d host: %s\n",
-             channel, dns_server[channel].hostname);
+   _MSG("Dns_server: starting...\n ch: %d host: %s\n",
+        channel, dns_server[channel].hostname);
 
    error = getaddrinfo(dns_server[channel].hostname, NULL, &hints, &res0);
 
@@ -310,8 +306,8 @@ static void *Dns_server(void *data)
    }
 
    /* tell our findings */
-   DEBUG_MSG(5, "Dns_server [%d]: %s is %p\n", channel,
-             dns_server[channel].hostname, hosts);
+   MSG("Dns_server [%d]: %s is %p\n", channel,
+       dns_server[channel].hostname, hosts);
    dns_server[channel].addr_list = hosts;
    dns_server[channel].ip_ready = TRUE;
 

@@ -15,10 +15,6 @@
  * http://www.ietf.org/rfc/rfc2965.txt
  */
 
-#define DEBUG_LEVEL 10
-#include "debug.h"
-
-
 #ifdef DISABLE_COOKIES
 
 /*
@@ -26,7 +22,7 @@
  */
 void a_Cookies_init(void)
 {
-   DEBUG_MSG(10, "Cookies: absolutely disabled at compilation time.\n");
+   MSG("Cookies: absolutely disabled at compilation time.\n");
 }
 
 #else
@@ -94,10 +90,10 @@ static FILE *Cookies_fopen(const char *filename, char *init_str)
             write(fd, init_str, strlen(init_str));
          close(fd);
 
-         DEBUG_MSG(10, "Cookies: Created file: %s\n", filename);
+         MSG("Cookies: Created file: %s\n", filename);
          F_in = fopen(filename, "r");
       } else {
-         DEBUG_MSG(10, "Cookies: Could not create file: %s!\n", filename);
+         MSG("Cookies: Could not create file: %s!\n", filename);
       }
    }
 
@@ -120,11 +116,11 @@ void a_Cookies_init(void)
 
    /* Read and parse the cookie control file (cookiesrc) */
    if (Cookie_control_init() != 0) {
-      DEBUG_MSG(10, "Disabling cookies.\n");
+      MSG("Disabling cookies.\n");
       return;
    }
 
-   DEBUG_MSG(10, "Enabling cookies as from cookiesrc...\n");
+   MSG("Enabling cookies as from cookiesrc...\n");
    disabled = FALSE;
 }
 
@@ -150,7 +146,7 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
 
    action = Cookies_control_check(set_url);
    if (action == COOKIE_DENY) {
-      DEBUG_MSG(5, "Cookies: denied SET for %s\n", URL_HOST_(set_url));
+      _MSG("Cookies: denied SET for %s\n", URL_HOST_(set_url));
       return;
    }
 
@@ -161,7 +157,7 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
                              "set_cookie", cookie_string, URL_HOST_(set_url),
                              path ? path : "/", numstr);
 
-      DEBUG_MSG(5, "Cookies.c: a_Cookies_set \n\t \"%s\" \n",cmd );
+      _MSG("Cookies.c: a_Cookies_set \n\t \"%s\" \n",cmd );
       /* This call is commented because it doesn't guarantee the order
        * in which cookies are set and got. (It may deadlock too) */
       //a_Capi_dpi_send_cmd(NULL, NULL, cmd, "cookies", 1);
@@ -187,7 +183,7 @@ char *a_Cookies_get_query(const DilloUrl *request_url)
 
    action = Cookies_control_check(request_url);
    if (action == COOKIE_DENY) {
-      DEBUG_MSG(5, "Cookies: denied GET for %s\n", URL_HOST_(request_url));
+      _MSG("Cookies: denied GET for %s\n", URL_HOST_(request_url));
       return dStrdup("");
    }
    path = URL_PATH_(request_url);

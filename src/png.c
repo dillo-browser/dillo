@@ -31,17 +31,16 @@
 #include "dicache.h"
 #include "prefs.h"
 
-#define DEBUG_LEVEL 6
-#include "debug.h"
-
 enum prog_state {
    IS_finished, IS_init, IS_nextdata
 };
 
+#if 0
 static char *prog_state_name[] =
 {
    "IS_finished", "IS_init", "IS_nextdata"
 };
+#endif
 
 /*
  * This holds the data that must be saved between calls to this module.
@@ -120,7 +119,7 @@ void Png_error_handling(png_structp png_ptr, png_const_charp msg)
 {
    DilloPng *png;
 
-   DEBUG_MSG(6, "Png_error_handling: %s\n", msg);
+   MSG("Png_error_handling: %s\n", msg);
    png = png_get_error_ptr(png_ptr);
 
    png->error = 1;
@@ -139,7 +138,7 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
    uint_t i;
    double gamma;
 
-   DEBUG_MSG(5, "Png_datainfo_callback:\n");
+   _MSG("Png_datainfo_callback:\n");
 
    png = png_get_progressive_ptr(png_ptr);
    dReturn_if_fail (png != NULL);
@@ -147,9 +146,9 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
    png_get_IHDR(png_ptr, info_ptr, &png->width, &png->height,
                 &bit_depth, &color_type, &interlace_type, NULL, NULL);
 
-   DEBUG_MSG(5, "Png_datainfo_callback: png->width  = %ld\n"
-             "Png_datainfo_callback: png->height = %ld\n",
-             png->width, png->height);
+   _MSG("Png_datainfo_callback: png->width  = %ld\n"
+        "Png_datainfo_callback: png->height = %ld\n",
+        png->width, png->height);
 
    /* we need RGB/RGBA in the end */
    if (color_type == PNG_COLOR_TYPE_PALETTE && bit_depth <= 8) {
@@ -196,10 +195,10 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
    png->channels = png_get_channels(png_ptr, info_ptr);
 
    /* init Dillo specifics */
-   DEBUG_MSG(5, "Png_datainfo_callback: rowbytes = %d\n"
-             "Png_datainfo_callback: width    = %ld\n"
-             "Png_datainfo_callback: height   = %ld\n",
-             png->rowbytes, png->width, png->height);
+   _MSG("Png_datainfo_callback: rowbytes = %d\n"
+        "Png_datainfo_callback: width    = %ld\n"
+        "Png_datainfo_callback: height   = %ld\n",
+        png->rowbytes, png->width, png->height);
 
    png->image_data = (uchar_t *) dMalloc(png->rowbytes * png->height);
    png->row_pointers = (uchar_t **) dMalloc(png->height * sizeof(uchar_t *));
@@ -225,7 +224,7 @@ static void
    if (!new_row)                /* work to do? */
       return;
 
-   DEBUG_MSG(5, "Png_datarow_callback: row_num = %ld\n", row_num);
+   _MSG("Png_datarow_callback: row_num = %ld\n", row_num);
 
    png = png_get_progressive_ptr(png_ptr);
 
@@ -292,7 +291,7 @@ static void
 {
    DilloPng *png;
 
-   DEBUG_MSG(5, "Png_dataend_callback:\n");
+   _MSG("Png_dataend_callback:\n");
 
    png = png_get_progressive_ptr(png_ptr);
    png->state = IS_finished;
@@ -343,7 +342,7 @@ static void Png_callback(int Op, CacheClient_t *Client)
    /* Let's make some sound if we have been called with no data */
    dReturn_if_fail ( Client->Buf != NULL && Client->BufSize > 0 );
 
-   DEBUG_MSG(5, "Png_callback BufSize = %d\n", Client->BufSize);
+   _MSG("Png_callback BufSize = %d\n", Client->BufSize);
 
    /* Keep local copies so we don't have to pass multiple args to
     * a number of functions. */
@@ -352,7 +351,7 @@ static void Png_callback(int Op, CacheClient_t *Client)
 
    /* start/resume the FSM here */
    while (png->state != IS_finished && DATASIZE) {
-      DEBUG_MSG(5, "State = %s\n", prog_state_name[png->state]);
+      _MSG("State = %s\n", prog_state_name[png->state]);
 
       switch (png->state) {
       case IS_init:
@@ -448,11 +447,10 @@ void *a_Png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
    DilloWeb *web = Ptr;
    DICacheEntry *DicEntry;
 
-   DEBUG_MSG(5, "a_Png_image: Type = %s\n"
-             "a_Png_image: libpng - Compiled %s; using %s.\n"
-             "a_Png_image: zlib   - Compiled %s; using %s.\n",
-             Type, PNG_LIBPNG_VER_STRING, png_libpng_ver,
-             ZLIB_VERSION, zlib_version);
+   _MSG("a_Png_image: Type = %s\n"
+        "a_Png_image: libpng - Compiled %s; using %s.\n"
+        "a_Png_image: zlib   - Compiled %s; using %s.\n",
+        Type, PNG_LIBPNG_VER_STRING, png_libpng_ver,ZLIB_VERSION,zlib_version);
 
    if (!web->Image)
       web->Image = a_Image_new(0, 0, NULL, prefs.bg_color);

@@ -47,11 +47,6 @@ D_STMT_START {                                                        \
 
 #define _MSG_BW(web, root, ...)
 
-#define DEBUG_LEVEL 5
-#include "../debug.h"
-
-
-
 /* 'Url' and 'web' are just references (no need to deallocate them here). */
 typedef struct {
    int SockFD;
@@ -333,7 +328,7 @@ static int Http_connect_socket(ChainLink *Info)
 
    if ((S->SockFD = socket(dh->af, SOCK_STREAM, IPPROTO_TCP)) < 0) {
       S->Err = errno;
-      DEBUG_MSG(5, "Http_connect_socket ERROR: %s\n", dStrerror(errno));
+      MSG("Http_connect_socket ERROR: %s\n", dStrerror(errno));
       return -1;
    }
    /* set NONBLOCKING and close on exec. */
@@ -352,7 +347,7 @@ static int Http_connect_socket(ChainLink *Info)
       sin->sin_port = S->port ? htons(S->port) : htons(DILLO_URL_HTTP_PORT);
       memcpy(&sin->sin_addr, dh->data, (size_t)dh->alen);
       if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
-         DEBUG_MSG(5, "Connecting to %s\n", inet_ntoa(sin->sin_addr));
+         MSG("Connecting to %s\n", inet_ntoa(sin->sin_addr));
       break;
    }
 #ifdef ENABLE_IPV6
@@ -366,7 +361,7 @@ static int Http_connect_socket(ChainLink *Info)
       memcpy(&sin6->sin6_addr, dh->data, dh->alen);
       inet_ntop(dh->af, dh->data, buf, sizeof(buf));
       if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
-         DEBUG_MSG(5, "Connecting to %s\n", buf);
+         MSG("Connecting to %s\n", buf);
       break;
    }
 #endif
@@ -377,7 +372,7 @@ static int Http_connect_socket(ChainLink *Info)
    if (status == -1 && errno != EINPROGRESS) {
       S->Err = errno;
       Http_socket_close(S);
-      DEBUG_MSG(5, "Http_connect_socket ERROR: %s\n", dStrerror(S->Err));
+      MSG("Http_connect_socket ERROR: %s\n", dStrerror(S->Err));
       return -1;
    } else {
       Http_send_query(S->Info, S);

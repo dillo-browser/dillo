@@ -116,6 +116,7 @@ dillo-fltk2
  - Made image inputs less of a special case by using x,y in ComplexButton.
  - Made forms show their action URL upon enter/leave mouse events (safety).
  - Fixed a memory leak in plain.cc.
+ - Switched from DEBUG_MSG to MSG.
    Patches: place (AKA corvid)
 +- Fixed a problem with locally-installed dpis.
  - Added code for optional image loading (nice interface) very advanced!
