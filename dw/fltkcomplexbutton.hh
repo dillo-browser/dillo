@@ -1,7 +1,5 @@
 //
 //
-// Push button widget
-//
 // Copyright 2002 by Bill Spitzak and others.
 //
 // This library is free software; you can redistribute it and/or
@@ -18,8 +16,6 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
-//
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
 //
 
 #ifndef __FLTK_COMPLEX_BUTTON_HH__
