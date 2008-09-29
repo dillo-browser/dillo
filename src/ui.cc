@@ -495,14 +495,16 @@ void UI::make_menubar(int x, int y, int w, int h)
    mb->begin();
     ItemGroup *g = new ItemGroup( "&File" );
     g->begin();
-     new Item("&New Window", COMMAND + 'n', menubar_cb, (void *)"nb");
-     new Item("New &Tab", COMMAND + 't', menubar_cb, (void *)"nt");
+     /* FLTK2 BUG: The space prefix avoids FLTK2 taking the
+      *            first letter as a SHORTCUT */
+     new Item(" &New Window", COMMAND + 'n', menubar_cb, (void *)"nb");
+     new Item(" New &Tab", COMMAND + 't', menubar_cb, (void *)"nt");
      new Divider();
-     new Item("&Open File...", COMMAND + 'o', menubar_cb, (void *)"of");
-     new Item("Open UR&L...", COMMAND + 'l', menubar_cb, (void *)"ou");
-     new Item("Close &Window", COMMAND + 'q', menubar_cb, (void *)"cw");
+     new Item(" &Open File...", COMMAND + 'o', menubar_cb, (void *)"of");
+     new Item(" Open UR&L...", COMMAND + 'l', menubar_cb, (void *)"ou");
+     new Item(" Close &Window", COMMAND + 'q', menubar_cb, (void *)"cw");
      new Divider();
-     new Item("E&xit Dillo", ACCELERATOR + 'q', menubar_cb, (void *)"ed");
+     new Item(" E&xit Dillo", ACCELERATOR + 'q', menubar_cb, (void *)"ed");
     g->end();
    mb->box(EMBOSSED_BOX);
    mb->end();
