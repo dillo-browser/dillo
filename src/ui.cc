@@ -292,20 +292,6 @@ static void bugmeter_cb(Widget *wid, void *data)
    }
 }
 
-/*
- * Callback for the image loading button.
- */
-static void imageload_cb(Widget *w, void *data)
-{
-   int k = event_key();
-   //if (k && k <= 7)
-   //   MSG("[ImageLoad], mouse button %d was pressed\n", k);
-   if (k == 1) {
-      ((UI*)data)->imageload_toggle();
-   }
-}
-
-
 //////////////////////////////////////////////////////////////////////////////
 // UI class methods
 //
@@ -677,17 +663,16 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
 
    // Image loading indicator
    ImageLoad = new HighlightButton(ww-il_w-bm_w,0,il_w,s_h,0);
-   ImgImageLoadOn = new xpmImage(imgload_on_xpm);
+   ImageLoad->type(Button::TOGGLE);
    ImgImageLoadOff = new xpmImage(imgload_off_xpm);
-   if (prefs.load_images) {
-      ImageLoad->image(ImgImageLoadOn);
-   } else {
-      ImageLoad->image(ImgImageLoadOff);
-   }
+   ImgImageLoadOn = new xpmImage(imgload_on_xpm);
+   ImgImageLoadMulti = new MultiImage(*ImgImageLoadOff,STATE,*ImgImageLoadOn);
+   ImageLoad->state(prefs.load_images);
+   ImageLoad->image(ImgImageLoadMulti);
+
    ImageLoad->box(THIN_DOWN_BOX);
    ImageLoad->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
    ImageLoad->tooltip("Toggle image loading");
-   ImageLoad->callback(imageload_cb, this);
    ImageLoad->clear_tab_to_focus();
    StatusPanel->add(ImageLoad);
 
@@ -744,6 +729,7 @@ UI::~UI()
  */
 void UI::delete_status_panel_images()
 {
+   delete ImgImageLoadMulti;
    delete ImgImageLoadOn;
    delete ImgImageLoadOff;
    delete ImgMeterOK;
@@ -1049,19 +1035,6 @@ UIPanelmode UI::get_panelmode()
 void UI::panelmode_cb_i()
 {
    set_panelmode((UIPanelmode) !Panelmode);
-}
-
-/*
- * Toggle image loading
- */
-void UI::imageload_toggle()
-{
-   prefs.load_images = !prefs.load_images;
-   if (prefs.load_images) {
-      ImageLoad->image(ImgImageLoadOn);
-   } else {
-      ImageLoad->image(ImgImageLoadOff);
-   }
 }
 
 /*

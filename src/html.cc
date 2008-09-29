@@ -2071,7 +2071,7 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
 //    style_attrs->x_tooltip = a_Dw_tooltip_new_no_ref(attrbuf);
 
    alt_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "alt", NULL);
-   if (!prefs.load_images && (!alt_ptr || !*alt_ptr)) {
+   if ((!alt_ptr || !*alt_ptr) && !a_UIcmd_get_images_enabled(html->bw)) {
       dFree(alt_ptr);
       alt_ptr = dStrdup("[IMG]"); // Place holder for img_off mode
    }
@@ -2126,7 +2126,8 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
                       style_attrs);
    }
 
-   load_now = prefs.load_images || (a_Capi_get_flags(url) & CAPI_IsCached);
+   load_now = a_UIcmd_get_images_enabled(html->bw) ||
+              (a_Capi_get_flags(url) & CAPI_IsCached);
    Html_add_new_linkimage(html, &url, load_now ? NULL : Image);
    if (load_now)
       Html_load_image(html->bw, url, Image);

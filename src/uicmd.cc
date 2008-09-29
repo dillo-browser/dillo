@@ -815,6 +815,14 @@ void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...)
 }
 
 /*
+ * Check whether the UI has automatic image loading enabled.
+ */
+bool_t a_UIcmd_get_images_enabled(BrowserWindow *bw)
+{
+   return BW2UI(bw)->get_images_enabled();
+}
+
+/*
  * Set the sensitivity of back/forw/stop buttons.
  */
 static void a_UIcmd_set_buttons_sens_cb(void *vbw)

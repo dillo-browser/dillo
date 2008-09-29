@@ -58,7 +58,7 @@ class UI : public fltk::Group {
          *ImgStopIns, *ImgStopSens, *ImgFullScreenOn, *ImgFullScreenOff,
          *ImgImageLoadOn, *ImgImageLoadOff, *ImgMeterOK, *ImgMeterBug,
          *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgClear, *ImgSearch;
-   MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti;
+   MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti, *ImgImageLoadMulti;
    Group *Panel, *StatusPanel;
    Widget *Main;
    Output *Status;
@@ -103,6 +103,7 @@ public:
    void set_panelmode(UIPanelmode mode);
    UIPanelmode get_panelmode();
    void set_findbar_visibility(bool visible);
+   bool get_images_enabled() { return ImageLoad->state();}
    Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
 
@@ -116,7 +117,6 @@ public:
    void color_change_cb_i();
    void toggle_cb_i();
    void panelmode_cb_i();
-   void imageload_toggle();
 };
 
 #endif // __UI_HH__
