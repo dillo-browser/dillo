@@ -648,7 +648,7 @@ static int File_get_file(ClientInfo *Client,
       }
    } while (st > 0);
 
-   /* todo: It may be better to send an error report to dillo instead of
+   /* TODO: It may be better to send an error report to dillo instead of
     *       calling exit() */
    if (st == -1) {
       MSG("ERROR while reading from file \"%s\", error was \"%s\"\n",
@@ -977,7 +977,7 @@ int main(void)
       }
    }
 
-   /* todo: handle a running thread better. */
+   /* TODO: handle a running thread better. */
    for (i = 0; i < 5 && ThreadRunning; ++i) {
       MSG("sleep i=%u", i);
       sleep(i);

@@ -254,7 +254,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
          if ((colspan < 0) || (attrbuf == invalid))
             colspan = 1;
       }
-      /* todo: check errors? */
+      /* TODO: check errors? */
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rowspan")))
          rowspan = MAX(1, strtol (attrbuf, NULL, 10));
 

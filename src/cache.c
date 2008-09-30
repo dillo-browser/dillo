@@ -969,7 +969,7 @@ static void Cache_null_client(int Op, CacheClient_t *Client)
  *   - Remove clients when done
  *   - Call redirect handler
  *
- * todo: Implement CA_Abort Op in client callback
+ * TODO: Implement CA_Abort Op in client callback
  */
 static void Cache_process_queue(CacheEntry_t *entry)
 {
@@ -1184,7 +1184,7 @@ CacheClient_t *a_Cache_client_get_if_unique(int Key)
 
 /*
  * Remove a client from the client queue
- * todo: notify the dicache and upper layers
+ * TODO: notify the dicache and upper layers
  */
 void a_Cache_stop_client(int Key)
 {

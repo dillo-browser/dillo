@@ -12,7 +12,7 @@
  *
  */
 
-/* Todo: this server is not assembling the received packets.
+/* TODO: this server is not assembling the received packets.
  * This means it currently expects dillo to send full dpi tags
  * within the socket; if that fails, everything stops.
  * This is not hard to fix, mainly is a matter of expecting the
@@ -1314,7 +1314,7 @@ static int Bmsrv_modify_add_url(SockHandler *sh, char *s_url)
    dFree(url);
    section = 0;
 
-   /* todo: we should send an "Bookmark added" message, but the
+   /* TODO: we should send an "Bookmark added" message, but the
       msg-after-HTML functionallity is still pending, not hard though. */
 
    /* Write new bookmarks file */

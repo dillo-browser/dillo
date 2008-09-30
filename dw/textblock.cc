@@ -51,7 +51,7 @@ Textblock::Textblock (bool limitTextWidth)
     * should not decrease the speed considerably.
     * (Current setting is for minimal memory usage. An interesting fact
     * is that high values decrease speed due to memory handling overhead!)
-    * todo: Some tests would be useful.
+    * TODO: Some tests would be useful.
     */
    lines = new misc::SimpleVector <Line> (1);
    words = new misc::SimpleVector <Word> (1);
@@ -1015,7 +1015,7 @@ void Textblock::wordWrap(int wordIndex)
    //                    lastLine->max_word_min);
 
    /* Finally, justify the line. Breaks are ignored, since the HTML
-    * parser sometimes assignes the wrong style to them. (todo: ) */
+    * parser sometimes assignes the wrong style to them. (TODO: ) */
    if (word->content.type != core::Content::BREAK) {
       switch (word->style->textAlign) {
       case core::style::TEXT_ALIGN_LEFT:
@@ -1697,7 +1697,7 @@ void Textblock::addSpace (core::style::Style *style)
    if (nl >= 0) {
       nw = words->size () - 1;
       if (nw >= 0) {
-         /* todo: remove this test case */
+         /* TODO: remove this test case */
          //if (page->words[nw].orig_space != 0) {
          //   _MSG("   a_Dw_page_add_space:: already existing space!!!\n");
          //}

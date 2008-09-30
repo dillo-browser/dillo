@@ -169,7 +169,7 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
    }
 
    /* Get and set gamma information. Beware: gamma correction 2.2 will
-      only work on PC's. todo: select screen gamma correction for other
+      only work on PC's. TODO: select screen gamma correction for other
       platforms. */
    if (png_get_gAMA(png_ptr, info_ptr, &gamma))
       png_set_gamma(png_ptr, 2.2, gamma);
@@ -243,13 +243,13 @@ static void
       break;
    case 4:
      {
-        /* todo: get the backgound color from the parent
+        /* TODO: get the backgound color from the parent
          * of the image widget -- Livio.                 */
         int a, bg_red, bg_green, bg_blue;
         uchar_t *pl = png->linebuf;
         uchar_t *data = png->image_data + (row_num * png->rowbytes);
 
-        /* todo: maybe change prefs.bg_color to `a_Dw_widget_get_bg_color`,
+        /* TODO: maybe change prefs.bg_color to `a_Dw_widget_get_bg_color`,
          * when background colors are correctly implementated */
         bg_blue  = (png->Image->bg_color) & 0xFF;
         bg_green = (png->Image->bg_color>>8) & 0xFF;

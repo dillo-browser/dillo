@@ -230,12 +230,12 @@ int main(void)
    dpi_attr_list = NULL;
    services_list = NULL;
    //daemon(0,0); /* Use 0,1 for feedback */
-   /* todo: call setsid() ?? */
+   /* TODO: call setsid() ?? */
 
    /* Allow read and write access, but only for the user.
-    * todo: can this cause trouble with umount? */
+    * TODO: can this cause trouble with umount? */
    umask(0077);
-   /* todo: make dpid work on any directory. */
+   /* TODO: make dpid work on any directory. */
    // chdir("/");
 
    /* close inherited file descriptors */

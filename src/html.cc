@@ -304,11 +304,11 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
       else if (dStrcasecmp (align, "justify") == 0)
          style_attrs.textAlign = TEXT_ALIGN_JUSTIFY;
       else if (dStrcasecmp (align, "char") == 0) {
-         /* todo: Actually not supported for <p> etc. */
+         /* TODO: Actually not supported for <p> etc. */
          style_attrs.textAlign = TEXT_ALIGN_STRING;
          if ((charattr = a_Html_get_attr(html, tag, tagsize, "char"))) {
             if (charattr[0] == 0)
-               /* todo: ALIGN=" ", and even ALIGN="&32;" will reult in
+               /* TODO: ALIGN=" ", and even ALIGN="&32;" will reult in
                 * an empty string (don't know whether the latter is
                 * correct, has to be clarified with the specs), so
                 * that for empty strings, " " is assumed. */
@@ -316,7 +316,7 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
             else
                style_attrs.textAlignChar = charattr[0];
          } else
-            /* todo: Examine LANG attr of <html>. */
+            /* TODO: Examine LANG attr of <html>. */
             style_attrs.textAlignChar = '.';
       }
       S_TOP(html)->style = Style::create (HT2LT(html), &style_attrs);
@@ -661,7 +661,7 @@ void DilloHtml::finishParsing(int ClientKey)
 {
    int si;
 
-   /* force the close of elements left open (todo: not for XHTML) */
+   /* force the close of elements left open (TODO: not for XHTML) */
    while ((si = stack->size() - 1)) {
       if (stack->getRef(si)->tag_idx != -1) {
          Html_tag_cleanup_at_close(this, stack->getRef(si)->tag_idx);
@@ -1588,7 +1588,7 @@ static void Html_tag_open_html(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_html(DilloHtml *html, int TagIdx)
 {
-   /* todo: may add some checks here */
+   /* TODO: may add some checks here */
    if (html->Num_HTML == 1) {
       /* beware of pages with multiple HTML close tags... :-P */
       html->InFlags &= ~IN_HTML;
@@ -1778,7 +1778,7 @@ static void Html_tag_close_body(DilloHtml *html, int TagIdx)
 
 /*
  * <P>
- * todo: what's the point between adding the parbreak before and
+ * TODO: what's the point between adding the parbreak before and
  *       after the push?
  */
 static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
@@ -1794,7 +1794,7 @@ static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
 
 /*
  * <FRAME>, <IFRAME>
- * todo: This is just a temporary fix while real frame support
+ * TODO: This is just a temporary fix while real frame support
  *       isn't finished. Imitates lynx/w3m's frames.
  */
 static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
@@ -1862,7 +1862,7 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
 
 /*
  * <FRAMESET>
- * todo: This is just a temporary fix while real frame support
+ * TODO: This is just a temporary fix while real frame support
  *       isn't finished. Imitates lynx/w3m's frames.
  */
 static void Html_tag_open_frameset (DilloHtml *html,
@@ -1880,7 +1880,7 @@ static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
 
-   /* todo: combining these two would be slightly faster */
+   /* TODO: combining these two would be slightly faster */
    a_Html_set_top_font(html, prefs.vw_fontname,
                        Html_level_to_fontsize(FontSizesNum - (tag[2] - '0')),
                        1, 3);
@@ -2094,7 +2094,7 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
       MSG("a_Html_add_new_image: suspicious image size request %dx%d\n", w, h);
    }
 
-   /* todo: we should scale the image respecting its ratio.
+   /* TODO: we should scale the image respecting its ratio.
     *       As the image size is not known at this time, maybe a flag
     *       can be set to scale it later.
    if ((width_ptr && !height_ptr) || (height_ptr && !width_ptr))
@@ -2184,7 +2184,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 
    usemap_url = NULL;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "usemap")))
-      /* todo: usemap URLs outside of the document are not used. */
+      /* TODO: usemap URLs outside of the document are not used. */
       usemap_url = a_Html_url_new(html, attrbuf, NULL, 0);
 
    /* Set the style attributes for this image */
@@ -2326,7 +2326,7 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
       type = UNKNOWN;
    }
    if (type == RECTANGLE || type == CIRCLE || type == POLYGON) {
-      /* todo: add support for coords in % */
+      /* TODO: add support for coords in % */
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "coords"))) {
          coords = Html_read_coords(html, attrbuf);
 
@@ -2476,7 +2476,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
    DilloUrl *url;
    const char *attrbuf;
 
-   /* todo: add support for MAP with A HREF */
+   /* TODO: add support for MAP with A HREF */
    if (html->InFlags & IN_MAP)
       Html_tag_open_area(html, tag, tagsize);
 
@@ -2801,7 +2801,7 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
          style_attrs.textAlign = TEXT_ALIGN_CENTER;
    }
   
-   /* todo: evaluate attribute */
+   /* TODO: evaluate attribute */
    if (a_Html_get_attr(html, tag, tagsize, "noshade")) {
       style_attrs.setBorderStyle (BORDER_SOLID);
       style_attrs.setBorderColor (
@@ -2914,7 +2914,7 @@ static int Html_tag_pre_excludes(int tag_idx)
  * More info at:
  *   http://lists.w3.org/Archives/Public/www-html/2000Feb/thread.html#msg232
  *
- * todo: Note that we're sending custom HTML while still IN_HEAD. This
+ * TODO: Note that we're sending custom HTML while still IN_HEAD. This
  * is a hackish way to put the message. A much cleaner approach is to
  * build a custom widget for it.
  */
@@ -2954,7 +2954,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          while (*content && *(content++) != '=');
 
          /* Send a custom HTML message.
-          * todo: This is a hairy hack,
+          * TODO: This is a hairy hack,
           *       It'd be much better to build a widget. */
          ds_msg = dStr_sized_new(256);
          dStr_sprintf(ds_msg, meta_template, content, delay_str);
@@ -3086,7 +3086,7 @@ static void Html_tag_open_sup(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
- * <DIV> (todo: make a complete implementation)
+ * <DIV> (TODO: make a complete implementation)
  */
 static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 {
@@ -3175,7 +3175,7 @@ const TagInfo Tags[] = {
  {"del", B8(011101),'R',2, Html_tag_open_strike, Html_tag_close_default},
  {"dfn", B8(010101),'R',2, Html_tag_open_dfn, Html_tag_close_default},
  {"dir", B8(011010),'R',2, Html_tag_open_dir, Html_tag_close_par},
- /* todo: complete <div> support! */
+ /* TODO: complete <div> support! */
  {"div", B8(011110),'R',2, Html_tag_open_div, Html_tag_close_div},
  {"dl", B8(011010),'R',2, Html_tag_open_dl, Html_tag_close_par},
  {"dt", B8(010110),'O',1, Html_tag_open_dt, Html_tag_close_par},
@@ -3206,7 +3206,7 @@ const TagInfo Tags[] = {
  {"li", B8(011110),'O',1, Html_tag_open_li, Html_tag_close_li},
  /* link 100000 'F' */
  {"map", B8(011001),'R',2, Html_tag_open_map, Html_tag_close_map},
- /* menu 1010 -- todo: not exactly 1010, it can contain LI and inline */
+ /* menu 1010 -- TODO: not exactly 1010, it can contain LI and inline */
  {"menu", B8(011010),'R',2, Html_tag_open_menu, Html_tag_close_par},
  {"meta", B8(100001),'F',0, Html_tag_open_meta, Html_tag_close_default},
  /* noframes 1011 */
@@ -3332,7 +3332,7 @@ static int Html_needs_optional_close(int old_idx, int cur_idx)
    }
 
    /* HTML, HEAD, BODY are handled by Html_test_section(), not here. */
-   /* todo: TBODY is pending */
+   /* TODO: TBODY is pending */
    return 0;
 }
 
@@ -3457,7 +3457,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
 
    ni = Html_tag_index(start + IsCloseTag);
    if (ni == -1) {
-      /* todo: doctype parsing is a bit fuzzy, but enough for the time being */
+      /* TODO: doctype parsing is a bit fuzzy, but enough for the time being */
       if (!(html->InFlags & IN_HTML)) {
          if (tagsize > 9 && !dStrncasecmp(tag, "<!doctype", 9))
             Html_parse_doctype(html, tag, tagsize);
@@ -3481,7 +3481,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       if (Tags[ni].Flags & 2 || (ci != -1 && Tags[ci].EndTag == 'O'))
          Html_stack_cleanup_at_open(html, ni);
 
-      /* todo: this is only raising a warning, take some defined action.
+      /* TODO: this is only raising a warning, take some defined action.
        * Note: apache uses IMG inside PRE (we could use its "alt"). */
       if ((html->InFlags & IN_PRE) && Html_tag_pre_excludes(ni))
          BUG_MSG("<pre> is not allowed to contain <%s>\n", Tags[ni].name);
@@ -3523,7 +3523,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       html->PrevWasOpenTag = true;
 
       /* Request inmediate close for elements with forbidden close tag. */
-      /* todo: XHTML always requires close tags. A simple implementation
+      /* TODO: XHTML always requires close tags. A simple implementation
        * of the commented clause below will make it work. */
       if  (/* parsing HTML && */ Tags[ni].EndTag == 'F')
          html->ReqTagClose = true;

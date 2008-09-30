@@ -112,7 +112,7 @@ Findbar::Findbar(int width, int height) :
     i->when(WHEN_ENTER_KEY_ALWAYS);
     i->callback(search_cb2, this);
 
-    // todo: search previous would be nice
+    // TODO: search previous would be nice
     findb = new HighlightButton(x, border, button_width, height, "Next");
     x += button_width + gap;
     findb->tooltip("Find next occurrence of the search phrase");

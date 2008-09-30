@@ -150,7 +150,7 @@ public:  //BUG: for now everything is public
    DilloHtmlSelect *select;
    bool init_val;     /* only meaningful for buttons */
    Dstr *file_data;   /* only meaningful for file inputs.
-                         todo: may become a list... */
+                         TODO: may become a list... */
 
 private:
    void connectTo(DilloHtmlReceiver *form_receiver);
@@ -611,7 +611,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
 
 /*
  * The textarea tag
- * (todo: It doesn't support wrapping).
+ * (TODO: It doesn't support wrapping).
  */
 void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 {
@@ -1349,7 +1349,7 @@ void DilloHtmlForm::appendInputMultipartFiles(Dstr* data,
          dStr_append(data, "--");
          dStr_append(data, boundary);
       }
-      // todo: encode name, filename
+      // TODO: encode name, filename
       dStr_sprintfa(data,
                     "\r\n"
                     "Content-Disposition: form-data; name=\"%s\"; "
@@ -1389,7 +1389,7 @@ void DilloHtmlForm::appendInputMultipart(Dstr *data,
          dStr_append(data, "--");
          dStr_append(data, boundary);
       }
-      // todo: encode name (RFC 2231)
+      // TODO: encode name (RFC 2231)
       dStr_sprintfa(data,
                     "\r\n"
                     "Content-Disposition: form-data; name=\"%s\"\r\n"

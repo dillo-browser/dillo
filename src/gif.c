@@ -54,7 +54,7 @@
  */
 
 
-/* todo:
+/* TODO:
  * + Make sure to handle error cases gracefully (including aborting the
  * connection, if necessary).
  */
@@ -167,7 +167,7 @@ void *a_Gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
 
    if (!web->Image)
       web->Image = a_Image_new(0, 0, NULL, prefs.bg_color);
-      /* todo: get the backgound color from the parent widget -- Livio. */
+      /* TODO: get the backgound color from the parent widget -- Livio. */
 
    /* Add an extra reference to the Image (for dicache usage) */
    a_Image_ref(web->Image);

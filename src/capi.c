@@ -265,7 +265,7 @@ static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
 
 /*
  * Build the dpip command tag, according to URL and server.
- * todo: make it PROXY-aware (AFAIS, it should be easy)
+ * TODO: make it PROXY-aware (AFAIS, it should be easy)
  */
 static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 {
@@ -293,7 +293,7 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 
 /*
  * Most used function for requesting a URL.
- * todo: clean up the ad-hoc bindings with an API that allows dynamic
+ * TODO: clean up the ad-hoc bindings with an API that allows dynamic
  *       addition of new plugins.
  *
  * Return value: A primary key for identifying the client,

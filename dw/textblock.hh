@@ -161,7 +161,7 @@ protected:
 
    struct Word
    {
-      /* todo: perhaps add a xLeft? */
+      /* TODO: perhaps add a xLeft? */
       core::Requisition size;
       /* Space after the word, only if it's not a break: */
       unsigned short origSpace; /* from font, set by addSpace */

@@ -26,7 +26,7 @@
 #define PATH_LEN 50
 #define CMDLEN 20
 #define MSGLEN 50
-/*! \todo: Should read this from dillorc */
+/*! \TODO: Should read this from dillorc */
 #define SRS_NAME "dpid.srs"
 char *srs_name;
 

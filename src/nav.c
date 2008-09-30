@@ -542,7 +542,7 @@ void a_Nav_save_url(BrowserWindow *bw,
    Web->bw = bw;
    Web->filename = dStrdup(filename); 
    Web->flags |= WEB_Download;
-   /* todo: keep track of this client */
+   /* TODO: keep track of this client */
    a_Capi_open_url(Web, Nav_save_cb, Web);
 }
 

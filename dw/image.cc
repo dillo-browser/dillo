@@ -322,7 +322,7 @@ void Image::draw (core::View *view, core::Rectangle *area)
       }
    }
 
-   /** todo: draw selection */
+   /** TODO: draw selection */
 }
 
 core::Iterator *Image::iterator (core::Content::Type mask, bool atEnd)

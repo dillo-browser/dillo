@@ -381,7 +381,7 @@ char *a_Misc_encode_base64(const char *in)
 /*
  * Load a local file into a dStr.
  * Return value: dStr on success, NULL on error.
- * todo: a filesize threshold may be implemented.
+ * TODO: a filesize threshold may be implemented.
  */
 Dstr *a_Misc_file2dstr(const char *filename)
 {

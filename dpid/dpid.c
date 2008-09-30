@@ -409,7 +409,7 @@ int register_all(struct dp **attlist)
    dFree(sys_dpidir);
    dFree(user_dpidir);
 
-   /* todo: do we consider snum == 0 an error?
+   /* TODO: do we consider snum == 0 an error?
     *       (if so, we should return -1 )       */
    return (snum);
 }

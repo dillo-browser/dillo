@@ -255,7 +255,7 @@ void a_Dicache_invalidate_entry(const DilloUrl *Url)
  */
 void a_Dicache_callback(int Op, CacheClient_t *Client)
 {
-   /* todo: Handle Op = CA_Abort (to show what was got)  --Jcid */
+   /* TODO: Handle Op = CA_Abort (to show what was got)  --Jcid */
    uint_t i;
    DilloWeb *Web = Client->Web;
    DilloImage *Image = Web->Image;

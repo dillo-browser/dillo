@@ -888,7 +888,7 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
       canvasHeightGreater = false;
 
    /* if size changes, redraw this view.
-    * todo: this is a resize call (redraw/resize code needs a review). */
+    * TODO: this is a resize call (redraw/resize code needs a review). */
    if (viewportWidth != width || viewportHeight != height)
       queueResize();
 

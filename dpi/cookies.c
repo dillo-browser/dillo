@@ -23,7 +23,7 @@
  *       add comments, remove leaks, etc.
  */
 
-/* Todo: this server is not assembling the received packets.
+/* TODO: this server is not assembling the received packets.
  * This means it currently expects dillo to send full dpi tags
  * within the socket; if that fails, everything stops.
  */
@@ -533,7 +533,7 @@ static time_t Cookies_create_timestamp(const char *expires)
       day = strtol(cp + 2, NULL, 10);
       month = Cookies_get_month(cp + 5);
       year = strtol(cp + 9, &cp, 10);
-      /* todo: tricky, because two digits for year IS ambiguous! */
+      /* TODO: tricky, because two digits for year IS ambiguous! */
       year += (year < 70) ? 2000 : ((year < 100) ? 1900 : 0);
       hour = strtol(cp + 1, NULL, 10);
       minutes = strtol(cp + 4, NULL, 10);

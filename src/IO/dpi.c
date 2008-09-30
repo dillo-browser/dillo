@@ -244,7 +244,7 @@ static void Dpi_parse_token(dpi_conn_t *conn)
       urlstr = a_Dpip_get_attr(Tok, conn->TokSize, "url");
       a_Chain_fcb(OpSend, conn->InfoRecv, urlstr, cmd);
       dFree(urlstr);
-      /* todo: a_Dpip_get_attr(Tok, conn->TokSize, "send_mode") */
+      /* TODO: a_Dpip_get_attr(Tok, conn->TokSize, "send_mode") */
 
    } else if (strcmp(cmd, "reload_request") == 0) {
       urlstr = a_Dpip_get_attr(Tok, conn->TokSize, "url");
@@ -753,12 +753,12 @@ char *a_Dpi_send_blocking_cmd(const char *server_name, const char *cmd)
 
    SockFD = Dpi_connect_socket(server_name, TRUE);
    if (SockFD != -1) {
-      /* todo: handle the case of (st < strlen(cmd)) */
+      /* TODO: handle the case of (st < strlen(cmd)) */
       do
          st = write(SockFD, cmd, strlen(cmd));
       while (st == -1 && errno == EINTR);
 
-      /* todo: if the answer is too long... */
+      /* TODO: if the answer is too long... */
       do
          st = read(SockFD, buf, 16384);
       while (st < 0 && errno == EINTR);

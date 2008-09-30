@@ -178,7 +178,7 @@ void FltkResource::setWidgetStyle (::fltk::Widget *widget,
    if (bg) {
       if (style->color) {
          /*
-          * todo: if/when CSS is implemented, test whether style->color
+          * TODO: if/when CSS is implemented, test whether style->color
           * will consistently provide readable widgets.
           */
          int32_t c = bg->colors[FltkColor::SHADING_NORMAL];

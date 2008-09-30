@@ -272,7 +272,7 @@ static void b1_cb(Widget *wid, void *cb_data)
  */
 //static void fullscreen_cb(Widget *wid, void *data)
 //{
-//   /* todo: do we want to toggle fullscreen or panelmode?
+//   /* TODO: do we want to toggle fullscreen or panelmode?
 //            maybe we need to add another button?*/
 //   ((UI*)data)->panelmode_cb_i();
 //}
