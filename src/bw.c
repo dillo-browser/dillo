@@ -258,6 +258,11 @@ void a_Bw_cleanup(BrowserWindow *bw)
 
 /*--------------------------------------------------------------------------*/
 
+int a_Bw_num()
+{
+   return num_bws;
+}
+
 /*
  * TODO: remove this Hack.
  */

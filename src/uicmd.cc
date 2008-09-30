@@ -34,7 +34,7 @@
 #include "nav.h"
 
 // Handy macro
-#define BW2UI(bw) ((UI*)(bw->ui))
+#define BW2UI(bw) ((UI*)((bw)->ui))
 
 // Platform idependent part
 using namespace dw::core;
@@ -109,6 +109,24 @@ public:
    }
 };
 
+static void win_cb (fltk::Widget *w, void *cb_data) {
+   CustTabGroup *tabs;
+   int choice = 0;
+
+   if (cb_data == NULL) {
+      w->hide ();
+   } else {
+      // It is assumed that user_data() of a window contains a pointer
+      // to the current BrowserWindow.
+      tabs = BW2UI((BrowserWindow*) cb_data)->tabs();
+      if (tabs->children () > 1)
+         choice = a_Dialog_choice3 ("Window contains more than one tab.",
+            "Close all tabs", "Cancel", NULL);
+      if (choice == 0)
+         for (int i = tabs->children() - 1; i >= 0; i--)
+            a_UIcmd_close_bw(((UI*)tabs->child(i))->vbw());
+   }
+}
 
 /*
  * Create a new UI and its associated BrowserWindow data structure.
@@ -132,6 +150,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);
    DilloTabs->selection_color(156);
    win->add(DilloTabs);
+   win->callback(win_cb, (void*) NULL);
 
    // Create and set the UI
    UI *new_ui = new UI(0, 0, ww, wh, "Label", old_bw ? BW2UI(old_bw) : NULL);
@@ -254,9 +273,14 @@ void a_UIcmd_close_bw(void *vbw)
 void a_UIcmd_close_all_bw()
 {
    BrowserWindow *bw;
+   int choice = 0;
 
-   while ((bw = a_Bw_get()))
-      a_UIcmd_close_bw((void*)bw);
+   if (a_Bw_num() > 1)
+      choice = a_Dialog_choice3 ("More than one open tab or Window.",
+         "Close all tabs and windows", "Cancel", NULL);
+   if (choice == 0)
+      while ((bw = a_Bw_get()))
+         a_UIcmd_close_bw((void*)bw);
 }
 
 /*

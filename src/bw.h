@@ -76,6 +76,7 @@ void a_Bw_init(void);
 BrowserWindow *a_Bw_new();
 void a_Bw_free(BrowserWindow *bw);
 BrowserWindow *a_Bw_get();
+int a_Bw_num();
 
 void a_Bw_add_client(BrowserWindow *bw, int Key, int Root);
 int a_Bw_remove_client(BrowserWindow *bw, int ClientKey);
