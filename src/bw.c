@@ -58,7 +58,6 @@ BrowserWindow *a_Bw_new()
    bw->nav_expect_url = NULL;
 
    bw->redirect_level = 0;
-   bw->sens_idle_up = 0;
 
    bw->RootClients = dList_new(8);
    bw->ImageClients = dList_new(8);

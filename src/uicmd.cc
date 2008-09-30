@@ -849,10 +849,9 @@ bool_t a_UIcmd_get_images_enabled(BrowserWindow *bw)
 /*
  * Set the sensitivity of back/forw/stop buttons.
  */
-static void a_UIcmd_set_buttons_sens_cb(void *vbw)
+void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
 {
    int sens;
-   BrowserWindow *bw = (BrowserWindow*)vbw;
 
    // Stop
    sens = (dList_length(bw->ImageClients) || dList_length(bw->RootClients));
@@ -864,20 +863,6 @@ static void a_UIcmd_set_buttons_sens_cb(void *vbw)
    sens = (a_Nav_stack_ptr(bw) < a_Nav_stack_size(bw) - 1 &&
            !bw->nav_expecting);
    BW2UI(bw)->button_set_sens(UI_FORW, sens);
-  
-   bw->sens_idle_up = 0;
-}
-
-
-/*
- * Set the timeout function for button sensitivity
- */
-void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
-{
-   if (bw->sens_idle_up == 0) {
-      a_Timeout_add(0.0, a_UIcmd_set_buttons_sens_cb, bw);
-      bw->sens_idle_up = 1;
-   }
 }
 
 /*

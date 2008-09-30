@@ -57,9 +57,6 @@ struct _BrowserWindow
     * redirection loops (accounts for WEB_RootUrl only) */
    int redirect_level;
 
-   /* flag for button sens idle function */
-   int sens_idle_up;
-
    /* TODO: maybe this fits better in the linkblock.
     * Although having it here avoids having a signal for handling it. */
    int num_page_bugs;

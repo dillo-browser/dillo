@@ -827,7 +827,7 @@ static void *File_serve_client(void *data)
 
    /* Read the dpi command */
    dpip_tag = sock_handler_read(Client->sh);
-   MSG("dpip_tag={%s}\n", dpip_tag);
+   _MSG("dpip_tag={%s}\n", dpip_tag);
 
    if (dpip_tag) {
       cmd = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cmd");
