@@ -1906,64 +1906,60 @@ void Textblock::flush ()
 
 void Textblock::changeLinkColor (int link, int newColor)
 {
-   int from = -1, to;
-   core::style::StyleAttrs style_attrs;
-   core::style::Style *visited_style;
+   for (int lineIndex = 0; lineIndex < lines->size(); lineIndex++) {
+      bool changed = false;
+      Line *line = lines->getRef (lineIndex);
+      int wordIndex;
 
-   //printf("Textblock::changeLinkColor link=%d\n", link);
+      for (wordIndex = line->firstWord;wordIndex < line->lastWord;wordIndex++){
+         Word *word = words->getRef(wordIndex);
 
-   /* Find the first and last word of this link (binary search) */
-   int min = 0, max = words->size() - 1, i, d;
-   while (min <= max) {
-      i = (min + max) / 2;
-      for (d = i; d > min && words->getRef(d)->style->x_link == -1; --d);
-      //printf(" changeLinkColor:  min=%d max=%d i=%d d=%d s=%d\n",
-      //       min,max,i,d,i-d);
-      if (words->getRef(d)->style->x_link == -1) {
-         min = i + 1;
-         continue;
+         if (word->style->x_link == link) {
+            core::style::StyleAttrs styleAttrs;
+
+            switch (word->content.type) {
+            case core::Content::TEXT:
+            {  core::style::Style *old_style = word->style;
+               styleAttrs = *old_style;
+               styleAttrs.color = core::style::Color::createSimple (layout,
+                                                                    newColor);
+               word->style = core::style::Style::create (layout, &styleAttrs);
+               old_style->unref();
+               old_style = word->spaceStyle;
+               styleAttrs = *old_style;
+               styleAttrs.color = core::style::Color::createSimple (layout,
+                                                                    newColor);
+               word->spaceStyle =
+                               core::style::Style::create(layout, &styleAttrs);
+               old_style->unref();
+               break;
+            }
+            case core::Content::WIDGET:
+            {  core::Widget *widget = word->content.widget;
+               styleAttrs = *widget->getStyle();
+               styleAttrs.color = core::style::Color::createSimple (layout,
+                                                                    newColor);
+               styleAttrs.setBorderColor(
+                           core::style::Color::createShaded(layout, newColor));
+               widget->setStyle(
+                             core::style::Style::create (layout, &styleAttrs));
+               break;
+            }
+            default:
+               break;
+            }
+            changed = true;
+         }
       }
-      /* found a link */
-      if (words->getRef(d)->style->x_link < link) {
-         min = d + 1;
-      } else if (words->getRef(d)->style->x_link > link) {
-         max = d - 1;
-      } else {
-         for (; d > 0 && words->getRef(d-1)->style->x_link == link; --d);
-         from = d;
-         for (; d < max && words->getRef(d+1)->style->x_link == link; ++d);
-         to = d;
-         break;
-      }
-   }
-
-   if (from != -1) {
-      style_attrs = *words->getRef(from)->style;
-      style_attrs.color =
-         core::style::Color::createSimple (layout, newColor);
-      visited_style = core::style::Style::create (layout, &style_attrs);
-      changeWordStyle (from, to, visited_style, false, false);
-      visited_style->unref();
+      if (changed)
+         queueDrawArea (0, lineYOffsetWidget(line), allocation.width,
+                        line->ascent + line->descent);
    }
 }
 
 void Textblock::changeWordStyle (int from, int to, core::style::Style *style,
                                  bool includeFirstSpace, bool includeLastSpace)
 {
-   Word *word;
-   int wordIndex;
-
-   /** \todo handle: includeFirstSpace and includeLastSpace */
-
-   if (from < 0 || to < from || to >= words->size())
-      return;
-   for (wordIndex = from; wordIndex <= to; wordIndex++) {
-      word = words->getRef (wordIndex);
-      word->style->unref();
-      style->ref();
-      word->style = style;
-   }
-   queueDraw();
 }
 
 // ----------------------------------------------------------------------
