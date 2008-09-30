@@ -1445,29 +1445,30 @@ static const char *const full_screen_off_xpm[] = {
 
 /* XPM */
 static const char *const mini_bug_xpm[] = {
-"15 16 6 1",
+"16 16 7 1",
 "       c None",
 ".      c #000000000000",
+"r      c #FFFF00000000",
 "X      c #BEFBC30BBEFB",
 "o      c #861782078617",
 "O      c #FFFFFFFFFFFF",
 "+      c #30C230C230C2",
-"               ",
-"    .   .      ",
-"     ...       ",
-"   X.....X     ",
-"   o.O...o     ",
-"  o.O...o.o    ",
-"  ..OoXo...    ",
-" .....X.....   ",
-"  ....X....    ",
-" .o...X...o.   ",
-"   ...X...     ",
-"  .X..X..X.    ",
-"     .o.       ",
-"          .+++.",
-"           .o. ",
-"            .  "};
+"                ",
+"     .   .      ",
+"      ...       ",
+"    X.....X     ",
+"    o.O...o     ",
+"   o.O...o.o    ",
+"   .rrrXrrr.    ",
+"  .rrrrXrrrr.   ",
+"   .rrrXrrr.    ",
+"  .o.rrXrr.o.   ",
+"    .rrXrr.     ",
+"   .XrrXrrX.    ",
+"      .o.       ",
+"           .+++.",
+"            .o. ",
+"             .  "};
 
 /* XPM */
 static const char *const mini_ok_xpm[] = {
