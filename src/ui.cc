@@ -412,7 +412,7 @@ PackedGroup *UI::make_location()
     i->color(CuteColor);
     i->when(WHEN_ENTER_KEY);
     i->callback(location_cb, this);
-    b->set_click_to_focus();
+    i->set_click_to_focus();
 
     Search = b = new HighlightButton(0,0,16,22,0);
     ImgSearch = new xpmImage(search_xpm);
