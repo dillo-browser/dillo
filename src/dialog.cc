@@ -133,8 +133,6 @@ void *a_Dialog_make_text_window(const char *txt, const char *title)
  
     TextDisplay *td = new TextDisplay(0,0,ww, wh-bh);
     td->buffer()->text(txt);
-    /* enable wrapping lines; text uses entire width of window */
-    td->wrap_mode(true, 0);
 
     if (textfont)
        td->textfont(textfont);
@@ -147,6 +145,11 @@ void *a_Dialog_make_text_window(const char *txt, const char *title)
        ++line_num_width;
     line_num_width = (int)(line_num_width * fltk::getwidth("0"));
     td->linenumber_width(line_num_width);
+
+    /* enable wrapping lines; text uses entire width of window */
+    td->wrap_mode(true, false);
+    /* WORKAROUND: FLTK may not display all the lines without this */
+    td->resize(ww+1,wh-bh);
 
     ReturnButton *b = new ReturnButton (0, wh-bh, ww, bh, "Close");
     b->callback(window_close_cb, window);
