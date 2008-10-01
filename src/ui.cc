@@ -61,22 +61,21 @@ static struct iconset standard_icons = {
 };
 
 static struct iconset small_icons = {
-   new xpmImage(mini_ok_xpm),
-   new xpmImage(mini_bug_xpm),
+   standard_icons.ImgMeterOK,
+   standard_icons.ImgMeterBug,
    new xpmImage(home_s_xpm),
    new xpmImage(reload_s_xpm),
    new xpmImage(save_s_xpm),
    new xpmImage(bm_s_xpm),
    new xpmImage(new_s_xpm),
-   new xpmImage(search_xpm),
+   standard_icons.ImgSearch,
    new MultiImage(*new xpmImage(left_s_xpm), INACTIVE_R,
                   *new xpmImage(left_si_xpm)),
    new MultiImage(*new xpmImage(right_s_xpm), INACTIVE_R,
                   *new xpmImage(right_si_xpm)),
    new MultiImage(*new xpmImage(stop_s_xpm), INACTIVE_R,
                   *new xpmImage(stop_si_xpm)),
-   new MultiImage(*new xpmImage(imgload_off_xpm), INACTIVE_R,
-                  *new xpmImage(imgload_on_xpm))
+   standard_icons.ImgImageLoadMulti
 };
 
 
