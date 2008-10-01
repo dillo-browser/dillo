@@ -113,19 +113,27 @@ static void win_cb (fltk::Widget *w, void *cb_data) {
    CustTabGroup *tabs;
    int choice = 0;
 
-   if (cb_data == NULL) {
-      w->hide ();
-   } else {
-      // It is assumed that user_data() of a window contains a pointer
-      // to the current BrowserWindow.
-      tabs = BW2UI((BrowserWindow*) cb_data)->tabs();
-      if (tabs->children () > 1)
-         choice = a_Dialog_choice3 ("Window contains more than one tab.",
-            "Close all tabs", "Cancel", NULL);
-      if (choice == 0)
-         for (int i = tabs->children() - 1; i >= 0; i--)
-            a_UIcmd_close_bw(((UI*)tabs->child(i))->vbw());
+   tabs = BW2UI((BrowserWindow*) cb_data)->tabs();
+   if (tabs->children () > 1)
+      choice = a_Dialog_choice3 ("Window contains more than one tab.",
+                                 "Close all tabs", "Cancel", NULL);
+   if (choice == 0)
+      while (tabs->children())
+         a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(tabs->child(0)));
+}
+
+/*
+ * Given a UI or UI child widget, return its bw.
+ */
+BrowserWindow *a_UIcmd_get_bw_by_widget(void *v_wid)
+{
+   BrowserWindow *bw;
+   for (int i = 0; i < a_Bw_num(); ++i) {
+      bw = a_Bw_get(i);
+      if (((fltk::Widget*)bw->ui)->contains((fltk::Widget*)v_wid))
+         return bw;
    }
+   return NULL;
 }
 
 /*
@@ -150,7 +158,6 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);
    DilloTabs->selection_color(156);
    win->add(DilloTabs);
-   win->callback(win_cb, (void*) NULL);
 
    // Create and set the UI
    UI *new_ui = new UI(0, 0, ww, wh, "Label", old_bw ? BW2UI(old_bw) : NULL);
@@ -184,13 +191,12 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    // Now, create a new browser window structure
    new_bw = a_Bw_new();
 
-   // Store new_bw for callback data inside UI
-   new_ui->vbw(new_bw);
-
    // Reference the UI from the bw
    new_bw->ui = (void *)new_ui;
    // Copy the layout pointer into the bw data
    new_bw->render_layout = (void*)layout;
+
+   win->callback(win_cb, new_bw);
 
    return new_bw;
 }
@@ -231,9 +237,6 @@ BrowserWindow *UIcmd_tab_new(const void *vbw)
 
    // Now, create a new browser window structure
    new_bw = a_Bw_new();
-
-   // Store new_bw for callback data inside UI
-   new_ui->vbw(new_bw);
 
    // Reference the UI from the bw
    new_bw->ui = (void *)new_ui;
@@ -279,7 +282,7 @@ void a_UIcmd_close_all_bw()
       choice = a_Dialog_choice3 ("More than one open tab or Window.",
          "Close all tabs and windows", "Cancel", NULL);
    if (choice == 0)
-      while ((bw = a_Bw_get()))
+      while ((bw = a_Bw_get(0)))
          a_UIcmd_close_bw((void*)bw);
 }
 

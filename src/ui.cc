@@ -99,8 +99,8 @@ int CustHighlightButton::handle(int e)
    if (e == PASTE) {
       const char* t = event_text();
       if (t && *t) {
-         a_UIcmd_set_location_text(this->window()->user_data(), t);
-         a_UIcmd_open_urlstr(this->window()->user_data(), t);
+         a_UIcmd_set_location_text(a_UIcmd_get_bw_by_widget(this), t);
+         a_UIcmd_open_urlstr(a_UIcmd_get_bw_by_widget(this), t);
          return 1;
       }
    }
@@ -154,7 +154,7 @@ static void search_cb(Widget *wid, void *data)
       MSG("[Search], mouse button %d was pressed\n", k);
 
    if (k == 1) {
-      a_UIcmd_search_dialog(wid->window()->user_data());
+      a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(wid));
    } else if (k == 2) {
       ((UI*)data)->color_change_cb_i();
    } else if (k == 3) {
@@ -203,7 +203,7 @@ static void location_cb(Widget *wid, void *data)
     * The Back or Forward, buttons, or the first click on a rendered
     * page. BUG: this must be investigated and reported to FLTK2 team */
    if (event_key() == ReturnKey) {
-      a_UIcmd_open_urlstr(i->window()->user_data(), i->value());
+      a_UIcmd_open_urlstr(a_UIcmd_get_bw_by_widget(i), i->value());
    }
    if (ui->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS) {
       ui->set_panelmode(UI_HIDDEN);
@@ -225,41 +225,41 @@ static void b1_cb(Widget *wid, void *cb_data)
    switch (bn) {
    case UI_BACK:
       if (k == 1) {
-         a_UIcmd_back(wid->window()->user_data());
+         a_UIcmd_back(a_UIcmd_get_bw_by_widget(wid));
       } else if (k == 3) {
-         a_UIcmd_back_popup(wid->window()->user_data());
+         a_UIcmd_back_popup(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_FORW:
       if (k == 1) {
-         a_UIcmd_forw(wid->window()->user_data());
+         a_UIcmd_forw(a_UIcmd_get_bw_by_widget(wid));
       } else if (k == 3) {
-         a_UIcmd_forw_popup(wid->window()->user_data());
+         a_UIcmd_forw_popup(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_HOME:
       if (k == 1) {
-         a_UIcmd_home(wid->window()->user_data());
+         a_UIcmd_home(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_RELOAD:
       if (k == 1) {
-         a_UIcmd_reload(wid->window()->user_data());
+         a_UIcmd_reload(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_SAVE:
       if (k == 1) {
-         a_UIcmd_save(wid->window()->user_data());
+         a_UIcmd_save(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_STOP:
       if (k == 1) {
-         a_UIcmd_stop(wid->window()->user_data());
+         a_UIcmd_stop(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_BOOK:
       if (k == 1) {
-         a_UIcmd_book(wid->window()->user_data());
+         a_UIcmd_book(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    default:
@@ -286,9 +286,9 @@ static void bugmeter_cb(Widget *wid, void *data)
    if (k && k <= 7)
       MSG("[BugMeter], mouse button %d was pressed\n", k);
    if (k == 1) {
-      a_UIcmd_view_page_bugs(wid->window()->user_data());
+      a_UIcmd_view_page_bugs(a_UIcmd_get_bw_by_widget(wid));
    } else if (k == 3) {
-      a_UIcmd_bugmeter_popup(wid->window()->user_data());
+      a_UIcmd_bugmeter_popup(a_UIcmd_get_bw_by_widget(wid));
    }
 }
 
@@ -458,15 +458,15 @@ static void menubar_cb(Widget *wid, void *data)
 {
    if (strcmp((char*)data, "nb") == 0) {
       a_UIcmd_browser_window_new(wid->window()->w(), wid->window()->h(),
-                                 wid->window()->user_data());
+                                 a_UIcmd_get_bw_by_widget(wid));
    } else if (strcmp((char*)data, "nt") == 0) {
-      a_UIcmd_open_url_nt(wid->window()->user_data(), NULL, 1);
+      a_UIcmd_open_url_nt(a_UIcmd_get_bw_by_widget(wid), NULL, 1);
    } else if (strcmp((char*)data, "of") == 0) {
-      a_UIcmd_open_file(wid->window()->user_data());
+      a_UIcmd_open_file(a_UIcmd_get_bw_by_widget(wid));
    } else if (strcmp((char*)data, "ou") == 0) {
-      a_UIcmd_focus_location(wid->window()->user_data());
+      a_UIcmd_focus_location(a_UIcmd_get_bw_by_widget(wid));
    } else if (strcmp((char*)data, "cw") == 0) {
-      a_UIcmd_close_bw(wid->window()->user_data());
+      a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(wid));
    } else if (strcmp((char*)data, "ed") == 0) {
       a_UIcmd_close_all_bw();
    }
@@ -756,7 +756,7 @@ int UI::handle(int event)
       // Handle keyboard shortcuts here.
       if (modifier == CTRL) {
          if (k == 'b') {
-            a_UIcmd_book(this->window()->user_data());
+            a_UIcmd_book(a_UIcmd_get_bw_by_widget(this));
             ret = 1;
          } else if (k == 'f') {
             set_findbar_visibility(1);
@@ -765,22 +765,22 @@ int UI::handle(int event)
             focus_location();
             ret = 1;
          } else if (k == 'n') {
-            a_UIcmd_browser_window_new(w(), h(), this->window()->user_data());
+            a_UIcmd_browser_window_new(w(),h(),a_UIcmd_get_bw_by_widget(this));
             ret = 1;
          } else if (k == 'o') {
-            a_UIcmd_open_file(this->window()->user_data());
+            a_UIcmd_open_file(a_UIcmd_get_bw_by_widget(this));
             ret = 1;
          } else if (k == 'q') {
-            a_UIcmd_close_bw(this->window()->user_data());
+            a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(this));
             ret = 1;
          } else if (k == 'r') {
-            a_UIcmd_reload(this->window()->user_data());
+            a_UIcmd_reload(a_UIcmd_get_bw_by_widget(this));
             ret = 1;
          } else if (k == 's') {
-            a_UIcmd_search_dialog(this->window()->user_data());
+            a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(this));
             ret = 1;
          } else if (k == 't') {
-            a_UIcmd_open_url_nt(this->window()->user_data(), NULL, 1);
+            a_UIcmd_open_url_nt(a_UIcmd_get_bw_by_widget(this), NULL, 1);
             ret = 1;
          } else if (k == ' ') {
             panelmode_cb_i();
@@ -789,20 +789,14 @@ int UI::handle(int event)
       } else {
          // Back and Forward navigation shortcuts
          if (modifier == 0 && (k == BackSpaceKey ||  k == ',')) {
-            a_UIcmd_back(this->window()->user_data());
+            a_UIcmd_back(a_UIcmd_get_bw_by_widget(this));
             ret = 1;
          } else if ((modifier == 0 && k == '.') ||
                     (modifier == SHIFT && k == BackSpaceKey)) {
-            a_UIcmd_forw(this->window()->user_data());
+            a_UIcmd_forw(a_UIcmd_get_bw_by_widget(this));
             ret = 1;
          }
       }
-
-   } else if (event == FOCUS_CHANGE) {
-      // The "bw" for this tab is stored in the parent window.
-      // Update "bw" each time we switch tabs.
-      window()->user_data(vbw());
-      ret = 0;
    }
 
    if (!ret)

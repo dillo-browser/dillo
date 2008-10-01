@@ -9,6 +9,7 @@ extern "C" {
 
 
 BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *v_bw);
+BrowserWindow *a_UIcmd_get_bw_by_widget(void *v_wid);
 void a_UIcmd_open_urlstr(void *vbw, const char *urlstr);
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url);

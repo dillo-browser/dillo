@@ -55,7 +55,7 @@ void Findbar::search_cb(Widget *, void *vfb)
    bool case_sens = fb->cb->value();
 
    if (key[0] != '\0')
-      a_UIcmd_findtext_search((BrowserWindow *) fb->window()->user_data(),
+      a_UIcmd_findtext_search(a_UIcmd_get_bw_by_widget(fb),
                               key, case_sens);
 }
 
@@ -170,7 +170,7 @@ void Findbar::hide()
    BrowserWindow *bw;
 
    Group::hide();
-   if ((bw = (BrowserWindow *) this->window()->user_data()))
+   if ((bw = a_UIcmd_get_bw_by_widget(this)))
       a_UIcmd_findtext_reset(bw);
    a_UIcmd_focus_main_area(bw);
 }

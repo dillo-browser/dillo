@@ -263,12 +263,12 @@ int a_Bw_num()
 }
 
 /*
- * TODO: remove this Hack.
+ * Return a bw by index
  */
-BrowserWindow *a_Bw_get()
+BrowserWindow *a_Bw_get(int i)
 {
-   if (num_bws > 0)
-      return bws[0];
+   if (i >= 0 && i < num_bws)
+      return bws[i];
    return NULL;
 }
 

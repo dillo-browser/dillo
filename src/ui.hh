@@ -44,7 +44,6 @@ class CustTabGroup;
 // UI class definition -------------------------------------------------------
 //
 class UI : public fltk::Group {
-   void *Bw;
    CustTabGroup *Tabs;
    char *TabTooltip;
 
@@ -109,8 +108,6 @@ public:
 
    CustTabGroup *tabs() { return Tabs; }
    void tabs(CustTabGroup *tabs) { Tabs = tabs; }
-   void *vbw() { return Bw; }
-   void vbw(void *v_bw) { Bw = v_bw; }
 
    // Hooks to method callbacks
    void panel_cb_i();
