@@ -711,6 +711,8 @@ bool_t DilloHtml::unloadedImages()
  */
 void DilloHtml::loadImages (const DilloUrl *pattern)
 {
+   dReturn_if_fail (bw->nav_expecting == FALSE);
+
    for (int i = 0; i < images->size(); i++) {
       if (images->get(i)->image) {
          if ((!pattern) || (!a_Url_cmp(images->get(i)->url, pattern))) {
