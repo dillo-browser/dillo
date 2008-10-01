@@ -35,6 +35,53 @@ using namespace fltk;
 #include "pixmaps.h"
 #include "uicmd.hh"
 
+struct iconset {
+   Image *ImgMeterOK, *ImgMeterBug,
+         *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgClear, *ImgSearch;
+   MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti, *ImgImageLoadMulti;
+};
+
+static struct iconset standard_icons = {
+   new xpmImage(mini_ok_xpm),
+   new xpmImage(mini_bug_xpm),
+   new xpmImage(home_xpm),
+   new xpmImage(reload_xpm),
+   new xpmImage(save_xpm),
+   new xpmImage(bm_xpm),
+   new xpmImage(new_s_xpm),
+   new xpmImage(search_xpm),
+   new MultiImage(*new xpmImage(left_xpm), INACTIVE_R,
+                  *new xpmImage(left_i_xpm)),
+   new MultiImage(*new xpmImage(right_xpm), INACTIVE_R,
+                  *new xpmImage(right_i_xpm)),
+   new MultiImage(*new xpmImage(stop_xpm), INACTIVE_R,
+                  *new xpmImage(stop_i_xpm)),
+   new MultiImage(*new xpmImage(imgload_on_xpm), INACTIVE_R,
+                  *new xpmImage(imgload_off_xpm))
+};
+
+static struct iconset small_icons = {
+   new xpmImage(mini_ok_xpm),
+   new xpmImage(mini_bug_xpm),
+   new xpmImage(home_s_xpm),
+   new xpmImage(reload_s_xpm),
+   new xpmImage(save_s_xpm),
+   new xpmImage(bm_s_xpm),
+   new xpmImage(new_s_xpm),
+   new xpmImage(search_xpm),
+   new MultiImage(*new xpmImage(left_s_xpm), INACTIVE_R,
+                  *new xpmImage(left_si_xpm)),
+   new MultiImage(*new xpmImage(right_s_xpm), INACTIVE_R,
+                  *new xpmImage(right_si_xpm)),
+   new MultiImage(*new xpmImage(stop_s_xpm), INACTIVE_R,
+                  *new xpmImage(stop_si_xpm)),
+   new MultiImage(*new xpmImage(imgload_off_xpm), INACTIVE_R,
+                  *new xpmImage(imgload_on_xpm))
+};
+
+
+static struct iconset *icons = &standard_icons;
+
 /*
  * Local sub class
  * (Used to avoid certain shortcuts in the location bar)
@@ -309,57 +356,44 @@ PackedGroup *UI::make_toolbar(int tw, int th)
    PackedGroup *p1=new PackedGroup(0,0,tw,th);
    p1->begin();
     Back = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Back" : 0);
-    ImgLeftIns = new xpmImage(Small_Icons ? left_si_xpm : left_i_xpm);
-    ImgLeftSens = new xpmImage(Small_Icons ? left_s_xpm : left_xpm);
-    ImgLeftMulti = new MultiImage(*ImgLeftSens, INACTIVE_R, *ImgLeftIns);
-    b->image(ImgLeftMulti);
+    b->image(icons->ImgLeftMulti);
     b->tooltip("Previous page");
     b->callback(b1_cb, (void *)UI_BACK);
     b->clear_tab_to_focus();
     HighlightButton::default_style->highlight_color(CuteColor);
 
     Forw = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Forw" : 0);
-    ImgRightIns = new xpmImage(Small_Icons ? right_si_xpm : right_i_xpm);
-    ImgRightSens = new xpmImage(Small_Icons ? right_s_xpm : right_xpm);
-    ImgRightMulti = new MultiImage(*ImgRightSens, INACTIVE_R, *ImgRightIns);
-    b->image(ImgRightMulti);
+    b->image(icons->ImgRightMulti);
     b->tooltip("Next page");
     b->callback(b1_cb, (void *)UI_FORW);
     b->clear_tab_to_focus();
   
     Home = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Home" : 0);
-    ImgHome = new xpmImage(Small_Icons ? home_s_xpm : home_xpm);
-    b->image(ImgHome);
+    b->image(icons->ImgHome);
     b->tooltip("Go to the Home page");
     b->callback(b1_cb, (void *)UI_HOME);
     b->clear_tab_to_focus();
 
     Reload = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Reload" : 0);
-    ImgReload = new xpmImage(Small_Icons ? reload_s_xpm : reload_xpm);
-    b->image(ImgReload);
+    b->image(icons->ImgReload);
     b->tooltip("Reload");
     b->callback(b1_cb, (void *)UI_RELOAD);
     b->clear_tab_to_focus();
   
     Save = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Save" : 0);
-    ImgSave = new xpmImage(Small_Icons ? save_s_xpm : save_xpm);
-    b->image(ImgSave);
+    b->image(icons->ImgSave);
     b->tooltip("Save this page");
     b->callback(b1_cb, (void *)UI_SAVE);
     b->clear_tab_to_focus();
   
     Stop = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
-    ImgStopIns = new xpmImage(Small_Icons ? stop_si_xpm : stop_i_xpm);
-    ImgStopSens = new xpmImage(Small_Icons ? stop_s_xpm : stop_xpm);
-    ImgStopMulti = new MultiImage(*ImgStopSens, INACTIVE_R, *ImgStopIns);
-    b->image(ImgStopMulti);
+    b->image(icons->ImgStopMulti);
     b->tooltip("Stop loading");
     b->callback(b1_cb, (void *)UI_STOP);
     b->clear_tab_to_focus();
 
     Bookmarks = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Book" : 0);
-    ImgBook = new xpmImage(Small_Icons ? bm_s_xpm : bm_xpm);
-    b->image(ImgBook);
+    b->image(icons->ImgBook);
     b->tooltip("View bookmarks");
     b->callback(b1_cb, (void *)UI_BOOK);
     b->clear_tab_to_focus();
@@ -371,28 +405,6 @@ PackedGroup *UI::make_toolbar(int tw, int th)
 }
 
 /*
- * Delete panel imgs
- */
-void UI::delete_panel_images()
-{
-   delete ImgLeftIns;
-   delete ImgLeftSens;
-   delete ImgLeftMulti;
-   delete ImgRightIns;
-   delete ImgRightSens;
-   delete ImgRightMulti;
-   delete ImgStopIns;
-   delete ImgStopSens;
-   delete ImgStopMulti;
-   delete ImgHome;
-   delete ImgReload;
-   delete ImgSave;
-   delete ImgBook;
-   delete ImgClear;
-   delete ImgSearch;
-}
-
-/*
  * Create the location box (Clear/Input/Search)
  */
 PackedGroup *UI::make_location()
@@ -401,8 +413,7 @@ PackedGroup *UI::make_location()
    PackedGroup *pg = new PackedGroup(0,0,0,0);
    pg->begin();
     Clear = b = new CustHighlightButton(2,2,16,22,0);
-    ImgClear = new xpmImage(new_s_xpm);
-    b->image(ImgClear);
+    b->image(icons->ImgClear);
     b->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
     b->callback(clear_cb, this);
     b->clear_tab_to_focus();
@@ -415,8 +426,7 @@ PackedGroup *UI::make_location()
     i->set_click_to_focus();
 
     Search = b = new HighlightButton(0,0,16,22,0);
-    ImgSearch = new xpmImage(search_xpm);
-    b->image(ImgSearch);
+    b->image(icons->ImgSearch);
     b->tooltip("Search the Web");
     b->callback(search_cb, this);
     b->clear_tab_to_focus();
@@ -509,6 +519,11 @@ Group *UI::make_panel(int ww)
       PanelSize = P_tiny;
       Small_Icons = !Small_Icons;
    }
+
+   if (Small_Icons)
+      icons = &small_icons;
+   else
+      icons = &standard_icons;
    
    if (PanelSize == P_tiny) {
       if (Small_Icons)
@@ -664,11 +679,8 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    // Image loading indicator
    ImageLoad = new HighlightButton(ww-il_w-bm_w,0,il_w,s_h,0);
    ImageLoad->type(Button::TOGGLE);
-   ImgImageLoadOff = new xpmImage(imgload_off_xpm);
-   ImgImageLoadOn = new xpmImage(imgload_on_xpm);
-   ImgImageLoadMulti = new MultiImage(*ImgImageLoadOff,STATE,*ImgImageLoadOn);
    ImageLoad->state(prefs.load_images);
-   ImageLoad->image(ImgImageLoadMulti);
+   ImageLoad->image(icons->ImgImageLoadMulti);
 
    ImageLoad->box(THIN_DOWN_BOX);
    ImageLoad->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
@@ -678,9 +690,7 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
 
    // Bug Meter
    BugMeter = new HighlightButton(ww-bm_w,0,bm_w,s_h,0);
-   ImgMeterOK = new xpmImage(mini_ok_xpm);
-   ImgMeterBug = new xpmImage(mini_bug_xpm);
-   BugMeter->image(ImgMeterOK);
+   BugMeter->image(icons->ImgMeterOK);
    BugMeter->box(THIN_DOWN_BOX);
    BugMeter->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
    BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
@@ -695,8 +705,6 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    // Make the full screen button (to be attached to the viewport later)
    // TODO: attach to the viewport
    //FullScreen = new HighlightButton(0,0,15,15);
-   ImgFullScreenOn = new xpmImage(full_screen_on_xpm);
-   ImgFullScreenOff = new xpmImage(full_screen_off_xpm);
    //FullScreen->image(ImgFullScreenOn);
    //FullScreen->tooltip("Hide Controls");
    //FullScreen->callback(fullscreen_cb, this);
@@ -718,22 +726,6 @@ UI::~UI()
 {
    _MSG("UI::~UI()\n");
    dFree(TabTooltip);
-   delete_panel_images();
-   delete_status_panel_images();
-   delete ImgFullScreenOn;
-   delete ImgFullScreenOff;
-}
-
-/*
- * delete status panel images
- */
-void UI::delete_status_panel_images()
-{
-   delete ImgImageLoadMulti;
-   delete ImgImageLoadOn;
-   delete ImgImageLoadOff;
-   delete ImgMeterOK;
-   delete ImgMeterBug;
 }
 
 /*
@@ -914,11 +906,11 @@ void UI::set_bug_prog(int n_bug)
    int new_w = 16;
 
    if (n_bug == 0) {
-      BugMeter->image(ImgMeterOK);
+      BugMeter->image(icons->ImgMeterOK);
       BugMeter->label("");
    } else if (n_bug >= 1) {
       if (n_bug == 1)
-         BugMeter->image(ImgMeterBug);
+         BugMeter->image(icons->ImgMeterBug);
       snprintf(str, 32, "%d", n_bug);
       BugMeter->copy_label(str);
       BugMeter->redraw_label();
@@ -970,8 +962,6 @@ void UI::customize(int flags)
 void UI::panel_cb_i()
 {
    Group *NewPanel;
-
-   delete_panel_images();
 
    // Create a new Panel
    ++PanelSize;

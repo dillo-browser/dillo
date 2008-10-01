@@ -53,11 +53,6 @@ class UI : public fltk::Group {
    Input  *Location;
    PackedGroup *ProgBox;
    CustProgressBox *PProg, *IProg;
-   Image *ImgLeftIns, *ImgLeftSens, *ImgRightIns, *ImgRightSens,
-         *ImgStopIns, *ImgStopSens, *ImgFullScreenOn, *ImgFullScreenOff,
-         *ImgImageLoadOn, *ImgImageLoadOff, *ImgMeterOK, *ImgMeterBug,
-         *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgClear, *ImgSearch;
-   MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti, *ImgImageLoadMulti;
    Group *Panel, *StatusPanel;
    Widget *Main;
    Output *Status;
@@ -76,8 +71,6 @@ class UI : public fltk::Group {
    void make_menubar(int x, int y, int w, int h);
    Group *make_panel(int ww);
 
-   void delete_panel_images();
-   void delete_status_panel_images();
 public:
 
    UI(int x,int y,int w,int h, const char* label = 0, const UI *cur_ui=NULL);
