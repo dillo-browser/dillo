@@ -15,12 +15,11 @@ using namespace fltk;
  * Searchbar to find text in page.
  */
 class Findbar : public Group {
-   HighlightButton *findb;
    Button *clrb;
-   HighlightButton *hidebutton;
+   HighlightButton *hide_btn, *next_btn;
+   CheckButton *check_btn;
    xpmImage *hideImg;
    Input *i;
-   CheckButton *cb;
    
    static void search_cb (Widget *, void *);
    static void search_cb2 (Widget *, void *);

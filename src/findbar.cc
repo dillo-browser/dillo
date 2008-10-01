@@ -52,7 +52,7 @@ void Findbar::search_cb(Widget *, void *vfb)
 {
    Findbar *fb = (Findbar *)vfb;
    const char *key = fb->i->value();
-   bool case_sens = fb->cb->value();
+   bool case_sens = fb->check_btn->value();
 
    if (key[0] != '\0')
       a_UIcmd_findtext_search(a_UIcmd_get_bw_by_widget(fb),
@@ -97,13 +97,13 @@ Findbar::Findbar(int width, int height) :
    Group::hide();
 
    begin();
-    hidebutton = new HighlightButton(x, border, 16, height, 0);
+    hide_btn = new HighlightButton(x, border, 16, height, 0);
     hideImg = new xpmImage(new_s_xpm);
-    hidebutton->image(hideImg);
-    hidebutton->tooltip("Hide");
+    hide_btn->image(hideImg);
+    hide_btn->tooltip("Hide");
     x += 16 + gap;
-    hidebutton->callback(hide_cb, this);
-    hidebutton->clear_tab_to_focus();
+    hide_btn->callback(hide_cb, this);
+    hide_btn->clear_tab_to_focus();
 
     i = new MyInput(x, border, input_width, height);
     x += input_width + gap;
@@ -111,16 +111,20 @@ Findbar::Findbar(int width, int height) :
     i->color(206);
     i->when(WHEN_ENTER_KEY_ALWAYS);
     i->callback(search_cb2, this);
+    i->clear_tab_to_focus();
 
     // TODO: search previous would be nice
-    findb = new HighlightButton(x, border, button_width, height, "Next");
+    next_btn = new HighlightButton(x, border, button_width, height, "Next");
     x += button_width + gap;
-    findb->tooltip("Find next occurrence of the search phrase");
-    findb->add_shortcut(ReturnKey);
-    findb->add_shortcut(KeypadEnter);
-    findb->callback(search_cb, this);
+    next_btn->tooltip("Find next occurrence of the search phrase");
+    next_btn->add_shortcut(ReturnKey);
+    next_btn->add_shortcut(KeypadEnter);
+    next_btn->callback(search_cb, this);
+    next_btn->clear_tab_to_focus();
 
-    cb = new CheckButton(x, border, 2*button_width, height, "Case-sensitive");
+    check_btn = new CheckButton(x, border, 2*button_width, height,
+                              "Case-sensitive");
+    check_btn->clear_tab_to_focus();
     x += 2 * button_width + gap;
 
    end();
