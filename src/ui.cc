@@ -56,8 +56,8 @@ static struct iconset standard_icons = {
                   *new xpmImage(right_i_xpm)),
    new MultiImage(*new xpmImage(stop_xpm), INACTIVE_R,
                   *new xpmImage(stop_i_xpm)),
-   new MultiImage(*new xpmImage(imgload_on_xpm), INACTIVE_R,
-                  *new xpmImage(imgload_off_xpm))
+   new MultiImage(*new xpmImage(imgload_off_xpm), STATE,
+                  *new xpmImage(imgload_on_xpm))
 };
 
 static struct iconset small_icons = {
