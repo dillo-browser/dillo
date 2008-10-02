@@ -70,10 +70,9 @@ public:
                int i = value();
                if (k == LeftKey) {i = i ? i-1 : children()-1;}
                else {i++; if (i >= children()) i = 0;}
-               if (value(i)) do_callback();
+               selected_child(child(i));
                return 1;
             }
-            return 0;
          }
       }
       return TabGroup::handle(e);
@@ -134,6 +133,20 @@ BrowserWindow *a_UIcmd_get_bw_by_widget(void *v_wid)
          return bw;
    }
    return NULL;
+}
+
+/*
+ * FLTK regards SHIFT + {LeftKey, Right} as navigation keys.
+ * Special handling is required to override it. Here we route
+ * these events directly to the recipient.
+ * TODO: focus is not remembered correctly.
+ */
+void a_UIcmd_send_event_to_tabs_by_wid(int e, void *v_wid)
+{
+   BrowserWindow *bw = a_UIcmd_get_bw_by_widget(v_wid);
+   UI *ui = (UI*)bw->ui;
+   if (ui->tabs())
+      ui->tabs()->handle(e);
 }
 
 /*

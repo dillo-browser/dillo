@@ -119,8 +119,11 @@ int CustInput::handle(int e)
          } else if (k == 'o' || k == 'r' || k == HomeKey || k == EndKey)
             return 0;
       } else if (modifier == SHIFT) {
-         if (k == LeftKey || k == RightKey)
-            return 0;
+         if (k == LeftKey || k == RightKey) {
+            _MSG(" CustInput::handle > SHIFT+RightKey\n");
+            a_UIcmd_send_event_to_tabs_by_wid(e, this);
+            return 1;
+         }
       }
    }
    _MSG("\n");

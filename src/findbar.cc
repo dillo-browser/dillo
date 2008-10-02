@@ -34,12 +34,19 @@ int MyInput::handle(int e)
    _MSG("findbar MyInput::handle()\n");
    int ret = 1, k = event_key();
    unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
-   if (modifier == 0) {
-      if (e == KEY && k == EscapeKey) {
-         _MSG("findbar MyInput: caught EscapeKey\n");
-         ret = 0;
+
+   if (e == KEY) {
+      if (k == LeftKey || k == RightKey) {
+         if (modifier == SHIFT) {
+            a_UIcmd_send_event_to_tabs_by_wid(e, this);
+            return 1;
+         }
+      } else if (k == EscapeKey && modifier == 0) {
+         // Avoid clearing the text with Esc, just hide the findbar.
+         return 0;
       }
    }
+
    if (ret)
       ret = Input::handle(e);
    return ret;
