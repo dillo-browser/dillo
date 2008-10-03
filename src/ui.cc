@@ -27,6 +27,7 @@
 
 #include "ui.hh"
 #include "msg.h"
+#include "timeout.hh"
 
 using namespace fltk;
 
@@ -469,6 +470,20 @@ PackedGroup *UI::make_progress_bars(int wide, int thin_up)
 }
 
 /*
+ * Close bw's behind a timeout to let the triggering code unwind out of the
+ * window before it's all torn down.
+ */
+static void menubar_close_bw(void *vbw)
+{
+   BrowserWindow *bw = (BrowserWindow *)vbw;
+   if (bw)
+      a_UIcmd_close_bw(bw);
+   else
+      a_UIcmd_close_all_bw();
+   a_Timeout_remove();
+}
+
+/*
  * Static function for menubar callbacks.
  */
 static void menubar_cb(Widget *wid, void *data)
@@ -483,9 +498,9 @@ static void menubar_cb(Widget *wid, void *data)
    } else if (strcmp((char*)data, "ou") == 0) {
       a_UIcmd_focus_location(a_UIcmd_get_bw_by_widget(wid));
    } else if (strcmp((char*)data, "cw") == 0) {
-      a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(wid));
+      a_Timeout_add(0.0, menubar_close_bw, a_UIcmd_get_bw_by_widget(wid));
    } else if (strcmp((char*)data, "ed") == 0) {
-      a_UIcmd_close_all_bw();
+      a_Timeout_add(0.0, menubar_close_bw, NULL);
    }
 }
 
