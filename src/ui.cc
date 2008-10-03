@@ -82,10 +82,14 @@ static struct iconset small_icons = {
 static struct iconset *icons = &standard_icons;
 
 /*
- * Local sub class
- * (Used to avoid certain shortcuts in the location bar)
+ * Local sub classes
  */
 
+//----------------------------------------------------------------------------
+
+/*
+ * (Used to avoid certain shortcuts in the location bar)
+ */
 class CustInput : public Input {
 public:
    CustInput (int x, int y, int w, int h, const char* l=0) :
