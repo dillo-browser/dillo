@@ -911,7 +911,7 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
          cookie->secure = TRUE;
       } else {
          /* Oops! this can't be good... */
-         MSG("Cookie contains illegal attribute!\n");
+         MSG("Cookie contains unknown attribute: '%s'\n", attr);
          dFree(attr);
          error = TRUE;
          continue;
