@@ -821,8 +821,9 @@ const char *UI::get_location()
  */
 void UI::set_location(const char *str)
 {
-   Location->static_value("");
-   Location->insert(str);
+   if (!str) str = "";
+   Location->text(str);
+   Location->position(strlen(str));
 }
 
 /*
