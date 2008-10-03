@@ -251,6 +251,7 @@ static void location_cb(Widget *wid, void *data)
    Input *i = (Input*)wid;
    UI *ui = (UI*)data;
 
+   _MSG("location_cb()\n");
    /* This test is necessary because WHEN_ENTER_KEY also includes
     * other events we're not interested in. For instance pressing
     * The Back or Forward, buttons, or the first click on a rendered
@@ -826,6 +827,8 @@ const char *UI::get_location()
 void UI::set_location(const char *str)
 {
    if (!str) str = "";
+   // This text() call clears fl_pending_callback, avoiding
+   // an extra location_cb() call.
    Location->text(str);
    Location->position(strlen(str));
 }

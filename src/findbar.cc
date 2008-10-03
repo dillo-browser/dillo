@@ -58,7 +58,7 @@ int MyInput::handle(int e)
 void Findbar::search_cb(Widget *, void *vfb)
 {
    Findbar *fb = (Findbar *)vfb;
-   const char *key = fb->i->value();
+   const char *key = fb->i->text();
    bool case_sens = fb->check_btn->value();
 
    if (key[0] != '\0')
