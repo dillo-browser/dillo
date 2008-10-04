@@ -73,6 +73,8 @@ public:
                selected_child(child(i));
                return 1;
             }
+            // Avoid focus change.
+            return 0; 
          }
       }
       return TabGroup::handle(e);
@@ -169,6 +171,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    win->clear_double_buffer();
    win->set_flag(RAW_LABEL);
    CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);
+   DilloTabs->clear_tab_to_focus();
    DilloTabs->selection_color(156);
    win->add(DilloTabs);
 
