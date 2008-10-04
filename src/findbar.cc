@@ -119,6 +119,7 @@ Findbar::Findbar(int width, int height) :
     i->when(WHEN_ENTER_KEY_ALWAYS);
     i->callback(search_cb2, this);
     i->clear_tab_to_focus();
+    i->set_click_to_focus();
 
     // TODO: search previous would be nice
     next_btn = new HighlightButton(x, border, button_width, height, "Next");
