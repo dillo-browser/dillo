@@ -678,10 +678,18 @@ template <class I>
 template <class I>
 void FltkToggleButtonResource<I>::sizeRequest (core::Requisition *requisition)
 {
-   /** \bug Random values. */
-   requisition->width = 20;
-   requisition->ascent = 18;
-   requisition->descent = 5;
+   FltkFont *font = getFont();
+
+   if (font) {
+      ::fltk::setfont(font->font, font->size);
+      requisition->width = font->ascent + font->descent + 2*RELIEF_X_THICKNESS;
+      requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
+      requisition->descent = font->descent + RELIEF_Y_THICKNESS;
+   } else {
+      requisition->width = 1;
+      requisition->ascent = 1;
+      requisition->descent = 0;
+   }
 }
 
 

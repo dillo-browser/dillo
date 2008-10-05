@@ -350,6 +350,8 @@ private:
 
 protected:
    virtual ::fltk::Button *createNewButton (core::Allocation *allocation) = 0;
+   // TODO: maybe getFont() is not the best way to do it...
+   virtual FltkFont *getFont() = 0;
    ::fltk::Widget *createNewWidget (core::Allocation *allocation);
    
 public:
@@ -367,6 +369,8 @@ public:
 class FltkCheckButtonResource:
    public FltkToggleButtonResource <dw::core::ui::CheckButtonResource>
 {
+private:
+   FltkFont *getFont() {return style ? (FltkFont *)style->font : NULL;}
 protected:
    ::fltk::Button *createNewButton (core::Allocation *allocation);
 
@@ -427,6 +431,7 @@ private:
    Group *group;
 
    static void widgetCallback (::fltk::Widget *widget, void *data);
+   FltkFont *getFont() {return style ? (FltkFont *)style->font : NULL;}
    void buttonClicked ();
 
 protected:
