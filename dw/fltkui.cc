@@ -678,7 +678,8 @@ template <class I>
 template <class I>
 void FltkToggleButtonResource<I>::sizeRequest (core::Requisition *requisition)
 {
-   FltkFont *font = getFont();
+   FltkFont *font = (FltkFont *)
+      (this->FltkResource::style ? this->FltkResource::style->font : NULL);
 
    if (font) {
       ::fltk::setfont(font->font, font->size);
