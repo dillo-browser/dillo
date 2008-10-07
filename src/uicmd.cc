@@ -294,7 +294,7 @@ void a_UIcmd_close_bw(void *vbw)
 /*
  * Close all the browser windows
  */
-void a_UIcmd_close_all_bw()
+void a_UIcmd_close_all_bw(void *)
 {
    BrowserWindow *bw;
    int choice = 0;

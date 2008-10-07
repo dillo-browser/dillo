@@ -479,7 +479,7 @@ static void menubar_close_bw(void *vbw)
    if (bw)
       a_UIcmd_close_bw(bw);
    else
-      a_UIcmd_close_all_bw();
+      a_UIcmd_close_all_bw(NULL);
    a_Timeout_remove();
 }
 
@@ -799,6 +799,10 @@ int UI::handle(int event)
          } else if (k == ' ') {
             panelmode_cb_i();
             ret = 1;
+         }
+      } else if (modifier == ALT) {
+         if (k == 'q' && event_key_state(LeftAltKey)) {
+            a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
          }
       } else {
          // Back and Forward navigation shortcuts
