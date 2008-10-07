@@ -1,47 +1,49 @@
 Jan 2002, Jörgen Viksell - jorgen.viksell@telia.com,
           Jorge Arellano Cid --
-Last update: May 2008
+Last update: October 2008
 
 
 ==================
  Cookies in Dillo
 ==================
 
- The cookie support in Dillo aims to support cookies of the old
-original Netscape style, as well as the kind specified in RFC 2109.
- Between sessions, the cookies get saved to ~/.dillo/cookies.
-At the moment the only enforcements on the amount of cookies to
-save to disk is max 20 per domain.
- There's also a file for controlling cookies: ~/.dillo/cookiesrc. Dillo
-initially sets it to ignore (reject) all cookies, so if you want to use
-cookies, change it to meet your needs.
+Supported: old Netscape style, RFC 2109, RFC 2965.
 
- If you don't want cookies at all, you have two options:
+Cookies are handled by a dpi (plugin) which shares them between your
+instances of Dillo.
 
-1.- Delete ~/.dillo/cookiesrc (or leave it just as dillo creates it).
-2. Configure Dillo with ./configure --disable-cookies. Then all the
-   cookie stuff will be skipped at compilation.
+When the dpi exits, cookies that you have ACCEPTed are saved to
+~/.dillo/cookies.txt, and ACCEPT_SESSION cookies are forgotten.
+(Currently the only limit to the amount of cookies to save to disk is
+a maximum of 20 per domain.)
+The dpi normally exits after a period of inactivity, but you can force it to
+exit with the command "dpidc stop".
 
 
 =====================
  Controlling cookies
 =====================
 
- There is a small and simple way to restrict urls from setting cookies
-in Dillo. In the file ~/.dillo/cookiesrc You may specify rules
-for different domains. The syntax looks something like this:
+Out of the box, dillo rejects all cookies.
+
+
+If you want to accept certain cookies, you can specify rules for different
+domains in the file ~/.dillo/cookiesrc. The syntax looks like:
 
 DEFAULT       DENY
 slashdot.org  ACCEPT
 .host.com     ACCEPT_SESSION
 
- The first line says that we should deny all cookies from all domains
-by default.
- The second one tells Dillo to save all cookies from slashdot.org
-across sessions, until it expires.
- And finally, the third says that all subdomains of host.com should be
-allowed to set cookies. But these cookies will only be saved in
-memory until you exit.
+Line 1: Deny all cookies from all domains not otherwise specified.
+Line 2: Accept all cookies from slashdot.org, and save them to
+        ~/.dillo/cookies.txt when the cookies dpi exits.
+Line 3: Accept all cookies from all subdomains of host.com, but
+        do not save them when the dpi exits.
+
+
+If you are positive that you will never want any cookies, you can
+configure/compile Dillo without cookie support. The option is:
+./configure --disable-cookies
 
 
 ===================
