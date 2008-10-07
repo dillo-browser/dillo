@@ -820,11 +820,6 @@ int UI::handle(int event)
    if (!ret)
       ret = Group::handle(event);
    return ret;
-
-   // if (event_key_state(LeftAltKey) && modifier == ALT && k == 'q') {
-   //    a_UIcmd_close_all_bw();
-   //    ret = 1;
-   // }
 }
 
 
