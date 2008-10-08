@@ -69,8 +69,7 @@
 
 
 
-#define ENABLE_SSL
-/* #undef ENABLE_SSL */
+#undef ENABLE_SSL
 #ifdef ENABLE_SSL
 
 #include <openssl/ssl.h>
