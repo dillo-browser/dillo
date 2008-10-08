@@ -1,4 +1,4 @@
-README: Last update Oct 2007  --jcid
+README: Last update Oct 2008  --jcid
 
  This documents need a review. They were current with dillo1 and
 now, with dillo2, most of them are obsolete, specially Dw*txt, but
@@ -26,12 +26,6 @@ Jorge.-
    Images.txt          Image handling and processing        Current
    HtmlParser.txt      A versatile parser                   Current
    Dw.txt              The New Dillo Widget (Overview)      Current
-   DwRendering.txt     Dw Rendering Abstraction             Current
-   DwWidget.txt        The base object of Dw                Current
-   DwImage.txt         Dillo Widget image handling          Incomplete
-   DwPage.txt          Dillo Widget page (shortly)          Incomplete
-   DwStyle.txt         Styles of Dillo Widgets              Pending
-   DwTable.txt         Tables in dillo                      Current
    Imgbuf.txt          Image buffers                        Pending
    Selection.txt       Selections, and link activation      Current (?)
    Cookies.txt         Explains how to enable cookies       Current
