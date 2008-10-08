@@ -451,7 +451,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    Start_Buf = NULL;
    Start_Ofs = 0;
 
-   MSG("DilloHtml(): content type: %s\n", content_type);
+   _MSG("DilloHtml(): content type: %s\n", content_type);
    this->content_type = dStrdup(content_type);
 
    /* get charset */
