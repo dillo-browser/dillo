@@ -129,10 +129,6 @@ void FltkViewBase::drawRectangle (const core::Rectangle *rect,
          viewRect.w (),
          viewRect.h ());
 
-#ifdef NO_DOUBLEBUFFER
-      push_clip (viewRect);
-#endif
-
       if (doubleBuffer && backBuffer && !backBufferInUse) {
          backBufferInUse = true;
          {
@@ -151,15 +147,19 @@ void FltkViewBase::drawRectangle (const core::Rectangle *rect,
             viewRect);
 
          backBufferInUse = false;
+      } else if (doubleBuffer) {
+         push_clip (viewRect);
+         setcolor (bgColor);
+         fillrect (viewRect);
+         theLayout->expose (this, &r);
+         pop_clip ();
       } else {
+         // if doubleBuffer is false we assume that a clipping
+         // rectangle has been set already
          setcolor (bgColor);
          fillrect (viewRect);
          theLayout->expose (this, &r);
       }
-
-#ifdef NO_DOUBLEBUFFER
-      pop_clip ();
-#endif
    }
 }
 
