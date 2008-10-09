@@ -37,6 +37,8 @@ using namespace fltk;
 static DilloUrl *popup_url = NULL;
 // Weak reference to the popup's bw
 static BrowserWindow *popup_bw = NULL;
+// Where to place the filemenu popup
+int popup_x, popup_y;
 // History popup direction (-1 = back, 1 = forward).
 static int history_direction = -1; 
 // History popup, list of URL-indexes.
@@ -75,6 +77,28 @@ void CustItem::draw() {
 
 
 //--------------------------------------------------------------------------
+/*
+ * Static function for File menu callbacks.
+ */
+static void filemenu_cb(Widget *wid, void *data)
+{
+   if (strcmp((char*)data, "nw") == 0) {
+      UI *ui = (UI*)popup_bw->ui;
+      a_UIcmd_browser_window_new(ui->w(), ui->h(), popup_bw);
+   } else if (strcmp((char*)data, "nt") == 0) {
+      a_UIcmd_open_url_nt(popup_bw, NULL, 1);
+   } else if (strcmp((char*)data, "of") == 0) {
+      a_UIcmd_open_file(popup_bw);
+   } else if (strcmp((char*)data, "ou") == 0) {
+      a_UIcmd_focus_location(popup_bw);
+   } else if (strcmp((char*)data, "cw") == 0) {
+      a_Timeout_add(0.0, a_UIcmd_close_bw, popup_bw);
+   } else if (strcmp((char*)data, "ed") == 0) {
+      a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
+   }
+}
+
+
 static void Menu_copy_urlstr_cb(Widget *)
 {
    if (popup_url)
@@ -244,7 +268,7 @@ static void Menu_history_cb(Widget *wid, void *data)
 }
 
 /*
- * Manus are popped-up from this timeout callback so the events
+ * Menus are popped-up from this timeout callback so the events
  * associated with the button are gone when it pops. This way we
  * avoid a segfault when a new page replaces the page that issued
  * the popup menu.
@@ -252,6 +276,17 @@ static void Menu_history_cb(Widget *wid, void *data)
 static void Menu_popup_cb(void *data)
 {
    ((PopupMenu *)data)->popup();
+   a_Timeout_remove();
+}
+
+/*
+ * Same as above but with coordinates.
+ */
+static void Menu_popup_cb2(void *data)
+{
+   Menu *m = (Menu *)data;
+   m->value(-1);
+   m->popup(Rectangle(popup_x,popup_y,m->w(),m->h()), m->label());
    a_Timeout_remove();
 }
 
@@ -410,6 +445,43 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
    }
 
    a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
+}
+
+/*
+ * File popup menu (construction & popup)
+ */
+void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
+{
+   UI *ui = (UI *)bw->ui;
+   Widget *wid = (Widget*)v_wid;
+   // One menu for every browser window
+   static PopupMenu *pm = 0;
+
+   popup_bw = bw;
+   popup_x = wid->x();
+   popup_y = wid->y() + wid->h() +
+             // WORKAROUND: ?? wid->y() doesn't count tabs ??
+             (((Group*)ui->tabs())->children() > 1 ? 20 : 0);
+   a_Url_free(popup_url);
+   popup_url = NULL;
+
+   if (!pm) {
+      Item *i;
+      pm = new PopupMenu(0,0,0,0,"File");
+      pm->begin();
+       i = new Item("New Window", CTRL+'n', filemenu_cb, (void*)"nw");
+       i = new Item("New Tab", CTRL+'t', filemenu_cb, (void*)"nt");
+       new Divider();
+       i = new Item("Open File...", CTRL+'o', filemenu_cb, (void*)"of");
+       i = new Item("Open URL...", CTRL+'l', filemenu_cb, (void*)"ou");
+       i = new Item("Close", CTRL+'q', filemenu_cb, (void*)"cw");
+       new Divider();
+       i = new Item("Exit Dillo", ALT+'q', filemenu_cb, (void*)"ed");
+      pm->type(PopupMenu::POPUP123);
+      pm->end();
+   }
+
+   a_Timeout_add(0.0, Menu_popup_cb2, (void *)pm);
 }
 
 /*

@@ -49,7 +49,7 @@ class UI : public fltk::Group {
 
    Group *TopGroup;
    Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks,
-          *Clear, *Search, *FullScreen, *ImageLoad, *BugMeter;
+          *Clear, *Search, *FullScreen, *ImageLoad, *BugMeter, *FileButton;
    Input  *Location;
    PackedGroup *ProgBox;
    CustProgressBox *PProg, *IProg;
@@ -69,6 +69,7 @@ class UI : public fltk::Group {
    PackedGroup *make_location();
    PackedGroup *make_progress_bars(int wide, int thin_up);
    void make_menubar(int x, int y, int w, int h);
+   Widget *make_filemenu_button();
    Group *make_panel(int ww);
 
 public:

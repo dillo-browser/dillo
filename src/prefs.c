@@ -91,7 +91,7 @@ typedef enum {
    DRC_TOKEN_SHOW_EXTRA_WARNINGS,
    DRC_TOKEN_SHOW_FORW,
    DRC_TOKEN_SHOW_HOME,
-   DRC_TOKEN_SHOW_MENUBAR,
+   DRC_TOKEN_SHOW_FILEMENU,
    DRC_TOKEN_SHOW_MSG,
    DRC_TOKEN_SHOW_PROGRESS_BOX,
    DRC_TOKEN_SHOW_RELOAD,
@@ -150,9 +150,9 @@ static const SymNode_t symbols[] = {
    { "show_bookmarks", DRC_TOKEN_SHOW_BOOKMARKS },
    { "show_clear_url", DRC_TOKEN_SHOW_CLEAR_URL },
    { "show_extra_warnings", DRC_TOKEN_SHOW_EXTRA_WARNINGS },
+   { "show_filemenu", DRC_TOKEN_SHOW_FILEMENU },
    { "show_forw", DRC_TOKEN_SHOW_FORW },
    { "show_home", DRC_TOKEN_SHOW_HOME },
-   { "show_menubar", DRC_TOKEN_SHOW_MENUBAR },
    { "show_msg", DRC_TOKEN_SHOW_MSG },
    { "show_progress_box", DRC_TOKEN_SHOW_PROGRESS_BOX },
    { "show_reload", DRC_TOKEN_SHOW_RELOAD },
@@ -302,8 +302,8 @@ static int Prefs_parse_pair(char *name, char *value)
    case DRC_TOKEN_SHOW_BOOKMARKS:
       prefs.show_bookmarks = (strcmp(value, "YES") == 0);
       break;
-   case DRC_TOKEN_SHOW_MENUBAR:
-      prefs.show_menubar = (strcmp(value, "YES") == 0);
+   case DRC_TOKEN_SHOW_FILEMENU:
+      prefs.show_filemenu = (strcmp(value, "YES") == 0);
       break;
    case DRC_TOKEN_SHOW_CLEAR_URL:
       prefs.show_clear_url = (strcmp(value, "YES") == 0);
@@ -442,7 +442,7 @@ void a_Prefs_init(void)
    prefs.show_save=TRUE;
    prefs.show_stop=TRUE;
    prefs.show_bookmarks=TRUE;
-   prefs.show_menubar=TRUE;
+   prefs.show_filemenu=TRUE;
    prefs.show_clear_url=TRUE;
    prefs.show_url=TRUE;
    prefs.show_search=TRUE;

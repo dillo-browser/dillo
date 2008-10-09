@@ -204,8 +204,6 @@ public:
 static void search_cb(Widget *wid, void *data)
 {
    int k = event_key();
-   if (k && k <= 7)
-      MSG("[Search], mouse button %d was pressed\n", k);
 
    if (k == 1) {
       a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(wid));
@@ -217,6 +215,17 @@ static void search_cb(Widget *wid, void *data)
 }
 
 /*
+ * Callback for the File menu button.
+ */
+static void filemenu_cb(Widget *wid, void *)
+{
+   int k = event_key();
+   if (k == 1 || k == 3) {
+      a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(wid), wid);
+   }
+}
+
+/*
  * Callback for the location's clear-button.
  */
 static void clear_cb(Widget *w, void *data)
@@ -224,8 +233,6 @@ static void clear_cb(Widget *w, void *data)
    UI *ui = (UI*)data;
 
    int k = event_key();
-   if (k && k <= 7)
-      MSG("[Clear], mouse button %d was pressed\n", k);
    if (k == 1) {
       ui->set_location("");
       ui->focus_location();
@@ -338,8 +345,6 @@ static void b1_cb(Widget *wid, void *cb_data)
 static void bugmeter_cb(Widget *wid, void *data)
 {
    int k = event_key();
-   if (k && k <= 7)
-      MSG("[BugMeter], mouse button %d was pressed\n", k);
    if (k == 1) {
       a_UIcmd_view_page_bugs(a_UIcmd_get_bw_by_widget(wid));
    } else if (k == 3) {
@@ -470,63 +475,32 @@ PackedGroup *UI::make_progress_bars(int wide, int thin_up)
 }
 
 /*
- * Close bw's behind a timeout to let the triggering code unwind out of the
- * window before it's all torn down.
+ * Create the "File" menu
+ * Static function for File menu callbacks.
  */
-static void menubar_close_bw(void *vbw)
+Widget *UI::make_filemenu_button()
 {
-   BrowserWindow *bw = (BrowserWindow *)vbw;
-   if (bw)
-      a_UIcmd_close_bw(bw);
-   else
-      a_UIcmd_close_all_bw(NULL);
-   a_Timeout_remove();
+   HighlightButton *btn;
+   int w,h, padding;
+
+   FileButton = btn = new HighlightButton(0,0,0,0,"W");
+   btn->measure_label(w, h);
+   padding = w;
+   btn->copy_label(PanelSize == P_tiny ? "&F" : "&File");
+   btn->measure_label(w,h);
+   if (PanelSize == P_large)
+      h = fh;
+   btn->resize(w+padding,h);
+   _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
+   btn->box(PanelSize == P_large ? FLAT_BOX : THIN_UP_BOX);
+   btn->callback(filemenu_cb, this);
+   btn->tooltip("File menu");
+   btn->clear_tab_to_focus();
+   if (!prefs.show_filemenu && PanelSize != P_large)
+      btn->hide();
+   return btn;
 }
 
-/*
- * Static function for menubar callbacks.
- */
-static void menubar_cb(Widget *wid, void *data)
-{
-   if (strcmp((char*)data, "nb") == 0) {
-      a_UIcmd_browser_window_new(wid->window()->w(), wid->window()->h(),
-                                 a_UIcmd_get_bw_by_widget(wid));
-   } else if (strcmp((char*)data, "nt") == 0) {
-      a_UIcmd_open_url_nt(a_UIcmd_get_bw_by_widget(wid), NULL, 1);
-   } else if (strcmp((char*)data, "of") == 0) {
-      a_UIcmd_open_file(a_UIcmd_get_bw_by_widget(wid));
-   } else if (strcmp((char*)data, "ou") == 0) {
-      a_UIcmd_focus_location(a_UIcmd_get_bw_by_widget(wid));
-   } else if (strcmp((char*)data, "cw") == 0) {
-      a_Timeout_add(0.0, menubar_close_bw, a_UIcmd_get_bw_by_widget(wid));
-   } else if (strcmp((char*)data, "ed") == 0) {
-      a_Timeout_add(0.0, menubar_close_bw, NULL);
-   }
-}
-
-/*
- * Create the menubar ("File" menu only).
- */
-void UI::make_menubar(int x, int y, int w, int h)
-{
-   MenuBar *mb = new MenuBar(x,y,w,h);
-   mb->begin();
-    ItemGroup *g = new ItemGroup( "&File" );
-    g->begin();
-     /* FLTK2 BUG: The space prefix avoids FLTK2 taking the
-      *            first letter as a SHORTCUT */
-     new Item(" &New Window", COMMAND + 'n', menubar_cb, (void *)"nb");
-     new Item(" New &Tab", COMMAND + 't', menubar_cb, (void *)"nt");
-     new Divider();
-     new Item(" &Open File...", COMMAND + 'o', menubar_cb, (void *)"of");
-     new Item(" Open UR&L...", COMMAND + 'l', menubar_cb, (void *)"ou");
-     new Item(" Close &Window", COMMAND + 'q', menubar_cb, (void *)"cw");
-     new Divider();
-     new Item(" E&xit Dillo", ACCELERATOR + 'q', menubar_cb, (void *)"ed");
-    g->end();
-   mb->box(EMBOSSED_BOX);
-   mb->end();
-}
 
 /*
  * Create the control panel
@@ -566,38 +540,43 @@ Group *UI::make_panel(int ww)
       if (Small_Icons)
          xpos = 0, bw = 42, bh = 36, fh = 22, lh = 22, lbl = 1;
       else
-         xpos = 0, bw = 45, bh = 45, fh = 28, lh = 28, lbl = 1;
+         xpos = 0, bw = 45, bh = 45, fh = 24, lh = 28, lbl = 1;
    }
 
    if (PanelSize == P_tiny) {
       g1 = new Group(0,0,ww,bh);
-      g1->begin();
        // Toolbar
        pg = make_toolbar(ww,bh);
        pg->box(EMBOSSED_BOX);
-       //pg->box(BORDER_FRAME);
-        w = make_location();
+       g1->add(pg);
+       w = make_filemenu_button();
+       pg->add(w);
+       w = make_location();
        pg->add(w);
        pg->resizable(w);
-        w = make_progress_bars(0,1);
+       w = make_progress_bars(0,1);
        pg->add(w);
 
       g1->resizable(pg);
-      g1->end();
 
    } else {
       g1 = new Group(0,0,ww,fh+lh+bh);
       g1->begin();
-       // File menu
-       if (PanelSize == P_large) {
-          make_menubar(0,0,ww,fh);
-       }
+        // File menu
+        if (PanelSize == P_large) {
+           make_filemenu_button();
+           g2 = new Group(0,fh,ww,lh);
+           g2->begin();
+           pg = make_location();
+           pg->resize(ww,lh);
+        } else {
+           g2 = new PackedGroup(0,fh,ww,lh);
+           g2->type(PackedGroup::ALL_CHILDREN_VERTICAL);
+           g2->begin();
+           make_filemenu_button();
+           pg = make_location();
+        }
 
-       // Location
-       g2 = new Group(0,fh,ww,lh);
-       g2->begin();
-        pg = make_location();
-        pg->resize(ww,lh);
        g2->resizable(pg);
        g2->end();
    
@@ -801,7 +780,9 @@ int UI::handle(int event)
             ret = 1;
          }
       } else if (modifier == ALT) {
-         if (k == 'q' && event_key_state(LeftAltKey)) {
+         if (k == 'f') {
+            a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(this), FileButton);
+         } else if (k == 'q' && event_key_state(LeftAltKey)) {
             a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
          }
       } else {
@@ -954,8 +935,6 @@ void UI::customize(int flags)
 {
    // flags argument not currently used
 
-   if ( !prefs.show_menubar )
-      MSG("show_menubar preference ignored\n");
    if ( !prefs.show_back )
       Back->hide();
    if ( !prefs.show_forw )

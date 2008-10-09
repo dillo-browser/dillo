@@ -665,6 +665,14 @@ void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
 }
 
 /*
+ * Pop up the file menu
+ */
+void a_UIcmd_file_popup(void *vbw, void *v_wid)
+{
+   a_Menu_file_popup((BrowserWindow*)vbw, v_wid);
+}
+
+/*
  * Copy url string to paste buffer
  */
 void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr)

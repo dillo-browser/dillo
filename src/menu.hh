@@ -12,6 +12,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
 void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url);
 void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
                         bool_t loaded_img, DilloUrl *link_url);
+void a_Menu_file_popup(BrowserWindow *bw, void *v_wid);
 void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url);
 void a_Menu_history_popup(BrowserWindow *bw, int direction);
 

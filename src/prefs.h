@@ -45,7 +45,7 @@ struct _DilloPrefs {
    bool_t show_save;
    bool_t show_stop;
    bool_t show_bookmarks;
-   bool_t show_menubar;
+   bool_t show_filemenu;
    bool_t show_clear_url;
    bool_t show_url;
    bool_t show_search;
