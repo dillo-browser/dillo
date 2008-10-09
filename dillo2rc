@@ -18,6 +18,13 @@
 # (there's a toggle button near the bug meter to change this on-the-fly)
 #load_images=YES
 
+
+# Change the buffering scheme for drawing
+# 0 no double buffering - useful for debugging
+# 1 light buffering using a single back buffer for all windows
+# 2 full fltk-based double buffering for all windows
+#buffered_drawing=1
+
 # Set your default directory for download/save operations
 #save_dir=/tmp
 

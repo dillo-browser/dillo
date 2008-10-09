@@ -168,7 +168,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
 
    Window *win = new Window(ww, wh);
    win->shortcut(0); // Ignore Escape
-   win->clear_double_buffer();
+   if (prefs.buffered_drawing != 2)
+      win->clear_double_buffer();
    win->set_flag(RAW_LABEL);
    CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);
    DilloTabs->clear_tab_to_focus();
@@ -198,6 +199,10 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    Layout *layout = new Layout (platform);
 
    FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
+   if (prefs.buffered_drawing == 1)
+      viewport->setBufferedDrawing (true);
+   else
+      viewport->setBufferedDrawing (false);
    
    layout->attachView (viewport);
    new_ui->set_render_layout(*viewport);

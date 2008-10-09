@@ -50,16 +50,23 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
    lastDraw = time(0);
    drawDelay = 2;      /* in seconds */
    mouse_x = mouse_y = 0;
-#ifndef NO_DOUBLEBUFFER
-   if (!backBuffer) {
+   if (backBuffer == NULL) {
       backBuffer = new Image ();
    }
-#endif
 }
 
 FltkViewBase::~FltkViewBase ()
 {
    cancelQueueDraw ();
+}
+
+void FltkViewBase::setBufferedDrawing (bool b) {
+   if (b && backBuffer == NULL) {
+      backBuffer = new Image ();
+   } else if (!b && backBuffer != NULL) {
+      delete backBuffer;
+      backBuffer = NULL;
+   }
 }
 
 void FltkViewBase::draw ()

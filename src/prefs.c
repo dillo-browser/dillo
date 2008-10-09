@@ -76,6 +76,7 @@ typedef enum {
    DRC_TOKEN_LIMIT_TEXT_WIDTH,
    DRC_TOKEN_LINK_COLOR,
    DRC_TOKEN_LOAD_IMAGES,
+   DRC_TOKEN_BUFFERED_DRAWING,
    DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB,
    DRC_TOKEN_NOPROXY,
    DRC_TOKEN_PANEL_SIZE,
@@ -123,6 +124,7 @@ struct SymNode_ {
 static const SymNode_t symbols[] = {
    { "allow_white_bg", DRC_TOKEN_ALLOW_WHITE_BG },
    { "bg_color", DRC_TOKEN_BG_COLOR },
+   { "buffered_drawing", DRC_TOKEN_BUFFERED_DRAWING },
    { "contrast_visited_color", DRC_TOKEN_CONTRAST_VISITED_COLOR },
    { "enterpress_forces_submit", DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT },
    { "focus_new_tab", DRC_TOKEN_FOCUS_NEW_TAB },
@@ -321,6 +323,9 @@ static int Prefs_parse_pair(char *name, char *value)
    case DRC_TOKEN_LOAD_IMAGES:
       prefs.load_images = (strcmp(value, "YES") == 0);
       break;
+   case DRC_TOKEN_BUFFERED_DRAWING:
+      prefs.buffered_drawing = atoi(value);
+      break;
    case DRC_TOKEN_FW_FONT:
       dFree(prefs.fw_fontname);
       prefs.fw_fontname = dStrdup(value);
@@ -444,6 +449,7 @@ void a_Prefs_init(void)
    prefs.show_progress_box=TRUE;
    prefs.fullwindow_start=FALSE;
    prefs.load_images=TRUE;
+   prefs.buffered_drawing=1;
    prefs.vw_fontname = dStrdup(D_VW_FONTNAME);
    prefs.fw_fontname = dStrdup(D_FW_FONTNAME);
    prefs.generate_submit = FALSE;

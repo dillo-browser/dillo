@@ -75,6 +75,7 @@ public:
 
    core::View *getClippingView (int x, int y, int width, int height);
    void mergeClippingView (core::View *clippingView);
+   void setBufferedDrawing (bool b);
 };
 
 
