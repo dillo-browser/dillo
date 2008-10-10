@@ -1,12 +1,12 @@
-AM_CPPFLAGS=-DDILLORC_SYS='"$(sysconfdir)/dillo2rc"' @LIBJPEG_CPPFLAGS@
+AM_CPPFLAGS=-DDILLORC_SYS='"$(sysconfdir)/dillorc"' @LIBJPEG_CPPFLAGS@
 AM_CFLAGS = @LIBPNG_CFLAGS@
 AM_CXXFLAGS = -I.. @LIBPNG_CFLAGS@ @LIBFLTK_CXXFLAGS@
 
 SUBDIRS = IO
 
-bin_PROGRAMS = dillo-fltk
+bin_PROGRAMS = dillo
 
-dillo_fltk_LDADD = \
+dillo_LDADD = \
 	../dlib/libDlib.a \
 	../dpip/libDpip.a \
 	IO/libDiof.a \
@@ -16,7 +16,7 @@ dillo_fltk_LDADD = \
 	../lout/liblout.a \
 	@LIBJPEG_LIBS@ @LIBPNG_LIBS@ @LIBFLTK_LIBS@ @LIBZ_LIBS@ @LIBICONV_LIBS@
 
-dillo_fltk_SOURCES = \
+dillo_SOURCES = \
 	dillo.cc \
 	dir.c \
 	dir.h \

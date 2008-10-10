@@ -31,7 +31,7 @@
 #include "misc.h"
 #include "msg.h"
 
-#define RCNAME "dillo2rc"
+#define RCNAME "dillorc"
 
 #define DILLO_START_PAGE "about:splash"
 #define DILLO_HOME "http://www.dillo.org/"

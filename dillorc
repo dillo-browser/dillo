@@ -1,4 +1,4 @@
-# dillo2rc
+# dillorc
 # Sample dillo initialization file.
 #
 # Lines that start with a '#' are comments.
@@ -229,4 +229,4 @@
 
 
 # -----------------------------------------------------------------------
-# dillo2rc ends here.
+# dillorc ends here.

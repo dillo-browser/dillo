@@ -2,7 +2,7 @@
 Dillo project
 =============================================================================
 
-dillo-fltk2
+dillo-2.0
 
 +- Ported Dillo from GTK1 to FLTK2.
  - Ported a susbstantial part of the code from C to C++ (FLTK2 is in C++).
@@ -45,7 +45,7 @@ dillo-fltk2
  - Added a workaround for a CCC reentrancy segfault.
  - Bound FltkMultiLineTextResource to the html parser (TEXTAREA).
  - Added code to ignore the first <P> after <LI>.
- - Added a http_referer preference. See details in dillo2rc.
+ - Added a http_referer preference. See details in dillorc.
  - Added a text placeholder: "[IMG]" for img_off mode.
  - Fixed a SEGFAULT bug in http.c (handling of web->url).
  - Fixed handling of #anchors with repush, and other operations.
@@ -71,8 +71,8 @@ dillo-fltk2
  - Added code for the image menu and hooked it to dw2 signals.
  - Hooked the page and link menus.
  - Added a image-loading toggle button to the UI.
- - Enabled hiding widgets of the control panel from dillo2rc.
- - Added a save-directory preference (save_dir in dillo2rc).
+ - Enabled hiding widgets of the control panel from dillorc.
+ - Added a save-directory preference (save_dir in dillorc).
  - Fixed page-popup-menu to use the stack's top URL instead of base_url.
  - Added the "static" qualifier where missing.
  - Bound "Copy link location".

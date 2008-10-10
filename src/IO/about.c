@@ -291,7 +291,7 @@ const char *AboutSplash=
 "<li>Simplified http.c by reusing the new non-blocking writes in IO."
 "<li>Implemented Stop button to not only stop rendering but also networking."
 "<li>Bound Ctrl+Space to toggle fullscreen mode."
-"<li>Added a http_referer preference. See details in dillo2rc."
+"<li>Added a http_referer preference. See details in dillorc."
 "<li>CCC: added reentrancy control to the OpEnd and OpAbort operations."
 "<li>CCC: enhanced the debug function and implemented OpAbort for dpi."
 "<li>Hooked a decoder for text/plain with charset."
