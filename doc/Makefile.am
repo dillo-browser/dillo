@@ -28,12 +28,6 @@ EXTRA_DIST = \
         Cookies.txt \
         Dillo.txt \
         Dw.txt \
-        DwImage.txt \
-        DwPage.txt \
-        DwRender.txt \
-        DwStyle.txt \
-        DwTable.txt \
-        DwWidget.txt \
         HtmlParser.txt \
         IO.txt \
         Images.txt \
