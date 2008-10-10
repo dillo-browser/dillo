@@ -67,7 +67,6 @@ and that has deep understanding of HTTP (RFC-2068) and cookies (RFC-2965).
 
  Non technical persons may like to read:
    http://www.junkbusters.com/cookies.html
-   http://www.newsfactor.com/perl/story/16455.html (about user-spying)
 
  The dillo project is especially concerned about privacy and security
 issues. Our advice is to avoid cookies whenever possible and at most set
