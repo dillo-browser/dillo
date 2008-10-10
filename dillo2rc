@@ -91,9 +91,9 @@
 # home="file:/home/jcid/HomePage/Home.html"
 #home="http://www.dillo.org/"
 
-# Set search url to use with "s <keywords>".
-# %s is replaced with keywords separated by '+'.
-# search_url="http://search.lycos.com/default.asp?query=%s"
+# Set the URL used by the web search dialog.
+# "%s" is replaced with the search keywords separated by '+'.
+# search_url="http://search.lycos.com/?query=%s"
 # search_url="http://www.alltheweb.com/search?cat=web&query=%s"
 #search_url="http://www.google.com/search?q=%s"
 
