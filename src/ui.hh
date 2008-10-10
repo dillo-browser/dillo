@@ -96,7 +96,8 @@ public:
    void set_panelmode(UIPanelmode mode);
    UIPanelmode get_panelmode();
    void set_findbar_visibility(bool visible);
-   bool get_images_enabled() { return ImageLoad->state();}
+   bool images_enabled() { return ImageLoad->state();}
+   void images_enabled(int flag) { ImageLoad->state(flag);}
    Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
 

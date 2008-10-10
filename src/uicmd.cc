@@ -881,7 +881,15 @@ void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...)
  */
 bool_t a_UIcmd_get_images_enabled(BrowserWindow *bw)
 {
-   return BW2UI(bw)->get_images_enabled();
+   return BW2UI(bw)->images_enabled();
+}
+
+/*
+ * Enable/Disable automatic image loading.
+ */
+void a_UIcmd_set_images_enabled(BrowserWindow *bw, int flag)
+{
+   BW2UI(bw)->images_enabled(flag);
 }
 
 /*

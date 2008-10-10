@@ -124,6 +124,16 @@ int main(int argc, char **argv)
       DilloUrl *url = Dillo_make_start_url(argv[1]);
       a_UIcmd_open_urlstr(bw, URL_STR(url));
       a_Url_free(url);
+   } else if (argc == 6) {
+      // WORKAROUND: sylpheed execs "dillo -l -f -x XID URL"
+      if (strcmp(argv[1], "-l") == 0 && strcmp(argv[2], "-f") == 0 &&
+          strcmp(argv[3], "-x") == 0) {
+         a_UIcmd_set_images_enabled(bw, FALSE);
+         DilloUrl *url = Dillo_make_start_url(argv[5]);
+         a_Url_set_flags(url, URL_FLAGS(url) & URL_SpamSafe);
+         a_UIcmd_open_urlstr(bw, URL_STR(url));
+         a_Url_free(url);
+      }
    } else {
       /* Send startup screen */
       a_Nav_push(bw, prefs.start_page);

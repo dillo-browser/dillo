@@ -70,6 +70,7 @@ void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug);
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label);
 void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...);
 bool_t a_UIcmd_get_images_enabled(BrowserWindow *bw);
+void a_UIcmd_set_images_enabled(BrowserWindow *bw, int flag);
 void a_UIcmd_set_buttons_sens(BrowserWindow *bw);
 void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
 
