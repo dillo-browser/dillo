@@ -2,40 +2,21 @@
  Dillo
 =======
 
-  This  is  an  alpha release of the next generation of the Dillo
-web  browser.  The  code  underwent  a major rewrite: significant
-parts  of  the  codebase  were  ported  to C++, and the rendering
-engine now uses the FLTK2 library instead of GTK1.
+  This  is a beta release of the next generation of the Dillo web
+browser. The code underwent a major rewrite: significant parts of
+the  codebase  were  ported  to C++, and the rendering engine now
+uses the FLTK2 library instead of GTK1.
 
-  With  regard to Dillo 0.8.6, dillo-f15f has some advantages (as
-antialiasing and utf-8), and some disadvantages. The problems are
-simple  to  solve and only need some man months to complete. When
-we're  there,  dillo-f15f  will be easily regarded as better than
-the former series.
-
-  This is release should be regarded as alpha.
+Our users will surely enjoy this new release as it will give them
+the   same   things  they're  accustomed  plus  tabbed  browsing,
+antialiasing,  different  character  sets,  accepting  compressed
+pages,  control  over  image  loading,  smaller  footprint, fewer
+dependencies, better table rendering, bugfixes, improved GUI, ...
+In brief, a better dillo. 
 
 
   Here's a list of some well known problems:
 
-Fixed    * no iteration inside simple lists
-Fixed    * image links haven't been hooked yet
-Fixed    * the scrolling position is not yet updated (when following a
-           link, the former scroll position is kept).
-Fixed    * viewport scrolling is not yet optimized (takes lots of CPU)
-Fixed    * you may experience crashes from "assert" statements from
-           unfinished code.
-Fixed    * context menus are not yet completely hooked or activated
-Fixed    * Selecting text with the mouse is half hooked. This is, you
-           can see the selected text in the terminal but can't paste.
-Fixed    * Searching for text is not yet hooked. Look in test/ directory
-           of dw2 for an example of find text.
-Fixed    * Form elements are not yet hooked/implemented. You can look
-           in dw2' test/dw_ui_test.cc to see what's already done.
-Fixed    * Sometimes pages don't load giving a warning on an already
-           closed IO. I'll try to look at this one soon.
-Fixed    * No image maps.
-Fixed    * The SELECT element inside FORMS is not implemented.
          * no FRAMES rendering
          * no https (there's a barebones prototype).
 
@@ -81,4 +62,4 @@ Solaris
     
 Jorge.-
 (jcid@dillo.org)
-Dec 03, 2007
+Oct, 2008
