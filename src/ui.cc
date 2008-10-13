@@ -564,7 +564,12 @@ Group *UI::make_panel(int ww)
       g1->begin();
         // File menu
         if (PanelSize == P_large) {
-           make_filemenu_button();
+           g3 = new Group(0,0,ww,lh);
+           g3->box(FLAT_BOX);
+           Widget *bn = make_filemenu_button();
+           g3->add(bn);
+           g3->add_resizable(*new InvisibleBox(bn->w(),0,ww - bn->w(),lh));
+
            g2 = new Group(0,fh,ww,lh);
            g2->begin();
            pg = make_location();

@@ -19,6 +19,14 @@ In brief, a better dillo.
 
          * no FRAMES rendering
          * no https (there's a barebones prototype).
+-----
+FLTK2
+-----
+
+  You can get the fltk2 library from fltk.org.
+The recommended version is >= r6403. e.g. in:
+
+  http://fltk.org/software.php?VERSION=2.0.x-r6403
 
 
 ------------
