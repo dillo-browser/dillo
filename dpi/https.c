@@ -68,7 +68,7 @@
 #define MSG(...)  printf("[https dpi]: " __VA_ARGS__)
 
 
-
+#define ENABLE_SSL
 #undef ENABLE_SSL
 #ifdef ENABLE_SSL
 
@@ -664,7 +664,7 @@ static void no_ssl_support(void)
       "  <b>*** Dillo's prototype plugin for https support"
       " is disabled now ***</b>\n\n"
       "  If you want to test this <b>alpha</b> support code, just remove\n"
-      "  line 65 from https.c, recompile and reinstall.\n\n"
+      "  line 72 from dpi/https.c, recompile and reinstall.\n\n"
       "  (beware that this https support is very limited now)\n\n"
       "  To use https and SSL, you must have \n"
       "  the OpenSSL development libraries installed.  Check your\n"
