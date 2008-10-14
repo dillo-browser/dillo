@@ -197,14 +197,9 @@ Dstr *Http_make_content_type(const DilloUrl *url)
 Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
 {
    char *ptr, *cookies, *referer;
-   Dstr *s_port     = dStr_new(""),
-        *query      = dStr_new(""),
+   Dstr *query      = dStr_new(""),
         *full_path  = dStr_new(""),
         *proxy_auth = dStr_new("");
-
-   /* Sending the default port in the query may cause a 302-answer.  --Jcid */
-   if (URL_PORT(url) && URL_PORT(url) != DILLO_URL_HTTP_PORT)
-      dStr_sprintfa(s_port, ":%d", URL_PORT(url));
 
    if (use_proxy) {
       dStr_sprintfa(full_path, "%s%s",
@@ -233,7 +228,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Connection: close\r\n"
          "Accept-Charset: utf-8,*;q=0.8\r\n"
          "Accept-Encoding: gzip\r\n"
-         "Host: %s%s\r\n"
+         "Host: %s\r\n"
          "%s"
          "%s"
          "User-Agent: Dillo/%s\r\n"
@@ -241,7 +236,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Content-Type: %s\r\n"
          "%s"
          "\r\n",
-         full_path->str, URL_HOST(url), s_port->str,
+         full_path->str, URL_AUTHORITY(url),
          proxy_auth->str, referer, VERSION,
          URL_DATA(url)->len, content_type->str,
          cookies);
@@ -255,7 +250,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Connection: close\r\n"
          "Accept-Charset: utf-8,*;q=0.8\r\n"
          "Accept-Encoding: gzip\r\n"
-         "Host: %s%s\r\n"
+         "Host: %s\r\n"
          "%s"
          "%s"
          "User-Agent: Dillo/%s\r\n"
@@ -264,13 +259,12 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          full_path->str,
          (URL_FLAGS(url) & URL_E2EQuery) ?
             "Cache-Control: no-cache\r\nPragma: no-cache\r\n" : "",
-         URL_HOST(url), s_port->str,
+         URL_AUTHORITY(url),
          proxy_auth->str, referer, VERSION, cookies);
    }
    dFree(referer);
    dFree(cookies);
 
-   dStr_free(s_port, TRUE);
    dStr_free(full_path, TRUE);
    dStr_free(proxy_auth, TRUE);
    _MSG("Query: {%s}\n", dStr_printable(query, 8192));

@@ -5,6 +5,7 @@ Dillo project
 dillo-2.1
 
 +- Added support for numeric IPv6 addresses entered into the url bar.
+ - Used the URL authority part instead of stripped default port in HTTP query.
    Patch: Justus Winter
 
 dillo-2.0
