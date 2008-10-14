@@ -410,7 +410,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       inp_type = DILLO_HTML_INPUT_PASSWORD;
       EntryResource *entryResource = factory->createEntryResource (10, true);
       embed = new Embed (entryResource);
-      init_str = (value) ? value : NULL;
+      init_str = value;
    } else if (!dStrcasecmp(type, "checkbox")) {
       inp_type = DILLO_HTML_INPUT_CHECKBOX;
       CheckButtonResource *check_b_r=factory->createCheckButtonResource(false);
@@ -426,11 +426,10 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       rb_r = factory->createRadioButtonResource(rb_r, false);
       embed = new Embed (rb_r);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
-      init_str = (value) ? value : NULL;
+      init_str = value;
    } else if (!dStrcasecmp(type, "hidden")) {
       inp_type = DILLO_HTML_INPUT_HIDDEN;
-      if (value)
-         init_str = dStrdup(a_Html_get_attr(html, tag, tagsize, "value"));
+      init_str = value;
    } else if (!dStrcasecmp(type, "submit")) {
       inp_type = DILLO_HTML_INPUT_SUBMIT;
       init_str = (value) ? value : dStrdup("submit");
@@ -497,7 +496,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       inp_type = DILLO_HTML_INPUT_TEXT;
       EntryResource *entryResource = factory->createEntryResource (10, false);
       embed = new Embed (entryResource);
-      init_str = (value) ? value : NULL;
+      init_str = value;
    } else {
       /* Unknown input type */
       BUG_MSG("Unknown input type: \"%s\"\n", type);
