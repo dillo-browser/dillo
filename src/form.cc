@@ -28,22 +28,22 @@
 using namespace dw;
 using namespace dw::core;
 using namespace dw::core::style;
+using namespace dw::core::ui;
 
 /*
- * Forward declarations 
+ * Forward declarations
  */
 
 class DilloHtmlReceiver;
 class DilloHtmlSelect;
 class DilloHtmlOption;
 
-static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
-                                             const char *tag, int tagsize);
+static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize);
 
 static void Html_option_finish(DilloHtml *html);
 
 /*
- * Typedefs 
+ * Typedefs
  */
 
 typedef enum {
@@ -67,7 +67,7 @@ typedef enum {
 } DilloHtmlInputType;
 
 /*
- * Class declarations  
+ * Class declarations
  */
 
 class DilloHtmlForm {
@@ -75,31 +75,28 @@ class DilloHtmlForm {
    friend class DilloHtmlInput;
 
    DilloHtml *html;
-   void eventHandler(dw::core::ui::Resource *resource);
-   void submit(DilloHtmlInput *input);
-   DilloUrl *buildQueryUrl(DilloHtmlInput *input);
+   void eventHandler(Resource *resource);
+   void submit(DilloHtmlInput *active_input);
+   DilloUrl *buildQueryUrl(DilloHtmlInput *active_input);
    Dstr *buildQueryData(DilloHtmlInput *active_submit);
-   char *makeMultipartBoundary(iconv_t encoder, DilloHtmlInput *active_submit);
-   Dstr *encodeText(iconv_t encoder, Dstr **input);
-   void urlencodeAppend(Dstr *str, const char *val);
-   void appendInputUrlencode(Dstr *data,
+   char *makeMultipartBoundary(iconv_t char_encoder,
+                               DilloHtmlInput *active_submit);
+   Dstr *encodeText(iconv_t char_encoder, Dstr **input);
+   void strUrlencodeAppend(Dstr *dstr, const char *str);
+   void inputUrlencodeAppend(Dstr *data, const char *name, const char *value);
+   void inputMultipartAppend(Dstr *data, const char *boundary,
                              const char *name, const char *value);
-   void appendInputMultipartFiles(Dstr* data,
-                                  const char *boundary,
+   void filesInputMultipartAppend(Dstr* data, const char *boundary,
                                   const char *name, Dstr *file,
                                   const char *filename);
-   void appendInputMultipart(Dstr *data,
-                             const char *boundary,
-                             const char *name,
-                             const char *value);
-   void appendClickposUrlencode(Dstr *data, Dstr *name, Dstr *x, Dstr *y);
-   void appendClickposMultipart(Dstr *data, const char *boundary, Dstr *name,
-                                Dstr *x, Dstr *y);
+   void imageInputUrlencodeAppend(Dstr *data, Dstr *name, Dstr *x, Dstr *y);
+   void imageInputMultipartAppend(Dstr *data, const char *boundary, Dstr *name,
+                                  Dstr *x, Dstr *y);
 
 public:  //BUG: for now everything is public
    DilloHtmlMethod method;
    DilloUrl *action;
-   DilloHtmlEnc enc;
+   DilloHtmlEnc content_type;
    char *submit_charset;
 
    lout::misc::SimpleVector<DilloHtmlInput*> *inputs;
@@ -110,39 +107,38 @@ public:  //BUG: for now everything is public
    DilloHtmlReceiver *form_receiver;
 
 public:
-   DilloHtmlForm (DilloHtml *html, 
+   DilloHtmlForm (DilloHtml *html,
                   DilloHtmlMethod method, const DilloUrl *action,
-                  DilloHtmlEnc enc, const char *charset);
+                  DilloHtmlEnc content_type, const char *charset);
    ~DilloHtmlForm ();
-   DilloHtmlInput *getInput (dw::core::ui::Resource *resource);
+   DilloHtmlInput *getInput (Resource *resource);
    DilloHtmlInput *getRadioInput (const char *name);
    void reset ();
    void addInput(DilloHtmlInput *input, DilloHtmlInputType type);
 };
 
 class DilloHtmlReceiver:
-   public dw::core::ui::Resource::ActivateReceiver,
-   public dw::core::ui::ButtonResource::ClickedReceiver
+   public Resource::ActivateReceiver,
+   public ButtonResource::ClickedReceiver
 {
    friend class DilloHtmlForm;
    DilloHtmlForm* form;
    DilloHtmlReceiver (DilloHtmlForm* form2) { form = form2; }
    ~DilloHtmlReceiver () { }
-   void activate (dw::core::ui::Resource *resource);
-   void enter (dw::core::ui::Resource *resource);
-   void leave (dw::core::ui::Resource *resource);
-   void clicked (dw::core::ui::ButtonResource *resource,
-                 int buttonNo, int x, int y);
+   void activate (Resource *resource);
+   void enter (Resource *resource);
+   void leave (Resource *resource);
+   void clicked (ButtonResource *resource, int buttonNo, int x, int y);
 };
 
 class DilloHtmlInput {
 
-   // DilloHtmlForm::addInput() calls connectTo() 
+   // DilloHtmlForm::addInput() calls connectTo()
    friend class DilloHtmlForm;
 
 public:  //BUG: for now everything is public
    DilloHtmlInputType type;
-   dw::core::ui::Embed *embed; /* May be NULL (think: hidden input) */
+   Embed *embed; /* May be NULL (think: hidden input) */
    char *name;
    char *init_str;    /* note: some overloading - for buttons, init_str
                          is simply the value of the button; for text
@@ -154,15 +150,12 @@ public:  //BUG: for now everything is public
 
 private:
    void connectTo(DilloHtmlReceiver *form_receiver);
-   void activate(DilloHtmlForm *form, bool force_submit);
+   void activate(DilloHtmlForm *form, bool entry_input_submits);
    void readFile(BrowserWindow *bw);
 
 public:
-   DilloHtmlInput (DilloHtmlInputType type,
-                   dw::core::ui::Embed *embed,
-                   const char *name,
-                   const char *init_str,
-                   bool init_val);
+   DilloHtmlInput (DilloHtmlInputType type, Embed *embed,
+                   const char *name, const char *init_str, bool init_val);
    ~DilloHtmlInput ();
    void appendValuesTo(Dlist *values, bool is_active_submit);
    void reset();
@@ -178,9 +171,8 @@ public:
    DilloHtmlOption *getCurrentOption ();
    void addOption (char *value, bool selected, bool enabled);
    void ensureSelection ();
-   void addOptionsTo (dw::core::ui::SelectionResource *res);
-   void appendValuesTo (Dlist *values,
-                        dw::core::ui::SelectionResource *res);
+   void addOptionsTo (SelectionResource *res);
+   void appendValuesTo (Dlist *values, SelectionResource *res);
 };
 
 class DilloHtmlOption {
@@ -190,20 +182,18 @@ public:
    bool selected, enabled;
 private:
    DilloHtmlOption (char *value, bool selected, bool enabled);
-   ~DilloHtmlOption (); 
+   ~DilloHtmlOption ();
 };
 
 /*
- * Form API 
+ * Form API
  */
 
-DilloHtmlForm *a_Html_form_new (DilloHtml *html,
-                                DilloHtmlMethod method,
+DilloHtmlForm *a_Html_form_new (DilloHtml *html, DilloHtmlMethod method,
                                 const DilloUrl *action,
-                                DilloHtmlEnc enc,
-                                const char *charset)
+                                DilloHtmlEnc content_type, const char *charset)
 {
-   return new DilloHtmlForm (html,method,action,enc,charset);
+   return new DilloHtmlForm (html, method, action, content_type, charset);
 }
 
 void a_Html_form_delete (DilloHtmlForm *form)
@@ -217,14 +207,14 @@ void a_Html_input_delete (DilloHtmlInput *input)
 }
 
 /*
- * Form parsing functions 
+ * Form parsing functions
  */
 
 /*
  * Add an HTML control
  */
 static void Html_add_input(DilloHtml *html, DilloHtmlInputType type,
-                           dw::core::ui::Embed *embed, const char *name,
+                           Embed *embed, const char *name,
                            const char *init_str, bool init_val)
 {
    _MSG("name=[%s] init_str=[%s] init_val=[%d]\n", name, init_str, init_val);
@@ -283,7 +273,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloUrl *action;
    DilloHtmlMethod method;
-   DilloHtmlEnc enc;
+   DilloHtmlEnc content_type;
    char *charset, *first;
    const char *attrbuf;
 
@@ -310,11 +300,11 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
       action = a_Html_url_new(html, attrbuf, NULL, 0);
    else
       action = a_Url_dup(html->base_url);
-   enc = DILLO_HTML_ENC_URLENCODING;
+   content_type = DILLO_HTML_ENC_URLENCODED;
    if ((method == DILLO_HTML_METHOD_POST) &&
        ((attrbuf = a_Html_get_attr(html, tag, tagsize, "enctype")))) {
       if (!dStrcasecmp(attrbuf, "multipart/form-data"))
-         enc = DILLO_HTML_ENC_MULTIPART;
+         content_type = DILLO_HTML_ENC_MULTIPART;
    }
    charset = NULL;
    first = NULL;
@@ -335,7 +325,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    }
    if (!charset)
       charset = html->charset;
-   html->formNew(method, action, enc, charset);
+   html->formNew(method, action, content_type, charset);
    dFree(first);
    a_Url_free(action);
 }
@@ -346,7 +336,7 @@ void Html_tag_close_form(DilloHtml *html, int TagIdx)
       "<input type='submit' value='?Submit?' alt='dillo-generated-button'>";
    DilloHtmlForm *form;
 // int i;
-  
+
    if (html->InFlags & IN_FORM) {
       form = html->getCurrentForm ();
       /* If we don't have a submit button and the user desires one,
@@ -360,7 +350,7 @@ void Html_tag_close_form(DilloHtml *html, int TagIdx)
             form->num_submit_buttons = 0;
          }
       }
-  
+
 //    /* Make buttons sensitive again */
 //    for (i = 0; i < form->inputs->size(); i++) {
 //       input_i = form->inputs->get(i);
@@ -392,11 +382,11 @@ void Html_tag_close_form(DilloHtml *html, int TagIdx)
 void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloHtmlInputType inp_type;
-   dw::core::ui::Embed *embed = NULL;
+   Embed *embed = NULL;
    char *value, *name, *type, *init_str;
    const char *attrbuf, *label;
    bool init_val = false;
-  
+
    if (html->InFlags & IN_SELECT) {
       BUG_MSG("<input> element inside <select>\n");
       return;
@@ -405,38 +395,36 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       BUG_MSG("<input> element inside <button>\n");
       return;
    }
-  
+
    /* Get 'value', 'name' and 'type' */
    value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
    name = a_Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
    type = a_Html_get_attr_wdef(html, tag, tagsize, "type", "");
-  
+
    init_str = NULL;
    inp_type = DILLO_HTML_INPUT_UNKNOWN;
    if (!dStrcasecmp(type, "password")) {
       inp_type = DILLO_HTML_INPUT_PASSWORD;
-      dw::core::ui::EntryResource *entryResource =
+      EntryResource *entryResource =
          HT2LT(html)->getResourceFactory()->createEntryResource (10, true);
-      embed = new dw::core::ui::Embed (entryResource);
+      embed = new Embed (entryResource);
       init_str = (value) ? value : NULL;
    } else if (!dStrcasecmp(type, "checkbox")) {
       inp_type = DILLO_HTML_INPUT_CHECKBOX;
-      dw::core::ui::CheckButtonResource *check_b_r =
+      CheckButtonResource *check_b_r =
          HT2LT(html)->getResourceFactory()->createCheckButtonResource(false);
-      embed = new dw::core::ui::Embed (check_b_r);
+      embed = new Embed (check_b_r);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
       init_str = (value) ? value : dStrdup("on");
    } else if (!dStrcasecmp(type, "radio")) {
       inp_type = DILLO_HTML_INPUT_RADIO;
-      dw::core::ui::RadioButtonResource *rb_r = NULL;
+      RadioButtonResource *rb_r = NULL;
       DilloHtmlInput *input = Html_get_radio_input(html, name);
       if (input)
-         rb_r =
-            (dw::core::ui::RadioButtonResource*)
-            input->embed->getResource();
+         rb_r = (RadioButtonResource*) input->embed->getResource();
       rb_r = HT2LT(html)->getResourceFactory()
                 ->createRadioButtonResource(rb_r, false);
-      embed = new dw::core::ui::Embed (rb_r);
+      embed = new Embed (rb_r);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
       init_str = (value) ? value : NULL;
    } else if (!dStrcasecmp(type, "hidden")) {
@@ -446,18 +434,16 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    } else if (!dStrcasecmp(type, "submit")) {
       inp_type = DILLO_HTML_INPUT_SUBMIT;
       init_str = (value) ? value : dStrdup("submit");
-      dw::core::ui::LabelButtonResource *label_b_r =
-         HT2LT(html)->getResourceFactory()
-         ->createLabelButtonResource(init_str);
-      embed = new dw::core::ui::Embed (label_b_r);
+      LabelButtonResource *label_b_r =
+        HT2LT(html)->getResourceFactory()->createLabelButtonResource(init_str);
+      embed = new Embed (label_b_r);
 //    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
    } else if (!dStrcasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_RESET;
       init_str = (value) ? value : dStrdup("Reset");
-      dw::core::ui::LabelButtonResource *label_b_r =
-         HT2LT(html)->getResourceFactory()
-         ->createLabelButtonResource(init_str);
-      embed = new dw::core::ui::Embed (label_b_r);
+      LabelButtonResource *label_b_r =
+        HT2LT(html)->getResourceFactory()->createLabelButtonResource(init_str);
+      embed = new Embed (label_b_r);
 //    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
    } else if (!dStrcasecmp(type, "image")) {
       if (URL_FLAGS(html->base_url) & URL_SpamSafe) {
@@ -466,10 +452,10 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          attrbuf = a_Html_get_attr(html, tag, tagsize, "alt");
          label = attrbuf ? attrbuf : value ? value : name ? name : "Submit";
          init_str = dStrdup(label);
-         dw::core::ui::LabelButtonResource *label_b_r =
+         LabelButtonResource *label_b_r =
             HT2LT(html)->getResourceFactory()
             ->createLabelButtonResource(init_str);
-         embed = new dw::core::ui::Embed (label_b_r);
+         embed = new Embed (label_b_r);
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
       } else {
          inp_type = DILLO_HTML_INPUT_IMAGE;
@@ -485,7 +471,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
             valid = false;
             BUG_MSG("Forms with file input MUST use HTTP POST method\n");
             MSG("File input ignored in form not using HTTP POST method\n");
-         } else if (form->enc != DILLO_HTML_ENC_MULTIPART) {
+         } else if (form->content_type != DILLO_HTML_ENC_MULTIPART) {
             valid = false;
             BUG_MSG("Forms with file input MUST use multipart/form-data"
                     " encoding\n");
@@ -496,26 +482,26 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       if (valid) {
          inp_type = DILLO_HTML_INPUT_FILE;
          init_str = dStrdup("File selector");
-         dw::core::ui::LabelButtonResource *lbr =
+         LabelButtonResource *lbr =
             HT2LT(html)->getResourceFactory()->
                createLabelButtonResource(init_str);
-         embed = new dw::core::ui::Embed (lbr);
+         embed = new Embed (lbr);
       }
    } else if (!dStrcasecmp(type, "button")) {
       inp_type = DILLO_HTML_INPUT_BUTTON;
       if (value) {
          init_str = value;
-         dw::core::ui::LabelButtonResource *label_b_r =
+         LabelButtonResource *label_b_r =
             HT2LT(html)->getResourceFactory()
             ->createLabelButtonResource(init_str);
-         embed = new dw::core::ui::Embed (label_b_r);
+         embed = new Embed (label_b_r);
       }
    } else if (!dStrcasecmp(type, "text") || !*type) {
       /* Text input, which also is the default */
       inp_type = DILLO_HTML_INPUT_TEXT;
-      dw::core::ui::EntryResource *entryResource =
+      EntryResource *entryResource =
          HT2LT(html)->getResourceFactory()->createEntryResource (10, false);
-      embed = new dw::core::ui::Embed (entryResource);
+      embed = new Embed (entryResource);
       init_str = (value) ? value : NULL;
    } else {
       /* Unknown input type */
@@ -526,13 +512,12 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       Html_add_input(html, inp_type, embed, name,
                      (init_str) ? init_str : "", init_val);
    }
-  
-   if (embed != NULL && inp_type != DILLO_HTML_INPUT_IMAGE && 
+
+   if (embed != NULL && inp_type != DILLO_HTML_INPUT_IMAGE &&
        inp_type != DILLO_HTML_INPUT_UNKNOWN) {
       if (inp_type == DILLO_HTML_INPUT_TEXT ||
           inp_type == DILLO_HTML_INPUT_PASSWORD) {
-         dw::core::ui::EntryResource *entryres =
-            (dw::core::ui::EntryResource*)embed->getResource();
+         EntryResource *entryres = (EntryResource*)embed->getResource();
          /* Readonly or not? */
          if (a_Html_get_attr(html, tag, tagsize, "readonly"))
             entryres->setEditable(false);
@@ -570,7 +555,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloUrl *action;
-   dw::core::ui::Embed *embed;
+   Embed *embed;
    const char *attrbuf;
 
    if (html->InFlags & IN_FORM) {
@@ -582,19 +567,19 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
       action = a_Html_url_new(html, attrbuf, NULL, 0);
    else
       action = a_Url_dup(html->base_url);
-  
-   html->formNew(DILLO_HTML_METHOD_GET, action, DILLO_HTML_ENC_URLENCODING,
+
+   html->formNew(DILLO_HTML_METHOD_GET, action, DILLO_HTML_ENC_URLENCODED,
                  html->charset);
    html->InFlags |= IN_FORM;
-  
+
    DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
-  
+
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "prompt")))
       DW2TB(html->dw)->addText(attrbuf, S_TOP(html)->style);
- 
-   dw::core::ui::EntryResource *entryResource =
+
+   EntryResource *entryResource =
       HT2LT(html)->getResourceFactory()->createEntryResource (10, false);
-   embed = new dw::core::ui::Embed (entryResource);
+   embed = new Embed (entryResource);
    Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
    Color *bg;
@@ -620,7 +605,7 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    char *name;
    const char *attrbuf;
    int cols, rows;
-  
+
    if (html->InFlags & IN_TEXTAREA) {
       BUG_MSG("nested <textarea>\n");
       html->ReqTagClose = TRUE;
@@ -630,11 +615,11 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
       BUG_MSG("<textarea> element inside <select>\n");
       return;
    }
-  
+
    html->InFlags |= IN_TEXTAREA;
    a_Html_stash_init(html);
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
-  
+
    cols = 20;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cols")))
       cols = strtol(attrbuf, NULL, 10);
@@ -655,11 +640,11 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name")))
       name = dStrdup(attrbuf);
 
-   dw::core::ui::MultiLineTextResource *textres =
+   MultiLineTextResource *textres =
       HT2LT(html)->getResourceFactory()->createMultiLineTextResource (cols,
                                                                       rows);
 
-   dw::core::ui::Embed *embed = new dw::core::ui::Embed(textres);
+   Embed *embed = new Embed(textres);
    /* Readonly or not? */
    if (a_Html_get_attr(html, tag, tagsize, "readonly"))
       textres->setEditable(false);
@@ -692,7 +677,7 @@ void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
          dStr_erase(html->Stash, 0, 1);
       if (html->Stash->str[0] == '\n')
          dStr_erase(html->Stash, 0, 1);
-   
+
       /* As the spec recommends to canonicalize line endings, it is safe
        * to replace '\r' with '\n'. It will be canonicalized anyway! */
       for (i = 0; i < html->Stash->len; ++i) {
@@ -703,13 +688,12 @@ void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
                html->Stash->str[i] = '\n';
          }
       }
-   
+
       /* The HTML3.2 spec says it can have "text and character entities". */
       str = a_Html_parse_entities(html, html->Stash->str, html->Stash->len);
       input = Html_get_current_input(html);
       input->init_str = str;
-      ((dw::core::ui::MultiLineTextResource *)input->embed->getResource ())
-         ->setText(str);
+      ((MultiLineTextResource *)input->embed->getResource ())->setText(str);
 
       html->InFlags &= ~IN_TEXTAREA;
    }
@@ -733,19 +717,17 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    html->InFlags &= ~IN_OPTION;
 
    char *name = a_Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
-   dw::core::ui::ResourceFactory *factory =
-      HT2LT(html)->getResourceFactory ();
+   ResourceFactory *factory = HT2LT(html)->getResourceFactory ();
    DilloHtmlInputType type;
-   dw::core::ui::SelectionResource *res;
+   SelectionResource *res;
    if (a_Html_get_attr(html, tag, tagsize, "multiple")) {
       type = DILLO_HTML_INPUT_SEL_LIST;
-      res = factory->createListResource (
-         dw::core::ui::ListResource::SELECTION_MULTIPLE);
+      res = factory->createListResource (ListResource::SELECTION_MULTIPLE);
    } else {
       type = DILLO_HTML_INPUT_SELECT;
       res = factory->createOptionMenuResource ();
    }
-   dw::core::ui::Embed *embed = new dw::core::ui::Embed(res);
+   Embed *embed = new Embed(res);
 
    int bg;
    if (prefs.standard_widget_colors) {
@@ -798,11 +780,10 @@ void Html_tag_close_select(DilloHtml *html, int TagIdx)
       DilloHtmlInput *input = Html_get_current_input(html);
       DilloHtmlSelect *select = input->select;
 
-      // BUG(?): should not do this for MULTI selections 
+      // BUG(?): should not do this for MULTI selections
       select->ensureSelection ();
 
-      dw::core::ui::SelectionResource *res =
-         (dw::core::ui::SelectionResource*)input->embed->getResource();
+      SelectionResource *res = (SelectionResource*)input->embed->getResource();
       select->addOptionsTo (res);
    }
 
@@ -826,13 +807,10 @@ void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
 
    if (input->type == DILLO_HTML_INPUT_SELECT ||
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
-      char *value =
-         a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
-      bool selected =
-         (a_Html_get_attr(html, tag, tagsize, "selected") != NULL);
-      bool enabled =
-         (a_Html_get_attr(html, tag, tagsize, "disabled") == NULL);
-      input->select->addOption(value,selected,enabled);
+      char *value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
+      bool selected = (a_Html_get_attr(html, tag, tagsize,"selected") != NULL);
+      bool enabled = (a_Html_get_attr(html, tag, tagsize, "disabled") == NULL);
+      input->select->addOption(value, selected, enabled);
    }
 
    a_Html_stash_init(html);
@@ -876,10 +854,10 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 
    if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
       /* Render the button */
-      dw::core::style::StyleAttrs style_attrs;
-      dw::core::style::Style *style;
-      dw::core::Widget *page;
-      dw::core::ui::Embed *embed;
+      StyleAttrs style_attrs;
+      Style *style;
+      Widget *page;
+      Embed *embed;
       char *name, *value;
 
       style_attrs = *S_TOP(html)->style;
@@ -893,10 +871,10 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       page = new Textblock (prefs.limit_text_width);
       page->setStyle (style);
 
-      dw::core::ui::ComplexButtonResource *complex_b_r =
+      ComplexButtonResource *complex_b_r =
          HT2LT(html)->getResourceFactory()
          ->createComplexButtonResource(page, true);
-      embed = new dw::core::ui::Embed(complex_b_r);
+      embed = new Embed(complex_b_r);
 // a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
 
       DW2TB(html->dw)->addParbreak (5, style);
@@ -928,26 +906,26 @@ void Html_tag_close_button(DilloHtml *html, int TagIdx)
 }
 
 /*
- * Class implementations 
+ * Class implementations
  */
 
 /*
- * DilloHtmlForm 
+ * DilloHtmlForm
  */
 
 /*
- * Constructor 
+ * Constructor
  */
 DilloHtmlForm::DilloHtmlForm (DilloHtml *html2,
                               DilloHtmlMethod method2,
                               const DilloUrl *action2,
-                              DilloHtmlEnc enc2,
+                              DilloHtmlEnc content_type2,
                               const char *charset)
 {
    html = html2;
    method = method2;
    action = a_Url_dup(action2);
-   enc = enc2;
+   content_type = content_type2;
    submit_charset = dStrdup(charset);
    inputs = new misc::SimpleVector <DilloHtmlInput*> (4);
    num_entry_fields = 0;
@@ -956,7 +934,7 @@ DilloHtmlForm::DilloHtmlForm (DilloHtml *html2,
 }
 
 /*
- * Destructor 
+ * Destructor
  */
 DilloHtmlForm::~DilloHtmlForm ()
 {
@@ -969,15 +947,14 @@ DilloHtmlForm::~DilloHtmlForm ()
       delete(form_receiver);
 }
 
-void DilloHtmlForm::eventHandler(dw::core::ui::Resource *resource)
+void DilloHtmlForm::eventHandler(Resource *resource)
 {
    MSG("DilloHtmlForm::eventHandler\n");
    DilloHtmlInput *input = getInput(resource);
    if (input) {
-      bool force_submit =
-         prefs.enterpress_forces_submit ||
-         num_entry_fields == 1;
-      input->activate (this, force_submit);
+      bool entry_input_submits = prefs.enterpress_forces_submit ||
+                                 num_entry_fields == 1;
+      input->activate (this, entry_input_submits);
    } else {
       MSG("DilloHtmlForm::eventHandler: ERROR, input not found!\n");
    }
@@ -987,9 +964,9 @@ void DilloHtmlForm::eventHandler(dw::core::ui::Resource *resource)
  * Submit.
  * (Called by eventHandler())
  */
-void DilloHtmlForm::submit(DilloHtmlInput *input)
+void DilloHtmlForm::submit(DilloHtmlInput *active_input)
 {
-   DilloUrl *url = buildQueryUrl(input);
+   DilloUrl *url = buildQueryUrl(active_input);
    if (url) {
       a_Nav_push(html->bw, url);
       a_Url_free(url);
@@ -1002,7 +979,7 @@ void DilloHtmlForm::submit(DilloHtmlInput *input)
  * Build a new query URL.
  * (Called by submit())
  */
-DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input)
+DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *active_input)
 {
    DilloUrl *new_url = NULL;
 
@@ -1014,10 +991,10 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input)
       _MSG("DilloHtmlForm::buildQueryUrl: action=%s\n",URL_STR_(action));
 
       if (num_submit_buttons > 0) {
-         if ((input->type == DILLO_HTML_INPUT_SUBMIT) ||
-             (input->type == DILLO_HTML_INPUT_IMAGE) ||
-             (input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT)) {
-            active_submit = input;
+         if ((active_input->type == DILLO_HTML_INPUT_SUBMIT) ||
+             (active_input->type == DILLO_HTML_INPUT_IMAGE) ||
+             (active_input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT)) {
+            active_submit = active_input;
          }
       }
 
@@ -1031,7 +1008,7 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *input)
             /* new_url keeps the dStr and sets DataStr to NULL */
             a_Url_set_data(new_url, &DataStr);
             a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Post);
-            if (enc == DILLO_HTML_ENC_MULTIPART)
+            if (content_type == DILLO_HTML_ENC_MULTIPART)
                a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_MultipartEnc);
          } else {
             /* remove <fragment> and <query> sections if present */
@@ -1063,11 +1040,11 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
 {
    Dstr *DataStr = NULL;
    char *boundary = NULL;
-   iconv_t encoder = (iconv_t) -1;
+   iconv_t char_encoder = (iconv_t) -1;
 
    if (submit_charset && dStrcasecmp(submit_charset, "UTF-8")) {
-      encoder = iconv_open(submit_charset, "UTF-8");
-      if (encoder == (iconv_t) -1) {
+      char_encoder = iconv_open(submit_charset, "UTF-8");
+      if (char_encoder == (iconv_t) -1) {
          MSG_WARN("Cannot convert to character encoding '%s'\n",
                   submit_charset);
       } else {
@@ -1075,21 +1052,21 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
       }
    }
 
-   if (enc == DILLO_HTML_ENC_MULTIPART) {
-      if (!(boundary = makeMultipartBoundary(encoder, active_submit)))
+   if (content_type == DILLO_HTML_ENC_MULTIPART) {
+      if (!(boundary = makeMultipartBoundary(char_encoder, active_submit)))
          MSG_ERR("Cannot generate multipart/form-data boundary.\n");
    }
 
-   if ((enc == DILLO_HTML_ENC_URLENCODING) || (boundary != NULL)) {
+   if ((content_type == DILLO_HTML_ENC_URLENCODED) || (boundary != NULL)) {
       Dlist *values = dList_new(5);
 
       DataStr = dStr_sized_new(4096);
-      for (int input_idx = 0; input_idx < inputs->size(); input_idx++) {
-         DilloHtmlInput *input = inputs->get (input_idx);
+      for (int i = 0; i < inputs->size(); i++) {
+         DilloHtmlInput *input = inputs->get (i);
          Dstr *name = dStr_new(input->name);
          bool is_active_submit = (input == active_submit);
 
-         name = encodeText(encoder, &name);
+         name = encodeText(char_encoder, &name);
 
          input->appendValuesTo(values, is_active_submit);
 
@@ -1100,26 +1077,26 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
             dList_remove(values, file);
 
             /* Get filename and encode it. Do not encode file contents. */
-            dw::core::ui::LabelButtonResource *lbr =
-               (dw::core::ui::LabelButtonResource*)
-               input->embed->getResource();
+            LabelButtonResource *lbr =
+                            (LabelButtonResource*) input->embed->getResource();
             const char *filename = lbr->getLabel();
             if (filename[0] && strcmp(filename, input->init_str)) {
                char *p = strrchr(filename, '/');
                if (p)
                   filename = p + 1;     /* don't reveal path */
                Dstr *dfilename = dStr_new(filename);
-               dfilename = encodeText(encoder, &dfilename);
-               appendInputMultipartFiles(DataStr, boundary, name->str,
+               dfilename = encodeText(char_encoder, &dfilename);
+               filesInputMultipartAppend(DataStr, boundary, name->str,
                                          file, dfilename->str);
                dStr_free(dfilename, 1);
             }
             dStr_free(file, 1);
          } else if (input->type == DILLO_HTML_INPUT_INDEX) {
+            /* no name */
             Dstr *val = (Dstr *) dList_nth_data(values, 0);
             dList_remove(values, val);
-            val = encodeText(encoder, &val);
-            urlencodeAppend(DataStr, val->str);
+            val = encodeText(char_encoder, &val);
+            strUrlencodeAppend(DataStr, val->str);
             dStr_free(val, 1);
          } else if (input->type == DILLO_HTML_INPUT_IMAGE) {
             if (dList_length(values) > 0) {
@@ -1128,10 +1105,10 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
                dList_remove(values, x);
                y = (Dstr *) dList_nth_data(values, 0);
                dList_remove(values, y);
-               if (enc == DILLO_HTML_ENC_URLENCODING)
-                  appendClickposUrlencode(DataStr, name, x, y);
-               else if (enc == DILLO_HTML_ENC_MULTIPART)
-                  appendClickposMultipart(DataStr, boundary, name, x, y);
+               if (content_type == DILLO_HTML_ENC_URLENCODED)
+                  imageInputUrlencodeAppend(DataStr, name, x, y);
+               else if (content_type == DILLO_HTML_ENC_MULTIPART)
+                  imageInputMultipartAppend(DataStr, boundary, name, x, y);
                dStr_free(x, 1);
                dStr_free(y, 1);
             }
@@ -1140,30 +1117,29 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
             for (i = 0; i < length; i++) {
                Dstr *val = (Dstr *) dList_nth_data(values, 0);
                dList_remove(values, val);
-               val = encodeText(encoder, &val);
-               if (enc == DILLO_HTML_ENC_URLENCODING)
-                  appendInputUrlencode(DataStr, name->str, val->str);
-               else if (enc == DILLO_HTML_ENC_MULTIPART)
-                  appendInputMultipart(DataStr, boundary,
-                                       name->str, val->str);
+               val = encodeText(char_encoder, &val);
+               if (content_type == DILLO_HTML_ENC_URLENCODED)
+                  inputUrlencodeAppend(DataStr, name->str, val->str);
+               else if (content_type == DILLO_HTML_ENC_MULTIPART)
+                  inputMultipartAppend(DataStr, boundary, name->str, val->str);
                dStr_free(val, 1);
             }
          }
          dStr_free(name, 1);
       }
       if (DataStr->len > 0) {
-         if (enc == DILLO_HTML_ENC_URLENCODING) {
+         if (content_type == DILLO_HTML_ENC_URLENCODED) {
             if (DataStr->str[DataStr->len - 1] == '&')
                dStr_truncate(DataStr, DataStr->len - 1);
-         } else if (enc == DILLO_HTML_ENC_MULTIPART) {
+         } else if (content_type == DILLO_HTML_ENC_MULTIPART) {
             dStr_append(DataStr, "--");
          }
       }
       dList_free(values);
    }
    dFree(boundary);
-   if (encoder != (iconv_t) -1)
-      (void)iconv_close(encoder);
+   if (char_encoder != (iconv_t) -1)
+      (void)iconv_close(char_encoder);
    return DataStr;
 }
 
@@ -1171,7 +1147,7 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
  * Generate a boundary string for use in separating the parts of a
  * multipart/form-data submission.
  */
-char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
+char *DilloHtmlForm::makeMultipartBoundary(iconv_t char_encoder,
                                            DilloHtmlInput *active_submit)
 {
    const int max_tries = 10;
@@ -1181,25 +1157,25 @@ char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
    char *ret = NULL;
 
    /* fill DataStr with names, filenames, and values */
-   for (int input_idx = 0; input_idx < inputs->size(); input_idx++) {
+   for (int i = 0; i < inputs->size(); i++) {
       Dstr *dstr;
-      DilloHtmlInput *input = inputs->get (input_idx);
+      DilloHtmlInput *input = inputs->get (i);
       bool is_active_submit = (input == active_submit);
       input->appendValuesTo(values, is_active_submit);
 
       if (input->name) {
          dstr = dStr_new(input->name);
-         dstr = encodeText(encoder, &dstr);
+         dstr = encodeText(char_encoder, &dstr);
          dStr_append_l(DataStr, dstr->str, dstr->len);
          dStr_free(dstr, 1);
       }
       if (input->type == DILLO_HTML_INPUT_FILE) {
-         dw::core::ui::LabelButtonResource *lbr =
-            (dw::core::ui::LabelButtonResource*)input->embed->getResource();
+         LabelButtonResource *lbr =
+            (LabelButtonResource*)input->embed->getResource();
          const char *filename = lbr->getLabel();
          if (filename[0] && strcmp(filename, input->init_str)) {
             dstr = dStr_new(filename);
-            dstr = encodeText(encoder, &dstr);
+            dstr = encodeText(char_encoder, &dstr);
             dStr_append_l(DataStr, dstr->str, dstr->len);
             dStr_free(dstr, 1);
          }
@@ -1209,7 +1185,7 @@ char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
          dstr = (Dstr *) dList_nth_data(values, 0);
          dList_remove(values, dstr);
          if (input->type != DILLO_HTML_INPUT_FILE)
-            dstr = encodeText(encoder, &dstr);
+            dstr = encodeText(char_encoder, &dstr);
          dStr_append_l(DataStr, dstr->str, dstr->len);
          dStr_free(dstr, 1);
       }
@@ -1233,9 +1209,9 @@ char *DilloHtmlForm::makeMultipartBoundary(iconv_t encoder,
 /*
  * Pass input text through character set encoder.
  * Return value: same input Dstr if no encoding is needed.
-                 new Dstr when encoding (input Dstr is freed).
+ *               new Dstr when encoding (input Dstr is freed).
  */
-Dstr *DilloHtmlForm::encodeText(iconv_t encoder, Dstr **input)
+Dstr *DilloHtmlForm::encodeText(iconv_t char_encoder, Dstr **input)
 {
    int rc = 0;
    Dstr *output;
@@ -1245,7 +1221,7 @@ Dstr *DilloHtmlForm::encodeText(iconv_t encoder, Dstr **input)
    size_t inLeft, outRoom;
    bool bad_chars = false;
 
-   if ((encoder == (iconv_t) -1) || *input == NULL || (*input)->len == 0)
+   if ((char_encoder == (iconv_t) -1) || *input == NULL || (*input)->len == 0)
       return *input;
 
    output = dStr_new("");
@@ -1258,7 +1234,7 @@ Dstr *DilloHtmlForm::encodeText(iconv_t encoder, Dstr **input)
       outPtr = buffer;
       outRoom = bufsize;
 
-      rc = iconv(encoder, &inPtr, &inLeft, &outPtr, &outRoom);
+      rc = iconv(char_encoder, &inPtr, &inLeft, &outPtr, &outRoom);
 
       // iconv() on success, number of bytes converted
       //         -1, errno == EILSEQ illegal byte sequence found
@@ -1298,28 +1274,27 @@ Dstr *DilloHtmlForm::encodeText(iconv_t encoder, Dstr **input)
 
    return output;
 }
-  
+
 /*
- * Urlencode 'val' and append it to 'str'
+ * Urlencode 'str' and append it to 'dstr'
  */
-void DilloHtmlForm::urlencodeAppend(Dstr *str, const char *val)
+void DilloHtmlForm::strUrlencodeAppend(Dstr *dstr, const char *str)
 {
-   char *enc_val = a_Url_encode_hex_str(val);
-   dStr_append(str, enc_val);
-   dFree(enc_val);
+   char *encoded = a_Url_encode_hex_str(str);
+   dStr_append(dstr, encoded);
+   dFree(encoded);
 }
 
 /*
  * Append a name-value pair to url data using url encoding.
  */
-void DilloHtmlForm::appendInputUrlencode(Dstr *data,
-                                         const char *name,
+void DilloHtmlForm::inputUrlencodeAppend(Dstr *data, const char *name,
                                          const char *value)
 {
    if (name && name[0]) {
-      urlencodeAppend(data, name);
+      strUrlencodeAppend(data, name);
       dStr_append_c(data, '=');
-      urlencodeAppend(data, value);
+      strUrlencodeAppend(data, value);
       dStr_append_c(data, '&');
    }
 }
@@ -1328,7 +1303,7 @@ void DilloHtmlForm::appendInputUrlencode(Dstr *data,
  * Append files to URL data using multipart encoding.
  * Currently only accepts one file.
  */
-void DilloHtmlForm::appendInputMultipartFiles(Dstr* data,
+void DilloHtmlForm::filesInputMultipartAppend(Dstr* data,
                                               const char *boundary,
                                               const char *name,
                                               Dstr *file,
@@ -1379,7 +1354,7 @@ void DilloHtmlForm::appendInputMultipartFiles(Dstr* data,
 /*
  * Append a name-value pair to url data using multipart encoding.
  */
-void DilloHtmlForm::appendInputMultipart(Dstr *data,
+void DilloHtmlForm::inputMultipartAppend(Dstr *data,
                                          const char *boundary,
                                          const char *name,
                                          const char *value)
@@ -1403,13 +1378,13 @@ void DilloHtmlForm::appendInputMultipart(Dstr *data,
 /*
  * Append an image button click position to url data using url encoding.
  */
-void DilloHtmlForm::appendClickposUrlencode(Dstr *data, Dstr *name, Dstr *x,
-                                            Dstr *y)
+void DilloHtmlForm::imageInputUrlencodeAppend(Dstr *data, Dstr *name, Dstr *x,
+                                              Dstr *y)
 {
    if (name->len) {
-      urlencodeAppend(data, name->str);
+      strUrlencodeAppend(data, name->str);
       dStr_sprintfa(data, ".x=%s&", x->str);
-      urlencodeAppend(data, name->str);
+      strUrlencodeAppend(data, name->str);
       dStr_sprintfa(data, ".y=%s&", y->str);
    } else
       dStr_sprintfa(data, "x=%s&y=%s&", x->str, y->str);
@@ -1418,8 +1393,8 @@ void DilloHtmlForm::appendClickposUrlencode(Dstr *data, Dstr *name, Dstr *x,
 /*
  * Append an image button click position to url data using multipart encoding.
  */
-void DilloHtmlForm::appendClickposMultipart(Dstr *data, const char *boundary,
-                                            Dstr *name, Dstr *x, Dstr *y)
+void DilloHtmlForm::imageInputMultipartAppend(Dstr *data, const char *boundary,
+                                              Dstr *name, Dstr *x, Dstr *y)
 {
    int orig_len = name->len;
 
@@ -1427,10 +1402,10 @@ void DilloHtmlForm::appendClickposMultipart(Dstr *data, const char *boundary,
       dStr_append_c(name, '.');
    dStr_append_c(name, 'x');
 
-   appendInputMultipart(data, boundary, name->str, x->str);
+   inputMultipartAppend(data, boundary, name->str, x->str);
    dStr_truncate(name, name->len - 1);
    dStr_append_c(name, 'y');
-   appendInputMultipart(data, boundary, name->str, y->str);
+   inputMultipartAppend(data, boundary, name->str, y->str);
    dStr_truncate(name, orig_len);
 }
 
@@ -1469,7 +1444,7 @@ void DilloHtmlForm::addInput(DilloHtmlInput *input, DilloHtmlInputType type)
 /*
  * Return the input with a given resource.
  */
-DilloHtmlInput *DilloHtmlForm::getInput (dw::core::ui::Resource *resource)
+DilloHtmlInput *DilloHtmlForm::getInput (Resource *resource)
 {
    for (int idx = 0; idx < inputs->size(); idx++) {
       DilloHtmlInput *input = inputs->get(idx);
@@ -1495,13 +1470,13 @@ DilloHtmlInput *DilloHtmlForm::getRadioInput (const char *name)
 }
 
 /*
- * DilloHtmlReceiver 
+ * DilloHtmlReceiver
  *
  * TODO: Currently there's "clicked" for buttons, we surely need "enter" for
  * textentries, and maybe the "mouseover, ...." set for Javascript.
  */
 
-void DilloHtmlReceiver::activate (dw::core::ui::Resource *resource)
+void DilloHtmlReceiver::activate (Resource *resource)
 {
    form->eventHandler(resource);
 }
@@ -1510,7 +1485,7 @@ void DilloHtmlReceiver::activate (dw::core::ui::Resource *resource)
  * Enter a form control, as in "onmouseover".
  * For _pressing_ enter in a text control, see activate().
  */
-void DilloHtmlReceiver::enter (dw::core::ui::Resource *resource)
+void DilloHtmlReceiver::enter (Resource *resource)
 {
    DilloHtml *html = form->html;
    DilloHtmlInput *input = form->getInput(resource);
@@ -1532,29 +1507,27 @@ void DilloHtmlReceiver::enter (dw::core::ui::Resource *resource)
 /*
  * Leave a form control, or "onmouseout".
  */
-void DilloHtmlReceiver::leave (dw::core::ui::Resource *resource)
+void DilloHtmlReceiver::leave (Resource *resource)
 {
    DilloHtml *html = form->html;
    a_UIcmd_set_msg(html->bw, "");
 }
 
-void DilloHtmlReceiver::clicked (dw::core::ui::ButtonResource *resource,
+void DilloHtmlReceiver::clicked (ButtonResource *resource,
                                  int buttonNo, int x, int y)
 {
 // form->eventHandler(resource, x, y);
 }
 
 /*
- * DilloHtmlInput 
+ * DilloHtmlInput
  */
 
 /*
- * Constructor 
+ * Constructor
  */
-DilloHtmlInput::DilloHtmlInput (DilloHtmlInputType type2,
-                                dw::core::ui::Embed *embed2,
-                                const char *name2,
-                                const char *init_str2,
+DilloHtmlInput::DilloHtmlInput (DilloHtmlInputType type2, Embed *embed2,
+                                const char *name2, const char *init_str2,
                                 bool init_val2)
 {
    type = type2;
@@ -1576,7 +1549,7 @@ DilloHtmlInput::DilloHtmlInput (DilloHtmlInputType type2,
 }
 
 /*
- * Destructor 
+ * Destructor
  */
 DilloHtmlInput::~DilloHtmlInput ()
 {
@@ -1592,7 +1565,7 @@ DilloHtmlInput::~DilloHtmlInput ()
  */
 void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
 {
-   dw::core::ui::Resource *resource = NULL;
+   Resource *resource = NULL;
    if (embed)
       resource = embed->getResource ();
    switch (type) {
@@ -1604,7 +1577,7 @@ void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
    case DILLO_HTML_INPUT_TEXTAREA:
    case DILLO_HTML_INPUT_SELECT:
    case DILLO_HTML_INPUT_SEL_LIST:
-      // do nothing 
+      // do nothing
       break;
    case DILLO_HTML_INPUT_TEXT:
    case DILLO_HTML_INPUT_PASSWORD:
@@ -1622,14 +1595,14 @@ void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
 }
 
 /*
- * Activate a form 
+ * Activate a form
  */
-void DilloHtmlInput::activate(DilloHtmlForm *form, bool force_submit)
+void DilloHtmlInput::activate(DilloHtmlForm *form, bool entry_input_submits)
 {
    switch (type) {
    case DILLO_HTML_INPUT_TEXT:
    case DILLO_HTML_INPUT_PASSWORD:
-      if (force_submit)
+      if (entry_input_submits)
          form->submit (this);
       break;
    case DILLO_HTML_INPUT_FILE:
@@ -1646,7 +1619,7 @@ void DilloHtmlInput::activate(DilloHtmlForm *form, bool force_submit)
 }
 
 /*
- * Read a file into cache 
+ * Read a file into cache
  */
 void DilloHtmlInput::readFile (BrowserWindow *bw)
 {
@@ -1657,8 +1630,7 @@ void DilloHtmlInput::readFile (BrowserWindow *bw)
       file_data = a_Misc_file2dstr(filename);
       if (file_data) {
          a_UIcmd_set_msg(bw, "File loaded.");
-         dw::core::ui::LabelButtonResource *lbr =
-            (dw::core::ui::LabelButtonResource*)embed->getResource();
+         LabelButtonResource *lbr = (LabelButtonResource*)embed->getResource();
          lbr->setLabel(filename);
       } else {
          a_UIcmd_set_msg(bw, "ERROR: can't load: %s", filename);
@@ -1676,23 +1648,22 @@ void DilloHtmlInput::appendValuesTo(Dlist *values, bool is_active_submit)
    case DILLO_HTML_INPUT_PASSWORD:
    case DILLO_HTML_INPUT_INDEX:
       {
-         dw::core::ui::EntryResource *entryres =
-            (dw::core::ui::EntryResource*)embed->getResource();
+         EntryResource *entryres = (EntryResource*)embed->getResource();
          dList_append(values, dStr_new(entryres->getText()));
       }
       break;
    case DILLO_HTML_INPUT_TEXTAREA:
       {
-         dw::core::ui::MultiLineTextResource *textres =
-            (dw::core::ui::MultiLineTextResource*)embed->getResource();
+         MultiLineTextResource *textres =
+            (MultiLineTextResource*)embed->getResource();
          dList_append(values, dStr_new(textres->getText()));
       }
       break;
    case DILLO_HTML_INPUT_CHECKBOX:
    case DILLO_HTML_INPUT_RADIO:
       {
-         dw::core::ui::ToggleButtonResource *cb_r =
-            (dw::core::ui::ToggleButtonResource*)embed->getResource();
+         ToggleButtonResource *cb_r =
+            (ToggleButtonResource*)embed->getResource();
          if (name && init_str && cb_r->isActivated()) {
             dList_append(values, dStr_new(init_str));
          }
@@ -1708,16 +1679,14 @@ void DilloHtmlInput::appendValuesTo(Dlist *values, bool is_active_submit)
       break;
    case DILLO_HTML_INPUT_SELECT:
    case DILLO_HTML_INPUT_SEL_LIST:
-      {  // brackets for compiler happiness.
-         dw::core::ui::SelectionResource *sel_res =
-            (dw::core::ui::SelectionResource*)embed->getResource();
+      {
+         SelectionResource *sel_res = (SelectionResource*)embed->getResource();
          select->appendValuesTo (values, sel_res);
       }
       break;
    case DILLO_HTML_INPUT_FILE:
       {
-         dw::core::ui::LabelButtonResource *lbr =
-            (dw::core::ui::LabelButtonResource*)embed->getResource();
+         LabelButtonResource *lbr = (LabelButtonResource*)embed->getResource();
          const char *filename = lbr->getLabel();
          if (filename[0] && strcmp(filename, init_str)) {
             if (file_data) {
@@ -1732,8 +1701,8 @@ void DilloHtmlInput::appendValuesTo(Dlist *values, bool is_active_submit)
       break;
    case DILLO_HTML_INPUT_IMAGE:
       if (is_active_submit) {
-         dw::core::ui::ComplexButtonResource *cbr =
-            (dw::core::ui::ComplexButtonResource*)embed->getResource();
+         ComplexButtonResource *cbr =
+            (ComplexButtonResource*)embed->getResource();
          Dstr *strX = dStr_new("");
          Dstr *strY = dStr_new("");
          dStr_sprintf(strX, "%d", cbr->getClickX());
@@ -1756,16 +1725,15 @@ void DilloHtmlInput::reset ()
    case DILLO_HTML_INPUT_TEXT:
    case DILLO_HTML_INPUT_PASSWORD:
       {
-         dw::core::ui::EntryResource *entryres =
-            (dw::core::ui::EntryResource*)embed->getResource();
+         EntryResource *entryres = (EntryResource*)embed->getResource();
          entryres->setText(init_str ? init_str : "");
       }
       break;
    case DILLO_HTML_INPUT_CHECKBOX:
    case DILLO_HTML_INPUT_RADIO:
       {
-         dw::core::ui::ToggleButtonResource *tb_r =
-            (dw::core::ui::ToggleButtonResource*)embed->getResource();
+         ToggleButtonResource *tb_r =
+            (ToggleButtonResource*)embed->getResource();
          tb_r->setActivated(init_val);
       }
       break;
@@ -1801,15 +1769,14 @@ void DilloHtmlInput::reset ()
       break;
    case DILLO_HTML_INPUT_TEXTAREA:
       if (init_str != NULL) {
-         dw::core::ui::MultiLineTextResource *textres =
-            (dw::core::ui::MultiLineTextResource*)embed->getResource();
+         MultiLineTextResource *textres =
+            (MultiLineTextResource*)embed->getResource();
          textres->setText(init_str ? init_str : "");
       }
       break;
    case DILLO_HTML_INPUT_FILE:
       {
-         dw::core::ui::LabelButtonResource *lbr =
-            (dw::core::ui::LabelButtonResource*)embed->getResource();
+         LabelButtonResource *lbr = (LabelButtonResource*)embed->getResource();
          lbr->setLabel(init_str);
       }
       break;
@@ -1819,11 +1786,11 @@ void DilloHtmlInput::reset ()
 }
 
 /*
- * DilloHtmlSelect 
+ * DilloHtmlSelect
  */
 
 /*
- * Constructor 
+ * Constructor
  */
 DilloHtmlSelect::DilloHtmlSelect ()
 {
@@ -1831,7 +1798,7 @@ DilloHtmlSelect::DilloHtmlSelect ()
 }
 
 /*
- * Destructor 
+ * Destructor
  */
 DilloHtmlSelect::~DilloHtmlSelect ()
 {
@@ -1872,7 +1839,7 @@ void DilloHtmlSelect::ensureSelection()
    }
 }
 
-void DilloHtmlSelect::addOptionsTo (dw::core::ui::SelectionResource *res)
+void DilloHtmlSelect::addOptionsTo (SelectionResource *res)
 {
    int size = options->size ();
    for (int i = 0; i < size; i++) {
@@ -1881,8 +1848,7 @@ void DilloHtmlSelect::addOptionsTo (dw::core::ui::SelectionResource *res)
    }
 }
 
-void DilloHtmlSelect::appendValuesTo (Dlist *values,
-                                      dw::core::ui::SelectionResource *res)
+void DilloHtmlSelect::appendValuesTo (Dlist *values, SelectionResource *res)
 {
    int size = options->size ();
    for (int i = 0; i < size; i++) {
@@ -1895,11 +1861,11 @@ void DilloHtmlSelect::appendValuesTo (Dlist *values,
 }
 
 /*
- * DilloHtmlOption 
+ * DilloHtmlOption
  */
 
 /*
- * Constructor 
+ * Constructor
  */
 DilloHtmlOption::DilloHtmlOption (char *value2,
                                   bool selected2,
@@ -1912,7 +1878,7 @@ DilloHtmlOption::DilloHtmlOption (char *value2,
 }
 
 /*
- * Destructor 
+ * Destructor
  */
 DilloHtmlOption::~DilloHtmlOption ()
 {
@@ -1921,21 +1887,20 @@ DilloHtmlOption::~DilloHtmlOption ()
 }
 
 /*
- * Utilities 
+ * Utilities
  */
 
 /*
  * Create input image for the form
  */
-static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
-                                             const char *tag, int tagsize)
+static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    StyleAttrs style_attrs;
    DilloImage *Image;
-   dw::core::ui::Embed *button = NULL;
+   Embed *button = NULL;
    DilloUrl *url = NULL;
-  
+
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) &&
        (url = a_Html_url_new(html, attrbuf, NULL, 0))) {
       style_attrs = *S_TOP(html)->style;
@@ -1948,10 +1913,10 @@ static dw::core::ui::Embed *Html_input_image(DilloHtml *html,
                                         false))) {
          Style *style = Style::create (HT2LT(html), &style_attrs);
          IM2DW(Image)->setStyle (style);
-         dw::core::ui::ComplexButtonResource *complex_b_r =
+         ComplexButtonResource *complex_b_r =
             HT2LT(html)->getResourceFactory()->createComplexButtonResource(
                                                           IM2DW(Image), false);
-         button = new dw::core::ui::Embed(complex_b_r);
+         button = new Embed(complex_b_r);
          DW2TB(html->dw)->addWidget (button, style);
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
          style->unref();

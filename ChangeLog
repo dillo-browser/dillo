@@ -3,6 +3,7 @@ Dillo project
 =============================================================================
 
 dillo-2.1
+
 +- Added support for numeric IPv6 addresses entered into the url bar.
    Patch: Justus Winter
 

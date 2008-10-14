@@ -14,7 +14,7 @@ typedef enum {
 } DilloHtmlMethod;
 
 typedef enum {
-   DILLO_HTML_ENC_URLENCODING,
+   DILLO_HTML_ENC_URLENCODED,
    DILLO_HTML_ENC_MULTIPART
 } DilloHtmlEnc;
 
