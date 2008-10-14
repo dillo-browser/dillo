@@ -95,7 +95,7 @@
 # "%s" is replaced with the search keywords separated by '+'.
 # search_url="http://search.lycos.com/?query=%s"
 # search_url="http://www.alltheweb.com/search?cat=web&query=%s"
-#search_url="http://www.google.com/search?q=%s"
+#search_url="http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
 # Set the proxy information for http.
 # WARNING: dillo uses wget for ftp and https. To use a proxy for those

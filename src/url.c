@@ -102,11 +102,23 @@ const char *a_Url_hostname(const DilloUrl *u)
    DilloUrl *url = (DilloUrl *) u;
 
    if (!url->hostname && url->authority) {
-      if ((p = strchr(url->authority, ':'))) {
-         url->port = strtol(p + 1, NULL, 10);
-         url->hostname = dStrndup(url->authority,(uint_t)(p - url->authority));
-      } else
-         url->hostname = url->authority;
+      if (url->authority[0] == '[' && (p = strchr(url->authority, ']'))) {
+         /* numeric ipv6 address, strip the brackets */
+         url->hostname = dStrndup(url->authority + 1,
+                                  (uint_t)(p - url->authority - 1));
+         if ((p = strchr(p, ':'))) {
+            url->port = strtol(p + 1, NULL, 10);
+         }
+      } else {
+         /* numeric ipv4 or hostname */
+         if ((p = strchr(url->authority, ':'))) {
+            url->port = strtol(p + 1, NULL, 10);
+            url->hostname = dStrndup(url->authority,
+				     (uint_t)(p - url->authority));
+         } else {
+            url->hostname = url->authority;
+         }
+      }
    }
 
    return url->hostname;

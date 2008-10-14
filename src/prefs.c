@@ -42,7 +42,7 @@
 
 #define D_VW_FONTNAME "DejaVu Sans"
 #define D_FW_FONTNAME "DejaVu Sans Mono"
-#define D_SEARCH_URL "http://www.google.com/search?q=%s"
+#define D_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #define D_SAVE_DIR "/tmp/"
 
 #define DW_COLOR_DEFAULT_BGND   0xdcd1ba
