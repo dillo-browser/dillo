@@ -786,22 +786,12 @@ bool DilloHtml::HtmlLinkReceiver::click (Widget *widget, int link, int img,
 
    if ((img != -1) && (html->images->get(img)->image)) {
       // clicked an image that has not already been loaded
-      DilloUrl *pattern;
-
       if (event->button == 1){
          // load all instances of this image
-         pattern = html->images->get(img)->url;
-      } else {
-         if (event->button == 2){
-            // load all images
-            pattern = NULL;
-         } else {
-            return false;
-         }
+         DilloUrl *pattern = html->images->get(img)->url;
+         html->loadImages(pattern);
+         return true;
       }
-
-      html->loadImages(pattern);
-      return true;
    }
 
    if (link != -1) {
