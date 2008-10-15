@@ -910,8 +910,8 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
       } else if (dStrcasecmp(attr, "Secure") == 0) {
          cookie->secure = TRUE;
       } else if (dStrcasecmp(attr, "HttpOnly") == 0) {
-         // this case intentionally left blank, we because do not (yet) 
-         // do client-side scripting 
+         // this case is intentionally left blank, because we do not
+         // do client-side scripting (yet).
       } else {
          /* Oops! this can't be good... */
          MSG("Cookie contains unknown attribute: '%s'\n", attr);
