@@ -1059,41 +1059,42 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
          DilloHtmlInput *input = inputs->get (i);
          Dstr *name = dStr_new(input->name);
          bool is_active_submit = (input == active_submit);
+         int valcount;
 
          name = encodeText(char_encoder, &name);
 
          input->appendValuesTo(values, is_active_submit);
 
-         if (input->type == DILLO_HTML_INPUT_FILE && dList_length(values) >0) {
-            if (dList_length(values) > 1)
-               MSG_WARN("multiple files per form control not supported\n");
-            Dstr *file = (Dstr *) dList_nth_data(values, 0);
-            dList_remove(values, file);
+         if ((valcount = dList_length(values)) > 0) {
+            if (input->type == DILLO_HTML_INPUT_FILE) {
+               if (valcount > 1)
+                  MSG_WARN("multiple files per form control not supported\n");
+               Dstr *file = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, file);
 
-            /* Get filename and encode it. Do not encode file contents. */
-            LabelButtonResource *lbr =
+               /* Get filename and encode it. Do not encode file contents. */
+               LabelButtonResource *lbr =
                             (LabelButtonResource*) input->embed->getResource();
-            const char *filename = lbr->getLabel();
-            if (filename[0] && strcmp(filename, input->init_str)) {
-               char *p = strrchr(filename, '/');
-               if (p)
-                  filename = p + 1;     /* don't reveal path */
-               Dstr *dfilename = dStr_new(filename);
-               dfilename = encodeText(char_encoder, &dfilename);
-               filesInputMultipartAppend(DataStr, boundary, name->str,
-                                         file, dfilename->str);
-               dStr_free(dfilename, 1);
-            }
-            dStr_free(file, 1);
-         } else if (input->type == DILLO_HTML_INPUT_INDEX) {
-            /* no name */
-            Dstr *val = (Dstr *) dList_nth_data(values, 0);
-            dList_remove(values, val);
-            val = encodeText(char_encoder, &val);
-            strUrlencodeAppend(DataStr, val->str);
-            dStr_free(val, 1);
-         } else if (input->type == DILLO_HTML_INPUT_IMAGE) {
-            if (dList_length(values) > 0) {
+               const char *filename = lbr->getLabel();
+               if (filename[0] && strcmp(filename, input->init_str)) {
+                  char *p = strrchr(filename, '/');
+                  if (p)
+                     filename = p + 1;     /* don't reveal path */
+                  Dstr *dfilename = dStr_new(filename);
+                  dfilename = encodeText(char_encoder, &dfilename);
+                  filesInputMultipartAppend(DataStr, boundary, name->str,
+                                            file, dfilename->str);
+                  dStr_free(dfilename, 1);
+               }
+               dStr_free(file, 1);
+            } else if (input->type == DILLO_HTML_INPUT_INDEX) {
+               /* no name */
+               Dstr *val = (Dstr *) dList_nth_data(values, 0);
+               dList_remove(values, val);
+               val = encodeText(char_encoder, &val);
+               strUrlencodeAppend(DataStr, val->str);
+               dStr_free(val, 1);
+            } else if (input->type == DILLO_HTML_INPUT_IMAGE) {
                Dstr *x, *y;
                x = (Dstr *) dList_nth_data(values, 0);
                dList_remove(values, x);
@@ -1105,18 +1106,18 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
                   imageInputMultipartAppend(DataStr, boundary, name, x, y);
                dStr_free(x, 1);
                dStr_free(y, 1);
-            }
-         } else {
-            int length = dList_length(values), i;
-            for (i = 0; i < length; i++) {
-               Dstr *val = (Dstr *) dList_nth_data(values, 0);
-               dList_remove(values, val);
-               val = encodeText(char_encoder, &val);
-               if (content_type == DILLO_HTML_ENC_URLENCODED)
-                  inputUrlencodeAppend(DataStr, name->str, val->str);
-               else if (content_type == DILLO_HTML_ENC_MULTIPART)
-                  inputMultipartAppend(DataStr, boundary, name->str, val->str);
-               dStr_free(val, 1);
+            } else {
+               for (int j = 0; j < valcount; j++) {
+                  Dstr *val = (Dstr *) dList_nth_data(values, 0);
+                  dList_remove(values, val);
+                  val = encodeText(char_encoder, &val);
+                  if (content_type == DILLO_HTML_ENC_URLENCODED)
+                     inputUrlencodeAppend(DataStr, name->str, val->str);
+                  else if (content_type == DILLO_HTML_ENC_MULTIPART)
+                     inputMultipartAppend(DataStr, boundary, name->str,
+                                          val->str);
+                  dStr_free(val, 1);
+               }
             }
          }
          dStr_free(name, 1);
