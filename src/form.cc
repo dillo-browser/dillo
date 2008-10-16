@@ -401,6 +401,7 @@ static int Html_input_get_size(DilloHtml *html, const char *attrbuf)
 void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloHtmlInputType inp_type;
+   Resource *resource = NULL;
    Embed *embed = NULL;
    char *value, *name, *type, *init_str;
    const char *attrbuf, *label;
@@ -429,13 +430,11 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       inp_type = DILLO_HTML_INPUT_PASSWORD;
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
-      EntryResource *entryResource = factory->createEntryResource (size, true);
-      embed = new Embed (entryResource);
+      resource = factory->createEntryResource (size, true);
       init_str = value;
    } else if (!dStrcasecmp(type, "checkbox")) {
       inp_type = DILLO_HTML_INPUT_CHECKBOX;
-      CheckButtonResource *check_b_r=factory->createCheckButtonResource(false);
-      embed = new Embed (check_b_r);
+      resource = factory->createCheckButtonResource(false);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
       init_str = (value) ? value : dStrdup("on");
    } else if (!dStrcasecmp(type, "radio")) {
@@ -444,8 +443,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       DilloHtmlInput *input = Html_get_radio_input(html, name);
       if (input)
          rb_r = (RadioButtonResource*) input->embed->getResource();
-      rb_r = factory->createRadioButtonResource(rb_r, false);
-      embed = new Embed (rb_r);
+      resource = factory->createRadioButtonResource(rb_r, false);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
       init_str = value;
    } else if (!dStrcasecmp(type, "hidden")) {
@@ -454,16 +452,12 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    } else if (!dStrcasecmp(type, "submit")) {
       inp_type = DILLO_HTML_INPUT_SUBMIT;
       init_str = (value) ? value : dStrdup("submit");
-      LabelButtonResource *label_b_r =
-         factory->createLabelButtonResource(init_str);
-      embed = new Embed (label_b_r);
+      resource = factory->createLabelButtonResource(init_str);
 //    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
    } else if (!dStrcasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_RESET;
       init_str = (value) ? value : dStrdup("Reset");
-      LabelButtonResource *label_b_r =
-         factory->createLabelButtonResource(init_str);
-      embed = new Embed (label_b_r);
+      resource = factory->createLabelButtonResource(init_str);
 //    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
    } else if (!dStrcasecmp(type, "image")) {
       if (URL_FLAGS(html->base_url) & URL_SpamSafe) {
@@ -472,9 +466,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          attrbuf = a_Html_get_attr(html, tag, tagsize, "alt");
          label = attrbuf ? attrbuf : value ? value : name ? name : "Submit";
          init_str = dStrdup(label);
-         LabelButtonResource *label_b_r =
-            factory->createLabelButtonResource(init_str);
-         embed = new Embed (label_b_r);
+         resource = factory->createLabelButtonResource(init_str);
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
       } else {
          inp_type = DILLO_HTML_INPUT_IMAGE;
@@ -501,29 +493,28 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       if (valid) {
          inp_type = DILLO_HTML_INPUT_FILE;
          init_str = dStrdup("File selector");
-         LabelButtonResource *lbr=factory->createLabelButtonResource(init_str);
-         embed = new Embed (lbr);
+         resource = factory->createLabelButtonResource(init_str);
       }
    } else if (!dStrcasecmp(type, "button")) {
       inp_type = DILLO_HTML_INPUT_BUTTON;
       if (value) {
          init_str = value;
-         LabelButtonResource *label_b_r =
-            factory->createLabelButtonResource(init_str);
-         embed = new Embed (label_b_r);
+         resource = factory->createLabelButtonResource(init_str);
       }
    } else if (!dStrcasecmp(type, "text") || !*type) {
       /* Text input, which also is the default */
       inp_type = DILLO_HTML_INPUT_TEXT;
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
-      EntryResource *entryResource = factory->createEntryResource(size, false);
-      embed = new Embed (entryResource);
+      resource = factory->createEntryResource(size, false);
       init_str = value;
    } else {
       /* Unknown input type */
       BUG_MSG("Unknown input type: \"%s\"\n", type);
    }
+
+   if (resource)
+      embed = new Embed (resource);
 
    if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
       Html_add_input(html, inp_type, embed, name,
@@ -534,10 +525,8 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
        inp_type != DILLO_HTML_INPUT_UNKNOWN) {
       if (inp_type == DILLO_HTML_INPUT_TEXT ||
           inp_type == DILLO_HTML_INPUT_PASSWORD) {
-         EntryResource *entryres = (EntryResource*)embed->getResource();
-         /* Readonly or not? */
          if (a_Html_get_attr(html, tag, tagsize, "readonly"))
-            entryres->setEditable(false);
+            ((EntryResource *) resource)->setEditable(false);
 
 //       /* Maximum length of the text in the entry */
 //       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "maxlength")))
@@ -884,9 +873,8 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       page->setStyle (style);
 
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();
-      ComplexButtonResource *complex_b_r =
-         factory->createComplexButtonResource(page, true);
-      embed = new Embed(complex_b_r);
+      Resource *resource = factory->createComplexButtonResource(page, true);
+      embed = new Embed(resource);
 // a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
 
       DW2TB(html->dw)->addParbreak (5, style);
@@ -1940,7 +1928,6 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
          a_Url_free(url);
       }
    }
-
    if (!button)
       MSG("Html_input_image: unable to create image submit.\n");
    return button;

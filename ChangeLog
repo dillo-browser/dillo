@@ -11,6 +11,8 @@ dillo-2.1
  - Tuned input width a bit.
  - Resource embed cleanup (forms)
    Patches: place (AKA corvid)
++- Switched SSL enabled to configure.in (./configure --enable-ssl)
+   Patch: Jeremy Henty
 
 dw
 
