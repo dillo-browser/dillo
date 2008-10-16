@@ -21,12 +21,8 @@ private:
    static ::fltk::Image *backBuffer;
    static bool backBufferInUse;
 
-   void drawRectangle (const core::Rectangle *rect, bool doubleBuffer);
+   void draw (const core::Rectangle *rect, bool doubleBuffer);
    void drawChildWidgets ();
-
-public:
-   time_t lastDraw;
-   time_t drawDelay;
 
 protected:
    core::Layout *theLayout;
@@ -54,7 +50,6 @@ public:
    void finishDrawing (core::Rectangle *area);
    void queueDraw (core::Rectangle *area);
    void queueDrawTotal ();
-   void drawTotal ();
    void cancelQueueDraw ();
    void drawPoint (core::style::Color *color,
                    core::style::Color::Shading shading,

@@ -11,6 +11,13 @@ dillo-2.1
  - Tuned input width a bit.
    Patches: place (AKA corvid)
 
+dw
+
++- Unused code cleanup.
+   Patch: Johannes Hofmann
+
+-----------------------------------------------------------------------------
+
 dillo-2.0
 
 +- Ported Dillo from GTK1 to FLTK2.
@@ -186,9 +193,6 @@ dillo-2.0
  - Replaced the findtext dialog with an in-window widget!
    Patches: Justus Winter
 
- TODO:
-
- - test no_proxy (set a list in dillorc).
 
 -----------------------------------------------------------------------------
 dw

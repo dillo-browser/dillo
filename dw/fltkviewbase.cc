@@ -47,8 +47,6 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
    canvasWidth = 1;
    canvasHeight = 1;
    bgColor = WHITE;
-   lastDraw = time(0);
-   drawDelay = 2;      /* in seconds */
    mouse_x = mouse_y = 0;
    if (backBuffer == NULL) {
       backBuffer = new Image ();
@@ -77,7 +75,7 @@ void FltkViewBase::draw ()
       container::typed::Iterator <core::Rectangle> it;
 
       for (it = drawRegion.rectangles (); it.hasNext (); ) {
-         drawRectangle (it.getNext (), true);
+         draw (it.getNext (), true);
       }
 
       drawRegion.clear ();
@@ -96,7 +94,7 @@ void FltkViewBase::draw ()
          w (),
          h ());
 
-      drawRectangle (&rect, false);
+      draw (&rect, false);
 
       if (! (d & DAMAGE_SCROLL)) {
          drawRegion.clear ();
@@ -104,8 +102,8 @@ void FltkViewBase::draw ()
    }
 }
 
-void FltkViewBase::drawRectangle (const core::Rectangle *rect,
-                                  bool doubleBuffer)
+void FltkViewBase::draw (const core::Rectangle *rect,
+                         bool doubleBuffer)
 {
    int offsetX = 0, offsetY = 0;
 
@@ -333,33 +331,13 @@ void FltkViewBase::queueDraw (core::Rectangle *area)
    redraw (DAMAGE_VALUE);
 }
 
-static void drawTotalTimeout (void *data)
-{
-   FltkViewBase *view = (FltkViewBase*) data;
-   if (time(0) >= view->lastDraw + view->drawDelay) {
-      view->drawTotal ();
-   } else {
-      ::fltk::add_timeout (0.2f, drawTotalTimeout, data);
-   }
-}
-
-void FltkViewBase::drawTotal ()
-{
-   //static int calls = 0;
-   //printf(" FltkViewBase::drawTotal calls = %d\n", ++calls);
-   redraw (DAMAGE_EXPOSE);
-   lastDraw = time (0);
-   cancelQueueDraw ();
-}
-
 void FltkViewBase::queueDrawTotal ()
 {
-   drawTotal ();
+   redraw (DAMAGE_EXPOSE);
 }
 
 void FltkViewBase::cancelQueueDraw ()
 {
-   ::fltk::remove_timeout (drawTotalTimeout, this);
 }
 
 void FltkViewBase::drawPoint (core::style::Color *color,
