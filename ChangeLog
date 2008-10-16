@@ -6,9 +6,10 @@ dillo-2.1
 
 +- Added support for numeric IPv6 addresses entered into the url bar.
  - Used the URL authority part instead of stripped default port in HTTP query.
-   Patch: Justus Winter
+   Patches: Justus Winter
 +- Fix for file inputs without values (forms).
-   Patch: place (AKA corvid)
+ - Tuned input width a bit.
+   Patches: place (AKA corvid)
 
 dillo-2.0
 

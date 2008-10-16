@@ -496,7 +496,7 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
       FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
       requisition->width =
-         (int)::fltk::getwidth ("M", 1)
+         (int)::fltk::getwidth ("n", 1)
          * (maxLength == UNLIMITED_MAX_LENGTH ? 10 : maxLength)
          + 2 * RELIEF_X_THICKNESS;
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
@@ -607,7 +607,7 @@ void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
       FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
       requisition->width =
-         (int)::fltk::getwidth ("X", 1) * numCols +
+         (int)::fltk::getwidth ("n", 1) * numCols +
          2 * RELIEF_X_THICKNESS;
       requisition->ascent =
          font->ascent + RELIEF_Y_THICKNESS;

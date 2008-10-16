@@ -377,6 +377,25 @@ void Html_tag_close_form(DilloHtml *html, int TagIdx)
 }
 
 /*
+ * get size, restrict it to reasonable value
+ */
+static int Html_input_get_size(DilloHtml *html, const char *attrbuf)
+{
+   const int MAX_SIZE = 1024;
+   int size = 20;
+
+   if (attrbuf) {
+      size = strtol(attrbuf, NULL, 10);
+      if (size < 1 || size > MAX_SIZE) {
+         int badSize = size;
+         size = (size < 1 ? 20 : MAX_SIZE);
+         BUG_MSG("input size=%d, using size=%d instead\n", badSize, size);
+      }
+   }
+   return size;
+}
+
+/*
  * Add a new input to current form
  */
 void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
@@ -408,7 +427,9 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    inp_type = DILLO_HTML_INPUT_UNKNOWN;
    if (!dStrcasecmp(type, "password")) {
       inp_type = DILLO_HTML_INPUT_PASSWORD;
-      EntryResource *entryResource = factory->createEntryResource (10, true);
+      attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
+      int size = Html_input_get_size(html, attrbuf);
+      EntryResource *entryResource = factory->createEntryResource (size, true);
       embed = new Embed (entryResource);
       init_str = value;
    } else if (!dStrcasecmp(type, "checkbox")) {
@@ -494,7 +515,9 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    } else if (!dStrcasecmp(type, "text") || !*type) {
       /* Text input, which also is the default */
       inp_type = DILLO_HTML_INPUT_TEXT;
-      EntryResource *entryResource = factory->createEntryResource (10, false);
+      attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
+      int size = Html_input_get_size(html, attrbuf);
+      EntryResource *entryResource = factory->createEntryResource(size, false);
       embed = new Embed (entryResource);
       init_str = value;
    } else {
@@ -516,11 +539,6 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          if (a_Html_get_attr(html, tag, tagsize, "readonly"))
             entryres->setEditable(false);
 
-//       /* Set width of the entry */
-//       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
-//          gtk_widget_set_usize(widget, (strtol(attrbuf, NULL, 10) + 1) *
-//                               gdk_char_width(widget->style->font, '0'), 0);
-//
 //       /* Maximum length of the text in the entry */
 //       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "maxlength")))
 //          gtk_entry_set_max_length(GTK_ENTRY(widget),
@@ -572,7 +590,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
       DW2TB(html->dw)->addText(attrbuf, S_TOP(html)->style);
 
    ResourceFactory *factory = HT2LT(html)->getResourceFactory();
-   EntryResource *entryResource = factory->createEntryResource (10, false);
+   EntryResource *entryResource = factory->createEntryResource (20, false);
    embed = new Embed (entryResource);
    Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
