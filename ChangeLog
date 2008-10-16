@@ -9,6 +9,7 @@ dillo-2.1
    Patches: Justus Winter
 +- Fix for file inputs without values (forms).
  - Tuned input width a bit.
+ - Resource embed cleanup (forms)
    Patches: place (AKA corvid)
 
 dw
