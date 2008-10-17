@@ -21,7 +21,7 @@ AC_ARG_ENABLE(insure, [  --enable-insure         Try to compile and run with Ins
                     , enable_insure=no)
 AC_ARG_ENABLE(ansi,   [  --enable-ansi           Try to compile and run with ANSI flags],
                     , enable_ansi=no)
-AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable ssl features (eg. https)],
+AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable ssl, https (ALPHA CODE)],
                     , enable_ssl=no)
 AC_ARG_ENABLE(ipv6,   [  --enable-ipv6           Build with support for IPv6], , )
 AC_ARG_ENABLE(cookies,[  --disable-cookies       Don't compile support for cookies],
