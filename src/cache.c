@@ -1020,6 +1020,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
             if (TypeMismatch) {
                a_UIcmd_set_msg(Client_bw,"HTTP warning: Content-Type '%s' "
                                "doesn't match the real data.", entry->TypeHdr);
+               OfferDownload = TRUE;
             }
             if (entry->Flags & CA_Redirect) {
                if (!Client->Callback) {

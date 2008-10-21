@@ -16,7 +16,7 @@ dillo-2.1
 
 dw
 
-+- Cleaned up Unused code in fltkviewbase.
++- Cleaned up unused code in fltkviewbase.
    Patch: Johannes Hofmann
 
 -----------------------------------------------------------------------------
