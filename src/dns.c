@@ -267,12 +267,13 @@ static void *Dns_server(void *data)
    int channel = VOIDP2INT(data);
    struct addrinfo hints, *res0;
    int error;
+   Dlist *hosts;
 
    memset(&hints, 0, sizeof(hints));
    hints.ai_family = AF_UNSPEC;
    hints.ai_socktype = SOCK_STREAM;
 
-   Dlist *hosts = dList_new(2);
+   hosts = dList_new(2);
 
    _MSG("Dns_server: starting...\n ch: %d host: %s\n",
         channel, dns_server[channel].hostname);

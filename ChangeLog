@@ -13,6 +13,9 @@ dillo-2.1
    Patches: place (AKA corvid)
 +- Switched SSL enabled to configure.in (./configure --enable-ssl).
    Patch: Jeremy Henty
++- Allowed compilation with older machines by removing a few C99isms.
+ - Added use of inttypes.h when stdint.h isn't found.
+   Patches: Dan Fandrich
 
 dw
 

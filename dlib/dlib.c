@@ -204,10 +204,11 @@ static void dStr_resize(Dstr *ds, int n_sz, int keep)
  */
 Dstr *dStr_sized_new (int sz)
 {
+   Dstr *ds;
    if (sz < 2)
       sz = 2;
 
-   Dstr *ds = dNew(Dstr, 1);
+   ds = dNew(Dstr, 1);
    ds->str = NULL;
    dStr_resize(ds, sz + 1, 0); /* (sz + 1) for the extra '\0' */
    return ds;
@@ -476,10 +477,11 @@ const char *dStr_printable(Dstr *in, int maxlen)
  */
 Dlist *dList_new(int size)
 {
+   Dlist *l;
    if (size <= 0)
       return NULL;
 
-   Dlist *l = dNew(Dlist, 1);
+   l = dNew(Dlist, 1);
    l->len = 0;
    l->sz = size;
    l->list = dNew(void*, l->sz);

@@ -70,6 +70,8 @@ cat >d_size.h <<_______EOF
 
 #if HAVE_STDINT_H == 0
 #include <stdint.h>
+#elif defined(HAVE_INTTYPES_H)
+#include <inttypes.h>
 #else
 typedef signed $gint16    int16_t;
 typedef unsigned $gint16  uint16_t;

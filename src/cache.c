@@ -513,8 +513,9 @@ int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
 {
    CacheEntry_t *entry = Cache_entry_search_with_redirect(Url);
    if (entry) {
+      Dstr *data;
       Cache_ref_data(entry);
-      Dstr *data = Cache_data(entry);
+      data = Cache_data(entry);
       *PBuf = data->str;
       *BufSize = data->len;
    } else {

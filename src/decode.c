@@ -221,9 +221,9 @@ Decode *a_Decode_content_init(const char *format)
 
    if (format && *format) {
       if (!dStrcasecmp(format, "gzip") || !dStrcasecmp(format, "x-gzip")) {
+         z_stream *zs;
          _MSG("gzipped data!\n");
 
-         z_stream *zs;
          dc = dNew(Decode, 1);
          dc->buffer = dNew(char, bufsize);
          dc->state = zs = dNew(z_stream, 1);
