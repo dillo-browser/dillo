@@ -481,6 +481,7 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
       pm->end();
    }
 
+   pm->label(wid->visible() ? NULL : "File");
    a_Timeout_add(0.0, Menu_popup_cb2, (void *)pm);
 }
 
