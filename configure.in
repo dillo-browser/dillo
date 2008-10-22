@@ -334,6 +334,7 @@ if test "x$iconv_ok" = "xyes"; then
   LIBS="$old_libs $LIBICONV_LIBS"
   old_cflags="$CFLAGS"
   CFLAGS="$CFLAGS -Werror"
+  AC_LANG_PUSH([C++])
   AC_TRY_COMPILE([#include <iconv.h>],
 [
      const char *inPtr;
@@ -343,6 +344,7 @@ if test "x$iconv_ok" = "xyes"; then
       iconv(encoder, &inPtr, &inLeft, &outPtr, &outRoom);
 ],
 iconv_old=yes,iconv_old=no)
+  AC_LANG_POP([C++])
   LIBS="$old_libs"
   CFLAGS="$old_cflags"
 
