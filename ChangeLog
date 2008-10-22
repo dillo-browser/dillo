@@ -16,6 +16,8 @@ dillo-2.1
 +- Allowed compilation with older machines by removing a few C99isms.
  - Added use of inttypes.h when stdint.h isn't found.
    Patches: Dan Fandrich
++- Added ipv6 addresses iteration and ipv4 fallback.
+   Patch: James Turner, Jorge Arellano
 +- Set the File menu label to hide when the File menu button is shown.
    Patch: Jorge Arellano
 

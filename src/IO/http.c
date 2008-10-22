@@ -305,7 +305,7 @@ static void Http_send_query(ChainLink *Info, SocketData_t *S)
  */
 static int Http_connect_socket(ChainLink *Info)
 {
-   int status;
+   int i, status;
 #ifdef ENABLE_IPV6
    struct sockaddr_in6 name;
 #else
@@ -318,61 +318,62 @@ static int Http_connect_socket(ChainLink *Info)
    S = a_Klist_get_data(ValidSocks, VOIDP2INT(Info->LocalKey));
 
    /* TODO: iterate this address list until success, or end-of-list */
-   dh = dList_nth_data(S->addr_list, 0);
+   for (i = 0; (dh = dList_nth_data(S->addr_list, i)); ++i) {
+      if ((S->SockFD = socket(dh->af, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+         S->Err = errno;
+         MSG("Http_connect_socket ERROR: %s\n", dStrerror(errno));
+         continue;
+      }
+      /* set NONBLOCKING and close on exec. */
+      fcntl(S->SockFD, F_SETFL, O_NONBLOCK | fcntl(S->SockFD, F_GETFL));
+      fcntl(S->SockFD, F_SETFD, FD_CLOEXEC | fcntl(S->SockFD, F_GETFD));
 
-   if ((S->SockFD = socket(dh->af, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-      S->Err = errno;
-      MSG("Http_connect_socket ERROR: %s\n", dStrerror(errno));
-      return -1;
-   }
-   /* set NONBLOCKING and close on exec. */
-   fcntl(S->SockFD, F_SETFL, O_NONBLOCK | fcntl(S->SockFD, F_GETFL));
-   fcntl(S->SockFD, F_SETFD, FD_CLOEXEC | fcntl(S->SockFD, F_GETFD));
-
-   /* Some OSes require this...  */
-   memset(&name, 0, sizeof(name));
-   /* Set remaining parms. */
-   switch (dh->af) {
-   case AF_INET:
-   {
-      struct sockaddr_in *sin = (struct sockaddr_in *)&name;
-      socket_len = sizeof(struct sockaddr_in);
-      sin->sin_family = dh->af;
-      sin->sin_port = S->port ? htons(S->port) : htons(DILLO_URL_HTTP_PORT);
-      memcpy(&sin->sin_addr, dh->data, (size_t)dh->alen);
-      if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
-         MSG("Connecting to %s\n", inet_ntoa(sin->sin_addr));
-      break;
-   }
+      /* Some OSes require this...  */
+      memset(&name, 0, sizeof(name));
+      /* Set remaining parms. */
+      switch (dh->af) {
+      case AF_INET:
+      {
+         struct sockaddr_in *sin = (struct sockaddr_in *)&name;
+         socket_len = sizeof(struct sockaddr_in);
+         sin->sin_family = dh->af;
+         sin->sin_port = S->port ? htons(S->port) : htons(DILLO_URL_HTTP_PORT);
+         memcpy(&sin->sin_addr, dh->data, (size_t)dh->alen);
+         if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
+            MSG("Connecting to %s\n", inet_ntoa(sin->sin_addr));
+         break;
+      }
 #ifdef ENABLE_IPV6
-   case AF_INET6:
-   {
-      char buf[128];
-      struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&name;
-      socket_len = sizeof(struct sockaddr_in6);
-      sin6->sin6_family = dh->af;
-      sin6->sin6_port = S->port ? htons(S->port) : htons(DILLO_URL_HTTP_PORT);
-      memcpy(&sin6->sin6_addr, dh->data, dh->alen);
-      inet_ntop(dh->af, dh->data, buf, sizeof(buf));
-      if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
-         MSG("Connecting to %s\n", buf);
-      break;
-   }
+      case AF_INET6:
+      {
+         char buf[128];
+         struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&name;
+         socket_len = sizeof(struct sockaddr_in6);
+         sin6->sin6_family = dh->af;
+         sin6->sin6_port = 
+            S->port ? htons(S->port) : htons(DILLO_URL_HTTP_PORT);
+         memcpy(&sin6->sin6_addr, dh->data, dh->alen);
+         inet_ntop(dh->af, dh->data, buf, sizeof(buf));
+         if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
+            MSG("Connecting to %s\n", buf);
+         break;
+      }
 #endif
-   }/*switch*/
+      }/*switch*/
 
-   MSG_BW(S->web, 1, "Contacting host...");
-   status = connect(S->SockFD, (struct sockaddr *)&name, socket_len);
-   if (status == -1 && errno != EINPROGRESS) {
-      S->Err = errno;
-      Http_socket_close(S);
-      MSG("Http_connect_socket ERROR: %s\n", dStrerror(S->Err));
-      return -1;
-   } else {
-      Http_send_query(S->Info, S);
+      MSG_BW(S->web, 1, "Contacting host...");
+      status = connect(S->SockFD, (struct sockaddr *)&name, socket_len);
+      if (status == -1 && errno != EINPROGRESS) {
+         S->Err = errno;
+         Http_socket_close(S);
+         MSG("Http_connect_socket ERROR: %s\n", dStrerror(S->Err));
+      } else {
+         Http_send_query(S->Info, S);
+         return 0; /* Success */
+      }
    }
 
-   return 0; /* Success */
+   return -1;
 }
 
 /*
