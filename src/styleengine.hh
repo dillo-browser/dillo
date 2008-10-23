@@ -1,5 +1,5 @@
-#ifndef __CSS_HH__
-#define __CSS_HH__
+#ifndef __STYLEENGINE_HH__
+#define __STYLEENGINE_HH__
 
 #include "dw/core.hh"
 

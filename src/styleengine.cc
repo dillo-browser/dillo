@@ -1,5 +1,5 @@
 /*
- * File: css.cc
+ * File: styleengine.cc
  *
  * Copyright 2008 Jorge Arellano Cid <jcid@dillo.org>
  *
@@ -10,7 +10,7 @@
  */
 
 #include <stdio.h>
-#include "css.hh"
+#include "styleengine.hh"
 
 StyleEngine::StyleEngine () {
 }

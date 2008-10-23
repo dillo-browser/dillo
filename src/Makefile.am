@@ -67,6 +67,8 @@ dillo_SOURCES = \
 	capi.h \
 	css.cc \
 	css.hh \
+	styleengine.cc \
+	styleengine.hh \
 	plain.cc \
 	html.cc \
 	html.hh \
