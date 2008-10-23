@@ -481,6 +481,8 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    stack->getRef(0)->current_bg_color = prefs.bg_color;
    stack->getRef(0)->hand_over_break = false;
 
+   styleEngine = new StyleEngine ();
+
    InFlags = IN_NONE;
 
    Stash = dStr_new("");

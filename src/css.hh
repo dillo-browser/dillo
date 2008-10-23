@@ -2,19 +2,17 @@
 #define __CSS_HH__
 
 #include "dw/core.hh"
-#include "html_common.hh"
 
 class StyleEngine {
    private:
-      DilloHtml *html;
       dw::core::style::Style *currentStyle;
 
    public:
-      StyleEngine (DilloHtml *html);
+      StyleEngine ();
       ~StyleEngine ();
 
-      void startElement (const char *name);
-      void endElement (const char *name);
+      void startElement (int tag, const char *id, const char *style);
+      void endElement (int tag);
       inline dw::core::style::Style *style () { return currentStyle; };
 };
 

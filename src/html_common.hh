@@ -13,6 +13,8 @@
 
 #include "form.hh"
 
+#include "css.hh"
+
 /*
  * Macros 
  */
@@ -174,6 +176,7 @@ public:  //BUG: for now everything is public
    float DocTypeVersion;          /* HTML or XHTML version number */
 
    lout::misc::SimpleVector<DilloHtmlState> *stack;
+   StyleEngine *styleEngine;
 
    int InFlags; /* tracks which elements we are in */
 

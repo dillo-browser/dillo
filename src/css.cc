@@ -11,8 +11,7 @@
 
 #include "css.hh"
 
-StyleEngine::StyleEngine (DilloHtml *html) {
-   this->html = html;
+StyleEngine::StyleEngine () {
 }
 
 StyleEngine::~StyleEngine () {
