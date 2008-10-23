@@ -233,6 +233,8 @@ public:
  * Parser functions 
  */
 
+int a_Html_tag_index(const char *tag);
+
 const char *a_Html_get_attr(DilloHtml *html,
                             const char *tag,
                             int tagsize,

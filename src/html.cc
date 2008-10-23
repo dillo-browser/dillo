@@ -113,7 +113,6 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof);
 static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
                             DilloImage *image);
 static void Html_callback(int Op, CacheClient_t *Client);
-static int Html_tag_index(const char *tag);
 static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
 
 /*-----------------------------------------------------------------------------
@@ -2889,7 +2888,7 @@ static int Html_tag_pre_excludes(int tag_idx)
    /* initialize array */
    if (!ei_set[0])
       for (i = 0; es_set[i]; ++i)
-         ei_set[i] = Html_tag_index(es_set[i]);
+         ei_set[i] = a_Html_tag_index(es_set[i]);
 
    for (i = 0; ei_set[i]; ++i)
       if (tag_idx == ei_set[i])
@@ -3260,7 +3259,7 @@ static int Html_tag_compare(const char *p1, const char *p2)
  * Get 'tag' index
  * return -1 if tag is not handled yet
  */
-static int Html_tag_index(const char *tag)
+int a_Html_tag_index(const char *tag)
 {
    int low, high, mid, cond;
 
@@ -3291,17 +3290,17 @@ static int Html_needs_optional_close(int old_idx, int cur_idx)
 
    if (i_P == -1) {
     /* initialize the indexes of elements with optional close */
-    i_P  = Html_tag_index("p"),
-    i_LI = Html_tag_index("li"),
-    i_TD = Html_tag_index("td"),
-    i_TR = Html_tag_index("tr"),
-    i_TH = Html_tag_index("th"),
-    i_DD = Html_tag_index("dd"),
-    i_DT = Html_tag_index("dt"),
-    i_OPTION = Html_tag_index("option");
-    // i_THEAD = Html_tag_index("thead");
-    // i_TFOOT = Html_tag_index("tfoot");
-    // i_COLGROUP = Html_tag_index("colgroup");
+    i_P  = a_Html_tag_index("p"),
+    i_LI = a_Html_tag_index("li"),
+    i_TD = a_Html_tag_index("td"),
+    i_TR = a_Html_tag_index("tr"),
+    i_TH = a_Html_tag_index("th"),
+    i_DD = a_Html_tag_index("dd"),
+    i_DT = a_Html_tag_index("dt"),
+    i_OPTION = a_Html_tag_index("option");
+    // i_THEAD = a_Html_tag_index("thead");
+    // i_TFOOT = a_Html_tag_index("tfoot");
+    // i_COLGROUP = a_Html_tag_index("colgroup");
    }
 
    if (old_idx == i_P || old_idx == i_DT) {
@@ -3398,7 +3397,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
 
    if (!(html->InFlags & IN_HTML)) {
       tag = "<html>";
-      tag_idx = Html_tag_index(tag + 1);
+      tag_idx = a_Html_tag_index(tag + 1);
       if (tag_idx != new_idx || IsCloseTag) {
          /* implicit open */
          Html_force_push_tag(html, tag_idx);
@@ -3410,7 +3409,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
       /* head element */
       if (!(html->InFlags & IN_HEAD)) {
          tag = "<head>";
-         tag_idx = Html_tag_index(tag + 1);
+         tag_idx = a_Html_tag_index(tag + 1);
          if (tag_idx != new_idx || IsCloseTag) {
             /* implicit open of the head element */
             Html_force_push_tag(html, tag_idx);
@@ -3422,11 +3421,11 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
       /* body element */
       if (html->InFlags & IN_HEAD) {
          tag = "</head>";
-         tag_idx = Html_tag_index(tag + 2);
+         tag_idx = a_Html_tag_index(tag + 2);
          Tags[tag_idx].close (html, tag_idx);
       }
       tag = "<body>";
-      tag_idx = Html_tag_index(tag + 1);
+      tag_idx = a_Html_tag_index(tag + 1);
       if (tag_idx != new_idx || IsCloseTag) {
          /* implicit open */
          Html_force_push_tag(html, tag_idx);
@@ -3447,7 +3446,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
    char *start = tag + 1; /* discard the '<' */
    int IsCloseTag = (*start == '/');
 
-   ni = Html_tag_index(start + IsCloseTag);
+   ni = a_Html_tag_index(start + IsCloseTag);
    if (ni == -1) {
       /* TODO: doctype parsing is a bit fuzzy, but enough for the time being */
       if (!(html->InFlags & IN_HTML)) {
