@@ -4,21 +4,22 @@ Dillo project
 
 dillo-2.1
 
++- Added ipv6 addresses iteration and ipv4 fallback.
+   Patch: James Turner, Jorge Arellano
 +- Added support for numeric IPv6 addresses entered into the url bar.
  - Used the URL authority part instead of stripped default port in HTTP query.
    Patches: Justus Winter
 +- Fix for file inputs without values (forms).
  - Tuned input width a bit.
  - Cleaned up resource embedding (forms)
+ - Made cookierc parsing more robust.
    Patches: place (AKA corvid)
 +- Switched SSL enabled to configure.in (./configure --enable-ssl).
    Patch: Jeremy Henty
 +- Allowed compilation with older machines by removing a few C99isms.
  - Added use of inttypes.h when stdint.h isn't found.
    Patches: Dan Fandrich
-+- Added ipv6 addresses iteration and ipv4 fallback.
-   Patch: James Turner, Jorge Arellano
-+- Set the File menu label to hide when the File menu button is shown.
++- Set the File menu label to hide when the File menu-button is shown.
  ? Trying a new iconv() test in configure.in.
    Patch: Jorge Arellano
 
