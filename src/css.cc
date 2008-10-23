@@ -9,10 +9,21 @@
  * (at your option) any later version.
  */
 
+#include <stdio.h>
 #include "css.hh"
 
 StyleEngine::StyleEngine () {
 }
 
 StyleEngine::~StyleEngine () {
+}
+
+void
+StyleEngine::startElement (int tag, const char *id, const char *style) {
+   fprintf(stderr, "===> START %d %s %s\n", tag, id, style);
+}
+
+void
+StyleEngine::endElement (int tag) {
+   fprintf(stderr, "===> END %d\n", tag);
 }

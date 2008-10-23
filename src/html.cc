@@ -3445,6 +3445,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
 {
    int ci, ni;           /* current and new tag indexes */
    const char *attrbuf;
+   char *id = NULL, *style = NULL;
    char *start = tag + 1; /* discard the '<' */
    int IsCloseTag = (*start == '/');
 
@@ -3497,12 +3498,14 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
           * spec states in Sec. 7.5.2 that anchor ids are case-sensitive.
           * So we don't do it and hope for better specs in the future ...
           */
-         Html_check_name_val(html, attrbuf, "id");
+         if (attrbuf)
+            id = strdup (attrbuf);
+         Html_check_name_val(html, id, "id");
          /* We compare the "id" value with the url-decoded "name" value */
-         if (!html->NameVal || strcmp(html->NameVal, attrbuf)) {
+         if (!html->NameVal || strcmp(html->NameVal, id)) {
             if (html->NameVal)
                BUG_MSG("'id' and 'name' attribute of <a> tag differ\n");
-            Html_add_anchor(html, attrbuf);
+            Html_add_anchor(html, id);
          }
       }
 
@@ -3511,6 +3514,20 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
          dFree(html->NameVal);
          html->NameVal = NULL;
       }
+
+      if (tagsize >= 11) {       /* length of "<t style=i>" */
+          attrbuf = Html_get_attr2(html, tag, tagsize, "style",
+                                   HTML_LeftTrim | HTML_RightTrim);
+          if (attrbuf)
+            style = strdup (attrbuf);
+      }
+
+      html->styleEngine->startElement (ni, id, style);
+
+      if (id)
+         free (id);
+      if (style)
+         free (style);
 
       /* let the parser know this was an open tag */
       html->PrevWasOpenTag = true;
@@ -3534,6 +3551,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
             (size_t)tagsize == strlen(Tags[ni].name) + 3))) {   /*  <x/>   */
    
          Tags[ni].close (html, ni);
+         html->styleEngine->endElement (ni);
          /* This was a close tag */
          html->PrevWasOpenTag = false;
          html->ReqTagClose = false;
