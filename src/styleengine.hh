@@ -11,7 +11,7 @@ class StyleEngine {
       StyleEngine ();
       ~StyleEngine ();
 
-      void startElement (int tag, const char *id, const char *style);
+      void startElement (int tag, const char *id, const char *klass, const char *style);
       void endElement (int tag);
       inline dw::core::style::Style *style () { return currentStyle; };
 };

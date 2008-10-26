@@ -19,8 +19,8 @@ StyleEngine::~StyleEngine () {
 }
 
 void
-StyleEngine::startElement (int tag, const char *id, const char *style) {
-   fprintf(stderr, "===> START %d %s %s\n", tag, id, style);
+StyleEngine::startElement (int tag, const char *id, const char *klass, const char *style) {
+   fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
 }
 
 void

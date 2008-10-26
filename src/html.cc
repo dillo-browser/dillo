@@ -3445,7 +3445,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
 {
    int ci, ni;           /* current and new tag indexes */
    const char *attrbuf;
-   char *id = NULL, *style = NULL;
+   char *id = NULL, *klass = NULL, *style = NULL;
    char *start = tag + 1; /* discard the '<' */
    int IsCloseTag = (*start == '/');
 
@@ -3515,6 +3515,13 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
          html->NameVal = NULL;
       }
 
+      if (tagsize >= 10) {       /* length of "<t class=i>" */
+          attrbuf = Html_get_attr2(html, tag, tagsize, "class",
+                                   HTML_LeftTrim | HTML_RightTrim);
+          if (attrbuf)
+            klass = strdup (attrbuf);
+      }
+
       if (tagsize >= 11) {       /* length of "<t style=i>" */
           attrbuf = Html_get_attr2(html, tag, tagsize, "style",
                                    HTML_LeftTrim | HTML_RightTrim);
@@ -3522,10 +3529,13 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
             style = strdup (attrbuf);
       }
 
-      html->styleEngine->startElement (ni, id, style);
+
+      html->styleEngine->startElement (ni, id, klass, style);
 
       if (id)
          free (id);
+      if (klass)
+         free (klass);
       if (style)
          free (style);
 
