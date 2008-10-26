@@ -62,6 +62,7 @@ struct _DilloPrefs {
    char *save_dir;
    bool_t show_msg;
    bool_t show_extra_warnings;
+   bool_t middle_click_drags_page;
 };
 
 /* Global Data */

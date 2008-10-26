@@ -625,6 +625,8 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    if (f)
       this->labelfont(f);
 
+   PointerOnLink = FALSE;
+
    Tabs = NULL;
    TabTooltip = NULL;
    TopGroup = new PackedGroup(0, 0, ww, wh);
@@ -800,6 +802,14 @@ int UI::handle(int event)
             a_UIcmd_forw(a_UIcmd_get_bw_by_widget(this));
             ret = 1;
          }
+      }
+
+   } else if (event == PUSH) {
+      if (prefs.middle_click_drags_page == 0 &&
+          event_button() == MiddleButton &&
+          !a_UIcmd_pointer_on_link(a_UIcmd_get_bw_by_widget(this))) {
+         paste_url();
+         ret = 1;
       }
    }
 

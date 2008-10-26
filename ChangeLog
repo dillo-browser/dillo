@@ -19,6 +19,8 @@ dillo-2.1
 +- Allowed compilation with older machines by removing a few C99isms.
  - Added use of inttypes.h when stdint.h isn't found.
    Patches: Dan Fandrich
++- Added the "middle_click_drags_page" dillorc option.
+   Patch: Jorge Arellano, Thomas Orgis
 +- Set the File menu label to hide when the File menu-button is shown.
  ? Trying a new iconv() test in configure.in.
    Patch: Jorge Arellano

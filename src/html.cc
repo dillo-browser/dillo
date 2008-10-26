@@ -732,10 +732,12 @@ bool DilloHtml::HtmlLinkReceiver::enter (Widget *widget, int link, int img,
    if (link == -1) {
       _MSG(" Link  LEAVE  notify...\n");
       a_UIcmd_set_msg(bw, "");
+      a_UIcmd_set_pointer_on_link(bw, FALSE);
    } else {
       _MSG(" Link  ENTER  notify...\n");
       Html_set_link_coordinates(html, link, x, y);
       a_UIcmd_set_msg(bw, "%s", URL_STR(html->links->get(link)));
+      a_UIcmd_set_pointer_on_link(bw, TRUE);
    }
    return true;
 }

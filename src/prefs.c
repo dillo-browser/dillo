@@ -61,6 +61,7 @@ DilloPrefs prefs;
 
 /* define enumeration values to be returned for specific symbols */
 typedef enum {
+   DRC_TOKEN_MIDDLE_CLICK_DRAGS_PAGE,
    DRC_TOKEN_ALLOW_WHITE_BG,
    DRC_TOKEN_BG_COLOR,
    DRC_TOKEN_CONTRAST_VISITED_COLOR,
@@ -141,6 +142,7 @@ static const SymNode_t symbols[] = {
    { "limit_text_width", DRC_TOKEN_LIMIT_TEXT_WIDTH },
    { "link_color", DRC_TOKEN_LINK_COLOR },
    { "load_images", DRC_TOKEN_LOAD_IMAGES },
+   { "middle_click_drags_page", DRC_TOKEN_MIDDLE_CLICK_DRAGS_PAGE },
    { "middle_click_opens_new_tab", DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB },
    { "no_proxy", DRC_TOKEN_NOPROXY },
    { "panel_size", DRC_TOKEN_PANEL_SIZE },
@@ -235,6 +237,9 @@ static int Prefs_parse_pair(char *name, char *value)
       break;
    case DRC_TOKEN_ALLOW_WHITE_BG:
       prefs.allow_white_bg = (strcmp(value, "YES") == 0);
+      break;
+   case DRC_TOKEN_MIDDLE_CLICK_DRAGS_PAGE:
+      prefs.middle_click_drags_page = (strcmp(value, "YES") == 0);
       break;
    case DRC_TOKEN_FORCE_MY_COLORS:
       prefs.force_my_colors = (strcmp(value, "YES") == 0);
@@ -459,6 +464,7 @@ void a_Prefs_init(void)
    prefs.save_dir = dStrdup(D_SAVE_DIR);
    prefs.show_msg = TRUE;
    prefs.show_extra_warnings = FALSE;
+   prefs.middle_click_drags_page = TRUE;
 
    /* this locale stuff is to avoid parsing problems with float numbers */
    old_locale = dStrdup (setlocale (LC_NUMERIC, NULL));
