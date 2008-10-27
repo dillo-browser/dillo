@@ -14,8 +14,9 @@ dillo-2.1
  - Cleaned up resource embedding (forms)
  - Made cookierc parsing more robust.
    Patches: place (AKA corvid)
-+- Switched SSL enabled to configure.in (./configure --enable-ssl).
-   Patch: Jeremy Henty
++- Switched SSL-enabled to configure.in (./configure --enable-ssl).
+ - Standardised the installation of dpid/dpidrc with auto* tools.
+   Patches: Jeremy Henty
 +- Allowed compilation with older machines by removing a few C99isms.
  - Added use of inttypes.h when stdint.h isn't found.
    Patches: Dan Fandrich
