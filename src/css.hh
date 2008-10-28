@@ -3,6 +3,8 @@
 
 #include "dw/core.hh"
 
+#include "doctree.hh"
+
 class CssProperty {
    public:
       typedef union {
@@ -116,19 +118,77 @@ class CssProperty {
       void apply (dw::core::style::StyleAttrs *styleAttr);
 };
 
-typedef lout::container::typed::List <CssProperty> CssPropertyList;
+class CssPropertyList : public lout::misc::SimpleVector <CssProperty*> {
+   public:
+      CssPropertyList() : lout::misc::SimpleVector <CssProperty*> (1) {};
+      void apply (dw::core::style::StyleAttrs *styleAttr);
+};
 
+/** \todo proper implementation */
 class CssSelector {
+   private:
+      int tagIndex;
+      const char *klass, *id;
+
+   public:
+      CssSelector (int tagIndex, const char *klass, const char *id) {
+         this->tagIndex = tagIndex;
+         this->klass = klass;
+         this->id = id;
+      }; 
+
+      bool match (Doctree *dt);
 };
 
 class CssRule {
    private:
-      CssPropertyList props;
+      CssSelector *selector;
+      CssPropertyList *props;
 
    public:
-      CssRule ();
+      CssRule (CssSelector *selector, CssPropertyList *props) {
+         this->selector = selector;
+         this->props = props;
+      };
       ~CssRule ();
 
+      void apply (dw::core::style::StyleAttrs *styleAttr);
+};
+
+class CssStyleSheet : public lout::misc::SimpleVector <CssRule*> {
+   public:
+      CssStyleSheet() : lout::misc::SimpleVector <CssRule*> (1) {};
+      void apply (dw::core::style::StyleAttrs *styleAttr);
+};
+
+typedef enum {
+   CSS_PRIMARY_USER_IMPORTANT,
+   CSS_PRIMARY_AUTHOR_IMPORTANT,
+   CSS_PRIMARY_AUTHOR,
+   CSS_PRIMARY_USER,
+   CSS_PRIMARY_USER_AGENT
+} CssPrimaryOrder;
+
+class CssContext {
+   public:
+      typedef enum {
+         USER_IMPORTANT,
+         AUTHOR_IMPORTANT,
+         AUTHOR,
+         USER,
+         USER_AGENT
+      } PrimaryOrder;
+
+   private:
+      CssStyleSheet sheet[USER_AGENT + 1];
+
+   public:
+      void addRule (CssRule *rule, PrimaryOrder order) {
+         sheet[order].increase ();
+         sheet[order].set (sheet[order].size () - 1, rule);
+      };
+
+      void apply (dw::core::style::StyleAttrs *styleAttr);
 };
 
 #endif

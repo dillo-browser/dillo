@@ -12,3 +12,11 @@
 #include <stdio.h>
 #include "css.hh"
 
+void CssProperty::apply (dw::core::style::StyleAttrs *styleAttrs) {
+   switch (name) {
+      
+
+      default:
+         break;
+   }
+}

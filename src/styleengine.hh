@@ -2,6 +2,7 @@
 #define __STYLEENGINE_HH__
 
 #include "dw/core.hh"
+#include "doctree.hh"
 
 class StyleEngine {
    private:
