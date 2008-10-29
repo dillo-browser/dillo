@@ -24,8 +24,7 @@ StyleEngine::~StyleEngine () {
    delete stack;
 }
 
-void
-StyleEngine::startElement (int tag, const char *id, const char *klass,
+void StyleEngine::startElement (int tag, const char *id, const char *klass,
    const char *style) {
    fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
 
@@ -43,13 +42,11 @@ StyleEngine::startElement (int tag, const char *id, const char *klass,
    n->styleAttribute = style;
 }
 
-void
-StyleEngine::setNonCssProperties (CssPropertyList *props) {
+void StyleEngine::setNonCssProperties (CssPropertyList *props) {
    stack->getRef (stack->size () - 1)->nonCssProperties = props;
 }
 
-void
-StyleEngine::endElement (int tag) {
+void StyleEngine::endElement (int tag) {
    fprintf(stderr, "===> END %d\n", tag);
    assert (stack->size () > 0);
 
