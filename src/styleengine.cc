@@ -51,6 +51,14 @@ StyleEngine::setNonCssProperties (CssPropertyList *props) {
 void
 StyleEngine::endElement (int tag) {
    fprintf(stderr, "===> END %d\n", tag);
+   assert (stack->size () > 0);
+
+   Node *n =  stack->getRef (stack->size () - 1);
+   if (n->style)
+      n->style->unref ();
+   if (n->nonCssProperties)
+      delete n->nonCssProperties;
+   
    stack->setSize (stack->size () - 1);
 }
 
