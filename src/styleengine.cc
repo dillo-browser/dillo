@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include "styleengine.hh"
 
+using namespace dw::core::style;
+
 StyleEngine::StyleEngine (dw::core::Layout *layout) {
    stack = new lout::misc::SimpleVector <Node> (1);
    cssContext = new CssContext ();
@@ -52,36 +54,53 @@ StyleEngine::endElement (int tag) {
    stack->setSize (stack->size () - 1);
 }
 
-void StyleEngine::apply (dw::core::style::StyleAttrs *attr,
-   CssPropertyList *props) {
+void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
+   FontAttrs fontAttrs = *attrs->font;
 
    for (int i = 0; i < props->size (); i++) {
       CssProperty *p = props->getRef (i);
       
       switch (p->name) {
-
+         /* \todo missing cases */
+         case CssProperty::CSS_PROPERTY_BACKGROUND_COLOR:
+            attrs->backgroundColor =
+               Color::createSimple (layout, p->value.color);
+            break; 
+         case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR:
+            attrs->borderColor.bottom =
+              Color::createSimple (layout, p->value.color);
+            break; 
+         case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
+            attrs->borderStyle.bottom = p->value.borderStyle;
+            break;
+         case CssProperty::CSS_PROPERTY_FONT_FAMILY:
+            fontAttrs.name = p->value.name;
+            break;
+         case CssProperty::CSS_PROPERTY_FONT_SIZE:
+            fontAttrs.size = p->value.size;
+            break;
 
          default:
             break;
       }
    }
+
+   attrs->font = Font::create (layout, &fontAttrs);
 }
 
-dw::core::style::Style * StyleEngine::style0 () {
+Style * StyleEngine::style0 () {
    CssPropertyList props;
    CssPropertyList *tagStyleProps = CssPropertyList::parse (
       stack->getRef (stack->size () - 1)->styleAttribute);
 
-   dw::core::style::StyleAttrs attrs =
-      *stack->getRef (stack->size () - 1)->style;
+   StyleAttrs attrs = *stack->getRef (stack->size () - 1)->style;
 
    cssContext->apply (&props, this, tagStyleProps,
       stack->getRef (stack->size () - 1)->nonCssProperties);
 
    apply (&attrs, &props);
 
-   stack->getRef (stack->size () - 1)->style =
-      dw::core::style::Style::create (layout, &attrs);
+   stack->getRef (stack->size () - 1)->style = Style::create (layout, &attrs);
    
    return NULL;
 }

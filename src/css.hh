@@ -19,6 +19,7 @@ class CssProperty {
          dw::core::style::TextDecoration textDecoration;
          dw::core::style::WhiteSpace whiteSpace;
          const char *name; /* used for font family */
+         int size;
       } Value;
 
       typedef enum {
