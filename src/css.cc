@@ -12,6 +12,11 @@
 #include <stdio.h>
 #include "css.hh"
 
+/** \todo dummy only */
+CssPropertyList *CssPropertyList::parse (const char *buf, int buflen) {
+   return NULL;
+}
+
 void CssPropertyList::set (CssProperty::Name name, CssProperty::Value value) {
    for (int i = 0; i < size (); i++)
       if (getRef (i)->name == name) {
@@ -27,6 +32,11 @@ void CssPropertyList::set (CssProperty::Name name, CssProperty::Value value) {
 void CssPropertyList::apply (CssPropertyList *props) {
    for (int i = 0; i < size (); i++)
       props->set (getRef (i)->name, getRef (i)->value);
+}
+
+/** \todo dummy only */
+CssSelector *CssSelector::parse (const char *buf, int buflen) {
+   return NULL;
 }
 
 /** \todo dummy only */
