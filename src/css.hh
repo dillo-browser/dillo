@@ -152,43 +152,33 @@ class CssRule {
       };
       ~CssRule ();
 
-      void apply (dw::core::style::StyleAttrs *styleAttr);
+      void apply (dw::core::style::StyleAttrs *styleAttrs, Doctree *docTree);
 };
 
 class CssStyleSheet : public lout::misc::SimpleVector <CssRule*> {
    public:
       CssStyleSheet() : lout::misc::SimpleVector <CssRule*> (1) {};
-      void apply (dw::core::style::StyleAttrs *styleAttr);
+      void apply (dw::core::style::StyleAttrs *styleAttrs, Doctree *docTree);
 };
-
-typedef enum {
-   CSS_PRIMARY_USER_IMPORTANT,
-   CSS_PRIMARY_AUTHOR_IMPORTANT,
-   CSS_PRIMARY_AUTHOR,
-   CSS_PRIMARY_USER,
-   CSS_PRIMARY_USER_AGENT
-} CssPrimaryOrder;
 
 class CssContext {
    public:
       typedef enum {
-         USER_IMPORTANT,
-         AUTHOR_IMPORTANT,
-         AUTHOR,
+         USER_AGENT,
          USER,
-         USER_AGENT
+         AUTHOR,
+         AUTHOR_IMPORTANT,
+         USER_IMPORTANT
       } PrimaryOrder;
 
    private:
-      CssStyleSheet sheet[USER_AGENT + 1];
+      CssStyleSheet sheet[USER_IMPORTANT + 1];
 
    public:
-      void addRule (CssRule *rule, PrimaryOrder order) {
-         sheet[order].increase ();
-         sheet[order].set (sheet[order].size () - 1, rule);
-      };
-
-      void apply (dw::core::style::StyleAttrs *styleAttr);
+      void addRule (CssRule *rule, PrimaryOrder order);
+      void apply (dw::core::style::StyleAttrs *styleAttrs,
+         Doctree *docTree,
+         CssPropertyList *tagStyle, CssPropertyList *nonCss);
 };
 
 #endif

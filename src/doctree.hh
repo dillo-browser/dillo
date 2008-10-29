@@ -2,10 +2,8 @@
 #define __DOCTREE_HH__
 
 class DoctreeNode {
-   private:
-      int index;
-
    public:
+      int depth;
       int tagIndex;
       const char *klass;
       const char *id;
@@ -13,7 +11,7 @@ class DoctreeNode {
 
 class Doctree {
    public:
-      virtual ~Doctree () = 0;
+      virtual ~Doctree () {};
       virtual const DoctreeNode *top () = 0;
       virtual const DoctreeNode *parent (const DoctreeNode *node) = 0;
 };

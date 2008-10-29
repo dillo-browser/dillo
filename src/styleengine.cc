@@ -13,9 +13,11 @@
 #include "styleengine.hh"
 
 StyleEngine::StyleEngine () {
+   stack = new lout::misc::SimpleVector <Node> (1);
 }
 
 StyleEngine::~StyleEngine () {
+   delete stack;
 }
 
 void
