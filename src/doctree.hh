@@ -4,7 +4,7 @@
 class DoctreeNode {
    public:
       int depth;
-      int tagIndex;
+      int tag;
       const char *klass;
       const char *id;
 };

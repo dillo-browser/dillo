@@ -116,7 +116,7 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
    public:
       CssPropertyList() : lout::misc::SimpleVector <CssProperty> (1) {};
 
-      static CssPropertyList *parse (const char *buf, int buflen);
+      static CssPropertyList *parse (const char *buf);
       void set (CssProperty::Name name, CssProperty::Value value);
       void apply (CssPropertyList *props);
 };
@@ -124,17 +124,17 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
 /** \todo proper implementation */
 class CssSelector {
    private:
-      int tagIndex;
+      int tag;
       const char *klass, *id;
 
    public:
-      CssSelector (int tagIndex, const char *klass, const char *id) {
-         this->tagIndex = tagIndex;
+      CssSelector (int tag, const char *klass, const char *id) {
+         this->tag = tag;
          this->klass = klass;
          this->id = id;
       };
 
-      static CssSelector *parse (const char *buf, int buflen);
+      static CssSelector *parse (const char *buf);
 
       bool match (Doctree *dt);
 };

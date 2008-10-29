@@ -10,14 +10,19 @@ class StyleEngine : public Doctree {
       class Node : public DoctreeNode {
          public:
             dw::core::style::Style *style;
+            CssPropertyList *nonCssProperties;
+            const char *styleAttribute;
       };
 
+      dw::core::Layout *layout;
       lout::misc::SimpleVector <Node> *stack;
+      CssContext *cssContext;
 
       dw::core::style::Style *style0 ();
+      void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
 
    public:
-      StyleEngine ();
+      StyleEngine (dw::core::Layout *layout);
       ~StyleEngine ();
    
       /* Doctree interface */

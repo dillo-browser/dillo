@@ -13,7 +13,7 @@
 #include "css.hh"
 
 /** \todo dummy only */
-CssPropertyList *CssPropertyList::parse (const char *buf, int buflen) {
+CssPropertyList *CssPropertyList::parse (const char *buf) {
    return NULL;
 }
 
@@ -35,13 +35,13 @@ void CssPropertyList::apply (CssPropertyList *props) {
 }
 
 /** \todo dummy only */
-CssSelector *CssSelector::parse (const char *buf, int buflen) {
+CssSelector *CssSelector::parse (const char *buf) {
    return NULL;
 }
 
 /** \todo dummy only */
 bool CssSelector::match (Doctree *docTree) {
-   return tagIndex < 0 || tagIndex == docTree->top ()->tagIndex;
+   return tag < 0 || tag == docTree->top ()->tag;
 }
 
 void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
