@@ -26,6 +26,7 @@ void CssPropertyList::apply (dw::core::style::StyleAttrs *styleAttrs) {
       get (i)->apply (styleAttrs);
 }
 
+/** \todo dummy only */
 bool CssSelector::match (Doctree *docTree) {
    return tagIndex < 0 || tagIndex == docTree->top ()->tagIndex;
 }
