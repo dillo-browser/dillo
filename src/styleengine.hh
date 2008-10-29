@@ -19,7 +19,7 @@ class StyleEngine : public Doctree {
       CssContext *cssContext;
 
       dw::core::style::Style *style0 ();
-      void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
+      void apply (dw::core::style::StyleAttrs *attrs, CssPropertySet *props);
 
    public:
       StyleEngine (dw::core::Layout *layout);

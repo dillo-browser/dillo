@@ -29,7 +29,7 @@ void CssPropertyList::set (CssProperty::Name name, CssProperty::Value value) {
    getRef (size () - 1)->value = value;
 }
 
-void CssPropertyList::apply (CssPropertyList *props) {
+void CssPropertyList::apply (CssPropertySet *props) {
    for (int i = 0; i < size (); i++)
       props->set (getRef (i)->name, getRef (i)->value);
 }
@@ -44,12 +44,12 @@ bool CssSelector::match (Doctree *docTree) {
    return tag < 0 || tag == docTree->top ()->tag;
 }
 
-void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
+void CssRule::apply (CssPropertySet *props, Doctree *docTree) {
    if (selector->match (docTree))
       this->props->apply (props);
 }
 
-void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
+void CssStyleSheet::apply (CssPropertySet *props, Doctree *docTree) {
    for (int i = 0; i < size (); i++)
       get (i)->apply (props, docTree);
 }
@@ -59,7 +59,7 @@ void CssContext::addRule (CssRule *rule, PrimaryOrder order) {
    sheet[order].set (sheet[order].size () - 1, rule);
 };
 
-void CssContext::apply (CssPropertyList *props, Doctree *docTree,
+void CssContext::apply (CssPropertySet *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCss) {
 
    sheet[CSS_PRIMARY_USER_AGENT].apply (props, docTree);

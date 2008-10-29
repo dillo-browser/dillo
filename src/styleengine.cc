@@ -59,30 +59,32 @@ void StyleEngine::endElement (int tag) {
    stack->setSize (stack->size () - 1);
 }
 
-void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
+void StyleEngine::apply (StyleAttrs *attrs, CssPropertySet *props) {
    FontAttrs fontAttrs = *attrs->font;
 
-   for (int i = 0; i < props->size (); i++) {
-      CssProperty *p = props->getRef (i);
+   for (int i = 0; i < CssProperty::CSS_PROPERTY_LAST; i++) {
+      CssProperty::Value *v = props->get ((CssProperty::Name) i);
+      if (v == NULL)
+         continue;
       
-      switch (p->name) {
+      switch (i) {
          /* \todo missing cases */
          case CssProperty::CSS_PROPERTY_BACKGROUND_COLOR:
             attrs->backgroundColor =
-               Color::createSimple (layout, p->value.color);
+               Color::createSimple (layout, v->color);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR:
             attrs->borderColor.bottom =
-              Color::createSimple (layout, p->value.color);
+              Color::createSimple (layout, v->color);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
-            attrs->borderStyle.bottom = p->value.borderStyle;
+            attrs->borderStyle.bottom = v->borderStyle;
             break;
          case CssProperty::CSS_PROPERTY_FONT_FAMILY:
-            fontAttrs.name = p->value.name;
+            fontAttrs.name = v->name;
             break;
          case CssProperty::CSS_PROPERTY_FONT_SIZE:
-            fontAttrs.size = p->value.size;
+            fontAttrs.size = v->size;
             break;
 
          default:
@@ -94,7 +96,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
 }
 
 Style * StyleEngine::style0 () {
-   CssPropertyList props;
+   CssPropertySet props;
    CssPropertyList *tagStyleProps = CssPropertyList::parse (
       stack->getRef (stack->size () - 1)->styleAttribute);
 

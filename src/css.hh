@@ -113,13 +113,32 @@ class CssProperty {
       Value value;
 };
 
+class CssPropertySet {
+   private:
+      bool isSet[CssProperty::CSS_PROPERTY_LAST];
+      CssProperty::Value value[CssProperty::CSS_PROPERTY_LAST];
+
+   public:
+      inline void set (CssProperty::Name name, CssProperty::Value v) {
+         value[name] = v; 
+         isSet[name] = true;
+      }
+
+      inline CssProperty::Value *get (CssProperty::Name name) {
+         if (isSet[name])
+            return &value[name];
+         else
+            return NULL;
+      }
+};
+
 class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
    public:
       CssPropertyList() : lout::misc::SimpleVector <CssProperty> (1) {};
 
       static CssPropertyList *parse (const char *buf);
       void set (CssProperty::Name name, CssProperty::Value value);
-      void apply (CssPropertyList *props);
+      void apply (CssPropertySet *props);
 };
 
 /** \todo proper implementation */
@@ -152,13 +171,13 @@ class CssRule {
       };
       ~CssRule ();
 
-      void apply (CssPropertyList *props, Doctree *docTree);
+      void apply (CssPropertySet *props, Doctree *docTree);
 };
 
 class CssStyleSheet : public lout::misc::SimpleVector <CssRule*> {
    public:
       CssStyleSheet() : lout::misc::SimpleVector <CssRule*> (1) {};
-      void apply (CssPropertyList *props, Doctree *docTree);
+      void apply (CssPropertySet *props, Doctree *docTree);
 };
 
 class CssContext {
@@ -176,7 +195,7 @@ class CssContext {
 
    public:
       void addRule (CssRule *rule, PrimaryOrder order);
-      void apply (CssPropertyList *props,
+      void apply (CssPropertySet *props,
          Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCss);
 };
