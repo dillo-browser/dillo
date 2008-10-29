@@ -13,12 +13,11 @@
 #include "css.hh"
 
 void CssPropertyList::set (CssProperty::Name name, CssProperty::Value value) {
-   for (int i = 0; i < size (); i++) {
+   for (int i = 0; i < size (); i++)
       if (getRef (i)->name == name) {
          getRef (i)->value = value;
          return;
       }
-   }
 
    increase ();
    getRef (size () - 1)->name = name;
@@ -36,7 +35,6 @@ bool CssSelector::match (Doctree *docTree) {
 }
 
 void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
-
    if (selector->match (docTree))
       this->props->apply (props);
 }
@@ -54,10 +52,10 @@ void CssContext::addRule (CssRule *rule, PrimaryOrder order) {
 void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCss) {
 
-   sheet[USER_AGENT].apply (props, docTree);
+   sheet[CSS_PRIMARY_USER_AGENT].apply (props, docTree);
    if (nonCss)
         nonCss->apply (props);
-   for (int o = USER; o <= USER_IMPORTANT; o++)
+   for (int o = CSS_PRIMARY_USER; o <= CSS_PRIMARY_USER_IMPORTANT; o++)
       sheet[o].apply (props, docTree);
    if (tagStyle)
         nonCss->apply (props);
