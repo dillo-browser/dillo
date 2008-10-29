@@ -12,18 +12,22 @@
 #include <stdio.h>
 #include "css.hh"
 
-void CssProperty::apply (dw::core::style::StyleAttrs *styleAttrs) {
-   switch (name) {
-      
-
-      default:
-         break;
+void CssPropertyList::set (CssProperty::Name name, CssProperty::Value value) {
+   for (int i = 0; i < size (); i++) {
+      if (getRef (i)->name == name) {
+         getRef (i)->value = value;
+         return;
+      }
    }
+
+   increase ();
+   getRef (size () - 1)->name = name;
+   getRef (size () - 1)->value = value;
 }
 
-void CssPropertyList::apply (dw::core::style::StyleAttrs *styleAttrs) {
+void CssPropertyList::apply (CssPropertyList *props) {
    for (int i = 0; i < size (); i++)
-      get (i)->apply (styleAttrs);
+      props->set (getRef (i)->name, getRef (i)->value);
 }
 
 /** \todo dummy only */
@@ -31,18 +35,15 @@ bool CssSelector::match (Doctree *docTree) {
    return tagIndex < 0 || tagIndex == docTree->top ()->tagIndex;
 }
 
-void CssRule::apply (dw::core::style::StyleAttrs *styleAttrs,
-   Doctree *docTree) {
+void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
 
    if (selector->match (docTree))
-      props->apply (styleAttrs);
+      this->props->apply (props);
 }
 
-void CssStyleSheet::apply (dw::core::style::StyleAttrs *styleAttrs,
-   Doctree *docTree) {
-
+void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
    for (int i = 0; i < size (); i++)
-      get (i)->apply (styleAttrs, docTree);
+      get (i)->apply (props, docTree);
 }
 
 void CssContext::addRule (CssRule *rule, PrimaryOrder order) {
@@ -50,15 +51,14 @@ void CssContext::addRule (CssRule *rule, PrimaryOrder order) {
    sheet[order].set (sheet[order].size () - 1, rule);
 };
 
-void CssContext::apply (dw::core::style::StyleAttrs *styleAttrs,
-         Doctree *docTree,
+void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCss) {
 
-   sheet[USER_AGENT].apply (styleAttrs, docTree);
+   sheet[USER_AGENT].apply (props, docTree);
    if (nonCss)
-        nonCss->apply (styleAttrs);
+        nonCss->apply (props);
    for (int o = USER; o <= USER_IMPORTANT; o++)
-      sheet[o].apply (styleAttrs, docTree);
+      sheet[o].apply (props, docTree);
    if (tagStyle)
-        nonCss->apply (styleAttrs);
+        nonCss->apply (props);
 }

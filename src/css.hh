@@ -111,17 +111,14 @@ class CssProperty {
 
       Name name;
       Value value;
-
-      CssProperty ();
-      ~CssProperty ();
-
-      void apply (dw::core::style::StyleAttrs *styleAttr);
 };
 
-class CssPropertyList : public lout::misc::SimpleVector <CssProperty*> {
+class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
    public:
-      CssPropertyList() : lout::misc::SimpleVector <CssProperty*> (1) {};
-      void apply (dw::core::style::StyleAttrs *styleAttr);
+      CssPropertyList() : lout::misc::SimpleVector <CssProperty> (1) {};
+
+      void set (CssProperty::Name name, CssProperty::Value value);
+      void apply (CssPropertyList *props);
 };
 
 /** \todo proper implementation */
@@ -152,13 +149,13 @@ class CssRule {
       };
       ~CssRule ();
 
-      void apply (dw::core::style::StyleAttrs *styleAttrs, Doctree *docTree);
+      void apply (CssPropertyList *props, Doctree *docTree);
 };
 
 class CssStyleSheet : public lout::misc::SimpleVector <CssRule*> {
    public:
       CssStyleSheet() : lout::misc::SimpleVector <CssRule*> (1) {};
-      void apply (dw::core::style::StyleAttrs *styleAttrs, Doctree *docTree);
+      void apply (CssPropertyList *props, Doctree *docTree);
 };
 
 class CssContext {
@@ -176,7 +173,7 @@ class CssContext {
 
    public:
       void addRule (CssRule *rule, PrimaryOrder order);
-      void apply (dw::core::style::StyleAttrs *styleAttrs,
+      void apply (CssPropertyList *props,
          Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCss);
 };
