@@ -109,6 +109,18 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    props->set (CssProperty::CSS_PROPERTY_CURSOR, v);
    s->addRule (new CssSelector(a_Html_tag_index("a"), NULL, NULL), props);
 
+   // <b>
+   props = new CssPropertyList ();
+   v.weight = 700;
+   props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, v);
+   s->addRule (new CssSelector(a_Html_tag_index("b"), NULL, NULL), props);
+
+   // <i>
+   props = new CssPropertyList ();
+   v.fontStyle = dw::core::style::FONT_STYLE_ITALIC;
+   props->set (CssProperty::CSS_PROPERTY_FONT_STYLE, v);
+   s->addRule (new CssSelector(a_Html_tag_index("i"), NULL, NULL), props);
+
    // <h1>
    props = new CssPropertyList ();
    v.size = 40;

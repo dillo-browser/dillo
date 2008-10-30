@@ -45,7 +45,7 @@ StyleEngine::~StyleEngine () {
 
 void StyleEngine::startElement (int tag, const char *id, const char *klass,
    const char *style) {
-//   fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
+   fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
 
    if (stack->getRef (stack->size () - 1)->style == NULL)
       style0 ();
@@ -65,8 +65,8 @@ void StyleEngine::setNonCssProperties (CssPropertyList *props) {
 }
 
 void StyleEngine::endElement (int tag) {
-//   fprintf(stderr, "===> END %d\n", tag);
-   assert (stack->size () > 0);
+   fprintf(stderr, "===> END %d\n", tag);
+   assert (stack->size () > 1);
 
    Node *n =  stack->getRef (stack->size () - 1);
    if (n->style)
@@ -95,8 +95,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             attrs->borderStyle.bottom = p->value.borderStyle;
             break;
          case CssProperty::CSS_PROPERTY_COLOR:
-            attrs->color =
-               Color::createSimple (layout, p->value.color);
+            attrs->color = Color::createSimple (layout, p->value.color);
             break; 
          case CssProperty::CSS_PROPERTY_CURSOR:
             attrs->cursor = p->value.cursor;
@@ -106,6 +105,12 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CssProperty::CSS_PROPERTY_FONT_SIZE:
             fontAttrs.size = p->value.size;
+            break;
+         case CssProperty::CSS_PROPERTY_FONT_STYLE:
+            fontAttrs.style = p->value.fontStyle;
+            break;
+         case CssProperty::CSS_PROPERTY_FONT_WEIGHT:
+            fontAttrs.weight = p->value.weight;
             break;
          case CssProperty::CSS_PROPERTY_TEXT_DECORATION:
             attrs->textDecoration |= p->value.textDecoration;

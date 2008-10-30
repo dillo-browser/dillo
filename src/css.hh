@@ -20,6 +20,7 @@ class CssProperty {
          dw::core::style::WhiteSpace whiteSpace;
          const char *name; /* used for font family */
          int size;
+         int weight;
          int x_link;
          int x_img;
       } Value;
