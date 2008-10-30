@@ -99,6 +99,7 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    CssPropertyList *props;
    CssProperty::Value v;
 
+   // <a>
    props = new CssPropertyList ();
    v.color = prefs.link_color;
    props->set (CssProperty::CSS_PROPERTY_COLOR, v);
@@ -106,7 +107,28 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, v);
    v.cursor = dw::core::style::CURSOR_POINTER;
    props->set (CssProperty::CSS_PROPERTY_CURSOR, v);
-   s->addRule (new CssSelector(a_Html_tag_index("a"), NULL, NULL), props);   
+   s->addRule (new CssSelector(a_Html_tag_index("a"), NULL, NULL), props);
+
+   // <h1>
+   props = new CssPropertyList ();
+   v.size = 40;
+   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, v);
+   v.name = "Times";
+   props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, v);
+   s->addRule (new CssSelector(a_Html_tag_index("h1"), NULL, NULL), props);
+
+   // <h2>
+   props = new CssPropertyList ();
+   v.size = 30;
+   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, v);
+   s->addRule (new CssSelector(a_Html_tag_index("h2"), NULL, NULL), props);
+
+   // <h3>
+   props = new CssPropertyList ();
+   v.size = 20;
+   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, v);
+   s->addRule (new CssSelector(a_Html_tag_index("h3"), NULL, NULL), props);
+   
    return s;
 }
 
