@@ -125,8 +125,6 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    props = new CssPropertyList ();
    v.size = 40;
    props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, v);
-   v.name = "Times";
-   props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, v);
    s->addRule (new CssSelector(a_Html_tag_index("h1"), NULL, NULL), props);
 
    // <h2>
@@ -140,6 +138,12 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    v.size = 20;
    props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, v);
    s->addRule (new CssSelector(a_Html_tag_index("h3"), NULL, NULL), props);
+
+   // <pre>
+   props = new CssPropertyList ();
+   v.name = "DejaVu Sans Mono";
+   props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, v);
+   s->addRule (new CssSelector(a_Html_tag_index("pre"), NULL, NULL), props);
    
    return s;
 }
@@ -162,6 +166,12 @@ CssStyleSheet * CssContext::buildUserStyle (bool important) {
    v.color = prefs.text_color;
    props->set (CssProperty::CSS_PROPERTY_COLOR, v);
    s->addRule (new CssSelector(a_Html_tag_index("body"), NULL, NULL), props);
+
+   // <pre>
+   props = new CssPropertyList ();
+   v.name = prefs.fw_fontname;
+   props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, v);
+   s->addRule (new CssSelector(a_Html_tag_index("pre"), NULL, NULL), props);
 
    return s;
 }
