@@ -160,8 +160,6 @@ CssStyleSheet * CssContext::buildUserStyle (bool important) {
    v.name = prefs.vw_fontname;
    props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, v);
    v.color = prefs.bg_color;
-   props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, v);
-   v.color = prefs.text_color;
    props->set (CssProperty::CSS_PROPERTY_COLOR, v);
    s->addRule (new CssSelector(a_Html_tag_index("body"), NULL, NULL), props);
 
