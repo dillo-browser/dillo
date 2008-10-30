@@ -2463,9 +2463,9 @@ static void Html_add_anchor(DilloHtml *html, const char *name)
  */
 static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 {
-   StyleAttrs style_attrs;
-   Style *old_style;
    DilloUrl *url;
+   CssPropertyList *props;
+   CssProperty::Value propValue;
    const char *attrbuf;
 
    /* TODO: add support for MAP with A HREF */
@@ -2480,28 +2480,10 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       url = a_Html_url_new(html, attrbuf, NULL, 0);
       dReturn_if_fail ( url != NULL );
 
-      old_style = html->styleEngine->style ();
-      style_attrs = *old_style;
-
-      if (a_Capi_get_flags(url) & CAPI_IsCached) {
-         html->InVisitedLink = true;
-         style_attrs.color = Color::createSimple (
-            HT2LT(html),
-            html->visited_color
-/*
-            a_Color_vc(html->visited_color,
-                       html->styleEngine->style ()->color->getColor(),
-                       html->link_color,
-                       S_TOP(html)->current_bg_color),
-*/
-            );
-      }
-
-      style_attrs.x_link = Html_set_new_link(html, &url);
-
-//      html->styleEngine->style () =
-//         Style::create (HT2LT(html), &style_attrs);
-//      old_style->unref ();
+      props = new CssPropertyList ();
+      propValue.x_link = Html_set_new_link(html, &url);
+      props->set (CssProperty::PROPERTY_X_LINK, propValue);
+      html->styleEngine->setNonCssProperties (props);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name"))) {

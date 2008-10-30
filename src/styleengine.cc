@@ -113,6 +113,12 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_TEXT_DECORATION:
             attrs->textDecoration |= p->value.textDecoration;
             break;
+         case CssProperty::PROPERTY_X_LINK:
+            attrs->x_link = p->value.x_link;
+            break;
+         case CssProperty::PROPERTY_X_IMG:
+            attrs->x_img = p->value.x_img;
+            break;
 
          default:
             break;
