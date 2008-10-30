@@ -20,6 +20,8 @@ class CssProperty {
          dw::core::style::WhiteSpace whiteSpace;
          const char *name; /* used for font family */
          int size;
+         int x_link;
+         int x_img;
       } Value;
 
       typedef enum {
@@ -106,6 +108,9 @@ class CssProperty {
          CSS_PROPERTY_X_LINK,
          CSS_PROPERTY_X_COLSPAN,
          CSS_PROPERTY_X_ROWSPAN,
+         PROPERTY_X_LINK,
+         PROPERTY_X_IMG,
+         PROPERTY_X_TOOLTIP,
          CSS_PROPERTY_LAST
       } Name;
 
