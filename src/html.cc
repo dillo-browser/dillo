@@ -1007,7 +1007,7 @@ static int Html_parse_entity(DilloHtml *html, const char *token,
 
    } else if (isalpha(*s)) {
       /* character entity reference */
-      while (*++s && (isalnum(*s) || strchr(":_.-", *s)));
+      while (*++s && (isalnum(*s) || strchr(":_.-", *s))) ;
       c = *s;
       *s = 0;
 
@@ -1187,10 +1187,10 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
       Pword = a_Html_parse_entities(html, word, size);
       for (start = i = 0; Pword[i]; start = i)
          if (isspace(Pword[i])) {
-            while (Pword[++i] && isspace(Pword[i]));
+            while (Pword[++i] && isspace(Pword[i])) ;
             Html_process_space(html, Pword + start, i - start);
          } else {
-            while (Pword[++i] && !isspace(Pword[i]));
+            while (Pword[++i] && !isspace(Pword[i])) ;
             ch = Pword[i];
             Pword[i] = 0;
             DW2TB(html->dw)->addText(Pword, S_TOP(html)->style);
@@ -1209,7 +1209,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
          Pword = a_Html_parse_entities(html, word, size);
          for (i = 0; Pword[i]; ++i)
             if (strchr("\t\f\n\r", Pword[i]))
-               for (j = i; (Pword[j] = Pword[j+1]); ++j);
+               for (j = i; (Pword[j] = Pword[j+1]); ++j) ;
    
          DW2TB(html->dw)->addText(Pword, S_TOP(html)->style);
          dFree(Pword);
@@ -1331,8 +1331,8 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
           (cmp = (new_idx != html->stack->getRef(stack_idx)->tag_idx)) &&
           ((w3c_mode &&
             Tags[html->stack->getRef(stack_idx)->tag_idx].EndTag == 'O') ||
-           (!w3c_mode &&
-            (Tags[html->stack->getRef(stack_idx)->tag_idx].EndTag == 'O') ||
+           ((!w3c_mode &&
+            (Tags[html->stack->getRef(stack_idx)->tag_idx].EndTag == 'O')) ||
              Tags[html->stack->getRef(stack_idx)->tag_idx].TagLevel <
              Tags[new_idx].TagLevel))) {
       --stack_idx;
@@ -1516,7 +1516,7 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
     * and replace '\n' and '\r' with ' ' inside quoted strings. */
    for (i = 0, p = ntag; *p; ++p) {
       if (isspace(*p)) {
-         for (ntag[i++] = ' '; isspace(p[1]); ++p);
+         for (ntag[i++] = ' '; isspace(p[1]); ++p) ;
       } else if ((quote = *p) == '"' || *p == '\'') {
          for (ntag[i++] = *p++; (ntag[i++] = *p) && *p != quote; ++p) {
             if (*p == '\n' || *p == '\r')
@@ -2945,7 +2945,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
             sprintf(delay_str, ".");
 
          /* Skip to anything after "URL=" */
-         while (*content && *(content++) != '=');
+         while (*content && *(content++) != '=') ;
 
          /* Send a custom HTML message.
           * TODO: This is a hairy hack,
@@ -3766,7 +3766,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
 
       if (isspace(buf[buf_index])) {
          /* whitespace: group all available whitespace */
-         while (++buf_index < bufsize && isspace(buf[buf_index]));
+         while (++buf_index < bufsize && isspace(buf[buf_index])) ;
          Html_process_space(html, buf + token_start, buf_index - token_start);
          token_start = buf_index;
 

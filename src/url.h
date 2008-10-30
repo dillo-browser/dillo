@@ -95,12 +95,12 @@ extern "C" {
 struct _DilloUrl {
    Dstr  *url_string;
    const char *buffer;
-   const char *scheme;            //
-   const char *authority;         //
-   const char *path;              // These are references only
-   const char *query;             // (no need to free them)
-   const char *fragment;          //
-   const char *hostname;          //
+   const char *scheme;            /**/
+   const char *authority;         /**/
+   const char *path;              /* These are references only */
+   const char *query;             /* (no need to free them) */
+   const char *fragment;          /**/
+   const char *hostname;          /**/
    int port;
    int flags;
    Dstr *data;                    /* POST */

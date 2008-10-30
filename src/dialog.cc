@@ -193,7 +193,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
    txt[0] = txt[6] = NULL;
    txt[1] = alt1; txt[2] = alt2; txt[3] = alt3;
    txt[4] = alt4; txt[5] = alt5;
-   for (int i=1; txt[i]; ++i, ++nb);
+   for (int i=1; txt[i]; ++i, ++nb) ;
 
    Window *window = new Window(ww,wh,"Choice5");
    window->begin();

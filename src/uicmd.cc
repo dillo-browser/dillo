@@ -85,11 +85,12 @@ public:
    void remove (Widget *w) {
       TabGroup::remove (w);
       /* fixup resizable in case we just removed it */
-      if (resizable () == w)
+      if (resizable () == w) {
          if (children () > 0)
             resizable (child (children () - 1));
          else
             resizable (NULL);
+      }
 
       if (children () < 2)
          hideLabels ();

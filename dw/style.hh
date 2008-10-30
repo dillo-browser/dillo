@@ -346,11 +346,11 @@ inline Length createAbsLength(int n) { return (n << 2) | 1; }
 
 /** \brief Returns a percentage, \em v is relative to 1, not to 100. */
 inline Length createPerLength(double v) {
-   return (int)(v * (1 << 18)) & ~3 | 2; }
+   return ((int)(v * (1 << 18)) & ~3) | 2; }
 
 /** \brief Returns a relative length. */
 inline Length createRelLength(double v) {
-   return (int)(v * (1 << 18)) & ~3 | 3; }
+   return ((int)(v * (1 << 18)) & ~3) | 3; }
 
 /** \brief Returns true if \em l is an absolute length. */
 inline bool isAbsLength(Length l) { return (l & 3) == 1; }

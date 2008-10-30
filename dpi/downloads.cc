@@ -513,7 +513,7 @@ void DLItem::log_text_add(const char *buf, ssize_t st)
          if (isdigit(*q++ = *p)) {
             // keep here
          } else if (*p == 'K') {
-            for(--q; isdigit(q[-1]); --q); log_state = ST_discard;
+            for(--q; isdigit(q[-1]); --q) ; log_state = ST_discard;
          } else {
             log_state = ST_copy;
          }
