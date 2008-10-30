@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include "html_common.hh"
 #include "css.hh"
 
 /** \todo dummy only */
@@ -49,24 +50,63 @@ void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
       this->props->apply (props);
 }
 
+void CssStyleSheet::addRule (CssSelector *selector, CssPropertyList *props) {
+   CssRule *rule = new CssRule (selector, props);
+   increase ();
+   set (size () - 1, rule);
+}
+
 void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
    for (int i = 0; i < size (); i++)
       get (i)->apply (props, docTree);
 }
 
-void CssContext::addRule (CssRule *rule, PrimaryOrder order) {
-   sheet[order].increase ();
-   sheet[order].set (sheet[order].size () - 1, rule);
-};
+CssStyleSheet *CssContext::userAgentStyle;
+CssStyleSheet *CssContext::userStyle;
+CssStyleSheet *CssContext::userImportantStyle;
+
+CssContext::CssContext () {
+   for (int o = CSS_PRIMARY_USER_AGENT; o <= CSS_PRIMARY_USER_IMPORTANT; o++)
+      sheet[o] = NULL;
+
+   if (userAgentStyle == NULL) {
+      userAgentStyle = buildUserAgentStyle ();
+      userStyle = buildUserStyle (false);
+      userImportantStyle = buildUserStyle (true);
+   }
+
+   sheet[CSS_PRIMARY_USER_AGENT] = userAgentStyle;
+   sheet[CSS_PRIMARY_USER] = userStyle;
+   sheet[CSS_PRIMARY_USER_IMPORTANT] = userImportantStyle;
+}
 
 void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCss) {
 
-   sheet[CSS_PRIMARY_USER_AGENT].apply (props, docTree);
+   sheet[CSS_PRIMARY_USER_AGENT]->apply (props, docTree);
    if (nonCss)
         nonCss->apply (props);
    for (int o = CSS_PRIMARY_USER; o <= CSS_PRIMARY_USER_IMPORTANT; o++)
-      sheet[o].apply (props, docTree);
+      if (sheet[o])
+         sheet[o]->apply (props, docTree);
    if (tagStyle)
         nonCss->apply (props);
+}
+
+CssStyleSheet * CssContext::buildUserAgentStyle () {
+   CssStyleSheet *s = new CssStyleSheet ();
+   CssPropertyList *props;
+   CssProperty::Value v;
+
+   props = new CssPropertyList ();
+   v.color = 13;
+   props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, v);
+   v.size = 20;
+   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, v);
+   s->addRule (new CssSelector(a_Html_tag_index("a"), NULL, NULL), props);   
+   return s;
+}
+
+CssStyleSheet * CssContext::buildUserStyle (bool important) {
+   return NULL;
 }

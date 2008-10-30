@@ -155,9 +155,10 @@ class CssRule {
       void apply (CssPropertyList *props, Doctree *docTree);
 };
 
-class CssStyleSheet : public lout::misc::SimpleVector <CssRule*> {
+class CssStyleSheet : lout::misc::SimpleVector <CssRule*> {
    public:
       CssStyleSheet() : lout::misc::SimpleVector <CssRule*> (1) {};
+      void addRule (CssSelector *selector, CssPropertyList *props);
       void apply (CssPropertyList *props, Doctree *docTree);
 };
 
@@ -172,9 +173,18 @@ class CssContext {
       } PrimaryOrder;
 
    private:
-      CssStyleSheet sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
+      static CssStyleSheet *userAgentStyle;
+      static CssStyleSheet *userStyle;
+      static CssStyleSheet *userImportantStyle;
+      CssStyleSheet *sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
+
+      CssStyleSheet *buildUserAgentStyle ();
+      CssStyleSheet *buildUserStyle (bool important);
 
    public:
+      CssContext ();
+      ~CssContext ();
+
       void addRule (CssRule *rule, PrimaryOrder order);
       void apply (CssPropertyList *props,
          Doctree *docTree,
