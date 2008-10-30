@@ -1027,10 +1027,10 @@ void DLWin::del(int n_item)
 {
    DLItem *dl_item = mDList->get(n_item);
 
-   // Remove the widget from the scroll group
+   // Remove the widget from the packed group
    mPG->remove(dl_item->get_widget());
-   // Resize the scroll group
-   mPG->resize(mWin->w(), 1);
+   // WORKAROUND: without this call FLTK2 doesn't clear the background.
+   mScroll->redraw();
 
    mDList->del(n_item);
    delete(dl_item);
@@ -1093,7 +1093,7 @@ DLWin::DLWin(int ww, int wh) {
     mScroll->end();
     mScroll->type(ScrollGroup::VERTICAL);
    mWin->end();
-   mWin->resizable(mPG);
+   mWin->resizable(mScroll);
    mWin->callback(dlwin_esc_cb, NULL);
    mWin->show();
 
