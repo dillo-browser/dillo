@@ -53,7 +53,6 @@ void StyleEngine::startElement (int tag, const char *id, const char *klass,
    stack->increase ();
    Node *n =  stack->getRef (stack->size () - 1);
    n->style = NULL;
-   n->nonCssProperties = NULL;
    n->depth = stack->size ();
    n->tag = tag;
    n->id = id;
@@ -62,7 +61,7 @@ void StyleEngine::startElement (int tag, const char *id, const char *klass,
 }
 
 void StyleEngine::setNonCssProperties (CssPropertyList *props) {
-   stack->getRef (stack->size () - 1)->nonCssProperties = props;
+   style0 (props); // evaluate now, so caller can free props
 }
 
 void StyleEngine::endElement (int tag) {
@@ -72,8 +71,6 @@ void StyleEngine::endElement (int tag) {
    Node *n =  stack->getRef (stack->size () - 1);
    if (n->style)
       n->style->unref ();
-   if (n->nonCssProperties)
-      delete n->nonCssProperties;
    
    stack->setSize (stack->size () - 1);
 }
@@ -128,15 +125,14 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    attrs->font = Font::create (layout, &fontAttrs);
 }
 
-Style * StyleEngine::style0 () {
+Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    CssPropertyList props;
    CssPropertyList *tagStyleProps = CssPropertyList::parse (
       stack->getRef (stack->size () - 1)->styleAttribute);
 
    StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
 
-   cssContext->apply (&props, this, tagStyleProps,
-      stack->getRef (stack->size () - 1)->nonCssProperties);
+   cssContext->apply (&props, this, tagStyleProps, nonCssProperties);
 
    apply (&attrs, &props);
 

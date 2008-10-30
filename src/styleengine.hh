@@ -10,7 +10,6 @@ class StyleEngine : public Doctree {
       class Node : public DoctreeNode {
          public:
             dw::core::style::Style *style;
-            CssPropertyList *nonCssProperties;
             const char *styleAttribute;
       };
 
@@ -18,7 +17,7 @@ class StyleEngine : public Doctree {
       lout::misc::SimpleVector <Node> *stack;
       CssContext *cssContext;
 
-      dw::core::style::Style *style0 ();
+      dw::core::style::Style *style0 (CssPropertyList *nonCssProperties = NULL);
       void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
 
    public:

@@ -38,6 +38,7 @@
  * Change one toplevel attribute. var should be an identifier. val is
  * only evaluated once, so you can safely use a function call for it.
  */
+#if 0
 #define HTML_SET_TOP_ATTR(html, var, val) \
    do { \
       StyleAttrs style_attrs; \
@@ -50,7 +51,9 @@
          Style::create (HT2LT(html), &style_attrs); \
       old_style->unref (); \
    } while (FALSE)
-
+#else
+#define HTML_SET_TOP_ATTR(html, var, val) 
+#endif
 /*
  * Typedefs 
  */

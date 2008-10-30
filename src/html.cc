@@ -265,6 +265,7 @@ static int Html_add_new_linkimage(DilloHtml *html,
 void a_Html_set_top_font(DilloHtml *html, const char *name, int size,
                          int BI, int BImask)
 {
+#if 0
    FontAttrs font_attrs;
 
    font_attrs = *html->styleEngine->style ()->font;
@@ -279,6 +280,7 @@ void a_Html_set_top_font(DilloHtml *html, const char *name, int size,
 
    HTML_SET_TOP_ATTR (html, font,
                       Font::create (HT2LT(html), &font_attrs));
+#endif
 }
 
 /*
@@ -2464,7 +2466,7 @@ static void Html_add_anchor(DilloHtml *html, const char *name)
 static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloUrl *url;
-   CssPropertyList *props;
+   CssPropertyList props;
    CssProperty::Value propValue;
    const char *attrbuf;
 
@@ -2480,10 +2482,9 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       url = a_Html_url_new(html, attrbuf, NULL, 0);
       dReturn_if_fail ( url != NULL );
 
-      props = new CssPropertyList ();
       propValue.x_link = Html_set_new_link(html, &url);
-      props->set (CssProperty::PROPERTY_X_LINK, propValue);
-      html->styleEngine->setNonCssProperties (props);
+      props.set (CssProperty::PROPERTY_X_LINK, propValue);
+      html->styleEngine->setNonCssProperties (&props);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name"))) {
