@@ -101,7 +101,7 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
 
    // <a>
    props = new CssPropertyList ();
-   v.color = prefs.link_color;
+   v.color = 0x0000ff;
    props->set (CssProperty::CSS_PROPERTY_COLOR, v);
    v.textDecoration = dw::core::style::TEXT_DECORATION_UNDERLINE;
    props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, v);
@@ -145,5 +145,25 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
 }
 
 CssStyleSheet * CssContext::buildUserStyle (bool important) {
-   return NULL;
+   CssStyleSheet *s = new CssStyleSheet ();
+   CssPropertyList *props;
+   CssProperty::Value v;
+
+   // <a>
+   props = new CssPropertyList ();
+   v.color = prefs.link_color;
+   props->set (CssProperty::CSS_PROPERTY_COLOR, v);
+   s->addRule (new CssSelector(a_Html_tag_index("a"), NULL, NULL), props);
+
+   // <body>
+   props = new CssPropertyList ();
+   v.name = prefs.vw_fontname;
+   props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, v);
+   v.color = prefs.bg_color;
+   props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, v);
+   v.color = prefs.text_color;
+   props->set (CssProperty::CSS_PROPERTY_COLOR, v);
+   s->addRule (new CssSelector(a_Html_tag_index("body"), NULL, NULL), props);
+
+   return s;
 }

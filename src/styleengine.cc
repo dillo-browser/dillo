@@ -10,7 +10,6 @@
  */
 
 #include <stdio.h>
-#include "prefs.h"
 #include "styleengine.hh"
 
 using namespace dw::core::style;
@@ -27,14 +26,14 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    Node *n =  stack->getRef (stack->size () - 1);
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
-   font_attrs.name = prefs.vw_fontname;
+   font_attrs.name = "helvetica";
    font_attrs.size = 12;
    font_attrs.weight = 400;
    font_attrs.style = FONT_STYLE_NORMAL;
  
    style_attrs.initValues ();
    style_attrs.font = Font::create (layout, &font_attrs);
-   style_attrs.color = Color::createSimple (layout, prefs.text_color);
+   style_attrs.color = Color::createSimple (layout, 0);
    
    n->style = Style::create (layout, &style_attrs);
 }
@@ -45,7 +44,7 @@ StyleEngine::~StyleEngine () {
 
 void StyleEngine::startElement (int tag, const char *id, const char *klass,
    const char *style) {
-   fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
+//   fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
 
    if (stack->getRef (stack->size () - 1)->style == NULL)
       style0 ();
@@ -65,7 +64,7 @@ void StyleEngine::setNonCssProperties (CssPropertyList *props) {
 }
 
 void StyleEngine::endElement (int tag) {
-   fprintf(stderr, "===> END %d\n", tag);
+//   fprintf(stderr, "===> END %d\n", tag);
    assert (stack->size () > 1);
 
    Node *n =  stack->getRef (stack->size () - 1);
