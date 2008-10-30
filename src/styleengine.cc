@@ -10,14 +10,33 @@
  */
 
 #include <stdio.h>
+#include "prefs.h"
 #include "styleengine.hh"
 
 using namespace dw::core::style;
 
 StyleEngine::StyleEngine (dw::core::Layout *layout) {
+   StyleAttrs style_attrs;
+   FontAttrs font_attrs;
+
    stack = new lout::misc::SimpleVector <Node> (1);
    cssContext = new CssContext ();
    this->layout = layout;
+
+   stack->increase ();
+   Node *n =  stack->getRef (stack->size () - 1);
+
+   /* Create a dummy font, attribute, and tag for the bottom of the stack. */
+   font_attrs.name = prefs.vw_fontname;
+   font_attrs.size = 12;
+   font_attrs.weight = 400;
+   font_attrs.style = FONT_STYLE_NORMAL;
+ 
+   style_attrs.initValues ();
+   style_attrs.font = Font::create (layout, &font_attrs);
+   style_attrs.color = Color::createSimple (layout, prefs.text_color);
+   
+   n->style = Style::create (layout, &style_attrs);
 }
 
 StyleEngine::~StyleEngine () {
@@ -29,7 +48,7 @@ void StyleEngine::startElement (int tag, const char *id, const char *klass,
    fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
 
    if (stack->getRef (stack->size () - 1)->style == NULL)
-      stack->getRef (stack->size () - 1)->style = style0 ();
+      style0 ();
 
    stack->increase ();
    Node *n =  stack->getRef (stack->size () - 1);
@@ -98,7 +117,7 @@ Style * StyleEngine::style0 () {
    CssPropertyList *tagStyleProps = CssPropertyList::parse (
       stack->getRef (stack->size () - 1)->styleAttribute);
 
-   StyleAttrs attrs = *stack->getRef (stack->size () - 1)->style;
+   StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
 
    cssContext->apply (&props, this, tagStyleProps,
       stack->getRef (stack->size () - 1)->nonCssProperties);
@@ -107,5 +126,5 @@ Style * StyleEngine::style0 () {
 
    stack->getRef (stack->size () - 1)->style = Style::create (layout, &attrs);
    
-   return NULL;
+   return stack->getRef (stack->size () - 1)->style;
 }
