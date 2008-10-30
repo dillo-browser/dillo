@@ -2495,17 +2495,9 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
                        S_TOP(html)->current_bg_color),
 */
             );
-      } else {
-         style_attrs.color = Color::createSimple(HT2LT(html),
-                                                 html->link_color);
       }
 
-//    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "title")))
-//       style_attrs.x_tooltip = a_Dw_tooltip_new_no_ref(attrbuf);
-
-      style_attrs.textDecoration |= TEXT_DECORATION_UNDERLINE;
       style_attrs.x_link = Html_set_new_link(html, &url);
-      style_attrs.cursor = CURSOR_POINTER;
 
 //      html->styleEngine->style () =
 //         Style::create (HT2LT(html), &style_attrs);

@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include "prefs.h"
 #include "html_common.hh"
 #include "css.hh"
 
@@ -99,10 +100,12 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    CssProperty::Value v;
 
    props = new CssPropertyList ();
-   v.color = 13;
-   props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, v);
-   v.size = 20;
-   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, v);
+   v.color = prefs.link_color;
+   props->set (CssProperty::CSS_PROPERTY_COLOR, v);
+   v.textDecoration = dw::core::style::TEXT_DECORATION_UNDERLINE;
+   props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, v);
+   v.cursor = dw::core::style::CURSOR_POINTER;
+   props->set (CssProperty::CSS_PROPERTY_CURSOR, v);
    s->addRule (new CssSelector(a_Html_tag_index("a"), NULL, NULL), props);   
    return s;
 }

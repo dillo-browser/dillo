@@ -45,7 +45,7 @@ StyleEngine::~StyleEngine () {
 
 void StyleEngine::startElement (int tag, const char *id, const char *klass,
    const char *style) {
-   fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
+//   fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
 
    if (stack->getRef (stack->size () - 1)->style == NULL)
       style0 ();
@@ -66,7 +66,7 @@ void StyleEngine::setNonCssProperties (CssPropertyList *props) {
 }
 
 void StyleEngine::endElement (int tag) {
-   fprintf(stderr, "===> END %d\n", tag);
+//   fprintf(stderr, "===> END %d\n", tag);
    assert (stack->size () > 0);
 
    Node *n =  stack->getRef (stack->size () - 1);
@@ -97,11 +97,21 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
             attrs->borderStyle.bottom = p->value.borderStyle;
             break;
+         case CssProperty::CSS_PROPERTY_COLOR:
+            attrs->color =
+               Color::createSimple (layout, p->value.color);
+            break; 
+         case CssProperty::CSS_PROPERTY_CURSOR:
+            attrs->cursor = p->value.cursor;
+            break; 
          case CssProperty::CSS_PROPERTY_FONT_FAMILY:
             fontAttrs.name = p->value.name;
             break;
          case CssProperty::CSS_PROPERTY_FONT_SIZE:
             fontAttrs.size = p->value.size;
+            break;
+         case CssProperty::CSS_PROPERTY_TEXT_DECORATION:
+            attrs->textDecoration |= p->value.textDecoration;
             break;
 
          default:
