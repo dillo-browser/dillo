@@ -138,6 +138,7 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
    dw::core::style::Style *style, *old_style;
    int32_t bgcolor = -1;
    bool new_style = false;
+   CssPropertyList props;
 
 #ifdef USE_TABLES
    switch (S_TOP(html)->table_mode) {
@@ -171,7 +172,8 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 
       if (a_Html_get_attr (html, tag, tagsize, "align")) {
          S_TOP(html)->cell_text_align_set = TRUE;
-         a_Html_tag_set_align_attr (html, tag, tagsize);
+         a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+         html->styleEngine->setNonCssProperties (&props);
       }
 
       style_attrs = *S_TOP(html)->table_cell_style;
@@ -236,6 +238,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    dw::core::style::Style *style, *old_style;
    int32_t bgcolor;
    bool_t new_style;
+   CssPropertyList props;
 
    switch (S_TOP(html)->table_mode) {
    case DILLO_HTML_TABLE_MODE_NONE:
@@ -271,7 +274,8 @@ static void Html_tag_open_table_cell(DilloHtml *html,
 //      html->styleEngine->style () =
 //         Style::create (HT2LT(html), &style_attrs);
 //      old_style->unref ();
-      a_Html_tag_set_align_attr (html, tag, tagsize);
+      a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+      html->styleEngine->setNonCssProperties (&props);
 
       /* cell style */
       style_attrs = *S_TOP(html)->table_cell_style;

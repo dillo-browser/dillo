@@ -112,6 +112,9 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_FONT_WEIGHT:
             fontAttrs.weight = p->value.weight;
             break;
+         case CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE:
+            attrs->listStyleType = p->value.listStyleType;
+            break;
          case CssProperty::CSS_PROPERTY_TEXT_DECORATION:
             attrs->textDecoration |= p->value.textDecoration;
             break;

@@ -269,7 +269,7 @@ int32_t a_Html_color_parse(DilloHtml *html,
                            const char *subtag, int32_t default_color);
 dw::core::style::Length a_Html_parse_length (DilloHtml *html,
                                              const char *attr);
-void a_Html_tag_set_align_attr(DilloHtml *html,
+void a_Html_tag_set_align_attr(DilloHtml *html, CssPropertyList *props,
                                const char *tag, int tagsize);
 bool a_Html_tag_set_valign_attr(DilloHtml *html,
                                 const char *tag, int tagsize,

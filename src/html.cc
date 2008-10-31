@@ -288,25 +288,26 @@ void a_Html_set_top_font(DilloHtml *html, const char *name, int size,
  * sets the style at the top of the stack.
  */
 void a_Html_tag_set_align_attr(DilloHtml *html,
+                               CssPropertyList *props,        
                                const char *tag, int tagsize)
 {
-   const char *align, *charattr;
+   const char *align;
 
    if ((align = a_Html_get_attr(html, tag, tagsize, "align"))) {
-      Style *old_style = html->styleEngine->style ();
-      StyleAttrs style_attrs = *old_style;
+      CssProperty::Value v;
 
       if (dStrcasecmp (align, "left") == 0)
-         style_attrs.textAlign = TEXT_ALIGN_LEFT;
+         v.textAlignType = TEXT_ALIGN_LEFT;
       else if (dStrcasecmp (align, "right") == 0)
-         style_attrs.textAlign = TEXT_ALIGN_RIGHT;
+         v.textAlignType = TEXT_ALIGN_RIGHT;
       else if (dStrcasecmp (align, "center") == 0)
-         style_attrs.textAlign = TEXT_ALIGN_CENTER;
+         v.textAlignType = TEXT_ALIGN_CENTER;
       else if (dStrcasecmp (align, "justify") == 0)
-         style_attrs.textAlign = TEXT_ALIGN_JUSTIFY;
+         v.textAlignType = TEXT_ALIGN_JUSTIFY;
+#if 0
       else if (dStrcasecmp (align, "char") == 0) {
          /* TODO: Actually not supported for <p> etc. */
-         style_attrs.textAlign = TEXT_ALIGN_STRING;
+         v.textAlign = TEXT_ALIGN_STRING;
          if ((charattr = a_Html_get_attr(html, tag, tagsize, "char"))) {
             if (charattr[0] == 0)
                /* TODO: ALIGN=" ", and even ALIGN="&32;" will reult in
@@ -320,8 +321,8 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
             /* TODO: Examine LANG attr of <html>. */
             style_attrs.textAlignChar = '.';
       }
-//      html->styleEngine->style () = Style::create (HT2LT(html), &style_attrs);
-//      old_style->unref ();
+#endif
+      props->set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, v);
    }
 }
 
@@ -1763,13 +1764,16 @@ static void Html_tag_close_body(DilloHtml *html, int TagIdx)
  */
 static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
 {
+   CssPropertyList props;
+
    if ((html->InFlags & IN_LI) && !html->WordAfterLI) {
       /* ignore first parbreak after an empty <LI> */
       html->WordAfterLI = true;
    } else {
       DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
    }
-   a_Html_tag_set_align_attr (html, tag, tagsize);
+   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+   html->styleEngine->setNonCssProperties (&props);
 }
 
 /*
@@ -1858,13 +1862,12 @@ static void Html_tag_open_frameset (DilloHtml *html,
  */
 static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
 {
+   CssPropertyList props;
+
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
 
-   /* TODO: combining these two would be slightly faster */
-   a_Html_set_top_font(html, prefs.vw_fontname,
-                       Html_level_to_fontsize(FontSizesNum - (tag[2] - '0')),
-                       1, 3);
-   a_Html_tag_set_align_attr (html, tag, tagsize);
+   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+   html->styleEngine->setNonCssProperties (&props);
 
    /* First finalize unclosed H tags (we test if already named anyway) */
    a_Menu_pagemarks_set_text(html->bw, html->Stash->str);
@@ -2592,11 +2595,8 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dir(DilloHtml *html, const char *tag, int tagsize)
 {
-   ListStyleType list_style_type = LIST_STYLE_TYPE_DISC;
-
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
-   Html_add_indented(html, 40, 0, 9);
-   HTML_SET_TOP_ATTR(html, listStyleType, list_style_type);
+
    S_TOP(html)->list_type = HTML_LIST_UNORDERED;
    S_TOP(html)->list_number = 0;
    S_TOP(html)->ref_list_item = NULL;
@@ -2619,28 +2619,30 @@ static void Html_tag_open_menu(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
-   ListStyleType list_style_type;
    int n = 1;
+
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
+      CssPropertyList props;
+      CssProperty::Value v;
+
+      if (*attrbuf == '1')
+         v.listStyleType = LIST_STYLE_TYPE_DECIMAL;
+      else if (*attrbuf == 'a')
+         v.listStyleType = LIST_STYLE_TYPE_LOWER_ALPHA;
+      else if (*attrbuf == 'A')
+         v.listStyleType = LIST_STYLE_TYPE_UPPER_ALPHA;
+      else if (*attrbuf == 'i')
+         v.listStyleType = LIST_STYLE_TYPE_LOWER_ROMAN;
+      else if (*attrbuf == 'I')
+         v.listStyleType = LIST_STYLE_TYPE_UPPER_ROMAN;
+
+      props.set (CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, v);
+      html->styleEngine->setNonCssProperties (&props);
+   }
 
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
    Html_add_indented(html, 40, 0, 9);
 
-   list_style_type = LIST_STYLE_TYPE_DECIMAL;
-
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
-      if (*attrbuf == '1')
-         list_style_type = LIST_STYLE_TYPE_DECIMAL;
-      else if (*attrbuf == 'a')
-         list_style_type = LIST_STYLE_TYPE_LOWER_ALPHA;
-      else if (*attrbuf == 'A')
-         list_style_type = LIST_STYLE_TYPE_UPPER_ALPHA;
-      else if (*attrbuf == 'i')
-         list_style_type = LIST_STYLE_TYPE_LOWER_ROMAN;
-      else if (*attrbuf == 'I')
-         list_style_type = LIST_STYLE_TYPE_UPPER_ROMAN;
-   }
-
-   HTML_SET_TOP_ATTR(html, listStyleType, list_style_type);
    S_TOP(html)->list_type = HTML_LIST_ORDERED;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "start")) &&
@@ -3043,8 +3045,11 @@ static void Html_tag_open_sup(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 {
+   CssPropertyList props;
+
    DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
-   a_Html_tag_set_align_attr (html, tag, tagsize);
+   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+   html->styleEngine->setNonCssProperties (&props);
 }
 
 /*
@@ -3443,10 +3448,6 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       /* Push the tag into the stack */
       Html_push_tag(html, ni);
 
-      /* Call the open function for this tag */
-      Tags[ni].open (html, tag, tagsize);
-      if (html->stop_parser)
-         break;
 
       /* Now parse attributes that can appear on any tag */
       if (tagsize >= 8 &&        /* length of "<t id=i>" */
@@ -3498,6 +3499,11 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
          free (klass);
       if (style)
          free (style);
+
+      /* Call the open function for this tag */
+      Tags[ni].open (html, tag, tagsize);
+      if (html->stop_parser)
+         break;
 
       /* let the parser know this was an open tag */
       html->PrevWasOpenTag = true;
