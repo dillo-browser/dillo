@@ -115,6 +115,9 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE:
             attrs->listStyleType = p->value.listStyleType;
             break;
+         case CssProperty::CSS_PROPERTY_TEXT_ALIGN:
+            attrs->textAlign = p->value.textAlignType;
+            break;
          case CssProperty::CSS_PROPERTY_TEXT_DECORATION:
             attrs->textDecoration |= p->value.textDecoration;
             break;
