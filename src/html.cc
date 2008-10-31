@@ -1278,6 +1278,7 @@ static void Html_real_pop_tag(DilloHtml *html)
    //(html->styleEngine->style ())->unref ();
    if (S_TOP(html)->table_cell_style)
       (S_TOP(html)->table_cell_style)->unref ();
+   html->styleEngine->endElement (S_TOP(html)->tag_idx);
    hand_over_break = S_TOP(html)->hand_over_break;
    html->stack->setSize (html->stack->size() - 1);
    Html_eventually_pop_dw(html, hand_over_break);
@@ -3520,7 +3521,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
             (size_t)tagsize == strlen(Tags[ni].name) + 3))) {   /*  <x/>   */
    
          Tags[ni].close (html, ni);
-         html->styleEngine->endElement (ni);
+//         html->styleEngine->endElement (ni);
          /* This was a close tag */
          html->PrevWasOpenTag = false;
          html->ReqTagClose = false;
