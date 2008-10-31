@@ -469,7 +469,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    stack = new misc::SimpleVector <DilloHtmlState> (16);
    stack->increase();
-   stack->getRef(0)->style = NULL;
    stack->getRef(0)->table_cell_style = NULL;
    stack->getRef(0)->parse_mode = DILLO_HTML_PARSE_MODE_INIT;
    stack->getRef(0)->table_mode = DILLO_HTML_TABLE_MODE_NONE;
@@ -528,24 +527,10 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
  */
 void DilloHtml::initDw()
 {
-   StyleAttrs style_attrs;
-   FontAttrs font_attrs;
-
    dReturn_if_fail (dw == NULL);
 
    /* Create the main widget */
    dw = stack->getRef(0)->textblock = new Textblock (prefs.limit_text_width);
-
-   /* Create a dummy font, attribute, and tag for the bottom of the stack. */
-   font_attrs.name = prefs.vw_fontname;
-   font_attrs.size = Html_level_to_fontsize(FontSizesBase);
-   font_attrs.weight = 400;
-   font_attrs.style = FONT_STYLE_NORMAL;
-
-   style_attrs.initValues ();
-   style_attrs.font = Font::create (HT2LT(this), &font_attrs);
-   style_attrs.color = Color::createSimple (HT2LT(this), prefs.text_color);
-   stack->getRef(0)->style = Style::create (HT2LT(this), &style_attrs);
 
    stack->getRef(0)->table_cell_style = NULL;
 

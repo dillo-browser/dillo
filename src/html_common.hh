@@ -114,7 +114,8 @@ struct _DilloLinkImage {
 };
 
 struct _DilloHtmlState {
-   dw::core::style::Style *style, *table_cell_style;
+//   dw::core::style::Style *style, *table_cell_style;
+   dw::core::style::Style *table_cell_style;
    DilloHtmlParseMode parse_mode;
    DilloHtmlTableMode table_mode;
    bool cell_text_align_set;

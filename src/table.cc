@@ -49,7 +49,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    int32_t border = 0, cellspacing = 1, cellpadding = 2, bgcolor;
 #endif
 
-   DW2TB(html->dw)->addParbreak (0, S_TOP(html)->style);
+   DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
 
 #ifdef USE_TABLES
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border")))
@@ -60,7 +60,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       cellpadding = strtol (attrbuf, NULL, 10);
 
    /* The style for the table */
-   style_attrs = *S_TOP(html)->style;
+   style_attrs = *html->styleEngine->style ();
 
    /* When dillo was started with the --debug-rendering option, there
     * is always a border around the table. */
@@ -101,7 +101,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    /* The style for the cells */
    cell_style = Style::create (HT2LT(html), &style_attrs);
-   style_attrs = *S_TOP(html)->style;
+   style_attrs = *html->styleEngine->style ();
    /* When dillo was started with the --debug-rendering option, there
     * is always a border around the cells. */
    if (dillo_dbg_rendering)
@@ -157,7 +157,7 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
             if (bgcolor == 0xffffff && !prefs.allow_white_bg)
                bgcolor = prefs.bg_color;
 
-            style_attrs = *S_TOP(html)->style;
+            style_attrs = *html->styleEngine->style ();
             style_attrs.backgroundColor =
                Color::createShaded (HT2LT(html), bgcolor);
             style = Style::create (HT2LT(html), &style_attrs);
@@ -194,7 +194,7 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TR;
 #else
-   DW2TB(html->dw)->addParbreak (0, S_TOP(html)->style);
+   DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
 #endif
 }
 
@@ -259,7 +259,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
          rowspan = MAX(1, strtol (attrbuf, NULL, 10));
 
       /* text style */
-      old_style = S_TOP(html)->style;
+      old_style = html->styleEngine->style ();
       style_attrs = *old_style;
       if (!S_TOP(html)->cell_text_align_set)
          style_attrs.textAlign = text_align;
@@ -268,9 +268,9 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       else
          style_attrs.whiteSpace = WHITE_SPACE_NORMAL;
 
-      S_TOP(html)->style =
-         Style::create (HT2LT(html), &style_attrs);
-      old_style->unref ();
+//      html->styleEngine->style () =
+//         Style::create (HT2LT(html), &style_attrs);
+//      old_style->unref ();
       a_Html_tag_set_align_attr (html, tag, tagsize);
 
       /* cell style */
@@ -299,7 +299,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
          }
       }
 
-      if (S_TOP(html)->style->textAlign
+      if (html->styleEngine->style ()->textAlign
           == TEXT_ALIGN_STRING)
          col_tb = new dw::TableCell (((dw::Table*)S_TOP(html)->table)->getCellRef (),
                                      prefs.limit_text_width);

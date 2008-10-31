@@ -277,7 +277,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    char *charset, *first;
    const char *attrbuf;
 
-   DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
 
    if (html->InFlags & IN_FORM) {
       BUG_MSG("nested forms\n");
@@ -540,7 +540,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
       HTML_SET_TOP_ATTR(html, backgroundColor, bg);
 
-      DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+      DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
    }
    dFree(type);
    dFree(name);
@@ -573,10 +573,10 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
                  html->charset);
    html->InFlags |= IN_FORM;
 
-   DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "prompt")))
-      DW2TB(html->dw)->addText(attrbuf, S_TOP(html)->style);
+      DW2TB(html->dw)->addText(attrbuf, html->styleEngine->style ());
 
    ResourceFactory *factory = HT2LT(html)->getResourceFactory();
    EntryResource *entryResource = factory->createEntryResource (20, false);
@@ -589,7 +589,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    else
       bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
    HTML_SET_TOP_ATTR(html, backgroundColor, bg);
-   DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+   DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
 
    a_Url_free(action);
    html->InFlags &= ~IN_FORM;
@@ -658,7 +658,7 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
       bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
    HTML_SET_TOP_ATTR(html, backgroundColor, bg);
 
-   DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+   DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
    dFree(name);
 }
 
@@ -740,7 +740,7 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    }
    HTML_SET_TOP_ATTR(html, backgroundColor,
                      Color::createShaded (HT2LT(html), bg));
-   DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+   DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
 
 // size = 0;
 // if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
@@ -861,7 +861,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       Embed *embed;
       char *name, *value;
 
-      style_attrs = *S_TOP(html)->style;
+      style_attrs = *html->styleEngine->style ();
       style_attrs.margin.setVal(0);
       style_attrs.borderWidth.setVal(0);
       style_attrs.padding.setVal(0);
@@ -1904,7 +1904,7 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) &&
        (url = a_Html_url_new(html, attrbuf, NULL, 0))) {
-      style_attrs = *S_TOP(html)->style;
+      style_attrs = *html->styleEngine->style ();
       style_attrs.cursor = CURSOR_POINTER;
       style_attrs.backgroundColor =
         style::Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
