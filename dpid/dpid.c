@@ -728,7 +728,6 @@ void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
       DpiBye_cmd = a_Dpip_build_cmd("cmd=%s", "DpiBye");
 
    sun_path_len = sizeof(sa.sun_path);
-   addr_len = sizeof(dpi_addr);
 
    dpi_addr.sun_family = AF_LOCAL;
 
@@ -746,6 +745,7 @@ void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
          MSG_ERR("\n - socket path = %s\n", dpi_attr_list[i].sockpath);
       }
       strncpy(dpi_addr.sun_path, dpi_attr_list[i].sockpath, sun_path_len);
+      addr_len = D_SUN_LEN(&dpi_addr);
       if (connect(dpi_socket, (struct sockaddr *) &dpi_addr, addr_len) == -1) {
          ERRMSG("stop_active_dpis", "connect", errno);
          MSG_ERR("%s\n", dpi_addr.sun_path);

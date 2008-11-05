@@ -17,6 +17,7 @@ dillo-2.1
 +- Switched SSL-enabled to configure.in (./configure --enable-ssl).
  - Standardised the installation of dpid/dpidrc with auto* tools.
  - Set the ScrollGroup as the resizable widget in downloads dpi.
+ - Cleaned up and normalized D_SUN_LEN usage.
    Patches: Jeremy Henty
 +- Allowed compilation with older machines by removing a few C99isms.
  - Added use of inttypes.h when stdint.h isn't found.

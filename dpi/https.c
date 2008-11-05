@@ -25,7 +25,7 @@
  * the https dillo plugin with the OpenSSL project's "OpenSSL"
  * library, and distribute the linked executables, without including
  * the source code for OpenSSL in the source distribution. You must
- * obey the GNU General Public License, version 2, in all respects
+ * obey the GNU General Public License, version 3, in all respects
  * for all of the code used other than "OpenSSL".
  *
  */
