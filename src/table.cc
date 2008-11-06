@@ -234,11 +234,12 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    Widget *col_tb;
    int colspan = 1, rowspan = 1;
    const char *attrbuf;
-   dw::core::style::StyleAttrs style_attrs;
-   dw::core::style::Style *style, *old_style;
    int32_t bgcolor;
+   StyleAttrs style_attrs;
+   Style *style;
    bool_t new_style;
    CssPropertyList props;
+   CssProperty::Value v;
 
    switch (S_TOP(html)->table_mode) {
    case DILLO_HTML_TABLE_MODE_NONE:
@@ -262,14 +263,15 @@ static void Html_tag_open_table_cell(DilloHtml *html,
          rowspan = MAX(1, strtol (attrbuf, NULL, 10));
 
       /* text style */
-      old_style = html->styleEngine->style ();
-      style_attrs = *old_style;
-      if (!S_TOP(html)->cell_text_align_set)
-         style_attrs.textAlign = text_align;
+      if (!S_TOP(html)->cell_text_align_set) {
+         v.textAlignType = text_align;
+         props.set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, v);
+      }
       if (a_Html_get_attr(html, tag, tagsize, "nowrap"))
-         style_attrs.whiteSpace = WHITE_SPACE_NOWRAP;
+         v.whiteSpace = WHITE_SPACE_NOWRAP;
       else
-         style_attrs.whiteSpace = WHITE_SPACE_NORMAL;
+         v.whiteSpace = WHITE_SPACE_NORMAL;
+      props.set (CssProperty::CSS_PROPERTY_WHITE_SPACE, v);
 
 //      html->styleEngine->style () =
 //         Style::create (HT2LT(html), &style_attrs);
