@@ -42,6 +42,9 @@ StyleEngine::~StyleEngine () {
    delete stack;
 }
 
+/**
+ * \brief tell the styleEngine that a new html element has started.
+ */
 void StyleEngine::startElement (int tag, const char *id, const char *klass,
    const char *style) {
 //   fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
@@ -59,10 +62,17 @@ void StyleEngine::startElement (int tag, const char *id, const char *klass,
    n->styleAttribute = style;
 }
 
+/**
+ * \brief set properties that were definded using (mostly deprecated) HTML
+ * attributes (e.g. bgColor).
+ */
 void StyleEngine::setNonCssProperties (CssPropertyList *props) {
    style0 (props); // evaluate now, so caller can free props
 }
 
+/**
+ * \brief tell the styleEngine that a html element has ended.
+ */
 void StyleEngine::endElement (int tag) {
 //   fprintf(stderr, "===> END %d\n", tag);
    assert (stack->size () > 1);
@@ -136,11 +146,17 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    attrs->font = Font::create (layout, &fontAttrs);
 }
 
+/**
+ * \brief Create a new style object based on the previously opened / closed
+ *    HTML elements and the nonCssProperties that have been set.
+ *    This method is private. Call style() to get a current style object.
+ */
 Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    CssPropertyList props;
    CssPropertyList *tagStyleProps = CssPropertyList::parse (
       stack->getRef (stack->size () - 1)->styleAttribute);
 
+   // get previous style from the stack
    StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
 
    cssContext->apply (&props, this, tagStyleProps, nonCssProperties);
