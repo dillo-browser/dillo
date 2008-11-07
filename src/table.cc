@@ -239,7 +239,6 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    Style *style;
    bool_t new_style;
    CssPropertyList props;
-   CssProperty::Value v;
 
    switch (S_TOP(html)->table_mode) {
    case DILLO_HTML_TABLE_MODE_NONE:
@@ -264,14 +263,12 @@ static void Html_tag_open_table_cell(DilloHtml *html,
 
       /* text style */
       if (!S_TOP(html)->cell_text_align_set) {
-         v.textAlignType = text_align;
-         props.set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, v);
+         props.set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, text_align);
       }
       if (a_Html_get_attr(html, tag, tagsize, "nowrap"))
-         v.whiteSpace = WHITE_SPACE_NOWRAP;
+         props.set (CssProperty::CSS_PROPERTY_WHITE_SPACE, WHITE_SPACE_NOWRAP);
       else
-         v.whiteSpace = WHITE_SPACE_NORMAL;
-      props.set (CssProperty::CSS_PROPERTY_WHITE_SPACE, v);
+         props.set (CssProperty::CSS_PROPERTY_WHITE_SPACE, WHITE_SPACE_NORMAL);
 
 //      html->styleEngine->style () =
 //         Style::create (HT2LT(html), &style_attrs);

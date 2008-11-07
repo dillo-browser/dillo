@@ -95,47 +95,47 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          /* \todo missing cases */
          case CssProperty::CSS_PROPERTY_BACKGROUND_COLOR:
             attrs->backgroundColor =
-               Color::createSimple (layout, p->value.color);
+               Color::createSimple (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR:
             attrs->borderColor.bottom =
-              Color::createSimple (layout, p->value.color);
+              Color::createSimple (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
-            attrs->borderStyle.bottom = p->value.borderStyle;
+            attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_COLOR:
-            attrs->color = Color::createSimple (layout, p->value.color);
+            attrs->color = Color::createSimple (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_CURSOR:
-            attrs->cursor = p->value.cursor;
+            attrs->cursor = (Cursor) p->value.intVal;
             break; 
          case CssProperty::CSS_PROPERTY_FONT_FAMILY:
-            fontAttrs.name = p->value.name;
+            fontAttrs.name = p->value.strVal;
             break;
          case CssProperty::CSS_PROPERTY_FONT_SIZE:
-            fontAttrs.size = p->value.size;
+            fontAttrs.size = p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_FONT_STYLE:
-            fontAttrs.style = p->value.fontStyle;
+            fontAttrs.style = (FontStyle) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_FONT_WEIGHT:
-            fontAttrs.weight = p->value.weight;
+            fontAttrs.weight = p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE:
-            attrs->listStyleType = p->value.listStyleType;
+            attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_TEXT_ALIGN:
-            attrs->textAlign = p->value.textAlignType;
+            attrs->textAlign = (TextAlignType) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_TEXT_DECORATION:
-            attrs->textDecoration |= p->value.textDecoration;
+            attrs->textDecoration |= p->value.intVal;
             break;
          case CssProperty::PROPERTY_X_LINK:
-            attrs->x_link = p->value.x_link;
+            attrs->x_link = p->value.intVal;
             break;
          case CssProperty::PROPERTY_X_IMG:
-            attrs->x_img = p->value.x_img;
+            attrs->x_img = p->value.intVal;
             break;
 
          default:

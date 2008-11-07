@@ -294,16 +294,16 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
    const char *align;
 
    if ((align = a_Html_get_attr(html, tag, tagsize, "align"))) {
-      CssProperty::Value v;
+      TextAlignType textAlignType = TEXT_ALIGN_LEFT;
 
       if (dStrcasecmp (align, "left") == 0)
-         v.textAlignType = TEXT_ALIGN_LEFT;
+         textAlignType = TEXT_ALIGN_LEFT;
       else if (dStrcasecmp (align, "right") == 0)
-         v.textAlignType = TEXT_ALIGN_RIGHT;
+         textAlignType = TEXT_ALIGN_RIGHT;
       else if (dStrcasecmp (align, "center") == 0)
-         v.textAlignType = TEXT_ALIGN_CENTER;
+         textAlignType = TEXT_ALIGN_CENTER;
       else if (dStrcasecmp (align, "justify") == 0)
-         v.textAlignType = TEXT_ALIGN_JUSTIFY;
+         textAlignType = TEXT_ALIGN_JUSTIFY;
 #if 0
       else if (dStrcasecmp (align, "char") == 0) {
          /* TODO: Actually not supported for <p> etc. */
@@ -322,7 +322,7 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
             style_attrs.textAlignChar = '.';
       }
 #endif
-      props->set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, v);
+      props->set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, textAlignType);
    }
 }
 
@@ -2456,7 +2456,6 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloUrl *url;
    CssPropertyList props;
-   CssProperty::Value propValue;
    const char *attrbuf;
 
    /* TODO: add support for MAP with A HREF */
@@ -2471,8 +2470,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       url = a_Html_url_new(html, attrbuf, NULL, 0);
       dReturn_if_fail ( url != NULL );
 
-      propValue.x_link = Html_set_new_link(html, &url);
-      props.set (CssProperty::PROPERTY_X_LINK, propValue);
+      props.set (CssProperty::PROPERTY_X_LINK, Html_set_new_link(html, &url));
       html->styleEngine->setNonCssProperties (&props);
    }
 
@@ -2623,20 +2621,20 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
       CssPropertyList props;
-      CssProperty::Value v;
+      ListStyleType listStyleType = LIST_STYLE_TYPE_DECIMAL;
 
       if (*attrbuf == '1')
-         v.listStyleType = LIST_STYLE_TYPE_DECIMAL;
+         listStyleType = LIST_STYLE_TYPE_DECIMAL;
       else if (*attrbuf == 'a')
-         v.listStyleType = LIST_STYLE_TYPE_LOWER_ALPHA;
+         listStyleType = LIST_STYLE_TYPE_LOWER_ALPHA;
       else if (*attrbuf == 'A')
-         v.listStyleType = LIST_STYLE_TYPE_UPPER_ALPHA;
+         listStyleType = LIST_STYLE_TYPE_UPPER_ALPHA;
       else if (*attrbuf == 'i')
-         v.listStyleType = LIST_STYLE_TYPE_LOWER_ROMAN;
+         listStyleType = LIST_STYLE_TYPE_LOWER_ROMAN;
       else if (*attrbuf == 'I')
-         v.listStyleType = LIST_STYLE_TYPE_UPPER_ROMAN;
+         listStyleType = LIST_STYLE_TYPE_UPPER_ROMAN;
 
-      props.set (CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, v);
+      props.set (CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, listStyleType);
       html->styleEngine->setNonCssProperties (&props);
    }
 

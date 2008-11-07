@@ -7,22 +7,8 @@
 class CssProperty {
    public:
       typedef union {
-         int color;
-         dw::core::style::Length length;
-         dw::core::style::Cursor cursor;
-         dw::core::style::BorderStyle borderStyle;
-         dw::core::style::TextAlignType textAlignType;
-         dw::core::style::VAlignType valignType;
-         dw::core::style::DisplayType displayType;
-         dw::core::style::ListStyleType listStyleType;
-         dw::core::style::FontStyle fontStyle;
-         dw::core::style::TextDecoration textDecoration;
-         dw::core::style::WhiteSpace whiteSpace;
-         const char *name; /* used for font family */
-         int size;
-         int weight;
-         int x_link;
-         int x_img;
+         int intVal;
+         char *strVal;
       } Value;
 
       typedef enum {
@@ -125,6 +111,16 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
 
       static CssPropertyList *parse (const char *buf);
       void set (CssProperty::Name name, CssProperty::Value value);
+      void set (CssProperty::Name name, char *value) {
+         CssProperty::Value v;
+         v.strVal = value;
+         set (name, v);
+      };
+      void set (CssProperty::Name name, int value) {
+         CssProperty::Value v;
+         v.intVal = value;
+         set (name, v);
+      };
       void apply (CssPropertyList *props);
 };
 

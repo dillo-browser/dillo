@@ -14,6 +14,8 @@
 #include "html_common.hh"
 #include "css.hh"
 
+using namespace dw::core::style;
+
 /** \todo dummy only */
 CssPropertyList *CssPropertyList::parse (const char *buf) {
    return NULL;
@@ -102,58 +104,47 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
 CssStyleSheet * CssContext::buildUserAgentStyle () {
    CssStyleSheet *s = new CssStyleSheet ();
    CssPropertyList *props;
-   CssProperty::Value v;
 
    // <a>
    props = new CssPropertyList ();
-   v.color = 0x0000ff;
-   props->set (CssProperty::CSS_PROPERTY_COLOR, v);
-   v.textDecoration = dw::core::style::TEXT_DECORATION_UNDERLINE;
-   props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, v);
-   v.cursor = dw::core::style::CURSOR_POINTER;
-   props->set (CssProperty::CSS_PROPERTY_CURSOR, v);
+   props->set (CssProperty::CSS_PROPERTY_COLOR, 0x0000ff);
+   props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, TEXT_DECORATION_UNDERLINE);
+   props->set (CssProperty::CSS_PROPERTY_CURSOR, CURSOR_POINTER);
    s->addRule (new CssSelector(a_Html_tag_index("a"), NULL, NULL), props);
 
    // <b>
    props = new CssPropertyList ();
-   v.weight = 700;
-   props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, v);
+   props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, 700);
    s->addRule (new CssSelector(a_Html_tag_index("b"), NULL, NULL), props);
 
    // <i>
    props = new CssPropertyList ();
-   v.fontStyle = dw::core::style::FONT_STYLE_ITALIC;
-   props->set (CssProperty::CSS_PROPERTY_FONT_STYLE, v);
+   props->set (CssProperty::CSS_PROPERTY_FONT_STYLE, FONT_STYLE_ITALIC);
    s->addRule (new CssSelector(a_Html_tag_index("i"), NULL, NULL), props);
 
    // <h1>
    props = new CssPropertyList ();
-   v.size = 40;
-   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, v);
+   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 40);
    s->addRule (new CssSelector(a_Html_tag_index("h1"), NULL, NULL), props);
 
    // <h2>
    props = new CssPropertyList ();
-   v.size = 30;
-   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, v);
+   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 30);
    s->addRule (new CssSelector(a_Html_tag_index("h2"), NULL, NULL), props);
 
    // <h3>
    props = new CssPropertyList ();
-   v.size = 20;
-   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, v);
+   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 20);
    s->addRule (new CssSelector(a_Html_tag_index("h3"), NULL, NULL), props);
 
    // <ol>
    props = new CssPropertyList ();
-   v.listStyleType = dw::core::style::LIST_STYLE_TYPE_DECIMAL;
-   props->set (CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, v);
+   props->set (CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, LIST_STYLE_TYPE_DECIMAL);
    s->addRule (new CssSelector(a_Html_tag_index("ol"), NULL, NULL), props);
 
    // <pre>
    props = new CssPropertyList ();
-   v.name = "DejaVu Sans Mono";
-   props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, v);
+   props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, "DejaVu Sans Mono");
    s->addRule (new CssSelector(a_Html_tag_index("pre"), NULL, NULL), props);
    
    return s;
@@ -162,27 +153,22 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
 CssStyleSheet * CssContext::buildUserStyle (bool important) {
    CssStyleSheet *s = new CssStyleSheet ();
    CssPropertyList *props;
-   CssProperty::Value v;
 
    if (! important) {
       // <a>
       props = new CssPropertyList ();
-      v.color = prefs.link_color;
-      props->set (CssProperty::CSS_PROPERTY_COLOR, v);
+      props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.link_color);
       s->addRule (new CssSelector(a_Html_tag_index("a"), NULL, NULL), props);
 
       // <body>
       props = new CssPropertyList ();
-      v.name = prefs.vw_fontname;
-      props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, v);
-      v.color = prefs.text_color;
-      props->set (CssProperty::CSS_PROPERTY_COLOR, v);
+      props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, prefs.vw_fontname);
+      props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.text_color);
       s->addRule (new CssSelector(a_Html_tag_index("body"), NULL, NULL), props);
 
       // <pre>
       props = new CssPropertyList ();
-      v.name = prefs.fw_fontname;
-      props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, v);
+      props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, prefs.fw_fontname);
       s->addRule (new CssSelector(a_Html_tag_index("pre"), NULL, NULL), props);
    }
 
