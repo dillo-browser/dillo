@@ -120,7 +120,20 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             fontAttrs.style = (FontStyle) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_FONT_WEIGHT:
-            fontAttrs.weight = p->value.intVal;
+            switch (p->value.intVal) {
+               case CssProperty::CSS_FONT_WEIGHT_LIGHTER:
+                  fontAttrs.weight -= CssProperty::CSS_FONT_WEIGHT_STEP;
+                  break;
+               case CssProperty::CSS_FONT_WEIGHT_BOLDER:
+                  fontAttrs.weight += CssProperty::CSS_FONT_WEIGHT_STEP;
+                  break;
+               default:
+                  fontAttrs.weight = p->value.intVal;
+            }
+            if (fontAttrs.weight < CssProperty::CSS_FONT_WEIGHT_MIN)
+               fontAttrs.weight = CssProperty::CSS_FONT_WEIGHT_MIN;
+            if (fontAttrs.weight > CssProperty::CSS_FONT_WEIGHT_MAX)
+               fontAttrs.weight = CssProperty::CSS_FONT_WEIGHT_MAX;
             break;
          case CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE:
             attrs->listStyleType = (ListStyleType) p->value.intVal;

@@ -114,7 +114,7 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
 
    // <b>
    props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, 700);
+   props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, CssProperty::CSS_FONT_WEIGHT_BOLDER);
    s->addRule (new CssSelector(a_Html_tag_index("b"), NULL, NULL), props);
 
    // <i>
