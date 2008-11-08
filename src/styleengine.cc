@@ -59,6 +59,7 @@ void StyleEngine::startElement (int tag, const char *id, const char *klass,
    n->tag = tag;
    n->id = id;
    n->klass = klass;
+   n->pseudoClass = NULL;
    n->styleAttribute = style;
 }
 
@@ -68,6 +69,13 @@ void StyleEngine::startElement (int tag, const char *id, const char *klass,
  */
 void StyleEngine::setNonCssProperties (CssPropertyList *props) {
    style0 (props); // evaluate now, so caller can free props
+}
+
+/**
+ * \brief set the CSS pseudo class (e.g. "link", "visited").
+ */
+void StyleEngine::setPseudoClass (const char *pseudoClass) {
+   stack->getRef (stack->size () - 1)->pseudoClass = pseudoClass;
 }
 
 /**
@@ -129,6 +137,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
                   break;
                default:
                   fontAttrs.weight = p->value.intVal;
+                  break;
             }
             if (fontAttrs.weight < CssProperty::CSS_FONT_WEIGHT_MIN)
                fontAttrs.weight = CssProperty::CSS_FONT_WEIGHT_MIN;

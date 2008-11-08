@@ -111,7 +111,7 @@ class CssProperty {
          CSS_FONT_WEIGHT_BOLD = 700,
          CSS_FONT_WEIGHT_MIN = 100,
          CSS_FONT_WEIGHT_MAX = 900,
-      } CssFontWeightExtensions;
+      } FontWeightExtensions;
 
       Name name;
       Value value;
