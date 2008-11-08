@@ -64,7 +64,6 @@ void StyleAttrs::initValues ()
  */
 void StyleAttrs::resetValues ()
 {
-   x_link = -1;
    x_img = -1;
    x_tooltip = NULL;
 
