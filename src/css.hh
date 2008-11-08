@@ -8,7 +8,7 @@ class CssProperty {
    public:
       typedef union {
          int intVal;
-         char *strVal;
+         const char *strVal;
       } Value;
 
       typedef enum {
@@ -123,7 +123,7 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
 
       static CssPropertyList *parse (const char *buf);
       void set (CssProperty::Name name, CssProperty::Value value);
-      void set (CssProperty::Name name, char *value) {
+      void set (CssProperty::Name name, const char *value) {
          CssProperty::Value v;
          v.strVal = value;
          set (name, v);

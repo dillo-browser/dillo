@@ -1915,39 +1915,26 @@ static void Html_tag_open_br(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
 {
-   StyleAttrs style_attrs;
-   Style *old_style;
    /*Font font;*/
    const char *attrbuf;
    int32_t color;
+   CssPropertyList props;
 
-   if (!prefs.force_my_colors) {
-      old_style = html->styleEngine->style ();
-      style_attrs = *old_style;
-
-      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "color"))) {
-         if (prefs.contrast_visited_color && html->InVisitedLink) {
-            color = html->visited_color;
-         } else { 
-            /* use the tag-specified color */
-            color = a_Html_color_parse(html, attrbuf,
-                                       style_attrs.color->getColor());
-            style_attrs.color = Color::createSimple (HT2LT(html), color);
-         }
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "color"))) {
+      if (prefs.contrast_visited_color && html->InVisitedLink) {
+         color = html->visited_color;
+      } else { 
+         /* use the tag-specified color */
+         color = a_Html_color_parse(html, attrbuf, -1);
       }
-
-#if 0
-    //if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "face"))) {
-    //   font = *( style_attrs.font );
-    //   font.name = attrbuf;
-    //   style_attrs.font = a_Dw_style_font_new_from_list (&font);
-    //}
-#endif
-
-//      html->styleEngine->style () =
-//         Style::create (HT2LT(html), &style_attrs);
-//      old_style->unref ();
+      if (color != -1)
+         props.set (CssProperty::CSS_PROPERTY_COLOR, color);
    }
+
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "face")))
+      props.set (CssProperty::CSS_PROPERTY_FONT_FAMILY, attrbuf);
+
+   html->styleEngine->setNonCssProperties (&props);
 }
 
 /*
