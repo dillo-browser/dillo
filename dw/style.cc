@@ -84,7 +84,6 @@ void StyleAttrs::resetValues ()
 
    display = DISPLAY_INLINE;
    whiteSpace = WHITE_SPACE_NORMAL;
-   cursor = CURSOR_DEFAULT; /** \todo Check CSS specification again. */
 }
 
 /**
