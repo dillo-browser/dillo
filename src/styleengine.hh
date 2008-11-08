@@ -40,6 +40,7 @@ class StyleEngine : public Doctree {
          const char *style);
       void endElement (int tag);
       void setNonCssProperties (CssPropertyList *props);
+      void setPseudoClass (const char *pseudoClass);
 
       inline dw::core::style::Style *style () {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->style;

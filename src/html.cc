@@ -2470,6 +2470,13 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       url = a_Html_url_new(html, attrbuf, NULL, 0);
       dReturn_if_fail ( url != NULL );
 
+      if (a_Capi_get_flags(url) & CAPI_IsCached) {
+         html->InVisitedLink = true;
+         html->styleEngine->setPseudoClass ("visited");
+      } else {
+         html->styleEngine->setPseudoClass ("link");
+      }
+
       props.set (CssProperty::PROPERTY_X_LINK, Html_set_new_link(html, &url));
       html->styleEngine->setNonCssProperties (&props);
    }

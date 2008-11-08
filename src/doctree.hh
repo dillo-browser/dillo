@@ -6,6 +6,7 @@ class DoctreeNode {
       int depth;
       int tag;
       const char *klass;
+      const char *pseudoClass;
       const char *id;
 };
 
