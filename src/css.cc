@@ -43,9 +43,20 @@ CssSelector *CssSelector::parse (const char *buf) {
    return NULL;
 }
 
-/** \todo dummy only */
+/** \todo implement all selection option CSS offers */
 bool CssSelector::match (Doctree *docTree) {
-   return tag < 0 || tag == docTree->top ()->tag;
+   const DoctreeNode *n = docTree-> top ();
+
+   if (tag >= 0 && tag != n->tag)
+      return false;
+   if (klass != NULL &&
+      (n->klass == NULL || strcmp (klass, n->klass) != 0) &&
+      (n->pseudoClass == NULL || strcmp (klass, n->pseudoClass) != 0))
+      return false;
+   if (id != NULL && (n->id == NULL || strcmp (id, n->id) != 0))
+      return false;
+   
+   return true;
 }
 
 void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
@@ -105,12 +116,19 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    CssStyleSheet *s = new CssStyleSheet ();
    CssPropertyList *props;
 
-   // <a>
+   // :link
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_COLOR, 0x0000ff);
    props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, TEXT_DECORATION_UNDERLINE);
    props->set (CssProperty::CSS_PROPERTY_CURSOR, CURSOR_POINTER);
-   s->addRule (new CssSelector(a_Html_tag_index("a"), NULL, NULL), props);
+   s->addRule (new CssSelector(-1, "link", NULL), props);
+
+   // :visited
+   props = new CssPropertyList ();
+   props->set (CssProperty::CSS_PROPERTY_COLOR, 0x800080);
+   props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, TEXT_DECORATION_UNDERLINE);
+   props->set (CssProperty::CSS_PROPERTY_CURSOR, CURSOR_POINTER);
+   s->addRule (new CssSelector(-1, "visited", NULL), props);
 
    // <b>
    props = new CssPropertyList ();
@@ -155,10 +173,15 @@ CssStyleSheet * CssContext::buildUserStyle (bool important) {
    CssPropertyList *props;
 
    if (! important) {
-      // <a>
+      // :link 
       props = new CssPropertyList ();
       props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.link_color);
-      s->addRule (new CssSelector(a_Html_tag_index("a"), NULL, NULL), props);
+      s->addRule (new CssSelector(-1, "link", NULL), props);
+
+      // :visited 
+      props = new CssPropertyList ();
+      props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.visited_color);
+      s->addRule (new CssSelector(-1, "visited", NULL), props);
 
       // <body>
       props = new CssPropertyList ();
