@@ -484,24 +484,21 @@ void a_UIcmd_set_save_dir(const char *dir)
 void a_UIcmd_save(void *vbw)
 {
    const char *name;
-   char *SuggestedName, *urlstr;
-   DilloUrl *url;
+   char *SuggestedName;
+   BrowserWindow *bw = (BrowserWindow *)vbw;
+   const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
 
-   a_UIcmd_set_save_dir(prefs.save_dir);
+   if (url) {
+      a_UIcmd_set_save_dir(prefs.save_dir);
+      SuggestedName = UIcmd_make_save_filename(URL_PATH(url));
+      name = a_Dialog_save_file("Save Page as File", NULL, SuggestedName);
+      MSG("a_UIcmd_save: %s\n", name);
+      dFree(SuggestedName);
 
-   urlstr = a_UIcmd_get_location_text((BrowserWindow*)vbw);
-   url = a_Url_new(urlstr, NULL);
-   SuggestedName = UIcmd_make_save_filename(URL_PATH(url));
-   name = a_Dialog_save_file("Save Page as File", NULL, SuggestedName);
-   MSG("a_UIcmd_save: %s\n", name);
-   dFree(SuggestedName);
-   dFree(urlstr);
-
-   if (name) {
-      a_Nav_save_url((BrowserWindow*)vbw, url, name);
-   }
-
-   a_Url_free(url);
+      if (name) {
+         a_Nav_save_url(bw, url, name);
+      }
+   } 
 }
 
 /*
