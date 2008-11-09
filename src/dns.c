@@ -18,6 +18,7 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <errno.h>
 #include <unistd.h>
@@ -268,6 +269,8 @@ static void *Dns_server(void *data)
    struct addrinfo hints, *res0;
    int error;
    Dlist *hosts;
+   size_t length, i;
+   char addr_string[40];
 
    memset(&hints, 0, sizeof(hints));
    hints.ai_family = AF_UNSPEC;
@@ -307,8 +310,18 @@ static void *Dns_server(void *data)
    }
 
    /* tell our findings */
-   MSG("Dns_server [%d]: %s is %p\n", channel,
-       dns_server[channel].hostname, hosts);
+   MSG("Dns_server [%d]: %s is", channel,
+       dns_server[channel].hostname);
+   if ((length = dList_length(hosts))) {
+      for (i = 0; i < length; i++) {
+         a_Dns_dillohost_to_string(dList_nth_data(hosts, i),
+                                   addr_string, sizeof(addr_string));
+         MSG(" %s", addr_string);
+      }
+      MSG("\n");
+   } else {
+      MSG(" (nil)\n");
+   }
    dns_server[channel].addr_list = hosts;
    dns_server[channel].ip_ready = TRUE;
 
@@ -482,3 +495,20 @@ void a_Dns_freeall(void)
    dFree(dns_cache);
 }
 
+/*
+ *  Writes a string representation of the given DilloHost
+ *  into dst. dst will be \0 terminated.
+ *  Please note that dst must be at least 40 bytes long for IPv6
+ *  addresses.
+ */
+void a_Dns_dillohost_to_string(DilloHost *host, char *dst, size_t size)
+{
+   if (!inet_ntop(host->af, host->data, dst, size)) {
+      switch (errno) {
+         case EAFNOSUPPORT:
+            snprintf(dst, size, "Unknown address family");
+         case ENOSPC:
+            snprintf(dst, size, "Buffer too small");
+      }
+   }
+}
