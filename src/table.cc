@@ -101,12 +101,12 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    /* The style for the cells */
    table_cell_props = new CssPropertyList ();
-   table_cell_props->ref ();
    if (border != -1)
       table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, border);
    if (dillo_dbg_rendering && border < 1)
       table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, 1);
-   table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING, cellpadding);
+   if (cellpadding != -1)
+      table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING, cellpadding);
    /** \todo figure out how to implement shaded colors with CSS */
    table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_COLOR, 0x000000);
 
@@ -114,6 +114,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       S_TOP(html)->table_cell_props->unref ();
 
    S_TOP(html)->table_cell_props = table_cell_props;
+   S_TOP(html)->table_cell_props->ref ();
 
    table = new dw::Table(prefs.limit_text_width);
    DW2TB(html->dw)->addWidget (table, html->styleEngine->style ());
