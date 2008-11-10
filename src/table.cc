@@ -61,10 +61,10 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    if (border != -1)
       props.set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, border);
-   if (cellspacing != -1)
-      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING, cellspacing);
-
-   props.set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_OUTSET);
+   if (cellspacing != -1) {
+      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING_HORIZONTAL, cellspacing);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING_VERTICAL, cellspacing);
+   }
 
    /* When dillo was started with the --debug-rendering option, there
     * is always a border around the table. */
@@ -109,7 +109,6 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING, cellpadding);
    /** \todo figure out how to implement shaded colors with CSS */
    table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_COLOR, 0x000000);
-   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_INSET);
 
    if (S_TOP(html)->table_cell_props)
       S_TOP(html)->table_cell_props->unref ();
