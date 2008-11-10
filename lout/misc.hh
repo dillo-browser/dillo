@@ -113,6 +113,7 @@ public:
    }
 
    inline SimpleVector (const SimpleVector &o) {
+      this->array = NULL;
       this->num = o.num;
       this->numAlloc = o.numAlloc;
       resize ();
