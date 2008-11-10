@@ -116,6 +116,13 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    CssStyleSheet *s = new CssStyleSheet ();
    CssPropertyList *props;
 
+   // <body>
+   props = new CssPropertyList ();
+   props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, 0xdcd1ba);
+   props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, "DejaVu Sans");
+   props->set (CssProperty::CSS_PROPERTY_COLOR, 0x000000);
+   s->addRule (new CssSelector(a_Html_tag_index("body"), NULL, NULL), props);
+
    // :link
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_COLOR, 0x0000ff);
@@ -174,11 +181,14 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    // <table>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_OUTSET);
+   props->set (CssProperty::CSS_PROPERTY_BORDER_SPACING_HORIZONTAL, 1);
+   props->set (CssProperty::CSS_PROPERTY_BORDER_SPACING_VERTICAL, 1);
    s->addRule (new CssSelector(a_Html_tag_index("table"), NULL, NULL), props);
 
    // <td>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_INSET);
+   props->set (CssProperty::CSS_PROPERTY_PADDING, 2);
    s->addRule (new CssSelector(a_Html_tag_index("td"), NULL, NULL), props);
    
    return s;
@@ -201,6 +211,7 @@ CssStyleSheet * CssContext::buildUserStyle (bool important) {
 
       // <body>
       props = new CssPropertyList ();
+      props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, prefs.bg_color);
       props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, prefs.vw_fontname);
       props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.text_color);
       s->addRule (new CssSelector(a_Html_tag_index("body"), NULL, NULL), props);
