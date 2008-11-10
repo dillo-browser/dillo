@@ -204,6 +204,10 @@ int FltkViewBase::handle (int event)
                                  translateViewYToCanvasY (event_y ()),
                                  getDwButtonState (), event_button ());
       //printf ("PUSH => %s\n", processed ? "true" : "false");
+      if (processed) {
+         /* pressed dw content; fltk widgets should no longer have focus */
+         ::fltk::focus(NULL);
+      }
       return processed ? true : Group::handle (event);
 
    case RELEASE:
