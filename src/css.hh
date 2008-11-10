@@ -21,6 +21,7 @@ class CssProperty {
          CSS_PROPERTY_BORDER_BOTTOM_STYLE,
          CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
          CSS_PROPERTY_BORDER_COLLAPSE,
+         CSS_PROPERTY_BORDER_COLOR,
          CSS_PROPERTY_BORDER_LEFT_COLOR,
          CSS_PROPERTY_BORDER_LEFT_STYLE,
          CSS_PROPERTY_BORDER_LEFT_WIDTH,
@@ -28,9 +29,11 @@ class CssProperty {
          CSS_PROPERTY_BORDER_RIGHT_STYLE,
          CSS_PROPERTY_BORDER_RIGHT_WIDTH,
          CSS_PROPERTY_BORDER_SPACING,
+         CSS_PROPERTY_BORDER_STYLE,
          CSS_PROPERTY_BORDER_TOP_COLOR,
          CSS_PROPERTY_BORDER_TOP_STYLE,
          CSS_PROPERTY_BORDER_TOP_WIDTH,
+         CSS_PROPERTY_BORDER_WIDTH,
          CSS_PROPERTY_BOTTOM,
          CSS_PROPERTY_CAPTION_SIDE,
          CSS_PROPERTY_CLEAR,
@@ -72,6 +75,7 @@ class CssProperty {
          CSS_PROPERTY_OUTLINE_STYLE,
          CSS_PROPERTY_OUTLINE_WIDTH,
          CSS_PROPERTY_OVERFLOW,
+         CSS_PROPERTY_PADDING,
          CSS_PROPERTY_PADDING_BOTTOM,
          CSS_PROPERTY_PADDING_LEFT,
          CSS_PROPERTY_PADDING_RIGHT,
@@ -118,8 +122,15 @@ class CssProperty {
 };
 
 class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
+      int refCount;
+
    public:
-      CssPropertyList() : lout::misc::SimpleVector <CssProperty> (1) {};
+      CssPropertyList() : lout::misc::SimpleVector <CssProperty> (1) {
+         refCount = 0;
+      };
+      CssPropertyList(const CssPropertyList &p) : lout::misc::SimpleVector <CssProperty> (p) {
+         refCount = 0;
+      };
 
       static CssPropertyList *parse (const char *buf);
       void set (CssProperty::Name name, CssProperty::Value value);
@@ -134,6 +145,9 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
          set (name, v);
       };
       void apply (CssPropertyList *props);
+
+      inline void ref () { refCount++; }
+      inline void unref () { if(--refCount == 0) delete this; }
 };
 
 /** \todo proper implementation */

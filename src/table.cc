@@ -18,6 +18,7 @@
 
 #include "prefs.h"
 #include "msg.h"
+#include "css.hh"
 
 /* Undefine if you want to unroll tables. For instance for PDAs */
 #define USE_TABLES
@@ -43,10 +44,9 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 {
 #ifdef USE_TABLES
    dw::core::Widget *table;
-   dw::core::style::StyleAttrs style_attrs;
-   dw::core::style::Style *cell_style, *old_style;
+   CssPropertyList props, *table_cell_props;
    const char *attrbuf;
-   int32_t border = 0, cellspacing = 1, cellpadding = 2, bgcolor;
+   int32_t border = -1, cellspacing = -1, cellpadding = -1, bgcolor = -1;
 #endif
 
    DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
@@ -59,68 +59,65 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cellpadding")))
       cellpadding = strtol (attrbuf, NULL, 10);
 
-   /* The style for the table */
-   style_attrs = *html->styleEngine->style ();
+   if (border != -1)
+      props.set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, border);
+   if (cellspacing != -1)
+      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING, cellspacing);
+
+   props.set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_OUTSET);
 
    /* When dillo was started with the --debug-rendering option, there
     * is always a border around the table. */
-   if (dillo_dbg_rendering)
-      style_attrs.borderWidth.setVal (MIN (border, 1));
-   else
-      style_attrs.borderWidth.setVal (border);
-
-   style_attrs.setBorderColor (
-      Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color));
-   style_attrs.setBorderStyle (BORDER_OUTSET);
-   style_attrs.hBorderSpacing = cellspacing;
-   style_attrs.vBorderSpacing = cellspacing;
+   if (dillo_dbg_rendering && border < 1)
+      props.set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, 1);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width")))
-      style_attrs.width = a_Html_parse_length (html, attrbuf);
+      props.set (CssProperty::CSS_PROPERTY_WIDTH,
+         a_Html_parse_length (html, attrbuf));
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "align"))) {
       if (dStrcasecmp (attrbuf, "left") == 0)
-         style_attrs.textAlign = dw::core::style::TEXT_ALIGN_LEFT;
+         props.set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, TEXT_ALIGN_LEFT);
       else if (dStrcasecmp (attrbuf, "right") == 0)
-         style_attrs.textAlign = dw::core::style::TEXT_ALIGN_RIGHT;
+         props.set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, TEXT_ALIGN_RIGHT);
       else if (dStrcasecmp (attrbuf, "center") == 0)
-         style_attrs.textAlign = dw::core::style::TEXT_ALIGN_CENTER;
+         props.set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, TEXT_ALIGN_CENTER);
    }
 
-   if (!prefs.force_my_colors &&
-       (attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
+   /** \todo figure out how to implement shaded colors with CSS */
+   props.set (CssProperty::CSS_PROPERTY_BORDER_COLOR, 0x000000);
+
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       bgcolor = a_Html_color_parse(html, attrbuf, -1);
       if (bgcolor != -1) {
          if (bgcolor == 0xffffff && !prefs.allow_white_bg)
             bgcolor = prefs.bg_color;
          S_TOP(html)->current_bg_color = bgcolor;
-         style_attrs.backgroundColor =
-            Color::createShaded (HT2LT(html), bgcolor);
+         props.set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, bgcolor);
       }
    }
 
-   /* The style for the cells */
-   cell_style = Style::create (HT2LT(html), &style_attrs);
-   style_attrs = *html->styleEngine->style ();
-   /* When dillo was started with the --debug-rendering option, there
-    * is always a border around the cells. */
-   if (dillo_dbg_rendering)
-      style_attrs.borderWidth.setVal (1);
-   else
-      style_attrs.borderWidth.setVal (border ? 1 : 0);
-   style_attrs.padding.setVal(cellpadding);
-   style_attrs.setBorderColor (cell_style->borderColor.top);
-   style_attrs.setBorderStyle (BORDER_INSET);
+   html->styleEngine->setNonCssProperties (&props);
 
-   old_style = S_TOP(html)->table_cell_style;
-   S_TOP(html)->table_cell_style =
-      Style::create (HT2LT(html), &style_attrs);
-   if (old_style)
-      old_style->unref ();
+   /* The style for the cells */
+   table_cell_props = new CssPropertyList ();
+   table_cell_props->ref ();
+   if (border != -1)
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, border);
+   if (dillo_dbg_rendering && border < 1)
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, 1);
+   table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING, cellpadding);
+   /** \todo figure out how to implement shaded colors with CSS */
+   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_COLOR, 0x000000);
+   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_INSET);
+
+   if (S_TOP(html)->table_cell_props)
+      S_TOP(html)->table_cell_props->unref ();
+
+   S_TOP(html)->table_cell_props = table_cell_props;
 
    table = new dw::Table(prefs.limit_text_width);
-   DW2TB(html->dw)->addWidget (table, cell_style);
-   cell_style->unref ();
+   DW2TB(html->dw)->addWidget (table, html->styleEngine->style ());
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TOP;
    S_TOP(html)->cell_text_align_set = FALSE;
@@ -134,11 +131,9 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
-   dw::core::style::StyleAttrs style_attrs;
-   dw::core::style::Style *style, *old_style;
    int32_t bgcolor = -1;
    bool new_style = false;
-   CssPropertyList props;
+   CssPropertyList props, *table_cell_props;
 
 #ifdef USE_TABLES
    switch (S_TOP(html)->table_mode) {
@@ -149,26 +144,20 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
    case DILLO_HTML_TABLE_MODE_TOP:
    case DILLO_HTML_TABLE_MODE_TR:
    case DILLO_HTML_TABLE_MODE_TD:
-      style = NULL;
 
-      if (!prefs.force_my_colors &&
-          (attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
+      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
          bgcolor = a_Html_color_parse(html, attrbuf, -1);
          if (bgcolor != -1) {
             if (bgcolor == 0xffffff && !prefs.allow_white_bg)
                bgcolor = prefs.bg_color;
-
-            style_attrs = *html->styleEngine->style ();
-            style_attrs.backgroundColor =
-               Color::createShaded (HT2LT(html), bgcolor);
-            style = Style::create (HT2LT(html), &style_attrs);
+            props.set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, bgcolor);
             S_TOP(html)->current_bg_color = bgcolor;
          }
       }
 
-      ((dw::Table*)S_TOP(html)->table)->addRow (style);
-      if (style)
-         style->unref ();
+      html->styleEngine->setNonCssProperties (&props);
+
+      ((dw::Table*)S_TOP(html)->table)->addRow (html->styleEngine->style ());
 
       if (a_Html_get_attr (html, tag, tagsize, "align")) {
          S_TOP(html)->cell_text_align_set = TRUE;
@@ -176,18 +165,19 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
          html->styleEngine->setNonCssProperties (&props);
       }
 
-      style_attrs = *S_TOP(html)->table_cell_style;
+      table_cell_props = new CssPropertyList (*S_TOP(html)->table_cell_props);
       if (bgcolor != -1) {
-         style_attrs.backgroundColor =Color::createShaded(HT2LT(html),bgcolor);
+         props.set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, bgcolor);
          new_style = true;
       }
-      if (a_Html_tag_set_valign_attr (html, tag, tagsize, &style_attrs))
+      if (a_Html_tag_set_valign_attr (html, tag, tagsize, table_cell_props))
          new_style = true;
       if (new_style) {
-         old_style = S_TOP(html)->table_cell_style;
-         S_TOP(html)->table_cell_style =
-            Style::create (HT2LT(html), &style_attrs);
-         old_style->unref ();
+         S_TOP(html)->table_cell_props->unref ();
+         S_TOP(html)->table_cell_props = table_cell_props;
+         S_TOP(html)->table_cell_props->ref ();
+      } else {
+         delete table_cell_props;
       }
       break;
    default:
@@ -235,10 +225,8 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    int colspan = 1, rowspan = 1;
    const char *attrbuf;
    int32_t bgcolor;
-   StyleAttrs style_attrs;
-   Style *style;
    bool_t new_style;
-   CssPropertyList props;
+   CssPropertyList props (*S_TOP(html)->table_cell_props);
 
    switch (S_TOP(html)->table_mode) {
    case DILLO_HTML_TABLE_MODE_NONE:
@@ -270,37 +258,28 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       else
          props.set (CssProperty::CSS_PROPERTY_WHITE_SPACE, WHITE_SPACE_NORMAL);
 
-//      html->styleEngine->style () =
-//         Style::create (HT2LT(html), &style_attrs);
-//      old_style->unref ();
       a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-      html->styleEngine->setNonCssProperties (&props);
-
-      /* cell style */
-      style_attrs = *S_TOP(html)->table_cell_style;
-      new_style = FALSE;
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width"))) {
-         style_attrs.width = a_Html_parse_length (html, attrbuf);
-         new_style = TRUE;
+         props.set (CssProperty::CSS_PROPERTY_WIDTH,
+            a_Html_parse_length (html, attrbuf));
       }
 
-      if (a_Html_tag_set_valign_attr (html, tag, tagsize, &style_attrs))
+      if (a_Html_tag_set_valign_attr (html, tag, tagsize, &props))
          new_style = TRUE;
 
-      if (!prefs.force_my_colors &&
-          (attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
+      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
          bgcolor = a_Html_color_parse(html, attrbuf, -1);
          if (bgcolor != -1) {
             if (bgcolor == 0xffffff && !prefs.allow_white_bg)
                bgcolor = prefs.bg_color;
 
-            new_style = TRUE;
-            style_attrs.backgroundColor =
-               Color::createShaded (HT2LT(html), bgcolor);
+            props.set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, bgcolor);
             S_TOP(html)->current_bg_color = bgcolor;
          }
       }
+
+      html->styleEngine->setNonCssProperties (&props);
 
       if (html->styleEngine->style ()->textAlign
           == TEXT_ALIGN_STRING)
@@ -309,18 +288,14 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       else
          col_tb = new Textblock (prefs.limit_text_width);
 
-      if (new_style) {
-         style = dw::core::style::Style::create (HT2LT(html), &style_attrs);
-         col_tb->setStyle (style);
-         style->unref ();
-      } else
-         col_tb->setStyle (S_TOP(html)->table_cell_style);
+      col_tb->setStyle (html->styleEngine->style ());
 
       ((dw::Table*)S_TOP(html)->table)->addCell (col_tb, colspan, rowspan);
       S_TOP(html)->textblock = html->dw = col_tb;
 
       /* Handle it when the user clicks on a link */
       html->connectSignals(col_tb);
+
       break;
 
    default:

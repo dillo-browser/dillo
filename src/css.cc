@@ -164,6 +164,16 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, "DejaVu Sans Mono");
    s->addRule (new CssSelector(a_Html_tag_index("pre"), NULL, NULL), props);
+
+   // <table>
+   props = new CssPropertyList ();
+   props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_OUTSET);
+   s->addRule (new CssSelector(a_Html_tag_index("table"), NULL, NULL), props);
+
+   // <td>
+   props = new CssPropertyList ();
+   props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_INSET);
+   s->addRule (new CssSelector(a_Html_tag_index("td"), NULL, NULL), props);
    
    return s;
 }

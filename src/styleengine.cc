@@ -65,9 +65,11 @@ void StyleEngine::startElement (int tag, const char *id, const char *klass,
 
 /**
  * \brief set properties that were definded using (mostly deprecated) HTML
- * attributes (e.g. bgColor).
+ *    attributes (e.g. bgColor).
  */
 void StyleEngine::setNonCssProperties (CssPropertyList *props) {
+   if (stack->getRef (stack->size () - 1)->style)
+      stack->getRef (stack->size () - 1)->style->unref ();
    style0 (props); // evaluate now, so caller can free props
 }
 
@@ -93,6 +95,9 @@ void StyleEngine::endElement (int tag) {
    stack->setSize (stack->size () - 1);
 }
 
+/**
+ * \brief Make changes to StyleAttrs attrs according to CssPropertyList props.
+ */
 void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    FontAttrs fontAttrs = *attrs->font;
 
@@ -109,8 +114,17 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             attrs->borderColor.bottom =
               Color::createSimple (layout, p->value.intVal);
             break; 
+         case CssProperty::CSS_PROPERTY_BORDER_COLOR:
+            attrs->setBorderColor (Color::createSimple (layout, p->value.intVal));
+            break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
             attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_STYLE:
+            attrs->setBorderStyle ((BorderStyle) p->value.intVal);
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_WIDTH:
+            attrs->borderWidth.setVal (p->value.intVal);
             break;
          case CssProperty::CSS_PROPERTY_COLOR:
             attrs->color = Color::createSimple (layout, p->value.intVal);
@@ -147,11 +161,20 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE:
             attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;
+         case CssProperty::CSS_PROPERTY_PADDING:
+            attrs->padding.setVal (p->value.intVal);
+            break;
          case CssProperty::CSS_PROPERTY_TEXT_ALIGN:
             attrs->textAlign = (TextAlignType) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_TEXT_DECORATION:
             attrs->textDecoration |= p->value.intVal;
+            break;
+         case CssProperty::CSS_PROPERTY_VERTICAL_ALIGN:
+            attrs->valign = (VAlignType) p->value.intVal;
+            break;
+         case CssProperty::CSS_PROPERTY_WIDTH:
+            attrs->width = p->value.intVal;
             break;
          case CssProperty::PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
@@ -180,6 +203,8 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
 
    // get previous style from the stack
    StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
+   // reset values that are not inherited according to CSS
+   attrs.resetValues ();
 
    cssContext->apply (&props, this, tagStyleProps, nonCssProperties);
 

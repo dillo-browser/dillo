@@ -114,8 +114,7 @@ struct _DilloLinkImage {
 };
 
 struct _DilloHtmlState {
-//   dw::core::style::Style *style, *table_cell_style;
-   dw::core::style::Style *table_cell_style;
+   CssPropertyList *table_cell_props;
    DilloHtmlParseMode parse_mode;
    DilloHtmlTableMode table_mode;
    bool cell_text_align_set;
@@ -273,7 +272,7 @@ void a_Html_tag_set_align_attr(DilloHtml *html, CssPropertyList *props,
                                const char *tag, int tagsize);
 bool a_Html_tag_set_valign_attr(DilloHtml *html,
                                 const char *tag, int tagsize,
-                                dw::core::style::StyleAttrs *style_attrs);
+                                CssPropertyList *props);
 void a_Html_set_top_font(DilloHtml *html, const char *name, int size,
                          int BI, int BImask);
 

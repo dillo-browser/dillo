@@ -331,19 +331,22 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
  * sets the style in style_attrs. Returns true when set.
  */
 bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
-                                int tagsize, StyleAttrs *style_attrs)
+                                int tagsize, CssPropertyList *props)
 {
    const char *attr;
+   VAlignType valign;
 
    if ((attr = a_Html_get_attr(html, tag, tagsize, "valign"))) {
       if (dStrcasecmp (attr, "top") == 0)
-         style_attrs->valign = VALIGN_TOP;
+         valign = VALIGN_TOP;
       else if (dStrcasecmp (attr, "bottom") == 0)
-         style_attrs->valign = VALIGN_BOTTOM;
+         valign = VALIGN_BOTTOM;
       else if (dStrcasecmp (attr, "baseline") == 0)
-         style_attrs->valign = VALIGN_BASELINE;
+         valign = VALIGN_BASELINE;
       else
-         style_attrs->valign = VALIGN_MIDDLE;
+         valign = VALIGN_MIDDLE;
+
+      props->set (CssProperty::CSS_PROPERTY_VERTICAL_ALIGN, valign);
       return true;
    } else
       return false;
@@ -470,7 +473,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    stack = new misc::SimpleVector <DilloHtmlState> (16);
    stack->increase();
-   stack->getRef(0)->table_cell_style = NULL;
+   stack->getRef(0)->table_cell_props = NULL;
    stack->getRef(0)->parse_mode = DILLO_HTML_PARSE_MODE_INIT;
    stack->getRef(0)->table_mode = DILLO_HTML_TABLE_MODE_NONE;
    stack->getRef(0)->cell_text_align_set = false;
@@ -514,8 +517,8 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    images = new misc::SimpleVector <DilloLinkImage*> (16);
    //a_Dw_image_map_list_init(&maps);
 
-   link_color = prefs.link_color;
-   visited_color = prefs.visited_color;
+   link_color = -1;
+   visited_color = -1;
 
    /* Initialize the main widget */
    initDw();
@@ -533,7 +536,7 @@ void DilloHtml::initDw()
    /* Create the main widget */
    dw = stack->getRef(0)->textblock = new Textblock (prefs.limit_text_width);
 
-   stack->getRef(0)->table_cell_style = NULL;
+   stack->getRef(0)->table_cell_props = NULL;
 
    /* Handle it when the user clicks on a link */
    connectSignals(dw);
@@ -1254,9 +1257,8 @@ static void Html_push_tag(DilloHtml *html, int tag_idx)
     * instead of copying all fields except for tag.  --Jcid */
    *html->stack->getRef(n_items) = *html->stack->getRef(n_items - 1);
    html->stack->getRef(n_items)->tag_idx = tag_idx;
-   /* proper memory management, may be unref'd later */
-   if (S_TOP(html)->table_cell_style)
-      (S_TOP(html)->table_cell_style)->ref ();
+   if (S_TOP(html)->table_cell_props)
+      S_TOP(html)->table_cell_props->ref ();
    html->dw = S_TOP(html)->textblock;
 }
 
@@ -1276,10 +1278,9 @@ static void Html_real_pop_tag(DilloHtml *html)
 {
    bool hand_over_break;
 
-   //(html->styleEngine->style ())->unref ();
-   if (S_TOP(html)->table_cell_style)
-      (S_TOP(html)->table_cell_style)->unref ();
    html->styleEngine->endElement (S_TOP(html)->tag_idx);
+   if (S_TOP(html)->table_cell_props)
+      S_TOP(html)->table_cell_props->unref ();
    hand_over_break = S_TOP(html)->hand_over_break;
    html->stack->setSize (html->stack->size() - 1);
    Html_eventually_pop_dw(html, hand_over_break);
@@ -1686,8 +1687,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    Textblock *textblock;
-   StyleAttrs style_attrs;
-   Style *style;
+   CssPropertyList props;
    int32_t color;
 
    if (!(html->InFlags & IN_BODY))
@@ -1705,42 +1705,36 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    textblock = DW2TB(html->dw);
 
-   if (!prefs.force_my_colors) {
-      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
-         color = a_Html_color_parse(html, attrbuf, prefs.bg_color);
-         if (color == 0xffffff && !prefs.allow_white_bg)
-            color = prefs.bg_color;
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
+      color = a_Html_color_parse(html, attrbuf, prefs.bg_color);
+      if (color == 0xffffff && !prefs.allow_white_bg)
+         color = prefs.bg_color;
+      S_TOP(html)->current_bg_color = color;
+      props.set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, color);
+   }
 
-         style_attrs = *html->dw->getStyle ();
-         style_attrs.backgroundColor = Color::createShaded(HT2LT(html), color);
-         style = Style::create (HT2LT(html), &style_attrs);
-         html->dw->setStyle (style);
-         style->unref ();
-         S_TOP(html)->current_bg_color = color;
-      }
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "text"))) {
+      color = a_Html_color_parse(html, attrbuf, prefs.text_color);
+      props.set (CssProperty::CSS_PROPERTY_COLOR, color);
+   }
 
-      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "text"))) {
-         color = a_Html_color_parse(html, attrbuf, prefs.text_color);
-         HTML_SET_TOP_ATTR (html, color,
-                            Color::createSimple (HT2LT(html),color));
-      }
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))
+      html->link_color = a_Html_color_parse(html, attrbuf, -1);
 
-      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))
-         html->link_color = a_Html_color_parse(html,attrbuf,prefs.link_color);
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink")))
+      html->visited_color = a_Html_color_parse(html, attrbuf, -1);
 
-      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink")))
-         html->visited_color = a_Html_color_parse(html, attrbuf,
-                                                  prefs.visited_color);
-
-      if (prefs.contrast_visited_color) {
-         /* get a color that has a "safe distance" from text, link and bg */
-         html->visited_color =
+   if (prefs.contrast_visited_color) {
+      /* get a color that has a "safe distance" from text, link and bg */
+      html->visited_color =
             a_Color_vc(html->visited_color,
                        html->styleEngine->style ()->color->getColor(),
                        html->link_color,
                        S_TOP(html)->current_bg_color);
-      }
    }
+
+   html->styleEngine->setNonCssProperties (&props);
+   html->dw->setStyle (html->styleEngine->style ());
 
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_BODY;
 }
@@ -2460,11 +2454,16 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       if (a_Capi_get_flags(url) & CAPI_IsCached) {
          html->InVisitedLink = true;
          html->styleEngine->setPseudoClass ("visited");
+         if (html->visited_color != -1)
+            props.set (CssProperty::CSS_PROPERTY_COLOR, html->visited_color);
       } else {
          html->styleEngine->setPseudoClass ("link");
+         if (html->link_color != -1)
+            props.set (CssProperty::CSS_PROPERTY_COLOR, html->link_color);
       }
 
       props.set (CssProperty::PROPERTY_X_LINK, Html_set_new_link(html, &url));
+
       html->styleEngine->setNonCssProperties (&props);
    }
 
