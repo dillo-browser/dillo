@@ -84,7 +84,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
          props.set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, TEXT_ALIGN_CENTER);
    }
 
-   /** \todo figure out how to implement shaded colors with CSS */
+   /** \todo figure out how to handle shaded colors with CSS */
    props.set (CssProperty::CSS_PROPERTY_BORDER_COLOR, 0x000000);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
@@ -107,7 +107,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, 1);
    if (cellpadding != -1)
       table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING, cellpadding);
-   /** \todo figure out how to implement shaded colors with CSS */
+   /** \todo figure out how to handle shaded colors with CSS */
    table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_COLOR, 0x000000);
 
    if (S_TOP(html)->table_cell_props)
