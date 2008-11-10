@@ -166,7 +166,7 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 
       table_cell_props = new CssPropertyList (*S_TOP(html)->table_cell_props);
       if (bgcolor != -1) {
-         props.set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, bgcolor);
+         table_cell_props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, bgcolor);
          new_style = true;
       }
       if (a_Html_tag_set_valign_attr (html, tag, tagsize, table_cell_props))
