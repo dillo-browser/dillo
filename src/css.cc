@@ -155,6 +155,12 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 20);
    s->addRule (new CssSelector(a_Html_tag_index("h3"), NULL, NULL), props);
 
+   // <h4>
+   props = new CssPropertyList ();
+   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 12);
+   props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, CssProperty::CSS_FONT_WEIGHT_BOLD);
+   s->addRule (new CssSelector(a_Html_tag_index("h4"), NULL, NULL), props);
+
    // <ol>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, LIST_STYLE_TYPE_DECIMAL);
