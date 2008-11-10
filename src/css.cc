@@ -137,15 +137,18 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    props->set (CssProperty::CSS_PROPERTY_CURSOR, CURSOR_POINTER);
    s->addRule (new CssSelector(-1, "visited", NULL), props);
 
-   // <b>
+   // <b>, <strong>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, CssProperty::CSS_FONT_WEIGHT_BOLDER);
    s->addRule (new CssSelector(a_Html_tag_index("b"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("strong"), NULL, NULL), props);
 
-   // <i>
+   // <i>, <em>, <cite>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_FONT_STYLE, FONT_STYLE_ITALIC);
    s->addRule (new CssSelector(a_Html_tag_index("i"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("em"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("cite"), NULL, NULL), props);
 
    // <h1>
    props = new CssPropertyList ();

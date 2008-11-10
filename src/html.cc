@@ -1950,7 +1950,6 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_b(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_set_top_font(html, NULL, 0, 1, 1);
 }
 
 /*
@@ -1958,7 +1957,6 @@ static void Html_tag_open_b(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_strong(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_set_top_font(html, NULL, 0, 1, 1);
 }
 
 /*
@@ -1966,7 +1964,6 @@ static void Html_tag_open_strong(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_i(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_set_top_font(html, NULL, 0, 2, 2);
 }
 
 /*
@@ -1974,7 +1971,6 @@ static void Html_tag_open_i(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_em(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_set_top_font(html, NULL, 0, 2, 2);
 }
 
 /*
@@ -1982,7 +1978,6 @@ static void Html_tag_open_em(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_cite(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_set_top_font(html, NULL, 0, 2, 2);
 }
 
 /*
