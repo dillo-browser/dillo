@@ -658,13 +658,13 @@ static bool Css_parse_value (CssParser *parser,
             ival = 0;
       } else if (parser->ttype == CSS_TK_SYMBOL) {
          if (strcmp (parser->tval, "normal") == 0)
-            ival = CSS_FONT_WEIGHT_NORMAL;
+            ival = CssProperty::CSS_FONT_WEIGHT_NORMAL;
          if (strcmp (parser->tval, "bold") == 0)
-            ival = CSS_FONT_WEIGHT_BOLD;
+            ival = CssProperty::CSS_FONT_WEIGHT_BOLD;
          if (strcmp (parser->tval, "bolder") == 0)
-            ival = CSS_FONT_WEIGHT_BOLDER;
+            ival = CssProperty::CSS_FONT_WEIGHT_BOLDER;
          if (strcmp (parser->tval, "lighter") == 0)
-            ival = CSS_FONT_WEIGHT_LIGHTER;       
+            ival = CssProperty::CSS_FONT_WEIGHT_LIGHTER;       
       }
       
       if (ival != 0) {

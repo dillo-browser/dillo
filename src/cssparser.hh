@@ -86,25 +86,6 @@ enum {
 #define CSS_LENGTH_VALUE(l)     ( ( (float)((l) & ~7) ) / (1 << 19) )
 #define CSS_LENGTH_TYPE(l)      ((l) & 7)
 
-/*
- * Font weights are either absolute (number between 100 and 900), or have
- * the following relative values:
- */
-#define CSS_FONT_WEIGHT_LIGHTER -1
-#define CSS_FONT_WEIGHT_BOLDER  -2
-
-/* This is the difference used. */
-#define CSS_FONT_WEIGHT_STEP 300
-
-/* Some special font weights. */
-#define CSS_FONT_WEIGHT_LIGHT  100
-#define CSS_FONT_WEIGHT_NORMAL 400
-#define CSS_FONT_WEIGHT_BOLD   700
-
-#define CSS_FONT_WEIGHT_MIN    100
-#define CSS_FONT_WEIGHT_MAX    900
-
-
 void        a_Css_init                        (void);
 void        a_Css_freeall                     (void);
 
