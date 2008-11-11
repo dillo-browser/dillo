@@ -521,16 +521,14 @@ static bool Css_token_matches_property (CssParser *parser,
    }
 }
 
-static CssProperty::Value Css_parse_value (CssParser *parser,
-                                  CssProperty::Name prop)
+static bool Css_parse_value (CssParser *parser,
+                             CssProperty::Name prop,
+                             CssProperty::Value *val)
 {
-   CssProperty::Value val;
    int i, lentype;
-   bool found;
+   bool found, ret = false;
    float fval;
    int ival, err = 1;
-
-   val.intVal = 0;
 
    switch (Css_property_info[prop].type) {
    case CSS_TYPE_ENUM:
@@ -538,7 +536,8 @@ static CssProperty::Value Css_parse_value (CssParser *parser,
          for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
             if (strcmp (parser->tval,
                         Css_property_info[prop].enum_symbols[i]) == 0) {
-               val.intVal = i;
+               val->intVal = i;
+               ret = true;
                break;
             }
          Css_next_token (parser);
@@ -546,7 +545,8 @@ static CssProperty::Value Css_parse_value (CssParser *parser,
       break;
       
    case CSS_TYPE_MULTI_ENUM:
-      val.intVal = 0;
+      val->intVal = 0;
+      ret = true;
 
       while (parser->ttype == CSS_TK_SYMBOL) {
          if (strcmp (parser->tval, "none") != 0) {
@@ -555,7 +555,7 @@ static CssProperty::Value Css_parse_value (CssParser *parser,
                  i++) {
                if (strcmp (parser->tval,
                            Css_property_info[prop].enum_symbols[i]) == 0)
-                  val.intVal |= (1 << i);
+                  val->intVal |= (1 << i);
             }
          }
          Css_next_token (parser);
@@ -568,6 +568,8 @@ static CssProperty::Value Css_parse_value (CssParser *parser,
          fval = atof (parser->tval);
          lentype = CSS_LENGTH_TYPE_PX; /* Actually, there must be a unit,
                                         * except for num == 0. */
+
+         ret = true;
          
          Css_next_token (parser);
          if (parser->ttype == CSS_TK_SYMBOL) {
@@ -608,36 +610,41 @@ static CssProperty::Value Css_parse_value (CssParser *parser,
             Css_next_token (parser);
          }            
 
-         val.intVal = CSS_CREATE_LENGTH (fval, lentype);
+         val->intVal = CSS_CREATE_LENGTH (fval, lentype);
       } else if (parser->ttype == CSS_TK_SYMBOL &&
                  strcmp (parser->tval, "auto") == 0) {
-         val.intVal = CSS_LENGTH_TYPE_AUTO;
+         val->intVal = CSS_LENGTH_TYPE_AUTO;
       }
       break;
         
    case CSS_TYPE_COLOR:
       if (parser->ttype == CSS_TK_COLOR) {
-         val.intVal = a_Color_parse (parser->tval, -1, &err);
+         val->intVal = a_Color_parse (parser->tval, -1, &err);
          if (err)
             MSG_CSS("color is not in \"%s\" format\n", "#RRGGBB");
+         else
+            ret = true;
       } else if (parser->ttype == CSS_TK_SYMBOL) {
-         val.intVal = a_Color_parse (parser->tval, -1, &err);
+         val->intVal = a_Color_parse (parser->tval, -1, &err);
          if (err)
             MSG_CSS("color is not in \"%s\" format\n", "#RRGGBB");
+         else
+            ret = true;
          Css_next_token (parser);
       }
       break;
       
    case CSS_TYPE_STRING:
       if (parser->ttype == CSS_TK_STRING) {
-         val.strVal = dStrdup (parser->tval);
+         val->strVal = dStrdup (parser->tval);
          Css_next_token (parser);
       }
       break;
       
    case CSS_TYPE_SYMBOL:
       if (parser->ttype == CSS_TK_SYMBOL) {
-         val.strVal = dStrdup (parser->tval);
+         val->strVal = dStrdup (parser->tval);
+         ret = true;
          Css_next_token (parser);
       }
       break;
@@ -661,7 +668,8 @@ static CssProperty::Value Css_parse_value (CssParser *parser,
       }
       
       if (ival != 0) {
-         val.intVal = ival;
+         val->intVal = ival;
+         ret = true;
          Css_next_token (parser);
       }
       break;
@@ -673,10 +681,10 @@ static CssProperty::Value Css_parse_value (CssParser *parser,
    case CSS_TYPE_INTEGER:
       /* Not used for parser values. */
    default:
-      assert (false);
+      assert (false); /* not reached */
    }
 
-   return val;
+   return ret;
 }
 
 static bool Css_parse_weight (CssParser *parser)
@@ -717,7 +725,7 @@ static void Css_parse_declaration (CssParser *parser,
    CssPropertyInfo pi, *pip;
    CssShorthandInfo si, *sip;
    CssProperty::Name prop;
-   CssProperty::Value *val, *dir_vals[4];
+   CssProperty::Value val, dir_vals[4];
    bool found, weight;  
    int sh_index, i, n;
    int dir_set[4][4] = {
@@ -736,12 +744,11 @@ static void Css_parse_declaration (CssParser *parser,
          Css_next_token (parser);
          if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ':') {
             Css_next_token (parser);
-            if ((val = Css_parse_value (parser, prop))) {
+            if (Css_parse_value (parser, prop, &val)) {
                weight = Css_parse_weight (parser);
                Css_add_declarations (parser->context, selectors, prop, val,
                                      parser->order_count, parser->origin,
                                      weight);
-               Css_value_unref (val);
             }
          }
       } else  {
@@ -771,17 +778,15 @@ static void Css_parse_declaration (CssParser *parser,
                                       Css_property_info
                                       [Css_shorthand_info[sh_index]
                                        .properties[i]].symbol);
-                           if ((val = Css_parse_value (
-                                         parser,
+                           if (Css_parse_value ( parser,
                                          Css_shorthand_info[sh_index]
-                                            .properties[i]))) {
+                                            .properties[i], &val)) {
                               weight = Css_parse_weight (parser);
                               Css_add_declarations (
                                  parser->context, selectors,
                                  Css_shorthand_info[sh_index].properties[i],
                                  val, parser->order_count, parser->origin,
                                  weight);
-                              Css_value_unref (val);
                            }
                         }
                   } while (found);
@@ -793,10 +798,10 @@ static void Css_parse_declaration (CssParser *parser,
                      if (Css_token_matches_property (
                             parser,
                             Css_shorthand_info[sh_index].properties[0]) &&
-                         (val = Css_parse_value (
+                         Css_parse_value (
                                    parser,
                                    Css_shorthand_info[sh_index]
-                                      .properties[0]))) {
+                                      .properties[0], &val)) {
                         dir_vals[n] = val;
                         n++;
                      } else
@@ -816,9 +821,6 @@ static void Css_parse_declaration (CssParser *parser,
                      MSG_CSS("no values for shorthand proprerty '%s'\n",
                              Css_shorthand_info[sh_index].symbol);
 
-                  for (i = 0; i < n; i++)
-                     Css_value_unref (dir_vals[i]);
-                  
                   break;
                   
                case CssShorthandInfo::CSS_SHORTHAND_BORDER:
