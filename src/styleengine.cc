@@ -167,6 +167,9 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE:
             attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;
+         case CssProperty::CSS_PROPERTY_MARGIN:
+            attrs->margin.setVal (p->value.intVal);
+            break;
          case CssProperty::CSS_PROPERTY_PADDING:
             attrs->padding.setVal (p->value.intVal);
             break;

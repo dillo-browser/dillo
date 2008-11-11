@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <math.h>
 #include "prefs.h"
 #include "html_common.hh"
 #include "css.hh"
@@ -121,6 +122,7 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, 0xdcd1ba);
    props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, "DejaVu Sans");
    props->set (CssProperty::CSS_PROPERTY_COLOR, 0x000000);
+   props->set (CssProperty::CSS_PROPERTY_MARGIN, 5);
    s->addRule (new CssSelector(a_Html_tag_index("body"), NULL, NULL), props);
 
    // :link
@@ -216,6 +218,8 @@ CssStyleSheet * CssContext::buildUserStyle (bool important) {
       props = new CssPropertyList ();
       props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, prefs.bg_color);
       props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, prefs.vw_fontname);
+      props->set (CssProperty::CSS_PROPERTY_FONT_SIZE,
+         (int) rint(14.0 * prefs.font_factor));
       props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.text_color);
       s->addRule (new CssSelector(a_Html_tag_index("body"), NULL, NULL), props);
 
