@@ -398,6 +398,7 @@ static int Http_must_use_proxy(const DilloUrl *url)
          dFree(np);
       }
    }
+   _MSG("Http_must_use_proxy: %s\n  %s\n", URL_STR(url), ret ? "YES":"NO");
    return ret;
 }
 
@@ -459,7 +460,7 @@ static int Http_get(ChainLink *Info, void *Data1)
    S->Info = Info;
 
    /* Proxy support */
-   if (Http_must_use_proxy(URL_HOST(S->web->url))) {
+   if (Http_must_use_proxy(S->web->url)) {
       hostname = dStrdup(URL_HOST(HTTP_Proxy));
       S->port = URL_PORT(HTTP_Proxy);
       S->use_proxy = TRUE;

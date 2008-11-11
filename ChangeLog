@@ -29,13 +29,12 @@ dillo-2.1
    Patch: Justus Winter
 +- Reduced warnings with gcc-4.3.
    Patch: Thomas Orgis
-+- Fixed the proxy URL parameter for Http_must_use_proxy().
-   Patch: David McKee
 +- Added the "middle_click_drags_page" dillorc option.
    Patch: Jorge Arellano, Thomas Orgis
 +- Set the File menu label to hide when the File menu-button is shown.
  ? Trying a new iconv() test in configure.in.
-   Patch: Jorge Arellano
+ - Allowed the rc parser to skip whitespace around the equal sign.
+   Patches: Jorge Arellano
 
 dw
 

@@ -776,6 +776,10 @@ int dParser_get_rc_pair(char **line, char **name, char **value)
       *p = 0;
       *name = *line;
 
+      /* skip whitespace */
+      if (p < eq)
+         for (++p; isspace(*p); ++p);
+
       /* get value */
       if (p == eq) {
          for (++p; isspace(*p); ++p);
