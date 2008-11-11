@@ -621,10 +621,6 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
 {
    int s_h = 20;
 
-   Font *f = font(prefs.vw_fontname, 0);
-   if (f)
-      this->labelfont(f);
-
    PointerOnLink = FALSE;
 
    Tabs = NULL;
