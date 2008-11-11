@@ -59,7 +59,7 @@ void StyleEngine::startElement (int tag, const char *id, const char *klass,
    n->tag = tag;
    n->id = id;
    n->klass = klass;
-   n->pseudoClass = NULL;
+   n->pseudo = NULL;
    n->styleAttribute = style;
 }
 
@@ -76,8 +76,8 @@ void StyleEngine::setNonCssProperties (CssPropertyList *props) {
 /**
  * \brief set the CSS pseudo class (e.g. "link", "visited").
  */
-void StyleEngine::setPseudoClass (const char *pseudoClass) {
-   stack->getRef (stack->size () - 1)->pseudoClass = pseudoClass;
+void StyleEngine::setPseudoClass (const char *pseudo) {
+   stack->getRef (stack->size () - 1)->pseudo = pseudo;
 }
 
 /**

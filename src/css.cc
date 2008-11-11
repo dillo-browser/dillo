@@ -51,8 +51,10 @@ bool CssSelector::match (Doctree *docTree) {
    if (tag >= 0 && tag != n->tag)
       return false;
    if (klass != NULL &&
-      (n->klass == NULL || strcmp (klass, n->klass) != 0) &&
-      (n->pseudoClass == NULL || strcmp (klass, n->pseudoClass) != 0))
+      (n->klass == NULL || strcmp (klass, n->klass) != 0))
+      return false;
+   if (pseudo != NULL &&
+      (n->pseudo == NULL || strcmp (pseudo, n->pseudo) != 0))
       return false;
    if (id != NULL && (n->id == NULL || strcmp (id, n->id) != 0))
       return false;
@@ -123,78 +125,78 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, "DejaVu Sans");
    props->set (CssProperty::CSS_PROPERTY_COLOR, 0x000000);
    props->set (CssProperty::CSS_PROPERTY_MARGIN, 5);
-   s->addRule (new CssSelector(a_Html_tag_index("body"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("body")), props);
 
    // :link
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_COLOR, 0x0000ff);
    props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, TEXT_DECORATION_UNDERLINE);
    props->set (CssProperty::CSS_PROPERTY_CURSOR, CURSOR_POINTER);
-   s->addRule (new CssSelector(-1, "link", NULL), props);
+   s->addRule (new CssSelector(-1, NULL, "link"), props);
 
    // :visited
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_COLOR, 0x800080);
    props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, TEXT_DECORATION_UNDERLINE);
    props->set (CssProperty::CSS_PROPERTY_CURSOR, CURSOR_POINTER);
-   s->addRule (new CssSelector(-1, "visited", NULL), props);
+   s->addRule (new CssSelector(-1, NULL, "visited"), props);
 
    // <b>, <strong>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, CssProperty::CSS_FONT_WEIGHT_BOLDER);
-   s->addRule (new CssSelector(a_Html_tag_index("b"), NULL, NULL), props);
-   s->addRule (new CssSelector(a_Html_tag_index("strong"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("b")), props);
+   s->addRule (new CssSelector(a_Html_tag_index("strong")), props);
 
    // <i>, <em>, <cite>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_FONT_STYLE, FONT_STYLE_ITALIC);
-   s->addRule (new CssSelector(a_Html_tag_index("i"), NULL, NULL), props);
-   s->addRule (new CssSelector(a_Html_tag_index("em"), NULL, NULL), props);
-   s->addRule (new CssSelector(a_Html_tag_index("cite"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("i")), props);
+   s->addRule (new CssSelector(a_Html_tag_index("em")), props);
+   s->addRule (new CssSelector(a_Html_tag_index("cite")), props);
 
    // <h1>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 40);
-   s->addRule (new CssSelector(a_Html_tag_index("h1"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("h1")), props);
 
    // <h2>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 30);
-   s->addRule (new CssSelector(a_Html_tag_index("h2"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("h2")), props);
 
    // <h3>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 20);
-   s->addRule (new CssSelector(a_Html_tag_index("h3"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("h3")), props);
 
    // <h4>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 12);
    props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, CssProperty::CSS_FONT_WEIGHT_BOLD);
-   s->addRule (new CssSelector(a_Html_tag_index("h4"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("h4")), props);
 
    // <ol>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, LIST_STYLE_TYPE_DECIMAL);
-   s->addRule (new CssSelector(a_Html_tag_index("ol"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("ol")), props);
 
    // <pre>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, "DejaVu Sans Mono");
-   s->addRule (new CssSelector(a_Html_tag_index("pre"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("pre")), props);
 
    // <table>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_OUTSET);
    props->set (CssProperty::CSS_PROPERTY_BORDER_SPACING_HORIZONTAL, 1);
    props->set (CssProperty::CSS_PROPERTY_BORDER_SPACING_VERTICAL, 1);
-   s->addRule (new CssSelector(a_Html_tag_index("table"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("table")), props);
 
    // <td>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_INSET);
    props->set (CssProperty::CSS_PROPERTY_PADDING, 2);
-   s->addRule (new CssSelector(a_Html_tag_index("td"), NULL, NULL), props);
+   s->addRule (new CssSelector(a_Html_tag_index("td")), props);
    
    return s;
 }
@@ -207,12 +209,12 @@ CssStyleSheet * CssContext::buildUserStyle (bool important) {
       // :link 
       props = new CssPropertyList ();
       props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.link_color);
-      s->addRule (new CssSelector(-1, "link", NULL), props);
+      s->addRule (new CssSelector(-1, NULL, "link"), props);
 
       // :visited 
       props = new CssPropertyList ();
       props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.visited_color);
-      s->addRule (new CssSelector(-1, "visited", NULL), props);
+      s->addRule (new CssSelector(-1, NULL, "visited"), props);
 
       // <body>
       props = new CssPropertyList ();
@@ -221,12 +223,12 @@ CssStyleSheet * CssContext::buildUserStyle (bool important) {
       props->set (CssProperty::CSS_PROPERTY_FONT_SIZE,
          (int) rint(14.0 * prefs.font_factor));
       props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.text_color);
-      s->addRule (new CssSelector(a_Html_tag_index("body"), NULL, NULL), props);
+      s->addRule (new CssSelector(a_Html_tag_index("body")), props);
 
       // <pre>
       props = new CssPropertyList ();
       props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, prefs.fw_fontname);
-      s->addRule (new CssSelector(a_Html_tag_index("pre"), NULL, NULL), props);
+      s->addRule (new CssSelector(a_Html_tag_index("pre")), props);
    }
 
    return s;
