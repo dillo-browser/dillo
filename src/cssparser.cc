@@ -9,6 +9,7 @@
 #include "cssparser.hh"
 
 using namespace dw::core::style;
+
 #define DEBUG_MSG(A, B, ...) MSG(B, __VA_ARGS__)
 #define MSG_CSS(A, ...) MSG(A, __VA_ARGS__)
 #define DEBUG_TOKEN_LEVEL   0
@@ -728,10 +729,10 @@ static void Css_parse_declaration (CssParser *parser,
 
    if (parser->ttype == CSS_TK_SYMBOL) {
       pi.symbol = parser->tval;
-      pip = bsearch(&pi, Css_property_info, CSS_NUM_PARSED_PROPERTIES,
+      pip = (CssPropertyInfo*) bsearch(&pi, Css_property_info, CSS_NUM_PARSED_PROPERTIES,
                     sizeof (CssPropertyInfo), Css_property_info_cmp);
       if (pip) {
-         prop = pip - Css_property_info;
+         prop = (CssProperty::Name) (pip - Css_property_info);
          Css_next_token (parser);
          if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ':') {
             Css_next_token (parser);
@@ -746,7 +747,7 @@ static void Css_parse_declaration (CssParser *parser,
       } else  {
          /* Try shorthands. */
          si.symbol = parser->tval;
-         sip = bsearch(&pi, Css_shorthand_info, CSS_SHORTHAND_NUM,
+         sip = (CssShorthandInfo*) bsearch(&pi, Css_shorthand_info, CSS_SHORTHAND_NUM,
                        sizeof (CssShorthandInfo), Css_shorthand_info_cmp);
          if (sip) {
             sh_index = sip - Css_shorthand_info;
@@ -755,7 +756,7 @@ static void Css_parse_declaration (CssParser *parser,
                Css_next_token (parser);
 
                switch (Css_shorthand_info[sh_index].type) {
-               case CSS_SHORTHAND_MULTIPLE:
+               case CssShorthandInfo::CSS_SHORTHAND_MULTIPLE:
                   do {
                      for (found = false, i = 0;
                           !found &&
@@ -786,7 +787,7 @@ static void Css_parse_declaration (CssParser *parser,
                   } while (found);
                   break;
                               
-               case CSS_SHORTHAND_DIRECTIONS:
+               case CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS:
                   n = 0;
                   while (n < 4) {
                      if (Css_token_matches_property (
@@ -820,11 +821,11 @@ static void Css_parse_declaration (CssParser *parser,
                   
                   break;
                   
-               case CSS_SHORTHAND_BORDER:
+               case CssShorthandInfo::CSS_SHORTHAND_BORDER:
                   /* todo: Not yet implemented. */
                   break;
                   
-               case CSS_SHORTHAND_FONT:
+               case CssShorthandInfo::CSS_SHORTHAND_FONT:
                   /* todo: Not yet implemented. */
                   break;
                }
