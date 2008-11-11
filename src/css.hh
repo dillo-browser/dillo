@@ -12,6 +12,7 @@ class CssProperty {
       } Value;
 
       typedef enum {
+         CSS_PROPERTY_END = -1,
          CSS_PROPERTY_BACKGROUND_ATTACHMENT,
          CSS_PROPERTY_BACKGROUND_COLOR,
          CSS_PROPERTY_BACKGROUND_IMAGE,

@@ -1,0 +1,1023 @@
+#include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "css.hh"
+#include "cssparser.hh"
+
+using namespace dw::core::style;
+
+#define DEBUG_TOKEN_LEVEL   0
+#define DEBUG_PARSE_LEVEL   0
+#define DEBUG_CREATE_LEVEL  0
+
+#define DEBUG_LEVEL 10
+
+/* Applies to symbol lengths and string literals. */
+#define MAX_STR_LEN 256
+
+static char *Css_border_style_enum_vals[] = {
+   "none", "hidden", "dotted", "dashed", "solid", "double", "groove", "ridge",
+   "inset", "outset", NULL
+};
+
+static char *Css_display_enum_vals[DISPLAY_LAST + 1] = {
+   "block", "inline", "list-item", "table", "table-row-group",
+   "table-header-group", "table-footer-group", "table-row",
+   "table-cell",  NULL
+};
+
+static char *Css_font_style_enum_vals[] = {
+   "normal", "italic", "oblique", NULL
+};
+
+static char *Css_list_style_type_enum_vals[] = {
+   "disc", "circle", "square", "decimal", "decimal-leading-zero",
+   "lower-roman", "upper-roman", "lower-greek", "lower-alpha", "lower-latin",
+   "upper-alpha", "upper-latin", "hebrew", "armenian", "georgian",
+   "cjk-ideographic", "hiragana", "katakana", "hiragana-iroha",
+   "katakana-iroha", "none", NULL
+};
+
+static char *Css_text_align_enum_vals[] = {
+   "left", "right", "center", "justify", "string", NULL
+};
+
+static char *Css_text_decoration_enum_vals[] = {
+   "underline", "overline", "line-through", "blink", NULL
+};
+
+static char *Css_vertical_align_vals[] = {
+   "top", "bottom", "middle", "baseline", "sub", "super", NULL
+};
+
+static char *Css_white_space_vals[] = { "normal", "pre", "nowrap", NULL };
+
+CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
+   { "background-attachment", CSS_TYPE_UNUSED, NULL },
+   { "background-color", CSS_TYPE_COLOR, NULL },
+   { "background-image", CSS_TYPE_UNUSED, NULL },
+   { "background-position", CSS_TYPE_UNUSED, NULL },
+   { "background-repeat", CSS_TYPE_UNUSED, NULL },
+   { "border-bottom-color", CSS_TYPE_COLOR, NULL },
+   { "border-bottom-style", CSS_TYPE_ENUM, Css_border_style_enum_vals },
+   { "border-bottom-width", CSS_TYPE_LENGTH, NULL },
+   { "border-collapse", CSS_TYPE_UNUSED, NULL },
+   { "border-left-color", CSS_TYPE_COLOR, NULL },
+   { "border-left-style", CSS_TYPE_ENUM, Css_border_style_enum_vals },
+   { "border-left-width", CSS_TYPE_LENGTH, NULL },
+   { "border-right-color", CSS_TYPE_COLOR, NULL },
+   { "border-right-style", CSS_TYPE_ENUM, Css_border_style_enum_vals },
+   { "border-right-width", CSS_TYPE_LENGTH, NULL },
+   { "border-spacing", CSS_TYPE_LENGTH, NULL },
+   { "border-top-color", CSS_TYPE_COLOR, NULL },
+   { "border-top-style", CSS_TYPE_ENUM, Css_border_style_enum_vals },
+   { "border-top-width", CSS_TYPE_LENGTH, NULL },
+   { "bottom", CSS_TYPE_UNUSED, NULL },
+   { "caption-side", CSS_TYPE_UNUSED, NULL },
+   { "clear", CSS_TYPE_UNUSED, NULL },
+   { "clip", CSS_TYPE_UNUSED, NULL },
+   { "color", CSS_TYPE_COLOR, NULL },
+   { "content", CSS_TYPE_STRING, NULL },
+   { "counter-increment", CSS_TYPE_UNUSED, NULL },
+   { "counter-reset", CSS_TYPE_UNUSED, NULL },
+   { "cursor", CSS_TYPE_UNUSED, NULL },
+   { "direction", CSS_TYPE_UNUSED, NULL },
+   { "display", CSS_TYPE_ENUM, Css_display_enum_vals },
+   { "empty-cells", CSS_TYPE_UNUSED, NULL },
+   { "float", CSS_TYPE_UNUSED, NULL },
+   { "font-family", CSS_TYPE_SYMBOL, NULL },
+   { "font-size", CSS_TYPE_LENGTH, NULL },
+   { "font-size-adjust", CSS_TYPE_UNUSED, NULL },
+   { "font-stretch", CSS_TYPE_UNUSED, NULL },
+   { "font-style", CSS_TYPE_ENUM, Css_font_style_enum_vals },
+   { "font-variant", CSS_TYPE_UNUSED, NULL },
+   { "font-weight", CSS_TYPE_FONT_WEIGHT },
+   { "height", CSS_TYPE_LENGTH_PERCENTAGE, NULL },
+   { "left", CSS_TYPE_UNUSED, NULL },
+   { "letter-spacing", CSS_TYPE_UNUSED, NULL },
+   { "line-height", CSS_TYPE_UNUSED, NULL },
+   { "list-style-image", CSS_TYPE_UNUSED, NULL },
+   { "list-style-position", CSS_TYPE_UNUSED, NULL },
+   { "list-style-type", CSS_TYPE_ENUM, Css_list_style_type_enum_vals },
+   { "margin-bottom", CSS_TYPE_LENGTH, NULL },
+   { "margin-left", CSS_TYPE_LENGTH, NULL },
+   { "margin-right", CSS_TYPE_LENGTH, NULL },
+   { "margin-top", CSS_TYPE_LENGTH, NULL },
+   { "marker-offset", CSS_TYPE_UNUSED, NULL },
+   { "marks", CSS_TYPE_UNUSED, NULL },
+   { "max-height", CSS_TYPE_UNUSED, NULL },
+   { "max-width", CSS_TYPE_UNUSED, NULL },
+   { "min-height", CSS_TYPE_UNUSED, NULL },
+   { "min-width", CSS_TYPE_UNUSED, NULL },
+   { "outline-color", CSS_TYPE_UNUSED, NULL },
+   { "outline-style", CSS_TYPE_UNUSED, NULL },
+   { "outline-width", CSS_TYPE_UNUSED, NULL },
+   { "overflow", CSS_TYPE_UNUSED, NULL },
+   { "padding-bottom", CSS_TYPE_LENGTH, NULL },
+   { "padding-left", CSS_TYPE_LENGTH, NULL },
+   { "padding-right", CSS_TYPE_LENGTH, NULL },
+   { "padding-top", CSS_TYPE_LENGTH, NULL },
+   { "position", CSS_TYPE_UNUSED, NULL },
+   { "quotes", CSS_TYPE_UNUSED, NULL },
+   { "right", CSS_TYPE_UNUSED, NULL },
+   { "text-align", CSS_TYPE_ENUM, Css_text_align_enum_vals },
+   { "text-decoration", CSS_TYPE_MULTI_ENUM, Css_text_decoration_enum_vals },
+   { "text-shadow", CSS_TYPE_UNUSED, NULL },
+   { "text-transform", CSS_TYPE_UNUSED, NULL },
+   { "top", CSS_TYPE_UNUSED, NULL },
+   { "unicode-bidi", CSS_TYPE_UNUSED, NULL },
+   { "vertical-align", CSS_TYPE_ENUM, Css_vertical_align_vals },
+   { "visibility", CSS_TYPE_UNUSED, NULL },
+   { "white-space", CSS_TYPE_ENUM, Css_white_space_vals },
+   { "text-indent", CSS_TYPE_UNUSED, NULL },
+   { "width", CSS_TYPE_LENGTH_PERCENTAGE, NULL },
+   { "word-spacing", CSS_TYPE_UNUSED, NULL },
+   { "z-index", CSS_TYPE_UNUSED, NULL },
+
+   /* These are extensions, for internal used, and never parsed. */
+   { "x-link", CSS_TYPE_INTEGER, NULL },
+   { "x-colspan", CSS_TYPE_INTEGER, NULL },
+   { "x-rowspan", CSS_TYPE_INTEGER, NULL },
+};
+
+#define CSS_SHORTHAND_NUM 14
+
+typedef struct {
+   char *symbol;
+   enum {
+      CSS_SHORTHAND_MULTIPLE,   /* [ p1 || p2 || ...], the property pi is
+                                 * determined  by the type */
+      CSS_SHORTHAND_DIRECTIONS, /* <t>{1,4} */
+      CSS_SHORTHAND_BORDER,     /* special, used for 'border' */
+      CSS_SHORTHAND_FONT,       /* special, used for 'font' */ 
+   } type;
+   CssProperty::Name *properties; /* CSS_SHORTHAND_MULTIPLE:   must be terminated by
+                             * -1 
+                             * CSS_SHORTHAND_DIRECTIONS: must have length 4
+                             * CSS_SHORTHAND_BORDERS:    unused
+                             * CSS_SHORTHAND_FONT:       unused */
+} CssShorthandInfo;
+
+CssProperty::Name Css_background_properties[] = {
+   CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, CssProperty::CSS_PROPERTY_BACKGROUND_IMAGE,
+   CssProperty::CSS_PROPERTY_BACKGROUND_REPEAT, CssProperty::CSS_PROPERTY_BACKGROUND_ATTACHMENT,
+   CssProperty::CSS_PROPERTY_BACKGROUND_POSITION, CssProperty::CSS_PROPERTY_END
+};
+
+CssProperty::Name Css_border_bottom_properties[] = {
+   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR, CssProperty::CSS_PROPERTY_END
+};
+
+CssProperty::Name Css_border_color_properties[4] = {
+   CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR, CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR,
+   CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR, CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR
+};
+
+CssProperty::Name Css_border_left_properties[] = {
+   CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE,
+   CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR, CssProperty::CSS_PROPERTY_END
+};
+
+CssProperty::Name Css_border_right_properties[] = {
+   CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE,
+   CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR, CssProperty::CSS_PROPERTY_END
+};
+
+CssProperty::Name Css_border_style_properties[4] = {
+   CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE, CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+   CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE, CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE
+};
+
+CssProperty::Name Css_border_top_properties[] = {
+   CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
+   CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR, CssProperty::CSS_PROPERTY_END
+};
+
+CssProperty::Name Css_border_width_properties[4] = {
+   CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+   CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH
+};
+
+CssProperty::Name Css_list_style_properties[] = {
+   CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, CssProperty::CSS_PROPERTY_LIST_STYLE_POSITION,
+   CssProperty::CSS_PROPERTY_LIST_STYLE_IMAGE, CssProperty::CSS_PROPERTY_END
+};
+
+CssProperty::Name Css_margin_properties[4] = {
+   CssProperty::CSS_PROPERTY_MARGIN_TOP, CssProperty::CSS_PROPERTY_MARGIN_BOTTOM,
+   CssProperty::CSS_PROPERTY_MARGIN_LEFT, CssProperty::CSS_PROPERTY_MARGIN_RIGHT
+};
+
+CssProperty::Name Css_outline_properties[] = {
+   CssProperty::CSS_PROPERTY_OUTLINE_COLOR, CssProperty::CSS_PROPERTY_OUTLINE_STYLE,
+   CssProperty::CSS_PROPERTY_OUTLINE_WIDTH, CssProperty::CSS_PROPERTY_END
+};
+
+CssProperty::Name Css_padding_properties[4] = {
+   CssProperty::CSS_PROPERTY_PADDING_TOP, CssProperty::CSS_PROPERTY_PADDING_BOTTOM,
+   CssProperty::CSS_PROPERTY_PADDING_LEFT, CssProperty::CSS_PROPERTY_PADDING_RIGHT
+};
+
+static CssShorthandInfo Css_shorthand_info[CSS_SHORTHAND_NUM] = {
+   { "background", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE, Css_background_properties },
+   { "border", CssShorthandInfo::CSS_SHORTHAND_BORDER, NULL },
+   { "border-bottom", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE, Css_border_bottom_properties },
+   { "border-color", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS, Css_border_color_properties },
+   { "border-left", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE, Css_border_left_properties },
+   { "border-right", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE, Css_border_right_properties },
+   { "border-style", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS, Css_border_style_properties },
+   { "border-top", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE, Css_border_top_properties },
+   { "border-width", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS, Css_border_width_properties },
+   { "font", CssShorthandInfo::CSS_SHORTHAND_FONT, NULL },
+   { "list-style", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE, Css_list_style_properties },
+   { "margin", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS, Css_margin_properties },
+   { "outline", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE, Css_outline_properties },
+   { "padding", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS, Css_padding_properties },
+};
+
+
+static char *Css_primary_text[CSS_PRIMARY_LAST] = {
+   "user stylesheets, important", "author stylesheets, important",
+   "author stylesheets", "user stylesheets", "user-agent stylesheets"
+};   
+
+static char *Css_level_text[4] = { "id", "class", "pseudo-class", "element" };
+
+
+/* ----------------------------------------------------------------------
+ *    Initialization, Cleanup
+ * ---------------------------------------------------------------------- */
+
+static int values_num;
+
+void a_Css_init (void)
+{
+   values_num = 0;
+}
+
+void a_Css_freeall (void)
+{
+   if (values_num)
+      g_warning ("%d CSS values left", values_num);
+}
+
+/* ----------------------------------------------------------------------
+ *    Parsing
+ * ---------------------------------------------------------------------- */
+
+typedef enum {
+   CSS_TK_DECINT, CSS_TK_FLOAT, CSS_TK_COLOR, CSS_TK_SYMBOL, CSS_TK_STRING,
+   CSS_TK_CHAR, CSS_TK_END
+} CssTokenType;
+
+typedef struct {
+   CssContext *context;
+   int order_count;
+   CssOrigin origin;
+
+   const char *buf;
+   int buflen, bufptr;
+   
+   CssTokenType ttype;
+   char tval[MAX_STR_LEN];
+   bool within_block;
+} CssParser;
+
+/*
+ * Gets the next character from the buffer, or EOF.
+ */
+static int Css_getc (CssParser *parser)
+{
+   int c;
+
+   if (parser->bufptr >= parser->buflen)
+      c = EOF;
+   else
+      c = parser->buf[parser->bufptr];
+   
+   /* The buffer pointer is increased in any case, so that Css_ungetc works
+    * correctly at the end of the buffer. */
+   parser->bufptr++;
+   return c;
+}
+
+/*
+ * Undoes the last Css_getc().
+ */
+static void Css_ungetc (CssParser *parser)
+{
+   parser->bufptr--;
+}
+
+static void Css_next_token (CssParser *parser)
+{
+   int c, c1, d, i, j;
+   bool point_allowed;
+   char hexbuf[5];
+   bool escaped;
+   
+   do
+      c = Css_getc (parser);
+   while (isspace (c));
+
+   if (isdigit (c)) {
+      parser->ttype = CSS_TK_DECINT;
+      point_allowed = true;
+
+      parser->tval[0] = c;
+      i = 1;
+      c = Css_getc (parser);
+      while (isdigit(c) || (point_allowed && c == '.')) {
+         if (c == '.') {
+            parser->ttype = CSS_TK_FLOAT;
+            point_allowed = false; /* Only one point read. */
+         } 
+
+         if (i < MAX_STR_LEN - 1) {
+            parser->tval[i] = c;
+            i++;
+         } /* else silently truncated */
+
+         c = Css_getc (parser);
+      }
+      parser->tval[i] = 0;
+      Css_ungetc (parser);
+
+      DEBUG_MSG (DEBUG_TOKEN_LEVEL, "token number %s\n", parser->tval);
+      return;
+   }
+   
+   if (isalpha (c) || c == '_' || c == '-') {
+      parser->ttype = CSS_TK_SYMBOL;
+      
+      parser->tval[0] = c;
+      i = 1;
+      c = Css_getc (parser);
+      while (isalnum (c) || c == '_' || c == '-') {
+         if (i < MAX_STR_LEN - 1) {
+            parser->tval[i] = c;
+            i++;
+         } /* else silently truncated */
+         c = Css_getc (parser);
+      }
+      parser->tval[i] = 0;
+      Css_ungetc (parser);
+      DEBUG_MSG (DEBUG_TOKEN_LEVEL, "token symbol '%s'\n", parser->tval);
+      return;
+   }
+
+   if (c == '"' || c == '\'') {
+      c1 = c;
+      parser->ttype = CSS_TK_STRING;
+
+      i = 0;
+      c = Css_getc (parser);
+      escaped = false;
+
+      while (escaped || c != c1) {
+         if (c == '\\') {
+            escaped = true;
+            d = Css_getc (parser);
+            if (isxdigit (d)) {
+               /* Read hex Unicode char. (Actually, strings are yet only 8 
+                * bit.) */
+               hexbuf[0] = d;
+               j = 1;
+               d = Css_getc (parser);
+               while (j < 4 && isxdigit (d)) {
+                  hexbuf[j] = d;
+                  j++;
+                  d = Css_getc (parser);
+               }
+               hexbuf[j] = 0;
+               Css_ungetc (parser);
+               c = strtol (hexbuf, NULL, 16);
+            } else
+               /* Take next character literally. */
+               c = Css_getc (parser);
+         } else
+            escaped = false;
+
+         if (i < MAX_STR_LEN - 1) {
+            parser->tval[i] = c;
+            i++;
+         } /* else silently truncated */
+         c = Css_getc (parser);
+      }
+      parser->tval[i] = 0;
+      /* No Css_ungetc(). */
+      DEBUG_MSG (DEBUG_TOKEN_LEVEL, "token string '%s'\n", parser->tval);
+      return;
+   }
+
+   /*
+    * Within blocks, '#' starts a color, outside, it is used in selectors.
+    */
+   if (c == '#' && parser->within_block) {
+      parser->ttype = CSS_TK_COLOR;
+      
+      parser->tval[0] = c;
+      i = 1;
+      c = Css_getc (parser);
+      while (isxdigit (c)) {
+         if (i < MAX_STR_LEN - 1) {
+            parser->tval[i] = c;
+            i++;
+         } /* else silently truncated */
+         c = Css_getc (parser);
+      }
+      parser->tval[i] = 0;
+      Css_ungetc (parser);
+      DEBUG_MSG (DEBUG_TOKEN_LEVEL, "token color '%s'\n", parser->tval);
+      return;
+   }
+  
+   if (c == EOF) {
+      DEBUG_MSG (DEBUG_TOKEN_LEVEL, "token EOF\n");
+      parser->ttype = CSS_TK_END;
+      return;
+   }
+
+   parser->ttype = CSS_TK_CHAR;
+   parser->tval[0] = c;
+   parser->tval[1] = 0;
+   DEBUG_MSG (DEBUG_TOKEN_LEVEL, "token char '%c'\n", c);
+}
+
+
+static bool Css_token_matches_property (CssParser *parser,
+                                            CssProperty::Name prop)
+{
+   int i, err = 1;
+
+   switch (Css_property_info[prop].type) {
+   case CSS_TYPE_ENUM:
+      if (parser->ttype == CSS_TK_SYMBOL) {
+         for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
+            if (strcmp (parser->tval,
+                        Css_property_info[prop].enum_symbols[i]) == 0)
+               return true;
+      }
+      return false;
+      
+   case CSS_TYPE_MULTI_ENUM:
+      if (parser->ttype == CSS_TK_SYMBOL) {
+         if (strcmp (parser->tval, "none") != 0)
+            return true;
+         else {
+            for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
+               if (strcmp (parser->tval,
+                           Css_property_info[prop].enum_symbols[i]) == 0)
+                  return true;
+            }
+         }
+      }
+      return true;
+      
+   case CSS_TYPE_LENGTH_PERCENTAGE:
+   case CSS_TYPE_LENGTH:
+      return parser->ttype == CSS_TK_DECINT || parser->ttype == CSS_TK_FLOAT ||
+         (parser->ttype == CSS_TK_SYMBOL &&
+          strcmp (parser->tval, "auto") == 0);
+         
+   case CSS_TYPE_COLOR:
+      return (parser->ttype == CSS_TK_COLOR ||
+              parser->ttype == CSS_TK_SYMBOL) &&
+         a_Color_parse (parser->tval, -1, &err) != -1;
+
+   case CSS_TYPE_STRING:
+      return parser->ttype == CSS_TK_STRING;
+      
+   case CSS_TYPE_SYMBOL:
+      return parser->ttype == CSS_TK_SYMBOL;
+
+   case CSS_TYPE_FONT_WEIGHT:
+      if (parser->ttype == CSS_TK_DECINT) {
+         i = atoi (parser->tval);
+         return i >= 100 && i <= 900;
+      } else 
+         return (parser->ttype == CSS_TK_SYMBOL &&
+                 (strcmp (parser->tval, "normal") == 0 ||
+                  strcmp (parser->tval, "bold") == 0 ||
+                  strcmp (parser->tval, "bolder") == 0 ||
+                  strcmp (parser->tval, "lighter") == 0));
+      break;
+      
+   case CSS_TYPE_UNUSED:
+      return false;
+
+   case CSS_TYPE_INTEGER:
+      /* Not used for parser values. */
+   default:
+      g_assert_not_reached ();
+      return false;
+   }
+}
+
+static CssValue *Css_parse_value (CssParser *parser,
+                                  CssProperty::Name prop)
+{
+   CssValue *val;
+   int i, lentype;
+   bool found;
+   float fval;
+   int ival, err = 1;
+
+   val = NULL;
+
+   switch (Css_property_info[prop].type) {
+   case CSS_TYPE_ENUM:
+      if (parser->ttype == CSS_TK_SYMBOL) {
+         for (i = 0; val == NULL && Css_property_info[prop].enum_symbols[i];
+              i++)
+            if (strcmp (parser->tval,
+                        Css_property_info[prop].enum_symbols[i]) == 0) {
+               val = Css_value_new (CSS_TYPE_ENUM, parser->order_count);
+               val->val.int_val = i;
+            }
+         Css_next_token (parser);
+      }
+      break;
+      
+   case CSS_TYPE_MULTI_ENUM:
+      val = Css_value_new (CSS_TYPE_MULTI_ENUM, parser->order_count);
+      val->val.int_val = 0;
+
+      while (parser->ttype == CSS_TK_SYMBOL) {
+         if (strcmp (parser->tval, "none") != 0) {
+            for (i = 0, found = false;
+                 !found && Css_property_info[prop].enum_symbols[i];
+                 i++) {
+               if (strcmp (parser->tval,
+                           Css_property_info[prop].enum_symbols[i]) == 0)
+                  val->val.int_val |= (1 << i);
+            }
+         }
+         Css_next_token (parser);
+      }
+      break;
+      
+   case CSS_TYPE_LENGTH_PERCENTAGE:
+   case CSS_TYPE_LENGTH:
+      if (parser->ttype == CSS_TK_DECINT || parser->ttype == CSS_TK_FLOAT) {
+         val = Css_value_new (Css_property_info[prop].type,
+                              parser->order_count);
+         fval = atof (parser->tval);
+         lentype = CSS_LENGTH_TYPE_PX; /* Actually, there must be a unit,
+                                        * except for num == 0. */
+         
+         Css_next_token (parser);
+         if (parser->ttype == CSS_TK_SYMBOL) {
+            if (strcmp (parser->tval, "px") == 0) {
+               lentype = CSS_LENGTH_TYPE_PX;
+               Css_next_token (parser);
+            } else if (strcmp (parser->tval, "mm") == 0) {
+               lentype = CSS_LENGTH_TYPE_MM;
+               Css_next_token (parser);
+            } else if (strcmp (parser->tval, "cm") == 0) {
+               lentype = CSS_LENGTH_TYPE_MM;
+               fval *= 10;
+               Css_next_token (parser);
+            } else if (strcmp (parser->tval, "in") == 0) {
+               lentype = CSS_LENGTH_TYPE_MM;
+               fval *= 25.4;
+               Css_next_token (parser);
+            } else if (strcmp (parser->tval, "pt") == 0) {
+               lentype = CSS_LENGTH_TYPE_MM;
+               fval *= (25.4 / 72);
+               Css_next_token (parser);
+            } else if (strcmp (parser->tval, "pc") == 0) {
+               lentype = CSS_LENGTH_TYPE_MM;
+               fval *= (25.4 / 6);
+               Css_next_token (parser);
+            } else if (strcmp (parser->tval, "em") == 0) {
+               lentype = CSS_LENGTH_TYPE_EM;
+               Css_next_token (parser);
+            } else if (strcmp (parser->tval, "ex") == 0) {
+               lentype = CSS_LENGTH_TYPE_EX;
+               Css_next_token (parser);
+            }
+         } else if (Css_property_info[prop].type == CSS_TYPE_LENGTH_PERCENTAGE
+                    && parser->ttype == CSS_TK_CHAR &&
+                    parser->tval[0] == '%') {
+            fval /= 100;
+            lentype = CSS_LENGTH_TYPE_PERCENTAGE;
+            Css_next_token (parser);
+         }            
+
+         val->val.int_val = CSS_CREATE_LENGTH (fval, lentype);
+      } else if (parser->ttype == CSS_TK_SYMBOL &&
+                 strcmp (parser->tval, "auto") == 0) {
+         val = Css_value_new (Css_property_info[prop].type,
+                              parser->order_count);
+         val->val.int_val = CSS_LENGTH_TYPE_AUTO;
+      }
+      break;
+        
+   case CSS_TYPE_COLOR:
+      if (parser->ttype == CSS_TK_COLOR) {
+         val = Css_value_new (CSS_TYPE_COLOR, parser->order_count);
+         val->val.int_val = a_Color_parse (parser->tval, -1, &err);
+         if (err)
+            MSG_CSS("color is not in \"#RRGGBB\" format\n");
+      } else if (parser->ttype == CSS_TK_SYMBOL) {
+         val = Css_value_new (CSS_TYPE_COLOR, parser->order_count);
+         val->val.int_val = a_Color_parse (parser->tval, -1, &err);
+         if (err)
+            MSG_CSS("color is not in \"#RRGGBB\" format\n");
+         Css_next_token (parser);
+      }
+      break;
+      
+   case CSS_TYPE_STRING:
+      if (parser->ttype == CSS_TK_STRING) {
+         val = Css_value_new (CSS_TYPE_STRING, parser->order_count);
+         val->val.str_val = g_strdup (parser->tval);
+         Css_next_token (parser);
+      }
+      break;
+      
+   case CSS_TYPE_SYMBOL:
+      if (parser->ttype == CSS_TK_SYMBOL) {
+         val = Css_value_new (CSS_TYPE_SYMBOL, parser->order_count);
+         val->val.str_val = g_strdup (parser->tval);
+         Css_next_token (parser);
+      }
+      break;
+
+   case CSS_TYPE_FONT_WEIGHT:
+      ival = 0;
+      if (parser->ttype == CSS_TK_DECINT) {
+         ival = atoi (parser->tval);
+         if (ival < 100 || ival > 900)
+            /* invalid */
+            ival = 0;
+      } else if (parser->ttype == CSS_TK_SYMBOL) {
+         if (strcmp (parser->tval, "normal") == 0)
+            ival = CSS_FONT_WEIGHT_NORMAL;
+         if (strcmp (parser->tval, "bold") == 0)
+            ival = CSS_FONT_WEIGHT_BOLD;
+         if (strcmp (parser->tval, "bolder") == 0)
+            ival = CSS_FONT_WEIGHT_BOLDER;
+         if (strcmp (parser->tval, "lighter") == 0)
+            ival = CSS_FONT_WEIGHT_LIGHTER;       
+      }
+      
+      if (ival != 0) {
+         val = Css_value_new (CSS_TYPE_FONT_WEIGHT, parser->order_count);
+         val->val.int_val = ival;
+         Css_next_token (parser);
+      }
+      break;
+      
+   case CSS_TYPE_UNUSED:
+      /* nothing */
+      break;
+
+   case CSS_TYPE_INTEGER:
+      /* Not used for parser values. */
+   default:
+      g_assert_not_reached ();
+   }
+
+   return val;
+}
+
+static bool Css_parse_weight (CssParser *parser)
+{
+   if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '!') {
+      Css_next_token (parser);
+      if (parser->ttype == CSS_TK_SYMBOL &&
+          strcmp (parser->tval, "important") == 0) {
+         Css_next_token (parser);
+         return true;
+      }
+   }
+
+   return false;
+}
+
+/*
+ * bsearch(3) compare function for searching properties
+ */
+static int Css_property_info_cmp (const void *a, const void *b)
+{
+   return strcmp(((CssPropertyInfo*)a)->symbol, ((CssPropertyInfo*)b)->symbol);
+}
+
+
+/*
+ * bsearch(3) compare function for searching shorthands
+ */
+static int Css_shorthand_info_cmp (const void *a, const void *b)
+{
+   return strcmp(((CssShorthandInfo*)a)->symbol,
+                 ((CssShorthandInfo*)b)->symbol);
+}
+
+static void Css_parse_declaration (CssParser *parser,
+                                   GSList *selectors)
+{
+   CssPropertyInfo pi, *pip;
+   CssShorthandInfo si, *sip;
+   CssProperty::Name prop;
+   CssValue *val, *dir_vals[4];
+   bool found, weight;  
+   int sh_index, i, n;
+   int dir_set[4][4] = {
+      /* 1 value  */ { 0, 0, 0, 0 },
+      /* 2 values */ { 0, 0, 1, 1 },
+      /* 3 values */ { 0, 2, 1, 1 },
+      /* 4 values */ { 0, 2, 3, 1 }
+   };
+
+   if (parser->ttype == CSS_TK_SYMBOL) {
+      pi.symbol = parser->tval;
+      pip = bsearch(&pi, Css_property_info, CSS_NUM_PARSED_PROPERTIES,
+                    sizeof (CssPropertyInfo), Css_property_info_cmp);
+      if (pip) {
+         prop = pip - Css_property_info;
+         Css_next_token (parser);
+         if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ':') {
+            Css_next_token (parser);
+            if ((val = Css_parse_value (parser, prop))) {
+               weight = Css_parse_weight (parser);
+               Css_add_declarations (parser->context, selectors, prop, val,
+                                     parser->order_count, parser->origin,
+                                     weight);
+               Css_value_unref (val);
+            }
+         }
+      } else  {
+         /* Try shorthands. */
+         si.symbol = parser->tval;
+         sip = bsearch(&pi, Css_shorthand_info, CSS_SHORTHAND_NUM,
+                       sizeof (CssShorthandInfo), Css_shorthand_info_cmp);
+         if (sip) {
+            sh_index = sip - Css_shorthand_info;
+            Css_next_token (parser);
+            if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ':') {
+               Css_next_token (parser);
+
+               switch (Css_shorthand_info[sh_index].type) {
+               case CSS_SHORTHAND_MULTIPLE:
+                  do {
+                     for (found = false, i = 0;
+                          !found &&
+                             Css_shorthand_info[sh_index].properties[i] != -1;
+                          i++)
+                        if (Css_token_matches_property (
+                               parser,
+                               Css_shorthand_info[sh_index].properties[i])) {
+                           found = true;
+                           DEBUG_MSG (DEBUG_PARSE_LEVEL,
+                                      "will assign to '%s'\n",
+                                      Css_property_info
+                                      [Css_shorthand_info[sh_index]
+                                       .properties[i]].symbol);
+                           if ((val = Css_parse_value (
+                                         parser,
+                                         Css_shorthand_info[sh_index]
+                                            .properties[i]))) {
+                              weight = Css_parse_weight (parser);
+                              Css_add_declarations (
+                                 parser->context, selectors,
+                                 Css_shorthand_info[sh_index].properties[i],
+                                 val, parser->order_count, parser->origin,
+                                 weight);
+                              Css_value_unref (val);
+                           }
+                        }
+                  } while (found);
+                  break;
+                              
+               case CSS_SHORTHAND_DIRECTIONS:
+                  n = 0;
+                  while (n < 4) {
+                     if (Css_token_matches_property (
+                            parser,
+                            Css_shorthand_info[sh_index].properties[0]) &&
+                         (val = Css_parse_value (
+                                   parser,
+                                   Css_shorthand_info[sh_index]
+                                      .properties[0]))) {
+                        dir_vals[n] = val;
+                        n++;
+                     } else
+                        break;
+                  }
+
+                  weight = Css_parse_weight (parser);
+                  if (n > 0) {
+                     for (i = 0; i < 4; i++)
+                        Css_add_declarations (parser->context, selectors,
+                                              Css_shorthand_info[sh_index]
+                                              .properties[i],
+                                              dir_vals[dir_set[n - 1][i]],
+                                              parser->order_count,
+                                              parser->origin, weight);
+                  } else
+                     MSG_CSS("no values for shorthand proprerty '%s'\n",
+                             Css_shorthand_info[sh_index].symbol);
+
+                  for (i = 0; i < n; i++)
+                     Css_value_unref (dir_vals[i]);
+                  
+                  break;
+                  
+               case CSS_SHORTHAND_BORDER:
+                  /* todo: Not yet implemented. */
+                  break;
+                  
+               case CSS_SHORTHAND_FONT:
+                  /* todo: Not yet implemented. */
+                  break;
+               }
+            }
+         }
+      }
+   }
+
+   /* Skip all tokens until the expected end. */
+   while (!(parser->ttype == CSS_TK_END ||
+            (parser->ttype == CSS_TK_CHAR &&
+             (parser->tval[0] == ';' || parser->tval[0] == '}'))))
+      Css_next_token (parser);
+
+   if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ';')
+      Css_next_token (parser);
+}
+
+static void Css_parse_ruleset (CssParser *parser)
+{
+   GSList *list, *li;
+   CssSelector *selector;
+   char *p, **pp;
+   
+   list = NULL;
+
+   while (true) {
+      selector = NULL;
+
+      if (parser->ttype == CSS_TK_SYMBOL) {
+         selector = g_new (CssSelector, 1);
+         selector->element = g_strdup (parser->tval);
+         Css_next_token (parser);
+      } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
+         selector = g_new (CssSelector, 1);
+         selector->element = NULL;
+         Css_next_token (parser);
+      } else if (parser->ttype == CSS_TK_CHAR &&
+                 (parser->tval[0] == '.' || parser->tval[0] == ':' ||
+                  parser->tval[0] == '#')) {
+         selector = g_new (CssSelector, 1);
+         selector->element = NULL;
+         /* But no next token. */
+      }
+
+      if (selector) {
+         selector->id = selector->klass = selector->pseudo = NULL;
+
+         do {
+            pp = NULL;
+            if (parser->ttype == CSS_TK_CHAR) {
+               switch (parser->tval[0]) {
+               case '#':
+                  pp = &selector->id;
+                  break;
+               case '.':
+                  pp = &selector->klass;
+                  break;
+               case ':':
+                  pp = &selector->pseudo;
+                  break;
+               }
+            }
+
+            if (pp) {
+               Css_next_token (parser);
+               if (parser->ttype == CSS_TK_SYMBOL ||
+                   parser->ttype == CSS_TK_DECINT) {
+                  if (*pp == NULL)
+                     *pp = g_strdup (parser->tval);
+                  Css_next_token (parser);
+               } else if (parser->ttype == CSS_TK_FLOAT) {
+                  /* In this case, we are actually interested in three tokens:
+                   * number, '.', number. Instead, we have a decimal fraction,
+                   * which we split up again. */
+                  p = strchr (parser->tval, '.');
+                  if (*pp == NULL)
+                     *pp = g_strndup (parser->tval, p - parser->tval);
+                  if (selector->klass == NULL)
+                     selector->klass = g_strdup (p + 1);
+                  Css_next_token (parser);
+               }
+            }
+         } while (pp);
+      }
+    
+      /* Skip all tokens which may "belong" to this selector. */
+      while (!(parser->ttype == CSS_TK_END ||
+               (parser->ttype == CSS_TK_CHAR &&
+                (parser->tval[0] == ',' || parser->tval[0] == '{'))))
+         Css_next_token (parser);
+
+      if (selector)
+         DEBUG_MSG (DEBUG_PARSE_LEVEL, "end of selector (%s, %s, %s, %s)\n",
+                    selector->id, selector->klass, selector->pseudo,
+                    selector->element);
+      else
+         DEBUG_MSG (DEBUG_PARSE_LEVEL, "not a selector\n");
+      
+      if (selector)
+         list = g_slist_prepend (list, selector);
+
+      if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ',')
+         /* To read the next token. */
+         Css_next_token (parser);
+      else
+         /* No more selectors. */
+         break;
+   }
+
+   DEBUG_MSG (DEBUG_PARSE_LEVEL, "end of selectors\n");
+   
+   /* Read block. ('{' has already been read.) */
+   if (parser->ttype != CSS_TK_END) {
+      parser->within_block = true;
+      Css_next_token (parser);
+      do
+         Css_parse_declaration (parser, list);
+      while (!(parser->ttype == CSS_TK_END ||
+               (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '}')));
+      parser->within_block = false;
+   }
+
+   for (li = list; li; li = li->next)
+      g_free (li->data);
+   g_slist_free (list);
+
+   if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '}')
+      Css_next_token (parser);
+}
+
+void a_Css_parse (CssContext *context,
+                  const char *buf,
+                  int buflen,
+                  int order_count,
+                  CssOrigin origin)
+{
+   CssParser parser;
+
+   parser.context = context;
+   parser.buf = buf;
+   parser.buflen = buflen;
+   parser.bufptr = 0;
+   parser.order_count = 0;
+   parser.origin = origin;
+   parser.within_block = false;
+
+   Css_next_token (&parser);
+   while (parser.ttype != CSS_TK_END)
+      Css_parse_ruleset (&parser);
+}
+
+void p_Css_parse_element_style (CssContext *context,
+                                char *id,
+                                char *klass,
+                                char *pseudo,
+                                char *element,
+                                const char *buf,
+                                int buflen,
+                                int order_count,
+                                CssOrigin origin)
+{
+   CssParser parser;
+   CssSelector *selector;
+   GSList *list;
+
+   parser.context = context;
+   parser.buf = buf;
+   parser.buflen = buflen;
+   parser.bufptr = 0;
+   parser.order_count = 0;
+   parser.origin = origin;
+   parser.within_block = true;
+
+   selector = g_new (CssSelector, 1);
+   selector->id = id;
+   selector->klass = klass;
+   selector->pseudo = pseudo;
+   selector->element = element;
+   list = g_slist_append (NULL, selector);
+
+   Css_next_token (&parser);
+   while (parser.ttype != CSS_TK_END)
+      Css_parse_declaration (&parser, list);
+   
+   g_free (selector);
+   g_slist_free (list);
+}
