@@ -155,11 +155,16 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
 
 /** \todo proper implementation */
 class CssSelector {
-   private:
+   public:
       int tag;
       const char *klass, *id;
 
    public:
+      CssSelector () {
+         this->tag = -1;
+         this->klass = NULL;
+         this->id = NULL;
+      };
       CssSelector (int tag, const char *klass, const char *id) {
          this->tag = tag;
          this->klass = klass;
