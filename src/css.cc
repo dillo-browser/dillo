@@ -14,6 +14,7 @@
 #include "prefs.h"
 #include "html_common.hh"
 #include "css.hh"
+#include "cssparser.hh"
 
 using namespace dw::core::style;
 
@@ -116,6 +117,17 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
 }
 
 CssStyleSheet * CssContext::buildUserAgentStyle () {
+   char *cssBuf =
+     "body  {background: 0xdcd1ba; font-family: DejaVu Sans; color: black; margin-left: 5; \
+             margin-top: 5; margin-bottom: 5; margin-right: 5; } \
+      :link {color: blue; textdecoration: underline; cursor: pointer; } \
+      :visited {color: green; textdecoration: underline; cursor: pointer; } \
+      b, strong {fontweight: bolder; }";
+
+   a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
+
+
+
    CssStyleSheet *s = new CssStyleSheet ();
    CssPropertyList *props;
 
@@ -188,8 +200,7 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    // <table>
    props = new CssPropertyList ();
    props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_OUTSET);
-   props->set (CssProperty::CSS_PROPERTY_BORDER_SPACING_HORIZONTAL, 1);
-   props->set (CssProperty::CSS_PROPERTY_BORDER_SPACING_VERTICAL, 1);
+   props->set (CssProperty::CSS_PROPERTY_BORDER_SPACING, 1);
    s->addRule (new CssSelector(a_Html_tag_index("table")), props);
 
    // <td>

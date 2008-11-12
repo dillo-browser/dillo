@@ -61,10 +61,8 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    if (border != -1)
       props.set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, border);
-   if (cellspacing != -1) {
-      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING_HORIZONTAL, cellspacing);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING_VERTICAL, cellspacing);
-   }
+   if (cellspacing != -1)
+      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING, cellspacing);
 
    /* When dillo was started with the --debug-rendering option, there
     * is always a border around the table. */

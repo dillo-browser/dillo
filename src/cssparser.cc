@@ -69,6 +69,7 @@ CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
    { "border-bottom-style", CSS_TYPE_ENUM, Css_border_style_enum_vals },
    { "border-bottom-width", CSS_TYPE_LENGTH, NULL },
    { "border-collapse", CSS_TYPE_UNUSED, NULL },
+   { "border-color", CSS_TYPE_UNUSED, NULL },
    { "border-left-color", CSS_TYPE_COLOR, NULL },
    { "border-left-style", CSS_TYPE_ENUM, Css_border_style_enum_vals },
    { "border-left-width", CSS_TYPE_LENGTH, NULL },
@@ -76,6 +77,7 @@ CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
    { "border-right-style", CSS_TYPE_ENUM, Css_border_style_enum_vals },
    { "border-right-width", CSS_TYPE_LENGTH, NULL },
    { "border-spacing", CSS_TYPE_LENGTH, NULL },
+   { "border-style", CSS_TYPE_UNUSED, NULL },
    { "border-top-color", CSS_TYPE_COLOR, NULL },
    { "border-top-style", CSS_TYPE_ENUM, Css_border_style_enum_vals },
    { "border-top-width", CSS_TYPE_LENGTH, NULL },
@@ -106,6 +108,7 @@ CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
    { "list-style-image", CSS_TYPE_UNUSED, NULL },
    { "list-style-position", CSS_TYPE_UNUSED, NULL },
    { "list-style-type", CSS_TYPE_ENUM, Css_list_style_type_enum_vals },
+   { "margin", CSS_TYPE_UNUSED, NULL },
    { "margin-bottom", CSS_TYPE_LENGTH, NULL },
    { "margin-left", CSS_TYPE_LENGTH, NULL },
    { "margin-right", CSS_TYPE_LENGTH, NULL },
@@ -120,6 +123,7 @@ CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
    { "outline-style", CSS_TYPE_UNUSED, NULL },
    { "outline-width", CSS_TYPE_UNUSED, NULL },
    { "overflow", CSS_TYPE_UNUSED, NULL },
+   { "padding", CSS_TYPE_UNUSED, NULL },
    { "padding-bottom", CSS_TYPE_LENGTH, NULL },
    { "padding-left", CSS_TYPE_LENGTH, NULL },
    { "padding-right", CSS_TYPE_LENGTH, NULL },
@@ -145,6 +149,8 @@ CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
    { "x-link", CSS_TYPE_INTEGER, NULL },
    { "x-colspan", CSS_TYPE_INTEGER, NULL },
    { "x-rowspan", CSS_TYPE_INTEGER, NULL },
+
+   { "last", CSS_TYPE_UNUSED, NULL },
 };
 
 #define CSS_SHORTHAND_NUM 14

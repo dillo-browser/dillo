@@ -126,10 +126,8 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_BORDER_WIDTH:
             attrs->borderWidth.setVal (p->value.intVal);
             break;
-         case CssProperty::CSS_PROPERTY_BORDER_SPACING_HORIZONTAL:
+         case CssProperty::CSS_PROPERTY_BORDER_SPACING:
             attrs->hBorderSpacing = p->value.intVal;
-            break;
-         case CssProperty::CSS_PROPERTY_BORDER_SPACING_VERTICAL:
             attrs->vBorderSpacing = p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_COLOR:
