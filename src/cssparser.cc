@@ -5,6 +5,7 @@
 
 #include "msg.h"
 #include "colors.h"
+#include "html_common.hh"
 #include "css.hh"
 #include "cssparser.hh"
 
@@ -167,12 +168,12 @@ typedef struct {
 CssProperty::Name Css_background_properties[] = {
    CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, CssProperty::CSS_PROPERTY_BACKGROUND_IMAGE,
    CssProperty::CSS_PROPERTY_BACKGROUND_REPEAT, CssProperty::CSS_PROPERTY_BACKGROUND_ATTACHMENT,
-   CssProperty::CSS_PROPERTY_BACKGROUND_POSITION, CssProperty::CSS_PROPERTY_END
+   CssProperty::CSS_PROPERTY_BACKGROUND_POSITION, (CssProperty::Name) -1
 };
 
 CssProperty::Name Css_border_bottom_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR, CssProperty::CSS_PROPERTY_END
+   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR, (CssProperty::Name) -1
 };
 
 CssProperty::Name Css_border_color_properties[4] = {
@@ -182,12 +183,12 @@ CssProperty::Name Css_border_color_properties[4] = {
 
 CssProperty::Name Css_border_left_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR, CssProperty::CSS_PROPERTY_END
+   CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR, (CssProperty::Name) -1
 };
 
 CssProperty::Name Css_border_right_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR, CssProperty::CSS_PROPERTY_END
+   CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR, (CssProperty::Name) -1
 };
 
 CssProperty::Name Css_border_style_properties[4] = {
@@ -197,7 +198,7 @@ CssProperty::Name Css_border_style_properties[4] = {
 
 CssProperty::Name Css_border_top_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR, CssProperty::CSS_PROPERTY_END
+   CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR, (CssProperty::Name) -1
 };
 
 CssProperty::Name Css_border_width_properties[4] = {
@@ -207,7 +208,7 @@ CssProperty::Name Css_border_width_properties[4] = {
 
 CssProperty::Name Css_list_style_properties[] = {
    CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, CssProperty::CSS_PROPERTY_LIST_STYLE_POSITION,
-   CssProperty::CSS_PROPERTY_LIST_STYLE_IMAGE, CssProperty::CSS_PROPERTY_END
+   CssProperty::CSS_PROPERTY_LIST_STYLE_IMAGE, (CssProperty::Name) -1
 };
 
 CssProperty::Name Css_margin_properties[4] = {
@@ -217,7 +218,7 @@ CssProperty::Name Css_margin_properties[4] = {
 
 CssProperty::Name Css_outline_properties[] = {
    CssProperty::CSS_PROPERTY_OUTLINE_COLOR, CssProperty::CSS_PROPERTY_OUTLINE_STYLE,
-   CssProperty::CSS_PROPERTY_OUTLINE_WIDTH, CssProperty::CSS_PROPERTY_END
+   CssProperty::CSS_PROPERTY_OUTLINE_WIDTH, (CssProperty::Name) -1
 };
 
 CssProperty::Name Css_padding_properties[4] = {
@@ -719,8 +720,20 @@ static int Css_shorthand_info_cmp (const void *a, const void *b)
                  ((CssShorthandInfo*)b)->symbol);
 }
 
+
+static void Css_add_declarations (
+   CssContext *context,
+   lout::misc::SimpleVector <CssSelector*> *selectors,
+   CssProperty::Name prop,
+   CssProperty::Value val,
+   int order_count,
+   CssOrigin origin,
+   bool weight) {
+
+}
+
 static void Css_parse_declaration (CssParser *parser,
-                                   GSList *selectors)
+                         lout::misc::SimpleVector <CssSelector*> *selectors)
 {
    CssPropertyInfo pi, *pip;
    CssShorthandInfo si, *sip;
@@ -848,28 +861,26 @@ static void Css_parse_declaration (CssParser *parser,
 
 static void Css_parse_ruleset (CssParser *parser)
 {
-   GSList *list, *li;
+   lout::misc::SimpleVector <CssSelector*> *list;
    CssSelector *selector;
-   char *p, **pp;
+   const char *p, **pp;
    
-   list = NULL;
+   list = new lout::misc::SimpleVector <CssSelector*> (1);
 
    while (true) {
       selector = NULL;
 
       if (parser->ttype == CSS_TK_SYMBOL) {
-         selector = g_new (CssSelector, 1);
-         selector->element = dStrdup (parser->tval);
+         selector = new CssSelector ();
+         selector->element = a_Html_tag_index(parser->tval);
          Css_next_token (parser);
       } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
-         selector = g_new (CssSelector, 1);
-         selector->element = NULL;
+         selector = new CssSelector ();
          Css_next_token (parser);
       } else if (parser->ttype == CSS_TK_CHAR &&
                  (parser->tval[0] == '.' || parser->tval[0] == ':' ||
                   parser->tval[0] == '#')) {
-         selector = g_new (CssSelector, 1);
-         selector->element = NULL;
+         selector = new CssSelector ();
          /* But no next token. */
       }
 
@@ -921,14 +932,16 @@ static void Css_parse_ruleset (CssParser *parser)
          Css_next_token (parser);
 
       if (selector)
-         DEBUG_MSG (DEBUG_PARSE_LEVEL, "end of selector (%s, %s, %s, %s)\n",
+         DEBUG_MSG (DEBUG_PARSE_LEVEL, "end of selector (%s, %s, %s, %d)\n",
                     selector->id, selector->klass, selector->pseudo,
                     selector->element);
       else
          DEBUG_MSG (DEBUG_PARSE_LEVEL, "not a %s\n", "selector");
       
-      if (selector)
-         list = g_slist_prepend (list, selector);
+      if (selector) {
+         list->increase ();
+         list->set (list->size () - 1, selector);
+      }
 
       if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ',')
          /* To read the next token. */
@@ -951,9 +964,9 @@ static void Css_parse_ruleset (CssParser *parser)
       parser->within_block = false;
    }
 
-   for (li = list; li; li = li->next)
-      dFree (li->data);
-   g_slist_free (list);
+   for (int i = 0; i < list->size (); i++)
+      delete list->get (i);
+   delete list;
 
    if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '}')
       Css_next_token (parser);
@@ -980,6 +993,7 @@ void a_Css_parse (CssContext *context,
       Css_parse_ruleset (&parser);
 }
 
+#if 0
 void p_Css_parse_element_style (CssContext *context,
                                 char *id,
                                 char *klass,
@@ -1016,3 +1030,4 @@ void p_Css_parse_element_style (CssContext *context,
    dFree (selector);
    g_slist_free (list);
 }
+#endif
