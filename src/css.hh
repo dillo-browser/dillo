@@ -12,7 +12,6 @@ class CssProperty {
       } Value;
 
       typedef enum {
-         CSS_PROPERTY_END = -1,
          CSS_PROPERTY_BACKGROUND_ATTACHMENT,
          CSS_PROPERTY_BACKGROUND_COLOR,
          CSS_PROPERTY_BACKGROUND_IMAGE,
@@ -156,13 +155,13 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
 /** \todo proper implementation */
 class CssSelector {
    public:
-      int tag;
+      int element;
       const char *klass, *pseudo, *id;
 
    public:
-      CssSelector (int tag = -1, const char *klass = NULL,
+      CssSelector (int element = -1, const char *klass = NULL,
                    const char *pseudo = NULL, const char *id = NULL) {
-         this->tag = tag;
+         this->element = element;
          this->klass = klass;
          this->pseudo = pseudo;
          this->id = id;

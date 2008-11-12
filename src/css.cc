@@ -48,7 +48,7 @@ CssSelector *CssSelector::parse (const char *buf) {
 bool CssSelector::match (Doctree *docTree) {
    const DoctreeNode *n = docTree-> top ();
 
-   if (tag >= 0 && tag != n->tag)
+   if (element >= 0 && element != n->element)
       return false;
    if (klass != NULL &&
       (n->klass == NULL || strcmp (klass, n->klass) != 0))
