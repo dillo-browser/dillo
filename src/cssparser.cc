@@ -81,6 +81,7 @@ CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
    { "border-top-color", CSS_TYPE_COLOR, NULL },
    { "border-top-style", CSS_TYPE_ENUM, Css_border_style_enum_vals },
    { "border-top-width", CSS_TYPE_LENGTH, NULL },
+   { "border-width", CSS_TYPE_UNUSED, NULL },
    { "bottom", CSS_TYPE_UNUSED, NULL },
    { "caption-side", CSS_TYPE_UNUSED, NULL },
    { "clear", CSS_TYPE_UNUSED, NULL },
