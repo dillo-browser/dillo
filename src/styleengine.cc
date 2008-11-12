@@ -45,9 +45,9 @@ StyleEngine::~StyleEngine () {
 /**
  * \brief tell the styleEngine that a new html element has started.
  */
-void StyleEngine::startElement (int tag, const char *id, const char *klass,
+void StyleEngine::startElement (int element, const char *id, const char *klass,
    const char *style) {
-//   fprintf(stderr, "===> START %d %s %s %s\n", tag, id, klass, style);
+//   fprintf(stderr, "===> START %d %s %s %s\n", element, id, klass, style);
 
    if (stack->getRef (stack->size () - 1)->style == NULL)
       style0 ();
@@ -56,7 +56,7 @@ void StyleEngine::startElement (int tag, const char *id, const char *klass,
    Node *n =  stack->getRef (stack->size () - 1);
    n->style = NULL;
    n->depth = stack->size ();
-   n->tag = tag;
+   n->element = element;
    n->id = id;
    n->klass = klass;
    n->pseudo = NULL;
@@ -83,10 +83,10 @@ void StyleEngine::setPseudoClass (const char *pseudo) {
 /**
  * \brief tell the styleEngine that a html element has ended.
  */
-void StyleEngine::endElement (int tag) {
-//   fprintf(stderr, "===> END %d\n", tag);
+void StyleEngine::endElement (int element) {
+//   fprintf(stderr, "===> END %d\n", element);
    assert (stack->size () > 1);
-   assert (tag == stack->getRef (stack->size () - 1)->tag);
+   assert (element == stack->getRef (stack->size () - 1)->element);
 
    Node *n =  stack->getRef (stack->size () - 1);
    if (n->style)
