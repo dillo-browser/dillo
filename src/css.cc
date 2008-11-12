@@ -154,94 +154,11 @@ void CssContext::buildUserAgentStyle () {
      ":link {color: blue; text-decoration: underline; cursor: pointer; } "
      ":visited {color: green; text-decoration: underline; cursor: pointer; } "
      "b, strong {font-weight: bolder; } "
-     "h1 {font-size: 20em;} ";
+     "i, em, cite {font-style: italic; } "
+     "h1 {font-size: 40em;} "
+     "h4 {font-weight: bold} ";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
-
-#if 0
-   CssStyleSheet *s = new CssStyleSheet ();
-   CssPropertyList *props;
-
-   // <body>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, 0xdcd1ba);
-   props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, "DejaVu Sans");
-   props->set (CssProperty::CSS_PROPERTY_COLOR, 0x000000);
-   props->set (CssProperty::CSS_PROPERTY_MARGIN, 5);
-   s->addRule (new CssSelector(a_Html_tag_index("body")), props);
-
-   // :link
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_COLOR, 0x0000ff);
-   props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, TEXT_DECORATION_UNDERLINE);
-   props->set (CssProperty::CSS_PROPERTY_CURSOR, CURSOR_POINTER);
-   s->addRule (new CssSelector(-1, NULL, "link"), props);
-
-   // :visited
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_COLOR, 0x800080);
-   props->set (CssProperty::CSS_PROPERTY_TEXT_DECORATION, TEXT_DECORATION_UNDERLINE);
-   props->set (CssProperty::CSS_PROPERTY_CURSOR, CURSOR_POINTER);
-   s->addRule (new CssSelector(-1, NULL, "visited"), props);
-
-   // <b>, <strong>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, CssProperty::CSS_FONT_WEIGHT_BOLDER);
-   s->addRule (new CssSelector(a_Html_tag_index("b")), props);
-   s->addRule (new CssSelector(a_Html_tag_index("strong")), props);
-
-   // <i>, <em>, <cite>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_FONT_STYLE, FONT_STYLE_ITALIC);
-   s->addRule (new CssSelector(a_Html_tag_index("i")), props);
-   s->addRule (new CssSelector(a_Html_tag_index("em")), props);
-   s->addRule (new CssSelector(a_Html_tag_index("cite")), props);
-
-   // <h1>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 40);
-   s->addRule (new CssSelector(a_Html_tag_index("h1")), props);
-
-   // <h2>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 30);
-   s->addRule (new CssSelector(a_Html_tag_index("h2")), props);
-
-   // <h3>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 20);
-   s->addRule (new CssSelector(a_Html_tag_index("h3")), props);
-
-   // <h4>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_FONT_SIZE, 12);
-   props->set (CssProperty::CSS_PROPERTY_FONT_WEIGHT, CssProperty::CSS_FONT_WEIGHT_BOLD);
-   s->addRule (new CssSelector(a_Html_tag_index("h4")), props);
-
-   // <ol>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, LIST_STYLE_TYPE_DECIMAL);
-   s->addRule (new CssSelector(a_Html_tag_index("ol")), props);
-
-   // <pre>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, "DejaVu Sans Mono");
-   s->addRule (new CssSelector(a_Html_tag_index("pre")), props);
-
-   // <table>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_OUTSET);
-   props->set (CssProperty::CSS_PROPERTY_BORDER_SPACING, 1);
-   s->addRule (new CssSelector(a_Html_tag_index("table")), props);
-
-   // <td>
-   props = new CssPropertyList ();
-   props->set (CssProperty::CSS_PROPERTY_BORDER_STYLE, BORDER_INSET);
-   props->set (CssProperty::CSS_PROPERTY_PADDING, 2);
-   s->addRule (new CssSelector(a_Html_tag_index("td")), props);
-   
-   return s;
-#endif
 }
 
 void CssContext::buildUserStyle () {
