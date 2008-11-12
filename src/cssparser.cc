@@ -27,6 +27,12 @@ static char *Css_border_style_enum_vals[] = {
    "inset", "outset", NULL
 };
 
+static char *Css_cursor_enum_vals[] = {
+   "crosshair", "default", "pointer", "move", "e_resize", "ne_resize", "nw_resize",
+   "n_resize", "se_resize", "sw_resize", "s_resize", "w_resize", "text", "wait",
+   "help", NULL
+};
+
 static char *Css_display_enum_vals[DISPLAY_LAST + 1] = {
    "block", "inline", "list-item", "table", "table-row-group",
    "table-header-group", "table-footer-group", "table-row",
@@ -90,7 +96,7 @@ CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
    { "content", CSS_TYPE_STRING, NULL },
    { "counter-increment", CSS_TYPE_UNUSED, NULL },
    { "counter-reset", CSS_TYPE_UNUSED, NULL },
-   { "cursor", CSS_TYPE_UNUSED, NULL },
+   { "cursor", CSS_TYPE_ENUM, Css_cursor_enum_vals },
    { "direction", CSS_TYPE_UNUSED, NULL },
    { "display", CSS_TYPE_ENUM, Css_display_enum_vals },
    { "empty-cells", CSS_TYPE_UNUSED, NULL },
