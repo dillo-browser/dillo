@@ -40,16 +40,6 @@ typedef enum {
    CSS_ORIGIN_AUTHOR,
 } CssOrigin;
 
-/* Origin and weight. Used only internally.*/
-typedef enum {
-   CSS_PRIMARY_USER_IMPORTANT,
-   CSS_PRIMARY_AUTHOR_IMPORTANT,
-   CSS_PRIMARY_AUTHOR,
-   CSS_PRIMARY_USER,
-   CSS_PRIMARY_USER_AGENT,
-   CSS_PRIMARY_LAST,
-} CssPrimaryOrder;
-
 typedef struct {
    char *symbol;
    CssValueType type;

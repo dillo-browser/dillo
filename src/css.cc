@@ -18,9 +18,8 @@
 
 using namespace dw::core::style;
 
-/** \todo dummy only */
-CssPropertyList *CssPropertyList::parse (const char *buf) {
-   return NULL;
+void CssProperty::print () {
+   fprintf (stderr, "%s - %d\n", Css_property_info[name].symbol, value.intVal);
 }
 
 void CssPropertyList::set (CssProperty::Name name, CssProperty::Value value) {
@@ -40,9 +39,9 @@ void CssPropertyList::apply (CssPropertyList *props) {
       props->set (getRef (i)->name, getRef (i)->value);
 }
 
-/** \todo dummy only */
-CssSelector *CssSelector::parse (const char *buf) {
-   return NULL;
+void CssPropertyList::print () {
+   for (int i = 0; i < size (); i++)
+      getRef (i)->print ();
 }
 
 /** \todo implement all selection option CSS offers */
@@ -63,15 +62,29 @@ bool CssSelector::match (Doctree *docTree) {
    return true;
 }
 
+void CssSelector::print () {
+   fprintf (stderr, "Element %d, class %s, pseudo %s, id %s\n",
+      element, klass, pseudo, id);
+}
+
 void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
    if (selector->match (docTree))
       this->props->apply (props);
 }
 
-void CssStyleSheet::addRule (CssSelector *selector, CssPropertyList *props) {
-   CssRule *rule = new CssRule (selector, props);
+void CssRule::print () {
+   selector->print ();
+   props->print ();
+}
+
+void CssStyleSheet::addRule (CssRule *rule) {
    increase ();
    set (size () - 1, rule);
+}
+
+void CssStyleSheet::addRule (CssSelector *selector, CssPropertyList *props) {
+   CssRule *rule = new CssRule (selector, props);
+   addRule (rule);
 }
 
 void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
@@ -84,13 +97,20 @@ CssStyleSheet *CssContext::userStyle;
 CssStyleSheet *CssContext::userImportantStyle;
 
 CssContext::CssContext () {
-   for (int o = CSS_PRIMARY_USER_AGENT; o <= CSS_PRIMARY_USER_IMPORTANT; o++)
+   for (int o = CSS_PRIMARY_USER_AGENT; o < CSS_PRIMARY_LAST; o++)
       sheet[o] = NULL;
 
    if (userAgentStyle == NULL) {
-      userAgentStyle = buildUserAgentStyle ();
-      userStyle = buildUserStyle (false);
-      userImportantStyle = buildUserStyle (true);
+      userAgentStyle = new CssStyleSheet ();
+      userStyle = new CssStyleSheet ();
+      userImportantStyle = new CssStyleSheet ();
+
+      sheet[CSS_PRIMARY_USER_AGENT] = userAgentStyle;
+      sheet[CSS_PRIMARY_USER] = userStyle;
+      sheet[CSS_PRIMARY_USER_IMPORTANT] = userImportantStyle;
+
+      buildUserAgentStyle ();
+      buildUserStyle ();
    }
 
    sheet[CSS_PRIMARY_USER_AGENT] = userAgentStyle;
@@ -116,18 +136,28 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
         tagStyle->apply (props);
 }
 
-CssStyleSheet * CssContext::buildUserAgentStyle () {
+void CssContext::addRule (CssRule *rule, CssPrimaryOrder order) {
+   if (sheet[order] == NULL)
+      sheet[order] = new CssStyleSheet ();
+
+   sheet[order]->addRule (rule);
+
+   fprintf(stderr, "Adding Rule (%d)\n", order);
+   rule->print ();
+}
+
+void CssContext::buildUserAgentStyle () {
    char *cssBuf =
-     "body  {background: 0xdcd1ba; font-family: DejaVu Sans; color: black; margin-left: 5; \
-             margin-top: 5; margin-bottom: 5; margin-right: 5; } \
-      :link {color: blue; textdecoration: underline; cursor: pointer; } \
-      :visited {color: green; textdecoration: underline; cursor: pointer; } \
-      b, strong {fontweight: bolder; }";
+     "body  {background-color: 0xdcd1ba; font-family: helvetica; color: black; margin-left: 5px; \
+             margin-top: 5px; margin-bottom: 5px; margin-right: 5px; } \
+      :link {color: blue; text-decoration: underline; cursor: pointer; } \
+      :visited {color: green; text-decoration: underline; cursor: pointer; } \
+      b, strong {font-weight: bolder; } \
+      h1 {font-size: 20em;} ";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
 
-
-
+#if 0
    CssStyleSheet *s = new CssStyleSheet ();
    CssPropertyList *props;
 
@@ -210,9 +240,12 @@ CssStyleSheet * CssContext::buildUserAgentStyle () {
    s->addRule (new CssSelector(a_Html_tag_index("td")), props);
    
    return s;
+#endif
 }
 
-CssStyleSheet * CssContext::buildUserStyle (bool important) {
+void CssContext::buildUserStyle () {
+
+#if 0
    CssStyleSheet *s = new CssStyleSheet ();
    CssPropertyList *props;
 
@@ -243,4 +276,5 @@ CssStyleSheet * CssContext::buildUserStyle (bool important) {
    }
 
    return s;
+#endif
 }

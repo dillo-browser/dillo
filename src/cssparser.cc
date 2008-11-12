@@ -621,7 +621,7 @@ static bool Css_parse_value (CssParser *parser,
          val->intVal = CSS_CREATE_LENGTH (fval, lentype);
       } else if (parser->ttype == CSS_TK_SYMBOL &&
                  strcmp (parser->tval, "auto") == 0) {
-         val->intVal = CSS_LENGTH_TYPE_AUTO;
+         val->intVal = LENGTH_AUTO;
       }
       break;
         
@@ -727,25 +727,8 @@ static int Css_shorthand_info_cmp (const void *a, const void *b)
                  ((CssShorthandInfo*)b)->symbol);
 }
 
-
-static void Css_add_declarations (
-   CssContext *context,
-   lout::misc::SimpleVector <CssSelector*> *selectors,
-   CssProperty::Name prop,
-   CssProperty::Value val,
-   int order_count,
-   CssOrigin origin,
-   bool weight) {
-
-   for (int i = 0; i < selectors->size (); i++) {
-      CssSelector *s = selectors->get (i);
-      fprintf (stderr, "elem %d, class %s, pseudo %s, id %s -> %s, %d\n",
-         s->element, s->klass, s->pseudo, s->id, Css_property_info[prop].symbol, val.intVal);
-   }
-}
-
 static void Css_parse_declaration (CssParser *parser,
-                         lout::misc::SimpleVector <CssSelector*> *selectors)
+   CssPropertyList *props, CssPropertyList *importantProps)
 {
    CssPropertyInfo pi, *pip;
    CssShorthandInfo si, *sip;
@@ -771,9 +754,10 @@ static void Css_parse_declaration (CssParser *parser,
             Css_next_token (parser);
             if (Css_parse_value (parser, prop, &val)) {
                weight = Css_parse_weight (parser);
-               Css_add_declarations (parser->context, selectors, prop, val,
-                                     parser->order_count, parser->origin,
-                                     weight);
+               if (weight)
+                  importantProps->set (prop, val);
+               else
+                  props->set (prop, val);
             }
          }
       } else  {
@@ -807,11 +791,14 @@ static void Css_parse_declaration (CssParser *parser,
                                          Css_shorthand_info[sh_index]
                                             .properties[i], &val)) {
                               weight = Css_parse_weight (parser);
-                              Css_add_declarations (
-                                 parser->context, selectors,
-                                 Css_shorthand_info[sh_index].properties[i],
-                                 val, parser->order_count, parser->origin,
-                                 weight);
+                              if (weight)
+                                 importantProps->set (
+                                      Css_shorthand_info[sh_index].properties[i],
+                                      val);
+                              else
+                                 props->set (
+                                      Css_shorthand_info[sh_index].properties[i],
+                                      val);
                            }
                         }
                   } while (found);
@@ -836,12 +823,14 @@ static void Css_parse_declaration (CssParser *parser,
                   weight = Css_parse_weight (parser);
                   if (n > 0) {
                      for (i = 0; i < 4; i++)
-                        Css_add_declarations (parser->context, selectors,
-                                              Css_shorthand_info[sh_index]
+                        if (weight)
+                           importantProps->set (Css_shorthand_info[sh_index]
+                                                              .properties[i],
+                                                dir_vals[dir_set[n - 1][i]]);
+                        else
+                           props->set (Css_shorthand_info[sh_index]
                                               .properties[i],
-                                              dir_vals[dir_set[n - 1][i]],
-                                              parser->order_count,
-                                              parser->origin, weight);
+                                       dir_vals[dir_set[n - 1][i]]);
                   } else
                      MSG_CSS("no values for shorthand proprerty '%s'\n",
                              Css_shorthand_info[sh_index].symbol);
@@ -874,6 +863,7 @@ static void Css_parse_declaration (CssParser *parser,
 static void Css_parse_ruleset (CssParser *parser)
 {
    lout::misc::SimpleVector <CssSelector*> *list;
+   CssPropertyList *props, *importantProps;
    CssSelector *selector;
    const char *p, **pp;
    
@@ -964,20 +954,35 @@ static void Css_parse_ruleset (CssParser *parser)
    }
 
    DEBUG_MSG (DEBUG_PARSE_LEVEL, "end of %s\n", "selectors");
+
+   props = new CssPropertyList ();
+   importantProps = new CssPropertyList ();
    
    /* Read block. ('{' has already been read.) */
    if (parser->ttype != CSS_TK_END) {
       parser->within_block = true;
       Css_next_token (parser);
       do
-         Css_parse_declaration (parser, list);
+         Css_parse_declaration (parser, props, importantProps);
       while (!(parser->ttype == CSS_TK_END ||
                (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '}')));
       parser->within_block = false;
    }
 
-   for (int i = 0; i < list->size (); i++)
-      delete list->get (i);
+   for (int i = 0; i < list->size (); i++) {
+      CssSelector *s = list->get (i);
+
+      if (parser->origin == CSS_ORIGIN_USER_AGENT) {
+         parser->context->addRule (new CssRule (s, props), CSS_PRIMARY_USER_AGENT);
+      } else if (parser->origin == CSS_ORIGIN_USER) {
+         parser->context->addRule (new CssRule (s, props), CSS_PRIMARY_USER);
+         parser->context->addRule (new CssRule (s, importantProps), CSS_PRIMARY_USER_IMPORTANT);
+      } else if (parser->origin == CSS_ORIGIN_AUTHOR) {
+         parser->context->addRule (new CssRule (s, props), CSS_PRIMARY_AUTHOR);
+         parser->context->addRule (new CssRule (s, importantProps), CSS_PRIMARY_AUTHOR_IMPORTANT);
+      }
+   }
+
    delete list;
 
    if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '}')

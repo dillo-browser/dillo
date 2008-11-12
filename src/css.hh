@@ -4,6 +4,16 @@
 #include "dw/core.hh"
 #include "doctree.hh"
 
+/* Origin and weight. Used only internally.*/
+typedef enum {
+   CSS_PRIMARY_USER_AGENT,
+   CSS_PRIMARY_USER,
+   CSS_PRIMARY_AUTHOR,
+   CSS_PRIMARY_AUTHOR_IMPORTANT,
+   CSS_PRIMARY_USER_IMPORTANT,
+   CSS_PRIMARY_LAST,
+} CssPrimaryOrder;
+
 class CssProperty {
    public:
       typedef union {
@@ -120,6 +130,8 @@ class CssProperty {
 
       Name name;
       Value value;
+
+      void print ();
 };
 
 class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
@@ -133,7 +145,6 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
          refCount = 0;
       };
 
-      static CssPropertyList *parse (const char *buf);
       void set (CssProperty::Name name, CssProperty::Value value);
       void set (CssProperty::Name name, const char *value) {
          CssProperty::Value v;
@@ -146,6 +157,7 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
          set (name, v);
       };
       void apply (CssPropertyList *props);
+      void print ();
 
       inline void ref () { refCount++; }
       inline void unref () { if(--refCount == 0) delete this; }
@@ -166,9 +178,8 @@ class CssSelector {
          this->id = id;
       };
 
-      static CssSelector *parse (const char *buf);
-
       bool match (Doctree *dt);
+      void print ();
 };
 
 class CssRule {
@@ -184,39 +195,32 @@ class CssRule {
       ~CssRule ();
 
       void apply (CssPropertyList *props, Doctree *docTree);
+      void print ();
 };
 
 class CssStyleSheet : lout::misc::SimpleVector <CssRule*> {
    public:
       CssStyleSheet() : lout::misc::SimpleVector <CssRule*> (1) {};
+      void addRule (CssRule *rule);
       void addRule (CssSelector *selector, CssPropertyList *props);
       void apply (CssPropertyList *props, Doctree *docTree);
 };
 
 class CssContext {
-   public:
-      typedef enum {
-         CSS_PRIMARY_USER_AGENT,
-         CSS_PRIMARY_USER,
-         CSS_PRIMARY_AUTHOR,
-         CSS_PRIMARY_AUTHOR_IMPORTANT,
-         CSS_PRIMARY_USER_IMPORTANT
-      } PrimaryOrder;
-
    private:
       static CssStyleSheet *userAgentStyle;
       static CssStyleSheet *userStyle;
       static CssStyleSheet *userImportantStyle;
       CssStyleSheet *sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
 
-      CssStyleSheet *buildUserAgentStyle ();
-      CssStyleSheet *buildUserStyle (bool important);
+      void buildUserAgentStyle ();
+      void buildUserStyle ();
 
    public:
       CssContext ();
       ~CssContext ();
 
-      void addRule (CssRule *rule, PrimaryOrder order);
+      void addRule (CssRule *rule, CssPrimaryOrder order);
       void apply (CssPropertyList *props,
          Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCss);

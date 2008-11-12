@@ -168,6 +168,18 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_MARGIN:
             attrs->margin.setVal (p->value.intVal);
             break;
+         case CssProperty::CSS_PROPERTY_MARGIN_BOTTOM:
+            attrs->margin.bottom = p->value.intVal;
+            break;
+         case CssProperty::CSS_PROPERTY_MARGIN_LEFT:
+            attrs->margin.left = p->value.intVal;
+            break;
+         case CssProperty::CSS_PROPERTY_MARGIN_RIGHT:
+            attrs->margin.right = p->value.intVal;
+            break;
+         case CssProperty::CSS_PROPERTY_MARGIN_TOP:
+            attrs->margin.top = p->value.intVal;
+            break;
          case CssProperty::CSS_PROPERTY_PADDING:
             attrs->padding.setVal (p->value.intVal);
             break;
@@ -205,8 +217,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
  */
 Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    CssPropertyList props;
-   CssPropertyList *tagStyleProps = CssPropertyList::parse (
-      stack->getRef (stack->size () - 1)->styleAttribute);
+   CssPropertyList *tagStyleProps = NULL; /** \todo implementation */
 
    // get previous style from the stack
    StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
