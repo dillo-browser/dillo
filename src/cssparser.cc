@@ -730,6 +730,11 @@ static void Css_add_declarations (
    CssOrigin origin,
    bool weight) {
 
+   for (int i = 0; i < selectors->size (); i++) {
+      CssSelector *s = selectors->get (i);
+      fprintf (stderr, "elem %d, class %s, pseudo %s, id %s -> %s, %d\n",
+         s->element, s->klass, s->pseudo, s->id, Css_property_info[prop].symbol, val.intVal);
+   }
 }
 
 static void Css_parse_declaration (CssParser *parser,
