@@ -258,7 +258,7 @@ int StyleEngine::computeValue (CssLength value, Font *font) {
    static float dpmm;
 
    if (dpmm == 0.0)
-      dpmm = layout->dpiX () / 2.54; /* assume dpiX == dpiY */
+      dpmm = layout->dpiX () / 25.4; /* assume dpiX == dpiY */
 
    switch (CSS_LENGTH_TYPE (value)) {
       case CSS_LENGTH_TYPE_PX:
