@@ -145,8 +145,11 @@ CssContext::CssContext () {
 }
 
 CssContext::~CssContext () {
+   for (int o = CSS_PRIMARY_USER_AGENT; o < CSS_PRIMARY_LAST; o++)
+      if (sheet[o] != userAgentStyle && sheet[o] != userStyle &&
+          sheet[o] != userImportantStyle)
+         delete sheet[o];
 }
-
 
 void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCss) {
