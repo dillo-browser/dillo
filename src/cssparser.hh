@@ -1,6 +1,8 @@
 #ifndef __CSSPARSER_HH__
 #define __CSSPARSER_HH__
 
+#include "css.hh"
+
 /* The last three ones are never parsed. */
 #define CSS_NUM_INTERNAL_PROPERTIES 3
 #define CSS_NUM_PARSED_PROPERTIES \

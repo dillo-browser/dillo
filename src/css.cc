@@ -149,7 +149,7 @@ void CssContext::addRule (CssRule *rule, CssPrimaryOrder order) {
 void CssContext::buildUserAgentStyle () {
    char *cssBuf =
      "body  {background-color: 0xdcd1ba; font-family: helvetica; color: black;" 
-//     "       margin-left: 5px; margin-top: 5px; margin-bottom: 5px; margin-right: 5px;"
+     "       margin-left: 5px; margin-top: 5px; margin-bottom: 5px; margin-right: 5px;"
      " }"
      ":link {color: blue; text-decoration: underline; cursor: pointer; } "
      ":visited {color: green; text-decoration: underline; cursor: pointer; } "
@@ -159,6 +159,16 @@ void CssContext::buildUserAgentStyle () {
      "h4 {font-weight: bold} ";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
+
+   char buf[10000];
+
+   FILE *fp = fopen ("/tmp/style.css", "r");
+   if (fp) {
+      fread (buf, 1, sizeof (buf), fp);
+
+      a_Css_parse (this, buf, strlen (buf), 0, CSS_ORIGIN_AUTHOR);
+
+   }
 }
 
 void CssContext::buildUserStyle () {

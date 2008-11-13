@@ -10,6 +10,8 @@
  */
 
 #include <stdio.h>
+#include <math.h>
+#include "cssparser.hh"
 #include "styleengine.hh"
 
 using namespace dw::core::style;
@@ -207,8 +209,55 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       }
    }
 
+   fontAttrs.size = computeValue (fontAttrs.size,
+      stack->get (stack->size () - 2).style->font);
    attrs->font = Font::create (layout, &fontAttrs);
+
+   computeValues (&attrs->borderWidth, attrs->font);
+   computeValues (&attrs->margin, attrs->font);
+   computeValues (&attrs->padding, attrs->font);
+   attrs->width = computeValue (attrs->width, attrs->font);
+   attrs->height = computeValue (attrs->height, attrs->font);
 }
+
+/**
+ * \brief Resolve relative lengths to absolute values.
+ *    The font must be set already.
+ */
+void StyleEngine::computeValues (Box *box, Font *font) {
+   box->bottom = computeValue (box->bottom, font);
+   box->left = computeValue (box->left, font);
+   box->right = computeValue (box->right, font);
+   box->top = computeValue (box->top, font);
+}
+
+int StyleEngine::computeValue (int value, Font *font) {
+   int ret;
+   static float dpmm;
+
+   if (dpmm == 0.0)
+      dpmm = layout->dpiX () / 2.54; /* assume dpiX == dpiY */
+
+   switch (CSS_LENGTH_TYPE (value)) {
+      case CSS_LENGTH_TYPE_PX:
+         ret = (int) rintf (CSS_LENGTH_VALUE(value));
+         break;
+      case CSS_LENGTH_TYPE_MM:
+         ret = (int) rintf (CSS_LENGTH_VALUE(value) * dpmm);
+         break;
+      case CSS_LENGTH_TYPE_EM:
+         ret = (int) rintf (CSS_LENGTH_VALUE(value) * font->size);
+         break;
+      case CSS_LENGTH_TYPE_EX:
+         ret = (int) rintf (CSS_LENGTH_VALUE(value) * font->xHeight);
+         break;
+      default:
+         ret = value;
+         break;
+   }
+   return ret;
+}
+
 
 /**
  * \brief Create a new style object based on the previously opened / closed

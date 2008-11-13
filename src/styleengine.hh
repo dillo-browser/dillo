@@ -19,6 +19,8 @@ class StyleEngine : public Doctree {
 
       dw::core::style::Style *style0 (CssPropertyList *nonCssProperties = NULL);
       void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
+      int computeValue (int value, dw::core::style::Font *font);
+      void computeValues (dw::core::style::Box *box, dw::core::style::Font *font);
 
    public:
       StyleEngine (dw::core::Layout *layout);
