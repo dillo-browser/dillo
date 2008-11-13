@@ -102,7 +102,7 @@ void StyleEngine::endElement (int element) {
 void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    FontAttrs fontAttrs = *attrs->font;
 
-   /* determine font first so it can be used to resolve relative lenths 
+   /* Determine font first so it can be used to resolve relative lenths.
     * \todo Things should be rearranged so that just one pass is necessary.
     */
    for (int i = 0; i < props->size (); i++) {
@@ -176,6 +176,18 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CssProperty::CSS_PROPERTY_BORDER_WIDTH:
             attrs->borderWidth.setVal (computeValue (p->value.intVal, attrs->font));
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH:
+            attrs->borderWidth.bottom = computeValue (p->value.intVal, attrs->font);
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH:
+            attrs->borderWidth.left = computeValue (p->value.intVal, attrs->font);
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH:
+            attrs->borderWidth.right = computeValue (p->value.intVal, attrs->font);
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH:
+            attrs->borderWidth.top = computeValue (p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_BORDER_SPACING:
             attrs->hBorderSpacing = computeValue (p->value.intVal, attrs->font);
