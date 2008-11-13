@@ -158,7 +158,8 @@ void CssContext::buildUserAgentStyle () {
      "h1 {font-size: 40em;} "
      "h4 {font-weight: bold} "
      "table {border-top-style: outset} "
-     "td {border-top-style: inset} ";
+     "td {border-top-style: inset} "
+     "tt, pre {font-family: courier;} ";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
 }
