@@ -161,50 +161,23 @@ void CssContext::buildUserAgentStyle () {
      "td {border-top-style: inset} ";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
-
-   char buf[10000];
-
-   FILE *fp = fopen ("/tmp/style.css", "r");
-   if (fp) {
-      fread (buf, 1, sizeof (buf), fp);
-
-      a_Css_parse (this, buf, strlen (buf), 0, CSS_ORIGIN_AUTHOR);
-
-   }
 }
 
 void CssContext::buildUserStyle () {
+   char *buf;
+   char *filename;
 
-#if 0
-   CssStyleSheet *s = new CssStyleSheet ();
-   CssPropertyList *props;
+   filename = dStrconcat(dGethomedir(), "/.dillo/style.css", NULL);
 
-   if (! important) {
-      // :link 
-      props = new CssPropertyList ();
-      props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.link_color);
-      s->addRule (new CssSelector(-1, NULL, "link"), props);
+   FILE *fp = fopen (filename, "r");
+   if (fp) {
+      buf = (char*) dMalloc (10000); /* \todo proper buffer handling */
+      fread (buf, 1, 10000, fp);
 
-      // :visited 
-      props = new CssPropertyList ();
-      props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.visited_color);
-      s->addRule (new CssSelector(-1, NULL, "visited"), props);
+      a_Css_parse (this, buf, strlen (buf), 0, CSS_ORIGIN_USER);
 
-      // <body>
-      props = new CssPropertyList ();
-      props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, prefs.bg_color);
-      props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, prefs.vw_fontname);
-      props->set (CssProperty::CSS_PROPERTY_FONT_SIZE,
-         (int) rint(14.0 * prefs.font_factor));
-      props->set (CssProperty::CSS_PROPERTY_COLOR, prefs.text_color);
-      s->addRule (new CssSelector(a_Html_tag_index("body")), props);
-
-      // <pre>
-      props = new CssPropertyList ();
-      props->set (CssProperty::CSS_PROPERTY_FONT_FAMILY, prefs.fw_fontname);
-      s->addRule (new CssSelector(a_Html_tag_index("pre")), props);
+      dFree (buf);
    }
 
-   return s;
-#endif
+   dFree (filename);
 }
