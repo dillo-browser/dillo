@@ -11,7 +11,6 @@
 
 #include <stdio.h>
 #include <math.h>
-#include "css.hh"
 #include "styleengine.hh"
 
 using namespace dw::core::style;
@@ -231,7 +230,7 @@ void StyleEngine::computeValues (Box *box, Font *font) {
    box->top = computeValue (box->top, font);
 }
 
-int StyleEngine::computeValue (int value, Font *font) {
+int StyleEngine::computeValue (CssLength value, Font *font) {
    int ret;
    static float dpmm;
 
