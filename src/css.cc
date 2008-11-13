@@ -156,7 +156,9 @@ void CssContext::buildUserAgentStyle () {
      "b, strong {font-weight: bolder; } "
      "i, em, cite {font-style: italic; } "
      "h1 {font-size: 40em;} "
-     "h4 {font-weight: bold} ";
+     "h4 {font-weight: bold} "
+     "table {border-top-style: outset} "
+     "td {border-top-style: inset} ";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
 

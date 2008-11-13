@@ -160,11 +160,20 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_BORDER_COLOR:
             attrs->setBorderColor (Color::createSimple (layout, p->value.intVal));
             break; 
+         case CssProperty::CSS_PROPERTY_BORDER_STYLE:
+            attrs->setBorderStyle ((BorderStyle) p->value.intVal);
+            break;
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
             attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_BORDER_STYLE:
-            attrs->setBorderStyle ((BorderStyle) p->value.intVal);
+         case CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE:
+            attrs->borderStyle.left = (BorderStyle) p->value.intVal;
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE:
+            attrs->borderStyle.right = (BorderStyle) p->value.intVal;
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE:
+            attrs->borderStyle.top = (BorderStyle) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_BORDER_WIDTH:
             attrs->borderWidth.setVal (computeValue (p->value.intVal, attrs->font));
