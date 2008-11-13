@@ -60,14 +60,17 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       cellpadding = strtol (attrbuf, NULL, 10);
 
    if (border != -1)
-      props.set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, border);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_WIDTH,
+         CSS_CREATE_LENGTH (border, CSS_LENGTH_TYPE_PX));
    if (cellspacing != -1)
-      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING, cellspacing);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING,
+         CSS_CREATE_LENGTH (cellspacing, CSS_LENGTH_TYPE_PX));
 
    /* When dillo was started with the --debug-rendering option, there
     * is always a border around the table. */
    if (dillo_dbg_rendering && border < 1)
-      props.set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, 1);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_WIDTH,
+         CSS_CREATE_LENGTH (1, CSS_LENGTH_TYPE_PX));
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width")))
       props.set (CssProperty::CSS_PROPERTY_WIDTH,
@@ -100,11 +103,14 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    /* The style for the cells */
    table_cell_props = new CssPropertyList ();
    if (border != -1)
-      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, border);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH,
+         CSS_CREATE_LENGTH (border, CSS_LENGTH_TYPE_PX));
    if (dillo_dbg_rendering && border < 1)
-      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, 1);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, 
+         CSS_CREATE_LENGTH (1, CSS_LENGTH_TYPE_PX));
    if (cellpadding != -1)
-      table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING, cellpadding);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING,
+         CSS_CREATE_LENGTH (cellpadding, CSS_LENGTH_TYPE_PX));
    /** \todo figure out how to handle shaded colors with CSS */
    table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_COLOR, 0x000000);
 

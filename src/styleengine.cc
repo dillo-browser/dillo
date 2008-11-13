@@ -102,41 +102,13 @@ void StyleEngine::endElement (int element) {
 void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    FontAttrs fontAttrs = *attrs->font;
 
+   /* determine font first so it can be used to resolve relative lenths 
+    * \todo Things should be rearranged so that just one pass is necessary.
+    */
    for (int i = 0; i < props->size (); i++) {
       CssProperty *p = props->getRef (i);
       
       switch (p->name) {
-         /* \todo missing cases */
-         case CssProperty::CSS_PROPERTY_BACKGROUND_COLOR:
-            attrs->backgroundColor =
-               Color::createSimple (layout, p->value.intVal);
-            break; 
-         case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR:
-            attrs->borderColor.bottom =
-              Color::createSimple (layout, p->value.intVal);
-            break; 
-         case CssProperty::CSS_PROPERTY_BORDER_COLOR:
-            attrs->setBorderColor (Color::createSimple (layout, p->value.intVal));
-            break; 
-         case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
-            attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
-            break;
-         case CssProperty::CSS_PROPERTY_BORDER_STYLE:
-            attrs->setBorderStyle ((BorderStyle) p->value.intVal);
-            break;
-         case CssProperty::CSS_PROPERTY_BORDER_WIDTH:
-            attrs->borderWidth.setVal (p->value.intVal);
-            break;
-         case CssProperty::CSS_PROPERTY_BORDER_SPACING:
-            attrs->hBorderSpacing = p->value.intVal;
-            attrs->vBorderSpacing = p->value.intVal;
-            break;
-         case CssProperty::CSS_PROPERTY_COLOR:
-            attrs->color = Color::createSimple (layout, p->value.intVal);
-            break; 
-         case CssProperty::CSS_PROPERTY_CURSOR:
-            attrs->cursor = (Cursor) p->value.intVal;
-            break; 
          case CssProperty::CSS_PROPERTY_FONT_FAMILY:
             fontAttrs.name = p->value.strVal;
             break;
@@ -163,26 +135,70 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             if (fontAttrs.weight > CssProperty::CSS_FONT_WEIGHT_MAX)
                fontAttrs.weight = CssProperty::CSS_FONT_WEIGHT_MAX;
             break;
+         default:
+            break;
+      }
+   }
+
+   fontAttrs.size = computeValue (fontAttrs.size,
+      stack->get (stack->size () - 2).style->font);
+   attrs->font = Font::create (layout, &fontAttrs);
+
+   for (int i = 0; i < props->size (); i++) {
+      CssProperty *p = props->getRef (i);
+      
+      switch (p->name) {
+         /* \todo missing cases */
+         case CssProperty::CSS_PROPERTY_BACKGROUND_COLOR:
+            attrs->backgroundColor =
+               Color::createSimple (layout, p->value.intVal);
+            break; 
+         case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR:
+            attrs->borderColor.bottom =
+              Color::createSimple (layout, p->value.intVal);
+            break; 
+         case CssProperty::CSS_PROPERTY_BORDER_COLOR:
+            attrs->setBorderColor (Color::createSimple (layout, p->value.intVal));
+            break; 
+         case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
+            attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_STYLE:
+            attrs->setBorderStyle ((BorderStyle) p->value.intVal);
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_WIDTH:
+            attrs->borderWidth.setVal (computeValue (p->value.intVal, attrs->font));
+            break;
+         case CssProperty::CSS_PROPERTY_BORDER_SPACING:
+            attrs->hBorderSpacing = computeValue (p->value.intVal, attrs->font);
+            attrs->vBorderSpacing = attrs->hBorderSpacing;
+            break;
+         case CssProperty::CSS_PROPERTY_COLOR:
+            attrs->color = Color::createSimple (layout, p->value.intVal);
+            break; 
+         case CssProperty::CSS_PROPERTY_CURSOR:
+            attrs->cursor = (Cursor) p->value.intVal;
+            break; 
          case CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE:
             attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_MARGIN:
-            attrs->margin.setVal (p->value.intVal);
+            attrs->margin.setVal (computeValue (p->value.intVal, attrs->font));
             break;
          case CssProperty::CSS_PROPERTY_MARGIN_BOTTOM:
-            attrs->margin.bottom = p->value.intVal;
+            attrs->margin.bottom = computeValue (p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_MARGIN_LEFT:
-            attrs->margin.left = p->value.intVal;
+            attrs->margin.left = computeValue (p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_MARGIN_RIGHT:
-            attrs->margin.right = p->value.intVal;
+            attrs->margin.right = computeValue (p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_MARGIN_TOP:
-            attrs->margin.top = p->value.intVal;
+            attrs->margin.top = computeValue (p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_PADDING:
-            attrs->padding.setVal (p->value.intVal);
+            attrs->padding.setVal (computeValue (p->value.intVal, attrs->font));
             break;
          case CssProperty::CSS_PROPERTY_TEXT_ALIGN:
             attrs->textAlign = (TextAlignType) p->value.intVal;
@@ -193,8 +209,12 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_VERTICAL_ALIGN:
             attrs->valign = (VAlignType) p->value.intVal;
             break;
+         /* \todo proper conversion from CssLength to dw::core::style::Length */
          case CssProperty::CSS_PROPERTY_WIDTH:
-            attrs->width = p->value.intVal;
+               attrs->width = p->value.intVal;
+            break;
+         case CssProperty::CSS_PROPERTY_HEIGHT:
+               attrs->height = p->value.intVal;
             break;
          case CssProperty::PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
@@ -207,28 +227,11 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
       }
    }
-
-   fontAttrs.size = computeValue (fontAttrs.size,
-      stack->get (stack->size () - 2).style->font);
-   attrs->font = Font::create (layout, &fontAttrs);
-
-   computeValues (&attrs->borderWidth, attrs->font);
-   computeValues (&attrs->margin, attrs->font);
-   computeValues (&attrs->padding, attrs->font);
-   attrs->width = computeValue (attrs->width, attrs->font);
-   attrs->height = computeValue (attrs->height, attrs->font);
 }
 
 /**
  * \brief Resolve relative lengths to absolute values.
- *    The font must be set already.
  */
-void StyleEngine::computeValues (Box *box, Font *font) {
-   box->bottom = computeValue (box->bottom, font);
-   box->left = computeValue (box->left, font);
-   box->right = computeValue (box->right, font);
-   box->top = computeValue (box->top, font);
-}
 
 int StyleEngine::computeValue (CssLength value, Font *font) {
    int ret;
@@ -239,16 +242,16 @@ int StyleEngine::computeValue (CssLength value, Font *font) {
 
    switch (CSS_LENGTH_TYPE (value)) {
       case CSS_LENGTH_TYPE_PX:
-         ret = (int) rintf (CSS_LENGTH_VALUE(value));
+         ret = (int) CSS_LENGTH_VALUE (value);
          break;
       case CSS_LENGTH_TYPE_MM:
-         ret = (int) rintf (CSS_LENGTH_VALUE(value) * dpmm);
+         ret = (int) (CSS_LENGTH_VALUE (value) * dpmm);
          break;
       case CSS_LENGTH_TYPE_EM:
-         ret = (int) rintf (CSS_LENGTH_VALUE(value) * font->size);
+         ret = (int) (CSS_LENGTH_VALUE (value) * font->size);
          break;
       case CSS_LENGTH_TYPE_EX:
-         ret = (int) rintf (CSS_LENGTH_VALUE(value) * font->xHeight);
+         ret = (int) (CSS_LENGTH_VALUE(value) * font->xHeight);
          break;
       default:
          ret = value;
