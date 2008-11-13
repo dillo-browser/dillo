@@ -25,6 +25,7 @@
 #include <fltk/draw.h>
 #include <fltk/run.h>
 #include <fltk/events.h>
+#include <fltk/Monitor.h>
 #include <fltk/utf.h>
 #include <stdio.h>
 
@@ -299,6 +300,16 @@ int FltkPlatform::nextGlyph (const char *text, int idx)
 int FltkPlatform::prevGlyph (const char *text, int idx)
 {
    return utf8back (&text[idx - 1], text, &text[strlen (text)]) - text;
+}
+
+float FltkPlatform::dpiX ()
+{
+   return ::fltk::Monitor::all ().dpi_x ();
+}
+
+float FltkPlatform::dpiY ()
+{
+   return ::fltk::Monitor::all ().dpi_y ();
 }
 
 void FltkPlatform::generalStaticIdle (void *data)

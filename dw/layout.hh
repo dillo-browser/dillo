@@ -216,6 +216,16 @@ public:
       return platform->prevGlyph (text, idx);
    }
 
+   inline float dpiX ()
+   {
+      return platform->dpiX ();
+   }
+
+   inline float dpiY ()
+   {
+      return platform->dpiY ();
+   }
+
    inline style::Font *createFont (style::FontAttrs *attrs, bool tryEverything)
    {
       return  platform->createFont (attrs, tryEverything);

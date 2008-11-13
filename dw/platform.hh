@@ -66,6 +66,16 @@ public:
     * \brief Return the index of the previous glyph in string text.
     */
    virtual int prevGlyph (const char *text, int idx) = 0;
+
+   /**
+    * \brief Return screen resolution in x-direction.
+    */
+   virtual float dpiX () = 0;
+
+   /**
+    * \brief Return screen resolution in y-direction.
+    */
+   virtual float dpiY () = 0;
  
    /*
     * ---------------------------------------------------------

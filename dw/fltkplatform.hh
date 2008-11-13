@@ -125,6 +125,8 @@ public:
    int textWidth (core::style::Font *font, const char *text, int len);
    int nextGlyph (const char *text, int idx);
    int prevGlyph (const char *text, int idx);
+   float dpiX ();
+   float dpiY ();
    
    int addIdle (void (core::Layout::*func) ());
    void removeIdle (int idleId);
