@@ -187,28 +187,25 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
       };
       void apply (CssPropertyList *props);
       void print ();
-
       inline void ref () { refCount++; }
       inline void unref () { if(--refCount == 0) delete this; }
 };
 
 /** \todo proper implementation */
 class CssSelector {
+   private:
+      int refCount;
+   
    public:
       int element;
       const char *klass, *pseudo, *id;
 
-   public:
       CssSelector (int element = -1, const char *klass = NULL,
-                   const char *pseudo = NULL, const char *id = NULL) {
-         this->element = element;
-         this->klass = klass;
-         this->pseudo = pseudo;
-         this->id = id;
-      };
-
+                   const char *pseudo = NULL, const char *id = NULL);
       bool match (Doctree *dt);
       void print ();
+      inline void ref () { refCount++; }
+      inline void unref () { if(--refCount == 0) delete this; }
 };
 
 class CssRule {
@@ -217,10 +214,7 @@ class CssRule {
       CssPropertyList *props;
 
    public:
-      CssRule (CssSelector *selector, CssPropertyList *props) {
-         this->selector = selector;
-         this->props = props;
-      };
+      CssRule (CssSelector *selector, CssPropertyList *props);
       ~CssRule ();
 
       void apply (CssPropertyList *props, Doctree *docTree);
@@ -230,6 +224,7 @@ class CssRule {
 class CssStyleSheet : lout::misc::SimpleVector <CssRule*> {
    public:
       CssStyleSheet() : lout::misc::SimpleVector <CssRule*> (1) {};
+      ~CssStyleSheet();
       void addRule (CssRule *rule);
       void addRule (CssSelector *selector, CssPropertyList *props);
       void apply (CssPropertyList *props, Doctree *docTree);

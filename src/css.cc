@@ -44,6 +44,15 @@ void CssPropertyList::print () {
       getRef (i)->print ();
 }
 
+CssSelector::CssSelector (int element, const char *klass,
+                          const char *pseudo, const char *id) {
+   refCount = 0;
+   this->element = element;
+   this->klass = klass;
+   this->pseudo = pseudo;
+   this->id = id;
+};
+
 /** \todo implement all selection option CSS offers */
 bool CssSelector::match (Doctree *docTree) {
    const DoctreeNode *n = docTree-> top ();
@@ -66,6 +75,18 @@ void CssSelector::print () {
    fprintf (stderr, "Element %d, class %s, pseudo %s, id %s\n",
       element, klass, pseudo, id);
 }
+
+CssRule::CssRule (CssSelector *selector, CssPropertyList *props) {
+   this->selector = selector;
+   this->selector->ref ();
+   this->props = props;
+   this->props->ref ();
+};
+
+CssRule::~CssRule () {
+   this->selector->unref ();
+   this->props->unref ();
+};
 
 void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
    if (selector->match (docTree))
@@ -90,6 +111,11 @@ void CssStyleSheet::addRule (CssSelector *selector, CssPropertyList *props) {
 void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
    for (int i = 0; i < size (); i++)
       get (i)->apply (props, docTree);
+}
+
+CssStyleSheet::~CssStyleSheet () {
+   for (int i = 0; i < size (); i++)
+      delete get (i);
 }
 
 CssStyleSheet *CssContext::userAgentStyle;
@@ -142,8 +168,8 @@ void CssContext::addRule (CssRule *rule, CssPrimaryOrder order) {
 
    sheet[order]->addRule (rule);
 
-   fprintf(stderr, "Adding Rule (%d)\n", order);
-   rule->print ();
+//   fprintf(stderr, "Adding Rule (%d)\n", order);
+//   rule->print ();
 }
 
 void CssContext::buildUserAgentStyle () {

@@ -893,6 +893,7 @@ static void Css_parse_ruleset (CssParser *parser)
       }
 
       if (selector) {
+         selector->ref ();
          selector->id = selector->klass = selector->pseudo = NULL;
 
          do {
@@ -962,7 +963,9 @@ static void Css_parse_ruleset (CssParser *parser)
    DEBUG_MSG (DEBUG_PARSE_LEVEL, "end of %s\n", "selectors");
 
    props = new CssPropertyList ();
+   props->ref ();
    importantProps = new CssPropertyList ();
+   importantProps->ref ();
    
    /* Read block. ('{' has already been read.) */
    if (parser->ttype != CSS_TK_END) {
@@ -987,7 +990,12 @@ static void Css_parse_ruleset (CssParser *parser)
          parser->context->addRule (new CssRule (s, props), CSS_PRIMARY_AUTHOR);
          parser->context->addRule (new CssRule (s, importantProps), CSS_PRIMARY_AUTHOR_IMPORTANT);
       }
+
+      s->unref ();
    }
+
+   props->unref ();
+   importantProps->unref ();
 
    delete list;
 
