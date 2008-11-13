@@ -14,6 +14,35 @@ typedef enum {
    CSS_PRIMARY_LAST,
 } CssPrimaryOrder;
 
+/*
+ * Lengths are represented as int in the following way:
+ * 
+ *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+ *    | integer part  | decimal fraction  |   type    |
+ *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+ *     n-1          19  18              3   2  1   0
+ *
+ *    | <------ fixed point value ------> |
+ *
+ * where type is one of the CSS_LENGTH_TYPE_* values.
+ */
+
+typedef int CssLength;
+
+enum {
+   CSS_LENGTH_TYPE_PX,
+   CSS_LENGTH_TYPE_MM,         /* "cm", "in", "pt" and "pc" are converted into
+                                  millimeters. */
+   CSS_LENGTH_TYPE_EM,
+   CSS_LENGTH_TYPE_EX,
+   CSS_LENGTH_TYPE_PERCENTAGE,
+   CSS_LENGTH_TYPE_AUTO        /* This can be used as a simple value. */
+};
+
+#define CSS_CREATE_LENGTH(v, t) ( ( (int)((v) * (1 << 19)) & ~7 ) | (t) )
+#define CSS_LENGTH_VALUE(l)     ( ( (float)((l) & ~7) ) / (1 << 19) )
+#define CSS_LENGTH_TYPE(l)      ((l) & 7)
+
 class CssProperty {
    public:
       typedef union {

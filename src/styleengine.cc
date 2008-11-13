@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include "cssparser.hh"
+#include "css.hh"
 #include "styleengine.hh"
 
 using namespace dw::core::style;
