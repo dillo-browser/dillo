@@ -113,7 +113,8 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             fontAttrs.name = p->value.strVal;
             break;
          case CssProperty::CSS_PROPERTY_FONT_SIZE:
-            fontAttrs.size = p->value.intVal;
+            fontAttrs.size = computeValue (p->value.intVal,
+               stack->get (stack->size () - 2).style->font);
             break;
          case CssProperty::CSS_PROPERTY_FONT_STYLE:
             fontAttrs.style = (FontStyle) p->value.intVal;
@@ -140,8 +141,6 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       }
    }
 
-   fontAttrs.size = computeValue (fontAttrs.size,
-      stack->get (stack->size () - 2).style->font);
    attrs->font = Font::create (layout, &fontAttrs);
 
    for (int i = 0; i < props->size (); i++) {
