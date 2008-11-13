@@ -166,7 +166,7 @@ public:
     */
    inline T* getRef (int i) {
       if (BOUND_CHECKING)
-         assert (i >= 0 && i < this->num);
+         assert (i >= 0 && this->num - i > 0);
       return array + i;
    }
 

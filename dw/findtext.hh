@@ -65,7 +65,7 @@ private:
 
    inline static bool charsEqual (char c1, char c2, bool caseSens)
    { return caseSens ? c1 == c2 : tolower (c1) == tolower (c2) ||
-      isspace (c1) && isspace (c2); }
+      (isspace (c1) && isspace (c2)); }
 
 public:
    FindtextState ();

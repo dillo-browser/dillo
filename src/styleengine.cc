@@ -41,6 +41,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
 
 StyleEngine::~StyleEngine () {
    delete stack;
+   delete cssContext;
 }
 
 /**

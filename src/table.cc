@@ -35,7 +35,7 @@ using namespace dw::core::style;
 
 static void Html_tag_open_table_cell(DilloHtml *html,
                                      const char *tag, int tagsize,
-                                     dw::core::style::TextAlignType text_align);
+                                    dw::core::style::TextAlignType text_align);
 
 /*
  * <TABLE>
@@ -287,8 +287,9 @@ static void Html_tag_open_table_cell(DilloHtml *html,
 
       if (html->styleEngine->style ()->textAlign
           == TEXT_ALIGN_STRING)
-         col_tb = new dw::TableCell (((dw::Table*)S_TOP(html)->table)->getCellRef (),
-                                     prefs.limit_text_width);
+         col_tb = new dw::TableCell (
+                     ((dw::Table*)S_TOP(html)->table)->getCellRef (),
+                     prefs.limit_text_width);
       else
          col_tb = new Textblock (prefs.limit_text_width);
 

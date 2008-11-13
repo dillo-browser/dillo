@@ -398,6 +398,7 @@ static int Http_must_use_proxy(const DilloUrl *url)
          dFree(np);
       }
    }
+   _MSG("Http_must_use_proxy: %s\n  %s\n", URL_STR(url), ret ? "YES":"NO");
    return ret;
 }
 

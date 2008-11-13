@@ -144,6 +144,10 @@ CssContext::CssContext () {
    sheet[CSS_PRIMARY_USER_IMPORTANT] = userImportantStyle;
 }
 
+CssContext::~CssContext () {
+}
+
+
 void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCss) {
 

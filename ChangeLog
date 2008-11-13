@@ -4,22 +4,37 @@ Dillo project
 
 dillo-2.1
 
++- Added ipv6 addresses iteration and ipv4 fallback.
+   Patch: James Turner, Jorge Arellano
 +- Added support for numeric IPv6 addresses entered into the url bar.
  - Used the URL authority part instead of stripped default port in HTTP query.
    Patches: Justus Winter
 +- Fix for file inputs without values (forms).
  - Tuned input width a bit.
  - Cleaned up resource embedding (forms)
+ - Made cookierc parsing more robust.
+ - Switched a_UIcmd_save() to take its URL from history (not location bar).
+ - Set prefs.vw_fontname as deafult font for the UI.
+ - Fix: recover page focus when clicking-out of a widget.
    Patches: place (AKA corvid)
-+- Switched SSL enabled to configure.in (./configure --enable-ssl).
-   Patch: Jeremy Henty
++- Switched SSL-enabled to configure.in (./configure --enable-ssl).
+ - Standardised the installation of dpid/dpidrc with auto* tools.
+ - Set the ScrollGroup as the resizable widget in downloads dpi.
+ - Cleaned up and normalized D_SUN_LEN usage.
+   Patches: Jeremy Henty
 +- Allowed compilation with older machines by removing a few C99isms.
  - Added use of inttypes.h when stdint.h isn't found.
    Patches: Dan Fandrich
-+- Added ipv6 addresses iteration and ipv4 fallback.
-   Patch: James Turner, Jorge Arellano
-+- Set the File menu label to hide when the File menu button is shown.
-   Patch: Jorge Arellano
++- Made the DNS resolver report in numeric address notation.
+   Patch: Justus Winter
++- Reduced warnings with gcc-4.3.
+   Patch: Thomas Orgis
++- Added the "middle_click_drags_page" dillorc option.
+   Patch: Jorge Arellano, Thomas Orgis
++- Set the File menu label to hide when the File menu-button is shown.
+ ? Trying a new iconv() test in configure.in.
+ - Allowed the rc parser to skip whitespace around the equal sign.
+   Patches: Jorge Arellano
 
 dw
 

@@ -64,6 +64,7 @@ class UI : public fltk::Group {
 
    UIPanelmode Panelmode;
    Findbar *findbar;
+   int PointerOnLink;
 
    PackedGroup *make_toolbar(int tw, int th);
    PackedGroup *make_location();
@@ -103,6 +104,8 @@ public:
 
    CustTabGroup *tabs() { return Tabs; }
    void tabs(CustTabGroup *tabs) { Tabs = tabs; }
+   int pointerOnLink() { return PointerOnLink; }
+   void pointerOnLink(int flag) { PointerOnLink = flag; }
 
    // Hooks to method callbacks
    void panel_cb_i();

@@ -22,7 +22,7 @@ typedef struct _DilloHost
   int alen;
   char data[DILLO_ADDR_MAX];
 } DilloHost;
-
+void a_Dns_dillohost_to_string(DilloHost *host, char *dst, size_t size);
 
 #ifdef __cplusplus
 }

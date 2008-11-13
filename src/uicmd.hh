@@ -73,7 +73,8 @@ bool_t a_UIcmd_get_images_enabled(BrowserWindow *bw);
 void a_UIcmd_set_images_enabled(BrowserWindow *bw, int flag);
 void a_UIcmd_set_buttons_sens(BrowserWindow *bw);
 void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
-
+void a_UIcmd_set_pointer_on_link(BrowserWindow *bw, int flag);
+int a_UIcmd_pointer_on_link(BrowserWindow *bw);
 
 #ifdef __cplusplus
 }

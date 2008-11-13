@@ -33,6 +33,8 @@
 
 #include "nav.h"
 
+#define DEFAULT_TAB_LABEL "Dillo"
+
 // Handy macro
 #define BW2UI(bw) ((UI*)((bw)->ui))
 
@@ -83,11 +85,12 @@ public:
    void remove (Widget *w) {
       TabGroup::remove (w);
       /* fixup resizable in case we just removed it */
-      if (resizable () == w)
+      if (resizable () == w) {
          if (children () > 0)
             resizable (child (children () - 1));
          else
             resizable (NULL);
+      }
 
       if (children () < 2)
          hideLabels ();
@@ -177,7 +180,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    win->add(DilloTabs);
 
    // Create and set the UI
-   UI *new_ui = new UI(0, 0, ww, wh, "Label", old_bw ? BW2UI(old_bw) : NULL);
+   UI *new_ui = new UI(0, 0, ww, wh, DEFAULT_TAB_LABEL, old_bw ? BW2UI(old_bw) : NULL);
    new_ui->set_status("http://www.dillo.org/");
    new_ui->tabs(DilloTabs);
 
@@ -242,7 +245,7 @@ BrowserWindow *UIcmd_tab_new(const void *vbw)
                                         vbw);
 
    // Create and set the UI
-   UI *new_ui = new UI(0, 0, ui->w(), ui->h(), "Label", ui);
+   UI *new_ui = new UI(0, 0, ui->w(), ui->h(), DEFAULT_TAB_LABEL, ui);
    new_ui->tabs(ui->tabs());
 
    new_ui->tabs()->add(new_ui);
@@ -481,24 +484,21 @@ void a_UIcmd_set_save_dir(const char *dir)
 void a_UIcmd_save(void *vbw)
 {
    const char *name;
-   char *SuggestedName, *urlstr;
-   DilloUrl *url;
+   char *SuggestedName;
+   BrowserWindow *bw = (BrowserWindow *)vbw;
+   const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
 
-   a_UIcmd_set_save_dir(prefs.save_dir);
+   if (url) {
+      a_UIcmd_set_save_dir(prefs.save_dir);
+      SuggestedName = UIcmd_make_save_filename(URL_PATH(url));
+      name = a_Dialog_save_file("Save Page as File", NULL, SuggestedName);
+      MSG("a_UIcmd_save: %s\n", name);
+      dFree(SuggestedName);
 
-   urlstr = a_UIcmd_get_location_text((BrowserWindow*)vbw);
-   url = a_Url_new(urlstr, NULL);
-   SuggestedName = UIcmd_make_save_filename(URL_PATH(url));
-   name = a_Dialog_save_file("Save Page as File", NULL, SuggestedName);
-   MSG("a_UIcmd_save: %s\n", name);
-   dFree(SuggestedName);
-   dFree(urlstr);
-
-   if (name) {
-      a_Nav_save_url((BrowserWindow*)vbw, url, name);
-   }
-
-   a_Url_free(url);
+      if (name) {
+         a_Nav_save_url(bw, url, name);
+      }
+   } 
 }
 
 /*
@@ -909,6 +909,22 @@ void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
    sens = (a_Nav_stack_ptr(bw) < a_Nav_stack_size(bw) - 1 &&
            !bw->nav_expecting);
    BW2UI(bw)->button_set_sens(UI_FORW, sens);
+}
+
+/*
+ * Keep track of mouse pointer over a link.
+ */
+void a_UIcmd_set_pointer_on_link(BrowserWindow *bw, int flag)
+{
+   BW2UI(bw)->pointerOnLink(flag);
+}
+
+/*
+ * Is the mouse pointer over a link?
+ */
+int a_UIcmd_pointer_on_link(BrowserWindow *bw)
+{
+   return BW2UI(bw)->pointerOnLink();
 }
 
 /*

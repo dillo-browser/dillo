@@ -254,12 +254,11 @@ static int Cookie_control_init(void)
          j = 0;
 
          /* Get the domain */
-         while (!isspace(line[i]))
+         while (line[i] != '\0' && !isspace(line[i]))
             domain[j++] = line[i++];
          domain[j] = '\0';
 
          /* Skip past whitespaces */
-         i++;
          while (isspace(line[i]))
             i++;
 

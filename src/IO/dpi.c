@@ -353,7 +353,7 @@ static int Dpi_check_uds(char *uds_name)
       strncpy(pun.sun_path, uds_name, sizeof (pun.sun_path));
 
       if ((SockFD = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1 ||
-          connect(SockFD, (void*)&pun, D_SUN_LEN(&pun)) == -1) {
+          connect(SockFD, (struct sockaddr *) &pun, D_SUN_LEN(&pun)) == -1) {
          MSG("Dpi_check_uds: %s %s\n", dStrerror(errno), uds_name);
       } else {
          Dpi_close_fd(SockFD);
@@ -497,7 +497,7 @@ static char *Dpi_get_server_uds_name(const char *server_name)
       _MSG("dpid_uds_name = [%s]\n", dpid_uds_name);
       strncpy(dpid.sun_path, dpid_uds_name, sizeof(dpid.sun_path));
 
-      if (connect(sock, (struct sockaddr *) &dpid, sizeof(dpid)) == -1)
+      if (connect(sock, (struct sockaddr *) &dpid, D_SUN_LEN(&dpid)) == -1)
          perror("connect");
       /* ask dpid to check the server plugin and send its UDS name back */
       request = a_Dpip_build_cmd("cmd=%s msg=%s", "check_server", server_name);
@@ -717,7 +717,6 @@ void a_Dpi_bye_dpid()
 
    srs_name = Dpi_get_dpid_uds_name();
    sun_path_len = sizeof(sa.sun_path);
-   addr_len = sizeof(sa);
 
    sa.sun_family = AF_LOCAL;
 
@@ -725,6 +724,7 @@ void a_Dpi_bye_dpid()
       MSG("a_Dpi_bye_dpid: %s\n", dStrerror(errno));
    }
    strncpy(sa.sun_path, srs_name, sizeof (sa.sun_path));
+   addr_len = D_SUN_LEN(&sa);
    if (connect(new_socket, (struct sockaddr *) &sa, addr_len) == -1) {
       MSG("a_Dpi_bye_dpid: %s\n", dStrerror(errno));
       MSG("%s\n", sa.sun_path);

@@ -64,12 +64,6 @@ int main(void)
 #define MSG(...)  printf("[cookies dpi]: " __VA_ARGS__)
 
 
-/* This one is tricky, some sources state it should include the byte
- * for the terminating NULL, and others say it shouldn't. */
-# define D_SUN_LEN(ptr) ((size_t) (((struct sockaddr_un *) 0)->sun_path) \
-                        + strlen ((ptr)->sun_path))
-
-
 /*
  * a_List_add()
  *
@@ -1247,12 +1241,11 @@ static int Cookie_control_init(void)
          j = 0;
 
          /* Get the domain */
-         while (!isspace(line[i]))
+         while (line[i] != '\0' && !isspace(line[i]))
             domain[j++] = line[i++];
          domain[j] = '\0';
 
          /* Skip past whitespaces */
-         i++;
          while (isspace(line[i]))
             i++;
 

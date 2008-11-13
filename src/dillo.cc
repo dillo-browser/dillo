@@ -26,6 +26,7 @@
 
 #include <fltk/Window.h>
 #include <fltk/TabGroup.h>
+#include <fltk/Font.h>
 #include <fltk/run.h>
 
 #include "msg.h"
@@ -107,6 +108,12 @@ int main(int argc, char **argv)
 
    // WORKAROUND: sometimes the default pager triggers redraw storms
    fltk::TabGroup::default_pager(fltk::PAGER_SHRINK);
+
+   fltk::Font *dfont = fltk::font(prefs.vw_fontname, 0);
+   if (dfont) {
+      fltk::Widget::default_style->textfont(dfont);
+      fltk::Widget::default_style->labelfont(dfont);
+   }
 
    // Create a new UI/bw pair
    BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, NULL);

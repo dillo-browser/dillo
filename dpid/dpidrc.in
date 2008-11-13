@@ -1,0 +1,6 @@
+dpi_dir=@libdir@/dillo/dpi
+
+proto.file=file/file.dpi
+proto.ftp=ftp/ftp.filter.dpi
+proto.https=https/https.filter.dpi
+proto.data=datauri/datauri.filter.dpi

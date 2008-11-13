@@ -251,7 +251,7 @@ bool PairBase::equals(Object *other)
 
    return
       // Identical?
-      this == other ||
+      this == other || (
       (// Both first parts are NULL, ...
          (first == NULL && otherPair->first == NULL) ||
          // ... or both first parts are not NULL and equal
@@ -260,7 +260,7 @@ bool PairBase::equals(Object *other)
       // Same with second part.
       ((second == NULL && otherPair->second == NULL) ||
        (second != NULL && otherPair->second != NULL
-        && second->equals (otherPair->second)));
+        && second->equals (otherPair->second))));
 }
 
 int PairBase::hashValue()
