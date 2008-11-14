@@ -37,8 +37,8 @@ class StyleEngine : public Doctree {
             return NULL;
       };
 
-      void startElement (int tag, const char *id, const char *klass,
-         const char *style);
+      void startElement (int tag, const char *id = NULL, const char *klass = NULL,
+         const char *style = NULL);
       void endElement (int tag);
       void setNonCssProperties (CssPropertyList *props);
       void setPseudoClass (const char *pseudoClass);

@@ -1270,6 +1270,7 @@ static void Html_push_tag(DilloHtml *html, int tag_idx)
  */
 static void Html_force_push_tag(DilloHtml *html, int tag_idx)
 {
+   html->styleEngine->startElement (tag_idx);
    Html_push_tag(html, tag_idx);
 }
 
