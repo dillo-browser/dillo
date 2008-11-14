@@ -152,14 +152,14 @@ CssContext::~CssContext () {
 }
 
 void CssContext::apply (CssPropertyList *props, Doctree *docTree,
-         CssPropertyList *tagStyle, CssPropertyList *nonCss) {
+         CssPropertyList *tagStyle, CssPropertyList *nonCssHints) {
 
    for (int o = CSS_PRIMARY_USER_AGENT; o <= CSS_PRIMARY_USER; o++)
       if (sheet[o])
          sheet[o]->apply (props, docTree);
 
-   if (nonCss)
-        nonCss->apply (props);
+   if (nonCssHints)
+        nonCssHints->apply (props);
 
    for (int o = CSS_PRIMARY_AUTHOR; o <= CSS_PRIMARY_USER_IMPORTANT; o++)
       if (sheet[o])

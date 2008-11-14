@@ -1736,7 +1736,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
                        S_TOP(html)->current_bg_color);
    }
 
-   html->styleEngine->setNonCssProperties (&props);
+   html->styleEngine->setNonCssHints (&props);
    html->dw->setStyle (html->styleEngine->style ());
 
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_BODY;
@@ -1770,7 +1770,7 @@ static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
       DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
    }
    a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-   html->styleEngine->setNonCssProperties (&props);
+   html->styleEngine->setNonCssHints (&props);
 }
 
 /*
@@ -1864,7 +1864,7 @@ static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
 
    a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-   html->styleEngine->setNonCssProperties (&props);
+   html->styleEngine->setNonCssHints (&props);
 
    /* First finalize unclosed H tags (we test if already named anyway) */
    a_Menu_pagemarks_set_text(html->bw, html->Stash->str);
@@ -1931,7 +1931,7 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "face")))
       props.set (CssProperty::CSS_PROPERTY_FONT_FAMILY, attrbuf);
 
-   html->styleEngine->setNonCssProperties (&props);
+   html->styleEngine->setNonCssHints (&props);
 }
 
 /*
@@ -2462,7 +2462,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 
       props.set (CssProperty::PROPERTY_X_LINK, Html_set_new_link(html, &url));
 
-      html->styleEngine->setNonCssProperties (&props);
+      html->styleEngine->setNonCssHints (&props);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name"))) {
@@ -2626,7 +2626,7 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
          listStyleType = LIST_STYLE_TYPE_UPPER_ROMAN;
 
       props.set (CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, listStyleType);
-      html->styleEngine->setNonCssProperties (&props);
+      html->styleEngine->setNonCssHints (&props);
    }
 
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
@@ -3038,7 +3038,7 @@ static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 
    DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
    a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-   html->styleEngine->setNonCssProperties (&props);
+   html->styleEngine->setNonCssHints (&props);
 }
 
 /*

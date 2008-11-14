@@ -247,7 +247,7 @@ class CssContext {
       void addRule (CssRule *rule, CssPrimaryOrder order);
       void apply (CssPropertyList *props,
          Doctree *docTree,
-         CssPropertyList *tagStyle, CssPropertyList *nonCss);
+         CssPropertyList *tagStyle, CssPropertyList *nonCssHints);
 };
 
 #endif

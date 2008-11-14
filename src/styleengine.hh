@@ -17,7 +17,7 @@ class StyleEngine : public Doctree {
       lout::misc::SimpleVector <Node> *stack;
       CssContext *cssContext;
 
-      dw::core::style::Style *style0 (CssPropertyList *nonCssProperties = NULL);
+      dw::core::style::Style *style0 (CssPropertyList *nonCssHints = NULL);
       void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
       int computeValue (CssLength value, dw::core::style::Font *font);
 
@@ -40,7 +40,7 @@ class StyleEngine : public Doctree {
       void startElement (int tag, const char *id = NULL, const char *klass = NULL,
          const char *style = NULL);
       void endElement (int tag);
-      void setNonCssProperties (CssPropertyList *props);
+      void setNonCssHints (CssPropertyList *nonCssHints);
       void setPseudoClass (const char *pseudoClass);
 
       inline dw::core::style::Style *style () {

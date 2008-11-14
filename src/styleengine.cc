@@ -69,10 +69,10 @@ void StyleEngine::startElement (int element, const char *id, const char *klass,
  * \brief set properties that were definded using (mostly deprecated) HTML
  *    attributes (e.g. bgColor).
  */
-void StyleEngine::setNonCssProperties (CssPropertyList *props) {
+void StyleEngine::setNonCssHints (CssPropertyList *nonCssHints) {
    if (stack->getRef (stack->size () - 1)->style)
       stack->getRef (stack->size () - 1)->style->unref ();
-   style0 (props); // evaluate now, so caller can free props
+   style0 (nonCssHints); // evaluate now, so caller can free nonCssHints
 }
 
 /**
