@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include "../dlib/dlib.h"
 #include "styleengine.hh"
 
 using namespace dw::core::style;
@@ -47,9 +48,8 @@ StyleEngine::~StyleEngine () {
 /**
  * \brief tell the styleEngine that a new html element has started.
  */
-void StyleEngine::startElement (int element, const char *id, const char *klass,
-   const char *style) {
-//   fprintf(stderr, "===> START %d %s %s %s\n", element, id, klass, style);
+void StyleEngine::startElement (int element) {
+//   fprintf(stderr, "===> START %d\n", element);
 
    if (stack->getRef (stack->size () - 1)->style == NULL)
       style0 ();
@@ -59,11 +59,29 @@ void StyleEngine::startElement (int element, const char *id, const char *klass,
    n->style = NULL;
    n->depth = stack->size ();
    n->element = element;
-   n->id = id;
-   n->klass = klass;
+   n->id = NULL;
+   n->klass = NULL;
    n->pseudo = NULL;
-   n->styleAttribute = style;
+   n->styleAttribute = NULL;
 }
+
+void StyleEngine::setId (const char *id) {
+   Node *n =  stack->getRef (stack->size () - 1);
+   assert (n->id == NULL);
+   n->id = dStrdup (id);
+};
+
+void StyleEngine::setClass (const char *klass) {
+   Node *n =  stack->getRef (stack->size () - 1);
+   assert (n->klass == NULL);
+   n->klass = dStrdup (klass);
+};
+
+void StyleEngine::setStyle (const char *style) {
+   Node *n =  stack->getRef (stack->size () - 1);
+   assert (n->styleAttribute == NULL);
+   n->styleAttribute = dStrdup (style);
+};
 
 /**
  * \brief set properties that were definded using (mostly deprecated) HTML
@@ -78,8 +96,10 @@ void StyleEngine::setNonCssHints (CssPropertyList *nonCssHints) {
 /**
  * \brief set the CSS pseudo class (e.g. "link", "visited").
  */
-void StyleEngine::setPseudoClass (const char *pseudo) {
-   stack->getRef (stack->size () - 1)->pseudo = pseudo;
+void StyleEngine::setPseudo (const char *pseudo) {
+   Node *n =  stack->getRef (stack->size () - 1);
+   assert (n->pseudo == NULL);
+   n->pseudo = dStrdup (pseudo);
 }
 
 /**
@@ -91,9 +111,16 @@ void StyleEngine::endElement (int element) {
    assert (element == stack->getRef (stack->size () - 1)->element);
 
    Node *n =  stack->getRef (stack->size () - 1);
+
    if (n->style)
       n->style->unref ();
-   
+   if (n->id)
+      dFree ((void*) n->id); 
+   if (n->klass)
+      dFree ((void*) n->klass); 
+   if (n->styleAttribute)
+      dFree ((void*) n->styleAttribute); 
+
    stack->setSize (stack->size () - 1);
 }
 

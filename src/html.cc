@@ -2451,11 +2451,11 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 
       if (a_Capi_get_flags(url) & CAPI_IsCached) {
          html->InVisitedLink = true;
-         html->styleEngine->setPseudoClass ("visited");
+         html->styleEngine->setPseudo ("visited");
          if (html->visited_color != -1)
             props.set (CssProperty::CSS_PROPERTY_COLOR, html->visited_color);
       } else {
-         html->styleEngine->setPseudoClass ("link");
+         html->styleEngine->setPseudo ("link");
          if (html->link_color != -1)
             props.set (CssProperty::CSS_PROPERTY_COLOR, html->link_color);
       }
@@ -3399,7 +3399,6 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
 {
    int ci, ni;           /* current and new tag indexes */
    const char *attrbuf;
-   char *id = NULL, *klass = NULL, *style = NULL;
    char *start = tag + 1; /* discard the '<' */
    int IsCloseTag = (*start == '/');
 
@@ -3437,6 +3436,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       /* Push the tag into the stack */
       Html_push_tag(html, ni);
 
+      html->styleEngine->startElement (ni);
 
       /* Now parse attributes that can appear on any tag */
       if (tagsize >= 8 &&        /* length of "<t id=i>" */
@@ -3449,13 +3449,14 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
           * So we don't do it and hope for better specs in the future ...
           */
          if (attrbuf)
-            id = strdup (attrbuf);
-         Html_check_name_val(html, id, "id");
+            html->styleEngine->setId (attrbuf);
+
+         Html_check_name_val(html, attrbuf, "id");
          /* We compare the "id" value with the url-decoded "name" value */
-         if (!html->NameVal || strcmp(html->NameVal, id)) {
+         if (!html->NameVal || strcmp(html->NameVal, attrbuf)) {
             if (html->NameVal)
                BUG_MSG("'id' and 'name' attribute of <a> tag differ\n");
-            Html_add_anchor(html, id);
+            Html_add_anchor(html, attrbuf);
          }
       }
 
@@ -3469,25 +3470,15 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
           attrbuf = Html_get_attr2(html, tag, tagsize, "class",
                                    HTML_LeftTrim | HTML_RightTrim);
           if (attrbuf)
-            klass = strdup (attrbuf);
+            html->styleEngine->setClass (attrbuf);
       }
 
       if (tagsize >= 11) {       /* length of "<t style=i>" */
           attrbuf = Html_get_attr2(html, tag, tagsize, "style",
                                    HTML_LeftTrim | HTML_RightTrim);
           if (attrbuf)
-            style = strdup (attrbuf);
+            html->styleEngine->setStyle (attrbuf);
       }
-
-
-      html->styleEngine->startElement (ni, id, klass, style);
-
-      if (id)
-         free (id);
-      if (klass)
-         free (klass);
-      if (style)
-         free (style);
 
       /* Call the open function for this tag */
       Tags[ni].open (html, tag, tagsize);

@@ -37,11 +37,13 @@ class StyleEngine : public Doctree {
             return NULL;
       };
 
-      void startElement (int tag, const char *id = NULL, const char *klass = NULL,
-         const char *style = NULL);
+      void startElement (int tag);
+      void setId (const char *id);
+      void setClass (const char *klass);
+      void setStyle (const char *style);
       void endElement (int tag);
+      void setPseudo (const char *pseudo);
       void setNonCssHints (CssPropertyList *nonCssHints);
-      void setPseudoClass (const char *pseudoClass);
 
       inline dw::core::style::Style *style () {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->style;
