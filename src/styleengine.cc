@@ -218,6 +218,18 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_MARGIN_TOP:
             attrs->margin.top = computeValue (p->value.intVal, attrs->font);
             break;
+         case CssProperty::CSS_PROPERTY_PADDING_TOP:
+            attrs->padding.top = computeValue (p->value.intVal, attrs->font);
+            break;
+         case CssProperty::CSS_PROPERTY_PADDING_BOTTOM:
+            attrs->padding.bottom = computeValue (p->value.intVal, attrs->font);
+            break;
+         case CssProperty::CSS_PROPERTY_PADDING_LEFT:
+            attrs->padding.left = computeValue (p->value.intVal, attrs->font);
+            break;
+         case CssProperty::CSS_PROPERTY_PADDING_RIGHT:
+            attrs->padding.right = computeValue (p->value.intVal, attrs->font);
+            break;
          case CssProperty::CSS_PROPERTY_TEXT_ALIGN:
             attrs->textAlign = (TextAlignType) p->value.intVal;
             break;

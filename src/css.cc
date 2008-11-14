@@ -199,8 +199,8 @@ void CssContext::buildUserAgentStyle () {
      "sub { vertical-align: sub } "
      "sup { vertical-align: super } "
      "s, strike, del { text-decoration: line-through }"
-     "table {border-top-style: outset; border-spacing: 2px} "
-     "td {border-top-style: inset} "
+     "table {border-top-style: outset; border-spacing: 1px} "
+     "td {border-top-style: inset; padding-top: 2px; padding-bottom: 2px; padding-left: 2px; padding-right: 2px} "
      "thead, tbody, tfoot { vertical-align: middle }"
      "tt, pre {font-family: courier;} ";
 
