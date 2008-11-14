@@ -633,6 +633,7 @@ static bool Css_parse_value (CssParser *parser,
             MSG_CSS("color is not in \"%s\" format\n", "#RRGGBB");
          else
             ret = true;
+         Css_next_token (parser);
       } else if (parser->ttype == CSS_TK_SYMBOL) {
          val->intVal = a_Color_parse (parser->tval, -1, &err);
          if (err)
