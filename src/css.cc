@@ -182,8 +182,7 @@ void CssContext::addRule (CssRule *rule, CssPrimaryOrder order) {
 void CssContext::buildUserAgentStyle () {
    char *cssBuf =
      "body  {background-color: 0xdcd1ba; font-family: helvetica; color: black;" 
-     "       margin-left: 5px; margin-top: 5px; margin-bottom: 5px; margin-right: 5px;"
-     " }"
+     "       margin: 5px; }"
      "big { font-size: 1.17em }"
      ":link {color: blue; text-decoration: underline; cursor: pointer; } "
      ":visited {color: green; text-decoration: underline; cursor: pointer; } "
@@ -200,7 +199,7 @@ void CssContext::buildUserAgentStyle () {
      "sup { vertical-align: super } "
      "s, strike, del { text-decoration: line-through }"
      "table {border-top-style: outset; border-spacing: 1px} "
-     "td {border-top-style: inset; padding-top: 2px; padding-bottom: 2px; padding-left: 2px; padding-right: 2px} "
+     "td {border-top-style: inset; padding: 2px;} "
      "thead, tbody, tfoot { vertical-align: middle }"
      "tt, pre {font-family: courier;} ";
 
