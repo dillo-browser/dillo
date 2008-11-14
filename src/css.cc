@@ -60,12 +60,12 @@ bool CssSelector::match (Doctree *docTree) {
    if (element >= 0 && element != n->element)
       return false;
    if (klass != NULL &&
-      (n->klass == NULL || strcmp (klass, n->klass) != 0))
+      (n->klass == NULL || strcasecmp (klass, n->klass) != 0))
       return false;
    if (pseudo != NULL &&
-      (n->pseudo == NULL || strcmp (pseudo, n->pseudo) != 0))
+      (n->pseudo == NULL || strcasecmp (pseudo, n->pseudo) != 0))
       return false;
-   if (id != NULL && (n->id == NULL || strcmp (id, n->id) != 0))
+   if (id != NULL && (n->id == NULL || strcasecmp (id, n->id) != 0))
       return false;
    
    return true;
