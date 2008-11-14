@@ -194,6 +194,9 @@ void CssContext::buildUserAgentStyle () {
      "h4 {margin-top: 1.12em; margin-bottom: 0em;} "
      "h5 {font-size: 0.83em; margin-top: 1.5em; margin-bottom: 0em;} "
      "h6 {font-size: 0.75em; margin-top: 1.67em; margin-bottom: 0em;} "
+     "small, sub, sup { font-size: 0.83em } "
+     "sub             { vertical-align: sub } "
+     "sup             { vertical-align: super } "
      "table {border-top-style: outset} "
      "td {border-top-style: inset} "
      "tt, pre {font-family: courier;} ";
