@@ -184,6 +184,7 @@ void CssContext::buildUserAgentStyle () {
      "body  {background-color: 0xdcd1ba; font-family: helvetica; color: black;" 
      "       margin-left: 5px; margin-top: 5px; margin-bottom: 5px; margin-right: 5px;"
      " }"
+     "big { font-size: 1.17em }"
      ":link {color: blue; text-decoration: underline; cursor: pointer; } "
      ":visited {color: green; text-decoration: underline; cursor: pointer; } "
      "h1, h2, h3, h4, h5, h6, b, strong {font-weight: bolder; } "
@@ -195,10 +196,12 @@ void CssContext::buildUserAgentStyle () {
      "h5 {font-size: 0.83em; margin-top: 1.5em; margin-bottom: 0em;} "
      "h6 {font-size: 0.75em; margin-top: 1.67em; margin-bottom: 0em;} "
      "small, sub, sup { font-size: 0.83em } "
-     "sub             { vertical-align: sub } "
-     "sup             { vertical-align: super } "
-     "table {border-top-style: outset} "
+     "sub { vertical-align: sub } "
+     "sup { vertical-align: super } "
+     "s, strike, del { text-decoration: line-through }"
+     "table {border-top-style: outset; border-spacing: 2px} "
      "td {border-top-style: inset} "
+     "thead, tbody, tfoot { vertical-align: middle }"
      "tt, pre {font-family: courier;} ";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
