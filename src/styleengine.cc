@@ -153,16 +153,22 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             attrs->backgroundColor =
                Color::createSimple (layout, p->value.intVal);
             break; 
+         case CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR:
+            attrs->borderColor.top =
+              Color::createSimple (layout, p->value.intVal);
+            break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR:
             attrs->borderColor.bottom =
               Color::createSimple (layout, p->value.intVal);
             break; 
-         case CssProperty::CSS_PROPERTY_BORDER_COLOR:
-            attrs->setBorderColor (Color::createSimple (layout, p->value.intVal));
+         case CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR:
+            attrs->borderColor.left =
+              Color::createSimple (layout, p->value.intVal);
             break; 
-         case CssProperty::CSS_PROPERTY_BORDER_STYLE:
-            attrs->setBorderStyle ((BorderStyle) p->value.intVal);
-            break;
+         case CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR:
+            attrs->borderColor.right =
+              Color::createSimple (layout, p->value.intVal);
+            break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
             attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
             break;
@@ -174,9 +180,6 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE:
             attrs->borderStyle.top = (BorderStyle) p->value.intVal;
-            break;
-         case CssProperty::CSS_PROPERTY_BORDER_WIDTH:
-            attrs->borderWidth.setVal (computeValue (p->value.intVal, attrs->font));
             break;
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH:
             attrs->borderWidth.bottom = computeValue (p->value.intVal, attrs->font);
@@ -203,9 +206,6 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE:
             attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_MARGIN:
-            attrs->margin.setVal (computeValue (p->value.intVal, attrs->font));
-            break;
          case CssProperty::CSS_PROPERTY_MARGIN_BOTTOM:
             attrs->margin.bottom = computeValue (p->value.intVal, attrs->font);
             break;
@@ -217,9 +217,6 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CssProperty::CSS_PROPERTY_MARGIN_TOP:
             attrs->margin.top = computeValue (p->value.intVal, attrs->font);
-            break;
-         case CssProperty::CSS_PROPERTY_PADDING:
-            attrs->padding.setVal (computeValue (p->value.intVal, attrs->font));
             break;
          case CssProperty::CSS_PROPERTY_TEXT_ALIGN:
             attrs->textAlign = (TextAlignType) p->value.intVal;

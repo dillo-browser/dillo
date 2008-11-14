@@ -47,6 +47,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    CssPropertyList props, *table_cell_props;
    const char *attrbuf;
    int32_t border = -1, cellspacing = -1, cellpadding = -1, bgcolor = -1;
+   int cssLength;
 #endif
 
    DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
@@ -59,18 +60,28 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cellpadding")))
       cellpadding = strtol (attrbuf, NULL, 10);
 
-   if (border != -1)
-      props.set (CssProperty::CSS_PROPERTY_BORDER_WIDTH,
-         CSS_CREATE_LENGTH (border, CSS_LENGTH_TYPE_PX));
-   if (cellspacing != -1)
-      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING,
-         CSS_CREATE_LENGTH (cellspacing, CSS_LENGTH_TYPE_PX));
+   if (border != -1) {
+      cssLength = CSS_CREATE_LENGTH (border, CSS_LENGTH_TYPE_PX);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, cssLength);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, cssLength);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, cssLength);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, cssLength);
+   }
+
+   if (cellspacing != -1) {
+      cssLength = CSS_CREATE_LENGTH (cellspacing, CSS_LENGTH_TYPE_PX);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING, cssLength);
+   }
 
    /* When dillo was started with the --debug-rendering option, there
     * is always a border around the table. */
-   if (dillo_dbg_rendering && border < 1)
-      props.set (CssProperty::CSS_PROPERTY_BORDER_WIDTH,
-         CSS_CREATE_LENGTH (1, CSS_LENGTH_TYPE_PX));
+   if (dillo_dbg_rendering && border < 1) {
+      cssLength = CSS_CREATE_LENGTH (1, CSS_LENGTH_TYPE_PX);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, cssLength);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, cssLength);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, cssLength);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, cssLength);
+   }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width")))
       props.set (CssProperty::CSS_PROPERTY_WIDTH,
@@ -86,7 +97,10 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    }
 
    /** \todo figure out how to handle shaded colors with CSS */
-   props.set (CssProperty::CSS_PROPERTY_BORDER_COLOR, 0x000000);
+   props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR, 0x000000);
+   props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR, 0x000000);
+   props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR, 0x000000);
+   props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR, 0x000000);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       bgcolor = a_Html_color_parse(html, attrbuf, -1);
@@ -102,17 +116,35 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    /* The style for the cells */
    table_cell_props = new CssPropertyList ();
-   if (border != -1)
-      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH,
-         CSS_CREATE_LENGTH (border, CSS_LENGTH_TYPE_PX));
-   if (dillo_dbg_rendering && border < 1)
-      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_WIDTH, 
-         CSS_CREATE_LENGTH (1, CSS_LENGTH_TYPE_PX));
-   if (cellpadding != -1)
-      table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING,
-         CSS_CREATE_LENGTH (cellpadding, CSS_LENGTH_TYPE_PX));
+   if (border != -1) {
+      cssLength = CSS_CREATE_LENGTH (border, CSS_LENGTH_TYPE_PX);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, cssLength);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, cssLength);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, cssLength);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, cssLength);
+   }
+
+   if (dillo_dbg_rendering && border < 1) {
+      cssLength = CSS_CREATE_LENGTH (1, CSS_LENGTH_TYPE_PX);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, cssLength);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, cssLength);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, cssLength);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, cssLength);
+   }
+
+   if (cellpadding != -1) {
+      cssLength = CSS_CREATE_LENGTH (cellpadding, CSS_LENGTH_TYPE_PX);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING_TOP, cssLength);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING_BOTTOM, cssLength);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING_LEFT, cssLength);
+      table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING_RIGHT, cssLength);
+   }
+
    /** \todo figure out how to handle shaded colors with CSS */
-   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_COLOR, 0x000000);
+   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR, 0x000000);
+   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR, 0x000000);
+   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR, 0x000000);
+   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR, 0x000000);
 
    if (S_TOP(html)->table_cell_props)
       S_TOP(html)->table_cell_props->unref ();
