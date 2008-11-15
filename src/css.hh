@@ -216,7 +216,7 @@ class CssSelector {
  * \brief A CssSelector CssPropertyList pair.
  *  The CssPropertyList is applied if the CssSelector matches.
  */
-lass CssRule {
+class CssRule {
    private:
       CssSelector *selector;
       CssPropertyList *props;
