@@ -99,7 +99,7 @@ CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
    { "empty-cells", CSS_TYPE_UNUSED, NULL },
    { "float", CSS_TYPE_UNUSED, NULL },
    { "font-family", CSS_TYPE_SYMBOL, NULL },
-   { "font-size", CSS_TYPE_LENGTH, NULL },
+   { "font-size", CSS_TYPE_LENGTH_PERCENTAGE, NULL },
    { "font-size-adjust", CSS_TYPE_UNUSED, NULL },
    { "font-stretch", CSS_TYPE_UNUSED, NULL },
    { "font-style", CSS_TYPE_ENUM, Css_font_style_enum_vals },

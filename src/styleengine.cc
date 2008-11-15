@@ -130,6 +130,7 @@ void StyleEngine::endElement (int element) {
  */
 void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    FontAttrs fontAttrs = *attrs->font;
+   Font *parentFont;
 
    /* Determine font first so it can be used to resolve relative lenths.
     * \todo Things should be rearranged so that just one pass is necessary.
@@ -142,8 +143,12 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             fontAttrs.name = p->value.strVal;
             break;
          case CssProperty::CSS_PROPERTY_FONT_SIZE:
-            fontAttrs.size = computeValue (p->value.intVal,
-               stack->get (stack->size () - 2).style->font);
+            parentFont = stack->get (stack->size () - 2).style->font;
+            if (CSS_LENGTH_TYPE (p->value.intVal) == CSS_LENGTH_TYPE_PERCENTAGE)
+               fontAttrs.size = (int) (CSS_LENGTH_VALUE (p->value.intVal) * 
+                  parentFont->size);
+             else
+               fontAttrs.size = computeValue (p->value.intVal, parentFont);
             break;
          case CssProperty::CSS_PROPERTY_FONT_STYLE:
             fontAttrs.style = (FontStyle) p->value.intVal;
