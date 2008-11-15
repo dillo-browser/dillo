@@ -43,6 +43,9 @@ enum {
 #define CSS_LENGTH_VALUE(l)     ( ( (float)((l) & ~7) ) / (1 << 19) )
 #define CSS_LENGTH_TYPE(l)      ((l) & 7)
 
+/**
+ * \brief This class holds a CSS property and value pair.
+ */
 class CssProperty {
    public:
       typedef union {
@@ -158,6 +161,9 @@ class CssProperty {
       void print ();
 };
 
+/**
+ * \brief A list of CssProperty objects.
+ */ 
 class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
       int refCount;
 
@@ -186,7 +192,10 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
       inline void unref () { if(--refCount == 0) delete this; }
 };
 
-/** \todo proper implementation */
+/**
+ * \brief CSS selector class.
+ * \todo Implement missing selector options.
+ */
 class CssSelector {
    private:
       int refCount;
@@ -203,7 +212,11 @@ class CssSelector {
       inline void unref () { if(--refCount == 0) delete this; }
 };
 
-class CssRule {
+/**
+ * \brief A CssSelector CssPropertyList pair.
+ *  The CssPropertyList is applied if the CssSelector matches.
+ */
+lass CssRule {
    private:
       CssSelector *selector;
       CssPropertyList *props;
@@ -216,6 +229,10 @@ class CssRule {
       void print ();
 };
 
+/**
+ * \brief A list of CssRules.
+ * In apply () all matching rules are applied.
+ */
 class CssStyleSheet : lout::misc::SimpleVector <CssRule*> {
    public:
       CssStyleSheet() : lout::misc::SimpleVector <CssRule*> (1) {};
@@ -225,6 +242,9 @@ class CssStyleSheet : lout::misc::SimpleVector <CssRule*> {
       void apply (CssPropertyList *props, Doctree *docTree);
 };
 
+/**
+ * \brief A set of CssStyleSheets.
+ */
 class CssContext {
    private:
       static CssStyleSheet *userAgentStyle;
