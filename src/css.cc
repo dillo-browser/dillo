@@ -214,8 +214,8 @@ void CssContext::buildUserStyle () {
 
    FILE *fp = fopen (filename, "r");
    if (fp) {
-      buf = (char*) dMalloc (10000); /* \todo proper buffer handling */
-      fread (buf, 1, 10000, fp);
+      buf = (char*) dMalloc (100000); /* \todo proper buffer handling */
+      fread (buf, 1, 100000, fp);
 
       a_Css_parse (this, buf, strlen (buf), 0, CSS_ORIGIN_USER);
 
