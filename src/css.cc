@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include "../dlib/dlib.h"
 #include "prefs.h"
 #include "html_common.hh"
 #include "css.hh"
@@ -207,19 +208,20 @@ void CssContext::buildUserAgentStyle () {
 }
 
 void CssContext::buildUserStyle () {
-   char *buf;
+   char buf[1024];
    char *filename;
 
    filename = dStrconcat(dGethomedir(), "/.dillo/style.css", NULL);
-
    FILE *fp = fopen (filename, "r");
    if (fp) {
-      buf = (char*) dMalloc (100000); /* \todo proper buffer handling */
-      fread (buf, 1, 100000, fp);
+      Dstr *style = dStr_sized_new (1024);
+      size_t len;
+   
+      while ((len = fread (buf, 1, sizeof (buf), fp)))
+         dStr_append_l (style, buf, len);
 
-      a_Css_parse (this, buf, strlen (buf), 0, CSS_ORIGIN_USER);
-
-      dFree (buf);
+      a_Css_parse (this, style->str, style->len, 0, CSS_ORIGIN_USER);
+      dStr_free (style, 1);
    }
 
    dFree (filename);
