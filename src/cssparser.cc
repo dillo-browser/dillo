@@ -875,8 +875,9 @@ static void Css_parse_ruleset (CssParser *parser)
       selector = NULL;
 
       if (parser->ttype == CSS_TK_SYMBOL) {
-         selector = new CssSelector ();
-         selector->element = a_Html_tag_index(parser->tval);
+         int element = a_Html_tag_index(parser->tval);
+         if (element != -1) 
+            selector = new CssSelector (element);
          Css_next_token (parser);
       } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
          selector = new CssSelector ();
