@@ -181,7 +181,7 @@ void CssContext::addRule (CssRule *rule, CssPrimaryOrder order) {
 }
 
 void CssContext::buildUserAgentStyle () {
-   char *cssBuf =
+   const char *cssBuf =
      "body  {background-color: #dcd1ba; font-family: helvetica; color: black;" 
      "       margin: 5px; }"
      "big { font-size: 1.17em }"

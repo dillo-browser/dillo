@@ -171,7 +171,8 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
       CssPropertyList() : lout::misc::SimpleVector <CssProperty> (1) {
          refCount = 0;
       };
-      CssPropertyList(const CssPropertyList &p) : lout::misc::SimpleVector <CssProperty> (p) {
+      CssPropertyList(const CssPropertyList &p) :
+         lout::misc::SimpleVector <CssProperty> (p) {
          refCount = 0;
       };
 

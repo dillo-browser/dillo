@@ -2366,9 +2366,10 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
             html->visited_color
 /*
             a_Color_vc(html->visited_color,
-                       html->styleEngine->style ()->color->getColor(),
+                       html->styleEngine->style()->color->getColor(),
                        html->link_color,
-                       html->styleEngine->style ()->backgroundColor->getColor()),
+                       html->styleEngine->style()->backgroundColor->getColor()
+                      );
 */
             );
       } else {
@@ -2690,7 +2691,8 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
          BUG_MSG("illegal negative LIST VALUE attribute; Starting from 0\n");
          *list_number = 0;
       }
-      numtostr((*list_number)++, buf, 16, html->styleEngine->style ()->listStyleType);
+      numtostr((*list_number)++, buf, 16,
+               html->styleEngine->style ()->listStyleType);
       list_item->initWithText (dStrdup(buf), word_style);
       list_item->addSpace (word_style);
       html->PrevWasSPC = true;
