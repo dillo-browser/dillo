@@ -888,7 +888,7 @@ static void Css_parse_declaration(CssParser * parser,
                                       .properties[i],
                                       dir_vals[dir_set[n - 1][i]]);
                   } else
-                     MSG_CSS("no values for shorthand proprerty '%s'\n",
+                     MSG_CSS("no values for shorthand property '%s'\n",
                              Css_shorthand_info[sh_index].symbol);
 
                   break;
