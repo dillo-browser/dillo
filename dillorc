@@ -98,8 +98,9 @@
 #search_url="http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
 # Set the proxy information for http.
-# WARNING: dillo uses wget for ftp and https. To use a proxy for those
-# protocols, you will need to configure wget.
+# WARNING: - HTTPS does not currently use the proxy settings.
+#          - FTP and downloads plugins use wget. To use a proxy with them,
+#            you will need to configure wget accordingly.
 # http_proxy="http://localhost:8080/"
 #(by default, no proxy is used)
 
