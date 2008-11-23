@@ -58,16 +58,6 @@ void        a_Css_parse                       (CssContext *context,
                                                int order_count,
                                                CssOrigin origin);
 
-void        p_Css_parse_element_style         (CssContext *context,
-                                               char *id,
-                                               char *klass,
-                                               char *pseudo,
-                                               char *element,
-                                               const char *buf,
-                                               int buflen,
-                                               int order_count,
-                                               CssOrigin origin);
-
 extern CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST];
 
 #endif // __CSS_H__
