@@ -6,8 +6,6 @@
 .*\.o
 config\..*
 autom4te.cache
-COPYING
-INSTALL
 Makefile
 Makefile.in
 configure
