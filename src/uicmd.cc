@@ -180,7 +180,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    win->add(DilloTabs);
 
    // Create and set the UI
-   UI *new_ui = new UI(0, 0, ww, wh, DEFAULT_TAB_LABEL, old_bw ? BW2UI(old_bw) : NULL);
+   UI *new_ui = new UI(0, 0, ww, wh, DEFAULT_TAB_LABEL,
+                       old_bw ? BW2UI(old_bw) : NULL);
    new_ui->set_status("http://www.dillo.org/");
    new_ui->tabs(DilloTabs);
 

@@ -426,7 +426,7 @@ static void Cookies_save_and_free()
    rewind(file_stream);
    fd = fileno(file_stream);
    ftruncate(fd, 0);
-   fprintf(file_stream, cookies_txt_header_str);
+   fprintf(file_stream, "%s", cookies_txt_header_str);
 
    /* Iterate cookies per domain, saving and freeing */
    while ((node = dList_nth_data(cookies, 0))) {
