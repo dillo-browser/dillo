@@ -2489,15 +2489,6 @@ static void Html_tag_close_a(DilloHtml *html, int TagIdx)
  */
 static void Html_tag_open_u(DilloHtml *html, const char *tag, int tagsize)
 {
-   Style *style;
-   StyleAttrs style_attrs;
-
-   style = html->styleEngine->style ();
-   style_attrs = *style;
-   style_attrs.textDecoration |= TEXT_DECORATION_UNDERLINE;
-//   html->styleEngine->style () =
-//      Style::create (HT2LT(html), &style_attrs);
-//   style->unref ();
 }
 
 /*
@@ -2505,15 +2496,6 @@ static void Html_tag_open_u(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_strike(DilloHtml *html, const char *tag, int tagsize)
 {
-   Style *style;
-   StyleAttrs style_attrs;
-
-   style = html->styleEngine->style ();
-   style_attrs = *style;
-   style_attrs.textDecoration |= TEXT_DECORATION_LINE_THROUGH;
-//   html->styleEngine->style () =
-//      Style::create (HT2LT(html), &style_attrs);
-//   style->unref ();
 }
 
 /*
@@ -2996,7 +2978,6 @@ static void Html_tag_open_dfn(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_kbd(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
 
 /*
@@ -3004,7 +2985,6 @@ static void Html_tag_open_kbd(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_samp(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
 
 /*
@@ -3020,7 +3000,6 @@ static void Html_tag_open_var(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_sub(DilloHtml *html, const char *tag, int tagsize)
 {
-   HTML_SET_TOP_ATTR (html, valign, VALIGN_SUB);
 }
 
 /*
@@ -3028,7 +3007,6 @@ static void Html_tag_open_sub(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_sup(DilloHtml *html, const char *tag, int tagsize)
 {
-   HTML_SET_TOP_ATTR (html, valign, VALIGN_SUPER);
 }
 
 /*

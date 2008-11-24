@@ -195,6 +195,7 @@ void CssContext::buildUserAgentStyle () {
      "h4 {margin-top: 1.12em; margin-bottom: 0em;} "
      "h5 {font-size: 0.83em; margin-top: 1.5em; margin-bottom: 0em;} "
      "h6 {font-size: 0.75em; margin-top: 1.67em; margin-bottom: 0em;} "
+     "u {text-decoration: underline } "
      "small, sub, sup { font-size: 0.83em } "
      "sub { vertical-align: sub } "
      "sup { vertical-align: super } "
@@ -202,7 +203,7 @@ void CssContext::buildUserAgentStyle () {
      "table {border-top-style: outset; border-spacing: 1px} "
      "td {border-top-style: inset; padding: 2px;} "
      "thead, tbody, tfoot { vertical-align: middle }"
-     "tt, pre {font-family: courier;} ";
+     "tt, pre, samp, kbd {font-family: courier;} ";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
 }
