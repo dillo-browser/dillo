@@ -1922,8 +1922,9 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
          props.set (CssProperty::CSS_PROPERTY_COLOR, color);
    }
 
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "face")))
-      props.set (CssProperty::CSS_PROPERTY_FONT_FAMILY, attrbuf);
+// \todo reenable font face handling when font selection is implemented
+//   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "face")))
+//      props.set (CssProperty::CSS_PROPERTY_FONT_FAMILY, attrbuf);
 
    html->styleEngine->setNonCssHints (&props);
 }
