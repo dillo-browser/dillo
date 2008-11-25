@@ -1891,12 +1891,6 @@ static void Html_tag_close_h(DilloHtml *html, int TagIdx)
 static void Html_tag_open_big_small(DilloHtml *html,
                                     const char *tag, int tagsize)
 {
-   int level;
-
-   level =
-      Html_fontsize_to_level(html->styleEngine->style ()->font->size) +
-      ((dStrncasecmp(tag+1, "big", 3)) ? -1 : 1);
-   a_Html_set_top_font(html, NULL, Html_level_to_fontsize(level), 0, 0);
 }
 
 /*
@@ -1989,7 +1983,6 @@ static void Html_tag_open_cite(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_center(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
-   HTML_SET_TOP_ATTR(html, textAlign, TEXT_ALIGN_CENTER);
 }
 
 /*
@@ -1999,7 +1992,6 @@ static void Html_tag_open_address(DilloHtml *html,
                                   const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
-   a_Html_set_top_font(html, NULL, 0, 2, 2);
 }
 
 /*
@@ -2007,7 +1999,6 @@ static void Html_tag_open_address(DilloHtml *html,
  */
 static void Html_tag_open_tt(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
 
 /*
