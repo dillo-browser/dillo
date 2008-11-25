@@ -204,7 +204,7 @@ void CssContext::buildUserAgentStyle () {
      "table {border-top-style: outset; border-spacing: 1px} "
      "td {border-top-style: inset; padding: 2px;} "
      "thead, tbody, tfoot { vertical-align: middle }"
-     "tt, pre, samp, kbd {font-family: courier;} ";
+     "code, tt, pre, samp, kbd {font-family: courier;} ";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
 }

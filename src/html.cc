@@ -2784,7 +2784,6 @@ static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
-   a_Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 
    /* Is the placement of this statement right? */
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_PRE;
@@ -2954,7 +2953,6 @@ static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_code(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_set_top_font(html, prefs.fw_fontname, 0, 0, 0);
 }
 
 /*
