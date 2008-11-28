@@ -11,6 +11,7 @@ class StyleEngine : public Doctree {
          public:
             dw::core::style::Style *style;
             const char *styleAttribute;
+            bool inheritBackgroundColor;
       };
 
       dw::core::Layout *layout;
@@ -44,6 +45,7 @@ class StyleEngine : public Doctree {
       void endElement (int tag);
       void setPseudo (const char *pseudo);
       void setNonCssHints (CssPropertyList *nonCssHints);
+      void inheritBackgroundColor ();
 
       inline dw::core::style::Style *style () {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->style;

@@ -191,6 +191,7 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
          }
       }
 
+      html->styleEngine->inheritBackgroundColor ();
       html->styleEngine->setNonCssHints (&props);
 
       ((dw::Table*)S_TOP(html)->table)->addRow (html->styleEngine->style ());

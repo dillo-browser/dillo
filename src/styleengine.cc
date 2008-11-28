@@ -64,6 +64,7 @@ void StyleEngine::startElement (int element) {
    n->klass = NULL;
    n->pseudo = NULL;
    n->styleAttribute = NULL;
+   n->inheritBackgroundColor = false;
 }
 
 void StyleEngine::setId (const char *id) {
@@ -92,6 +93,16 @@ void StyleEngine::setNonCssHints (CssPropertyList *nonCssHints) {
    if (stack->getRef (stack->size () - 1)->style)
       stack->getRef (stack->size () - 1)->style->unref ();
    style0 (nonCssHints); // evaluate now, so caller can free nonCssHints
+}
+
+/**
+ * \brief Use of the background color of the parent style as default.
+ *   This is only used in table code to allow for colors specified for
+ *   table rows as table rows are currently no widgets and therefore
+ *   don't draw any background.
+ */
+void StyleEngine::inheritBackgroundColor () {
+   stack->getRef (stack->size () - 1)->inheritBackgroundColor = true;
 }
 
 /**
@@ -337,6 +348,10 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
    // reset values that are not inherited according to CSS
    attrs.resetValues ();
+  
+   if (stack->getRef (stack->size () - 2)->inheritBackgroundColor)
+      attrs.backgroundColor =
+         stack->getRef (stack->size () - 2)->style->backgroundColor; 
 
    cssContext->apply (&props, this, tagStyleProps, nonCssProperties);
 
