@@ -16,6 +16,7 @@ dillo-2.1
  - Switched a_UIcmd_save() to take its URL from history (not location bar).
  - Set prefs.vw_fontname as deafult font for the UI.
  - Fix: recover page focus when clicking-out of a widget.
+ - Fixed a segfault bug in the test/ directory.
    Patches: place (AKA corvid)
 +- Switched SSL-enabled to configure.in (./configure --enable-ssl).
  - Standardised the installation of dpid/dpidrc with auto* tools.
