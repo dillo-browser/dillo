@@ -971,13 +971,7 @@ static void Css_parse_simple_selector(CssParser * parser,
       }
    } while (pp);
 
-   /* Skip all tokens which may "belong" to this selector. */
-   while (!(parser->ttype == CSS_TK_END ||
-         (parser->ttype == CSS_TK_CHAR &&
-          (parser->tval[0] == ',' || parser->tval[0] == '{'))))
-      Css_next_token(parser);
-
-   DEBUG_MSG(DEBUG_PARSE_LEVEL, "end of selector (%s, %s, %s, %d)\n",
+   DEBUG_MSG(DEBUG_PARSE_LEVEL, "end of simple selector (%s, %s, %s, %d)\n",
       selector->id, selector->klass,
       selector->pseudo, selector->element);
 }
@@ -985,7 +979,23 @@ static void Css_parse_simple_selector(CssParser * parser,
 static CssSelector *Css_parse_selector(CssParser * parser) {
    CssSelector *selector = new CssSelector ();
 
-   Css_parse_simple_selector (parser, selector->top ());
+   while (true) {
+      Css_parse_simple_selector (parser, selector->top ());
+
+      if (parser->ttype == CSS_TK_END) {
+         delete selector;
+         return NULL;
+      } else if (parser->ttype == CSS_TK_CHAR &&
+         (parser->tval[0] == ',' || parser->tval[0] == '{')) {
+         return selector;
+      } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '>') {
+         selector->addSimpleSelector (CssSelector::CHILD);
+      } else if (parser->space_separated) {
+         selector->addSimpleSelector (CssSelector::DESCENDENT);
+      } else {
+         assert (false); /* not reached */
+      }
+   }
 
    return selector;
 }

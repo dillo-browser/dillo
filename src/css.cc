@@ -66,12 +66,12 @@ bool CssSelector::match (Doctree *docTree) {
    assert ((combinator == NULL && simpleSelector->size () == 1) ||
            combinator->size () == simpleSelector->size () - 1);
 
-   sel = simpleSelector->getRef (simpleSelector->size () - 1);
+   sel = top ();
    
    if (! sel->match (node))
       return false;
 
-   for (int i = simpleSelector->size () - 2; i > 0; i--) {
+   for (int i = simpleSelector->size () - 2; i >= 0; i--) {
       sel = simpleSelector->getRef (i);
       comb = combinator->get (i);
       node = docTree->parent (node);
@@ -92,6 +92,22 @@ bool CssSelector::match (Doctree *docTree) {
    return true;
 }
 
+void CssSelector::addSimpleSelector (Combinator c, int element,
+                                     const char *klass, const char *pseudo,
+                                     const char *id) {
+   simpleSelector->increase ();
+   if (combinator == NULL)
+      combinator = new lout::misc::SimpleVector <Combinator> (1);
+   combinator->increase ();
+
+   *combinator->getRef (combinator->size () - 1) = c;
+   top ()->element = element;
+   top ()->klass = klass;
+   top ()->pseudo = pseudo;
+   top ()->id = id;
+
+}
+
 void CssSelector::print () {
    for (int i = 0; i < simpleSelector->size () - 1; i++) {
       simpleSelector->getRef (i)->print ();
@@ -106,6 +122,7 @@ void CssSelector::print () {
    }
 
    top ()->print ();
+   fprintf (stderr, "\n");
 }
 
 bool CssSimpleSelector::match (const DoctreeNode *n) {
@@ -124,7 +141,7 @@ bool CssSimpleSelector::match (const DoctreeNode *n) {
 }
 
 void CssSimpleSelector::print () {
-   fprintf (stderr, "Element %d, class %s, pseudo %s, id %s\n",
+   fprintf (stderr, "Element %d, class %s, pseudo %s, id %s ",
       element, klass, pseudo, id);
 }
 
