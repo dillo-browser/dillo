@@ -922,78 +922,81 @@ static void Css_parse_declaration(CssParser * parser,
       Css_next_token(parser);
 }
 
+static CssSelector *Css_parse_selector(CssParser * parser) {
+   CssSelector *selector = new CssSelector ();
+   const char *p, **pp;
+
+   if (parser->ttype == CSS_TK_SYMBOL) {
+      selector->top ()->element = a_Html_tag_index(parser->tval);
+      Css_next_token(parser);
+   } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
+      selector->top ()->element = CssSimpleSelector::ELEMENT_ANY;
+      Css_next_token(parser);
+   }
+
+   do {
+      pp = NULL;
+      if (parser->ttype == CSS_TK_CHAR) {
+         switch (parser->tval[0]) {
+            case '#':
+               pp = &selector->top ()->id;
+               break;
+            case '.':
+               pp = &selector->top ()->klass;
+               break;
+               case ':':
+               pp = &selector->top ()->pseudo;
+               break;
+         }
+      }
+
+      if (pp) {
+         Css_next_token(parser);
+         if (parser->ttype == CSS_TK_SYMBOL ||
+            parser->ttype == CSS_TK_DECINT) {
+               if (*pp == NULL)
+                  *pp = dStrdup(parser->tval);
+               Css_next_token(parser);
+         } else if (parser->ttype == CSS_TK_FLOAT) {
+            /* In this case, we are actually interested in three tokens:
+             * number, '.', number. Instead, we have a decimal fraction,
+             * which we split up again. */
+            p = strchr(parser->tval, '.');
+            if (*pp == NULL)
+               *pp = dStrndup(parser->tval, p - parser->tval);
+            if (selector->top ()->klass == NULL)
+               selector->top ()->klass = dStrdup(p + 1);
+            Css_next_token(parser);
+         }
+      }
+   } while (pp);
+
+   /* Skip all tokens which may "belong" to this selector. */
+   while (!(parser->ttype == CSS_TK_END ||
+         (parser->ttype == CSS_TK_CHAR &&
+          (parser->tval[0] == ',' || parser->tval[0] == '{'))))
+      Css_next_token(parser);
+
+   DEBUG_MSG(DEBUG_PARSE_LEVEL, "end of selector (%s, %s, %s, %d)\n",
+      selector->top ()->id, selector->top ()->klass,
+      selector->top ()->pseudo, selector->top ()->element);
+
+   return selector;
+}
+
 static void Css_parse_ruleset(CssParser * parser)
 {
    lout::misc::SimpleVector < CssSelector * >*list;
    CssPropertyList *props, *importantProps;
    CssSelector *selector;
-   const char *p, **pp;
 
    list = new lout::misc::SimpleVector < CssSelector * >(1);
 
    while (true) {
-      selector = new CssSelector();
-      selector->ref();
-
-      if (parser->ttype == CSS_TK_SYMBOL) {
-         selector->top ()->element = a_Html_tag_index(parser->tval);
-         Css_next_token(parser);
-      } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
-         selector->top ()->element = CssSimpleSelector::ELEMENT_ANY;
-         Css_next_token(parser);
-      }
-
-      do {
-         pp = NULL;
-         if (parser->ttype == CSS_TK_CHAR) {
-            switch (parser->tval[0]) {
-               case '#':
-                  pp = &selector->top ()->id;
-                  break;
-               case '.':
-                  pp = &selector->top ()->klass;
-                  break;
-               case ':':
-                  pp = &selector->top ()->pseudo;
-                  break;
-            }
-         }
-
-         if (pp) {
-            Css_next_token(parser);
-            if (parser->ttype == CSS_TK_SYMBOL ||
-               parser->ttype == CSS_TK_DECINT) {
-               if (*pp == NULL)
-                  *pp = dStrdup(parser->tval);
-               Css_next_token(parser);
-            } else if (parser->ttype == CSS_TK_FLOAT) {
-               /* In this case, we are actually interested in three tokens:
-                * number, '.', number. Instead, we have a decimal fraction,
-                * which we split up again. */
-               p = strchr(parser->tval, '.');
-               if (*pp == NULL)
-                  *pp = dStrndup(parser->tval, p - parser->tval);
-               if (selector->top ()->klass == NULL)
-                  selector->top ()->klass = dStrdup(p + 1);
-               Css_next_token(parser);
-            }
-         }
-      } while (pp);
-
-      /* Skip all tokens which may "belong" to this selector. */
-      while (!(parser->ttype == CSS_TK_END ||
-               (parser->ttype == CSS_TK_CHAR &&
-                (parser->tval[0] == ',' || parser->tval[0] == '{'))))
-         Css_next_token(parser);
-
-      if (selector)
-         DEBUG_MSG(DEBUG_PARSE_LEVEL, "end of selector (%s, %s, %s, %d)\n",
-                   selector->top ()->id, selector->top ()->klass,
-                   selector->top ()->pseudo, selector->top ()->element);
-      else
-         DEBUG_MSG(DEBUG_PARSE_LEVEL, "not a %s\n", "selector");
+      selector = Css_parse_selector(parser);
 
       if (selector) {
+         selector->ref();
          list->increase();
          list->set(list->size() - 1, selector);
       }
