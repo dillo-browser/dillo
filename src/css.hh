@@ -195,6 +195,11 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
 
 class CssSimpleSelector {
    public:
+      enum {
+         ELEMENT_NONE = -1,
+         ELEMENT_ANY = -2,
+      };
+
       int element;
       const char *klass, *pseudo, *id;
 
@@ -220,9 +225,12 @@ class CssSelector {
       lout::misc::SimpleVector <Combinator> *combinator;
 
    public:
-      CssSelector (int element = -1, const char *klass = NULL,
+      CssSelector (int element = CssSimpleSelector::ELEMENT_ANY,
+                   const char *klass = NULL,
                    const char *pseudo = NULL, const char *id = NULL);
-      void addSimpleSelector (Combinator c, int element = -1, const char *klass = NULL,
+      void addSimpleSelector (Combinator c,
+                              int element = CssSimpleSelector::ELEMENT_ANY,
+                              const char *klass = NULL,
                               const char *pseudo = NULL, const char *id = NULL);
       inline CssSimpleSelector *top () {
          return simpleSelector->getRef (simpleSelector->size () - 1);

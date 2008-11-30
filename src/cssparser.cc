@@ -922,15 +922,15 @@ static void Css_parse_declaration(CssParser * parser,
       Css_next_token(parser);
 }
 
-static CssSelector *Css_parse_selector(CssParser * parser) {
-   CssSelector *selector = new CssSelector ();
+static void Css_parse_simple_selector(CssParser * parser,
+                                      CssSimpleSelector *selector) {
    const char *p, **pp;
 
    if (parser->ttype == CSS_TK_SYMBOL) {
-      selector->top ()->element = a_Html_tag_index(parser->tval);
+      selector->element = a_Html_tag_index(parser->tval);
       Css_next_token(parser);
    } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
-      selector->top ()->element = CssSimpleSelector::ELEMENT_ANY;
+      selector->element = CssSimpleSelector::ELEMENT_ANY;
       Css_next_token(parser);
    }
 
@@ -939,13 +939,13 @@ static CssSelector *Css_parse_selector(CssParser * parser) {
       if (parser->ttype == CSS_TK_CHAR) {
          switch (parser->tval[0]) {
             case '#':
-               pp = &selector->top ()->id;
+               pp = &selector->id;
                break;
             case '.':
-               pp = &selector->top ()->klass;
+               pp = &selector->klass;
                break;
                case ':':
-               pp = &selector->top ()->pseudo;
+               pp = &selector->pseudo;
                break;
          }
       }
@@ -964,8 +964,8 @@ static CssSelector *Css_parse_selector(CssParser * parser) {
             p = strchr(parser->tval, '.');
             if (*pp == NULL)
                *pp = dStrndup(parser->tval, p - parser->tval);
-            if (selector->top ()->klass == NULL)
-               selector->top ()->klass = dStrdup(p + 1);
+            if (selector->klass == NULL)
+               selector->klass = dStrdup(p + 1);
             Css_next_token(parser);
          }
       }
@@ -978,8 +978,14 @@ static CssSelector *Css_parse_selector(CssParser * parser) {
       Css_next_token(parser);
 
    DEBUG_MSG(DEBUG_PARSE_LEVEL, "end of selector (%s, %s, %s, %d)\n",
-      selector->top ()->id, selector->top ()->klass,
-      selector->top ()->pseudo, selector->top ()->element);
+      selector->id, selector->klass,
+      selector->pseudo, selector->element);
+}
+
+static CssSelector *Css_parse_selector(CssParser * parser) {
+   CssSelector *selector = new CssSelector ();
+
+   Css_parse_simple_selector (parser, selector->top ());
 
    return selector;
 }

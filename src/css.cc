@@ -109,7 +109,7 @@ void CssSelector::print () {
 }
 
 bool CssSimpleSelector::match (const DoctreeNode *n) {
-   if (element >= 0 && element != n->element)
+   if (element != ELEMENT_ANY && element != n->element)
       return false;
    if (klass != NULL &&
       (n->klass == NULL || strcasecmp (klass, n->klass) != 0))
@@ -227,8 +227,8 @@ void CssContext::addRule (CssRule *rule, CssPrimaryOrder order) {
 
    sheet[order]->addRule (rule);
 
-//   fprintf(stderr, "Adding Rule (%d)\n", order);
-//   rule->print ();
+   fprintf(stderr, "Adding Rule (%d)\n", order);
+   rule->print ();
 }
 
 void CssContext::buildUserAgentStyle () {
