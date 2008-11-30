@@ -340,6 +340,7 @@ typedef struct {
    CssTokenType ttype;
    char tval[MAX_STR_LEN];
    bool within_block;
+   bool space_separated; /* used when parsing CSS selectors */
 } CssParser;
 
 /*
@@ -375,9 +376,14 @@ static void Css_next_token(CssParser * parser)
    char hexbuf[5];
    bool escaped;
 
-   do
+   parser->space_separated = false;
+
+   c = Css_getc(parser);
+
+   while (isspace(c)) {
+      parser->space_separated = true;
       c = Css_getc(parser);
-   while (isspace(c));
+   }
 
    if (isdigit(c)) {
       parser->ttype = CSS_TK_DECINT;
@@ -1070,6 +1076,7 @@ void a_Css_parse(CssContext * context,
    parser.order_count = 0;
    parser.origin = origin;
    parser.within_block = false;
+   parser.space_separated = false;
 
    Css_next_token(&parser);
    while (parser.ttype != CSS_TK_END)
