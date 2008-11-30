@@ -130,8 +130,8 @@ private:
       FormClickedReceiver (Form *form, const char *name, const char *value);
       ~FormClickedReceiver ();
       
-      void clicked (dw::core::ui::ButtonResource *resource, int buttonNo,
-                    int x, int y);
+      void clicked(dw::core::ui::ButtonResource *resource,
+                   dw::core::EventButton *event);
    };
 
    lout::container::typed::List <ResourceDecorator> *resources;

@@ -334,8 +334,7 @@ public:
    class ClickedReceiver: public lout::signal::Receiver
    {
    public:
-      virtual void clicked (ButtonResource *resource, int buttonNo, int x,
-                            int y) = 0;
+      virtual void clicked (ButtonResource *resource, EventButton *event) = 0;
    };
 
 private:
@@ -347,14 +346,14 @@ private:
    public:
       inline void connectClicked (ClickedReceiver *receiver) {
          connect (receiver); }
-      void emitClicked (ButtonResource *resource, int buttonNo, int x, int y);
+      void emitClicked (ButtonResource *resource, EventButton *event);
    };
 
    ClickedEmitter clickedEmitter;
 
 protected:
-   inline void emitClicked (int buttonNo, int x, int y) {
-      return clickedEmitter.emitClicked (this, buttonNo, x, y); }
+   inline void emitClicked (EventButton *event) {
+      clickedEmitter.emitClicked (this, event); }
 
 public:
    inline void connectClicked (ClickedReceiver *receiver) {

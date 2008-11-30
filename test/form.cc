@@ -165,9 +165,9 @@ Form::FormClickedReceiver::~FormClickedReceiver ()
 }
       
 void Form::FormClickedReceiver::clicked (ButtonResource *resource,
-                                         int buttonNo, int x, int y)
+                                         dw::core::EventButton *event)
 {
-   form->send (name, value, x, y);
+   form->send (name, value, event->xCanvas, event->yCanvas);
 }
 
 Form::Form ()

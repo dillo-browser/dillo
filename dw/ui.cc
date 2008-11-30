@@ -211,21 +211,17 @@ bool ButtonResource::ClickedEmitter::emitToReceiver (lout::signal::Receiver
 {
    ((ClickedReceiver*)receiver)
       ->clicked ((ButtonResource*)((Pointer*)argv[0])->getValue (),
-                 ((Integer*)argv[1])->getValue (),
-                 ((Integer*)argv[2])->getValue (),
-                 ((Integer*)argv[3])->getValue ());
+                 (EventButton*)((Pointer*)argv[1])->getValue());
    return false;
 }
 
 void ButtonResource::ClickedEmitter::emitClicked (ButtonResource *resource,
-                                                  int buttonNo, int x, int y)
+                                                  EventButton *event)
 {
-   Integer i1 (buttonNo);
-   Integer i2 (x);
-   Integer i3 (y);
-   Pointer p (resource);
-   Object *argv[4] = { &p, &i1, &i2, &i3 };
-   emitVoid (0, 4, argv);
+   Pointer p1 (resource);
+   Pointer p2 (event);
+   Object *argv[2] = { &p1, &p2 };
+   emitVoid (0, 2, argv);
 }
 
 // ----------------------------------------------------------------------
