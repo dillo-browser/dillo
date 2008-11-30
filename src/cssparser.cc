@@ -932,15 +932,13 @@ static void Css_parse_ruleset(CssParser * parser)
    list = new lout::misc::SimpleVector < CssSelector * >(1);
 
    while (true) {
-      selector = NULL;
+      selector = new CssSelector();
 
       if (parser->ttype == CSS_TK_SYMBOL) {
-         int element = a_Html_tag_index(parser->tval);
-         if (element != -1) 
-            selector = new CssSelector(element);
+         selector->top ()->element = a_Html_tag_index(parser->tval);
          Css_next_token(parser);
       } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
-         selector = new CssSelector();
+         selector->top ()->element = CssSimpleSelector::ELEMENT_ANY;
          Css_next_token(parser);
       } else if (parser->ttype == CSS_TK_CHAR &&
                  (parser->tval[0] == '.' || parser->tval[0] == ':' ||
