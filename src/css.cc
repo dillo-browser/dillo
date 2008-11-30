@@ -48,16 +48,67 @@ void CssPropertyList::print () {
 CssSelector::CssSelector (int element, const char *klass,
                           const char *pseudo, const char *id) {
    refCount = 0;
-   this->element = element;
-   this->klass = klass;
-   this->pseudo = pseudo;
-   this->id = id;
+   combinator = NULL;
+   simpleSelector = new lout::misc::SimpleVector <CssSimpleSelector> (1);
+   simpleSelector->increase ();
+   top ()->element = element;
+   top ()->klass = klass;
+   top ()->pseudo = pseudo;
+   top ()->id = id;
 };
 
-/** \todo implement all selection option CSS offers */
 bool CssSelector::match (Doctree *docTree) {
-   const DoctreeNode *n = docTree-> top ();
+   CssSimpleSelector *sel;
+   Combinator comb;
+   const DoctreeNode *node = docTree->top ();
 
+   assert (simpleSelector->size () > 0);
+   assert ((combinator == NULL && simpleSelector->size () == 1) ||
+           combinator->size () == simpleSelector->size () - 1);
+
+   sel = simpleSelector->getRef (simpleSelector->size () - 1);
+   
+   if (! sel->match (node))
+      return false;
+
+   for (int i = simpleSelector->size () - 2; i > 0; i--) {
+      sel = simpleSelector->getRef (i);
+      comb = combinator->get (i);
+      node = docTree->parent (node);
+
+      if (node == NULL)
+         return false;
+     
+      switch (comb) {
+         case DESCENDENT:
+            if (!sel->match (node))
+               return false;
+            break;
+         default:
+            return false; // \todo implement other combinators
+      }
+   } 
+   
+   return true;
+}
+
+void CssSelector::print () {
+   for (int i = 0; i < simpleSelector->size () - 1; i++) {
+      simpleSelector->getRef (i)->print ();
+      switch (combinator->get (i)) {
+         case DESCENDENT:
+            fprintf (stderr, " ");
+            break;
+         default:
+            fprintf (stderr, "?");
+            break;
+      }
+   }
+
+   top ()->print ();
+}
+
+bool CssSimpleSelector::match (const DoctreeNode *n) {
    if (element >= 0 && element != n->element)
       return false;
    if (klass != NULL &&
@@ -72,7 +123,7 @@ bool CssSelector::match (Doctree *docTree) {
    return true;
 }
 
-void CssSelector::print () {
+void CssSimpleSelector::print () {
    fprintf (stderr, "Element %d, class %s, pseudo %s, id %s\n",
       element, klass, pseudo, id);
 }

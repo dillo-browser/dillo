@@ -945,20 +945,19 @@ static void Css_parse_ruleset(CssParser * parser)
 
       if (selector) {
          selector->ref();
-         selector->id = selector->klass = selector->pseudo = NULL;
 
          do {
             pp = NULL;
             if (parser->ttype == CSS_TK_CHAR) {
                switch (parser->tval[0]) {
                case '#':
-                  pp = &selector->id;
+                  pp = &selector->top ()->id;
                   break;
                case '.':
-                  pp = &selector->klass;
+                  pp = &selector->top ()->klass;
                   break;
                case ':':
-                  pp = &selector->pseudo;
+                  pp = &selector->top ()->pseudo;
                   break;
                }
             }
@@ -977,8 +976,8 @@ static void Css_parse_ruleset(CssParser * parser)
                   p = strchr(parser->tval, '.');
                   if (*pp == NULL)
                      *pp = dStrndup(parser->tval, p - parser->tval);
-                  if (selector->klass == NULL)
-                     selector->klass = dStrdup(p + 1);
+                  if (selector->top ()->klass == NULL)
+                     selector->top ()->klass = dStrdup(p + 1);
                   Css_next_token(parser);
                }
             }
@@ -993,8 +992,8 @@ static void Css_parse_ruleset(CssParser * parser)
 
       if (selector)
          DEBUG_MSG(DEBUG_PARSE_LEVEL, "end of selector (%s, %s, %s, %d)\n",
-                   selector->id, selector->klass, selector->pseudo,
-                   selector->element);
+                   selector->top ()->id, selector->top ()->klass,
+                   selector->top ()->pseudo, selector->top ()->element);
       else
          DEBUG_MSG(DEBUG_PARSE_LEVEL, "not a %s\n", "selector");
 

@@ -193,20 +193,41 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
       inline void unref () { if(--refCount == 0) delete this; }
 };
 
+class CssSimpleSelector {
+   public:
+      int element;
+      const char *klass, *pseudo, *id;
+
+      bool match (const DoctreeNode *node);
+      void print ();
+};
+
 /**
  * \brief CSS selector class.
  * \todo Implement missing selector options.
  */
 class CssSelector {
+   public:
+      typedef enum {
+         DESCENDENT,
+         CHILD,
+         ADJACENT_SIBLING,
+      } Combinator;
+
    private:
       int refCount;
-   
-   public:
-      int element;
-      const char *klass, *pseudo, *id;
+      lout::misc::SimpleVector <CssSimpleSelector> *simpleSelector;
+      lout::misc::SimpleVector <Combinator> *combinator;
 
+   public:
       CssSelector (int element = -1, const char *klass = NULL,
                    const char *pseudo = NULL, const char *id = NULL);
+      void addSimpleSelector (Combinator c, int element = -1, const char *klass = NULL,
+                              const char *pseudo = NULL, const char *id = NULL);
+      inline CssSimpleSelector *top () {
+         return simpleSelector->getRef (simpleSelector->size () - 1);
+      };
+      
       bool match (Doctree *dt);
       void print ();
       inline void ref () { refCount++; }
