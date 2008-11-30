@@ -941,11 +941,6 @@ static void Css_parse_ruleset(CssParser * parser)
       } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
          selector->top ()->element = CssSimpleSelector::ELEMENT_ANY;
          Css_next_token(parser);
-      } else if (parser->ttype == CSS_TK_CHAR &&
-                 (parser->tval[0] == '.' || parser->tval[0] == ':' ||
-                  parser->tval[0] == '#')) {
-         selector = new CssSelector();
-         /* But no next token. */
       }
 
       do {
