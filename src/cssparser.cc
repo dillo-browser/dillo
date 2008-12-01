@@ -922,7 +922,7 @@ static void Css_parse_declaration(CssParser * parser,
       Css_next_token(parser);
 }
 
-static void Css_parse_simple_selector(CssParser * parser,
+static bool Css_parse_simple_selector(CssParser * parser,
                                       CssSimpleSelector *selector) {
    const char *p, **pp;
 
@@ -932,6 +932,9 @@ static void Css_parse_simple_selector(CssParser * parser,
    } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
       selector->element = CssSimpleSelector::ELEMENT_ANY;
       Css_next_token(parser);
+   } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] != '#' &&
+              parser->tval[0] != '.' && parser->tval[0] != ':') {
+      return false;
    }
 
    do {
@@ -974,26 +977,27 @@ static void Css_parse_simple_selector(CssParser * parser,
    DEBUG_MSG(DEBUG_PARSE_LEVEL, "end of simple selector (%s, %s, %s, %d)\n",
       selector->id, selector->klass,
       selector->pseudo, selector->element);
+
+   return true;
 }
 
 static CssSelector *Css_parse_selector(CssParser * parser) {
    CssSelector *selector = new CssSelector ();
 
    while (true) {
-      Css_parse_simple_selector (parser, selector->top ());
+      if (! Css_parse_simple_selector (parser, selector->top ()))
+         Css_next_token(parser); /* make sure we advance at least one token */
 
-      if (parser->ttype == CSS_TK_END) {
-         delete selector;
-         return NULL;
-      } else if (parser->ttype == CSS_TK_CHAR &&
+      if (parser->ttype == CSS_TK_CHAR &&
          (parser->tval[0] == ',' || parser->tval[0] == '{')) {
          return selector;
       } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '>') {
          selector->addSimpleSelector (CssSelector::CHILD);
-      } else if (parser->space_separated) {
+      } else if (parser->ttype != CSS_TK_END && parser->space_separated) {
          selector->addSimpleSelector (CssSelector::DESCENDENT);
       } else {
-         assert (false); /* not reached */
+         delete selector;
+         return NULL;
       }
    }
 
