@@ -929,9 +929,13 @@ static bool Css_parse_simple_selector(CssParser * parser,
    if (parser->ttype == CSS_TK_SYMBOL) {
       selector->element = a_Html_tag_index(parser->tval);
       Css_next_token(parser);
+      if (parser->space_separated)
+         return true;
    } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
       selector->element = CssSimpleSelector::ELEMENT_ANY;
       Css_next_token(parser);
+      if (parser->space_separated)
+         return true;
    } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] != '#' &&
               parser->tval[0] != '.' && parser->tval[0] != ':') {
       return false;
@@ -955,6 +959,9 @@ static bool Css_parse_simple_selector(CssParser * parser,
 
       if (pp) {
          Css_next_token(parser);
+         if (parser->space_separated)
+            return true;
+
          if (parser->ttype == CSS_TK_SYMBOL ||
             parser->ttype == CSS_TK_DECINT) {
                if (*pp == NULL)
@@ -971,6 +978,8 @@ static bool Css_parse_simple_selector(CssParser * parser,
                selector->klass = dStrdup(p + 1);
             Css_next_token(parser);
          }
+         if (parser->space_separated)
+            return true;
       }
    } while (pp);
 
