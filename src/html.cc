@@ -3006,10 +3006,9 @@ static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 {
    CssPropertyList props;
 
-   DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
    a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-   html->styleEngine->inheritBackgroundColor ();
    html->styleEngine->setNonCssHints (&props);
+   Html_add_indented(html, 0, 0, 0);
 }
 
 /*
