@@ -217,7 +217,7 @@ static int32_t Color_parse_hex (const char *s, int32_t default_color, int *err)
 
   *err = 1;
   ret_color = strtol(s, &tail, 16);
-  if (tail - s == 6)
+  if (tail - s == 6 || tail - s == 3)
      *err = 0;
   else
      ret_color = default_color;
