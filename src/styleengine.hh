@@ -32,7 +32,7 @@ class StyleEngine : public Doctree {
       };
 
       inline const DoctreeNode *parent (const DoctreeNode *n) {
-         if (n->depth > 0)
+         if (n->depth > 1)
             return stack->getRef (n->depth - 1);
          else
             return NULL;
