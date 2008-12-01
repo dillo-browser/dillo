@@ -1893,6 +1893,13 @@ static void Html_tag_open_big_small(DilloHtml *html,
 {
 }
 
+static void Html_tag_open_span(DilloHtml *html,
+                               const char *tag, int tagsize)
+{
+   html->styleEngine->inheritBackgroundColor();
+}
+
+
 /*
  * <BR>
  */
@@ -3141,7 +3148,7 @@ const TagInfo Tags[] = {
  {"script", B8(111001),'R',2, Html_tag_open_script, Html_tag_close_script},
  {"select", B8(010101),'R',2, Html_tag_open_select, Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_big_small, Html_tag_close_default},
- /* span 0101 */
+ {"span", B8(010101),'R',2, Html_tag_open_span, Html_tag_close_default},
  {"strike", B8(010101),'R',2, Html_tag_open_strike, Html_tag_close_default},
  {"strong", B8(010101),'R',2, Html_tag_open_strong, Html_tag_close_default},
  {"style", B8(100101),'R',2, Html_tag_open_style, Html_tag_close_style},
