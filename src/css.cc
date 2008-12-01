@@ -80,9 +80,16 @@ bool CssSelector::match (Doctree *docTree) {
          return false;
      
       switch (comb) {
-         case DESCENDENT:
+         case CHILD:
             if (!sel->match (node))
                return false;
+            break;
+         case DESCENDENT:
+            while (!sel->match (node)) {
+               node = docTree->parent (node);
+               if (node == NULL)
+                  return false;
+            }
             break;
          default:
             return false; // \todo implement other combinators
@@ -112,6 +119,9 @@ void CssSelector::print () {
    for (int i = 0; i < simpleSelector->size () - 1; i++) {
       simpleSelector->getRef (i)->print ();
       switch (combinator->get (i)) {
+         case CHILD:
+            fprintf (stderr, ">");
+            break;
          case DESCENDENT:
             fprintf (stderr, " ");
             break;
