@@ -55,7 +55,7 @@ void StyleEngine::startElement (int element) {
    if (stack->getRef (stack->size () - 1)->style == NULL)
       style0 ();
 
-   stack->increase ();
+   stack->setSize (stack->size () + 1);
    Node *n =  stack->getRef (stack->size () - 1);
    n->style = NULL;
    n->depth = stack->size () - 1;
