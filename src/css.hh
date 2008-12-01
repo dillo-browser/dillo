@@ -220,9 +220,13 @@ class CssSelector {
       } Combinator;
 
    private:
+      struct CombinatorAndSelector {
+         Combinator combinator;
+         CssSimpleSelector selector;
+      };
+
       int refCount;
-      lout::misc::SimpleVector <CssSimpleSelector> *simpleSelector;
-      lout::misc::SimpleVector <Combinator> *combinator;
+      lout::misc::SimpleVector <struct CombinatorAndSelector> *selectorList;
 
    public:
       CssSelector (int element = CssSimpleSelector::ELEMENT_ANY,
@@ -233,7 +237,7 @@ class CssSelector {
                               const char *klass = NULL,
                               const char *pseudo = NULL, const char *id = NULL);
       inline CssSimpleSelector *top () {
-         return simpleSelector->getRef (simpleSelector->size () - 1);
+         return &selectorList->getRef (selectorList->size () - 1)->selector;
       };
       
       bool match (Doctree *dt);

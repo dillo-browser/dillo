@@ -48,9 +48,9 @@ void CssPropertyList::print () {
 CssSelector::CssSelector (int element, const char *klass,
                           const char *pseudo, const char *id) {
    refCount = 0;
-   combinator = NULL;
-   simpleSelector = new lout::misc::SimpleVector <CssSimpleSelector> (1);
-   simpleSelector->increase ();
+   selectorList = new lout::misc::SimpleVector
+                                  <struct CombinatorAndSelector> (1);
+   selectorList->increase ();
    top ()->element = element;
    top ()->klass = klass;
    top ()->pseudo = pseudo;
@@ -62,18 +62,16 @@ bool CssSelector::match (Doctree *docTree) {
    Combinator comb;
    const DoctreeNode *node = docTree->top ();
 
-   assert (simpleSelector->size () > 0);
-   assert ((combinator == NULL && simpleSelector->size () == 1) ||
-           combinator->size () == simpleSelector->size () - 1);
+   assert (selectorList->size () > 0);
 
    sel = top ();
    
    if (! sel->match (node))
       return false;
 
-   for (int i = simpleSelector->size () - 2; i >= 0; i--) {
-      sel = simpleSelector->getRef (i);
-      comb = combinator->get (i);
+   for (int i = selectorList->size () - 2; i >= 0; i--) {
+      sel = &selectorList->getRef (i)->selector;
+      comb = selectorList->getRef (i + 1)->combinator;
       node = docTree->parent (node);
 
       if (node == NULL)
@@ -102,12 +100,9 @@ bool CssSelector::match (Doctree *docTree) {
 void CssSelector::addSimpleSelector (Combinator c, int element,
                                      const char *klass, const char *pseudo,
                                      const char *id) {
-   simpleSelector->increase ();
-   if (combinator == NULL)
-      combinator = new lout::misc::SimpleVector <Combinator> (1);
-   combinator->increase ();
+   selectorList->increase ();
 
-   *combinator->getRef (combinator->size () - 1) = c;
+   selectorList->getRef (selectorList->size () - 1)->combinator = c;
    top ()->element = element;
    top ()->klass = klass;
    top ()->pseudo = pseudo;
@@ -116,18 +111,21 @@ void CssSelector::addSimpleSelector (Combinator c, int element,
 }
 
 void CssSelector::print () {
-   for (int i = 0; i < simpleSelector->size () - 1; i++) {
-      simpleSelector->getRef (i)->print ();
-      switch (combinator->get (i)) {
-         case CHILD:
-            fprintf (stderr, ">");
-            break;
-         case DESCENDENT:
-            fprintf (stderr, " ");
-            break;
-         default:
-            fprintf (stderr, "?");
-            break;
+   for (int i = 0; i < selectorList->size () - 1; i++) {
+      selectorList->getRef (i)->selector.print ();
+
+      if (i < selectorList->size () - 2) {
+         switch (selectorList->getRef (i)->combinator) {
+            case CHILD:
+               fprintf (stderr, ">");
+               break;
+            case DESCENDENT:
+               fprintf (stderr, " ");
+               break;
+            default:
+               fprintf (stderr, "?");
+               break;
+         }
       }
    }
 
