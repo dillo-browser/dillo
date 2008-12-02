@@ -380,9 +380,27 @@ static void Css_next_token(CssParser * parser)
 
    c = Css_getc(parser);
 
-   while (isspace(c)) {
-      parser->space_separated = true;
-      c = Css_getc(parser);
+   while (true) {
+      if (isspace(c)) { // ignore whitespace
+         parser->space_separated = true;
+         c = Css_getc(parser);
+      } else if (c == '/') { // ignore comments
+         d = Css_getc(parser);
+         if (d == '*') {
+            c = Css_getc(parser);
+            d = Css_getc(parser);
+            while (c != '*' || d != '/') {
+               c = d;
+               d = Css_getc(parser);
+            }
+            c = Css_getc(parser);
+         } else {
+            Css_ungetc(parser);
+            break;
+         }
+      } else {
+         break;
+      }
    }
 
    if (isdigit(c)) {
