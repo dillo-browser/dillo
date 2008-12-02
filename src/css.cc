@@ -252,8 +252,8 @@ void CssContext::addRule (CssRule *rule, CssPrimaryOrder order) {
 
    sheet[order]->addRule (rule);
 
-   fprintf(stderr, "Adding Rule (%d)\n", order);
-   rule->print ();
+//  fprintf(stderr, "Adding Rule (%d)\n", order);
+//  rule->print ();
 }
 
 void CssContext::buildUserAgentStyle () {
