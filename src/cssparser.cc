@@ -405,7 +405,7 @@ static void Css_next_token(CssParser * parser)
          if (d == '*') {
             c = Css_getc(parser);
             d = Css_getc(parser);
-            while (c != '*' || d != '/') {
+            while (d != EOF && (c != '*' || d != '/')) {
                c = d;
                d = Css_getc(parser);
             }
@@ -473,7 +473,7 @@ static void Css_next_token(CssParser * parser)
       c = Css_getc(parser);
       escaped = false;
 
-      while (escaped || c != c1) {
+      while (c != EOF && (escaped || c != c1)) {
          if (c == '\\') {
             escaped = true;
             d = Css_getc(parser);
