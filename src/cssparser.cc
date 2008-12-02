@@ -173,7 +173,7 @@ typedef struct {
                                          * CSS_SHORTHAND_DIRECTIONS:
                                          *   must have length 4
                                          * CSS_SHORTHAND_BORDERS:
-                                         *   unused
+                                         *   must have length 12
                                          * CSS_SHORTHAND_FONT:
                                          *   unused */
 } CssShorthandInfo;
@@ -264,10 +264,26 @@ CssProperty::Name Css_padding_properties[4] = {
    CssProperty::CSS_PROPERTY_PADDING_RIGHT
 };
 
+CssProperty::Name Css_border_properties[12] = {
+   CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH,
+   CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
+   CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR,
+   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR,
+   CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH,
+   CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE,
+   CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR,
+   CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+   CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE,
+   CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR
+};
+
 static CssShorthandInfo Css_shorthand_info[CSS_SHORTHAND_NUM] = {
    {"background", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
     Css_background_properties},
-   {"border", CssShorthandInfo::CSS_SHORTHAND_BORDER, NULL},
+   {"border", CssShorthandInfo::CSS_SHORTHAND_BORDER,
+    Css_border_properties},
    {"border-bottom", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
     Css_border_bottom_properties},
    {"border-color", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS,
@@ -808,7 +824,7 @@ static void Css_parse_declaration(CssParser * parser,
    CssProperty::Name prop;
    CssProperty::Value val, dir_vals[4];
    bool found, weight;
-   int sh_index, i, n;
+   int sh_index, i, j, n;
    int dir_set[4][4] = {
       /* 1 value  */ {0, 0, 0, 0},
       /* 2 values */ {0, 0, 1, 1},
@@ -918,7 +934,30 @@ static void Css_parse_declaration(CssParser * parser,
                   break;
 
                case CssShorthandInfo::CSS_SHORTHAND_BORDER:
-                  /* todo: Not yet implemented. */
+                  do {
+                     for (found = false, i = 0;
+                          !found && i < 3;
+                          i++)
+                        if (Css_token_matches_property(parser,
+                                                       Css_shorthand_info
+                                                       [sh_index].
+                                                       properties[i])) {
+                           found = true;
+                           if (Css_parse_value(parser,
+                                               Css_shorthand_info[sh_index]
+                                               .properties[i], &val)) {
+                              weight = Css_parse_weight(parser);
+                              for (j = 0; j < 4; j++)
+                                 if (weight)
+                                    importantProps->
+                                       set(Css_shorthand_info[sh_index].
+                                          properties[j * 3 + i], val);
+                                 else
+                                    props->set(Css_shorthand_info[sh_index].
+                                       properties[j * 3 + i], val);
+                           }
+                        }
+                  } while (found);
                   break;
 
                case CssShorthandInfo::CSS_SHORTHAND_FONT:
