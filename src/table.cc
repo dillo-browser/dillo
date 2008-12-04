@@ -50,7 +50,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    int cssLength;
 #endif
 
-   DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (0, html->styleEngine->wordStyle ());
 
 #ifdef USE_TABLES
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border")))
@@ -223,7 +223,7 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TR;
 #else
-   DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (0, html->styleEngine->wordStyle ());
 #endif
 }
 

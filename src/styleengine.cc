@@ -59,6 +59,7 @@ void StyleEngine::startElement (int element) {
    stack->increase ();
    Node *n =  stack->getRef (stack->size () - 1);
    n->style = NULL;
+   n->wordStyle = NULL;
    n->depth = stack->size () - 1;
    n->element = element;
    n->id = NULL;

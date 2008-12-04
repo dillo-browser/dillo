@@ -277,7 +277,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    char *charset, *first;
    const char *attrbuf;
 
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
    if (html->InFlags & IN_FORM) {
       BUG_MSG("nested forms\n");
@@ -573,10 +573,10 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
                  html->charset);
    html->InFlags |= IN_FORM;
 
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "prompt")))
-      DW2TB(html->dw)->addText(attrbuf, html->styleEngine->style ());
+      DW2TB(html->dw)->addText(attrbuf, html->styleEngine->wordStyle ());
 
    ResourceFactory *factory = HT2LT(html)->getResourceFactory();
    EntryResource *entryResource = factory->createEntryResource (20, false);

@@ -1092,11 +1092,11 @@ static void Html_process_space(DilloHtml *html, const char *space,
 
             if (spaceCnt) {
                spc = dStrnfill(spaceCnt, ' ');
-               DW2TB(html->dw)->addText (spc, html->styleEngine->style ());
+               DW2TB(html->dw)->addText (spc, html->styleEngine->wordStyle ());
                dFree(spc);
                spaceCnt = 0;
             }
-            DW2TB(html->dw)->addLinebreak (html->styleEngine->style ());
+            DW2TB(html->dw)->addLinebreak (html->styleEngine->wordStyle ());
             html->pre_column = 0;
          }
          html->PreFirstChar = false;
@@ -1124,7 +1124,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
 
       if (spaceCnt) {
          spc = dStrnfill(spaceCnt, ' ');
-         DW2TB(html->dw)->addText (spc, html->styleEngine->style ());
+         DW2TB(html->dw)->addText (spc, html->styleEngine->wordStyle ());
          dFree(spc);
       }
 
@@ -1132,7 +1132,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
       if (SGML_SPCDEL) {
          /* SGML_SPCDEL ignores white space inmediately after an open tag */
       } else if (!html->PrevWasSPC) {
-         DW2TB(html->dw)->addSpace(html->styleEngine->style ());
+         DW2TB(html->dw)->addSpace(html->styleEngine->wordStyle ());
          html->PrevWasSPC = true;
       }
 
@@ -1185,7 +1185,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             while (Pword[++i] && !isspace(Pword[i])) ;
             ch = Pword[i];
             Pword[i] = 0;
-            DW2TB(html->dw)->addText(Pword, html->styleEngine->style ());
+            DW2TB(html->dw)->addText(Pword, html->styleEngine->wordStyle ());
             Pword[i] = ch;
             html->pre_column += i - start;
             html->PreFirstChar = false;
@@ -1195,7 +1195,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
    } else {
       if (!memchr(word,'&', size)) {
          /* No entities */
-         DW2TB(html->dw)->addText(word, html->styleEngine->style ());
+         DW2TB(html->dw)->addText(word, html->styleEngine->wordStyle ());
       } else {
          /* Collapse white-space entities inside the word (except &nbsp;) */
          Pword = a_Html_parse_entities(html, word, size);
@@ -1203,7 +1203,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             if (strchr("\t\f\n\r", Pword[i]))
                for (j = i; (Pword[j] = Pword[j+1]); ++j) ;
    
-         DW2TB(html->dw)->addText(Pword, html->styleEngine->style ());
+         DW2TB(html->dw)->addText(Pword, html->styleEngine->wordStyle ());
          dFree(Pword);
       }
    }
@@ -1768,7 +1768,7 @@ static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
       /* ignore first parbreak after an empty <LI> */
       html->WordAfterLI = true;
    } else {
-      DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+      DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    }
    a_Html_tag_set_align_attr (html, &props, tag, tagsize);
    html->styleEngine->setNonCssHints (&props);
@@ -1812,14 +1812,14 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
    style_attrs.cursor = CURSOR_POINTER;
    link_style = Style::create (HT2LT(html), &style_attrs);
 
-   textblock->addParbreak (5, html->styleEngine->style ());
+   textblock->addParbreak (5, html->styleEngine->wordStyle ());
 
    /* The bullet will be assigned the current list style, which should
     * be "disc" by default, but may in very weird pages be different.
     * Anyway, there should be no harm. */
    bullet = new Bullet();
    textblock->addWidget(bullet, html->styleEngine->style ());
-   textblock->addSpace(html->styleEngine->style ());
+   textblock->addSpace(html->styleEngine->wordStyle ());
 
    if (tolower(tag[1]) == 'i') {
       /* IFRAME usually comes with very long advertising/spying URLS,
@@ -1836,7 +1836,7 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
       }
    }
 
-   textblock->addParbreak (5, html->styleEngine->style ());
+   textblock->addParbreak (5, html->styleEngine->wordStyle ());
 
    link_style->unref ();
    dFree(src);
@@ -1850,8 +1850,8 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_frameset (DilloHtml *html,
                                     const char *tag, int tagsize)
 {
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
-   DW2TB(html->dw)->addText("--FRAME--", html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
+   DW2TB(html->dw)->addText("--FRAME--", html->styleEngine->wordStyle ());
    Html_add_indented(html, 40, 0, 5);
 }
 
@@ -1862,7 +1862,7 @@ static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
 {
    CssPropertyList props;
 
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
    a_Html_tag_set_align_attr (html, &props, tag, tagsize);
    html->styleEngine->setNonCssHints (&props);
@@ -1882,7 +1882,7 @@ static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_h(DilloHtml *html, int TagIdx)
 {
    a_Menu_pagemarks_set_text(html->bw, html->Stash->str);
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    a_Html_pop_tag(html, TagIdx);
 }
 
@@ -1906,7 +1906,7 @@ static void Html_tag_open_span(DilloHtml *html,
  */
 static void Html_tag_open_br(DilloHtml *html, const char *tag, int tagsize)
 {
-   DW2TB(html->dw)->addLinebreak (html->styleEngine->style ());
+   DW2TB(html->dw)->addLinebreak (html->styleEngine->wordStyle ());
 }
 
 /*
@@ -1991,7 +1991,7 @@ static void Html_tag_open_cite(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_center(DilloHtml *html, const char *tag, int tagsize)
 {
-   DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (0, html->styleEngine->wordStyle ());
 }
 
 /*
@@ -2000,7 +2000,7 @@ static void Html_tag_open_center(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_address(DilloHtml *html,
                                   const char *tag, int tagsize)
 {
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
 /*
@@ -2504,7 +2504,7 @@ static void Html_tag_open_strike(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_blockquote(DilloHtml *html, 
                                      const char *tag, int tagsize)
 {
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    Html_add_indented(html, 40, 40, 9);
 }
 
@@ -2516,7 +2516,7 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
    ListStyleType list_style_type;
 
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    Html_add_indented(html, 40, 0, 9);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
@@ -2567,7 +2567,7 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dir(DilloHtml *html, const char *tag, int tagsize)
 {
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
    S_TOP(html)->list_type = HTML_LIST_UNORDERED;
    S_TOP(html)->list_number = 0;
@@ -2612,7 +2612,7 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHints (&props);
    }
 
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    Html_add_indented(html, 40, 0, 9);
 
    S_TOP(html)->list_type = HTML_LIST_ORDERED;
@@ -2647,7 +2647,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
    ref_list_item = &html->stack->getRef(html->stack->size()-2)->ref_list_item;
 
    /* set the item style */
-   word_style = html->styleEngine->style ();
+   word_style = html->styleEngine->wordStyle ();
    style_attrs = *word_style;
  //style_attrs.backgroundColor = Color::createShaded (HT2LT(html), 0xffff40);
  //style_attrs.setBorderColor (Color::createSimple (HT2LT(html), 0x000000));
@@ -2751,12 +2751,12 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.borderWidth.right = size / 2;
    style = Style::create (HT2LT(html), &style_attrs);
 
-   DW2TB(html->dw)->addParbreak (5, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());
    hruler = new Ruler();
    hruler->setStyle (style);
    DW2TB(html->dw)->addWidget (hruler, style);
    style->unref ();
-   DW2TB(html->dw)->addParbreak (5, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());
 }
 
 /*
@@ -2765,7 +2765,7 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_dl(DilloHtml *html, const char *tag, int tagsize)
 {
    /* may want to actually do some stuff here. */
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
 /*
@@ -2773,7 +2773,7 @@ static void Html_tag_open_dl(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
 {
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    a_Html_set_top_font(html, NULL, 0, 1, 1);
 }
 
@@ -2782,7 +2782,7 @@ static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
 {
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    Html_add_indented(html, 40, 40, 9);
 }
 
@@ -2791,7 +2791,7 @@ static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
 {
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
    /* Is the placement of this statement right? */
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_PRE;
@@ -2807,7 +2807,7 @@ static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_pre(DilloHtml *html, int TagIdx)
 {
    html->InFlags &= ~IN_PRE;
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    a_Html_pop_tag(html, TagIdx);
 }
 
@@ -3024,7 +3024,7 @@ static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_div(DilloHtml *html, int TagIdx)
 {
-   DW2TB(html->dw)->addParbreak (0, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (0, html->styleEngine->wordStyle ());
    a_Html_pop_tag(html, TagIdx);
 }
 
@@ -3041,7 +3041,7 @@ static void Html_tag_close_default(DilloHtml *html, int TagIdx)
  */
 static void Html_tag_close_par(DilloHtml *html, int TagIdx)
 {
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    a_Html_pop_tag(html, TagIdx);
 }
 
