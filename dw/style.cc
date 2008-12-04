@@ -485,9 +485,6 @@ void drawBorder (View *view, Rectangle *area,
    Color::Shading top, right, bottom, left;
    int xb1, yb1, xb2, yb2, xp1, yp1, xp2, yp2;
 
-   if (style->borderStyle.top == BORDER_NONE)
-      return;
-
    xb1 = x + style->margin.left;
    yb1 = y + style->margin.top;
    xb2 = xb1 + width - style->margin.left - style->margin.right;
@@ -518,18 +515,25 @@ void drawBorder (View *view, Rectangle *area,
       break;
    }
 
-   drawPolygon (view, style->borderColor.top, top, xb1, yb1, xb2, yb1,
-                style->borderWidth.top, style->borderWidth.left,
-                - style->borderWidth.right);
-   drawPolygon (view, style->borderColor.right, right, xb2, yb1, xb2, yb2,
-                - style->borderWidth.right, style->borderWidth.top,
-                - style->borderWidth.bottom);
-   drawPolygon (view, style->borderColor.bottom, bottom, xb1, yb2, xb2, yb2,
-                - style->borderWidth.bottom, style->borderWidth.left,
-                - style->borderWidth.right);
-   drawPolygon (view, style->borderColor.left, left, xb1, yb1, xb1, yb2,
-                style->borderWidth.left, style->borderWidth.top,
-                - style->borderWidth.bottom);
+   if (style->borderStyle.top != BORDER_NONE)
+      drawPolygon (view, style->borderColor.top, top, xb1, yb1, xb2, yb1,
+                   style->borderWidth.top, style->borderWidth.left,
+                   - style->borderWidth.right);
+
+   if (style->borderStyle.right != BORDER_NONE)
+      drawPolygon (view, style->borderColor.right, right, xb2, yb1, xb2, yb2,
+                   - style->borderWidth.right, style->borderWidth.top,
+                   - style->borderWidth.bottom);
+
+   if (style->borderStyle.bottom != BORDER_NONE)
+      drawPolygon (view, style->borderColor.bottom, bottom, xb1, yb2, xb2, yb2,
+                   - style->borderWidth.bottom, style->borderWidth.left,
+                   - style->borderWidth.right);
+
+   if (style->borderStyle.left != BORDER_NONE)
+      drawPolygon (view, style->borderColor.left, left, xb1, yb1, xb1, yb2,
+                   style->borderWidth.left, style->borderWidth.top,
+                   - style->borderWidth.bottom);
 }
 
 
