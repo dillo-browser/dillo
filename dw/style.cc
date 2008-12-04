@@ -67,7 +67,6 @@ void StyleAttrs::resetValues ()
    x_img = -1;
    x_tooltip = NULL;
 
-   textAlign = TEXT_ALIGN_LEFT; /* ??? */
    valign = VALIGN_MIDDLE;
    textAlignChar = '.';
    backgroundColor = NULL;
