@@ -42,6 +42,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
 }
 
 StyleEngine::~StyleEngine () {
+   /* \todo clear stack if not empty */
    delete stack;
    delete cssContext;
 }
@@ -126,6 +127,8 @@ void StyleEngine::endElement (int element) {
 
    if (n->style)
       n->style->unref ();
+   if (n->wordStyle)
+      n->wordStyle->unref ();
    if (n->id)
       dFree ((void*) n->id); 
    if (n->klass)
@@ -360,6 +363,13 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    stack->getRef (stack->size () - 1)->style = Style::create (layout, &attrs);
    
    return stack->getRef (stack->size () - 1)->style;
+}
+
+Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
+   StyleAttrs attrs = *style ();
+   attrs.resetValues ();
+   stack->getRef (stack->size () - 1)->wordStyle = Style::create (layout, &attrs);
+   return stack->getRef (stack->size () - 1)->wordStyle;
 }
 
 void StyleEngine::parse (const char *buf, int buflen,

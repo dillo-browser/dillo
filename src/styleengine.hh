@@ -11,6 +11,7 @@ class StyleEngine : public Doctree {
       class Node : public DoctreeNode {
          public:
             dw::core::style::Style *style;
+            dw::core::style::Style *wordStyle;
             const char *styleAttribute;
             bool inheritBackgroundColor;
       };
@@ -20,6 +21,7 @@ class StyleEngine : public Doctree {
       CssContext *cssContext;
 
       dw::core::style::Style *style0 (CssPropertyList *nonCssHints = NULL);
+      dw::core::style::Style *wordStyle0 (CssPropertyList *nonCssHints = NULL);
       void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
       int computeValue (CssLength value, dw::core::style::Font *font);
 
@@ -56,6 +58,14 @@ class StyleEngine : public Doctree {
          else
             return style0 ();
       };
+      inline dw::core::style::Style *wordStyle () {
+         dw::core::style::Style *s = stack->getRef (stack->size () - 1)->wordStyle;
+         if (s)
+            return s;
+         else
+            return wordStyle0 ();
+      };
+
 };
 
 #endif
