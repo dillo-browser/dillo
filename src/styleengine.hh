@@ -4,6 +4,7 @@
 #include "dw/core.hh"
 #include "doctree.hh"
 #include "css.hh"
+#include "cssparser.hh"
 
 class StyleEngine : public Doctree {
    private:
@@ -38,6 +39,7 @@ class StyleEngine : public Doctree {
             return NULL;
       };
 
+      void parse (const char *buf, int buflen, int order_count, CssOrigin origin);
       void startElement (int tag);
       void setId (const char *id);
       void setClass (const char *klass);

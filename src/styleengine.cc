@@ -361,3 +361,9 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    
    return stack->getRef (stack->size () - 1)->style;
 }
+
+void StyleEngine::parse (const char *buf, int buflen,
+                         int order_count, CssOrigin origin) {
+
+   a_Css_parse (cssContext, buf, buflen, order_count, origin);
+}
