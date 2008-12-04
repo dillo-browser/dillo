@@ -353,10 +353,6 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    // reset values that are not inherited according to CSS
    attrs.resetValues ();
   
-   if (stack->getRef (stack->size () - 2)->inheritBackgroundColor)
-      attrs.backgroundColor =
-         stack->getRef (stack->size () - 2)->style->backgroundColor; 
-
    cssContext->apply (&props, this, tagStyleProps, nonCssProperties);
 
    apply (&attrs, &props);
@@ -369,6 +365,10 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
 Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
    StyleAttrs attrs = *style ();
    attrs.resetValues ();
+
+   if (stack->getRef (stack->size () - 1)->inheritBackgroundColor)
+      attrs.backgroundColor = style ()->backgroundColor;
+
    stack->getRef (stack->size () - 1)->wordStyle = Style::create (layout, &attrs);
    return stack->getRef (stack->size () - 1)->wordStyle;
 }
