@@ -2466,6 +2466,8 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHints (&props);
    }
 
+   html->styleEngine->inheritBackgroundColor ();
+
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name"))) {
       if (prefs.show_extra_warnings)
          Html_check_name_val(html, attrbuf, "name");
