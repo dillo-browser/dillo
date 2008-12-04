@@ -354,52 +354,20 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
 
 
 /*
- * Add a new DwPage into the current DwPage, for indentation.
- * left and right are the horizontal indentation amounts, space is the
- * vertical space around the block.
+ * Create and add a new Textblock to the current Textblock
  */
-static void Html_add_indented_widget(DilloHtml *html, Widget *textblock,
-                                     int left, int right, int space)
+static void Html_add_textblock(DilloHtml *html, int space)
 {
-   StyleAttrs style_attrs;
-   Style *style;
+   Textblock *textblock = new Textblock (prefs.limit_text_width);
 
-   style_attrs = *html->styleEngine->style ();
-
-   style_attrs.margin.setVal (0);
-   style_attrs.borderWidth.setVal (0);
-   style_attrs.padding.setVal(0);
-
-   /* Activate this for debugging */
-#if 0
-   style_attrs.borderWidth.setVal (1);
-   style_attrs.setBorderColor (
-      Color::createShaded (HT2LT(html), style_attrs.color->getColor());
-   style_attrs.setBorderStyle (BORDER_DASHED);
-#endif
-
-   style_attrs.margin.left = left;
-   style_attrs.margin.right = right;
-   style = Style::create (HT2LT(html), &style_attrs);
-
-   DW2TB(html->dw)->addParbreak (space, style);
-   DW2TB(html->dw)->addWidget (textblock, style);
-   DW2TB(html->dw)->addParbreak (space, style);
+   DW2TB(html->dw)->addParbreak (space, html->styleEngine->wordStyle ());
+   DW2TB(html->dw)->addWidget (textblock, html->styleEngine->style ());
+   DW2TB(html->dw)->addParbreak (space, html->styleEngine->wordStyle ());
    S_TOP(html)->textblock = html->dw = textblock;
    S_TOP(html)->hand_over_break = true;
-   style->unref ();
 
    /* Handle it when the user clicks on a link */
    html->connectSignals(textblock);
-}
-
-/*
- * Create and add a new indented DwPage to the current DwPage
- */
-static void Html_add_indented(DilloHtml *html, int left, int right, int space)
-{
-   Textblock *textblock = new Textblock (prefs.limit_text_width);
-   Html_add_indented_widget (html, textblock, left, right, space);
 }
 
 /*
@@ -1852,7 +1820,7 @@ static void Html_tag_open_frameset (DilloHtml *html,
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    DW2TB(html->dw)->addText("--FRAME--", html->styleEngine->wordStyle ());
-   Html_add_indented(html, 40, 0, 5);
+   Html_add_textblock(html, 5);
 }
 
 /*
@@ -2507,7 +2475,7 @@ static void Html_tag_open_blockquote(DilloHtml *html,
                                      const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
-   Html_add_indented(html, 40, 40, 9);
+   Html_add_textblock(html, 9);
 }
 
 /*
@@ -2519,7 +2487,7 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
    ListStyleType list_style_type;
 
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
-   Html_add_indented(html, 40, 0, 9);
+   Html_add_textblock(html, 9);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
       /* list_style_type explicitly defined */
@@ -2615,7 +2583,7 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
    }
 
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
-   Html_add_indented(html, 40, 0, 9);
+   Html_add_textblock(html, 9);
 
    S_TOP(html)->list_type = HTML_LIST_ORDERED;
 
@@ -2785,7 +2753,7 @@ static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
-   Html_add_indented(html, 40, 40, 9);
+   Html_add_textblock(html, 9);
 }
 
 /*
@@ -3018,7 +2986,7 @@ static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 
    a_Html_tag_set_align_attr (html, &props, tag, tagsize);
    html->styleEngine->setNonCssHints (&props);
-   Html_add_indented(html, 0, 0, 0);
+   Html_add_textblock(html, 0);
 }
 
 /*
