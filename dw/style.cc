@@ -515,22 +515,22 @@ void drawBorder (View *view, Rectangle *area,
       break;
    }
 
-   if (style->borderStyle.top != BORDER_NONE)
+   if (style->borderStyle.top != BORDER_NONE && style->borderColor.top)
       drawPolygon (view, style->borderColor.top, top, xb1, yb1, xb2, yb1,
                    style->borderWidth.top, style->borderWidth.left,
                    - style->borderWidth.right);
 
-   if (style->borderStyle.right != BORDER_NONE)
+   if (style->borderStyle.right != BORDER_NONE && style->borderColor.right)
       drawPolygon (view, style->borderColor.right, right, xb2, yb1, xb2, yb2,
                    - style->borderWidth.right, style->borderWidth.top,
                    - style->borderWidth.bottom);
 
-   if (style->borderStyle.bottom != BORDER_NONE)
+   if (style->borderStyle.bottom != BORDER_NONE && style->borderColor.bottom)
       drawPolygon (view, style->borderColor.bottom, bottom, xb1, yb2, xb2, yb2,
                    - style->borderWidth.bottom, style->borderWidth.left,
                    - style->borderWidth.right);
 
-   if (style->borderStyle.left != BORDER_NONE)
+   if (style->borderStyle.left != BORDER_NONE && style->borderColor.left)
       drawPolygon (view, style->borderColor.left, left, xb1, yb1, xb1, yb2,
                    style->borderWidth.left, style->borderWidth.top,
                    - style->borderWidth.bottom);
