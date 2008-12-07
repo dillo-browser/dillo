@@ -3530,9 +3530,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       /* Test for </x>, ReqTagClose, <x /> and <x/> */
       if (*start == '/' ||                                      /* </x>    */
           html->ReqTagClose ||                                  /* request */
-          (tag[tagsize - 2] == '/' &&                           /* XML:    */
-           (isspace(tag[tagsize - 3]) ||                        /*  <x />  */
-            (size_t)tagsize == strlen(Tags[ni].name) + 3))) {   /*  <x/>   */
+          tag[tagsize - 2] == '/') {                            /* XML     */
    
          Tags[ni].close (html, ni);
          /* This was a close tag */
