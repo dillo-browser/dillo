@@ -263,7 +263,13 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    const char *attrbuf;
    int32_t bgcolor;
    bool_t new_style;
-   CssPropertyList props (*S_TOP(html)->table_cell_props);
+   CssPropertyList *props;
+
+   // \todo any shorter way to do this?
+   if (S_TOP(html)->table_cell_props != NULL)
+      props = new CssPropertyList (*S_TOP(html)->table_cell_props);
+   else
+      props = new CssPropertyList ();
 
    switch (S_TOP(html)->table_mode) {
    case DILLO_HTML_TABLE_MODE_NONE:
@@ -288,21 +294,21 @@ static void Html_tag_open_table_cell(DilloHtml *html,
 
       /* text style */
       if (!S_TOP(html)->cell_text_align_set) {
-         props.set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, text_align);
+         props->set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, text_align);
       }
       if (a_Html_get_attr(html, tag, tagsize, "nowrap"))
-         props.set (CssProperty::CSS_PROPERTY_WHITE_SPACE, WHITE_SPACE_NOWRAP);
+         props->set (CssProperty::CSS_PROPERTY_WHITE_SPACE, WHITE_SPACE_NOWRAP);
       else
-         props.set (CssProperty::CSS_PROPERTY_WHITE_SPACE, WHITE_SPACE_NORMAL);
+         props->set (CssProperty::CSS_PROPERTY_WHITE_SPACE, WHITE_SPACE_NORMAL);
 
-      a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+      a_Html_tag_set_align_attr (html, props, tag, tagsize);
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width"))) {
-         props.set (CssProperty::CSS_PROPERTY_WIDTH,
+         props->set (CssProperty::CSS_PROPERTY_WIDTH,
             a_Html_parse_length (html, attrbuf));
       }
 
-      if (a_Html_tag_set_valign_attr (html, tag, tagsize, &props))
+      if (a_Html_tag_set_valign_attr (html, tag, tagsize, props))
          new_style = TRUE;
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
@@ -311,12 +317,13 @@ static void Html_tag_open_table_cell(DilloHtml *html,
             if (bgcolor == 0xffffff && !prefs.allow_white_bg)
                bgcolor = prefs.bg_color;
 
-            props.set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, bgcolor);
+            props->set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, bgcolor);
             S_TOP(html)->current_bg_color = bgcolor;
          }
       }
 
-      html->styleEngine->setNonCssHints (&props);
+      html->styleEngine->setNonCssHints (props);
+      delete props;
 
       if (html->styleEngine->style ()->textAlign
           == TEXT_ALIGN_STRING)
