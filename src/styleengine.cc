@@ -352,6 +352,10 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
    // reset values that are not inherited according to CSS
    attrs.resetValues ();
+
+   if (stack->getRef (stack->size () - 2)->inheritBackgroundColor)
+      attrs.backgroundColor =
+         stack->getRef (stack->size () - 2)->style->backgroundColor;
   
    cssContext->apply (&props, this, tagStyleProps, nonCssProperties);
 
