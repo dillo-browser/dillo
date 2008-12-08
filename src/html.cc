@@ -603,7 +603,6 @@ int DilloHtml::getCurTagLineNumber()
  */
 void DilloHtml::freeParseData()
 {
-//   (stack->getRef(0)->style)->unref ();  /* template style */
    delete(stack);
 
    dStr_free(Stash, TRUE);
@@ -3453,7 +3452,6 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
           tag[tagsize - 2] == '/') {                            /* XML     */
    
          Html_tag_cleanup_at_close(html, ni);
-//         html->styleEngine->endElement (ni);
          /* This was a close tag */
          html->ReqTagClose = false;
       }
