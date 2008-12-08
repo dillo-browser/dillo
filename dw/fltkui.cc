@@ -286,11 +286,47 @@ void FltkLabelButtonResource::sizeRequest (core::Requisition *requisition)
    }
 }
 
+/*
+ * Get FLTK state and translate to dw
+ *
+ * TODO: find a good home for this and the fltkviewbase.cc original.
+ */
+static core::ButtonState getDwButtonState ()
+{
+   int s1 = ::fltk::event_state ();
+   int s2 = (core::ButtonState)0;
+   
+   if(s1 & ::fltk::SHIFT)   s2 |= core::SHIFT_MASK;
+   if(s1 & ::fltk::CTRL)    s2 |= core::CONTROL_MASK;
+   if(s1 & ::fltk::ALT)     s2 |= core::META_MASK;
+   if(s1 & ::fltk::BUTTON1) s2 |= core::BUTTON1_MASK;
+   if(s1 & ::fltk::BUTTON2) s2 |= core::BUTTON2_MASK;
+   if(s1 & ::fltk::BUTTON3) s2 |= core::BUTTON3_MASK;
+
+   return (core::ButtonState)s2;
+}
+
+static void setButtonEvent(dw::core::EventButton *event)
+{
+   event->xCanvas = ::fltk::event_x();
+   event->yCanvas = ::fltk::event_y();
+   event->state = getDwButtonState();
+   event->button = ::fltk::event_button();
+   event->numPressed = ::fltk::event_clicks() + 1;
+}
+
 void FltkLabelButtonResource::widgetCallback (::fltk::Widget *widget,
                                               void *data)
 {
-   if (widget->when () & ::fltk::WHEN_RELEASE)
-      ((FltkLabelButtonResource*)data)->emitActivate ();
+   if ((widget->when () & ::fltk::WHEN_RELEASE) &&
+       ((::fltk::event_key() == ::fltk::ReturnKey) ||
+        (::fltk::event_button() == ::fltk::LeftButton ||
+         ::fltk::event_button() == ::fltk::MiddleButton))) {
+      FltkLabelButtonResource *lbr = (FltkLabelButtonResource*) data;
+      dw::core::EventButton event;
+      setButtonEvent(&event);
+      lbr->emitClicked(&event);
+   }
 }
 
 const char *FltkLabelButtonResource::getLabel ()
@@ -336,12 +372,15 @@ void FltkComplexButtonResource::widgetCallback (::fltk::Widget *widget,
 {
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
 
-   /* would be best not to send click pos. if the image could not be loaded */
-   if (::fltk::event() == ::fltk::RELEASE &&
-       ::fltk::event_button() == ::fltk::LeftButton) {
+   if (widget->when() == ::fltk::WHEN_RELEASE &&
+       ((::fltk::event_key() == ::fltk::ReturnKey) ||
+        (::fltk::event_button() == ::fltk::LeftButton ||
+         ::fltk::event_button() == ::fltk::MiddleButton))) {
       res->click_x = ::fltk::event_x();
       res->click_y = ::fltk::event_y();
-      res->emitActivate ();
+      dw::core::EventButton event;
+      setButtonEvent(&event);
+      res->emitClicked(&event);
    } else {
       ((FltkViewBase*)res->lastFlatView)->handle(::fltk::event());
    }

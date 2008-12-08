@@ -75,8 +75,8 @@ class DilloHtmlForm {
    friend class DilloHtmlInput;
 
    DilloHtml *html;
-   void eventHandler(Resource *resource);
-   void submit(DilloHtmlInput *active_input);
+   void eventHandler(Resource *resource, EventButton *event);
+   void submit(DilloHtmlInput *active_input, EventButton *event);
    DilloUrl *buildQueryUrl(DilloHtmlInput *active_input);
    Dstr *buildQueryData(DilloHtmlInput *active_submit);
    char *makeMultipartBoundary(iconv_t char_encoder,
@@ -128,7 +128,7 @@ class DilloHtmlReceiver:
    void activate (Resource *resource);
    void enter (Resource *resource);
    void leave (Resource *resource);
-   void clicked (ButtonResource *resource, int buttonNo, int x, int y);
+   void clicked (ButtonResource *resource, EventButton *event);
 };
 
 class DilloHtmlInput {
@@ -150,7 +150,7 @@ public:  //BUG: for now everything is public
 
 private:
    void connectTo(DilloHtmlReceiver *form_receiver);
-   void activate(DilloHtmlForm *form, bool entry_input_submits);
+   void activate(DilloHtmlForm *form, int num_entry_fields,EventButton *event);
    void readFile(BrowserWindow *bw);
 
 public:
@@ -947,14 +947,12 @@ DilloHtmlForm::~DilloHtmlForm ()
       delete(form_receiver);
 }
 
-void DilloHtmlForm::eventHandler(Resource *resource)
+void DilloHtmlForm::eventHandler(Resource *resource, EventButton *event)
 {
    MSG("DilloHtmlForm::eventHandler\n");
    DilloHtmlInput *input = getInput(resource);
    if (input) {
-      bool entry_input_submits = prefs.enterpress_forces_submit ||
-                                 num_entry_fields == 1;
-      input->activate (this, entry_input_submits);
+      input->activate (this, num_entry_fields, event);
    } else {
       MSG("DilloHtmlForm::eventHandler: ERROR, input not found!\n");
    }
@@ -964,11 +962,21 @@ void DilloHtmlForm::eventHandler(Resource *resource)
  * Submit.
  * (Called by eventHandler())
  */
-void DilloHtmlForm::submit(DilloHtmlInput *active_input)
+void DilloHtmlForm::submit(DilloHtmlInput *active_input, EventButton *event)
 {
    DilloUrl *url = buildQueryUrl(active_input);
    if (url) {
-      a_Nav_push(html->bw, url);
+      if (event && event->button == 2) {
+         if (prefs.middle_click_opens_new_tab) {
+            int focus = prefs.focus_new_tab ? 1 : 0;
+            if (event->state == SHIFT_MASK) focus = !focus;
+            a_UIcmd_open_url_nt(html->bw, url, focus);
+         } else {
+            a_Nav_push_nw(html->bw, url);
+         }
+      } else {
+         a_Nav_push(html->bw, url);
+      }
       a_Url_free(url);
    }
    // /* now, make the rendered area have its focus back */
@@ -1479,7 +1487,7 @@ DilloHtmlInput *DilloHtmlForm::getRadioInput (const char *name)
 
 void DilloHtmlReceiver::activate (Resource *resource)
 {
-   form->eventHandler(resource);
+   form->eventHandler(resource, NULL);
 }
 
 /*
@@ -1515,9 +1523,9 @@ void DilloHtmlReceiver::leave (Resource *resource)
 }
 
 void DilloHtmlReceiver::clicked (ButtonResource *resource,
-                                 int buttonNo, int x, int y)
+                                 EventButton *event)
 {
-// form->eventHandler(resource, x, y);
+   form->eventHandler(resource, event);
 }
 
 /*
@@ -1566,56 +1574,52 @@ DilloHtmlInput::~DilloHtmlInput ()
  */
 void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
 {
-   Resource *resource = NULL;
-   if (embed)
-      resource = embed->getResource ();
-   switch (type) {
-   case DILLO_HTML_INPUT_UNKNOWN:
-   case DILLO_HTML_INPUT_HIDDEN:
-   case DILLO_HTML_INPUT_CHECKBOX:
-   case DILLO_HTML_INPUT_RADIO:
-   case DILLO_HTML_INPUT_BUTTON:
-   case DILLO_HTML_INPUT_TEXTAREA:
-   case DILLO_HTML_INPUT_SELECT:
-   case DILLO_HTML_INPUT_SEL_LIST:
-      // do nothing
-      break;
-   case DILLO_HTML_INPUT_TEXT:
-   case DILLO_HTML_INPUT_PASSWORD:
-   case DILLO_HTML_INPUT_INDEX:
-   case DILLO_HTML_INPUT_SUBMIT:
-   case DILLO_HTML_INPUT_RESET:
-   case DILLO_HTML_INPUT_BUTTON_SUBMIT:
-   case DILLO_HTML_INPUT_BUTTON_RESET:
-   case DILLO_HTML_INPUT_IMAGE:
-   case DILLO_HTML_INPUT_FILE:
-      if (resource)
-         resource->connectActivate (form_receiver);
-      break;
+   Resource *resource;
+   if (embed && (resource = embed->getResource())) {
+      switch (type) {
+         case DILLO_HTML_INPUT_UNKNOWN:
+         case DILLO_HTML_INPUT_HIDDEN:
+         case DILLO_HTML_INPUT_CHECKBOX:
+         case DILLO_HTML_INPUT_RADIO:
+         case DILLO_HTML_INPUT_BUTTON:
+         case DILLO_HTML_INPUT_TEXTAREA:
+         case DILLO_HTML_INPUT_SELECT:
+         case DILLO_HTML_INPUT_SEL_LIST:
+            // do nothing
+            break;
+         case DILLO_HTML_INPUT_SUBMIT:
+         case DILLO_HTML_INPUT_RESET:
+         case DILLO_HTML_INPUT_BUTTON_SUBMIT:
+         case DILLO_HTML_INPUT_BUTTON_RESET:
+         case DILLO_HTML_INPUT_IMAGE:
+         case DILLO_HTML_INPUT_FILE:
+            ((ButtonResource *)resource)->connectClicked (form_receiver);
+         case DILLO_HTML_INPUT_TEXT:
+         case DILLO_HTML_INPUT_PASSWORD:
+         case DILLO_HTML_INPUT_INDEX:
+            resource->connectActivate (form_receiver);
+            break;
+         break;
+      }
    }
 }
 
 /*
  * Activate a form
  */
-void DilloHtmlInput::activate(DilloHtmlForm *form, bool entry_input_submits)
+void DilloHtmlInput::activate(DilloHtmlForm *form, int num_entry_fields,
+                              EventButton *event)
 {
-   switch (type) {
-   case DILLO_HTML_INPUT_TEXT:
-   case DILLO_HTML_INPUT_PASSWORD:
-      if (entry_input_submits)
-         form->submit (this);
-      break;
-   case DILLO_HTML_INPUT_FILE:
+   if (type == DILLO_HTML_INPUT_FILE) {
       readFile (form->html->bw);
-      break;
-   case DILLO_HTML_INPUT_RESET:
-   case DILLO_HTML_INPUT_BUTTON_RESET:
-      form->reset ();
-      break;
-   default:
-      form->submit (this);
-      break;
+   } else if (type == DILLO_HTML_INPUT_RESET ||
+              type == DILLO_HTML_INPUT_BUTTON_RESET) {
+      form->reset();
+   } else if ((type != DILLO_HTML_INPUT_TEXT &&
+               type != DILLO_HTML_INPUT_PASSWORD) ||
+              prefs.enterpress_forces_submit ||
+              num_entry_fields == 1) {
+      form->submit(this, event);
    }
 }
 

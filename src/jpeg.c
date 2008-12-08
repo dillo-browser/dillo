@@ -278,14 +278,14 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
       /* decompression step 3 (see libjpeg.doc) */
       if (jpeg_read_header(&(jpeg->cinfo), TRUE) != JPEG_SUSPENDED) {
          type = DILLO_IMG_TYPE_GRAY;
-         if (jpeg->cinfo.num_components == 1)
+         if (jpeg->cinfo.num_components == 1) {
             type = DILLO_IMG_TYPE_GRAY;
-         else if (jpeg->cinfo.num_components == 3)
+         } else if (jpeg->cinfo.num_components == 3) {
             type = DILLO_IMG_TYPE_RGB;
-         else
+         } else {
             _MSG("jpeg: can't handle %d component images\n",
                  jpeg->cinfo.num_components);
-
+         }
          /*
           * If a multiple-scan image is not completely in cache,
           * use progressive display, updating as it arrives.

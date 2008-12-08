@@ -60,7 +60,7 @@ Form::RadioButtonResourceDecorator::RadioButtonResourceDecorator
    this->values = new const char*[n + 1];
    for(int i = 0; i < n; i++)
       this->values[i] = strdup (values[i]);
-   values[n] = 0;
+   this->values[n] = 0;
 }
 
 Form::RadioButtonResourceDecorator::~RadioButtonResourceDecorator ()
@@ -165,9 +165,9 @@ Form::FormClickedReceiver::~FormClickedReceiver ()
 }
       
 void Form::FormClickedReceiver::clicked (ButtonResource *resource,
-                                         int buttonNo, int x, int y)
+                                         dw::core::EventButton *event)
 {
-   form->send (name, value, x, y);
+   form->send (name, value, event->xCanvas, event->yCanvas);
 }
 
 Form::Form ()
