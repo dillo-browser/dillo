@@ -167,8 +167,8 @@
 # large  :  Traditional
 # panel_size=tiny
 # panel_size=small
-# panel_size=medium
-#panel_size=large
+#panel_size=medium
+# panel_size=large
 
 #small_icons=NO
 
