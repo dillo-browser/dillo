@@ -38,6 +38,7 @@ dillo-2.1
 +- Set the File menu label to hide when the File menu-button is shown.
  ? Trying a new iconv() test in configure.in.
  - Allowed the rc parser to skip whitespace around the equal sign.
+ - Fixed the parser not to call Html_tag_close_* functions twice.
    Patches: Jorge Arellano
 
 dw
