@@ -307,7 +307,6 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
 /**
  * \brief Resolve relative lengths to absolute values.
  */
-
 void StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
    static float dpmm;
 
