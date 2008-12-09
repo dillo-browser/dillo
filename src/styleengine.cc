@@ -159,11 +159,8 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CssProperty::CSS_PROPERTY_FONT_SIZE:
             parentFont = stack->get (stack->size () - 2).style->font;
-            if (CSS_LENGTH_TYPE (p->value.intVal) == CSS_LENGTH_TYPE_PERCENTAGE)
-               fontAttrs.size = (int) (CSS_LENGTH_VALUE (p->value.intVal) * 
-                  parentFont->size);
-             else
-               fontAttrs.size = computeValue (p->value.intVal, parentFont);
+            computeValue (&fontAttrs.size, p->value.intVal, parentFont,
+               parentFont->size);
             break;
          case CssProperty::CSS_PROPERTY_FONT_STYLE:
             fontAttrs.style = (FontStyle) p->value.intVal;
@@ -230,20 +227,20 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             attrs->borderStyle.top = (BorderStyle) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH:
-            attrs->borderWidth.bottom = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->borderWidth.bottom, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH:
-            attrs->borderWidth.left = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->borderWidth.left, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH:
-            attrs->borderWidth.right = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->borderWidth.right, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH:
-            attrs->borderWidth.top = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->borderWidth.top, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_BORDER_SPACING:
-            attrs->hBorderSpacing = computeValue (p->value.intVal, attrs->font);
-            attrs->vBorderSpacing = attrs->hBorderSpacing;
+            computeValue (&attrs->hBorderSpacing, p->value.intVal, attrs->font);
+            computeValue (&attrs->vBorderSpacing, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_COLOR:
             attrs->color = Color::createSimple (layout, p->value.intVal);
@@ -255,28 +252,28 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_MARGIN_BOTTOM:
-            attrs->margin.bottom = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->margin.bottom, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_MARGIN_LEFT:
-            attrs->margin.left = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->margin.left, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_MARGIN_RIGHT:
-            attrs->margin.right = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->margin.right, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_MARGIN_TOP:
-            attrs->margin.top = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->margin.top, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_PADDING_TOP:
-            attrs->padding.top = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->padding.top, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_PADDING_BOTTOM:
-            attrs->padding.bottom = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->padding.bottom, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_PADDING_LEFT:
-            attrs->padding.left = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->padding.left, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_PADDING_RIGHT:
-            attrs->padding.right = computeValue (p->value.intVal, attrs->font);
+            computeValue (&attrs->padding.right, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_TEXT_ALIGN:
             attrs->textAlign = (TextAlignType) p->value.intVal;
@@ -288,10 +285,11 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             attrs->valign = (VAlignType) p->value.intVal;
             break;
          case CssProperty::CSS_PROPERTY_WIDTH:
-               attrs->width = computeLength (p->value.intVal, attrs->font);
+            computeLength (&attrs->width, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_HEIGHT:
-               attrs->height = computeLength (p->value.intVal, attrs->font);
+            computeLength (&attrs->height, p->value.intVal, attrs->font);
+            break;
             break;
          case CssProperty::PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
@@ -310,8 +308,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
  * \brief Resolve relative lengths to absolute values.
  */
 
-int StyleEngine::computeValue (CssLength value, Font *font) {
-   int ret;
+void StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
    static float dpmm;
 
    if (dpmm == 0.0)
@@ -319,29 +316,40 @@ int StyleEngine::computeValue (CssLength value, Font *font) {
 
    switch (CSS_LENGTH_TYPE (value)) {
       case CSS_LENGTH_TYPE_PX:
-         ret = (int) CSS_LENGTH_VALUE (value);
+         *dest = (int) CSS_LENGTH_VALUE (value);
          break;
       case CSS_LENGTH_TYPE_MM:
-         ret = (int) (CSS_LENGTH_VALUE (value) * dpmm);
+         *dest = (int) (CSS_LENGTH_VALUE (value) * dpmm);
          break;
       case CSS_LENGTH_TYPE_EM:
-         ret = (int) (CSS_LENGTH_VALUE (value) * font->size);
+         *dest = (int) (CSS_LENGTH_VALUE (value) * font->size);
          break;
       case CSS_LENGTH_TYPE_EX:
-         ret = (int) (CSS_LENGTH_VALUE(value) * font->xHeight);
+         *dest = (int) (CSS_LENGTH_VALUE(value) * font->xHeight);
          break;
       default:
-         ret = value;
          break;
    }
-   return ret;
 }
 
-dw::core::style::Length StyleEngine::computeLength (CssLength value, Font *font) {
+void StyleEngine::computeValue (int *dest, CssLength value, Font *font,
+                                int percentageBase) {
    if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE)
-      return createPerLength (CSS_LENGTH_VALUE (value));
-    else
-      return createAbsLength (computeValue (value, font));
+      *dest = (int) (CSS_LENGTH_VALUE (value) * percentageBase);
+   else
+      computeValue (dest, value, font);
+}
+
+void StyleEngine::computeLength (dw::core::style::Length *dest,
+                                 CssLength value, Font *font) {
+   int v;
+
+   if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE)
+      *dest = createPerLength (CSS_LENGTH_VALUE (value));
+    else {
+      computeValue (&v, value, font);
+      *dest = createAbsLength (v);
+   }
 }
 
 /**

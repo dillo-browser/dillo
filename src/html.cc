@@ -2010,11 +2010,11 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    // TODO: the same for percentage and relative lengths.
    if (width_ptr) {
       l_w = a_Html_parse_length (html, width_ptr);
-      w = CSS_LENGTH_TYPE(l_w) == CSS_LENGTH_TYPE_PX ? CSS_LENGTH_VALUE(l_w) : 0;
+      w = (int) CSS_LENGTH_TYPE(l_w) == CSS_LENGTH_TYPE_PX ? CSS_LENGTH_VALUE(l_w) : 0;
    }
    if (height_ptr) {
       l_h = a_Html_parse_length (html, height_ptr);
-      h = CSS_LENGTH_TYPE(l_h) == CSS_LENGTH_TYPE_PX ? CSS_LENGTH_VALUE(l_h) : 0;
+      h = (int) CSS_LENGTH_TYPE(l_h) == CSS_LENGTH_TYPE_PX ? CSS_LENGTH_VALUE(l_h) : 0;
    }
    if (w < 0 || h < 0 || abs(w*h) > MAX_W * MAX_H) {
       dFree(width_ptr);
@@ -2022,8 +2022,10 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
       width_ptr = height_ptr = NULL;
       MSG("a_Html_add_new_image: suspicious image size request %dx%d\n", w, h);
    } else {
-      props.set (CssProperty::CSS_PROPERTY_WIDTH, l_w);
-      props.set (CssProperty::CSS_PROPERTY_HEIGHT, l_h);
+      if (width_ptr)
+         props.set (CssProperty::CSS_PROPERTY_WIDTH, l_w);
+      if (height_ptr)
+         props.set (CssProperty::CSS_PROPERTY_HEIGHT, l_h);
    }
 
    /* TODO: we should scale the image respecting its ratio.
@@ -2037,6 +2039,7 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "hspace"))) {
       space = strtol(attrbuf, NULL, 10);
       if (space > 0) {
+         space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
          props.set (CssProperty::CSS_PROPERTY_MARGIN_LEFT, space);
          props.set (CssProperty::CSS_PROPERTY_MARGIN_RIGHT, space);
       }
@@ -2046,6 +2049,7 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vspace"))) {
       space = strtol(attrbuf, NULL, 10);
       if (space > 0) {
+         space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
          props.set (CssProperty::CSS_PROPERTY_MARGIN_TOP, space);
          props.set (CssProperty::CSS_PROPERTY_MARGIN_BOTTOM, space);
       }

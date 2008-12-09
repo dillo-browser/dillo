@@ -23,8 +23,10 @@ class StyleEngine : public Doctree {
       dw::core::style::Style *style0 (CssPropertyList *nonCssHints = NULL);
       dw::core::style::Style *wordStyle0 (CssPropertyList *nonCssHints = NULL);
       void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
-      int computeValue (CssLength value, dw::core::style::Font *font);
-      dw::core::style::Length computeLength (CssLength value, dw::core::style::Font *font);
+      void computeValue (int *dest, CssLength value, dw::core::style::Font *font);
+      void computeValue (int *dest, CssLength value, dw::core::style::Font *font,
+         int percentageBase);
+      void computeLength (dw::core::style::Length *dest, CssLength value, dw::core::style::Font *font);
 
    public:
       StyleEngine (dw::core::Layout *layout);
