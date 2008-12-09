@@ -52,7 +52,7 @@ class StyleEngine : public Doctree {
       void endElement (int tag);
       void setPseudo (const char *pseudo);
       void setNonCssHints (CssPropertyList *nonCssHints);
-      void inheritBackgroundColor ();
+      void inheritBackgroundColor (); /* \todo get rid of this somehow */
 
       inline dw::core::style::Style *style () {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->style;
