@@ -284,6 +284,9 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_VERTICAL_ALIGN:
             attrs->valign = (VAlignType) p->value.intVal;
             break;
+         case CssProperty::CSS_PROPERTY_WHITE_SPACE:
+            attrs->whiteSpace = (WhiteSpace) p->value.intVal;
+            break;
          case CssProperty::CSS_PROPERTY_WIDTH:
             computeLength (&attrs->width, p->value.intVal, attrs->font);
             break;
