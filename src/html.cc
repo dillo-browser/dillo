@@ -106,9 +106,6 @@ static const char *Html_get_attr2(DilloHtml *html,
                                   int tagsize,
                                   const char *attrname,
                                   int tag_parsing_flags);
-static void Html_add_widget(DilloHtml *html, Widget *widget,
-                            char *width_str, char *height_str,
-                            StyleAttrs *style_attrs);
 static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof);
 static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
                             DilloImage *image);
@@ -3607,29 +3604,6 @@ char *a_Html_get_attr_wdef(DilloHtml *html,
 
    return attrbuf ? dStrdup(attrbuf) : dStrdup(def);
 }
-
-/*
- * Add a widget to the page.
- */
-static void Html_add_widget(DilloHtml *html,
-                            Widget *widget,
-                            char *width_str,
-                            char *height_str,
-                            StyleAttrs *style_attrs)
-{
-   StyleAttrs new_style_attrs;
-   Style *style;
-
-   new_style_attrs = *style_attrs;
-   new_style_attrs.width = width_str ?
-      a_Html_parse_length (html, width_str) : LENGTH_AUTO;
-   new_style_attrs.height = height_str ?
-      a_Html_parse_length (html, height_str) : LENGTH_AUTO;
-   style = Style::create (HT2LT(html), &new_style_attrs);
-   DW2TB(html->dw)->addWidget (widget, style);
-   style->unref ();
-}
-
 
 /*
  * Dispatch the apropriate function for 'Op'
