@@ -1307,7 +1307,7 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
 
          /* Close this and only this tag */
          html->CloseOneTag = true;
-         MSG("Close: %*s%s\n", html->stack->size()," ",Tags[toptag_idx].name);
+         _MSG("Close: %*s%s\n", html->stack->size()," ",Tags[toptag_idx].name);
          Tags[toptag_idx].close (html, toptag_idx);
       }
 
@@ -3315,7 +3315,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
       if (tag_idx != new_idx || IsCloseTag) {
          /* implicit open */
          Html_force_push_tag(html, tag_idx);
-         MSG("Open : %*s%s\n", html->stack->size()," ",Tags[tag_idx].name);
+         _MSG("Open : %*s%s\n", html->stack->size()," ",Tags[tag_idx].name);
          Tags[tag_idx].open (html, tag, strlen(tag));
       }
    }
@@ -3328,7 +3328,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
          if (tag_idx != new_idx || IsCloseTag) {
             /* implicit open of the head element */
             Html_force_push_tag(html, tag_idx);
-            MSG("Open : %*s%s\n", html->stack->size()," ",Tags[tag_idx].name);
+            _MSG("Open : %*s%s\n", html->stack->size()," ",Tags[tag_idx].name);
             Tags[tag_idx].open (html, tag, strlen(tag));
          }
       }
@@ -3345,7 +3345,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
       if (tag_idx != new_idx || IsCloseTag) {
          /* implicit open */
          Html_force_push_tag(html, tag_idx);
-         MSG("Open : %*s%s\n", html->stack->size()," ",Tags[tag_idx].name);
+         _MSG("Open : %*s%s\n", html->stack->size()," ",Tags[tag_idx].name);
          Tags[tag_idx].open (html, tag, strlen(tag));
       }
    }
@@ -3398,7 +3398,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       Html_push_tag(html, ni);
 
       html->styleEngine->startElement (ni);
-      MSG("Open : %*s%s\n", html->stack->size(), " ", Tags[ni].name);
+      _MSG("Open : %*s%s\n", html->stack->size(), " ", Tags[ni].name);
 
       /* Now parse attributes that can appear on any tag */
       if (tagsize >= 8 &&        /* length of "<t id=i>" */
@@ -3461,7 +3461,9 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       /* Test for </x>, ReqTagClose, <x /> and <x/> */
       if (*start == '/' ||                                      /* </x>    */
           html->ReqTagClose ||                                  /* request */
-          tag[tagsize - 2] == '/') {                            /* XML     */
+          (tag[tagsize-2] == '/' &&                             /* XML:    */
+           (strchr(" \"'", tag[tagsize-3]) ||                   /* [ "']/> */
+            (size_t)tagsize == strlen(Tags[ni].name) + 3))) {   /*  <x/>   */
    
          Html_tag_cleanup_at_close(html, ni);
          /* This was a close tag */
