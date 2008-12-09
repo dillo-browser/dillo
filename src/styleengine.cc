@@ -287,12 +287,11 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_VERTICAL_ALIGN:
             attrs->valign = (VAlignType) p->value.intVal;
             break;
-         /* \todo proper conversion from CssLength to dw::core::style::Length */
          case CssProperty::CSS_PROPERTY_WIDTH:
-               attrs->width = p->value.intVal;
+               attrs->width = computeLength (p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_HEIGHT:
-               attrs->height = p->value.intVal;
+               attrs->height = computeLength (p->value.intVal, attrs->font);
             break;
          case CssProperty::PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
@@ -338,6 +337,12 @@ int StyleEngine::computeValue (CssLength value, Font *font) {
    return ret;
 }
 
+dw::core::style::Length StyleEngine::computeLength (CssLength value, Font *font) {
+   if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE)
+      return createPerLength (CSS_LENGTH_VALUE (value));
+    else
+      return createAbsLength (computeValue (value, font));
+}
 
 /**
  * \brief Create a new style object based on the previously opened / closed

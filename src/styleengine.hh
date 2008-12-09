@@ -24,6 +24,7 @@ class StyleEngine : public Doctree {
       dw::core::style::Style *wordStyle0 (CssPropertyList *nonCssHints = NULL);
       void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
       int computeValue (CssLength value, dw::core::style::Font *font);
+      dw::core::style::Length computeLength (CssLength value, dw::core::style::Font *font);
 
    public:
       StyleEngine (dw::core::Layout *layout);

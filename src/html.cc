@@ -1337,10 +1337,10 @@ void a_Html_pop_tag(DilloHtml *html, int TagIdx)
 /*
  * Used by a_Html_parse_length
  */
-static Length Html_parse_length_or_multi_length (const char *attr,
-                                                 char **endptr)
+static CssLength Html_parse_length_or_multi_length (const char *attr,
+                                                    char **endptr)
 {
-   Length l;
+   CssLength l;
    double v;
    char *end;
 
@@ -1348,12 +1348,12 @@ static Length Html_parse_length_or_multi_length (const char *attr,
    switch (*end) {
    case '%':
       end++;
-      l = createPerLength (v / 100);
+      l = CSS_CREATE_LENGTH (v / 100, CSS_LENGTH_TYPE_PERCENTAGE);
       break;
 
    case '*':
       end++;
-      l = createRelLength (v);
+      l = CSS_CREATE_LENGTH (v, CSS_LENGTH_TYPE_RELATIVE);
       break;
 /*
    The "px" suffix seems not allowed by HTML4.01 SPEC.
@@ -1362,7 +1362,7 @@ static Length Html_parse_length_or_multi_length (const char *attr,
          end += 2;
 */
    default:
-      l = createAbsLength ((int)v);
+      l = CSS_CREATE_LENGTH (v, CSS_LENGTH_TYPE_PX);
       break;
    }
 
@@ -1376,24 +1376,24 @@ static Length Html_parse_length_or_multi_length (const char *attr,
  * Returns a length or a percentage, or UNDEF_LENGTH in case
  * of an error, or if attr is NULL.
  */
-Length a_Html_parse_length (DilloHtml *html, const char *attr)
+CssLength a_Html_parse_length (DilloHtml *html, const char *attr)
 {
-   Length l;
+   CssLength l;
    char *end;
 
    l = Html_parse_length_or_multi_length (attr, &end);
    if (isRelLength (l))
       /* not allowed as &Length; */
-      return LENGTH_AUTO;
+      l = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
    else {
       /* allow only whitespaces */
       if (*end && !isspace (*end)) {
          BUG_MSG("Garbage after length: %s\n", attr);
-         return LENGTH_AUTO;
+         l = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
       }
    }
 
-   _MSG("a_Html_parse_length: \"%s\" %d\n", attr, absLengthVal(l));
+   _MSG("a_Html_parse_length: \"%s\" %d\n", attr, CSS_LENGTH_VALUE(l));
    return l;
 }
 
@@ -1993,6 +1993,7 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    Length l_w, l_h;
    int space, w = 0, h = 0;
    bool load_now;
+   CssPropertyList props;
 
 // if (prefs.show_tooltip &&
 //     (attrbuf = a_Html_get_attr(html, tag, tagsize, "title")))
@@ -2009,17 +2010,20 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    // TODO: the same for percentage and relative lengths.
    if (width_ptr) {
       l_w = a_Html_parse_length (html, width_ptr);
-      w = isAbsLength(l_w) ? absLengthVal(l_w) : 0;
+      w = CSS_LENGTH_TYPE(l_w) == CSS_LENGTH_TYPE_PX ? CSS_LENGTH_VALUE(l_w) : 0;
    }
    if (height_ptr) {
       l_h = a_Html_parse_length (html, height_ptr);
-      h = isAbsLength(l_h) ? absLengthVal(l_h) : 0;
+      h = CSS_LENGTH_TYPE(l_h) == CSS_LENGTH_TYPE_PX ? CSS_LENGTH_VALUE(l_h) : 0;
    }
    if (w < 0 || h < 0 || abs(w*h) > MAX_W * MAX_H) {
       dFree(width_ptr);
       dFree(height_ptr);
       width_ptr = height_ptr = NULL;
       MSG("a_Html_add_new_image: suspicious image size request %dx%d\n", w, h);
+   } else {
+      props.set (CssProperty::CSS_PROPERTY_WIDTH, l_w);
+      props.set (CssProperty::CSS_PROPERTY_HEIGHT, l_h);
    }
 
    /* TODO: we should scale the image respecting its ratio.
@@ -2032,27 +2036,31 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    /* Spacing to the left and right */
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "hspace"))) {
       space = strtol(attrbuf, NULL, 10);
-      if (space > 0)
-         style_attrs->margin.left = style_attrs->margin.right = space;
+      if (space > 0) {
+         props.set (CssProperty::CSS_PROPERTY_MARGIN_LEFT, space);
+         props.set (CssProperty::CSS_PROPERTY_MARGIN_RIGHT, space);
+      }
    }
 
    /* Spacing at the top and bottom */
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vspace"))) {
       space = strtol(attrbuf, NULL, 10);
-      if (space > 0)
-         style_attrs->margin.top = style_attrs->margin.bottom = space;
+      if (space > 0) {
+         props.set (CssProperty::CSS_PROPERTY_MARGIN_TOP, space);
+         props.set (CssProperty::CSS_PROPERTY_MARGIN_BOTTOM, space);
+      }
    }
 
    /* x_img is an index to a list of {url,image} pairs.
     * We know Html_add_new_linkimage() will use size() as its next index */
-   style_attrs->x_img = html->images->size();
+   props.set (CssProperty::PROPERTY_X_IMG, html->images->size());
+
+   html->styleEngine->setNonCssHints(&props);
 
    /* Add a new image widget to this page */
    Image = a_Image_new(0, 0, alt_ptr, S_TOP(html)->current_bg_color);
-   if (add) {
-      Html_add_widget(html, (Widget*)Image->dw, width_ptr, height_ptr,
-                      style_attrs);
-   }
+   if (add)
+      DW2TB(html->dw)->addWidget((Widget*)Image->dw, html->styleEngine->style());
 
    load_now = a_UIcmd_get_images_enabled(html->bw) ||
               (a_Capi_get_flags(url) & CAPI_IsCached);

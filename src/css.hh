@@ -36,6 +36,8 @@ enum {
    CSS_LENGTH_TYPE_EM,
    CSS_LENGTH_TYPE_EX,
    CSS_LENGTH_TYPE_PERCENTAGE,
+   CSS_LENGTH_TYPE_RELATIVE,   /* This does not exist in CSS but
+                                  is used in HTML */
    CSS_LENGTH_TYPE_AUTO        /* This can be used as a simple value. */
 };
 
