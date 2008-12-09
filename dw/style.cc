@@ -82,7 +82,6 @@ void StyleAttrs::resetValues ()
    vBorderSpacing = 0;
 
    display = DISPLAY_INLINE;
-   whiteSpace = WHITE_SPACE_NORMAL;
 }
 
 /**
