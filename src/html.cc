@@ -1382,7 +1382,7 @@ CssLength a_Html_parse_length (DilloHtml *html, const char *attr)
    char *end;
 
    l = Html_parse_length_or_multi_length (attr, &end);
-   if (isRelLength (l))
+   if (CSS_LENGTH_TYPE (l) == CSS_LENGTH_TYPE_RELATIVE)
       /* not allowed as &Length; */
       l = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
    else {
