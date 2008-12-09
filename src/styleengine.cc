@@ -293,7 +293,6 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_HEIGHT:
             computeLength (&attrs->height, p->value.intVal, attrs->font);
             break;
-            break;
          case CssProperty::PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
             break;
