@@ -205,8 +205,8 @@ int FltkViewBase::handle (int event)
                                  getDwButtonState (), event_button ());
       //printf ("PUSH => %s\n", processed ? "true" : "false");
       if (processed) {
-         /* pressed dw content; fltk widgets should no longer have focus */
-         ::fltk::focus(NULL);
+         /* pressed dw content; give focus to the view */
+         ::fltk::focus(this);
       }
       return processed ? true : Group::handle (event);
 
