@@ -274,6 +274,8 @@ void CssContext::buildUserAgentStyle () {
      "h4 {margin-top: 1.12em; margin-bottom: 0em;} "
      "h5 {font-size: 0.83em; margin-top: 1.5em; margin-bottom: 0em;} "
      "h6 {font-size: 0.75em; margin-top: 1.67em; margin-bottom: 0em;} "
+     "hr {width: 100%; border: 1px inset gray} "
+     "pre {white-space: pre} "
      "u {text-decoration: underline } "
      "small, sub, sup { font-size: 0.83em } "
      "sub { vertical-align: sub } "

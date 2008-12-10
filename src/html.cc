@@ -2682,57 +2682,55 @@ static void Html_tag_close_li(DilloHtml *html, int TagIdx)
 static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
 {
    Widget *hruler;
-   StyleAttrs style_attrs;
-   Style *style;
+   CssPropertyList props;
    char *width_ptr;
    const char *attrbuf;
    int32_t size = 0;
   
-   style_attrs = *html->styleEngine->style ();
-
-   width_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "width", "100%");
-   style_attrs.width = a_Html_parse_length (html, width_ptr);
-   dFree(width_ptr);
+   width_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "width", NULL);
+   if (width_ptr) {
+      props.set (CssProperty::CSS_PROPERTY_WIDTH, 
+         a_Html_parse_length (html, width_ptr));
+      dFree(width_ptr);
+   }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
       size = strtol(attrbuf, NULL, 10);
-  
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "align"))) {
-      if (dStrcasecmp (attrbuf, "left") == 0)
-         style_attrs.textAlign = TEXT_ALIGN_LEFT;
-      else if (dStrcasecmp (attrbuf, "right") == 0)
-         style_attrs.textAlign = TEXT_ALIGN_RIGHT;
-      else if (dStrcasecmp (attrbuf, "center") == 0)
-         style_attrs.textAlign = TEXT_ALIGN_CENTER;
-   }
+ 
+   a_Html_tag_set_align_attr(html, &props, tag, tagsize); 
   
    /* TODO: evaluate attribute */
    if (a_Html_get_attr(html, tag, tagsize, "noshade")) {
-      style_attrs.setBorderStyle (BORDER_SOLID);
-      style_attrs.setBorderColor (
-         Color::createShaded (HT2LT(html), style_attrs.color->getColor()));
+      props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE, BORDER_SOLID);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE, BORDER_SOLID);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE, BORDER_SOLID);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE, BORDER_SOLID);
+
+      /* \todo handle shaded colors with CSS */
+      props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR, 0x000000);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR, 0x000000);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR, 0x000000);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR, 0x000000);
+
       if (size < 1)
          size = 1;
-   } else {
-      style_attrs.setBorderStyle (BORDER_INSET);
-      style_attrs.setBorderColor
-         (Color::createShaded (HT2LT(html),
-                               S_TOP(html)->current_bg_color));
-      if (size < 2)
-         size = 2;
    }
-  
-   style_attrs.borderWidth.top =
-      style_attrs.borderWidth.left = (size + 1) / 2;
-   style_attrs.borderWidth.bottom =
-      style_attrs.borderWidth.right = size / 2;
-   style = Style::create (HT2LT(html), &style_attrs);
+ 
+   if (size > 0) { 
+      CssLength size_top = CSS_CREATE_LENGTH ((size + 1) / 2, CSS_LENGTH_TYPE_PX);
+      CssLength size_left = CSS_CREATE_LENGTH (size / 2, CSS_LENGTH_TYPE_PX);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, size_top);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, size_top);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, size_left);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, size_left);
+   }
 
    DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());
+
+   html->styleEngine->setNonCssHints (&props);
    hruler = new Ruler();
-   hruler->setStyle (style);
-   DW2TB(html->dw)->addWidget (hruler, style);
-   style->unref ();
+   hruler->setStyle (html->styleEngine->style ());
+   DW2TB(html->dw)->addWidget (hruler, html->styleEngine->style ());
    DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());
 }
 
@@ -2772,7 +2770,6 @@ static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
 
    /* Is the placement of this statement right? */
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_PRE;
-   HTML_SET_TOP_ATTR (html, whiteSpace, WHITE_SPACE_PRE);
    html->pre_column = 0;
    html->PreFirstChar = true;
    html->InFlags |= IN_PRE;
