@@ -97,10 +97,6 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    }
 
    /** \todo figure out how to handle shaded colors with CSS */
-   props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR, 0x000000);
-   props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR, 0x000000);
-   props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR, 0x000000);
-   props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR, 0x000000);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       bgcolor = a_Html_color_parse(html, attrbuf, -1);
@@ -141,10 +137,6 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    }
 
    /** \todo figure out how to handle shaded colors with CSS */
-   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR, 0x000000);
-   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR, 0x000000);
-   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR, 0x000000);
-   table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR, 0x000000);
 
    if (S_TOP(html)->table_cell_props)
       S_TOP(html)->table_cell_props->unref ();
