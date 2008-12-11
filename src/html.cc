@@ -2706,19 +2706,17 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
       props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE, BORDER_SOLID);
       props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE, BORDER_SOLID);
 
-      /* \todo handle shaded colors with CSS */
-
-      if (size < 1)
+      if (size <= 0)
          size = 1;
    }
  
    if (size > 0) { 
       CssLength size_top = CSS_CREATE_LENGTH ((size + 1) / 2, CSS_LENGTH_TYPE_PX);
-      CssLength size_left = CSS_CREATE_LENGTH (size / 2, CSS_LENGTH_TYPE_PX);
+      CssLength size_bottom = CSS_CREATE_LENGTH (size / 2, CSS_LENGTH_TYPE_PX);
       props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, size_top);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, size_top);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, size_left);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, size_left);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, size_top);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, size_bottom);
+      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, size_bottom);
    }
 
    DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());
