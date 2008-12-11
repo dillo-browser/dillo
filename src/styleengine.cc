@@ -200,19 +200,19 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR:
             attrs->borderColor.top =
-              Color::createSimple (layout, p->value.intVal);
+              Color::createShaded (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR:
             attrs->borderColor.bottom =
-              Color::createSimple (layout, p->value.intVal);
+              Color::createShaded (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR:
             attrs->borderColor.left =
-              Color::createSimple (layout, p->value.intVal);
+              Color::createShaded (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR:
             attrs->borderColor.right =
-              Color::createSimple (layout, p->value.intVal);
+              Color::createShaded (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
             attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
@@ -304,6 +304,21 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
       }
    }
+
+   /* make sure border colors are set */
+   if (attrs->borderColor.top == NULL) 
+      attrs->borderColor.top = Color::createShaded (layout,
+         attrs->color->getColor ());
+   if (attrs->borderColor.bottom == NULL) 
+      attrs->borderColor.bottom = Color::createShaded (layout,
+         attrs->color->getColor ());
+   if (attrs->borderColor.left == NULL) 
+      attrs->borderColor.left = Color::createShaded (layout,
+         attrs->color->getColor ());
+   if (attrs->borderColor.right == NULL) 
+      attrs->borderColor.right = Color::createShaded (layout,
+         attrs->color->getColor ());
+   
 }
 
 /**
