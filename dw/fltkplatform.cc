@@ -101,11 +101,9 @@ container::typed::HashTable <dw::core::style::ColorAttrs,
       new container::typed::HashTable <dw::core::style::ColorAttrs,
                                        FltkColor> (false, false);
 
-FltkColor::FltkColor (int color, core::style::Color::Type type):
-   Color (color, type)
+FltkColor::FltkColor (int color): Color (color)
 {
    this->color = color;
-   this->type = type;
 
    /*
     * fltk/setcolor.cxx:
@@ -123,13 +121,10 @@ FltkColor::FltkColor (int color, core::style::Color::Type type):
       colors[SHADING_NORMAL] = ::fltk::BLACK;
    if (!(colors[SHADING_INVERSE] = shadeColor (color, SHADING_INVERSE) << 8))
       colors[SHADING_INVERSE] = ::fltk::BLACK;
-
-   if(type == core::style::Color::TYPE_SHADED) {
-      if (!(colors[SHADING_DARK] = shadeColor (color, SHADING_DARK) << 8))
-         colors[SHADING_DARK] = ::fltk::BLACK;
-      if (!(colors[SHADING_LIGHT] = shadeColor (color, SHADING_LIGHT) << 8))
-         colors[SHADING_LIGHT] = ::fltk::BLACK;
-   }
+   if (!(colors[SHADING_DARK] = shadeColor (color, SHADING_DARK) << 8))
+      colors[SHADING_DARK] = ::fltk::BLACK;
+   if (!(colors[SHADING_LIGHT] = shadeColor (color, SHADING_LIGHT) << 8))
+      colors[SHADING_LIGHT] = ::fltk::BLACK;
 }
 
 FltkColor::~FltkColor ()
@@ -137,13 +132,13 @@ FltkColor::~FltkColor ()
    colorsTable->remove (this);
 }
 
-FltkColor * FltkColor::create (int col, core::style::Color::Type type)
+FltkColor * FltkColor::create (int col)
 {
-   ColorAttrs attrs(col, type);
+   ColorAttrs attrs(col);
    FltkColor *color = colorsTable->get (&attrs);
 
    if (color == NULL) {
-      color = new FltkColor (col, type);
+      color = new FltkColor (col);
       colorsTable->put (color, color);
    }
 
@@ -385,14 +380,9 @@ core::style::Font *FltkPlatform::createFont (core::style::FontAttrs
    return FltkFont::create (attrs);
 }
 
-core::style::Color *FltkPlatform::createSimpleColor (int color)
+core::style::Color *FltkPlatform::createColor (int color)
 {
-   return FltkColor::create (color, core::style::Color::TYPE_SIMPLE);
-}
-
-core::style::Color *FltkPlatform::createShadedColor (int color)
-{
-   return FltkColor::create (color, core::style::Color::TYPE_SHADED);
+   return FltkColor::create (color);
 }
 
 void FltkPlatform::copySelection(const char *text)

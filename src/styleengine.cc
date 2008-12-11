@@ -35,8 +35,8 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
  
    style_attrs.initValues ();
    style_attrs.font = Font::create (layout, &font_attrs);
-   style_attrs.color = Color::createSimple (layout, 0);
-   style_attrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   style_attrs.color = Color::create (layout, 0);
+   style_attrs.backgroundColor = Color::create (layout, 0xffffff);
    
    n->style = Style::create (layout, &style_attrs);
 }
@@ -196,23 +196,23 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          /* \todo missing cases */
          case CssProperty::CSS_PROPERTY_BACKGROUND_COLOR:
             attrs->backgroundColor =
-               Color::createSimple (layout, p->value.intVal);
+               Color::create (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR:
             attrs->borderColor.top =
-              Color::createShaded (layout, p->value.intVal);
+              Color::create (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR:
             attrs->borderColor.bottom =
-              Color::createShaded (layout, p->value.intVal);
+              Color::create (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR:
             attrs->borderColor.left =
-              Color::createShaded (layout, p->value.intVal);
+              Color::create (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR:
             attrs->borderColor.right =
-              Color::createShaded (layout, p->value.intVal);
+              Color::create (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
             attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
@@ -243,7 +243,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             computeValue (&attrs->vBorderSpacing, p->value.intVal, attrs->font);
             break;
          case CssProperty::CSS_PROPERTY_COLOR:
-            attrs->color = Color::createSimple (layout, p->value.intVal);
+            attrs->color = Color::create (layout, p->value.intVal);
             break; 
          case CssProperty::CSS_PROPERTY_CURSOR:
             attrs->cursor = (Cursor) p->value.intVal;
@@ -307,17 +307,13 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
 
    /* make sure border colors are set */
    if (attrs->borderColor.top == NULL) 
-      attrs->borderColor.top = Color::createShaded (layout,
-         attrs->color->getColor ());
+      attrs->borderColor.top = attrs->color;
    if (attrs->borderColor.bottom == NULL) 
-      attrs->borderColor.bottom = Color::createShaded (layout,
-         attrs->color->getColor ());
+      attrs->borderColor.bottom = attrs->color;
    if (attrs->borderColor.left == NULL) 
-      attrs->borderColor.left = Color::createShaded (layout,
-         attrs->color->getColor ());
+      attrs->borderColor.left = attrs->color;
    if (attrs->borderColor.right == NULL) 
-      attrs->borderColor.right = Color::createShaded (layout,
-         attrs->color->getColor ());
+      attrs->borderColor.right = attrs->color;
    
 }
 

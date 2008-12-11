@@ -80,9 +80,9 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
       styleAttrs.initValues ();
       styleAttrs.margin.setVal (5);
       styleAttrs.font = style::Font::create (layout, &fontAttrs);
-      styleAttrs.color = style::Color::createSimple (layout, 0xff0000);
+      styleAttrs.color = style::Color::create (layout, 0xff0000);
       styleAttrs.backgroundColor = 
-         style::Color::createSimple (layout, prefs.bg_color);
+         style::Color::create (layout, prefs.bg_color);
       widgetStyle = style::Style::create (layout, &styleAttrs);
       dw->setStyle (widgetStyle);
       widgetStyle->unref ();

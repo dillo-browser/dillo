@@ -34,13 +34,13 @@ class FltkColor: public core::style::Color
    static lout::container::typed::HashTable <dw::core::style::ColorAttrs,
                                        FltkColor> *colorsTable;
 
-   FltkColor (int color, core::style::Color::Type type);
+   FltkColor (int color);
    ~FltkColor ();
 
 public:
    int colors[SHADING_NUM];
 
-   static FltkColor *create(int color, core::style::Color::Type type);
+   static FltkColor *create(int color);
 };
 
 
@@ -133,8 +133,7 @@ public:
    
    core::style::Font *createFont (core::style::FontAttrs *attrs,
                                       bool tryEverything);
-   core::style::Color *createSimpleColor (int color);
-   core::style::Color *createShadedColor (int color);
+   core::style::Color *createColor (int color);
    
    core::Imgbuf *createImgbuf (core::Imgbuf::Type type, int width, int height);
 

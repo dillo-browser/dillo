@@ -1766,9 +1766,9 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
 
    if (a_Capi_get_flags(url) & CAPI_IsCached) { /* visited frame */
       style_attrs.color =
-         Color::createSimple (HT2LT(html), html->visited_color);
+         Color::create (HT2LT(html), html->visited_color);
    } else {                                    /* unvisited frame */
-      style_attrs.color = Color::createSimple (HT2LT(html), html->link_color);
+      style_attrs.color = Color::create (HT2LT(html), html->link_color);
    }
    style_attrs.textDecoration |= TEXT_DECORATION_UNDERLINE;
    style_attrs.x_link = Html_set_new_link(html, &url);
@@ -2136,10 +2136,10 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
       if (html->styleEngine->style ()->x_link != -1) {
          /* In this case we can use the text color */
          style_attrs.setBorderColor (
-            Color::createShaded (HT2LT(html), style_attrs.color->getColor()));
+            Color::create (HT2LT(html), style_attrs.color->getColor()));
       } else {
          style_attrs.setBorderColor (
-            Color::createShaded (HT2LT(html), html->link_color));
+            Color::create (HT2LT(html), html->link_color));
       }
       style_attrs.setBorderStyle (BORDER_SOLID);
       style_attrs.borderWidth.setVal (border);
@@ -2336,7 +2336,7 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
       style_attrs = *html->styleEngine->style ();
 
       if (a_Capi_get_flags(url) & CAPI_IsCached) {
-         style_attrs.color = Color::createSimple (
+         style_attrs.color = Color::create (
             HT2LT(html),
             html->visited_color
 /*
@@ -2348,8 +2348,7 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
 */
             );
       } else {
-         style_attrs.color = Color::createSimple(HT2LT(html),
-                                                 html->link_color);
+         style_attrs.color = Color::create (HT2LT(html), html->link_color);
       }
 
       style_attrs.textDecoration |= TEXT_DECORATION_UNDERLINE;

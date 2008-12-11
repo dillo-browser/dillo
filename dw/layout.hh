@@ -231,14 +231,9 @@ public:
       return  platform->createFont (attrs, tryEverything);
    }
 
-   inline style::Color *createSimpleColor (int color)
+   inline style::Color *createColor (int color)
    {
-      return platform->createSimpleColor (color);
-   }
-
-   inline style::Color *createShadedColor (int color)
-   {
-      return platform->createShadedColor (color);
+      return platform->createColor (color);
    }
 
    inline Imgbuf *createImgbuf (Imgbuf::Type type, int width, int height)

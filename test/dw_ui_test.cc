@@ -53,8 +53,8 @@ int main(int argc, char **argv)
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
    styleAttrs.margin.setVal (5);
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    FontAttrs fontAttrs;
    fontAttrs.name = "Helvetica";

@@ -53,9 +53,9 @@ int main(int argc, char **argv)
    styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
    styleAttrs.color =
-      dw::core::style::Color::createSimple (layout, 0x000000);
+      dw::core::style::Color::create (layout, 0x000000);
    styleAttrs.backgroundColor =
-      dw::core::style::Color::createSimple (layout, 0xffffff);
+      dw::core::style::Color::create (layout, 0xffffff);
 
    dw::core::style::Style *widgetStyle = 
       dw::core::style::Style::create (layout, &styleAttrs);

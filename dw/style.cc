@@ -334,12 +334,12 @@ Font *Font::createFromList (Layout *layout, FontAttrs *attrs,
 bool ColorAttrs::equals(object::Object *other)
 {
    ColorAttrs *oc = (ColorAttrs*)other;
-   return this == oc || (color == oc->color && type == oc->type);
+   return this == oc || (color == oc->color);
 }
 
 int ColorAttrs::hashValue()
 {
-   return color ^ type;
+   return color;
 }
 
 Color::~Color ()
@@ -403,21 +403,11 @@ int Color::shadeColor (int color, Shading shading)
 }
 
   
-Color *Color::create (Layout *layout, int col, Type type)
+Color *Color::create (Layout *layout, int col)
 {
-   ColorAttrs attrs(col, type);
-   Color *color = NULL;
+   ColorAttrs attrs(col);
 
-   switch (type) {
-      case TYPE_SIMPLE:
-         color = layout->createSimpleColor (col);
-         break;
-      case TYPE_SHADED:
-         color = layout->createShadedColor (col);
-         break;
-   }
-
-   return color;
+   return layout->createColor (col);
 }
 
 // ----------------------------------------------------------------------

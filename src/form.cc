@@ -537,7 +537,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       if (prefs.standard_widget_colors)
          bg = NULL;
       else
-         bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+         bg = Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
       HTML_SET_TOP_ATTR(html, backgroundColor, bg);
 
       DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
@@ -587,7 +587,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    if (prefs.standard_widget_colors)
       bg = NULL;
    else
-      bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+      bg = Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
    HTML_SET_TOP_ATTR(html, backgroundColor, bg);
    DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
 
@@ -655,7 +655,7 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    if (prefs.standard_widget_colors)
       bg = NULL;
    else
-      bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+      bg = Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
    HTML_SET_TOP_ATTR(html, backgroundColor, bg);
 
    DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
@@ -866,7 +866,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       style_attrs.borderWidth.setVal(0);
       style_attrs.padding.setVal(0);
       style_attrs.backgroundColor =
-               Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+               Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
       style = Style::create (HT2LT(html), &style_attrs);
 
       page = new Textblock (prefs.limit_text_width);
@@ -1911,7 +1911,7 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
       style_attrs = *html->styleEngine->style ();
       style_attrs.cursor = CURSOR_POINTER;
       style_attrs.backgroundColor =
-        style::Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+        style::Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
 
       /* create new image and add it to the button */
       if ((Image = a_Html_add_new_image(html, tag, tagsize, url, &style_attrs,

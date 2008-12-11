@@ -99,8 +99,8 @@ int main(int argc, char **argv)
    styleAttrs.initValues ();
    styleAttrs.font = Font::create (layout, &fontAttrs);
    styleAttrs.margin.setVal (10);
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
    Style *topWidgetStyle = Style::create (layout, &styleAttrs);
 
    styleAttrs.margin.setVal (0);

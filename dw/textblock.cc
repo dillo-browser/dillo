@@ -1921,14 +1921,14 @@ void Textblock::changeLinkColor (int link, int newColor)
             case core::Content::TEXT:
             {  core::style::Style *old_style = word->style;
                styleAttrs = *old_style;
-               styleAttrs.color = core::style::Color::createSimple (layout,
-                                                                    newColor);
+               styleAttrs.color = core::style::Color::create (layout,
+                                                              newColor);
                word->style = core::style::Style::create (layout, &styleAttrs);
                old_style->unref();
                old_style = word->spaceStyle;
                styleAttrs = *old_style;
-               styleAttrs.color = core::style::Color::createSimple (layout,
-                                                                    newColor);
+               styleAttrs.color = core::style::Color::create (layout,
+                                                              newColor);
                word->spaceStyle =
                                core::style::Style::create(layout, &styleAttrs);
                old_style->unref();
@@ -1937,10 +1937,10 @@ void Textblock::changeLinkColor (int link, int newColor)
             case core::Content::WIDGET:
             {  core::Widget *widget = word->content.widget;
                styleAttrs = *widget->getStyle();
-               styleAttrs.color = core::style::Color::createSimple (layout,
-                                                                    newColor);
+               styleAttrs.color = core::style::Color::create (layout,
+                                                              newColor);
                styleAttrs.setBorderColor(
-                           core::style::Color::createShaded(layout, newColor));
+                           core::style::Color::create (layout, newColor));
                widget->setStyle(
                              core::style::Style::create (layout, &styleAttrs));
                break;
