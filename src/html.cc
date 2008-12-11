@@ -2707,10 +2707,6 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
       props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE, BORDER_SOLID);
 
       /* \todo handle shaded colors with CSS */
-      props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR, 0x000000);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR, 0x000000);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR, 0x000000);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR, 0x000000);
 
       if (size < 1)
          size = 1;
