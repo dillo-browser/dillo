@@ -96,8 +96,6 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
          props.set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, TEXT_ALIGN_CENTER);
    }
 
-   /** \todo figure out how to handle shaded colors with CSS */
-
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       bgcolor = a_Html_color_parse(html, attrbuf, -1);
       if (bgcolor != -1) {
@@ -112,15 +110,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    /* The style for the cells */
    table_cell_props = new CssPropertyList ();
-   if (border != -1) {
-      cssLength = CSS_CREATE_LENGTH (border, CSS_LENGTH_TYPE_PX);
-      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, cssLength);
-      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, cssLength);
-      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, cssLength);
-      table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, cssLength);
-   }
-
-   if (dillo_dbg_rendering && border < 1) {
+   if (border > 0 || dillo_dbg_rendering) {
       cssLength = CSS_CREATE_LENGTH (1, CSS_LENGTH_TYPE_PX);
       table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, cssLength);
       table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, cssLength);
@@ -135,8 +125,6 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING_LEFT, cssLength);
       table_cell_props->set (CssProperty::CSS_PROPERTY_PADDING_RIGHT, cssLength);
    }
-
-   /** \todo figure out how to handle shaded colors with CSS */
 
    if (S_TOP(html)->table_cell_props)
       S_TOP(html)->table_cell_props->unref ();
