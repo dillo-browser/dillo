@@ -39,6 +39,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    style_attrs.backgroundColor = Color::create (layout, 0xffffff);
    
    n->style = Style::create (layout, &style_attrs);
+   n->pseudo = NULL;
 }
 
 StyleEngine::~StyleEngine () {
@@ -64,7 +65,7 @@ void StyleEngine::startElement (int element) {
    n->element = element;
    n->id = NULL;
    n->klass = NULL;
-   n->pseudo = NULL;
+   n->pseudo = stack->getRef (stack->size () - 2)->pseudo; // inherit pseudo
    n->styleAttribute = NULL;
    n->inheritBackgroundColor = false;
 }
@@ -108,12 +109,19 @@ void StyleEngine::inheritBackgroundColor () {
 }
 
 /**
- * \brief set the CSS pseudo class (e.g. "link", "visited").
+ * \brief set the CSS pseudo class :link.
  */
-void StyleEngine::setPseudo (const char *pseudo) {
+void StyleEngine::setPseudoLink () {
    Node *n =  stack->getRef (stack->size () - 1);
-   assert (n->pseudo == NULL);
-   n->pseudo = dStrdup (pseudo);
+   n->pseudo = "link";
+}
+
+/**
+ * \brief set the CSS pseudo class :visited.
+ */
+void StyleEngine::setPseudoVisited () {
+   Node *n =  stack->getRef (stack->size () - 1);
+   n->pseudo = "visited";
 }
 
 /**

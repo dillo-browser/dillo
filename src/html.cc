@@ -2414,11 +2414,11 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 
       if (a_Capi_get_flags(url) & CAPI_IsCached) {
          html->InVisitedLink = true;
-         html->styleEngine->setPseudo ("visited");
+         html->styleEngine->setPseudoVisited ();
          if (html->visited_color != -1)
             props.set (CssProperty::CSS_PROPERTY_COLOR, html->visited_color);
       } else {
-         html->styleEngine->setPseudo ("link");
+         html->styleEngine->setPseudoLink ();
          if (html->link_color != -1)
             props.set (CssProperty::CSS_PROPERTY_COLOR, html->link_color);
       }

@@ -50,7 +50,8 @@ class StyleEngine : public Doctree {
       void setClass (const char *klass);
       void setStyle (const char *style);
       void endElement (int tag);
-      void setPseudo (const char *pseudo);
+      void setPseudoLink ();
+      void setPseudoVisited ();
       void setNonCssHints (CssPropertyList *nonCssHints);
       void inheritBackgroundColor (); /* \todo get rid of this somehow */
 
