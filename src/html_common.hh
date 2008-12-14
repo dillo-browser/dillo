@@ -258,7 +258,6 @@ DilloUrl *a_Html_url_new(DilloHtml *html,
 
 DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
                                  int tagsize, DilloUrl *url,
-                                 dw::core::style::StyleAttrs *style_attrs,
                                  bool add);
 
 char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize);

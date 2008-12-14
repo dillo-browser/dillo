@@ -1979,7 +1979,6 @@ static void Html_tag_open_tt(DilloHtml *html, const char *tag, int tagsize)
  */
 DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
                                  int tagsize, DilloUrl *url,
-                                 dw::core::style::StyleAttrs *style_attrs,
                                  bool add)
 {
    const int MAX_W = 6000, MAX_H = 6000;
@@ -1988,7 +1987,7 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    char *width_ptr, *height_ptr, *alt_ptr;
    const char *attrbuf;
    Length l_w, l_h;
-   int space, w = 0, h = 0;
+   int space, border, w = 0, h = 0;
    bool load_now;
    CssPropertyList props;
 
@@ -2052,6 +2051,18 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
       }
    }
 
+   /* Border */
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border"))) {
+      border = strtol(attrbuf, NULL, 10);
+      if (border >= 0) {
+         border = CSS_CREATE_LENGTH(border, CSS_LENGTH_TYPE_PX);
+         props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, border);
+         props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, border);
+         props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, border);
+         props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, border);
+      }
+   }
+
    /* x_img is an index to a list of {url,image} pairs.
     * We know Html_add_new_linkimage() will use size() as its next index */
    props.set (CssProperty::PROPERTY_X_IMG, html->images->size());
@@ -2105,9 +2116,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
    DilloImage *Image;
    DilloUrl *url, *usemap_url;
    Textblock *textblock;
-   StyleAttrs style_attrs;
    const char *attrbuf;
-   int border;
 
    /* This avoids loading images. Useful for viewing suspicious HTML email. */
    if (URL_FLAGS(html->base_url) & URL_SpamSafe)
@@ -2124,28 +2133,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
       /* TODO: usemap URLs outside of the document are not used. */
       usemap_url = a_Html_url_new(html, attrbuf, NULL, 0);
 
-   /* Set the style attributes for this image */
-   style_attrs = *html->styleEngine->style ();
-   if (html->styleEngine->style ()->x_link != -1 ||
-       usemap_url != NULL) {
-      /* Images within links */
-      border = 1;
-      if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border")))
-         border = strtol (attrbuf, NULL, 10);
-
-      if (html->styleEngine->style ()->x_link != -1) {
-         /* In this case we can use the text color */
-         style_attrs.setBorderColor (
-            Color::create (HT2LT(html), style_attrs.color->getColor()));
-      } else {
-         style_attrs.setBorderColor (
-            Color::create (HT2LT(html), html->link_color));
-      }
-      style_attrs.setBorderStyle (BORDER_SOLID);
-      style_attrs.borderWidth.setVal (border);
-   }
-
-   Image = a_Html_add_new_image(html, tag, tagsize, url, &style_attrs, true);
+   Image = a_Html_add_new_image(html, tag, tagsize, url, true);
 
    /* Image maps */
    if (a_Html_get_attr(html, tag, tagsize, "ismap")) {

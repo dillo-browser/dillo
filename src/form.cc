@@ -1914,8 +1914,7 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
         style::Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
 
       /* create new image and add it to the button */
-      if ((Image = a_Html_add_new_image(html, tag, tagsize, url, &style_attrs,
-                                        false))) {
+      if ((Image = a_Html_add_new_image(html, tag, tagsize, url, false))) {
          Style *style = Style::create (HT2LT(html), &style_attrs);
          IM2DW(Image)->setStyle (style);
          ResourceFactory *factory = HT2LT(html)->getResourceFactory();
