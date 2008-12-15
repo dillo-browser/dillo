@@ -2062,6 +2062,11 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
          props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, border);
          props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, border);
          props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, border);
+
+         props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE, BORDER_SOLID);
+         props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE, BORDER_SOLID);
+         props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE, BORDER_SOLID);
+         props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE, BORDER_SOLID);
       }
    }
 
