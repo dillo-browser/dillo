@@ -39,6 +39,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    style_attrs.backgroundColor = Color::create (layout, 0xffffff);
    
    n->style = Style::create (layout, &style_attrs);
+   n->wordStyle = NULL;
    n->pseudo = NULL;
 }
 
