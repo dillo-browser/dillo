@@ -1825,10 +1825,12 @@ static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
 {
    CssPropertyList props;
 
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
+   html->styleEngine->inheritBackgroundColor ();
    a_Html_tag_set_align_attr (html, &props, tag, tagsize);
    html->styleEngine->setNonCssHints (&props);
+
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
    /* First finalize unclosed H tags (we test if already named anyway) */
    a_Menu_pagemarks_set_text(html->bw, html->Stash->str);
