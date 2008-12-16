@@ -241,7 +241,7 @@ class CssSelector {
       inline CssSimpleSelector *top () {
          return &selectorList->getRef (selectorList->size () - 1)->selector;
       };
-      
+
       bool match (Doctree *dt);
       void print ();
       inline void ref () { refCount++; }
@@ -255,10 +255,11 @@ class CssSelector {
 class CssRule {
    private:
       int refCount;
-      CssSelector *selector;
       CssPropertyList *props;
 
    public:
+      CssSelector *selector;
+
       CssRule (CssSelector *selector, CssPropertyList *props);
       ~CssRule ();
 
@@ -272,9 +273,13 @@ class CssRule {
  * \brief A list of CssRules.
  * In apply () all matching rules are applied.
  */
-class CssStyleSheet : lout::misc::SimpleVector <CssRule*> {
+class CssStyleSheet {
+   private:
+      static const int ntags = 90; // \todo replace 90
+      lout::misc::SimpleVector <CssRule*> *ruleTable[ntags];
+
    public:
-      CssStyleSheet() : lout::misc::SimpleVector <CssRule*> (1) {};
+      CssStyleSheet();
       ~CssStyleSheet();
       void addRule (CssRule *rule);
       void addRule (CssSelector *selector, CssPropertyList *props);

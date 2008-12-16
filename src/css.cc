@@ -175,9 +175,34 @@ void CssRule::print () {
    props->print ();
 }
 
+CssStyleSheet::CssStyleSheet () {
+   for (int i = 0; i < ntags; i++)
+      ruleTable[i] = new lout::misc::SimpleVector <CssRule*> (1);
+}
+
+CssStyleSheet::~CssStyleSheet () {
+   for (int i = 0; i < ntags; i++) {
+      for (int j = 0; j < ruleTable[i]->size (); j++)
+         ruleTable[i]->get (j)->unref ();
+         
+      delete ruleTable[i];
+   }
+}
+
 void CssStyleSheet::addRule (CssRule *rule) {
-   increase ();
-   set (size () - 1, rule);
+   int topElement = rule->selector->top ()->element;
+
+   if (topElement == CssSimpleSelector::ELEMENT_ANY) {
+      for (int i = 0; i < ntags; i++) {
+         ruleTable[i]->increase ();
+         *ruleTable[i]->getRef (ruleTable[i]->size () - 1) = rule;
+         rule->ref ();
+      }
+   } else if (topElement >= 0 && topElement < ntags) {
+      ruleTable[topElement]->increase ();
+      *ruleTable[topElement]->getRef (ruleTable[topElement]->size () - 1) = rule;
+      rule->ref ();
+   }
 }
 
 void CssStyleSheet::addRule (CssSelector *selector, CssPropertyList *props) {
@@ -186,13 +211,11 @@ void CssStyleSheet::addRule (CssSelector *selector, CssPropertyList *props) {
 }
 
 void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
-   for (int i = 0; i < size (); i++)
-      get (i)->apply (props, docTree);
-}
+   lout::misc::SimpleVector <CssRule*> *ruleList;
 
-CssStyleSheet::~CssStyleSheet () {
-   for (int i = 0; i < size (); i++)
-      delete get (i);
+   ruleList = ruleTable[docTree->top ()->element];
+   for (int i = 0; i < ruleList->size (); i++)
+      ruleList->get (i)->apply (props, docTree);
 }
 
 CssStyleSheet *CssContext::userAgentStyle;
