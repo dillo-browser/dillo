@@ -254,6 +254,7 @@ class CssSelector {
  */
 class CssRule {
    private:
+      int refCount;
       CssSelector *selector;
       CssPropertyList *props;
 
@@ -262,6 +263,8 @@ class CssRule {
       ~CssRule ();
 
       void apply (CssPropertyList *props, Doctree *docTree);
+      inline void ref () { refCount++; }
+      inline void unref () { if(--refCount == 0) delete this; }
       void print ();
 };
 
