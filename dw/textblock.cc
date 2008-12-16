@@ -1077,8 +1077,8 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
       widget->setAscent (availAscent);
       widget->setDescent (availDescent);
       widget->sizeRequest (size);
-      size->ascent -= widget->getStyle()->margin.top;
-      size->descent -= widget->getStyle()->margin.bottom;
+//      size->ascent -= widget->getStyle()->margin.top;
+//      size->descent -= widget->getStyle()->margin.bottom;
    } else {
       /* TODO: Use margin.{top|bottom} here, like above.
        * (No harm for the next future.) */
