@@ -2875,6 +2875,55 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
    }
 }
 
+static void Css_callback(int Op, CacheClient_t *Client)
+{
+   if (Op) { /* EOF */
+      a_Nav_repush(((DilloWeb *)Client->Web)->bw);
+   }
+}
+
+static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
+{
+   const char *attrbuf;
+
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rel")) &&
+       !dStrcasecmp(attrbuf, "stylesheet") &&
+       (attrbuf = a_Html_get_attr(html, tag, tagsize, "type")) &&
+       !dStrcasecmp(attrbuf, "text/css")) {
+      if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "media")) ||
+          !dStrcasecmp(attrbuf, "all") ||
+          !dStrcasecmp(attrbuf, "screen")) {
+
+/* How will we know when to use "handheld"? Ask the html->bw->ui for
+   screen dimensions, I suppose. Also, the media attr can be a
+   comma-separated list. */
+
+         if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "href"))) {
+            DilloUrl *url;
+            MSG("Load stylesheet %s\n", attrbuf);
+            if ((url = a_Html_url_new(html, attrbuf, NULL, 0))) {
+               char *data;
+               int len;
+               if (a_Nav_get_buf(url, &data, &len)) {
+                  /* Haven't looked into what origin_count is */
+                  html->styleEngine->parse(data, len, 0, CSS_ORIGIN_AUTHOR);
+                  a_Nav_unref_buf(url);
+               } else {
+                  int ClientKey;
+                  DilloWeb *Web = a_Web_new(url);
+                  Web->bw = html->bw;
+                  if ((ClientKey = a_Capi_open_url(Web, Css_callback, NULL))) {
+                     a_Bw_add_client(html->bw, ClientKey, 0);
+                     a_Bw_add_url(html->bw, url);
+                  }
+               }
+               a_Url_free(url);
+            }
+         }
+      }
+   }
+}
+
 /*
  * Set the history of the menu to be consistent with the active menuitem.
  */
@@ -3091,7 +3140,7 @@ const TagInfo Tags[] = {
  /* label 010101 */
  /* legend 01?? */
  {"li", B8(011110),'O',1, Html_tag_open_li, Html_tag_close_li},
- /* link 100000 'F' */
+ {"link", B8(100001),'F',0, Html_tag_open_link, Html_tag_close_default},
  {"map", B8(011001),'R',2, Html_tag_open_map, Html_tag_close_map},
  /* menu 1010 -- TODO: not exactly 1010, it can contain LI and inline */
  {"menu", B8(011010),'R',2, Html_tag_open_menu, Html_tag_close_par},
