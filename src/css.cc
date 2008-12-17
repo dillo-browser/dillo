@@ -158,6 +158,7 @@ void CssSimpleSelector::print () {
 }
 
 CssRule::CssRule (CssSelector *selector, CssPropertyList *props) {
+   refCount = 0;
    this->selector = selector;
    this->selector->ref ();
    this->props = props;
