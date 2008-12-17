@@ -166,8 +166,8 @@ CssRule::CssRule (CssSelector *selector, CssPropertyList *props) {
 };
 
 CssRule::~CssRule () {
-   this->selector->unref ();
-   this->props->unref ();
+   selector->unref ();
+   props->unref ();
 };
 
 void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
