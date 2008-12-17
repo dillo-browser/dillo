@@ -546,6 +546,8 @@ DilloHtml::~DilloHtml()
    }
    delete (images);
 
+   delete styleEngine;
+
    //a_Dw_image_map_list_free(&maps);
 }
 
