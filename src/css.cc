@@ -57,6 +57,10 @@ CssSelector::CssSelector (int element, const char *klass,
    top ()->id = id;
 };
 
+CssSelector::~CssSelector () {
+   delete selectorList;
+}
+
 bool CssSelector::match (Doctree *docTree) {
    CssSimpleSelector *sel;
    Combinator comb;

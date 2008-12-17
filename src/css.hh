@@ -234,6 +234,7 @@ class CssSelector {
       CssSelector (int element = CssSimpleSelector::ELEMENT_ANY,
                    const char *klass = NULL,
                    const char *pseudo = NULL, const char *id = NULL);
+      ~CssSelector ();
       void addSimpleSelector (Combinator c,
                               int element = CssSimpleSelector::ELEMENT_ANY,
                               const char *klass = NULL,
