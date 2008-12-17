@@ -23,8 +23,6 @@
 /* Undefine if you want to unroll tables. For instance for PDAs */
 #define USE_TABLES
 
-#define dillo_dbg_rendering 0
-
 using namespace dw;
 using namespace dw::core;
 using namespace dw::core::style;
@@ -73,16 +71,6 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       props.set (CssProperty::CSS_PROPERTY_BORDER_SPACING, cssLength);
    }
 
-   /* When dillo was started with the --debug-rendering option, there
-    * is always a border around the table. */
-   if (dillo_dbg_rendering && border < 1) {
-      cssLength = CSS_CREATE_LENGTH (1, CSS_LENGTH_TYPE_PX);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, cssLength);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, cssLength);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, cssLength);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, cssLength);
-   }
-
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width")))
       props.set (CssProperty::CSS_PROPERTY_WIDTH,
          a_Html_parse_length (html, attrbuf));
@@ -110,7 +98,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    /* The style for the cells */
    table_cell_props = new CssPropertyList ();
-   if (border > 0 || dillo_dbg_rendering) {
+   if (border > 0) {
       cssLength = CSS_CREATE_LENGTH (1, CSS_LENGTH_TYPE_PX);
       table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, cssLength);
       table_cell_props->set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, cssLength);
