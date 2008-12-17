@@ -24,6 +24,6 @@ dpid_SOURCES = \
 sysconf_DATA = dpidrc
 CLEANFILES = $(sysconf_DATA)
 
-dpidrc: dpidrc.in Makefile
-	sed -e 's|[@]libdir[@]|$(libdir)|' dpidrc.in > dpidrc
+dpidrc: $(srcdir)/dpidrc.in Makefile
+	sed -e 's|[@]libdir[@]|$(libdir)|' $(srcdir)/dpidrc.in > dpidrc
 
