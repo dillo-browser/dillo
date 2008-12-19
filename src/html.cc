@@ -2574,6 +2574,32 @@ static void Html_tag_open_blockquote(DilloHtml *html,
 }
 
 /*
+ * <Q>
+ */
+static void Html_tag_open_q(DilloHtml *html, const char *tag, int tagsize)
+{
+    /*
+     * Left Double Quotation Mark, which is wrong in many cases, but
+     * should at least be widely recognized.
+     */
+    const char *U201C = "\xe2\x80\x9c";
+
+    DW2TB(html->dw)->addText (U201C, S_TOP(html)->style);
+}
+
+/*
+ * </Q>
+ */
+static void Html_tag_close_q(DilloHtml *html, int TagIdx)
+{
+   /* Right Double Quotation Mark */
+   const char *U201D = "\xe2\x80\x9d";
+
+   DW2TB(html->dw)->addText (U201D, S_TOP(html)->style);
+   a_Html_pop_tag(html, TagIdx);
+}
+
+/*
  * Handle the <UL> tag.
  */
 static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
@@ -3211,7 +3237,7 @@ const TagInfo Tags[] = {
  {"p", B8(010110),'O',1, Html_tag_open_p, Html_tag_close_par},
  /* param 010001 'F' */
  {"pre", B8(010110),'R',2, Html_tag_open_pre, Html_tag_close_pre},
- /* q 010101 */
+ {"q", B8(010101),'R',2, Html_tag_open_q, Html_tag_close_q},
  {"s", B8(010101),'R',2, Html_tag_open_strike, Html_tag_close_default},
  {"samp", B8(010101),'R',2, Html_tag_open_samp, Html_tag_close_default},
  {"script", B8(111001),'R',2, Html_tag_open_script, Html_tag_close_script},
