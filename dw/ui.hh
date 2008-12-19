@@ -232,6 +232,7 @@ protected:
    void sizeAllocateImpl (Allocation *allocation);
    void enterNotifyImpl (core::EventCrossing *event);
    void leaveNotifyImpl (core::EventCrossing *event);
+   bool buttonPressImpl (core::EventButton *event);
 
 public:
    static int CLASS_ID;
@@ -271,6 +272,14 @@ public:
       virtual void enter (Resource *resource) = 0;
       virtual void leave (Resource *resource) = 0;
    };
+   /**
+    * \brief Receiver interface for the "clicked" signal.
+    */
+   class ClickedReceiver: public lout::signal::Receiver
+   {
+   public:
+      virtual void clicked (Resource *resource, EventButton *event) = 0;
+   };
 
 private:
    class ActivateEmitter: public lout::signal::Emitter
@@ -286,8 +295,20 @@ private:
       void emitLeave (Resource *resource);
    };
 
+   class ClickedEmitter: public lout::signal::Emitter
+   {
+   protected:
+      bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
+                           int argc, Object **argv);
+   public:
+      inline void connectClicked (ClickedReceiver *receiver) {
+         connect (receiver); }
+      void emitClicked (Resource *resource, EventButton *event);
+   };
+
    Embed *embed;
    ActivateEmitter activateEmitter;
+   ClickedEmitter clickedEmitter;
 
    void emitEnter ();
    void emitLeave ();
@@ -301,6 +322,8 @@ protected:
 
    inline void emitActivate () {
       return activateEmitter.emitActivate (this); }
+   inline void emitClicked (EventButton *event) {
+      clickedEmitter.emitClicked (this, event); }
 
 public:
    inline Resource () { embed = NULL; }
@@ -322,43 +345,13 @@ public:
 
    inline void connectActivate (ActivateReceiver *receiver) {
       activateEmitter.connectActivate (receiver); }
+   inline void connectClicked (ClickedReceiver *receiver) {
+      clickedEmitter.connectClicked (receiver); }
 };
 
 
 class ButtonResource: public Resource
-{
-public:
-   /**
-    * \brief Receiver interface for the "clicked" signal.
-    */
-   class ClickedReceiver: public lout::signal::Receiver
-   {
-   public:
-      virtual void clicked (ButtonResource *resource, EventButton *event) = 0;
-   };
-
-private:
-   class ClickedEmitter: public lout::signal::Emitter
-   {
-   protected:
-      bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
-                           int argc, Object **argv);
-   public:
-      inline void connectClicked (ClickedReceiver *receiver) {
-         connect (receiver); }
-      void emitClicked (ButtonResource *resource, EventButton *event);
-   };
-
-   ClickedEmitter clickedEmitter;
-
-protected:
-   inline void emitClicked (EventButton *event) {
-      clickedEmitter.emitClicked (this, event); }
-
-public:
-   inline void connectClicked (ClickedReceiver *receiver) {
-      clickedEmitter.connectClicked (receiver); }
-};
+{};
 
 /**
  * \brief Interface for labelled buttons resources.

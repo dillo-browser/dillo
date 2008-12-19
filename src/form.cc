@@ -119,7 +119,7 @@ public:
 
 class DilloHtmlReceiver:
    public Resource::ActivateReceiver,
-   public ButtonResource::ClickedReceiver
+   public Resource::ClickedReceiver
 {
    friend class DilloHtmlForm;
    DilloHtmlForm* form;
@@ -128,7 +128,7 @@ class DilloHtmlReceiver:
    void activate (Resource *resource);
    void enter (Resource *resource);
    void leave (Resource *resource);
-   void clicked (ButtonResource *resource, EventButton *event);
+   void clicked (Resource *resource, EventButton *event);
 };
 
 class DilloHtmlInput {
@@ -950,11 +950,15 @@ DilloHtmlForm::~DilloHtmlForm ()
 void DilloHtmlForm::eventHandler(Resource *resource, EventButton *event)
 {
    MSG("DilloHtmlForm::eventHandler\n");
-   DilloHtmlInput *input = getInput(resource);
-   if (input) {
-      input->activate (this, num_entry_fields, event);
+   if (event && (event->button == 3)) {
+      MSG("Form menu\n");
    } else {
-      MSG("DilloHtmlForm::eventHandler: ERROR, input not found!\n");
+      DilloHtmlInput *input = getInput(resource);
+      if (input) {
+         input->activate (this, num_entry_fields, event);
+      } else {
+        MSG("DilloHtmlForm::eventHandler: ERROR, input not found!\n");
+      }
    }
 }
 
@@ -1522,7 +1526,7 @@ void DilloHtmlReceiver::leave (Resource *resource)
    a_UIcmd_set_msg(html->bw, "");
 }
 
-void DilloHtmlReceiver::clicked (ButtonResource *resource,
+void DilloHtmlReceiver::clicked (Resource *resource,
                                  EventButton *event)
 {
    form->eventHandler(resource, event);
@@ -1576,30 +1580,17 @@ void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
 {
    Resource *resource;
    if (embed && (resource = embed->getResource())) {
-      switch (type) {
-         case DILLO_HTML_INPUT_UNKNOWN:
-         case DILLO_HTML_INPUT_HIDDEN:
-         case DILLO_HTML_INPUT_CHECKBOX:
-         case DILLO_HTML_INPUT_RADIO:
-         case DILLO_HTML_INPUT_BUTTON:
-         case DILLO_HTML_INPUT_TEXTAREA:
-         case DILLO_HTML_INPUT_SELECT:
-         case DILLO_HTML_INPUT_SEL_LIST:
-            // do nothing
-            break;
-         case DILLO_HTML_INPUT_SUBMIT:
-         case DILLO_HTML_INPUT_RESET:
-         case DILLO_HTML_INPUT_BUTTON_SUBMIT:
-         case DILLO_HTML_INPUT_BUTTON_RESET:
-         case DILLO_HTML_INPUT_IMAGE:
-         case DILLO_HTML_INPUT_FILE:
-            ((ButtonResource *)resource)->connectClicked (form_receiver);
-         case DILLO_HTML_INPUT_TEXT:
-         case DILLO_HTML_INPUT_PASSWORD:
-         case DILLO_HTML_INPUT_INDEX:
-            resource->connectActivate (form_receiver);
-            break;
-         break;
+      resource->connectClicked (form_receiver);
+      if (type == DILLO_HTML_INPUT_SUBMIT ||
+          type == DILLO_HTML_INPUT_RESET ||
+          type == DILLO_HTML_INPUT_BUTTON_SUBMIT ||
+          type == DILLO_HTML_INPUT_BUTTON_RESET ||
+          type == DILLO_HTML_INPUT_IMAGE ||
+          type == DILLO_HTML_INPUT_FILE ||
+          type == DILLO_HTML_INPUT_TEXT ||
+          type == DILLO_HTML_INPUT_PASSWORD ||
+          type == DILLO_HTML_INPUT_INDEX) {
+         resource->connectActivate (form_receiver);
       }
    }
 }
@@ -1610,16 +1601,29 @@ void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
 void DilloHtmlInput::activate(DilloHtmlForm *form, int num_entry_fields,
                               EventButton *event)
 {
-   if (type == DILLO_HTML_INPUT_FILE) {
+   switch (type) {
+   case DILLO_HTML_INPUT_FILE:
       readFile (form->html->bw);
-   } else if (type == DILLO_HTML_INPUT_RESET ||
-              type == DILLO_HTML_INPUT_BUTTON_RESET) {
+      break;
+   case DILLO_HTML_INPUT_RESET:
+   case DILLO_HTML_INPUT_BUTTON_RESET:
       form->reset();
-   } else if ((type != DILLO_HTML_INPUT_TEXT &&
-               type != DILLO_HTML_INPUT_PASSWORD) ||
-              prefs.enterpress_forces_submit ||
-              num_entry_fields == 1) {
+      break;
+   case DILLO_HTML_INPUT_TEXT:
+   case DILLO_HTML_INPUT_PASSWORD:
+      if (!(prefs.enterpress_forces_submit || num_entry_fields == 1)) {
+         break;
+      } else {
+         /* fall through */
+      }
+   case DILLO_HTML_INPUT_SUBMIT:
+   case DILLO_HTML_INPUT_BUTTON_SUBMIT:
+   case DILLO_HTML_INPUT_IMAGE:
+   case DILLO_HTML_INPUT_INDEX:
       form->submit(this, event);
+      break;
+   default:
+      break;
    }
 }
 

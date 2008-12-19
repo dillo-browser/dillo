@@ -69,6 +69,19 @@ void Embed::leaveNotifyImpl (core::EventCrossing *event)
    resource->emitLeave();
 }
 
+bool Embed::buttonPressImpl (core::EventButton *event)
+{
+   bool handled;
+
+   if (event->button == 3) {
+      resource->emitClicked(event);
+      handled = true;
+   } else {
+      handled = false;
+   }
+   return handled;
+}
+
 void Embed::setWidth (int width)
 {
    resource->setWidth (width);
@@ -201,22 +214,18 @@ void Resource::emitLeave ()
    activateEmitter.emitLeave(this);
 }
 
-// ----------------------------------------------------------------------
-
-bool ButtonResource::ClickedEmitter::emitToReceiver (lout::signal::Receiver
-                                                     *receiver,
-                                                     int signalNo,
-                                                     int argc,
-                                                     Object **argv)
+bool Resource::ClickedEmitter::emitToReceiver(lout::signal::Receiver *receiver,
+                                              int signalNo, int argc,
+                                              Object **argv)
 {
    ((ClickedReceiver*)receiver)
-      ->clicked ((ButtonResource*)((Pointer*)argv[0])->getValue (),
+      ->clicked ((Resource*)((Pointer*)argv[0])->getValue (),
                  (EventButton*)((Pointer*)argv[1])->getValue());
    return false;
 }
 
-void ButtonResource::ClickedEmitter::emitClicked (ButtonResource *resource,
-                                                  EventButton *event)
+void Resource::ClickedEmitter::emitClicked (Resource *resource,
+                                            EventButton *event)
 {
    Pointer p1 (resource);
    Pointer p2 (event);

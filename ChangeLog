@@ -44,6 +44,8 @@ dillo-2.1
 
 dw
 
++- Moved clicked from ButtonResource to Resource.
+   Patch: place (AKA corvid)
 +- Cleaned up unused code in fltkviewbase.
    Patch: Johannes Hofmann
 
