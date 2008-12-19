@@ -372,8 +372,6 @@ void Html_tag_close_form(DilloHtml *html, int TagIdx)
    html->InFlags &= ~IN_SELECT;
    html->InFlags &= ~IN_OPTION;
    html->InFlags &= ~IN_TEXTAREA;
-
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -698,7 +696,6 @@ void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
 
       html->InFlags &= ~IN_TEXTAREA;
    }
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -787,8 +784,6 @@ void Html_tag_close_select(DilloHtml *html, int TagIdx)
       SelectionResource *res = (SelectionResource*)input->embed->getResource();
       select->addOptionsTo (res);
    }
-
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -902,7 +897,6 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 void Html_tag_close_button(DilloHtml *html, int TagIdx)
 {
    html->InFlags &= ~IN_BUTTON;
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
