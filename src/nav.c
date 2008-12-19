@@ -381,6 +381,7 @@ static void Nav_repush_callback(void *data)
 void a_Nav_repush(BrowserWindow *bw)
 {
    dReturn_if_fail (bw != NULL);
+   MSG(">>> a_Nav_repush <<<<\n");
    a_Timeout_add(0.0, Nav_repush_callback, (void*)bw);
 }
 

@@ -205,7 +205,7 @@ void CssStyleSheet::addRule (CssRule *rule) {
       }
    } else if (topElement >= 0 && topElement < ntags) {
       ruleTable[topElement]->increase ();
-      *ruleTable[topElement]->getRef (ruleTable[topElement]->size () - 1) = rule;
+      *ruleTable[topElement]->getRef (ruleTable[topElement]->size()-1) = rule;
       rule->ref ();
    }
 }

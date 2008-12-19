@@ -11,7 +11,7 @@
 
 using namespace dw::core::style;
 
-#define DEBUG_MSG(A, B, ...) MSG(B, __VA_ARGS__)
+#define DEBUG_MSG(A, B, ...) _MSG(B, __VA_ARGS__)
 #define MSG_CSS(A, ...) MSG(A, __VA_ARGS__)
 #define DEBUG_TOKEN_LEVEL   0
 #define DEBUG_PARSE_LEVEL   0

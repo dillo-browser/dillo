@@ -428,6 +428,9 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    a_Misc_parse_content_type(content_type, NULL, NULL, &charset);
 
    stop_parser = false;
+   stop_parser_after_head = false;
+   repush_after_head = false;
+   repush_after_stylesheet = false;
 
    CurrTagOfs = 0;
    OldTagOfs = 0;
@@ -1570,14 +1573,22 @@ static void Html_tag_open_head(DilloHtml *html, const char *tag, int tagsize)
  * Handle close HEAD element
  * Note: as a side effect of Html_test_section() this function is called
  *       twice when the head element is closed implicitly.
+ * Note2: HEAD is parsed once completely got. This asserts that a
+ *        linked stylesheet will always arrive after HEAD contents.
  */
 static void Html_tag_close_head(DilloHtml *html, int TagIdx)
 {
    if (html->InFlags & IN_HEAD) {
+      MSG("Closing HEAD section\n");
       if (html->Num_TITLE == 0)
          BUG_MSG("HEAD section lacks the TITLE element\n");
-   
+
       html->InFlags &= ~IN_HEAD;
+
+      if (html->stop_parser_after_head)
+         html->stop_parser = true;
+      if (html->repush_after_head)
+         a_Nav_repush(html->bw);
    }
    a_Html_pop_tag(html, TagIdx);
 }
@@ -2010,11 +2021,13 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    // TODO: the same for percentage and relative lengths.
    if (width_ptr) {
       l_w = a_Html_parse_length (html, width_ptr);
-      w = (int) CSS_LENGTH_TYPE(l_w) == CSS_LENGTH_TYPE_PX ? CSS_LENGTH_VALUE(l_w) : 0;
+      w = (int) CSS_LENGTH_TYPE(l_w) == CSS_LENGTH_TYPE_PX ? 
+                                           CSS_LENGTH_VALUE(l_w) : 0;
    }
    if (height_ptr) {
       l_h = a_Html_parse_length (html, height_ptr);
-      h = (int) CSS_LENGTH_TYPE(l_h) == CSS_LENGTH_TYPE_PX ? CSS_LENGTH_VALUE(l_h) : 0;
+      h = (int) CSS_LENGTH_TYPE(l_h) == CSS_LENGTH_TYPE_PX ?
+                                           CSS_LENGTH_VALUE(l_h) : 0;
    }
    if (w < 0 || h < 0 || abs(w*h) > MAX_W * MAX_H) {
       dFree(width_ptr);
@@ -2066,9 +2079,10 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
          props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, border);
 
          props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE, BORDER_SOLID);
-         props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE, BORDER_SOLID);
+         props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+                    BORDER_SOLID);
          props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE, BORDER_SOLID);
-         props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE, BORDER_SOLID);
+         props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE,BORDER_SOLID);
       }
    }
 
@@ -2081,7 +2095,8 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    /* Add a new image widget to this page */
    Image = a_Image_new(0, 0, alt_ptr, S_TOP(html)->current_bg_color);
    if (add)
-      DW2TB(html->dw)->addWidget((Widget*)Image->dw, html->styleEngine->style());
+      DW2TB(html->dw)->addWidget((Widget*)Image->dw,
+                                 html->styleEngine->style());
 
    load_now = a_UIcmd_get_images_enabled(html->bw) ||
               (a_Capi_get_flags(url) & CAPI_IsCached);
@@ -2707,7 +2722,7 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
    }
  
    if (size > 0) { 
-      CssLength size_top = CSS_CREATE_LENGTH ((size + 1) / 2, CSS_LENGTH_TYPE_PX);
+      CssLength size_top = CSS_CREATE_LENGTH ((size+1)/2, CSS_LENGTH_TYPE_PX);
       CssLength size_bottom = CSS_CREATE_LENGTH (size / 2, CSS_LENGTH_TYPE_PX);
       props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, size_top);
       props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, size_top);
@@ -2869,61 +2884,97 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
              * this code in another bw might have already changed it for us.
              */
             if (a_Misc_content_type_cmp(html->content_type, new_content)) {
-               a_Nav_repush(html->bw);
-               html->stop_parser = true;
+               html->stop_parser_after_head = true;
+               html->repush_after_head = true;
             }
          }
       }   
    }
 }
 
-static void Css_callback(int Op, CacheClient_t *Client)
+static void Html_css_load_callback(int Op, CacheClient_t *Client)
 {
+   MSG("Css_callback: Op=%d\n", Op);
    if (Op) { /* EOF */
+      // May check num_style_sheets here...
       a_Nav_repush(((DilloWeb *)Client->Web)->bw);
    }
 }
 
-static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
+/*
+ * Tell cache to retrieve a stylesheet
+ */
+static void Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
 {
-   const char *attrbuf;
-
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rel")) &&
-       !dStrcasecmp(attrbuf, "stylesheet") &&
-       (attrbuf = a_Html_get_attr(html, tag, tagsize, "type")) &&
-       !dStrcasecmp(attrbuf, "text/css")) {
-      if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "media")) ||
-          !dStrcasecmp(attrbuf, "all") ||
-          !dStrcasecmp(attrbuf, "screen")) {
-
-/* How will we know when to use "handheld"? Ask the html->bw->ui for
-   screen dimensions, I suppose. Also, the media attr can be a
-   comma-separated list. */
-
-         if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "href"))) {
-            DilloUrl *url;
-            MSG("Load stylesheet %s\n", attrbuf);
-            if ((url = a_Html_url_new(html, attrbuf, NULL, 0))) {
-               char *data;
-               int len;
-               if (a_Nav_get_buf(url, &data, &len)) {
-                  /* Haven't looked into what origin_count is */
-                  html->styleEngine->parse(data, len, 0, CSS_ORIGIN_AUTHOR);
-                  a_Nav_unref_buf(url);
-               } else {
-                  int ClientKey;
-                  DilloWeb *Web = a_Web_new(url);
-                  Web->bw = html->bw;
-                  if ((ClientKey = a_Capi_open_url(Web, Css_callback, NULL))) {
-                     a_Bw_add_client(html->bw, ClientKey, 0);
-                     a_Bw_add_url(html->bw, url);
-                  }
-               }
-               a_Url_free(url);
-            }
-         }
+   char *data;
+   int len;
+   if (a_Nav_get_buf(url, &data, &len)) {
+      /* Haven't looked into what origin_count is */
+      if (a_Capi_get_flags(url) & CAPI_Completed)
+         html->styleEngine->parse(data, len, 0, CSS_ORIGIN_AUTHOR);
+      a_Nav_unref_buf(url);
+   } else if (!html->repush_after_head) {
+      /* Fill a Web structure for the cache query */
+      int ClientKey;
+      DilloWeb *Web = a_Web_new(url);
+      Web->bw = html->bw;
+      //Web->flags |= WEB_Stylesheet;
+      if ((ClientKey = a_Capi_open_url(Web, Html_css_load_callback, NULL))) {
+         html->repush_after_stylesheet = true;
+         a_Bw_add_client(html->bw, ClientKey, 0);
+         a_Bw_add_url(html->bw, url);
       }
    }
+}
+
+/*
+ * Parse the LINK element (Only CSS stylesheets by now).
+ * (If it either hits or misses, is not relevant here; that's up to the
+ *  cache functions)
+ */
+static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
+{
+   DilloUrl *url;
+   const char *attrbuf;
+
+   //char *tag_str = dStrndup(tag, tagsize);
+   //MSG("Html_tag_open_link(): %s\n", tag_str);
+   //dFree(tag_str);
+
+   /* When viewing suspicious HTML email, don't load LINK */
+   if (URL_FLAGS(html->base_url) & URL_SpamSafe)
+      return;
+   /* Ignore LINK outside HEAD */
+   if (!(html->InFlags & IN_HEAD)) {
+      BUG_MSG("the LINK element must be inside the HEAD section\n");
+      return;
+   }
+   /* Load only one stylesheet by now... */
+   if (html->repush_after_stylesheet)
+      return;
+
+   /* TODO: How will we know when to use "handheld"? Ask the html->bw->ui for
+      screen dimensions, or a dillorc preference. */
+
+   /* CSS stylesheet link */
+   if ((!(attrbuf = a_Html_get_attr(html, tag, tagsize, "rel")) ||
+        dStrcasecmp(attrbuf, "stylesheet")) ||
+       (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "href")) ||
+        !(url = a_Html_url_new(html, attrbuf, NULL, 0))))
+      return;
+   /* IMPLIED attributes? */
+   if (((attrbuf = a_Html_get_attr(html, tag, tagsize, "type")) &&
+        dStrcasecmp(attrbuf, "text/css")) ||
+       ((attrbuf = a_Html_get_attr(html, tag, tagsize, "media")) &&
+        !dStristr(attrbuf, "screen") && !dStrcasecmp(attrbuf, "all")))
+      return;
+
+   MSG("  Html_tag_open_link(): URL=%s\n", URL_STR(url));
+   MSG("    repush after HEAD=%d SHEET=%d\n",
+       html->repush_after_head, html->repush_after_stylesheet);
+
+   Html_load_stylesheet(html, url);
+   a_Url_free(url);
 }
 
 /*

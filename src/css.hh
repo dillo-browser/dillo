@@ -238,7 +238,7 @@ class CssSelector {
       void addSimpleSelector (Combinator c,
                               int element = CssSimpleSelector::ELEMENT_ANY,
                               const char *klass = NULL,
-                              const char *pseudo = NULL, const char *id = NULL);
+                              const char *pseudo = NULL, const char *id=NULL);
       inline CssSimpleSelector *top () {
          return &selectorList->getRef (selectorList->size () - 1)->selector;
       };
