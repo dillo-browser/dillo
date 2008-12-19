@@ -2966,7 +2966,7 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
    if (((attrbuf = a_Html_get_attr(html, tag, tagsize, "type")) &&
         dStrcasecmp(attrbuf, "text/css")) ||
        ((attrbuf = a_Html_get_attr(html, tag, tagsize, "media")) &&
-        !dStristr(attrbuf, "screen") && !dStrcasecmp(attrbuf, "all")))
+        !dStristr(attrbuf, "screen") && dStrcasecmp(attrbuf, "all")))
       return;
 
    MSG("  Html_tag_open_link(): URL=%s\n", URL_STR(url));
