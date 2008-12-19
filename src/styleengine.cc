@@ -329,7 +329,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
 /**
  * \brief Resolve relative lengths to absolute values.
  */
-void StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
+bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
    static float dpmm;
 
    if (dpmm == 0.0)
@@ -338,39 +338,45 @@ void StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
    switch (CSS_LENGTH_TYPE (value)) {
       case CSS_LENGTH_TYPE_PX:
          *dest = (int) CSS_LENGTH_VALUE (value);
-         break;
+         return true;
       case CSS_LENGTH_TYPE_MM:
          *dest = (int) (CSS_LENGTH_VALUE (value) * dpmm);
-         break;
+        return true;
       case CSS_LENGTH_TYPE_EM:
          *dest = (int) (CSS_LENGTH_VALUE (value) * font->size);
-         break;
+        return true;
       case CSS_LENGTH_TYPE_EX:
          *dest = (int) (CSS_LENGTH_VALUE(value) * font->xHeight);
-         break;
+        return true;
       default:
          break;
    }
+
+   return false;
 }
 
-void StyleEngine::computeValue (int *dest, CssLength value, Font *font,
+bool StyleEngine::computeValue (int *dest, CssLength value, Font *font,
                                 int percentageBase) {
-   if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE)
+   if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE) {
       *dest = (int) (CSS_LENGTH_VALUE (value) * percentageBase);
-   else
-      computeValue (dest, value, font);
+      return true;
+   } else
+      return computeValue (dest, value, font);
 }
 
-void StyleEngine::computeLength (dw::core::style::Length *dest,
+bool StyleEngine::computeLength (dw::core::style::Length *dest,
                                  CssLength value, Font *font) {
    int v;
 
-   if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE)
+   if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE) {
       *dest = createPerLength (CSS_LENGTH_VALUE (value));
-    else {
-      computeValue (&v, value, font);
-      *dest = createAbsLength (v);
-   }
+      return true;
+    } else if (computeValue (&v, value, font)) {
+       *dest = createAbsLength (v);
+       return true;
+    }
+
+   return false;
 }
 
 /**
