@@ -28,6 +28,8 @@ dillo_SOURCES = \
 	bw.c \
 	cookies.c \
 	cookies.h \
+	auth.c \
+	auth.h \
 	colors.c \
 	colors.h \
 	binaryconst.h \

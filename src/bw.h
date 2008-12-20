@@ -84,6 +84,7 @@ void a_Bw_remove_doc(BrowserWindow *bw, void *vdoc);
 void a_Bw_add_url(BrowserWindow *bw, const DilloUrl *Url);
 void a_Bw_cleanup(BrowserWindow *bw);
 
+typedef void (*BwCallback_t)(BrowserWindow *bw, const void *data);
 
 #ifdef __cplusplus
 }

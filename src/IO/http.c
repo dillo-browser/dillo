@@ -33,6 +33,7 @@
 #include "../dns.h"
 #include "../web.hh"
 #include "../cookies.h"
+#include "../auth.h"
 #include "../prefs.h"
 #include "../misc.h"
 
@@ -196,7 +197,7 @@ Dstr *Http_make_content_type(const DilloUrl *url)
  */
 Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
 {
-   char *ptr, *cookies, *referer;
+   char *ptr, *cookies, *auth, *referer;
    Dstr *query      = dStr_new(""),
         *full_path  = dStr_new(""),
         *proxy_auth = dStr_new("");
@@ -219,6 +220,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
    }
 
    cookies = a_Cookies_get_query(url);
+   auth = a_Auth_get_auth_str(url);
    referer = Http_get_referer(url);
    if (URL_FLAGS(url) & URL_Post) {
       Dstr *content_type = Http_make_content_type(url);
@@ -228,15 +230,16 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Connection: close\r\n"
          "Accept-Charset: utf-8,*;q=0.8\r\n"
          "Accept-Encoding: gzip\r\n"
+         "%s" /* auth */
          "Host: %s\r\n"
          "%s"
          "%s"
          "User-Agent: Dillo/%s\r\n"
          "Content-Length: %ld\r\n"
          "Content-Type: %s\r\n"
-         "%s"
+         "%s" /* cookies */
          "\r\n",
-         full_path->str, URL_AUTHORITY(url),
+         full_path->str, auth ? auth : "", URL_AUTHORITY(url),
          proxy_auth->str, referer, VERSION,
          URL_DATA(url)->len, content_type->str,
          cookies);
@@ -250,16 +253,17 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Connection: close\r\n"
          "Accept-Charset: utf-8,*;q=0.8\r\n"
          "Accept-Encoding: gzip\r\n"
+         "%s" /* auth */
          "Host: %s\r\n"
          "%s"
          "%s"
          "User-Agent: Dillo/%s\r\n"
-         "%s"
+         "%s" /* cookies */
          "\r\n",
          full_path->str,
          (URL_FLAGS(url) & URL_E2EQuery) ?
             "Cache-Control: no-cache\r\nPragma: no-cache\r\n" : "",
-         URL_AUTHORITY(url),
+         auth ? auth : "", URL_AUTHORITY(url),
          proxy_auth->str, referer, VERSION, cookies);
    }
    dFree(referer);

@@ -5,7 +5,7 @@ Dillo project
 dillo-2.1
 
 +- Added ipv6 addresses iteration and ipv4 fallback.
-   Patch: James Turner, Jorge Arellano
+   Patch: James Turner, Jorge Arellano Cid
 +- Added support for numeric IPv6 addresses entered into the url bar.
  - Used the URL authority part instead of stripped default port in HTTP query.
    Patches: Justus Winter
@@ -26,6 +26,8 @@ dillo-2.1
  - Set the ScrollGroup as the resizable widget in downloads dpi.
  - Cleaned up and normalized D_SUN_LEN usage.
    Patches: Jeremy Henty
++- Implemented Basic authentication!
+   Patch: Jeremy Henty, Jorge Arellano Cid
 +- Allowed compilation with older machines by removing a few C99isms.
  - Added use of inttypes.h when stdint.h isn't found.
    Patches: Dan Fandrich
@@ -36,12 +38,12 @@ dillo-2.1
 +- Made the parser recognize "[^ ]/>"-terminated XML elements.
    Patch: Johannes Hofmann
 +- Added the "middle_click_drags_page" dillorc option.
-   Patch: Jorge Arellano, Thomas Orgis
+   Patch: Jorge Arellano Cid, Thomas Orgis
 +- Set the File menu label to hide when the File menu-button is shown.
  ? Trying a new iconv() test in configure.in.
  - Allowed the rc parser to skip whitespace around the equal sign.
  - Fixed the parser not to call Html_tag_close_* functions twice.
-   Patches: Jorge Arellano
+   Patches: Jorge Arellano Cid
 
 dw
 

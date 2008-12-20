@@ -32,6 +32,7 @@
 #include "misc.h"
 #include "capi.h"
 #include "decode.h"
+#include "auth.h"
 
 #include "timeout.hh"
 #include "uicmd.hh"
@@ -54,6 +55,7 @@ typedef struct {
    char *TypeMeta;           /* MIME type string from META HTTP-EQUIV */
    Dstr *Header;             /* HTTP header */
    const DilloUrl *Location; /* New URI for redirects */
+   Dlist *Auth;              /* Authentication fields */
    Dstr *Data;               /* Pointer to raw data */
    Dstr *UTF8Data;           /* Data after charset translation */
    int DataRefcount;         /* Reference count */
@@ -87,6 +89,7 @@ static uint_t DelayedQueueIdleId = 0;
  */
 static void Cache_process_queue(CacheEntry_t *entry);
 static void Cache_delayed_process_queue(CacheEntry_t *entry);
+static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw);
 
 
 /*
@@ -206,6 +209,7 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->TypeMeta = NULL;
    NewEntry->Header = dStr_new("");
    NewEntry->Location = NULL;
+   NewEntry->Auth = NULL;
    NewEntry->Data = dStr_sized_new(8*1024);
    NewEntry->UTF8Data = NULL;
    NewEntry->DataRefcount = 0;
@@ -288,6 +292,18 @@ void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds)
 }
 
 /*
+ *  Free Authentication fields.
+ */
+static void Cache_auth_free(Dlist *auth)
+{
+   int i;
+   void *auth_field;
+   for (i = 0; (auth_field = dList_nth_data(auth, i)); ++i)
+      dFree(auth_field);
+   dList_free(auth);
+}
+
+/*
  *  Free the components of a CacheEntry_t struct.
  */
 static void Cache_entry_free(CacheEntry_t *entry)
@@ -298,6 +314,7 @@ static void Cache_entry_free(CacheEntry_t *entry)
    dFree(entry->TypeMeta);
    dStr_free(entry->Header, TRUE);
    a_Url_free((DilloUrl *)entry->Location);
+   Cache_auth_free(entry->Auth);
    dStr_free(entry->Data, 1);
    dStr_free(entry->UTF8Data, 1);
    if (entry->CharsetDecoder)
@@ -655,6 +672,9 @@ static void Cache_parse_header(CacheEntry_t *entry)
          }
          dFree(location_str);
 
+      } else if (strncmp(header + 9, "401", 3) == 0) {
+         entry->Auth =
+            Cache_parse_multiple_fields(header, "WWW-Authenticate");
       } else if (strncmp(header + 9, "404", 3) == 0) {
          entry->Flags |= CA_NotFound;
       }
@@ -927,6 +947,50 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
    return 0;
 }
 
+typedef struct {
+   Dlist *auth;
+   DilloUrl *url;
+   BrowserWindow *bw;
+} CacheAuthData_t;
+
+/*
+ * Ask for user/password and reload the page.
+ */
+static void Cache_auth_callback(void *vdata)
+{
+   CacheAuthData_t *data = (CacheAuthData_t *)vdata;
+   if (a_Auth_do_auth(data->auth, data->url))
+      a_Nav_reload(data->bw);
+   Cache_auth_free(data->auth);
+   a_Url_free(data->url);
+   dFree(data);
+   Cache_auth_entry(NULL, NULL);
+   a_Timeout_remove();
+}
+
+/*
+ * Set a timeout function to ask for user/password.
+ */ 
+static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw)
+{
+   static int busy = 0;
+   CacheAuthData_t *data;
+
+   if (!entry) {
+      busy = 0;
+   } else if (busy) {
+      MSG_WARN("Cache_auth_entry: caught busy!\n");
+   } else if (entry->Auth) {
+      busy = 1;
+      data = dNew(CacheAuthData_t, 1);
+      data->auth = entry->Auth;
+      data->url = a_Url_dup(entry->Url);
+      data->bw = bw;
+      entry->Auth = NULL;
+      a_Timeout_add(0.0, Cache_auth_callback, data);
+   }
+}
+
 /*
  * Check whether a URL scheme is downloadable.
  * Return: 1 enabled, 0 disabled.
@@ -1114,6 +1178,9 @@ static void Cache_process_queue(CacheEntry_t *entry)
          a_UIcmd_save_link(Client_bw, url);
       }
       a_Url_free(url);
+
+   } else if (entry->Auth && (entry->Flags & CA_GotData)) {
+      Cache_auth_entry(entry, Client_bw);
    }
 
    /* Trigger cleanup when there are no cache clients */
