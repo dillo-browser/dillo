@@ -197,7 +197,8 @@ Dstr *Http_make_content_type(const DilloUrl *url)
  */
 Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
 {
-   char *ptr, *cookies, *auth, *referer;
+   const char *auth;
+   char *ptr, *cookies, *referer;
    Dstr *query      = dStr_new(""),
         *full_path  = dStr_new(""),
         *proxy_auth = dStr_new("");
