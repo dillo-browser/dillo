@@ -45,6 +45,7 @@
 #include "capi.h"
 #include "dicache.h"
 #include "cookies.h"
+#include "auth.h"
 
 
 /*
@@ -102,6 +103,7 @@ int main(int argc, char **argv)
    a_Dicache_init();
    a_Bw_init();
    a_Cookies_init();
+   a_Auth_init();
 
    // Sets WM_CLASS hint on X11
    fltk::Window::xclass("dillo");

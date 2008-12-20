@@ -467,7 +467,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    PrevWasSPC = false;
    InVisitedLink = false;
    ReqTagClose = false;
-   CloseOneTag = false;
    TagSoup = true;
    NameVal = NULL;
 
@@ -1277,12 +1276,6 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
    int stack_idx, cmp = 1;
    int new_idx = TagIdx;
 
-   if (html->CloseOneTag) {
-      Html_real_pop_tag(html);
-      html->CloseOneTag = false;
-      return;
-   }
-
    /* Look for the candidate tag to close */
    stack_idx = html->stack->size() - 1;
    while (stack_idx &&
@@ -1308,9 +1301,9 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
                     Tags[toptag_idx].name);
 
          /* Close this and only this tag */
-         html->CloseOneTag = true;
          _MSG("Close: %*s%s\n", html->stack->size()," ",Tags[toptag_idx].name);
          Tags[toptag_idx].close (html, toptag_idx);
+         Html_real_pop_tag(html);
       }
 
    } else {
@@ -1322,14 +1315,6 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
                  Tags[html->stack->getRef(stack_idx)->tag_idx].name);
       }
    }
-}
-
-/*
- * Cleanup (conditional), and Pop the tag (if it matches)
- */
-void a_Html_pop_tag(DilloHtml *html, int TagIdx)
-{
-   Html_tag_cleanup_at_close(html, TagIdx);
 }
 
 /*
@@ -1546,7 +1531,6 @@ static void Html_tag_close_html(DilloHtml *html, int TagIdx)
       /* beware of pages with multiple HTML close tags... :-P */
       html->InFlags &= ~IN_HTML;
    }
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -1590,7 +1574,6 @@ static void Html_tag_close_head(DilloHtml *html, int TagIdx)
       if (html->repush_after_head)
          a_Nav_repush(html->bw);
    }
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -1616,7 +1599,6 @@ static void Html_tag_close_title(DilloHtml *html, int TagIdx)
    } else {
       BUG_MSG("the TITLE element must be inside the HEAD section\n");
    }
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -1636,7 +1618,6 @@ static void Html_tag_open_script(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_script(DilloHtml *html, int TagIdx)
 {
    /* eventually the stash will be sent to an interpreter for parsing */
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -1673,7 +1654,6 @@ static void Html_tag_close_style(DilloHtml *html, int TagIdx)
 {
    html->styleEngine->parse(html->Stash->str, html->Stash->len,
                             0, CSS_ORIGIN_AUTHOR);
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -1744,7 +1724,6 @@ static void Html_tag_close_body(DilloHtml *html, int TagIdx)
       /* some tag soup pages use multiple BODY tags... */
       html->InFlags &= ~IN_BODY;
    }
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -1877,7 +1856,6 @@ static void Html_tag_close_h(DilloHtml *html, int TagIdx)
 {
    a_Menu_pagemarks_set_text(html->bw, html->Stash->str);
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -2223,7 +2201,6 @@ static void Html_tag_open_map(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_map(DilloHtml *html, int TagIdx)
 {
    html->InFlags &= ~IN_MAP;
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -2485,7 +2462,6 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_a(DilloHtml *html, int TagIdx)
 {
    html->InVisitedLink = false;
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -2510,6 +2486,31 @@ static void Html_tag_open_blockquote(DilloHtml *html,
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    Html_add_textblock(html, 9);
+}
+
+/*
+ * <Q>
+ */
+static void Html_tag_open_q(DilloHtml *html, const char *tag, int tagsize)
+{
+    /*
+     * Left Double Quotation Mark, which is wrong in many cases, but
+     * should at least be widely recognized.
+     */
+    const char *U201C = "\xe2\x80\x9c";
+
+    DW2TB(html->dw)->addText (U201C, html->styleEngine->wordStyle ());
+}
+
+/*
+ * </Q>
+ */
+static void Html_tag_close_q(DilloHtml *html, int TagIdx)
+{
+   /* Right Double Quotation Mark */
+   const char *U201D = "\xe2\x80\x9d";
+
+   DW2TB(html->dw)->addText (U201D, html->styleEngine->wordStyle ());
 }
 
 /*
@@ -2700,7 +2701,6 @@ static void Html_tag_close_li(DilloHtml *html, int TagIdx)
    html->InFlags &= ~IN_LI;
    html->WordAfterLI = false;
    ((ListItem *)html->dw)->flush ();
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -2803,7 +2803,6 @@ static void Html_tag_close_pre(DilloHtml *html, int TagIdx)
 {
    html->InFlags &= ~IN_PRE;
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -3105,15 +3104,13 @@ static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_div(DilloHtml *html, int TagIdx)
 {
    DW2TB(html->dw)->addParbreak (0, html->styleEngine->wordStyle ());
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
- * Default close for most tags - just pop the stack.
+ * Default close for most tags.
  */
 static void Html_tag_close_default(DilloHtml *html, int TagIdx)
 {
-   a_Html_pop_tag(html, TagIdx);
 }
 
 /*
@@ -3122,7 +3119,6 @@ static void Html_tag_close_default(DilloHtml *html, int TagIdx)
 static void Html_tag_close_par(DilloHtml *html, int TagIdx)
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
-   a_Html_pop_tag(html, TagIdx);
 }
 
 
@@ -3223,7 +3219,7 @@ const TagInfo Tags[] = {
  {"p", B8(010110),'O',1, Html_tag_open_p, Html_tag_close_par},
  /* param 010001 'F' */
  {"pre", B8(010110),'R',2, Html_tag_open_pre, Html_tag_close_pre},
- /* q 010101 */
+ {"q", B8(010101),'R',2, Html_tag_open_q, Html_tag_close_q},
  {"s", B8(010101),'R',2, Html_tag_open_strike, Html_tag_close_default},
  {"samp", B8(010101),'R',2, Html_tag_open_samp, Html_tag_close_default},
  {"script", B8(111001),'R',2, Html_tag_open_script, Html_tag_close_script},

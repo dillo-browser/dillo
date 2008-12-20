@@ -87,7 +87,7 @@ int ComplexButton::handle(int event, const Rectangle& rectangle) {
     if (pushed()) return 1; // ignore extra pushes on currently-pushed button
     initial_state = state();
     clear_flag(PUSHED);
-    do_callback();
+    /* do_callback(); */
   case DRAG: {
     bool inside = event_inside(rectangle);
     if (inside) {

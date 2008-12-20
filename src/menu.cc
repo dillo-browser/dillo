@@ -175,7 +175,7 @@ static void Menu_save_page_cb(Widget* )
 }
 
 /* 
- * Save current page
+ * View current page source
  */
 static void Menu_view_page_source_cb(Widget* )
 {
@@ -192,18 +192,22 @@ static void Menu_view_page_bugs_cb(Widget* )
 
 /*
  * Load images on current page that match URL pattern
- *
- * BUG: assumes that the document is a DilloHtml.
  */
 static void Menu_load_images_cb(Widget*, void *user_data)
 {
    DilloUrl *pattern = (DilloUrl *) user_data ;
 
    if (popup_bw && popup_bw->Docs) {
-      int i, n;
-      n = dList_length(popup_bw->Docs);
-      for (i = 0; i < n; i++) {
-         a_Html_load_images(dList_nth_data(popup_bw->Docs, i), pattern);
+      if (dList_find_custom(popup_bw->PageUrls, popup_url,
+                            (dCompareFunc)a_Url_cmp)){
+         /* HTML page is still there */
+         int n = dList_length(popup_bw->Docs);
+         if (n == 1) {
+            a_Html_load_images(dList_nth_data(popup_bw->Docs, 0), pattern);
+         } else if (n > 1) {
+            /* e.g. frames implemented and not all containing html */
+            MSG("Menu_load_images_cb multiple Docs not handled\n");
+         }
       }
    }
 }

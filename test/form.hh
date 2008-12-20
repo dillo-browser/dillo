@@ -120,7 +120,7 @@ private:
    };
 
    class FormClickedReceiver:
-      public dw::core::ui::ButtonResource::ClickedReceiver
+      public dw::core::ui::Resource::ClickedReceiver
    {
    private:
       Form *form;
@@ -130,7 +130,7 @@ private:
       FormClickedReceiver (Form *form, const char *name, const char *value);
       ~FormClickedReceiver ();
       
-      void clicked(dw::core::ui::ButtonResource *resource,
+      void clicked(dw::core::ui::Resource *resource,
                    dw::core::EventButton *event);
    };
 

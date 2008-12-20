@@ -164,7 +164,7 @@ Form::FormClickedReceiver::~FormClickedReceiver ()
    delete[] value;
 }
       
-void Form::FormClickedReceiver::clicked (ButtonResource *resource,
+void Form::FormClickedReceiver::clicked (Resource *resource,
                                          dw::core::EventButton *event)
 {
    form->send (name, value, event->xCanvas, event->yCanvas);
