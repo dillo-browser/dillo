@@ -1641,11 +1641,27 @@ static void Html_tag_close_script(DilloHtml *html, int TagIdx)
 
 /*
  * Handle open STYLE
- * store the contents to the stash where (in the future) the style
- * sheet interpreter can get it.
+ * Store contents in the stash where the style sheet interpreter can get it.
  */
 static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
 {
+   const char *attrbuf;
+
+   if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
+      BUG_MSG("type attribute is required for <style>\n");
+   } else if (dStrcasecmp(attrbuf, "text/css")) {
+      MSG("Shouldn't be applying <style type=\"%s\">\n", attrbuf);
+      /* We need to inform close_style() */
+   }
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "media")) &&
+       dStrcasecmp(attrbuf, "all") && !dStristr(attrbuf, "screen")) {
+      /* HTML 4.01 sec. 6.13 says that media descriptors are case-sensitive,
+       * but sec. 14.2.3 says that the attribute is case-insensitive.
+       * TODO can be a comma-separated list.
+       * TODO handheld.
+       */
+      MSG("Shouldn't be applying <style media=\"%s\">\n", attrbuf);
+   }
    a_Html_stash_init(html);
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
 }
