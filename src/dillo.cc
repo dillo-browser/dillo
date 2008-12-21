@@ -47,15 +47,135 @@
 #include "cookies.h"
 #include "auth.h"
 
+/*
+ * Command line options structure
+ */
+typedef enum {
+   DILLO_CLI_NONE          = 0,
+   DILLO_CLI_XID           = 1 << 0,
+   DILLO_CLI_FULLWINDOW    = 1 << 1,
+   DILLO_CLI_HELP          = 1 << 2,
+   DILLO_CLI_VERSION       = 1 << 3,
+   DILLO_CLI_LOCAL         = 1 << 4,
+   DILLO_CLI_GEOMETRY      = 1 << 5,
+   DILLO_CLI_ERROR         = 1 << 15,
+} OptID;
+
+typedef struct {
+   const char *shortopt;
+   const char *longopt;
+   int opt_argc; /* positive: mandatory, negative: optional */
+   OptID id;
+   const char *help;
+} CLI_options;
+
+static CLI_options Options[] = {
+   {"-f", "--fullwindow", 0, DILLO_CLI_FULLWINDOW,
+    "  -f, --fullwindow       Start in full window mode: hide address bar,\n"
+    "                         navigation buttons, menu, and status bar."},
+   {"-g", "-geometry",    1, DILLO_CLI_GEOMETRY,
+    "  -g, -geometry GEO      Set initial window position where GEO is\n"
+    "                         WxH[{+-}X{+-}Y]"},
+   {"-h", "--help",       0, DILLO_CLI_HELP,
+    "  -h, --help             Display this help text and exit."},
+   {"-l", "--local",      0, DILLO_CLI_LOCAL,
+    "  -l, --local            Don't load images for these URL(s)."},
+   {"-v", "--version",    0, DILLO_CLI_VERSION,
+    "  -v, --version          Display version info and exit."},
+   {"-x", "--xid",        1, DILLO_CLI_XID,
+    "  -x, --xid XID          (DOES NOT WORK YET)\n"
+    "                         Open first Dillo window in an existing\n"
+    "                         GtkSocket which window ID is XID (decimal)."},
+   {NULL, NULL, 0, DILLO_CLI_NONE, NULL}
+};
+
+/*
+ * Print help text generated from the options structure
+ */
+static void Dillo_print_help(const char *cmdname, CLI_options *options)
+{
+   printf("Usage: %s [OPTION]... [--] [URL|FILE]...\n"
+          "Options:\n", cmdname);
+   while(options && options->help) {
+      printf("%s\n", options->help);
+      options++;
+   }
+   printf("  URL                    URL to browse.\n"
+          "  FILE                   Local FILE to view.\n"
+          "\n");
+}
+
+/*
+ * Return the maximum number of option arguments
+ */
+static int Dillo_get_max_opt(CLI_options *options)
+{
+   int i, max;
+
+   for (i = 0, max = 0; options[i].shortopt; i++)
+      if (abs(options[i].opt_argc) > max)
+         max = abs(options[i].opt_argc);
+   return max;
+}
+
+/*
+ * Get next command line option.
+ */
+static OptID Dillo_get_opt(CLI_options *options, int argc, char **argv,
+                           char **opt_argv, int *idx)
+{
+   typedef enum { O_SEARCH, O_FOUND, O_NOTFOUND, O_DONE } State;
+   OptID opt_id = DILLO_CLI_NONE;
+   int i = 0;
+   State state = O_SEARCH;
+
+   if (*idx >= argc) {
+      state = O_DONE;
+   } else {
+      state = O_NOTFOUND;
+      for (i = 0; options[i].shortopt; i++) {
+         if (strcmp(options[i].shortopt, argv[*idx]) == 0 ||
+             strcmp(options[i].longopt, argv[*idx]) == 0) {
+            state = O_FOUND;
+            ++*idx;
+            break;
+         }
+      }
+   }
+   if (state == O_FOUND) {
+      int n_arg = options[i].opt_argc;
+      opt_id  = options[i].id;
+      /* Find the required/optional arguments of the option */
+      for (i = 0; *idx < argc && i < abs(n_arg) && argv[*idx][0] != '-'; i++)
+         opt_argv[i] = argv[(*idx)++];
+      opt_argv[i] = NULL;
+
+      /* Optional arguments have opt_argc < 0 */
+      if (i < n_arg) {
+         fprintf(stderr, "Option %s requires %d argument%s\n",
+                 argv[*idx-i-1], n_arg, (n_arg == 1) ? "" : "s");
+         opt_id = DILLO_CLI_ERROR;
+      }
+   }
+   if (state == O_NOTFOUND) {
+      if (strcmp(argv[*idx], "--") == 0)
+         (*idx)++;
+      else if (argv[*idx][0] == '-') {
+         fprintf(stderr, "Command line option \"%s\" not recognized.\n",
+                 argv[*idx]);
+         opt_id = DILLO_CLI_ERROR;
+      }
+   }
+   return opt_id;
+}
 
 /*
  * Given a command line argument, build a DilloUrl for it.
  */
-static DilloUrl *Dillo_make_start_url(char *str)
+static DilloUrl *Dillo_make_start_url(char *str, bool local)
 {
    char *url_str, *p;
    DilloUrl *start_url;
-   int is_file = FALSE;
 
    /* Relative path to a local file? */
    p = (*str == '/') ? dStrdup(str) : dStrconcat(a_Dir_get_owd(),"/",str,NULL);
@@ -63,19 +183,17 @@ static DilloUrl *Dillo_make_start_url(char *str)
    if (access(p, F_OK) == 0) {
       /* absolute path may have non-URL characters */
       url_str = a_Misc_escape_chars(p, "% ");
-      is_file = TRUE;
+      start_url = a_Url_new(url_str + 1, "file:/");
    } else {
       /* Not a file, filter URL string */
       url_str = a_Url_string_strip_delimiters(str);
-   }
-   dFree(p);
-
-   if (is_file) {
-      start_url = a_Url_new(url_str + 1, "file:/");
-   } else {
       start_url = a_Url_new(url_str, NULL);
    }
+   dFree(p);
    dFree(url_str);
+
+   if (local)
+      a_Url_set_flags(start_url, URL_FLAGS(start_url) | URL_SpamSafe);
 
    return start_url;
 }
@@ -85,10 +203,57 @@ static DilloUrl *Dillo_make_start_url(char *str)
  */
 int main(int argc, char **argv)
 {
+   uint opt_id;
+   uint options_got = 0;
+   uint32_t xid = 0;
+   int idx = 1;
+   int xpos = D_GEOMETRY_DEFAULT_XPOS, ypos = D_GEOMETRY_DEFAULT_YPOS;
+   int width = D_GEOMETRY_DEFAULT_WIDTH, height = D_GEOMETRY_DEFAULT_HEIGHT;
+   char **opt_argv;
+
    srand((uint_t)(time(0) ^ getpid()));
 
    // Some OSes exit dillo without this (not GNU/Linux).
    signal(SIGPIPE, SIG_IGN);
+
+   /* Handle command line options */
+   opt_argv = dNew0(char*, Dillo_get_max_opt(Options) + 1);
+   while ((opt_id = Dillo_get_opt(Options, argc, argv, opt_argv, &idx))) {
+      options_got |= opt_id;
+      switch (opt_id) {
+      case DILLO_CLI_FULLWINDOW:
+      case DILLO_CLI_LOCAL:
+         break;
+      case DILLO_CLI_XID:
+      {
+         char *end;
+         xid = strtol(opt_argv[0], &end, 10);
+         if (*end) {
+            fprintf(stderr, "XID argument \"%s\" not valid. Must be an "
+                            "unsigned decimal number.\n",opt_argv[0]);
+            return -1;
+         }
+         break;
+      }
+      case DILLO_CLI_GEOMETRY:
+         if (!a_Misc_parse_geometry(opt_argv[0], &xpos, &ypos,&width,&height)){
+            fprintf(stderr, "geometry argument \"%s\" not valid. Must be of "
+                            "the form WxH[{+-}X{+-}Y].\n", opt_argv[0]);
+            return -1;
+         }
+         break;
+      case DILLO_CLI_VERSION:
+         puts("Dillo version " VERSION);
+         return 0;
+      case DILLO_CLI_HELP:
+         Dillo_print_help(argv[0], Options);
+         return 0;
+      default:
+         Dillo_print_help(argv[0], Options);
+         return -1;
+      }
+   }
+   dFree(opt_argv);
 
    // Initialize internal modules
    a_Dir_init();
@@ -105,12 +270,23 @@ int main(int argc, char **argv)
    a_Cookies_init();
    a_Auth_init();
 
+   /* command line options override preferences */
+   if (options_got & DILLO_CLI_FULLWINDOW)
+      prefs.fullwindow_start = TRUE;
+   if (options_got & DILLO_CLI_GEOMETRY) {
+       prefs.width = width;
+       prefs.height = height;
+       prefs.xpos = xpos;
+       prefs.ypos = ypos;
+   }
+
    // Sets WM_CLASS hint on X11
    fltk::Window::xclass("dillo");
 
    // WORKAROUND: sometimes the default pager triggers redraw storms
    fltk::TabGroup::default_pager(fltk::PAGER_SHRINK);
 
+   /* use preferred font for UI */
    fltk::Font *dfont = fltk::font(prefs.vw_fontname, 0);
    if (dfont) {
       fltk::Widget::default_style->textfont(dfont);
@@ -120,6 +296,7 @@ int main(int argc, char **argv)
    // Create a new UI/bw pair
    BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, NULL);
 
+   /* Proxy authentication */
    if (prefs.http_proxyuser && !a_Http_proxy_auth()) {
       const char *passwd = a_UIcmd_get_passwd(prefs.http_proxyuser);
       if (passwd) {
@@ -129,23 +306,29 @@ int main(int argc, char **argv)
       }
    }
 
-   if (argc == 2) {
-      DilloUrl *url = Dillo_make_start_url(argv[1]);
-      a_UIcmd_open_urlstr(bw, URL_STR(url));
-      a_Url_free(url);
-   } else if (argc == 6) {
-      // WORKAROUND: sylpheed execs "dillo -l -f -x XID URL"
-      if (strcmp(argv[1], "-l") == 0 && strcmp(argv[2], "-f") == 0 &&
-          strcmp(argv[3], "-x") == 0) {
-         a_UIcmd_set_images_enabled(bw, FALSE);
-         DilloUrl *url = Dillo_make_start_url(argv[5]);
-         a_Url_set_flags(url, URL_FLAGS(url) & URL_SpamSafe);
-         a_UIcmd_open_urlstr(bw, URL_STR(url));
-         a_Url_free(url);
-      }
-   } else {
-      /* Send startup screen */
+   /* Open URLs/files */
+   const bool local = options_got & DILLO_CLI_LOCAL;
+
+   if (idx == argc) {
+      /* No URLs/files on cmdline. Send startup screen */
       a_Nav_push(bw, prefs.start_page);
+   } else {
+      for (int i = idx; i < argc; i++) {
+         DilloUrl *start_url = Dillo_make_start_url(argv[i], local);
+
+         if (i > idx) {
+            if (prefs.middle_click_opens_new_tab) {
+               /* user must prefer tabs */
+               const int focus = 0;
+               a_UIcmd_open_url_nt(bw, start_url, focus);
+            } else {
+               a_UIcmd_open_url_nw(bw, start_url);
+            }
+         } else {
+            a_Nav_push(bw, start_url);
+         }
+         a_Url_free(start_url);
+      }
    }
 
    return fltk::run();
