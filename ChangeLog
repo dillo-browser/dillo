@@ -22,6 +22,7 @@ dillo-2.1
  - Cleaned up Html_pop_tag().
  - Ported the command line interface from dillo1 (XID not working yet).
  - Switched file dpi error messages to HTML.
+ - Added a popup menu to form's submit button.
    Patches: place (AKA corvid)
 +- Switched SSL-enabled to configure.in (./configure --enable-ssl).
  - Standardised the installation of dpid/dpidrc with auto* tools.
