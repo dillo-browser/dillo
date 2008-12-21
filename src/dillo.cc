@@ -69,7 +69,7 @@ typedef struct {
    const char *help;
 } CLI_options;
 
-const CLI_options Options[] = {
+static const CLI_options Options[] = {
    {"-f", "--fullwindow", 0, DILLO_CLI_FULLWINDOW,
     "  -f, --fullwindow       Start in full window mode: hide address bar,\n"
     "                         navigation buttons, menu, and status bar."},
