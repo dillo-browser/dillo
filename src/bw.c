@@ -63,6 +63,7 @@ BrowserWindow *a_Bw_new()
    bw->ImageClients = dList_new(8);
    bw->NumImages = 0;
    bw->NumImagesGot = 0;
+   bw->NumPendingStyleSheets = 0;
    bw->PageUrls = dList_new(8);
    bw->Docs = dList_new(8);
 
@@ -253,6 +254,9 @@ void a_Bw_cleanup(BrowserWindow *bw)
    /* Zero image-progress data */
    bw->NumImages = 0;
    bw->NumImagesGot = 0;
+
+   /* Zero stylesheet counter */
+   bw->NumPendingStyleSheets = 0;
 }
 
 /*--------------------------------------------------------------------------*/

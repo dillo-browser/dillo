@@ -430,7 +430,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    stop_parser = false;
    stop_parser_after_head = false;
    repush_after_head = false;
-   repush_after_stylesheet = false;
 
    CurrTagOfs = 0;
    OldTagOfs = 0;
@@ -2907,12 +2906,17 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
    }
 }
 
+/*
+ * Called by the network engine when a stylesheet has new data.
+ */
 static void Html_css_load_callback(int Op, CacheClient_t *Client)
 {
-   MSG("Css_callback: Op=%d\n", Op);
+   _MSG("Css_callback: Op=%d\n", Op);
    if (Op) { /* EOF */
-      // May check num_style_sheets here...
-      a_Nav_repush(((DilloWeb *)Client->Web)->bw);
+      BrowserWindow *bw = ((DilloWeb *)Client->Web)->bw;
+      /* Repush when we've got them all */
+      if (--bw->NumPendingStyleSheets == 0)
+         a_Nav_repush(bw);
    }
 }
 
@@ -2935,9 +2939,11 @@ static void Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
       Web->bw = html->bw;
       //Web->flags |= WEB_Stylesheet;
       if ((ClientKey = a_Capi_open_url(Web, Html_css_load_callback, NULL))) {
-         html->repush_after_stylesheet = true;
+         ++html->bw->NumPendingStyleSheets;
          a_Bw_add_client(html->bw, ClientKey, 0);
          a_Bw_add_url(html->bw, url);
+         MSG("Html_load_stylesheet: NumPendingStyleSheets=%d\n",
+             html->bw->NumPendingStyleSheets);
       }
    }
 }
@@ -2964,9 +2970,6 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
       BUG_MSG("the LINK element must be inside the HEAD section\n");
       return;
    }
-   /* Load only one stylesheet by now... */
-   if (html->repush_after_stylesheet)
-      return;
 
    /* TODO: How will we know when to use "handheld"? Ask the html->bw->ui for
       screen dimensions, or a dillorc preference. */
@@ -2985,8 +2988,7 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
       return;
 
    MSG("  Html_tag_open_link(): URL=%s\n", URL_STR(url));
-   MSG("    repush after HEAD=%d SHEET=%d\n",
-       html->repush_after_head, html->repush_after_stylesheet);
+   MSG("    repush after HEAD=%d\n", html->repush_after_head);
 
    Html_load_stylesheet(html, url);
    a_Url_free(url);

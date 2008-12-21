@@ -194,12 +194,13 @@ static void Nav_stack_clean(BrowserWindow *bw)
 static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 {
    DilloUrl *old_url;
-   bool_t MustLoad, ForceReload;
+   bool_t MustLoad, ForceReload, Repush;
    int x, y, idx, ClientKey;
    DilloWeb *Web;
 
    MSG("Nav_open_url: new url='%s'\n", URL_STR_(url));
 
+   Repush = (URL_FLAGS(url) & URL_ReloadFromCache);
    ForceReload = (URL_FLAGS(url) & (URL_E2EQuery + URL_ReloadFromCache)) != 0;
 
    /* Get the url of the current page */
@@ -207,8 +208,8 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
    old_url = a_History_get_url(NAV_UIDX(bw, idx));
    _MSG("Nav_open_url:  old_url='%s' idx=%d\n", URL_STR(old_url), idx);
    /* Record current scrolling position */
-   if (URL_FLAGS(url) & URL_ReloadFromCache) {
-      /* Repush operation, don't change scroll position */
+   if (Repush) {
+      /* Don't change scroll position */
    } else if (old_url) {
       a_UIcmd_get_scroll_xy(bw, &x, &y);
       Nav_save_scroll_pos(bw, idx, x, y);

@@ -43,6 +43,7 @@ dillo-2.1
  ? Trying a new iconv() test in configure.in.
  - Allowed the rc parser to skip whitespace around the equal sign.
  - Fixed the parser not to call Html_tag_close_* functions twice.
+ - Implemented CSS Stylesheet loading.
    Patches: Jorge Arellano Cid
 
 dw
