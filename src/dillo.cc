@@ -69,7 +69,7 @@ typedef struct {
    const char *help;
 } CLI_options;
 
-static CLI_options Options[] = {
+const CLI_options Options[] = {
    {"-f", "--fullwindow", 0, DILLO_CLI_FULLWINDOW,
     "  -f, --fullwindow       Start in full window mode: hide address bar,\n"
     "                         navigation buttons, menu, and status bar."},
@@ -92,7 +92,7 @@ static CLI_options Options[] = {
 /*
  * Print help text generated from the options structure
  */
-static void Dillo_print_help(const char *cmdname, CLI_options *options)
+static void Dillo_print_help(const char *cmdname, const CLI_options *options)
 {
    printf("Usage: %s [OPTION]... [--] [URL|FILE]...\n"
           "Options:\n", cmdname);
@@ -108,7 +108,7 @@ static void Dillo_print_help(const char *cmdname, CLI_options *options)
 /*
  * Return the maximum number of option arguments
  */
-static int Dillo_get_max_opt(CLI_options *options)
+static int Dillo_get_max_opt(const CLI_options *options)
 {
    int i, max;
 
@@ -121,7 +121,7 @@ static int Dillo_get_max_opt(CLI_options *options)
 /*
  * Get next command line option.
  */
-static OptID Dillo_get_opt(CLI_options *options, int argc, char **argv,
+static OptID Dillo_get_opt(const CLI_options *options, int argc, char **argv,
                            char **opt_argv, int *idx)
 {
    typedef enum { O_SEARCH, O_FOUND, O_NOTFOUND, O_DONE } State;
