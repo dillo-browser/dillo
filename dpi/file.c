@@ -47,12 +47,6 @@
 #define MAXNAMESIZE 30
 #define HIDE_DOTFILES TRUE
 
-enum {
-   FILE_OK,
-   FILE_NOT_FOUND,
-   FILE_NO_ACCESS
-};
-
 typedef struct {
    char *full_path;
    const char *filename;
@@ -408,7 +402,9 @@ static void File_transfer_dir(ClientInfo *Client,
    Hdirname = Escape_html_str(Ddir->dirname);
 
    sock_handler_printf(Client->sh, 0,
-      "Content-Type: text/html\n\n"
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html\r\n"
+      "\r\n"
       "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN'>\n"
       "<HTML>\n<HEAD>\n <BASE href='file:%s'>\n"
       " <TITLE>file:%s</TITLE>\n</HEAD>\n"
@@ -522,6 +518,43 @@ static const char *File_content_type(const char *filename)
 }
 
 /*
+ * Send an error page
+ */
+static void File_send_error_page(ClientInfo *Client, int res,
+                                 const char *orig_url)
+{
+   const char *status;
+   const char *body;
+   char *d_cmd;
+
+   switch (res) {
+   case EACCES:
+      status = "403 Forbidden";
+      break;
+   case ENOENT:
+      status = "404 Not Found";
+      break;
+   default:
+      /* good enough */
+      status = "500 Internal Server Error";
+   }
+
+   body = status; /* it's simple */
+
+   /* Send DPI command */
+   d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", orig_url);
+   sock_handler_write_str(Client->sh, 1, d_cmd);
+   dFree(d_cmd);
+
+   sock_handler_printf(Client->sh, 0, "HTTP/1.1 %s\r\n"
+                                      "Content-Type: text/plain\r\n"
+                                      "Content-Length: %ld\r\n"
+                                      "\r\n"
+                                      "%s",
+                                      status, strlen(body), body);
+}
+
+/*
  * Try to stat the file and determine if it's readable.
  */
 static void File_get(ClientInfo *Client, const char *filename,
@@ -529,12 +562,10 @@ static void File_get(ClientInfo *Client, const char *filename,
 {
    int res;
    struct stat sb;
-   char *d_cmd;
-   Dstr *ds = NULL;
 
    if (stat(filename, &sb) != 0) {
       /* stat failed, prepare a file-not-found error. */
-      res = FILE_NOT_FOUND;
+      res = ENOENT;
    } else if (S_ISDIR(sb.st_mode)) {
       /* set up for reading directory */
       res = File_get_dir(Client, filename, orig_url);
@@ -542,21 +573,8 @@ static void File_get(ClientInfo *Client, const char *filename,
       /* set up for reading a file */
       res = File_get_file(Client, filename, &sb, orig_url);
    }
-
-   if (res == FILE_NOT_FOUND) {
-      ds = dStr_sized_new(128);
-      dStr_sprintf(ds, "%s Not Found: %s",
-                   S_ISDIR(sb.st_mode) ? "Directory" : "File", filename);
-   } else if (res == FILE_NO_ACCESS) {
-      ds = dStr_sized_new(128);
-      dStr_sprintf(ds, "Access denied to %s: %s",
-                   S_ISDIR(sb.st_mode) ? "Directory" : "File", filename);
-   }
-   if (ds) {
-      d_cmd = a_Dpip_build_cmd("cmd=%s msg=%s","send_status_message",ds->str);
-      sock_handler_write_str(Client->sh, 1, d_cmd);
-      dFree(d_cmd);
-      dStr_free(ds, 1);
+   if (res != 0) {
+      File_send_error_page(Client, res, orig_url);
    }
 }
 
@@ -580,13 +598,13 @@ static int File_get_dir(ClientInfo *Client,
    if (Ddir) {
       File_transfer_dir(Client, Ddir, orig_url);
       File_dillodir_free(Ddir);
-      return FILE_OK;
+      return 0;
    } else
-      return FILE_NO_ACCESS;
+      return EACCES;
 }
 
 /*
- * Send the MIME content/type and then send the file itself.
+ * Send HTTP headers and then send the file itself.
  */
 static int File_get_file(ClientInfo *Client,
                          const char *filename,
@@ -602,7 +620,7 @@ static int File_get_file(ClientInfo *Client,
    bool_t gzipped = FALSE;
 
    if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0)
-      return FILE_NO_ACCESS;
+      return errno;
 
    /* Send DPI command */
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", orig_url);
@@ -626,15 +644,18 @@ static int File_get_file(ClientInfo *Client,
    dFree(name);
 
    /* Send HTTP headers */
+   sock_handler_write_str(Client->sh, 0, "HTTP/1.1 200 OK\r\n");
    if (gzipped) {
-      sock_handler_write_str(Client->sh, 0, "Content-Encoding: gzip\n");
+      sock_handler_write_str(Client->sh, 0, "Content-Encoding: gzip\r\n");
    }
    if (!gzipped || strcmp(ct, unknown_type)) {
-      sock_handler_printf(Client->sh, 0, "Content-Type: %s\n", ct);
+      sock_handler_printf(Client->sh, 0, "Content-Type: %s\r\n", ct);
    } else {
       /* If we don't know type for gzipped data, let dillo figure it out. */
    }
-   sock_handler_printf(Client->sh, 0, "Content-Length: %ld\n\n", sb->st_size);
+   sock_handler_printf(Client->sh, 0, "Content-Length: %ld\r\n"
+                                      "\r\n",
+                                      sb->st_size);
 
    /* Send body -- raw file contents */
    do {
@@ -657,11 +678,12 @@ static int File_get_file(ClientInfo *Client,
    }
 
    File_close(fd);
-   return FILE_OK;
+      
+   return 0;
 }
 
 /*
- * Given an hex octet (e3, 2F, 20), return the corresponding
+ * Given a hex octet (e3, 2F, 20), return the corresponding
  * character if the octet is valid, and -1 otherwise
  */
 static int File_parse_hex_octet(const char *s)
@@ -729,7 +751,7 @@ static char *File_normalize_path(const char *orig)
 }
 
 /*
- * Set the style flag and ask for a reload, so it shows inmediatly.
+ * Set the style flag and ask for a reload, so it shows immediately.
  */
 static void File_toggle_html_style(ClientInfo *Client)
 {
