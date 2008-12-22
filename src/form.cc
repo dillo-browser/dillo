@@ -342,7 +342,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
 
 void Html_tag_close_form(DilloHtml *html, int TagIdx)
 {
-   static const char *SubmitTag =
+   static const char *const SubmitTag =
       "<input type='submit' value='?Submit?' alt='dillo-generated-button'>";
    DilloHtmlForm *form;
 // int i;
