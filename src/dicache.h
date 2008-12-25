@@ -29,7 +29,7 @@ struct _DICacheEntry {
    uchar_t *cmap;          /* Color map */
    uchar_t *linebuf;       /* Decompressed RGB buffer for one line */
    void *v_imgbuf;         /* Void pointer to an Imgbuf object */
-   size_t TotalSize;       /* Amount of memory the image takes up */
+   uint_t TotalSize;       /* Amount of memory the image takes up */
    int Y;                  /* Current decoding row */
    uint_t ScanNumber;      /* Current decoding scan */
    bitvec_t *BitVec;       /* Bit vector for decoded rows */
@@ -37,7 +37,6 @@ struct _DICacheEntry {
    int RefCount;           /* Reference Counter */
    int version;            /* Version number, used for different
                               versions of the same URL image */
-
    DICacheEntry *next;     /* Link to the next "newer" version */
 };
 
