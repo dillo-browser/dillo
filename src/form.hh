@@ -38,6 +38,9 @@ DilloHtmlForm *a_Html_form_new(DilloHtml *html,
 
 void a_Html_form_delete(DilloHtmlForm* form);
 void a_Html_input_delete(DilloHtmlInput* input);
+void a_Html_form_submit2(void *v_form);
+void a_Html_form_reset2(void *v_form);
+
 
 /*
  * Form parsing functions 

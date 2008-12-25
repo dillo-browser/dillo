@@ -54,7 +54,6 @@ DilloImage *a_Image_new(int width,
    Image->cmap = NULL;
    Image->in_type = DILLO_IMG_TYPE_NOTSET;
    Image->bg_color = bg_color;
-   Image->ProcessedBytes = 0;
    Image->ScanNumber = 0;
    Image->BitVec = NULL;
    Image->State = IMG_Empty;
@@ -172,7 +171,7 @@ void a_Image_new_scan(DilloImage *Image, void *v_imgbuf)
 void a_Image_write(DilloImage *Image, void *v_imgbuf,
                    const uchar_t *buf, uint_t y, int decode)
 {
-   uchar_t *newbuf;
+   const uchar_t *newbuf;
 
    dReturn_if_fail ( y < Image->height );
 

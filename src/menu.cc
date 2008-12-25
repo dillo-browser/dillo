@@ -38,7 +38,7 @@ static DilloUrl *popup_url = NULL;
 // Weak reference to the popup's bw
 static BrowserWindow *popup_bw = NULL;
 // Where to place the filemenu popup
-int popup_x, popup_y;
+static int popup_x, popup_y;
 // History popup direction (-1 = back, 1 = forward).
 static int history_direction = -1; 
 // History popup, list of URL-indexes.
@@ -207,6 +207,44 @@ static void Menu_load_images_cb(Widget*, void *user_data)
          } else if (n > 1) {
             /* e.g. frames implemented and not all containing html */
             MSG("Menu_load_images_cb multiple Docs not handled\n");
+         }
+      }
+   }
+}
+
+/*
+ * Submit form
+ */
+static void Menu_form_submit_cb(Widget*, void *v_form)
+{
+  if (popup_bw && popup_bw->Docs) {
+      if (dList_find_custom(popup_bw->PageUrls, popup_url,
+                            (dCompareFunc)a_Url_cmp)){
+         /* HTML page is still there */
+         int n = dList_length(popup_bw->Docs);
+         if (n == 1) {
+            a_Html_form_submit(dList_nth_data(popup_bw->Docs, 0), v_form);
+         } else if (n > 1) {
+            MSG ("Menu_form_submit_cb multiple Docs not implemented\n");
+         }
+      }
+   }
+}
+
+/*
+ * Reset form
+ */
+static void Menu_form_reset_cb(Widget*, void *v_form)
+{
+   if (popup_bw && popup_bw->Docs) {
+      if (dList_find_custom(popup_bw->PageUrls, popup_url,
+                            (dCompareFunc)a_Url_cmp)){
+         /* HTML page is still there */
+         int n = dList_length(popup_bw->Docs);
+         if (n == 1) {
+            a_Html_form_reset(dList_nth_data(popup_bw->Docs, 0), v_form);
+         } else if (n > 1) {
+            MSG ("Menu_form_reset_cb multiple Docs not implemented\n");
          }
       }
    }
@@ -447,6 +485,31 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
    } else {
       link_menuitem->deactivate();
    }
+
+   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
+}
+
+/*
+ * Form popup menu (construction & popup)
+ */
+void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
+                       void *formptr)
+{
+   static PopupMenu *pm = 0;
+
+   popup_bw = bw;
+   a_Url_free(popup_url);
+   popup_url = a_Url_dup(page_url);
+   if (!pm) {
+     Item *i;
+      pm = new PopupMenu(0,0,0,0,"FORM OPTIONS");
+      pm->add(i = new Item("Submit form"));
+      i->callback(Menu_form_submit_cb);
+      pm->add(i = new Item("Reset form"));
+      i->callback(Menu_form_reset_cb);
+      pm->type(PopupMenu::POPUP123);
+   }
+   pm->user_data(formptr);
 
    a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
 }

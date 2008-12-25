@@ -4,6 +4,7 @@
  *
  * Geoff Lane nov 1999 zzassgl@twirl.mcc.ac.uk
  * Luca Rota, Jorge Arellano Cid, Eric Gaudet 2000
+ * Jorge Arellano Cid 2009
  *
  * "PNG: The Definitive Guide" by Greg Roelofs, O'Reilly
  * ISBN 1-56592-542-4
@@ -67,19 +68,19 @@ typedef
 struct _DilloPng {
    DilloImage *Image;           /* Image meta data */
    DilloUrl *url;               /* Primary Key for the dicache */
-   int version;                /* Secondary Key for the dicache */
+   int version;                 /* Secondary Key for the dicache */
 
    double display_exponent;     /* gamma correction */
-   ulong_t width;                /* png image width */
-   ulong_t height;               /* png image height */
+   ulong_t width;               /* png image width */
+   ulong_t height;              /* png image height */
    png_structp png_ptr;         /* libpng private data */
    png_infop info_ptr;          /* libpng private info */
-   uchar_t *image_data;          /* decoded image data    */
-   uchar_t **row_pointers;       /* pntr to row starts    */
+   uchar_t *image_data;         /* decoded image data    */
+   uchar_t **row_pointers;      /* pntr to row starts    */
    jmp_buf jmpbuf;              /* png error processing */
-   int error;                  /* error flag */
+   int error;                   /* error flag */
    png_uint_32 previous_row;
-   int rowbytes;               /* No. bytes in image row */
+   int rowbytes;                /* No. bytes in image row */
    short passes;
    short channels;              /* No. image channels */
 
@@ -92,13 +93,13 @@ struct _DilloPng {
  * ipbuf    ipbufstart                            ipbufsize
  */
 
-   uchar_t *ipbuf;               /* image data in buffer */
-   int ipbufstart;             /* first valid image byte */
-   int ipbufsize;              /* size of valid data in */
+   uchar_t *ipbuf;              /* image data in buffer */
+   int ipbufstart;              /* first valid image byte */
+   int ipbufsize;               /* size of valid data in */
 
    enum prog_state state;       /* FSM current state  */
 
-   uchar_t *linebuf;             /* o/p raster data */
+   uchar_t *linebuf;            /* o/p raster data */
 
 } DilloPng;
 
@@ -297,57 +298,37 @@ static void
    png->state = IS_finished;
 }
 
+/*
+ * Finish the decoding process (and free the memory)
+ */
+static void Png_close(DilloPng *png, CacheClient_t *Client)
+{
+   /* Free up the resources for this image */
+   a_Dicache_close(png->url, png->version, Client);
+   dFree(png->image_data);
+   dFree(png->row_pointers);
+   dFree(png->linebuf);
+
+   if (setjmp(png->jmpbuf))
+      MSG_WARN("PNG: can't destroy read structure\n");
+   else if (png->png_ptr)
+      png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
+   dFree(png);
+}
 
 /*
- * Op:  Operation to perform.
- *   If (Op == 0)
- *      start or continue processing an image if image data exists.
- *   else
- *       terminate processing, cleanup any allocated memory,
- *       close down the decoding process.
- *
- * Client->CbData  : pointer to previously allocated DilloPng work area.
- *  This holds the current state of the image processing and is saved
- *  across calls to this routine.
- * Client->Buf     : Pointer to data start.
- * Client->BufSize : the size of the data buffer.
- *
- * You have to keep track of where you are in the image data and
- * how much has been processed.
- *
- * It's entirely possible that you will not see the end of the data.  The
- * user may terminate transfer via a Stop button or there may be a network
- * failure.  This means that you can't just wait for all the data to be
- * presented before starting conversion and display.
+ * Receive and process new chunks of PNG image data
  */
-static void Png_callback(int Op, CacheClient_t *Client)
+static void Png_write(DilloPng *png, void *Buf, uint_t BufSize)
 {
-   DilloPng *png = Client->CbData;
+   dReturn_if_fail ( Buf != NULL && BufSize > 0 );
 
-   if (Op) {
-      /* finished - free up the resources for this image */
-      a_Dicache_close(png->url, png->version, Client);
-      dFree(png->image_data);
-      dFree(png->row_pointers);
-      dFree(png->linebuf);
-
-      if (setjmp(png->jmpbuf))
-         MSG_WARN("PNG: can't destroy read structure\n");
-      else if (png->png_ptr)
-         png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
-      dFree(png);
-      return;
-   }
-
-   /* Let's make some sound if we have been called with no data */
-   dReturn_if_fail ( Client->Buf != NULL && Client->BufSize > 0 );
-
-   _MSG("Png_callback BufSize = %d\n", Client->BufSize);
+   _MSG("Png_callback BufSize = %d\n", BufSize);
 
    /* Keep local copies so we don't have to pass multiple args to
     * a number of functions. */
-   png->ipbuf = Client->Buf;
-   png->ipbufsize = Client->BufSize;
+   png->ipbuf = Buf;
+   png->ipbufsize = BufSize;
 
    /* start/resume the FSM here */
    while (png->state != IS_finished && DATASIZE) {
@@ -408,6 +389,37 @@ static void Png_callback(int Op, CacheClient_t *Client)
 }
 
 /*
+ * Op:  Operation to perform.
+ *   If (Op == 0)
+ *      start or continue processing an image if image data exists.
+ *   else
+ *       terminate processing, cleanup any allocated memory,
+ *       close down the decoding process.
+ *
+ * Client->CbData  : pointer to previously allocated DilloPng work area.
+ *  This holds the current state of the image processing and is kept
+ *  across calls to this routine.
+ * Client->Buf     : Pointer to data start.
+ * Client->BufSize : the size of the data buffer.
+ *
+ * You have to keep track of where you are in the image data and
+ * how much has been processed.
+ *
+ * It's entirely possible that you will not see the end of the data.  The
+ * user may terminate transfer via a Stop button or there may be a network
+ * failure.  This means that you can't just wait for all the data to be
+ * presented before starting conversion and display.
+ */
+static void Png_callback(int Op, CacheClient_t *Client)
+{
+   if (Op) { /* EOF */
+      Png_close(Client->CbData, Client);
+   } else {
+      Png_write(Client->CbData, Client->Buf, Client->BufSize);
+   }
+}
+
+/*
  * Create the image state data that must be kept between calls
  */
 static DilloPng *Png_new(DilloImage *Image, DilloUrl *url, int version)
@@ -433,24 +445,18 @@ static DilloPng *Png_new(DilloImage *Image, DilloUrl *url, int version)
 /*
  * MIME handler for "image/png" type
  * (Sets Png_callback or a_Dicache_callback as the cache-client)
+ *
+ * Parameters:
+ *   Type: MIME type
+ *   Ptr:  points to a Web structure
+ *   Call: Dillo calls this with more data/eod
+ *   Data: Decoding data structure
  */
 void *a_Png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
                   void **Data)
 {
-/*
- * Type: MIME type
- * Ptr:  points to a Web structure
- * Call: Dillo calls this with more data/eod
- * Data: raw image data
- */
-
    DilloWeb *web = Ptr;
    DICacheEntry *DicEntry;
-
-   _MSG("a_Png_image: Type = %s\n"
-        "a_Png_image: libpng - Compiled %s; using %s.\n"
-        "a_Png_image: zlib   - Compiled %s; using %s.\n",
-        Type, PNG_LIBPNG_VER_STRING, png_libpng_ver,ZLIB_VERSION,zlib_version);
 
    if (!web->Image)
       web->Image = a_Image_new(0, 0, NULL, prefs.bg_color);

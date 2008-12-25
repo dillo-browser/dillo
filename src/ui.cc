@@ -993,7 +993,8 @@ void UI::panel_cb_i()
  */
 void UI::color_change_cb_i()
 {
-   static int ncolor = 0, cols[] = {7,17,26,51,140,156,205,206,215,-1};
+   const int cols[] = {7,17,26,51,140,156,205,206,215,-1};
+   static int ncolor = 0;
 
    ncolor = (cols[ncolor+1] < 0) ? 0 : ncolor + 1;
    CuteColor = cols[ncolor];

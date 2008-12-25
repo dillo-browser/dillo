@@ -35,10 +35,6 @@
 
 #define DILLO_START_PAGE "about:splash"
 #define DILLO_HOME "http://www.dillo.org/"
-#define D_GEOMETRY_DEFAULT_WIDTH   780
-#define D_GEOMETRY_DEFAULT_HEIGHT  580
-#define D_GEOMETRY_DEFAULT_XPOS  -9999
-#define D_GEOMETRY_DEFAULT_YPOS  -9999
 
 #define D_VW_FONTNAME "DejaVu Sans"
 #define D_FW_FONTNAME "DejaVu Sans Mono"

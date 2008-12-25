@@ -295,21 +295,20 @@ static AuthRealm_t *Auth_realm_by_path(const AuthHost_t *host,
    int i, j;
    int match_length;
 
+   match_length = 0;
    realm_best = NULL;
    for (i = 0; (realm = dList_nth_data(host->realms, i)); i++) {
       char *realm_path;
 
       for (j = 0; (realm_path = dList_nth_data(realm->paths, j)); j++) {
-         int realm_path_length;
-
-         realm_path_length = strlen(realm_path);
+         int realm_path_length = strlen(realm_path);
          if (Auth_path_is_inside(path, realm_path, realm_path_length) &&
              !(realm_best && match_length >= realm_path_length)) {
             realm_best = realm;
             match_length = realm_path_length;
          }
-      } /* for (j = 0; (path = ... */
-   } /* for (i = 0; (realm = ... */
+      }
+   }
 
    return realm_best;
 }
@@ -353,7 +352,7 @@ static void Auth_realm_add_path(AuthRealm_t *realm, const char *path)
 /*
  * Return the authorization header for an HTTP query.
  */
-char *a_Auth_get_auth_str(const DilloUrl *url)
+const char *a_Auth_get_auth_str(const DilloUrl *url)
 {
    AuthHost_t *host;
    AuthRealm_t *realm;

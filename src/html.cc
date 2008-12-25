@@ -215,6 +215,45 @@ void a_Html_load_images(void *v_html, DilloUrl *pattern)
 }
 
 /*
+ * Search for form 
+ */
+static bool Html_contains_form(DilloHtml *html, void *v_form)
+{
+   for (int i = 0; i < html->forms->size(); i++) {
+      if (html->forms->get(i) == v_form) {
+         return true;
+      }
+   }
+   return false;
+}
+
+/*
+ * Used by the "Submit form" form menuitem.
+ */
+void a_Html_form_submit(void *v_html, void *v_form)
+{
+   DilloHtml *html = (DilloHtml*)v_html;
+
+   if (Html_contains_form(html, v_form)) {
+      /* it's still valid */              
+     a_Html_form_submit2(v_form);
+   }                          
+}
+
+/*
+ * Used by the "Reset form" form menuitem.
+ */
+void a_Html_form_reset(void *v_html, void *v_form)
+{
+   DilloHtml *html = (DilloHtml*)v_html;
+
+   if (Html_contains_form(html, v_form)) {
+      /* it's still valid */            
+     a_Html_form_reset2(v_form);
+   }
+}
+
+/*
  * Set the URL data for image maps.
  */
 static void Html_set_link_coordinates(DilloHtml *html, int link, int x, int y)

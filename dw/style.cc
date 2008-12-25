@@ -560,10 +560,10 @@ void drawBackground (View *view, Rectangle *area,
 // ----------------------------------------------------------------------
 
 static const char
-   *roman_I0[] = { "","I","II","III","IV","V","VI","VII","VIII","IX" },
-   *roman_I1[] = { "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC" },
-   *roman_I2[] = { "","C","CC","CCC","CD","D","DC","DCC","DCCC","CM" },
-   *roman_I3[] = { "","M","MM","MMM","MMMM" };
+   *const roman_I0[] = { "","I","II","III","IV","V","VI","VII","VIII","IX" },
+   *const roman_I1[] = { "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC" },
+   *const roman_I2[] = { "","C","CC","CCC","CD","D","DC","DCC","DCCC","CM" },
+   *const roman_I3[] = { "","M","MM","MMM","MMMM" };
 
 void strtolower (char *s)
 {

@@ -76,7 +76,6 @@ class DilloHtmlForm {
 
    DilloHtml *html;
    void eventHandler(Resource *resource, EventButton *event);
-   void submit(DilloHtmlInput *active_input, EventButton *event);
    DilloUrl *buildQueryUrl(DilloHtmlInput *active_input);
    Dstr *buildQueryData(DilloHtmlInput *active_submit);
    char *makeMultipartBoundary(iconv_t char_encoder,
@@ -113,6 +112,7 @@ public:
    ~DilloHtmlForm ();
    DilloHtmlInput *getInput (Resource *resource);
    DilloHtmlInput *getRadioInput (const char *name);
+   void submit(DilloHtmlInput *active_input, EventButton *event);
    void reset ();
    void addInput(DilloHtmlInput *input, DilloHtmlInputType type);
 };
@@ -204,6 +204,16 @@ void a_Html_form_delete (DilloHtmlForm *form)
 void a_Html_input_delete (DilloHtmlInput *input)
 {
    delete input;
+}
+
+void a_Html_form_submit2(void *vform)
+{
+   ((DilloHtmlForm *)vform)->submit(NULL, NULL);
+}
+
+void a_Html_form_reset2(void *vform)
+{
+   ((DilloHtmlForm *)vform)->reset();
 }
 
 /*
@@ -332,7 +342,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
 
 void Html_tag_close_form(DilloHtml *html, int TagIdx)
 {
-   static const char *SubmitTag =
+   static const char *const SubmitTag =
       "<input type='submit' value='?Submit?' alt='dillo-generated-button'>";
    DilloHtmlForm *form;
 // int i;
@@ -945,7 +955,7 @@ void DilloHtmlForm::eventHandler(Resource *resource, EventButton *event)
 {
    MSG("DilloHtmlForm::eventHandler\n");
    if (event && (event->button == 3)) {
-      MSG("Form menu\n");
+      a_UIcmd_form_popup(html->bw, html->page_url, this);
    } else {
       DilloHtmlInput *input = getInput(resource);
       if (input) {
@@ -996,7 +1006,7 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *active_input)
 
       _MSG("DilloHtmlForm::buildQueryUrl: action=%s\n",URL_STR_(action));
 
-      if (num_submit_buttons > 0) {
+      if (active_input && num_submit_buttons > 0) {
          if ((active_input->type == DILLO_HTML_INPUT_SUBMIT) ||
              (active_input->type == DILLO_HTML_INPUT_IMAGE) ||
              (active_input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT)) {
@@ -1727,6 +1737,7 @@ void DilloHtmlInput::reset ()
    switch (type) {
    case DILLO_HTML_INPUT_TEXT:
    case DILLO_HTML_INPUT_PASSWORD:
+   case DILLO_HTML_INPUT_INDEX:
       {
          EntryResource *entryres = (EntryResource*)embed->getResource();
          entryres->setText(init_str ? init_str : "");

@@ -7,6 +7,11 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define D_GEOMETRY_DEFAULT_WIDTH   780
+#define D_GEOMETRY_DEFAULT_HEIGHT  580
+#define D_GEOMETRY_DEFAULT_XPOS  -9999
+#define D_GEOMETRY_DEFAULT_YPOS  -9999
+
 /* Panel sizes */
 enum { P_tiny = 0, P_small, P_medium, P_large };
 
