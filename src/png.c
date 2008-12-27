@@ -231,8 +231,9 @@ static void
 
    png_progressive_combine_row(png_ptr, png->row_pointers[row_num], new_row);
 
+   _MSG("png: row_num=%u previous_row=%u\n", row_num, png->previous_row);
    if (row_num < png->previous_row) {
-      a_Dicache_new_scan(png->Image, png->url, png->version);
+      a_Dicache_new_scan(png->url, png->version);
    }
    png->previous_row = row_num;
 
@@ -468,16 +469,16 @@ void *a_Png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
    if (!DicEntry) {
       /* Let's create an entry for this image... */
       DicEntry = a_Dicache_add_entry(web->url);
-
-      /* ... and let the decoder feed it! */
-      *Data = Png_new(web->Image, DicEntry->url, DicEntry->version);
-      *Call = (CA_Callback_t) Png_callback;
+      DicEntry->DecoderData =
+         Png_new(web->Image, DicEntry->url, DicEntry->version);
    } else {
-      /* Let's feed our client from the dicache */
+      /* Repeated image */
       a_Dicache_ref(DicEntry->url, DicEntry->version);
-      *Data = web->Image;
-      *Call = (CA_Callback_t) a_Dicache_callback;
    }
+   DicEntry->Decoder = Png_callback;
+   *Data = DicEntry->DecoderData;
+   *Call = (CA_Callback_t) a_Dicache_callback;
+
    return (web->Image->dw);
 }
 

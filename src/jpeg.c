@@ -121,16 +121,16 @@ void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
    if (!DicEntry) {
       /* Let's create an entry for this image... */
       DicEntry = a_Dicache_add_entry(web->url);
-
-      /* ... and let the decoder feed it! */
-      *Data = Jpeg_new(web->Image, DicEntry->url, DicEntry->version);
-      *Call = (CA_Callback_t) Jpeg_callback;
+      DicEntry->DecoderData =
+         Jpeg_new(web->Image, DicEntry->url, DicEntry->version);
    } else {
-      /* Let's feed our client from the dicache */
+      /* Repeated image */
       a_Dicache_ref(DicEntry->url, DicEntry->version);
-      *Data = web->Image;
-      *Call = (CA_Callback_t) a_Dicache_callback;
    }
+   DicEntry->Decoder = Jpeg_callback;
+   *Data = DicEntry->DecoderData;
+   *Call = (CA_Callback_t) a_Dicache_callback;
+
    return (web->Image->dw);
 }
 
@@ -330,7 +330,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
 
    if (jpeg->state == DILLO_JPEG_READ_BEGIN_SCAN) {
       if (jpeg_start_output(&jpeg->cinfo, jpeg->cinfo.input_scan_number)) {
-         a_Dicache_new_scan(jpeg->Image, jpeg->url, jpeg->version);
+         a_Dicache_new_scan(jpeg->url, jpeg->version);
          jpeg->state = DILLO_JPEG_READ_IN_SCAN;
       }
    }
@@ -389,7 +389,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
                   /* out of input */
                   break;
                }
-               a_Dicache_new_scan(jpeg->Image, jpeg->url, jpeg->version);
+               a_Dicache_new_scan(jpeg->url, jpeg->version);
                jpeg->state = DILLO_JPEG_READ_IN_SCAN;
             }
          }

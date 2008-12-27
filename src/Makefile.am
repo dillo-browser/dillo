@@ -89,6 +89,8 @@ dillo_SOURCES = \
 	gif.c \
 	jpeg.c \
 	png.c \
+	imgbuf.cc \
+	imgbuf.hh \
 	image.cc \
 	image.hh \
 	menu.hh \
