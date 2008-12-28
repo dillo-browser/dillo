@@ -42,7 +42,6 @@ struct _DilloImage {
    DilloImgType in_type;    /* Image Type */
    int32_t bg_color;        /* Background color */
 
-   int ProcessedBytes;      /* Amount of bytes already decoded */
    bitvec_t *BitVec;        /* Bit vector for decoded rows */
    uint_t ScanNumber;       /* Current decoding scan */
    ImageState State;        /* Processing status */

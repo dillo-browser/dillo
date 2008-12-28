@@ -666,6 +666,14 @@ void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
 }
 
 /*
+ * Pop up the form menu
+ */
+void a_UIcmd_form_popup(void *vbw, const DilloUrl *url, void *vform)
+{
+   a_Menu_form_popup((BrowserWindow*)vbw, url, vform);
+}
+
+/*
  * Pop up the file menu
  */
 void a_UIcmd_file_popup(void *vbw, void *v_wid)
