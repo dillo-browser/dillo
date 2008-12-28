@@ -200,7 +200,7 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 
    MSG("Nav_open_url: new url='%s'\n", URL_STR_(url));
 
-   Repush = (URL_FLAGS(url) & URL_ReloadFromCache) != 0;
+   Repush = (URL_FLAGS(url) & URL_ReloadFromCache);
    ForceReload = (URL_FLAGS(url) & (URL_E2EQuery + URL_ReloadFromCache)) != 0;
 
    /* Get the url of the current page */
