@@ -128,10 +128,9 @@ void a_Image_new_scan(DilloImage *Image, void *v_imgbuf)
 /*
  * Implement the write method
  */
-void a_Image_write(DilloImage *Image, void *v_imgbuf,
-                   const uchar_t *buf, uint_t y, int decode)
+void a_Image_write(DilloImage *Image, uint_t y)
 {
-   MSG("a_Image_write\n");
+   _MSG("a_Image_write\n");
    dReturn_if_fail ( y < Image->height );
 
    /* Update the row in DwImage */

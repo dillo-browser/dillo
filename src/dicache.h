@@ -27,7 +27,6 @@ struct _DICacheEntry {
    uint_t width, height;   /* As taken from image data */
    DilloImgType type;      /* Image type */
    uchar_t *cmap;          /* Color map */
-   uchar_t *linebuf;       /* Decompressed RGB buffer for one line */
    void *v_imgbuf;         /* Void pointer to an Imgbuf object */
    uint_t TotalSize;       /* Amount of memory the image takes up */
    int Y;                  /* Current decoding row */

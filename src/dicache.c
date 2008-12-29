@@ -80,7 +80,6 @@ static DICacheEntry *Dicache_entry_new(void)
    entry->height = 0;
    entry->type = DILLO_IMG_TYPE_NOTSET;
    entry->cmap = NULL;
-   entry->linebuf = NULL;
    entry->v_imgbuf = NULL;
    entry->RefCount = 1;
    entry->TotalSize = 0;
@@ -191,7 +190,6 @@ static void Dicache_remove(const DilloUrl *Url, int version)
    if (entry) {
       /* Eliminate this dicache entry */
       dFree(entry->cmap);
-      dFree(entry->linebuf);
       a_Bitvec_free(entry->BitVec);
       a_Imgbuf_unref(entry->v_imgbuf);
       dicache_size_total -= entry->TotalSize;
@@ -271,6 +269,7 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
    if (DicEntry->State < DIC_Close &&
        DicEntry->DecodedSize < Client->BufSize) {
       DicEntry->Decoder(Op, Client);
+      DicEntry->DecodedSize = Client->BufSize; /* necessary ?? */
    }
 
    /* when the data stream is not an image 'v_imgbuf' remains NULL */
@@ -287,15 +286,13 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
             for (i = 0; i < DicEntry->height; ++i)
                if (a_Bitvec_get_bit(DicEntry->BitVec, (int)i) &&
                    !a_Bitvec_get_bit(Image->BitVec, (int)i) )
-                  a_Image_write(Image, DicEntry->v_imgbuf,
-                                DicEntry->linebuf, i, FALSE);
+                  a_Image_write(Image, i);
          } else {
             for (i = 0; i < DicEntry->height; ++i) {
                if (a_Bitvec_get_bit(DicEntry->BitVec, (int)i) ||
                    !a_Bitvec_get_bit(Image->BitVec, (int)i)   ||
                    DicEntry->ScanNumber > Image->ScanNumber + 1) {
-                  a_Image_write(Image, DicEntry->v_imgbuf,
-                                DicEntry->linebuf, i, FALSE);
+                  a_Image_write(Image, i);
                }
                if (!a_Bitvec_get_bit(DicEntry->BitVec, (int)i))
                   a_Bitvec_clear_bit(Image->BitVec, (int)i);
@@ -320,7 +317,7 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
 {
    DICacheEntry *DicEntry;
 
-   MSG("a_Dicache_set_parms\n");
+   MSG("a_Dicache_set_parms (%s)\n", URL_STR(url));
    dReturn_if_fail ( Image != NULL && width && height );
    /* Find the DicEntry for this Image */
    DicEntry = Dicache_get_entry_version(url, version);
@@ -328,9 +325,7 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
    /* Parameters already set? */
    dReturn_if_fail ( DicEntry->State < DIC_SetParms );
 
-   /* Initialize the DicEntry */
-   DicEntry->linebuf = dNew(uchar_t, width * 3);
-   dReturn_if_fail ( DicEntry->linebuf != NULL );
+   MSG("  RefCount=%d version=%d\n", DicEntry->RefCount, DicEntry->version);
 
    /* BUG: there's just one image-type now */
    #define I_RGB 0
@@ -399,7 +394,7 @@ void a_Dicache_write(DilloImage *Image, DilloUrl *url, int version,
 {
    DICacheEntry *DicEntry;
 
-   MSG("a_Dicache_write\n");
+   _MSG("a_Dicache_write\n");
    dReturn_if_fail ( Image != NULL );
    DicEntry = Dicache_get_entry_version(url, version);
    dReturn_if_fail ( DicEntry != NULL );
@@ -428,8 +423,6 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
    DicEntry->State = DIC_Close;
    dFree(DicEntry->cmap);
    DicEntry->cmap = NULL;
-   dFree(DicEntry->linebuf);
-   DicEntry->linebuf = NULL;
    a_Bw_close_client(Web->bw, Client->Key);
 }
 
@@ -477,7 +470,6 @@ void a_Dicache_freeall(void)
       while ((entry = node->first)) {
          node->first = entry->next;
          dFree(entry->cmap);
-         dFree(entry->linebuf);
          a_Bitvec_free(entry->BitVec);
          a_Imgbuf_unref(entry->v_imgbuf);
          dicache_size_total -= entry->TotalSize;
