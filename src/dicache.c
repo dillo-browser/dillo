@@ -336,10 +336,6 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
    #define I_RGB 0
    DicEntry->v_imgbuf = a_Imgbuf_new(Image->dw, I_RGB, width, height);
 
-   /* This extra reference activates the dicache ALWAYS.
-    * Extra code is necessary in Imgbuf to be able to free it */
-   //a_Imgbuf_ref(DicEntry->v_imgbuf);
-
    DicEntry->TotalSize = width * height * 3;
    DicEntry->width = width;
    DicEntry->height = height;
@@ -348,12 +344,6 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
    DicEntry->State = DIC_SetParms;
 
    dicache_size_total += DicEntry->TotalSize;
-
-#if 0
-   /* Allocate and initialize this image */
-   a_Image_set_parms(Image, DicEntry->v_imgbuf, url, version,
-                     width, height, type);
-#endif
 }
 
 /*
@@ -376,7 +366,6 @@ void a_Dicache_set_cmap(DilloUrl *url, int version, DilloImage *Image,
       DicEntry->cmap[bg_index * 3 + 2] = (Image->bg_color) & 0xff;
    }
 
-   //a_Image_set_cmap(Image, DicEntry->cmap);
    DicEntry->State = DIC_SetCmap;
 }
 
@@ -397,7 +386,6 @@ void a_Dicache_new_scan(const DilloUrl *url, int version)
    }
    a_Bitvec_clear(DicEntry->BitVec);
    DicEntry->ScanNumber++;
-   //a_Image_new_scan(image, DicEntry->v_imgbuf);
 }
 
 /*
@@ -420,7 +408,6 @@ void a_Dicache_write(DilloImage *Image, DilloUrl *url, int version,
    /* update the common buffer in the imgbuf */
    a_Imgbuf_update(DicEntry->v_imgbuf, buf, DicEntry->type,
                    DicEntry->cmap, DicEntry->width, DicEntry->height, Y);
-   //a_Image_write(Image, DicEntry->v_imgbuf, buf, Y, TRUE);
 
    DicEntry->Y = Y;
    a_Bitvec_set_bit(DicEntry->BitVec, (int)Y);
@@ -443,7 +430,6 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
    DicEntry->cmap = NULL;
    dFree(DicEntry->linebuf);
    DicEntry->linebuf = NULL;
-   //a_Image_close(Web->Image);
    a_Bw_close_client(Web->bw, Client->Key);
 }
 
