@@ -266,10 +266,12 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
    dReturn_if_fail ( DicEntry != NULL );
 
    /* Only call the decoder when necessary */
-   if (DicEntry->State < DIC_Close &&
+   if (Op == CA_Send && DicEntry->State < DIC_Close &&
        DicEntry->DecodedSize < Client->BufSize) {
       DicEntry->Decoder(Op, Client);
       DicEntry->DecodedSize = Client->BufSize; /* necessary ?? */
+   } else if (Op == CA_Close || Op == CA_Abort) {
+      a_Dicache_close(DicEntry->url, DicEntry->version, Client);
    }
 
    /* when the data stream is not an image 'v_imgbuf' remains NULL */
@@ -417,12 +419,16 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
    DilloWeb *Web = Client->Web;
    DICacheEntry *DicEntry = Dicache_get_entry_version(url, version);
 
-   MSG("a_Dicache_close\n");
+   MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount);
    dReturn_if_fail ( DicEntry != NULL );
 
    DicEntry->State = DIC_Close;
    dFree(DicEntry->cmap);
    DicEntry->cmap = NULL;
+   DicEntry->Decoder = NULL;
+   DicEntry->DecoderData = NULL;
+   a_Dicache_unref(url, version);
+
    a_Bw_close_client(Web->bw, Client->Key);
 }
 
