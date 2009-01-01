@@ -172,7 +172,6 @@ public:  //BUG: for now everything is public
    char *content_type, *charset;
    bool stop_parser;
 
-   bool stop_parser_after_head;
    bool repush_after_head;
 
    size_t CurrTagOfs;

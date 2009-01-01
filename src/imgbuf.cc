@@ -70,7 +70,8 @@ void a_Imgbuf_ref(void *v_imgbuf)
  */
 void a_Imgbuf_unref(void *v_imgbuf)
 {
-   ((Imgbuf*)v_imgbuf)->unref();
+   if (v_imgbuf)
+      ((Imgbuf*)v_imgbuf)->unref();
 }
 
 /*

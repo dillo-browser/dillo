@@ -87,7 +87,7 @@ static DICacheEntry *Dicache_entry_new(void)
    entry->ScanNumber = 0;
    entry->BitVec = NULL;
    entry->State = DIC_Empty;
-   entry->version = 0;
+   entry->version = 1;
 
    entry->Decoder = NULL;
    entry->DecoderData = NULL;
@@ -133,41 +133,31 @@ DICacheEntry *a_Dicache_add_entry(const DilloUrl *Url)
 }
 
 /*
- * Search an entry in the dicache (given the Url).
- * Return value: a pointer to the entry of the _newest_ (i.e. highest)
- *               version if found; NULL otherwise.
- */
-DICacheEntry *a_Dicache_get_entry(const DilloUrl *Url)
-{
-   DICacheNode *node;
-   DICacheEntry *entry;
-
-   node = dList_find_sorted(CachedIMGs, Url, Dicache_node_by_url_cmp);
-
-   if (!node || !node->valid)
-      return NULL;
-
-   for (entry = node->first; (entry && entry->next); entry = entry->next);
-
-   return entry;
-}
-
-/*
  * Search a particular version of a URL in the Dicache.
  * Return value: a pointer to the entry if found; NULL otherwise.
+ *
+ * Notes: DIC_Last means last version of the image.
+ *        version zero is not allowed.
  */
-static DICacheEntry *Dicache_get_entry_version(const DilloUrl *Url,
-                                               int version)
+DICacheEntry *a_Dicache_get_entry(const DilloUrl *Url, int version)
 {
    DICacheNode *node;
-   DICacheEntry *entry;
+   DICacheEntry *entry = NULL;
+
+   dReturn_val_if_fail(version != 0, NULL);
 
    node = dList_find_sorted(CachedIMGs, Url, Dicache_node_by_url_cmp);
-   entry = (node) ? node->first : NULL;
-
-   while (entry && entry->version != version)
-      entry = entry->next;
-
+   if (node) {
+      if (version == DIC_Last) {
+         if (node->valid) {
+            entry = node->first;
+            for ( ;  (entry && entry->next); entry = entry->next);
+         }
+      } else {
+         entry = node->first;
+         for ( ; entry && entry->version != version; entry = entry->next) ;
+      }
+   }
    return entry;
 }
 
@@ -217,7 +207,7 @@ void a_Dicache_unref(const DilloUrl *Url, int version)
 {
    DICacheEntry *entry;
 
-   if ((entry = Dicache_get_entry_version(Url, version))) {
+   if ((entry = a_Dicache_get_entry(Url, version))) {
       if (--entry->RefCount == 0) {
          Dicache_remove(Url, version);
       }
@@ -231,7 +221,7 @@ DICacheEntry* a_Dicache_ref(const DilloUrl *Url, int version)
 {
    DICacheEntry *entry;
 
-   if ((entry = Dicache_get_entry_version(Url, version))) {
+   if ((entry = a_Dicache_get_entry(Url, version))) {
       ++entry->RefCount;
    }
    return entry;
@@ -239,7 +229,8 @@ DICacheEntry* a_Dicache_ref(const DilloUrl *Url, int version)
 
 /*
  * Invalidate this entry. This is used for the reloading mechanism.
- * Can't erase current versions, but a_Dicache_get_entry must return NULL.
+ * Can't erase current versions, but a_Dicache_get_entry(url, DIC_Last)
+ * must return NULL.
  */
 void a_Dicache_invalidate_entry(const DilloUrl *Url)
 {
@@ -261,9 +252,13 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
    uint_t i;
    DilloWeb *Web = Client->Web;
    DilloImage *Image = Web->Image;
-   DICacheEntry *DicEntry = a_Dicache_get_entry(Web->url);
+   DICacheEntry *DicEntry = a_Dicache_get_entry(Web->url, DIC_Last);
 
    dReturn_if_fail ( DicEntry != NULL );
+
+   /* Copy the version number in the Client */
+   if (Client->Version == 0)
+      Client->Version = DicEntry->version;
 
    /* Only call the decoder when necessary */
    if (Op == CA_Send && DicEntry->State < DIC_Close &&
@@ -322,7 +317,7 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
    MSG("a_Dicache_set_parms (%s)\n", URL_STR(url));
    dReturn_if_fail ( Image != NULL && width && height );
    /* Find the DicEntry for this Image */
-   DicEntry = Dicache_get_entry_version(url, version);
+   DicEntry = a_Dicache_get_entry(url, version);
    dReturn_if_fail ( DicEntry != NULL );
    /* Parameters already set? */
    dReturn_if_fail ( DicEntry->State < DIC_SetParms );
@@ -350,7 +345,7 @@ void a_Dicache_set_cmap(DilloUrl *url, int version, DilloImage *Image,
                         const uchar_t *cmap, uint_t num_colors,
                         int num_colors_max, int bg_index)
 {
-   DICacheEntry *DicEntry = Dicache_get_entry_version(url, version);
+   DICacheEntry *DicEntry = a_Dicache_get_entry(url, version);
 
    dReturn_if_fail ( DicEntry != NULL );
 
@@ -375,7 +370,7 @@ void a_Dicache_new_scan(const DilloUrl *url, int version)
 
    MSG("a_Dicache_new_scan\n");
    dReturn_if_fail ( url != NULL );
-   DicEntry = Dicache_get_entry_version(url, version);
+   DicEntry = a_Dicache_get_entry(url, version);
    dReturn_if_fail ( DicEntry != NULL );
    if (DicEntry->State < DIC_SetParms) {
       MSG("a_Dicache_new_scan before DIC_SetParms\n");
@@ -398,7 +393,7 @@ void a_Dicache_write(DilloImage *Image, DilloUrl *url, int version,
 
    _MSG("a_Dicache_write\n");
    dReturn_if_fail ( Image != NULL );
-   DicEntry = Dicache_get_entry_version(url, version);
+   DicEntry = a_Dicache_get_entry(url, version);
    dReturn_if_fail ( DicEntry != NULL );
    dReturn_if_fail ( DicEntry->width > 0 && DicEntry->height > 0 );
 
@@ -417,10 +412,10 @@ void a_Dicache_write(DilloImage *Image, DilloUrl *url, int version,
 void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
 {
    DilloWeb *Web = Client->Web;
-   DICacheEntry *DicEntry = Dicache_get_entry_version(url, version);
+   DICacheEntry *DicEntry = a_Dicache_get_entry(url, version);
 
-   MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount);
    dReturn_if_fail ( DicEntry != NULL );
+   MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount);
 
    DicEntry->State = DIC_Close;
    dFree(DicEntry->cmap);

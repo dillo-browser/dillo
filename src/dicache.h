@@ -10,6 +10,10 @@ extern "C" {
 #include "image.hh"
 #include "cache.h"
 
+/* Symbolic name to request the last version of an image */
+#define DIC_Last  -1
+
+
 /* These will reflect the entry's "state" */
 typedef enum {
    DIC_Empty,      /* Just created the entry */
@@ -47,7 +51,7 @@ struct _DICacheEntry {
 
 void a_Dicache_init (void);
 
-DICacheEntry *a_Dicache_get_entry(const DilloUrl *Url);
+DICacheEntry *a_Dicache_get_entry(const DilloUrl *Url, int version);
 DICacheEntry *a_Dicache_add_entry(const DilloUrl *Url);
 
 void a_Dicache_callback(int Op, CacheClient_t *Client);

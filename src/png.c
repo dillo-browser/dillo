@@ -304,12 +304,13 @@ static void
  */
 static void Png_close(DilloPng *png, CacheClient_t *Client)
 {
-   /* Free up the resources for this image */
+   /* Let dicache know decoding is over */
    a_Dicache_close(png->url, png->version, Client);
+
+   /* Free up the resources for this image */
    dFree(png->image_data);
    dFree(png->row_pointers);
    dFree(png->linebuf);
-
    if (setjmp(png->jmpbuf))
       MSG_WARN("PNG: can't destroy read structure\n");
    else if (png->png_ptr)
@@ -444,8 +445,9 @@ static DilloPng *Png_new(DilloImage *Image, DilloUrl *url, int version)
 }
 
 /*
- * MIME handler for "image/png" type
- * (Sets Png_callback or a_Dicache_callback as the cache-client)
+ * MIME handler for "image/png" type.
+ * Sets a_Dicache_callback as the cache-client,
+ * and Png_callback as the image decoder.
  *
  * Parameters:
  *   Type: MIME type
@@ -465,7 +467,7 @@ void *a_Png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
    /* Add an extra reference to the Image (for dicache usage) */
    a_Image_ref(web->Image);
 
-   DicEntry = a_Dicache_get_entry(web->url);
+   DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
    if (!DicEntry) {
       /* Let's create an entry for this image... */
       DicEntry = a_Dicache_add_entry(web->url);

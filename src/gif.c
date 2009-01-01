@@ -157,7 +157,8 @@ void *a_Gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
 
 /*
  * MIME handler for "image/gif" type
- * (Sets Gif_callback as cache-client)
+ * Sets a_Dicache_callback as the cache-client,
+ * and Gif_callback as the image decoder.
  */
 void *a_Gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
                   void **Data)
@@ -172,7 +173,7 @@ void *a_Gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
    /* Add an extra reference to the Image (for dicache usage) */
    a_Image_ref(web->Image);
 
-   DicEntry = a_Dicache_get_entry(web->url);
+   DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
    if (!DicEntry) {
       /* Let's create an entry for this image... */
       DicEntry = a_Dicache_add_entry(web->url);
@@ -261,7 +262,7 @@ static void Gif_close(DilloGif *gif, CacheClient_t *Client)
 {
    int i;
 
-   _MSG("destroy gif %p\n", gif);
+   MSG("Gif_close: destroy gif %p\n", gif);
 
    a_Dicache_close(gif->url, gif->version, Client);
 

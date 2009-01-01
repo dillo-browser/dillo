@@ -103,7 +103,8 @@ METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo)
 
 /*
  * MIME handler for "image/jpeg" type
- * (Sets Jpeg_callback or a_Dicache_callback as the cache-client)
+ * Sets a_Dicache_callback as the cache-client,
+ * and Jpeg_callback as the image decoder.
  */
 void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
                    void **Data)
@@ -117,7 +118,7 @@ void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
    /* Add an extra reference to the Image (for dicache usage) */
    a_Image_ref(web->Image);
 
-   DicEntry = a_Dicache_get_entry(web->url);
+   DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
    if (!DicEntry) {
       /* Let's create an entry for this image... */
       DicEntry = a_Dicache_add_entry(web->url);

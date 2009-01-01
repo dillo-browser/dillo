@@ -467,7 +467,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    a_Misc_parse_content_type(content_type, NULL, NULL, &charset);
 
    stop_parser = false;
-   stop_parser_after_head = false;
    repush_after_head = false;
 
    CurrTagOfs = 0;
@@ -1607,10 +1606,10 @@ static void Html_tag_close_head(DilloHtml *html, int TagIdx)
 
       html->InFlags &= ~IN_HEAD;
 
-      if (html->stop_parser_after_head)
+      if (html->repush_after_head) {
          html->stop_parser = true;
-      if (html->repush_after_head)
          a_Nav_repush(html->bw);
+      }
    }
 }
 
@@ -2937,7 +2936,6 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
              * this code in another bw might have already changed it for us.
              */
             if (a_Misc_content_type_cmp(html->content_type, new_content)) {
-               html->stop_parser_after_head = true;
                html->repush_after_head = true;
             }
          }
