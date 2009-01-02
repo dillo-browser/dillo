@@ -187,7 +187,7 @@ static int try_ftp_transfer(char *url)
    int DataPipe[2];
 
    if (pipe(DataPipe) < 0) {
-      MSG("pipe, %s\n", strerror(errno));
+      MSG("pipe, %s\n", dStrerror(errno));
       return 0;
    }
 

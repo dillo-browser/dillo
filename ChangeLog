@@ -29,6 +29,7 @@ dillo-2.1
  - Set the ScrollGroup as the resizable widget in downloads dpi.
  - Cleaned up and normalized D_SUN_LEN usage.
  - Fixed incorrect use of VOIDP2INT in Dialog_user_password_cb().
+ - Ensure that the dlib dStr* functions are used everywhere.
    Patches: Jeremy Henty
 +- Implemented Basic authentication!
    Patch: Jeremy Henty, Jorge Arellano Cid

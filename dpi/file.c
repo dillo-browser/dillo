@@ -673,7 +673,7 @@ static int File_get_file(ClientInfo *Client,
     *       calling exit() */
    if (st == -1) {
       MSG("ERROR while reading from file \"%s\", error was \"%s\"\n",
-          filename, strerror(errno));
+          filename, dStrerror(errno));
       exit(1);
    }
 
