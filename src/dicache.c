@@ -314,7 +314,7 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
 {
    DICacheEntry *DicEntry;
 
-   MSG("a_Dicache_set_parms (%s)\n", URL_STR(url));
+   _MSG("a_Dicache_set_parms (%s)\n", URL_STR(url));
    dReturn_if_fail ( Image != NULL && width && height );
    /* Find the DicEntry for this Image */
    DicEntry = a_Dicache_get_entry(url, version);
@@ -322,7 +322,7 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
    /* Parameters already set? */
    dReturn_if_fail ( DicEntry->State < DIC_SetParms );
 
-   MSG("  RefCount=%d version=%d\n", DicEntry->RefCount, DicEntry->version);
+   _MSG("  RefCount=%d version=%d\n", DicEntry->RefCount, DicEntry->version);
 
    /* BUG: there's just one image-type now */
    #define I_RGB 0
@@ -347,6 +347,7 @@ void a_Dicache_set_cmap(DilloUrl *url, int version, DilloImage *Image,
 {
    DICacheEntry *DicEntry = a_Dicache_get_entry(url, version);
 
+   _MSG("a_Dicache_set_cmap\n");
    dReturn_if_fail ( DicEntry != NULL );
 
    dFree(DicEntry->cmap);
@@ -368,7 +369,7 @@ void a_Dicache_new_scan(const DilloUrl *url, int version)
 {
    DICacheEntry *DicEntry;
 
-   MSG("a_Dicache_new_scan\n");
+   _MSG("a_Dicache_new_scan\n");
    dReturn_if_fail ( url != NULL );
    DicEntry = a_Dicache_get_entry(url, version);
    dReturn_if_fail ( DicEntry != NULL );
@@ -415,7 +416,7 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
    DICacheEntry *DicEntry = a_Dicache_get_entry(url, version);
 
    dReturn_if_fail ( DicEntry != NULL );
-   MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount);
+   _MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount);
 
    DicEntry->State = DIC_Close;
    dFree(DicEntry->cmap);

@@ -1600,7 +1600,7 @@ static void Html_tag_open_head(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_head(DilloHtml *html, int TagIdx)
 {
    if (html->InFlags & IN_HEAD) {
-      MSG("Closing HEAD section\n");
+      _MSG("Closing HEAD section\n");
       if (html->Num_TITLE == 0)
          BUG_MSG("HEAD section lacks the TITLE element\n");
 
@@ -3025,7 +3025,7 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
       return;
 
    MSG("  Html_tag_open_link(): URL=%s\n", URL_STR(url));
-   MSG("    repush after HEAD=%d\n", html->repush_after_head);
+   _MSG("    repush after HEAD=%d\n", html->repush_after_head);
 
    Html_load_stylesheet(html, url);
    a_Url_free(url);
