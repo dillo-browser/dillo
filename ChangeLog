@@ -28,6 +28,7 @@ dillo-2.1
  - Standardised the installation of dpid/dpidrc with auto* tools.
  - Set the ScrollGroup as the resizable widget in downloads dpi.
  - Cleaned up and normalized D_SUN_LEN usage.
+ - Fixed incorrect use of VOIDP2INT in Dialog_user_password_cb().
    Patches: Jeremy Henty
 +- Implemented Basic authentication!
    Patch: Jeremy Henty, Jorge Arellano Cid

@@ -76,7 +76,7 @@ static AuthParse_t *Auth_parse_new()
 static void Auth_parse_free(AuthParse_t *auth_parse)
 {
    if (auth_parse) {
-      dFree((void *) auth_parse->realm);
+      dFree((void *)auth_parse->realm);
    }
 }
 
@@ -101,132 +101,163 @@ static int Auth_is_token_char(char c)
    return (strchr(invalid, c) || iscntrl(c)) ? 0 : 1;
 }
 
-static void Auth_parse_auth_basic(AuthParse_t *auth_parse, char *auth)
+/*
+ * Unquote the content of a quoted string.
+ * Return: newly allocated unquoted content.
+ *
+ * Arguments:
+ * quoted: pointer to the first char *after* the initial double quote.
+ * size: the number of chars in the result, *not* including a final '\0'.
+ *
+ * Preconditions:
+ * quoted points to a correctly quoted and escaped string.
+ * size is the number of characters in the quoted string, *after*
+ * removing escape characters.
+ *
+ */
+static const char *Auth_unquote_value(const char *quoted, int size)
+{
+   char c, *value, *value_ptr;
+   value_ptr = value = dNew(char, size + 1);
+   while ((c = *quoted++) != '"')
+      *value_ptr++ = (c == '\\') ? *quoted++ : c;
+   *value_ptr = '\0';
+   return value;
+}
+
+/*
+ * Parse a quoted string. Save the result as the auth realm if required.
+ * Return: 1 if the parse succeeds, 0 otherwise.
+ */
+static int Auth_parse_quoted_string(AuthParse_t *auth_parse, int set_realm,
+                                    char **auth)
+{
+   char *value;
+   int size;
+
+   /* parse the '"' */
+   switch (*(*auth)++) {
+   case '"':
+      break;
+   case '\0':
+   case ',':
+      MSG("auth.c: missing Basic auth token value after '='\n");
+      return 0;
+      break;
+   default:
+      MSG("auth.c: garbage in Basic auth after '='\n");
+      return 0;
+      break;
+   }
+
+   /* parse the rest */
+   value = *auth;
+   size = 0;
+   while (1) {
+      switch (*(*auth)++) {
+      case '"':
+         if (set_realm) {
+            dFree((void *)auth_parse->realm);
+            auth_parse->realm = Auth_unquote_value(value, size);
+            auth_parse->ok = 1;
+         }
+         return 1;
+         break;
+      case '\0':
+         MSG("auth.c: auth string ended inside quoted string value\n");
+         return 0;
+         break;
+      case '\\':
+         /* end of string? */
+         if (!*(*auth)++) {
+            MSG("auth.c: "
+                "auth string ended inside quoted string value "
+                "immediately after \\\n");
+            return 0;
+         }
+         /* fall through to the next case */
+      default:
+         size++;
+         break;
+      }
+   }
+}
+
+/*
+ * Parse a token-value pair.
+ * Return: 1 if the parse succeeds, 0 otherwise.
+ */
+static int Auth_parse_token_value(AuthParse_t *auth_parse, char **auth)
+{
+   char *token;
+   int token_size, set_realm;
+   static const char realm_token[] = "realm";
+
+   /* parse a token */
+   token = *auth;
+   token_size = 0;
+   while (Auth_is_token_char(**auth)) {
+      (*auth)++;
+      token_size++;
+   }
+   if (token_size == 0) {
+      MSG("auth.c: Auth_parse_token_value: "
+          "missing Basic auth token\n");
+      return 0;
+   }
+
+   /* skip space characters */
+   while (**auth == ' ')
+      (*auth)++;
+
+   /* parse the '=' */
+   switch (*(*auth)++) {
+   case '=':
+      break;
+   case '\0':
+   case ',':
+      MSG("auth.c: Auth_parse_token_value: "
+          "missing Basic auth token value\n");
+      return 0;
+      break;
+   default:
+      MSG("auth.c: Auth_parse_token_value: "
+          "garbage after Basic auth token\n");
+      return 0;
+      break;
+   }
+
+   /* skip space characters */
+   while (**auth == ' ')
+      (*auth)++;
+
+   /* is this value the realm? */
+   set_realm =
+      auth_parse->realm == NULL &&
+      strncasecmp(realm_token,token,token_size) == 0 &&
+      strlen(realm_token) == token_size;
+
+   return Auth_parse_quoted_string(auth_parse, set_realm, auth);
+}
+
+static void Auth_parse_auth_basic(AuthParse_t *auth_parse, char **auth)
 {
    int token_value_pairs_found;
-   char *realm = NULL;
-   static const char realm_token[] = "realm";
 
    /* parse comma-separated token-value pairs */
    token_value_pairs_found = 0;
    while (1) {
-      char *token, *value;
-      int token_size, value_size;
-
-      /* skip host and comma characters */
-      while (*auth == ' ' || *auth == ',')
-         auth++;
-
+      /* skip space and comma characters */
+      while (**auth == ' ' || **auth == ',')
+         (*auth)++;
       /* end of string? */
-      if (!*auth)
-         goto end_parse;
-
-      /* parse a token */
-      token = auth;
-      token_size = 0;
-      while (Auth_is_token_char(*auth)) {
-         auth++;
-         token_size++;
-      }
-      if (token_size == 0) {
-         MSG("auth.c: Auth_parse_auth_basic: "
-             "missing Basic auth token\n");
-         goto end_parse;
-      }
-
-      /* skip space characters */
-      while (*auth == ' ')
-         auth++;
-
-      /* parse the '=' */
-      switch (*auth++) {
-      case '=':
+      if (!**auth)
          break;
-      case '\0':
-      case ',':
-         MSG("auth.c: Auth_parse_auth_basic: "
-             "missing Basic auth token value\n");
-         goto end_parse;
+      /* parse token-value pair */
+      if (!Auth_parse_token_value(auth_parse, auth))
          break;
-      default:
-         MSG("auth.c: Auth_parse_auth_basic: "
-             "garbage after Basic auth token\n");
-         goto end_parse;
-         break;
-      }
-
-      /* skip space characters */
-      while (*auth == ' ')
-         auth++;
-
-      /* parse a quoted string */
-
-      /* parse a '"' */
-      switch (*auth++) {
-      case '"':
-         break;
-      case '\0':
-      case ',':
-         MSG("auth.c: Auth_parse_auth_basic: "
-             "missing Basic auth token value after '='\n");
-         goto end_parse;
-         break;
-      default:
-         MSG("auth.c: Auth_parse_auth_basic: "
-             "garbage in Basic auth after '='\n");
-         goto end_parse;
-         break;
-      }
-
-      /* parse the rest of a quoted string */
-      value = auth;
-      value_size = 0;
-      while (1) {
-         switch (*auth++) {
-         case '"':
-            goto end_quoted_string;
-            break;
-         case '\0':
-            MSG("auth.c: Auth_parse_auth_basic: "
-                "auth string ended inside quoted string value\n");
-            goto end_parse;
-            break;
-         case '\\':
-            /* end of string? */
-            if (!*auth++) {
-               MSG("auth.c: Auth_parse_auth_basic: "
-                   "auth string ended inside quoted string value "
-                   "immediately after \\\n");
-               goto end_parse;
-            }
-            /* fall through to the next case */
-         default:
-            value_size++;
-            break;
-         }
-      } /* parse quoted string */
-   end_quoted_string:
-
       token_value_pairs_found = 1;
-
-      if (realm == NULL &&
-          strncasecmp(realm_token,token,token_size) == 0 &&
-          strlen(realm_token) == token_size) {
-         /* unquote and save the value */
-         char c, *value_ptr, *realm_ptr;
-         realm = dNew(char, value_size + 1);
-         value_ptr = value;
-         realm_ptr = realm;
-         while ((c = *value_ptr++) != '"')
-            *realm_ptr++ = (c == '\\') ? *value_ptr++ : c;
-         *realm_ptr = '\0';
-         auth_parse->ok = 1;
-         auth_parse->realm = realm;
-         _MSG("auth.c: Auth_parse_auth_basic: realm: '%s'\n", realm);
-         return;
-      }
    }
- end_parse:
 
    if (!token_value_pairs_found) {
       MSG("auth.c: Auth_parse_auth_basic: "
@@ -234,7 +265,7 @@ static void Auth_parse_auth_basic(AuthParse_t *auth_parse, char *auth)
       return;
    }
 
-   if (!realm) {
+   if (!auth_parse->realm) {
       MSG("auth.c: Auth_parse_auth_basic: "
           "missing Basic auth realm\n");
       return;
@@ -245,7 +276,8 @@ static void Auth_parse_auth(AuthParse_t *auth_parse, char *auth)
 {
    _MSG("auth.c: Auth_parse_auth: auth = '%s'\n", auth);
    if (strncasecmp(auth, "Basic ", 6) == 0) {
-      Auth_parse_auth_basic(auth_parse, auth + 6);
+      auth += 6;
+      Auth_parse_auth_basic(auth_parse, &auth);
    } else {
       MSG("auth.c: Auth_parse_auth: "
           "unknown authorization scheme: auth = {%s}\n",

@@ -615,7 +615,7 @@ void a_Menu_history_popup(BrowserWindow *bw, int direction)
     for (i = 0; history_list[i] != -1; i += 1) {
        // TODO: restrict title size
        it = new CustItem(a_History_get_title(history_list[i], 1));
-       it->callback(Menu_history_cb, (void*)(i+1));
+       it->callback(Menu_history_cb, INT2VOIDP(i+1));
     }
    pm->type(PopupMenu::POPUP123);
    pm->end();
