@@ -91,7 +91,7 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
                        int version, uint_t width, uint_t height,
                        DilloImgType type)
 {
-   MSG("a_Image_set_parms: width=%d height=%d\n", width, height);
+   _MSG("a_Image_set_parms: width=%d height=%d\n", width, height);
 
    bool resize = (Image->width != width || Image->height != height);
    OI(Image)->setBuffer((Imgbuf*)v_imgbuf, resize);
@@ -109,7 +109,7 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
  */
 void a_Image_set_cmap(DilloImage *Image, const uchar_t *cmap)
 {
-   MSG("a_Image_set_cmap\n");
+   _MSG("a_Image_set_cmap\n");
    Image->cmap = cmap;
    Image->State = IMG_SetCmap;
 }
@@ -119,7 +119,7 @@ void a_Image_set_cmap(DilloImage *Image, const uchar_t *cmap)
  */
 void a_Image_new_scan(DilloImage *Image, void *v_imgbuf)
 {
-   MSG("a_Image_new_scan\n");
+   _MSG("a_Image_new_scan\n");
    a_Bitvec_clear(Image->BitVec);
    Image->ScanNumber++;
    ((Imgbuf*)v_imgbuf)->newScan();
@@ -144,7 +144,7 @@ void a_Image_write(DilloImage *Image, uint_t y)
  */
 void a_Image_close(DilloImage *Image)
 {
-   MSG("a_Image_close\n");
+   _MSG("a_Image_close\n");
    a_Image_unref(Image);
 }
 
