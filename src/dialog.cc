@@ -217,7 +217,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
        b = new HighlightButton(xpos, wh-bh, bw, bh, txt[i]);
        b->align(ALIGN_WRAP|ALIGN_CLIP);
        b->box(UP_BOX);
-       b->callback(choice5_cb, (void*)i);
+       b->callback(choice5_cb, INT2VOIDP(i));
        xpos += bw + gap;
     }
    window->end();
@@ -232,12 +232,14 @@ int a_Dialog_choice5(const char *QuestionTxt,
 
 
 /*--------------------------------------------------------------------------*/
-static int ok_answer = 1, cancel_answer = 0;
+/*
+ * ret: 0 = Cancel, 1 = OK
+ */
 static void Dialog_user_password_cb(Widget *button, void *vIntPtr)
 {
-   int ok = VOIDP2INT(vIntPtr);
-  _MSG("Dialog_user_password_cb: %d\n", ok);
-  button->window()->make_exec_return(ok);
+   int ret = VOIDP2INT(vIntPtr);
+  _MSG("Dialog_user_password_cb: %d\n", ret);
+  button->window()->make_exec_return(ret);
 }
 
 /*
@@ -279,14 +281,14 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
       new Button(200,button_y,50,button_h,"OK");
    ok_button->labelsize(14);
    ok_button->callback(Dialog_user_password_cb);
-   ok_button->user_data(&ok_answer);
+   ok_button->user_data(INT2VOIDP(1));
 
    /* "Cancel" button */
    Button *cancel_button =
       new Button(50,button_y,100,button_h,"Cancel");
    cancel_button->labelsize(14);
    cancel_button->callback(Dialog_user_password_cb);
-   cancel_button->user_data(&cancel_answer);
+   cancel_button->user_data(INT2VOIDP(0));
 
    window->end();
    window->size_range(window_w,window_h,window_w,window_h);
