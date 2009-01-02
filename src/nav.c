@@ -378,6 +378,9 @@ static void Nav_repush_callback(void *data)
  * Repush current URL: not an end-to-end reload but from cache.
  * - Currently used to switch to a charset decoder given by the META element.
  * - Delayed to let dillo finish the call flow into a known state.
+ *
+ * There's no need to stop the parser before calling this function:
+ * When the timeout activates, a_Bw_stop_clients will stop the data feed.
  */
 void a_Nav_repush(BrowserWindow *bw)
 {

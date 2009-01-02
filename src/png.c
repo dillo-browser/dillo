@@ -231,8 +231,9 @@ static void
 
    png_progressive_combine_row(png_ptr, png->row_pointers[row_num], new_row);
 
+   _MSG("png: row_num=%u previous_row=%u\n", row_num, png->previous_row);
    if (row_num < png->previous_row) {
-      a_Dicache_new_scan(png->Image, png->url, png->version);
+      a_Dicache_new_scan(png->url, png->version);
    }
    png->previous_row = row_num;
 
@@ -303,12 +304,13 @@ static void
  */
 static void Png_close(DilloPng *png, CacheClient_t *Client)
 {
-   /* Free up the resources for this image */
+   /* Let dicache know decoding is over */
    a_Dicache_close(png->url, png->version, Client);
+
+   /* Free up the resources for this image */
    dFree(png->image_data);
    dFree(png->row_pointers);
    dFree(png->linebuf);
-
    if (setjmp(png->jmpbuf))
       MSG_WARN("PNG: can't destroy read structure\n");
    else if (png->png_ptr)
@@ -443,8 +445,9 @@ static DilloPng *Png_new(DilloImage *Image, DilloUrl *url, int version)
 }
 
 /*
- * MIME handler for "image/png" type
- * (Sets Png_callback or a_Dicache_callback as the cache-client)
+ * MIME handler for "image/png" type.
+ * Sets a_Dicache_callback as the cache-client,
+ * and Png_callback as the image decoder.
  *
  * Parameters:
  *   Type: MIME type
@@ -464,20 +467,20 @@ void *a_Png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
    /* Add an extra reference to the Image (for dicache usage) */
    a_Image_ref(web->Image);
 
-   DicEntry = a_Dicache_get_entry(web->url);
+   DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
    if (!DicEntry) {
       /* Let's create an entry for this image... */
       DicEntry = a_Dicache_add_entry(web->url);
-
-      /* ... and let the decoder feed it! */
-      *Data = Png_new(web->Image, DicEntry->url, DicEntry->version);
-      *Call = (CA_Callback_t) Png_callback;
+      DicEntry->DecoderData =
+         Png_new(web->Image, DicEntry->url, DicEntry->version);
    } else {
-      /* Let's feed our client from the dicache */
+      /* Repeated image */
       a_Dicache_ref(DicEntry->url, DicEntry->version);
-      *Data = web->Image;
-      *Call = (CA_Callback_t) a_Dicache_callback;
    }
+   DicEntry->Decoder = Png_callback;
+   *Data = DicEntry->DecoderData;
+   *Call = (CA_Callback_t) a_Dicache_callback;
+
    return (web->Image->dw);
 }
 

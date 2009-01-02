@@ -161,6 +161,7 @@ static int Cache_client_enqueue(const DilloUrl *Url, DilloWeb *Web,
    ClientKey = Cache_client_make_key();
    NewClient->Key = ClientKey;
    NewClient->Url = Url;
+   NewClient->Version = 0;
    NewClient->Buf = NULL;
    NewClient->Callback = Callback;
    NewClient->CbData = CbData;
@@ -1258,9 +1259,14 @@ CacheClient_t *a_Cache_client_get_if_unique(int Key)
 void a_Cache_stop_client(int Key)
 {
    CacheClient_t *Client;
+   DICacheEntry *DicEntry;
 
    if ((Client = dList_find_custom(ClientQueue, INT2VOIDP(Key),
                                    Cache_client_by_key_cmp))) {
+      DicEntry = a_Dicache_get_entry(Client->Url, Client->Version);
+      if (DicEntry) {
+         a_Dicache_unref(Client->Url, Client->Version);
+      }
       Cache_client_dequeue(Client, NULLKey);
    } else {
       _MSG("WARNING: Cache_stop_client, nonexistent client\n");
