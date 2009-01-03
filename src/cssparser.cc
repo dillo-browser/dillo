@@ -1008,7 +1008,7 @@ static bool Css_parse_simple_selector(CssParser * parser,
             case '.':
                pp = &selector->klass;
                break;
-               case ':':
+            case ':':
                pp = &selector->pseudo;
                break;
          }
@@ -1059,6 +1059,7 @@ static CssSelector *Css_parse_selector(CssParser * parser) {
          return selector;
       } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '>') {
          selector->addSimpleSelector (CssSelector::CHILD);
+         Css_next_token(parser);
       } else if (parser->ttype != CSS_TK_END && parser->space_separated) {
          selector->addSimpleSelector (CssSelector::DESCENDENT);
       } else {
