@@ -115,25 +115,24 @@ void CssSelector::addSimpleSelector (Combinator c, int element,
 }
 
 void CssSelector::print () {
-   for (int i = 0; i < selectorList->size () - 1; i++) {
+   for (int i = 0; i < selectorList->size (); i++) {
       selectorList->getRef (i)->selector.print ();
 
-      if (i < selectorList->size () - 2) {
-         switch (selectorList->getRef (i)->combinator) {
+      if (i < selectorList->size () - 1) {
+         switch (selectorList->getRef (i + 1)->combinator) {
             case CHILD:
-               fprintf (stderr, ">");
+               fprintf (stderr, "> ");
                break;
             case DESCENDENT:
-               fprintf (stderr, " ");
+               fprintf (stderr, "\" \" ");
                break;
             default:
-               fprintf (stderr, "?");
+               fprintf (stderr, "? ");
                break;
          }
       }
    }
 
-   top ()->print ();
    fprintf (stderr, "\n");
 }
 
@@ -308,6 +307,7 @@ void CssContext::buildUserAgentStyle () {
      "ul {list-style-type: disc} "
      "ul > ul {list-style-type: circle} "
      "ul > ul > ul {list-style-type: square} "
+     "ul > ul > ul > ul {list-style-type: disc} "
      "u {text-decoration: underline } "
      "small, sub, sup { font-size: 0.83em } "
      "sub { vertical-align: sub } "
