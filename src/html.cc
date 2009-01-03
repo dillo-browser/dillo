@@ -2355,10 +2355,9 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
 {
-   StyleAttrs style_attrs;
-   Style *style;
    DilloUrl *url, *base_url = NULL;
    const char *attrbuf;
+   CssPropertyList props;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "codebase"))) {
       base_url = a_Html_url_new(html, attrbuf, NULL, 0);
@@ -2369,31 +2368,16 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
                            URL_STR(base_url), (base_url != NULL));
       dReturn_if_fail ( url != NULL );
 
-      style_attrs = *html->styleEngine->style ();
-
       if (a_Capi_get_flags(url) & CAPI_IsCached) {
-         style_attrs.color = Color::create (
-            HT2LT(html),
-            html->visited_color
-/*
-            a_Color_vc(html->visited_color,
-                       html->styleEngine->style()->color->getColor(),
-                       html->link_color,
-                       html->styleEngine->style()->backgroundColor->getColor()
-                      );
-*/
-            );
+         html->styleEngine->setPseudoVisited ();
       } else {
-         style_attrs.color = Color::create (HT2LT(html), html->link_color);
+         html->styleEngine->setPseudoLink ();
       }
+   
+      props.set(CssProperty::PROPERTY_X_LINK, Html_set_new_link(html, &url));
+      html->styleEngine->setNonCssHints (&props);
 
-      style_attrs.textDecoration |= TEXT_DECORATION_UNDERLINE;
-      style_attrs.x_link = Html_set_new_link(html, &url);
-      style_attrs.cursor = CURSOR_POINTER;
-
-      style = Style::create (HT2LT(html), &style_attrs);
-      DW2TB(html->dw)->addText("[OBJECT]", style);
-      style->unref ();
+      DW2TB(html->dw)->addText("[OBJECT]", html->styleEngine->wordStyle ());
    }
    a_Url_free(base_url);
 }
