@@ -340,13 +340,13 @@ bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
          *dest = (int) CSS_LENGTH_VALUE (value);
          return true;
       case CSS_LENGTH_TYPE_MM:
-         *dest = (int) (CSS_LENGTH_VALUE (value) * dpmm);
+         *dest = (int) (CSS_LENGTH_VALUE (value) * dpmm + 0.5);
         return true;
       case CSS_LENGTH_TYPE_EM:
-         *dest = (int) (CSS_LENGTH_VALUE (value) * font->size);
+         *dest = (int) (CSS_LENGTH_VALUE (value) * font->size + 0.5);
         return true;
       case CSS_LENGTH_TYPE_EX:
-         *dest = (int) (CSS_LENGTH_VALUE(value) * font->xHeight);
+         *dest = (int) (CSS_LENGTH_VALUE(value) * font->xHeight + 0.5);
         return true;
       default:
          break;
@@ -358,7 +358,7 @@ bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
 bool StyleEngine::computeValue (int *dest, CssLength value, Font *font,
                                 int percentageBase) {
    if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE) {
-      *dest = (int) (CSS_LENGTH_VALUE (value) * percentageBase);
+      *dest = (int) (CSS_LENGTH_VALUE (value) * percentageBase + 0.5);
       return true;
    } else
       return computeValue (dest, value, font);
