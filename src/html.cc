@@ -1793,9 +1793,8 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
    char *src;
    DilloUrl *url;
    Textblock *textblock;
-   StyleAttrs style_attrs;
-   Style *link_style;
    Widget *bullet;
+   CssPropertyList props;
 
    textblock = DW2TB(html->dw);
 
@@ -1807,18 +1806,14 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
 
    src = dStrdup(attrbuf);
 
-   style_attrs = *(html->styleEngine->style ());
-
    if (a_Capi_get_flags(url) & CAPI_IsCached) { /* visited frame */
-      style_attrs.color =
-         Color::create (HT2LT(html), html->visited_color);
+      html->styleEngine->setPseudoVisited ();
    } else {                                    /* unvisited frame */
-      style_attrs.color = Color::create (HT2LT(html), html->link_color);
+      html->styleEngine->setPseudoLink ();
    }
-   style_attrs.textDecoration |= TEXT_DECORATION_UNDERLINE;
-   style_attrs.x_link = Html_set_new_link(html, &url);
-   style_attrs.cursor = CURSOR_POINTER;
-   link_style = Style::create (HT2LT(html), &style_attrs);
+
+   props.set (CssProperty::PROPERTY_X_LINK, Html_set_new_link(html, &url));
+   html->styleEngine->setNonCssHints (&props);
 
    textblock->addParbreak (5, html->styleEngine->wordStyle ());
 
@@ -1832,21 +1827,20 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
    if (tolower(tag[1]) == 'i') {
       /* IFRAME usually comes with very long advertising/spying URLS,
        * to not break rendering we will force name="IFRAME" */
-      textblock->addText ("IFRAME", link_style);
+      textblock->addText ("IFRAME", html->styleEngine->wordStyle ());
 
    } else {
       /* FRAME:
        * If 'name' tag is present use it, if not use 'src' value */
       if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "name"))) {
-         textblock->addText (src, link_style);
+         textblock->addText (src, html->styleEngine->wordStyle ());
       } else {
-         textblock->addText (attrbuf, link_style);
+         textblock->addText (attrbuf, html->styleEngine->wordStyle ());
       }
    }
 
    textblock->addParbreak (5, html->styleEngine->wordStyle ());
 
-   link_style->unref ();
    dFree(src);
 }
 
