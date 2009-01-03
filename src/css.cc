@@ -304,6 +304,7 @@ void CssContext::buildUserAgentStyle () {
      "h6 {font-size: 0.75em; margin-top: 1.67em; margin-bottom: 0em;} "
      "hr {width: 100%; border: 1px inset} "
      "pre {white-space: pre} "
+     "ol {list-style-type: decimal} "
      "ul {list-style-type: disc} "
      "ul > ul {list-style-type: circle} "
      "ul > ul > ul {list-style-type: square} "
