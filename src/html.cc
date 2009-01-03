@@ -2552,9 +2552,6 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
    ListStyleType list_style_type;
 
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
-   Html_add_textblock(html, 9);
-
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
       CssPropertyList props;
 
@@ -2572,6 +2569,9 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
       props.set(CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, list_style_type);
       html->styleEngine->setNonCssHints (&props);
    } 
+
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
+   Html_add_textblock(html, 9);
 
    S_TOP(html)->list_type = HTML_LIST_UNORDERED;
    S_TOP(html)->list_number = 0;
