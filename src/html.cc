@@ -2693,7 +2693,6 @@ static void Html_tag_open_dl(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
-   a_Html_set_top_font(html, NULL, 0, 1, 1);
 }
 
 /*

@@ -290,6 +290,7 @@ void CssContext::buildUserAgentStyle () {
      "big { font-size: 1.17em }"
      "blockquote, dd {margin-left: 40px; margin-right: 40px}"
      "center { text-align: center }"
+     "dt { font-weight: bolder }"
      ":link {color: blue; text-decoration: underline; cursor: pointer; } "
      ":visited {color: green; text-decoration: underline; cursor: pointer; } "
      "h1, h2, h3, h4, h5, h6, b, strong {font-weight: bolder; } "
