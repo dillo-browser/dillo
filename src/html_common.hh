@@ -273,7 +273,5 @@ void a_Html_tag_set_align_attr(DilloHtml *html, CssPropertyList *props,
 bool a_Html_tag_set_valign_attr(DilloHtml *html,
                                 const char *tag, int tagsize,
                                 CssPropertyList *props);
-void a_Html_set_top_font(DilloHtml *html, const char *name, int size,
-                         int BI, int BImask);
 
 #endif /* __HTML_COMMON_HH__ */

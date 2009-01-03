@@ -209,7 +209,6 @@ void Html_tag_open_td(DilloHtml *html, const char *tag, int tagsize)
  */
 void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_set_top_font(html, NULL, 0, 1, 1);
    Html_tag_open_table_cell (html, tag, tagsize,
                              dw::core::style::TEXT_ALIGN_CENTER);
 }

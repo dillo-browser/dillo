@@ -295,31 +295,6 @@ static int Html_add_new_linkimage(DilloHtml *html,
 }
 
 /*
- * Set the font at the top of the stack. BImask specifies which
- * attributes in BI should be changed.
- */
-void a_Html_set_top_font(DilloHtml *html, const char *name, int size,
-                         int BI, int BImask)
-{
-#if 0
-   FontAttrs font_attrs;
-
-   font_attrs = *html->styleEngine->style ()->font;
-   if (name)
-      font_attrs.name = name;
-   if (size)
-      font_attrs.size = size;
-   if (BImask & 1)
-      font_attrs.weight = (BI & 1) ? 700 : 400;
-   if (BImask & 2)
-      font_attrs.style = (BI & 2) ? FONT_STYLE_ITALIC : FONT_STYLE_NORMAL;
-
-   HTML_SET_TOP_ATTR (html, font,
-                      Font::create (HT2LT(html), &font_attrs));
-#endif
-}
-
-/*
  * Evaluates the ALIGN attribute (left|center|right|justify) and
  * sets the style at the top of the stack.
  */
