@@ -1889,14 +1889,6 @@ static void Html_tag_close_h(DilloHtml *html, int TagIdx)
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
-/*
- * <BIG> | <SMALL>
- */
-static void Html_tag_open_big_small(DilloHtml *html,
-                                    const char *tag, int tagsize)
-{
-}
-
 static void Html_tag_open_span(DilloHtml *html,
                                const char *tag, int tagsize)
 {
@@ -1955,41 +1947,6 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
- * <B>
- */
-static void Html_tag_open_b(DilloHtml *html, const char *tag, int tagsize)
-{
-}
-
-/*
- * <STRONG>
- */
-static void Html_tag_open_strong(DilloHtml *html, const char *tag, int tagsize)
-{
-}
-
-/*
- * <I>
- */
-static void Html_tag_open_i(DilloHtml *html, const char *tag, int tagsize)
-{
-}
-
-/*
- * <EM>
- */
-static void Html_tag_open_em(DilloHtml *html, const char *tag, int tagsize)
-{
-}
-
-/*
- * <CITE>
- */
-static void Html_tag_open_cite(DilloHtml *html, const char *tag, int tagsize)
-{
-}
-
-/*
  * <CENTER>
  */
 static void Html_tag_open_center(DilloHtml *html, const char *tag, int tagsize)
@@ -2004,13 +1961,6 @@ static void Html_tag_open_address(DilloHtml *html,
                                   const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
-}
-
-/*
- * <TT>
- */
-static void Html_tag_open_tt(DilloHtml *html, const char *tag, int tagsize)
-{
 }
 
 /*
@@ -2477,20 +2427,6 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_a(DilloHtml *html, int TagIdx)
 {
    html->InVisitedLink = false;
-}
-
-/*
- * Insert underlined text in the page.
- */
-static void Html_tag_open_u(DilloHtml *html, const char *tag, int tagsize)
-{
-}
-
-/*
- * Insert strike-through text. Used by <S>, <STRIKE> and <DEL>.
- */
-static void Html_tag_open_strike(DilloHtml *html, const char *tag, int tagsize)
-{
 }
 
 /*
@@ -3024,54 +2960,7 @@ static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
    }
 }
 
-/*
- * <CODE>
- */
-static void Html_tag_open_code(DilloHtml *html, const char *tag, int tagsize)
-{
-}
-
-/*
- * <DFN>
- */
-static void Html_tag_open_dfn(DilloHtml *html, const char *tag, int tagsize)
-{
-   a_Html_set_top_font(html, NULL, 0, 2, 3);
-}
-
-/*
- * <KBD>
- */
-static void Html_tag_open_kbd(DilloHtml *html, const char *tag, int tagsize)
-{
-}
-
-/*
- * <SAMP>
- */
-static void Html_tag_open_samp(DilloHtml *html, const char *tag, int tagsize)
-{
-}
-
-/*
- * <VAR>
- */
-static void Html_tag_open_var(DilloHtml *html, const char *tag, int tagsize)
-{
-   a_Html_set_top_font(html, NULL, 0, 2, 2);
-}
-
-/*
- * <SUB>
- */
-static void Html_tag_open_sub(DilloHtml *html, const char *tag, int tagsize)
-{
-}
-
-/*
- * <SUP>
- */
-static void Html_tag_open_sup(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_default(DilloHtml *html, const char *tag, int tagsize)
 {
 }
 
@@ -3146,30 +3035,30 @@ const TagInfo Tags[] = {
  /* acronym 010101 */
  {"address", B8(010110),'R',2, Html_tag_open_address, Html_tag_close_par},
  {"area", B8(010001),'F',0, Html_tag_open_area, Html_tag_close_default},
- {"b", B8(010101),'R',2, Html_tag_open_b, Html_tag_close_default},
+ {"b", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"base", B8(100001),'F',0, Html_tag_open_base, Html_tag_close_default},
  /* basefont 010001 */
  /* bdo 010101 */
- {"big", B8(010101),'R',2, Html_tag_open_big_small, Html_tag_close_default},
+ {"big", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"blockquote", B8(011110),'R',2,Html_tag_open_blockquote,Html_tag_close_par},
  {"body", B8(011110),'O',1, Html_tag_open_body, Html_tag_close_body},
  {"br", B8(010001),'F',0, Html_tag_open_br, Html_tag_close_default},
  {"button", B8(011101),'R',2, Html_tag_open_button, Html_tag_close_button},
  /* caption */
  {"center", B8(011110),'R',2, Html_tag_open_center, Html_tag_close_div},
- {"cite", B8(010101),'R',2, Html_tag_open_cite, Html_tag_close_default},
- {"code", B8(010101),'R',2, Html_tag_open_code, Html_tag_close_default},
+ {"cite", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
+ {"code", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  /* col 010010 'F' */
  /* colgroup */
  {"dd", B8(011110),'O',1, Html_tag_open_dd, Html_tag_close_par},
- {"del", B8(011101),'R',2, Html_tag_open_strike, Html_tag_close_default},
- {"dfn", B8(010101),'R',2, Html_tag_open_dfn, Html_tag_close_default},
+ {"del", B8(011101),'R',2, Html_tag_open_default, Html_tag_close_default},
+ {"dfn", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"dir", B8(011010),'R',2, Html_tag_open_dir, Html_tag_close_par},
  /* TODO: complete <div> support! */
  {"div", B8(011110),'R',2, Html_tag_open_div, Html_tag_close_div},
  {"dl", B8(011010),'R',2, Html_tag_open_dl, Html_tag_close_par},
  {"dt", B8(010110),'O',1, Html_tag_open_dt, Html_tag_close_par},
- {"em", B8(010101),'R',2, Html_tag_open_em, Html_tag_close_default},
+ {"em", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  /* fieldset */
  {"font", B8(010101),'R',2, Html_tag_open_font, Html_tag_close_default},
  {"form", B8(011110),'R',2, Html_tag_open_form, Html_tag_close_form},
@@ -3184,13 +3073,13 @@ const TagInfo Tags[] = {
  {"head", B8(101101),'O',1, Html_tag_open_head, Html_tag_close_head},
  {"hr", B8(010010),'F',0, Html_tag_open_hr, Html_tag_close_default},
  {"html", B8(001110),'O',1, Html_tag_open_html, Html_tag_close_html},
- {"i", B8(010101),'R',2, Html_tag_open_i, Html_tag_close_default},
+ {"i", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"iframe", B8(011110),'R',2, Html_tag_open_frame, Html_tag_close_default},
  {"img", B8(010001),'F',0, Html_tag_open_img, Html_tag_close_default},
  {"input", B8(010001),'F',0, Html_tag_open_input, Html_tag_close_default},
  /* ins */
  {"isindex", B8(110001),'F',0, Html_tag_open_isindex, Html_tag_close_default},
- {"kbd", B8(010101),'R',2, Html_tag_open_kbd, Html_tag_close_default},
+ {"kbd", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  /* label 010101 */
  /* legend 01?? */
  {"li", B8(011110),'O',1, Html_tag_open_li, Html_tag_close_li},
@@ -3209,17 +3098,17 @@ const TagInfo Tags[] = {
  /* param 010001 'F' */
  {"pre", B8(010110),'R',2, Html_tag_open_pre, Html_tag_close_pre},
  {"q", B8(010101),'R',2, Html_tag_open_q, Html_tag_close_q},
- {"s", B8(010101),'R',2, Html_tag_open_strike, Html_tag_close_default},
- {"samp", B8(010101),'R',2, Html_tag_open_samp, Html_tag_close_default},
+ {"s", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
+ {"samp", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"script", B8(111001),'R',2, Html_tag_open_script, Html_tag_close_script},
  {"select", B8(010101),'R',2, Html_tag_open_select, Html_tag_close_select},
- {"small", B8(010101),'R',2, Html_tag_open_big_small, Html_tag_close_default},
+ {"small", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"span", B8(010101),'R',2, Html_tag_open_span, Html_tag_close_default},
- {"strike", B8(010101),'R',2, Html_tag_open_strike, Html_tag_close_default},
- {"strong", B8(010101),'R',2, Html_tag_open_strong, Html_tag_close_default},
+ {"strike", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
+ {"strong", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"style", B8(100101),'R',2, Html_tag_open_style, Html_tag_close_style},
- {"sub", B8(010101),'R',2, Html_tag_open_sub, Html_tag_close_default},
- {"sup", B8(010101),'R',2, Html_tag_open_sup, Html_tag_close_default},
+ {"sub", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
+ {"sup", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"table", B8(011010),'R',5, Html_tag_open_table, Html_tag_close_div},
  /* tbody */
  {"td", B8(011110),'O',3, Html_tag_open_td, Html_tag_close_default},
@@ -3229,10 +3118,10 @@ const TagInfo Tags[] = {
  /* thead */
  {"title", B8(100101),'R',2, Html_tag_open_title, Html_tag_close_title},
  {"tr", B8(011010),'O',4, Html_tag_open_tr, Html_tag_close_default},
- {"tt", B8(010101),'R',2, Html_tag_open_tt, Html_tag_close_default},
- {"u", B8(010101),'R',2, Html_tag_open_u, Html_tag_close_default},
+ {"tt", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
+ {"u", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"ul", B8(011010),'R',2, Html_tag_open_ul, Html_tag_close_par},
- {"var", B8(010101),'R',2, Html_tag_open_var, Html_tag_close_default}
+ {"var", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default}
 
 };
 #define NTAGS (sizeof(Tags)/sizeof(Tags[0]))
