@@ -2562,6 +2562,8 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
    Html_add_textblock(html, 9);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
+      CssPropertyList props;
+
       /* list_style_type explicitly defined */
       if (dStrncasecmp(attrbuf, "disc", 4) == 0)
          list_style_type = LIST_STYLE_TYPE_DISC;
@@ -2572,33 +2574,12 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
       else
          /* invalid value */
          list_style_type = LIST_STYLE_TYPE_DISC;
-   } else {
-      if (S_TOP(html)->list_type == HTML_LIST_UNORDERED) {
-         /* Nested <UL>'s. */
-         /* --EG :: I changed the behavior here : types are cycling instead of
-          * being forced to square. It's easier for mixed lists level counting.
-          */
-         switch (html->styleEngine->style ()->listStyleType) {
-         case LIST_STYLE_TYPE_DISC:
-            list_style_type = LIST_STYLE_TYPE_CIRCLE;
-            break;
-         case LIST_STYLE_TYPE_CIRCLE:
-            list_style_type = LIST_STYLE_TYPE_SQUARE;
-            break;
-         case LIST_STYLE_TYPE_SQUARE:
-         default: /* this is actually a bug */
-            list_style_type = LIST_STYLE_TYPE_DISC;
-            break;
-         }
-      } else {
-         /* Either first <UL>, or a <OL> before. */
-         list_style_type = LIST_STYLE_TYPE_DISC;
-      }
-   }
 
-   HTML_SET_TOP_ATTR(html, listStyleType, list_style_type);
+      props.set(CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, list_style_type);
+      html->styleEngine->setNonCssHints (&props);
+   } 
+
    S_TOP(html)->list_type = HTML_LIST_UNORDERED;
-
    S_TOP(html)->list_number = 0;
    S_TOP(html)->ref_list_item = NULL;
 }
@@ -2673,13 +2654,16 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
 {
-   StyleAttrs style_attrs;
-   Style *item_style, *word_style;
+   Style *style = html->styleEngine->style ();
+   Style *wordStyle = html->styleEngine->wordStyle ();
    Widget **ref_list_item;
    ListItem *list_item;
    int *list_number;
    const char *attrbuf;
    char buf[16];
+   
+   if (S_TOP(html)->list_type == HTML_LIST_NONE)
+      BUG_MSG("<li> outside <ul> or <ol>\n");
 
    html->InFlags |= IN_LI;
    html->WordAfterLI = false;
@@ -2688,45 +2672,33 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
    list_number = &html->stack->getRef(html->stack->size()-2)->list_number;
    ref_list_item = &html->stack->getRef(html->stack->size()-2)->ref_list_item;
 
-   /* set the item style */
-   word_style = html->styleEngine->wordStyle ();
-   style_attrs = *word_style;
- //style_attrs.backgroundColor = Color::createShaded (HT2LT(html), 0xffff40);
- //style_attrs.setBorderColor (Color::createSimple (HT2LT(html), 0x000000));
- //style_attrs.setBorderStyle (BORDER_SOLID);
- //style_attrs.borderWidth.setVal (1);
-   item_style = Style::create (HT2LT(html), &style_attrs);
-
-   DW2TB(html->dw)->addParbreak (2, word_style);
+   DW2TB(html->dw)->addParbreak (2, wordStyle);
 
    list_item = new ListItem ((ListItem*)*ref_list_item,prefs.limit_text_width);
-   DW2TB(html->dw)->addWidget (list_item, item_style);
-   DW2TB(html->dw)->addParbreak (2, word_style);
+   DW2TB(html->dw)->addWidget (list_item, style);
+   DW2TB(html->dw)->addParbreak (2, wordStyle);
    *ref_list_item = list_item;
    S_TOP(html)->textblock = html->dw = list_item;
-   item_style->unref();
    /* Handle it when the user clicks on a link */
    html->connectSignals(list_item);
 
-   switch (S_TOP(html)->list_type) {
-   case HTML_LIST_ORDERED:
+   if (style->listStyleType == LIST_STYLE_TYPE_NONE) {
+      // none
+   } else if (style->listStyleType >= LIST_STYLE_TYPE_DECIMAL) {
+      // ordered
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "value")) &&
           (*list_number = strtol(attrbuf, NULL, 10)) < 0) {
          BUG_MSG("illegal negative LIST VALUE attribute; Starting from 0\n");
          *list_number = 0;
       }
-      numtostr((*list_number)++, buf, 16,
-               html->styleEngine->style ()->listStyleType);
-      list_item->initWithText (dStrdup(buf), word_style);
-      list_item->addSpace (word_style);
+      numtostr((*list_number)++, buf, 16, style->listStyleType);
+      list_item->initWithText (dStrdup(buf), wordStyle);
+      list_item->addSpace (wordStyle);
       html->PrevWasSPC = true;
-      break;
-   case HTML_LIST_NONE:
-      BUG_MSG("<li> outside <ul> or <ol>\n");
-   default:
-      list_item->initWithWidget (new Bullet(), word_style);
-      list_item->addSpace (word_style);
-      break;
+   } else {
+      // unordered
+      list_item->initWithWidget (new Bullet(), wordStyle);
+      list_item->addSpace (wordStyle);
    }
 }
 
