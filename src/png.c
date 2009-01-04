@@ -304,6 +304,7 @@ static void
  */
 static void Png_close(DilloPng *png, CacheClient_t *Client)
 {
+   MSG("Png_close\n");
    /* Let dicache know decoding is over */
    a_Dicache_close(png->url, png->version, Client);
 

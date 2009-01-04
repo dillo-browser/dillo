@@ -66,12 +66,6 @@ void a_Image_new_scan(DilloImage *image, void *v_imgbuf);
 void a_Image_write(DilloImage *Image, uint_t y);
 void a_Image_close(DilloImage *Image);
 
-void a_Image_imgbuf_ref(void *v_imgbuf);
-void a_Image_imgbuf_unref(void *v_imgbuf);
-void *a_Image_imgbuf_new(void *v_dw, int img_type, int width, int height);
-int a_Image_imgbuf_last_reference(void *v_imgbuf);
-void a_Image_imgbuf_update(DilloImage *Image, void *v_imgbuf,
-                           const uchar_t *buf, uint_t y);
 
 #ifdef __cplusplus
 }

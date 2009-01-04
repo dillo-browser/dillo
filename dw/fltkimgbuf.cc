@@ -85,12 +85,7 @@ void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
 
 FltkImgbuf::~FltkImgbuf ()
 {
-   //printf ("FltkImgbuf::~FltkImgbuf (%s)\n", isRoot() ? "root" : "scaled");
-
-   //if (root)
-   //   printf("FltkImgbuf[scaled %p, root is %p]: deleted\n", this, root);
-   //else
-   //   printf("FltkImgbuf[root %p]: deleted\n", this);
+   //printf("~FltkImgbuf[%s %p] deleted\n", isRoot() ? "root":"scaled", this);
 
    if (!isRoot())
       root->detachScaledBuf (this);
@@ -175,7 +170,7 @@ void FltkImgbuf::newScan ()
 
 core::Imgbuf* FltkImgbuf::getScaledBuf (int width, int height)
 {
-   if (root)
+   if (!isRoot())
       return root->getScaledBuf (width, height);
    
    if (width == this->width && height == this->height) {
@@ -256,10 +251,11 @@ void FltkImgbuf::unref ()
       if (isRoot ()) {
          // Root buffer, it must be ensured that no scaled buffers are left.
          // See also FltkImgbuf::detachScaledBuf().
-         if (scaledBuffers->isEmpty () && deleteOnUnref)
+         if (scaledBuffers->isEmpty () && deleteOnUnref) {
             delete this;
-         else
-            printf("FltkImgbuf[root %p]: not deleted\n", this);
+         } else
+            printf("FltkImgbuf[root %p]: not deleted. numScaled=%d\n",
+                   this, scaledBuffers->size ());
       } else
          // Scaled buffer buffer, simply delete it.
          delete this;
@@ -293,7 +289,7 @@ int FltkImgbuf::scaledY(int ySrc)
 }
 
 void FltkImgbuf::draw (::fltk::Widget *target, int xRoot, int yRoot,
-                   int x, int y, int width, int height)
+                       int x, int y, int width, int height)
 {
    // TODO (i):  Implementation.
    // TODO (ii): Clarify the question, whether "target" is the current widget

@@ -245,67 +245,6 @@ void a_Dicache_invalidate_entry(const DilloUrl *Url)
 /* ------------------------------------------------------------------------- */
 
 /*
- * This function is a cache client; (but feeds its clients from dicache)
- */
-void a_Dicache_callback(int Op, CacheClient_t *Client)
-{
-   uint_t i;
-   DilloWeb *Web = Client->Web;
-   DilloImage *Image = Web->Image;
-   DICacheEntry *DicEntry = a_Dicache_get_entry(Web->url, DIC_Last);
-
-   dReturn_if_fail ( DicEntry != NULL );
-
-   /* Copy the version number in the Client */
-   if (Client->Version == 0)
-      Client->Version = DicEntry->version;
-
-   /* Only call the decoder when necessary */
-   if (Op == CA_Send && DicEntry->State < DIC_Close &&
-       DicEntry->DecodedSize < Client->BufSize) {
-      DicEntry->Decoder(Op, Client);
-      DicEntry->DecodedSize = Client->BufSize; /* necessary ?? */
-   } else if (Op == CA_Close || Op == CA_Abort) {
-      a_Dicache_close(DicEntry->url, DicEntry->version, Client);
-   }
-
-   /* when the data stream is not an image 'v_imgbuf' remains NULL */
-   if (Op == CA_Send && DicEntry->v_imgbuf) {
-      if (Image->height == 0 && DicEntry->State >= DIC_SetParms) {
-         /* Set parms */
-         a_Image_set_parms(
-            Image, DicEntry->v_imgbuf, DicEntry->url,
-            DicEntry->version, DicEntry->width, DicEntry->height,
-            DicEntry->type);
-      }
-      if (DicEntry->State == DIC_Write) {
-         if (DicEntry->ScanNumber == Image->ScanNumber) {
-            for (i = 0; i < DicEntry->height; ++i)
-               if (a_Bitvec_get_bit(DicEntry->BitVec, (int)i) &&
-                   !a_Bitvec_get_bit(Image->BitVec, (int)i) )
-                  a_Image_write(Image, i);
-         } else {
-            for (i = 0; i < DicEntry->height; ++i) {
-               if (a_Bitvec_get_bit(DicEntry->BitVec, (int)i) ||
-                   !a_Bitvec_get_bit(Image->BitVec, (int)i)   ||
-                   DicEntry->ScanNumber > Image->ScanNumber + 1) {
-                  a_Image_write(Image, i);
-               }
-               if (!a_Bitvec_get_bit(DicEntry->BitVec, (int)i))
-                  a_Bitvec_clear_bit(Image->BitVec, (int)i);
-            }
-            Image->ScanNumber = DicEntry->ScanNumber;
-         }
-      }
-   } else if (Op == CA_Close || Op == CA_Abort) {
-      a_Image_close(Image);
-      a_Bw_close_client(Web->bw, Client->Key);
-   }
-}
-
-/* ------------------------------------------------------------------------- */
-
-/*
  * Set image's width, height & type
  * (By now, we'll use the image information despite the html tags --Jcid)
  */
@@ -416,17 +355,86 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
    DICacheEntry *DicEntry = a_Dicache_get_entry(url, version);
 
    dReturn_if_fail ( DicEntry != NULL );
-   _MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount);
 
-   DicEntry->State = DIC_Close;
-   dFree(DicEntry->cmap);
-   DicEntry->cmap = NULL;
-   DicEntry->Decoder = NULL;
-   DicEntry->DecoderData = NULL;
+   if (DicEntry->State < DIC_Close) {
+      DicEntry->State = DIC_Close;
+      dFree(DicEntry->cmap);
+      DicEntry->cmap = NULL;
+      DicEntry->Decoder = NULL;
+      DicEntry->DecoderData = NULL;
+   }
    a_Dicache_unref(url, version);
+   MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount);
 
    a_Bw_close_client(Web->bw, Client->Key);
 }
+
+/* ------------------------------------------------------------------------- */
+
+/*
+ * This function is a cache client; (but feeds its clients from dicache)
+ */
+void a_Dicache_callback(int Op, CacheClient_t *Client)
+{
+   uint_t i;
+   DilloWeb *Web = Client->Web;
+   DilloImage *Image = Web->Image;
+   DICacheEntry *DicEntry = a_Dicache_get_entry(Web->url, DIC_Last);
+
+   dReturn_if_fail ( DicEntry != NULL );
+
+   /* Copy the version number in the Client */
+   if (Client->Version == 0)
+      Client->Version = DicEntry->version;
+
+   /* Only call the decoder when necessary */
+   if (Op == CA_Send && DicEntry->State < DIC_Close &&
+       DicEntry->DecodedSize < Client->BufSize) {
+      DicEntry->Decoder(Op, Client);
+      DicEntry->DecodedSize = Client->BufSize;
+   } else if (Op == CA_Close || Op == CA_Abort) {
+      if (DicEntry->State < DIC_Close) {
+         DicEntry->Decoder(Op, Client);
+      } else {
+         a_Dicache_close(DicEntry->url, DicEntry->version, Client);
+      }
+   }
+
+   /* when the data stream is not an image 'v_imgbuf' remains NULL */
+   if (Op == CA_Send && DicEntry->v_imgbuf) {
+      if (Image->height == 0 && DicEntry->State >= DIC_SetParms) {
+         /* Set parms */
+         a_Image_set_parms(
+            Image, DicEntry->v_imgbuf, DicEntry->url,
+            DicEntry->version, DicEntry->width, DicEntry->height,
+            DicEntry->type);
+      }
+      if (DicEntry->State == DIC_Write) {
+         if (DicEntry->ScanNumber == Image->ScanNumber) {
+            for (i = 0; i < DicEntry->height; ++i)
+               if (a_Bitvec_get_bit(DicEntry->BitVec, (int)i) &&
+                   !a_Bitvec_get_bit(Image->BitVec, (int)i) )
+                  a_Image_write(Image, i);
+         } else {
+            for (i = 0; i < DicEntry->height; ++i) {
+               if (a_Bitvec_get_bit(DicEntry->BitVec, (int)i) ||
+                   !a_Bitvec_get_bit(Image->BitVec, (int)i)   ||
+                   DicEntry->ScanNumber > Image->ScanNumber + 1) {
+                  a_Image_write(Image, i);
+               }
+               if (!a_Bitvec_get_bit(DicEntry->BitVec, (int)i))
+                  a_Bitvec_clear_bit(Image->BitVec, (int)i);
+            }
+            Image->ScanNumber = DicEntry->ScanNumber;
+         }
+      }
+   } else if (Op == CA_Close || Op == CA_Abort) {
+      a_Image_close(Image);
+      a_Bw_close_client(Web->bw, Client->Key);
+   }
+}
+
+/* ------------------------------------------------------------------------- */
 
 /*
  * Free the imgbuf (RGB data) of unused entries.
@@ -437,6 +445,7 @@ void a_Dicache_cleanup(void)
    DICacheNode *node;
    DICacheEntry *entry;
 
+   _MSG("a_Dicache_cleanup\n");
    for (i = 0; i < dList_length(CachedIMGs); ++i) {
       node = dList_nth_data(CachedIMGs, i);
       /* iterate each entry of this node */

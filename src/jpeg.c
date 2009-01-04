@@ -84,7 +84,6 @@ typedef struct DilloJpeg {
 static DilloJpeg *Jpeg_new(DilloImage *Image, DilloUrl *url, int version);
 static void Jpeg_callback(int Op, CacheClient_t *Client);
 static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize);
-static void Jpeg_close(DilloJpeg *jpeg, CacheClient_t *Client);
 METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo);
 
 /* exported function */
@@ -140,6 +139,7 @@ void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
  */
 static void Jpeg_close(DilloJpeg *jpeg, CacheClient_t *Client)
 {
+   MSG("Jpeg_close\n");
    a_Dicache_close(jpeg->url, jpeg->version, Client);
    jpeg_destroy_decompress(&(jpeg->cinfo));
    dFree(jpeg);
