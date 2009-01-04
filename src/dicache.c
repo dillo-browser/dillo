@@ -445,6 +445,7 @@ void a_Dicache_cleanup(void)
    DICacheNode *node;
    DICacheEntry *entry;
 
+   _MSG("a_Dicache_cleanup\n");
    for (i = 0; i < dList_length(CachedIMGs); ++i) {
       node = dList_nth_data(CachedIMGs, i);
       /* iterate each entry of this node */

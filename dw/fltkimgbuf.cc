@@ -85,12 +85,7 @@ void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
 
 FltkImgbuf::~FltkImgbuf ()
 {
-   //printf ("FltkImgbuf::~FltkImgbuf (%s)\n", isRoot() ? "root" : "scaled");
-
-   //if (root)
-   //   printf("FltkImgbuf[scaled %p, root is %p]: deleted\n", this, root);
-   //else
-   //   printf("FltkImgbuf[root %p]: deleted\n", this);
+   //printf("~FltkImgbuf[%s %p] deleted\n", isRoot() ? "root":"scaled", this);
 
    if (!isRoot())
       root->detachScaledBuf (this);
