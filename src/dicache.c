@@ -356,6 +356,9 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
 
    dReturn_if_fail ( DicEntry != NULL );
 
+   /* print msg before actual unref to avoid dereferencing an invalid pointer */
+   MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount - 1);
+
    if (DicEntry->State < DIC_Close) {
       DicEntry->State = DIC_Close;
       dFree(DicEntry->cmap);
@@ -364,7 +367,6 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
       DicEntry->DecoderData = NULL;
    }
    a_Dicache_unref(url, version);
-   MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount);
 
    a_Bw_close_client(Web->bw, Client->Key);
 }
