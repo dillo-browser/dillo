@@ -256,10 +256,11 @@ void FltkImgbuf::unref ()
       if (isRoot ()) {
          // Root buffer, it must be ensured that no scaled buffers are left.
          // See also FltkImgbuf::detachScaledBuf().
-         if (scaledBuffers->isEmpty () && deleteOnUnref)
+         if (scaledBuffers->isEmpty () && deleteOnUnref) {
             delete this;
-         else
-            printf("FltkImgbuf[root %p]: not deleted\n", this);
+         } else
+            printf("FltkImgbuf[root %p]: not deleted. numScaled=%d\n",
+                   this, scaledBuffers->size ());
       } else
          // Scaled buffer buffer, simply delete it.
          delete this;
