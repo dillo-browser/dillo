@@ -175,7 +175,7 @@ void FltkImgbuf::newScan ()
 
 core::Imgbuf* FltkImgbuf::getScaledBuf (int width, int height)
 {
-   if (root)
+   if (!isRoot())
       return root->getScaledBuf (width, height);
    
    if (width == this->width && height == this->height) {
@@ -293,7 +293,7 @@ int FltkImgbuf::scaledY(int ySrc)
 }
 
 void FltkImgbuf::draw (::fltk::Widget *target, int xRoot, int yRoot,
-                   int x, int y, int width, int height)
+                       int x, int y, int width, int height)
 {
    // TODO (i):  Implementation.
    // TODO (ii): Clarify the question, whether "target" is the current widget
