@@ -199,7 +199,35 @@ void FltkResource::setWidgetStyle (::fltk::Widget *widget,
       }
    }
 }
-   
+
+void FltkResource::setDisplayed(bool displayed)
+{
+   for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
+        it.hasNext(); ) {
+      ViewAndWidget *viewAndWidget = it.getNext ();
+      if (displayed)
+         viewAndWidget->widget->show();
+      else
+         viewAndWidget->widget->hide();
+   }
+}
+
+bool FltkResource::displayed()
+{
+   bool ret;
+   Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
+
+   if (it.hasNext()) {
+      ViewAndWidget *viewAndWidget = it.getNext ();
+      // visible() is not the same thing as being show()n exactly, but
+      // show()/hide() set it appropriately for our purposes.
+      ret = viewAndWidget->widget->visible();
+   } else {
+      ret = false;
+   }
+   return ret;
+}
+
 bool FltkResource::isEnabled ()
 {
    /** \bug Not implemented. */
@@ -487,11 +515,12 @@ int FltkComplexButtonResource::reliefYThickness ()
 // ----------------------------------------------------------------------
 
 FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int maxLength,
-                                      bool password):  
+                                      bool password, const char *label):  
    FltkSpecificResource <dw::core::ui::EntryResource> (platform)
 {
    this->maxLength = maxLength;
    this->password = password;
+   this->label = label ? strdup(label) : NULL;
    
    initText = NULL;
    editable = false;
@@ -503,6 +532,8 @@ FltkEntryResource::~FltkEntryResource ()
 {
    if (initText)
       delete initText;
+   if (label)
+      delete label;
 }
 
 ::fltk::Widget *FltkEntryResource::createNewWidget (core::Allocation
@@ -518,6 +549,10 @@ FltkEntryResource::~FltkEntryResource ()
    input->callback (widgetCallback, this);
    input->when (::fltk::WHEN_ENTER_KEY_ALWAYS);
 
+   if (label) {
+      input->label(label);
+      input->set_flag(::fltk::ALIGN_INSIDE_LEFT);
+   }
    if (viewsAndWidgets->isEmpty ()) {
       // First widget created, attach the set text.
       if (initText)
@@ -529,9 +564,15 @@ FltkEntryResource::~FltkEntryResource ()
    return input;
 }
 
+void FltkEntryResource::setDisplayed(bool displayed)
+{
+   FltkResource::setDisplayed(displayed);
+   queueResize(true);
+}
+
 void FltkEntryResource::sizeRequest (core::Requisition *requisition)
 {
-   if (style) {
+   if (displayed() && style) {
       FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
       requisition->width =
@@ -541,8 +582,8 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
       requisition->descent = font->descent + RELIEF_Y_THICKNESS;
    } else {
-      requisition->width = 1;
-      requisition->ascent = 1;
+      requisition->width = 0;
+      requisition->ascent = 0;
       requisition->descent = 0;
    }
 }

@@ -41,7 +41,8 @@ void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
 void a_UIcmd_link_popup(void *vbw, const DilloUrl *url);
 void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
                          DilloUrl *link_url);
-void a_UIcmd_form_popup(void *vbw, const DilloUrl *url, void *vform);
+void a_UIcmd_form_popup(void *vbw, const DilloUrl *url, void *vform,
+                        bool_t showing_hiddens);
 void a_UIcmd_file_popup(void *vbw, void *v_wid);
 void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr);
 void a_UIcmd_view_page_source(const DilloUrl *url);

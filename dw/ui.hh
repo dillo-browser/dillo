@@ -243,6 +243,7 @@ public:
    void setWidth (int width);
    void setAscent (int ascent);
    void setDescent (int descent);
+   void setDisplayed (bool displayed);
    void draw (View *view, Rectangle *area);
    Iterator *iterator (Content::Type mask, bool atEnd);
    void setStyle (style::Style *style);
@@ -336,6 +337,7 @@ public:
    virtual void setWidth (int width);
    virtual void setAscent (int ascent);
    virtual void setDescent (int descent);
+   virtual void setDisplayed (bool displayed);
    virtual void draw (View *view, Rectangle *area);
    virtual Iterator *iterator (Content::Type mask, bool atEnd) = 0; 
    virtual void setStyle (style::Style *style);
@@ -539,8 +541,8 @@ public:
    virtual ListResource *createListResource (ListResource::SelectionMode
                                              selectionMode) = 0;
    virtual OptionMenuResource *createOptionMenuResource () = 0;
-   virtual EntryResource *createEntryResource (int maxLength,
-                                               bool password) = 0;
+   virtual EntryResource *createEntryResource (int maxLength, bool password,
+                                               const char *label) = 0;
    virtual MultiLineTextResource *createMultiLineTextResource (int cols,
                                                                int rows) = 0;
    virtual CheckButtonResource *createCheckButtonResource (bool activated) = 0;

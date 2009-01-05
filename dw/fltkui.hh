@@ -195,6 +195,8 @@ protected:
    virtual ::fltk::Widget *createNewWidget (core::Allocation *allocation) = 0;
 
    void setWidgetStyle (::fltk::Widget *widget, core::style::Style *style);
+   void setDisplayed (bool displayed);
+   bool displayed();
 public:
    ~FltkResource ();
 
@@ -298,15 +300,18 @@ private:
    int maxLength;
    bool password;
    const char *initText;
+   char *label;
    bool editable;
 
    static void widgetCallback (::fltk::Widget *widget, void *data);
+   void setDisplayed (bool displayed);
 
 protected:
    ::fltk::Widget *createNewWidget (core::Allocation *allocation);
 
 public:
-   FltkEntryResource (FltkPlatform *platform, int maxLength, bool password);
+   FltkEntryResource (FltkPlatform *platform, int maxLength, bool password,
+                      const char *label);
    ~FltkEntryResource ();
 
    void sizeRequest (core::Requisition *requisition);

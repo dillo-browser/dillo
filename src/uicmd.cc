@@ -668,9 +668,10 @@ void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
 /*
  * Pop up the form menu
  */
-void a_UIcmd_form_popup(void *vbw, const DilloUrl *url, void *vform)
+void a_UIcmd_form_popup(void *vbw, const DilloUrl *url, void *vform,
+                        bool_t showing_hiddens)
 {
-   a_Menu_form_popup((BrowserWindow*)vbw, url, vform);
+   a_Menu_form_popup((BrowserWindow*)vbw, url, vform, showing_hiddens);
 }
 
 /*
