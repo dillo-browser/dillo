@@ -425,6 +425,7 @@ static void Cache_ref_data(CacheEntry_t *entry)
       entry->DataRefcount++;
       _MSG("DataRefcount++: %d\n", entry->DataRefcount);
       if (entry->CharsetDecoder && entry->DataRefcount == 1) {
+         dStr_free(entry->UTF8Data, 1);
          entry->UTF8Data = a_Decode_process(entry->CharsetDecoder,
                                             entry->Data->str,
                                             entry->Data->len);
@@ -760,8 +761,10 @@ static void Cache_parse_header(CacheEntry_t *entry)
       a_Misc_parse_content_type(Type, NULL, NULL, &charset);
       if (charset) {
          entry->CharsetDecoder = a_Decode_charset_init(charset);
-         if (entry->CharsetDecoder)
+         if (entry->CharsetDecoder) {
+            dStr_free(entry->UTF8Data, 1);
             entry->UTF8Data = dStr_new("");
+         }
          dFree(charset);
       }
    }
