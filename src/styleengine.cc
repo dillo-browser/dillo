@@ -41,6 +41,8 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    n->style = Style::create (layout, &style_attrs);
    n->wordStyle = NULL;
    n->pseudo = NULL;
+   n->styleAttribute = NULL;
+   n->inheritBackgroundColor = false;
 }
 
 StyleEngine::~StyleEngine () {
