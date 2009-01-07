@@ -583,7 +583,15 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
    char *buf = Buf + Start_Ofs;
    int bufsize = BufSize - Start_Ofs;
 
+   MSG("DilloHtml::write BufSize=%d Start_Ofs=%d\n", BufSize, Start_Ofs);
+#if 0
+   char *aux = dStrndup(Buf, BufSize);
+   MSG(" {%s}\n", aux);
+   dFree(aux);
+#endif
+
    dReturn_if_fail (dw != NULL);
+   dReturn_if_fail (stop_parser == FALSE);
 
    Start_Buf = Buf;
    token_start = Html_write_raw(this, buf, bufsize, Eof);
@@ -1583,6 +1591,7 @@ static void Html_tag_close_head(DilloHtml *html, int TagIdx)
 
       if (html->repush_after_head) {
          html->stop_parser = true;
+         MSG(" [html->stop_parser = true]\n");
          a_Nav_repush(html->bw);
       }
    }
@@ -2789,9 +2798,8 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
       } else if (!dStrcasecmp(equiv, "content-type") &&
                  (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
          if (a_Misc_content_type_cmp(html->content_type, content)) {
-            const bool_t force = FALSE;
             const char *new_content =
-               a_Capi_set_content_type(html->page_url, content, force);
+               a_Capi_set_content_type(html->page_url, content);
             /* Cannot ask cache whether the content type was changed, as
              * this code in another bw might have already changed it for us.
              */
@@ -2934,7 +2942,7 @@ static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
    }
 }
 
-static void Html_tag_open_default(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_default(DilloHtml *html,const char *tag,int tagsize)
 {
 }
 
@@ -3311,6 +3319,8 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
    char *start = tag + 1; /* discard the '<' */
    int IsCloseTag = (*start == '/');
 
+   dReturn_if_fail ( html->stop_parser == false );
+
    ni = a_Html_tag_index(start + IsCloseTag);
    if (ni == -1) {
       /* TODO: doctype parsing is a bit fuzzy, but enough for the time being */
@@ -3391,9 +3401,8 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       }
 
       /* Call the open function for this tag */
+      _MSG("Open : %s\n", Tags[ni].name);
       Tags[ni].open (html, tag, tagsize);
-      if (html->stop_parser)
-         break;
 
       /* Request inmediate close for elements with forbidden close tag. */
       /* TODO: XHTML always requires close tags. A simple implementation
@@ -3413,6 +3422,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
            (strchr(" \"'", tag[tagsize-3]) ||                   /* [ "']/> */
             (size_t)tagsize == strlen(Tags[ni].name) + 3))) {   /*  <x/>   */
    
+         _MSG("Close: %s\n", Tags[ni].name);
          Html_tag_cleanup_at_close(html, ni);
          /* This was a close tag */
          html->ReqTagClose = false;

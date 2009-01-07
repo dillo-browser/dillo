@@ -26,8 +26,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData);
 int a_Capi_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize);
 void a_Capi_unref_buf(const DilloUrl *Url);
 const char *a_Capi_get_content_type(const DilloUrl *url);
-const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
-                                    bool_t force);
+const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype);
 int a_Capi_get_flags(const DilloUrl *Url);
 int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
                          int flags);
