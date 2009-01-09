@@ -2848,6 +2848,9 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
    /* TODO: How will we know when to use "handheld"? Ask the html->bw->ui for
       screen dimensions, or a dillorc preference. */
 
+   if (!prefs.load_stylesheets)
+      return;
+
    /* CSS stylesheet link */
    if ((!(attrbuf = a_Html_get_attr(html, tag, tagsize, "rel")) ||
         dStrcasecmp(attrbuf, "stylesheet")) ||

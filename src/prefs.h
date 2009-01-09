@@ -57,6 +57,7 @@ struct _DilloPrefs {
    bool_t show_progress_box;
    bool_t fullwindow_start;
    bool_t load_images;
+   bool_t load_stylesheets;
    int32_t buffered_drawing;
    char *vw_fontname;
    char *fw_fontname;
