@@ -309,16 +309,6 @@ static CssShorthandInfo Css_shorthand_info[CSS_SHORTHAND_NUM] = {
     Css_padding_properties},
 };
 
-
-static const char *Css_primary_text[CSS_PRIMARY_LAST] = {
-   "user stylesheets, important", "author stylesheets, important",
-   "author stylesheets", "user stylesheets", "user-agent stylesheets"
-};
-
-static const char *Css_level_text[4] =
-    { "id", "class", "pseudo-class", "element" };
-
-
 /* ----------------------------------------------------------------------
  *    Initialization, Cleanup
  * ---------------------------------------------------------------------- */
