@@ -1948,13 +1948,13 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    // TODO: the same for percentage and relative lengths.
    if (width_ptr) {
       l_w = a_Html_parse_length (html, width_ptr);
-      w = (int) CSS_LENGTH_TYPE(l_w) == CSS_LENGTH_TYPE_PX ? 
-                                           CSS_LENGTH_VALUE(l_w) : 0;
+      w = (int) (CSS_LENGTH_TYPE(l_w) == CSS_LENGTH_TYPE_PX ?
+                 CSS_LENGTH_VALUE(l_w) : 0);
    }
    if (height_ptr) {
       l_h = a_Html_parse_length (html, height_ptr);
-      h = (int) CSS_LENGTH_TYPE(l_h) == CSS_LENGTH_TYPE_PX ?
-                                           CSS_LENGTH_VALUE(l_h) : 0;
+      h = (int) (CSS_LENGTH_TYPE(l_h) == CSS_LENGTH_TYPE_PX ?
+                 CSS_LENGTH_VALUE(l_h) : 0);
    }
    if (w < 0 || h < 0 || abs(w*h) > MAX_W * MAX_H) {
       dFree(width_ptr);
