@@ -179,7 +179,6 @@ void *a_Gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
       DicEntry = a_Dicache_add_entry(web->url);
       DicEntry->DecoderData =
          Gif_new(web->Image, DicEntry->url, DicEntry->version);
-      a_Dicache_ref(DicEntry->url, DicEntry->version);
    } else {
       /* Repeated image */
       a_Dicache_ref(DicEntry->url, DicEntry->version);
