@@ -1928,7 +1928,8 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    DilloImage *Image;
    char *width_ptr, *height_ptr, *alt_ptr;
    const char *attrbuf;
-   Length l_w, l_h;
+   Length l_w  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
+   Length l_h  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
    int space, border, w = 0, h = 0;
    bool load_now;
    CssPropertyList props;
@@ -1962,9 +1963,9 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
       width_ptr = height_ptr = NULL;
       MSG("a_Html_add_new_image: suspicious image size request %dx%d\n", w, h);
    } else {
-      if (width_ptr)
+      if (CSS_LENGTH_TYPE(l_w) != CSS_LENGTH_TYPE_AUTO)
          props.set (CssProperty::CSS_PROPERTY_WIDTH, l_w);
-      if (height_ptr)
+      if (CSS_LENGTH_TYPE(l_h) != CSS_LENGTH_TYPE_AUTO)
          props.set (CssProperty::CSS_PROPERTY_HEIGHT, l_h);
    }
 
