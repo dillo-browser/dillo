@@ -390,12 +390,10 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
       Client->Version = DicEntry->version;
 
    /* Only call the decoder when necessary */
-   int newData = FALSE;
    if (Op == CA_Send && DicEntry->State < DIC_Close &&
        DicEntry->DecodedSize < Client->BufSize) {
       DicEntry->Decoder(Op, Client);
       DicEntry->DecodedSize = Client->BufSize;
-      newData = TRUE;
    } else if (Op == CA_Close || Op == CA_Abort) {
       if (DicEntry->State < DIC_Close) {
          DicEntry->Decoder(Op, Client);
@@ -413,7 +411,7 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
             DicEntry->version, DicEntry->width, DicEntry->height,
             DicEntry->type);
       }
-      if (DicEntry->State == DIC_Write && newData) {
+      if (DicEntry->State == DIC_Write) {
          if (DicEntry->ScanNumber == Image->ScanNumber) {
             for (i = 0; i < DicEntry->height; ++i)
                if (a_Bitvec_get_bit(DicEntry->BitVec, (int)i) &&
@@ -454,8 +452,8 @@ void a_Dicache_cleanup(void)
       node = dList_nth_data(CachedIMGs, i);
       /* iterate each entry of this node */
       for (entry = node->first; entry; entry = entry->next) {
-         if (entry->RefCount == 1 ||
-             (entry->v_imgbuf && a_Imgbuf_last_reference(entry->v_imgbuf))) {
+         if (entry->v_imgbuf &&
+             a_Imgbuf_last_reference(entry->v_imgbuf)) {
             /* free this unused entry */
             if (entry->next) {
                Dicache_remove(node->url, entry->version);
