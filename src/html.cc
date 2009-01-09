@@ -382,38 +382,6 @@ static void Html_add_textblock(DilloHtml *html, int space)
 }
 
 /*
- * Given a font_size, this will return the correct 'level'.
- * (or the closest, if the exact level isn't found).
- */
-static int Html_fontsize_to_level(int fontsize)
-{
-   int i, level;
-   double normalized_size = fontsize / prefs.font_factor,
-          approximation   = FontSizes[FontSizesNum-1] + 1;
-
-   for (i = level = 0; i < FontSizesNum; i++)
-      if (approximation >= fabs(normalized_size - FontSizes[i])) {
-         approximation = fabs(normalized_size - FontSizes[i]);
-         level = i;
-      } else {
-         break;
-      }
-
-   return level;
-}
-
-/*
- * Given a level of a font, this will return the correct 'size'.
- */
-static int Html_level_to_fontsize(int level)
-{
-   level = MAX(0, level);
-   level = MIN(FontSizesNum - 1, level);
-
-   return (int)rint(FontSizes[level]*prefs.font_factor);
-}
-
-/*
  * Create and initialize a new DilloHtml class
  */
 DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
