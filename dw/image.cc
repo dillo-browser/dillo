@@ -144,8 +144,24 @@ Image::~Image()
 void Image::sizeRequestImpl (core::Requisition *requisition)
 {
    if (buffer) {
-      requisition->width = buffer->getRootWidth ();
-      requisition->ascent = buffer->getRootHeight ();
+      if (getStyle ()->height == core::style::LENGTH_AUTO &&
+          core::style::isAbsLength (getStyle ()->width) &&
+          buffer->getRootWidth () > 0) {
+         // preserve aspect ratio when only width is given
+         requisition->width = core::style::absLengthVal (getStyle ()->width);
+         requisition->ascent = buffer->getRootHeight () *
+                               requisition->width / buffer->getRootWidth ();
+      } else if (getStyle ()->width == core::style::LENGTH_AUTO &&
+                 core::style::isAbsLength (getStyle ()->height) &&
+                 buffer->getRootHeight () > 0) {
+         // preserve aspect ratio when only height is given
+         requisition->ascent = core::style::absLengthVal (getStyle ()->height);
+         requisition->width = buffer->getRootWidth () *
+                               requisition->ascent / buffer->getRootHeight ();
+      } else {
+         requisition->width = buffer->getRootWidth ();
+         requisition->ascent = buffer->getRootHeight ();
+      }
       requisition->descent = 0;
    } else {
       if(altText && altText[0]) {
