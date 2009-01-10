@@ -234,7 +234,7 @@ static int Auth_parse_token_value(AuthParse_t *auth_parse, char **auth)
    /* is this value the realm? */
    set_realm =
       auth_parse->realm == NULL &&
-      strncasecmp(realm_token,token,token_size) == 0 &&
+      dStrncasecmp(realm_token,token,token_size) == 0 &&
       strlen(realm_token) == token_size;
 
    return Auth_parse_quoted_string(auth_parse, set_realm, auth);
@@ -275,7 +275,7 @@ static void Auth_parse_auth_basic(AuthParse_t *auth_parse, char **auth)
 static void Auth_parse_auth(AuthParse_t *auth_parse, char *auth)
 {
    _MSG("auth.c: Auth_parse_auth: auth = '%s'\n", auth);
-   if (strncasecmp(auth, "Basic ", 6) == 0) {
+   if (dStrncasecmp(auth, "Basic ", 6) == 0) {
       auth += 6;
       Auth_parse_auth_basic(auth_parse, &auth);
    } else {

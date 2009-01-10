@@ -294,7 +294,7 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    char *p, *esc_url;
 
    if (pipe(LogPipe) < 0) {
-      MSG("pipe, %s\n", strerror(errno));
+      MSG("pipe, %s\n", dStrerror(errno));
       return;
    }
    /* Set FD to background */
@@ -685,7 +685,7 @@ void DLItem::update()
 
    /* Update curr_size */
    if (stat(fullname, &ss) == -1) {
-      MSG("stat, %s\n", strerror(errno));
+      MSG("stat, %s\n", dStrerror(errno));
       return;
    }
    update_size((int)ss.st_size);
@@ -833,7 +833,7 @@ static ssize_t readline(int socket, Dstr ** msg)
    while (st < 0 && errno == EINTR);
 
    if (st == -1)
-      MSG("readline, %s\n", strerror(errno));
+      MSG("readline, %s\n", dStrerror(errno));
 
    dStr_truncate(*msg, 0);
    if (st > 0)
@@ -888,7 +888,7 @@ static void read_req_cb(int req_fd, void *)
       new_socket = accept(req_fd, (struct sockaddr *) &clnt_addr, &csz);
    } while (new_socket == -1 && errno == EINTR);
    if (new_socket == -1) {
-      MSG("accept, %s fd=%d\n", strerror(errno), req_fd);
+      MSG("accept, %s fd=%d\n", dStrerror(errno), req_fd);
       return;
    }
 

@@ -75,6 +75,7 @@ class DilloHtmlForm {
    friend class DilloHtmlInput;
 
    DilloHtml *html;
+   bool showing_hiddens;
    void eventHandler(Resource *resource, EventButton *event);
    DilloUrl *buildQueryUrl(DilloHtmlInput *active_input);
    Dstr *buildQueryData(DilloHtmlInput *active_submit);
@@ -114,6 +115,7 @@ public:
    DilloHtmlInput *getRadioInput (const char *name);
    void submit(DilloHtmlInput *active_input, EventButton *event);
    void reset ();
+   void display_hiddens(bool display);
    void addInput(DilloHtmlInput *input, DilloHtmlInputType type);
 };
 
@@ -214,6 +216,11 @@ void a_Html_form_submit2(void *vform)
 void a_Html_form_reset2(void *vform)
 {
    ((DilloHtmlForm *)vform)->reset();
+}
+
+void a_Html_form_display_hiddens2(void *vform, bool display)
+{
+   ((DilloHtmlForm *)vform)->display_hiddens(display);
 }
 
 /*
@@ -438,7 +445,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       inp_type = DILLO_HTML_INPUT_PASSWORD;
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
-      resource = factory->createEntryResource (size, true);
+      resource = factory->createEntryResource (size, true, NULL);
       init_str = value;
    } else if (!dStrcasecmp(type, "checkbox")) {
       inp_type = DILLO_HTML_INPUT_CHECKBOX;
@@ -457,6 +464,8 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    } else if (!dStrcasecmp(type, "hidden")) {
       inp_type = DILLO_HTML_INPUT_HIDDEN;
       init_str = value;
+      int size = Html_input_get_size(html, NULL);
+      resource = factory->createEntryResource(size, false, name);
    } else if (!dStrcasecmp(type, "submit")) {
       inp_type = DILLO_HTML_INPUT_SUBMIT;
       init_str = (value) ? value : dStrdup("submit");
@@ -514,7 +523,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       inp_type = DILLO_HTML_INPUT_TEXT;
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
-      resource = factory->createEntryResource(size, false);
+      resource = factory->createEntryResource(size, false, NULL);
       init_str = value;
    } else {
       /* Unknown input type */
@@ -531,6 +540,10 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 
    if (embed != NULL && inp_type != DILLO_HTML_INPUT_IMAGE &&
        inp_type != DILLO_HTML_INPUT_UNKNOWN) {
+      if (inp_type == DILLO_HTML_INPUT_HIDDEN) {
+         /* TODO Perhaps do this with access to current form setting */
+         embed->setDisplayed(false);
+      }
       if (inp_type == DILLO_HTML_INPUT_TEXT ||
           inp_type == DILLO_HTML_INPUT_PASSWORD) {
          if (a_Html_get_attr(html, tag, tagsize, "readonly"))
@@ -587,7 +600,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
       DW2TB(html->dw)->addText(attrbuf, html->styleEngine->wordStyle ());
 
    ResourceFactory *factory = HT2LT(html)->getResourceFactory();
-   EntryResource *entryResource = factory->createEntryResource (20, false);
+   EntryResource *entryResource = factory->createEntryResource (20,false,NULL);
    embed = new Embed (entryResource);
    Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
@@ -934,6 +947,7 @@ DilloHtmlForm::DilloHtmlForm (DilloHtml *html2,
    inputs = new misc::SimpleVector <DilloHtmlInput*> (4);
    num_entry_fields = 0;
    num_submit_buttons = 0;
+   showing_hiddens = false;
    form_receiver = new DilloHtmlReceiver (this);
 }
 
@@ -955,7 +969,7 @@ void DilloHtmlForm::eventHandler(Resource *resource, EventButton *event)
 {
    MSG("DilloHtmlForm::eventHandler\n");
    if (event && (event->button == 3)) {
-      a_UIcmd_form_popup(html->bw, html->page_url, this);
+      a_UIcmd_form_popup(html->bw, html->page_url, this, showing_hiddens);
    } else {
       DilloHtmlInput *input = getInput(resource);
       if (input) {
@@ -1438,6 +1452,21 @@ void DilloHtmlForm::reset ()
 }
 
 /*
+ * Show/hide "hidden" form controls
+ */
+void DilloHtmlForm::display_hiddens(bool display)
+{
+   int size = inputs->size();
+   for (int i = 0; i < size; i++) {
+      DilloHtmlInput *input = inputs->get(i);
+      if (input->type == DILLO_HTML_INPUT_HIDDEN) {
+         input->embed->setDisplayed(display);
+      }
+   }
+  showing_hiddens = display;
+}
+
+/*
  * Add a new input.
  */
 void DilloHtmlForm::addInput(DilloHtmlInput *input, DilloHtmlInputType type)
@@ -1660,6 +1689,7 @@ void DilloHtmlInput::appendValuesTo(Dlist *values, bool is_active_submit)
    case DILLO_HTML_INPUT_TEXT:
    case DILLO_HTML_INPUT_PASSWORD:
    case DILLO_HTML_INPUT_INDEX:
+   case DILLO_HTML_INPUT_HIDDEN:
       {
          EntryResource *entryres = (EntryResource*)embed->getResource();
          dList_append(values, dStr_new(entryres->getText()));
@@ -1686,9 +1716,6 @@ void DilloHtmlInput::appendValuesTo(Dlist *values, bool is_active_submit)
    case DILLO_HTML_INPUT_BUTTON_SUBMIT:
       if (is_active_submit)
          dList_append(values, dStr_new(init_str));
-      break;
-   case DILLO_HTML_INPUT_HIDDEN:
-      dList_append(values, dStr_new(init_str));
       break;
    case DILLO_HTML_INPUT_SELECT:
    case DILLO_HTML_INPUT_SEL_LIST:
@@ -1738,6 +1765,7 @@ void DilloHtmlInput::reset ()
    case DILLO_HTML_INPUT_TEXT:
    case DILLO_HTML_INPUT_PASSWORD:
    case DILLO_HTML_INPUT_INDEX:
+   case DILLO_HTML_INPUT_HIDDEN:
       {
          EntryResource *entryres = (EntryResource*)embed->getResource();
          entryres->setText(init_str ? init_str : "");

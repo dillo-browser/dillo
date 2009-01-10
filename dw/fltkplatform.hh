@@ -81,7 +81,8 @@ private:
       createListResource (core::ui::ListResource::SelectionMode selectionMode);
       core::ui::OptionMenuResource *createOptionMenuResource ();
       core::ui::EntryResource *createEntryResource (int maxLength,
-                                                    bool password);
+                                                    bool password,
+                                                    const char *label);
       core::ui::MultiLineTextResource *createMultiLineTextResource (int cols,
                                                                     int rows);
       core::ui::CheckButtonResource *createCheckButtonResource (bool

@@ -250,6 +250,29 @@ static void Menu_form_reset_cb(Widget*, void *v_form)
    }
 }
 
+/*
+ * Toggle display of 'hidden' form controls.
+ */
+static void Menu_form_hiddens_cb(Widget *w, void *user_data)
+{
+   void *v_form = w->parent()->user_data();
+   bool visible = *((bool *) user_data);
+
+   if (popup_bw && popup_bw->Docs) {
+      if (dList_find_custom(popup_bw->PageUrls, popup_url,
+                            (dCompareFunc)a_Url_cmp)){
+         /* HTML page is still there */
+         int n = dList_length(popup_bw->Docs);
+         if (n == 1) {
+            a_Html_form_display_hiddens(dList_nth_data(popup_bw->Docs, 0),
+                                        v_form, !visible);
+         } else if (n > 1) {
+            MSG ("Menu_form_hiddens_cb multiple Docs not implemented\n");
+         }
+      }
+   }
+}
+
 /* 
  * Validate URL with the W3C
  */
@@ -493,9 +516,11 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
  * Form popup menu (construction & popup)
  */
 void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
-                       void *formptr)
+                       void *formptr, bool_t hidvis)
 {
    static PopupMenu *pm = 0;
+   static Item *hiddens_item = 0;
+   static bool hiddens_visible;
 
    popup_bw = bw;
    a_Url_free(popup_url);
@@ -507,9 +532,15 @@ void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
       i->callback(Menu_form_submit_cb);
       pm->add(i = new Item("Reset form"));
       i->callback(Menu_form_reset_cb);
+      pm->add(hiddens_item = new Item(""));
+      hiddens_item->callback(Menu_form_hiddens_cb);
+      hiddens_item->user_data(&hiddens_visible);
       pm->type(PopupMenu::POPUP123);
    }
    pm->user_data(formptr);
+
+   hiddens_visible = hidvis;
+   hiddens_item->label(hiddens_visible ? "Hide hiddens": "Show hiddens");
 
    a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
 }

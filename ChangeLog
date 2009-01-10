@@ -23,12 +23,14 @@ dillo-2.1
  - Ported the command line interface from dillo1 (XID not working yet).
  - Switched file dpi error messages to HTML.
  - Added a popup menu to form's submit button.
+ - Added a right-click menu to the form submit button (allows to show hiddens).
    Patches: place (AKA corvid)
 +- Switched SSL-enabled to configure.in (./configure --enable-ssl).
  - Standardised the installation of dpid/dpidrc with auto* tools.
  - Set the ScrollGroup as the resizable widget in downloads dpi.
  - Cleaned up and normalized D_SUN_LEN usage.
  - Fixed incorrect use of VOIDP2INT in Dialog_user_password_cb().
+ - Ensure that the dlib dStr* functions are used everywhere.
    Patches: Jeremy Henty
 +- Implemented Basic authentication!
    Patch: Jeremy Henty, Jorge Arellano Cid

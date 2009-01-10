@@ -254,6 +254,19 @@ void a_Html_form_reset(void *v_html, void *v_form)
 }
 
 /*
+ * Used by the "Show/Hide hiddens" form menuitem.
+ */
+void a_Html_form_display_hiddens(void *v_html, void *v_form, bool_t display)
+{
+   DilloHtml *html = (DilloHtml*)v_html;
+
+   if (Html_contains_form(html, v_form)) {
+      /* it's still valid */
+      a_Html_form_display_hiddens2(v_form, (display != 0));
+   }
+}
+
+/*
  * Set the URL data for image maps.
  */
 static void Html_set_link_coordinates(DilloHtml *html, int link, int x, int y)

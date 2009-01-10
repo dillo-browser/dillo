@@ -97,6 +97,11 @@ void Embed::setDescent (int descent)
    resource->setDescent (descent);
 }
 
+void Embed::setDisplayed (bool displayed)
+{
+   resource->setDisplayed (displayed);
+}
+
 void Embed::draw (View *view, Rectangle *area)
 {
    drawWidgetBox (view, area, false);
@@ -193,6 +198,10 @@ void Resource::setAscent (int ascent)
 }
 
 void Resource::setDescent (int descent)
+{
+}
+
+void Resource::setDisplayed (bool displayed)
 {
 }
 
