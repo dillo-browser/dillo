@@ -987,6 +987,7 @@ static bool Css_parse_simple_selector(CssParser * parser,
               (parser->tval[0] == '#' ||
                parser->tval[0] == '.' ||
                parser->tval[0] == ':')) {
+      // nothing to be done in this case
    } else {
       return false;
    }
