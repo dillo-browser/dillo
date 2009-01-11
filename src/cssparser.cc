@@ -983,8 +983,11 @@ static bool Css_parse_simple_selector(CssParser * parser,
       Css_next_token(parser);
       if (parser->space_separated)
          return true;
-   } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] != '#' &&
-              parser->tval[0] != '.' && parser->tval[0] != ':') {
+   } else if (parser->ttype == CSS_TK_CHAR && 
+              (parser->tval[0] == '#' ||
+               parser->tval[0] == '.' ||
+               parser->tval[0] == ':')) {
+   } else {
       return false;
    }
 
