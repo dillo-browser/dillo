@@ -22,8 +22,13 @@
 /*
  * Debugging macros
  */
+#define SILENT 1
 #define _MSG(...)
-#define MSG(...)  printf("[datauri dpi]: " __VA_ARGS__)
+#if SILENT
+ #define MSG(...)
+#else
+ #define MSG(...)  fprintf(stderr, "[datauri dpi]: " __VA_ARGS__)
+#endif
 
 /*
  * Global variables
