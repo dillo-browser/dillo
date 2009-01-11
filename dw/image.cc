@@ -207,10 +207,9 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
           " = %d - %d = %d\n", this->getHeight(), getStyle()->boxDiffHeight(),
           this->getHeight() - getStyle()->boxDiffHeight());
 #endif
-   if (buffer != NULL &&
-       /* It may be, that the image is allocated at zero content size. In this
-        * case, we simply wait. */
-       getContentWidth () > 0 && getContentHeight () > 0) {
+   if (buffer && (getContentWidth () > 0 || getContentHeight () > 0)) {
+      // Zero content size : simply wait...
+      // Only one dimension: naturally scale
       oldBuffer = buffer;
       buffer = oldBuffer->getScaledBuf (allocation->width - dx,
                                         allocation->ascent
@@ -355,11 +354,10 @@ void Image::setBuffer (core::Imgbuf *buffer, bool resize)
    if (resize)
       queueResize (0, true);
 
-   // If the image has not yet been allocated, or is allocated at zero
-   // content size, the first part is useless.
    if (wasAllocated () && getContentWidth () > 0 && getContentHeight () > 0) {
-         this->buffer =
-            buffer->getScaledBuf (getContentWidth (), getContentHeight ());
+      // Only scale when both dimensions are known.
+      this->buffer =
+         buffer->getScaledBuf (getContentWidth (), getContentHeight ());
    } else {
       this->buffer = buffer;
       buffer->ref ();
