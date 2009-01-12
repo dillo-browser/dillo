@@ -273,18 +273,30 @@ class CssRule {
  */
 class CssStyleSheet {
    private:
-      class RuleMap : public lout::container::typed::HashTable <lout::object::ConstString, lout::object::Pointer > {
+      class RuleList : public lout::misc::SimpleVector <CssRule*>, public lout::object::Object {
          public:
-            RuleMap () : lout::container::typed::HashTable <lout::object::ConstString, lout::object::Pointer > (true, true, 256) {
+            RuleList () : lout::misc::SimpleVector <CssRule*> (1) {};
+            ~RuleList () {
+               for (int i = 0; i < size (); i++)
+                  delete get (i);
+            };
+
+            bool equals (lout::object::Object *other) { return this == other; };
+            int hashValue () { return (intptr_t) this; };
+      };
+
+      class RuleMap : public lout::container::typed::HashTable <lout::object::ConstString, RuleList > {
+         public:
+            RuleMap () : lout::container::typed::HashTable <lout::object::ConstString, RuleList > (true, true, 256) {
             };
       };
 
       static const int ntags = 90; // \todo replace 90
-      lout::misc::SimpleVector <CssRule*> *elementTable[ntags];
+      RuleList *elementTable[ntags];
 
       RuleMap *idTable;
       RuleMap *classTable;
-      lout::misc::SimpleVector <CssRule*> *anyTable;
+      RuleList *anyTable;
 
    public:
       CssStyleSheet();
