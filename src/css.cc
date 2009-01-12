@@ -200,10 +200,10 @@ void CssStyleSheet::addRule (CssRule *rule) {
    CssSimpleSelector *top = rule->selector->top ();
    lout::misc::SimpleVector <CssRule*> *ruleList = NULL;
    lout::object::Pointer *ruleListP;
-   lout::object::String *string;
+   lout::object::ConstString *string;
    
    if (top->id) {
-      string = new lout::object::String (top->id);
+      string = new lout::object::ConstString (top->id);
       ruleListP = idTable->get (string);
       if (ruleListP == NULL) {
          ruleList = new lout::misc::SimpleVector <CssRule*> (1);
@@ -213,7 +213,7 @@ void CssStyleSheet::addRule (CssRule *rule) {
          ruleList = (lout::misc::SimpleVector <CssRule*>*) ruleListP->getValue ();
       }
    } else if (top->klass) {
-      string = new lout::object::String (top->klass);
+      string = new lout::object::ConstString (top->klass);
       ruleListP = classTable->get (string);
       if (ruleListP == NULL) {
          ruleList = new lout::misc::SimpleVector <CssRule*> (1);
@@ -245,13 +245,17 @@ void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
    const DoctreeNode *top = docTree->top ();
    
    if (top->id) {
-      ruleListP = idTable->get (new lout::object::String (top->id));
+      lout::object::String idString (top->id);
+
+      ruleListP = idTable->get (&idString);
       if (ruleListP)
          ruleList[3] = (lout::misc::SimpleVector <CssRule*>*) ruleListP->getValue ();
    }
 
    if (top->klass) {
-      ruleListP = classTable->get (new lout::object::String (top->klass));
+      lout::object::String classString (top->klass);
+
+      ruleListP = classTable->get (&classString);
       if (ruleListP)
          ruleList[2] = (lout::misc::SimpleVector <CssRule*>*) ruleListP->getValue ();
    }

@@ -273,9 +273,9 @@ class CssRule {
  */
 class CssStyleSheet {
    private:
-      class RuleMap : public lout::container::typed::HashTable <lout::object::String, lout::object::Pointer > {
+      class RuleMap : public lout::container::typed::HashTable <lout::object::ConstString, lout::object::Pointer > {
          public:
-            RuleMap () : lout::container::typed::HashTable <lout::object::String, lout::object::Pointer > (true, true, 256) {
+            RuleMap () : lout::container::typed::HashTable <lout::object::ConstString, lout::object::Pointer > (true, true, 256) {
             };
       };
 
