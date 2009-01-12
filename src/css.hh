@@ -276,8 +276,18 @@ class CssRule {
  */
 class CssStyleSheet {
    private:
+      class RuleMap : public lout::container::typed::HashTable <lout::object::String, lout::object::Pointer > {
+         public:
+            RuleMap () : lout::container::typed::HashTable <lout::object::String, lout::object::Pointer > (true, true, 256) {
+            };
+      };
+
       static const int ntags = 90; // \todo replace 90
-      lout::misc::SimpleVector <CssRule*> *ruleTable[ntags];
+      lout::misc::SimpleVector <CssRule*> *elementTable[ntags];
+
+      RuleMap *idTable;
+      RuleMap *classTable;
+      lout::misc::SimpleVector <CssRule*> *anyTable;
 
    public:
       CssStyleSheet();
