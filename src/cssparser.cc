@@ -1045,12 +1045,15 @@ static CssSelector *Css_parse_selector(CssParser * parser) {
    CssSelector *selector = new CssSelector ();
 
    while (true) {
-      if (! Css_parse_simple_selector (parser, selector->top ()))
-         Css_next_token(parser); /* make sure we advance at least one token */
+      if (! Css_parse_simple_selector (parser, selector->top ())) {
+         delete selector;
+         selector = NULL;
+         break;
+      }
 
       if (parser->ttype == CSS_TK_CHAR &&
          (parser->tval[0] == ',' || parser->tval[0] == '{')) {
-         return selector;
+         break;
       } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '>') {
          selector->addSimpleSelector (CssSelector::CHILD);
          Css_next_token(parser);
@@ -1058,9 +1061,15 @@ static CssSelector *Css_parse_selector(CssParser * parser) {
          selector->addSimpleSelector (CssSelector::DESCENDENT);
       } else {
          delete selector;
-         return NULL;
+         selector = NULL;
+         break;
       }
    }
+
+   while (parser->ttype != CSS_TK_END &&
+          (parser->ttype != CSS_TK_CHAR ||
+           (parser->tval[0] != ',' && parser->tval[0] != '{')))
+         Css_next_token(parser);
 
    return selector;
 }
