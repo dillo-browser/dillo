@@ -157,7 +157,6 @@ void CssSimpleSelector::print () {
 }
 
 CssRule::CssRule (CssSelector *selector, CssPropertyList *props) {
-   refCount = 0;
    this->selector = selector;
    this->selector->ref ();
    this->props = props;
@@ -191,7 +190,7 @@ CssStyleSheet::CssStyleSheet () {
 CssStyleSheet::~CssStyleSheet () {
    for (int i = 0; i < ntags; i++) {
       for (int j = 0; j < elementTable[i]->size (); j++)
-         elementTable[i]->get (j)->unref ();
+         delete elementTable[i]->get (j);
          
       delete elementTable[i];
    }
@@ -232,7 +231,6 @@ void CssStyleSheet::addRule (CssRule *rule) {
    if (ruleList) {
       ruleList->increase ();
       *ruleList->getRef (ruleList->size() - 1) = rule;
-      rule->ref ();
    }
 }
 
