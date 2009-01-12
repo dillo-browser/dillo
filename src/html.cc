@@ -2552,11 +2552,11 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
    list_number = &html->stack->getRef(html->stack->size()-2)->list_number;
    ref_list_item = &html->stack->getRef(html->stack->size()-2)->ref_list_item;
 
-   DW2TB(html->dw)->addParbreak (2, wordStyle);
+   DW2TB(html->dw)->addParbreak (0, wordStyle);
 
    list_item = new ListItem ((ListItem*)*ref_list_item,prefs.limit_text_width);
    DW2TB(html->dw)->addWidget (list_item, style);
-   DW2TB(html->dw)->addParbreak (2, wordStyle);
+   DW2TB(html->dw)->addParbreak (0, wordStyle);
    *ref_list_item = list_item;
    S_TOP(html)->textblock = html->dw = list_item;
    /* Handle it when the user clicks on a link */
