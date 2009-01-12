@@ -201,21 +201,26 @@ void CssStyleSheet::addRule (CssRule *rule) {
    CssSimpleSelector *top = rule->selector->top ();
    lout::misc::SimpleVector <CssRule*> *ruleList = NULL;
    lout::object::Pointer *ruleListP;
+   lout::object::String *string;
    
    if (top->id) {
-      ruleListP = idTable->get (new lout::object::String (top->id));
+      string = new lout::object::String (top->id);
+      ruleListP = idTable->get (string);
       if (ruleListP == NULL) {
          ruleList = new lout::misc::SimpleVector <CssRule*> (1);
-         idTable->put (new lout::object::String (top->id), new lout::object::Pointer (ruleList));
+         idTable->put (string, new lout::object::Pointer (ruleList));
       } else {
+         delete string;
          ruleList = (lout::misc::SimpleVector <CssRule*>*) ruleListP->getValue ();
       }
    } else if (top->klass) {
-      ruleListP = classTable->get (new lout::object::String (top->klass));
+      string = new lout::object::String (top->klass);
+      ruleListP = classTable->get (string);
       if (ruleListP == NULL) {
          ruleList = new lout::misc::SimpleVector <CssRule*> (1);
-         classTable->put (new lout::object::String (top->klass), new lout::object::Pointer (ruleList));
+         classTable->put (string, new lout::object::Pointer (ruleList));
       } else {
+         delete string;
          ruleList = (lout::misc::SimpleVector <CssRule*>*) ruleListP->getValue ();
       }
    } else if (top->element >= 0 && top->element < ntags) {
