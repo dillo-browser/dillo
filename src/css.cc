@@ -170,7 +170,6 @@ void CssSimpleSelector::print () {
 }
 
 CssRule::CssRule (CssSelector *selector, CssPropertyList *props) {
-   refCount = 0;
    this->selector = selector;
    this->selector->ref ();
    this->props = props;
@@ -194,31 +193,53 @@ void CssRule::print () {
 
 CssStyleSheet::CssStyleSheet () {
    for (int i = 0; i < ntags; i++)
-      ruleTable[i] = new lout::misc::SimpleVector <CssRule*> (1);
+      elementTable[i] = new RuleList ();
+
+   idTable = new RuleMap ();
+   classTable = new RuleMap ();
+   anyTable = new RuleList ();
 }
 
 CssStyleSheet::~CssStyleSheet () {
-   for (int i = 0; i < ntags; i++) {
-      for (int j = 0; j < ruleTable[i]->size (); j++)
-         ruleTable[i]->get (j)->unref ();
-         
-      delete ruleTable[i];
-   }
+   for (int i = 0; i < ntags; i++)
+      delete elementTable[i];
+   delete idTable;
+   delete classTable;
+   delete anyTable;
 }
 
 void CssStyleSheet::addRule (CssRule *rule) {
-   int topElement = rule->selector->top ()->element;
-
-   if (topElement == CssSimpleSelector::ELEMENT_ANY) {
-      for (int i = 0; i < ntags; i++) {
-         ruleTable[i]->increase ();
-         *ruleTable[i]->getRef (ruleTable[i]->size () - 1) = rule;
-         rule->ref ();
+   CssSimpleSelector *top = rule->selector->top ();
+   RuleList *ruleList = NULL;
+   lout::object::ConstString *string;
+   
+   if (top->id) {
+      string = new lout::object::ConstString (top->id);
+      ruleList = idTable->get (string);
+      if (ruleList == NULL) {
+         ruleList = new RuleList ();
+         idTable->put (string, ruleList);
+      } else {
+         delete string;
       }
-   } else if (topElement >= 0 && topElement < ntags) {
-      ruleTable[topElement]->increase ();
-      *ruleTable[topElement]->getRef (ruleTable[topElement]->size()-1) = rule;
-      rule->ref ();
+   } else if (top->klass) {
+      string = new lout::object::ConstString (top->klass);
+      ruleList = classTable->get (string);
+      if (ruleList == NULL) {
+         ruleList = new RuleList;
+         classTable->put (string, ruleList);
+      } else {
+         delete string;
+      }
+   } else if (top->element >= 0 && top->element < ntags) {
+      ruleList = elementTable[top->element];
+   } else if (top->element == CssSimpleSelector::ELEMENT_ANY) {
+      ruleList = anyTable;
+   }
+
+   if (ruleList) {
+      ruleList->increase ();
+      *ruleList->getRef (ruleList->size() - 1) = rule;
    }
 }
 
@@ -228,11 +249,44 @@ void CssStyleSheet::addRule (CssSelector *selector, CssPropertyList *props) {
 }
 
 void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
-   lout::misc::SimpleVector <CssRule*> *ruleList;
+   RuleList *ruleList[4] = {NULL, NULL, NULL, NULL};
+   const DoctreeNode *top = docTree->top ();
+   
+   if (top->id) {
+      lout::object::String idString (top->id);
 
-   ruleList = ruleTable[docTree->top ()->element];
-   for (int i = 0; i < ruleList->size (); i++)
-      ruleList->get (i)->apply (props, docTree);
+      ruleList[3] = idTable->get (&idString);
+   }
+
+   if (top->klass) {
+      lout::object::String classString (top->klass);
+
+      ruleList[2] = classTable->get (&classString);
+   }
+
+   ruleList[1] = elementTable[docTree->top ()->element];
+   ruleList[0] = anyTable;
+
+#if 0
+   fprintf(stderr, "==> ");
+   for (int j = 0; j < 4; j++)
+      fprintf(stderr, "%d ", ruleList[j]?ruleList[j]->size():0);
+   fprintf(stderr, "\n");
+#endif
+
+   for (int i = 0;; i++) {
+      int n = 0;
+
+      for (int j = 0; j < 4; j++) {
+         if (ruleList[j] && ruleList[j]->size () > i) {
+            ruleList[j]->get (i)->apply (props, docTree);
+            n++;
+         }
+      }
+
+      if (n == 0)
+         break;
+   } 
 }
 
 CssStyleSheet *CssContext::userAgentStyle;
