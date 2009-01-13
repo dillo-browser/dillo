@@ -223,6 +223,7 @@ class CssSelector {
 
    private:
       struct CombinatorAndSelector {
+         int notMatchingBefore; // used for optimizing CSS selector matching
          Combinator combinator;
          CssSimpleSelector selector;
       };

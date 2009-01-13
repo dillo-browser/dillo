@@ -3,6 +3,7 @@
 
 class DoctreeNode {
    public:
+      int num; // unique ascending id
       int depth;
       int element;
       const char *klass;

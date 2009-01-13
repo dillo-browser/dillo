@@ -51,6 +51,7 @@ CssSelector::CssSelector (int element, const char *klass,
    selectorList = new lout::misc::SimpleVector
                                   <struct CombinatorAndSelector> (1);
    selectorList->increase ();
+   selectorList->getRef (0)->notMatchingBefore = -1;
    top ()->element = element;
    top ()->klass = klass;
    top ()->pseudo = pseudo;
@@ -64,7 +65,8 @@ CssSelector::~CssSelector () {
 bool CssSelector::match (Doctree *docTree) {
    CssSimpleSelector *sel;
    Combinator comb;
-   const DoctreeNode *node = docTree->top ();
+   int *notMatchingBefore;
+   const DoctreeNode *n, *node = docTree->top ();
 
    assert (selectorList->size () > 0);
 
@@ -76,6 +78,7 @@ bool CssSelector::match (Doctree *docTree) {
    for (int i = selectorList->size () - 2; i >= 0; i--) {
       sel = &selectorList->getRef (i)->selector;
       comb = selectorList->getRef (i + 1)->combinator;
+      notMatchingBefore = &selectorList->getRef (i + 1)->notMatchingBefore;
       node = docTree->parent (node);
 
       if (node == NULL)
@@ -87,10 +90,19 @@ bool CssSelector::match (Doctree *docTree) {
                return false;
             break;
          case DESCENDENT:
+            n = node;
             while (!sel->match (node)) {
-               node = docTree->parent (node);
-               if (node == NULL)
+               if (node == NULL || *notMatchingBefore >= node->num) {
+                  *notMatchingBefore = n->num; 
                   return false;
+               }
+
+               node = docTree->parent (node);
+
+               if (node == NULL || *notMatchingBefore >= node->num) {
+                  *notMatchingBefore = n->num; 
+                  return false;
+               }
             }
             break;
          default:
@@ -107,6 +119,7 @@ void CssSelector::addSimpleSelector (Combinator c, int element,
    selectorList->increase ();
 
    selectorList->getRef (selectorList->size () - 1)->combinator = c;
+   selectorList->getRef (selectorList->size () - 1)->notMatchingBefore = -1;
    top ()->element = element;
    top ()->klass = klass;
    top ()->pseudo = pseudo;

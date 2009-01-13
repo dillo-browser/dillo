@@ -19,6 +19,7 @@ class StyleEngine : public Doctree {
       dw::core::Layout *layout;
       lout::misc::SimpleVector <Node> *stack;
       CssContext *cssContext;
+      int num;
 
       dw::core::style::Style *style0 (CssPropertyList *nonCssHints = NULL);
       dw::core::style::Style *wordStyle0 (CssPropertyList *nonCssHints = NULL);

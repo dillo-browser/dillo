@@ -23,6 +23,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    stack = new lout::misc::SimpleVector <Node> (1);
    cssContext = new CssContext ();
    this->layout = layout;
+   num = 0;
 
    stack->increase ();
    Node *n =  stack->getRef (stack->size () - 1);
@@ -37,7 +38,8 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    style_attrs.font = Font::create (layout, &font_attrs);
    style_attrs.color = Color::create (layout, 0);
    style_attrs.backgroundColor = Color::create (layout, 0xffffff);
-   
+
+   n->num = num++;
    n->style = Style::create (layout, &style_attrs);
    n->wordStyle = NULL;
    n->pseudo = NULL;
@@ -62,6 +64,7 @@ void StyleEngine::startElement (int element) {
 
    stack->increase ();
    Node *n =  stack->getRef (stack->size () - 1);
+   n->num = num++;
    n->style = NULL;
    n->wordStyle = NULL;
    n->depth = stack->size () - 1;
