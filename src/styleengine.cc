@@ -415,6 +415,8 @@ Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
    if (stack->getRef (stack->size () - 1)->inheritBackgroundColor)
       attrs.backgroundColor = style ()->backgroundColor;
 
+   attrs.valign = style ()->valign;
+
    stack->getRef (stack->size () - 1)->wordStyle = Style::create (layout, &attrs);
    return stack->getRef (stack->size () - 1)->wordStyle;
 }
