@@ -262,7 +262,7 @@ static void Gif_close(DilloGif *gif, CacheClient_t *Client)
 {
    int i;
 
-   MSG("Gif_close: destroy gif %p\n", gif);
+   _MSG("Gif_close: destroy gif %p\n", gif);
 
    a_Dicache_close(gif->url, gif->version, Client);
 

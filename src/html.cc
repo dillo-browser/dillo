@@ -564,7 +564,7 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
    char *buf = Buf + Start_Ofs;
    int bufsize = BufSize - Start_Ofs;
 
-   MSG("DilloHtml::write BufSize=%d Start_Ofs=%d\n", BufSize, Start_Ofs);
+   _MSG("DilloHtml::write BufSize=%d Start_Ofs=%d\n", BufSize, Start_Ofs);
 #if 0
    char *aux = dStrndup(Buf, BufSize);
    MSG(" {%s}\n", aux);

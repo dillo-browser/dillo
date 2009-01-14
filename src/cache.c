@@ -636,7 +636,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
    void *data;
    int i;
 
-   MSG("Cache_parse_header\n");
+   _MSG("Cache_parse_header\n");
 
    if (entry->Header->len > 12) {
       if (header[9] == '1' && header[10] == '0' && header[11] == '0') {
@@ -751,8 +751,8 @@ static void Cache_parse_header(CacheEntry_t *entry)
       /* This HTTP Content-Type is not trusted. It's checked against real data
        * in Cache_process_queue(); only then CA_GotContentType becomes true. */
       entry->TypeHdr = Type;
-      MSG("TypeHdr  {%s} {%s}\n", Type, URL_STR(entry->Url));
-      MSG("TypeMeta {%s}\n", entry->TypeMeta);
+      _MSG("TypeHdr  {%s} {%s}\n", Type, URL_STR(entry->Url));
+      _MSG("TypeMeta {%s}\n", entry->TypeMeta);
    }
 }
 
@@ -773,7 +773,7 @@ static int Cache_get_header(CacheEntry_t *entry,
          continue;
       if (N == 1 && (buf[i] == ' ' || buf[i] == '\t')) {
          /* unfold multiple-line header */
-         MSG("Multiple-line header!\n");
+         _MSG("Multiple-line header!\n");
          dStr_erase(hdr, hdr->len - 1, 1);
       }
       N = (buf[i] == '\n') ? N + 1 : 0;
@@ -810,7 +810,7 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
    /* Assert a valid entry (not aborted) */
    dReturn_if_fail (entry != NULL);
 
-   MSG("__a_Cache_process_dbuf__\n");
+   _MSG("__a_Cache_process_dbuf__\n");
 
    if (Op == IORead) {
       /* 

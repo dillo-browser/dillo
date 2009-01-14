@@ -139,7 +139,7 @@ void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
  */
 static void Jpeg_close(DilloJpeg *jpeg, CacheClient_t *Client)
 {
-   MSG("Jpeg_close\n");
+   _MSG("Jpeg_close\n");
    a_Dicache_close(jpeg->url, jpeg->version, Client);
    jpeg_destroy_decompress(&(jpeg->cinfo));
    dFree(jpeg);

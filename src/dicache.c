@@ -357,7 +357,7 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
    dReturn_if_fail ( DicEntry != NULL );
 
    /* a_Dicache_unref() may free DicEntry */
-   MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount - 1);
+   _MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount - 1);
 
    if (DicEntry->State < DIC_Close) {
       DicEntry->State = DIC_Close;

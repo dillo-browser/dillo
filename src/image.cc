@@ -144,7 +144,7 @@ void a_Image_write(DilloImage *Image, uint_t y)
  */
 void a_Image_close(DilloImage *Image)
 {
-   MSG("a_Image_close\n");
+   _MSG("a_Image_close\n");
    a_Image_unref(Image);
 }
 
