@@ -27,7 +27,7 @@
 using namespace dw::core;
 
 // Image to Object-Image macro
-#define OI(Image)  ((dw::Image*)(Image->dw))
+#define I2DW(Image)  ((dw::Image*)(Image->dw))
 
 
 /*
@@ -44,8 +44,6 @@ DilloImage *a_Image_new(int width,
    Image->dw = (void*) new dw::Image(alt_text);
    Image->width = 0;
    Image->height = 0;
-   Image->cmap = NULL;
-   Image->in_type = DILLO_IMG_TYPE_NOTSET;
    Image->bg_color = bg_color;
    Image->ScanNumber = 0;
    Image->BitVec = NULL;
@@ -94,11 +92,10 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
    _MSG("a_Image_set_parms: width=%d height=%d\n", width, height);
 
    bool resize = (Image->width != width || Image->height != height);
-   OI(Image)->setBuffer((Imgbuf*)v_imgbuf, resize);
+   I2DW(Image)->setBuffer((Imgbuf*)v_imgbuf, resize);
 
    if (!Image->BitVec)
       Image->BitVec = a_Bitvec_new(height);
-   Image->in_type = type;
    Image->width = width;
    Image->height = height;
    Image->State = IMG_SetParms;
@@ -110,7 +107,6 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
 void a_Image_set_cmap(DilloImage *Image, const uchar_t *cmap)
 {
    _MSG("a_Image_set_cmap\n");
-   Image->cmap = cmap;
    Image->State = IMG_SetCmap;
 }
 
@@ -134,7 +130,7 @@ void a_Image_write(DilloImage *Image, uint_t y)
    dReturn_if_fail ( y < Image->height );
 
    /* Update the row in DwImage */
-   OI(Image)->drawRow(y);
+   I2DW(Image)->drawRow(y);
    a_Bitvec_set_bit(Image->BitVec, y);
    Image->State = IMG_Write;
 }

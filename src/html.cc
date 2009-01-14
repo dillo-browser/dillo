@@ -2034,10 +2034,13 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    html->styleEngine->setNonCssHints(&props);
 
    /* Add a new image widget to this page */
-   Image = a_Image_new(0, 0, alt_ptr, S_TOP(html)->current_bg_color);
-   if (add)
+   Image = a_Image_new(0, 0, alt_ptr, 0);
+   if (add) {
       DW2TB(html->dw)->addWidget((Widget*)Image->dw,
                                  html->styleEngine->style());
+   }
+   if (DW2TB(html->dw)->getBgColor())
+      Image->bg_color = DW2TB(html->dw)->getBgColor()->getColor();
 
    load_now = a_UIcmd_get_images_enabled(html->bw) ||
               (a_Capi_get_flags(url) & CAPI_IsCached);

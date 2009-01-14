@@ -1947,8 +1947,6 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
        (url = a_Html_url_new(html, attrbuf, NULL, 0))) {
       style_attrs = *html->styleEngine->style ();
       style_attrs.cursor = CURSOR_POINTER;
-      style_attrs.backgroundColor =
-        style::Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
 
       /* create new image and add it to the button */
       if ((Image = a_Html_add_new_image(html, tag, tagsize, url, false))) {

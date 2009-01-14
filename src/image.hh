@@ -38,10 +38,7 @@ struct _DilloImage {
    uint_t width;
    uint_t height;
 
-   const uchar_t *cmap;     /* Color map (only for indexed) */
-   DilloImgType in_type;    /* Image Type */
    int32_t bg_color;        /* Background color */
-
    bitvec_t *BitVec;        /* Bit vector for decoded rows */
    uint_t ScanNumber;       /* Current decoding scan */
    ImageState State;        /* Processing status */
