@@ -91,18 +91,17 @@ bool CssSelector::match (Doctree *docTree) {
             break;
          case DESCENDENT:
             n = node;
-            while (!sel->match (node)) {
-               if (node->num < *notMatchingBefore) {
-                  *notMatchingBefore = n->num; 
+
+            while (true) {
+               if (node == NULL || node->num < *notMatchingBefore) {
+                  *notMatchingBefore = n->num;
                   return false;
                }
+
+               if (sel->match (node))
+                  break;
 
                node = docTree->parent (node);
-
-               if (node == NULL) {
-                  *notMatchingBefore = n->num; 
-                  return false;
-               }
             }
             break;
          default:
