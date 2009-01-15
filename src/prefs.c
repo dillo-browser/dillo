@@ -70,6 +70,7 @@ typedef enum {
    DRC_TOKEN_GENERATE_SUBMIT,
    DRC_TOKEN_GEOMETRY,
    DRC_TOKEN_HOME,
+   DRC_TOKEN_HTTP_LANGUAGE,
    DRC_TOKEN_LIMIT_TEXT_WIDTH,
    DRC_TOKEN_LINK_COLOR,
    DRC_TOKEN_LOAD_IMAGES,
@@ -132,6 +133,7 @@ static const SymNode_t symbols[] = {
    { "generate_submit", DRC_TOKEN_GENERATE_SUBMIT },
    { "geometry", DRC_TOKEN_GEOMETRY },
    { "home", DRC_TOKEN_HOME },
+   { "http_language", DRC_TOKEN_HTTP_LANGUAGE },
    { "http_proxy", DRC_TOKEN_PROXY },
    { "http_proxyuser", DRC_TOKEN_PROXYUSER },
    { "http_referer", DRC_TOKEN_REFERER },
@@ -202,6 +204,10 @@ static int Prefs_parse_pair(char *name, char *value)
    case DRC_TOKEN_GEOMETRY:
       a_Misc_parse_geometry(value, &prefs.xpos, &prefs.ypos,
                             &prefs.width, &prefs.height);
+      break;
+   case DRC_TOKEN_HTTP_LANGUAGE:
+      dFree(prefs.http_language);
+      prefs.http_language = dStrdup(value);
       break;
    case DRC_TOKEN_PROXY:
       a_Url_free(prefs.http_proxy);
@@ -415,6 +421,7 @@ void a_Prefs_init(void)
    prefs.height = D_GEOMETRY_DEFAULT_HEIGHT;
    prefs.xpos = D_GEOMETRY_DEFAULT_XPOS;
    prefs.ypos = D_GEOMETRY_DEFAULT_YPOS;
+   prefs.http_language = NULL;
    prefs.http_proxy = NULL;
    prefs.http_proxyuser = NULL;
    prefs.http_referer = dStrdup("host");
@@ -479,6 +486,7 @@ void a_Prefs_init(void)
  */
 void a_Prefs_freeall(void)
 {
+   dFree(prefs.http_language);
    dFree(prefs.http_proxyuser);
    dFree(prefs.http_referer);
    dFree(prefs.no_proxy);

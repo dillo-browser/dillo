@@ -24,6 +24,7 @@ dillo-2.1
  - Switched file dpi error messages to HTML.
  - Added a popup menu to form's submit button.
  - Added a right-click menu to the form submit button (allows to show hiddens).
+ - Added the "http_language" dillorc option for setting HTTP's Accept-Language.
    Patches: place (AKA corvid)
 +- Switched SSL-enabled to configure.in (./configure --enable-ssl).
  - Standardised the installation of dpid/dpidrc with auto* tools.

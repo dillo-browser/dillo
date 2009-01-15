@@ -68,13 +68,18 @@ static Klist_t *ValidSocks = NULL; /* Active sockets list. It holds pointers to
 
 static DilloUrl *HTTP_Proxy = NULL;
 static char *HTTP_Proxy_Auth_base64 = NULL;
+static char *HTTP_Language_hdr = NULL;
 
 /*
- * Initialize proxy vars.
+ * Initialize proxy vars and Accept-Language header
  */
 int a_Http_init(void)
 {
    char *env_proxy = getenv("http_proxy");
+
+   HTTP_Language_hdr = prefs.http_language ?
+      dStrconcat("Accept-Language: ", prefs.http_language, "\r\n", NULL) :
+      dStrdup("");
 
    if (env_proxy && strlen(env_proxy))
       HTTP_Proxy = a_Url_new(env_proxy, NULL);
@@ -231,6 +236,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Connection: close\r\n"
          "Accept-Charset: utf-8,*;q=0.8\r\n"
          "Accept-Encoding: gzip\r\n"
+         "%s" /* language */
          "%s" /* auth */
          "Host: %s\r\n"
          "%s"
@@ -240,8 +246,8 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Content-Type: %s\r\n"
          "%s" /* cookies */
          "\r\n",
-         full_path->str, auth ? auth : "", URL_AUTHORITY(url),
-         proxy_auth->str, referer, VERSION,
+         full_path->str, HTTP_Language_hdr, auth ? auth : "",
+         URL_AUTHORITY(url), proxy_auth->str, referer, VERSION,
          URL_DATA(url)->len, content_type->str,
          cookies);
       dStr_append_l(query, URL_DATA(url)->str, URL_DATA(url)->len);
@@ -254,6 +260,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Connection: close\r\n"
          "Accept-Charset: utf-8,*;q=0.8\r\n"
          "Accept-Encoding: gzip\r\n"
+         "%s" /* language */
          "%s" /* auth */
          "Host: %s\r\n"
          "%s"
@@ -264,7 +271,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          full_path->str,
          (URL_FLAGS(url) & URL_E2EQuery) ?
             "Cache-Control: no-cache\r\nPragma: no-cache\r\n" : "",
-         auth ? auth : "", URL_AUTHORITY(url),
+         HTTP_Language_hdr, auth ? auth : "", URL_AUTHORITY(url),
          proxy_auth->str, referer, VERSION, cookies);
    }
    dFree(referer);
