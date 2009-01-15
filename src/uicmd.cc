@@ -290,6 +290,7 @@ void a_UIcmd_close_bw(void *vbw)
    delete(layout);
    if (ui->tabs()) {
       ui->tabs()->remove(ui);
+      ui->tabs()->value(ui->tabs()->children() - 1);
       if (ui->tabs()->value() != -1)
          ui->tabs()->selected_child()->take_focus();
       else
