@@ -223,6 +223,7 @@ class CssSelector {
 
    private:
       struct CombinatorAndSelector {
+         int notMatchingBefore; // used for optimizing CSS selector matching
          Combinator combinator;
          CssSimpleSelector selector;
       };
@@ -255,7 +256,6 @@ class CssSelector {
  */
 class CssRule {
    private:
-      int refCount;
       CssPropertyList *props;
 
    public:
@@ -265,8 +265,6 @@ class CssRule {
       ~CssRule ();
 
       void apply (CssPropertyList *props, Doctree *docTree);
-      inline void ref () { refCount++; }
-      inline void unref () { if(--refCount == 0) delete this; }
       void print ();
 };
 
@@ -276,8 +274,32 @@ class CssRule {
  */
 class CssStyleSheet {
    private:
+      class RuleList : public lout::misc::SimpleVector <CssRule*>,
+                       public lout::object::Object {
+         public:
+            RuleList () : lout::misc::SimpleVector <CssRule*> (1) {};
+            ~RuleList () {
+               for (int i = 0; i < size (); i++)
+                  delete get (i);
+            };
+
+            bool equals (lout::object::Object *other) { return this == other; };
+            int hashValue () { return (intptr_t) this; };
+      };
+
+      class RuleMap : public lout::container::typed::HashTable
+                             <lout::object::ConstString, RuleList > {
+         public:
+            RuleMap () : lout::container::typed::HashTable
+                    <lout::object::ConstString, RuleList > (true, true, 256) {};
+      };
+
       static const int ntags = 90; // \todo replace 90
-      lout::misc::SimpleVector <CssRule*> *ruleTable[ntags];
+      RuleList *elementTable[ntags];
+
+      RuleMap *idTable;
+      RuleMap *classTable;
+      RuleList *anyTable;
 
    public:
       CssStyleSheet();
