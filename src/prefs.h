@@ -22,6 +22,7 @@ struct _DilloPrefs {
    int height;
    int xpos;
    int ypos;
+   char *http_language;
    DilloUrl *http_proxy;
    char *http_proxyuser;
    char *http_referer;

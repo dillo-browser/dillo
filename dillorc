@@ -99,6 +99,15 @@
 # search_url="http://www.alltheweb.com/search?cat=web&query=%s"
 #search_url="http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
+# If set, dillo will ask web servers to send pages in this language.
+# This setting does NOT change dillo's user interface.
+# Format explained: www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
+# Language-REGION values: www.iana.org/assignments/language-subtag-registry
+# (by default, no Accept-Language header is sent)
+# http_language="de"
+# http_language="pt-BR"
+# http_language="vi,de-CH,de;q=0.5,th;q=0.3"
+
 # Set the proxy information for http.
 # WARNING: - HTTPS does not currently use the proxy settings.
 #          - FTP and downloads plugins use wget. To use a proxy with them,
