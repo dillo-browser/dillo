@@ -1,7 +1,7 @@
 /*
  * File: styleengine.cc
  *
- * Copyright 2008 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2008-2009 Johannes Hofmann <Johannes.Hofmann@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
