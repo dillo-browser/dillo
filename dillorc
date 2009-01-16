@@ -18,6 +18,8 @@
 # (there's a toggle button near the bug meter to change this on-the-fly)
 #load_images=YES
 
+# Change this if you want to disable loading of CSS stylesheets.
+#load_stylesheets=YES
 
 # Change the buffering scheme for drawing
 # 0 no double buffering - useful for debugging

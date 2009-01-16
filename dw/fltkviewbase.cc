@@ -30,6 +30,7 @@
 #include <fltk/run.h>
 
 #include <stdio.h>
+#include "../lout/msg.h"
 
 using namespace fltk;
 using namespace lout::object;
@@ -203,7 +204,7 @@ int FltkViewBase::handle (int event)
                                  translateViewXToCanvasX (event_x ()),
                                  translateViewYToCanvasY (event_y ()),
                                  getDwButtonState (), event_button ());
-      //printf ("PUSH => %s\n", processed ? "true" : "false");
+      _MSG("PUSH => %s\n", processed ? "true" : "false");
       if (processed) {
          /* pressed dw content; give focus to the view */
          ::fltk::focus(this);
@@ -216,7 +217,7 @@ int FltkViewBase::handle (int event)
                                    translateViewXToCanvasX (event_x ()),
                                    translateViewYToCanvasY (event_y ()),
                                    getDwButtonState (), event_button ());
-      //printf ("RELEASE => %s\n", processed ? "true" : "false");
+      _MSG("RELEASE => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
    case MOVE:
@@ -227,7 +228,7 @@ int FltkViewBase::handle (int event)
                                   translateViewXToCanvasX (mouse_x),
                                   translateViewYToCanvasY (mouse_y),
                                   getDwButtonState ());
-      //printf ("MOVE => %s\n", processed ? "true" : "false");
+      _MSG("MOVE => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
    case DRAG:
@@ -236,7 +237,7 @@ int FltkViewBase::handle (int event)
                                   translateViewXToCanvasX (event_x ()),
                                   translateViewYToCanvasY (event_y ()),
                                   getDwButtonState ());
-      //printf ("DRAG => %s\n", processed ? "true" : "false");
+      _MSG("DRAG => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
    case ENTER:
@@ -306,7 +307,7 @@ void FltkViewBase::setCursor (core::style::Cursor cursor)
       "CURSOR_HELP"
    };
 
-   printf ("Cursor changes to '%s'.\n", cursorName[cursor]);
+   MSG("Cursor changes to '%s'.\n", cursorName[cursor]);
    */
 
    /** \bug Does not work */

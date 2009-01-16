@@ -66,6 +66,16 @@ public:
     * \brief Return the index of the previous glyph in string text.
     */
    virtual int prevGlyph (const char *text, int idx) = 0;
+
+   /**
+    * \brief Return screen resolution in x-direction.
+    */
+   virtual float dpiX () = 0;
+
+   /**
+    * \brief Return screen resolution in y-direction.
+    */
+   virtual float dpiY () = 0;
  
    /*
     * ---------------------------------------------------------
@@ -110,15 +120,9 @@ public:
                                     bool tryEverything) = 0;
  
    /**
-    * \brief Create a simple color resource for a given 0xrrggbb value.
+    * \brief Create a color resource for a given 0xrrggbb value.
     */
-   virtual style::Color *createSimpleColor (int color) = 0;
-
-   /**
-    * \brief Create a shaded color resource for a given 0xrrggbb value.
-    */
-   virtual style::Color *createShadedColor (int color) = 0;
-
+   virtual style::Color *createColor (int color) = 0;
 
    /*
     * --------------------

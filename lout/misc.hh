@@ -112,6 +112,14 @@ public:
       this->array = NULL;
    }
 
+   inline SimpleVector (const SimpleVector &o) {
+      this->array = NULL;
+      this->num = o.num;
+      this->numAlloc = o.numAlloc;
+      resize ();
+      memcpy (this->array, o.array, sizeof (T) * num);
+   }
+
    inline ~SimpleVector ()
    {
       if (this->array)

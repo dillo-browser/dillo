@@ -294,7 +294,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    char *charset, *first;
    const char *attrbuf;
 
-   DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
    if (html->InFlags & IN_FORM) {
       BUG_MSG("nested forms\n");
@@ -558,10 +558,10 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       if (prefs.standard_widget_colors)
          bg = NULL;
       else
-         bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+         bg = Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
       HTML_SET_TOP_ATTR(html, backgroundColor, bg);
 
-      DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+      DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
    }
    dFree(type);
    dFree(name);
@@ -594,10 +594,10 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
                  html->charset);
    html->InFlags |= IN_FORM;
 
-   DW2TB(html->dw)->addParbreak (9, S_TOP(html)->style);
+   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "prompt")))
-      DW2TB(html->dw)->addText(attrbuf, S_TOP(html)->style);
+      DW2TB(html->dw)->addText(attrbuf, html->styleEngine->wordStyle ());
 
    ResourceFactory *factory = HT2LT(html)->getResourceFactory();
    EntryResource *entryResource = factory->createEntryResource (20,false,NULL);
@@ -608,9 +608,9 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    if (prefs.standard_widget_colors)
       bg = NULL;
    else
-      bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+      bg = Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
    HTML_SET_TOP_ATTR(html, backgroundColor, bg);
-   DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+   DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
 
    a_Url_free(action);
    html->InFlags &= ~IN_FORM;
@@ -676,10 +676,10 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    if (prefs.standard_widget_colors)
       bg = NULL;
    else
-      bg = Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+      bg = Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
    HTML_SET_TOP_ATTR(html, backgroundColor, bg);
 
-   DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+   DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
    dFree(name);
 }
 
@@ -760,7 +760,7 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    }
    HTML_SET_TOP_ATTR(html, backgroundColor,
                      Color::createShaded (HT2LT(html), bg));
-   DW2TB(html->dw)->addWidget (embed, S_TOP(html)->style);
+   DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
 
 // size = 0;
 // if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
@@ -879,12 +879,12 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       Embed *embed;
       char *name, *value;
 
-      style_attrs = *S_TOP(html)->style;
+      style_attrs = *html->styleEngine->style ();
       style_attrs.margin.setVal(0);
       style_attrs.borderWidth.setVal(0);
       style_attrs.padding.setVal(0);
       style_attrs.backgroundColor =
-               Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
+               Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
       style = Style::create (HT2LT(html), &style_attrs);
 
       page = new Textblock (prefs.limit_text_width);
@@ -1945,14 +1945,11 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) &&
        (url = a_Html_url_new(html, attrbuf, NULL, 0))) {
-      style_attrs = *S_TOP(html)->style;
+      style_attrs = *html->styleEngine->style ();
       style_attrs.cursor = CURSOR_POINTER;
-      style_attrs.backgroundColor =
-        style::Color::createShaded(HT2LT(html), S_TOP(html)->current_bg_color);
 
       /* create new image and add it to the button */
-      if ((Image = a_Html_add_new_image(html, tag, tagsize, url, &style_attrs,
-                                        false))) {
+      if ((Image = a_Html_add_new_image(html, tag, tagsize, url, false))) {
          Style *style = Style::create (HT2LT(html), &style_attrs);
          IM2DW(Image)->setStyle (style);
          ResourceFactory *factory = HT2LT(html)->getResourceFactory();

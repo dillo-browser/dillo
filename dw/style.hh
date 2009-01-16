@@ -591,22 +591,16 @@ public:
  */
 class ColorAttrs: public object::Object
 {
-public:
-   enum Type { TYPE_SIMPLE, TYPE_SHADED };
-
 protected:
    int color;
-   Type type;
 
 public:
-   inline ColorAttrs(int color, Type type)
+   inline ColorAttrs(int color)
    {
       this->color = color;
-      this->type = type;
    }
 
    inline int getColor () { return color; }
-   inline Type getType () { return type; }
 
    bool equals(object::Object *other);
    int hashValue();
@@ -621,12 +615,11 @@ class Color: public ColorAttrs
 private:
    int refCount;
 
-   static Color *create (Layout *layout, int color, Type type);
    void remove(dw::core::Layout *layout);
-    int shadeColor (int color, int d);
+   int shadeColor (int color, int d);
 
 protected:
-   inline Color (int color, Type type): ColorAttrs (color, type) {
+   inline Color (int color): ColorAttrs (color) {
       refCount = 0; }
    virtual ~Color ();
 
@@ -638,15 +631,7 @@ protected:
    int shadeColor (int color, Shading shading);
 
 public:
-   inline static Color *createSimple (Layout *layout, int color)
-   {
-      return create (layout, color, TYPE_SIMPLE);
-   }
-
-   inline static Color *createShaded (Layout *layout, int color)
-   {
-      return create (layout, color, TYPE_SHADED);
-   }
+   static Color *create (Layout *layout, int color);
 
    inline void ref () { refCount++; }
    inline void unref ()

@@ -50,7 +50,7 @@ int main(int argc, char **argv)
    styleAttrs.margin.setVal (5);
    styleAttrs.borderWidth.setVal (1);
    styleAttrs.setBorderStyle (BORDER_OUTSET);
-   styleAttrs.setBorderColor (Color::createShaded (layout, 0x808080));
+   styleAttrs.setBorderColor (Color::create (layout, 0x808080));
 
    FontAttrs fontAttrs;
    fontAttrs.name = "Bitstream Charter";
@@ -59,8 +59,8 @@ int main(int argc, char **argv)
    fontAttrs.style = FONT_STYLE_NORMAL;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xa0a0a0);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xa0a0a0);
    styleAttrs.hBorderSpacing = 5;
    styleAttrs.vBorderSpacing = 5;
 

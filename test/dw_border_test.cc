@@ -49,7 +49,7 @@ int main(int argc, char **argv)
    styleAttrs.initValues ();
    styleAttrs.margin.setVal (5);
    styleAttrs.borderWidth.setVal (2);
-   styleAttrs.setBorderColor (Color::createShaded (layout, 0xffffff));
+   styleAttrs.setBorderColor (Color::create (layout, 0xffffff));
    styleAttrs.setBorderStyle (BORDER_INSET);
    styleAttrs.padding.setVal (5);
 
@@ -60,15 +60,15 @@ int main(int argc, char **argv)
    fontAttrs.style = FONT_STYLE_NORMAL;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    Style *widgetStyle1 = Style::create (layout, &styleAttrs);
 
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffff80);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffff80);
    styleAttrs.margin.setVal (0);
    styleAttrs.borderWidth.setVal (1);
-   styleAttrs.setBorderColor (Color::createSimple (layout, 0x4040ff));
+   styleAttrs.setBorderColor (Color::create (layout, 0x4040ff));
    styleAttrs.setBorderStyle (BORDER_SOLID);
    styleAttrs.padding.setVal (1);
 

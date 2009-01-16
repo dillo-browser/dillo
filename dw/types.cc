@@ -21,6 +21,7 @@
 
 
 #include "core.hh"
+#include "../lout/msg.h"
 
 namespace dw {
 namespace core {
@@ -180,8 +181,8 @@ bool Polygon::linesCross(int ax1, int ay1, int ax2, int ay2,
    bool cross =
       linesCross0 (ax1, ay1, ax2, ay2, bx1, by1, bx2, by2) &&
       linesCross0 (bx1, by1, bx2, by2, ax1, ay1, ax2, ay2);
-   //printf ("(%d, %d) - (%d, %d) and (%d, %d) - (%d, %d) cross? %s.\n",
-   //        ax1, ay1, ax2, ay2, bx1, by1, bx2, by2, cross ? "Yes" : "No");
+   _MSG("(%d, %d) - (%d, %d) and (%d, %d) - (%d, %d) cross? %s.\n",
+        ax1, ay1, ax2, ay2, bx1, by1, bx2, by2, cross ? "Yes" : "No");
    return cross;
 }
 

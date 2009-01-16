@@ -38,6 +38,8 @@ struct _BrowserWindow
    int NumImages;
    /* Number of images already loaded */
    int NumImagesGot;
+   /* Number of not yet arrived style sheets */
+   int NumPendingStyleSheets;
    /* List of all Urls requested by this page (and its types) */
    Dlist *PageUrls;
 
@@ -57,8 +59,7 @@ struct _BrowserWindow
     * redirection loops (accounts for WEB_RootUrl only) */
    int redirect_level;
 
-   /* TODO: maybe this fits better in the linkblock.
-    * Although having it here avoids having a signal for handling it. */
+   /* HTML-bugs detected at parse time */
    int num_page_bugs;
    Dstr *page_bugs;
 };

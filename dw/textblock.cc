@@ -21,6 +21,7 @@
 
 
 #include "textblock.hh"
+#include "../lout/msg.h"
 #include "../lout/misc.hh"
 
 #include <stdio.h>
@@ -260,8 +261,8 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
                   extremes->minWidth = wordExtremes.minWidth;
             }
 
-            //printf("parMax = %d, wordMaxWidth=%d, prevWordSpace=%d\n",
-            //       parMax, wordExtremes.maxWidth, prevWordSpace);
+            _MSG("parMax = %d, wordMaxWidth=%d, prevWordSpace=%d\n",
+                 parMax, wordExtremes.maxWidth, prevWordSpace);
             if (word->content.type != core::Content::BREAK)
                parMax += prevWordSpace;
             parMax += wordExtremes.maxWidth;
@@ -1077,8 +1078,8 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
       widget->setAscent (availAscent);
       widget->setDescent (availDescent);
       widget->sizeRequest (size);
-      size->ascent -= widget->getStyle()->margin.top;
-      size->descent -= widget->getStyle()->margin.bottom;
+//      size->ascent -= widget->getStyle()->margin.top;
+//      size->descent -= widget->getStyle()->margin.bottom;
    } else {
       /* TODO: Use margin.{top|bottom} here, like above.
        * (No harm for the next future.) */
@@ -1417,7 +1418,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
          break;
 
       default:
-         fprintf (stderr,  "BUG!!! at (%d, %d).\n", xWorld, yWorldBase + diff);
+         MSG_ERR("at (%d, %d).\n", xWorld, yWorldBase + diff);
          break;
       }
 
@@ -1921,14 +1922,14 @@ void Textblock::changeLinkColor (int link, int newColor)
             case core::Content::TEXT:
             {  core::style::Style *old_style = word->style;
                styleAttrs = *old_style;
-               styleAttrs.color = core::style::Color::createSimple (layout,
-                                                                    newColor);
+               styleAttrs.color = core::style::Color::create (layout,
+                                                              newColor);
                word->style = core::style::Style::create (layout, &styleAttrs);
                old_style->unref();
                old_style = word->spaceStyle;
                styleAttrs = *old_style;
-               styleAttrs.color = core::style::Color::createSimple (layout,
-                                                                    newColor);
+               styleAttrs.color = core::style::Color::create (layout,
+                                                              newColor);
                word->spaceStyle =
                                core::style::Style::create(layout, &styleAttrs);
                old_style->unref();
@@ -1937,10 +1938,10 @@ void Textblock::changeLinkColor (int link, int newColor)
             case core::Content::WIDGET:
             {  core::Widget *widget = word->content.widget;
                styleAttrs = *widget->getStyle();
-               styleAttrs.color = core::style::Color::createSimple (layout,
-                                                                    newColor);
+               styleAttrs.color = core::style::Color::create (layout,
+                                                              newColor);
                styleAttrs.setBorderColor(
-                           core::style::Color::createShaded(layout, newColor));
+                           core::style::Color::create (layout, newColor));
                widget->setStyle(
                              core::style::Style::create (layout, &styleAttrs));
                break;

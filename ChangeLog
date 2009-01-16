@@ -50,7 +50,8 @@ dillo-2.1
  ? Trying a new iconv() test in configure.in.
  - Allowed the rc parser to skip whitespace around the equal sign.
  - Fixed the parser not to call Html_tag_close_* functions twice.
-!- Started code cleanup of the image code mainly in dicache.c.
+ - Implemented CSS Stylesheet loading.
+ - Made a big cleanup of cache.c WRT charset decoding (fixes bugs).
    Patches: Jorge Arellano Cid
 
 dw
@@ -59,6 +60,8 @@ dw
    Patch: place (AKA corvid)
 +- Cleaned up unused code in fltkviewbase.
    Patch: Johannes Hofmann
++- Added lout/msg.h and normalized debug messages to use it.
+   Patch: Jorge Arellano Cid
 
 -----------------------------------------------------------------------------
 

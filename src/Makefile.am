@@ -67,6 +67,13 @@ dillo_SOURCES = \
 	dicache.h \
 	capi.c \
 	capi.h \
+	css.cc \
+	css.hh \
+	cssparser.cc \
+	cssparser.hh \
+	doctree.hh \
+	styleengine.cc \
+	styleengine.hh \
 	plain.cc \
 	html.cc \
 	html.hh \
@@ -82,6 +89,8 @@ dillo_SOURCES = \
 	gif.c \
 	jpeg.c \
 	png.c \
+	imgbuf.cc \
+	imgbuf.hh \
 	image.cc \
 	image.hh \
 	menu.hh \

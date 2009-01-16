@@ -21,6 +21,7 @@
 
 
 #include "image.hh"
+#include "../lout/msg.h"
 #include "../lout/misc.hh"
 
 namespace dw {
@@ -197,15 +198,15 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
    dx = getStyle()->boxDiffWidth ();
    dy = getStyle()->boxDiffHeight ();
 #if 0
-   printf("boxDiffHeight = %d + %d, buffer=%p\n",
-          getStyle()->boxOffsetY(), getStyle()->boxRestHeight(), buffer);
-   printf("getContentWidth() = allocation.width - style->boxDiffWidth ()"
-          " = %d - %d = %d\n",
-          this->allocation.width, getStyle()->boxDiffWidth(),
-          this->allocation.width - getStyle()->boxDiffWidth());
-   printf("getContentHeight() = getHeight() - style->boxDiffHeight ()"
-          " = %d - %d = %d\n", this->getHeight(), getStyle()->boxDiffHeight(),
-          this->getHeight() - getStyle()->boxDiffHeight());
+   MSG("boxDiffHeight = %d + %d, buffer=%p\n",
+       getStyle()->boxOffsetY(), getStyle()->boxRestHeight(), buffer);
+   MSG("getContentWidth() = allocation.width - style->boxDiffWidth ()"
+       " = %d - %d = %d\n",
+       this->allocation.width, getStyle()->boxDiffWidth(),
+       this->allocation.width - getStyle()->boxDiffWidth());
+   MSG("getContentHeight() = getHeight() - style->boxDiffHeight ()"
+       " = %d - %d = %d\n", this->getHeight(), getStyle()->boxDiffHeight(),
+       this->getHeight() - getStyle()->boxDiffHeight());
 #endif
    if (buffer && (getContentWidth () > 0 || getContentHeight () > 0)) {
       // Zero content size : simply wait...

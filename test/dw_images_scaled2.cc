@@ -90,8 +90,8 @@ int main(int argc, char **argv)
    fontAttrs.style = FONT_STYLE_NORMAL;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    Style *widgetStyle = Style::create (layout, &styleAttrs);
 
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
    Style *wordStyle = Style::create (layout, &styleAttrs);
 
    styleAttrs.borderWidth.setVal (1);
-   styleAttrs.setBorderColor (Color::createShaded (layout, 0x000080));
+   styleAttrs.setBorderColor (Color::create (layout, 0x000080));
    styleAttrs.setBorderStyle (BORDER_SOLID);
    styleAttrs.padding.setVal (1);
    styleAttrs.backgroundColor = NULL;

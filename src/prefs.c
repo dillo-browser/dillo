@@ -74,6 +74,7 @@ typedef enum {
    DRC_TOKEN_LIMIT_TEXT_WIDTH,
    DRC_TOKEN_LINK_COLOR,
    DRC_TOKEN_LOAD_IMAGES,
+   DRC_TOKEN_LOAD_STYLESHEETS,
    DRC_TOKEN_BUFFERED_DRAWING,
    DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB,
    DRC_TOKEN_NOPROXY,
@@ -140,6 +141,7 @@ static const SymNode_t symbols[] = {
    { "limit_text_width", DRC_TOKEN_LIMIT_TEXT_WIDTH },
    { "link_color", DRC_TOKEN_LINK_COLOR },
    { "load_images", DRC_TOKEN_LOAD_IMAGES },
+   { "load_stylesheets", DRC_TOKEN_LOAD_STYLESHEETS },
    { "middle_click_drags_page", DRC_TOKEN_MIDDLE_CLICK_DRAGS_PAGE },
    { "middle_click_opens_new_tab", DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB },
    { "no_proxy", DRC_TOKEN_NOPROXY },
@@ -330,6 +332,9 @@ static int Prefs_parse_pair(char *name, char *value)
    case DRC_TOKEN_LOAD_IMAGES:
       prefs.load_images = (strcmp(value, "YES") == 0);
       break;
+   case DRC_TOKEN_LOAD_STYLESHEETS:
+      prefs.load_stylesheets = (strcmp(value, "YES") == 0);
+      break;
    case DRC_TOKEN_BUFFERED_DRAWING:
       prefs.buffered_drawing = atoi(value);
       break;
@@ -457,6 +462,7 @@ void a_Prefs_init(void)
    prefs.show_progress_box=TRUE;
    prefs.fullwindow_start=FALSE;
    prefs.load_images=TRUE;
+   prefs.load_stylesheets=TRUE;
    prefs.buffered_drawing=1;
    prefs.vw_fontname = dStrdup(D_VW_FONTNAME);
    prefs.fw_fontname = dStrdup(D_FW_FONTNAME);

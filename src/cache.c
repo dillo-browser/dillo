@@ -161,6 +161,7 @@ static int Cache_client_enqueue(const DilloUrl *Url, DilloWeb *Web,
    ClientKey = Cache_client_make_key();
    NewClient->Key = ClientKey;
    NewClient->Url = Url;
+   NewClient->Version = 0;
    NewClient->Buf = NULL;
    NewClient->Callback = Callback;
    NewClient->CbData = CbData;
@@ -424,6 +425,7 @@ static void Cache_ref_data(CacheEntry_t *entry)
       entry->DataRefcount++;
       _MSG("DataRefcount++: %d\n", entry->DataRefcount);
       if (entry->CharsetDecoder && entry->DataRefcount == 1) {
+         dStr_free(entry->UTF8Data, 1);
          entry->UTF8Data = a_Decode_process(entry->CharsetDecoder,
                                             entry->Data->str,
                                             entry->Data->len);
@@ -483,40 +485,33 @@ static Dstr *Cache_data(CacheEntry_t *entry)
  * Change Content-Type for cache entry found by url.
  * Return new content type.
  */
-const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
-                                     bool_t force)
+const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype)
 {
+   char *charset;
    const char *curr;
    CacheEntry_t *entry = Cache_entry_search_with_redirect(url);
 
-   if (!entry)
-      return NULL;
+   dReturn_val_if_fail (entry != NULL, NULL);
+
+   MSG("a_Cache_set_content_type {%s} {%s}\n", ctype, URL_STR(url));
 
    curr = Cache_current_content_type(entry);
-   if (entry->TypeMeta && (force == FALSE)) {
-      /* it's already been set */
-      return curr;
-  }
-
-   if (a_Misc_content_type_cmp(curr, ctype)) {
-      char *charset;
-
-      dFree(entry->TypeMeta);
+   if (entry->TypeMeta) {
+      /* Type is already been set. Do nothing.
+       * Multiple META elements? */
+   } else if (a_Misc_content_type_cmp(curr, ctype)) {
+      /* TypeMeta not set, and META gives one different from default */
       curr = entry->TypeMeta = dStrdup(ctype);
-
       if (entry->CharsetDecoder)
          a_Decode_free(entry->CharsetDecoder);
       a_Misc_parse_content_type(ctype, NULL, NULL, &charset);
       entry->CharsetDecoder = a_Decode_charset_init(charset);
       dFree(charset);
 
+      /* Invalidate UTF8Data */
       dStr_free(entry->UTF8Data, 1);
-      if (entry->CharsetDecoder && entry->DataRefcount > 0)
-         entry->UTF8Data = a_Decode_process(entry->CharsetDecoder,
-                                            entry->Data->str,
-                                            entry->Data->len);
-      else
-         entry->UTF8Data = NULL;
+      entry->UTF8Data = NULL;
+
    }
 
    return curr;
@@ -632,7 +627,7 @@ static Dlist *Cache_parse_multiple_fields(const char *header,
 static void Cache_parse_header(CacheEntry_t *entry)
 {
    char *header = entry->Header->str;
-   char *Length, *Type, *location_str, *encoding, *charset;
+   char *Length, *Type, *location_str, *encoding;
 #ifndef DISABLE_COOKIES
    Dlist *Cookies;
 #endif
@@ -640,6 +635,8 @@ static void Cache_parse_header(CacheEntry_t *entry)
    Dlist *warnings;
    void *data;
    int i;
+
+   _MSG("Cache_parse_header\n");
 
    if (entry->Header->len > 12) {
       if (header[9] == '1' && header[10] == '0' && header[11] == '0') {
@@ -751,18 +748,11 @@ static void Cache_parse_header(CacheEntry_t *entry)
          MSG_HTTP("Server didn't send Content-Type in header.\n");
       }
    } else {
+      /* This HTTP Content-Type is not trusted. It's checked against real data
+       * in Cache_process_queue(); only then CA_GotContentType becomes true. */
       entry->TypeHdr = Type;
-      _MSG("Content-Type {%s} {%s}\n", Type, URL_STR(entry->Url));
-      /* This Content-Type is not trusted. It's checked against real data
-       * in Cache_process_queue(); only then CA_GotContentType becomes true.
-       */
-      a_Misc_parse_content_type(Type, NULL, NULL, &charset);
-      if (charset) {
-         entry->CharsetDecoder = a_Decode_charset_init(charset);
-         if (entry->CharsetDecoder)
-            entry->UTF8Data = dStr_new("");
-         dFree(charset);
-      }
+      _MSG("TypeHdr  {%s} {%s}\n", Type, URL_STR(entry->Url));
+      _MSG("TypeMeta {%s}\n", entry->TypeMeta);
    }
 }
 
@@ -783,7 +773,7 @@ static int Cache_get_header(CacheEntry_t *entry,
          continue;
       if (N == 1 && (buf[i] == ' ' || buf[i] == '\t')) {
          /* unfold multiple-line header */
-         MSG("Multiple-line header!\n");
+         _MSG("Multiple-line header!\n");
          dStr_erase(hdr, hdr->len - 1, 1);
       }
       N = (buf[i] == '\n') ? N + 1 : 0;
@@ -812,15 +802,60 @@ static int Cache_get_header(CacheEntry_t *entry,
 void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
                           const DilloUrl *Url)
 {
-   int offset = 0;
-   int len;
+   int offset, len;
    const char *str;
+   Dstr *dstr1, *dstr2, *dstr3;
    CacheEntry_t *entry = Cache_entry_search(Url);
 
    /* Assert a valid entry (not aborted) */
    dReturn_if_fail (entry != NULL);
 
-   if (Op == IOClose) {
+   _MSG("__a_Cache_process_dbuf__\n");
+
+   if (Op == IORead) {
+      /* 
+       * Cache_get_header() will set CA_GotHeader if it has a full header, and
+       * Cache_parse_header() will unset it if the header ends being
+       * merely an informational response from the server (i.e., 100 Continue)
+       */
+      for (offset = 0; !(entry->Flags & CA_GotHeader) &&
+           (len = Cache_get_header(entry, buf + offset, buf_size - offset));
+           Cache_parse_header(entry) ) {
+         offset += len;
+      }
+
+      if (entry->Flags & CA_GotHeader) {
+         str = buf + offset;
+         len = buf_size - offset;
+         entry->TransferSize += len;
+         dstr1 = dstr2 = dstr3 = NULL;
+
+         /* Decode arrived data (<= 3 stages) */
+         if (entry->TransferDecoder) {
+            dstr1 = a_Decode_process(entry->TransferDecoder, str, len);
+            str = dstr1->str;
+            len = dstr1->len;
+         }
+         if (entry->ContentDecoder) {
+            dstr2 = a_Decode_process(entry->ContentDecoder, str, len);
+            str = dstr2->str;
+            len = dstr2->len;
+         }
+         dStr_append_l(entry->Data, str, len);
+         if (entry->CharsetDecoder && entry->UTF8Data) {
+            dstr3 = a_Decode_process(entry->CharsetDecoder, str, len);
+            dStr_append_l(entry->UTF8Data, dstr3->str, dstr3->len);
+         }
+         dStr_free(dstr1, 1);
+         dStr_free(dstr2, 1);
+         dStr_free(dstr3, 1);
+      
+         if (entry->Data->len)
+            entry->Flags &= ~CA_IsEmpty;
+
+         Cache_process_queue(entry);
+      }
+   } else if (Op == IOClose) {
       if ((entry->Flags & CA_GotLength) &&
           (entry->ExpectedSize != entry->TransferSize)) {
          MSG_HTTP("Content-Length does NOT match message body,\n"
@@ -843,61 +878,11 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
       if (entry->Flags & CA_GotHeader) {
          Cache_unref_data(entry);
       }
-      return;
+
    } else if (Op == IOAbort) {
       /* unused */
       MSG("a_Cache_process_dbuf Op = IOAbort; not implemented!\n");
-      return;
    }
-
-   /*
-    * Cache_get_header() will set CA_GotHeader if it has a full header, and
-    * Cache_parse_header() will unset it if the header turns out to have been
-    * merely an informational response from the server (i.e., 100 Continue)
-    */
-   while (!(entry->Flags & CA_GotHeader) &&
-          (len = Cache_get_header(entry, buf + offset, buf_size - offset))) {
-      offset += len;
-      /* Let's scan, allocate, and set things according to header info */
-      Cache_parse_header(entry);
-   }
-
-   if (!(entry->Flags & CA_GotHeader))
-      return;
-
-   str = buf + offset;
-   len = buf_size - offset;
-   entry->TransferSize += len;
-
-   if (entry->TransferDecoder) {
-      Dstr *dbuf = a_Decode_process(entry->TransferDecoder, str, len);
-      str = dbuf->str;
-      len = dbuf->len;
-      dStr_free(dbuf, 0);
-   }
-   if (entry->ContentDecoder) {
-      Dstr *dbuf = a_Decode_process(entry->ContentDecoder, str, len);
-      if (entry->TransferDecoder)
-         dFree((char *)str);
-      str = dbuf->str;
-      len = dbuf->len;
-      dStr_free(dbuf, 0);
-   }
-   dStr_append_l(entry->Data, str, len);
-
-   if (entry->UTF8Data) {
-      Dstr *dbuf = a_Decode_process(entry->CharsetDecoder, str, len);
-      dStr_append_l(entry->UTF8Data, dbuf->str, dbuf->len);
-      dStr_free(dbuf, 1);
-   }
-
-   if (entry->TransferDecoder || entry->ContentDecoder)
-      dFree((char *)str);
-
-   if (entry->Data->len)
-      entry->Flags &= ~CA_IsEmpty;
-
-   Cache_process_queue(entry);
 }
 
 /*
@@ -1258,9 +1243,14 @@ CacheClient_t *a_Cache_client_get_if_unique(int Key)
 void a_Cache_stop_client(int Key)
 {
    CacheClient_t *Client;
+   DICacheEntry *DicEntry;
 
    if ((Client = dList_find_custom(ClientQueue, INT2VOIDP(Key),
                                    Cache_client_by_key_cmp))) {
+      DicEntry = a_Dicache_get_entry(Client->Url, Client->Version);
+      if (DicEntry) {
+         a_Dicache_unref(Client->Url, Client->Version);
+      }
       Cache_client_dequeue(Client, NULLKey);
    } else {
       _MSG("WARNING: Cache_stop_client, nonexistent client\n");

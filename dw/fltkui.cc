@@ -23,6 +23,7 @@
 #include "fltkcore.hh"
 #include "fltkflatview.hh"
 #include "fltkcomplexbutton.hh"
+#include "../lout/msg.h"
 #include "../lout/misc.hh"
 
 #include <stdio.h>
@@ -120,7 +121,7 @@ void FltkResource::detachView (FltkView *view)
       }
    }
 
-   fprintf (stderr, "FltkResource::detachView: View not found.");
+   MSG_WARN("FltkResource::detachView: View not found.");
 }
 
 void FltkResource::sizeAllocate (core::Allocation *allocation)
@@ -444,9 +445,8 @@ void FltkComplexButtonResource::detachView (FltkView *view)
       }
    }
 
-   fprintf (stderr,
-            "FltkComplexButtonResourceResource::detachView: View not "
-            "found.\n");
+   MSG_WARN("FltkComplexButtonResourceResource::detachView: "
+            "View not found.\n");
 }
 
 void FltkComplexButtonResource::sizeAllocate (core::Allocation *allocation)
@@ -597,7 +597,7 @@ void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
     * The Back or Forward, buttons, or the first click on a rendered
     * page. BUG: this must be investigated and reported to FLTK2 team
     */
-   printf ("when = %d\n", widget->when ());
+   MSG("when = %d\n", widget->when ());
    if ((widget->when () & ::fltk::WHEN_ENTER_KEY_ALWAYS) &&
        (::fltk::event_key() == ::fltk::ReturnKey))
       ((FltkEntryResource*)data)->emitActivate ();
@@ -648,11 +648,11 @@ FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
 
    // Check values. Upper bound check is left to the caller.
    if (numCols < 1) {
-      fprintf (stderr, "WARNING: numCols = %d is set to 1.\n", numCols);
+      MSG_WARN("numCols = %d is set to 1.\n", numCols);
       numCols = 1;
    }
    if (numRows < 1) {
-      fprintf (stderr, "WARNING: numRows = %d is set to 1.\n", numRows);
+      MSG_WARN("numRows = %d is set to 1.\n", numRows);
       numRows = 1;
    }
 
