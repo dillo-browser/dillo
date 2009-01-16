@@ -52,6 +52,7 @@ dillo-2.1
  - Fixed the parser not to call Html_tag_close_* functions twice.
  - Implemented CSS Stylesheet loading.
  - Made a big cleanup of cache.c WRT charset decoding (fixes bugs).
+ - Made an extensive cleanup/fixup of the whole image handling process.
    Patches: Jorge Arellano Cid
 
 dw
