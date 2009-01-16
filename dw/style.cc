@@ -26,6 +26,7 @@
 #include <ctype.h>
 
 #include "core.hh"
+#include "../lout/msg.h"
 
 namespace dw {
 namespace core {
@@ -324,7 +325,7 @@ Font *Font::createFromList (Layout *layout, FontAttrs *attrs,
    }
 
    if (font == NULL)
-      fprintf (stderr, "Could not find any font.\n");
+      MSG_WARN("Could not find any font.\n");
 
    return font;
 }
@@ -450,11 +451,10 @@ static void drawPolygon (View *view, Color *color, Color::Shading shading,
             points[3][1] = y1 + width;
          }
 
-         /*
-         printf ("drawPolygon: (%d, %d) .. (%d, %d) .. (%d, %d) .. (%d, %d)\n",
-                 points[0][0], points[0][1], points[1][0], points[1][1],
-                 points[2][0], points[2][1], points[3][0], points[3][1]);
-         */
+         _MSG("drawPolygon: (%d, %d) .. (%d, %d) .. (%d, %d) .. (%d, %d)\n",
+              points[0][0], points[0][1], points[1][0], points[1][1],
+              points[2][0], points[2][1], points[3][0], points[3][1]);
+
          view->drawPolygon (color, shading, true, points, 4);
       }
    }

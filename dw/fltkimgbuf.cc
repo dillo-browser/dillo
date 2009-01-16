@@ -21,6 +21,7 @@
 
 
 #include "fltkcore.hh"
+#include "../lout/msg.h"
 #include "../lout/misc.hh"
 
 #include <fltk/draw.h>
@@ -35,13 +36,13 @@ using namespace container::typed;
 
 FltkImgbuf::FltkImgbuf (Type type, int width, int height)
 {
-   //printf("FltkImgbuf: new root %p\n", this);
+   _MSG("FltkImgbuf: new root %p\n", this);
    init (type, width, height, NULL);
 }
 
 FltkImgbuf::FltkImgbuf (Type type, int width, int height, FltkImgbuf *root)
 {
-   //printf("FltkImgbuf: new scaled %p, root is %p\n", this, root);
+   _MSG("FltkImgbuf: new scaled %p, root is %p\n", this, root);
    init (type, width, height, root);
 }
 
@@ -58,8 +59,7 @@ void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
       case RGB:  bpp = 3; break;
       default:   bpp = 1; break;
    }
-   //fprintf(stderr,"FltkImgbuf::init width=%d height=%d bpp=%d\n",
-   //        width, height, bpp);
+   _MSG("FltkImgbuf::init width=%d height=%d bpp=%d\n", width, height, bpp);
    rawdata = new uchar[bpp * width * height];
    // Set light-gray as interim background color.
    memset(rawdata, 222, width*height*bpp);
@@ -85,7 +85,7 @@ void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
 
 FltkImgbuf::~FltkImgbuf ()
 {
-   //printf("~FltkImgbuf[%s %p] deleted\n", isRoot() ? "root":"scaled", this);
+   _MSG("~FltkImgbuf[%s %p] deleted\n", isRoot() ? "root":"scaled", this);
 
    if (!isRoot())
       root->detachScaledBuf (this);
@@ -105,8 +105,8 @@ void FltkImgbuf::detachScaledBuf (FltkImgbuf *scaledBuf)
 {
    scaledBuffers->detachRef (scaledBuf);
 
-   //printf("FltkImgbuf[root %p]: scaled buffer %p is detached, %d left\n",
-   //       this, scaledBuf, scaledBuffers->size ());
+   _MSG("FltkImgbuf[root %p]: scaled buffer %p is detached, %d left\n",
+        this, scaledBuf, scaledBuffers->size ());
 
    if (refCount == 0 && scaledBuffers->isEmpty () && deleteOnUnref)
       // If the root buffer is not used anymore, but this is the last scaled
@@ -202,8 +202,8 @@ void FltkImgbuf::getRowArea (int row, dw::core::Rectangle *area)
       area->y = row;
       area->width = width;
       area->height = 1;
-      //fprintf(stderr,"::getRowArea: area x=%d y=%d width=%d height=%d\n",
-      //        area->x, area->y, area->width, area->height);
+      _MSG("::getRowArea: area x=%d y=%d width=%d height=%d\n",
+           area->x, area->y, area->width, area->height);
    } else {
       // scaled buffer
       int sr1 = scaledY (row);
@@ -213,8 +213,8 @@ void FltkImgbuf::getRowArea (int row, dw::core::Rectangle *area)
       area->y = sr1;
       area->width = width;
       area->height = sr2 - sr1;
-      //fprintf(stderr,"::getRowArea: area x=%d y=%d width=%d height=%d\n",
-      //        area->x, area->y, area->width, area->height);
+      _MSG("::getRowArea: area x=%d y=%d width=%d height=%d\n",
+           area->x, area->y, area->width, area->height);
    }
 }
 
@@ -233,19 +233,19 @@ void FltkImgbuf::ref ()
    refCount++;
 
    //if (root)
-   //   printf("FltkImgbuf[scaled %p, root is %p]: ref() => %d\n",
-   //          this, root, refCount);
+   //   MSG("FltkImgbuf[scaled %p, root is %p]: ref() => %d\n",
+   //        this, root, refCount);
    //else
-   //   printf("FltkImgbuf[root %p]: ref() => %d\n", this, refCount);
+   //   MSG("FltkImgbuf[root %p]: ref() => %d\n", this, refCount);
 }
 
 void FltkImgbuf::unref ()
 {
    //if (root)
-   //   printf("FltkImgbuf[scaled %p, root is %p]: ref() => %d\n",
-   //          this, root, refCount - 1);
+   //   MSG("FltkImgbuf[scaled %p, root is %p]: ref() => %d\n",
+   //       this, root, refCount - 1);
    //else
-   //   printf("FltkImgbuf[root %p]: ref() => %d\n", this, refCount - 1);
+   //   MSG("FltkImgbuf[root %p]: ref() => %d\n", this, refCount - 1);
 
    if (--refCount == 0) {
       if (isRoot ()) {
@@ -253,9 +253,10 @@ void FltkImgbuf::unref ()
          // See also FltkImgbuf::detachScaledBuf().
          if (scaledBuffers->isEmpty () && deleteOnUnref) {
             delete this;
-         } else
-            printf("FltkImgbuf[root %p]: not deleted. numScaled=%d\n",
-                   this, scaledBuffers->size ());
+         } else {
+            _MSG("FltkImgbuf[root %p]: not deleted. numScaled=%d\n",
+                 this, scaledBuffers->size ());
+         }
       } else
          // Scaled buffer buffer, simply delete it.
          delete this;
@@ -291,27 +292,13 @@ int FltkImgbuf::scaledY(int ySrc)
 void FltkImgbuf::draw (::fltk::Widget *target, int xRoot, int yRoot,
                        int x, int y, int width, int height)
 {
-   // TODO (i):  Implementation.
-   // TODO (ii): Clarify the question, whether "target" is the current widget
-   //            (and so has not to be passed at all).
+   // TODO: Clarify the question, whether "target" is the current widget
+   //       (and so has not to be passed at all).
 
-/*
-   setcolor (0);
+   _MSG("::draw: xRoot=%d x=%d yRoot=%d y=%d width=%d height=%d\n"
+        "        this->width=%d this->height=%d\n",
+        xRoot, x, yRoot, y, width, height, this->width, this->height);
 
-   for (int row = y; row < y + height; row++) {
-      if (copiedRows->get (row)) {
-         ::fltk::Rectangle rect (x + xRoot, row + yRoot, width, 1);
-         fillrect (rect);
-      }
-   }
-*/
-
-   //fprintf(stderr,"::draw: xRoot=%d x=%d yRoot=%d y=%d width=%d height=%d\n"
-   //        "        this->width=%d this->height=%d\n",
-   //        xRoot, x, yRoot, y, width, height, this->width, this->height);
-
-//{
-#if 1
    if (x > this->width || y > this->height) {
       return;
    }
@@ -324,19 +311,10 @@ void FltkImgbuf::draw (::fltk::Widget *target, int xRoot, int yRoot,
       height = this->height - y;
    }
 
-   // almost OK for rows. For some unknown reason it trims the bottom and 
-   // rightmost parts when scrolling.
+   // Draw 
    ::fltk::Rectangle rect (xRoot + x, yRoot + y, width, height);
    PixelType ptype = (type == RGBA) ? ::fltk::RGBA : ::fltk::RGB;
    drawimage(rawdata+bpp*(y*this->width + x),ptype,rect,bpp*this->width);
-
-#else
-   // OK for full image.
-   ::fltk::Rectangle rect (xRoot, yRoot, this->width, this->height);
-   PixelType ptype = (type == RGBA) ? ::fltk::RGBA : ::fltk::RGB;
-   drawimage(rawdata,ptype,rect);
-#endif
-//}
 }
 
 } // namespace dw

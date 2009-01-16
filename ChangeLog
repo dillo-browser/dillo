@@ -59,6 +59,8 @@ dw
    Patch: place (AKA corvid)
 +- Cleaned up unused code in fltkviewbase.
    Patch: Johannes Hofmann
++- Added lout/msg.h and normalized debug messages to use it.
+   Patch: Jorge Arellano Cid
 
 -----------------------------------------------------------------------------
 

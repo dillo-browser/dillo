@@ -11,4 +11,5 @@ liblout_a_SOURCES = \
 	object.cc \
 	object.hh \
 	signal.cc \
-	signal.hh
+	signal.hh \
+	msg.h

@@ -22,6 +22,7 @@
 
 #include "core.hh"
 
+#include "../lout/msg.h"
 #include "../lout/debug.hh"
 #include "../lout/misc.hh"
 
@@ -128,7 +129,7 @@ Layout::~Layout ()
 void Layout::addWidget (Widget *widget)
 {
    if (topLevel) {
-      fprintf (stderr, "widget already set\n");
+      MSG_WARN("widget already set\n");
       return;
    }
 
@@ -261,8 +262,8 @@ void Layout::scrollTo0 (HPosition hpos, VPosition vpos,
                         bool scrollingInterrupted)
 {
    if (usesViewport) {
-      //printf ("scrollTo (%d, %d, %s)\n",
-      //        x, y, scrollingInterrupted ? "true" : "false");
+      _MSG("scrollTo (%d, %d, %s)\n",
+           x, y, scrollingInterrupted ? "true" : "false");
 
       scrollTargetHpos = hpos;
       scrollTargetVpos = vpos;
@@ -353,7 +354,7 @@ void Layout::adjustScrollPos ()
       canvasAscent + canvasDescent - (viewportHeight - hScrollbarThickness));
    scrollY = misc::max (scrollY, 0);
 
- //printf("adjustScrollPos: scrollX=%d scrollY=%d\n", scrollX, scrollY);
+   _MSG("adjustScrollPos: scrollX=%d scrollY=%d\n", scrollX, scrollY);
 }
 
 bool Layout::calcScrollInto (int requestedValue, int requestedSize,
@@ -413,7 +414,7 @@ void Layout::draw (View *view, Rectangle *area)
  */
 void Layout::setAnchor (const char *anchor)
 {
-   //printf ("setAnchor (%s)\n", anchor);
+   _MSG("setAnchor (%s)\n", anchor);
 
    if (requestedAnchor)
       delete requestedAnchor;
@@ -523,7 +524,7 @@ void Layout::updateBgColor ()
 void Layout::resizeIdle ()
 {
    //static int calls = 0;
-   //printf(" Layout::resizeIdle calls = %d\n", ++calls);
+   //MSG(" Layout::resizeIdle calls = %d\n", ++calls);
 
    while (resizeIdleId != -1) {
       // Reset already here, since in this function, queueResize() may be
@@ -739,8 +740,8 @@ void Layout::leaveNotify (View *view, ButtonState state)
  */
 Widget *Layout::getWidgetAtPoint (int x, int y)
 {
-   //_MSG ("------------------------------------------------------------\n");
-   //_MSG ("widget at (%d, %d)\n", x, y);
+   _MSG ("------------------------------------------------------------\n");
+   _MSG ("widget at (%d, %d)\n", x, y);
    if (topLevel)
       return topLevel->getWidgetAtPoint (x, y, 0);
    else
@@ -879,8 +880,8 @@ void Layout::scrollPosChanged (View *view, int x, int y)
  */
 void Layout::viewportSizeChanged (View *view, int width, int height)
 {
-   //printf("Layout::viewportSizeChanged w=%d h=%d new_w=%d new_h=%d\n",
-   //       viewportWidth, viewportHeight, width, height);
+   _MSG("Layout::viewportSizeChanged w=%d h=%d new_w=%d new_h=%d\n",
+        viewportWidth, viewportHeight, width, height);
 
    /* If the width has become higher, we test again, whether the vertical
     * scrollbar (so to speak) can be hidden again. */

@@ -55,7 +55,6 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
 
    font = ::fltk::font(name, fa);
    if(font == NULL) {
-      //fprintf(stderr, "No font '%s', using default sans-serif font.\n",name);
       /*
        * If using xft, fltk::HELVETICA just means sans, fltk::COURIER
        * means mono, and fltk::TIMES means serif.

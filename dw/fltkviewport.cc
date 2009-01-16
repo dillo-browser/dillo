@@ -27,6 +27,7 @@
 #include <fltk/events.h>
 
 #include <stdio.h>
+#include "../lout/msg.h"
 
 using namespace fltk;
 using namespace lout::object;
@@ -211,7 +212,7 @@ void FltkViewport::draw ()
 
 int FltkViewport::handle (int event)
 {
-   //printf("FltkViewport::handle %d\n", event);
+   _MSG("FltkViewport::handle %d\n", event);
 
    if (hscrollbar->Rectangle::contains (event_x (), event_y ()) &&
        !(event_state() & (SHIFT | CTRL | ALT)) &&

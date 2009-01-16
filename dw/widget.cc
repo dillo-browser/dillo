@@ -22,6 +22,7 @@
 
 #include "core.hh"
 
+#include "../lout/msg.h"
 #include "../lout/debug.hh"
 
 using namespace lout::object;
@@ -315,7 +316,7 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
 {
    /** \todo Maybe only the intersection? */
    layout->queueDraw (x + allocation.x, y + allocation.y, width, height);
- //printf("Widget::queueDrawArea x=%d y=%d w=%d h=%d\n", x, y, width, height);
+   _MSG("Widget::queueDrawArea x=%d y=%d w=%d h=%d\n", x, y, width, height);
 }
 
 /**
@@ -547,7 +548,7 @@ style::Color *Widget::getBgColor ()
       widget = widget->parent;
    }
 
-   fprintf (stderr, "No background color found!\n");
+   MSG_WARN("No background color found!\n");
    return NULL;
 
 }
@@ -692,7 +693,7 @@ Widget *Widget::getNearestCommonAncestor (Widget *otherWidget)
    /* Search upwards. */
    while (widget1 != widget2) {
       if (widget1->parent == NULL) {
-         fprintf (stderr, "widgets in different trees\n");
+         MSG_WARN("widgets in different trees\n");
          return NULL;
       }
       

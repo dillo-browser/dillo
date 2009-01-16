@@ -21,6 +21,7 @@
 
 
 #include "textblock.hh"
+#include "../lout/msg.h"
 #include "../lout/misc.hh"
 
 #include <stdio.h>
@@ -260,8 +261,8 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
                   extremes->minWidth = wordExtremes.minWidth;
             }
 
-            //printf("parMax = %d, wordMaxWidth=%d, prevWordSpace=%d\n",
-            //       parMax, wordExtremes.maxWidth, prevWordSpace);
+            _MSG("parMax = %d, wordMaxWidth=%d, prevWordSpace=%d\n",
+                 parMax, wordExtremes.maxWidth, prevWordSpace);
             if (word->content.type != core::Content::BREAK)
                parMax += prevWordSpace;
             parMax += wordExtremes.maxWidth;
@@ -1417,7 +1418,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
          break;
 
       default:
-         fprintf (stderr,  "BUG!!! at (%d, %d).\n", xWorld, yWorldBase + diff);
+         MSG_ERR("at (%d, %d).\n", xWorld, yWorldBase + diff);
          break;
       }
 
