@@ -21,6 +21,9 @@
 # Change this if you want to disable loading of CSS stylesheets.
 #load_stylesheets=YES
 
+# Change this if you want to disable parsing of embedded CSS.
+#parse_embedded_css=YES
+
 # Change the buffering scheme for drawing
 # 0 no double buffering - useful for debugging
 # 1 light buffering using a single back buffer for all windows

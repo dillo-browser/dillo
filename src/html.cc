@@ -1654,8 +1654,9 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_style(DilloHtml *html, int TagIdx)
 {
-   html->styleEngine->parse(html->Stash->str, html->Stash->len,
-                            0, CSS_ORIGIN_AUTHOR);
+   if (prefs.parse_embedded_css)
+      html->styleEngine->parse(html->Stash->str, html->Stash->len,
+                               0, CSS_ORIGIN_AUTHOR);
 }
 
 /*
