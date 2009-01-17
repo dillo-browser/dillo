@@ -230,7 +230,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
  * Create a new Tab.
  * i.e the new UI and its associated BrowserWindow data structure.
  */
-BrowserWindow *UIcmd_tab_new(const void *vbw)
+static BrowserWindow *UIcmd_tab_new(const void *vbw)
 {
    _MSG(" UIcmd_tab_new vbw=%p\n", vbw);
 

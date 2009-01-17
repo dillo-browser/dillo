@@ -22,28 +22,28 @@ using namespace dw::core::style;
 /* Applies to symbol lengths and string literals. */
 #define MAX_STR_LEN 256
 
-static const char *Css_border_style_enum_vals[] = {
+static const char *const Css_border_style_enum_vals[] = {
    "none", "hidden", "dotted", "dashed", "solid", "double", "groove",
    "ridge", "inset", "outset", NULL
 };
 
-static const char *Css_cursor_enum_vals[] = {
+static const char *const Css_cursor_enum_vals[] = {
    "crosshair", "default", "pointer", "move", "e_resize", "ne_resize",
    "nw_resize", "n_resize", "se_resize", "sw_resize", "s_resize",
    "w_resize", "text", "wait", "help", NULL
 };
 
-static const char *Css_display_enum_vals[DISPLAY_LAST + 1] = {
+static const char *const Css_display_enum_vals[DISPLAY_LAST + 1] = {
    "block", "inline", "list-item", "table", "table-row-group",
    "table-header-group", "table-footer-group", "table-row",
    "table-cell", NULL
 };
 
-static const char *Css_font_style_enum_vals[] = {
+static const char *const Css_font_style_enum_vals[] = {
    "normal", "italic", "oblique", NULL
 };
 
-static const char *Css_list_style_type_enum_vals[] = {
+static const char *const Css_list_style_type_enum_vals[] = {
    "disc", "circle", "square", "decimal", "decimal-leading-zero",
    "lower-roman", "upper-roman", "lower-greek", "lower-alpha",
    "lower-latin", "upper-alpha", "upper-latin", "hebrew", "armenian",
@@ -51,23 +51,23 @@ static const char *Css_list_style_type_enum_vals[] = {
    "katakana-iroha", "none", NULL
 };
 
-static const char *Css_text_align_enum_vals[] = {
+static const char *const Css_text_align_enum_vals[] = {
    "left", "right", "center", "justify", "string", NULL
 };
 
-static const char *Css_text_decoration_enum_vals[] = {
+static const char *const Css_text_decoration_enum_vals[] = {
    "underline", "overline", "line-through", "blink", NULL
 };
 
-static const char *Css_vertical_align_vals[] = {
+static const char *const Css_vertical_align_vals[] = {
    "top", "bottom", "middle", "baseline", "sub", "super", NULL
 };
 
-static const char *Css_white_space_vals[] = {
+static const char *const Css_white_space_vals[] = {
    "normal", "pre", "nowrap", NULL
 };
 
-CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
+const CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
    {"background-attachment", CSS_TYPE_UNUSED, NULL},
    {"background-color", CSS_TYPE_COLOR, NULL},
    {"background-image", CSS_TYPE_UNUSED, NULL},
@@ -168,7 +168,7 @@ typedef struct {
       CSS_SHORTHAND_BORDER,     /* special, used for 'border' */
       CSS_SHORTHAND_FONT,       /* special, used for 'font' */
    } type;
-   CssProperty::Name * properties;      /* CSS_SHORTHAND_MULTIPLE:
+   const CssProperty::Name * properties;/* CSS_SHORTHAND_MULTIPLE:
                                          *   must be terminated by -1
                                          * CSS_SHORTHAND_DIRECTIONS:
                                          *   must have length 4
@@ -178,7 +178,7 @@ typedef struct {
                                          *   unused */
 } CssShorthandInfo;
 
-CssProperty::Name Css_background_properties[] = {
+const CssProperty::Name Css_background_properties[] = {
    CssProperty::CSS_PROPERTY_BACKGROUND_COLOR,
    CssProperty::CSS_PROPERTY_BACKGROUND_IMAGE,
    CssProperty::CSS_PROPERTY_BACKGROUND_REPEAT,
@@ -187,84 +187,84 @@ CssProperty::Name Css_background_properties[] = {
    (CssProperty::Name) - 1
 };
 
-CssProperty::Name Css_border_bottom_properties[] = {
+const CssProperty::Name Css_border_bottom_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR,
    (CssProperty::Name) - 1
 };
 
-CssProperty::Name Css_border_color_properties[4] = {
+const CssProperty::Name Css_border_color_properties[4] = {
    CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR,
    CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR,
    CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR,
    CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR
 };
 
-CssProperty::Name Css_border_left_properties[] = {
+const CssProperty::Name Css_border_left_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR,
    (CssProperty::Name) - 1
 };
 
-CssProperty::Name Css_border_right_properties[] = {
+const CssProperty::Name Css_border_right_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR,
    (CssProperty::Name) - 1
 };
 
-CssProperty::Name Css_border_style_properties[4] = {
+const CssProperty::Name Css_border_style_properties[4] = {
    CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE
 };
 
-CssProperty::Name Css_border_top_properties[] = {
+const CssProperty::Name Css_border_top_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR,
    (CssProperty::Name) - 1
 };
 
-CssProperty::Name Css_border_width_properties[4] = {
+const CssProperty::Name Css_border_width_properties[4] = {
    CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH
 };
 
-CssProperty::Name Css_list_style_properties[] = {
+const CssProperty::Name Css_list_style_properties[] = {
    CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE,
    CssProperty::CSS_PROPERTY_LIST_STYLE_POSITION,
    CssProperty::CSS_PROPERTY_LIST_STYLE_IMAGE,
    (CssProperty::Name) - 1
 };
 
-CssProperty::Name Css_margin_properties[4] = {
+const CssProperty::Name Css_margin_properties[4] = {
    CssProperty::CSS_PROPERTY_MARGIN_TOP,
    CssProperty::CSS_PROPERTY_MARGIN_BOTTOM,
    CssProperty::CSS_PROPERTY_MARGIN_LEFT,
    CssProperty::CSS_PROPERTY_MARGIN_RIGHT
 };
 
-CssProperty::Name Css_outline_properties[] = {
+const CssProperty::Name Css_outline_properties[] = {
    CssProperty::CSS_PROPERTY_OUTLINE_COLOR,
    CssProperty::CSS_PROPERTY_OUTLINE_STYLE,
    CssProperty::CSS_PROPERTY_OUTLINE_WIDTH,
    (CssProperty::Name) - 1
 };
 
-CssProperty::Name Css_padding_properties[4] = {
+const CssProperty::Name Css_padding_properties[4] = {
    CssProperty::CSS_PROPERTY_PADDING_TOP,
    CssProperty::CSS_PROPERTY_PADDING_BOTTOM,
    CssProperty::CSS_PROPERTY_PADDING_LEFT,
    CssProperty::CSS_PROPERTY_PADDING_RIGHT
 };
 
-CssProperty::Name Css_border_properties[12] = {
+const CssProperty::Name Css_border_properties[12] = {
    CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR,
@@ -279,7 +279,7 @@ CssProperty::Name Css_border_properties[12] = {
    CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR
 };
 
-static CssShorthandInfo Css_shorthand_info[CSS_SHORTHAND_NUM] = {
+static const CssShorthandInfo Css_shorthand_info[CSS_SHORTHAND_NUM] = {
    {"background", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
     Css_background_properties},
    {"border", CssShorthandInfo::CSS_SHORTHAND_BORDER,

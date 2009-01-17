@@ -45,7 +45,7 @@ typedef enum {
 typedef struct {
    const char *symbol;
    CssValueType type;
-   const char **enum_symbols;
+   const char *const *enum_symbols;
 } CssPropertyInfo;
 
 
@@ -58,6 +58,6 @@ void        a_Css_parse                       (CssContext *context,
                                                int order_count,
                                                CssOrigin origin);
 
-extern CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST];
+extern const CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST];
 
 #endif // __CSS_H__
