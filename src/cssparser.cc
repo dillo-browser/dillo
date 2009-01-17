@@ -836,7 +836,7 @@ static void Css_parse_declaration(CssParser * parser,
             Css_next_token(parser);
             if (Css_parse_value(parser, prop, &val)) {
                weight = Css_parse_weight(parser);
-               if (weight)
+               if (weight && importantProps)
                   importantProps->set(prop, val);
                else
                   props->set(prop, val);
@@ -877,7 +877,7 @@ static void Css_parse_declaration(CssParser * parser,
                                                Css_shorthand_info[sh_index]
                                                .properties[i], &val)) {
                               weight = Css_parse_weight(parser);
-                              if (weight)
+                              if (weight && importantProps)
                                  importantProps->
                                      set(Css_shorthand_info[sh_index].
                                          properties[i], val);
@@ -908,7 +908,7 @@ static void Css_parse_declaration(CssParser * parser,
                   weight = Css_parse_weight(parser);
                   if (n > 0) {
                      for (i = 0; i < 4; i++)
-                        if (weight)
+                        if (weight && importantProps)
                            importantProps->set(Css_shorthand_info[sh_index]
                                                .properties[i],
                                                dir_vals[dir_set[n - 1]
@@ -938,7 +938,7 @@ static void Css_parse_declaration(CssParser * parser,
                                                .properties[i], &val)) {
                               weight = Css_parse_weight(parser);
                               for (j = 0; j < 4; j++)
-                                 if (weight)
+                                 if (weight && importantProps)
                                     importantProps->
                                        set(Css_shorthand_info[sh_index].
                                           properties[j * 3 + i], val);
@@ -1164,4 +1164,30 @@ void a_Css_parse(CssContext * context,
    Css_next_token(&parser);
    while (parser.ttype != CSS_TK_END)
       Css_parse_ruleset(&parser);
+}
+
+CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen)
+{
+   CssPropertyList *props = new CssPropertyList ();
+   CssParser parser;
+
+   parser.context = NULL;
+   parser.buf = buf;
+   parser.buflen = buflen;
+   parser.bufptr = 0;
+   parser.order_count = 0;
+   parser.origin = CSS_ORIGIN_AUTHOR;
+   parser.within_block = true;
+   parser.space_separated = false;
+
+   Css_next_token(&parser);
+   while (parser.ttype != CSS_TK_END)
+      Css_parse_declaration(&parser, props, NULL);
+
+   if (props->size () == 0) {
+      delete props;
+      props = NULL;
+   }
+
+   return props;
 }

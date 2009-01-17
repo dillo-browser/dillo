@@ -58,6 +58,8 @@ void        a_Css_parse                       (CssContext *context,
                                                int order_count,
                                                CssOrigin origin);
 
+CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen);
+
 extern const CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST];
 
 #endif // __CSS_H__

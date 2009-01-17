@@ -391,8 +391,9 @@ bool StyleEngine::computeLength (dw::core::style::Length *dest,
  *    This method is private. Call style() to get a current style object.
  */
 Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
-   CssPropertyList props;
-   CssPropertyList *tagStyleProps = NULL; /** \todo implementation */
+   CssPropertyList props, *styleAttributeProps = NULL;
+   const char *styleAttribute =
+      stack->getRef (stack->size () - 1)->styleAttribute;
 
    // get previous style from the stack
    StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
@@ -402,9 +403,19 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    if (stack->getRef (stack->size () - 2)->inheritBackgroundColor)
       attrs.backgroundColor =
          stack->getRef (stack->size () - 2)->style->backgroundColor;
-  
-   cssContext->apply (&props, this, tagStyleProps, nonCssProperties);
 
+   // parse style information from style="" attribute, if it exists
+   if (styleAttribute)
+      styleAttributeProps =
+         a_Css_parse_declaration (styleAttribute, strlen (styleAttribute));
+
+   // merge style information
+   cssContext->apply (&props, this, styleAttributeProps, nonCssProperties);
+
+   if (styleAttributeProps)
+      delete styleAttributeProps;
+
+   // apply style
    apply (&attrs, &props);
 
    stack->getRef (stack->size () - 1)->style = Style::create (layout, &attrs);
