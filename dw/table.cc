@@ -947,7 +947,7 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
 #ifdef DBG
       MSG("APP_P, result = { ");
       for (int col = 0; col < numCols; col++)
-         MSG("%d ", result->get(col));
+         MSG("%d ", colWidths->get(col));
       MSG("}\n");
 #endif
 
