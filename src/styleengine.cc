@@ -405,7 +405,7 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
          stack->getRef (stack->size () - 2)->style->backgroundColor;
 
    // parse style information from style="" attribute, if it exists
-   if (styleAttribute)
+   if (styleAttribute && prefs.parse_embedded_css)
       styleAttributeProps =
          a_Css_parse_declaration (styleAttribute, strlen (styleAttribute));
 

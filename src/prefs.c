@@ -79,6 +79,7 @@ typedef enum {
    DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB,
    DRC_TOKEN_NOPROXY,
    DRC_TOKEN_PANEL_SIZE,
+   DRC_TOKEN_PARSE_EMBEDDED_CSS,
    DRC_TOKEN_PROXY,
    DRC_TOKEN_PROXYUSER,
    DRC_TOKEN_REFERER,
@@ -146,6 +147,7 @@ static const SymNode_t symbols[] = {
    { "middle_click_opens_new_tab", DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB },
    { "no_proxy", DRC_TOKEN_NOPROXY },
    { "panel_size", DRC_TOKEN_PANEL_SIZE },
+   { "parse_embedded_css", DRC_TOKEN_PARSE_EMBEDDED_CSS },
    { "save_dir", DRC_TOKEN_SAVE_DIR },
    { "search_url", DRC_TOKEN_SEARCH_URL },
    { "show_back", DRC_TOKEN_SHOW_BACK },
@@ -263,6 +265,9 @@ static int Prefs_parse_pair(char *name, char *value)
          prefs.panel_size = P_medium;
       else /* default to "medium" */
          prefs.panel_size = P_medium;
+      break;
+   case DRC_TOKEN_PARSE_EMBEDDED_CSS:
+      prefs.parse_embedded_css = (strcmp(value, "YES") == 0);
       break;
    case DRC_TOKEN_SMALL_ICONS:
       prefs.small_icons = (strcmp(value, "YES") == 0);
@@ -463,6 +468,7 @@ void a_Prefs_init(void)
    prefs.fullwindow_start=FALSE;
    prefs.load_images=TRUE;
    prefs.load_stylesheets=TRUE;
+   prefs.parse_embedded_css=TRUE;
    prefs.buffered_drawing=1;
    prefs.vw_fontname = dStrdup(D_VW_FONTNAME);
    prefs.fw_fontname = dStrdup(D_FW_FONTNAME);
