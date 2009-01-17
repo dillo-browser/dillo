@@ -55,6 +55,14 @@ void dFree (void *mem);
  */
 #define D_STMT_START      do
 #define D_STMT_END        while (0)
+#define dReturn_if(expr)               \
+   D_STMT_START{                       \
+      if (expr) { return; };           \
+   }D_STMT_END
+#define dReturn_val_if(expr)           \
+   D_STMT_START{                       \
+      if (expr) { return val; };       \
+   }D_STMT_END
 #define dReturn_if_fail(expr)          \
    D_STMT_START{                       \
       if (!(expr)) { return; };        \
