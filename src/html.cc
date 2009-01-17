@@ -1836,10 +1836,6 @@ static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
 
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
-   /* First finalize unclosed H tags (we test if already named anyway) */
-   a_Menu_pagemarks_set_text(html->bw, html->Stash->str);
-   a_Menu_pagemarks_add(html->bw, DW2TB(html->dw),
-                        html->styleEngine->style (), (tag[2] - '0'));
    a_Html_stash_init(html);
    S_TOP(html)->parse_mode =
       DILLO_HTML_PARSE_MODE_STASH_AND_BODY;
@@ -1850,7 +1846,6 @@ static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_h(DilloHtml *html, int TagIdx)
 {
-   a_Menu_pagemarks_set_text(html->bw, html->Stash->str);
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
