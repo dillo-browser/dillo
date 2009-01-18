@@ -873,32 +873,21 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 
    if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
       /* Render the button */
-      StyleAttrs style_attrs;
-      Style *style;
       Widget *page;
       Embed *embed;
       char *name, *value;
 
-      style_attrs = *html->styleEngine->style ();
-      style_attrs.margin.setVal(0);
-      style_attrs.borderWidth.setVal(0);
-      style_attrs.padding.setVal(0);
-      style_attrs.backgroundColor =
-               Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
-      style = Style::create (HT2LT(html), &style_attrs);
-
       page = new Textblock (prefs.limit_text_width);
-      page->setStyle (style);
+      page->setStyle (html->styleEngine->style ());
 
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();
       Resource *resource = factory->createComplexButtonResource(page, true);
       embed = new Embed(resource);
 // a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
 
-      DW2TB(html->dw)->addParbreak (5, style);
-      DW2TB(html->dw)->addWidget (embed, style);
-      DW2TB(html->dw)->addParbreak (5, style);
-      style->unref ();
+      DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());
+      DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
+      DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());
 
       S_TOP(html)->textblock = html->dw = page;
       /* right button press for menus for button contents */
@@ -1938,27 +1927,24 @@ DilloHtmlOption::~DilloHtmlOption ()
 static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
-   StyleAttrs style_attrs;
    DilloImage *Image;
    Embed *button = NULL;
    DilloUrl *url = NULL;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) &&
        (url = a_Html_url_new(html, attrbuf, NULL, 0))) {
-      style_attrs = *html->styleEngine->style ();
-      style_attrs.cursor = CURSOR_POINTER;
+
+      html->styleEngine->setPseudoLink ();
 
       /* create new image and add it to the button */
       if ((Image = a_Html_add_new_image(html, tag, tagsize, url, false))) {
-         Style *style = Style::create (HT2LT(html), &style_attrs);
-         IM2DW(Image)->setStyle (style);
+         IM2DW(Image)->setStyle (html->styleEngine->style ());
          ResourceFactory *factory = HT2LT(html)->getResourceFactory();
          ComplexButtonResource *complex_b_r =
             factory->createComplexButtonResource(IM2DW(Image), false);
          button = new Embed(complex_b_r);
-         DW2TB(html->dw)->addWidget (button, style);
+         DW2TB(html->dw)->addWidget (button, html->styleEngine->style ());
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
-         style->unref();
 
          /* a right button press brings up the image menu */
          html->connectSignals((Widget*)Image->dw);
