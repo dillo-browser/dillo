@@ -31,7 +31,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = "helvetica";
-   font_attrs.size = (int) (12 * prefs.font_factor + 0.5);
+   font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
    font_attrs.weight = CssProperty::CSS_FONT_WEIGHT_NORMAL;
    font_attrs.style = FONT_STYLE_NORMAL;
  
