@@ -266,13 +266,6 @@ void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
    ruleList[1] = elementTable[docTree->top ()->element];
    ruleList[0] = anyTable;
 
-#if 0
-   fprintf(stderr, "==> ");
-   for (int j = 0; j < 4; j++)
-      fprintf(stderr, "%d ", ruleList[j]?ruleList[j]->size():0);
-   fprintf(stderr, "\n");
-#endif
-
    for (int i = 0;; i++) {
       int n = 0;
 
