@@ -1181,8 +1181,10 @@ CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen)
    parser.space_separated = false;
 
    Css_next_token(&parser);
-   while (parser.ttype != CSS_TK_END)
+   do
       Css_parse_declaration(&parser, props, NULL);
+   while (!(parser.ttype == CSS_TK_END ||
+         (parser.ttype == CSS_TK_CHAR && parser.tval[0] == '}')));
 
    if (props->size () == 0) {
       delete props;
