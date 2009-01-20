@@ -1004,6 +1004,13 @@ static bool Css_parse_simple_selector(CssParser * parser,
                break;
             case ':':
                pp = &selector->pseudo;
+               if (*pp)
+                  // pseudo class has been set already.
+                  // As dillo currently only supports :link and :visisted, a
+                  // selector with more than one pseudo class will never match.
+                  // By returning false, the whole CssRule will be dropped.
+                  // \todo adapt this when supporting :hover, :active...
+                  return false;
                break;
          }
       }
