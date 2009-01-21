@@ -377,10 +377,13 @@ bool StyleEngine::computeLength (dw::core::style::Length *dest,
    if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE) {
       *dest = createPerLength (CSS_LENGTH_VALUE (value));
       return true;
-    } else if (computeValue (&v, value, font)) {
-       *dest = createAbsLength (v);
-       return true;
-    }
+   } else if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_AUTO) {
+      *dest = dw::core::style::LENGTH_AUTO;
+      return true;
+   } else if (computeValue (&v, value, font)) {
+      *dest = createAbsLength (v);
+      return true;
+   }
 
    return false;
 }
