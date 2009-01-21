@@ -71,8 +71,6 @@ bool CssSelector::match (Doctree *docTree) {
    int *notMatchingBefore;
    const DoctreeNode *n, *node = docTree->top ();
 
-   assert (selectorList->size () > 0);
-
    for (int i = selectorList->size () - 1; i >= 0; i--) {
       struct CombinatorAndSelector *cs = selectorList->getRef (i);
 
@@ -170,6 +168,8 @@ void CssSimpleSelector::print () {
 }
 
 CssRule::CssRule (CssSelector *selector, CssPropertyList *props) {
+   assert (selector->size () > 0);
+
    this->selector = selector;
    this->selector->ref ();
    this->props = props;

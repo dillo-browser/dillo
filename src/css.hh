@@ -238,7 +238,7 @@ class CssSelector {
       inline CssSimpleSelector *top () {
          return &selectorList->getRef (selectorList->size () - 1)->selector;
       };
-
+      inline int size () { return selectorList->size (); };
       bool match (Doctree *dt);
       void print ();
       inline void ref () { refCount++; }
