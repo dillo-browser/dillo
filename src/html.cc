@@ -571,8 +571,8 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
    dFree(aux);
 #endif
 
-   dReturn_if_fail (dw != NULL);
-   dReturn_if_fail (stop_parser == FALSE);
+   dReturn_if (dw == NULL);
+   dReturn_if (stop_parser == TRUE);
 
    Start_Buf = Buf;
    token_start = Html_write_raw(this, buf, bufsize, Eof);
@@ -2736,7 +2736,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 " <tr><td bgcolor='#a0a0a0' colspan='2'>The author wanted you to go\n"
 " <a href='%s'>here</a>%s</td></tr></table><br>\n";
 
-   const char *equiv, *content;
+   const char *equiv, *content, *new_content;
    char delay_str[64];
    Dstr *ds_msg;
    int delay;
@@ -2778,15 +2778,14 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
       } else if (!dStrcasecmp(equiv, "content-type") &&
                  (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
-         if (a_Misc_content_type_cmp(html->content_type, content)) {
-            const char *new_content =
-               a_Capi_set_content_type(html->page_url, content);
-            /* Cannot ask cache whether the content type was changed, as
-             * this code in another bw might have already changed it for us.
-             */
-            if (a_Misc_content_type_cmp(html->content_type, new_content)) {
-               html->repush_after_head = true;
-            }
+         _MSG("Html_tag_open_meta: content={%s}\n", content);
+         /* Cannot ask cache whether the content type was changed, as
+          * this code in another bw might have already changed it for us.
+          */
+         new_content = a_Capi_set_content_type(html->page_url, content);
+         if (a_Misc_content_type_cmp(html->content_type, new_content)) {
+            html->stop_parser = true; /* Avoid a race condition */
+            html->repush_after_head = true;
          }
       }   
    }
@@ -3303,7 +3302,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
    char *start = tag + 1; /* discard the '<' */
    int IsCloseTag = (*start == '/');
 
-   dReturn_if_fail ( html->stop_parser == false );
+   dReturn_if (html->stop_parser == TRUE);
 
    ni = a_Html_tag_index(start + IsCloseTag);
    if (ni == -1) {
@@ -3586,7 +3585,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
     * boundary. Iterate through tokens until end of buffer is reached. */
    buf_index = 0;
    token_start = buf_index;
-   while ((buf_index < bufsize) && (html->stop_parser == false)) {
+   while ((buf_index < bufsize) && !html->stop_parser) {
       /* invariant: buf_index == bufsize || token_start == buf_index */
 
       if (S_TOP(html)->parse_mode ==

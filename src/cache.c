@@ -497,23 +497,31 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype)
 
    curr = Cache_current_content_type(entry);
    if (entry->TypeMeta) {
-      /* Type is already been set. Do nothing.
+      /* Type is already been set. Do nothing. META overrides TypeHdr.
        * Multiple META elements? */
-   } else if (a_Misc_content_type_cmp(curr, ctype)) {
-      /* TypeMeta not set, and META gives one different from default */
-      curr = entry->TypeMeta = dStrdup(ctype);
-      if (entry->CharsetDecoder)
-         a_Decode_free(entry->CharsetDecoder);
-      a_Misc_parse_content_type(ctype, NULL, NULL, &charset);
-      entry->CharsetDecoder = a_Decode_charset_init(charset);
-      dFree(charset);
+   } else {
+      if (!entry->TypeHdr) {
+         /* Content-Type from HTTP header */
+         entry->TypeHdr = dStrdup(ctype);
+      } else {
+         /* Content-Type from META */
+         entry->TypeMeta = dStrdup(ctype);
+      }
+      if (a_Misc_content_type_cmp(curr, ctype)) {
+         /* ctype gives one different from current */
+         if (entry->CharsetDecoder)
+            a_Decode_free(entry->CharsetDecoder);
+         a_Misc_parse_content_type(ctype, NULL, NULL, &charset);
+         entry->CharsetDecoder = a_Decode_charset_init(charset);
+         dFree(charset);
+         curr = Cache_current_content_type(entry);
+   
+         /* Invalidate UTF8Data */
+         dStr_free(entry->UTF8Data, 1);
+         entry->UTF8Data = NULL;
 
-      /* Invalidate UTF8Data */
-      dStr_free(entry->UTF8Data, 1);
-      entry->UTF8Data = NULL;
-
+      }
    }
-
    return curr;
 }
 
@@ -739,7 +747,6 @@ static void Cache_parse_header(CacheEntry_t *entry)
       dStr_free(entry->Data, 1);
       entry->Data = dStr_sized_new(MIN(entry->ExpectedSize, MAX_INIT_BUF));
    }
-   Cache_ref_data(entry);
 
    /* Get Content-Type */
    if ((Type = Cache_parse_field(header, "Content-Type")) == NULL) {
@@ -750,10 +757,12 @@ static void Cache_parse_header(CacheEntry_t *entry)
    } else {
       /* This HTTP Content-Type is not trusted. It's checked against real data
        * in Cache_process_queue(); only then CA_GotContentType becomes true. */
-      entry->TypeHdr = Type;
+      a_Cache_set_content_type(entry->Url, Type);
       _MSG("TypeHdr  {%s} {%s}\n", Type, URL_STR(entry->Url));
       _MSG("TypeMeta {%s}\n", entry->TypeMeta);
+      dFree(Type);
    }
+   Cache_ref_data(entry);
 }
 
 /*
