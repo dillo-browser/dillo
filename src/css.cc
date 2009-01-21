@@ -81,7 +81,7 @@ bool CssSelector::match (Doctree *docTree) {
    for (int i = selectorList->size () - 2; i >= 0; i--) {
       sel = &selectorList->getRef (i)->selector;
       comb = selectorList->getRef (i + 1)->combinator;
-      notMatchingBefore = &selectorList->getRef (i + 1)->notMatchingBefore;
+      notMatchingBefore = &selectorList->getRef (i)->notMatchingBefore;
       node = docTree->parent (node);
 
       if (node == NULL)
