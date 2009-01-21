@@ -697,6 +697,7 @@ static bool Css_parse_value(CssParser * parser,
       } else if (parser->ttype == CSS_TK_SYMBOL &&
                  strcmp(parser->tval, "auto") == 0) {
          val->intVal = CSS_LENGTH_TYPE_AUTO;
+         Css_next_token(parser);
       }
       break;
 
