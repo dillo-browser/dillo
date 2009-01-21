@@ -93,7 +93,7 @@ bool CssSelector::match (Doctree *docTree) {
             n = node;
 
             while (true) {
-               if (node == NULL || node->num < *notMatchingBefore) {
+               if (node == NULL || node->num <= *notMatchingBefore) {
                   *notMatchingBefore = n->num;
                   return false;
                }
