@@ -67,22 +67,17 @@ CssSelector::~CssSelector () {
 
 bool CssSelector::match (Doctree *docTree) {
    CssSimpleSelector *sel;
-   Combinator comb;
+   Combinator comb = CHILD;
    int *notMatchingBefore;
    const DoctreeNode *n, *node = docTree->top ();
 
    assert (selectorList->size () > 0);
 
-   sel = top ();
-   
-   if (! sel->match (node))
-      return false;
+   for (int i = selectorList->size () - 1; i >= 0; i--) {
+      struct CombinatorAndSelector *cs = selectorList->getRef (i);
 
-   for (int i = selectorList->size () - 2; i >= 0; i--) {
-      sel = &selectorList->getRef (i)->selector;
-      comb = selectorList->getRef (i + 1)->combinator;
-      notMatchingBefore = &selectorList->getRef (i)->notMatchingBefore;
-      node = docTree->parent (node);
+      sel = &cs->selector;
+      notMatchingBefore = &cs->notMatchingBefore;
 
       if (node == NULL)
          return false;
@@ -110,6 +105,9 @@ bool CssSelector::match (Doctree *docTree) {
          default:
             return false; // \todo implement other combinators
       }
+
+      comb = cs->combinator;
+      node = docTree->parent (node);
    } 
    
    return true;
