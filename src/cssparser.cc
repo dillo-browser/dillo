@@ -696,7 +696,9 @@ static bool Css_parse_value(CssParser * parser,
          val->intVal = CSS_CREATE_LENGTH(fval, lentype);
       } else if (parser->ttype == CSS_TK_SYMBOL &&
                  strcmp(parser->tval, "auto") == 0) {
+         ret = true;
          val->intVal = CSS_LENGTH_TYPE_AUTO;
+         Css_next_token(parser);
       }
       break;
 
@@ -1004,6 +1006,13 @@ static bool Css_parse_simple_selector(CssParser * parser,
                break;
             case ':':
                pp = &selector->pseudo;
+               if (*pp)
+                  // pseudo class has been set already.
+                  // As dillo currently only supports :link and :visisted, a
+                  // selector with more than one pseudo class will never match.
+                  // By returning false, the whole CssRule will be dropped.
+                  // \todo adapt this when supporting :hover, :active...
+                  return false;
                break;
          }
       }
@@ -1181,8 +1190,10 @@ CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen)
    parser.space_separated = false;
 
    Css_next_token(&parser);
-   while (parser.ttype != CSS_TK_END)
+   do
       Css_parse_declaration(&parser, props, NULL);
+   while (!(parser.ttype == CSS_TK_END ||
+         (parser.ttype == CSS_TK_CHAR && parser.tval[0] == '}')));
 
    if (props->size () == 0) {
       delete props;

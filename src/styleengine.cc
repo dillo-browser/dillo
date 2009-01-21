@@ -31,7 +31,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = "helvetica";
-   font_attrs.size = (int) (12 * prefs.font_factor + 0.5);
+   font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
    font_attrs.weight = CssProperty::CSS_FONT_WEIGHT_NORMAL;
    font_attrs.style = FONT_STYLE_NORMAL;
  
@@ -377,10 +377,13 @@ bool StyleEngine::computeLength (dw::core::style::Length *dest,
    if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE) {
       *dest = createPerLength (CSS_LENGTH_VALUE (value));
       return true;
-    } else if (computeValue (&v, value, font)) {
-       *dest = createAbsLength (v);
-       return true;
-    }
+   } else if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_AUTO) {
+      *dest = dw::core::style::LENGTH_AUTO;
+      return true;
+   } else if (computeValue (&v, value, font)) {
+      *dest = createAbsLength (v);
+      return true;
+   }
 
    return false;
 }

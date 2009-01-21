@@ -232,19 +232,14 @@ class CssSelector {
       lout::misc::SimpleVector <struct CombinatorAndSelector> *selectorList;
 
    public:
-      CssSelector (int element = CssSimpleSelector::ELEMENT_ANY,
-                   const char *klass = NULL,
-                   const char *pseudo = NULL, const char *id = NULL);
+      CssSelector ();
       ~CssSelector ();
-      void addSimpleSelector (Combinator c,
-                              int element = CssSimpleSelector::ELEMENT_ANY,
-                              const char *klass = NULL,
-                              const char *pseudo = NULL, const char *id=NULL);
+      void addSimpleSelector (Combinator c);
       inline CssSimpleSelector *top () {
          return &selectorList->getRef (selectorList->size () - 1)->selector;
       };
-
-      bool match (Doctree *dt);
+      inline int size () { return selectorList->size (); };
+      bool match (Doctree *dt, const DoctreeNode *node);
       void print ();
       inline void ref () { refCount++; }
       inline void unref () { if(--refCount == 0) delete this; }
@@ -264,7 +259,8 @@ class CssRule {
       CssRule (CssSelector *selector, CssPropertyList *props);
       ~CssRule ();
 
-      void apply (CssPropertyList *props, Doctree *docTree);
+      void apply (CssPropertyList *props,
+                  Doctree *docTree, const DoctreeNode *node);
       void print ();
 };
 
@@ -306,7 +302,8 @@ class CssStyleSheet {
       ~CssStyleSheet();
       void addRule (CssRule *rule);
       void addRule (CssSelector *selector, CssPropertyList *props);
-      void apply (CssPropertyList *props, Doctree *docTree);
+      void apply (CssPropertyList *props,
+                  Doctree *docTree, const DoctreeNode *node);
 };
 
 /**

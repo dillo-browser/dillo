@@ -45,41 +45,37 @@ void CssPropertyList::print () {
       getRef (i)->print ();
 }
 
-CssSelector::CssSelector (int element, const char *klass,
-                          const char *pseudo, const char *id) {
+CssSelector::CssSelector () {
+   struct CombinatorAndSelector *cs;
+
    refCount = 0;
    selectorList = new lout::misc::SimpleVector
                                   <struct CombinatorAndSelector> (1);
    selectorList->increase ();
-   selectorList->getRef (0)->notMatchingBefore = -1;
-   top ()->element = element;
-   top ()->klass = klass;
-   top ()->pseudo = pseudo;
-   top ()->id = id;
+   cs = selectorList->getRef (selectorList->size () - 1);
+
+   cs->notMatchingBefore = -1;
+   cs->selector.element = CssSimpleSelector::ELEMENT_ANY;
+   cs->selector.klass = NULL; 
+   cs->selector.pseudo = NULL;
+   cs->selector.id = NULL;
 };
 
 CssSelector::~CssSelector () {
    delete selectorList;
 }
 
-bool CssSelector::match (Doctree *docTree) {
+bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
    CssSimpleSelector *sel;
-   Combinator comb;
+   Combinator comb = CHILD;
    int *notMatchingBefore;
-   const DoctreeNode *n, *node = docTree->top ();
+   const DoctreeNode *n;
 
-   assert (selectorList->size () > 0);
+   for (int i = selectorList->size () - 1; i >= 0; i--) {
+      struct CombinatorAndSelector *cs = selectorList->getRef (i);
 
-   sel = top ();
-   
-   if (! sel->match (node))
-      return false;
-
-   for (int i = selectorList->size () - 2; i >= 0; i--) {
-      sel = &selectorList->getRef (i)->selector;
-      comb = selectorList->getRef (i + 1)->combinator;
-      notMatchingBefore = &selectorList->getRef (i + 1)->notMatchingBefore;
-      node = docTree->parent (node);
+      sel = &cs->selector;
+      notMatchingBefore = &cs->notMatchingBefore;
 
       if (node == NULL)
          return false;
@@ -93,7 +89,7 @@ bool CssSelector::match (Doctree *docTree) {
             n = node;
 
             while (true) {
-               if (node == NULL || node->num < *notMatchingBefore) {
+               if (node == NULL || node->num <= *notMatchingBefore) {
                   *notMatchingBefore = n->num;
                   return false;
                }
@@ -107,23 +103,26 @@ bool CssSelector::match (Doctree *docTree) {
          default:
             return false; // \todo implement other combinators
       }
+
+      comb = cs->combinator;
+      node = docTree->parent (node);
    } 
    
    return true;
 }
 
-void CssSelector::addSimpleSelector (Combinator c, int element,
-                                     const char *klass, const char *pseudo,
-                                     const char *id) {
+void CssSelector::addSimpleSelector (Combinator c) {
+   struct CombinatorAndSelector *cs;
+
    selectorList->increase ();
+   cs = selectorList->getRef (selectorList->size () - 1);
 
-   selectorList->getRef (selectorList->size () - 1)->combinator = c;
-   selectorList->getRef (selectorList->size () - 1)->notMatchingBefore = -1;
-   top ()->element = element;
-   top ()->klass = klass;
-   top ()->pseudo = pseudo;
-   top ()->id = id;
-
+   cs->combinator = c;
+   cs->notMatchingBefore = -1;
+   cs->selector.element = CssSimpleSelector::ELEMENT_ANY;
+   cs->selector.klass = NULL;
+   cs->selector.pseudo = NULL;
+   cs->selector.id = NULL;
 }
 
 void CssSelector::print () {
@@ -169,6 +168,8 @@ void CssSimpleSelector::print () {
 }
 
 CssRule::CssRule (CssSelector *selector, CssPropertyList *props) {
+   assert (selector->size () > 0);
+
    this->selector = selector;
    this->selector->ref ();
    this->props = props;
@@ -180,8 +181,9 @@ CssRule::~CssRule () {
    props->unref ();
 };
 
-void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
-   if (selector->match (docTree))
+void CssRule::apply (CssPropertyList *props,
+                     Doctree *docTree, const DoctreeNode *node) {
+   if (selector->match (docTree, node))
       this->props->apply (props);
 }
 
@@ -247,18 +249,18 @@ void CssStyleSheet::addRule (CssSelector *selector, CssPropertyList *props) {
    addRule (rule);
 }
 
-void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
+void CssStyleSheet::apply (CssPropertyList *props,
+                           Doctree *docTree, const DoctreeNode *node) {
    RuleList *ruleList[4] = {NULL, NULL, NULL, NULL};
-   const DoctreeNode *top = docTree->top ();
    
-   if (top->id) {
-      lout::object::String idString (top->id);
+   if (node->id) {
+      lout::object::String idString (node->id);
 
       ruleList[3] = idTable->get (&idString);
    }
 
-   if (top->klass) {
-      lout::object::String classString (top->klass);
+   if (node->klass) {
+      lout::object::String classString (node->klass);
 
       ruleList[2] = classTable->get (&classString);
    }
@@ -266,19 +268,12 @@ void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
    ruleList[1] = elementTable[docTree->top ()->element];
    ruleList[0] = anyTable;
 
-#if 0
-   fprintf(stderr, "==> ");
-   for (int j = 0; j < 4; j++)
-      fprintf(stderr, "%d ", ruleList[j]?ruleList[j]->size():0);
-   fprintf(stderr, "\n");
-#endif
-
    for (int i = 0;; i++) {
       int n = 0;
 
       for (int j = 0; j < 4; j++) {
          if (ruleList[j] && ruleList[j]->size () > i) {
-            ruleList[j]->get (i)->apply (props, docTree);
+            ruleList[j]->get (i)->apply (props, docTree, node);
             n++;
          }
       }
@@ -323,17 +318,18 @@ CssContext::~CssContext () {
 
 void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCssHints) {
+   const DoctreeNode *node = docTree->top ();
 
    for (int o = CSS_PRIMARY_USER_AGENT; o <= CSS_PRIMARY_USER; o++)
       if (sheet[o])
-         sheet[o]->apply (props, docTree);
+         sheet[o]->apply (props, docTree, node);
 
    if (nonCssHints)
         nonCssHints->apply (props);
 
    for (int o = CSS_PRIMARY_AUTHOR; o <= CSS_PRIMARY_USER_IMPORTANT; o++)
       if (sheet[o])
-         sheet[o]->apply (props, docTree);
+         sheet[o]->apply (props, docTree, node);
 
    if (tagStyle)
         tagStyle->apply (props);
@@ -358,10 +354,10 @@ void CssContext::buildUserAgentStyle () {
      "center {text-align: center}"
      "dt {font-weight: bolder}"
      ":link {color: blue; text-decoration: underline; cursor: pointer}"
-     ":visited {color: green; text-decoration: underline; cursor: pointer}"
+     ":visited {color: #800080; text-decoration: underline; cursor: pointer}"
      "h1, h2, h3, h4, h5, h6, b, strong {font-weight: bolder}"
      "i, em, cite, address {font-style: italic}"
-     "img:link, img:visited {border: 1px solid}"
+     ":link img, :visited img {border: 1px solid}"
      "frameset, ul, ol, dir {margin-left: 40px}"
      "h1 {font-size: 2em; margin-top: .67em; margin-bottom: 0}"
      "h2 {font-size: 1.5em; margin-top: .75em; margin-bottom: 0}"
