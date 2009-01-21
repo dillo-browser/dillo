@@ -65,11 +65,11 @@ CssSelector::~CssSelector () {
    delete selectorList;
 }
 
-bool CssSelector::match (Doctree *docTree) {
+bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
    CssSimpleSelector *sel;
    Combinator comb = CHILD;
    int *notMatchingBefore;
-   const DoctreeNode *n, *node = docTree->top ();
+   const DoctreeNode *n;
 
    for (int i = selectorList->size () - 1; i >= 0; i--) {
       struct CombinatorAndSelector *cs = selectorList->getRef (i);
@@ -181,8 +181,9 @@ CssRule::~CssRule () {
    props->unref ();
 };
 
-void CssRule::apply (CssPropertyList *props, Doctree *docTree) {
-   if (selector->match (docTree))
+void CssRule::apply (CssPropertyList *props,
+                     Doctree *docTree, const DoctreeNode *node) {
+   if (selector->match (docTree, node))
       this->props->apply (props);
 }
 
@@ -248,18 +249,18 @@ void CssStyleSheet::addRule (CssSelector *selector, CssPropertyList *props) {
    addRule (rule);
 }
 
-void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
+void CssStyleSheet::apply (CssPropertyList *props,
+                           Doctree *docTree, const DoctreeNode *node) {
    RuleList *ruleList[4] = {NULL, NULL, NULL, NULL};
-   const DoctreeNode *top = docTree->top ();
    
-   if (top->id) {
-      lout::object::String idString (top->id);
+   if (node->id) {
+      lout::object::String idString (node->id);
 
       ruleList[3] = idTable->get (&idString);
    }
 
-   if (top->klass) {
-      lout::object::String classString (top->klass);
+   if (node->klass) {
+      lout::object::String classString (node->klass);
 
       ruleList[2] = classTable->get (&classString);
    }
@@ -272,7 +273,7 @@ void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree) {
 
       for (int j = 0; j < 4; j++) {
          if (ruleList[j] && ruleList[j]->size () > i) {
-            ruleList[j]->get (i)->apply (props, docTree);
+            ruleList[j]->get (i)->apply (props, docTree, node);
             n++;
          }
       }
@@ -317,17 +318,18 @@ CssContext::~CssContext () {
 
 void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCssHints) {
+   const DoctreeNode *node = docTree->top ();
 
    for (int o = CSS_PRIMARY_USER_AGENT; o <= CSS_PRIMARY_USER; o++)
       if (sheet[o])
-         sheet[o]->apply (props, docTree);
+         sheet[o]->apply (props, docTree, node);
 
    if (nonCssHints)
         nonCssHints->apply (props);
 
    for (int o = CSS_PRIMARY_AUTHOR; o <= CSS_PRIMARY_USER_IMPORTANT; o++)
       if (sheet[o])
-         sheet[o]->apply (props, docTree);
+         sheet[o]->apply (props, docTree, node);
 
    if (tagStyle)
         tagStyle->apply (props);

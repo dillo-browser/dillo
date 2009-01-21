@@ -239,7 +239,7 @@ class CssSelector {
          return &selectorList->getRef (selectorList->size () - 1)->selector;
       };
       inline int size () { return selectorList->size (); };
-      bool match (Doctree *dt);
+      bool match (Doctree *dt, const DoctreeNode *node);
       void print ();
       inline void ref () { refCount++; }
       inline void unref () { if(--refCount == 0) delete this; }
@@ -259,7 +259,8 @@ class CssRule {
       CssRule (CssSelector *selector, CssPropertyList *props);
       ~CssRule ();
 
-      void apply (CssPropertyList *props, Doctree *docTree);
+      void apply (CssPropertyList *props,
+                  Doctree *docTree, const DoctreeNode *node);
       void print ();
 };
 
@@ -301,7 +302,8 @@ class CssStyleSheet {
       ~CssStyleSheet();
       void addRule (CssRule *rule);
       void addRule (CssSelector *selector, CssPropertyList *props);
-      void apply (CssPropertyList *props, Doctree *docTree);
+      void apply (CssPropertyList *props,
+                  Doctree *docTree, const DoctreeNode *node);
 };
 
 /**
