@@ -232,14 +232,9 @@ class CssSelector {
       lout::misc::SimpleVector <struct CombinatorAndSelector> *selectorList;
 
    public:
-      CssSelector (int element = CssSimpleSelector::ELEMENT_ANY,
-                   const char *klass = NULL,
-                   const char *pseudo = NULL, const char *id = NULL);
+      CssSelector ();
       ~CssSelector ();
-      void addSimpleSelector (Combinator c,
-                              int element = CssSimpleSelector::ELEMENT_ANY,
-                              const char *klass = NULL,
-                              const char *pseudo = NULL, const char *id=NULL);
+      void addSimpleSelector (Combinator c);
       inline CssSimpleSelector *top () {
          return &selectorList->getRef (selectorList->size () - 1)->selector;
       };

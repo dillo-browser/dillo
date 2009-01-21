@@ -45,17 +45,20 @@ void CssPropertyList::print () {
       getRef (i)->print ();
 }
 
-CssSelector::CssSelector (int element, const char *klass,
-                          const char *pseudo, const char *id) {
+CssSelector::CssSelector () {
+   struct CombinatorAndSelector *cs;
+
    refCount = 0;
    selectorList = new lout::misc::SimpleVector
                                   <struct CombinatorAndSelector> (1);
    selectorList->increase ();
-   selectorList->getRef (0)->notMatchingBefore = -1;
-   top ()->element = element;
-   top ()->klass = klass;
-   top ()->pseudo = pseudo;
-   top ()->id = id;
+   cs = selectorList->getRef (selectorList->size () - 1);
+
+   cs->notMatchingBefore = -1;
+   cs->selector.element = CssSimpleSelector::ELEMENT_ANY;
+   cs->selector.klass = NULL; 
+   cs->selector.pseudo = NULL;
+   cs->selector.id = NULL;
 };
 
 CssSelector::~CssSelector () {
@@ -112,18 +115,18 @@ bool CssSelector::match (Doctree *docTree) {
    return true;
 }
 
-void CssSelector::addSimpleSelector (Combinator c, int element,
-                                     const char *klass, const char *pseudo,
-                                     const char *id) {
+void CssSelector::addSimpleSelector (Combinator c) {
+   struct CombinatorAndSelector *cs;
+
    selectorList->increase ();
+   cs = selectorList->getRef (selectorList->size () - 1);
 
-   selectorList->getRef (selectorList->size () - 1)->combinator = c;
-   selectorList->getRef (selectorList->size () - 1)->notMatchingBefore = -1;
-   top ()->element = element;
-   top ()->klass = klass;
-   top ()->pseudo = pseudo;
-   top ()->id = id;
-
+   cs->combinator = c;
+   cs->notMatchingBefore = -1;
+   cs->selector.element = CssSimpleSelector::ELEMENT_ANY;
+   cs->selector.klass = NULL;
+   cs->selector.pseudo = NULL;
+   cs->selector.id = NULL;
 }
 
 void CssSelector::print () {
