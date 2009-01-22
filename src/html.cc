@@ -2108,7 +2108,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 
    if (usemap_url) {
       ((::dw::Image*)Image->dw)->setUseMap(&html->maps,
-                            new ::object::String(usemap_url->url_string->str));
+                            new ::object::String(URL_STR(usemap_url)));
       a_Url_free (usemap_url);
    }
    html->connectSignals((Widget*)Image->dw);
@@ -2129,7 +2129,7 @@ static void Html_tag_open_map(DilloHtml *html, const char *tag, int tagsize)
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name"))) {
          hash_name = dStrconcat("#", attrbuf, NULL);
          url = a_Html_url_new(html, hash_name, NULL, 0);
-         html->maps.startNewMap(new ::object::String(url->url_string->str));
+         html->maps.startNewMap(new ::object::String(URL_STR(url)));
          a_Url_free (url);
          dFree(hash_name);
       }
