@@ -126,6 +126,7 @@ static void Decode_gzip_free(Decode *dc)
 {
    (void)inflateEnd((z_stream *)dc->state);
 
+   dFree(dc->state);
    dFree(dc->buffer);
 }
 
@@ -182,6 +183,7 @@ static Dstr *Decode_charset(Decode *dc, const char *instr, int inlen)
 
 static void Decode_charset_free(Decode *dc)
 {
+   /* iconv_close() frees dc->state */
    (void)iconv_close((iconv_t)(dc->state));
 
    dFree(dc->buffer);

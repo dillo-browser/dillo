@@ -493,7 +493,7 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype)
 
    dReturn_val_if_fail (entry != NULL, NULL);
 
-   MSG("a_Cache_set_content_type {%s} {%s}\n", ctype, URL_STR(url));
+   _MSG("a_Cache_set_content_type {%s} {%s}\n", ctype, URL_STR(url));
 
    curr = Cache_current_content_type(entry);
    if (entry->TypeMeta) {
