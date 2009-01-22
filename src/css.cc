@@ -347,7 +347,7 @@ void CssContext::addRule (CssRule *rule, CssPrimaryOrder order) {
 
 void CssContext::buildUserAgentStyle () {
    const char *cssBuf =
-     "body  {background-color: #dcd1ba; font-family: helvetica; color: black;" 
+     "body  {background-color: #dcd1ba; font-family: sans; color: black;" 
      "       margin: 5px}"
      "big {font-size: 1.17em}"
      "blockquote, dd {margin-left: 40px; margin-right: 40px}"
@@ -382,7 +382,7 @@ void CssContext::buildUserAgentStyle () {
      "td {border-style: inset; padding: 2px}"
      "thead, tbody, tfoot { vertical-align: middle}"
      "th { font-weight: bolder; text-align: center}"
-     "code, tt, pre, samp, kbd {font-family: courier}";
+     "code, tt, pre, samp, kbd {font-family: monospace}";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
 }

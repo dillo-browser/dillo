@@ -579,7 +579,7 @@ static bool Css_token_matches_property(CssParser * parser,
       return parser->ttype == CSS_TK_STRING;
 
    case CSS_TYPE_SYMBOL:
-      return parser->ttype == CSS_TK_SYMBOL;
+      return parser->ttype == CSS_TK_SYMBOL || parser->ttype == CSS_TK_STRING;
 
    case CSS_TYPE_FONT_WEIGHT:
       if (parser->ttype == CSS_TK_DECINT) {
@@ -728,7 +728,7 @@ static bool Css_parse_value(CssParser * parser,
       break;
 
    case CSS_TYPE_SYMBOL:
-      if (parser->ttype == CSS_TK_SYMBOL) {
+      if (parser->ttype == CSS_TK_SYMBOL || parser->ttype == CSS_TK_STRING) {
          val->strVal = dStrdup(parser->tval);
          ret = true;
          Css_next_token(parser);

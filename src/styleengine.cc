@@ -30,7 +30,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    Node *n =  stack->getRef (stack->size () - 1);
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
-   font_attrs.name = "helvetica";
+   font_attrs.name = prefs.vw_fontname;
    font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
    font_attrs.weight = CssProperty::CSS_FONT_WEIGHT_NORMAL;
    font_attrs.style = FONT_STYLE_NORMAL;
@@ -170,7 +170,15 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       
       switch (p->name) {
          case CssProperty::CSS_PROPERTY_FONT_FAMILY:
-            fontAttrs.name = p->value.strVal;
+            // \todo memory management of font name strings
+            // \todo handle comma separated lists of font names
+            // \todo handle sans-serif, cursive, fantasy
+            if (strcmp (p->value.strVal, "sans") == 0)
+               fontAttrs.name = prefs.vw_fontname;
+            else if (strcmp (p->value.strVal, "monospace") == 0)  
+               fontAttrs.name = prefs.fw_fontname;
+            else
+               fontAttrs.name = p->value.strVal;
             break;
          case CssProperty::CSS_PROPERTY_FONT_SIZE:
             parentFont = stack->get (stack->size () - 2).style->font;
