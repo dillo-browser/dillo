@@ -467,8 +467,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    attr_data = dStr_sized_new(1024);
 
-   parse_finished = false;
-
    /* Init page-handling variables */
    forms = new misc::SimpleVector <DilloHtmlForm*> (1);
    inputs_outside_form = new misc::SimpleVector <DilloHtmlInput*> (1);
@@ -511,8 +509,7 @@ DilloHtml::~DilloHtml()
 {
    _MSG("::~DilloHtml(this=%p)\n", this);
 
-   if (!parse_finished)
-      freeParseData();
+   freeParseData();
 
    a_Bw_remove_doc(bw, this);
 
@@ -571,10 +568,12 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
    dFree(aux);
 #endif
 
+   /* Update Start_Buf. It may be used after the parser is stopped */
+   Start_Buf = Buf;
+
    dReturn_if (dw == NULL);
    dReturn_if (stop_parser == TRUE);
 
-   Start_Buf = Buf;
    token_start = Html_write_raw(this, buf, bufsize, Eof);
    Start_Ofs += token_start;
 }
@@ -629,9 +628,6 @@ void DilloHtml::finishParsing(int ClientKey)
    }
    /* Remove this client from our active list */
    a_Bw_close_client(bw, ClientKey);
-
-   freeParseData();
-   parse_finished = true;
 }
 
 /*

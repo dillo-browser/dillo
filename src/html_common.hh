@@ -217,7 +217,6 @@ public:  //BUG: for now everything is public
    int32_t visited_color;
 
 private:
-   bool parse_finished;
    void freeParseData();
    void initDw();  /* Used by the constructor */
 
