@@ -1141,8 +1141,10 @@ static void Cache_process_queue(CacheEntry_t *entry)
          if ((Client->BufSize = data->len) > 0) {
             Client->Buf = data->str;
             (Client->Callback)(CA_Send, Client);
-            if (ClientWeb->flags & WEB_RootUrl)
-               a_UIcmd_set_page_prog(Client_bw, data->len, 1);
+            if (ClientWeb->flags & WEB_RootUrl) {
+               /* show size of page received */
+               a_UIcmd_set_page_prog(Client_bw, entry->Data->len, 1);
+            }
          }
 
          /* Remove client when done */
