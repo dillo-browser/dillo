@@ -2778,7 +2778,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          /* Cannot ask cache whether the content type was changed, as
           * this code in another bw might have already changed it for us.
           */
-         new_content = a_Capi_set_content_type(html->page_url, content);
+         new_content = a_Capi_set_content_type(html->page_url,content,"meta");
          if (a_Misc_content_type_cmp(html->content_type, new_content)) {
             html->stop_parser = true; /* Avoid a race condition */
             html->repush_after_head = true;

@@ -483,9 +483,11 @@ static Dstr *Cache_data(CacheEntry_t *entry)
 
 /*
  * Change Content-Type for cache entry found by url.
+ * from = { "http" | "meta" }
  * Return new content type.
  */
-const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype)
+const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
+                                     const char *from)
 {
    char *charset;
    const char *curr;
@@ -496,11 +498,11 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype)
    _MSG("a_Cache_set_content_type {%s} {%s}\n", ctype, URL_STR(url));
 
    curr = Cache_current_content_type(entry);
-   if (entry->TypeMeta) {
-      /* Type is already been set. Do nothing. META overrides TypeHdr.
-       * Multiple META elements? */
+   if  (entry->TypeMeta || (*from == 'h' && entry->TypeHdr) ) {
+      /* Type is already been set. Do nothing.
+       * BTW, META overrides TypeHdr */
    } else {
-      if (!entry->TypeHdr) {
+      if (*from == 'h') {
          /* Content-Type from HTTP header */
          entry->TypeHdr = dStrdup(ctype);
       } else {
@@ -509,17 +511,18 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype)
       }
       if (a_Misc_content_type_cmp(curr, ctype)) {
          /* ctype gives one different from current */
-         if (entry->CharsetDecoder)
-            a_Decode_free(entry->CharsetDecoder);
          a_Misc_parse_content_type(ctype, NULL, NULL, &charset);
-         entry->CharsetDecoder = a_Decode_charset_init(charset);
-         dFree(charset);
-         curr = Cache_current_content_type(entry);
-   
-         /* Invalidate UTF8Data */
-         dStr_free(entry->UTF8Data, 1);
-         entry->UTF8Data = NULL;
-
+         if (charset) {
+            if (entry->CharsetDecoder)
+               a_Decode_free(entry->CharsetDecoder);
+            entry->CharsetDecoder = a_Decode_charset_init(charset);
+            dFree(charset);
+            curr = Cache_current_content_type(entry);
+      
+            /* Invalidate UTF8Data */
+            dStr_free(entry->UTF8Data, 1);
+            entry->UTF8Data = NULL;
+         }
       }
    }
    return curr;
@@ -757,7 +760,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
    } else {
       /* This HTTP Content-Type is not trusted. It's checked against real data
        * in Cache_process_queue(); only then CA_GotContentType becomes true. */
-      a_Cache_set_content_type(entry->Url, Type);
+      a_Cache_set_content_type(entry->Url, Type, "http");
       _MSG("TypeHdr  {%s} {%s}\n", Type, URL_STR(entry->Url));
       _MSG("TypeMeta {%s}\n", entry->TypeMeta);
       dFree(Type);

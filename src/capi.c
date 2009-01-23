@@ -421,9 +421,10 @@ const char *a_Capi_get_content_type(const DilloUrl *url)
 /*
  * Set the Content-Type for the URL. 
  */
-const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype)
+const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
+                                    const char *from)
 {
-   return a_Cache_set_content_type(url, ctype);
+   return a_Cache_set_content_type(url, ctype, from);
 }
 
 /*
