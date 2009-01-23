@@ -3382,6 +3382,8 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       /* Call the open function for this tag */
       _MSG("Open : %s\n", Tags[ni].name);
       Tags[ni].open (html, tag, tagsize);
+      if (html->stop_parser)
+         break;
 
       /* Request inmediate close for elements with forbidden close tag. */
       /* TODO: XHTML always requires close tags. A simple implementation
