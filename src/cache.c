@@ -1254,15 +1254,23 @@ CacheClient_t *a_Cache_client_get_if_unique(int Key)
 void a_Cache_stop_client(int Key)
 {
    CacheClient_t *Client;
+   CacheEntry_t *entry;
    DICacheEntry *DicEntry;
 
+   /* The client can be in both queues at the same time */
    if ((Client = dList_find_custom(ClientQueue, INT2VOIDP(Key),
                                    Cache_client_by_key_cmp))) {
-      DicEntry = a_Dicache_get_entry(Client->Url, Client->Version);
-      if (DicEntry) {
+      /* Dicache */
+      if ((DicEntry = a_Dicache_get_entry(Client->Url, Client->Version)))
          a_Dicache_unref(Client->Url, Client->Version);
-      }
+
+      /* DelayedQueue */
+      if ((entry = Cache_entry_search(Client->Url)))
+         dList_remove(DelayedQueue, entry);
+
+      /* Main queue */
       Cache_client_dequeue(Client, NULLKey);
+
    } else {
       _MSG("WARNING: Cache_stop_client, nonexistent client\n");
    }
