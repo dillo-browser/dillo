@@ -55,13 +55,12 @@ CssSelector::CssSelector () {
    cs = selectorList->getRef (selectorList->size () - 1);
 
    cs->notMatchingBefore = -1;
-   cs->selector.element = CssSimpleSelector::ELEMENT_ANY;
-   cs->selector.klass = NULL; 
-   cs->selector.pseudo = NULL;
-   cs->selector.id = NULL;
+   cs->selector = new CssSimpleSelector ();
 };
 
 CssSelector::~CssSelector () {
+   for (int i = selectorList->size () - 1; i >= 0; i--)
+      delete selectorList->getRef (i)->selector;
    delete selectorList;
 }
 
@@ -74,7 +73,7 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
    for (int i = selectorList->size () - 1; i >= 0; i--) {
       struct CombinatorAndSelector *cs = selectorList->getRef (i);
 
-      sel = &cs->selector;
+      sel = cs->selector;
       notMatchingBefore = &cs->notMatchingBefore;
 
       if (node == NULL)
@@ -119,15 +118,12 @@ void CssSelector::addSimpleSelector (Combinator c) {
 
    cs->combinator = c;
    cs->notMatchingBefore = -1;
-   cs->selector.element = CssSimpleSelector::ELEMENT_ANY;
-   cs->selector.klass = NULL;
-   cs->selector.pseudo = NULL;
-   cs->selector.id = NULL;
+   cs->selector = new CssSimpleSelector ();
 }
 
 void CssSelector::print () {
    for (int i = 0; i < selectorList->size (); i++) {
-      selectorList->getRef (i)->selector.print ();
+      selectorList->getRef (i)->selector->print ();
 
       if (i < selectorList->size () - 1) {
          switch (selectorList->getRef (i + 1)->combinator) {
@@ -145,6 +141,19 @@ void CssSelector::print () {
    }
 
    fprintf (stderr, "\n");
+}
+
+CssSimpleSelector::CssSimpleSelector () {
+   element = ELEMENT_ANY;
+   klass = NULL;
+   id = NULL;
+   pseudo = NULL;
+}
+
+CssSimpleSelector::~CssSimpleSelector () {
+   dFree (klass);
+   dFree (id);
+   dFree (pseudo);
 }
 
 bool CssSimpleSelector::match (const DoctreeNode *n) {

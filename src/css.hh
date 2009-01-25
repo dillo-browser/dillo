@@ -203,8 +203,10 @@ class CssSimpleSelector {
       };
 
       int element;
-      const char *klass, *pseudo, *id;
+      char *klass, *pseudo, *id;
 
+      CssSimpleSelector ();
+      ~CssSimpleSelector ();
       bool match (const DoctreeNode *node);
       void print ();
 };
@@ -225,7 +227,7 @@ class CssSelector {
       struct CombinatorAndSelector {
          int notMatchingBefore; // used for optimizing CSS selector matching
          Combinator combinator;
-         CssSimpleSelector selector;
+         CssSimpleSelector *selector;
       };
 
       int refCount;
@@ -236,7 +238,7 @@ class CssSelector {
       ~CssSelector ();
       void addSimpleSelector (Combinator c);
       inline CssSimpleSelector *top () {
-         return &selectorList->getRef (selectorList->size () - 1)->selector;
+         return selectorList->getRef (selectorList->size () - 1)->selector;
       };
       inline int size () { return selectorList->size (); };
       bool match (Doctree *dt, const DoctreeNode *node);

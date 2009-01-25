@@ -973,7 +973,7 @@ static void Css_parse_declaration(CssParser * parser,
 
 static bool Css_parse_simple_selector(CssParser * parser,
                                       CssSimpleSelector *selector) {
-   const char *p, **pp;
+   char *p, **pp;
 
    if (parser->ttype == CSS_TK_SYMBOL) {
       selector->element = a_Html_tag_index(parser->tval);
