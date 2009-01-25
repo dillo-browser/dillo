@@ -1846,13 +1846,6 @@ static void Html_tag_close_h(DilloHtml *html, int TagIdx)
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
-static void Html_tag_open_span(DilloHtml *html,
-                               const char *tag, int tagsize)
-{
-   html->styleEngine->inheritBackgroundColor();
-}
-
-
 /*
  * <BR>
  */
@@ -2923,6 +2916,7 @@ static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
 
 static void Html_tag_open_default(DilloHtml *html,const char *tag,int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor();
 }
 
 /*
@@ -3064,7 +3058,7 @@ const TagInfo Tags[] = {
  {"script", B8(111001),'R',2, Html_tag_open_script, Html_tag_close_script},
  {"select", B8(010101),'R',2, Html_tag_open_select, Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
- {"span", B8(010101),'R',2, Html_tag_open_span, Html_tag_close_default},
+ {"span", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"strike", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"strong", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"style", B8(100101),'R',2, Html_tag_open_style, Html_tag_close_style},
