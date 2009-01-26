@@ -1149,7 +1149,8 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             while (Pword[++i] && !isspace(Pword[i])) ;
             ch = Pword[i];
             Pword[i] = 0;
-            DW2TB(html->dw)->addText(Pword, html->styleEngine->wordStyle ());
+            DW2TB(html->dw)->addText(Pword + start,
+                                     html->styleEngine->wordStyle ());
             Pword[i] = ch;
             html->pre_column += i - start;
             html->PreFirstChar = false;
