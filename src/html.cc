@@ -2665,10 +2665,6 @@ static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
 
-   /* Is the placement of this statement right? */
-   S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_PRE;
-   html->pre_column = 0;
-   html->PreFirstChar = true;
    html->InFlags |= IN_PRE;
 }
 
@@ -3326,6 +3322,13 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
       if (attrbuf)
          html->styleEngine->setStyle (attrbuf);
    }
+
+  if (S_TOP(html)->parse_mode != DILLO_HTML_PARSE_MODE_PRE &&
+      html->styleEngine->style ()->whiteSpace == WHITE_SPACE_PRE) {
+     S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_PRE;
+     html->pre_column = 0;
+     html->PreFirstChar = true;
+  }
 }
 
 /*
