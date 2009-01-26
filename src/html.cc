@@ -1149,7 +1149,8 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             while (Pword[++i] && !isspace(Pword[i])) ;
             ch = Pword[i];
             Pword[i] = 0;
-            DW2TB(html->dw)->addText(Pword, html->styleEngine->wordStyle ());
+            DW2TB(html->dw)->addText(Pword + start,
+                                     html->styleEngine->wordStyle ());
             Pword[i] = ch;
             html->pre_column += i - start;
             html->PreFirstChar = false;
@@ -1163,10 +1164,15 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
       } else {
          /* Collapse white-space entities inside the word (except &nbsp;) */
          Pword = a_Html_parse_entities(html, word, size);
-         for (i = 0; Pword[i]; ++i)
-            if (strchr("\t\f\n\r", Pword[i]))
-               for (j = i; (Pword[j] = Pword[j+1]); ++j) ;
-   
+         /* Collapse adjacent "\t\f\n\r" characters into a single space */
+         for (i = j = 0; (Pword[i] = Pword[j]); ++i, ++j) {
+            if (strchr("\t\f\n\r", Pword[i])) {
+               if (i == 0 || (i > 0 && Pword[i-1] != ' '))
+                  Pword[i] = ' ';
+               else 
+                  for (--i; strchr("\t\f\n\r", Pword[j+1]); ++j) ;
+            }
+         }
          DW2TB(html->dw)->addText(Pword, html->styleEngine->wordStyle ());
          dFree(Pword);
       }
