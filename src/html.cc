@@ -3281,6 +3281,54 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
 }
 
 /*
+ * Parse attributes that can appear on any tag.
+ */
+static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
+{
+   const char *attrbuf;
+
+   if (tagsize >= 8 &&        /* length of "<t id=i>" */
+       (attrbuf = Html_get_attr2(html, tag, tagsize, "id",
+                                 HTML_LeftTrim | HTML_RightTrim))) {
+      /* According to the SGML declaration of HTML 4, all NAME values
+       * occuring outside entities must be converted to uppercase
+       * (this is what "NAMECASE GENERAL YES" says). But the HTML 4
+       * spec states in Sec. 7.5.2 that anchor ids are case-sensitive.
+       * So we don't do it and hope for better specs in the future ...
+       */
+      if (attrbuf)
+         html->styleEngine->setId (attrbuf);
+
+      Html_check_name_val(html, attrbuf, "id");
+      /* We compare the "id" value with the url-decoded "name" value */
+      if (!html->NameVal || strcmp(html->NameVal, attrbuf)) {
+         if (html->NameVal)
+            BUG_MSG("'id' and 'name' attribute of <a> tag differ\n");
+         Html_add_anchor(html, attrbuf);
+      }
+   }
+   /* Reset NameVal */
+   if (html->NameVal) {
+      dFree(html->NameVal);
+      html->NameVal = NULL;
+   }
+
+   if (tagsize >= 10) {       /* length of "<t class=i>" */
+      attrbuf = Html_get_attr2(html, tag, tagsize, "class",
+                               HTML_LeftTrim | HTML_RightTrim);
+      if (attrbuf)
+         html->styleEngine->setClass (attrbuf);
+   }
+
+   if (tagsize >= 11) {       /* length of "<t style=i>" */
+      attrbuf = Html_get_attr2(html, tag, tagsize, "style",
+                               HTML_LeftTrim | HTML_RightTrim);
+      if (attrbuf)
+         html->styleEngine->setStyle (attrbuf);
+   }
+}
+
+/*
  * Process a tag, given as 'tag' and 'tagsize'. -- tagsize is [1 based]
  * ('tag' must include the enclosing angle brackets)
  * This function calls the right open or close function for the tag.
@@ -3288,7 +3336,6 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
 static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
 {
    int ci, ni;           /* current and new tag indexes */
-   const char *attrbuf;
    char *start = tag + 1; /* discard the '<' */
    int IsCloseTag = (*start == '/');
 
@@ -3331,47 +3378,8 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       html->styleEngine->startElement (ni);
       _MSG("Open : %*s%s\n", html->stack->size(), " ", Tags[ni].name);
 
-      /* Now parse attributes that can appear on any tag */
-      if (tagsize >= 8 &&        /* length of "<t id=i>" */
-          (attrbuf = Html_get_attr2(html, tag, tagsize, "id",
-                                    HTML_LeftTrim | HTML_RightTrim))) {
-         /* According to the SGML declaration of HTML 4, all NAME values
-          * occuring outside entities must be converted to uppercase
-          * (this is what "NAMECASE GENERAL YES" says). But the HTML 4
-          * spec states in Sec. 7.5.2 that anchor ids are case-sensitive.
-          * So we don't do it and hope for better specs in the future ...
-          */
-         if (attrbuf)
-            html->styleEngine->setId (attrbuf);
-
-         Html_check_name_val(html, attrbuf, "id");
-         /* We compare the "id" value with the url-decoded "name" value */
-         if (!html->NameVal || strcmp(html->NameVal, attrbuf)) {
-            if (html->NameVal)
-               BUG_MSG("'id' and 'name' attribute of <a> tag differ\n");
-            Html_add_anchor(html, attrbuf);
-         }
-      }
-
-      /* Reset NameVal */
-      if (html->NameVal) {
-         dFree(html->NameVal);
-         html->NameVal = NULL;
-      }
-
-      if (tagsize >= 10) {       /* length of "<t class=i>" */
-          attrbuf = Html_get_attr2(html, tag, tagsize, "class",
-                                   HTML_LeftTrim | HTML_RightTrim);
-          if (attrbuf)
-            html->styleEngine->setClass (attrbuf);
-      }
-
-      if (tagsize >= 11) {       /* length of "<t style=i>" */
-          attrbuf = Html_get_attr2(html, tag, tagsize, "style",
-                                   HTML_LeftTrim | HTML_RightTrim);
-          if (attrbuf)
-            html->styleEngine->setStyle (attrbuf);
-      }
+      /* Parse attributes that can appear on any tag */
+      Html_parse_common_attrs(html, tag, tagsize);
 
       /* Call the open function for this tag */
       _MSG("Open : %s\n", Tags[ni].name);
