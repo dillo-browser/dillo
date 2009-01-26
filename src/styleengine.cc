@@ -30,7 +30,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    Node *n =  stack->getRef (stack->size () - 1);
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
-   font_attrs.name = prefs.vw_fontname;
+   font_attrs.name = prefs.font_sans_serif;
    font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
    font_attrs.weight = CssProperty::CSS_FONT_WEIGHT_NORMAL;
    font_attrs.style = FONT_STYLE_NORMAL;
@@ -172,11 +172,16 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CssProperty::CSS_PROPERTY_FONT_FAMILY:
             // \todo memory management of font name strings
             // \todo handle comma separated lists of font names
-            // \todo handle sans-serif, cursive, fantasy
-            if (strcmp (p->value.strVal, "sans") == 0)
-               fontAttrs.name = prefs.vw_fontname;
+            if (strcmp (p->value.strVal, "serif") == 0)
+               fontAttrs.name = prefs.font_serif;
+            else if (strcmp (p->value.strVal, "sans-serif") == 0)  
+               fontAttrs.name = prefs.font_sans_serif;
+            else if (strcmp (p->value.strVal, "cursive") == 0)  
+               fontAttrs.name = prefs.font_cursive;
+            else if (strcmp (p->value.strVal, "fantasy") == 0)  
+               fontAttrs.name = prefs.font_fantasy;
             else if (strcmp (p->value.strVal, "monospace") == 0)  
-               fontAttrs.name = prefs.fw_fontname;
+               fontAttrs.name = prefs.font_monospace;
             else
                fontAttrs.name = p->value.strVal;
             break;

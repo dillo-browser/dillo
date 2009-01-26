@@ -37,22 +37,16 @@
 #                           RENDERING SECTION
 #-------------------------------------------------------------------------
 
-# Fontname for variable width rendering (most of the text).
+# Fontnames:
 #   - some fonts may slow down rendering.
 #   - try to tune a fontname/font_factor combination.
 # Ex. {helvetica, lucida, times, "new century schoolbook", utopia, ...}
-# vw_fontname="new century schoolbook"
-# vw_fontname="helvetica"
-# vw_fontname="times"
-# vw_fontname="Bitstream vera Serif"
-# vw_fontname="arial"
-#vw_fontname="DejaVu Sans"
-
-# Fontname for fixed width rendering (mainly text quoted with <pre>)
-# fw_fontname=courier
-# fw_fontname="Bitstream Vera Sans Mono"
-# fw_fontname="Andale Mono"
-#fw_fontname="DejaVu Sans Mono"
+#
+# font_serif="DejaVu Serif"
+# font_sans_serif="DejaVu Sans"
+# font_cursive="DejaVu Sans"
+# font_fantasy="DejaVu Sans"
+# font_monospace="DejaVu Sans Mono"
 
 # All fontsizes are scaled by this value
 # font_factor=1.5

@@ -287,7 +287,7 @@ int main(int argc, char **argv)
    fltk::TabGroup::default_pager(fltk::PAGER_SHRINK);
 
    /* use preferred font for UI */
-   fltk::Font *dfont = fltk::font(prefs.vw_fontname, 0);
+   fltk::Font *dfont = fltk::font(prefs.font_sans_serif, 0);
    if (dfont) {
       fltk::Widget::default_style->textfont(dfont);
       fltk::Widget::default_style->labelfont(dfont);

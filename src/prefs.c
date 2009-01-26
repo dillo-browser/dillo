@@ -36,8 +36,11 @@
 #define DILLO_START_PAGE "about:splash"
 #define DILLO_HOME "http://www.dillo.org/"
 
-#define D_VW_FONTNAME "DejaVu Sans"
-#define D_FW_FONTNAME "DejaVu Sans Mono"
+#define D_FONT_SERIF "DejaVu Serif"
+#define D_FONT_SANS_SERIF "DejaVu Sans"
+#define D_FONT_CURSIVE "DejaVu Sans" /* \todo find good default */
+#define D_FONT_FANTASY "DejaVu Sans" /* \todo find good default */
+#define D_FONT_MONOSPACE "DejaVu Sans Mono"
 #define D_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #define D_SAVE_DIR "/tmp/"
 
@@ -64,6 +67,11 @@ typedef enum {
    DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT,
    DRC_TOKEN_FOCUS_NEW_TAB,
    DRC_TOKEN_FONT_FACTOR,
+   DRC_TOKEN_FONT_SERIF,
+   DRC_TOKEN_FONT_SANS_SERIF,
+   DRC_TOKEN_FONT_CURSIVE,
+   DRC_TOKEN_FONT_FANTASY,
+   DRC_TOKEN_FONT_MONOSPACE,
    DRC_TOKEN_FORCE_MY_COLORS,
    DRC_TOKEN_FULLWINDOW_START,
    DRC_TOKEN_FW_FONT,
@@ -128,10 +136,14 @@ static const SymNode_t symbols[] = {
    { "contrast_visited_color", DRC_TOKEN_CONTRAST_VISITED_COLOR },
    { "enterpress_forces_submit", DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT },
    { "focus_new_tab", DRC_TOKEN_FOCUS_NEW_TAB },
+   { "font_cursive", DRC_TOKEN_FONT_CURSIVE },
    { "font_factor", DRC_TOKEN_FONT_FACTOR },
+   { "font_fantasy", DRC_TOKEN_FONT_FANTASY },
+   { "font_monospace", DRC_TOKEN_FONT_MONOSPACE },
+   { "font_sans_serif", DRC_TOKEN_FONT_SANS_SERIF },
+   { "font_serif", DRC_TOKEN_FONT_SERIF },
    { "force_my_colors", DRC_TOKEN_FORCE_MY_COLORS },
    { "fullwindow_start", DRC_TOKEN_FULLWINDOW_START },
-   { "fw_fontname", DRC_TOKEN_FW_FONT },
    { "generate_submit", DRC_TOKEN_GENERATE_SUBMIT },
    { "geometry", DRC_TOKEN_GEOMETRY },
    { "home", DRC_TOKEN_HOME },
@@ -170,7 +182,6 @@ static const SymNode_t symbols[] = {
    { "start_page", DRC_TOKEN_START_PAGE },
    { "text_color", DRC_TOKEN_TEXT_COLOR },
    { "visited_color", DRC_TOKEN_VISITED_COLOR, },
-   { "vw_fontname", DRC_TOKEN_VW_FONT },
    { "w3c_plus_heuristics", DRC_TOKEN_W3C_PLUS_HEURISTICS }
 };
 
@@ -343,13 +354,25 @@ static int Prefs_parse_pair(char *name, char *value)
    case DRC_TOKEN_BUFFERED_DRAWING:
       prefs.buffered_drawing = atoi(value);
       break;
-   case DRC_TOKEN_FW_FONT:
-      dFree(prefs.fw_fontname);
-      prefs.fw_fontname = dStrdup(value);
+   case DRC_TOKEN_FONT_SERIF:
+      dFree(prefs.font_serif);
+      prefs.font_serif = dStrdup(value);
       break;
-   case DRC_TOKEN_VW_FONT:
-      dFree(prefs.vw_fontname);
-      prefs.vw_fontname = dStrdup(value);
+   case DRC_TOKEN_FONT_SANS_SERIF:
+      dFree(prefs.font_sans_serif);
+      prefs.font_sans_serif = dStrdup(value);
+      break;
+   case DRC_TOKEN_FONT_CURSIVE:
+      dFree(prefs.font_cursive);
+      prefs.font_cursive = dStrdup(value);
+      break;
+   case DRC_TOKEN_FONT_FANTASY:
+      dFree(prefs.font_fantasy);
+      prefs.font_fantasy = dStrdup(value);
+      break;
+   case DRC_TOKEN_FONT_MONOSPACE:
+      dFree(prefs.font_monospace);
+      prefs.font_monospace = dStrdup(value);
       break;
    case DRC_TOKEN_GENERATE_SUBMIT:
       prefs.generate_submit = (strcmp(value, "YES") == 0);
@@ -470,8 +493,11 @@ void a_Prefs_init(void)
    prefs.load_stylesheets=TRUE;
    prefs.parse_embedded_css=TRUE;
    prefs.buffered_drawing=1;
-   prefs.vw_fontname = dStrdup(D_VW_FONTNAME);
-   prefs.fw_fontname = dStrdup(D_FW_FONTNAME);
+   prefs.font_serif = dStrdup(D_FONT_SERIF);
+   prefs.font_sans_serif = dStrdup(D_FONT_SANS_SERIF);
+   prefs.font_cursive = dStrdup(D_FONT_CURSIVE);
+   prefs.font_fantasy = dStrdup(D_FONT_FANTASY);
+   prefs.font_monospace = dStrdup(D_FONT_MONOSPACE);
    prefs.generate_submit = FALSE;
    prefs.enterpress_forces_submit = FALSE;
    prefs.middle_click_opens_new_tab = TRUE;
@@ -503,8 +529,11 @@ void a_Prefs_freeall(void)
    dFree(prefs.http_referer);
    dFree(prefs.no_proxy);
    a_Url_free(prefs.http_proxy);
-   dFree(prefs.fw_fontname);
-   dFree(prefs.vw_fontname);
+   dFree(prefs.font_serif);
+   dFree(prefs.font_sans_serif);
+   dFree(prefs.font_cursive);
+   dFree(prefs.font_fantasy);
+   dFree(prefs.font_monospace);
    a_Url_free(prefs.start_page);
    a_Url_free(prefs.home);
    dFree(prefs.search_url);

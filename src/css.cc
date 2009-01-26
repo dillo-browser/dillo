@@ -356,7 +356,7 @@ void CssContext::addRule (CssRule *rule, CssPrimaryOrder order) {
 
 void CssContext::buildUserAgentStyle () {
    const char *cssBuf =
-     "body  {background-color: #dcd1ba; font-family: sans; color: black;" 
+     "body  {background-color: #dcd1ba; font-family: sans-serif; color: black;" 
      "       margin: 5px}"
      "big {font-size: 1.17em}"
      "blockquote, dd {margin-left: 40px; margin-right: 40px}"
