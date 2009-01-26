@@ -2566,7 +2566,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
          *list_number = 0;
       }
       numtostr((*list_number)++, buf, 16, style->listStyleType);
-      list_item->initWithText (dStrdup(buf), wordStyle);
+      list_item->initWithText (buf, wordStyle);
       list_item->addSpace (wordStyle);
       html->PrevWasSPC = true;
    } else {

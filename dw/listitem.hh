@@ -19,7 +19,7 @@ public:
    ~ListItem();
 
    void initWithWidget (core::Widget *widget, core::style::Style *style);
-   void initWithText (char *texty, core::style::Style *style);
+   void initWithText (const char *text, core::style::Style *style);
 };
 
 } // namespace dw

@@ -46,7 +46,7 @@ void ListItem::initWithWidget (core::Widget *widget,
    updateValue ();
 }
 
-void ListItem::initWithText (char *text, core::style::Style *style)
+void ListItem::initWithText (const char *text, core::style::Style *style)
 {
    addText (text, style);
    addSpace (style); 

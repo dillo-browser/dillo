@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 
       char buf[16];
       sprintf (buf, "%d.", i);
-      listItem->initWithText (strdup (buf), wordStyle);
+      listItem->initWithText (buf, wordStyle);
 
       for(int j = 0; wordsItem[j]; j++) {
          if(j != 0)
