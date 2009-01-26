@@ -263,13 +263,13 @@ void CssStyleSheet::apply (CssPropertyList *props,
    RuleList *ruleList[4] = {NULL, NULL, NULL, NULL};
    
    if (node->id) {
-      lout::object::String idString (node->id);
+      lout::object::ConstString idString (node->id);
 
       ruleList[3] = idTable->get (&idString);
    }
 
    if (node->klass) {
-      lout::object::String classString (node->klass);
+      lout::object::ConstString classString (node->klass);
 
       ruleList[2] = classTable->get (&classString);
    }
