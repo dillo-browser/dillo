@@ -41,12 +41,13 @@
 #   - some fonts may slow down rendering.
 #   - try to tune a fontname/font_factor combination.
 # Ex. {helvetica, lucida, times, "new century schoolbook", utopia, ...}
+# The values below represent the defaults.
 #
-# font_serif="DejaVu Serif"
-# font_sans_serif="DejaVu Sans"
-# font_cursive="DejaVu Sans"
-# font_fantasy="DejaVu Sans"
-# font_monospace="DejaVu Sans Mono"
+#font_serif="DejaVu Serif"
+#font_sans_serif="DejaVu Sans"
+#font_cursive="DejaVu Sans"
+#font_fantasy="DejaVu Sans"
+#font_monospace="DejaVu Sans Mono"
 
 # All fontsizes are scaled by this value
 # font_factor=1.5
