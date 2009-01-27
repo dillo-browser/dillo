@@ -17,6 +17,7 @@ void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
 void a_Menu_file_popup(BrowserWindow *bw, void *v_wid);
 void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url);
 void a_Menu_history_popup(BrowserWindow *bw, int direction);
+void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid);
 
 
 #ifdef __cplusplus

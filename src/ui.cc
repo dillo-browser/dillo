@@ -38,7 +38,8 @@ using namespace fltk;
 
 struct iconset {
    Image *ImgMeterOK, *ImgMeterBug,
-         *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgClear, *ImgSearch;
+         *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgTools,
+         *ImgClear,*ImgSearch;
    MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti, *ImgImageLoadMulti;
 };
 
@@ -49,6 +50,7 @@ static struct iconset standard_icons = {
    new xpmImage(reload_xpm),
    new xpmImage(save_xpm),
    new xpmImage(bm_xpm),
+   new xpmImage(tools_xpm),
    new xpmImage(new_s_xpm),
    new xpmImage(search_xpm),
    new MultiImage(*new xpmImage(left_xpm), INACTIVE_R,
@@ -68,6 +70,7 @@ static struct iconset small_icons = {
    new xpmImage(reload_s_xpm),
    new xpmImage(save_s_xpm),
    new xpmImage(bm_s_xpm),
+   new xpmImage(tools_s_xpm),
    new xpmImage(new_s_xpm),
    standard_icons.ImgSearch,
    new MultiImage(*new xpmImage(left_s_xpm), INACTIVE_R,
@@ -189,7 +192,7 @@ public:
 // Toolbar buttons -----------------------------------------------------------
 //
 //static const char *button_names[] = {
-//   "Back", "Forward", "Home", "Reload", "Save", "Stop", "Bookmarks",
+//   "Back", "Forward", "Home", "Reload", "Save", "Stop", "Bookmarks", "Tools",
 //   "Clear", "Search"
 //};
 
@@ -324,6 +327,11 @@ static void b1_cb(Widget *wid, void *cb_data)
          a_UIcmd_book(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
+   case UI_TOOLS:
+      if (k == 1 || k == 3) {
+         a_UIcmd_tools(a_UIcmd_get_bw_by_widget(wid), wid);
+      }
+      break;
    default:
       break;
    }
@@ -409,6 +417,12 @@ PackedGroup *UI::make_toolbar(int tw, int th)
     b->image(icons->ImgBook);
     b->tooltip("View bookmarks");
     b->callback(b1_cb, (void *)UI_BOOK);
+    b->clear_tab_to_focus();
+
+    Tools = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Tools" : 0);
+    b->image(icons->ImgTools);
+    b->tooltip("Settings");
+    b->callback(b1_cb, (void *)UI_TOOLS);
     b->clear_tab_to_focus();
 
    p1->type(PackedGroup::ALL_CHILDREN_VERTICAL);

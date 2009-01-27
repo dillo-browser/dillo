@@ -21,8 +21,10 @@ void a_UIcmd_forw(void *vbw);
 void a_UIcmd_forw_popup(void *vbw);
 void a_UIcmd_home(void *vbw);
 void a_UIcmd_reload(void *vbw);
+void a_UIcmd_repush(void *vbw);
 void a_UIcmd_save(void *vbw);
 void a_UIcmd_stop(void *vbw);
+void a_UIcmd_tools(void *vbw, void *v_wid);
 void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_file(void *vbw);
 const char *a_UIcmd_select_file();
@@ -36,8 +38,7 @@ void a_UIcmd_findtext_search(BrowserWindow *bw,const char *key,int case_sens);
 void a_UIcmd_findtext_reset(BrowserWindow *bw);
 void a_UIcmd_focus_main_area(BrowserWindow *bw);
 void a_UIcmd_focus_location(void *vbw);
-void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
-                        bool_t has_bugs, bool_t unloaded_imgs);
+void a_UIcmd_page_popup(void *vbw, bool_t has_bugs, bool_t unloaded_imgs);
 void a_UIcmd_link_popup(void *vbw, const DilloUrl *url);
 void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
                          DilloUrl *link_url);

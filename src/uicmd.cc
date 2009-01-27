@@ -439,6 +439,14 @@ void a_UIcmd_reload(void *vbw)
 }
 
 /*
+ * Repush current URL
+ */
+void a_UIcmd_repush(void *vbw)
+{
+   a_Nav_repush((BrowserWindow*)vbw);
+}
+
+/*
  * Return a suitable filename for a given URL path.
  */
 static char *UIcmd_make_save_filename(const char *pathstr)
@@ -523,6 +531,14 @@ void a_UIcmd_stop(void *vbw)
    a_Nav_cancel_expect(bw);
    a_Bw_stop_clients(bw, BW_Root + BW_Img + Bw_Force);
    a_UIcmd_set_buttons_sens(bw);
+}
+
+/*
+ * Popup the tools menu
+ */
+void a_UIcmd_tools(void *vbw, void *v_wid)
+{
+   a_Menu_tools_popup((BrowserWindow*)vbw, v_wid);
 }
 
 /*
@@ -643,10 +659,11 @@ void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url)
 /*
  * Popup the page menu
  */
-void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
-                        bool_t has_bugs, bool_t unloaded_imgs)
+void a_UIcmd_page_popup(void *vbw, bool_t has_bugs, bool_t unloaded_imgs)
 {
-   a_Menu_page_popup((BrowserWindow*)vbw, url, has_bugs, unloaded_imgs);
+   BrowserWindow *bw = (BrowserWindow*)vbw;
+   DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
+   a_Menu_page_popup(bw, url, has_bugs, unloaded_imgs);
 }
 
 /*

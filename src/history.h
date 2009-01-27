@@ -10,7 +10,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 int a_History_add_url(DilloUrl *url);
-int a_History_set_title(int idx, const char *title);
+void a_History_set_title_by_url(const DilloUrl *url, const char *title);
 DilloUrl *a_History_get_url(int idx);
 const char *a_History_get_title(int idx, int force);
 const char *a_History_get_title_by_url(const DilloUrl *url, int force);

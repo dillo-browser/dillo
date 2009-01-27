@@ -33,7 +33,6 @@
 #include "misc.h"
 #include "uicmd.hh"
 #include "history.h"
-#include "nav.h"
 #include "menu.hh"
 #include "prefs.h"
 #include "capi.h"
@@ -721,8 +720,7 @@ bool DilloHtml::HtmlLinkReceiver::press (Widget *widget, int link, int img,
          ret = true;
       } else {
          if (link == -1) {
-            a_UIcmd_page_popup(bw, a_History_get_url(NAV_TOP_UIDX(bw)),
-                               bw->num_page_bugs != 0,
+            a_UIcmd_page_popup(bw, bw->num_page_bugs != 0,
                                html->unloadedImages());
             ret = true;
          } else {
@@ -1575,7 +1573,7 @@ static void Html_tag_close_head(DilloHtml *html, int TagIdx)
       if (html->repush_after_head) {
          html->stop_parser = true;
          MSG(" [html->stop_parser = true]\n");
-         a_Nav_repush(html->bw);
+         a_UIcmd_repush(html->bw);
       }
    }
 }
@@ -1599,7 +1597,7 @@ static void Html_tag_close_title(DilloHtml *html, int TagIdx)
    if (html->InFlags & IN_HEAD) {
       /* title is only valid inside HEAD */
       a_UIcmd_set_page_title(html->bw, html->Stash->str);
-      a_History_set_title(NAV_TOP_UIDX(html->bw),html->Stash->str);
+      a_History_set_title_by_url(html->page_url, html->Stash->str);
    } else {
       BUG_MSG("the TITLE element must be inside the HEAD section\n");
    }
@@ -2792,7 +2790,7 @@ static void Html_css_load_callback(int Op, CacheClient_t *Client)
       BrowserWindow *bw = ((DilloWeb *)Client->Web)->bw;
       /* Repush when we've got them all */
       if (--bw->NumPendingStyleSheets == 0)
-         a_Nav_repush(bw);
+         a_UIcmd_repush(bw);
    }
 }
 
@@ -2803,11 +2801,11 @@ static void Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
 {
    char *data;
    int len;
-   if (a_Nav_get_buf(url, &data, &len)) {
+   if (a_Capi_get_buf(url, &data, &len)) {
       /* Haven't looked into what origin_count is */
       if (a_Capi_get_flags(url) & CAPI_Completed)
          html->styleEngine->parse(data, len, 0, CSS_ORIGIN_AUTHOR);
-      a_Nav_unref_buf(url);
+      a_Capi_unref_buf(url);
    } else if (!html->repush_after_head) {
       /* Fill a Web structure for the cache query */
       int ClientKey;
@@ -2838,9 +2836,11 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
    //MSG("Html_tag_open_link(): %s\n", tag_str);
    //dFree(tag_str);
 
+   /* Remote stylesheets enabled? */
+   dReturn_if_fail (prefs.load_stylesheets);
    /* When viewing suspicious HTML email, don't load LINK */
-   if (URL_FLAGS(html->base_url) & URL_SpamSafe)
-      return;
+   dReturn_if (URL_FLAGS(html->base_url) & URL_SpamSafe);
+
    /* Ignore LINK outside HEAD */
    if (!(html->InFlags & IN_HEAD)) {
       BUG_MSG("the LINK element must be inside the HEAD section\n");

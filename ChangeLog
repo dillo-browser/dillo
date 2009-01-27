@@ -53,6 +53,8 @@ dillo-2.1
  - Implemented CSS Stylesheet loading.
  - Made a big cleanup of cache.c WRT charset decoding (fixes bugs).
  - Made an extensive cleanup/fixup of the whole image handling process.
+ - Implemented the tools button with a couple CSS options.
+ - Removed the nav.h dependency from html.cc
    Patches: Jorge Arellano Cid
 
 dw

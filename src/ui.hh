@@ -26,6 +26,7 @@ typedef enum {
    UI_SAVE,
    UI_STOP,
    UI_BOOK,
+   UI_TOOLS,
    UI_CLEAR,
    UI_SEARCH
 } UIButton;
@@ -48,7 +49,7 @@ class UI : public fltk::Group {
    char *TabTooltip;
 
    Group *TopGroup;
-   Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks,
+   Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
           *Clear, *Search, *FullScreen, *ImageLoad, *BugMeter, *FileButton;
    Input  *Location;
    PackedGroup *ProgBox;

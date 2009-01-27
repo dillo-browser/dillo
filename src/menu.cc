@@ -16,6 +16,7 @@
 #include <fltk/events.h>
 #include <fltk/PopupMenu.h>
 #include <fltk/Item.h>
+#include <fltk/ToggleItem.h>
 #include <fltk/Divider.h>
 
 #include "msg.h"
@@ -619,7 +620,6 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
  */
 void a_Menu_history_popup(BrowserWindow *bw, int direction)
 {
-   // One menu for every browser window
    static PopupMenu *pm = 0;
    Item *it;
    int i;
@@ -652,5 +652,53 @@ void a_Menu_history_popup(BrowserWindow *bw, int direction)
    pm->end();
 
    pm->popup();
+}
+
+/*
+ * Toggle use of remote stylesheets
+ */ 
+static void Menu_remote_css_cb(Widget *wid)
+{
+   _MSG("Menu_remote_css_cb\n");
+   prefs.load_stylesheets = wid->state() ? 1 : 0;
+   a_UIcmd_repush(popup_bw);
+}
+
+/*
+ * Toggle use of embedded CSS style
+ */ 
+static void Menu_embedded_css_cb(Widget *wid)
+{
+   prefs.parse_embedded_css = wid->state() ? 1 : 0;
+   a_UIcmd_repush(popup_bw);
+}
+
+/*
+ * Tools popup menu (construction & popup)
+ */
+void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
+{
+   // One menu shared by every browser window
+   static PopupMenu *pm = NULL;
+   Widget *wid = (Widget*)v_wid;
+   Item *it;
+
+   popup_bw = bw;
+
+   if (!pm) {
+      pm = new PopupMenu(0,0,0,0, "TOOLS");
+      pm->begin();
+       it = new ToggleItem("Use remote CSS");
+       it->callback(Menu_remote_css_cb);
+       it->state(true);
+       it = new ToggleItem("Use embedded CSS");
+       it->callback(Menu_embedded_css_cb);
+       it->state(true);
+       pm->type(PopupMenu::POPUP13);
+      pm->end();
+   }
+   //pm->popup();
+   pm->value(-1);
+   ((Menu*)pm)->popup(Rectangle(0,wid->h(),pm->w(),pm->h()));
 }
 
