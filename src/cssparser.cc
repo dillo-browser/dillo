@@ -1110,9 +1110,9 @@ static void Css_parse_ruleset(CssParser * parser)
 
    DEBUG_MSG(DEBUG_PARSE_LEVEL, "end of %s\n", "selectors");
 
-   props = new CssPropertyList();
+   props = new CssPropertyList(true);
    props->ref();
-   importantProps = new CssPropertyList();
+   importantProps = new CssPropertyList(true);
    importantProps->ref();
 
    /* Read block. ('{' has already been read.) */

@@ -24,6 +24,23 @@ void CssProperty::print () {
    fprintf (stderr, "%s - %d\n", Css_property_info[name].symbol, value.intVal);
 }
 
+CssPropertyList::~CssPropertyList () {
+   if (ownerOfStrings) {
+      for (int i = 0; i < size (); i++) {
+         CssProperty *p = getRef (i);
+
+         switch (p->name) {
+            case CssProperty::CSS_PROPERTY_CONTENT:
+            case CssProperty::CSS_PROPERTY_FONT_FAMILY:
+               dFree (p->value.strVal);
+               break;
+            default:
+               break;
+         }
+      }
+   }
+}
+
 void CssPropertyList::set (CssProperty::Name name, CssProperty::Value value) {
    for (int i = 0; i < size (); i++)
       if (getRef (i)->name == name) {

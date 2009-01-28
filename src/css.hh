@@ -52,7 +52,7 @@ class CssProperty {
    public:
       typedef union {
          int intVal;
-         const char *strVal;
+         char *strVal;
       } Value;
 
       typedef enum {
@@ -167,19 +167,24 @@ class CssProperty {
  * \brief A list of CssProperty objects.
  */ 
 class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
-      int refCount;
+   int refCount;
+   bool ownerOfStrings;
 
    public:
-      CssPropertyList() : lout::misc::SimpleVector <CssProperty> (1) {
+      CssPropertyList(bool ownerOfStrings = false) :
+                  lout::misc::SimpleVector <CssProperty> (1) {
          refCount = 0;
+         this->ownerOfStrings = ownerOfStrings;
       };
       CssPropertyList(const CssPropertyList &p) :
          lout::misc::SimpleVector <CssProperty> (p) {
          refCount = 0;
+         ownerOfStrings = false;
       };
+      ~CssPropertyList ();
 
       void set (CssProperty::Name name, CssProperty::Value value);
-      void set (CssProperty::Name name, const char *value) {
+      void set (CssProperty::Name name, char *value) {
          CssProperty::Value v;
          v.strVal = value;
          set (name, v);
