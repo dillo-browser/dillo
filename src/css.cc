@@ -84,7 +84,7 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
             if (!sel->match (node))
                return false;
             break;
-         case DESCENDENT:
+         case DESCENDANT:
             n = node;
 
             while (true) {
@@ -130,7 +130,7 @@ void CssSelector::print () {
             case CHILD:
                fprintf (stderr, "> ");
                break;
-            case DESCENDENT:
+            case DESCENDANT:
                fprintf (stderr, "\" \" ");
                break;
             default:

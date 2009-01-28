@@ -218,7 +218,7 @@ class CssSimpleSelector {
 class CssSelector {
    public:
       typedef enum {
-         DESCENDENT,
+         DESCENDANT,
          CHILD,
          ADJACENT_SIBLING,
       } Combinator;

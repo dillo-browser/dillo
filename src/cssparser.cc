@@ -1067,7 +1067,7 @@ static CssSelector *Css_parse_selector(CssParser * parser) {
          selector->addSimpleSelector (CssSelector::CHILD);
          Css_next_token(parser);
       } else if (parser->ttype != CSS_TK_END && parser->space_separated) {
-         selector->addSimpleSelector (CssSelector::DESCENDENT);
+         selector->addSimpleSelector (CssSelector::DESCENDANT);
       } else {
          delete selector;
          selector = NULL;
