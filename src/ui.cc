@@ -974,6 +974,8 @@ void UI::customize(int flags)
       Stop->hide();
    if ( !prefs.show_bookmarks )
       Bookmarks->hide();
+   if ( !prefs.show_tools )
+      Tools->hide();
    if ( !prefs.show_clear_url )
       Clear->hide();
    if ( !prefs.show_url )

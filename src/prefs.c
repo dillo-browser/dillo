@@ -105,6 +105,7 @@ typedef enum {
    DRC_TOKEN_SHOW_SAVE,
    DRC_TOKEN_SHOW_SEARCH,
    DRC_TOKEN_SHOW_STOP,
+   DRC_TOKEN_SHOW_TOOLS,
    DRC_TOKEN_SHOW_TOOLTIP,
    DRC_TOKEN_SHOW_URL,
    DRC_TOKEN_SMALL_ICONS,
@@ -173,6 +174,7 @@ static const SymNode_t symbols[] = {
    { "show_save", DRC_TOKEN_SHOW_SAVE },
    { "show_search", DRC_TOKEN_SHOW_SEARCH },
    { "show_stop", DRC_TOKEN_SHOW_STOP },
+   { "show_tools", DRC_TOKEN_SHOW_TOOLS },
    { "show_tooltip", DRC_TOKEN_SHOW_TOOLTIP },
    { "show_url", DRC_TOKEN_SHOW_URL },
    { "small_icons", DRC_TOKEN_SMALL_ICONS },
@@ -324,6 +326,9 @@ static int Prefs_parse_pair(char *name, char *value)
       break;
    case DRC_TOKEN_SHOW_BOOKMARKS:
       prefs.show_bookmarks = (strcmp(value, "YES") == 0);
+      break;
+   case DRC_TOKEN_SHOW_TOOLS:
+      prefs.show_tools = (strcmp(value, "YES") == 0);
       break;
    case DRC_TOKEN_SHOW_FILEMENU:
       prefs.show_filemenu = (strcmp(value, "YES") == 0);
@@ -478,6 +483,7 @@ void a_Prefs_init(void)
    prefs.show_save=TRUE;
    prefs.show_stop=TRUE;
    prefs.show_bookmarks=TRUE;
+   prefs.show_tools=TRUE;
    prefs.show_filemenu=TRUE;
    prefs.show_clear_url=TRUE;
    prefs.show_url=TRUE;

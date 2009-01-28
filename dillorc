@@ -189,6 +189,7 @@
 #show_save=YES
 #show_stop=YES
 #show_bookmarks=YES
+#show_tools=YES
 #show_filemenu=YES
 #show_clear_url=YES
 #show_url=YES
