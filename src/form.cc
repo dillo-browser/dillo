@@ -102,7 +102,6 @@ public:  //BUG: for now everything is public
    lout::misc::SimpleVector<DilloHtmlInput*> *inputs;
 
    int num_entry_fields;
-   int num_submit_buttons;
 
    DilloHtmlReceiver *form_receiver;
 
@@ -349,25 +348,12 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
 
 void Html_tag_close_form(DilloHtml *html, int TagIdx)
 {
-   static const char *const SubmitTag =
-      "<input type='submit' value='?Submit?' alt='dillo-generated-button'>";
-   DilloHtmlForm *form;
+// DilloHtmlForm *form;
 // int i;
-
-   if (html->InFlags & IN_FORM) {
-      form = html->getCurrentForm ();
-      /* If we don't have a submit button and the user desires one,
-         let's add a custom one */
-      if (form->num_submit_buttons == 0) {
-         if (prefs.show_extra_warnings || form->num_entry_fields != 1)
-            BUG_MSG("FORM lacks a Submit button\n");
-         if (prefs.generate_submit) {
-            BUG_MSG(" (added a submit button internally)\n");
-            Html_tag_open_input(html, SubmitTag, strlen(SubmitTag));
-            form->num_submit_buttons = 0;
-         }
-      }
-
+//
+// if (html->InFlags & IN_FORM) {
+//    form = html->getCurrentForm ();
+//
 //    /* Make buttons sensitive again */
 //    for (i = 0; i < form->inputs->size(); i++) {
 //       input_i = form->inputs->get(i);
@@ -383,7 +369,7 @@ void Html_tag_close_form(DilloHtml *html, int TagIdx)
 //          a_Dw_button_set_sensitive(DW_BUTTON(input_i->widget), TRUE);
 //       }
 //    }
-   }
+// }
 
    html->InFlags &= ~IN_FORM;
    html->InFlags &= ~IN_SELECT;
@@ -935,7 +921,6 @@ DilloHtmlForm::DilloHtmlForm (DilloHtml *html2,
    submit_charset = dStrdup(charset);
    inputs = new misc::SimpleVector <DilloHtmlInput*> (4);
    num_entry_fields = 0;
-   num_submit_buttons = 0;
    showing_hiddens = false;
    form_receiver = new DilloHtmlReceiver (this);
 }
@@ -1009,7 +994,7 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *active_input)
 
       _MSG("DilloHtmlForm::buildQueryUrl: action=%s\n",URL_STR_(action));
 
-      if (active_input && num_submit_buttons > 0) {
+      if (active_input) {
          if ((active_input->type == DILLO_HTML_INPUT_SUBMIT) ||
              (active_input->type == DILLO_HTML_INPUT_IMAGE) ||
              (active_input->type == DILLO_HTML_INPUT_BUTTON_SUBMIT)) {
@@ -1469,10 +1454,6 @@ void DilloHtmlForm::addInput(DilloHtmlInput *input, DilloHtmlInputType type)
    if (type == DILLO_HTML_INPUT_PASSWORD ||
        type == DILLO_HTML_INPUT_TEXT) {
       num_entry_fields++;
-   } else if (type == DILLO_HTML_INPUT_SUBMIT ||
-              type == DILLO_HTML_INPUT_BUTTON_SUBMIT ||
-              type == DILLO_HTML_INPUT_IMAGE) {
-      num_submit_buttons++;
    }
 }
 

@@ -204,11 +204,6 @@
 # useful to keep away from the mouse by forcing enter to submit.
 #enterpress_forces_submit=NO
 
-# Some forms lack a submit button, and dillo can generate a custom one
-# internally. Unfortunately there's no guarantee for it to work. :(
-# (my experience is that forms that lack a submit rely on Javascript)
-#generate_submit=NO
-
 # A mouse's middle click over a link opens a new Tab.
 # If you prefer to open a new Window instead, set it to NO.
 #middle_click_opens_new_tab=YES

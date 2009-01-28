@@ -75,7 +75,6 @@ typedef enum {
    DRC_TOKEN_FORCE_MY_COLORS,
    DRC_TOKEN_FULLWINDOW_START,
    DRC_TOKEN_FW_FONT,
-   DRC_TOKEN_GENERATE_SUBMIT,
    DRC_TOKEN_GEOMETRY,
    DRC_TOKEN_HOME,
    DRC_TOKEN_HTTP_LANGUAGE,
@@ -144,7 +143,6 @@ static const SymNode_t symbols[] = {
    { "font_serif", DRC_TOKEN_FONT_SERIF },
    { "force_my_colors", DRC_TOKEN_FORCE_MY_COLORS },
    { "fullwindow_start", DRC_TOKEN_FULLWINDOW_START },
-   { "generate_submit", DRC_TOKEN_GENERATE_SUBMIT },
    { "geometry", DRC_TOKEN_GEOMETRY },
    { "home", DRC_TOKEN_HOME },
    { "http_language", DRC_TOKEN_HTTP_LANGUAGE },
@@ -374,9 +372,6 @@ static int Prefs_parse_pair(char *name, char *value)
       dFree(prefs.font_monospace);
       prefs.font_monospace = dStrdup(value);
       break;
-   case DRC_TOKEN_GENERATE_SUBMIT:
-      prefs.generate_submit = (strcmp(value, "YES") == 0);
-      break;
    case DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT:
       prefs.enterpress_forces_submit = (strcmp(value, "YES") == 0);
       break;
@@ -498,7 +493,6 @@ void a_Prefs_init(void)
    prefs.font_cursive = dStrdup(D_FONT_CURSIVE);
    prefs.font_fantasy = dStrdup(D_FONT_FANTASY);
    prefs.font_monospace = dStrdup(D_FONT_MONOSPACE);
-   prefs.generate_submit = FALSE;
    prefs.enterpress_forces_submit = FALSE;
    prefs.middle_click_opens_new_tab = TRUE;
    prefs.search_url = dStrdup(D_SEARCH_URL);
