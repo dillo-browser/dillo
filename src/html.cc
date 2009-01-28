@@ -114,11 +114,6 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
 /*-----------------------------------------------------------------------------
  * Local Data
  *---------------------------------------------------------------------------*/
-/* The following array of font sizes has to be _strictly_ increasing */
-static const int FontSizes[] = {10, 12, 14, 18, 22, 28};
-static const int FontSizesNum = 6;
-static const int FontSizesBase = 2;
-
 /* Parsing table structure */
 typedef struct {
    const char *name;      /* element name */
