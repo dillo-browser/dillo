@@ -13,6 +13,7 @@
 #include <math.h>
 #include "../dlib/dlib.h"
 #include "prefs.h"
+#include "misc.h"
 #include "html_common.hh"
 #include "css.hh"
 #include "cssparser.hh"
@@ -397,21 +398,12 @@ void CssContext::buildUserAgentStyle () {
 }
 
 void CssContext::buildUserStyle () {
-   char buf[1024];
-   char *filename;
+   Dstr *style;
+   char *filename = dStrconcat(dGethomedir(), "/.dillo/style.css", NULL);
 
-   filename = dStrconcat(dGethomedir(), "/.dillo/style.css", NULL);
-   FILE *fp = fopen (filename, "r");
-   if (fp) {
-      Dstr *style = dStr_sized_new (1024);
-      size_t len;
-   
-      while ((len = fread (buf, 1, sizeof (buf), fp)))
-         dStr_append_l (style, buf, len);
-
+   if ((style = a_Misc_file2dstr(filename))) {
       a_Css_parse (this, style->str, style->len, 0, CSS_ORIGIN_USER);
       dStr_free (style, 1);
    }
-
    dFree (filename);
 }
