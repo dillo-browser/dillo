@@ -161,12 +161,12 @@ bool CssSimpleSelector::match (const DoctreeNode *n) {
    if (element != ELEMENT_ANY && element != n->element)
       return false;
    if (klass != NULL &&
-      (n->klass == NULL || strcasecmp (klass, n->klass) != 0))
+      (n->klass == NULL || dStrcasecmp (klass, n->klass) != 0))
       return false;
    if (pseudo != NULL &&
-      (n->pseudo == NULL || strcasecmp (pseudo, n->pseudo) != 0))
+      (n->pseudo == NULL || dStrcasecmp (pseudo, n->pseudo) != 0))
       return false;
-   if (id != NULL && (n->id == NULL || strcasecmp (id, n->id) != 0))
+   if (id != NULL && (n->id == NULL || dStrcasecmp (id, n->id) != 0))
       return false;
    
    return true;
