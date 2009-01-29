@@ -319,7 +319,7 @@ int main(int argc, char **argv)
          if (i > idx) {
             if (prefs.middle_click_opens_new_tab) {
                /* user must prefer tabs */
-               const int focus = 0;
+               const int focus = 1;
                a_UIcmd_open_url_nt(bw, start_url, focus);
             } else {
                a_UIcmd_open_url_nw(bw, start_url);
