@@ -192,25 +192,35 @@ static void Menu_view_page_bugs_cb(Widget* )
 }
 
 /*
- * Load images on current page that match URL pattern
+ * Get the document (HTML page) this menu was triggered for.
  */
-static void Menu_load_images_cb(Widget*, void *user_data)
+static void *Menu_get_bw_doc()
 {
-   DilloUrl *pattern = (DilloUrl *) user_data ;
+   void *doc = NULL;
 
    if (popup_bw && popup_bw->Docs) {
       if (dList_find_custom(popup_bw->PageUrls, popup_url,
                             (dCompareFunc)a_Url_cmp)){
          /* HTML page is still there */
-         int n = dList_length(popup_bw->Docs);
-         if (n == 1) {
-            a_Html_load_images(dList_nth_data(popup_bw->Docs, 0), pattern);
-         } else if (n > 1) {
-            /* e.g. frames implemented and not all containing html */
-            MSG("Menu_load_images_cb multiple Docs not handled\n");
-         }
+         if (dList_length(popup_bw->Docs) == 1)
+            doc = dList_nth_data(popup_bw->Docs, 0);
+         else
+            MSG("Menu_get_bw_doc() multiple docs not implemented\n");
       }
    }
+   return doc;
+}
+
+/*
+ * Load images on current page that match URL pattern
+ */
+static void Menu_load_images_cb(Widget*, void *user_data)
+{
+   DilloUrl *pattern = (DilloUrl *) user_data;
+   void *doc = Menu_get_bw_doc();
+
+   if (doc)
+      a_Html_load_images(doc, pattern);
 }
 
 /*
@@ -218,18 +228,10 @@ static void Menu_load_images_cb(Widget*, void *user_data)
  */
 static void Menu_form_submit_cb(Widget*, void *v_form)
 {
-  if (popup_bw && popup_bw->Docs) {
-      if (dList_find_custom(popup_bw->PageUrls, popup_url,
-                            (dCompareFunc)a_Url_cmp)){
-         /* HTML page is still there */
-         int n = dList_length(popup_bw->Docs);
-         if (n == 1) {
-            a_Html_form_submit(dList_nth_data(popup_bw->Docs, 0), v_form);
-         } else if (n > 1) {
-            MSG ("Menu_form_submit_cb multiple Docs not implemented\n");
-         }
-      }
-   }
+   void *doc = Menu_get_bw_doc();
+
+   if (doc)
+      a_Html_form_submit(doc, v_form);
 }
 
 /*
@@ -237,18 +239,10 @@ static void Menu_form_submit_cb(Widget*, void *v_form)
  */
 static void Menu_form_reset_cb(Widget*, void *v_form)
 {
-   if (popup_bw && popup_bw->Docs) {
-      if (dList_find_custom(popup_bw->PageUrls, popup_url,
-                            (dCompareFunc)a_Url_cmp)){
-         /* HTML page is still there */
-         int n = dList_length(popup_bw->Docs);
-         if (n == 1) {
-            a_Html_form_reset(dList_nth_data(popup_bw->Docs, 0), v_form);
-         } else if (n > 1) {
-            MSG ("Menu_form_reset_cb multiple Docs not implemented\n");
-         }
-      }
-   }
+   void *doc = Menu_get_bw_doc();
+
+   if (doc)
+      a_Html_form_reset(doc, v_form);
 }
 
 /*
@@ -258,20 +252,10 @@ static void Menu_form_hiddens_cb(Widget *w, void *user_data)
 {
    void *v_form = w->parent()->user_data();
    bool visible = *((bool *) user_data);
+   void *doc = Menu_get_bw_doc();
 
-   if (popup_bw && popup_bw->Docs) {
-      if (dList_find_custom(popup_bw->PageUrls, popup_url,
-                            (dCompareFunc)a_Url_cmp)){
-         /* HTML page is still there */
-         int n = dList_length(popup_bw->Docs);
-         if (n == 1) {
-            a_Html_form_display_hiddens(dList_nth_data(popup_bw->Docs, 0),
-                                        v_form, !visible);
-         } else if (n > 1) {
-            MSG ("Menu_form_hiddens_cb multiple Docs not implemented\n");
-         }
-      }
-   }
+   if (doc)
+      a_Html_form_display_hiddens(doc, v_form, !visible);
 }
 
 /* 
