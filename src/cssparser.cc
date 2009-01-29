@@ -157,8 +157,6 @@ const CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
    {"last", CSS_TYPE_UNUSED, NULL},
 };
 
-#define CSS_SHORTHAND_NUM 14
-
 typedef struct {
    const char *symbol;
    enum {
@@ -215,7 +213,7 @@ const CssProperty::Name Css_border_right_properties[] = {
    (CssProperty::Name) - 1
 };
 
-const CssProperty::Name Css_border_style_properties[4] = {
+const CssProperty::Name Css_border_style_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE,
@@ -229,7 +227,7 @@ const CssProperty::Name Css_border_top_properties[] = {
    (CssProperty::Name) - 1
 };
 
-const CssProperty::Name Css_border_width_properties[4] = {
+const CssProperty::Name Css_border_width_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH,
@@ -243,7 +241,7 @@ const CssProperty::Name Css_list_style_properties[] = {
    (CssProperty::Name) - 1
 };
 
-const CssProperty::Name Css_margin_properties[4] = {
+const CssProperty::Name Css_margin_properties[] = {
    CssProperty::CSS_PROPERTY_MARGIN_TOP,
    CssProperty::CSS_PROPERTY_MARGIN_BOTTOM,
    CssProperty::CSS_PROPERTY_MARGIN_LEFT,
@@ -257,14 +255,14 @@ const CssProperty::Name Css_outline_properties[] = {
    (CssProperty::Name) - 1
 };
 
-const CssProperty::Name Css_padding_properties[4] = {
+const CssProperty::Name Css_padding_properties[] = {
    CssProperty::CSS_PROPERTY_PADDING_TOP,
    CssProperty::CSS_PROPERTY_PADDING_BOTTOM,
    CssProperty::CSS_PROPERTY_PADDING_LEFT,
    CssProperty::CSS_PROPERTY_PADDING_RIGHT
 };
 
-const CssProperty::Name Css_border_properties[12] = {
+const CssProperty::Name Css_border_properties[] = {
    CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH,
    CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
    CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR,
@@ -279,7 +277,16 @@ const CssProperty::Name Css_border_properties[12] = {
    CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR
 };
 
-static const CssShorthandInfo Css_shorthand_info[CSS_SHORTHAND_NUM] = {
+const CssProperty::Name Css_font_properties[] = {
+   CssProperty::CSS_PROPERTY_FONT_SIZE,
+   CssProperty::CSS_PROPERTY_FONT_STYLE,
+   CssProperty::CSS_PROPERTY_FONT_VARIANT,
+   CssProperty::CSS_PROPERTY_FONT_WEIGHT,
+   CssProperty::CSS_PROPERTY_FONT_FAMILY,
+   (CssProperty::Name) - 1
+};
+
+static const CssShorthandInfo Css_shorthand_info[] = {
    {"background", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
     Css_background_properties},
    {"border", CssShorthandInfo::CSS_SHORTHAND_BORDER,
@@ -298,7 +305,8 @@ static const CssShorthandInfo Css_shorthand_info[CSS_SHORTHAND_NUM] = {
     Css_border_top_properties},
    {"border-width", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS,
     Css_border_width_properties},
-   {"font", CssShorthandInfo::CSS_SHORTHAND_FONT, NULL},
+   {"font", CssShorthandInfo::CSS_SHORTHAND_FONT,
+    Css_font_properties},
    {"list-style", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
     Css_list_style_properties},
    {"margin", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS,
@@ -308,6 +316,8 @@ static const CssShorthandInfo Css_shorthand_info[CSS_SHORTHAND_NUM] = {
    {"padding", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS,
     Css_padding_properties},
 };
+
+#define CSS_SHORTHAND_NUM (sizeof(Css_shorthand_info) / sizeof(CssShorthandInfo))
 
 /* ----------------------------------------------------------------------
  *    Initialization, Cleanup
@@ -859,6 +869,9 @@ static void Css_parse_declaration(CssParser * parser,
                Css_next_token(parser);
 
                switch (Css_shorthand_info[sh_index].type) {
+
+               case CssShorthandInfo::CSS_SHORTHAND_FONT:
+                  /* \todo Implement details. */
                case CssShorthandInfo::CSS_SHORTHAND_MULTIPLE:
                   do {
                      for (found = false, i = 0;
@@ -950,10 +963,6 @@ static void Css_parse_declaration(CssParser * parser,
                            }
                         }
                   } while (found);
-                  break;
-
-               case CssShorthandInfo::CSS_SHORTHAND_FONT:
-                  /* todo: Not yet implemented. */
                   break;
                }
             }
