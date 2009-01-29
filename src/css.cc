@@ -25,25 +25,16 @@ void CssProperty::print () {
 }
 
 CssPropertyList::~CssPropertyList () {
-   if (ownerOfStrings) {
-      for (int i = 0; i < size (); i++) {
-         CssProperty *p = getRef (i);
-
-         switch (p->name) {
-            case CssProperty::CSS_PROPERTY_CONTENT:
-            case CssProperty::CSS_PROPERTY_FONT_FAMILY:
-               dFree (p->value.strVal);
-               break;
-            default:
-               break;
-         }
-      }
-   }
+   if (ownerOfStrings)
+      for (int i = 0; i < size (); i++)
+         getRef (i)->free ();
 }
 
 void CssPropertyList::set (CssProperty::Name name, CssProperty::Value value) {
    for (int i = 0; i < size (); i++)
       if (getRef (i)->name == name) {
+         if (ownerOfStrings)
+            getRef (i)->free ();
          getRef (i)->value = value;
          return;
       }

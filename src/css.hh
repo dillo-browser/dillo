@@ -160,6 +160,16 @@ class CssProperty {
       Name name;
       Value value;
 
+      void free () {
+         switch (name) {
+            case CssProperty::CSS_PROPERTY_CONTENT:
+            case CssProperty::CSS_PROPERTY_FONT_FAMILY:
+               dFree (value.strVal);
+               break;
+            default:
+               break;
+         }
+      }
       void print ();
 };
 
