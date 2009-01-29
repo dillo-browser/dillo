@@ -140,6 +140,8 @@ Image::~Image()
       delete altText;
    if (buffer)
       buffer->unref ();
+   if (mapKey)
+      delete mapKey;
 }
 
 void Image::sizeRequestImpl (core::Requisition *requisition)
@@ -401,6 +403,8 @@ void Image::setIsMap ()
 void Image::setUseMap (ImageMapsList *list, object::Object *key)
 {
    mapList = list;
+   if (mapKey && mapKey != key)
+      delete mapKey;
    mapKey = key;
 }
 
