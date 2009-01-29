@@ -269,7 +269,7 @@ int FontAttrs::hashValue()
 
 Font::~Font ()
 {
-   free (name);
+   free ((char*)name);
 }
 
 void Font::copyAttrs (FontAttrs *attrs)

@@ -546,7 +546,7 @@ public:
 class FontAttrs: public object::Object
 {
 public:
-   char *name;
+   const char *name;
    int size;
    int weight;
    FontStyle style;
