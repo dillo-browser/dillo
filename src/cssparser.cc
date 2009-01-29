@@ -1186,7 +1186,7 @@ void a_Css_parse(CssContext * context,
 
 CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen)
 {
-   CssPropertyList *props = new CssPropertyList ();
+   CssPropertyList *props = new CssPropertyList (true);
    CssParser parser;
 
    parser.context = NULL;

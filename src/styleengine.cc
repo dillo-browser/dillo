@@ -428,13 +428,13 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    // merge style information
    cssContext->apply (&props, this, styleAttributeProps, nonCssProperties);
 
-   if (styleAttributeProps)
-      delete styleAttributeProps;
-
    // apply style
    apply (&attrs, &props);
 
    stack->getRef (stack->size () - 1)->style = Style::create (layout, &attrs);
+
+   if (styleAttributeProps)
+      delete styleAttributeProps;
    
    return stack->getRef (stack->size () - 1)->style;
 }
