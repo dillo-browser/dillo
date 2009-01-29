@@ -279,6 +279,15 @@ const CssProperty::Name Css_border_properties[12] = {
    CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR
 };
 
+const CssProperty::Name Css_font_properties[] = {
+   CssProperty::CSS_PROPERTY_FONT_SIZE,
+   CssProperty::CSS_PROPERTY_FONT_STYLE,
+   CssProperty::CSS_PROPERTY_FONT_VARIANT,
+   CssProperty::CSS_PROPERTY_FONT_WEIGHT,
+   CssProperty::CSS_PROPERTY_FONT_FAMILY,
+   (CssProperty::Name) - 1
+};
+
 static const CssShorthandInfo Css_shorthand_info[CSS_SHORTHAND_NUM] = {
    {"background", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
     Css_background_properties},
@@ -298,7 +307,8 @@ static const CssShorthandInfo Css_shorthand_info[CSS_SHORTHAND_NUM] = {
     Css_border_top_properties},
    {"border-width", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS,
     Css_border_width_properties},
-   {"font", CssShorthandInfo::CSS_SHORTHAND_FONT, NULL},
+   {"font", CssShorthandInfo::CSS_SHORTHAND_FONT,
+    Css_font_properties},
    {"list-style", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
     Css_list_style_properties},
    {"margin", CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS,
@@ -859,6 +869,9 @@ static void Css_parse_declaration(CssParser * parser,
                Css_next_token(parser);
 
                switch (Css_shorthand_info[sh_index].type) {
+
+               case CssShorthandInfo::CSS_SHORTHAND_FONT:
+                  /* \todo Implement details. */
                case CssShorthandInfo::CSS_SHORTHAND_MULTIPLE:
                   do {
                      for (found = false, i = 0;
@@ -950,10 +963,6 @@ static void Css_parse_declaration(CssParser * parser,
                            }
                         }
                   } while (found);
-                  break;
-
-               case CssShorthandInfo::CSS_SHORTHAND_FONT:
-                  /* todo: Not yet implemented. */
                   break;
                }
             }
