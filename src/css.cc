@@ -193,15 +193,13 @@ int CssSimpleSelector::specificity () {
    int spec = 0;
 
    if (id)
-      spec++;
-   spec <<= 10; 
+      spec += 1 << 20;
    if (klass)
-      spec++;
+      spec += 1 << 10;
    if (pseudo)
-      spec++;
-   spec <<= 10; 
+      spec += 1 << 10;
    if (element != ELEMENT_ANY)
-      spec++;
+      spec += 1;
 
    return spec;
 }
