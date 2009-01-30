@@ -348,14 +348,20 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
         tagStyle->apply (props);
 }
 
-void CssContext::addRule (CssRule *rule, CssPrimaryOrder order) {
-   if (sheet[order] == NULL)
-      sheet[order] = new CssStyleSheet ();
+void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
+                          CssPrimaryOrder order) {
 
-   sheet[order]->addRule (rule);
+   if (props->size () > 0) {
+      CssRule *rule = new CssRule (sel, props);
 
-//  fprintf(stderr, "Adding Rule (%d)\n", order);
-//  rule->print ();
+      if (sheet[order] == NULL)
+         sheet[order] = new CssStyleSheet ();
+
+      sheet[order]->addRule (rule);
+
+//    fprintf(stderr, "Adding Rule (%d)\n", order);
+//    rule->print ();
+   }
 }
 
 void CssContext::buildUserAgentStyle () {

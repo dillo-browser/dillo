@@ -1139,16 +1139,14 @@ static void Css_parse_ruleset(CssParser * parser)
       CssSelector *s = list->get(i);
 
       if (parser->origin == CSS_ORIGIN_USER_AGENT) {
-         parser->context->addRule(new CssRule(s, props),
-                                  CSS_PRIMARY_USER_AGENT);
+         parser->context->addRule(s, props, CSS_PRIMARY_USER_AGENT);
       } else if (parser->origin == CSS_ORIGIN_USER) {
-         parser->context->addRule(new CssRule(s, props), CSS_PRIMARY_USER);
-         parser->context->addRule(new CssRule(s, importantProps),
+         parser->context->addRule(s, props, CSS_PRIMARY_USER);
+         parser->context->addRule(s, importantProps,
                                   CSS_PRIMARY_USER_IMPORTANT);
       } else if (parser->origin == CSS_ORIGIN_AUTHOR) {
-         parser->context->addRule(new CssRule(s, props),
-                                  CSS_PRIMARY_AUTHOR);
-         parser->context->addRule(new CssRule(s, importantProps),
+         parser->context->addRule(s, props, CSS_PRIMARY_AUTHOR);
+         parser->context->addRule(s, importantProps,
                                   CSS_PRIMARY_AUTHOR_IMPORTANT);
       }
 
