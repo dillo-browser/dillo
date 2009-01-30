@@ -733,6 +733,7 @@ static bool Css_parse_value(CssParser * parser,
    case CSS_TYPE_STRING:
       if (parser->ttype == CSS_TK_STRING) {
          val->strVal = dStrdup(parser->tval);
+         ret = true;
          Css_next_token(parser);
       }
       break;
