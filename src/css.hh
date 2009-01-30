@@ -271,6 +271,7 @@ class CssSelector {
 class CssRule {
    private:
       CssPropertyList *props;
+      int spec;
 
    public:
       CssSelector *selector;
@@ -280,6 +281,7 @@ class CssRule {
 
       void apply (CssPropertyList *props,
                   Doctree *docTree, const DoctreeNode *node);
+      inline int specificity () { return spec; };
       void print ();
 };
 

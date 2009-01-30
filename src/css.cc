@@ -218,6 +218,7 @@ CssRule::CssRule (CssSelector *selector, CssPropertyList *props) {
    this->selector->ref ();
    this->props = props;
    this->props->ref ();
+   spec = selector->specificity ();
 };
 
 CssRule::~CssRule () {
