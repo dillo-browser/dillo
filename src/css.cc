@@ -393,14 +393,14 @@ void CssContext::buildUserAgentStyle () {
      "ul > ul > ul {list-style-type: square}"
      "ul > ul > ul > ul {list-style-type: disc}"
      "u {text-decoration: underline}"
-     "small, sub, sup { font-size: 0.83em}"
-     "sub { vertical-align: sub}"
-     "sup { vertical-align: super}"
-     "s, strike, del { text-decoration: line-through}"
+     "small, sub, sup {font-size: 0.83em}"
+     "sub {vertical-align: sub}"
+     "sup {vertical-align: super}"
+     "s, strike, del {text-decoration: line-through}"
      "table {border-style: outset; border-spacing: 1px}"
      "td {border-style: inset; padding: 2px}"
-     "thead, tbody, tfoot { vertical-align: middle}"
-     "th { font-weight: bolder; text-align: center}"
+     "thead, tbody, tfoot {vertical-align: middle}"
+     "th {font-weight: bolder; text-align: center}"
      "code, tt, pre, samp, kbd {font-family: monospace}";
 
    a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
