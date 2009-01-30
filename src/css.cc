@@ -262,11 +262,6 @@ void CssStyleSheet::addRule (CssRule *rule) {
    }
 }
 
-void CssStyleSheet::addRule (CssSelector *selector, CssPropertyList *props) {
-   CssRule *rule = new CssRule (selector, props);
-   addRule (rule);
-}
-
 void CssStyleSheet::apply (CssPropertyList *props,
                            Doctree *docTree, const DoctreeNode *node) {
    RuleList *ruleList[4] = {NULL, NULL, NULL, NULL};

@@ -318,7 +318,6 @@ class CssStyleSheet {
       CssStyleSheet();
       ~CssStyleSheet();
       void addRule (CssRule *rule);
-      void addRule (CssSelector *selector, CssPropertyList *props);
       void apply (CssPropertyList *props,
                   Doctree *docTree, const DoctreeNode *node);
 };
