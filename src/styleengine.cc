@@ -170,7 +170,6 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       
       switch (p->name) {
          case CssProperty::CSS_PROPERTY_FONT_FAMILY:
-            // \todo memory management of font name strings
             // \todo handle comma separated lists of font names
             if (strcmp (p->value.strVal, "serif") == 0)
                fontAttrs.name = prefs.font_serif;
