@@ -320,23 +320,6 @@ static const CssShorthandInfo Css_shorthand_info[] = {
 #define CSS_SHORTHAND_NUM (sizeof(Css_shorthand_info) / sizeof(CssShorthandInfo))
 
 /* ----------------------------------------------------------------------
- *    Initialization, Cleanup
- * ---------------------------------------------------------------------- */
-
-static int values_num;
-
-void a_Css_init(void)
-{
-   values_num = 0;
-}
-
-void a_Css_freeall(void)
-{
-   if (values_num)
-      fprintf(stderr, "%d CSS values left", values_num);
-}
-
-/* ----------------------------------------------------------------------
  *    Parsing
  * ---------------------------------------------------------------------- */
 

@@ -48,10 +48,6 @@ typedef struct {
    const char *const *enum_symbols;
 } CssPropertyInfo;
 
-
-void        a_Css_init                        (void);
-void        a_Css_freeall                     (void);
-
 void        a_Css_parse                       (CssContext *context,
                                                const char *buf,
                                                int buflen,
