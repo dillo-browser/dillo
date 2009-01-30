@@ -281,6 +281,7 @@ void CssStyleSheet::apply (CssPropertyList *props,
    ruleList[1] = elementTable[docTree->top ()->element];
    ruleList[0] = anyTable;
 
+   // \todo apply rules in the correct order based on their specificity
    for (int i = 0;; i++) {
       int n = 0;
 
