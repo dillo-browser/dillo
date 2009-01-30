@@ -235,6 +235,12 @@ void CssRule::print () {
    props->print ();
 }
 
+/*
+ * \brief insert rule with increasing specificity
+ * If two rules have the same specificity, the one that was added later
+ * will be added behind the others.
+ * This gives later added rules more weight.
+ */
 void CssStyleSheet::RuleList::insert (CssRule *rule) {
    increase ();
    int i = size () - 1;
