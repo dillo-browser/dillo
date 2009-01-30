@@ -160,7 +160,7 @@ class CssProperty {
       Name name;
       Value value;
 
-      void free () {
+      inline void free () {
          switch (name) {
             case CssProperty::CSS_PROPERTY_CONTENT:
             case CssProperty::CSS_PROPERTY_FONT_FAMILY:
@@ -181,12 +181,12 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
    bool ownerOfStrings;
 
    public:
-      CssPropertyList(bool ownerOfStrings = false) :
+      inline CssPropertyList(bool ownerOfStrings = false) :
                   lout::misc::SimpleVector <CssProperty> (1) {
          refCount = 0;
          this->ownerOfStrings = ownerOfStrings;
       };
-      CssPropertyList(const CssPropertyList &p) :
+      inline CssPropertyList(const CssPropertyList &p) :
          lout::misc::SimpleVector <CssProperty> (p) {
          refCount = 0;
          ownerOfStrings = false;
@@ -194,12 +194,12 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
       ~CssPropertyList ();
 
       void set (CssProperty::Name name, CssProperty::Value value);
-      void set (CssProperty::Name name, char *value) {
+      inline void set (CssProperty::Name name, char *value) {
          CssProperty::Value v;
          v.strVal = value;
          set (name, v);
       };
-      void set (CssProperty::Name name, int value) {
+      inline void set (CssProperty::Name name, int value) {
          CssProperty::Value v;
          v.intVal = value;
          set (name, v);
@@ -296,8 +296,8 @@ class CssStyleSheet {
                   delete get (i);
             };
 
-            bool equals (lout::object::Object *other) { return this == other; };
-            int hashValue () { return (intptr_t) this; };
+            inline bool equals (lout::object::Object *other) { return this == other; };
+            inline int hashValue () { return (intptr_t) this; };
       };
 
       class RuleMap : public lout::container::typed::HashTable
