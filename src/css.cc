@@ -237,6 +237,16 @@ void CssRule::print () {
    props->print ();
 }
 
+void CssStyleSheet::RuleList::insert (CssRule *rule) {
+   increase ();
+   int i = size () - 1;
+
+   while (i > 0 && rule->specificity () < get (i - 1)->specificity ())
+      *getRef (i) = get (i - 1);
+
+   *getRef (i) = rule;
+}
+
 CssStyleSheet::CssStyleSheet () {
    for (int i = 0; i < ntags; i++)
       elementTable[i] = new RuleList ();
@@ -283,10 +293,8 @@ void CssStyleSheet::addRule (CssRule *rule) {
       ruleList = anyTable;
    }
 
-   if (ruleList) {
-      ruleList->increase ();
-      *ruleList->getRef (ruleList->size() - 1) = rule;
-   }
+   if (ruleList)
+      ruleList->insert (rule);
 }
 
 void CssStyleSheet::apply (CssPropertyList *props,

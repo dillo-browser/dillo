@@ -300,6 +300,7 @@ class CssStyleSheet {
                   delete get (i);
             };
 
+            void insert (CssRule *rule);
             inline bool equals (lout::object::Object *other) { return this == other; };
             inline int hashValue () { return (intptr_t) this; };
       };
