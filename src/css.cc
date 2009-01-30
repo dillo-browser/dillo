@@ -239,8 +239,10 @@ void CssStyleSheet::RuleList::insert (CssRule *rule) {
    increase ();
    int i = size () - 1;
 
-   while (i > 0 && rule->specificity () < get (i - 1)->specificity ())
+   while (i > 0 && rule->specificity () < get (i - 1)->specificity ()) {
       *getRef (i) = get (i - 1);
+      i--;
+   }
 
    *getRef (i) = rule;
 }
@@ -298,36 +300,43 @@ void CssStyleSheet::addRule (CssRule *rule) {
 void CssStyleSheet::apply (CssPropertyList *props,
                            Doctree *docTree, const DoctreeNode *node) {
    RuleList *ruleList[4] = {NULL, NULL, NULL, NULL};
+   int index[4] = {0, 0, 0, 0};
    
    if (node->id) {
       lout::object::ConstString idString (node->id);
 
-      ruleList[3] = idTable->get (&idString);
+      ruleList[0] = idTable->get (&idString);
    }
 
    if (node->klass) {
       lout::object::ConstString classString (node->klass);
 
-      ruleList[2] = classTable->get (&classString);
+      ruleList[1] = classTable->get (&classString);
    }
 
-   ruleList[1] = elementTable[docTree->top ()->element];
-   ruleList[0] = anyTable;
+   ruleList[2] = elementTable[docTree->top ()->element];
+   ruleList[3] = anyTable;
 
-   // \todo apply rules in the correct order based on their specificity
-   for (int i = 0;; i++) {
-      int n = 0;
+   while (true) {
+      int minSpec = 1 << 30;
+      int minSpecIndex = -1;
 
-      for (int j = 0; j < 4; j++) {
-         if (ruleList[j] && ruleList[j]->size () > i) {
-            ruleList[j]->get (i)->apply (props, docTree, node);
-            n++;
+      for (int i = 0; i < 4; i++) {
+         if (ruleList[i] && ruleList[i]->size () > index[i] &&
+            ruleList[i]->get(index[i])->specificity () < minSpec) {
+
+            minSpec = ruleList[i]->get(index[i])->specificity ();
+            minSpecIndex = i;
          }
       }
 
-      if (n == 0)
+      if (minSpecIndex >= 0) {
+         ruleList[minSpecIndex]->get (index[minSpecIndex])->apply (props, docTree, node);
+         index[minSpecIndex]++;
+      } else {
          break;
-   } 
+      }
+   }
 }
 
 CssStyleSheet *CssContext::userAgentStyle;
