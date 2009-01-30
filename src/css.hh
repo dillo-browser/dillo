@@ -223,6 +223,7 @@ class CssSimpleSelector {
       CssSimpleSelector ();
       ~CssSimpleSelector ();
       bool match (const DoctreeNode *node);
+      int specificity ();
       void print ();
 };
 
@@ -257,6 +258,7 @@ class CssSelector {
       };
       inline int size () { return selectorList->size (); };
       bool match (Doctree *dt, const DoctreeNode *node);
+      int specificity ();
       void print ();
       inline void ref () { refCount++; }
       inline void unref () { if(--refCount == 0) delete this; }

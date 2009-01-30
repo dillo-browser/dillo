@@ -130,6 +130,15 @@ void CssSelector::addSimpleSelector (Combinator c) {
    cs->selector = new CssSimpleSelector ();
 }
 
+int CssSelector::specificity () {
+   int spec = 0;
+
+   for (int i = 0; i < selectorList->size (); i++)
+      spec += selectorList->getRef (i)->selector->specificity ();
+
+   return spec;
+}
+
 void CssSelector::print () {
    for (int i = 0; i < selectorList->size (); i++) {
       selectorList->getRef (i)->selector->print ();
@@ -178,6 +187,23 @@ bool CssSimpleSelector::match (const DoctreeNode *n) {
       return false;
    
    return true;
+}
+
+int CssSimpleSelector::specificity () {
+   int spec = 0;
+
+   if (id)
+      spec++;
+   spec <<= 10; 
+   if (klass)
+      spec++;
+   if (pseudo)
+      spec++;
+   spec <<= 10; 
+   if (element != ELEMENT_ANY)
+      spec++;
+
+   return spec;
 }
 
 void CssSimpleSelector::print () {
