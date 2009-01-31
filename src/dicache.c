@@ -20,8 +20,17 @@
 #include "web.hh"
 #include "dicache.h"
 #include "cache.h"
+#include "dpng.h"
+#include "dgif.h"
+#include "djpeg.h"
 
 typedef struct _DICacheNode DICacheNode;
+
+enum {
+   DIC_Gif,
+   DIC_Png,
+   DIC_Jpeg
+};
 
 struct _DICacheNode {
    int valid;            /* flag */
@@ -372,6 +381,83 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
 }
 
 /* ------------------------------------------------------------------------- */
+
+/*
+ * Generic MIME handler for GIF, JPEG and PNG.
+ * Sets a_Dicache_callback as the cache-client,
+ * and also sets the image decoder.
+ *
+ * Parameters:
+ *   Type: MIME type
+ *   Ptr:  points to a Web structure
+ *   Call: Dillo calls this with more data/eod
+ *   Data: Decoding data structure
+ */
+static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
+                           CA_Callback_t *Call, void **Data)
+{
+   DilloWeb *web = Ptr;
+   DICacheEntry *DicEntry;
+
+   dReturn_val_if_fail(MimeType && Ptr, NULL);
+
+   if (!web->Image)
+      web->Image = a_Image_new(0, 0, NULL, prefs.bg_color);
+
+   /* Add an extra reference to the Image (for dicache usage) */
+   a_Image_ref(web->Image);
+
+   DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
+   if (!DicEntry) {
+      /* Let's create an entry for this image... */
+      DicEntry = a_Dicache_add_entry(web->url);
+      DicEntry->DecoderData = 
+         (ImgType == DIC_Png) ?
+            a_Png_new(web->Image, DicEntry->url, DicEntry->version) :
+         (ImgType == DIC_Gif) ?
+            a_Gif_new(web->Image, DicEntry->url, DicEntry->version) :
+         (ImgType == DIC_Jpeg) ?
+            a_Jpeg_new(web->Image, DicEntry->url, DicEntry->version) :
+            NULL;
+   } else {
+      /* Repeated image */
+      a_Dicache_ref(DicEntry->url, DicEntry->version);
+   }
+   DicEntry->Decoder = (ImgType == DIC_Png) ? a_Png_callback :
+                       (ImgType == DIC_Gif) ? a_Gif_callback :
+                       (ImgType == DIC_Jpeg) ? a_Jpeg_callback : NULL;
+   *Data = DicEntry->DecoderData;
+   *Call = (CA_Callback_t) a_Dicache_callback;
+
+   return (web->Image->dw);
+}
+
+/*
+ * PNG wrapper for Dicache_image()
+ */
+void *a_Dicache_png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                          void **Data)
+{
+   return Dicache_image(DIC_Png, Type, Ptr, Call, Data);
+}
+
+/*
+ * GIF wrapper for Dicache_image()
+ */
+void *a_Dicache_gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                          void **Data)
+{
+   return Dicache_image(DIC_Gif, Type, Ptr, Call, Data);
+}
+
+/*
+ * JPEG wrapper for Dicache_image()
+ */
+void *a_Dicache_jpeg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                           void **Data)
+{
+   return Dicache_image(DIC_Jpeg, Type, Ptr, Call, Data);
+}
 
 /*
  * This function is a cache client; (but feeds its clients from dicache)

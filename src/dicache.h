@@ -54,6 +54,12 @@ void a_Dicache_init (void);
 DICacheEntry *a_Dicache_get_entry(const DilloUrl *Url, int version);
 DICacheEntry *a_Dicache_add_entry(const DilloUrl *Url);
 
+void *a_Dicache_png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                          void **Data);
+void *a_Dicache_gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                          void **Data);
+void *a_Dicache_jpeg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                           void **Data);
 void a_Dicache_callback(int Op, CacheClient_t *Client);
 void a_Dicache_callback2(int Op, CacheClient_t *Client);
 

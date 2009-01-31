@@ -81,14 +81,8 @@ typedef struct DilloJpeg {
 /*
  * Forward declarations
  */
-static DilloJpeg *Jpeg_new(DilloImage *Image, DilloUrl *url, int version);
-static void Jpeg_callback(int Op, CacheClient_t *Client);
 static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize);
 METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo);
-
-/* exported function */
-void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
-                   void **Data);
 
 
 /* this is the routine called by libjpeg when it detects an error. */
@@ -98,40 +92,6 @@ METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo)
    my_error_ptr myerr = (my_error_ptr) cinfo->err;
    (*cinfo->err->output_message) (cinfo);
    longjmp(myerr->setjmp_buffer, 1);
-}
-
-/*
- * MIME handler for "image/jpeg" type
- * Sets a_Dicache_callback as the cache-client,
- * and Jpeg_callback as the image decoder.
- */
-void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
-                   void **Data)
-{
-   DilloWeb *web = P;
-   DICacheEntry *DicEntry;
-
-   if (!web->Image)
-      web->Image = a_Image_new(0, 0, NULL, 0);
-
-   /* Add an extra reference to the Image (for dicache usage) */
-   a_Image_ref(web->Image);
-
-   DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
-   if (!DicEntry) {
-      /* Let's create an entry for this image... */
-      DicEntry = a_Dicache_add_entry(web->url);
-      DicEntry->DecoderData =
-         Jpeg_new(web->Image, DicEntry->url, DicEntry->version);
-   } else {
-      /* Repeated image */
-      a_Dicache_ref(DicEntry->url, DicEntry->version);
-   }
-   DicEntry->Decoder = Jpeg_callback;
-   *Data = DicEntry->DecoderData;
-   *Call = (CA_Callback_t) a_Dicache_callback;
-
-   return (web->Image->dw);
 }
 
 /*
@@ -201,7 +161,7 @@ static void term_source(j_decompress_ptr cinfo)
 {
 }
 
-static DilloJpeg *Jpeg_new(DilloImage *Image, DilloUrl *url, int version)
+void *a_Jpeg_new(DilloImage *Image, DilloUrl *url, int version)
 {
    my_source_mgr *src;
    DilloJpeg *jpeg = dMalloc(sizeof(*jpeg));
@@ -237,7 +197,7 @@ static DilloJpeg *Jpeg_new(DilloImage *Image, DilloUrl *url, int version)
    return jpeg;
 }
 
-static void Jpeg_callback(int Op, CacheClient_t *Client)
+void a_Jpeg_callback(int Op, CacheClient_t *Client)
 {
    if (Op)
       Jpeg_close(Client->CbData, Client);
@@ -398,5 +358,10 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
       dFree(linebuf);
    }
 }
+
+#else /* ENABLE_JPEG */
+
+void *a_Jpeg_new() { return 0; }
+void a_Jpeg_callback() { return; }
 
 #endif /* ENABLE_JPEG */

@@ -31,18 +31,12 @@ void *a_Html_text (const char *Type,void *web, CA_Callback_t *Call,
                        void **Data);
 void *a_Plain_text(const char *Type,void *web, CA_Callback_t *Call,
                        void **Data);
-#ifdef ENABLE_JPEG
-void *a_Jpeg_image(const char *Type,void *web, CA_Callback_t *Call,
-                       void **Data);
-#endif
-#ifdef ENABLE_PNG
-void *a_Png_image (const char *Type,void *web, CA_Callback_t *Call,
-                       void **Data);
-#endif
-#ifdef ENABLE_GIF
-void *a_Gif_image (const char *Type,void *web, CA_Callback_t *Call,
-                       void **Data);
-#endif
+void *a_Dicache_png_image (const char *Type,void *web, CA_Callback_t *Call,
+                           void **Data);
+void *a_Dicache_gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                          void **Data);
+void *a_Dicache_jpeg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                           void **Data);
 
 /*
  * Functions defined inside Mime module

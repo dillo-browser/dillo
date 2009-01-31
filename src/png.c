@@ -107,13 +107,6 @@ struct _DilloPng {
 #define BLACK     0
 #define WHITE     255
 
-/*
- * Forward declarations
- */
-/* exported function */
-void *a_Png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
-                  void **Data);
-
 
 static
 void Png_error_handling(png_structp png_ptr, png_const_charp msg)
@@ -326,8 +319,6 @@ static void Png_write(DilloPng *png, void *Buf, uint_t BufSize)
 {
    dReturn_if_fail ( Buf != NULL && BufSize > 0 );
 
-   _MSG("Png_callback BufSize = %d\n", BufSize);
-
    /* Keep local copies so we don't have to pass multiple args to
     * a number of functions. */
    png->ipbuf = Buf;
@@ -413,7 +404,7 @@ static void Png_write(DilloPng *png, void *Buf, uint_t BufSize)
  * failure.  This means that you can't just wait for all the data to be
  * presented before starting conversion and display.
  */
-static void Png_callback(int Op, CacheClient_t *Client)
+void a_Png_callback(int Op, CacheClient_t *Client)
 {
    if (Op) { /* EOF */
       Png_close(Client->CbData, Client);
@@ -425,7 +416,7 @@ static void Png_callback(int Op, CacheClient_t *Client)
 /*
  * Create the image state data that must be kept between calls
  */
-static DilloPng *Png_new(DilloImage *Image, DilloUrl *url, int version)
+void *a_Png_new(DilloImage *Image, DilloUrl *url, int version)
 {
    DilloPng *png = dNew0(DilloPng, 1);
 
@@ -445,44 +436,9 @@ static DilloPng *Png_new(DilloImage *Image, DilloUrl *url, int version)
    return png;
 }
 
-/*
- * MIME handler for "image/png" type.
- * Sets a_Dicache_callback as the cache-client,
- * and Png_callback as the image decoder.
- *
- * Parameters:
- *   Type: MIME type
- *   Ptr:  points to a Web structure
- *   Call: Dillo calls this with more data/eod
- *   Data: Decoding data structure
- */
-void *a_Png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
-                  void **Data)
-{
-   DilloWeb *web = Ptr;
-   DICacheEntry *DicEntry;
+#else /* ENABLE_PNG */
 
-   if (!web->Image)
-      web->Image = a_Image_new(0, 0, NULL, prefs.bg_color);
-
-   /* Add an extra reference to the Image (for dicache usage) */
-   a_Image_ref(web->Image);
-
-   DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
-   if (!DicEntry) {
-      /* Let's create an entry for this image... */
-      DicEntry = a_Dicache_add_entry(web->url);
-      DicEntry->DecoderData =
-         Png_new(web->Image, DicEntry->url, DicEntry->version);
-   } else {
-      /* Repeated image */
-      a_Dicache_ref(DicEntry->url, DicEntry->version);
-   }
-   DicEntry->Decoder = Png_callback;
-   *Data = DicEntry->DecoderData;
-   *Call = (CA_Callback_t) a_Dicache_callback;
-
-   return (web->Image->dw);
-}
+void *a_Png_new() { return 0; }
+void a_Png_callback() { return; }
 
 #endif /* ENABLE_PNG */

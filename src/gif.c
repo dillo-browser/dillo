@@ -147,53 +147,12 @@ static void Gif_write(DilloGif *gif, void *Buf, uint_t BufSize);
 static void Gif_close(DilloGif *gif, CacheClient_t *Client);
 static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *buf,
                                 int bufsize, void *Buf);
-static DilloGif *Gif_new(DilloImage *Image, DilloUrl *url, int version);
-static void Gif_callback(int Op, CacheClient_t *Client);
 
-/* exported function */
-void *a_Gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
-                  void **Data);
-
-
-/*
- * MIME handler for "image/gif" type
- * Sets a_Dicache_callback as the cache-client,
- * and Gif_callback as the image decoder.
- */
-void *a_Gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
-                  void **Data)
-{
-   DilloWeb *web = Ptr;
-   DICacheEntry *DicEntry;
-
-   if (!web->Image)
-      web->Image = a_Image_new(0, 0, NULL, prefs.bg_color);
-      /* TODO: get the backgound color from the parent widget -- Livio. */
-
-   /* Add an extra reference to the Image (for dicache usage) */
-   a_Image_ref(web->Image);
-
-   DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
-   if (!DicEntry) {
-      /* Let's create an entry for this image... */
-      DicEntry = a_Dicache_add_entry(web->url);
-      DicEntry->DecoderData =
-         Gif_new(web->Image, DicEntry->url, DicEntry->version);
-   } else {
-      /* Repeated image */
-      a_Dicache_ref(DicEntry->url, DicEntry->version);
-   }
-   DicEntry->Decoder = Gif_callback;
-   *Data = DicEntry->DecoderData;
-   *Call = (CA_Callback_t) a_Dicache_callback;
-
-   return (web->Image->dw);
-}
 
 /*
  * Create a new gif structure for decoding a gif into a RGB buffer
  */
-static DilloGif *Gif_new(DilloImage *Image, DilloUrl *url, int version)
+void *a_Gif_new(DilloImage *Image, DilloUrl *url, int version)
 {
    DilloGif *gif = dMalloc(sizeof(DilloGif));
 
@@ -220,7 +179,7 @@ static DilloGif *Gif_new(DilloImage *Image, DilloUrl *url, int version)
  * This function is a cache client, it receives data from the cache
  * and dispatches it to the appropriate gif-processing functions
  */
-static void Gif_callback(int Op, CacheClient_t *Client)
+void a_Gif_callback(int Op, CacheClient_t *Client)
 {
    if (Op)
       Gif_close(Client->CbData, Client);
@@ -1045,5 +1004,10 @@ static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *ibuf,
 
    return bufsize - tmp_bufsize;
 }
+
+#else /* ENABLE_GIF */
+
+void *a_Gif_new() { return 0; }
+void a_Gif_callback() { return; }
 
 #endif /* ENABLE_GIF */

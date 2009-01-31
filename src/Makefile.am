@@ -87,8 +87,11 @@ dillo_SOURCES = \
 	dns.c \
 	dns.h \
 	gif.c \
+	gif.h \
 	jpeg.c \
+	djpeg.h \
 	png.c \
+	dpng.h \
 	imgbuf.cc \
 	imgbuf.hh \
 	image.cc \
