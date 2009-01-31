@@ -536,20 +536,20 @@ static bool Css_token_matches_property(CssParser * parser,
    case CSS_TYPE_ENUM:
       if (parser->ttype == CSS_TK_SYMBOL) {
          for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
-            if (strcmp(parser->tval,
-                       Css_property_info[prop].enum_symbols[i]) == 0)
+            if (strcasecmp(parser->tval,
+                           Css_property_info[prop].enum_symbols[i]) == 0)
                return true;
       }
       return false;
 
    case CSS_TYPE_MULTI_ENUM:
       if (parser->ttype == CSS_TK_SYMBOL) {
-         if (strcmp(parser->tval, "none") != 0)
+         if (strcasecmp(parser->tval, "none") != 0)
             return true;
          else {
             for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
-               if (strcmp(parser->tval,
-                          Css_property_info[prop].enum_symbols[i]) == 0)
+               if (strcasecmp(parser->tval,
+                              Css_property_info[prop].enum_symbols[i]) == 0)
                   return true;
             }
          }
@@ -560,8 +560,8 @@ static bool Css_token_matches_property(CssParser * parser,
    case CSS_TYPE_LENGTH:
       return parser->ttype == CSS_TK_DECINT ||
           parser->ttype == CSS_TK_FLOAT || (parser->ttype == CSS_TK_SYMBOL
-                                            && strcmp(parser->tval,
-                                                      "auto") == 0);
+                                            && strcasecmp(parser->tval,
+                                                          "auto") == 0);
 
    case CSS_TYPE_COLOR:
       return (parser->ttype == CSS_TK_COLOR ||
@@ -580,10 +580,10 @@ static bool Css_token_matches_property(CssParser * parser,
          return i >= 100 && i <= 900;
       } else
          return (parser->ttype == CSS_TK_SYMBOL &&
-                 (strcmp(parser->tval, "normal") == 0 ||
-                  strcmp(parser->tval, "bold") == 0 ||
-                  strcmp(parser->tval, "bolder") == 0 ||
-                  strcmp(parser->tval, "lighter") == 0));
+                 (strcasecmp(parser->tval, "normal") == 0 ||
+                  strcasecmp(parser->tval, "bold") == 0 ||
+                  strcasecmp(parser->tval, "bolder") == 0 ||
+                  strcasecmp(parser->tval, "lighter") == 0));
       break;
 
    case CSS_TYPE_UNUSED:
@@ -610,8 +610,8 @@ static bool Css_parse_value(CssParser * parser,
    case CSS_TYPE_ENUM:
       if (parser->ttype == CSS_TK_SYMBOL) {
          for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
-            if (strcmp(parser->tval,
-                       Css_property_info[prop].enum_symbols[i]) == 0) {
+            if (strcasecmp(parser->tval,
+                           Css_property_info[prop].enum_symbols[i]) == 0) {
                val->intVal = i;
                ret = true;
                break;
@@ -625,11 +625,11 @@ static bool Css_parse_value(CssParser * parser,
       ret = true;
 
       while (parser->ttype == CSS_TK_SYMBOL) {
-         if (strcmp(parser->tval, "none") != 0) {
+         if (strcasecmp(parser->tval, "none") != 0) {
             for (i = 0, found = false;
                  !found && Css_property_info[prop].enum_symbols[i]; i++) {
-               if (strcmp(parser->tval,
-                          Css_property_info[prop].enum_symbols[i]) == 0)
+               if (strcasecmp(parser->tval,
+                              Css_property_info[prop].enum_symbols[i]) == 0)
                   val->intVal |= (1 << i);
             }
          }
@@ -648,32 +648,32 @@ static bool Css_parse_value(CssParser * parser,
 
          Css_next_token(parser);
          if (parser->ttype == CSS_TK_SYMBOL) {
-            if (strcmp(parser->tval, "px") == 0) {
+            if (strcasecmp(parser->tval, "px") == 0) {
                lentype = CSS_LENGTH_TYPE_PX;
                Css_next_token(parser);
-            } else if (strcmp(parser->tval, "mm") == 0) {
+            } else if (strcasecmp(parser->tval, "mm") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                Css_next_token(parser);
-            } else if (strcmp(parser->tval, "cm") == 0) {
+            } else if (strcasecmp(parser->tval, "cm") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= 10;
                Css_next_token(parser);
-            } else if (strcmp(parser->tval, "in") == 0) {
+            } else if (strcasecmp(parser->tval, "in") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= 25.4;
                Css_next_token(parser);
-            } else if (strcmp(parser->tval, "pt") == 0) {
+            } else if (strcasecmp(parser->tval, "pt") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= (25.4 / 72);
                Css_next_token(parser);
-            } else if (strcmp(parser->tval, "pc") == 0) {
+            } else if (strcasecmp(parser->tval, "pc") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= (25.4 / 6);
                Css_next_token(parser);
-            } else if (strcmp(parser->tval, "em") == 0) {
+            } else if (strcasecmp(parser->tval, "em") == 0) {
                lentype = CSS_LENGTH_TYPE_EM;
                Css_next_token(parser);
-            } else if (strcmp(parser->tval, "ex") == 0) {
+            } else if (strcasecmp(parser->tval, "ex") == 0) {
                lentype = CSS_LENGTH_TYPE_EX;
                Css_next_token(parser);
             }
@@ -688,7 +688,7 @@ static bool Css_parse_value(CssParser * parser,
 
          val->intVal = CSS_CREATE_LENGTH(fval, lentype);
       } else if (parser->ttype == CSS_TK_SYMBOL &&
-                 strcmp(parser->tval, "auto") == 0) {
+                 strcasecmp(parser->tval, "auto") == 0) {
          ret = true;
          val->intVal = CSS_LENGTH_TYPE_AUTO;
          Css_next_token(parser);
@@ -737,13 +737,13 @@ static bool Css_parse_value(CssParser * parser,
             /* invalid */
             ival = 0;
       } else if (parser->ttype == CSS_TK_SYMBOL) {
-         if (strcmp(parser->tval, "normal") == 0)
+         if (strcasecmp(parser->tval, "normal") == 0)
             ival = CssProperty::CSS_FONT_WEIGHT_NORMAL;
-         if (strcmp(parser->tval, "bold") == 0)
+         if (strcasecmp(parser->tval, "bold") == 0)
             ival = CssProperty::CSS_FONT_WEIGHT_BOLD;
-         if (strcmp(parser->tval, "bolder") == 0)
+         if (strcasecmp(parser->tval, "bolder") == 0)
             ival = CssProperty::CSS_FONT_WEIGHT_BOLDER;
-         if (strcmp(parser->tval, "lighter") == 0)
+         if (strcasecmp(parser->tval, "lighter") == 0)
             ival = CssProperty::CSS_FONT_WEIGHT_LIGHTER;
       }
 
@@ -772,7 +772,7 @@ static bool Css_parse_weight(CssParser * parser)
    if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '!') {
       Css_next_token(parser);
       if (parser->ttype == CSS_TK_SYMBOL &&
-          strcmp(parser->tval, "important") == 0) {
+          strcasecmp(parser->tval, "important") == 0) {
          Css_next_token(parser);
          return true;
       }
@@ -786,8 +786,8 @@ static bool Css_parse_weight(CssParser * parser)
  */
 static int Css_property_info_cmp(const void *a, const void *b)
 {
-   return strcmp(((CssPropertyInfo *) a)->symbol,
-                 ((CssPropertyInfo *) b)->symbol);
+   return strcasecmp(((CssPropertyInfo *) a)->symbol,
+                     ((CssPropertyInfo *) b)->symbol);
 }
 
 
@@ -796,8 +796,8 @@ static int Css_property_info_cmp(const void *a, const void *b)
  */
 static int Css_shorthand_info_cmp(const void *a, const void *b)
 {
-   return strcmp(((CssShorthandInfo *) a)->symbol,
-                 ((CssShorthandInfo *) b)->symbol);
+   return strcasecmp(((CssShorthandInfo *) a)->symbol,
+                     ((CssShorthandInfo *) b)->symbol);
 }
 
 static void Css_parse_declaration(CssParser * parser,
