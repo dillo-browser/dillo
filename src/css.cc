@@ -323,6 +323,8 @@ void CssStyleSheet::apply (CssPropertyList *props,
    ruleList[2] = elementTable[docTree->top ()->element];
    ruleList[3] = anyTable;
 
+   // Apply potentially matching rules from ruleList[0-3] with
+   // ascending specificity. Each ruleList is sorted already.
    while (true) {
       int minSpec = 1 << 30;
       int minSpecIndex = -1;
