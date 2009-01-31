@@ -1,3 +1,20 @@
+/*
+ * File: cssparser.cc
+ *
+ * Copyright 2004 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2008-2009 Johannes Hofmann <Johannes.Hofmann@gmx.de>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
+/*
+ * This file is heavily based on the CSS parser of dillo-0.8.0-css-3 -
+ * a dillo1 based CSS prototype written by Sebastian Geerken.
+ */
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
