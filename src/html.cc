@@ -1740,6 +1740,7 @@ static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
       DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    }
    a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+   html->styleEngine->inheritBackgroundColor ();
    html->styleEngine->setNonCssHints (&props);
 }
 
