@@ -59,7 +59,7 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
        * If using xft, fltk::HELVETICA just means sans, fltk::COURIER
        * means mono, and fltk::TIMES means serif.
        */
-      font = HELVETICA;
+      font = HELVETICA->plus (fa);
    }      
 
    setfont(font, size);
