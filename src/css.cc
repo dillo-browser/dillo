@@ -305,7 +305,7 @@ void CssStyleSheet::addRule (CssRule *rule) {
 
 void CssStyleSheet::apply (CssPropertyList *props,
                            Doctree *docTree, const DoctreeNode *node) {
-   RuleList *ruleList[4] = {NULL, NULL, NULL, NULL};
+   RuleList *ruleList[4];
    int numLists = 0, index[4] = {0, 0, 0, 0};
    
    if (node->id) {
