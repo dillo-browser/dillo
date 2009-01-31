@@ -275,18 +275,19 @@ static void
         break;
      }
    default:
-      MSG("Png_datarow_callback: unexpected number of channels = %d\n",
-          png->channels);
+      MSG("Png_datarow_callback: unexpected number of channels=%d pass=%d\n",
+          png->channels, pass);
       abort();
    }
 }
 
-static void
- Png_dataend_callback(png_structp png_ptr, png_infop info_ptr)
+static void Png_dataend_callback(png_structp png_ptr, png_infop info_ptr)
 {
    DilloPng *png;
 
    _MSG("Png_dataend_callback:\n");
+   if (!info_ptr)
+      MSG("Png_dataend_callback: info_ptr = NULL\n");
 
    png = png_get_progressive_ptr(png_ptr);
    png->state = IS_finished;
