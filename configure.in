@@ -455,7 +455,7 @@ if eval "test x$GCC = xyes"; then
   if test "`echo $CFLAGS | grep '\-Wall' 2> /dev/null`" = ""; then
     CFLAGS="$CFLAGS -Wall"
   fi
-  if test "`echo $CFLAGS | grep -e '-W ' -e '-W$' ' 2> /dev/null`" = ""; then
+  if test "`echo $CFLAGS | grep -e '-W ' -e '-W$' 2> /dev/null`" = ""; then
     CFLAGS="$CFLAGS -W"
   fi
   if test "`echo $CFLAGS | grep '\-W[^a]' 2> /dev/null`" = ""; then
