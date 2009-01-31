@@ -306,22 +306,31 @@ void CssStyleSheet::addRule (CssRule *rule) {
 void CssStyleSheet::apply (CssPropertyList *props,
                            Doctree *docTree, const DoctreeNode *node) {
    RuleList *ruleList[4] = {NULL, NULL, NULL, NULL};
-   int index[4] = {0, 0, 0, 0};
+   int numLists = 0, index[4] = {0, 0, 0, 0};
    
    if (node->id) {
       lout::object::ConstString idString (node->id);
 
-      ruleList[0] = idTable->get (&idString);
+      ruleList[numLists] = idTable->get (&idString);
+      if (ruleList[numLists])
+         numLists++;
    }
 
    if (node->klass) {
       lout::object::ConstString classString (node->klass);
 
-      ruleList[1] = classTable->get (&classString);
+      ruleList[numLists] = classTable->get (&classString);
+      if (ruleList[numLists])
+         numLists++;
    }
 
-   ruleList[2] = elementTable[docTree->top ()->element];
-   ruleList[3] = anyTable;
+   ruleList[numLists] = elementTable[docTree->top ()->element];
+   if (ruleList[numLists])
+      numLists++;
+
+   ruleList[numLists] = anyTable;
+   if (ruleList[numLists])
+      numLists++;
 
    // Apply potentially matching rules from ruleList[0-3] with
    // ascending specificity. Each ruleList is sorted already.
@@ -329,7 +338,7 @@ void CssStyleSheet::apply (CssPropertyList *props,
       int minSpec = 1 << 30;
       int minSpecIndex = -1;
 
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < numLists; i++) {
          if (ruleList[i] && ruleList[i]->size () > index[i] &&
             ruleList[i]->get(index[i])->specificity () < minSpec) {
 
