@@ -390,6 +390,7 @@ static int Prefs_parse_pair(char *name, char *value)
    case DRC_TOKEN_SAVE_DIR:
       dFree(prefs.save_dir);
       prefs.save_dir = dStrdup(value);
+      break;
    case DRC_TOKEN_SHOW_MSG:
       prefs.show_msg = (strcmp(value, "YES") == 0);
       break;
