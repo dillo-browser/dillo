@@ -425,9 +425,6 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
          sheet[order] = new CssStyleSheet ();
 
       sheet[order]->addRule (rule);
-
-//    fprintf(stderr, "Adding Rule (%d)\n", order);
-//    rule->print ();
    }
 }
 
