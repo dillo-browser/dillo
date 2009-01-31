@@ -105,7 +105,12 @@ static void Jpeg_close(DilloJpeg *jpeg, CacheClient_t *Client)
    dFree(jpeg);
 }
 
-static void init_source(j_decompress_ptr cinfo)
+/*
+ * The proper signature is:
+ *    static void init_source(j_decompress_ptr cinfo)
+ * (declaring it with no parameter avoids a compiler warning)
+ */
+static void init_source()
 {
 }
 
@@ -157,7 +162,12 @@ static void skip_input_data(j_decompress_ptr cinfo, long num_bytes)
    }
 }
 
-static void term_source(j_decompress_ptr cinfo)
+/*
+ * The proper signature is:
+ *    static void term_source(j_decompress_ptr cinfo)
+ * (declaring it with no parameter avoids a compiler warning)
+ */
+static void term_source()
 {
 }
 
