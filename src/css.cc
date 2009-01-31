@@ -384,19 +384,26 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCssHints) {
    const DoctreeNode *node = docTree->top ();
 
-   for (int o = CSS_PRIMARY_USER_AGENT; o <= CSS_PRIMARY_USER; o++)
-      if (sheet[o])
-         sheet[o]->apply (props, docTree, node);
+   if (sheet[CSS_PRIMARY_USER_AGENT])
+      sheet[CSS_PRIMARY_USER_AGENT]->apply (props, docTree, node);
+
+   if (sheet[CSS_PRIMARY_USER])
+      sheet[CSS_PRIMARY_USER]->apply (props, docTree, node);
 
    if (nonCssHints)
         nonCssHints->apply (props);
-
-   for (int o = CSS_PRIMARY_AUTHOR; o <= CSS_PRIMARY_USER_IMPORTANT; o++)
-      if (sheet[o])
-         sheet[o]->apply (props, docTree, node);
+   
+   if (sheet[CSS_PRIMARY_AUTHOR])
+      sheet[CSS_PRIMARY_AUTHOR]->apply (props, docTree, node);
 
    if (tagStyle)
         tagStyle->apply (props);
+
+   if (sheet[CSS_PRIMARY_AUTHOR_IMPORTANT])
+      sheet[CSS_PRIMARY_AUTHOR_IMPORTANT]->apply (props, docTree, node);
+
+   if (sheet[CSS_PRIMARY_USER_IMPORTANT])
+      sheet[CSS_PRIMARY_USER_IMPORTANT]->apply (props, docTree, node);
 }
 
 void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
