@@ -92,7 +92,6 @@ static DICacheEntry *Dicache_entry_new(void)
    entry->v_imgbuf = NULL;
    entry->RefCount = 1;
    entry->TotalSize = 0;
-   entry->Y = 0;
    entry->ScanNumber = 0;
    entry->BitVec = NULL;
    entry->State = DIC_Empty;
@@ -350,7 +349,6 @@ void a_Dicache_write(DilloImage *Image, DilloUrl *url, int version,
    a_Imgbuf_update(DicEntry->v_imgbuf, buf, DicEntry->type,
                    DicEntry->cmap, DicEntry->width, DicEntry->height, Y);
 
-   DicEntry->Y = Y;
    a_Bitvec_set_bit(DicEntry->BitVec, (int)Y);
    DicEntry->State = DIC_Write;
 }

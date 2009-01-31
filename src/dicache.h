@@ -33,7 +33,6 @@ struct _DICacheEntry {
    uchar_t *cmap;          /* Color map */
    void *v_imgbuf;         /* Void pointer to an Imgbuf object */
    uint_t TotalSize;       /* Amount of memory the image takes up */
-   int Y;                  /* Current decoding row */
    uint_t ScanNumber;      /* Current decoding scan */
    bitvec_t *BitVec;       /* Bit vector for decoded rows */
    DicEntryState State;    /* Current status for this entry */
