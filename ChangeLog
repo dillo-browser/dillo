@@ -47,14 +47,16 @@ dillo-2.1
 +- Added the "middle_click_drags_page" dillorc option.
    Patch: Jorge Arellano Cid, Thomas Orgis
 +- Set the File menu label to hide when the File menu-button is shown.
- ? Trying a new iconv() test in configure.in.
+ - Trying a new iconv() test in configure.in.
  - Allowed the rc parser to skip whitespace around the equal sign.
  - Fixed the parser not to call Html_tag_close_* functions twice.
- - Implemented CSS Stylesheet loading.
+ - Implemented loading of remote CSS Stylesheet.
  - Made a big cleanup of cache.c WRT charset decoding (fixes bugs).
  - Made an extensive cleanup/fixup of the whole image handling process.
  - Implemented the tools button with a couple CSS options.
  - Removed the nav.h dependency from html.cc
+ - Made the repush() operation more general and suited for CSS use.
+ - Fixed collapsing of whitespace entities in HTML mode.
    Patches: Jorge Arellano Cid
 
 dw
