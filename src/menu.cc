@@ -674,10 +674,10 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
       pm->begin();
        it = new ToggleItem("Use remote CSS");
        it->callback(Menu_remote_css_cb);
-       it->state(true);
+       it->state(prefs.load_stylesheets);
        it = new ToggleItem("Use embedded CSS");
        it->callback(Menu_embedded_css_cb);
-       it->state(true);
+       it->state(prefs.parse_embedded_css);
        pm->type(PopupMenu::POPUP13);
       pm->end();
    }
