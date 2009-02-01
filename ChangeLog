@@ -32,6 +32,7 @@ dillo-2.1
  - Cleaned up and normalized D_SUN_LEN usage.
  - Fixed incorrect use of VOIDP2INT in Dialog_user_password_cb().
  - Ensure that the dlib dStr* functions are used everywhere.
+ - Fixed a leak in Html_tag_open_link().
    Patches: Jeremy Henty
 +- Implemented Basic authentication!
    Patch: Jeremy Henty, Jorge Arellano Cid

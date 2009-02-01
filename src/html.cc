@@ -2850,16 +2850,19 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
       return;
 
    /* CSS stylesheet link */
-   if ((!(attrbuf = a_Html_get_attr(html, tag, tagsize, "rel")) ||
-        dStrcasecmp(attrbuf, "stylesheet")) ||
-       (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "href")) ||
-        !(url = a_Html_url_new(html, attrbuf, NULL, 0))))
+   if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "rel")) ||
+       dStrcasecmp(attrbuf, "stylesheet"))
       return;
+
    /* IMPLIED attributes? */
    if (((attrbuf = a_Html_get_attr(html, tag, tagsize, "type")) &&
         dStrcasecmp(attrbuf, "text/css")) ||
        ((attrbuf = a_Html_get_attr(html, tag, tagsize, "media")) &&
         !dStristr(attrbuf, "screen") && dStrcasecmp(attrbuf, "all")))
+      return;
+
+   if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "href")) ||
+       !(url = a_Html_url_new(html, attrbuf, NULL, 0)))
       return;
 
    MSG("  Html_tag_open_link(): URL=%s\n", URL_STR(url));
