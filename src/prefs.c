@@ -58,134 +58,22 @@ DilloPrefs prefs;
  * Local types
  *---------------------------------------------------------------------------*/
 
-/* define enumeration values to be returned for specific symbols */
 typedef enum {
-   DRC_TOKEN_ALLOW_WHITE_BG,
-   DRC_TOKEN_BG_COLOR,
-   DRC_TOKEN_BUFFERED_DRAWING,
-   DRC_TOKEN_CONTRAST_VISITED_COLOR,
-   DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT,
-   DRC_TOKEN_FOCUS_NEW_TAB,
-   DRC_TOKEN_FONT_CURSIVE,
-   DRC_TOKEN_FONT_FACTOR,
-   DRC_TOKEN_FONT_FANTASY,
-   DRC_TOKEN_FONT_MONOSPACE,
-   DRC_TOKEN_FONT_SANS_SERIF,
-   DRC_TOKEN_FONT_SERIF,
-   DRC_TOKEN_FORCE_MY_COLORS,
-   DRC_TOKEN_FULLWINDOW_START,
-   DRC_TOKEN_FW_FONT,
-   DRC_TOKEN_GEOMETRY,
-   DRC_TOKEN_HOME,
-   DRC_TOKEN_HTTP_LANGUAGE,
-   DRC_TOKEN_LIMIT_TEXT_WIDTH,
-   DRC_TOKEN_LINK_COLOR,
-   DRC_TOKEN_LOAD_IMAGES,
-   DRC_TOKEN_LOAD_STYLESHEETS,
-   DRC_TOKEN_MIDDLE_CLICK_DRAGS_PAGE,
-   DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB,
-   DRC_TOKEN_NOPROXY,
-   DRC_TOKEN_PANEL_SIZE,
-   DRC_TOKEN_PARSE_EMBEDDED_CSS,
-   DRC_TOKEN_PROXY,
-   DRC_TOKEN_PROXYUSER,
-   DRC_TOKEN_REFERER,
-   DRC_TOKEN_SAVE_DIR,
-   DRC_TOKEN_SEARCH_URL,
-   DRC_TOKEN_SHOW_BACK,
-   DRC_TOKEN_SHOW_BOOKMARKS,
-   DRC_TOKEN_SHOW_CLEAR_URL,
-   DRC_TOKEN_SHOW_EXTRA_WARNINGS,
-   DRC_TOKEN_SHOW_FILEMENU,
-   DRC_TOKEN_SHOW_FORW,
-   DRC_TOKEN_SHOW_HOME,
-   DRC_TOKEN_SHOW_MSG,
-   DRC_TOKEN_SHOW_PROGRESS_BOX,
-   DRC_TOKEN_SHOW_RELOAD,
-   DRC_TOKEN_SHOW_SAVE,
-   DRC_TOKEN_SHOW_SEARCH,
-   DRC_TOKEN_SHOW_STOP,
-   DRC_TOKEN_SHOW_TOOLS,
-   DRC_TOKEN_SHOW_TOOLTIP,
-   DRC_TOKEN_SHOW_URL,
-   DRC_TOKEN_SMALL_ICONS,
-   DRC_TOKEN_STANDARD_WIDGET_COLORS,
-   DRC_TOKEN_START_PAGE,
-   DRC_TOKEN_TEXT_COLOR,
-   DRC_TOKEN_VISITED_COLOR,
-   DRC_TOKEN_VW_FONT,
-   DRC_TOKEN_W3C_PLUS_HEURISTICS
-} RcToken_t;
+   PREFS_BOOL,
+   PREFS_STRING,
+   PREFS_URL,
+   PREFS_INT32,
+   PREFS_DOUBLE,
+   PREFS_COLOR,
+   PREFS_GEOMETRY,
+   PREFS_PANEL_SIZE
+} PrefType_t;
 
-typedef struct SymNode_ SymNode_t;
-
-struct SymNode_ {
+typedef struct SymNode_ {
    char *name;
-   RcToken_t token;
-};
-
-/*-----------------------------------------------------------------------------
- * Local data
- *---------------------------------------------------------------------------*/
-
-/* Symbol array, sorted alphabetically */
-static const SymNode_t symbols[] = {
-   { "allow_white_bg", DRC_TOKEN_ALLOW_WHITE_BG },
-   { "bg_color", DRC_TOKEN_BG_COLOR },
-   { "buffered_drawing", DRC_TOKEN_BUFFERED_DRAWING },
-   { "contrast_visited_color", DRC_TOKEN_CONTRAST_VISITED_COLOR },
-   { "enterpress_forces_submit", DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT },
-   { "focus_new_tab", DRC_TOKEN_FOCUS_NEW_TAB },
-   { "font_cursive", DRC_TOKEN_FONT_CURSIVE },
-   { "font_factor", DRC_TOKEN_FONT_FACTOR },
-   { "font_fantasy", DRC_TOKEN_FONT_FANTASY },
-   { "font_monospace", DRC_TOKEN_FONT_MONOSPACE },
-   { "font_sans_serif", DRC_TOKEN_FONT_SANS_SERIF },
-   { "font_serif", DRC_TOKEN_FONT_SERIF },
-   { "force_my_colors", DRC_TOKEN_FORCE_MY_COLORS },
-   { "fullwindow_start", DRC_TOKEN_FULLWINDOW_START },
-   { "geometry", DRC_TOKEN_GEOMETRY },
-   { "home", DRC_TOKEN_HOME },
-   { "http_language", DRC_TOKEN_HTTP_LANGUAGE },
-   { "http_proxy", DRC_TOKEN_PROXY },
-   { "http_proxyuser", DRC_TOKEN_PROXYUSER },
-   { "http_referer", DRC_TOKEN_REFERER },
-   { "limit_text_width", DRC_TOKEN_LIMIT_TEXT_WIDTH },
-   { "link_color", DRC_TOKEN_LINK_COLOR },
-   { "load_images", DRC_TOKEN_LOAD_IMAGES },
-   { "load_stylesheets", DRC_TOKEN_LOAD_STYLESHEETS },
-   { "middle_click_drags_page", DRC_TOKEN_MIDDLE_CLICK_DRAGS_PAGE },
-   { "middle_click_opens_new_tab", DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB },
-   { "no_proxy", DRC_TOKEN_NOPROXY },
-   { "panel_size", DRC_TOKEN_PANEL_SIZE },
-   { "parse_embedded_css", DRC_TOKEN_PARSE_EMBEDDED_CSS },
-   { "save_dir", DRC_TOKEN_SAVE_DIR },
-   { "search_url", DRC_TOKEN_SEARCH_URL },
-   { "show_back", DRC_TOKEN_SHOW_BACK },
-   { "show_bookmarks", DRC_TOKEN_SHOW_BOOKMARKS },
-   { "show_clear_url", DRC_TOKEN_SHOW_CLEAR_URL },
-   { "show_extra_warnings", DRC_TOKEN_SHOW_EXTRA_WARNINGS },
-   { "show_filemenu", DRC_TOKEN_SHOW_FILEMENU },
-   { "show_forw", DRC_TOKEN_SHOW_FORW },
-   { "show_home", DRC_TOKEN_SHOW_HOME },
-   { "show_msg", DRC_TOKEN_SHOW_MSG },
-   { "show_progress_box", DRC_TOKEN_SHOW_PROGRESS_BOX },
-   { "show_reload", DRC_TOKEN_SHOW_RELOAD },
-   { "show_save", DRC_TOKEN_SHOW_SAVE },
-   { "show_search", DRC_TOKEN_SHOW_SEARCH },
-   { "show_stop", DRC_TOKEN_SHOW_STOP },
-   { "show_tools", DRC_TOKEN_SHOW_TOOLS },
-   { "show_tooltip", DRC_TOKEN_SHOW_TOOLTIP },
-   { "show_url", DRC_TOKEN_SHOW_URL },
-   { "small_icons", DRC_TOKEN_SMALL_ICONS },
-   { "standard_widget_colors", DRC_TOKEN_STANDARD_WIDGET_COLORS },
-   { "start_page", DRC_TOKEN_START_PAGE },
-   { "text_color", DRC_TOKEN_TEXT_COLOR },
-   { "visited_color", DRC_TOKEN_VISITED_COLOR, },
-   { "w3c_plus_heuristics", DRC_TOKEN_W3C_PLUS_HEURISTICS }
-};
-
-static const uint_t n_symbols = sizeof (symbols) / sizeof (symbols[0]);
+   void *pref;
+   PrefType_t type;
+} SymNode_t;
 
 /*
  *- Mini parser -------------------------------------------------------------
@@ -202,7 +90,8 @@ static int Prefs_symbol_cmp(const void *a, const void *b)
 /*
  * Parse a name/value pair and set preferences accordingly.
  */
-static int Prefs_parse_pair(char *name, char *value)
+static int Prefs_parse_pair(char *name, char *value, const SymNode_t *symbols,
+                            int n_symbols)
 {
    int st;
    SymNode_t key, *node;
@@ -215,187 +104,40 @@ static int Prefs_parse_pair(char *name, char *value)
       return -1;
    }
 
-   switch (node->token) {
-   case DRC_TOKEN_GEOMETRY:
+   switch (node->type) {
+   case PREFS_BOOL:
+      *(bool_t *)node->pref = strcmp(value, "YES") == 0;
+      break;
+   case PREFS_STRING:
+      dFree(*(char **)node->pref);
+      *(char **)node->pref = dStrdup(value);
+      break;
+   case PREFS_URL:
+      a_Url_free(*(DilloUrl **)node->pref);
+      *(DilloUrl **)node->pref = a_Url_new(value, NULL);
+      break;
+   case PREFS_INT32:
+      *(int32_t *)node->pref = atoi(value);
+      break;
+   case PREFS_DOUBLE:
+      *(double *)node->pref = strtod(value, NULL);
+      break;
+   case PREFS_COLOR:
+      *(int32_t *)node->pref = a_Color_parse(value, *(int32_t*)node->pref,&st);
+      break;
+   case PREFS_GEOMETRY:
       a_Misc_parse_geometry(value, &prefs.xpos, &prefs.ypos,
                             &prefs.width, &prefs.height);
       break;
-   case DRC_TOKEN_HTTP_LANGUAGE:
-      dFree(prefs.http_language);
-      prefs.http_language = dStrdup(value);
-      break;
-   case DRC_TOKEN_PROXY:
-      a_Url_free(prefs.http_proxy);
-      prefs.http_proxy = a_Url_new(value, NULL);
-      break;
-   case DRC_TOKEN_PROXYUSER:
-      dFree(prefs.http_proxyuser);
-      prefs.http_proxyuser = dStrdup(value);
-      break;
-   case DRC_TOKEN_REFERER:
-      dFree(prefs.http_referer);
-      prefs.http_referer = dStrdup(value);
-      break;
-   case DRC_TOKEN_NOPROXY:
-      dFree(prefs.no_proxy);
-      prefs.no_proxy = dStrdup(value);
-      break;
-   case DRC_TOKEN_LINK_COLOR:
-      prefs.link_color = a_Color_parse(value, prefs.link_color, &st);
-      break;
-   case DRC_TOKEN_VISITED_COLOR:
-      prefs.visited_color = a_Color_parse(value, prefs.visited_color, &st);
-      break;
-   case DRC_TOKEN_TEXT_COLOR:
-      prefs.text_color = a_Color_parse(value, prefs.text_color, &st);
-      break;
-   case DRC_TOKEN_BG_COLOR:
-      prefs.bg_color = a_Color_parse(value, prefs.bg_color, &st);
-      break;
-   case DRC_TOKEN_ALLOW_WHITE_BG:
-      prefs.allow_white_bg = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_MIDDLE_CLICK_DRAGS_PAGE:
-      prefs.middle_click_drags_page = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_FORCE_MY_COLORS:
-      prefs.force_my_colors = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_CONTRAST_VISITED_COLOR:
-      prefs.contrast_visited_color = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_STANDARD_WIDGET_COLORS:
-      prefs.standard_widget_colors = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_PANEL_SIZE:
+   case PREFS_PANEL_SIZE:
       if (!dStrcasecmp(value, "tiny"))
          prefs.panel_size = P_tiny;
       else if (!dStrcasecmp(value, "small"))
          prefs.panel_size = P_small;
-      else if (!dStrcasecmp(value, "medium"))
-         prefs.panel_size = P_medium;
+      else if (!dStrcasecmp(value, "large"))
+         prefs.panel_size = P_large;
       else /* default to "medium" */
          prefs.panel_size = P_medium;
-      break;
-   case DRC_TOKEN_PARSE_EMBEDDED_CSS:
-      prefs.parse_embedded_css = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SMALL_ICONS:
-      prefs.small_icons = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_START_PAGE:
-      a_Url_free(prefs.start_page);
-      prefs.start_page = a_Url_new(value, NULL);
-      break;
-   case DRC_TOKEN_HOME:
-      a_Url_free(prefs.home);
-      prefs.home = a_Url_new(value, NULL);
-      break;
-   case DRC_TOKEN_SHOW_TOOLTIP:
-      prefs.show_tooltip = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_FOCUS_NEW_TAB:
-      prefs.focus_new_tab = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_FONT_FACTOR:
-      prefs.font_factor = strtod(value, NULL);
-      break;
-   case DRC_TOKEN_LIMIT_TEXT_WIDTH:
-      prefs.limit_text_width = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_W3C_PLUS_HEURISTICS:
-      prefs.w3c_plus_heuristics = (strcmp(value,"YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_BACK:
-      prefs.show_back = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_FORW:
-      prefs.show_forw = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_HOME:
-      prefs.show_home = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_RELOAD:
-      prefs.show_reload = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_SAVE:
-      prefs.show_save = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_STOP:
-      prefs.show_stop = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_BOOKMARKS:
-      prefs.show_bookmarks = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_TOOLS:
-      prefs.show_tools = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_FILEMENU:
-      prefs.show_filemenu = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_CLEAR_URL:
-      prefs.show_clear_url = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_URL:
-      prefs.show_url = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_SEARCH:
-      prefs.show_search = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_PROGRESS_BOX:
-      prefs.show_progress_box = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_FULLWINDOW_START:
-      prefs.fullwindow_start = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_LOAD_IMAGES:
-      prefs.load_images = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_LOAD_STYLESHEETS:
-      prefs.load_stylesheets = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_BUFFERED_DRAWING:
-      prefs.buffered_drawing = atoi(value);
-      break;
-   case DRC_TOKEN_FONT_SERIF:
-      dFree(prefs.font_serif);
-      prefs.font_serif = dStrdup(value);
-      break;
-   case DRC_TOKEN_FONT_SANS_SERIF:
-      dFree(prefs.font_sans_serif);
-      prefs.font_sans_serif = dStrdup(value);
-      break;
-   case DRC_TOKEN_FONT_CURSIVE:
-      dFree(prefs.font_cursive);
-      prefs.font_cursive = dStrdup(value);
-      break;
-   case DRC_TOKEN_FONT_FANTASY:
-      dFree(prefs.font_fantasy);
-      prefs.font_fantasy = dStrdup(value);
-      break;
-   case DRC_TOKEN_FONT_MONOSPACE:
-      dFree(prefs.font_monospace);
-      prefs.font_monospace = dStrdup(value);
-      break;
-   case DRC_TOKEN_ENTERPRESS_FORCES_SUBMIT:
-      prefs.enterpress_forces_submit = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_MIDDLE_CLICK_OPENS_NEW_TAB:
-      prefs.middle_click_opens_new_tab = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SEARCH_URL:
-      dFree(prefs.search_url);
-      prefs.search_url = dStrdup(value);
-      break;
-   case DRC_TOKEN_SAVE_DIR:
-      dFree(prefs.save_dir);
-      prefs.save_dir = dStrdup(value);
-      break;
-   case DRC_TOKEN_SHOW_MSG:
-      prefs.show_msg = (strcmp(value, "YES") == 0);
-      break;
-   case DRC_TOKEN_SHOW_EXTRA_WARNINGS:
-      prefs.show_extra_warnings = (strcmp(value, "YES") == 0);
       break;
    default:
       MSG_WARN("prefs: {%s} IS recognized but not handled!\n", name);
@@ -410,6 +152,66 @@ static int Prefs_parse_pair(char *name, char *value)
  */
 static int Prefs_parse_dillorc(void)
 {
+   /* Symbol array, sorted alphabetically */
+   const SymNode_t symbols[] = {
+   { "allow_white_bg", &prefs.allow_white_bg, PREFS_BOOL },
+   { "bg_color", &prefs.bg_color, PREFS_COLOR },
+   { "buffered_drawing", &prefs.buffered_drawing, PREFS_INT32 },
+   { "contrast_visited_color", &prefs.contrast_visited_color, PREFS_BOOL },
+   { "enterpress_forces_submit", &prefs.enterpress_forces_submit, PREFS_BOOL },
+   { "focus_new_tab", &prefs.focus_new_tab, PREFS_BOOL },
+   { "font_cursive", &prefs.font_cursive, PREFS_STRING },
+   { "font_factor", &prefs.font_factor, PREFS_DOUBLE },
+   { "font_fantasy", &prefs.font_fantasy, PREFS_STRING },
+   { "font_monospace", &prefs.font_monospace, PREFS_STRING },
+   { "font_sans_serif", &prefs.font_sans_serif, PREFS_STRING },
+   { "font_serif", &prefs.font_serif, PREFS_STRING },
+   { "force_my_colors", &prefs.force_my_colors, PREFS_BOOL },
+   { "fullwindow_start", &prefs.fullwindow_start, PREFS_BOOL },
+   { "geometry", NULL, PREFS_GEOMETRY },
+   { "home", &prefs.home, PREFS_URL },
+   { "http_language", &prefs.http_language, PREFS_STRING },
+   { "http_proxy", &prefs.http_proxy, PREFS_URL },
+   { "http_proxyuser", &prefs.http_proxyuser, PREFS_STRING },
+   { "http_referer", &prefs.http_referer, PREFS_STRING },
+   { "limit_text_width", &prefs.limit_text_width, PREFS_BOOL },
+   { "link_color", &prefs.link_color, PREFS_COLOR },
+   { "load_images", &prefs.load_images, PREFS_BOOL },
+   { "load_stylesheets", &prefs.load_stylesheets, PREFS_BOOL },
+   { "middle_click_drags_page", &prefs.middle_click_drags_page, PREFS_BOOL },
+   { "middle_click_opens_new_tab", &prefs.middle_click_opens_new_tab,
+     PREFS_BOOL },
+   { "no_proxy", &prefs.no_proxy, PREFS_STRING },
+   { "panel_size", &prefs.panel_size, PREFS_PANEL_SIZE },
+   { "parse_embedded_css", &prefs.parse_embedded_css, PREFS_BOOL },
+   { "save_dir", &prefs.save_dir, PREFS_STRING },
+   { "search_url", &prefs.search_url, PREFS_STRING },
+   { "show_back", &prefs.show_back, PREFS_BOOL },
+   { "show_bookmarks", &prefs.show_bookmarks, PREFS_BOOL },
+   { "show_clear_url", &prefs.show_clear_url, PREFS_BOOL },
+   { "show_extra_warnings", &prefs.show_extra_warnings, PREFS_BOOL },
+   { "show_filemenu", &prefs.show_filemenu, PREFS_BOOL },
+   { "show_forw", &prefs.show_forw, PREFS_BOOL },
+   { "show_home", &prefs.show_home, PREFS_BOOL },
+   { "show_msg", &prefs.show_msg, PREFS_BOOL },
+   { "show_progress_box", &prefs.show_progress_box, PREFS_BOOL },
+   { "show_reload", &prefs.show_reload, PREFS_BOOL },
+   { "show_save", &prefs.show_save, PREFS_BOOL },
+   { "show_search", &prefs.show_search, PREFS_BOOL },
+   { "show_stop", &prefs.show_stop, PREFS_BOOL },
+   { "show_tools", &prefs.show_tools, PREFS_BOOL },
+   { "show_tooltip", &prefs.show_tooltip, PREFS_BOOL },
+   { "show_url", &prefs.show_url, PREFS_BOOL },
+   { "small_icons", &prefs.small_icons, PREFS_BOOL },
+   { "standard_widget_colors", &prefs.standard_widget_colors, PREFS_BOOL },
+   { "start_page", &prefs.start_page, PREFS_URL },
+   { "text_color", &prefs.text_color, PREFS_COLOR },
+   { "visited_color", &prefs.visited_color, PREFS_COLOR },
+   { "w3c_plus_heuristics", &prefs.w3c_plus_heuristics, PREFS_BOOL }
+   };
+
+   const uint_t n_symbols = sizeof (symbols) / sizeof (symbols[0]);
+
    FILE *F_in;
    char *filename, *line, *name, *value;
    int ret = -1;
@@ -430,7 +232,7 @@ static int Prefs_parse_dillorc(void)
       while ((line = dGetline(F_in)) != NULL) {
          if (dParser_get_rc_pair(&line, &name, &value) == 0) {
             _MSG("{%s}, {%s}\n", name, value);
-            Prefs_parse_pair(name, value);
+            Prefs_parse_pair(name, value, symbols, n_symbols);
          } else if (line[0] && line[0] != '#' && (!name || !value)) {
             MSG("prefs: Syntax error in %s: name=\"%s\" value=\"%s\"\n",
                 RCNAME, name, value);
@@ -451,62 +253,65 @@ void a_Prefs_init(void)
 {
    char *old_locale;
 
+   prefs.allow_white_bg = TRUE;
+   prefs.bg_color = DW_COLOR_DEFAULT_BGND;
+   prefs.buffered_drawing=1;
+   prefs.contrast_visited_color = TRUE;
+   prefs.enterpress_forces_submit = FALSE;
+   prefs.focus_new_tab = TRUE;
+   prefs.font_cursive = dStrdup(D_FONT_CURSIVE);
+   prefs.font_factor = 1.0;
+   prefs.font_fantasy = dStrdup(D_FONT_FANTASY);
+   prefs.font_monospace = dStrdup(D_FONT_MONOSPACE);
+   prefs.font_sans_serif = dStrdup(D_FONT_SANS_SERIF);
+   prefs.font_serif = dStrdup(D_FONT_SERIF);
+   prefs.force_my_colors = FALSE;
+   prefs.fullwindow_start=FALSE;
+
+   /* these four constitute the geometry */
    prefs.width = D_GEOMETRY_DEFAULT_WIDTH;
    prefs.height = D_GEOMETRY_DEFAULT_HEIGHT;
    prefs.xpos = D_GEOMETRY_DEFAULT_XPOS;
    prefs.ypos = D_GEOMETRY_DEFAULT_YPOS;
+
+   prefs.home = a_Url_new(DILLO_HOME, NULL);
    prefs.http_language = NULL;
    prefs.http_proxy = NULL;
    prefs.http_proxyuser = NULL;
    prefs.http_referer = dStrdup("host");
-   prefs.no_proxy = NULL;
-   prefs.link_color = DW_COLOR_DEFAULT_LINK;
-   prefs.visited_color = DW_COLOR_DEFAULT_VLINK;
-   prefs.bg_color = DW_COLOR_DEFAULT_BGND;
-   prefs.text_color = DW_COLOR_DEFAULT_TEXT;
-   prefs.start_page = a_Url_new(DILLO_START_PAGE, NULL);
-   prefs.home = a_Url_new(DILLO_HOME, NULL);
-   prefs.allow_white_bg = TRUE;
-   prefs.force_my_colors = FALSE;
-   prefs.contrast_visited_color = TRUE;
-   prefs.standard_widget_colors = FALSE;
-   prefs.show_tooltip = TRUE;
-   prefs.panel_size = P_medium;
-   prefs.small_icons = FALSE;
    prefs.limit_text_width = FALSE;
-   prefs.w3c_plus_heuristics = TRUE;
-   prefs.focus_new_tab = TRUE;
-   prefs.font_factor = 1.0;
-   prefs.show_back=TRUE;
-   prefs.show_forw=TRUE;
-   prefs.show_home=TRUE;
-   prefs.show_reload=TRUE;
-   prefs.show_save=TRUE;
-   prefs.show_stop=TRUE;
-   prefs.show_bookmarks=TRUE;
-   prefs.show_tools=TRUE;
-   prefs.show_filemenu=TRUE;
-   prefs.show_clear_url=TRUE;
-   prefs.show_url=TRUE;
-   prefs.show_search=TRUE;
-   prefs.show_progress_box=TRUE;
-   prefs.fullwindow_start=FALSE;
+   prefs.link_color = DW_COLOR_DEFAULT_LINK;
    prefs.load_images=TRUE;
    prefs.load_stylesheets=TRUE;
-   prefs.parse_embedded_css=TRUE;
-   prefs.buffered_drawing=1;
-   prefs.font_serif = dStrdup(D_FONT_SERIF);
-   prefs.font_sans_serif = dStrdup(D_FONT_SANS_SERIF);
-   prefs.font_cursive = dStrdup(D_FONT_CURSIVE);
-   prefs.font_fantasy = dStrdup(D_FONT_FANTASY);
-   prefs.font_monospace = dStrdup(D_FONT_MONOSPACE);
-   prefs.enterpress_forces_submit = FALSE;
-   prefs.middle_click_opens_new_tab = TRUE;
-   prefs.search_url = dStrdup(D_SEARCH_URL);
-   prefs.save_dir = dStrdup(D_SAVE_DIR);
-   prefs.show_msg = TRUE;
-   prefs.show_extra_warnings = FALSE;
    prefs.middle_click_drags_page = TRUE;
+   prefs.middle_click_opens_new_tab = TRUE;
+   prefs.no_proxy = NULL;
+   prefs.panel_size = P_medium;
+   prefs.parse_embedded_css=TRUE;
+   prefs.save_dir = dStrdup(D_SAVE_DIR);
+   prefs.search_url = dStrdup(D_SEARCH_URL);
+   prefs.show_back=TRUE;
+   prefs.show_bookmarks=TRUE;
+   prefs.show_clear_url=TRUE;
+   prefs.show_extra_warnings = FALSE;
+   prefs.show_filemenu=TRUE;
+   prefs.show_forw=TRUE;
+   prefs.show_home=TRUE;
+   prefs.show_msg = TRUE;
+   prefs.show_progress_box=TRUE;
+   prefs.show_reload=TRUE;
+   prefs.show_save=TRUE;
+   prefs.show_search=TRUE;
+   prefs.show_stop=TRUE;
+   prefs.show_tools=TRUE;
+   prefs.show_tooltip = TRUE;
+   prefs.show_url=TRUE;
+   prefs.small_icons = FALSE;
+   prefs.standard_widget_colors = FALSE;
+   prefs.start_page = a_Url_new(DILLO_START_PAGE, NULL);
+   prefs.text_color = DW_COLOR_DEFAULT_TEXT;
+   prefs.visited_color = DW_COLOR_DEFAULT_VLINK;
+   prefs.w3c_plus_heuristics = TRUE;
 
    /* this locale stuff is to avoid parsing problems with float numbers */
    old_locale = dStrdup (setlocale (LC_NUMERIC, NULL));
@@ -525,18 +330,19 @@ void a_Prefs_init(void)
  */
 void a_Prefs_freeall(void)
 {
+   dFree(prefs.font_cursive);
+   dFree(prefs.font_fantasy);
+   dFree(prefs.font_monospace);
+   dFree(prefs.font_sans_serif);
+   dFree(prefs.font_serif);
    dFree(prefs.http_language);
    dFree(prefs.http_proxyuser);
    dFree(prefs.http_referer);
    dFree(prefs.no_proxy);
-   a_Url_free(prefs.http_proxy);
-   dFree(prefs.font_serif);
-   dFree(prefs.font_sans_serif);
-   dFree(prefs.font_cursive);
-   dFree(prefs.font_fantasy);
-   dFree(prefs.font_monospace);
-   a_Url_free(prefs.start_page);
-   a_Url_free(prefs.home);
-   dFree(prefs.search_url);
    dFree(prefs.save_dir);
+   dFree(prefs.search_url);
+
+   a_Url_free(prefs.home);
+   a_Url_free(prefs.http_proxy);
+   a_Url_free(prefs.start_page);
 }
