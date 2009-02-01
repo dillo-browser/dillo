@@ -8,6 +8,7 @@ dillo-2.1
    Patch: James Turner, Jorge Arellano Cid
 +- Added support for numeric IPv6 addresses entered into the url bar.
  - Used the URL authority part instead of stripped default port in HTTP query.
+ - Made the DNS resolver report in numeric address notation.
    Patches: Justus Winter
 +- Fix for file inputs without values (forms).
  - Tuned input width a bit.
@@ -39,8 +40,6 @@ dillo-2.1
 +- Allowed compilation with older machines by removing a few C99isms.
  - Added use of inttypes.h when stdint.h isn't found.
    Patches: Dan Fandrich
-+- Made the DNS resolver report in numeric address notation.
-   Patch: Justus Winter
 +- Reduced warnings with gcc-4.3.
    Patch: Thomas Orgis
 +- Made the parser recognize "[^ ]/>"-terminated XML elements.
