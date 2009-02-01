@@ -288,8 +288,8 @@ static int Html_set_new_link(DilloHtml *html, DilloUrl **url)
 /*
  * Add a new image.
  */
-static int Html_add_new_linkimage(DilloHtml *html,
-                                  DilloUrl **url, DilloImage *image)
+static void Html_add_new_linkimage(DilloHtml *html,
+                                   DilloUrl **url, DilloImage *image)
 {
    DilloLinkImage *li = dNew(DilloLinkImage, 1);
    li->url = *url;
@@ -298,7 +298,6 @@ static int Html_add_new_linkimage(DilloHtml *html,
    int ni = html->images->size();
    html->images->increase();
    html->images->set(ni, li);
-   return ni;
 }
 
 /*
