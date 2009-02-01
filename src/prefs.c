@@ -244,6 +244,12 @@ static int Prefs_parse_dillorc(void)
    }
    dFree(filename);
 
+   if (prefs.limit_text_width) {
+      /* BUG: causes 100% CPU usage with <button> or <input type="image"> */
+      MSG_WARN("Disabling limit_text_width preference (currently broken).\n");
+      prefs.limit_text_width = FALSE;
+   }
+
    return ret;
 }
 
