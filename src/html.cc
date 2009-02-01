@@ -2822,6 +2822,9 @@ static void Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
  * Parse the LINK element (Only CSS stylesheets by now).
  * (If it either hits or misses, is not relevant here; that's up to the
  *  cache functions)
+ *
+ * TODO: How will we know when to use "handheld"? Ask the html->bw->ui for
+ * screen dimensions, or a dillorc preference.
  */
 static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
 {
@@ -2832,8 +2835,6 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
    //MSG("Html_tag_open_link(): %s\n", tag_str);
    //dFree(tag_str);
 
-   /* Remote stylesheets enabled? */
-   dReturn_if_fail (prefs.load_stylesheets);
    /* When viewing suspicious HTML email, don't load LINK */
    dReturn_if (URL_FLAGS(html->base_url) & URL_SpamSafe);
 
@@ -2842,12 +2843,8 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
       BUG_MSG("the LINK element must be inside the HEAD section\n");
       return;
    }
-
-   /* TODO: How will we know when to use "handheld"? Ask the html->bw->ui for
-      screen dimensions, or a dillorc preference. */
-
-   if (!prefs.load_stylesheets)
-      return;
+   /* Remote stylesheets enabled? */
+   dReturn_if_fail (prefs.load_stylesheets);
 
    /* CSS stylesheet link */
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "rel")) ||
