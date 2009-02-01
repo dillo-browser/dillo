@@ -594,7 +594,7 @@ static bool Css_token_matches_property(CssParser * parser,
 
    case CSS_TYPE_FONT_WEIGHT:
       if (parser->ttype == CSS_TK_DECINT) {
-         i = atoi(parser->tval);
+         i = strtol(parser->tval, NULL, 10);
          return i >= 100 && i <= 900;
       } else
          return (parser->ttype == CSS_TK_SYMBOL &&
@@ -750,7 +750,7 @@ static bool Css_parse_value(CssParser * parser,
    case CSS_TYPE_FONT_WEIGHT:
       ival = 0;
       if (parser->ttype == CSS_TK_DECINT) {
-         ival = atoi(parser->tval);
+         ival = strtol(parser->tval, NULL, 10);
          if (ival < 100 || ival > 900)
             /* invalid */
             ival = 0;

@@ -117,7 +117,7 @@ static int Prefs_parse_pair(char *name, char *value, const SymNode_t *symbols,
       *(DilloUrl **)node->pref = a_Url_new(value, NULL);
       break;
    case PREFS_INT32:
-      *(int32_t *)node->pref = atoi(value);
+      *(int32_t *)node->pref = strtol(value, NULL, 10);
       break;
    case PREFS_DOUBLE:
       *(double *)node->pref = strtod(value, NULL);

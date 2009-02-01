@@ -308,7 +308,7 @@ static int get_network_connection(char * url)
       /*Check for port number*/
       if (strchr(url+url_offset, ':') ==
           (url + url_offset + url_look_up_length)){
-         portnum = atoi(url + url_offset + url_look_up_length + 1);
+         portnum = strtol(url + url_offset + url_look_up_length + 1, NULL, 10);
       }
    } else {
       url_look_up = url + url_offset;
