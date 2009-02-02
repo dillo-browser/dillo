@@ -348,7 +348,6 @@ typedef enum {
 
 typedef struct {
    CssContext *context;
-   int order_count;
    CssOrigin origin;
 
    const char *buf;
@@ -1166,7 +1165,7 @@ static void Css_parse_ruleset(CssParser * parser)
 
 void a_Css_parse(CssContext * context,
                  const char *buf,
-                 int buflen, int order_count, CssOrigin origin)
+                 int buflen, CssOrigin origin)
 {
    CssParser parser;
 
@@ -1174,7 +1173,6 @@ void a_Css_parse(CssContext * context,
    parser.buf = buf;
    parser.buflen = buflen;
    parser.bufptr = 0;
-   parser.order_count = 0;
    parser.origin = origin;
    parser.within_block = false;
    parser.space_separated = false;
@@ -1193,7 +1191,6 @@ CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen)
    parser.buf = buf;
    parser.buflen = buflen;
    parser.bufptr = 0;
-   parser.order_count = 0;
    parser.origin = CSS_ORIGIN_AUTHOR;
    parser.within_block = true;
    parser.space_separated = false;

@@ -451,8 +451,7 @@ Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
    return stack->getRef (stack->size () - 1)->wordStyle;
 }
 
-void StyleEngine::parse (const char *buf, int buflen,
-                         int order_count, CssOrigin origin) {
+void StyleEngine::parse (const char *buf, int buflen, CssOrigin origin) {
 
-   a_Css_parse (cssContext, buf, buflen, order_count, origin);
+   a_Css_parse (cssContext, buf, buflen, origin);
 }

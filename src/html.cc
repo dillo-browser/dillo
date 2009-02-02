@@ -1650,7 +1650,7 @@ static void Html_tag_close_style(DilloHtml *html, int TagIdx)
 {
    if (prefs.parse_embedded_css)
       html->styleEngine->parse(html->Stash->str, html->Stash->len,
-                               0, CSS_ORIGIN_AUTHOR);
+                               CSS_ORIGIN_AUTHOR);
 }
 
 /*
@@ -2799,7 +2799,7 @@ static void Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
    if (a_Capi_get_buf(url, &data, &len)) {
       /* Haven't looked into what origin_count is */
       if (a_Capi_get_flags(url) & CAPI_Completed)
-         html->styleEngine->parse(data, len, 0, CSS_ORIGIN_AUTHOR);
+         html->styleEngine->parse(data, len, CSS_ORIGIN_AUTHOR);
       a_Capi_unref_buf(url);
    } else if (!html->repush_after_head) {
       /* Fill a Web structure for the cache query */
