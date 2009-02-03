@@ -424,7 +424,8 @@ static void Cache_ref_data(CacheEntry_t *entry)
    if (entry) {
       entry->DataRefcount++;
       _MSG("DataRefcount++: %d\n", entry->DataRefcount);
-      if (entry->CharsetDecoder && entry->DataRefcount == 1) {
+      if (entry->CharsetDecoder &&
+          (!entry->UTF8Data || entry->DataRefcount == 1)) {
          dStr_free(entry->UTF8Data, 1);
          entry->UTF8Data = a_Decode_process(entry->CharsetDecoder,
                                             entry->Data->str,
@@ -518,7 +519,7 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
             entry->CharsetDecoder = a_Decode_charset_init(charset);
             dFree(charset);
             curr = Cache_current_content_type(entry);
-      
+
             /* Invalidate UTF8Data */
             dStr_free(entry->UTF8Data, 1);
             entry->UTF8Data = NULL;

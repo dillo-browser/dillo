@@ -172,13 +172,14 @@ public:  //BUG: for now everything is public
    char *content_type, *charset;
    bool stop_parser;
 
-   bool repush_after_head;
-
    size_t CurrTagOfs;
    size_t OldTagOfs, OldTagLine;
 
    DilloHtmlDocumentType DocType; /* as given by DOCTYPE tag */
    float DocTypeVersion;          /* HTML or XHTML version number */
+
+   /* vector of remote CSS resources, as given by the LINK element */
+   lout::misc::SimpleVector<DilloUrl*> *cssUrls;
 
    lout::misc::SimpleVector<DilloHtmlState> *stack;
    StyleEngine *styleEngine;
@@ -233,6 +234,7 @@ public:
    DilloHtmlForm *getCurrentForm ();
    bool_t unloadedImages();
    void loadImages (const DilloUrl *pattern);
+   void addCssUrl(const DilloUrl *url);
 };
 
 /*

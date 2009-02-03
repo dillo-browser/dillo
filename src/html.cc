@@ -110,6 +110,7 @@ static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
                             DilloImage *image);
 static void Html_callback(int Op, CacheClient_t *Client);
 static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
+static void Html_load_stylesheet(DilloHtml *html, DilloUrl *url);
 
 /*-----------------------------------------------------------------------------
  * Local Data
@@ -416,7 +417,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    a_Misc_parse_content_type(content_type, NULL, NULL, &charset);
 
    stop_parser = false;
-   repush_after_head = false;
 
    CurrTagOfs = 0;
    OldTagOfs = 0;
@@ -424,6 +424,8 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    DocType = DT_NONE;    /* assume Tag Soup 0.0!   :-) */
    DocTypeVersion = 0.0f;
+
+   cssUrls = new misc::SimpleVector <DilloUrl*> (1);
 
    stack = new misc::SimpleVector <DilloHtmlState> (16);
    stack->increase();
@@ -508,6 +510,11 @@ DilloHtml::~DilloHtml()
 
    a_Url_free(page_url);
    a_Url_free(base_url);
+
+   for (int i = 0; i < cssUrls->size(); i++)
+      if (cssUrls->get(i))
+         a_Url_free(cssUrls->get(i));
+   delete (cssUrls);
 
    for (int i = 0; i < forms->size(); i++)
       a_Html_form_delete (forms->get(i));
@@ -613,6 +620,8 @@ void DilloHtml::finishParsing(int ClientKey)
 {
    int si;
 
+   dReturn_if (stop_parser == true);
+
    /* force the close of elements left open (TODO: not for XHTML) */
    while ((si = stack->size() - 1)) {
       if (stack->getRef(si)->tag_idx != -1) {
@@ -670,6 +679,16 @@ void DilloHtml::loadImages (const DilloUrl *pattern)
          }
       }
    }
+}
+
+/*
+ * Save URL in a vector (may be loaded later).
+ */
+void DilloHtml::addCssUrl(const DilloUrl *url)
+{
+   int nu = cssUrls->size();
+   cssUrls->increase();
+   cssUrls->set(nu, a_Url_dup(url));
 }
 
 bool DilloHtml::HtmlLinkReceiver::enter (Widget *widget, int link, int img,
@@ -1552,8 +1571,7 @@ static void Html_tag_open_head(DilloHtml *html, const char *tag, int tagsize)
  * Handle close HEAD element
  * Note: as a side effect of Html_test_section() this function is called
  *       twice when the head element is closed implicitly.
- * Note2: HEAD is parsed once completely got. This asserts that a
- *        linked stylesheet will always arrive after HEAD contents.
+ * Note2: HEAD is parsed once completely got.
  */
 static void Html_tag_close_head(DilloHtml *html, int TagIdx)
 {
@@ -1564,10 +1582,9 @@ static void Html_tag_close_head(DilloHtml *html, int TagIdx)
 
       html->InFlags &= ~IN_HEAD;
 
-      if (html->repush_after_head) {
-         html->stop_parser = true;
-         MSG(" [html->stop_parser = true]\n");
-         a_UIcmd_repush(html->bw);
+      /* charset is already set, load remote stylesheets now */
+      for (int i = 0; i < html->cssUrls->size(); i++) {
+         Html_load_stylesheet(html, html->cssUrls->get(i));
       }
    }
 }
@@ -2768,8 +2785,8 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
           */
          new_content = a_Capi_set_content_type(html->page_url,content,"meta");
          if (a_Misc_content_type_cmp(html->content_type, new_content)) {
-            html->stop_parser = true; /* Avoid a race condition */
-            html->repush_after_head = true;
+            html->stop_parser = true; /* The cache buffer is no longer valid */
+            a_UIcmd_repush(html->bw);
          }
       }   
    }
@@ -2780,7 +2797,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_css_load_callback(int Op, CacheClient_t *Client)
 {
-   _MSG("Css_callback: Op=%d\n", Op);
+   _MSG("Html_css_load_callback: Op=%d\n", Op);
    if (Op) { /* EOF */
       BrowserWindow *bw = ((DilloWeb *)Client->Web)->bw;
       /* Repush when we've got them all */
@@ -2796,25 +2813,28 @@ static void Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
 {
    char *data;
    int len;
+
+   dReturn_if (url == NULL);
+
+   _MSG("Html_load_stylesheet: ");
    if (a_Capi_get_buf(url, &data, &len)) {
-      /* Haven't looked into what origin_count is */
+      _MSG("cached URL=%s len=%d", URL_STR(url), len);
       if (a_Capi_get_flags(url) & CAPI_Completed)
          html->styleEngine->parse(data, len, 0, CSS_ORIGIN_AUTHOR);
       a_Capi_unref_buf(url);
-   } else if (!html->repush_after_head) {
+   } else {
       /* Fill a Web structure for the cache query */
       int ClientKey;
       DilloWeb *Web = a_Web_new(url);
       Web->bw = html->bw;
-      //Web->flags |= WEB_Stylesheet;
       if ((ClientKey = a_Capi_open_url(Web, Html_css_load_callback, NULL))) {
          ++html->bw->NumPendingStyleSheets;
          a_Bw_add_client(html->bw, ClientKey, 0);
          a_Bw_add_url(html->bw, url);
-         MSG("Html_load_stylesheet: NumPendingStyleSheets=%d\n",
-             html->bw->NumPendingStyleSheets);
+         MSG("NumPendingStyleSheets=%d", html->bw->NumPendingStyleSheets);
       }
    }
+   MSG("\n");
 }
 
 /*
@@ -2861,10 +2881,9 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
        !(url = a_Html_url_new(html, attrbuf, NULL, 0)))
       return;
 
-   MSG("  Html_tag_open_link(): URL=%s\n", URL_STR(url));
-   _MSG("    repush after HEAD=%d\n", html->repush_after_head);
+   MSG("  Html_tag_open_link(): addCssUrl %s\n", URL_STR(url));
 
-   Html_load_stylesheet(html, url);
+   html->addCssUrl(url);
    a_Url_free(url);
 }
 
