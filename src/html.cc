@@ -460,15 +460,15 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    attr_data = dStr_sized_new(1024);
 
+   link_color = -1;
+   visited_color = -1;
+
    /* Init page-handling variables */
    forms = new misc::SimpleVector <DilloHtmlForm*> (1);
    inputs_outside_form = new misc::SimpleVector <DilloHtmlInput*> (1);
    links = new misc::SimpleVector <DilloUrl*> (64);
    images = new misc::SimpleVector <DilloLinkImage*> (16);
    //a_Dw_image_map_list_init(&maps);
-
-   link_color = -1;
-   visited_color = -1;
 
    /* Initialize the main widget */
    initDw();
@@ -565,7 +565,7 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
    Start_Buf = Buf;
 
    dReturn_if (dw == NULL);
-   dReturn_if (stop_parser == TRUE);
+   dReturn_if (stop_parser == true);
 
    token_start = Html_write_raw(this, buf, bufsize, Eof);
    Start_Ofs += token_start;
@@ -2736,12 +2736,12 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
        (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
 
          /* Get delay, if present, and make a message with it */
-         if ((delay = strtol(content, NULL, 0)))
+         if ((delay = strtol(content, NULL, 0))) {
             snprintf(delay_str, 64, " after %d second%s.",
-                       delay, (delay > 1) ? "s" : "");
-         else
+                     delay, (delay > 1) ? "s" : "");
+         } else {
             sprintf(delay_str, ".");
-
+         }
          /* Skip to anything after "URL=" */
          while (*content && *(content++) != '=') ;
 
@@ -3343,7 +3343,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
    char *start = tag + 1; /* discard the '<' */
    int IsCloseTag = (*start == '/');
 
-   dReturn_if (html->stop_parser == TRUE);
+   dReturn_if (html->stop_parser == true);
 
    ni = a_Html_tag_index(start + IsCloseTag);
    if (ni == -1) {

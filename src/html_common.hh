@@ -204,6 +204,9 @@ public:  //BUG: for now everything is public
 
    Dstr *attr_data;       /* Buffer for attribute value */
 
+   int32_t link_color;
+   int32_t visited_color;
+
    /* -------------------------------------------------------------------*/
    /* Variables required after parsing (for page functionality)          */
    /* -------------------------------------------------------------------*/
@@ -212,9 +215,6 @@ public:  //BUG: for now everything is public
    lout::misc::SimpleVector<DilloUrl*> *links;
    lout::misc::SimpleVector<DilloLinkImage*> *images;
    dw::ImageMapsList maps;
-
-   int32_t link_color;
-   int32_t visited_color;
 
 private:
    void freeParseData();
