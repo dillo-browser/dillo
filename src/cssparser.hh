@@ -51,7 +51,6 @@ typedef struct {
 void        a_Css_parse                       (CssContext *context,
                                                const char *buf,
                                                int buflen,
-                                               int order_count,
                                                CssOrigin origin);
 
 CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen);

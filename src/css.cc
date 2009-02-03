@@ -467,7 +467,7 @@ void CssContext::buildUserAgentStyle () {
      "th {font-weight: bolder; text-align: center}"
      "code, tt, pre, samp, kbd {font-family: monospace}";
 
-   a_Css_parse (this, cssBuf, strlen (cssBuf), 0, CSS_ORIGIN_USER_AGENT);
+   a_Css_parse (this, cssBuf, strlen (cssBuf), CSS_ORIGIN_USER_AGENT);
 }
 
 void CssContext::buildUserStyle () {
@@ -475,7 +475,7 @@ void CssContext::buildUserStyle () {
    char *filename = dStrconcat(dGethomedir(), "/.dillo/style.css", NULL);
 
    if ((style = a_Misc_file2dstr(filename))) {
-      a_Css_parse (this, style->str, style->len, 0, CSS_ORIGIN_USER);
+      a_Css_parse (this, style->str, style->len, CSS_ORIGIN_USER);
       dStr_free (style, 1);
    }
    dFree (filename);

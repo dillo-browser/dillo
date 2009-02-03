@@ -45,7 +45,7 @@ class StyleEngine : public Doctree {
             return NULL;
       };
 
-      void parse (const char *buf, int buflen, int order_count, CssOrigin origin);
+      void parse (const char *buf, int buflen, CssOrigin origin);
       void startElement (int tag);
       void setId (const char *id);
       void setClass (const char *klass);
