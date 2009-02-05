@@ -157,7 +157,8 @@ class CssProperty {
          CSS_FONT_WEIGHT_MAX = 900,
       } FontWeightExtensions;
 
-      Name name;
+      short name;
+      short type;
       Value value;
 
       inline void free () {

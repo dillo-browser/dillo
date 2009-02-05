@@ -46,7 +46,7 @@ void CssPropertyList::set (CssProperty::Name name, CssProperty::Value value) {
 
 void CssPropertyList::apply (CssPropertyList *props) {
    for (int i = 0; i < size (); i++)
-      props->set (getRef (i)->name, getRef (i)->value);
+      props->set ((CssProperty::Name) getRef (i)->name, getRef (i)->value);
 }
 
 void CssPropertyList::print () {
