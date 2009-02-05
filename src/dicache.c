@@ -19,7 +19,6 @@
 #include "imgbuf.hh"
 #include "web.hh"
 #include "dicache.h"
-#include "cache.h"
 #include "dpng.h"
 #include "dgif.h"
 #include "djpeg.h"
