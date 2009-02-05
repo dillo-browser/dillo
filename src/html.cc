@@ -340,7 +340,7 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
             style_attrs.textAlignChar = '.';
       }
 #endif
-      props->set (CssProperty::CSS_PROPERTY_TEXT_ALIGN, textAlignType);
+      props->set (CSS_PROPERTY_TEXT_ALIGN, textAlignType);
    }
 }
 
@@ -364,7 +364,7 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
       else
          valign = VALIGN_MIDDLE;
 
-      props->set (CssProperty::CSS_PROPERTY_VERTICAL_ALIGN, valign);
+      props->set (CSS_PROPERTY_VERTICAL_ALIGN, valign);
       return true;
    } else
       return false;
@@ -1700,12 +1700,12 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
       if (color == 0xffffff && !prefs.allow_white_bg)
          color = prefs.bg_color;
       S_TOP(html)->current_bg_color = color;
-      props.set (CssProperty::CSS_PROPERTY_BACKGROUND_COLOR, color);
+      props.set (CSS_PROPERTY_BACKGROUND_COLOR, color);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "text"))) {
       color = a_Html_color_parse(html, attrbuf, prefs.text_color);
-      props.set (CssProperty::CSS_PROPERTY_COLOR, color);
+      props.set (CSS_PROPERTY_COLOR, color);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))
@@ -1790,7 +1790,7 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setPseudoLink ();
    }
 
-   props.set (CssProperty::PROPERTY_X_LINK, Html_set_new_link(html, &url));
+   props.set (PROPERTY_X_LINK, Html_set_new_link(html, &url));
    html->styleEngine->setNonCssHints (&props);
 
    textblock->addParbreak (5, html->styleEngine->wordStyle ());
@@ -1888,12 +1888,12 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
          color = a_Html_color_parse(html, attrbuf, -1);
       }
       if (color != -1)
-         props.set (CssProperty::CSS_PROPERTY_COLOR, color);
+         props.set (CSS_PROPERTY_COLOR, color);
    }
 
 // \todo reenable font face handling when font selection is implemented
 //   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "face")))
-//      props.set (CssProperty::CSS_PROPERTY_FONT_FAMILY, attrbuf);
+//      props.set (CSS_PROPERTY_FONT_FAMILY, attrbuf);
 
    html->styleEngine->setNonCssHints (&props);
 }
@@ -1978,9 +1978,9 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
       MSG("a_Html_add_new_image: suspicious image size request %dx%d\n", w, h);
    } else {
       if (CSS_LENGTH_TYPE(l_w) != CSS_LENGTH_TYPE_AUTO)
-         props.set (CssProperty::CSS_PROPERTY_WIDTH, l_w);
+         props.set (CSS_PROPERTY_WIDTH, l_w);
       if (CSS_LENGTH_TYPE(l_h) != CSS_LENGTH_TYPE_AUTO)
-         props.set (CssProperty::CSS_PROPERTY_HEIGHT, l_h);
+         props.set (CSS_PROPERTY_HEIGHT, l_h);
    }
 
    /* TODO: we should scale the image respecting its ratio.
@@ -1995,8 +1995,8 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
       space = strtol(attrbuf, NULL, 10);
       if (space > 0) {
          space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         props.set (CssProperty::CSS_PROPERTY_MARGIN_LEFT, space);
-         props.set (CssProperty::CSS_PROPERTY_MARGIN_RIGHT, space);
+         props.set (CSS_PROPERTY_MARGIN_LEFT, space);
+         props.set (CSS_PROPERTY_MARGIN_RIGHT, space);
       }
    }
 
@@ -2005,8 +2005,8 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
       space = strtol(attrbuf, NULL, 10);
       if (space > 0) {
          space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         props.set (CssProperty::CSS_PROPERTY_MARGIN_TOP, space);
-         props.set (CssProperty::CSS_PROPERTY_MARGIN_BOTTOM, space);
+         props.set (CSS_PROPERTY_MARGIN_TOP, space);
+         props.set (CSS_PROPERTY_MARGIN_BOTTOM, space);
       }
    }
 
@@ -2015,22 +2015,22 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
       border = strtol(attrbuf, NULL, 10);
       if (border >= 0) {
          border = CSS_CREATE_LENGTH(border, CSS_LENGTH_TYPE_PX);
-         props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, border);
-         props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, border);
-         props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, border);
-         props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, border);
+         props.set (CSS_PROPERTY_BORDER_TOP_WIDTH, border);
+         props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH, border);
+         props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH, border);
+         props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH, border);
 
-         props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE, BORDER_SOLID);
-         props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+         props.set (CSS_PROPERTY_BORDER_TOP_STYLE, BORDER_SOLID);
+         props.set (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
                     BORDER_SOLID);
-         props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE, BORDER_SOLID);
-         props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE,BORDER_SOLID);
+         props.set (CSS_PROPERTY_BORDER_LEFT_STYLE, BORDER_SOLID);
+         props.set (CSS_PROPERTY_BORDER_RIGHT_STYLE,BORDER_SOLID);
       }
    }
 
    /* x_img is an index to a list of {url,image} pairs.
     * We know Html_add_new_linkimage() will use size() as its next index */
-   props.set (CssProperty::PROPERTY_X_IMG, html->images->size());
+   props.set (PROPERTY_X_IMG, html->images->size());
 
    html->styleEngine->setNonCssHints(&props);
 
@@ -2294,7 +2294,7 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
          html->styleEngine->setPseudoLink ();
       }
    
-      props.set(CssProperty::PROPERTY_X_LINK, Html_set_new_link(html, &url));
+      props.set(PROPERTY_X_LINK, Html_set_new_link(html, &url));
       html->styleEngine->setNonCssHints (&props);
 
       DW2TB(html->dw)->addText("[OBJECT]", html->styleEngine->wordStyle ());
@@ -2368,14 +2368,14 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
          html->InVisitedLink = true;
          html->styleEngine->setPseudoVisited ();
          if (html->visited_color != -1)
-            props.set (CssProperty::CSS_PROPERTY_COLOR, html->visited_color);
+            props.set (CSS_PROPERTY_COLOR, html->visited_color);
       } else {
          html->styleEngine->setPseudoLink ();
          if (html->link_color != -1)
-            props.set (CssProperty::CSS_PROPERTY_COLOR, html->link_color);
+            props.set (CSS_PROPERTY_COLOR, html->link_color);
       }
 
-      props.set (CssProperty::PROPERTY_X_LINK, Html_set_new_link(html, &url));
+      props.set (PROPERTY_X_LINK, Html_set_new_link(html, &url));
 
       html->styleEngine->setNonCssHints (&props);
    }
@@ -2456,7 +2456,7 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
          /* invalid value */
          list_style_type = LIST_STYLE_TYPE_DISC;
 
-      props.set(CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, list_style_type);
+      props.set(CSS_PROPERTY_LIST_STYLE_TYPE, list_style_type);
       html->styleEngine->setNonCssHints (&props);
    } 
 
@@ -2515,7 +2515,7 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
       else if (*attrbuf == 'I')
          listStyleType = LIST_STYLE_TYPE_UPPER_ROMAN;
 
-      props.set (CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE, listStyleType);
+      props.set (CSS_PROPERTY_LIST_STYLE_TYPE, listStyleType);
       html->styleEngine->setNonCssHints (&props);
    }
 
@@ -2609,7 +2609,7 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
   
    width_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "width", NULL);
    if (width_ptr) {
-      props.set (CssProperty::CSS_PROPERTY_WIDTH, 
+      props.set (CSS_PROPERTY_WIDTH, 
          a_Html_parse_length (html, width_ptr));
       dFree(width_ptr);
    }
@@ -2621,10 +2621,10 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
   
    /* TODO: evaluate attribute */
    if (a_Html_get_attr(html, tag, tagsize, "noshade")) {
-      props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE, BORDER_SOLID);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE, BORDER_SOLID);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE, BORDER_SOLID);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE, BORDER_SOLID);
+      props.set (CSS_PROPERTY_BORDER_TOP_STYLE, BORDER_SOLID);
+      props.set (CSS_PROPERTY_BORDER_BOTTOM_STYLE, BORDER_SOLID);
+      props.set (CSS_PROPERTY_BORDER_LEFT_STYLE, BORDER_SOLID);
+      props.set (CSS_PROPERTY_BORDER_RIGHT_STYLE, BORDER_SOLID);
 
       if (size <= 0)
          size = 1;
@@ -2633,10 +2633,10 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
    if (size > 0) { 
       CssLength size_top = CSS_CREATE_LENGTH ((size+1)/2, CSS_LENGTH_TYPE_PX);
       CssLength size_bottom = CSS_CREATE_LENGTH (size / 2, CSS_LENGTH_TYPE_PX);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH, size_top);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH, size_top);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH, size_bottom);
-      props.set (CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH, size_bottom);
+      props.set (CSS_PROPERTY_BORDER_TOP_WIDTH, size_top);
+      props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH, size_top);
+      props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH, size_bottom);
+      props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH, size_bottom);
    }
 
    DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());

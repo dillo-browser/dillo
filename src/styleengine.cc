@@ -32,7 +32,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = prefs.font_sans_serif;
    font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
-   font_attrs.weight = CssProperty::CSS_FONT_WEIGHT_NORMAL;
+   font_attrs.weight = CSS_FONT_WEIGHT_NORMAL;
    font_attrs.style = FONT_STYLE_NORMAL;
  
    style_attrs.initValues ();
@@ -169,7 +169,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       CssProperty *p = props->getRef (i);
       
       switch (p->name) {
-         case CssProperty::CSS_PROPERTY_FONT_FAMILY:
+         case CSS_PROPERTY_FONT_FAMILY:
             // \todo handle comma separated lists of font names
             if (strcmp (p->value.strVal, "serif") == 0)
                fontAttrs.name = prefs.font_serif;
@@ -184,30 +184,30 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             else
                fontAttrs.name = p->value.strVal;
             break;
-         case CssProperty::CSS_PROPERTY_FONT_SIZE:
+         case CSS_PROPERTY_FONT_SIZE:
             parentFont = stack->get (stack->size () - 2).style->font;
             computeValue (&fontAttrs.size, p->value.intVal, parentFont,
                parentFont->size);
             break;
-         case CssProperty::CSS_PROPERTY_FONT_STYLE:
+         case CSS_PROPERTY_FONT_STYLE:
             fontAttrs.style = (FontStyle) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_FONT_WEIGHT:
+         case CSS_PROPERTY_FONT_WEIGHT:
             switch (p->value.intVal) {
-               case CssProperty::CSS_FONT_WEIGHT_LIGHTER:
-                  fontAttrs.weight -= CssProperty::CSS_FONT_WEIGHT_STEP;
+               case CSS_FONT_WEIGHT_LIGHTER:
+                  fontAttrs.weight -= CSS_FONT_WEIGHT_STEP;
                   break;
-               case CssProperty::CSS_FONT_WEIGHT_BOLDER:
-                  fontAttrs.weight += CssProperty::CSS_FONT_WEIGHT_STEP;
+               case CSS_FONT_WEIGHT_BOLDER:
+                  fontAttrs.weight += CSS_FONT_WEIGHT_STEP;
                   break;
                default:
                   fontAttrs.weight = p->value.intVal;
                   break;
             }
-            if (fontAttrs.weight < CssProperty::CSS_FONT_WEIGHT_MIN)
-               fontAttrs.weight = CssProperty::CSS_FONT_WEIGHT_MIN;
-            if (fontAttrs.weight > CssProperty::CSS_FONT_WEIGHT_MAX)
-               fontAttrs.weight = CssProperty::CSS_FONT_WEIGHT_MAX;
+            if (fontAttrs.weight < CSS_FONT_WEIGHT_MIN)
+               fontAttrs.weight = CSS_FONT_WEIGHT_MIN;
+            if (fontAttrs.weight > CSS_FONT_WEIGHT_MAX)
+               fontAttrs.weight = CSS_FONT_WEIGHT_MAX;
             break;
          default:
             break;
@@ -221,109 +221,109 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       
       switch (p->name) {
          /* \todo missing cases */
-         case CssProperty::CSS_PROPERTY_BACKGROUND_COLOR:
+         case CSS_PROPERTY_BACKGROUND_COLOR:
             attrs->backgroundColor =
                Color::create (layout, p->value.intVal);
             break; 
-         case CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR:
+         case CSS_PROPERTY_BORDER_TOP_COLOR:
             attrs->borderColor.top =
               Color::create (layout, p->value.intVal);
             break; 
-         case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR:
+         case CSS_PROPERTY_BORDER_BOTTOM_COLOR:
             attrs->borderColor.bottom =
               Color::create (layout, p->value.intVal);
             break; 
-         case CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR:
+         case CSS_PROPERTY_BORDER_LEFT_COLOR:
             attrs->borderColor.left =
               Color::create (layout, p->value.intVal);
             break; 
-         case CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR:
+         case CSS_PROPERTY_BORDER_RIGHT_COLOR:
             attrs->borderColor.right =
               Color::create (layout, p->value.intVal);
             break; 
-         case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE:
+         case CSS_PROPERTY_BORDER_BOTTOM_STYLE:
             attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE:
+         case CSS_PROPERTY_BORDER_LEFT_STYLE:
             attrs->borderStyle.left = (BorderStyle) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE:
+         case CSS_PROPERTY_BORDER_RIGHT_STYLE:
             attrs->borderStyle.right = (BorderStyle) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE:
+         case CSS_PROPERTY_BORDER_TOP_STYLE:
             attrs->borderStyle.top = (BorderStyle) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH:
+         case CSS_PROPERTY_BORDER_BOTTOM_WIDTH:
             computeValue (&attrs->borderWidth.bottom, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH:
+         case CSS_PROPERTY_BORDER_LEFT_WIDTH:
             computeValue (&attrs->borderWidth.left, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH:
+         case CSS_PROPERTY_BORDER_RIGHT_WIDTH:
             computeValue (&attrs->borderWidth.right, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH:
+         case CSS_PROPERTY_BORDER_TOP_WIDTH:
             computeValue (&attrs->borderWidth.top, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_BORDER_SPACING:
+         case CSS_PROPERTY_BORDER_SPACING:
             computeValue (&attrs->hBorderSpacing, p->value.intVal, attrs->font);
             computeValue (&attrs->vBorderSpacing, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_COLOR:
+         case CSS_PROPERTY_COLOR:
             attrs->color = Color::create (layout, p->value.intVal);
             break; 
-         case CssProperty::CSS_PROPERTY_CURSOR:
+         case CSS_PROPERTY_CURSOR:
             attrs->cursor = (Cursor) p->value.intVal;
             break; 
-         case CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE:
+         case CSS_PROPERTY_LIST_STYLE_TYPE:
             attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_MARGIN_BOTTOM:
+         case CSS_PROPERTY_MARGIN_BOTTOM:
             computeValue (&attrs->margin.bottom, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_MARGIN_LEFT:
+         case CSS_PROPERTY_MARGIN_LEFT:
             computeValue (&attrs->margin.left, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_MARGIN_RIGHT:
+         case CSS_PROPERTY_MARGIN_RIGHT:
             computeValue (&attrs->margin.right, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_MARGIN_TOP:
+         case CSS_PROPERTY_MARGIN_TOP:
             computeValue (&attrs->margin.top, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_PADDING_TOP:
+         case CSS_PROPERTY_PADDING_TOP:
             computeValue (&attrs->padding.top, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_PADDING_BOTTOM:
+         case CSS_PROPERTY_PADDING_BOTTOM:
             computeValue (&attrs->padding.bottom, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_PADDING_LEFT:
+         case CSS_PROPERTY_PADDING_LEFT:
             computeValue (&attrs->padding.left, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_PADDING_RIGHT:
+         case CSS_PROPERTY_PADDING_RIGHT:
             computeValue (&attrs->padding.right, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_TEXT_ALIGN:
+         case CSS_PROPERTY_TEXT_ALIGN:
             attrs->textAlign = (TextAlignType) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_TEXT_DECORATION:
+         case CSS_PROPERTY_TEXT_DECORATION:
             attrs->textDecoration |= p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_VERTICAL_ALIGN:
+         case CSS_PROPERTY_VERTICAL_ALIGN:
             attrs->valign = (VAlignType) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_WHITE_SPACE:
+         case CSS_PROPERTY_WHITE_SPACE:
             attrs->whiteSpace = (WhiteSpace) p->value.intVal;
             break;
-         case CssProperty::CSS_PROPERTY_WIDTH:
+         case CSS_PROPERTY_WIDTH:
             computeLength (&attrs->width, p->value.intVal, attrs->font);
             break;
-         case CssProperty::CSS_PROPERTY_HEIGHT:
+         case CSS_PROPERTY_HEIGHT:
             computeLength (&attrs->height, p->value.intVal, attrs->font);
             break;
-         case CssProperty::PROPERTY_X_LINK:
+         case PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
             break;
-         case CssProperty::PROPERTY_X_IMG:
+         case PROPERTY_X_IMG:
             attrs->x_img = p->value.intVal;
             break;
 

@@ -84,7 +84,7 @@ static const char *const Css_white_space_vals[] = {
    "normal", "pre", "nowrap", NULL
 };
 
-const CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST] = {
+const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"background-attachment", CSS_TYPE_UNUSED, NULL},
    {"background-color", CSS_TYPE_COLOR, NULL},
    {"background-image", CSS_TYPE_UNUSED, NULL},
@@ -183,124 +183,124 @@ typedef struct {
       CSS_SHORTHAND_BORDER,     /* special, used for 'border' */
       CSS_SHORTHAND_FONT,       /* special, used for 'font' */
    } type;
-   const CssProperty::Name * properties;/* CSS_SHORTHAND_MULTIPLE:
-                                         *   must be terminated by -1
-                                         * CSS_SHORTHAND_DIRECTIONS:
-                                         *   must have length 4
-                                         * CSS_SHORTHAND_BORDERS:
-                                         *   must have length 12
-                                         * CSS_SHORTHAND_FONT:
-                                         *   unused */
+   const CssPropertyName * properties;/* CSS_SHORTHAND_MULTIPLE:
+                                       *   must be terminated by -1
+                                       * CSS_SHORTHAND_DIRECTIONS:
+                                       *   must have length 4
+                                       * CSS_SHORTHAND_BORDERS:
+                                       *   must have length 12
+                                       * CSS_SHORTHAND_FONT:
+                                       *   unused */
 } CssShorthandInfo;
 
-const CssProperty::Name Css_background_properties[] = {
-   CssProperty::CSS_PROPERTY_BACKGROUND_COLOR,
-   CssProperty::CSS_PROPERTY_BACKGROUND_IMAGE,
-   CssProperty::CSS_PROPERTY_BACKGROUND_REPEAT,
-   CssProperty::CSS_PROPERTY_BACKGROUND_ATTACHMENT,
-   CssProperty::CSS_PROPERTY_BACKGROUND_POSITION,
-   (CssProperty::Name) - 1
+const CssPropertyName Css_background_properties[] = {
+   CSS_PROPERTY_BACKGROUND_COLOR,
+   CSS_PROPERTY_BACKGROUND_IMAGE,
+   CSS_PROPERTY_BACKGROUND_REPEAT,
+   CSS_PROPERTY_BACKGROUND_ATTACHMENT,
+   CSS_PROPERTY_BACKGROUND_POSITION,
+   (CssPropertyName) - 1
 };
 
-const CssProperty::Name Css_border_bottom_properties[] = {
-   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR,
-   (CssProperty::Name) - 1
+const CssPropertyName Css_border_bottom_properties[] = {
+   CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+   CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+   CSS_PROPERTY_BORDER_BOTTOM_COLOR,
+   (CssPropertyName) - 1
 };
 
-const CssProperty::Name Css_border_color_properties[4] = {
-   CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR,
-   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR,
-   CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR,
-   CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR
+const CssPropertyName Css_border_color_properties[4] = {
+   CSS_PROPERTY_BORDER_TOP_COLOR,
+   CSS_PROPERTY_BORDER_BOTTOM_COLOR,
+   CSS_PROPERTY_BORDER_LEFT_COLOR,
+   CSS_PROPERTY_BORDER_RIGHT_COLOR
 };
 
-const CssProperty::Name Css_border_left_properties[] = {
-   CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR,
-   (CssProperty::Name) - 1
+const CssPropertyName Css_border_left_properties[] = {
+   CSS_PROPERTY_BORDER_LEFT_WIDTH,
+   CSS_PROPERTY_BORDER_LEFT_STYLE,
+   CSS_PROPERTY_BORDER_LEFT_COLOR,
+   (CssPropertyName) - 1
 };
 
-const CssProperty::Name Css_border_right_properties[] = {
-   CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR,
-   (CssProperty::Name) - 1
+const CssPropertyName Css_border_right_properties[] = {
+   CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+   CSS_PROPERTY_BORDER_RIGHT_STYLE,
+   CSS_PROPERTY_BORDER_RIGHT_COLOR,
+   (CssPropertyName) - 1
 };
 
-const CssProperty::Name Css_border_style_properties[] = {
-   CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE
+const CssPropertyName Css_border_style_properties[] = {
+   CSS_PROPERTY_BORDER_TOP_STYLE,
+   CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+   CSS_PROPERTY_BORDER_LEFT_STYLE,
+   CSS_PROPERTY_BORDER_RIGHT_STYLE
 };
 
-const CssProperty::Name Css_border_top_properties[] = {
-   CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR,
-   (CssProperty::Name) - 1
+const CssPropertyName Css_border_top_properties[] = {
+   CSS_PROPERTY_BORDER_TOP_WIDTH,
+   CSS_PROPERTY_BORDER_TOP_STYLE,
+   CSS_PROPERTY_BORDER_TOP_COLOR,
+   (CssPropertyName) - 1
 };
 
-const CssProperty::Name Css_border_width_properties[] = {
-   CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH
+const CssPropertyName Css_border_width_properties[] = {
+   CSS_PROPERTY_BORDER_TOP_WIDTH,
+   CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+   CSS_PROPERTY_BORDER_LEFT_WIDTH,
+   CSS_PROPERTY_BORDER_RIGHT_WIDTH
 };
 
-const CssProperty::Name Css_list_style_properties[] = {
-   CssProperty::CSS_PROPERTY_LIST_STYLE_TYPE,
-   CssProperty::CSS_PROPERTY_LIST_STYLE_POSITION,
-   CssProperty::CSS_PROPERTY_LIST_STYLE_IMAGE,
-   (CssProperty::Name) - 1
+const CssPropertyName Css_list_style_properties[] = {
+   CSS_PROPERTY_LIST_STYLE_TYPE,
+   CSS_PROPERTY_LIST_STYLE_POSITION,
+   CSS_PROPERTY_LIST_STYLE_IMAGE,
+   (CssPropertyName) - 1
 };
 
-const CssProperty::Name Css_margin_properties[] = {
-   CssProperty::CSS_PROPERTY_MARGIN_TOP,
-   CssProperty::CSS_PROPERTY_MARGIN_BOTTOM,
-   CssProperty::CSS_PROPERTY_MARGIN_LEFT,
-   CssProperty::CSS_PROPERTY_MARGIN_RIGHT
+const CssPropertyName Css_margin_properties[] = {
+   CSS_PROPERTY_MARGIN_TOP,
+   CSS_PROPERTY_MARGIN_BOTTOM,
+   CSS_PROPERTY_MARGIN_LEFT,
+   CSS_PROPERTY_MARGIN_RIGHT
 };
 
-const CssProperty::Name Css_outline_properties[] = {
-   CssProperty::CSS_PROPERTY_OUTLINE_COLOR,
-   CssProperty::CSS_PROPERTY_OUTLINE_STYLE,
-   CssProperty::CSS_PROPERTY_OUTLINE_WIDTH,
-   (CssProperty::Name) - 1
+const CssPropertyName Css_outline_properties[] = {
+   CSS_PROPERTY_OUTLINE_COLOR,
+   CSS_PROPERTY_OUTLINE_STYLE,
+   CSS_PROPERTY_OUTLINE_WIDTH,
+   (CssPropertyName) - 1
 };
 
-const CssProperty::Name Css_padding_properties[] = {
-   CssProperty::CSS_PROPERTY_PADDING_TOP,
-   CssProperty::CSS_PROPERTY_PADDING_BOTTOM,
-   CssProperty::CSS_PROPERTY_PADDING_LEFT,
-   CssProperty::CSS_PROPERTY_PADDING_RIGHT
+const CssPropertyName Css_padding_properties[] = {
+   CSS_PROPERTY_PADDING_TOP,
+   CSS_PROPERTY_PADDING_BOTTOM,
+   CSS_PROPERTY_PADDING_LEFT,
+   CSS_PROPERTY_PADDING_RIGHT
 };
 
-const CssProperty::Name Css_border_properties[] = {
-   CssProperty::CSS_PROPERTY_BORDER_TOP_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_TOP_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_TOP_COLOR,
-   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_BOTTOM_COLOR,
-   CssProperty::CSS_PROPERTY_BORDER_LEFT_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_LEFT_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_LEFT_COLOR,
-   CssProperty::CSS_PROPERTY_BORDER_RIGHT_WIDTH,
-   CssProperty::CSS_PROPERTY_BORDER_RIGHT_STYLE,
-   CssProperty::CSS_PROPERTY_BORDER_RIGHT_COLOR
+const CssPropertyName Css_border_properties[] = {
+   CSS_PROPERTY_BORDER_TOP_WIDTH,
+   CSS_PROPERTY_BORDER_TOP_STYLE,
+   CSS_PROPERTY_BORDER_TOP_COLOR,
+   CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+   CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+   CSS_PROPERTY_BORDER_BOTTOM_COLOR,
+   CSS_PROPERTY_BORDER_LEFT_WIDTH,
+   CSS_PROPERTY_BORDER_LEFT_STYLE,
+   CSS_PROPERTY_BORDER_LEFT_COLOR,
+   CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+   CSS_PROPERTY_BORDER_RIGHT_STYLE,
+   CSS_PROPERTY_BORDER_RIGHT_COLOR
 };
 
-const CssProperty::Name Css_font_properties[] = {
-   CssProperty::CSS_PROPERTY_FONT_SIZE,
-   CssProperty::CSS_PROPERTY_FONT_STYLE,
-   CssProperty::CSS_PROPERTY_FONT_VARIANT,
-   CssProperty::CSS_PROPERTY_FONT_WEIGHT,
-   CssProperty::CSS_PROPERTY_FONT_FAMILY,
-   (CssProperty::Name) - 1
+const CssPropertyName Css_font_properties[] = {
+   CSS_PROPERTY_FONT_SIZE,
+   CSS_PROPERTY_FONT_STYLE,
+   CSS_PROPERTY_FONT_VARIANT,
+   CSS_PROPERTY_FONT_WEIGHT,
+   CSS_PROPERTY_FONT_FAMILY,
+   (CssPropertyName) - 1
 };
 
 static const CssShorthandInfo Css_shorthand_info[] = {
@@ -545,7 +545,7 @@ static void Css_next_token(CssParser * parser)
 
 
 static bool Css_token_matches_property(CssParser * parser,
-                                       CssProperty::Name prop)
+                                       CssPropertyName prop)
 {
    int i, err = 1;
 
@@ -615,8 +615,8 @@ static bool Css_token_matches_property(CssParser * parser,
 }
 
 static bool Css_parse_value(CssParser * parser,
-                            CssProperty::Name prop,
-                            CssProperty::Value * val)
+                            CssPropertyName prop,
+                            CssPropertyValue * val)
 {
    int i, lentype;
    bool found, ret = false;
@@ -755,13 +755,13 @@ static bool Css_parse_value(CssParser * parser,
             ival = 0;
       } else if (parser->ttype == CSS_TK_SYMBOL) {
          if (dStrcasecmp(parser->tval, "normal") == 0)
-            ival = CssProperty::CSS_FONT_WEIGHT_NORMAL;
+            ival = CSS_FONT_WEIGHT_NORMAL;
          if (dStrcasecmp(parser->tval, "bold") == 0)
-            ival = CssProperty::CSS_FONT_WEIGHT_BOLD;
+            ival = CSS_FONT_WEIGHT_BOLD;
          if (dStrcasecmp(parser->tval, "bolder") == 0)
-            ival = CssProperty::CSS_FONT_WEIGHT_BOLDER;
+            ival = CSS_FONT_WEIGHT_BOLDER;
          if (dStrcasecmp(parser->tval, "lighter") == 0)
-            ival = CssProperty::CSS_FONT_WEIGHT_LIGHTER;
+            ival = CSS_FONT_WEIGHT_LIGHTER;
       }
 
       if (ival != 0) {
@@ -824,8 +824,8 @@ static void Css_parse_declaration(CssParser * parser,
    CssPropertyInfo pi, *pip;
    CssShorthandInfo si, *sip;
 
-   CssProperty::Name prop;
-   CssProperty::Value val, dir_vals[4];
+   CssPropertyName prop;
+   CssPropertyValue val, dir_vals[4];
    bool found, weight;
    int sh_index, i, j, n;
    int dir_set[4][4] = {
@@ -843,7 +843,7 @@ static void Css_parse_declaration(CssParser * parser,
                                       sizeof(CssPropertyInfo),
                                       Css_property_info_cmp);
       if (pip) {
-         prop = (CssProperty::Name) (pip - Css_property_info);
+         prop = (CssPropertyName) (pip - Css_property_info);
          Css_next_token(parser);
          if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ':') {
             Css_next_token(parser);

@@ -6,7 +6,7 @@
 /* The last three ones are never parsed. */
 #define CSS_NUM_INTERNAL_PROPERTIES 3
 #define CSS_NUM_PARSED_PROPERTIES \
-   (CssProperty::CSS_PROPERTY_LAST - CSS_NUM_INTERNAL_PROPERTIES)
+   (CSS_PROPERTY_LAST - CSS_NUM_INTERNAL_PROPERTIES)
 
 
 typedef enum {
@@ -55,6 +55,6 @@ void        a_Css_parse                       (CssContext *context,
 
 CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen);
 
-extern const CssPropertyInfo Css_property_info[CssProperty::CSS_PROPERTY_LAST];
+extern const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST];
 
 #endif // __CSS_H__
