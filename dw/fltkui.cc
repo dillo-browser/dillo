@@ -36,7 +36,6 @@
 #include <fltk/CheckButton.h>
 #include <fltk/Choice.h>
 #include <fltk/Browser.h>
-#include <fltk/MultiBrowser.h>
 #include <fltk/Font.h>
 #include <fltk/draw.h>
 #include <fltk/Symbol.h>
@@ -1226,10 +1225,12 @@ bool FltkOptionMenuResource::isSelected (int index)
 
 FltkListResource::FltkListResource (FltkPlatform *platform,
                                     core::ui::ListResource::SelectionMode
-                                    selectionMode):
+                                    selectionMode, int rowCount):
    FltkSelectionResource <dw::core::ui::ListResource> (platform),
    itemsSelected(8)
 {
+   mode = selectionMode;
+   showRows = rowCount;
    init (platform);
 }
 
@@ -1241,9 +1242,10 @@ FltkListResource::~FltkListResource ()
 ::fltk::Menu *FltkListResource::createNewMenu (core::Allocation *allocation)
 {
    ::fltk::Menu *menu =
-      new ::fltk::MultiBrowser (allocation->x, allocation->y,
-                                allocation->width,
-                                allocation->ascent + allocation->descent);
+      new ::fltk::Browser (allocation->x, allocation->y, allocation->width,
+                           allocation->ascent + allocation->descent);
+   if (mode == SELECTION_MULTIPLE)
+      menu->type(::fltk::Browser::MULTI);
    menu->set_flag (::fltk::RAW_LABEL);
    menu->callback(widgetCallback,this);
    menu->when(::fltk::WHEN_CHANGED);
@@ -1253,7 +1255,9 @@ FltkListResource::~FltkListResource ()
 void FltkListResource::widgetCallback (::fltk::Widget *widget, void *data)
 {
    ::fltk::Widget *fltkItem = ((::fltk::Menu *) widget)->item ();
-   int index = (long) (fltkItem->user_data ());
+   int index = -1;
+   if (fltkItem)
+      index = (long) (fltkItem->user_data ());
    if (index > -1) {
       bool selected = fltkItem->selected ();
       ((FltkListResource *) data)->itemsSelected.set (index, selected);
@@ -1275,13 +1279,19 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
-      int maxStringWidth = getMaxStringWidth ();
-      requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
-      requisition->descent =
-         (getNumberOfItems () - 1) * (font->ascent) + font->descent;
-      requisition->width = maxStringWidth
-         + (font->ascent + font->descent) * 4 / 5
-         + 2 * RELIEF_X_THICKNESS;
+      int rows = getNumberOfItems();
+      if (showRows < rows) {
+         rows = showRows;
+      }
+      /*
+       * The widget sometimes shows scrollbars when they are not required.
+       * The following values try to keep any scrollbars from obscuring
+       * options, at the cost of showing too much whitespace at times.
+       */
+      requisition->width = getMaxStringWidth() + 24;
+      requisition->ascent = font->ascent + 2;
+      requisition->descent = font->descent + 3 +
+                             (rows - 1) * (font->ascent + font->descent + 1);
    } else {
       requisition->width = 1;
       requisition->ascent = 1;

@@ -538,10 +538,12 @@ protected:
 private:
    static void widgetCallback (::fltk::Widget *widget, void *data);
    misc::SimpleVector <bool> itemsSelected;
-
+   int showRows;
+   ListResource::SelectionMode mode;
 public:
    FltkListResource (FltkPlatform *platform,
-                     core::ui::ListResource::SelectionMode selectionMode);
+                     core::ui::ListResource::SelectionMode selectionMode,
+                     int rows);
    ~FltkListResource ();
 
    void addItem (const char *str, bool enabled, bool selected);

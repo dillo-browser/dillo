@@ -72,7 +72,7 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor = NULL;
 
    SelectionResource *res = layout->getResourceFactory()->createListResource
-      (ListResource::SELECTION_AT_MOST_ONE);
+      (ListResource::SELECTION_AT_MOST_ONE, 4);
    //SelectionResource *res =
    //   layout->getResourceFactory()->createOptionMenuResource ();
    
