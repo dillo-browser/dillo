@@ -186,8 +186,42 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CSS_PROPERTY_FONT_SIZE:
             parentFont = stack->get (stack->size () - 2).style->font;
-            computeValue (&fontAttrs.size, p->value.intVal, parentFont,
-               parentFont->size);
+            if (p->type == CSS_TYPE_ENUM) {
+               switch (p->value.intVal) {
+                  case CSS_FONT_SIZE_XX_SMALL:
+                     fontAttrs.size = (int) (11.0 * prefs.font_factor + 0.5);
+                     break;
+                  case CSS_FONT_SIZE_X_SMALL:
+                     fontAttrs.size = (int) (12.0 * prefs.font_factor + 0.5);
+                     break;
+                  case CSS_FONT_SIZE_SMALL:
+                     fontAttrs.size = (int) (13.0 * prefs.font_factor + 0.5);
+                     break;
+                  case CSS_FONT_SIZE_MEDIUM:
+                     fontAttrs.size = (int) (14.0 * prefs.font_factor + 0.5);
+                     break;
+                  case CSS_FONT_SIZE_LARGE:
+                     fontAttrs.size = (int) (15.0 * prefs.font_factor + 0.5);
+                     break;
+                  case CSS_FONT_SIZE_X_LARGE:
+                     fontAttrs.size = (int) (16.0 * prefs.font_factor + 0.5);
+                     break;
+                  case CSS_FONT_SIZE_XX_LARGE:
+                     fontAttrs.size = (int) (17.0 * prefs.font_factor + 0.5);
+                     break;
+                  case CSS_FONT_SIZE_SMALLER:
+                     fontAttrs.size -= (int) (1.0 * prefs.font_factor + 0.5);
+                     break;
+                  case CSS_FONT_SIZE_LARGER:
+                     fontAttrs.size += (int) (1.0 * prefs.font_factor + 0.5);
+                     break;
+                  default:
+                     assert(false); // invalid font-size enum
+               }
+            } else {
+               computeValue (&fontAttrs.size, p->value.intVal, parentFont,
+                  parentFont->size);
+            }
             break;
          case CSS_PROPERTY_FONT_STYLE:
             fontAttrs.style = (FontStyle) p->value.intVal;
