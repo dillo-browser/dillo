@@ -18,7 +18,7 @@ typedef enum {
 
 typedef struct {
    const char *symbol;
-   const CssValueType type[2];
+   const CssValueType type[3];
    const char *const *enum_symbols;
 } CssPropertyInfo;
 

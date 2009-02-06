@@ -168,15 +168,11 @@ typedef union {
 } CssPropertyValue;
 
 typedef enum {
-   CSS_FONT_WEIGHT_LIGHTER = -1,
-   CSS_FONT_WEIGHT_BOLDER = -2,
-   CSS_FONT_WEIGHT_STEP = 300,
-   /* Some special font weights. */
-   CSS_FONT_WEIGHT_LIGHT = 100,
-   CSS_FONT_WEIGHT_NORMAL = 400,
-   CSS_FONT_WEIGHT_BOLD = 700,
-   CSS_FONT_WEIGHT_MIN = 100,
-   CSS_FONT_WEIGHT_MAX = 900,
+   CSS_FONT_WEIGHT_BOLD,
+   CSS_FONT_WEIGHT_BOLDER,
+   CSS_FONT_WEIGHT_LIGHT,
+   CSS_FONT_WEIGHT_LIGHTER,
+   CSS_FONT_WEIGHT_NORMAL,
 } CssFontWeightExtensions;
 
 /**

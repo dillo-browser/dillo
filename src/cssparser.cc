@@ -60,6 +60,10 @@ static const char *const Css_font_style_enum_vals[] = {
    "normal", "italic", "oblique", NULL
 };
 
+static const char *const Css_font_weight_enum_vals[] = {
+   "bold", "bolder", "light", "lighter", "normal", NULL
+};
+
 static const char *const Css_list_style_type_enum_vals[] = {
    "disc", "circle", "square", "decimal", "decimal-leading-zero",
    "lower-roman", "upper-roman", "lower-greek", "lower-alpha",
@@ -123,7 +127,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"font-stretch", {CSS_TYPE_UNUSED}, NULL},
    {"font-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_font_style_enum_vals},
    {"font-variant", {CSS_TYPE_UNUSED}, NULL},
-   {"font-weight", {CSS_TYPE_FONT_WEIGHT, CSS_TYPE_UNUSED}, NULL},
+   {"font-weight", {CSS_TYPE_ENUM, CSS_TYPE_FONT_WEIGHT, CSS_TYPE_UNUSED}, Css_font_weight_enum_vals},
    {"height", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"left", {CSS_TYPE_UNUSED}, NULL},
    {"letter-spacing", {CSS_TYPE_UNUSED}, NULL},
@@ -549,7 +553,7 @@ static bool Css_token_matches_property(CssParser * parser,
 {
    int i, err = 1;
 
-   for (int j = 0; j < 2 && Css_property_info[prop].type[j] != CSS_TYPE_UNUSED; j++) {
+   for (int j = 0; Css_property_info[prop].type[j] != CSS_TYPE_UNUSED; j++) {
       if (type)
          *type = Css_property_info[prop].type[j];
 
@@ -610,22 +614,15 @@ static bool Css_token_matches_property(CssParser * parser,
                i = strtol(parser->tval, NULL, 10);
                if (i >= 100 && i <= 900)
                   return true;
-            } else if (parser->ttype == CSS_TK_SYMBOL &&
-                     (dStrcasecmp(parser->tval, "normal") == 0 ||
-                      dStrcasecmp(parser->tval, "bold") == 0 ||
-                      dStrcasecmp(parser->tval, "bolder") == 0 ||
-                      dStrcasecmp(parser->tval, "lighter") == 0))
-               return true;
+            }
             break;
 
          case CSS_TYPE_UNUSED:
-            return false;
-
          case CSS_TYPE_INTEGER:
             /* Not used for parser values. */
          default:
             assert(false);
-            return false;
+            break;
       }
    }
 
@@ -771,15 +768,6 @@ static bool Css_parse_value(CssParser * parser,
          if (ival < 100 || ival > 900)
             /* invalid */
             ival = 0;
-      } else if (parser->ttype == CSS_TK_SYMBOL) {
-         if (dStrcasecmp(parser->tval, "normal") == 0)
-            ival = CSS_FONT_WEIGHT_NORMAL;
-         if (dStrcasecmp(parser->tval, "bold") == 0)
-            ival = CSS_FONT_WEIGHT_BOLD;
-         if (dStrcasecmp(parser->tval, "bolder") == 0)
-            ival = CSS_FONT_WEIGHT_BOLDER;
-         if (dStrcasecmp(parser->tval, "lighter") == 0)
-            ival = CSS_FONT_WEIGHT_LIGHTER;
       }
 
       if (ival != 0) {

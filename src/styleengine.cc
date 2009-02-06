@@ -32,7 +32,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = prefs.font_sans_serif;
    font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
-   font_attrs.weight = CSS_FONT_WEIGHT_NORMAL;
+   font_attrs.weight = 400;
    font_attrs.style = FONT_STYLE_NORMAL;
  
    style_attrs.initValues ();
@@ -193,21 +193,37 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             fontAttrs.style = (FontStyle) p->value.intVal;
             break;
          case CSS_PROPERTY_FONT_WEIGHT:
-            switch (p->value.intVal) {
-               case CSS_FONT_WEIGHT_LIGHTER:
-                  fontAttrs.weight -= CSS_FONT_WEIGHT_STEP;
-                  break;
-               case CSS_FONT_WEIGHT_BOLDER:
-                  fontAttrs.weight += CSS_FONT_WEIGHT_STEP;
-                  break;
-               default:
-                  fontAttrs.weight = p->value.intVal;
-                  break;
+
+            if (p->type == CSS_TYPE_ENUM) {
+               switch (p->value.intVal) {
+                  case CSS_FONT_WEIGHT_BOLD:
+                     fontAttrs.weight = 700;
+                     break;
+                  case CSS_FONT_WEIGHT_BOLDER:
+                     fontAttrs.weight += 300;
+                     break;
+                  case CSS_FONT_WEIGHT_LIGHT:
+                     fontAttrs.weight = 100;
+                     break;
+                  case CSS_FONT_WEIGHT_LIGHTER:
+                     fontAttrs.weight -= 300;
+                     break;
+                  case CSS_FONT_WEIGHT_NORMAL:
+                     fontAttrs.weight = 400;
+                     break;
+                  default:
+                     assert(false); // invalid font weight value
+                     break;
+               }
+            } else {
+               fontAttrs.weight = p->value.intVal;
             }
-            if (fontAttrs.weight < CSS_FONT_WEIGHT_MIN)
-               fontAttrs.weight = CSS_FONT_WEIGHT_MIN;
-            if (fontAttrs.weight > CSS_FONT_WEIGHT_MAX)
-               fontAttrs.weight = CSS_FONT_WEIGHT_MAX;
+
+            if (fontAttrs.weight < 100)
+               fontAttrs.weight = 100;
+            if (fontAttrs.weight > 900)
+               fontAttrs.weight = 900;
+
             break;
          default:
             break;
