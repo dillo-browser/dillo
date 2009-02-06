@@ -3330,7 +3330,7 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
       Html_add_anchor(html, attrbuf);
    }
 
-   if (tagsize >= 10) {       /* length of "<t class=i>" */
+   if (tagsize >= 11) {       /* length of "<t class=i>" */
       attrbuf = Html_get_attr2(html, tag, tagsize, "class",
                                HTML_LeftTrim | HTML_RightTrim);
       if (attrbuf)
