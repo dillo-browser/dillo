@@ -32,13 +32,17 @@ CssPropertyList::~CssPropertyList () {
 
 void CssPropertyList::set (CssPropertyName name, CssValueType type,
                            CssPropertyValue value) {
-   for (int i = 0; i < size (); i++)
-      if (getRef (i)->name == name) {
+   for (int i = 0; i < size (); i++) {
+      CssProperty *prop = getRef (i);
+
+      if (prop->name == name) {
          if (ownerOfStrings)
-            getRef (i)->free ();
-         getRef (i)->value = value;
+            prop->free ();
+         prop->type = type;
+         prop->value = value;
          return;
       }
+   }
 
    increase ();
    getRef (size () - 1)->name = name;

@@ -625,6 +625,7 @@ static bool Css_token_matches_property(CssParser * parser,
       }
    }
 
+   *type = CSS_TYPE_UNUSED;
    return false;
 }
 
