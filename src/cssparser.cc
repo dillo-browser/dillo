@@ -554,8 +554,7 @@ static bool Css_token_matches_property(CssParser * parser,
    int i, err = 1;
 
    for (int j = 0; Css_property_info[prop].type[j] != CSS_TYPE_UNUSED; j++) {
-      if (type)
-         *type = Css_property_info[prop].type[j];
+      *type = Css_property_info[prop].type[j];
 
       switch (Css_property_info[prop].type[j]) {
 
