@@ -95,7 +95,7 @@ int main(int argc, char **argv)
    SelectionResource *selres[2];
    selres[0] = layout->getResourceFactory()->createOptionMenuResource ();
    selres[1] = layout->getResourceFactory()->createListResource
-      (ListResource::SELECTION_AT_MOST_ONE);
+      (ListResource::SELECTION_AT_MOST_ONE, 4);
    LabelButtonResource *buttonres =
       layout->getResourceFactory()->createLabelButtonResource ("Run!");
 

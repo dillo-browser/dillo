@@ -539,7 +539,7 @@ public:
                                                                bool relief)
       = 0;
    virtual ListResource *createListResource (ListResource::SelectionMode
-                                             selectionMode) = 0;
+                                             selectionMode, int rows) = 0;
    virtual OptionMenuResource *createOptionMenuResource () = 0;
    virtual EntryResource *createEntryResource (int maxLength, bool password,
                                                const char *label) = 0;

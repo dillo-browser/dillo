@@ -78,7 +78,8 @@ private:
       core::ui::ComplexButtonResource *
       createComplexButtonResource (core::Widget *widget, bool relief);
       core::ui::ListResource *
-      createListResource (core::ui::ListResource::SelectionMode selectionMode);
+      createListResource (core::ui::ListResource::SelectionMode selectionMode,
+                          int rows);
       core::ui::OptionMenuResource *createOptionMenuResource ();
       core::ui::EntryResource *createEntryResource (int maxLength,
                                                     bool password,

@@ -182,9 +182,9 @@ core::ui::ListResource *
 FltkPlatform::FltkResourceFactory::createListResource (core::ui
                                                        ::ListResource
                                                        ::SelectionMode
-                                                       selectionMode)
+                                                       selectionMode, int rows)
 {
-   return new ui::FltkListResource (platform, selectionMode);
+   return new ui::FltkListResource (platform, selectionMode, rows);
 }
 
 core::ui::OptionMenuResource *

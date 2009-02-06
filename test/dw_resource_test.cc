@@ -40,7 +40,7 @@ int main(int argc, char **argv)
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
 
-   ::fltk::Window *window = new ::fltk::Window(410, 210, "Dw Simple Image");
+   ::fltk::Window *window = new ::fltk::Window(410, 210, "Dw Resource test");
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 410, 210);
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor = NULL;
 
    SelectionResource *res = layout->getResourceFactory()->createListResource
-      (ListResource::SELECTION_AT_MOST_ONE);
+      (ListResource::SELECTION_AT_MOST_ONE, 4);
    //SelectionResource *res =
    //   layout->getResourceFactory()->createOptionMenuResource ();
    

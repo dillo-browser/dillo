@@ -713,8 +713,8 @@ void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
 /* The select tag is quite tricky, because of gorpy html syntax. */
 void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 {
-// const char *attrbuf;
-// int size, type, multi;
+   const char *attrbuf;
+   int rows = 0;
 
    if (html->InFlags & IN_SELECT) {
       BUG_MSG("nested <select>\n");
@@ -727,12 +727,25 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    ResourceFactory *factory = HT2LT(html)->getResourceFactory ();
    DilloHtmlInputType type;
    SelectionResource *res;
-   if (a_Html_get_attr(html, tag, tagsize, "multiple")) {
-      type = DILLO_HTML_INPUT_SEL_LIST;
-      res = factory->createListResource (ListResource::SELECTION_MULTIPLE);
-   } else {
+   bool multi = a_Html_get_attr(html, tag, tagsize, "multiple") != NULL;
+
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size"))) {
+      rows = strtol(attrbuf, NULL, 10);
+      if (rows > 100)
+         rows = 100;
+   }
+   if (rows < 1)
+      rows = multi ? 10 : 1;
+
+   if (rows == 1 && multi == false) {
       type = DILLO_HTML_INPUT_SELECT;
       res = factory->createOptionMenuResource ();
+   } else {
+      type = DILLO_HTML_INPUT_SEL_LIST;
+      res = factory->createListResource (multi ?
+                                         ListResource::SELECTION_MULTIPLE :
+                                         ListResource::SELECTION_EXACTLY_ONE,
+                                         rows);
    }
    Embed *embed = new Embed(res);
 
@@ -747,26 +760,6 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    HTML_SET_TOP_ATTR(html, backgroundColor,
                      Color::createShaded (HT2LT(html), bg));
    DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
-
-// size = 0;
-// if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
-//    size = strtol(attrbuf, NULL, 10);
-//
-// multi = (a_Html_get_attr(html, tag, tagsize, "multiple")) ? 1 : 0;
-// if (size < 1)
-//    size = multi ? 10 : 1;
-//
-// if (size == 1) {
-//    menu = gtk_menu_new();
-//    widget = gtk_option_menu_new();
-//    type = DILLO_HTML_INPUT_SELECT;
-// } else {
-//    menu = gtk_list_new();
-//    widget = menu;
-//    if (multi)
-//       gtk_list_set_selection_mode(GTK_LIST(menu), GTK_SELECTION_MULTIPLE);
-//    type = DILLO_HTML_INPUT_SEL_LIST;
-// }
 
    Html_add_input(html, type, embed, name, NULL, false);
    a_Html_stash_init(html);
