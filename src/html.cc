@@ -456,7 +456,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    InVisitedLink = false;
    ReqTagClose = false;
    TagSoup = true;
-   NameVal = NULL;
 
    Num_HTML = Num_HEAD = Num_BODY = Num_TITLE = 0;
 
@@ -2383,11 +2382,24 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
    html->styleEngine->inheritBackgroundColor ();
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name"))) {
+      char *nameVal;
+      const char *id = html->styleEngine->getId ();
+
       if (prefs.show_extra_warnings)
          Html_check_name_val(html, attrbuf, "name");
-      /* html->NameVal is freed in Html_process_tag */
-      html->NameVal = a_Url_decode_hex_str(attrbuf);
-      Html_add_anchor(html, html->NameVal);
+
+      nameVal = a_Url_decode_hex_str(attrbuf);
+
+      if (nameVal) {
+         /* We compare the "id" value with the url-decoded "name" value */
+         if (!id || strcmp(nameVal, id)) {
+            if (id)
+               BUG_MSG("'id' and 'name' attribute of <a> tag differ\n");
+            Html_add_anchor(html, nameVal);
+         }
+
+         dFree(nameVal);
+      }
    }
 }
 
@@ -3312,21 +3324,10 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
        * spec states in Sec. 7.5.2 that anchor ids are case-sensitive.
        * So we don't do it and hope for better specs in the future ...
        */
-      if (attrbuf)
-         html->styleEngine->setId (attrbuf);
-
       Html_check_name_val(html, attrbuf, "id");
-      /* We compare the "id" value with the url-decoded "name" value */
-      if (!html->NameVal || strcmp(html->NameVal, attrbuf)) {
-         if (html->NameVal)
-            BUG_MSG("'id' and 'name' attribute of <a> tag differ\n");
-         Html_add_anchor(html, attrbuf);
-      }
-   }
-   /* Reset NameVal */
-   if (html->NameVal) {
-      dFree(html->NameVal);
-      html->NameVal = NULL;
+
+      html->styleEngine->setId(attrbuf);
+      Html_add_anchor(html, attrbuf);
    }
 
    if (tagsize >= 10) {       /* length of "<t class=i>" */
