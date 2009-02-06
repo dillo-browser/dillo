@@ -85,93 +85,92 @@ static const char *const Css_white_space_vals[] = {
 };
 
 const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
-   {"background-attachment", CSS_TYPE_UNUSED, NULL},
-   {"background-color", CSS_TYPE_COLOR, NULL},
-   {"background-image", CSS_TYPE_UNUSED, NULL},
-   {"background-position", CSS_TYPE_UNUSED, NULL},
-   {"background-repeat", CSS_TYPE_UNUSED, NULL},
-   {"border-bottom-color", CSS_TYPE_COLOR, NULL},
-   {"border-bottom-style", CSS_TYPE_ENUM, Css_border_style_enum_vals},
-   {"border-bottom-width", CSS_TYPE_LENGTH, NULL},
-   {"border-collapse", CSS_TYPE_UNUSED, NULL},
-   {"border-left-color", CSS_TYPE_COLOR, NULL},
-   {"border-left-style", CSS_TYPE_ENUM, Css_border_style_enum_vals},
-   {"border-left-width", CSS_TYPE_LENGTH, NULL},
-   {"border-right-color", CSS_TYPE_COLOR, NULL},
-   {"border-right-style", CSS_TYPE_ENUM, Css_border_style_enum_vals},
-   {"border-right-width", CSS_TYPE_LENGTH, NULL},
-   {"border-spacing", CSS_TYPE_LENGTH, NULL},
-   {"border-top-color", CSS_TYPE_COLOR, NULL},
-   {"border-top-style", CSS_TYPE_ENUM, Css_border_style_enum_vals},
-   {"border-top-width", CSS_TYPE_LENGTH, NULL},
-   {"bottom", CSS_TYPE_UNUSED, NULL},
-   {"caption-side", CSS_TYPE_UNUSED, NULL},
-   {"clear", CSS_TYPE_UNUSED, NULL},
-   {"clip", CSS_TYPE_UNUSED, NULL},
-   {"color", CSS_TYPE_COLOR, NULL},
-   {"content", CSS_TYPE_STRING, NULL},
-   {"counter-increment", CSS_TYPE_UNUSED, NULL},
-   {"counter-reset", CSS_TYPE_UNUSED, NULL},
-   {"cursor", CSS_TYPE_ENUM, Css_cursor_enum_vals},
-   {"direction", CSS_TYPE_UNUSED, NULL},
-   {"display", CSS_TYPE_ENUM, Css_display_enum_vals},
-   {"empty-cells", CSS_TYPE_UNUSED, NULL},
-   {"float", CSS_TYPE_UNUSED, NULL},
-   {"font-family", CSS_TYPE_SYMBOL, NULL},
-   {"font-size", CSS_TYPE_LENGTH_PERCENTAGE, NULL},
-   {"font-size-adjust", CSS_TYPE_UNUSED, NULL},
-   {"font-stretch", CSS_TYPE_UNUSED, NULL},
-   {"font-style", CSS_TYPE_ENUM, Css_font_style_enum_vals},
-   {"font-variant", CSS_TYPE_UNUSED, NULL},
-   {"font-weight", CSS_TYPE_FONT_WEIGHT, NULL},
-   {"height", CSS_TYPE_LENGTH_PERCENTAGE, NULL},
-   {"left", CSS_TYPE_UNUSED, NULL},
-   {"letter-spacing", CSS_TYPE_UNUSED, NULL},
-   {"line-height", CSS_TYPE_UNUSED, NULL},
-   {"list-style-image", CSS_TYPE_UNUSED, NULL},
-   {"list-style-position", CSS_TYPE_UNUSED, NULL},
-   {"list-style-type", CSS_TYPE_ENUM, Css_list_style_type_enum_vals},
-   {"margin-bottom", CSS_TYPE_LENGTH, NULL},
-   {"margin-left", CSS_TYPE_LENGTH, NULL},
-   {"margin-right", CSS_TYPE_LENGTH, NULL},
-   {"margin-top", CSS_TYPE_LENGTH, NULL},
-   {"marker-offset", CSS_TYPE_UNUSED, NULL},
-   {"marks", CSS_TYPE_UNUSED, NULL},
-   {"max-height", CSS_TYPE_UNUSED, NULL},
-   {"max-width", CSS_TYPE_UNUSED, NULL},
-   {"min-height", CSS_TYPE_UNUSED, NULL},
-   {"min-width", CSS_TYPE_UNUSED, NULL},
-   {"outline-color", CSS_TYPE_UNUSED, NULL},
-   {"outline-style", CSS_TYPE_UNUSED, NULL},
-   {"outline-width", CSS_TYPE_UNUSED, NULL},
-   {"overflow", CSS_TYPE_UNUSED, NULL},
-   {"padding-bottom", CSS_TYPE_LENGTH, NULL},
-   {"padding-left", CSS_TYPE_LENGTH, NULL},
-   {"padding-right", CSS_TYPE_LENGTH, NULL},
-   {"padding-top", CSS_TYPE_LENGTH, NULL},
-   {"position", CSS_TYPE_UNUSED, NULL},
-   {"quotes", CSS_TYPE_UNUSED, NULL},
-   {"right", CSS_TYPE_UNUSED, NULL},
-   {"text-align", CSS_TYPE_ENUM, Css_text_align_enum_vals},
-   {"text-decoration", CSS_TYPE_MULTI_ENUM, Css_text_decoration_enum_vals},
-   {"text-indent", CSS_TYPE_UNUSED, NULL},
-   {"text-shadow", CSS_TYPE_UNUSED, NULL},
-   {"text-transform", CSS_TYPE_UNUSED, NULL},
-   {"top", CSS_TYPE_UNUSED, NULL},
-   {"unicode-bidi", CSS_TYPE_UNUSED, NULL},
-   {"vertical-align", CSS_TYPE_ENUM, Css_vertical_align_vals},
-   {"visibility", CSS_TYPE_UNUSED, NULL},
-   {"white-space", CSS_TYPE_ENUM, Css_white_space_vals},
-   {"width", CSS_TYPE_LENGTH_PERCENTAGE, NULL},
-   {"word-spacing", CSS_TYPE_UNUSED, NULL},
-   {"z-index", CSS_TYPE_UNUSED, NULL},
+   {"background-attachment", {CSS_TYPE_UNUSED}, NULL},
+   {"background-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"background-image", {CSS_TYPE_UNUSED}, NULL},
+   {"background-position", {CSS_TYPE_UNUSED}, NULL},
+   {"background-repeat", {CSS_TYPE_UNUSED}, NULL},
+   {"border-bottom-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-bottom-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_border_style_enum_vals},
+   {"border-bottom-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"border-collapse", {CSS_TYPE_UNUSED}, NULL},
+   {"border-left-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-left-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_border_style_enum_vals},
+   {"border-left-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"border-right-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-right-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_border_style_enum_vals},
+   {"border-right-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"border-spacing", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"border-top-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-top-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_border_style_enum_vals},
+   {"border-top-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"bottom", {CSS_TYPE_UNUSED}, NULL},
+   {"caption-side", {CSS_TYPE_UNUSED}, NULL},
+   {"clear", {CSS_TYPE_UNUSED}, NULL},
+   {"clip", {CSS_TYPE_UNUSED}, NULL},
+   {"color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"content", {CSS_TYPE_STRING, CSS_TYPE_UNUSED}, NULL},
+   {"counter-increment", {CSS_TYPE_UNUSED}, NULL},
+   {"counter-reset", {CSS_TYPE_UNUSED}, NULL},
+   {"cursor", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_cursor_enum_vals},
+   {"direction", {CSS_TYPE_UNUSED}, NULL},
+   {"display", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_display_enum_vals},
+   {"empty-cells", {CSS_TYPE_UNUSED}, NULL},
+   {"float", {CSS_TYPE_UNUSED}, NULL},
+   {"font-family", {CSS_TYPE_SYMBOL, CSS_TYPE_UNUSED}, NULL},
+   {"font-size", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
+   {"font-size-adjust", {CSS_TYPE_UNUSED}, NULL},
+   {"font-stretch", {CSS_TYPE_UNUSED}, NULL},
+   {"font-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_font_style_enum_vals},
+   {"font-variant", {CSS_TYPE_UNUSED}, NULL},
+   {"font-weight", {CSS_TYPE_FONT_WEIGHT, CSS_TYPE_UNUSED}, NULL},
+   {"height", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
+   {"left", {CSS_TYPE_UNUSED}, NULL},
+   {"letter-spacing", {CSS_TYPE_UNUSED}, NULL},
+   {"line-height", {CSS_TYPE_UNUSED}, NULL},
+   {"list-style-image", {CSS_TYPE_UNUSED}, NULL},
+   {"list-style-position", {CSS_TYPE_UNUSED}, NULL},
+   {"list-style-type", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_list_style_type_enum_vals},
+   {"margin-bottom", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"margin-left", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"margin-right", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"margin-top", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"marker-offset", {CSS_TYPE_UNUSED}, NULL},
+   {"marks", {CSS_TYPE_UNUSED}, NULL},
+   {"max-height", {CSS_TYPE_UNUSED}, NULL},
+   {"max-width", {CSS_TYPE_UNUSED}, NULL},
+   {"min-height", {CSS_TYPE_UNUSED}, NULL},
+   {"min-width", {CSS_TYPE_UNUSED}, NULL},
+   {"outline-color", {CSS_TYPE_UNUSED}, NULL},
+   {"outline-style", {CSS_TYPE_UNUSED}, NULL},
+   {"outline-width", {CSS_TYPE_UNUSED}, NULL},
+   {"overflow", {CSS_TYPE_UNUSED}, NULL},
+   {"padding-bottom", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"padding-left", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"padding-right", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"padding-top", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"position", {CSS_TYPE_UNUSED}, NULL},
+   {"quotes", {CSS_TYPE_UNUSED}, NULL},
+   {"right", {CSS_TYPE_UNUSED}, NULL},
+   {"text-align", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_text_align_enum_vals},
+   {"text-decoration", {CSS_TYPE_MULTI_ENUM, CSS_TYPE_UNUSED}, Css_text_decoration_enum_vals},
+   {"text-indent", {CSS_TYPE_UNUSED}, NULL},
+   {"text-shadow", {CSS_TYPE_UNUSED}, NULL},
+   {"text-transform", {CSS_TYPE_UNUSED}, NULL},
+   {"top", {CSS_TYPE_UNUSED}, NULL},
+   {"unicode-bidi", {CSS_TYPE_UNUSED}, NULL},
+   {"vertical-align", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_vertical_align_vals},
+   {"visibility", {CSS_TYPE_UNUSED}, NULL},
+   {"white-space", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_white_space_vals},
+   {"width", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
+   {"word-spacing", {CSS_TYPE_UNUSED}, NULL},
+   {"z-index", {CSS_TYPE_UNUSED}, NULL},
 
    /* These are extensions, for internal used, and never parsed. */
-   {"x-link", CSS_TYPE_INTEGER, NULL},
-   {"x-colspan", CSS_TYPE_INTEGER, NULL},
-   {"x-rowspan", CSS_TYPE_INTEGER, NULL},
-
-   {"last", CSS_TYPE_UNUSED, NULL},
+   {"x-link", {CSS_TYPE_INTEGER, CSS_TYPE_UNUSED}, NULL},
+   {"x-colspan", {CSS_TYPE_INTEGER, CSS_TYPE_UNUSED}, NULL},
+   {"x-rowspan", {CSS_TYPE_INTEGER, CSS_TYPE_UNUSED}, NULL},
+   {"last", {CSS_TYPE_UNUSED}, NULL},
 };
 
 typedef struct {
@@ -545,77 +544,97 @@ static void Css_next_token(CssParser * parser)
 
 
 static bool Css_token_matches_property(CssParser * parser,
-                                       CssPropertyName prop)
+                                       CssPropertyName prop,
+                                       CssValueType * type)
 {
    int i, err = 1;
 
-   switch (Css_property_info[prop].type) {
-   case CSS_TYPE_ENUM:
-      if (parser->ttype == CSS_TK_SYMBOL) {
-         for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
-            if (dStrcasecmp(parser->tval,
-                            Css_property_info[prop].enum_symbols[i]) == 0)
-               return true;
-      }
-      return false;
+   for (int j = 0; j < 2 && Css_property_info[prop].type[j] != CSS_TYPE_UNUSED; j++) {
+      if (type)
+         *type = Css_property_info[prop].type[j];
 
-   case CSS_TYPE_MULTI_ENUM:
-      if (parser->ttype == CSS_TK_SYMBOL) {
-         if (dStrcasecmp(parser->tval, "none") != 0)
-            return true;
-         else {
-            for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
-               if (dStrcasecmp(parser->tval,
-                               Css_property_info[prop].enum_symbols[i]) == 0)
-                  return true;
+      switch (Css_property_info[prop].type[j]) {
+
+         case CSS_TYPE_ENUM:
+            if (parser->ttype == CSS_TK_SYMBOL) {
+               for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
+                  if (dStrcasecmp(parser->tval,
+                        Css_property_info[prop].enum_symbols[i]) == 0)
+                     return true;
             }
-         }
+            break;
+
+         case CSS_TYPE_MULTI_ENUM:
+            if (parser->ttype == CSS_TK_SYMBOL) {
+               if (dStrcasecmp(parser->tval, "none") != 0)
+                     return true;
+               else {
+                  for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
+                     if (dStrcasecmp(parser->tval,
+                           Css_property_info[prop].enum_symbols[i]) == 0)
+                        return true;
+                  }
+               }
+            }
+            break;
+
+         case CSS_TYPE_LENGTH_PERCENTAGE:
+         case CSS_TYPE_LENGTH:
+            if (parser->ttype == CSS_TK_DECINT ||
+               parser->ttype == CSS_TK_FLOAT ||
+               (parser->ttype == CSS_TK_SYMBOL && dStrcasecmp(parser->tval,
+                                                              "auto") == 0))
+               return true;
+            break;
+
+         case CSS_TYPE_COLOR:
+            if ((parser->ttype == CSS_TK_COLOR ||
+                  parser->ttype == CSS_TK_SYMBOL) &&
+               a_Color_parse(parser->tval, -1, &err) != -1)
+               return true;
+            break;
+
+         case CSS_TYPE_STRING:
+            if (parser->ttype == CSS_TK_STRING)
+               return true;
+            break;
+
+         case CSS_TYPE_SYMBOL:
+            if (parser->ttype == CSS_TK_SYMBOL ||
+               parser->ttype == CSS_TK_STRING)
+               return true;
+            break;
+
+         case CSS_TYPE_FONT_WEIGHT:
+            if (parser->ttype == CSS_TK_DECINT) {
+               i = strtol(parser->tval, NULL, 10);
+               if (i >= 100 && i <= 900)
+                  return true;
+            } else if (parser->ttype == CSS_TK_SYMBOL &&
+                     (dStrcasecmp(parser->tval, "normal") == 0 ||
+                      dStrcasecmp(parser->tval, "bold") == 0 ||
+                      dStrcasecmp(parser->tval, "bolder") == 0 ||
+                      dStrcasecmp(parser->tval, "lighter") == 0))
+               return true;
+            break;
+
+         case CSS_TYPE_UNUSED:
+            return false;
+
+         case CSS_TYPE_INTEGER:
+            /* Not used for parser values. */
+         default:
+            assert(false);
+            return false;
       }
-      return true;
-
-   case CSS_TYPE_LENGTH_PERCENTAGE:
-   case CSS_TYPE_LENGTH:
-      return parser->ttype == CSS_TK_DECINT ||
-          parser->ttype == CSS_TK_FLOAT || (parser->ttype == CSS_TK_SYMBOL
-                                            && dStrcasecmp(parser->tval,
-                                                           "auto") == 0);
-
-   case CSS_TYPE_COLOR:
-      return (parser->ttype == CSS_TK_COLOR ||
-              parser->ttype == CSS_TK_SYMBOL) &&
-          a_Color_parse(parser->tval, -1, &err) != -1;
-
-   case CSS_TYPE_STRING:
-      return parser->ttype == CSS_TK_STRING;
-
-   case CSS_TYPE_SYMBOL:
-      return parser->ttype == CSS_TK_SYMBOL || parser->ttype == CSS_TK_STRING;
-
-   case CSS_TYPE_FONT_WEIGHT:
-      if (parser->ttype == CSS_TK_DECINT) {
-         i = strtol(parser->tval, NULL, 10);
-         return i >= 100 && i <= 900;
-      } else
-         return (parser->ttype == CSS_TK_SYMBOL &&
-                 (dStrcasecmp(parser->tval, "normal") == 0 ||
-                  dStrcasecmp(parser->tval, "bold") == 0 ||
-                  dStrcasecmp(parser->tval, "bolder") == 0 ||
-                  dStrcasecmp(parser->tval, "lighter") == 0));
-      break;
-
-   case CSS_TYPE_UNUSED:
-      return false;
-
-   case CSS_TYPE_INTEGER:
-      /* Not used for parser values. */
-   default:
-      assert(false);
-      return false;
    }
+
+   return false;
 }
 
 static bool Css_parse_value(CssParser * parser,
                             CssPropertyName prop,
+                            CssValueType type,
                             CssPropertyValue * val)
 {
    int i, lentype;
@@ -623,7 +642,7 @@ static bool Css_parse_value(CssParser * parser,
    float fval;
    int ival, err = 1;
 
-   switch (Css_property_info[prop].type) {
+   switch (type) {
    case CSS_TYPE_ENUM:
       if (parser->ttype == CSS_TK_SYMBOL) {
          for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
@@ -694,8 +713,7 @@ static bool Css_parse_value(CssParser * parser,
                lentype = CSS_LENGTH_TYPE_EX;
                Css_next_token(parser);
             }
-         } else if (Css_property_info[prop].type ==
-                    CSS_TYPE_LENGTH_PERCENTAGE &&
+         } else if (type == CSS_TYPE_LENGTH_PERCENTAGE &&
                     parser->ttype == CSS_TK_CHAR &&
                     parser->tval[0] == '%') {
             fval /= 100;
@@ -821,8 +839,9 @@ static void Css_parse_declaration(CssParser * parser,
                                   CssPropertyList * props,
                                   CssPropertyList * importantProps)
 {
-   CssPropertyInfo pi, *pip;
+   CssPropertyInfo pi = {NULL, {CSS_TYPE_UNUSED}, NULL}, *pip;
    CssShorthandInfo si, *sip;
+   CssValueType type = CSS_TYPE_UNUSED;
 
    CssPropertyName prop;
    CssPropertyValue val, dir_vals[4];
@@ -847,7 +866,8 @@ static void Css_parse_declaration(CssParser * parser,
          Css_next_token(parser);
          if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ':') {
             Css_next_token(parser);
-            if (Css_parse_value(parser, prop, &val)) {
+            if (Css_token_matches_property (parser, prop, &type) &&
+                Css_parse_value(parser, prop, type, &val)) {
                weight = Css_parse_weight(parser);
                if (weight && importantProps)
                   importantProps->set(prop, val);
@@ -882,7 +902,7 @@ static void Css_parse_declaration(CssParser * parser,
                         if (Css_token_matches_property(parser,
                                                        Css_shorthand_info
                                                        [sh_index].
-                                                       properties[i])) {
+                                                       properties[i], &type)) {
                            found = true;
                            DEBUG_MSG(DEBUG_PARSE_LEVEL,
                                      "will assign to '%s'\n",
@@ -891,7 +911,7 @@ static void Css_parse_declaration(CssParser * parser,
                                       .properties[i]].symbol);
                            if (Css_parse_value(parser,
                                                Css_shorthand_info[sh_index]
-                                               .properties[i], &val)) {
+                                               .properties[i], type, &val)) {
                               weight = Css_parse_weight(parser);
                               if (weight && importantProps)
                                  importantProps->
@@ -911,10 +931,10 @@ static void Css_parse_declaration(CssParser * parser,
                      if (Css_token_matches_property(parser,
                                                     Css_shorthand_info
                                                     [sh_index].
-                                                    properties[0]) &&
+                                                    properties[0], &type) &&
                          Css_parse_value(parser,
                                          Css_shorthand_info[sh_index]
-                                         .properties[0], &val)) {
+                                         .properties[0], type, &val)) {
                         dir_vals[n] = val;
                         n++;
                      } else
@@ -947,11 +967,11 @@ static void Css_parse_declaration(CssParser * parser,
                         if (Css_token_matches_property(parser,
                                                        Css_shorthand_info
                                                        [sh_index].
-                                                       properties[i])) {
+                                                       properties[i], &type)) {
                            found = true;
                            if (Css_parse_value(parser,
                                                Css_shorthand_info[sh_index]
-                                               .properties[i], &val)) {
+                                               .properties[i], type, &val)) {
                               weight = Css_parse_weight(parser);
                               for (j = 0; j < 4; j++)
                                  if (weight && importantProps)
