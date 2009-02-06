@@ -566,7 +566,7 @@ static bool Css_token_matches_property(CssParser * parser,
 
          case CSS_TYPE_MULTI_ENUM:
             if (parser->ttype == CSS_TK_SYMBOL) {
-               if (dStrcasecmp(parser->tval, "none") != 0)
+               if (dStrcasecmp(parser->tval, "none") == 0)
                      return true;
                else {
                   for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
