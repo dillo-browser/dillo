@@ -870,9 +870,9 @@ static void Css_parse_declaration(CssParser * parser,
                 Css_parse_value(parser, prop, type, &val)) {
                weight = Css_parse_weight(parser);
                if (weight && importantProps)
-                  importantProps->set(prop, val);
+                  importantProps->set(prop, type, val);
                else
-                  props->set(prop, val);
+                  props->set(prop, type, val);
             }
          }
       } else {
@@ -916,10 +916,10 @@ static void Css_parse_declaration(CssParser * parser,
                               if (weight && importantProps)
                                  importantProps->
                                      set(Css_shorthand_info[sh_index].
-                                         properties[i], val);
+                                         properties[i], type, val);
                               else
                                  props->set(Css_shorthand_info[sh_index].
-                                            properties[i], val);
+                                            properties[i], type, val);
                            }
                         }
                   } while (found);
@@ -947,11 +947,13 @@ static void Css_parse_declaration(CssParser * parser,
                         if (weight && importantProps)
                            importantProps->set(Css_shorthand_info[sh_index]
                                                .properties[i],
+                                               type,
                                                dir_vals[dir_set[n - 1]
                                                         [i]]);
                         else
                            props->set(Css_shorthand_info[sh_index]
                                       .properties[i],
+                                      type,
                                       dir_vals[dir_set[n - 1][i]]);
                   } else
                      MSG_CSS("no values for shorthand property '%s'\n",
@@ -977,10 +979,10 @@ static void Css_parse_declaration(CssParser * parser,
                                  if (weight && importantProps)
                                     importantProps->
                                        set(Css_shorthand_info[sh_index].
-                                          properties[j * 3 + i], val);
+                                          properties[j * 3 + i], type, val);
                                  else
                                     props->set(Css_shorthand_info[sh_index].
-                                       properties[j * 3 + i], val);
+                                       properties[j * 3 + i], type, val);
                            }
                         }
                   } while (found);
