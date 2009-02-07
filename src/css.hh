@@ -199,9 +199,9 @@ class CssProperty {
       CssPropertyValue value;
 
       inline void free () {
-         switch (name) {
-            case CSS_PROPERTY_CONTENT:
-            case CSS_PROPERTY_FONT_FAMILY:
+         switch (type) {
+            case CSS_TYPE_STRING:
+            case CSS_TYPE_SYMBOL:
                dFree (value.strVal);
                break;
             default:
