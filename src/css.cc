@@ -32,8 +32,10 @@ CssPropertyList::~CssPropertyList () {
 
 void CssPropertyList::set (CssPropertyName name, CssValueType type,
                            CssPropertyValue value) {
+   CssProperty *prop;
+
    for (int i = 0; i < size (); i++) {
-      CssProperty *prop = getRef (i);
+      prop = getRef (i);
 
       if (prop->name == name) {
          if (ownerOfStrings)
@@ -45,9 +47,10 @@ void CssPropertyList::set (CssPropertyName name, CssValueType type,
    }
 
    increase ();
-   getRef (size () - 1)->name = name;
-   getRef (size () - 1)->type = type;
-   getRef (size () - 1)->value = value;
+   prop = getRef (size () - 1);
+   prop->name = name;
+   prop->type = type;
+   prop->value = value;
 }
 
 void CssPropertyList::apply (CssPropertyList *props) {
