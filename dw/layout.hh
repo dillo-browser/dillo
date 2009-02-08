@@ -255,8 +255,8 @@ public:
       emitter.connectLayout (receiver); }
 
    /** \brief See dw::core::FindtextState::search. */
-   inline FindtextState::Result search (const char *str, bool caseSens)
-      { return findtextState.search (str, caseSens); }
+   inline FindtextState::Result search (const char *str, bool caseSens, int backwards)
+      { return findtextState.search (str, caseSens, backwards); }
 
    /** \brief See dw::core::FindtextState::resetSearch. */
    inline void resetSearch () { findtextState.resetSearch (); }

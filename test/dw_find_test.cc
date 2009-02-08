@@ -44,7 +44,7 @@ static ::fltk::Widget *resultLabel;
 static void findCallback (::fltk::Widget *widget, void *data)
 {
    //switch(layout->search ("worm", true)) {
-   switch(layout->search ("WORM", false)) {
+   switch(layout->search ("WORM", false, false)) {
        case FindtextState::SUCCESS:
           resultLabel->label("SUCCESS");
           break;
