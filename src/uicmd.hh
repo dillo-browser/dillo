@@ -34,7 +34,8 @@ void a_UIcmd_book(void *vbw);
 void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
 void a_UIcmd_findtext_dialog(BrowserWindow *bw);
-void a_UIcmd_findtext_search(BrowserWindow *bw,const char *key,int case_sens);
+void a_UIcmd_findtext_search(BrowserWindow *bw,const char *key,int case_sens,
+                             int backwards);
 void a_UIcmd_findtext_reset(BrowserWindow *bw);
 void a_UIcmd_focus_main_area(BrowserWindow *bw);
 void a_UIcmd_focus_location(void *vbw);

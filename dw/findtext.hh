@@ -58,10 +58,12 @@ private:
     * NULL, when no text is highlighted.
     */
    CharIterator *hlIterator;  
-
-   static int *createNexttab (const char *key, bool caseSens);
+   
+   static const char* rev(const char* _str); /* Function to reverse a C-string */
+   
+   static int *createNexttab (const char *needle, bool caseSens, bool backwards);
    bool unhighlight ();
-   bool search0 ();
+   bool search0 (bool backwards, bool firstTrial);
 
    inline static bool charsEqual (char c1, char c2, bool caseSens)
    { return caseSens ? c1 == c2 : tolower (c1) == tolower (c2) ||
@@ -72,7 +74,7 @@ public:
    ~FindtextState ();
 
    void setWidget (Widget *widget);
-   Result search (const char *key, bool caseSens);
+   Result search (const char *key, bool caseSens, bool backwards);
    void resetSearch ();
 };
 

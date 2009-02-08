@@ -9,6 +9,8 @@ dillo-2.1
 +- Added support for numeric IPv6 addresses entered into the url bar.
  - Used the URL authority part instead of stripped default port in HTTP query.
    Patches: Justus Winter
++- Implemented "search previous" in string searches.
+   Patch: João Ricardo Lourenço
 +- Fix for file inputs without values (forms).
  - Tuned input width a bit.
  - Cleaned up resource embedding (forms)
@@ -50,7 +52,7 @@ dillo-2.1
 +- Added the "middle_click_drags_page" dillorc option.
    Patch: Jorge Arellano Cid, Thomas Orgis
 +- Set the File menu label to hide when the File menu-button is shown.
- - Trying a new iconv() test in configure.in.
+ - Set a new iconv() test in configure.in.
  - Allowed the rc parser to skip whitespace around the equal sign.
  - Fixed the parser not to call Html_tag_close_* functions twice.
  - Implemented loading of remote CSS Stylesheet.
