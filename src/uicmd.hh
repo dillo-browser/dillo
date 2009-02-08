@@ -38,7 +38,7 @@ void a_UIcmd_findtext_search(BrowserWindow *bw,const char *key,int case_sens);
 void a_UIcmd_findtext_reset(BrowserWindow *bw);
 void a_UIcmd_focus_main_area(BrowserWindow *bw);
 void a_UIcmd_focus_location(void *vbw);
-void a_UIcmd_page_popup(void *vbw, bool_t has_bugs, bool_t unloaded_imgs);
+void a_UIcmd_page_popup(void *vbw, bool_t has_bugs);
 void a_UIcmd_link_popup(void *vbw, const DilloUrl *url);
 void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
                          DilloUrl *link_url);
@@ -72,8 +72,6 @@ void a_UIcmd_set_img_prog(BrowserWindow *bw, int n_img, int t_img, int cmd);
 void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug);
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label);
 void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...);
-bool_t a_UIcmd_get_images_enabled(BrowserWindow *bw);
-void a_UIcmd_set_images_enabled(BrowserWindow *bw, int flag);
 void a_UIcmd_set_buttons_sens(BrowserWindow *bw);
 void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
 void a_UIcmd_set_pointer_on_link(BrowserWindow *bw, int flag);

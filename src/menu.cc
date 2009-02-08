@@ -199,8 +199,8 @@ static void *Menu_get_bw_doc()
    void *doc = NULL;
 
    if (popup_bw && popup_bw->Docs) {
-      if (dList_find_custom(popup_bw->PageUrls, popup_url,
-                            (dCompareFunc)a_Url_cmp)){
+      if (!popup_url || dList_find_custom(popup_bw->PageUrls, popup_url,
+                                          (dCompareFunc)a_Url_cmp)){
          /* HTML page is still there */
          if (dList_length(popup_bw->Docs) == 1)
             doc = dList_nth_data(popup_bw->Docs, 0);
@@ -344,13 +344,12 @@ static void Menu_popup_cb2(void *data)
  * Page popup menu (construction & popup)
  */
 void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url, 
-                       bool_t has_bugs, bool_t unloaded_imgs)
+                       bool_t has_bugs)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
    // Active/inactive control.
    static Item *view_page_bugs_item = 0;
-   static Item *load_images_item = 0;
 
    popup_bw = bw;
    a_Url_free(popup_url);
@@ -364,8 +363,6 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
        i->callback(Menu_view_page_source_cb);
        i = view_page_bugs_item = new Item("View page Bugs");
        i->callback(Menu_view_page_bugs_cb);
-       i = load_images_item = new Item("Load images");
-       i->callback(Menu_load_images_cb);
        i = new Item("Bookmark this page");
        i->callback(Menu_add_bookmark_cb);
        new Divider();    
@@ -386,13 +383,6 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
       view_page_bugs_item->activate();
    else
       view_page_bugs_item->deactivate();
-
-   if (unloaded_imgs == TRUE) {
-      load_images_item->activate();
-      load_images_item->user_data(NULL); /* wildcard */
-   } else {
-      load_images_item->deactivate();
-   }
 
    a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
 }
@@ -658,6 +648,22 @@ static void Menu_embedded_css_cb(Widget *wid)
 }
 
 /*
+ * Toggle loading of images -- and load them if enabling.
+ */ 
+static void Menu_imgload_toggle_cb(Widget *wid)
+{
+   if ((prefs.load_images = wid->state() ? 1 : 0)) {
+      popup_url = NULL;
+      void *doc = Menu_get_bw_doc();
+
+      if (doc) {
+         DilloUrl *pattern = NULL;
+         a_Html_load_images(doc, pattern);
+      }
+   }
+}
+
+/*
  * Tools popup menu (construction & popup)
  */
 void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
@@ -678,6 +684,10 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
        it = new ToggleItem("Use embedded CSS");
        it->callback(Menu_embedded_css_cb);
        it->state(prefs.parse_embedded_css);
+       new Divider();    
+       it = new ToggleItem("Load images");
+       it->callback(Menu_imgload_toggle_cb);
+       it->state(prefs.load_images);
        pm->type(PopupMenu::POPUP13);
       pm->end();
    }

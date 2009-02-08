@@ -659,11 +659,11 @@ void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url)
 /*
  * Popup the page menu
  */
-void a_UIcmd_page_popup(void *vbw, bool_t has_bugs, bool_t unloaded_imgs)
+void a_UIcmd_page_popup(void *vbw, bool_t has_bugs)
 {
    BrowserWindow *bw = (BrowserWindow*)vbw;
    DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
-   a_Menu_page_popup(bw, url, has_bugs, unloaded_imgs);
+   a_Menu_page_popup(bw, url, has_bugs);
 }
 
 /*
@@ -902,22 +902,6 @@ void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...)
    va_end(argp);
    BW2UI(bw)->set_status(ds->str);
    dStr_free(ds, 1);
-}
-
-/*
- * Check whether the UI has automatic image loading enabled.
- */
-bool_t a_UIcmd_get_images_enabled(BrowserWindow *bw)
-{
-   return BW2UI(bw)->images_enabled();
-}
-
-/*
- * Enable/Disable automatic image loading.
- */
-void a_UIcmd_set_images_enabled(BrowserWindow *bw, int flag)
-{
-   BW2UI(bw)->images_enabled(flag);
 }
 
 /*
