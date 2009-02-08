@@ -42,7 +42,7 @@ void a_UIcmd_focus_location(void *vbw);
 void a_UIcmd_page_popup(void *vbw, bool_t has_bugs);
 void a_UIcmd_link_popup(void *vbw, const DilloUrl *url);
 void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
-                         DilloUrl *link_url);
+                         DilloUrl *page_url, DilloUrl *link_url);
 void a_UIcmd_form_popup(void *vbw, const DilloUrl *url, void *vform,
                         bool_t showing_hiddens);
 void a_UIcmd_file_popup(void *vbw, void *v_wid);

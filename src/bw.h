@@ -81,6 +81,8 @@ int a_Bw_remove_client(BrowserWindow *bw, int ClientKey);
 void a_Bw_close_client(BrowserWindow *bw, int ClientKey);
 void a_Bw_stop_clients(BrowserWindow *bw, int flags);
 void a_Bw_add_doc(BrowserWindow *bw, void *vdoc);
+void *a_Bw_get_current_doc(BrowserWindow *bw);
+void *a_Bw_get_url_doc(BrowserWindow *bw, const DilloUrl *Url);
 void a_Bw_remove_doc(BrowserWindow *bw, void *vdoc);
 void a_Bw_add_url(BrowserWindow *bw, const DilloUrl *Url);
 void a_Bw_cleanup(BrowserWindow *bw);

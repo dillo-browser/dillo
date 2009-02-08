@@ -678,9 +678,9 @@ void a_UIcmd_link_popup(void *vbw, const DilloUrl *url)
  * Pop up the image menu
  */
 void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
-                         DilloUrl *link_url)
+                         DilloUrl *page_url, DilloUrl *link_url)
 {
-   a_Menu_image_popup((BrowserWindow*)vbw, url, loaded_img, link_url);
+   a_Menu_image_popup((BrowserWindow*)vbw, url, loaded_img, page_url,link_url);
 }
 
 /*

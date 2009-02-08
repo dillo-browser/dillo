@@ -13,6 +13,7 @@
 
 
 #include "bw.h"
+#include "msg.h"
 #include "list.h"
 #include "capi.h"
 #include "uicmd.hh"
@@ -214,6 +215,38 @@ void a_Bw_add_doc(BrowserWindow *bw, void *vdoc)
    dReturn_if_fail ( bw != NULL && vdoc != NULL);
 
    dList_append(bw->Docs, vdoc);
+}
+
+/*
+ * Get current document.
+ */
+void *a_Bw_get_current_doc(BrowserWindow *bw)
+{
+   void *doc = NULL;
+   int len = dList_length(bw->Docs);
+
+   if (len == 1)
+      doc = dList_nth_data(bw->Docs, 0);
+   else if (len > 1)
+      MSG("a_Bw_get_current_doc() multiple docs not implemented\n");
+
+   return doc;
+}
+
+/*
+ * Get document by URL.
+ *
+ * This is currently used by popup menus that need to ensure that the
+ * page has not changed while the menu was popped up.
+ */
+void *a_Bw_get_url_doc(BrowserWindow *bw, const DilloUrl *url)
+{
+   void *doc = NULL;
+
+   if (url && dList_find_custom(bw->PageUrls, url, (dCompareFunc)a_Url_cmp)) {
+      doc = a_Bw_get_current_doc(bw);
+   }
+   return doc;
 }
 
 /*

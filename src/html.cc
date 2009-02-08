@@ -727,8 +727,8 @@ bool DilloHtml::HtmlLinkReceiver::press (Widget *widget, int link, int img,
          if (link != -1)
             linkurl = html->links->get(link);
          const bool_t loaded_img = (html->images->get(img)->image == NULL);
-         a_UIcmd_image_popup(
-            bw, html->images->get(img)->url, loaded_img, linkurl);
+         a_UIcmd_image_popup(bw, html->images->get(img)->url, loaded_img,
+                             html->page_url, linkurl);
          ret = true;
       } else {
          if (link == -1) {

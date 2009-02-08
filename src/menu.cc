@@ -192,35 +192,15 @@ static void Menu_view_page_bugs_cb(Widget* )
 }
 
 /*
- * Get the document (HTML page) this menu was triggered for.
- */
-static void *Menu_get_bw_doc()
-{
-   void *doc = NULL;
-
-   if (popup_bw && popup_bw->Docs) {
-      if (!popup_url || dList_find_custom(popup_bw->PageUrls, popup_url,
-                                          (dCompareFunc)a_Url_cmp)){
-         /* HTML page is still there */
-         if (dList_length(popup_bw->Docs) == 1)
-            doc = dList_nth_data(popup_bw->Docs, 0);
-         else
-            MSG("Menu_get_bw_doc() multiple docs not implemented\n");
-      }
-   }
-   return doc;
-}
-
-/*
  * Load images on current page that match URL pattern
  */
 static void Menu_load_images_cb(Widget*, void *user_data)
 {
-   DilloUrl *pattern = (DilloUrl *) user_data;
-   void *doc = Menu_get_bw_doc();
+   DilloUrl *page_url = (DilloUrl *) user_data;
+   void *doc = a_Bw_get_url_doc(popup_bw, page_url);
 
    if (doc)
-      a_Html_load_images(doc, pattern);
+      a_Html_load_images(doc, popup_url);
 }
 
 /*
@@ -228,7 +208,7 @@ static void Menu_load_images_cb(Widget*, void *user_data)
  */
 static void Menu_form_submit_cb(Widget*, void *v_form)
 {
-   void *doc = Menu_get_bw_doc();
+   void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
 
    if (doc)
       a_Html_form_submit(doc, v_form);
@@ -239,7 +219,7 @@ static void Menu_form_submit_cb(Widget*, void *v_form)
  */
 static void Menu_form_reset_cb(Widget*, void *v_form)
 {
-   void *doc = Menu_get_bw_doc();
+   void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
 
    if (doc)
       a_Html_form_reset(doc, v_form);
@@ -252,7 +232,7 @@ static void Menu_form_hiddens_cb(Widget *w, void *user_data)
 {
    void *v_form = w->parent()->user_data();
    bool visible = *((bool *) user_data);
-   void *doc = Menu_get_bw_doc();
+   void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
 
    if (doc)
       a_Html_form_display_hiddens(doc, v_form, !visible);
@@ -427,18 +407,22 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
  * Image popup menu (construction & popup)
  */
 void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
-                        bool_t loaded_img, DilloUrl *link_url)
+                        bool_t loaded_img, DilloUrl *page_url,
+                        DilloUrl *link_url)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
    // Active/inactive control.
    static Item *link_menuitem = 0;
    static Item *load_img_menuitem = 0;
+   static DilloUrl *popup_page_url = NULL;
    static DilloUrl *popup_link_url = NULL;
 
    popup_bw = bw;
    a_Url_free(popup_url);
    popup_url = a_Url_dup(url);
+   a_Url_free(popup_page_url);
+   popup_page_url = a_Url_dup(page_url);
    a_Url_free(popup_link_url);
    popup_link_url = a_Url_dup(link_url);
    
@@ -474,7 +458,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
       load_img_menuitem->deactivate();
    } else {
       load_img_menuitem->activate();
-      load_img_menuitem->user_data(popup_url);
+      load_img_menuitem->user_data(popup_page_url);
    }
 
    if (link_url) {
@@ -653,8 +637,7 @@ static void Menu_embedded_css_cb(Widget *wid)
 static void Menu_imgload_toggle_cb(Widget *wid)
 {
    if ((prefs.load_images = wid->state() ? 1 : 0)) {
-      popup_url = NULL;
-      void *doc = Menu_get_bw_doc();
+      void *doc = a_Bw_get_current_doc(popup_bw);
 
       if (doc) {
          DilloUrl *pattern = NULL;
