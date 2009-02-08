@@ -40,7 +40,7 @@ struct iconset {
    Image *ImgMeterOK, *ImgMeterBug,
          *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgTools,
          *ImgClear,*ImgSearch;
-   MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti, *ImgImageLoadMulti;
+   MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti;
 };
 
 static struct iconset standard_icons = {
@@ -59,8 +59,6 @@ static struct iconset standard_icons = {
                   *new xpmImage(right_i_xpm)),
    new MultiImage(*new xpmImage(stop_xpm), INACTIVE_R,
                   *new xpmImage(stop_i_xpm)),
-   new MultiImage(*new xpmImage(imgload_off_xpm), STATE,
-                  *new xpmImage(imgload_on_xpm))
 };
 
 static struct iconset small_icons = {
@@ -79,7 +77,6 @@ static struct iconset small_icons = {
                   *new xpmImage(right_si_xpm)),
    new MultiImage(*new xpmImage(stop_s_xpm), INACTIVE_R,
                   *new xpmImage(stop_si_xpm)),
-   standard_icons.ImgImageLoadMulti
 };
 
 
@@ -683,9 +680,8 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    // Status Panel
    StatusPanel = new Group(0, 0, ww, s_h, 0);
    // Status box
-   int il_w = 16;
    int bm_w = 16;
-   Status = new Output(0, 0, ww-bm_w-il_w, s_h, 0);
+   Status = new Output(0, 0, ww-bm_w, s_h, 0);
    Status->value("");
    Status->box(THIN_DOWN_BOX);
    Status->clear_click_to_focus();
@@ -693,18 +689,6 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    Status->color(GRAY80);
    StatusPanel->add(Status);
    //Status->throw_focus();
-
-   // Image loading indicator
-   ImageLoad = new HighlightButton(ww-il_w-bm_w,0,il_w,s_h,0);
-   ImageLoad->type(Button::TOGGLE);
-   ImageLoad->state(prefs.load_images);
-   ImageLoad->image(icons->ImgImageLoadMulti);
-
-   ImageLoad->box(THIN_DOWN_BOX);
-   ImageLoad->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
-   ImageLoad->tooltip("Toggle image loading");
-   ImageLoad->clear_tab_to_focus();
-   StatusPanel->add(ImageLoad);
 
    // Bug Meter
    BugMeter = new HighlightButton(ww-bm_w,0,bm_w,s_h,0);
@@ -946,9 +930,7 @@ void UI::set_bug_prog(int n_bug)
       BugMeter->redraw_label();
       new_w = strlen(str)*8 + 20;
    }
-   Status->resize(0,0,StatusPanel->w()-ImageLoad->w()-new_w,Status->h());
-   ImageLoad->resize(StatusPanel->w()-ImageLoad->w()-new_w, 0, ImageLoad->w(),
-                     ImageLoad->h());
+   Status->resize(0,0,StatusPanel->w()-new_w,Status->h());
    BugMeter->resize(StatusPanel->w()-new_w, 0, new_w, BugMeter->h());
    StatusPanel->init_sizes();
 }

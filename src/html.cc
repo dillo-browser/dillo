@@ -732,8 +732,7 @@ bool DilloHtml::HtmlLinkReceiver::press (Widget *widget, int link, int img,
          ret = true;
       } else {
          if (link == -1) {
-            a_UIcmd_page_popup(bw, bw->num_page_bugs != 0,
-                               html->unloadedImages());
+            a_UIcmd_page_popup(bw, bw->num_page_bugs != 0);
             ret = true;
          } else {
             a_UIcmd_link_popup(bw, html->links->get(link));
@@ -1952,7 +1951,7 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
 //    style_attrs->x_tooltip = a_Dw_tooltip_new_no_ref(attrbuf);
 
    alt_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "alt", NULL);
-   if ((!alt_ptr || !*alt_ptr) && !a_UIcmd_get_images_enabled(html->bw)) {
+   if ((!alt_ptr || !*alt_ptr) && !prefs.load_images) {
       dFree(alt_ptr);
       alt_ptr = dStrdup("[IMG]"); // Place holder for img_off mode
    }
@@ -2049,7 +2048,7 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
    if (DW2TB(html->dw)->getBgColor())
       Image->bg_color = DW2TB(html->dw)->getBgColor()->getColor();
 
-   load_now = a_UIcmd_get_images_enabled(html->bw) ||
+   load_now = prefs.load_images ||
               (a_Capi_get_flags(url) & CAPI_IsCached);
    Html_add_new_linkimage(html, &url, load_now ? NULL : Image);
    if (load_now)

@@ -465,9 +465,12 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    // reset values that are not inherited according to CSS
    attrs.resetValues ();
 
-   if (stack->getRef (stack->size () - 2)->inheritBackgroundColor)
+   if (stack->getRef (stack->size () - 2)->inheritBackgroundColor) {
       attrs.backgroundColor =
          stack->getRef (stack->size () - 2)->style->backgroundColor;
+
+      attrs.valign = stack->getRef (stack->size () - 2)->style->valign;
+    }
 
    // parse style information from style="" attribute, if it exists
    if (styleAttribute && prefs.parse_embedded_css)
