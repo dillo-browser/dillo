@@ -1931,9 +1931,8 @@ static void Html_tag_open_address(DilloHtml *html,
  * Read image-associated tag attributes,
  * create new image and add it to the html page (if add is TRUE).
  */
-DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
-                                 int tagsize, DilloUrl *url,
-                                 bool add)
+DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
+                             int tagsize, DilloUrl *url)
 {
    const int MAX_W = 6000, MAX_H = 6000;
 
@@ -1973,7 +1972,7 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
       dFree(width_ptr);
       dFree(height_ptr);
       width_ptr = height_ptr = NULL;
-      MSG("a_Html_add_new_image: suspicious image size request %dx%d\n", w, h);
+      MSG("a_Html_image_new: suspicious image size request %dx%d\n", w, h);
    } else {
       if (CSS_LENGTH_TYPE(l_w) != CSS_LENGTH_TYPE_AUTO)
          props.set (CSS_PROPERTY_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE, l_w);
@@ -2041,10 +2040,6 @@ DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
 
    /* Add a new image widget to this page */
    Image = a_Image_new(0, 0, alt_ptr, 0);
-   if (add) {
-      DW2TB(html->dw)->addWidget((Widget*)Image->dw,
-                                 html->styleEngine->style());
-   }
    if (DW2TB(html->dw)->getBgColor())
       Image->bg_color = DW2TB(html->dw)->getBgColor()->getColor();
 
@@ -2107,7 +2102,8 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
       /* TODO: usemap URLs outside of the document are not used. */
       usemap_url = a_Html_url_new(html, attrbuf, NULL, 0);
 
-   Image = a_Html_add_new_image(html, tag, tagsize, url, true);
+   Image = a_Html_image_new(html, tag, tagsize, url);
+   DW2TB(html->dw)->addWidget((Widget*)Image->dw, html->styleEngine->style());
 
    /* Image maps */
    if (a_Html_get_attr(html, tag, tagsize, "ismap")) {

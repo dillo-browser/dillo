@@ -1911,7 +1911,7 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setPseudoLink ();
 
       /* create new image and add it to the button */
-      if ((Image = a_Html_add_new_image(html, tag, tagsize, url, false))) {
+      if ((Image = a_Html_image_new(html, tag, tagsize, url))) {
          IM2DW(Image)->setStyle (html->styleEngine->style ());
          ResourceFactory *factory = HT2LT(html)->getResourceFactory();
          ComplexButtonResource *complex_b_r =

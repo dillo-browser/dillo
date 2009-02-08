@@ -257,9 +257,8 @@ DilloUrl *a_Html_url_new(DilloHtml *html,
                          const char *url_str, const char *base_url,
                          int use_base_url);
 
-DilloImage *a_Html_add_new_image(DilloHtml *html, const char *tag,
-                                 int tagsize, DilloUrl *url,
-                                 bool add);
+DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
+                             int tagsize, DilloUrl *url);
 
 char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize);
 void a_Html_pop_tag(DilloHtml *html, int TagIdx);
