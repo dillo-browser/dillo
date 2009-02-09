@@ -96,7 +96,7 @@ static void Dillo_print_help(const char *cmdname, const CLI_options *options)
 {
    printf("Usage: %s [OPTION]... [--] [URL|FILE]...\n"
           "Options:\n", cmdname);
-   while(options && options->help) {
+   while (options && options->help) {
       printf("%s\n", options->help);
       options++;
    }

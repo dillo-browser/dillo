@@ -246,7 +246,7 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
       void apply (CssPropertyList *props);
       void print ();
       inline void ref () { refCount++; }
-      inline void unref () { if(--refCount == 0) delete this; }
+      inline void unref () { if (--refCount == 0) delete this; }
 };
 
 class CssSimpleSelector {
@@ -300,7 +300,7 @@ class CssSelector {
       int specificity ();
       void print ();
       inline void ref () { refCount++; }
-      inline void unref () { if(--refCount == 0) delete this; }
+      inline void unref () { if (--refCount == 0) delete this; }
 };
 
 /**
@@ -340,7 +340,9 @@ class CssStyleSheet {
             };
 
             void insert (CssRule *rule);
-            inline bool equals (lout::object::Object *other) { return this == other; };
+            inline bool equals (lout::object::Object *other) {
+               return this == other;
+            };
             inline int hashValue () { return (intptr_t) this; };
       };
 
@@ -348,7 +350,7 @@ class CssStyleSheet {
                              <lout::object::ConstString, RuleList > {
          public:
             RuleMap () : lout::container::typed::HashTable
-                    <lout::object::ConstString, RuleList > (true, true, 256) {};
+               <lout::object::ConstString, RuleList > (true, true, 256) {};
       };
 
       static const int ntags = 90; // \todo replace 90

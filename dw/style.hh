@@ -503,7 +503,7 @@ public:
    }
 
    inline void ref () { refCount++; }
-   inline void unref () { if(--refCount == 0) delete this; }
+   inline void unref () { if (--refCount == 0) delete this; }
 };
 
 
@@ -532,7 +532,7 @@ public:
 
    inline void ref () { refCount++; }
    inline void unref ()
-   { if(--refCount == 0) delete this; }
+   { if (--refCount == 0) delete this; }
 
    inline void onEnter () { }
    inline void onLeave () { }
@@ -582,7 +582,7 @@ public:
                                 char *defaultFamily);
 
    inline void ref () { refCount++; }
-   inline void unref () { if(--refCount == 0) delete this; }
+   inline void unref () { if (--refCount == 0) delete this; }
 };
 
 
@@ -635,7 +635,7 @@ public:
 
    inline void ref () { refCount++; }
    inline void unref ()
-   { if(--refCount == 0) delete this; }
+   { if (--refCount == 0) delete this; }
 };
 
 void drawBorder (View *view, Rectangle *area,

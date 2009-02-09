@@ -167,7 +167,7 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
       }
       requisition->descent = 0;
    } else {
-      if(altText && altText[0]) {
+      if (altText && altText[0]) {
          if (altTextWidth == -1)
             altTextWidth =
                layout->textWidth (getStyle()->font, altText, strlen (altText));
@@ -310,7 +310,7 @@ void Image::draw (core::View *view, core::Rectangle *area)
                           intersection.x - dx, intersection.y - dy,
                           intersection.width, intersection.height);
    } else {
-      if(altText && altText[0]) {
+      if (altText && altText[0]) {
          if (altTextWidth == -1)
             altTextWidth =
                layout->textWidth (getStyle()->font, altText, strlen (altText));
@@ -335,7 +335,7 @@ void Image::draw (core::View *view, core::Rectangle *area)
                              + getStyle()->font->ascent,
                              altText, strlen(altText));
 
-         if(clippingView)
+         if (clippingView)
             view->mergeClippingView (clippingView);
       }
    }

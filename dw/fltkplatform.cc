@@ -48,13 +48,13 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
    copyAttrs (attrs);
 
    int fa = 0;
-   if(weight >= 500)
+   if (weight >= 500)
       fa |= BOLD;
-   if(style != core::style::FONT_STYLE_NORMAL)
+   if (style != core::style::FONT_STYLE_NORMAL)
       fa  |= ITALIC;
 
    font = ::fltk::font(name, fa);
-   if(font == NULL) {
+   if (font == NULL) {
       /*
        * If using xft, fltk::HELVETICA just means sans, fltk::COURIER
        * means mono, and fltk::TIMES means serif.
@@ -242,7 +242,7 @@ FltkPlatform::FltkPlatform ()
 
 FltkPlatform::~FltkPlatform ()
 {
-   if(idleFuncRunning)
+   if (idleFuncRunning)
       remove_idle (generalStaticIdle, (void*)this);
    delete idleQueue;
    delete views;
@@ -325,7 +325,7 @@ void FltkPlatform::generalIdle ()
       idleQueue->removeRef(idleFunc);
    }
 
-   if(idleQueue->isEmpty()) {
+   if (idleQueue->isEmpty()) {
       idleFuncRunning = false;
       remove_idle (generalStaticIdle, (void*)this);
    }
@@ -340,7 +340,7 @@ int FltkPlatform::addIdle (void (core::Layout::*func) ())
     * Since ... (todo) we have to wrap around fltk_add_idle. There is only one
     * idle function, the passed idle function is put into a queue.
     */
-   if(!idleFuncRunning) {
+   if (!idleFuncRunning) {
       add_idle (generalStaticIdle, (void*)this);
       idleFuncRunning = true;
    }
@@ -361,15 +361,15 @@ void FltkPlatform::removeIdle (int idleId)
    container::typed::Iterator <IdleFunc> it;
    IdleFunc *idleFunc;
 
-   for(found = false, it = idleQueue->iterator(); !found && it.hasNext(); ) {
+   for (found = false, it = idleQueue->iterator(); !found && it.hasNext(); ) {
       idleFunc = it.getNext();
-      if(idleFunc->id == idleId) {
+      if (idleFunc->id == idleId) {
          idleQueue->removeRef (idleFunc);
          found = true;
       }
    }
 
-   if(idleFuncRunning && idleQueue->isEmpty())
+   if (idleFuncRunning && idleQueue->isEmpty())
       remove_idle (generalStaticIdle, (void*)this);
 }
 

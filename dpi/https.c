@@ -589,7 +589,7 @@ static int save_certificate_home(X509 * cert)
    snprintf(buf,4096,"%s/.dillo/certs/", dGethomedir());
    mkdir(buf, 01777);
 
-   do{
+   do {
       snprintf(buf, 4096, "%s/.dillo/certs/%lx.%u",
                dGethomedir(), X509_subject_name_hash(cert), i);
 
@@ -612,7 +612,7 @@ static int save_certificate_home(X509 * cert)
       }
       i++;
       /*Don't loop too many times - just give up*/
-   } while( i < 1024 );
+   } while (i < 1024);
 
    return retval;
 }

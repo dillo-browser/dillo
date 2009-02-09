@@ -96,7 +96,7 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
 
       if (backwards) {
          /* Go to end */
-         while(iterator->next () ) ;
+         while (iterator->next () ) ;
          iterator->prev (); //We don't want to be at CharIterator::END.
       } else {
          iterator->next ();
@@ -127,7 +127,7 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
          iterator = new CharIterator (widget);
          if (backwards) {
             /* Go to end */
-            while(iterator->next ()) ;
+            while (iterator->next ()) ;
             iterator->prev (); //We don't want to be at CharIterator::END.
          } else {
             iterator->next ();

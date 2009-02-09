@@ -850,10 +850,10 @@ char *dGetline (FILE *stream)
    dReturn_val_if_fail (stream, 0);
 
    dstr = dStr_sized_new(64);
-   while((ch = fgetc(stream)) != EOF) {
+   while ((ch = fgetc(stream)) != EOF) {
       if (ch == '\\') {
          /* continue with the next line */
-         while((ch = fgetc(stream)) != EOF && ch != '\n');
+         while ((ch = fgetc(stream)) != EOF && ch != '\n') ;
          continue;
       }
       dStr_append_c(dstr, ch);

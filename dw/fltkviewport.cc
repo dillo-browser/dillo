@@ -105,8 +105,8 @@ void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
    vscrollbar->w (SCROLLBAR_THICKNESS);
 
    int x = w () - SCROLLBAR_THICKNESS, y = h () - SCROLLBAR_THICKNESS;
-   for(Iterator <TypedPointer < ::fltk::Widget> > it = gadgets->iterator ();
-       it.hasNext (); ) {
+   for (Iterator <TypedPointer < ::fltk::Widget> > it = gadgets->iterator ();
+        it.hasNext (); ) {
       ::fltk::Widget *widget = it.getNext()->getTypedValue ();
       widget->x (0);
       widget->y (0);
@@ -168,10 +168,10 @@ void FltkViewport::draw_area (void *data, const Rectangle& cr )
 
   vp->FltkWidgetView::draw ();
 
-  for(Iterator <TypedPointer < ::fltk::Widget> > it = vp->gadgets->iterator ();
-          it.hasNext (); ) {
-          ::fltk::Widget *widget = it.getNext()->getTypedValue ();
-          vp->draw_child (*widget);
+  for (Iterator <TypedPointer < ::fltk::Widget> > it = vp->gadgets->iterator();
+       it.hasNext (); ) {
+     ::fltk::Widget *widget = it.getNext()->getTypedValue ();
+     vp->draw_child (*widget);
   }
 
   pop_clip();

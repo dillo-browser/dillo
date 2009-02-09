@@ -706,7 +706,7 @@ void Layout::enterNotify (View *view, int x, int y, ButtonState state)
    lastWidget = widgetAtPoint;
    moveToWidgetAtPoint (x, y, state);
 
-   if(widgetAtPoint) {
+   if (widgetAtPoint) {
       event.state = state;
       event.lastWidget = lastWidget;
       event.currentWidget = widgetAtPoint;
@@ -727,7 +727,7 @@ void Layout::leaveNotify (View *view, ButtonState state)
    lastWidget = widgetAtPoint;
    moveOutOfView (state);
 
-   if(lastWidget) {
+   if (lastWidget) {
       event.state = state;
       event.lastWidget = lastWidget;
       event.currentWidget = widgetAtPoint;
@@ -765,7 +765,7 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
       if (newWidgetAtPoint && widgetAtPoint)
          ancestor =
             newWidgetAtPoint->getNearestCommonAncestor (widgetAtPoint);
-      else if(newWidgetAtPoint)
+      else if (newWidgetAtPoint)
          ancestor = newWidgetAtPoint->getTopLevel ();
       else
          ancestor = widgetAtPoint->getTopLevel ();
@@ -777,7 +777,7 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          for (w = widgetAtPoint; w != ancestor; w = w->getParent ())
             trackLen++;
       trackLen++; // for the ancestor
-      if(newWidgetAtPoint)
+      if (newWidgetAtPoint)
          // second part
          for (w = newWidgetAtPoint; w != ancestor; w = w->getParent ())
             trackLen++;
@@ -789,7 +789,7 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          for (w = widgetAtPoint; w != ancestor; w = w->getParent ())
             track[i++] = w;
       track[i++] = ancestor;
-      if(newWidgetAtPoint) {
+      if (newWidgetAtPoint) {
          /* second part */
          i = trackLen - 1;
          for (w = newWidgetAtPoint; w != ancestor; w = w->getParent ())
@@ -827,7 +827,7 @@ bool Layout::processMouseEvent (MousePositionEvent *event,
    Widget *widget;
 
    for (widget = widgetAtPoint; widget; widget = widget->getParent ()) {
-      if(!mayBeSuppressed || widget->isButtonSensitive ()) {
+      if (!mayBeSuppressed || widget->isButtonSensitive ()) {
          event->xWidget = event->xCanvas - widget->getAllocation()->x;
          event->yWidget = event->yCanvas - widget->getAllocation()->y;
 
@@ -865,7 +865,7 @@ void Layout::scrollPosChanged (View *view, int x, int y)
       for (container::typed::Iterator <View> it = views->iterator ();
            it.hasNext (); ) {
          View *thisView = it.getNext();
-         if(view != thisView && thisView->usesViewport ())
+         if (view != thisView && thisView->usesViewport ())
             thisView->scrollTo (scrollX, scrollY);
       }
 
@@ -885,7 +885,7 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
 
    /* If the width has become higher, we test again, whether the vertical
     * scrollbar (so to speak) can be hidden again. */
-   if(usesViewport && width > viewportWidth)
+   if (usesViewport && width > viewportWidth)
       canvasHeightGreater = false;
 
    /* if size changes, redraw this view.
@@ -907,7 +907,7 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
    for (container::typed::Iterator <View> it = views->iterator ();
         it.hasNext (); ) {
       View *thisView = it.getNext();
-      if(view != thisView && thisView->usesViewport ())
+      if (view != thisView && thisView->usesViewport ())
          thisView->setViewportSize (viewportWidth, viewportHeight,
                                     actualHScrollbarThickness,
                                     actualVScrollbarThickness);

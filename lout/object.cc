@@ -186,11 +186,11 @@ int ConstString::hashValue()
 int ConstString::compareTo(Comparable *other)
 {
    String *otherString = (String*)other;
-   if(str && otherString->str)
+   if (str && otherString->str)
       return strcmp(str, otherString->str);
-   else if(str)
+   else if (str)
       return 1;
-   else if(otherString->str)
+   else if (otherString->str)
       return -1;
    else
       return 0;
@@ -199,7 +199,7 @@ int ConstString::compareTo(Comparable *other)
 
 int ConstString::hashValue(const char *str)
 {
-   if(str) {
+   if (str) {
       int h = 0;
       for (int i = 0; str[i]; i++)
          h = (h * 256 + str[i]);
@@ -223,7 +223,7 @@ String::String (const char *str): ConstString (str ? strdup(str) : NULL)
 
 String::~String ()
 {
-  if(str)
+  if (str)
     delete str;
 }
 
@@ -239,9 +239,9 @@ PairBase::PairBase(Object *first, Object *second)
 
 PairBase::~PairBase()
 {
-   if(first)
+   if (first)
       delete first;
-   if(second)
+   if (second)
       delete second;
 }
 
@@ -267,9 +267,9 @@ int PairBase::hashValue()
 {
    int value = 0;
 
-   if(first)
+   if (first)
       value ^= first->hashValue();
-   if(second)
+   if (second)
       value ^= second->hashValue();
    
    return value;
@@ -279,14 +279,14 @@ void PairBase::intoStringBuffer(misc::StringBuffer *sb)
 {
    sb->append("<pair: ");
 
-   if(first)
+   if (first)
       first->intoStringBuffer(sb);
    else
       sb->append("(nil)");
 
    sb->append(",");
 
-   if(second)
+   if (second)
       second->intoStringBuffer(sb);
    else
       sb->append("(nil)");
@@ -298,9 +298,9 @@ size_t PairBase::sizeOf()
 {
    size_t size = 0;
 
-   if(first)
+   if (first)
       size += first->sizeOf();
-   if(second)
+   if (second)
       size += second->sizeOf();
 
    return size;

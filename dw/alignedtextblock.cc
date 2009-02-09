@@ -54,7 +54,7 @@ void AlignedTextblock::List::unref(int pos)
    textblocks->set (pos, NULL);
    refCount--;
 
-   if(refCount == 0)
+   if (refCount == 0)
       delete this;
 }
 
@@ -68,7 +68,7 @@ AlignedTextblock::AlignedTextblock (bool limitTextWidth):
 
 void AlignedTextblock::setRefTextblock (AlignedTextblock *ref)
 {
-   if(ref == NULL)
+   if (ref == NULL)
       list = new List();
    else
       list = ref->list;

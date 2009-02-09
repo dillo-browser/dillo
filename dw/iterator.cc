@@ -210,7 +210,7 @@ int EmptyIterator::compareTo (misc::Comparable *other)
 
    if (content.type == otherIt->content.type)
       return 0;
-   else if(content.type == Content::START)
+   else if (content.type == Content::START)
       return -1;
    else
       return +1;
@@ -487,7 +487,7 @@ DeepIterator::DeepIterator (Iterator *it)
    
    //DEBUG_MSG (1, "  => %s\n", a_Dw_iterator_text (it));
 
-   if(hasContents) {
+   if (hasContents) {
       // If this widget has parents, we must construct appropriate iterators.
       //
       // \todo There may be a faster way instead of iterating through the
@@ -679,7 +679,7 @@ bool CharIterator::next ()
    if (ch == START || it->getContent()->type == Content::BREAK ||
        (it->getContent()->type == Content::TEXT &&
         it->getContent()->text[pos] == 0)) {
-      if(it->next()) {
+      if (it->next()) {
          if (it->getContent()->type == Content::BREAK)
             ch = '\n';
          else { // if (it->getContent()->type == Content::TEXT)
@@ -695,7 +695,7 @@ bool CharIterator::next ()
          ch = END;
          return false;
       }
-   } else if(ch == END)
+   } else if (ch == END)
       return false;
    else {
       // at this point, it->getContent()->type == Content::TEXT
@@ -717,7 +717,7 @@ bool CharIterator::prev ()
 {
    if (ch == END || it->getContent()->type == Content::BREAK ||
        (it->getContent()->type == Content::TEXT && pos == 0)) {
-      if(it->prev()) {
+      if (it->prev()) {
          if (it->getContent()->type == Content::BREAK)
             ch = '\n';
          else { // if (it->getContent()->type == Content::TEXT)
@@ -739,7 +739,7 @@ bool CharIterator::prev ()
          ch = START;
          return false;
       }
-   } else if(ch == START)
+   } else if (ch == START)
       return false;
    else {
       // at this point, it->getContent()->type == Content::TEXT

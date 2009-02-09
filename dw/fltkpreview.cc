@@ -191,7 +191,7 @@ void FltkPreviewWindow::reallocate ()
    int mx, my, width, height;
    bool warp = false;
 
-   if(preview->canvasHeight * maxWidth > maxHeight * preview->canvasWidth) {
+   if (preview->canvasHeight * maxWidth > maxHeight * preview->canvasWidth) {
       // Expand to maximal height (most likely case).
       width = preview->canvasWidth * maxHeight / preview->canvasHeight;
       height = maxHeight;

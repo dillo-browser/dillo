@@ -124,16 +124,16 @@ inline void FltkImgbuf::scaleRow (int row, const core::byte *data)
    int sr1 = scaledY (row);
    int sr2 = scaledY (row + 1);
    
-   for(int sr = sr1; sr < sr2; sr++) {
+   for (int sr = sr1; sr < sr2; sr++) {
       // Avoid multiple passes.
       if (copiedRows->get(sr)) continue;
 
       copiedRows->set (sr, true);
       if (sr == sr1) {
-         for(int px = 0; px < root->width; px++) {
+         for (int px = 0; px < root->width; px++) {
             int px1 = px * width / root->width;
             int px2 = (px+1) * width / root->width;
-            for(int sp = px1; sp < px2; sp++) {
+            for (int sp = px1; sp < px2; sp++) {
                memcpy(rawdata + (sr*width + sp)*bpp, data + px*bpp, bpp);
             }
          }

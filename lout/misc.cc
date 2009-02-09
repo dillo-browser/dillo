@@ -77,11 +77,11 @@ int Comparable::compareFun(const void *p1, const void *p2)
 {
    Comparable **c1 = (Comparable**)p1;
    Comparable **c2 = (Comparable**)p2;
-   if(c1 && c2)
+   if (c1 && c2)
       return ((*c1)->compareTo(*c2));
-   else if(c1)
+   else if (c1)
       return 1;
-   else if(c2)
+   else if (c2)
       return -1;
    else
       return 0;
@@ -104,7 +104,7 @@ StringBuffer::StringBuffer()
 StringBuffer::~StringBuffer()
 {
    clear ();
-   if(str)
+   if (str)
       delete[] str;
 }
 
@@ -121,7 +121,7 @@ void StringBuffer::appendNoCopy(char *str)
    node->data = str;
    node->next = NULL;
 
-   if(firstNode == NULL) {
+   if (firstNode == NULL) {
       firstNode = node;
       lastNode = node;
    } else {
@@ -141,15 +141,15 @@ void StringBuffer::appendNoCopy(char *str)
  */
 const char *StringBuffer::getChars()
 {
-   if(strValid)
+   if (strValid)
       return str;
 
-   if(str)
+   if (str)
       delete[] str;
    str = new char[numChars + 1];
    char *p = str;
 
-   for(Node *node = firstNode; node; node = node->next) {
+   for (Node *node = firstNode; node; node = node->next) {
       int l = strlen(node->data);
       memcpy(p, node->data, l * sizeof(char));
       p += l;
@@ -166,7 +166,7 @@ const char *StringBuffer::getChars()
 void StringBuffer::clear ()
 {
    Node *node, *nextNode;
-   for(node = firstNode; node; node = nextNode) {
+   for (node = firstNode; node; node = nextNode) {
       nextNode = node->next;
       delete node->data;
       delete node;
@@ -196,14 +196,14 @@ BitSet::~BitSet()
 void BitSet::intoStringBuffer(misc::StringBuffer *sb)
 {
    sb->append("[");
-   for(int i = 0; i < numBytes; i++)
+   for (int i = 0; i < numBytes; i++)
       sb->append(get(i) ? "1" : "0");
    sb->append("]");
 }
 
 bool BitSet::get(int i)
 {
-   if(8 * i >= numBytes)
+   if (8 * i >= numBytes)
       return false;
    else
       return bits[i / 8] & (1 << (i % 8));
@@ -211,9 +211,9 @@ bool BitSet::get(int i)
 
 void BitSet::set(int i, bool val)
 {
-   if(8 * i >= numBytes) {
+   if (8 * i >= numBytes) {
       int newNumBytes = numBytes;
-      while(8 * i >= newNumBytes)
+      while (8 * i >= newNumBytes)
          newNumBytes *= 2;
       bits =
          (unsigned char*)realloc(bits, newNumBytes * sizeof(unsigned char));
@@ -221,7 +221,7 @@ void BitSet::set(int i, bool val)
       numBytes = newNumBytes;
    }
   
-   if(val)
+   if (val)
       bits[i / 8] |= (1 << (i % 8));
    else
       bits[i / 8] &= ~(1 << (i % 8));
