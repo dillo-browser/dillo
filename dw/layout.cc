@@ -91,6 +91,8 @@ Layout::Layout (Platform *platform)
    
    usesViewport = false;
    scrollX = scrollY = 0;
+   viewportWidth = viewportHeight = 0;
+   hScrollbarThickness = vScrollbarThickness = 0;
 
    requestedAnchor = NULL;
    scrollIdleId = -1;
