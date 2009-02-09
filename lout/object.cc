@@ -271,7 +271,7 @@ int PairBase::hashValue()
       value ^= first->hashValue();
    if (second)
       value ^= second->hashValue();
-   
+
    return value;
 }
 

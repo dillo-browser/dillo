@@ -27,7 +27,7 @@ using namespace lout;
  *    edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
  *          labelfontsize=10, color="#404040", labelfontcolor="#000080"];
  *    fontname=Helvetica; fontsize=10;
- * 
+ *
  *    subgraph cluster_core {
  *       style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
  *       label="dw::core::ui";
@@ -79,7 +79,7 @@ using namespace lout;
  *    edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
  *          labelfontsize=10, color="#404040", labelfontcolor="#000080"];
  *    fontname=Helvetica; fontsize=10;
- * 
+ *
  *    subgraph cluster_core {
  *       style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
  *       label="dw::core::ui";
@@ -120,7 +120,7 @@ using namespace lout;
  *    edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
  *          labelfontsize=10, color="#404040", labelfontcolor="#000080"];
  *    fontname=Helvetica; fontsize=10;
- * 
+ *
  *    subgraph cluster_core {
  *       style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
  *       label="dw::core::ui";
@@ -202,7 +202,7 @@ public:
 
    virtual void attachView (FltkView *view);
    virtual void detachView (FltkView *view);
-   
+
    void sizeAllocate (core::Allocation *allocation);
    void draw (core::View *view, core::Rectangle *area);
 
@@ -276,7 +276,7 @@ protected:
 
    dw::core::Platform *createPlatform ();
    void setLayout (dw::core::Layout *layout);
-   
+
    int reliefXThickness ();
    int reliefYThickness ();
 
@@ -356,7 +356,7 @@ private:
 protected:
    virtual ::fltk::Button *createNewButton (core::Allocation *allocation) = 0;
    ::fltk::Widget *createNewWidget (core::Allocation *allocation);
-   
+
 public:
    FltkToggleButtonResource (FltkPlatform *platform,
                              bool activated);
@@ -413,7 +413,7 @@ private:
 
    public:
       Group (FltkRadioButtonResource *radioButtonResource);
-      
+
       inline container::typed::Iterator <FltkRadioButtonResource> iterator ()
       {
          return list->iterator ();
@@ -496,10 +496,10 @@ public:
    FltkSelectionResource (FltkPlatform *platform);
    ~FltkSelectionResource ();
 
-   dw::core::Iterator *iterator (dw::core::Content::Type mask, bool atEnd); 
+   dw::core::Iterator *iterator (dw::core::Content::Type mask, bool atEnd);
 
    void addItem (const char *str, bool enabled, bool selected);
-   
+
    void pushGroup (const char *name, bool enabled);
    void popGroup ();
 

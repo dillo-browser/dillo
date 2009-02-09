@@ -70,7 +70,7 @@ private:
    int scrollX, scrollY, viewportWidth, viewportHeight;
    bool canvasHeightGreater;
    int hScrollbarThickness, vScrollbarThickness;
-   
+
    HPosition scrollTargetHpos;
    VPosition scrollTargetVpos;
    int scrollTargetX, scrollTargetY, scrollTargetWidth, scrollTargetHeight;
@@ -136,13 +136,13 @@ private:
       int ex, int ey, int ewidth, int eheight);
    void queueResize ();
    void removeWidget ();
-  
+
 public:
    Layout (Platform *platform);
    ~Layout ();
 
    misc::ZoneAllocator *textZone;
-   
+
    void addWidget (Widget *widget);
    void setWidget (Widget *widget);
 
@@ -168,7 +168,7 @@ public:
    /**
     * \brief This function is called by a view, to delegate a button press
     * event.
-    * 
+    *
     * \em numPressed is 1 for simple presses, 2 for double presses etc. (more
     * that 2 is never needed), \em x and \em y the world coordinates, and
     * \em button the number of the button pressed.

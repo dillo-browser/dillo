@@ -26,7 +26,7 @@ private:
    ::fltk::Scrollbar *vscrollbar, *hscrollbar;
 
    GadgetOrientation gadgetOrientation[4];
-   container::typed::List <object::TypedPointer < ::fltk::Widget> > *gadgets; 
+   container::typed::List <object::TypedPointer < ::fltk::Widget> > *gadgets;
 
    void adjustScrollbarsAndGadgetsAllocation ();
    void adjustScrollbarValues ();
@@ -49,7 +49,7 @@ protected:
 public:
    FltkViewport (int x, int y, int w, int h, const char *label = 0);
    ~FltkViewport ();
- 
+
    void layout();
    void draw ();
    int handle (int event);

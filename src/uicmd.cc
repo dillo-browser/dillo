@@ -76,7 +76,7 @@ public:
                return 1;
             }
             // Avoid focus change.
-            return 0; 
+            return 0;
          }
       }
       return TabGroup::handle(e);
@@ -207,7 +207,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
       viewport->setBufferedDrawing (true);
    else
       viewport->setBufferedDrawing (false);
-   
+
    layout->attachView (viewport);
    new_ui->set_render_layout(*viewport);
 
@@ -259,7 +259,7 @@ static BrowserWindow *UIcmd_tab_new(const void *vbw)
    Layout *layout = new Layout (platform);
 
    FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
-   
+
    layout->attachView (viewport);
    new_ui->set_render_layout(*viewport);
 
@@ -508,7 +508,7 @@ void a_UIcmd_save(void *vbw)
       if (name) {
          a_Nav_save_url(bw, url, name);
       }
-   } 
+   }
 }
 
 /*
@@ -953,7 +953,7 @@ void a_UIcmd_fullscreen_toggle(BrowserWindow *bw)
 void a_UIcmd_findtext_search(BrowserWindow *bw, const char *key, int case_sens, int backwards)
 {
    Layout *l = (Layout *)bw->render_layout;
-   
+
    switch (l->search(key, case_sens, backwards)) {
       case FindtextState::RESTART:
          a_UIcmd_set_msg(bw, "No further occurrences of \"%s\". "

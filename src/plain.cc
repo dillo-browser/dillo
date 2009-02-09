@@ -109,7 +109,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
    styleAttrs.margin.setVal (5);
    styleAttrs.font = style::Font::create (layout, &fontAttrs);
    styleAttrs.color = style::Color::create (layout, prefs.text_color);
-   styleAttrs.backgroundColor = 
+   styleAttrs.backgroundColor =
       style::Color::create (layout, prefs.bg_color);
    widgetStyle = style::Style::create (layout, &styleAttrs);
 

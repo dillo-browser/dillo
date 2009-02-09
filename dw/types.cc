@@ -249,7 +249,7 @@ void Region::addRectangle (Rectangle *rPointer)
             r->y = misc::min(r->y, ownRect->y);
             r->width = combinedWidth;
             r->height = combinedHeight;
-            
+
             rectangleList->removeRef (ownRect);
       }
    }

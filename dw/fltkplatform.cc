@@ -60,7 +60,7 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
        * means mono, and fltk::TIMES means serif.
        */
       font = HELVETICA->plus (fa);
-   }      
+   }
 
    setfont(font, size);
    spaceWidth = (int)getwidth(" ");
@@ -141,7 +141,7 @@ FltkColor * FltkColor::create (int col)
       colorsTable->put (color, color);
    }
 
-   return color; 
+   return color;
 }
 
 void FltkView::addFltkWidget (::fltk::Widget *widget,
@@ -320,7 +320,7 @@ void FltkPlatform::generalIdle ()
       /* Execute the first function in the list. */
       idleFunc = idleQueue->getFirst ();
       (layout->*(idleFunc->func)) ();
-  
+
       /* Remove this function. */
       idleQueue->removeRef(idleFunc);
    }

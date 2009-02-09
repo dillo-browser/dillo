@@ -99,7 +99,7 @@ public:
 };
 
 /*
- * Disable: UpKey, DownKey, PageUpKey, PageDownKey and 
+ * Disable: UpKey, DownKey, PageUpKey, PageDownKey and
  * CTRL+{o,r,HomeKey,EndKey}
  */
 int CustInput::handle(int e)
@@ -385,7 +385,7 @@ PackedGroup *UI::make_toolbar(int tw, int th)
     b->tooltip("Next page");
     b->callback(b1_cb, (void *)UI_FORW);
     b->clear_tab_to_focus();
-  
+
     Home = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Home" : 0);
     b->image(icons->ImgHome);
     b->tooltip("Go to the Home page");
@@ -397,13 +397,13 @@ PackedGroup *UI::make_toolbar(int tw, int th)
     b->tooltip("Reload");
     b->callback(b1_cb, (void *)UI_RELOAD);
     b->clear_tab_to_focus();
-  
+
     Save = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Save" : 0);
     b->image(icons->ImgSave);
     b->tooltip("Save this page");
     b->callback(b1_cb, (void *)UI_SAVE);
     b->clear_tab_to_focus();
-  
+
     Stop = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
     b->image(icons->ImgStopMulti);
     b->tooltip("Stop loading");
@@ -531,7 +531,7 @@ Group *UI::make_panel(int ww)
       icons = &small_icons;
    else
       icons = &standard_icons;
-   
+
    if (PanelSize == P_tiny) {
       if (Small_Icons)
          xpos = 0, bw = 22, bh = 22, fh = 0, lh = 22, lbl = 0;
@@ -595,7 +595,7 @@ Group *UI::make_panel(int ww)
 
        g2->resizable(pg);
        g2->end();
-   
+
        // Toolbar
        g3 = new Group(0,fh+lh,ww,bh);
        g3->begin();
@@ -611,12 +611,12 @@ Group *UI::make_panel(int ww)
            w = make_progress_bars(1,0);
         }
         pg->add(w);
-   
+
        g3->resizable(pg); // Better than 'w3' and it also works
        pg->box(BORDER_FRAME);
        //g3->box(EMBOSSED_BOX);
        g3->end();
-   
+
       g1->resizable(g3);
       g1->end();
    }
@@ -626,7 +626,7 @@ Group *UI::make_panel(int ww)
 
 /*
  * User Interface constructor
- */ 
+ */
 UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
   Group(x, y, ww, wh, label)
 {
@@ -640,7 +640,7 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    add(TopGroup);
    resizable(TopGroup);
    set_flag(RAW_LABEL);
-   
+
    if (cur_ui) {
       PanelSize = cur_ui->PanelSize;
       CuteColor = cur_ui->CuteColor;
@@ -675,7 +675,7 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
 
    // Find text bar
    findbar = new Findbar(ww, 28);
-   TopGroup->add(findbar); 
+   TopGroup->add(findbar);
 
    // Status Panel
    StatusPanel = new Group(0, 0, ww, s_h, 0);
@@ -702,7 +702,7 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
 
    StatusPanel->resizable(Status);
 
-   TopGroup->add(StatusPanel); 
+   TopGroup->add(StatusPanel);
 
    // Make the full screen button (to be attached to the viewport later)
    // TODO: attach to the viewport
@@ -902,7 +902,7 @@ void UI::set_img_prog(int n_img, int t_img, int cmd)
    } else {
       IProg->activate();
       if (cmd == 1) {
-         snprintf(str, 32, "%s%d of %d", 
+         snprintf(str, 32, "%s%d of %d",
                   (PanelSize == 0) ? "" : "Images\n", n_img, t_img);
       } else if (cmd == 2) {
          str[0] = '\0';

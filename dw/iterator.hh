@@ -65,7 +65,7 @@ public:
    /**
     * \brief Shrink highlighted region to no longer contain the
     *    current content.
-    * 
+    *
     * The direction parameter indicates whether the highlighted region should be
     * reduced from the start (direction > 0) or from the end (direction < 0).
     * If direction is 0 all content is unhighlighted.
@@ -80,7 +80,7 @@ public:
     * DwIterator::highlight().
     */
    virtual void getAllocation (int start, int end, Allocation *allocation) = 0;
-   
+
    inline Iterator *cloneIterator () { return (Iterator*)clone(); }
 
    static void scrollTo (Iterator *it1, Iterator *it2, int start, int end,
@@ -96,10 +96,10 @@ class EmptyIterator: public Iterator
 {
 private:
    EmptyIterator (EmptyIterator &it);
-      
+
 public:
    EmptyIterator (Widget *widget, Content::Type mask, bool atEnd);
-    
+
    object::Object *clone();
    int compareTo(misc::Comparable *other);
    bool next ();
@@ -119,13 +119,13 @@ class TextIterator: public Iterator
 private:
    /** May be NULL, in this case, the next is skipped. */
    const char *text;
-   
+
    TextIterator (TextIterator &it);
-  
+
 public:
    TextIterator (Widget *widget, Content::Type mask, bool atEnd,
                  const char *text);
-   
+
    int compareTo(misc::Comparable *other);
 
    bool next ();
@@ -168,14 +168,14 @@ private:
 
    inline DeepIterator () { }
 
-public: 
+public:
    DeepIterator(Iterator *it);
    ~DeepIterator();
 
    object::Object *clone ();
 
    DeepIterator *createVariant(Iterator *it);
-   inline Iterator *getTopIterator () { return stack.getTop(); } 
+   inline Iterator *getTopIterator () { return stack.getTop(); }
    inline Content *getContent () { return &content; }
 
    bool isEmpty ();
@@ -188,7 +188,7 @@ public:
    /**
     * \brief Highlight a part of the current content.
     *
-    * Unhighlight the current content by passing -1 as start (see also 
+    * Unhighlight the current content by passing -1 as start (see also
     * (dw::core::Iterator::unhighlight). For text, start and end define the
     * characters, otherwise, the shape is defined as [0, 1], i.e. for
     * highlighting a whole dw::core::Content, pass 0 and >= 1.

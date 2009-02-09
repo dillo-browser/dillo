@@ -29,7 +29,7 @@ int TableCell::CLASS_ID = -1;
 
 TableCell::TableCell (TableCell *ref, bool limitTextWidth):
    AlignedTextblock (limitTextWidth)
-{  
+{
    registerName ("dw::TableCell", &CLASS_ID);
 
    /** \bug ignoreLine1OffsetSometimes does not work? */

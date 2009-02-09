@@ -546,7 +546,7 @@ void a_Nav_save_url(BrowserWindow *bw,
 {
    DilloWeb *Web = a_Web_new(url);
    Web->bw = bw;
-   Web->filename = dStrdup(filename); 
+   Web->filename = dStrdup(filename);
    Web->flags |= WEB_Download;
    /* TODO: keep track of this client */
    a_Capi_open_url(Web, Nav_save_cb, Web);

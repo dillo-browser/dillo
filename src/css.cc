@@ -98,7 +98,7 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
 
       if (node == NULL)
          return false;
-     
+
       switch (comb) {
          case CHILD:
             if (!sel->match (node))
@@ -125,8 +125,8 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
 
       comb = cs->combinator;
       node = docTree->parent (node);
-   } 
-   
+   }
+
    return true;
 }
 
@@ -196,7 +196,7 @@ bool CssSimpleSelector::match (const DoctreeNode *n) {
       return false;
    if (id != NULL && (n->id == NULL || dStrcasecmp (id, n->id) != 0))
       return false;
-   
+
    return true;
 }
 
@@ -285,7 +285,7 @@ void CssStyleSheet::addRule (CssRule *rule) {
    CssSimpleSelector *top = rule->selector->top ();
    RuleList *ruleList = NULL;
    lout::object::ConstString *string;
-   
+
    if (top->id) {
       string = new lout::object::ConstString (top->id);
       ruleList = idTable->get (string);
@@ -318,7 +318,7 @@ void CssStyleSheet::apply (CssPropertyList *props,
                            Doctree *docTree, const DoctreeNode *node) {
    RuleList *ruleList[4];
    int numLists = 0, index[4] = {0, 0, 0, 0};
-   
+
    if (node->id) {
       lout::object::ConstString idString (node->id);
 
@@ -412,7 +412,7 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
 
    if (nonCssHints)
         nonCssHints->apply (props);
-   
+
    if (sheet[CSS_PRIMARY_AUTHOR])
       sheet[CSS_PRIMARY_AUTHOR]->apply (props, docTree, node);
 
@@ -441,7 +441,7 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
 
 void CssContext::buildUserAgentStyle () {
    const char *cssBuf =
-     "body  {background-color: #dcd1ba; font-family: sans-serif; color: black;" 
+     "body  {background-color: #dcd1ba; font-family: sans-serif; color: black;"
      "       margin: 5px}"
      "big {font-size: 1.17em}"
      "blockquote, dd {margin-left: 40px; margin-right: 40px}"

@@ -20,7 +20,7 @@ class Findbar : public Group {
    CheckButton *check_btn;
    xpmImage *hideImg;
    Input *i;
-   
+
    static void search_cb (Widget *, void *);
    static void searchBackwards_cb (Widget *, void *);
    static void search_cb2 (Widget *, void *);

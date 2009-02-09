@@ -244,7 +244,7 @@ Decode *a_Decode_content_init(const char *format)
          MSG("Content-Encoding '%s' not recognized.\n", format);
       }
    }
-   return dc;      
+   return dc;
 }
 
 /*
@@ -294,7 +294,7 @@ Decode *a_Decode_charset_init(const char *format)
          MSG("Unable to convert from character encoding: '%s'\n", format);
       }
    }
-   return dc;      
+   return dc;
 }
 
 /*

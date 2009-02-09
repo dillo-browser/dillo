@@ -408,7 +408,7 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    if (!DicEntry) {
       /* Let's create an entry for this image... */
       DicEntry = a_Dicache_add_entry(web->url);
-      DicEntry->DecoderData = 
+      DicEntry->DecoderData =
          (ImgType == DIC_Png) ?
             a_Png_new(web->Image, DicEntry->url, DicEntry->version) :
          (ImgType == DIC_Gif) ?

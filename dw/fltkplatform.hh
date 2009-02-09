@@ -24,7 +24,7 @@ class FltkFont: public core::style::Font
 
 public:
    ::fltk::Font *font;
-  
+
    static FltkFont *create (core::style::FontAttrs *attrs);
 };
 
@@ -119,24 +119,24 @@ public:
    ~FltkPlatform ();
 
    void setLayout (core::Layout *layout);
-   
+
    void attachView (core::View *view);
 
    void detachView  (core::View *view);
-   
+
    int textWidth (core::style::Font *font, const char *text, int len);
    int nextGlyph (const char *text, int idx);
    int prevGlyph (const char *text, int idx);
    float dpiX ();
    float dpiY ();
-   
+
    int addIdle (void (core::Layout::*func) ());
    void removeIdle (int idleId);
-   
+
    core::style::Font *createFont (core::style::FontAttrs *attrs,
                                       bool tryEverything);
    core::style::Color *createColor (int color);
-   
+
    core::Imgbuf *createImgbuf (core::Imgbuf::Type type, int width, int height);
 
    void copySelection(const char *text);

@@ -362,7 +362,7 @@ static int Http_connect_socket(ChainLink *Info)
          struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&name;
          socket_len = sizeof(struct sockaddr_in6);
          sin6->sin6_family = dh->af;
-         sin6->sin6_port = 
+         sin6->sin6_port =
             S->port ? htons(S->port) : htons(DILLO_URL_HTTP_PORT);
          memcpy(&sin6->sin6_addr, dh->data, dh->alen);
          inet_ntop(dh->af, dh->data, buf, sizeof(buf));

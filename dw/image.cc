@@ -232,7 +232,7 @@ void Image::enterNotifyImpl (core::EventCrossing *event)
 }
 
 void Image::leaveNotifyImpl (core::EventCrossing *event)
-{                                                          
+{
    clicking = false;
 
    if (currLink != -1) {
@@ -273,7 +273,7 @@ bool Image::buttonPressImpl (core::EventButton *event)
       ret = true;
    }
    return ret;
-}              
+}
 
 bool Image::buttonReleaseImpl (core::EventButton *event)
 {
@@ -314,7 +314,7 @@ void Image::draw (core::View *view, core::Rectangle *area)
          if (altTextWidth == -1)
             altTextWidth =
                layout->textWidth (getStyle()->font, altText, strlen (altText));
-         
+
          core::View *clippingView = NULL, *usedView = view;
          if (allocation.width < altTextWidth ||
              allocation.ascent < getStyle()->font->ascent ||
@@ -375,7 +375,7 @@ void Image::drawRow (int row)
    core::Rectangle area;
 
    assert (buffer != NULL);
-   
+
    buffer->getRowArea (row, &area);
    if (area.width && area.height)
       queueDrawArea (area.x + getStyle()->boxOffsetX (),

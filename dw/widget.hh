@@ -162,7 +162,7 @@ protected:
       /**
        * \brief Set, when dw::core::Widget::requisition is not up to date
        *    anymore.
-       */          
+       */
       NEEDS_RESIZE     = 1 << 0,
 
       /**
@@ -175,7 +175,7 @@ protected:
       /**
        * \brief Set, when dw::core::Widget::extremes is not up to date
        *    anymore.
-       */          
+       */
       EXTREMES_CHANGED = 1 << 2,
 
       /**
@@ -183,7 +183,7 @@ protected:
        *    methods are implemented.
        *
        * Will hopefully be removed, after redesigning the size model.
-       */          
+       */
       USES_HINTS       = 1 << 3,
 
       /**
@@ -191,7 +191,7 @@ protected:
        *    some contents, e.g. an image, as opposed to a horizontal ruler.
        *
        * Will hopefully be removed, after redesigning the size model.
-       */          
+       */
       HAS_CONTENTS     = 1 << 4,
 
       /**
@@ -266,7 +266,7 @@ protected:
 
    inline void setFlags (Flags f)   { flags = (Flags)(flags | f); }
    inline void unsetFlags (Flags f) { flags = (Flags)(flags & ~f); }
-   
+
 
    inline void queueDraw ()
    {
@@ -343,7 +343,7 @@ protected:
                                       EventMotion *event, bool withinContent)
    { return layout->selectionState.buttonMotion (it, charPos, linkNo, event,
                                                  withinContent); }
-   
+
    inline bool selectionHandleEvent (SelectionState::EventType eventType,
                                      Iterator *it, int charPos, int linkNo,
                                      MousePositionEvent *event,
@@ -375,7 +375,7 @@ public:
 
    inline void connectLink (LinkReceiver *receiver)
    { linkEmitter.connectLink (receiver); }
-   
+
    inline bool emitLinkEnter (int link, int img, int x, int y)
    { return linkEmitter.emitEnter (this, link, img, x, y); }
 
@@ -417,7 +417,7 @@ public:
    bool motionNotify (EventMotion *event);
    void enterNotify (EventCrossing *event);
    void leaveNotify (EventCrossing *event);
-   
+
    virtual void setStyle (style::Style *style);
    void setBgColor (style::Color *bgColor);
    style::Color *getBgColor ();

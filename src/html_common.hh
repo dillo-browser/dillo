@@ -16,7 +16,7 @@
 #include "styleengine.hh"
 
 /*
- * Macros 
+ * Macros
  */
 
 // Dw to Textblock
@@ -52,18 +52,18 @@
       old_style->unref (); \
    } while (FALSE)
 #else
-#define HTML_SET_TOP_ATTR(html, var, val) 
+#define HTML_SET_TOP_ATTR(html, var, val)
 #endif
 /*
- * Typedefs 
+ * Typedefs
  */
 
 typedef struct _DilloLinkImage   DilloLinkImage;
 typedef struct _DilloHtmlState   DilloHtmlState;
 
 typedef enum {
-   DT_NONE,           
-   DT_HTML,           
+   DT_NONE,
+   DT_HTML,
    DT_XHTML
 } DilloHtmlDocumentType;
 
@@ -105,7 +105,7 @@ typedef enum {
 } DilloHtmlProcessingState;
 
 /*
- * Data Structures 
+ * Data Structures
  */
 
 struct _DilloLinkImage {
@@ -140,7 +140,7 @@ struct _DilloHtmlState {
 };
 
 /*
- * Classes 
+ * Classes
  */
 
 class DilloHtml {
@@ -237,7 +237,7 @@ public:
 };
 
 /*
- * Parser functions 
+ * Parser functions
  */
 
 int a_Html_tag_index(const char *tag);

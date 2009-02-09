@@ -13,118 +13,118 @@ using namespace lout;
  *    of paragraphs.
  *
  * <h3>Signals</h3>
- * 
+ *
  * dw::Textblock uses the signals defined in
  * dw::core::Widget::LinkReceiver, related to links. The coordinates are
  * always -1.
- * 
- * 
+ *
+ *
  * <h3>Collapsing Spaces</h3>
- * 
+ *
  * The idea behind this is that every paragraph has a specific vertical
  * space around and that they are combined to one space, according to
  * rules stated below. A paragraph consists either of the lines between
  * two paragraph breaks within a dw::Textblock, or of a dw::Textblock
  * within a dw::Textblock, in a single line; the latter is used for
  * indented boxes and list items.
- * 
+ *
  * The rules:
- * 
+ *
  * <ol>
  * <li> If a paragraph is following by another, the space between them is the
  *      maximum of both box spaces:
- * 
+ *
  *      \image html dw-textblock-collapsing-spaces-1-1.png
- * 
+ *
  *       are combined like this:
- * 
+ *
  *       \image html dw-textblock-collapsing-spaces-1-2.png
- * 
+ *
  * <li> a) If one paragraph is the first paragraph within another, the upper
  *      space of these paragraphs collapse. b) The analogue is the case for the
  *      last box:
- * 
+ *
  *      \image html dw-textblock-collapsing-spaces-2-1.png
- * 
+ *
  *      If B and C are put into A, the result is:
- * 
+ *
  *      \image html dw-textblock-collapsing-spaces-2-2.png
  * </ol>
- * 
+ *
  * For achieving this, there are some features of dw::Textblock:
- * 
+ *
  * <ul>
  * <li> Consequent breaks are automatically combined, according to
  *      rule 1. See the code of dw::Textblock::addParBreak for details.
- * 
+ *
  * <li> If a break is added as the first word of the dw::Textblock within
  *      another dw::Textblock, collapsing according to rule 2a is done
  *      automatically. See the code of dw::Textblock::addParBreak.
- * 
+ *
  *  <li> To collapse spaces according to rule 2b,
  *        dw::Textblock::addParBreak::handOverBreak must be called for
  *        the \em inner widget. The HTML parser does this in
  *        Html_eventually_pop_dw.
  * </ul>
- * 
- * 
+ *
+ *
  * <h3>Collapsing Margins</h3>
- * 
+ *
  * Collapsing margins, as defined in the CSS2 specification, are,
  * supported in addition to collapsing spaces. Also, spaces and margins
  * collapse themselves. I.e., the space between two paragraphs is the
  * maximum of the space calculated as described in "Collapsing Spaces"
  * and the space calculated according to the rules for collapsing margins.
- * 
+ *
  * (This is an intermediate hybrid state, collapsing spaces are used in
  * the current version of dillo, while I implemented collapsing margins
  * for the CSS prototype and integrated it already into the main trunk. For
  * a pure CSS-based dillo, collapsing spaces will not be needed anymore, and
  * may be removed for simplicity.)
- * 
- * 
+ *
+ *
  * <h3>Some Internals</h3>
- * 
+ *
  * There are two lists, dw::Textblock::words and
  * dw::Textblock::lines. The word list is quite static; only new words
  * may be added. A word is either text, a widget, a break or an
  * anchor. Anchors are stored in the text, because it may be necessary to
  * correct the scroller positions at rewrapping.
- * 
+ *
  * Lines refer to the word list (first and last), they are completely
  * redundant, i.e., they can be rebuilt from the words. Lines can be
  * rewrapped either completely or partially (see "Incremental Resizing"
  * below). For the latter purpose, several values are accumulated in the
  * lines. See dw::Textblock::Line for details.
- * 
- * 
+ *
+ *
  * <h4>Incremental Resizing</h4>
- * 
+ *
  * dw::Textblock makes use of incremental resizing as described in \ref
  * dw-widget-sizes. The parentRef is, for children of a dw::Textblock, simply
  * the number of the line.
- * 
+ *
  * Generally, there are three cases which may change the size of the
  * widget:
- * 
+ *
  * <ul>
  * <li> The available size of the widget has changed, e.g., because the
  *      user has changed the size of the browser window. In this case,
  *      it is necessary to rewrap all the lines.
- * 
+ *
  * <li> A child widget has changed its size. In this case, only a rewrap
  *      down from the line where this widget is located is necessary.
- * 
+ *
  *      (This case is very important for tables. Tables are quite at the
  *      bottom, so that a partial rewrap is relevant. Otherwise, tables
  *      change their size quite often, so that this is necessary for a
  *      fast, non-blocking rendering)
- * 
+ *
  * <li> A word (or widget, break etc.) is added to the text block. This
  *      makes it possible to reuse the old size by simply adjusting the
  *      current width and height, so no rewrapping is necessary.
  * </ul>
- * 
+ *
  * The state of the size calculation is stored in wrapRef within
  * dw::Textblock, which has the value -1 if no rewrapping of lines
  * necessary, or otherwise the line from which a rewrap is necessary.
@@ -282,7 +282,7 @@ protected:
     */
    inline int lineXOffsetContents (Line *line)
    {
-      return innerPadding + line->leftOffset + 
+      return innerPadding + line->leftOffset +
          (line == lines->getRef (0) ? line1OffsetEff : 0);
    }
 
@@ -327,7 +327,7 @@ protected:
    {
       return lineYOffsetWidget (lines->getRef (lineIndex));
    }
-   
+
    inline int lineYOffsetCanvasI (int lineIndex)
    {
       return lineYOffsetCanvas (lines->getRef (lineIndex));
@@ -348,7 +348,7 @@ protected:
    void setWidth (int width);
    void setAscent (int ascent);
    void setDescent (int descent);
-   void draw (core::View *view, core::Rectangle *area);  
+   void draw (core::View *view, core::Rectangle *area);
 
    bool buttonPressImpl (core::EventButton *event);
    bool buttonReleaseImpl (core::EventButton *event);
@@ -364,7 +364,7 @@ public:
    Textblock(bool limitTextWidth);
    ~Textblock();
 
-   core::Iterator *iterator (core::Content::Type mask, bool atEnd); 
+   core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 
    void flush ();
 

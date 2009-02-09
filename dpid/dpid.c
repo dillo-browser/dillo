@@ -424,13 +424,13 @@ static int services_alpha_comp(const struct service *s1,
    return -strcmp(s1->name, s2->name);
 }
 
-/*! Add services reading a dpidrc file                                         
- * each non empty or commented line has the form                               
- * service = path_relative_to_dpidir                                           
- * \Return:                                                                    
- * \li Returns number of available services on success                         
- * \li -1 on failure                                                           
- */                                                                            
+/*! Add services reading a dpidrc file
+ * each non empty or commented line has the form
+ * service = path_relative_to_dpidir
+ * \Return:
+ * \li Returns number of available services on success
+ * \li -1 on failure
+ */
 int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
 {
    FILE *dpidrc_stream;
@@ -509,7 +509,7 @@ int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
          s->dp_index = i;
       dFree(line);
    }
-   fclose(dpidrc_stream); 
+   fclose(dpidrc_stream);
 
    dList_sort(*services_list, (dCompareFunc)services_alpha_comp);
 

@@ -14,24 +14,24 @@ namespace core {
  * UI resources are another abstraction for Dw widgets, which are not
  * fully implemented in a platform-independent way. Typically, they
  * involve creating widgets, which the underlying UI toolkit provides.
- * 
+ *
  * As you see in this diagram:
- * 
+ *
  * \dot
  * digraph G {
  *    node [shape=record, fontname=Helvetica, fontsize=10];
  *    edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
  *          labelfontsize=10, color="#404040", labelfontcolor="#000080"];
  *    fontname=Helvetica; fontsize=10;
- * 
+ *
  *    subgraph cluster_core {
  *       style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
  *       label="dw::core";
- * 
+ *
  *       subgraph cluster_ui {
  *          style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
  *          label="dw::core::ui";
- * 
+ *
  *          Embed [URL="\ref dw::core::ui::Embed"];
  *          Resource [color="#a0a0a0", URL="\ref dw::core::ui::Resource"];
  *          LabelButtonResource [color="#a0a0a0",
@@ -40,19 +40,19 @@ namespace core {
  *                        URL="\ref dw::core::ui::EntryResource"];
  *          etc [color="#a0a0a0", label="..."];
  *       }
- * 
+ *
  *       Widget [URL="\ref dw::core::Widget", color="#a0a0a0"];
  *    }
- * 
+ *
  *    subgraph cluster_fltk {
  *       style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
  *       label="dw::fltk::ui";
- * 
+ *
  *       FltkLabelButtonResource
  *          [URL="\ref dw::fltk::ui::FltkLabelButtonResource"];
  *       FltkEntryResource [URL="\ref dw::fltk::ui::FltkEntryResource"];
  *    }
- * 
+ *
  *    Widget -> Embed;
  *    Embed -> Resource [arrowhead="open", arrowtail="none",
  *                       headlabel="1", taillabel="1"];
@@ -63,16 +63,16 @@ namespace core {
  *    EntryResource -> FltkEntryResource;
  * }
  * \enddot
- * 
+ *
  * <center>[\ref uml-legend "legend"]</center>
- * 
+ *
  * there are several levels:
- * 
+ *
  * <ol>
  * <li> The Dw widget is dw::core::ui::Embed. It delegates most to
  *      dw::core::ui::Resource, which has similar methods like
  *      dw::core::Widget.
- * 
+ *
  * <li> There are several sub interfaces of dw::core::ui::Resource, which
  *      may provide methods, as e.g. dw::core::ui::ListResource::addItem. In a
  *      platform independent context, you can cast the result of
@@ -80,44 +80,44 @@ namespace core {
  *      know, which one is used. E.g., if you know, that a given instance
  *      dw::core::ui::Embed refers to a dw::core::ui::ListResource, you can
  *      write something like:
- * 
+ *
  * \code
  * dw::core::ui::Embed *embed;
  * //...
  * ((dw::core::ui::ListResource*)embed->getResource ())->addItem ("Hello!");
  * \endcode
- * 
+ *
  * <li> These sub classes are then fully implemented in a platform specific
  *      way. For an example, look at dw::fltk::ui.
  * </ol>
- * 
+ *
  * There is a factory interface, dw::core::ui::ResourceFactory, which
  * provides methods for creating common resources. By calling
  * dw::core::Layout::getResourceFactory, which calls
  * dw::core::Platform::getResourceFactory, you get the factory for the used
  * platform.
- * 
+ *
  * It is possible to define additional sub classes of
  * dw::core::ui::Resource, but since they are not provided by
  * dw::core::ui::ResourceFactory, you have to define some other
  * abstractions, if you want to remain platform independent.
- * 
- * 
+ *
+ *
  * <h3>...</h3>
- * 
- * 
+ *
+ *
  * <h3>Resouces needed for HTML</h3>
- * 
+ *
  * This chapter describes, how the form controls defined by HTML are
  * implemented in Dw. Some of them do not refer to UI resources, but to
  * other widgets, links to the respective documentations are provided
  * here.
- * 
+ *
  * <h4>Resouces created with \<INPUT\></h4>
- * 
+ *
  * The HTML \<INPUT\> is always implemented by using UI
  * resources. \<INPUT\> element has the following attributes:
- * 
+ *
  * <table>
  * <tr><th>Attribute <th>Implementation
  * <tr><td>type      <td>This defines the resource you have to instanciate.
@@ -127,7 +127,7 @@ namespace core {
  * <tr><td>checked   <td>Parameter to
  *                     dw::core::ui::ResourceFactory::createCheckButtonResource
  *                and dw::core::ui::ResourceFactory::createRadioButtonResource.
- * <tr><td>disabled  <td>This is provided for all resources by 
+ * <tr><td>disabled  <td>This is provided for all resources by
  *                       dw::core::ui::Resource::setEnabled.
  * <tr><td>readonly  <td>This is provided by
  *                       dw::core::ui::TextResource::setEditable.
@@ -146,10 +146,10 @@ namespace core {
  * <tr><td>onchange  <td>Not supported currently.
  * <tr><td>accept    <td>Not supported currently.
  * </table>
- * 
+ *
  * For the different values of \em type, the following resources can be
  * used:
- * 
+ *
  * <table>
  * <tr><th>Type     <th>Resource
  *                  <th>Factory Method
@@ -175,35 +175,35 @@ namespace core {
  * <tr><td>file     <td>Not supported currently.
  *                  <td>-
  * </table>
- * 
+ *
  * <h4>\<SELECT\>, \<OPTGROUP\>, and \<OPTION\></h4>
- * 
+ *
  * \<SELECT\> is implemented either by dw::core::ui::OptionMenuResource
  * (better suitable for \em size = 1 and single selection) or
  * dw::core::ui::ListResource, which have a common base,
  * dw::core::ui::SelectionResource. In the latter case, \em size must be
  * specified via dw::core::style::Style.
- * 
+ *
  * Factory methods are dw::core::ui::ResourceFactory::createListResource and
  * dw::core::ui::ResourceFactory::createOptionMenuResource.
- * 
+ *
  * \<OPTION\>'s are added via dw::core::ui::SelectionResource::addItem.
- * 
+ *
  * \<OPTGROUP\> are created by using dw::core::ui::SelectionResource::pushGroup
  * and dw::core::ui::SelectionResource::popGroup.
- * 
+ *
  * For lists, the selection mode must be set in
  * dw::core::ui::ResourceFactory::createListResource.
- * 
+ *
  * <h4>\<TEXTAREA\></h4>
- * 
+ *
  * \<TEXTAREA\> is implemented by dw::core::ui::MultiLineTextResource,
  * the factory method is
  * dw::core::ui::ResourceFactory::createMultiLineTextResource.
  * dw::core::ui::TextResource::setEditable can be used, as for entries.
- * 
+ *
  * <h4>\<BUTTON\></h4>
- * 
+ *
  * For handling \<BUTTON\>, dw::core::ui::ComplexButtonResource should be used,
  * with a dw::Textblock inside, and relief = true. The contents of \<BUTTON\>
  * is then added to the dw::Textblock.
@@ -328,7 +328,7 @@ protected:
 
 public:
    inline Resource () { embed = NULL; }
-   
+
    virtual ~Resource ();
 
    virtual void sizeRequest (Requisition *requisition) = 0;
@@ -339,7 +339,7 @@ public:
    virtual void setDescent (int descent);
    virtual void setDisplayed (bool displayed);
    virtual void draw (View *view, Rectangle *area);
-   virtual Iterator *iterator (Content::Type mask, bool atEnd) = 0; 
+   virtual Iterator *iterator (Content::Type mask, bool atEnd) = 0;
    virtual void setStyle (style::Style *style);
 
    virtual bool isEnabled () = 0;
@@ -361,7 +361,7 @@ class ButtonResource: public Resource
 class LabelButtonResource: public ButtonResource
 {
 public:
-   Iterator *iterator (Content::Type mask, bool atEnd); 
+   Iterator *iterator (Content::Type mask, bool atEnd);
 
    virtual const char *getLabel () = 0;
    virtual void setLabel (const char *label) = 0;
@@ -391,7 +391,7 @@ protected:
 
    virtual Platform *createPlatform () = 0;
    virtual void setLayout (Layout *layout) = 0;
-   
+
    virtual int reliefXThickness () = 0;
    virtual int reliefYThickness () = 0;
 
@@ -413,14 +413,14 @@ public:
 };
 
 /**
- * \brief Base interface for dw::core::ui::ListResource and 
+ * \brief Base interface for dw::core::ui::ListResource and
  *    dw::core::ui::OptionMenuResource.
  */
 class SelectionResource: public Resource
 {
 public:
    virtual void addItem (const char *str, bool enabled, bool selected) = 0;
-   
+
    virtual void pushGroup (const char *name, bool enabled) = 0;
    virtual void popGroup () = 0;
 
@@ -442,7 +442,7 @@ public:
 
       /**
        * \brief Exactly one item is selected, except possibly at the beginning.
-       * 
+       *
        * If no item is selected initially, no one is selected automatically.
        * The user may not unselect the only selected item.
        */
@@ -470,7 +470,7 @@ class OptionMenuResource: public SelectionResource
 class TextResource: public Resource
 {
 public:
-   Iterator *iterator (Content::Type mask, bool atEnd); 
+   Iterator *iterator (Content::Type mask, bool atEnd);
 
    virtual const char *getText () = 0;
    virtual void setText (const char *text) = 0;
@@ -499,7 +499,7 @@ public:
 class CheckButtonResource: public ToggleButtonResource
 {
 public:
-   Iterator *iterator (Content::Type mask, bool atEnd); 
+   Iterator *iterator (Content::Type mask, bool atEnd);
 };
 
 class RadioButtonResource: public ToggleButtonResource
@@ -523,7 +523,7 @@ public:
     */
    virtual GroupIterator *groupIterator () = 0;
 
-   Iterator *iterator (Content::Type mask, bool atEnd); 
+   Iterator *iterator (Content::Type mask, bool atEnd);
 };
 
 

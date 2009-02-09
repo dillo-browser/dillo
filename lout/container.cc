@@ -77,7 +77,7 @@ Iterator &Iterator::operator=(Iterator &it2)
 Iterator::~Iterator()
 {
    if (impl)
-      impl->unref(); 
+      impl->unref();
 }
 
 // ----------------
@@ -241,7 +241,7 @@ void List::append(Object *element)
    if (last) {
       last->next = newLast;
       last = newLast;
-   } else 
+   } else
       first = last = newLast;
 
    numElements++;

@@ -131,11 +131,11 @@ public:
     * identity::IdentifiableObject::instanceOf are done.
     */
    int getClassId () { return classId; }
-   
+
    /**
     * \brief Return the name, under which the class of this object was
     *    registered.
-    */ 
+    */
    const char *getClassName() { return classesById->get(classId)->className; }
 
    bool instanceOf (int otherClassId);

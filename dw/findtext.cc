@@ -75,7 +75,7 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
 
    bool wasHighlighted = unhighlight ();
    bool newKey;
-   
+
    // If the key (or the widget) changes (including case sensitivity),
    // the search is started from the beginning.
    if (this->key == NULL || this->caseSens != caseSens ||
@@ -89,7 +89,7 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
       if (nexttab)
          delete[] nexttab;
       nexttab = createNexttab (key, caseSens, backwards);
-      
+
       if (iterator)
          delete iterator;
       iterator = new CharIterator (widget);
@@ -149,7 +149,7 @@ void FindtextState::resetSearch ()
 
    if (key)
       delete key;
-   key = NULL;  
+   key = NULL;
 }
 
 /*
@@ -221,7 +221,7 @@ bool FindtextState::search0 (bool backwards,  bool firstTrial)
 {
    if (iterator->getChar () == CharIterator::END)
       return false;
-      
+
    bool ret = false;
    const char* searchKey = (backwards) ? rev(key) : key;
    int j = 0;
@@ -246,7 +246,7 @@ bool FindtextState::search0 (bool backwards,  bool firstTrial)
        * If n is negative, we have to move backwards, but if it is
        * positive, we have to move forward. So, when l>=4, we start moving
        * the iterator forward. */
-         
+
       if (l==1) {
          iterator->prev();
          iterator->prev();
@@ -262,7 +262,7 @@ bool FindtextState::search0 (bool backwards,  bool firstTrial)
       /* Particular case where we can't find the last character */
       iterator->next();
    }
-   
+
    do {
       if (j == -1 || charsEqual (iterator->getChar(),searchKey[j],caseSens)) {
          j++;
@@ -270,7 +270,7 @@ bool FindtextState::search0 (bool backwards,  bool firstTrial)
       } else
          j = nexttab[j];
    } while (nextit && j < l);
-   
+
    if (j >= l) {
       if (backwards) {
          //This is the location of the key

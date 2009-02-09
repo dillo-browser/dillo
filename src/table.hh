@@ -2,13 +2,13 @@
 #define __TABLE_HH__
 
 /*
- * Classes 
+ * Classes
  */
 
 class DilloHtml;
 
 /*
- * Table parsing functions 
+ * Table parsing functions
  */
 
 void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize);

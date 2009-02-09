@@ -153,7 +153,7 @@ DataBuf *a_Chain_dbuf_new(void *buf, int size, int code)
 /*
  * Check whether the CCC is operative.
  * Also used to hook debug information.
- * 
+ *
  * Return value: 1 if ready to use, 0 if not operative.
  */
 int a_Chain_check(char *FuncStr, int Op, int Branch, int Dir,

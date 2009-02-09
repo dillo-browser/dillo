@@ -34,7 +34,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
    font_attrs.weight = 400;
    font_attrs.style = FONT_STYLE_NORMAL;
- 
+
    style_attrs.initValues ();
    style_attrs.font = Font::create (layout, &font_attrs);
    style_attrs.color = Color::create (layout, 0);
@@ -146,11 +146,11 @@ void StyleEngine::endElement (int element) {
    if (n->wordStyle)
       n->wordStyle->unref ();
    if (n->id)
-      dFree ((void*) n->id); 
+      dFree ((void*) n->id);
    if (n->klass)
-      dFree ((void*) n->klass); 
+      dFree ((void*) n->klass);
    if (n->styleAttribute)
-      dFree ((void*) n->styleAttribute); 
+      dFree ((void*) n->styleAttribute);
 
    stack->setSize (stack->size () - 1);
 }
@@ -167,19 +167,19 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
     */
    for (int i = 0; i < props->size (); i++) {
       CssProperty *p = props->getRef (i);
-      
+
       switch (p->name) {
          case CSS_PROPERTY_FONT_FAMILY:
             // \todo handle comma separated lists of font names
             if (strcmp (p->value.strVal, "serif") == 0)
                fontAttrs.name = prefs.font_serif;
-            else if (strcmp (p->value.strVal, "sans-serif") == 0)  
+            else if (strcmp (p->value.strVal, "sans-serif") == 0)
                fontAttrs.name = prefs.font_sans_serif;
-            else if (strcmp (p->value.strVal, "cursive") == 0)  
+            else if (strcmp (p->value.strVal, "cursive") == 0)
                fontAttrs.name = prefs.font_cursive;
-            else if (strcmp (p->value.strVal, "fantasy") == 0)  
+            else if (strcmp (p->value.strVal, "fantasy") == 0)
                fontAttrs.name = prefs.font_fantasy;
-            else if (strcmp (p->value.strVal, "monospace") == 0)  
+            else if (strcmp (p->value.strVal, "monospace") == 0)
                fontAttrs.name = prefs.font_monospace;
             else
                fontAttrs.name = p->value.strVal;
@@ -268,29 +268,29 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
 
    for (int i = 0; i < props->size (); i++) {
       CssProperty *p = props->getRef (i);
-      
+
       switch (p->name) {
          /* \todo missing cases */
          case CSS_PROPERTY_BACKGROUND_COLOR:
             attrs->backgroundColor =
                Color::create (layout, p->value.intVal);
-            break; 
+            break;
          case CSS_PROPERTY_BORDER_TOP_COLOR:
             attrs->borderColor.top =
               Color::create (layout, p->value.intVal);
-            break; 
+            break;
          case CSS_PROPERTY_BORDER_BOTTOM_COLOR:
             attrs->borderColor.bottom =
               Color::create (layout, p->value.intVal);
-            break; 
+            break;
          case CSS_PROPERTY_BORDER_LEFT_COLOR:
             attrs->borderColor.left =
               Color::create (layout, p->value.intVal);
-            break; 
+            break;
          case CSS_PROPERTY_BORDER_RIGHT_COLOR:
             attrs->borderColor.right =
               Color::create (layout, p->value.intVal);
-            break; 
+            break;
          case CSS_PROPERTY_BORDER_BOTTOM_STYLE:
             attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
             break;
@@ -321,10 +321,10 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CSS_PROPERTY_COLOR:
             attrs->color = Color::create (layout, p->value.intVal);
-            break; 
+            break;
          case CSS_PROPERTY_CURSOR:
             attrs->cursor = (Cursor) p->value.intVal;
-            break; 
+            break;
          case CSS_PROPERTY_LIST_STYLE_TYPE:
             attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;
@@ -383,15 +383,15 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    }
 
    /* make sure border colors are set */
-   if (attrs->borderColor.top == NULL) 
+   if (attrs->borderColor.top == NULL)
       attrs->borderColor.top = attrs->color;
-   if (attrs->borderColor.bottom == NULL) 
+   if (attrs->borderColor.bottom == NULL)
       attrs->borderColor.bottom = attrs->color;
-   if (attrs->borderColor.left == NULL) 
+   if (attrs->borderColor.left == NULL)
       attrs->borderColor.left = attrs->color;
-   if (attrs->borderColor.right == NULL) 
+   if (attrs->borderColor.right == NULL)
       attrs->borderColor.right = attrs->color;
-   
+
 }
 
 /**
@@ -487,7 +487,7 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
 
    if (styleAttributeProps)
       delete styleAttributeProps;
-   
+
    return stack->getRef (stack->size () - 1)->style;
 }
 

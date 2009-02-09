@@ -668,7 +668,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
                entry->Flags |= CA_ForceRedirect;  /* 301 Moved Permanently */
             else if (header[11] == '2')
                entry->Flags |= CA_TempRedirect;   /* 302 Temporary Redirect */
-   
+
             location_url = a_Url_new(location_str, URL_STR_(entry->Url));
             if (URL_FLAGS(location_url) & (URL_Post + URL_Get) &&
                 dStrcasecmp(URL_SCHEME(location_url), "dpi") == 0 &&
@@ -827,7 +827,7 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
    _MSG("__a_Cache_process_dbuf__\n");
 
    if (Op == IORead) {
-      /* 
+      /*
        * Cache_get_header() will set CA_GotHeader if it has a full header, and
        * Cache_parse_header() will unset it if the header ends being
        * merely an informational response from the server (i.e., 100 Continue)
@@ -863,7 +863,7 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
          dStr_free(dstr1, 1);
          dStr_free(dstr2, 1);
          dStr_free(dstr3, 1);
-      
+
          if (entry->Data->len)
             entry->Flags &= ~CA_IsEmpty;
 
@@ -969,7 +969,7 @@ static void Cache_auth_callback(void *vdata)
 
 /*
  * Set a timeout function to ask for user/password.
- */ 
+ */
 static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw)
 {
    static int busy = 0;

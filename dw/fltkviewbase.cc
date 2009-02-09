@@ -115,7 +115,7 @@ void FltkViewBase::draw (const core::Rectangle *rect,
       translateCanvasXToViewX (rect->x) + offsetX,
       translateCanvasYToViewY (rect->y) + offsetY,
       rect->width, rect->height);
-   
+
    ::fltk::intersect_with_clip (viewRect);
 
    viewRect.x (viewRect.x () - offsetX);
@@ -135,7 +135,7 @@ void FltkViewBase::draw (const core::Rectangle *rect,
 
             backBuffer->setsize (viewRect.w (), viewRect.h ());
             backBuffer->make_current ();
-            translate (-viewRect.x (), -viewRect.y ());   
+            translate (-viewRect.x (), -viewRect.y ());
 
             setcolor (bgColor);
             fillrect (viewRect);
@@ -177,7 +177,7 @@ core::ButtonState getDwButtonState ()
 {
    int s1 = event_state ();
    int s2 = (core::ButtonState)0;
-   
+
    if (s1 & SHIFT)   s2 |= core::SHIFT_MASK;
    if (s1 & CTRL)    s2 |= core::CONTROL_MASK;
    if (s1 & ALT)     s2 |= core::META_MASK;
@@ -193,7 +193,7 @@ int FltkViewBase::handle (int event)
    bool processed;
 
    /**
-    * \todo Consider, whether this from the FLTK documentation has any 
+    * \todo Consider, whether this from the FLTK documentation has any
     *    impacts: "To receive fltk::RELEASE events you must return non-zero
     *    when passed a fltk::PUSH event. "
     */
@@ -249,7 +249,7 @@ int FltkViewBase::handle (int event)
    case LEAVE:
       theLayout->leaveNotify (this, getDwButtonState ());
       return Group::handle (event);
-      
+
    default:
       return Group::handle (event);
    }
@@ -410,7 +410,7 @@ void FltkViewBase::drawPolygon (core::style::Color *color,
          fillpath();
       else
          strokepath();
-   }         
+   }
 }
 
 core::View *FltkViewBase::getClippingView (int x, int y, int width, int height)
@@ -439,7 +439,7 @@ FltkWidgetView::~FltkWidgetView ()
 
 void FltkWidgetView::layout () {
    /**
-    * pass layout to child widgets. This is needed for complex fltk 
+    * pass layout to child widgets. This is needed for complex fltk
     * widgets as TextEditor.
     * We can't use Group::layout() as that would rearrange the widgets.
     */

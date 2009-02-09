@@ -198,7 +198,7 @@ bool Widget::LinkEmitter::emitToReceiver (lout::signal::Receiver *receiver,
    return false;
 }
 
-bool Widget::LinkEmitter::emitEnter (Widget *widget, int link, int img, 
+bool Widget::LinkEmitter::emitEnter (Widget *widget, int link, int img,
                                      int x, int y)
 {
    Integer ilink (link), iimg (img), ix (x), iy (y);
@@ -238,7 +238,7 @@ int Widget::CLASS_ID = -1;
 Widget::Widget ()
 {
    registerName ("dw::core::Widget", &CLASS_ID);
-   
+
    flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED | HAS_CONTENTS);
    parent = NULL;
    layout = NULL;
@@ -496,7 +496,7 @@ void Widget::leaveNotify (EventCrossing *event)
  * The old style is automatically unreferred, the new is referred. If this
  * call causes the widget to change its size, dw::core::Widget::queueResize
  * is called.
- */ 
+ */
 void Widget::setStyle (style::Style *style)
 {
    bool sizeChanged;
@@ -696,7 +696,7 @@ Widget *Widget::getNearestCommonAncestor (Widget *otherWidget)
          MSG_WARN("widgets in different trees\n");
          return NULL;
       }
-      
+
       widget1 = widget1->parent;
       widget2 = widget2->parent;
    }
@@ -707,7 +707,7 @@ Widget *Widget::getNearestCommonAncestor (Widget *otherWidget)
 
 /**
  * \brief Search recursively through widget.
- * 
+ *
  * Used by dw::core::Layout:getWidgetAtPoint.
  */
 Widget *Widget::getWidgetAtPoint (int x, int y, int level)
@@ -739,7 +739,7 @@ Widget *Widget::getWidgetAtPoint (int x, int y, int level)
                                                                     level + 1);
 
       it->unref ();
-      
+
       if (childAtPoint)
          return childAtPoint;
       else

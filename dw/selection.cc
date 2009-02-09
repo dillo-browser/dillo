@@ -95,13 +95,13 @@ void SelectionState::resetLink ()
    link = NULL;
    linkState = LINK_NONE;
 }
-   
+
 bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
                                   EventButton *event, bool withinContent)
 {
    Widget *itWidget = it->getWidget ();
    bool ret = false;
- 
+
    if (event && event->button == 1 &&
        !withinContent && event->numPressed == 2) {
       // When the user double-clicks on empty parts, emit the double click

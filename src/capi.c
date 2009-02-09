@@ -423,7 +423,7 @@ const char *a_Capi_get_content_type(const DilloUrl *url)
 }
 
 /*
- * Set the Content-Type for the URL. 
+ * Set the Content-Type for the URL.
  */
 const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
                                     const char *from)
@@ -554,7 +554,7 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             if (Data2 && !strcmp(Data2, "DpidERROR"))
                a_UIcmd_set_msg(conn->bw,
                                "ERROR: can't start dpid daemon "
-                               "(URL scheme = '%s')!", 
+                               "(URL scheme = '%s')!",
                                URL_SCHEME(conn->url));
             /* finish conn */
             Capi_conn_unref(conn);

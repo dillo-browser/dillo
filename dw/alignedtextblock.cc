@@ -63,7 +63,7 @@ int AlignedTextblock::CLASS_ID = -1;
 AlignedTextblock::AlignedTextblock (bool limitTextWidth):
    Textblock (limitTextWidth)
 {
-   registerName ("dw::AlignedTextblock", &CLASS_ID);  
+   registerName ("dw::AlignedTextblock", &CLASS_ID);
 }
 
 void AlignedTextblock::setRefTextblock (AlignedTextblock *ref)
@@ -76,7 +76,7 @@ void AlignedTextblock::setRefTextblock (AlignedTextblock *ref)
    listPos = list->add (this);
    updateValue ();
 }
-                                    
+
 AlignedTextblock::~AlignedTextblock()
 {
    list->unref (listPos);
@@ -86,7 +86,7 @@ void AlignedTextblock::updateValue ()
 {
    if (list) {
       list->setValue (listPos, getValue ());
-      
+
       if (list->getValue (listPos) > list->getMaxValue ()) {
          // New value greater than current maximum -> apply it to others.
          list->setMaxValue (list->getValue (listPos));

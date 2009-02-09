@@ -157,7 +157,7 @@ void FltkViewport::layout ()
 {
    theLayout->viewportSizeChanged (this, w(), h());
    adjustScrollbarsAndGadgetsAllocation ();
-   
+
    FltkWidgetView::layout ();
 }
 
@@ -206,8 +206,8 @@ void FltkViewport::draw ()
       }
    }
 
-   scrollDX = 0; 
-   scrollDY = 0; 
+   scrollDX = 0;
+   scrollDY = 0;
 }
 
 int FltkViewport::handle (int event)
@@ -262,12 +262,12 @@ int FltkViewport::handle (int event)
    case ::fltk:: MOUSEWHEEL:
       return (event_dx() ? hscrollbar : vscrollbar)->handle(event);
       break;
-   
+
    case ::fltk::RELEASE:
       if (::fltk::event_button() == ::fltk::MiddleButton) {
          dragScrolling = 0;
          setCursor (core::style::CURSOR_DEFAULT);
-      } 
+      }
       break;
 
    case ::fltk::ENTER:
@@ -362,7 +362,7 @@ void FltkViewport::positionChanged ()
 /*
  * For scrollbars, this currently sets the same step to both vertical and
  * horizontal. It may me differentiated if necessary.
- */ 
+ */
 void FltkViewport::setScrollStep(int step)
 {
    vscrollbar->linesize(step);
@@ -443,8 +443,8 @@ void FltkViewport::updateCanvasWidgets (int dx, int dy)
    // scroll all child widgets except scroll bars
    for (int i = children () - 1; i > 0; i--) {
       ::fltk::Widget *widget = child (i);
-     
-      if (widget == hscrollbar || widget == vscrollbar) 
+
+      if (widget == hscrollbar || widget == vscrollbar)
          continue;
 
       widget->x (widget->x () - dx);

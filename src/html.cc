@@ -48,7 +48,7 @@
 #include "dw/ruler.hh"
 
 /*-----------------------------------------------------------------------------
- * Defines 
+ * Defines
  *---------------------------------------------------------------------------*/
 
 /* Define to 1 to ignore white space immediately after an open tag,
@@ -201,7 +201,7 @@ static void Html_free(void *data)
 
 /*
  * Used by the "Load images" page menuitem.
- */ 
+ */
 void a_Html_load_images(void *v_html, DilloUrl *pattern)
 {
    DilloHtml *html = (DilloHtml*)v_html;
@@ -210,7 +210,7 @@ void a_Html_load_images(void *v_html, DilloUrl *pattern)
 }
 
 /*
- * Search for form 
+ * Search for form
  */
 static bool Html_contains_form(DilloHtml *html, void *v_form)
 {
@@ -230,9 +230,9 @@ void a_Html_form_submit(void *v_html, void *v_form)
    DilloHtml *html = (DilloHtml*)v_html;
 
    if (Html_contains_form(html, v_form)) {
-      /* it's still valid */              
+      /* it's still valid */
      a_Html_form_submit2(v_form);
-   }                          
+   }
 }
 
 /*
@@ -243,7 +243,7 @@ void a_Html_form_reset(void *v_html, void *v_form)
    DilloHtml *html = (DilloHtml*)v_html;
 
    if (Html_contains_form(html, v_form)) {
-      /* it's still valid */            
+      /* it's still valid */
      a_Html_form_reset2(v_form);
    }
 }
@@ -306,7 +306,7 @@ static void Html_add_new_linkimage(DilloHtml *html,
  * sets the style at the top of the stack.
  */
 void a_Html_tag_set_align_attr(DilloHtml *html,
-                               CssPropertyList *props,        
+                               CssPropertyList *props,
                                const char *tag, int tagsize)
 {
    const char *align;
@@ -948,7 +948,7 @@ static int Html_parse_entity(DilloHtml *html, const char *token,
             /* strtol with base 16 accepts leading "0x" - we don't */
             if (*s == '0' && s[1] == 'x') {
                s++;
-               isocode = 0; 
+               isocode = 0;
             } else {
                isocode = strtol(s, &s, 16);
             }
@@ -1041,7 +1041,7 @@ char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize)
 /*
  * Parse spaces
  */
-static void Html_process_space(DilloHtml *html, const char *space, 
+static void Html_process_space(DilloHtml *html, const char *space,
                                int spacesize)
 {
    char *spc;
@@ -1178,7 +1178,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             if (strchr("\t\f\n\r", Pword[i])) {
                if (i == 0 || (i > 0 && Pword[i-1] != ' '))
                   Pword[i] = ' ';
-               else 
+               else
                   for (--i; strchr("\t\f\n\r", Pword[j+1]); ++j) ;
             }
          }
@@ -1446,7 +1446,7 @@ static int
  * recognizes the "HTML Level" with or without the URL. The convention
  * comes from mozilla (see URLs below), but Dillo doesn't have the same
  * rendering modes, so it may be better to chose another behaviour. --Jcid
- * 
+ *
  * http://www.mozilla.org/docs/web-developer/quirks/doctypes.html
  * http://lists.auriga.wearlab.de/pipermail/dillo-dev/2004-October/002300.html
  *
@@ -1881,7 +1881,7 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "color"))) {
       if (prefs.contrast_visited_color && html->InVisitedLink) {
          color = html->visited_color;
-      } else { 
+      } else {
          /* use the tag-specified color */
          color = a_Html_color_parse(html, attrbuf, -1);
       }
@@ -2058,7 +2058,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
 /*
  * Tell cache to retrieve image
  */
-static void Html_load_image(BrowserWindow *bw, DilloUrl *url, 
+static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
                             DilloImage *Image)
 {
    DilloWeb *Web;
@@ -2198,7 +2198,7 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
    int link = -1;
    Shape *shape = NULL;
-  
+
    if (!(html->InFlags & IN_MAP)) {
       BUG_MSG("<area> element not inside <map>\n");
       return;
@@ -2260,7 +2260,7 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
          dReturn_if_fail ( url != NULL );
          if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "alt")))
             a_Url_set_alt(url, attrbuf);
-  
+
          link = Html_set_new_link(html, &url);
       }
       if (type == BACKGROUND)
@@ -2283,7 +2283,7 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "codebase"))) {
       base_url = a_Html_url_new(html, attrbuf, NULL, 0);
    }
-   
+
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "data"))) {
       url = a_Html_url_new(html, attrbuf,
                            URL_STR(base_url), (base_url != NULL));
@@ -2294,7 +2294,7 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
       } else {
          html->styleEngine->setPseudoLink ();
       }
-   
+
       props.set(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
                 Html_set_new_link(html, &url));
       html->styleEngine->setNonCssHints (&props);
@@ -2418,7 +2418,7 @@ static void Html_tag_close_a(DilloHtml *html, int TagIdx)
 /*
  * <BLOCKQUOTE>
  */
-static void Html_tag_open_blockquote(DilloHtml *html, 
+static void Html_tag_open_blockquote(DilloHtml *html,
                                      const char *tag, int tagsize)
 {
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
@@ -2474,7 +2474,7 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
 
       props.set(CSS_PROPERTY_LIST_STYLE_TYPE, CSS_TYPE_ENUM, list_style_type);
       html->styleEngine->setNonCssHints (&props);
-   } 
+   }
 
    DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    Html_add_textblock(html, 9);
@@ -2561,7 +2561,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
    int *list_number;
    const char *attrbuf;
    char buf[16];
-   
+
    if (S_TOP(html)->list_type == HTML_LIST_NONE)
       BUG_MSG("<li> outside <ul> or <ol>\n");
 
@@ -2622,7 +2622,7 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
    char *width_ptr;
    const char *attrbuf;
    int32_t size = 0;
-  
+
    width_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "width", NULL);
    if (width_ptr) {
       props.set (CSS_PROPERTY_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
@@ -2632,9 +2632,9 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
       size = strtol(attrbuf, NULL, 10);
- 
-   a_Html_tag_set_align_attr(html, &props, tag, tagsize); 
-  
+
+   a_Html_tag_set_align_attr(html, &props, tag, tagsize);
+
    /* TODO: evaluate attribute */
    if (a_Html_get_attr(html, tag, tagsize, "noshade")) {
       props.set (CSS_PROPERTY_BORDER_TOP_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
@@ -2645,15 +2645,15 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
       if (size <= 0)
          size = 1;
    }
- 
-   if (size > 0) { 
+
+   if (size > 0) {
       CssLength size_top = CSS_CREATE_LENGTH ((size+1)/2, CSS_LENGTH_TYPE_PX);
       CssLength size_bottom = CSS_CREATE_LENGTH (size / 2, CSS_LENGTH_TYPE_PX);
       props.set (CSS_PROPERTY_BORDER_TOP_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
                  size_top);
-      props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE, 
+      props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
                  size_top);
-      props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE, 
+      props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
                  size_bottom);
       props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
                  size_bottom);
@@ -2808,7 +2808,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
             html->stop_parser = true; /* The cache buffer is no longer valid */
             a_UIcmd_repush(html->bw);
          }
-      }   
+      }
    }
 }
 
@@ -3436,7 +3436,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
           (tag[tagsize-2] == '/' &&                             /* XML:    */
            (strchr(" \"'", tag[tagsize-3]) ||                   /* [ "']/> */
             (size_t)tagsize == strlen(Tags[ni].name) + 3))) {   /*  <x/>   */
-   
+
          _MSG("Close: %s\n", Tags[ni].name);
          Html_tag_cleanup_at_close(html, ni);
          /* This was a close tag */

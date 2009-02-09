@@ -41,7 +41,7 @@ static BrowserWindow *popup_bw = NULL;
 // Where to place the filemenu popup
 static int popup_x, popup_y;
 // History popup direction (-1 = back, 1 = forward).
-static int history_direction = -1; 
+static int history_direction = -1;
 // History popup, list of URL-indexes.
 static int *history_list = NULL;
 
@@ -115,7 +115,7 @@ static void Menu_link_cb(Widget*, void *user_data)
       a_Menu_link_popup(popup_bw, url);
 }
 
-/* 
+/*
  * Open URL
  */
 static void Menu_open_url_cb(Widget* )
@@ -124,7 +124,7 @@ static void Menu_open_url_cb(Widget* )
    a_UIcmd_open_url(popup_bw, popup_url);
 }
 
-/* 
+/*
  * Open URL in new window
  */
 static void Menu_open_url_nw_cb(Widget* )
@@ -133,7 +133,7 @@ static void Menu_open_url_nw_cb(Widget* )
    a_UIcmd_open_url_nw(popup_bw, popup_url);
 }
 
-/* 
+/*
  * Open URL in new Tab
  */
 static void Menu_open_url_nt_cb(Widget* )
@@ -143,7 +143,7 @@ static void Menu_open_url_nt_cb(Widget* )
    a_UIcmd_open_url_nt(popup_bw, popup_url, focus);
 }
 
-/* 
+/*
  * Add bookmark
  */
 static void Menu_add_bookmark_cb(Widget* )
@@ -151,7 +151,7 @@ static void Menu_add_bookmark_cb(Widget* )
    a_UIcmd_add_bookmark(popup_bw, popup_url);
 }
 
-/* 
+/*
  * Find text
  */
 static void Menu_find_text_cb(Widget* )
@@ -159,7 +159,7 @@ static void Menu_find_text_cb(Widget* )
    ((UI *)popup_bw->ui)->set_findbar_visibility(1);
 }
 
-/* 
+/*
  * Save link
  */
 static void Menu_save_link_cb(Widget* )
@@ -167,7 +167,7 @@ static void Menu_save_link_cb(Widget* )
    a_UIcmd_save_link(popup_bw, popup_url);
 }
 
-/* 
+/*
  * Save current page
  */
 static void Menu_save_page_cb(Widget* )
@@ -175,7 +175,7 @@ static void Menu_save_page_cb(Widget* )
    a_UIcmd_save(popup_bw);
 }
 
-/* 
+/*
  * View current page source
  */
 static void Menu_view_page_source_cb(Widget* )
@@ -183,7 +183,7 @@ static void Menu_view_page_source_cb(Widget* )
    a_UIcmd_view_page_source(popup_url);
 }
 
-/* 
+/*
  * View current page's bugs
  */
 static void Menu_view_page_bugs_cb(Widget* )
@@ -238,7 +238,7 @@ static void Menu_form_hiddens_cb(Widget *w, void *user_data)
       a_Html_form_display_hiddens(doc, v_form, !visible);
 }
 
-/* 
+/*
  * Validate URL with the W3C
  */
 static void Menu_bugmeter_validate_w3c_cb(Widget* )
@@ -251,7 +251,7 @@ static void Menu_bugmeter_validate_w3c_cb(Widget* )
    dStr_free(dstr, 1);
 }
 
-/* 
+/*
  * Validate URL with the WDG
  */
 static void Menu_bugmeter_validate_wdg_cb(Widget* )
@@ -265,7 +265,7 @@ static void Menu_bugmeter_validate_wdg_cb(Widget* )
    dStr_free(dstr, 1);
 }
 
-/* 
+/*
  * Show info page for the bug meter
  */
 static void Menu_bugmeter_about_cb(Widget* )
@@ -323,7 +323,7 @@ static void Menu_popup_cb2(void *data)
 /*
  * Page popup menu (construction & popup)
  */
-void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url, 
+void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
                        bool_t has_bugs)
 {
    // One menu for every browser window
@@ -345,13 +345,13 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
        i->callback(Menu_view_page_bugs_cb);
        i = new Item("Bookmark this page");
        i->callback(Menu_add_bookmark_cb);
-       new Divider();    
+       new Divider();
        i = new Item("Find Text");
        i->callback(Menu_find_text_cb);
        //i->shortcut(CTRL+'f');
        i = new Item("Jump to...");
        i->deactivate();
-       new Divider();    
+       new Divider();
        i = new Item("Save page As...");
        i->callback(Menu_save_page_cb);
 
@@ -387,12 +387,12 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
        i->callback(Menu_open_url_nw_cb);
        i = new Item("Open Link in New Tab");
        i->callback(Menu_open_url_nt_cb);
-       new Divider();    
+       new Divider();
        i = new Item("Bookmark this Link");
        i->callback(Menu_add_bookmark_cb);
        i = new Item("Copy Link location");
        i->callback(Menu_copy_urlstr_cb);
-       new Divider();    
+       new Divider();
        i = new Item("Save Link As...");
        i->callback(Menu_save_link_cb);
 
@@ -425,7 +425,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
    popup_page_url = a_Url_dup(page_url);
    a_Url_free(popup_link_url);
    popup_link_url = a_Url_dup(link_url);
-   
+
    if (!pm) {
       Item *i;
       pm = new PopupMenu(0,0,0,0,"&IMAGE OPTIONS");
@@ -561,7 +561,7 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
        i->callback(Menu_bugmeter_validate_w3c_cb);
        i = new Item("Validate URL with WDG");
        i->callback(Menu_bugmeter_validate_wdg_cb);
-       new Divider();    
+       new Divider();
        i = new Item("About Bug Meter...");
        i->callback(Menu_bugmeter_about_cb);
       pm->type(PopupMenu::POPUP123);
@@ -614,7 +614,7 @@ void a_Menu_history_popup(BrowserWindow *bw, int direction)
 
 /*
  * Toggle use of remote stylesheets
- */ 
+ */
 static void Menu_remote_css_cb(Widget *wid)
 {
    _MSG("Menu_remote_css_cb\n");
@@ -624,7 +624,7 @@ static void Menu_remote_css_cb(Widget *wid)
 
 /*
  * Toggle use of embedded CSS style
- */ 
+ */
 static void Menu_embedded_css_cb(Widget *wid)
 {
    prefs.parse_embedded_css = wid->state() ? 1 : 0;
@@ -633,7 +633,7 @@ static void Menu_embedded_css_cb(Widget *wid)
 
 /*
  * Toggle loading of images -- and load them if enabling.
- */ 
+ */
 static void Menu_imgload_toggle_cb(Widget *wid)
 {
    if ((prefs.load_images = wid->state() ? 1 : 0)) {
@@ -667,7 +667,7 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
        it = new ToggleItem("Use embedded CSS");
        it->callback(Menu_embedded_css_cb);
        it->state(prefs.parse_embedded_css);
-       new Divider();    
+       new Divider();
        it = new ToggleItem("Load images");
        it->callback(Menu_imgload_toggle_cb);
        it->state(prefs.load_images);

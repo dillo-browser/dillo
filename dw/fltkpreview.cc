@@ -288,7 +288,7 @@ int FltkPreviewButton::handle (int event)
    case RELEASE:
       window->hideWindow ();
       return Button::handle (event);
-    
+
    default:
       return Button::handle (event);
    }

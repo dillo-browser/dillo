@@ -14,100 +14,100 @@ namespace core {
  * \brief Anything related to Dillo %Widget styles is defined here.
  *
  * <h3>Overview</h3>
- * 
+ *
  * dw::core::style::Style provides some resources and attributes for
  * drawing widgets, as well as for parts of a widget (e.g., dw::Textblock
  * uses styles for its words). Creating a style is done by filling a
  * dw::core::style::StyleAttrs with the attributes and calling
  * dw::core::style::Style::create:
- * 
+ *
  * \code
  * dw::core::style::Style styleAttrs;
  * dw::core::style::Style *style;
  * dw::core::Layout *layout;
- * 
+ *
  * // ...
- * 
+ *
  * styleAttrs.foo = bar;
  * // etc.
  * style = dw::core::style::Style::create (&styleAttrs, layout);
  * // do something with style
  * \endcode
- * 
+ *
  * After this, the attributes of a dw::core::style::Style should not be
  * changed anymore, since styles are often shared between different
  * widgets etc. (see below). Most times, you simply copy the attributes
  * of another style (possible, since dw::core::style::Style is a sub
  * class of dw::core::style::StyleAttrs), modify them and create a new
  * style:
- * 
+ *
  * \code
  * styleAttrs = *anotherStyle;
  * styleAttrs.foo = baz;
  * style = dw::core::style::Style::create (&styleAttrs, layout);
  * \endcode
- * 
+ *
  * The dw::core::style::Font structure can be created by
  * dw::core::style::Font::create, in a similar, with
  * dw::core::style::FontAttrs, and colors by
  * dw::core::style::Color::create, passing 0xrrggbb as an
  * argument. Furthermore, there is dw::core::style::Tooltip, created by
  * dw::core::style::Tooltip::create.
- * 
+ *
  * Notice that fonts, colors and tooltips are only intended to be used in
  * conjunction with dw::core::style::Style.
- * 
- * 
+ *
+ *
  * <h3>Naming</h3>
- * 
+ *
  * dw::core::style::Style will become important for CSS, each CSS
  * attribute, which is supported by dillo, will refer to an attribute in
  * dw::core::style::Style. For this reason, the attributes in
  * dw::core::style::Style get the names from the CSS attributes, with
  * "camelCase" instead of hythens (e.g. "background-color" becomes
  * "backgroundColor").
- * 
+ *
  * However, dw::core::style::Style will be extended by some more
  * attributes, which are not defined by CSS. To distinguish them, they
  * get the prefix "x_", e.g. dw::core::style::Style::x_link.
- * 
- * 
+ *
+ *
  * <h3>Lengths and Percentages</h3>
- * 
+ *
  * dw::core::style::Length is a simple data type for lengths and
  * percentages:
- * 
+ *
  * <ul>
  * <li> A length refers to an absolute measurement. It is used to
  *      represent the HTML type %Pixels; and the CSS type \<length\>.
- * 
+ *
  *      For CSS lenghts, there are two units: (i) pixels and absolute
  *      units, which have to be converted to pixels (a pixel is, unlike
  *      in the CSS specification, treated as absolute unit), and (ii) the
  *      relative units "em" and "ex" (see below).
- * 
+ *
  * <li> A percentage refers to a value relative to another value. It is
  *      used for the HTML type %Length; (except %Pixels;), and the CSS
  *      type \<percentage\>.
- * 
+ *
  * <li> A relative length can be used in lists of HTML MultiLengths.
  * </ul>
- * 
+ *
  * Since many values in CSS may be either lengths or percentages, a
  * single type is very useful.
- * 
+ *
  * <h4>Useful Functions</h4>
- * 
+ *
  * Creating lengths:
- * 
+ *
  * <ul>
  * <li> dw::core::style::createAbsLength
  * <li> dw::core::style::createPerLength
  * <li> dw::core::style::createRelLength
  * </ul>
- * 
+ *
  * Examine lengths:
- * 
+ *
  * <ul>
  * <li> dw::core::style::isAbsLength
  * <li> dw::core::style::isPerLength
@@ -116,61 +116,61 @@ namespace core {
  * <li> dw::core::style::perLengthVal
  * <li> dw::core::style::relLengthVal
  * </ul>
- * 
- * 
+ *
+ *
  * <h3>Boxes</h3>
- * 
+ *
  * <h4>The CSS %Box Model</h4>
- * 
+ *
  * For borders, margins etc., the box model defined by CSS2 is
  * used. dw::core::style::Style contains some members defining these
  * attributes. A dw::core::Widget must use these values for any
  * calculation of sizes. There are some helper functions (see
  * dw/style.hh). A dw::core::style::Style box looks quite similar to a
  * CSS box:
- * 
+ *
  * \image html dw-style-box-model.png
- * 
+ *
  * <h4>Background colors</h4>
- * 
+ *
  * The background color is stored in
  * dw::core::style::Style::backgroundColor, which may be NULL (the
  * background color of the parent widget is shining through).
- * 
+ *
  * For toplevel widgets, this color is set as the background color of the
  * views (dw::core::View::setBgColor), for other widgets, a filled
  * rectangle is drawn, covering the content and padding. (This is
  * compliant with CSS2, the background color of the toplevel element
  * covers the whole canvas.)
- * 
+ *
  * <h4>Drawing</h4>
- * 
+ *
  * The following methods may be useful:
- * 
+ *
  * <ul>
  * <li> dw::core::Widget::drawWidgetBox for drawing the box of a widget
  *      (typically at the beginning of the implementation of
  *      dw::core::Widget::draw), and
- * 
+ *
  * <li> dw::core::Widget::drawBox, for drawing parts of a widget (e.g.
  *      dw::Textblock::Word, which has its own dw::Textblock::Word::style).
  * </ul>
- * 
- * 
+ *
+ *
  * <h3>Notes on Memory Management</h3>
- * 
+ *
  * Memory management is done by reference counting,
  * dw::core::style::Style::create returns a pointer to
  * dw::core::style::Style with an increased reference counter, so you
  * should care about calling dw::core::style::Style::unref if it is not
  * used anymore. You do \em not need to care about the reference counters
  * of fonts and styles.
- * 
+ *
  * In detail:
- * 
+ *
  * <ul>
  * <li> dw::core::style::Style::ref is called in
- * 
+ *
  *      <ul>
  *      <li> dw::core::Widget::setStyle to assign a style to a widget,
  *      <li> dw::Textblock::addText, dw::Textblock::addWidget,
@@ -179,9 +179,9 @@ namespace core {
  *           to assign a style to a dw::Textblock::Word, and
  *      <li> by the HTML parser, when pushing an element on the stack.
  *      </ul>
- * 
+ *
  * <li> dw::core::style::Style::unref is called in
- * 
+ *
  *      <ul>
  *      <li> dw::core::Widget::~Widget, dw::Textblock::~Textblock, by the
  *           HTML parser, when popping an element fom the stack, and
@@ -319,15 +319,15 @@ enum WhiteSpace {
  * This is an implementation detail, use one of the following functions:
  *
  * Creating lengths:
- * 
+ *
  * <ul>
  * <li> dw::core::style::createAbsLength
  * <li> dw::core::style::createPerLength
  * <li> dw::core::style::createRelLength
  * </ul>
- * 
+ *
  * Examine lengths:
- * 
+ *
  * <ul>
  * <li> dw::core::style::isAbsLength
  * <li> dw::core::style::isPerLength
@@ -433,7 +433,7 @@ public:
    int x_link;
    int x_img;
    Tooltip *x_tooltip;
-   
+
    void initValues ();
    void resetValues ();
 

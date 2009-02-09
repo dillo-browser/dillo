@@ -100,7 +100,7 @@ private:
 
    /**
     * \brief Return the z-coordinate of the vector product of two
-    *    vectors, whose z-coordinate is 0 (so that x and y of 
+    *    vectors, whose z-coordinate is 0 (so that x and y of
     *    the vector product is 0, too).
     */
    inline int zOfVectorProduct(int x1, int y1, int x2, int y2) {
@@ -130,8 +130,8 @@ public:
 class Region
 {
 private:
-   container::typed::List <Rectangle> *rectangleList; 
-      
+   container::typed::List <Rectangle> *rectangleList;
+
 public:
    Region ();
    ~Region ();
@@ -186,7 +186,7 @@ struct Content
       SELECTION_CONTENT = TEXT | WIDGET | BREAK
    };
    /* Content is embedded in struct Word therefore we
-    * try to be space efficient. 
+    * try to be space efficient.
     */
    short type;
    bool space;

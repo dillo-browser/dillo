@@ -22,7 +22,7 @@
 
 #include "ruler.hh"
 #include "../lout/misc.hh"
-   
+
 #include <stdio.h>
 
 namespace dw {

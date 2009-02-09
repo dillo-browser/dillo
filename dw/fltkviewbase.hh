@@ -79,7 +79,7 @@ class FltkWidgetView: public FltkViewBase
 public:
    FltkWidgetView (int x, int y, int w, int h, const char *label = 0);
    ~FltkWidgetView ();
- 
+
    void layout();
 
    void drawText (core::style::Font *font,

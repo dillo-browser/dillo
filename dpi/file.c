@@ -678,7 +678,7 @@ static int File_get_file(ClientInfo *Client,
    }
 
    File_close(fd);
-      
+
    return 0;
 }
 

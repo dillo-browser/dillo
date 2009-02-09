@@ -114,7 +114,7 @@ void Table::sizeRequestImpl (core::Requisition *requisition)
       getStyle()->boxDiffHeight () + cumHeight->get (numRows)
       + getStyle()->vBorderSpacing;
    requisition->descent = 0;
-   
+
 }
 
 void Table::getExtremesImpl (core::Extremes *extremes)
@@ -171,14 +171,14 @@ void Table::sizeAllocateImpl (core::Allocation *allocation)
 
             core::Allocation childAllocation;
             core::Requisition childRequisition;
-            
+
             children->get(n)->cell.widget->sizeRequest (&childRequisition);
 
             childAllocation.x = x;
             childAllocation.y = cumHeight->get (row) + offy;
             childAllocation.width = width;
             childAllocation.ascent = childRequisition.ascent;
-            childAllocation.descent = 
+            childAllocation.descent =
                cumHeight->get (row + children->get(n)->cell.rowspan)
                - cumHeight->get (row) - getStyle()->vBorderSpacing
                - childRequisition.ascent;
@@ -187,7 +187,7 @@ void Table::sizeAllocateImpl (core::Allocation *allocation)
       }
 
       x += colWidths->get (col) + getStyle()->hBorderSpacing;
-   }             
+   }
 }
 
 void Table::resizeDrawImpl ()
@@ -199,7 +199,7 @@ void Table::resizeDrawImpl ()
 }
 
 void Table::setWidth (int width)
-{  
+{
    // If limitTextWidth is set, a queueResize may also be necessary.
    if (availWidth != width || limitTextWidth) {
       _MSG(" Table::setWidth %d\n", width);
@@ -255,7 +255,7 @@ void Table::draw (core::View *view, core::Rectangle *area)
       }
    }
 }
-  
+
 void Table::removeChild (Widget *child)
 {
    /** \bug Not implemented. */
@@ -333,7 +333,7 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
    child->cell.colspanEff = colspanEff;
    child->cell.rowspan = rowspan;
    children->set (curRow * numCols + curCol, child);
-   
+
    curCol += colspanEff;
 
    widget->setParent (this);
@@ -454,7 +454,7 @@ void Table::reallocChildren (int newNumCols, int newNumRows)
    for (int row = numRows; row < newNumRows; row++)
       for (int col = 0; col < newNumCols; col++)
          children->set (row * newNumCols + col, NULL);
-      
+
    // Simple arrays.
    rowStyle->setSize (newNumRows);
    for (int row = numRows; row < newNumRows; row++)
@@ -481,7 +481,7 @@ void Table::forceCalcCellSizes ()
 
    // Will also call calcColumnExtremes(), when needed.
    getExtremes (&extremes);
-   
+
    if (core::style::isAbsLength (getStyle()->width)) {
       totalWidth = core::style::absLengthVal (getStyle()->width);
    } else if (core::style::isPerLength (getStyle()->width)) {
@@ -1106,7 +1106,7 @@ int Table::TableIterator::compareTo(misc::Comparable *other)
 {
    return index - ((TableIterator*)other)->index;
 }
- 
+
 bool Table::TableIterator::next ()
 {
    Table *table = (Table*)getWidget();
@@ -1119,7 +1119,7 @@ bool Table::TableIterator::next ()
       content.type = core::Content::END;
       return false;
    }
-   
+
    do {
       index++;
       if (index >= table->children->size ()) {
@@ -1146,7 +1146,7 @@ bool Table::TableIterator::prev ()
       content.type = core::Content::START;
       return false;
    }
-  
+
    do {
       index--;
       if (index < 0) {

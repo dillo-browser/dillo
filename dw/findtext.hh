@@ -48,19 +48,19 @@ private:
     * dw::core::Findtext::widget
     */
    Widget *widget;
-   
+
    /** \brief The position from where the next search will start. */
    CharIterator *iterator;
 
    /**
     * \brief The position from where the characters are highlighted.
-    * 
+    *
     * NULL, when no text is highlighted.
     */
-   CharIterator *hlIterator;  
-   
+   CharIterator *hlIterator;
+
    static const char* rev(const char* _str); /* Function to reverse a C-string */
-   
+
    static int *createNexttab (const char *needle, bool caseSens, bool backwards);
    bool unhighlight ();
    bool search0 (bool backwards, bool firstTrial);

@@ -34,7 +34,7 @@ public:
    virtual void setCanvasSize (int width, int ascent, int descent) = 0;
 
    /**
-    * \brief Set the cursor appearance. 
+    * \brief Set the cursor appearance.
     */
    virtual void setCursor (style::Cursor cursor) = 0;
 
@@ -42,7 +42,7 @@ public:
     * \brief Set the background of the view.
     */
    virtual void setBgColor (style::Color *color) = 0;
-   
+
    /*
     * ---------------------------------------------------------
     *    Scrolling and Related. Only usesViewport must be
@@ -107,7 +107,7 @@ public:
    /**
     * \brief Called before drawing.
     *
-    * All actual drawing operations will be enclosed into calls of 
+    * All actual drawing operations will be enclosed into calls of
     * dw::core:View::startDrawing and dw::core:View::finishDrawing. They
     * may be implemented, e.g. when a backing
     * pixmap is used, to prevent flickering. StartDrawing() will then

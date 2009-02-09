@@ -15,23 +15,23 @@ using namespace lout;
  *    which is closely related.
  *
  * <h3>General Overview</h3>
- * 
+ *
  * dw::core::SelectionState is associated with dw::core::Layout. The selection
  * state is controlled by "abstract events", which are sent by single
  * widgets by calling one of the following methods:
- * 
+ *
  * <ul>
  * <li> dw::core::SelectionState::buttonPress for button press events,
  * <li> dw::core::SelectionState::buttonRelease for button release events, and
  * <li> dw::core::SelectionState::buttonMotion for motion events (with pressed
  *      mouse button).
  * </ul>
- * 
+ *
  * The widget must construct simple iterators (dw::core::Iterator), which will
  * be transferred to deep iterators (dw::core::DeepIterator), see below for
  * more details. All event handling methods have the same signature, the
  * arguments in detail are:
- * 
+ *
  * <table>
  * <tr><td>dw::core::Iterator *it       <td>the iterator pointing on the item
  *                                          under the mouse pointer; this
@@ -64,26 +64,26 @@ using namespace lout;
  * simple iterator is discarded and instead the stack has an iterator
  * pointing to text at the top. As a result, only the first letter of the
  * ALT text would be copied.
- * 
+ *
  * To avoid this problem, widgets should in this case pass
  * dw::core::SelectionState::END_OF_WORD as \em charPos, which is then
  * automatically reduced to the actual length of the deep(!) iterator.
- * 
+ *
  * The return value is the same as in DwWidget event handling methods.
  * I.e., in most cases, they should simply return it. The events
  * dw::core::Widget::LinkReceiver::press,
- * dw::core::Widget::LinkReceiver::release and 
+ * dw::core::Widget::LinkReceiver::release and
  * dw::core::Widget::LinkReceiver::click (but not
  * dw::core::Widget::LinkReceiver::enter) are emitted by these methods, so
  * that widgets which let dw::core::SelectionState handle links, should only
  * emit dw::core::Widget::LinkReceiver::enter for themselves.
- * 
+ *
  * <h3>Selection State</h3>
- * 
+ *
  * Selection interferes with handling the activation of links, so the
  * latter is also handled by the dw::core::SelectionState. Details are based on
  * following guidelines:
- * 
+ *
  * <ol>
  * <li> It should be simple to select links and to start selection in
  *      links. The rule to distinguish between link activation and
@@ -91,18 +91,18 @@ using namespace lout;
  *      the link. (This is, IMO, a useful feature. Even after drag and
  *      drop has been implemented in dillo, this should be somehow
  *      preserved.)
- * 
+ *
  * <li> The selection should stay as long as possible, i.e., the old
  *      selection is only cleared when a new selection is started.
  * </ol>
- * 
+ *
  * The latter leads to a model with two states: the selection state and
  * the link handling state.
- * 
+ *
  * The general selection works, for events not pointing on links, like
  * this (numbers in parantheses after the event denote the button, "n"
  * means arbitrary button):
- * 
+ *
  * \dot
  * digraph G {
  *    node [shape=ellipse, fontname=Helvetica, fontsize=10];
@@ -122,15 +122,15 @@ using namespace lout;
  *    q -> SELECTED [label="yes"];
  *    q -> NONE [label="no"];
  *    SELECTED -> SELECTING [label="press(1)"];
- *    
+ *
  * }
  * \enddot
  *
  * The selected region is represented by two instances of
  * dw::core::DeepIterator.
- * 
+ *
  * Links are handled by a different state machine:
- * 
+ *
  * \dot
  * digraph G {
  *    node [shape=ellipse, fontname=Helvetica, fontsize=10];
@@ -170,16 +170,16 @@ using namespace lout;
  * eventually be SELECTED/SELECTING, with the original and the current
  * position making up the selection region. This happens for button 1,
  * events with buttons other than 1 do not affect selection at all.
- * 
- * 
+ *
+ *
  * \todo dw::core::SelectionState::buttonMotion currently always assumes
  *    that button 1 has been pressed (since otherwise it would not do
  *    anything). This should be made a bit cleaner.
- * 
+ *
  * \todo The selection should be cleared, when the user selects something
  *    somewhere else (perhaps switched into "non-active" mode, as e.g. Gtk+
  *    does).
- * 
+ *
  */
 class SelectionState
 {
@@ -248,15 +248,15 @@ private:
 
 public:
    enum EventType { BUTTON_PRESS, BUTTON_RELEASE, BUTTON_MOTION };
-   
+
    SelectionState ();
    ~SelectionState ();
-      
+
    inline void setLayout (Layout *layout) { this->layout = layout; }
    void reset ();
    inline void connectDoubleClick (DoubleClickReceiver *receiver)
    { doubleClickEmitter.connectDoubleClick (receiver); }
-   
+
    bool buttonPress (Iterator *it, int charPos, int linkNo,
                      EventButton *event, bool withinContent);
    bool buttonRelease (Iterator *it, int charPos, int linkNo,

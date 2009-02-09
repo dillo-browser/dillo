@@ -49,7 +49,7 @@ void ListItem::initWithWidget (core::Widget *widget,
 void ListItem::initWithText (const char *text, core::style::Style *style)
 {
    addText (text, style);
-   addSpace (style); 
+   addSpace (style);
    updateValue ();
 }
 

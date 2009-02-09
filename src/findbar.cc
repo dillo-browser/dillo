@@ -89,7 +89,7 @@ void Findbar::search_cb2(Widget *widget, void *vfb)
    /*
     * Somehow fltk even regards the first loss of focus for the
     * window as a WHEN_ENTER_KEY_ALWAYS event.
-    */ 
+    */
    if (event_key() == ReturnKey)
       search_cb(widget, vfb);
 }

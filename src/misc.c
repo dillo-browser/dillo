@@ -150,7 +150,7 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
        * All in the above set regard [00-31] as control characters.
        * LATIN1: [7F-9F] unused
        * CP-1251 {7F,98} unused (two characters).
-       * 
+       *
        * We'll use [0-31] as indicators of non-text content.
        * Better heuristics are welcomed! :-) */
 

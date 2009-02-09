@@ -160,7 +160,7 @@
  *    // ...
  * };
  * \endcode
- * 
+ *
  * The constructor of Qix should then set \em qix:
  *
  * \code
@@ -217,7 +217,7 @@ private:
    container::typed::List <Receiver> *receivers;
 
    void unconnect (Receiver *receiver);
-   
+
 protected:
    void emitVoid (int signalNo, int argc, Object **argv);
    bool emitBool (int signalNo, int argc, Object **argv);

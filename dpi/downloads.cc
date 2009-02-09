@@ -107,7 +107,7 @@ class DLItem {
    enum {
       ST_newline, ST_number, ST_discard, ST_copy
    };
- 
+
    pid_t mPid;
    int LogPipe[2];
    char *shortname, *fullname;
@@ -744,7 +744,7 @@ void DLItem::update()
 /*! SIGCHLD handler
  */
 static void raw_sigchld(int)
-{          
+{
    caught_sigchld = 1;
 }
 
@@ -976,7 +976,7 @@ void DLWin::add(const char *full_filename, const char *url, DLAction action)
    } else if (f_pid < 0) {
       perror("fork, ");
       exit(1);
-   } else {   
+   } else {
       /* father */
       dl_win->show();
       dl_item->pid(f_pid);
@@ -999,7 +999,7 @@ DLAction DLWin::check_filename(char **p_fullname)
       return DL_NEWFILE;
 
    ds = dStr_sized_new(128);
-   dStr_sprintf(ds, 
+   dStr_sprintf(ds,
                 "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
                 *p_fullname, (int)ss.st_size);
    ch = fltk::choice(ds->str, "Rename", "Continue", "Abort");

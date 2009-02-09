@@ -52,7 +52,7 @@ void FltkFlatView::setCanvasSize (int width, int ascent, int descent)
 
 #if 0
    FltkWidgetView::setCanvasSize (width, ascent, descent);
-   
+
    w (width);
    h (ascent + descent);
 #endif

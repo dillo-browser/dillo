@@ -51,7 +51,7 @@ class Comparable
 {
 public:
     virtual ~Comparable();
-    
+
    /**
     * \brief Compare two objects c1 and c2.
     *
@@ -240,9 +240,9 @@ class BitSet
 private:
    unsigned char *bits;
    int numBytes;
-   
+
    inline int bytesForBits(int bits) { return bits == 0 ? 1 : (bits + 7) / 8; }
-  
+
 public:
    BitSet(int initBits);
    ~BitSet();
@@ -263,7 +263,7 @@ private:
    size_t poolSize, poolLimit, freeIdx;
    SimpleVector <char*> *pools;
    SimpleVector <char*> *bulk;
-   
+
 public:
    ZoneAllocator (size_t poolSize) {
       this->poolSize = poolSize;

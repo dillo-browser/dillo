@@ -154,7 +154,7 @@ const char *StringBuffer::getChars()
       memcpy(p, node->data, l * sizeof(char));
       p += l;
    }
-   
+
    *p = 0;
    strValid = true;
    return str;
@@ -183,7 +183,7 @@ void StringBuffer::clear ()
 
 BitSet::BitSet(int initBits)
 {
-   numBytes = bytesForBits(initBits);   
+   numBytes = bytesForBits(initBits);
    bits = (unsigned char*)malloc(numBytes * sizeof(unsigned char));
    clear();
 }
@@ -220,7 +220,7 @@ void BitSet::set(int i, bool val)
       memset(bits + numBytes, 0, newNumBytes - numBytes);
       numBytes = newNumBytes;
    }
-  
+
    if (val)
       bits[i / 8] |= (1 << (i % 8));
    else

@@ -485,7 +485,7 @@ static void Css_next_token(CssParser * parser)
             escaped = true;
             d = Css_getc(parser);
             if (isxdigit(d)) {
-               /* Read hex Unicode char. (Actually, strings are yet only 8 
+               /* Read hex Unicode char. (Actually, strings are yet only 8
                 * bit.) */
                hexbuf[0] = d;
                j = 1;
@@ -1009,7 +1009,7 @@ static bool Css_parse_simple_selector(CssParser * parser,
       Css_next_token(parser);
       if (parser->space_separated)
          return true;
-   } else if (parser->ttype == CSS_TK_CHAR && 
+   } else if (parser->ttype == CSS_TK_CHAR &&
               (parser->tval[0] == '#' ||
                parser->tval[0] == '.' ||
                parser->tval[0] == ':')) {

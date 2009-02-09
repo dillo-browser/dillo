@@ -159,7 +159,7 @@ void Iterator::scrollTo (Iterator *it1, Iterator *it2, int start, int end,
          //                      |----------|
          //                         width
          //
-         
+
          /** \todo Changes in the viewport size, until the idle function is
           *      called, are not regarded. */
 
@@ -468,7 +468,7 @@ DeepIterator::DeepIterator (Iterator *it)
    // since an DeepIterator should never return widgets.
    if (it->getContent()->type == Content::WIDGET) {
       Iterator *it2;
-      
+
       // The second argument of searchDownward is actually a matter of
       // taste :-)
       if ((it2 = searchDownward (it, mask, false)) ||
@@ -484,7 +484,7 @@ DeepIterator::DeepIterator (Iterator *it)
          hasContents = false;
       }
    }
-   
+
    //DEBUG_MSG (1, "  => %s\n", a_Dw_iterator_text (it));
 
    if (hasContents) {
@@ -509,7 +509,7 @@ DeepIterator::DeepIterator (Iterator *it)
                break;
          }
       }
-      
+
       stack.put (it, thisLevel);
       content = *(it->getContent());
    }
@@ -552,10 +552,10 @@ int DeepIterator::compareTo (misc::Comparable *other)
    while (stack.get(level)->getWidget ()
           != otherDeepIterator->stack.get(level)->getWidget ())
       level--;
-   
+
    return stack.get(level)->compareTo (otherDeepIterator->stack.get(level));
 }
-   
+
 DeepIterator *DeepIterator::createVariant(Iterator *it)
 {
    /** \todo Not yet implemented, and actually not yet needed very much. */
@@ -574,7 +574,7 @@ bool DeepIterator::isEmpty () {
 bool DeepIterator::next ()
 {
    Iterator *it = stack.getTop ();
-   
+
    if (it->next ()) {
       if (it->getContent()->type == Content::WIDGET) {
          // Widget: new iterator on stack, to search in this widget.
@@ -596,7 +596,7 @@ bool DeepIterator::next ()
          content.type = Content::END;
          return false;
       }
-   }  
+   }
 }
 
 /**
@@ -607,7 +607,7 @@ bool DeepIterator::next ()
 bool DeepIterator::prev ()
 {
    Iterator *it = stack.getTop ();
-   
+
    if (it->prev ()) {
       if (it->getContent()->type == Content::WIDGET) {
          // Widget: new iterator on stack, to search in this widget.
@@ -629,7 +629,7 @@ bool DeepIterator::prev ()
          content.type = Content::START;
          return false;
       }
-   }  
+   }
 }
 
 // -----------------
@@ -708,9 +708,9 @@ bool CharIterator::next ()
             return next ();
          }
       }
-      
+
       return true;
-   }   
+   }
 }
 
 bool CharIterator::prev ()
@@ -746,7 +746,7 @@ bool CharIterator::prev ()
       pos--;
       ch = it->getContent()->text[pos];
       return true;
-   }   
+   }
 }
 
 void CharIterator::highlight (CharIterator *it1, CharIterator *it2,

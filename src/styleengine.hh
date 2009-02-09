@@ -32,7 +32,7 @@ class StyleEngine : public Doctree {
    public:
       StyleEngine (dw::core::Layout *layout);
       ~StyleEngine ();
-   
+
       /* Doctree interface */
       inline const DoctreeNode *top () {
          return stack->getRef (stack->size () - 1);

@@ -38,7 +38,7 @@ private:
       public:
          ImageMap ();
          ~ImageMap ();
-         
+
          void add (core::Shape *shape, int link);
          void setDefaultLink (int link) { defaultLink = link; };
          int link (int x, int y);
@@ -47,7 +47,7 @@ private:
    lout::container::typed::HashTable <lout::object::Object, ImageMap>
       *imageMaps;
    ImageMap *currentMap;
-   
+
 public:
    ImageMapsList ();
    ~ImageMapsList ();
@@ -90,7 +90,7 @@ public:
  * dw::ImageMapsList::addShapeToCurrentMap adds a shape to the current
  * map. The \em link argument is a number, which is later passed to
  * the dw::core::Widget::LinkReceiver.
- * 
+ *
  * This map list is then, together with the key for the image, passed to
  * dw::Image::setUseMap. For HTML, a URL with the value of the "ismap"
  * attribute of \<IMG\> should be used.
@@ -103,9 +103,9 @@ public:
  * Currently, only maps defined in the same document as the image may be
  * used, since the dw::ImageMapsList is stored in the HTML link block, and
  * contains only the image maps defined in the document.
- * 
+ *
  * <h4>Server Side %Image Maps</h4>
- * 
+ *
  * To use images for server side image maps, you must call
  * dw::Image::setIsMap, and the dw::Image::style must contain a valid link
  * (dw::core::style::Style::x_link). After this, motions and clicks are
@@ -129,7 +129,7 @@ protected:
    void sizeRequestImpl (core::Requisition *requisition);
    void sizeAllocateImpl (core::Allocation *allocation);
 
-   void draw (core::View *view, core::Rectangle *area);  
+   void draw (core::View *view, core::Rectangle *area);
 
    bool buttonPressImpl (core::EventButton *event);
    bool buttonReleaseImpl (core::EventButton *event);
@@ -137,7 +137,7 @@ protected:
    void leaveNotifyImpl (core::EventCrossing *event);
    bool motionNotifyImpl (core::EventMotion *event);
 
-   //core::Iterator *iterator (Content::Type mask, bool atEnd); 
+   //core::Iterator *iterator (Content::Type mask, bool atEnd);
 
 public:
    static int CLASS_ID;
@@ -145,7 +145,7 @@ public:
    Image(const char *altText);
    ~Image();
 
-   core::Iterator *iterator (core::Content::Type mask, bool atEnd); 
+   core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 
    inline core::Imgbuf *getBuffer () { return buffer; }
    void setBuffer (core::Imgbuf *buffer, bool resize = false);

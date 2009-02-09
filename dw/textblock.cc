@@ -371,9 +371,9 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                // + word->content.widget->getStyle()->margin.bottom;
 
             oldChildAllocation = word->content.widget->getAllocation();
-   
-            if (childAllocation.x != oldChildAllocation->x || 
-               childAllocation.y != oldChildAllocation->y || 
+
+            if (childAllocation.x != oldChildAllocation->x ||
+               childAllocation.y != oldChildAllocation->y ||
                childAllocation.width != oldChildAllocation->width) {
                /* The child widget has changed its position or its width
                 * so we need to redraw from this line onwards.
@@ -393,7 +393,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                 * end up redrawing the whole screen over and over.
                 * The drawing of the child content is left to the child itself.
                 */
-               int childChangedY = 
+               int childChangedY =
                   misc::min(childAllocation.y - allocation->y +
                      childAllocation.ascent + childAllocation.descent,
                      oldChildAllocation->y - this->allocation.y +
@@ -1662,7 +1662,7 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
    char *copy;
    int y;
 
-   // Since an anchor does not take any space, it is safe to call 
+   // Since an anchor does not take any space, it is safe to call
    // addAnchor already here.
    if (wasAllocated ()) {
       if (lines->size () == 0)
@@ -1829,9 +1829,9 @@ void Textblock::addLinebreak (core::style::Style *style)
 
 /**
  * \brief Search recursively through widget.
- * 
+ *
  * This is an optimized version of the general
- * dw::core::Widget::getWidgetAtPoint method. 
+ * dw::core::Widget::getWidgetAtPoint method.
  */
 core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
 {
@@ -2001,14 +2001,14 @@ int Textblock::TextblockIterator::compareTo(misc::Comparable *other)
 {
    return index - ((TextblockIterator*)other)->index;
 }
- 
+
 bool Textblock::TextblockIterator::next ()
 {
    Textblock *textblock = (Textblock*)getWidget();
 
    if (content.type == core::Content::END)
       return false;
-  
+
    do {
       index++;
       if (index >= textblock->words->size ()) {
@@ -2027,7 +2027,7 @@ bool Textblock::TextblockIterator::prev ()
 
    if (content.type == core::Content::START)
       return false;
-  
+
    do {
       index--;
       if (index < 0) {

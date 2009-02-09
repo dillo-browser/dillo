@@ -123,7 +123,7 @@ inline void FltkImgbuf::scaleRow (int row, const core::byte *data)
 {
    int sr1 = scaledY (row);
    int sr2 = scaledY (row + 1);
-   
+
    for (int sr = sr1; sr < sr2; sr++) {
       // Avoid multiple passes.
       if (copiedRows->get(sr)) continue;
@@ -163,7 +163,7 @@ void FltkImgbuf::newScan ()
    if (isRoot()) {
       for (Iterator<FltkImgbuf> it = scaledBuffers->iterator(); it.hasNext();){
          FltkImgbuf *sb = it.getNext ();
-         sb->copiedRows->clear();       
+         sb->copiedRows->clear();
       }
    }
 }
@@ -172,7 +172,7 @@ core::Imgbuf* FltkImgbuf::getScaledBuf (int width, int height)
 {
    if (!isRoot())
       return root->getScaledBuf (width, height);
-   
+
    if (width == this->width && height == this->height) {
       ref ();
       return this;
@@ -265,7 +265,7 @@ void FltkImgbuf::unref ()
 
 bool FltkImgbuf::lastReference ()
 {
-   return refCount == 1 && 
+   return refCount == 1 &&
       (scaledBuffers == NULL || scaledBuffers->isEmpty ());
 }
 
@@ -311,7 +311,7 @@ void FltkImgbuf::draw (::fltk::Widget *target, int xRoot, int yRoot,
       height = this->height - y;
    }
 
-   // Draw 
+   // Draw
    ::fltk::Rectangle rect (xRoot + x, yRoot + y, width, height);
    PixelType ptype = (type == RGBA) ? ::fltk::RGBA : ::fltk::RGB;
    drawimage(rawdata+bpp*(y*this->width + x),ptype,rect,bpp*this->width);

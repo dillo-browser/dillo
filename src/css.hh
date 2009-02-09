@@ -34,7 +34,7 @@ typedef enum {
                                    'font-weight' */
    CSS_TYPE_STRING,             /* <string> */
    CSS_TYPE_SYMBOL,             /* Symbols, which are directly copied (as
-                                   opposed to CSS_TYPE_ENUM and 
+                                   opposed to CSS_TYPE_ENUM and
                                    CSS_TYPE_MULTI_ENUM). Used for
                                    'font-family'. */
    CSS_TYPE_UNUSED              /* Not yet used. Will itself get unused some
@@ -43,7 +43,7 @@ typedef enum {
 
 /*
  * Lengths are represented as int in the following way:
- * 
+ *
  *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
  *    | integer part  | decimal fraction  |   type    |
  *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
@@ -213,7 +213,7 @@ class CssProperty {
 
 /**
  * \brief A list of CssProperty objects.
- */ 
+ */
 class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
    int refCount;
    bool ownerOfStrings;

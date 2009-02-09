@@ -28,7 +28,7 @@ using namespace dw::core;
 using namespace dw::core::style;
 
 /*
- * Forward declarations 
+ * Forward declarations
  */
 
 static void Html_tag_open_table_cell(DilloHtml *html,
@@ -228,7 +228,7 @@ void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
- * Utilities 
+ * Utilities
  */
 
 /*

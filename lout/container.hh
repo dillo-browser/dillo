@@ -20,7 +20,7 @@ namespace lout {
 namespace container {
 
 /**
- * \brief The container classes defined here contain instances of 
+ * \brief The container classes defined here contain instances of
  *    object::Object.
  *
  * Different sub-classes may be mixed, and you have to care about casting,
@@ -44,13 +44,13 @@ protected:
    {
    private:
       int refcount;
-      
+
    public:
       AbstractIterator() { refcount = 1; }
-      
+
       void ref () { refcount++; }
       void unref () { refcount--; if (refcount == 0) delete this; }
-      
+
       virtual bool hasNext () = 0;
       virtual Object *getNext () = 0;
    };
@@ -60,7 +60,7 @@ protected:
 };
 
 /**
- * \brief This is a small wrapper for AbstractIterator, which may be used 
+ * \brief This is a small wrapper for AbstractIterator, which may be used
  *    directly, not as a pointer, to makes memory management simpler.
  */
 class Iterator
@@ -271,7 +271,7 @@ protected:
 public:
    Stack (bool ownerOfObjects);
    ~Stack();
-   
+
    void push (object::Object *object);
    void pushUnder (object::Object *object);
    inline object::Object *getTop () { return top ? top->object : NULL; }
@@ -421,7 +421,7 @@ public:
    inline Stack (bool ownerOfObjects)
    { this->base = new untyped::Stack (ownerOfObjects); }
    ~Stack() { delete this->base; }
-   
+
    inline void push (T *object) {
       ((untyped::Stack*)this->base)->push (object); }
    inline void pushUnder (T *object)

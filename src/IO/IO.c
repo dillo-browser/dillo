@@ -152,10 +152,10 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
    /* Stop the polling on this FD */
    if (CloseCode & IO_StopRd) {
      events |= DIO_READ;
-   } 
+   }
    if (CloseCode & IO_StopWr) {
      events |= DIO_WRITE;
-   } 
+   }
    a_IOwatch_remove_fd(io->FD, events);
    _MSG(" end IO close (%d) <=====\n", io->FD);
 }

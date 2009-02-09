@@ -150,7 +150,7 @@ int StyleAttrs::hashValue () {
       width +
       height +
       margin.hashValue () +
-      borderWidth.hashValue () + 
+      borderWidth.hashValue () +
       padding.hashValue () +
       (intptr_t) borderColor.top +
       (intptr_t) borderColor.right +
@@ -217,7 +217,7 @@ Style::~Style ()
       x_tooltip->unref();
 
    styleTable->remove (this);
-   totalRef--;  
+   totalRef--;
 }
 
 void Style::copyAttrs (StyleAttrs *attrs)
@@ -403,7 +403,7 @@ int Color::shadeColor (int color, Shading shading)
    }
 }
 
-  
+
 Color *Color::create (Layout *layout, int col)
 {
    ColorAttrs attrs(col);

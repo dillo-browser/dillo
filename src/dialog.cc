@@ -11,7 +11,7 @@
 
 // UI dialogs
 
-#include <math.h> // for rint() 
+#include <math.h> // for rint()
 
 #include <fltk/Window.h>
 #include <fltk/ask.h>
@@ -129,11 +129,11 @@ void *a_Dialog_make_text_window(const char *txt, const char *title)
    int wh = prefs.height, ww = prefs.width, bh = 30;
    int lines, line_num_width;
    Font *textfont = font(prefs.font_monospace, 0);
- 
+
    Window *window = new Window(ww, wh, title ? title : "Untitled");
    window->callback(window_close_cb, window);
    window->begin();
- 
+
     TextDisplay *td = new TextDisplay(0,0,ww, wh-bh);
     td->buffer()->text(txt);
 

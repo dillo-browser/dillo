@@ -100,7 +100,7 @@ void FltkResource::attachView (FltkView *view)
    if (view->usesFltkWidgets ()) {
       ViewAndWidget *viewAndWidget = new ViewAndWidget();
       viewAndWidget->view = view;
-      
+
       viewAndWidget->widget = createNewWidget (&allocation);
       viewAndWidget->view->addFltkWidget (viewAndWidget->widget, &allocation);
       viewsAndWidgets->append (viewAndWidget);
@@ -323,7 +323,7 @@ static core::ButtonState getDwButtonState ()
 {
    int s1 = ::fltk::event_state ();
    int s2 = (core::ButtonState)0;
-   
+
    if (s1 & ::fltk::SHIFT)   s2 |= core::SHIFT_MASK;
    if (s1 & ::fltk::CTRL)    s2 |= core::CONTROL_MASK;
    if (s1 & ::fltk::ALT)     s2 |= core::META_MASK;
@@ -496,7 +496,7 @@ int FltkComplexButtonResource::reliefYThickness ()
    if (!relief)
       button->box(::fltk::FLAT_BOX);
 
-   FltkFlatView *flatView = 
+   FltkFlatView *flatView =
       new FltkFlatView (allocation->x + reliefXThickness (),
                         allocation->y + reliefYThickness (),
                         allocation->width - 2 * reliefXThickness (),
@@ -514,13 +514,13 @@ int FltkComplexButtonResource::reliefYThickness ()
 // ----------------------------------------------------------------------
 
 FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int maxLength,
-                                      bool password, const char *label):  
+                                      bool password, const char *label):
    FltkSpecificResource <dw::core::ui::EntryResource> (platform)
 {
    this->maxLength = maxLength;
    this->password = password;
    this->label = label ? strdup(label) : NULL;
-   
+
    initText = NULL;
    editable = false;
 
@@ -636,7 +636,7 @@ void FltkEntryResource::setEditable (bool editable)
 // ----------------------------------------------------------------------
 
 FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
-                                                      int cols, int rows): 
+                                                      int cols, int rows):
    FltkSpecificResource <dw::core::ui::MultiLineTextResource> (platform)
 {
    buffer = new ::fltk::TextBuffer;
@@ -726,7 +726,7 @@ void FltkMultiLineTextResource::setEditable (bool editable)
 template <class I>
 FltkToggleButtonResource<I>::FltkToggleButtonResource (FltkPlatform *platform,
                                                        bool activated):
-   FltkSpecificResource <I> (platform)  
+   FltkSpecificResource <I> (platform)
 {
    initActivated = activated;
 }
@@ -815,7 +815,7 @@ FltkCheckButtonResource::~FltkCheckButtonResource ()
 
 
 ::fltk::Button *FltkCheckButtonResource::createNewButton (core::Allocation
-                                                          *allocation)   
+                                                          *allocation)
 {
    ::fltk::CheckButton *cb =
       new ::fltk::CheckButton (allocation->x, allocation->y, allocation->width,
@@ -854,7 +854,7 @@ FltkRadioButtonResource::Group::~Group ()
 {
    delete list;
 }
-      
+
 void FltkRadioButtonResource::Group::connect (FltkRadioButtonResource
                                               *radioButtonResource)
 {
@@ -915,7 +915,7 @@ void FltkRadioButtonResource::buttonClicked ()
 }
 
 ::fltk::Button *FltkRadioButtonResource::createNewButton (core::Allocation
-                                                          *allocation)   
+                                                          *allocation)
 {
    /*
     * Groups of fltk::RadioButton must be added to one fltk::Group, which is
@@ -1104,7 +1104,7 @@ template <class I> void FltkSelectionResource<I>::addItem (const char *str,
       }
    }
 }
-   
+
 template <class I> void FltkSelectionResource<I>::pushGroup (const char *name,
                                                              bool enabled)
 {
@@ -1202,7 +1202,7 @@ void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
       requisition->width = 1;
       requisition->ascent = 1;
       requisition->descent = 0;
-   } 
+   }
 }
 
 void FltkOptionMenuResource::addItem (const char *str,
@@ -1296,7 +1296,7 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
       requisition->width = 1;
       requisition->ascent = 1;
       requisition->descent = 0;
-   } 
+   }
 }
 
 bool FltkListResource::isSelected (int index)
