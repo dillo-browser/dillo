@@ -1257,9 +1257,12 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
          /* Adjust the text baseline if the word is <SUP>-ed or <SUB>-ed. */
          if (word->style->valign == core::style::VALIGN_SUB)
             diff = word->size.ascent / 2;
-         else if (word->style->valign == core::style::VALIGN_SUPER)
+         else if (word->style->valign == core::style::VALIGN_SUPER) {
+            /* calcTextSize increased word->size.ascent by 50%, so
+             * use 1/3 for 1/2 of original value.
+             */
             diff -= word->size.ascent / 3;
-
+         }
          /* Draw background (color, image), when given. */
          if (word->style->hasBackground () && word->size.width > 0)
             drawBox (view, word->style, area,
@@ -1587,7 +1590,7 @@ void Textblock::calcTextSize (const char *text, core::style::Style *style,
    if (style->valign == core::style::VALIGN_SUB)
       size->descent += (size->ascent / 2);
    else if (style->valign == core::style::VALIGN_SUPER)
-      size->ascent += (size->ascent / 3);
+      size->ascent += (size->ascent / 2);
 }
 
 
