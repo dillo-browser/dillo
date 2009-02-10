@@ -1299,6 +1299,24 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                             xWorld + word->size.width + word->effSpace - 1,
                             yWorldBase + 1 + diff);
 
+         /* overline */
+         if (word->style->textDecoration &
+             core::style::TEXT_DECORATION_OVERLINE)
+            view->drawLine (color, core::style::Color::SHADING_NORMAL,
+                            xWorld,
+                            yWorldBase + diff - word->style->font->ascent + 1,
+                            xWorld + word->size.width - 1,
+                            yWorldBase + diff - word->style->font->ascent + 1);
+         if (wordIndex + 1 < line->lastWord &&
+             (word->spaceStyle->textDecoration
+              & core::style::TEXT_DECORATION_OVERLINE))
+            view->drawLine (word->spaceStyle->color,
+                            core::style::Color::SHADING_NORMAL,
+                            xWorld + word->size.width,
+                            yWorldBase + diff - word->style->font->ascent + 1,
+                            xWorld + word->size.width + word->effSpace - 1,
+                            yWorldBase + diff - word->style->font->ascent + 1);
+
          /* strike-through */
          if (word->style->textDecoration
              & core::style::TEXT_DECORATION_LINE_THROUGH)
@@ -1368,7 +1386,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                                   word->content.text + effHLStart,
                                   effHLEnd - effHLStart);
 
-                  /* underline and strike-through */
+                  /* underline, overline, and strike-through */
                   if (word->style->textDecoration
                       & core::style::TEXT_DECORATION_UNDERLINE)
                      view->drawLine (color,
@@ -1376,6 +1394,15 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                                      startHL, yWorldBase + 1 + diff,
                                      startHL + widthHL - 1,
                                      yWorldBase + 1 + diff);
+                  if (word->style->textDecoration
+                      & core::style::TEXT_DECORATION_OVERLINE)
+                     view->drawLine (
+                        color,
+                        core::style::Color::SHADING_INVERSE,
+                        startHL,
+                        yWorldBase + diff - word->style->font->ascent + 1,
+                        startHL + widthHL - 1,
+                        yWorldBase + diff - word->style->font->ascent + 1);
                   if (word->style->textDecoration
                       & core::style::TEXT_DECORATION_LINE_THROUGH)
                      view->drawRectangle (
