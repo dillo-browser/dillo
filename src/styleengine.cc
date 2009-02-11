@@ -222,6 +222,10 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
                computeValue (&fontAttrs.size, p->value.intVal, parentFont,
                   parentFont->size);
             }
+
+            if (fontAttrs.size < prefs.font_min_size)
+               fontAttrs.size = prefs.font_min_size;
+
             break;
          case CSS_PROPERTY_FONT_STYLE:
             fontAttrs.style = (FontStyle) p->value.intVal;

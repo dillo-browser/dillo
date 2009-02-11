@@ -49,9 +49,12 @@
 #font_fantasy="DejaVu Sans"
 #font_monospace="DejaVu Sans Mono"
 
-# All fontsizes are scaled by this value
+# All font sizes are scaled by this value
 # font_factor=1.5
 #font_factor=1.0
+
+# Minimum font size
+#font_min_size=6
 
 # Show tooltip popup for images?
 # Note: We use the "title" attribute and not "alt".
