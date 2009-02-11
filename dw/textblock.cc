@@ -1282,12 +1282,12 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
 
          /* Adjust the text baseline if the word is <SUP>-ed or <SUB>-ed. */
          if (word->style->valign == core::style::VALIGN_SUB)
-            diff = word->size.ascent / 2;
+            diff = word->style->font->ascent / 3;
          else if (word->style->valign == core::style::VALIGN_SUPER) {
             diff -= word->style->font->ascent / 2;
          }
          if (word->spaceStyle->valign == core::style::VALIGN_SUB)
-            spaceDiff = word->spaceStyle->font->ascent / 2;
+            spaceDiff = word->spaceStyle->font->ascent / 3;
          else if (word->spaceStyle->valign == core::style::VALIGN_SUPER) {
             spaceDiff -= word->spaceStyle->font->ascent / 2;
          }
@@ -1603,7 +1603,7 @@ void Textblock::calcTextSize (const char *text, core::style::Style *style,
     * potentially the line's height.
     */
    if (style->valign == core::style::VALIGN_SUB)
-      size->descent += (size->ascent / 2);
+      size->descent += (size->ascent / 3);
    else if (style->valign == core::style::VALIGN_SUPER)
       size->ascent += (size->ascent / 2);
 }
