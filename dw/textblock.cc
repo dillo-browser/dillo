@@ -1369,21 +1369,6 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                      yWorldBase + diff - word->style->font->ascent,
                      widthHL,
                      word->style->font->ascent + word->style->font->descent);
-                  if (widthHLSpace > 0) {
-                     core::style::Color *spaceBgColor;
-
-                     if (!(spaceBgColor = word->spaceStyle->backgroundColor))
-                        spaceBgColor = thisBgColor;
-
-                     view->drawRectangle (
-                        spaceBgColor,
-                        core::style::Color::SHADING_INVERSE,
-                        true, startHL + widthHL,
-                        yWorldBase + spaceDiff -word->spaceStyle->font->ascent,
-                        widthHLSpace,
-                        word->spaceStyle->font->ascent +
-                         word->spaceStyle->font->descent);
-                  }
                   /* Highlight the text. */
                   view->drawText (word->style->font,
                                   color, core::style::Color::SHADING_INVERSE,
@@ -1395,12 +1380,27 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                      decorateText(view, word, word->style,
                                   core::style::Color::SHADING_INVERSE, startHL,
                                   yWorldBase + diff, widthHL);
+               }
+               if (widthHLSpace > 0) {
+                  core::style::Color *spaceBgColor;
 
-                  if (widthHLSpace && word->spaceStyle->textDecoration)
+                  if (!(spaceBgColor = word->spaceStyle->backgroundColor))
+                     spaceBgColor = thisBgColor;
+
+                  view->drawRectangle (
+                     spaceBgColor,
+                     core::style::Color::SHADING_INVERSE,
+                     true, startHL + widthHL,
+                     yWorldBase + spaceDiff -word->spaceStyle->font->ascent,
+                     widthHLSpace,
+                     word->spaceStyle->font->ascent +
+                      word->spaceStyle->font->descent);
+                  if (word->spaceStyle->textDecoration) {
                      decorateText(view, word, word->spaceStyle,
                                   core::style::Color::SHADING_INVERSE,
                                   startHL + widthHL, yWorldBase + spaceDiff,
                                   widthHLSpace);
+                  }
                }
             }
          }
