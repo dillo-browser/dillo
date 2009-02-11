@@ -208,9 +208,7 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
    old_url = a_History_get_url(NAV_UIDX(bw, idx));
    _MSG("Nav_open_url:  old_url='%s' idx=%d\n", URL_STR(old_url), idx);
    /* Record current scrolling position */
-   if (Repush) {
-      /* Don't change scroll position */
-   } else if (old_url) {
+   if (old_url) {
       a_UIcmd_get_scroll_xy(bw, &x, &y);
       Nav_save_scroll_pos(bw, idx, x, y);
       _MSG("Nav_open_url:  saved scroll of '%s' at x=%d y=%d\n",
