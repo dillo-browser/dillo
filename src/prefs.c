@@ -163,6 +163,7 @@ static int Prefs_parse_dillorc(void)
    { "font_cursive", &prefs.font_cursive, PREFS_STRING },
    { "font_factor", &prefs.font_factor, PREFS_DOUBLE },
    { "font_fantasy", &prefs.font_fantasy, PREFS_STRING },
+   { "font_min_size", &prefs.font_min_size, PREFS_INT32 },
    { "font_monospace", &prefs.font_monospace, PREFS_STRING },
    { "font_sans_serif", &prefs.font_sans_serif, PREFS_STRING },
    { "font_serif", &prefs.font_serif, PREFS_STRING },
@@ -267,6 +268,7 @@ void a_Prefs_init(void)
    prefs.focus_new_tab = TRUE;
    prefs.font_cursive = dStrdup(D_FONT_CURSIVE);
    prefs.font_factor = 1.0;
+   prefs.font_min_size = 6;
    prefs.font_fantasy = dStrdup(D_FONT_FANTASY);
    prefs.font_monospace = dStrdup(D_FONT_MONOSPACE);
    prefs.font_sans_serif = dStrdup(D_FONT_SANS_SERIF);
