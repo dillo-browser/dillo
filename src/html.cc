@@ -1788,7 +1788,7 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setPseudoLink ();
    }
 
-   props.set (PROPERTY_X_LINK, CSS_TYPE_INTEGER, Html_set_new_link(html, &url));
+   props.set (PROPERTY_X_LINK, CSS_TYPE_INTEGER, Html_set_new_link(html,&url));
    html->styleEngine->setNonCssHints (&props);
 
    textblock->addParbreak (5, html->styleEngine->wordStyle ());
@@ -1992,8 +1992,10 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       space = strtol(attrbuf, NULL, 10);
       if (space > 0) {
          space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         props.set (CSS_PROPERTY_MARGIN_LEFT, CSS_TYPE_LENGTH_PERCENTAGE, space);
-         props.set (CSS_PROPERTY_MARGIN_RIGHT, CSS_TYPE_LENGTH_PERCENTAGE, space);
+         props.set (CSS_PROPERTY_MARGIN_LEFT, CSS_TYPE_LENGTH_PERCENTAGE,
+                    space);
+         props.set (CSS_PROPERTY_MARGIN_RIGHT, CSS_TYPE_LENGTH_PERCENTAGE,
+                    space);
       }
    }
 
@@ -2002,8 +2004,10 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       space = strtol(attrbuf, NULL, 10);
       if (space > 0) {
          space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         props.set (CSS_PROPERTY_MARGIN_TOP, CSS_TYPE_LENGTH_PERCENTAGE, space);
-         props.set (CSS_PROPERTY_MARGIN_BOTTOM, CSS_TYPE_LENGTH_PERCENTAGE, space);
+         props.set (CSS_PROPERTY_MARGIN_TOP, CSS_TYPE_LENGTH_PERCENTAGE,
+                    space);
+         props.set (CSS_PROPERTY_MARGIN_BOTTOM, CSS_TYPE_LENGTH_PERCENTAGE,
+                    space);
       }
    }
 
@@ -2014,12 +2018,12 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
          border = CSS_CREATE_LENGTH(border, CSS_LENGTH_TYPE_PX);
          props.set (CSS_PROPERTY_BORDER_TOP_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
                     border);
-         props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                    border);
-         props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                    border);
-         props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                    border);
+         props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+                    CSS_TYPE_LENGTH_PERCENTAGE, border);
+         props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH, 
+                    CSS_TYPE_LENGTH_PERCENTAGE, border);
+         props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+                    CSS_TYPE_LENGTH_PERCENTAGE, border);
 
          props.set (CSS_PROPERTY_BORDER_TOP_STYLE, CSS_TYPE_ENUM,
                     BORDER_SOLID);
@@ -2370,7 +2374,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
          html->InVisitedLink = true;
          html->styleEngine->setPseudoVisited ();
          if (html->visited_color != -1)
-            props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR, html->visited_color);
+            props.set (CSS_PROPERTY_COLOR,CSS_TYPE_COLOR,html->visited_color);
       } else {
          html->styleEngine->setPseudoLink ();
          if (html->link_color != -1)
@@ -2638,7 +2642,7 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
    /* TODO: evaluate attribute */
    if (a_Html_get_attr(html, tag, tagsize, "noshade")) {
       props.set (CSS_PROPERTY_BORDER_TOP_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
-      props.set (CSS_PROPERTY_BORDER_BOTTOM_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
+      props.set (CSS_PROPERTY_BORDER_BOTTOM_STYLE,CSS_TYPE_ENUM,BORDER_SOLID);
       props.set (CSS_PROPERTY_BORDER_LEFT_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
       props.set (CSS_PROPERTY_BORDER_RIGHT_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
 
