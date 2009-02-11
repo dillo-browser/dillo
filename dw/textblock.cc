@@ -1203,6 +1203,32 @@ void Textblock::rewrap ()
 }
 
 /*
+ * Draw the decorations on a word.
+ */
+void Textblock::decorateText(core::View *view, Word *word,
+                             core::style::Style *style,
+                             core::style::Color::Shading shading,
+                             int x, int yBase, int width)
+{
+   int y;
+
+   if (style->textDecoration & core::style::TEXT_DECORATION_UNDERLINE) {
+      y = yBase + 1;
+      view->drawLine (style->color, shading, x, y, x + width - 1, y);
+   }
+   if (style->textDecoration & core::style::TEXT_DECORATION_OVERLINE) {
+      y = yBase - style->font->ascent + 1;
+      view->drawLine (style->color, shading, x, y, x + width - 1, y);
+   }
+   if (style->textDecoration & core::style::TEXT_DECORATION_LINE_THROUGH) {
+      int height = 1 + style->font->xHeight / 10;
+
+      y = yBase + (style->font->descent - style->font->ascent) / 2;
+      view->drawRectangle (style->color, shading, true, x, y, width, height);
+   }
+}
+
+/*
  * Paint a line
  * - x and y are toplevel dw coordinates (Question: what Dw? Changed. Test!)
  * - area is used always (ev. set it to event->area)
@@ -1215,7 +1241,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
    int xWidget, yWidget, xWorld, yWorld, yWorldBase;
    int startHL, widthHL;
    int wordLen;
-   int diff, effHLStart, effHLEnd, layer;
+   int diff, spaceDiff, effHLStart, effHLEnd, layer;
    core::Widget *child;
    core::Rectangle childArea;
    core::style::Color *color, *thisBgColor, *wordBgColor;
@@ -1239,7 +1265,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
    for (wordIndex = line->firstWord; wordIndex < line->lastWord;
         wordIndex++) {
       word = words->getRef(wordIndex);
-      diff = 0;
+      diff = spaceDiff = 0;
       color = word->style->color;
 
       //DBG_OBJ_ARRSET_NUM (page, "words.%d.<i>drawn at</i>.x", wordIndex,
@@ -1258,88 +1284,52 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
          if (word->style->valign == core::style::VALIGN_SUB)
             diff = word->size.ascent / 2;
          else if (word->style->valign == core::style::VALIGN_SUPER) {
-            /* calcTextSize increased word->size.ascent by 50%, so
-             * use 1/3 for 1/2 of original value.
-             */
-            diff -= word->size.ascent / 3;
+            diff -= word->style->font->ascent / 2;
+         }
+         if (word->spaceStyle->valign == core::style::VALIGN_SUB)
+            spaceDiff = word->spaceStyle->font->ascent / 2;
+         else if (word->spaceStyle->valign == core::style::VALIGN_SUPER) {
+            spaceDiff -= word->spaceStyle->font->ascent / 2;
          }
          /* Draw background (color, image), when given. */
          if (word->style->hasBackground () && word->size.width > 0)
-            drawBox (view, word->style, area,
-                     xWidget, yWidget + line->ascent - word->size.ascent,
-                     word->size.width, word->size.ascent + word->size.descent,
-                     false);
+            drawBox (
+               view, word->style, area,
+               xWidget,
+               yWidget + line->ascent + diff - word->style->font->ascent,
+               word->size.width,
+               word->style->font->ascent + word->style->font->descent,
+               false);
 
          /* Draw space background (color, image), when given. */
          if (word->spaceStyle->hasBackground () && word->effSpace > 0)
-            drawBox (view, word->spaceStyle, area,
-                     xWidget + word->size.width,
-                     yWidget + line->ascent - word->size.ascent,
-                     word->effSpace, word->size.ascent + word->size.descent,
-                     false);
+            drawBox (
+               view, word->spaceStyle, area,
+               xWidget + word->size.width,
+               yWidget + line->ascent + diff - word->spaceStyle->font->ascent,
+               word->effSpace,
+               word->spaceStyle->font->ascent +word->spaceStyle->font->descent,
+               false);
          view->drawText (word->style->font, color,
                          core::style::Color::SHADING_NORMAL,
                          xWorld, yWorldBase + diff,
                          word->content.text, strlen (word->content.text));
 
-         /* underline */
-         if (word->style->textDecoration &
-             core::style::TEXT_DECORATION_UNDERLINE)
-            view->drawLine (color, core::style::Color::SHADING_NORMAL,
-                            xWorld, yWorldBase + 1 + diff,
-                            xWorld + word->size.width - 1,
-                            yWorldBase + 1 + diff);
-         if (wordIndex + 1 < line->lastWord &&
-             (word->spaceStyle->textDecoration
-              & core::style::TEXT_DECORATION_UNDERLINE))
-            view->drawLine (word->spaceStyle->color,
-                            core::style::Color::SHADING_NORMAL,
-                            xWorld + word->size.width,
-                            yWorldBase + 1 + diff,
-                            xWorld + word->size.width + word->effSpace - 1,
-                            yWorldBase + 1 + diff);
+         if (word->style->textDecoration)
+            decorateText(view, word, word->style,
+                         core::style::Color::SHADING_NORMAL, xWorld,
+                         yWorldBase + diff, word->size.width);
 
-         /* overline */
-         if (word->style->textDecoration &
-             core::style::TEXT_DECORATION_OVERLINE)
-            view->drawLine (color, core::style::Color::SHADING_NORMAL,
-                            xWorld,
-                            yWorldBase + diff - word->style->font->ascent + 1,
-                            xWorld + word->size.width - 1,
-                            yWorldBase + diff - word->style->font->ascent + 1);
-         if (wordIndex + 1 < line->lastWord &&
-             (word->spaceStyle->textDecoration
-              & core::style::TEXT_DECORATION_OVERLINE))
-            view->drawLine (word->spaceStyle->color,
-                            core::style::Color::SHADING_NORMAL,
-                            xWorld + word->size.width,
-                            yWorldBase + diff - word->style->font->ascent + 1,
-                            xWorld + word->size.width + word->effSpace - 1,
-                            yWorldBase + diff - word->style->font->ascent + 1);
-
-         /* strike-through */
-         if (word->style->textDecoration
-             & core::style::TEXT_DECORATION_LINE_THROUGH)
-            view->drawRectangle (
-               color, core::style::Color::SHADING_NORMAL,
-               true, xWorld,
-               yWorldBase + (diff + word->size.descent - word->size.ascent)/2,
-               word->size.width,
-               1 + word->style->font->xHeight / 10);
-         if (wordIndex + 1 < line->lastWord &&
-             (word->spaceStyle->textDecoration
-              & core::style::TEXT_DECORATION_LINE_THROUGH))
-            view->drawRectangle (
-               word->spaceStyle->color,
-               core::style::Color::SHADING_NORMAL,
-               true, xWorld + word->size.width,
-               yWorldBase + (diff + word->size.descent - word->size.ascent)/2,
-               word->effSpace,
-               1 + word->style->font->xHeight / 10);
+         if (word->spaceStyle->textDecoration && word->effSpace)
+            decorateText(view, word, word->spaceStyle,
+                         core::style::Color::SHADING_NORMAL,
+                         xWorld + word->size.width, yWorldBase + spaceDiff,
+                         word->effSpace);
 
          for (layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
             if (hlStart[layer].index <= wordIndex &&
                 hlEnd[layer].index >= wordIndex) {
+               int widthHLSpace = 0;
 
                wordLen = strlen (word->content.text);
                effHLEnd = misc::min (wordLen, hlEnd[layer].nChar);
@@ -1367,18 +1357,33 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                if (wordIndex < hlEnd[layer].index &&
                    wordIndex < words->size () &&
                    wordIndex != line->lastWord - 1)
-                  widthHL += word->effSpace;
+                  widthHLSpace = word->effSpace;
 
 
                if (widthHL != 0) {
                   /* Draw background for highlighted text. */
-                  view->drawRectangle (wordBgColor,
-                                       core::style::Color::SHADING_INVERSE,
-                                       true, startHL,
-                                       yWorldBase - word->size.ascent,
-                                       widthHL,
-                                       word->size.ascent + word->size.descent);
+                  view->drawRectangle (
+                     wordBgColor,
+                     core::style::Color::SHADING_INVERSE,
+                     true, startHL,
+                     yWorldBase + diff - word->style->font->ascent,
+                     widthHL,
+                     word->style->font->ascent + word->style->font->descent);
+                  if (widthHLSpace > 0) {
+                     core::style::Color *spaceBgColor;
 
+                     if (!(spaceBgColor = word->spaceStyle->backgroundColor))
+                        spaceBgColor = thisBgColor;
+
+                     view->drawRectangle (
+                        spaceBgColor,
+                        core::style::Color::SHADING_INVERSE,
+                        true, startHL + widthHL,
+                        yWorldBase + spaceDiff -word->spaceStyle->font->ascent,
+                        widthHLSpace,
+                        word->spaceStyle->font->ascent +
+                         word->spaceStyle->font->descent);
+                  }
                   /* Highlight the text. */
                   view->drawText (word->style->font,
                                   color, core::style::Color::SHADING_INVERSE,
@@ -1386,33 +1391,16 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                                   word->content.text + effHLStart,
                                   effHLEnd - effHLStart);
 
-                  /* underline, overline, and strike-through */
-                  if (word->style->textDecoration
-                      & core::style::TEXT_DECORATION_UNDERLINE)
-                     view->drawLine (color,
-                                     core::style::Color::SHADING_INVERSE,
-                                     startHL, yWorldBase + 1 + diff,
-                                     startHL + widthHL - 1,
-                                     yWorldBase + 1 + diff);
-                  if (word->style->textDecoration
-                      & core::style::TEXT_DECORATION_OVERLINE)
-                     view->drawLine (
-                        color,
-                        core::style::Color::SHADING_INVERSE,
-                        startHL,
-                        yWorldBase + diff - word->style->font->ascent + 1,
-                        startHL + widthHL - 1,
-                        yWorldBase + diff - word->style->font->ascent + 1);
-                  if (word->style->textDecoration
-                      & core::style::TEXT_DECORATION_LINE_THROUGH)
-                     view->drawRectangle (
-                        color,
-                        core::style::Color::SHADING_INVERSE,
-                        true, startHL,
-                        yWorldBase + (diff + word->size.descent -
-                                      word->size.ascent) / 2,
-                        widthHL,
-                        1 + word->style->font->xHeight / 10);
+                  if (word->style->textDecoration)
+                     decorateText(view, word, word->style,
+                                  core::style::Color::SHADING_INVERSE, startHL,
+                                  yWorldBase + diff, widthHL);
+
+                  if (widthHLSpace && word->spaceStyle->textDecoration)
+                     decorateText(view, word, word->spaceStyle,
+                                  core::style::Color::SHADING_INVERSE,
+                                  startHL + widthHL, yWorldBase + spaceDiff,
+                                  widthHLSpace);
                }
             }
          }

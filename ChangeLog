@@ -30,6 +30,7 @@ dillo-2.1
  - Refactored prefs.c to a much smaller size!
  - Fixed a SEGFAULT bug on redirections without Location.
  - Implemented the "overline" text-decoration.
+ - Enhanced and cleaned up text decorations for SUB and SUP.
    Patches: place (AKA corvid)
 +- Switched SSL-enabled to configure.in (./configure --enable-ssl).
  - Standardised the installation of dpid/dpidrc with auto* tools.
