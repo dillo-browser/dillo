@@ -16,19 +16,21 @@ dillo-2.1
  - Cleaned up resource embedding (forms)
  - Made cookierc parsing more robust.
  - Switched a_UIcmd_save() to take its URL from history (not location bar).
- - Set prefs.vw_fontname as deafult font for the UI.
- - Fix: recover page focus when clicking-out of a widget.
+ - Set prefs.vw_fontname as default font for the UI.
+ - Fix: recover page focus when clicking outside of a widget.
  - Fixed a segfault bug in the test/ directory.
  - Set middle click to submit in a new TAB. (Helps to keep form data!)
  - Added support for the Q element. BUG#343
  - Cleaned up Html_pop_tag().
  - Ported the command line interface from dillo1 (XID not working yet).
  - Switched file dpi error messages to HTML.
- - Added a popup menu to form's submit button.
- - Added a right-click menu to the form submit button (allows to show hiddens).
+ - Added a right-click menu to form controls (show hiddens, submit, reset)
+ - Remove now-redundant generate_submit pref
  - Added the "http_language" dillorc option for setting HTTP's Accept-Language.
  - Refactored prefs.c to a much smaller size!
  - Fixed a SEGFAULT bug on redirections without Location.
+ - Obey SELECT's size attribute.
+ - Replace image loading button and page menu option with a tools menu option.
  - Implemented the "overline" text-decoration.
  - Enhanced and cleaned up text decorations for SUB and SUP.
    Patches: place (AKA corvid)
