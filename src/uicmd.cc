@@ -15,8 +15,12 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <math.h>       /* for rint */
+
+#include <fltk/draw.h>
+#include <fltk/damage.h>
 #include <fltk/Widget.h>
 #include <fltk/TabGroup.h>
+#include <fltk/Tooltip.h>
 
 #include "dir.h"
 #include "ui.hh"
@@ -51,20 +55,190 @@ static char *save_dir = NULL;
 
 using namespace fltk;
 
-//
-// For custom handling of keyboard
-//
+
+//----------------------------------------------------------------------------
+#define BTN_W 25
+#define BTN_H 20
+
+static int btn_x;
+
+/*
+ * Adds a tab-close button at the rightmost part
+ */
+class CustShrinkTabPager : public TabGroupPager {
+   bool btn_hl;
+   TabGroup *tg;
+public:
+   int update_positions(
+          TabGroup *g, int numchildren, int &selected,
+          int &cumulated_width, int &available_width,
+          int *tab_pos, int *tab_width);
+   virtual int which(TabGroup* g, int m_x,int m_y);
+   virtual TabGroupPager* clone() const;
+   virtual const char * mode_name() const {return "Shrink";}
+   virtual int id() const {return PAGER_SHRINK;}
+   virtual int available_width(TabGroup *g) const;
+   virtual bool draw_tabs(TabGroup* g, int selected, int* tab_pos,
+                          int* tab_width) {
+      if (!tg) tg = g;
+      if (g->children() > 1) {
+         fltk::Rectangle r(btn_x,0,BTN_W,BTN_H);
+         setcolor(btn_hl ? 206 : GRAY75);
+         fillrect(r);
+         if (btn_hl) {
+            setcolor(WHITE);
+            strokerect(r);
+         }
+         setcolor(GRAY10);
+         //fltk::setfont(fltk::getfont()->bold(), fltk::getsize());
+         r.h(r.h()-2);
+         drawtext("X", r, ALIGN_CENTER);
+      }
+      return false;
+   }
+
+   void btn_highlight(bool flag) {
+      if (btn_hl != flag) {
+         btn_hl = flag;
+         if (tg)
+            tg->redraw(DAMAGE_VALUE);
+      }
+   };
+   bool btn_highlight() { return btn_hl; };
+
+   CustShrinkTabPager() : TabGroupPager() {
+      noclip(true);
+      btn_hl = false;
+      tg = NULL;
+   }
+};
+
+int CustShrinkTabPager::available_width(TabGroup *g) const
+{
+   _MSG("CustShrinkTabPager::available_width\n");
+   int w = MAX (g->w() - this->slope()-1 - BTN_W, 0);
+   btn_x = w + 6;
+   return w;
+}
+
+int CustShrinkTabPager::which(TabGroup* g, int event_x,int event_y)
+{
+   int H = g->tab_height();
+   if (!H) return -1;
+   if (H < 0) {
+      if (event_y > g->h() || event_y < g->h()+H) return -1;
+   } else {
+      if (event_y > H || event_y < 0) return -1;
+   }
+   if (event_x < 0) return -1;
+   int p[128], w[128];
+   int selected = g->tab_positions(p, w);
+   int d = (event_y-(H>=0?0:g->h()))*slope()/H;
+   for (int i=0; i<g->children(); i++) {
+      if (event_x < p[i+1]+(i<selected ? slope() - d : d)) return i;
+   }
+   return -1;
+}
+
+/*
+ * Prevents tabs from going over the close-tab button.
+ * Modified from fltk-2.0.x-r6525.
+ */
+int CustShrinkTabPager::update_positions(
+       TabGroup *g, int numchildren, int &selected,
+       int &cumulated_width, int &available_width,
+       int *tab_pos, int *tab_width)
+{
+   available_width-=BTN_W;
+
+   // uh oh, they are too big, we must move them:
+   // special case when the selected tab itself is too big, make it fill
+   // cumulated_width:
+   int i;
+
+   if (tab_width[selected] >= available_width) {
+      tab_width[selected] = available_width;
+      for (i = 0; i <= selected; i++)
+         tab_pos[i] = 0;
+      for (i = selected + 1; i <= numchildren; i++)
+         tab_pos[i] = available_width;
+      return selected;
+   }
+
+   int w2[128];
+
+   for (i = 0; i < numchildren; i++)
+      w2[i] = tab_width[i];
+   i = numchildren - 1;
+   int j = 0;
+
+   int minsize = 5;
+
+   bool right = true;
+
+   while (cumulated_width > available_width) {
+      int n;                    // which one to shrink
+
+      if (j < selected && (!right || i <= selected)) {  // shrink a left one
+         n = j++;
+         right = true;
+      } else if (i > selected) {        // shrink a right one
+         n = i--;
+         right = false;
+      } else {                  // no more space, start making them zero
+         minsize = 0;
+         i = numchildren - 1;
+         j = 0;
+         right = true;
+         continue;
+      }
+      cumulated_width -= w2[n] - minsize;
+      w2[n] = minsize;
+      if (cumulated_width < available_width) {
+         w2[n] = available_width - cumulated_width + minsize;
+         cumulated_width = available_width;
+         break;
+      }
+   }
+   // re-sum the positions:
+   cumulated_width = 0;
+   for (i = 0; i < numchildren; i++) {
+      cumulated_width += w2[i];
+      tab_pos[i+1] = cumulated_width;
+   }
+   return selected;
+}
+
+TabGroupPager* CustShrinkTabPager::clone() const {
+   return new CustShrinkTabPager(*this);
+}
+
+//----------------------------------------------------------------------------
+
+/*
+ * For custom handling of keyboard
+ */
 class CustTabGroup : public fltk::TabGroup {
+  Tooltip *toolTip;
+  bool tooltipEnabled;
+  bool buttonPushed;
 public:
    CustTabGroup (int x, int y, int ww, int wh, const char *lbl=0) :
-      TabGroup(x,y,ww,wh,lbl) {};
+      TabGroup(x,y,ww,wh,lbl) {
+         this->pager(new CustShrinkTabPager());
+         toolTip = new Tooltip;
+         tooltipEnabled = false;
+         buttonPushed = false;
+      };
+      ~CustTabGroup() { delete toolTip; }
    int handle(int e) {
       // Don't focus with arrow keys
       _MSG("CustTabGroup::handle %d\n", e);
-      int k = event_key();
-      // We're only interested in some flags
-      unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
+      fltk::Rectangle r(btn_x,0,BTN_W,BTN_H);
       if (e == KEY) {
+         int k = event_key();
+         // We're only interested in some flags
+         unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
          if (k == UpKey || k == DownKey || k == TabKey) {
             return 0;
          } else if (k == LeftKey || k == RightKey) {
@@ -78,6 +252,46 @@ public:
             // Avoid focus change.
             return 0;
          }
+      } else if (e == MOVE) {
+         CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
+         if (event_inside(r) && children() > 1) {
+            /* We're inside the button area */
+            cstp->btn_highlight(true);
+            /* Prepare the tooltip for pop-up */
+            tooltipEnabled = true;
+            /* We use parent() if available because we are returning 0.
+             * Returning without having TabGroup processing makes the
+             * popup event never reach 'this', but it reaches parent() */
+            toolTip->enter(parent() ? parent() : this, r, "Close current Tab");
+
+            return 0;              // Change focus
+         } else {
+            cstp->btn_highlight(false);
+
+            /* Hide the tooltip or enable it again.*/
+            if (tooltipEnabled) {
+               tooltipEnabled = false;
+               toolTip->exit();
+            } else {
+               toolTip->enable();
+            }
+         }
+      } else if (e == PUSH && event_inside(r) &&
+                 event_button() == 1 && children() > 1) {
+         buttonPushed = true;
+         return 1;                 /* non-zero */
+      } else if (e == RELEASE) {
+         if (event_inside(r) && event_button() == 1 &&
+             children() > 1 && buttonPushed) {
+            a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(selected_child()));
+         } else {
+            CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
+            cstp->btn_highlight(false);
+         }
+         buttonPushed = false;
+      } else if (e == DRAG) {
+         /* Ignore this event */
+         return 1;
       }
       return TabGroup::handle(e);
    }
@@ -112,6 +326,8 @@ public:
          child(i)->resize(x(), y() + 20, w(), h() - 20);
    }
 };
+
+//----------------------------------------------------------------------------
 
 static void win_cb (fltk::Widget *w, void *cb_data) {
    CustTabGroup *tabs;

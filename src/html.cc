@@ -2020,7 +2020,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
                     border);
          props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
                     CSS_TYPE_LENGTH_PERCENTAGE, border);
-         props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH, 
+         props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH,
                     CSS_TYPE_LENGTH_PERCENTAGE, border);
          props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
                     CSS_TYPE_LENGTH_PERCENTAGE, border);
