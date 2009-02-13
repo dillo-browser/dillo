@@ -262,9 +262,9 @@ protected:
    void addLine (int wordInd, bool newPar);
    void calcWidgetSize (core::Widget *widget, core::Requisition *size);
    void rewrap ();
-   void decorateText(core::View *view, Word *word, core::style::Style *style,
-                     core::style::Color::Shading shading, int x, int yBase,
-                     int width);
+   void decorateText(core::View *view, core::style::Style *style,
+                     core::style::Color::Shading shading,
+                     int x, int yBase, int width);
    void drawLine (Line *line, core::View *view, core::Rectangle *area);
    int findLineIndex (int y);
    int findLineOfWord (int wordIndex);

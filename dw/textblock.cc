@@ -1205,8 +1205,7 @@ void Textblock::rewrap ()
 /*
  * Draw the decorations on a word.
  */
-void Textblock::decorateText(core::View *view, Word *word,
-                             core::style::Style *style,
+void Textblock::decorateText(core::View *view, core::style::Style *style,
                              core::style::Color::Shading shading,
                              int x, int yBase, int width)
 {
@@ -1236,182 +1235,189 @@ void Textblock::decorateText(core::View *view, Word *word,
  */
 void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
 {
-   Word *word;
-   int wordIndex;
-   int xWidget, yWidget, xWorld, yWorld, yWorldBase;
-   int startHL, widthHL;
-   int wordLen;
-   int diff, spaceDiff, effHLStart, effHLEnd, layer;
-   core::Widget *child;
-   core::Rectangle childArea;
-   core::style::Color *color, *thisBgColor, *wordBgColor;
+   int xWidget = lineXOffsetWidget(line);
+   int yWidgetBase = lineYOffsetWidget (line) + line->ascent;
+   int yWorldBase = allocation.y + yWidgetBase;
 
    /* Here's an idea on how to optimize this routine to minimize the number
-    * of calls to gdk_draw_string:
+    * of drawing calls:
     *
     * Copy the text from the words into a buffer, adding a new word
     * only if: the attributes match, and the spacing is either zero or
     * equal to the width of ' '. In the latter case, copy a " " into
     * the buffer. Then draw the buffer. */
 
-   thisBgColor = getBgColor ();
+   core::style::Color *thisBgColor = getBgColor ();
 
-   xWidget = lineXOffsetWidget(line);
-   xWorld = allocation.x + xWidget;
-   yWidget = lineYOffsetWidget (line);
-   yWorld = allocation.y + yWidget;
-   yWorldBase = yWorld + line->ascent;
-
-   for (wordIndex = line->firstWord; wordIndex < line->lastWord;
+   for (int wordIndex = line->firstWord; wordIndex < line->lastWord;
         wordIndex++) {
-      word = words->getRef(wordIndex);
-      diff = spaceDiff = 0;
-      color = word->style->color;
+      int xWorld = allocation.x + xWidget;
+      Word *word = words->getRef(wordIndex);
 
       //DBG_OBJ_ARRSET_NUM (page, "words.%d.<i>drawn at</i>.x", wordIndex,
       //                    xWidget);
       //DBG_OBJ_ARRSET_NUM (page, "words.%d.<i>drawn at</i>.y", wordIndex,
-      //                    yWidget);
+      //                    yWidgetBase - line->ascent);
 
       switch (word->content.type) {
       case core::Content::TEXT:
-         if (word->style->backgroundColor)
-            wordBgColor = word->style->backgroundColor;
-         else
-            wordBgColor = thisBgColor;
+      {
+         int yWordShift = 0, ySpaceShift = 0;
 
-         /* Adjust the text baseline if the word is <SUP>-ed or <SUB>-ed. */
-         if (word->style->valign == core::style::VALIGN_SUB)
-            diff = word->style->font->ascent / 3;
-         else if (word->style->valign == core::style::VALIGN_SUPER) {
-            diff -= word->style->font->ascent / 2;
+         if (word->size.width > 0) {
+            /* Draw word */
+
+            /* Adjust the text baseline if the word is <SUP>-ed or <SUB>-ed. */
+            if (word->style->valign == core::style::VALIGN_SUB)
+               yWordShift = word->style->font->ascent / 3;
+            else if (word->style->valign == core::style::VALIGN_SUPER) {
+               yWordShift -= word->style->font->ascent / 2;
+            }
+            /* Draw background (color, image), when given. */
+            if (word->style->hasBackground ())
+               drawBox (
+                  view, word->style, area,
+                  xWidget,
+                  yWidgetBase + yWordShift - word->style->font->ascent,
+                  word->size.width,
+                  word->style->font->ascent + word->style->font->descent,
+                  false);
+
+            view->drawText (word->style->font, word->style->color,
+                            core::style::Color::SHADING_NORMAL,
+                            xWorld, yWorldBase + yWordShift,
+                            word->content.text, strlen (word->content.text));
+
+            if (word->style->textDecoration)
+               decorateText(view, word->style,
+                            core::style::Color::SHADING_NORMAL, xWorld,
+                            yWorldBase + yWordShift, word->size.width);
          }
-         if (word->spaceStyle->valign == core::style::VALIGN_SUB)
-            spaceDiff = word->spaceStyle->font->ascent / 3;
-         else if (word->spaceStyle->valign == core::style::VALIGN_SUPER) {
-            spaceDiff -= word->spaceStyle->font->ascent / 2;
+
+         if (word->effSpace > 0 && (wordIndex < line->lastWord - 1)) {
+            /* Draw space unless at end of line */
+
+            /* Adjust the space baseline if the word is <SUP>-ed or <SUB>-ed */
+            if (word->spaceStyle->valign == core::style::VALIGN_SUB)
+               ySpaceShift = word->spaceStyle->font->ascent / 3;
+            else if (word->spaceStyle->valign == core::style::VALIGN_SUPER) {
+               ySpaceShift -= word->spaceStyle->font->ascent / 2;
+            }
+
+            /* Draw space background (color, image), when given. */
+            if (word->spaceStyle->hasBackground ())
+               drawBox (
+                  view, word->spaceStyle, area,
+                  xWidget + word->size.width,
+                  yWidgetBase + ySpaceShift - word->spaceStyle->font->ascent,
+                  word->effSpace,
+                  word->spaceStyle->font->ascent +
+                     word->spaceStyle->font->descent,
+                  false);
+
+            if (word->spaceStyle->textDecoration)
+               decorateText(view, word->spaceStyle,
+                            core::style::Color::SHADING_NORMAL,
+                            xWorld + word->size.width, yWorldBase +ySpaceShift,
+                            word->effSpace);
          }
-         /* Draw background (color, image), when given. */
-         if (word->style->hasBackground () && word->size.width > 0)
-            drawBox (
-               view, word->style, area,
-               xWidget,
-               yWidget + line->ascent + diff - word->style->font->ascent,
-               word->size.width,
-               word->style->font->ascent + word->style->font->descent,
-               false);
 
-         /* Draw space background (color, image), when given. */
-         if (word->spaceStyle->hasBackground () && word->effSpace > 0)
-            drawBox (
-               view, word->spaceStyle, area,
-               xWidget + word->size.width,
-               yWidget + line->ascent + diff - word->spaceStyle->font->ascent,
-               word->effSpace,
-               word->spaceStyle->font->ascent +word->spaceStyle->font->descent,
-               false);
-         view->drawText (word->style->font, color,
-                         core::style::Color::SHADING_NORMAL,
-                         xWorld, yWorldBase + diff,
-                         word->content.text, strlen (word->content.text));
-
-         if (word->style->textDecoration)
-            decorateText(view, word, word->style,
-                         core::style::Color::SHADING_NORMAL, xWorld,
-                         yWorldBase + diff, word->size.width);
-
-         if (word->spaceStyle->textDecoration && word->effSpace)
-            decorateText(view, word, word->spaceStyle,
-                         core::style::Color::SHADING_NORMAL,
-                         xWorld + word->size.width, yWorldBase + spaceDiff,
-                         word->effSpace);
-
-         for (layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
+         for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
             if (hlStart[layer].index <= wordIndex &&
                 hlEnd[layer].index >= wordIndex) {
-               int widthHLSpace = 0;
+               const int wordLen = strlen (word->content.text);
+               int xStart, width;
+               int firstCharIdx = 0;
+               int lastCharIdx = wordLen;
 
-               wordLen = strlen (word->content.text);
-               effHLEnd = misc::min (wordLen, hlEnd[layer].nChar);
-               effHLStart = 0;
                if (wordIndex == hlStart[layer].index)
-                  effHLStart = misc::min (hlStart[layer].nChar, wordLen);
+                  firstCharIdx = misc::min (hlStart[layer].nChar, wordLen);
 
-               effHLEnd = wordLen;
                if (wordIndex == hlEnd[layer].index)
-                  effHLEnd = misc::min (hlEnd[layer].nChar, wordLen);
+                  lastCharIdx = misc::min (hlEnd[layer].nChar, wordLen);
 
-               startHL = xWorld + layout->textWidth (word->style->font,
-                                                     word->content.text,
-                                                     effHLStart);
-               widthHL =
-                  layout->textWidth (word->style->font,
-                                     word->content.text + effHLStart,
-                                     effHLEnd - effHLStart);
+               xStart = xWorld + layout->textWidth (word->style->font,
+                                                    word->content.text,
+                                                    firstCharIdx);
+               width = layout->textWidth (word->style->font,
+                                           word->content.text + firstCharIdx,
+                                           lastCharIdx - firstCharIdx);
 
-               // If the space after this word highlighted, and this word
-               // is not the last one in this line, highlight also the
-               // space.
-               /** \todo This should also be done with spaces after non-text
-                *        words, but this is not yet defined very well. */
-               if (wordIndex < hlEnd[layer].index &&
-                   wordIndex < words->size () &&
-                   wordIndex != line->lastWord - 1)
-                  widthHLSpace = word->effSpace;
+               if (width > 0) {
+                  /* Highlight text */
+                  core::style::Color *wordBgColor;
 
+                  if (!(wordBgColor =  word->style->backgroundColor))
+                     wordBgColor = thisBgColor;
 
-               if (widthHL != 0) {
                   /* Draw background for highlighted text. */
                   view->drawRectangle (
                      wordBgColor,
                      core::style::Color::SHADING_INVERSE,
-                     true, startHL,
-                     yWorldBase + diff - word->style->font->ascent,
-                     widthHL,
+                     true, xStart,
+                     yWorldBase + yWordShift - word->style->font->ascent,
+                     width,
                      word->style->font->ascent + word->style->font->descent);
+
                   /* Highlight the text. */
-                  view->drawText (word->style->font,
-                                  color, core::style::Color::SHADING_INVERSE,
-                                  startHL, yWorldBase + diff,
-                                  word->content.text + effHLStart,
-                                  effHLEnd - effHLStart);
+                  view->drawText (word->style->font, word->style->color,
+                                  core::style::Color::SHADING_INVERSE,
+                                  xStart, yWorldBase + yWordShift,
+                                  word->content.text + firstCharIdx,
+                                  lastCharIdx - firstCharIdx);
 
                   if (word->style->textDecoration)
-                     decorateText(view, word, word->style,
-                                  core::style::Color::SHADING_INVERSE, startHL,
-                                  yWorldBase + diff, widthHL);
+                     decorateText(view, word->style,
+                                  core::style::Color::SHADING_INVERSE, xStart,
+                                  yWorldBase + yWordShift, width);
                }
-               if (widthHLSpace > 0) {
+               xStart += width;
+
+               // Show highlighted space unless this is the last word on the
+               // line.
+               /** \todo This should also be done with spaces after non-text
+                *        words, but this is not yet defined very well. */
+
+               width = 0;
+               if (wordIndex < hlEnd[layer].index &&
+                   wordIndex < line->lastWord - 1)
+                  width = word->effSpace;
+
+               if (width > 0) {
+                  /* Highlight space */
                   core::style::Color *spaceBgColor;
 
                   if (!(spaceBgColor = word->spaceStyle->backgroundColor))
                      spaceBgColor = thisBgColor;
 
                   view->drawRectangle (
-                     spaceBgColor,
-                     core::style::Color::SHADING_INVERSE,
-                     true, startHL + widthHL,
-                     yWorldBase + spaceDiff -word->spaceStyle->font->ascent,
-                     widthHLSpace,
+                     spaceBgColor, core::style::Color::SHADING_INVERSE,
+                     true, xStart,
+                     yWorldBase + ySpaceShift - word->spaceStyle->font->ascent,
+                     width,
                      word->spaceStyle->font->ascent +
-                      word->spaceStyle->font->descent);
+                        word->spaceStyle->font->descent);
+
                   if (word->spaceStyle->textDecoration) {
-                     decorateText(view, word, word->spaceStyle,
+                     decorateText(view, word->spaceStyle,
                                   core::style::Color::SHADING_INVERSE,
-                                  startHL + widthHL, yWorldBase + spaceDiff,
-                                  widthHLSpace);
+                                  xStart, yWorldBase + ySpaceShift,
+                                  width);
                   }
                }
             }
          }
          break;
-
+      }
       case core::Content::WIDGET:
-         child = word->content.widget;
+      {
+         core::Widget *child = word->content.widget;
+         core::Rectangle childArea;
+
          if (child->intersects (area, &childArea))
             child->draw (view, &childArea);
          break;
-
+      }
       case core::Content::ANCHOR: case core::Content::BREAK:
          /* nothing - an anchor/break isn't seen */
          /*
@@ -1439,11 +1445,9 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
          break;
 
       default:
-         MSG_ERR("at (%d, %d).\n", xWorld, yWorldBase + diff);
+         MSG_ERR("at (%d, %d).\n", xWorld, yWorldBase);
          break;
       }
-
-      xWorld += word->size.width + word->effSpace;
       xWidget += word->size.width + word->effSpace;
    }
 }
