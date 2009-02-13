@@ -1259,8 +1259,21 @@ void FltkListResource::widgetCallback (::fltk::Widget *widget, void *data)
    if (fltkItem)
       index = (long) (fltkItem->user_data ());
    if (index > -1) {
-      bool selected = fltkItem->selected ();
-      ((FltkListResource *) data)->itemsSelected.set (index, selected);
+      /* A MultiBrowser will trigger a callback for each item that is
+       * selected and each item that is deselected, but a "plain"
+       * Browser will only trigger the callback for the newly selected item
+       * (for which selected() is false, incidentally).
+       */
+      FltkListResource *res = (FltkListResource *) data;
+      if (res->mode == SELECTION_MULTIPLE) {
+         bool selected = fltkItem->selected ();
+         res->itemsSelected.set (index, selected);
+      } else {
+         int size = res->itemsSelected.size();
+         for (int i = 0; i < size; i++)
+            res->itemsSelected.set (i, false);
+         res->itemsSelected.set (index, true);
+      }
    }
 }
 
