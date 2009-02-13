@@ -2,7 +2,7 @@
  * File: url.c
  *
  * Copyright (C) 2001 Livio Baldini Soares <livio@linux.ime.usp.br>
- * Copyright (C) 2001-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2001-2009 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 
 /*
- * Regular Expression as given in RFC2396 for URL parsing.
+ * Regular Expression as given in RFC3986 for URL parsing.
  *
  *  ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
  *   12            3  4          5       6  7        8 9
@@ -114,7 +114,7 @@ const char *a_Url_hostname(const DilloUrl *u)
          if ((p = strchr(url->authority, ':'))) {
             url->port = strtol(p + 1, NULL, 10);
             url->hostname = dStrndup(url->authority,
-				     (uint_t)(p - url->authority));
+                                     (uint_t)(p - url->authority));
          } else {
             url->hostname = url->authority;
          }
@@ -206,7 +206,7 @@ void a_Url_free(DilloUrl *url)
 }
 
 /*
- * Resolve the URL as RFC2396 suggests.
+ * Resolve the URL as RFC3986 suggests.
  */
 static Dstr *Url_resolve_relative(const char *RelStr,
                                   DilloUrl *BaseUrlPar,
@@ -230,14 +230,19 @@ static Dstr *Url_resolve_relative(const char *RelStr,
    SolvedUrl = dStr_sized_new(64);
    Path = dStr_sized_new(64);
 
-   /* path empty && scheme, authority and query undefined */
-   if (!RelUrl->path && !RelUrl->scheme &&
-       !RelUrl->authority && !RelUrl->query) {
+   /* path empty && scheme and authority undefined */
+   if (!RelUrl->path && !RelUrl->scheme && !RelUrl->authority) {
       dStr_append(SolvedUrl, BaseStr);
+      if ((p = strchr(SolvedUrl->str, '#')))
+         dStr_truncate(SolvedUrl, p - SolvedUrl->str);
 
+      if (RelUrl->query) {                        /* query */
+         if (BaseUrl->query)
+            dStr_truncate(SolvedUrl, BaseUrl->query - BaseUrl->buffer - 1);
+         dStr_append_c(SolvedUrl, '?');
+         dStr_append(SolvedUrl, RelUrl->query);
+      }
       if (RelUrl->fragment) {                    /* fragment */
-         if (BaseUrl->fragment)
-            dStr_truncate(SolvedUrl, BaseUrl->fragment-BaseUrl->buffer-1);
          dStr_append_c(SolvedUrl, '#');
          dStr_append(SolvedUrl, RelUrl->fragment);
       }
@@ -252,14 +257,12 @@ static Dstr *Url_resolve_relative(const char *RelStr,
       if (RelUrl->path)
          dStr_append(Path, RelUrl->path);
 
-   } else if (RelUrl->path && RelUrl->path[0] == '/') {   /* path */
-      dStr_append(Path, RelUrl->path);
-
    } else {
-      // solve relative path
-      if (BaseUrl->path) {
+      if (RelUrl->path && RelUrl->path[0] == '/') {   /* absolute path */
+         ; /* Ignore BaseUrl path */
+      } else if (BaseUrl->path) {                     /* relative path */
          dStr_append(Path, BaseUrl->path);
-         for (i = Path->len; --i >= 0 && Path->str[i] != '/'; );
+         for (i = Path->len; --i >= 0 && Path->str[i] != '/'; ) ;
          if (Path->str[i] == '/')
             dStr_truncate(Path, ++i);
       }
@@ -278,14 +281,10 @@ static Dstr *Url_resolve_relative(const char *RelStr,
       // erase "<segment>/../" and "<segment>/.."
       s = p = Path->str;
       while ( (p = strstr(p, "/..")) != NULL ) {
-         if ((p[3] == '/' || !p[3]) && (p - s)) { //  "/../" | "/.."
-
-            for (e = p + 3 ; p[-1] != '/' && p > s; --p);
-            if (p[0] != '.' || p[1] != '.' || p[2] != '/') {
-               dStr_erase(Path, p - Path->str, e - p + (*e != 0));
-               p -= (p > Path->str);
-            } else
-               p = e;
+         if (p[3] == '/' || !p[3]) { //  "/../" | "/.."
+            for (e = p + 3 ; p > s && p[-1] != '/'; --p) ;
+            dStr_erase(Path, p - Path->str, e - p + (p > s && *e != 0));
+            p -= (p > Path->str);
          } else
             p += 3;
       }
@@ -611,7 +610,7 @@ char *a_Url_encode_hex_str(const char *str)
 
 
 /*
- * RFC-2396 suggests this stripping when "importing" URLs from other media.
+ * RFC-3986 suggests this stripping when "importing" URLs from other media.
  * Strip: "URL:", enclosing < >, and embedded whitespace.
  * (We also strip illegal chars: 00-1F and 7F)
  */
