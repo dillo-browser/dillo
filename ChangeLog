@@ -69,6 +69,7 @@ dillo-2.1
  - Removed the nav.h dependency from html.cc
  - Made the repush() operation more general and suited for CSS use.
  - Fixed collapsing of whitespace entities in HTML mode.
+ - Updated the URL resolver to comply with RFC-3986.
  - Fixed handling of META's content-type with no MIME type (e.g. only charset).
    Patches: Jorge Arellano Cid
 
