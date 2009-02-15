@@ -43,13 +43,17 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    n->num = num++;
    n->style = Style::create (layout, &style_attrs);
    n->wordStyle = NULL;
+   n->element = 0;
+   n->id = NULL;
+   n->klass = NULL;
    n->pseudo = NULL;
    n->styleAttribute = NULL;
    n->inheritBackgroundColor = false;
 }
 
 StyleEngine::~StyleEngine () {
-   /* \todo clear stack if not empty */
+   while (stack->size () > 0)
+      endElement (stack->getRef (stack->size () - 1)->element);
    delete stack;
    delete cssContext;
 }
@@ -136,7 +140,7 @@ void StyleEngine::setPseudoVisited () {
  */
 void StyleEngine::endElement (int element) {
 //   fprintf(stderr, "===> END %d\n", element);
-   assert (stack->size () > 1);
+   assert (stack->size () > 0);
    assert (element == stack->getRef (stack->size () - 1)->element);
 
    Node *n =  stack->getRef (stack->size () - 1);

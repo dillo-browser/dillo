@@ -310,8 +310,12 @@ void CssStyleSheet::addRule (CssRule *rule) {
       ruleList = anyTable;
    }
 
-   if (ruleList)
+   if (ruleList) {
       ruleList->insert (rule);
+   } else {
+      assert (top->element == CssSimpleSelector::ELEMENT_NONE);
+      delete rule;
+   }
 }
 
 void CssStyleSheet::apply (CssPropertyList *props,
