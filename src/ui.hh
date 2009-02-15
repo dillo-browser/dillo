@@ -73,6 +73,7 @@ class UI : public fltk::Group {
    void make_menubar(int x, int y, int w, int h);
    Widget *make_filemenu_button();
    Group *make_panel(int ww);
+   Group *make_status_panel(int ww);
 
 public:
 

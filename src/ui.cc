@@ -625,13 +625,43 @@ Group *UI::make_panel(int ww)
 }
 
 /*
+ * Create the status panel
+ */
+Group *UI::make_status_panel(int ww)
+{
+   const int s_h = 20, bm_w = 16;
+   Group *g = new Group(0, 0, ww, s_h, 0);
+
+   // Status box
+   Status = new Output(0, 0, ww-bm_w, s_h, 0);
+   Status->value("");
+   Status->box(THIN_DOWN_BOX);
+   Status->clear_click_to_focus();
+   Status->clear_tab_to_focus();
+   Status->color(GRAY80);
+   g->add(Status);
+   //Status->throw_focus();
+
+   // Bug Meter
+   BugMeter = new HighlightButton(ww-bm_w,0,bm_w,s_h,0);
+   BugMeter->image(icons->ImgMeterOK);
+   BugMeter->box(THIN_DOWN_BOX);
+   BugMeter->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
+   BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
+   BugMeter->callback(bugmeter_cb, this);
+   BugMeter->clear_tab_to_focus();
+   g->add(BugMeter);
+
+   g->resizable(Status);
+   return g;
+}
+
+/*
  * User Interface constructor
  */
 UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
   Group(x, y, ww, wh, label)
 {
-   int s_h = 20;
-
    PointerOnLink = FALSE;
 
    Tabs = NULL;
@@ -655,11 +685,9 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
      Panelmode = (UIPanelmode) prefs.fullwindow_start;
    }
 
-
    // Control panel
    Panel = make_panel(ww);
    TopGroup->add(Panel);
-
 
    // Render area
    Main = new Widget(0,0,1,1,"Welcome...");
@@ -678,30 +706,7 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    TopGroup->add(findbar);
 
    // Status Panel
-   StatusPanel = new Group(0, 0, ww, s_h, 0);
-   // Status box
-   int bm_w = 16;
-   Status = new Output(0, 0, ww-bm_w, s_h, 0);
-   Status->value("");
-   Status->box(THIN_DOWN_BOX);
-   Status->clear_click_to_focus();
-   Status->clear_tab_to_focus();
-   Status->color(GRAY80);
-   StatusPanel->add(Status);
-   //Status->throw_focus();
-
-   // Bug Meter
-   BugMeter = new HighlightButton(ww-bm_w,0,bm_w,s_h,0);
-   BugMeter->image(icons->ImgMeterOK);
-   BugMeter->box(THIN_DOWN_BOX);
-   BugMeter->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
-   BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
-   BugMeter->callback(bugmeter_cb, this);
-   BugMeter->clear_tab_to_focus();
-   StatusPanel->add(BugMeter);
-
-   StatusPanel->resizable(Status);
-
+   StatusPanel = make_status_panel(ww);
    TopGroup->add(StatusPanel);
 
    // Make the full screen button (to be attached to the viewport later)
@@ -717,8 +722,6 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
       Panel->hide();
       StatusPanel->hide();
    }
-
-   //show();
 }
 
 /*
