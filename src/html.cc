@@ -2792,12 +2792,13 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          ds_msg = dStr_sized_new(256);
          dStr_sprintf(ds_msg, meta_template, content, delay_str);
          {
-            int SaveFlags = html->InFlags;
+            int o_InFlags = html->InFlags;
+            int o_TagSoup = html->TagSoup;
             html->InFlags = IN_BODY;
             html->TagSoup = false;
             Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
-            html->TagSoup = true;
-            html->InFlags = SaveFlags;
+            html->TagSoup = o_TagSoup;
+            html->InFlags = o_InFlags;
          }
          dStr_free(ds_msg, 1);
 

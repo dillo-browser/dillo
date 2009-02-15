@@ -53,6 +53,7 @@ typedef struct {
    char *TypeDet;            /* MIME type string (detected from data) */
    char *TypeHdr;            /* MIME type string as from the HTTP Header */
    char *TypeMeta;           /* MIME type string from META HTTP-EQUIV */
+   char *TypeNorm;           /* MIME type string normalized */
    Dstr *Header;             /* HTTP header */
    const DilloUrl *Location; /* New URI for redirects */
    Dlist *Auth;              /* Authentication fields */
@@ -208,6 +209,7 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->TypeDet = NULL;
    NewEntry->TypeHdr = NULL;
    NewEntry->TypeMeta = NULL;
+   NewEntry->TypeNorm = NULL;
    NewEntry->Header = dStr_new("");
    NewEntry->Location = NULL;
    NewEntry->Auth = NULL;
@@ -313,6 +315,7 @@ static void Cache_entry_free(CacheEntry_t *entry)
    dFree(entry->TypeDet);
    dFree(entry->TypeHdr);
    dFree(entry->TypeMeta);
+   dFree(entry->TypeNorm);
    dStr_free(entry->Header, TRUE);
    a_Url_free((DilloUrl *)entry->Location);
    Cache_auth_free(entry->Auth);
@@ -460,8 +463,8 @@ static void Cache_unref_data(CacheEntry_t *entry)
  */
 static const char *Cache_current_content_type(CacheEntry_t *entry)
 {
-   return entry->TypeMeta ? entry->TypeMeta : entry->TypeHdr ? entry->TypeHdr :
-          entry->TypeDet;
+   return entry->TypeNorm ? entry->TypeNorm : entry->TypeMeta ? entry->TypeMeta
+          : entry->TypeHdr ? entry->TypeHdr : entry->TypeDet;
 }
 
 /*
@@ -490,8 +493,8 @@ static Dstr *Cache_data(CacheEntry_t *entry)
 const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
                                      const char *from)
 {
-   char *charset;
    const char *curr;
+   char *major, *minor, *charset;
    CacheEntry_t *entry = Cache_entry_search_with_redirect(url);
 
    dReturn_val_if_fail (entry != NULL, NULL);
@@ -512,7 +515,12 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
       }
       if (a_Misc_content_type_cmp(curr, ctype)) {
          /* ctype gives one different from current */
-         a_Misc_parse_content_type(ctype, NULL, NULL, &charset);
+         a_Misc_parse_content_type(ctype, &major, &minor, &charset);
+         if (*from == 'm' && charset &&
+             ((!major || !*major) && (!minor || !*minor))) {
+            /* META only gives charset; use detected MIME type too */
+            entry->TypeNorm = dStrconcat(entry->TypeDet, ctype, NULL);
+         }
          if (charset) {
             if (entry->CharsetDecoder)
                a_Decode_free(entry->CharsetDecoder);
@@ -1111,13 +1119,13 @@ static void Cache_process_queue(CacheEntry_t *entry)
             if (TypeMismatch) {
                AbortEntry = TRUE;
             } else {
-               const char *content_type = Cache_current_content_type(entry);
-               st = a_Web_dispatch_by_type(content_type, ClientWeb,
+               const char *curr_type = Cache_current_content_type(entry);
+               st = a_Web_dispatch_by_type(curr_type, ClientWeb,
                                            &Client->Callback, &Client->CbData);
                if (st == -1) {
                   /* MIME type is not viewable */
                   if (ClientWeb->flags & WEB_RootUrl) {
-                     MSG("Content-Type '%s' not viewable.\n", content_type);
+                     MSG("Content-Type '%s' not viewable.\n", curr_type);
                      /* prepare a download offer... */
                      AbortEntry = OfferDownload = TRUE;
                   } else {

@@ -368,7 +368,7 @@ static void Nav_repush(BrowserWindow *bw)
 
 static void Nav_repush_callback(void *data)
 {
-   _MSG(">>>   Nav_repush_callback <<<<\n");
+   _MSG(">>>> Nav_repush_callback <<<<\n");
    Nav_repush(data);
    a_Timeout_remove();
 }
