@@ -52,8 +52,15 @@ dillo-2.1
 +- Reduced warnings with gcc-4.3.
    Patch: Thomas Orgis
 +- Made the parser recognize "[^ ]/>"-terminated XML elements.
+ - Implemented basic CSS infrastructure.
+ - Brought in Sebastian's CSS parser from dillo-0.8.0-css-3.
+ - Read user style from ~/.dillo/style.css.
+ - Added support for descendant and child selectors.
+ - Improved CSS selector matching performance using hash tables.
+ - Support selector specificity.
+ - Add support for font-size and font-weight enum values.
  - Added "font_min_size" dillorc option.
-   Patch: Johannes Hofmann
+   Patches: Johannes Hofmann
 +- Implemented a close-tab button for the GUI.
    Patch: João Ricardo Lourenço, Jorge Arellano Cid
 +- Added the "middle_click_drags_page" dillorc option.
