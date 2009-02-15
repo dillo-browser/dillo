@@ -53,7 +53,7 @@
 # font_factor=1.5
 #font_factor=1.0
 
-# Minimum font size
+# Minimum font size in pixels
 #font_min_size=6
 
 # Show tooltip popup for images?
