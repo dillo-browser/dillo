@@ -32,6 +32,8 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = prefs.font_sans_serif;
    font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
+   if (font_attrs.size < prefs.font_min_size)
+      font_attrs.size = prefs.font_min_size;
    font_attrs.weight = 400;
    font_attrs.style = FONT_STYLE_NORMAL;
 
