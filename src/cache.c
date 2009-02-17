@@ -525,13 +525,13 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
             if (entry->CharsetDecoder)
                a_Decode_free(entry->CharsetDecoder);
             entry->CharsetDecoder = a_Decode_charset_init(charset);
-            dFree(charset);
             curr = Cache_current_content_type(entry);
 
             /* Invalidate UTF8Data */
             dStr_free(entry->UTF8Data, 1);
             entry->UTF8Data = NULL;
          }
+         dFree(major); dFree(minor); dFree(charset);
       }
    }
    return curr;
