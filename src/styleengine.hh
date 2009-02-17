@@ -56,6 +56,7 @@ class StyleEngine : public Doctree {
       void setPseudoVisited ();
       void setNonCssHints (CssPropertyList *nonCssHints);
       void inheritBackgroundColor (); /* \todo get rid of this somehow */
+      dw::core::style::Style *backgroundStyle ();
 
       inline dw::core::style::Style *style () {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->style;
@@ -71,7 +72,6 @@ class StyleEngine : public Doctree {
          else
             return wordStyle0 ();
       };
-
 };
 
 #endif

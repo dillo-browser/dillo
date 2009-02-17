@@ -465,6 +465,21 @@ bool StyleEngine::computeLength (dw::core::style::Length *dest,
 }
 
 /**
+ * \brief Similar to StyleEngine::style(), but with backgroundColor set.
+ * A normal style might have backgroundColor == NULL to indicate a transparent
+ * background. This method ensures that backgroundColor is set.
+ */ 
+Style * StyleEngine::backgroundStyle () {
+   StyleAttrs attrs = *style ();
+   
+   for (int i = stack->size () - 1; i >= 0 && ! attrs.backgroundColor; i--)
+      attrs.backgroundColor = stack->getRef (i)->style->backgroundColor;
+
+   assert (attrs.backgroundColor);
+   return Style::create (layout, &attrs);
+}
+
+/**
  * \brief Create a new style object based on the previously opened / closed
  *    HTML elements and the nonCssProperties that have been set.
  *    This method is private. Call style() to get a current style object.

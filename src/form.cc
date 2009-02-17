@@ -857,7 +857,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       char *name, *value;
 
       page = new Textblock (prefs.limit_text_width);
-      page->setStyle (html->styleEngine->style ());
+      page->setStyle (html->styleEngine->backgroundStyle ());
 
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();
       Resource *resource = factory->createComplexButtonResource(page, true);
@@ -1912,7 +1912,7 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
 
       /* create new image and add it to the button */
       if ((Image = a_Html_image_new(html, tag, tagsize, url))) {
-         IM2DW(Image)->setStyle (html->styleEngine->style ());
+         IM2DW(Image)->setStyle (html->styleEngine->backgroundStyle ());
          ResourceFactory *factory = HT2LT(html)->getResourceFactory();
          ComplexButtonResource *complex_b_r =
             factory->createComplexButtonResource(IM2DW(Image), false);
