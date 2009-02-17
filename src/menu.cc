@@ -19,6 +19,7 @@
 #include <fltk/ToggleItem.h>
 #include <fltk/Divider.h>
 
+#include "lout/misc.hh"    /* SimpleVector */
 #include "msg.h"
 #include "menu.hh"
 #include "uicmd.hh"
@@ -238,6 +239,11 @@ static void Menu_form_hiddens_cb(Widget *w, void *user_data)
       a_Html_form_display_hiddens(doc, v_form, !visible);
 }
 
+static void Menu_stylesheet_cb(Widget *w, void *)
+{
+   a_UIcmd_open_urlstr(popup_bw, w->label() + 5);
+}
+
 /*
  * Validate URL with the W3C
  */
@@ -324,25 +330,31 @@ static void Menu_popup_cb2(void *data)
  * Page popup menu (construction & popup)
  */
 void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
-                       bool_t has_bugs)
+                       bool_t has_bugs, void *v_cssUrls)
 {
+   lout::misc::SimpleVector <DilloUrl*> *cssUrls =
+                            (lout::misc::SimpleVector <DilloUrl*> *) v_cssUrls;
+   Item *i;
+   int j;
    // One menu for every browser window
    static PopupMenu *pm = 0;
    // Active/inactive control.
    static Item *view_page_bugs_item = 0;
+   static ItemGroup *stylesheets = 0;
 
    popup_bw = bw;
    a_Url_free(popup_url);
    popup_url = a_Url_dup(url);
 
    if (!pm) {
-      Item *i;
       pm = new PopupMenu(0,0,0,0,"&PAGE OPTIONS");
       pm->begin();
        i = new Item("View page Source");
        i->callback(Menu_view_page_source_cb);
        i = view_page_bugs_item = new Item("View page Bugs");
        i->callback(Menu_view_page_bugs_cb);
+       stylesheets = new ItemGroup("View Stylesheets");
+       new Divider();
        i = new Item("Bookmark this page");
        i->callback(Menu_add_bookmark_cb);
        new Divider();
@@ -363,6 +375,30 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
       view_page_bugs_item->activate();
    else
       view_page_bugs_item->deactivate();
+
+   int n = stylesheets->children();
+   for (j = 0; j < n; j++) {
+      /* get rid of the old ones */
+      Widget *child = stylesheets->child(0);
+      dFree((char *)child->label());
+      delete child;
+   }
+
+   if (cssUrls && cssUrls->size () > 0) {
+      stylesheets->activate();
+      for (j = 0; j < cssUrls->size(); j++) {
+         DilloUrl *url = cssUrls->get(j);
+         const char *action = "View ";
+         /* may want ability to Load individual unloaded stylesheets as well */
+         char *label = dStrconcat(action, URL_STR(url), NULL);
+         i = new Item(label);
+         i->set_flag(RAW_LABEL);
+         i->callback(Menu_stylesheet_cb);
+         stylesheets->add(i);
+      }
+   } else {
+      stylesheets->deactivate();
+   }
 
    a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
 }
