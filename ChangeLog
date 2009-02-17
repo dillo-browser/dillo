@@ -59,7 +59,7 @@ dillo-2.1
  - Improved CSS selector matching performance using hash tables.
  - Support selector specificity.
  - Add support for font-size and font-weight enum values.
- - Added "font_min_size" dillorc option.
+ - Added "font_max_size", "font_min_size" dillorc options.
    Patches: Johannes Hofmann
 +- Implemented a close-tab button for the GUI.
    Patch: João Ricardo Lourenço, Jorge Arellano Cid

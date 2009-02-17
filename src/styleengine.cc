@@ -34,6 +34,8 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
    if (font_attrs.size < prefs.font_min_size)
       font_attrs.size = prefs.font_min_size;
+   if (font_attrs.size > prefs.font_max_size)
+      font_attrs.size = prefs.font_max_size;
    font_attrs.weight = 400;
    font_attrs.style = FONT_STYLE_NORMAL;
 
@@ -231,6 +233,8 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
 
             if (fontAttrs.size < prefs.font_min_size)
                fontAttrs.size = prefs.font_min_size;
+            if (fontAttrs.size > prefs.font_max_size)
+               fontAttrs.size = prefs.font_max_size;
 
             break;
          case CSS_PROPERTY_FONT_STYLE:
