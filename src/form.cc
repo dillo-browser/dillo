@@ -314,8 +314,10 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    }
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "action")))
       action = a_Html_url_new(html, attrbuf, NULL, 0);
-   else
+   else {
+      BUG_MSG("action attribute required for <form>\n");
       action = a_Url_dup(html->base_url);
+   }
    content_type = DILLO_HTML_ENC_URLENCODED;
    if ((method == DILLO_HTML_METHOD_POST) &&
        ((attrbuf = a_Html_get_attr(html, tag, tagsize, "enctype")))) {
@@ -628,17 +630,23 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    a_Html_stash_init(html);
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
 
-   cols = 20;
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cols")))
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cols"))) {
       cols = strtol(attrbuf, NULL, 10);
+   } else {
+      BUG_MSG("cols attribute is required for <textarea>\n");
+      cols = 20;
+   }
    if (cols < 1 || cols > MAX_COLS) {
       int badCols = cols;
       cols = (cols < 1 ? 20 : MAX_COLS);
       BUG_MSG("textarea cols=%d, using cols=%d instead\n", badCols, cols);
    }
-   rows = 10;
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rows")))
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rows"))) {
       rows = strtol(attrbuf, NULL, 10);
+   } else {
+      BUG_MSG("rows attribute is required for <textarea>\n");
+      rows = 10;
+   }
    if (rows < 1 || rows > MAX_ROWS) {
       int badRows = rows;
       rows = (rows < 1 ? 2 : MAX_ROWS);
