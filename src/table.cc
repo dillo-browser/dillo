@@ -244,13 +244,6 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    const char *attrbuf;
    int32_t bgcolor;
    bool_t new_style;
-   CssPropertyList *props;
-
-   // \todo any shorter way to do this?
-   if (S_TOP(html)->table_cell_props != NULL)
-      props = new CssPropertyList (*S_TOP(html)->table_cell_props);
-   else
-      props = new CssPropertyList ();
 
    switch (S_TOP(html)->table_mode) {
    case DILLO_HTML_TABLE_MODE_NONE:
@@ -272,6 +265,13 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       /* TODO: check errors? */
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rowspan")))
          rowspan = MAX(1, strtol (attrbuf, NULL, 10));
+
+      CssPropertyList *props;
+      // \todo any shorter way to do this?
+      if (S_TOP(html)->table_cell_props != NULL)
+         props = new CssPropertyList (*S_TOP(html)->table_cell_props);
+      else
+         props = new CssPropertyList ();
 
       /* text style */
       if (!S_TOP(html)->cell_text_align_set) {
