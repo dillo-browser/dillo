@@ -106,13 +106,12 @@ static Dstr *Decode_gzip(Decode *dc, const char *instr, int inlen)
 
       rc = inflate(zs, Z_SYNC_FLUSH);
 
+      dStr_append_l(output, dc->buffer, zs->total_out);
+
       if ((rc == Z_OK) || (rc == Z_STREAM_END)) {
          // Z_STREAM_END at end of file
 
          inputConsumed += zs->total_in;
-
-         dStr_append_l(output, dc->buffer, zs->total_out);
-
          zs->total_out = 0;
          zs->total_in = 0;
       } else if (rc == Z_DATA_ERROR) {
