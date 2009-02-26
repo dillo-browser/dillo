@@ -1019,7 +1019,7 @@ static void Css_parse_declaration(CssParser * parser,
 
 static bool Css_parse_simple_selector(CssParser * parser,
                                       CssSimpleSelector *selector) {
-   char *p, **pp;
+   char **pp;
 
    if (parser->ttype == CSS_TK_SYMBOL) {
       selector->element = a_Html_tag_index(parser->tval);
@@ -1068,21 +1068,12 @@ static bool Css_parse_simple_selector(CssParser * parser,
          if (parser->space_separated)
             return true;
 
-         if (parser->ttype == CSS_TK_SYMBOL ||
-            parser->ttype == CSS_TK_DECINT) {
+         if (parser->ttype == CSS_TK_SYMBOL) {
                if (*pp == NULL)
                   *pp = dStrdup(parser->tval);
                Css_next_token(parser);
-         } else if (parser->ttype == CSS_TK_FLOAT) {
-            /* In this case, we are actually interested in three tokens:
-             * number, '.', number. Instead, we have a decimal fraction,
-             * which we split up again. */
-            p = strchr(parser->tval, '.');
-            if (*pp == NULL)
-               *pp = dStrndup(parser->tval, p - parser->tval);
-            if (selector->klass == NULL)
-               selector->klass = dStrdup(p + 1);
-            Css_next_token(parser);
+         } else {
+            return false; // don't accept classes or id's starting with integer
          }
          if (parser->space_separated)
             return true;
