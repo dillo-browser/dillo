@@ -394,11 +394,12 @@ static void Css_ungetc(CssParser * parser)
 
 static void Css_next_token(CssParser * parser)
 {
-   int c, c1, d, i, j;
-   bool point_allowed;
+   int c, c1, d, j;
    char hexbuf[5];
    bool escaped;
+   int i = 0;
 
+   parser->ttype = CSS_TK_CHAR; /* init */
    parser->space_separated = false;
 
    c = Css_getc(parser);
@@ -428,27 +429,48 @@ static void Css_next_token(CssParser * parser)
 
    if (isdigit(c)) {
       parser->ttype = CSS_TK_DECINT;
-      point_allowed = true;
-
-      parser->tval[0] = c;
-      i = 1;
-      c = Css_getc(parser);
-      while (isdigit(c) || (point_allowed && c == '.')) {
-         if (c == '.') {
-            parser->ttype = CSS_TK_FLOAT;
-            point_allowed = false;      /* Only one point read. */
-         }
-
+      do {
          if (i < MAX_STR_LEN - 1) {
-            parser->tval[i] = c;
-            i++;
+            parser->tval[i++] = c;
          }
          /* else silently truncated */
          c = Css_getc(parser);
-      }
-      parser->tval[i] = 0;
-      Css_ungetc(parser);
+      } while (isdigit(c));
+      if (c != '.')
+         Css_ungetc(parser);
 
+      /* ...but keep going to see whether it's really a float */
+   }
+
+   if (c == '.') {
+      c = Css_getc(parser);
+      if (isdigit(c)) {
+         parser->ttype = CSS_TK_FLOAT;
+         if (i < MAX_STR_LEN - 1)
+            parser->tval[i++] = '.';
+         do {
+            if (i < MAX_STR_LEN - 1)
+               parser->tval[i++] = c;
+            /* else silently truncated */
+            c = Css_getc(parser);
+         } while (isdigit(c));
+
+         Css_ungetc(parser);
+         parser->tval[i] = 0;
+         DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token number %s\n", parser->tval);
+         return;
+      } else {
+         Css_ungetc(parser);
+         if (parser->ttype == CSS_TK_DECINT) {
+            Css_ungetc(parser);
+         } else {
+            c = '.';
+         }
+      }
+   }
+
+   if (parser->ttype == CSS_TK_DECINT) {
+      parser->tval[i] = 0;
       DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token number %s\n", parser->tval);
       return;
    }
