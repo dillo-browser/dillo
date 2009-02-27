@@ -427,6 +427,7 @@ static void Css_next_token(CssParser * parser)
       }
    }
 
+   // \todo handle negative numbers according to CSS 2.1
    if (isdigit(c)) {
       parser->ttype = CSS_TK_DECINT;
       do {
@@ -1136,6 +1137,10 @@ static void Css_parse_ruleset(CssParser * parser)
          list->increase();
          list->set(list->size() - 1, selector);
       }
+
+      // \todo dump whole ruleset in case of parse error as required by CSS 2.1
+      //       however make sure we don't dump it if only dillo fails to parse
+      //       valid CSS.
 
       if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ',')
          /* To read the next token. */
