@@ -1029,9 +1029,6 @@ void DLWin::del(int n_item)
 
    // Remove the widget from the packed group
    mPG->remove(dl_item->get_widget());
-   // WORKAROUND: without this call FLTK2 doesn't clear the background.
-   mScroll->redraw();
-
    mDList->del(n_item);
    delete(dl_item);
 }
