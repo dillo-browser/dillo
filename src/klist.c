@@ -120,6 +120,7 @@ void a_Klist_free(Klist_t **KlistPtr)
       dList_remove_fast(Klist->List, 0);
       dFree(node);
    }
+   dList_free(Klist->List);
    dFree(Klist);
    *KlistPtr = NULL;
 }
