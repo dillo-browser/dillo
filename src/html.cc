@@ -3343,14 +3343,13 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
       Html_add_anchor(html, attrbuf);
    }
 
-   if (tagsize >= 11) {       /* length of "<t class=i>" */
+   if (tagsize >= 11 && (prefs.parse_embedded_css || prefs.load_stylesheets)) {
+      /* length of "<t class=i>" or "<t style=i>" */
       attrbuf = Html_get_attr2(html, tag, tagsize, "class",
                                HTML_LeftTrim | HTML_RightTrim);
       if (attrbuf)
          html->styleEngine->setClass (attrbuf);
-   }
 
-   if (tagsize >= 11) {       /* length of "<t style=i>" */
       attrbuf = Html_get_attr2(html, tag, tagsize, "style",
                                HTML_LeftTrim | HTML_RightTrim);
       if (attrbuf)
