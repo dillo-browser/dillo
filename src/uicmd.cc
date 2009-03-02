@@ -225,7 +225,10 @@ class CustTabGroup : public fltk::TabGroup {
 public:
    CustTabGroup (int x, int y, int ww, int wh, const char *lbl=0) :
       TabGroup(x,y,ww,wh,lbl) {
-         this->pager(new CustShrinkTabPager());
+         // The parameter pager is cloned, so free it.
+         CustShrinkTabPager *cp = new CustShrinkTabPager();
+         this->pager(cp);
+         delete cp;
          toolTip = new Tooltip;
          tooltipEnabled = false;
          buttonPushed = false;
