@@ -1793,11 +1793,8 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
 
    textblock->addParbreak (5, html->styleEngine->wordStyle ());
 
-   /* The bullet will be assigned the current list style, which should
-    * be "disc" by default, but may in very weird pages be different.
-    * Anyway, there should be no harm. */
    bullet = new Bullet();
-   textblock->addWidget(bullet, html->styleEngine->style ());
+   textblock->addWidget(bullet, html->styleEngine->wordStyle ());
    textblock->addSpace(html->styleEngine->wordStyle ());
 
    if (tolower(tag[1]) == 'i') {
