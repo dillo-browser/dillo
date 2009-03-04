@@ -95,9 +95,9 @@ public:
          drawtext("X", r, ALIGN_CENTER);
          return false;
       } else {
+         // WORKAROUND: for http://fltk.org/str.php?L2062
          // By returning true we avoid a call to TabGroup::draw_tab()
          // in TabGroup::draw() in case we don't show the tabs.
-         // This is a workaround for http://fltk.org/str.php?L2062
          return true;
       }
    }
