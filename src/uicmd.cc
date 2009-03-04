@@ -93,8 +93,13 @@ public:
          //fltk::setfont(fltk::getfont()->bold(), fltk::getsize());
          r.h(r.h()-2);
          drawtext("X", r, ALIGN_CENTER);
+         return false;
+      } else {
+         // By returning true we avoid a call to TabGroup::draw_tab()
+         // in TabGroup::draw() in case we don't show the tabs.
+         // This is a workaround for http://fltk.org/str.php?L2062
+         return true;
       }
-      return false;
    }
 
    void btn_highlight(bool flag) {
