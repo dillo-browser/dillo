@@ -63,6 +63,7 @@ dillo-2.1
  - Add support for font-size and font-weight enum values.
  - Added "font_max_size", "font_min_size" dillorc options.
  - Add workaround for fltk bug #2062.
+ - Reduce number of styleEngine::style0() calls.
    Patches: Johannes Hofmann
 +- Updated the GPL copyright note in the source files.
    Patch: Detlef Riekenberg

@@ -488,9 +488,17 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    CssPropertyList props, *styleAttributeProps = NULL;
    const char *styleAttribute =
       stack->getRef (stack->size () - 1)->styleAttribute;
-
    // get previous style from the stack
    StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
+
+   // Ensure that StyleEngine::style0() has not been called before for
+   // this element.
+   // Style computation is expensive so limit it as much as possible.
+   // If this assertion is hit, you need to rearrange the code that is 
+   // doing styleEngine calls to call setNonCssHints() before calling
+   // style() or wordStyle() for each new element.
+   assert (stack->getRef (stack->size () - 1)->style == NULL);
+
    // reset values that are not inherited according to CSS
    attrs.resetValues ();
 

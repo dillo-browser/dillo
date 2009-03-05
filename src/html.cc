@@ -1712,6 +1712,9 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink")))
       html->visited_color = a_Html_color_parse(html, attrbuf, -1);
 
+   html->styleEngine->setNonCssHints (&props);
+   html->dw->setStyle (html->styleEngine->style ());
+
    if (prefs.contrast_visited_color) {
       /* get a color that has a "safe distance" from text, link and bg */
       html->visited_color =
@@ -1720,9 +1723,6 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
                        html->link_color,
                        S_TOP(html)->current_bg_color);
    }
-
-   html->styleEngine->setNonCssHints (&props);
-   html->dw->setStyle (html->styleEngine->style ());
 
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_BODY;
 }
@@ -1747,15 +1747,16 @@ static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
 {
    CssPropertyList props;
 
+   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+   html->styleEngine->inheritBackgroundColor ();
+   html->styleEngine->setNonCssHints (&props);
+
    if ((html->InFlags & IN_LI) && !html->WordAfterLI) {
       /* ignore first parbreak after an empty <LI> */
       html->WordAfterLI = true;
    } else {
       DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
    }
-   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-   html->styleEngine->inheritBackgroundColor ();
-   html->styleEngine->setNonCssHints (&props);
 }
 
 /*
@@ -2660,9 +2661,10 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
                  size_bottom);
    }
 
+   html->styleEngine->setNonCssHints (&props);
+
    DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());
 
-   html->styleEngine->setNonCssHints (&props);
    hruler = new Ruler();
    hruler->setStyle (html->styleEngine->style ());
    DW2TB(html->dw)->addWidget (hruler, html->styleEngine->style ());
@@ -3337,7 +3339,6 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
       Html_check_name_val(html, attrbuf, "id");
 
       html->styleEngine->setId(attrbuf);
-      Html_add_anchor(html, attrbuf);
    }
 
    if (tagsize >= 11 && (prefs.parse_embedded_css || prefs.load_stylesheets)) {
@@ -3353,12 +3354,6 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
          html->styleEngine->setStyle (attrbuf);
    }
 
-  if (S_TOP(html)->parse_mode != DILLO_HTML_PARSE_MODE_PRE &&
-      html->styleEngine->style ()->whiteSpace == WHITE_SPACE_PRE) {
-     S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_PRE;
-     html->pre_column = 0;
-     html->PreFirstChar = true;
-  }
 }
 
 /*
@@ -3419,6 +3414,16 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       Tags[ni].open (html, tag, tagsize);
       if (html->stop_parser)
          break;
+
+      if (S_TOP(html)->parse_mode != DILLO_HTML_PARSE_MODE_PRE &&
+         html->styleEngine->style ()->whiteSpace == WHITE_SPACE_PRE) {
+         S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_PRE;
+         html->pre_column = 0;
+         html->PreFirstChar = true;
+      }
+
+      if (html->styleEngine->getId ())
+         Html_add_anchor(html, html->styleEngine->getId ());
 
       /* Request inmediate close for elements with forbidden close tag. */
       /* TODO: XHTML always requires close tags. A simple implementation

@@ -48,7 +48,6 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    int cssLength;
 #endif
 
-   DW2TB(html->dw)->addParbreak (0, html->styleEngine->wordStyle ());
 
 #ifdef USE_TABLES
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border")))
@@ -100,6 +99,8 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    }
 
    html->styleEngine->setNonCssHints (&props);
+
+   DW2TB(html->dw)->addParbreak (0, html->styleEngine->wordStyle ());
 
    /* The style for the cells */
    table_cell_props = new CssPropertyList ();
@@ -172,16 +173,15 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
          }
       }
 
+      if (a_Html_get_attr (html, tag, tagsize, "align")) {
+         S_TOP(html)->cell_text_align_set = TRUE;
+         a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+      }
+
       html->styleEngine->inheritBackgroundColor ();
       html->styleEngine->setNonCssHints (&props);
 
       ((dw::Table*)S_TOP(html)->table)->addRow (html->styleEngine->style ());
-
-      if (a_Html_get_attr (html, tag, tagsize, "align")) {
-         S_TOP(html)->cell_text_align_set = TRUE;
-         a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-         html->styleEngine->setNonCssHints (&props);
-      }
 
       table_cell_props = new CssPropertyList (*S_TOP(html)->table_cell_props);
       if (bgcolor != -1) {
