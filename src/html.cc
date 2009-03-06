@@ -1701,8 +1701,9 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "text"))) {
-      color = a_Html_color_parse(html, attrbuf, prefs.text_color);
-      props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR, color);
+      color = a_Html_color_parse(html, attrbuf, -1);
+      if (color != -1)
+         props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR, color);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))

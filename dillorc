@@ -144,9 +144,6 @@
 
 # Here we can use the HTML color names or C syntax.
 
-# Set the text color
-#text_color=black
-
 # Set the link color
 #link_color=blue
 
