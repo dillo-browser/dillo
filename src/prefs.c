@@ -43,7 +43,6 @@
 #define D_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #define D_SAVE_DIR "/tmp/"
 
-#define DW_COLOR_DEFAULT_BGND   0xdcd1ba
 #define DW_COLOR_DEFAULT_TEXT   0x000000
 #define DW_COLOR_DEFAULT_LINK   0x0000ff
 #define DW_COLOR_DEFAULT_VLINK  0x800080
@@ -154,7 +153,6 @@ static int Prefs_parse_dillorc(void)
    /* Symbol array, sorted alphabetically */
    const SymNode_t symbols[] = {
    { "allow_white_bg", &prefs.allow_white_bg, PREFS_BOOL },
-   { "bg_color", &prefs.bg_color, PREFS_COLOR },
    { "buffered_drawing", &prefs.buffered_drawing, PREFS_INT32 },
    { "contrast_visited_color", &prefs.contrast_visited_color, PREFS_BOOL },
    { "enterpress_forces_submit", &prefs.enterpress_forces_submit, PREFS_BOOL },
@@ -260,7 +258,6 @@ void a_Prefs_init(void)
    char *old_locale;
 
    prefs.allow_white_bg = TRUE;
-   prefs.bg_color = DW_COLOR_DEFAULT_BGND;
    prefs.buffered_drawing=1;
    prefs.contrast_visited_color = TRUE;
    prefs.enterpress_forces_submit = FALSE;

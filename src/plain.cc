@@ -22,6 +22,7 @@
 #include "bw.h"
 #include "web.hh"
 #include "misc.h"
+#include "styleengine.hh"
 
 #include "uicmd.hh"
 
@@ -85,9 +86,6 @@ void a_Plain_free(void *data);
  */
 DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
 {
-   style::StyleAttrs styleAttrs;
-   style::FontAttrs fontAttrs;
-
    /* Init event receiver */
    plainReceiver.plain = this;
 
@@ -98,20 +96,12 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
    Start_Ofs = 0;
    state = ST_SeekingEol;
 
-   /* Create the font and attribute for the page. */
-   fontAttrs.name = prefs.font_monospace;
-   fontAttrs.size = (int) rint(14.0 * prefs.font_factor);
-   fontAttrs.weight = 400;
-   fontAttrs.style = style::FONT_STYLE_NORMAL;
+   StyleEngine styleEngine ((Layout*)bw->render_layout);
 
-   Layout *layout = (Layout*)bw->render_layout;
-   styleAttrs.initValues ();
-   styleAttrs.margin.setVal (5);
-   styleAttrs.font = style::Font::create (layout, &fontAttrs);
-   styleAttrs.color = style::Color::create (layout, prefs.text_color);
-   styleAttrs.backgroundColor =
-      style::Color::create (layout, prefs.bg_color);
-   widgetStyle = style::Style::create (layout, &styleAttrs);
+   styleEngine.startElement ("body");
+   styleEngine.startElement ("pre");
+   widgetStyle = styleEngine.wordStyle ();
+   widgetStyle->ref ();
 
    /* The context menu */
    DW2TB(dw)->connectEvent (&plainReceiver);

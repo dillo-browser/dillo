@@ -31,7 +31,6 @@ struct _DilloPrefs {
    DilloUrl *home;
    int32_t link_color;
    int32_t visited_color;
-   int32_t bg_color;
    int32_t text_color;
    bool_t allow_white_bg;
    bool_t force_my_colors;

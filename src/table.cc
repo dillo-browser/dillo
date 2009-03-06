@@ -90,12 +90,8 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       bgcolor = a_Html_color_parse(html, attrbuf, -1);
-      if (bgcolor != -1) {
-         if (bgcolor == 0xffffff && !prefs.allow_white_bg)
-            bgcolor = prefs.bg_color;
-         S_TOP(html)->current_bg_color = bgcolor;
+      if (bgcolor != -1)
          props.set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR, bgcolor);
-      }
    }
 
    html->styleEngine->setNonCssHints (&props);
@@ -165,12 +161,8 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
          bgcolor = a_Html_color_parse(html, attrbuf, -1);
-         if (bgcolor != -1) {
-            if (bgcolor == 0xffffff && !prefs.allow_white_bg)
-               bgcolor = prefs.bg_color;
+         if (bgcolor != -1)
             props.set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR, bgcolor);
-            S_TOP(html)->current_bg_color = bgcolor;
-         }
       }
 
       if (a_Html_get_attr (html, tag, tagsize, "align")) {
@@ -294,13 +286,8 @@ static void Html_tag_open_table_cell(DilloHtml *html,
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
          bgcolor = a_Html_color_parse(html, attrbuf, -1);
-         if (bgcolor != -1) {
-            if (bgcolor == 0xffffff && !prefs.allow_white_bg)
-               bgcolor = prefs.bg_color;
-
+         if (bgcolor != -1)
             props->set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR, bgcolor);
-            S_TOP(html)->current_bg_color = bgcolor;
-         }
       }
 
       html->styleEngine->setNonCssHints (props);

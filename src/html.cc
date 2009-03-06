@@ -425,6 +425,8 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    DocType = DT_NONE;    /* assume Tag Soup 0.0!   :-) */
    DocTypeVersion = 0.0f;
 
+   styleEngine = new StyleEngine (HT2LT (this));
+
    cssUrls = new misc::SimpleVector <DilloUrl*> (1);
 
    stack = new misc::SimpleVector <DilloHtmlState> (16);
@@ -439,10 +441,9 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    stack->getRef(0)->textblock = NULL;
    stack->getRef(0)->table = NULL;
    stack->getRef(0)->ref_list_item = NULL;
-   stack->getRef(0)->current_bg_color = prefs.bg_color;
+   stack->getRef(0)->current_bg_color =
+      styleEngine->style()->backgroundColor->getColor();
    stack->getRef(0)->hand_over_break = false;
-
-   styleEngine = new StyleEngine (HT2LT (this));
 
    InFlags = IN_NONE;
 
@@ -1694,11 +1695,9 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    textblock = DW2TB(html->dw);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
-      color = a_Html_color_parse(html, attrbuf, prefs.bg_color);
-      if (color == 0xffffff && !prefs.allow_white_bg)
-         color = prefs.bg_color;
-      S_TOP(html)->current_bg_color = color;
-      props.set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR, color);
+      color = a_Html_color_parse(html, attrbuf, -1);
+      if (color != -1)
+         props.set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR, color);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "text"))) {

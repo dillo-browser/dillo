@@ -27,6 +27,7 @@ struct _DilloWeb {
 
   DilloImage *Image;          /* For image urls [reference] */
 
+  int32_t bgColor;            /* for image backgrounds */
   char *filename;             /* Variables for Local saving */
   FILE *stream;
   int SavedBytes;

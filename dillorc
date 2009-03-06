@@ -144,11 +144,6 @@
 
 # Here we can use the HTML color names or C syntax.
 
-# Set the background color
-# bg_color=gray
-# bg_color=0xd6d6c0
-#bg_color=0xdcd1ba
-
 # Set the text color
 #text_color=black
 

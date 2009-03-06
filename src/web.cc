@@ -23,6 +23,7 @@
 
 #include "dw/core.hh"
 #include "prefs.h"
+#include "styleengine.hh"
 #include "web.hh"
 
 // Platform independent part
@@ -54,9 +55,6 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
                             CA_Callback_t *Call, void **Data)
 {
    Widget *dw = NULL;
-   style::StyleAttrs styleAttrs;
-   style::Style *widgetStyle;
-   style::FontAttrs fontAttrs;
 
    _MSG("a_Web_dispatch_by_type\n");
 
@@ -67,25 +65,17 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
 
    if (Web->flags & WEB_RootUrl) {
       /* We have RootUrl! */
+
+      /* Set a style for the widget */
+      StyleEngine styleEngine (layout);
+      styleEngine.startElement ("body");
+      Web->bgColor = styleEngine.backgroundStyle ()->backgroundColor->getColor ();
+
       dw = (Widget*) a_Mime_set_viewer(Type, Web, Call, Data);
       if (dw == NULL)
          return -1;
 
-      /* Set a style for the widget */
-      fontAttrs.name = prefs.font_sans_serif;
-      fontAttrs.size = (int) rint(14.0 * prefs.font_factor);
-      fontAttrs.weight = 400;
-      fontAttrs.style = style::FONT_STYLE_NORMAL;
-
-      styleAttrs.initValues ();
-      styleAttrs.margin.setVal (5);
-      styleAttrs.font = style::Font::create (layout, &fontAttrs);
-      styleAttrs.color = style::Color::create (layout, 0xff0000);
-      styleAttrs.backgroundColor =
-         style::Color::create (layout, prefs.bg_color);
-      widgetStyle = style::Style::create (layout, &styleAttrs);
-      dw->setStyle (widgetStyle);
-      widgetStyle->unref ();
+      dw->setStyle (styleEngine.style ());
 
       /* This method frees the old dw if any */
       layout->setWidget(dw);
@@ -130,7 +120,8 @@ DilloWeb* a_Web_new(const DilloUrl *url)
    web->filename = NULL;
    web->stream  = NULL;
    web->SavedBytes = 0;
-
+   web->bgColor = 0x000000; /* Dummy value will be overwritten
+                             * in a_Web_dispatch_by_type. */
    dList_append(ValidWebs, (void *)web);
    return web;
 }

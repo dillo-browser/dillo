@@ -13,6 +13,7 @@
 #include <math.h>
 #include "../dlib/dlib.h"
 #include "prefs.h"
+#include "html_common.hh"
 #include "styleengine.hh"
 
 using namespace dw::core::style;
@@ -83,6 +84,10 @@ void StyleEngine::startElement (int element) {
    n->pseudo = NULL;
    n->styleAttribute = NULL;
    n->inheritBackgroundColor = false;
+}
+
+void StyleEngine::startElement (const char *tagname) {
+   startElement (a_Html_tag_index (tagname));
 }
 
 void StyleEngine::setId (const char *id) {
