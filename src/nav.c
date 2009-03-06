@@ -163,7 +163,7 @@ static void Nav_save_scroll_pos(BrowserWindow *bw, int idx, int posx, int posy)
 }
 
 /*
- * Remove equal adyacent URLs at the top of the stack.
+ * Remove equal adjacent URLs at the top of the stack.
  * (It may happen with redirections)
  */
 static void Nav_stack_clean(BrowserWindow *bw)
