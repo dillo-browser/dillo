@@ -396,7 +396,6 @@ static void Css_next_token(CssParser * parser)
 {
    int c, c1, d, j;
    char hexbuf[5];
-   bool escaped;
    int i = 0;
 
    parser->ttype = CSS_TK_CHAR; /* init */
@@ -501,11 +500,9 @@ static void Css_next_token(CssParser * parser)
 
       i = 0;
       c = Css_getc(parser);
-      escaped = false;
 
-      while (c != EOF && (escaped || c != c1)) {
+      while (c != EOF && c != c1) {
          if (c == '\\') {
-            escaped = true;
             d = Css_getc(parser);
             if (isxdigit(d)) {
                /* Read hex Unicode char. (Actually, strings are yet only 8
@@ -521,11 +518,11 @@ static void Css_next_token(CssParser * parser)
                hexbuf[j] = 0;
                Css_ungetc(parser);
                c = strtol(hexbuf, NULL, 16);
-            } else
-               /* Take next character literally. */
-               c = Css_getc(parser);
-         } else
-            escaped = false;
+            } else {
+               /* Take character literally. */
+               c = d;
+            }
+         }
 
          if (i < MAX_STR_LEN - 1) {
             parser->tval[i] = c;

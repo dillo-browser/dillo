@@ -67,6 +67,7 @@ dillo-2.1
  - Reduce number of styleEngine::style0() calls.
  - Replace bg_color dillorc option.
  - Remove text_color, link_color, and force_my_colors dillorc options.
+ - Fix CSS string parsing bug.
    Patches: Johannes Hofmann
 +- Updated the GPL copyright note in the source files.
    Patch: Detlef Riekenberg
