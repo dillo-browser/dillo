@@ -150,9 +150,6 @@
 # If your eyes suffer with white backgrounds, change this.
 #allow_white_bg=YES
 
-# Use the same colors with all documents?
-#force_my_colors=NO
-
 # When set to YES, the page author's visited link color may be overridden
 # to allow better contrast with text/links/background
 #contrast_visited_color=YES

@@ -32,7 +32,6 @@ struct _DilloPrefs {
    int32_t link_color;
    int32_t visited_color;
    bool_t allow_white_bg;
-   bool_t force_my_colors;
    bool_t contrast_visited_color;
    bool_t show_tooltip;
    int panel_size;

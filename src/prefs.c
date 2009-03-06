@@ -164,7 +164,6 @@ static int Prefs_parse_dillorc(void)
    { "font_monospace", &prefs.font_monospace, PREFS_STRING },
    { "font_sans_serif", &prefs.font_sans_serif, PREFS_STRING },
    { "font_serif", &prefs.font_serif, PREFS_STRING },
-   { "force_my_colors", &prefs.force_my_colors, PREFS_BOOL },
    { "fullwindow_start", &prefs.fullwindow_start, PREFS_BOOL },
    { "geometry", NULL, PREFS_GEOMETRY },
    { "home", &prefs.home, PREFS_URL },
@@ -268,7 +267,6 @@ void a_Prefs_init(void)
    prefs.font_monospace = dStrdup(D_FONT_MONOSPACE);
    prefs.font_sans_serif = dStrdup(D_FONT_SANS_SERIF);
    prefs.font_serif = dStrdup(D_FONT_SERIF);
-   prefs.force_my_colors = FALSE;
    prefs.fullwindow_start=FALSE;
 
    /* these four constitute the geometry */
