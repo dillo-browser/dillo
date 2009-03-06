@@ -65,6 +65,7 @@ dillo-2.1
  - Added "font_max_size", "font_min_size" dillorc options.
  - Add workaround for fltk bug #2062.
  - Reduce number of styleEngine::style0() calls.
+ - Replace bg_color dillorc option.
    Patches: Johannes Hofmann
 +- Updated the GPL copyright note in the source files.
    Patch: Detlef Riekenberg
