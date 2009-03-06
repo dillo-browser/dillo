@@ -142,11 +142,6 @@
 #                            COLORS SECTION
 #-------------------------------------------------------------------------
 
-# Here we can use the HTML color names or C syntax.
-
-# Set the link color
-#link_color=blue
-
 # If your eyes suffer with white backgrounds, change this.
 #allow_white_bg=YES
 

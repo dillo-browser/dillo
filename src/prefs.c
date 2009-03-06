@@ -43,7 +43,6 @@
 #define D_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #define D_SAVE_DIR "/tmp/"
 
-#define DW_COLOR_DEFAULT_LINK   0x0000ff
 #define DW_COLOR_DEFAULT_VLINK  0x800080
 
 /*-----------------------------------------------------------------------------
@@ -172,7 +171,6 @@ static int Prefs_parse_dillorc(void)
    { "http_proxyuser", &prefs.http_proxyuser, PREFS_STRING },
    { "http_referer", &prefs.http_referer, PREFS_STRING },
    { "limit_text_width", &prefs.limit_text_width, PREFS_BOOL },
-   { "link_color", &prefs.link_color, PREFS_COLOR },
    { "load_images", &prefs.load_images, PREFS_BOOL },
    { "load_stylesheets", &prefs.load_stylesheets, PREFS_BOOL },
    { "middle_click_drags_page", &prefs.middle_click_drags_page, PREFS_BOOL },
@@ -281,7 +279,6 @@ void a_Prefs_init(void)
    prefs.http_proxyuser = NULL;
    prefs.http_referer = dStrdup("host");
    prefs.limit_text_width = FALSE;
-   prefs.link_color = DW_COLOR_DEFAULT_LINK;
    prefs.load_images=TRUE;
    prefs.load_stylesheets=TRUE;
    prefs.middle_click_drags_page = TRUE;
