@@ -542,14 +542,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 //          gtk_entry_set_max_length(GTK_ENTRY(widget),
 //                                   strtol(attrbuf, NULL, 10));
       }
-      Color *bg;
-      if (prefs.standard_widget_colors)
-         bg = NULL;
-      else
-         bg = Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
-      HTML_SET_TOP_ATTR(html, backgroundColor, bg);
-
-      DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
+      DW2TB(html->dw)->addWidget (embed, html->styleEngine->backgroundStyle());
    }
    dFree(type);
    dFree(name);
@@ -592,13 +585,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    embed = new Embed (entryResource);
    Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
-   Color *bg;
-   if (prefs.standard_widget_colors)
-      bg = NULL;
-   else
-      bg = Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
-   HTML_SET_TOP_ATTR(html, backgroundColor, bg);
-   DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
+   DW2TB(html->dw)->addWidget (embed, html->styleEngine->backgroundStyle ());
 
    a_Url_free(action);
    html->InFlags &= ~IN_FORM;
@@ -666,14 +653,7 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
       textres->setEditable(false);
    Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
 
-   Color *bg;
-   if (prefs.standard_widget_colors)
-      bg = NULL;
-   else
-      bg = Color::create (HT2LT(html), S_TOP(html)->current_bg_color);
-   HTML_SET_TOP_ATTR(html, backgroundColor, bg);
-
-   DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
+   DW2TB(html->dw)->addWidget (embed, html->styleEngine->backgroundStyle ());
    dFree(name);
 }
 
@@ -757,17 +737,7 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    }
    Embed *embed = new Embed(res);
 
-   int bg;
-   if (prefs.standard_widget_colors) {
-      /* Valid colors required; SELECT can contain other elements (BUG) */
-      HTML_SET_TOP_ATTR(html, color, Color::createSimple (HT2LT(html), 0));
-      bg = 0xffffff;
-   } else {
-      bg = S_TOP(html)->current_bg_color;
-   }
-   HTML_SET_TOP_ATTR(html, backgroundColor,
-                     Color::createShaded (HT2LT(html), bg));
-   DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
+   DW2TB(html->dw)->addWidget (embed, html->styleEngine->backgroundStyle ());
 
    Html_add_input(html, type, embed, name, NULL, false);
    a_Html_stash_init(html);

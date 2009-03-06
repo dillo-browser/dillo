@@ -204,7 +204,6 @@ static int Prefs_parse_dillorc(void)
    { "show_tooltip", &prefs.show_tooltip, PREFS_BOOL },
    { "show_url", &prefs.show_url, PREFS_BOOL },
    { "small_icons", &prefs.small_icons, PREFS_BOOL },
-   { "standard_widget_colors", &prefs.standard_widget_colors, PREFS_BOOL },
    { "start_page", &prefs.start_page, PREFS_URL },
    { "text_color", &prefs.text_color, PREFS_COLOR },
    { "visited_color", &prefs.visited_color, PREFS_COLOR },
@@ -316,7 +315,6 @@ void a_Prefs_init(void)
    prefs.show_tooltip = TRUE;
    prefs.show_url=TRUE;
    prefs.small_icons = FALSE;
-   prefs.standard_widget_colors = FALSE;
    prefs.start_page = a_Url_new(DILLO_START_PAGE, NULL);
    prefs.text_color = DW_COLOR_DEFAULT_TEXT;
    prefs.visited_color = DW_COLOR_DEFAULT_VLINK;
