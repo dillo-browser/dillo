@@ -32,7 +32,6 @@
 #endif
 
 #include "image.hh"
-#include "web.hh"
 #include "cache.h"
 #include "dicache.h"
 #include "capi.h"       /* get cache entry status */

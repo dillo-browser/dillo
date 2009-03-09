@@ -27,7 +27,6 @@
 
 #include "msg.h"
 #include "image.hh"
-#include "web.hh"
 #include "cache.h"
 #include "dicache.h"
 
