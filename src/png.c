@@ -30,7 +30,6 @@
 #include "web.hh"
 #include "cache.h"
 #include "dicache.h"
-#include "prefs.h"
 
 enum prog_state {
    IS_finished, IS_init, IS_nextdata

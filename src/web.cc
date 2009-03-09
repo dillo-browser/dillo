@@ -22,7 +22,6 @@
 #include "IO/mime.h"
 
 #include "dw/core.hh"
-#include "prefs.h"
 #include "styleengine.hh"
 #include "web.hh"
 

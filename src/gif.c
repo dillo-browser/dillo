@@ -70,7 +70,6 @@
 #include "web.hh"
 #include "cache.h"
 #include "dicache.h"
-#include "prefs.h"
 
 #define INTERLACE      0x40
 #define LOCALCOLORMAP  0x80

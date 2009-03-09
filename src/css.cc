@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "../dlib/dlib.h"
-#include "prefs.h"
 #include "misc.h"
 #include "html_common.hh"
 #include "css.hh"
