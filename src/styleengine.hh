@@ -26,8 +26,9 @@ class StyleEngine : public Doctree {
       void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
       bool computeValue (int *dest, CssLength value, dw::core::style::Font *font);
       bool computeValue (int *dest, CssLength value, dw::core::style::Font *font,
-         int percentageBase);
-      bool computeLength (dw::core::style::Length *dest, CssLength value, dw::core::style::Font *font);
+                         int percentageBase);
+      bool computeLength (dw::core::style::Length *dest, CssLength value,
+                          dw::core::style::Font *font);
 
    public:
       StyleEngine (dw::core::Layout *layout);
@@ -66,6 +67,7 @@ class StyleEngine : public Doctree {
          else
             return style0 ();
       };
+
       inline dw::core::style::Style *wordStyle () {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->wordStyle;
          if (s)

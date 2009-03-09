@@ -512,7 +512,7 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
          stack->getRef (stack->size () - 2)->style->backgroundColor;
 
       attrs.valign = stack->getRef (stack->size () - 2)->style->valign;
-    }
+   }
 
    // parse style information from style="" attribute, if it exists
    if (styleAttribute && prefs.parse_embedded_css)
@@ -547,6 +547,5 @@ Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
 }
 
 void StyleEngine::parse (const char *buf, int buflen, CssOrigin origin) {
-
    a_Css_parse (cssContext, buf, buflen, origin);
 }
