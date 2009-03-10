@@ -426,7 +426,13 @@ static void Css_next_token(CssParser * parser)
       }
    }
 
-   // \todo handle negative numbers according to CSS 2.1
+   // handle negative numbers
+   if (c == '-') {
+      if (i < MAX_STR_LEN - 1)
+         parser->tval[i++] = c;
+      c = Css_getc(parser);
+   }
+
    if (isdigit(c)) {
       parser->ttype = CSS_TK_DECINT;
       do {
@@ -473,6 +479,12 @@ static void Css_next_token(CssParser * parser)
       parser->tval[i] = 0;
       DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token number %s\n", parser->tval);
       return;
+   }
+
+   if (i) {
+      Css_ungetc(parser); /* ungetc '-' */
+      i--;
+      c = Css_getc(parser);
    }
 
    if (isalpha(c) || c == '_' || c == '-') {
