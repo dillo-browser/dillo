@@ -26,7 +26,6 @@
 #include <locale.h>       /* for setlocale */
 #include <ctype.h>        /* for isspace */
 #include "prefs.h"
-#include "colors.h"
 #include "misc.h"
 #include "msg.h"
 
@@ -58,7 +57,6 @@ typedef enum {
    PREFS_URL,
    PREFS_INT32,
    PREFS_DOUBLE,
-   PREFS_COLOR,
    PREFS_GEOMETRY,
    PREFS_PANEL_SIZE
 } PrefType_t;
@@ -87,7 +85,6 @@ static int Prefs_symbol_cmp(const void *a, const void *b)
 static int Prefs_parse_pair(char *name, char *value, const SymNode_t *symbols,
                             int n_symbols)
 {
-   int st;
    SymNode_t key, *node;
 
    key.name = name;
@@ -115,9 +112,6 @@ static int Prefs_parse_pair(char *name, char *value, const SymNode_t *symbols,
       break;
    case PREFS_DOUBLE:
       *(double *)node->pref = strtod(value, NULL);
-      break;
-   case PREFS_COLOR:
-      *(int32_t *)node->pref = a_Color_parse(value, *(int32_t*)node->pref,&st);
       break;
    case PREFS_GEOMETRY:
       a_Misc_parse_geometry(value, &prefs.xpos, &prefs.ypos,
