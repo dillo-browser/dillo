@@ -204,8 +204,9 @@ public:  //BUG: for now everything is public
 
    Dstr *attr_data;       /* Buffer for attribute value */
 
-   int32_t link_color;
-   int32_t visited_color;
+   int32_t non_css_link_color; /* as provided by link attribute in <body> */
+   int32_t non_css_visited_color; /* as provided by vlink attribute in <body> */
+   int32_t visited_color; /* as computed according to CSS */
 
    /* -------------------------------------------------------------------*/
    /* Variables required after parsing (for page functionality)          */

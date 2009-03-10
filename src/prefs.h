@@ -29,7 +29,6 @@ struct _DilloPrefs {
    char *no_proxy;
    DilloUrl *start_page;
    DilloUrl *home;
-   int32_t visited_color;
    bool_t allow_white_bg;
    bool_t contrast_visited_color;
    bool_t show_tooltip;

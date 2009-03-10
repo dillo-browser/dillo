@@ -462,7 +462,8 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    attr_data = dStr_sized_new(1024);
 
-   link_color = -1;
+   non_css_link_color = -1;
+   non_css_visited_color = -1;
    visited_color = -1;
 
    /* Init page-handling variables */
@@ -1678,6 +1679,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    Textblock *textblock;
    CssPropertyList props;
    int32_t color;
+   int tag_index_a = a_Html_tag_index ("a");
 
    if (!(html->InFlags & IN_BODY))
       html->InFlags |= IN_BODY;
@@ -1707,21 +1709,38 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))
-      html->link_color = a_Html_color_parse(html, attrbuf, -1);
+      html->non_css_link_color = a_Html_color_parse(html, attrbuf, -1);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink")))
-      html->visited_color = a_Html_color_parse(html, attrbuf, -1);
+      html->non_css_visited_color = a_Html_color_parse(html, attrbuf, -1);
 
    html->styleEngine->setNonCssHints (&props);
    html->dw->setStyle (html->styleEngine->style ());
 
+   /* Determine a color for visited links.
+    * This color is computed once per page and used for immediate feedback
+    * when clicking a link.
+    * On reload style including color for visited links is computed properly
+    * according to CSS.
+    */
+   html->styleEngine->startElement (tag_index_a);
+   html->styleEngine->setPseudoVisited ();
+   if (html->non_css_visited_color != -1) {
+      CssPropertyList vprops; 
+      vprops.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+                 html->non_css_visited_color);
+      html->styleEngine->setNonCssHints (&vprops);
+   }
+   html->visited_color = html->styleEngine->style ()->color->getColor ();
+   html->styleEngine->endElement (tag_index_a);
+
    if (prefs.contrast_visited_color) {
       /* get a color that has a "safe distance" from text, link and bg */
       html->visited_color =
-            a_Color_vc(html->visited_color,
-                       html->styleEngine->style ()->color->getColor(),
-                       html->link_color,
-                       S_TOP(html)->current_bg_color);
+         a_Color_vc(html->visited_color,
+            html->styleEngine->style ()->color->getColor(),
+            html->non_css_link_color,
+            S_TOP(html)->current_bg_color);
    }
 
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_BODY;
@@ -2371,12 +2390,14 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       if (a_Capi_get_flags(url) & CAPI_IsCached) {
          html->InVisitedLink = true;
          html->styleEngine->setPseudoVisited ();
-         if (html->visited_color != -1)
-            props.set (CSS_PROPERTY_COLOR,CSS_TYPE_COLOR,html->visited_color);
+         if (html->non_css_visited_color != -1)
+            props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+                       html->non_css_visited_color);
       } else {
          html->styleEngine->setPseudoLink ();
-         if (html->link_color != -1)
-            props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR, html->link_color);
+         if (html->non_css_link_color != -1)
+            props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+                       html->non_css_link_color);
       }
 
       props.set (PROPERTY_X_LINK, CSS_TYPE_INTEGER,

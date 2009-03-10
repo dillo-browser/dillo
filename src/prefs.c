@@ -43,8 +43,6 @@
 #define D_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #define D_SAVE_DIR "/tmp/"
 
-#define DW_COLOR_DEFAULT_VLINK  0x800080
-
 /*-----------------------------------------------------------------------------
  * Global Data
  *---------------------------------------------------------------------------*/
@@ -199,7 +197,6 @@ static int Prefs_parse_dillorc(void)
    { "show_url", &prefs.show_url, PREFS_BOOL },
    { "small_icons", &prefs.small_icons, PREFS_BOOL },
    { "start_page", &prefs.start_page, PREFS_URL },
-   { "visited_color", &prefs.visited_color, PREFS_COLOR },
    { "w3c_plus_heuristics", &prefs.w3c_plus_heuristics, PREFS_BOOL }
    };
 
@@ -306,7 +303,6 @@ void a_Prefs_init(void)
    prefs.show_url=TRUE;
    prefs.small_icons = FALSE;
    prefs.start_page = a_Url_new(DILLO_START_PAGE, NULL);
-   prefs.visited_color = DW_COLOR_DEFAULT_VLINK;
    prefs.w3c_plus_heuristics = TRUE;
 
    /* this locale stuff is to avoid parsing problems with float numbers */
