@@ -124,7 +124,7 @@ DOCTYPE
 "  </table></td></tr>                            \n"
 "</table>                                        \n"
 "\n"
-"<form>\n"
+"<form action='modify'>\n"
 "<table width='100%' border='1' cellpadding='0'>\n"
 " <tr><td>\n"
 "  <table width='100%' bgcolor='teal'>\n"
@@ -251,7 +251,7 @@ DOCTYPE
 "   </td></tr></table></td></tr>\n"
 "</table>\n"
 "<br>\n"
-"<form>\n"
+"<form action='modify'>\n"
 " <input type='hidden' name='operation' value='add_section'>\n"
 "<table border='1' width='100%'>\n"
 " <tr>\n"
@@ -291,7 +291,7 @@ DOCTYPE
 "   </td></tr></table></td></tr>\n"
 "</table>\n"
 "<br>\n"
-"<form>\n"
+"<form action='modify'>\n"
 "<input type='hidden' name='operation' value='modify2'>\n";
 
 static const char *modifypage_update_title =
@@ -354,7 +354,7 @@ DOCTYPE
 "   </td></tr></table></td></tr>\n"
 "</table>\n"
 "<br>\n"
-"<form>\n"
+"<form action='modify'>\n"
 "<input type='hidden' name='operation' value='add_url2'>\n"
 "<table border='1' width='100%'>\n"
 " <tr>\n"
