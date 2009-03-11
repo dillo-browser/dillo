@@ -291,8 +291,12 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       switch (p->name) {
          /* \todo missing cases */
          case CSS_PROPERTY_BACKGROUND_COLOR:
-            attrs->backgroundColor =
-               Color::create (layout, p->value.intVal);
+            if (!prefs.allow_white_bg && p->value.intVal == 0xffffff)
+               attrs->backgroundColor =
+                  Color::create (layout, 0xdcd1ba);
+            else
+               attrs->backgroundColor =
+                  Color::create (layout, p->value.intVal);
             break;
          case CSS_PROPERTY_BORDER_TOP_COLOR:
             attrs->borderColor.top =
