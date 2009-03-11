@@ -47,6 +47,8 @@ dillo-2.1
    Patches: Jeremy Henty
 +- Implemented Basic authentication!
    Patch: Jeremy Henty, Jorge Arellano Cid
++- Added "-fno-rtti -fno-exceptions" to CXXFLAGS (reduces binary size).
+   Patch: Jorge Arellano Cid, place (AKA corvid)
 +- Allowed compilation with older machines by removing a few C99isms.
  - Added use of inttypes.h when stdint.h isn't found.
    Patches: Dan Fandrich

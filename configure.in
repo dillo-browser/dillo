@@ -481,7 +481,10 @@ dnl -----------
 dnl CXX options
 dnl -----------
 dnl
-CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter"
+
+if eval "test x$GCC = xyes"; then
+  CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter -fno-rtti -fno-exceptions"
+fi
 
 AC_SUBST(LIBJPEG_LIBS)
 AC_SUBST(LIBJPEG_LDFLAGS)
