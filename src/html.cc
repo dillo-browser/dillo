@@ -489,8 +489,6 @@ void DilloHtml::initDw()
    /* Create the main widget */
    dw = stack->getRef(0)->textblock = new Textblock (prefs.limit_text_width);
 
-   stack->getRef(0)->table_cell_props = NULL;
-
    /* Handle it when the user clicks on a link */
    connectSignals(dw);
 
@@ -605,6 +603,9 @@ int DilloHtml::getCurTagLineNumber()
  */
 void DilloHtml::freeParseData()
 {
+   for (int i = stack->size () - 1; i >= 0; i--)
+      if (stack->getRef (i)->table_cell_props)
+         stack->getRef (i)->table_cell_props->unref ();
    delete(stack);
 
    dStr_free(Stash, TRUE);
