@@ -291,12 +291,10 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       switch (p->name) {
          /* \todo missing cases */
          case CSS_PROPERTY_BACKGROUND_COLOR:
-            if (!prefs.allow_white_bg && p->value.intVal == 0xffffff)
-               attrs->backgroundColor =
-                  Color::create (layout, 0xdcd1ba);
+            if (prefs.allow_white_bg || p->value.intVal != 0xffffff)
+               attrs->backgroundColor = Color::create(layout, p->value.intVal);
             else
-               attrs->backgroundColor =
-                  Color::create (layout, p->value.intVal);
+               attrs->backgroundColor = Color::create(layout, 0xdcd1ba);
             break;
          case CSS_PROPERTY_BORDER_TOP_COLOR:
             attrs->borderColor.top =
@@ -327,20 +325,24 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             attrs->borderStyle.top = (BorderStyle) p->value.intVal;
             break;
          case CSS_PROPERTY_BORDER_BOTTOM_WIDTH:
-            computeValue (&attrs->borderWidth.bottom, p->value.intVal, attrs->font);
+            computeValue (&attrs->borderWidth.bottom, p->value.intVal,
+                          attrs->font);
             break;
          case CSS_PROPERTY_BORDER_LEFT_WIDTH:
-            computeValue (&attrs->borderWidth.left, p->value.intVal, attrs->font);
+            computeValue (&attrs->borderWidth.left, p->value.intVal,
+                          attrs->font);
             break;
          case CSS_PROPERTY_BORDER_RIGHT_WIDTH:
-            computeValue (&attrs->borderWidth.right, p->value.intVal, attrs->font);
+            computeValue (&attrs->borderWidth.right, p->value.intVal,
+                          attrs->font);
             break;
          case CSS_PROPERTY_BORDER_TOP_WIDTH:
-            computeValue (&attrs->borderWidth.top, p->value.intVal, attrs->font);
+            computeValue (&attrs->borderWidth.top, p->value.intVal,
+                          attrs->font);
             break;
          case CSS_PROPERTY_BORDER_SPACING:
-            computeValue (&attrs->hBorderSpacing, p->value.intVal, attrs->font);
-            computeValue (&attrs->vBorderSpacing, p->value.intVal, attrs->font);
+            computeValue (&attrs->hBorderSpacing, p->value.intVal,attrs->font);
+            computeValue (&attrs->vBorderSpacing, p->value.intVal,attrs->font);
             break;
          case CSS_PROPERTY_COLOR:
             attrs->color = Color::create (layout, p->value.intVal);
@@ -367,7 +369,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             computeValue (&attrs->padding.top, p->value.intVal, attrs->font);
             break;
          case CSS_PROPERTY_PADDING_BOTTOM:
-            computeValue (&attrs->padding.bottom, p->value.intVal, attrs->font);
+            computeValue (&attrs->padding.bottom, p->value.intVal,attrs->font);
             break;
          case CSS_PROPERTY_PADDING_LEFT:
             computeValue (&attrs->padding.left, p->value.intVal, attrs->font);
@@ -546,7 +548,7 @@ Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
 
    attrs.valign = style ()->valign;
 
-   stack->getRef (stack->size () - 1)->wordStyle = Style::create (layout, &attrs);
+   stack->getRef(stack->size() - 1)->wordStyle = Style::create(layout, &attrs);
    return stack->getRef (stack->size () - 1)->wordStyle;
 }
 
