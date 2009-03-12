@@ -56,7 +56,7 @@ typedef enum {
 
 typedef int CssLength;
 
-enum {
+typedef enum {
    CSS_LENGTH_TYPE_PX,
    CSS_LENGTH_TYPE_MM,         /* "cm", "in", "pt" and "pc" are converted into
                                   millimeters. */
@@ -66,11 +66,19 @@ enum {
    CSS_LENGTH_TYPE_RELATIVE,   /* This does not exist in CSS but
                                   is used in HTML */
    CSS_LENGTH_TYPE_AUTO        /* This can be used as a simple value. */
-};
+} CssLengthType;
 
-#define CSS_CREATE_LENGTH(v, t) ( ( (int)((v) * (1 << 19)) & ~7 ) | (t) )
-#define CSS_LENGTH_VALUE(l)     ( ( (float)((l) & ~7) ) / (1 << 19) )
-#define CSS_LENGTH_TYPE(l)      ((l) & 7)
+inline CssLength CSS_CREATE_LENGTH (float v, CssLengthType t) {
+   return ((int) (v * (1 << 19)) & ~7 ) | t;
+}
+
+inline float CSS_LENGTH_VALUE (CssLength l) {
+   return  ((float)(l & ~7)) / (1 << 19);
+}
+
+inline CssLengthType CSS_LENGTH_TYPE (CssLength l) {
+   return (CssLengthType) (l & 7);
+}
 
 typedef enum {
    CSS_PROPERTY_BACKGROUND_ATTACHMENT,

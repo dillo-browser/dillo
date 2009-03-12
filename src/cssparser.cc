@@ -670,10 +670,10 @@ static bool Css_parse_value(CssParser * parser,
                             CssValueType type,
                             CssPropertyValue * val)
 {
-   int i, lentype;
+   CssLengthType lentype;
    bool found, ret = false;
    float fval;
-   int ival, err = 1;
+   int i, ival, err = 1;
 
    switch (type) {
    case CSS_TYPE_ENUM:
