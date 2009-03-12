@@ -35,26 +35,6 @@
    } D_STMT_END
 
 /*
- * Change one toplevel attribute. var should be an identifier. val is
- * only evaluated once, so you can safely use a function call for it.
- */
-#if 0
-#define HTML_SET_TOP_ATTR(html, var, val) \
-   do { \
-      StyleAttrs style_attrs; \
-      Style *old_style; \
-       \
-      old_style = S_TOP(html)->style; \
-      style_attrs = *old_style; \
-      style_attrs.var = (val); \
-      S_TOP(html)->style = \
-         Style::create (HT2LT(html), &style_attrs); \
-      old_style->unref (); \
-   } while (FALSE)
-#else
-#define HTML_SET_TOP_ATTR(html, var, val)
-#endif
-/*
  * Typedefs
  */
 
