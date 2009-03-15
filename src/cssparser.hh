@@ -27,8 +27,8 @@ class CssParser {
 
       CssTokenType ttype;
       char tval[maxStrLen];
-      bool within_block;
-      bool space_separated; /* used when parsing CSS selectors */
+      bool withinBlock;
+      bool spaceSeparated; /* used when parsing CSS selectors */
 
       CssParser(CssContext *context, CssOrigin origin,
                 const char *buf, int buflen);

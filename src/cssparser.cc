@@ -359,8 +359,8 @@ CssParser::CssParser(CssContext *context, CssOrigin origin,
    this->buf = buf;
    this->buflen = buflen;
    this->bufptr = 0;
-   this->space_separated = false;
-   this->within_block = false;
+   this->spaceSeparated = false;
+   this->withinBlock = false;
 
    nextToken ();
 }
@@ -398,13 +398,13 @@ void CssParser::nextToken()
    int i = 0;
 
    ttype = CSS_TK_CHAR; /* init */
-   space_separated = false;
+   spaceSeparated = false;
 
    c = getc();
 
    while (true) {
       if (isspace(c)) { // ignore whitespace
-         space_separated = true;
+         spaceSeparated = true;
          c = getc();
       } else if (c == '/') { // ignore comments
          d = getc();
@@ -550,7 +550,7 @@ void CssParser::nextToken()
    /*
     * Within blocks, '#' starts a color, outside, it is used in selectors.
     */
-   if (c == '#' && within_block) {
+   if (c == '#' && withinBlock) {
       ttype = CSS_TK_COLOR;
 
       tval[0] = c;
@@ -1020,12 +1020,12 @@ bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
    if (ttype == CSS_TK_SYMBOL) {
       selector->element = a_Html_tag_index(tval);
       nextToken();
-      if (space_separated)
+      if (spaceSeparated)
          return true;
    } else if (ttype == CSS_TK_CHAR && tval[0] == '*') {
       selector->element = CssSimpleSelector::ELEMENT_ANY;
       nextToken();
-      if (space_separated)
+      if (spaceSeparated)
          return true;
    } else if (ttype == CSS_TK_CHAR &&
               (tval[0] == '#' ||
@@ -1061,7 +1061,7 @@ bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
 
       if (pp) {
          nextToken();
-         if (space_separated)
+         if (spaceSeparated)
             return true;
 
          if (ttype == CSS_TK_SYMBOL) {
@@ -1071,7 +1071,7 @@ bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
          } else {
             return false; // don't accept classes or id's starting with integer
          }
-         if (space_separated)
+         if (spaceSeparated)
             return true;
       }
    } while (pp);
@@ -1100,7 +1100,7 @@ CssSelector *CssParser::parseSelector()
       } else if (ttype == CSS_TK_CHAR && tval[0] == '>') {
          selector->addSimpleSelector (CssSelector::CHILD);
          nextToken();
-      } else if (ttype != CSS_TK_END && space_separated) {
+      } else if (ttype != CSS_TK_END && spaceSeparated) {
          selector->addSimpleSelector (CssSelector::DESCENDANT);
       } else {
          delete selector;
@@ -1155,13 +1155,13 @@ void CssParser::parseRuleset()
 
    /* Read block. ('{' has already been read.) */
    if (ttype != CSS_TK_END) {
-      within_block = true;
+      withinBlock = true;
       nextToken();
       do
          parseDeclaration(props, importantProps);
       while (!(ttype == CSS_TK_END ||
                (ttype == CSS_TK_CHAR && tval[0] == '}')));
-      within_block = false;
+      withinBlock = false;
    }
 
    for (int i = 0; i < list->size(); i++) {
@@ -1206,7 +1206,7 @@ CssPropertyList *CssParser::parseDeclarationBlock(const char *buf, int buflen)
    CssPropertyList *props = new CssPropertyList (true);
    CssParser parser (NULL, CSS_ORIGIN_AUTHOR, buf, buflen);
 
-   parser.within_block = true;
+   parser.withinBlock = true;
 
    do
       parser.parseDeclaration(props, NULL);
