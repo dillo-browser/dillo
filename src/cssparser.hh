@@ -11,13 +11,13 @@ typedef struct {
 
 extern const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST];
 
-typedef enum {
-   CSS_TK_DECINT, CSS_TK_FLOAT, CSS_TK_COLOR, CSS_TK_SYMBOL, CSS_TK_STRING,
-   CSS_TK_CHAR, CSS_TK_END
-} CssTokenType;
-
 class CssParser {
    private:
+      typedef enum {
+         CSS_TK_DECINT, CSS_TK_FLOAT, CSS_TK_COLOR, CSS_TK_SYMBOL, CSS_TK_STRING,
+         CSS_TK_CHAR, CSS_TK_END
+      } CssTokenType;
+
       static const int maxStrLen = 256;
       CssContext *context;
       CssOrigin origin;
