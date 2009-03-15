@@ -39,6 +39,12 @@ using namespace dw::core::style;
 /* Applies to symbol lengths and string literals. */
 #define MAX_STR_LEN 256
 
+/* The last three ones are never parsed. */
+#define CSS_NUM_INTERNAL_PROPERTIES 3
+#define CSS_NUM_PARSED_PROPERTIES \
+   (CSS_PROPERTY_LAST - CSS_NUM_INTERNAL_PROPERTIES)
+
+
 static const char *const Css_border_style_enum_vals[] = {
    "none", "hidden", "dotted", "dashed", "solid", "double", "groove",
    "ridge", "inset", "outset", NULL

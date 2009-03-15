@@ -3,13 +3,6 @@
 
 #include "css.hh"
 
-/* The last three ones are never parsed. */
-#define CSS_NUM_INTERNAL_PROPERTIES 3
-#define CSS_NUM_PARSED_PROPERTIES \
-   (CSS_PROPERTY_LAST - CSS_NUM_INTERNAL_PROPERTIES)
-
-
-
 typedef enum {
    CSS_ORIGIN_USER_AGENT,
    CSS_ORIGIN_USER,
