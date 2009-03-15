@@ -36,9 +36,6 @@ using namespace dw::core::style;
 
 #define DEBUG_LEVEL 10
 
-/* Applies to symbol lengths and string literals. */
-#define MAX_STR_LEN 256
-
 /* The last three ones are never parsed. */
 #define CSS_NUM_INTERNAL_PROPERTIES 3
 #define CSS_NUM_PARSED_PROPERTIES \
@@ -354,40 +351,6 @@ static const CssShorthandInfo Css_shorthand_info[] = {
  *    Parsing
  * ---------------------------------------------------------------------- */
 
-typedef enum {
-   CSS_TK_DECINT, CSS_TK_FLOAT, CSS_TK_COLOR, CSS_TK_SYMBOL, CSS_TK_STRING,
-   CSS_TK_CHAR, CSS_TK_END
-} CssTokenType;
-
-class CssParser {
-   public:
-      CssContext *context;
-      CssOrigin origin;
-
-      const char *buf;
-      int buflen, bufptr;
-
-      CssTokenType ttype;
-      char tval[MAX_STR_LEN];
-      bool within_block;
-      bool space_separated; /* used when parsing CSS selectors */
-
-      CssParser(CssContext *context, CssOrigin origin,
-                const char *buf, int buflen);
-      int getc();
-      void ungetc();
-      void nextToken();
-      bool tokenMatchesProperty(CssPropertyName prop, CssValueType * type);
-      bool parseValue(CssPropertyName prop, CssValueType type,
-                      CssPropertyValue * val);
-      bool parseWeight();
-      void parseDeclaration(CssPropertyList * props,
-                            CssPropertyList * importantProps);
-      bool parseSimpleSelector(CssSimpleSelector *selector);
-      CssSelector *parseSelector();
-      void parseRuleset();
-};
-
 CssParser::CssParser(CssContext *context, CssOrigin origin,
                      const char *buf, int buflen)
 {
@@ -463,7 +426,7 @@ void CssParser::nextToken()
 
    // handle negative numbers
    if (c == '-') {
-      if (i < MAX_STR_LEN - 1)
+      if (i < CSS_MAX_STR_LEN - 1)
          tval[i++] = c;
       c = getc();
    }
@@ -471,7 +434,7 @@ void CssParser::nextToken()
    if (isdigit(c)) {
       ttype = CSS_TK_DECINT;
       do {
-         if (i < MAX_STR_LEN - 1) {
+         if (i < CSS_MAX_STR_LEN - 1) {
             tval[i++] = c;
          }
          /* else silently truncated */
@@ -487,10 +450,10 @@ void CssParser::nextToken()
       c = getc();
       if (isdigit(c)) {
          ttype = CSS_TK_FLOAT;
-         if (i < MAX_STR_LEN - 1)
+         if (i < CSS_MAX_STR_LEN - 1)
             tval[i++] = '.';
          do {
-            if (i < MAX_STR_LEN - 1)
+            if (i < CSS_MAX_STR_LEN - 1)
                tval[i++] = c;
             /* else silently truncated */
             c = getc();
@@ -529,7 +492,7 @@ void CssParser::nextToken()
       i = 1;
       c = getc();
       while (isalnum(c) || c == '_' || c == '-') {
-         if (i < MAX_STR_LEN - 1) {
+         if (i < CSS_MAX_STR_LEN - 1) {
             tval[i] = c;
             i++;
          }                      /* else silently truncated */
@@ -571,7 +534,7 @@ void CssParser::nextToken()
             }
          }
 
-         if (i < MAX_STR_LEN - 1) {
+         if (i < CSS_MAX_STR_LEN - 1) {
             tval[i] = c;
             i++;
          }                      /* else silently truncated */
@@ -593,7 +556,7 @@ void CssParser::nextToken()
       i = 1;
       c = getc();
       while (isxdigit(c)) {
-         if (i < MAX_STR_LEN - 1) {
+         if (i < CSS_MAX_STR_LEN - 1) {
             tval[i] = c;
             i++;
          }                      /* else silently truncated */
@@ -1227,19 +1190,17 @@ void CssParser::parseRuleset()
       nextToken();
 }
 
-void a_Css_parse(CssContext * context,
-                 const char *buf,
-                 int buflen, CssOrigin origin)
+void CssParser::parse(CssContext * context,
+                      const char *buf,
+                      int buflen, CssOrigin origin)
 {
    CssParser parser (context, origin, buf, buflen);
-
-   parser.within_block = false;
 
    while (parser.ttype != CSS_TK_END)
       parser.parseRuleset();
 }
 
-CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen)
+CssPropertyList *CssParser::parseDeclarationBlock(const char *buf, int buflen)
 {
    CssPropertyList *props = new CssPropertyList (true);
    CssParser parser (NULL, CSS_ORIGIN_AUTHOR, buf, buflen);

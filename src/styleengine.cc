@@ -523,7 +523,8 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    // parse style information from style="" attribute, if it exists
    if (styleAttribute && prefs.parse_embedded_css)
       styleAttributeProps =
-         a_Css_parse_declaration (styleAttribute, strlen (styleAttribute));
+         CssParser::parseDeclarationBlock (styleAttribute,
+                                           strlen (styleAttribute));
 
    // merge style information
    cssContext->apply (&props, this, styleAttributeProps, nonCssProperties);
@@ -553,5 +554,5 @@ Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
 }
 
 void StyleEngine::parse (const char *buf, int buflen, CssOrigin origin) {
-   a_Css_parse (cssContext, buf, buflen, origin);
+   CssParser::parse (cssContext, buf, buflen, origin);
 }

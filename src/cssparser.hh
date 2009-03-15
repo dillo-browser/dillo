@@ -9,13 +9,48 @@ typedef struct {
    const char *const *enum_symbols;
 } CssPropertyInfo;
 
-void        a_Css_parse                       (CssContext *context,
-                                               const char *buf,
-                                               int buflen,
-                                               CssOrigin origin);
-
-CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen);
-
 extern const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST];
+
+typedef enum {
+   CSS_TK_DECINT, CSS_TK_FLOAT, CSS_TK_COLOR, CSS_TK_SYMBOL, CSS_TK_STRING,
+   CSS_TK_CHAR, CSS_TK_END
+} CssTokenType;
+
+/* Applies to symbol lengths and string literals. */
+#define CSS_MAX_STR_LEN 256
+
+class CssParser {
+   private:
+      CssContext *context;
+      CssOrigin origin;
+
+      const char *buf;
+      int buflen, bufptr;
+
+      CssTokenType ttype;
+      char tval[CSS_MAX_STR_LEN];
+      bool within_block;
+      bool space_separated; /* used when parsing CSS selectors */
+
+      CssParser(CssContext *context, CssOrigin origin,
+                const char *buf, int buflen);
+      int getc();
+      void ungetc();
+      void nextToken();
+      bool tokenMatchesProperty(CssPropertyName prop, CssValueType * type);
+      bool parseValue(CssPropertyName prop, CssValueType type,
+                      CssPropertyValue * val);
+      bool parseWeight();
+      void parseDeclaration(CssPropertyList * props,
+                            CssPropertyList * importantProps);
+      bool parseSimpleSelector(CssSimpleSelector *selector);
+      CssSelector *parseSelector();
+      void parseRuleset();
+
+   public:
+      static CssPropertyList *parseDeclarationBlock(const char *buf, int buflen);
+      static void parse(CssContext *context, const char *buf, int buflen,
+                        CssOrigin origin);
+};
 
 #endif
