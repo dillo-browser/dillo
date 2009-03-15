@@ -16,11 +16,9 @@ typedef enum {
    CSS_TK_CHAR, CSS_TK_END
 } CssTokenType;
 
-/* Applies to symbol lengths and string literals. */
-#define CSS_MAX_STR_LEN 256
-
 class CssParser {
    private:
+      static const int maxStrLen = 256;
       CssContext *context;
       CssOrigin origin;
 
@@ -28,7 +26,7 @@ class CssParser {
       int buflen, bufptr;
 
       CssTokenType ttype;
-      char tval[CSS_MAX_STR_LEN];
+      char tval[maxStrLen];
       bool within_block;
       bool space_separated; /* used when parsing CSS selectors */
 

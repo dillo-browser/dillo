@@ -426,7 +426,7 @@ void CssParser::nextToken()
 
    // handle negative numbers
    if (c == '-') {
-      if (i < CSS_MAX_STR_LEN - 1)
+      if (i < maxStrLen - 1)
          tval[i++] = c;
       c = getc();
    }
@@ -434,7 +434,7 @@ void CssParser::nextToken()
    if (isdigit(c)) {
       ttype = CSS_TK_DECINT;
       do {
-         if (i < CSS_MAX_STR_LEN - 1) {
+         if (i < maxStrLen - 1) {
             tval[i++] = c;
          }
          /* else silently truncated */
@@ -450,10 +450,10 @@ void CssParser::nextToken()
       c = getc();
       if (isdigit(c)) {
          ttype = CSS_TK_FLOAT;
-         if (i < CSS_MAX_STR_LEN - 1)
+         if (i < maxStrLen - 1)
             tval[i++] = '.';
          do {
-            if (i < CSS_MAX_STR_LEN - 1)
+            if (i < maxStrLen - 1)
                tval[i++] = c;
             /* else silently truncated */
             c = getc();
@@ -492,7 +492,7 @@ void CssParser::nextToken()
       i = 1;
       c = getc();
       while (isalnum(c) || c == '_' || c == '-') {
-         if (i < CSS_MAX_STR_LEN - 1) {
+         if (i < maxStrLen - 1) {
             tval[i] = c;
             i++;
          }                      /* else silently truncated */
@@ -534,7 +534,7 @@ void CssParser::nextToken()
             }
          }
 
-         if (i < CSS_MAX_STR_LEN - 1) {
+         if (i < maxStrLen - 1) {
             tval[i] = c;
             i++;
          }                      /* else silently truncated */
@@ -556,7 +556,7 @@ void CssParser::nextToken()
       i = 1;
       c = getc();
       while (isxdigit(c)) {
-         if (i < CSS_MAX_STR_LEN - 1) {
+         if (i < maxStrLen - 1) {
             tval[i] = c;
             i++;
          }                      /* else silently truncated */
