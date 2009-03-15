@@ -3,12 +3,6 @@
 
 #include "css.hh"
 
-typedef enum {
-   CSS_ORIGIN_USER_AGENT,
-   CSS_ORIGIN_USER,
-   CSS_ORIGIN_AUTHOR,
-} CssOrigin;
-
 typedef struct {
    const char *symbol;
    const CssValueType type[3];

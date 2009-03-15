@@ -15,6 +15,12 @@ typedef enum {
 } CssPrimaryOrder;
 
 typedef enum {
+   CSS_ORIGIN_USER_AGENT,
+   CSS_ORIGIN_USER,
+   CSS_ORIGIN_AUTHOR,
+} CssOrigin;
+
+typedef enum {
    CSS_TYPE_INTEGER,            /* This type is only used internally, for x-*
                                    properties. */
    CSS_TYPE_ENUM,               /* Value is i, if represented by
