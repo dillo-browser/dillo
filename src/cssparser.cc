@@ -359,72 +359,86 @@ typedef enum {
    CSS_TK_CHAR, CSS_TK_END
 } CssTokenType;
 
-typedef struct {
-   CssContext *context;
-   CssOrigin origin;
+class CssParser {
+   public:
+      CssContext *context;
+      CssOrigin origin;
 
-   const char *buf;
-   int buflen, bufptr;
+      const char *buf;
+      int buflen, bufptr;
 
-   CssTokenType ttype;
-   char tval[MAX_STR_LEN];
-   bool within_block;
-   bool space_separated; /* used when parsing CSS selectors */
-} CssParser;
+      CssTokenType ttype;
+      char tval[MAX_STR_LEN];
+      bool within_block;
+      bool space_separated; /* used when parsing CSS selectors */
+
+      int getc();
+      void ungetc();
+      void nextToken();
+      bool tokenMatchesProperty(CssPropertyName prop, CssValueType * type);
+      bool parseValue(CssPropertyName prop, CssValueType type,
+                      CssPropertyValue * val);
+      bool parseWeight();
+      void parseDeclaration(CssPropertyList * props,
+                            CssPropertyList * importantProps);
+      bool parseSimpleSelector(CssSimpleSelector *selector);
+      CssSelector *parseSelector();
+      void parseRuleset();
+};
 
 /*
  * Gets the next character from the buffer, or EOF.
  */
-static int Css_getc(CssParser * parser)
+int CssParser::getc()
 {
    int c;
 
-   if (parser->bufptr >= parser->buflen)
+   if (bufptr >= buflen)
       c = EOF;
    else
-      c = parser->buf[parser->bufptr];
+      c = buf[bufptr];
 
    /* The buffer pointer is increased in any case, so that Css_ungetc works
     * correctly at the end of the buffer. */
-   parser->bufptr++;
+   bufptr++;
    return c;
 }
 
 /*
  * Undoes the last Css_getc().
  */
-static void Css_ungetc(CssParser * parser)
+void CssParser::ungetc()
 {
-   parser->bufptr--;
+   bufptr--;
 }
 
-static void Css_next_token(CssParser * parser)
+void CssParser::nextToken()
 {
    int c, c1, d, j;
    char hexbuf[5];
    int i = 0;
 
-   parser->ttype = CSS_TK_CHAR; /* init */
-   parser->space_separated = false;
+   ttype = CSS_TK_CHAR; /* init */
+   space_separated = false;
 
-   c = Css_getc(parser);
+   c = getc();
 
    while (true) {
       if (isspace(c)) { // ignore whitespace
-         parser->space_separated = true;
-         c = Css_getc(parser);
+         space_separated = true;
+         c = getc();
       } else if (c == '/') { // ignore comments
-         d = Css_getc(parser);
+         d = getc();
          if (d == '*') {
-            c = Css_getc(parser);
-            d = Css_getc(parser);
+            c = getc();
+            d = getc();
             while (d != EOF && (c != '*' || d != '/')) {
                c = d;
-               d = Css_getc(parser);
+               d = getc();
             }
-            c = Css_getc(parser);
+            c = getc();
          } else {
-            Css_ungetc(parser);
+            ungetc();
             break;
          }
       } else {
@@ -435,106 +449,106 @@ static void Css_next_token(CssParser * parser)
    // handle negative numbers
    if (c == '-') {
       if (i < MAX_STR_LEN - 1)
-         parser->tval[i++] = c;
-      c = Css_getc(parser);
+         tval[i++] = c;
+      c = getc();
    }
 
    if (isdigit(c)) {
-      parser->ttype = CSS_TK_DECINT;
+      ttype = CSS_TK_DECINT;
       do {
          if (i < MAX_STR_LEN - 1) {
-            parser->tval[i++] = c;
+            tval[i++] = c;
          }
          /* else silently truncated */
-         c = Css_getc(parser);
+         c = getc();
       } while (isdigit(c));
       if (c != '.')
-         Css_ungetc(parser);
+         ungetc();
 
       /* ...but keep going to see whether it's really a float */
    }
 
    if (c == '.') {
-      c = Css_getc(parser);
+      c = getc();
       if (isdigit(c)) {
-         parser->ttype = CSS_TK_FLOAT;
+         ttype = CSS_TK_FLOAT;
          if (i < MAX_STR_LEN - 1)
-            parser->tval[i++] = '.';
+            tval[i++] = '.';
          do {
             if (i < MAX_STR_LEN - 1)
-               parser->tval[i++] = c;
+               tval[i++] = c;
             /* else silently truncated */
-            c = Css_getc(parser);
+            c = getc();
          } while (isdigit(c));
 
-         Css_ungetc(parser);
-         parser->tval[i] = 0;
-         DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token number %s\n", parser->tval);
+         ungetc();
+         tval[i] = 0;
+         DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token number %s\n", tval);
          return;
       } else {
-         Css_ungetc(parser);
-         if (parser->ttype == CSS_TK_DECINT) {
-            Css_ungetc(parser);
+         ungetc();
+         if (ttype == CSS_TK_DECINT) {
+            ungetc();
          } else {
             c = '.';
          }
       }
    }
 
-   if (parser->ttype == CSS_TK_DECINT) {
-      parser->tval[i] = 0;
-      DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token number %s\n", parser->tval);
+   if (ttype == CSS_TK_DECINT) {
+      tval[i] = 0;
+      DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token number %s\n", tval);
       return;
    }
 
    if (i) {
-      Css_ungetc(parser); /* ungetc '-' */
+      ungetc(); /* ungetc '-' */
       i--;
-      c = Css_getc(parser);
+      c = getc();
    }
 
    if (isalpha(c) || c == '_' || c == '-') {
-      parser->ttype = CSS_TK_SYMBOL;
+      ttype = CSS_TK_SYMBOL;
 
-      parser->tval[0] = c;
+      tval[0] = c;
       i = 1;
-      c = Css_getc(parser);
+      c = getc();
       while (isalnum(c) || c == '_' || c == '-') {
          if (i < MAX_STR_LEN - 1) {
-            parser->tval[i] = c;
+            tval[i] = c;
             i++;
          }                      /* else silently truncated */
-         c = Css_getc(parser);
+         c = getc();
       }
-      parser->tval[i] = 0;
-      Css_ungetc(parser);
-      DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token symbol '%s'\n", parser->tval);
+      tval[i] = 0;
+      ungetc();
+      DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token symbol '%s'\n", tval);
       return;
    }
 
    if (c == '"' || c == '\'') {
       c1 = c;
-      parser->ttype = CSS_TK_STRING;
+      ttype = CSS_TK_STRING;
 
       i = 0;
-      c = Css_getc(parser);
+      c = getc();
 
       while (c != EOF && c != c1) {
          if (c == '\\') {
-            d = Css_getc(parser);
+            d = getc();
             if (isxdigit(d)) {
                /* Read hex Unicode char. (Actually, strings are yet only 8
                 * bit.) */
                hexbuf[0] = d;
                j = 1;
-               d = Css_getc(parser);
+               d = getc();
                while (j < 4 && isxdigit(d)) {
                   hexbuf[j] = d;
                   j++;
-                  d = Css_getc(parser);
+                  d = getc();
                }
                hexbuf[j] = 0;
-               Css_ungetc(parser);
+               ungetc();
                c = strtol(hexbuf, NULL, 16);
             } else {
                /* Take character literally. */
@@ -543,55 +557,53 @@ static void Css_next_token(CssParser * parser)
          }
 
          if (i < MAX_STR_LEN - 1) {
-            parser->tval[i] = c;
+            tval[i] = c;
             i++;
          }                      /* else silently truncated */
-         c = Css_getc(parser);
+         c = getc();
       }
-      parser->tval[i] = 0;
+      tval[i] = 0;
       /* No Css_ungetc(). */
-      DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token string '%s'\n", parser->tval);
+      DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token string '%s'\n", tval);
       return;
    }
 
    /*
     * Within blocks, '#' starts a color, outside, it is used in selectors.
     */
-   if (c == '#' && parser->within_block) {
-      parser->ttype = CSS_TK_COLOR;
+   if (c == '#' && within_block) {
+      ttype = CSS_TK_COLOR;
 
-      parser->tval[0] = c;
+      tval[0] = c;
       i = 1;
-      c = Css_getc(parser);
+      c = getc();
       while (isxdigit(c)) {
          if (i < MAX_STR_LEN - 1) {
-            parser->tval[i] = c;
+            tval[i] = c;
             i++;
          }                      /* else silently truncated */
-         c = Css_getc(parser);
+         c = getc();
       }
-      parser->tval[i] = 0;
-      Css_ungetc(parser);
-      DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token color '%s'\n", parser->tval);
+      tval[i] = 0;
+      ungetc();
+      DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token color '%s'\n", tval);
       return;
    }
 
    if (c == EOF) {
       DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token %s\n", "EOF");
-      parser->ttype = CSS_TK_END;
+      ttype = CSS_TK_END;
       return;
    }
 
-   parser->ttype = CSS_TK_CHAR;
-   parser->tval[0] = c;
-   parser->tval[1] = 0;
+   ttype = CSS_TK_CHAR;
+   tval[0] = c;
+   tval[1] = 0;
    DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token char '%c'\n", c);
 }
 
 
-static bool Css_token_matches_property(CssParser * parser,
-                                       CssPropertyName prop,
-                                       CssValueType * type)
+bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType * type)
 {
    int i, err = 1;
 
@@ -601,21 +613,21 @@ static bool Css_token_matches_property(CssParser * parser,
       switch (Css_property_info[prop].type[j]) {
 
          case CSS_TYPE_ENUM:
-            if (parser->ttype == CSS_TK_SYMBOL) {
+            if (ttype == CSS_TK_SYMBOL) {
                for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
-                  if (dStrcasecmp(parser->tval,
+                  if (dStrcasecmp(tval,
                         Css_property_info[prop].enum_symbols[i]) == 0)
                      return true;
             }
             break;
 
          case CSS_TYPE_MULTI_ENUM:
-            if (parser->ttype == CSS_TK_SYMBOL) {
-               if (dStrcasecmp(parser->tval, "none") == 0)
+            if (ttype == CSS_TK_SYMBOL) {
+               if (dStrcasecmp(tval, "none") == 0)
                      return true;
                else {
                   for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
-                     if (dStrcasecmp(parser->tval,
+                     if (dStrcasecmp(tval,
                            Css_property_info[prop].enum_symbols[i]) == 0)
                         return true;
                   }
@@ -625,34 +637,34 @@ static bool Css_token_matches_property(CssParser * parser,
 
          case CSS_TYPE_LENGTH_PERCENTAGE:
          case CSS_TYPE_LENGTH:
-            if (parser->ttype == CSS_TK_DECINT ||
-               parser->ttype == CSS_TK_FLOAT ||
-               (parser->ttype == CSS_TK_SYMBOL && dStrcasecmp(parser->tval,
+            if (ttype == CSS_TK_DECINT ||
+               ttype == CSS_TK_FLOAT ||
+               (ttype == CSS_TK_SYMBOL && dStrcasecmp(tval,
                                                               "auto") == 0))
                return true;
             break;
 
          case CSS_TYPE_COLOR:
-            if ((parser->ttype == CSS_TK_COLOR ||
-                  parser->ttype == CSS_TK_SYMBOL) &&
-               a_Color_parse(parser->tval, -1, &err) != -1)
+            if ((ttype == CSS_TK_COLOR ||
+                  ttype == CSS_TK_SYMBOL) &&
+               a_Color_parse(tval, -1, &err) != -1)
                return true;
             break;
 
          case CSS_TYPE_STRING:
-            if (parser->ttype == CSS_TK_STRING)
+            if (ttype == CSS_TK_STRING)
                return true;
             break;
 
          case CSS_TYPE_SYMBOL:
-            if (parser->ttype == CSS_TK_SYMBOL ||
-               parser->ttype == CSS_TK_STRING)
+            if (ttype == CSS_TK_SYMBOL ||
+               ttype == CSS_TK_STRING)
                return true;
             break;
 
          case CSS_TYPE_FONT_WEIGHT:
-            if (parser->ttype == CSS_TK_DECINT) {
-               i = strtol(parser->tval, NULL, 10);
+            if (ttype == CSS_TK_DECINT) {
+               i = strtol(tval, NULL, 10);
                if (i >= 100 && i <= 900)
                   return true;
             }
@@ -671,10 +683,9 @@ static bool Css_token_matches_property(CssParser * parser,
    return false;
 }
 
-static bool Css_parse_value(CssParser * parser,
-                            CssPropertyName prop,
-                            CssValueType type,
-                            CssPropertyValue * val)
+bool CssParser::parseValue(CssPropertyName prop,
+                           CssValueType type,
+                           CssPropertyValue * val)
 {
    CssLengthType lentype;
    bool found, ret = false;
@@ -683,15 +694,15 @@ static bool Css_parse_value(CssParser * parser,
 
    switch (type) {
    case CSS_TYPE_ENUM:
-      if (parser->ttype == CSS_TK_SYMBOL) {
+      if (ttype == CSS_TK_SYMBOL) {
          for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
-            if (dStrcasecmp(parser->tval,
+            if (dStrcasecmp(tval,
                             Css_property_info[prop].enum_symbols[i]) == 0) {
                val->intVal = i;
                ret = true;
                break;
             }
-         Css_next_token(parser);
+         nextToken();
       }
       break;
 
@@ -699,114 +710,114 @@ static bool Css_parse_value(CssParser * parser,
       val->intVal = 0;
       ret = true;
 
-      while (parser->ttype == CSS_TK_SYMBOL) {
-         if (dStrcasecmp(parser->tval, "none") != 0) {
+      while (ttype == CSS_TK_SYMBOL) {
+         if (dStrcasecmp(tval, "none") != 0) {
             for (i = 0, found = false;
                  !found && Css_property_info[prop].enum_symbols[i]; i++) {
-               if (dStrcasecmp(parser->tval,
+               if (dStrcasecmp(tval,
                                Css_property_info[prop].enum_symbols[i]) == 0)
                   val->intVal |= (1 << i);
             }
          }
-         Css_next_token(parser);
+         nextToken();
       }
       break;
 
    case CSS_TYPE_LENGTH_PERCENTAGE:
    case CSS_TYPE_LENGTH:
-      if (parser->ttype == CSS_TK_DECINT || parser->ttype == CSS_TK_FLOAT) {
-         fval = atof(parser->tval);
+      if (ttype == CSS_TK_DECINT || ttype == CSS_TK_FLOAT) {
+         fval = atof(tval);
          lentype = CSS_LENGTH_TYPE_PX;  /* Actually, there must be a unit,
                                          * except for num == 0. */
 
          ret = true;
 
-         Css_next_token(parser);
-         if (parser->ttype == CSS_TK_SYMBOL) {
-            if (dStrcasecmp(parser->tval, "px") == 0) {
+         nextToken();
+         if (ttype == CSS_TK_SYMBOL) {
+            if (dStrcasecmp(tval, "px") == 0) {
                lentype = CSS_LENGTH_TYPE_PX;
-               Css_next_token(parser);
-            } else if (dStrcasecmp(parser->tval, "mm") == 0) {
+               nextToken();
+            } else if (dStrcasecmp(tval, "mm") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
-               Css_next_token(parser);
-            } else if (dStrcasecmp(parser->tval, "cm") == 0) {
+               nextToken();
+            } else if (dStrcasecmp(tval, "cm") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= 10;
-               Css_next_token(parser);
-            } else if (dStrcasecmp(parser->tval, "in") == 0) {
+               nextToken();
+            } else if (dStrcasecmp(tval, "in") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= 25.4;
-               Css_next_token(parser);
-            } else if (dStrcasecmp(parser->tval, "pt") == 0) {
+               nextToken();
+            } else if (dStrcasecmp(tval, "pt") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= (25.4 / 72);
-               Css_next_token(parser);
-            } else if (dStrcasecmp(parser->tval, "pc") == 0) {
+               nextToken();
+            } else if (dStrcasecmp(tval, "pc") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= (25.4 / 6);
-               Css_next_token(parser);
-            } else if (dStrcasecmp(parser->tval, "em") == 0) {
+               nextToken();
+            } else if (dStrcasecmp(tval, "em") == 0) {
                lentype = CSS_LENGTH_TYPE_EM;
-               Css_next_token(parser);
-            } else if (dStrcasecmp(parser->tval, "ex") == 0) {
+               nextToken();
+            } else if (dStrcasecmp(tval, "ex") == 0) {
                lentype = CSS_LENGTH_TYPE_EX;
-               Css_next_token(parser);
+               nextToken();
             }
          } else if (type == CSS_TYPE_LENGTH_PERCENTAGE &&
-                    parser->ttype == CSS_TK_CHAR &&
-                    parser->tval[0] == '%') {
+                    ttype == CSS_TK_CHAR &&
+                    tval[0] == '%') {
             fval /= 100;
             lentype = CSS_LENGTH_TYPE_PERCENTAGE;
-            Css_next_token(parser);
+            nextToken();
          }
 
          val->intVal = CSS_CREATE_LENGTH(fval, lentype);
-      } else if (parser->ttype == CSS_TK_SYMBOL &&
-                 dStrcasecmp(parser->tval, "auto") == 0) {
+      } else if (ttype == CSS_TK_SYMBOL &&
+                 dStrcasecmp(tval, "auto") == 0) {
          ret = true;
          val->intVal = CSS_LENGTH_TYPE_AUTO;
-         Css_next_token(parser);
+         nextToken();
       }
       break;
 
    case CSS_TYPE_COLOR:
-      if (parser->ttype == CSS_TK_COLOR) {
-         val->intVal = a_Color_parse(parser->tval, -1, &err);
+      if (ttype == CSS_TK_COLOR) {
+         val->intVal = a_Color_parse(tval, -1, &err);
          if (err)
             MSG_CSS("color is not in \"%s\" format\n", "#RRGGBB");
          else
             ret = true;
-         Css_next_token(parser);
-      } else if (parser->ttype == CSS_TK_SYMBOL) {
-         val->intVal = a_Color_parse(parser->tval, -1, &err);
+         nextToken();
+      } else if (ttype == CSS_TK_SYMBOL) {
+         val->intVal = a_Color_parse(tval, -1, &err);
          if (err)
             MSG_CSS("color is not in \"%s\" format\n", "#RRGGBB");
          else
             ret = true;
-         Css_next_token(parser);
+         nextToken();
       }
       break;
 
    case CSS_TYPE_STRING:
-      if (parser->ttype == CSS_TK_STRING) {
-         val->strVal = dStrdup(parser->tval);
+      if (ttype == CSS_TK_STRING) {
+         val->strVal = dStrdup(tval);
          ret = true;
-         Css_next_token(parser);
+         nextToken();
       }
       break;
 
    case CSS_TYPE_SYMBOL:
-      if (parser->ttype == CSS_TK_SYMBOL || parser->ttype == CSS_TK_STRING) {
-         val->strVal = dStrdup(parser->tval);
+      if (ttype == CSS_TK_SYMBOL || ttype == CSS_TK_STRING) {
+         val->strVal = dStrdup(tval);
          ret = true;
-         Css_next_token(parser);
+         nextToken();
       }
       break;
 
    case CSS_TYPE_FONT_WEIGHT:
       ival = 0;
-      if (parser->ttype == CSS_TK_DECINT) {
-         ival = strtol(parser->tval, NULL, 10);
+      if (ttype == CSS_TK_DECINT) {
+         ival = strtol(tval, NULL, 10);
          if (ival < 100 || ival > 900)
             /* invalid */
             ival = 0;
@@ -815,7 +826,7 @@ static bool Css_parse_value(CssParser * parser,
       if (ival != 0) {
          val->intVal = ival;
          ret = true;
-         Css_next_token(parser);
+         nextToken();
       }
       break;
 
@@ -832,13 +843,13 @@ static bool Css_parse_value(CssParser * parser,
    return ret;
 }
 
-static bool Css_parse_weight(CssParser * parser)
+bool CssParser::parseWeight()
 {
-   if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '!') {
-      Css_next_token(parser);
-      if (parser->ttype == CSS_TK_SYMBOL &&
-          dStrcasecmp(parser->tval, "important") == 0) {
-         Css_next_token(parser);
+   if (ttype == CSS_TK_CHAR && tval[0] == '!') {
+      nextToken();
+      if (ttype == CSS_TK_SYMBOL &&
+          dStrcasecmp(tval, "important") == 0) {
+         nextToken();
          return true;
       }
    }
@@ -865,9 +876,8 @@ static int Css_shorthand_info_cmp(const void *a, const void *b)
                       ((CssShorthandInfo *) b)->symbol);
 }
 
-static void Css_parse_declaration(CssParser * parser,
-                                  CssPropertyList * props,
-                                  CssPropertyList * importantProps)
+void CssParser::parseDeclaration(CssPropertyList * props,
+                                 CssPropertyList * importantProps)
 {
    CssPropertyInfo pi = {NULL, {CSS_TYPE_UNUSED}, NULL}, *pip;
    CssShorthandInfo si, *sip;
@@ -884,8 +894,8 @@ static void Css_parse_declaration(CssParser * parser,
       /* 4 values */ {0, 2, 3, 1}
    };
 
-   if (parser->ttype == CSS_TK_SYMBOL) {
-      pi.symbol = parser->tval;
+   if (ttype == CSS_TK_SYMBOL) {
+      pi.symbol = tval;
       pip =
           (CssPropertyInfo *) bsearch(&pi, Css_property_info,
                                       CSS_NUM_PARSED_PROPERTIES,
@@ -893,12 +903,12 @@ static void Css_parse_declaration(CssParser * parser,
                                       Css_property_info_cmp);
       if (pip) {
          prop = (CssPropertyName) (pip - Css_property_info);
-         Css_next_token(parser);
-         if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ':') {
-            Css_next_token(parser);
-            if (Css_token_matches_property (parser, prop, &type) &&
-                Css_parse_value(parser, prop, type, &val)) {
-               weight = Css_parse_weight(parser);
+         nextToken();
+         if (ttype == CSS_TK_CHAR && tval[0] == ':') {
+            nextToken();
+            if (tokenMatchesProperty (prop, &type) &&
+                parseValue(prop, type, &val)) {
+               weight = parseWeight();
                if (weight && importantProps)
                   importantProps->set(prop, type, val);
                else
@@ -907,7 +917,7 @@ static void Css_parse_declaration(CssParser * parser,
          }
       } else {
          /* Try shorthands. */
-         si.symbol = parser->tval;
+         si.symbol = tval;
          sip =
              (CssShorthandInfo *) bsearch(&pi, Css_shorthand_info,
                                           CSS_SHORTHAND_NUM,
@@ -915,9 +925,9 @@ static void Css_parse_declaration(CssParser * parser,
                                           Css_shorthand_info_cmp);
          if (sip) {
             sh_index = sip - Css_shorthand_info;
-            Css_next_token(parser);
-            if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ':') {
-               Css_next_token(parser);
+            nextToken();
+            if (ttype == CSS_TK_CHAR && tval[0] == ':') {
+               nextToken();
 
                switch (Css_shorthand_info[sh_index].type) {
 
@@ -929,20 +939,17 @@ static void Css_parse_declaration(CssParser * parser,
                           !found &&
                           Css_shorthand_info[sh_index].properties[i] != -1;
                           i++)
-                        if (Css_token_matches_property(parser,
-                                                       Css_shorthand_info
-                                                       [sh_index].
-                                                       properties[i], &type)) {
+                        if (tokenMatchesProperty(Css_shorthand_info[sh_index].
+                                                 properties[i], &type)) {
                            found = true;
                            DEBUG_MSG(DEBUG_PARSE_LEVEL,
                                      "will assign to '%s'\n",
                                      Css_property_info
                                      [Css_shorthand_info[sh_index]
                                       .properties[i]].symbol);
-                           if (Css_parse_value(parser,
-                                               Css_shorthand_info[sh_index]
-                                               .properties[i], type, &val)) {
-                              weight = Css_parse_weight(parser);
+                           if (parseValue(Css_shorthand_info[sh_index]
+                                          .properties[i], type, &val)) {
+                              weight = parseWeight();
                               if (weight && importantProps)
                                  importantProps->
                                      set(Css_shorthand_info[sh_index].
@@ -958,20 +965,17 @@ static void Css_parse_declaration(CssParser * parser,
                case CssShorthandInfo::CSS_SHORTHAND_DIRECTIONS:
                   n = 0;
                   while (n < 4) {
-                     if (Css_token_matches_property(parser,
-                                                    Css_shorthand_info
-                                                    [sh_index].
-                                                    properties[0], &type) &&
-                         Css_parse_value(parser,
-                                         Css_shorthand_info[sh_index]
-                                         .properties[0], type, &val)) {
+                     if (tokenMatchesProperty(Css_shorthand_info[sh_index].
+                                              properties[0], &type) &&
+                         parseValue(Css_shorthand_info[sh_index]
+                                    .properties[0], type, &val)) {
                         dir_vals[n] = val;
                         n++;
                      } else
                         break;
                   }
 
-                  weight = Css_parse_weight(parser);
+                  weight = parseWeight();
                   if (n > 0) {
                      for (i = 0; i < 4; i++)
                         if (weight && importantProps)
@@ -996,15 +1000,12 @@ static void Css_parse_declaration(CssParser * parser,
                      for (found = false, i = 0;
                           !found && i < 3;
                           i++)
-                        if (Css_token_matches_property(parser,
-                                                       Css_shorthand_info
-                                                       [sh_index].
-                                                       properties[i], &type)) {
+                        if (tokenMatchesProperty(Css_shorthand_info[sh_index].
+                                                 properties[i], &type)) {
                            found = true;
-                           if (Css_parse_value(parser,
-                                               Css_shorthand_info[sh_index]
-                                               .properties[i], type, &val)) {
-                              weight = Css_parse_weight(parser);
+                           if (parseValue(Css_shorthand_info[sh_index]
+                                          .properties[i], type, &val)) {
+                              weight = parseWeight();
                               for (j = 0; j < 4; j++)
                                  if (weight && importantProps)
                                     importantProps->
@@ -1024,33 +1025,33 @@ static void Css_parse_declaration(CssParser * parser,
    }
 
    /* Skip all tokens until the expected end. */
-   while (!(parser->ttype == CSS_TK_END ||
-            (parser->ttype == CSS_TK_CHAR &&
-             (parser->tval[0] == ';' || parser->tval[0] == '}'))))
-      Css_next_token(parser);
+   while (!(ttype == CSS_TK_END ||
+            (ttype == CSS_TK_CHAR &&
+             (tval[0] == ';' || tval[0] == '}'))))
+      nextToken();
 
-   if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ';')
-      Css_next_token(parser);
+   if (ttype == CSS_TK_CHAR && tval[0] == ';')
+      nextToken();
 }
 
-static bool Css_parse_simple_selector(CssParser * parser,
-                                      CssSimpleSelector *selector) {
+bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
+{
    char **pp;
 
-   if (parser->ttype == CSS_TK_SYMBOL) {
-      selector->element = a_Html_tag_index(parser->tval);
-      Css_next_token(parser);
-      if (parser->space_separated)
+   if (ttype == CSS_TK_SYMBOL) {
+      selector->element = a_Html_tag_index(tval);
+      nextToken();
+      if (space_separated)
          return true;
-   } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '*') {
+   } else if (ttype == CSS_TK_CHAR && tval[0] == '*') {
       selector->element = CssSimpleSelector::ELEMENT_ANY;
-      Css_next_token(parser);
-      if (parser->space_separated)
+      nextToken();
+      if (space_separated)
          return true;
-   } else if (parser->ttype == CSS_TK_CHAR &&
-              (parser->tval[0] == '#' ||
-               parser->tval[0] == '.' ||
-               parser->tval[0] == ':')) {
+   } else if (ttype == CSS_TK_CHAR &&
+              (tval[0] == '#' ||
+               tval[0] == '.' ||
+               tval[0] == ':')) {
       // nothing to be done in this case
    } else {
       return false;
@@ -1058,8 +1059,8 @@ static bool Css_parse_simple_selector(CssParser * parser,
 
    do {
       pp = NULL;
-      if (parser->ttype == CSS_TK_CHAR) {
-         switch (parser->tval[0]) {
+      if (ttype == CSS_TK_CHAR) {
+         switch (tval[0]) {
             case '#':
                pp = &selector->id;
                break;
@@ -1080,18 +1081,18 @@ static bool Css_parse_simple_selector(CssParser * parser,
       }
 
       if (pp) {
-         Css_next_token(parser);
-         if (parser->space_separated)
+         nextToken();
+         if (space_separated)
             return true;
 
-         if (parser->ttype == CSS_TK_SYMBOL) {
+         if (ttype == CSS_TK_SYMBOL) {
                if (*pp == NULL)
-                  *pp = dStrdup(parser->tval);
-               Css_next_token(parser);
+                  *pp = dStrdup(tval);
+               nextToken();
          } else {
             return false; // don't accept classes or id's starting with integer
          }
-         if (parser->space_separated)
+         if (space_separated)
             return true;
       }
    } while (pp);
@@ -1103,23 +1104,24 @@ static bool Css_parse_simple_selector(CssParser * parser,
    return true;
 }
 
-static CssSelector *Css_parse_selector(CssParser * parser) {
+CssSelector *CssParser::parseSelector()
+{
    CssSelector *selector = new CssSelector ();
 
    while (true) {
-      if (! Css_parse_simple_selector (parser, selector->top ())) {
+      if (! parseSimpleSelector (selector->top ())) {
          delete selector;
          selector = NULL;
          break;
       }
 
-      if (parser->ttype == CSS_TK_CHAR &&
-         (parser->tval[0] == ',' || parser->tval[0] == '{')) {
+      if (ttype == CSS_TK_CHAR &&
+         (tval[0] == ',' || tval[0] == '{')) {
          break;
-      } else if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '>') {
+      } else if (ttype == CSS_TK_CHAR && tval[0] == '>') {
          selector->addSimpleSelector (CssSelector::CHILD);
-         Css_next_token(parser);
-      } else if (parser->ttype != CSS_TK_END && parser->space_separated) {
+         nextToken();
+      } else if (ttype != CSS_TK_END && space_separated) {
          selector->addSimpleSelector (CssSelector::DESCENDANT);
       } else {
          delete selector;
@@ -1128,15 +1130,15 @@ static CssSelector *Css_parse_selector(CssParser * parser) {
       }
    }
 
-   while (parser->ttype != CSS_TK_END &&
-          (parser->ttype != CSS_TK_CHAR ||
-           (parser->tval[0] != ',' && parser->tval[0] != '{')))
-         Css_next_token(parser);
+   while (ttype != CSS_TK_END &&
+          (ttype != CSS_TK_CHAR ||
+           (tval[0] != ',' && tval[0] != '{')))
+         nextToken();
 
    return selector;
 }
 
-static void Css_parse_ruleset(CssParser * parser)
+void CssParser::parseRuleset()
 {
    lout::misc::SimpleVector < CssSelector * >*list;
    CssPropertyList *props, *importantProps;
@@ -1145,7 +1147,7 @@ static void Css_parse_ruleset(CssParser * parser)
    list = new lout::misc::SimpleVector < CssSelector * >(1);
 
    while (true) {
-      selector = Css_parse_selector(parser);
+      selector = parseSelector();
 
       if (selector) {
          selector->ref();
@@ -1157,9 +1159,9 @@ static void Css_parse_ruleset(CssParser * parser)
       //       however make sure we don't dump it if only dillo fails to parse
       //       valid CSS.
 
-      if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == ',')
+      if (ttype == CSS_TK_CHAR && tval[0] == ',')
          /* To read the next token. */
-         Css_next_token(parser);
+         nextToken();
       else
          /* No more selectors. */
          break;
@@ -1173,28 +1175,28 @@ static void Css_parse_ruleset(CssParser * parser)
    importantProps->ref();
 
    /* Read block. ('{' has already been read.) */
-   if (parser->ttype != CSS_TK_END) {
-      parser->within_block = true;
-      Css_next_token(parser);
+   if (ttype != CSS_TK_END) {
+      within_block = true;
+      nextToken();
       do
-         Css_parse_declaration(parser, props, importantProps);
-      while (!(parser->ttype == CSS_TK_END ||
-               (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '}')));
-      parser->within_block = false;
+         parseDeclaration(props, importantProps);
+      while (!(ttype == CSS_TK_END ||
+               (ttype == CSS_TK_CHAR && tval[0] == '}')));
+      within_block = false;
    }
 
    for (int i = 0; i < list->size(); i++) {
       CssSelector *s = list->get(i);
 
-      if (parser->origin == CSS_ORIGIN_USER_AGENT) {
-         parser->context->addRule(s, props, CSS_PRIMARY_USER_AGENT);
-      } else if (parser->origin == CSS_ORIGIN_USER) {
-         parser->context->addRule(s, props, CSS_PRIMARY_USER);
-         parser->context->addRule(s, importantProps,
+      if (origin == CSS_ORIGIN_USER_AGENT) {
+         context->addRule(s, props, CSS_PRIMARY_USER_AGENT);
+      } else if (origin == CSS_ORIGIN_USER) {
+         context->addRule(s, props, CSS_PRIMARY_USER);
+         context->addRule(s, importantProps,
                                   CSS_PRIMARY_USER_IMPORTANT);
-      } else if (parser->origin == CSS_ORIGIN_AUTHOR) {
-         parser->context->addRule(s, props, CSS_PRIMARY_AUTHOR);
-         parser->context->addRule(s, importantProps,
+      } else if (origin == CSS_ORIGIN_AUTHOR) {
+         context->addRule(s, props, CSS_PRIMARY_AUTHOR);
+         context->addRule(s, importantProps,
                                   CSS_PRIMARY_AUTHOR_IMPORTANT);
       }
 
@@ -1206,8 +1208,8 @@ static void Css_parse_ruleset(CssParser * parser)
 
    delete list;
 
-   if (parser->ttype == CSS_TK_CHAR && parser->tval[0] == '}')
-      Css_next_token(parser);
+   if (ttype == CSS_TK_CHAR && tval[0] == '}')
+      nextToken();
 }
 
 void a_Css_parse(CssContext * context,
@@ -1224,9 +1226,9 @@ void a_Css_parse(CssContext * context,
    parser.within_block = false;
    parser.space_separated = false;
 
-   Css_next_token(&parser);
+   parser.nextToken();
    while (parser.ttype != CSS_TK_END)
-      Css_parse_ruleset(&parser);
+      parser.parseRuleset();
 }
 
 CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen)
@@ -1242,9 +1244,9 @@ CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen)
    parser.within_block = true;
    parser.space_separated = false;
 
-   Css_next_token(&parser);
+   parser.nextToken();
    do
-      Css_parse_declaration(&parser, props, NULL);
+      parser.parseDeclaration(props, NULL);
    while (!(parser.ttype == CSS_TK_END ||
          (parser.ttype == CSS_TK_CHAR && parser.tval[0] == '}')));
 
