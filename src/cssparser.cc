@@ -360,6 +360,7 @@ CssParser::CssParser(CssContext *context, CssOrigin origin,
    this->buflen = buflen;
    this->bufptr = 0;
    this->space_separated = false;
+   this->within_block = false;
 
    nextToken ();
 }
