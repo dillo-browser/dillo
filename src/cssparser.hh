@@ -3,14 +3,6 @@
 
 #include "css.hh"
 
-typedef struct {
-   const char *symbol;
-   const CssValueType type[3];
-   const char *const *enum_symbols;
-} CssPropertyInfo;
-
-extern const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST];
-
 class CssParser {
    private:
       typedef enum {
@@ -49,6 +41,7 @@ class CssParser {
       static CssPropertyList *parseDeclarationBlock(const char *buf, int buflen);
       static void parse(CssContext *context, const char *buf, int buflen,
                         CssOrigin origin);
+      static const char *propertyNameString(CssPropertyName name);
 };
 
 #endif

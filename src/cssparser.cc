@@ -42,6 +42,12 @@ using namespace dw::core::style;
    (CSS_PROPERTY_LAST - CSS_NUM_INTERNAL_PROPERTIES)
 
 
+typedef struct {
+   const char *symbol;
+   const CssValueType type[3];
+   const char *const *enum_symbols;
+} CssPropertyInfo;
+
 static const char *const Css_border_style_enum_vals[] = {
    "none", "hidden", "dotted", "dashed", "solid", "double", "groove",
    "ridge", "inset", "outset", NULL
@@ -1189,6 +1195,11 @@ void CssParser::parseRuleset()
 
    if (ttype == CSS_TK_CHAR && tval[0] == '}')
       nextToken();
+}
+
+const char * CssParser::propertyNameString(CssPropertyName name)
+{
+   return Css_property_info[name].symbol;
 }
 
 void CssParser::parse(CssContext * context,

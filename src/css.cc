@@ -20,7 +20,8 @@
 using namespace dw::core::style;
 
 void CssProperty::print () {
-   fprintf (stderr, "%s - %d\n", Css_property_info[name].symbol, value.intVal);
+   fprintf (stderr, "%s - %d\n",
+            CssParser::propertyNameString((CssPropertyName) name), value.intVal);
 }
 
 CssPropertyList::~CssPropertyList () {
