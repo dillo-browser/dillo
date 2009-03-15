@@ -372,6 +372,8 @@ class CssParser {
       bool within_block;
       bool space_separated; /* used when parsing CSS selectors */
 
+      CssParser(CssContext *context, CssOrigin origin,
+                const char *buf, int buflen);
       int getc();
       void ungetc();
       void nextToken();
@@ -385,6 +387,19 @@ class CssParser {
       CssSelector *parseSelector();
       void parseRuleset();
 };
+
+CssParser::CssParser(CssContext *context, CssOrigin origin,
+                     const char *buf, int buflen)
+{
+   this->context = context;
+   this->origin = origin;
+   this->buf = buf;
+   this->buflen = buflen;
+   this->bufptr = 0;
+   this->space_separated = false;
+
+   nextToken ();
+}
 
 /*
  * Gets the next character from the buffer, or EOF.
@@ -1216,17 +1231,10 @@ void a_Css_parse(CssContext * context,
                  const char *buf,
                  int buflen, CssOrigin origin)
 {
-   CssParser parser;
+   CssParser parser (context, origin, buf, buflen);
 
-   parser.context = context;
-   parser.buf = buf;
-   parser.buflen = buflen;
-   parser.bufptr = 0;
-   parser.origin = origin;
    parser.within_block = false;
-   parser.space_separated = false;
 
-   parser.nextToken();
    while (parser.ttype != CSS_TK_END)
       parser.parseRuleset();
 }
@@ -1234,17 +1242,10 @@ void a_Css_parse(CssContext * context,
 CssPropertyList *a_Css_parse_declaration(const char *buf, int buflen)
 {
    CssPropertyList *props = new CssPropertyList (true);
-   CssParser parser;
+   CssParser parser (NULL, CSS_ORIGIN_AUTHOR, buf, buflen);
 
-   parser.context = NULL;
-   parser.buf = buf;
-   parser.buflen = buflen;
-   parser.bufptr = 0;
-   parser.origin = CSS_ORIGIN_AUTHOR;
    parser.within_block = true;
-   parser.space_separated = false;
 
-   parser.nextToken();
    do
       parser.parseDeclaration(props, NULL);
    while (!(parser.ttype == CSS_TK_END ||
