@@ -1020,8 +1020,7 @@ DLAction DLWin::check_filename(char **p_fullname)
 }
 
 /*
- * Add a new download request to the main window and
- * fork a child to do the job.
+ * Delete a download request from the main window.
  */
 void DLWin::del(int n_item)
 {

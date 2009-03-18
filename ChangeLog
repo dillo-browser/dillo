@@ -44,6 +44,7 @@ dillo-2.1
  - Ensure that the dlib dStr* functions are used everywhere.
  - Fixed a memory leak in Html_tag_open_link().
  - Fixed a memory leak in Klist().
+ - Fix the comment for DLWin::del() (dpi/downloads.cc).
    Patches: Jeremy Henty
 +- Implemented Basic authentication!
    Patch: Jeremy Henty, Jorge Arellano Cid
