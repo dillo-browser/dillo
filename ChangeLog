@@ -74,6 +74,7 @@ dillo-2.1
  - Replace visited_color dillorc option.
  - Add support for negative numbers in CSS parser.
  - Fix allow_white_bg dillorc option.
+ - Load <style></style> content only if applicable.
    Patches: Johannes Hofmann
 +- Updated the GPL copyright note in the source files.
    Patch: Detlef Riekenberg

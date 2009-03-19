@@ -457,6 +457,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    InVisitedLink = false;
    ReqTagClose = false;
    TagSoup = true;
+   loadCssFromStash = false;
 
    Num_HTML = Num_HEAD = Num_BODY = Num_TITLE = 0;
 
@@ -1642,11 +1643,12 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
 
+   html->loadCssFromStash = true;
+
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
       BUG_MSG("type attribute is required for <style>\n");
    } else if (dStrcasecmp(attrbuf, "text/css")) {
-      MSG("Shouldn't be applying <style type=\"%s\">\n", attrbuf);
-      /* We need to inform close_style() */
+      html->loadCssFromStash = false;
    }
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "media")) &&
        dStrcasecmp(attrbuf, "all") && !dStristr(attrbuf, "screen")) {
@@ -1655,8 +1657,9 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
        * TODO can be a comma-separated list.
        * TODO handheld.
        */
-      MSG("Shouldn't be applying <style media=\"%s\">\n", attrbuf);
+      html->loadCssFromStash = false;
    }
+
    a_Html_stash_init(html);
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
 }
@@ -1666,7 +1669,7 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_style(DilloHtml *html, int TagIdx)
 {
-   if (prefs.parse_embedded_css)
+   if (prefs.parse_embedded_css && html->loadCssFromStash)
       html->styleEngine->parse(html->Stash->str, html->Stash->len,
                                CSS_ORIGIN_AUTHOR);
 }

@@ -178,6 +178,7 @@ public:  //BUG: for now everything is public
    bool ReqTagClose;      /* Flag to help handling bad-formed HTML */
    bool WordAfterLI;      /* Flag to help ignoring the 1st <P> after <LI> */
    bool TagSoup;          /* Flag to enable the parser's cleanup functions */
+   bool loadCssFromStash; /* current stash content should be loaded as CSS */
 
    /* element counters: used for validation purposes */
    uchar_t Num_HTML, Num_HEAD, Num_BODY, Num_TITLE;
