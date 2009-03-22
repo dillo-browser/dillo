@@ -41,6 +41,7 @@ static void Dpiapi_dialog_answer_cb(BrowserWindow *bw, int answer)
 
    /* Send answer */
    a_Capi_dpi_send_cmd(NULL, bw, cmd, dialog_server, 0);
+   dFree(cmd);
 }
 
 /*
