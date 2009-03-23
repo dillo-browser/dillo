@@ -623,15 +623,14 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType * type)
          case CSS_TYPE_LENGTH_PERCENTAGE:
          case CSS_TYPE_LENGTH:
             if (ttype == CSS_TK_DECINT ||
-               ttype == CSS_TK_FLOAT ||
-               (ttype == CSS_TK_SYMBOL && dStrcasecmp(tval,
-                                                              "auto") == 0))
+                ttype == CSS_TK_FLOAT ||
+                (ttype == CSS_TK_SYMBOL && dStrcasecmp(tval, "auto") == 0))
                return true;
             break;
 
          case CSS_TYPE_COLOR:
             if ((ttype == CSS_TK_COLOR ||
-                  ttype == CSS_TK_SYMBOL) &&
+                 ttype == CSS_TK_SYMBOL) &&
                a_Color_parse(tval, -1, &err) != -1)
                return true;
             break;
@@ -643,7 +642,7 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType * type)
 
          case CSS_TYPE_SYMBOL:
             if (ttype == CSS_TK_SYMBOL ||
-               ttype == CSS_TK_STRING)
+                ttype == CSS_TK_STRING)
                return true;
             break;
 
@@ -757,8 +756,7 @@ bool CssParser::parseValue(CssPropertyName prop,
          }
 
          val->intVal = CSS_CREATE_LENGTH(fval, lentype);
-      } else if (ttype == CSS_TK_SYMBOL &&
-                 dStrcasecmp(tval, "auto") == 0) {
+      } else if (ttype == CSS_TK_SYMBOL && dStrcasecmp(tval, "auto") == 0) {
          ret = true;
          val->intVal = CSS_LENGTH_TYPE_AUTO;
          nextToken();
@@ -1177,12 +1175,10 @@ void CssParser::parseRuleset()
          context->addRule(s, props, CSS_PRIMARY_USER_AGENT);
       } else if (origin == CSS_ORIGIN_USER) {
          context->addRule(s, props, CSS_PRIMARY_USER);
-         context->addRule(s, importantProps,
-                                  CSS_PRIMARY_USER_IMPORTANT);
+         context->addRule(s, importantProps, CSS_PRIMARY_USER_IMPORTANT);
       } else if (origin == CSS_ORIGIN_AUTHOR) {
          context->addRule(s, props, CSS_PRIMARY_AUTHOR);
-         context->addRule(s, importantProps,
-                                  CSS_PRIMARY_AUTHOR_IMPORTANT);
+         context->addRule(s, importantProps, CSS_PRIMARY_AUTHOR_IMPORTANT);
       }
 
       s->unref();
