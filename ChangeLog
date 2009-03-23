@@ -75,6 +75,7 @@ dillo-2.1
  - Add support for negative numbers in CSS parser.
  - Fix allow_white_bg dillorc option.
  - Load <style></style> content only if applicable.
+ - Allow negative values for specific CSS properties only.
    Patches: Johannes Hofmann
 +- Updated the GPL copyright note in the source files.
    Patch: Detlef Riekenberg

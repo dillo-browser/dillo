@@ -148,10 +148,10 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"list-style-image", {CSS_TYPE_UNUSED}, NULL},
    {"list-style-position", {CSS_TYPE_UNUSED}, NULL},
    {"list-style-type", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_list_style_type_enum_vals},
-   {"margin-bottom", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
-   {"margin-left", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
-   {"margin-right", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
-   {"margin-top", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"margin-bottom", {CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"margin-left", {CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"margin-right", {CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"margin-top", {CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"marker-offset", {CSS_TYPE_UNUSED}, NULL},
    {"marks", {CSS_TYPE_UNUSED}, NULL},
    {"max-height", {CSS_TYPE_UNUSED}, NULL},
@@ -622,6 +622,10 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType * type)
 
          case CSS_TYPE_LENGTH_PERCENTAGE:
          case CSS_TYPE_LENGTH:
+            if  (tval[0] == '-')
+               return false;
+            // Fall Through
+         case CSS_TYPE_SIGNED_LENGTH:
             if (ttype == CSS_TK_DECINT ||
                 ttype == CSS_TK_FLOAT ||
                 (ttype == CSS_TK_SYMBOL && dStrcasecmp(tval, "auto") == 0))
@@ -709,6 +713,7 @@ bool CssParser::parseValue(CssPropertyName prop,
 
    case CSS_TYPE_LENGTH_PERCENTAGE:
    case CSS_TYPE_LENGTH:
+   case CSS_TYPE_SIGNED_LENGTH:
       if (ttype == CSS_TK_DECINT || ttype == CSS_TK_FLOAT) {
          fval = atof(tval);
          lentype = CSS_LENGTH_TYPE_PX;  /* Actually, there must be a unit,

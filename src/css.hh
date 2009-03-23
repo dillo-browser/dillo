@@ -35,6 +35,7 @@ typedef enum {
                                    only because Dw cannot handle percentages
                                    in this particular case (e.g.
                                    'margin-*-width'). */
+   CSS_TYPE_SIGNED_LENGTH,      /* As CSS_TYPE_LENGTH but may be negative. */
    CSS_TYPE_COLOR,              /* Represented as integer. */
    CSS_TYPE_FONT_WEIGHT,        /* this very special and only used by
                                    'font-weight' */
