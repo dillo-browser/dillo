@@ -355,15 +355,23 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CSS_PROPERTY_MARGIN_BOTTOM:
             computeValue (&attrs->margin.bottom, p->value.intVal, attrs->font);
+            if (attrs->margin.bottom < 0) // \todo fix negative margins in dw/* 
+               attrs->margin.bottom = 0;
             break;
          case CSS_PROPERTY_MARGIN_LEFT:
             computeValue (&attrs->margin.left, p->value.intVal, attrs->font);
+            if (attrs->margin.left < 0) // \todo fix negative margins in dw/*
+               attrs->margin.left = 0;
             break;
          case CSS_PROPERTY_MARGIN_RIGHT:
             computeValue (&attrs->margin.right, p->value.intVal, attrs->font);
+            if (attrs->margin.right < 0) // \todo fix negative margins in dw/*
+               attrs->margin.right = 0;
             break;
          case CSS_PROPERTY_MARGIN_TOP:
             computeValue (&attrs->margin.top, p->value.intVal, attrs->font);
+            if (attrs->margin.top < 0) // \todo fix negative margins in dw/*
+               attrs->margin.top = 0;
             break;
          case CSS_PROPERTY_PADDING_TOP:
             computeValue (&attrs->padding.top, p->value.intVal, attrs->font);

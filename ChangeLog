@@ -76,6 +76,7 @@ dillo-2.1
  - Fix allow_white_bg dillorc option.
  - Load <style></style> content only if applicable.
  - Allow negative values for specific CSS properties only.
+ - Disable negative margins for now as dw/* does not support them yet.
    Patches: Johannes Hofmann
 +- Updated the GPL copyright note in the source files.
    Patch: Detlef Riekenberg
