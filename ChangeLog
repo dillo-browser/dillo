@@ -8,6 +8,7 @@ dillo-2.1
    Patch: James Turner, Jorge Arellano Cid
 +- Added support for numeric IPv6 addresses entered into the url bar.
  - Used the URL authority part instead of stripped default port in HTTP query.
+ - Fixed Bookmarks modify's HTML so it wraps nicely on handhelds.
    Patches: Justus Winter
 +- Implemented "search previous" in string searches.
    Patch: João Ricardo Lourenço
