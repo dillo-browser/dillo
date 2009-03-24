@@ -374,7 +374,7 @@ CssParser::CssParser(CssContext *context, CssOrigin origin,
 /*
  * Gets the next character from the buffer, or EOF.
  */
-int CssParser::getc()
+int CssParser::getChar()
 {
    int c;
 
@@ -383,16 +383,16 @@ int CssParser::getc()
    else
       c = buf[bufptr];
 
-   /* The buffer pointer is increased in any case, so that Css_ungetc works
+   /* The buffer pointer is increased in any case, so that ungetChar works
     * correctly at the end of the buffer. */
    bufptr++;
    return c;
 }
 
 /*
- * Undoes the last Css_getc().
+ * Undoes the last getChar().
  */
-void CssParser::ungetc()
+void CssParser::ungetChar()
 {
    bufptr--;
 }
@@ -406,24 +406,24 @@ void CssParser::nextToken()
    ttype = CSS_TK_CHAR; /* init */
    spaceSeparated = false;
 
-   c = getc();
+   c = getChar();
 
    while (true) {
       if (isspace(c)) { // ignore whitespace
          spaceSeparated = true;
-         c = getc();
+         c = getChar();
       } else if (c == '/') { // ignore comments
-         d = getc();
+         d = getChar();
          if (d == '*') {
-            c = getc();
-            d = getc();
+            c = getChar();
+            d = getChar();
             while (d != EOF && (c != '*' || d != '/')) {
                c = d;
-               d = getc();
+               d = getChar();
             }
-            c = getc();
+            c = getChar();
          } else {
-            ungetc();
+            ungetChar();
             break;
          }
       } else {
@@ -435,7 +435,7 @@ void CssParser::nextToken()
    if (c == '-') {
       if (i < maxStrLen - 1)
          tval[i++] = c;
-      c = getc();
+      c = getChar();
    }
 
    if (isdigit(c)) {
@@ -445,16 +445,16 @@ void CssParser::nextToken()
             tval[i++] = c;
          }
          /* else silently truncated */
-         c = getc();
+         c = getChar();
       } while (isdigit(c));
       if (c != '.')
-         ungetc();
+         ungetChar();
 
       /* ...but keep going to see whether it's really a float */
    }
 
    if (c == '.') {
-      c = getc();
+      c = getChar();
       if (isdigit(c)) {
          ttype = CSS_TK_FLOAT;
          if (i < maxStrLen - 1)
@@ -463,17 +463,17 @@ void CssParser::nextToken()
             if (i < maxStrLen - 1)
                tval[i++] = c;
             /* else silently truncated */
-            c = getc();
+            c = getChar();
          } while (isdigit(c));
 
-         ungetc();
+         ungetChar();
          tval[i] = 0;
          DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token number %s\n", tval);
          return;
       } else {
-         ungetc();
+         ungetChar();
          if (ttype == CSS_TK_DECINT) {
-            ungetc();
+            ungetChar();
          } else {
             c = '.';
          }
@@ -487,9 +487,9 @@ void CssParser::nextToken()
    }
 
    if (i) {
-      ungetc(); /* ungetc '-' */
+      ungetChar(); /* ungetChar '-' */
       i--;
-      c = getc();
+      c = getChar();
    }
 
    if (isalpha(c) || c == '_' || c == '-') {
@@ -497,16 +497,16 @@ void CssParser::nextToken()
 
       tval[0] = c;
       i = 1;
-      c = getc();
+      c = getChar();
       while (isalnum(c) || c == '_' || c == '-') {
          if (i < maxStrLen - 1) {
             tval[i] = c;
             i++;
          }                      /* else silently truncated */
-         c = getc();
+         c = getChar();
       }
       tval[i] = 0;
-      ungetc();
+      ungetChar();
       DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token symbol '%s'\n", tval);
       return;
    }
@@ -516,24 +516,24 @@ void CssParser::nextToken()
       ttype = CSS_TK_STRING;
 
       i = 0;
-      c = getc();
+      c = getChar();
 
       while (c != EOF && c != c1) {
          if (c == '\\') {
-            d = getc();
+            d = getChar();
             if (isxdigit(d)) {
                /* Read hex Unicode char. (Actually, strings are yet only 8
                 * bit.) */
                hexbuf[0] = d;
                j = 1;
-               d = getc();
+               d = getChar();
                while (j < 4 && isxdigit(d)) {
                   hexbuf[j] = d;
                   j++;
-                  d = getc();
+                  d = getChar();
                }
                hexbuf[j] = 0;
-               ungetc();
+               ungetChar();
                c = strtol(hexbuf, NULL, 16);
             } else {
                /* Take character literally. */
@@ -545,10 +545,10 @@ void CssParser::nextToken()
             tval[i] = c;
             i++;
          }                      /* else silently truncated */
-         c = getc();
+         c = getChar();
       }
       tval[i] = 0;
-      /* No Css_ungetc(). */
+      /* No ungetChar(). */
       DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token string '%s'\n", tval);
       return;
    }
@@ -561,16 +561,16 @@ void CssParser::nextToken()
 
       tval[0] = c;
       i = 1;
-      c = getc();
+      c = getChar();
       while (isxdigit(c)) {
          if (i < maxStrLen - 1) {
             tval[i] = c;
             i++;
          }                      /* else silently truncated */
-         c = getc();
+         c = getChar();
       }
       tval[i] = 0;
-      ungetc();
+      ungetChar();
       DEBUG_MSG(DEBUG_TOKEN_LEVEL, "token color '%s'\n", tval);
       return;
    }

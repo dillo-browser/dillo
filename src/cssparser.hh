@@ -24,8 +24,8 @@ class CssParser {
 
       CssParser(CssContext *context, CssOrigin origin,
                 const char *buf, int buflen);
-      int getc();
-      void ungetc();
+      int getChar();
+      void ungetChar();
       void nextToken();
       bool tokenMatchesProperty(CssPropertyName prop, CssValueType * type);
       bool parseValue(CssPropertyName prop, CssValueType type,
