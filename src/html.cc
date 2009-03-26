@@ -2811,7 +2811,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          while (*content && *(content++) != '=') ;
          /* Handle the case of a quoted URL */
          if (*content == '"' || *content == '\'') {
-            if (p = strchr(content + 1, *content))
+            if ((p = strchr(content + 1, *content)))
                mr_url = dStrndup(content + 1, p - content - 1);
             else
                mr_url = strdup(content + 1);
