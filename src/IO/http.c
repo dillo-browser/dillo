@@ -248,7 +248,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "\r\n",
          full_path->str, HTTP_Language_hdr, auth ? auth : "",
          URL_AUTHORITY(url), proxy_auth->str, referer, VERSION,
-         URL_DATA(url)->len, content_type->str,
+         (long)URL_DATA(url)->len, content_type->str,
          cookies);
       dStr_append_l(query, URL_DATA(url)->str, URL_DATA(url)->len);
       dStr_free(content_type, TRUE);
