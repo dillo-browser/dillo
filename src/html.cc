@@ -2834,6 +2834,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
             html->InFlags = o_InFlags;
          }
          dStr_free(ds_msg, 1);
+         dFree(mr_url);
 
       } else if (!dStrcasecmp(equiv, "content-type") &&
                  (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
