@@ -2786,7 +2786,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 " <a href='%s'>here</a>%s</td></tr></table><br>\n";
 
    const char *equiv, *content, *new_content;
-   char delay_str[64];
+   char delay_str[64], *mr_url, *p;
    Dstr *ds_msg;
    int delay;
 
@@ -2809,12 +2809,21 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          }
          /* Skip to anything after "URL=" */
          while (*content && *(content++) != '=') ;
+         /* Handle the case of a quoted URL */
+         if (*content == '"' || *content == '\'') {
+            if (p = strchr(content + 1, *content))
+               mr_url = dStrndup(content + 1, p - content - 1);
+            else
+               mr_url = strdup(content + 1);
+         } else {
+            mr_url = strdup(content);
+         }
 
          /* Send a custom HTML message.
           * TODO: This is a hairy hack,
           *       It'd be much better to build a widget. */
          ds_msg = dStr_sized_new(256);
-         dStr_sprintf(ds_msg, meta_template, content, delay_str);
+         dStr_sprintf(ds_msg, meta_template, mr_url, delay_str);
          {
             int o_InFlags = html->InFlags;
             int o_TagSoup = html->TagSoup;

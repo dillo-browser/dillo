@@ -98,6 +98,7 @@ dillo-2.1
  - Fixed collapsing of whitespace entities in HTML mode.
  - Updated the URL resolver to comply with RFC-3986.
  - Fixed handling of META's content-type with no MIME type (e.g. only charset).
+ - Added support for a quoted URL in META refresh.
    Patches: Jorge Arellano Cid
 
 dw
