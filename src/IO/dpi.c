@@ -371,7 +371,7 @@ static char *Dpi_get_dpid_uds_dir(void)
 {
    FILE *in;
    char *saved_name_filename;    /*  :)  */
-   char dpid_uds_dir[256], *p = NULL;
+   char buf[256], *dpid_uds_dir, *p = NULL, *nl;
 
    saved_name_filename =
       dStrconcat(dGethomedir(), "/.dillo/dpi_socket_dir", NULL);
@@ -379,14 +379,16 @@ static char *Dpi_get_dpid_uds_dir(void)
    dFree(saved_name_filename);
 
    if (in != NULL) {
-      fgets(dpid_uds_dir, 256, in);
+      dpid_uds_dir = fgets(buf, sizeof(buf), in);
       fclose(in);
-      if ((p = strchr(dpid_uds_dir, '\n'))) {
-         *p = 0;
-      }
-      if (access(dpid_uds_dir, F_OK) == 0) {
-         p = dStrdup(dpid_uds_dir);
-         _MSG("Dpi_get_dpid_uds_dir:: %s\n", p);
+      if (dpid_uds_dir) {
+         if ((nl = strchr(dpid_uds_dir, '\n'))) {
+            *nl = 0;
+         }
+         if (access(dpid_uds_dir, F_OK) == 0) {
+            p = dStrdup(dpid_uds_dir);
+            _MSG("Dpi_get_dpid_uds_dir:: %s\n", p);
+         }
       }
    }
 
@@ -730,7 +732,9 @@ void a_Dpi_bye_dpid()
       MSG("%s\n", sa.sun_path);
    }
    DpiBye_cmd = a_Dpip_build_cmd("cmd=%s", "DpiBye");
-   (void) write(new_socket, DpiBye_cmd, strlen(DpiBye_cmd));
+   if (write(new_socket, DpiBye_cmd, strlen(DpiBye_cmd)) !=
+       (ssize_t) strlen(DpiBye_cmd))
+      MSG_WARN("Failed to send DpiBye\n");
    dFree(DpiBye_cmd);
    Dpi_close_fd(new_socket);
 }
