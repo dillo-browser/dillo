@@ -178,7 +178,7 @@ public:
     */
    inline T get (int i) {
       if (BOUND_CHECKING)
-         assert (i >= 0 && i < this->num);
+         assert (i >= 0 && this->num - i > 0);
       return this->array[i];
    }
 
@@ -192,7 +192,7 @@ public:
     */
    inline void set (int i, T t) {
       if (BOUND_CHECKING)
-         assert (i >= 0 && i < this->num);
+         assert (i >= 0 && this->num - i > 0);
       this->array[i] = t;
    }
 };
