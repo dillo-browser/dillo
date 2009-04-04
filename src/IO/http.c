@@ -173,7 +173,7 @@ static char *Http_get_referer(const DilloUrl *url)
 /*
  * Generate Content-Type header value for a POST query.
  */
-Dstr *Http_make_content_type(const DilloUrl *url)
+static Dstr *Http_make_content_type(const DilloUrl *url)
 {
    Dstr *dstr;
 
