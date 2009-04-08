@@ -1257,6 +1257,8 @@ void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl) {
             (ttype == CSS_TK_CHAR && (tval[0] == ';'))))
          nextToken();
 
+      nextToken();
+
       if (urlStr) {
          MSG("CssParser::parseImport(): @import %s\n", urlStr);
          DilloUrl *url = a_Html_url_new (html, urlStr, a_Url_str(baseUrl), baseUrl ? 1 : 0);
