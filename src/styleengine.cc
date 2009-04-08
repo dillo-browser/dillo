@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "../dlib/dlib.h"
+#include "msg.h"
 #include "prefs.h"
 #include "html_common.hh"
 #include "styleengine.hh"
@@ -26,6 +27,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    cssContext = new CssContext ();
    this->layout = layout;
    num = 0;
+   importDepth = 0;
 
    stack->increase ();
    Node *n =  stack->getRef (stack->size () - 1);
@@ -561,6 +563,13 @@ Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
    return stack->getRef (stack->size () - 1)->wordStyle;
 }
 
-void StyleEngine::parse (const char *buf, int buflen, CssOrigin origin) {
-   CssParser::parse (cssContext, buf, buflen, origin);
+void StyleEngine::parse (DilloHtml *html, DilloUrl *url, const char *buf, int buflen, CssOrigin origin) {
+   if (importDepth > 10) { // avoid looping with recursive @import directives
+      MSG_WARN("Maximum depth of CSS @import reached - ignoring stylesheet.\n");
+      return;
+   }
+
+   importDepth++;
+   CssParser::parse (html, url, cssContext, buf, buflen, origin);
+   importDepth--;
 }

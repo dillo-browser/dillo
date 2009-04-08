@@ -78,6 +78,7 @@ dillo-2.1
  - Load <style></style> content only if applicable.
  - Allow negative values for specific CSS properties only.
  - Disable negative margins for now as dw/* does not support them yet.
+ - Support CSS @import directive.
    Patches: Johannes Hofmann
 +- Updated the GPL copyright note in the source files.
    Patch: Detlef Riekenberg

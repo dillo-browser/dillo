@@ -255,4 +255,6 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html,
                                 const char *tag, int tagsize,
                                 CssPropertyList *props);
 
+void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url);
+
 #endif /* __HTML_COMMON_HH__ */

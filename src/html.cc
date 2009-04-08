@@ -110,7 +110,6 @@ static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
                             DilloImage *image);
 static void Html_callback(int Op, CacheClient_t *Client);
 static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
-static void Html_load_stylesheet(DilloHtml *html, DilloUrl *url);
 
 /*-----------------------------------------------------------------------------
  * Local Data
@@ -1586,7 +1585,7 @@ static void Html_tag_close_head(DilloHtml *html, int TagIdx)
 
       /* charset is already set, load remote stylesheets now */
       for (int i = 0; i < html->cssUrls->size(); i++) {
-         Html_load_stylesheet(html, html->cssUrls->get(i));
+         a_Html_load_stylesheet(html, html->cssUrls->get(i));
       }
    }
 }
@@ -1670,7 +1669,7 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_style(DilloHtml *html, int TagIdx)
 {
    if (prefs.parse_embedded_css && html->loadCssFromStash)
-      html->styleEngine->parse(html->Stash->str, html->Stash->len,
+      html->styleEngine->parse(html, NULL, html->Stash->str, html->Stash->len,
                                CSS_ORIGIN_AUTHOR);
 }
 
@@ -2868,18 +2867,18 @@ static void Html_css_load_callback(int Op, CacheClient_t *Client)
 /*
  * Tell cache to retrieve a stylesheet
  */
-static void Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
+void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
 {
    char *data;
    int len;
 
-   dReturn_if (url == NULL);
+   dReturn_if (url == NULL || ! prefs.load_stylesheets);
 
    _MSG("Html_load_stylesheet: ");
    if (a_Capi_get_buf(url, &data, &len)) {
       _MSG("cached URL=%s len=%d", URL_STR(url), len);
       if (a_Capi_get_flags(url) & CAPI_Completed)
-         html->styleEngine->parse(data, len, CSS_ORIGIN_AUTHOR);
+         html->styleEngine->parse(html, url, data, len, CSS_ORIGIN_AUTHOR);
       a_Capi_unref_buf(url);
    } else {
       /* Fill a Web structure for the cache query */
@@ -2923,7 +2922,6 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
    }
    /* Remote stylesheets enabled? */
    dReturn_if_fail (prefs.load_stylesheets);
-
    /* CSS stylesheet link */
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "rel")) ||
        dStrcasecmp(attrbuf, "stylesheet"))

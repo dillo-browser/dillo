@@ -1,6 +1,8 @@
 #ifndef __STYLEENGINE_HH__
 #define __STYLEENGINE_HH__
 
+class StyleEngine;
+
 #include "dw/core.hh"
 #include "doctree.hh"
 #include "css.hh"
@@ -20,6 +22,7 @@ class StyleEngine : public Doctree {
       lout::misc::SimpleVector <Node> *stack;
       CssContext *cssContext;
       int num;
+      int importDepth;
 
       dw::core::style::Style *style0 (CssPropertyList *nonCssHints = NULL);
       dw::core::style::Style *wordStyle0 (CssPropertyList *nonCssHints = NULL);
@@ -46,7 +49,7 @@ class StyleEngine : public Doctree {
             return NULL;
       };
 
-      void parse (const char *buf, int buflen, CssOrigin origin);
+      void parse (DilloHtml *html, DilloUrl *url, const char *buf, int buflen, CssOrigin origin);
       void startElement (int tag);
       void startElement (const char *tagname);
       void setId (const char *id);

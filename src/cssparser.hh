@@ -2,6 +2,7 @@
 #define __CSSPARSER_HH__
 
 #include "css.hh"
+#include "html_common.hh"
 
 class CssParser {
    private:
@@ -34,12 +35,14 @@ class CssParser {
       void parseDeclaration(CssPropertyList * props,
                             CssPropertyList * importantProps);
       bool parseSimpleSelector(CssSimpleSelector *selector);
+      char *parseUrl();
+      void parseImport(DilloHtml *html, DilloUrl *url);
       CssSelector *parseSelector();
       void parseRuleset();
 
    public:
       static CssPropertyList *parseDeclarationBlock(const char *buf, int buflen);
-      static void parse(CssContext *context, const char *buf, int buflen,
+      static void parse(DilloHtml *html, DilloUrl *url, CssContext *context, const char *buf, int buflen,
                         CssOrigin origin);
       static const char *propertyNameString(CssPropertyName name);
 };
