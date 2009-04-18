@@ -59,6 +59,10 @@ struct _BrowserWindow
     * redirection loops (accounts for WEB_RootUrl only) */
    int redirect_level;
 
+   /* Url for zero-delay redirections in the META element */
+   int meta_refresh_status;
+   DilloUrl *meta_refresh_url;
+
    /* HTML-bugs detected at parse time */
    int num_page_bugs;
    Dstr *page_bugs;

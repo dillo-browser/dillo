@@ -59,6 +59,8 @@ BrowserWindow *a_Bw_new()
    bw->nav_expect_url = NULL;
 
    bw->redirect_level = 0;
+   bw->meta_refresh_status = 0;
+   bw->meta_refresh_url = NULL;
 
    bw->RootClients = dList_new(8);
    bw->ImageClients = dList_new(8);
@@ -100,6 +102,8 @@ void a_Bw_free(BrowserWindow *bw)
          for (j = 0; j < dList_length(bw->nav_stack); ++j)
             dFree(dList_nth_data(bw->nav_stack, j));
          dList_free(bw->nav_stack);
+
+         a_Url_free(bw->meta_refresh_url);
 
          dStr_free(bw->page_bugs, 1);
          dFree(bw);

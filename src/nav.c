@@ -194,7 +194,7 @@ static void Nav_stack_clean(BrowserWindow *bw)
 static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 {
    DilloUrl *old_url;
-   bool_t MustLoad, ForceReload, Repush;
+   bool_t MustLoad, ForceReload, Repush, IgnoreScroll;
    int x, y, idx, ClientKey;
    DilloWeb *Web;
 
@@ -202,13 +202,14 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 
    Repush = (URL_FLAGS(url) & URL_ReloadFromCache) != 0;
    ForceReload = (URL_FLAGS(url) & (URL_E2EQuery + URL_ReloadFromCache)) != 0;
+   IgnoreScroll = (URL_FLAGS(url) & URL_IgnoreScroll) != 0;
 
    /* Get the url of the current page */
    idx = a_Nav_stack_ptr(bw);
    old_url = a_History_get_url(NAV_UIDX(bw, idx));
    _MSG("Nav_open_url:  old_url='%s' idx=%d\n", URL_STR(old_url), idx);
    /* Record current scrolling position */
-   if (old_url) {
+   if (old_url && !IgnoreScroll) {
       a_UIcmd_get_scroll_xy(bw, &x, &y);
       Nav_save_scroll_pos(bw, idx, x, y);
       _MSG("Nav_open_url:  saved scroll of '%s' at x=%d y=%d\n",
@@ -254,6 +255,8 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
       }
       bw->nav_expecting = FALSE;
    }
+   if (bw->meta_refresh_status > 0)
+      --bw->meta_refresh_status;
 }
 
 /*
@@ -264,7 +267,7 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
  */
 void a_Nav_expect_done(BrowserWindow *bw)
 {
-   int url_idx, posx, posy, reload, repush, e2equery, goto_old_scroll = TRUE;
+   int m, url_idx, posx, posy, reload, repush, e2equery, goto_old_scroll=TRUE;
    DilloUrl *url;
    char *fragment = NULL;
 
@@ -277,11 +280,10 @@ void a_Nav_expect_done(BrowserWindow *bw)
       e2equery = (URL_FLAGS(url) & URL_E2EQuery);
       fragment = a_Url_decode_hex_str(URL_FRAGMENT_(url));
 
-      /* Unset E2EQuery, ReloadPage and ReloadFromCache
+      /* Unset E2EQuery, ReloadPage, ReloadFromCache and IgnoreScroll
        * before adding this url to history */
-      a_Url_set_flags(url, URL_FLAGS(url) & ~URL_E2EQuery);
-      a_Url_set_flags(url, URL_FLAGS(url) & ~URL_ReloadPage);
-      a_Url_set_flags(url, URL_FLAGS(url) & ~URL_ReloadFromCache);
+      m = URL_E2EQuery|URL_ReloadPage|URL_ReloadFromCache|URL_IgnoreScroll;
+      a_Url_set_flags(url, URL_FLAGS(url) & ~m);
       url_idx = a_History_add_url(url);
 
       if (repush) {
@@ -386,6 +388,41 @@ void a_Nav_repush(BrowserWindow *bw)
    dReturn_if_fail (bw != NULL);
    MSG(">>> a_Nav_repush <<<<\n");
    a_Timeout_add(0.0, Nav_repush_callback, (void*)bw);
+}
+
+/*
+ * This one does a_Nav_redirection0's job.
+ */
+static void Nav_redirection0_callback(void *data)
+{
+   BrowserWindow *bw = (BrowserWindow *)data;
+   _MSG(">>>> Nav_redirection0_callback <<<<\n");
+
+   if (bw->meta_refresh_status == 2) {
+      Nav_stack_move_ptr(bw, -1);
+      a_Nav_push(bw, bw->meta_refresh_url);
+   }
+   a_Url_free(bw->meta_refresh_url);
+   bw->meta_refresh_url = NULL;
+   bw->meta_refresh_status = 0;
+   a_Timeout_remove();
+}
+
+/*
+ * Handle a zero-delay URL redirection given by META
+ */
+void a_Nav_redirection0(BrowserWindow *bw, const DilloUrl *new_url)
+{
+   dReturn_if_fail (bw != NULL);
+   _MSG(">>> a_Nav_redirection0 <<<<\n");
+
+   if (bw->meta_refresh_url)
+      a_Url_free(bw->meta_refresh_url);
+   bw->meta_refresh_url = a_Url_dup(new_url);
+   a_Url_set_flags(bw->meta_refresh_url,
+                   URL_FLAGS(new_url)|URL_E2EQuery|URL_IgnoreScroll);
+   bw->meta_refresh_status = 2;
+   a_Timeout_add(0.0, Nav_redirection0_callback, (void*)bw);
 }
 
 /*

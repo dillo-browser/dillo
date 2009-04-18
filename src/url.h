@@ -39,7 +39,7 @@
 #define URL_ReloadPage          (1 << 7)
 #define URL_ReloadFromCache     (1 << 8)
 
-#define URL_ReloadIncomplete    (1 << 9)
+#define URL_IgnoreScroll        (1 << 9)
 #define URL_SpamSafe            (1 << 10)
 
 #define URL_MultipartEnc        (1 << 11)

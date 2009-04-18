@@ -671,6 +671,14 @@ void a_UIcmd_repush(void *vbw)
 }
 
 /*
+ * Zero-delay URL redirection.
+ */
+void a_UIcmd_redirection0(void *vbw, const DilloUrl *url)
+{
+   a_Nav_redirection0((BrowserWindow*)vbw, url);
+}
+
+/*
  * Return a suitable filename for a given URL path.
  */
 static char *UIcmd_make_save_filename(const char *pathstr)

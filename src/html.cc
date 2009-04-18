@@ -2763,12 +2763,12 @@ static int Html_tag_pre_excludes(int tag_idx)
 
 /*
  * Handle <META>
- * We do not support http-equiv=refresh because it's non standard,
- * (the HTML 4.01 SPEC recommends explicitly to avoid it), and it
- * can be easily abused!
- *
+ * We do not support http-equiv=refresh with delay>0 because it's
+ * non standard, (the HTML 4.01 SPEC recommends explicitly to avoid it).
  * More info at:
  *   http://lists.w3.org/Archives/Public/www-html/2000Feb/thread.html#msg232
+ * Instant client-side redirects (delay=0) are supported:
+ *   http://www.w3.org/TR/2008/NOTE-WCAG20-TECHS-20081211/H76.html
  *
  * TODO: Note that we're sending custom HTML while still IN_HEAD. This
  * is a hackish way to put the message. A much cleaner approach is to
@@ -2786,7 +2786,6 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
    const char *equiv, *content, *new_content;
    char delay_str[64], *mr_url, *p;
-   Dstr *ds_msg;
    int delay;
 
    /* only valid inside HEAD */
@@ -2797,7 +2796,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
    if ((equiv = a_Html_get_attr(html, tag, tagsize, "http-equiv"))) {
       if (!dStrcasecmp(equiv, "refresh") &&
-       (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
+          (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
 
          /* Get delay, if present, and make a message with it */
          if ((delay = strtol(content, NULL, 0))) {
@@ -2818,21 +2817,29 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
             mr_url = strdup(content);
          }
 
-         /* Send a custom HTML message.
-          * TODO: This is a hairy hack,
-          *       It'd be much better to build a widget. */
-         ds_msg = dStr_sized_new(256);
-         dStr_sprintf(ds_msg, meta_template, mr_url, delay_str);
-         {
-            int o_InFlags = html->InFlags;
-            int o_TagSoup = html->TagSoup;
-            html->InFlags = IN_BODY;
-            html->TagSoup = false;
-            Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
-            html->TagSoup = o_TagSoup;
-            html->InFlags = o_InFlags;
+         if (delay == 0) {
+            /* zero-delay redirection */
+            html->stop_parser = true;
+            DilloUrl *new_url = a_Url_new(mr_url, URL_STR(html->base_url));
+            a_UIcmd_redirection0((void*)html->bw, new_url);
+            a_Url_free(new_url);
+         } else {
+            /* Send a custom HTML message.
+             * TODO: This is a hairy hack,
+             *       It'd be much better to build a widget. */
+            Dstr *ds_msg = dStr_sized_new(256);
+            dStr_sprintf(ds_msg, meta_template, mr_url, delay_str);
+            {
+               int o_InFlags = html->InFlags;
+               int o_TagSoup = html->TagSoup;
+               html->InFlags = IN_BODY;
+               html->TagSoup = false;
+               Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
+               html->TagSoup = o_TagSoup;
+               html->InFlags = o_InFlags;
+            }
+            dStr_free(ds_msg, 1);
          }
-         dStr_free(ds_msg, 1);
          dFree(mr_url);
 
       } else if (!dStrcasecmp(equiv, "content-type") &&
