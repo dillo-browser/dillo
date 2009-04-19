@@ -270,9 +270,9 @@ static void Html_tag_open_table_cell(DilloHtml *html,
          props->set (CSS_PROPERTY_TEXT_ALIGN, CSS_TYPE_ENUM, text_align);
       }
       if (a_Html_get_attr(html, tag, tagsize, "nowrap"))
-         props->set (CSS_PROPERTY_WHITE_SPACE, CSS_TYPE_ENUM, WHITE_SPACE_NOWRAP);
+         props->set(CSS_PROPERTY_WHITE_SPACE,CSS_TYPE_ENUM,WHITE_SPACE_NOWRAP);
       else
-         props->set (CSS_PROPERTY_WHITE_SPACE, CSS_TYPE_ENUM, WHITE_SPACE_NORMAL);
+         props->set(CSS_PROPERTY_WHITE_SPACE,CSS_TYPE_ENUM,WHITE_SPACE_NORMAL);
 
       a_Html_tag_set_align_attr (html, props, tag, tagsize);
 
@@ -287,7 +287,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
          bgcolor = a_Html_color_parse(html, attrbuf, -1);
          if (bgcolor != -1)
-            props->set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR, bgcolor);
+            props->set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR,bgcolor);
       }
 
       html->styleEngine->setNonCssHints (props);

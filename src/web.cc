@@ -68,7 +68,7 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
       /* Set a style for the widget */
       StyleEngine styleEngine (layout);
       styleEngine.startElement ("body");
-      Web->bgColor = styleEngine.backgroundStyle ()->backgroundColor->getColor ();
+      Web->bgColor= styleEngine.backgroundStyle()->backgroundColor->getColor();
 
       dw = (Widget*) a_Mime_set_viewer(Type, Web, Call, Data);
       if (dw == NULL)

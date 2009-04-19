@@ -21,7 +21,7 @@ using namespace dw::core::style;
 
 void CssProperty::print () {
    fprintf (stderr, "%s - %d\n",
-            CssParser::propertyNameString((CssPropertyName) name), value.intVal);
+            CssParser::propertyNameString((CssPropertyName)name),value.intVal);
 }
 
 CssPropertyList::~CssPropertyList () {
@@ -363,7 +363,8 @@ void CssStyleSheet::apply (CssPropertyList *props,
       }
 
       if (minSpecIndex >= 0) {
-         ruleList[minSpecIndex]->get (index[minSpecIndex])->apply (props, docTree, node);
+         ruleList[minSpecIndex]->get (index[minSpecIndex])->apply
+                                                        (props, docTree, node);
          index[minSpecIndex]++;
       } else {
          break;
@@ -482,7 +483,8 @@ void CssContext::buildUserAgentStyle () {
      "th {font-weight: bolder; text-align: center}"
      "code, tt, pre, samp, kbd {font-family: monospace}";
 
-   CssParser::parse (NULL, NULL, this, cssBuf, strlen (cssBuf), CSS_ORIGIN_USER_AGENT);
+   CssParser::parse (NULL, NULL, this, cssBuf, strlen (cssBuf),
+                     CSS_ORIGIN_USER_AGENT);
 }
 
 void CssContext::buildUserStyle () {
@@ -490,7 +492,7 @@ void CssContext::buildUserStyle () {
    char *filename = dStrconcat(dGethomedir(), "/.dillo/style.css", NULL);
 
    if ((style = a_Misc_file2dstr(filename))) {
-      CssParser::parse (NULL, NULL, this, style->str, style->len, CSS_ORIGIN_USER);
+      CssParser::parse (NULL,NULL,this,style->str, style->len,CSS_ORIGIN_USER);
       dStr_free (style, 1);
    }
    dFree (filename);

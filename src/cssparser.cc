@@ -66,7 +66,8 @@ static const char *const Css_display_enum_vals[DISPLAY_LAST + 1] = {
 };
 
 static const char *const Css_font_size_enum_vals[] = {
-   "large", "larger", "medium", "small", "smaller", "xx-large", "xx-small", "x-large", "x-small", NULL
+   "large", "larger", "medium", "small", "smaller", "xx-large", "xx-small",
+   "x-large", "x-small", NULL
 };
 
 static const char *const Css_font_style_enum_vals[] = {
@@ -108,18 +109,22 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"background-position", {CSS_TYPE_UNUSED}, NULL},
    {"background-repeat", {CSS_TYPE_UNUSED}, NULL},
    {"border-bottom-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
-   {"border-bottom-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_border_style_enum_vals},
+   {"border-bottom-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_border_style_enum_vals},
    {"border-bottom-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"border-collapse", {CSS_TYPE_UNUSED}, NULL},
    {"border-left-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
-   {"border-left-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_border_style_enum_vals},
+   {"border-left-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_border_style_enum_vals},
    {"border-left-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"border-right-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
-   {"border-right-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_border_style_enum_vals},
+   {"border-right-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_border_style_enum_vals},
    {"border-right-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"border-spacing", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"border-top-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
-   {"border-top-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_border_style_enum_vals},
+   {"border-top-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_border_style_enum_vals},
    {"border-top-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"bottom", {CSS_TYPE_UNUSED}, NULL},
    {"caption-side", {CSS_TYPE_UNUSED}, NULL},
@@ -135,19 +140,22 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"empty-cells", {CSS_TYPE_UNUSED}, NULL},
    {"float", {CSS_TYPE_UNUSED}, NULL},
    {"font-family", {CSS_TYPE_SYMBOL, CSS_TYPE_UNUSED}, NULL},
-   {"font-size", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, Css_font_size_enum_vals},
+   {"font-size", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED},
+    Css_font_size_enum_vals},
    {"font-size-adjust", {CSS_TYPE_UNUSED}, NULL},
    {"font-stretch", {CSS_TYPE_UNUSED}, NULL},
    {"font-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_font_style_enum_vals},
    {"font-variant", {CSS_TYPE_UNUSED}, NULL},
-   {"font-weight", {CSS_TYPE_ENUM, CSS_TYPE_FONT_WEIGHT, CSS_TYPE_UNUSED}, Css_font_weight_enum_vals},
+   {"font-weight", {CSS_TYPE_ENUM, CSS_TYPE_FONT_WEIGHT, CSS_TYPE_UNUSED},
+    Css_font_weight_enum_vals},
    {"height", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"left", {CSS_TYPE_UNUSED}, NULL},
    {"letter-spacing", {CSS_TYPE_UNUSED}, NULL},
    {"line-height", {CSS_TYPE_UNUSED}, NULL},
    {"list-style-image", {CSS_TYPE_UNUSED}, NULL},
    {"list-style-position", {CSS_TYPE_UNUSED}, NULL},
-   {"list-style-type", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_list_style_type_enum_vals},
+   {"list-style-type", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_list_style_type_enum_vals},
    {"margin-bottom", {CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"margin-left", {CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"margin-right", {CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED}, NULL},
@@ -170,13 +178,14 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"quotes", {CSS_TYPE_UNUSED}, NULL},
    {"right", {CSS_TYPE_UNUSED}, NULL},
    {"text-align", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_text_align_enum_vals},
-   {"text-decoration", {CSS_TYPE_MULTI_ENUM, CSS_TYPE_UNUSED}, Css_text_decoration_enum_vals},
+   {"text-decoration", {CSS_TYPE_MULTI_ENUM, CSS_TYPE_UNUSED},
+    Css_text_decoration_enum_vals},
    {"text-indent", {CSS_TYPE_UNUSED}, NULL},
    {"text-shadow", {CSS_TYPE_UNUSED}, NULL},
    {"text-transform", {CSS_TYPE_UNUSED}, NULL},
    {"top", {CSS_TYPE_UNUSED}, NULL},
    {"unicode-bidi", {CSS_TYPE_UNUSED}, NULL},
-   {"vertical-align", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_vertical_align_vals},
+   {"vertical-align",{CSS_TYPE_ENUM, CSS_TYPE_UNUSED},Css_vertical_align_vals},
    {"visibility", {CSS_TYPE_UNUSED}, NULL},
    {"white-space", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_white_space_vals},
    {"width", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
@@ -1261,7 +1270,8 @@ void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl) {
 
       if (urlStr) {
          MSG("CssParser::parseImport(): @import %s\n", urlStr);
-         DilloUrl *url = a_Html_url_new (html, urlStr, a_Url_str(baseUrl), baseUrl ? 1 : 0);
+         DilloUrl *url = a_Html_url_new (html, urlStr, a_Url_str(baseUrl),
+                                         baseUrl ? 1 : 0);
          a_Html_load_stylesheet(html, url);
          a_Url_free(url);
          dFree (urlStr);

@@ -7,8 +7,8 @@
 class CssParser {
    private:
       typedef enum {
-         CSS_TK_DECINT, CSS_TK_FLOAT, CSS_TK_COLOR, CSS_TK_SYMBOL, CSS_TK_STRING,
-         CSS_TK_CHAR, CSS_TK_END
+         CSS_TK_DECINT, CSS_TK_FLOAT, CSS_TK_COLOR, CSS_TK_SYMBOL,
+         CSS_TK_STRING, CSS_TK_CHAR, CSS_TK_END
       } CssTokenType;
 
       static const int maxStrLen = 256;
@@ -41,9 +41,10 @@ class CssParser {
       void parseRuleset();
 
    public:
-      static CssPropertyList *parseDeclarationBlock(const char *buf, int buflen);
-      static void parse(DilloHtml *html, DilloUrl *url, CssContext *context, const char *buf, int buflen,
-                        CssOrigin origin);
+      static CssPropertyList *parseDeclarationBlock(const char *buf,
+                                                    int buflen);
+      static void parse(DilloHtml *html, DilloUrl *url, CssContext *context,
+                        const char *buf, int buflen, CssOrigin origin);
       static const char *propertyNameString(CssPropertyName name);
 };
 

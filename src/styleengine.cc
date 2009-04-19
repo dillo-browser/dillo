@@ -357,7 +357,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CSS_PROPERTY_MARGIN_BOTTOM:
             computeValue (&attrs->margin.bottom, p->value.intVal, attrs->font);
-            if (attrs->margin.bottom < 0) // \todo fix negative margins in dw/* 
+            if (attrs->margin.bottom < 0) // \todo fix negative margins in dw/*
                attrs->margin.bottom = 0;
             break;
          case CSS_PROPERTY_MARGIN_LEFT:
@@ -563,9 +563,10 @@ Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
    return stack->getRef (stack->size () - 1)->wordStyle;
 }
 
-void StyleEngine::parse (DilloHtml *html, DilloUrl *url, const char *buf, int buflen, CssOrigin origin) {
+void StyleEngine::parse (DilloHtml *html, DilloUrl *url, const char *buf,
+                         int buflen, CssOrigin origin) {
    if (importDepth > 10) { // avoid looping with recursive @import directives
-      MSG_WARN("Maximum depth of CSS @import reached - ignoring stylesheet.\n");
+      MSG_WARN("Maximum depth of CSS @import reached--ignoring stylesheet.\n");
       return;
    }
 

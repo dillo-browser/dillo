@@ -27,9 +27,10 @@ class StyleEngine : public Doctree {
       dw::core::style::Style *style0 (CssPropertyList *nonCssHints = NULL);
       dw::core::style::Style *wordStyle0 (CssPropertyList *nonCssHints = NULL);
       void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
-      bool computeValue (int *dest, CssLength value, dw::core::style::Font *font);
-      bool computeValue (int *dest, CssLength value, dw::core::style::Font *font,
-                         int percentageBase);
+      bool computeValue (int *dest, CssLength value,
+                         dw::core::style::Font *font);
+      bool computeValue (int *dest, CssLength value,
+                         dw::core::style::Font *font, int percentageBase);
       bool computeLength (dw::core::style::Length *dest, CssLength value,
                           dw::core::style::Font *font);
 
@@ -49,7 +50,8 @@ class StyleEngine : public Doctree {
             return NULL;
       };
 
-      void parse (DilloHtml *html, DilloUrl *url, const char *buf, int buflen, CssOrigin origin);
+      void parse (DilloHtml *html, DilloUrl *url, const char *buf, int buflen,
+                  CssOrigin origin);
       void startElement (int tag);
       void startElement (const char *tagname);
       void setId (const char *id);
@@ -72,7 +74,7 @@ class StyleEngine : public Doctree {
       };
 
       inline dw::core::style::Style *wordStyle () {
-         dw::core::style::Style *s = stack->getRef (stack->size () - 1)->wordStyle;
+         dw::core::style::Style *s = stack->getRef(stack->size()-1)->wordStyle;
          if (s)
             return s;
          else
