@@ -915,14 +915,14 @@ static int Html_ms_stupid_quotes_2ucs(int isocode)
 {
    int ret;
    switch (isocode) {
-      case 145:
-      case 146: ret = '\''; break;
-      case 147:
-      case 148: ret = '"'; break;
-      case 149: ret = 176; break;
-      case 150:
-      case 151: ret = '-'; break;
-      default:  ret = isocode; break;
+   case 145:
+   case 146: ret = '\''; break;
+   case 147:
+   case 148: ret = '"'; break;
+   case 149: ret = 176; break;
+   case 150:
+   case 151: ret = '-'; break;
+   default:  ret = isocode; break;
    }
    return ret;
 }

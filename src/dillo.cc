@@ -91,7 +91,7 @@ static const CLI_options Options[] = {
 /*
  * Print help text generated from the options structure
  */
-static void Dillo_print_help(const char *cmdname, const CLI_options *options)
+static void printHelp(const char *cmdname, const CLI_options *options)
 {
    printf("Usage: %s [OPTION]... [--] [URL|FILE]...\n"
           "Options:\n", cmdname);
@@ -107,7 +107,7 @@ static void Dillo_print_help(const char *cmdname, const CLI_options *options)
 /*
  * Return the maximum number of option arguments
  */
-static int Dillo_get_max_opt(const CLI_options *options)
+static int numOptions(const CLI_options *options)
 {
    int i, max;
 
@@ -120,7 +120,7 @@ static int Dillo_get_max_opt(const CLI_options *options)
 /*
  * Get next command line option.
  */
-static OptID Dillo_get_opt(const CLI_options *options, int argc, char **argv,
+static OptID getCmdOption(const CLI_options *options, int argc, char **argv,
                            char **opt_argv, int *idx)
 {
    typedef enum { O_SEARCH, O_FOUND, O_NOTFOUND, O_DONE } State;
@@ -171,7 +171,7 @@ static OptID Dillo_get_opt(const CLI_options *options, int argc, char **argv,
 /*
  * Given a command line argument, build a DilloUrl for it.
  */
-static DilloUrl *Dillo_make_start_url(char *str, bool local)
+static DilloUrl *makeStartUrl(char *str, bool local)
 {
    char *url_str, *p;
    DilloUrl *start_url;
@@ -216,8 +216,8 @@ int main(int argc, char **argv)
    signal(SIGPIPE, SIG_IGN);
 
    /* Handle command line options */
-   opt_argv = dNew0(char*, Dillo_get_max_opt(Options) + 1);
-   while ((opt_id = Dillo_get_opt(Options, argc, argv, opt_argv, &idx))) {
+   opt_argv = dNew0(char*, numOptions(Options) + 1);
+   while ((opt_id = getCmdOption(Options, argc, argv, opt_argv, &idx))) {
       options_got |= opt_id;
       switch (opt_id) {
       case DILLO_CLI_FULLWINDOW:
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
          break;
       }
       case DILLO_CLI_GEOMETRY:
-         if (!a_Misc_parse_geometry(opt_argv[0], &xpos, &ypos,&width,&height)){
+         if (!a_Misc_parse_geometry(opt_argv[0],&xpos,&ypos,&width,&height)){
             fprintf(stderr, "geometry argument \"%s\" not valid. Must be of "
                             "the form WxH[{+-}X{+-}Y].\n", opt_argv[0]);
             return -1;
@@ -245,10 +245,10 @@ int main(int argc, char **argv)
          puts("Dillo version " VERSION);
          return 0;
       case DILLO_CLI_HELP:
-         Dillo_print_help(argv[0], Options);
+         printHelp(argv[0], Options);
          return 0;
       default:
-         Dillo_print_help(argv[0], Options);
+         printHelp(argv[0], Options);
          return -1;
       }
    }
@@ -313,7 +313,7 @@ int main(int argc, char **argv)
       a_Nav_push(bw, prefs.start_page);
    } else {
       for (int i = idx; i < argc; i++) {
-         DilloUrl *start_url = Dillo_make_start_url(argv[i], local);
+         DilloUrl *start_url = makeStartUrl(argv[i], local);
 
          if (i > idx) {
             if (prefs.middle_click_opens_new_tab) {
