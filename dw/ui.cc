@@ -101,6 +101,11 @@ void Embed::setDisplayed (bool displayed)
    resource->setDisplayed (displayed);
 }
 
+void Embed::setEnabled (bool enabled)
+{
+   resource->setEnabled (enabled);
+}
+
 void Embed::draw (View *view, Rectangle *area)
 {
    drawWidgetBox (view, area, false);

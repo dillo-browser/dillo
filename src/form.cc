@@ -76,6 +76,7 @@ class DilloHtmlForm {
 
    DilloHtml *html;
    bool showing_hiddens;
+   bool enabled;
    void eventHandler(Resource *resource, EventButton *event);
    DilloUrl *buildQueryUrl(DilloHtmlInput *active_input);
    Dstr *buildQueryData(DilloHtmlInput *active_submit);
@@ -108,7 +109,8 @@ public:  //BUG: for now everything is public
 public:
    DilloHtmlForm (DilloHtml *html,
                   DilloHtmlMethod method, const DilloUrl *action,
-                  DilloHtmlEnc content_type, const char *charset);
+                  DilloHtmlEnc content_type, const char *charset,
+                  bool enabled);
    ~DilloHtmlForm ();
    DilloHtmlInput *getInput (Resource *resource);
    DilloHtmlInput *getRadioInput (const char *name);
@@ -116,6 +118,7 @@ public:
    void reset ();
    void display_hiddens(bool display);
    void addInput(DilloHtmlInput *input, DilloHtmlInputType type);
+   void setEnabled(bool enabled);
 };
 
 class DilloHtmlReceiver:
@@ -160,6 +163,7 @@ public:
    ~DilloHtmlInput ();
    void appendValuesTo(Dlist *values, bool is_active_submit);
    void reset();
+   void setEnabled(bool enabled) {if (embed) embed->setEnabled(enabled); };
 };
 
 class DilloHtmlSelect {
@@ -192,9 +196,10 @@ private:
 
 DilloHtmlForm *a_Html_form_new (DilloHtml *html, DilloHtmlMethod method,
                                 const DilloUrl *action,
-                                DilloHtmlEnc content_type, const char *charset)
+                                DilloHtmlEnc content_type, const char *charset,
+                                bool enabled)
 {
-   return new DilloHtmlForm (html, method, action, content_type, charset);
+   return new DilloHtmlForm (html, method, action, content_type, charset, enabled);
 }
 
 void a_Html_form_delete (DilloHtmlForm *form)
@@ -883,7 +888,7 @@ DilloHtmlForm::DilloHtmlForm (DilloHtml *html2,
                               DilloHtmlMethod method2,
                               const DilloUrl *action2,
                               DilloHtmlEnc content_type2,
-                              const char *charset)
+                              const char *charset, bool enabled)
 {
    html = html2;
    method = method2;
@@ -893,6 +898,7 @@ DilloHtmlForm::DilloHtmlForm (DilloHtml *html2,
    inputs = new misc::SimpleVector <DilloHtmlInput*> (4);
    num_entry_fields = 0;
    showing_hiddens = false;
+   this->enabled = enabled;
    form_receiver = new DilloHtmlReceiver (this);
 }
 
@@ -1411,12 +1417,19 @@ void DilloHtmlForm::display_hiddens(bool display)
   showing_hiddens = display;
 }
 
+void DilloHtmlForm::setEnabled(bool enabled)
+{
+   for (int i = 0; i < inputs->size(); i++)
+      inputs->get(i)->setEnabled(enabled);
+}
+
 /*
  * Add a new input.
  */
 void DilloHtmlForm::addInput(DilloHtmlInput *input, DilloHtmlInputType type)
 {
    input->connectTo (form_receiver);
+   input->setEnabled (enabled);
    int ni = inputs->size ();
    inputs->increase ();
    inputs->set (ni,input);

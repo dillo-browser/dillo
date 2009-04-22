@@ -235,7 +235,14 @@ bool FltkResource::isEnabled ()
 
 void FltkResource::setEnabled (bool enabled)
 {
-   /** \bug Not implemented. */
+   for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
+        it.hasNext(); ) {
+      ViewAndWidget *viewAndWidget = it.getNext ();
+      if (enabled)
+         viewAndWidget->widget->activate ();
+      else
+         viewAndWidget->widget->deactivate ();
+   }
 }
 
 // ----------------------------------------------------------------------

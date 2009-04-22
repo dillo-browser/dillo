@@ -34,7 +34,7 @@ DilloHtmlForm *a_Html_form_new(DilloHtml *html,
                                DilloHtmlMethod method,
                                const DilloUrl *action,
                                DilloHtmlEnc enc,
-                               const char *charset);
+                               const char *charset, bool enabled);
 
 void a_Html_form_delete(DilloHtmlForm* form);
 void a_Html_input_delete(DilloHtmlInput* input);

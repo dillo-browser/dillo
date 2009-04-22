@@ -640,7 +640,10 @@ void DilloHtml::finishParsing(int ClientKey)
 int DilloHtml::formNew(DilloHtmlMethod method, const DilloUrl *action,
                        DilloHtmlEnc enc, const char *charset)
 {
-   DilloHtmlForm *form = a_Html_form_new (this,method,action,enc,charset);
+   // avoid data loss on repush after CSS stylesheets have been loaded
+   bool enabled = bw->NumPendingStyleSheets == 0;
+   DilloHtmlForm *form = a_Html_form_new (this, method, action,
+                                          enc, charset, enabled);
    int nf = forms->size ();
    forms->increase ();
    forms->set (nf, form);
