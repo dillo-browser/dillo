@@ -244,7 +244,7 @@ public:
    void setAscent (int ascent);
    void setDescent (int descent);
    void setDisplayed (bool displayed);
-   void setEnabled (bool displayed);
+   void setEnabled (bool enabled);
    void draw (View *view, Rectangle *area);
    Iterator *iterator (Content::Type mask, bool atEnd);
    void setStyle (style::Style *style);
