@@ -606,73 +606,73 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType * type)
 
       switch (Css_property_info[prop].type[j]) {
 
-         case CSS_TYPE_ENUM:
-            if (ttype == CSS_TK_SYMBOL) {
-               for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
+      case CSS_TYPE_ENUM:
+         if (ttype == CSS_TK_SYMBOL) {
+            for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
+               if (dStrcasecmp(tval,
+                     Css_property_info[prop].enum_symbols[i]) == 0)
+                  return true;
+         }
+         break;
+
+      case CSS_TYPE_MULTI_ENUM:
+         if (ttype == CSS_TK_SYMBOL) {
+            if (dStrcasecmp(tval, "none") == 0)
+                  return true;
+            else {
+               for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
                   if (dStrcasecmp(tval,
                         Css_property_info[prop].enum_symbols[i]) == 0)
                      return true;
-            }
-            break;
-
-         case CSS_TYPE_MULTI_ENUM:
-            if (ttype == CSS_TK_SYMBOL) {
-               if (dStrcasecmp(tval, "none") == 0)
-                     return true;
-               else {
-                  for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
-                     if (dStrcasecmp(tval,
-                           Css_property_info[prop].enum_symbols[i]) == 0)
-                        return true;
-                  }
                }
             }
-            break;
+         }
+         break;
 
-         case CSS_TYPE_LENGTH_PERCENTAGE:
-         case CSS_TYPE_LENGTH:
-            if  (tval[0] == '-')
-               return false;
-            // Fall Through
-         case CSS_TYPE_SIGNED_LENGTH:
-            if (ttype == CSS_TK_DECINT ||
-                ttype == CSS_TK_FLOAT ||
-                (ttype == CSS_TK_SYMBOL && dStrcasecmp(tval, "auto") == 0))
+      case CSS_TYPE_LENGTH_PERCENTAGE:
+      case CSS_TYPE_LENGTH:
+         if  (tval[0] == '-')
+            return false;
+         // Fall Through
+      case CSS_TYPE_SIGNED_LENGTH:
+         if (ttype == CSS_TK_DECINT ||
+             ttype == CSS_TK_FLOAT ||
+             (ttype == CSS_TK_SYMBOL && dStrcasecmp(tval, "auto") == 0))
+            return true;
+         break;
+
+      case CSS_TYPE_COLOR:
+         if ((ttype == CSS_TK_COLOR ||
+              ttype == CSS_TK_SYMBOL) &&
+            a_Color_parse(tval, -1, &err) != -1)
+            return true;
+         break;
+
+      case CSS_TYPE_STRING:
+         if (ttype == CSS_TK_STRING)
+            return true;
+         break;
+
+      case CSS_TYPE_SYMBOL:
+         if (ttype == CSS_TK_SYMBOL ||
+             ttype == CSS_TK_STRING)
+            return true;
+         break;
+
+      case CSS_TYPE_FONT_WEIGHT:
+         if (ttype == CSS_TK_DECINT) {
+            i = strtol(tval, NULL, 10);
+            if (i >= 100 && i <= 900)
                return true;
-            break;
+         }
+         break;
 
-         case CSS_TYPE_COLOR:
-            if ((ttype == CSS_TK_COLOR ||
-                 ttype == CSS_TK_SYMBOL) &&
-               a_Color_parse(tval, -1, &err) != -1)
-               return true;
-            break;
-
-         case CSS_TYPE_STRING:
-            if (ttype == CSS_TK_STRING)
-               return true;
-            break;
-
-         case CSS_TYPE_SYMBOL:
-            if (ttype == CSS_TK_SYMBOL ||
-                ttype == CSS_TK_STRING)
-               return true;
-            break;
-
-         case CSS_TYPE_FONT_WEIGHT:
-            if (ttype == CSS_TK_DECINT) {
-               i = strtol(tval, NULL, 10);
-               if (i >= 100 && i <= 900)
-                  return true;
-            }
-            break;
-
-         case CSS_TYPE_UNUSED:
-         case CSS_TYPE_INTEGER:
-            /* Not used for parser values. */
-         default:
-            assert(false);
-            break;
+      case CSS_TYPE_UNUSED:
+      case CSS_TYPE_INTEGER:
+         /* Not used for parser values. */
+      default:
+         assert(false);
+         break;
       }
    }
 
@@ -1058,22 +1058,22 @@ bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
       pp = NULL;
       if (ttype == CSS_TK_CHAR) {
          switch (tval[0]) {
-            case '#':
-               pp = &selector->id;
-               break;
-            case '.':
-               pp = &selector->klass;
-               break;
-            case ':':
-               pp = &selector->pseudo;
-               if (*pp)
-                  // pseudo class has been set already.
-                  // As dillo currently only supports :link and :visisted, a
-                  // selector with more than one pseudo class will never match.
-                  // By returning false, the whole CssRule will be dropped.
-                  // \todo adapt this when supporting :hover, :active...
-                  return false;
-               break;
+         case '#':
+            pp = &selector->id;
+            break;
+         case '.':
+            pp = &selector->klass;
+            break;
+         case ':':
+            pp = &selector->pseudo;
+            if (*pp)
+               // pseudo class has been set already.
+               // As dillo currently only supports :link and :visisted, a
+               // selector with more than one pseudo class will never match.
+               // By returning false, the whole CssRule will be dropped.
+               // \todo adapt this when supporting :hover, :active...
+               return false;
+            break;
          }
       }
 
@@ -1083,9 +1083,9 @@ bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
             return true;
 
          if (ttype == CSS_TK_SYMBOL) {
-               if (*pp == NULL)
-                  *pp = dStrdup(tval);
-               nextToken();
+            if (*pp == NULL)
+               *pp = dStrdup(tval);
+            nextToken();
          } else {
             return false; // don't accept classes or id's starting with integer
          }
@@ -1207,7 +1207,8 @@ void CssParser::parseRuleset()
       nextToken();
 }
 
-char * CssParser::parseUrl() {
+char * CssParser::parseUrl()
+{
    Dstr *urlStr = NULL;
 
    if (ttype != CSS_TK_SYMBOL ||
@@ -1247,7 +1248,8 @@ char * CssParser::parseUrl() {
    }
 }
 
-void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl) {
+void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
+{
    char *urlStr = NULL;
 
    if (html != NULL &&
