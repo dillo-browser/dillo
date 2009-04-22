@@ -176,6 +176,9 @@ namespace ui {
  */
 class FltkResource: public object::Object
 {
+private:
+   bool enabled;
+
 protected:
    class ViewAndWidget: public object::Object
    {

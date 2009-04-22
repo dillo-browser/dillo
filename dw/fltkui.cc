@@ -62,6 +62,8 @@ FltkResource::FltkResource (FltkPlatform *platform)
    allocation.descent = 0;
 
    style = NULL;
+
+   enabled = true;
 }
 
 /**
@@ -105,6 +107,8 @@ void FltkResource::attachView (FltkView *view)
       viewsAndWidgets->append (viewAndWidget);
       if (style)
          setWidgetStyle (viewAndWidget->widget, style);
+      if (! enabled)
+         viewAndWidget->widget->deactivate ();
    }
 }
 
@@ -229,12 +233,13 @@ bool FltkResource::displayed()
 
 bool FltkResource::isEnabled ()
 {
-   /** \bug Not implemented. */
-   return true;
+   return enabled;
 }
 
 void FltkResource::setEnabled (bool enabled)
 {
+   this->enabled = enabled;
+
    for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
         it.hasNext(); ) {
       ViewAndWidget *viewAndWidget = it.getNext ();
