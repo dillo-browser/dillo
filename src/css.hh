@@ -283,6 +283,7 @@ class CssSimpleSelector {
 
 /**
  * \brief CSS selector class.
+ *
  * \todo Implement missing selector options.
  */
 class CssSelector {
@@ -320,6 +321,7 @@ class CssSelector {
 
 /**
  * \brief A CssSelector CssPropertyList pair.
+ *
  *  The CssPropertyList is applied if the CssSelector matches.
  */
 class CssRule {
@@ -341,6 +343,7 @@ class CssRule {
 
 /**
  * \brief A list of CssRules.
+ *
  * In apply () all matching rules are applied.
  */
 class CssStyleSheet {

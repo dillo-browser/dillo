@@ -30,6 +30,9 @@ CssPropertyList::~CssPropertyList () {
          getRef (i)->free ();
 }
 
+/**
+ * \brief Set property to a given name and type.
+ */
 void CssPropertyList::set (CssPropertyName name, CssValueType type,
                            CssPropertyValue value) {
    CssProperty *prop;
@@ -53,6 +56,9 @@ void CssPropertyList::set (CssPropertyName name, CssValueType type,
    prop->value = value;
 }
 
+/**
+ * \brief Merge properties into argument property list.
+ */
 void CssPropertyList::apply (CssPropertyList *props) {
    for (int i = 0; i < size (); i++)
       props->set ((CssPropertyName) getRef (i)->name,
@@ -84,6 +90,9 @@ CssSelector::~CssSelector () {
    delete selectorList;
 }
 
+/**
+ * \brief Return whether selector matches at a given node in the document tree.
+ */
 bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
    CssSimpleSelector *sel;
    Combinator comb = CHILD;
@@ -141,6 +150,12 @@ void CssSelector::addSimpleSelector (Combinator c) {
    cs->selector = new CssSimpleSelector ();
 }
 
+/**
+ * \brief Return the specificity of the selector.
+ *
+ * The specificity of a CSS selector is defined in
+ * http://www.w3.org/TR/CSS21/cascade.html#specificity
+ */
 int CssSelector::specificity () {
    int spec = 0;
 
@@ -185,6 +200,10 @@ CssSimpleSelector::~CssSimpleSelector () {
    dFree (pseudo);
 }
 
+/**
+ * \brief Return whether simple selector matches at a given node of
+ *        the document tree.
+ */
 bool CssSimpleSelector::match (const DoctreeNode *n) {
    if (element != ELEMENT_ANY && element != n->element)
       return false;
@@ -200,6 +219,11 @@ bool CssSimpleSelector::match (const DoctreeNode *n) {
    return true;
 }
 
+/**
+ * \brief Return the specificity of the simple selector.
+ *
+ * The result is used in CssSelector::specificity ().
+ */
 int CssSimpleSelector::specificity () {
    int spec = 0;
 
@@ -247,7 +271,8 @@ void CssRule::print () {
 }
 
 /*
- * \brief insert rule with increasing specificity
+ * \brief Insert rule with increasing specificity.
+ *
  * If two rules have the same specificity, the one that was added later
  * will be added behind the others.
  * This gives later added rules more weight.
@@ -281,6 +306,12 @@ CssStyleSheet::~CssStyleSheet () {
    delete anyTable;
 }
 
+/**
+ * \brief Insert a rule into CssStyleSheet.
+ *
+ * To improve matching performance the rules are organized into
+ * rule lists based on the topmost simple selector of their selector.
+ */
 void CssStyleSheet::addRule (CssRule *rule) {
    CssSimpleSelector *top = rule->selector->top ();
    RuleList *ruleList = NULL;
@@ -318,6 +349,12 @@ void CssStyleSheet::addRule (CssRule *rule) {
    }
 }
 
+/**
+ * \brief Apply a stylesheet to a property list.
+ *
+ * The properties are set as defined by the rules in the stylesheet that
+ * match at the given node in the document tree.
+ */ 
 void CssStyleSheet::apply (CssPropertyList *props,
                            Doctree *docTree, const DoctreeNode *node) {
    RuleList *ruleList[4];
@@ -405,6 +442,15 @@ CssContext::~CssContext () {
          delete sheet[o];
 }
 
+/**
+ * \brief Apply a CSS context to a property list.
+ *
+ * The stylesheets in the context are applied one after the other
+ * in the ordering defined by CSS 2.1.
+ * Stylesheets that are applied later can overwrite properties set
+ * by previous stylesheets.
+ * This allows e.g. user styles to overwrite author styles.
+ */
 void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *nonCssHints) {
    const DoctreeNode *node = docTree->top ();
@@ -444,6 +490,12 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
    }
 }
 
+/**
+ * \brief Create the user agent style.
+ *
+ * The user agent style defines how dillo renders HTML in the absence of 
+ * author or user styles.
+ */
 void CssContext::buildUserAgentStyle () {
    const char *cssBuf =
      "body  {background-color: #dcd1ba; font-family: sans-serif; color: black;"
