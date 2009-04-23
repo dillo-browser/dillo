@@ -11,6 +11,15 @@ class DoctreeNode {
       const char *id;
 };
 
+/**
+ * \brief HTML document tree interface.
+ *
+ * The Doctree class defines the interface to the parsed HTML document tree
+ * as it is used for CSS selector matching.
+ * Currently the Doctree can be represented as stack, however to support
+ * CSS adjacent siblings or for future JavaScript support it may have to
+ * be extended to a real tree.
+ */
 class Doctree {
    public:
       virtual ~Doctree () {};
