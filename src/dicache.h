@@ -68,8 +68,7 @@ void a_Dicache_set_cmap(DilloUrl *url, int version, DilloImage *Image,
                         const uchar_t *cmap, uint_t num_colors,
                         int num_colors_max, int bg_index);
 void a_Dicache_new_scan(const DilloUrl *url, int version);
-void a_Dicache_write(DilloImage *Image, DilloUrl *url, int version,
-                     const uchar_t *buf, uint_t Y);
+void a_Dicache_write(DilloUrl *url, int version, const uchar_t *buf, uint_t Y);
 void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client);
 
 void a_Dicache_invalidate_entry(const DilloUrl *Url);

@@ -316,8 +316,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
             /* out of input */
             break;
          }
-         a_Dicache_write(jpeg->Image, jpeg->url, jpeg->version,
-                         linebuf, jpeg->y);
+         a_Dicache_write(jpeg->url, jpeg->version, linebuf, jpeg->y);
 
          jpeg->y++;
 

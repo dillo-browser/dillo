@@ -230,7 +230,7 @@ static void
 
    switch (png->channels) {
    case 3:
-      a_Dicache_write(png->Image, png->url, png->version,
+      a_Dicache_write(png->url, png->version,
                       png->image_data + (row_num * png->rowbytes),
                       (uint_t)row_num);
       break;
@@ -268,8 +268,7 @@ static void
               data++;
            }
         }
-        a_Dicache_write(png->Image, png->url, png->version,
-                        png->linebuf, (uint_t)row_num);
+        a_Dicache_write(png->url, png->version, png->linebuf, (uint_t)row_num);
         break;
      }
    default:

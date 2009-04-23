@@ -376,7 +376,7 @@ static void Gif_lwz_init(DilloGif *gif)
  */
 static void Gif_emit_line(DilloGif *gif, const uchar_t *linebuf)
 {
-   a_Dicache_write(gif->Image, gif->url, gif->version, linebuf, gif->y);
+   a_Dicache_write(gif->url, gif->version, linebuf, gif->y);
    if (gif->Flags & INTERLACE) {
       switch (gif->pass) {
       case 0:

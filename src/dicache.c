@@ -333,13 +333,11 @@ void a_Dicache_new_scan(const DilloUrl *url, int version)
  * buf: row buffer
  * Y  : row number
  */
-void a_Dicache_write(DilloImage *Image, DilloUrl *url, int version,
-                     const uchar_t *buf, uint_t Y)
+void a_Dicache_write(DilloUrl *url, int version, const uchar_t *buf, uint_t Y)
 {
    DICacheEntry *DicEntry;
 
    _MSG("a_Dicache_write\n");
-   dReturn_if_fail ( Image != NULL );
    DicEntry = a_Dicache_get_entry(url, version);
    dReturn_if_fail ( DicEntry != NULL );
    dReturn_if_fail ( DicEntry->width > 0 && DicEntry->height > 0 );
