@@ -362,7 +362,7 @@ static void Auth_realm_add_path(AuthRealm_t *realm, const char *path)
    int len, i;
    char *realm_path, *n_path;
 
-   n_path = strdup(path);
+   n_path = dStrdup(path);
    len = strlen(n_path);
 
    /* remove trailing '/' */

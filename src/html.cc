@@ -2815,9 +2815,9 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
             if ((p = strchr(content + 1, *content)))
                mr_url = dStrndup(content + 1, p - content - 1);
             else
-               mr_url = strdup(content + 1);
+               mr_url = dStrdup(content + 1);
          } else {
-            mr_url = strdup(content);
+            mr_url = dStrdup(content);
          }
 
          if (delay == 0) {
