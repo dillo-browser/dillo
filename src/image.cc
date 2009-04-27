@@ -102,15 +102,6 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
 }
 
 /*
- * Reference the dicache entry color map
- */
-void a_Image_set_cmap(DilloImage *Image, const uchar_t *cmap)
-{
-   _MSG("a_Image_set_cmap\n");
-   Image->State = IMG_SetCmap;
-}
-
-/*
  * Begin a new scan for a multiple-scan image
  */
 void a_Image_new_scan(DilloImage *Image, void *v_imgbuf)
