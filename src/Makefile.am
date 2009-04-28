@@ -18,8 +18,8 @@ dillo_LDADD = \
 
 dillo_SOURCES = \
 	dillo.cc \
-	paths.c \
-	paths.h \
+	paths.cc \
+	paths.hh \
 	ui.cc \
 	ui.hh \
 	uicmd.cc \
