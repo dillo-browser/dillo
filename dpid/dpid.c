@@ -433,9 +433,8 @@ static int services_alpha_comp(const struct service *s1,
 int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
 {
    FILE *dpidrc_stream;
-   char *p, *line = NULL;
-   char *service, *path;
-   int i;
+   char *p, *line = NULL, *service, *path;
+   int i, st;
    struct service *s;
    char *user_dpidir = NULL, *sys_dpidir = NULL, *dpidrc = NULL;
 
@@ -479,14 +478,16 @@ int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
 
    /* dpidrc parser loop */
    while ((line = dGetline(dpidrc_stream)) != NULL) {
-
-      if (dParser_get_rc_pair(&line, &service, &path) == -1) {
-         if (line[0] && line[0] != '#' && (!service || !path)) {
-            MSG_ERR("Syntax error in %s: service=\"%s\" path=\"%s\"\n",
-                    dpidrc, service, path);
-         }
+      st = dParser_parse_rc_line(&line, &service, &path);
+      if (st < 0) {
+         MSG_ERR("dpid: Syntax error in %s: service=\"%s\" path=\"%s\"\n",
+                 dpidrc, service, path);
+         continue;
+      } else if (st != 0) {
          continue;
       }
+
+      _MSG("dpid: service=%s, path=%s\n", service, path);
 
       /* ignore dpi_dir silently */
       if (strcmp(service, "dpi_dir") == 0)
@@ -506,6 +507,7 @@ int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
       /* if the dpi exist bind service and dpi */
       if (i < numdpis)
          s->dp_index = i;
+
       dFree(line);
    }
    fclose(dpidrc_stream);

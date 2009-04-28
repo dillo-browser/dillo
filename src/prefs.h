@@ -1,3 +1,14 @@
+/*
+ * Preferences
+ *
+ * Copyright (C) 2006-2009 Jorge Arellano Cid <jcid@dillo.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #ifndef __PREFS_H__
 #define __PREFS_H__
 
@@ -7,10 +18,21 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define D_GEOMETRY_DEFAULT_WIDTH   780
-#define D_GEOMETRY_DEFAULT_HEIGHT  580
-#define D_GEOMETRY_DEFAULT_XPOS  -9999
-#define D_GEOMETRY_DEFAULT_YPOS  -9999
+#define PREFS_GEOMETRY_DEFAULT_WIDTH   780
+#define PREFS_GEOMETRY_DEFAULT_HEIGHT  580
+#define PREFS_GEOMETRY_DEFAULT_XPOS  -9999
+#define PREFS_GEOMETRY_DEFAULT_YPOS  -9999
+#define PREFS_START_PAGE      "about:splash"
+#define PREFS_HOME            "http://www.dillo.org/"
+#define PREFS_FONT_SERIF      "DejaVu Serif"
+#define PREFS_FONT_SANS_SERIF "DejaVu Sans"
+#define PREFS_FONT_CURSIVE    "DejaVu Sans" /* TODO: find good default */
+#define PREFS_FONT_FANTASY    "DejaVu Sans" /* TODO: find good default */
+#define PREFS_FONT_MONOSPACE  "DejaVu Sans Mono"
+#define PREFS_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
+#define PREFS_SAVE_DIR        "/tmp/"
+#define PREFS_VISITED_COLOR   0x800080
+#define PREFS_HTTP_REFERER    "about:blank"
 
 /* Panel sizes */
 enum { P_tiny = 0, P_small, P_medium, P_large };
@@ -76,7 +98,6 @@ struct _DilloPrefs {
 extern DilloPrefs prefs;
 
 void a_Prefs_init(void);
-void a_Prefs_freeall(void);
 
 #ifdef __cplusplus
 }

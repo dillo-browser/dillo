@@ -18,8 +18,8 @@ dillo_LDADD = \
 
 dillo_SOURCES = \
 	dillo.cc \
-	dir.c \
-	dir.h \
+	paths.c \
+	paths.h \
 	ui.cc \
 	ui.hh \
 	uicmd.cc \
@@ -39,6 +39,8 @@ dillo_SOURCES = \
 	history.c \
 	prefs.c \
 	prefs.h \
+	prefsparser.cc \
+	prefsparser.hh \
 	msg.h \
 	list.h \
 	url.c \

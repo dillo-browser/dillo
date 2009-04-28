@@ -758,9 +758,10 @@ void *dList_find_sorted (Dlist *lp, const void *data, dCompareFunc func)
  *    - line is modified!
  *    - it skips blank lines and lines starting with '#'
  *
- * Return value: 0 on successful value/pair, -1 otherwise
+ * Return value: 1 on blank line or comment, 0 on successful value/pair,
+ *              -1 otherwise.
  */
-int dParser_get_rc_pair(char **line, char **name, char **value)
+int dParser_parse_rc_line(char **line, char **name, char **value)
 {
    char *eq, *p;
    int len, ret = -1;
@@ -770,7 +771,10 @@ int dParser_get_rc_pair(char **line, char **name, char **value)
    *name = NULL;
    *value = NULL;
    dStrstrip(*line);
-   if (*line[0] != '#' && (eq = strchr(*line, '='))) {
+   if (!*line[0] || *line[0] == '#') {
+      /* blank line or comment */
+      ret = 1;
+   } else if ((eq = strchr(*line, '='))) {
       /* get name */
       for (p = *line; *p && *p != '=' && !isspace(*p); ++p);
       *p = 0;

@@ -29,10 +29,11 @@
 #include <fltk/run.h>
 
 #include "msg.h"
-#include "dir.h"
+#include "paths.hh"
 #include "uicmd.hh"
 
 #include "prefs.h"
+#include "prefsparser.hh"
 #include "bw.h"
 #include "misc.h"
 #include "nav.h"
@@ -177,7 +178,8 @@ static DilloUrl *makeStartUrl(char *str, bool local)
    DilloUrl *start_url;
 
    /* Relative path to a local file? */
-   p = (*str == '/') ? dStrdup(str) : dStrconcat(a_Dir_get_owd(),"/",str,NULL);
+   p = (*str == '/') ? dStrdup(str) :
+                       dStrconcat(Paths::getOldWorkingDir(), "/", str, NULL);
 
    if (access(p, F_OK) == 0) {
       /* absolute path may have non-URL characters */
@@ -206,9 +208,11 @@ int main(int argc, char **argv)
    uint options_got = 0;
    uint32_t xid = 0;
    int idx = 1;
-   int xpos = D_GEOMETRY_DEFAULT_XPOS, ypos = D_GEOMETRY_DEFAULT_YPOS;
-   int width = D_GEOMETRY_DEFAULT_WIDTH, height = D_GEOMETRY_DEFAULT_HEIGHT;
+   int xpos = PREFS_GEOMETRY_DEFAULT_XPOS, ypos = PREFS_GEOMETRY_DEFAULT_YPOS,
+       width = PREFS_GEOMETRY_DEFAULT_WIDTH,
+       height = PREFS_GEOMETRY_DEFAULT_HEIGHT;
    char **opt_argv;
+   FILE *fp;
 
    srand((uint_t)(time(0) ^ getpid()));
 
@@ -254,10 +258,18 @@ int main(int argc, char **argv)
    }
    dFree(opt_argv);
 
-   // Initialize internal modules
-   a_Dir_init();
+   // create ~/.dillo if not present
+   Paths::init();
+
+   // set the default values for the preferences
    a_Prefs_init();
-   a_Dir_check_dillorc_directory(); /* and create if not present */
+
+   // parse dillorc
+   if ((fp = Paths::getPrefsFP(PATHS_RC_PREFS))) {
+      PrefsParser::parse(fp);
+   }
+
+   // initialize internal modules
    a_Dpi_init();
    a_Dns_init();
    a_Web_init();

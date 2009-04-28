@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 
-/*#include "prefs.h"*/
 #define prefs_show_msg    1
 
 #define D_STMT_START      do

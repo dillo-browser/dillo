@@ -158,7 +158,7 @@ void *dList_find_sorted (Dlist *lp, const void *data, dCompareFunc func);
 /*
  *- Parse function ------------------------------------------------------------
  */
-int dParser_get_rc_pair(char **line, char **name, char **value);
+int dParser_parse_rc_line(char **line, char **name, char **value);
 
 /*
  *- Misc utility functions ----------------------------------------------------

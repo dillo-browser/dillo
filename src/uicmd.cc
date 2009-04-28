@@ -22,7 +22,7 @@
 #include <fltk/TabGroup.h>
 #include <fltk/Tooltip.h>
 
-#include "dir.h"
+#include "paths.hh"
 #include "ui.hh"
 #include "uicmd.hh"
 #include "timeout.hh"
@@ -561,7 +561,7 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
          /* file URI */
          ch = new_urlstr[5];
          if (!ch || ch == '.') {
-            url = a_Url_new(a_Dir_get_owd(), "file:");
+            url = a_Url_new(Paths::getOldWorkingDir(), "file:");
          } else if (ch == '~') {
             url = a_Url_new(dGethomedir(), "file:");
          } else {
