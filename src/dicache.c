@@ -325,6 +325,7 @@ void a_Dicache_new_scan(const DilloUrl *url, int version)
    }
    a_Bitvec_clear(DicEntry->BitVec);
    DicEntry->ScanNumber++;
+   a_Imgbuf_new_scan(DicEntry->v_imgbuf);
 }
 
 /*

@@ -115,3 +115,11 @@ void a_Imgbuf_update(void *v_imgbuf, const uchar_t *buf, DilloImgType type,
    ((Imgbuf*)v_imgbuf)->copyRow(y, (byte *)newbuf);
 }
 
+/*
+ * Reset for a new scan from a multiple-scan image.
+ */
+void a_Imgbuf_new_scan(void *v_imgbuf)
+{
+   ((Imgbuf*)v_imgbuf)->newScan();
+}
+

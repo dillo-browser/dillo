@@ -58,7 +58,6 @@ void a_Image_unref(DilloImage *Image);
 void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
                        int version, uint_t width, uint_t height,
                        DilloImgType type);
-void a_Image_new_scan(DilloImage *image, void *v_imgbuf);
 void a_Image_write(DilloImage *Image, uint_t y);
 void a_Image_close(DilloImage *Image);
 

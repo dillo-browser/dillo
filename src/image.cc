@@ -102,17 +102,6 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
 }
 
 /*
- * Begin a new scan for a multiple-scan image
- */
-void a_Image_new_scan(DilloImage *Image, void *v_imgbuf)
-{
-   _MSG("a_Image_new_scan\n");
-   a_Bitvec_clear(Image->BitVec);
-   Image->ScanNumber++;
-   ((Imgbuf*)v_imgbuf)->newScan();
-}
-
-/*
  * Implement the write method
  */
 void a_Image_write(DilloImage *Image, uint_t y)
