@@ -31,8 +31,7 @@ extern "C" {
 #define PREFS_FONT_MONOSPACE  "DejaVu Sans Mono"
 #define PREFS_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #define PREFS_SAVE_DIR        "/tmp/"
-#define PREFS_VISITED_COLOR   0x800080
-#define PREFS_HTTP_REFERER    "about:blank"
+#define PREFS_HTTP_REFERER    "host"
 
 /* Panel sizes */
 enum { P_tiny = 0, P_small, P_medium, P_large };
