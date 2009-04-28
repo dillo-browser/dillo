@@ -85,7 +85,7 @@ FILE *Paths::getPrefsFP(const char *rcFile)
          MSG("paths: Cannot open file '%s'\n",path2);
          MSG("paths: Using internal defaults...\n");
       } else {
-         MSG("paths: Using %s\n", path);
+         MSG("paths: Using %s\n", path2);
       }
       dFree(path2);
    }
