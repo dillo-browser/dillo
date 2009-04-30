@@ -44,7 +44,7 @@ typedef struct SymNode_ {
 int PrefsParser::parseOption(char *name, char *value)
 {
    const SymNode_t *node;
-   unsigned int i;
+   uint_t i;
 
    /* Symbol array, sorted alphabetically */
    const SymNode_t symbols[] = {

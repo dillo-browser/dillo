@@ -170,7 +170,7 @@ char *a_Misc_mkfname(char *template)
 {
    char *tmp = template + strlen(template) - 6;
    int i;
-   unsigned int random;
+   uint_t random;
    struct stat stat_buf;
 
    if (tmp < template)
