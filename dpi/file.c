@@ -483,6 +483,8 @@ static const char *File_ext(const char *filename)
               !dStrcasecmp(e, "htm") ||
               !dStrcasecmp(e, "shtml")) {
       return "text/html";
+   } else if (!dStrcasecmp(e, "txt")) {
+      return "text/plain";
    } else {
       return NULL;
    }
