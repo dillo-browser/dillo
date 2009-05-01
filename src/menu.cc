@@ -110,7 +110,7 @@ static void Menu_copy_urlstr_cb(Widget *)
 static void Menu_link_cb(Widget*, void *user_data)
 {
    DilloUrl *url = (DilloUrl *) user_data ;
-   MSG("Menu_link_cb: click! :-)\n");
+   _MSG("Menu_link_cb: click! :-)\n");
 
    if (url)
       a_Menu_link_popup(popup_bw, url);
@@ -121,7 +121,7 @@ static void Menu_link_cb(Widget*, void *user_data)
  */
 static void Menu_open_url_cb(Widget* )
 {
-   MSG("Open URL cb: click! :-)\n");
+   _MSG("Open URL cb: click! :-)\n");
    a_UIcmd_open_url(popup_bw, popup_url);
 }
 

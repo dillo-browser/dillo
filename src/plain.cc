@@ -115,7 +115,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
  */
 DilloPlain::~DilloPlain()
 {
-   MSG("::~DilloPlain()\n");
+   _MSG("::~DilloPlain()\n");
    a_Url_free(url);
    widgetStyle->unref();
 }
@@ -199,7 +199,7 @@ void *a_Plain_text(const char *type, void *P, CA_Callback_t *Call, void **Data)
 
 void a_Plain_free(void *data)
 {
-   MSG("a_Plain_free! %p\n", data);
+   _MSG("a_Plain_free! %p\n", data);
    delete ((DilloPlain *)data);
 }
 

@@ -1951,8 +1951,7 @@ static void Html_tag_open_address(DilloHtml *html,
 }
 
 /*
- * Read image-associated tag attributes,
- * create new image and add it to the html page (if add is TRUE).
+ * Read image-associated tag attributes and create new image.
  */
 DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
                              int tagsize, DilloUrl *url)
