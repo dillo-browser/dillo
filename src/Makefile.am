@@ -41,6 +41,8 @@ dillo_SOURCES = \
 	prefs.h \
 	prefsparser.cc \
 	prefsparser.hh \
+	keys.cc \
+	keys.hh \
 	msg.h \
 	list.h \
 	url.c \

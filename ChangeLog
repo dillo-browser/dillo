@@ -87,6 +87,8 @@ dillo-2.1
    Patch: João Ricardo Lourenço, Jorge Arellano Cid
 +- Added the "middle_click_drags_page" dillorc option.
    Patch: Jorge Arellano Cid, Thomas Orgis
++- Added configurable keybindings! (in ~/.dillo/keysrc)
+   Patch: Jorge Arellano Cid, Tim Nieradzik
 +- Set the File menu label to hide when the File menu-button is shown.
  - Set a new iconv() test in configure.in.
  - Allowed the rc parser to skip whitespace around the equal sign.
