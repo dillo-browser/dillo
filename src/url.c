@@ -190,6 +190,7 @@ static DilloUrl *Url_object_new(const char *uri_str)
 
 /*
  *  Free a DilloUrl
+ *  Do nothing if the argument is NULL
  */
 void a_Url_free(DilloUrl *url)
 {

@@ -511,8 +511,7 @@ DilloHtml::~DilloHtml()
    a_Url_free(base_url);
 
    for (int i = 0; i < cssUrls->size(); i++)
-      if (cssUrls->get(i))
-         a_Url_free(cssUrls->get(i));
+      a_Url_free(cssUrls->get(i));
    delete (cssUrls);
 
    for (int i = 0; i < forms->size(); i++)
@@ -524,15 +523,13 @@ DilloHtml::~DilloHtml()
    delete(inputs_outside_form);
 
    for (int i = 0; i < links->size(); i++)
-      if (links->get(i))
-         a_Url_free(links->get(i));
+      a_Url_free(links->get(i));
    delete (links);
 
    for (int i = 0; i < images->size(); i++) {
       DilloLinkImage *li = images->get(i);
       a_Url_free(li->url);
-      if (li->image)
-         a_Image_unref(li->image);
+      a_Image_unref(li->image);
       dFree(li);
    }
    delete (images);

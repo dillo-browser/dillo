@@ -249,10 +249,8 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 void a_Nav_cancel_expect(BrowserWindow *bw)
 {
    if (bw->nav_expecting) {
-      if (bw->nav_expect_url) {
-         a_Url_free(bw->nav_expect_url);
-         bw->nav_expect_url = NULL;
-      }
+      a_Url_free(bw->nav_expect_url);
+      bw->nav_expect_url = NULL;
       bw->nav_expecting = FALSE;
    }
    if (bw->meta_refresh_status > 0)
@@ -416,8 +414,7 @@ void a_Nav_redirection0(BrowserWindow *bw, const DilloUrl *new_url)
    dReturn_if_fail (bw != NULL);
    _MSG(">>> a_Nav_redirection0 <<<<\n");
 
-   if (bw->meta_refresh_url)
-      a_Url_free(bw->meta_refresh_url);
+   a_Url_free(bw->meta_refresh_url);
    bw->meta_refresh_url = a_Url_dup(new_url);
    a_Url_set_flags(bw->meta_refresh_url,
                    URL_FLAGS(new_url)|URL_E2EQuery|URL_IgnoreScroll);

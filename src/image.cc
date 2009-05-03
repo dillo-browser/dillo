@@ -65,6 +65,7 @@ static void Image_free(DilloImage *Image)
 
 /*
  * Unref and free if necessary
+ * Do nothing if the argument is NULL
  */
 void a_Image_unref(DilloImage *Image)
 {
@@ -75,6 +76,7 @@ void a_Image_unref(DilloImage *Image)
 
 /*
  * Add a reference to an Image struct
+ * Do nothing if the argument is NULL
  */
 void a_Image_ref(DilloImage *Image)
 {

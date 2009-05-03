@@ -139,10 +139,8 @@ int a_Web_valid(DilloWeb *web)
 void a_Web_free(DilloWeb *web)
 {
    if (!web) return;
-   if (web->url)
-      a_Url_free(web->url);
-   if (web->Image)
-      a_Image_unref(web->Image);
+   a_Url_free(web->url);
+   a_Image_unref(web->Image);
    dFree(web->filename);
    dList_remove(ValidWebs, (void *)web);
    dFree(web);

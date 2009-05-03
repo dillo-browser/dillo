@@ -46,6 +46,7 @@ dillo-2.1
  - Fixed a memory leak in Html_tag_open_link().
  - Fixed a memory leak in Klist().
  - Fix the comment for DLWin::del() (dpi/downloads.cc).
+ - Removed redundant caller NULL checks already in the API.
    Patches: Jeremy Henty
 +- Implemented Basic authentication!
    Patch: Jeremy Henty, Jorge Arellano Cid
