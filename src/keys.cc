@@ -129,8 +129,10 @@ void Keys::free()
 {
    KeyBinding_t *node;
 
-   while ((node = (KeyBinding_t*)dList_nth_data(bindings, 0)))
+   while ((node = (KeyBinding_t*)dList_nth_data(bindings, 0))) {
       dFree((char*)node->name);
+      dFree(node);
+   }
    dList_free(bindings);
 }
 
@@ -155,8 +157,7 @@ int Keys::getKeyCmd()
    keyNode.key = fltk::event_key();
    keyNode.modifier = fltk::event_state();
 
-   void *data = dList_find_sorted(bindings, &keyNode,
-                                  (dCompareFunc)nodeByKeyCmp);
+   void *data = dList_find_sorted(bindings, &keyNode, nodeByKeyCmp);
    if (data)
       ret = ((KeyBinding_t*)data)->cmd;
    return ret;
@@ -167,14 +168,16 @@ int Keys::getKeyCmd()
  */
 void Keys::delKeyCmd(int key, int mod)
 {
-   KeyBinding_t keyNode;
+   KeyBinding_t keyNode, *node;
    keyNode.key = key;
    keyNode.modifier = mod;
 
-   void *data = dList_find_sorted(bindings, &keyNode,
-                                  (dCompareFunc)nodeByKeyCmp);
-   if (data)
-      dList_remove(bindings, data);
+   node = (KeyBinding_t*) dList_find_sorted(bindings, &keyNode, nodeByKeyCmp);
+   if (node) {
+      dList_remove(bindings, node);
+      dFree((char*)node->name);
+      dFree(node);
+   }
 }
 
 /*
