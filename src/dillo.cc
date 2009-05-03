@@ -34,6 +34,7 @@
 
 #include "prefs.h"
 #include "prefsparser.hh"
+#include "keys.hh"
 #include "bw.h"
 #include "misc.h"
 #include "nav.h"
@@ -261,12 +262,19 @@ int main(int argc, char **argv)
    // create ~/.dillo if not present
    Paths::init();
 
+   // initialize default key bindings
+   Keys::init();
+
    // set the default values for the preferences
    a_Prefs_init();
 
    // parse dillorc
    if ((fp = Paths::getPrefsFP(PATHS_RC_PREFS))) {
       PrefsParser::parse(fp);
+   }
+   // parse keysrc
+   if ((fp = Paths::getPrefsFP(PATHS_RC_KEYS))) {
+      Keys::parse(fp);
    }
 
    // initialize internal modules

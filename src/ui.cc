@@ -25,6 +25,7 @@
 #include <fltk/Item.h>
 #include <fltk/Divider.h>
 
+#include "keys.hh"
 #include "ui.hh"
 #include "msg.h"
 #include "timeout.hh"
@@ -741,66 +742,64 @@ int UI::handle(int event)
    _MSG("UI::handle event=%d (%d,%d)\n", event, event_x(), event_y());
    _MSG("Panel->h()=%d Main->h()=%d\n", Panel->h() , Main->h());
 
-   int ret = 0, k = event_key();
-
-   // We're only interested in some flags
-   unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
+   int ret = 0;
 
    if (event == KEY) {
       return 0; // Receive as shortcut
-
    } else if (event == SHORTCUT) {
-      // Handle keyboard shortcuts here.
-      if (modifier == CTRL) {
-         if (k == 'b') {
-            a_UIcmd_book(a_UIcmd_get_bw_by_widget(this));
-            ret = 1;
-         } else if (k == 'f') {
-            set_findbar_visibility(1);
-            ret = 1;
-         } else if (k == 'l') {
-            focus_location();
-            ret = 1;
-         } else if (k == 'n') {
-            a_UIcmd_browser_window_new(w(),h(),a_UIcmd_get_bw_by_widget(this));
-            ret = 1;
-         } else if (k == 'o') {
-            a_UIcmd_open_file(a_UIcmd_get_bw_by_widget(this));
-            ret = 1;
-         } else if (k == 'q') {
-            a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(this));
-            ret = 1;
-         } else if (k == 'r') {
-            a_UIcmd_reload(a_UIcmd_get_bw_by_widget(this));
-            ret = 1;
-         } else if (k == 's') {
-            a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(this));
-            ret = 1;
-         } else if (k == 't') {
-            a_UIcmd_open_url_nt(a_UIcmd_get_bw_by_widget(this), NULL, 1);
-            ret = 1;
-         } else if (k == ' ') {
-            panelmode_cb_i();
-            ret = 1;
-         }
-      } else if (modifier == ALT) {
-         if (k == 'f') {
-            a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(this), FileButton);
-         } else if (k == 'q' && event_key_state(LeftAltKey)) {
-            a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
-         }
-      } else {
-         // Back and Forward navigation shortcuts
-         if (modifier == 0 && (k == BackSpaceKey ||  k == ',')) {
-            a_UIcmd_back(a_UIcmd_get_bw_by_widget(this));
-            ret = 1;
-         } else if ((modifier == 0 && k == '.') ||
-                    (modifier == SHIFT && k == BackSpaceKey)) {
-            a_UIcmd_forw(a_UIcmd_get_bw_by_widget(this));
-            ret = 1;
-         }
+      int cmd = Keys::getKeyCmd();
+      if (cmd == KEYS_NOP) {
+         // Do nothing
+      } else if (cmd == KEYS_BACK) {
+         a_UIcmd_back(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_FORWARD) {
+         a_UIcmd_forw(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_BOOKMARKS) {
+         a_UIcmd_book(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_FIND) {
+         set_findbar_visibility(1);
+         ret = 1;
+      } else if (cmd == KEYS_WEBSEARCH) {
+         a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_GOTO) {
+         focus_location();
+         ret = 1;
+      } else if (cmd == KEYS_NEW_TAB) {
+         a_UIcmd_open_url_nt(a_UIcmd_get_bw_by_widget(this), NULL, 1);
+         ret = 1;
+      } else if (cmd == KEYS_CLOSE_TAB) {
+         a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_HIDE_PANELS &&
+                 get_panelmode() == UI_TEMPORARILY_SHOW_PANELS) {
+         set_panelmode(UI_HIDDEN);
+         ret = 1;
+      } else if (cmd == KEYS_NEW_WINDOW) {
+         a_UIcmd_browser_window_new(w(),h(),a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_OPEN) {
+         a_UIcmd_open_file(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_HOME) {
+         a_UIcmd_home(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_RELOAD) {
+         a_UIcmd_reload(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_FULLSCREEN) {
+         panelmode_cb_i();
+         ret = 1;
+      } else if (cmd == KEYS_FILE_MENU) {
+         a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(this), FileButton);
+         ret = 1;
+      } else if (cmd == KEYS_CLOSE_ALL) {
+         a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
+         ret = 1;
       }
-
    } else if (event == PUSH) {
       if (prefs.middle_click_drags_page == 0 &&
           event_button() == MiddleButton &&
@@ -810,8 +809,10 @@ int UI::handle(int event)
       }
    }
 
-   if (!ret)
+   if (!ret) {
       ret = Group::handle(event);
+   }
+
    return ret;
 }
 
