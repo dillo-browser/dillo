@@ -189,7 +189,7 @@ int Keys::getKeyCode(char *keyName)
 {
    uint_t i;
    for (i = 0; i < sizeof(keyNames) / sizeof(Mapping_t); i++) {
-      if (!strcasecmp(keyNames[i].name, keyName)) {
+      if (!dStrcasecmp(keyNames[i].name, keyName)) {
          return keyNames[i].value;
       }
    }
@@ -206,7 +206,7 @@ int Keys::getCmdCode(const char *commandName)
    uint_t i;
 
    for (i = 0; i < sizeof(default_keys) / sizeof(KeyBinding_t); i++) {
-      if (!strcasecmp(default_keys[i].name, commandName))
+      if (!dStrcasecmp(default_keys[i].name, commandName))
          return default_keys[i].cmd;
    }
    return -1;
@@ -220,7 +220,7 @@ int Keys::getModifier(char *modifierName)
 {
    uint_t i;
    for (i = 0; i < sizeof(modifierNames) / sizeof(Mapping_t); i++) {
-      if (!strcasecmp(modifierNames[i].name, modifierName)) {
+      if (!dStrcasecmp(modifierNames[i].name, modifierName)) {
          return modifierNames[i].value;
       }
    }
@@ -250,7 +250,7 @@ void Keys::parseKey(char *key, char *commandName)
    for (  ; isspace(*key); ++key) ;
    // Get modifiers
    while(*key == '<' && (p = strchr(++key, '>'))) {
-      modstr = strndup(key, p - key);
+      modstr = dStrndup(key, p - key);
       if ((st = getModifier(modstr)) == -1) {
          MSG("Keys::parseKey unknown modifier: %s\n", modstr);
       } else {
@@ -260,7 +260,7 @@ void Keys::parseKey(char *key, char *commandName)
       key = p + 1;
    }
    // Allow trailing space after keyname
-   keystr = (*key && (p = strchr(key + 1, ' '))) ? strndup(key, p - key - 1) :
+   keystr = (*key && (p = strchr(key + 1, ' '))) ? dStrndup(key, p - key - 1) :
                                                    dStrdup(key);
    // Get key code
    if (!key[1]) {
