@@ -374,14 +374,13 @@ void a_Cache_entry_remove_by_url(DilloUrl *url)
  * Try finding the url in the cache. If it hits, send the cache contents
  * from there. If it misses, set up a new connection.
  *
- * - 'Web' is an auxiliar data structure with misc. parameters.
+ * - 'Web' is an auxiliary data structure with misc. parameters.
  * - 'Call' is the callback that receives the data
  * - 'CbData' is custom data passed to 'Call'
  *   Note: 'Call' and/or 'CbData' can be NULL, in that case they get set
  *   later by a_Web_dispatch_by_type, based on content/type and 'Web' data.
  *
  * Return value: A primary key for identifying the client,
- *               0 if the client is aborted in the process.
  */
 int a_Cache_open_url(void *web, CA_Callback_t Call, void *CbData)
 {
