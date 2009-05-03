@@ -142,7 +142,7 @@ static int Cache_client_make_key(void)
 {
    static int ClientKey = 0; /* Provide a primary key for each client */
 
-   if (++ClientKey < 0)
+   if (++ClientKey <= 0)
       ClientKey = 1;
    return ClientKey;
 }
