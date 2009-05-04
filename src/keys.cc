@@ -292,7 +292,7 @@ void Keys::parseKey(char *key, char *commandName)
 void Keys::parse(FILE *fp)
 {
    char *line, *keycomb, *command;
-   int st;
+   int st, lineno = 1;
 
    // scan the file line by line
    while ((line = dGetline(fp)) != NULL) {
@@ -302,11 +302,12 @@ void Keys::parse(FILE *fp)
          _MSG("Keys::parse: keycomb=%s, command=%s\n", keycomb, command);
          parseKey(keycomb, command);
       } else if (st < 0) {
-         MSG("Keys::parse: Syntax error in keysrc: "
-             "keycomb=\"%s\" command=\"%s\"\n", keycomb, command);
+         MSG("Keys::parse: Syntax error in keysrc line %d: "
+             "keycomb=\"%s\" command=\"%s\"\n", lineno, keycomb, command);
       }
 
       dFree(line);
+      ++lineno;
    }
    fclose(fp);
 }
