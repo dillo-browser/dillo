@@ -154,9 +154,18 @@ int Keys::getKeyCmd()
 {
    int ret = KEYS_NOP;
    KeyBinding_t keyNode;
-   keyNode.key = fltk::event_key();
-   keyNode.modifier = fltk::event_state();
 
+   if (fltk::event_state() == fltk::SHIFT &&
+       ispunct(fltk::event_text()[0])) {
+      // Get key code for a shifted character
+      keyNode.key = fltk::event_text()[0];
+      keyNode.modifier = 0;
+   } else {
+      keyNode.key = fltk::event_key();
+      keyNode.modifier = fltk::event_state();
+   }
+
+   _MSG("getKeyCmd: key=%d, mod=%d\n", keyNode.key, keyNode.modifier);
    void *data = dList_find_sorted(bindings, &keyNode, nodeByKeyCmp);
    if (data)
       ret = ((KeyBinding_t*)data)->cmd;
@@ -249,7 +258,8 @@ void Keys::parseKey(char *key, char *commandName)
    // Skip space
    for (  ; isspace(*key); ++key) ;
    // Get modifiers
-   while(*key == '<' && (p = strchr(++key, '>'))) {
+   while(*key == '<' && (p = strchr(key, '>'))) {
+      ++key;
       modstr = dStrndup(key, p - key);
       if ((st = getModifier(modstr)) == -1) {
          MSG("Keys::parseKey unknown modifier: %s\n", modstr);
@@ -282,6 +292,7 @@ void Keys::parseKey(char *key, char *commandName)
          node->modifier = keymod;
          node->key = keycode;
          dList_insert_sorted(bindings, node, nodeByKeyCmp);
+         _MSG("parseKey: Adding key=%d, mod=%d\n", node->key, node->modifier);
       }
    }
 }
