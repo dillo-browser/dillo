@@ -209,7 +209,9 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
        " = %d - %d = %d\n", this->getHeight(), getStyle()->boxDiffHeight(),
        this->getHeight() - getStyle()->boxDiffHeight());
 #endif
-   if (buffer && (getContentWidth () > 0 || getContentHeight () > 0)) {
+   if (buffer &&
+       (allocation->width - dx > 0 ||
+        allocation->ascent + allocation->descent - dy > 0)) {
       // Zero content size : simply wait...
       // Only one dimension: naturally scale
       oldBuffer = buffer;
