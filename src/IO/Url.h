@@ -20,8 +20,6 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy);
 
 void a_Http_ccc (int Op, int Branch, int Dir, ChainLink *Info,
                  void *Data1, void *Data2);
-void a_About_ccc(int Op, int Branch, int Dir, ChainLink *Info,
-                 void *Data1, void *Data2);
 void a_IO_ccc   (int Op, int Branch, int Dir, ChainLink *Info,
                  void *Data1, void *Data2);
 void a_Dpi_ccc  (int Op, int Branch, int Dir, ChainLink *Info,
