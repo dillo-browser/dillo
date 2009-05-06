@@ -314,7 +314,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    if (web->flags & WEB_Download) {
      /* download request: if cached save from cache, else
       * for http, ftp or https, use the downloads dpi */
-     if (a_Capi_get_flags(web->url) & CAPI_IsCached) {
+     if (a_Capi_get_flags_with_redirection(web->url) & CAPI_IsCached) {
         if (web->filename) {
            if ((web->stream = fopen(web->filename, "w"))) {
               use_cache = 1;
@@ -376,12 +376,11 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
 }
 
 /*
- * Return status information of an URL's content-transfer process.
+ * Convert cache-defined flags to Capi ones.
  */
-int a_Capi_get_flags(const DilloUrl *Url)
+static int Capi_map_cache_flags(uint_t flags)
 {
    int status = 0;
-   uint_t flags = a_Cache_get_flags(Url);
 
    if (flags) {
       status |= CAPI_IsCached;
@@ -394,6 +393,26 @@ int a_Capi_get_flags(const DilloUrl *Url)
 
       /* CAPI_Aborted is not yet used/defined */
    }
+   return status;
+}
+
+/*
+ * Return status information of an URL's content-transfer process.
+ */
+int a_Capi_get_flags(const DilloUrl *Url)
+{
+   uint_t flags = a_Cache_get_flags(Url);
+   int status = flags ? Capi_map_cache_flags(flags) : 0;
+   return status;
+}
+
+/*
+ * Same as a_Capi_get_flags() but following redirections.
+ */
+int a_Capi_get_flags_with_redirection(const DilloUrl *Url)
+{
+   uint_t flags = a_Cache_get_flags_with_redirection(Url);
+   int status = flags ? Capi_map_cache_flags(flags) : 0;
    return status;
 }
 

@@ -414,6 +414,15 @@ int a_Cache_open_url(void *web, CA_Callback_t Call, void *CbData)
  */
 uint_t a_Cache_get_flags(const DilloUrl *url)
 {
+   CacheEntry_t *entry = Cache_entry_search(url);
+   return (entry ? entry->Flags : 0);
+}
+
+/*
+ * Get cache entry status (following redirections).
+ */
+uint_t a_Cache_get_flags_with_redirection(const DilloUrl *url)
+{
    CacheEntry_t *entry = Cache_entry_search_with_redirect(url);
    return (entry ? entry->Flags : 0);
 }

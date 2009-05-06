@@ -1805,9 +1805,11 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
 
    src = dStrdup(attrbuf);
 
-   if (a_Capi_get_flags(url) & CAPI_IsCached) { /* visited frame */
+   if (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached) {
+      /* visited frame */
       html->styleEngine->setPseudoVisited ();
-   } else {                                    /* unvisited frame */
+   } else {
+      /* unvisited frame */
       html->styleEngine->setPseudoLink ();
    }
 
@@ -2067,7 +2069,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       Image->bg_color = DW2TB(html->dw)->getBgColor()->getColor();
 
    load_now = prefs.load_images ||
-              (a_Capi_get_flags(url) & CAPI_IsCached);
+              (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached);
    Html_add_new_linkimage(html, &url, load_now ? NULL : Image);
    if (load_now)
       Html_load_image(html->bw, url, Image);
@@ -2312,7 +2314,7 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
                            URL_STR(base_url), (base_url != NULL));
       dReturn_if_fail ( url != NULL );
 
-      if (a_Capi_get_flags(url) & CAPI_IsCached) {
+      if (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached) {
          html->styleEngine->setPseudoVisited ();
       } else {
          html->styleEngine->setPseudoLink ();
@@ -2389,7 +2391,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
       url = a_Html_url_new(html, attrbuf, NULL, 0);
       dReturn_if_fail ( url != NULL );
 
-      if (a_Capi_get_flags(url) & CAPI_IsCached) {
+      if (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached) {
          html->InVisitedLink = true;
          html->styleEngine->setPseudoVisited ();
          if (html->non_css_visited_color != -1)
@@ -2883,7 +2885,7 @@ void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
    _MSG("Html_load_stylesheet: ");
    if (a_Capi_get_buf(url, &data, &len)) {
       _MSG("cached URL=%s len=%d", URL_STR(url), len);
-      if (a_Capi_get_flags(url) & CAPI_Completed)
+      if (a_Capi_get_flags_with_redirection(url) & CAPI_Completed)
          html->styleEngine->parse(html, url, data, len, CSS_ORIGIN_AUTHOR);
       a_Capi_unref_buf(url);
    } else {

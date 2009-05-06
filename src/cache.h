@@ -65,6 +65,7 @@ const char *a_Cache_get_content_type(const DilloUrl *url);
 const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
                                      const char *from);
 uint_t a_Cache_get_flags(const DilloUrl *url);
+uint_t a_Cache_get_flags_with_redirection(const DilloUrl *url);
 void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
                           const DilloUrl *Url);
 void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds);
