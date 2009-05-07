@@ -33,10 +33,7 @@ using namespace dw::core;
 /*
  * Create and initialize a new image structure.
  */
-DilloImage *a_Image_new(int width,
-                        int height,
-                        const char *alt_text,
-                        int32_t bg_color)
+DilloImage *a_Image_new(const char *alt_text, int32_t bg_color)
 {
    DilloImage *Image;
 
