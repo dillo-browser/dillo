@@ -136,18 +136,6 @@ void a_Cache_init(void)
 /* Client operations ------------------------------------------------------ */
 
 /*
- * Make a unique primary-key for cache clients
- */
-static int Cache_client_make_key(void)
-{
-   static int ClientKey = 0; /* Provide a primary key for each client */
-
-   if (++ClientKey <= 0)
-      ClientKey = 1;
-   return ClientKey;
-}
-
-/*
  * Add a client to ClientQueue.
  *  - Every client-field is just a reference (except 'Web').
  *  - Return a unique number for identifying the client.
@@ -155,11 +143,13 @@ static int Cache_client_make_key(void)
 static int Cache_client_enqueue(const DilloUrl *Url, DilloWeb *Web,
                                  CA_Callback_t Callback, void *CbData)
 {
-   int ClientKey;
+   static int ClientKey = 0; /* Provide a primary key for each client */
    CacheClient_t *NewClient;
 
+   if (++ClientKey <= 0)
+      ClientKey = 1;
+
    NewClient = dNew(CacheClient_t, 1);
-   ClientKey = Cache_client_make_key();
    NewClient->Key = ClientKey;
    NewClient->Url = Url;
    NewClient->Version = 0;
