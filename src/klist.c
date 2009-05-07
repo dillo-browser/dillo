@@ -117,7 +117,7 @@ void a_Klist_free(Klist_t **KlistPtr)
 
    while (dList_length(Klist->List) > 0) {
       node = dList_nth_data(Klist->List, 0);
-      dList_remove_fast(Klist->List, 0);
+      dList_remove_fast(Klist->List, node);
       dFree(node);
    }
    dList_free(Klist->List);
