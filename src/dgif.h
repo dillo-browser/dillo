@@ -10,7 +10,7 @@ extern "C" {
 
 
 void *a_Gif_new(DilloImage *Image, DilloUrl *url, int version);
-void a_Gif_callback(int Op, CacheClient_t *Client);
+void a_Gif_callback(int Op, void *data);
 
 
 #ifdef __cplusplus

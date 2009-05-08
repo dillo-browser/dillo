@@ -60,7 +60,6 @@ void *a_Dicache_gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
 void *a_Dicache_jpeg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
                            void **Data);
 void a_Dicache_callback(int Op, CacheClient_t *Client);
-void a_Dicache_callback2(int Op, CacheClient_t *Client);
 
 void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
                          uint_t width, uint_t height, DilloImgType type);

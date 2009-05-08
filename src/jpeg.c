@@ -94,14 +94,23 @@ METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo)
 }
 
 /*
+ * Free the jpeg-decoding data structure.
+ */
+static void Jpeg_free(DilloJpeg *jpeg)
+{
+   MSG("Jpeg_free %p\n", jpeg);
+   jpeg_destroy_decompress(&(jpeg->cinfo));
+   dFree(jpeg);
+}
+
+/*
  * Finish the decoding process
  */
 static void Jpeg_close(DilloJpeg *jpeg, CacheClient_t *Client)
 {
    _MSG("Jpeg_close\n");
    a_Dicache_close(jpeg->url, jpeg->version, Client);
-   jpeg_destroy_decompress(&(jpeg->cinfo));
-   dFree(jpeg);
+   Jpeg_free(jpeg);
 }
 
 /*
@@ -174,6 +183,7 @@ void *a_Jpeg_new(DilloImage *Image, DilloUrl *url, int version)
 {
    my_source_mgr *src;
    DilloJpeg *jpeg = dMalloc(sizeof(*jpeg));
+   MSG("Jpeg_new: jpeg=%p\n", jpeg);
 
    jpeg->Image = Image;
    jpeg->url = url;
@@ -206,12 +216,17 @@ void *a_Jpeg_new(DilloImage *Image, DilloUrl *url, int version)
    return jpeg;
 }
 
-void a_Jpeg_callback(int Op, CacheClient_t *Client)
+void a_Jpeg_callback(int Op, void *data)
 {
-   if (Op)
-      Jpeg_close(Client->CbData, Client);
-   else
+   if (Op == CA_Send) {
+      CacheClient_t *Client = data;
       Jpeg_write(Client->CbData, Client->Buf, Client->BufSize);
+   } else if (Op == CA_Close) {
+      CacheClient_t *Client = data;
+      Jpeg_close(Client->CbData, Client);
+   } else if (Op == CA_Abort) {
+      Jpeg_free(data);
+   }
 }
 
 /*
