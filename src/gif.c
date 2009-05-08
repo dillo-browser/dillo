@@ -153,6 +153,7 @@ static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *buf,
 void *a_Gif_new(DilloImage *Image, DilloUrl *url, int version)
 {
    DilloGif *gif = dMalloc(sizeof(DilloGif));
+   MSG("Gif_new: gif=%p\n", gif);
 
    gif->Image = Image;
    gif->url = url;
@@ -174,15 +175,38 @@ void *a_Gif_new(DilloImage *Image, DilloUrl *url, int version)
 }
 
 /*
+ * Free the gif-decoding data structure.
+ */
+static void Gif_free(DilloGif *gif)
+{
+   int i;
+
+   MSG("Gif_free: gif %p\n", gif);
+
+   dFree(gif->linebuf);
+   if (gif->spill_lines != NULL) {
+      for (i = 0; i < gif->num_spill_lines_max; i++)
+         dFree(gif->spill_lines[i]);
+      dFree(gif->spill_lines);
+   }
+   dFree(gif);
+}
+
+/*
  * This function is a cache client, it receives data from the cache
  * and dispatches it to the appropriate gif-processing functions
  */
-void a_Gif_callback(int Op, CacheClient_t *Client)
+void a_Gif_callback(int Op, void *data)
 {
-   if (Op)
-      Gif_close(Client->CbData, Client);
-   else
+   if (Op == CA_Send) {
+      CacheClient_t *Client = data;
       Gif_write(Client->CbData, Client->Buf, Client->BufSize);
+   } else if (Op == CA_Close) {
+      CacheClient_t *Client = data;
+      Gif_close(Client->CbData, Client);
+   } else if (Op == CA_Abort) {
+      Gif_free(data);
+   }
 }
 
 /*
@@ -217,20 +241,9 @@ static void Gif_write(DilloGif *gif, void *Buf, uint_t BufSize)
  */
 static void Gif_close(DilloGif *gif, CacheClient_t *Client)
 {
-   int i;
-
    _MSG("Gif_close: destroy gif %p\n", gif);
-
    a_Dicache_close(gif->url, gif->version, Client);
-
-   dFree(gif->linebuf);
-
-   if (gif->spill_lines != NULL) {
-      for (i = 0; i < gif->num_spill_lines_max; i++)
-         dFree(gif->spill_lines[i]);
-      dFree(gif->spill_lines);
-   }
-   dFree(gif);
+   Gif_free(gif);
 }
 
 

@@ -50,8 +50,7 @@ struct _DilloImage {
 /*
  * Function prototypes
  */
-DilloImage *a_Image_new(int width, int height,
-                        const char *alt_text, int32_t bg_color);
+DilloImage *a_Image_new(const char *alt_text, int32_t bg_color);
 void a_Image_ref(DilloImage *Image);
 void a_Image_unref(DilloImage *Image);
 

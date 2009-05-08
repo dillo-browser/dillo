@@ -2064,7 +2064,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
    html->styleEngine->setNonCssHints(&props);
 
    /* Add a new image widget to this page */
-   Image = a_Image_new(0, 0, alt_ptr, 0);
+   Image = a_Image_new(alt_ptr, 0);
    if (DW2TB(html->dw)->getBgColor())
       Image->bg_color = DW2TB(html->dw)->getBgColor()->getColor();
 

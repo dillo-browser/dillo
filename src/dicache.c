@@ -175,7 +175,7 @@ static void Dicache_remove(const DilloUrl *Url, int version)
 {
    DICacheNode *node;
    DICacheEntry *entry, *prev;
-
+   _MSG("Dicache_remove url=%s\n", URL_STR(Url));
    node = dList_find_sorted(CachedIMGs, Url, Dicache_node_by_url_cmp);
    prev = entry = (node) ? node->first : NULL;
 
@@ -185,10 +185,15 @@ static void Dicache_remove(const DilloUrl *Url, int version)
    }
 
    if (entry) {
+      _MSG("Dicache_remove Decoder=%p DecoderData=%p\n",
+          entry->Decoder, entry->DecoderData);
       /* Eliminate this dicache entry */
       dFree(entry->cmap);
       a_Bitvec_free(entry->BitVec);
       a_Imgbuf_unref(entry->v_imgbuf);
+      if (entry->Decoder) {
+         entry->Decoder(CA_Abort, entry->DecoderData);
+      }
       dicache_size_total -= entry->TotalSize;
 
       if (node->first == entry) {
@@ -208,12 +213,13 @@ static void Dicache_remove(const DilloUrl *Url, int version)
 
 /*
  * Unrefs the counter of a dicache entry, and _if_ no DwImage is acessing
- * this buffer, then we call Dicache_free to do the dirty job.
+ * this buffer, then we call Dicache_remove() to do the job.
  */
 void a_Dicache_unref(const DilloUrl *Url, int version)
 {
    DICacheEntry *entry;
 
+   _MSG("a_Dicache_unref\n");
    if ((entry = a_Dicache_get_entry(Url, version))) {
       if (--entry->RefCount == 0) {
          Dicache_remove(Url, version);
@@ -398,7 +404,7 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    dReturn_val_if_fail(MimeType && Ptr, NULL);
 
    if (!web->Image)
-      web->Image = a_Image_new(0, 0, NULL, web->bgColor);
+      web->Image = a_Image_new(NULL, web->bgColor);
 
    /* Add an extra reference to the Image (for dicache usage) */
    a_Image_ref(web->Image);
@@ -419,9 +425,10 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
       /* Repeated image */
       a_Dicache_ref(DicEntry->url, DicEntry->version);
    }
-   DicEntry->Decoder = (ImgType == DIC_Png) ? a_Png_callback :
-                       (ImgType == DIC_Gif) ? a_Gif_callback :
-                       (ImgType == DIC_Jpeg) ? a_Jpeg_callback : NULL;
+   DicEntry->Decoder = (ImgType == DIC_Png)  ? (CA_Callback_t)a_Png_callback :
+                       (ImgType == DIC_Gif)  ? (CA_Callback_t)a_Gif_callback :
+                       (ImgType == DIC_Jpeg) ? (CA_Callback_t)a_Jpeg_callback:
+                                               NULL;
    *Data = DicEntry->DecoderData;
    *Call = (CA_Callback_t) a_Dicache_callback;
 

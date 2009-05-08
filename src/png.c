@@ -291,15 +291,12 @@ static void Png_dataend_callback(png_structp png_ptr, png_infop info_ptr)
 }
 
 /*
- * Finish the decoding process (and free the memory)
+ * Free up the resources for this image.
  */
-static void Png_close(DilloPng *png, CacheClient_t *Client)
+static void Png_free(DilloPng *png)
 {
-   _MSG("Png_close\n");
-   /* Let dicache know decoding is over */
-   a_Dicache_close(png->url, png->version, Client);
+   MSG("Png_free %p\n", png);
 
-   /* Free up the resources for this image */
    dFree(png->image_data);
    dFree(png->row_pointers);
    dFree(png->linebuf);
@@ -308,6 +305,17 @@ static void Png_close(DilloPng *png, CacheClient_t *Client)
    else if (png->png_ptr)
       png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
    dFree(png);
+}
+
+/*
+ * Finish the decoding process (and free the memory)
+ */
+static void Png_close(DilloPng *png, CacheClient_t *Client)
+{
+   _MSG("Png_close\n");
+   /* Let dicache know decoding is over */
+   a_Dicache_close(png->url, png->version, Client);
+   Png_free(png);
 }
 
 /*
@@ -402,12 +410,16 @@ static void Png_write(DilloPng *png, void *Buf, uint_t BufSize)
  * failure.  This means that you can't just wait for all the data to be
  * presented before starting conversion and display.
  */
-void a_Png_callback(int Op, CacheClient_t *Client)
+void a_Png_callback(int Op, void *data)
 {
-   if (Op) { /* EOF */
-      Png_close(Client->CbData, Client);
-   } else {
+   if (Op == CA_Send) {
+      CacheClient_t *Client = data;
       Png_write(Client->CbData, Client->Buf, Client->BufSize);
+   } else if (Op == CA_Close) {
+      CacheClient_t *Client = data;
+      Png_close(Client->CbData, Client);
+   } else if (Op == CA_Abort) {
+      Png_free(data);
    }
 }
 
@@ -417,6 +429,7 @@ void a_Png_callback(int Op, CacheClient_t *Client)
 void *a_Png_new(DilloImage *Image, DilloUrl *url, int version)
 {
    DilloPng *png = dNew0(DilloPng, 1);
+   MSG("Png_new: png=%p\n", png);
 
    png->Image = Image;
    png->url = url;
