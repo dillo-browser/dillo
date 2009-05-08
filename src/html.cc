@@ -480,7 +480,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 }
 
 /*
- * Miscelaneous initializations for Dw
+ * Miscellaneous initializations for Dw
  */
 void DilloHtml::initDw()
 {
@@ -1106,7 +1106,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
 
    } else {
       if (SGML_SPCDEL) {
-         /* SGML_SPCDEL ignores white space inmediately after an open tag */
+         /* SGML_SPCDEL ignores white space immediately after an open tag */
       } else if (!html->PrevWasSPC) {
          DW2TB(html->dw)->addSpace(html->styleEngine->wordStyle ());
          html->PrevWasSPC = true;
@@ -3466,7 +3466,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       if (html->styleEngine->getId ())
          Html_add_anchor(html, html->styleEngine->getId ());
 
-      /* Request inmediate close for elements with forbidden close tag. */
+      /* Request immediate close for elements with forbidden close tag. */
       /* TODO: XHTML always requires close tags. A simple implementation
        * of the commented clause below will make it work. */
       if  (/* parsing HTML && */ Tags[ni].EndTag == 'F')

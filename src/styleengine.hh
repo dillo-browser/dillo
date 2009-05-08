@@ -11,7 +11,7 @@ class StyleEngine;
 /**
  * \brief This class provides the glue between HTML parser and CSS subsystem.
  *
- * It maintains a document tree and creates and cashes style objects for use
+ * It maintains a document tree and creates and caches style objects for use
  * by the HTML parser.
  * The HTML parser in turn informs StyleEngine about opened or closed
  * HTML elements and their attributes via the startElement() / endElement()

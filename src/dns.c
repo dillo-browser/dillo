@@ -381,7 +381,7 @@ void a_Dns_resolve(const char *hostname, DnsCallback_t cb_func, void *cb_data)
          break;
 
    if (i < dns_cache_size) {
-      /* already resolved, call the Callback inmediately. */
+      /* already resolved, call the Callback immediately. */
       cb_func(0, dns_cache[i].addr_list, cb_data);
 
    } else if ((i = Dns_queue_find(hostname)) != -1) {
