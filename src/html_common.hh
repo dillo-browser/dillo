@@ -19,8 +19,8 @@
  * Macros
  */
 
-// Dw to Textblock
-#define DW2TB(dw)  ((Textblock*)dw)
+// "html struct" to Textblock
+#define HT2TB(html)  ((Textblock*)(html->dw))
 // "html struct" to "Layout"
 #define HT2LT(html)  ((Layout*)html->bw->render_layout)
 // "Image" to "Dw Widget"

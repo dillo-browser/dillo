@@ -298,7 +298,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    char *charset, *first;
    const char *attrbuf;
 
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
+   HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 
    if (html->InFlags & IN_FORM) {
       BUG_MSG("nested forms\n");
@@ -547,7 +547,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 //          gtk_entry_set_max_length(GTK_ENTRY(widget),
 //                                   strtol(attrbuf, NULL, 10));
       }
-      DW2TB(html->dw)->addWidget (embed, html->styleEngine->backgroundStyle());
+      HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle());
    }
    dFree(type);
    dFree(name);
@@ -580,17 +580,17 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
                  html->charset);
    html->InFlags |= IN_FORM;
 
-   DW2TB(html->dw)->addParbreak (9, html->styleEngine->wordStyle ());
+   HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "prompt")))
-      DW2TB(html->dw)->addText(attrbuf, html->styleEngine->wordStyle ());
+      HT2TB(html)->addText(attrbuf, html->styleEngine->wordStyle ());
 
    ResourceFactory *factory = HT2LT(html)->getResourceFactory();
    EntryResource *entryResource = factory->createEntryResource (20,false,NULL);
    embed = new Embed (entryResource);
    Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
-   DW2TB(html->dw)->addWidget (embed, html->styleEngine->backgroundStyle ());
+   HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
 
    a_Url_free(action);
    html->InFlags &= ~IN_FORM;
@@ -658,7 +658,7 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
       textres->setEditable(false);
    Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
 
-   DW2TB(html->dw)->addWidget (embed, html->styleEngine->backgroundStyle ());
+   HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
    dFree(name);
 }
 
@@ -742,7 +742,7 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    }
    Embed *embed = new Embed(res);
 
-   DW2TB(html->dw)->addWidget (embed, html->styleEngine->backgroundStyle ());
+   HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
 
    Html_add_input(html, type, embed, name, NULL, false);
    a_Html_stash_init(html);
@@ -847,9 +847,9 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       embed = new Embed(resource);
 // a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
 
-      DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());
-      DW2TB(html->dw)->addWidget (embed, html->styleEngine->style ());
-      DW2TB(html->dw)->addParbreak (5, html->styleEngine->wordStyle ());
+      HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
+      HT2TB(html)->addWidget (embed, html->styleEngine->style ());
+      HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
 
       S_TOP(html)->textblock = html->dw = page;
       /* right button press for menus for button contents */
@@ -1908,7 +1908,7 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
          ComplexButtonResource *complex_b_r =
             factory->createComplexButtonResource(IM2DW(Image), false);
          button = new Embed(complex_b_r);
-         DW2TB(html->dw)->addWidget (button, html->styleEngine->style ());
+         HT2TB(html)->addWidget (button, html->styleEngine->style ());
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
 
          /* a right button press brings up the image menu */

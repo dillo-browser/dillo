@@ -96,7 +96,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    html->styleEngine->setNonCssHints (&props);
 
-   DW2TB(html->dw)->addParbreak (0, html->styleEngine->wordStyle ());
+   HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
 
    /* The style for the cells */
    table_cell_props = new CssPropertyList ();
@@ -131,7 +131,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    S_TOP(html)->table_cell_props->ref ();
 
    table = new dw::Table(prefs.limit_text_width);
-   DW2TB(html->dw)->addWidget (table, html->styleEngine->style ());
+   HT2TB(html)->addWidget (table, html->styleEngine->style ());
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TOP;
    S_TOP(html)->cell_text_align_set = FALSE;
@@ -197,7 +197,7 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TR;
 #else
-   DW2TB(html->dw)->addParbreak (0, html->styleEngine->wordStyle ());
+   HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
 #endif
 }
 
