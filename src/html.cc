@@ -294,6 +294,7 @@ static void Html_add_new_linkimage(DilloHtml *html,
    DilloLinkImage *li = dNew(DilloLinkImage, 1);
    li->url = *url;
    li->image = image;
+   a_Image_ref(image);
 
    int ni = html->images->size();
    html->images->increase();
@@ -677,6 +678,7 @@ void DilloHtml::loadImages (const DilloUrl *pattern)
       if (images->get(i)->image) {
          if ((!pattern) || (!a_Url_cmp(images->get(i)->url, pattern))) {
             Html_load_image(bw, images->get(i)->url, images->get(i)->image);
+            a_Image_unref (images->get(i)->image);
             images->get(i)->image = NULL;  // web owns it now
          }
       }
@@ -2092,6 +2094,7 @@ static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
    Web = a_Web_new(url);
    Web->bw = bw;
    Web->Image = Image;
+   a_Image_ref(Image);
    Web->flags |= WEB_Image;
    /* Request image data from the cache */
    if ((ClientKey = a_Capi_open_url(Web, NULL, NULL)) != 0) {

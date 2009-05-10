@@ -46,7 +46,7 @@ DilloImage *a_Image_new(const char *alt_text, int32_t bg_color)
    Image->BitVec = NULL;
    Image->State = IMG_Empty;
 
-   Image->RefCount = 1;
+   Image->RefCount = 0;
 
    return Image;
 }
@@ -120,6 +120,5 @@ void a_Image_write(DilloImage *Image, uint_t y)
 void a_Image_close(DilloImage *Image)
 {
    _MSG("a_Image_close\n");
-   a_Image_unref(Image);
 }
 

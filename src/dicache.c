@@ -403,11 +403,10 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
 
    dReturn_val_if_fail(MimeType && Ptr, NULL);
 
-   if (!web->Image)
+   if (!web->Image) {
       web->Image = a_Image_new(NULL, web->bgColor);
-
-   /* Add an extra reference to the Image (for dicache usage) */
-   a_Image_ref(web->Image);
+      a_Image_ref(web->Image);
+   }
 
    DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
    if (!DicEntry) {
