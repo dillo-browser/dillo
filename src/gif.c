@@ -153,7 +153,7 @@ static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *buf,
 void *a_Gif_new(DilloImage *Image, DilloUrl *url, int version)
 {
    DilloGif *gif = dMalloc(sizeof(DilloGif));
-   MSG("Gif_new: gif=%p\n", gif);
+   MSG("a_Gif_new: gif=%p\n", gif);
 
    gif->Image = Image;
    gif->url = url;
@@ -181,7 +181,7 @@ static void Gif_free(DilloGif *gif)
 {
    int i;
 
-   MSG("Gif_free: gif %p\n", gif);
+   MSG("Gif_free: gif=%p\n", gif);
 
    dFree(gif->linebuf);
    if (gif->spill_lines != NULL) {
