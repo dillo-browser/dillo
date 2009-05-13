@@ -98,7 +98,7 @@ METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo)
  */
 static void Jpeg_free(DilloJpeg *jpeg)
 {
-   MSG("Jpeg_free: jpeg=%p\n", jpeg);
+   _MSG("Jpeg_free: jpeg=%p\n", jpeg);
    jpeg_destroy_decompress(&(jpeg->cinfo));
    dFree(jpeg);
 }
@@ -183,7 +183,7 @@ void *a_Jpeg_new(DilloImage *Image, DilloUrl *url, int version)
 {
    my_source_mgr *src;
    DilloJpeg *jpeg = dMalloc(sizeof(*jpeg));
-   MSG("a_Jpeg_new: jpeg=%p\n", jpeg);
+   _MSG("a_Jpeg_new: jpeg=%p\n", jpeg);
 
    jpeg->Image = Image;
    jpeg->url = url;

@@ -295,7 +295,7 @@ static void Png_dataend_callback(png_structp png_ptr, png_infop info_ptr)
  */
 static void Png_free(DilloPng *png)
 {
-   MSG("Png_free: png=%p\n", png);
+   _MSG("Png_free: png=%p\n", png);
 
    dFree(png->image_data);
    dFree(png->row_pointers);
@@ -429,7 +429,7 @@ void a_Png_callback(int Op, void *data)
 void *a_Png_new(DilloImage *Image, DilloUrl *url, int version)
 {
    DilloPng *png = dNew0(DilloPng, 1);
-   MSG("a_Png_new: png=%p\n", png);
+   _MSG("a_Png_new: png=%p\n", png);
 
    png->Image = Image;
    png->url = url;
