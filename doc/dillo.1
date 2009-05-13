@@ -1,0 +1,93 @@
+.TH dillo 1 "May 11, 2009" "version 2.1" "USER COMMANDS"
+.SH NAME
+dillo \- web browser
+.SH SYNOPSIS
+.B dillo
+.RI [ OPTION ]...
+.RB [ \-\- ]
+.RI [ URL | FILE ]...
+.SH DESCRIPTION
+.PP
+Dillo is a lightweight graphical web browser that aims to be secure.
+It handles HTTP internally, and FILE, FTP, and
+DATA URIs are handled through a plugin system (dpi). In addition,
+.I INSECURE
+HTTPS support can be enabled. Both FTP and Dillo's download manager use the
+.BR wget (1)
+downloader.
+.PP
+Dillo displays HTML, text, PNG, JPEG, and GIF files.
+It handles cookies, basic authentication, proxying, and some CSS.
+.PP
+Framesets are displayed as links to frames, and there is currently
+no support for javascript or video.
+.SH OPTIONS
+.TP
+\fB\-f\fR, \fB\-\-fullwindow\fR
+Start in full window mode: hide address bar, navigation buttons, menu, and
+status bar.
+.TP
+\fB\-g\fR, \fB\-\-geometry \fIGEO\fR
+Set initial window position where \fIGEO\fR is
+\fIW\fBx\fIH\fR[{\fB+\-\fR}\fIX\fR{\fB+\-\fR}\fIY\fR].
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Display this help text and exit.
+.TP
+\fB\-l\fR, \fB\-\-local\fR
+Don't load images for these URL(s).
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+Display version info and exit.
+.TP
+\fB\-x\fR, \fB\-\-xid \fIXID\fR
+(DOES NOT WORK YET) Open first Dillo window in an existing GtkSocket which
+window ID is XID (decimal).
+.SH EXIT STATUS
+.TP
+.B -1
+Error in command line arguments.
+.TP
+.B 0
+No error.
+.SH ENVIRONMENT
+.TP
+.BR "HOME " "(or " "HOMEDRIVE " "and " "HOMEPATH " "on Cygwin)"
+User's home directory.
+.TP
+.B LOGNAME
+User's login name, used to generate dpi sockets in /tmp.
+.SH FILES
+.TP
+.I dpid 
+Dillo plugin daemon
+.TP
+.I ~/.dillo/bm.txt 
+User bookmarks
+.TP
+.I ~/.dillo/cookies.txt 
+Stored cookies
+.TP
+.I ~/.dillo/cookiesrc 
+Cookie settings
+.TP
+.I ~/.dillo/dillorc 
+Configuration file.
+.TP
+.I ~/.dillo/dpi_socket_dir 
+Contains name of directory containing dpi sockets.
+.TP
+.I ~/.dillo/dpidrc 
+Contains name of directory containing dpis, and associates
+dpi files with protocols.
+.TP
+.I ~/.dillo/keysrc 
+Keybindings.
+.TP
+.I ~/.dillo/style.css 
+User style sheet
+.SH SEE ALSO
+.BR wget (1)
+.PP
+Dillo website:
+.B http://www.dillo.org
