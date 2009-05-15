@@ -260,6 +260,11 @@ public:
             // Avoid focus change.
             return 0;
          }
+      } else if (e == FOCUS_CHANGE) {
+         // Update the window title
+         BrowserWindow *bw = a_UIcmd_get_bw_by_widget(selected_child());
+         const char *title = a_History_get_title(a_Nav_get_top_uidx(bw), 1);
+         BW2UI(bw)->set_page_title(title ? title : "");
       } else if (e == MOVE) {
          CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
          if (event_inside(r) && children() > 1) {
