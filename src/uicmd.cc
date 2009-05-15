@@ -720,7 +720,7 @@ const char *a_UIcmd_get_save_dir()
  */
 void a_UIcmd_set_save_dir(const char *dir)
 {
-   char *p;
+   const char *p;
 
    if (dir && (p = strrchr(dir, '/'))) {
       dFree(save_dir);

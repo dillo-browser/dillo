@@ -291,7 +291,8 @@ static void prButton_scb(Widget *, void *cb_data)
 DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
 {
    struct stat ss;
-   char *p, *esc_url;
+   const char *p;
+   char *esc_url;
 
    if (pipe(LogPipe) < 0) {
       MSG("pipe, %s\n", dStrerror(errno));
