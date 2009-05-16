@@ -1059,17 +1059,15 @@ void UI::set_render_layout(Widget &nw)
 /*
  * Set the window title
  */
-void UI::set_page_title(const char *label)
+void UI::set_tab_title(const char *label)
 {
    char title[128];
 
    dReturn_if_fail(label != NULL);
 
    snprintf(title, 128, "Dillo: %s", label);
-   this->window()->copy_label(title);
-   this->window()->redraw_label();
-
-   if (tabs() && *label) {
+   if (*label) {
+      // Make a label for this tab
       size_t tab_chars = 18;
       snprintf(title, tab_chars + 1, "%s", label);
       if (strlen(label) > tab_chars) {

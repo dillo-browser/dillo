@@ -264,7 +264,7 @@ public:
          // Update the window title
          BrowserWindow *bw = a_UIcmd_get_bw_by_widget(selected_child());
          const char *title = a_History_get_title(a_Nav_get_top_uidx(bw), 1);
-         BW2UI(bw)->set_page_title(title ? title : "");
+         a_UIcmd_set_page_title(bw, title ? title : "");
       } else if (e == MOVE) {
          CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
          if (event_inside(r) && children() > 1) {
@@ -1127,12 +1127,20 @@ void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug)
 }
 
 /*
- * Set the page title.
- * now it goes to the window titlebar (maybe to TAB label in the future).
+ * Set the page title in the window titlebar and tab label.
+ * (Update window titlebar for the current tab only)
  */
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
 {
-   BW2UI(bw)->set_page_title(label);
+   char title[128];
+
+   if (a_UIcmd_get_bw_by_widget(BW2UI(bw)->tabs()->selected_child()) == bw) {
+      // This is the focused bw, set window title
+      snprintf(title, 128, "Dillo: %s", label);
+      BW2UI(bw)->window()->copy_label(title);
+      BW2UI(bw)->window()->redraw_label();
+   }
+   BW2UI(bw)->set_tab_title(label);
 }
 
 /*
