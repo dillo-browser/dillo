@@ -23,12 +23,11 @@
 #include <math.h>       /* for rint */
 #include <errno.h>
 
-#include <fltk/utf.h>   /* for utf8encode */
-
 #include "bw.h"         /* for BrowserWindow */
 #include "msg.h"
 #include "binaryconst.h"
 #include "colors.h"
+#include "utf8.hh"
 
 #include "misc.h"
 #include "uicmd.hh"
@@ -1028,7 +1027,7 @@ char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize)
                                        toksize-i, &entsize)) >= 0) {
          if (isocode >= 128) {
             /* multibyte encoding */
-            n = utf8encode(isocode, buf);
+            n = a_Utf8_encode(isocode, buf);
             for (k = 0; k < n; ++k)
                new_str[j++] = buf[k];
          } else {
@@ -3568,7 +3567,7 @@ static const char *Html_get_attr2(DilloHtml *html,
                                              tagsize-i, &entsize)) >= 0) {
                if (isocode >= 128) {
                   char buf[4];
-                  int k, n = utf8encode(isocode, buf);
+                  int k, n = a_Utf8_encode(isocode, buf);
                   for (k = 0; k < n; ++k)
                      dStr_append_c(Buf, buf[k]);
                } else {

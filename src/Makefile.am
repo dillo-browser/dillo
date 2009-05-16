@@ -53,6 +53,8 @@ dillo_SOURCES = \
 	klist.h \
 	chain.c \
 	chain.h \
+	utf8.cc \
+	utf8.hh \
 	timeout.cc \
 	timeout.hh \
 	dialog.cc \
