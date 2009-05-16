@@ -1081,8 +1081,11 @@ void UI::set_page_title(const char *label)
          }
          snprintf(title + tab_chars, 4, "...");
       }
-      this->copy_label(title);
-      this->redraw_label();
+      // Avoid unnecessary redraws
+      if (strcmp(this->label(), title)) {
+         this->copy_label(title);
+         this->redraw_label();
+      }
 
       // Disabled because of a bug in fltk::Tabgroup
       //dFree(TabTooltip);
