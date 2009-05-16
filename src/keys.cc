@@ -250,7 +250,7 @@ void Keys::parseKey(char *key, char *commandName)
 
    // Get command code
    if ((st = getCmdCode(commandName)) == -1) {
-      MSG("Invalid command name: '%s'\n", commandName);
+      MSG("Keys::parseKey: Invalid command name: '%s'\n", commandName);
       return;
    } else
       symcode = st;
