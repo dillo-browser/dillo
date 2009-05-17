@@ -852,6 +852,9 @@ char *dGethomedir ()
 
       } else if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
          homedir = dStrconcat(getenv("HOMEDRIVE"), getenv("HOMEPATH"), NULL);
+      } else {
+         DLIB_MSG("dGethomedir: $HOME not set, using '/'.\n");
+         homedir = dStrdup("/");
       }
    }
    return homedir;
