@@ -7,6 +7,7 @@
 #include <string.h>    /* for strerror */
 #include <strings.h>   /* for strcasecmp, strncasecmp (POSIX 2001) */
 
+#include "d_size.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -159,6 +160,11 @@ void *dList_find_sorted (Dlist *lp, const void *data, dCompareFunc func);
  *- Parse function ------------------------------------------------------------
  */
 int dParser_parse_rc_line(char **line, char **name, char **value);
+
+/*
+ *- Dlib messages -------------------------------------------------------------
+ */
+void dLib_show_messages(bool_t show);
 
 /*
  *- Misc utility functions ----------------------------------------------------

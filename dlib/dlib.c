@@ -27,6 +27,15 @@
 
 #include "dlib.h"
 
+static bool_t dLib_show_msg = TRUE;
+
+/* dlib msgs go to stderr to avoid problems with filter dpis */
+#define DLIB_MSG(...)                              \
+   D_STMT_START {                                  \
+      if (dLib_show_msg)                           \
+         fprintf(stderr, __VA_ARGS__);             \
+   } D_STMT_END
+
 /*
  *- Memory --------------------------------------------------------------------
  */
@@ -798,6 +807,14 @@ int dParser_parse_rc_line(char **line, char **name, char **value)
    }
 
    return ret;
+}
+
+/*
+ *- Dlib messages -------------------------------------------------------------
+ */
+void dLib_show_messages(bool_t show)
+{
+   dLib_show_msg = show;
 }
 
 /*

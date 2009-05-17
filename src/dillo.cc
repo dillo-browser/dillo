@@ -276,6 +276,7 @@ int main(int argc, char **argv)
    if ((fp = Paths::getPrefsFP(PATHS_RC_KEYS))) {
       Keys::parse(fp);
    }
+   dLib_show_messages(prefs.show_msg);
 
    // initialize internal modules
    a_Dpi_init();
