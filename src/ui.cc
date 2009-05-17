@@ -29,6 +29,7 @@
 #include "ui.hh"
 #include "msg.h"
 #include "timeout.hh"
+#include "utf8.hh"
 
 using namespace fltk;
 
@@ -1068,17 +1069,13 @@ void UI::set_tab_title(const char *label)
    snprintf(title, 128, "Dillo: %s", label);
    if (*label) {
       // Make a label for this tab
-      size_t tab_chars = 18;
+      size_t tab_chars = 18, label_len = strlen(label);
+
+      if (label_len > tab_chars)
+         tab_chars = a_Utf8_end_of_char(label, tab_chars - 1) + 1;
       snprintf(title, tab_chars + 1, "%s", label);
-      if (strlen(label) > tab_chars) {
-         while (label[tab_chars] & 0x80 && !(label[tab_chars] & 0x40) &&
-                tab_chars < 23) {
-            // In the middle of a multibyte UTF-8 character.
-            title[tab_chars] = label[tab_chars];
-            tab_chars++;
-         }
+      if (label_len > tab_chars)
          snprintf(title + tab_chars, 4, "...");
-      }
       // Avoid unnecessary redraws
       if (strcmp(this->label(), title)) {
          this->copy_label(title);

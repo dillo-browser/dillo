@@ -16,6 +16,26 @@
 // C++ functions with C linkage ----------------------------------------------
 
 /*
+ * Return index of the last byte of the UTF-8-encoded character that str + i
+ * points to or into.
+ */
+uint_t a_Utf8_end_of_char(const char *str, uint_t i)
+{
+   /* We can almost get what we want from utf8fwd(p+1,...)-1, but that
+    * does not work for the last character in a string, and the fn makes some
+    * assumptions that do not suit us.
+    * Here's something very simpleminded instead:
+    */
+   if (str && *str && (str[i] & 0x80)) {
+      int internal_bytes = (str[i] & 0x40) ? 0 : 1;
+
+      while (((str[i + 1] & 0xc0) == 0x80) && (++internal_bytes < 4))
+         i++;
+   }
+   return i;
+}
+
+/*
  * Write UTF-8 encoding of ucs into buf and return number of bytes written.
  */
 int a_Utf8_encode(unsigned int ucs, char *buf)
