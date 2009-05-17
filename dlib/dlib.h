@@ -60,7 +60,7 @@ void dFree (void *mem);
    D_STMT_START{                       \
       if (expr) { return; };           \
    }D_STMT_END
-#define dReturn_val_if(expr)           \
+#define dReturn_val_if(expr,val)       \
    D_STMT_START{                       \
       if (expr) { return val; };       \
    }D_STMT_END
