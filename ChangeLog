@@ -83,6 +83,7 @@ dillo-2.1
  - Support CSS @import directive.
  - Disable form widgets while stylesheets are loading.
  - Fix image scaling on reload with border, margin, or padding > 0.
+ - Implement --xid command line option (used by claws mail client).
    Patches: Johannes Hofmann
 +- Updated the GPL copyright note in the source files.
    Patch: Detlef Riekenberg

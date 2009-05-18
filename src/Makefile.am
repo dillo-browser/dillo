@@ -108,6 +108,8 @@ dillo_SOURCES = \
 	dpiapi.h \
 	pixmaps.h \
 	findbar.cc \
-	findbar.hh
+	findbar.hh \
+	xembed.cc \
+	xembed.hh
 
 EXTRA_DIST = chg srch

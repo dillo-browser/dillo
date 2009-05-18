@@ -780,7 +780,7 @@ int UI::handle(int event)
          set_panelmode(UI_HIDDEN);
          ret = 1;
       } else if (cmd == KEYS_NEW_WINDOW) {
-         a_UIcmd_browser_window_new(w(),h(),a_UIcmd_get_bw_by_widget(this));
+         a_UIcmd_browser_window_new(w(),h(),0,a_UIcmd_get_bw_by_widget(this));
          ret = 1;
       } else if (cmd == KEYS_OPEN) {
          a_UIcmd_open_file(a_UIcmd_get_bw_by_widget(this));

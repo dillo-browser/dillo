@@ -314,7 +314,7 @@ int main(int argc, char **argv)
    }
 
    // Create a new UI/bw pair
-   BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, NULL);
+   BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, xid, NULL);
 
    /* Proxy authentication */
    if (prefs.http_proxyuser && !a_Http_proxy_auth()) {

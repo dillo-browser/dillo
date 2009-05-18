@@ -86,7 +86,7 @@ static void filemenu_cb(Widget *wid, void *data)
 {
    if (strcmp((char*)data, "nw") == 0) {
       UI *ui = (UI*)popup_bw->ui;
-      a_UIcmd_browser_window_new(ui->w(), ui->h(), popup_bw);
+      a_UIcmd_browser_window_new(ui->w(), ui->h(), 0, popup_bw);
    } else if (strcmp((char*)data, "nt") == 0) {
       a_UIcmd_open_url_nt(popup_bw, NULL, 1);
    } else if (strcmp((char*)data, "of") == 0) {

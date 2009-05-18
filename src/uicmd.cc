@@ -28,6 +28,7 @@
 #include "timeout.hh"
 #include "menu.hh"
 #include "dialog.hh"
+#include "xembed.hh"
 #include "bookmark.h"
 #include "history.h"
 #include "msg.h"
@@ -387,10 +388,11 @@ void a_UIcmd_send_event_to_tabs_by_wid(int e, void *v_wid)
  * Create a new UI and its associated BrowserWindow data structure.
  * Use style from v_ui. If non-NULL it must be of type UI*.
  */
-BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
+BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, uint32_t xid, const void *vbw)
 {
    BrowserWindow *old_bw = (BrowserWindow*)vbw;
    BrowserWindow *new_bw = NULL;
+   Xembed *win;
 
    if (ww <= 0 || wh <= 0) {
       // Set default geometry from dillorc.
@@ -398,7 +400,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
       wh = prefs.height;
    }
 
-   Window *win = new Window(ww, wh);
+   win = new Xembed(ww, wh);
+
    win->shortcut(0); // Ignore Escape
    if (prefs.buffered_drawing != 2)
       win->clear_double_buffer();
@@ -417,6 +420,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    DilloTabs->add(new_ui);
    DilloTabs->resizable(new_ui);
    DilloTabs->window()->resizable(new_ui);
+   if (xid)
+      win->embed(xid);
    DilloTabs->window()->show();
 
    if (old_bw == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
@@ -472,7 +477,7 @@ static BrowserWindow *UIcmd_tab_new(const void *vbw)
    // WORKAROUND: limit the number of tabs because of a fltk bug
    if (ui->tabs()->children() >= 127)
       return a_UIcmd_browser_window_new(ui->window()->w(), ui->window()->h(),
-                                        vbw);
+                                        0, vbw);
 
    // Create and set the UI
    UI *new_ui = new UI(0, 0, ui->w(), ui->h(), DEFAULT_TAB_LABEL, ui);
