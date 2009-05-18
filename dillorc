@@ -114,6 +114,7 @@
 # http_language="vi,de-CH,de;q=0.5,th;q=0.3"
 
 # Set the proxy information for http.
+# Note that the http_proxy environment variable overrides this setting.
 # WARNING: - HTTPS does not currently use the proxy settings.
 #          - FTP and downloads plugins use wget. To use a proxy with them,
 #            you will need to configure wget accordingly.
