@@ -564,7 +564,7 @@ static const char
    *const roman_I2[] = { "","C","CC","CCC","CD","D","DC","DCC","DCCC","CM" },
    *const roman_I3[] = { "","M","MM","MMM","MMMM" };
 
-void strtolower (char *s)
+static void strtolower (char *s)
 {
    for ( ; *s; s++)
       *s = tolower (*s);
@@ -581,6 +581,9 @@ void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType)
    bool low = false;
    int start_ch = 'A';
 
+   if (buflen <= 0)
+      return;
+
    switch(listStyleType){
    case LIST_STYLE_TYPE_LOWER_ALPHA:
       start_ch = 'a';
@@ -588,9 +591,9 @@ void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType)
       i0 = num - 1;
       i1 = i0/26 - 1; i2 = i1/26 - 1;
       if (i2 > 25) /* more than 26+26^2+26^3=18278 elements ? */
-         sprintf(buf, "****.");
+         snprintf(buf, buflen, "****.");
       else
-         sprintf(buf, "%c%c%c.",
+         snprintf(buf, buflen, "%c%c%c.",
                  i2<0 ? ' ' : start_ch + i2%26,
                  i1<0 ? ' ' : start_ch + i1%26,
                  i0<0 ? ' ' : start_ch + i0%26);
@@ -602,18 +605,23 @@ void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType)
       i1 = i0/10; i2 = i1/10; i3 = i2/10;
       i0 %= 10;   i1 %= 10;   i2 %= 10;
       if (num < 0 || i3 > 4) /* more than 4999 elements ? */
-         sprintf(buf, "****.");
+         snprintf(buf, buflen, "****.");
       else
          snprintf(buf, buflen, "%s%s%s%s.", roman_I3[i3], roman_I2[i2],
                   roman_I1[i1], roman_I0[i0]);
-      if (low)
-         strtolower(buf);
       break;
    case LIST_STYLE_TYPE_DECIMAL:
    default:
-      sprintf(buf, "%d.", num);
+      snprintf(buf, buflen, "%d.", num);
       break;
    }
+
+   // ensure termination
+   buf[buflen - 1] = '\0';
+
+   if (low)
+      strtolower(buf);
+
 }
 
 } // namespace style
