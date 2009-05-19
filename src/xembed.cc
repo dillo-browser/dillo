@@ -1,5 +1,6 @@
 #include <fltk/Window.h>
 #include <fltk/x11.h>
+#include <fltk/run.h>
 #include <fltk/x.h>
 
 #include "xembed.hh"
@@ -11,10 +12,12 @@ void Xembed::embed (unsigned long xid) {
 #if USE_X11
    fltk::Widget *r = resizable();
    // WORKAROUND: Avoid jumping windows with tiling window managers (e.g. dwm)
+   resize(1, 1);
    resizable(NULL);
    fltk::Window::show();
    fltk::Widget::hide();
    resizable(r);
+   fltk::flush();
    XReparentWindow (fltk::xdisplay, fltk::xid(this), xid, 0, 0);
 #endif
 }
