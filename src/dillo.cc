@@ -84,9 +84,8 @@ static const CLI_options Options[] = {
    {"-v", "--version",    0, DILLO_CLI_VERSION,
     "  -v, --version          Display version info and exit."},
    {"-x", "--xid",        1, DILLO_CLI_XID,
-    "  -x, --xid XID          (DOES NOT WORK YET)\n"
-    "                         Open first Dillo window in an existing\n"
-    "                         GtkSocket which window ID is XID (decimal)."},
+    "  -x, --xid XID          Open first Dillo window in an existing\n"
+    "                         window whose window ID is XID (decimal)."},
    {NULL, NULL, 0, DILLO_CLI_NONE, NULL}
 };
 
