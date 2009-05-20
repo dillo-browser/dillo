@@ -15,18 +15,11 @@
  */
 
 
-#include <ctype.h> /* for parsing */
-#include <unistd.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
+#include <ctype.h> /* iscntrl */
 #include "auth.h"
 #include "msg.h"
 #include "misc.h"
 #include "dialog.hh"
-#include "IO/Url.h"
 #include "../dlib/dlib.h"
 
 
