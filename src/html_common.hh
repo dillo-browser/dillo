@@ -146,7 +146,6 @@ public:  //BUG: for now everything is public
    /* -------------------------------------------------------------------*/
    /* Variables required at parsing time                                 */
    /* -------------------------------------------------------------------*/
-   size_t Buf_Consumed; /* amount of source from cache consumed */
    char *Start_Buf;
    int Start_Ofs;
    char *content_type, *charset;

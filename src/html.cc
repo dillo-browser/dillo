@@ -405,7 +405,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    a_Bw_add_doc(p_bw, this);
 
    /* Init for-parsing variables */
-   Buf_Consumed = 0;
    Start_Buf = NULL;
    Start_Ofs = 0;
 
