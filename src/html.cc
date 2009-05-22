@@ -1741,7 +1741,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
          a_Color_vc(html->visited_color,
             html->styleEngine->style ()->color->getColor(),
             html->non_css_link_color,
-            html->styleEngine->style()->backgroundColor->getColor());
+            html->styleEngine->backgroundStyle()->backgroundColor->getColor());
    }
 
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_BODY;
