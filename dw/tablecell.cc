@@ -44,7 +44,7 @@ TableCell::~TableCell()
 void TableCell::wordWrap(int wordIndex)
 {
    Textblock::Word *word;
-   char *p;
+   const char *p;
 
    Textblock::wordWrap (wordIndex);
 
