@@ -109,10 +109,6 @@ struct _DilloHtmlState {
    /* This is used to align list items (especially in enumerated lists) */
    dw::core::Widget *ref_list_item;
 
-   /* This makes image processing faster than a function
-      a_Dw_widget_get_background_color. */
-   int32_t current_bg_color;
-
    /* This is used for list items etc; if it is set to TRUE, breaks
       have to be "handed over" (see Html_add_indented and
       Html_eventually_pop_dw). */

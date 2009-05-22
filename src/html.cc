@@ -439,8 +439,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    stack->getRef(0)->textblock = NULL;
    stack->getRef(0)->table = NULL;
    stack->getRef(0)->ref_list_item = NULL;
-   stack->getRef(0)->current_bg_color =
-      styleEngine->style()->backgroundColor->getColor();
    stack->getRef(0)->hand_over_break = false;
 
    InFlags = IN_NONE;
@@ -1743,7 +1741,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
          a_Color_vc(html->visited_color,
             html->styleEngine->style ()->color->getColor(),
             html->non_css_link_color,
-            S_TOP(html)->current_bg_color);
+            html->styleEngine->style()->backgroundColor->getColor());
    }
 
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_BODY;
