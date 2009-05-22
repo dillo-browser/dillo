@@ -1064,7 +1064,7 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
                             (LabelButtonResource*) input->embed->getResource();
                const char *filename = lbr->getLabel();
                if (filename[0] && strcmp(filename, input->init_str)) {
-                  char *p = strrchr(filename, '/');
+                  const char *p = strrchr(filename, '/');
                   if (p)
                      filename = p + 1;     /* don't reveal path */
                   Dstr *dfilename = dStr_new(filename);
