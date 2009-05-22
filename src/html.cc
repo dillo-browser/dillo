@@ -2784,8 +2784,8 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 " <tr><td bgcolor='#a0a0a0' colspan='2'>The author wanted you to go\n"
 " <a href='%s'>here</a>%s</td></tr></table><br>\n";
 
-   const char *equiv, *content, *new_content;
-   char delay_str[64], *mr_url, *p;
+   const char *p, *equiv, *content, *new_content;
+   char delay_str[64], *mr_url;
    int delay;
 
    /* only valid inside HEAD */

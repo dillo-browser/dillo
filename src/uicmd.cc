@@ -694,8 +694,8 @@ void a_UIcmd_redirection0(void *vbw, const DilloUrl *url)
 static char *UIcmd_make_save_filename(const char *pathstr)
 {
    size_t MaxLen = 64;
-   char *FileName, *name, *newname, *o, *n;
-   const char *dir = a_UIcmd_get_save_dir();
+   char *FileName, *newname, *o, *n;
+   const char *name, *dir = a_UIcmd_get_save_dir();
 
    if ((name = strrchr(pathstr, '/'))) {
       if (strlen(++name) > MaxLen) {
