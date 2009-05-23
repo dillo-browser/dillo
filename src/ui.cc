@@ -1058,7 +1058,7 @@ void UI::set_render_layout(Widget &nw)
 }
 
 /*
- * Set the window title
+ * Set the tab title
  */
 void UI::set_tab_title(const char *label)
 {
@@ -1066,7 +1066,6 @@ void UI::set_tab_title(const char *label)
 
    dReturn_if_fail(label != NULL);
 
-   snprintf(title, 128, "Dillo: %s", label);
    if (*label) {
       // Make a label for this tab
       size_t tab_chars = 18, label_len = strlen(label);
