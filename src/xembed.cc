@@ -8,7 +8,7 @@
 using namespace fltk;
 // TODO; Implement proper XEMBED support;
 // http://standards.freedesktop.org/xembed-spec/xembed-spec-latest.html
-void Xembed::embed (unsigned long xid) {
+void Xembed::embed (uint32_t xid) {
 #if USE_X11
    fltk::Widget *r = resizable();
    // WORKAROUND: Avoid jumping windows with tiling window managers (e.g. dwm)
