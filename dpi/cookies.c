@@ -539,7 +539,7 @@ static time_t Cookies_create_timestamp(const char *expires)
    }
 
    /* Error checks  --this may be overkill */
-   if (!(day > 0 && day < 32 && month > 0 && month < 13 && year > 1970 &&
+   if (!(day > 0 && day < 32 && month > 0 && month < 13 && year >= 1970 &&
          hour >= 0 && hour < 24 && minutes >= 0 && minutes < 60 &&
          seconds >= 0 && seconds < 60)) {
       MSG("%s%s\n", E_msg, expires);
