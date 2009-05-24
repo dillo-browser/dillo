@@ -1,5 +1,5 @@
-#ifndef __XIDWINDOW_HH__
-#define __XIDWINDOW_HH__
+#ifndef __XEMBED_HH__
+#define __XEMBED_HH__
 
 #include <fltk/Window.h>
 
