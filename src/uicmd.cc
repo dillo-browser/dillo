@@ -26,6 +26,7 @@
 #include "ui.hh"
 #include "uicmd.hh"
 #include "timeout.hh"
+#include "utf8.hh"
 #include "menu.hh"
 #include "dialog.hh"
 #include "xembed.hh"
@@ -1137,11 +1138,15 @@ void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug)
  */
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
 {
-   char title[128];
+   const int size = 128;
+   char title[size];
 
    if (a_UIcmd_get_bw_by_widget(BW2UI(bw)->tabs()->selected_child()) == bw) {
       // This is the focused bw, set window title
-      snprintf(title, 128, "Dillo: %s", label);
+      if (snprintf(title, size, "Dillo: %s", label) >= size) {
+         uint_t i = MIN(size - 4, 1 + a_Utf8_end_of_char(title, size - 8));
+         snprintf(title + i, 4, "...");
+      }
       BW2UI(bw)->window()->copy_label(title);
       BW2UI(bw)->window()->redraw_label();
    }
