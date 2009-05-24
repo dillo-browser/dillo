@@ -3,6 +3,8 @@
 
 #include <fltk/Window.h>
 
+#include "d_size.h"
+
 class Xembed : public fltk::Window {
    public:
       Xembed(int _w, int _h) : fltk::Window(_w, _h) {};
