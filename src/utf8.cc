@@ -36,6 +36,16 @@ uint_t a_Utf8_end_of_char(const char *str, uint_t i)
 }
 
 /*
+ * Decode a single UTF-8-encoded character starting at p.
+ * The resulting Unicode value (in the range 0-0x10ffff) is returned,
+ * and len is set the the number of bytes in the UTF-8 encoding.
+ */
+uint_t a_Utf8_decode(const char* str, const char* end, int* len)
+{
+   return utf8decode(str, end, len);
+}
+
+/*
  * Write UTF-8 encoding of ucs into buf and return number of bytes written.
  */
 int a_Utf8_encode(unsigned int ucs, char *buf)

@@ -16,6 +16,7 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "utf8.hh"
 #include "msg.h"
 #include "misc.h"
 
@@ -47,7 +48,6 @@ char *a_Misc_escape_chars(const char *str, const char *esc_set)
    return p;
 }
 
-
 #define TAB_SIZE 8
 /*
  * Takes a string and converts any tabs to spaces.
@@ -55,23 +55,27 @@ char *a_Misc_escape_chars(const char *str, const char *esc_set)
 char *a_Misc_expand_tabs(const char *str, int len)
 {
    Dstr *New = dStr_new("");
-   int i, j, pos, old_pos;
+   int i = 0, j, pos = 0, old_pos, char_len;
+   uint_t code;
    char *val;
 
-   if (len) {
-      for (pos = 0, i = 0; i < len; i++) {
-         if (str[i] == '\t') {
-            /* Fill with whitespaces until the next tab. */
-            old_pos = pos;
-            pos += TAB_SIZE - (pos % TAB_SIZE);
-            for (j = old_pos; j < pos; j++)
-               dStr_append_c(New, ' ');
-         } else {
-            dStr_append_c(New, str[i]);
-            pos++;
-         }
+   while (i < len) {
+      code = a_Utf8_decode(&str[i], str + len, &char_len);
+
+      if (code == '\t') {
+         /* Fill with whitespaces until the next tab. */
+         old_pos = pos;
+         pos += TAB_SIZE - (pos % TAB_SIZE);
+         for (j = old_pos; j < pos; j++)
+            dStr_append_c(New, ' ');
+      } else {
+         dStr_append_l(New, &str[i], char_len);
+         pos++;
       }
+
+      i += char_len;
    }
+
    val = New->str;
    dStr_free(New, FALSE);
    return val;
