@@ -38,7 +38,9 @@ uint_t a_Utf8_end_of_char(const char *str, uint_t i)
 /*
  * Decode a single UTF-8-encoded character starting at p.
  * The resulting Unicode value (in the range 0-0x10ffff) is returned,
- * and len is set the the number of bytes in the UTF-8 encoding.
+ * and len is set to the number of bytes in the UTF-8 encoding.
+ * Note that utf8decode(), if given non-UTF-8 data, will interpret
+ * it as ISO-8859-1 or CP1252 if possible.
  */
 uint_t a_Utf8_decode(const char* str, const char* end, int* len)
 {
