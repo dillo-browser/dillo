@@ -393,7 +393,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, uint32_t xid, const vo
 {
    BrowserWindow *old_bw = (BrowserWindow*)vbw;
    BrowserWindow *new_bw = NULL;
-   Xembed *win;
+   Window *win;
 
    if (ww <= 0 || wh <= 0) {
       // Set default geometry from dillorc.
@@ -401,7 +401,10 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, uint32_t xid, const vo
       wh = prefs.height;
    }
 
-   win = new Xembed(ww, wh);
+   if (xid)
+      win = new Xembed(xid, ww, wh);
+   else
+      win = new Window(ww, wh);
 
    win->shortcut(0); // Ignore Escape
    if (prefs.buffered_drawing != 2)
@@ -421,8 +424,6 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, uint32_t xid, const vo
    DilloTabs->add(new_ui);
    DilloTabs->resizable(new_ui);
    DilloTabs->window()->resizable(new_ui);
-   if (xid)
-      win->embed(xid);
    DilloTabs->window()->show();
 
    if (old_bw == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
