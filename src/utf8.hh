@@ -13,7 +13,7 @@ extern "C" {
  * "used to replace an incoming character whose value is unknown or otherwise
  * unrepresentable in Unicode"
  */
-const char utf8_replacement_char[] = "\xEF\xBF\xBD";
+static const char utf8_replacement_char[] = "\xEF\xBF\xBD";
 
 uint_t a_Utf8_end_of_char(const char *str, uint_t i);
 uint_t a_Utf8_decode(const char*, const char* end, int* len);
