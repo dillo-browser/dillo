@@ -71,9 +71,6 @@ static int event_handler(int e, fltk::Window *w) {
    Atom xembed_atom = XInternAtom (fltk::xdisplay, "_XEMBED", false);
 
    if (fltk::xevent.type == ClientMessage) {
-
-   fprintf(stderr, "====> %s\n", XGetAtomName(fltk::xdisplay, fltk::xevent.xclient.message_type));
-
       if (fltk::xevent.xclient.message_type == xembed_atom) {
          long message = fltk::xevent.xclient.data.l[1];
 
@@ -138,6 +135,7 @@ void Xembed::create_internal(uint32_t parent) {
 }
 
 #else  // USE_X11
+
 void
 Xembed::setXembedInfo(unsigned long flags) {};
 
@@ -153,4 +151,5 @@ void
 Xembed::create() {
    Window::create();
 }
+
 #endif
