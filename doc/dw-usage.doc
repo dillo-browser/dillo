@@ -20,7 +20,7 @@ As described in \ref dw-overview, the following objects are needed:
 <li> some widgets (for this example, only a simple dw::Textblock).
 </ul>
 
-First of all, the necessary #include's:
+First of all, the necessary \#include's:
 
 \code
 #include <fltk/Window.h>

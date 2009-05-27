@@ -106,7 +106,7 @@ The following changes should be applied manually.
 
 <h3>Changes in fltkcomplexbutton.hh</h3>
 
-First of all, the #define's for avoiding multiple includes:
+First of all, the \#define's for avoiding multiple includes:
 
 \code
 -#ifndef fltk_ComplexButton_h // fltk_Button_h formerly
@@ -167,7 +167,7 @@ namespace conflict:
 
 <h3>Changes in fltkcomplexbutton.cc</h3>
 
-First, #include's:
+First, \#include's:
 
 \code
  
