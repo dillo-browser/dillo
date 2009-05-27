@@ -15,6 +15,7 @@
 #include <stdlib.h>     /* strtol */
 
 #include "decode.h"
+#include "utf8.hh"
 #include "msg.h"
 
 static const int bufsize = 8*1024;
@@ -164,15 +165,8 @@ static Dstr *Decode_charset(Decode *dc, const char *instr, int inlen)
       if (rc == EILSEQ){
          inPtr++;
          inLeft--;
-         /*
-          * U+FFFD: "used to replace an incoming character whose value is
-          *        unknown or unrepresentable in Unicode."
-          */
-          //dStr_append(output, "\ufffd");
-          // \uxxxx is C99. UTF-8-specific:
-          dStr_append_c(output, 0xEF);
-          dStr_append_c(output, 0xBF);
-          dStr_append_c(output, 0xBD);
+         dStr_append_l(output, utf8_replacement_char,
+                       sizeof(utf8_replacement_char) - 1);
       }
    }
    dStr_erase(dc->leftover, 0, dc->leftover->len - inLeft);
