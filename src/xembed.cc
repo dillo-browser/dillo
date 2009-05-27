@@ -79,6 +79,8 @@ static int event_handler(int e, fltk::Window *w) {
 
          switch (message) {
             case XEMBED_WINDOW_ACTIVATE:
+               // Force a ConfigureNotify message so fltk can get the new
+               // coordinates after a move of the embedder window.
                w->resize(0, 0, w->w(), w->h());
                break;
             case XEMBED_WINDOW_DEACTIVATE:
