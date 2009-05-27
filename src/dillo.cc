@@ -85,7 +85,7 @@ static const CLI_options Options[] = {
     "  -v, --version          Display version info and exit."},
    {"-x", "--xid",        1, DILLO_CLI_XID,
     "  -x, --xid XID          Open first Dillo window in an existing\n"
-    "                         window whose window ID is XID (decimal)."},
+    "                         window whose window ID is XID."},
    {NULL, NULL, 0, DILLO_CLI_NONE, NULL}
 };
 
@@ -230,10 +230,9 @@ int main(int argc, char **argv)
       case DILLO_CLI_XID:
       {
          char *end;
-         xid = strtol(opt_argv[0], &end, 10);
+         xid = strtol(opt_argv[0], &end, 0);
          if (*end) {
-            fprintf(stderr, "XID argument \"%s\" not valid. Must be an "
-                            "unsigned decimal number.\n",opt_argv[0]);
+            fprintf(stderr, "XID argument \"%s\" not valid.\n",opt_argv[0]);
             return -1;
          }
          break;
