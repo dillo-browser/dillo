@@ -36,7 +36,4 @@
          printf("** ERROR **: " __VA_ARGS__);      \
    } D_STMT_END
 
-#define MSG_HTTP(...)                              \
-   printf("HTTP warning: " __VA_ARGS__)
-
 #endif /* __MSG_H__ */
