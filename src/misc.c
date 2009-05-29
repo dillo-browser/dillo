@@ -19,7 +19,7 @@
 #include "utf8.hh"
 #include "msg.h"
 #include "misc.h"
-
+#include "utf8.hh"
 
 /*
  * Escape characters as %XX sequences.
@@ -169,12 +169,16 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
          if (ch > 190)
             ++non_ascci_text;
       }
-      if (bin_chars == 0) {
+      if (bin_chars == 0 && (non_ascci - non_ascci_text) <= Size/10) {
          /* Let's say text: if "rare" chars are <= 10% */
-         if ((non_ascci - non_ascci_text) <= Size/10)
+         Type = DT_TEXT_PLAIN;
+      } else if (Size > 0) {
+         /* a special check for UTF-8 */
+         Size = a_Utf8_end_of_char(p, Size - 1) + 1;
+         if (a_Utf8_test(p, Size) > 0)
             Type = DT_TEXT_PLAIN;
       }
-      if (Size == 256)
+      if (Size >= 256)
          st = 0;
    }
 
