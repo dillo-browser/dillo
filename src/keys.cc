@@ -76,7 +76,7 @@ static const Mapping_t modifierNames[] = {
    { "Button3", fltk::BUTTON3 }
 };
 
-static KeyBinding_t default_keys[] = {
+static const KeyBinding_t default_keys[] = {
    { "open"         , KEYS_OPEN         , fltk::CTRL   , 'o'                },
    { "new-window"   , KEYS_NEW_WINDOW   , fltk::CTRL   , 'n'                },
    { "new-tab"      , KEYS_NEW_TAB      , fltk::CTRL   , 't'                },

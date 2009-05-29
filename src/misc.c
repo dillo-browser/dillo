@@ -27,7 +27,7 @@
  */
 char *a_Misc_escape_chars(const char *str, const char *esc_set)
 {
-   static const char *hex = "0123456789ABCDEF";
+   static const char *const hex = "0123456789ABCDEF";
    char *p = NULL;
    Dstr *dstr;
    int i;
@@ -350,9 +350,9 @@ int a_Misc_parse_geometry(char *str, int *x, int *y, int *w, int *h)
  */
 char *a_Misc_encode_base64(const char *in)
 {
-   static const char *base64_hex = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                   "abcdefghijklmnopqrstuvwxyz"
-                                   "0123456789+/";
+   static const char *const base64_hex = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                         "abcdefghijklmnopqrstuvwxyz"
+                                         "0123456789+/";
    char *out = NULL;
    int len, i = 0;
 

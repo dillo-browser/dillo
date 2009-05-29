@@ -18,7 +18,7 @@
 #include "dpip.h"
 #include "d_size.h"
 
-static char Quote = '\'';
+static const char Quote = '\'';
 
 /*
  * Basically the syntax of a dpip tag is:

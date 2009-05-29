@@ -578,7 +578,7 @@ char *a_Url_decode_hex_str(const char *str)
  */
 char *a_Url_encode_hex_str(const char *str)
 {
-   static const char *verbatim = "-_.*";
+   static const char *const verbatim = "-_.*";
    char *newstr, *c;
 
    if (!str)
