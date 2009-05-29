@@ -123,7 +123,7 @@ void Xembed::createInternal(uint32_t parent) {
       | EnterWindowMask | LeaveWindowMask
       | PointerMotionMask;
 
-   fltk::CreatedWindow *x = fltk::CreatedWindow::set_xid(window,
+   fltk::CreatedWindow::set_xid(window,
       XCreateWindow(fltk::xdisplay,
          parent,
          X, Y, W, H,
