@@ -37,16 +37,16 @@ Xembed::setXembedInfo(unsigned long flags)
   buffer[1] = flags;
 
   XChangeProperty (fltk::xdisplay,
-           xid,
-           xembed_info_atom, xembed_info_atom, 32,
-           PropModeReplace,
-           (unsigned char *)buffer, 2);
+     xid,
+     xembed_info_atom, xembed_info_atom, 32,
+     PropModeReplace,
+     (unsigned char *)buffer, 2);
 }
 
 void
 Xembed::sendXembedEvent(uint32_t message) {
    XClientMessageEvent xclient;
-   
+
    memset (&xclient, 0, sizeof (xclient));
    xclient.window = xid;
    xclient.type = ClientMessage;
@@ -94,12 +94,12 @@ static int event_handler(int e, fltk::Window *w) {
 // TODO; Implement more XEMBED support;
 
 void Xembed::create() {
-   create_internal(xid);
+   createInternal(xid);
    setXembedInfo(1);
    fltk::add_event_handler(event_handler);
 }
 
-void Xembed::create_internal(uint32_t parent) {
+void Xembed::createInternal(uint32_t parent) {
    fltk::Window *window = this;
    Colormap colormap = fltk::xcolormap;
 

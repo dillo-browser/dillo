@@ -135,6 +135,7 @@ bool DilloPlain::PlainEventReceiver::buttonPress (Widget *widget,
    return false;
 }
 
+#define MAXWORD 500
 /*
  * Here we parse plain text and put it into the page structure.
  * (This function is called by Plain_callback whenever there's new data)
@@ -161,7 +162,15 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
          break;
       case ST_Eol:
          data = a_Misc_expand_tabs(Start + i - len, len);
-         DW2TB(dw)->addText(data, widgetStyle);
+         char *dp = data;
+         while (strlen (dp) > MAXWORD) {
+            char save = data[MAXWORD];
+            dp[MAXWORD] = '\0';
+            DW2TB(dw)->addText(dp, widgetStyle);
+            dp[MAXWORD] = save;
+            dp += MAXWORD;
+         }
+         DW2TB(dw)->addText(dp, widgetStyle);
          DW2TB(dw)->addParbreak(0, widgetStyle);
          dFree(data);
          if (Start[i] == '\r' && Start[i + 1] == '\n') ++i;
@@ -174,7 +183,15 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
    Start_Ofs += i - len;
    if (Eof && len) {
       data = a_Misc_expand_tabs(Start + i - len, len);
-      DW2TB(dw)->addText(data, widgetStyle);
+      char *dp = data;
+      while (strlen (dp) > MAXWORD) {
+         char save = data[MAXWORD];
+         dp[MAXWORD] = '\0';
+         DW2TB(dw)->addText(dp, widgetStyle);
+         dp[MAXWORD] = save;
+         dp += MAXWORD;
+      }
+      DW2TB(dw)->addText(dp, widgetStyle);
       DW2TB(dw)->addParbreak(0, widgetStyle);
       dFree(data);
       Start_Ofs += len;
