@@ -8,7 +8,7 @@
  *    members are instances of object::Object.
  *
  * A common problem in languanges without garbage collection is, where the
- * children belong to, and so, who is responsible to delete them (instanciation
+ * children belong to, and so, who is responsible to delete them (instantiation
  * is always done by the caller). This information is here told to the
  * collections, each container has a constructor with the parameter
  * "ownerOfObjects" (HashTable has two such parameters, for keys and values).
@@ -70,7 +70,7 @@ class Iterator
 private:
    Collection0::AbstractIterator *impl;
 
-   // Should not instanciated directly.
+   // Should not instantiated directly.
    inline Iterator(Collection0::AbstractIterator *impl) { this->impl = impl; }
 
 public:

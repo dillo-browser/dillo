@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 
    // Note on complex buttons: before any operations on the widget, which
    // need a layout, the complex button resource should be created, since
-   // then, a layout and a platform are instanciated.
+   // then, a layout and a platform are instantiated.
    Textblock *cbuttontext = new Textblock(false);
    ComplexButtonResource *cbuttonres =
       layout->getResourceFactory()->createComplexButtonResource (cbuttontext,

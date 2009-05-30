@@ -53,7 +53,7 @@ namespace identity {
  * </ul>
  *
  * After this, <i>class</i>::CLASS_ID refers to a number, which denotes the
- * class. (If this is still -1, since the class has not yet been instanciated,
+ * class. (If this is still -1, since the class has not yet been instantiated,
  * any test will fail, which is correct.)
  *
  * <h3>Notes on implementation</h3>
