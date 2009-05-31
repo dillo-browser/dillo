@@ -221,9 +221,9 @@ static int32_t Color_parse_hex (const char *s, int32_t default_color, int *err)
      *err = 0;
   else if (tail - s == 3) {       /* #RGB as allowed by CSS */
      *err = 0;
-	 ret_color = ((ret_color & 0xf00) << 12) | ((ret_color & 0xf00) << 8) |
-                 ((ret_color & 0x0f0) << 8) | ((ret_color & 0x0f0) << 4) |
-				 ((ret_color & 0x00f) << 4) | ((ret_color & 0x00f) << 0);
+         ret_color = ((ret_color & 0xf00) << 12) | ((ret_color & 0xf00) << 8) |
+                     ((ret_color & 0x0f0) << 8)  | ((ret_color & 0x0f0) << 4) |
+                     ((ret_color & 0x00f) << 4)  | ((ret_color & 0x00f) << 0);
   } else
      ret_color = default_color;
 
