@@ -38,6 +38,7 @@
 #include "bw.h"
 #include "misc.h"
 #include "nav.h"
+#include "history.h"
 
 #include "dns.h"
 #include "web.hh"
@@ -349,5 +350,23 @@ int main(int argc, char **argv)
       }
    }
 
-   return fltk::run();
+   fltk::run();
+
+   /*
+    * Memory deallocating routines
+    * (This can be left to the OS, but we'll do it, with a view to test
+    *  and fix our memory management)
+    */
+   a_Cookies_freeall();
+   a_Cache_freeall();
+   a_Dicache_freeall();
+   a_Http_freeall();
+   a_Dns_freeall();
+   a_History_freeall();
+   a_Prefs_freeall();
+   /* TODO: auth, css */
+
+   //a_Dpi_bye_dpid();
+   MSG("Dillo: normal exit!\n");
+   return 0;
 }

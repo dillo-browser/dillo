@@ -97,6 +97,7 @@ struct _DilloPrefs {
 extern DilloPrefs prefs;
 
 void a_Prefs_init(void);
+void a_Prefs_freeall(void);
 
 #ifdef __cplusplus
 }

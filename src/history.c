@@ -149,7 +149,7 @@ void a_History_set_title_by_url(const DilloUrl *url, const char *title)
 /*
  * Free all the memory used by this module
  */
-void a_History_free()
+void a_History_freeall()
 {
    int i;
 

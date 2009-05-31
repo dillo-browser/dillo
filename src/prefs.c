@@ -79,3 +79,24 @@ void a_Prefs_init(void)
    prefs.w3c_plus_heuristics = TRUE;
 }
 
+/*
+ *  memory-deallocation
+ *  (Call this one at exit time)
+ */
+void a_Prefs_freeall(void)
+{
+   dFree(prefs.font_cursive);
+   dFree(prefs.font_fantasy);
+   dFree(prefs.font_monospace);
+   dFree(prefs.font_sans_serif);
+   dFree(prefs.font_serif);
+   a_Url_free(prefs.home);
+   dFree(prefs.http_language);
+   a_Url_free(prefs.http_proxy);
+   dFree(prefs.http_proxyuser);
+   dFree(prefs.http_referer);
+   dFree(prefs.no_proxy);
+   dFree(prefs.save_dir);
+   dFree(prefs.search_url);
+   a_Url_free(prefs.start_page);
+}

@@ -548,4 +548,5 @@ void a_Http_freeall(void)
    a_Klist_free(&ValidSocks);
    a_Url_free(HTTP_Proxy);
    dFree(HTTP_Proxy_Auth_base64);
+   dFree(HTTP_Language_hdr);
 }
