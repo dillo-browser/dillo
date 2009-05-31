@@ -154,7 +154,7 @@ bool FltkPreview::usesFltkWidgets ()
    return false;
 }
 
-void FltkPreview::drawFltkWidget (Widget *widget,
+void FltkPreview::drawFltkWidget (::fltk::Widget *widget,
                                   core::Rectangle *area)
 {
 }

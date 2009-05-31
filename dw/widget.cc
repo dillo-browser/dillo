@@ -54,8 +54,8 @@ void Widget::EventReceiver::leaveNotify (Widget *widget, EventCrossing *event)
 
 
 bool Widget::EventEmitter::emitToReceiver (lout::signal::Receiver *receiver,
-                                           int signalNo,
-                                           int argc, Object **argv)
+                                           int signalNo, int argc,
+                                           lout::object::Object **argv)
 {
    EventReceiver *eventReceiver = (EventReceiver*)receiver;
 
@@ -152,8 +152,8 @@ bool Widget::LinkReceiver::click (Widget *widget, int link, int img,
 
 
 bool Widget::LinkEmitter::emitToReceiver (lout::signal::Receiver *receiver,
-                                          int signalNo,
-                                          int argc, Object **argv)
+                                          int signalNo, int argc,
+                                          lout::object::Object **argv)
 {
    LinkReceiver *linkReceiver = (LinkReceiver*)receiver;
 

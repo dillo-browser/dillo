@@ -38,8 +38,8 @@ void Layout::Receiver::canvasSizeChanged (int width, int ascent, int descent)
 // ----------------------------------------------------------------------
 
 bool Layout::Emitter::emitToReceiver (lout::signal::Receiver *receiver,
-                                      int signalNo,
-                                      int argc, Object **argv)
+                                      int signalNo, int argc,
+                                      lout::object::Object **argv)
 {
    Receiver *layoutReceiver = (Receiver*)receiver;
 

@@ -37,7 +37,7 @@ private:
 
    protected:
       bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
-                           int argc, Object **argv);
+                           int argc, lout::object::Object **argv);
 
    public:
       inline void connectLayout (Receiver *receiver) { connect (receiver); }
