@@ -59,9 +59,9 @@ private:
     */
    CharIterator *hlIterator;
 
-   static const char* rev(const char* _str); /* Function to reverse a C-string */
+   static const char* rev(const char* _str); /* reverse a C string */
 
-   static int *createNexttab (const char *needle, bool caseSens, bool backwards);
+   static int *createNexttab (const char *needle,bool caseSens,bool backwards);
    bool unhighlight ();
    bool search0 (bool backwards, bool firstTrial);
 

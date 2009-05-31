@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 {
 \endcode
 
-As the first object, the platform is instanciated:
+As the first object, the platform is instantiated:
 
 \code
    dw::fltk::FltkPlatform *platform = new dw::fltk::FltkPlatform ();

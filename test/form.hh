@@ -55,7 +55,7 @@ private:
    /**
     * \brief Decorates instances of dw::core::ui::RadioButtonResource.
     *
-    * This class has to be instanciated only once for a group of radio
+    * This class has to be instantiated only once for a group of radio
     * buttons.
     */
    class RadioButtonResourceDecorator: public ResourceDecorator

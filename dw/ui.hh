@@ -120,7 +120,7 @@ namespace core {
  *
  * <table>
  * <tr><th>Attribute <th>Implementation
- * <tr><td>type      <td>This defines the resource you have to instanciate.
+ * <tr><td>type      <td>This defines the resource you have to instantiate.
  * <tr><td>name      <td>Not needed within Dw.
  * <tr><td>value     <td>The initial value is treated differently by different
  *                       resources.
