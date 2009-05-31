@@ -66,9 +66,9 @@ public:
     * \brief Shrink highlighted region to no longer contain the
     *    current content.
     *
-    * The direction parameter indicates whether the highlighted region should be
-    * reduced from the start (direction > 0) or from the end (direction < 0).
-    * If direction is 0 all content is unhighlighted.
+    * The direction parameter indicates whether the highlighted region should
+    * be reduced from the start (direction > 0) or from the end
+    * (direction < 0). If direction is 0 all content is unhighlighted.
     */
    virtual void unhighlight (int direction, HighlightLayer layer) = 0;
 

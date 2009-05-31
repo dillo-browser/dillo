@@ -389,7 +389,8 @@ void a_UIcmd_send_event_to_tabs_by_wid(int e, void *v_wid)
  * Create a new UI and its associated BrowserWindow data structure.
  * Use style from v_ui. If non-NULL it must be of type UI*.
  */
-BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, uint32_t xid, const void *vbw)
+BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, uint32_t xid,
+                                          const void *vbw)
 {
    BrowserWindow *old_bw = (BrowserWindow*)vbw;
    BrowserWindow *new_bw = NULL;

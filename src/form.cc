@@ -199,7 +199,7 @@ DilloHtmlForm *a_Html_form_new (DilloHtml *html, DilloHtmlMethod method,
                                 DilloHtmlEnc content_type, const char *charset,
                                 bool enabled)
 {
-   return new DilloHtmlForm (html, method, action, content_type, charset, enabled);
+   return new DilloHtmlForm (html, method,action,content_type,charset,enabled);
 }
 
 void a_Html_form_delete (DilloHtmlForm *form)
