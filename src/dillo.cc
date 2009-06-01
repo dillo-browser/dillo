@@ -364,6 +364,7 @@ int main(int argc, char **argv)
    a_Dns_freeall();
    a_History_freeall();
    a_Prefs_freeall();
+   Keys::free();
    /* TODO: auth, css */
 
    //a_Dpi_bye_dpid();

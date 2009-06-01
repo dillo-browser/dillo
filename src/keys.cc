@@ -131,6 +131,7 @@ void Keys::free()
 
    while ((node = (KeyBinding_t*)dList_nth_data(bindings, 0))) {
       dFree((char*)node->name);
+      dList_remove_fast(bindings, node);
       dFree(node);
    }
    dList_free(bindings);
