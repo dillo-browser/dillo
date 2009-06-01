@@ -365,6 +365,7 @@ int main(int argc, char **argv)
    a_History_freeall();
    a_Prefs_freeall();
    Keys::free();
+   Paths::free();
    /* TODO: auth, css */
 
    //a_Dpi_bye_dpid();
