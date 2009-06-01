@@ -37,6 +37,7 @@ dillo-2.1
  - Added "View Stylesheets" to the page menu.
  - Remove standard_widget_colors dillorc option.
  - Added dillo(1) man page.
+ - Proxy support for HTTPS.
    Patches: place (AKA corvid)
 +- Switched SSL-enabled to configure.in (./configure --enable-ssl).
  - Standardised the installation of dpid/dpidrc with auto* tools.

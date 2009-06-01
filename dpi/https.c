@@ -129,7 +129,8 @@ static void yes_ssl_support(void)
    SSL_CTX * ssl_context = NULL;
    SSL * ssl_connection = NULL;
 
-   char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *http_query = NULL;
+   char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *http_query = NULL,
+        *proxy_url = NULL, *proxy_connect = NULL;
    char buf[4096];
    int retval = 0;
    int network_socket = -1;
@@ -194,6 +195,9 @@ static void yes_ssl_support(void)
       /*Get the network address and command to be used*/
       dpip_tag = sock_handler_read(sh);
       cmd = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cmd");
+      proxy_url = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "proxy_url");
+      proxy_connect =
+                  a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "proxy_connect");
       url = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "url");
       http_query = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "query");
 
@@ -205,13 +209,66 @@ static void yes_ssl_support(void)
    }
 
    if (exit_error == 0){
-      network_socket = get_network_connection(url);
+      char *connect_url = proxy_url ? proxy_url : url;
+
+      network_socket = get_network_connection(connect_url);
       if (network_socket<0){
          MSG("Network socket create error\n");
          exit_error = 1;
       }
    }
 
+   if (exit_error == 0 && proxy_connect != NULL) {
+      ssize_t St;
+      const char *p = proxy_connect;
+      int writelen = strlen(proxy_connect);
+
+      while (writelen > 0) {
+         St = write(network_socket, p, writelen);
+         if (St < 0) {
+            /* Error */
+            if (errno != EINTR) {
+               MSG("Error writing to proxy.\n");
+               exit_error = 1;
+               break;
+            }
+         } else {
+            p += St;
+            writelen -= St;
+         }
+      }
+      if (exit_error == 0) {
+         const size_t buflen = 200;
+         char buf[buflen];
+         Dstr *reply = dStr_new("");
+
+         while (1) {
+            St = read(network_socket, buf, buflen);
+            if (St > 0) {
+               dStr_append_l(reply, buf, St);
+               if (strstr(reply->str, "\r\n\r\n")) {
+                  /* have whole reply header */
+                  if (reply->len >= 12 && reply->str[9] == '2') {
+                     /* e.g. "HTTP/1.1 200 Connection established[...]" */
+                     MSG("CONNECT through proxy succeeded.\n");
+                  } else {
+                     /* TODO: send reply body to dillo */
+                     exit_error = 1;
+                     MSG("CONNECT through proxy failed.\n");
+                  }
+                  break;
+               }
+            } else if (St < 0) {
+               if (errno != EINTR) {
+                  exit_error = 1;
+                  MSG("Error reading from proxy.\n");
+                  break;
+               }
+            }
+         }
+         dStr_free(reply, 1);
+      }
+   }
 
    if (exit_error == 0){
       /* Configure SSL to use network file descriptor */
@@ -263,6 +320,8 @@ static void yes_ssl_support(void)
    dFree(cmd);
    dFree(url);
    dFree(http_query);
+   dFree(proxy_url);
+   dFree(proxy_connect);
 
    if (network_socket != -1){
       close(network_socket);
@@ -297,6 +356,9 @@ static int get_network_connection(char * url)
    /*Determine how much of url we chop off as unneeded*/
    if (dStrncasecmp(url, "https://", 8) == 0){
       url_offset = 8;
+   } else if (dStrncasecmp(url, "http://", 7) == 0) {
+      url_offset = 7;
+      portnum = 80;
    }
 
    /*Find end of URL*/

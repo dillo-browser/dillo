@@ -265,7 +265,6 @@ static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
 
 /*
  * Build the dpip command tag, according to URL and server.
- * TODO: make it PROXY-aware (AFAIS, it should be easy)
  */
 static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 {
@@ -273,10 +272,20 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 
    if (strcmp(server, "proto.https") == 0) {
       /* Let's be kind and make the HTTP query string for the dpi */
+      char *proxy_connect = a_Http_make_connect_str(web->url);
       Dstr *http_query = a_Http_make_query_str(web->url, FALSE);
       /* BUG: embedded NULLs in query data will truncate message */
-      cmd = a_Dpip_build_cmd("cmd=%s url=%s query=%s",
-                             "open_url", URL_STR(web->url), http_query->str);
+      if (proxy_connect) {
+         const char *proxy_urlstr = a_Http_get_proxy_urlstr();
+         cmd = a_Dpip_build_cmd("cmd=%s proxy_url=%s proxy_connect=%s "
+                                "url=%s query=%s", "open_url", proxy_urlstr,
+                                proxy_connect, URL_STR(web->url),
+                                http_query->str);
+      } else {
+         cmd = a_Dpip_build_cmd("cmd=%s url=%s query=%s",
+                                "open_url", URL_STR(web->url),http_query->str);
+      }
+      dFree(proxy_connect);
       dStr_free(http_query, 1);
 
    } else if (strcmp(server, "downloads") == 0) {

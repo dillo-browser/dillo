@@ -16,6 +16,7 @@
 
 #include <config.h>
 
+#include <ctype.h>              /* isdigit */
 #include <unistd.h>
 #include <errno.h>              /* for errno */
 #include <stdlib.h>
@@ -412,6 +413,56 @@ static int Http_must_use_proxy(const DilloUrl *url)
    }
    _MSG("Http_must_use_proxy: %s\n  %s\n", URL_STR(url), ret ? "YES":"NO");
    return ret;
+}
+
+/*
+ * Return a new string for the request used to tunnel HTTPS through a proxy.
+ * As of 2009, the best reference appears to be section 5 of RFC 2817.
+ */
+char *a_Http_make_connect_str(const DilloUrl *url)
+{
+   Dstr *dstr;
+   const char *auth1;
+   int auth_len;
+   char *auth2, *proxy_auth, *retstr;
+
+   dReturn_val_if_fail(Http_must_use_proxy(url), NULL);
+
+   dstr = dStr_new("");
+   auth1 = URL_AUTHORITY(url);
+   auth_len = strlen(auth1);
+   if (auth_len > 0 && !isdigit(auth1[auth_len - 1]))
+      /* if no port number, add HTTPS port */
+      auth2 = dStrconcat(auth1, ":443", NULL);
+   else
+      auth2 = dStrdup(auth1);
+   proxy_auth = HTTP_Proxy_Auth_base64 ?
+                   dStrconcat ("Proxy-Authorization: Basic ",
+                               HTTP_Proxy_Auth_base64, "\r\n", NULL) :
+                   dStrdup("");
+   dStr_sprintfa(
+      dstr,
+      "CONNECT %s HTTP/1.1\r\n"
+      "Host: %s\r\n"
+      "%s"
+      "\r\n",
+      auth2, 
+      auth2,
+      proxy_auth);
+
+   dFree(auth2);
+   dFree(proxy_auth);
+   retstr = dstr->str;
+   dStr_free(dstr, 0);
+   return retstr;
+}
+
+/*
+ * Return URL string of HTTP proxy, if any
+ */
+const char *a_Http_get_proxy_urlstr()
+{
+   return HTTP_Proxy ? URL_STR(HTTP_Proxy) : NULL;
 }
 
 /*
