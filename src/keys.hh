@@ -39,18 +39,19 @@ typedef enum {
 } KeysCommand_t;
 
 class Keys {
-public:
-   static void init();
-   static void free();
+private:
    static int nodeByKeyCmp(const void *node, const void *key);
-   static KeysCommand_t getKeyCmd(void);
    static void delKeyCmd(int key, int mod);
    static KeysCommand_t getCmdCode(const char *symbolName);
    static int getKeyCode(char *keyName);
    static int getModifier(char *modifierName);
-   static int getShortcut(KeysCommand_t cmd);
    static void parseKey(char *key, char *symbol);
+public:
+   static void init();
+   static void free();
    static void parse(FILE *fp);
+   static KeysCommand_t getKeyCmd(void);
+   static int getShortcut(KeysCommand_t cmd);
 };
 
 
