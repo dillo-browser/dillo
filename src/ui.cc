@@ -748,7 +748,7 @@ int UI::handle(int event)
    if (event == KEY) {
       return 0; // Receive as shortcut
    } else if (event == SHORTCUT) {
-      int cmd = Keys::getKeyCmd();
+      KeysCommand_t cmd = Keys::getKeyCmd();
       if (cmd == KEYS_NOP) {
          // Do nothing
       } else if (cmd == KEYS_BACK) {

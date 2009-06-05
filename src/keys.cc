@@ -23,7 +23,8 @@
  */
 typedef struct {
    const char *name;
-   int cmd, modifier, key;
+   KeysCommand_t cmd;
+   int modifier, key;
 } KeyBinding_t;
 
 typedef struct {
@@ -151,9 +152,9 @@ int Keys::nodeByKeyCmp(const void *node, const void *key)
  * Look if the just pressed key is bound to a command.
  * Return value: The command if found, KEYS_NOP otherwise.
  */
-int Keys::getKeyCmd()
+KeysCommand_t Keys::getKeyCmd()
 {
-   int ret = KEYS_NOP;
+   KeysCommand_t ret = KEYS_NOP;
    KeyBinding_t keyNode;
 
    if (fltk::event_state() == fltk::SHIFT &&
@@ -211,7 +212,7 @@ int Keys::getKeyCode(char *keyName)
  * Takes a command name and searches it in the mapping table.
  * Return value: command code if found, -1 otherwise
  */
-int Keys::getCmdCode(const char *commandName)
+KeysCommand_t Keys::getCmdCode(const char *commandName)
 {
    uint_t i;
 
@@ -219,7 +220,7 @@ int Keys::getCmdCode(const char *commandName)
       if (!dStrcasecmp(default_keys[i].name, commandName))
          return default_keys[i].cmd;
    }
-   return -1;
+   return KEYS_INVALID;
 }
 
 /*
@@ -242,13 +243,13 @@ int Keys::getModifier(char *modifierName)
  * Given a keys command, return a shortcut for it, or 0 if there is none
  * (e.g., for KEYS_NEW_WINDOW, return CTRL+'n').
  */
-int Keys::getShortcut(int command)
+int Keys::getShortcut(KeysCommand_t cmd)
 {
    int len = dList_length(bindings);
 
    for (int i = 0; i < len; i++) {
       KeyBinding_t *node = (KeyBinding_t*)dList_nth_data(bindings, i);
-      if (command == node->cmd)
+      if (cmd == node->cmd)
          return node->modifier + node->key;
    }
    return 0;
@@ -261,16 +262,16 @@ int Keys::getShortcut(int command)
 void Keys::parseKey(char *key, char *commandName)
 {
    char *p, *modstr, *keystr;
-   int st, symcode = 0, keymod = 0, keycode = 0;
+   KeysCommand_t symcode;
+   int st, keymod = 0, keycode = 0;
 
    _MSG("Keys::parseKey key='%s' commandName='%s'\n", key, commandName);
 
    // Get command code
-   if ((st = getCmdCode(commandName)) == -1) {
+   if ((symcode = getCmdCode(commandName)) == KEYS_INVALID) {
       MSG("Keys::parseKey: Invalid command name: '%s'\n", commandName);
       return;
-   } else
-      symcode = st;
+   }
 
    // Skip space
    for (  ; isspace(*key); ++key) ;

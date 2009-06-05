@@ -13,7 +13,8 @@
 #define __KEYS_HH__
 
 
-enum {
+typedef enum {
+   KEYS_INVALID = -1,
    KEYS_NOP,   /* No operation bound */
    KEYS_OPEN,
    KEYS_NEW_WINDOW,
@@ -35,19 +36,19 @@ enum {
    KEYS_FORWARD,
    KEYS_GOTO,
    KEYS_HOME
-};
+} KeysCommand_t;
 
 class Keys {
 public:
    static void init();
    static void free();
    static int nodeByKeyCmp(const void *node, const void *key);
-   static int getKeyCmd(void);
+   static KeysCommand_t getKeyCmd(void);
    static void delKeyCmd(int key, int mod);
-   static int getCmdCode(const char *symbolName);
+   static KeysCommand_t getCmdCode(const char *symbolName);
    static int getKeyCode(char *keyName);
    static int getModifier(char *modifierName);
-   static int getShortcut(int command);
+   static int getShortcut(KeysCommand_t cmd);
    static void parseKey(char *key, char *symbol);
    static void parse(FILE *fp);
 };
