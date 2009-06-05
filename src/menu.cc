@@ -26,6 +26,7 @@
 #include "history.h"
 #include "html.hh"
 #include "ui.hh" // for (UI *)
+#include "keys.hh"
 #include "timeout.hh"
 
 using namespace fltk;
@@ -559,17 +560,24 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
    popup_url = NULL;
 
    if (!pm) {
+      int shortcut;
       Item *i;
       pm = new PopupMenu(0,0,0,0,"File");
       pm->begin();
-       i = new Item("New Window", CTRL+'n', filemenu_cb, (void*)"nw");
-       i = new Item("New Tab", CTRL+'t', filemenu_cb, (void*)"nt");
+       shortcut = Keys::getShortcut(KEYS_NEW_WINDOW);
+       i = new Item("New Window", shortcut, filemenu_cb, (void*)"nw");
+       shortcut = Keys::getShortcut(KEYS_NEW_TAB);
+       i = new Item("New Tab", shortcut, filemenu_cb, (void*)"nt");
        new Divider();
-       i = new Item("Open File...", CTRL+'o', filemenu_cb, (void*)"of");
-       i = new Item("Open URL...", CTRL+'l', filemenu_cb, (void*)"ou");
-       i = new Item("Close", CTRL+'q', filemenu_cb, (void*)"cw");
+       shortcut = Keys::getShortcut(KEYS_OPEN);
+       i = new Item("Open File...", shortcut, filemenu_cb, (void*)"of");
+       shortcut = Keys::getShortcut(KEYS_GOTO);
+       i = new Item("Open URL...", shortcut, filemenu_cb, (void*)"ou");
+       shortcut = Keys::getShortcut(KEYS_CLOSE_TAB);
+       i = new Item("Close", shortcut, filemenu_cb, (void*)"cw");
        new Divider();
-       i = new Item("Exit Dillo", ALT+'q', filemenu_cb, (void*)"ed");
+       shortcut = Keys::getShortcut(KEYS_CLOSE_ALL);
+       i = new Item("Exit Dillo", shortcut, filemenu_cb, (void*)"ed");
       pm->type(PopupMenu::POPUP123);
       pm->end();
    }

@@ -47,6 +47,7 @@ public:
    static int getCmdCode(const char *symbolName);
    static int getKeyCode(char *keyName);
    static int getModifier(char *modifierName);
+   static int getShortcut(int command);
    static void parseKey(char *key, char *symbol);
    static void parse(FILE *fp);
 };

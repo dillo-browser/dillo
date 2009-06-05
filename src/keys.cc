@@ -239,6 +239,22 @@ int Keys::getModifier(char *modifierName)
 }
 
 /*
+ * Given a keys command, return a shortcut for it, or 0 if there is none
+ * (e.g., for KEYS_NEW_WINDOW, return CTRL+'n').
+ */
+int Keys::getShortcut(int command)
+{
+   int len = dList_length(bindings);
+
+   for (int i = 0; i < len; i++) {
+      KeyBinding_t *node = (KeyBinding_t*)dList_nth_data(bindings, i);
+      if (command == node->cmd)
+         return node->modifier + node->key;
+   }
+   return 0;
+}
+
+/*
  * Parse a key-combination/command-name pair, and
  * insert it into the bindings list.
  */
