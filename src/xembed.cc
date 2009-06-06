@@ -22,6 +22,7 @@
 #include "xembed.hh"
 
 #if USE_X11
+
 typedef enum { 
   XEMBED_EMBEDDED_NOTIFY        = 0,
   XEMBED_WINDOW_ACTIVATE        = 1,
@@ -102,7 +103,7 @@ static int event_handler(int e, fltk::Window *w) {
    return 0;
 }
 
-// TODO; Implement more XEMBED support;
+// TODO: Implement more XEMBED support;
 
 void Xembed::create() {
    createInternal(xid);
