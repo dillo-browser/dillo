@@ -47,14 +47,13 @@ private:
 
 public:
    BrowserWindow *bw;
-   DilloUrl *url;
 
    Widget *dw;
    style::Style *widgetStyle;
    size_t Start_Ofs;    /* Offset of where to start reading next */
    int state;
 
-   DilloPlain(BrowserWindow *bw, const DilloUrl *url);
+   DilloPlain(BrowserWindow *bw);
    ~DilloPlain();
 
    void write(void *Buf, uint_t BufSize, int Eof);
@@ -84,14 +83,13 @@ void a_Plain_free(void *data);
 /*
  * Diplain constructor.
  */
-DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
+DilloPlain::DilloPlain(BrowserWindow *p_bw)
 {
    /* Init event receiver */
    plainReceiver.plain = this;
 
    /* Init internal variables */
    bw = p_bw;
-   url = a_Url_dup(p_url);
    dw = new Textblock (prefs.limit_text_width);
    Start_Ofs = 0;
    state = ST_SeekingEol;
@@ -116,7 +114,6 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
 DilloPlain::~DilloPlain()
 {
    _MSG("::~DilloPlain()\n");
-   a_Url_free(url);
    widgetStyle->unref();
 }
 
@@ -189,7 +186,7 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
 void *a_Plain_text(const char *type, void *P, CA_Callback_t *Call, void **Data)
 {
    DilloWeb *web = (DilloWeb*)P;
-   DilloPlain *plain = new DilloPlain(web->bw, web->url);
+   DilloPlain *plain = new DilloPlain(web->bw);
 
    *Call = (CA_Callback_t)Plain_callback;
    *Data = (void*)plain;
