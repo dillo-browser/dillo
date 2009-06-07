@@ -7,6 +7,7 @@ AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE(dillo, 2.0)
 AM_CONFIG_HEADER(config.h)
+sysconfdir=${sysconfdir}/${PACKAGE}
 
 dnl Options
 

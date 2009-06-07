@@ -80,7 +80,7 @@ FILE *Paths::getPrefsFP(const char *rcFile)
    if (!(fp = fopen(path, "r"))) {
       MSG("paths: Cannot open file '%s'\n", path);
 
-      char *path2 = dStrconcat(PATHS_RC_SYS, rcFile, NULL);
+      char *path2 = dStrconcat(DILLO_SYSCONF, rcFile, NULL);
       if (!(fp = fopen(path2, "r"))) {
          MSG("paths: Cannot open file '%s'\n",path2);
          MSG("paths: Using internal defaults...\n");
