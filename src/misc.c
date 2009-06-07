@@ -198,6 +198,7 @@ void a_Misc_parse_content_type(const char *str, char **major, char **minor,
                                char **charset)
 {
    const char *s;
+   bool_t is_text;
 
    if (major)
       *major = NULL;
@@ -211,6 +212,7 @@ void a_Misc_parse_content_type(const char *str, char **major, char **minor,
    for (s = str; isalnum(*s) || (*s == '-'); s++);
    if (major)
       *major = dStrndup(str, s - str);
+   is_text = (s - str == 4) && !dStrncasecmp(str, "text", 4);
 
    if (*s == '/') {
       for (str = ++s; isalnum(*s) || (*s == '-'); s++);
@@ -218,7 +220,8 @@ void a_Misc_parse_content_type(const char *str, char **major, char **minor,
          *minor = dStrndup(str, s - str);
    }
 
-   if (charset && *s) {
+   if (is_text && charset && *s) {
+      /* charset parameter is defined for text media type (RFC 2046) */
       const char terminators[] = " ;\t";
       const char key[] = "charset";
 
