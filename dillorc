@@ -15,13 +15,15 @@
 #geometry=780x580
 
 # Change this if you want to have text-only browsing from the start.
-# (there's a toggle button near the bug meter to change this on-the-fly)
+# (While browsing, this can be changed from the tools/settings menu.)
 #load_images=YES
 
-# Change this if you want to disable loading of CSS stylesheets.
+# Change this if you want to disable loading of CSS stylesheets initially.
+# (While browsing, this can be changed from the tools/settings menu.)
 #load_stylesheets=YES
 
-# Change this if you want to disable parsing of embedded CSS.
+# Change this if you want to disable parsing of embedded CSS initially.
+# (While browsing, this can be changed from the tools/settings menu.)
 #parse_embedded_css=YES
 
 # Change the buffering scheme for drawing
