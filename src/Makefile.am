@@ -112,4 +112,5 @@ dillo_SOURCES = \
 	xembed.cc \
 	xembed.hh
 
-EXTRA_DIST = chg srch
+EXTRA_DIST = chg srch keysrc
+sysconf_DATA = keysrc

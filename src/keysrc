@@ -1,0 +1,66 @@
+# keysrc
+# Sample dillo key bindings file.
+#
+# The format is: "key = action" or "<modifier>key = action".
+# Lines that begin with a '#' are comments.
+# The commented-out bindings below show the defaults built into Dillo.
+#
+# Modifiers recognized: "Shift", "Ctrl", "Alt", "Meta".
+# Key names recognized: "Backspace", "Delete", "Down", "End", "Esc",
+# "F1" through "F12", "Home", "Insert", "Left", "PageDown", "PageUp",
+# "Print", "Return", "Right", "Space", "Tab", "Up".
+
+# "open" lets you browse your local files for one to open.
+#<ctrl>o = open
+
+# "new-window" opens a new browser window.
+#<ctrl>n = new-window
+
+# "new-tab" opens a new tab in the current browser window.
+#<ctrl>t = new-tab
+
+# "close-tab" closes the current tab.
+# Note that this closes the browser window if there is only one tab.
+#<ctrl>q = close-tab
+
+# "close-all" closes all tabs/windows and exits.
+#<alt>q = close-all
+
+# "left-tab" and "right-tab" switch to the left/right of the current tab.
+# *** NOT HOOKED UP YET ***
+# <shift>tab = left-tab
+# <ctrl>tab = right-tab
+
+# "back" and "forward" move back/forward through the browser history.
+#backspace = back
+#<shift>backspace = forward
+#, = back
+#. = forward
+
+# "reload" the current page.
+#<ctrl>r = reload
+
+# "home" goes to the homepage that you set in your dillorc.
+#<ctrl>h = home
+
+# "find" lets you search for a text string on the current page.
+#<ctrl>f = find
+
+# "hide-panels" hides the findbar.
+#esc = hide-panels
+
+# "websearch" lets you send a text string to the search engine that you
+# set in your dillorc.
+#<ctrl>s = websearch
+
+# go to your "bookmarks".
+#<ctrl>b = bookmarks
+
+# "fullscreen" hides/shows the panels at the top and bottom of a dillo window.
+#<ctrl>space = fullscreen
+
+# "file-menu" pops up the file menu.
+#<alt>f = file-menu
+
+# "goto" goes to the location bar at the top of the window.
+#<ctrl>l = goto
