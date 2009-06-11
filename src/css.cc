@@ -507,7 +507,7 @@ void CssContext::buildUserAgentStyle () {
      ":link {color: blue; text-decoration: underline; cursor: pointer}"
      ":visited {color: #800080; text-decoration: underline; cursor: pointer}"
      "h1, h2, h3, h4, h5, h6, b, strong {font-weight: bolder}"
-     "i, em, cite, address {font-style: italic}"
+     "i, em, cite, address, var {font-style: italic}"
      ":link img, :visited img {border: 1px solid}"
      "frameset, ul, ol, dir {margin-left: 40px}"
      "h1 {font-size: 2em; margin-top: .67em; margin-bottom: 0}"
