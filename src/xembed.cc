@@ -14,7 +14,6 @@
 #include <ctype.h>
 
 #include <fltk/Window.h>
-#include <fltk/x11.h>
 #include <fltk/run.h>
 #include <fltk/events.h>
 #include <fltk/x.h>
