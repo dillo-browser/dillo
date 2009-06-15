@@ -690,20 +690,6 @@ static void Menu_imgload_toggle_cb(Widget *wid)
    }
 }
 
-static void Menu_fontsize_inc_cb(Widget *wid)
-{
-   MSG("Menu_fontsize_inc_cb\n");
-   prefs.font_factor += 0.2;
-   a_UIcmd_repush(popup_bw);
-}
-
-static void Menu_fontsize_dec_cb(Widget *wid)
-{
-   MSG("Menu_fontsize_dec_cb\n");
-   prefs.font_factor -= 0.2;
-   a_UIcmd_repush(popup_bw);
-}
-
 /*
  * Tools popup menu (construction & popup)
  */
@@ -719,11 +705,6 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
    if (!pm) {
       pm = new PopupMenu(0,0,0,0, "TOOLS");
       pm->begin();
-       it = new Item("Larger fonts");
-       it->callback(Menu_fontsize_inc_cb);
-       it = new Item("Smaller fonts");
-       it->callback(Menu_fontsize_dec_cb);
-       new Divider();
        it = new ToggleItem("Use remote CSS");
        it->callback(Menu_remote_css_cb);
        it->state(prefs.load_stylesheets);
