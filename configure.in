@@ -5,7 +5,7 @@ AC_INIT(src/dillo.cc)
 dnl Detect the canonical host and target build environment
 AC_CANONICAL_SYSTEM
 
-AM_INIT_AUTOMAKE(dillo, 2.0)
+AM_INIT_AUTOMAKE(dillo, 2.1)
 AM_CONFIG_HEADER(config.h)
 sysconfdir=${sysconfdir}/${PACKAGE}
 
