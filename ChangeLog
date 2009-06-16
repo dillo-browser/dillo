@@ -2,7 +2,7 @@
 Dillo project
 =============================================================================
 
-dillo-2.1 [??, 2009]
+dillo-2.1 [Jun 15, 2009]
 
 +- Added ipv6 addresses iteration and ipv4 fallback.
    Patch: James Turner, Jorge Arellano Cid
