@@ -812,6 +812,15 @@ static size_t Gif_do_img_desc(DilloGif *gif, void *Buf,
 
    gif->Width   = LM_to_uint(buf[4], buf[5]);
    gif->Height  = LM_to_uint(buf[6], buf[7]);
+
+   /* check max image size */
+   if (gif->Width * gif->Height > IMAGE_MAX_W * IMAGE_MAX_H) {
+      MSG("Gif_do_img_desc: suspicious image size request %ux%u\n",
+          gif->Width, gif->Height);
+      gif->state = 999;
+      return 0;
+   }
+
    gif->linebuf = dMalloc(gif->Width);
 
    a_Dicache_set_parms(gif->url, gif->version, gif->Image,

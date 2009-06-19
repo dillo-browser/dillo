@@ -279,6 +279,16 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
              !(a_Capi_get_flags(jpeg->url) & CAPI_Completed))
             jpeg->cinfo.buffered_image = TRUE;
 
+         /* check max image size */
+         if ((uint_t)jpeg->cinfo.image_width *
+             (uint_t)jpeg->cinfo.image_height  > IMAGE_MAX_W * IMAGE_MAX_H) {
+            MSG("Jpeg_write: suspicious image size request %ux%u\n",
+                (uint_t)jpeg->cinfo.image_width,
+                (uint_t)jpeg->cinfo.image_height);
+            jpeg->state = DILLO_JPEG_ERROR;
+            return;
+         }
+
          a_Dicache_set_parms(jpeg->url, jpeg->version, jpeg->Image,
                              (uint_t)jpeg->cinfo.image_width,
                              (uint_t)jpeg->cinfo.image_height,

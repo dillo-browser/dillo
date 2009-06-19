@@ -137,6 +137,8 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
 
    png_get_IHDR(png_ptr, info_ptr, &png->width, &png->height,
                 &bit_depth, &color_type, &interlace_type, NULL, NULL);
+
+   /* check max image size */
    if (abs(png->width*png->height) > IMAGE_MAX_W * IMAGE_MAX_H) {
       MSG("Png_datainfo_callback: suspicious image size request %ldx%ld\n",
           png->width, png->height);
