@@ -1953,8 +1953,6 @@ static void Html_tag_open_address(DilloHtml *html,
 DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
                              int tagsize, DilloUrl *url)
 {
-   const int MAX_W = 6000, MAX_H = 6000;
-
    DilloImage *Image;
    char *width_ptr, *height_ptr, *alt_ptr;
    const char *attrbuf;
@@ -1987,7 +1985,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       h = (int) (CSS_LENGTH_TYPE(l_h) == CSS_LENGTH_TYPE_PX ?
                  CSS_LENGTH_VALUE(l_h) : 0);
    }
-   if (w < 0 || h < 0 || abs(w*h) > MAX_W * MAX_H) {
+   if (w < 0 || h < 0 || abs(w*h) > IMAGE_MAX_W * IMAGE_MAX_H) {
       dFree(width_ptr);
       dFree(height_ptr);
       width_ptr = height_ptr = NULL;
