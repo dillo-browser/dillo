@@ -12,6 +12,19 @@ extern "C" {
 #include "bitvec.h"
 #include "url.h"
 
+/*
+ * Defines
+ */
+
+/* Arbitrary maximum for image size (to avoid image size-crafting attacks). */
+#define IMAGE_MAX_W  6000
+#define IMAGE_MAX_H  6000
+
+
+/*
+ * Types
+ */
+
 typedef struct _DilloImage DilloImage;
 
 typedef enum {
