@@ -29,7 +29,6 @@
 #include <fltk/Widget.h>
 #include <fltk/Group.h>
 #include <fltk/Input.h>
-#include <fltk/SecretInput.h>
 #include <fltk/TextEditor.h>
 #include <fltk/RadioButton.h>
 #include <fltk/CheckButton.h>
@@ -550,12 +549,10 @@ FltkEntryResource::~FltkEntryResource ()
                                                     *allocation)
 {
    ::fltk::Input *input =
-        password ?
-        new ::fltk::SecretInput (allocation->x, allocation->y,
-                                 allocation->width,
-                                 allocation->ascent + allocation->descent) :
         new ::fltk::Input (allocation->x, allocation->y, allocation->width,
                            allocation->ascent + allocation->descent);
+   if (password)
+      input->type(::fltk::Input::SECRET);
    input->callback (widgetCallback, this);
    input->when (::fltk::WHEN_ENTER_KEY_ALWAYS);
 
