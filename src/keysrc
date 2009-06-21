@@ -9,6 +9,8 @@
 # Key names recognized: "Backspace", "Delete", "Down", "End", "Esc",
 # "F1" through "F12", "Home", "Insert", "Left", "PageDown", "PageUp",
 # "Print", "Return", "Right", "Space", "Tab", "Up".
+#
+# The action "nop" (no operation) can be used to remove a binding.
 
 # "open" lets you browse your local files for one to open.
 #<ctrl>o = open
