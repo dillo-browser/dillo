@@ -697,10 +697,10 @@ void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
          (int)::fltk::getwidth ("n", 1) * numCols +
          2 * RELIEF_X_THICKNESS;
       requisition->ascent =
-         font->ascent + RELIEF_Y_THICKNESS;
+         RELIEF_Y_THICKNESS + font->ascent +
+         (font->ascent + font->descent) * (numRows - 1);
       requisition->descent =
          font->descent +
-         (font->ascent + font->descent) * (numRows - 1) +
          RELIEF_Y_THICKNESS;
    } else {
       requisition->width = 1;
@@ -1310,9 +1310,9 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
        * options, at the cost of showing too much whitespace at times.
        */
       requisition->width = getMaxStringWidth() + 24;
-      requisition->ascent = font->ascent + 2;
-      requisition->descent = font->descent + 3 +
-                             (rows - 1) * (font->ascent + font->descent + 1);
+      requisition->ascent = font->ascent + 2 +
+                            (rows - 1) * (font->ascent + font->descent + 1);
+      requisition->descent = font->descent + 3;
    } else {
       requisition->width = 1;
       requisition->ascent = 1;
