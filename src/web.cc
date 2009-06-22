@@ -9,10 +9,6 @@
  * (at your option) any later version.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>      /* for rint */
-
 #include "msg.h"
 #include "nav.h"
 

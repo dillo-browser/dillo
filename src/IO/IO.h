@@ -1,9 +1,6 @@
 #ifndef __IO_H__
 #define __IO_H__
 
-#include <unistd.h>
-#include <sys/uio.h>
-
 #include "d_size.h"
 #include "../../dlib/dlib.h"
 #include "../chain.h"

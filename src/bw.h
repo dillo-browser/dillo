@@ -1,8 +1,6 @@
 #ifndef __BW_H__
 #define __BW_H__
 
-#include <sys/types.h>
-
 #include "url.h"     /* for DilloUrl */
 
 /*

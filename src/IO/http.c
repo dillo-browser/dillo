@@ -20,9 +20,7 @@
 #include <unistd.h>
 #include <errno.h>              /* for errno */
 #include <stdlib.h>
-#include <signal.h>
 #include <fcntl.h>
-#include <sys/wait.h>
 #include <sys/socket.h>         /* for lots of socket stuff */
 #include <netinet/in.h>         /* for ntohl and stuff */
 #include <arpa/inet.h>          /* for inet_ntop */

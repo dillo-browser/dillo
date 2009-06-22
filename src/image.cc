@@ -15,9 +15,6 @@
  * of data from an Image to a DwImage widget.
  */
 
-#include <stdio.h>
-#include <string.h>
-
 #include "msg.h"
 
 #include "image.hh"

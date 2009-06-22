@@ -34,7 +34,6 @@ void a_Cookies_init(void)
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>       /* for time() and time_t */
 #include <ctype.h>
 
 #include "msg.h"

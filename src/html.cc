@@ -20,7 +20,6 @@
 #include <string.h>     /* for memcpy and memmove */
 #include <stdlib.h>
 #include <stdio.h>      /* for sprintf */
-#include <math.h>       /* for rint */
 #include <errno.h>
 
 #include "bw.h"         /* for BrowserWindow */

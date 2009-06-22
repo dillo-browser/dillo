@@ -13,9 +13,6 @@
  * Module for decoding a text/plain object into a dw widget.
  */
 
-#include <string.h>     /* for memcpy and memmove */
-#include <math.h>       /* for rint() */
-
 #include "msg.h"
 #include "prefs.h"
 #include "cache.h"

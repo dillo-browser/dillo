@@ -13,7 +13,6 @@
 #define __MIME_H__
 
 #include <config.h>
-#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {

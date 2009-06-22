@@ -10,7 +10,6 @@
  */
 
 #include <stdio.h>
-#include <math.h>
 #include "../dlib/dlib.h"
 #include "misc.h"
 #include "html_common.hh"

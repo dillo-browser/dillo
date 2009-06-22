@@ -11,8 +11,6 @@
 
 // Functions/Methods for menus
 
-#include <stdio.h>
-#include <stdarg.h>
 #include <fltk/events.h>
 #include <fltk/PopupMenu.h>
 #include <fltk/Item.h>

@@ -13,14 +13,9 @@
  * Dillo's event driven IO engine
  */
 
-#include <stdio.h>
-#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/stat.h>
-#include <sys/uio.h>
-#include <sys/socket.h>
 #include "../msg.h"
 #include "../chain.h"
 #include "../klist.h"

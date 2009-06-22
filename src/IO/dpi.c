@@ -21,13 +21,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>           /* for errno */
 
-#include <stdio.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netinet/in.h>

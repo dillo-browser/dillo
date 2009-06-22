@@ -16,11 +16,8 @@
 #include <ctype.h>              /* for tolower */
 #include <sys/types.h>
 
-#include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
 
 #include "msg.h"
 #include "IO/Url.h"

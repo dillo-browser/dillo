@@ -13,11 +13,7 @@
 #include <config.h>
 #ifdef ENABLE_PNG
 
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h> /* For abort() */
-
-#include <zlib.h>
 
 #ifdef HAVE_LIBPNG_PNG_H
 #include <libpng/png.h>

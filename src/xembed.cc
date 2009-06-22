@@ -9,7 +9,6 @@
  * (at your option) any later version.
  */
 
-#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 

@@ -9,8 +9,7 @@
  * (at your option) any later version.
  */
 
-#include <stdio.h>
-#include <math.h>
+/* #include <stdio.h> */
 #include "../dlib/dlib.h"
 #include "msg.h"
 #include "prefs.h"

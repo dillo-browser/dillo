@@ -9,9 +9,7 @@
  * (at your option) any later version.
  */
 
-#include <sys/time.h>       /* for libc5 compatibility */
 #include <string.h>         /* for memset */
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "msg.h"

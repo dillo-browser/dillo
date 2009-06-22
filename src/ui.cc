@@ -11,7 +11,6 @@
 
 // UI for Dillo
 
-#include <stdlib.h>
 #include <stdio.h>
 
 #include <fltk/HighlightButton.h>
