@@ -77,13 +77,6 @@ public:
 template <class T> class SimpleVector
 {
 private:
-   enum {
-      /**
-       * \brief Edit this for debugging. Should be optimized by the compiler.
-       */
-      BOUND_CHECKING = 1
-   };
-
    T *array;
    int num, numAlloc;
 
@@ -169,8 +162,7 @@ public:
     * \sa misc::SimpleVector::get
     */
    inline T* getRef (int i) {
-      if (BOUND_CHECKING)
-         assert (i >= 0 && this->num - i > 0);
+      assert (i >= 0 && this->num - i > 0);
       return array + i;
    }
 
@@ -181,8 +173,7 @@ public:
     * misc::SimpleVector::getRef.
     */
    inline T get (int i) {
-      if (BOUND_CHECKING)
-         assert (i >= 0 && this->num - i > 0);
+      assert (i >= 0 && this->num - i > 0);
       return this->array[i];
    }
 
@@ -195,8 +186,7 @@ public:
     * be necessary before.
     */
    inline void set (int i, T t) {
-      if (BOUND_CHECKING)
-         assert (i >= 0 && this->num - i > 0);
+      assert (i >= 0 && this->num - i > 0);
       this->array[i] = t;
    }
 };
