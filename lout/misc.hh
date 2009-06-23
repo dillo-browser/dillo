@@ -138,14 +138,18 @@ public:
     *
     * May be necessary before calling misc::SimpleVector::set.
     */
-   inline void increase() { this->num++; this->resize (); }
+   inline void increase() { setSize(this->num + 1); }
 
    /**
     * \brief Set the size explicitely.
     *
     * May be necessary before calling misc::SimpleVector::set.
     */
-   inline void setSize(int newSize) { this->num = newSize; this->resize (); }
+   inline void setSize(int newSize) {
+      assert (newSize >= 0);
+      this->num = newSize;
+      this->resize ();
+   }
 
    /**
     * \brief Set the size explicitely and initialize new values.
