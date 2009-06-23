@@ -711,33 +711,30 @@ bool CssParser::parseRgbColor(int32_t *c) {
       MSG_CSS("expected '%s' not found in rgb color\n", "(");
       return false;
    }
-
    nextToken();
+
    if (!parseRgbColorComponent(&cc))
       return false;
-
    *c |= cc;
 
    if (ttype != CSS_TK_CHAR || tval[0] != ',') {
       MSG_CSS("expected '%s' not found in rgb color\n", ",");
       return false;
    }
-
    nextToken();
+
    if (!parseRgbColorComponent(&cc))
       return false;
-
    *c |= cc << 8;
 
    if (ttype != CSS_TK_CHAR || tval[0] != ',') {
       MSG_CSS("expected '%s' not found in rgb color\n", ",");
       return false;
    }
-
    nextToken();
+
    if (!parseRgbColorComponent(&cc))
       return false;
-
    *c |= cc << 16;
 
    if (ttype != CSS_TK_CHAR || tval[0] != ')') {
