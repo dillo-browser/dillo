@@ -643,7 +643,8 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType * type)
       case CSS_TYPE_COLOR:
          if ((ttype == CSS_TK_COLOR ||
               ttype == CSS_TK_SYMBOL) &&
-            a_Color_parse(tval, -1, &err) != -1)
+            (dStrcasecmp(tval, "rgb") == 0 ||
+             a_Color_parse(tval, -1, &err) != -1))
             return true;
          break;
 
@@ -677,6 +678,74 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType * type)
 
    *type = CSS_TYPE_UNUSED;
    return false;
+}
+
+bool CssParser::parseRgbColorComponent(int32_t *cc) {
+   if (ttype != CSS_TK_DECINT) {
+      MSG_CSS("expected integer not found in %s color\n", "rgb");
+      return false;
+   }
+   
+   *cc = strtol(tval, NULL, 10);
+   
+   nextToken();
+   if (ttype == CSS_TK_CHAR && tval[0] == '%') {
+      *cc = *cc * 255 / 100;
+      nextToken();
+   }
+
+   if (*cc > 255)
+      *cc = 255;
+   if (*cc < 0)
+      *cc = 0;
+
+   return true;
+}
+
+bool CssParser::parseRgbColor(int32_t *c) {
+   int32_t cc;
+
+   *c = 0;
+
+   if (ttype != CSS_TK_CHAR || tval[0] != '(') {
+      MSG_CSS("expected '%s' not found in rgb color\n", "(");
+      return false;
+   }
+
+   nextToken();
+   if (!parseRgbColorComponent(&cc))
+      return false;
+
+   *c |= cc;
+
+   if (ttype != CSS_TK_CHAR || tval[0] != ',') {
+      MSG_CSS("expected '%s' not found in rgb color\n", ",");
+      return false;
+   }
+
+   nextToken();
+   if (!parseRgbColorComponent(&cc))
+      return false;
+
+   *c |= cc << 8;
+
+   if (ttype != CSS_TK_CHAR || tval[0] != ',') {
+      MSG_CSS("expected '%s' not found in rgb color\n", ",");
+      return false;
+   }
+
+   nextToken();
+   if (!parseRgbColorComponent(&cc))
+      return false;
+
+   *c |= cc << 16;
+
+   if (ttype != CSS_TK_CHAR || tval[0] != ')') {
+      MSG_CSS("expected '%s' not found in rgb color\n", ")");
+      return false;
+   }
+
+   return true;
 }
 
 bool CssParser::parseValue(CssPropertyName prop,
@@ -785,11 +854,19 @@ bool CssParser::parseValue(CssPropertyName prop,
             ret = true;
          nextToken();
       } else if (ttype == CSS_TK_SYMBOL) {
-         val->intVal = a_Color_parse(tval, -1, &err);
-         if (err)
-            MSG_CSS("color is not in \"%s\" format\n", "#RRGGBB");
-         else
-            ret = true;
+         if (dStrcasecmp(tval, "rgb") == 0) {
+            nextToken();
+            if (parseRgbColor(&val->intVal))
+               ret = true;
+            else
+               MSG_CSS("Failed to parse %s color\n", "rgb(r,g,b)");
+         } else {
+            val->intVal = a_Color_parse(tval, -1, &err);
+            if (err)
+               MSG_CSS("color is not in \"%s\" format\n", "#RRGGBB");
+            else
+               ret = true;
+         }
          nextToken();
       }
       break;

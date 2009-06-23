@@ -32,6 +32,8 @@ class CssParser {
       bool parseValue(CssPropertyName prop, CssValueType type,
                       CssPropertyValue * val);
       bool parseWeight();
+      bool parseRgbColorComponent(int32_t *cc);
+      bool parseRgbColor(int32_t *c);
       void parseDeclaration(CssPropertyList * props,
                             CssPropertyList * importantProps);
       bool parseSimpleSelector(CssSimpleSelector *selector);
