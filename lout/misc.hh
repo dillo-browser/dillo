@@ -143,14 +143,14 @@ public:
    /**
     * \brief Set the size explicitely.
     *
-    * May be necessary before called before misc::SimpleVector::set.
+    * May be necessary before calling misc::SimpleVector::set.
     */
    inline void setSize(int newSize) { this->num = newSize; this->resize (); }
 
    /**
     * \brief Set the size explicitely and initialize new values.
     *
-    * May be necessary before called before misc::SimpleVector::set.
+    * May be necessary before calling misc::SimpleVector::set.
     */
    inline void setSize (int newSize, T t) {
       int oldSize = this->num;
