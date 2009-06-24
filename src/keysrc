@@ -66,3 +66,6 @@
 
 # "goto" goes to the location bar at the top of the window.
 #<ctrl>l = goto
+
+# "stop" loading the page. 
+#(stop has no default binding)
