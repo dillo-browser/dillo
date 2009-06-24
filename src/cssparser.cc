@@ -727,7 +727,7 @@ bool CssParser::parseRgbColor(int32_t *c) {
 
    if (!parseRgbColorComponent(&cc, &percentage))
       return false;
-   *c |= cc;
+   *c |= cc << 16;
 
    if (ttype != CSS_TK_CHAR || tval[0] != ',') {
       MSG_CSS("expected '%s' not found in rgb color\n", ",");
@@ -747,7 +747,7 @@ bool CssParser::parseRgbColor(int32_t *c) {
 
    if (!parseRgbColorComponent(&cc, &percentage))
       return false;
-   *c |= cc << 16;
+   *c |= cc;
 
    if (ttype != CSS_TK_CHAR || tval[0] != ')') {
       MSG_CSS("expected '%s' not found in rgb color\n", ")");
