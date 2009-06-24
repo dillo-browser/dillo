@@ -258,14 +258,14 @@ int main(int argc, char **argv)
    }
    dFree(opt_argv);
 
+   // set the default values for the preferences
+   a_Prefs_init();
+
    // create ~/.dillo if not present
    Paths::init();
 
    // initialize default key bindings
    Keys::init();
-
-   // set the default values for the preferences
-   a_Prefs_init();
 
    // parse dillorc
    if ((fp = Paths::getPrefsFP(PATHS_RC_PREFS))) {

@@ -11,6 +11,8 @@ dillo-2.2 [??, 2009]
 +- Removed redundant system includes.
    Added the "nop" keybinding (nop = NO_OPERATION; cancels a default hook).
    Patches: place (AKA corvid)
++- Check chdir() return code in Paths::init.
+   Patch: Michal Nowak
 
 -----------------------------------------------------------------------------
 

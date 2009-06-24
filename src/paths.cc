@@ -32,10 +32,15 @@ void Paths::init(void)
 {
    char *path;
    struct stat st;
+   int rc = 0;
 
    dFree(oldWorkingDir);
    oldWorkingDir = dGetcwd();
-   chdir("/tmp");
+   rc = chdir("/tmp");
+   if (rc == -1) {
+      MSG("paths: error changing directory to /tmp: %s\n", 
+          dStrerror(errno));
+   }
 
    path = dStrconcat(dGethomedir(), "/.dillo", NULL);
    if (stat(path, &st) == -1) {
