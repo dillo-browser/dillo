@@ -583,7 +583,7 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                a_UIcmd_set_msg(conn->bw,
                                "ERROR: can't start dpid daemon "
                                "(URL scheme = '%s')!",
-                               URL_SCHEME(conn->url));
+                               conn->url ? URL_SCHEME(conn->url) : "");
             /* finish conn */
             Capi_conn_unref(conn);
             dFree(Info);

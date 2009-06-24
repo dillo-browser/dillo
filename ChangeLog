@@ -9,7 +9,8 @@ dillo-2.2 [??, 2009]
  - Assert that SimpleVector size is positive.
    Patches: Johannes Hofmann
 +- Removed redundant system includes.
-   Added the "nop" keybinding (nop = NO_OPERATION; cancels a default hook).
+ - Added the "nop" keybinding (nop = NO_OPERATION; cancels a default hook).
+ - Fixed segfault when URL is NULL and dpis can't be found.
    Patches: place (AKA corvid)
 +- Check chdir() return code in Paths::init.
    Patch: Michal Nowak
