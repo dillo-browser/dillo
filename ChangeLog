@@ -2,6 +2,18 @@
 Dillo project
 =============================================================================
 
+dillo-2.2 [??, 2009]
+
++- Fixed a bug in parsing RGB color values (CSS).
+ - Added support for css colors of the form rgb(255, 255, 255).
+ - Assert that SimpleVector size is positive.
+   Patches: Johannes Hofmann
++- Removed redundant system includes.
+   Added the "nop" keybinding (nop = NO_OPERATION; cancels a default hook).
+   Patches: place (AKA corvid)
+
+-----------------------------------------------------------------------------
+
 dillo-2.1 [Jun 15, 2009]
 
 +- Added ipv6 addresses iteration and ipv4 fallback.
