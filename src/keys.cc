@@ -90,6 +90,7 @@ static const KeyBinding_t default_keys[] = {
    { "bookmarks"    , KEYS_BOOKMARKS    , fltk::CTRL   , 'b'                },
    { "fullscreen"   , KEYS_FULLSCREEN   , fltk::CTRL   , fltk::SpaceKey     },
    { "reload"       , KEYS_RELOAD       , fltk::CTRL   , 'r'                },
+   { "stop"         , KEYS_STOP         , 0            , 0                  },
    { "hide-panels"  , KEYS_HIDE_PANELS  , 0            , fltk::EscapeKey    },
    { "file-menu"    , KEYS_FILE_MENU    , fltk::ALT    , 'f'                },
    { "close-all"    , KEYS_CLOSE_ALL    , fltk::ALT    , 'q'                },
@@ -115,12 +116,14 @@ void Keys::init()
    // Fill our key bindings list
    bindings = dList_new(32);
    for (uint_t i = 0; i < sizeof(default_keys) / sizeof(KeyBinding_t); i++) {
-      node = dNew(KeyBinding_t, 1);
-      node->name = dStrdup(default_keys[i].name);
-      node->cmd = default_keys[i].cmd;
-      node->modifier = default_keys[i].modifier;
-      node->key = default_keys[i].key;
-      dList_insert_sorted(bindings, node, nodeByKeyCmp);
+      if (default_keys[i].key) {
+         node = dNew(KeyBinding_t, 1);
+         node->name = dStrdup(default_keys[i].name);
+         node->cmd = default_keys[i].cmd;
+         node->modifier = default_keys[i].modifier;
+         node->key = default_keys[i].key;
+         dList_insert_sorted(bindings, node, nodeByKeyCmp);
+      }
    }
 }
 
