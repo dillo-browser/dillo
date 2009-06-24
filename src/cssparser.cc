@@ -680,7 +680,7 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType * type)
    return false;
 }
 
-bool CssParser::parseRgbColorComponent(int32_t *cc) {
+bool CssParser::parseRgbColorComponent(int32_t *cc, int *percentage) {
    if (ttype != CSS_TK_DECINT) {
       MSG_CSS("expected integer not found in %s color\n", "rgb");
       return false;
@@ -690,8 +690,19 @@ bool CssParser::parseRgbColorComponent(int32_t *cc) {
    
    nextToken();
    if (ttype == CSS_TK_CHAR && tval[0] == '%') {
+      if (*percentage == 0) {
+         MSG_CSS("'%s' unexpected in rgb color\n", "%");
+         return false;
+      }
+      *percentage = 1;
       *cc = *cc * 255 / 100;
       nextToken();
+   } else {
+      if (*percentage == 1) {
+         MSG_CSS("expected '%s' not found in rgb color\n", "%");
+         return false;
+      }
+      *percentage = 0;
    }
 
    if (*cc > 255)
@@ -704,6 +715,7 @@ bool CssParser::parseRgbColorComponent(int32_t *cc) {
 
 bool CssParser::parseRgbColor(int32_t *c) {
    int32_t cc;
+   int percentage = -1;
 
    *c = 0;
 
@@ -713,7 +725,7 @@ bool CssParser::parseRgbColor(int32_t *c) {
    }
    nextToken();
 
-   if (!parseRgbColorComponent(&cc))
+   if (!parseRgbColorComponent(&cc, &percentage))
       return false;
    *c |= cc;
 
@@ -723,7 +735,7 @@ bool CssParser::parseRgbColor(int32_t *c) {
    }
    nextToken();
 
-   if (!parseRgbColorComponent(&cc))
+   if (!parseRgbColorComponent(&cc, &percentage))
       return false;
    *c |= cc << 8;
 
@@ -733,7 +745,7 @@ bool CssParser::parseRgbColor(int32_t *c) {
    }
    nextToken();
 
-   if (!parseRgbColorComponent(&cc))
+   if (!parseRgbColorComponent(&cc, &percentage))
       return false;
    *c |= cc << 16;
 
