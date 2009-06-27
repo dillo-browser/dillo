@@ -280,7 +280,7 @@ static void Cookies_init()
       line[0] = '\0';
       rc = fgets(line, LINE_MAXLEN, file_stream);
       if (!rc && ferror(file_stream)) {
-         MSG("Cookies1: Error while reading rule from cookiesrc: %s\n",
+         MSG("Cookies1: Error while reading from cookies.txt: %s\n",
              dStrerror(errno));
          break; /* bail out */
       }
@@ -350,7 +350,7 @@ static void Cookies_init()
          line[0] = '\0';
          rc = fgets(line, LINE_MAXLEN, old_cookies_file_stream);
          if (!rc && ferror(old_cookies_file_stream)) {
-            MSG("Cookies2: Error while reading rule from cookiesrc: %s\n",
+            MSG("Cookies2: Error while reading from cookies file: %s\n",
                 dStrerror(errno));
             break; /* bail out */
          }
