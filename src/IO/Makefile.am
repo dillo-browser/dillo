@@ -8,7 +8,6 @@ libDiof_a_SOURCES = \
 	mime.h \
 	about.c \
 	Url.h \
-	proto.c	\
 	http.c \
 	dpi.c \
 	IO.c \

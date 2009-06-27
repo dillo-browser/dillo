@@ -275,12 +275,17 @@ int main(void)
 {
    char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *mime_type;
    unsigned char *data;
+   int rc;
    size_t data_size = 0;
 
    /* Initialize the SockHandler */
    sh = sock_handler_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
 
-   chdir("/tmp");
+   rc = chdir("/tmp");
+   if (rc == -1) {
+      MSG("paths: error changing directory to /tmp: %s\n",
+          dStrerror(errno));
+   }
 
    /* Read the dpi command from STDIN */
    dpip_tag = sock_handler_read(sh);

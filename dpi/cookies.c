@@ -178,14 +178,19 @@ static FILE *Cookies_fopen(const char *filename, const char *mode,
                            char *init_str)
 {
    FILE *F_in;
-   int fd;
+   int fd, rc;
 
    if ((F_in = fopen(filename, mode)) == NULL) {
       /* Create the file */
       fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
       if (fd != -1) {
-         if (init_str)
-            write(fd, init_str, strlen(init_str));
+         if (init_str) {
+            rc = write(fd, init_str, strlen(init_str));
+            if (rc == -1) {
+               MSG("Cookies: Could not write initial string to file %s: %s\n",
+                  filename, dStrerror(errno));
+            }
+         }
          close(fd);
 
          MSG("Created file: %s\n", filename);
@@ -222,7 +227,7 @@ static void Cookies_free_cookie(CookieData_t *cookie)
 static void Cookies_init()
 {
    CookieData_t *cookie;
-   char *filename;
+   char *filename, *rc = NULL;
    char line[LINE_MAXLEN];
 #ifndef HAVE_LOCKF
    struct flock lck;
@@ -273,7 +278,12 @@ static void Cookies_init()
    /* Get all lines in the file */
    while (!feof(file_stream)) {
       line[0] = '\0';
-      fgets(line, LINE_MAXLEN, file_stream);
+      rc = fgets(line, LINE_MAXLEN, file_stream);
+      if (!rc && ferror(file_stream)) {
+         MSG("Cookies1: Error while reading rule from cookiesrc: %s\n",
+             dStrerror(errno));
+         break; /* bail out */
+      }
 
       /* Remove leading and trailing whitespaces */
       dStrstrip(line);
@@ -338,7 +348,12 @@ static void Cookies_init()
       /* Get all lines in the file */
       while (!feof(old_cookies_file_stream)) {
          line[0] = '\0';
-         fgets(line, LINE_MAXLEN, old_cookies_file_stream);
+         rc = fgets(line, LINE_MAXLEN, old_cookies_file_stream);
+         if (!rc && ferror(old_cookies_file_stream)) {
+            MSG("Cookies2: Error while reading rule from cookiesrc: %s\n",
+                dStrerror(errno));
+            break; /* bail out */
+         }
 
          /* Remove leading and trailing whitespaces */
          dStrstrip(line);
@@ -425,7 +440,8 @@ static void Cookies_save_and_free()
 
    rewind(file_stream);
    fd = fileno(file_stream);
-   ftruncate(fd, 0);
+   if (ftruncate(fd, 0) == -1)
+      MSG("Cookies: Truncate file stream failed: %s\n", dStrerror(errno));
    fprintf(file_stream, "%s", cookies_txt_header_str);
 
    /* Iterate cookies per domain, saving and freeing */
@@ -1213,7 +1229,7 @@ static int Cookie_control_init(void)
 {
    CookieControl cc;
    FILE *stream;
-   char *filename;
+   char *filename, *rc;
    char line[LINE_MAXLEN];
    char domain[LINE_MAXLEN];
    char rule[LINE_MAXLEN];
@@ -1231,7 +1247,12 @@ static int Cookie_control_init(void)
    /* Get all lines in the file */
    while (!feof(stream)) {
       line[0] = '\0';
-      fgets(line, LINE_MAXLEN, stream);
+      rc = fgets(line, LINE_MAXLEN, stream);
+      if (!rc && ferror(stream)) {
+         MSG("Cookies3: Error while reading rule from cookiesrc: %s\n",
+             dStrerror(errno));
+         break; /* bail out */
+      }
 
       /* Remove leading and trailing whitespaces */
       dStrstrip(line);

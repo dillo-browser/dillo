@@ -720,7 +720,7 @@ void est_dpi_sigchld(void)
 void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
 {
    static char *DpiBye_cmd = NULL;
-   int i, dpi_socket;
+   int i, dpi_socket, rc;
    struct sockaddr_un dpi_addr;
    struct sockaddr_un sa;
    size_t sun_path_len, addr_len;
@@ -751,7 +751,11 @@ void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
          ERRMSG("stop_active_dpis", "connect", errno);
          MSG_ERR("%s\n", dpi_addr.sun_path);
       }
-      (void) write(dpi_socket, DpiBye_cmd, strlen(DpiBye_cmd));
+      rc = write(dpi_socket, DpiBye_cmd, strlen(DpiBye_cmd));
+      if (rc == -1) {
+         MSG("stop_active_dpis: Error on sending BYE command: %s\n",
+             dStrerror(errno));
+      }
       a_Misc_close_fd(dpi_socket);
    }
 }

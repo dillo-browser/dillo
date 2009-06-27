@@ -266,7 +266,7 @@ static int try_ftp_transfer(char *url)
 int main(int argc, char **argv)
 {
    char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *url2 = NULL;
-   int nb;
+   int nb, rc;
    char *p, *d_cmd;
 
    /* Debugging with a command line argument */
@@ -277,7 +277,11 @@ int main(int argc, char **argv)
    sh = sock_handler_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
 
    /* wget may need to write a temporary file... */
-   chdir("/tmp");
+   rc = chdir("/tmp");
+   if (rc == -1) {
+      MSG("paths: error changing directory to /tmp: %s\n", 
+          dStrerror(errno));
+   }
 
    /* Read the dpi command from STDIN */
    if (!dpip_tag)

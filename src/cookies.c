@@ -35,6 +35,7 @@ void a_Cookies_init(void)
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "msg.h"
 #include "IO/Url.h"
@@ -79,14 +80,19 @@ static int Cookie_control_init(void);
 static FILE *Cookies_fopen(const char *filename, char *init_str)
 {
    FILE *F_in;
-   int fd;
+   int fd, rc;
 
    if ((F_in = fopen(filename, "r")) == NULL) {
       /* Create the file */
       fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
       if (fd != -1) {
-         if (init_str)
-            write(fd, init_str, strlen(init_str));
+         if (init_str) {
+            rc = write(fd, init_str, strlen(init_str));
+            if (rc == -1) {
+               MSG("Cookies: Could not write initial string to file %s: %s\n",
+                   filename, dStrerror(errno));
+            }
+         }
          close(fd);
 
          MSG("Cookies: Created file: %s\n", filename);
@@ -227,7 +233,7 @@ static int Cookie_control_init(void)
 {
    CookieControl cc;
    FILE *stream;
-   char *filename;
+   char *filename, *rc;
    char line[LINE_MAXLEN];
    char domain[LINE_MAXLEN];
    char rule[LINE_MAXLEN];
@@ -245,7 +251,12 @@ static int Cookie_control_init(void)
    /* Get all lines in the file */
    while (!feof(stream)) {
       line[0] = '\0';
-      fgets(line, LINE_MAXLEN, stream);
+      rc = fgets(line, LINE_MAXLEN, stream);
+      if (!rc && ferror(stream)) {
+         MSG("Cookies1: Error while reading rule from cookiesrc: %s\n",
+             dStrerror(errno));
+         return 2; /* bail out */
+      }
 
       /* Remove leading and trailing whitespaces */
       dStrstrip(line);

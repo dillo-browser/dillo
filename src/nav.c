@@ -597,5 +597,5 @@ int a_Nav_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
  */
 void a_Nav_unref_buf(const DilloUrl *Url)
 {
-   return a_Capi_unref_buf(Url);
+   a_Capi_unref_buf(Url);
 }

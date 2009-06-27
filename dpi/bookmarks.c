@@ -687,15 +687,29 @@ static void Bms_check_import(void)
       "grep -i \"href\" %s | "
       "sed -e 's/<li><A HREF=\"/s0 /' -e 's/\">/ /' -e 's/<.*$//' >> %s";
    Dstr *dstr = dStr_new("");
+   int rc;
 
 
    if (access(BmFile, F_OK) != 0) {
       OldBmFile = dStrconcat(dGethomedir(), "/.dillo/bookmarks.html", NULL);
       if (access(OldBmFile, F_OK) == 0) {
          dStr_sprintf(dstr, cmd1, BmFile);
-         system(dstr->str);
+         rc = system(dstr->str);
+         if (rc == 127) {
+            MSG("Bookmarks: /bin/sh could not be executed\n");
+         } else if (rc == -1) {
+            MSG("Bookmarks: process creation failure: %s\n", 
+                dStrerror(errno));
+         }
          dStr_sprintf(dstr, cmd2, OldBmFile, BmFile);
-         system(dstr->str);
+         rc = system(dstr->str);
+         if (rc == 127) {
+            MSG("Bookmarks: /bin/sh could not be executed\n");
+         } else if (rc == -1) {
+            MSG("Bookmarks: process creation failure: %s\n", 
+                dStrerror(errno));
+         }
+
          dStr_free(dstr, TRUE);
          dFree(OldBmFile);
       }
