@@ -1990,7 +1990,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
     * Be careful to avoid integer overflows during the checks.
     * There is an additional check in dw/image.cc to catch cases
     * where only one dimension is given and the image is scaled
-    * preserving it's original aspect ration.
+    * preserving its original aspect ratio.
     * Size requests passed via CSS are also checked there.
     */
    if (w < 0 || h < 0 ||
