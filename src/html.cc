@@ -1984,7 +1984,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       h = (int) (CSS_LENGTH_TYPE(l_h) == CSS_LENGTH_TYPE_PX ?
                  CSS_LENGTH_VALUE(l_h) : 0);
    }
-   if (w < 0 || h < 0 || abs(w*h) > IMAGE_MAX_W * IMAGE_MAX_H) {
+   if (w < 0 || h < 0 || abs(w*h) > IMAGE_MAX_AREA) {
       dFree(width_ptr);
       dFree(height_ptr);
       width_ptr = height_ptr = NULL;

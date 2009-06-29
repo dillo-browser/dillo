@@ -17,9 +17,7 @@ extern "C" {
  */
 
 /* Arbitrary maximum for image size (to avoid image size-crafting attacks). */
-#define IMAGE_MAX_W  6000
-#define IMAGE_MAX_H  6000
-
+#define IMAGE_MAX_AREA (6000 * 6000)
 
 /*
  * Types

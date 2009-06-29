@@ -282,7 +282,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
          /* check max image size */
          if (jpeg->cinfo.image_width <= 0 || jpeg->cinfo.image_height <= 0 ||
              jpeg->cinfo.image_width > 
-             (IMAGE_MAX_W * IMAGE_MAX_H) / jpeg->cinfo.image_height) {
+             IMAGE_MAX_AREA / jpeg->cinfo.image_height) {
             MSG("Jpeg_write: suspicious image size request %ux%u\n",
                 (uint_t)jpeg->cinfo.image_width,
                 (uint_t)jpeg->cinfo.image_height);

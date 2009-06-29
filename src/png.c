@@ -136,7 +136,7 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
 
    /* check max image size */
    if (png->width <= 0 || png->height <= 0 ||
-       png->width > (IMAGE_MAX_W * IMAGE_MAX_H) / png->height) {
+       png->width > IMAGE_MAX_AREA / png->height) {
       MSG("Png_datainfo_callback: suspicious image size request %ldx%ld\n",
           png->width, png->height);
       Png_error_handling(png_ptr, "Aborting...");

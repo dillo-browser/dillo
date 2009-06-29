@@ -815,7 +815,7 @@ static size_t Gif_do_img_desc(DilloGif *gif, void *Buf,
 
    /* check max image size */
    if (gif->Width <= 0 || gif->Height <= 0 ||
-       gif->Width > (IMAGE_MAX_W * IMAGE_MAX_H) / gif->Height) {
+       gif->Width > IMAGE_MAX_AREA / gif->Height) {
       MSG("Gif_do_img_desc: suspicious image size request %ux%u\n",
           gif->Width, gif->Height);
       gif->state = 999;
