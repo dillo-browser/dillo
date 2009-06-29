@@ -26,6 +26,8 @@
 #include <fltk/draw.h>
 #include <fltk/Color.h>
 
+#define IMAGE_MAX_AREA (6000 * 6000)
+
 using namespace fltk;
 
 namespace dw {
@@ -183,6 +185,18 @@ core::Imgbuf* FltkImgbuf::getScaledBuf (int width, int height)
          sb->ref ();
          return sb;
       }
+   }
+
+   /* Check for excessive image sizes which would cause crashes due to
+    * too big allocations for the image buffer.
+    * In this case we return a pointer to the unscaled image buffer.
+    */
+   if (width <= 0 || height <= 0 ||
+       width > IMAGE_MAX_AREA / height) {
+      MSG("FltkImgbuf::getScaledBuf: suspicious image size request %dx%d\n",
+           width, height);
+      ref ();
+      return this;
    }
 
    /* This size is not yet used, so a new buffer has to be created. */
