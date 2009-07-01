@@ -4,6 +4,8 @@ Dillo project
 
 dillo-2.2 [??, 2009]
 
++- Add additional size checks for images.
+   Patch: Jorge Arellano Cid, Johannes Hofmann, corvid
 +- Fixed a bug in parsing RGB color values (CSS).
  - Added support for css colors of the form rgb(255, 255, 255).
  - Assert that SimpleVector size is positive.
