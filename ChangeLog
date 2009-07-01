@@ -2,7 +2,7 @@
 Dillo project
 =============================================================================
 
-dillo-2.2 [??, 2009]
+dillo-2.1.1 [Jul 3, 2009]
 
 +- Add additional size checks for images.
    Patch: Jorge Arellano Cid, Johannes Hofmann, corvid
@@ -12,6 +12,7 @@ dillo-2.2 [??, 2009]
    Patches: Johannes Hofmann
 +- Removed redundant system includes.
  - Added the "nop" keybinding (nop = NO_OPERATION; cancels a default hook).
+ - Added 'stop' key action (not bound by default).
  - Fixed segfault when URL is NULL and dpis can't be found.
    Patches: place (AKA corvid)
 +- Reduced 'warning: ignoring return value of ...'
