@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "../lout/msg.h"
 
 #include "fltkpreview.hh"
 #include "fltkmisc.hh"
@@ -101,6 +101,11 @@ void FltkPreview::scrollTo (int x, int y)
 {
    scrollX = x;
    scrollY = y;
+}
+
+void FltkPreview::scroll (dw::core::ScrollCommand cmd)
+{
+   MSG_ERR("FltkPreview::scroll not implemented\n");
 }
 
 void FltkPreview::setViewportSize (int width, int height,

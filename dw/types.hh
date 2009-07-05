@@ -30,6 +30,8 @@ enum VPosition
    VPOS_NO_CHANGE
 };
 
+enum ScrollCommand {SCREEN_UP_CMD, SCREEN_DOWN_CMD, LINE_UP_CMD, LINE_DOWN_CMD,
+                    LEFT_CMD, RIGHT_CMD, TOP_CMD, BOTTOM_CMD};
 
 /*
  * Different "layers" may be highlighted in a widget.

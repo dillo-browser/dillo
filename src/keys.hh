@@ -36,7 +36,15 @@ typedef enum {
    KEYS_BACK,
    KEYS_FORWARD,
    KEYS_GOTO,
-   KEYS_HOME
+   KEYS_HOME,
+   KEYS_SCREEN_UP,
+   KEYS_SCREEN_DOWN,
+   KEYS_LINE_UP,
+   KEYS_LINE_DOWN,
+   KEYS_LEFT,
+   KEYS_RIGHT,
+   KEYS_TOP,
+   KEYS_BOTTOM
 } KeysCommand_t;
 
 class Keys {

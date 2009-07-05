@@ -159,6 +159,7 @@ public:
 
    void scrollTo (HPosition hpos, VPosition vpos,
                   int x, int y, int width, int height);
+   void scroll (ScrollCommand);
    void setAnchor (const char *anchor);
 
    /* View */

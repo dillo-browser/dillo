@@ -23,6 +23,7 @@
 #include <fltk/Tooltip.h>
 
 #include "paths.hh"
+#include "keys.hh"
 #include "ui.hh"
 #include "uicmd.hh"
 #include "timeout.hh"
@@ -1087,6 +1088,40 @@ void a_UIcmd_set_scroll_by_fragment(BrowserWindow *bw, const char *f)
    }
 }
 
+/*
+ * Pass scrolling command to dw.
+ */
+void a_UIcmd_scroll(BrowserWindow *bw, int icmd)
+{
+   Layout *layout = (Layout*)bw->render_layout;
+
+   if (layout) {
+      typedef struct {
+         KeysCommand_t keys_cmd;
+         ScrollCommand dw_cmd;
+      } mapping_t;
+
+      const mapping_t map[] = {
+         {KEYS_SCREEN_UP, SCREEN_UP_CMD},
+         {KEYS_SCREEN_DOWN, SCREEN_DOWN_CMD},
+         {KEYS_LINE_UP, LINE_UP_CMD},
+         {KEYS_LINE_DOWN, LINE_DOWN_CMD},
+         {KEYS_LEFT, LEFT_CMD},
+         {KEYS_RIGHT, RIGHT_CMD},
+         {KEYS_TOP, TOP_CMD},
+         {KEYS_BOTTOM, BOTTOM_CMD},
+      };
+      KeysCommand_t keycmd = (KeysCommand_t)icmd;
+
+      for (uint_t i = 0; i < (sizeof(map)/sizeof(mapping_t)); i++) {
+         if (keycmd == map[i].keys_cmd) {
+            layout->scroll(map[i].dw_cmd);
+            break;
+         }
+      }
+   }
+}
+         
 /*
  * Get location's text
  */

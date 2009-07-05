@@ -225,6 +225,15 @@ int FltkViewport::handle (int event)
    }
 
    switch(event) {
+   case ::fltk::KEY:
+      /* Tell fltk we want to receive KEY events as SHORTCUTs.
+       * As we don't know the exact keybindings set by the user, we ask
+       * for all of them (except TabKey to keep navigation between form
+       * widgets). */
+      if (::fltk::event_key() != TabKey)
+         return 0;
+      break;
+
    case ::fltk::FOCUS:
       /** \bug Draw focus box. */
       return 1;
@@ -279,60 +288,6 @@ int FltkViewport::handle (int event)
    case ::fltk::LEAVE:
       mouse_x = mouse_y = -1;
       break;
-
-   case ::fltk::KEY:
-      /* tell fltk we want to receive these KEY events as SHORTCUT */
-      switch (::fltk::event_key()) {
-      case PageUpKey:
-      case PageDownKey:
-      case SpaceKey:
-      case DownKey:
-      case UpKey:
-      case RightKey:
-      case LeftKey:
-      case HomeKey:
-      case EndKey:
-         return 0;
-      }
-      break;
-
-   case ::fltk::SHORTCUT:
-      switch (::fltk::event_key()) {
-      case PageUpKey:
-      case 'b':
-      case 'B':
-         scroll (0, -vscrollbar->pagesize ());
-         return 1;
-
-      case PageDownKey:
-      case SpaceKey:
-         scroll (0, vscrollbar->pagesize ());
-         return 1;
-
-      case DownKey:
-         scroll (0, (int) vscrollbar->linesize ());
-         return 1;
-
-      case UpKey:
-         scroll (0, (int) -vscrollbar->linesize ());
-         return 1;
-
-      case RightKey:
-         scroll ((int) hscrollbar->linesize (), 0);
-         return 1;
-
-      case LeftKey:
-         scroll ((int) -hscrollbar->linesize (), 0);
-         return 1;
-
-      case HomeKey:
-         scrollTo (scrollX, 0);
-         return 1;
-
-      case EndKey:
-         scrollTo (scrollX, canvasHeight); /* gets adjusted in scrollTo () */
-         return 1;
-      }
    }
 
    return FltkWidgetView::handle (event);
@@ -417,6 +372,27 @@ void FltkViewport::scrollTo (int x, int y)
 void FltkViewport::scroll (int dx, int dy)
 {
    scrollTo (scrollX + dx, scrollY + dy);
+}
+
+void FltkViewport::scroll (core::ScrollCommand cmd)
+{
+   if (cmd == core::SCREEN_UP_CMD) {
+      scroll (0, -vscrollbar->pagesize ());
+   } else if (cmd == core::SCREEN_DOWN_CMD) {
+      scroll (0, vscrollbar->pagesize ());
+   } else if (cmd == core::LINE_UP_CMD) {
+      scroll (0, (int) -vscrollbar->linesize ());
+   } else if (cmd == core::LINE_DOWN_CMD) {
+      scroll (0, (int) vscrollbar->linesize ());
+   } else if (cmd == core::LEFT_CMD) {
+      scroll ((int) -hscrollbar->linesize (), 0);
+   } else if (cmd == core::RIGHT_CMD) {
+      scroll ((int) hscrollbar->linesize (), 0);
+   } else if (cmd == core::TOP_CMD) {
+      scrollTo (scrollX, 0);
+   } else if (cmd == core::BOTTOM_CMD) {
+      scrollTo (scrollX, canvasHeight); /* gets adjusted in scrollTo () */
+   }
 }
 
 void FltkViewport::setViewportSize (int width, int height,

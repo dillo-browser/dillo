@@ -750,6 +750,12 @@ int UI::handle(int event)
       KeysCommand_t cmd = Keys::getKeyCmd();
       if (cmd == KEYS_NOP) {
          // Do nothing
+      } else if (cmd == KEYS_SCREEN_UP || cmd == KEYS_SCREEN_DOWN ||
+                 cmd == KEYS_LINE_UP || cmd == KEYS_LINE_DOWN ||
+                 cmd == KEYS_LEFT || cmd == KEYS_RIGHT ||
+                 cmd == KEYS_TOP || cmd == KEYS_BOTTOM) {
+         a_UIcmd_scroll(a_UIcmd_get_bw_by_widget(this), cmd);
+         ret = 1;
       } else if (cmd == KEYS_BACK) {
          a_UIcmd_back(a_UIcmd_get_bw_by_widget(this));
          ret = 1;

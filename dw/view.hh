@@ -80,6 +80,11 @@ public:
    virtual void scrollTo (int x, int y) = 0;
 
    /**
+    * \brief Scroll the viewport as commanded.
+    */
+   virtual void scroll (ScrollCommand) { };
+
+   /**
     * \brief Set the viewport size.
     *
     * Does not have to be implemented, when usesViewport returns false.

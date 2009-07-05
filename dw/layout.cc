@@ -248,6 +248,16 @@ void Layout::detachView (View *view)
     */
 }
 
+void Layout::scroll(ScrollCommand cmd)
+{
+   for (typed::Iterator <View> it = views->iterator (); it.hasNext (); ) {
+      View *view = it.getNext ();
+
+      if (view->usesViewport ())
+         view->scroll(cmd);
+   }
+}
+
 /**
  * \brief Scrolls all viewports, so that the region [x, y, width, height]
  *    is seen, according to hpos and vpos.

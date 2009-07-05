@@ -68,6 +68,7 @@ void a_UIcmd_get_wh(BrowserWindow *bw, int *w, int *h);
 void a_UIcmd_get_scroll_xy(BrowserWindow *bw, int *x, int *y);
 void a_UIcmd_set_scroll_xy(BrowserWindow *bw, int x, int y);
 void a_UIcmd_set_scroll_by_fragment(BrowserWindow *bw, const char *f);
+void a_UIcmd_scroll(BrowserWindow *bw, int icmd);
 char *a_UIcmd_get_location_text(BrowserWindow *bw);
 void a_UIcmd_set_location_text(void *vbw, const char *text);
 void a_UIcmd_set_page_prog(BrowserWindow *bw, size_t nbytes, int cmd);

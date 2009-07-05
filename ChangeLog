@@ -2,6 +2,13 @@
 Dillo project
 =============================================================================
 
+dillo-2.2 [??]
+
++- Added keybindings for scrolling.
+   Patch: corvid, Jorge Arellano Cid
+
+-----------------------------------------------------------------------------
+
 dillo-2.1.1 [Jul 3, 2009]
 
 +- Add additional size checks for images.

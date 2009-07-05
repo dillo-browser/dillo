@@ -69,3 +69,26 @@
 
 # "stop" loading the page. 
 #(stop has no default binding)
+
+#--------------------------------------------------------------------
+#                     MOTION COMMANDS
+#--------------------------------------------------------------------
+
+#pageup = screen-up
+#b = screen-up
+
+#pagedown = screen-down
+#space = screen-down
+
+#up = line-up
+
+#down = line-down
+
+#left = left
+
+#right = right
+
+#home = top
+
+#end = bottom
+

@@ -99,7 +99,17 @@ static const KeyBinding_t default_keys[] = {
    { "forward"      , KEYS_FORWARD      , fltk::SHIFT  , fltk::BackSpaceKey },
    { "forward"      , KEYS_FORWARD      , 0            , '.'                },
    { "goto"         , KEYS_GOTO         , fltk::CTRL   , 'l'                },
-   { "home"         , KEYS_HOME         , fltk::CTRL   , 'h'                }
+   { "home"         , KEYS_HOME         , fltk::CTRL   , 'h'                },
+   { "screen-up"    , KEYS_SCREEN_UP    , 0            , fltk::PageUpKey    },
+   { "screen-up"    , KEYS_SCREEN_UP    , 0            , 'b'                },
+   { "screen-down"  , KEYS_SCREEN_DOWN  , 0            , fltk::PageDownKey  },
+   { "screen-down"  , KEYS_SCREEN_DOWN  , 0            , fltk::SpaceKey     },
+   { "line-up"      , KEYS_LINE_UP      , 0            , fltk::UpKey        },
+   { "line-down"    , KEYS_LINE_DOWN    , 0            , fltk::DownKey      },
+   { "left"         , KEYS_LEFT         , 0            , fltk::LeftKey      },
+   { "right"        , KEYS_RIGHT        , 0            , fltk::RightKey     },
+   { "top"          , KEYS_TOP          , 0            , fltk::HomeKey      },
+   { "bottom"       , KEYS_BOTTOM       , 0            , fltk::EndKey       },
 };
 
 static Dlist *bindings;
