@@ -45,7 +45,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    CssPropertyList props, *table_cell_props;
    const char *attrbuf;
    int32_t border = -1, cellspacing = -1, cellpadding = -1, bgcolor = -1;
-   int cssLength;
+   CssLength cssLength;
 #endif
 
 

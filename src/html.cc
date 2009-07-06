@@ -1955,8 +1955,8 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
    DilloImage *Image;
    char *width_ptr, *height_ptr, *alt_ptr;
    const char *attrbuf;
-   Length l_w  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
-   Length l_h  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
+   CssLength l_w  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
+   CssLength l_h  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
    int space, border, w = 0, h = 0;
    bool load_now;
    CssPropertyList props;
