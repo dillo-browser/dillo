@@ -226,10 +226,9 @@ int FltkViewport::handle (int event)
 
    switch(event) {
    case ::fltk::KEY:
-      /* Tell fltk we want to receive KEY events as SHORTCUTs.
+      /* Tell fltk we want to receive KEY events as SHORTCUT.
        * As we don't know the exact keybindings set by the user, we ask
-       * for all of them (except TabKey to keep navigation between form
-       * widgets). */
+       * for all of them (except TabKey to keep form navigation). */
       if (::fltk::event_key() != TabKey)
          return 0;
       break;
