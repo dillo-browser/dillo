@@ -83,7 +83,7 @@ typedef enum {
 
 inline CssLength CSS_CREATE_LENGTH (float v, CssLengthType t) {
    static const int CSS_LENGTH_FRAC_MAX = (1 << (32 - 15 - 1)) - 1;
-   static const int CSS_LENGTH_INT_MAX = 1 << (32 - 4) - 1;
+   static const int CSS_LENGTH_INT_MAX = (1 << (32 - 4)) - 1;
    int iv;
 
    switch (t) {
