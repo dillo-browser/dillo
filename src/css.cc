@@ -367,8 +367,9 @@ void CssStyleSheet::addRule (CssRule *rule) {
  */ 
 void CssStyleSheet::apply (CssPropertyList *props,
                            Doctree *docTree, const DoctreeNode *node) {
-   RuleList *ruleList[32];
-   int numLists = 0, index[32] = {0};
+   static const int maxLists = 32;
+   RuleList *ruleList[maxLists];
+   int numLists = 0, index[maxLists] = {0};
 
    if (node->id) {
       lout::object::ConstString idString (node->id);
@@ -380,8 +381,8 @@ void CssStyleSheet::apply (CssPropertyList *props,
 
    if (node->klass) {
       for (int i = 0; i < node->klass->size (); i++) {
-         if (i >= 16) {
-            MSG_WARN("Maximum number of classes per node exceeded.\n");
+         if (i >= maxLists - 4) {
+            MSG_WARN("Maximum number of classes per element exceeded.\n");
             break;
          }
 
