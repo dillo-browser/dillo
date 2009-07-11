@@ -100,7 +100,9 @@ void StyleEngine::setId (const char *id) {
 void StyleEngine::setClass (const char *klass) {
    Node *n =  stack->getRef (stack->size () - 1);
    assert (n->klass == NULL);
-   n->klass = dStrdup (klass);
+   n->klass = new lout::misc::SimpleVector<char*>(1);
+   n->klass->increase ();
+   n->klass->set (0, dStrdup (klass));
 };
 
 void StyleEngine::setStyle (const char *style) {
@@ -161,8 +163,11 @@ void StyleEngine::endElement (int element) {
       n->wordStyle->unref ();
    if (n->id)
       dFree ((void*) n->id);
-   if (n->klass)
-      dFree ((void*) n->klass);
+   if (n->klass) {
+      for (int i = 0; i < n->klass->size (); i++)
+         dFree (n->klass->get(i));
+      delete n->klass;
+   }
    if (n->styleAttribute)
       dFree ((void*) n->styleAttribute);
 

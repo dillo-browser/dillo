@@ -1,12 +1,14 @@
 #ifndef __DOCTREE_HH__
 #define __DOCTREE_HH__
 
+#include "lout/misc.hh"
+
 class DoctreeNode {
    public:
       int num; // unique ascending id
       int depth;
       int element;
-      const char *klass;
+      lout::misc::SimpleVector<char*> *klass;
       const char *pseudo;
       const char *id;
 };

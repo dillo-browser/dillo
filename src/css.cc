@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "../dlib/dlib.h"
 #include "misc.h"
+#include "msg.h"
 #include "html_common.hh"
 #include "css.hh"
 #include "cssparser.hh"
@@ -206,14 +207,24 @@ CssSimpleSelector::~CssSimpleSelector () {
 bool CssSimpleSelector::match (const DoctreeNode *n) {
    if (element != ELEMENT_ANY && element != n->element)
       return false;
-   if (klass != NULL &&
-      (n->klass == NULL || dStrcasecmp (klass, n->klass) != 0))
-      return false;
    if (pseudo != NULL &&
       (n->pseudo == NULL || dStrcasecmp (pseudo, n->pseudo) != 0))
       return false;
    if (id != NULL && (n->id == NULL || dStrcasecmp (id, n->id) != 0))
       return false;
+   if (klass != NULL) {
+      bool found = false;
+      if (n->klass != NULL) {
+         for (int i = 0; i < n->klass->size (); i++) {
+            if (dStrcasecmp (klass, n->klass->get(i)) == 0) {
+               found = true;
+               break;
+            }
+         }
+      }
+      if (! found)
+         return false;
+   }
 
    return true;
 }
@@ -356,8 +367,8 @@ void CssStyleSheet::addRule (CssRule *rule) {
  */ 
 void CssStyleSheet::apply (CssPropertyList *props,
                            Doctree *docTree, const DoctreeNode *node) {
-   RuleList *ruleList[4];
-   int numLists = 0, index[4] = {0, 0, 0, 0};
+   RuleList *ruleList[32];
+   int numLists = 0, index[32] = {0};
 
    if (node->id) {
       lout::object::ConstString idString (node->id);
@@ -368,11 +379,18 @@ void CssStyleSheet::apply (CssPropertyList *props,
    }
 
    if (node->klass) {
-      lout::object::ConstString classString (node->klass);
+      for (int i = 0; i < node->klass->size (); i++) {
+         if (i >= 16) {
+            MSG_WARN("Maximum number of classes per node exceeded.\n");
+            break;
+         }
 
-      ruleList[numLists] = classTable->get (&classString);
-      if (ruleList[numLists])
-         numLists++;
+         lout::object::ConstString classString (node->klass->get (i));
+
+         ruleList[numLists] = classTable->get (&classString);
+         if (ruleList[numLists])
+            numLists++;
+      }
    }
 
    ruleList[numLists] = elementTable[docTree->top ()->element];
