@@ -6,6 +6,8 @@ dillo-2.2 [??]
 
 +- Added keybindings for scrolling.
    Patch: corvid, Jorge Arellano Cid
++- Add support for multiple class names in CSS.
+   Patch: Johannes Hofmann
 
 -----------------------------------------------------------------------------
 
