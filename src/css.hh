@@ -312,17 +312,31 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
 };
 
 class CssSimpleSelector {
+   private:
+      int element;
+      char *klass, *pseudo, *id;
+
    public:
       enum {
          ELEMENT_NONE = -1,
          ELEMENT_ANY = -2,
       };
 
-      int element;
-      char *klass, *pseudo, *id;
+      typedef enum {
+         SELECT_NONE,
+         SELECT_CLASS,
+         SELECT_PSEUDO_CLASS,
+         SELECT_ID,
+      } SelectType;
 
       CssSimpleSelector ();
       ~CssSimpleSelector ();
+      inline void setElement (int e) { element = e; };
+      void setSelect (SelectType t, const char *v);
+      inline const char *getClass () { return klass; };
+      inline const char *getPseudoClass () { return pseudo; };
+      inline const char *getId () { return id; };
+      inline int getElement () { return element; };
       bool match (const DoctreeNode *node);
       int specificity ();
       void print ();

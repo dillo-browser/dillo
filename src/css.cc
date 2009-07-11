@@ -200,6 +200,25 @@ CssSimpleSelector::~CssSimpleSelector () {
    dFree (pseudo);
 }
 
+void CssSimpleSelector::setSelect (SelectType t, const char *v) {
+   switch (t) {
+      case SELECT_CLASS:
+         if (klass == NULL)
+            klass = dStrdup (v);
+         break;
+      case SELECT_PSEUDO_CLASS:
+         if (pseudo == NULL)
+            pseudo = dStrdup (v);
+         break;
+      case SELECT_ID:
+         if (id == NULL)
+            id = dStrdup (v);
+         break;
+      default:
+         break;
+   }
+}
+
 /**
  * \brief Return whether simple selector matches at a given node of
  *        the document tree.
@@ -327,8 +346,8 @@ void CssStyleSheet::addRule (CssRule *rule) {
    RuleList *ruleList = NULL;
    lout::object::ConstString *string;
 
-   if (top->id) {
-      string = new lout::object::ConstString (top->id);
+   if (top->getId ()) {
+      string = new lout::object::ConstString (top->getId ());
       ruleList = idTable->get (string);
       if (ruleList == NULL) {
          ruleList = new RuleList ();
@@ -336,8 +355,8 @@ void CssStyleSheet::addRule (CssRule *rule) {
       } else {
          delete string;
       }
-   } else if (top->klass) {
-      string = new lout::object::ConstString (top->klass);
+   } else if (top->getClass ()) {
+      string = new lout::object::ConstString (top->getClass ());
       ruleList = classTable->get (string);
       if (ruleList == NULL) {
          ruleList = new RuleList;
@@ -345,16 +364,16 @@ void CssStyleSheet::addRule (CssRule *rule) {
       } else {
          delete string;
       }
-   } else if (top->element >= 0 && top->element < ntags) {
-      ruleList = elementTable[top->element];
-   } else if (top->element == CssSimpleSelector::ELEMENT_ANY) {
+   } else if (top->getElement () >= 0 && top->getElement () < ntags) {
+      ruleList = elementTable[top->getElement ()];
+   } else if (top->getElement () == CssSimpleSelector::ELEMENT_ANY) {
       ruleList = anyTable;
    }
 
    if (ruleList) {
       ruleList->insert (rule);
    } else {
-      assert (top->element == CssSimpleSelector::ELEMENT_NONE);
+      assert (top->getElement () == CssSimpleSelector::ELEMENT_NONE);
       delete rule;
    }
 }

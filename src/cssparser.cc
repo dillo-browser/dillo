@@ -1118,15 +1118,15 @@ void CssParser::parseDeclaration(CssPropertyList * props,
 
 bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
 {
-   char **pp;
+   CssSimpleSelector::SelectType selectType;
 
    if (ttype == CSS_TK_SYMBOL) {
-      selector->element = a_Html_tag_index(tval);
+      selector->setElement (a_Html_tag_index(tval));
       nextToken();
       if (spaceSeparated)
          return true;
    } else if (ttype == CSS_TK_CHAR && tval[0] == '*') {
-      selector->element = CssSimpleSelector::ELEMENT_ANY;
+      selector->setElement (CssSimpleSelector::ELEMENT_ANY);
       nextToken();
       if (spaceSeparated)
          return true;
@@ -1140,18 +1140,18 @@ bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
    }
 
    do {
-      pp = NULL;
+      selectType = CssSimpleSelector::SELECT_NONE;
       if (ttype == CSS_TK_CHAR) {
          switch (tval[0]) {
          case '#':
-            pp = &selector->id;
+            selectType = CssSimpleSelector::SELECT_ID;
             break;
          case '.':
-            pp = &selector->klass;
+            selectType = CssSimpleSelector::SELECT_CLASS;
             break;
          case ':':
-            pp = &selector->pseudo;
-            if (*pp)
+            selectType = CssSimpleSelector::SELECT_PSEUDO_CLASS;
+            if (selector->getPseudoClass ())
                // pseudo class has been set already.
                // As dillo currently only supports :link and :visisted, a
                // selector with more than one pseudo class will never match.
@@ -1162,14 +1162,13 @@ bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
          }
       }
 
-      if (pp) {
+      if (selectType != CssSimpleSelector::SELECT_NONE) {
          nextToken();
          if (spaceSeparated)
             return true;
 
          if (ttype == CSS_TK_SYMBOL) {
-            if (*pp == NULL)
-               *pp = dStrdup(tval);
+            selector->setSelect (selectType, tval);
             nextToken();
          } else {
             return false; // don't accept classes or id's starting with integer
@@ -1177,7 +1176,7 @@ bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
          if (spaceSeparated)
             return true;
       }
-   } while (pp);
+   } while (selectType != CssSimpleSelector::SELECT_NONE);
 
    DEBUG_MSG(DEBUG_PARSE_LEVEL, "end of simple selector (%s, %s, %s, %d)\n",
       selector->id, selector->klass,
