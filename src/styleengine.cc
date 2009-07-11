@@ -97,12 +97,30 @@ void StyleEngine::setId (const char *id) {
    n->id = dStrdup (id);
 };
 
+/**
+ * \brief split a string at <sep> chars and return a simple vector of strings
+ * \todo should be optimized to avoid malloc()/free() calls.
+ */
+static lout::misc::SimpleVector<char *> *
+splitStr(const char *str, const char *sep) {
+   char *tok, *copy, *p;
+   lout::misc::SimpleVector<char *> *list =
+      new lout::misc::SimpleVector<char *>(1);
+
+   p = copy = dStrdup (str);
+   while ((tok = dStrsep(&p, sep))) {
+      list->increase ();
+      list->set (list->size () - 1, dStrdup (tok));
+   }
+   dFree (copy);
+
+   return list; 
+}
+
 void StyleEngine::setClass (const char *klass) {
    Node *n =  stack->getRef (stack->size () - 1);
    assert (n->klass == NULL);
-   n->klass = new lout::misc::SimpleVector<char*>(1);
-   n->klass->increase ();
-   n->klass->set (0, dStrdup (klass));
+   n->klass = splitStr (klass, " ");
 };
 
 void StyleEngine::setStyle (const char *style) {
