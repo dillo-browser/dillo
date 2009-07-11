@@ -314,7 +314,8 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
 class CssSimpleSelector {
    private:
       int element;
-      char *klass, *pseudo, *id;
+      char *pseudo, *id;
+      lout::misc::SimpleVector <char *> *klass;
 
    public:
       enum {
@@ -333,7 +334,7 @@ class CssSimpleSelector {
       ~CssSimpleSelector ();
       inline void setElement (int e) { element = e; };
       void setSelect (SelectType t, const char *v);
-      inline const char *getClass () { return klass; };
+      inline lout::misc::SimpleVector <char *> *getClass () { return klass; };
       inline const char *getPseudoClass () { return pseudo; };
       inline const char *getId () { return id; };
       inline int getElement () { return element; };

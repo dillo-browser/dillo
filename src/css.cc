@@ -195,7 +195,11 @@ CssSimpleSelector::CssSimpleSelector () {
 }
 
 CssSimpleSelector::~CssSimpleSelector () {
-   dFree (klass);
+   if (klass) {
+      for (int i = 0; i < klass->size (); i++)
+         dFree (klass->get (i));
+      delete klass;
+   }
    dFree (id);
    dFree (pseudo);
 }
@@ -204,7 +208,9 @@ void CssSimpleSelector::setSelect (SelectType t, const char *v) {
    switch (t) {
       case SELECT_CLASS:
          if (klass == NULL)
-            klass = dStrdup (v);
+            klass = new lout::misc::SimpleVector <char *> (1);
+         klass->increase ();
+         klass->set (klass->size () - 1, dStrdup (v));
          break;
       case SELECT_PSEUDO_CLASS:
          if (pseudo == NULL)
@@ -232,17 +238,19 @@ bool CssSimpleSelector::match (const DoctreeNode *n) {
    if (id != NULL && (n->id == NULL || dStrcasecmp (id, n->id) != 0))
       return false;
    if (klass != NULL) {
-      bool found = false;
-      if (n->klass != NULL) {
-         for (int i = 0; i < n->klass->size (); i++) {
-            if (dStrcasecmp (klass, n->klass->get(i)) == 0) {
-               found = true;
-               break;
+      for (int i = 0; i < klass->size (); i++) {
+         bool found = false;
+         if (n->klass != NULL) {
+            for (int j = 0; j < n->klass->size (); j++) {
+               if (dStrcasecmp (klass->get(i), n->klass->get(j)) == 0) {
+                  found = true;
+                  break;
+               }
             }
          }
+         if (! found)
+            return false;
       }
-      if (! found)
-         return false;
    }
 
    return true;
@@ -269,8 +277,13 @@ int CssSimpleSelector::specificity () {
 }
 
 void CssSimpleSelector::print () {
-   fprintf (stderr, "Element %d, class %s, pseudo %s, id %s ",
-      element, klass, pseudo, id);
+   fprintf (stderr, "Element %d, pseudo %s, id %s ",
+      element, pseudo, id);
+   if (klass != NULL) {
+      fprintf (stderr, "class ");
+      for (int i = 0; i < klass->size (); i++)
+         fprintf (stderr, ".%s", klass->get (i));
+   }
 }
 
 CssRule::CssRule (CssSelector *selector, CssPropertyList *props) {
@@ -355,8 +368,8 @@ void CssStyleSheet::addRule (CssRule *rule) {
       } else {
          delete string;
       }
-   } else if (top->getClass ()) {
-      string = new lout::object::ConstString (top->getClass ());
+   } else if (top->getClass () && top->getClass ()->size () > 0) {
+      string = new lout::object::ConstString (top->getClass ()->get (0));
       ruleList = classTable->get (string);
       if (ruleList == NULL) {
          ruleList = new RuleList;
