@@ -168,11 +168,11 @@ int CustHighlightButton::handle(int e)
  * Used to resize the progress boxes automatically.
  */
 class CustProgressBox : public InvisibleBox {
+   int padding;
 public:
    CustProgressBox(int x, int y, int w, int h, const char *l=0) :
-      InvisibleBox(x,y,w,h,l) {};
+      InvisibleBox(x,y,w,h,l) { padding = 0; };
    void update_label(const char *lbl) {
-      static int padding = 0;
       int w,h;
       if (!padding) {
          copy_label("W");
