@@ -97,7 +97,7 @@ static int a_Misc_get_content_type_from_data2(void *Data, size_t Size,
    size_t i, non_ascci;
 
    /* HTML try */
-   for (i = 0; i < Size && isspace(p[i]); ++i);
+   for (i = 0; i < Size && dIsspace(p[i]); ++i);
    if ((Size - i >= 5  && !dStrncasecmp(p+i, "<html", 5)) ||
        (Size - i >= 5  && !dStrncasecmp(p+i, "<head", 5)) ||
        (Size - i >= 6  && !dStrncasecmp(p+i, "<title", 6)) ||
@@ -129,7 +129,7 @@ static int a_Misc_get_content_type_from_data2(void *Data, size_t Size,
       Size = MIN (Size, 256);
       for (i = 0; i < Size; i++) {
          ch = (uchar_t) p[i];
-         if ((ch < 32 || ch > 126) && !isspace(ch))
+         if ((ch < 32 || ch > 126) && !dIsspace(ch))
             ++non_ascci;
       }
       if (Size == 256) {

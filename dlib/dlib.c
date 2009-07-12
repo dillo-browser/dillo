@@ -124,8 +124,8 @@ char *dStrstrip(char *s)
    int len;
 
    if (s && *s) {
-      for (p = s; isspace(*p); ++p);
-      for (len = strlen(p); len && isspace(p[len-1]); --len);
+      for (p = s; dIsspace(*p); ++p);
+      for (len = strlen(p); len && dIsspace(p[len-1]); --len);
       if (p > s)
          memmove(s, p, len);
       s[len] = 0;
@@ -785,17 +785,17 @@ int dParser_parse_rc_line(char **line, char **name, char **value)
       ret = 1;
    } else if ((eq = strchr(*line, '='))) {
       /* get name */
-      for (p = *line; *p && *p != '=' && !isspace(*p); ++p);
+      for (p = *line; *p && *p != '=' && !dIsspace(*p); ++p);
       *p = 0;
       *name = *line;
 
       /* skip whitespace */
       if (p < eq)
-         for (++p; isspace(*p); ++p);
+         for (++p; dIsspace(*p); ++p);
 
       /* get value */
       if (p == eq) {
-         for (++p; isspace(*p); ++p);
+         for (++p; dIsspace(*p); ++p);
          len = strlen(p);
          if (len >= 2 && *p == '"' && p[len-1] == '"') {
             p[len-1] = 0;

@@ -122,7 +122,7 @@ static const char *File_get_content_type_from_data(void *Data, size_t Size)
    _MSG("File_get_content_type_from_data:: Size = %d\n", Size);
 
    /* HTML try */
-   for (i = 0; i < Size && isspace(p[i]); ++i);
+   for (i = 0; i < Size && dIsspace(p[i]); ++i);
    if ((Size - i >= 5  && !dStrncasecmp(p+i, "<html", 5)) ||
        (Size - i >= 5  && !dStrncasecmp(p+i, "<head", 5)) ||
        (Size - i >= 6  && !dStrncasecmp(p+i, "<title", 6)) ||

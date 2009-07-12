@@ -91,7 +91,7 @@ static int Auth_path_is_inside(const char *path1, const char *path2, int len)
 static int Auth_is_token_char(char c)
 {
    const char *invalid = "\"()<>@,;:\\[]?=/{} \t";
-   return (strchr(invalid, c) || iscntrl(c)) ? 0 : 1;
+   return (strchr(invalid, c) || iscntrl((uchar_t)c)) ? 0 : 1;
 }
 
 /*

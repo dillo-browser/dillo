@@ -128,7 +128,7 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
    DetectedContentType Type = DT_OCTET_STREAM; /* default to binary */
 
    /* HTML try */
-   for (i = 0; i < Size && isspace(p[i]); ++i);
+   for (i = 0; i < Size && dIsspace(p[i]); ++i);
    if ((Size - i >= 5  && !dStrncasecmp(p+i, "<html", 5)) ||
        (Size - i >= 5  && !dStrncasecmp(p+i, "<head", 5)) ||
        (Size - i >= 6  && !dStrncasecmp(p+i, "<title", 6)) ||
@@ -166,7 +166,7 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
       Size = MIN (Size, 256);
       for (i = 0; i < Size; i++) {
          int ch = (uchar_t) p[i];
-         if (ch < 32 && !isspace(ch))
+         if (ch < 32 && !dIsspace(ch))
             ++bin_chars;
          if (ch > 126)
             ++non_ascci;
@@ -208,13 +208,13 @@ void a_Misc_parse_content_type(const char *str, char **major, char **minor,
    if (!str)
       return;
 
-   for (s = str; isalnum(*s) || (*s == '-'); s++);
+   for (s = str; dIsalnum(*s) || (*s == '-'); s++);
    if (major)
       *major = dStrndup(str, s - str);
    is_text = (s - str == 4) && !dStrncasecmp(str, "text", 4);
 
    if (*s == '/') {
-      for (str = ++s; isalnum(*s) || (*s == '-'); s++);
+      for (str = ++s; dIsalnum(*s) || (*s == '-'); s++);
       if (minor)
          *minor = dStrndup(str, s - str);
    }

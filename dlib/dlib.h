@@ -30,6 +30,10 @@ extern "C" {
 #undef  MIN
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 
+/* Handle signed char */
+#define dIsspace(c) isspace((uchar_t)(c))
+#define dIsalnum(c) isalnum((uchar_t)(c))
+
 /*
  *-- Casts -------------------------------------------------------------------
  */

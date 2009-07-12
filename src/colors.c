@@ -246,7 +246,7 @@ int32_t a_Color_parse (const char *subtag, int32_t default_color, int *err)
    int ret, low, mid, high, st = 1;
 
    /* skip leading spaces */
-   for (cp = subtag; isspace(*cp); cp++);
+   for (cp = subtag; dIsspace(*cp); cp++);
 
    ret_color = default_color;
    if (*cp == '#') {

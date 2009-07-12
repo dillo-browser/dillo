@@ -838,7 +838,7 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
          continue;
       }
       /* Skip whitespace */
-      while (isspace(*str))
+      while (dIsspace(*str))
          str++;
 
       /* Get attribute */
@@ -1262,17 +1262,17 @@ static int Cookie_control_init(void)
          j = 0;
 
          /* Get the domain */
-         while (line[i] != '\0' && !isspace(line[i]))
+         while (line[i] != '\0' && !dIsspace(line[i]))
             domain[j++] = line[i++];
          domain[j] = '\0';
 
          /* Skip past whitespaces */
-         while (isspace(line[i]))
+         while (dIsspace(line[i]))
             i++;
 
          /* Get the rule */
          j = 0;
-         while (line[i] != '\0' && !isspace(line[i]))
+         while (line[i] != '\0' && !dIsspace(line[i]))
             rule[j++] = line[i++];
          rule[j] = '\0';
 
