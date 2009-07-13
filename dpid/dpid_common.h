@@ -9,9 +9,6 @@
  * the next patch
  */
 
-#include <stdio.h>
-#include <errno.h>
-#include <sys/types.h>
 #include <dirent.h>
 
 #include "../dlib/dlib.h"

@@ -22,6 +22,7 @@
  */
 
 #include <errno.h>
+#include <stdlib.h>  /* for exit */
 #include "dpid_common.h"
 #include "dpi.h"
 #include "misc_new.h"

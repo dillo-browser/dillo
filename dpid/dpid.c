@@ -19,6 +19,9 @@
  * Main functions to set-up dpi information and to initialise sockets
  */
 #include <errno.h>
+#include <stdlib.h>   /* for exit */
+#include <fcntl.h>    /* for F_SETFD, F_GETFD, FD_CLOEXEC */
+
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -26,7 +29,6 @@
 #include "dpid.h"
 #include "dpi.h"
 #include "dpi_socket_dir.h"
-#include "dpi_service.h"
 #include "misc_new.h"
 
 #include "../dpip/dpip.h"
@@ -213,6 +215,56 @@ enum file_type get_file_type(char *file_name)
       MSG_ERR("get_file_type: Unknown file type for %s\n", file_name);
       return UNKNOWN_FILE;
    }
+}
+
+/*! Get dpi directory path from dpidrc
+ * \Return
+ * dpi directory on success, NULL on failure
+ * \Important
+ * The dpi_dir definition in dpidrc must have no leading white space.
+ */
+char *get_dpi_dir(char *dpidrc)
+{
+   FILE *In;
+   int len;
+   char *rcline = NULL, *value = NULL, *p;
+
+   if ((In = fopen(dpidrc, "r")) == NULL) {
+      ERRMSG("dpi_dir", "fopen", errno);
+      MSG_ERR(" - %s\n", dpidrc);
+      return (NULL);
+   }
+
+   while ((rcline = dGetline(In)) != NULL) {
+      if (strncmp(rcline, "dpi_dir", 7) == 0)
+         break;
+      dFree(rcline);
+   }
+   fclose(In);
+
+   if (!rcline) {
+      ERRMSG("dpi_dir", "Failed to find a dpi_dir entry in dpidrc", 0);
+      MSG_ERR("Put your dillo plugins path in %s\n", dpidrc);
+      MSG_ERR("eg. dpi_dir=/usr/local/lib/dillo/dpi ");
+      MSG_ERR("with no leading spaces.\n");
+      value = NULL;
+   } else {
+      len = (int) strlen(rcline);
+      if (len && rcline[len - 1] == '\n')
+         rcline[len - 1] = 0;
+
+      if ((p = strchr(rcline, '='))) {
+         while (*++p == ' ');
+         value = dStrdup(p);
+      } else {
+         ERRMSG("dpi_dir", "strchr", 0);
+         MSG_ERR(" - '=' not found in %s\n", rcline);
+         value = NULL;
+      }
+   }
+
+   dFree(rcline);
+   return (value);
 }
 
 /*! Scans a service directory in dpi_dir and fills dpi_attr

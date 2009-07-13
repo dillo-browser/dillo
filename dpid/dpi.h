@@ -7,13 +7,8 @@
 #ifndef DPI_H
 #define DPI_H
 
-#include <config.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
+#include <unistd.h>      /* for socklen_t */
+#include <sys/socket.h>  /* for socklen_t and AF_LOCAL */
 
 /* Check the Unix98 goodie */
 #ifndef socklen_t

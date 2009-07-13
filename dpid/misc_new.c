@@ -9,20 +9,15 @@
  * (at your option) any later version.
  */
 
-#include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
-#include <string.h>
+#include <errno.h>      /* errno, err-codes */
 #include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <errno.h>
-#include <fcntl.h>
-#include "d_size.h"
-#include "misc_new.h"
-#include "dpid_common.h"
+#include <time.h>
+#include <sys/stat.h>   /* stat */
+#include <stdlib.h>     /* rand, srand */
 
-#include "misc_new.h"  /* for function prototypes */
+#include "../dlib/dlib.h"
+#include "dpid_common.h"
+#include "misc_new.h"   /* for function prototypes */
 
 
 /*

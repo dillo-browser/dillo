@@ -8,13 +8,11 @@ bin_SCRIPTS = dpidc
 
 dpid_SOURCES = \
 	dpi.h \
-	dpi_service.h \
 	dpi_socket_dir.h \
 	dpid.h \
 	dpid_common.h \
 	misc_new.h \
 	dpi.c \
-	dpi_service.c \
 	dpi_socket_dir.c \
 	dpid.c \
 	dpid_common.c \

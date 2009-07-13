@@ -15,12 +15,12 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
-#include <unistd.h>
-#include <limits.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <assert.h>
+#include <errno.h>    /* for ckd_write */
+#include <unistd.h>   /* for ckd_write */
+#include <stdlib.h>   /* for exit */
+#include <assert.h>   /* for assert */
+#include <sys/stat.h> /* for umask */
+
 #include "dpid_common.h"
 #include "dpid.h"
 #include "dpi.h"
