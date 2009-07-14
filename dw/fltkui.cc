@@ -178,23 +178,21 @@ void FltkResource::setWidgetStyle (::fltk::Widget *widget,
 
    FltkColor *bg = (FltkColor*)style->backgroundColor;
    if (bg) {
-      if (style->color) {
-         /*
-          * TODO: if/when CSS is implemented, test whether style->color
-          * will consistently provide readable widgets.
-          */
-         int32_t c = bg->colors[FltkColor::SHADING_NORMAL];
-         int r = (c >> 24) & 0xff, g = (c >> 16) & 0xff, b = (c >> 8) & 0xff;
-         bool light =  (r + g >= 0x150) || (r + g + b >= 0x180);
+      int normal_bg = bg->colors[FltkColor::SHADING_NORMAL];
 
-         widget->labelcolor(light? ::fltk::BLACK : ::fltk::WHITE);
-         widget->textcolor(light? ::fltk::BLACK : ::fltk::WHITE);
-         widget->selection_color(light? ::fltk::BLACK : ::fltk::WHITE);
+      if (style->color) {
+         int style_fg = ((FltkColor*)style->color)->colors
+                                                   [FltkColor::SHADING_NORMAL];
+         ::fltk::Color fg = ::fltk::contrast(style_fg, normal_bg);
+
+         widget->labelcolor(fg);
+         widget->textcolor(fg);
+         widget->selection_color(fg);
       }
 
-      widget->color(bg->colors[FltkColor::SHADING_NORMAL]);
-      widget->buttoncolor(bg->colors[FltkColor::SHADING_NORMAL]);
-      widget->selection_textcolor(bg->colors[FltkColor::SHADING_NORMAL]);
+      widget->color(normal_bg);
+      widget->buttoncolor(normal_bg);
+      widget->selection_textcolor(normal_bg);
       if (!(widget->type() & (::fltk::Widget::RADIO|::fltk::Widget::TOGGLE))) {
          /* it looks awful to highlight the buttons */
          widget->highlight_color(bg->colors[FltkColor::SHADING_LIGHT]);
