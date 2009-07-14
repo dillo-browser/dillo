@@ -1253,6 +1253,13 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
       int xWorld = allocation.x + xWidget;
       Word *word = words->getRef(wordIndex);
 
+      if (xWidget + word->size.width < area->x) {
+         xWidget += word->size.width + word->effSpace;
+         continue;
+      } else if (xWidget > area->x + area->width) {
+         break;
+      }
+
       //DBG_OBJ_ARRSET_NUM (page, "words.%d.<i>drawn at</i>.x", wordIndex,
       //                    xWidget);
       //DBG_OBJ_ARRSET_NUM (page, "words.%d.<i>drawn at</i>.y", wordIndex,
