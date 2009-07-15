@@ -10,11 +10,6 @@
 #include <unistd.h>      /* for socklen_t */
 #include <sys/socket.h>  /* for socklen_t and AF_LOCAL */
 
-/* Check the Unix98 goodie */
-#ifndef socklen_t
-   #define socklen_t uint32_t
-#endif
-
 /* Some systems may not have this one... */
 #ifndef AF_LOCAL
    #define AF_LOCAL AF_UNIX

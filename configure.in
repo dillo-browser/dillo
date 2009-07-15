@@ -135,7 +135,7 @@ ac_cv_socklen_t="size_t"
 )
 AC_MSG_RESULT($ac_cv_socklen_t)
 if test "$ac_cv_socklen_t" != "socklen_t"; then
-  AC_DEFINE_UNQUOTED(socklen_t, $ac_cv_socklen_t,
+  AC_DEFINE_UNQUOTED([socklen_t], [$ac_cv_socklen_t],
                      [Define the real type of socklen_t])
 fi
 
@@ -183,7 +183,7 @@ if test "x$enable_jpeg" = "xyes"; then
 fi
 
 if test "x$jpeg_ok" = "xyes"; then
-  AC_DEFINE([ENABLE_JPEG], [], [Enable JPEG images])
+  AC_DEFINE([ENABLE_JPEG], [1], [Enable JPEG images])
 fi
 
 dnl -------------
@@ -268,12 +268,12 @@ dnl Try to find libpng even though libpng-config wasn't found
 fi
 
 if test "x$png_ok" = "xyes"; then
-  AC_DEFINE([ENABLE_PNG], [], [Enable PNG images])
+  AC_DEFINE([ENABLE_PNG], [1], [Enable PNG images])
 fi
 
 dnl Check if support for GIF images should be compiled in
 if test "x$enable_gif" = "xyes"; then
-  AC_DEFINE([ENABLE_GIF], [], [Enable GIF images])
+  AC_DEFINE([ENABLE_GIF], [1], [Enable GIF images])
 fi
 
 dnl --------------------------
@@ -298,7 +298,7 @@ if test "x$enable_ssl" = "xyes"; then
 fi
 
 if test "x$ssl_ok" = "xyes"; then
-  AC_DEFINE([ENABLE_SSL], [], [Enable SSL support])
+  AC_DEFINE([ENABLE_SSL], [1], [Enable SSL support])
 fi
 
 dnl --------------------------------------------------------------
