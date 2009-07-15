@@ -2169,13 +2169,15 @@ static void Html_tag_open_map(DilloHtml *html, const char *tag, int tagsize)
       BUG_MSG("nested <map>\n");
    } else {
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name"))) {
+         html->InFlags |= IN_MAP;
          hash_name = dStrconcat("#", attrbuf, NULL);
          url = a_Html_url_new(html, hash_name, NULL, 0);
          html->maps.startNewMap(new ::object::String(URL_STR(url)));
          a_Url_free (url);
          dFree(hash_name);
+      } else {
+         BUG_MSG("name attribute is required for <map>\n");
       }
-      html->InFlags |= IN_MAP;
    }
 }
 

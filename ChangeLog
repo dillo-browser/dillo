@@ -12,6 +12,8 @@ dillo-2.2 [??]
  - Fixed CustProgressBox() for systems without weak symbols.
  - Handle signed chars. Added dIsspace() and dIsalnum() to dlib.
    Patches: Jorge Arellano Cid
++- Fix segfault from AREA when MAP is missing name attribute.
+   Patch: corvid
 
 -----------------------------------------------------------------------------
 
