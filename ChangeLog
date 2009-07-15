@@ -8,6 +8,10 @@ dillo-2.2 [??]
    Patch: corvid, Jorge Arellano Cid
 +- Add support for multiple class names in CSS.
    Patch: Johannes Hofmann
++- Cleaned up system includes in dpid directory.
+ - Fixed CustProgressBox() for systems without weak symbols.
+ - Handle signed chars. Added dIsspace() and dIsalnum() to dlib.
+   Patches: Jorge Arellano Cid
 
 -----------------------------------------------------------------------------
 
