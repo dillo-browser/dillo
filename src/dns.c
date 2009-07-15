@@ -13,7 +13,16 @@
  * Non blocking pthread-handled Dns scheme
  */
 
-#include <pthread.h>
+
+/*
+ * Uncomment the following line for debugging or gprof profiling.
+ */
+/* #undef D_DNS_THREADED */
+
+#ifdef D_DNS_THREADED
+#  include <pthread.h>
+#endif
+
 
 #include <netdb.h>
 #include <sys/types.h>
@@ -29,11 +38,6 @@
 #include "dns.h"
 #include "list.h"
 #include "timeout.hh"
-
-/*
- * Uncomment the following line for debugging or gprof profiling.
- */
-/* #undef D_DNS_THREADED */
 
 
 /* Maximum dns resolving threads */
