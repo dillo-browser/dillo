@@ -68,7 +68,7 @@ static int start_filter_plugin(struct dp dpi_attr)
    }
    if (pid == 0) {
       /* Child, start plugin */
-      if (execl(dpi_attr.path, dpi_attr.path, NULL) == -1) {
+      if (execl(dpi_attr.path, dpi_attr.path, (char*)NULL) == -1) {
          ERRMSG("start_plugin", "execl", errno);
          MSG_ERR("ERROR in child proc for %s\n", dpi_attr.path);
          exit(1);
@@ -100,7 +100,7 @@ static void start_server_plugin(struct dp dpi_attr)
       MSG_ERR("ERROR in child proc for %s\n", dpi_attr.path);
       exit(1);
    }
-   if (execl(dpi_attr.path, dpi_attr.path, NULL) == -1) {
+   if (execl(dpi_attr.path, dpi_attr.path, (char*)NULL) == -1) {
       ERRMSG("start_plugin", "execl", errno);
       MSG_ERR("ERROR in child proc for %s\n", dpi_attr.path);
       exit(1);
