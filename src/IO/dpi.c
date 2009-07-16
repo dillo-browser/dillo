@@ -299,9 +299,9 @@ static int Dpi_start_dpid(void)
       /* This is the child process.  Execute the command. */
       char *path1 = dStrconcat(dGethomedir(), "/.dillo/dpid", NULL);
       Dpi_close_fd(st_pipe[0]);
-      if (execl(path1, "dpid", NULL) == -1) {
+      if (execl(path1, "dpid", (char*)NULL) == -1) {
          dFree(path1);
-         if (execlp("dpid", "dpid", NULL) == -1) {
+         if (execlp("dpid", "dpid", (char*)NULL) == -1) {
             MSG("Dpi_start_dpid (child): %s\n", dStrerror(errno));
             do
                n = write(st_pipe[1], "ERROR", 5);
