@@ -205,8 +205,8 @@ static DilloUrl *makeStartUrl(char *str, bool local)
  */
 int main(int argc, char **argv)
 {
-   uint opt_id;
-   uint options_got = 0;
+   uint_t opt_id;
+   uint_t options_got = 0;
    uint32_t xid = 0;
    int idx = 1;
    int xpos = PREFS_GEOMETRY_DEFAULT_XPOS, ypos = PREFS_GEOMETRY_DEFAULT_YPOS,

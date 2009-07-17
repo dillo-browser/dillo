@@ -87,7 +87,6 @@ static GDnsCache *dns_cache;
 static int dns_cache_size, dns_cache_size_max;
 static GDnsQueue *dns_queue;
 static int dns_queue_size, dns_queue_size_max;
-static bool_t ipv6_enabled;
 
 
 /* ----------------------------------------------------------------------
@@ -200,16 +199,14 @@ void a_Dns_init(void)
 #endif
    }
 
-   /* IPv6 test */
-   ipv6_enabled = FALSE;
 #ifdef ENABLE_IPV6
+   /* IPv6 test */
    {
       /* If the IPv6 address family is not available there is no point
          wasting time trying to connect to v6 addresses. */
       int fd = socket(AF_INET6, SOCK_STREAM, 0);
       if (fd >= 0) {
          close(fd);
-         ipv6_enabled = TRUE;
       }
    }
 #endif
