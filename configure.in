@@ -374,6 +374,10 @@ case $target in
     AC_MSG_WARN([*** _Untested pthreads_ try setting LIBPTHREAD_LIBS manually if it doesn't work ***])
     ;;
 
+  *-*-minix*)
+    AC_MSG_NOTICE([Minix detected, skipping pthread detection])
+    ;;
+
   *)
     AC_MSG_CHECKING(whether threads work with -pthread)
     LDSAVEFLAGS=$LDFLAGS
