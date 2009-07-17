@@ -21,7 +21,8 @@ using namespace dw::core::style;
 
 void CssProperty::print () {
    fprintf (stderr, "%s - %d\n",
-            CssParser::propertyNameString((CssPropertyName)name),value.intVal);
+            CssParser::propertyNameString((CssPropertyName)name),
+            (int)value.intVal);
 }
 
 CssPropertyList::~CssPropertyList () {

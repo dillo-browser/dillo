@@ -225,7 +225,7 @@ typedef enum {
 } CssPropertyName;
 
 typedef union {
-   int intVal;
+   int32_t intVal;
    char *strVal;
 } CssPropertyValue;
 
