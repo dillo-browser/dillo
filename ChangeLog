@@ -11,6 +11,7 @@ dillo-2.2 [??]
 +- Cleaned up system includes in dpid directory.
  - Fixed CustProgressBox() for systems without weak symbols.
  - Handle signed chars. Added dIsspace() and dIsalnum() to dlib.
+ - Added a_Dpip_get_attr_l() to DPIP's API.
    Patches: Jorge Arellano Cid
 +- Fix segfault from AREA when MAP is missing name attribute.
    Patch: corvid

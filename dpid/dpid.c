@@ -859,7 +859,7 @@ char *get_message(int sock, char *dpi_tag)
 {
    char *msg, *d_cmd;
 
-   msg = a_Dpip_get_attr(dpi_tag, strlen(dpi_tag), "msg");
+   msg = a_Dpip_get_attr(dpi_tag, "msg");
    if (msg == NULL) {
       ERRMSG("get_message", "failed to parse msg", 0);
       d_cmd = a_Dpip_build_cmd("cmd=%s msg=%s",

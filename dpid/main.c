@@ -155,7 +155,7 @@ static int get_command(int sock, char *dpi_tag)
       return (-1);
    }
 
-   cmd = a_Dpip_get_attr(dpi_tag, strlen(dpi_tag), "cmd");
+   cmd = a_Dpip_get_attr(dpi_tag, "cmd");
 
    if (cmd == NULL) {
       ERRMSG("get_command", "a_Dpip_get_attr", 0);

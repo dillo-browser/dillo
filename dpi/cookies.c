@@ -1354,7 +1354,7 @@ static int srv_parse_buf(SockHandler *sh, char *Buf, size_t BufSize)
       return 1;
    }
 
-   cmd = a_Dpip_get_attr(Buf, BufSize, "cmd");
+   cmd = a_Dpip_get_attr_l(Buf, BufSize, "cmd");
 
    if (cmd && strcmp(cmd, "DpiBye") == 0) {
       dFree(cmd);
@@ -1363,10 +1363,10 @@ static int srv_parse_buf(SockHandler *sh, char *Buf, size_t BufSize)
 
    } else if (cmd && strcmp(cmd, "set_cookie") == 0) {
       dFree(cmd);
-      cookie = a_Dpip_get_attr(Buf, BufSize, "cookie");
-      host = a_Dpip_get_attr(Buf, BufSize, "host");
-      path = a_Dpip_get_attr(Buf, BufSize, "path");
-      p = a_Dpip_get_attr(Buf, BufSize, "port");
+      cookie = a_Dpip_get_attr_l(Buf, BufSize, "cookie");
+      host = a_Dpip_get_attr_l(Buf, BufSize, "host");
+      path = a_Dpip_get_attr_l(Buf, BufSize, "path");
+      p = a_Dpip_get_attr_l(Buf, BufSize, "port");
       port = strtol(p, NULL, 10);
       dFree(p);
 
@@ -1379,10 +1379,10 @@ static int srv_parse_buf(SockHandler *sh, char *Buf, size_t BufSize)
 
    } else if (cmd && strcmp(cmd, "get_cookie") == 0) {
       dFree(cmd);
-      scheme = a_Dpip_get_attr(Buf, BufSize, "scheme");
-      host = a_Dpip_get_attr(Buf, BufSize, "host");
-      path = a_Dpip_get_attr(Buf, BufSize, "path");
-      p = a_Dpip_get_attr(Buf, BufSize, "port");
+      scheme = a_Dpip_get_attr_l(Buf, BufSize, "scheme");
+      host = a_Dpip_get_attr_l(Buf, BufSize, "host");
+      path = a_Dpip_get_attr_l(Buf, BufSize, "path");
+      p = a_Dpip_get_attr_l(Buf, BufSize, "port");
       port = strtol(p, NULL, 10);
       dFree(p);
 

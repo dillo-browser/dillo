@@ -221,14 +221,14 @@ static void Dpi_parse_token(dpi_conn_t *conn)
    tag = dStrndup(Tok, (size_t)conn->TokSize);
    _MSG("Dpi_parse_token: {%s}\n", tag);
 
-   cmd = a_Dpip_get_attr(Tok, conn->TokSize, "cmd");
+   cmd = a_Dpip_get_attr_l(Tok, conn->TokSize, "cmd");
    if (strcmp(cmd, "send_status_message") == 0) {
-      msg = a_Dpip_get_attr(Tok, conn->TokSize, "msg");
+      msg = a_Dpip_get_attr_l(Tok, conn->TokSize, "msg");
       a_Chain_fcb(OpSend, conn->InfoRecv, msg, cmd);
       dFree(msg);
 
    } else if (strcmp(cmd, "chat") == 0) {
-      msg = a_Dpip_get_attr(Tok, conn->TokSize, "msg");
+      msg = a_Dpip_get_attr_l(Tok, conn->TokSize, "msg");
       a_Chain_fcb(OpSend, conn->InfoRecv, msg, cmd);
       dFree(msg);
 
@@ -238,13 +238,13 @@ static void Dpi_parse_token(dpi_conn_t *conn)
 
    } else if (strcmp(cmd, "start_send_page") == 0) {
       conn->Send2EOF = 1;
-      urlstr = a_Dpip_get_attr(Tok, conn->TokSize, "url");
+      urlstr = a_Dpip_get_attr_l(Tok, conn->TokSize, "url");
       a_Chain_fcb(OpSend, conn->InfoRecv, urlstr, cmd);
       dFree(urlstr);
-      /* TODO: a_Dpip_get_attr(Tok, conn->TokSize, "send_mode") */
+      /* TODO: a_Dpip_get_attr_l(Tok, conn->TokSize, "send_mode") */
 
    } else if (strcmp(cmd, "reload_request") == 0) {
-      urlstr = a_Dpip_get_attr(Tok, conn->TokSize, "url");
+      urlstr = a_Dpip_get_attr_l(Tok, conn->TokSize, "url");
       a_Chain_fcb(OpSend, conn->InfoRecv, urlstr, cmd);
       dFree(urlstr);
    }
@@ -531,9 +531,9 @@ static char *Dpi_get_server_uds_name(const char *server_name)
 
       /* Parse reply */
       if (rdlen == 0 && rply) {
-         cmd = a_Dpip_get_attr(rply, (int)strlen(rply), "cmd");
+         cmd = a_Dpip_get_attr(rply, "cmd");
          if (strcmp(cmd, "send_data") == 0)
-            server_uds_name = a_Dpip_get_attr(rply, (int)strlen(rply), "msg");
+            server_uds_name = a_Dpip_get_attr(rply, "msg");
          dFree(cmd);
          dFree(rply);
       }

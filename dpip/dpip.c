@@ -107,17 +107,18 @@ char *a_Dpip_build_cmd(const char *format, ...)
 }
 
 /*
- * Task: given a tag and an attribute name, return its value.
- *       (stuffing of ' is removed here)
+ * Task: given a tag, its size and an attribute name, return the
+ * attribute value (stuffing of ' is removed here).
+ *
  * Return value: the attribute value, or NULL if not present or malformed.
  */
-char *a_Dpip_get_attr(char *tag, size_t tagsize, const char *attrname)
+char *a_Dpip_get_attr_l(char *tag, size_t tagsize, const char *attrname)
 {
    uint_t i, n = 0, found = 0;
    char *p, *q, *start, *val = NULL;
    DpipTagParsingState state = SEEK_NAME;
 
-   if (!attrname || !*attrname)
+   if (!tag || !tagsize || !attrname || !*attrname)
       return NULL;
 
    for (i = 1; i < tagsize && !found; ++i) {
@@ -162,6 +163,15 @@ char *a_Dpip_get_attr(char *tag, size_t tagsize, const char *attrname)
       }
    }
    return val;
+}
+
+/*
+ * Task: given a tag and an attribute name, return its value.
+ * Return value: the attribute value, or NULL if not present or malformed.
+ */
+char *a_Dpip_get_attr(char *tag, const char *attrname)
+{
+   return (tag ? a_Dpip_get_attr_l(tag, strlen(tag), attrname) : NULL);
 }
 
 /* ------------------------------------------------------------------------- */

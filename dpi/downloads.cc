@@ -899,7 +899,7 @@ static void read_req_cb(int req_fd, void *)
    close(new_socket);
    _MSG("Received tag={%s}\n", tag->str);
 
-   if ((cmd = a_Dpip_get_attr(tag->str, (size_t)tag->len, "cmd")) == NULL) {
+   if ((cmd = a_Dpip_get_attr(tag->str, "cmd")) == NULL) {
       MSG("Failed to parse 'cmd' in {%s}\n", tag->str);
       goto end;
    }
@@ -911,11 +911,11 @@ static void read_req_cb(int req_fd, void *)
       MSG("unknown command: '%s'. Aborting.\n", cmd);
       goto end;
    }
-   if (!(url = a_Dpip_get_attr(tag->str,(size_t)tag->len, "url"))){
+   if (!(url = a_Dpip_get_attr(tag->str, "url"))){
       MSG("Failed to parse 'url' in {%s}\n", tag->str);
       goto end;
    }
-   if (!(dl_dest = a_Dpip_get_attr(tag->str,(size_t)tag->len,"destination"))){
+   if (!(dl_dest = a_Dpip_get_attr(tag->str, "destination"))){
       MSG("Failed to parse 'destination' in {%s}\n", tag->str);
       goto end;
    }

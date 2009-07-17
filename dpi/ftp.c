@@ -288,8 +288,8 @@ int main(int argc, char **argv)
       dpip_tag = sock_handler_read(sh);
    MSG("tag=[%s]\n", dpip_tag);
 
-   cmd = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cmd");
-   url = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "url");
+   cmd = a_Dpip_get_attr(dpip_tag, "cmd");
+   url = a_Dpip_get_attr(dpip_tag, "url");
    if (!cmd || !url) {
       MSG("ERROR, cmd=%s, url=%s\n", cmd, url);
       exit (EXIT_FAILURE);

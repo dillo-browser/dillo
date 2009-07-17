@@ -207,7 +207,7 @@ char *a_Cookies_get_query(const DilloUrl *request_url)
    query = dStrdup("Cookie2: $Version=\"1\"\r\n");
 
    if (dpip_tag != NULL) {
-      char *cookie = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cookie");
+      char *cookie = a_Dpip_get_attr(dpip_tag, "cookie");
       char *old_query = query;
       query = dStrconcat(old_query, cookie, NULL);
       dFree(old_query);

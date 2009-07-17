@@ -56,8 +56,8 @@ int main(void)
    dpip_tag = sock_handler_read(sh);
    MSG("tag = [%s]\n", dpip_tag);
 
-   cmd = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cmd");
-   url = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "url");
+   cmd = a_Dpip_get_attr(dpip_tag, "cmd");
+   url = a_Dpip_get_attr(dpip_tag, "url");
 
 /*-- Dialog part */
 {
@@ -77,7 +77,7 @@ int main(void)
    MSG("tag = [%s]\n", dpip_tag2);
 
    /* Get "msg" value */
-   dialog_msg = a_Dpip_get_attr(dpip_tag2, strlen(dpip_tag2), "msg");
+   dialog_msg = a_Dpip_get_attr(dpip_tag2, "msg");
    choice_num = 0;
    if (dialog_msg)
       choice_num = *dialog_msg - '0';

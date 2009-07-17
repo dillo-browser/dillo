@@ -108,7 +108,7 @@ static int dialog_get_answer_number(void)
 
    /* Read the dpi command from STDIN */
    dpip_tag = sock_handler_read(sh);
-   response = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "msg");
+   response = a_Dpip_get_attr(dpip_tag, "msg");
    response_number = (response) ? strtol (response, NULL, 10) : -1;
    dFree(dpip_tag);
    dFree(response);
@@ -194,12 +194,12 @@ static void yes_ssl_support(void)
 
       /*Get the network address and command to be used*/
       dpip_tag = sock_handler_read(sh);
-      cmd = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cmd");
-      proxy_url = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "proxy_url");
+      cmd = a_Dpip_get_attr(dpip_tag, "cmd");
+      proxy_url = a_Dpip_get_attr(dpip_tag, "proxy_url");
       proxy_connect =
-                  a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "proxy_connect");
-      url = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "url");
-      http_query = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "query");
+                  a_Dpip_get_attr(dpip_tag, "proxy_connect");
+      url = a_Dpip_get_attr(dpip_tag, "url");
+      http_query = a_Dpip_get_attr(dpip_tag, "query");
 
       if (cmd == NULL || url == NULL || http_query == NULL){
          MSG("***Value of cmd, url or http_query is NULL"
@@ -699,9 +699,9 @@ static void no_ssl_support(void)
    MSG("{In https.filter.dpi}\n");
    MSG("no_ssl_support version\n");
 
-   cmd = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cmd");
-   url = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "url");
-   http_query = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "query");
+   cmd = a_Dpip_get_attr(dpip_tag, "cmd");
+   url = a_Dpip_get_attr(dpip_tag, "url");
+   http_query = a_Dpip_get_attr(dpip_tag, "query");
 
    MSG("{ cmd: %s}\n", cmd);
    MSG("{ url: %s}\n", url);

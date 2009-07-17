@@ -854,12 +854,12 @@ static void *File_serve_client(void *data)
    _MSG("dpip_tag={%s}\n", dpip_tag);
 
    if (dpip_tag) {
-      cmd = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cmd");
+      cmd = a_Dpip_get_attr(dpip_tag, "cmd");
       if (cmd) {
          if (strcmp(cmd, "DpiBye") == 0) {
             DPIBYE = 1;
          } else {
-            url = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "url");
+            url = a_Dpip_get_attr(dpip_tag, "url");
             if (!url)
                MSG("file.dpi:: Failed to parse 'url'\n");
          }

@@ -1580,11 +1580,11 @@ static int Bmsrv_parse_buf(SockHandler *sh, char *Buf)
    }
 
    BufSize = strlen(Buf);
-   cmd = a_Dpip_get_attr(Buf, BufSize, "cmd");
+   cmd = a_Dpip_get_attr_l(Buf, BufSize, "cmd");
 
    if (cmd && strcmp(cmd, "chat") == 0) {
       dFree(cmd);
-      msg = a_Dpip_get_attr(Buf, BufSize, "msg");
+      msg = a_Dpip_get_attr_l(Buf, BufSize, "msg");
       if (*msg == 'H') {
          /* "Hi server" */
          if (sock_handler_write_str(sh, 1, msg1))
@@ -1611,8 +1611,8 @@ static int Bmsrv_parse_buf(SockHandler *sh, char *Buf)
 
    } else if (cmd && strcmp(cmd, "add_bookmark") == 0) {
       dFree(cmd);
-      url = a_Dpip_get_attr(Buf, BufSize, "url");
-      title = a_Dpip_get_attr(Buf, BufSize, "title");
+      url = a_Dpip_get_attr_l(Buf, BufSize, "url");
+      title = a_Dpip_get_attr_l(Buf, BufSize, "title");
       if (strlen(title) == 0) {
          dFree(title);
          title = dStrdup("(Untitled)");
@@ -1625,7 +1625,7 @@ static int Bmsrv_parse_buf(SockHandler *sh, char *Buf)
 
    } else if (cmd && strcmp(cmd, "open_url") == 0) {
       dFree(cmd);
-      url = a_Dpip_get_attr(Buf, BufSize, "url");
+      url = a_Dpip_get_attr_l(Buf, BufSize, "url");
 
       if (strcmp(url, "dpi:/bm/modify") == 0) {
          st = Bmsrv_send_modify_answer(sh, url);
