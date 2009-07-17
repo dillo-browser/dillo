@@ -200,19 +200,19 @@ void a_Capi_conn_abort_by_url(const DilloUrl *url)
 /* ------------------------------------------------------------------------- */
 
 /*
- * Safety test: only allow dpi-urls from dpi-generated pages.
+ * Safety test: only allow GET|POST dpi-urls from dpi-generated pages.
  */
-static int Capi_dpi_verify_request(DilloWeb *web)
+int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url)
 {
    DilloUrl *referer;
    int allow = FALSE;
 
    /* test POST and GET */
-   if (dStrcasecmp(URL_SCHEME(web->url), "dpi") == 0 &&
-       URL_FLAGS(web->url) & (URL_Post + URL_Get)) {
+   if (dStrcasecmp(URL_SCHEME(url), "dpi") == 0 &&
+       URL_FLAGS(url) & (URL_Post + URL_Get)) {
       /* only allow dpi requests from dpi-generated urls */
-      if (a_Nav_stack_size(web->bw)) {
-         referer = a_History_get_url(NAV_TOP_UIDX(web->bw));
+      if (a_Nav_stack_size(bw)) {
+         referer = a_History_get_url(NAV_TOP_UIDX(bw));
          if (dStrcasecmp(URL_SCHEME(referer), "dpi") == 0) {
             allow = TRUE;
          }
@@ -222,10 +222,10 @@ static int Capi_dpi_verify_request(DilloWeb *web)
    }
 
    if (!allow) {
-      MSG("Capi_dpi_verify_request: Permission Denied!\n");
-      MSG("  URL_STR : %s\n", URL_STR(web->url));
-      if (URL_FLAGS(web->url) & URL_Post) {
-         MSG("  URL_DATA: %s\n", dStr_printable(URL_DATA(web->url), 1024));
+      MSG("a_Capi_dpi_verify_request: Permission Denied!\n");
+      MSG("  URL_STR : %s\n", URL_STR(url));
+      if (URL_FLAGS(url) & URL_Post) {
+         MSG("  URL_DATA: %s\n", dStr_printable(URL_DATA(url), 1024));
       }
    }
    return allow;
@@ -344,7 +344,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
 
    } else if (Capi_url_uses_dpi(web->url, &server)) {
       /* dpi request */
-      if ((safe = Capi_dpi_verify_request(web))) {
+      if ((safe = a_Capi_dpi_verify_request(web->bw, web->url))) {
          if (dStrcasecmp(scheme, "dpi") == 0) {
             /* make "dpi:/" prefixed urls always reload. */
             a_Url_set_flags(web->url, URL_FLAGS(web->url) | URL_E2EQuery);
