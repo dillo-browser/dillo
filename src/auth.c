@@ -70,6 +70,7 @@ static void Auth_parse_free(AuthParse_t *auth_parse)
 {
    if (auth_parse) {
       dFree((void *)auth_parse->realm);
+      dFree(auth_parse);
    }
 }
 
