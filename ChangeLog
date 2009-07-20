@@ -14,7 +14,8 @@ dillo-2.2 [??]
  - Added a_Dpip_get_attr_l() to DPIP's API.
    Patches: Jorge Arellano Cid
 +- Fix segfault from AREA when MAP is missing name attribute.
-   Patch: corvid
+ - Fix image map coordinates when margin/border/padding present.
+   Patches: corvid
 
 -----------------------------------------------------------------------------
 

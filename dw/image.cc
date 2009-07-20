@@ -242,21 +242,47 @@ void Image::leaveNotifyImpl (core::EventCrossing *event)
    }
 }
 
+/*
+ * Return the coordinate relative to the contents.
+ * If the event occurred in the surrounding box, return the value at the
+ * edge of the contents instead.
+ */
+int Image::contentX (core::MousePositionEvent *event)
+{
+   int ret = event->xWidget - getStyle()->boxOffsetX();
+
+   ret = misc::min(getContentWidth(), misc::max(ret, 0));
+   return ret;
+}
+
+int Image::contentY (core::MousePositionEvent *event)
+{
+   int ret = event->yWidget - getStyle()->boxOffsetY();
+
+   ret = misc::min(getContentHeight(), misc::max(ret, 0));
+   return ret;
+}
+
 bool Image::motionNotifyImpl (core::EventMotion *event)
 {
-   if (mapList) {
-      /* client-side image map */
-      int newLink = mapList->link (mapKey, event->xWidget, event->yWidget);
-      if (newLink != currLink) {
-         currLink = newLink;
-         clicking = false;
-         setCursor(newLink == -1 ? core::style::CURSOR_DEFAULT :
-                                   core::style::CURSOR_POINTER);
-         (void) emitLinkEnter (newLink, -1, -1, -1);
+   if (mapList || isMap) {
+      int x = contentX(event);
+      int y = contentY(event);
+
+      if (mapList) {
+         /* client-side image map */
+         int newLink = mapList->link (mapKey, x, y);
+         if (newLink != currLink) {
+            currLink = newLink;
+            clicking = false;
+            setCursor(newLink == -1 ? core::style::CURSOR_DEFAULT :
+                                      core::style::CURSOR_POINTER);
+            (void) emitLinkEnter (newLink, -1, -1, -1);
+         }
+      } else if (isMap && currLink != -1) {
+         /* server-side image map */
+         (void) emitLinkEnter (currLink, -1, x, y);
       }
-   } else if (isMap && currLink != -1) {
-      /* server-side image map */
-      (void) emitLinkEnter (currLink, -1, event->xWidget, event->yWidget);
    }
    return true;
 }
@@ -264,8 +290,9 @@ bool Image::motionNotifyImpl (core::EventMotion *event)
 bool Image::buttonPressImpl (core::EventButton *event)
 {
    bool ret = false;
-   currLink = mapList ? mapList->link (mapKey, event->xWidget, event->yWidget):
-      getStyle()->x_link;
+
+   currLink = mapList? mapList->link (mapKey, contentX(event),contentY(event)):
+              getStyle()->x_link;
    if (event->button == 3){
       (void)emitLinkPress(currLink, getStyle()->x_img, -1,-1,event);
       ret = true;
@@ -278,11 +305,14 @@ bool Image::buttonPressImpl (core::EventButton *event)
 
 bool Image::buttonReleaseImpl (core::EventButton *event)
 {
-   currLink = mapList ? mapList->link (mapKey, event->xWidget, event->yWidget):
-      getStyle()->x_link;
+   int x = -1, y = -1;
+
+   if (mapList || isMap) {
+      x = contentX(event);
+      y = contentY(event);
+   }
+   currLink = mapList ? mapList->link (mapKey, x, y) : getStyle()->x_link;
    if (clicking) {
-      int x = isMap ? event->xWidget : -1;
-      int y = isMap ? event->yWidget : -1;
       clicking = false;
       emitLinkClick (currLink, getStyle()->x_img, x, y, event);
       return true;

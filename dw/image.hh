@@ -136,6 +136,8 @@ protected:
    void enterNotifyImpl (core::EventCrossing *event);
    void leaveNotifyImpl (core::EventCrossing *event);
    bool motionNotifyImpl (core::EventMotion *event);
+   int contentX (core::MousePositionEvent *event);
+   int contentY (core::MousePositionEvent *event);
 
    //core::Iterator *iterator (Content::Type mask, bool atEnd);
 
