@@ -305,14 +305,11 @@ bool Image::buttonPressImpl (core::EventButton *event)
 
 bool Image::buttonReleaseImpl (core::EventButton *event)
 {
-   int x = -1, y = -1;
-
-   if (mapList || isMap) {
-      x = contentX(event);
-      y = contentY(event);
-   }
-   currLink = mapList ? mapList->link (mapKey, x, y) : getStyle()->x_link;
+   currLink = mapList ? mapList->link (mapKey, contentX(event),contentY(event)):
+      getStyle()->x_link;
    if (clicking) {
+      int x = isMap ? contentX(event) : -1;
+      int y = isMap ? contentY(event) : -1;
       clicking = false;
       emitLinkClick (currLink, getStyle()->x_img, x, y, event);
       return true;
