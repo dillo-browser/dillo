@@ -268,7 +268,7 @@ int CssSimpleSelector::specificity () {
    if (id)
       spec += 1 << 20;
    if (klass)
-      spec += 1 << 10;
+      spec += klass->size() << 10;
    if (pseudo)
       spec += 1 << 10;
    if (element != ELEMENT_ANY)
