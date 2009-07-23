@@ -325,7 +325,7 @@ void a_Dicache_new_scan(const DilloUrl *url, int version)
    dReturn_if_fail ( DicEntry != NULL );
    if (DicEntry->State < DIC_SetParms) {
       MSG("a_Dicache_new_scan before DIC_SetParms\n");
-      exit(-1);
+      exit(1);
    }
    a_Bitvec_clear(DicEntry->BitVec);
    DicEntry->ScanNumber++;
