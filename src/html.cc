@@ -849,7 +849,7 @@ static const Ent_t Entities[NumEnt] = {
    {"loz",022712}, {"lrm",020016},  {"lsaquo",020071},{"lsquo",020030},
    {"lt",60},      {"macr",0257},   {"mdash",020024},{"micro",0265},
    {"middot",0267},{"minus",021022},{"mu",01674},    {"nabla",021007},
-   {"nbsp",32},    {"ndash",020023},{"ne",021140},   {"ni",021013},
+   {"nbsp",0240},  {"ndash",020023},{"ne",021140},   {"ni",021013},
    {"not",0254},   {"notin",021011},{"nsub",021204}, {"ntilde",0361},
    {"nu",01675},   {"oacute",0363}, {"ocirc",0364},  {"oelig",0523},
    {"ograve",0362},{"oline",020076},{"omega",01711}, {"omicron",01677},
@@ -1173,13 +1173,14 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
       } else {
          /* Collapse white-space entities inside the word (except &nbsp;) */
          Pword = a_Html_parse_entities(html, word, size);
-         /* Collapse adjacent "\t\f\n\r" characters into a single space */
+         /* Collapse adjacent " \t\f\n\r" characters into a single space */
          for (i = j = 0; (Pword[i] = Pword[j]); ++i, ++j) {
-            if (strchr("\t\f\n\r", Pword[i])) {
+            if (strchr(" \t\f\n\r", Pword[i])) {
                if (i == 0 || (i > 0 && Pword[i-1] != ' '))
                   Pword[i] = ' ';
                else
-                  for (--i; strchr("\t\f\n\r", Pword[j+1]); ++j) ;
+                  for (--i; Pword[j+1] && strchr(" \t\f\n\r", Pword[j+1]); ++j)
+                     ;
             }
          }
          HT2TB(html)->addText(Pword, html->styleEngine->wordStyle ());
