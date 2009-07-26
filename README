@@ -38,9 +38,9 @@ FLTK2
 
   The FLTK2 library is statically linked into Dillo2.
   You can get it from fltk.org.
-The recommended version is >= r6525. e.g. in:
+The recommended version is >= r6834. e.g. in:
 
-  http://fltk.org/software.php?VERSION=2.0.x-r6525
+  http://fltk.org/software.php?VERSION=2.0.x-r6834
 
 
 ------------
