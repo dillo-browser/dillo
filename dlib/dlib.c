@@ -169,18 +169,20 @@ char *dStrsep(char **orig, const char *delim)
 char *dStristr(const char *haystack, const char *needle)
 {
    int i, j;
+   char *ret = NULL;
 
-   for (i = 0, j = 0; haystack[i] && needle[j]; ++i)
-      if (tolower(haystack[i]) == tolower(needle[j])) {
-         ++j;
-      } else if (j) {
-         i -= j;
-         j = 0;
-      }
-
-   if (!needle[j])                 /* Got all */
-      return (char *)(haystack + i - j);
-   return NULL;
+   if (haystack && needle) {
+      for (i = 0, j = 0; haystack[i] && needle[j]; ++i)
+         if (tolower(haystack[i]) == tolower(needle[j])) {
+            ++j;
+         } else if (j) {
+            i -= j;
+            j = 0;
+         }
+      if (!needle[j])                 /* Got all */
+         ret = (char *)(haystack + i - j);
+   }
+   return ret;
 }
 
 
