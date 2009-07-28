@@ -16,12 +16,14 @@ namespace fltk {
 class FltkViewBase: public FltkView, public ::fltk::Group
 {
 private:
+   typedef enum { DRAW_PLAIN, DRAW_CLIPPED, DRAW_BUFFERED } DrawType;
+
    int bgColor;
    core::Region drawRegion;
    static ::fltk::Image *backBuffer;
    static bool backBufferInUse;
 
-   void draw (const core::Rectangle *rect, bool doubleBuffer);
+   void draw (const core::Rectangle *rect, DrawType type);
    void drawChildWidgets ();
 
 protected:

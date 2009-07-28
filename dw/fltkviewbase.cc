@@ -75,7 +75,7 @@ void FltkViewBase::draw ()
       container::typed::Iterator <core::Rectangle> it;
 
       for (it = drawRegion.rectangles (); it.hasNext (); ) {
-         draw (it.getNext (), true);
+         draw (it.getNext (), DRAW_BUFFERED);
       }
 
       drawRegion.clear ();
@@ -94,16 +94,18 @@ void FltkViewBase::draw ()
          w (),
          h ());
 
-      draw (&rect, false);
-
-      if (! (d & DAMAGE_SCROLL)) {
+      if (d == DAMAGE_SCROLL) {
+         // a clipping rectangle has already been set by fltk::scrollrect ()
+         draw (&rect, DRAW_PLAIN);
+      } else {
+         draw (&rect, DRAW_CLIPPED);
          drawRegion.clear ();
       }
    }
 }
 
 void FltkViewBase::draw (const core::Rectangle *rect,
-                         bool doubleBuffer)
+                         DrawType type)
 {
    int offsetX = 0, offsetY = 0;
 
@@ -127,7 +129,7 @@ void FltkViewBase::draw (const core::Rectangle *rect,
          viewRect.w (),
          viewRect.h ());
 
-      if (doubleBuffer && backBuffer && !backBufferInUse) {
+      if (type == DRAW_BUFFERED && backBuffer && !backBufferInUse) {
          backBufferInUse = true;
          {
             GSave gsave;
@@ -145,15 +147,15 @@ void FltkViewBase::draw (const core::Rectangle *rect,
             viewRect);
 
          backBufferInUse = false;
-      } else if (doubleBuffer) {
+      } else if (type == DRAW_BUFFERED || type == DRAW_CLIPPED) {
+         // if type == DRAW_BUFFERED but we do not have backBuffer available
+         // we fall back to clipped drawing
          push_clip (viewRect);
          setcolor (bgColor);
          fillrect (viewRect);
          theLayout->expose (this, &r);
          pop_clip ();
       } else {
-         // if doubleBuffer is false we assume that a clipping
-         // rectangle has been set already
          setcolor (bgColor);
          fillrect (viewRect);
          theLayout->expose (this, &r);
