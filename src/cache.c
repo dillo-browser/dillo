@@ -85,7 +85,7 @@ static uint_t DelayedQueueIdleId = 0;
 /*
  *  Forward declarations
  */
-static void Cache_process_queue(CacheEntry_t *entry);
+static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry);
 static void Cache_delayed_process_queue(CacheEntry_t *entry);
 static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw);
 
@@ -870,7 +870,7 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
          if (entry->Data->len)
             entry->Flags &= ~CA_IsEmpty;
 
-         Cache_process_queue(entry);
+         entry = Cache_process_queue(entry);
       }
    } else if (Op == IOClose) {
       if ((entry->Flags & CA_GotLength) &&
@@ -891,11 +891,12 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
          entry->ContentDecoder = NULL;
       }
       dStr_fit(entry->Data);                /* fit buffer size! */
-      Cache_process_queue(entry);
-      if (entry->Flags & CA_GotHeader) {
-         Cache_unref_data(entry);
-      }
 
+      if ((entry = Cache_process_queue(entry))) {
+         if (entry->Flags & CA_GotHeader) {
+            Cache_unref_data(entry);
+         }
+      }
    } else if (Op == IOAbort) {
       /* unused */
       MSG("a_Cache_process_dbuf Op = IOAbort; not implemented!\n");
@@ -1036,9 +1037,11 @@ static void Cache_null_client(int Op, CacheClient_t *Client)
  *   - Remove clients when done
  *   - Call redirect handler
  *
+ * Return: Cache entry, which may be NULL if it has been removed.
+ *
  * TODO: Implement CA_Abort Op in client callback
  */
-static void Cache_process_queue(CacheEntry_t *entry)
+static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
 {
    uint_t i;
    int st;
@@ -1055,7 +1058,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
    if (Busy)
       MSG_ERR("FATAL!: >>>> Cache_process_queue Caught busy!!! <<<<\n");
    if (!(entry->Flags & CA_GotHeader))
-      return;
+      return entry;
    if (!(entry->Flags & CA_GotContentType)) {
       st = a_Misc_get_content_type_from_data(
               entry->Data->str, entry->Data->len, &Type);
@@ -1069,7 +1072,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
          entry->TypeDet = dStrdup(Type);
          entry->Flags |= CA_GotContentType;
       } else
-         return;  /* i.e., wait for more data */
+         return entry;  /* i.e., wait for more data */
    }
 
    Busy = TRUE;
@@ -1178,6 +1181,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
       DilloUrl *url = a_Url_dup(entry->Url);
       a_Capi_conn_abort_by_url(url);
       Cache_entry_remove(entry, NULL);
+      entry = NULL;
       if (OfferDownload && Cache_download_enabled(url)) {
          a_UIcmd_save_link(Client_bw, url);
       }
@@ -1195,6 +1199,7 @@ static void Cache_process_queue(CacheEntry_t *entry)
 
    Busy = FALSE;
    _MSG("QueueSize ====> %d\n", dList_length(ClientQueue));
+   return entry;
 }
 
 /*
@@ -1206,10 +1211,7 @@ static void Cache_delayed_process_queue_callback()
 
    while ((entry = (CacheEntry_t *)dList_nth_data(DelayedQueue, 0))) {
       Cache_ref_data(entry);
-      Cache_process_queue(entry);
-      if (entry != dList_nth_data(DelayedQueue, 0)) {
-         /* Cache_process_queue() has removed the entry! */
-      } else {
+      if ((entry = Cache_process_queue(entry))) {
          Cache_unref_data(entry);
          dList_remove(DelayedQueue, entry);
       }
