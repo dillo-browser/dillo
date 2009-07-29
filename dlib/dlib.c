@@ -150,8 +150,7 @@ char *dStrsep(char **orig, const char *delim)
 {
    char *str, *p;
 
-   if (!(str = *orig))
-      return NULL;
+   dReturn_val_if_fail (orig && (str = *orig) && delim, NULL);
 
    p = strpbrk(str, delim);
    if (p) {
@@ -169,6 +168,8 @@ char *dStrsep(char **orig, const char *delim)
 char *dStristr(const char *haystack, const char *needle)
 {
    int i, j;
+
+   dReturn_val_if_fail (haystack && needle, NULL);
 
    for (i = 0, j = 0; haystack[i] && needle[j]; ++i)
       if (tolower(haystack[i]) == tolower(needle[j])) {
