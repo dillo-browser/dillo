@@ -1,0 +1,144 @@
+Last review: August, 2009 --jcid
+
+
+----------------------------
+Internal working for the CCC
+----------------------------
+
+
+HTTP protocol
+-------------
+
+
+      Query:                              |
+                                          .
+          1B --> 1B  1B --> 1B      -->   |  -------------.
+      .----.     .----.     .----.        .               |
+I     |Capi|     |http|     | IO |        |               |
+      '----'     '----'     '----'        .               |
+          1F <-- 1F  1F <-- 1F            |               V
+                                          .                
+                                          |           [Server]
+      Answer:                             .
+
+          2B --> 2B  2B --> 2B            |               |
+      .----.     .----.     .----.        .               |
+II    |Capi|     |Dpi |     | IO |        |               |
+      '----'     '----'     '----'        .               |
+          2F <-- 2F  2F <-- 2F      <--   |  <------------'
+                                          .
+                                          |
+
+*  currently the query chain isn't built at once because socket()
+needs the remote hostname's IP to return an associated FD. [1]
+
+
+* the answer branch is built when capi 1F receives the FD.
+
+
+Function calls for HTTP CCC
+---------------------------
+
+  a_Capi_open_url
+    a_Cache_open_url
+      if URL_E2EReload -> prepare reload
+      if cached
+        client enqueue
+        delayed process queue
+      else
+        Cache_entry_add
+        client enqueue
+
+    if (reload)
+      Capi OpStart 1B
+      OpStart, BCK:               [Capi] --> [http]
+        Http_get
+
+    -//->
+    a_Http_dns_cb
+      Http_connect_socket
+        Http_send_query
+          a_Http_make_query_str
+            OpStart, BCK:         [Capi] --> [http] --> [IO]
+            OpSend, BCK
+              IO_submit
+                a_IOwatch_add_fd (DIO_WRITE, ...)
+            a_Chain_fcb(OpSend FD): this starts the receiving branch
+
+
+
+  Note about 'web' structures. They're created using a_Web_new().
+The  web.c  module  keeps a list of valid webs, so anytime you're
+unsure  of  a  weak  reference  to  'web', it can be checked with
+a_Web_valid(web). 
+
+
+
+------------
+Dpi protocol
+------------
+
+
+      Query:                              |
+                                          .
+          1B --> 1B  1B --> 1B      -->   |  -------------.
+      .----.     .----.     .----.        .               |
+I     |Capi|     |Dpi |     | IO |        |               |
+      '----'     '----'     '----'        .               |
+          1F <-- 1F  1F <-- 1F            |               V
+                                          .                
+                                          |           [Server]
+                                          .                
+      Answer (same as HTTP):              |               |
+                                          .               |
+          2B --> 2B  2B --> 2B            |               |
+      .----.     .----.     .----.        .               |
+II    |Capi|     |Dpi |     | IO |        |               |
+      '----'     '----'     '----'        .               |
+          2F <-- 2F  2F <-- 2F      <--   |  <------------'
+                                          .
+                                          |
+
+
+CCC Construction:
+
+  a_Capi_open_url() calls a_Capi_dpi_send_cmd() when the URL
+belongs to a dpi and it is not cached.
+
+  a_Capi_dpi_send_cmd() creates the I-CCC backwards when requested
+to open a new connection. That is, Capi links Dpi, Dpi links IO, and
+Dpi sends the Socket FD to capi (Capi's OpSend 1F). If the connection
+exists, it is reused with OpSend.
+
+  When Capi receives the Socket FD, it creates the II-CCC backwards
+(Capi's OpStart 2B). Capi links Dpi, Dpi links IO, and Dpi starts IO
+(IO's OpStart 2B).
+
+
+
+
+Normal termination:
+
+  When  the dpi server is done, it closes the FD, and OpEnd flows
+from  IO  to  Capi (IO's OpEnd 2F). When in Capi, capi propagates
+OpEnd to I.
+
+Abnormal termination:
+
+  The  case  of  the transfer being aborted before the dpi server
+starts to send content exists, and it's handled like this:
+
+  When Capi receives "start_send_page" (Capi's OpSend 2F), it may
+detect  an  invalid  web  structure.  If  so, it issues an OpStop
+backwards (Dpi's OpStop 3B, not implemented).
+
+  The  transfer  is  not currently aborted in II but just flagged
+ABORTED. It continues without further processing by Capi.
+
+
+--
+
+[1]  The  CCC  construction  may be simplified by building all at
+once (i.e. not splitted with events). That could avoid complexity
+and allow for easier error handling.
+
