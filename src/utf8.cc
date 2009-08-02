@@ -11,6 +11,7 @@
 
 #include <fltk/utf.h>
 
+#include "../dlib/dlib.h"    /* TRUE/FALSE */
 #include "utf8.hh"
 
 // C++ functions with C linkage ----------------------------------------------
@@ -63,4 +64,31 @@ int a_Utf8_encode(unsigned int ucs, char *buf)
 int a_Utf8_test(const char* src, unsigned int srclen)
 {
    return utf8test(src, srclen);
+}
+
+/*
+ * Does s point to a UTF-8-encoded ideographic character?
+ *
+ * This is based on http://unicode.org/reports/tr14/#ID plus some guesses
+ * for what might make the most sense for Dillo. Surprisingly, they include
+ * Hangul Compatibility Jamo, but they're the experts, so I'll follow along.
+ */
+bool_t a_Utf8_ideographic(const char *s, const char *end, int *len)
+{
+   bool_t ret = FALSE;
+
+   if ((uchar_t)*s >= 0xe2) {
+      /* Unicode char >= U+2000. */
+      unsigned unicode = a_Utf8_decode(s, end, len);
+
+      if (unicode >= 0x2e80 &&
+           ((unicode <= 0xa4cf) ||
+            (unicode >= 0xf900 && unicode <= 0xfaff) ||
+            (unicode >= 0xff00 && unicode <= 0xff9f))) {
+         ret = TRUE;
+     }
+   } else {
+      *len = 1 + (int)a_Utf8_end_of_char(s, 0);
+   }
+   return ret;
 }

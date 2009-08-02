@@ -1189,13 +1189,26 @@ static void Html_process_word(DilloHtml *html, char *word, int size)
          }
       }
       for (start = i = 0; Pword[i]; start = i) {
+         int len;
+
          if (isspace(Pword[i])) {
             while (Pword[++i] && isspace(Pword[i])) ;
             Html_process_space(html, Pword + start, i - start);
-         } else {
-            while (Pword[++i] && !isspace(Pword[i])) ;
+         } else if (a_Utf8_ideographic(Pword+i, Pword_end, &len)) {
+            i += len;
             ch = Pword[i];
             Pword[i] = '\0';
+            HT2TB(html)->addText(Pword + start,
+                                 html->styleEngine->wordStyle ());
+            Pword[i] = ch;
+            html->PrevWasSPC = false;
+         } else {
+            do {
+               i += len;
+            } while (Pword[i] && !isspace(Pword[i]) &&
+                     (!a_Utf8_ideographic(Pword+i, Pword_end, &len)));
+            ch = Pword[i];
+            Pword[i] = 0;
             HT2TB(html)->addText(Pword + start,
                                  html->styleEngine->wordStyle ());
             Pword[i] = ch;
