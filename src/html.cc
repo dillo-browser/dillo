@@ -1122,7 +1122,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
  * Entities are parsed (or not) according to parse_mode.
  * 'word' is a '\0'-terminated string.
  */
-static void Html_process_word(DilloHtml *html, char *word, int size)
+static void Html_process_word(DilloHtml *html, const char *word, int size)
 {
    int i, j, start;
    char *Pword;
@@ -1164,16 +1164,16 @@ static void Html_process_word(DilloHtml *html, char *word, int size)
       dFree(Pword);
 
    } else {
-      char *Pword_end;
+      const char *word2, *word2_end;
 
+      Pword = NULL;
       if (!memchr(word,'&', size)) {
          /* No entities */
-         Pword = word;
-         Pword_end = Pword + size - 1;
+         word2 = word;
+         word2_end = word + size - 1;
       } else {
          /* Collapse white-space entities inside the word (except &nbsp;) */
          Pword = a_Html_parse_entities(html, word, size);
-         Pword_end = Pword + strlen(Pword) - 1;
          /* Collapse adjacent " \t\f\n\r" characters into a single space */
          for (i = j = 0; (Pword[i] = Pword[j]); ++i, ++j) {
             if (strchr(" \t\f\n\r", Pword[i])) {
@@ -1184,29 +1184,31 @@ static void Html_process_word(DilloHtml *html, char *word, int size)
                      ;
             }
          }
+         word2 = Pword;
+         word2_end = word2 + strlen(word2) - 1;
       }
-      for (start = i = 0; Pword[i]; start = i) {
+      for (start = i = 0; word2[i]; start = i) {
          int len;
 
-         if (isspace(Pword[i])) {
-            while (Pword[++i] && isspace(Pword[i])) ;
-            Html_process_space(html, Pword + start, i - start);
-         } else if (a_Utf8_ideographic(Pword+i, Pword_end, &len)) {
+         if (isspace(word2[i])) {
+            while (word2[++i] && isspace(word2[i])) ;
+            Html_process_space(html, word2 + start, i - start);
+         } else if (a_Utf8_ideographic(word2+i, word2_end, &len)) {
             i += len;
-            HT2TB(html)->addText(Pword + start, i - start,
+            HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());
             html->PrevWasSPC = false;
          } else {
             do {
                i += len;
-            } while (Pword[i] && !isspace(Pword[i]) &&
-                     (!a_Utf8_ideographic(Pword+i, Pword_end, &len)));
-            HT2TB(html)->addText(Pword + start, i - start,
+            } while (word2[i] && !isspace(word2[i]) &&
+                     (!a_Utf8_ideographic(word2+i, word2_end, &len)));
+            HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());
             html->PrevWasSPC = false;
          }
       }
-      if (word != Pword)
+      if (Pword == word2)
          dFree(Pword);
    }
    if (html->InFlags & IN_LI)
