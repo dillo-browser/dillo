@@ -1125,7 +1125,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
 static void Html_process_word(DilloHtml *html, char *word, int size)
 {
    int i, j, start;
-   char *Pword, ch;
+   char *Pword;
    DilloHtmlParseMode parse_mode = S_TOP(html)->parse_mode;
 
    if (parse_mode == DILLO_HTML_PARSE_MODE_STASH ||
@@ -1156,11 +1156,8 @@ static void Html_process_word(DilloHtml *html, char *word, int size)
             Html_process_space(html, Pword + start, i - start);
          } else {
             while (Pword[++i] && !isspace(Pword[i])) ;
-            ch = Pword[i];
-            Pword[i] = 0;
-            HT2TB(html)->addText(Pword + start,
+            HT2TB(html)->addText(Pword + start, i - start,
                                      html->styleEngine->wordStyle ());
-            Pword[i] = ch;
             html->pre_column += i - start;
             html->PreFirstChar = false;
          }
@@ -1196,22 +1193,16 @@ static void Html_process_word(DilloHtml *html, char *word, int size)
             Html_process_space(html, Pword + start, i - start);
          } else if (a_Utf8_ideographic(Pword+i, Pword_end, &len)) {
             i += len;
-            ch = Pword[i];
-            Pword[i] = '\0';
-            HT2TB(html)->addText(Pword + start,
+            HT2TB(html)->addText(Pword + start, i - start,
                                  html->styleEngine->wordStyle ());
-            Pword[i] = ch;
             html->PrevWasSPC = false;
          } else {
             do {
                i += len;
             } while (Pword[i] && !isspace(Pword[i]) &&
                      (!a_Utf8_ideographic(Pword+i, Pword_end, &len)));
-            ch = Pword[i];
-            Pword[i] = 0;
-            HT2TB(html)->addText(Pword + start,
+            HT2TB(html)->addText(Pword + start, i - start,
                                  html->styleEngine->wordStyle ());
-            Pword[i] = ch;
             html->PrevWasSPC = false;
          }
       }

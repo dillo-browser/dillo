@@ -272,7 +272,7 @@ protected:
 
    Word *addWord (int width, int ascent, int descent,
                   core::style::Style *style);
-   void calcTextSize (const char *text, core::style::Style *style,
+   void calcTextSize (const char *text, size_t len, core::style::Style *style,
                       core::Requisition *size);
 
 
@@ -371,7 +371,11 @@ public:
 
    void flush ();
 
-   void addText (const char *text, core::style::Style *style);
+   void addText (const char *text, size_t len, core::style::Style *style);
+   inline void addText (const char *text, core::style::Style *style)
+   {
+      addText (text, strlen(text), style);
+   }
    void addWidget (core::Widget *widget, core::style::Style *style);
    bool addAnchor (const char *name, core::style::Style *style);
    void addSpace(core::style::Style *style);

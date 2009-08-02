@@ -1601,11 +1601,11 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
 /**
  * Calculate the size of a text word.
  */
-void Textblock::calcTextSize (const char *text, core::style::Style *style,
+void Textblock::calcTextSize (const char *text, size_t len,
+                              core::style::Style *style,
                               core::Requisition *size)
 {
-   size->width =
-      layout->textWidth (style->font, text, strlen (text));
+   size->width = layout->textWidth (style->font, text, len);
    size->ascent = style->font->ascent;
    size->descent = style->font->descent;
 
@@ -1623,15 +1623,16 @@ void Textblock::calcTextSize (const char *text, core::style::Style *style,
  * Add a word to the page structure. Stashes the argument pointer in
  * the page data structure so that it will be deallocated on destroy.
  */
-void Textblock::addText (const char *text, core::style::Style *style)
+void Textblock::addText (const char *text, size_t len,
+                         core::style::Style *style)
 {
    Word *word;
    core::Requisition size;
 
-   calcTextSize (text, style, &size);
+   calcTextSize (text, len, style, &size);
    word = addWord (size.width, size.ascent, size.descent, style);
    word->content.type = core::Content::TEXT;
-   word->content.text = layout->textZone->strdup(text);
+   word->content.text = layout->textZone->strndup(text, len);
 
    //DBG_OBJ_ARRSET_STR (page, "words.%d.content.text", page->num_words - 1,
    //                    word->content.text);
