@@ -1122,7 +1122,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
  * Entities are parsed (or not) according to parse_mode.
  * 'word' is a '\0'-terminated string.
  */
-static void Html_process_word(DilloHtml *html, const char *word, int size)
+static void Html_process_word(DilloHtml *html, char *word, int size)
 {
    int i, j, start;
    char *Pword, ch;
@@ -1167,12 +1167,16 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
       dFree(Pword);
 
    } else {
+      char *Pword_end;
+
       if (!memchr(word,'&', size)) {
          /* No entities */
-         HT2TB(html)->addText(word, html->styleEngine->wordStyle ());
+         Pword = word;
+         Pword_end = Pword + size - 1;
       } else {
          /* Collapse white-space entities inside the word (except &nbsp;) */
          Pword = a_Html_parse_entities(html, word, size);
+         Pword_end = Pword + strlen(Pword) - 1;
          /* Collapse adjacent " \t\f\n\r" characters into a single space */
          for (i = j = 0; (Pword[i] = Pword[j]); ++i, ++j) {
             if (strchr(" \t\f\n\r", Pword[i])) {
@@ -1183,12 +1187,24 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
                      ;
             }
          }
-         HT2TB(html)->addText(Pword, html->styleEngine->wordStyle ());
-         dFree(Pword);
       }
+      for (start = i = 0; Pword[i]; start = i) {
+         if (isspace(Pword[i])) {
+            while (Pword[++i] && isspace(Pword[i])) ;
+            Html_process_space(html, Pword + start, i - start);
+         } else {
+            while (Pword[++i] && !isspace(Pword[i])) ;
+            ch = Pword[i];
+            Pword[i] = '\0';
+            HT2TB(html)->addText(Pword + start,
+                                 html->styleEngine->wordStyle ());
+            Pword[i] = ch;
+            html->PrevWasSPC = false;
+         }
+      }
+      if (word != Pword)
+         dFree(Pword);
    }
-
-   html->PrevWasSPC = false;
    if (html->InFlags & IN_LI)
       html->WordAfterLI = true;
 }
