@@ -1498,7 +1498,7 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
       if (isspace(*p)) {
          for (ntag[i++] = ' '; isspace(p[1]); ++p) ;
       } else if ((quote = *p) == '"' || *p == '\'') {
-         for (ntag[i++] = *p++; (ntag[i++] = *p) && *p != quote; ++p) {
+         for (ntag[i++] = *p++; (ntag[i] = *p) && ntag[i++] != quote; ++p) {
             if (*p == '\n' || *p == '\r')
                ntag[i - 1] = ' ';
             p += (p[0] == '\r' && p[1] == '\n') ? 1 : 0;

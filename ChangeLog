@@ -19,6 +19,7 @@ dillo-2.2 [??]
  - Fix cache segfault when cache entry removed.
  - Split words that contain whitespace as numeric character references.
  - Allow linebreaks around Chinese/Japanese characters.
+ - Fix segfault in Html_parse_doctype (BUG#918).
    Patches: corvid
 
 -----------------------------------------------------------------------------
