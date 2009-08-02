@@ -15,7 +15,10 @@ dillo-2.2 [??]
    Patches: Jorge Arellano Cid
 +- Fix segfault from AREA when MAP is missing name attribute.
  - Fix image map coordinates when margin/border/padding present.
- - Handle CSS charset.
+ - Handle stylesheet @charset.
+ - Fix cache segfault when cache entry removed.
+ - Split words that contain whitespace as numeric character references.
+ - Allow linebreaks around Chinese/Japanese characters.
    Patches: corvid
 
 -----------------------------------------------------------------------------
