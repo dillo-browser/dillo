@@ -1065,7 +1065,8 @@ static void Html_process_space(DilloHtml *html, const char *space,
 
             if (spaceCnt) {
                spc = dStrnfill(spaceCnt, ' ');
-               HT2TB(html)->addText (spc, html->styleEngine->wordStyle ());
+               HT2TB(html)->addText (spc, spaceCnt,
+                                     html->styleEngine->wordStyle ());
                dFree(spc);
                spaceCnt = 0;
             }
@@ -1097,7 +1098,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
 
       if (spaceCnt) {
          spc = dStrnfill(spaceCnt, ' ');
-         HT2TB(html)->addText (spc, html->styleEngine->wordStyle ());
+         HT2TB(html)->addText (spc, spaceCnt, html->styleEngine->wordStyle ());
          dFree(spc);
       }
 
