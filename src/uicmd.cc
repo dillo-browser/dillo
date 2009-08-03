@@ -309,7 +309,15 @@ public:
          /* Ignore this event */
          return 1;
       }
-      return TabGroup::handle(e);
+      int ret = TabGroup::handle(e);
+
+      if (e == PUSH) {
+         /* WORKAROUND: FLTK raises the window on unhandled clicks,
+          * which we do not want.
+          */ 
+         ret = 1;
+      }
+      return ret;
    }
 
    void remove (Widget *w) {
