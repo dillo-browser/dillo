@@ -59,11 +59,11 @@ Function calls for HTTP CCC
       Http_connect_socket
         Http_send_query
           a_Http_make_query_str
-            OpStart, BCK:         [Capi] --> [http] --> [IO]
-            OpSend, BCK
+          OpStart, BCK:           [Capi] --> [http] --> [IO]
+          OpSend, BCK
               IO_submit
                 a_IOwatch_add_fd (DIO_WRITE, ...)
-            a_Chain_fcb(OpSend FD): this starts the receiving branch
+          a_Chain_fcb(OpSend FD): this starts the receiving branch
 
 
 
