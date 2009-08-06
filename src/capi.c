@@ -582,11 +582,17 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             conn->InfoSend = NULL;
             /* remove the cache entry for this URL */
             a_Cache_entry_remove_by_url(conn->url);
-            if (Data2 && !strcmp(Data2, "DpidERROR"))
-               a_UIcmd_set_msg(conn->bw,
-                               "ERROR: can't start dpid daemon "
-                               "(URL scheme = '%s')!",
-                               conn->url ? URL_SCHEME(conn->url) : "");
+            if (Data2) {
+               if (!strcmp(Data2, "DpidERROR")) {
+                  a_UIcmd_set_msg(conn->bw,
+                                  "ERROR: can't start dpid daemon "
+                                  "(URL scheme = '%s')!",
+                                  conn->url ? URL_SCHEME(conn->url) : "");
+               } else if (!strcmp(Data2, "Both") && conn->InfoRecv) {
+                  /* abort the other branch too */
+                  a_Capi_ccc(OpAbort, 2, BCK, conn->InfoRecv, NULL, NULL);
+               }
+            }
             /* finish conn */
             Capi_conn_unref(conn);
             dFree(Info);

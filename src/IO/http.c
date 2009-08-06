@@ -495,7 +495,8 @@ void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
          MSG_BW(S->web, 0, "ERROR: Dns can't resolve %s",
             (S->use_proxy) ? URL_HOST_(HTTP_Proxy) : URL_HOST_(S->web->url));
          a_Chain_bcb(OpAbort, S->Info, NULL, NULL);
-         a_Chain_fcb(OpAbort, S->Info, NULL, NULL);
+         S->Info->Flags &= ~CCC_Aborted;
+         a_Chain_fcb(OpAbort, S->Info, NULL, "Both");
          dFree(S->Info);
          Http_socket_free(SKey);
       }

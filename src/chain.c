@@ -104,6 +104,7 @@ int a_Chain_fcb(int Op, ChainLink *Info, void *Data1, void *Data2)
    if (Info->Flags & (CCC_Ended + CCC_Aborted)) {
       /* CCC is not operative */
    } else if (Info->Fcb) {
+      /* flag the caller */
       if (Op == OpEnd)
          Info->Flags |= CCC_Ended;
       else if (Op == OpAbort)
@@ -126,6 +127,7 @@ int a_Chain_bcb(int Op, ChainLink *Info, void *Data1, void *Data2)
    if (Info->Flags & (CCC_Ended + CCC_Aborted)) {
       /* CCC is not operative */
    } else if (Info->Bcb) {
+      /* flag the caller */
       if (Op == OpEnd)
          Info->Flags |= CCC_Ended;
       else if (Op == OpAbort)
@@ -166,7 +168,9 @@ int a_Chain_check(char *FuncStr, int Op, int Branch, int Dir,
 
    if (Info->Flags & (CCC_Ended + CCC_Aborted)) {
       /* CCC is not operative */
-      MSG_WARN("CCC: call on already finished chain.\n");
+      MSG_WARN("CCC: call on already finished chain. Flags=%s%s\n",
+               Info->Flags & CCC_Ended ? "CCC_Ended " : "",
+               Info->Flags & CCC_Aborted ? "CCC_Aborted" : "");
    } else {
       ret = 1;
    }
