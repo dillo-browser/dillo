@@ -1,4 +1,4 @@
-Last review: August, 2009 --jcid
+Last review: August 04, 2009 --jcid
 
 
 ----------------------------
@@ -29,17 +29,27 @@ II    |Capi|     |Dpi |     | IO |        |               |
                                           .
                                           |
 
-*  currently the query chain isn't built at once because socket()
-needs the remote hostname's IP to return an associated FD. [1]
+*  a_Capi_open_url()  builds  both the Answer and Query chains at
+once  (Answer  first  then  Query), to ensure a uniform structure
+that avoids complexity (e.g. race conditions).
 
+*  Http_get()  sets  a  callback  for  the  DNS hostname resolve.
+Normally  it  comes  later, but may also by issued immediately if
+the hostname is cached.
 
-* the answer branch is built when capi 1F receives the FD.
+*  The  socket FD is passed by means of OpSend by the http module
+once the remote IP is known and the socket is connected.
+
 
 
 Function calls for HTTP CCC
 ---------------------------
 
   a_Capi_open_url
+    if (reload)
+      Capi OpStart 2B (answer)    [Capi] --> [dpi]  --> [IO]
+      Capi OpStart 1B (query)     [Capi] --> [http] --> [IO]
+        Http_get
     a_Cache_open_url
       if URL_E2EReload -> prepare reload
       if cached
@@ -49,22 +59,16 @@ Function calls for HTTP CCC
         Cache_entry_add
         client enqueue
 
-    if (reload)
-      Capi OpStart 1B
-      OpStart, BCK:               [Capi] --> [http]
-        Http_get
-
     -//->
     a_Http_dns_cb
       Http_connect_socket
+        OpSend FD, BCK
+        OpSend FD, FWD
         Http_send_query
           a_Http_make_query_str
-          OpStart, BCK:           [Capi] --> [http] --> [IO]
-          OpSend, BCK
+            OpSend, BCK
               IO_submit
                 a_IOwatch_add_fd (DIO_WRITE, ...)
-          a_Chain_fcb(OpSend FD): this starts the receiving branch
-
 
 
   Note about 'web' structures. They're created using a_Web_new().
@@ -102,43 +106,36 @@ II    |Capi|     |Dpi |     | IO |        |               |
 
 CCC Construction:
 
-  a_Capi_open_url() calls a_Capi_dpi_send_cmd() when the URL
+  a_Capi_open_url()  calls  a_Capi_dpi_send_cmd()  when  the  URL
 belongs to a dpi and it is not cached.
 
-  a_Capi_dpi_send_cmd() creates the I-CCC backwards when requested
-to open a new connection. That is, Capi links Dpi, Dpi links IO, and
-Dpi sends the Socket FD to capi (Capi's OpSend 1F). If the connection
-exists, it is reused with OpSend.
-
-  When Capi receives the Socket FD, it creates the II-CCC backwards
-(Capi's OpStart 2B). Capi links Dpi, Dpi links IO, and Dpi starts IO
-(IO's OpStart 2B).
+  a_Capi_dpi_send_cmd()  builds  both the Answer and Query chains
+at  once (Answer first then Query), in the same way as HTTP does.
+Note  that  the  answer chain is the same for both, and the query
+chain only differs in the module in the middle ([http] or [dpi]).
 
 
+Function calls for DPI CCC
+--------------------------
+
+  a_Capi_open_url
+    a_Capi_dpi_send_cmd
+      Capi OpStart 2B (answer)    [Capi] --> [dpi]  --> [IO]
+      Capi OpStart 1B (query)     [Capi] --> [http] --> [IO]
+      a_Cache_open_url
+        [...]
 
 
 Normal termination:
 
   When  the dpi server is done, it closes the FD, and OpEnd flows
-from  IO  to  Capi (IO's OpEnd 2F). When in Capi, capi propagates
-OpEnd to I.
+from  IO  to  Capi (answer branch). When in Capi, capi propagates
+OpEnd to the query branch.
 
 Abnormal termination:
 
-  The  case  of  the transfer being aborted before the dpi server
-starts to send content exists, and it's handled like this:
-
-  When Capi receives "start_send_page" (Capi's OpSend 2F), it may
-detect  an  invalid  web  structure.  If  so, it issues an OpStop
-backwards (Dpi's OpStop 3B, not implemented).
-
-  The  transfer  is  not currently aborted in II but just flagged
-ABORTED. It continues without further processing by Capi.
-
-
---
-
-[1]  The  CCC  construction  may be simplified by building all at
-once (i.e. not splitted with events). That could avoid complexity
-and allow for easier error handling.
+  The  transfer may be aborted by a_Capi_conn_abort_by_url(). The
+OpAbort is not yet standardized and has an ad-hoc implementation.
+One idea is to have OpAbort always propagate BCK and then FWD and
+to jump into the other chain when it gets to [Capi].
 

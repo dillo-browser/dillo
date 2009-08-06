@@ -367,6 +367,9 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
          a_Capi_conn_abort_by_url(web->url);
          /* create a new connection and start the CCC operations */
          conn = Capi_conn_new(web->url, web->bw, "http", "none");
+         /* start the reception branch before the query one because the DNS
+          * may callback immediatly. This may avoid a race condition. */
+         a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), conn, "http");
          a_Capi_ccc(OpStart, 1, BCK, a_Chain_new(), conn, web);
       }
       use_cache = 1;
@@ -475,6 +478,7 @@ int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
       /* Create a new connection data struct and add it to the list */
       conn = Capi_conn_new(url, bw, server, cmd);
       /* start the CCC operations */
+      a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), conn, server);
       a_Capi_ccc(OpStart, 1, BCK, a_Chain_new(), conn, server);
 
    } else {
@@ -557,18 +561,17 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             MSG_WARN("Unused CCC\n");
             break;
          }
-      } else {  /* FWD */
+      } else {  /* 1 FWD */
          /* Command sending branch (status) */
          switch (Op) {
          case OpSend:
             if (!Data2) {
                MSG_WARN("Capi.c: Opsend [1F] Data2 = NULL\n");
-            } else if (strcmp(Data2, "SockFD") == 0) {
-               /* start the receiving branch */
-               capi_conn_t *conn = Info->LocalKey;
+            } else if (strcmp(Data2, "FD") == 0) {
+               conn = Info->LocalKey;
                conn->SockFD = *(int*)Data1;
-               a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), Info->LocalKey,
-                          conn->server);
+               /* communicate the FD through the answer branch */
+               a_Capi_ccc(OpSend, 2, BCK, conn->InfoRecv, &conn->SockFD, "FD");
             } else if (strcmp(Data2, "DpidOK") == 0) {
                /* resume pending dpi requests */
                Capi_conn_resume();
@@ -596,16 +599,22 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
 
    } else if (Branch == 2) {
       if (Dir == BCK) {
-         /* Server listening branch (status)
-          * (Data1 = conn; Data2 = {"HttpFD" | "DpiFD"}) */
+         /* Answer branch */
          switch (Op) {
          case OpStart:
+            /* Data1 = conn; Data2 = {"http" | "<dpi server name>"} */
             conn = Data1;
             Capi_conn_ref(conn);
             Info->LocalKey = conn;
             conn->InfoRecv = Info;
             a_Chain_link_new(Info, a_Capi_ccc, BCK, a_Dpi_ccc, 2, 2);
-            a_Chain_bcb(OpStart, Info, &conn->SockFD, Data2);
+            a_Chain_bcb(OpStart, Info, NULL, Data2);
+            break;
+         case OpSend:
+            /* Data1 = FD */
+            if (Data2 && strcmp(Data2, "FD") == 0) {
+               a_Chain_bcb(OpSend, Info, Data1, Data2);
+            }
             break;
          case OpAbort:
             conn = Info->LocalKey;
@@ -618,7 +627,7 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             MSG_WARN("Unused CCC\n");
             break;
          }
-      } else {  /* FWD */
+      } else {  /* 2 FWD */
          /* Server listening branch */
          switch (Op) {
          case OpSend:

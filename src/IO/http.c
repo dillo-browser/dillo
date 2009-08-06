@@ -299,14 +299,9 @@ static void Http_send_query(ChainLink *Info, SocketData_t *S)
    _MSG_BW(S->web, 1, "Sending query to %s...", URL_HOST_(S->web->url));
 
    /* send query */
-   a_Chain_link_new(Info, a_Http_ccc, BCK, a_IO_ccc, 1, 1);
-   a_Chain_bcb(OpStart, Info, &S->SockFD, NULL);
    a_Chain_bcb(OpSend, Info, dbuf, NULL);
    dFree(dbuf);
    dStr_free(query, 1);
-
-   /* Tell the cache to start the receiving CCC for the answer */
-   a_Chain_fcb(OpSend, Info, &S->SockFD, "SockFD");
 }
 
 /*
@@ -379,6 +374,8 @@ static int Http_connect_socket(ChainLink *Info)
          Http_socket_close(S);
          MSG("Http_connect_socket ERROR: %s\n", dStrerror(S->Err));
       } else {
+         a_Chain_bcb(OpSend, Info, &S->SockFD, "FD");
+         a_Chain_fcb(OpSend, Info, &S->SockFD, "FD");
          Http_send_query(S->Info, S);
          return 0; /* Success */
       }
@@ -476,6 +473,7 @@ void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
    S = a_Klist_get_data(ValidSocks, SKey);
    if (S) {
       if (!a_Web_valid(S->web)) {
+         a_Chain_bcb(OpAbort, S->Info, NULL, NULL);
          a_Chain_fcb(OpAbort, S->Info, NULL, NULL);
          dFree(S->Info);
          Http_socket_free(SKey);
@@ -486,6 +484,7 @@ void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
          /* start connecting the socket */
          if (Http_connect_socket(S->Info) < 0) {
             MSG_BW(S->web, 1, "ERROR: %s", dStrerror(S->Err));
+            a_Chain_bcb(OpAbort, S->Info, NULL, NULL);
             a_Chain_fcb(OpAbort, S->Info, NULL, NULL);
             dFree(S->Info);
             Http_socket_free(SKey);
@@ -495,6 +494,7 @@ void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
          /* DNS wasn't able to resolve the hostname */
          MSG_BW(S->web, 0, "ERROR: Dns can't resolve %s",
             (S->use_proxy) ? URL_HOST_(HTTP_Proxy) : URL_HOST_(S->web->url));
+         a_Chain_bcb(OpAbort, S->Info, NULL, NULL);
          a_Chain_fcb(OpAbort, S->Info, NULL, NULL);
          dFree(S->Info);
          Http_socket_free(SKey);
@@ -560,6 +560,10 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             /* ( Data1 = Web ) */
             SKey = Http_sock_new();
             Info->LocalKey = INT2VOIDP(SKey);
+            /* link IO */
+            a_Chain_link_new(Info, a_Http_ccc, BCK, a_IO_ccc, 1, 1);
+            a_Chain_bcb(OpStart, Info, NULL, NULL);
+            /* async. connection */
             Http_get(Info, Data1);
             break;
          case OpEnd:
@@ -575,7 +579,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             dFree(Info);
             break;
          }
-      } else {  /* FWD */
+      } else {  /* 1 FWD */
          /* HTTP send-query status branch */
          switch (Op) {
          default:

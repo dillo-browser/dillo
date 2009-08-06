@@ -615,13 +615,13 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                   *fd = SockFD;
                   Info->LocalKey = fd;
                   a_Chain_link_new(Info, a_Dpi_ccc, BCK, a_IO_ccc, 1, 1);
-                  a_Chain_bcb(OpStart, Info, Info->LocalKey, NULL);
-                  /* tell the capi to start the receiving branch */
-                  a_Chain_fcb(OpSend, Info, Info->LocalKey, "SockFD");
+                  a_Chain_bcb(OpStart, Info, NULL, NULL);
                }
             }
 
             if (st == 0 && SockFD != -1) {
+               a_Chain_bcb(OpSend, Info, &SockFD, "FD");
+               a_Chain_fcb(OpSend, Info, &SockFD, "FD");
                a_Chain_fcb(OpSend, Info, NULL, "DpidOK");
             } else {
                MSG_ERR("dpi.c: can't start dpi daemon\n");
@@ -645,7 +645,7 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             MSG_WARN("Unused CCC\n");
             break;
          }
-      } else {  /* FWD */
+      } else {  /* 1 FWD */
          /* Send commands to dpi-server (status) */
          switch (Op) {
          case OpAbort:
@@ -675,7 +675,7 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             MSG_WARN("Unused CCC\n");
             break;
          }
-      } else {  /* BCK */
+      } else {  /* 2 BCK */
          switch (Op) {
          case OpStart:
             conn = Dpi_conn_new(Info);
@@ -687,7 +687,12 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             }
 
             a_Chain_link_new(Info, a_Dpi_ccc, BCK, a_IO_ccc, 2, 2);
-            a_Chain_bcb(OpStart, Info, NULL, Data1); /* IORead, SockFD */
+            a_Chain_bcb(OpStart, Info, NULL, NULL); /* IORead */
+            break;
+         case OpSend:
+            if (Data2 && !strcmp(Data2, "FD")) {
+               a_Chain_bcb(OpSend, Info, Data1, Data2);
+            }
             break;
          case OpAbort:
             a_Chain_bcb(OpAbort, Info, NULL, NULL);
