@@ -139,6 +139,7 @@ void a_Web_free(DilloWeb *web)
    a_Image_unref(web->Image);
    dFree(web->filename);
    dList_remove(ValidWebs, (void *)web);
+   _MSG("a_Web_free: ValidWebs=%d\n", dList_length(ValidWebs));
    dFree(web);
 }
 

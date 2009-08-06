@@ -22,7 +22,8 @@ using namespace fltk;
 //
 void a_IOwatch_add_fd(int fd, int when, FileHandler Callback, void *usr_data=0)
 {
-   add_fd(fd, when, Callback, usr_data);
+   if (fd >= 0)
+      add_fd(fd, when, Callback, usr_data);
 }
 
 //
@@ -30,6 +31,7 @@ void a_IOwatch_add_fd(int fd, int when, FileHandler Callback, void *usr_data=0)
 //
 void a_IOwatch_remove_fd(int fd, int when)
 {
-   remove_fd(fd, when);
+   if (fd >= 0)
+      remove_fd(fd, when);
 }
 
