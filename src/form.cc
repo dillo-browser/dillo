@@ -1933,7 +1933,6 @@ static void Html_option_finish(DilloHtml *html)
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
       DilloHtmlOption *option =
          input->select->getCurrentOption ();
-      option->content =
-         a_Html_parse_entities(html, html->Stash->str, html->Stash->len);
+      option->content = dStrndup(html->Stash->str, html->Stash->len);
    }
 }

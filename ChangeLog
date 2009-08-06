@@ -15,6 +15,7 @@ dillo-2.2 [??]
  - Changed the CCCs to build in one step (for both HTTP and DPI). This
    is simpler and helps to avoid race conditions.
  - Updated CCCwork.txt to the new scheme.
+ - Fixed a bug with OPTION element (it was parsing entities twice).
    Patches: Jorge Arellano Cid
 +- Fix segfault from AREA when MAP is missing name attribute.
  - Fix image map coordinates when margin/border/padding present.
