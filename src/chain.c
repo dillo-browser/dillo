@@ -139,6 +139,28 @@ int a_Chain_bcb(int Op, ChainLink *Info, void *Data1, void *Data2)
    return ret;
 }
 
+/*
+ * Issue the backward callback of the 'Info' link and then the
+ * forward callback (used for OpAbort and OpStop).
+ * Return value: 1 if OK, 0 if not operative.
+ */
+int a_Chain_bfcb(int Op, ChainLink *Info, void *Data1, void *Data2)
+{
+   int ret;
+
+   ret = a_Chain_bcb(Op, Info, Data1, Data2);
+   if (ret == 1) {
+      /* we need to clear the flag to reuse this 'Info' ChainLink */
+      if (Op == OpEnd)
+         Info->Flags &= ~CCC_Ended;
+      else if (Op == OpAbort)
+         Info->Flags &= ~CCC_Aborted;
+
+      ret = a_Chain_fcb(Op, Info, Data1, Data2);
+   }
+   return ret;
+}
+
 
 /*
  * Allocate and initialize a new DataBuf structure

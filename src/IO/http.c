@@ -473,8 +473,7 @@ void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
    S = a_Klist_get_data(ValidSocks, SKey);
    if (S) {
       if (!a_Web_valid(S->web)) {
-         a_Chain_bcb(OpAbort, S->Info, NULL, NULL);
-         a_Chain_fcb(OpAbort, S->Info, NULL, NULL);
+         a_Chain_bfcb(OpAbort, S->Info, NULL, "Both");
          dFree(S->Info);
          Http_socket_free(SKey);
 
@@ -484,8 +483,7 @@ void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
          /* start connecting the socket */
          if (Http_connect_socket(S->Info) < 0) {
             MSG_BW(S->web, 1, "ERROR: %s", dStrerror(S->Err));
-            a_Chain_bcb(OpAbort, S->Info, NULL, NULL);
-            a_Chain_fcb(OpAbort, S->Info, NULL, NULL);
+            a_Chain_bfcb(OpAbort, S->Info, NULL, "Both");
             dFree(S->Info);
             Http_socket_free(SKey);
          }
@@ -494,9 +492,7 @@ void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
          /* DNS wasn't able to resolve the hostname */
          MSG_BW(S->web, 0, "ERROR: Dns can't resolve %s",
             (S->use_proxy) ? URL_HOST_(HTTP_Proxy) : URL_HOST_(S->web->url));
-         a_Chain_bcb(OpAbort, S->Info, NULL, NULL);
-         S->Info->Flags &= ~CCC_Aborted;
-         a_Chain_fcb(OpAbort, S->Info, NULL, "Both");
+         a_Chain_bfcb(OpAbort, S->Info, NULL, "Both");
          dFree(S->Info);
          Http_socket_free(SKey);
       }

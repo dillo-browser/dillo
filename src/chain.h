@@ -69,6 +69,7 @@ ChainLink *a_Chain_link_new(ChainLink *AInfo, ChainFunction_t AFunc,
 void a_Chain_unlink(ChainLink *Info, int Direction);
 int a_Chain_fcb(int Op, ChainLink *Info, void *Data1, void *Data2);
 int a_Chain_bcb(int Op, ChainLink *Info, void *Data1, void *Data2);
+int a_Chain_bfcb(int Op, ChainLink *Info, void *Data1, void *Data2);
 int a_Chain_check(char *FuncStr, int Op, int Branch, int Dir,
                   ChainLink *Info);
 
