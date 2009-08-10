@@ -110,7 +110,7 @@ int ComplexButton::handle(int event, const Rectangle& rectangle) {
     redraw(DAMAGE_VALUE);
     if (type() == RADIO)
       setonly();
-    else if (type()) // TOGGLE
+    else if (type() == TOGGLE)
       state(!initial_state);
     else {
       state(initial_state);
@@ -137,7 +137,7 @@ int ComplexButton::handle(int event, const Rectangle& rectangle) {
         setonly();
         if (when() & WHEN_CHANGED) do_callback(); else set_changed();
       }
-    } else if (type()) { // TOGGLE
+    } else if (type() == TOGGLE) {
       state(!state());
       if (when() & WHEN_CHANGED) do_callback(); else set_changed();
     }
