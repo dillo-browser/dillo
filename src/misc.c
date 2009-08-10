@@ -192,10 +192,12 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
 
 /*
  * Parse Content-Type string, e.g., "text/html; charset=utf-8".
+ * Content-Type is defined in RFC 2045 section 5.1.
  */
 void a_Misc_parse_content_type(const char *str, char **major, char **minor,
                                char **charset)
 {
+   static const char tspecials_space[] = "()<>@,;:\\\"/[]?= ";
    const char *s;
    bool_t is_text;
 
@@ -208,19 +210,24 @@ void a_Misc_parse_content_type(const char *str, char **major, char **minor,
    if (!str)
       return;
 
-   for (s = str; dIsalnum(*s) || (*s == '-'); s++);
+   for (s = str; *s && !iscntrl((uchar_t)*s) && !strchr(tspecials_space, *s);
+        s++) ;
    if (major)
       *major = dStrndup(str, s - str);
    is_text = (s - str == 4) && !dStrncasecmp(str, "text", 4);
 
    if (*s == '/') {
-      for (str = ++s; dIsalnum(*s) || (*s == '-'); s++);
+      for (str = ++s;
+           *s && !iscntrl((uchar_t)*s) && !strchr(tspecials_space, *s); s++) ;
       if (minor)
          *minor = dStrndup(str, s - str);
    }
 
    if (is_text && charset && *s) {
-      /* charset parameter is defined for text media type (RFC 2046) */
+      /* charset parameter is defined for text media type (RFC 2046).
+       * Note that is_text will no longer suffice if dillo begins to
+       * handle xhtml someday.
+       */
       const char terminators[] = " ;\t";
       const char key[] = "charset";
 
