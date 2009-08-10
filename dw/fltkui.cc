@@ -193,7 +193,8 @@ void FltkResource::setWidgetStyle (::fltk::Widget *widget,
       widget->color(normal_bg);
       widget->buttoncolor(normal_bg);
       widget->selection_textcolor(normal_bg);
-      if (!(widget->type() & (::fltk::Widget::RADIO|::fltk::Widget::TOGGLE))) {
+      if (widget->type() != ::fltk::Widget::RADIO &&
+          widget->type() != ::fltk::Widget::TOGGLE) {
          /* it looks awful to highlight the buttons */
          widget->highlight_color(bg->colors[FltkColor::SHADING_LIGHT]);
       }
