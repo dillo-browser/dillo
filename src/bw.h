@@ -8,7 +8,7 @@
  */
 #define BW_Root            (1)  /* Root URLs */
 #define BW_Img             (2)  /* Image URLs */
-#define Bw_Force           (4)  /* Stop connection too */
+#define BW_Force           (4)  /* Stop connection too */
 
 
 typedef struct _BrowserWindow BrowserWindow;

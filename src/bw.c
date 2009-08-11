@@ -182,7 +182,7 @@ void a_Bw_stop_clients(BrowserWindow *bw, int flags)
    if (flags & BW_Root) {
       /* Remove root clients */
       while ((data = dList_nth_data(bw->RootClients, 0))) {
-         a_Capi_stop_client(VOIDP2INT(data), (flags & Bw_Force));
+         a_Capi_stop_client(VOIDP2INT(data), (flags & BW_Force));
          dList_remove_fast(bw->RootClients, data);
       }
    }
@@ -190,7 +190,7 @@ void a_Bw_stop_clients(BrowserWindow *bw, int flags)
    if (flags & BW_Img) {
       /* Remove image clients */
       while ((data = dList_nth_data(bw->ImageClients, 0))) {
-         a_Capi_stop_client(VOIDP2INT(data), (flags & Bw_Force));
+         a_Capi_stop_client(VOIDP2INT(data), (flags & BW_Force));
          dList_remove_fast(bw->ImageClients, data);
       }
    }

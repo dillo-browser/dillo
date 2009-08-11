@@ -532,7 +532,7 @@ void a_UIcmd_close_bw(void *vbw)
    Layout *layout = (Layout*)bw->render_layout;
 
    MSG("a_UIcmd_close_bw\n");
-   a_Bw_stop_clients(bw, BW_Root + BW_Img + Bw_Force);
+   a_Bw_stop_clients(bw, BW_Root + BW_Img + BW_Force);
    delete(layout);
    if (ui->tabs()) {
       ui->tabs()->remove(ui);
@@ -792,7 +792,7 @@ void a_UIcmd_stop(void *vbw)
 
    MSG("a_UIcmd_stop()\n");
    a_Nav_cancel_expect(bw);
-   a_Bw_stop_clients(bw, BW_Root + BW_Img + Bw_Force);
+   a_Bw_stop_clients(bw, BW_Root + BW_Img + BW_Force);
    a_UIcmd_set_buttons_sens(bw);
 }
 
