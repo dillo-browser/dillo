@@ -234,7 +234,7 @@ int main(int argc, char **argv)
          xid = strtol(opt_argv[0], &end, 0);
          if (*end) {
             fprintf(stderr, "XID argument \"%s\" not valid.\n",opt_argv[0]);
-            return -1;
+            return 2;
          }
          break;
       }
@@ -242,7 +242,7 @@ int main(int argc, char **argv)
          if (!a_Misc_parse_geometry(opt_argv[0],&xpos,&ypos,&width,&height)){
             fprintf(stderr, "geometry argument \"%s\" not valid. Must be of "
                             "the form WxH[{+-}X{+-}Y].\n", opt_argv[0]);
-            return -1;
+            return 2;
          }
          break;
       case DILLO_CLI_VERSION:
@@ -253,7 +253,7 @@ int main(int argc, char **argv)
          return 0;
       default:
          printHelp(argv[0], Options);
-         return -1;
+         return 2;
       }
    }
    dFree(opt_argv);

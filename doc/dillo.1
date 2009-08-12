@@ -1,4 +1,4 @@
-.TH dillo 1 "July 23, 2009" "version 2.2" "USER COMMANDS"
+.TH dillo 1 "August 11, 2009" "version 2.2" "USER COMMANDS"
 .SH NAME
 dillo \- web browser
 .SH SYNOPSIS
@@ -44,14 +44,14 @@ Display version info and exit.
 Open first Dillo window in an existing window whose window ID is \fIXID\fR.
 .SH EXIT STATUS
 .TP
-.B -1
-Error in command line arguments.
-.TP
 .B 0
 No error.
 .TP
 .B 1
-Runtime error.
+Internal error.
+.TP
+.B 2
+Error in command line arguments.
 .SH ENVIRONMENT
 .TP
 .BR "HOME " "(or " "HOMEDRIVE " "and " "HOMEPATH " "on Cygwin)"
