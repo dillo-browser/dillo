@@ -283,7 +283,7 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
 
    if (numRows == 0) {
       // to prevent a crash
-      MSG_WARN("Cell without row.\n");
+      MSG("addCell: cell without row.\n");
       addRow (NULL);
    }
 
