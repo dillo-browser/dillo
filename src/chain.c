@@ -15,7 +15,7 @@
 #include "chain.h"
 #include "../dlib/dlib.h"
 
-#define VERBOSE 1
+#define VERBOSE 0
 
 /*
  * Show debugging info

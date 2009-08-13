@@ -22,7 +22,6 @@
 #include "IO/IO.h"    /* for IORead &friends */
 #include "IO/Url.h"
 #include "chain.h"
-#include "list.h"
 #include "history.h"
 #include "nav.h"
 #include "dpiapi.h"
@@ -56,9 +55,8 @@ enum {
  * Local data
  */
 /* Data list for active dpi connections */
-static capi_conn_t **DpiConn = NULL;
-static int DpiConnSize;
-static int DpiConnMax = 4;
+static Dlist *CapiConns;      /* Data list for active connections; it holds
+                               * pointers to capi_conn_t structures. */
 
 
 /*
@@ -75,7 +73,9 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
  */
 void a_Capi_init(void)
 {
-   /* nothing to do for capi yet, just for cache */
+   /* create an empty list */
+   CapiConns = dList_new(32);
+   /* init cache */
    a_Cache_init();
 }
 
@@ -103,15 +103,22 @@ static capi_conn_t *
 }
 
 /*
+ * Validate a capi_conn_t pointer.
+ * Return value: NULL if not valid, conn otherwise.
+ */
+static capi_conn_t *Capi_conn_valid(capi_conn_t *conn)
+{
+   return dList_find(CapiConns, conn);
+}
+
+/*
  * Increment the reference count and add to the list if not present
  */
 static void Capi_conn_ref(capi_conn_t *conn)
 {
    if (++conn->Ref == 1) {
       /* add the connection data to list */
-      a_List_add(DpiConn, DpiConnSize, DpiConnMax);
-      DpiConn[DpiConnSize] = conn;
-      DpiConnSize++;
+      dList_append(CapiConns, (void *)conn);
    }
    _MSG(" Capi_conn_ref #%d %p\n", conn->Ref, conn);
 }
@@ -121,26 +128,30 @@ static void Capi_conn_ref(capi_conn_t *conn)
  */
 static void Capi_conn_unref(capi_conn_t *conn)
 {
-   int i, j;
-
    _MSG(" Capi_conn_unref #%d %p\n", conn->Ref - 1, conn);
 
+   /* We may validate conn here, but it doesn't *seem* necessary */
    if (--conn->Ref == 0) {
-      for (i = 0; i < DpiConnSize; ++i) {
-         if (DpiConn[i] == conn) {
-            /* remove conn preserving the list order */
-            for (j = i; j + 1 < DpiConnSize; ++j)
-               DpiConn[j] = DpiConn[j + 1];
-            --DpiConnSize;
-            /* free dynamic memory */
-            a_Url_free(conn->url);
-            dFree(conn->server);
-            dFree(conn->datastr);
-            dFree(conn);
-            break;
-         }
-      }
+      /* remove conn preserving the list order */
+      dList_remove(CapiConns, (void *)conn);
+      /* free dynamic memory */
+      a_Url_free(conn->url);
+      dFree(conn->server);
+      dFree(conn->datastr);
+      dFree(conn);
    }
+   _MSG(" Capi_conn_unref CapiConns=%d\n", dList_length(CapiConns));
+}
+
+/*
+ * Compare function for searching a conn by server string
+ */
+static int Capi_conn_by_server_cmp(const void *v1, const void *v2)
+{
+   const capi_conn_t *node = v1;
+   const char *server = v2;
+   dReturn_val_if_fail(node && node->server && server, 1);
+   return strcmp(node->server, server);
 }
 
 /*
@@ -148,13 +159,7 @@ static void Capi_conn_unref(capi_conn_t *conn)
  */
 static capi_conn_t *Capi_conn_find(char *server)
 {
-   int i;
-
-   for (i = 0; i < DpiConnSize; ++i)
-      if (strcmp(server, DpiConn[i]->server) == 0)
-         return DpiConn[i];
-
-   return NULL;
+   return dList_find_custom(CapiConns, (void*)server, Capi_conn_by_server_cmp);
 }
 
 /*
@@ -164,10 +169,11 @@ static void Capi_conn_resume(void)
 {
    int i;
    DataBuf *dbuf;
+   capi_conn_t *conn;
 
-   for (i = 0; i < DpiConnSize; ++i) {
-      if (DpiConn[i]->Flags & PENDING) {
-         capi_conn_t *conn = DpiConn[i];
+   for (i = 0; i < dList_length(CapiConns); ++i) {
+      conn = dList_nth_data (CapiConns, i);
+      if (conn->Flags & PENDING) {
          dbuf = a_Chain_dbuf_new(conn->datastr,(int)strlen(conn->datastr), 0);
          a_Capi_ccc(OpSend, 1, BCK, conn->InfoSend, dbuf, NULL);
          dFree(dbuf);
@@ -182,10 +188,11 @@ static void Capi_conn_resume(void)
 void a_Capi_conn_abort_by_url(const DilloUrl *url)
 {
    int i;
+   capi_conn_t *conn;
 
-   for (i = 0; i < DpiConnSize; ++i) {
-      if (a_Url_cmp(DpiConn[i]->url, url) == 0) {
-         capi_conn_t *conn = DpiConn[i];
+   for (i = 0; i < dList_length(CapiConns); ++i) {
+      conn = dList_nth_data (CapiConns, i);
+      if (a_Url_cmp(conn->url, url) == 0) {
          if (conn->InfoSend) {
             a_Capi_ccc(OpAbort, 1, BCK, conn->InfoSend, NULL, NULL);
          }
@@ -310,9 +317,9 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
  */
 int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
 {
-   capi_conn_t *conn;
    int reload;
    char *cmd, *server;
+   capi_conn_t *conn = NULL;
    const char *scheme = URL_SCHEME(web->url);
    int safe = 0, ret = 0, use_cache = 0;
 
@@ -380,7 +387,10 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    }
 
    if (use_cache) {
-      ret = a_Cache_open_url(web, Call, CbData);
+      if (!conn || (conn && Capi_conn_valid(conn))) {
+         /* not aborted, let's continue... */
+         ret = a_Cache_open_url(web, Call, CbData);
+      }
    } else {
       a_Web_free(web);
    }
@@ -593,6 +603,8 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                   a_Capi_ccc(OpAbort, 2, BCK, conn->InfoRecv, NULL, NULL);
                }
             }
+            /* if URL == expect-url */
+            a_Nav_cancel_expect_if_eq(conn->bw, conn->url);
             /* finish conn */
             Capi_conn_unref(conn);
             dFree(Info);
