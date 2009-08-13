@@ -139,3 +139,15 @@ OpAbort is not yet standardized and has an ad-hoc implementation.
 One idea is to have OpAbort always propagate BCK and then FWD and
 to jump into the other chain when it gets to [Capi].
 
+
+Debugging CCC
+-------------
+
+  A  simple way to "look" inside it, is to "#define VERBOSE 1" in
+chain.c,  and  then to follow its work with a printed copy of the
+diagrams in this document.
+
+  Each new data request generates a CCC, so if you want to debug,
+it's  good  to refine the testcase to the minimum possible number
+of CCCs.
+
