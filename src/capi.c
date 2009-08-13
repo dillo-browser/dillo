@@ -103,6 +103,21 @@ static capi_conn_t *
 }
 
 /*
+ * Validate a capi_conn_t pointer.
+ * Return value: NULL if not valid, conn otherwise.
+ */
+static capi_conn_t *Capi_conn_valid(capi_conn_t *conn)
+{
+   int i;
+
+   for (i = 0; i < DpiConnSize; ++i)
+      if (conn == DpiConn[i])
+         return conn;
+
+   return NULL;
+}
+
+/*
  * Increment the reference count and add to the list if not present
  */
 static void Capi_conn_ref(capi_conn_t *conn)
@@ -310,9 +325,9 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
  */
 int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
 {
-   capi_conn_t *conn;
    int reload;
    char *cmd, *server;
+   capi_conn_t *conn = NULL;
    const char *scheme = URL_SCHEME(web->url);
    int safe = 0, ret = 0, use_cache = 0;
 
@@ -380,7 +395,10 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    }
 
    if (use_cache) {
-      ret = a_Cache_open_url(web, Call, CbData);
+      if (!conn || (conn && Capi_conn_valid(conn))) {
+         /* not aborted, let's continue... */
+         ret = a_Cache_open_url(web, Call, CbData);
+      }
    } else {
       a_Web_free(web);
    }
@@ -593,6 +611,8 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                   a_Capi_ccc(OpAbort, 2, BCK, conn->InfoRecv, NULL, NULL);
                }
             }
+            /* if URL == expect-url */
+            a_Nav_cancel_expect_if_eq(conn->bw, conn->url);
             /* finish conn */
             Capi_conn_unref(conn);
             dFree(Info);

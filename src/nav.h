@@ -25,6 +25,7 @@ void a_Nav_reload(BrowserWindow *bw);
 void a_Nav_jump(BrowserWindow *bw, int offset, int new_bw);
 void a_Nav_free(BrowserWindow *bw);
 void a_Nav_cancel_expect (BrowserWindow *bw);
+void a_Nav_cancel_expect_if_eq(BrowserWindow *bw, const DilloUrl *url);
 void a_Nav_expect_done(BrowserWindow *bw);
 int a_Nav_stack_ptr(BrowserWindow *bw);
 int a_Nav_stack_size(BrowserWindow *bw);

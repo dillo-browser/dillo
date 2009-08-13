@@ -258,6 +258,15 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
 }
 
 /*
+ * Cancel the expect if 'url' matches.
+ */
+void a_Nav_cancel_expect_if_eq(BrowserWindow *bw, const DilloUrl *url)
+{
+   if (bw->nav_expecting && a_Url_cmp(url, bw->nav_expect_url) == 0)
+      a_Nav_cancel_expect(bw);
+}
+
+/*
  * We have an answer! Set things accordingly.
  * This function is called for root URLs only.
  * Beware: this function is much more complex than it looks
