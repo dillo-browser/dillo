@@ -18,6 +18,7 @@ dillo-2.2 [??]
  - Fixed a bug with OPTION element (it was parsing entities twice).
  - Bugfix: remove the empty cache entry lingering after connection abort.
  - Switched capi to use dlib's Dlist instead of a_List_* methods.
+ - Remove empty cache entries on Stop-button press and new link request!
    Patches: Jorge Arellano Cid
 +- Fix segfault from AREA when MAP is missing name attribute.
  - Fix image map coordinates when margin/border/padding present.

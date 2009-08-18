@@ -1180,7 +1180,6 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
       /* Abort the entry, remove it from cache, and maybe offer download. */
       DilloUrl *url = a_Url_dup(entry->Url);
       a_Capi_conn_abort_by_url(url);
-      Cache_entry_remove(entry, NULL);
       entry = NULL;
       if (OfferDownload && Cache_download_enabled(url)) {
          a_UIcmd_save_link(Client_bw, url);

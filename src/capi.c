@@ -184,6 +184,7 @@ static void Capi_conn_resume(void)
 
 /*
  * Abort the connection for a given url, using its CCC.
+ * (OpAbort 2,BCK removes the cache entry)
  */
 void a_Capi_conn_abort_by_url(const DilloUrl *url)
 {
@@ -515,7 +516,11 @@ void a_Capi_stop_client(int Key, int force)
 {
    CacheClient_t *Client;
 
-   if (force && (Client = a_Cache_client_get_if_unique(Key))) {
+   _MSG("a_Capi_stop_client:  force=%d\n", force);
+
+   Client = a_Cache_client_get_if_unique(Key);
+   if (Client && (force || Client->BufSize == 0)) {
+      /* remove empty entries too */
       a_Capi_conn_abort_by_url(Client->Url);
    }
    a_Cache_stop_client(Key);
@@ -590,8 +595,6 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          case OpAbort:
             conn = Info->LocalKey;
             conn->InfoSend = NULL;
-            /* remove the cache entry for this URL */
-            a_Cache_entry_remove_by_url(conn->url);
             if (Data2) {
                if (!strcmp(Data2, "DpidERROR")) {
                   a_UIcmd_set_msg(conn->bw,
@@ -638,6 +641,8 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             conn = Info->LocalKey;
             conn->InfoRecv = NULL;
             a_Chain_bcb(OpAbort, Info, NULL, NULL);
+            /* remove the cache entry for this URL */
+            a_Cache_entry_remove_by_url(conn->url);
             Capi_conn_unref(conn);
             dFree(Info);
             break;
