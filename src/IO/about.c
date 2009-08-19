@@ -129,7 +129,7 @@ const char *const AboutSplash=
 "    <tr>\n"
 "    <td>&nbsp;&nbsp;\n"
 "    <td>\n"
-"     <a href='http://www.voltairenet.org/'>VoltaireNet</a>\n"
+"     <a href='http://www.voltairenet.org/en'>VoltaireNet</a>\n"
 "    <tr>\n"
 "    <td>&nbsp;&nbsp;\n"
 "    <td>\n"
