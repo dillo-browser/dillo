@@ -175,7 +175,9 @@ static void Capi_conn_resume(void)
       conn = dList_nth_data (CapiConns, i);
       if (conn->Flags & PENDING) {
          dbuf = a_Chain_dbuf_new(conn->datastr,(int)strlen(conn->datastr), 0);
-         a_Capi_ccc(OpSend, 1, BCK, conn->InfoSend, dbuf, NULL);
+         if (conn->InfoSend) {
+            a_Capi_ccc(OpSend, 1, BCK, conn->InfoSend, dbuf, NULL);
+         }
          dFree(dbuf);
          conn->Flags &= ~PENDING;
       }
