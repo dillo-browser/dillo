@@ -396,9 +396,15 @@ static int Http_must_use_proxy(const DilloUrl *url)
    if (HTTP_Proxy) {
       ret = 1;
       if (prefs.no_proxy) {
+         const char *host = URL_HOST(url);
+         size_t host_len = strlen(host);
+
          np = dStrdup(prefs.no_proxy);
          for (p = np; (tok = dStrsep(&p, " "));  ) {
-            if (dStristr(URL_AUTHORITY(url), tok)) {
+            int start = host_len - strlen(tok);
+
+            if (start >= 0 && dStrcasecmp(host + start, tok) == 0) {
+               /* no_proxy token is suffix of host string */
                ret = 0;
                break;
             }
