@@ -475,8 +475,8 @@ void drawBorder (View *view, Rectangle *area,
 
    xb1 = x + style->margin.left;
    yb1 = y + style->margin.top;
-   xb2 = xb1 + width - style->margin.left - style->margin.right;
-   yb2 = yb1 + height - style->margin.top - style->margin.bottom;
+   xb2 = x + width - style->margin.right;
+   yb2 = y + height - style->margin.bottom;
 
    xp1 = xb1 + style->borderWidth.top;
    yp1 = yb1 + style->borderWidth.left;
