@@ -412,51 +412,18 @@ Color *Color::create (Layout *layout, int col)
 
 // ----------------------------------------------------------------------
 
-/**
- * \brief Draw a part of a border.
- */
-static void drawPolygon (View *view, Color *color, Color::Shading shading,
-                         int x1, int y1, int x2, int y2,
-                         int width, int w1, int w2)
-{
-   int points[4][2];
+static void drawTriangle (View *view, Color *color, Color::Shading shading,
+                          int x1, int y1, int x2, int y2, int x3, int y3) {
+   int points[3][2];
 
-   if (width != 0) {
-      if (width == 1) {
-         if (x1 == x2)
-            view->drawLine (color, shading, x1, y1, x2, y2 - 1);
-         else
-            view->drawLine (color, shading, x1, y1, x2 - 1, y2);
-      } else if (width == -1) {
-         if (x1 == x2)
-            view->drawLine (color, shading, x1 - 1, y1, x2 - 1, y2 - 1);
-         else
-            view->drawLine (color, shading, x1, y1 - 1, x2 - 1, y2 - 1);
-      } else {
-         points[0][0] = x1;
-         points[0][1] = y1;
-         points[1][0] = x2;
-         points[1][1] = y2;
+   points[0][0] = x1;
+   points[0][1] = y1;
+   points[1][0] = x2;
+   points[1][1] = y2;
+   points[2][0] = x3;
+   points[2][1] = y3;
 
-         if (x1 == x2) {
-            points[2][0] = x1 + width;
-            points[2][1] = y2 + w2;
-            points[3][0] = x1 + width;
-            points[3][1] = y1 + w1;
-         } else {
-            points[2][0] = x2 + w2;
-            points[2][1] = y1 + width;
-            points[3][0] = x1 + w1;
-            points[3][1] = y1 + width;
-         }
-
-         _MSG("drawPolygon: (%d, %d) .. (%d, %d) .. (%d, %d) .. (%d, %d)\n",
-              points[0][0], points[0][1], points[1][0], points[1][1],
-              points[2][0], points[2][1], points[3][0], points[3][1]);
-
-         view->drawPolygon (color, shading, true, points, 4);
-      }
-   }
+   view->drawPolygon (color, shading, true, points, 3);
 }
 
 /**
@@ -473,15 +440,17 @@ void drawBorder (View *view, Rectangle *area,
    Color::Shading top, right, bottom, left;
    int xb1, yb1, xb2, yb2, xp1, yp1, xp2, yp2;
 
+   // top left and bottom right point of outer border boundary
    xb1 = x + style->margin.left;
    yb1 = y + style->margin.top;
    xb2 = x + width - style->margin.right;
    yb2 = y + height - style->margin.bottom;
 
-   xp1 = xb1 + style->borderWidth.top;
-   yp1 = yb1 + style->borderWidth.left;
-   xp2 = xb2 + style->borderWidth.bottom;
-   yp2 = yb2 + style->borderWidth.right;
+   // top left and bottom right point of inner border boundary
+   xp1 = xb1 + style->borderWidth.left;
+   yp1 = yb1 + style->borderWidth.top;
+   xp2 = xb2 - style->borderWidth.right;
+   yp2 = yb2 - style->borderWidth.bottom;
 
    light = inverse ? Color::SHADING_DARK : Color::SHADING_LIGHT;
    dark = inverse ? Color::SHADING_LIGHT : Color::SHADING_DARK;
@@ -504,24 +473,42 @@ void drawBorder (View *view, Rectangle *area,
    }
 
    if (style->borderStyle.top != BORDER_NONE && style->borderColor.top)
-      drawPolygon (view, style->borderColor.top, top, xb1, yb1, xb2, yb1,
-                   style->borderWidth.top, style->borderWidth.left,
-                   - style->borderWidth.right);
-
-   if (style->borderStyle.right != BORDER_NONE && style->borderColor.right)
-      drawPolygon (view, style->borderColor.right, right, xb2, yb1, xb2, yb2,
-                   - style->borderWidth.right, style->borderWidth.top,
-                   - style->borderWidth.bottom);
+      view->drawRectangle(style->borderColor.top, top, true,
+                          xb1, yb1, xb2 - xb1, style->borderWidth.top);
 
    if (style->borderStyle.bottom != BORDER_NONE && style->borderColor.bottom)
-      drawPolygon (view, style->borderColor.bottom, bottom, xb1, yb2, xb2, yb2,
-                   - style->borderWidth.bottom, style->borderWidth.left,
-                   - style->borderWidth.right);
+      view->drawRectangle(style->borderColor.bottom, bottom, true,
+                          xb1, yb2, xb2 - xb1, - style->borderWidth.bottom);
 
    if (style->borderStyle.left != BORDER_NONE && style->borderColor.left)
-      drawPolygon (view, style->borderColor.left, left, xb1, yb1, xb1, yb2,
-                   style->borderWidth.left, style->borderWidth.top,
-                   - style->borderWidth.bottom);
+      view->drawRectangle(style->borderColor.left, left, true,
+                          xb1, yp1, style->borderWidth.left, yp2 - yp1);
+
+   if (style->borderWidth.left > 1) {
+      if (style->borderWidth.top > 1 &&
+          style->borderColor.left != style->borderColor.top)
+         drawTriangle (view, style->borderColor.left, left,
+                       xb1, yp1, xp1, yp1, xb1, yb1);
+      if (style->borderWidth.bottom > 1 &&
+          style->borderColor.left != style->borderColor.bottom)
+         drawTriangle (view, style->borderColor.left, left,
+                       xb1, yp2, xp1, yp2, xb1, yb2);
+   }
+
+   if (style->borderStyle.right != BORDER_NONE && style->borderColor.right)
+      view->drawRectangle(style->borderColor.right, right, true,
+                          xb2, yp1, - style->borderWidth.right, yp2 - yp1);
+
+   if (style->borderWidth.right > 1) {
+      if (style->borderWidth.top > 1 &&
+          style->borderColor.right != style->borderColor.top)
+         drawTriangle (view, style->borderColor.right, right,
+                       xb2, yp1, xp2, yp1, xb2, yb1);
+      if (style->borderWidth.bottom > 1 &&
+          style->borderColor.right != style->borderColor.bottom)
+         drawTriangle (view, style->borderColor.right, right,
+                       xb2, yp2, xp2, yp2, xb2, yb2);
+   }
 }
 
 
