@@ -2155,9 +2155,10 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
 
    allocation->x =
       textblock->allocation.x + textblock->lineXOffsetWidget (line);
-   for (int i = line->firstWord; i < index; i++)
-      allocation->x += textblock->words->getRef(i)->size.width;
-
+   for (int i = line->firstWord; i < index; i++) {
+      Word *w = textblock->words->getRef(i);
+      allocation->x += w->size.width + w->effSpace;
+   }
    allocation->y =
       textblock->allocation.y
       + textblock->lineYOffsetWidget (line) + line->ascent - word->size.ascent;
