@@ -367,10 +367,23 @@ void FltkViewBase::drawRectangle (core::style::Color *color,
                                   int x, int y, int width, int height)
 {
    setcolor(((FltkColor*)color)->colors[shading]);
+   if (width < 0) {
+      x += width;
+      width = -width;
+   }
+   if (height < 0) {
+      y += height;
+      height = -height;
+   }
+
    int x1 = translateCanvasXToViewX (x);
    int y1 = translateCanvasYToViewY (y);
    int x2 = translateCanvasXToViewX (x + width);
    int y2 = translateCanvasYToViewY (y + height);
+
+   clipPoint (&x1, &y1);
+   clipPoint (&x2, &y2);
+
    ::fltk::Rectangle rect (x1, y1, x2 - x1, y2 - y1);
    if (filled)
       fillrect (rect);

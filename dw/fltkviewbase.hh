@@ -25,6 +25,16 @@ private:
 
    void draw (const core::Rectangle *rect, DrawType type);
    void drawChildWidgets ();
+   inline void clipPoint (int *x, int *y) {
+      if (*x < 0)
+         *x = 0;
+      if (*x > w ())
+         *x = w ();
+      if (*y < 0)
+         *y = 0;
+      if (*y > h ())
+         *y = h ();
+   }
 
 protected:
    core::Layout *theLayout;
