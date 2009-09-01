@@ -151,6 +151,7 @@ static int Cache_client_enqueue(const DilloUrl *Url, DilloWeb *Web,
    NewClient->Url = Url;
    NewClient->Version = 0;
    NewClient->Buf = NULL;
+   NewClient->BufSize = 0;
    NewClient->Callback = Callback;
    NewClient->CbData = CbData;
    NewClient->Web    = Web;
