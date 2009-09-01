@@ -48,6 +48,7 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
    canvasHeight = 1;
    bgColor = WHITE;
    mouse_x = mouse_y = 0;
+   exposeArea = NULL;
    if (backBuffer == NULL) {
       backBuffer = new Image ();
    }
@@ -129,6 +130,8 @@ void FltkViewBase::draw (const core::Rectangle *rect,
          viewRect.w (),
          viewRect.h ());
 
+      exposeArea = &viewRect;
+
       if (type == DRAW_BUFFERED && backBuffer && !backBufferInUse) {
          backBufferInUse = true;
          {
@@ -160,6 +163,8 @@ void FltkViewBase::draw (const core::Rectangle *rect,
          fillrect (viewRect);
          theLayout->expose (this, &r);
       }
+
+      exposeArea = NULL;
    }
 }
 
