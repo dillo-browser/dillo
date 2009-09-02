@@ -486,11 +486,13 @@ void drawBorder (View *view, Rectangle *area,
 
    if (style->borderWidth.left > 1) {
       if (style->borderWidth.top > 1 &&
-          style->borderColor.left != style->borderColor.top)
+          (style->borderColor.left != style->borderColor.top ||
+           left != top))
          drawTriangle (view, style->borderColor.left, left,
                        xb1, yp1, xp1, yp1, xb1, yb1);
       if (style->borderWidth.bottom > 1 &&
-          style->borderColor.left != style->borderColor.bottom)
+          (style->borderColor.left != style->borderColor.bottom ||
+           left != bottom))
          drawTriangle (view, style->borderColor.left, left,
                        xb1, yp2, xp1, yp2, xb1, yb2);
    }
@@ -501,11 +503,13 @@ void drawBorder (View *view, Rectangle *area,
 
    if (style->borderWidth.right > 1) {
       if (style->borderWidth.top > 1 &&
-          style->borderColor.right != style->borderColor.top)
+          (style->borderColor.right != style->borderColor.top ||
+           right != top))
          drawTriangle (view, style->borderColor.right, right,
                        xb2, yp1, xp2, yp1, xb2, yb1);
       if (style->borderWidth.bottom > 1 &&
-          style->borderColor.right != style->borderColor.bottom)
+          (style->borderColor.right != style->borderColor.bottom ||
+           right != bottom))
          drawTriangle (view, style->borderColor.right, right,
                        xb2, yp2, xp2, yp2, xb2, yb2);
    }
