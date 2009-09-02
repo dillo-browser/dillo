@@ -24,7 +24,7 @@ developers.
    Dillo can be viewed as the sum of five main parts:
 
    1.- Dillo Widget: A custom widget, FLTK2 based, that holds the
-neccesary data structures and mechanisms for graphical rendering.
+necessary data structures and mechanisms for graphical rendering.
 (Described in Dw*.txt, dw*.c files among the sources.)
 
    2.-  Dillo Cache: Integrated with a signal driven Input/Output

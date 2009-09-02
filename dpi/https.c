@@ -379,7 +379,7 @@ static int get_network_connection(char * url)
    root_url = dStrdup(url_look_up);
    hp=gethostbyname(url_look_up);
 
-   /*url_look_uip no longer needed, so free if neccessary*/
+   /*url_look_uip no longer needed, so free if necessary*/
    if (url_look_up_length != 0){
       dFree(url_look_up);
    }

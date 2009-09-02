@@ -1679,7 +1679,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 
 
 /**
- * Add an anchor to the page. "name" is copied, so no strdup is neccessary for
+ * Add an anchor to the page. "name" is copied, so no strdup is necessary for
  * the caller.
  *
  * Return true on success, and false, when this anchor had already been
@@ -1704,7 +1704,7 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
 
    if (copy == NULL)
       /**
-       * \todo It may be neccessary for future uses to save the anchor in
+       * \todo It may be necessary for future uses to save the anchor in
        *    some way, e.g. when parts of the widget tree change.
        */
       return false;

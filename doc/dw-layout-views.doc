@@ -100,7 +100,7 @@ the area, which is used to display the canvas.
 <h2>Drawing</h2>
 
 A view must implement several drawing methods, which work on the whole
-canvas. If it is neccesary to convert them (e.g. into
+canvas. If it is necessary to convert them (e.g. into
 dw::fltk::FltkViewport), this is done in a way fully transparent to
 dw::core::Widget and dw::core::Layout, instead, this is done by the
 view implementation.
