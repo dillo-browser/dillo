@@ -1342,13 +1342,17 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                if (wordIndex == hlEnd[layer].index)
                   lastCharIdx = misc::min (hlEnd[layer].nChar, wordLen);
 
-               xStart = xWorld + layout->textWidth (word->style->font,
-                                                    word->content.text,
-                                                    firstCharIdx);
-               width = layout->textWidth (word->style->font,
-                                           word->content.text + firstCharIdx,
-                                           lastCharIdx - firstCharIdx);
-
+               xStart = xWorld;
+               if (firstCharIdx)
+                  xStart += layout->textWidth (word->style->font,
+                                               word->content.text,
+                                               firstCharIdx);
+               if (firstCharIdx == 0 && lastCharIdx == wordLen)
+                  width = word->size.width;
+               else
+                  width = layout->textWidth (word->style->font,
+                                             word->content.text + firstCharIdx,
+                                             lastCharIdx - firstCharIdx);
                if (width > 0) {
                   /* Highlight text */
                   core::style::Color *wordBgColor;
