@@ -219,7 +219,9 @@ public:
 class CharIterator: public object::Object, public misc::Comparable
 {
 public:
-   enum { START = -1, END = -2 };
+   // START and END must not clash with any char value
+   // neither for signed nor unsigned char.
+   enum { START = 257, END = 258 };
 
 private:
    DeepIterator *it;
