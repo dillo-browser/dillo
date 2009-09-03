@@ -57,7 +57,7 @@ int ListItem::getValue ()
    if (words->size () == 0)
       return 0;
    else
-      return words->get(0).size.width + words->get(0).origSpace;
+      return words->getRef(0)->size.width + words->getRef(0)->origSpace;
 }
 
 void ListItem::setMaxValue (int maxValue, int value)

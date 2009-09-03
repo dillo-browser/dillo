@@ -1788,20 +1788,22 @@ void Textblock::addParbreak (int space, core::style::Style *style)
            widget = widget->getParent ()) {
          Textblock *textblock2 = (Textblock*)widget->getParent ();
          if (textblock2->listItem)
-            isfirst = (textblock2->words->get(1).content.type
+            isfirst = (textblock2->words->getRef(1)->content.type
                        == core::Content::WIDGET
-                       && textblock2->words->get(1).content.widget == widget);
+                       && textblock2->words->getRef(1)->content.widget
+                       == widget);
          else
-            isfirst = (textblock2->words->get(0).content.type
+            isfirst = (textblock2->words->getRef(0)->content.type
                        == core::Content::WIDGET
-                       && textblock2->words->get(0).content.widget == widget);
+                       && textblock2->words->getRef(0)->content.widget
+                       == widget);
          if (!isfirst) {
             /* The page we searched for has been found. */
             lineno = widget->parentRef;
             if (lineno > 0 &&
                 (word2 =
                  textblock2->words->getRef(textblock2->lines
-                                           ->get(lineno - 1).firstWord)) &&
+                                           ->getRef(lineno - 1)->firstWord)) &&
                 word2->content.type == core::Content::BREAK) {
                if (word2->content.breakSpace < space) {
                   word2->content.breakSpace = space;
@@ -1845,7 +1847,7 @@ void Textblock::addLinebreak (core::style::Style *style)
    Word *word;
 
    if (words->size () == 0 ||
-       words->get(words->size () - 1).content.type == core::Content::BREAK)
+       words->getRef(words->size () - 1)->content.type == core::Content::BREAK)
       // An <BR> in an empty line gets the height of the current font
       // (why would someone else place it here?), ...
       word = addWord (0, style->font->ascent, style->font->descent, style);
@@ -2022,7 +2024,7 @@ Textblock::TextblockIterator::TextblockIterator (Textblock *textblock,
    else if (index >= textblock->words->size ())
       content.type = core::Content::END;
    else
-      content = textblock->words->get(index).content;
+      content = textblock->words->getRef(index)->content;
 }
 
 object::Object *Textblock::TextblockIterator::clone()
@@ -2048,9 +2050,9 @@ bool Textblock::TextblockIterator::next ()
          content.type = core::Content::END;
          return false;
       }
-   } while ((textblock->words->get(index).content.type & getMask()) == 0);
+   } while ((textblock->words->getRef(index)->content.type & getMask()) == 0);
 
-   content = textblock->words->get(index).content;
+   content = textblock->words->getRef(index)->content;
    return true;
 }
 
@@ -2067,9 +2069,9 @@ bool Textblock::TextblockIterator::prev ()
          content.type = core::Content::START;
          return false;
       }
-   } while ((textblock->words->get(index).content.type & getMask()) == 0);
+   } while ((textblock->words->getRef(index)->content.type & getMask()) == 0);
 
-   content = textblock->words->get(index).content;
+   content = textblock->words->getRef(index)->content;
    return true;
 }
 
