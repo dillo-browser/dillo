@@ -29,6 +29,7 @@ dillo-2.2 [??]
  - Allow linebreaks around Chinese/Japanese characters.
  - Fix segfault in Html_parse_doctype (BUG#918).
  - Change exit code used for bad command line argument.
+ - By default, do not use proxy for localhost (BUG 921).
    Patches: corvid
 
 -----------------------------------------------------------------------------

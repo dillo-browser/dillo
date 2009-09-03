@@ -129,7 +129,7 @@
 
 # Set the domains to access without proxy
 # no_proxy = ".hola.com .mynet.cl .hi.de"
-#(by default, no proxy is used)
+#no_proxy="localhost 127.0.0.1"
 
 # Set the HTTP Referer (sic) header.
 # Note that there is no option to reveal the page that you came from because it

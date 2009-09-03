@@ -53,7 +53,7 @@ void a_Prefs_init(void)
    prefs.load_stylesheets=TRUE;
    prefs.middle_click_drags_page = TRUE;
    prefs.middle_click_opens_new_tab = TRUE;
-   prefs.no_proxy = NULL;
+   prefs.no_proxy = dStrdup(PREFS_NO_PROXY);
    prefs.panel_size = P_medium;
    prefs.parse_embedded_css=TRUE;
    prefs.save_dir = dStrdup(PREFS_SAVE_DIR);

@@ -30,6 +30,7 @@ extern "C" {
 #define PREFS_FONT_FANTASY    "DejaVu Sans" /* TODO: find good default */
 #define PREFS_FONT_MONOSPACE  "DejaVu Sans Mono"
 #define PREFS_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
+#define PREFS_NO_PROXY        "localhost 127.0.0.1"
 #define PREFS_SAVE_DIR        "/tmp/"
 #define PREFS_HTTP_REFERER    "host"
 
