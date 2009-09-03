@@ -2159,14 +2159,32 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
 
    allocation->x =
       textblock->allocation.x + textblock->lineXOffsetWidget (line);
+
    for (int i = line->firstWord; i < index; i++) {
       Word *w = textblock->words->getRef(i);
       allocation->x += w->size.width + w->effSpace;
    }
+   if (start > 0 && word->content.type == core::Content::TEXT) {
+      allocation->x += textblock->layout->textWidth (word->style->font,
+                                                     word->content.text,
+                                                     start);
+   }
    allocation->y =
       textblock->allocation.y
       + textblock->lineYOffsetWidget (line) + line->ascent - word->size.ascent;
+
    allocation->width = word->size.width;
+   if (word->content.type == core::Content::TEXT) {
+      int wordEnd = strlen(word->content.text);
+
+      if (start > 0 || end < wordEnd) {
+         end = misc::min(end, wordEnd); /* end could be INT_MAX */
+         allocation->width =
+            textblock->layout->textWidth (word->style->font,
+                                          word->content.text + start,
+                                          end - start);
+      }
+   }
    allocation->ascent = word->size.ascent;
    allocation->descent = word->size.descent;
 }
