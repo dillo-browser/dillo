@@ -22,17 +22,6 @@ extern "C" {
 #define PREFS_GEOMETRY_DEFAULT_HEIGHT  580
 #define PREFS_GEOMETRY_DEFAULT_XPOS  -9999
 #define PREFS_GEOMETRY_DEFAULT_YPOS  -9999
-#define PREFS_START_PAGE      "about:splash"
-#define PREFS_HOME            "http://www.dillo.org/"
-#define PREFS_FONT_SERIF      "DejaVu Serif"
-#define PREFS_FONT_SANS_SERIF "DejaVu Sans"
-#define PREFS_FONT_CURSIVE    "DejaVu Sans" /* TODO: find good default */
-#define PREFS_FONT_FANTASY    "DejaVu Sans" /* TODO: find good default */
-#define PREFS_FONT_MONOSPACE  "DejaVu Sans Mono"
-#define PREFS_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
-#define PREFS_NO_PROXY        "localhost 127.0.0.1"
-#define PREFS_SAVE_DIR        "/tmp/"
-#define PREFS_HTTP_REFERER    "host"
 
 /* Panel sizes */
 enum { P_tiny = 0, P_small, P_medium, P_large };
