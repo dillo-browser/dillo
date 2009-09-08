@@ -72,6 +72,12 @@ void sock_handler_free(SockHandler *sh);
 char *Escape_uri_str(const char *str, const char *p_esc_set);
 
 /*
+ * Unescape %XX sequences in a string.
+ * Return value: a new unescaped string
+ */
+char *Unescape_uri_str(const char *str);
+
+/*
  * Escape unsafe characters as html entities.
  * Return value: New escaped string.
  */

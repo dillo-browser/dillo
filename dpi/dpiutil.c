@@ -57,6 +57,28 @@ char *Escape_uri_str(const char *str, const char *p_esc_set)
    return p;
 }
 
+/*
+ * Unescape %XX sequences in a string.
+ * Return value: a new unescaped string
+ */
+char *Unescape_uri_str(const char *s)
+{
+   char *p, *buf = dStrdup(s);
+
+   if (strchr(s, '%')) {
+      for (p = buf; (*p = *s); ++s, ++p) {
+         if (*p == '%' && isxdigit(s[1]) && isxdigit(s[2])) {
+            *p = (isdigit(s[1]) ? (s[1] - '0') : toupper(s[1]) - 'A' + 10)*16;
+            *p += isdigit(s[2]) ? (s[2] - '0') : toupper(s[2]) - 'A' + 10;
+            s += 2;
+         }
+      }
+   }
+
+   return buf;
+}
+
+
 static const char *unsafe_chars = "&<>\"'";
 static const char *unsafe_rep[] =
   { "&amp;", "&lt;", "&gt;", "&quot;", "&#39;" };
