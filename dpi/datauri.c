@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <errno.h>
 
 #include "../dpip/dpip.h"
 #include "dpiutil.h"
@@ -35,7 +37,19 @@
  */
 static SockHandler *sh = NULL;
 
+static void b64strip_illegal_chars(unsigned char* str)
+{
+   unsigned char *p, *s = str;
 
+   MSG("len=%d{%s}\n", strlen((char*)str), str);
+
+   for (p = s; (*p = *s); ++s) {
+      if (isalnum(*p) || strchr("+/=", *p))
+         ++p;
+   }
+
+   MSG("len=%d{%s}\n", strlen((char *)str), str);
+}
 
 static int b64decode(unsigned char* str)
 {
@@ -255,7 +269,8 @@ static unsigned char *datauri_get_data(char *url, size_t *p_sz)
    if (p) {
       ++p;
       if (is_base64) {
-         data = (unsigned char *)dStrdup(p);
+         data = (unsigned char *)Unescape_uri_str(p);
+         b64strip_illegal_chars(data);
          *p_sz = (size_t) b64decode(data);
       } else {
          data = (unsigned char *)a_Url_decode_hex_str(p, p_sz);
