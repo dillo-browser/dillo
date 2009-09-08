@@ -91,6 +91,7 @@ static const KeyBinding_t default_keys[] = {
    { "fullscreen"   , KEYS_FULLSCREEN   , fltk::CTRL   , fltk::SpaceKey     },
    { "reload"       , KEYS_RELOAD       , fltk::CTRL   , 'r'                },
    { "stop"         , KEYS_STOP         , 0            , 0                  },
+   { "save"         , KEYS_SAVE         , 0            , 0                  },
    { "hide-panels"  , KEYS_HIDE_PANELS  , 0            , fltk::EscapeKey    },
    { "file-menu"    , KEYS_FILE_MENU    , fltk::ALT    , 'f'                },
    { "close-all"    , KEYS_CLOSE_ALL    , fltk::ALT    , 'q'                },

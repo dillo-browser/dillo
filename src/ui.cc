@@ -799,6 +799,9 @@ int UI::handle(int event)
       } else if (cmd == KEYS_STOP) {
          a_UIcmd_stop(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
+      } else if (cmd == KEYS_SAVE) {
+         a_UIcmd_save(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
       } else if (cmd == KEYS_FULLSCREEN) {
          panelmode_cb_i();
          ret = 1;

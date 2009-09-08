@@ -70,6 +70,9 @@
 # "stop" loading the page. 
 #(stop has no default binding)
 
+# "save" the current page.
+#(save has no default binding)
+
 #--------------------------------------------------------------------
 #                     MOTION COMMANDS
 #--------------------------------------------------------------------

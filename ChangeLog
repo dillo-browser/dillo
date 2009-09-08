@@ -31,6 +31,8 @@ dillo-2.2 [??]
  - Fix segfault in Html_parse_doctype (BUG#918).
  - Change exit code used for bad command line argument.
  - By default, do not use proxy for localhost (BUG 921).
+ - Fix scrolling for text search.
+ - Added 'save' key action (not bound by default).
    Patches: corvid
 
 -----------------------------------------------------------------------------
