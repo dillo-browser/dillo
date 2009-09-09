@@ -48,7 +48,7 @@ public:
 
    /*
     * -----------------------------------
-    *    Platform dependant properties
+    *    Platform dependent properties
     * -----------------------------------
     */
 
@@ -105,10 +105,10 @@ public:
     */
 
    /**
-    * \brief Create a (platform dependant) font.
+    * \brief Create a (platform dependent) font.
     *
     * Typically, within a platform, a sub class of dw::core::style::Font
-    * is defined, which holds more platform dependant data.
+    * is defined, which holds more platform dependent data.
     *
     * Also, this method must fill the attributes "font" (when needed),
     * "ascent", "descent", "spaceSidth" and "xHeight". If "tryEverything"

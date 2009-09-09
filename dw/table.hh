@@ -97,7 +97,7 @@ namespace dw {
  *    (W - \sum e_{i,\min})\f]
  *
  * This one is used currently, but another one will be used soon, which is
- * described below. The rest of this chapter is independant of the exact
+ * described below. The rest of this chapter is independent of the exact
  * apportionment algorithm.
  *
  * When referring to the apportionment function, we will call it

@@ -11,10 +11,10 @@ namespace core {
 using namespace lout;
 
 /**
- * \brief The platform independant interface for image buffers.
+ * \brief The platform independent interface for image buffers.
  *
  * %Image buffers depend on the platform (see \ref dw-images-and-backgrounds),
- * but have this general, platform independant interface. The purpose of
+ * but have this general, platform independent interface. The purpose of
  * an image buffer is
  *
  * <ol>
