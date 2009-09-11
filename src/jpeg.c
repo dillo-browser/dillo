@@ -87,6 +87,8 @@ METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo);
 /* this is the routine called by libjpeg when it detects an error. */
 METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo)
 {
+   DilloJpeg *jpeg = ((my_source_mgr *) ((j_decompress_ptr) cinfo)->src)->jpeg;
+   MSG_WARN("\"%s\": ", URL_STR(jpeg->url));
    /* display message and return to setjmp buffer */
    my_error_ptr myerr = (my_error_ptr) cinfo->err;
    (*cinfo->err->output_message) (cinfo);
