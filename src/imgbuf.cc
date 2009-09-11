@@ -38,7 +38,7 @@ static uchar_t *Imgbuf_rgb_line(const uchar_t *buf,
          for (x = 0; x < width; x++)
             memcpy(linebuf + x * 3, cmap + buf[x] * 3, 3);
       } else {
-         MSG("Gif:: WARNING, image lacks a color map\n");
+         MSG_WARN("Gif:: image lacks a color map\n");
       }
       break;
    case DILLO_IMG_TYPE_GRAY:
