@@ -34,33 +34,36 @@ using namespace dw::fltk;
 
 class LinkTestReceiver: public Widget::LinkReceiver
 {
-   bool enter (Widget *widget, int link, int x, int y);
-   bool press (Widget *widget, int link, int x, int y, EventButton *event);
-   bool release (Widget *widget, int link, int x, int y, EventButton *event);
-   bool click (Widget *widget, int link, int x, int y, EventButton *event);
+   bool enter (Widget *widget, int link, int img, int x, int y);
+   bool press (Widget *widget, int link, int img, int x, int y,
+               EventButton *event);
+   bool release (Widget *widget, int link, int img, int x, int y,
+                 EventButton *event);
+   bool click (Widget *widget, int link, int img, int x, int y,
+               EventButton *event);
 };
 
-bool LinkTestReceiver::enter (Widget *widget, int link, int x, int y)
+bool LinkTestReceiver::enter (Widget *widget, int link, int img, int x, int y)
 {
    printf ("enter: %d\n", link);
    return true;
 }
 
-bool LinkTestReceiver::press (Widget *widget, int link, int x, int y,
+bool LinkTestReceiver::press (Widget *widget, int link, int img, int x, int y,
                               EventButton *event)
 {
    printf ("press: %d\n", link);
    return true;
 }
 
-bool LinkTestReceiver::release (Widget *widget, int link, int x, int y,
+bool LinkTestReceiver::release (Widget *widget, int link, int img, int x,int y,
                                 EventButton *event)
 {
    printf ("release: %d\n", link);
    return true;
 }
 
-bool LinkTestReceiver::click (Widget *widget, int link, int x, int y,
+bool LinkTestReceiver::click (Widget *widget, int link, int img, int x, int y,
                               EventButton *event)
 {
    printf ("click: %d\n", link);
@@ -75,7 +78,7 @@ int main(int argc, char **argv)
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
 
-   ::fltk::Window *window = new ::fltk::Window(200, 300, "Dw Links");
+   ::fltk::Window *window = new ::fltk::Window(200, 300, "Dw Links2");
    window->begin();
     ::fltk::Widget *Panel = new ::fltk::Widget(0, 0, ww, lh, "CONTROL PANEL");
 

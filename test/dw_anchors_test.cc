@@ -98,7 +98,7 @@ int main(int argc, char **argv)
    platform = new FltkPlatform ();
    layout = new Layout (platform);
 
-   window = new ::fltk::Window(250, 200, "Dw Find Test");
+   window = new ::fltk::Window(250, 200, "Dw Anchors Test");
    window->begin();
 
    viewport = new FltkViewport (50, 0, 200, 200);
