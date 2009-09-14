@@ -14,12 +14,12 @@ class FindtextState
 {
 public:
    typedef enum {
-      /** \brief The next occurance of the pattern has been found. */
+      /** \brief The next occurrence of the pattern has been found. */
       SUCCESS,
 
       /**
-       * \brief There is no further occurance of the pattern, instead, the
-       *    first occurance has been selected.
+       * \brief There is no further occurrence of the pattern, instead, the
+       *    first occurrence has been selected.
        */
       RESTART,
 
