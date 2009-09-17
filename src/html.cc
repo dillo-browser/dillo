@@ -2160,6 +2160,7 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 
    Image = a_Html_image_new(html, tag, tagsize, url);
    HT2TB(html)->addWidget((Widget*)Image->dw, html->styleEngine->style());
+   html->PrevWasSPC = false;
 
    /* Image maps */
    if (a_Html_get_attr(html, tag, tagsize, "ismap")) {
