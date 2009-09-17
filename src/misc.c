@@ -194,12 +194,11 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
  * Parse Content-Type string, e.g., "text/html; charset=utf-8".
  * Content-Type is defined in RFC 2045 section 5.1.
  */
-void a_Misc_parse_content_type(const char *str, char **major, char **minor,
+void a_Misc_parse_content_type(const char *type, char **major, char **minor,
                                char **charset)
 {
    static const char tspecials_space[] = "()<>@,;:\\\"/[]?= ";
-   const char *s;
-   bool_t is_text;
+   const char *str, *s;
 
    if (major)
       *major = NULL;
@@ -207,14 +206,13 @@ void a_Misc_parse_content_type(const char *str, char **major, char **minor,
       *minor = NULL;
    if (charset)
       *charset = NULL;
-   if (!str)
+   if (!(str = type))
       return;
 
    for (s = str; *s && !iscntrl((uchar_t)*s) && !strchr(tspecials_space, *s);
         s++) ;
    if (major)
       *major = dStrndup(str, s - str);
-   is_text = (s - str == 4) && !dStrncasecmp(str, "text", 4);
 
    if (*s == '/') {
       for (str = ++s;
@@ -222,11 +220,16 @@ void a_Misc_parse_content_type(const char *str, char **major, char **minor,
       if (minor)
          *minor = dStrndup(str, s - str);
    }
-
-   if (is_text && charset && *s) {
-      /* charset parameter is defined for text media type (RFC 2046).
-       * Note that is_text will no longer suffice if dillo begins to
-       * handle xhtml someday.
+   if (charset && *s &&
+       (dStrncasecmp(type, "text/", 5) == 0 ||
+        dStrncasecmp(type, "application/xhtml+xml", 21) == 0)) {
+      /* "charset" parameter defined for text media type in RFC 2046,
+       * application/xhtml+xml in RFC 3236.
+       *
+       * Note that RFC 3023 lists some main xml media types and provides
+       * the convention of using the "+xml" minor type suffix for other
+       * xml types, so it would be reasonable to check for that suffix if
+       * we have need to care about various xml types someday.
        */
       const char terminators[] = " ;\t";
       const char key[] = "charset";
