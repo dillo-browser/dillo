@@ -1030,6 +1030,23 @@ static void Cache_null_client(int Op, CacheClient_t *Client)
    return;
 }
 
+typedef struct {
+   BrowserWindow *bw;
+   DilloUrl *url;
+} Cache_savelink_t;
+
+/* Save link from behind a timeout so that Cache_process_queue() can
+ * get on with its work.
+ */
+static void Cache_savelink_cb(void *vdata)
+{
+   Cache_savelink_t *data = (Cache_savelink_t*) vdata;
+
+   a_UIcmd_save_link(data->bw, data->url);
+   a_Url_free(data->url);
+   dFree(data);
+}
+
 /*
  * Update cache clients for a single cache-entry
  * Tasks:
@@ -1183,10 +1200,13 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
       a_Capi_conn_abort_by_url(url);
       entry = NULL;
       if (OfferDownload && Cache_download_enabled(url)) {
-         a_UIcmd_save_link(Client_bw, url);
+         Cache_savelink_t *data = dNew(Cache_savelink_t, 1);
+         data->bw = Client_bw;
+         data->url = url;
+         a_Timeout_add(0.0, Cache_savelink_cb, data);
+      } else {
+         a_Url_free(url);
       }
-      a_Url_free(url);
-
    } else if (entry->Auth && (entry->Flags & CA_GotData)) {
       Cache_auth_entry(entry, Client_bw);
    }
