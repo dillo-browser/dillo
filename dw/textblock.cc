@@ -1470,14 +1470,15 @@ int Textblock::findLineOfWord (int wordIndex)
 int Textblock::findWord (int x, int y)
 {
    int lineIndex, wordIndex;
-   int xCursor, lastXCursor;
+   int xCursor, lastXCursor, yWidgetBase;
    Line *line;
    Word *word;
 
    if ((lineIndex = findLineIndex (y)) >= lines->size ())
       return -1;
    line = lines->getRef (lineIndex);
-   if (lineYOffsetWidget (line) + line->ascent + line->descent <= y)
+   yWidgetBase = lineYOffsetWidget (line) + line->ascent;
+   if (yWidgetBase + line->descent <= y)
       return -1;
 
    xCursor = lineXOffsetWidget (line);
@@ -1485,8 +1486,11 @@ int Textblock::findWord (int x, int y)
       word = words->getRef (wordIndex);
       lastXCursor = xCursor;
       xCursor += word->size.width + word->effSpace;
-      if (lastXCursor <= x && xCursor > x)
+      if (lastXCursor <= x && xCursor > x && 
+          y > yWidgetBase - word->size.ascent &&
+          y <= yWidgetBase + word->size.descent) {
          return wordIndex;
+      }
    }
 
    return -1;
