@@ -245,11 +245,6 @@ protected:
    struct {int index, nChar;}
       hlStart[core::HIGHLIGHT_NUM_LAYERS], hlEnd[core::HIGHLIGHT_NUM_LAYERS];
 
-   /* The word index of the link under a button press, and the char
-    * position */
-   int linkPressedIndex;
-   int link_pressedCharPos;
-
    int hoverLink;                      /* The link under the button. */
    core::style::Tooltip *hoverTooltip; /* The tooltip under the button. No ref
                                         * hold. */
