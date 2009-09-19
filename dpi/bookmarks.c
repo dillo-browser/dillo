@@ -96,7 +96,7 @@ DOCTYPE
 "<head>\n"
 "<title>Bookmarks</title>\n"
 "</head>\n"
-"<body bgcolor='#778899' link='black' vlink='brown'>\n"
+"<body id='dillo_bm' bgcolor='#778899' link='black' vlink='brown'>\n"
 "<table border='1' cellpadding='0' width='100%'>\n"
 " <tr><td>\n"
 "  <table width='100%' bgcolor='#b4b4b4'>\n"
@@ -115,7 +115,7 @@ DOCTYPE
 "<head>\n"
 "<title>Bookmarks</title>\n"
 "</head>\n"
-"<body bgcolor='#778899' link='black' vlink='brown'>\n"
+"<body id='dillo_bm' bgcolor='#778899' link='black' vlink='brown'>\n"
 "<table border='1' cellpadding='0' width='100%'>\n"
 " <tr><td>\n"
 "  <table width='100%' bgcolor='#b4b4b4'>\n"
@@ -245,7 +245,7 @@ DOCTYPE
 "<head>\n"
 "<title>Bookmarks</title>\n"
 "</head>\n"
-"<body bgcolor='#778899' link='black' vlink='brown'>\n"
+"<body id='dillo_bm' bgcolor='#778899' link='black' vlink='brown'>\n"
 "<table border='1' cellpadding='0' width='100%'>\n"
 " <tr><td colspan='2'>\n"
 "  <table bgcolor='#b4b4b4' width='100%'>\n"
@@ -292,7 +292,7 @@ DOCTYPE
 "<head>\n"
 "<title>Bookmarks</title>\n"
 "</head>\n"
-"<body bgcolor='#778899' link='black' vlink='brown'>\n"
+"<body id='dillo_bm' bgcolor='#778899' link='black' vlink='brown'>\n"
 "<table border='1' cellpadding='0' width='100%'>\n"
 " <tr><td colspan='2'>\n"
 "  <table bgcolor='#b4b4b4' width='100%'>\n"
@@ -360,7 +360,7 @@ DOCTYPE
 "<head>\n"
 "<title>Bookmarks</title>\n"
 "</head>\n"
-"<body bgcolor='#778899' link='black' vlink='brown'>\n"
+"<body id='dillo_bm' bgcolor='#778899' link='black' vlink='brown'>\n"
 "<table border='1' cellpadding='0' width='100%'>\n"
 " <tr><td colspan='2'>\n"
 "  <table bgcolor='#b4b4b4' width='100%'>\n"
@@ -1653,7 +1653,7 @@ static int Bmsrv_parse_buf(SockHandler *sh, char *Buf)
       if (st != 0) {
          char *err =
             DOCTYPE
-            "<HTML><body> Error on the bookmarks server...</body></html>";
+            "<HTML><body id='dillo_bm'> Error on the bookmarks server...</body></html>";
          if (sock_handler_write_str(sh, 1, err) != 0) {
             return 1;
          }
