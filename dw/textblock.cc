@@ -1402,7 +1402,9 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                   drawText(wordIndex, view, area, xWidget, yWidgetBase);
                }
             }
-            if (word->effSpace > 0 && wordIndex < line->lastWord - 1) {
+            if (word->effSpace > 0 && wordIndex < line->lastWord - 1 &&
+                words->getRef(wordIndex + 1)->content.type !=
+                                                        core::Content::BREAK) {
                drawSpace(wordIndex, view, area, xWidget + word->size.width,
                          yWidgetBase);
             }
