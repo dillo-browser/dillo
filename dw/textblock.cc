@@ -521,28 +521,22 @@ bool Textblock::motionNotifyImpl (core::EventMotion *event)
    if (event->state & core::BUTTON1_MASK)
       return sendSelectionEvent (core::SelectionState::BUTTON_MOTION, event);
    else {
-      int linkOld, wordIndex;
-      core::style::Tooltip *tooltipOld;
+      int wordIndex, linkOld = hoverLink;
+      core::style::Tooltip *tooltipOld = hoverTooltip;
 
       wordIndex = findWord (event->xWidget, event->yWidget);
 
       // cursor from word or widget style
-      if (wordIndex == -1)
-         setCursor (getStyle()->cursor);
-      else
-         setCursor (words->getRef(wordIndex)->style->cursor);
-
-      linkOld = hoverLink;
-      tooltipOld = hoverTooltip;
-
       if (wordIndex == -1) {
+         setCursor (getStyle()->cursor);
          hoverLink = -1;
          hoverTooltip = NULL;
       } else {
-         hoverLink = words->getRef(wordIndex)->style->x_link;
-         hoverTooltip = words->getRef(wordIndex)->style->x_tooltip;
+         core::style::Style *style = words->getRef(wordIndex)->style;
+         setCursor (style->cursor);
+         hoverLink = style->x_link;
+         hoverTooltip = style->x_tooltip;
       }
-
       // Show/hide tooltip
       if (tooltipOld != hoverTooltip) {
          if (tooltipOld)
