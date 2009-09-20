@@ -447,7 +447,7 @@ char *a_Http_make_connect_str(const DilloUrl *url)
       "Host: %s\r\n"
       "%s"
       "\r\n",
-      auth2, 
+      auth2,
       auth2,
       proxy_auth);
 

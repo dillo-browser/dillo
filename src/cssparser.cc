@@ -685,9 +685,9 @@ bool CssParser::parseRgbColorComponent(int32_t *cc, int *percentage) {
       MSG_CSS("expected integer not found in %s color\n", "rgb");
       return false;
    }
-   
+
    *cc = strtol(tval, NULL, 10);
-   
+
    nextToken();
    if (ttype == CSS_TK_CHAR && tval[0] == '%') {
       if (*percentage == 0) {

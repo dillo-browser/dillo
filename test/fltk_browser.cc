@@ -39,7 +39,7 @@ int main (int argc, char *argv[])
       new Item ("second");
       new Item ("third");
    }
-   
+
    window->resizable(browser);
    window->show();
    return run();

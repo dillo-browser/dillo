@@ -314,7 +314,7 @@ public:
       if (e == PUSH) {
          /* WORKAROUND: FLTK raises the window on unhandled clicks,
           * which we do not want.
-          */ 
+          */
          ret = 1;
       }
       return ret;
@@ -1129,7 +1129,7 @@ void a_UIcmd_scroll(BrowserWindow *bw, int icmd)
       }
    }
 }
-         
+
 /*
  * Get location's text
  */

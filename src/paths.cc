@@ -38,7 +38,7 @@ void Paths::init(void)
    oldWorkingDir = dGetcwd();
    rc = chdir("/tmp");
    if (rc == -1) {
-      MSG("paths: error changing directory to /tmp: %s\n", 
+      MSG("paths: error changing directory to /tmp: %s\n",
           dStrerror(errno));
    }
 

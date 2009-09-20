@@ -49,7 +49,7 @@ const char *Form::TextResourceDecorator::getValue ()
 
 Form::RadioButtonResourceDecorator::RadioButtonResourceDecorator
    (const char *name, RadioButtonResource *resource, const char **values):
-      Form::ResourceDecorator (name)     
+      Form::ResourceDecorator (name)
 {
    this->resource = resource;
 
@@ -99,7 +99,7 @@ const char *Form::CheckButtonResourceDecorator::getValue ()
 
 Form::SelectionResourceDecorator::SelectionResourceDecorator
    (const char *name, SelectionResource *resource, const char **values):
-      Form::ResourceDecorator (name)     
+      Form::ResourceDecorator (name)
 {
    this->resource = resource;
 
@@ -162,7 +162,7 @@ Form::FormClickedReceiver::~FormClickedReceiver ()
    delete name;
    delete[] value;
 }
-      
+
 void Form::FormClickedReceiver::clicked (Resource *resource,
                                          dw::core::EventButton *event)
 {
@@ -173,7 +173,7 @@ Form::Form ()
 {
    resources = new lout::container::typed::List <ResourceDecorator> (true);
    activateReceiver = new FormActivateReceiver (this);
-   clickedReceivers = 
+   clickedReceivers =
       new lout::container::typed::List <FormClickedReceiver> (true);
 }
 

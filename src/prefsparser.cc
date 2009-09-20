@@ -48,7 +48,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "allow_white_bg", &prefs.allow_white_bg, PREFS_BOOL },
       { "buffered_drawing", &prefs.buffered_drawing, PREFS_INT32 },
       { "contrast_visited_color", &prefs.contrast_visited_color, PREFS_BOOL },
-      { "enterpress_forces_submit", &prefs.enterpress_forces_submit, 
+      { "enterpress_forces_submit", &prefs.enterpress_forces_submit,
         PREFS_BOOL },
       { "focus_new_tab", &prefs.focus_new_tab, PREFS_BOOL },
       { "font_cursive", &prefs.font_cursive, PREFS_STRING },

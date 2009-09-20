@@ -89,7 +89,7 @@ int main(int argc, char **argv)
       "comes", "some", "more", "text", "to",
       "demonstrate", "word", "wrapping.", NULL };
 
-   
+
    for(int i = 0; wordsPar[i]; i++) {
       if(i != 0)
          textblock->addSpace (wordStyle);

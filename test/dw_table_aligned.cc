@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 
    styleAttrs.borderWidth.setVal (1);
    styleAttrs.setBorderStyle (BORDER_INSET);
-  
+
    Style *cellStyle = Style::create (layout, &styleAttrs);
 
    styleAttrs.borderWidth.setVal (0);
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 
       cell->addText (buf, wordStyle);
       cell->flush ();
-   } 
+   }
 
    wordStyle->unref();
    cellStyle->unref();

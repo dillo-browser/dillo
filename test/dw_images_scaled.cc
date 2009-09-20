@@ -57,13 +57,13 @@ static void imageDrawTimeout (void *data)
             buf[4 * x + 2] = imgRow * 255 / 199;
             buf[4 * x + 3] = (199 - imgRow) * 255 / 199;
          }
-     
+
          imgbuf->copyRow (imgRow, buf);
-         image->drawRow (imgRow);       
+         image->drawRow (imgRow);
          imgRow++;
       }
    }
-   
+
    if(imgRow < 200)
       ::fltk::repeat_timeout (0.5, imageDrawTimeout, NULL);
 }
@@ -79,13 +79,13 @@ static void imageDrawTimeout (void *data)
             buf[3 * x + 1] = (399 - x) * 255 / 399;
             buf[3 * x + 2] = imgRow * 255 / 199;
          }
-     
+
          imgbuf->copyRow (imgRow, buf);
-         image->drawRow (imgRow);       
+         image->drawRow (imgRow);
          imgRow++;
       }
    }
-   
+
    if(imgRow < 200)
       ::fltk::repeat_timeout (0.5, imageDrawTimeout, NULL);
 }
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
 
    image = new dw::Image ("");
    textblock->addWidget (image, imageStyle);
-   textblock->addSpace (imageStyle);     
+   textblock->addSpace (imageStyle);
 
    imageStyle->unref();
 

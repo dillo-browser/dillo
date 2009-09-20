@@ -1750,7 +1750,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    html->styleEngine->startElement (tag_index_a);
    html->styleEngine->setPseudoVisited ();
    if (html->non_css_visited_color != -1) {
-      CssPropertyList vprops; 
+      CssPropertyList vprops;
       vprops.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
                  html->non_css_visited_color);
       html->styleEngine->setNonCssHints (&vprops);
@@ -2009,7 +2009,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
                  CSS_LENGTH_VALUE(l_h) : 0);
    }
    /* Check for suspicious image size request that would cause
-    * an excessive amount of memory to be allocated for the 
+    * an excessive amount of memory to be allocated for the
     * image buffer.
     * Be careful to avoid integer overflows during the checks.
     * There is an additional check in dw/image.cc to catch cases

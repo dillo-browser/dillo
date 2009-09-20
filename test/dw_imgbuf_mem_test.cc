@@ -33,7 +33,7 @@ void solution1 ()
 {
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
-   
+
    Imgbuf *rootbuf = layout->createImgbuf (Imgbuf::RGB, 100, 100);
    rootbuf->ref (); // Extra reference by the dicache.
    printf ("=== Can be deleted? %s.\n",
@@ -48,7 +48,7 @@ void solution1 ()
    printf ("=== Can be deleted? %s.\n",
            rootbuf->lastReference () ? "Yes" : "No");
    rootbuf->unref (); // Extra reference by the dicache.
-   
+
    delete layout;
 }
 
@@ -56,7 +56,7 @@ void solution2 ()
 {
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
-   
+
    Imgbuf *rootbuf = layout->createImgbuf (Imgbuf::RGB, 100, 100);
    rootbuf->setDeleteOnUnref (false);
    printf ("=== Can be deleted? %s.\n",
@@ -71,7 +71,7 @@ void solution2 ()
    printf ("=== Can be deleted? %s.\n",
            !rootbuf->isReferred () ? "Yes" : "No");
    delete rootbuf;
-   
+
    delete layout;
 }
 
@@ -90,13 +90,13 @@ void solution3 ()
 {
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
-   
+
    Imgbuf *rootbuf = layout->createImgbuf (Imgbuf::RGB, 100, 100);
    rootbuf->connectDeletion (new RootbufDeletionReceiver ());
    Imgbuf *scaledbuf = rootbuf->getScaledBuf (50, 50);
    rootbuf->unref ();
    scaledbuf->unref ();
-   
+
    delete layout;
 }
 

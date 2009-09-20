@@ -698,7 +698,7 @@ static void Bms_check_import(void)
          if (rc == 127) {
             MSG("Bookmarks: /bin/sh could not be executed\n");
          } else if (rc == -1) {
-            MSG("Bookmarks: process creation failure: %s\n", 
+            MSG("Bookmarks: process creation failure: %s\n",
                 dStrerror(errno));
          }
          dStr_sprintf(dstr, cmd2, OldBmFile, BmFile);
@@ -706,7 +706,7 @@ static void Bms_check_import(void)
          if (rc == 127) {
             MSG("Bookmarks: /bin/sh could not be executed\n");
          } else if (rc == -1) {
-            MSG("Bookmarks: process creation failure: %s\n", 
+            MSG("Bookmarks: process creation failure: %s\n",
                 dStrerror(errno));
          }
 

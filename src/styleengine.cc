@@ -516,10 +516,10 @@ bool StyleEngine::computeLength (dw::core::style::Length *dest,
  * \brief Similar to StyleEngine::style(), but with backgroundColor set.
  * A normal style might have backgroundColor == NULL to indicate a transparent
  * background. This method ensures that backgroundColor is set.
- */ 
+ */
 Style * StyleEngine::backgroundStyle () {
    StyleAttrs attrs = *style ();
-   
+
    for (int i = stack->size () - 1; i >= 0 && ! attrs.backgroundColor; i--)
       attrs.backgroundColor = stack->getRef (i)->style->backgroundColor;
 
@@ -542,7 +542,7 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    // Ensure that StyleEngine::style0() has not been called before for
    // this element.
    // Style computation is expensive so limit it as much as possible.
-   // If this assertion is hit, you need to rearrange the code that is 
+   // If this assertion is hit, you need to rearrange the code that is
    // doing styleEngine calls to call setNonCssHints() before calling
    // style() or wordStyle() for each new element.
    assert (stack->getRef (stack->size () - 1)->style == NULL);

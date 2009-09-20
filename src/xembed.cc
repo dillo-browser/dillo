@@ -21,7 +21,7 @@
 
 #if USE_X11
 
-typedef enum { 
+typedef enum {
   XEMBED_EMBEDDED_NOTIFY        = 0,
   XEMBED_WINDOW_ACTIVATE        = 1,
   XEMBED_WINDOW_DEACTIVATE      = 2,

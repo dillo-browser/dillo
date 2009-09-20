@@ -113,7 +113,7 @@ private:
 
    public:
       inline FormActivateReceiver (Form *form) { this->form = form; }
-      
+
       void activate (dw::core::ui::Resource *resource);
       void enter (dw::core::ui::Resource *resource);
       void leave (dw::core::ui::Resource *resource);
@@ -129,7 +129,7 @@ private:
    public:
       FormClickedReceiver (Form *form, const char *name, const char *value);
       ~FormClickedReceiver ();
-      
+
       void clicked(dw::core::ui::Resource *resource,
                    dw::core::EventButton *event);
    };

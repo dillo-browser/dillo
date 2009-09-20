@@ -74,7 +74,7 @@ int main(int argc, char **argv)
       (ListResource::SELECTION_AT_MOST_ONE, 4);
    //SelectionResource *res =
    //   layout->getResourceFactory()->createOptionMenuResource ();
-   
+
    Embed *embed = new Embed (res);
    textblock->addWidget (embed, widgetStyle);
    textblock->addSpace (widgetStyle);

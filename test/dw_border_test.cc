@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
    const char *words1[] = { "Some", "random", "text.", NULL };
    const char *words2[] = { "A", "nested", "paragraph.", NULL };
-   
+
    for(int i = 0; words1[i]; i++) {
       if(i != 0)
          textblock1->addSpace (wordStyle);
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 
    for(int i = 0; i < 1; i++) {
       textblock1->addParbreak(0, wordStyle);
-      
+
       Textblock *textblock2 = new Textblock (false);
       textblock1->addWidget (textblock2, widgetStyle2);
 

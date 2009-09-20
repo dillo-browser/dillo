@@ -56,7 +56,7 @@ static void textTimeout (void *data)
 {
    Textblock *oldTop = topTextblock;
    topTextblock = new Textblock (false);
-   
+
    if (oldTop) {
       oldTop->addLinebreak (wordStyle);
       oldTop->addWidget (topTextblock, widgetStyle);
@@ -72,7 +72,7 @@ static void textTimeout (void *data)
    buf[0] = toupper (buf[0]);
    topTextblock->addText (buf, headingStyle);
    topTextblock->addParbreak (5, headingStyle);
-  
+
    for (int i = 0; i < 30; i++) {
       strcpy (buf, numbers[textblockNo]);
       if (i == 0)
@@ -84,7 +84,7 @@ static void textTimeout (void *data)
    }
 
    topTextblock->flush ();
-   
+
    textblockNo++;
    if (textblockNo < 10)
       ::fltk::repeat_timeout (1, textTimeout, NULL);

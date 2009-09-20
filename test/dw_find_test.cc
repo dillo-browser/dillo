@@ -47,7 +47,7 @@ static void findCallback (::fltk::Widget *widget, void *data)
        case FindtextState::SUCCESS:
           resultLabel->label("SUCCESS");
           break;
-          
+
        case FindtextState::RESTART:
           resultLabel->label("RESTART");
           break;

@@ -143,7 +143,7 @@ int main(int argc, char **argv)
    styleAttrs.color = Color::create (layout, 0x0000ff);
    styleAttrs.textDecoration = TEXT_DECORATION_UNDERLINE;
    styleAttrs.cursor = CURSOR_POINTER;
-   
+
    for(int i = 1; i <= 30; i++) {
       char buf[4];
       sprintf(buf, "%d.", i);
@@ -160,15 +160,15 @@ int main(int argc, char **argv)
          textblock->addText (words1[j], wordStyle);
          textblock->addSpace(wordStyle);
       }
-      
+
       styleAttrs.x_link = i;
       Style *linkStyle = Style::create (layout, &styleAttrs);
-      
+
       for(int j = 0; words2[j]; j++) {
          textblock->addText (words2[j], linkStyle);
          textblock->addSpace(wordStyle);
       }
-      
+
       linkStyle->unref ();
 
       textblock->addParbreak(10, wordStyle);

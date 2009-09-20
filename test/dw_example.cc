@@ -56,7 +56,7 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor =
       dw::core::style::Color::create (layout, 0xffffff);
 
-   dw::core::style::Style *widgetStyle = 
+   dw::core::style::Style *widgetStyle =
       dw::core::style::Style::create (layout, &styleAttrs);
 
    dw::Textblock *textblock = new dw::Textblock (false);

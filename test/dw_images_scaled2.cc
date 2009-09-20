@@ -55,14 +55,14 @@ static void imageDrawTimeout (void *data)
             buf[3 * x + 1] = (399 - x) * 255 / 399;
             buf[3 * x + 2] = imgRow * 255 / 199;
          }
-     
+
          imgbuf->copyRow (imgRow, buf);
-         image1->drawRow (imgRow);       
-         image2->drawRow (imgRow);       
+         image1->drawRow (imgRow);
+         image2->drawRow (imgRow);
          imgRow++;
       }
    }
-   
+
    if(imgRow < 200)
       ::fltk::repeat_timeout (0.5, imageDrawTimeout, NULL);
 }

@@ -1486,7 +1486,7 @@ int Textblock::findWord (int x, int y)
       word = words->getRef (wordIndex);
       lastXCursor = xCursor;
       xCursor += word->size.width + word->effSpace;
-      if (lastXCursor <= x && xCursor > x && 
+      if (lastXCursor <= x && xCursor > x &&
           y > yWidgetBase - word->size.ascent &&
           y <= yWidgetBase + word->size.descent) {
          return wordIndex;

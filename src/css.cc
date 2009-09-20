@@ -397,7 +397,7 @@ void CssStyleSheet::addRule (CssRule *rule) {
  *
  * The properties are set as defined by the rules in the stylesheet that
  * match at the given node in the document tree.
- */ 
+ */
 void CssStyleSheet::apply (CssPropertyList *props,
                            Doctree *docTree, const DoctreeNode *node) {
    static const int maxLists = 32;
@@ -544,7 +544,7 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
 /**
  * \brief Create the user agent style.
  *
- * The user agent style defines how dillo renders HTML in the absence of 
+ * The user agent style defines how dillo renders HTML in the absence of
  * author or user styles.
  */
 void CssContext::buildUserAgentStyle () {
