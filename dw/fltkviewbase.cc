@@ -297,7 +297,7 @@ void FltkViewBase::setCursor (core::style::Cursor cursor)
    /*
    static char *cursorName[] = {
       "CURSOR_CROSS",
-      "CURSOR_ARROW",
+      "CURSOR_DEFAULT",
       "CURSOR_HAND",
       "CURSOR_MOVE",
       "CURSOR_WE",
