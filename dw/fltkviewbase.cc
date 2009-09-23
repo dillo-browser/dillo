@@ -278,7 +278,7 @@ void FltkViewBase::setCursor (core::style::Cursor cursor)
 {
    static Cursor *mapDwToFltk[] = {
       CURSOR_CROSS,
-      CURSOR_ARROW,
+      CURSOR_DEFAULT,
       CURSOR_HAND,
       CURSOR_MOVE,
       CURSOR_WE,
