@@ -53,9 +53,9 @@ static const char *const Css_border_style_enum_vals[] = {
 };
 
 static const char *const Css_cursor_enum_vals[] = {
-   "crosshair", "default", "pointer", "move", "e_resize", "ne_resize",
-   "nw_resize", "n_resize", "se_resize", "sw_resize", "s_resize",
-   "w_resize", "text", "wait", "help", NULL
+   "crosshair", "default", "pointer", "move", "e-resize", "ne-resize",
+   "nw-resize", "n-resize", "se-resize", "sw-resize", "s-resize",
+   "w-resize", "text", "wait", "help", NULL
 };
 
 static const char *const Css_display_enum_vals[DISPLAY_LAST + 1] = {
