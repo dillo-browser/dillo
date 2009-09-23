@@ -275,7 +275,8 @@ bool Image::motionNotifyImpl (core::EventMotion *event)
          if (newLink != currLink) {
             currLink = newLink;
             clicking = false;
-            setCursor(newLink == -1 ? core::style::CURSOR_DEFAULT :
+            /* \todo Using MAP/AREA styles would probably be best */
+            setCursor(newLink == -1 ? getStyle()->cursor :
                                       core::style::CURSOR_POINTER);
             (void) emitLinkEnter (newLink, -1, -1, -1);
          }
