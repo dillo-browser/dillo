@@ -1060,6 +1060,7 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
 {
    core::Requisition requisition;
    int availWidth, availAscent, availDescent;
+   core::style::Style *wstyle = widget->getStyle();
 
    /* We ignore line1_offset[_eff]. */
    availWidth = this->availWidth - getStyle()->boxDiffWidth () - innerPadding;
@@ -1071,39 +1072,37 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
       widget->setAscent (availAscent);
       widget->setDescent (availDescent);
       widget->sizeRequest (size);
-//      size->ascent -= widget->getStyle()->margin.top;
-//      size->descent -= widget->getStyle()->margin.bottom;
+//      size->ascent -= wstyle->margin.top;
+//      size->descent -= wstyle->margin.bottom;
    } else {
       /* TODO: Use margin.{top|bottom} here, like above.
        * (No harm for the next future.) */
-      if (widget->getStyle()->width == core::style::LENGTH_AUTO ||
-          widget->getStyle()->height == core::style::LENGTH_AUTO)
+      if (wstyle->width == core::style::LENGTH_AUTO ||
+          wstyle->height == core::style::LENGTH_AUTO)
          widget->sizeRequest (&requisition);
 
-      if (widget->getStyle()->width == core::style::LENGTH_AUTO)
+      if (wstyle->width == core::style::LENGTH_AUTO)
          size->width = requisition.width;
-      else if (core::style::isAbsLength (widget->getStyle()->width))
+      else if (core::style::isAbsLength (wstyle->width))
          /* Fixed lengths are only applied to the content, so we have to
           * add padding, border and margin. */
-         size->width = core::style::absLengthVal (widget->getStyle()->width)
-            + widget->getStyle()->boxDiffWidth ();
+         size->width = core::style::absLengthVal (wstyle->width)
+            + wstyle->boxDiffWidth ();
       else
-         size->width =
-            (int) (core::style::perLengthVal (widget->getStyle()->width)
-                   * availWidth);
+         size->width = (int) (core::style::perLengthVal (wstyle->width)
+                       * availWidth);
 
-      if (widget->getStyle()->height == core::style::LENGTH_AUTO) {
+      if (wstyle->height == core::style::LENGTH_AUTO) {
          size->ascent = requisition.ascent;
          size->descent = requisition.descent;
-      } else if (core::style::isAbsLength (widget->getStyle()->height)) {
+      } else if (core::style::isAbsLength (wstyle->height)) {
          /* Fixed lengths are only applied to the content, so we have to
           * add padding, border and margin. */
-         size->ascent =
-            core::style::absLengthVal (widget->getStyle()->height)
-            + widget->getStyle()->boxDiffHeight ();
+         size->ascent = core::style::absLengthVal (wstyle->height)
+                        + wstyle->boxDiffHeight ();
          size->descent = 0;
       } else {
-         double len = core::style::perLengthVal (widget->getStyle()->height);
+         double len = core::style::perLengthVal (wstyle->height);
          size->ascent = (int) (len * availAscent);
          size->descent = (int) (len * availDescent);
       }
