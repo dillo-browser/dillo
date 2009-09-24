@@ -40,7 +40,7 @@ void StyleAttrs::initValues ()
    textAlign = TEXT_ALIGN_LEFT;
    textAlignChar = '.';
    listStyleType = LIST_STYLE_TYPE_DISC;
-   valign = VALIGN_MIDDLE;
+   valign = VALIGN_BASELINE;
    backgroundColor = NULL;
    width = LENGTH_AUTO;
    height = LENGTH_AUTO;
@@ -67,7 +67,7 @@ void StyleAttrs::resetValues ()
    x_img = -1;
    x_tooltip = NULL;
 
-   valign = VALIGN_MIDDLE;
+   valign = VALIGN_BASELINE;
    textAlignChar = '.';
    backgroundColor = NULL;
    width = LENGTH_AUTO;
