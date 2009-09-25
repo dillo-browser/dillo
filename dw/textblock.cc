@@ -845,12 +845,12 @@ void Textblock::addLine (int wordInd, bool newPar)
 /*
  * This method is called in two cases: (i) when a word is added (by
  * Dw_page_add_word), and (ii) when a page has to be (partially)
- * rewrapped. It does word wrap, and adds new lines, if necesary.
+ * rewrapped. It does word wrap, and adds new lines, if necessary.
  */
 void Textblock::wordWrap(int wordIndex)
 {
    Line *lastLine;
-   Word *word, *prevWord;
+   Word *word;
    int availWidth, lastSpace, leftOffset;
    bool newLine = false, newPar = false;
    core::Extremes wordExtremes;
@@ -874,34 +874,33 @@ void Textblock::wordWrap(int wordIndex)
       newPar = true;
       lastLine = NULL;
    } else {
+      Word *prevWord = words->getRef (wordIndex - 1);
+
       lastLine = lines->getRef (lines->size () - 1);
 
-      if (lines->size () > 0) {
-         prevWord = words->getRef (wordIndex - 1);
-         if (prevWord->content.type == core::Content::BREAK) {
-            //DBG_MSG (page, "wrap", 0, "after a break");
-            /* previous word is a break */
-            newLine = true;
-            newPar = true;
-         } else if (word->style->whiteSpace
-                    != core::style::WHITE_SPACE_NORMAL) {
-            //DBG_MSGF (page, "wrap", 0, "no wrap (white_space = %d)",
-            //          word->style->white_space);
-            newLine = false;
-            newPar = false;
-         } else {
-            if (lastLine->firstWord != wordIndex) {
-               /* Does new word fit into the last line? */
-               //DBG_MSGF (page, "wrap", 0,
-               //          "word %d (%s) fits? (%d + %d + %d &lt;= %d)...",
-               //          word_ind, a_Dw_content_html (&word->content),
-               //          page->lastLine_width, prevWord->orig_space,
-               //          word->size.width, availWidth);
-               newLine = (lastLineWidth + prevWord->origSpace
-                           + word->size.width > availWidth);
-               //DBG_MSGF (page, "wrap", 0, "... %s.",
-               //          newLine ? "No" : "Yes");
-            }
+      if (prevWord->content.type == core::Content::BREAK) {
+         //DBG_MSG (page, "wrap", 0, "after a break");
+         /* previous word is a break */
+         newLine = true;
+         newPar = true;
+      } else if (word->style->whiteSpace
+                 != core::style::WHITE_SPACE_NORMAL) {
+         //DBG_MSGF (page, "wrap", 0, "no wrap (white_space = %d)",
+         //          word->style->white_space);
+         newLine = false;
+         newPar = false;
+      } else {
+         if (lastLine->firstWord != wordIndex) {
+            /* Does new word fit into the last line? */
+            //DBG_MSGF (page, "wrap", 0,
+            //          "word %d (%s) fits? (%d + %d + %d &lt;= %d)...",
+            //          word_ind, a_Dw_content_html (&word->content),
+            //          page->lastLine_width, prevWord->orig_space,
+            //          word->size.width, availWidth);
+            newLine = (lastLineWidth + prevWord->origSpace
+                       + word->size.width > availWidth);
+            //DBG_MSGF (page, "wrap", 0, "... %s.",
+            //          newLine ? "No" : "Yes");
          }
       }
    }
