@@ -284,7 +284,7 @@ Decode *a_Decode_charset_init(const char *format)
            dc->decode = Decode_charset;
            dc->free = Decode_charset_free;
       } else {
-         MSG("Unable to convert from character encoding: '%s'\n", format);
+         MSG_WARN("Unable to convert from character encoding: '%s'\n", format);
       }
    }
    return dc;
