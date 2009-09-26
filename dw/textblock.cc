@@ -240,7 +240,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
          //DEBUG_MSG (DEBUG_SIZE_LEVEL, "   line %d (of %d), nowrap = %d\n",
          //           lineIndex, page->num_lines, nowrap);
 
-         for (wordIndex = line->firstWord; wordIndex < line->lastWord;
+         for (wordIndex = line->firstWord; wordIndex <= line->lastWord;
               wordIndex++) {
             word = words->getRef (wordIndex);
             getWordExtremes (word, &wordExtremes);
@@ -273,11 +273,11 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
             //           word_extremes.maxWidth);
          }
 
-         if ((line->lastWord > line->firstWord &&
-              words->getRef(line->lastWord - 1)->content.type
+         if ((line->lastWord >= line->firstWord &&
+              words->getRef(line->lastWord)->content.type
               == core::Content::BREAK ) ||
              lineIndex == lines->size () - 1 ) {
-            word = words->getRef (line->lastWord - 1);
+            word = words->getRef (line->lastWord);
 
             //DEBUG_MSG (DEBUG_SIZE_LEVEL + 2,
             //           "   parMax = %d, after word %d (%s)\n",
@@ -340,7 +340,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
       xCursor = lineXOffsetWidget (line);
 
       wordInLine = 0;
-      for (wordIndex = line->firstWord; wordIndex < line->lastWord;
+      for (wordIndex = line->firstWord; wordIndex <= line->lastWord;
            wordIndex++) {
          word = words->getRef (wordIndex);
 
@@ -428,7 +428,7 @@ void Textblock::resizeDrawImpl ()
       /* Remember the last word that has been drawn so we can ensure to
        * draw any new added words (see sizeAllocateImpl()).
        */
-      lastWordDrawn = lastLine->lastWord;
+      lastWordDrawn = lastLine->lastWord + 1;
    }
 
    redrawY = getHeight ();
@@ -609,7 +609,7 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
           (lineYOffsetWidget (line) + line->ascent + line->descent)) {
          // Choose this break.
          withinContent = false;
-         wordIndex = line->lastWord - 1;
+         wordIndex = line->lastWord;
          charPos = 0;
       } else if (event->xWidget < lineXOffsetWidget (line)) {
          // Left of the first word in the line.
@@ -620,7 +620,7 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
          nextWordStartX = lineXOffsetWidget (line);
          found = false;
          for (wordIndex = line->firstWord;
-              !found && wordIndex < line->lastWord;
+              !found && wordIndex <= line->lastWord;
               wordIndex++) {
             word = words->getRef (wordIndex);
             wordStartX = nextWordStartX;
@@ -669,7 +669,7 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
             // No word found in this line (i.e. we are on the right side),
             // take the last of this line.
             withinContent = false;
-            wordIndex = line->lastWord - 1;
+            wordIndex = line->lastWord;
             if (wordIndex >= words->size ())
                wordIndex--;
             word = words->getRef (wordIndex);
@@ -715,12 +715,12 @@ void Textblock::justifyLine (Line *line, int availWidth)
    diff = availWidth - lastLineWidth;
    if (diff > 0) {
       origSpaceSum = 0;
-      for (i = line->firstWord; i < line->lastWord - 1; i++)
+      for (i = line->firstWord; i < line->lastWord; i++)
          origSpaceSum += words->getRef(i)->origSpace;
 
       origSpaceCum = 0;
       lastEffSpaceDiffCum = 0;
-      for (i = line->firstWord; i < line->lastWord - 1; i++) {
+      for (i = line->firstWord; i < line->lastWord; i++) {
          origSpaceCum += words->getRef(i)->origSpace;
 
          if (origSpaceCum == 0)
@@ -929,7 +929,7 @@ void Textblock::wordWrap(int wordIndex)
       lastLine = lines->getRef (lines->size () - 1);
    }
 
-   lastLine->lastWord = wordIndex + 1;
+   lastLine->lastWord = wordIndex;
    lastLine->ascent = misc::max (lastLine->ascent, (int) word->size.ascent);
    lastLine->descent = misc::max (lastLine->descent, (int) word->size.descent);
 
@@ -1136,8 +1136,7 @@ void Textblock::rewrap ()
    //DBG_OBJ_SET_NUM(page, "num_lines", page->num_lines);
    //DBG_OBJ_SET_NUM(page, "lastLine_width", page->lastLine_width);
 
-   /* In the word list, we start at the last word, plus one (see definition
-    * of last_word), in the line before. */
+   /* In the word list, start at the last word plus one in the line before. */
    if (wrapRef > 0) {
       /* Note: In this case, Dw_page_real_word_wrap will immediately find
        * the need to rewrap the line, since we start with the last one (plus
@@ -1148,11 +1147,11 @@ void Textblock::rewrap ()
       lastLineParMin = lastLine->parMin;
       lastLineParMax = lastLine->parMax;
 
-      wordIndex = lastLine->lastWord;
-      for (i = lastLine->firstWord; i < lastLine->lastWord - 1; i++)
+      wordIndex = lastLine->lastWord + 1;
+      for (i = lastLine->firstWord; i < lastLine->lastWord; i++)
          lastLineWidth += (words->getRef(i)->size.width +
                            words->getRef(i)->origSpace);
-      lastLineWidth += words->getRef(lastLine->lastWord - 1)->size.width;
+      lastLineWidth += words->getRef(lastLine->lastWord)->size.width;
    } else {
       lastLineParMin = 0;
       lastLineParMax = 0;
@@ -1375,7 +1374,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
     * the buffer. Then draw the buffer. */
 
    for (int wordIndex = line->firstWord;
-        wordIndex < line->lastWord && xWidget < area->x + area->width;
+        wordIndex <= line->lastWord && xWidget < area->x + area->width;
         wordIndex++) {
       Word *word = words->getRef(wordIndex);
 
@@ -1394,7 +1393,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                   drawText(wordIndex, view, area, xWidget, yWidgetBase);
                }
             }
-            if (word->effSpace > 0 && wordIndex < line->lastWord - 1 &&
+            if (word->effSpace > 0 && wordIndex < line->lastWord &&
                 words->getRef(wordIndex + 1)->content.type !=
                                                         core::Content::BREAK) {
                drawSpace(wordIndex, view, area, xWidget + word->size.width,
@@ -1453,7 +1452,7 @@ int Textblock::findLineOfWord (int wordIndex)
    while (true) {
       index = (low + high) / 2;
       if (wordIndex >= lines->getRef(index)->firstWord) {
-         if (wordIndex < lines->getRef(index)->lastWord)
+         if (wordIndex <= lines->getRef(index)->lastWord)
             return index;
          else
             low = index + 1;
@@ -1480,7 +1479,7 @@ int Textblock::findWord (int x, int y)
       return -1;
 
    xCursor = lineXOffsetWidget (line);
-   for (wordIndex = line->firstWord; wordIndex < line->lastWord; wordIndex++) {
+   for (wordIndex = line->firstWord; wordIndex <= line->lastWord;wordIndex++) {
       word = words->getRef (wordIndex);
       lastXCursor = xCursor;
       xCursor += word->size.width + word->effSpace;
@@ -1837,7 +1836,7 @@ core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
 
    line = lines->getRef (lineIndex);
 
-   for (wordIndex = line->firstWord; wordIndex < line->lastWord; wordIndex++) {
+   for (wordIndex = line->firstWord; wordIndex <= line->lastWord;wordIndex++) {
       Word *word =  words->getRef (wordIndex);
 
       if (word->content.type == core::Content::WIDGET) {
@@ -1897,10 +1896,10 @@ void Textblock::changeLinkColor (int link, int newColor)
    for (int lineIndex = 0; lineIndex < lines->size(); lineIndex++) {
       bool changed = false;
       Line *line = lines->getRef (lineIndex);
-      int wordIndex;
+      int wordIdx;
 
-      for (wordIndex = line->firstWord;wordIndex < line->lastWord;wordIndex++){
-         Word *word = words->getRef(wordIndex);
+      for (wordIdx = line->firstWord; wordIdx <= line->lastWord; wordIdx++){
+         Word *word = words->getRef(wordIdx);
 
          if (word->style->x_link == link) {
             core::style::StyleAttrs styleAttrs;

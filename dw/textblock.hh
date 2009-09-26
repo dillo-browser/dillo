@@ -135,8 +135,8 @@ class Textblock: public core::Widget
 protected:
    struct Line
    {
-      int firstWord;    /* first-word's position in DwPageWord [0 based] */
-      int lastWord;     /* last-word's position in DwPageWord [1 based] */
+      int firstWord;    /* first word's index in word vector */
+      int lastWord;     /* last word's index in word vector */
 
       /* "top" is always relative to the top of the first line, i.e.
        * page->lines[0].top is always 0. */
