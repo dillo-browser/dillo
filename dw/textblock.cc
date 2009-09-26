@@ -42,7 +42,7 @@ Textblock::Textblock (bool limitTextWidth)
    ignoreLine1OffsetSometimes = false;
    mustQueueResize = false;
    redrawY = 0;
-   lastWordDrawn = 0;
+   lastWordDrawn = -1;
 
    /*
     * The initial sizes of lines and words should not be
@@ -344,7 +344,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
            wordIndex++) {
          word = words->getRef (wordIndex);
 
-         if (wordIndex == lastWordDrawn) {
+         if (wordIndex == lastWordDrawn + 1) {
             redrawY = misc::min (redrawY, lineYOffsetWidget (line));
          }
 
@@ -428,7 +428,7 @@ void Textblock::resizeDrawImpl ()
       /* Remember the last word that has been drawn so we can ensure to
        * draw any new added words (see sizeAllocateImpl()).
        */
-      lastWordDrawn = lastLine->lastWord + 1;
+      lastWordDrawn = lastLine->lastWord;
    }
 
    redrawY = getHeight ();
