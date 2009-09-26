@@ -273,6 +273,8 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
             //           word_extremes.maxWidth);
          }
 
+         /* This "line->lastWord >= line->firstWord" test seems questionable */
+
          if ((line->lastWord >= line->firstWord &&
               words->getRef(line->lastWord)->content.type
               == core::Content::BREAK ) ||
