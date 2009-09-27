@@ -331,7 +331,6 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    int xCursor;
    core::Allocation childAllocation;
    core::Allocation *oldChildAllocation;
-   int wordInLine;
 
    if (allocation->width != this->allocation.width) {
       redrawY = 0;
@@ -341,7 +340,6 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
       line = lines->getRef (lineIndex);
       xCursor = lineXOffsetWidget (line);
 
-      wordInLine = 0;
       for (wordIndex = line->firstWord; wordIndex <= line->lastWord;
            wordIndex++) {
          word = words->getRef (wordIndex);
@@ -412,7 +410,6 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             break;
 
          default:
-            wordInLine++;
             // make compiler happy
             break;
          }
