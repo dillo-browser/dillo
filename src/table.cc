@@ -20,9 +20,6 @@
 #include "msg.h"
 #include "css.hh"
 
-/* Undefine if you want to unroll tables. For instance for PDAs */
-#define USE_TABLES
-
 using namespace dw;
 using namespace dw::core;
 using namespace dw::core::style;
@@ -40,16 +37,12 @@ static void Html_tag_open_table_cell(DilloHtml *html,
  */
 void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 {
-#ifdef USE_TABLES
    dw::core::Widget *table;
    CssPropertyList props, *table_cell_props;
    const char *attrbuf;
    int32_t border = -1, cellspacing = -1, cellpadding = -1, bgcolor = -1;
    CssLength cssLength;
-#endif
 
-
-#ifdef USE_TABLES
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border")))
       border = isdigit(attrbuf[0]) ? strtol (attrbuf, NULL, 10) : 1;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cellspacing")))
@@ -136,7 +129,6 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TOP;
    S_TOP(html)->cell_text_align_set = FALSE;
    S_TOP(html)->table = table;
-#endif
 }
 
 /*
@@ -149,7 +141,6 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
    bool new_style = false;
    CssPropertyList props, *table_cell_props;
 
-#ifdef USE_TABLES
    switch (S_TOP(html)->table_mode) {
    case DILLO_HTML_TABLE_MODE_NONE:
       _MSG("Invalid HTML syntax: <tr> outside <table>\n");
@@ -196,9 +187,6 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
    }
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TR;
-#else
-   HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
-#endif
 }
 
 /*
@@ -230,7 +218,6 @@ static void Html_tag_open_table_cell(DilloHtml *html,
                                      const char *tag, int tagsize,
                                      dw::core::style::TextAlignType text_align)
 {
-#ifdef USE_TABLES
    Widget *col_tb;
    int colspan = 1, rowspan = 1;
    const char *attrbuf;
@@ -317,5 +304,4 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    }
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TD;
-#endif
 }
