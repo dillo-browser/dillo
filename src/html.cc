@@ -1944,13 +1944,17 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
 {
-// DwTooltip *tooltip;
-// const char *attrbuf;
-//
-// if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
-//    tooltip = a_Dw_tooltip_new_no_ref(attrbuf);
-//    HTML_SET_TOP_ATTR(html, x_tooltip, tooltip);
-// }
+   const char *attrbuf;
+  
+   if (prefs.show_tooltip &&
+       (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
+      CssPropertyList props;
+      char *tooltip_str = dStrdup(attrbuf);
+
+      props.set (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING, tooltip_str);
+      html->styleEngine->setNonCssHints (&props);
+      dFree(tooltip_str);
+   }
 }
 
 /*
@@ -1984,11 +1988,13 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
    int space, border, w = 0, h = 0;
    bool load_now;
    CssPropertyList props;
+   char *tooltip_str = NULL;
 
-// if (prefs.show_tooltip &&
-//     (attrbuf = a_Html_get_attr(html, tag, tagsize, "title")))
-//    style_attrs->x_tooltip = a_Dw_tooltip_new_no_ref(attrbuf);
-
+   if (prefs.show_tooltip &&
+       (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
+      tooltip_str = dStrdup(attrbuf);
+      props.set (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING, tooltip_str);
+   }
    alt_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "alt", NULL);
    if ((!alt_ptr || !*alt_ptr) && !prefs.load_images) {
       dFree(alt_ptr);
@@ -2104,6 +2110,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
    if (load_now)
       Html_load_image(html->bw, url, Image);
 
+   dFree(tooltip_str);
    dFree(width_ptr);
    dFree(height_ptr);
    dFree(alt_ptr);

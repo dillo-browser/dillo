@@ -226,19 +226,27 @@ void Image::enterNotifyImpl (core::EventCrossing *event)
 {
    // BUG: this is wrong for image maps, but the cursor position is unknown.
    currLink = getStyle()->x_link;
+   core::style::Tooltip *tooltip = getStyle()->x_tooltip;
 
    if (currLink != -1) {
       (void) emitLinkEnter (currLink, -1, -1, -1);
+   }
+   if (tooltip) {
+      tooltip->onEnter();
    }
 }
 
 void Image::leaveNotifyImpl (core::EventCrossing *event)
 {
+   core::style::Tooltip *tooltip = getStyle()->x_tooltip;
    clicking = false;
 
    if (currLink != -1) {
       currLink = -1;
       (void) emitLinkEnter (-1, -1, -1, -1);
+   }
+   if (tooltip) {
+      tooltip->onLeave();
    }
 }
 

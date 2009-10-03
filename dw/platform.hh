@@ -124,6 +124,11 @@ public:
     */
    virtual style::Color *createColor (int color) = 0;
 
+   /**
+    * \brief Create a tooltip
+    */
+   virtual style::Tooltip *createTooltip (const char *text) = 0;
+
    /*
     * --------------------
     *    Image Buffers

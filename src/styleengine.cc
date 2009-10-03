@@ -438,7 +438,9 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case PROPERTY_X_IMG:
             attrs->x_img = p->value.intVal;
             break;
-
+         case PROPERTY_X_TOOLTIP:
+            attrs->x_tooltip = Tooltip::create(layout, p->value.strVal);
+            break;
          default:
             break;
       }

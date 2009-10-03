@@ -524,19 +524,18 @@ class Tooltip: public TooltipAttrs
 private:
    int refCount;
 
+protected:
    Tooltip (const char *text): TooltipAttrs(text) { refCount = 0; }
 
 public:
-   inline Tooltip *create (Layout *layout, const char *text)
-   { return new Tooltip (text); }
-
+   static Tooltip *create (dw::core::Layout *layout, const char *text);
    inline void ref () { refCount++; }
    inline void unref ()
    { if (--refCount == 0) delete this; }
 
-   inline void onEnter () { }
-   inline void onLeave () { }
-   inline void onMotion () { }
+   inline virtual void onEnter () { }
+   inline virtual void onLeave () { }
+   inline virtual void onMotion () { }
 };
 
 

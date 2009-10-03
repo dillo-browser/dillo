@@ -33,6 +33,7 @@ dillo-2.2 [??]
  - By default, do not use proxy for localhost (BUG 921).
  - Fix scrolling for text search.
  - Added 'save' key action (not bound by default).
+ - Tooltips
    Patches: corvid
 
 -----------------------------------------------------------------------------

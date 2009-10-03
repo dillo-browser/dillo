@@ -65,7 +65,6 @@ void StyleAttrs::initValues ()
 void StyleAttrs::resetValues ()
 {
    x_img = -1;
-   x_tooltip = NULL;
 
    valign = VALIGN_BASELINE;
    textAlignChar = '.';
@@ -408,6 +407,11 @@ Color *Color::create (Layout *layout, int col)
    ColorAttrs attrs(col);
 
    return layout->createColor (col);
+}
+
+Tooltip *Tooltip::create (Layout *layout, const char *text)
+{
+   return layout->createTooltip (text);
 }
 
 // ----------------------------------------------------------------------

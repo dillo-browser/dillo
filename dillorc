@@ -61,11 +61,7 @@
 # Minimum font size in pixels
 #font_min_size=6
 
-# Show tooltip popup for images?
-# Note: We use the "title" attribute and not "alt".
-#       More info at: http://bugzilla.mozilla.org/show_bug.cgi?id=25537
-# *** NOT HOOKED UP YET ***
-#
+# Show tooltip popup for title attributes
 #show_tooltip=YES
 
 # Set this to YES if you want to limit the word wrap width to the viewport

@@ -43,6 +43,20 @@ public:
    static FltkColor *create(int color);
 };
 
+class FltkTooltip: public core::style::Tooltip
+{
+private:
+   FltkTooltip (const char *text);
+   ~FltkTooltip ();
+   bool shown;
+   static ::fltk::Widget *widget;
+public:
+   static FltkTooltip *create(const char *text);
+   void onEnter();
+   void onLeave();
+   void onMotion();
+};
+
 
 /**
  * \brief This interface adds some more methods for all flkt-based views.
@@ -136,6 +150,7 @@ public:
    core::style::Font *createFont (core::style::FontAttrs *attrs,
                                       bool tryEverything);
    core::style::Color *createColor (int color);
+   core::style::Tooltip *createTooltip (const char *text);
 
    core::Imgbuf *createImgbuf (core::Imgbuf::Type type, int width, int height);
 

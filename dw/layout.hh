@@ -237,6 +237,11 @@ public:
       return platform->createColor (color);
    }
 
+   inline style::Tooltip *createTooltip (const char *text)
+   {
+      return platform->createTooltip (text);
+   }
+
    inline Imgbuf *createImgbuf (Imgbuf::Type type, int width, int height)
    {
       return platform->createImgbuf (type, width, height);

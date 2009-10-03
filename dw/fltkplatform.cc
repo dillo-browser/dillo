@@ -25,6 +25,8 @@
 #include <fltk/run.h>
 #include <fltk/events.h>
 #include <fltk/Monitor.h>
+#include <fltk/InvisibleBox.h>
+#include <fltk/Tooltip.h>
 #include <fltk/utf.h>
 #include <stdio.h>
 
@@ -141,6 +143,45 @@ FltkColor * FltkColor::create (int col)
    }
 
    return color;
+}
+
+::fltk::Widget *FltkTooltip::widget = NULL;
+
+FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
+{
+   /* ::fltk::Tooltip really, really wants a Widget */
+   if (!widget)
+      widget = new ::fltk::InvisibleBox(1, 1, 0, 0, NULL);
+   shown = false;
+}
+
+FltkTooltip::~FltkTooltip ()
+{
+   if (shown)
+      ::fltk::Tooltip::exit();
+}
+
+FltkTooltip *FltkTooltip::create (const char *text)
+{
+   return new FltkTooltip(text);
+}
+
+void FltkTooltip::onEnter()
+{
+   Rectangle rect;
+   widget->get_absolute_rect(&rect);
+   ::fltk::Tooltip::enter(widget, rect, str);
+   shown = true;
+}
+
+void FltkTooltip::onLeave()
+{
+   ::fltk::Tooltip::exit();
+   shown = false;
+}
+
+void FltkTooltip::onMotion()
+{
 }
 
 void FltkView::addFltkWidget (::fltk::Widget *widget,
@@ -382,6 +423,11 @@ core::style::Font *FltkPlatform::createFont (core::style::FontAttrs
 core::style::Color *FltkPlatform::createColor (int color)
 {
    return FltkColor::create (color);
+}
+
+core::style::Tooltip *FltkPlatform::createTooltip (const char *text)
+{
+   return FltkTooltip::create (text);
 }
 
 void FltkPlatform::copySelection(const char *text)
