@@ -122,7 +122,6 @@ Findbar::Findbar(int width, int height) :
     hide_btn = new HighlightButton(x, border, 16, height, 0);
     hideImg = new xpmImage(new_s_xpm);
     hide_btn->image(hideImg);
-    hide_btn->tooltip("Hide");
     x += 16 + gap;
     hide_btn->callback(hide_cb, this);
     hide_btn->clear_tab_to_focus();
@@ -138,16 +137,12 @@ Findbar::Findbar(int width, int height) :
 
     next_btn = new HighlightButton(x, border, button_width, height, "Next");
     x += button_width + gap;
-    next_btn->tooltip("Find next occurrence of the search phrase\n"
-                      "shortcut: Enter");
     next_btn->add_shortcut(ReturnKey);
     next_btn->add_shortcut(KeypadEnter);
     next_btn->callback(search_cb, this);
     next_btn->clear_tab_to_focus();
 
     prev_btn= new HighlightButton(x, border, button_width, height, "Previous");
-    prev_btn->tooltip("Find previous occurrence of the search phrase\n"
-                      "shortcut: Shift+Enter");
     prev_btn->add_shortcut(SHIFT+ReturnKey);
     prev_btn->callback(searchBackwards_cb, this);
     prev_btn->clear_tab_to_focus();
@@ -159,6 +154,14 @@ Findbar::Findbar(int width, int height) :
     x += 2 * button_width + gap;
 
    end();
+
+   if (prefs.show_tooltip) {
+      hide_btn->tooltip("Hide");
+      next_btn->tooltip("Find next occurrence of the search phrase\n"
+                        "shortcut: Enter");
+      prev_btn->tooltip("Find previous occurrence of the search phrase\n"
+                        "shortcut: Shift+Enter");
+   }
 }
 
 Findbar::~Findbar()

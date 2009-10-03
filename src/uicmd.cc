@@ -273,23 +273,26 @@ public:
          if (event_inside(r) && children() > 1) {
             /* We're inside the button area */
             cstp->btn_highlight(true);
-            /* Prepare the tooltip for pop-up */
-            tooltipEnabled = true;
-            /* We use parent() if available because we are returning 0.
-             * Returning without having TabGroup processing makes the
-             * popup event never reach 'this', but it reaches parent() */
-            toolTip->enter(parent() ? parent() : this, r, "Close current Tab");
-
+            if (prefs.show_tooltip) {
+               /* Prepare the tooltip for pop-up */
+               tooltipEnabled = true;
+               /* We use parent() if available because we are returning 0.
+                * Returning without having TabGroup processing makes the
+                * popup event never reach 'this', but it reaches parent() */
+               toolTip->enter(parent() ?parent():this, r, "Close current Tab");
+            }
             return 0;              // Change focus
          } else {
             cstp->btn_highlight(false);
 
-            /* Hide the tooltip or enable it again.*/
-            if (tooltipEnabled) {
-               tooltipEnabled = false;
-               toolTip->exit();
-            } else {
-               toolTip->enable();
+            if (prefs.show_tooltip) {
+               /* Hide the tooltip or enable it again.*/
+               if (tooltipEnabled) {
+                  tooltipEnabled = false;
+                  toolTip->exit();
+               } else {
+                  toolTip->enable();
+               }
             }
          }
       } else if (e == PUSH && event_inside(r) &&

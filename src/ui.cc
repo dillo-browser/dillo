@@ -376,56 +376,58 @@ PackedGroup *UI::make_toolbar(int tw, int th)
    p1->begin();
     Back = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Back" : 0);
     b->image(icons->ImgLeftMulti);
-    b->tooltip("Previous page");
     b->callback(b1_cb, (void *)UI_BACK);
     b->clear_tab_to_focus();
     HighlightButton::default_style->highlight_color(CuteColor);
 
     Forw = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Forw" : 0);
     b->image(icons->ImgRightMulti);
-    b->tooltip("Next page");
     b->callback(b1_cb, (void *)UI_FORW);
     b->clear_tab_to_focus();
 
     Home = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Home" : 0);
     b->image(icons->ImgHome);
-    b->tooltip("Go to the Home page");
     b->callback(b1_cb, (void *)UI_HOME);
     b->clear_tab_to_focus();
 
     Reload = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Reload" : 0);
     b->image(icons->ImgReload);
-    b->tooltip("Reload");
     b->callback(b1_cb, (void *)UI_RELOAD);
     b->clear_tab_to_focus();
 
     Save = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Save" : 0);
     b->image(icons->ImgSave);
-    b->tooltip("Save this page");
     b->callback(b1_cb, (void *)UI_SAVE);
     b->clear_tab_to_focus();
 
     Stop = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
     b->image(icons->ImgStopMulti);
-    b->tooltip("Stop loading");
     b->callback(b1_cb, (void *)UI_STOP);
     b->clear_tab_to_focus();
 
     Bookmarks = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Book" : 0);
     b->image(icons->ImgBook);
-    b->tooltip("View bookmarks");
     b->callback(b1_cb, (void *)UI_BOOK);
     b->clear_tab_to_focus();
 
     Tools = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Tools" : 0);
     b->image(icons->ImgTools);
-    b->tooltip("Settings");
     b->callback(b1_cb, (void *)UI_TOOLS);
     b->clear_tab_to_focus();
 
    p1->type(PackedGroup::ALL_CHILDREN_VERTICAL);
    p1->end();
 
+   if (prefs.show_tooltip) {
+      Back->tooltip("Previous page");
+      Forw->tooltip("Next page");
+      Home->tooltip("Go to the Home page");
+      Reload->tooltip("Reload");
+      Save->tooltip("Save this page");
+      Stop->tooltip("Stop loading");
+      Bookmarks->tooltip("View bookmarks");
+      Tools->tooltip("Settings");
+   }
    return p1;
 }
 
@@ -439,12 +441,10 @@ PackedGroup *UI::make_location()
    pg->begin();
     Clear = b = new CustHighlightButton(2,2,16,22,0);
     b->image(icons->ImgClear);
-    b->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
     b->callback(clear_cb, this);
     b->clear_tab_to_focus();
 
     Input *i = Location = new CustInput(0,0,0,0,0);
-    i->tooltip("Location");
     i->color(CuteColor);
     i->when(WHEN_ENTER_KEY);
     i->callback(location_cb, this);
@@ -452,7 +452,6 @@ PackedGroup *UI::make_location()
 
     Search = b = new HighlightButton(0,0,16,22,0);
     b->image(icons->ImgSearch);
-    b->tooltip("Search the Web");
     b->callback(search_cb, this);
     b->clear_tab_to_focus();
 
@@ -460,6 +459,11 @@ PackedGroup *UI::make_location()
    pg->resizable(i);
    pg->end();
 
+   if (prefs.show_tooltip) {
+      Clear->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
+      Location->tooltip("Location");
+      Search->tooltip("Search the Web");
+   }
    return pg;
 }
 
@@ -506,7 +510,8 @@ Widget *UI::make_filemenu_button()
    _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
    btn->box(PanelSize == P_large ? FLAT_BOX : THIN_UP_BOX);
    btn->callback(filemenu_cb, this);
-   btn->tooltip("File menu");
+   if (prefs.show_tooltip)
+      btn->tooltip("File menu");
    btn->clear_tab_to_focus();
    if (!prefs.show_filemenu && PanelSize != P_large)
       btn->hide();
@@ -648,7 +653,8 @@ Group *UI::make_status_panel(int ww)
    BugMeter->image(icons->ImgMeterOK);
    BugMeter->box(THIN_DOWN_BOX);
    BugMeter->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
-   BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
+   if (prefs.show_tooltip)
+      BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
    BugMeter->callback(bugmeter_cb, this);
    BugMeter->clear_tab_to_focus();
    g->add(BugMeter);
