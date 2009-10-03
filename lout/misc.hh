@@ -31,9 +31,6 @@ template <class T> inline T max (T a, T b, T c)
 extern const char *prgName;
 
 void init (int argc, char *argv[]);
-void chop (char *s);
-char *strip (char *s);
-
 
 inline void assertNotReached ()
 {

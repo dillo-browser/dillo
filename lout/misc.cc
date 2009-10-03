@@ -37,29 +37,6 @@ void init (int argc, char *argv[])
    prgName = strdup (argv[0]);
 }
 
-void chop (char *s)
-{
-   char *p = s + strlen (s) - 1;
-   while (*p == '\n') {
-      *p = 0;
-      p--;
-   }
-}
-
-char *strip (char *s)
-{
-   while (isspace (*s))
-      s++;
-
-   char *p = s + strlen (s) - 1;
-   while (isspace (*p)) {
-      *p = 0;
-      p--;
-   }
-
-   return s;
-}
-
 // ----------------
 //    Comparable
 // ----------------
