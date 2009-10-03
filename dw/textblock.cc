@@ -560,6 +560,10 @@ void Textblock::leaveNotifyImpl (core::EventCrossing *event)
 {
    hoverLink = -1;
    (void) emitLinkEnter (hoverLink, -1, -1, -1);
+   if (hoverTooltip) {
+      hoverTooltip->onLeave();
+      hoverTooltip = NULL;
+   }
 }
 
 /**
