@@ -2417,6 +2417,7 @@ static void Html_add_anchor(DilloHtml *html, const char *name)
 static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloUrl *url;
+   char *tooltip_str = NULL;
    CssPropertyList props;
    const char *attrbuf;
 
@@ -2447,9 +2448,14 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 
       props.set (PROPERTY_X_LINK, CSS_TYPE_INTEGER,
                  Html_set_new_link(html, &url));
-
-      html->styleEngine->setNonCssHints (&props);
    }
+   if (prefs.show_tooltip &&
+       (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
+      tooltip_str = dStrdup(attrbuf);
+      props.set (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING, tooltip_str);
+   }
+   html->styleEngine->setNonCssHints (&props);
+   dFree(tooltip_str);
 
    html->styleEngine->inheritBackgroundColor ();
 
