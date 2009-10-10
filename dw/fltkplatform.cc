@@ -153,12 +153,34 @@ FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
    if (!widget)
       widget = new ::fltk::InvisibleBox(1, 1, 0, 0, NULL);
    shown = false;
+
+   if (!text || !strpbrk(text, "&@")) {
+      escaped_str = NULL;
+   } else {
+      /*
+       * WORKAROUND: ::fltk::Tooltip::tooltip_timeout() makes instance_
+       * if necessary, and immediately uses it. This means that we can't
+       * get our hands on it to set RAW_LABEL until after it has been shown
+       * once. So let's escape the special characters ourselves.
+       */
+      const char *src = text;
+      char *dest = escaped_str = (char *) malloc(strlen(text) * 2 + 1);
+
+      while (*src) {
+         if (*src == '&' || *src == '@')
+            *dest++ = *src;
+         *dest++ = *src++;
+      }
+      *dest = '\0';
+   }
 }
 
 FltkTooltip::~FltkTooltip ()
 {
    if (shown)
       ::fltk::Tooltip::exit();
+   if (escaped_str)
+      free(escaped_str);
 }
 
 FltkTooltip *FltkTooltip::create (const char *text)
@@ -170,7 +192,7 @@ void FltkTooltip::onEnter()
 {
    Rectangle rect;
    widget->get_absolute_rect(&rect);
-   ::fltk::Tooltip::enter(widget, rect, str);
+   ::fltk::Tooltip::enter(widget, rect, escaped_str ? escaped_str : str);
    shown = true;
 }
 
