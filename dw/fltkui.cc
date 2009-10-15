@@ -47,8 +47,8 @@ namespace ui {
 
 enum { RELIEF_X_THICKNESS = 3, RELIEF_Y_THICKNESS = 3 };
 
-using namespace object;
-using namespace container::typed;
+using namespace lout::object;
+using namespace lout::container::typed;
 
 FltkResource::FltkResource (FltkPlatform *platform)
 {
@@ -71,7 +71,7 @@ FltkResource::FltkResource (FltkPlatform *platform)
  */
 void FltkResource::init (FltkPlatform *platform)
 {
-   viewsAndWidgets = new container::typed::List <ViewAndWidget> (true);
+   viewsAndWidgets = new lout::container::typed::List <ViewAndWidget> (true);
    platform->attachResource (this);
 }
 
@@ -393,7 +393,7 @@ FltkComplexButtonResource::FltkComplexButtonResource (FltkPlatform *platform,
                                                       *widget, bool relief):
    FltkSpecificResource <dw::core::ui::ComplexButtonResource> (platform)
 {
-   viewsAndViews = new container::typed::List <ViewAndView> (true);
+   viewsAndViews = new lout::container::typed::List <ViewAndView> (true);
    this->relief = relief;
    FltkResource::init (platform);
    ComplexButtonResource::init (widget);
@@ -853,7 +853,7 @@ void FltkRadioButtonResource::Group::FltkGroupIterator::unref ()
 FltkRadioButtonResource::Group::Group (FltkRadioButtonResource
                                        *radioButtonResource)
 {
-   list = new container::typed::List <FltkRadioButtonResource> (false);
+   list = new lout::container::typed::List <FltkRadioButtonResource> (false);
    connect (radioButtonResource);
 }
 

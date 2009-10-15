@@ -28,7 +28,7 @@ enum ButtonState
  * The dw::core::Event hierarchy describes events in a platform independent
  * way.
  */
-class Event: public object::Object
+class Event: public lout::object::Object
 {
 public:
 };

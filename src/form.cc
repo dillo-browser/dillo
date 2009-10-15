@@ -25,6 +25,7 @@
 #include "nav.h"
 #include "uicmd.hh"
 
+using namespace lout;
 using namespace dw;
 using namespace dw::core;
 using namespace dw::core::style;

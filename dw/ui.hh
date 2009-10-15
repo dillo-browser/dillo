@@ -531,7 +531,7 @@ public:
 /**
  * \brief A factory for the common resource.
  */
-class ResourceFactory: public object::Object
+class ResourceFactory: public lout::object::Object
 {
 public:
    virtual LabelButtonResource *createLabelButtonResource (const char *label)

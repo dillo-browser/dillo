@@ -27,7 +27,8 @@ namespace dw {
 namespace core {
 namespace ui {
 
-using namespace object;
+using namespace lout;
+using namespace lout::object;
 
 int Embed::CLASS_ID = -1;
 

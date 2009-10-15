@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <limits.h>
 
+using namespace lout;
+
 namespace dw {
 
 int Textblock::CLASS_ID = -1;

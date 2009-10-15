@@ -16,8 +16,6 @@
 
 #include "findbar.hh"
 
-using namespace fltk;
-
 typedef enum {
    UI_BACK = 0,
    UI_FORW,
@@ -48,15 +46,15 @@ class UI : public fltk::Group {
    CustTabGroup *Tabs;
    char *TabTooltip;
 
-   Group *TopGroup;
-   Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
+   fltk::Group *TopGroup;
+   fltk::Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
           *Clear, *Search, *FullScreen, *BugMeter, *FileButton;
-   Input  *Location;
-   PackedGroup *ProgBox;
+   fltk::Input  *Location;
+   fltk::PackedGroup *ProgBox;
    CustProgressBox *PProg, *IProg;
-   Group *Panel, *StatusPanel;
-   Widget *Main;
-   Output *Status;
+   fltk::Group *Panel, *StatusPanel;
+   fltk::Widget *Main;
+   fltk::Output *Status;
 
    int MainIdx;
    // Panel customization variables
@@ -67,13 +65,13 @@ class UI : public fltk::Group {
    Findbar *findbar;
    int PointerOnLink;
 
-   PackedGroup *make_toolbar(int tw, int th);
-   PackedGroup *make_location();
-   PackedGroup *make_progress_bars(int wide, int thin_up);
+   fltk::PackedGroup *make_toolbar(int tw, int th);
+   fltk::PackedGroup *make_location();
+   fltk::PackedGroup *make_progress_bars(int wide, int thin_up);
    void make_menubar(int x, int y, int w, int h);
-   Widget *make_filemenu_button();
-   Group *make_panel(int ww);
-   Group *make_status_panel(int ww);
+   fltk::Widget *make_filemenu_button();
+   fltk::Group *make_panel(int ww);
+   fltk::Group *make_status_panel(int ww);
 
 public:
 

@@ -73,7 +73,7 @@ void FltkViewBase::draw ()
    int d = damage ();
 
    if ((d & DAMAGE_VALUE) && !(d & DAMAGE_EXPOSE)) {
-      container::typed::Iterator <core::Rectangle> it;
+      lout::container::typed::Iterator <core::Rectangle> it;
 
       for (it = drawRegion.rectangles (); it.hasNext (); ) {
          draw (it.getNext (), DRAW_BUFFERED);

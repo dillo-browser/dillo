@@ -6,8 +6,6 @@
 
 namespace dw {
 
-using namespace lout;
-
 /**
  * \brief A Widget for rendering text blocks, i.e. paragraphs or sequences
  *    of paragraphs.
@@ -185,8 +183,8 @@ protected:
       TextblockIterator (Textblock *textblock, core::Content::Type mask,
                          int index);
 
-      object::Object *clone();
-      int compareTo(misc::Comparable *other);
+      lout::object::Object *clone();
+      int compareTo(lout::misc::Comparable *other);
 
       bool next ();
       bool prev ();
@@ -239,8 +237,8 @@ protected:
    int lastLineParMax;
    int wrapRef;  /* [0 based] */
 
-   misc::SimpleVector <Line> *lines;
-   misc::SimpleVector <Word> *words;
+   lout::misc::SimpleVector <Line> *lines;
+   lout::misc::SimpleVector <Word> *words;
 
    struct {int index, nChar;}
       hlStart[core::HIGHLIGHT_NUM_LAYERS], hlEnd[core::HIGHLIGHT_NUM_LAYERS];

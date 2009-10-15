@@ -13,7 +13,7 @@ namespace core {
  *
  * \sa\ref dw-overview
  */
-class Platform: public object::Object
+class Platform: public lout::object::Object
 {
 public:
    /*

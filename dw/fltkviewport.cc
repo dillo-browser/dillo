@@ -29,6 +29,7 @@
 #include "../lout/msg.h"
 
 using namespace fltk;
+using namespace lout;
 using namespace lout::object;
 using namespace lout::container::typed;
 

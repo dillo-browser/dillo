@@ -34,6 +34,7 @@ namespace dw {
 namespace fltk {
 
 using namespace ::fltk;
+using namespace lout;
 
 /**
  * \todo Distinction between italics and oblique would be nice.

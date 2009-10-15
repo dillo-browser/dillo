@@ -24,6 +24,7 @@
 #include "../lout/msg.h"
 #include "../lout/debug.hh"
 
+using namespace lout;
 using namespace lout::object;
 
 namespace dw {

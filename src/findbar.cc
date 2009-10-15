@@ -18,6 +18,8 @@
 #include "uicmd.hh"
 #include "bw.h"
 
+using namespace fltk;
+
 /*
  * Local sub class
  * (Used to handle escape in the findbar, may also avoid some shortcuts).

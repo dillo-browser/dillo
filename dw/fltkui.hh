@@ -14,8 +14,6 @@
 namespace dw {
 namespace fltk {
 
-using namespace lout;
-
 /**
  * \brief FLTK implementation of dw::core::ui.
  *
@@ -174,20 +172,20 @@ namespace ui {
 /**
  * ...
  */
-class FltkResource: public object::Object
+class FltkResource: public lout::object::Object
 {
 private:
    bool enabled;
 
 protected:
-   class ViewAndWidget: public object::Object
+   class ViewAndWidget: public lout::object::Object
    {
    public:
       FltkView *view;
       ::fltk::Widget *widget;
    };
 
-   container::typed::List <ViewAndWidget> *viewsAndWidgets;
+   lout::container::typed::List <ViewAndWidget> *viewsAndWidgets;
    core::Allocation allocation;
    FltkPlatform *platform;
 
@@ -262,7 +260,7 @@ private:
    static void widgetCallback (::fltk::Widget *widget, void *data);
 
 protected:
-   class ViewAndView: public object::Object
+   class ViewAndView: public lout::object::Object
    {
    public:
       FltkView *topView, *flatView;
@@ -270,7 +268,7 @@ protected:
 
    FltkView *lastFlatView;
 
-   container::typed::List <ViewAndView> *viewsAndViews;
+   lout::container::typed::List <ViewAndView> *viewsAndViews;
 
    void attachView (FltkView *view);
    void detachView (FltkView *view);
@@ -396,10 +394,10 @@ private:
          public dw::core::ui::RadioButtonResource::GroupIterator
       {
       private:
-         container::typed::Iterator <FltkRadioButtonResource> it;
+         lout::container::typed::Iterator <FltkRadioButtonResource> it;
 
       public:
-         inline FltkGroupIterator (container::typed::List
+         inline FltkGroupIterator (lout::container::typed::List
                                    <FltkRadioButtonResource>
                                    *list)
             { it = list->iterator (); }
@@ -409,7 +407,7 @@ private:
          void unref ();
       };
 
-      container::typed::List <FltkRadioButtonResource> *list;
+      lout::container::typed::List <FltkRadioButtonResource> *list;
 
    protected:
       ~Group ();
@@ -417,7 +415,7 @@ private:
    public:
       Group (FltkRadioButtonResource *radioButtonResource);
 
-      inline container::typed::Iterator <FltkRadioButtonResource> iterator ()
+      inline lout::container::typed::Iterator <FltkRadioButtonResource> iterator ()
       {
          return list->iterator ();
       }
@@ -454,7 +452,7 @@ template <class I> class FltkSelectionResource:
    public FltkSpecificResource <I>
 {
 protected:
-   class Item: public object::Object
+   class Item: public lout::object::Object
    {
    public:
       enum Type { ITEM, START, END } type;
@@ -470,19 +468,19 @@ protected:
       ::fltk::ItemGroup *createNewGroupWidget ();
    };
 
-   class WidgetStack: public object::Object
+   class WidgetStack: public lout::object::Object
    {
    public:
       ::fltk::Menu *widget;
-      container::typed::Stack <object::TypedPointer < ::fltk::Menu> > *stack;
+      lout::container::typed::Stack <lout::object::TypedPointer < ::fltk::Menu> > *stack;
 
       WidgetStack (::fltk::Menu *widget);
       ~WidgetStack ();
    };
 
-   container::typed::List <WidgetStack> *widgetStacks;
-   container::typed::List <Item> *allItems;
-   container::typed::Vector <Item> *items;
+   lout::container::typed::List <WidgetStack> *widgetStacks;
+   lout::container::typed::List <Item> *allItems;
+   lout::container::typed::Vector <Item> *items;
 
    Item *createNewItem (typename Item::Type type,
                         const char *name = NULL,
@@ -540,7 +538,7 @@ protected:
 
 private:
    static void widgetCallback (::fltk::Widget *widget, void *data);
-   misc::SimpleVector <bool> itemsSelected;
+   lout::misc::SimpleVector <bool> itemsSelected;
    int showRows;
    ListResource::SelectionMode mode;
 public:

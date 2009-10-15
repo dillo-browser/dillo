@@ -406,7 +406,7 @@ class Tooltip;
 /**
  * \sa dw::core::style
  */
-class StyleAttrs : public object::Object
+class StyleAttrs : public lout::object::Object
 {
 public:
    Font *font;
@@ -467,7 +467,7 @@ public:
 
    inline bool hasBackground () { return backgroundColor != NULL; }
 
-   bool equals (object::Object *other);
+   bool equals (lout::object::Object *other);
    int hashValue ();
 };
 
@@ -480,7 +480,7 @@ class Style: public StyleAttrs
 private:
    static int totalRef;
    int refCount;
-   static container::typed::HashTable <StyleAttrs, Style> *styleTable;
+   static lout::container::typed::HashTable <StyleAttrs, Style> *styleTable;
 
    Style (StyleAttrs *attrs);
 
@@ -510,10 +510,10 @@ public:
 /**
  * \sa dw::core::style
  */
-class TooltipAttrs: public object::String
+class TooltipAttrs: public lout::object::String
 {
 public:
-   TooltipAttrs(const char *text): object::String(text) { }
+   TooltipAttrs(const char *text): lout::object::String(text) { }
 };
 
 /**
@@ -542,7 +542,7 @@ public:
 /**
  * \sa dw::core::style
  */
-class FontAttrs: public object::Object
+class FontAttrs: public lout::object::Object
 {
 public:
    const char *name;
@@ -550,7 +550,7 @@ public:
    int weight;
    FontStyle style;
 
-   bool equals(object::Object *other);
+   bool equals(lout::object::Object *other);
    int hashValue();
 };
 
@@ -588,7 +588,7 @@ public:
 /**
  * \sa dw::core::style
  */
-class ColorAttrs: public object::Object
+class ColorAttrs: public lout::object::Object
 {
 protected:
    int color;
@@ -601,7 +601,7 @@ public:
 
    inline int getColor () { return color; }
 
-   bool equals(object::Object *other);
+   bool equals(lout::object::Object *other);
    int hashValue();
 };
 

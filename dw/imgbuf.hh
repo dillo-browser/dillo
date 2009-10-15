@@ -8,8 +8,6 @@
 namespace dw {
 namespace core {
 
-using namespace lout;
-
 /**
  * \brief The platform independent interface for image buffers.
  *
@@ -158,7 +156,7 @@ using namespace lout;
  *
  * \sa \ref dw-images-and-backgrounds
  */
-class Imgbuf: public object::Object, public lout::signal::ObservedObject
+class Imgbuf: public lout::object::Object, public lout::signal::ObservedObject
 {
 public:
    enum Type { RGB, RGBA, GRAY, INDEXED, INDEXED_ALPHA };

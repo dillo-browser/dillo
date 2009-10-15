@@ -33,7 +33,7 @@ using namespace fltk;
 namespace dw {
 namespace fltk {
 
-using namespace container::typed;
+using namespace lout::container::typed;
 
 FltkImgbuf::FltkImgbuf (Type type, int width, int height)
 {
@@ -67,11 +67,11 @@ void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
 
    refCount = 1;
    deleteOnUnref = true;
-   copiedRows = new misc::BitSet (height);
+   copiedRows = new lout::misc::BitSet (height);
 
    // The list is only used for root buffers.
    if (isRoot())
-      scaledBuffers = new container::typed::List <FltkImgbuf> (true);
+      scaledBuffers = new lout::container::typed::List <FltkImgbuf> (true);
    else
       scaledBuffers = NULL;
 

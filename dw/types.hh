@@ -8,8 +8,6 @@
 namespace dw {
 namespace core {
 
-using namespace lout;
-
 enum HPosition
 {
    HPOS_LEFT,
@@ -52,7 +50,7 @@ struct Point
 /**
  * \brief Abstract interface for different shapes.
  */
-class Shape: public object::Object
+class Shape: public lout::object::Object
 {
 public:
    virtual bool isPointWithin (int x, int y) = 0;
@@ -97,7 +95,7 @@ public:
 class Polygon: public Shape
 {
 private:
-   misc::SimpleVector<Point> *points;
+   lout::misc::SimpleVector<Point> *points;
    int minx, miny, maxx, maxy;
 
    /**
@@ -132,7 +130,7 @@ public:
 class Region
 {
 private:
-   container::typed::List <Rectangle> *rectangleList;
+   lout::container::typed::List <Rectangle> *rectangleList;
 
 public:
    Region ();
@@ -142,7 +140,7 @@ public:
 
    void addRectangle (Rectangle *r);
 
-   container::typed::Iterator <Rectangle> rectangles ()
+   lout::container::typed::Iterator <Rectangle> rectangles ()
    {
       return rectangleList->iterator ();
    };

@@ -26,7 +26,8 @@ private:
    ::fltk::Scrollbar *vscrollbar, *hscrollbar;
 
    GadgetOrientation gadgetOrientation[4];
-   container::typed::List <object::TypedPointer < ::fltk::Widget> > *gadgets;
+   lout::container::typed::List <lout::object::TypedPointer < ::fltk::Widget> >
+      *gadgets;
 
    void adjustScrollbarsAndGadgetsAllocation ();
    void adjustScrollbarValues ();

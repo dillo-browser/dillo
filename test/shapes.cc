@@ -22,7 +22,7 @@
 #include "../dw/core.hh"
 
 using namespace dw::core;
-using namespace misc;
+using namespace lout::misc;
 
 int main()
 {

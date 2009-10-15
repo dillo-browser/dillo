@@ -13,7 +13,7 @@ namespace core {
  *
  * \sa\ref dw-overview, \ref dw-layout-widgets, \ref dw-layout-views
  */
-class Layout: public object::Object
+class Layout: public lout::object::Object
 {
    friend class Widget;
 
@@ -47,7 +47,7 @@ private:
 
    Emitter emitter;
 
-   class Anchor: public object::Object
+   class Anchor: public lout::object::Object
    {
    public:
       char *name;
@@ -58,7 +58,7 @@ private:
    };
 
    Platform *platform;
-   container::typed::List <View> *views;
+   lout::container::typed::List <View> *views;
    Widget *topLevel, *widgetAtPoint;
 
    /* The state, which must be projected into the views. */
@@ -80,7 +80,7 @@ private:
    bool scrollIdleNotInterrupted;
 
    /* Anchors of the widget tree */
-   container::typed::HashTable <object::String, Anchor> *anchorsTable;
+   lout::container::typed::HashTable <lout::object::String, Anchor> *anchorsTable;
 
    SelectionState selectionState;
    FindtextState findtextState;
@@ -141,7 +141,7 @@ public:
    Layout (Platform *platform);
    ~Layout ();
 
-   misc::ZoneAllocator *textZone;
+   lout::misc::ZoneAllocator *textZone;
 
    void addWidget (Widget *widget);
    void setWidget (Widget *widget);

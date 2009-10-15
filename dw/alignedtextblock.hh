@@ -16,8 +16,8 @@ private:
    class List
    {
    private:
-      misc::SimpleVector <AlignedTextblock*> *textblocks;
-      misc::SimpleVector <int> *values;
+      lout::misc::SimpleVector <AlignedTextblock*> *textblocks;
+      lout::misc::SimpleVector <int> *values;
       int maxValue, refCount;
 
       ~List ();

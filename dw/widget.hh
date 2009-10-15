@@ -20,7 +20,7 @@ namespace core {
  *
  * \sa\ref dw-overview, \ref dw-layout-widgets
  */
-class Widget: public identity::IdentifiableObject
+class Widget: public lout::identity::IdentifiableObject
 {
    friend class Layout;
 

@@ -23,6 +23,8 @@
 
 #include <string.h>
 
+using namespace lout;
+
 /*
  * strndup() is a GNU extension.
  */

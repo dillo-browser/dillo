@@ -58,6 +58,7 @@
 /*-----------------------------------------------------------------------------
  * Name spaces
  *---------------------------------------------------------------------------*/
+using namespace lout;
 using namespace dw;
 using namespace dw::core;
 using namespace dw::core::ui;

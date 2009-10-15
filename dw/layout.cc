@@ -25,6 +25,7 @@
 #include "../lout/debug.hh"
 #include "../lout/misc.hh"
 
+using namespace lout;
 using namespace lout::container;
 using namespace lout::object;
 

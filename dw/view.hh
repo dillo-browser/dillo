@@ -13,7 +13,7 @@ namespace core {
  *
  * \sa\ref dw-overview, \ref dw-layout-views
  */
-class View: public object::Object
+class View: public lout::object::Object
 {
 public:
    /*

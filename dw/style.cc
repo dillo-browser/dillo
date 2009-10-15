@@ -27,6 +27,8 @@
 #include "core.hh"
 #include "../lout/msg.h"
 
+using namespace lout;
+
 namespace dw {
 namespace core {
 namespace style {

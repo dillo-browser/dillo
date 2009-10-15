@@ -22,6 +22,8 @@
 #include "core.hh"
 #include <limits.h>
 
+using namespace lout;
+
 namespace dw {
 namespace core {
 

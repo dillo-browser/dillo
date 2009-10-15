@@ -26,8 +26,8 @@ namespace dw {
 
 AlignedTextblock::List::List ()
 {
-   textblocks = new misc::SimpleVector <AlignedTextblock*> (4);
-   values = new misc::SimpleVector <int> (4);
+   textblocks = new lout::misc::SimpleVector <AlignedTextblock*> (4);
+   values = new lout::misc::SimpleVector <int> (4);
    maxValue = 0;
    refCount = 0;
 }

@@ -361,8 +361,8 @@ private:
       TableIterator (Table *table, core::Content::Type mask, bool atEnd);
       TableIterator (Table *table, core::Content::Type mask, int index);
 
-      object::Object *clone();
-      int compareTo(misc::Comparable *other);
+      lout::object::Object *clone();
+      int compareTo(lout::misc::Comparable *other);
 
       bool next ();
       bool prev ();
@@ -377,37 +377,37 @@ private:
    int availWidth, availAscent, availDescent;  // set by set...
 
    int numRows, numCols, curRow, curCol;
-   misc::SimpleVector<Child*> *children;
+   lout::misc::SimpleVector<Child*> *children;
 
    int redrawX, redrawY;
 
    /**
     * \brief The extremes of all columns.
     */
-   misc::SimpleVector<core::Extremes> *colExtremes;
+   lout::misc::SimpleVector<core::Extremes> *colExtremes;
 
    /**
     * \brief The widths of all columns.
     */
-   misc::SimpleVector<int> *colWidths;
+   lout::misc::SimpleVector<int> *colWidths;
 
    /**
     * Row cumulative height array: cumHeight->size() is numRows + 1,
     * cumHeight->get(0) is 0, cumHeight->get(numRows) is the total table
     * height.
     */
-   misc::SimpleVector<int> *cumHeight;
+   lout::misc::SimpleVector<int> *cumHeight;
    /**
     * If a Cell has rowspan > 1, it goes into this array
     */
-   misc::SimpleVector<int> *rowSpanCells;
+   lout::misc::SimpleVector<int> *rowSpanCells;
    /**
     * If a Cell has colspan > 1, it goes into this array
     */
-   misc::SimpleVector<int> *colSpanCells;
-   misc::SimpleVector<int> *baseline;
+   lout::misc::SimpleVector<int> *colSpanCells;
+   lout::misc::SimpleVector<int> *baseline;
 
-   misc::SimpleVector<core::style::Style*> *rowStyle;
+   lout::misc::SimpleVector<core::style::Style*> *rowStyle;
 
    /**
     * hasColPercent becomes true when any cell specifies a percentage width.
@@ -415,7 +415,7 @@ private:
     */
    enum { LEN_AUTO = -1, LEN_ABS = -2};
    int hasColPercent;
-   misc::SimpleVector<float> *colPercents;
+   lout::misc::SimpleVector<float> *colPercents;
 
    inline bool childDefined(int n)
    {
@@ -438,7 +438,7 @@ private:
    void setCumHeight (int row, int value)
    {
       if (value != cumHeight->get (row)) {
-         redrawY = misc::min ( redrawY, value );
+         redrawY = lout::misc::min ( redrawY, value );
          cumHeight->set (row, value);
       }
    }
@@ -446,7 +446,7 @@ private:
    inline void setColWidth (int col, int value)
    {
       if (value != colWidths->get (col)) {
-         redrawX = misc::min (redrawX, value);
+         redrawX = lout::misc::min (redrawX, value);
          colWidths->set (col, value);
       }
    }

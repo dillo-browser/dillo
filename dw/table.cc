@@ -25,6 +25,7 @@
 
 #define MAX misc::max
 
+using namespace lout;
 
 namespace dw {
 

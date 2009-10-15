@@ -8,8 +8,6 @@
 namespace dw {
 namespace core {
 
-using namespace lout;
-
 /**
  * \brief This class handles selections, as well as activation of links,
  *    which is closely related.
