@@ -78,7 +78,7 @@ Layout::Anchor::~Anchor ()
 Layout::Layout (Platform *platform)
 {
    this->platform = platform;
-   views = new container::typed::List <View> (true);
+   view = NULL;
    topLevel = NULL;
    widgetAtPoint = NULL;
 
@@ -123,7 +123,7 @@ Layout::~Layout ()
    if (topLevel)
       delete topLevel;
    delete platform;
-   delete views;
+   delete view;
    delete anchorsTable;
    delete textZone;
 }
@@ -156,13 +156,10 @@ void Layout::removeWidget ()
    canvasWidth = canvasAscent = canvasDescent = 0;
    scrollX = scrollY = 0;
 
-   for (typed::Iterator <View> it = views->iterator (); it.hasNext (); ) {
-      View *view = it.getNext ();
-      view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
-      if (view->usesViewport ())
-         view->setViewportSize (viewportWidth, viewportHeight, 0, 0);
-      view->queueDrawTotal ();
-   }
+   view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
+   if (view->usesViewport ())
+      view->setViewportSize (viewportWidth, viewportHeight, 0, 0);
+   view->queueDrawTotal ();
 
    setAnchor (NULL);
    updateAnchor ();
@@ -194,7 +191,10 @@ void Layout::setWidget (Widget *widget)
  */
 void Layout::attachView (View *view)
 {
-   views->append (view);
+   if (this->view)
+      MSG_ERR("attachView: Multiple views for layout!\n");
+
+   this->view = view;
    platform->attachView (view);
 
    /*
@@ -236,11 +236,12 @@ void Layout::attachView (View *view)
 
 void Layout::detachView (View *view)
 {
+   if (this->view != view)
+      MSG_ERR("detachView: this->view: %p view %p\n", this->view, view);
+
    view->setLayout (NULL);
    platform->detachView (view);
-
-   views->detachRef (view);
-
+   this->view = NULL;
    /**
     * \todo Actually, viewportMarkerWidthDiff and
     *       viewportMarkerHeightDiff have to be recalculated here, since the
@@ -251,12 +252,8 @@ void Layout::detachView (View *view)
 
 void Layout::scroll(ScrollCommand cmd)
 {
-   for (typed::Iterator <View> it = views->iterator (); it.hasNext (); ) {
-      View *view = it.getNext ();
-
-      if (view->usesViewport ())
-         view->scroll(cmd);
-   }
+   if (view->usesViewport ())
+      view->scroll(cmd);
 }
 
 /**
@@ -346,11 +343,7 @@ void Layout::scrollIdle ()
 
    if (xChanged || yChanged) {
       adjustScrollPos ();
-      for (container::typed::Iterator <View> it = views->iterator ();
-           it.hasNext (); ) {
-         View *thisView = it.getNext();
-         thisView->scrollTo (scrollX, scrollY);
-      }
+      view->scrollTo (scrollX, scrollY);
    }
 
    scrollIdleId = -1;
@@ -500,11 +493,7 @@ void Layout::setCursor (style::Cursor cursor)
 {
    if (cursor != this->cursor) {
       this->cursor = cursor;
-
-      for (typed::Iterator <View> it = views->iterator (); it.hasNext (); ) {
-         View *view = it.getNext ();
-         view->setCursor (cursor);
-      }
+      view->setCursor (cursor);
    }
 }
 
@@ -526,11 +515,7 @@ void Layout::updateBgColor ()
       bgColor = topLevel->getStyle()->backgroundColor;
    else
       bgColor = NULL;
-
-   for (typed::Iterator <View> it = views->iterator (); it.hasNext (); ) {
-      View *view = it.getNext ();
-      view->setBgColor (bgColor);
-   }
+   view->setBgColor (bgColor);
 }
 
 void Layout::resizeIdle ()
@@ -562,12 +547,9 @@ void Layout::resizeIdle ()
          emitter.emitCanvasSizeChanged (
             canvasWidth, canvasAscent, canvasDescent);
 
-         // Tell the views about the new world size.
-         for (typed::Iterator <View> it = views->iterator (); it.hasNext ();) {
-            View *view = it.getNext ();
-            view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
-          //  view->queueDrawTotal (false);
-         }
+         // Tell the view about the new world size.
+         view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
+         //  view->queueDrawTotal (false);
 
          if (usesViewport) {
             int actualHScrollbarThickness =
@@ -585,14 +567,10 @@ void Layout::resizeIdle ()
             }
 
             // Set viewport sizes.
-            for (typed::Iterator <View> it = views->iterator ();
-               it.hasNext (); ) {
-               View *view = it.getNext ();
-               if (view->usesViewport ())
-                  view->setViewportSize (viewportWidth, viewportHeight,
-                                         actualHScrollbarThickness,
-                                         actualVScrollbarThickness);
-            }
+            if (view->usesViewport ())
+               view->setViewportSize (viewportWidth, viewportHeight,
+                                      actualHScrollbarThickness,
+                                      actualVScrollbarThickness);
          }
       }
 
@@ -623,11 +601,7 @@ void Layout::queueDraw (int x, int y, int width, int height)
 
    if (area.isEmpty ()) return;
 
-   for (container::typed::Iterator <View> it = views->iterator ();
-      it.hasNext (); ) {
-      View *view = it.getNext ();
-      view->queueDraw (&area);
-   }
+   view->queueDraw (&area);
 }
 
 void Layout::queueDrawExcept (int x, int y, int width, int height,
@@ -656,11 +630,7 @@ void Layout::queueDrawExcept (int x, int y, int width, int height,
 void Layout::queueResize ()
 {
    if (resizeIdleId == -1) {
-      for (container::typed::Iterator <View> it = views->iterator ();
-           it.hasNext (); ) {
-         View *view = it.getNext ();
-         view->cancelQueueDraw ();
-      }
+      view->cancelQueueDraw ();
 
       resizeIdleId = platform->addIdle (&Layout::resizeIdle);
    }
@@ -873,14 +843,6 @@ void Layout::scrollPosChanged (View *view, int x, int y)
       scrollX = x;
       scrollY = y;
 
-      // Tell all views about the scrolling position, except the caller.
-      for (container::typed::Iterator <View> it = views->iterator ();
-           it.hasNext (); ) {
-         View *thisView = it.getNext();
-         if (view != thisView && thisView->usesViewport ())
-            thisView->scrollTo (scrollX, scrollY);
-      }
-
       setAnchor (NULL);
       updateAnchor ();
    }
@@ -909,21 +871,6 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
    viewportHeight = height;
 
    setSizeHints ();
-
-   int actualHScrollbarThickness =
-      (canvasWidth > viewportWidth) ? hScrollbarThickness : 0;
-   int actualVScrollbarThickness =
-      (canvasAscent + canvasDescent > viewportWidth) ? vScrollbarThickness : 0;
-
-   /* Tell all views about the size, except the caller. */
-   for (container::typed::Iterator <View> it = views->iterator ();
-        it.hasNext (); ) {
-      View *thisView = it.getNext();
-      if (view != thisView && thisView->usesViewport ())
-         thisView->setViewportSize (viewportWidth, viewportHeight,
-                                    actualHScrollbarThickness,
-                                    actualVScrollbarThickness);
-   }
 }
 
 } // namespace dw

@@ -58,10 +58,10 @@ private:
    };
 
    Platform *platform;
-   lout::container::typed::List <View> *views;
+   View *view;
    Widget *topLevel, *widgetAtPoint;
 
-   /* The state, which must be projected into the views. */
+   /* The state, which must be projected into the view. */
    style::Color *bgColor;
    style::Cursor cursor;
    int canvasWidth, canvasAscent, canvasDescent;

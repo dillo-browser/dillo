@@ -126,7 +126,7 @@ private:
    static void generalStaticIdle(void *data);
    void generalIdle();
 
-   lout::container::typed::List <FltkView> *views;
+   FltkView *view;
    lout::container::typed::List <ui::FltkResource> *resources;
 
 public:

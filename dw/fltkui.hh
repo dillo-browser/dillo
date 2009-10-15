@@ -178,14 +178,8 @@ private:
    bool enabled;
 
 protected:
-   class ViewAndWidget: public lout::object::Object
-   {
-   public:
-      FltkView *view;
-      ::fltk::Widget *widget;
-   };
-
-   lout::container::typed::List <ViewAndWidget> *viewsAndWidgets;
+   FltkView *view;
+   ::fltk::Widget *widget;
    core::Allocation allocation;
    FltkPlatform *platform;
 
@@ -260,15 +254,7 @@ private:
    static void widgetCallback (::fltk::Widget *widget, void *data);
 
 protected:
-   class ViewAndView: public lout::object::Object
-   {
-   public:
-      FltkView *topView, *flatView;
-   };
-
-   FltkView *lastFlatView;
-
-   lout::container::typed::List <ViewAndView> *viewsAndViews;
+   FltkView *topView, *flatView;
 
    void attachView (FltkView *view);
    void detachView (FltkView *view);

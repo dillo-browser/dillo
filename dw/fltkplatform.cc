@@ -18,7 +18,7 @@
  */
 
 
-
+#include "../lout/msg.h"
 #include "fltkcore.hh"
 
 #include <fltk/draw.h>
@@ -297,7 +297,7 @@ FltkPlatform::FltkPlatform ()
    idleFuncRunning = false;
    idleFuncId = 0;
 
-   views = new container::typed::List <FltkView> (false);
+   view = NULL;
    resources = new container::typed::List <ui::FltkResource> (false);
 
    resourceFactory.setPlatform (this);
@@ -308,7 +308,6 @@ FltkPlatform::~FltkPlatform ()
    if (idleFuncRunning)
       remove_idle (generalStaticIdle, (void*)this);
    delete idleQueue;
-   delete views;
    delete resources;
 }
 
@@ -320,25 +319,30 @@ void FltkPlatform::setLayout (core::Layout *layout)
 
 void FltkPlatform::attachView (core::View *view)
 {
-   views->append ((FltkView*)view);
+   if (this->view)
+      MSG_ERR("FltkPlatform::attachView: multiple views!\n");
+   this->view = (FltkView*)view;
 
    for (container::typed::Iterator <ui::FltkResource> it =
            resources->iterator (); it.hasNext (); ) {
       ui::FltkResource *resource = it.getNext ();
-      resource->attachView ((FltkView*)view);
+      resource->attachView (this->view);
    }
 }
 
 
 void FltkPlatform::detachView  (core::View *view)
 {
-   views->removeRef ((FltkView*)view);
+   if (this->view != view)
+      MSG_ERR("FltkPlatform::detachView: this->view: %p view: %p\n",
+              this->view, view);
 
    for (container::typed::Iterator <ui::FltkResource> it =
            resources->iterator (); it.hasNext (); ) {
       ui::FltkResource *resource = it.getNext ();
       resource->detachView ((FltkView*)view);
    }
+   this->view = NULL;
 }
 
 
@@ -473,12 +477,7 @@ core::ui::ResourceFactory *FltkPlatform::getResourceFactory ()
 void FltkPlatform::attachResource (ui::FltkResource *resource)
 {
    resources->append (resource);
-
-   for (container::typed::Iterator <FltkView> it = views->iterator ();
-        it.hasNext (); ) {
-      FltkView *view = it.getNext ();
-      resource->attachView (view);
-   }
+   resource->attachView (view);
 }
 
 void FltkPlatform::detachResource (ui::FltkResource *resource)
