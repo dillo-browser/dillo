@@ -249,6 +249,10 @@ typedef enum {
    CSS_FONT_SIZE_X_SMALL,
 } CssFontSizeExtensions;
 
+typedef enum {
+   CSS_LETTER_SPACING_NORMAL
+} CssLetterSpacingExtensions;
+
 
 /**
  * \brief This class holds a CSS property and value pair.

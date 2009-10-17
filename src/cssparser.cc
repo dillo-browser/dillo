@@ -77,6 +77,10 @@ static const char *const Css_font_weight_enum_vals[] = {
    "bold", "bolder", "light", "lighter", "normal", NULL
 };
 
+static const char *const Css_letter_spacing_enum_vals[] = {
+   "normal", NULL
+};
+
 static const char *const Css_list_style_type_enum_vals[] = {
    "disc", "circle", "square", "decimal", "decimal-leading-zero",
    "lower-roman", "upper-roman", "lower-greek", "lower-alpha",
@@ -149,7 +153,8 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
     Css_font_weight_enum_vals},
    {"height", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"left", {CSS_TYPE_UNUSED}, NULL},
-   {"letter-spacing", {CSS_TYPE_UNUSED}, NULL},
+   {"letter-spacing", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
+    Css_letter_spacing_enum_vals},
    {"line-height", {CSS_TYPE_UNUSED}, NULL},
    {"list-style-image", {CSS_TYPE_UNUSED}, NULL},
    {"list-style-position", {CSS_TYPE_UNUSED}, NULL},

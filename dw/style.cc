@@ -254,8 +254,11 @@ bool FontAttrs::equals(object::Object *other)
    FontAttrs *otherAttrs = (FontAttrs*)other;
    return
       this == otherAttrs ||
-      (size == otherAttrs->size && weight == otherAttrs->weight &&
-       style == otherAttrs->style && strcmp (name, otherAttrs->name) == 0);
+      (size == otherAttrs->size &&
+       weight == otherAttrs->weight &&
+       style == otherAttrs->style &&
+       letterSpacing == otherAttrs->letterSpacing &&
+       strcmp (name, otherAttrs->name) == 0);
 }
 
 int FontAttrs::hashValue()
@@ -264,6 +267,7 @@ int FontAttrs::hashValue()
    h = (h << 5) - h + size;
    h = (h << 5) - h + weight;
    h = (h << 5) - h + style;
+   h = (h << 5) - h + letterSpacing;
    return h;
 }
 
@@ -278,6 +282,7 @@ void Font::copyAttrs (FontAttrs *attrs)
    size = attrs->size;
    weight = attrs->weight;
    style = attrs->style;
+   letterSpacing = attrs->letterSpacing;
 }
 
 Font *Font::create0 (Layout *layout, FontAttrs *attrs,

@@ -40,6 +40,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
       font_attrs.size = prefs.font_max_size;
    font_attrs.weight = 400;
    font_attrs.style = FONT_STYLE_NORMAL;
+   font_attrs.letterSpacing = 0;
 
    style_attrs.initValues ();
    style_attrs.font = Font::create (layout, &font_attrs);
@@ -202,7 +203,7 @@ void StyleEngine::endElement (int element) {
  */
 void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    FontAttrs fontAttrs = *attrs->font;
-   Font *parentFont;
+   Font *parentFont = stack->get (stack->size () - 2).style->font;
 
    /* Determine font first so it can be used to resolve relative lenths.
     * \todo Things should be rearranged so that just one pass is necessary.
@@ -227,7 +228,6 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
                fontAttrs.name = p->value.strVal;
             break;
          case CSS_PROPERTY_FONT_SIZE:
-            parentFont = stack->get (stack->size () - 2).style->font;
             if (p->type == CSS_TYPE_ENUM) {
                switch (p->value.intVal) {
                   case CSS_FONT_SIZE_XX_SMALL:
@@ -306,6 +306,17 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             if (fontAttrs.weight > 900)
                fontAttrs.weight = 900;
 
+            break;
+         case CSS_PROPERTY_LETTER_SPACING:
+            if (p->type == CSS_TYPE_ENUM) {
+               if (p->value.intVal == CSS_LETTER_SPACING_NORMAL) {
+                  fontAttrs.letterSpacing = 0;
+               }
+            } else {
+               computeValue (&fontAttrs.letterSpacing, p->value.intVal,
+                  parentFont, parentFont->size);
+            }
+            // TODO
             break;
          default:
             break;

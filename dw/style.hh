@@ -548,6 +548,7 @@ public:
    const char *name;
    int size;
    int weight;
+   int letterSpacing;
    FontStyle style;
 
    bool equals(lout::object::Object *other);
