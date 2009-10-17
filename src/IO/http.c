@@ -553,6 +553,8 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
 {
    int SKey = VOIDP2INT(Info->LocalKey);
 
+   (void)Data2; /* suppress unused parameter warning */
+
    dReturn_if_fail( a_Chain_check("a_Http_ccc", Op, Branch, Dir, Info) );
 
    if (Branch == 1) {
