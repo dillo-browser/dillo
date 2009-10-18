@@ -479,8 +479,23 @@ void FltkWidgetView::drawText (core::style::Font *font,
    FltkFont *ff = (FltkFont*)font;
    setfont(ff->font, ff->size);
    setcolor(((FltkColor*)color)->colors[shading]);
-   drawtext(text, len,
-            translateCanvasXToViewX (x), translateCanvasYToViewY (y));
+
+   if (!font->letterSpacing) {
+      drawtext(text, len,
+               translateCanvasXToViewX (x), translateCanvasYToViewY (y));
+   } else {
+      /* Nonzero letter spacing adjustment, draw each glyph individually */
+      int viewX = translateCanvasXToViewX (x),
+          viewY = translateCanvasYToViewY (y);
+      int curr = 0, next = 0;
+
+      while (next < len) {
+         next = theLayout->nextGlyph(text, curr);
+         drawtext(text + curr, next - curr, viewX, viewY);
+         viewX += font->letterSpacing + (int)getwidth(text + curr,next - curr);
+         curr = next;
+      }
+   }
 }
 
 void FltkWidgetView::drawImage (core::Imgbuf *imgbuf, int xRoot, int yRoot,

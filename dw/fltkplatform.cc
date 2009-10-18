@@ -65,7 +65,7 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
    }
 
    setfont(font, size);
-   spaceWidth = (int)getwidth(" ");
+   spaceWidth = misc::max(0, (int)getwidth(" ") + letterSpacing);
    int xw, xh;
    measure("x", xw, xh);
    xHeight = xh;
@@ -349,9 +349,21 @@ void FltkPlatform::detachView  (core::View *view)
 int FltkPlatform::textWidth (core::style::Font *font, const char *text,
                              int len)
 {
+   int width;
    FltkFont *ff = (FltkFont*) font;
    setfont (ff->font, ff->size);
-   return (int) getwidth (text, len);
+   width = (int) getwidth (text, len);
+
+   if (font->letterSpacing) {
+      int curr = 0, next = 0;
+
+      while (next < len) {
+         next = nextGlyph(text, curr);
+         width += font->letterSpacing;
+         curr = next;
+      }
+   }
+   return width;
 }
 
 int FltkPlatform::nextGlyph (const char *text, int idx)
