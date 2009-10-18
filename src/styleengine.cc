@@ -316,7 +316,14 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
                computeValue (&fontAttrs.letterSpacing, p->value.intVal,
                   parentFont, parentFont->size);
             }
-            // TODO
+
+            /* Limit letterSpacing to reasonable values to avoid overflows e.g,
+             * when measuring word width.
+             */
+            if (fontAttrs.letterSpacing > 1000)
+               fontAttrs.letterSpacing = 1000;
+            else if (fontAttrs.letterSpacing < -1000)
+               fontAttrs.letterSpacing = -1000;
             break;
          default:
             break;
