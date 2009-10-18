@@ -63,7 +63,7 @@ typedef enum {
  *    | <------ fixed point value ------> |
  *
  * where type is one of the CSS_LENGTH_TYPE_* values.
- * CSS_LENGTH_TYPE_PX and CSS_LENGTH_TYPE_MM are stored as
+ * CSS_LENGTH_TYPE_PX values are stored as
  * 29 bit signed integer, all other types as fixed point values.
  */
 
@@ -88,13 +88,13 @@ inline CssLength CSS_CREATE_LENGTH (float v, CssLengthType t) {
 
    switch (t) {
    case CSS_LENGTH_TYPE_PX:
-   case CSS_LENGTH_TYPE_MM:
       iv = (int) (v + 0.5);
       if (iv > CSS_LENGTH_INT_MAX)
          iv = CSS_LENGTH_INT_MAX;
       else if (iv < -CSS_LENGTH_INT_MAX)
          iv = -CSS_LENGTH_INT_MAX;
       return iv << 3 | t;
+   case CSS_LENGTH_TYPE_MM:
    case CSS_LENGTH_TYPE_EM:
    case CSS_LENGTH_TYPE_EX:
    case CSS_LENGTH_TYPE_PERCENTAGE:
@@ -119,8 +119,8 @@ inline CssLengthType CSS_LENGTH_TYPE (CssLength l) {
 inline float CSS_LENGTH_VALUE (CssLength l) {
    switch (CSS_LENGTH_TYPE(l)) {
    case CSS_LENGTH_TYPE_PX:
-   case CSS_LENGTH_TYPE_MM:
       return (float) (l >> 3);
+   case CSS_LENGTH_TYPE_MM:
    case CSS_LENGTH_TYPE_EM:
    case CSS_LENGTH_TYPE_EX:
    case CSS_LENGTH_TYPE_PERCENTAGE:
