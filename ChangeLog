@@ -34,6 +34,7 @@ dillo-2.2 [??]
  - Fix scrolling for text search.
  - Added 'save' key action (not bound by default).
  - Tooltips
+ - Fix segfault when radio button lacks name attribute.
    Patches: corvid
 +- Support for the letter-spacing property.
    Patch: Johannes Hofmann, corvid

@@ -257,18 +257,20 @@ static void Html_add_input(DilloHtml *html, DilloHtmlInputType type,
  */
 static DilloHtmlInput *Html_get_radio_input(DilloHtml *html, const char *name)
 {
-   lout::misc::SimpleVector<DilloHtmlInput*>* inputs;
+   if (name) {
+      lout::misc::SimpleVector<DilloHtmlInput*>* inputs;
 
-   if (html->InFlags & IN_FORM)
-      inputs = html->getCurrentForm()->inputs;
-   else
-      inputs = html->inputs_outside_form;
+      if (html->InFlags & IN_FORM)
+         inputs = html->getCurrentForm()->inputs;
+      else
+         inputs = html->inputs_outside_form;
 
-   for (int idx = 0; idx < inputs->size(); idx++) {
-      DilloHtmlInput *input = inputs->get(idx);
-      if (input->type == DILLO_HTML_INPUT_RADIO &&
-          input->name && !dStrcasecmp(input->name, name))
-         return input;
+      for (int idx = 0; idx < inputs->size(); idx++) {
+         DilloHtmlInput *input = inputs->get(idx);
+         if (input->type == DILLO_HTML_INPUT_RADIO &&
+             input->name && !dStrcasecmp(input->name, name))
+            return input;
+      }
    }
    return NULL;
 }
