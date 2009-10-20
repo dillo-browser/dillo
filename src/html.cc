@@ -1317,12 +1317,10 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
    stack_idx = html->stack->size() - 1;
    while (stack_idx &&
           (cmp = (new_idx != html->stack->getRef(stack_idx)->tag_idx)) &&
-          ((w3c_mode &&
-            Tags[html->stack->getRef(stack_idx)->tag_idx].EndTag == 'O') ||
-           ((!w3c_mode &&
-            (Tags[html->stack->getRef(stack_idx)->tag_idx].EndTag == 'O')) ||
-             Tags[html->stack->getRef(stack_idx)->tag_idx].TagLevel <
-             Tags[new_idx].TagLevel))) {
+          (Tags[html->stack->getRef(stack_idx)->tag_idx].EndTag == 'O' ||
+           (!w3c_mode &&
+            Tags[html->stack->getRef(stack_idx)->tag_idx].TagLevel <
+            Tags[new_idx].TagLevel))) {
       --stack_idx;
    }
 
