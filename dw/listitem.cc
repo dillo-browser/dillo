@@ -30,6 +30,7 @@ ListItem::ListItem (ListItem *ref, bool limitTextWidth):
    AlignedTextblock (limitTextWidth)
 {
    registerName ("dw::ListItem", &CLASS_ID);
+   listItem = true;
    setRefTextblock (ref);
 }
 
