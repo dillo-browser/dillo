@@ -1740,16 +1740,13 @@ void Textblock::addParbreak (int space, core::style::Style *style)
               widget->getParent()->instanceOf (Textblock::CLASS_ID);
            widget = widget->getParent ()) {
          Textblock *textblock2 = (Textblock*)widget->getParent ();
-         if (textblock2->listItem)
-            isfirst = (textblock2->words->getRef(1)->content.type
-                       == core::Content::WIDGET
-                       && textblock2->words->getRef(1)->content.widget
-                       == widget);
-         else
-            isfirst = (textblock2->words->getRef(0)->content.type
-                       == core::Content::WIDGET
-                       && textblock2->words->getRef(0)->content.widget
-                       == widget);
+         int index = (textblock2->listItem &&
+                      (textblock2->getStyle()->listStyleType !=
+                       dw::core::style::LIST_STYLE_TYPE_NONE)) ? 1 : 0;
+         isfirst = (textblock2->words->getRef(index)->content.type
+                    == core::Content::WIDGET
+                    && textblock2->words->getRef(index)->content.widget
+                    == widget);
          if (!isfirst) {
             /* The page we searched for has been found. */
             lineno = widget->parentRef;
