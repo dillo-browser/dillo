@@ -2666,12 +2666,11 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
       }
       numtostr((*list_number)++, buf, 16, style->listStyleType);
       list_item->initWithText (buf, wordStyle);
-      list_item->addSpace (wordStyle);
-      html->PrevWasSPC = true;
+      html->PrevWasSPC = true; /* space added in initWithText */
    } else {
       // unordered
       list_item->initWithWidget (new Bullet(), wordStyle);
-      list_item->addSpace (wordStyle);
+      html->PrevWasSPC = true; /* space added in initWithWidget */
    }
 }
 
