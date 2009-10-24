@@ -2527,11 +2527,11 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
       CssPropertyList props;
 
       /* list_style_type explicitly defined */
-      if (dStrncasecmp(attrbuf, "disc", 4) == 0)
+      if (dStrcasecmp(attrbuf, "disc") == 0)
          list_style_type = LIST_STYLE_TYPE_DISC;
-      else if (dStrncasecmp(attrbuf, "circle", 6) == 0)
+      else if (dStrcasecmp(attrbuf, "circle") == 0)
          list_style_type = LIST_STYLE_TYPE_CIRCLE;
-      else if (dStrncasecmp(attrbuf, "square", 6) == 0)
+      else if (dStrcasecmp(attrbuf, "square") == 0)
          list_style_type = LIST_STYLE_TYPE_SQUARE;
       else
          /* invalid value */
