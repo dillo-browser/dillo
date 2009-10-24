@@ -1213,8 +1213,6 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
       if (Pword == word2)
          dFree(Pword);
    }
-   if (html->InFlags & IN_LI)
-      html->WordAfterLI = true;
 }
 
 /*
@@ -1792,13 +1790,7 @@ static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
    a_Html_tag_set_align_attr (html, &props, tag, tagsize);
    html->styleEngine->inheritBackgroundColor ();
    html->styleEngine->setNonCssHints (&props);
-
-   if ((html->InFlags & IN_LI) && !html->WordAfterLI) {
-      /* ignore first parbreak after an empty <LI> */
-      html->WordAfterLI = true;
-   } else {
-      HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
-   }
+   HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
 /*
@@ -2639,7 +2631,6 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
       BUG_MSG("<li> outside <ul> or <ol>\n");
 
    html->InFlags |= IN_LI;
-   html->WordAfterLI = false;
 
    /* Get our parent tag's variables (used as state storage) */
    list_number = &html->stack->getRef(html->stack->size()-2)->list_number;
@@ -2680,7 +2671,6 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_li(DilloHtml *html, int TagIdx)
 {
    html->InFlags &= ~IN_LI;
-   html->WordAfterLI = false;
    ((ListItem *)html->dw)->flush ();
 }
 

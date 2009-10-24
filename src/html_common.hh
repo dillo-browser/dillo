@@ -171,7 +171,6 @@ public:  //BUG: for now everything is public
    bool PrevWasSPC;       /* Flag to help handling collapsing white space */
    bool InVisitedLink;    /* used to 'contrast_visited_colors' */
    bool ReqTagClose;      /* Flag to help handling bad-formed HTML */
-   bool WordAfterLI;      /* Flag to help ignoring the 1st <P> after <LI> */
    bool TagSoup;          /* Flag to enable the parser's cleanup functions */
    bool loadCssFromStash; /* current stash content should be loaded as CSS */
 
