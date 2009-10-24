@@ -1717,10 +1717,7 @@ void Textblock::addSpace (core::style::Style *style)
  */
 void Textblock::addParbreak (int space, core::style::Style *style)
 {
-   Word *word, *word2 = NULL; // Latter for compiler happiness, search!
-   bool isfirst;
-   Widget *widget;
-   int lineno;
+   Word *word;
 
    /* A break may not be the first word of a page, or directly after
       the bullet/number (which is the first word) in a list item. (See
@@ -1733,6 +1730,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
          a widget is used as a text box (lists, blockquotes, list
          items etc) -- then we simply adjust the break before, in a
          way that the space is in any case visible. */
+      Widget *widget;
 
       /* Find the widget where to adjust the break_space. */
       for (widget = this;
@@ -1743,13 +1741,15 @@ void Textblock::addParbreak (int space, core::style::Style *style)
          int index = (textblock2->listItem &&
                       (textblock2->getStyle()->listStyleType !=
                        dw::core::style::LIST_STYLE_TYPE_NONE)) ? 1 : 0;
-         isfirst = (textblock2->words->getRef(index)->content.type
-                    == core::Content::WIDGET
-                    && textblock2->words->getRef(index)->content.widget
-                    == widget);
+         bool isfirst = (textblock2->words->getRef(index)->content.type
+                         == core::Content::WIDGET
+                         && textblock2->words->getRef(index)->content.widget
+                         == widget);
          if (!isfirst) {
             /* The page we searched for has been found. */
-            lineno = widget->parentRef;
+            Word *word2;
+            int lineno = widget->parentRef;
+
             if (lineno > 0 &&
                 (word2 =
                  textblock2->words->getRef(textblock2->lines
