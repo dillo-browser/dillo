@@ -491,7 +491,7 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
 {
    const char *curr;
    char *major, *minor, *charset;
-   CacheEntry_t *entry = Cache_entry_search_with_redirect(url);
+   CacheEntry_t *entry = Cache_entry_search(url);
 
    dReturn_val_if_fail (entry != NULL, NULL);
 
