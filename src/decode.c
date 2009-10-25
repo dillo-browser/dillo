@@ -190,7 +190,7 @@ Decode *a_Decode_transfer_init(const char *format)
 {
    Decode *dc = NULL;
 
-   if (format && !dStrncasecmp(format, "chunked", 7)) {
+   if (format && !dStrcasecmp(format, "chunked")) {
       int *chunk_remaining = dNew(int, 1);
       *chunk_remaining = 0;
       dc = dNew(Decode, 1);
