@@ -758,12 +758,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
    }
 
    /* Get Content-Type */
-   if ((Type = Cache_parse_field(header, "Content-Type")) == NULL) {
-      if (!((entry->Flags & CA_GotLength) && (entry->ExpectedSize == 0))) {
-         /* unless the server sent Content-Length: 0 */
-         MSG_HTTP("Server didn't send Content-Type in header.\n");
-      }
-   } else {
+   if ((Type = Cache_parse_field(header, "Content-Type"))) {
       /* This HTTP Content-Type is not trusted. It's checked against real data
        * in Cache_process_queue(); only then CA_GotContentType becomes true. */
       a_Cache_set_content_type(entry->Url, Type, "http");
@@ -874,6 +869,10 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
          entry = Cache_process_queue(entry);
       }
    } else if (Op == IOClose) {
+      if ((entry->ExpectedSize || entry->TransferSize) &&
+          entry->TypeHdr == NULL) {
+         MSG_HTTP("Message with a body lacked Content-Type header.\n");
+      }
       if ((entry->Flags & CA_GotLength) &&
           (entry->ExpectedSize != entry->TransferSize)) {
          MSG_HTTP("Content-Length does NOT match message body,\n"
