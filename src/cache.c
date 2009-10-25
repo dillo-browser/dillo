@@ -702,22 +702,30 @@ static void Cache_parse_header(CacheEntry_t *entry)
       dList_free(warnings);
    }
 
+   /*
+    * Get Transfer-Encoding and initialize decoder
+    */
+   encoding = Cache_parse_field(header, "Transfer-Encoding");
+   entry->TransferDecoder = a_Decode_transfer_init(encoding);
+
+
    if ((Length = Cache_parse_field(header, "Content-Length")) != NULL) {
-      char *tmp;
-      if ((tmp = Cache_parse_field(header, "Transfer-Encoding"))) {
+      if (encoding) {
          /*
-          * BUG: Should test for _presence_ of headers, not whether they
-          * have content.
+          * If Transfer-Encoding is present, Content-Length must be ignored.
+          * If the Transfer-Encoding is non-identity, it is an error.
           */
-         MSG_HTTP("Both Content-Length and Transfer-Encoding headers"
-                  " received.\n");
-         dFree(tmp);
+         if (dStrcasecmp(encoding, "identity"))
+            MSG_HTTP("Content-Length and non-identity Transfer-Encoding "
+                     "headers both present.\n");
       } else {
          entry->Flags |= CA_GotLength;
          entry->ExpectedSize = MAX(strtol(Length, NULL, 10), 0);
       }
       dFree(Length);
    }
+
+   dFree(encoding); /* free Transfer-Encoding */
 
 #ifndef DISABLE_COOKIES
    /* BUG: If a server feels like mixing Set-Cookie2 and Set-Cookie
@@ -731,13 +739,6 @@ static void Cache_parse_header(CacheEntry_t *entry)
       dList_free(Cookies);
    }
 #endif /* !DISABLE_COOKIES */
-
-   /*
-    * Get Transfer-Encoding and initialize decoder
-    */
-   encoding = Cache_parse_field(header, "Transfer-Encoding");
-   entry->TransferDecoder = a_Decode_transfer_init(encoding);
-   dFree(encoding);
 
    /*
     * Get Content-Encoding and initialize decoder
