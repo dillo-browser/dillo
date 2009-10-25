@@ -588,8 +588,10 @@ void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType)
 
    switch(listStyleType){
    case LIST_STYLE_TYPE_LOWER_ALPHA:
+   case LIST_STYLE_TYPE_LOWER_LATIN:
       start_ch = 'a';
    case LIST_STYLE_TYPE_UPPER_ALPHA:
+   case LIST_STYLE_TYPE_UPPER_LATIN:
       i0 = num - 1;
       i1 = i0/26 - 1; i2 = i1/26 - 1;
       if (i2 > 25) /* more than 26+26^2+26^3=18278 elements ? */
