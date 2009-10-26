@@ -523,20 +523,17 @@ bool Textblock::motionNotifyImpl (core::EventMotion *event)
       return sendSelectionEvent (core::SelectionState::BUTTON_MOTION, event);
    else {
       bool inSpace;
-      int wordIndex, linkOld = hoverLink;
+      int linkOld = hoverLink;
       core::style::Tooltip *tooltipOld = hoverTooltip;
-
-      wordIndex = findWord (event->xWidget, event->yWidget, &inSpace);
+      const Word *word = findWord (event->xWidget, event->yWidget, &inSpace);
 
       // cursor from word or widget style
-      if (wordIndex == -1) {
+      if (word == NULL) {
          setCursor (getStyle()->cursor);
          hoverLink = -1;
          hoverTooltip = NULL;
       } else {
-         core::style::Style *style =
-            inSpace ? words->getRef(wordIndex)->spaceStyle :
-                      words->getRef(wordIndex)->style;
+         core::style::Style *style = inSpace ? word->spaceStyle : word->style;
          setCursor (style->cursor);
          hoverLink = style->x_link;
          hoverTooltip = style->x_tooltip;
@@ -1472,7 +1469,7 @@ int Textblock::findLineOfWord (int wordIndex)
 /**
  * \brief Find the index of the word, or -1.
  */
-int Textblock::findWord (int x, int y, bool *inSpace)
+Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
 {
    int lineIndex, wordIndex;
    int xCursor, lastXCursor, yWidgetBase;
@@ -1482,11 +1479,11 @@ int Textblock::findWord (int x, int y, bool *inSpace)
    *inSpace = false;
 
    if ((lineIndex = findLineIndex (y)) >= lines->size ())
-      return -1;
+      return NULL;
    line = lines->getRef (lineIndex);
    yWidgetBase = lineYOffsetWidget (line) + line->ascent;
    if (yWidgetBase + line->descent <= y)
-      return -1;
+      return NULL;
 
    xCursor = lineXOffsetWidget (line);
    for (wordIndex = line->firstWord; wordIndex <= line->lastWord;wordIndex++) {
@@ -1497,11 +1494,11 @@ int Textblock::findWord (int x, int y, bool *inSpace)
           y > yWidgetBase - word->size.ascent &&
           y <= yWidgetBase + word->size.descent) {
          *inSpace = x >= xCursor - word->effSpace;
-         return wordIndex;
+         return word;
       }
    }
 
-   return -1;
+   return NULL;
 }
 
 void Textblock::draw (core::View *view, core::Rectangle *area)
