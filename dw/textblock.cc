@@ -1683,22 +1683,14 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
  */
 void Textblock::addSpace (core::style::Style *style)
 {
-   int nl, nw;
-   int space;
+   if (lines->size () > 0) {
+      int wordIndex = words->size () - 1;
 
-   nl = lines->size () - 1;
-   if (nl >= 0) {
-      nw = words->size () - 1;
-      if (nw >= 0) {
-         /* TODO: remove this test case */
-         //if (page->words[nw].orig_space != 0) {
-         //   _MSG("   a_Dw_page_add_space:: already existing space!!!\n");
-         //}
+      if (wordIndex >= 0) {
+         Word *word = words->getRef(wordIndex);
 
-         space = style->font->spaceWidth;
-         words->getRef(nw)->origSpace = space;
-         words->getRef(nw)->effSpace = space;
-         words->getRef(nw)->content.space = true;
+         word->effSpace = word->origSpace = style->font->spaceWidth;
+         word->content.space = true;
 
          //DBG_OBJ_ARRSET_NUM (page, "words.%d.orig_space", nw,
          //                    page->words[nw].orig_space);
@@ -1706,9 +1698,9 @@ void Textblock::addSpace (core::style::Style *style)
          //                    page->words[nw].eff_space);
          //DBG_OBJ_ARRSET_NUM (page, "words.%d.content.space", nw,
          //                    page->words[nw].content.space);
-         if (style != words->getRef(nw)->spaceStyle) {
-            words->getRef(nw)->spaceStyle->unref ();
-            words->getRef(nw)->spaceStyle = style;
+         if (style != word->spaceStyle) {
+            word->spaceStyle->unref ();
+            word->spaceStyle = style;
             style->ref ();
          }
       }
