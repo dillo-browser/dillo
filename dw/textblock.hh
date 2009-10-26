@@ -265,7 +265,7 @@ protected:
    void drawLine (Line *line, core::View *view, core::Rectangle *area);
    int findLineIndex (int y);
    int findLineOfWord (int wordIndex);
-   int findWord (int x, int y);
+   int findWord (int x, int y, bool *inSpace);
 
    Word *addWord (int width, int ascent, int descent,
                   core::style::Style *style);
