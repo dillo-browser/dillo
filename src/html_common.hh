@@ -168,7 +168,6 @@ public:  //BUG: for now everything is public
    bool PreFirstChar;     /* used to skip the first CR or CRLF in PRE tags */
    bool PrevWasCR;        /* Flag to help parsing of "\r\n" in PRE tags */
    bool PrevWasOpenTag;   /* Flag to help deferred parsing of white space */
-   bool PrevWasSPC;       /* Flag to help handling collapsing white space */
    bool InVisitedLink;    /* used to 'contrast_visited_colors' */
    bool ReqTagClose;      /* Flag to help handling bad-formed HTML */
    bool TagSoup;          /* Flag to enable the parser's cleanup functions */

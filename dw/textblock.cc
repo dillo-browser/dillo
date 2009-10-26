@@ -1706,10 +1706,11 @@ void Textblock::addSpace (core::style::Style *style)
          //                    page->words[nw].eff_space);
          //DBG_OBJ_ARRSET_NUM (page, "words.%d.content.space", nw,
          //                    page->words[nw].content.space);
-
-         words->getRef(nw)->spaceStyle->unref ();
-         words->getRef(nw)->spaceStyle = style;
-         style->ref ();
+         if (style != words->getRef(nw)->spaceStyle) {
+            words->getRef(nw)->spaceStyle->unref ();
+            words->getRef(nw)->spaceStyle = style;
+            style->ref ();
+         }
       }
    }
 }

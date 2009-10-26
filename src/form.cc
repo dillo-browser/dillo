@@ -552,7 +552,6 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 //                                   strtol(attrbuf, NULL, 10));
       }
       HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle());
-      html->PrevWasSPC = false;
    }
    dFree(type);
    dFree(name);
@@ -596,7 +595,6 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
    HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
-   html->PrevWasSPC = false;
 
    a_Url_free(action);
    html->InFlags &= ~IN_FORM;
@@ -665,7 +663,6 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
 
    HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
-   html->PrevWasSPC = false;
    dFree(name);
 }
 
@@ -752,7 +749,6 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
 
    Html_add_input(html, type, embed, name, NULL, false);
-   html->PrevWasSPC = false;
    a_Html_stash_init(html);
    dFree(name);
 }
@@ -1917,7 +1913,6 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
             factory->createComplexButtonResource(IM2DW(Image), false);
          button = new Embed(complex_b_r);
          HT2TB(html)->addWidget (button, html->styleEngine->style ());
-         html->PrevWasSPC = false;
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
 
          /* a right button press brings up the image menu */

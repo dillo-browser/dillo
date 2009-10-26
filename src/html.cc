@@ -449,7 +449,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    pre_column = 0;
    PreFirstChar = false;
    PrevWasCR = false;
-   PrevWasSPC = false;
    InVisitedLink = false;
    ReqTagClose = false;
    TagSoup = true;
@@ -1106,9 +1105,8 @@ static void Html_process_space(DilloHtml *html, const char *space,
    } else {
       if (SGML_SPCDEL) {
          /* SGML_SPCDEL ignores white space immediately after an open tag */
-      } else if (!html->PrevWasSPC) {
+      } else {
          HT2TB(html)->addSpace(html->styleEngine->wordStyle ());
-         html->PrevWasSPC = true;
       }
 
       if (parse_mode == DILLO_HTML_PARSE_MODE_STASH_AND_BODY)
@@ -1199,7 +1197,6 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             i += len;
             HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());
-            html->PrevWasSPC = false;
          } else {
             do {
                i += len;
@@ -1207,7 +1204,6 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
                      (!a_Utf8_ideographic(word2+i, word2_end, &len)));
             HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());
-            html->PrevWasSPC = false;
          }
       }
       if (Pword == word2)
@@ -2158,7 +2154,6 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 
    Image = a_Html_image_new(html, tag, tagsize, url);
    HT2TB(html)->addWidget((Widget*)Image->dw, html->styleEngine->style());
-   html->PrevWasSPC = false;
 
    /* Image maps */
    if (a_Html_get_attr(html, tag, tagsize, "ismap")) {
@@ -2657,11 +2652,9 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
       }
       numtostr((*list_number)++, buf, 16, style->listStyleType);
       list_item->initWithText (buf, wordStyle);
-      html->PrevWasSPC = true; /* space added in initWithText */
    } else {
       // unordered
       list_item->initWithWidget (new Bullet(), wordStyle);
-      html->PrevWasSPC = true; /* space added in initWithWidget */
    }
 }
 
