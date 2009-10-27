@@ -1883,14 +1883,6 @@ static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
- * Handle close: <H1> | <H2> | <H3> | <H4> | <H5> | <H6>
- */
-static void Html_tag_close_h(DilloHtml *html, int TagIdx)
-{
-   HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
-}
-
-/*
  * <BR>
  */
 static void Html_tag_open_br(DilloHtml *html, const char *tag, int tagsize)
@@ -1948,6 +1940,14 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
  * <CENTER>
  */
 static void Html_tag_open_center(DilloHtml *html, const char *tag, int tagsize)
+{
+   HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
+}
+
+/*
+ * </CENTER>, also used for </TABLE>
+ */
+static void Html_tag_close_center(DilloHtml *html, int TagIdx)
 {
    HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
 }
@@ -2481,7 +2481,6 @@ static void Html_tag_close_a(DilloHtml *html, int TagIdx)
 static void Html_tag_open_blockquote(DilloHtml *html,
                                      const char *tag, int tagsize)
 {
-   HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
    Html_add_textblock(html, 9);
 }
 
@@ -2536,7 +2535,6 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHints (&props);
    }
 
-   HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
    Html_add_textblock(html, 9);
 
    S_TOP(html)->list_type = HTML_LIST_UNORDERED;
@@ -2595,7 +2593,6 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHints (&props);
    }
 
-   HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
    Html_add_textblock(html, 9);
 
    S_TOP(html)->list_type = HTML_LIST_ORDERED;
@@ -2746,7 +2743,6 @@ static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
 {
-   HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
    Html_add_textblock(html, 9);
 }
 
@@ -3060,14 +3056,6 @@ static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
- * </DIV>, also used for </TABLE> and </CENTER>
- */
-static void Html_tag_close_div(DilloHtml *html, int TagIdx)
-{
-   HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
-}
-
-/*
  * Default close for most tags.
  */
 static void Html_tag_close_default(DilloHtml *html, int TagIdx)
@@ -3123,22 +3111,23 @@ const TagInfo Tags[] = {
  /* basefont 010001 */
  /* bdo 010101 */
  {"big", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
- {"blockquote", B8(011110),'R',2,Html_tag_open_blockquote,Html_tag_close_par},
+ {"blockquote", B8(011110),'R',2, Html_tag_open_blockquote,
+                                  Html_tag_close_default},
  {"body", B8(011110),'O',1, Html_tag_open_body, Html_tag_close_body},
  {"br", B8(010001),'F',0, Html_tag_open_br, Html_tag_close_default},
  {"button", B8(011101),'R',2, Html_tag_open_button, Html_tag_close_button},
  /* caption */
- {"center", B8(011110),'R',2, Html_tag_open_center, Html_tag_close_div},
+ {"center", B8(011110),'R',2, Html_tag_open_center, Html_tag_close_center},
  {"cite", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"code", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  /* col 010010 'F' */
  /* colgroup */
- {"dd", B8(011110),'O',1, Html_tag_open_dd, Html_tag_close_par},
+ {"dd", B8(011110),'O',1, Html_tag_open_dd, Html_tag_close_default},
  {"del", B8(011101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"dfn", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"dir", B8(011010),'R',2, Html_tag_open_dir, Html_tag_close_par},
  /* TODO: complete <div> support! */
- {"div", B8(011110),'R',2, Html_tag_open_div, Html_tag_close_div},
+ {"div", B8(011110),'R',2, Html_tag_open_div, Html_tag_close_default},
  {"dl", B8(011010),'R',2, Html_tag_open_dl, Html_tag_close_par},
  {"dt", B8(010110),'O',1, Html_tag_open_dt, Html_tag_close_par},
  {"em", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
@@ -3147,12 +3136,12 @@ const TagInfo Tags[] = {
  {"form", B8(011110),'R',2, Html_tag_open_form, Html_tag_close_form},
  {"frame", B8(010010),'F',0, Html_tag_open_frame, Html_tag_close_default},
  {"frameset", B8(011110),'R',2,Html_tag_open_frameset, Html_tag_close_default},
- {"h1", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_h},
- {"h2", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_h},
- {"h3", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_h},
- {"h4", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_h},
- {"h5", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_h},
- {"h6", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_h},
+ {"h1", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_par},
+ {"h2", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_par},
+ {"h3", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_par},
+ {"h4", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_par},
+ {"h5", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_par},
+ {"h6", B8(010110),'R',2, Html_tag_open_h, Html_tag_close_par},
  {"head", B8(101101),'O',1, Html_tag_open_head, Html_tag_close_head},
  {"hr", B8(010010),'F',0, Html_tag_open_hr, Html_tag_close_default},
  {"html", B8(001110),'O',1, Html_tag_open_html, Html_tag_close_html},
@@ -3174,7 +3163,7 @@ const TagInfo Tags[] = {
  /* noframes 1011 */
  /* noscript 1011 */
  {"object", B8(111101),'R',2, Html_tag_open_object, Html_tag_close_default},
- {"ol", B8(011010),'R',2, Html_tag_open_ol, Html_tag_close_par},
+ {"ol", B8(011010),'R',2, Html_tag_open_ol, Html_tag_close_default},
  /* optgroup */
  {"option", B8(010001),'O',1, Html_tag_open_option, Html_tag_close_default},
  {"p", B8(010110),'O',1, Html_tag_open_p, Html_tag_close_par},
@@ -3192,7 +3181,7 @@ const TagInfo Tags[] = {
  {"style", B8(100101),'R',2, Html_tag_open_style, Html_tag_close_style},
  {"sub", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"sup", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
- {"table", B8(011010),'R',5, Html_tag_open_table, Html_tag_close_div},
+ {"table", B8(011010),'R',5, Html_tag_open_table, Html_tag_close_center},
  /* tbody */
  {"td", B8(011110),'O',3, Html_tag_open_td, Html_tag_close_default},
  {"textarea", B8(010101),'R',2,Html_tag_open_textarea,Html_tag_close_textarea},
@@ -3203,7 +3192,7 @@ const TagInfo Tags[] = {
  {"tr", B8(011010),'O',4, Html_tag_open_tr, Html_tag_close_default},
  {"tt", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
  {"u", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default},
- {"ul", B8(011010),'R',2, Html_tag_open_ul, Html_tag_close_par},
+ {"ul", B8(011010),'R',2, Html_tag_open_ul, Html_tag_close_default},
  {"var", B8(010101),'R',2, Html_tag_open_default, Html_tag_close_default}
 
 };
