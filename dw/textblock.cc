@@ -1690,16 +1690,16 @@ void Textblock::addSpace (core::style::Style *style)
       if (wordIndex >= 0) {
          Word *word = words->getRef(wordIndex);
 
-         word->effSpace = word->origSpace = style->font->spaceWidth;
-         word->content.space = true;
+         if (!word->content.space) {
+            word->content.space = true;
+            word->effSpace = word->origSpace = style->font->spaceWidth;
 
-         //DBG_OBJ_ARRSET_NUM (page, "words.%d.orig_space", nw,
-         //                    page->words[nw].orig_space);
-         //DBG_OBJ_ARRSET_NUM (page, "words.%d.eff_space", nw,
-         //                    page->words[nw].eff_space);
-         //DBG_OBJ_ARRSET_NUM (page, "words.%d.content.space", nw,
-         //                    page->words[nw].content.space);
-         if (style != word->spaceStyle) {
+            //DBG_OBJ_ARRSET_NUM (page, "words.%d.orig_space", nw,
+            //                    page->words[nw].orig_space);
+            //DBG_OBJ_ARRSET_NUM (page, "words.%d.eff_space", nw,
+            //                    page->words[nw].eff_space);
+            //DBG_OBJ_ARRSET_NUM (page, "words.%d.content.space", nw,
+            //                    page->words[nw].content.space);
             word->spaceStyle->unref ();
             word->spaceStyle = style;
             style->ref ();
