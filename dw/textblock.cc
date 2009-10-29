@@ -36,6 +36,7 @@ Textblock::Textblock (bool limitTextWidth)
 {
    registerName ("dw::Textblock", &CLASS_ID);
    setFlags (USES_HINTS);
+   setButtonSensitive(true);
 
    listItem = false;
    innerPadding = 0;

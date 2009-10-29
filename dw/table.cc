@@ -35,6 +35,7 @@ Table::Table(bool limitTextWidth)
 {
    registerName ("dw::Table", &CLASS_ID);
    setFlags (USES_HINTS);
+   setButtonSensitive(false);
 
    this->limitTextWidth = limitTextWidth;
 

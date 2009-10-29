@@ -35,6 +35,7 @@ TableCell::TableCell (TableCell *ref, bool limitTextWidth):
    //ignoreLine1OffsetSometimes = true;
    charWordIndex = -1;
    setRefTextblock (ref);
+   setButtonSensitive(true);
 }
 
 TableCell::~TableCell()
