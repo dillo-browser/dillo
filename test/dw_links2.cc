@@ -32,7 +32,7 @@ using namespace dw::core;
 using namespace dw::core::style;
 using namespace dw::fltk;
 
-class LinkTestReceiver: public Widget::LinkReceiver
+class LinkTestReceiver: public Layout::LinkReceiver
 {
    bool enter (Widget *widget, int link, int img, int x, int y);
    bool press (Widget *widget, int link, int img, int x, int y,
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
    textblock->setStyle (widgetStyle);
    layout->setWidget (textblock);
 
-   textblock->connectLink (new LinkTestReceiver ());
+   layout->connectLink (new LinkTestReceiver ());
 
    widgetStyle->unref();
 
