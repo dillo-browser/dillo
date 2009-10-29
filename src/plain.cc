@@ -35,12 +35,13 @@ using namespace dw::core;
 
 class DilloPlain {
 private:
-   class PlainEventReceiver: public dw::core::Widget::EventReceiver {
+   class PlainLinkReceiver: public dw::core::Layout::LinkReceiver {
    public:
       DilloPlain *plain;
-      bool buttonPress(dw::core::Widget *widget, dw::core::EventButton *event);
+      bool press(dw::core::Widget *widget, int link, int img, int x, int y,
+                 dw::core::EventButton *event);
    };
-   PlainEventReceiver plainReceiver;
+   PlainLinkReceiver plainReceiver;
 
 public:
    BrowserWindow *bw;
@@ -91,7 +92,8 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw)
    Start_Ofs = 0;
    state = ST_SeekingEol;
 
-   StyleEngine styleEngine ((Layout*)bw->render_layout);
+   Layout *layout = (Layout*) bw->render_layout;
+   StyleEngine styleEngine (layout);
 
    styleEngine.startElement ("body");
    styleEngine.startElement ("pre");
@@ -99,7 +101,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw)
    widgetStyle->ref ();
 
    /* The context menu */
-   DW2TB(dw)->connectEvent (&plainReceiver);
+   layout->connectLink (&plainReceiver);
 
    /* Hook destructor to the dw delete call */
    dw->setDeleteCallback(a_Plain_free, this);
@@ -117,10 +119,10 @@ DilloPlain::~DilloPlain()
 /*
  * Receive the mouse button press event
  */
-bool DilloPlain::PlainEventReceiver::buttonPress (Widget *widget,
-                                                  EventButton *event)
+bool DilloPlain::PlainLinkReceiver::press (Widget *widget, int, int, int, int,
+                                           EventButton *event)
 {
-   _MSG("DilloPlain::PlainEventReceiver::buttonPress\n");
+   _MSG("DilloPlain::PlainLinkReceiver::buttonPress\n");
 
    if (event->button == 3) {
       a_UIcmd_page_popup(plain->bw, FALSE, NULL);
