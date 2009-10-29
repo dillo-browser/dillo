@@ -1684,26 +1684,24 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
  */
 void Textblock::addSpace (core::style::Style *style)
 {
-   if (lines->size () > 0) {
-      int wordIndex = words->size () - 1;
+   int wordIndex = words->size () - 1;
 
-      if (wordIndex >= 0) {
-         Word *word = words->getRef(wordIndex);
+   if (wordIndex >= 0) {
+      Word *word = words->getRef(wordIndex);
 
-         if (!word->content.space) {
-            word->content.space = true;
-            word->effSpace = word->origSpace = style->font->spaceWidth;
+      if (!word->content.space) {
+         word->content.space = true;
+         word->effSpace = word->origSpace = style->font->spaceWidth;
 
-            //DBG_OBJ_ARRSET_NUM (page, "words.%d.orig_space", nw,
-            //                    page->words[nw].orig_space);
-            //DBG_OBJ_ARRSET_NUM (page, "words.%d.eff_space", nw,
-            //                    page->words[nw].eff_space);
-            //DBG_OBJ_ARRSET_NUM (page, "words.%d.content.space", nw,
-            //                    page->words[nw].content.space);
-            word->spaceStyle->unref ();
-            word->spaceStyle = style;
-            style->ref ();
-         }
+         //DBG_OBJ_ARRSET_NUM (page, "words.%d.orig_space", nw,
+         //                    page->words[nw].orig_space);
+         //DBG_OBJ_ARRSET_NUM (page, "words.%d.eff_space", nw,
+         //                    page->words[nw].eff_space);
+         //DBG_OBJ_ARRSET_NUM (page, "words.%d.content.space", nw,
+         //                    page->words[nw].content.space);
+         word->spaceStyle->unref ();
+         word->spaceStyle = style;
+         style->ref ();
       }
    }
 }
