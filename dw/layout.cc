@@ -932,6 +932,10 @@ bool Layout::processMouseEvent (MousePositionEvent *event,
          }
       }
    }
+   if (type == BUTTON_PRESS)
+      return emitLinkPress (NULL, -1, -1, -1, -1, (EventButton*)event);
+   else if (type == BUTTON_RELEASE)
+      return emitLinkRelease(NULL, -1, -1, -1, -1, (EventButton*)event);
 
    return false;
 }

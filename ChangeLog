@@ -35,6 +35,7 @@ dillo-2.2 [??]
  - Added 'save' key action (not bound by default).
  - Tooltips
  - Fix segfault when radio button lacks name attribute.
+ - Enable popup menu below bottom of page content (BUG#856).
    Patches: corvid
 +- Support for the letter-spacing property.
    Patch: Johannes Hofmann, corvid
