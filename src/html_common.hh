@@ -121,7 +121,7 @@ struct _DilloHtmlState {
 
 class DilloHtml {
 private:
-   class HtmlLinkReceiver: public dw::core::Widget::LinkReceiver {
+   class HtmlLinkReceiver: public dw::core::Layout::LinkReceiver {
    public:
       DilloHtml *html;
 

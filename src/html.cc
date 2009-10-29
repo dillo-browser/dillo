@@ -382,9 +382,6 @@ static void Html_add_textblock(DilloHtml *html, int space)
    HT2TB(html)->addParbreak (space, html->styleEngine->wordStyle ());
    S_TOP(html)->textblock = html->dw = textblock;
    S_TOP(html)->hand_over_break = true;
-
-   /* Handle it when the user clicks on a link */
-   html->connectSignals(textblock);
 }
 
 /*
@@ -393,14 +390,15 @@ static void Html_add_textblock(DilloHtml *html, int space)
 DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
                      const char *content_type)
 {
-   /* Init event receiver */
-   linkReceiver.html = this;
-
    /* Init main variables */
    bw = p_bw;
    page_url = a_Url_dup(url);
    base_url = a_Url_dup(url);
    dw = NULL;
+
+   /* Init event receiver */
+   linkReceiver.html = this;
+   HT2LT(this)->connectLink (&linkReceiver);
 
    a_Bw_add_doc(p_bw, this);
 
@@ -485,9 +483,6 @@ void DilloHtml::initDw()
    /* Create the main widget */
    dw = stack->getRef(0)->textblock = new Textblock (prefs.limit_text_width);
 
-   /* Handle it when the user clicks on a link */
-   connectSignals(dw);
-
    bw->num_page_bugs = 0;
    dStr_truncate(bw->page_bugs, 0);
 }
@@ -533,14 +528,6 @@ DilloHtml::~DilloHtml()
    delete styleEngine;
 
    //a_Dw_image_map_list_free(&maps);
-}
-
-/*
- * Connect all signals of a textblock or an image.
- */
-void DilloHtml::connectSignals(Widget *dw)
-{
-   dw->connectLink (&linkReceiver);
 }
 
 /*
@@ -2171,7 +2158,6 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
                             new ::object::String(URL_STR(usemap_url)));
       a_Url_free (usemap_url);
    }
-   html->connectSignals((Widget*)Image->dw);
 }
 
 /*
@@ -2635,8 +2621,6 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
    HT2TB(html)->addParbreak (0, wordStyle);
    *ref_list_item = list_item;
    S_TOP(html)->textblock = html->dw = list_item;
-   /* Handle it when the user clicks on a link */
-   html->connectSignals(list_item);
 
    if (style->listStyleType == LIST_STYLE_TYPE_NONE) {
       // none

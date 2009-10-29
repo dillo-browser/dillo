@@ -548,7 +548,7 @@ bool Textblock::motionNotifyImpl (core::EventMotion *event)
          hoverTooltip->onMotion ();
 
       if (hoverLink != linkOld)
-         return emitLinkEnter (hoverLink, -1, -1, -1);
+         return layout->emitLinkEnter (this, hoverLink, -1, -1, -1);
       else
          return hoverLink != -1;
    }
@@ -561,7 +561,7 @@ void Textblock::enterNotifyImpl (core::EventCrossing *event)
 void Textblock::leaveNotifyImpl (core::EventCrossing *event)
 {
    hoverLink = -1;
-   (void) emitLinkEnter (hoverLink, -1, -1, -1);
+   (void) layout->emitLinkEnter (this, hoverLink, -1, -1, -1);
    if (hoverTooltip) {
       hoverTooltip->onLeave();
       hoverTooltip = NULL;

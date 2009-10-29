@@ -856,8 +856,6 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
 
       S_TOP(html)->textblock = html->dw = page;
-      /* right button press for menus for button contents */
-      html->connectSignals(page);
 
       value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
       name = a_Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
@@ -1915,8 +1913,6 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
          HT2TB(html)->addWidget (button, html->styleEngine->style ());
 //       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
 
-         /* a right button press brings up the image menu */
-         html->connectSignals((Widget*)Image->dw);
       } else {
          a_Url_free(url);
       }

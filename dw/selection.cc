@@ -118,8 +118,7 @@ bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
       if (linkNo != -1) {
          // link handling
          if (event) {
-            // return value is ignored
-            itWidget->emitLinkPress (linkNo, -1, -1, -1, event);
+            (void) layout->emitLinkPress (itWidget, linkNo, -1, -1, -1, event);
             resetLink ();
             linkState = LINK_PRESSED;
             linkButton = event->button;
@@ -162,7 +161,7 @@ bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
          } else {
             if (event && event->button == 3) {
                // menu popup
-               itWidget->emitLinkPress (-1, -1, -1, -1, event);
+               layout->emitLinkPress (itWidget, -1, -1, -1, -1, event);
                ret = true;
             }
          }
@@ -182,14 +181,12 @@ bool SelectionState::buttonRelease (Iterator *it, int charPos, int linkNo,
       // link handling
       ret = true;
       if (linkNo != -1)
-         // return value is ignored
-         itWidget->emitLinkRelease (linkNo, -1, -1, -1, event);
+         (void) layout->emitLinkRelease (itWidget, linkNo, -1, -1, -1, event);
 
       // The link where the user clicked the mouse button?
       if (linkNo == linkNumber) {
          resetLink ();
-         // return value is ignored
-         itWidget->emitLinkClick (linkNo, -1, -1, -1, event);
+         (void) layout->emitLinkClick (itWidget, linkNo, -1, -1, -1, event);
       } else {
          if (event->button == 1)
             // Reset links and switch to selection mode. The selection

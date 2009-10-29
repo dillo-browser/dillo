@@ -29,6 +29,78 @@ public:
       virtual void canvasSizeChanged (int width, int ascent, int descent);
    };
 
+   class LinkReceiver: public lout::signal::Receiver
+   {
+   public:
+      /**
+       * \brief Called, when a link is entered, left, or the position has
+       *    changed.
+       *
+       * When a link is entered, this method is called with the respective
+       * arguments. When a link is left, this method is called with all
+       * three arguments (\em link, \em x, \em y) set to -1.
+       *
+       * When coordinates are supported, a change of the coordinates also
+       * causes emitting this signal.
+       */
+      virtual bool enter (Widget *widget, int link, int img, int x, int y);
+
+      /**
+       * \brief Called, when the user has pressed the mouse button on a
+       *    link (but not yet released).
+       *
+       * The causing event is passed as \em event.
+       */
+      virtual bool press (Widget *widget, int link, int img, int x, int y,
+                          EventButton *event);
+
+      /**
+       * \brief Called, when the user has released the mouse button on a
+       *    link.
+       *
+       * The causing event is passed as \em event.
+       */
+      virtual bool release (Widget *widget, int link, int img, int x, int y,
+                            EventButton *event);
+
+      /**
+       * \brief Called, when the user has clicked on a link.
+       *
+       * For mouse interaction, this is equivalent to "press" and "release"
+       * on the same link. In this case, \em event contains the "release"
+       * event.
+       *
+       *
+       * When activating links via keyboard is supported, only a "clicked"
+       * signal will be emitted, and \em event will be NULL.
+       */
+      virtual bool click (Widget *widget, int link, int img, int x, int y,
+                          EventButton *event);
+   };
+
+   class LinkEmitter: public lout::signal::Emitter
+   {
+   private:
+      enum { ENTER, PRESS, RELEASE, CLICK };
+
+   protected:
+      bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
+                           int argc, lout::object::Object **argv);
+
+   public:
+      inline void connectLink (LinkReceiver *receiver) { connect (receiver); }
+
+      bool emitEnter (Widget *widget, int link, int img, int x, int y);
+      bool emitPress (Widget *widget, int link, int img, int x, int y,
+                      EventButton *event);
+      bool emitRelease (Widget *widget, int link, int img, int x, int y,
+                        EventButton *event);
+      bool emitClick (Widget *widget, int link, int img, int x, int y,
+                      EventButton *event);
+   };
+
+   LinkEmitter linkEmitter;
+
 private:
    class Emitter: public lout::signal::Emitter
    {
@@ -140,6 +212,24 @@ private:
 public:
    Layout (Platform *platform);
    ~Layout ();
+
+   inline void connectLink (LinkReceiver *receiver)
+   { linkEmitter.connectLink (receiver); }
+
+   inline bool emitLinkEnter (Widget *w, int link, int img, int x, int y)
+   { return linkEmitter.emitEnter (w, link, img, x, y); }
+
+   inline bool emitLinkPress (Widget *w, int link, int img,
+                              int x, int y, EventButton *event)
+   { return linkEmitter.emitPress (w, link, img, x, y, event); }
+
+   inline bool emitLinkRelease (Widget *w, int link, int img,
+                                int x, int y, EventButton *event)
+   { return linkEmitter.emitRelease (w, link, img, x, y, event); }
+
+   inline bool emitLinkClick (Widget *w, int link, int img,
+                              int x, int y, EventButton *event)
+   { return linkEmitter.emitClick (w, link, img, x, y, event); }
 
    lout::misc::ZoneAllocator *textZone;
 

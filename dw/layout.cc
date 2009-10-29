@@ -66,6 +66,110 @@ void Layout::Emitter::emitCanvasSizeChanged (int width,
    emitVoid (CANVAS_SIZE_CHANGED, 3, argv);
 }
 
+// ----------------------------------------------------------------------
+
+bool Layout::LinkReceiver::enter (Widget *widget, int link, int img,
+                                  int x, int y)
+{
+   return false;
+}
+
+bool Layout::LinkReceiver::press (Widget *widget, int link, int img,
+                                  int x, int y, EventButton *event)
+{
+   return false;
+}
+
+bool Layout::LinkReceiver::release (Widget *widget, int link, int img,
+                                    int x, int y, EventButton *event)
+{
+   return false;
+}
+
+bool Layout::LinkReceiver::click (Widget *widget, int link, int img,
+                                    int x, int y, EventButton *event)
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------
+
+bool Layout::LinkEmitter::emitToReceiver (lout::signal::Receiver *receiver,
+                                          int signalNo, int argc,
+                                          lout::object::Object **argv)
+{
+   LinkReceiver *linkReceiver = (LinkReceiver*)receiver;
+
+   switch (signalNo) {
+   case ENTER:
+      return linkReceiver->enter ((Widget*)argv[0],
+                                  ((Integer*)argv[1])->getValue (),
+                                  ((Integer*)argv[2])->getValue (),
+                                  ((Integer*)argv[3])->getValue (),
+                                  ((Integer*)argv[4])->getValue ());
+
+   case PRESS:
+      return linkReceiver->press ((Widget*)argv[0],
+                                  ((Integer*)argv[1])->getValue (),
+                                  ((Integer*)argv[2])->getValue (),
+                                  ((Integer*)argv[3])->getValue (),
+                                  ((Integer*)argv[4])->getValue (),
+                                  (EventButton*)argv[5]);
+
+   case RELEASE:
+      return linkReceiver->release ((Widget*)argv[0],
+                                    ((Integer*)argv[1])->getValue (),
+                                    ((Integer*)argv[2])->getValue (),
+                                    ((Integer*)argv[3])->getValue (),
+                                    ((Integer*)argv[4])->getValue (),
+                                    (EventButton*)argv[5]);
+
+   case CLICK:
+      return linkReceiver->click ((Widget*)argv[0],
+                                  ((Integer*)argv[1])->getValue (),
+                                  ((Integer*)argv[2])->getValue (),
+                                  ((Integer*)argv[3])->getValue (),
+                                  ((Integer*)argv[4])->getValue (),
+                                  (EventButton*)argv[5]);
+
+   default:
+      misc::assertNotReached ();
+   }
+   return false;
+}
+
+bool Layout::LinkEmitter::emitEnter (Widget *widget, int link, int img,
+                                     int x, int y)
+{
+   Integer ilink (link), iimg (img), ix (x), iy (y);
+   Object *argv[5] = { widget, &ilink, &iimg, &ix, &iy };
+   return emitBool (ENTER, 5, argv);
+}
+
+bool Layout::LinkEmitter::emitPress (Widget *widget, int link, int img,
+                                     int x, int y, EventButton *event)
+{
+   Integer ilink (link), iimg (img), ix (x), iy (y);
+   Object *argv[6] = { widget, &ilink, &iimg, &ix, &iy, event };
+   return emitBool (PRESS, 6, argv);
+}
+
+bool Layout::LinkEmitter::emitRelease (Widget *widget, int link, int img,
+                                       int x, int y, EventButton *event)
+{
+   Integer ilink (link), iimg (img), ix (x), iy (y);
+   Object *argv[6] = { widget, &ilink, &iimg, &ix, &iy, event };
+   return emitBool (RELEASE, 6, argv);
+}
+
+bool Layout::LinkEmitter::emitClick (Widget *widget, int link, int img,
+                                     int x, int y, EventButton *event)
+{
+   Integer ilink (link), iimg (img), ix (x), iy (y);
+   Object *argv[6] = { widget, &ilink, &iimg, &ix, &iy, event };
+   return emitBool (CLICK, 6, argv);
+}
+
 // ---------------------------------------------------------------------
 
 Layout::Anchor::~Anchor ()

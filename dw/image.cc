@@ -229,7 +229,7 @@ void Image::enterNotifyImpl (core::EventCrossing *event)
    core::style::Tooltip *tooltip = getStyle()->x_tooltip;
 
    if (currLink != -1) {
-      (void) emitLinkEnter (currLink, -1, -1, -1);
+      (void) layout->emitLinkEnter (this, currLink, -1, -1, -1);
    }
    if (tooltip) {
       tooltip->onEnter();
@@ -243,7 +243,7 @@ void Image::leaveNotifyImpl (core::EventCrossing *event)
 
    if (currLink != -1) {
       currLink = -1;
-      (void) emitLinkEnter (-1, -1, -1, -1);
+      (void) layout->emitLinkEnter (this, -1, -1, -1, -1);
    }
    if (tooltip) {
       tooltip->onLeave();
@@ -286,11 +286,11 @@ bool Image::motionNotifyImpl (core::EventMotion *event)
             /* \todo Using MAP/AREA styles would probably be best */
             setCursor(newLink == -1 ? getStyle()->cursor :
                                       core::style::CURSOR_POINTER);
-            (void) emitLinkEnter (newLink, -1, -1, -1);
+            (void) layout->emitLinkEnter (this, newLink, -1, -1, -1);
          }
       } else if (isMap && currLink != -1) {
          /* server-side image map */
-         (void) emitLinkEnter (currLink, -1, x, y);
+         (void) layout->emitLinkEnter (this, currLink, -1, x, y);
       }
    }
    return true;
@@ -303,7 +303,8 @@ bool Image::buttonPressImpl (core::EventButton *event)
    currLink = mapList? mapList->link (mapKey, contentX(event),contentY(event)):
               getStyle()->x_link;
    if (event->button == 3){
-      (void)emitLinkPress(currLink, getStyle()->x_img, -1,-1,event);
+      (void)layout->emitLinkPress(this, currLink, getStyle()->x_img, -1, -1,
+                                  event);
       ret = true;
    } else if (event->button == 1 || currLink != -1){
       clicking = true;
@@ -320,7 +321,7 @@ bool Image::buttonReleaseImpl (core::EventButton *event)
       int x = isMap ? contentX(event) : -1;
       int y = isMap ? contentY(event) : -1;
       clicking = false;
-      emitLinkClick (currLink, getStyle()->x_img, x, y, event);
+      layout->emitLinkClick (this, currLink, getStyle()->x_img, x, y, event);
       return true;
    }
    return false;

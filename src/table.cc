@@ -292,10 +292,6 @@ static void Html_tag_open_table_cell(DilloHtml *html,
 
       ((dw::Table*)S_TOP(html)->table)->addCell (col_tb, colspan, rowspan);
       S_TOP(html)->textblock = html->dw = col_tb;
-
-      /* Handle it when the user clicks on a link */
-      html->connectSignals(col_tb);
-
       break;
 
    default:
