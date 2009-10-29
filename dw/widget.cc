@@ -30,101 +30,6 @@ using namespace lout::object;
 namespace dw {
 namespace core {
 
-bool Widget::EventReceiver::buttonPress (Widget *widget, EventButton *event)
-{
-   return false;
-}
-
-bool Widget::EventReceiver::buttonRelease (Widget *widget, EventButton *event)
-{
-   return false;
-}
-
-bool Widget::EventReceiver::motionNotify (Widget *widget, EventMotion *event)
-{
-   return false;
-}
-
-void Widget::EventReceiver::enterNotify (Widget *widget, EventCrossing *event)
-{
-}
-
-void Widget::EventReceiver::leaveNotify (Widget *widget, EventCrossing *event)
-{
-}
-
-
-bool Widget::EventEmitter::emitToReceiver (lout::signal::Receiver *receiver,
-                                           int signalNo, int argc,
-                                           lout::object::Object **argv)
-{
-   EventReceiver *eventReceiver = (EventReceiver*)receiver;
-
-   switch (signalNo) {
-   case BUTTON_PRESS:
-      return eventReceiver->buttonPress ((Widget*)argv[0],
-                                         (EventButton*)argv[1]);
-
-   case BUTTON_RELEASE:
-      return eventReceiver->buttonRelease ((Widget*)argv[0],
-                                           (EventButton*)argv[1]);
-
-   case MOTION_NOTIFY:
-      return eventReceiver->motionNotify ((Widget*)argv[0],
-                                          (EventMotion*)argv[1]);
-
-   case ENTER_NOTIFY:
-      eventReceiver->enterNotify ((Widget*)argv[0],
-                                  (EventCrossing*)argv[1]);
-      break;
-
-   case LEAVE_NOTIFY:
-      eventReceiver->leaveNotify ((Widget*)argv[1],
-                                  (EventCrossing*)argv[0]);
-      break;
-
-   default:
-      misc::assertNotReached ();
-   }
-
-   /* Compiler happiness. */
-   return false;
-}
-
-bool Widget::EventEmitter::emitButtonPress (Widget *widget, EventButton *event)
-{
-   Object *argv[2] = { widget, event };
-   return emitBool (BUTTON_PRESS, 2, argv);
-}
-
-bool Widget::EventEmitter::emitButtonRelease (Widget *widget,
-                                              EventButton *event)
-{
-   Object *argv[2] = { widget, event };
-   return emitBool (BUTTON_RELEASE, 2, argv);
-}
-
-bool Widget::EventEmitter::emitMotionNotify (Widget *widget,
-                                             EventMotion *event)
-{
-   Object *argv[2] = { widget, event };
-   return emitBool (MOTION_NOTIFY, 2, argv);
-}
-
-void Widget::EventEmitter::emitEnterNotify (Widget *widget,
-                                            EventCrossing *event)
-{
-   Object *argv[2] = { widget, event };
-   emitVoid (ENTER_NOTIFY, 2, argv);
-}
-
-void Widget::EventEmitter::emitLeaveNotify (Widget *widget,
-                                            EventCrossing *event)
-{
-   Object *argv[2] = { widget, event };
-   emitVoid (LEAVE_NOTIFY, 2, argv);
-}
-
 // ----------------------------------------------------------------------
 
 int Widget::CLASS_ID = -1;
@@ -353,35 +258,27 @@ void Widget::sizeAllocate (Allocation *allocation)
 
 bool Widget::buttonPress (EventButton *event)
 {
-   bool b1 = buttonPressImpl (event);
-   bool b2 = eventEmitter.emitButtonPress (this, event);
-   return b1 || b2;
+   return buttonPressImpl (event);
 }
 
 bool Widget::buttonRelease (EventButton *event)
 {
-   bool b1 = buttonReleaseImpl (event);
-   bool b2 = eventEmitter.emitButtonRelease (this, event);
-   return b1 || b2;
+   return buttonReleaseImpl (event);
 }
 
 bool Widget::motionNotify (EventMotion *event)
 {
-   bool b1 = motionNotifyImpl (event);
-   bool b2 = eventEmitter.emitMotionNotify (this, event);
-   return b1 || b2;
+   return motionNotifyImpl (event);
 }
 
 void Widget::enterNotify (EventCrossing *event)
 {
    enterNotifyImpl (event);
-   eventEmitter.emitEnterNotify (this, event);
 }
 
 void Widget::leaveNotify (EventCrossing *event)
 {
    leaveNotifyImpl (event);
-   eventEmitter.emitLeaveNotify (this, event);
 }
 
 /**

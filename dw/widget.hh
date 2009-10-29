@@ -24,44 +24,6 @@ class Widget: public lout::identity::IdentifiableObject
 {
    friend class Layout;
 
-public:
-   class EventReceiver: public lout::signal::Receiver
-   {
-   public:
-      virtual bool buttonPress (Widget *widget, EventButton *event);
-      virtual bool buttonRelease (Widget *widget, EventButton *event);
-      virtual bool motionNotify (Widget *widget, EventMotion *event);
-      virtual void enterNotify (Widget *widget, EventCrossing *event);
-      virtual void leaveNotify (Widget *widget, EventCrossing *event);
-   };
-
-private:
-   class EventEmitter: public lout::signal::Emitter
-   {
-   private:
-      enum { BUTTON_PRESS, BUTTON_RELEASE, MOTION_NOTIFY, ENTER_NOTIFY,
-             LEAVE_NOTIFY };
-
-   protected:
-      bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
-                           int argc, lout::object::Object **argv);
-
-   public:
-      inline void connectEvent (EventReceiver *receiver)
-      { connect (receiver); }
-
-      bool emitButtonPress (Widget *widget, EventButton *event);
-      bool emitButtonRelease (Widget *widget, EventButton *event);
-      bool emitMotionNotify (Widget *widget, EventMotion *event);
-      void emitEnterNotify (Widget *widget, EventCrossing *event);
-      void emitLeaveNotify (Widget *widget, EventCrossing *event);
-   };
-
-   EventEmitter eventEmitter;
-
-   style::Style *style;
-
-
 protected:
    enum Flags {
       /**
@@ -112,6 +74,7 @@ private:
     * \brief The parent widget, NULL for top-level widgets.
     */
    Widget *parent;
+   style::Style *style;
 
    Flags flags;
 
@@ -273,10 +236,6 @@ public:
    inline bool needsAllocate ()   { return flags & NEEDS_ALLOCATE; }
    inline bool extremesChanged () { return flags & EXTREMES_CHANGED; }
    inline bool wasAllocated ()    { return flags & WAS_ALLOCATED; }
-
-   inline void connectEvent (EventReceiver *receiver)
-   { eventEmitter.connectEvent (receiver); }
-
    inline bool usesHints ()       { return flags & USES_HINTS; }
    inline bool hasContents ()     { return flags & HAS_CONTENTS; }
 
