@@ -56,7 +56,7 @@
 /*
  * Global variables
  */
-static SockHandler *sh = NULL;
+static Dsh *sh = NULL;
 static char **dl_argv = NULL;
 
 /*---------------------------------------------------------------------------*/
@@ -240,18 +240,18 @@ static int try_ftp_transfer(char *url)
       if (!has_html_header && dbuf->len) {
          /* Send dpip tag */
          d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", url);
-         sock_handler_write_str(sh, 1, d_cmd);
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
 
          /* Send HTTP header. */
-         sock_handler_write_str(sh, 0, "Content-type: ");
-         sock_handler_write_str(sh, 0, mime_type);
-         sock_handler_write_str(sh, 1, "\n\n");
+         a_Dpip_dsh_write_str(sh, 0, "Content-type: ");
+         a_Dpip_dsh_write_str(sh, 0, mime_type);
+         a_Dpip_dsh_write_str(sh, 1, "\n\n");
          has_html_header = 1;
       }
 
       if (!aborted && dbuf->len) {
-         sock_handler_write(sh, 0, dbuf->str, dbuf->len);
+         a_Dpip_dsh_write(sh, 0, dbuf->str, dbuf->len);
          nb += dbuf->len;
          dStr_truncate(dbuf, 0);
       }
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
       dpip_tag = dStrdup(argv[1]);
 
    /* Initialize the SockHandler */
-   sh = sock_handler_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
+   sh = a_Dpip_dsh_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
 
    /* wget may need to write a temporary file... */
    rc = chdir("/tmp");
@@ -283,9 +283,17 @@ int main(int argc, char **argv)
           dStrerror(errno));
    }
 
+   /* Authenticate our client... */
+   if (!(dpip_tag = a_Dpip_dsh_read_token(sh, 1)) ||
+       a_Dpip_check_auth(dpip_tag) < 0) {
+      MSG("can't authenticate request: %s\n", dStrerror(errno));
+      a_Dpip_dsh_close(sh);
+      return 1;
+   }
+   dFree(dpip_tag);
+
    /* Read the dpi command from STDIN */
-   if (!dpip_tag)
-      dpip_tag = sock_handler_read(sh);
+   dpip_tag = a_Dpip_dsh_read_token(sh, 1);
    MSG("tag=[%s]\n", dpip_tag);
 
    cmd = a_Dpip_get_attr(dpip_tag, "cmd");
@@ -308,7 +316,7 @@ int main(int argc, char **argv)
       /* The transfer failed, let dillo know... */
       d_cmd = a_Dpip_build_cmd("cmd=%s to_cmd=%s msg=%s",
                                "answer", "open_url", "not a directory");
-      sock_handler_write_str(sh, 1, d_cmd);
+      a_Dpip_dsh_write_str(sh, 1, d_cmd);
       dFree(d_cmd);
    }
 
@@ -318,8 +326,8 @@ int main(int argc, char **argv)
    dFree(dpip_tag);
 
    /* Finish the SockHandler */
-   sock_handler_close(sh);
-   sock_handler_free(sh);
+   a_Dpip_dsh_close(sh);
+   a_Dpip_dsh_free(sh);
 
    return 0;
 }
