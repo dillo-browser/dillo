@@ -31,9 +31,10 @@
 
 
 /*!
- * Macro for calling the ckd_write function
+ * Macros for calling ckd_write and ckd_close functions
  */
 #define CKD_WRITE(fd, msg) ckd_write(fd, msg, __FILE__, __LINE__)
+#define CKD_CLOSE(fd)      ckd_close(fd, __FILE__, __LINE__)
 
 
 /*! Error codes for dpid */
@@ -56,5 +57,6 @@ void errmsg(char *caller, char *called, int errornum, char *file, int line);
 int no_dotfiles(const struct dirent *filedat);
 
 ssize_t ckd_write(int fd, char *msg, char *file, int line);
+ssize_t ckd_close(int fd, char *file, int line);
 
 #endif

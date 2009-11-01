@@ -221,6 +221,8 @@ int a_Dpip_check_auth(const char *auth_tag)
       if (strcmp(msg, SharedSecret) == 0)
          ret = 1;
    }
+   if (In)
+      fclose(In);
    dFree(rcline);
    dFree(fname);
    dFree(msg);
@@ -243,7 +245,6 @@ Dsh *a_Dpip_dsh_new(int fd_in, int fd_out, int flush_sz)
    /* init descriptors and streams */
    dsh->fd_in  = fd_in;
    dsh->fd_out = fd_out;
-   dsh->out = fdopen(fd_out, "w");
 
    /* init buffer */
    dsh->dbuf = dStr_sized_new(8 *1024);
@@ -263,27 +264,88 @@ Dsh *a_Dpip_dsh_new(int fd_in, int fd_out, int flush_sz)
  */
 int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize)
 {
-   int ret = 1;
+   int blocking, old_flags, st, sent = 0, ret = 1;
 
    /* append to buf */
    dStr_append_l(dsh->dbuf, Data, DataSize);
 
-   /* flush data if necessary */
-   if (flush || dsh->dbuf->len >= dsh->flush_sz) {
-      if (dsh->dbuf->len &&
-          fwrite (dsh->dbuf->str, dsh->dbuf->len, 1, dsh->out) != 1) {
-         MSG_ERR("[a_Dpip_dsh_write] %s\n", dStrerror(errno));
-      } else {
-         fflush(dsh->out);
-         dStr_truncate(dsh->dbuf, 0);
-         ret = 0;
-      }
+   if (!flush || dsh->dbuf->len == 0)
+      return 0;
 
-   } else {
-      ret = 0;
+   blocking = !(dsh->mode & DPIP_NONBLOCK);
+   if (!blocking) {
+      /* set BLOCKING temporarily... */
+      old_flags = fcntl(dsh->fd_in, F_GETFL);
+      fcntl(dsh->fd_in, F_SETFL, old_flags & ~O_NONBLOCK);
+   }
+
+   while (1) {
+      st = write(dsh->fd_out, dsh->dbuf->str + sent, dsh->dbuf->len - sent);
+      if (st < 0) {
+         if (errno == EINTR) {
+            continue;
+         } else {
+            dsh->status = DPIP_ERROR;
+            break;
+         }
+      } else {
+         sent += st;
+         if (sent == dsh->dbuf->len) {
+            dStr_truncate(dsh->dbuf, 0);
+            ret = 0;
+            break;
+         }
+      }
+   }
+
+   if (!blocking) {
+      /* restore nonblocking mode */
+      fcntl(dsh->fd_in, F_SETFL, old_flags);
    }
 
    return ret;
+}
+
+/*
+ * Return value: 1..DataSize sent, -1 eagain, or -3 on big Error
+ */
+int a_Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize)
+{
+   int blocking, old_flags, st, ret = -3, sent = 0;
+
+   blocking = !(dsh->mode & DPIP_NONBLOCK);
+   if (blocking) {
+      /* set NONBLOCKING temporarily... */
+      old_flags = fcntl(dsh->fd_in, F_GETFL);
+      fcntl(dsh->fd_in, F_SETFL, O_NONBLOCK | old_flags);
+   }
+
+   while (1) {
+      st = write(dsh->fd_out, Data + sent, DataSize - sent);
+      if (st < 0) {
+         if (errno == EINTR) {
+            continue;
+         } else if (errno == EAGAIN) {
+            dsh->status = DPIP_EAGAIN;
+            ret = -1;
+            break;
+         } else {
+            MSG_ERR("[a_Dpip_dsh_trywrite] %s\n", dStrerror(errno));
+            dsh->status = DPIP_ERROR;
+            ret = -3;
+            break;
+         }
+      }
+      sent += st;
+      break;
+   }
+
+   if (blocking) {
+      /* restore blocking mode */
+      fcntl(dsh->fd_in, F_SETFL, old_flags);
+   }
+
+   return (st > 0 ? sent : ret);
 }
 
 /*
@@ -303,6 +365,8 @@ static void Dpip_dsh_read_nb(Dsh *dsh)
    int old_flags, blocking;
    char buf[RBUF_SZ];
 
+   dReturn_if (dsh->status == DPIP_ERROR || dsh->status == DPIP_EOF);
+
    blocking = !(dsh->mode & DPIP_NONBLOCK);
    if (blocking) {
       /* set NONBLOCKING temporarily... */
@@ -320,7 +384,7 @@ static void Dpip_dsh_read_nb(Dsh *dsh)
             /* no problem, return what we've got so far... */
             dsh->status = DPIP_EAGAIN;
          } else {
-            MSG_ERR("[Dpip_dsh_read] %s\n", dStrerror(errno));
+            MSG_ERR("[Dpip_dsh_read_nb] %s\n", dStrerror(errno));
             dsh->status = DPIP_ERROR;
          }
          break;
@@ -348,6 +412,8 @@ static void Dpip_dsh_read(Dsh *dsh)
    ssize_t st;
    int old_flags, non_blocking;
    char buf[RBUF_SZ];
+
+   dReturn_if (dsh->status == DPIP_ERROR || dsh->status == DPIP_EOF);
 
    non_blocking = (dsh->mode & DPIP_NONBLOCK);
    if (non_blocking) {
@@ -434,10 +500,20 @@ char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
  */
 void a_Dpip_dsh_close(Dsh *dsh)
 {
+   int st;
+
    /* flush internal buffer */
    a_Dpip_dsh_write(dsh, 1, "", 0);
-   fclose(dsh->out);
-   close(dsh->fd_out);
+
+   /* close fds */
+   while((st = close(dsh->fd_in)) < 0 && errno == EINTR) ;
+   if (st < 0)
+      MSG_ERR("[a_Dpip_dsh_close] close: %s\n", dStrerror(errno));
+   if (dsh->fd_out != dsh->fd_in) {
+      while((st = close(dsh->fd_out)) < 0 && errno == EINTR) ;
+      if (st < 0)
+         MSG_ERR("[a_Dpip_dsh_close] close: %s\n", dStrerror(errno));
+   }
 }
 
 /*

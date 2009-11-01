@@ -513,6 +513,25 @@ int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
    return (dList_length(*services_list));
 }
 
+/*
+ * Return a socket file descriptor
+ * (useful to set socket options in a uniform way)
+ */
+static int make_socket_fd()
+{
+   int ret;
+
+   if ((ret = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+      ERRMSG("make_socket_fd", "socket", errno);
+   }
+
+   /* set some buffering to increase the transfer's speed */
+   //setsockopt(sock_fd, SOL_SOCKET, SO_SNDBUF,
+   //           &sock_buflen, (socklen_t)sizeof(sock_buflen));
+
+   return ret;
+}
+
 /*! Bind a socket port on localhost. Try to be close to base_port.
  * \Return
  * \li listening socket file descriptor on success
@@ -522,19 +541,14 @@ int bind_socket_fd(int base_port, int *p_port)
 {
    int sock_fd, port;
    struct sockaddr_in sin;
-   //size_t sock_buflen = 8192;
    int ok = 0, last_port = base_port + 50;
 
-   if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-      ERRMSG("bind_socket_fd", "socket", errno);
+   if ((sock_fd = make_socket_fd()) == -1) {
       return (-1);              /* avoids nested ifs */
    }
    /* Set the socket FD to close on exec */
    fcntl(sock_fd, F_SETFD, FD_CLOEXEC | fcntl(sock_fd, F_GETFD));
 
-   /* set some buffering to increase the transfer's speed */
-   //setsockopt(sock_fd, SOL_SOCKET, SO_SNDBUF,
-   //           &sock_buflen, (socklen_t)sizeof(sock_buflen));
 
    memset(&sin, 0, sizeof(sin));
    sin.sin_family = AF_INET;
@@ -579,8 +593,9 @@ int save_comm_keys(int srs_port)
       MSG("save_comm_keys: open %s\n", dStrerror(errno));
    } else {
       snprintf(port_str, 16, "%d %s\n", srs_port, SharedKey);
-      if (CKD_WRITE(fd, port_str) != -1)
+      if (CKD_WRITE(fd, port_str) != -1 && CKD_CLOSE(fd) != -1) {
          ret = 1;
+      }
    }
 
    return ret;
@@ -734,10 +749,11 @@ void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
       if (dpi_attr_list[i].pid == 1 || dpi_attr_list[i].filter)
          continue;
 
-      if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+      if ((sock_fd = make_socket_fd()) == -1) {
          ERRMSG("stop_active_dpis", "socket", errno);
          continue;
       }
+
       sin.sin_port = htons(dpi_attr_list[i].port);
       if (ckd_connect(sock_fd, (struct sockaddr *)&sin, sizeof(sin)) == -1) {
          ERRMSG("stop_active_dpis", "connect", errno);

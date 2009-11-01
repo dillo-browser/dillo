@@ -423,6 +423,19 @@ static int Dpi_read_comm_keys(int *port)
 }
 
 /*
+ * Return a socket file descriptor
+ */
+static int Dpi_make_socket_fd()
+{
+   int fd, ret = -1;
+
+   if ((fd = socket(AF_INET, SOCK_STREAM, 0)) != -1) {
+      ret = fd;
+   }
+   return ret;
+}
+
+/*
  * Make a connection test for a IDS.
  * Return: 1 OK, -1 Not working.
  */
@@ -439,7 +452,7 @@ static int Dpi_check_dpid_ids()
 
    if (Dpi_read_comm_keys(&dpid_port) != -1) {
       sin.sin_port = htons(dpid_port);
-      if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+      if ((sock_fd = Dpi_make_socket_fd()) == -1) {
          MSG("Dpi_check_dpid_ids: sock_fd=%d %s\n", sock_fd, dStrerror(errno));
       } else if (connect(sock_fd, (struct sockaddr *)&sin, sin_sz) == -1) {
          MSG("Dpi_check_dpid_ids: %s\n", dStrerror(errno));
@@ -538,7 +551,7 @@ int Dpi_get_server_port(const char *server_name)
       sin.sin_family = AF_INET;
       sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
       sin.sin_port = htons(dpid_port);
-      if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1 ||
+      if ((sock_fd = Dpi_make_socket_fd()) == -1 ||
           connect(sock_fd, (struct sockaddr *)&sin, sin_sz) == -1) {
          MSG("Dpi_get_server_port: %s\n", dStrerror(errno));
       } else {
@@ -613,7 +626,7 @@ static int Dpi_connect_socket(const char *server_name, int retry)
    sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
    sin.sin_port = htons(dpi_port);
 
-   if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+   if ((sock_fd = Dpi_make_socket_fd()) == -1) {
       perror("[dpi::socket]");
    } else if (connect(sock_fd, (void*)&sin, sizeof(sin)) == -1) {
       err = errno;

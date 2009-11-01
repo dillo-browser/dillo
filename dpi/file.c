@@ -60,7 +60,7 @@
 
 
 typedef enum {
-   st_start,
+   st_start = 10,
    st_dpip,
    st_http,
    st_content,
@@ -92,6 +92,8 @@ typedef struct {
    int err_code;
    int flags;
    int old_style;
+
+   Dstr *dbuf;
 } ClientInfo;
 
 /*
@@ -115,7 +117,7 @@ fd_set read_set, write_set;
  */
 static void File_close(int fd)
 {
-   while (close(fd) < 0 && errno == EINTR)
+   while (fd >= 0 && close(fd) < 0 && errno == EINTR)
       ;
 }
 
@@ -547,7 +549,7 @@ static const char *File_content_type(const char *filename)
          File_close(fd);
       }
    }
-
+   _MSG("File_content_type: name=%s ct=%s\n", filename, ct);
    return ct;
 }
 
@@ -697,7 +699,7 @@ static int File_send_file(ClientInfo *client)
    const char *ct;
    const char *unknown_type = "application/octet-stream";
    char buf[LBUF], *d_cmd, *name;
-   int st, namelen;
+   int st, st2, namelen;
    bool_t gzipped = FALSE;
 
    if (client->state == st_start) {
@@ -744,27 +746,30 @@ static int File_send_file(ClientInfo *client)
 
    } else if (client->state == st_http) {
       /* Send body -- raw file contents */
-      do {
-         if ((st = read(client->file_fd, buf, LBUF)) > 0) {
-            if (a_Dpip_dsh_write(client->sh, 0, buf, (size_t)st) != 0)
-               break;
-         } else if (st < 0) {
-            perror("[read]");
-            if (errno == EINTR || errno == EAGAIN)
-               continue;
+      if (client->dbuf->len > 0) {
+         /* send pending data */
+         st = a_Dpip_dsh_trywrite(client->sh, 
+                                  client->dbuf->str, client->dbuf->len);
+         if (st > 0)
+            dStr_erase(client->dbuf, 0, st);
+      } else {
+         /* ok to send new data */
+         do {
+            st = read(client->file_fd, buf, LBUF);
+         } while (st < 0 && errno == EINTR);
+         if (st == -1) {
+            MSG("\nexit(1), ERROR while reading from file '%s': %s\n\n",
+                client->filename, dStrerror(errno));
+            exit(1);
+         } else if (st == 0) {
+            client->state = st_content;
+            client->flags |= FILE_DONE;
+         } else {
+            /* partial write */
+            st2 = a_Dpip_dsh_trywrite(client->sh, buf, st);
+            if (st2 > 0 && st2 < st)
+               dStr_append_l(client->dbuf, buf + st2, st - st2);
          }
-      } while (st > 0);
-   
-      /* TODO: It may be better to send an error report to dillo instead of
-       *       calling exit() */
-      if (st == -1) {
-         MSG("ERROR while reading from file \"%s\", error was \"%s\"\n",
-             client->filename, dStrerror(errno));
-         exit(1);
-      } else if (st == 0) {
-         client->state = st_content;
-         File_close(client->file_fd);
-         client->flags |= FILE_DONE;
       }
    }
 
@@ -859,6 +864,7 @@ static void File_toggle_html_style(ClientInfo *client)
  */
 static void termination_handler(int signum)
 {
+  MSG("\nexit(signum), signum=%d\n\n", signum);
   exit(signum);
 }
 
@@ -883,6 +889,8 @@ static ClientInfo *File_add_client(int sock_fd)
    new_client->err_code = 0;
    new_client->flags = FILE_READ;
    new_client->old_style = OLD_STYLE;
+   new_client->dbuf = dStr_sized_new(8*1024);
+
    dList_append(Clients, new_client);
    return new_client;
 }
@@ -897,8 +905,10 @@ static void File_remove_client(ClientInfo *client)
    _MSG("Closing Socket Handler\n");
    a_Dpip_dsh_close(client->sh);
    a_Dpip_dsh_free(client->sh);
+   File_close(client->file_fd);
    dFree(client->orig_url);
    dFree(client->filename);
+   dStr_free(client->dbuf, TRUE);
    File_dillodir_free(client->d_dir);
 
    dFree(client);
@@ -914,7 +924,8 @@ static void File_serve_client(void *data, int f_write)
    int st;
 
    while (1) {
-      MSG("File_serve_client %p, flags=%d\n", client, client->flags);
+      _MSG("File_serve_client %p, flags=%d state=%d\n",
+          client, client->flags, client->state);
       if (client->flags & (FILE_DONE | FILE_ERR))
          break;
       if (client->flags & FILE_READ) {
@@ -1015,7 +1026,7 @@ static int File_check_fds(uint_t seconds)
       if (client->flags & FILE_WRITE)
          FD_SET (client->sh->fd_out, &write_set);
    }
-   MSG("Watching %d fds:", dList_length(Clients) + 1);
+   MSG("Watching %d fds\n", dList_length(Clients) + 1);
 
    /* Initialize the timeout data structure. */
    timeout.tv_sec = seconds;
@@ -1024,7 +1035,7 @@ static int File_check_fds(uint_t seconds)
    do {
       st = select(FD_SETSIZE, &read_set, &write_set, NULL, &timeout);
    } while (st == -1 && errno == EINTR);
-
+/*
    MSG_RAW(" (%d%s%s)", STDIN_FILENO,
            FD_ISSET(STDIN_FILENO, &read_set) ? "R" : "",
            FD_ISSET(STDIN_FILENO, &write_set) ? "W" : "");
@@ -1034,7 +1045,7 @@ static int File_check_fds(uint_t seconds)
               FD_ISSET(client->sh->fd_out, &write_set) ? "W" : "");
    }
    MSG_RAW("\n");
- 
+*/
    return st;
 }
 
@@ -1087,6 +1098,7 @@ int main(void)
             break;
          } else {
             /* Create and initialize a new client */
+            MSG(" accept() fd=%d\n", tmp_fd);
             File_add_client(tmp_fd);
          }
          continue;

@@ -229,7 +229,7 @@ static int Auth_parse_token_value(AuthParse_t *auth_parse, char **auth)
    set_realm =
       auth_parse->realm == NULL &&
       dStrncasecmp(realm_token,token,token_size) == 0 &&
-      strlen(realm_token) == token_size;
+      strlen(realm_token) == (size_t)token_size;
 
    return Auth_parse_quoted_string(auth_parse, set_realm, auth);
 }
