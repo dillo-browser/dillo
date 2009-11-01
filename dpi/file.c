@@ -922,7 +922,7 @@ static void File_serve_client(void *data, int f_write)
          break;
       if (client->flags & FILE_READ) {
          dpip_tag = a_Dpip_dsh_read_token(client->sh, 0);
-         MSG("dpip_tag={%s}\n", dpip_tag);
+         _MSG("dpip_tag={%s}\n", dpip_tag);
          if (!dpip_tag)
             break;
       }
@@ -931,7 +931,7 @@ static void File_serve_client(void *data, int f_write)
          if (!(client->flags & FILE_AUTH_OK)) {
             /* Authenticate our client... */
             st = a_Dpip_check_auth(dpip_tag);
-            MSG("a_Dpip_check_auth returned %d\n", st);
+            _MSG("a_Dpip_check_auth returned %d\n", st);
             client->flags |= (st == 1) ? FILE_AUTH_OK : FILE_ERR;
          } else {
             /* Get file request */
@@ -1018,7 +1018,7 @@ static int File_check_fds(uint_t seconds)
       if (client->flags & FILE_WRITE)
          FD_SET (client->sh->fd_out, &write_set);
    }
-   MSG("Watching %d fds\n", dList_length(Clients) + 1);
+   _MSG("Watching %d fds\n", dList_length(Clients) + 1);
 
    /* Initialize the timeout data structure. */
    timeout.tv_sec = seconds;
@@ -1064,6 +1064,9 @@ int main(void)
    FD_ZERO (&write_set);
    FD_SET (STDIN_FILENO, &read_set);
 
+   /* Set STDIN socket nonblocking (to ensure accept() never blocks) */
+   fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK | fcntl(STDIN_FILENO, F_GETFL));
+
    /* initialize Clients list */
    Clients = dList_new(512);
 
@@ -1089,6 +1092,8 @@ int main(void)
             tmp_fd = accept(STDIN_FILENO, (struct sockaddr *)&sin, &sin_sz);
          } while (tmp_fd < 0 && errno == EINTR);
          if (tmp_fd == -1) {
+            if (errno == EAGAIN)
+               continue;
             MSG(" accept() %s\n", dStrerror(errno));
             break;
          } else {
