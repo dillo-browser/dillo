@@ -1688,10 +1688,9 @@ static void termination_handler(int signum)
  */
 int main(void) {
    struct sockaddr_un spun;
-   int temp_sock_descriptor;
+   int tmp_fd, code;
    socklen_t address_size;
    char *tok;
-   int code;
    Dsh *sh;
 
    /* Arrange the cleanup function for terminations via exit() */
@@ -1715,15 +1714,23 @@ int main(void) {
    MSG("(v.13): accepting connections...\n");
 
    while (1) {
-      temp_sock_descriptor =
-         accept(STDIN_FILENO, (struct sockaddr *)&spun, &address_size);
-      if (temp_sock_descriptor == -1) {
+      tmp_fd = accept(STDIN_FILENO, (struct sockaddr *)&spun, &address_size);
+      if (tmp_fd == -1) {
          perror("[accept]");
          exit(1);
       }
 
       /* create the Dsh structure */
-      sh = a_Dpip_dsh_new(temp_sock_descriptor,temp_sock_descriptor,8*1024);
+      sh = a_Dpip_dsh_new(tmp_fd, tmp_fd, 8*1024);
+
+      /* Authenticate our client... */
+      if (!(tok = a_Dpip_dsh_read_token(sh, 1)) ||
+          a_Dpip_check_auth(tok) < 0) {
+         MSG("can't authenticate request: %s\n", dStrerror(errno));
+         a_Dpip_dsh_close(sh);
+         exit(1);
+      }
+      dFree(tok);
 
       while (1) {
          code = 1;
