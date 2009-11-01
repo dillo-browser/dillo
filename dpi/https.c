@@ -91,7 +91,7 @@ static int save_certificate_home(X509 * cert);
  * Global variables
  */
 static char *root_url = NULL;  /*Holds the URL we are connecting to*/
-static SockHandler *sh;
+static Dsh *sh;
 
 
 #ifdef ENABLE_SSL
@@ -107,7 +107,7 @@ static int dialog_get_answer_number(void)
    char *dpip_tag, *response;
 
    /* Read the dpi command from STDIN */
-   dpip_tag = sock_handler_read(sh);
+   dpip_tag = a_Dpip_dsh_read_token(sh, 1);
    response = a_Dpip_get_attr(dpip_tag, "msg");
    response_number = (response) ? strtol (response, NULL, 10) : -1;
    dFree(dpip_tag);
@@ -193,7 +193,7 @@ static void yes_ssl_support(void)
       SSL_set_verify(ssl_connection, SSL_VERIFY_NONE, 0);
 
       /*Get the network address and command to be used*/
-      dpip_tag = sock_handler_read(sh);
+      dpip_tag = a_Dpip_dsh_read_token(sh, 1);
       cmd = a_Dpip_get_attr(dpip_tag, "cmd");
       proxy_url = a_Dpip_get_attr(dpip_tag, "proxy_url");
       proxy_connect =
@@ -304,14 +304,14 @@ static void yes_ssl_support(void)
 
       /*Send dpi command*/
       d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", url);
-      sock_handler_write_str(sh, 1, d_cmd);
+      a_Dpip_dsh_write_str(sh, 1, d_cmd);
       dFree(d_cmd);
 
       /*Send remaining data*/
 
       while ((ret = SSL_read(ssl_connection, buf, 4096)) > 0 ){
          /* flush is good for dialup speed */
-         sock_handler_write(sh, 1, buf, (size_t)ret);
+         a_Dpip_dsh_write(sh, 1, buf, (size_t)ret);
       }
    }
 
@@ -431,7 +431,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
          "This site CAN NOT be trusted. Sending data is NOT SAFE.\n"
          "What do I do?",
          "Continue", "Cancel");
-      sock_handler_write_str(sh, 1, d_cmd);
+      a_Dpip_dsh_write_str(sh, 1, d_cmd);
       dFree(d_cmd);
 
       /*Read the user's response*/
@@ -469,7 +469,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
          d_cmd = a_Dpip_build_cmd(
             "cmd=%s msg=%s alt1=%s alt2=%s alt3=%s",
             "dialog", msg, "Continue", "Cancel", "Trust Certificate");
-         sock_handler_write_str(sh, 1, d_cmd);
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
          dFree(msg);
 
@@ -499,7 +499,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
             "The issuer for the remote certificate cannot be found\n"
             "The authenticity of the remote certificate cannot be trusted",
             "Continue", "Cancel");
-         sock_handler_write_str(sh, 1, d_cmd);
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
 
          response_number = dialog_get_answer_number();
@@ -518,7 +518,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
             "The remote certificate signature could not be read\n"
             "or is invalid and should not be trusted",
             "Continue", "Cancel");
-         sock_handler_write_str(sh, 1, d_cmd);
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
 
          response_number = dialog_get_answer_number();
@@ -537,7 +537,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
             "presented has a starting validity after today's date\n"
             "You should be cautious about using this site",
             "Continue", "Cancel");
-         sock_handler_write_str(sh, 1, d_cmd);
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
 
          response_number = dialog_get_answer_number();
@@ -554,7 +554,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
             "wasn't designed to last this long. You should avoid \n"
             "this site.",
             "Continue", "Cancel");
-         sock_handler_write_str(sh, 1, d_cmd);
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
          response_number = dialog_get_answer_number();
          if (response_number == 1) {
@@ -573,7 +573,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
             "making it impossible to determine if the certificate\n"
             "is valid.  You should not trust this certificate.",
             "Continue", "Cancel");
-         sock_handler_write_str(sh, 1, d_cmd);
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
          response_number = dialog_get_answer_number();
          if (response_number == 1) {
@@ -593,7 +593,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
             "with the remote system.  The connection should not\n"
             "be trusted",
             "Continue", "Cancel");
-         sock_handler_write_str(sh, 1, d_cmd);
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
          response_number = dialog_get_answer_number();
          if (response_number == 1) {
@@ -610,7 +610,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
             "does not match other information presented\n"
             "This may be an attempt to evesdrop on communications",
             "Continue", "Cancel");
-         sock_handler_write_str(sh, 1, d_cmd);
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
       default:             /*Need to add more options later*/
          snprintf(buf, 80,
@@ -618,7 +618,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
          d_cmd = a_Dpip_build_cmd(
             "cmd=%s msg=%s alt1=%s alt2=%s",
             "dialog", buf, "Continue", "Cancel");
-         sock_handler_write_str(sh, 1, d_cmd);
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
          response_number = dialog_get_answer_number();
          /*abort on anything but "Continue"*/
@@ -694,7 +694,7 @@ static void no_ssl_support(void)
    char *d_cmd;
 
    /* Read the dpi command from STDIN */
-   dpip_tag = sock_handler_read(sh);
+   dpip_tag = a_Dpip_dsh_read_token(sh, 1);
 
    MSG("{In https.filter.dpi}\n");
    MSG("no_ssl_support version\n");
@@ -710,14 +710,14 @@ static void no_ssl_support(void)
    MSG("{ sending dpip cmd...}\n");
 
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", url);
-   sock_handler_write_str(sh, 1, d_cmd);
+   a_Dpip_dsh_write_str(sh, 1, d_cmd);
    dFree(d_cmd);
 
    MSG("{ dpip cmd sent.}\n");
 
    MSG("{ sending HTML...}\n");
 
-   sock_handler_printf(sh, 1,
+   a_Dpip_dsh_printf(sh, 1,
       "Content-type: text/html\n\n"
       "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN'>\n"
       "<html><head><title>SSL support is disabled</title></head>\n"
@@ -758,8 +758,19 @@ static void no_ssl_support(void)
 /*---------------------------------------------------------------------------*/
 int main(void)
 {
+   char *dpip_tag;
+
    /* Initialize the SockHandler for this filter dpi */
-   sh = sock_handler_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
+   sh = a_Dpip_dsh_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
+
+   /* Authenticate our client... */
+   if (!(dpip_tag = a_Dpip_dsh_read_token(sh, 1)) ||
+       a_Dpip_check_auth(dpip_tag) < 0) {
+      MSG("can't authenticate request: %s\n", dStrerror(errno));
+      a_Dpip_dsh_close(sh);
+      return 1;
+   }
+   dFree(dpip_tag);
 
 #ifdef ENABLE_SSL
    yes_ssl_support();
@@ -768,8 +779,8 @@ int main(void)
 #endif
 
    /* Finish the SockHandler */
-   sock_handler_close(sh);
-   sock_handler_free(sh);
+   a_Dpip_dsh_close(sh);
+   a_Dpip_dsh_free(sh);
 
    dFree(root_url);
 
