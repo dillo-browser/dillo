@@ -1,10 +1,10 @@
 AM_CPPFLAGS=-DDPIDRC_SYS='"$(sysconfdir)/dpidrc"'
 
-bin_PROGRAMS = dpid
+bin_PROGRAMS = dpid dpidc
 dpid_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
+dpidc_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
 
-EXTRA_DIST = dpidc dpidrc.in
-bin_SCRIPTS = dpidc
+EXTRA_DIST = dpidrc.in
 
 dpid_SOURCES = \
 	dpi.h \
@@ -18,6 +18,8 @@ dpid_SOURCES = \
 	dpid_common.c \
 	main.c \
 	misc_new.c
+
+dpidc_SOURCES = dpidc.c
 
 sysconf_DATA = dpidrc
 CLEANFILES = $(sysconf_DATA)
