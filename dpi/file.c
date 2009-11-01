@@ -61,7 +61,7 @@ typedef struct {
 } DilloDir;
 
 typedef struct {
-   SockHandler *sh;
+   Dsh *sh;
    int status;
    int old_style;
    pthread_t thrID;
@@ -278,7 +278,7 @@ static void File_print_parent_dir(ClientInfo *Client, const char *dirname)
 
       Uparent = Escape_uri_str(parent, NULL);
       HUparent = Escape_html_str(Uparent);
-      sock_handler_printf(Client->sh, 0,
+      a_Dpip_dsh_printf(Client->sh, 0,
          "<a href='file:%s'>Parent directory</a>", HUparent);
       dFree(HUparent);
       dFree(Uparent);
@@ -295,14 +295,14 @@ static void File_print_mtime(ClientInfo *Client, time_t mtime)
 
    /* Month, day and {hour or year} */
    if (Client->old_style) {
-      sock_handler_printf(Client->sh, 0, " %.3s %.2s", ds + 4, ds + 8);
+      a_Dpip_dsh_printf(Client->sh, 0, " %.3s %.2s", ds + 4, ds + 8);
       if (time(NULL) - mtime > 15811200) {
-         sock_handler_printf(Client->sh, 0, "  %.4s", ds + 20);
+         a_Dpip_dsh_printf(Client->sh, 0, "  %.4s", ds + 20);
       } else {
-         sock_handler_printf(Client->sh, 0, " %.5s", ds + 11);
+         a_Dpip_dsh_printf(Client->sh, 0, " %.5s", ds + 11);
       }
    } else {
-      sock_handler_printf(Client->sh, 0,
+      a_Dpip_dsh_printf(Client->sh, 0,
          "<td>%.3s&nbsp;%.2s&nbsp;%.5s", ds + 4, ds + 8,
          /* (more than 6 months old) ? year : hour; */
          (time(NULL) - mtime > 15811200) ? ds + 20 : ds + 11);
@@ -358,7 +358,7 @@ static void File_info2html(ClientInfo *Client, FileInfo *finfo, int n)
    if (Client->old_style) {
       char *dots = ".. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. ..";
       int ndots = MAXNAMESIZE - strlen(name);
-      sock_handler_printf(Client->sh, 0,
+      a_Dpip_dsh_printf(Client->sh, 0,
          "%s<a href='%s'>%s</a>"
          " %s"
          " %-11s%4d %-5s",
@@ -367,7 +367,7 @@ static void File_info2html(ClientInfo *Client, FileInfo *finfo, int n)
          filecont, size, sizeunits);
 
    } else {
-      sock_handler_printf(Client->sh, 0,
+      a_Dpip_dsh_printf(Client->sh, 0,
          "<tr align=center %s><td>%s<td align=left><a href='%s'>%s</a>"
          "<td>%s<td>%d&nbsp;%s",
          (n & 1) ? "bgcolor=#dcdcdc" : "",
@@ -375,7 +375,7 @@ static void File_info2html(ClientInfo *Client, FileInfo *finfo, int n)
          filecont, size, sizeunits);
    }
    File_print_mtime(Client, finfo->mtime);
-   sock_handler_write_str(Client->sh, 0, "\n");
+   a_Dpip_dsh_write_str(Client->sh, 0, "\n");
 
    dFree(Hname);
    dFree(HUref);
@@ -393,7 +393,7 @@ static void File_transfer_dir(ClientInfo *Client,
 
    /* Send DPI header */
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", orig_url);
-   sock_handler_write_str(Client->sh, 1, d_cmd);
+   a_Dpip_dsh_write_str(Client->sh, 1, d_cmd);
    dFree(d_cmd);
 
    /* Send page title */
@@ -401,7 +401,7 @@ static void File_transfer_dir(ClientInfo *Client,
    HUdirname = Escape_html_str(Udirname);
    Hdirname = Escape_html_str(Ddir->dirname);
 
-   sock_handler_printf(Client->sh, 0,
+   a_Dpip_dsh_printf(Client->sh, 0,
       "HTTP/1.1 200 OK\r\n"
       "Content-Type: text/html\r\n"
       "\r\n"
@@ -415,21 +415,21 @@ static void File_transfer_dir(ClientInfo *Client,
    dFree(Udirname);
 
    if (Client->old_style) {
-      sock_handler_write_str(Client->sh, 0, "<pre>\n");
+      a_Dpip_dsh_write_str(Client->sh, 0, "<pre>\n");
    }
 
    /* Output the parent directory */
    File_print_parent_dir(Client, Ddir->dirname);
 
    /* HTML style toggle */
-   sock_handler_write_str(Client->sh, 0,
+   a_Dpip_dsh_write_str(Client->sh, 0,
       "&nbsp;&nbsp;<a href='dpi:/file/toggle'>%</a>\n");
 
    if (dList_length(Ddir->flist)) {
       if (Client->old_style) {
-         sock_handler_write_str(Client->sh, 0, "\n\n");
+         a_Dpip_dsh_write_str(Client->sh, 0, "\n\n");
       } else {
-         sock_handler_write_str(Client->sh, 0,
+         a_Dpip_dsh_write_str(Client->sh, 0,
             "<br><br>\n"
             "<table border=0 cellpadding=1 cellspacing=0"
             " bgcolor=#E0E0E0 width=100%>\n"
@@ -441,7 +441,7 @@ static void File_transfer_dir(ClientInfo *Client,
             "<td><b>Modified&nbsp;at</b>\n");
       }
    } else {
-      sock_handler_write_str(Client->sh, 0, "<br><br>Directory is empty...");
+      a_Dpip_dsh_write_str(Client->sh, 0, "<br><br>Directory is empty...");
    }
 
    /* Output entries */
@@ -451,13 +451,13 @@ static void File_transfer_dir(ClientInfo *Client,
 
    if (dList_length(Ddir->flist)) {
       if (Client->old_style) {
-         sock_handler_write_str(Client->sh, 0, "</pre>\n");
+         a_Dpip_dsh_write_str(Client->sh, 0, "</pre>\n");
       } else {
-         sock_handler_write_str(Client->sh, 0, "</table>\n");
+         a_Dpip_dsh_write_str(Client->sh, 0, "</table>\n");
       }
    }
 
-   sock_handler_write_str(Client->sh, 0, "</BODY></HTML>\n");
+   a_Dpip_dsh_write_str(Client->sh, 0, "</BODY></HTML>\n");
 }
 
 /*
@@ -545,15 +545,16 @@ static void File_send_error_page(ClientInfo *Client, int res,
 
    /* Send DPI command */
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", orig_url);
-   sock_handler_write_str(Client->sh, 1, d_cmd);
+   a_Dpip_dsh_write_str(Client->sh, 1, d_cmd);
    dFree(d_cmd);
 
-   sock_handler_printf(Client->sh, 0, "HTTP/1.1 %s\r\n"
-                                      "Content-Type: text/plain\r\n"
-                                      "Content-Length: %ld\r\n"
-                                      "\r\n"
-                                      "%s",
-                                      status, strlen(body), body);
+   a_Dpip_dsh_printf(Client->sh, 0, 
+                     "HTTP/1.1 %s\r\n"
+                     "Content-Type: text/plain\r\n"
+                     "Content-Length: %ld\r\n"
+                     "\r\n"
+                     "%s",
+                     status, strlen(body), body);
 }
 
 /*
@@ -626,7 +627,7 @@ static int File_get_file(ClientInfo *Client,
 
    /* Send DPI command */
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", orig_url);
-   sock_handler_write_str(Client->sh, 1, d_cmd);
+   a_Dpip_dsh_write_str(Client->sh, 1, d_cmd);
    dFree(d_cmd);
 
    /* Check for gzipped file */
@@ -646,23 +647,24 @@ static int File_get_file(ClientInfo *Client,
    dFree(name);
 
    /* Send HTTP headers */
-   sock_handler_write_str(Client->sh, 0, "HTTP/1.1 200 OK\r\n");
+   a_Dpip_dsh_write_str(Client->sh, 0, "HTTP/1.1 200 OK\r\n");
    if (gzipped) {
-      sock_handler_write_str(Client->sh, 0, "Content-Encoding: gzip\r\n");
+      a_Dpip_dsh_write_str(Client->sh, 0, "Content-Encoding: gzip\r\n");
    }
    if (!gzipped || strcmp(ct, unknown_type)) {
-      sock_handler_printf(Client->sh, 0, "Content-Type: %s\r\n", ct);
+      a_Dpip_dsh_printf(Client->sh, 0, "Content-Type: %s\r\n", ct);
    } else {
       /* If we don't know type for gzipped data, let dillo figure it out. */
    }
-   sock_handler_printf(Client->sh, 0, "Content-Length: %ld\r\n"
-                                      "\r\n",
-                                      sb->st_size);
+   a_Dpip_dsh_printf(Client->sh, 0,
+                     "Content-Length: %ld\r\n"
+                     "\r\n",
+                     sb->st_size);
 
    /* Send body -- raw file contents */
    do {
       if ((st = read(fd, buf, LBUF)) > 0) {
-         if (sock_handler_write(Client->sh, 0, buf, (size_t)st) != 0)
+         if (a_Dpip_dsh_write(Client->sh, 0, buf, (size_t)st) != 0)
             break;
       } else if (st < 0) {
          perror("[read]");
@@ -761,7 +763,7 @@ static void File_toggle_html_style(ClientInfo *Client)
 
    OLD_STYLE = !OLD_STYLE;
    d_cmd = a_Dpip_build_cmd("cmd=%s", "reload_request");
-   sock_handler_write_str(Client->sh, 1, d_cmd);
+   a_Dpip_dsh_write_str(Client->sh, 1, d_cmd);
    dFree(d_cmd);
 }
 
@@ -784,7 +786,7 @@ static ClientInfo *File_add_client(int sock_fd)
    ClientInfo *NewClient;
 
    NewClient = dNew(ClientInfo, 1);
-   NewClient->sh = sock_handler_new(sock_fd, sock_fd, 8*1024);
+   NewClient->sh = a_Dpip_dsh_new(sock_fd, sock_fd, 8*1024);
    NewClient->status = 0;
    NewClient->done = 0;
    NewClient->old_style = OLD_STYLE;
@@ -821,8 +823,8 @@ static void File_remove_client_n(uint_t n)
   pthread_mutex_unlock(&ClMut);
 
    _MSG("Closing Socket Handler\n");
-   sock_handler_close(Client->sh);
-   sock_handler_free(Client->sh);
+   a_Dpip_dsh_close(Client->sh);
+   a_Dpip_dsh_free(Client->sh);
    dFree(Client);
 }
 
@@ -846,34 +848,32 @@ static int File_num_clients(void)
  */
 static void File_serve_client(void *data)
 {
-   char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *path, *auth, *p;
+   char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *path;
    ClientInfo *Client = data;
+   int st;
 
    /* Authenticate our client... */
-   auth = sock_handler_read(Client->sh);
-   if ((p = strchr(auth, '<')) != NULL) {
-      /* auth and dpip's tag are in one chunk, separate them */
-      dpip_tag = dStrdup(p);
-      *p = 0;
-   }
-   MSG("auth={%s}\n", auth);
-   if (a_Dpip_check_auth(auth) == -1) {
-      dFree(dpip_tag);
-      dFree(auth);
-      return;
-   }
-   dFree(auth);
+   do {
+      dpip_tag = a_Dpip_dsh_read_token(Client->sh);
+   } while (!dpip_tag && Client->sh->status == DPIP_EAGAIN);
+   _MSG("auth={%s}\n", dpip_tag);
+   st = a_Dpip_check_auth(dpip_tag);
+   dFree(dpip_tag);
+   _MSG("a_Dpip_check_auth returned %d\n", st);
+   dReturn_if (st == -1);
 
    /* Read the dpi command */
-   if (!dpip_tag)
-      dpip_tag = sock_handler_read(Client->sh);
-   MSG("dpip_tag={%s}\n", dpip_tag);
+   do {
+      dpip_tag = a_Dpip_dsh_read_token(Client->sh);
+   } while (!dpip_tag && Client->sh->status == DPIP_EAGAIN);
+   _MSG("dpip_tag={%s}\n", dpip_tag);
 
    if (dpip_tag) {
       cmd = a_Dpip_get_attr(dpip_tag, "cmd");
       if (cmd) {
          if (strcmp(cmd, "DpiBye") == 0) {
             DPIBYE = 1;
+            MSG("file.dpi:: (pid %d): Got DpiBye.\n", (int)getpid());
          } else {
             url = a_Dpip_get_attr(dpip_tag, "url");
             if (!url)

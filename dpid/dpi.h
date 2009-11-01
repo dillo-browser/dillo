@@ -28,7 +28,8 @@
  */
 enum {
    UNKNOWN_CMD,
-   BYE_CMD, /* "DpiBye" */
+   AUTH_CMD, /* authentication */
+   BYE_CMD,  /* "DpiBye" */
    CHECK_SERVER_CMD, /* "check_server" */
    REGISTER_ALL_CMD, /* "register_all" */
    REGISTER_SERVICE_CMD /* "register_service" */

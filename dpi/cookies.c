@@ -42,6 +42,7 @@ int main(void)
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+#include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -113,6 +114,11 @@ typedef struct {
    bool_t session_only;
    Dlist *ports;
 } CookieData_t;
+
+typedef struct {
+   Dsh *sh;
+   int status;
+} ClientInfo;
 
 /*
  * Local data
@@ -1343,22 +1349,25 @@ static CookieControlAction Cookies_control_check_domain(const char *domain)
  * Note: Buf is a zero terminated string
  * Return code: { 0:OK, 1:Abort, 2:Close }
  */
-static int srv_parse_buf(SockHandler *sh, char *Buf, size_t BufSize)
+static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
 {
    char *p, *cmd, *cookie, *host, *path, *scheme;
-   int port, ret;
-
-   if (!(p = strchr(Buf, '>'))) {
-      /* Haven't got a full tag */
-      MSG("Haven't got a full tag!\n");
-      return 1;
-   }
+   int port, ret = 1;
+   size_t BufSize = strlen(Buf);
 
    cmd = a_Dpip_get_attr_l(Buf, BufSize, "cmd");
 
-   if (cmd && strcmp(cmd, "DpiBye") == 0) {
+   if (!cmd) {
+      /* abort */
+   } else if (client->status == 0) {
+      /* authenticate */
+      if (a_Dpip_check_auth(Buf) == 1) {
+         client->status = 1;
+         ret = 0;
+      }
+   } else if (strcmp(cmd, "DpiBye") == 0) {
       dFree(cmd);
-      MSG("Cookies dpi (pid %d): Got DpiBye.\n", (int)getpid());
+      MSG("(pid %d): Got DpiBye.\n", (int)getpid());
       exit(0);
 
    } else if (cmd && strcmp(cmd, "set_cookie") == 0) {
@@ -1375,7 +1384,7 @@ static int srv_parse_buf(SockHandler *sh, char *Buf, size_t BufSize)
       dFree(path);
       dFree(host);
       dFree(cookie);
-      return 2;
+      ret = 2;
 
    } else if (cmd && strcmp(cmd, "get_cookie") == 0) {
       dFree(cmd);
@@ -1393,19 +1402,17 @@ static int srv_parse_buf(SockHandler *sh, char *Buf, size_t BufSize)
 
       cmd = a_Dpip_build_cmd("cmd=%s cookie=%s", "get_cookie_answer", cookie);
 
-      if (sock_handler_write_str(sh, 1, cmd)) {
+      if (a_Dpip_dsh_write_str(sh, 1, cmd)) {
           ret = 1;
       } else {
-          _MSG("sock_handler_write_str: SUCCESS cmd={%s}\n", cmd);
+          _MSG("a_Dpip_dsh_write_str: SUCCESS cmd={%s}\n", cmd);
           ret = 2;
       }
       dFree(cookie);
       dFree(cmd);
-
-      return ret;
    }
 
-   return 0;
+   return ret;
 }
 
 /* --  Termination handlers ----------------------------------------------- */
@@ -1433,12 +1440,12 @@ static void termination_handler(int signum)
  * -- MAIN -------------------------------------------------------------------
  */
 int main(void) {
-   struct sockaddr_un spun;
-   int temp_sock_descriptor;
+   struct sockaddr_in sin;
    socklen_t address_size;
+   ClientInfo *client;
+   int tmp_fd,code;
    char *buf;
-   int code;
-   SockHandler *sh;
+   Dsh *sh;
 
    /* Arrange the cleanup function for terminations via exit() */
    atexit(cleanup);
@@ -1458,36 +1465,45 @@ int main(void) {
       exit(1);
 
    /* some OSes may need this... */
-   address_size = sizeof(struct sockaddr_un);
+   address_size = sizeof(struct sockaddr_in);
 
    while (1) {
-      temp_sock_descriptor =
-         accept(STDIN_FILENO, (struct sockaddr *)&spun, &address_size);
-      if (temp_sock_descriptor == -1) {
+      tmp_fd = accept(STDIN_FILENO, (struct sockaddr *)&sin, &address_size);
+      if (tmp_fd == -1) {
          perror("[accept]");
          exit(1);
       }
 
-      /* create the SockHandler structure */
-      sh = sock_handler_new(temp_sock_descriptor,temp_sock_descriptor,8*1024);
+      /* create the Dsh structure */
+      sh = a_Dpip_dsh_new(tmp_fd, tmp_fd, 8*1024);
+      client = dNew(ClientInfo,1);
+      client->sh = sh;
+      client->status = 0;
 
       while (1) {
          code = 1;
-         if ((buf = sock_handler_read(sh)) != NULL) {
+         if ((buf = a_Dpip_dsh_read_token(sh)) != NULL) {
             /* Let's see what we fished... */
             _MSG(" buf = {%s}\n", buf);
-            code = srv_parse_buf(sh, buf, strlen(buf));
+            code = srv_parse_tok(sh, client, buf);
+            dFree(buf);
+         } else if (sh->status == DPIP_EAGAIN) {
+            /* may reach here when the tag size is larger than kernel buffer */
+            continue;
          }
+
          _MSG(" code = %d %s\n", code, code == 1 ? "EXIT" : "BREAK");
-         if (code == 1)
+         if (code == 1) {
             exit(1);
-         else if (code == 2)
+         } else if (code == 2) {
             break;
+         }
       }
 
-      _MSG("Closing SockHandler\n");
-      sock_handler_close(sh);
-      sock_handler_free(sh);
+      _MSG("Closing Dsh\n");
+      a_Dpip_dsh_close(sh);
+      a_Dpip_dsh_free(sh);
+      dFree(client);
 
    }/*while*/
 

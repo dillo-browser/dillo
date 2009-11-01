@@ -461,7 +461,7 @@ static int Dpi_check_dpid(int num_tries)
    int check_st = 1, ret = 2;
 
    check_st = Dpi_check_dpid_ids();
-   MSG("Dpi_check_dpid: check_st=%d\n", check_st);
+   _MSG("Dpi_check_dpid: check_st=%d\n", check_st);
 
    if (check_st == 1) {
       /* connection test with dpi server passed */
@@ -575,8 +575,8 @@ int Dpi_get_server_port(const char *server_name)
       cmd = a_Dpip_get_attr(rply, "cmd");
       if (strcmp(cmd, "send_data") == 0) {
          port_str = a_Dpip_get_attr(rply, "msg");
-         MSG("Dpi_get_server_port: rply=%s\n", rply);
-         MSG("Dpi_get_server_port: port_str=%s\n", port_str);
+         _MSG("Dpi_get_server_port: rply=%s\n", rply);
+         _MSG("Dpi_get_server_port: port_str=%s\n", port_str);
          dpi_port = strtol(port_str, NULL, 10);
          dFree(port_str);
          ok = 1;
@@ -598,13 +598,14 @@ static int Dpi_connect_socket(const char *server_name, int retry)
 {
    struct sockaddr_in sin;
    int sock_fd, err, dpi_port, ret=-1;
+   char *cmd = NULL;
 
    /* Query dpid for the port number for this server */
    if ((dpi_port = Dpi_get_server_port(server_name)) == -1) {
-      MSG("Dpi_connect_socket:: can't get port number for %s\n", server_name);
+      _MSG("Dpi_connect_socket:: can't get port number for %s\n", server_name);
       return -1;
    }
-   MSG("Dpi_connect_socket: server=%s port=%d\n", server_name, dpi_port);
+   _MSG("Dpi_connect_socket: server=%s port=%d\n", server_name, dpi_port);
 
    /* connect with this server's socket */
    memset(&sin, 0, sizeof(sin));
@@ -627,11 +628,14 @@ static int Dpi_connect_socket(const char *server_name, int retry)
       }
 
    /* send authentication Key (the server closes sock_fd on error) */
-   } else if (Dpi_blocking_write(sock_fd,SharedKey,strlen(SharedKey)) == -1) {
+   } else if (!(cmd = a_Dpip_build_cmd("cmd=%s msg=%s", "auth", SharedKey))) {
+      MSG_ERR("[Dpi_connect_socket] Can't make auth message.\n");
+   } else if (Dpi_blocking_write(sock_fd, cmd, strlen(cmd)) == -1) {
       MSG_ERR("[Dpi_connect_socket] Can't send auth message.\n");
    } else {
       ret = sock_fd;
    }
+   dFree(cmd);
 
    return ret;
 }

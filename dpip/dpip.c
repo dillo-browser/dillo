@@ -124,10 +124,11 @@ char *a_Dpip_build_cmd(const char *format, ...)
  *
  * Return value: the attribute value, or NULL if not present or malformed.
  */
-char *a_Dpip_get_attr_l(char *tag, size_t tagsize, const char *attrname)
+char *a_Dpip_get_attr_l(const char *tag, size_t tagsize, const char *attrname)
 {
    uint_t i, n = 0, found = 0;
-   char *p, *q, *start, *val = NULL;
+   const char *p, *q, *start;
+   char *r, *s, *val = NULL;
    DpipTagParsingState state = SEEK_NAME;
 
    if (!tag || !tagsize || !attrname || !*attrname)
@@ -169,9 +170,9 @@ char *a_Dpip_get_attr_l(char *tag, size_t tagsize, const char *attrname)
          p = q + 2;
       if (q && q[1] == ' ') {
          val = dStrndup(start, (uint_t)(q - start));
-         for (p = q = val; (*q = *p); ++p, ++q)
-            if (*p == Quote && p[1] == p[0])
-               ++p;
+         for (r = s = val; (*r = *s); ++r, ++s)
+            if (s[0] == Quote && s[0] == s[1])
+               ++s;
       }
    }
    return val;
@@ -181,7 +182,7 @@ char *a_Dpip_get_attr_l(char *tag, size_t tagsize, const char *attrname)
  * Task: given a tag and an attribute name, return its value.
  * Return value: the attribute value, or NULL if not present or malformed.
  */
-char *a_Dpip_get_attr(char *tag, const char *attrname)
+char *a_Dpip_get_attr(const char *tag, const char *attrname)
 {
    return (tag ? a_Dpip_get_attr_l(tag, strlen(tag), attrname) : NULL);
 }
@@ -190,14 +191,19 @@ char *a_Dpip_get_attr(char *tag, const char *attrname)
  * Check whether the given 'auth' string equals what dpid saved.
  * Return value: 1 if equal, -1 otherwise
  */
-int a_Dpip_check_auth(const char *auth)
+int a_Dpip_check_auth(const char *auth_tag)
 {
    char SharedSecret[32];
    FILE *In;
-   char *fname, *rcline = NULL, *tail;
+   char *fname, *rcline = NULL, *tail, *cmd, *msg;
    int i, port, ret = -1;
 
-   dReturn_val_if (auth == NULL, -1);
+   /* sanity checks */
+   if (!auth_tag ||
+       !(cmd = a_Dpip_get_attr(auth_tag, "cmd")) || strcmp(cmd, "auth") ||
+       !(msg = a_Dpip_get_attr(auth_tag, "msg"))) {
+      return ret;
+   }
 
    fname = dStrconcat(dGethomedir(), "/.dillo/dpid_comm_keys", NULL);
    if ((In = fopen(fname, "r")) == NULL) {
@@ -209,11 +215,13 @@ int a_Dpip_check_auth(const char *auth)
       for (i = 0; *tail && isxdigit(tail[i+1]); ++i)
          SharedSecret[i] = tail[i+1];
       SharedSecret[i] = 0;
-      if (strcmp(auth, SharedSecret) == 0)
+      if (strcmp(msg, SharedSecret) == 0)
          ret = 1;
    }
    dFree(rcline);
    dFree(fname);
+   dFree(msg);
+   dFree(cmd);
 
    return ret;
 }
@@ -376,9 +384,12 @@ char *a_Dpip_dsh_read_token(Dsh *dsh)
 
 /*
  * Close this socket for reading and writing.
+ * (flush pending data)
  */
 void a_Dpip_dsh_close(Dsh *dsh)
 {
+   /* flush internal buffer */
+   a_Dpip_dsh_write(dsh, 1, "", 0);
    fclose(dsh->out);
    close(dsh->fd_out);
 }

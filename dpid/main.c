@@ -112,32 +112,17 @@ static void start_server_plugin(struct dp dpi_attr)
  * \Return
  * pointer to dynamically allocated request tag
  */
-static char *get_request(int sock)
+static char *get_request(Dsh *sh)
 {
-   char *req, buf[10];
-   size_t buflen;
-   size_t rqsz;
-   ssize_t rdln;
-
-   req = NULL;
-   buf[0] = '\0';
-   buflen = sizeof(buf) / sizeof(buf[0]);
+   char *dpip_tag;
 
    (void) sigprocmask(SIG_BLOCK, &mask_sigchld, NULL);
-   for (rqsz = 0; (rdln = read(sock, buf, buflen)) != 0; rqsz += rdln) {
-      if (rdln == -1)
-         break;
-      req = (char *) realloc(req, rqsz + rdln + 1);
-      if (rqsz == 0)
-         req[0] = '\0';
-      strncat(req, buf, (size_t) rdln);
-   }
+   do {
+      dpip_tag = a_Dpip_dsh_read_token(sh);
+   } while (!dpip_tag && sh->status == DPIP_EAGAIN);
    (void) sigprocmask(SIG_UNBLOCK, &mask_sigchld, NULL);
-   if (rdln == -1) {
-      ERRMSG("get_request", "read", errno);
-   }
 
-   return (req);
+   return dpip_tag;
 }
 
 /*!
@@ -145,7 +130,7 @@ static char *get_request(int sock)
  * \Return
  * command code on success, -1 on failure
  */
-static int get_command(int sock, char *dpi_tag)
+static int get_command(Dsh *sh, char *dpi_tag)
 {
    char *cmd, *d_cmd;
    int COMMAND;
@@ -162,9 +147,11 @@ static int get_command(int sock, char *dpi_tag)
       MSG_ERR(": dpid failed to parse cmd in %s\n", dpi_tag);
       d_cmd = a_Dpip_build_cmd("cmd=%s msg=%s",
                                "DpiError", "Failed to parse request");
-      (void) CKD_WRITE(sock, d_cmd);
+      a_Dpip_dsh_write_str(sh, 1, d_cmd);
       dFree(d_cmd);
       COMMAND = -1;
+   } else if (strcmp("auth", cmd) == 0) {
+      COMMAND = AUTH_CMD;
    } else if (strcmp("DpiBye", cmd) == 0) {
       COMMAND = BYE_CMD;
    } else if (strcmp("check_server", cmd) == 0) {
@@ -337,10 +324,19 @@ int main(void)
             MSG_ERR("service pending connections, and continue\n");
          } else {
             int command;
+            Dsh *sh;
 
-            req = get_request(sock_fd);
-            command = get_command(sock_fd, req);
+            sh = a_Dpip_dsh_new(sock_fd, sock_fd, 1024);
+read_next:
+            req = get_request(sh);
+            command = get_command(sh, req);
             switch (command) {
+            case AUTH_CMD:
+               if (a_Dpip_check_auth(req) != -1) {
+                  dFree(req);
+                  goto read_next;
+               }
+               break;
             case BYE_CMD:
                stop_active_dpis(dpi_attr_list, numdpis);
                //cleanup();
@@ -368,7 +364,8 @@ int main(void)
             }
             if (req)
                free(req);
-            a_Misc_close_fd(sock_fd);
+            a_Dpip_dsh_close(sh);
+            a_Dpip_dsh_free(sh);
          }
       }
 

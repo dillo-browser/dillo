@@ -700,16 +700,30 @@ void est_dpi_sigchld(void)
    }
 }
 
+/*! EINTR aware connect() call */
+int ckd_connect (int sock_fd, struct sockaddr *addr, socklen_t len)
+{
+   ssize_t ret;
+
+   do {
+      ret = connect(sock_fd, addr, len);
+   } while (ret == -1 && errno == EINTR);
+   if (ret == -1) {
+      ERRMSG("dpid.c", "connect", errno);
+   }
+   return ret;
+}
+
 /*! Send DpiBye command to all active non-filter dpis
  */
 void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
 {
-   static char *DpiBye_cmd = NULL;
+   char *bye_cmd, *auth_cmd;
    int i, sock_fd;
    struct sockaddr_in sin;
 
-   if (!DpiBye_cmd)
-      DpiBye_cmd = a_Dpip_build_cmd("cmd=%s", "DpiBye");
+   bye_cmd = a_Dpip_build_cmd("cmd=%s", "DpiBye");
+   auth_cmd = a_Dpip_build_cmd("cmd=%s msg=%s", "auth", SharedKey);
 
    memset(&sin, 0, sizeof(sin));
    sin.sin_family = AF_INET;
@@ -725,16 +739,19 @@ void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
          continue;
       }
       sin.sin_port = htons(dpi_attr_list[i].port);
-      if (connect(sock_fd, (struct sockaddr *)&sin, sizeof(sin)) == -1) {
+      if (ckd_connect(sock_fd, (struct sockaddr *)&sin, sizeof(sin)) == -1) {
          ERRMSG("stop_active_dpis", "connect", errno);
          MSG_ERR("%s\n", dpi_attr_list[i].path);
-      } else if (write(sock_fd, SharedKey, strlen(SharedKey)) == -1) {
+      } else if (CKD_WRITE(sock_fd, auth_cmd) == -1) {
          ERRMSG("stop_active_dpis", "write", errno);
-      } else if (write(sock_fd, DpiBye_cmd, strlen(DpiBye_cmd)) == -1) {
+      } else if (CKD_WRITE(sock_fd, bye_cmd) == -1) {
          ERRMSG("stop_active_dpis", "write", errno);
       }
       a_Misc_close_fd(sock_fd);
    }
+
+   dFree(auth_cmd);
+   dFree(bye_cmd);
 }
 
 /*! Removes dpis in dpi_attr_list from the
