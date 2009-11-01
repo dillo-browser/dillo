@@ -16,18 +16,21 @@
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>   /* for close */
+#include <fcntl.h>    /* for fcntl */
 
-#include "../dlib/dlib.h"
 #include "dpip.h"
 #include "d_size.h"
 
-#define MSG_ERR(...)  fprintf(stderr, "[dpip]: " __VA_ARGS__)
+#define DPIP_TAG_END            " '>"
+#define DPIP_MODE_SWITCH_TAG    "cmd='start_send_page' "
+#define MSG_ERR(...)            fprintf(stderr, "[dpip]: " __VA_ARGS__)
 
 /*
  * Local variables
  */
 static const char Quote = '\'';
-
+static const int DpipTag = 1;
 
 /*
  * Basically the syntax of a dpip tag is:
@@ -215,5 +218,178 @@ int a_Dpip_check_auth(const char *auth)
    return ret;
 }
 
-/* ------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ * Dpip socket API ----------------------------------------------------------
+ */
+
+/*
+ * Create and initialize a dpip socket handler
+ */
+Dsh *a_Dpip_dsh_new(int fd_in, int fd_out, int flush_sz)
+{
+   Dsh *dsh = dNew(Dsh, 1);
+
+   /* init descriptors and streams */
+   dsh->fd_in  = fd_in;
+   dsh->fd_out = fd_out;
+   dsh->out = fdopen(fd_out, "w");
+
+   /* init buffer */
+   dsh->dbuf = dStr_sized_new(8 *1024);
+   dsh->rd_dbuf = dStr_sized_new(8 *1024);
+   dsh->flush_sz = flush_sz;
+   dsh->mode = DPIP_TAG;
+   if (fcntl(dsh->fd_in, F_GETFL) & O_NONBLOCK)
+      dsh->mode |= DPIP_NONBLOCK;
+   dsh->status = 0;
+
+   return dsh;
+}
+
+/*
+ * Streamed write to socket
+ * Return: 0 on success, 1 on error.
+ */
+int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize)
+{
+   int ret = 1;
+
+   /* append to buf */
+   dStr_append_l(dsh->dbuf, Data, DataSize);
+
+   /* flush data if necessary */
+   if (flush || dsh->dbuf->len >= dsh->flush_sz) {
+      if (dsh->dbuf->len &&
+          fwrite (dsh->dbuf->str, dsh->dbuf->len, 1, dsh->out) != 1) {
+         MSG_ERR("[a_Dpip_dsh_write] %s\n", dStrerror(errno));
+      } else {
+         fflush(dsh->out);
+         dStr_truncate(dsh->dbuf, 0);
+         ret = 0;
+      }
+
+   } else {
+      ret = 0;
+   }
+
+   return ret;
+}
+
+/*
+ * Convenience function.
+ */
+int a_Dpip_dsh_write_str(Dsh *dsh, int flush, const char *str)
+{
+   return a_Dpip_dsh_write(dsh, flush, str, (int)strlen(str));
+}
+
+/*
+ * Read new data from the socket into our buffer.
+ * Used by both blocking and non-blocking IO.
+ */
+static void Dpip_dsh_read(Dsh *dsh)
+{
+//#define LBUF_SZ 16384
+#define LBUF_SZ 1
+
+   ssize_t st;
+   int old_flags, blocking;
+   char buf[LBUF_SZ];
+
+   blocking = !(dsh->mode & DPIP_NONBLOCK);
+   if (blocking) {
+      old_flags = fcntl(dsh->fd_in, F_GETFL);
+   }
+
+   while (1) {
+      /* can't use fread() */
+      do
+         st = read(dsh->fd_in, buf, LBUF_SZ);
+      while (st < 0 && errno == EINTR);
+
+      if (st < 0) {
+         if (errno == EAGAIN) {
+            /* no problem, return what we've got so far... */
+            dsh->status = DPIP_EAGAIN;
+         } else {
+            MSG_ERR("[Dpip_dsh_read] %s\n", dStrerror(errno));
+            dsh->status = DPIP_ERROR;
+         }
+         break;
+      } else if (st == 0) {
+         dsh->status = DPIP_EOF;
+         break;
+      } else {
+         /* append to buf */
+         dStr_append_l(dsh->rd_dbuf, buf, st);
+         if (blocking) {
+            /* set NONBLOCKING temporarily... */
+            fcntl(dsh->fd_in, F_SETFL, O_NONBLOCK | old_flags);
+         }
+      }
+   }
+
+   if (blocking) {
+      /* restore blocking mode */
+      fcntl(dsh->fd_in, F_SETFL, old_flags);
+   }
+}
+
+/*
+ * Return a newlly allocated string with the next dpip token in the socket.
+ * Return value: token string on success, NULL otherwise
+ */
+char *a_Dpip_dsh_read_token(Dsh *dsh)
+{
+   char *p, *ret = NULL;
+
+   /* switch mode upon request */
+   if (dsh->mode & DPIP_LAST_TAG)
+      dsh->mode = DPIP_RAW;
+
+   /* Only read from socket when there's no data in buffer or
+    * the tag is incomplete */
+   if (dsh->rd_dbuf->len == 0 ||
+       (dsh->mode & DPIP_TAG &&
+        !(p = strstr(dsh->rd_dbuf->str, DPIP_TAG_END)))) {
+      Dpip_dsh_read(dsh);
+   }
+
+   if (dsh->mode & DPIP_TAG) {
+      /* return a full tag */
+      if ((p = strstr(dsh->rd_dbuf->str, DPIP_TAG_END))) {
+         ret = dStrndup(dsh->rd_dbuf->str, p - dsh->rd_dbuf->str + 3);
+         dStr_erase(dsh->rd_dbuf, 0, p - dsh->rd_dbuf->str + 3);
+         if (strstr(ret, DPIP_MODE_SWITCH_TAG))
+            dsh->mode |= DPIP_LAST_TAG;
+      }
+   } else {
+      /* raw mode, return what we have "as is" */
+      if (dsh->rd_dbuf->len > 0) {
+         ret = dStrndup(dsh->rd_dbuf->str, dsh->rd_dbuf->len);
+         dStr_truncate(dsh->rd_dbuf, 0);
+      }
+   }
+
+   return ret;
+}
+
+/*
+ * Close this socket for reading and writing.
+ */
+void a_Dpip_dsh_close(Dsh *dsh)
+{
+   fclose(dsh->out);
+   close(dsh->fd_out);
+}
+
+/*
+ * Free the SockHandler structure
+ */
+void a_Dpip_dsh_free(Dsh *dsh)
+{
+   dStr_free(dsh->dbuf, 1);
+   dStr_free(dsh->rd_dbuf, 1);
+   dFree(dsh);
+}
 

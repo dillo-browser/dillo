@@ -1432,7 +1432,7 @@ static void termination_handler(int signum)
 /*
  * -- MAIN -------------------------------------------------------------------
  */
-int main (void) {
+int main(void) {
    struct sockaddr_un spun;
    int temp_sock_descriptor;
    socklen_t address_size;
