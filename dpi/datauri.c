@@ -35,7 +35,7 @@
 /*
  * Global variables
  */
-static SockHandler *sh = NULL;
+static Dsh *sh = NULL;
 
 static void b64strip_illegal_chars(unsigned char* str)
 {
@@ -167,16 +167,16 @@ static void send_decoded_data(const char *url, const char *mime_type,
 
    /* Send dpip tag */
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", url);
-   sock_handler_write_str(sh, 1, d_cmd);
+   a_Dpip_dsh_write_str(sh, 1, d_cmd);
    dFree(d_cmd);
 
    /* Send HTTP header. */
-   sock_handler_write_str(sh, 0, "Content-type: ");
-   sock_handler_write_str(sh, 0, mime_type);
-   sock_handler_write_str(sh, 1, "\n\n");
+   a_Dpip_dsh_write_str(sh, 0, "Content-type: ");
+   a_Dpip_dsh_write_str(sh, 0, mime_type);
+   a_Dpip_dsh_write_str(sh, 1, "\n\n");
 
    /* Send message */
-   sock_handler_write(sh, 0, (char *)data, data_sz);
+   a_Dpip_dsh_write(sh, 0, (char *)data, data_sz);
 }
 
 static void send_failure_message(const char *url, const char *mime_type,
@@ -194,24 +194,24 @@ static void send_failure_message(const char *url, const char *mime_type,
 
    /* Send dpip tag */
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", url);
-   sock_handler_write_str(sh, 1, d_cmd);
+   a_Dpip_dsh_write_str(sh, 1, d_cmd);
    dFree(d_cmd);
 
    /* Send HTTP header. */
-   sock_handler_write_str(sh, 0, "Content-type: ");
-   sock_handler_write_str(sh, 0, msg_mime_type);
-   sock_handler_write_str(sh, 1, "\n\n");
+   a_Dpip_dsh_write_str(sh, 0, "Content-type: ");
+   a_Dpip_dsh_write_str(sh, 0, msg_mime_type);
+   a_Dpip_dsh_write_str(sh, 1, "\n\n");
 
    /* Send message */
-   sock_handler_write_str(sh, 0, msg);
+   a_Dpip_dsh_write_str(sh, 0, msg);
 
    /* send some debug info */
    snprintf(buf, 1024, "mime_type: %s<br>data size: %d<br>data: %s<br>",
             mime_type, (int)data_sz, data);
-   sock_handler_write_str(sh, 0, buf);
+   a_Dpip_dsh_write_str(sh, 0, buf);
 
    /* close page */
-   sock_handler_write_str(sh, 0, "</body></html>");
+   a_Dpip_dsh_write_str(sh, 0, "</body></html>");
 }
 
 /*
@@ -294,7 +294,7 @@ int main(void)
    size_t data_size = 0;
 
    /* Initialize the SockHandler */
-   sh = sock_handler_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
+   sh = a_Dpip_dsh_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
 
    rc = chdir("/tmp");
    if (rc == -1) {
@@ -302,8 +302,17 @@ int main(void)
           dStrerror(errno));
    }
 
+   /* Authenticate our client... */
+   if (!(dpip_tag = a_Dpip_dsh_read_token(sh, 1)) ||
+       a_Dpip_check_auth(dpip_tag) < 0) {
+      MSG("can't authenticate request: %s\n", dStrerror(errno));
+      a_Dpip_dsh_close(sh);
+      return 1;
+   }
+   dFree(dpip_tag);
+
    /* Read the dpi command from STDIN */
-   dpip_tag = sock_handler_read(sh);
+   dpip_tag = a_Dpip_dsh_read_token(sh, 1);
    MSG("[%s]\n", dpip_tag);
 
    cmd = a_Dpip_get_attr(dpip_tag, "cmd");
@@ -336,8 +345,8 @@ int main(void)
    dFree(dpip_tag);
 
    /* Finish the SockHandler */
-   sock_handler_close(sh);
-   sock_handler_free(sh);
+   a_Dpip_dsh_close(sh);
+   a_Dpip_dsh_free(sh);
 
    return 0;
 }
