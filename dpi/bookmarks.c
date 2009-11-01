@@ -1727,12 +1727,9 @@ int main(void) {
 
       while (1) {
          code = 1;
-         if ((tok = a_Dpip_dsh_read_token(sh)) != NULL) {
+         if ((tok = a_Dpip_dsh_read_token(sh, 1)) != NULL) {
             /* Let's see what we fished... */
             code = Bmsrv_parse_token(sh, tok);
-         } else if (sh->status == DPIP_EAGAIN) {
-            /* may reach here when the tag size is larger than kernel buffer */
-            continue;
          }
          dFree(tok);
 

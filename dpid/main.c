@@ -117,9 +117,7 @@ static char *get_request(Dsh *sh)
    char *dpip_tag;
 
    (void) sigprocmask(SIG_BLOCK, &mask_sigchld, NULL);
-   do {
-      dpip_tag = a_Dpip_dsh_read_token(sh);
-   } while (!dpip_tag && sh->status == DPIP_EAGAIN);
+   dpip_tag = a_Dpip_dsh_read_token(sh, 1);
    (void) sigprocmask(SIG_UNBLOCK, &mask_sigchld, NULL);
 
    return dpip_tag;

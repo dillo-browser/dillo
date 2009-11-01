@@ -1482,14 +1482,11 @@ int main(void) {
 
       while (1) {
          code = 1;
-         if ((buf = a_Dpip_dsh_read_token(sh)) != NULL) {
+         if ((buf = a_Dpip_dsh_read_token(sh, 1)) != NULL) {
             /* Let's see what we fished... */
             _MSG(" buf = {%s}\n", buf);
             code = srv_parse_tok(sh, client, buf);
             dFree(buf);
-         } else if (sh->status == DPIP_EAGAIN) {
-            /* may reach here when the tag size is larger than kernel buffer */
-            continue;
          }
 
          _MSG(" code = %d %s\n", code, code == 1 ? "EXIT" : "BREAK");

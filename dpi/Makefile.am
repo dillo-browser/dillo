@@ -20,11 +20,10 @@ downloads_dpi_LDADD = @LIBFLTK_LIBS@ ../dpip/libDpip.a ../dlib/libDlib.a
 ftp_filter_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
 https_filter_dpi_LDADD = @LIBSSL_LIBS@ ../dpip/libDpip.a ../dlib/libDlib.a
 hello_filter_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
-file_dpi_LDADD = @LIBPTHREAD_LIBS@ ../dpip/libDpip.a ../dlib/libDlib.a
+file_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
 cookies_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
 datauri_filter_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
 
-file_dpi_LDFLAGS = @LIBPTHREAD_LDFLAGS@
 downloads_dpi_CXXFLAGS = @LIBFLTK_CXXFLAGS@
 
 bookmarks_dpi_SOURCES = bookmarks.c dpiutil.c dpiutil.h

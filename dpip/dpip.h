@@ -68,7 +68,7 @@ int a_Dpip_check_auth(const char *auth);
 Dsh *a_Dpip_dsh_new(int fd_in, int fd_out, int flush_sz);
 int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize);
 int a_Dpip_dsh_write_str(Dsh *dsh, int flush, const char *str);
-char *a_Dpip_dsh_read_token(Dsh *dsh);
+char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking);
 void a_Dpip_dsh_close(Dsh *dsh);
 void a_Dpip_dsh_free(Dsh *dsh);
 
