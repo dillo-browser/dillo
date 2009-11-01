@@ -259,12 +259,58 @@ Dsh *a_Dpip_dsh_new(int fd_in, int fd_out, int flush_sz)
 }
 
 /*
+ * Return value: 1..DataSize sent, -1 eagain, or -3 on big Error
+ */
+static int Dpip_dsh_write(Dsh *dsh, int nb, const char *Data, int DataSize)
+{
+   int req_mode, old_flags, st, ret = -3, sent = 0;
+
+   req_mode = (nb) ? DPIP_NONBLOCK : 0;
+   if ((dsh->mode & DPIP_NONBLOCK) != req_mode) {
+      /* change mode temporarily... */
+      old_flags = fcntl(dsh->fd_out, F_GETFL);
+      fcntl(dsh->fd_out, F_SETFL,
+            (nb) ? O_NONBLOCK | old_flags : old_flags & ~O_NONBLOCK);
+   }
+
+   while (1) {
+      st = write(dsh->fd_out, Data + sent, DataSize - sent);
+      if (st < 0) {
+         if (errno == EINTR) {
+            continue;
+         } else if (errno == EAGAIN) {
+            dsh->status = DPIP_EAGAIN;
+            ret = -1;
+            break;
+         } else {
+            MSG_ERR("[Dpip_dsh_write] %s\n", dStrerror(errno));
+            dsh->status = DPIP_ERROR;
+            break;
+         }
+      } else {
+         sent += st;
+         if (nb || sent == DataSize) {
+            ret = sent;
+            break;
+         }
+      }
+   }
+
+   if ((dsh->mode & DPIP_NONBLOCK) != req_mode) {
+      /* restore old mode */
+      fcntl(dsh->fd_out, F_SETFL, old_flags);
+   }
+
+   return ret;
+}
+
+/*
  * Streamed write to socket
  * Return: 0 on success, 1 on error.
  */
 int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize)
 {
-   int blocking, old_flags, st, sent = 0, ret = 1;
+   int ret = 1;
 
    /* append to buf */
    dStr_append_l(dsh->wrbuf, Data, DataSize);
@@ -272,72 +318,10 @@ int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize)
    if (!flush || dsh->wrbuf->len == 0)
       return 0;
 
-   blocking = !(dsh->mode & DPIP_NONBLOCK);
-   if (!blocking) {
-      /* set BLOCKING temporarily... */
-      old_flags = fcntl(dsh->fd_in, F_GETFL);
-      fcntl(dsh->fd_in, F_SETFL, old_flags & ~O_NONBLOCK);
-   }
-
-   while (1) {
-      st = write(dsh->fd_out, dsh->wrbuf->str + sent, dsh->wrbuf->len - sent);
-      if (st < 0) {
-         if (errno == EINTR) {
-            continue;
-         } else {
-            dsh->status = DPIP_ERROR;
-            break;
-         }
-      } else {
-         sent += st;
-         if (sent == dsh->wrbuf->len) {
-            dStr_truncate(dsh->wrbuf, 0);
-            ret = 0;
-            break;
-         }
-      }
-   }
-
-   if (!blocking) {
-      /* restore nonblocking mode */
-      fcntl(dsh->fd_in, F_SETFL, old_flags);
-   }
-
-   return ret;
-}
-
-/*
- * Return value: 1..DataSize sent, -1 eagain, or -3 on big Error
- */
-static int Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize)
-{
-   int blocking, old_flags, st, ret = -3;
-
-   blocking = !(dsh->mode & DPIP_NONBLOCK);
-   if (blocking) {
-      /* set NONBLOCKING temporarily... */
-      old_flags = fcntl(dsh->fd_in, F_GETFL);
-      fcntl(dsh->fd_in, F_SETFL, O_NONBLOCK | old_flags);
-   }
-
-   do {
-      st = write(dsh->fd_out, Data, DataSize);
-   } while (st < 0 && errno == EINTR);
-   if (st < 0) {
-      if (errno == EAGAIN) {
-         dsh->status = DPIP_EAGAIN;
-         ret = -1;
-      } else {
-         MSG_ERR("[Dpip_dsh_trywrite] %s\n", dStrerror(errno));
-         dsh->status = DPIP_ERROR;
-      }
-   } else {
-      ret = st;
-   }
-
-   if (blocking) {
-      /* restore blocking mode */
-      fcntl(dsh->fd_in, F_SETFL, old_flags);
+   ret = Dpip_dsh_write(dsh, 0, dsh->wrbuf->str, dsh->wrbuf->len);
+   if (ret == dsh->wrbuf->len) {
+      dStr_truncate(dsh->wrbuf, 0);
+      ret = 0;
    }
 
    return ret;
@@ -354,7 +338,7 @@ int a_Dpip_dsh_tryflush(Dsh *dsh)
    if (dsh->wrbuf->len == 0) {
       st = 0;
    } else {
-      st = Dpip_dsh_trywrite(dsh, dsh->wrbuf->str, dsh->wrbuf->len);
+      st = Dpip_dsh_write(dsh, 1, dsh->wrbuf->str, dsh->wrbuf->len);
       if (st > 0) {
          /* update internal buffer */
          dStr_erase(dsh->wrbuf, 0, st);
@@ -370,7 +354,7 @@ int a_Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize)
 {
    int st;
 
-   if ((st = Dpip_dsh_trywrite(dsh, Data, DataSize)) > 0) {
+   if ((st = Dpip_dsh_write(dsh, 1, Data, DataSize)) > 0) {
       /* update internal buffer */
       if (st < DataSize)
          dStr_append_l(dsh->wrbuf, Data + st, DataSize - st);
