@@ -496,6 +496,8 @@ void a_Dpip_dsh_close(Dsh *dsh)
  */
 void a_Dpip_dsh_free(Dsh *dsh)
 {
+   dReturn_if (dsh == NULL);
+
    dStr_free(dsh->wrbuf, 1);
    dStr_free(dsh->rdbuf, 1);
    dFree(dsh);

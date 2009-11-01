@@ -821,29 +821,6 @@ static void update_cb(void *data)
 // DLWin ---------------------------------------------------------------------
 
 /*
- * Read a single line from a socket and store it in a Dstr.
- */
-static ssize_t readline(int socket, Dstr ** msg)
-{
-   ssize_t st;
-   char buf[16384];
-
-   /* can't use fread() */
-   do
-      st = read(socket, buf, 16384);
-   while (st < 0 && errno == EINTR);
-
-   if (st == -1)
-      MSG("readline, %s\n", dStrerror(errno));
-
-   dStr_truncate(*msg, 0);
-   if (st > 0)
-      dStr_append_l(*msg, buf, (int)st);
-
-   return st;
-}
-
-/*
  * Make a new name and place it in 'dl_dest'.
  */
 static void make_new_name(char **dl_dest, const char *url)
@@ -874,33 +851,48 @@ static void make_new_name(char **dl_dest, const char *url)
  */
 static void read_req_cb(int req_fd, void *)
 {
-   Dstr *tag;
    struct sockaddr_un clnt_addr;
-   int new_socket;
+   int sock_fd;
    socklen_t csz;
    struct stat sb;
-   char *cmd = NULL, *url = NULL, *dl_dest = NULL;
+   Dsh *sh = NULL;
+   char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *dl_dest = NULL;
    DLAction action = DL_ABORT; /* compiler happiness */
 
    /* Initialize the value-result parameter */
    csz = sizeof(struct sockaddr_un);
    /* accept the request */
    do {
-      new_socket = accept(req_fd, (struct sockaddr *) &clnt_addr, &csz);
-   } while (new_socket == -1 && errno == EINTR);
-   if (new_socket == -1) {
+      sock_fd = accept(req_fd, (struct sockaddr *) &clnt_addr, &csz);
+   } while (sock_fd == -1 && errno == EINTR);
+   if (sock_fd == -1) {
       MSG("accept, %s fd=%d\n", dStrerror(errno), req_fd);
       return;
    }
 
-   //sigprocmask(SIG_BLOCK, &blockSC, NULL);
-   tag = dStr_sized_new(64);
-   readline(new_socket, &tag);
-   close(new_socket);
-   _MSG("Received tag={%s}\n", tag->str);
+   /* create a sock handler */
+   sh = a_Dpip_dsh_new(sock_fd, sock_fd, 8*1024);
 
-   if ((cmd = a_Dpip_get_attr(tag->str, "cmd")) == NULL) {
-      MSG("Failed to parse 'cmd' in {%s}\n", tag->str);
+   /* Authenticate our client... */
+   if (!(dpip_tag = a_Dpip_dsh_read_token(sh, 1)) ||
+       a_Dpip_check_auth(dpip_tag) < 0) {
+      MSG("can't authenticate request: %s fd=%d\n", dStrerror(errno), sock_fd);
+      a_Dpip_dsh_close(sh);
+      goto end;
+   }
+   dFree(dpip_tag);
+
+   /* Read request */
+   if (!(dpip_tag = a_Dpip_dsh_read_token(sh, 1))) {
+      MSG("can't read request: %s fd=%d\n", dStrerror(errno), sock_fd);
+      a_Dpip_dsh_close(sh);
+      goto end;
+   }
+   a_Dpip_dsh_close(sh);
+   _MSG("Received tag={%s}\n", dpip_tag);
+
+   if ((cmd = a_Dpip_get_attr(dpip_tag, "cmd")) == NULL) {
+      MSG("Failed to parse 'cmd' in {%s}\n", dpip_tag);
       goto end;
    }
    if (strcmp(cmd, "DpiBye") == 0) {
@@ -911,12 +903,12 @@ static void read_req_cb(int req_fd, void *)
       MSG("unknown command: '%s'. Aborting.\n", cmd);
       goto end;
    }
-   if (!(url = a_Dpip_get_attr(tag->str, "url"))){
-      MSG("Failed to parse 'url' in {%s}\n", tag->str);
+   if (!(url = a_Dpip_get_attr(dpip_tag, "url"))){
+      MSG("Failed to parse 'url' in {%s}\n", dpip_tag);
       goto end;
    }
-   if (!(dl_dest = a_Dpip_get_attr(tag->str, "destination"))){
-      MSG("Failed to parse 'destination' in {%s}\n", tag->str);
+   if (!(dl_dest = a_Dpip_get_attr(dpip_tag, "destination"))){
+      MSG("Failed to parse 'destination' in {%s}\n", dpip_tag);
       goto end;
    }
    /* 'dl_dest' may be a directory */
@@ -935,7 +927,8 @@ end:
    dFree(cmd);
    dFree(url);
    dFree(dl_dest);
-   dStr_free(tag, TRUE);
+   dFree(dpip_tag);
+   a_Dpip_dsh_free(sh);
 }
 
 /*
