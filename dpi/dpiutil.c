@@ -194,7 +194,7 @@ SockHandler *sock_handler_new(int fd_in, int fd_out, int flush_sz)
 int sock_handler_write(SockHandler *sh, int flush,
                        const char *Data, size_t DataSize)
 {
-   int retval = 1;
+   int ret = 1;
 
    /* append to buf */
    while (sh->buf_max < sh->buf_sz + DataSize) {
@@ -219,7 +219,7 @@ int sock_handler_write(SockHandler *sh, int flush,
    }
    if (i == sh->buf_sz) {
       sh->buf_sz = 0;
-      retval = 0;
+      ret = 0;
    }
 }
 #else
@@ -230,14 +230,14 @@ int sock_handler_write(SockHandler *sh, int flush,
       } else {
          fflush(sh->out);
          sh->buf_sz = 0;
-         retval = 0;
+         ret = 0;
       }
 
    } else {
-      retval = 0;
+      ret = 0;
    }
 #endif
-   return retval;
+   return ret;
 }
 
 /*

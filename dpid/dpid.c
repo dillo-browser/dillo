@@ -222,7 +222,7 @@ int get_dpi_attr(char *dpi_dir, char *service, struct dp *dpi_attr)
    char *service_dir = NULL;
    struct stat statinfo;
    enum file_type ftype;
-   int retval = -1;
+   int ret = -1;
    DIR *dir_stream;
    struct dirent *dir_entry = NULL;
 
@@ -252,7 +252,7 @@ int get_dpi_attr(char *dpi_dir, char *service, struct dp *dpi_attr)
                   dpi_attr->filter = 1;
                else
                   dpi_attr->filter = 0;
-               retval = 0;
+               ret = 0;
                break;
             default:
                break;
@@ -260,12 +260,12 @@ int get_dpi_attr(char *dpi_dir, char *service, struct dp *dpi_attr)
       }
       closedir(dir_stream);
 
-      if (retval != 0)
+      if (ret != 0)
          MSG_ERR("get_dpi_attr: No dpi plug-in in %s/%s\n",
                  dpi_dir, service);
    }
    dFree(service_dir);
-   return retval;
+   return ret;
 }
 
 /*! Register a service
@@ -280,7 +280,7 @@ int get_dpi_attr(char *dpi_dir, char *service, struct dp *dpi_attr)
 int register_service(struct dp *dpi_attr, char *service)
 {
    char *user_dpi_dir, *dpidrc, *user_service_dir, *dir = NULL;
-   int retval = -1;
+   int ret = -1;
 
    user_dpi_dir = dStrconcat(dGethomedir(), "/", dotDILLO_DPI, NULL);
    user_service_dir =
@@ -304,12 +304,12 @@ int register_service(struct dp *dpi_attr, char *service)
    /* Check home dir for dpis */
    if (access(user_service_dir, F_OK) == 0) {
       get_dpi_attr(user_dpi_dir, service, dpi_attr);
-      retval = 0;
+      ret = 0;
    } else {                     /* Check system wide dpis */
       if ((dir = get_dpi_dir(dpidrc)) != NULL) {
          if (access(dir, F_OK) == 0) {
             get_dpi_attr(dir, service, dpi_attr);
-            retval = 0;
+            ret = 0;
          } else {
             ERRMSG("register_service", "get_dpi_attr failed", 0);
          }
@@ -321,7 +321,7 @@ int register_service(struct dp *dpi_attr, char *service)
    dFree(user_service_dir);
    dFree(dpidrc);
    dFree(dir);
-   return (retval);
+   return ret;
 }
 
 /*!

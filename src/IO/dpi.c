@@ -767,22 +767,22 @@ void a_Dpi_dillo_exit()
 char *a_Dpi_send_blocking_cmd(const char *server_name, const char *cmd)
 {
    int cst, sock_fd;
-   char *retval = NULL;
+   char *ret = NULL;
 
    /* test the dpid, and wait a bit for it to start if necessary */
    if ((cst = Dpi_blocking_start_dpid()) != 0) {
-      return retval;
+      return ret;
    }
 
    if ((sock_fd = Dpi_connect_socket(server_name, TRUE)) == -1) {
       MSG_ERR("[a_Dpi_send_blocking_cmd] Can't connect to server.\n");
    } else if (Dpi_blocking_write(sock_fd, cmd, strlen(cmd)) == -1) {
       MSG_ERR("[a_Dpi_send_blocking_cmd] Can't send message.\n");
-   } if ((retval = Dpi_blocking_read(sock_fd)) == NULL) {
+   } if ((ret = Dpi_blocking_read(sock_fd)) == NULL) {
       MSG_ERR("[a_Dpi_send_blocking_cmd] Can't read message.\n");
    }
    Dpi_close_fd(sock_fd);
 
-   return retval;
+   return ret;
 }
 

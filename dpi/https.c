@@ -132,7 +132,7 @@ static void yes_ssl_support(void)
    char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *http_query = NULL,
         *proxy_url = NULL, *proxy_connect = NULL;
    char buf[4096];
-   int retval = 0;
+   int ret = 0;
    int network_socket = -1;
 
 
@@ -309,9 +309,9 @@ static void yes_ssl_support(void)
 
       /*Send remaining data*/
 
-      while ((retval = SSL_read(ssl_connection, buf, 4096)) > 0 ){
+      while ((ret = SSL_read(ssl_connection, buf, 4096)) > 0 ){
          /* flush is good for dialup speed */
-         sock_handler_write(sh, 1, buf, (size_t)retval);
+         sock_handler_write(sh, 1, buf, (size_t)ret);
       }
    }
 
@@ -414,7 +414,7 @@ static int get_network_connection(char * url)
 static int handle_certificate_problem(SSL * ssl_connection)
 {
    int response_number;
-   int retval = -1;
+   int ret = -1;
    long st;
    char *cn, *cn_end;
    char buf[4096], *d_cmd, *msg;
@@ -439,7 +439,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
 
       /*Abort on anything but "Continue"*/
       if (response_number == 1){
-         retval = 0;
+         ret = 0;
       }
 
    } else {
@@ -447,7 +447,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
       st = SSL_get_verify_result(ssl_connection);
       switch (st) {
       case X509_V_OK:      /*Everything is Kosher*/
-         retval = 0;
+         ret = 0;
          break;
       case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
          /*Either self signed and untrusted*/
@@ -476,7 +476,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
          response_number = dialog_get_answer_number();
          switch (response_number){
             case 1:
-               retval = 0;
+               ret = 0;
                break;
             case 2:
                break;
@@ -485,7 +485,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
                /*Potential security problems because we are writing
                 *to the filesystem*/
                save_certificate_home(remote_cert);
-               retval = 1;
+               ret = 1;
                break;
             default:
                break;
@@ -504,7 +504,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
 
          response_number = dialog_get_answer_number();
          if (response_number == 1) {
-            retval = 0;
+            ret = 0;
          }
          break;
 
@@ -523,7 +523,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
 
          response_number = dialog_get_answer_number();
          if (response_number == 1) {
-            retval = 0;
+            ret = 0;
          }
          break;
       case X509_V_ERR_CERT_NOT_YET_VALID:
@@ -542,7 +542,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
 
          response_number = dialog_get_answer_number();
          if (response_number == 1) {
-            retval = 0;
+            ret = 0;
          }
          break;
       case X509_V_ERR_CERT_HAS_EXPIRED:
@@ -558,7 +558,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
          dFree(d_cmd);
          response_number = dialog_get_answer_number();
          if (response_number == 1) {
-            retval = 0;
+            ret = 0;
          }
          break;
       case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
@@ -577,7 +577,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
          dFree(d_cmd);
          response_number = dialog_get_answer_number();
          if (response_number == 1) {
-            retval = 0;
+            ret = 0;
          }
          break;
       case X509_V_ERR_INVALID_CA:
@@ -597,7 +597,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
          dFree(d_cmd);
          response_number = dialog_get_answer_number();
          if (response_number == 1) {
-            retval = 0;
+            ret = 0;
          }
          break;
       case X509_V_ERR_SUBJECT_ISSUER_MISMATCH:
@@ -623,14 +623,14 @@ static int handle_certificate_problem(SSL * ssl_connection)
          response_number = dialog_get_answer_number();
          /*abort on anything but "Continue"*/
          if (response_number == 1){
-            retval = 0;
+            ret = 0;
          }
       }
       X509_free(remote_cert);
       remote_cert = 0;
    }
 
-   return retval;
+   return ret;
 }
 
 /*
@@ -643,7 +643,7 @@ static int save_certificate_home(X509 * cert)
 
    FILE * fp = NULL;
    uint_t i = 0;
-   int retval = 1;
+   int ret = 1;
 
    /*Attempt to create .dillo/certs blindly - check later*/
    snprintf(buf,4096,"%s/.dillo/", dGethomedir());
@@ -666,7 +666,7 @@ static int save_certificate_home(X509 * cert)
             PEM_write_X509(fp, cert);
             fclose(fp);
             MSG("Wrote certificate\n");
-            retval = 0;
+            ret = 0;
             break;
          }
       } else {
@@ -676,7 +676,7 @@ static int save_certificate_home(X509 * cert)
       /*Don't loop too many times - just give up*/
    } while (i < 1024);
 
-   return retval;
+   return ret;
 }
 
 
