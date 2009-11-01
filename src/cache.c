@@ -999,7 +999,7 @@ static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw)
  * Check whether a URL scheme is downloadable.
  * Return: 1 enabled, 0 disabled.
  */
-static int Cache_download_enabled(const DilloUrl *url)
+int a_Cache_download_enabled(const DilloUrl *url)
 {
    if (!dStrcasecmp(URL_SCHEME(url), "http") ||
        !dStrcasecmp(URL_SCHEME(url), "https") ||
@@ -1035,7 +1035,8 @@ typedef struct {
    DilloUrl *url;
 } Cache_savelink_t;
 
-/* Save link from behind a timeout so that Cache_process_queue() can
+/*
+ * Save link from behind a timeout so that Cache_process_queue() can
  * get on with its work.
  */
 static void Cache_savelink_cb(void *vdata)
@@ -1198,8 +1199,10 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
       /* Abort the entry, remove it from cache, and maybe offer download. */
       DilloUrl *url = a_Url_dup(entry->Url);
       a_Capi_conn_abort_by_url(url);
+      /* Necessary when 'conn' is already done */
+      Cache_entry_remove(NULL, url);
       entry = NULL;
-      if (OfferDownload && Cache_download_enabled(url)) {
+      if (OfferDownload && a_Cache_download_enabled(url)) {
          Cache_savelink_t *data = dNew(Cache_savelink_t, 1);
          data->bw = Client_bw;
          data->url = url;

@@ -187,6 +187,8 @@ static void Capi_conn_resume(void)
 /*
  * Abort the connection for a given url, using its CCC.
  * (OpAbort 2,BCK removes the cache entry)
+ * TODO: when conn is already done, the cache entry isn't removed.
+ *       This may be wrong and needs a revision. 
  */
 void a_Capi_conn_abort_by_url(const DilloUrl *url)
 {
@@ -341,15 +343,11 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
               MSG_WARN("Cannot open \"%s\" for writing.\n", web->filename);
            }
         }
-     } else {
-        if (!dStrcasecmp(scheme, "https") ||
-            !dStrcasecmp(scheme, "http") ||
-            !dStrcasecmp(scheme, "ftp")) {
-           server = "downloads";
-           cmd = Capi_dpi_build_cmd(web, server);
-           a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
-           dFree(cmd);
-        }
+     } else if (a_Cache_download_enabled(web->url)) {
+        server = "downloads";
+        cmd = Capi_dpi_build_cmd(web, server);
+        a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
+        dFree(cmd);
      }
 
    } else if (Capi_url_uses_dpi(web->url, &server)) {
