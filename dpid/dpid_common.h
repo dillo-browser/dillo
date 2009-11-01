@@ -23,6 +23,8 @@
 
 #define dotDILLO_DPI ".dillo/dpi"
 #define dotDILLO_DPIDRC ".dillo/dpidrc"
+#define dotDILLO_DPID_COMM_KEYS ".dillo/dpid_comm_keys"
+
 #define ERRMSG(CALLER, CALLED, ERR)\
  errmsg(CALLER, CALLED, ERR, __FILE__, __LINE__)
 #define _ERRMSG(CALLER, CALLED, ERR)

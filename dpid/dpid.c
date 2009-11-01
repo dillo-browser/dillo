@@ -19,11 +19,13 @@
  * Main functions to set-up dpi information and to initialise sockets
  */
 #include <errno.h>
-#include <stdlib.h>   /* for exit */
-#include <fcntl.h>    /* for F_SETFD, F_GETFD, FD_CLOEXEC */
+#include <stdlib.h>             /* for exit */
+#include <fcntl.h>              /* for F_SETFD, F_GETFD, FD_CLOEXEC */
 
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/socket.h>
+
 #include <unistd.h>
 #include "dpid_common.h"
 #include "dpid.h"
@@ -37,70 +39,11 @@
 
 volatile sig_atomic_t caught_sigchld = 0;
 
-/*! Return the basename of a filename
+/*! Remove UDS filenames 
  */
-static char *get_basename(char *filename)
+void cleanup()
 {
-   char *p;
 
-   if (filename && (p = strrchr(filename, '/'))) {
-      filename = p + 1;
-   }
-   return filename;
-}
-
-/*! Close and remove the sockets in the
- * given dpi attribute list
- */
-void rm_dpi_sockets(struct dp *dpi_attr_list, int numdpis)
-{
-   int i;
-
-   for (i = 0; i < numdpis; i++) {
-      a_Misc_close_fd(dpi_attr_list[i].socket);
-      (void) unlink(dpi_attr_list[i].sockpath);
-   }
-}
-
-/*! Close and remove inactive dpi sockets
- * \Return
- * Number of active dpis.
- */
-int rm_inactive_dpi_sockets(struct dp *dpi_attr_list, int numdpis)
-{
-   int i, active = 0;
-
-   for (i = 0; i < numdpis; i++) {
-      if (dpi_attr_list[i].pid == 1) {
-         a_Misc_close_fd(dpi_attr_list[i].socket);
-         (void) unlink(dpi_attr_list[i].sockpath);
-      } else
-         active++;
-   }
-   return (active);
-}
-
-/*! Remove sockets
- */
-void cleanup(char *socket_dir)
-{
-   DIR *dir;
-   struct dirent *dir_entry = NULL;
-   char *sockpath;
-
-   dir = opendir(socket_dir);
-   if (dir == NULL) {
-      ERRMSG("cleanup", "opendir", errno);
-      return;
-   }
-   while ( (dir_entry = readdir(dir)) != NULL ) {
-      if (dir_entry->d_name[0] == '.')
-         continue;
-      sockpath = dStrconcat(socket_dir, "/", dir_entry->d_name, NULL);
-      unlink(sockpath);
-      dFree(sockpath);
-   }
-   closedir(dir);
 }
 
 /*! Free memory used to describe
@@ -115,10 +58,6 @@ void free_dpi_attr(struct dp *dpi_attr)
    if (dpi_attr->path != NULL) {
       dFree(dpi_attr->path);
       dpi_attr->path = NULL;
-   }
-   if (dpi_attr->sockpath != NULL) {
-      dFree(dpi_attr->sockpath);
-      dpi_attr->sockpath = NULL;
    }
 }
 
@@ -306,7 +245,7 @@ int get_dpi_attr(char *dpi_dir, char *service, struct dp *dpi_attr)
                dpi_attr->path =
                   dStrconcat(service_dir, "/", dir_entry->d_name, NULL);
                dpi_attr->id = dStrdup(service);
-               dpi_attr->sockpath = NULL;
+               dpi_attr->port = 0;
                dpi_attr->pid = 1;
                if (strstr(dpi_attr->path, ".filter") != NULL)
                   dpi_attr->filter = 1;
@@ -573,127 +512,122 @@ int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
    return (dList_length(*services_list));
 }
 
-/*! Initialise the service request socket
+/*! Bind a socket port on localhost. Try to be close to base_port.
+ * \Return
+ * \li listening socket file descriptor on success
+ * \li -1 on failure
+ */
+int bind_socket_fd(int base_port, int *p_port)
+{
+   int sock_fd, port;
+   struct sockaddr_in sin;
+   //size_t sock_buflen = 8192;
+   int ok = 0, last_port = base_port + 50;
+
+   if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+      ERRMSG("bind_socket_fd", "socket", errno);
+      return (-1);              /* avoids nested ifs */
+   }
+   /* Set the socket FD to close on exec */
+   fcntl(sock_fd, F_SETFD, FD_CLOEXEC | fcntl(sock_fd, F_GETFD));
+
+   /* set some buffering to increase the transfer's speed */
+   //setsockopt(sock_fd, SOL_SOCKET, SO_SNDBUF,
+   //           &sock_buflen, (socklen_t)sizeof(sock_buflen));
+
+   memset(&sin, 0, sizeof(sin));
+   sin.sin_family = AF_INET;
+   sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+   /* Try to bind a port on localhost */
+   for (port = base_port; port <= last_port; ++port) {
+      sin.sin_port = htons(port);
+      if ((bind(sock_fd, (struct sockaddr *)&sin, sizeof(sin))) == -1) {
+         if (errno == EADDRINUSE || errno == EADDRNOTAVAIL)
+            continue;
+         ERRMSG("bind_socket_fd", "bind", errno);
+      } else if (listen(sock_fd, QUEUE) == -1) {
+         ERRMSG("bind_socket_fd", "listen", errno);
+      } else {
+         *p_port = port;
+         ok = 1;
+         break;
+      }
+   }
+   if (port > last_port) {
+      MSG_ERR("Hey! Can't find an available port from %d to %d\n",
+              base_port, last_port);
+   }
+
+   return ok ? sock_fd : -1;
+}
+
+/*! Save the current port in a file so dillo can find it.
+ * \Return:
+ * \li -1 on failure
+ */
+int save_comm_keys(int srs_port)
+{
+   int fd;
+   char *fname, ret = -1, port_str[16];
+
+   fname = dStrconcat(dGethomedir(), "/", dotDILLO_DPID_COMM_KEYS, NULL);
+   fd = open(fname, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+   dFree(fname);
+   if (fd == -1) {
+      MSG("save_comm_keys: open %s\n", dStrerror(errno));
+   } else {
+      snprintf(port_str, 8, "%d\n", srs_port);
+      if (CKD_WRITE(fd, port_str) != -1)
+         ret = 1;
+   }
+
+   return ret;
+}
+
+/*! Initialise the service request socket (IDS)
  * \Return:
  * \li Number of sockets (1 == success)
  * \li -1 on failure
  */
-int init_srs_socket(char *sockdir)
+int init_ids_srs_socket()
 {
-   int retval = -1;
-   struct sockaddr_un srs_sa;
-   size_t sun_path_len;
-   socklen_t addr_sz;
+   int srs_port, ret = -1;
 
-   srs_name = dStrconcat(sockdir, "/", SRS_NAME, NULL);
    FD_ZERO(&sock_set);
 
-   /* Initialise srs, service request socket on startup */
-   if ((srs = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1) {
-      ERRMSG("init_srs_socket", "socket", errno);
-      return (retval);              /* avoids nesting ifs too deeply */
-   }
-   /* Set srs to close on exec */
-   fcntl(srs, F_SETFD, FD_CLOEXEC | fcntl(srs, F_GETFD));
-
-   srs_sa.sun_family = AF_LOCAL;
-
-   sun_path_len = sizeof(srs_sa.sun_path);
-   if (strlen(srs_name) > sun_path_len) {
-      ERRMSG("init_srs_socket", "srs_name is too long", 0);
-      MSG_ERR("\n - it should be <= %lu chars", (ulong_t)sun_path_len);
-      MSG_ERR("\n - srs_name = %s\n", srs_name);
-      return(retval);
-   }
-   strncpy(srs_sa.sun_path, srs_name, sun_path_len);
-   addr_sz = (socklen_t) D_SUN_LEN(&srs_sa);
-
-   if ((bind(srs, (struct sockaddr *) &srs_sa, addr_sz)) == -1) {
-      if (errno == EADDRINUSE) {
-         ERRMSG("init_srs_socket", "bind", errno);
-         MSG_ERR("srs_sa.sun_path = %s\n", srs_sa.sun_path);
-         dpi_errno = dpid_srs_addrinuse;
-      } else {
-         ERRMSG("init_srs_socket", "bind", errno);
-         MSG_ERR("srs_sa.sun_path = %s\n", srs_sa.sun_path);
+   if ((srs_fd = bind_socket_fd(DPID_BASE_PORT, &srs_port)) != -1) {
+      /* save port number */
+      if (save_comm_keys(srs_port) != -1) {
+         FD_SET(srs_fd, &sock_set);
+         ret = 1;
       }
-   } else if (chmod(srs_sa.sun_path, S_IRUSR | S_IWUSR) == -1) {
-      ERRMSG("init_srs_socket", "chmod", errno);
-      MSG_ERR("srs_sa.sun_path = %s\n", srs_sa.sun_path);
-   } else if (listen(srs, QUEUE) == -1) {
-      ERRMSG("init_srs_socket", "listen", errno);
-   } else {
-      retval = 1;
    }
 
-   FD_SET(srs, &sock_set);
-   return (retval);
+   return ret;
 }
 
-/*! Initialise a single dpi socket
+/*! Initialize a single dpi socket
  * \Return
  * \li 1 on success
  * \li -1 on failure
  */
-int init_dpi_socket(struct dp *dpi_attr, char *sockdir)
+int init_dpi_socket(struct dp *dpi_attr)
 {
-   int caught_error = 0, s;
-   char *dpi_nm;                /* pointer to basename in dpi_attr->path */
-   struct sockaddr_un sa;
-   size_t sp_len;
-   socklen_t addr_sz;
-   size_t sock_buflen = 8192;
+   int s_fd, port, ret = -1;
 
-   sp_len = sizeof(sa.sun_path);
-   if ((s = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1) {
-      ERRMSG("init_all_dpi_sockets", "socket", errno);
-      return (-1);              /* avoids nested ifs */
-   }
-   /* Set the socket FD to close on exec */
-   fcntl(s, F_SETFD, FD_CLOEXEC | fcntl(s, F_GETFD));
-
-   /* set some buffering to increase the transfer's speed */
-   setsockopt(s, SOL_SOCKET, SO_SNDBUF,
-              &sock_buflen, (socklen_t)sizeof(sock_buflen));
-
-   dpi_attr->socket = s;
-   dpi_attr->sa.sun_family = AF_LOCAL;
-   dpi_nm = get_basename(dpi_attr->path);
-
-   dpi_attr->sockpath = dStrconcat(sockdir, "/", dpi_nm, "-XXXXXX", NULL);
-   a_Misc_mkfname(dpi_attr->sockpath);
-   if (strlen(dpi_attr->sockpath) > sp_len) {
-      ERRMSG("init_all_dpi_sockets", "socket path is too long", 0);
-      MSG_ERR("\n - it should be <= %lu chars", (ulong_t)sp_len);
-      MSG_ERR("\n - socket path = %s\n", dpi_attr->sockpath);
-      return(-1);
-   }
-   strncpy(dpi_attr->sa.sun_path, dpi_attr->sockpath, sp_len);
-   addr_sz = (socklen_t) D_SUN_LEN(&dpi_attr->sa);
-
-   if ((bind(s, (struct sockaddr *) &dpi_attr->sa, addr_sz)) == -1) {
-      ERRMSG("init_all_dpi_sockets", "bind", errno);
-      MSG_ERR("%s\n", dpi_attr->sa.sun_path);
-      caught_error = 1;
-   } else if (chmod(dpi_attr->sa.sun_path, S_IRUSR | S_IWUSR) == -1) {
-      ERRMSG("init_all_dpi_sockets", "chmod", errno);
-      MSG_ERR("%s\n", dpi_attr->sa.sun_path);
-      caught_error = 1;
-   } else if (listen(s, QUEUE) == -1) {
-      ERRMSG("init_all_dpi_sockets", "listen", errno);
-      caught_error = 1;
+   if ((s_fd = bind_socket_fd(DPID_BASE_PORT, &port)) != -1) {
+      dpi_attr->sock_fd = s_fd;
+      dpi_attr->port = port;
+      FD_SET(s_fd, &sock_set);
+      ret = 1;
    }
 
-   if (caught_error) {
-      return (-1);
-   } else {
-      FD_SET(s, &sock_set);
-      return (1);
-   }
+   return ret;
 }
 
 /*! Setup sockets for the plugins and add them to
- * to the set of sockets (sock_set) watched by select.
+ * the set of sockets (sock_set) watched by select.
  * \Return
  * \li Number of sockets on success
  * \li -1 on failure
@@ -702,17 +636,13 @@ int init_dpi_socket(struct dp *dpi_attr, char *sockdir)
  * \Uses
  * numdpis, srs, srs_name
  */
-int init_all_dpi_sockets(struct dp *dpi_attr_list, char *sockdir)
+int init_all_dpi_sockets(struct dp *dpi_attr_list)
 {
    int i;
-   struct sockaddr_un sa;
-   size_t sp_len;
-
-   sp_len = sizeof(sa.sun_path);
 
    /* Initialise sockets for each dpi */
    for (i = 0; i < numdpis; i++) {
-      if (init_dpi_socket(dpi_attr_list + i, sockdir) == -1)
+      if (init_dpi_socket(dpi_attr_list + i) == -1)
          return (-1);
       numsocks++;
    }
@@ -741,7 +671,7 @@ void handle_sigchld(void)
    for (i = 0; i < numdpis; i++) {
       if (waitpid(dpi_attr_list[i].pid, &status, WNOHANG) > 0) {
          dpi_attr_list[i].pid = 1;
-         FD_SET(dpi_attr_list[i].socket, &sock_set);
+         FD_SET(dpi_attr_list[i].sock_fd, &sock_set);
          numsocks++;
       }
    }
@@ -772,43 +702,34 @@ void est_dpi_sigchld(void)
 void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
 {
    static char *DpiBye_cmd = NULL;
-   int i, dpi_socket, rc;
-   struct sockaddr_un dpi_addr;
-   struct sockaddr_un sa;
-   size_t sun_path_len, addr_len;
+   int i, sock_fd;
+   struct sockaddr_in sin;
 
    if (!DpiBye_cmd)
       DpiBye_cmd = a_Dpip_build_cmd("cmd=%s", "DpiBye");
 
-   sun_path_len = sizeof(sa.sun_path);
-
-   dpi_addr.sun_family = AF_LOCAL;
+   memset(&sin, 0, sizeof(sin));
+   sin.sin_family = AF_INET;
+   sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
    for (i = 0; i < numdpis; i++) {
       /* Skip inactive dpis and filters */
       if (dpi_attr_list[i].pid == 1 || dpi_attr_list[i].filter)
          continue;
 
-      if ((dpi_socket = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1) {
+      if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
          ERRMSG("stop_active_dpis", "socket", errno);
+         continue;
       }
-      if (strlen(dpi_attr_list[i].sockpath) > sun_path_len) {
-         ERRMSG("stop_active_dpis", "socket path is too long", 0);
-         MSG_ERR("\n - it should be <= %lu chars",(ulong_t)sun_path_len);
-         MSG_ERR("\n - socket path = %s\n", dpi_attr_list[i].sockpath);
-      }
-      strncpy(dpi_addr.sun_path, dpi_attr_list[i].sockpath, sun_path_len);
-      addr_len = D_SUN_LEN(&dpi_addr);
-      if (connect(dpi_socket, (struct sockaddr *) &dpi_addr, addr_len) == -1) {
+      sin.sin_port = htons(dpi_attr_list[i].port);
+      if (connect(sock_fd, (struct sockaddr *)&sin, sizeof(sin)) == -1) {
          ERRMSG("stop_active_dpis", "connect", errno);
-         MSG_ERR("%s\n", dpi_addr.sun_path);
-      }
-      rc = write(dpi_socket, DpiBye_cmd, strlen(DpiBye_cmd));
-      if (rc == -1) {
+         MSG_ERR("%s\n", dpi_attr_list[i].path);
+      } else if (write(sock_fd, DpiBye_cmd, strlen(DpiBye_cmd)) == -1) {
          MSG("stop_active_dpis: Error on sending BYE command: %s\n",
              dStrerror(errno));
       }
-      a_Misc_close_fd(dpi_socket);
+      a_Misc_close_fd(sock_fd);
    }
 }
 
@@ -821,8 +742,8 @@ void ignore_dpi_sockets(struct dp *dpi_attr_list, int numdpis)
    int i;
 
    for (i = 0; i < numdpis; i++) {
-      FD_CLR(dpi_attr_list[i].socket, &sock_set);
-      a_Misc_close_fd(dpi_attr_list[i].socket);
+      FD_CLR(dpi_attr_list[i].sock_fd, &sock_set);
+      a_Misc_close_fd(dpi_attr_list[i].sock_fd);
    }
 }
 
@@ -833,20 +754,19 @@ void ignore_dpi_sockets(struct dp *dpi_attr_list, int numdpis)
  * \Return
  * Number of available dpis
  */
-int register_all_cmd(char *sockdir)
+int register_all_cmd()
 {
    stop_active_dpis(dpi_attr_list, numdpis);
-   rm_dpi_sockets(dpi_attr_list, numdpis);
    free_plugin_list(&dpi_attr_list, numdpis);
    free_services_list(services_list);
    services_list = NULL;
    numdpis = 0;
    numsocks = 1;                /* the srs socket */
    FD_ZERO(&sock_set);
-   FD_SET(srs, &sock_set);
+   FD_SET(srs_fd, &sock_set);
    numdpis = register_all(&dpi_attr_list);
    fill_services_list(dpi_attr_list, numdpis, &services_list);
-   numsocks = init_all_dpi_sockets(dpi_attr_list, sockdir);
+   numsocks = init_all_dpi_sockets(dpi_attr_list);
    return (numdpis);
 }
 
@@ -855,7 +775,7 @@ int register_all_cmd(char *sockdir)
  * \Return
  * message on success, NULL on failure
  */
-char *get_message(int sock, char *dpi_tag)
+char *get_message(int sock_fd, char *dpi_tag)
 {
    char *msg, *d_cmd;
 
@@ -864,7 +784,7 @@ char *get_message(int sock, char *dpi_tag)
       ERRMSG("get_message", "failed to parse msg", 0);
       d_cmd = a_Dpip_build_cmd("cmd=%s msg=%s",
                                "DpiError", "Failed to parse request");
-      (void) CKD_WRITE(sock, d_cmd);
+      (void) CKD_WRITE(sock_fd, d_cmd);
       dFree(d_cmd);
    }
    return (msg);
@@ -889,40 +809,30 @@ int service_match(const struct service *A, const char *B)
 }
 
 /*!
- * Send socket path that matches dpi_id to client
+ * Send socket port that matches dpi_id to client
  */
-void send_sockpath(int sock, char *dpi_tag, struct dp *dpi_attr_list)
+void send_sockport(int sock_fd, char *dpi_tag, struct dp *dpi_attr_list)
 {
    int i;
-   char *dpi_id;
-   char *d_cmd;
+   char *dpi_id, *d_cmd, port_str[16];
    struct service *serv;
 
-   dReturn_if_fail((dpi_id = get_message(sock, dpi_tag)) != NULL);
+   dReturn_if_fail((dpi_id = get_message(sock_fd, dpi_tag)) != NULL);
 
    serv = dList_find_custom(services_list,dpi_id,(dCompareFunc)service_match);
 
    if (serv == NULL || (i = serv->dp_index) == -1)
       for (i = 0; i < numdpis; i++)
          if (!strncmp(dpi_attr_list[i].id, dpi_id,
-        dpi_attr_list[i].id - strchr(dpi_attr_list[i].id, '.')))
+                      dpi_attr_list[i].id - strchr(dpi_attr_list[i].id, '.')))
             break;
 
    if (i < numdpis) {
       /* found */
-      if (access(dpi_attr_list[i].path, F_OK) == -1) {
-         ERRMSG("send_sockpath", "access", errno);
-         MSG_ERR(" - %s\n", dpi_attr_list[i].sockpath);
-         d_cmd = a_Dpip_build_cmd("cmd=%s msg=%s",
-                                  "DpiError", "Plugin currently unavailable");
-         (void) CKD_WRITE(sock, d_cmd);
-         dFree(d_cmd);
-      } else {
-         d_cmd = a_Dpip_build_cmd("cmd=%s msg=%s",
-                                  "send_data", dpi_attr_list[i].sockpath);
-         (void) CKD_WRITE(sock, d_cmd);
-         dFree(d_cmd);
-      }
+      snprintf(port_str, 8, "%d", dpi_attr_list[i].port);
+      d_cmd = a_Dpip_build_cmd("cmd=%s msg=%s", "send_data", port_str);
+      (void) CKD_WRITE(sock_fd, d_cmd);
+      dFree(d_cmd);
    }
 
    dFree(dpi_id);

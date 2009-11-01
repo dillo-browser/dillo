@@ -7,14 +7,20 @@
 # stop: Stops dpid.
 
 use strict;
-use IO::Socket::UNIX;
+use IO::Socket::INET;
 
 # Get socket directory name
-open(DSD, "<$ENV{HOME}/.dillo/dpi_socket_dir");
-my $dir = <DSD>;
-close(DSD);
+#open(DSD, "<$ENV{HOME}/.dillo/dpi_socket_dir");
+#my $dir = <DSD>;
+#close(DSD);
 
-my $socket = IO::Socket::UNIX->new(Peer => "$dir/dpid.srs", Type => SOCK_STREAM, Timeout => 1000 ) or die "new: $@";
+# Get dpid's listening port from saved file
+open(DSD, "<$ENV{HOME}/.dillo/dpid_comm_keys");
+my $port = <DSD>;
+close(DSD);
+print "Got: localhost:$port\n";
+
+my $socket = IO::Socket::INET->new(Peer => "localhost:$port", Type => SOCK_STREAM, Timeout => 1000 ) or die "new: $@";
 
 $socket->autoflush(1);
 
@@ -23,7 +29,7 @@ my %dpi_command = (
         "stop" => "<dpi cmd='DpiBye' '>",
         );
 
-if ( exists($dpi_command{$ARGV[0]}) ) {
+if ( $#ARGV == 0 && exists($dpi_command{$ARGV[0]}) ) {
         print $socket $dpi_command{$ARGV[0]};
 } else {
         close($socket);

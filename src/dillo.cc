@@ -368,7 +368,7 @@ int main(int argc, char **argv)
    Paths::free();
    /* TODO: auth, css */
 
-   //a_Dpi_bye_dpid();
+   //a_Dpi_dillo_exit();
    MSG("Dillo: normal exit!\n");
    return 0;
 }

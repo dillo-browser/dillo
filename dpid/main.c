@@ -15,11 +15,11 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>    /* for ckd_write */
-#include <unistd.h>   /* for ckd_write */
-#include <stdlib.h>   /* for exit */
-#include <assert.h>   /* for assert */
-#include <sys/stat.h> /* for umask */
+#include <errno.h>       /* for ckd_write */
+#include <unistd.h>      /* for ckd_write */
+#include <stdlib.h>      /* for exit */
+#include <assert.h>      /* for assert */
+#include <sys/stat.h>    /* for umask */
 
 #include "dpid_common.h"
 #include "dpid.h"
@@ -45,7 +45,7 @@ static int start_filter_plugin(struct dp dpi_attr)
 
    csz = (socklen_t) sizeof(clnt_addr);
 
-   newsock = accept(dpi_attr.socket, (struct sockaddr *) &clnt_addr, &csz);
+   newsock = accept(dpi_attr.sock_fd, (struct sockaddr *) &clnt_addr, &csz);
    if (newsock == -1)
       ERRMSG("start_plugin", "accept", errno);
 
@@ -90,12 +90,12 @@ static int start_filter_plugin(struct dp dpi_attr)
 
 static void start_server_plugin(struct dp dpi_attr)
 {
-   if (dup2(dpi_attr.socket, STDIN_FILENO) == -1) {
+   if (dup2(dpi_attr.sock_fd, STDIN_FILENO) == -1) {
       ERRMSG("start_plugin", "dup2", errno);
       MSG_ERR("ERROR in child proc for %s\n", dpi_attr.path);
       exit(1);
    }
-   if (a_Misc_close_fd(dpi_attr.socket) == -1) {
+   if (a_Misc_close_fd(dpi_attr.sock_fd) == -1) {
       ERRMSG("start_plugin", "close", errno);
       MSG_ERR("ERROR in child proc for %s\n", dpi_attr.path);
       exit(1);
@@ -220,7 +220,6 @@ static int get_open_max(void)
 int main(void)
 {
    int i, n = 0, open_max;
-   char *dirname = NULL, *sockdir = NULL;
    int dpid_idle_timeout = 60 * 60; /* default, in seconds */
    struct timeval select_timeout;
    sigset_t mask_none;
@@ -250,6 +249,7 @@ int main(void)
    /* Get list of available dpis */
    numdpis = register_all(&dpi_attr_list);
 
+#if 0
    /* Get name of socket directory */
    dirname = a_Dpi_sockdir_file();
    if ((sockdir = init_sockdir(dirname)) == NULL) {
@@ -257,14 +257,16 @@ int main(void)
       MSG_ERR("Failed to create socket directory\n");
       exit(1);
    }
+#endif
 
    /* Init and get services list */
    fill_services_list(dpi_attr_list, numdpis, &services_list);
 
    /* Remove any sockets that may have been leftover from a crash */
-   cleanup(sockdir);
+   //cleanup();
+
    /* Initialise sockets */
-   if ((numsocks = init_srs_socket(sockdir)) == -1) {
+   if ((numsocks = init_ids_srs_socket()) == -1) {
       switch (dpi_errno) {
       case dpid_srs_addrinuse:
          MSG_ERR("dpid refuses to start, possibly because:\n");
@@ -272,11 +274,12 @@ int main(void)
          MSG_ERR("\t2) A previous dpid didn't clean up on exit.\n");
          exit(1);
       default:
-         ERRMSG("main", "init_srs_sockets failed", 0);
+         //ERRMSG("main", "init_srs_socket failed", 0);
+         ERRMSG("main", "init_ids_srs_socket failed", 0);
          exit(1);
       }
    }
-   numsocks = init_all_dpi_sockets(dpi_attr_list, sockdir);
+   numsocks = init_all_dpi_sockets(dpi_attr_list);
    //est_terminator(); /* Do we still want to clean up on an abnormal exit? */
    est_dpi_sigchld();
 
@@ -308,7 +311,7 @@ int main(void)
                continue;
 
             stop_active_dpis(dpi_attr_list, numdpis);
-            cleanup(sockdir);
+            //cleanup();
             exit(0);
          }
       } while (n == -1 && errno == EINTR);
@@ -318,42 +321,42 @@ int main(void)
          exit(1);
       }
       /* If the service req socket is selected then service the req. */
-      if (FD_ISSET(srs, &selected_set)) {
-         int sock;
-         socklen_t csz;
-         struct sockaddr_un clnt_addr;
+      if (FD_ISSET(srs_fd, &selected_set)) {
+         int sock_fd;
+         socklen_t sin_sz;
+         struct sockaddr_in sin;
          char *req = NULL;
 
          --n;
          assert(n >= 0);
-         csz = (socklen_t) sizeof(clnt_addr);
-         sock = accept(srs, (struct sockaddr *) &clnt_addr, &csz);
-         if (sock == -1) {
+         sin_sz = (socklen_t) sizeof(sin);
+         sock_fd = accept(srs_fd, (struct sockaddr *)&sin, &sin_sz);
+         if (sock_fd == -1) {
             ERRMSG("main", "accept", errno);
             MSG_ERR("accept on srs socket failed\n");
             MSG_ERR("service pending connections, and continue\n");
          } else {
             int command;
 
-            req = get_request(sock);
-            command = get_command(sock, req);
+            req = get_request(sock_fd);
+            command = get_command(sock_fd, req);
             switch (command) {
             case BYE_CMD:
                stop_active_dpis(dpi_attr_list, numdpis);
-               cleanup(sockdir);
+               //cleanup();
                exit(0);
                break;
             case CHECK_SERVER_CMD:
-               send_sockpath(sock, req, dpi_attr_list);
+               send_sockport(sock_fd, req, dpi_attr_list);
                break;
             case REGISTER_ALL_CMD:
-               register_all_cmd(sockdir);
+               register_all_cmd();
                break;
             case UNKNOWN_CMD:
                {
                char *d_cmd = a_Dpip_build_cmd("cmd=%s msg=%s",
                                               "DpiError", "Unknown command");
-               (void) CKD_WRITE(sock, d_cmd);
+               (void) CKD_WRITE(sock_fd, d_cmd);
                dFree(d_cmd);
                ERRMSG("main", "Unknown command", 0);
                MSG_ERR(" for request: %s\n", req);
@@ -365,14 +368,14 @@ int main(void)
             }
             if (req)
                free(req);
-            a_Misc_close_fd(sock);
+            a_Misc_close_fd(sock_fd);
          }
       }
 
       /* While there's a request on one of the plugin sockets
        * find the matching plugin and start it. */
       for (i = 0; n > 0 && i < numdpis; i++) {
-         if (FD_ISSET(dpi_attr_list[i].socket, &selected_set)) {
+         if (FD_ISSET(dpi_attr_list[i].sock_fd, &selected_set)) {
             --n;
             assert(n >= 0);
 
@@ -386,11 +389,12 @@ int main(void)
                 * on its socket */
                numsocks--;
                assert(numsocks >= 0);
-               FD_CLR(dpi_attr_list[i].socket, &sock_set);
+               FD_CLR(dpi_attr_list[i].sock_fd, &sock_set);
                if ((dpi_attr_list[i].pid = fork()) == -1) {
                   ERRMSG("main", "fork", errno);
                   /* exit(1); */
                } else if (dpi_attr_list[i].pid == 0) {
+                  /* child */
                   (void) sigprocmask(SIG_SETMASK, &mask_none, NULL);
                   start_server_plugin(dpi_attr_list[i]);
                }

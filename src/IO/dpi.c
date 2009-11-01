@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>           /* for errno */
+#include <fcntl.h>
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -335,76 +336,57 @@ static int Dpi_start_dpid(void)
 }
 
 /*
- * Make a connection test for a UDS.
- * Return: 0 OK, 1 Not working.
+ * Read dpid's communication keys from its saved file.
+ * Return value: 1 on success, -1 on error.
  */
-static int Dpi_check_uds(char *uds_name)
+static int Dpi_read_comm_keys(int *port)
 {
-   struct sockaddr_un pun;
-   int SockFD, ret = 1;
+   FILE *In;
+   char *fname, *rcline = NULL;
+   int ret = -1;
 
-   if (access(uds_name, W_OK) == 0) {
-      /* socket connection test */
-      memset(&pun, 0, sizeof(struct sockaddr_un));
-      pun.sun_family = AF_LOCAL;
-      strncpy(pun.sun_path, uds_name, sizeof (pun.sun_path));
-
-      if ((SockFD = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1 ||
-          connect(SockFD, (struct sockaddr *) &pun, D_SUN_LEN(&pun)) == -1) {
-         MSG("Dpi_check_uds: %s %s\n", dStrerror(errno), uds_name);
-      } else {
-         Dpi_close_fd(SockFD);
-         ret = 0;
-      }
+   fname = dStrconcat(dGethomedir(), "/.dillo/dpid_comm_keys", NULL);
+   if ((In = fopen(fname, "r")) == NULL) {
+      MSG_ERR("[Dpi_read_comm_keys] %s\n", dStrerror(errno));
+   } else if ((rcline = dGetline(In)) == NULL) {
+      MSG_ERR("[Dpi_read_comm_keys] empty file: %s\n", fname);
+   } else {
+      *port = strtol(rcline, NULL, 10);
+      ret = 1;
    }
+   dFree(rcline);
+   dFree(fname);
+
    return ret;
 }
 
 /*
- * Return the directory where the UDS are in,
- * NULL if it can't be found.
+ * Make a connection test for a IDS.
+ * Return: 1 OK, -1 Not working.
  */
-static char *Dpi_get_dpid_uds_dir(void)
+static int Dpi_check_dpid_ids()
 {
-   FILE *in;
-   char *saved_name_filename;    /*  :)  */
-   char buf[256], *dpid_uds_dir, *p = NULL, *nl;
+   struct sockaddr_in sin;
+   const socklen_t sin_sz = sizeof(sin);
+   int sock_fd, dpid_port, ret = -1;
 
-   saved_name_filename =
-      dStrconcat(dGethomedir(), "/.dillo/dpi_socket_dir", NULL);
-   in = fopen(saved_name_filename, "r");
-   dFree(saved_name_filename);
+   /* socket connection test */
+   memset(&sin, 0, sizeof(sin));
+   sin.sin_family = AF_INET;
+   sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
-   if (in != NULL) {
-      dpid_uds_dir = fgets(buf, sizeof(buf), in);
-      fclose(in);
-      if (dpid_uds_dir) {
-         if ((nl = strchr(dpid_uds_dir, '\n'))) {
-            *nl = 0;
-         }
-         if (access(dpid_uds_dir, F_OK) == 0) {
-            p = dStrdup(dpid_uds_dir);
-            _MSG("Dpi_get_dpid_uds_dir:: %s\n", p);
-         }
+   if (Dpi_read_comm_keys(&dpid_port) != -1) {
+      sin.sin_port = htons(dpid_port);
+      if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+         MSG("Dpi_check_dpid_ids: sock_fd=%d %s\n", sock_fd, dStrerror(errno));
+      } else if (connect(sock_fd, (struct sockaddr *)&sin, sin_sz) == -1) {
+         MSG("Dpi_check_dpid_ids: %s\n", dStrerror(errno));
+      } else {
+         Dpi_close_fd(sock_fd);
+         ret = 1;
       }
    }
-
-   _MSG("Dpi_get_dpid_uds_dir: %s \n", dStrerror(errno));
-   return p;
-}
-
-/*
- * Return the dpid's UDS name, NULL on failure.
- */
-static char *Dpi_get_dpid_uds_name(void)
-{
-   char *dpid_uds_dir, *dpid_uds_name = NULL;
-
-   if ((dpid_uds_dir = Dpi_get_dpid_uds_dir()) != NULL)
-      dpid_uds_name= dStrconcat(dpid_uds_dir, "/", "dpid.srs", NULL);
-
-   dFree(dpid_uds_dir);
-   return dpid_uds_name;
+   return ret;
 }
 
 /*
@@ -414,20 +396,16 @@ static char *Dpi_get_dpid_uds_name(void)
 static int Dpi_check_dpid(int num_tries)
 {
    static int starting = 0;
-   char *dpid_uds_name;
    int check_st = 1, ret = 2;
 
-   if ((dpid_uds_name = Dpi_get_dpid_uds_name()))
-      check_st = Dpi_check_uds(dpid_uds_name);
+   check_st = Dpi_check_dpid_ids();
+   MSG("Dpi_check_dpid: check_st=%d\n", check_st);
 
-   _MSG("Dpi_check_dpid: dpid_uds_name=%s, check_st=%d\n",
-        dpid_uds_name, check_st);
-
-   if (check_st == 0) {
+   if (check_st == 1) {
       /* connection test with dpi server passed */
       starting = 0;
       ret = 0;
-   } else if (!dpid_uds_name || check_st) {
+   } else {
       if (!starting) {
          /* start dpid */
          if (Dpi_start_dpid() == 0) {
@@ -435,6 +413,7 @@ static int Dpi_check_dpid(int num_tries)
             ret = 1;
          }
       } else if (++starting < num_tries) {
+         /* starting */
          ret = 1;
       } else {
          /* we waited too much, report an error... */
@@ -442,7 +421,6 @@ static int Dpi_check_dpid(int num_tries)
       }
    }
 
-   dFree(dpid_uds_name);
    _MSG("Dpi_check_dpid:: %s\n",
         (ret == 0) ? "OK" : (ret == 1 ? "EAGAIN" : "ERROR"));
    return ret;
@@ -466,59 +444,69 @@ static int Dpi_blocking_start_dpid(void)
 }
 
 /*
- * Return the UDS name of a dpi server.
+ * Return the dpi server's port number, or -1 on error.
  * (A query is sent to dpid and then its answer parsed)
  * note: as the available servers and/or the dpi socket directory can
  *       change at any time, we'll ask each time. If someday we find
  *       that connecting each time significantly degrades performance,
  *       an optimized approach can be tried.
+ * TODO: here we should use the credentials in ~/.dillo/dpid_comm_keys
+ *       (dpid port and password).
  */
-static char *Dpi_get_server_uds_name(const char *server_name)
+int Dpi_get_server_port(const char *server_name)
 {
-   char *dpid_uds_dir, *dpid_uds_name = NULL,
-         *server_uds_name = NULL;
-   int st;
+   int sock_fd, req_sz, rdlen, dpi_port;
+   int st, dpid_port, ret = -1, ok = 0;
+   struct sockaddr_in sin;
+   char buf[128], *cmd, *request, *rply = NULL, *port_str;
+   size_t buflen;
+   socklen_t sin_sz;
 
-   dReturn_val_if_fail (server_name != NULL, NULL);
-   _MSG("Dpi_get_server_uds_name:: server_name = [%s]\n", server_name);
+   dReturn_val_if_fail (server_name != NULL, ret);
+   _MSG("Dpi_get_server_port:: server_name = [%s]\n", server_name);
 
-   dpid_uds_dir = Dpi_get_dpid_uds_dir();
-   if (dpid_uds_dir) {
-      struct sockaddr_un dpid;
-      int sock, req_sz, rdlen;
-      char buf[128], *cmd, *request, *rply;
-      size_t buflen;
-
-      /* Get the server's uds name from dpid */
-      sock = socket(AF_LOCAL, SOCK_STREAM, 0);
-      dpid.sun_family = AF_LOCAL;
-      dpid_uds_name = dStrconcat(dpid_uds_dir, "/", "dpid.srs", NULL);
-      _MSG("dpid_uds_name = [%s]\n", dpid_uds_name);
-      strncpy(dpid.sun_path, dpid_uds_name, sizeof(dpid.sun_path));
-
-      if (connect(sock, (struct sockaddr *) &dpid, D_SUN_LEN(&dpid)) == -1)
-         perror("connect");
-      /* ask dpid to check the server plugin and send its UDS name back */
+   /* Read dpid's port from saved file */
+   if (Dpi_read_comm_keys(&dpid_port) != -1) {
+      ok = 1;
+   }
+   if (ok) {
+      /* Connect a socket with dpid */
+      sin_sz = sizeof(sin);
+      memset(&sin, 0, sizeof(sin));
+      sin.sin_family = AF_INET;
+      sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+      sin.sin_port = htons(dpid_port);
+      if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1 ||
+          connect(sock_fd, (struct sockaddr *)&sin, sin_sz) == -1) {
+         MSG("Dpi_get_server_port: %s\n", dStrerror(errno));
+         ok = 0;
+      }
+   }
+   if (ok) {
+      /* ask dpid to check the dpi and send its port number back */
       request = a_Dpip_build_cmd("cmd=%s msg=%s", "check_server", server_name);
       _MSG("[%s]\n", request);
-      do
-         st = write(sock, request, strlen(request));
-      while (st < 0 && errno == EINTR);
-      if (st < 0 && errno != EINTR)
-         perror("writing request");
+      do {
+         st = write(sock_fd, request, strlen(request));
+      } while (st < 0 && errno == EINTR);
+      if (st < 0 && errno != EINTR) {
+         MSG("Dpi_get_server_port: %s\n", dStrerror(errno));
+         ok = 0;
+      }
       dFree(request);
-      shutdown(sock, 1); /* signals no more writes to dpid */
-
+      shutdown(sock_fd, 1); /* signals no more writes to dpid */
+   }
+   if (ok) {
       /* Get the reply */
-      rply = NULL;
       buf[0] = '\0';
       buflen = sizeof(buf)/sizeof(buf[0]);
-      for (req_sz = 0; (rdlen = read(sock, buf, buflen)) != 0;
+      for (req_sz = 0; (rdlen = read(sock_fd, buf, buflen)) != 0;
            req_sz += rdlen) {
          if (rdlen == -1 && errno == EINTR)
                continue;
          if (rdlen == -1) {
-            perror(" ** Dpi_get_server_uds_name **");
+            MSG("Dpi_get_server_port: %s\n", dStrerror(errno));
+            ok = 0;
             break;
          }
          rply = dRealloc(rply, (uint_t)(req_sz + rdlen + 1));
@@ -526,69 +514,70 @@ static char *Dpi_get_server_uds_name(const char *server_name)
             rply[0] = '\0';
          strncat(rply, buf, (size_t)rdlen);
       }
-      Dpi_close_fd(sock);
-      _MSG("rply = [%s]\n", rply);
-
-      /* Parse reply */
+      Dpi_close_fd(sock_fd);
       if (rdlen == 0 && rply) {
-         cmd = a_Dpip_get_attr(rply, "cmd");
-         if (strcmp(cmd, "send_data") == 0)
-            server_uds_name = a_Dpip_get_attr(rply, "msg");
-         dFree(cmd);
-         dFree(rply);
+         _MSG("rply = [%s]\n", rply);
+         ok = 1;
       }
    }
-   dFree(dpid_uds_dir);
-   dFree(dpid_uds_name);
-   _MSG("Dpi_get_server_uds_name:: %s\n", server_uds_name);
-   return server_uds_name;
+   if (ok) {
+      /* Parse reply */
+      cmd = a_Dpip_get_attr(rply, "cmd");
+      if (strcmp(cmd, "send_data") == 0) {
+         port_str = a_Dpip_get_attr(rply, "msg");
+         MSG("Dpi_get_server_port: rply=%s\n", rply);
+         MSG("Dpi_get_server_port: port_str=%s\n", port_str);
+         dpi_port = strtol(port_str, NULL, 10);
+         dFree(port_str);
+         ok = 1;
+      }
+      dFree(cmd);
+   }
+   dFree(rply);
+
+   return ok ? dpi_port : -1;
 }
 
 
 /*
  * Connect a socket to a dpi server and return the socket's FD.
- * We have to ask 'dpid' (dpi daemon) for the UDS of the target dpi server.
+ * We have to ask 'dpid' (dpi daemon) for the port of the target dpi server.
  * Once we have it, then the proper file descriptor is returned (-1 on error).
  */
 static int Dpi_connect_socket(const char *server_name, int retry)
 {
-   char *server_uds_name;
-   struct sockaddr_un pun;
-   int SockFD, err;
+   struct sockaddr_in sin;
+   int sock_fd, err, dpi_port;
 
-   /* Query dpid for the UDS name for this server */
-   server_uds_name = Dpi_get_server_uds_name(server_name);
-   _MSG("server_uds_name = [%s]\n", server_uds_name);
-
-   if (access(server_uds_name, F_OK) != 0) {
-      MSG("server socket was NOT found\n");
+   /* Query dpid for the port number for this server */
+   if ((dpi_port = Dpi_get_server_port(server_name)) == -1) {
+      MSG("Dpi_connect_socket:: can't get port number for %s\n", server_name);
       return -1;
    }
+   MSG("Dpi_connect_socket: server=%s port=%d\n", server_name, dpi_port);
 
    /* connect with this server's socket */
-   memset(&pun, 0, sizeof(struct sockaddr_un));
-   pun.sun_family = AF_LOCAL;
-   strncpy(pun.sun_path, server_uds_name, sizeof (pun.sun_path));
-   dFree(server_uds_name);
+   memset(&sin, 0, sizeof(sin));
+   sin.sin_family = AF_INET;
+   sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+   sin.sin_port = htons(dpi_port);
 
-   if ((SockFD = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1)
+   if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
       perror("[dpi::socket]");
-   else if (connect(SockFD, (void*)&pun, D_SUN_LEN(&pun)) == -1) {
+   } else if (connect(sock_fd, (void*)&sin, sizeof(sin)) == -1) {
       err = errno;
-      SockFD = -1;
+      sock_fd = -1;
       MSG("[dpi::connect] errno:%d %s\n", errno, dStrerror(errno));
       if (retry) {
          switch (err) {
             case ECONNREFUSED: case EBADF: case ENOTSOCK: case EADDRNOTAVAIL:
-               /* the server may crash and its socket name survive */
-               unlink(pun.sun_path);
-               SockFD = Dpi_connect_socket(server_name, FALSE);
+               sock_fd = Dpi_connect_socket(server_name, FALSE);
                break;
          }
       }
    }
 
-   return SockFD;
+   return sock_fd;
 }
 
 
@@ -707,38 +696,13 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
    }
 }
 
-/*! Send DpiBye to dpid
- * Note: currently disabled. Maybe it'd be better to have a
- * dpid_idle_timeout variable in the config file.
+/*! Let dpid know dillo is no longer running.
+ * Note: currently disabled. It may serve to let the cookies dpi know
+ * when to expire session cookies.
  */
-void a_Dpi_bye_dpid()
+void a_Dpi_dillo_exit()
 {
-   char *DpiBye_cmd;
-   struct sockaddr_un sa;
-   size_t sun_path_len, addr_len;
-   char *srs_name;
-   int new_socket;
 
-   srs_name = Dpi_get_dpid_uds_name();
-   sun_path_len = sizeof(sa.sun_path);
-
-   sa.sun_family = AF_LOCAL;
-
-   if ((new_socket = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1) {
-      MSG("a_Dpi_bye_dpid: %s\n", dStrerror(errno));
-   }
-   strncpy(sa.sun_path, srs_name, sizeof (sa.sun_path));
-   addr_len = D_SUN_LEN(&sa);
-   if (connect(new_socket, (struct sockaddr *) &sa, addr_len) == -1) {
-      MSG("a_Dpi_bye_dpid: %s\n", dStrerror(errno));
-      MSG("%s\n", sa.sun_path);
-   }
-   DpiBye_cmd = a_Dpip_build_cmd("cmd=%s", "DpiBye");
-   if (write(new_socket, DpiBye_cmd, strlen(DpiBye_cmd)) !=
-       (ssize_t) strlen(DpiBye_cmd))
-      MSG_WARN("Failed to send DpiBye\n");
-   dFree(DpiBye_cmd);
-   Dpi_close_fd(new_socket);
 }
 
 
