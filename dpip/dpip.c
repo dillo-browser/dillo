@@ -22,8 +22,8 @@
 #include "dpip.h"
 #include "d_size.h"
 
-//#define RBUF_SZ 16384
-#define RBUF_SZ 1
+#define RBUF_SZ 16*1024
+//#define RBUF_SZ 1
 
 #define DPIP_TAG_END            " '>"
 #define DPIP_MODE_SWITCH_TAG    "cmd='start_send_page' "
@@ -371,97 +371,58 @@ int a_Dpip_dsh_write_str(Dsh *dsh, int flush, const char *str)
 }
 
 /*
- * Read raw data from the socket into our buffer without blocking.
+ * Read raw data from the socket into our buffer in
+ * either BLOCKING or NONBLOCKING mode.
  */
-static void Dpip_dsh_read_nb(Dsh *dsh)
+static void Dpip_dsh_read(Dsh *dsh, int blocking)
 {
-   ssize_t st;
-   int old_flags, blocking;
    char buf[RBUF_SZ];
+   int req_mode, old_flags, st, ret = -3, nb = !blocking;
 
    dReturn_if (dsh->status == DPIP_ERROR || dsh->status == DPIP_EOF);
 
-   blocking = !(dsh->mode & DPIP_NONBLOCK);
-   if (blocking) {
-      /* set NONBLOCKING temporarily... */
+   req_mode = (nb) ? DPIP_NONBLOCK : 0;
+   if ((dsh->mode & DPIP_NONBLOCK) != req_mode) {
+      /* change mode temporarily... */
       old_flags = fcntl(dsh->fd_in, F_GETFL);
-      fcntl(dsh->fd_in, F_SETFL, O_NONBLOCK | old_flags);
+      fcntl(dsh->fd_in, F_SETFL,
+            (nb) ? O_NONBLOCK | old_flags : old_flags & ~O_NONBLOCK);
    }
 
    while (1) {
-      do
-         st = read(dsh->fd_in, buf, RBUF_SZ);
-      while (st < 0 && errno == EINTR);
-
+      st = read(dsh->fd_in, buf, RBUF_SZ);
       if (st < 0) {
-         if (errno == EAGAIN) {
-            /* no problem, return what we've got so far... */
+         if (errno == EINTR) {
+            continue;
+         } else if (errno == EAGAIN) {
             dsh->status = DPIP_EAGAIN;
+            ret = -1;
+            break;
          } else {
-            MSG_ERR("[Dpip_dsh_read_nb] %s\n", dStrerror(errno));
+            MSG_ERR("[Dpip_dsh_read] %s\n", dStrerror(errno));
             dsh->status = DPIP_ERROR;
+            break;
          }
-         break;
       } else if (st == 0) {
          dsh->status = DPIP_EOF;
          break;
       } else {
          /* append to buf */
          dStr_append_l(dsh->rdbuf, buf, st);
+         if (blocking)
+            break;
       }
    }
 
-   if (blocking) {
-      /* restore blocking mode */
-      fcntl(dsh->fd_in, F_SETFL, old_flags);
-   }
-}
-
-/*
- * Read raw data from the socket into our buffer in BLOCKING mode.
- */
-static void Dpip_dsh_read(Dsh *dsh)
-{
-
-   ssize_t st;
-   int old_flags, non_blocking;
-   char buf[RBUF_SZ];
-
-   dReturn_if (dsh->status == DPIP_ERROR || dsh->status == DPIP_EOF);
-
-   non_blocking = (dsh->mode & DPIP_NONBLOCK);
-   if (non_blocking) {
-      /* set blocking mode temporarily */
-      old_flags = fcntl(dsh->fd_in, F_GETFL);
-      fcntl(dsh->fd_in, F_SETFL, old_flags);
+   if ((dsh->mode & DPIP_NONBLOCK) != req_mode) {
+      /* restore old mode */
+      fcntl(dsh->fd_out, F_SETFL, old_flags);
    }
 
-   while (1) {
-      do
-         st = read(dsh->fd_in, buf, RBUF_SZ);
-      while (st < 0 && errno == EINTR);
-
-      if (st < 0) {
-         MSG_ERR("[Dpip_dsh_read] %s\n", dStrerror(errno));
-         dsh->status = DPIP_ERROR;
-         break;
-      } else if (st == 0) {
-         dsh->status = DPIP_EOF;
-         break;
-      } else {
-         /* append to buf */
-         dStr_append_l(dsh->rdbuf, buf, st);
-         break;
-      }
-   }
-
-   if (non_blocking) {
-      /* restore non blocking mode */
-      fcntl(dsh->fd_in, F_SETFL, old_flags);
-   }
-
-   /* assert there's no more data in the wire... */
-   Dpip_dsh_read_nb(dsh);
+   /* assert there's no more data in the wire...
+    * (st < buf upon interrupt || st == buf and no more data) */
+   if (blocking)
+      Dpip_dsh_read(dsh, 0);
 }
 
 /*
@@ -473,7 +434,7 @@ char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
    char *p, *ret = NULL;
 
    /* Read all available data without blocking */
-   Dpip_dsh_read_nb(dsh);
+   Dpip_dsh_read(dsh, 0);
 
    /* switch mode upon request */
    if (dsh->mode & DPIP_LAST_TAG)
@@ -483,7 +444,7 @@ char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
       /* Only wait for data when the tag is incomplete */
       if (!strstr(dsh->rdbuf->str, DPIP_TAG_END)) {
          do {
-            Dpip_dsh_read(dsh);
+            Dpip_dsh_read(dsh, 1);
             p = strstr(dsh->rdbuf->str, DPIP_TAG_END);
          } while (!p && dsh->status == EAGAIN);
       }
