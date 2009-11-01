@@ -247,8 +247,8 @@ Dsh *a_Dpip_dsh_new(int fd_in, int fd_out, int flush_sz)
    dsh->fd_out = fd_out;
 
    /* init buffer */
-   dsh->dbuf = dStr_sized_new(8 *1024);
-   dsh->rd_dbuf = dStr_sized_new(8 *1024);
+   dsh->wrbuf = dStr_sized_new(8 *1024);
+   dsh->rdbuf = dStr_sized_new(8 *1024);
    dsh->flush_sz = flush_sz;
    dsh->mode = DPIP_TAG;
    if (fcntl(dsh->fd_in, F_GETFL) & O_NONBLOCK)
@@ -267,9 +267,9 @@ int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize)
    int blocking, old_flags, st, sent = 0, ret = 1;
 
    /* append to buf */
-   dStr_append_l(dsh->dbuf, Data, DataSize);
+   dStr_append_l(dsh->wrbuf, Data, DataSize);
 
-   if (!flush || dsh->dbuf->len == 0)
+   if (!flush || dsh->wrbuf->len == 0)
       return 0;
 
    blocking = !(dsh->mode & DPIP_NONBLOCK);
@@ -280,7 +280,7 @@ int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize)
    }
 
    while (1) {
-      st = write(dsh->fd_out, dsh->dbuf->str + sent, dsh->dbuf->len - sent);
+      st = write(dsh->fd_out, dsh->wrbuf->str + sent, dsh->wrbuf->len - sent);
       if (st < 0) {
          if (errno == EINTR) {
             continue;
@@ -290,8 +290,8 @@ int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize)
          }
       } else {
          sent += st;
-         if (sent == dsh->dbuf->len) {
-            dStr_truncate(dsh->dbuf, 0);
+         if (sent == dsh->wrbuf->len) {
+            dStr_truncate(dsh->wrbuf, 0);
             ret = 0;
             break;
          }
@@ -309,9 +309,9 @@ int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize)
 /*
  * Return value: 1..DataSize sent, -1 eagain, or -3 on big Error
  */
-int a_Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize)
+static int Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize)
 {
-   int blocking, old_flags, st, ret = -3, sent = 0;
+   int blocking, old_flags, st, ret = -3;
 
    blocking = !(dsh->mode & DPIP_NONBLOCK);
    if (blocking) {
@@ -320,24 +320,19 @@ int a_Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize)
       fcntl(dsh->fd_in, F_SETFL, O_NONBLOCK | old_flags);
    }
 
-   while (1) {
-      st = write(dsh->fd_out, Data + sent, DataSize - sent);
-      if (st < 0) {
-         if (errno == EINTR) {
-            continue;
-         } else if (errno == EAGAIN) {
-            dsh->status = DPIP_EAGAIN;
-            ret = -1;
-            break;
-         } else {
-            MSG_ERR("[a_Dpip_dsh_trywrite] %s\n", dStrerror(errno));
-            dsh->status = DPIP_ERROR;
-            ret = -3;
-            break;
-         }
+   do {
+      st = write(dsh->fd_out, Data, DataSize);
+   } while (st < 0 && errno == EINTR);
+   if (st < 0) {
+      if (errno == EAGAIN) {
+         dsh->status = DPIP_EAGAIN;
+         ret = -1;
+      } else {
+         MSG_ERR("[Dpip_dsh_trywrite] %s\n", dStrerror(errno));
+         dsh->status = DPIP_ERROR;
       }
-      sent += st;
-      break;
+   } else {
+      ret = st;
    }
 
    if (blocking) {
@@ -345,7 +340,42 @@ int a_Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize)
       fcntl(dsh->fd_in, F_SETFL, old_flags);
    }
 
-   return (st > 0 ? sent : ret);
+   return ret;
+}
+
+/*
+ * Return value: 0 on success or empty buffer, 
+ *               1..DataSize sent, -1 eagain, or -3 on big Error
+ */
+int a_Dpip_dsh_tryflush(Dsh *dsh)
+{
+   int st;
+
+   if (dsh->wrbuf->len == 0) {
+      st = 0;
+   } else {
+      st = Dpip_dsh_trywrite(dsh, dsh->wrbuf->str, dsh->wrbuf->len);
+      if (st > 0) {
+         /* update internal buffer */
+         dStr_erase(dsh->wrbuf, 0, st);
+      }
+   }
+   return (dsh->wrbuf->len == 0) ? 0 : st;
+}
+
+/*
+ * Return value: 1..DataSize sent, -1 eagain, or -3 on big Error
+ */
+int a_Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize)
+{
+   int st;
+
+   if ((st = Dpip_dsh_trywrite(dsh, Data, DataSize)) > 0) {
+      /* update internal buffer */
+      if (st < DataSize)
+         dStr_append_l(dsh->wrbuf, Data + st, DataSize - st);
+   }
+   return st;
 }
 
 /*
@@ -393,7 +423,7 @@ static void Dpip_dsh_read_nb(Dsh *dsh)
          break;
       } else {
          /* append to buf */
-         dStr_append_l(dsh->rd_dbuf, buf, st);
+         dStr_append_l(dsh->rdbuf, buf, st);
       }
    }
 
@@ -436,7 +466,7 @@ static void Dpip_dsh_read(Dsh *dsh)
          break;
       } else {
          /* append to buf */
-         dStr_append_l(dsh->rd_dbuf, buf, st);
+         dStr_append_l(dsh->rdbuf, buf, st);
          break;
       }
    }
@@ -467,27 +497,27 @@ char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
 
    if (blocking && dsh->mode & DPIP_TAG) {
       /* Only wait for data when the tag is incomplete */
-      if (!strstr(dsh->rd_dbuf->str, DPIP_TAG_END)) {
+      if (!strstr(dsh->rdbuf->str, DPIP_TAG_END)) {
          do {
             Dpip_dsh_read(dsh);
-            p = strstr(dsh->rd_dbuf->str, DPIP_TAG_END);
+            p = strstr(dsh->rdbuf->str, DPIP_TAG_END);
          } while (!p && dsh->status == EAGAIN);
       }
    }
 
    if (dsh->mode & DPIP_TAG) {
       /* return a full tag */
-      if ((p = strstr(dsh->rd_dbuf->str, DPIP_TAG_END))) {
-         ret = dStrndup(dsh->rd_dbuf->str, p - dsh->rd_dbuf->str + 3);
-         dStr_erase(dsh->rd_dbuf, 0, p - dsh->rd_dbuf->str + 3);
+      if ((p = strstr(dsh->rdbuf->str, DPIP_TAG_END))) {
+         ret = dStrndup(dsh->rdbuf->str, p - dsh->rdbuf->str + 3);
+         dStr_erase(dsh->rdbuf, 0, p - dsh->rdbuf->str + 3);
          if (strstr(ret, DPIP_MODE_SWITCH_TAG))
             dsh->mode |= DPIP_LAST_TAG;
       }
    } else {
       /* raw mode, return what we have "as is" */
-      if (dsh->rd_dbuf->len > 0) {
-         ret = dStrndup(dsh->rd_dbuf->str, dsh->rd_dbuf->len);
-         dStr_truncate(dsh->rd_dbuf, 0);
+      if (dsh->rdbuf->len > 0) {
+         ret = dStrndup(dsh->rdbuf->str, dsh->rdbuf->len);
+         dStr_truncate(dsh->rdbuf, 0);
       }
    }
 
@@ -521,8 +551,8 @@ void a_Dpip_dsh_close(Dsh *dsh)
  */
 void a_Dpip_dsh_free(Dsh *dsh)
 {
-   dStr_free(dsh->dbuf, 1);
-   dStr_free(dsh->rd_dbuf, 1);
+   dStr_free(dsh->wrbuf, 1);
+   dStr_free(dsh->rdbuf, 1);
    dFree(dsh);
 }
 

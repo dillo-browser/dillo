@@ -92,8 +92,6 @@ typedef struct {
    int err_code;
    int flags;
    int old_style;
-
-   Dstr *dbuf;
 } ClientInfo;
 
 /*
@@ -694,6 +692,7 @@ static void File_get(ClientInfo *client, const char *filename,
  */
 static int File_send_file(ClientInfo *client)
 {
+//#define LBUF 1
 #define LBUF 16*1024
 
    const char *ct;
@@ -746,29 +745,24 @@ static int File_send_file(ClientInfo *client)
 
    } else if (client->state == st_http) {
       /* Send body -- raw file contents */
-      if (client->dbuf->len > 0) {
-         /* send pending data */
-         st = a_Dpip_dsh_trywrite(client->sh, 
-                                  client->dbuf->str, client->dbuf->len);
-         if (st > 0)
-            dStr_erase(client->dbuf, 0, st);
+      if ((st = a_Dpip_dsh_tryflush(client->sh)) < 0) {
+         client->flags |= (st == -3) ? FILE_ERR : 0;
       } else {
-         /* ok to send new data */
+         /* no pending data, let's send new data */
          do {
-            st = read(client->file_fd, buf, LBUF);
-         } while (st < 0 && errno == EINTR);
-         if (st == -1) {
-            MSG("\nexit(1), ERROR while reading from file '%s': %s\n\n",
+            st2 = read(client->file_fd, buf, LBUF);
+         } while (st2 < 0 && errno == EINTR);
+         if (st2 < 0) {
+            MSG("\nERROR while reading from file '%s': %s\n\n",
                 client->filename, dStrerror(errno));
-            exit(1);
-         } else if (st == 0) {
+            client->flags |= FILE_ERR;
+         } else if (st2 == 0) {
             client->state = st_content;
             client->flags |= FILE_DONE;
          } else {
-            /* partial write */
-            st2 = a_Dpip_dsh_trywrite(client->sh, buf, st);
-            if (st2 > 0 && st2 < st)
-               dStr_append_l(client->dbuf, buf + st2, st - st2);
+            /* ok to write */
+            st = a_Dpip_dsh_trywrite(client->sh, buf, st2);
+            client->flags |= (st == -3) ? FILE_ERR : 0;
          }
       }
    }
@@ -889,7 +883,6 @@ static ClientInfo *File_add_client(int sock_fd)
    new_client->err_code = 0;
    new_client->flags = FILE_READ;
    new_client->old_style = OLD_STYLE;
-   new_client->dbuf = dStr_sized_new(8*1024);
 
    dList_append(Clients, new_client);
    return new_client;
@@ -908,7 +901,6 @@ static void File_remove_client(ClientInfo *client)
    File_close(client->file_fd);
    dFree(client->orig_url);
    dFree(client->filename);
-   dStr_free(client->dbuf, TRUE);
    File_dillodir_free(client->d_dir);
 
    dFree(client);
@@ -1053,7 +1045,7 @@ static int File_check_fds(uint_t seconds)
 int main(void)
 {
    struct sockaddr_in sin;
-   socklen_t address_size;
+   socklen_t sin_sz;
    int tmp_fd, c_st, st = 1;
 
    /* Arrange the cleanup function for abnormal terminations */
@@ -1065,6 +1057,7 @@ int main(void)
      signal (SIGTERM, SIG_IGN);
 
    MSG("(v.2) accepting connections...\n");
+   //sleep(20);
 
    /* initialize observed file descriptors */
    FD_ZERO (&read_set);
@@ -1075,7 +1068,7 @@ int main(void)
    Clients = dList_new(512);
 
    /* some OSes may need this... */
-   address_size = sizeof(struct sockaddr_in);
+   sin_sz = sizeof(sin);
 
    /* start the service loop */
    while (!DPIBYE) {
@@ -1092,13 +1085,17 @@ int main(void)
 
       if (FD_ISSET(STDIN_FILENO, &read_set)) {
          /* accept the incoming connection */
-         tmp_fd = accept(STDIN_FILENO, (struct sockaddr *)&sin, &address_size);
+         do {
+            tmp_fd = accept(STDIN_FILENO, (struct sockaddr *)&sin, &sin_sz);
+         } while (tmp_fd < 0 && errno == EINTR);
          if (tmp_fd == -1) {
             MSG(" accept() %s\n", dStrerror(errno));
             break;
          } else {
+            _MSG(" accept() fd=%d\n", tmp_fd);
+            /* Set nonblocking */
+            fcntl(tmp_fd, F_SETFL, O_NONBLOCK | fcntl(tmp_fd, F_GETFL));
             /* Create and initialize a new client */
-            MSG(" accept() fd=%d\n", tmp_fd);
             File_add_client(tmp_fd);
          }
          continue;

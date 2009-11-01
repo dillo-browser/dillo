@@ -35,8 +35,8 @@ struct _DpipSocketHandler {
    /* FILE *in;    --Unused. The stream functions block when reading. */
    FILE *out;
 
-   Dstr *dbuf;     /* write buffer */
-   Dstr *rd_dbuf;  /* read buffer */
+   Dstr *wrbuf;    /* write buffer */
+   Dstr *rdbuf;    /* read buffer */
    int flush_sz;   /* max size before flush */
 
    int mode;       /* mode flags: DPIP_TAG | DPIP_LAST_TAG | DPIP_RAW */
@@ -68,6 +68,7 @@ int a_Dpip_check_auth(const char *auth);
 Dsh *a_Dpip_dsh_new(int fd_in, int fd_out, int flush_sz);
 int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize);
 int a_Dpip_dsh_write_str(Dsh *dsh, int flush, const char *str);
+int a_Dpip_dsh_tryflush(Dsh *dsh);
 int a_Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize);
 char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking);
 void a_Dpip_dsh_close(Dsh *dsh);
