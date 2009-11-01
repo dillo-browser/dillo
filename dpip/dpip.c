@@ -10,15 +10,24 @@
  *
  */
 
+#include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "../dlib/dlib.h"
 #include "dpip.h"
 #include "d_size.h"
 
+#define MSG_ERR(...)  fprintf(stderr, "[dpip]: " __VA_ARGS__)
+
+/*
+ * Local variables
+ */
 static const char Quote = '\'';
+
 
 /*
  * Basically the syntax of a dpip tag is:
@@ -172,6 +181,38 @@ char *a_Dpip_get_attr_l(char *tag, size_t tagsize, const char *attrname)
 char *a_Dpip_get_attr(char *tag, const char *attrname)
 {
    return (tag ? a_Dpip_get_attr_l(tag, strlen(tag), attrname) : NULL);
+}
+
+/*
+ * Check whether the given 'auth' string equals what dpid saved.
+ * Return value: 1 if equal, -1 otherwise
+ */
+int a_Dpip_check_auth(const char *auth)
+{
+   char SharedSecret[32];
+   FILE *In;
+   char *fname, *rcline = NULL, *tail;
+   int i, port, ret = -1;
+
+   dReturn_val_if (auth == NULL, -1);
+
+   fname = dStrconcat(dGethomedir(), "/.dillo/dpid_comm_keys", NULL);
+   if ((In = fopen(fname, "r")) == NULL) {
+      MSG_ERR("[a_Dpip_check_auth] %s\n", dStrerror(errno));
+   } else if ((rcline = dGetline(In)) == NULL) {
+      MSG_ERR("[a_Dpip_check_auth] empty file: %s\n", fname);
+   } else {
+      port = strtol(rcline, &tail, 10);
+      for (i = 0; *tail && isxdigit(tail[i+1]); ++i)
+         SharedSecret[i] = tail[i+1];
+      SharedSecret[i] = 0;
+      if (strcmp(auth, SharedSecret) == 0)
+         ret = 1;
+   }
+   dFree(rcline);
+   dFree(fname);
+
+   return ret;
 }
 
 /* ------------------------------------------------------------------------- */

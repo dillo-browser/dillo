@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <errno.h>           /* for errno */
 #include <fcntl.h>
+#include <ctype.h>           /* isxdigit */
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -73,7 +74,7 @@ typedef struct {
  */
 static Klist_t *ValidConns = NULL; /* Active connections list. It holds
                                     * pointers to dpi_conn_t structures. */
-
+static char SharedKey[32];
 
 /*
  * Initialize local data
@@ -400,8 +401,8 @@ static int Dpi_start_dpid(void)
 static int Dpi_read_comm_keys(int *port)
 {
    FILE *In;
-   char *fname, *rcline = NULL;
-   int ret = -1;
+   char *fname, *rcline = NULL, *tail;
+   int i, ret = -1;
 
    fname = dStrconcat(dGethomedir(), "/.dillo/dpid_comm_keys", NULL);
    if ((In = fopen(fname, "r")) == NULL) {
@@ -409,7 +410,10 @@ static int Dpi_read_comm_keys(int *port)
    } else if ((rcline = dGetline(In)) == NULL) {
       MSG_ERR("[Dpi_read_comm_keys] empty file: %s\n", fname);
    } else {
-      *port = strtol(rcline, NULL, 10);
+      *port = strtol(rcline, &tail, 10);
+      for (i = 0; *tail && isxdigit(tail[i+1]); ++i)
+         SharedKey[i] = tail[i+1];
+      SharedKey[i] = 0;
       ret = 1;
    }
    dFree(rcline);
@@ -593,7 +597,7 @@ int Dpi_get_server_port(const char *server_name)
 static int Dpi_connect_socket(const char *server_name, int retry)
 {
    struct sockaddr_in sin;
-   int sock_fd, err, dpi_port;
+   int sock_fd, err, dpi_port, ret=-1;
 
    /* Query dpid for the port number for this server */
    if ((dpi_port = Dpi_get_server_port(server_name)) == -1) {
@@ -621,11 +625,16 @@ static int Dpi_connect_socket(const char *server_name, int retry)
                break;
          }
       }
+
+   /* send authentication Key (the server closes sock_fd on error) */
+   } else if (Dpi_blocking_write(sock_fd,SharedKey,strlen(SharedKey)) == -1) {
+      MSG_ERR("[Dpi_connect_socket] Can't send auth message.\n");
+   } else {
+      ret = sock_fd;
    }
 
-   return sock_fd;
+   return ret;
 }
-
 
 /*
  * CCC function for the Dpi module

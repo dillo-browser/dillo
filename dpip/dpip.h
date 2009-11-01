@@ -26,6 +26,8 @@ char *a_Dpip_build_cmd(const char *format, ...);
 char *a_Dpip_get_attr(char *tag, const char *attrname);
 char *a_Dpip_get_attr_l(char *tag, size_t tagsize, const char *attrname);
 
+int a_Dpip_check_auth(const char *auth);
+
 
 #ifdef __cplusplus
 }

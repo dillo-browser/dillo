@@ -38,6 +38,7 @@
 #define QUEUE 5
 
 volatile sig_atomic_t caught_sigchld = 0;
+char *SharedKey = NULL;
 
 /*! Remove UDS filenames 
  */
@@ -562,14 +563,14 @@ int bind_socket_fd(int base_port, int *p_port)
    return ok ? sock_fd : -1;
 }
 
-/*! Save the current port in a file so dillo can find it.
+/*! Save the current port and a shared secret in a file so dillo can find it.
  * \Return:
  * \li -1 on failure
  */
 int save_comm_keys(int srs_port)
 {
    int fd;
-   char *fname, ret = -1, port_str[16];
+   char *fname, ret = -1, port_str[32];
 
    fname = dStrconcat(dGethomedir(), "/", dotDILLO_DPID_COMM_KEYS, NULL);
    fd = open(fname, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
@@ -577,7 +578,7 @@ int save_comm_keys(int srs_port)
    if (fd == -1) {
       MSG("save_comm_keys: open %s\n", dStrerror(errno));
    } else {
-      snprintf(port_str, 8, "%d\n", srs_port);
+      snprintf(port_str, 16, "%d %s\n", srs_port, SharedKey);
       if (CKD_WRITE(fd, port_str) != -1)
          ret = 1;
    }
@@ -597,7 +598,9 @@ int init_ids_srs_socket()
    FD_ZERO(&sock_set);
 
    if ((srs_fd = bind_socket_fd(DPID_BASE_PORT, &srs_port)) != -1) {
-      /* save port number */
+      /* create the shared secret */
+      SharedKey = a_Misc_mksecret(8);
+      /* save port number and SharedKey */
       if (save_comm_keys(srs_port) != -1) {
          FD_SET(srs_fd, &sock_set);
          ret = 1;
@@ -725,9 +728,10 @@ void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
       if (connect(sock_fd, (struct sockaddr *)&sin, sizeof(sin)) == -1) {
          ERRMSG("stop_active_dpis", "connect", errno);
          MSG_ERR("%s\n", dpi_attr_list[i].path);
+      } else if (write(sock_fd, SharedKey, strlen(SharedKey)) == -1) {
+         ERRMSG("stop_active_dpis", "write", errno);
       } else if (write(sock_fd, DpiBye_cmd, strlen(DpiBye_cmd)) == -1) {
-         MSG("stop_active_dpis: Error on sending BYE command: %s\n",
-             dStrerror(errno));
+         ERRMSG("stop_active_dpis", "write", errno);
       }
       a_Misc_close_fd(sock_fd);
    }

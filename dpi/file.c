@@ -844,14 +844,30 @@ static int File_num_clients(void)
  * Serve this client.
  * (this function runs on its own thread)
  */
-static void *File_serve_client(void *data)
+static void File_serve_client(void *data)
 {
-   char *dpip_tag, *cmd = NULL, *url = NULL, *path;
+   char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *path, *auth, *p;
    ClientInfo *Client = data;
 
+   /* Authenticate our client... */
+   auth = sock_handler_read(Client->sh);
+   if ((p = strchr(auth, '<')) != NULL) {
+      /* auth and dpip's tag are in one chunk, separate them */
+      dpip_tag = dStrdup(p);
+      *p = 0;
+   }
+   MSG("auth={%s}\n", auth);
+   if (a_Dpip_check_auth(auth) == -1) {
+      dFree(dpip_tag);
+      dFree(auth);
+      return;
+   }
+   dFree(auth);
+
    /* Read the dpi command */
-   dpip_tag = sock_handler_read(Client->sh);
-   _MSG("dpip_tag={%s}\n", dpip_tag);
+   if (!dpip_tag)
+      dpip_tag = sock_handler_read(Client->sh);
+   MSG("dpip_tag={%s}\n", dpip_tag);
 
    if (dpip_tag) {
       cmd = a_Dpip_get_attr(dpip_tag, "cmd");
@@ -864,8 +880,8 @@ static void *File_serve_client(void *data)
                MSG("file.dpi:: Failed to parse 'url'\n");
          }
       }
+      dFree(cmd);
    }
-   dFree(cmd);
    dFree(dpip_tag);
 
    if (!DPIBYE && url) {
@@ -886,8 +902,6 @@ static void *File_serve_client(void *data)
 
    /* flag the the transfer finished */
    Client->done = 1;
-
-   return NULL;
 }
 
 /*

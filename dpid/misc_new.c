@@ -191,3 +191,26 @@ char *a_Misc_mkfname(char *template)
       MSG_ERR("a_Misc_mkfname: another round for %s \n", template);
    }
 }
+
+/*
+ * Return a new, random hexadecimal string of 'nchar' characters.
+ */
+char *a_Misc_mksecret(int nchar)
+{
+   int i;
+   uint_t random;
+   char *secret = dNew(char, nchar + 1);
+
+   srand((uint_t)(time(0) ^ getpid()));
+   random = (unsigned) rand();
+   for (i = 0; i < nchar; ++i) {
+      int hexdigit = (random >> (i * 5)) & 0x0f;
+
+      secret[i] = hexdigit > 9 ? hexdigit + 'a' - 10 : hexdigit + '0';
+   }
+   secret[i] = 0;
+   MSG("a_Misc_mksecret: %s\n", secret);
+
+   return secret;
+}
+

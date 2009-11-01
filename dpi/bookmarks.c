@@ -1653,7 +1653,8 @@ static int Bmsrv_parse_buf(SockHandler *sh, char *Buf)
       if (st != 0) {
          char *err =
             DOCTYPE
-            "<HTML><body id='dillo_bm'> Error on the bookmarks server...</body></html>";
+            "<HTML><body id='dillo_bm'> Error on the bookmarks server..."
+            "      </body></html>";
          if (sock_handler_write_str(sh, 1, err) != 0) {
             return 1;
          }
@@ -1686,7 +1687,7 @@ static void termination_handler(int signum)
 /*
  * -- MAIN -------------------------------------------------------------------
  */
-int main (void) {
+int main(void) {
    struct sockaddr_un spun;
    int temp_sock_descriptor;
    socklen_t address_size;
