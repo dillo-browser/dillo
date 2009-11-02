@@ -1273,16 +1273,19 @@ static void Html_real_pop_tag(DilloHtml *html)
    Html_eventually_pop_dw(html, hand_over_break);
 }
 
+/*
+ * Cleanup the stack to a given index.
+ */
 static void Html_tag_cleanup_to_idx(DilloHtml *html, int idx)
 {
-   while (html->stack->size() > idx) {
+   int s_sz;
+   while ((s_sz = html->stack->size()) > idx) {
       int toptag_idx = S_TOP(html)->tag_idx;
-      if (html->stack->size() > idx + 1 &&
-          Tags[toptag_idx].EndTag != 'O')
-         BUG_MSG("  - forcing close of open tag: <%s>\n",
-                 Tags[toptag_idx].name);
-      _MSG("Close: %*s%s\n", html->stack->size()," ",Tags[toptag_idx].name);
-      Tags[toptag_idx].close (html, toptag_idx);
+      TagInfo toptag = Tags[toptag_idx];
+      if (s_sz > idx + 1 && toptag.EndTag != 'O')
+         BUG_MSG("  - forcing close of open tag: <%s>\n", toptag.name);
+      _MSG("Close: %*s%s\n", size," ", toptag.name);
+      toptag.close(html, toptag_idx);
       Html_real_pop_tag(html);
    }
 }
@@ -1302,34 +1305,37 @@ static void Html_tag_cleanup_to_idx(DilloHtml *html, int idx)
  *   2.- If it exists, clean all the tags in between.
  *   3.- Cleanup the matching tag. (on error, give a warning message)
  */
-static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
+static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
 {
    int w3c_mode = !prefs.w3c_plus_heuristics;
-   int stack_idx, cmp = 1;
-   int new_idx = TagIdx;
+   int stack_idx, tag_idx, matched = 0, expected = 0;
+   TagInfo tag, new_tag = Tags[new_idx];
 
    /* Look for the candidate tag to close */
-   stack_idx = html->stack->size() - 1;
-   while (stack_idx &&
-          (cmp = (new_idx != html->stack->getRef(stack_idx)->tag_idx)) &&
-          (Tags[html->stack->getRef(stack_idx)->tag_idx].EndTag == 'O' ||
-           (!w3c_mode &&
-            Tags[html->stack->getRef(stack_idx)->tag_idx].TagLevel <
-            Tags[new_idx].TagLevel))) {
-      --stack_idx;
+   stack_idx = html->stack->size();
+   while (--stack_idx) {
+      tag_idx = html->stack->getRef(stack_idx)->tag_idx;
+      if (tag_idx == new_idx) {
+         /* matching tag found */
+         matched = 1;
+         break;
+      } else if (Tags[tag_idx].EndTag == 'O') {
+         /* skip an optional tag */
+         continue;
+      } else if (w3c_mode || Tags[tag_idx].TagLevel >= new_tag.TagLevel) {
+         /* this is the tag that should have been closed */
+         expected = 1;
+         break;
+      }
    }
 
-   /* clean, up to the matching tag */
-   if (cmp == 0 && stack_idx > 0) {
+   if (matched) {
       Html_tag_cleanup_to_idx(html, stack_idx);
+   } else if (expected) {
+      BUG_MSG("unexpected closing tag: </%s> -- expected </%s>.\n",
+              new_tag.name, tag.name);
    } else {
-      if (stack_idx == 0) {
-         BUG_MSG("unexpected closing tag: </%s>.\n", Tags[new_idx].name);
-      } else {
-         BUG_MSG("unexpected closing tag: </%s>. -- expected </%s>\n",
-                 Tags[new_idx].name,
-                 Tags[html->stack->getRef(stack_idx)->tag_idx].name);
-      }
+      BUG_MSG("unexpected closing tag: </%s>.\n", new_tag.name);
    }
 }
 
