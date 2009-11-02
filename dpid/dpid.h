@@ -13,6 +13,10 @@
 
 #include "d_size.h"
 
+/* FreeBSD 6.4 doesn't have it */
+#ifndef IPPORT_USERRESERVED
+ #define IPPORT_USERRESERVED 5000
+#endif
 
 #define PATH_LEN 50
 #define CMDLEN 20
