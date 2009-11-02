@@ -1273,6 +1273,20 @@ static void Html_real_pop_tag(DilloHtml *html)
    Html_eventually_pop_dw(html, hand_over_break);
 }
 
+static void Html_tag_cleanup_to_idx(DilloHtml *html, int idx)
+{
+   while (html->stack->size() > idx) {
+      int toptag_idx = S_TOP(html)->tag_idx;
+      if (html->stack->size() > idx + 1 &&
+          Tags[toptag_idx].EndTag != 'O')
+         BUG_MSG("  - forcing close of open tag: <%s>\n",
+                 Tags[toptag_idx].name);
+      _MSG("Close: %*s%s\n", html->stack->size()," ",Tags[toptag_idx].name);
+      Tags[toptag_idx].close (html, toptag_idx);
+      Html_real_pop_tag(html);
+   }
+}
+
 /*
  * Default close function for tags.
  * (conditional cleanup of the stack)
@@ -1307,21 +1321,7 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx)
 
    /* clean, up to the matching tag */
    if (cmp == 0 && stack_idx > 0) {
-      /* There's a valid matching tag in the stack */
-      while (html->stack->size() > stack_idx) {
-         int toptag_idx = S_TOP(html)->tag_idx;
-         /* Warn when we decide to close an open tag (for !w3c_mode) */
-         if (html->stack->size() > stack_idx + 1 &&
-             Tags[toptag_idx].EndTag != 'O')
-            BUG_MSG("  - forcing close of open tag: <%s>\n",
-                    Tags[toptag_idx].name);
-
-         /* Close this and only this tag */
-         _MSG("Close: %*s%s\n", html->stack->size()," ",Tags[toptag_idx].name);
-         Tags[toptag_idx].close (html, toptag_idx);
-         Html_real_pop_tag(html);
-      }
-
+      Html_tag_cleanup_to_idx(html, stack_idx);
    } else {
       if (stack_idx == 0) {
          BUG_MSG("unexpected closing tag: </%s>.\n", Tags[new_idx].name);
