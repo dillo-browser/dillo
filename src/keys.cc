@@ -11,6 +11,7 @@
 
 #include <fltk/events.h>
 #include <stdio.h>
+#include <stdlib.h>        /* strtol */
 #include <string.h>
 #include <ctype.h>
 
@@ -310,6 +311,9 @@ void Keys::parseKey(char *key, char *commandName)
    // Get key code
    if (!key[1]) {
       keycode = *key;
+   } else if (key[0] == '0' && key[1] == 'x') {
+      /* keysym. For details on values reported, see fltk's fltk/events.h */
+      keycode = strtol(key, NULL, 0x10);
    } else if ((st = getKeyCode(keystr)) == -1) {
       MSG("Keys::parseKey unknown keyname: %s\n", keystr);
    } else {

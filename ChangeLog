@@ -47,6 +47,7 @@ dillo-2.2 [??]
  - Fix segfault when radio button lacks name attribute.
  - Enable popup menu below bottom of page content (BUG#856).
  - Handle JPEGs with CMYK color space.
+ - Allow keysyms in keysrc.
    Patches: corvid
 +- Support for the letter-spacing property.
    Patch: Johannes Hofmann, corvid
