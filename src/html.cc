@@ -1309,7 +1309,7 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
 {
    int w3c_mode = !prefs.w3c_plus_heuristics;
    int stack_idx, tag_idx, matched = 0, expected = 0;
-   TagInfo tag, new_tag = Tags[new_idx];
+   TagInfo new_tag = Tags[new_idx];
 
    /* Look for the candidate tag to close */
    stack_idx = html->stack->size();
@@ -1333,7 +1333,7 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
       Html_tag_cleanup_to_idx(html, stack_idx);
    } else if (expected) {
       BUG_MSG("unexpected closing tag: </%s> -- expected </%s>.\n",
-              new_tag.name, tag.name);
+              new_tag.name, Tags[tag_idx].name);
    } else {
       BUG_MSG("unexpected closing tag: </%s>.\n", new_tag.name);
    }
