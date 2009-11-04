@@ -45,6 +45,19 @@ static uchar_t *Imgbuf_rgb_line(const uchar_t *buf,
       for (x = 0; x < width; x++)
          memset(linebuf + x * 3, buf[x], 3);
       break;
+   case DILLO_IMG_TYPE_CMYK_INV:
+      /*
+       * We treat CMYK as if it were "RGBW", and it works. Everyone who is
+       * trying to handle CMYK jpegs is confused by this, and supposedly
+       * the issue is that Adobe CMYK is "wrong" but ubiquitous.
+       */
+      for (x = 0; x < width; x++) {
+         uint_t white = buf[x * 4 + 3];
+         linebuf[x * 3] = buf[x * 4] * white / 0x100;
+         linebuf[x * 3 + 1] = buf[x * 4 + 1] * white / 0x100;
+         linebuf[x * 3 + 2] = buf[x * 4 + 2] * white / 0x100;
+      }
+      break;
    case DILLO_IMG_TYPE_RGB:
       /* avoid a memcpy here!  --Jcid */
       return (uchar_t *)buf;
