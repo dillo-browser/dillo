@@ -1041,7 +1041,9 @@ void Textblock::wordWrap(int wordIndex)
       if (leftOffset < 0)
          leftOffset = 0;
 
-      if (listItem && lastLine == lines->getRef (0)) {
+      if (listItem &&
+          getStyle()->listStyleType != core::style::LIST_STYLE_TYPE_NONE &&
+          lastLine == lines->getRef (0)) {
          /* List item markers are always on the left. */
          lastLine->leftOffset = 0;
          words->getRef(0)->effSpace = words->getRef(0)->origSpace + leftOffset;
