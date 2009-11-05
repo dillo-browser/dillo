@@ -196,7 +196,7 @@ protected:
    friend class TextblockIterator;
 
    /* These fields provide some ad-hoc-functionality, used by sub-classes. */
-   bool listItem;      /* If true, the first word of the page is treated
+   bool hasListitemValue; /* If true, the first word of the page is treated
                           specially (search in source). */
    int innerPadding;    /* This is an additional padding on the left side
                             (used by ListItem). */

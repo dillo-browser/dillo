@@ -38,7 +38,7 @@ Textblock::Textblock (bool limitTextWidth)
    setFlags (USES_HINTS);
    setButtonSensitive(true);
 
-   listItem = false;
+   hasListitemValue = false;
    innerPadding = 0;
    line1Offset = 0;
    line1OffsetEff = 0;
@@ -1041,8 +1041,7 @@ void Textblock::wordWrap(int wordIndex)
       if (leftOffset < 0)
          leftOffset = 0;
 
-      if (listItem &&
-          getStyle()->listStyleType != core::style::LIST_STYLE_TYPE_NONE &&
+      if (hasListitemValue &&
           lastLine == lines->getRef (0)) {
          /* List item markers are always on the left. */
          lastLine->leftOffset = 0;
@@ -1720,7 +1719,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
       the bullet/number (which is the first word) in a list item. (See
       also comment in Dw_page_size_request.) */
    if (words->size () == 0 ||
-       (listItem && words->size () == 1)) {
+       (hasListitemValue && words->size () == 1)) {
       /* This is a bit hackish: If a break is added as the
          first/second word of a page, and the parent widget is also a
          DwPage, and there is a break before -- this is the case when
@@ -1735,9 +1734,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
               widget->getParent()->instanceOf (Textblock::CLASS_ID);
            widget = widget->getParent ()) {
          Textblock *textblock2 = (Textblock*)widget->getParent ();
-         int index = (textblock2->listItem &&
-                      (textblock2->getStyle()->listStyleType !=
-                       dw::core::style::LIST_STYLE_TYPE_NONE)) ? 1 : 0;
+         int index = textblock2->hasListitemValue ? 1 : 0;
          bool isfirst = (textblock2->words->getRef(index)->content.type
                          == core::Content::WIDGET
                          && textblock2->words->getRef(index)->content.widget

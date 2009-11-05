@@ -30,7 +30,6 @@ ListItem::ListItem (ListItem *ref, bool limitTextWidth):
    AlignedTextblock (limitTextWidth)
 {
    registerName ("dw::ListItem", &CLASS_ID);
-   listItem = true;
    setRefTextblock (ref);
 }
 
@@ -41,6 +40,7 @@ ListItem::~ListItem()
 void ListItem::initWithWidget (core::Widget *widget,
                                 core::style::Style *style)
 {
+   hasListitemValue = true;
    addWidget (widget, style);
    addSpace (style);
    updateValue ();
@@ -48,6 +48,7 @@ void ListItem::initWithWidget (core::Widget *widget,
 
 void ListItem::initWithText (const char *text, core::style::Style *style)
 {
+   hasListitemValue = true;
    addText (text, style);
    addSpace (style);
    updateValue ();
