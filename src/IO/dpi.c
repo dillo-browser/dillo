@@ -530,13 +530,13 @@ static int Dpi_blocking_start_dpid(void)
  */
 int Dpi_get_server_port(const char *server_name)
 {
-   int sock_fd, dpi_port;
-   int dpid_port, ret = -1, ok = 0;
+   int sock_fd, dpi_port = -1;
+   int dpid_port, ok = 0;
    struct sockaddr_in sin;
    char *cmd, *request, *rply = NULL, *port_str;
    socklen_t sin_sz;
 
-   dReturn_val_if_fail (server_name != NULL, ret);
+   dReturn_val_if_fail (server_name != NULL, dpi_port);
    _MSG("Dpi_get_server_port:: server_name = [%s]\n", server_name);
 
    /* Read dpid's port from saved file */
