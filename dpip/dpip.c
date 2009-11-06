@@ -263,7 +263,7 @@ Dsh *a_Dpip_dsh_new(int fd_in, int fd_out, int flush_sz)
  */
 static int Dpip_dsh_write(Dsh *dsh, int nb, const char *Data, int DataSize)
 {
-   int req_mode, old_flags, st, ret = -3, sent = 0;
+   int req_mode, old_flags = 0, st, ret = -3, sent = 0;
 
    req_mode = (nb) ? DPIP_NONBLOCK : 0;
    if ((dsh->mode & DPIP_NONBLOCK) != req_mode) {
@@ -377,7 +377,7 @@ int a_Dpip_dsh_write_str(Dsh *dsh, int flush, const char *str)
 static void Dpip_dsh_read(Dsh *dsh, int blocking)
 {
    char buf[RBUF_SZ];
-   int req_mode, old_flags, st, ret = -3, nb = !blocking;
+   int req_mode, old_flags = 0, st, ret = -3, nb = !blocking;
 
    dReturn_if (dsh->status == DPIP_ERROR || dsh->status == DPIP_EOF);
 
