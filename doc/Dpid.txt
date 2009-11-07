@@ -279,9 +279,31 @@ started.
   Once  you've  played  enough  with  it,  start reading the well
 commented code in hello.c and start making changes!
 
-  ------
-  Notes:
-  ------
+
+  ---------------
+  Debugging a dpi
+  ---------------
+
+  The  simplest  way  is  to add printf() feedback using the MSG*
+macros.  You  can  start  the dpid by hand on a terminal to force
+messages to go there.
+
+  Sometimes  more  complex dpis need more than MSG*. In this case
+you can use gdb like this.
+
+    1.- Add an sleep(20) statement just after the dpi starts.
+    2.- Start  dillo and issue a request for your dpi. This will
+        get your dpi started.
+    3.- Standing in the dpi source directory:
+        ps aux|grep dpi
+    4.- Take note of the dpi's PID and start gdb, then:
+        (gdb) attach <PID>
+    5.- Continue from there...
+
+
+  ------------
+  Final Notes:
+  ------------
 
   1.-  If  you  already  understand the hello dpi and want to try
 something more advanced:
