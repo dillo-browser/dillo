@@ -1611,7 +1611,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    core::Requisition size;
 
    /* We first assign -1 as parent_ref, since the call of widget->size_request
-    * will otherwise let this DwPage be rewrapped from the beginning.
+    * will otherwise let this Textblock be rewrapped from the beginning.
     * (parent_ref is actually undefined, but likely has the value 0.) At the,
     * end of this function, the correct value is assigned. */
    widget->parentRef = -1;
@@ -1722,7 +1722,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
        (hasListitemValue && words->size () == 1)) {
       /* This is a bit hackish: If a break is added as the
          first/second word of a page, and the parent widget is also a
-         DwPage, and there is a break before -- this is the case when
+         Textblock, and there is a break before -- this is the case when
          a widget is used as a text box (lists, blockquotes, list
          items etc) -- then we simply adjust the break before, in a
          way that the space is in any case visible. */
