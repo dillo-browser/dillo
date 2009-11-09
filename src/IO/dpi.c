@@ -528,7 +528,7 @@ static int Dpi_blocking_start_dpid(void)
  * TODO: here we should use the credentials in ~/.dillo/dpid_comm_keys
  *       (dpid port and password).
  */
-int Dpi_get_server_port(const char *server_name)
+static int Dpi_get_server_port(const char *server_name)
 {
    int sock_fd, dpi_port = -1;
    int dpid_port, ok = 0;
