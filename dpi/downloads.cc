@@ -583,7 +583,9 @@ void DLItem::update_size(int new_sz)
       prBar->move(1);
    } else {
       prBar->showtext(true);
-      double pos = 100.0 * (double)curr_bytesize / total_bytesize;
+      double pos = 100.0;
+      if (total_bytesize > 0)
+         pos *= (double)curr_bytesize / total_bytesize;
       prBar->position(pos);
    }
 }
