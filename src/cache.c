@@ -1199,17 +1199,18 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
       /* Abort the entry, remove it from cache, and maybe offer download. */
       DilloUrl *url = a_Url_dup(entry->Url);
       a_Capi_conn_abort_by_url(url);
-      /* Necessary when 'conn' is already done */
-      Cache_entry_remove(NULL, url);
       entry = NULL;
-      if (OfferDownload && a_Cache_download_enabled(url)) {
-         Cache_savelink_t *data = dNew(Cache_savelink_t, 1);
-         data->bw = Client_bw;
-         data->url = url;
-         a_Timeout_add(0.0, Cache_savelink_cb, data);
-      } else {
-         a_Url_free(url);
+      if (OfferDownload) {
+         /* Remove entry when 'conn' is already done */
+         Cache_entry_remove(NULL, url);
+         if (a_Cache_download_enabled(url)) {
+            Cache_savelink_t *data = dNew(Cache_savelink_t, 1);
+            data->bw = Client_bw;
+            data->url = a_Url_dup(url);
+            a_Timeout_add(0.0, Cache_savelink_cb, data);
+         }
       }
+      a_Url_free(url);
    } else if (entry->Auth && (entry->Flags & CA_GotData)) {
       Cache_auth_entry(entry, Client_bw);
    }
