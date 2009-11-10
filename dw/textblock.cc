@@ -1855,19 +1855,16 @@ core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
  */
 void Textblock::handOverBreak (core::style::Style *style)
 {
- #if 0
-   MISSING
-   DwPageLine *last_line;
-   DwWidget *parent;
+   if (lines->size() > 0) {
+      Widget *parent;
+      Line *lastLine = lines->getRef (lines->size () - 1);
 
-   if (page->num_lines == 0)
-      return;
-
-   last_line = &page->lines[page->num_lines - 1];
-   if (last_line->break_space != 0 &&
-       (parent = DW_WIDGET(page)->parent) && DW_IS_PAGE (parent))
-      a_Dw_page_add_parbreak (DW_PAGE (parent), last_line->break_space, style);
-#endif
+      if (lastLine->breakSpace != 0 && (parent = getParent()) &&
+          parent->instanceOf (Textblock::CLASS_ID)) {
+         Textblock *textblock2 = (Textblock*) parent;
+         textblock2->addParbreak(lastLine->breakSpace, style);
+      }
+   }
 }
 
 /*
