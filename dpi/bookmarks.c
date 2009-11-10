@@ -1704,6 +1704,9 @@ int main(void) {
    if (signal (SIGTERM, termination_handler) == SIG_IGN)
      signal (SIGTERM, SIG_IGN);
 
+   /* We may receive SIGPIPE (e.g. socket is closed early by our client) */
+   signal(SIGPIPE, SIG_IGN);
+
    /* Initialize local data */
    B_bms = dList_new(512);
    B_secs = dList_new(32);
@@ -1740,10 +1743,10 @@ int main(void) {
          }
          dFree(tok);
 
-         if (code == 1)
-            exit(1);
-         else if (code == 2)
+         if (code != 0) {
+            /* socket is not operative (e.g. closed by client) */
             break;
+         }
       }
 
       a_Dpip_dsh_close(sh);

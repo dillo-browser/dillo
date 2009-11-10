@@ -389,6 +389,7 @@ static int Dpi_start_dpid(void)
       } else {
          ret = 0;
       }
+      Dpi_close_fd(st_pipe[0]);
    }
 
    return ret;
@@ -416,6 +417,8 @@ static int Dpi_read_comm_keys(int *port)
       SharedKey[i] = 0;
       ret = 1;
    }
+   if (In)
+      fclose(In);
    dFree(rcline);
    dFree(fname);
 
@@ -525,12 +528,10 @@ static int Dpi_blocking_start_dpid(void)
  *       change at any time, we'll ask each time. If someday we find
  *       that connecting each time significantly degrades performance,
  *       an optimized approach can be tried.
- * TODO: here we should use the credentials in ~/.dillo/dpid_comm_keys
- *       (dpid port and password).
  */
 static int Dpi_get_server_port(const char *server_name)
 {
-   int sock_fd, dpi_port = -1;
+   int sock_fd = -1, dpi_port = -1;
    int dpid_port, ok = 0;
    struct sockaddr_in sin;
    char *cmd, *request, *rply = NULL, *port_str;
@@ -570,7 +571,6 @@ static int Dpi_get_server_port(const char *server_name)
          ok = 1;
       }
       dFree(request);
-      shutdown(sock_fd, 1); /* signals no more writes to dpid */
    }
    if (ok) {
       /* Get the reply */
@@ -580,7 +580,6 @@ static int Dpi_get_server_port(const char *server_name)
       } else {
          ok = 1;
       }
-      Dpi_close_fd(sock_fd);
    }
    if (ok) {
       /* Parse reply */
@@ -597,6 +596,7 @@ static int Dpi_get_server_port(const char *server_name)
       dFree(cmd);
    }
    dFree(rply);
+   Dpi_close_fd(sock_fd);
 
    return ok ? dpi_port : -1;
 }
