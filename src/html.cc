@@ -1218,7 +1218,7 @@ static bool Html_match_tag(const char *tagstr, char *tag, int tagsize)
 
 /*
  * This function is called after popping the stack, to
- * handle nested DwPage widgets.
+ * handle nested Textblock widgets.
  */
 static void Html_eventually_pop_dw(DilloHtml *html, bool hand_over_break)
 {

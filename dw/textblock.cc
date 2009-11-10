@@ -1611,7 +1611,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    core::Requisition size;
 
    /* We first assign -1 as parent_ref, since the call of widget->size_request
-    * will otherwise let this DwPage be rewrapped from the beginning.
+    * will otherwise let this Textblock be rewrapped from the beginning.
     * (parent_ref is actually undefined, but likely has the value 0.) At the,
     * end of this function, the correct value is assigned. */
    widget->parentRef = -1;
@@ -1722,7 +1722,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
        (hasListitemValue && words->size () == 1)) {
       /* This is a bit hackish: If a break is added as the
          first/second word of a page, and the parent widget is also a
-         DwPage, and there is a break before -- this is the case when
+         Textblock, and there is a break before -- this is the case when
          a widget is used as a text box (lists, blockquotes, list
          items etc) -- then we simply adjust the break before, in a
          way that the space is in any case visible. */
@@ -1855,19 +1855,16 @@ core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
  */
 void Textblock::handOverBreak (core::style::Style *style)
 {
- #if 0
-   MISSING
-   DwPageLine *last_line;
-   DwWidget *parent;
+   if (lines->size() > 0) {
+      Widget *parent;
+      Line *lastLine = lines->getRef (lines->size () - 1);
 
-   if (page->num_lines == 0)
-      return;
-
-   last_line = &page->lines[page->num_lines - 1];
-   if (last_line->break_space != 0 &&
-       (parent = DW_WIDGET(page)->parent) && DW_IS_PAGE (parent))
-      a_Dw_page_add_parbreak (DW_PAGE (parent), last_line->break_space, style);
-#endif
+      if (lastLine->breakSpace != 0 && (parent = getParent()) &&
+          parent->instanceOf (Textblock::CLASS_ID)) {
+         Textblock *textblock2 = (Textblock*) parent;
+         textblock2->addParbreak(lastLine->breakSpace, style);
+      }
+   }
 }
 
 /*

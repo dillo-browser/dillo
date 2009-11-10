@@ -445,14 +445,6 @@ void a_Nav_push_nw(BrowserWindow *bw, const DilloUrl *url)
 }
 
 /*
- * Wraps a_Nav_push to match 'DwPage->link' function type
- */
-void a_Nav_vpush(void *vbw, const DilloUrl *url)
-{
-   a_Nav_push(vbw, url);
-}
-
-/*
  * Send the browser back to previous page
  */
 void a_Nav_back(BrowserWindow *bw)
