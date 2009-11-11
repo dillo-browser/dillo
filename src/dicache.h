@@ -51,7 +51,6 @@ struct _DICacheEntry {
 void a_Dicache_init (void);
 
 DICacheEntry *a_Dicache_get_entry(const DilloUrl *Url, int version);
-DICacheEntry *a_Dicache_add_entry(const DilloUrl *Url);
 
 void *a_Dicache_png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
                           void **Data);
