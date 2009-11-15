@@ -69,7 +69,6 @@ uint_t a_Cache_get_flags_with_redirection(const DilloUrl *url);
 void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
                           const DilloUrl *Url);
 int a_Cache_download_enabled(const DilloUrl *url);
-void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds);
 void a_Cache_entry_remove_by_url(DilloUrl *url);
 void a_Cache_freeall(void);
 CacheClient_t *a_Cache_client_get_if_unique(int Key);

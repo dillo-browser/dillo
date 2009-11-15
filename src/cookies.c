@@ -42,7 +42,6 @@ void a_Cookies_init(void)
 #include "list.h"
 #include "cookies.h"
 #include "capi.h"
-#include "dpiapi.h"
 #include "../dpip/dpip.h"
 
 

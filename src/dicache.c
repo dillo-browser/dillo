@@ -107,7 +107,7 @@ static DICacheEntry *Dicache_entry_new(void)
  * Add a new entry in the dicache
  * (a single node (URL) may have several entries)
  */
-DICacheEntry *a_Dicache_add_entry(const DilloUrl *Url)
+static DICacheEntry *Dicache_add_entry(const DilloUrl *Url)
 {
    DICacheEntry *entry;
    DICacheNode *node;
@@ -409,7 +409,7 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
    if (!DicEntry) {
       /* Let's create an entry for this image... */
-      DicEntry = a_Dicache_add_entry(web->url);
+      DicEntry = Dicache_add_entry(web->url);
       DicEntry->DecoderData =
          (ImgType == DIC_Png) ?
             a_Png_new(web->Image, DicEntry->url, DicEntry->version) :

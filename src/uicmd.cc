@@ -266,7 +266,7 @@ public:
       } else if (e == FOCUS_CHANGE) {
          // Update the window title
          BrowserWindow *bw = a_UIcmd_get_bw_by_widget(selected_child());
-         const char *title = a_History_get_title(a_Nav_get_top_uidx(bw), 1);
+         const char *title = a_History_get_title(NAV_TOP_UIDX(bw), 1);
          a_UIcmd_set_page_title(bw, title ? title : "");
       } else if (e == MOVE) {
          CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
