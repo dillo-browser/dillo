@@ -204,6 +204,7 @@ void StyleEngine::endElement (int element) {
 void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    FontAttrs fontAttrs = *attrs->font;
    Font *parentFont = stack->get (stack->size () - 2).style->font;
+   char *c;
 
    /* Determine font first so it can be used to resolve relative lenths.
     * \todo Things should be rearranged so that just one pass is necessary.
@@ -214,6 +215,11 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       switch (p->name) {
          case CSS_PROPERTY_FONT_FAMILY:
             // \todo handle comma separated lists of font names
+            // for now simply use the first name in the list
+            if ((c = strchr(p->value.strVal, ',')))
+               *c = '\0';
+            p->value.strVal = dStrstrip(p->value.strVal);
+
             if (strcmp (p->value.strVal, "serif") == 0)
                fontAttrs.name = prefs.font_serif;
             else if (strcmp (p->value.strVal, "sans-serif") == 0)
