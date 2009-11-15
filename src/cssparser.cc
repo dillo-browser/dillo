@@ -770,6 +770,7 @@ bool CssParser::parseValue(CssPropertyName prop,
    bool found, ret = false;
    float fval;
    int i, ival, err = 1;
+   Dstr *dstr;
 
    switch (type) {
    case CSS_TYPE_ENUM:
@@ -894,10 +895,22 @@ bool CssParser::parseValue(CssPropertyName prop,
       break;
 
    case CSS_TYPE_SYMBOL:
-      if (ttype == CSS_TK_SYMBOL || ttype == CSS_TK_STRING) {
-         val->strVal = dStrdup(tval);
+      /* Read comma separated list of font family names */
+      dstr = dStr_new("");
+      while (ttype == CSS_TK_SYMBOL || ttype == CSS_TK_STRING ||
+             (ttype == CSS_TK_CHAR && tval[0] == ',')) {
+         if (spaceSeparated)
+            dStr_append_c(dstr, ' ');
+         dStr_append(dstr, tval);
          ret = true;
          nextToken();
+      }
+
+      if (ret) {
+         val->strVal = dStrstrip(dstr->str);
+         dStr_free(dstr, 0);
+      } else {
+         dStr_free(dstr, 1);
       }
       break;
 
