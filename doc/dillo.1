@@ -1,4 +1,4 @@
-.TH dillo 1 "August 11, 2009" "version 2.2" "USER COMMANDS"
+.TH dillo 1 "November 16, 2009" "version 2.2" "USER COMMANDS"
 .SH NAME
 dillo \- web browser
 .SH SYNOPSIS
@@ -57,16 +57,15 @@ Error in command line arguments.
 .BR "HOME " "(or " "HOMEDRIVE " "and " "HOMEPATH " "on Cygwin)"
 User's home directory.
 .TP
-.B LOGNAME
-User's login name, used to generate dpi sockets in
-.IR /tmp .
-.TP
 .B http_proxy
 URL of proxy to send HTTP traffic through.
 .SH FILES
 .TP
 .I dpid 
 Dillo plugin daemon
+.TP
+.I dpidc 
+Control program for dpid.
 .TP
 .I ~/.dillo/bm.txt 
 User bookmarks
@@ -80,8 +79,8 @@ Cookie settings
 .I ~/.dillo/dillorc 
 Configuration file.
 .TP
-.I ~/.dillo/dpi_socket_dir 
-Contains name of directory containing dpi sockets.
+.I ~/.dillo/dpid_comm_keys
+Keys used in dpi daemon communication.
 .TP
 .I ~/.dillo/dpidrc 
 Contains name of directory containing dpis, and associates
