@@ -38,7 +38,7 @@
  * Typedefs
  */
 
-typedef struct _DilloLinkImage   DilloLinkImage;
+typedef struct _DilloHtmlImage   DilloHtmlImage;
 typedef struct _DilloHtmlState   DilloHtmlState;
 
 typedef enum {
@@ -88,7 +88,7 @@ typedef enum {
  * Data Structures
  */
 
-struct _DilloLinkImage {
+struct _DilloHtmlImage {
    DilloUrl *url;
    DilloImage *image;
 };
@@ -188,7 +188,7 @@ public:  //BUG: for now everything is public
    lout::misc::SimpleVector<DilloHtmlForm*> *forms;
    lout::misc::SimpleVector<DilloHtmlInput*> *inputs_outside_form;
    lout::misc::SimpleVector<DilloUrl*> *links;
-   lout::misc::SimpleVector<DilloLinkImage*> *images;
+   lout::misc::SimpleVector<DilloHtmlImage*> *images;
    dw::ImageMapsList maps;
 
 private:

@@ -285,19 +285,20 @@ static int Html_set_new_link(DilloHtml *html, DilloUrl **url)
 }
 
 /*
- * Add a new image.
+ * Add a new image to our list.
+ * image is NULL if dillo will try to load the image immediately.
  */
-static void Html_add_new_linkimage(DilloHtml *html,
+static void Html_add_new_htmlimage(DilloHtml *html,
                                    DilloUrl **url, DilloImage *image)
 {
-   DilloLinkImage *li = dNew(DilloLinkImage, 1);
-   li->url = *url;
-   li->image = image;
+   DilloHtmlImage *hi = dNew(DilloHtmlImage, 1);
+   hi->url = *url;
+   hi->image = image;
    a_Image_ref(image);
 
-   int ni = html->images->size();
+   int n = html->images->size();
    html->images->increase();
-   html->images->set(ni, li);
+   html->images->set(n, hi);
 }
 
 /*
@@ -464,8 +465,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    forms = new misc::SimpleVector <DilloHtmlForm*> (1);
    inputs_outside_form = new misc::SimpleVector <DilloHtmlInput*> (1);
    links = new misc::SimpleVector <DilloUrl*> (64);
-   images = new misc::SimpleVector <DilloLinkImage*> (16);
-   //a_Dw_image_map_list_init(&maps);
+   images = new misc::SimpleVector <DilloHtmlImage*> (16);
 
    /* Initialize the main widget */
    initDw();
@@ -518,16 +518,14 @@ DilloHtml::~DilloHtml()
    delete (links);
 
    for (int i = 0; i < images->size(); i++) {
-      DilloLinkImage *li = images->get(i);
-      a_Url_free(li->url);
-      a_Image_unref(li->image);
-      dFree(li);
+      DilloHtmlImage *img = images->get(i);
+      a_Url_free(img->url);
+      a_Image_unref(img->image);
+      dFree(img);
    }
    delete (images);
 
    delete styleEngine;
-
-   //a_Dw_image_map_list_free(&maps);
 }
 
 /*
@@ -2074,7 +2072,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
    }
 
    /* x_img is an index to a list of {url,image} pairs.
-    * We know Html_add_new_linkimage() will use size() as its next index */
+    * We know Html_add_new_htmlimage() will use size() as its next index */
    props.set (PROPERTY_X_IMG, CSS_TYPE_INTEGER, html->images->size());
 
    html->styleEngine->setNonCssHints(&props);
@@ -2086,7 +2084,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
 
    load_now = prefs.load_images ||
               (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached);
-   Html_add_new_linkimage(html, &url, load_now ? NULL : Image);
+   Html_add_new_htmlimage(html, &url, load_now ? NULL : Image);
    if (load_now)
       Html_load_image(html->bw, url, Image);
 
