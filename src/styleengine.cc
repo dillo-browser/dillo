@@ -9,7 +9,6 @@
  * (at your option) any later version.
  */
 
-/* #include <stdio.h> */
 #include "../dlib/dlib.h"
 #include "msg.h"
 #include "prefs.h"
@@ -69,8 +68,6 @@ StyleEngine::~StyleEngine () {
  * \brief tell the styleEngine that a new html element has started.
  */
 void StyleEngine::startElement (int element) {
-//   fprintf(stderr, "===> START %d\n", element);
-
    if (stack->getRef (stack->size () - 1)->style == NULL)
       style0 ();
 
@@ -175,7 +172,6 @@ void StyleEngine::setPseudoVisited () {
  * \brief tell the styleEngine that a html element has ended.
  */
 void StyleEngine::endElement (int element) {
-//   fprintf(stderr, "===> END %d\n", element);
    assert (stack->size () > 0);
    assert (element == stack->getRef (stack->size () - 1)->element);
 
@@ -206,15 +202,13 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    Font *parentFont = stack->get (stack->size () - 2).style->font;
    char *c, *fontName;
 
-   /* Determine font first so it can be used to resolve relative lenths.
-    * \todo Things should be rearranged so that just one pass is necessary.
-    */
+   /* Determine font first so it can be used to resolve relative lenths. */
    for (int i = 0; i < props->size (); i++) {
       CssProperty *p = props->getRef (i);
 
       switch (p->name) {
          case CSS_PROPERTY_FONT_FAMILY:
-            // check font names in comma separated list
+            // Check font names in comma separated list.
             // Note, that p->value.strVal is modified, so that in future calls
             // the matching font name can be used directly.
             fontName = NULL;
@@ -569,8 +563,8 @@ Style * StyleEngine::backgroundStyle () {
 
 /**
  * \brief Create a new style object based on the previously opened / closed
- *    HTML elements and the nonCssProperties that have been set.
- *    This method is private. Call style() to get a current style object.
+ * HTML elements and the nonCssProperties that have been set.
+ * This method is private. Call style() to get a current style object.
  */
 Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    CssPropertyList props, *styleAttributeProps = NULL;
