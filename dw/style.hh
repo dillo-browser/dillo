@@ -578,8 +578,7 @@ public:
    int xHeight;
 
    static Font *create (Layout *layout, FontAttrs *attrs);
-   static Font *createFromList (Layout *layout, FontAttrs *attrs,
-                                char *defaultFamily);
+   static bool exists (Layout *layout, const char *name);
 
    inline void ref () { refCount++; }
    inline void unref () { if (--refCount == 0) delete this; }

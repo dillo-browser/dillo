@@ -322,6 +322,11 @@ public:
       return  platform->createFont (attrs, tryEverything);
    }
 
+   inline bool fontExists (const char *name)
+   {
+      return platform->fontExists (name);
+   }
+
    inline style::Color *createColor (int color)
    {
       return platform->createColor (color);

@@ -119,6 +119,8 @@ public:
    virtual style::Font *createFont (style::FontAttrs *attrs,
                                     bool tryEverything) = 0;
 
+   virtual bool fontExists (const char *name) = 0;
+
    /**
     * \brief Create a color resource for a given 0xrrggbb value.
     */

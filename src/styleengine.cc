@@ -204,7 +204,7 @@ void StyleEngine::endElement (int element) {
 void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    FontAttrs fontAttrs = *attrs->font;
    Font *parentFont = stack->get (stack->size () - 2).style->font;
-   char *c;
+   char *c, *fontName;
 
    /* Determine font first so it can be used to resolve relative lenths.
     * \todo Things should be rearranged so that just one pass is necessary.
@@ -214,24 +214,38 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
 
       switch (p->name) {
          case CSS_PROPERTY_FONT_FAMILY:
-            // \todo handle comma separated lists of font names
-            // for now simply use the first name in the list
-            if ((c = strchr(p->value.strVal, ',')))
-               *c = '\0';
-            p->value.strVal = dStrstrip(p->value.strVal);
+            // check font names in comma separated list
+            // Note, that p->value.strVal is modified, so that in future calls
+            // the matching font name can be used directly.
+            fontName = NULL;
+            while (p->value.strVal) {
+               if ((c = strchr(p->value.strVal, ',')))
+                  *c = '\0';
+               dStrstrip(p->value.strVal);
 
-            if (strcmp (p->value.strVal, "serif") == 0)
-               fontAttrs.name = prefs.font_serif;
-            else if (strcmp (p->value.strVal, "sans-serif") == 0)
-               fontAttrs.name = prefs.font_sans_serif;
-            else if (strcmp (p->value.strVal, "cursive") == 0)
-               fontAttrs.name = prefs.font_cursive;
-            else if (strcmp (p->value.strVal, "fantasy") == 0)
-               fontAttrs.name = prefs.font_fantasy;
-            else if (strcmp (p->value.strVal, "monospace") == 0)
-               fontAttrs.name = prefs.font_monospace;
-            else
-               fontAttrs.name = p->value.strVal;
+               if (strcmp (p->value.strVal, "serif") == 0)
+                  fontName = prefs.font_serif;
+               else if (strcmp (p->value.strVal, "sans-serif") == 0)
+                  fontName = prefs.font_sans_serif;
+               else if (strcmp (p->value.strVal, "cursive") == 0)
+                  fontName = prefs.font_cursive;
+               else if (strcmp (p->value.strVal, "fantasy") == 0)
+                  fontName = prefs.font_fantasy;
+               else if (strcmp (p->value.strVal, "monospace") == 0)
+                  fontName = prefs.font_monospace;
+               else if (Font::exists(layout, p->value.strVal))
+                  fontName = p->value.strVal;
+
+               if (fontName) {   // font found
+                  fontAttrs.name = fontName;
+                  break;
+               } else if (c) {   // try next from list
+                  memmove(p->value.strVal, c + 1, strlen(c + 1) + 1);
+               } else {          // no font found
+                  break;
+               }
+            }
+
             break;
          case CSS_PROPERTY_FONT_SIZE:
             if (p->type == CSS_TYPE_ENUM) {

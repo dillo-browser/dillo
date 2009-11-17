@@ -150,6 +150,7 @@ public:
 
    core::style::Font *createFont (core::style::FontAttrs *attrs,
                                       bool tryEverything);
+   bool fontExists (const char *name);
    core::style::Color *createColor (int color);
    core::style::Tooltip *createTooltip (const char *text);
 

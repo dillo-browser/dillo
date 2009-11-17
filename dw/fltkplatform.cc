@@ -83,6 +83,12 @@ FltkFont::~FltkFont ()
    fontsTable->remove (this);
 }
 
+bool
+FltkPlatform::fontExists (const char *name)
+{
+   return ::fltk::font(name) != NULL;
+}
+
 FltkFont*
 FltkFont::create (core::style::FontAttrs *attrs)
 {

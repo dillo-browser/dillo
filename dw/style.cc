@@ -296,43 +296,9 @@ Font *Font::create (Layout *layout, FontAttrs *attrs)
    return create0 (layout, attrs, false);
 }
 
-Font *Font::createFromList (Layout *layout, FontAttrs *attrs,
-                            char *defaultFamily)
+bool Font::exists (Layout *layout, const char *name)
 {
-   Font *font = NULL;
-   FontAttrs attrs2;
-   char *comma, *list, *current;
-
-   attrs2 = *attrs;
-   current = list = strdup (attrs->name);
-
-   while (current && (font == NULL)) {
-      comma = strchr (current, ',');
-      if (comma) *comma = 0;
-
-      attrs2.name = current;
-      font = create0 (layout, &attrs2, false);
-      if (font)
-         break;
-
-      if (comma) {
-         current = comma + 1;
-         while (isspace (*current)) current++;
-      } else
-         current = NULL;
-   }
-
-   delete list;
-
-   if (font == NULL) {
-      attrs2.name = defaultFamily;
-      font = create0 (layout, &attrs2, true);
-   }
-
-   if (font == NULL)
-      MSG_WARN("Could not find any font.\n");
-
-   return font;
+   return layout->fontExists (name);
 }
 
 // ----------------------------------------------------------------------
