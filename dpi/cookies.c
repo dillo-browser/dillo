@@ -1443,7 +1443,7 @@ int main(void) {
    struct sockaddr_in sin;
    socklen_t address_size;
    ClientInfo *client;
-   int tmp_fd,code;
+   int sock_fd, code;
    char *buf;
    Dsh *sh;
 
@@ -1468,14 +1468,14 @@ int main(void) {
    address_size = sizeof(struct sockaddr_in);
 
    while (1) {
-      tmp_fd = accept(STDIN_FILENO, (struct sockaddr *)&sin, &address_size);
-      if (tmp_fd == -1) {
+      sock_fd = accept(STDIN_FILENO, (struct sockaddr *)&sin, &address_size);
+      if (sock_fd == -1) {
          perror("[accept]");
          exit(1);
       }
 
       /* create the Dsh structure */
-      sh = a_Dpip_dsh_new(tmp_fd, tmp_fd, 8*1024);
+      sh = a_Dpip_dsh_new(sock_fd, sock_fd, 8*1024);
       client = dNew(ClientInfo,1);
       client->sh = sh;
       client->status = 0;

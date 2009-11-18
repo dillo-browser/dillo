@@ -1046,7 +1046,7 @@ int main(void)
 {
    struct sockaddr_in sin;
    socklen_t sin_sz;
-   int tmp_fd, c_st, st = 1;
+   int sock_fd, c_st, st = 1;
 
    /* Arrange the cleanup function for abnormal terminations */
    if (signal (SIGINT, termination_handler) == SIG_IGN)
@@ -1089,19 +1089,19 @@ int main(void)
       if (FD_ISSET(STDIN_FILENO, &read_set)) {
          /* accept the incoming connection */
          do {
-            tmp_fd = accept(STDIN_FILENO, (struct sockaddr *)&sin, &sin_sz);
-         } while (tmp_fd < 0 && errno == EINTR);
-         if (tmp_fd == -1) {
+            sock_fd = accept(STDIN_FILENO, (struct sockaddr *)&sin, &sin_sz);
+         } while (sock_fd < 0 && errno == EINTR);
+         if (sock_fd == -1) {
             if (errno == EAGAIN)
                continue;
             MSG(" accept() %s\n", dStrerror(errno));
             break;
          } else {
-            _MSG(" accept() fd=%d\n", tmp_fd);
+            _MSG(" accept() fd=%d\n", sock_fd);
             /* Set nonblocking */
-            fcntl(tmp_fd, F_SETFL, O_NONBLOCK | fcntl(tmp_fd, F_GETFL));
+            fcntl(sock_fd, F_SETFL, O_NONBLOCK | fcntl(sock_fd, F_GETFL));
             /* Create and initialize a new client */
-            File_add_client(tmp_fd);
+            File_add_client(sock_fd);
          }
          continue;
       }

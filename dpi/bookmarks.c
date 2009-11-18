@@ -254,7 +254,7 @@ DOCTYPE
 "     Modify bookmarks :: add section\n"
 "    </td>\n"
 "    <td align='right'>\n"
-"     [<a href='dpi:/bm/modify'>cancel</a>]\n"
+"     [<a href='dpi:/bm/'>cancel</a>]\n"
 "    </td>\n"
 "   </tr>\n"
 "  </table></td></tr>\n"
@@ -299,7 +299,7 @@ DOCTYPE
 "   <tr><td bgcolor='#b4b4b4'> Modify bookmarks :: update\n"
 "    </td>\n"
 "    <td align='right'>\n"
-"     [<a href='dpi:/bm/modify'>cancel</a>]\n"
+"     [<a href='dpi:/bm/'>cancel</a>]\n"
 "    </td>\n"
 "   </tr>\n"
 "  </table></td></tr>\n"
@@ -367,7 +367,7 @@ DOCTYPE
 "   <tr><td bgcolor='#b4b4b4'> Modify bookmarks :: add url\n"
 "    </td>\n"
 "    <td align='right'>\n"
-"     [<a href='dpi:/bm/modify'>cancel</a>]\n"
+"     [<a href='dpi:/bm/'>cancel</a>]\n"
 "    </td>\n"
 "   </tr>\n"
 "  </table></td></tr>\n"
@@ -1688,7 +1688,7 @@ static void termination_handler(int signum)
  */
 int main(void) {
    struct sockaddr_un spun;
-   int tmp_fd, code;
+   int sock_fd, code;
    socklen_t address_size;
    char *tok;
    Dsh *sh;
@@ -1717,14 +1717,14 @@ int main(void) {
    MSG("(v.13): accepting connections...\n");
 
    while (1) {
-      tmp_fd = accept(STDIN_FILENO, (struct sockaddr *)&spun, &address_size);
-      if (tmp_fd == -1) {
+      sock_fd = accept(STDIN_FILENO, (struct sockaddr *)&spun, &address_size);
+      if (sock_fd == -1) {
          perror("[accept]");
          exit(1);
       }
 
       /* create the Dsh structure */
-      sh = a_Dpip_dsh_new(tmp_fd, tmp_fd, 8*1024);
+      sh = a_Dpip_dsh_new(sock_fd, sock_fd, 8*1024);
 
       /* Authenticate our client... */
       if (!(tok = a_Dpip_dsh_read_token(sh, 1)) ||
