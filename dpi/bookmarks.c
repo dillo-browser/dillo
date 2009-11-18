@@ -1749,6 +1749,11 @@ int main(void) {
          }
       }
 
+      /* WORKAROUND: there's an obscure bug not delivering our bookmarks'
+       * "Add Section" page.  Not closing the completely unrelated stream
+       * in dillo's Dpi_read_comm_keys() also makes it work! */
+      while (usleep(2) < 0 && errno == EINTR) ;
+
       a_Dpip_dsh_close(sh);
       a_Dpip_dsh_free(sh);
 
