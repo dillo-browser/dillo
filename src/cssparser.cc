@@ -410,6 +410,28 @@ void CssParser::ungetChar()
    bufptr--;
 }
 
+/*
+ * Skip string str if it is found in the input buffer.
+ * If not wind back. The first char is passed as parameter c
+ * to avoid unnecessary getChar() / ungetChar() calls.
+ */
+inline bool CssParser::skipString(int c, const char *str)
+{
+   int n = 0;
+
+   while (str[n]) {
+      if (str[n] != c) {
+         while (n--)
+            ungetChar();
+         return false;
+      }
+      c = getChar();
+      n++;
+   }
+
+   return true;
+}
+
 void CssParser::nextToken()
 {
    int c, c1, d, j;
@@ -419,26 +441,16 @@ void CssParser::nextToken()
    ttype = CSS_TK_CHAR; /* init */
    spaceSeparated = false;
 
-   c = getChar();
-
    while (true) {
-      if (isspace(c)) { // ignore whitespace
+      c = getChar();
+      if (isspace(c)) {                    // ignore whitespace
          spaceSeparated = true;
-         c = getChar();
-      } else if (c == '/') { // ignore comments
-         d = getChar();
-         if (d == '*') {
+      } else if (skipString(c, "/*")) {    // ignore comments
+         do {
             c = getChar();
-            d = getChar();
-            while (d != EOF && (c != '*' || d != '/')) {
-               c = d;
-               d = getChar();
-            }
-            c = getChar();
-         } else {
-            ungetChar();
-            break;
-         }
+         } while (! skipString(c, "*/"));
+      } else if (skipString(c, "<!--")) {  // ignore XML comment markers
+      } else if (skipString(c, "-->")) { 
       } else {
          break;
       }
