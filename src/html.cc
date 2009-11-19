@@ -1886,8 +1886,8 @@ static void Html_tag_open_br(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
 {
-   /*Font font;*/
    const char *attrbuf;
+   char *fontFamily = NULL;
    int32_t color;
    CssPropertyList props;
 
@@ -1902,11 +1902,13 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
          props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR, color);
    }
 
-// \todo reenable font face handling when font selection is implemented
-//   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "face")))
-//      props.set (CSS_PROPERTY_FONT_FAMILY, CSS_TYPE_SYMBOL, attrbuf);
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "face"))) {
+      fontFamily = dStrdup(attrbuf);
+      props.set (CSS_PROPERTY_FONT_FAMILY, CSS_TYPE_SYMBOL, fontFamily);
+   }
 
    html->styleEngine->setNonCssHints (&props);
+   dFree(fontFamily);
 }
 
 /*

@@ -9,6 +9,7 @@ dillo-2.2 [??]
 +- Add support for multiple class names in CSS.
  - Fix X11 coordinate overflows with huge borders.
  - Improve CSS font parsing.
+ - Enable font face setting via <font> element.
    Patch: Johannes Hofmann
 +- Cleaned up system includes in dpid directory.
  - Fixed CustProgressBox() for systems without weak symbols.
