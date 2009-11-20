@@ -483,50 +483,46 @@ void a_Nav_home(BrowserWindow *bw)
 /*
  * This one does a_Nav_reload's job!
  */
-static void Nav_reload(BrowserWindow *bw)
+static void Nav_reload_callback(void *data)
 {
-   DilloUrl *ReqURL;
+   BrowserWindow *bw = data;
+   DilloUrl *h_url, *r_url;
+   int choice, confirmed = 1;
 
    a_Nav_cancel_expect(bw);
    if (a_Nav_stack_size(bw)) {
-      ReqURL = a_Url_dup(a_History_get_url(NAV_TOP_UIDX(bw)));
-      /* Mark URL as reload to differentiate from push */
-      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_ReloadPage);
-      /* Let's make reload be end-to-end */
-      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_E2EQuery);
-      /* This is an explicit reload, so clear the SpamSafe flag */
-      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) & ~URL_SpamSafe);
-      bw->nav_expect_url = ReqURL;
-      bw->nav_expecting = TRUE;
-      Nav_open_url(bw, ReqURL, 0);
+      h_url = a_History_get_url(NAV_TOP_UIDX(bw));
+      if (URL_FLAGS(h_url) & URL_Post) {
+         /* Attempt to repost data, let's confirm... */
+         choice = a_Dialog_choice3("Repost form data?",
+                                   "Yes", "*No", "Cancel");
+         confirmed = (choice == 0);  /* "Yes" */
+      }
+
+      if (confirmed) {
+         r_url = a_Url_dup(h_url);
+         /* Mark URL as reload to differentiate from push */
+         a_Url_set_flags(r_url, URL_FLAGS(r_url) | URL_ReloadPage);
+         /* Let's make reload be end-to-end */
+         a_Url_set_flags(r_url, URL_FLAGS(r_url) | URL_E2EQuery);
+         /* This is an explicit reload, so clear the SpamSafe flag */
+         a_Url_set_flags(r_url, URL_FLAGS(r_url) & ~URL_SpamSafe);
+         bw->nav_expect_url = r_url;
+         bw->nav_expecting = TRUE;
+         Nav_open_url(bw, r_url, 0);
+      }
    }
 }
 
 /*
  * Implement the RELOAD button functionality.
  * (Currently it only reloads the page, not its images)
+ * Note: the timeout lets CCC operations end before making the request.
  */
 void a_Nav_reload(BrowserWindow *bw)
 {
-   DilloUrl *url;
-   int choice;
-
-   a_Nav_cancel_expect(bw);
-   if (a_Nav_stack_size(bw)) {
-      url = a_History_get_url(NAV_TOP_UIDX(bw));
-      if (URL_FLAGS(url) & URL_Post) {
-         /* Attempt to repost data, let's confirm... */
-         choice = a_Dialog_choice3("Repost form data?",
-                                   "Yes", "*No", "Cancel");
-         if (choice == 0) { /* "Yes" */
-            _MSG("Nav_reload_confirmed\n");
-            Nav_reload(bw);
-         }
-
-      } else {
-         Nav_reload(bw);
-      }
-   }
+   dReturn_if_fail (bw != NULL);
+   a_Timeout_add(0.0, Nav_reload_callback, (void*)bw);
 }
 
 /*
