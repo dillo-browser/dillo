@@ -448,7 +448,7 @@ void CssParser::nextToken()
       } else if (skipString(c, "/*")) {    // ignore comments
          do {
             c = getChar();
-         } while (! skipString(c, "*/"));
+         } while (c != EOF && ! skipString(c, "*/"));
       } else if (skipString(c, "<!--")) {  // ignore XML comment markers
       } else if (skipString(c, "-->")) { 
       } else {
