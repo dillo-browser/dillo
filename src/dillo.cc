@@ -171,6 +171,24 @@ static OptID getCmdOption(const CLI_options *options, int argc, char **argv,
 }
 
 /*
+ * Tell the user if default/pref fonts can't be found.
+ */
+static void checkFont(const char *name, const char *type)
+{
+   if (::fltk::font(name) == NULL)
+      MSG_WARN("preferred %s font \"%s\" not found.\n", type, name);
+}
+
+static void checkPreferredFonts()
+{
+   checkFont(prefs.font_sans_serif, "sans-serif");
+   checkFont(prefs.font_serif, "serif");
+   checkFont(prefs.font_monospace, "monospace");
+   checkFont(prefs.font_cursive, "cursive");
+   checkFont(prefs.font_fantasy, "fantasy");
+}
+
+/*
  * Given a command line argument, build a DilloUrl for it.
  */
 static DilloUrl *makeStartUrl(char *str, bool local)
@@ -305,6 +323,7 @@ int main(int argc, char **argv)
    // WORKAROUND: sometimes the default pager triggers redraw storms
    fltk::TabGroup::default_pager(fltk::PAGER_SHRINK);
 
+   checkPreferredFonts();
    /* use preferred font for UI */
    fltk::Font *dfont = fltk::font(prefs.font_sans_serif, 0);
    if (dfont) {
