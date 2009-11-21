@@ -54,6 +54,9 @@ dillo-2.2 [??]
    Patches: corvid
 +- Support for the letter-spacing property.
    Patch: Johannes Hofmann, corvid
++- Fixed a bug in w3c_mode. In fact it wasn't working at all.
+ - Improve stylesheet menu.
+   Patches: Jeremy Henty
 
 -----------------------------------------------------------------------------
 
@@ -129,7 +132,6 @@ dillo-2.1 [Jun 15, 2009]
  - Fixed a memory leak in Klist().
  - Fix the comment for DLWin::del() (dpi/downloads.cc).
  - Removed redundant caller NULL checks already in the API.
- - Fixed a bug in w3c_mode. In fact it wasn't working at all.
    Patches: Jeremy Henty
 +- Implemented Basic authentication!
    Patch: Jeremy Henty, Jorge Arellano Cid

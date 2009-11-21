@@ -238,9 +238,10 @@ static void Menu_form_hiddens_cb(Widget *w, void *user_data)
       a_Html_form_display_hiddens(doc, v_form, !visible);
 }
 
-static void Menu_stylesheet_cb(Widget *w, void *)
+static void Menu_stylesheet_cb(Widget *w, void *vUrl)
 {
-   a_UIcmd_open_urlstr(popup_bw, w->label() + 5);
+   const DilloUrl *url = (const DilloUrl *) vUrl;
+   a_UIcmd_open_url(popup_bw, url);
 }
 
 /*
@@ -380,18 +381,34 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
       /* get rid of the old ones */
       Widget *child = stylesheets->child(0);
       dFree((char *)child->label());
+      a_Url_free((DilloUrl *)child->user_data());
       delete child;
    }
 
    if (cssUrls && cssUrls->size () > 0) {
       stylesheets->activate();
       for (j = 0; j < cssUrls->size(); j++) {
-         DilloUrl *url = cssUrls->get(j);
-         const char *action = "View ";
          /* may want ability to Load individual unloaded stylesheets as well */
-         char *label = dStrconcat(action, URL_STR(url), NULL);
+         const char *action = "View ";
+         DilloUrl *url = cssUrls->get(j);
+         const char *url_str = URL_STR(url);
+         const uint_t head_length = 30, tail_length = 40,
+                      url_len = strlen(url_str);;
+         char *label;
+
+         if (url_len > head_length + tail_length + 3) {
+            /* trim long URLs when making the label */
+            char *url_head = dStrndup(url_str, head_length);
+            const char *url_tail = url_str + (url_len - tail_length);
+            label = dStrconcat(action, url_head, "...", url_tail, NULL);
+            dFree(url_head);
+         } else {
+            label = dStrconcat(action, url_str, NULL);
+         }
+
          i = new Item(label);
          i->set_flag(RAW_LABEL);
+         i->user_data(a_Url_dup(url));
          i->callback(Menu_stylesheet_cb);
          stylesheets->add(i);
       }
