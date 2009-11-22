@@ -43,6 +43,8 @@ private:
    };
    PlainLinkReceiver plainReceiver;
 
+   void addLine(char *Buf, uint_t BufSize);
+
 public:
    BrowserWindow *bw;
 
@@ -131,6 +133,24 @@ bool DilloPlain::PlainLinkReceiver::press (Widget *widget, int, int, int, int,
    return false;
 }
 
+void DilloPlain::addLine(char *Buf, uint_t BufSize)
+{
+   uint_t remaining;
+   char *dp, *data;
+   const uint_t maxWordLen = 128; // Limit word len to avoid X11 coordinate
+                                  // overflow with extremely long lines.
+   dp = data = a_Misc_expand_tabs(Buf, BufSize);
+   remaining = strlen(data);
+   while (remaining > maxWordLen) {
+      DW2TB(dw)->addText(dp, maxWordLen, widgetStyle);
+      remaining -= maxWordLen;
+      dp += maxWordLen;
+   }
+   DW2TB(dw)->addText(dp, widgetStyle);
+   DW2TB(dw)->addParbreak(0, widgetStyle);
+   dFree(data);
+}
+
 /*
  * Here we parse plain text and put it into the page structure.
  * (This function is called by Plain_callback whenever there's new data)
@@ -138,7 +158,6 @@ bool DilloPlain::PlainLinkReceiver::press (Widget *widget, int, int, int, int,
 void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
 {
    char *Start;
-   char *data;
    uint_t i, len, MaxBytes;
 
    _MSG("DilloPlain::write Eof=%d\n", Eof);
@@ -156,10 +175,7 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
          }
          break;
       case ST_Eol:
-         data = a_Misc_expand_tabs(Start + i - len, len);
-         DW2TB(dw)->addText(data, widgetStyle);
-         DW2TB(dw)->addParbreak(0, widgetStyle);
-         dFree(data);
+         addLine(Start + i - len, len);
          if (Start[i] == '\r' && Start[i + 1] == '\n') ++i;
          if (i < MaxBytes) ++i;
          state = ST_SeekingEol;
@@ -169,10 +185,7 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
    }
    Start_Ofs += i - len;
    if (Eof && len) {
-      data = a_Misc_expand_tabs(Start + i - len, len);
-      DW2TB(dw)->addText(data, widgetStyle);
-      DW2TB(dw)->addParbreak(0, widgetStyle);
-      dFree(data);
+      addLine(Start + i - len, len);
       Start_Ofs += len;
    }
 

@@ -11,6 +11,7 @@ dillo-2.2 [??]
  - Improve CSS font parsing.
  - Enable font face setting via <font> element.
  - Ignore XML comment markers in CSS.
+ - Split up long lines in plain.cc to avoid X11 coordinate overflows.
    Patch: Johannes Hofmann
 +- Cleaned up system includes in dpid directory.
  - Fixed CustProgressBox() for systems without weak symbols.
