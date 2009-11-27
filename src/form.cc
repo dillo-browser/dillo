@@ -22,7 +22,6 @@
 #include "misc.h"
 #include "msg.h"
 #include "prefs.h"
-#include "nav.h"
 #include "uicmd.hh"
 
 using namespace lout;
