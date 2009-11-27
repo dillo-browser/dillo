@@ -947,10 +947,10 @@ void DilloHtmlForm::submit(DilloHtmlInput *active_input, EventButton *event)
             if (event->state == SHIFT_MASK) focus = !focus;
             a_UIcmd_open_url_nt(html->bw, url, focus);
          } else {
-            a_Nav_push_nw(html->bw, url);
+            a_UIcmd_open_url_nw(html->bw, url);
          }
       } else {
-         a_Nav_push(html->bw, url);
+         a_UIcmd_open_url(html->bw, url);
       }
       a_Url_free(url);
    }

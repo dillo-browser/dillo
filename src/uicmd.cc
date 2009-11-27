@@ -472,6 +472,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    win->callback(win_cb, new_bw);
 
+   new_ui->focus_location();
+
    return new_bw;
 }
 
@@ -617,12 +619,31 @@ void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
    a_Nav_push(bw, url);
 }
 
+static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
+{
+   /* When opening a new BrowserWindow (tab or real window) we focus
+    * Location if we don't yet have an URL, main otherwise.
+    */
+   if (url) {
+      a_Nav_push(new_bw, url);
+      BW2UI(new_bw)->focus_main();
+   } else {
+      BW2UI(new_bw)->focus_location();
+   }       
+}
+
 /*
- * Open a new URL in the given browser window
+ * Open a new URL in a new browser window
  */
 void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
-{
-   a_Nav_push_nw(bw, url);
+{  
+   int w, h;
+   BrowserWindow *new_bw;
+
+   a_UIcmd_get_wh(bw, &w, &h);
+   new_bw = a_UIcmd_browser_window_new(w, h, 0, bw);
+
+   UIcmd_open_url_nbw(new_bw, url);
 }
 
 /*
@@ -631,12 +652,11 @@ void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
 void a_UIcmd_open_url_nt(void *vbw, const DilloUrl *url, int focus)
 {
    BrowserWindow *new_bw = UIcmd_tab_new(vbw);
-   if (url)
-      a_Nav_push(new_bw, url);
-   if (focus) {
+
+   if (focus)
       BW2UI(new_bw)->tabs()->selected_child(BW2UI(new_bw));
-      BW2UI(new_bw)->tabs()->selected_child()->take_focus();
-   }
+
+   UIcmd_open_url_nbw(new_bw, url);
 }
 
 /*
