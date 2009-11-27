@@ -432,19 +432,6 @@ void a_Nav_redirection0(BrowserWindow *bw, const DilloUrl *new_url)
 }
 
 /*
- * Same as a_Nav_push() but in a new window.
- */
-void a_Nav_push_nw(BrowserWindow *bw, const DilloUrl *url)
-{
-   int w, h;
-   BrowserWindow *newbw;
-
-   a_UIcmd_get_wh(bw, &w, &h);
-   newbw = a_UIcmd_browser_window_new(w, h, 0, bw);
-   a_Nav_push(newbw, url);
-}
-
-/*
  * Send the browser back to previous page
  */
 void a_Nav_back(BrowserWindow *bw)
@@ -533,7 +520,7 @@ void a_Nav_jump(BrowserWindow *bw, int offset, int new_bw)
    int idx = a_Nav_stack_ptr(bw) + offset;
 
    if (new_bw) {
-      a_Nav_push_nw(bw, a_History_get_url(NAV_UIDX(bw,idx)));
+      a_UIcmd_open_url_nw(bw, a_History_get_url(NAV_UIDX(bw,idx)));
    } else {
       a_Nav_cancel_expect(bw);
       Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), offset);
