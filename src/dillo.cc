@@ -37,7 +37,6 @@
 #include "keys.hh"
 #include "bw.h"
 #include "misc.h"
-#include "nav.h"
 #include "history.h"
 
 #include "dns.h"
@@ -349,7 +348,7 @@ int main(int argc, char **argv)
 
    if (idx == argc) {
       /* No URLs/files on cmdline. Send startup screen */
-      a_Nav_push(bw, prefs.start_page);
+      a_UIcmd_open_url(bw, prefs.start_page);
    } else {
       for (int i = idx; i < argc; i++) {
          DilloUrl *start_url = makeStartUrl(argv[i], local);
@@ -363,7 +362,7 @@ int main(int argc, char **argv)
                a_UIcmd_open_url_nw(bw, start_url);
             }
          } else {
-            a_Nav_push(bw, start_url);
+            a_UIcmd_open_url(bw, start_url);
          }
          a_Url_free(start_url);
       }
