@@ -135,20 +135,16 @@ bool DilloPlain::PlainLinkReceiver::press (Widget *widget, int, int, int, int,
 
 void DilloPlain::addLine(char *Buf, uint_t BufSize)
 {
-   uint_t remaining;
-   char *dp, *data;
-   const uint_t maxWordLen = 128; // Limit word len to avoid X11 coordinate
-                                  // overflow with extremely long lines.
-   dp = data = a_Misc_expand_tabs(Buf, BufSize);
-   remaining = strlen(data);
-   while (remaining > maxWordLen) {
-      DW2TB(dw)->addText(dp, maxWordLen, widgetStyle);
-      remaining -= maxWordLen;
-      dp += maxWordLen;
-   }
-   DW2TB(dw)->addText(dp, widgetStyle);
+   int len;
+   char buf[128];
+   char *end = Buf + BufSize;
+
+   // Limit word len to avoid X11 coordinate
+   // overflow with extremely long lines.
+   while ((len = a_Misc_expand_tabs(&Buf, end, buf, sizeof(buf))))
+      DW2TB(dw)->addText(buf, len, widgetStyle);
+
    DW2TB(dw)->addParbreak(0, widgetStyle);
-   dFree(data);
 }
 
 /*

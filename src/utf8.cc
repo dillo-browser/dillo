@@ -92,3 +92,11 @@ bool_t a_Utf8_ideographic(const char *s, const char *end, int *len)
    }
    return ret;
 }
+
+bool_t a_Utf8_combining_char(int unicode)
+{
+   return ((unicode >= 0x0300 && unicode <= 0x036f) ||
+           (unicode >= 0x1dc0 && unicode <= 0x1dff) ||
+           (unicode >= 0x20d0 && unicode <= 0x20ff) ||
+           (unicode >= 0xfe20 && unicode <= 0xfe2f));
+}

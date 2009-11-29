@@ -14,11 +14,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "utf8.hh"
 #include "msg.h"
 #include "misc.h"
-#include "utf8.hh"
 
 /*
  * Escape characters as %XX sequences.
@@ -51,38 +51,50 @@ char *a_Misc_escape_chars(const char *str, const char *esc_set)
 /*
  * Takes a string and converts any tabs to spaces.
  */
-char *a_Misc_expand_tabs(const char *str, int len)
+int
+a_Misc_expand_tabs(char **start, char *end, char *buf, int buflen)
 {
-   int i = 0, j, pos = 0, old_pos, char_len;
+   int j, pos = 0, written = 0, old_pos, char_len;
    uint_t code;
-   char *val;
+   static const int combining_char_space = 32;
 
-   if (memchr(str, '\t', len) == NULL) {
-      val = dStrndup(str, len);
-   } else {
-      Dstr *New = dStr_new("");
+   while (*start < end && written < buflen - TAB_SIZE - combining_char_space) {
+      code = a_Utf8_decode(*start, end, &char_len);
 
-      while (i < len) {
-         code = a_Utf8_decode(&str[i], str + len, &char_len);
-
-         if (code == '\t') {
-            /* Fill with whitespaces until the next tab. */
-            old_pos = pos;
-            pos += TAB_SIZE - (pos % TAB_SIZE);
-            for (j = old_pos; j < pos; j++)
-               dStr_append_c(New, ' ');
-         } else {
-            dStr_append_l(New, &str[i], char_len);
-            pos++;
-         }
-
-         i += char_len;
+      if (code == '\t') {
+         /* Fill with whitespaces until the next tab. */
+         old_pos = pos;
+         pos += TAB_SIZE - (pos % TAB_SIZE);
+         for (j = old_pos; j < pos; j++)
+            buf[written++] = ' ';
+      } else {
+         assert(char_len <= 4);
+         for (j = 0; j < char_len; j++)
+            buf[written++] = (*start)[j];
+         pos++;
       }
 
-      val = New->str;
-      dStr_free(New, FALSE);
+      *start += char_len;
    }
-   return val;
+
+   /* If following chars are combining chars (e.g. accents) add them to the
+    * buffer. We have reserved combining_char_space bytes for this.
+    * If there should be more combining chars, we split nevertheless.
+    */
+   while (*start < end && written < buflen - 4) {
+      code = a_Utf8_decode(*start, end, &char_len);
+
+      if (! a_Utf8_combining_char(code))
+         break;
+
+      assert(char_len <= 4);
+      for (j = 0; j < char_len; j++)
+         buf[written++] = (*start)[j];
+    
+      *start += char_len;
+   }
+
+   return written;
 }
 
 /* TODO: could use dStr ADT! */
