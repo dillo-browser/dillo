@@ -68,7 +68,7 @@ public:
  * <h3>Signals</h3>
  *
  * For image maps, dw::Image uses the signals defined in
- * dw::core::Widget::LinkReceiver. For client side image maps, -1 is
+ * dw::core::Layout::LinkReceiver. For client side image maps, -1 is
  * passed for the coordinates, for server side image maps, the respective
  * coordinates are used. See section "Image Maps" below.
  *
@@ -89,7 +89,7 @@ public:
  *
  * dw::ImageMapsList::addShapeToCurrentMap adds a shape to the current
  * map. The \em link argument is a number, which is later passed to
- * the dw::core::Widget::LinkReceiver.
+ * the dw::core::Layout::LinkReceiver.
  *
  * This map list is then, together with the key for the image, passed to
  * dw::Image::setUseMap. For HTML, a URL with the value of the "ismap"
@@ -109,7 +109,7 @@ public:
  * To use images for server side image maps, you must call
  * dw::Image::setIsMap, and the dw::Image::style must contain a valid link
  * (dw::core::style::Style::x_link). After this, motions and clicks are
- * delegated to dw::core::Widget::LinkReceiver.
+ * delegated to dw::core::Layout::LinkReceiver.
  *
  * \sa\ref dw-images-and-backgrounds
  */

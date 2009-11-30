@@ -13,7 +13,7 @@ namespace dw {
  * <h3>Signals</h3>
  *
  * dw::Textblock uses the signals defined in
- * dw::core::Widget::LinkReceiver, related to links. The coordinates are
+ * dw::core::Layout::LinkReceiver, related to links. The coordinates are
  * always -1.
  *
  *

@@ -40,7 +40,7 @@ namespace core {
  *                                          within the iterator,
  * <tr><td>int linkNo                   <td>if this item is associated with a
  *                                          link, its number (see
- *                                          dw::core::Widget::LinkReceiver),
+ *                                          dw::core::Layout::LinkReceiver),
  *                                          otherwise -1
  * <tr><td>dw::core::EventButton *event <td>the event itself; only the button
  *                                          is used
@@ -69,12 +69,12 @@ namespace core {
  *
  * The return value is the same as in DwWidget event handling methods.
  * I.e., in most cases, they should simply return it. The events
- * dw::core::Widget::LinkReceiver::press,
- * dw::core::Widget::LinkReceiver::release and
- * dw::core::Widget::LinkReceiver::click (but not
- * dw::core::Widget::LinkReceiver::enter) are emitted by these methods, so
+ * dw::core::Layout::LinkReceiver::press,
+ * dw::core::Layout::LinkReceiver::release and
+ * dw::core::Layout::LinkReceiver::click (but not
+ * dw::core::Layout::LinkReceiver::enter) are emitted by these methods, so
  * that widgets which let dw::core::SelectionState handle links, should only
- * emit dw::core::Widget::LinkReceiver::enter for themselves.
+ * emit dw::core::Layout::LinkReceiver::enter for themselves.
  *
  * <h3>Selection State</h3>
  *
