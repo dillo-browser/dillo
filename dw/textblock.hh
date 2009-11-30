@@ -83,18 +83,18 @@ namespace dw {
  *
  * <h3>Some Internals</h3>
  *
- * There are two lists, dw::Textblock::words and
- * dw::Textblock::lines. The word list is quite static; only new words
- * may be added. A word is either text, a widget, a break or an
- * anchor. Anchors are stored in the text, because it may be necessary to
- * correct the scroller positions at rewrapping.
+ * There are 3 lists, dw::Textblock::words, dw::Textblock::lines, and
+ * dw::Textblock::anchors. The word list is quite static; only new words
+ * may be added. A word is either text, a widget, or a break.
  *
- * Lines refer to the word list (first and last), they are completely
+ * Lines refer to the word list (first and last). They are completely
  * redundant, i.e., they can be rebuilt from the words. Lines can be
  * rewrapped either completely or partially (see "Incremental Resizing"
  * below). For the latter purpose, several values are accumulated in the
  * lines. See dw::Textblock::Line for details.
  *
+ * Anchors associate the anchor name with the index of the next word at
+ * the point of the anchor.
  *
  * <h4>Incremental Resizing</h4>
  *
