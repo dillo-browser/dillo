@@ -232,7 +232,7 @@ and dw::core::Widget::leaveNotifyImpl are called.
 <h3>Signals</h3>
 
 If a caller outside of the widget is interested in these events, he
-can connect a dw::core::Widget::EventReceiver. For those events with a
+can connect a dw::core::Layoutt::LinkReceiver. For those events with a
 boolean return value, the results of the signal emission is regarded,
 i.e. the delegation of an event to the parent of the widget can be
 stopped by a signal receiver returning true, even if the widget method

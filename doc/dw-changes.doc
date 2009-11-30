@@ -91,7 +91,7 @@ The old documentation has been moved to:
 <tr><td>remarks on specific widgets  <td>respective source files: dw::Bullet,
                                       dw::core::ui::Embed
 <tr><td rowspan="2">DwImage.txt
-    <td>signals                   <td>dw::core::Widget::LinkReceiver
+    <td>signals                   <td>dw::core::Layout::LinkReceiver
 <tr><td>rest                      <td>dw::Image,
                                       \ref dw-images-and-backgrounds
 <tr><td colspan="2">Imgbuf.txt    <td>dw::core::Imgbuf,
