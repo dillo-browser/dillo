@@ -179,8 +179,7 @@ struct Content
       END               = 1 << 1,
       TEXT              = 1 << 2,
       WIDGET            = 1 << 3,
-      ANCHOR            = 1 << 4,
-      BREAK             = 1 << 5,
+      BREAK             = 1 << 4,
       ALL               = 0xff,
       REAL_CONTENT      = 0xff ^ (START | END),
       SELECTION_CONTENT = TEXT | WIDGET | BREAK
@@ -193,7 +192,6 @@ struct Content
    union {
       const char *text;
       Widget *widget;
-      char *anchor;
       int breakSpace;
    };
 };

@@ -58,6 +58,7 @@ Textblock::Textblock (bool limitTextWidth)
     */
    lines = new misc::SimpleVector <Line> (1);
    words = new misc::SimpleVector <Word> (1);
+   anchors = new misc::SimpleVector <Anchor> (1);
 
    //DBG_OBJ_SET_NUM(page, "num_lines", num_lines);
 
@@ -99,16 +100,19 @@ Textblock::~Textblock ()
       Word *word = words->getRef (i);
       if (word->content.type == core::Content::WIDGET)
          delete word->content.widget;
-      else if (word->content.type == core::Content::ANCHOR)
-         /* This also frees the names (see removeAnchor() and related). */
-         removeAnchor(word->content.anchor);
-
       word->style->unref ();
       word->spaceStyle->unref ();
    }
 
+   for (int i = 0; i < anchors->size(); i++) {
+      Anchor *anchor = anchors->getRef (i);
+      /* This also frees the names (see removeAnchor() and related). */
+      removeAnchor(anchor->name);
+   }
+
    delete lines;
    delete words;
+   delete anchors;
 
    /* Make sure we don't own widgets anymore. Necessary before call of
       parent class destructor. (???) */
@@ -407,11 +411,6 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             word->content.widget->sizeAllocate (&childAllocation);
             break;
 
-         case core::Content::ANCHOR:
-            changeAnchor (word->content.anchor,
-                          lineYOffsetCanvasAllocation (line, allocation));
-            break;
-
          default:
             // make compiler happy
             break;
@@ -419,6 +418,19 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
          xCursor += (word->size.width + word->effSpace);
       }
+   }
+
+   for (int i = 0; i < anchors->size(); i++) {
+      Anchor *anchor = anchors->getRef(i);
+      int y;
+
+      if (anchor->wordIndex >= words->size()) {
+         y = allocation->y + allocation->ascent + allocation->descent;
+      } else {
+         Line *line = lines->getRef(findLineOfWord (anchor->wordIndex));
+         y = lineYOffsetCanvasAllocation (line, allocation);
+      }
+      changeAnchor (anchor->name, y);
    }
 }
 
@@ -1649,7 +1661,6 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
  */
 bool Textblock::addAnchor (const char *name, core::style::Style *style)
 {
-   Word *word;
    char *copy;
    int y;
 
@@ -1671,10 +1682,12 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
        */
       return false;
    else {
-      word = addWord (0, 0, 0, style);
-      word->content.type = core::Content::ANCHOR;
-      word->content.anchor = copy;
-      wordWrap (words->size () - 1);
+      Anchor *anchor;
+
+      anchors->increase();
+      anchor = anchors->getRef(anchors->size() - 1);
+      anchor->name = copy;
+      anchor->wordIndex = words->size();
       return true;
    }
 }

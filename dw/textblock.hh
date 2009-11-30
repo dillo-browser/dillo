@@ -172,6 +172,12 @@ protected:
                                          later set by a_Dw_page_add_space */
    };
 
+   struct Anchor
+   {
+      char *name;
+      int wordIndex;
+   };
+
    class TextblockIterator: public core::Iterator
    {
    private:
@@ -239,6 +245,7 @@ protected:
 
    lout::misc::SimpleVector <Line> *lines;
    lout::misc::SimpleVector <Word> *words;
+   lout::misc::SimpleVector <Anchor> *anchors;
 
    struct {int index, nChar;}
       hlStart[core::HIGHLIGHT_NUM_LAYERS], hlEnd[core::HIGHLIGHT_NUM_LAYERS];
