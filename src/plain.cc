@@ -139,10 +139,15 @@ void DilloPlain::addLine(char *Buf, uint_t BufSize)
    char buf[128];
    char *end = Buf + BufSize;
 
-   // Limit word len to avoid X11 coordinate
-   // overflow with extremely long lines.
-   while ((len = a_Misc_expand_tabs(&Buf, end, buf, sizeof(buf))))
-      DW2TB(dw)->addText(buf, len, widgetStyle);
+   if (BufSize > 0) {
+      // Limit word length to avoid X11 coordinate
+      // overflow with extremely long lines.
+      while ((len = a_Misc_expand_tabs(&Buf, end, buf, sizeof(buf))))
+         DW2TB(dw)->addText(buf, len, widgetStyle);
+   } else {
+      // Add dummy word for empty lines - otherwise the parbreak is ignored.
+      DW2TB(dw)->addText("", 0, widgetStyle);
+   }
 
    DW2TB(dw)->addParbreak(0, widgetStyle);
 }
