@@ -120,6 +120,7 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
 
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
