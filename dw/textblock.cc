@@ -134,7 +134,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
       Line *lastLine = lines->getRef (lines->size () - 1);
       requisition->width =
          misc::max (lastLine->maxLineWidth, lastLineWidth);
-      /* Note: the break_space of the last line is ignored, so breaks
+      /* Note: the breakSpace of the last line is ignored, so breaks
          at the end of a textblock are not visible. */
       requisition->ascent = lines->getRef(0)->ascent;
       requisition->descent = lastLine->top
@@ -1447,9 +1447,9 @@ int Textblock::findLineIndex (int y)
 
    /*
     * This new routine returns the line number between (top) and
-    * (top + size.ascent + size.descent + break_space): the space
+    * (top + size.ascent + size.descent + breakSpace): the space
     * _below_ the line is considered part of the line.  Old routine
-    * returned line number between (top - previous_line->break_space)
+    * returned line number between (top - previous_line->breakSpace)
     * and (top + size.ascent + size.descent): the space _above_ the
     * line was considered part of the line.  This is important for
     * Dw_page_find_link() --EG
@@ -1741,7 +1741,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
          way that the space is in any case visible. */
       Widget *widget;
 
-      /* Find the widget where to adjust the break_space. */
+      /* Find the widget where to adjust the breakSpace. */
       for (widget = this;
            widget->getParent() &&
               widget->getParent()->instanceOf (Textblock::CLASS_ID);
