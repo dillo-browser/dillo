@@ -59,7 +59,7 @@ static const char *const Css_cursor_enum_vals[] = {
 };
 
 static const char *const Css_display_enum_vals[DISPLAY_LAST + 1] = {
-   "block", "inline", "list-item", "table", "table-row-group",
+   "block", "inline", "list-item", "none", "table", "table-row-group",
    "table-header-group", "table-footer-group", "table-row",
    "table-cell", NULL
 };
