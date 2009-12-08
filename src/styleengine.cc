@@ -414,6 +414,9 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CSS_PROPERTY_DISPLAY:
             attrs->display = (DisplayType) p->value.intVal;
             break;
+         case CSS_PROPERTY_LIST_STYLE_POSITION:
+            attrs->listStylePosition = (ListStylePosition) p->value.intVal;
+            break;
          case CSS_PROPERTY_LIST_STYLE_TYPE:
             attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;

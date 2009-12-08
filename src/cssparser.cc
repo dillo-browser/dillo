@@ -81,6 +81,10 @@ static const char *const Css_letter_spacing_enum_vals[] = {
    "normal", NULL
 };
 
+static const char *const Css_list_style_position_enum_vals[] = {
+   "inside", "outside", NULL
+};
+
 static const char *const Css_list_style_type_enum_vals[] = {
    "disc", "circle", "square", "decimal", "decimal-leading-zero",
    "lower-roman", "upper-roman", "lower-greek", "lower-alpha",
@@ -157,7 +161,8 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
     Css_letter_spacing_enum_vals},
    {"line-height", {CSS_TYPE_UNUSED}, NULL},
    {"list-style-image", {CSS_TYPE_UNUSED}, NULL},
-   {"list-style-position", {CSS_TYPE_UNUSED}, NULL},
+   {"list-style-position", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_list_style_position_enum_vals},
    {"list-style-type", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_list_style_type_enum_vals},
    {"margin-bottom", {CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED}, NULL},

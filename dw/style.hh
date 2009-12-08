@@ -256,6 +256,10 @@ enum DisplayType {
    DISPLAY_LAST
 };
 
+enum ListStylePosition {
+   LIST_STYLE_POSITION_INSIDE,
+   LIST_STYLE_POSITION_OUTSIDE
+};
 
 enum ListStyleType {
    LIST_STYLE_TYPE_DISC,
@@ -427,6 +431,7 @@ public:
 
    DisplayType display;
    WhiteSpace whiteSpace;
+   ListStylePosition listStylePosition;
    ListStyleType listStyleType;
    Cursor cursor;
 

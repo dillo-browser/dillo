@@ -43,7 +43,8 @@ void ListItem::initWithWidget (core::Widget *widget,
    hasListitemValue = true;
    addWidget (widget, style);
    addSpace (style);
-   updateValue ();
+   if (style->listStylePosition == core::style::LIST_STYLE_POSITION_OUTSIDE)
+      updateValue ();
 }
 
 void ListItem::initWithText (const char *text, core::style::Style *style)
@@ -51,7 +52,8 @@ void ListItem::initWithText (const char *text, core::style::Style *style)
    hasListitemValue = true;
    addText (text, style);
    addSpace (style);
-   updateValue ();
+   if (style->listStylePosition == core::style::LIST_STYLE_POSITION_OUTSIDE)
+      updateValue ();
 }
 
 int ListItem::getValue ()

@@ -41,6 +41,7 @@ void StyleAttrs::initValues ()
    textDecoration = TEXT_DECORATION_NONE;
    textAlign = TEXT_ALIGN_LEFT;
    textAlignChar = '.';
+   listStylePosition = LIST_STYLE_POSITION_OUTSIDE;
    listStyleType = LIST_STYLE_TYPE_DISC;
    valign = VALIGN_BASELINE;
    backgroundColor = NULL;
@@ -131,6 +132,7 @@ bool StyleAttrs::equals (object::Object *other) {
        borderStyle.left == otherAttrs->borderStyle.left &&
        display == otherAttrs->display &&
        whiteSpace == otherAttrs->whiteSpace &&
+       listStylePosition == otherAttrs->listStylePosition &&
        listStyleType == otherAttrs->listStyleType &&
        x_link == otherAttrs->x_link &&
        x_img == otherAttrs->x_img &&
@@ -162,6 +164,7 @@ int StyleAttrs::hashValue () {
       borderStyle.left +
       display +
       whiteSpace +
+      listStylePosition +
       listStyleType +
       x_link +
       x_img +
@@ -240,6 +243,7 @@ void Style::copyAttrs (StyleAttrs *attrs)
    borderStyle = attrs->borderStyle;
    display = attrs->display;
    whiteSpace = attrs->whiteSpace;
+   listStylePosition = attrs->listStylePosition;
    listStyleType = attrs->listStyleType;
    cursor = attrs->cursor;
    x_link = attrs->x_link;
