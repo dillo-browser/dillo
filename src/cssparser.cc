@@ -58,7 +58,7 @@ static const char *const Css_cursor_enum_vals[] = {
    "w-resize", "text", "wait", "help", NULL
 };
 
-static const char *const Css_display_enum_vals[DISPLAY_LAST + 1] = {
+static const char *const Css_display_enum_vals[] = {
    "block", "inline", "list-item", "none", "table", "table-row-group",
    "table-header-group", "table-footer-group", "table-row",
    "table-cell", NULL
