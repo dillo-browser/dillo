@@ -185,7 +185,7 @@ char *get_dpi_dir(char *dpidrc)
    if (!rcline) {
       ERRMSG("dpi_dir", "Failed to find a dpi_dir entry in dpidrc", 0);
       MSG_ERR("Put your dillo plugins path in %s\n", dpidrc);
-      MSG_ERR("eg. dpi_dir=/usr/local/lib/dillo/dpi ");
+      MSG_ERR("e.g. dpi_dir=/usr/local/lib/dillo/dpi\n");
       MSG_ERR("with no leading spaces.\n");
       value = NULL;
    } else {
