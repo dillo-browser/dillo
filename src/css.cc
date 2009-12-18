@@ -549,7 +549,7 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
  */
 void CssContext::buildUserAgentStyle () {
    const char *cssBuf =
-     "body  {background-color: #dcd1ba; font-family: sans-serif; color: black;"
+     "body  {background-color: #e0e0a3; font-family: sans-serif; color: black;"
      "       margin: 5px}"
      "big {font-size: 1.17em}"
      "blockquote, dd {margin-left: 40px; margin-right: 40px}"
