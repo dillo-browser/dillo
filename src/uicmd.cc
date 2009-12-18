@@ -602,7 +602,7 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
       dFree(new_urlstr);
 
       if (url) {
-         a_Nav_push(bw, url);
+         a_UIcmd_open_url(bw, url);
          a_Url_free(url);
       }
    }
@@ -617,6 +617,7 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 {
    a_Nav_push(bw, url);
+   a_UIcmd_focus_main_area(bw);
 }
 
 static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
