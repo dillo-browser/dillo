@@ -42,6 +42,8 @@ class StyleEngine : public Doctree {
                          dw::core::style::Font *font, int percentageBase);
       bool computeLength (dw::core::style::Length *dest, CssLength value,
                           dw::core::style::Font *font);
+      void computeBorderWidth (int *dest, CssProperty *p,
+                               dw::core::style::Font *font);
 
    public:
       StyleEngine (dw::core::Layout *layout);

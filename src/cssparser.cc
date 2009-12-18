@@ -52,6 +52,10 @@ static const char *const Css_border_style_enum_vals[] = {
    "ridge", "inset", "outset", NULL
 };
 
+static const char *const Css_border_width_enum_vals[] = {
+   "thin", "medium", "thick", NULL
+};
+
 static const char *const Css_cursor_enum_vals[] = {
    "crosshair", "default", "pointer", "move", "e-resize", "ne-resize",
    "nw-resize", "n-resize", "se-resize", "sw-resize", "s-resize",
@@ -118,21 +122,25 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"border-bottom-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
    {"border-bottom-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
-   {"border-bottom-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"border-bottom-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
+    Css_border_width_enum_vals},
    {"border-collapse", {CSS_TYPE_UNUSED}, NULL},
    {"border-left-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
    {"border-left-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
-   {"border-left-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"border-left-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
+    Css_border_width_enum_vals},
    {"border-right-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
    {"border-right-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
-   {"border-right-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"border-rigth-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
+    Css_border_width_enum_vals},
    {"border-spacing", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"border-top-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
    {"border-top-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
-   {"border-top-width", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
+   {"border-top-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
+    Css_border_width_enum_vals},
    {"bottom", {CSS_TYPE_UNUSED}, NULL},
    {"caption-side", {CSS_TYPE_UNUSED}, NULL},
    {"clear", {CSS_TYPE_UNUSED}, NULL},

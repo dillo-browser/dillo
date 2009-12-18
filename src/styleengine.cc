@@ -386,20 +386,16 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             attrs->borderStyle.top = (BorderStyle) p->value.intVal;
             break;
          case CSS_PROPERTY_BORDER_BOTTOM_WIDTH:
-            computeValue (&attrs->borderWidth.bottom, p->value.intVal,
-                          attrs->font);
+            computeBorderWidth (&attrs->borderWidth.bottom, p, attrs->font);
             break;
          case CSS_PROPERTY_BORDER_LEFT_WIDTH:
-            computeValue (&attrs->borderWidth.left, p->value.intVal,
-                          attrs->font);
+            computeBorderWidth (&attrs->borderWidth.left, p, attrs->font);
             break;
          case CSS_PROPERTY_BORDER_RIGHT_WIDTH:
-            computeValue (&attrs->borderWidth.right, p->value.intVal,
-                          attrs->font);
+            computeBorderWidth (&attrs->borderWidth.right, p, attrs->font);
             break;
          case CSS_PROPERTY_BORDER_TOP_WIDTH:
-            computeValue (&attrs->borderWidth.top, p->value.intVal,
-                          attrs->font);
+            computeBorderWidth (&attrs->borderWidth.top, p, attrs->font);
             break;
          case CSS_PROPERTY_BORDER_SPACING:
             computeValue (&attrs->hBorderSpacing, p->value.intVal,attrs->font);
@@ -550,6 +546,27 @@ bool StyleEngine::computeLength (dw::core::style::Length *dest,
    }
 
    return false;
+}
+
+void StyleEngine::computeBorderWidth (int *dest, CssProperty *p,
+                                      dw::core::style::Font *font) {
+   if (p->type == CSS_TYPE_ENUM) {
+      switch (p->value.intVal) {
+         case CSS_BORDER_WIDTH_THIN:
+            *dest = 1;
+            break;
+         case CSS_BORDER_WIDTH_MEDIUM:
+            *dest = 2;
+            break;
+         case CSS_BORDER_WIDTH_THICK:
+            *dest = 3;
+            break;
+         default:
+            assert(false);
+      }
+   } else {
+      computeValue (dest, p->value.intVal, font);
+   }
 }
 
 /**
