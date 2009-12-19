@@ -626,9 +626,10 @@ void CssParser::nextToken()
 }
 
 
-bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType * type)
+bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
 {
    int i, err = 1;
+   CssValueType savedType = *type;
 
    for (int j = 0; Css_property_info[prop].type[j] != CSS_TYPE_UNUSED; j++) {
       *type = Css_property_info[prop].type[j];
@@ -706,7 +707,7 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType * type)
       }
    }
 
-   *type = CSS_TYPE_UNUSED;
+   *type = savedType;
    return false;
 }
 
@@ -1010,6 +1011,7 @@ void CssParser::parseDeclaration(CssPropertyList * props,
 
    CssPropertyName prop;
    CssPropertyValue val, dir_vals[4];
+   CssValueType  dir_types[4];
    bool found, weight;
    int sh_index, i, j, n;
    int dir_set[4][4] = {
@@ -1095,6 +1097,7 @@ void CssParser::parseDeclaration(CssPropertyList * props,
                          parseValue(Css_shorthand_info[sh_index]
                                     .properties[0], type, &val)) {
                         dir_vals[n] = val;
+                        dir_types[n] = type;
                         n++;
                      } else
                         break;
@@ -1106,13 +1109,12 @@ void CssParser::parseDeclaration(CssPropertyList * props,
                         if (weight && importantProps)
                            importantProps->set(Css_shorthand_info[sh_index]
                                                .properties[i],
-                                               type,
-                                               dir_vals[dir_set[n - 1]
-                                                        [i]]);
+                                               dir_types[dir_set[n - 1][i]],
+                                               dir_vals[dir_set[n - 1][i]]);
                         else
                            props->set(Css_shorthand_info[sh_index]
                                       .properties[i],
-                                      type,
+                                      dir_types[dir_set[n - 1][i]],
                                       dir_vals[dir_set[n - 1][i]]);
                   } else
                      MSG_CSS("no values for shorthand property '%s'\n",
