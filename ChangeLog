@@ -14,6 +14,8 @@ dillo-2.2 [??]
  - Split up long lines in plain.cc to avoid X11 coordinate overflows.
  - Fix user agent style for nested <ul>.
  - Add support for CSS property list-style-position.
+ - Support border-width: thin | medium | thick.
+ - Fix CSS_SHORTHAND_DIRECTIONS case in CssParser.
    Patch: Johannes Hofmann
 +- Cleaned up system includes in dpid directory.
  - Fixed CustProgressBox() for systems without weak symbols.
