@@ -106,7 +106,8 @@ static const char *const Css_text_decoration_enum_vals[] = {
 };
 
 static const char *const Css_vertical_align_vals[] = {
-   "top", "bottom", "middle", "baseline", "sub", "super", NULL
+   "top", "bottom", "middle", "baseline", "sub", "super", "text-top",
+   "text-bottom", NULL
 };
 
 static const char *const Css_white_space_vals[] = {
