@@ -81,7 +81,7 @@ namespace core {
  * <li> A length refers to an absolute measurement. It is used to
  *      represent the HTML type %Pixels; and the CSS type \<length\>.
  *
- *      For CSS lenghts, there are two units: (i) pixels and absolute
+ *      For CSS lengths, there are two units: (i) pixels and absolute
  *      units, which have to be converted to pixels (a pixel is, unlike
  *      in the CSS specification, treated as absolute unit), and (ii) the
  *      relative units "em" and "ex" (see below).
@@ -343,7 +343,7 @@ enum WhiteSpace {
  * <li> dw::core::style::relLengthVal
  * </ul>
  *
- * "auto" lenghths are represented as dw::core::style::LENGTH_AUTO.
+ * "auto" lengths are represented as dw::core::style::LENGTH_AUTO.
  */
 typedef int Length;
 
