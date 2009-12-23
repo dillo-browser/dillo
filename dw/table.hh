@@ -174,7 +174,7 @@ namespace dw {
  *      minimum.
  * </ol>
  *
- * Generally, if absolute widths are speficied, they are, instead of the
+ * Generally, if absolute widths are specified, they are, instead of the
  * results of dw::core::Widget::getExtremes, taken for the minimal and
  * maximal width of a cell (minus the box difference, i.e. the difference
  * between content size and widget size). If the content width
