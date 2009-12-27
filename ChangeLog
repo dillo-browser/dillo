@@ -56,6 +56,7 @@ dillo-2.2 [??]
  - Enable popup menu below bottom of page content (BUG#856).
  - Handle JPEGs with CMYK color space.
  - Allow keysyms in keysrc.
+ - Improve cookie attribute value parsing (BUG 819)
    Patches: corvid
 +- Support for the letter-spacing property.
    Patch: Johannes Hofmann, corvid

@@ -769,8 +769,12 @@ static char *Cookies_parse_value(char **cookie_str,
       case ' ':
       case '\t':
          if (!broken_syntax && str[0] != '\'' && str[0] != '"') {
-            *cookie_str = str + i + 1;
             end = 1;
+            *cookie_str = str + i + 1;
+            while (**cookie_str == ' ' || **cookie_str == '\t')
+               *cookie_str += 1;
+            if (**cookie_str == ';')
+               *cookie_str += 1;
          }
          break;
       case '\'':
