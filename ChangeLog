@@ -57,6 +57,7 @@ dillo-2.2 [??]
  - Handle JPEGs with CMYK color space.
  - Allow keysyms in keysrc.
  - Improve cookie attribute value parsing (BUG 819)
+ - Clean up cookie expiration/replacement
    Patches: corvid
 +- Support for the letter-spacing property.
    Patch: Johannes Hofmann, corvid

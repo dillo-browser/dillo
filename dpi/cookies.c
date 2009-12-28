@@ -648,16 +648,15 @@ static void Cookies_add_cookie(CookieData_t *cookie)
    CookieData_t *c;
    CookieNode *node;
 
-   /* Don't add an expired cookie */
-   if (!cookie->session_only && cookie->expires_at < time(NULL)) {
-      Cookies_free_cookie(cookie);
-      return;
-   }
-
    node = dList_find_sorted(cookies, cookie->domain,Cookie_node_by_domain_cmp);
    domain_cookies = (node) ? node->dlist : NULL;
 
    if (domain_cookies) {
+      /* Remove any cookies with the same name and path */
+      while ((c = dList_find_custom(domain_cookies, cookie, Cookies_cmp))){
+         Cookies_remove_cookie(c);
+      }
+
       /* Respect the limit of 20 cookies per domain */
       if (dList_length(domain_cookies) >= 20) {
          MSG("There are too many cookies for this domain (%s)\n",
@@ -666,10 +665,16 @@ static void Cookies_add_cookie(CookieData_t *cookie)
          return;
       }
 
-      /* Remove any cookies with the same name and path */
-      while ((c = dList_find_custom(domain_cookies, cookie, Cookies_cmp))){
-         Cookies_remove_cookie(c);
-      }
+   }
+
+   /* Don't add an expired cookie. Strictly speaking, max-age cookies should
+    * only be discarded when "the age is _greater_ than delta-seconds seconds"
+    * (my emphasis), but "A value of zero means the cookie SHOULD be discarded
+    * immediately", and there's no compelling reason to distinguish between
+    * these cases. */
+   if (cookie->expires_at <= time(NULL)) {
+      Cookies_free_cookie(cookie);
+      return;
    }
 
    /* add the cookie into the respective domain list */
@@ -834,11 +839,14 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
    char *value;
    int num_attr = 0;
    bool_t max_age = FALSE;
+   bool_t expires = FALSE;
    bool_t discard = FALSE;
    bool_t error = FALSE;
 
    cookie = dNew0(CookieData_t, 1);
-   cookie->session_only = TRUE;
+
+   /* let's arbitrarily choose a year for now */
+   cookie->expires_at = time(NULL) + 60 * 60 * 24 * 365;
 
    /* Iterate until there is nothing left of the string OR we come
     * across a comma representing the start of another cookie */
@@ -872,31 +880,26 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
          value = Cookies_parse_value(&str, FALSE, FALSE);
          cookie->domain = value;
       } else if (dStrcasecmp(attr, "Discard") == 0) {
-         cookie->session_only = TRUE;
          discard = TRUE;
       } else if (dStrcasecmp(attr, "Max-Age") == 0) {
-         if (!discard) {
-            value = Cookies_parse_value(&str, FALSE, FALSE);
-
-            if (value) {
-               cookie->expires_at = time(NULL) + strtol(value, NULL, 10);
-               cookie->session_only = FALSE;
-               max_age = TRUE;
-               dFree(value);
-            } else {
-               MSG("Cannot parse cookie Max-Age value!\n");
-               dFree(attr);
-               error = TRUE;
-               continue;
-            }
+         value = Cookies_parse_value(&str, FALSE, FALSE);
+         if (value) {
+            cookie->expires_at = time(NULL) + strtol(value, NULL, 10);
+            expires = max_age = TRUE;
+            dFree(value);
+         } else {
+            MSG("Cannot parse cookie Max-Age value!\n");
+            dFree(attr);
+            error = TRUE;
+            continue;
          }
       } else if (dStrcasecmp(attr, "Expires") == 0) {
-         if (!max_age && !discard) {
-            MSG("Old netscape-style cookie...\n");
+         if (!max_age) {
+            MSG("Old Netscape-style cookie...\n");
             value = Cookies_parse_value(&str, TRUE, FALSE);
             if (value) {
                cookie->expires_at = Cookies_create_timestamp(value);
-               cookie->session_only = FALSE;
+               expires = TRUE;
                dFree(value);
             } else {
                MSG("Cannot parse cookie Expires value!\n");
@@ -943,6 +946,16 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
       dFree(attr);
       num_attr++;
    }
+
+   /*
+    * Netscape cookie spec: "expires is an optional attribute. If not
+    * specified, the cookie will expire when the user's session ends."
+    * rfc 2965: (in the absence of) "Max-Age The default behavior is to
+    * discard the cookie when the user agent exits."
+    * "The Discard attribute instructs the user agent to discard the
+    * cookie unconditionally when the user agent terminates."
+    */
+   cookie->session_only = discard == TRUE || expires == FALSE;
 
    *cookie_str = (*str == ',') ? str + 1 : str;
 
@@ -1094,6 +1107,8 @@ static void Cookies_set(char *cookie_string, char *url_host,
       return;
    }
 
+   _MSG("%s setting: %s\n", url_host, cookie_string);
+
    if ((list = Cookies_parse_string(url_port, cookie_string))) {
       for (i = 0; (cookie = dList_nth_data(list, i)); ++i) {
          if (Cookies_validate_domain(cookie, url_host, url_path)) {
@@ -1176,7 +1191,7 @@ static char *Cookies_get(char *url_host, char *url_path,
 
       for (i = 0; (cookie = dList_nth_data(domain_cookies, i)); ++i) {
          /* Remove expired cookie. */
-         if (!cookie->session_only && cookie->expires_at < time(NULL)) {
+         if (cookie->expires_at < time(NULL)) {
             Cookies_remove_cookie(cookie);
             --i; continue;
          }
@@ -1220,6 +1235,7 @@ static char *Cookies_get(char *url_host, char *url_path,
    dFree(path);
    str = cookie_dstring->str;
    dStr_free(cookie_dstring, FALSE);
+   _MSG("%s gets %s\n", url_host, str);
    return str;
 }
 
