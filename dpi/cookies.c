@@ -162,7 +162,7 @@ static int Cookie_node_cmp(const void *v1, const void *v2)
 {
    const CookieNode *n1 = v1, *n2 = v2;
 
-   return strcmp(n1->domain, n2->domain);
+   return dStrcasecmp(n1->domain, n2->domain);
 }
 
 /*
@@ -173,7 +173,7 @@ static int Cookie_node_by_domain_cmp(const void *v1, const void *v2)
    const CookieNode *node = v1;
    const char *domain = v2;
 
-   return strcmp(node->domain, domain);
+   return dStrcasecmp(node->domain, domain);
 }
 
 /*
