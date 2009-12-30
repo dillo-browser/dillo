@@ -907,6 +907,11 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
                error = TRUE;
                continue;
             }
+         } else {
+            MSG("Cookie cannot contain Max-Age and Expires.\n");
+            dFree(attr);
+            error = TRUE;
+            continue;
          }
       } else if (dStrcasecmp(attr, "Port") == 0) {
          value = Cookies_parse_value(&str, FALSE, TRUE);
