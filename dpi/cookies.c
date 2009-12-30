@@ -1202,7 +1202,20 @@ static char *Cookies_get(char *url_host, char *url_path,
          }
          /* Check if the cookie matches the requesting URL */
          if (Cookies_match(cookie, url_port, path, is_ssl)) {
-            dList_append(matching_cookies, cookie);
+            int j;
+            CookieData_t *curr;
+            uint_t path_length = strlen(cookie->path);
+
+            /* "If multiple cookies satisfy the criteria [to be sent in a
+             * query], they are ordered in the Cookie header such that those
+             * with more specific Path attributes precede those with less
+             * specific."
+             */
+            for (j = 0;
+                 (curr = dList_nth_data(matching_cookies, j)) &&
+                  strlen(curr->path) >= path_length;
+                 j++) ;
+            dList_insert_pos(matching_cookies, cookie, j);
          }
       }
    }
