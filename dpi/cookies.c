@@ -1046,28 +1046,15 @@ static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host,
                                       char *url_path)
 {
    int dots, diff, i;
-   bool_t ret, is_ip;
-   char *path = Cookies_strip_path(url_path);
+   bool_t is_ip;
 
    /* Make sure that the path is set to something */
    if (!cookie->path || cookie->path[0] != '/') {
-      uint_t pathlen;
-
       dFree(cookie->path);
-      cookie->path = dStrdup(path);
-
-      /* RFC 2109 does not want a trailing '/', but RFC 2965 does. Since the
-       * world has taken little notice of 2965 and cookie paths consistently
-       * lack a trailing '/', let's remove it.
-       */
-      pathlen = strlen(cookie->path);
-      if (pathlen > 1 && cookie->path[pathlen - 1] == '/')
-         cookie->path[pathlen - 1] = '\0';
+      cookie->path = Cookies_strip_path(url_path);
    }
 
-   ret = Cookies_path_is_prefix(cookie->path, path);
-   dFree(path);
-   if (!ret)
+   if (!Cookies_path_is_prefix(cookie->path, url_path))
       return FALSE;
 
    /* If the server never set a domain, or set one without a leading
@@ -1112,7 +1099,11 @@ static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host,
 }
 
 /*
- * Strip the filename from a full path.
+ * For default path attributes, RFC 2109 gives: "Defaults to the path of the
+ * request URL that generated the Set-Cookie response, up to, but not
+ * including, the right-most /".
+ *
+ * (RFC 2965 keeps the '/', but is not so widely followed.)
  */
 static char *Cookies_strip_path(const char *path)
 {
@@ -1124,7 +1115,7 @@ static char *Cookies_strip_path(const char *path)
 
       while (len && path[len] != '/')
          len--;
-      ret = dStrndup(path, len + 1);
+      ret = dStrndup(path, len ? len : 1);
    } else {
       ret = dStrdup("/");
    }
@@ -1208,7 +1199,7 @@ static bool_t Cookies_match(CookieData_t *cookie, int port,
 static char *Cookies_get(char *url_host, char *url_path,
                          char *url_scheme, int url_port)
 {
-   char *domain_str, *q, *str, *path;
+   char *domain_str, *q, *str;
    CookieData_t *cookie;
    Dlist *matching_cookies;
    CookieNode *node;
@@ -1221,8 +1212,6 @@ static char *Cookies_get(char *url_host, char *url_path,
       return dStrdup("");
 
    matching_cookies = dList_new(8);
-
-   path = Cookies_strip_path(url_path);
 
    /* Check if the protocol is secure or not */
    is_ssl = (!dStrcasecmp(url_scheme, "https"));
@@ -1241,7 +1230,7 @@ static char *Cookies_get(char *url_host, char *url_path,
             --i; continue;
          }
          /* Check if the cookie matches the requesting URL */
-         if (Cookies_match(cookie, url_port, path, is_ssl)) {
+         if (Cookies_match(cookie, url_port, url_path, is_ssl)) {
             int j;
             CookieData_t *curr;
             uint_t path_length = strlen(cookie->path);
@@ -1290,7 +1279,6 @@ static char *Cookies_get(char *url_host, char *url_path,
    }
 
    dList_free(matching_cookies);
-   dFree(path);
    str = cookie_dstring->str;
    dStr_free(cookie_dstring, FALSE);
    _MSG("%s gets %s\n", url_host, str);
