@@ -1040,6 +1040,42 @@ static bool_t Cookies_path_is_prefix(const char *prefix, const char *path)
 }
 
 /*
+ * Check whether host name A domain-matches host name B.
+ */
+static bool_t Cookies_domain_matches(char *A, char *B)
+{
+   int diff;
+
+   if (!A || !*A || !B || !*B)
+      return FALSE;
+
+   /* "Host A's name domain-matches host B's if their host name strings
+    * string-compare equal; or"...
+    */
+   if (!dStrcasecmp(A, B))
+      return TRUE;
+
+   /* ..."A is a HDN [host domain name] string and has the form NB, where N
+    * is a non-empty name string, B has the form .B', and B' is a HDN string.
+    */
+
+   if (*B != '.') {
+      return FALSE;
+   }
+
+   diff = strlen(A) - strlen(B);
+
+   if (diff > 0) {
+      return (dStrcasecmp(A + diff, B) == 0);
+   } else {
+      /* Consider A to domain-match B if B is of the form .A
+       * CONTRARY TO RFC
+       */
+      return (dStrcasecmp(A, B + 1) == 0);
+   }
+}
+
+/*
  * Validate cookies domain against some security checks.
  */
 static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host,
@@ -1060,10 +1096,18 @@ static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host,
    /* If the server never set a domain, or set one without a leading
     * dot (which isn't allowed), we use the calling URL's hostname. */
    if (cookie->domain == NULL || cookie->domain[0] != '.') {
+      if (cookie->domain) {
+         /* It may be necessary to handle these old-style domains. */
+         MSG("Ignoring cookie domain \'%s\' without leading dot.\n",
+             cookie->domain);
+      }
       dFree(cookie->domain);
       cookie->domain = dStrdup(host);
       return TRUE;
    }
+
+   if (!Cookies_domain_matches(host, cookie->domain))
+      return FALSE;
 
    /* Count the number of dots and also find out if it is an IP-address */
    is_ip = TRUE;
@@ -1074,13 +1118,24 @@ static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host,
          is_ip = FALSE;
    }
 
-   /* A valid domain must have at least two dots in it */
-   /* NOTE: this breaks cookies on localhost... */
+   if (i > 0 && cookie->domain[i - 1] == '.') {
+       /* A trailing dot is a sneaky trick, but we won't fall for it. */
+      dots--;
+   }
+
+   /* A valid domain must have at least two dots in it
+    * NOTE: this breaks cookies on localhost...
+    *
+    * TODO: accept the publicsuffix.org list as an optional external file.
+    */
    if (dots < 2) {
       return FALSE;
    }
 
-   /* Now see if the url matches the domain */
+   /* Reject a cookie if the "request-host is a FQDN [fully-qualified domain
+    * name] (not IP address) and has the form HD, where D is the value of the
+    * Domain attribute, and H is a string that contains one or more dots.
+    */
    diff = strlen(host) - i;
    if (diff > 0) {
       if (dStrcasecmp(host + diff, cookie->domain))
