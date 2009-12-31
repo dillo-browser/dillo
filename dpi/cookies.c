@@ -895,7 +895,7 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
          }
       } else if (dStrcasecmp(attr, "Expires") == 0) {
          if (!max_age) {
-            MSG("Old Netscape-style cookie...\n");
+            _MSG("Old Netscape-style cookie...\n");
             value = Cookies_parse_value(&str, TRUE, FALSE);
             if (value) {
                cookie->expires_at = Cookies_create_timestamp(value);
