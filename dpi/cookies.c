@@ -1016,19 +1016,59 @@ static int Cookies_cmp(const void *a, const void *b)
 }
 
 /*
+ * Check whether 'prefix' is a prefix of 'path'.
+ */
+static bool_t Cookies_path_is_prefix(const char *prefix, const char *path)
+{
+   bool_t ret = TRUE;
+
+   if (!prefix || !path)
+      return FALSE;
+
+   /*
+    * The original Netscape cookie spec states 'The path "/foo" would match
+    * "/foobar" and "/foo/bar.html"', so when the RFCs say "prefix", they
+    * apparently really do mean prefix, however utterly bizarre that might be.
+    *
+    * (On the other hand, http://testsuites.opera.com/cookies/302/302.php
+    * takes quite some interest in the prefix as a genuine path.)
+    */
+   if (strncmp(prefix, path, strlen(prefix)))
+      ret = FALSE;
+
+   return ret;
+}
+
+/*
  * Validate cookies domain against some security checks.
  */
 static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host,
                                       char *url_path)
 {
    int dots, diff, i;
-   bool_t is_ip;
+   bool_t ret, is_ip;
+   char *path = Cookies_strip_path(url_path);
 
    /* Make sure that the path is set to something */
    if (!cookie->path || cookie->path[0] != '/') {
+      uint_t pathlen;
+
       dFree(cookie->path);
-      cookie->path = Cookies_strip_path(url_path);
+      cookie->path = dStrdup(path);
+
+      /* RFC 2109 does not want a trailing '/', but RFC 2965 does. Since the
+       * world has taken little notice of 2965 and cookie paths consistently
+       * lack a trailing '/', let's remove it.
+       */
+      pathlen = strlen(cookie->path);
+      if (pathlen > 1 && cookie->path[pathlen - 1] == '/')
+         cookie->path[pathlen - 1] = '\0';
    }
+
+   ret = Cookies_path_is_prefix(cookie->path, path);
+   dFree(path);
+   if (!ret)
+      return FALSE;
 
    /* If the server never set a domain, or set one without a leading
     * dot (which isn't allowed), we use the calling URL's hostname. */
@@ -1072,7 +1112,7 @@ static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host,
 }
 
 /*
- * Strip of the filename from a full path
+ * Strip the filename from a full path.
  */
 static char *Cookies_strip_path(const char *path)
 {
@@ -1144,8 +1184,8 @@ static bool_t Cookies_match(CookieData_t *cookie, int port,
    if (cookie->secure && !is_ssl)
       return FALSE;
 
-   /* Check that the cookie path is a subpath of the current path */
-   if (strncmp(cookie->path, path, strlen(cookie->path)) != 0)
+   /* Check that the cookie path is a prefix of the current path */
+   if (!Cookies_path_is_prefix(cookie->path, path))
       return FALSE;
 
    /* Check if the port of the request URL matches any
