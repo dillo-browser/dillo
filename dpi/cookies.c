@@ -928,6 +928,8 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
 
          if (value) {
             cookie->version = strtol(value, NULL, 10);
+            if (cookie->version == 1)
+               MSG("RFC cookie!\n");
             dFree(value);
          } else {
             MSG("Cannot parse cookie Version value!\n");
