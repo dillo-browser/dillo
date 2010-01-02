@@ -875,9 +875,11 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
          cookie->value = Cookies_parse_value(&str, FALSE, TRUE);
       } else if (dStrcasecmp(attr, "Path") == 0) {
          value = Cookies_parse_value(&str, FALSE, FALSE);
+         dFree(cookie->path);
          cookie->path = value;
       } else if (dStrcasecmp(attr, "Domain") == 0) {
          value = Cookies_parse_value(&str, FALSE, FALSE);
+         dFree(cookie->domain);
          cookie->domain = value;
       } else if (dStrcasecmp(attr, "Discard") == 0) {
          discard = TRUE;
