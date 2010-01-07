@@ -17,9 +17,9 @@ class StyleEngine;
  * HTML elements and their attributes via the startElement() / endElement()
  * methods.
  */
-class StyleEngine : public Doctree {
+class StyleEngine {
    private:
-      class Node : public DoctreeNode {
+      class Node {
          public:
             dw::core::style::Style *style;
             dw::core::style::Style *wordStyle;
@@ -30,7 +30,7 @@ class StyleEngine : public Doctree {
       dw::core::Layout *layout;
       lout::misc::SimpleVector <Node> *stack;
       CssContext *cssContext;
-      int num;
+      Doctree *doctree;
       int importDepth;
 
       dw::core::style::Style *style0 (CssPropertyList *nonCssHints = NULL);
@@ -49,24 +49,12 @@ class StyleEngine : public Doctree {
       StyleEngine (dw::core::Layout *layout);
       ~StyleEngine ();
 
-      /* Doctree interface */
-      inline const DoctreeNode *top () {
-         return stack->getRef (stack->size () - 1);
-      };
-
-      inline const DoctreeNode *parent (const DoctreeNode *n) {
-         if (n->depth > 1)
-            return stack->getRef (n->depth - 1);
-         else
-            return NULL;
-      };
-
       void parse (DilloHtml *html, DilloUrl *url, const char *buf, int buflen,
                   CssOrigin origin);
       void startElement (int tag);
       void startElement (const char *tagname);
       void setId (const char *id);
-      const char * getId () { return top ()->id; };
+      const char * getId () { return doctree->top ()->id; };
       void setClass (const char *klass);
       void setStyle (const char *style);
       void endElement (int tag);

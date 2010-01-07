@@ -21,14 +21,14 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    StyleAttrs style_attrs;
    FontAttrs font_attrs;
 
+   doctree = new Doctree ();
    stack = new lout::misc::SimpleVector <Node> (1);
    cssContext = new CssContext ();
    this->layout = layout;
-   num = 0;
    importDepth = 0;
 
    stack->increase ();
-   Node *n =  stack->getRef (stack->size () - 1);
+   Node *n = stack->getRef (stack->size () - 1);
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = prefs.font_sans_serif;
@@ -46,21 +46,17 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    style_attrs.color = Color::create (layout, 0);
    style_attrs.backgroundColor = Color::create (layout, 0xffffff);
 
-   n->num = num++;
    n->style = Style::create (layout, &style_attrs);
    n->wordStyle = NULL;
-   n->element = 0;
-   n->id = NULL;
-   n->klass = NULL;
-   n->pseudo = NULL;
    n->styleAttribute = NULL;
    n->inheritBackgroundColor = false;
 }
 
 StyleEngine::~StyleEngine () {
-   while (stack->size () > 0)
-      endElement (stack->getRef (stack->size () - 1)->element);
+   while (doctree->top ())
+      endElement (doctree->top ()->element);
    delete stack;
+   delete doctree;
    delete cssContext;
 }
 
@@ -72,17 +68,14 @@ void StyleEngine::startElement (int element) {
       style0 ();
 
    stack->increase ();
-   Node *n =  stack->getRef (stack->size () - 1);
-   n->num = num++;
+   Node *n = stack->getRef (stack->size () - 1);
    n->style = NULL;
    n->wordStyle = NULL;
-   n->depth = stack->size () - 1;
-   n->element = element;
-   n->id = NULL;
-   n->klass = NULL;
-   n->pseudo = NULL;
    n->styleAttribute = NULL;
    n->inheritBackgroundColor = false;
+
+   DoctreeNode *dn = doctree->push ();
+   dn->element = element;
 }
 
 void StyleEngine::startElement (const char *tagname) {
@@ -90,9 +83,9 @@ void StyleEngine::startElement (const char *tagname) {
 }
 
 void StyleEngine::setId (const char *id) {
-   Node *n =  stack->getRef (stack->size () - 1);
-   assert (n->id == NULL);
-   n->id = dStrdup (id);
+   DoctreeNode *dn =  doctree->top ();
+   assert (dn->id == NULL);
+   dn->id = dStrdup (id);
 };
 
 /**
@@ -121,13 +114,13 @@ static lout::misc::SimpleVector<char *> *splitStr (const char *str, char sep) {
 }
 
 void StyleEngine::setClass (const char *klass) {
-   Node *n =  stack->getRef (stack->size () - 1);
-   assert (n->klass == NULL);
-   n->klass = splitStr (klass, ' ');
+   DoctreeNode *dn = doctree->top ();
+   assert (dn->klass == NULL);
+   dn->klass = splitStr (klass, ' ');
 };
 
 void StyleEngine::setStyle (const char *style) {
-   Node *n =  stack->getRef (stack->size () - 1);
+   Node *n = stack->getRef (stack->size () - 1);
    assert (n->styleAttribute == NULL);
    n->styleAttribute = dStrdup (style);
 };
@@ -156,16 +149,16 @@ void StyleEngine::inheritBackgroundColor () {
  * \brief set the CSS pseudo class :link.
  */
 void StyleEngine::setPseudoLink () {
-   Node *n =  stack->getRef (stack->size () - 1);
-   n->pseudo = "link";
+   DoctreeNode *dn = doctree->top ();
+   dn->pseudo = "link";
 }
 
 /**
  * \brief set the CSS pseudo class :visited.
  */
 void StyleEngine::setPseudoVisited () {
-   Node *n =  stack->getRef (stack->size () - 1);
-   n->pseudo = "visited";
+   DoctreeNode *dn = doctree->top ();
+   dn->pseudo = "visited";
 }
 
 /**
@@ -173,24 +166,18 @@ void StyleEngine::setPseudoVisited () {
  */
 void StyleEngine::endElement (int element) {
    assert (stack->size () > 0);
-   assert (element == stack->getRef (stack->size () - 1)->element);
+   assert (element == doctree->top ()->element);
 
-   Node *n =  stack->getRef (stack->size () - 1);
+   Node *n = stack->getRef (stack->size () - 1);
 
    if (n->style)
       n->style->unref ();
    if (n->wordStyle)
       n->wordStyle->unref ();
-   if (n->id)
-      dFree ((void*) n->id);
-   if (n->klass) {
-      for (int i = 0; i < n->klass->size (); i++)
-         dFree (n->klass->get(i));
-      delete n->klass;
-   }
    if (n->styleAttribute)
       dFree ((void*) n->styleAttribute);
 
+   doctree->pop ();
    stack->setSize (stack->size () - 1);
 }
 
@@ -621,7 +608,7 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
                                            strlen (styleAttribute));
 
    // merge style information
-   cssContext->apply (&props, this, styleAttributeProps, nonCssProperties);
+   cssContext->apply (&props, doctree, styleAttributeProps, nonCssProperties);
 
    // apply style
    apply (&attrs, &props);
