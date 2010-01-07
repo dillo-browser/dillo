@@ -364,13 +364,17 @@ static int Dpi_start_dpid(void)
       Dpi_close_fd(st_pipe[0]);
       if (execl(path1, "dpid", (char*)NULL) == -1) {
          dFree(path1);
-         if (execlp("dpid", "dpid", (char*)NULL) == -1) {
-            MSG("Dpi_start_dpid (child): %s\n", dStrerror(errno));
-            if (Dpi_blocking_write(st_pipe[1], "ERROR", 5) == -1) {
-               MSG("Dpi_start_dpid (child): can't write to pipe.\n");
+         path1 = dStrconcat(DILLO_BINDIR, "dpid", NULL);
+         if (execl(path1, "dpid", (char*)NULL) == -1) {
+            dFree(path1);
+            if (execlp("dpid", "dpid", (char*)NULL) == -1) {
+               MSG("Dpi_start_dpid (child): %s\n", dStrerror(errno));
+               if (Dpi_blocking_write(st_pipe[1], "ERROR", 5) == -1) {
+                  MSG("Dpi_start_dpid (child): can't write to pipe.\n");
+               }
+               Dpi_close_fd(st_pipe[1]);
+               _exit (EXIT_FAILURE);
             }
-            Dpi_close_fd(st_pipe[1]);
-            _exit (EXIT_FAILURE);
          }
       }
    } else if (pid < 0) {
