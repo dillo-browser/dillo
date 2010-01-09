@@ -567,269 +567,148 @@ static void Cookies_remove_cookie(CookieData_t *cookie)
 }
 
 /*
- * Return the attribute that is present at *cookie_str. This function
- * will also attempt to advance cookie_str past any equal-sign.
+ * Return the attribute that is present at *cookie_str.
  */
 static char *Cookies_parse_attr(char **cookie_str)
 {
-   char *str = *cookie_str;
-   uint_t i, end = 0;
-   bool_t got_attr = FALSE;
+   char *str;
+   uint_t len;
 
-   for (i = 0; ; i++) {
-      switch (str[i]) {
-      case ' ':
-      case '\t':
-      case '=':
-      case ';':
-         got_attr = TRUE;
-         if (end == 0)
-            end = i;
-         break;
-      case ',':
-         *cookie_str = str + i;
-         return dStrndup(str, i);
-         break;
-      case '\0':
-         if (!got_attr) {
-            end = i;
-            got_attr = TRUE;
-         }
-         /* fall through! */
-      default:
-         if (got_attr) {
-            *cookie_str = str + i;
-            return dStrndup(str, end);
-         }
-         break;
-      }
-   }
+   while (dIsspace(**cookie_str))
+      (*cookie_str)++;
 
-   return NULL;
+   str = *cookie_str;
+   /* find '=' at end of attr, ';' after attr/val pair, '\0' end of string */
+   len = strcspn(str, "=;");
+   *cookie_str += len;
+
+   while (len && (str[len - 1] == ' ' || str[len - 1] == '\t'))
+      len--;
+   return dStrndup(str, len);
 }
 
 /*
- * Get the value starting at *cookie_str.
- * broken_syntax: watch out for stupid syntax (comma in unquoted string...)
+ * Get the value in *cookie_str.
  */
-static char *Cookies_parse_value(char **cookie_str,
-                                 bool_t broken_syntax,
-                                 bool_t keep_quotes)
+static char *Cookies_parse_value(char **cookie_str)
 {
-   uint_t i, end;
-   char *str = *cookie_str;
+   uint_t len;
+   char *str;
 
-   for (i = end = 0; !end; ++i) {
-      switch (str[i]) {
-      case ' ':
-      case '\t':
-         if (!broken_syntax && str[0] != '\'' && str[0] != '"') {
-            end = 1;
-            *cookie_str = str + i + 1;
-            while (**cookie_str == ' ' || **cookie_str == '\t')
-               *cookie_str += 1;
-            if (**cookie_str == ';')
-               *cookie_str += 1;
-         }
-         break;
-      case '\'':
-      case '"':
-         if (i != 0 && str[i] == str[0]) {
-            char *tmp = str + i;
+   if (**cookie_str == '=') {
+      (*cookie_str)++;
+      while (dIsspace(**cookie_str))
+         (*cookie_str)++;
 
-            while (*tmp != '\0' && *tmp != ';' && *tmp != ',')
-               tmp++;
+      str = *cookie_str;
+      /* finds ';' after attr/val pair or '\0' at end of string */
+      len = strcspn(str, ";");
+      *cookie_str += len;
 
-            *cookie_str = (*tmp == ';') ? tmp + 1 : tmp;
-
-            if (keep_quotes)
-               i++;
-            end = 1;
-         }
-         break;
-      case '\0':
-         *cookie_str = str + i;
-         end = 1;
-         break;
-      case ',':
-         if (str[0] != '\'' && str[0] != '"' && !broken_syntax) {
-            /* A new cookie starts here! */
-            *cookie_str = str + i;
-            end = 1;
-         }
-         break;
-      case ';':
-         if (str[0] != '\'' && str[0] != '"') {
-            *cookie_str = str + i + 1;
-            end = 1;
-         }
-         break;
-      default:
-         break;
-      }
-   }
-   /* keep i as an index to the last char */
-   --i;
-
-   if ((str[0] == '\'' || str[0] == '"') && !keep_quotes) {
-      return i > 1 ? dStrndup(str + 1, i - 1) : NULL;
+      while (len && (str[len - 1] == ' ' || str[len - 1] == '\t'))
+         len--;
    } else {
-      return dStrndup(str, i);
+      str = *cookie_str;
+      len = 0;
    }
+   return dStrndup(str, len);
 }
 
 /*
- * Parse one cookie...
+ * Advance past any value
  */
-static CookieData_t *Cookies_parse_one(char **cookie_str)
+static void Cookies_eat_value(char **cookie_str)
 {
-   CookieData_t *cookie;
-   char *str = *cookie_str;
-   char *attr;
-   char *value;
-   int num_attr = 0;
+   if (**cookie_str == '=')
+      *cookie_str += strcspn(*cookie_str, ";");
+}
+
+/*
+ * Parse cookie. A cookie might look something like:
+ * "Name=Val; Domain=example.com; Max-Age=3600; HttpOnly"
+ */
+static CookieData_t *Cookies_parse(char *cookie_str)
+{
+   CookieData_t *cookie = NULL;
+   char *str = cookie_str;
+   bool_t first_attr = TRUE;
    bool_t max_age = FALSE;
    bool_t expires = FALSE;
-   bool_t discard = FALSE;
-   bool_t error = FALSE;
 
-   cookie = dNew0(CookieData_t, 1);
-
-   /* let's arbitrarily choose a year for now */
-   cookie->expires_at = time(NULL) + 60 * 60 * 24 * 365;
-
-   /* Iterate until there is nothing left of the string OR we come
-    * across a comma representing the start of another cookie */
-   while (*str != '\0' && *str != ',') {
-      if (error) {
-         str++;
-         continue;
-      }
-      /* Skip whitespace */
-      while (dIsspace(*str))
-         str++;
+   /* Iterate until there is nothing left of the string */
+   while (*str) {
+      char *attr;
+      char *value;
 
       /* Get attribute */
       attr = Cookies_parse_attr(&str);
-      if (!attr) {
-         MSG("Cannot parse cookie attribute!\n");
-         error = TRUE;
-         continue;
-      }
 
       /* Get the value for the attribute and store it */
-      if (num_attr == 0) {
-         /* The first attr, which always is the user supplied attr, may
-          * have the same name as an ordinary attr. Hence this workaround. */
-         cookie->name = dStrdup(attr);
-         cookie->value = Cookies_parse_value(&str, FALSE, TRUE);
+      if (first_attr) {
+         if (!*str && !*attr) {
+            dFree(attr);
+            return NULL;
+         }
+         cookie = dNew0(CookieData_t, 1);
+         /* let's arbitrarily choose a year for now */
+         cookie->expires_at = time(NULL) + 60 * 60 * 24 * 365;
+
+         if (*str != '=') {
+            /* NOTE it seems possible that the Working Group will decide
+             * against allowing nameless cookies.
+             */
+            cookie->name = dStrdup("");
+            cookie->value = attr;
+         } else {
+            cookie->name = dStrdup(attr);
+            cookie->value = Cookies_parse_value(&str);
+         }
       } else if (dStrcasecmp(attr, "Path") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
+         value = Cookies_parse_value(&str);
          dFree(cookie->path);
          cookie->path = value;
       } else if (dStrcasecmp(attr, "Domain") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
+         value = Cookies_parse_value(&str);
          dFree(cookie->domain);
          cookie->domain = value;
-      } else if (dStrcasecmp(attr, "Discard") == 0) {
-         discard = TRUE;
       } else if (dStrcasecmp(attr, "Max-Age") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
-         if (value) {
+         value = Cookies_parse_value(&str);
+         if (isdigit(*value) || *value == '-') {
             cookie->expires_at = time(NULL) + strtol(value, NULL, 10);
             expires = max_age = TRUE;
-            dFree(value);
-         } else {
-            MSG("Cannot parse cookie Max-Age value!\n");
-            dFree(attr);
-            error = TRUE;
-            continue;
          }
+         dFree(value);
       } else if (dStrcasecmp(attr, "Expires") == 0) {
          if (!max_age) {
-            _MSG("Old Netscape-style cookie...\n");
-            value = Cookies_parse_value(&str, TRUE, FALSE);
-            if (value) {
-               cookie->expires_at = Cookies_create_timestamp(value);
-               expires = TRUE;
-               dFree(value);
-            } else {
-               MSG("Cannot parse cookie Expires value!\n");
-               dFree(attr);
-               error = TRUE;
-               continue;
-            }
-         } else {
-            MSG("Cookie cannot contain Max-Age and Expires.\n");
-            dFree(attr);
-            error = TRUE;
-            continue;
+            value = Cookies_parse_value(&str);
+            cookie->expires_at = Cookies_create_timestamp(value);
+            expires = TRUE;
+            dFree(value);
+            MSG("Expires in %ld seconds, at %s",
+                (long)cookie->expires_at - time(NULL),
+                ctime(&cookie->expires_at));
+
          }
       } else if (dStrcasecmp(attr, "Secure") == 0) {
          cookie->secure = TRUE;
+         Cookies_eat_value(&str);
       } else if (dStrcasecmp(attr, "HttpOnly") == 0) {
-         // this case is intentionally left blank, because we do not
-         // do client-side scripting (yet).
+         Cookies_eat_value(&str);
       } else {
-         /* Oops! this can't be good... */
          MSG("Cookie contains unknown attribute: '%s'\n", attr);
+         Cookies_eat_value(&str);
+      }
+
+      if (first_attr)
+         first_attr = FALSE;
+      else
          dFree(attr);
-         error = TRUE;
-         continue;
-      }
 
-      dFree(attr);
-      num_attr++;
+      if (*str == ';')
+         str++;
    }
-
-   /*
-    * Netscape cookie spec: "expires is an optional attribute. If not
-    * specified, the cookie will expire when the user's session ends."
-    * rfc 2965: (in the absence of) "Max-Age The default behavior is to
-    * discard the cookie when the user agent exits."
-    * "The Discard attribute instructs the user agent to discard the
-    * cookie unconditionally when the user agent terminates."
-    */
-   cookie->session_only = discard == TRUE || expires == FALSE;
-
-   *cookie_str = (*str == ',') ? str + 1 : str;
-
-   if (!error && (!cookie->name || !cookie->value)) {
-      MSG("Cookie missing name and/or value!\n");
-      error = TRUE;
-   }
-   if (error) {
-      Cookies_free_cookie(cookie);
-      cookie = NULL;
-   }
+   cookie->session_only = expires == FALSE;
    return cookie;
-}
-
-/*
- * Iterate the cookie string until we catch all cookies.
- * Return Value: a list with all the cookies! (or NULL upon error)
- */
-static Dlist *Cookies_parse_string(char *cookie_string)
-{
-   CookieData_t *cookie;
-   Dlist *ret = NULL;
-   char *str = cookie_string;
-
-   /* The string may contain several cookies separated by comma.
-    * We'll iterate until we've caught them all */
-   while (*str) {
-      cookie = Cookies_parse_one(&str);
-
-      if (cookie) {
-         if (!ret)
-            ret = dList_new(4);
-         dList_append(ret, cookie);
-      } else {
-         MSG("Malformed cookie field, ignoring cookie: %s\n", cookie_string);
-      }
-   }
-
-   return ret;
 }
 
 /*
@@ -1038,8 +917,6 @@ static void Cookies_set(char *cookie_string, char *url_host,
 {
    CookieControlAction action;
    CookieData_t *cookie;
-   Dlist *list;
-   int i;
 
    if (disabled)
       return;
@@ -1052,20 +929,17 @@ static void Cookies_set(char *cookie_string, char *url_host,
 
    _MSG("%s setting: %s\n", url_host, cookie_string);
 
-   if ((list = Cookies_parse_string(cookie_string))) {
-      for (i = 0; (cookie = dList_nth_data(list, i)); ++i) {
-         if (Cookies_validate_domain(cookie, url_host)) {
-            Cookies_validate_path(cookie, url_path);
-            if (action == COOKIE_ACCEPT_SESSION)
-               cookie->session_only = TRUE;
-            Cookies_add_cookie(cookie);
-         } else {
-            MSG("Rejecting cookie for %s from host %s path %s\n",
-                cookie->domain, url_host, url_path);
-            Cookies_free_cookie(cookie);
-         }
+   if ((cookie = Cookies_parse(cookie_string))) {
+      if (Cookies_validate_domain(cookie, url_host)) {
+         Cookies_validate_path(cookie, url_path);
+         if (action == COOKIE_ACCEPT_SESSION)
+            cookie->session_only = TRUE;
+         Cookies_add_cookie(cookie);
+      } else {
+         MSG("Rejecting cookie for %s from host %s path %s\n",
+             cookie->domain, url_host, url_path);
+         Cookies_free_cookie(cookie);
       }
-      dList_free(list);
    }
 }
 
@@ -1166,9 +1040,8 @@ static char *Cookies_get(char *url_host, char *url_path,
 
       for (i = 0; (cookie = dList_nth_data(matching_cookies, i)); ++i) {
          dStr_sprintfa(cookie_dstring,
-                       "%s=%s; $Path=%s; $Domain=%s",
-                       cookie->name, cookie->value,
-                       cookie->path, cookie->domain);
+                       "%s%s%s",
+                       cookie->name, *cookie->name ? "=" : "", cookie->value);
          dStr_append(cookie_dstring,
                      dList_length(matching_cookies) > i + 1 ? "; " : "\r\n");
       }
