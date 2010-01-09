@@ -632,7 +632,7 @@ static void Cookies_eat_value(char **cookie_str)
  * Parse cookie. A cookie might look something like:
  * "Name=Val; Domain=example.com; Max-Age=3600; HttpOnly"
  */
-static CookieData_t *Cookies_parse(char *cookie_str)
+static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
 {
    CookieData_t *cookie = NULL;
    char *str = cookie_str;
@@ -687,6 +687,29 @@ static CookieData_t *Cookies_parse(char *cookie_str)
          if (!max_age) {
             value = Cookies_parse_value(&str);
             cookie->expires_at = Cookies_create_timestamp(value);
+            if (cookie->expires_at && server_date) {
+               time_t server_time = Cookies_create_timestamp(server_date);
+
+               if (server_time) {
+                  time_t now = time(NULL);
+                  time_t client_time = cookie->expires_at + now - server_time;
+
+                  if (server_time == cookie->expires_at) {
+                      cookie->expires_at = now;
+                  } else if ((cookie->expires_at > now) ==
+                             (client_time > now)) {
+                     cookie->expires_at = client_time;
+                  } else {
+                     /* It seems not at all unlikely that bad server code will
+                      * fail to take normal clock skew into account when
+                      * setting max/min cookie values.
+                      */
+                     MSG("At %ld, %ld was trying to turn into %ld\n",
+                         (long)now, (long)cookie->expires_at,
+                         (long)client_time);
+                  }
+               }
+            }
             expires = TRUE;
             dFree(value);
             MSG("Expires in %ld seconds, at %s",
@@ -918,7 +941,7 @@ static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host)
  * Set the value corresponding to the cookie string
  */
 static void Cookies_set(char *cookie_string, char *url_host,
-                        char *url_path)
+                        char *url_path, char *server_date)
 {
    CookieControlAction action;
    CookieData_t *cookie;
@@ -934,7 +957,7 @@ static void Cookies_set(char *cookie_string, char *url_host,
 
    _MSG("%s setting: %s\n", url_host, cookie_string);
 
-   if ((cookie = Cookies_parse(cookie_string))) {
+   if ((cookie = Cookies_parse(cookie_string, server_date))) {
       if (Cookies_validate_domain(cookie, url_host)) {
          Cookies_validate_path(cookie, url_path);
          if (action == COOKIE_ACCEPT_SESSION)
@@ -1211,13 +1234,17 @@ static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
       exit(0);
 
    } else if (cmd && strcmp(cmd, "set_cookie") == 0) {
+      char *date;
+
       dFree(cmd);
       cookie = a_Dpip_get_attr_l(Buf, BufSize, "cookie");
       host = a_Dpip_get_attr_l(Buf, BufSize, "host");
       path = a_Dpip_get_attr_l(Buf, BufSize, "path");
+      date = a_Dpip_get_attr_l(Buf, BufSize, "date");
 
-      Cookies_set(cookie, host, path);
+      Cookies_set(cookie, host, path, date);
 
+      dFree(date);
       dFree(path);
       dFree(host);
       dFree(cookie);

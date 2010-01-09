@@ -733,10 +733,13 @@ static void Cache_parse_header(CacheEntry_t *entry)
     * know if that is a real issue though. */
    if ((Cookies = Cache_parse_multiple_fields(header, "Set-Cookie2")) ||
        (Cookies = Cache_parse_multiple_fields(header, "Set-Cookie"))) {
-      a_Cookies_set(Cookies, entry->Url);
+      char *server_date = Cache_parse_field(header, "Date");
+
+      a_Cookies_set(Cookies, entry->Url, server_date);
       for (i = 0; (data = dList_nth_data(Cookies, i)); ++i)
          dFree(data);
       dList_free(Cookies);
+      dFree(server_date);
    }
 #endif /* !DISABLE_COOKIES */
 

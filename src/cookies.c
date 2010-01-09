@@ -138,7 +138,8 @@ void a_Cookies_freeall()
 /*
  * Set the value corresponding to the cookie string
  */
-void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
+void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url,
+                   const char *date)
 {
    CookieControlAction action;
    char *cmd, *cookie_string, *dpip_tag;
@@ -156,9 +157,14 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
 
    for (i = 0; (cookie_string = dList_nth_data(cookie_strings, i)); ++i) {
       path = URL_PATH_(set_url);
-      cmd = a_Dpip_build_cmd("cmd=%s cookie=%s host=%s path=%s",
-                             "set_cookie", cookie_string, URL_HOST_(set_url),
-                             path ? path : "/");
+      if (date)
+         cmd = a_Dpip_build_cmd("cmd=%s cookie=%s host=%s path=%s date=%s",
+                                "set_cookie", cookie_string,
+                                URL_HOST_(set_url), path ? path : "/", date);
+      else
+         cmd = a_Dpip_build_cmd("cmd=%s cookie=%s host=%s path=%s",
+                                "set_cookie", cookie_string,
+                                URL_HOST_(set_url), path ? path : "/");
 
       _MSG("Cookies.c: a_Cookies_set \n\t \"%s\" \n",cmd );
       /* This call is commented because it doesn't guarantee the order
