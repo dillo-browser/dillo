@@ -728,11 +728,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
    dFree(encoding); /* free Transfer-Encoding */
 
 #ifndef DISABLE_COOKIES
-   /* BUG: If a server feels like mixing Set-Cookie2 and Set-Cookie
-    * responses which aren't identical, then we have a problem. I don't
-    * know if that is a real issue though. */
-   if ((Cookies = Cache_parse_multiple_fields(header, "Set-Cookie2")) ||
-       (Cookies = Cache_parse_multiple_fields(header, "Set-Cookie"))) {
+   if ((Cookies = Cache_parse_multiple_fields(header, "Set-Cookie"))) {
       char *server_date = Cache_parse_field(header, "Date");
 
       a_Cookies_set(Cookies, entry->Url, server_date);
