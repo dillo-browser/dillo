@@ -107,6 +107,7 @@ typedef struct {
    time_t expires_at;
    bool_t secure;
    bool_t session_only;
+   long last_used;
 } CookieData_t;
 
 typedef struct {
@@ -127,6 +128,7 @@ static int num_ccontrol = 0;
 static int num_ccontrol_max = 1;
 static CookieControlAction default_action = COOKIE_DENY;
 
+static long cookies_use_counter = 0;
 static bool_t disabled;
 static FILE *file_stream;
 static const char *const cookies_txt_header_str =
@@ -496,6 +498,29 @@ static time_t Cookies_create_timestamp(const char *expires)
    return ret;
 }
 
+/*
+ * Remove the least recently used cookie in the list.
+ */
+static void Cookies_remove_LRU(Dlist *cookies)
+{
+   int n = dList_length(cookies);
+
+   if (n > 0) {
+      int i;
+      CookieData_t *lru = dList_nth_data(cookies, 0);
+
+      for (i = 1; i < n; i++) {
+         CookieData_t *curr = dList_nth_data(cookies, i);
+
+         if (curr->last_used < lru->last_used)
+            lru = curr;
+      }
+      dList_remove(cookies, lru);
+      MSG("removed LRU cookie \'%s=%s\'\n", lru->name, lru->value);
+      Cookies_free_cookie(lru);
+   }
+}
+
 static void Cookies_add_cookie(CookieData_t *cookie)
 {
    Dlist *domain_cookies;
@@ -515,8 +540,7 @@ static void Cookies_add_cookie(CookieData_t *cookie)
       if (dList_length(domain_cookies) >= 20) {
          MSG("There are too many cookies for this domain (%s)\n",
              cookie->domain);
-         Cookies_free_cookie(cookie);
-         return;
+         Cookies_remove_LRU(domain_cookies);
       }
 
    }
@@ -531,7 +555,9 @@ static void Cookies_add_cookie(CookieData_t *cookie)
       return;
    }
 
-   /* add the cookie into the respective domain list */
+   cookie->last_used = cookies_use_counter++;
+
+   /* add cookie to domain list */
    node = dList_find_sorted(cookies, cookie->domain,Cookie_node_by_domain_cmp);
    domain_cookies = (node) ? node->dlist : NULL;
    if (!domain_cookies) {
@@ -1014,6 +1040,8 @@ static void Cookies_add_matching_cookies(const char *domain,
             CookieData_t *curr;
             uint_t path_length = strlen(cookie->path);
 
+            cookie->last_used = cookies_use_counter;
+
             /* Longest cookies go first */
             for (j = 0;
                  (curr = dList_nth_data(matching_cookies, j)) &&
@@ -1077,6 +1105,10 @@ static char *Cookies_get(char *url_host, char *url_path,
    dList_free(matching_cookies);
    str = cookie_dstring->str;
    dStr_free(cookie_dstring, FALSE);
+
+   if (*str)
+      cookies_use_counter++;
+
    _MSG("%s gets %s\n", url_host, str);
    return str;
 }
