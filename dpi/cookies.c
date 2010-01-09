@@ -389,20 +389,19 @@ static void Cookies_save_and_free()
    fclose(file_stream);
 }
 
-static char *months[] =
-{ "",
-  "Jan", "Feb", "Mar",
-  "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep",
-  "Oct", "Nov", "Dec"
-};
-
 /*
  * Take a months name and return a number between 1-12.
  * E.g. 'April' -> 4
  */
 static int Cookies_get_month(const char *month_name)
 {
+   static const char *const months[] =
+   { "",
+     "Jan", "Feb", "Mar",
+     "Apr", "May", "Jun",
+     "Jul", "Aug", "Sep",
+     "Oct", "Nov", "Dec"
+   };
    int i;
 
    for (i = 1; i <= 12; i++) {
@@ -423,20 +422,29 @@ static int Cookies_get_month(const char *month_name)
  *   Tue May 21 13:46:22 1991\n
  *   Tue May 21 13:46:22 1991
  *
+ *   Let's add:
+ *   Mon Jan 11 08:00:00 2010 GMT
+ *
  * (return 0 on malformed date string syntax)
+ *
+ * NOTE that the draft spec wants user agents to be more flexible in what
+ * they accept. For now, let's hack in special cases when they're encountered.
+ * Why? Because this function is currently understandable, and I don't want to
+ * abandon that (or at best decrease that -- see section 5.1.1) until there
+ * is known to be good reason.
  */
 static time_t Cookies_create_timestamp(const char *expires)
 {
    time_t ret;
    int day, month, year, hour, minutes, seconds;
    char *cp;
-   char *E_msg =
+   const char *const E_msg =
       "Expire date is malformed!\n"
       " (should be RFC-1123 | RFC-850 | ANSI asctime)\n"
-      " Ignoring cookie: ";
+      " Discarding cookie: ";
 
    cp = strchr(expires, ',');
-   if (!cp && (strlen(expires) == 24 || strlen(expires) == 25)) {
+   if (!cp && strlen(expires)>20 && expires[13] == ':' && expires[16] == ':') {
       /* Looks like ANSI asctime format... */
       cp = (char *)expires;
       day = strtol(cp + 8, NULL, 10);       /* day */
@@ -485,9 +493,6 @@ static time_t Cookies_create_timestamp(const char *expires)
                   (hour * 60 * 60) +
                   (minutes * 60) +
                   seconds);
-
-   MSG("Expires in %ld seconds, at %s",
-       (long)ret - time(NULL), ctime(&ret));
 
    return ret;
 }
