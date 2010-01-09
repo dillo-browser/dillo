@@ -129,10 +129,10 @@ static CookieControlAction default_action = COOKIE_DENY;
 
 static bool_t disabled;
 static FILE *file_stream;
-static char *cookies_txt_header_str =
+static const char *const cookies_txt_header_str =
 "# HTTP Cookie File\n"
-"# http://wp.netscape.com/newsref/std/cookie_spec.html\n"
-"# This is a generated file!  Do not edit.\n\n";
+"# This is a generated file!  Do not edit.\n"
+"# [domain  TRUE  path  secure  expiry_time  name  value]\n\n";
 
 
 /*
@@ -171,7 +171,7 @@ static int Cookie_node_by_domain_cmp(const void *v1, const void *v2)
  * with the optional 'init_str' as its content.
  */
 static FILE *Cookies_fopen(const char *filename, const char *mode,
-                           char *init_str)
+                           const char *init_str)
 {
    FILE *F_in;
    int fd, rc;
@@ -215,7 +215,7 @@ static void Cookies_free_cookie(CookieData_t *cookie)
 
 /*
  * Initialize the cookies module
- * (The 'disabled' variable is writable only within Cookies_init)
+ * (The 'disabled' variable is writeable only within Cookies_init)
  */
 static void Cookies_init()
 {
@@ -272,8 +272,7 @@ static void Cookies_init()
       line[0] = '\0';
       rc = fgets(line, LINE_MAXLEN, file_stream);
       if (!rc && ferror(file_stream)) {
-         MSG("Cookies1: Error while reading from cookies.txt: %s\n",
-             dStrerror(errno));
+         MSG("Error while reading from cookies.txt: %s\n", dStrerror(errno));
          break; /* bail out */
       }
 
@@ -522,12 +521,12 @@ static void Cookies_add_cookie(CookieData_t *cookie)
 
    }
 
-   /* Don't add an expired cookie. Strictly speaking, max-age cookies should
-    * only be discarded when "the age is _greater_ than delta-seconds seconds"
-    * (my emphasis), but "A value of zero means the cookie SHOULD be discarded
-    * immediately", and there's no compelling reason to distinguish between
-    * these cases. */
+   /* Don't add an expired cookie. Whether expiring now == expired, exactly,
+    * is arguable, but we definitely do not want to add a Max-Age=0 cookie.
+    */
    if (cookie->expires_at <= time(NULL)) {
+      MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
+          cookie->value, cookie->domain, cookie->path);
       Cookies_free_cookie(cookie);
       return;
    }
@@ -964,7 +963,7 @@ static void Cookies_set(char *cookie_string, char *url_host,
             cookie->session_only = TRUE;
          Cookies_add_cookie(cookie);
       } else {
-         MSG("Rejecting cookie for %s from host %s path %s\n",
+         MSG("Rejecting cookie for domain %s from host %s path %s\n",
              cookie->domain, url_host, url_path);
          Cookies_free_cookie(cookie);
       }
@@ -972,7 +971,7 @@ static void Cookies_set(char *cookie_string, char *url_host,
 }
 
 /*
- * Compare the cookie with the supplied data to see if it matches
+ * Compare the cookie with the supplied data to see whether it matches
  */
 static bool_t Cookies_match(CookieData_t *cookie, const char *url_path,
                             bool_t is_ssl)
@@ -1004,7 +1003,7 @@ static void Cookies_add_matching_cookies(const char *domain,
       for (i = 0; (cookie = dList_nth_data(domain_cookies, i)); ++i) {
          /* Remove expired cookie. */
          if (cookie->expires_at < time(NULL)) {
-            MSG("goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
+            MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
                 cookie->value, cookie->domain, cookie->path);
             Cookies_remove_cookie(cookie);
             --i; continue;
@@ -1118,7 +1117,7 @@ static int Cookie_control_init(void)
       line[0] = '\0';
       rc = fgets(line, LINE_MAXLEN, stream);
       if (!rc && ferror(stream)) {
-         MSG("Cookies3: Error while reading rule from cookiesrc: %s\n",
+         MSG("Error while reading rule from cookiesrc: %s\n",
              dStrerror(errno));
          break; /* bail out */
       }
