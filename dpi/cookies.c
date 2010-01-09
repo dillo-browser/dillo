@@ -238,7 +238,6 @@ static void Cookies_init()
 #ifndef HAVE_LOCKF
    struct flock lck;
 #endif
-   FILE *old_cookies_file_stream;
 
    /* Default setting */
    disabled = TRUE;
@@ -256,7 +255,7 @@ static void Cookies_init()
    dFree(filename);
 
    if (!file_stream) {
-      MSG("ERROR: Can't open ~/.dillo/cookies.txt, disabling cookies\n");
+      MSG("ERROR: Can't open ~/.dillo/cookies.txt; disabling cookies\n");
       return;
    }
 
@@ -272,12 +271,12 @@ static void Cookies_init()
    disabled = (fcntl(fileno(file_stream), F_SETLK, &lck) == -1);
 #endif
    if (disabled) {
-      MSG("The cookies file has a file lock: disabling cookies!\n");
+      MSG("The cookies file has a file lock; disabling cookies!\n");
       fclose(file_stream);
       return;
    }
 
-   MSG("Enabling cookies as from cookiesrc...\n");
+   MSG("Enabling cookies as per cookiesrc...\n");
 
    cookies = dList_new(32);
 
@@ -300,7 +299,7 @@ static void Cookies_init()
           * pieces[0] The domain name
           * pieces[1] TRUE/FALSE: is the domain a suffix, or a full domain?
           * pieces[2] The path
-          * pieces[3] Is the cookie unsecure or secure (TRUE/FALSE)
+          * pieces[3] TRUE/FALSE: is the cookie for secure use only?
           * pieces[4] Timestamp of expire date
           * pieces[5] Name of the cookie
           * pieces[6] Value of the cookie
@@ -346,86 +345,6 @@ static void Cookies_init()
          Cookies_add_cookie(cookie);
       }
    }
-
-   filename = dStrconcat(dGethomedir(), "/.dillo/cookies", NULL);
-   if ((old_cookies_file_stream = fopen(filename, "r")) != NULL) {
-      MSG("WARNING: Reading old cookies file ~/.dillo/cookies too\n");
-
-      /* Get all lines in the file */
-      while (!feof(old_cookies_file_stream)) {
-         line[0] = '\0';
-         rc = fgets(line, LINE_MAXLEN, old_cookies_file_stream);
-         if (!rc && ferror(old_cookies_file_stream)) {
-            MSG("Cookies2: Error while reading from cookies file: %s\n",
-                dStrerror(errno));
-            break; /* bail out */
-         }
-
-         /* Remove leading and trailing whitespaces */
-         dStrstrip(line);
-
-         if (line[0] != '\0') {
-            /*
-             * Split the row into pieces using a tab as the delimiter.
-             * pieces[0] The version this cookie was set as (0 / 1)
-             * pieces[1] The domain name
-             * pieces[2] A comma separated list of accepted ports
-             * pieces[3] The path
-             * pieces[4] Is the cookie unsecure or secure (0 / 1)
-             * pieces[5] Timestamp of expire date
-             * pieces[6] Name of the cookie
-             * pieces[7] Value of the cookie
-             * pieces[8] Comment
-             * pieces[9] Comment url
-             */
-            CookieControlAction action;
-            char *piece;
-            char *line_marker = line;
-
-            cookie = dNew0(CookieData_t, 1);
-
-            cookie->session_only = FALSE;
-            piece = dStrsep(&line_marker, "\t");
-            if (piece != NULL)
-            cookie->version = strtol(piece, NULL, 10);
-            cookie->domain  = dStrdup(dStrsep(&line_marker, "\t"));
-            Cookies_parse_ports(0, cookie, dStrsep(&line_marker, "\t"));
-            cookie->path = dStrdup(dStrsep(&line_marker, "\t"));
-            piece = dStrsep(&line_marker, "\t");
-            if (piece != NULL && piece[0] == '1')
-               cookie->secure = TRUE;
-            piece = dStrsep(&line_marker, "\t");
-            if (piece != NULL)
-               cookie->expires_at = (time_t) strtol(piece, NULL, 10);
-            cookie->name = dStrdup(dStrsep(&line_marker, "\t"));
-            cookie->value = dStrdup(dStrsep(&line_marker, "\t"));
-            cookie->comment = dStrdup(dStrsep(&line_marker, "\t"));
-            cookie->comment_url = dStrdup(dStrsep(&line_marker, "\t"));
-
-            if (!cookie->domain || cookie->domain[0] == '\0' ||
-                !cookie->path || cookie->path[0] != '/' ||
-                !cookie->name || cookie->name[0] == '\0' ||
-                !cookie->value) {
-               MSG("Malformed line in cookies file!\n");
-               Cookies_free_cookie(cookie);
-               continue;
-            }
-
-            action = Cookies_control_check_domain(cookie->domain);
-            if (action == COOKIE_DENY) {
-               Cookies_free_cookie(cookie);
-               continue;
-            } else if (action == COOKIE_ACCEPT_SESSION) {
-               cookie->session_only = TRUE;
-            }
-
-            /* Save cookie in memory */
-            Cookies_add_cookie(cookie);
-         }
-      }
-      fclose(old_cookies_file_stream);
-   }
-   dFree(filename);
 }
 
 /*
