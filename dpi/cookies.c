@@ -143,7 +143,6 @@ static char *cookies_txt_header_str =
 
 static CookieControlAction Cookies_control_check_domain(const char *domain);
 static int Cookie_control_init(void);
-static char *Cookies_strip_path(const char *path);
 static void Cookies_add_cookie(CookieData_t *cookie);
 static void Cookies_remove_cookie(CookieData_t *cookie);
 static int Cookies_cmp(const void *a, const void *b);
@@ -849,26 +848,27 @@ static int Cookies_cmp(const void *a, const void *b)
 }
 
 /*
- * Check whether 'prefix' is a prefix of 'path'.
+ * Check whether url_path path-matches cookie_path
+ *
+ * Note different user agents apparently vary in path-matching behaviour,
+ * but this is the recommended method at the moment.
  */
-static bool_t Cookies_path_is_prefix(const char *prefix, const char *path)
+static bool_t Cookies_path_matches(const char *url_path,
+                                   const char *cookie_path)
 {
    bool_t ret = TRUE;
 
-   if (!prefix || !path)
-      return FALSE;
-
-   /*
-    * The original Netscape cookie spec states 'The path "/foo" would match
-    * "/foobar" and "/foo/bar.html"', so when the RFCs say "prefix", they
-    * apparently really do mean prefix, however utterly bizarre that might be.
-    *
-    * (On the other hand, http://testsuites.opera.com/cookies/302/302.php
-    * takes quite some interest in the prefix as a genuine path.)
-    */
-   if (strncmp(prefix, path, strlen(prefix)))
+   if (!url_path || !cookie_path) {
       ret = FALSE;
+   } else {
+      uint_t c_len = strlen(cookie_path);
+      uint_t u_len = strlen(url_path);
 
+      ret = (!strncmp(cookie_path, url_path, c_len) &&
+             ((c_len == u_len) ||
+              (c_len > 0 && cookie_path[c_len - 1] == '/') ||
+              (u_len > c_len && url_path[c_len] == '/')));
+   }
    return ret;
 }
 
@@ -909,22 +909,32 @@ static bool_t Cookies_domain_matches(char *A, char *B)
 }
 
 /*
+ * If cookie path is not properly set, remedy that.
+ */
+static void Cookies_validate_path(CookieData_t *cookie, const char *url_path)
+{
+   if (!cookie->path || cookie->path[0] != '/') {
+      dFree(cookie->path);
+
+      if (url_path) {
+         uint_t len = strlen(url_path);
+
+         while (len && url_path[len] != '/')
+            len--;
+         cookie->path = dStrndup(url_path, len ? len : 1);
+      } else {
+         cookie->path = dStrdup("/");
+      }
+   }
+}
+
+/*
  * Validate cookies domain against some security checks.
  */
-static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host,
-                                      char *url_path)
+static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host)
 {
    int dots, diff, i;
    bool_t is_ip;
-
-   /* Make sure that the path is set to something */
-   if (!cookie->path || cookie->path[0] != '/') {
-      dFree(cookie->path);
-      cookie->path = Cookies_strip_path(url_path);
-   }
-
-   if (!Cookies_path_is_prefix(cookie->path, url_path))
-      return FALSE;
 
    /* If the server never set a domain, or set one without a leading
     * dot (which isn't allowed), we use the calling URL's hostname. */
@@ -987,31 +997,6 @@ static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host,
 }
 
 /*
- * For default path attributes, RFC 2109 gives: "Defaults to the path of the
- * request URL that generated the Set-Cookie response, up to, but not
- * including, the right-most /".
- *
- * (RFC 2965 keeps the '/', but is not so widely followed.)
- */
-static char *Cookies_strip_path(const char *path)
-{
-   char *ret;
-   uint_t len;
-
-   if (path) {
-      len = strlen(path);
-
-      while (len && path[len] != '/')
-         len--;
-      ret = dStrndup(path, len ? len : 1);
-   } else {
-      ret = dStrdup("/");
-   }
-
-   return ret;
-}
-
-/*
  * Set the value corresponding to the cookie string
  */
 static void Cookies_set(char *cookie_string, char *url_host,
@@ -1035,7 +1020,8 @@ static void Cookies_set(char *cookie_string, char *url_host,
 
    if ((list = Cookies_parse_string(cookie_string))) {
       for (i = 0; (cookie = dList_nth_data(list, i)); ++i) {
-         if (Cookies_validate_domain(cookie, url_host, url_path)) {
+         if (Cookies_validate_domain(cookie, url_host)) {
+            Cookies_validate_path(cookie, url_path);
             if (action == COOKIE_ACCEPT_SESSION)
                cookie->session_only = TRUE;
             Cookies_add_cookie(cookie);
@@ -1052,7 +1038,7 @@ static void Cookies_set(char *cookie_string, char *url_host,
 /*
  * Compare the cookie with the supplied data to see if it matches
  */
-static bool_t Cookies_match(CookieData_t *cookie, const char *path,
+static bool_t Cookies_match(CookieData_t *cookie, const char *url_path,
                             bool_t is_ssl)
 {
    /* Insecure cookies matches both secure and insecure urls, secure
@@ -1060,8 +1046,7 @@ static bool_t Cookies_match(CookieData_t *cookie, const char *path,
    if (cookie->secure && !is_ssl)
       return FALSE;
 
-   /* Check that the cookie path is a prefix of the current path */
-   if (!Cookies_path_is_prefix(cookie->path, path))
+   if (!Cookies_path_matches(url_path, cookie->path))
       return FALSE;
 
    /* It's a match */
