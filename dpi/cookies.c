@@ -797,7 +797,7 @@ static bool_t Cookies_path_matches(const char *url_path,
       ret = (!strncmp(cookie_path, url_path, c_len) &&
              ((c_len == u_len) ||
               (c_len > 0 && cookie_path[c_len - 1] == '/') ||
-              (u_len > c_len && url_path[c_len] == '/')));
+              (url_path[c_len] == '/')));
    }
    return ret;
 }
