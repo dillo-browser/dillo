@@ -107,12 +107,8 @@ typedef struct {
    char *domain;
    char *path;
    time_t expires_at;
-   uint_t version;
-   char *comment;
-   char *comment_url;
    bool_t secure;
    bool_t session_only;
-   Dlist *ports;
 } CookieData_t;
 
 typedef struct {
@@ -147,9 +143,6 @@ static char *cookies_txt_header_str =
 
 static CookieControlAction Cookies_control_check_domain(const char *domain);
 static int Cookie_control_init(void);
-static void Cookies_parse_ports(int url_port, CookieData_t *cookie,
-                                const char *port_str);
-static char *Cookies_build_ports_str(CookieData_t *cookie);
 static char *Cookies_strip_path(const char *path);
 static void Cookies_add_cookie(CookieData_t *cookie);
 static void Cookies_remove_cookie(CookieData_t *cookie);
@@ -220,9 +213,6 @@ static void Cookies_free_cookie(CookieData_t *cookie)
    dFree(cookie->value);
    dFree(cookie->domain);
    dFree(cookie->path);
-   dFree(cookie->comment);
-   dFree(cookie->comment_url);
-   dList_free(cookie->ports);
    dFree(cookie);
 }
 
@@ -311,7 +301,6 @@ static void Cookies_init()
          cookie = dNew0(CookieData_t, 1);
 
          cookie->session_only = FALSE;
-         cookie->version = 0;
          cookie->domain = dStrdup(dStrsep(&line_marker, "\t"));
          dStrsep(&line_marker, "\t"); /* we use domain always as sufix */
          cookie->path = dStrdup(dStrsep(&line_marker, "\t"));
@@ -373,7 +362,6 @@ static void Cookies_save_and_free()
    while ((node = dList_nth_data(cookies, 0))) {
       for (i = 0; (cookie = dList_nth_data(node->dlist, i)); ++i) {
          if (!cookie->session_only) {
-            /* char * ports_str = Cookies_build_ports_str(cookie); */
             fprintf(file_stream, "%s\tTRUE\t%s\t%s\t%ld\t%s\t%s\n",
                     cookie->domain,
                     cookie->path,
@@ -381,7 +369,6 @@ static void Cookies_save_and_free()
                     (long)cookie->expires_at,
                     cookie->name,
                     cookie->value);
-            /* dFree(ports_str); */
          }
 
          Cookies_free_cookie(cookie);
@@ -504,59 +491,6 @@ static time_t Cookies_create_timestamp(const char *expires)
 
    MSG("Expires in %ld seconds, at %s",
        (long)ret - time(NULL), ctime(&ret));
-
-   return ret;
-}
-
-/*
- * Parse a string containing a list of port numbers.
- */
-static void Cookies_parse_ports(int url_port, CookieData_t *cookie,
-                                const char *port_str)
-{
-   if ((!port_str || !port_str[0]) && url_port != 0) {
-      /* There was no list, so only the calling urls port should be allowed. */
-      if (!cookie->ports)
-         cookie->ports = dList_new(1);
-      dList_append(cookie->ports, INT2VOIDP(url_port));
-   } else if (port_str[0] == '"' && port_str[1] != '"') {
-      char *tok, *str;
-      int port;
-
-      str = dStrdup(port_str + 1);
-      while ((tok = dStrsep(&str, ","))) {
-         port = strtol(tok, NULL, 10);
-         if (port > 0) {
-            if (!cookie->ports)
-               cookie->ports = dList_new(1);
-            dList_append(cookie->ports, INT2VOIDP(port));
-         }
-      }
-      dFree(str);
-   }
-}
-
-/*
- * Build a string of the ports in 'cookie'.
- */
-static char *Cookies_build_ports_str(CookieData_t *cookie)
-{
-   Dstr *dstr;
-   char *ret;
-   void *data;
-   int i;
-
-   dstr = dStr_new("\"");
-   for (i = 0; (data = dList_nth_data(cookie->ports, i)); ++i) {
-      dStr_sprintfa(dstr, "%d,", VOIDP2INT(data));
-   }
-   /* Remove any trailing comma */
-   if (dstr->len > 1)
-      dStr_erase(dstr, dstr->len - 1, 1);
-   dStr_append(dstr, "\"");
-
-   ret = dstr->str;
-   dStr_free(dstr, FALSE);
 
    return ret;
 }
@@ -750,7 +684,7 @@ static char *Cookies_parse_value(char **cookie_str,
 /*
  * Parse one cookie...
  */
-static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
+static CookieData_t *Cookies_parse_one(char **cookie_str)
 {
    CookieData_t *cookie;
    char *str = *cookie_str;
@@ -834,30 +768,6 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
             error = TRUE;
             continue;
          }
-      } else if (dStrcasecmp(attr, "Port") == 0) {
-         value = Cookies_parse_value(&str, FALSE, TRUE);
-         Cookies_parse_ports(url_port, cookie, value);
-         dFree(value);
-      } else if (dStrcasecmp(attr, "Comment") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
-         cookie->comment = value;
-      } else if (dStrcasecmp(attr, "CommentURL") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
-         cookie->comment_url = value;
-      } else if (dStrcasecmp(attr, "Version") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
-
-         if (value) {
-            cookie->version = strtol(value, NULL, 10);
-            if (cookie->version == 1)
-               MSG("RFC cookie!\n");
-            dFree(value);
-         } else {
-            MSG("Cannot parse cookie Version value!\n");
-            dFree(attr);
-            error = TRUE;
-            continue;
-         }
       } else if (dStrcasecmp(attr, "Secure") == 0) {
          cookie->secure = TRUE;
       } else if (dStrcasecmp(attr, "HttpOnly") == 0) {
@@ -902,7 +812,7 @@ static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
  * Iterate the cookie string until we catch all cookies.
  * Return Value: a list with all the cookies! (or NULL upon error)
  */
-static Dlist *Cookies_parse_string(int url_port, char *cookie_string)
+static Dlist *Cookies_parse_string(char *cookie_string)
 {
    CookieData_t *cookie;
    Dlist *ret = NULL;
@@ -911,7 +821,7 @@ static Dlist *Cookies_parse_string(int url_port, char *cookie_string)
    /* The string may contain several cookies separated by comma.
     * We'll iterate until we've caught them all */
    while (*str) {
-      cookie = Cookies_parse_one(url_port, &str);
+      cookie = Cookies_parse_one(&str);
 
       if (cookie) {
          if (!ret)
@@ -1105,7 +1015,7 @@ static char *Cookies_strip_path(const char *path)
  * Set the value corresponding to the cookie string
  */
 static void Cookies_set(char *cookie_string, char *url_host,
-                        char *url_path, int url_port)
+                        char *url_path)
 {
    CookieControlAction action;
    CookieData_t *cookie;
@@ -1123,7 +1033,7 @@ static void Cookies_set(char *cookie_string, char *url_host,
 
    _MSG("%s setting: %s\n", url_host, cookie_string);
 
-   if ((list = Cookies_parse_string(url_port, cookie_string))) {
+   if ((list = Cookies_parse_string(cookie_string))) {
       for (i = 0; (cookie = dList_nth_data(list, i)); ++i) {
          if (Cookies_validate_domain(cookie, url_host, url_path)) {
             if (action == COOKIE_ACCEPT_SESSION)
@@ -1142,12 +1052,9 @@ static void Cookies_set(char *cookie_string, char *url_host,
 /*
  * Compare the cookie with the supplied data to see if it matches
  */
-static bool_t Cookies_match(CookieData_t *cookie, int port,
-                              const char *path, bool_t is_ssl)
+static bool_t Cookies_match(CookieData_t *cookie, const char *path,
+                            bool_t is_ssl)
 {
-   void *data;
-   int i;
-
    /* Insecure cookies matches both secure and insecure urls, secure
       cookies matches only secure urls */
    if (cookie->secure && !is_ssl)
@@ -1157,16 +1064,6 @@ static bool_t Cookies_match(CookieData_t *cookie, int port,
    if (!Cookies_path_is_prefix(cookie->path, path))
       return FALSE;
 
-   /* Check if the port of the request URL matches any
-    * of those set in the cookie */
-   if (cookie->ports) {
-      for (i = 0; (data = dList_nth_data(cookie->ports, i)); ++i) {
-         if (VOIDP2INT(data) == port)
-            return TRUE;
-      }
-      return FALSE;
-   }
-
    /* It's a match */
    return TRUE;
 }
@@ -1175,9 +1072,9 @@ static bool_t Cookies_match(CookieData_t *cookie, int port,
  * Return a string that contains all relevant cookies as headers.
  */
 static char *Cookies_get(char *url_host, char *url_path,
-                         char *url_scheme, int url_port)
+                         char *url_scheme)
 {
-   char *domain_str, *q, *str;
+   char *domain_str, *str;
    CookieData_t *cookie;
    Dlist *matching_cookies;
    CookieNode *node;
@@ -1208,7 +1105,7 @@ static char *Cookies_get(char *url_host, char *url_path,
             --i; continue;
          }
          /* Check if the cookie matches the requesting URL */
-         if (Cookies_match(cookie, url_port, url_path, is_ssl)) {
+         if (Cookies_match(cookie, url_path, is_ssl)) {
             int j;
             CookieData_t *curr;
             uint_t path_length = strlen(cookie->path);
@@ -1230,27 +1127,14 @@ static char *Cookies_get(char *url_host, char *url_path,
    /* Found the cookies, now make the string */
    cookie_dstring = dStr_new("");
    if (dList_length(matching_cookies) > 0) {
-      CookieData_t *first_cookie = dList_nth_data(matching_cookies, 0);
 
       dStr_sprintfa(cookie_dstring, "Cookie: ");
 
-      if (first_cookie->version != 0)
-         dStr_sprintfa(cookie_dstring, "$Version=\"%d\"; ",
-                       first_cookie->version);
-
-
       for (i = 0; (cookie = dList_nth_data(matching_cookies, i)); ++i) {
-         q = (cookie->version == 0 ? "" : "\"");
          dStr_sprintfa(cookie_dstring,
-                       "%s=%s; $Path=%s%s%s; $Domain=%s%s%s",
+                       "%s=%s; $Path=%s; $Domain=%s",
                        cookie->name, cookie->value,
-                       q, cookie->path, q, q, cookie->domain, q);
-         if (cookie->ports) {
-            char *ports_str = Cookies_build_ports_str(cookie);
-            dStr_sprintfa(cookie_dstring, "; $Port=%s", ports_str);
-            dFree(ports_str);
-         }
-
+                       cookie->path, cookie->domain);
          dStr_append(cookie_dstring,
                      dList_length(matching_cookies) > i + 1 ? "; " : "\r\n");
       }
@@ -1395,8 +1279,8 @@ static CookieControlAction Cookies_control_check_domain(const char *domain)
  */
 static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
 {
-   char *p, *cmd, *cookie, *host, *path, *scheme;
-   int port, ret = 1;
+   char *cmd, *cookie, *host, *path, *scheme;
+   int ret = 1;
    size_t BufSize = strlen(Buf);
 
    cmd = a_Dpip_get_attr_l(Buf, BufSize, "cmd");
@@ -1419,11 +1303,8 @@ static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
       cookie = a_Dpip_get_attr_l(Buf, BufSize, "cookie");
       host = a_Dpip_get_attr_l(Buf, BufSize, "host");
       path = a_Dpip_get_attr_l(Buf, BufSize, "path");
-      p = a_Dpip_get_attr_l(Buf, BufSize, "port");
-      port = strtol(p, NULL, 10);
-      dFree(p);
 
-      Cookies_set(cookie, host, path, port);
+      Cookies_set(cookie, host, path);
 
       dFree(path);
       dFree(host);
@@ -1435,11 +1316,8 @@ static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
       scheme = a_Dpip_get_attr_l(Buf, BufSize, "scheme");
       host = a_Dpip_get_attr_l(Buf, BufSize, "host");
       path = a_Dpip_get_attr_l(Buf, BufSize, "path");
-      p = a_Dpip_get_attr_l(Buf, BufSize, "port");
-      port = strtol(p, NULL, 10);
-      dFree(p);
 
-      cookie = Cookies_get(host, path, scheme, port);
+      cookie = Cookies_get(host, path, scheme);
       dFree(scheme);
       dFree(path);
       dFree(host);
