@@ -13,19 +13,17 @@
  *
  */
 
-/* Handling of cookies takes place here.
- * This implementation aims to follow RFC 2965:
- * http://www.ietf.org/rfc/rfc2965.txt
- */
-
-/*
- * TODO: Cleanup this code. Shorten some functions, order things,
- *       add comments, remove leaks, etc.
- */
-
-/* TODO: this server is not assembling the received packets.
- * This means it currently expects dillo to send full dpi tags
- * within the socket; if that fails, everything stops.
+/* This is written to follow the HTTP State Working Group's
+ * draft-ietf-httpstate-cookie-01.txt.
+ *
+ * We depart from the draft spec's domain format in that, rather than
+ * using a host-only flag, we continue to use the .domain notation
+ * internally to indicate cookies that may also be returned to subdomains.
+ *
+ * Info on cookies in the wild:
+ *  http://www.ietf.org/mail-archive/web/http-state/current/msg00078.html
+ * And dates specifically:
+ *  http://www.ietf.org/mail-archive/web/http-state/current/msg00128.html
  */
 
 #ifdef DISABLE_COOKIES
@@ -873,42 +871,6 @@ static bool_t Cookies_path_matches(const char *url_path,
 }
 
 /*
- * Check whether host name A domain-matches host name B.
- */
-static bool_t Cookies_domain_matches(char *A, char *B)
-{
-   int diff;
-
-   if (!A || !*A || !B || !*B)
-      return FALSE;
-
-   /* "Host A's name domain-matches host B's if their host name strings
-    * string-compare equal; or"...
-    */
-   if (!dStrcasecmp(A, B))
-      return TRUE;
-
-   /* ..."A is a HDN [host domain name] string and has the form NB, where N
-    * is a non-empty name string, B has the form .B', and B' is a HDN string.
-    */
-
-   if (*B != '.') {
-      return FALSE;
-   }
-
-   diff = strlen(A) - strlen(B);
-
-   if (diff > 0) {
-      return (dStrcasecmp(A + diff, B) == 0);
-   } else {
-      /* Consider A to domain-match B if B is of the form .A
-       * CONTRARY TO RFC
-       */
-      return (dStrcasecmp(A, B + 1) == 0);
-   }
-}
-
-/*
  * If cookie path is not properly set, remedy that.
  */
 static void Cookies_validate_path(CookieData_t *cookie, const char *url_path)
@@ -929,70 +891,142 @@ static void Cookies_validate_path(CookieData_t *cookie, const char *url_path)
 }
 
 /*
+ * Check whether host name A domain-matches host name B.
+ */
+static bool_t Cookies_domain_matches(char *A, char *B)
+{
+   int diff;
+
+   if (!A || !*A || !B || !*B)
+      return FALSE;
+
+   if (*B == '.')
+      B++;
+
+   /* Should we concern ourselves with trailing dots in matching (here or
+    * elsewhere)? The HTTP State people have found that most user agents
+    * don't, so: No.
+    */
+
+   if (!dStrcasecmp(A, B))
+      return TRUE;
+
+   diff = strlen(A) - strlen(B);
+
+   if (diff > 0) {
+      /* B is the tail of A, and the match is preceded by a '.' */
+      return (dStrcasecmp(A + diff, B) == 0 && A[diff - 1] == '.');
+   } else {
+      return FALSE;
+   }
+}
+
+/*
+ * Based on the host, how many internal dots do we need in a cookie domain
+ * to make it valid? e.g., "org" is not on the list, so dillo.org is a safe
+ * cookie domain, but "uk" is on the list, so ac.uk is not safe.
+ *
+ * This is imperfect, but it's something. Specifically, checking for these
+ * TLDs is the solution that Konqueror used once upon a time, according to
+ * reports.
+ */
+static uint_t Cookies_internal_dots_required(const char *host)
+{
+   uint_t ret = 1;
+
+   if (host) {
+      int start, after, tld_len;
+
+      /* We may be able to trust the format of the host string more than
+       * I am here. Trailing dots and no dots are real possibilities, though.
+       */
+      after = strlen(host);
+      if (after > 0 && host[after - 1] == '.')
+         after--;
+      start = after;
+      while (start > 0 && host[start - 1] != '.')
+         start--;
+      tld_len = after - start;
+
+      if (tld_len > 0) {
+         const char *const tlds[] = {"ai","au","bd","bh","ck","eg","et","fk",
+                                     "il","in","kh","kr","mk","mt","na","np",
+                                     "nz","pg","pk","qa","sa","sb","sg","sv",
+                                    "ua","ug","uk","uy","vn","za","zw","name"};
+         uint_t i, tld_num = sizeof(tlds) / sizeof(tlds[0]);
+
+         for (i = 0; i < tld_num; i++) {
+            if (strlen(tlds[i]) == (uint_t) tld_len &&
+                !dStrncasecmp(tlds[i], host + start, tld_len)) {
+               MSG("TLD code matched %s\n", tlds[i]);
+               ret++;
+               break;
+            }
+         }
+      }
+   }
+   return ret;
+}
+
+/*
+ * Is the domain an IP address?
+ */
+static bool_t Cookies_domain_is_ip(const char *domain)
+{
+   bool_t ipv4 = TRUE, ipv6 = TRUE;
+
+   if (!domain)
+      return FALSE;
+
+   while (*domain) {
+      if (*domain != '.' && !isdigit(*domain))
+         ipv4 = FALSE;
+      if (*domain != ':' && !isxdigit(*domain))
+         ipv6 = FALSE;
+      if (!(ipv4 || ipv6))
+         return FALSE;
+      domain++;
+   }
+   MSG("an IP address\n");
+   return TRUE;
+}
+
+/*
  * Validate cookies domain against some security checks.
  */
 static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host)
 {
-   int dots, diff, i;
-   bool_t is_ip;
+   uint_t i, internal_dots;
 
-   /* If the server never set a domain, or set one without a leading
-    * dot (which isn't allowed), we use the calling URL's hostname. */
-   if (cookie->domain == NULL || cookie->domain[0] != '.') {
-      if (cookie->domain) {
-         /* It may be necessary to handle these old-style domains. */
-         MSG("Ignoring cookie domain \'%s\' without leading dot.\n",
-             cookie->domain);
-      }
-      dFree(cookie->domain);
+   if (!cookie->domain) {
       cookie->domain = dStrdup(host);
       return TRUE;
+   }
+
+   if (cookie->domain[0] != '.' && !Cookies_domain_is_ip(cookie->domain)) {
+      char *d = dStrconcat(".", cookie->domain, NULL);
+      dFree(cookie->domain);
+      cookie->domain = d;
    }
 
    if (!Cookies_domain_matches(host, cookie->domain))
       return FALSE;
 
-   /* Count the number of dots and also find out if it is an IP-address */
-   is_ip = TRUE;
-   for (i = 0, dots = 0; cookie->domain[i] != '\0'; i++) {
+   internal_dots = 0;
+   for (i = 1; i < strlen(cookie->domain) - 1; i++) {
       if (cookie->domain[i] == '.')
-         dots++;
-      else if (!isdigit(cookie->domain[i]))
-         is_ip = FALSE;
+         internal_dots++;
    }
 
-   if (i > 0 && cookie->domain[i - 1] == '.') {
-       /* A trailing dot is a sneaky trick, but we won't fall for it. */
-      dots--;
-   }
-
-   /* A valid domain must have at least two dots in it
-    * NOTE: this breaks cookies on localhost...
-    *
+   /* All of this dots business is a weak hack.
     * TODO: accept the publicsuffix.org list as an optional external file.
     */
-   if (dots < 2) {
+   if (internal_dots < Cookies_internal_dots_required(host)) {
+      MSG("not enough dots in %s\n", cookie->domain);
       return FALSE;
    }
 
-   /* Reject a cookie if the "request-host is a FQDN [fully-qualified domain
-    * name] (not IP address) and has the form HD, where D is the value of the
-    * Domain attribute, and H is a string that contains one or more dots.
-    */
-   diff = strlen(host) - i;
-   if (diff > 0) {
-      if (dStrcasecmp(host + diff, cookie->domain))
-         return FALSE;
-
-      if (!is_ip) {
-         /* "x.y.test.com" is not allowed to set cookies for ".test.com";
-          *  only an url of the form "y.test.com" would be. */
-         while ( diff-- )
-            if (host[diff] == '.')
-               return FALSE;
-      }
-   }
-
+   MSG("host %s and domain %s is all right\n", host, cookie->domain);
    return TRUE;
 }
 
@@ -1053,6 +1087,43 @@ static bool_t Cookies_match(CookieData_t *cookie, const char *url_path,
    return TRUE;
 }
 
+static void Cookies_add_matching_cookies(const char *domain,
+                                         const char *url_path,
+                                         Dlist *matching_cookies,
+                                         bool_t is_ssl)
+{
+   CookieNode *node = dList_find_sorted(cookies, domain,
+                                        Cookie_node_by_domain_cmp);
+   if (node) {
+      int i;
+      CookieData_t *cookie;
+      Dlist *domain_cookies = node->dlist;
+
+      for (i = 0; (cookie = dList_nth_data(domain_cookies, i)); ++i) {
+         /* Remove expired cookie. */
+         if (cookie->expires_at < time(NULL)) {
+            MSG("goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
+                cookie->value, cookie->domain, cookie->path);
+            Cookies_remove_cookie(cookie);
+            --i; continue;
+         }
+         /* Check if the cookie matches the requesting URL */
+         if (Cookies_match(cookie, url_path, is_ssl)) {
+            int j;
+            CookieData_t *curr;
+            uint_t path_length = strlen(cookie->path);
+
+            /* Longest cookies go first */
+            for (j = 0;
+                 (curr = dList_nth_data(matching_cookies, j)) &&
+                  strlen(curr->path) >= path_length;
+                 j++) ;
+            dList_insert_pos(matching_cookies, cookie, j);
+         }
+      }
+   }
+}
+
 /*
  * Return a string that contains all relevant cookies as headers.
  */
@@ -1062,8 +1133,6 @@ static char *Cookies_get(char *url_host, char *url_path,
    char *domain_str, *str;
    CookieData_t *cookie;
    Dlist *matching_cookies;
-   CookieNode *node;
-   Dlist *domain_cookies;
    bool_t is_ssl;
    Dstr *cookie_dstring;
    int i;
@@ -1079,34 +1148,14 @@ static char *Cookies_get(char *url_host, char *url_path,
    for (domain_str = (char *) url_host;
         domain_str != NULL && *domain_str;
         domain_str = strchr(domain_str+1, '.')) {
-
-      node = dList_find_sorted(cookies, domain_str, Cookie_node_by_domain_cmp);
-      domain_cookies = (node) ? node->dlist : NULL;
-
-      for (i = 0; (cookie = dList_nth_data(domain_cookies, i)); ++i) {
-         /* Remove expired cookie. */
-         if (cookie->expires_at < time(NULL)) {
-            Cookies_remove_cookie(cookie);
-            --i; continue;
-         }
-         /* Check if the cookie matches the requesting URL */
-         if (Cookies_match(cookie, url_path, is_ssl)) {
-            int j;
-            CookieData_t *curr;
-            uint_t path_length = strlen(cookie->path);
-
-            /* "If multiple cookies satisfy the criteria [to be sent in a
-             * query], they are ordered in the Cookie header such that those
-             * with more specific Path attributes precede those with less
-             * specific."
-             */
-            for (j = 0;
-                 (curr = dList_nth_data(matching_cookies, j)) &&
-                  strlen(curr->path) >= path_length;
-                 j++) ;
-            dList_insert_pos(matching_cookies, cookie, j);
-         }
-      }
+      Cookies_add_matching_cookies(domain_str, url_path, matching_cookies,
+                                   is_ssl);
+   }
+   if (!Cookies_domain_is_ip(url_host)) {
+      domain_str = dStrconcat(".", url_host, NULL);
+      Cookies_add_matching_cookies(domain_str, url_path, matching_cookies,
+                                   is_ssl);
+      dFree(domain_str);
    }
 
    /* Found the cookies, now make the string */
