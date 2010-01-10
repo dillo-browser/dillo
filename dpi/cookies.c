@@ -980,7 +980,7 @@ static void Cookies_set(char *cookie_string, char *url_host,
       return;
    }
 
-   _MSG("%s setting: %s\n", url_host, cookie_string);
+   MSG("%s SETTING: %s\n", url_host, cookie_string);
 
    if ((cookie = Cookies_parse(cookie_string, server_date))) {
       if (Cookies_validate_domain(cookie, url_host)) {
@@ -1109,7 +1109,7 @@ static char *Cookies_get(char *url_host, char *url_path,
    if (*str)
       cookies_use_counter++;
 
-   _MSG("%s gets %s\n", url_host, str);
+   MSG("%s GETTING: %s\n", url_host, str);
    return str;
 }
 
