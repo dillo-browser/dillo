@@ -893,10 +893,16 @@ static uint_t Cookies_internal_dots_required(const char *host)
       tld_len = after - start;
 
       if (tld_len > 0) {
-         const char *const tlds[] = {"ai","au","bd","bh","ck","eg","et","fk",
-                                     "il","in","kh","kr","mk","mt","na","np",
-                                     "nz","pg","pk","qa","sa","sb","sg","sv",
-                                    "ua","ug","uk","uy","vn","za","zw","name"};
+         /* These TLDs were chosen by examining the current publicsuffix list
+          * in January 2010 and picking out those where it was simplest for
+          * them to describe the situation by beginning with a "*.[tld]" rule.
+          */
+         const char *const tlds[] = {"ar","au","bd","bn","bt","ck","cy","do",
+                                     "eg","er","et","fj","fk","gt","gu","id",
+                                     "il","jm","ke","kh","kw","ml","mm","mt",
+                                     "mz","ni","np","nz","om","pg","py","qa",
+                                     "sv","tr","uk","uy","ve","ye","yu","za",
+                                     "zm","zw"};
          uint_t i, tld_num = sizeof(tlds) / sizeof(tlds[0]);
 
          for (i = 0; i < tld_num; i++) {
