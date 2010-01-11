@@ -16,6 +16,7 @@ dillo-2.2 [??]
  - Add support for CSS property list-style-position.
  - Support border-width: thin | medium | thick.
  - Fix CSS_SHORTHAND_DIRECTIONS case in CssParser.
+ - Add quirk to reset font properties in tables (fixes e.g. gmail).
    Patch: Johannes Hofmann
 +- Cleaned up system includes in dpid directory.
  - Fixed CustProgressBox() for systems without weak symbols.
