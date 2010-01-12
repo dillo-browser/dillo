@@ -113,8 +113,8 @@
 
 # Set the proxy information for http.
 # Note that the http_proxy environment variable overrides this setting.
-# WARNING: FTP and downloads plugins use wget. To use a proxy with them,
-#          you will need to configure wget accordingly.
+# WARNING: For ftp, dillo uses wget. To use a proxy with it, you will need
+#          to set the ftp_proxy environment variable.
 # http_proxy="http://localhost:8080/"
 #(by default, no proxy is used)
 
@@ -123,7 +123,8 @@
 # http_proxyuser="joe"
 #(by default, no proxy is used)
 
-# Set the domains to access without proxy
+# Set the domains to access without proxy.
+# Note that the downloads dpi does not know about this list.
 # no_proxy = ".hola.com .mynet.cl .hi.de"
 #no_proxy="localhost 127.0.0.1"
 

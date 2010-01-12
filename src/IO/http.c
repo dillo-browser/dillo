@@ -82,8 +82,10 @@ int a_Http_init(void)
 
    if (env_proxy && strlen(env_proxy))
       HTTP_Proxy = a_Url_new(env_proxy, NULL);
-   if (!HTTP_Proxy && prefs.http_proxy)
-      HTTP_Proxy = a_Url_dup(prefs.http_proxy);
+   if (!HTTP_Proxy && prefs.http_proxy) {
+      HTTP_Proxy = a_Url_new(prefs.http_proxy, NULL);
+      setenv("http_proxy", URL_STR(HTTP_Proxy), 1);
+   }
 
 /*  This allows for storing the proxy password in "user:passwd" format
  * in dillorc, but as this constitutes a security problem, it was disabled.

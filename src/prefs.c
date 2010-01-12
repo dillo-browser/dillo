@@ -104,7 +104,7 @@ void a_Prefs_freeall(void)
    dFree(prefs.font_serif);
    a_Url_free(prefs.home);
    dFree(prefs.http_language);
-   a_Url_free(prefs.http_proxy);
+   dFree(prefs.http_proxy);
    dFree(prefs.http_proxyuser);
    dFree(prefs.http_referer);
    dFree(prefs.no_proxy);
