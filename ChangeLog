@@ -2,7 +2,7 @@
 Dillo project
 =============================================================================
 
-dillo-2.2 [??, 2010]
+dillo-2.2 [??]
 
 +- Added keybindings for scrolling.
    Patch: corvid, Jorge Arellano Cid
@@ -59,8 +59,6 @@ dillo-2.2 [??, 2010]
  - Allow keysyms in keysrc.
  - Explicitly check installation bindir for dpid (BUG 930)
  - General cookies overhaul.
- - If http_proxy environment var not set and http_proxy pref is set, then set
-   env from pref so a spawned dpid/downloads dpi/wget will see pref value.
    Patches: corvid
 +- Support for the letter-spacing property.
    Patch: Johannes Hofmann, corvid
