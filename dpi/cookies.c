@@ -343,6 +343,7 @@ static void Cookies_save_and_free()
    int i, fd;
    CookieNode *node;
    CookieData_t *cookie;
+   time_t now;
 
 #ifndef HAVE_LOCKF
    struct flock lck;
@@ -350,6 +351,8 @@ static void Cookies_save_and_free()
 
    if (disabled)
       return;
+
+   now = time(NULL);
 
    rewind(file_stream);
    fd = fileno(file_stream);
@@ -360,7 +363,7 @@ static void Cookies_save_and_free()
    /* Iterate cookies per domain, saving and freeing */
    while ((node = dList_nth_data(cookies, 0))) {
       for (i = 0; (cookie = dList_nth_data(node->dlist, i)); ++i) {
-         if (!cookie->session_only) {
+         if (!cookie->session_only && (cookie->expires_at > now)) {
             fprintf(file_stream, "%s\tTRUE\t%s\t%s\t%ld\t%s\t%s\n",
                     cookie->domain,
                     cookie->path,
