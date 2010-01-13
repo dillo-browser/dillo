@@ -926,22 +926,24 @@ static uint_t Cookies_internal_dots_required(const char *host)
  */
 static bool_t Cookies_domain_is_ip(const char *domain)
 {
-   bool_t ipv4 = TRUE, ipv6 = TRUE;
+   uint_t len;
 
    if (!domain)
       return FALSE;
 
-   while (*domain) {
-      if (*domain != '.' && !isdigit(*domain))
-         ipv4 = FALSE;
-      if (*domain != ':' && !isxdigit(*domain))
-         ipv6 = FALSE;
-      if (!(ipv4 || ipv6))
-         return FALSE;
-      domain++;
+   len = strlen(domain);
+
+   if (len == strspn(domain, "0123456789.")) {
+      MSG("an IPv4 address\n");
+      return TRUE;
    }
-   MSG("an IP address\n");
-   return TRUE;
+   if (*domain == '[' &&
+       (len == strspn(domain, "0123456789abcdefABCDEF:.[]"))) {
+      /* The precise format is shown in section 3.2.2 of rfc 3986 */
+      MSG("an IPv6 address\n");
+      return TRUE;
+   }
+   return FALSE;
 }
 
 /*
