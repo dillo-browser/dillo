@@ -793,6 +793,31 @@ static int Cookies_cmp(const void *a, const void *b)
 }
 
 /*
+ * Is the domain an IP address?
+ */
+static bool_t Cookies_domain_is_ip(const char *domain)
+{
+   uint_t len;
+
+   if (!domain)
+      return FALSE;
+
+   len = strlen(domain);
+
+   if (len == strspn(domain, "0123456789.")) {
+      MSG("an IPv4 address\n");
+      return TRUE;
+   }
+   if (*domain == '[' &&
+       (len == strspn(domain, "0123456789abcdefABCDEF:.[]"))) {
+      /* The precise format is shown in section 3.2.2 of rfc 3986 */
+      MSG("an IPv6 address\n");
+      return TRUE;
+   }
+   return FALSE;
+}
+
+/*
  * Check whether url_path path-matches cookie_path
  *
  * Note different user agents apparently vary in path-matching behaviour,
@@ -858,6 +883,9 @@ static bool_t Cookies_domain_matches(char *A, char *B)
    if (!dStrcasecmp(A, B))
       return TRUE;
 
+   if (Cookies_domain_is_ip(B))
+      return FALSE;
+
    diff = strlen(A) - strlen(B);
 
    if (diff > 0) {
@@ -919,31 +947,6 @@ static uint_t Cookies_internal_dots_required(const char *host)
       }
    }
    return ret;
-}
-
-/*
- * Is the domain an IP address?
- */
-static bool_t Cookies_domain_is_ip(const char *domain)
-{
-   uint_t len;
-
-   if (!domain)
-      return FALSE;
-
-   len = strlen(domain);
-
-   if (len == strspn(domain, "0123456789.")) {
-      MSG("an IPv4 address\n");
-      return TRUE;
-   }
-   if (*domain == '[' &&
-       (len == strspn(domain, "0123456789abcdefABCDEF:.[]"))) {
-      /* The precise format is shown in section 3.2.2 of rfc 3986 */
-      MSG("an IPv6 address\n");
-      return TRUE;
-   }
-   return FALSE;
 }
 
 /*
