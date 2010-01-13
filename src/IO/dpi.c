@@ -30,6 +30,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 
@@ -434,9 +435,11 @@ static int Dpi_read_comm_keys(int *port)
  */
 static int Dpi_make_socket_fd()
 {
-   int fd, ret = -1;
+   int fd, one = 1, ret = -1;
 
    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) != -1) {
+      /* avoid delays when sending small pieces of data */
+      setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
       ret = fd;
    }
    return ret;
