@@ -145,7 +145,6 @@ static const char *const cookies_txt_header_str =
 static CookieControlAction Cookies_control_check_domain(const char *domain);
 static int Cookie_control_init(void);
 static void Cookies_add_cookie(CookieData_t *cookie);
-static void Cookies_remove_cookie(CookieData_t *cookie);
 static int Cookies_cmp(const void *a, const void *b);
 
 /*
@@ -539,8 +538,9 @@ static void Cookies_add_cookie(CookieData_t *cookie)
 
    if (domain_cookies) {
       /* Remove any cookies with the same name and path */
-      while ((c = dList_find_custom(domain_cookies, cookie, Cookies_cmp))){
-         Cookies_remove_cookie(c);
+      while ((c = dList_find_custom(domain_cookies, cookie, Cookies_cmp))) {
+         dList_remove(domain_cookies, c);
+         Cookies_free_cookie(c);
       }
 
       /* Respect the limit of 20 cookies per domain */
@@ -549,7 +549,6 @@ static void Cookies_add_cookie(CookieData_t *cookie)
              cookie->domain);
          Cookies_remove_LRU(domain_cookies);
       }
-
    }
 
    /* Don't add an expired cookie. Whether expiring now == expired, exactly,
@@ -559,48 +558,27 @@ static void Cookies_add_cookie(CookieData_t *cookie)
       MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
           cookie->value, cookie->domain, cookie->path);
       Cookies_free_cookie(cookie);
-      return;
-   }
-
-   cookie->last_used = cookies_use_counter++;
-
-   /* add cookie to domain list */
-   node = dList_find_sorted(cookies, cookie->domain,Cookie_node_by_domain_cmp);
-   domain_cookies = (node) ? node->dlist : NULL;
-   if (!domain_cookies) {
-      domain_cookies = dList_new(5);
-      dList_append(domain_cookies, cookie);
-      node = dNew(CookieNode, 1);
-      node->domain = dStrdup(cookie->domain);
-      node->dlist = domain_cookies;
-      dList_insert_sorted(cookies, node, Cookie_node_cmp);
    } else {
-      dList_append(domain_cookies, cookie);
-   }
-}
+      cookie->last_used = cookies_use_counter++;
 
-/*
- * Remove the cookie from the domain list.
- * If the domain list is empty, remove the node too.
- * Free the cookie.
- */
-static void Cookies_remove_cookie(CookieData_t *cookie)
-{
-   CookieNode *node;
-
-   node = dList_find_sorted(cookies, cookie->domain,Cookie_node_by_domain_cmp);
-   if (node) {
-      dList_remove(node->dlist, cookie);
-      if (dList_length(node->dlist) == 0) {
-         dList_remove(cookies, node);
-         dFree(node->domain);
-         dList_free(node->dlist);
+      /* add cookie to domain list */
+      if (!domain_cookies) {
+         domain_cookies = dList_new(5);
+         dList_append(domain_cookies, cookie);
+         node = dNew(CookieNode, 1);
+         node->domain = dStrdup(cookie->domain);
+         node->dlist = domain_cookies;
+         dList_insert_sorted(cookies, node, Cookie_node_cmp);
+      } else {
+         dList_append(domain_cookies, cookie);
       }
-   } else {
-      MSG("Attempting to remove a cookie that doesn't exist!\n");
    }
-
-   Cookies_free_cookie(cookie);
+   if (domain_cookies && (dList_length(domain_cookies) == 0)) {
+      dList_remove(cookies, node);
+      dFree(node->domain);
+      dList_free(domain_cookies);
+      dFree(node);
+   }
 }
 
 /*
@@ -1056,7 +1034,8 @@ static void Cookies_add_matching_cookies(const char *domain,
          if (cookie->expires_at < time(NULL)) {
             MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
                 cookie->value, cookie->domain, cookie->path);
-            Cookies_remove_cookie(cookie);
+            dList_remove(domain_cookies, cookie);
+            Cookies_free_cookie(cookie);
             --i; continue;
          }
          /* Check if the cookie matches the requesting URL */
@@ -1074,6 +1053,13 @@ static void Cookies_add_matching_cookies(const char *domain,
                  j++) ;
             dList_insert_pos(matching_cookies, cookie, j);
          }
+      }
+
+      if (dList_length(domain_cookies) == 0) {
+         dList_remove(cookies, node);
+         dFree(node->domain);
+         dList_free(domain_cookies);
+         dFree(node);
       }
    }
 }
