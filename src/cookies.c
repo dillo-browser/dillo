@@ -10,10 +10,9 @@
  * (at your option) any later version.
  */
 
-/* Handling of cookies takes place here.
- * This implementation aims to follow RFC 2965:
- * http://www.ietf.org/rfc/rfc2965.txt
- */
+/* Handling of cookies takes place here. */
+
+#include "msg.h"
 
 #ifdef DISABLE_COOKIES
 
@@ -37,7 +36,6 @@ void a_Cookies_init(void)
 #include <ctype.h>
 #include <errno.h>
 
-#include "msg.h"
 #include "IO/Url.h"
 #include "list.h"
 #include "cookies.h"
