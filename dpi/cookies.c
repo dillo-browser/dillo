@@ -310,12 +310,11 @@ static void Cookies_init()
          if (piece != NULL)
             cookie->expires_at = (time_t) strtol(piece, NULL, 10);
          cookie->name = dStrdup(dStrsep(&line_marker, "\t"));
-         cookie->value = dStrdup(dStrsep(&line_marker, "\t"));
+         cookie->value = dStrdup(line_marker ? line_marker : "");
 
          if (!cookie->domain || cookie->domain[0] == '\0' ||
              !cookie->path || cookie->path[0] != '/' ||
-             !cookie->name || cookie->name[0] == '\0' ||
-             !cookie->value) {
+             !cookie->name || !cookie->value) {
             MSG("Malformed line in cookies.txt file!\n");
             Cookies_free_cookie(cookie);
             continue;
