@@ -63,6 +63,7 @@ struct _DilloPrefs {
    bool_t show_clear_url;
    bool_t show_url;
    bool_t show_search;
+   bool_t show_help;
    bool_t show_progress_box;
    bool_t fullwindow_start;
    bool_t load_images;

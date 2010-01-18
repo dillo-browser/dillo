@@ -11,6 +11,7 @@
 
 // UI for Dillo
 
+#include <unistd.h>
 #include <stdio.h>
 
 #include <fltk/HighlightButton.h>
@@ -40,7 +41,7 @@ using namespace fltk;
 struct iconset {
    Image *ImgMeterOK, *ImgMeterBug,
          *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgTools,
-         *ImgClear,*ImgSearch;
+         *ImgClear,*ImgSearch, *ImgHelp;
    MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti;
 };
 
@@ -54,6 +55,7 @@ static struct iconset standard_icons = {
    new xpmImage(tools_xpm),
    new xpmImage(new_s_xpm),
    new xpmImage(search_xpm),
+   new xpmImage(help_xpm),
    new MultiImage(*new xpmImage(left_xpm), INACTIVE_R,
                   *new xpmImage(left_i_xpm)),
    new MultiImage(*new xpmImage(right_xpm), INACTIVE_R,
@@ -72,6 +74,7 @@ static struct iconset small_icons = {
    new xpmImage(tools_s_xpm),
    new xpmImage(new_s_xpm),
    standard_icons.ImgSearch,
+   standard_icons.ImgHelp,
    new MultiImage(*new xpmImage(left_s_xpm), INACTIVE_R,
                   *new xpmImage(left_si_xpm)),
    new MultiImage(*new xpmImage(right_s_xpm), INACTIVE_R,
@@ -213,6 +216,25 @@ static void search_cb(Widget *wid, void *data)
    } else if (k == 3) {
       ((UI*)data)->panel_cb_i();
    }
+}
+
+/*
+ * Callback for the help button.
+ */                               
+static void help_cb(Widget *w, void *)
+{
+   char *path = dStrconcat(DILLO_DOCDIR, "user_help.html", NULL);
+   BrowserWindow *bw = a_UIcmd_get_bw_by_widget(w);
+
+   if (access(path, R_OK) == 0) {
+      char *urlstr = dStrconcat("file:", path, NULL);
+      a_UIcmd_open_urlstr(bw, urlstr);
+      dFree(urlstr);
+   } else {
+      MSG("Can't read local help file at \"%s\". Getting remote help...\n", path);
+      a_UIcmd_open_urlstr(bw, "http://www.dillo.org/dillo2-help.html");
+   }
+   dFree(path);
 }
 
 /*
@@ -455,6 +477,11 @@ PackedGroup *UI::make_location()
     b->callback(search_cb, this);
     b->clear_tab_to_focus();
 
+    Help = b = new HighlightButton(0,0,16,22,0);
+    b->image(icons->ImgHelp);
+    b->callback(help_cb, this);
+    b->clear_tab_to_focus();
+
    pg->type(PackedGroup::ALL_CHILDREN_VERTICAL);
    pg->resizable(i);
    pg->end();
@@ -463,6 +490,7 @@ PackedGroup *UI::make_location()
       Clear->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
       Location->tooltip("Location");
       Search->tooltip("Search the Web");
+      Help->tooltip("Help");
    }
    return pg;
 }
@@ -986,6 +1014,8 @@ void UI::customize(int flags)
       Location->hide();
    if ( !prefs.show_search )
       Search->hide();
+   if ( !prefs.show_help )
+      Help->hide();
    if ( !prefs.show_progress_box )
       ProgBox->hide();
 }

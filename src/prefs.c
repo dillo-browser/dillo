@@ -76,6 +76,7 @@ void a_Prefs_init(void)
    prefs.show_extra_warnings = FALSE;
    prefs.show_filemenu=TRUE;
    prefs.show_forw = TRUE;
+   prefs.show_help = TRUE;
    prefs.show_home = TRUE;
    prefs.show_msg = TRUE;
    prefs.show_progress_box = TRUE;

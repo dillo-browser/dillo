@@ -1,0 +1,298 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title> Help for Dillo </title>
+</head>
+
+<body bgcolor='#778899' text='#000000'>
+
+  <table bgcolor="#70a0c0" border="1" cellpadding="5">
+   <tr><td><h1>Help for Dillo 2.1.1</h1>
+  </table>
+  <p>
+  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=5>
+    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+    <h4><font color="green">Basics:</font></h4>
+    </td></tr>
+
+    <tr><td WIDTH="100%" bgcolor="#70a0c0">
+    <ul>
+      <li>You can tell a link from plain content by the hand-shaped cursor.
+      <li> Besides browsing the web, Dillo also has basic file browsing
+           capabilities included. So, entering <a href="file:">file:</a> in your
+           Dillo URL window will give you the contents of your current
+           working directory, and <a href="file:~">file:~</a> entered in the
+           same place will point your Dillo browser right to your home
+           directory...
+      <li> Dillo, at this stage of development, is <u>not</u> not ready
+           to render pages that use <b><font color="#5040a0">frames</font></b>.
+           Nevertheless, it comes with a tiny handler (lynx/w3m-like) that will
+           let you choose which frame to visit, one by one.
+      <li> Dillo  has  <b><font color="#5040a0">context
+           sensitive menus</font></b> using the right  mouse  button
+           (available on pages, links, images, forms, the Back
+           and Forward buttons, and the bug meter).
+      <li> Some  of the functions in Dillo are handled by independent
+           processes.  For  instance,  downloads come through <em>wget</em>.
+           If Dillo exits, the download can continue (more details
+	   below).
+    </ul>
+    </td></tr>
+  </table>
+ 
+  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+    <h4><font color="green">Usage:</font></h4>
+    </td></tr>
+
+    <tr><td BGCOLOR="#70a0c0">
+    <ul>
+      <li> You can scroll around your Dillo main window using
+           CTRL+{PgUp|PgDwn|Home|End} or using the mouse middle button
+           or mouse wheel. If nothing happens when keys are pressed, try
+           <b> <font color="#5040a0">focusing</font></b> your Dillo main
+           window first by clicking it (not on any link!:)).
+      <li> You can use the space key as PgDn, and {'b' | 'B'} as PgUp.</li>
+      <li> Similarly, you can use "<b>,</b>" and "<b>.</b>" as shortcuts for
+           forward and backward buttons (mnemonic: those
+           keys are usually labeled "<" and ">").
+      <li> <b>Configuration:</b> If you want to change Dillo's
+           appearance or behaviour, look at the options in your
+           <b><font color="#5040a0">dillorc</font></b>
+           file (if you don't have a copy in your ~/.dillo/ directory, get it 
+           <a href='http://www.dillo.org/dillorc'>here</a>). 
+      <li> Clicking the "Reload" button always requests an end-to-end reload
+           of the page currently viewed, but it will *not* reload embedded
+           images during this process.
+      <li> Dialogs can be closed with the ESC key.
+      <li> If you want to try a different control panel, right-click over the
+           search button until you find one that suits your needs, then make
+	   it the default in your <code>dillorc</code> file.
+      <li> The whole window area can be used to display the page. Just hit
+           Ctrl-Space!
+    </ul>
+    </td></tr>
+  </table>
+
+  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+    <h4><font color="green">Downloads:</font></h4>
+    </td></tr>
+
+    <tr><td BGCOLOR="#70a0c0">
+    <p>
+    Downloads are made using <b><font color="#5040a0">wget</font></b>
+    with a FLTK2-based GUI wrapper, through the Dillo plugin (dpi) framework.
+    If you close the browser window, downloads will continue.
+    <p>
+    </td></tr>
+  </table>
+
+  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+    <h4><font color="green">Find text:</font></h4>
+    </td></tr>
+
+    <tr><td bgcolor="#70a0c0">
+    <p>
+    This one is very useful;
+    it can be found in the right-mouse-button menu<br>
+    Find text is tuned for speed so don't hesitate to use it even for minimal
+    searches.
+    <p>
+    <u>Semantics:</u>
+    <ul>
+      <li> You can search for substrings, words and sentences. </li>
+      <li> To find a substring or word, just enter its text. </li>
+      <li> To find a left-aligned substring, prepend it with a space. </li>
+      <li> To find a right-aligned substring, append a space to it.</li>
+      <li> To find full words only, prepend and append spaces to them. </li>
+      <li> To find a sentence, enter the words and remember that the above rules
+           apply for every word in it. </li>
+    </ul>
+    <p>
+    Dillo will scroll the page and highlight found text!
+    <p>
+    <small>Default shortcut: [CTRL]+"F".</small>
+
+    </td></tr>
+  </table>
+
+  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+    <h4><font color="green">Copy&amp;Paste:</font></h4>
+    </td></tr>
+
+    <tr><td bgcolor="#70a0c0">
+    <p>
+    Just hold down the left mouse button and move to select the
+    area to copy. To paste, go to the target application and
+    press the middle mouse button.
+    <p>
+    If you want to select more than one screen, hold the mouse button
+    down and scroll with PgUp, PgDn or the arrow keys.
+    <P>
+    If you want to paste an URL into Dillo, do it on the "clear-URL"
+    button (the "X" next to the location bar).
+    <p>
+    Note: If it doesn't work, please try again. There's a bug lurking there.
+    </td></tr>
+  </table>
+
+  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+    <h4><font color="green">Navigation history:</font></h4>
+    </td></tr>
+
+    <tr><td bgcolor="#70a0c0">
+    <p>
+    Currently, navigation history supports the navigation-stack model; just
+    right-click on the Back or Forward buttons and they will pop up!
+    <p> <u>Remember:</u>
+    <ul>
+      <li> These history menus are relative to the current page. </li>
+      <li> They show the page-title but the status bar shows the URL. </li>
+      <li> Left-click jumps to the selected item. </li>
+      <li> Middle-click opens the item in a new browser tab/window. </li>
+    </ul>
+    </td></tr>
+ </table>
+
+ <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+   <h4><font color="green">Cookies:</font></h4>
+   </td></tr>
+
+   <tr><td bgcolor="#70a0c0">
+   <p>
+   Due to privacy concerns, cookies are disabled by default.
+   That is, if you just compile and use dillo, it will reject
+   every single cookie sent to it!
+   <p>
+   If you want to enable cookies in dillo, just
+   <a href="http://www.dillo.org/Cookies.txt">set up a <code>cookiesrc</code>
+   file</a>.
+   </td></tr>
+ </table>
+
+ <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+   <h4><font color="green">Tabs:</font></h4>
+   </td></tr>
+
+   <tr><td bgcolor="#70a0c0">
+   <p>
+   Dillo has tabbed browsing. Just middle click to open a link or submit a
+   form in a new tab. It will be automatically focused. If you want to
+   customize this behaviour, adjust these dillorc options:
+   <ul>
+    <li><code>middle_click_opens_new_tab</code>
+    <li><code>focus_new_tab</code>
+   </ul>
+   Press SHIFT to temporarily reverse the focusing behaviour.
+   <p>
+   </td></tr>
+ </table>
+
+ <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+   <h4><font color="green">Images-off mode:</font></h4>
+   </td></tr>
+   <tr><td bgcolor="#70a0c0">
+   <p>
+   You can browse without images now:
+   <ul>
+   <li>There is an option in the Tools menu to disable automatic image loading.
+   An image's alt text (or <code>[IMG]</code> placeholder) will appear in the
+   page.
+   <li>If you want to load an individual image, left click on its text.
+   <li>You can set "no images" as the default mode in dillorc.
+   </ul>
+   </td></tr>
+ </table>
+
+ <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+   <h4><font color="green">Bookmarks:</font></h4>
+   </td></tr>
+
+   <tr><td bgcolor="#70a0c0">
+   <p>
+   Bookmarks are handled by the Dillo plugin
+   (<a href='http://www.dillo.org/dpi1.html'>dpi</a>) framework.
+   This should be transparent to the end user. Please note that:
+   <ul>
+     <li>It is a good idea to keep a backup of your 
+         <code>~/.dillo/bm.txt</code>
+     <li>The server will stay alive after closing dillo.
+     <li>You can stop the server by sending it a KILL signal. Dillo
+         will automatically restart it when it is needed.
+     <li>If you don't have root access, install <em>dpid</em> and
+         the <em>dpis</em>
+         inside your <code>~/.dillo/</code> directory as explained
+	 in the README file.
+   </ul>
+   </td></tr>
+ </table>
+
+ <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+   <h4><font color="green">Bug Meter:</font></h4>
+   </td></tr>
+   <tr><td bgcolor="#70a0c0">
+   <p>
+   Dillo's <a href='http://www.dillo.org/help/bug_meter.html'>bug meter</a>
+   shows the number of
+   <b><font color="#5040a0">detected bugs</font></b> inside the
+   page. The bugs are caught at parsing time, so the
+   error messages also show the line where they occur and provide a
+   <b><font color="#5040a0">hint</font></b> of what was expected instead!
+   <p>
+   The primary purpose of the bug meter is to
+   <b><font color="#5040a0">help</font></b> webmasters and page
+   authors to polish the contents of their sites with a view to making
+   them standards-compliant.
+   <p>
+   The bug meter is located at the lower right corner of
+   Dillo. Left-click to see the messages, right-click for a menu.
+   </td></tr>
+ </table>
+
+ <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
+   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
+   <h4><font color="green">Keyboard shortcuts:</font></h4>
+   </td></tr>
+   <tr><td bgcolor="#70a0c0">
+<table border=1 width="100%">
+<tr><th>Shortcut                   <th>Mnemonic        <th>Function
+<tr><td>Ctrl-L                     <td>Location        <td>enter a new URL
+<tr><td>Ctrl-F                     <td>Find            <td>find text
+<tr><td>Ctrl-S                     <td>Search          <td>search the web
+<tr><td>Ctrl-R                     <td>Reload          <td>reload current page
+<tr><td>Ctrl-N                     <td>New             <td>New browser window
+<tr><td>Ctrl-T                     <td>Tab             <td>New tab
+<tr><td>Ctrl-Q                     <td>Quit            <td>quit tab/window
+<tr><td>Ctrl-O                     <td>Open            <td>Open file
+<tr><td>Ctrl-B                     <td>Bookmarks       <td>view bookmarks
+<tr><td>Ctrl-Space                 <td>"more space!"   <td>Hide/show controls
+<tr><td>Back       or "<b>,</b>"   <td><               <td>previous page
+<tr><td>Shift-Back or "<b>.</b>"   <td>>               <td>next page
+<tr><td>Esc                        <td>escape          <td>close dialog
+<tr><td>Alt-F                      <td>File            <td>file menu
+<tr><td>Alt-X                      <td>eXit            <td>exit Dillo
+<tr><td>Shift-Right                <td>Right           <td>Next tab
+<tr><td>Shift-Left                 <td>Left            <td>Previous tab
+<tr><td>Ctrl-TabKey                <td>TabKey          <td>Next tab
+<tr><td>Shift-Ctrl- TabKey         <td>TabKey          <td>Previous tab
+</table>
+<p>
+You can change the bindings using a
+<code>~/.dillo/<a href="http://www.dillo.org/keysrc">keysrc</a></code>
+file.
+   </td></tr>
+ </table>
+
+</body>
+</html>

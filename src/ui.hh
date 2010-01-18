@@ -48,7 +48,7 @@ class UI : public fltk::Group {
 
    fltk::Group *TopGroup;
    fltk::Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
-          *Clear, *Search, *FullScreen, *BugMeter, *FileButton;
+          *Clear, *Search, *Help, *FullScreen, *BugMeter, *FileButton;
    fltk::Input  *Location;
    fltk::PackedGroup *ProgBox;
    CustProgressBox *PProg, *IProg;

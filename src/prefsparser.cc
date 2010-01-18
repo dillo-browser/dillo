@@ -84,6 +84,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "show_extra_warnings", &prefs.show_extra_warnings, PREFS_BOOL },
       { "show_filemenu", &prefs.show_filemenu, PREFS_BOOL },
       { "show_forw", &prefs.show_forw, PREFS_BOOL },
+      { "show_help", &prefs.show_help, PREFS_BOOL },
       { "show_home", &prefs.show_home, PREFS_BOOL },
       { "show_msg", &prefs.show_msg, PREFS_BOOL },
       { "show_progress_box", &prefs.show_progress_box, PREFS_BOOL },

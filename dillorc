@@ -179,6 +179,7 @@
 #show_clear_url=YES
 #show_url=YES
 #show_search=YES
+#show_help=YES
 #show_progress_box=YES
 
 # Start dillo with the panels hidden?
