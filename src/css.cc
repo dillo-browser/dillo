@@ -584,7 +584,13 @@ void CssContext::buildUserAgentStyle () {
      "td, th {border-style: inset; padding: 2px}"
      "thead, tbody, tfoot {vertical-align: middle}"
      "th {font-weight: bolder; text-align: center}"
-     "code, tt, pre, samp, kbd {font-family: monospace}";
+     "code, tt, pre, samp, kbd {font-family: monospace}"
+     /* WORKAROUND: Reset font properties in tables as some
+      * some pages rely on it (e.g. gmail).
+      * http://developer.mozilla.org/En/Fixing_Table_Inheritance_in_Quirks_Mode
+      * has a detailed description of the issue.
+      */
+     "table, caption {font-size: medium; font-weight: normal}";
 
    CssParser::parse (NULL, NULL, this, cssBuf, strlen (cssBuf),
                      CSS_ORIGIN_USER_AGENT);

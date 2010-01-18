@@ -12,7 +12,8 @@ extern "C" {
 # define a_Cookies_freeall() ;
 #else
   char *a_Cookies_get_query(const DilloUrl *request_url);
-  void  a_Cookies_set(Dlist *cookie_string, const DilloUrl *set_url);
+  void  a_Cookies_set(Dlist *cookie_string, const DilloUrl *set_url,
+                      const char *server_date);
   void  a_Cookies_init( void );
   void  a_Cookies_freeall( void );
 #endif

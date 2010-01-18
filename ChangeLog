@@ -16,6 +16,7 @@ dillo-2.2 [??]
  - Add support for CSS property list-style-position.
  - Support border-width: thin | medium | thick.
  - Fix CSS_SHORTHAND_DIRECTIONS case in CssParser.
+ - Add quirk to reset font properties in tables (fixes e.g. gmail).
    Patch: Johannes Hofmann
 +- Cleaned up system includes in dpid directory.
  - Fixed CustProgressBox() for systems without weak symbols.
@@ -56,6 +57,8 @@ dillo-2.2 [??]
  - Enable popup menu below bottom of page content (BUG#856).
  - Handle JPEGs with CMYK color space.
  - Allow keysyms in keysrc.
+ - Explicitly check installation bindir for dpid (BUG 930)
+ - General cookies overhaul.
    Patches: corvid
 +- Support for the letter-spacing property.
    Patch: Johannes Hofmann, corvid

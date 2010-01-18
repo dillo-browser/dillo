@@ -10,10 +10,9 @@
  * (at your option) any later version.
  */
 
-/* Handling of cookies takes place here.
- * This implementation aims to follow RFC 2965:
- * http://www.ietf.org/rfc/rfc2965.txt
- */
+/* Handling of cookies takes place here. */
+
+#include "msg.h"
 
 #ifdef DISABLE_COOKIES
 
@@ -37,7 +36,6 @@ void a_Cookies_init(void)
 #include <ctype.h>
 #include <errno.h>
 
-#include "msg.h"
 #include "IO/Url.h"
 #include "list.h"
 #include "cookies.h"
@@ -138,10 +136,11 @@ void a_Cookies_freeall()
 /*
  * Set the value corresponding to the cookie string
  */
-void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
+void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url,
+                   const char *date)
 {
    CookieControlAction action;
-   char *cmd, *cookie_string, *dpip_tag, numstr[16];
+   char *cmd, *cookie_string, *dpip_tag;
    const char *path;
    int i;
 
@@ -156,10 +155,14 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
 
    for (i = 0; (cookie_string = dList_nth_data(cookie_strings, i)); ++i) {
       path = URL_PATH_(set_url);
-      snprintf(numstr, 16, "%d", URL_PORT(set_url));
-      cmd = a_Dpip_build_cmd("cmd=%s cookie=%s host=%s path=%s port=%s",
-                             "set_cookie", cookie_string, URL_HOST_(set_url),
-                             path ? path : "/", numstr);
+      if (date)
+         cmd = a_Dpip_build_cmd("cmd=%s cookie=%s host=%s path=%s date=%s",
+                                "set_cookie", cookie_string,
+                                URL_HOST_(set_url), path ? path : "/", date);
+      else
+         cmd = a_Dpip_build_cmd("cmd=%s cookie=%s host=%s path=%s",
+                                "set_cookie", cookie_string,
+                                URL_HOST_(set_url), path ? path : "/");
 
       _MSG("Cookies.c: a_Cookies_set \n\t \"%s\" \n",cmd );
       /* This call is commented because it doesn't guarantee the order
@@ -178,7 +181,7 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
  */
 char *a_Cookies_get_query(const DilloUrl *request_url)
 {
-   char *cmd, *dpip_tag, *query, numstr[16];
+   char *cmd, *dpip_tag, *query;
    const char *path;
    CookieControlAction action;
 
@@ -192,10 +195,9 @@ char *a_Cookies_get_query(const DilloUrl *request_url)
    }
    path = URL_PATH_(request_url);
 
-   snprintf(numstr, 16, "%d", URL_PORT(request_url));
-   cmd = a_Dpip_build_cmd("cmd=%s scheme=%s host=%s path=%s port=%s",
+   cmd = a_Dpip_build_cmd("cmd=%s scheme=%s host=%s path=%s",
                           "get_cookie", URL_SCHEME(request_url),
-                         URL_HOST(request_url), path ? path : "/", numstr);
+                         URL_HOST(request_url), path ? path : "/");
 
    /* Get the answer from cookies.dpi */
    _MSG("cookies.c: a_Dpi_send_blocking_cmd cmd = {%s}\n", cmd);
@@ -203,15 +205,11 @@ char *a_Cookies_get_query(const DilloUrl *request_url)
    _MSG("cookies.c: after a_Dpi_send_blocking_cmd resp={%s}\n", dpip_tag);
    dFree(cmd);
 
-   query = dStrdup("Cookie2: $Version=\"1\"\r\n");
-
    if (dpip_tag != NULL) {
-      char *cookie = a_Dpip_get_attr(dpip_tag, "cookie");
-      char *old_query = query;
-      query = dStrconcat(old_query, cookie, NULL);
-      dFree(old_query);
+      query = a_Dpip_get_attr(dpip_tag, "cookie");
       dFree(dpip_tag);
-      dFree(cookie);
+   } else {
+      query = dStrdup("");
    }
    return query;
 }

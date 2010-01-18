@@ -1437,12 +1437,12 @@ int Textblock::findLineIndex (int y)
    while ( step > 1 ) {
       index = low + step;
       if (index <= maxIndex &&
-          lineYOffsetWidgetI (index) < y)
+          lineYOffsetWidgetI (index) <= y)
          low = index;
       step = (step + 1) >> 1;
    }
 
-   if (low < maxIndex && lineYOffsetWidgetI (low + 1) < y)
+   if (low < maxIndex && lineYOffsetWidgetI (low + 1) <= y)
       low++;
 
    /*

@@ -5,12 +5,20 @@
 
 class DoctreeNode {
    public:
+      DoctreeNode *parent;
       int num; // unique ascending id
-      int depth;
       int element;
       lout::misc::SimpleVector<char*> *klass;
       const char *pseudo;
       const char *id;
+
+      DoctreeNode () {
+         parent = NULL;
+         klass = NULL;
+         pseudo = NULL;
+         id = NULL;
+         element = 0;
+      };
 };
 
 /**
@@ -23,10 +31,42 @@ class DoctreeNode {
  * be extended to a real tree.
  */
 class Doctree {
+   private:
+      DoctreeNode *topNode;
+      int num;
+
    public:
-      virtual ~Doctree () {};
-      virtual const DoctreeNode *top () = 0;
-      virtual const DoctreeNode *parent (const DoctreeNode *node) = 0;
+      Doctree () {
+         topNode = NULL;
+         num = 0;
+      };
+      ~Doctree () { while (top ()) pop (); };
+      DoctreeNode *push () {
+         DoctreeNode *dn = new DoctreeNode ();
+         dn->parent = topNode;
+         dn->num = num++;
+         topNode = dn;
+         return dn;
+      };
+      void pop () {
+         DoctreeNode *dn = topNode;
+         if (dn) {
+            dFree ((void*) dn->id);
+            if (dn->klass) {
+               for (int i = 0; i < dn->klass->size (); i++)
+                  dFree (dn->klass->get(i));
+               delete dn->klass;
+            }
+            topNode = dn->parent;
+            delete dn;
+         }
+      };
+      inline DoctreeNode *top () {
+         return topNode;
+      };
+      inline DoctreeNode *parent (const DoctreeNode *node) {
+         return node->parent;
+      };
 };
 
 #endif

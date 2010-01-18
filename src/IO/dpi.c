@@ -30,6 +30,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 
@@ -364,13 +365,17 @@ static int Dpi_start_dpid(void)
       Dpi_close_fd(st_pipe[0]);
       if (execl(path1, "dpid", (char*)NULL) == -1) {
          dFree(path1);
-         if (execlp("dpid", "dpid", (char*)NULL) == -1) {
-            MSG("Dpi_start_dpid (child): %s\n", dStrerror(errno));
-            if (Dpi_blocking_write(st_pipe[1], "ERROR", 5) == -1) {
-               MSG("Dpi_start_dpid (child): can't write to pipe.\n");
+         path1 = dStrconcat(DILLO_BINDIR, "dpid", NULL);
+         if (execl(path1, "dpid", (char*)NULL) == -1) {
+            dFree(path1);
+            if (execlp("dpid", "dpid", (char*)NULL) == -1) {
+               MSG("Dpi_start_dpid (child): %s\n", dStrerror(errno));
+               if (Dpi_blocking_write(st_pipe[1], "ERROR", 5) == -1) {
+                  MSG("Dpi_start_dpid (child): can't write to pipe.\n");
+               }
+               Dpi_close_fd(st_pipe[1]);
+               _exit (EXIT_FAILURE);
             }
-            Dpi_close_fd(st_pipe[1]);
-            _exit (EXIT_FAILURE);
          }
       }
    } else if (pid < 0) {
@@ -430,9 +435,11 @@ static int Dpi_read_comm_keys(int *port)
  */
 static int Dpi_make_socket_fd()
 {
-   int fd, ret = -1;
+   int fd, one = 1, ret = -1;
 
    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) != -1) {
+      /* avoid delays when sending small pieces of data */
+      setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
       ret = fd;
    }
    return ret;

@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
 
 #include <unistd.h>
 #include "dpid_common.h"
@@ -519,10 +520,13 @@ int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
  */
 static int make_socket_fd()
 {
-   int ret;
+   int ret, one = 1;
 
    if ((ret = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
       ERRMSG("make_socket_fd", "socket", errno);
+   } else {
+      /* avoid delays when sending small pieces of data */
+      setsockopt(ret, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
    }
 
    /* set some buffering to increase the transfer's speed */

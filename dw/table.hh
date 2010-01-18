@@ -14,7 +14,7 @@ namespace dw {
  *
  * The dw::Table widget is used to render HTML tables.
  *
- * Each cell is itself an own widget. Any widget may be used, however, in
+ * Each cell is itself a separate widget. Any widget may be used, however, in
  * dillo, only instances of dw::Textblock and dw::TableCell are used as
  * children of dw::Table.
  *
@@ -25,7 +25,7 @@ namespace dw {
  *
  * The following diagram shows the dependencies between the different
  * functions, which are related to size calculation. Click on the boxes
- * for more informations.
+ * for more information.
  *
  * \dot
  * digraph G {
@@ -128,7 +128,7 @@ namespace dw {
  *      \f$e_{\hbox{span},i,\min}\f$ (but not \f$e_{\hbox{span},i,\max}\f$)
  *      are calculated from cells with colspan > 1. (In the following formulas,
  *      the cell at \f$(i_1, j)\f$ always span from \f$i_1\f$ to \f$i_2\f$.)
- *      If the minimal width of the column exeeds the sum of the column minima
+ *      If the minimal width of the column exceeds the sum of the column minima
  *      calculated in the last step:
  *
  *      \f[e_{\hbox{cell},i_1,j,\min} >
@@ -137,7 +137,7 @@ namespace dw {
  *      then the minimal width of this cell is apportioned to the columns:
  *
  *      <ul>
- *      <li> If the minimal width of this cell also exeeds the sum of the
+ *      <li> If the minimal width of this cell also exceeds the sum of the
  *           column maxima:
  *
  *        \f[e_{\hbox{cell},i_1,j,\min} >
@@ -170,11 +170,11 @@ namespace dw {
  *      \f[ e_{i,\max} =
  *         \max \{ e_{\hbox{base},i,\max}, e_{i,\min} \} \f]
  *      For the maxima, there is no \f$e_{\hbox{span},i,\max}\f$, but it has to
- *      be assured, that the maximum is always greater or equal than/to the
+ *      be assured, that the maximum is always greater than or equal to the
  *      minimum.
  * </ol>
  *
- * Generally, if absolute widths are speficied, they are, instead of the
+ * Generally, if absolute widths are specified, they are, instead of the
  * results of dw::core::Widget::getExtremes, taken for the minimal and
  * maximal width of a cell (minus the box difference, i.e. the difference
  * between content size and widget size). If the content width
@@ -199,15 +199,15 @@ namespace dw {
  *
  * <ul>
  * <li> the specified absolute width of the table, when given, or
- * <li> the available width (set by dw::Table::setWidth) times the specifies
- *      percentage width pf t(at max 100%), if the latter is given, or
+ * <li> the available width (set by dw::Table::setWidth) times the specified
+ *      percentage width of t(at max 100%), if the latter is given, or
  * <li> otherwise the available width.
  * </ul>
  *
  * In any case, it is corrected, if it is less than the minimal width
  * (but not if it is greater than the maximal width).
  *
- * \bug The parantheses is not fully clear, look at the old code.
+ * \bug The parentheses is not fully clear, look at the old code.
  *
  * Details on differences because of styles are omitted. Below, this
  * total width is called \f$W\f$.
@@ -230,7 +230,7 @@ namespace dw {
  *
  * <li> Then, calculate the sum of the widths, which the columns with
  *      percentage width specification would allocate, when fully adhering to
- *      then:
+ *      them:
  *
  *      \f[W_{\hbox{columns}_\%,\hbox{best}} = W \sum w_{i,\%}\f]
  *
@@ -274,7 +274,7 @@ namespace dw {
  * <h5>Column Widths</h5>
  *
  * The column widths are now simply calculated by applying the
- * apportenment function.
+ * apportionment function.
  *
  *
  * <h5>Row Heights</h5>
@@ -286,7 +286,7 @@ namespace dw {
  * The algorithm described here tends to result in more homogeneous column
  * widths.
  *
- * The following rule lead to well-defined \f$w_{i}\f$: All columns
+ * The following rule leads to well-defined \f$w_{i}\f$: All columns
  * \f$i\f$ have have the same width \f$w\f$, except:
  * <ul>
  * <li> \f$w < e_{i,\min}\f$, or

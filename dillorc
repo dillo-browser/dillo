@@ -114,7 +114,8 @@
 # Set the proxy information for http.
 # Note that the http_proxy environment variable overrides this setting.
 # WARNING: FTP and downloads plugins use wget. To use a proxy with them,
-#          you will need to configure wget accordingly.
+#          you will need to configure wget accordingly. See
+#          http://www.gnu.org/software/wget/manual/html_node/Proxies.html
 # http_proxy="http://localhost:8080/"
 #(by default, no proxy is used)
 

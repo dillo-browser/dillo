@@ -134,6 +134,7 @@ bool StyleAttrs::equals (object::Object *other) {
        whiteSpace == otherAttrs->whiteSpace &&
        listStylePosition == otherAttrs->listStylePosition &&
        listStyleType == otherAttrs->listStyleType &&
+       cursor == otherAttrs->cursor &&
        x_link == otherAttrs->x_link &&
        x_img == otherAttrs->x_img &&
        x_tooltip == otherAttrs->x_tooltip);
@@ -166,6 +167,7 @@ int StyleAttrs::hashValue () {
       whiteSpace +
       listStylePosition +
       listStyleType +
+      cursor +
       x_link +
       x_img +
       (intptr_t) x_tooltip;
