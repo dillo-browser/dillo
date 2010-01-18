@@ -639,6 +639,44 @@ static void Cookies_eat_value(char **cookie_str)
 }
 
 /*
+ * Handle Expires attribute.
+ * Note that this CAN MODIFY the value string.
+ */
+static time_t Cookies_expires_attr(char *value, const char *server_date)
+{
+   time_t exptime;
+
+   if (*value == '"' && value[strlen(value) - 1] == '"') {
+      /* In this one case, pay attention to quotes */
+      value[strlen(value) - 1] = '\0';
+      value++;
+   }
+   exptime = Cookies_create_timestamp(value);
+   if (exptime && server_date) {
+      time_t server_time = Cookies_create_timestamp(server_date);
+
+      if (server_time) {
+         time_t now = time(NULL);
+         time_t client_time = exptime + now - server_time;
+
+         if (server_time == exptime) {
+             exptime = now;
+         } else if ((exptime > now) == (client_time > now)) {
+            exptime = client_time;
+         } else {
+            /* Don't want to wrap around at the extremes of representable
+             * values thanks to clock skew.
+             */
+            MSG("At %ld, %ld was trying to turn into %ld\n",
+                (long)now, (long)exptime,
+                (long)client_time);
+         }
+      }
+   }
+   return exptime;
+}
+
+/*
  * Parse cookie. A cookie might look something like:
  * "Name=Val; Domain=example.com; Max-Age=3600; HttpOnly"
  */
@@ -703,30 +741,7 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
       } else if (dStrcasecmp(attr, "Expires") == 0) {
          if (!max_age) {
             value = Cookies_parse_value(&str);
-            cookie->expires_at = Cookies_create_timestamp(value);
-            if (cookie->expires_at && server_date) {
-               time_t server_time = Cookies_create_timestamp(server_date);
-
-               if (server_time) {
-                  time_t now = time(NULL);
-                  time_t client_time = cookie->expires_at + now - server_time;
-
-                  if (server_time == cookie->expires_at) {
-                      cookie->expires_at = now;
-                  } else if ((cookie->expires_at > now) ==
-                             (client_time > now)) {
-                     cookie->expires_at = client_time;
-                  } else {
-                     /* It seems not at all unlikely that bad server code will
-                      * fail to take normal clock skew into account when
-                      * setting max/min cookie values.
-                      */
-                     MSG("At %ld, %ld was trying to turn into %ld\n",
-                         (long)now, (long)cookie->expires_at,
-                         (long)client_time);
-                  }
-               }
-            }
+            cookie->expires_at = Cookies_expires_attr(value, server_date);
             expires = TRUE;
             dFree(value);
             MSG("Expires in %ld seconds, at %s",
