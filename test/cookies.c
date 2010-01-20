@@ -497,36 +497,29 @@ static void expect(int lineno, const char *exp_reply,
    }
 }
 
-int main()
+static void toomany()
 {
-   time_t t = time(NULL)+1000;
-   char *server_time = ctime(&t);
-
-   a_Cookies_set("name=val", "ordinary.com", "/", server_time);
-   expect(__LINE__, "Cookie: name=val\r\n", "http", "ordinary.com", "/");
-
-   /* TOO MANY COOKIES FOR DOMAIN */
-   a_Cookies_set("1=1", "toomany.com", "/", server_time);
-   a_Cookies_set("2=1", "toomany.com", "/", server_time);
-   a_Cookies_set("3=1", "toomany.com", "/", server_time);
-   a_Cookies_set("4=1", "toomany.com", "/", server_time);
-   a_Cookies_set("5=1", "toomany.com", "/", server_time);
-   a_Cookies_set("6=1", "toomany.com", "/", server_time);
-   a_Cookies_set("7=1", "toomany.com", "/path/", server_time);
-   a_Cookies_set("8=1", "toomany.com", "/", server_time);
-   a_Cookies_set("9=1", "toomany.com", "/", server_time);
-   a_Cookies_set("10=1", "toomany.com", "/", server_time);
-   a_Cookies_set("11=1", "toomany.com", "/", server_time);
-   a_Cookies_set("12=1", "toomany.com", "/", server_time);
-   a_Cookies_set("13=1", "toomany.com", "/", server_time);
-   a_Cookies_set("14=1", "toomany.com", "/", server_time);
-   a_Cookies_set("15=1", "toomany.com", "/", server_time);
-   a_Cookies_set("16=1", "toomany.com", "/", server_time);
-   a_Cookies_set("17=1", "toomany.com", "/", server_time);
-   a_Cookies_set("18=1", "toomany.com", "/", server_time);
-   a_Cookies_set("19=1", "toomany.com", "/", server_time);
-   a_Cookies_set("20=1", "toomany.com", "/", server_time);
-   a_Cookies_set("21=1", "toomany.com", "/", server_time);
+   a_Cookies_set("1=1", "toomany.com", "/", NULL);
+   a_Cookies_set("2=1", "toomany.com", "/", NULL);
+   a_Cookies_set("3=1", "toomany.com", "/", NULL);
+   a_Cookies_set("4=1", "toomany.com", "/", NULL);
+   a_Cookies_set("5=1", "toomany.com", "/", NULL);
+   a_Cookies_set("6=1", "toomany.com", "/", NULL);
+   a_Cookies_set("7=1", "toomany.com", "/path/", NULL);
+   a_Cookies_set("8=1", "toomany.com", "/", NULL);
+   a_Cookies_set("9=1", "toomany.com", "/", NULL);
+   a_Cookies_set("10=1", "toomany.com", "/", NULL);
+   a_Cookies_set("11=1", "toomany.com", "/", NULL);
+   a_Cookies_set("12=1", "toomany.com", "/", NULL);
+   a_Cookies_set("13=1", "toomany.com", "/", NULL);
+   a_Cookies_set("14=1", "toomany.com", "/", NULL);
+   a_Cookies_set("15=1", "toomany.com", "/", NULL);
+   a_Cookies_set("16=1", "toomany.com", "/", NULL);
+   a_Cookies_set("17=1", "toomany.com", "/", NULL);
+   a_Cookies_set("18=1", "toomany.com", "/", NULL);
+   a_Cookies_set("19=1", "toomany.com", "/", NULL);
+   a_Cookies_set("20=1", "toomany.com", "/", NULL);
+   a_Cookies_set("21=1", "toomany.com", "/", NULL);
    /* 1 was oldest and discarded */
    expect(__LINE__, "Cookie: 7=1; 2=1; 3=1; 4=1; 5=1; 6=1; 8=1; 9=1; 10=1; "
                     "11=1; 12=1; 13=1; 14=1; 15=1; 16=1; 17=1; 18=1; 19=1; "
@@ -536,160 +529,406 @@ int main()
    expect(__LINE__, "Cookie: 2=1; 3=1; 4=1; 5=1; 6=1; 8=1; 9=1; 10=1; "
                     "11=1; 12=1; 13=1; 14=1; 15=1; 16=1; 17=1; 18=1; 19=1; "
                     "20=1; 21=1\r\n", "http", "toomany.com", "/");
-   a_Cookies_set("22=1", "toomany.com", "/", server_time);
+   a_Cookies_set("22=1", "toomany.com", "/", NULL);
    /* 7 was oldest and discarded */
    expect(__LINE__, "Cookie: 2=1; 3=1; 4=1; 5=1; 6=1; 8=1; 9=1; 10=1; "
                     "11=1; 12=1; 13=1; 14=1; 15=1; 16=1; 17=1; 18=1; 19=1; "
                     "20=1; 21=1; 22=1\r\n", "http", "toomany.com", "/path/");
+}
 
-   /* MAX-AGE */
-   a_Cookies_set("name=val; max-age=0", "maxage0.com", "/", server_time);
+static void maxage()
+{
+   time_t t = time(NULL)+1000;
+   char *server_date = dStrdup(ctime(&t));
+
+   a_Cookies_set("name=val; max-age=0", "maxage0.com", "/", NULL);
    expect(__LINE__, "", "http", "maxage0.com", "/");
 
-   a_Cookies_set("name=val; max-age=100", "maxage100.com", "/", server_time);
+   a_Cookies_set("name=val; max-age=100", "maxage100.com", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "maxage100.com", "/");
 
-   a_Cookies_set("name=val; max-age=-100", "maxage-100.com", "/", server_time);
+   a_Cookies_set("name=val; max-age=-100", "maxage-100.com", "/", NULL);
    expect(__LINE__, "", "http", "maxage-100.com", "/");
 
-   /* TODO: ADD SOME EXPIRES */
+   /* just having a server date shouldn't matter */
+
+   a_Cookies_set("name=val; max-age=0", "maxage0s.com", "/", server_date);
+   expect(__LINE__, "", "http", "maxage0s.com", "/");
+
+   a_Cookies_set("name=val; max-age=100", "maxage100s.com", "/", server_date);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "maxage100s.com", "/");
+
+   a_Cookies_set("name=val; max-age=-100", "maxage-100s.com", "/",server_date);
+   expect(__LINE__, "", "http", "maxage-100s.com", "/");
+
+   /* MAX-AGE and EXPIRES */
+   a_Cookies_set("name=val; max-age=90; expires=Wed Jan 20 01:26:32 2010",
+                 "maxagelater.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "maxagelater.com", "/");
+
+   a_Cookies_set("name=val; max-age=90; expires=Wed Jan 20 01:26:32 2010",
+                 "maxagelaters.com", "/", server_date);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "maxagelaters.com", "/");
+
+   dFree(server_date);
+}
+
+static void expires_server_ahead()
+{
+   char *string;
+   time_t t = time(NULL)+1000;
+   char *server_date = dStrdup(ctime(&t));
+   time_t expt = t + 1000;
+   char *exp_date = dStrdup(ctime(&expt));
+
+   string = dStrconcat("name=val; expires=", exp_date, NULL);
+   a_Cookies_set(string, "e2000s1000.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "e2000s1000.com", "/");
+
+   a_Cookies_set(string, "e2000s1000s.com", "/", server_date);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "e2000s1000s.com", "/");
+
+   expt = t - 500; /* past for the server, future for us */
+   dFree(exp_date);
+   exp_date = dStrdup(ctime(&expt));
+
+   string = dStrconcat("name=val; expires=", exp_date, NULL);
+   a_Cookies_set(string, "e500s1000.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "e500s1000.com", "/");
+
+   a_Cookies_set(string, "e500s1000s.com", "/", server_date);
+   expect(__LINE__, "", "http", "e500s1000s.com", "/");
+
+   expt = t; /* expire at future-for-us server date */
+   dFree(exp_date);
+   exp_date = dStrdup(ctime(&expt));
+
+   string = dStrconcat("name=val; expires=", exp_date, NULL);
+   a_Cookies_set(string, "e1000s1000.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "e1000s1000.com", "/");
+
+   a_Cookies_set(string, "e1000s1000s.com", "/", server_date);
+   expect(__LINE__, "", "http", "e1000s1000s.com", "/");
+
+   expt = time(NULL); /* now */
+   dFree(exp_date);
+   exp_date = dStrdup(ctime(&expt));
+
+   string = dStrconcat("name=val; expires=", exp_date, NULL);
+   a_Cookies_set(string, "e0s1000.com", "/", NULL);
+   expect(__LINE__, "", "http", "e0s1000.com", "/");
+
+   a_Cookies_set(string, "e0s1000s.com", "/", server_date);
+   expect(__LINE__, "", "http", "e0s1000s.com", "/");
+
+   dFree(exp_date);
+   dFree(server_date);
+}
+
+static void expires_server_behind()
+{
+   char *string;
+   time_t t = time(NULL)-1000;
+   char *server_date = dStrdup(ctime(&t));
+
+   time_t expt = t + 1000;
+   char *exp_date = dStrdup(ctime(&expt));
+
+   string = dStrconcat("name=val; expires=", exp_date, NULL);
+   a_Cookies_set(string, "e0s-1000.com", "/", NULL);
+   expect(__LINE__, "", "http", "e0s-1000.com", "/");
+
+   a_Cookies_set(string, "e0s-1000s.com", "/", server_date);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "e0s-1000s.com","/");
+
+   expt = t + 500; /* future for the server, past for us */
+   dFree(exp_date);
+   exp_date = dStrdup(ctime(&expt));
+
+   string = dStrconcat("name=val; expires=", exp_date, NULL);
+   a_Cookies_set(string, "e-500s-1000.com", "/", NULL);
+   expect(__LINE__, "", "http", "e-500s-1000.com", "/");
+
+   a_Cookies_set(string, "e-500s-1000s.com", "/", server_date);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "e-500s-1000s.com", "/");
+
+   expt = t; /* expire at past-for-us server date */
+   dFree(exp_date);
+   exp_date = dStrdup(ctime(&expt));
+
+   string = dStrconcat("name=val; expires=", exp_date, NULL);
+   a_Cookies_set(string, "e-1000s-1000.com", "/", NULL);
+   expect(__LINE__, "", "http", "e-1000s-1000.com", "/");
+
+   a_Cookies_set(string, "e-1000s-1000s.com", "/", server_date);
+   expect(__LINE__, "", "http", "e-1000s-1000s.com", "/");
+
+   dFree(server_date);
+   dFree(exp_date);
+}
+
+static void expires_extremes()
+{
+   time_t t;
+   char *server_date;
+
+   a_Cookies_set("name=val; expires=Fri Dec 13 20:45:52 1901", "expmin.com",
+                 "/", NULL);
+   expect(__LINE__, "", "http", "expmin.com", "/");
+
+   a_Cookies_set("name=val; expires=Wed Dec 31 23:59:59 1969", "expneg.com",
+                 "/", NULL);
+   expect(__LINE__, "", "http", "expneg.com", "/");
+
+   a_Cookies_set("name=val; expires=Thu Jan  1 00:00:00 1970", "expepoch.com",
+                 "/", NULL);
+   expect(__LINE__, "", "http", "expepoch.com", "/");
+
+   /* TODO: revisit these tests in a few decades */
+   a_Cookies_set("name=val; expires=Tue Jan 19 03:14:07 2038", "expmax.com",
+                 "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "expmax.com", "/");
+
+   a_Cookies_set("name=val; expires=Sun Jan  1 00:00:00 2040", "pastmax.com",
+                 "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "pastmax.com", "/");
+
+   t = time(NULL)+1000;
+   server_date = dStrdup(ctime(&t));
+
+   a_Cookies_set("name=val; expires=Fri Dec 13 20:45:52 1901", "expmina.com",
+                 "/", server_date);
+   expect(__LINE__, "", "http", "expmina.com", "/");
+
+   a_Cookies_set("name=val; expires=Wed Dec 31 23:59:59 1969", "expnega.com",
+                 "/", server_date);
+   expect(__LINE__, "", "http", "expnega.com", "/");
+
+   a_Cookies_set("name=val; expires=Thu Jan  1 00:00:00 1970", "expepocha.com",
+                 "/", server_date);
+   expect(__LINE__, "", "http", "expepocha.com", "/");
+
+   a_Cookies_set("name=val; expires=Tue Jan 19 03:14:07 2038", "expmaxa.com",
+                 "/", server_date);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "expmaxa.com", "/");
+
+   a_Cookies_set("name=val; expires=Sun Jan  1 00:00:00 2040", "pastmaxa.com",
+                 "/", server_date);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "pastmaxa.com", "/");
+
+   t = time(NULL)-1000;
+   dFree(server_date);
+   server_date = dStrdup(ctime(&t));
+
+   a_Cookies_set("name=val; expires=Fri Dec 13 20:45:52 1901", "expminb.com",
+                 "/", server_date);
+   expect(__LINE__, "", "http", "expminb.com", "/");
+
+   a_Cookies_set("name=val; expires=Wed Dec 31 23:59:59 1969", "expnegb.com",
+                 "/", server_date);
+   expect(__LINE__, "", "http", "expnegb.com", "/");
+
+   a_Cookies_set("name=val; expires=Thu Jan  1 00:00:00 1970", "expepochb.com",
+                 "/", server_date);
+   expect(__LINE__, "", "http", "expepochb.com", "/");
+
+   a_Cookies_set("name=val; expires=Tue Jan 19 03:14:07 2038", "expmaxb.com",
+                 "/", server_date);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "expmaxb.com", "/");
+
+   a_Cookies_set("name=val; expires=Sun Jan  1 00:00:00 2040", "pastmaxb.com",
+                 "/", server_date);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "pastmaxb.com", "/");
+
+   dFree(server_date);
+}
+
+static void path()
+{
+   a_Cookies_set("name=val; path=/", "p1.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p1.com", "/");
+
+   a_Cookies_set("name=val; path=/dir1", "p2.com", "/dir2", NULL);
+   expect(__LINE__, "", "http", "p2.com", "/");
+   expect(__LINE__, "", "http", "p2.com", "/d");
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p2.com", "/dir1");
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p2.com", "/dir1/");
+   expect(__LINE__, "", "http", "p2.com", "/dir2");
+   expect(__LINE__, "", "http", "p2.com", "/dir11");
+
+   a_Cookies_set("name=val; path=dir1", "p3.com", "/dir2", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p3.com", "/");
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p3.com", "/dir1");
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p3.com", "/dir2");
+
+   a_Cookies_set("name=val; path=/dir1/", "p4.com", "/dir2", NULL);
+   expect(__LINE__, "", "http", "p4.com", "/");
+   /* this next one strikes me as a bit odd, personally, but I suppose it's not
+    * a big deal */
+   expect(__LINE__, "", "http", "p4.com", "/dir1");
+   expect(__LINE__, "", "http", "p4.com", "/dir11");
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p4.com", "/dir1/");
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p4.com", "/dir1/sub");
+
+   a_Cookies_set("name=val", "p5.com", "/dir/subdir", NULL);
+   expect(__LINE__, "", "http", "p5.com", "/");
+   expect(__LINE__, "", "http", "p5.com", "/bir");
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p5.com", "/dir");
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p5.com", "/dir/");
+
+   a_Cookies_set("name=val", "p6.com", "/dir/subdir/", NULL);
+   expect(__LINE__, "", "http", "p6.com", "/dir/");
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p6.com", "/dir/subdir");
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "p6.com", "/dir/subdir/s");
+}
+
+int main()
+{
+   a_Cookies_set("name=val", "ordinary.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "ordinary.com", "/");
+
+   toomany();
+   maxage();
+   expires_server_ahead();
+   expires_server_behind();
+   expires_extremes();
+
+   a_Cookies_set("name=val; expires=\"Sun Jan 10 00:00:00 2038\"",
+                 "quoted-date.org", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "quoted-date.org", "/");
+
+   a_Cookies_set("name=val; expires=\"Sun Jan 11 00:00:00 1970\"",
+                 "quoted-pastdate.org", "/", NULL);
+   expect(__LINE__, "", "http", "quoted-pastdate.org", "/");
+
+   path();
 
    /* LEADING/TRAILING DOTS AND A LITTLE PUBLIC SUFFIX */
-   a_Cookies_set("name=val; domain=co.uk", "www.co.uk", "/", server_time);
+   a_Cookies_set("name=val; domain=co.uk", "www.co.uk", "/", NULL);
    expect(__LINE__, "", "http", "www.co.uk", "/");
 
-   a_Cookies_set("name=val; domain=.co.uk", "www.co.uk", "/", server_time);
+   a_Cookies_set("name=val; domain=.co.uk", "www.co.uk", "/", NULL);
    expect(__LINE__, "", "http", "www.co.uk", "/");
 
-   a_Cookies_set("name=val; domain=co.uk.", "www.co.uk.", "/", server_time);
+   a_Cookies_set("name=val; domain=co.uk.", "www.co.uk.", "/", NULL);
    expect(__LINE__, "", "http", "www.co.uk.", "/");
 
-   a_Cookies_set("name=val; domain=.co.uk.", "www.co.uk.", "/", server_time);
+   a_Cookies_set("name=val; domain=.co.uk.", "www.co.uk.", "/", NULL);
    expect(__LINE__, "", "http", ".www.co.uk.", "/");
 
-   a_Cookies_set("name=val; domain=co.org", "www.co.org", "/", server_time);
+   a_Cookies_set("name=val; domain=co.org", "www.co.org", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "www.co.org", "/");
 
-   a_Cookies_set("name=val; domain=.cp.org", "www.cp.org", "/", server_time);
+   a_Cookies_set("name=val; domain=.cp.org", "www.cp.org", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "www.cp.org", "/");
 
 
    /* DOTDOMAIN */
    a_Cookies_set("name=val; domain=.dotdomain.org", "dotdomain.org", "/",
-                 server_time);
+                 NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "dotdomain.org", "/");
    expect(__LINE__, "Cookie: name=val\r\n", "http", "www.dotdomain.org", "/");
 
    /* SUBDOMAIN */
    a_Cookies_set("name=val; domain=www.subdomain.com", "subdomain.com", "/",
-                 server_time);
+                 NULL);
    expect(__LINE__, "", "http", "subdomain.com", "/");
    expect(__LINE__, "", "http", "www.subdomain.com", "/");
 
    /* SUPERDOMAIN(?) */
    a_Cookies_set("name=val; domain=supdomain.com", "www.supdomain.com", "/",
-                 server_time);
+                 NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "www.supdomain.com", "/");
    expect(__LINE__, "Cookie: name=val\r\n", "http", "supdomain.com", "/");
 
    /* UNRELATED */
-   a_Cookies_set("name=val; domain=another.com", "unrelated.com", "/",
-                 server_time);
+   a_Cookies_set("name=val; domain=another.com", "unrelated.com", "/", NULL);
    expect(__LINE__, "", "http", "another.com", "/");
-   a_Cookies_set("name=val; domain=another.com", "a.org", "/", server_time);
+   a_Cookies_set("name=val; domain=another.com", "a.org", "/", NULL);
    expect(__LINE__, "", "http", "another.com", "/");
-   a_Cookies_set("name=val; domain=another.com", "badguys.com", "/",
-                 server_time);
+   a_Cookies_set("name=val; domain=another.com", "badguys.com", "/", NULL);
    expect(__LINE__, "", "http", "another.com", "/");
    a_Cookies_set("name=val; domain=another.com", "more.badguys.com", "/",
-                 server_time);
+                 NULL);
    expect(__LINE__, "", "http", "another.com", "/");
-   a_Cookies_set("name=val; domain=another.com", "verybadguys.com", "/",
-                 server_time);
+   a_Cookies_set("name=val; domain=another.com", "verybadguys.com", "/", NULL);
    expect(__LINE__, "", "http", "another.com", "/");
 
    /* SECURE */
-   a_Cookies_set("name=val; secure", "secure.com", "/", server_time);
+   a_Cookies_set("name=val; secure", "secure.com", "/", NULL);
    expect(__LINE__, "", "http", "secure.com", "/");
    expect(__LINE__, "Cookie: name=val\r\n", "https", "secure.com", "/");
 
    /* HTTPONLY */
-   a_Cookies_set("name=val; HttpOnly", "httponly.net", "/", server_time);
+   a_Cookies_set("name=val; HttpOnly", "httponly.net", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "httponly.net", "/");
 
    /* GIBBERISH ATTR IGNORED */
-   a_Cookies_set("name=val; ldkfals", "gibberish.net", "/", server_time);
+   a_Cookies_set("name=val; ldkfals", "gibberish.net", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "gibberish.net", "/");
 
    /* WHITESPACE/DELIMITERS */
-   a_Cookies_set(" name=val ", "whitespace.net", "/", server_time);
-   a_Cookies_set("name2=val2;", "whitespace.net", "/", server_time);
+   a_Cookies_set(" name=val ", "whitespace.net", "/", NULL);
+   a_Cookies_set("name2=val2;", "whitespace.net", "/", NULL);
    expect(__LINE__, "Cookie: name=val; name2=val2\r\n", "http",
           "whitespace.net", "/");
 
    /* NAMELESS/VALUELESS */
-   a_Cookies_set("value", "nonameval.org", "/", server_time);
-   a_Cookies_set("name=", "nonameval.org", "/", server_time);
-   a_Cookies_set("name2= ", "nonameval.org", "/", server_time);
+   a_Cookies_set("value", "nonameval.org", "/", NULL);
+   a_Cookies_set("name=", "nonameval.org", "/", NULL);
+   a_Cookies_set("name2= ", "nonameval.org", "/", NULL);
    expect(__LINE__, "Cookie: value; name=; name2=\r\n", "http",
           "nonameval.org", "/");
-   a_Cookies_set("=val2", "nonameval.org", "/", server_time);
+   a_Cookies_set("=val2", "nonameval.org", "/", NULL);
    expect(__LINE__, "Cookie: name=; name2=; val2\r\n", "http",
           "nonameval.org", "/");
 
-   /* PATH */
-
-   a_Cookies_set("name=val; path=/", "p1.com", "/", server_time);
-   expect(__LINE__, "Cookie: name=val\r\n", "http", "p1.com", "/");
-
-   /* TODO MORE PATH TESTING */
 
    /* SOME IP ADDRS */
 
    a_Cookies_set("name=val", "[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]",
-                 "/", server_time);
+                 "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http",
           "[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]", "/");
 
-   a_Cookies_set("name=val", "[::FFFF:129.144.52.38]",
-                 "/", server_time);
+   a_Cookies_set("name=val", "[::FFFF:129.144.52.38]", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "[::FFFF:129.144.52.38]",
           "/");
 
-   a_Cookies_set("name=val", "127.0.0.1", "/", server_time);
+   a_Cookies_set("name=val", "127.0.0.1", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "127.0.0.1", "/");
 
-   a_Cookies_set("name=val; domain=128.0.0.1", "128.0.0.1", "/", server_time);
+   a_Cookies_set("name=val; domain=128.0.0.1", "128.0.0.1", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "128.0.0.1", "/");
 
-   a_Cookies_set("name=val; domain=130.0.0.1", "129.0.0.1", "/", server_time);
+   a_Cookies_set("name=val; domain=130.0.0.1", "129.0.0.1", "/", NULL);
    expect(__LINE__, "", "http", "129.0.0.1", "/");
    expect(__LINE__, "", "http", "130.0.0.1", "/");
 
-   a_Cookies_set("name=val", "2.0.0.1", "/", server_time);
-   a_Cookies_set("name=bad; domain=22.0.0.1", "2.0.0.1", "/", server_time);
-   a_Cookies_set("name=bad; domain=.0.0.1", "2.0.0.1", "/", server_time);
-   a_Cookies_set("name=bad; domain=not-ip.org", "2.0.0.1", "/", server_time);
+   a_Cookies_set("name=val", "2.0.0.1", "/", NULL);
+   a_Cookies_set("name=bad; domain=22.0.0.1", "2.0.0.1", "/", NULL);
+   a_Cookies_set("name=bad; domain=.0.0.1", "2.0.0.1", "/", NULL);
+   a_Cookies_set("name=bad; domain=not-ip.org", "2.0.0.1", "/", NULL);
    expect(__LINE__, "", "http", "22.0.0.1", "/");
    expect(__LINE__, "", "http", "not-ip.org", "/");
    expect(__LINE__, "Cookie: name=val\r\n", "http", "2.0.0.1", "/");
 
 #if 0
 HAD BEEN PLAYING AROUND WITH REAL PUBLIC SUFFIX
-a_Cookies_set("name=val;domain=sub.sub.yokohama.jp", "sub.sub.yokohama.jp", "/", server_time);
+a_Cookies_set("name=val;domain=sub.sub.yokohama.jp", "sub.sub.yokohama.jp", "/", NULL);
 MSG("sub sub yokohama should work: %s\n",
     a_Cookies_get_query("http", "sub.sub.yokohama.jp", "/"));
-a_Cookies_set("name=val; domain=sub.tokyo.jp", "sub.sub.tokyo.jp", "/", server_time);
+a_Cookies_set("name=val; domain=sub.tokyo.jp", "sub.sub.tokyo.jp", "/", NULL);
 MSG("sub tokyo jp should fail: %s\n",
     a_Cookies_get_query("http", "sub.sub.tokyo.jp", "/"));
-a_Cookies_set("name=val; domain=pref.chiba.jp", "sub.pref.chiba.jp", "/", server_time);
+a_Cookies_set("name=val; domain=pref.chiba.jp", "sub.pref.chiba.jp", "/", NULL);
 MSG("pref chiba jp should succeed: %s\n",
     a_Cookies_get_query("http", "sub.pref.chiba.jp", "/"));
-a_Cookies_set("name=val; domain=org", "www.dillo.org", "/", server_time);
-a_Cookies_set("name=val; domain=org", "dillo.org", "/", server_time);
-a_Cookies_set("name=val; domain=org", ".dillo.org", "/", server_time);
-a_Cookies_set("name=val; domain=org.", ".dillo.org", "/", server_time);
-a_Cookies_set("name=val; domain=org.", ".dillo.org.", "/", server_time);
+a_Cookies_set("name=val; domain=org", "www.dillo.org", "/", NULL);
+a_Cookies_set("name=val; domain=org", "dillo.org", "/", NULL);
+a_Cookies_set("name=val; domain=org", ".dillo.org", "/", NULL);
+a_Cookies_set("name=val; domain=org.", ".dillo.org", "/", NULL);
+a_Cookies_set("name=val; domain=org.", ".dillo.org.", "/", NULL);
 MSG("org should fail: %s\n",
     a_Cookies_get_query("http", "www.dillo.org", "/"));
 #endif
