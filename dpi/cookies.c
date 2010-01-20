@@ -656,20 +656,17 @@ static time_t Cookies_expires_attr(char *value, const char *server_date)
       time_t server_time = Cookies_create_timestamp(server_date);
 
       if (server_time) {
-         time_t now = time(NULL);
-         time_t client_time = exptime + now - server_time;
+         time_t local_shift = time(NULL) - server_time;
 
-         if (server_time == exptime) {
-             exptime = now;
-         } else if ((exptime > now) == (client_time > now)) {
-            exptime = client_time;
-         } else {
+         if ((exptime > 0 && local_shift > 0 && (exptime + local_shift < 0)) ||
+             (exptime < 0 && local_shift < 0 && (exptime + local_shift > 0))) {
             /* Don't want to wrap around at the extremes of representable
              * values thanks to clock skew.
              */
-            MSG("At %ld, %ld was trying to turn into %ld\n",
-                (long)now, (long)exptime,
-                (long)client_time);
+            MSG("Time %ld was trying to turn into %ld\n", (long)exptime,
+                (long)(exptime + local_shift));
+         } else {
+            exptime += local_shift;
          }
       }
    }
