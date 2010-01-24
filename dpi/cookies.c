@@ -979,36 +979,42 @@ static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host)
 
 /*
  * Set the value corresponding to the cookie string
+ * Return value: 0 set OK, -1 disabled, -2 denied, -3 rejected.
  */
-static void Cookies_set(char *cookie_string, char *url_host,
-                        char *url_path, char *server_date)
+static int Cookies_set(char *cookie_string, char *url_host,
+                       char *url_path, char *server_date)
 {
    CookieControlAction action;
    CookieData_t *cookie;
+   int ret = -1;
 
    if (disabled)
-      return;
+      return ret;
 
    action = Cookies_control_check_domain(url_host);
    if (action == COOKIE_DENY) {
       MSG("denied SET for %s\n", url_host);
-      return;
-   }
+      ret = -2;
 
-   MSG("%s SETTING: %s\n", url_host, cookie_string);
-
-   if ((cookie = Cookies_parse(cookie_string, server_date))) {
-      if (Cookies_validate_domain(cookie, url_host)) {
-         Cookies_validate_path(cookie, url_path);
-         if (action == COOKIE_ACCEPT_SESSION)
-            cookie->session_only = TRUE;
-         Cookies_add_cookie(cookie);
-      } else {
-         MSG("Rejecting cookie for domain %s from host %s path %s\n",
-             cookie->domain, url_host, url_path);
-         Cookies_free_cookie(cookie);
+   } else {
+      MSG("%s SETTING: %s\n", url_host, cookie_string);
+      ret = -3;
+      if ((cookie = Cookies_parse(cookie_string, server_date))) {
+         if (Cookies_validate_domain(cookie, url_host)) {
+            Cookies_validate_path(cookie, url_path);
+            if (action == COOKIE_ACCEPT_SESSION)
+               cookie->session_only = TRUE;
+            Cookies_add_cookie(cookie);
+            ret = 0;
+         } else {
+            MSG("Rejecting cookie for domain %s from host %s path %s\n",
+                cookie->domain, url_host, url_path);
+            Cookies_free_cookie(cookie);
+         }
       }
    }
+
+   return ret;
 }
 
 /*
@@ -1288,6 +1294,7 @@ static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
       exit(0);
 
    } else if (cmd && strcmp(cmd, "set_cookie") == 0) {
+      int st;
       char *date;
 
       dFree(cmd);
@@ -1296,8 +1303,12 @@ static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
       path = a_Dpip_get_attr_l(Buf, BufSize, "path");
       date = a_Dpip_get_attr_l(Buf, BufSize, "date");
 
-      Cookies_set(cookie, host, path, date);
+      st = Cookies_set(cookie, host, path, date);
+      cmd = a_Dpip_build_cmd("cmd=%s msg=%s", "set_cookie_answer",
+                             st == 0 ? "ok" : "not set");
+      a_Dpip_dsh_write_str(sh, 1, cmd);
 
+      dFree(cmd);
       dFree(date);
       dFree(path);
       dFree(host);
