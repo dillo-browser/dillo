@@ -24,7 +24,7 @@ if [ ! -d $BASE2 ] ; then
 fi
 
 cp dpid/dpid dpid/dpidc $BASE
-strip $BASE/dpid
+strip $BASE/dpid $BASE/dpidc
 
 cd dpi
 for F in *.dpi ; do
