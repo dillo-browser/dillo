@@ -111,6 +111,9 @@
 # http_language="pt-BR"
 # http_language="vi,de-CH,de;q=0.5,th;q=0.3"
 
+# Maximum number of simultaneous TCP connections to a single server or proxy.
+# http_max_conns=6
+
 # Set the proxy information for http.
 # Note that the http_proxy environment variable overrides this setting.
 # WARNING: FTP and downloads plugins use wget. To use a proxy with them,

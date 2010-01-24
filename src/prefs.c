@@ -58,6 +58,7 @@ void a_Prefs_init(void)
    prefs.home = a_Url_new(PREFS_HOME, NULL);
    prefs.http_language = NULL;
    prefs.http_proxy = NULL;
+   prefs.http_max_conns = 6;
    prefs.http_proxyuser = NULL;
    prefs.http_referer = dStrdup(PREFS_HTTP_REFERER);
    prefs.limit_text_width = FALSE;

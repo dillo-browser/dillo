@@ -65,6 +65,8 @@ dillo-2.2 [??]
 +- Fixed a bug in w3c_mode. In fact it wasn't working at all.
  - Improve stylesheet menu.
    Patches: Jeremy Henty
++- Limit number of simultaneous connections.
+   Patch: Johannes Hofmann, Jorge Arellano Cid (BUG 685)
 
 -----------------------------------------------------------------------------
 

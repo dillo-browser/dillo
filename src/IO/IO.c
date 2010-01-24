@@ -133,7 +133,8 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
 
    /* With HTTP, if we close the writing part, the reading one also gets
     * closed! (other clients may set 'IOFlag_ForceClose') */
-   if ((io->Flags & IOFlag_ForceClose) || (CloseCode == IO_StopRdWr)) {
+   if (((io->Flags & IOFlag_ForceClose) || (CloseCode == IO_StopRdWr)) &&
+       io->FD != -1) {
       do
          st = close(io->FD);
       while (st < 0 && errno == EINTR);

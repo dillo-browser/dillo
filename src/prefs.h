@@ -34,6 +34,7 @@ struct _DilloPrefs {
    int xpos;
    int ypos;
    char *http_language;
+   int32_t http_max_conns;
    DilloUrl *http_proxy;
    char *http_proxyuser;
    char *http_referer;

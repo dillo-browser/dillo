@@ -21,6 +21,7 @@
 #include <errno.h>              /* for errno */
 #include <stdlib.h>
 #include <fcntl.h>
+#include <assert.h>
 #include <sys/socket.h>         /* for lots of socket stuff */
 #include <netinet/in.h>         /* for ntohl and stuff */
 #include <arpa/inet.h>          /* for inet_ntop */
@@ -47,27 +48,58 @@ D_STMT_START {                                                        \
 
 #define _MSG_BW(web, root, ...)
 
+static const int HTTP_SOCKET_USE_PROXY   = 0x1;
+static const int HTTP_SOCKET_QUEUED      = 0x4;
+static const int HTTP_SOCKET_TO_BE_FREED = 0x8;
+
 /* 'Url' and 'web' are just references (no need to deallocate them here). */
 typedef struct {
    int SockFD;
    uint_t port;            /* need a separate port in order to support PROXY */
-   bool_t use_proxy;       /* indicates whether to use proxy or not */
+   uint_t flags;
    DilloWeb *web;          /* reference to client's web structure */
    Dlist *addr_list;       /* Holds the DNS answer */
    int Err;                /* Holds the errno of the connect() call */
    ChainLink *Info;        /* Used for CCC asynchronous operations */
+   char *connected_to;     /* Used for per-host connection limit */
 } SocketData_t;
 
+/* Data structures and functions to queue sockets that need to be
+ * delayed due to the per host connection limit.
+ */
+typedef struct SocketQueueEntry {
+   SocketData_t* sock;
+   struct SocketQueueEntry *next ;
+} SocketQueueEntry_t;
+
+typedef struct {
+   SocketQueueEntry_t *head;
+   SocketQueueEntry_t *tail;
+} SocketQueue_t;
+
+typedef struct {
+  char *host;
+  int active_connections;
+  SocketQueue_t queue; 
+} HostConnection_t;
+
+static void Http_socket_queue_init(SocketQueue_t *sq);
+static void Http_socket_enqueue(SocketQueue_t *sq, SocketData_t* sock);
+static SocketData_t* Http_socket_dequeue(SocketQueue_t *sq);
+static HostConnection_t *Http_host_connection_get(const char *host);
+static void Http_host_connection_remove(HostConnection_t *hc);
+static int Http_connect_socket(ChainLink *Info);
+static void Http_socket_free(int SKey);
 
 /*
  * Local data
  */
 static Klist_t *ValidSocks = NULL; /* Active sockets list. It holds pointers to
                                     * SocketData_t structures. */
-
 static DilloUrl *HTTP_Proxy = NULL;
 static char *HTTP_Proxy_Auth_base64 = NULL;
 static char *HTTP_Language_hdr = NULL;
+static Dlist *host_connections;
 
 /*
  * Initialize proxy vars and Accept-Language header
@@ -91,6 +123,9 @@ int a_Http_init(void)
    if (HTTP_Proxy && prefs.http_proxyuser && strchr(prefs.http_proxyuser, ':'))
       HTTP_Proxy_Auth_base64 = a_Misc_encode_base64(prefs.http_proxyuser);
  */
+
+   host_connections = dList_new(5);
+
    return 0;
 }
 
@@ -123,6 +158,31 @@ static int Http_sock_new(void)
    return a_Klist_insert(&ValidSocks, S);
 }
 
+static void Http_connect_queued_sockets(HostConnection_t *hc)
+{
+   SocketData_t *sd;
+   while (hc->active_connections < prefs.http_max_conns &&
+          (sd = Http_socket_dequeue(&hc->queue))) {
+
+      sd->flags &= ~HTTP_SOCKET_QUEUED;
+
+      if (sd->flags & HTTP_SOCKET_TO_BE_FREED) {
+          dFree(sd);
+      } else if (a_Web_valid(sd->web)) {
+         /* start connecting the socket */
+         if (Http_connect_socket(sd->Info) < 0) {
+            MSG_BW(sd->web, 1, "ERROR: %s", dStrerror(sd->Err));
+            a_Chain_bfcb(OpAbort, sd->Info, NULL, "Both");
+            dFree(sd->Info);
+            Http_socket_free((int) sd->Info->LocalKey);
+         } else {
+            sd->connected_to = hc->host;
+            hc->active_connections++;
+         }
+      }
+   }
+}
+
 /*
  * Free SocketData_t struct
  */
@@ -132,7 +192,19 @@ static void Http_socket_free(int SKey)
 
    if ((S = a_Klist_get_data(ValidSocks, SKey))) {
       a_Klist_remove(ValidSocks, SKey);
-      dFree(S);
+
+      if (S->flags & HTTP_SOCKET_QUEUED) {
+         S->flags |= HTTP_SOCKET_TO_BE_FREED;
+      } else {
+         if (S->connected_to) {
+            HostConnection_t *hc = Http_host_connection_get(S->connected_to);
+            hc->active_connections--;
+            Http_connect_queued_sockets(hc);
+            if (hc->active_connections == 0)
+               Http_host_connection_remove(hc);
+      } 
+         dFree(S);
+      }
    }
 }
 
@@ -291,7 +363,7 @@ static void Http_send_query(ChainLink *Info, SocketData_t *S)
    DataBuf *dbuf;
 
    /* Create the query */
-   query = a_Http_make_query_str(S->web->url, S->use_proxy);
+   query = a_Http_make_query_str(S->web->url, S->flags & HTTP_SOCKET_USE_PROXY);
    dbuf = a_Chain_dbuf_new(query->str, query->len, 0);
 
    /* actually this message is sent too early.
@@ -471,10 +543,11 @@ const char *a_Http_get_proxy_urlstr()
  * Continue connecting the socket, or abort upon error condition.
  * S->web is checked to assert the operation wasn't aborted while waiting.
  */
-void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
+static void Http_dns_cb(int Status, Dlist *addr_list, void *data)
 {
    int SKey = VOIDP2INT(data);
    SocketData_t *S;
+   HostConnection_t *hc;
 
    S = a_Klist_get_data(ValidSocks, SKey);
    if (S) {
@@ -486,18 +559,18 @@ void a_Http_dns_cb(int Status, Dlist *addr_list, void *data)
       } else if (Status == 0 && addr_list) {
          /* Successful DNS answer; save the IP */
          S->addr_list = addr_list;
-         /* start connecting the socket */
-         if (Http_connect_socket(S->Info) < 0) {
-            MSG_BW(S->web, 1, "ERROR: %s", dStrerror(S->Err));
-            a_Chain_bfcb(OpAbort, S->Info, NULL, "Both");
-            dFree(S->Info);
-            Http_socket_free(SKey);
-         }
-
+         S->flags |= HTTP_SOCKET_QUEUED;
+         if (S->flags & HTTP_SOCKET_USE_PROXY)
+            hc = Http_host_connection_get(URL_HOST(HTTP_Proxy));
+         else
+            hc = Http_host_connection_get(URL_HOST(S->web->url));
+         Http_socket_enqueue(&hc->queue, S);
+         Http_connect_queued_sockets(hc);
       } else {
          /* DNS wasn't able to resolve the hostname */
          MSG_BW(S->web, 0, "ERROR: Dns can't resolve %s",
-            (S->use_proxy) ? URL_HOST_(HTTP_Proxy) : URL_HOST_(S->web->url));
+            (S->flags & HTTP_SOCKET_USE_PROXY) ? URL_HOST_(HTTP_Proxy) :
+                                                 URL_HOST_(S->web->url));
          a_Chain_bfcb(OpAbort, S->Info, NULL, "Both");
          dFree(S->Info);
          Http_socket_free(SKey);
@@ -527,11 +600,11 @@ static int Http_get(ChainLink *Info, void *Data1)
    if (Http_must_use_proxy(S->web->url)) {
       hostname = dStrdup(URL_HOST(HTTP_Proxy));
       S->port = URL_PORT(HTTP_Proxy);
-      S->use_proxy = TRUE;
+      S->flags |= HTTP_SOCKET_USE_PROXY;
    } else {
       hostname = dStrdup(URL_HOST(S->web->url));
       S->port = URL_PORT(S->web->url);
-      S->use_proxy = FALSE;
+      S->flags &= ~HTTP_SOCKET_USE_PROXY;
    }
 
    /* Let the user know what we'll do */
@@ -539,7 +612,7 @@ static int Http_get(ChainLink *Info, void *Data1)
 
    /* Let the DNS engine resolve the hostname, and when done,
     * we'll try to connect the socket from the callback function */
-   a_Dns_resolve(hostname, a_Http_dns_cb, Info->LocalKey);
+   a_Dns_resolve(hostname, Http_dns_cb, Info->LocalKey);
 
    dFree(hostname);
    return 0;
@@ -596,6 +669,83 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
 }
 
 
+static void Http_socket_queue_init(SocketQueue_t *sq)
+{
+   sq->head = NULL;
+   sq->tail = NULL;
+}
+
+static void Http_socket_enqueue(SocketQueue_t *sq, SocketData_t* sock)
+{
+   SocketQueueEntry_t *se = dNew(SocketQueueEntry_t, 1);
+
+   se->sock = sock;
+   se->next = NULL;
+
+   if (sq->tail)
+      sq->tail->next = se;
+   sq->tail = se;
+
+   if (! sq->head) 
+      sq->head = se;
+}
+
+static SocketData_t* Http_socket_dequeue(SocketQueue_t *sq)
+{
+   SocketQueueEntry_t *se = sq->head;
+   SocketData_t *sd = NULL;
+
+   if (se) {
+      sq->head = se->next;
+      if (sq->tail == se)
+         sq->tail = NULL;
+      sd = se->sock;
+      dFree(se);
+   }
+
+   return sd;
+}
+
+static HostConnection_t *Http_host_connection_get(const char *host)
+{
+   int i;
+   HostConnection_t *hc;
+
+   for (i = 0; i < dList_length(host_connections); i++) {
+      hc = (HostConnection_t*) dList_nth_data(host_connections, i);
+
+      if (dStrcasecmp(host, hc->host) == 0)
+         return hc;
+   }
+
+   hc = dNew0(HostConnection_t, 1);
+   Http_socket_queue_init(&hc->queue);
+   hc->host = dStrdup(host);
+   dList_append(host_connections, hc);
+
+   return hc;
+}
+
+static void Http_host_connection_remove(HostConnection_t *hc)
+{
+    assert(hc->queue.head == NULL);
+    dFree(hc->host);
+    dList_remove_fast(host_connections, hc);
+}
+
+static void Http_host_connection_remove_all()
+{
+   int i;
+   HostConnection_t *hc;
+
+   for (i = 0; i < dList_length(host_connections); i++) {
+      hc = (HostConnection_t*) dList_nth_data(host_connections, i);
+
+      while (Http_socket_dequeue(&hc->queue));
+      Http_host_connection_remove(hc);
+   }
+   dList_free(host_connections);
+}
 
 /*
  * Deallocate memory used by http module
@@ -603,6 +753,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
  */
 void a_Http_freeall(void)
 {
+   Http_host_connection_remove_all();
    a_Klist_free(&ValidSocks);
    a_Url_free(HTTP_Proxy);
    dFree(HTTP_Proxy_Auth_base64);
