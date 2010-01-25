@@ -22,7 +22,7 @@ static char SharedKey[32];
 void error(char *msg)
 {
     perror(msg);
-    exit(0);
+    exit(1);
 }
 
 /*
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 
     if (argc != 2) {
        fprintf(stderr,"\nUsage:\n %s {stop|register|chat}\n\n", argv[0]);
-       exit(0);
+       exit(1);
     }
 
     /* Read dpid's port number from saved file */
