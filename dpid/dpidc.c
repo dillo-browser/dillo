@@ -18,11 +18,16 @@ char *CMD_STOP     = "<cmd='DpiBye' '>";
 
 static char SharedKey[32];
 
-
-void error(char *msg)
+static void print_usage(const char *prgname)
 {
-    perror(msg);
-    exit(1);
+   fprintf(stderr,"Control program for the Dillo plugin daemon\n"
+                  "Usage: %s {stop|register|chat}\n\n", prgname);
+}
+
+static void error(char *msg)
+{
+   perror(msg);
+   exit(1);
 }
 
 /*
@@ -60,7 +65,7 @@ int main(int argc, char *argv[])
     char buffer[256];
 
     if (argc != 2) {
-       fprintf(stderr,"\nUsage:\n %s {stop|register|chat}\n\n", argv[0]);
+       print_usage(argv[0]);
        exit(1);
     }
 
@@ -95,9 +100,8 @@ int main(int argc, char *argv[])
        bzero(buffer,256);
        fgets(buffer,255,stdin);
     } else {
-       MSG_ERR("main: Unknown operation '%s'\n"
-               "Usage:\n"
-               "%s {stop|register|chat}\n\n", argv[1], argv[0]);
+       MSG_ERR("main: Unknown operation '%s'\n", argv[1]);
+       print_usage(argv[0]);
        exit(1);
     }
 
