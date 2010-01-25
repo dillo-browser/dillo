@@ -23,7 +23,7 @@ if [ ! -d $BASE2 ] ; then
   mkdir $BASE2
 fi
 
-cp dpid/dpid dpid/dpidc $BASE
+cp dpid/dpid dpid/dpidc dpid/dpidrc $BASE
 strip $BASE/dpid $BASE/dpidc
 
 cd dpi
