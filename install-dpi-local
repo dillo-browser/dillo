@@ -12,9 +12,13 @@ if [ -r $BASE/dpi_socket_dir ] ; then
 fi
 
 if [ ! -x dpid/dpid ] ; then
-   echo "You MUST run this script after make."
+   echo "This script may only be run AFTER make."
    exit 1
 fi
+
+# Try to communicate with any currently-running dpid to tell it
+# to stop itself and the dpi programs.
+dpidc stop
 
 if [ ! -d $BASE ] ; then
   mkdir $BASE
