@@ -2,16 +2,22 @@
  Dillo
 =======
 
-  Release 2.1.1 is part of of the dillo-2.x generation of the
+  Release 2.2 is part of of the dillo-2.x generation of the
 Dillo  web  browser.  In this new series significant parts of the
 codebase  were  ported  to C++, and the rendering engine now uses
 the FLTK2 library instead of GTK1.
+
+dillo-2.2:
+
+  This release features a major overhaul of the cookies subsystem,
+a reimplementation of the DPI API, a configurable connection limit,
+and various CSS improvements.
 
 dillo-2.1.1:
 
   This release improves image size checking.
 
-dillo-2.1:
+dillo-2.1 brought:
 
   This  release  came with substantial improvements, among which
 the  most important is a basic CSS infrastructure! There are also
