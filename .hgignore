@@ -26,6 +26,7 @@ dpi/ftp.filter.dpi
 dpi/hello.filter.dpi
 dpi/https.filter.dpi
 dpid/dpid
+test/cookies
 test/dw-anchors-test
 test/dw-border-test
 test/dw-example
