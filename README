@@ -7,31 +7,9 @@ Dillo  web  browser.  In this new series significant parts of the
 codebase  were  ported  to C++, and the rendering engine now uses
 the FLTK2 library instead of GTK1.
 
-dillo-2.2:
-
   This release features a major overhaul of the cookies subsystem,
 a reimplementation of the DPI API, a configurable connection limit,
 and various CSS improvements.
-
-dillo-2.1.1:
-
-  This release improves image size checking.
-
-dillo-2.1 brought:
-
-  This  release  came with substantial improvements, among which
-the  most important is a basic CSS infrastructure! There are also
-configurable  keybindings  among  other  goodies. Please read the
-Changelog highlights in the splash page of the browser itself.
-
-dillo-2.0 brought:
-
-  The same things dillo1 had, plus tabbed browsing, antialiasing,
-different  character  sets,  accepting  compressed pages, control
-over image loading, smaller footprint, fewer dependencies, better
-table  rendering,  bugfixes, improved GUI, ... In brief, a better
-dillo.
-
 
   Here's a list of some well known problems:
 
