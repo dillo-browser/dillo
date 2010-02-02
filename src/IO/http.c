@@ -729,18 +729,17 @@ static HostConnection_t *Http_host_connection_get(const char *host)
 static void Http_host_connection_remove(HostConnection_t *hc)
 {
     assert(hc->queue.head == NULL);
-    dFree(hc->host);
     dList_remove_fast(host_connections, hc);
+    dFree(hc->host);
+    dFree(hc);
 }
 
 static void Http_host_connection_remove_all()
 {
-   int i;
    HostConnection_t *hc;
 
-   for (i = 0; i < dList_length(host_connections); i++) {
-      hc = (HostConnection_t*) dList_nth_data(host_connections, i);
-
+   while (dList_length(host_connections) > 0) {
+      hc = (HostConnection_t*) dList_nth_data(host_connections, 0);
       while (Http_socket_dequeue(&hc->queue));
       Http_host_connection_remove(hc);
    }
