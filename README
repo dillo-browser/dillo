@@ -1,17 +1,16 @@
-=======
- Dillo
-=======
+===================
+ Dillo web browser
+===================
 
-  Release 2.2 is part of of the dillo-2.x generation of the
-Dillo  web  browser.  In this new series significant parts of the
-codebase  were  ported  to C++, and the rendering engine now uses
-the FLTK2 library instead of GTK1.
+  Dillo 2.2 features a major overhaul of the cookies subsystem,
+a reimplementation of the Dillo Plugin (DPI) API, a configurable
+connection limit, and various CSS improvements.
 
-  This release features a major overhaul of the cookies subsystem,
-a reimplementation of the DPI API, a configurable connection limit,
-and various CSS improvements.
+  This release is part of the Dillo2 series. In Dillo2, significant
+parts of the codebase were ported to C++, and the rendering engine was
+modified to use the FLTK2 library rather than GTK1.
 
-  Here's a list of some well known problems:
+  Here's a list of some well-known problems:
 
          * no FRAMES rendering
          * no https (there's a barebones prototype).
