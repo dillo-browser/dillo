@@ -98,7 +98,8 @@ int main(int argc, char *argv[])
     } else if (strcmp(argv[1], "chat") == 0) {
        printf("Please enter the message: ");
        bzero(buffer,256);
-       fgets(buffer,255,stdin);
+       if (fgets(buffer,255,stdin) == NULL)
+          MSG_ERR("dpidc: Can't read the message\n");
     } else {
        MSG_ERR("main: Unknown operation '%s'\n", argv[1]);
        print_usage(argv[0]);
