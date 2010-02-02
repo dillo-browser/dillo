@@ -555,8 +555,8 @@ static void Cookies_add_cookie(CookieData_t *cookie)
     * is arguable, but we definitely do not want to add a Max-Age=0 cookie.
     */
    if (cookie->expires_at <= time(NULL)) {
-      MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
-          cookie->value, cookie->domain, cookie->path);
+      _MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
+           cookie->value, cookie->domain, cookie->path);
       Cookies_free_cookie(cookie);
    } else {
       cookie->last_used = cookies_use_counter++;
@@ -663,8 +663,8 @@ static time_t Cookies_expires_attr(char *value, const char *server_date)
             /* Don't want to wrap around at the extremes of representable
              * values thanks to clock skew.
              */
-            MSG("Time %ld was trying to turn into %ld\n", (long)exptime,
-                (long)(exptime + local_shift));
+            _MSG("Time %ld was trying to turn into %ld\n", (long)exptime,
+                 (long)(exptime + local_shift));
          } else {
             exptime += local_shift;
          }
@@ -741,9 +741,9 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
             cookie->expires_at = Cookies_expires_attr(value, server_date);
             expires = TRUE;
             dFree(value);
-            MSG("Expires in %ld seconds, at %s",
-                (long)cookie->expires_at - time(NULL),
-                ctime(&cookie->expires_at));
+            _MSG("Expires in %ld seconds, at %s",
+                 (long)cookie->expires_at - time(NULL),
+                 ctime(&cookie->expires_at));
 
          }
       } else if (dStrcasecmp(attr, "Secure") == 0) {
@@ -794,13 +794,13 @@ static bool_t Cookies_domain_is_ip(const char *domain)
    len = strlen(domain);
 
    if (len == strspn(domain, "0123456789.")) {
-      MSG("an IPv4 address\n");
+      _MSG("an IPv4 address\n");
       return TRUE;
    }
    if (*domain == '[' &&
        (len == strspn(domain, "0123456789abcdefABCDEF:.[]"))) {
       /* The precise format is shown in section 3.2.2 of rfc 3986 */
-      MSG("an IPv6 address\n");
+      _MSG("an IPv6 address\n");
       return TRUE;
    }
    return FALSE;
@@ -928,7 +928,7 @@ static uint_t Cookies_internal_dots_required(const char *host)
          for (i = 0; i < tld_num; i++) {
             if (strlen(tlds[i]) == (uint_t) tld_len &&
                 !dStrncasecmp(tlds[i], host + start, tld_len)) {
-               MSG("TLD code matched %s\n", tlds[i]);
+               _MSG("TLD code matched %s\n", tlds[i]);
                ret++;
                break;
             }
@@ -973,7 +973,7 @@ static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host)
       return FALSE;
    }
 
-   MSG("host %s and domain %s is all right\n", host, cookie->domain);
+   _MSG("host %s and domain %s is all right\n", host, cookie->domain);
    return TRUE;
 }
 
@@ -1050,8 +1050,8 @@ static void Cookies_add_matching_cookies(const char *domain,
       for (i = 0; (cookie = dList_nth_data(domain_cookies, i)); ++i) {
          /* Remove expired cookie. */
          if (cookie->expires_at < time(NULL)) {
-            MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
-                cookie->value, cookie->domain, cookie->path);
+            _MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
+                 cookie->value, cookie->domain, cookie->path);
             dList_remove(domain_cookies, cookie);
             Cookies_free_cookie(cookie);
             --i; continue;
