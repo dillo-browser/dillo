@@ -32,12 +32,14 @@ Out of the box, dillo rejects all cookies.
 If you want to accept certain cookies, you can specify rules for different
 domains in the file ~/.dillo/cookiesrc. The syntax looks like:
 
+#host         action
 DEFAULT       DENY
-slashdot.org  ACCEPT
+fltk.org      ACCEPT
 .host.com     ACCEPT_SESSION
 
+Line 0: Comment line begins with '#'.
 Line 1: Deny all cookies from all domains not otherwise specified.
-Line 2: Accept all cookies from slashdot.org, and save them to
+Line 2: Accept all cookies from fltk.org, and save them to
         ~/.dillo/cookies.txt when the cookies dpi exits.
 Line 3: Accept all cookies from all subdomains of host.com, but
         do not save them when the dpi exits.
