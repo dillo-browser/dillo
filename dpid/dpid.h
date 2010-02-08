@@ -98,6 +98,8 @@ void handle_sigchld(void);
 
 void est_dpi_sigchld(void);
 
+void est_dpi_terminator(void);
+
 void stop_active_dpis(struct dp *dpi_attr_list, int numdpis);
 
 void ignore_dpi_sockets(struct dp *dpi_attr_list, int numdpis);

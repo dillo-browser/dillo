@@ -41,11 +41,16 @@
 volatile sig_atomic_t caught_sigchld = 0;
 char *SharedKey = NULL;
 
-/*! Remove UDS filenames 
+/*! Remove dpid_comm_keys file.
+ * This avoids that dillo instances connect to a stale port after dpid
+ * has exited (e.g. after a reboot).
  */
 void cleanup()
 {
-
+   char *fname;
+   fname = dStrconcat(dGethomedir(), "/", dotDILLO_DPID_COMM_KEYS, NULL);
+   unlink(fname);
+   dFree(fname);
 }
 
 /*! Free memory used to describe
@@ -94,34 +99,27 @@ void free_services_list(Dlist *s_list)
    dList_free(s_list);
 }
 
-/*! \todo
- * Remove terminator and est_terminator unless we really want to clean up
- * on abnormal exit.
- */
-#if 0
 /*! Signal handler for SIGINT, SIGQUIT, and SIGTERM. Calls cleanup
+ * \todo what is the most portable way to ignore the signo argument of
+ *       without generating a warning? Is "int signo __unused" gcc specific?
  */
-void terminator(int sig)
+static void terminator()
 {
-   (void) signal(SIGCHLD, SIG_DFL);
    cleanup();
-   (void) signal(sig, SIG_DFL);
-   (void) raise(sig);
    _exit(0);
 }
 
 /*! Establish handler for termination signals
  * and register cleanup with atexit */
-void est_terminator(void)
+void est_dpi_terminator()
 {
    struct sigaction act;
    sigset_t block;
 
-   (void) sigemptyset(&block);
-   (void) sigaddset(&block, SIGINT);
-   (void) sigaddset(&block, SIGQUIT);
-   (void) sigaddset(&block, SIGTERM);
-   (void) sigaddset(&block, SIGSEGV);
+   sigemptyset(&block);
+   sigaddset(&block, SIGINT);
+   sigaddset(&block, SIGQUIT);
+   sigaddset(&block, SIGTERM);
 
    act.sa_handler = terminator;
    act.sa_mask = block;
@@ -129,18 +127,17 @@ void est_terminator(void)
 
    if (sigaction(SIGINT, &act, NULL) ||
        sigaction(SIGQUIT, &act, NULL) ||
-       sigaction(SIGTERM, &act, NULL) || sigaction(SIGSEGV, &act, NULL)) {
-      ERRMSG("est_terminator", "sigaction", errno);
+       sigaction(SIGTERM, &act, NULL)) {
+      ERRMSG("est_dpi_terminator", "sigaction", errno);
       exit(1);
    }
 
    if (atexit(cleanup) != 0) {
-      ERRMSG("est_terminator", "atexit", 0);
+      ERRMSG("est_dpi_terminator", "atexit", 0);
       MSG_ERR("Hey! atexit failed, how did that happen?\n");
       exit(1);
    }
 }
-#endif
 
 /*! Identify a given file
  * Currently there is only one file type associated with dpis.
@@ -587,8 +584,8 @@ int bind_socket_fd(int base_port, int *p_port)
  */
 int save_comm_keys(int srs_port)
 {
-   int fd;
-   char *fname, ret = -1, port_str[32];
+   int fd, ret = -1;
+   char *fname, port_str[32];
 
    fname = dStrconcat(dGethomedir(), "/", dotDILLO_DPID_COMM_KEYS, NULL);
    fd = open(fname, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);

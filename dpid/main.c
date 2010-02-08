@@ -265,7 +265,7 @@ int main(void)
       }
    }
    numsocks = init_all_dpi_sockets(dpi_attr_list);
-   //est_terminator(); /* Do we still want to clean up on an abnormal exit? */
+   est_dpi_terminator();
    est_dpi_sigchld();
 
    (void) sigemptyset(&mask_sigchld);
