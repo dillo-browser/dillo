@@ -100,11 +100,10 @@ void free_services_list(Dlist *s_list)
 }
 
 /*! Signal handler for SIGINT, SIGQUIT, and SIGTERM. Calls cleanup
- * \todo what is the most portable way to ignore the signo argument of
- *       without generating a warning? Is "int signo __unused" gcc specific?
  */
-static void terminator()
+static void terminator(int sig)
 {
+   (void) sig; /* suppress unused parameter warning */
    cleanup();
    _exit(0);
 }
