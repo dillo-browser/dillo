@@ -116,6 +116,7 @@ void est_dpi_terminator()
    sigset_t block;
 
    sigemptyset(&block);
+   sigaddset(&block, SIGHUP);
    sigaddset(&block, SIGINT);
    sigaddset(&block, SIGQUIT);
    sigaddset(&block, SIGTERM);
@@ -124,7 +125,8 @@ void est_dpi_terminator()
    act.sa_mask = block;
    act.sa_flags = 0;
 
-   if (sigaction(SIGINT, &act, NULL) ||
+   if (sigaction(SIGHUP, &act, NULL) ||
+       sigaction(SIGINT, &act, NULL) ||
        sigaction(SIGQUIT, &act, NULL) ||
        sigaction(SIGTERM, &act, NULL)) {
       ERRMSG("est_dpi_terminator", "sigaction", errno);
