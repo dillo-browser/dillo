@@ -240,7 +240,7 @@ const char *const AboutSplash=
 "<tr>\n"
 " <td bgcolor='#CCCCCC'>\n"
 "  <h4>Release overview</h4>\n"
-"  ??, 2010\n"
+"  February 11, 2010\n"
 "<tr>\n"
 " <td bgcolor='#FFFFFF'>\n"
 "  <table border='0' cellspacing='0' cellpadding='5'>\n"
