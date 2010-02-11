@@ -38,6 +38,7 @@ struct _DilloPrefs {
    DilloUrl *http_proxy;
    char *http_proxyuser;
    char *http_referer;
+   char *http_user_agent;
    char *no_proxy;
    DilloUrl *start_page;
    DilloUrl *home;

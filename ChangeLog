@@ -2,6 +2,12 @@
 Dillo project
 =============================================================================
 
+dillo-2.2.1 [not released yet]
++- Configurable User-Agent HTTP header.
+   Patch: Alexander Voigt, corvid
+
+-----------------------------------------------------------------------------
+
 dillo-2.2 [Feb 11, 2010]
 
 +- Added keybindings for scrolling.

@@ -140,6 +140,18 @@
 # path  : Send the requested URI's host and path.
 #http_referer=host
 
+# Set the HTTP User-Agent header.
+# This can be useful for privacy and for working around servers who think
+# Dillo is less capable than it really is. However, if you pretend to use a
+# different browser, servers may send you pages that work with the features
+# and bugs of that other browser -- or even disallow access in cases like
+# wget or googlebot. Remember this before submitting bug reports.
+#
+# See http://zytrax.com/tech/web/browser_ids.htm for a compilation of strings.
+#
+# http_user_agent="Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6"
+# http_user_agent="Wget/1.11.4"
+#The default is Dillo/(current version number)
 
 #-------------------------------------------------------------------------
 #                            COLORS SECTION

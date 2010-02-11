@@ -67,6 +67,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "http_proxy", &prefs.http_proxy, PREFS_URL },
       { "http_proxyuser", &prefs.http_proxyuser, PREFS_STRING },
       { "http_referer", &prefs.http_referer, PREFS_STRING },
+      { "http_user_agent", &prefs.http_user_agent, PREFS_STRING },
       { "limit_text_width", &prefs.limit_text_width, PREFS_BOOL },
       { "load_images", &prefs.load_images, PREFS_BOOL },
       { "load_stylesheets", &prefs.load_stylesheets, PREFS_BOOL },

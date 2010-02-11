@@ -312,13 +312,13 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Host: %s\r\n"
          "%s"
          "%s"
-         "User-Agent: Dillo/" VERSION "\r\n"
+         "User-Agent: %s\r\n"
          "Content-Length: %ld\r\n"
          "Content-Type: %s\r\n"
          "%s" /* cookies */
          "\r\n",
          full_path->str, HTTP_Language_hdr, auth ? auth : "",
-         URL_AUTHORITY(url), proxy_auth->str, referer,
+         URL_AUTHORITY(url), proxy_auth->str, referer, prefs.http_user_agent,
          (long)URL_DATA(url)->len, content_type->str,
          cookies);
       dStr_append_l(query, URL_DATA(url)->str, URL_DATA(url)->len);
@@ -336,14 +336,14 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
          "Host: %s\r\n"
          "%s"
          "%s"
-         "User-Agent: Dillo/" VERSION "\r\n"
+         "User-Agent: %s\r\n"
          "%s" /* cookies */
          "\r\n",
          full_path->str,
          (URL_FLAGS(url) & URL_E2EQuery) ?
             "Cache-Control: no-cache\r\nPragma: no-cache\r\n" : "",
          HTTP_Language_hdr, auth ? auth : "", URL_AUTHORITY(url),
-         proxy_auth->str, referer, cookies);
+         proxy_auth->str, referer, prefs.http_user_agent, cookies);
    }
    dFree(referer);
    dFree(cookies);
