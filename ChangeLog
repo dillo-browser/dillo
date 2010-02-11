@@ -5,6 +5,8 @@ Dillo project
 dillo-2.2.1 [not released yet]
 +- Configurable User-Agent HTTP header.
    Patch: Alexander Voigt, corvid
++- Include Accept header in HTTP queries.
+   Patch: corvid
 
 -----------------------------------------------------------------------------
 
