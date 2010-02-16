@@ -769,6 +769,9 @@ void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
 
    dFree(auth_cmd);
    dFree(bye_cmd);
+
+   /* Allow child dpis some time to read dpid_comm_keys before erasing it */
+   sleep (1);
 }
 
 /*! Removes dpis in dpi_attr_list from the
