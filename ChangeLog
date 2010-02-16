@@ -7,6 +7,7 @@ dillo-2.2.1 [not released yet]
    Patch: Alexander Voigt, corvid
 +- Include Accept header in HTTP queries.
  - Don't use obsolete png_check_sig().
+ - Handle zero-width space.
    Patches: corvid
 
 -----------------------------------------------------------------------------
