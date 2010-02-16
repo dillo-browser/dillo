@@ -440,13 +440,20 @@ char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
    if (dsh->mode & DPIP_LAST_TAG)
       dsh->mode = DPIP_RAW;
 
-   if (blocking && dsh->mode & DPIP_TAG) {
-      /* Only wait for data when the tag is incomplete */
-      if (!strstr(dsh->rdbuf->str, DPIP_TAG_END)) {
-         do {
+   if (blocking) {
+      if (dsh->mode & DPIP_TAG) {
+         /* Only wait for data when the tag is incomplete */
+         if (!strstr(dsh->rdbuf->str, DPIP_TAG_END)) {
+             do {
+                Dpip_dsh_read(dsh, 1);
+                p = strstr(dsh->rdbuf->str, DPIP_TAG_END);
+             } while (!p && dsh->status == EAGAIN);
+         }
+
+      } else if (dsh->mode & DPIP_RAW) {
+         /* Wait for data when the buffer is empty and there's no EOF yet */
+         while (dsh->rdbuf->len == 0 && dsh->status != DPIP_EOF)
             Dpip_dsh_read(dsh, 1);
-            p = strstr(dsh->rdbuf->str, DPIP_TAG_END);
-         } while (!p && dsh->status == EAGAIN);
       }
    }
 
