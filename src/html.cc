@@ -1178,6 +1178,8 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
          if (isspace(word2[i])) {
             while (word2[++i] && isspace(word2[i])) ;
             Html_process_space(html, word2 + start, i - start);
+         } else if (!strncmp(word2+i, utf8_zero_width_space, 3)) {
+            i += 3;
          } else if (a_Utf8_ideographic(word2+i, word2_end, &len)) {
             i += len;
             HT2TB(html)->addText(word2 + start, i - start,
@@ -1186,6 +1188,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             do {
                i += len;
             } while (word2[i] && !isspace(word2[i]) &&
+                     strncmp(word2+i, utf8_zero_width_space, 3) &&
                      (!a_Utf8_ideographic(word2+i, word2_end, &len)));
             HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());

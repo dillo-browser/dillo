@@ -345,8 +345,7 @@ static void Png_write(DilloPng *png, void *Buf, uint_t BufSize)
             return;            /* need MORE data */
          }
          /* check the image signature - DON'T update ipbufstart! */
-         if (!png_check_sig(png->ipbuf, DATASIZE)) {
-            /* you lied to me about it being a PNG image */
+         if (png_sig_cmp(png->ipbuf, 0, DATASIZE)) {
             MSG_WARN("\"%s\" is not a PNG file.\n", URL_STR(png->url));
             png->state = IS_finished;
             break;

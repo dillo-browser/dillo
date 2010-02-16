@@ -22,6 +22,7 @@
 #define PREFS_NO_PROXY        "localhost 127.0.0.1"
 #define PREFS_SAVE_DIR        "/tmp/"
 #define PREFS_HTTP_REFERER    "host"
+#define PREFS_HTTP_USER_AGENT "Dillo/" VERSION
 
 /*-----------------------------------------------------------------------------
  * Global Data
@@ -61,6 +62,7 @@ void a_Prefs_init(void)
    prefs.http_max_conns = 6;
    prefs.http_proxyuser = NULL;
    prefs.http_referer = dStrdup(PREFS_HTTP_REFERER);
+   prefs.http_user_agent = dStrdup(PREFS_HTTP_USER_AGENT);
    prefs.limit_text_width = FALSE;
    prefs.load_images=TRUE;
    prefs.load_stylesheets=TRUE;
@@ -109,6 +111,7 @@ void a_Prefs_freeall(void)
    a_Url_free(prefs.http_proxy);
    dFree(prefs.http_proxyuser);
    dFree(prefs.http_referer);
+   dFree(prefs.http_user_agent);
    dFree(prefs.no_proxy);
    dFree(prefs.save_dir);
    dFree(prefs.search_url);

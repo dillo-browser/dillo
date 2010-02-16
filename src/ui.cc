@@ -850,8 +850,21 @@ int UI::handle(int event)
       if (prefs.middle_click_drags_page == 0 &&
           event_button() == MiddleButton &&
           !a_UIcmd_pointer_on_link(a_UIcmd_get_bw_by_widget(this))) {
-         paste_url();
-         ret = 1;
+         if (Main->Rectangle::contains (event_x (), event_y ())) {
+            /* Offer the event to Main's children (form widgets) */
+            int save_x = e_x, save_y = e_y;
+
+            e_x -= Main->x();
+            e_y -= Main->y();
+            ret = ((Group *)Main)->Group::handle(event);
+            e_x = save_x;
+            e_y = save_y;
+         }
+         if (!ret) {
+            /* middle click was not on a link or a form widget */
+            paste_url();
+            ret = 1;
+         }
       }
    }
 
