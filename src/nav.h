@@ -34,6 +34,7 @@ void a_Nav_save_url(BrowserWindow *bw,
                     const DilloUrl *url, const char *filename);
 int a_Nav_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize);
 void a_Nav_unref_buf(const DilloUrl *Url);
+void a_Nav_send_source(BrowserWindow *bw, const DilloUrl *url);
 
 #ifdef __cplusplus
 }

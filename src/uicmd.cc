@@ -1002,11 +1002,7 @@ void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr)
  */
 void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url)
 {
-   DilloUrl *vs_url;
-
-   vs_url = a_Url_new("dpi:/vsource/", NULL);
-   a_UIcmd_open_url_nt(bw, vs_url, 1);
-   a_Url_free(vs_url);
+   a_Nav_send_source(bw, url);
 }
 
 /*

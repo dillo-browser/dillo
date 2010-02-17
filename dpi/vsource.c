@@ -29,6 +29,119 @@
 
 /*---------------------------------------------------------------------------*/
 
+const char *DOCTYPE=
+ "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN'>";
+
+
+void send_dpip_tag(Dsh *sh, char *dpip_tag)
+{
+   a_Dpip_dsh_printf(sh, 0, "\nDpip tag received: ");
+   a_Dpip_dsh_printf(sh, 0, dpip_tag ? dpip_tag : "None");
+   a_Dpip_dsh_printf(sh, 1, "\n\n");
+}
+
+/*
+ * Send source as plain text
+ */
+void send_plain_text(Dsh *sh, int data_size)
+{
+   int bytes_read = 0;
+   char *src_str;
+
+   /* Send HTTP header for plain text MIME type */
+   a_Dpip_dsh_printf(sh, 0, "Content-type: text/plain\n\n");
+
+   while (bytes_read < data_size &&
+          (src_str = a_Dpip_dsh_read_token(sh, 1))) {
+      bytes_read += strlen(src_str);
+      a_Dpip_dsh_write_str(sh, 1, src_str);
+      dFree(src_str);
+   }
+}
+
+/*
+ * Send source as plain text with line numbers
+ */
+void send_numbered_text(Dsh *sh, int data_size)
+{
+   int bytes_read = 0, line = 1;
+   char *p, *q, *src_str, line_str[32];
+
+   /* Send HTTP header for plain text MIME type */
+   a_Dpip_dsh_printf(sh, 0, "Content-type: text/plain\n\n");
+
+   while (bytes_read < data_size &&
+          (src_str = a_Dpip_dsh_read_token(sh, 1))) {
+      bytes_read += strlen(src_str);
+      p = q = src_str;
+
+      while (*p) {
+         snprintf(line_str, 32, "%2d: ", line);
+         a_Dpip_dsh_write_str(sh, 0, line_str);
+         if ((p = strchr(q, '\n'))) {
+            a_Dpip_dsh_write(sh, 0, q, p - q + 1);
+            if (p[1] == '\r')
+               ++p;
+            ++line;
+         } else {
+            a_Dpip_dsh_write_str(sh, 1, q);
+            break;
+         }
+         q = ++p;
+      }
+      dFree(src_str);
+   }
+}
+
+/*
+ * Send source as html text with line numbers
+ */
+void send_html_text(Dsh *sh, int data_size)
+{
+   int bytes_read = 0, old_line = 0, line = 1;
+   char *p, *q, *src_str, line_str[128];
+
+   /* Send HTTP header for plain text MIME type */
+   a_Dpip_dsh_printf(sh, 0, "Content-type: text/html\n\n");
+
+   a_Dpip_dsh_printf(sh, 0, DOCTYPE);
+   a_Dpip_dsh_printf(sh, 0, 
+                     "<html><body>\n<table width='100%%' cellpadding='0'>\n");
+
+   while (bytes_read < data_size &&
+          (src_str = a_Dpip_dsh_read_token(sh, 1))) {
+      bytes_read += strlen(src_str);
+      p = q = src_str;
+
+      while (*p) {
+         if (line > old_line) {
+            snprintf(line_str, 128, 
+                     "<tr><td bgcolor='%s'>%d&nbsp;<td>",
+                     (line & 1) ? "#B87333" : "#DD7F32", line);
+            a_Dpip_dsh_write_str(sh, 0, line_str);
+            old_line = line;
+         }
+         if ((p = strpbrk(q, "\n<"))) {
+            if (*p == '\n') {
+               a_Dpip_dsh_write(sh, 0, q, p - q + 1);
+               if (p[1] == '\r')
+                  ++p;
+               ++line;
+            } else {
+               a_Dpip_dsh_write(sh, 0, q, p - q);
+               a_Dpip_dsh_write_str(sh, 0, "&lt;");
+            }
+         } else {
+            a_Dpip_dsh_write_str(sh, 1, q);
+            break;
+         }
+         q = ++p;
+      }
+      dFree(src_str);
+   }
+
+   a_Dpip_dsh_printf(sh, 1, "</table></body></html>");
+}
 
 /*
  *
@@ -36,12 +149,12 @@
 int main(void)
 {
    Dsh *sh;
-   int data_size, bytes_read = 0;
+   int data_size;
    char *dpip_tag, *cmd = NULL, *url = NULL, *size_str = NULL;
-   char *d_cmd, *src_str;
+   char *d_cmd;
 
-   MSG("starting...\n");
-   /* sleep(20) */
+   _MSG("starting...\n");
+   //sleep(20);
 
    /* Initialize the SockHandler.
     * This means we'll use stdin for input and stdout for output.
@@ -79,32 +192,14 @@ int main(void)
    a_Dpip_dsh_write_str(sh, 0, d_cmd);
    dFree(d_cmd);
 
-   a_Dpip_dsh_printf(sh, 0,
-      "Content-type: text/plain\n\n"
-      ".----------------.\n"
-      "|  Hello World!  |\n"
-      "'----------------'\n\n");
-
-   /* Show the dpip tag we received */
-   a_Dpip_dsh_printf(sh, 0, "Dpip tag received: ");
-   a_Dpip_dsh_printf(sh, 0, dpip_tag);
-   dFree(dpip_tag);
-
    dpip_tag = a_Dpip_dsh_read_token(sh, 1);
-   a_Dpip_dsh_printf(sh, 0, "\nDpip tag received: ");
-   a_Dpip_dsh_printf(sh, 0, dpip_tag ? dpip_tag : "None");
-   a_Dpip_dsh_printf(sh, 1, "\n\n");
-   //dFree(dpip_tag);
    size_str = a_Dpip_get_attr(dpip_tag, "data_size");
    data_size = strtol(size_str, NULL, 10);
 
-   while (bytes_read < data_size &&
-          (src_str = a_Dpip_dsh_read_token(sh, 1))) {
-      bytes_read += strlen(src_str);
-      //a_Dpip_dsh_write_str(sh, 0, src_str);
-      a_Dpip_dsh_write_str(sh, 1, src_str);
-      dFree(src_str);
-   }
+   /* Choose your flavour */
+   //send_plain_text(sh, data_size);
+   //send_numbered_text(sh, data_size);
+   send_html_text(sh, data_size);
 
    dFree(cmd);
    dFree(url);

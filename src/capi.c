@@ -85,7 +85,7 @@ void a_Capi_init(void)
  * Create a new connection data structure
  */
 static capi_conn_t *
- Capi_conn_new(DilloUrl *url, void *bw, char *server, char *datastr)
+ Capi_conn_new(const DilloUrl *url, void *bw, char *server, char *datastr)
 {
    capi_conn_t *conn;
 
@@ -478,8 +478,8 @@ const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
  * Most of the time we send dpi commands, but it also serves for raw data
  * as with "view source".
  */
-int a_Capi_dpi_send_data(DilloUrl *url, void *bw, char *data, int data_sz,
-                         char *server, int flags)
+int a_Capi_dpi_send_data(const DilloUrl *url, void *bw, 
+                         char *data, int data_sz, char *server, int flags)
 {
    capi_conn_t *conn;
    DataBuf *dbuf;
@@ -502,7 +502,7 @@ int a_Capi_dpi_send_data(DilloUrl *url, void *bw, char *data, int data_sz,
          a_Capi_ccc(OpSend, 1, BCK, conn->InfoSend, dbuf, NULL);
          dFree(dbuf);
       } else {
-         MSG(" ERROR: [a_Capi_dpi_send_cmd] No open connection found\n");
+         MSG(" ERROR: [a_Capi_dpi_send_data] No open connection found\n");
       }
    }
 
@@ -517,6 +517,22 @@ int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
                         int flags)
 {
    return a_Capi_dpi_send_data(url, bw, cmd, strlen(cmd), server, flags);
+}
+
+/*
+ * Send this url's source to the "view source" dpi
+ */
+void a_Capi_dpi_send_source(BrowserWindow *bw, const DilloUrl *url,
+                            char *buf, int buf_size)
+{
+   char *cmd, size_str[32];
+
+   /* send the page's source to this dpi connection */
+   snprintf(size_str, 32, "%d", buf_size);
+   cmd = a_Dpip_build_cmd("cmd=%s url=%s data_size=%s",
+                          "start_send_page", URL_STR(url), size_str);
+   a_Capi_dpi_send_cmd(NULL, bw, cmd, "vsource", 0);
+   a_Capi_dpi_send_data(url, bw, buf, buf_size, "vsource", 0);
 }
 
 /*
