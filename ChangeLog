@@ -8,6 +8,7 @@ dillo-2.2.1 [not released yet]
 +- Include Accept header in HTTP queries.
  - Don't use obsolete png_check_sig().
  - Handle zero-width space.
+ - Fix segfault closing window from WM.
    Patches: corvid
 
 -----------------------------------------------------------------------------

@@ -357,10 +357,9 @@ public:
 //----------------------------------------------------------------------------
 
 static void win_cb (fltk::Widget *w, void *cb_data) {
-   CustTabGroup *tabs;
    int choice = 0;
+   CustTabGroup *tabs = (CustTabGroup*) cb_data;
 
-   tabs = BW2UI((BrowserWindow*) cb_data)->tabs();
    if (tabs->children () > 1)
       choice = a_Dialog_choice3 ("Window contains more than one tab.",
                                  "Close all tabs", "Cancel", NULL);
@@ -470,7 +469,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    // Copy the layout pointer into the bw data
    new_bw->render_layout = (void*)layout;
 
-   win->callback(win_cb, new_bw);
+   win->callback(win_cb, DilloTabs);
 
    new_ui->focus_location();
 
