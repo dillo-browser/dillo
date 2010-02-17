@@ -23,8 +23,7 @@ const char *a_Dialog_select_file(const char *msg,
                                  const char *pattern, const char *fname);
 char *a_Dialog_open_file(const char *msg,
                          const char *pattern, const char *fname);
-void *a_Dialog_make_text_window(const char *txt, const char *title);
-void a_Dialog_show_text_window(void *vWindow);
+void a_Dialog_text_window(const char *txt, const char *title);
 
 #ifdef __cplusplus
 }

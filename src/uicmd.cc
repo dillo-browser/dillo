@@ -1012,9 +1012,7 @@ void a_UIcmd_view_page_bugs(void *vbw)
    BrowserWindow *bw = (BrowserWindow*)vbw;
 
    if (bw->num_page_bugs > 0) {
-      void *vWindow = a_Dialog_make_text_window(bw->page_bugs->str,
-                                                "Detected HTML errors");
-      a_Dialog_show_text_window(vWindow);
+      a_Dialog_text_window(bw->page_bugs->str, "Detected HTML errors");
    } else {
       a_Dialog_msg("Zero detected HTML errors!");
    }
