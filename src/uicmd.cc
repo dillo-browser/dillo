@@ -1000,16 +1000,13 @@ void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr)
 /*
  * Show a text window with the URL's source
  */
-void a_UIcmd_view_page_source(const DilloUrl *url)
+void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url)
 {
-   char *buf;
-   int buf_size;
+   DilloUrl *vs_url;
 
-   if (a_Nav_get_buf(url, &buf, &buf_size)) {
-      void *vWindow = a_Dialog_make_text_window(buf, "View Page source");
-      a_Nav_unref_buf(url);
-      a_Dialog_show_text_window(vWindow);
-   }
+   vs_url = a_Url_new("dpi:/vsource/", NULL);
+   a_UIcmd_open_url_nt(bw, vs_url, 1);
+   a_Url_free(vs_url);
 }
 
 /*

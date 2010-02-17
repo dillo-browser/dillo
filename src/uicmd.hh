@@ -49,7 +49,7 @@ void a_UIcmd_form_popup(void *vbw, const DilloUrl *url, void *vform,
                         bool_t showing_hiddens);
 void a_UIcmd_file_popup(void *vbw, void *v_wid);
 void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr);
-void a_UIcmd_view_page_source(const DilloUrl *url);
+void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_view_page_bugs(void *vbw);
 void a_UIcmd_bugmeter_popup(void *vbw);
 int *a_UIcmd_get_history(BrowserWindow *bw, int direction);

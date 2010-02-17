@@ -180,7 +180,7 @@ static void Menu_save_page_cb(Widget* )
  */
 static void Menu_view_page_source_cb(Widget* )
 {
-   a_UIcmd_view_page_source(popup_url);
+   a_UIcmd_view_page_source(popup_bw, popup_url);
 }
 
 /*

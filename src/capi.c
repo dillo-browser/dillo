@@ -474,11 +474,12 @@ const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
 }
 
 /*
- * Send a dpi cmd.
- * (For instance: add_bookmark, open_url, send_preferences, ...)
+ * Send data to a dpi (e.g. add_bookmark, open_url, send_preferences, ...)
+ * Most of the time we send dpi commands, but it also serves for raw data
+ * as with "view source".
  */
-int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
-                        int flags)
+int a_Capi_dpi_send_data(DilloUrl *url, void *bw, char *data, int data_sz,
+                         char *server, int flags)
 {
    capi_conn_t *conn;
    DataBuf *dbuf;
@@ -487,7 +488,7 @@ int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
       /* open a new connection to server */
 
       /* Create a new connection data struct and add it to the list */
-      conn = Capi_conn_new(url, bw, server, cmd);
+      conn = Capi_conn_new(url, bw, server, data);
       /* start the CCC operations */
       a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), conn, server);
       a_Capi_ccc(OpStart, 1, BCK, a_Chain_new(), conn, server);
@@ -497,7 +498,7 @@ int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
       conn = Capi_conn_find(server);
       if (conn) {
          /* found */
-         dbuf = a_Chain_dbuf_new(cmd, (int)strlen(cmd), 0);
+         dbuf = a_Chain_dbuf_new(data, data_sz, 0);
          a_Capi_ccc(OpSend, 1, BCK, conn->InfoSend, dbuf, NULL);
          dFree(dbuf);
       } else {
@@ -506,6 +507,16 @@ int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
    }
 
    return 0;
+}
+
+/*
+ * Send a dpi cmd.
+ * (For instance: add_bookmark, open_url, send_preferences, ...)
+ */
+int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
+                        int flags)
+{
+   return a_Capi_dpi_send_data(url, bw, cmd, strlen(cmd), server, flags);
 }
 
 /*

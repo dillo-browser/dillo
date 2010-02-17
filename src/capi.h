@@ -31,6 +31,8 @@ const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
 int a_Capi_get_flags(const DilloUrl *Url);
 int a_Capi_get_flags_with_redirection(const DilloUrl *Url);
 int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url);
+int a_Capi_dpi_send_data(DilloUrl *url, void *bw, char *data, int data_sz,
+                         char *server, int flags);
 int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
                          int flags);
 void a_Capi_stop_client(int Key, int force);
