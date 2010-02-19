@@ -213,7 +213,10 @@ if test "x$enable_png" = "xyes"; then
 
 dnl Check if the user hasn't set the variable $PNG_CONFIG
   if test -z "$PNG_CONFIG"; then
-    PNG_CONFIG=`which libpng12-config`
+    PNG_CONFIG=`which libpng14-config`
+    if test -z "$PNG_CONFIG"; then
+      PNG_CONFIG=`which libpng12-config`
+    fi
     if test -z "$PNG_CONFIG"; then
       PNG_CONFIG=`which libpng-config`
     fi
@@ -236,6 +239,7 @@ dnl For debugging and to be user friendly
     AC_MSG_CHECKING([for libpng version])
     png_version=`$PNG_CONFIG --version`
     case $png_version in
+      1.4.*) AC_MSG_RESULT([$png_version (newer version)]) ;;
       1.2.*) AC_MSG_RESULT([$png_version (newer version)]) ;;
       1.0.*) AC_MSG_RESULT([$png_version (older version)]) ;;
           *) AC_MSG_RESULT([ERROR]) ;;
@@ -253,7 +257,7 @@ dnl Try to find libpng even though libpng-config wasn't found
 
     if test "x$png_ok" = "xyes"; then
       old_libs="$LIBS"
-      AC_CHECK_LIB(png, png_check_sig, png_ok=yes, png_ok=no, $LIBZ_LIBS -lm)
+      AC_CHECK_LIB(png, png_sig_cmp, png_ok=yes, png_ok=no, $LIBZ_LIBS -lm)
       LIBS="$old_libs"
 
       if test "x$png_ok" = "xyes"; then
