@@ -354,9 +354,13 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
       /* dpi request */
       if ((safe = a_Capi_dpi_verify_request(web->bw, web->url))) {
          if (dStrcasecmp(scheme, "dpi") == 0) {
-            /* make "dpi:/" prefixed urls always reload. */
-            a_Url_set_flags(web->url, URL_FLAGS(web->url) | URL_E2EQuery);
-            reload = 1;
+            if (strcmp(server, "vsource") == 0) {
+               /* don't reload the "view source" page */
+            } else {
+               /* make the other "dpi:/" prefixed urls always reload. */
+               a_Url_set_flags(web->url, URL_FLAGS(web->url) | URL_E2EQuery);
+               reload = 1;
+            }
          }
          if (reload) {
             a_Capi_conn_abort_by_url(web->url);

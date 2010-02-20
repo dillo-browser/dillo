@@ -339,7 +339,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    // One menu for every browser window
    static PopupMenu *pm = 0;
    // Active/inactive control.
-   static Item *view_page_bugs_item = 0;
+   static Item *view_page_bugs_item = 0, *view_source_item = 0;
    static ItemGroup *stylesheets = 0;
 
    popup_bw = bw;
@@ -349,7 +349,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    if (!pm) {
       pm = new PopupMenu(0,0,0,0,"&PAGE OPTIONS");
       pm->begin();
-       i = new Item("View page Source");
+       i = view_source_item = new Item("View page Source");
        i->callback(Menu_view_page_source_cb);
        i = view_page_bugs_item = new Item("View page Bugs");
        i->callback(Menu_view_page_bugs_cb);
@@ -375,6 +375,11 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
       view_page_bugs_item->activate();
    else
       view_page_bugs_item->deactivate();
+
+   if (strncmp(URL_STR(url), "dpi:/vsource/", 13) == 0)
+      view_source_item->deactivate();
+   else
+      view_source_item->activate();
 
    int n = stylesheets->children();
    for (j = 0; j < n; j++) {

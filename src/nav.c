@@ -479,7 +479,10 @@ static void Nav_reload_callback(void *data)
    a_Nav_cancel_expect(bw);
    if (a_Nav_stack_size(bw)) {
       h_url = a_History_get_url(NAV_TOP_UIDX(bw));
-      if (URL_FLAGS(h_url) & URL_Post) {
+      if (strncmp(URL_STR(h_url), "dpi:/vsource/", 13) == 0) {
+         /* disable reload for view source dpi */
+         confirmed = 0;
+      } else if (URL_FLAGS(h_url) & URL_Post) {
          /* Attempt to repost data, let's confirm... */
          choice = a_Dialog_choice3("Repost form data?",
                                    "Yes", "*No", "Cancel");
@@ -592,11 +595,16 @@ void a_Nav_send_source(BrowserWindow *bw, const DilloUrl *url)
    char *buf;
    int buf_size;
    DilloUrl *vs_url;
+   Dstr *dstr_url;
 
    if (a_Nav_get_buf(url, &buf, &buf_size)) {
-      vs_url = a_Url_new("dpi:/vsource/", NULL);
+      dstr_url = dStr_new("dpi:/vsource/:");
+      dStr_append(dstr_url, URL_STR(url));
+
+      vs_url = a_Url_new(dstr_url->str, NULL);
       a_UIcmd_open_url_nt(bw, vs_url, 1);
       a_Url_free(vs_url);
+      dStr_free(dstr_url, 1);
 
       /* send the page's source to this dpi connection */
       a_Capi_dpi_send_source(bw, url, buf, buf_size);
