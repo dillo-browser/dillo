@@ -1025,8 +1025,9 @@ void Textblock::wordWrap(int wordIndex)
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.max_word_min", page->num_lines - 1,
    //                    lastLine->max_word_min);
 
-   /* Finally, justify the line. Breaks are ignored, since the HTML
-    * parser sometimes assignes the wrong style to them. (TODO: ) */
+   /* Align the line.
+    * \todo Use block's style instead once paragraphs become proper blocks.
+    */
    if (word->content.type != core::Content::BREAK) {
       switch (word->style->textAlign) {
       case core::style::TEXT_ALIGN_LEFT:
