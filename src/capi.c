@@ -313,6 +313,35 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 }
 
 /*
+ * Send this url's source to the "view source" dpi
+ */
+static void Capi_dpi_send_source(BrowserWindow *bw,  DilloUrl *url)
+{
+   char *p, *buf, *cmd, size_str[32], *server="vsource";
+   int buf_size;
+   DilloUrl *s_url;
+
+   if (!(p = strchr(URL_STR(url), ':')) || !(p = strchr(p + 1, ':')))
+      return;
+
+   /* get the source DilloUrl */
+   s_url = a_Url_new(++p, NULL);
+   if (a_Capi_get_buf(s_url, &buf, &buf_size)) {
+      /* send the page's source to this dpi connection */
+      snprintf(size_str, 32, "%d", buf_size);
+      cmd = a_Dpip_build_cmd("cmd=%s url=%s data_size=%s",
+                             "start_send_page", URL_STR(url), size_str);
+      a_Capi_dpi_send_cmd(NULL, bw, cmd, server, 0);
+      a_Capi_dpi_send_data(url, bw, buf, buf_size, server, 0);
+   } else {
+      cmd = a_Dpip_build_cmd("cmd=%s msg=%s",
+                             "DpiError", "Page is NOT cached");
+      a_Capi_dpi_send_cmd(NULL, bw, cmd, server, 0);
+   }
+   a_Url_free(s_url);
+}
+
+/*
  * Most used function for requesting a URL.
  * TODO: clean up the ad-hoc bindings with an API that allows dynamic
  *       addition of new plugins.
@@ -365,9 +394,13 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
          if (reload) {
             a_Capi_conn_abort_by_url(web->url);
             /* Send dpip command */
+            _MSG("a_Capi_open_url, reload url='%s'\n", URL_STR(web->url));
             cmd = Capi_dpi_build_cmd(web, server);
             a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
             dFree(cmd);
+            if (strcmp(server, "vsource") == 0) {
+               Capi_dpi_send_source(web->bw, web->url);
+            }
          }
          use_cache = 1;
       }
@@ -521,22 +554,6 @@ int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
                         int flags)
 {
    return a_Capi_dpi_send_data(url, bw, cmd, strlen(cmd), server, flags);
-}
-
-/*
- * Send this url's source to the "view source" dpi
- */
-void a_Capi_dpi_send_source(BrowserWindow *bw, const DilloUrl *url,
-                            char *buf, int buf_size)
-{
-   char *cmd, size_str[32];
-
-   /* send the page's source to this dpi connection */
-   snprintf(size_str, 32, "%d", buf_size);
-   cmd = a_Dpip_build_cmd("cmd=%s url=%s data_size=%s",
-                          "start_send_page", URL_STR(url), size_str);
-   a_Capi_dpi_send_cmd(NULL, bw, cmd, "vsource", 0);
-   a_Capi_dpi_send_data(url, bw, buf, buf_size, "vsource", 0);
 }
 
 /*

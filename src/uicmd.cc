@@ -997,11 +997,24 @@ void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr)
 }
 
 /*
- * Show a text window with the URL's source
+ * Ask the vsource dpi to show this URL's source
  */
 void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url)
 {
-   a_Nav_send_source(bw, url);
+   char *buf;
+   int buf_size;
+   Dstr *dstr_url;
+   DilloUrl *vs_url;
+
+   if (a_Nav_get_buf(url, &buf, &buf_size)) {
+      dstr_url = dStr_new("dpi:/vsource/:");
+      dStr_append(dstr_url, URL_STR(url));
+
+      vs_url = a_Url_new(dstr_url->str, NULL);
+      a_UIcmd_open_url_nt(bw, vs_url, 1);
+      a_Url_free(vs_url);
+      dStr_free(dstr_url, 1);
+   }
 }
 
 /*

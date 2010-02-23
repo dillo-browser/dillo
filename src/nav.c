@@ -587,27 +587,3 @@ void a_Nav_unref_buf(const DilloUrl *Url)
    a_Capi_unref_buf(Url);
 }
 
-/*
- * Send source to a dpi
- */
-void a_Nav_send_source(BrowserWindow *bw, const DilloUrl *url)
-{
-   char *buf;
-   int buf_size;
-   DilloUrl *vs_url;
-   Dstr *dstr_url;
-
-   if (a_Nav_get_buf(url, &buf, &buf_size)) {
-      dstr_url = dStr_new("dpi:/vsource/:");
-      dStr_append(dstr_url, URL_STR(url));
-
-      vs_url = a_Url_new(dstr_url->str, NULL);
-      a_UIcmd_open_url_nt(bw, vs_url, 1);
-      a_Url_free(vs_url);
-      dStr_free(dstr_url, 1);
-
-      /* send the page's source to this dpi connection */
-      a_Capi_dpi_send_source(bw, url, buf, buf_size);
-      a_Nav_unref_buf(url);
-   }
-}

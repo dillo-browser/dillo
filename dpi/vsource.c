@@ -150,7 +150,7 @@ int main(void)
 {
    Dsh *sh;
    int data_size;
-   char *dpip_tag, *cmd = NULL, *url = NULL, *size_str = NULL;
+   char *dpip_tag, *cmd = NULL, *cmd2 = NULL, *url = NULL, *size_str = NULL;
    char *d_cmd;
 
    _MSG("starting...\n");
@@ -193,13 +193,21 @@ int main(void)
    dFree(d_cmd);
 
    dpip_tag = a_Dpip_dsh_read_token(sh, 1);
-   size_str = a_Dpip_get_attr(dpip_tag, "data_size");
-   data_size = strtol(size_str, NULL, 10);
-
-   /* Choose your flavour */
-   //send_plain_text(sh, data_size);
-   //send_numbered_text(sh, data_size);
-   send_html_text(sh, data_size);
+   cmd2 = a_Dpip_get_attr(dpip_tag, "cmd");
+   if (cmd2) {
+      if (strcmp(cmd2, "start_send_page") == 0 &&
+          (size_str = a_Dpip_get_attr(dpip_tag, "data_size"))) {
+         data_size = strtol(size_str, NULL, 10);
+         /* Choose your flavour */
+         //send_plain_text(sh, data_size);
+         //send_numbered_text(sh, data_size);
+         send_html_text(sh, data_size);
+      } else if (strcmp(cmd2, "DpiError") == 0) {
+         /* Dillo detected an error (other failures just close the socket) */
+         a_Dpip_dsh_printf(sh, 0, "Content-type: text/plain\n\n");
+         a_Dpip_dsh_printf(sh, 1, "[vsource dpi]: ERROR: Page not cached.\n");
+      }
+   }
 
    dFree(cmd);
    dFree(url);
