@@ -253,6 +253,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
             getWordExtremes (word, &wordExtremes);
 
             /* For the first word, we simply add the line1_offset. */
+            /* This test looks questionable */
             if (ignoreLine1OffsetSometimes && wordIndex == 0) {
                wordExtremes.minWidth += line1Offset;
                //DEBUG_MSG (DEBUG_SIZE_LEVEL + 1,
@@ -280,13 +281,9 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
             //           word_extremes.maxWidth);
          }
 
-         /* This "line->lastWord >= line->firstWord" test seems questionable */
-
-         if ((line->lastWord >= line->firstWord &&
-              words->getRef(line->lastWord)->content.type
+         if ((words->getRef(line->lastWord)->content.type
               == core::Content::BREAK ) ||
              lineIndex == lines->size () - 1 ) {
-            word = words->getRef (line->lastWord);
 
             //DEBUG_MSG (DEBUG_SIZE_LEVEL + 2,
             //           "   parMax = %d, after word %d (%s)\n",
@@ -757,7 +754,7 @@ void Textblock::justifyLine (Line *line, int availWidth)
 }
 
 
-void Textblock::addLine (int wordInd, bool newPar)
+Textblock::Line *Textblock::addLine (int wordInd, bool newPar)
 {
    Line *lastLine, *plastLine;
 
@@ -785,16 +782,12 @@ void Textblock::addLine (int wordInd, bool newPar)
       lastLine->maxLineWidth = plastLine->maxLineWidth;
       lastLine->maxWordMin = plastLine->maxWordMin;
       lastLine->maxParMax = plastLine->maxParMax;
-      lastLine->parMin = plastLine->parMin;
-      lastLine->parMax = plastLine->parMax;
    } else {
       /* first line: initialize values */
       lastLine->top = 0;
       lastLine->maxLineWidth = line1OffsetEff;
       lastLine->maxWordMin = 0;
       lastLine->maxParMax = 0;
-      lastLine->parMin =  line1OffsetEff;
-      lastLine->parMax =  line1OffsetEff;
    }
 
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.top", page->num_lines - 1,
@@ -835,6 +828,10 @@ void Textblock::addLine (int wordInd, bool newPar)
       //DBG_OBJ_ARRSET_NUM (page, "lines.%d.maxParMax", page->num_lines - 1,
       //                    lastLine->maxParMax);
 
+      /* The following code looks questionable (especially since the values
+       * will be overwritten). In any case, line1OffsetEff is probably
+       * supposed to go into lastLinePar*, not lastLine->par*.
+       */
       if (lines->size () > 1) {
          lastLine->parMin = 0;
          lastLine->parMax = 0;
@@ -858,6 +855,7 @@ void Textblock::addLine (int wordInd, bool newPar)
    //                    lastLine->parMax);
 
    //DBG_MSG_END (page);
+   return lastLine;
 }
 
 /*
@@ -907,19 +905,17 @@ void Textblock::wordWrap(int wordIndex)
          //          word->style->white_space);
          newLine = false;
          newPar = false;
-      } else {
-         if (lastLine->firstWord != wordIndex) {
-            /* Does new word fit into the last line? */
-            //DBG_MSGF (page, "wrap", 0,
-            //          "word %d (%s) fits? (%d + %d + %d &lt;= %d)...",
-            //          word_ind, a_Dw_content_html (&word->content),
-            //          page->lastLine_width, prevWord->orig_space,
-            //          word->size.width, availWidth);
-            newLine = (lastLineWidth + prevWord->origSpace
-                       + word->size.width > availWidth);
-            //DBG_MSGF (page, "wrap", 0, "... %s.",
-            //          newLine ? "No" : "Yes");
-         }
+      } else if (lastLine->firstWord != wordIndex) {
+         /* Does new word fit into the last line? */
+         //DBG_MSGF (page, "wrap", 0,
+         //          "word %d (%s) fits? (%d + %d + %d &lt;= %d)...",
+         //          word_ind, a_Dw_content_html (&word->content),
+         //          page->lastLine_width, prevWord->orig_space,
+         //          word->size.width, availWidth);
+         newLine = (lastLineWidth + prevWord->origSpace
+                    + word->size.width > availWidth);
+         //DBG_MSGF (page, "wrap", 0, "... %s.",
+         //          newLine ? "No" : "Yes");
       }
    }
 
@@ -927,15 +923,14 @@ void Textblock::wordWrap(int wordIndex)
    word->effSpace = word->origSpace;
    //DBG_OBJ_ARRSET_NUM (page,"words.%d.eff_space", word_ind, word->eff_space);
 
-   /* Test, whether line1_offset can be used. */
+   /* Test whether line1Offset can be used. */
    if (wordIndex == 0) {
-      if (ignoreLine1OffsetSometimes) {
-         if (line1Offset + word->size.width > availWidth)
-            line1OffsetEff = 0;
-         else
-            line1OffsetEff = line1Offset;
-      } else
+      if (ignoreLine1OffsetSometimes &&
+          line1Offset + word->size.width > availWidth) {
+         line1OffsetEff = 0;
+      } else {
          line1OffsetEff = line1Offset;
+      }
    }
 
    if (lastLine != NULL && newLine && !newPar &&
@@ -943,8 +938,7 @@ void Textblock::wordWrap(int wordIndex)
       justifyLine (lastLine, availWidth);
 
    if (newLine) {
-      addLine (wordIndex, newPar);
-      lastLine = lines->getRef (lines->size () - 1);
+      lastLine = addLine (wordIndex, newPar);
    }
 
    lastLine->lastWord = wordIndex;
@@ -1595,8 +1589,7 @@ void Textblock::calcTextSize (const char *text, size_t len,
 
 
 /**
- * Add a word to the page structure. Stashes the argument pointer in
- * the page data structure so that it will be deallocated on destroy.
+ * Add a word to the page structure.
  */
 void Textblock::addText (const char *text, size_t len,
                          core::style::Style *style)
@@ -1815,7 +1808,6 @@ void Textblock::addLinebreak (core::style::Style *style)
 
    word->content.type = core::Content::BREAK;
    word->content.breakSpace = 0;
-   word->style = style;
    wordWrap (words->size () - 1);
 }
 

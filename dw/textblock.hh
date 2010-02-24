@@ -259,7 +259,7 @@ protected:
    void getWordExtremes (Word *word, core::Extremes *extremes);
    void markChange (int ref);
    void justifyLine (Line *line, int availWidth);
-   void addLine (int wordInd, bool newPar);
+   Line *addLine (int wordInd, bool newPar);
    void calcWidgetSize (core::Widget *widget, core::Requisition *size);
    void rewrap ();
    void decorateText(core::View *view, core::style::Style *style,
