@@ -754,9 +754,9 @@ void Textblock::justifyLine (Line *line, int availWidth)
 }
 
 
-Textblock::Line *Textblock::addLine (int wordInd, bool newPar)
+Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
 {
-   Line *lastLine, *plastLine;
+   Line *lastLine;
 
    //DBG_MSG (page, "wrap", 0, "Dw_page_add_line");
    //DBG_MSG_START (page);
@@ -770,18 +770,18 @@ Textblock::Line *Textblock::addLine (int wordInd, bool newPar)
    lastLine = lines->getRef (lines->size () - 1);
 
    if (lines->size () == 1) {
-      plastLine = NULL;
       lastLine->top = 0;
       lastLine->maxLineWidth = line1OffsetEff;
       lastLine->maxWordMin = 0;
       lastLine->maxParMax = 0;
    } else {
-      plastLine = lines->getRef (lines->size () - 2);
-      lastLine->top = plastLine->top + plastLine->ascent +
-                      plastLine->descent + plastLine->breakSpace;
-      lastLine->maxLineWidth = plastLine->maxLineWidth;
-      lastLine->maxWordMin = plastLine->maxWordMin;
-      lastLine->maxParMax = plastLine->maxParMax;
+      Line *prevLine = lines->getRef (lines->size () - 2);
+
+      lastLine->top = prevLine->top + prevLine->ascent + prevLine->descent +
+                      prevLine->breakSpace;
+      lastLine->maxLineWidth = prevLine->maxLineWidth;
+      lastLine->maxWordMin = prevLine->maxWordMin;
+      lastLine->maxParMax = prevLine->maxParMax;
    }
 
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.top", page->num_lines - 1,
@@ -797,7 +797,7 @@ Textblock::Line *Textblock::addLine (int wordInd, bool newPar)
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.parMax", page->num_lines - 1,
    //                    lastLine->parMax);
 
-   lastLine->firstWord = wordInd;
+   lastLine->firstWord = wordIndex;
    lastLine->ascent = 0;
    lastLine->descent = 0;
    lastLine->marginDescent = 0;
