@@ -471,7 +471,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    win->callback(win_cb, DilloTabs);
 
-   new_ui->focus_location();
+   if (new_ui->get_panelmode() != UI_HIDDEN)
+      new_ui->focus_location();
 
    return new_bw;
 }

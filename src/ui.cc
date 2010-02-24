@@ -231,7 +231,8 @@ static void help_cb(Widget *w, void *)
       a_UIcmd_open_urlstr(bw, urlstr);
       dFree(urlstr);
    } else {
-      MSG("Can't read local help file at \"%s\". Getting remote help...\n", path);
+      MSG("Can't read local help file at \"%s\"."
+          " Getting remote help...\n", path);
       a_UIcmd_open_urlstr(bw, "http://www.dillo.org/dillo2-help.html");
    }
    dFree(path);
