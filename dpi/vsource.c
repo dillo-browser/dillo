@@ -106,7 +106,7 @@ void send_html_text(Dsh *sh, int data_size)
 
    a_Dpip_dsh_printf(sh, 0, DOCTYPE);
    a_Dpip_dsh_printf(sh, 0, 
-                     "<html><body>\n<table width='100%%' cellpadding='0'>\n");
+                     "<html><body>\n<table cellpadding='0'>\n");
 
    while (bytes_read < data_size &&
           (src_str = a_Dpip_dsh_read_token(sh, 1))) {
@@ -116,20 +116,20 @@ void send_html_text(Dsh *sh, int data_size)
       while (*p) {
          if (line > old_line) {
             snprintf(line_str, 128, 
-                     "<tr><td bgcolor='%s'>%d&nbsp;<td>",
-                     (line & 1) ? "#B87333" : "#DD7F32", line);
+                     "%s<tr><td bgcolor='%s'>%d%s<td><pre>",
+                     (line > 1) ? "</pre>" : "",
+                     (line & 1) ? "#B87333" : "#DD7F32", line,
+                     (line == 1 || (line % 10) == 0) ? "&nbsp;&nbsp;" : "");
             a_Dpip_dsh_write_str(sh, 0, line_str);
             old_line = line;
          }
-         if ((p = strpbrk(q, "\n<"))) {
+         if ((p = strpbrk(q, "\n<&"))) {
             if (*p == '\n') {
                a_Dpip_dsh_write(sh, 0, q, p - q + 1);
-               if (p[1] == '\r')
-                  ++p;
                ++line;
             } else {
                a_Dpip_dsh_write(sh, 0, q, p - q);
-               a_Dpip_dsh_write_str(sh, 0, "&lt;");
+               a_Dpip_dsh_write_str(sh, 0, (*p == '<') ? "&lt;" : "&amp;");
             }
          } else {
             a_Dpip_dsh_write_str(sh, 1, q);
@@ -140,7 +140,7 @@ void send_html_text(Dsh *sh, int data_size)
       dFree(src_str);
    }
 
-   a_Dpip_dsh_printf(sh, 1, "</table></body></html>");
+   a_Dpip_dsh_printf(sh, 1, "</pre></table></body></html>");
 }
 
 /*
