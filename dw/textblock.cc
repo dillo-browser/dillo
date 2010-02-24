@@ -859,9 +859,9 @@ Textblock::Line *Textblock::addLine (int wordInd, bool newPar)
 }
 
 /*
- * This method is called in two cases: (i) when a word is added (by
- * Dw_page_add_word), and (ii) when a page has to be (partially)
- * rewrapped. It does word wrap, and adds new lines, if necessary.
+ * This method is called in two cases: (i) when a word is added
+ * (ii) when a page has to be (partially) rewrapped. It does word wrap,
+ * and adds new lines if necessary.
  */
 void Textblock::wordWrap(int wordIndex)
 {
@@ -883,6 +883,17 @@ void Textblock::wordWrap(int wordIndex)
       availWidth = layout->getWidthViewport () - 10;
 
    word = words->getRef (wordIndex);
+   word->effSpace = word->origSpace;
+
+   /* Test whether line1Offset can be used. */
+   if (wordIndex == 0) {
+      if (ignoreLine1OffsetSometimes &&
+          line1Offset + word->size.width > availWidth) {
+         line1OffsetEff = 0;
+      } else {
+         line1OffsetEff = line1Offset;
+      }
+   }
 
    if (lines->size () == 0) {
       //DBG_MSG (page, "wrap", 0, "first line");
@@ -919,25 +930,11 @@ void Textblock::wordWrap(int wordIndex)
       }
    }
 
-   /* Has sometimes the wrong value. */
-   word->effSpace = word->origSpace;
-   //DBG_OBJ_ARRSET_NUM (page,"words.%d.eff_space", word_ind, word->eff_space);
-
-   /* Test whether line1Offset can be used. */
-   if (wordIndex == 0) {
-      if (ignoreLine1OffsetSometimes &&
-          line1Offset + word->size.width > availWidth) {
-         line1OffsetEff = 0;
-      } else {
-         line1OffsetEff = line1Offset;
-      }
-   }
-
-   if (lastLine != NULL && newLine && !newPar &&
-       word->style->textAlign == core::style::TEXT_ALIGN_JUSTIFY)
-      justifyLine (lastLine, availWidth);
-
    if (newLine) {
+      if (word->style->textAlign == core::style::TEXT_ALIGN_JUSTIFY &&
+          lastLine != NULL && !newPar) {
+         justifyLine (lastLine, availWidth);
+      }
       lastLine = addLine (wordIndex, newPar);
    }
 
@@ -974,29 +971,31 @@ void Textblock::wordWrap(int wordIndex)
          //DBG_OBJ_ARRSET_NUM (page, "lines.%d.ascent", page->num_lines - 1,
          //                    lastLine->ascent);
       }
-   } else
+   } else {
       lastLine->marginDescent =
          misc::max (lastLine->marginDescent, lastLine->descent);
 
-   getWordExtremes (word, &wordExtremes);
+      if (word->content.type == core::Content::BREAK)
+         lastLine->breakSpace =
+            misc::max (word->content.breakSpace,
+                       lastLine->marginDescent - lastLine->descent,
+                       lastLine->breakSpace);
+   }
+
    lastSpace = (wordIndex > 0) ? words->getRef(wordIndex - 1)->origSpace : 0;
 
-   if (word->content.type == core::Content::BREAK)
-      lastLine->breakSpace =
-         misc::max (word->content.breakSpace,
-                    lastLine->marginDescent - lastLine->descent,
-                    lastLine->breakSpace);
-
-   lastLineWidth += word->size.width;
    if (!newLine)
       lastLineWidth += lastSpace;
-
-   lastLineParMin += wordExtremes.maxWidth;
-   lastLineParMax += wordExtremes.maxWidth;
    if (!newPar) {
       lastLineParMin += lastSpace;
       lastLineParMax += lastSpace;
    }
+
+   lastLineWidth += word->size.width;
+
+   getWordExtremes (word, &wordExtremes);
+   lastLineParMin += wordExtremes.maxWidth;    /* Why maxWidth? */
+   lastLineParMax += wordExtremes.maxWidth;
 
    if (word->style->whiteSpace != core::style::WHITE_SPACE_NORMAL) {
       lastLine->parMin += wordExtremes.minWidth + lastSpace;
@@ -1005,10 +1004,10 @@ void Textblock::wordWrap(int wordIndex)
          misc::max (lastLine->maxWordMin, lastLine->parMin);
       /* NOTE: Most code relies on that all values of nowrap are equal for all
        * words within one line. */
-   } else
-      /* Simple case. */
+   } else {
       lastLine->maxWordMin =
          misc::max (lastLine->maxWordMin, wordExtremes.minWidth);
+   }
 
    //DBG_OBJ_SET_NUM(page, "lastLine_par_min", page->lastLine_par_min);
    //DBG_OBJ_SET_NUM(page, "lastLine_par_max", page->lastLine_par_max);
@@ -1030,15 +1029,12 @@ void Textblock::wordWrap(int wordIndex)
                                                 * future) */
          leftOffset = 0;
          break;
-
       case core::style::TEXT_ALIGN_RIGHT:
          leftOffset = availWidth - lastLineWidth;
          break;
-
       case core::style::TEXT_ALIGN_CENTER:
          leftOffset = (availWidth - lastLineWidth) / 2;
          break;
-
       default:
          /* compiler happiness */
          leftOffset = 0;
@@ -1058,7 +1054,6 @@ void Textblock::wordWrap(int wordIndex)
       } else
          lastLine->leftOffset = leftOffset;
    }
-
    mustQueueResize = true;
 
    //DBG_MSG_END (page);
