@@ -769,25 +769,19 @@ Textblock::Line *Textblock::addLine (int wordInd, bool newPar)
 
    lastLine = lines->getRef (lines->size () - 1);
 
-   if (lines->size () == 1)
+   if (lines->size () == 1) {
       plastLine = NULL;
-   else
-      plastLine = lines->getRef (lines->size () - 2);
-
-   if (plastLine) {
-      /* second or more lines: copy values of last line */
-      lastLine->top =
-         plastLine->top + plastLine->ascent +
-         plastLine->descent + plastLine->breakSpace;
-      lastLine->maxLineWidth = plastLine->maxLineWidth;
-      lastLine->maxWordMin = plastLine->maxWordMin;
-      lastLine->maxParMax = plastLine->maxParMax;
-   } else {
-      /* first line: initialize values */
       lastLine->top = 0;
       lastLine->maxLineWidth = line1OffsetEff;
       lastLine->maxWordMin = 0;
       lastLine->maxParMax = 0;
+   } else {
+      plastLine = lines->getRef (lines->size () - 2);
+      lastLine->top = plastLine->top + plastLine->ascent +
+                      plastLine->descent + plastLine->breakSpace;
+      lastLine->maxLineWidth = plastLine->maxLineWidth;
+      lastLine->maxWordMin = plastLine->maxWordMin;
+      lastLine->maxParMax = plastLine->maxParMax;
    }
 
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.top", page->num_lines - 1,
@@ -910,8 +904,7 @@ void Textblock::wordWrap(int wordIndex)
          /* previous word is a break */
          newLine = true;
          newPar = true;
-      } else if (word->style->whiteSpace
-                 != core::style::WHITE_SPACE_NORMAL) {
+      } else if (word->style->whiteSpace != core::style::WHITE_SPACE_NORMAL) {
          //DBG_MSGF (page, "wrap", 0, "no wrap (white_space = %d)",
          //          word->style->white_space);
          newLine = false;
@@ -923,8 +916,8 @@ void Textblock::wordWrap(int wordIndex)
          //          word_ind, a_Dw_content_html (&word->content),
          //          page->lastLine_width, prevWord->orig_space,
          //          word->size.width, availWidth);
-         newLine = (lastLineWidth + prevWord->origSpace
-                    + word->size.width > availWidth);
+         newLine = lastLineWidth + prevWord->origSpace + word->size.width >
+                   availWidth;
          //DBG_MSGF (page, "wrap", 0, "... %s.",
          //          newLine ? "No" : "Yes");
       }
@@ -1044,15 +1037,15 @@ void Textblock::wordWrap(int wordIndex)
       if (leftOffset < 0)
          leftOffset = 0;
 
-      if (hasListitemValue &&
-          lastLine == lines->getRef (0)) {
+      if (hasListitemValue && lastLine == lines->getRef (0)) {
          /* List item markers are always on the left. */
          lastLine->leftOffset = 0;
          words->getRef(0)->effSpace = words->getRef(0)->origSpace + leftOffset;
          //DBG_OBJ_ARRSET_NUM (page, "words.%d.eff_space", 0,
          //                    page->words[0].eff_space);
-      } else
+      } else {
          lastLine->leftOffset = leftOffset;
+      }
    }
    mustQueueResize = true;
 
