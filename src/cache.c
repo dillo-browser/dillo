@@ -585,7 +585,6 @@ static char *Cache_parse_field(const char *header, const char *fieldname)
       }
 
       i += j;
-      while (header[i] == ' ') i++;
       if (header[i] == ':') {
         /* Field found! */
         while (header[++i] == ' ' || header[i] == '\t');
@@ -622,7 +621,6 @@ static Dlist *Cache_parse_multiple_fields(const char *header,
       }
 
       i += j;
-      for ( ; header[i] == ' '; i++);
       if (header[i] == ':') {
          /* Field found! */
          while (header[++i] == ' ' || header[i] == '\t');
