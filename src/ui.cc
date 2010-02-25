@@ -711,7 +711,11 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
       PanelSize = cur_ui->PanelSize;
       CuteColor = cur_ui->CuteColor;
       Small_Icons = cur_ui->Small_Icons;
-      Panelmode = cur_ui->Panelmode;
+      if (cur_ui->Panelmode == UI_HIDDEN ||
+          cur_ui->Panelmode == UI_TEMPORARILY_SHOW_PANELS)
+         Panelmode = UI_HIDDEN;
+      else
+         Panelmode = UI_NORMAL;
    } else {
      // Set some default values
      //PanelSize = P_tiny, CuteColor = 26, Small_Icons = 0;
