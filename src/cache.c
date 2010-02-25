@@ -595,6 +595,7 @@ static char *Cache_parse_field(const char *header, const char *fieldname)
         field = dStrndup(header + i, j);
         return field;
       }
+      while (header[i] != '\n') i++;
    }
    return NULL;
 }
@@ -630,6 +631,8 @@ static Dlist *Cache_parse_multiple_fields(const char *header,
             j--;
          field = dStrndup(header + i, j);
          dList_append(fields, field);
+      } else {
+         while (header[i] != '\n') i++;
       }
    }
 
