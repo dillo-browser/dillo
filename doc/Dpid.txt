@@ -14,7 +14,7 @@ Nomenclature:
   dpi:
     generic term referring to dillo's plugin system (version1).
 
-  dpi1: 
+  dpi1:
     specific term for dillo's plugin spec version 1.
     at: http://www.dillo.org/dpi1.html
 
@@ -122,7 +122,7 @@ following functions is very helpful:
   * "one demand/one response"         man, preferences, ...
   * "resident while working"          downloads, mp3, ...
   * "resident until exit request"     bookmarks, ...
-   
+
   * "one client only"                 cd burner, ...
   * "one client per instance"         man, ...
   * "multiple clients/one instance"   downloads, cookies ...
@@ -191,7 +191,7 @@ dpi service process diagram
 
 (I)
      .--- s1 s2 s3 ... sn
-     |  
+     |
   [dpid]                     [dillo]
      |
      '--- srs
@@ -201,7 +201,7 @@ dpi service process diagram
 
 (II)
      .--- s1 s2 s3 ... sn
-     |  
+     |
   [dpid]                     [dillo]
      |                          |
      '--- srs ------------------'
@@ -227,7 +227,7 @@ dpi service process diagram
  .[dpid]        |            [dillo]
  .   |          |               |
  .   '--- srs   '---------------'
- .               
+ .
  .............[dpi program]
 
   when s3 has activity (incoming data), dpid forks the dpi
@@ -236,7 +236,7 @@ dpi service process diagram
 
 (V)
      .--- s1 s2 (s3) ... sn
-     |           
+     |
   [dpid]                     [dillo]
      |                          |
      '--- srs   .---------------'

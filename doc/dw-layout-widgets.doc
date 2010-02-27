@@ -81,7 +81,7 @@ different situations:
 <ol>
 <li> Adding an anchor is inititiated by a specific widget method, e.g.
      dw::Textblock::addAnchor. Here, dw::core::Widget::addAnchor must be
-     called, 
+     called,
 
 <li> Whenever the position of an anchor is changed,
      dw::core::Widget::changeAnchor is called (typically, this is done

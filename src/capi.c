@@ -188,7 +188,7 @@ static void Capi_conn_resume(void)
  * Abort the connection for a given url, using its CCC.
  * (OpAbort 2,BCK removes the cache entry)
  * TODO: when conn is already done, the cache entry isn't removed.
- *       This may be wrong and needs a revision. 
+ *       This may be wrong and needs a revision.
  */
 void a_Capi_conn_abort_by_url(const DilloUrl *url)
 {
@@ -520,7 +520,7 @@ const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
  * Most of the time we send dpi commands, but it also serves for raw data
  * as with "view source".
  */
-int a_Capi_dpi_send_data(const DilloUrl *url, void *bw, 
+int a_Capi_dpi_send_data(const DilloUrl *url, void *bw,
                          char *data, int data_sz, char *server, int flags)
 {
    capi_conn_t *conn;

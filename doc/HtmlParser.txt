@@ -79,7 +79,7 @@ TOKENS
 
 
 -----------------
-THE PARSING STACK 
+THE PARSING STACK
 -----------------
 
   The parsing state of the document is kept in a stack:
@@ -105,7 +105,7 @@ THE PARSING STACK
 
      /* This is used to align list items (especially in enumerated lists) */
      dw::core::Widget *ref_list_item;
-  
+
      /* This is used for list items etc; if it is set to TRUE, breaks
         have to be "handed over" (see Html_add_indented and
         Html_eventually_pop_dw). */

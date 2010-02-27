@@ -220,7 +220,7 @@ static void search_cb(Widget *wid, void *data)
 
 /*
  * Callback for the help button.
- */                               
+ */
 static void help_cb(Widget *w, void *)
 {
    char *path = dStrconcat(DILLO_DOCDIR, "user_help.html", NULL);

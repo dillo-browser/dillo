@@ -147,7 +147,7 @@ files:
 
 A complete map can be found at \ref dw-map.
 
-<ul> 
+<ul>
 <li> For learning, how to use Dw, read \ref dw-usage and related documents,
      dw::core::style, dw::core::ui and \ref dw-images-and-backgrounds.
 <li> Advanced topics are described in \ref dw-layout-widgets,

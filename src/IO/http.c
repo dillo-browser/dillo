@@ -80,7 +80,7 @@ typedef struct {
 typedef struct {
   char *host;
   int active_connections;
-  SocketQueue_t queue; 
+  SocketQueue_t queue;
 } HostConnection_t;
 
 static void Http_socket_queue_init(SocketQueue_t *sq);
@@ -202,7 +202,7 @@ static void Http_socket_free(int SKey)
             Http_connect_queued_sockets(hc);
             if (hc->active_connections == 0)
                Http_host_connection_remove(hc);
-      } 
+      }
          dFree(S);
       }
    }
@@ -688,7 +688,7 @@ static void Http_socket_enqueue(SocketQueue_t *sq, SocketData_t* sock)
       sq->tail->next = se;
    sq->tail = se;
 
-   if (! sq->head) 
+   if (! sq->head)
       sq->head = se;
 }
 

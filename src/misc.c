@@ -90,7 +90,7 @@ a_Misc_expand_tabs(char **start, char *end, char *buf, int buflen)
       assert(char_len <= 4);
       for (j = 0; j < char_len; j++)
          buf[written++] = (*start)[j];
-    
+
       *start += char_len;
    }
 

@@ -414,7 +414,7 @@ static void File_send_dir(ClientInfo *client)
 
    if (client->state == st_start) {
       /* Send DPI command */
-      d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", 
+      d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page",
                                client->orig_url);
       a_Dpip_dsh_write_str(client->sh, 1, d_cmd);
       dFree(d_cmd);
@@ -427,7 +427,7 @@ static void File_send_dir(ClientInfo *client)
       Udirname = Escape_uri_str(Ddir->dirname, NULL);
       HUdirname = Escape_html_str(Udirname);
       Hdirname = Escape_html_str(Ddir->dirname);
-   
+
       a_Dpip_dsh_printf(client->sh, 0,
          "HTTP/1.1 200 OK\r\n"
          "Content-Type: text/html\r\n"
@@ -440,18 +440,18 @@ static void File_send_dir(ClientInfo *client)
       dFree(Hdirname);
       dFree(HUdirname);
       dFree(Udirname);
-   
+
       if (client->old_style) {
          a_Dpip_dsh_write_str(client->sh, 0, "<pre>\n");
       }
-   
+
       /* Output the parent directory */
       File_print_parent_dir(client, Ddir->dirname);
-   
+
       /* HTML style toggle */
       a_Dpip_dsh_write_str(client->sh, 0,
          "&nbsp;&nbsp;<a href='dpi:/file/toggle'>%</a>\n");
-   
+
       if (dList_length(Ddir->flist)) {
          if (client->old_style) {
             a_Dpip_dsh_write_str(client->sh, 0, "\n\n");
@@ -477,7 +477,7 @@ static void File_send_dir(ClientInfo *client)
       for (n = 0; n < dList_length(Ddir->flist); ++n) {
          File_info2html(client, dList_nth_data(Ddir->flist,n), n+1);
       }
-   
+
       if (dList_length(Ddir->flist)) {
          if (client->old_style) {
             a_Dpip_dsh_write_str(client->sh, 0, "</pre>\n");
@@ -485,7 +485,7 @@ static void File_send_dir(ClientInfo *client)
             a_Dpip_dsh_write_str(client->sh, 0, "</table>\n");
          }
       }
-   
+
       a_Dpip_dsh_write_str(client->sh, 1, "</BODY></HTML>\n");
       client->state = st_content;
       client->flags |= FILE_DONE;
@@ -726,7 +726,7 @@ static int File_send_file(ClientInfo *client)
       if (!(ct = File_content_type(name)))
          ct = unknown_type;
       dFree(name);
-   
+
       /* Send HTTP headers */
       a_Dpip_dsh_write_str(client->sh, 0, "HTTP/1.1 200 OK\r\n");
       if (gzipped) {
@@ -926,7 +926,7 @@ static void File_serve_client(void *data, int f_write)
          if (!dpip_tag)
             break;
       }
-   
+
       if (client->flags & FILE_READ) {
          if (!(client->flags & FILE_AUTH_OK)) {
             /* Authenticate our client... */

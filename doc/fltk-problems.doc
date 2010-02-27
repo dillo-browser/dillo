@@ -110,7 +110,7 @@ at the end. Then, the namespace is changed:
 
 at the beginning and
 
-\code 
+\code
 -}
 +} // namespace ui
 +} // namespace fltk
@@ -128,7 +128,7 @@ at the end. Most important, the base class is changed:
 
 and
 
-\code 
+\code
 -class FL_API ComplexButton : public Widget {
 +class ComplexButton: public ::fltk::Group
 +{
@@ -147,7 +147,7 @@ namespace conflict:
 First, \#include's:
 
 \code
- 
+
  #include <fltk/events.h>
  #include <fltk/damage.h>
 -#include <fltk/ComplexButton.h> // <fltk/Button.h> formerly

@@ -105,7 +105,7 @@ void send_html_text(Dsh *sh, int data_size)
    a_Dpip_dsh_printf(sh, 0, "Content-type: text/html\n\n");
 
    a_Dpip_dsh_printf(sh, 0, DOCTYPE);
-   a_Dpip_dsh_printf(sh, 0, 
+   a_Dpip_dsh_printf(sh, 0,
                      "<html><body>\n<table cellpadding='0'>\n");
 
    while (bytes_read < data_size &&
@@ -115,7 +115,7 @@ void send_html_text(Dsh *sh, int data_size)
 
       while (*p) {
          if (line > old_line) {
-            snprintf(line_str, 128, 
+            snprintf(line_str, 128,
                      "%s<tr><td bgcolor='%s'>%d%s<td><pre>",
                      (line > 1) ? "</pre>" : "",
                      (line & 1) ? "#B87333" : "#DD7F32", line,

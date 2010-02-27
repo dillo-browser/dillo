@@ -47,7 +47,7 @@ jpeg.c and png.c)
    5.- The dpi framework: a gateway to interface the browser with
 external programs (Example: the bookmarks server plugin).
 Dpi spec: http://www.dillo.org/dpi1.html
-     
+
 
                       -------------------------
                       HOW IS THE PAGE RENDERED?
@@ -87,7 +87,7 @@ called  for  each tag (to parse and call the appropriate methods)
 and the whole page is contructed in a streamed way.
    Somewhere  in  the  middle of it, resize and repaint functions
 are  activated  and  idle  functions draw to screen what has been
-processed. 
+processed.
 
    (The process for images is described in Images.txt)
 

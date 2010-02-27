@@ -328,7 +328,7 @@ int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize)
 }
 
 /*
- * Return value: 0 on success or empty buffer, 
+ * Return value: 0 on success or empty buffer,
  *               1..DataSize sent, -1 eagain, or -3 on big Error
  */
 int a_Dpip_dsh_tryflush(Dsh *dsh)

@@ -17,7 +17,7 @@ HTTP protocol
 I     |Capi|     |http|     | IO |        |               |
       '----'     '----'     '----'        .               |
           1F <-- 1F  1F <-- 1F            |               V
-                                          .                
+                                          .
                                           |           [Server]
       Answer:                             .
 
@@ -74,7 +74,7 @@ Function calls for HTTP CCC
   Note about 'web' structures. They're created using a_Web_new().
 The  web.c  module  keeps a list of valid webs, so anytime you're
 unsure  of  a  weak  reference  to  'web', it can be checked with
-a_Web_valid(web). 
+a_Web_valid(web).
 
 
 
@@ -90,9 +90,9 @@ Dpi protocol
 I     |Capi|     |Dpi |     | IO |        |               |
       '----'     '----'     '----'        .               |
           1F <-- 1F  1F <-- 1F            |               V
-                                          .                
+                                          .
                                           |           [Server]
-                                          .                
+                                          .
       Answer (same as HTTP):              |               |
                                           .               |
           2B --> 2B  2B --> 2B            |               |

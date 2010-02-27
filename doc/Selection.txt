@@ -26,7 +26,7 @@ The widget must construct simple iterators (DwIterator), which will be
 transferred to extended iterators (DwExtIterator), see below for more
 details. All event handling functions have the same signature, the
 arguments in detail are:
- 
+
     - DwIterator *it           the iterator pointing on the item under
                                the mouse pointer,
     - gint char_pos            the exact (character) position within

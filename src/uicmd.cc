@@ -630,14 +630,14 @@ static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
       BW2UI(new_bw)->focus_main();
    } else {
       BW2UI(new_bw)->focus_location();
-   }       
+   }
 }
 
 /*
  * Open a new URL in a new browser window
  */
 void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
-{  
+{
    int w, h;
    BrowserWindow *new_bw;
 

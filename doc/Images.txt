@@ -64,7 +64,7 @@ with the widget code. This is done by calling image.c functions:
    a_Image_write
    a_Image_new_scan
    a_Image_close
-   
+
 * The functions in image.c make the required Dw calls.
 
 
@@ -117,7 +117,7 @@ represent which rows have been decoded.
   - dw/image.{cc,hh}
 
 *  Bear  in  mind  that  there are four data structures for image
-code: 
+code:
 
   - DilloImage (image.hh)
   - DICacheEntry (dicache.h)

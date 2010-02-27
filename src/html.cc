@@ -1920,7 +1920,7 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
-  
+
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
       CssPropertyList props;

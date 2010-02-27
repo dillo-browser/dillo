@@ -12,7 +12,7 @@ rendering and networking.
 calls  the  cache  or  the  dpi routines depending on the type of
 request.
 
-   Every  URL  must be requested using a_Capi_open_url, which 
+   Every  URL  must be requested using a_Capi_open_url, which
 sends the request to the cache if the data is cached, to dillo's
 http module for http: URLs, and through dillo's DPI system for
 other URLs.

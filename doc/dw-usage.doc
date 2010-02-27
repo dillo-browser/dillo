@@ -109,7 +109,7 @@ defined, here dw::core::style::Color::createSimple must be called:
 Finally, the style for the widget is created:
 
 \code
-   dw::core::style::Style *widgetStyle = 
+   dw::core::style::Style *widgetStyle =
       dw::core::style::Style::create (layout, &styleAttrs);
 \endcode
 
@@ -258,7 +258,7 @@ There are three dw::core::View implementations for FLTK:
      overview of the whole canvas.
 
 <li> dw::fltk::FltkFlatView is a "flat" view, i.e. it does not support
-     scrolling. It is used for HTML buttons, see 
+     scrolling. It is used for HTML buttons, see
      dw::fltk::ui::FltkComplexButtonResource and especially
      dw::fltk::ui::FltkComplexButtonResource::createNewWidget for details.
 </ul>
