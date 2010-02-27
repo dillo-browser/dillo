@@ -471,8 +471,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    win->callback(win_cb, DilloTabs);
 
-   if (new_ui->get_panelmode() != UI_HIDDEN)
-      new_ui->focus_location();
+   new_ui->focus_location();
 
    return new_bw;
 }
@@ -606,9 +605,6 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
          a_Url_free(url);
       }
    }
-
-   /* let the rendered area have focus */
-   //gtk_widget_grab_focus(GTK_BIN(bw->render_main_scroll)->child);
 }
 
 /*
@@ -617,6 +613,8 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 {
    a_Nav_push(bw, url);
+   if (BW2UI(bw)->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
+      BW2UI(bw)->set_panelmode(UI_HIDDEN);
    a_UIcmd_focus_main_area(bw);
 }
 
@@ -697,7 +695,7 @@ void a_UIcmd_forw_popup(void *vbw)
  */
 void a_UIcmd_home(void *vbw)
 {
-   a_Nav_home((BrowserWindow*)vbw);
+   a_UIcmd_open_url((BrowserWindow*)vbw, prefs.home);
 }
 
 /*
@@ -840,7 +838,7 @@ void a_UIcmd_open_file(void *vbw)
 
    if (name) {
       url = a_Url_new(name, "file:");
-      a_Nav_push((BrowserWindow*)vbw, url);
+      a_UIcmd_open_url((BrowserWindow*)vbw, url);
       a_Url_free(url);
       dFree(name);
    }
@@ -931,7 +929,7 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
 void a_UIcmd_book(void *vbw)
 {
    DilloUrl *url = a_Url_new("dpi:/bm/", NULL);
-   a_Nav_push((BrowserWindow*)vbw, url);
+   a_UIcmd_open_url((BrowserWindow*)vbw, url);
    a_Url_free(url);
 }
 
