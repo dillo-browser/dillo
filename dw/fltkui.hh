@@ -65,7 +65,7 @@ namespace fltk {
  * dw::core::ui::Resource is ambiguous for
  * dw::fltk::ui::FltkLabelButtonResource.
  *
- * To solve this, we have to remove the depencency between
+ * To solve this, we have to remove the dependency between
  * dw::fltk::ui::FltkResource and dw::core::ui::Resource, instead, the part
  * of dw::core::ui::Resource, which is implemented in
  * dw::fltk::ui::FltkResource, must be explicitly delegated from
