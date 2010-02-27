@@ -79,7 +79,7 @@ private:
 
    inline void resize ()
    {
-      /* This algorithm was tunned for memory&speed with this huge page:
+      /* This algorithm was tuned for memory&speed with this huge page:
        *   http://downloads.mysql.com/docs/refman-6.0-en.html.tar.gz
        */
       if (array == NULL) {
@@ -131,7 +131,7 @@ public:
    inline void increase() { setSize(this->num + 1); }
 
    /**
-    * \brief Set the size explicitely.
+    * \brief Set the size explicitly.
     *
     * May be necessary before calling misc::SimpleVector::set.
     */
@@ -142,7 +142,7 @@ public:
    }
 
    /**
-    * \brief Set the size explicitely and initialize new values.
+    * \brief Set the size explicitly and initialize new values.
     *
     * May be necessary before calling misc::SimpleVector::set.
     */
@@ -164,7 +164,7 @@ public:
    }
 
    /**
-    * \brief Return the one element, explicitety.
+    * \brief Return the one element, explicitly.
     *
     * The element is copied, so for complex elements, you should rather used
     * misc::SimpleVector::getRef.

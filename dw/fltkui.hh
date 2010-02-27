@@ -68,7 +68,7 @@ namespace fltk {
  * To solve this, we have to remove the depencency between
  * dw::fltk::ui::FltkResource and dw::core::ui::Resource, instead, the part
  * of dw::core::ui::Resource, which is implemented in
- * dw::fltk::ui::FltkResource, must be explicitely delegated from
+ * dw::fltk::ui::FltkResource, must be explicitly delegated from
  * dw::fltk::ui::FltkLabelButtonResourceto dw::fltk::ui::FltkResource:
  *
  * \dot
