@@ -219,14 +219,19 @@ int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url)
    DilloUrl *referer;
    int allow = FALSE;
 
-   /* test POST and GET */
-   if (dStrcasecmp(URL_SCHEME(url), "dpi") == 0 &&
-       URL_FLAGS(url) & (URL_Post + URL_Get)) {
-      /* only allow dpi requests from dpi-generated urls */
-      if (a_Nav_stack_size(bw)) {
-         referer = a_History_get_url(NAV_TOP_UIDX(bw));
-         if (dStrcasecmp(URL_SCHEME(referer), "dpi") == 0) {
-            allow = TRUE;
+   if (dStrcasecmp(URL_SCHEME(url), "dpi") == 0) {
+      if (!(URL_FLAGS(url) & (URL_Post + URL_Get))) {
+         allow = TRUE;
+      } else if (!(URL_FLAGS(url) & URL_Post) &&
+                 strncmp(URL_STR(url), "dpi:/vsource/", 13) == 0) {
+         allow = TRUE;
+      } else {
+         /* only allow GET&POST dpi-requests from dpi-generated urls */
+         if (a_Nav_stack_size(bw)) {
+            referer = a_History_get_url(NAV_TOP_UIDX(bw));
+            if (dStrcasecmp(URL_SCHEME(referer), "dpi") == 0) {
+               allow = TRUE;
+            }
          }
       }
    } else {
