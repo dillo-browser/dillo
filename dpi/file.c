@@ -955,6 +955,7 @@ static void File_serve_client(void *data, int f_write)
             dFree(path);
             dFree(url);
             dFree(cmd);
+            dFree(dpip_tag);
             break;
          }
          dFree(dpip_tag);

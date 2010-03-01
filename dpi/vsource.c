@@ -191,6 +191,7 @@ int main(void)
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", url);
    a_Dpip_dsh_write_str(sh, 0, d_cmd);
    dFree(d_cmd);
+   dFree(dpip_tag);
 
    dpip_tag = a_Dpip_dsh_read_token(sh, 1);
    cmd2 = a_Dpip_get_attr(dpip_tag, "cmd");
