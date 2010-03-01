@@ -344,6 +344,7 @@ static void Capi_dpi_send_source(BrowserWindow *bw,  DilloUrl *url)
       a_Capi_dpi_send_cmd(NULL, bw, cmd, server, 0);
    }
    a_Url_free(s_url);
+   dFree(cmd);
 }
 
 /*
