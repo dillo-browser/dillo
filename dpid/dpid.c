@@ -468,7 +468,7 @@ int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
    *services_list = dList_new(8);
 
    /* dpidrc parser loop */
-   while ((line = dGetline(dpidrc_stream)) != NULL) {
+   for (;(line = dGetline(dpidrc_stream)) != NULL; dFree(line)) {
       st = dParser_parse_rc_line(&line, &service, &path);
       if (st < 0) {
          MSG_ERR("dpid: Syntax error in %s: service=\"%s\" path=\"%s\"\n",
@@ -498,8 +498,6 @@ int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
       /* if the dpi exist bind service and dpi */
       if (i < numdpis)
          s->dp_index = i;
-
-      dFree(line);
    }
    fclose(dpidrc_stream);
 
