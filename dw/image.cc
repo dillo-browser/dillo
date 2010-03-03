@@ -354,16 +354,14 @@ void Image::draw (core::View *view, core::Rectangle *area)
                layout->textWidth (getStyle()->font, altText, strlen (altText));
 
          core::View *clippingView = NULL, *usedView = view;
-         if (allocation.width < altTextWidth ||
-             allocation.ascent < getStyle()->font->ascent ||
-             allocation.descent < getStyle()->font->descent) {
+         if ((getContentWidth() < altTextWidth) ||
+             (getContentHeight() <
+              getStyle()->font->ascent + getStyle()->font->descent)) {
             clippingView = usedView =
                view->getClippingView (allocation.x + getStyle()->boxOffsetX (),
                                       allocation.y + getStyle()->boxOffsetY (),
-                                      allocation.width
-                                      - getStyle()->boxDiffWidth (),
-                                      allocation.ascent + allocation.descent
-                                      - getStyle()->boxDiffHeight ());
+                                      getContentWidth(),
+                                      getContentHeight());
          }
 
          usedView->drawText (getStyle()->font, getStyle()->color,
