@@ -57,7 +57,8 @@ enum {
 /* Data list for active dpi connections */
 static Dlist *CapiConns;      /* Data list for active connections; it holds
                                * pointers to capi_conn_t structures. */
-
+/* Last URL asked for view source */
+static DilloUrl *CapiVsUrl = NULL;
 
 /*
  * Forward declarations
@@ -212,6 +213,15 @@ void a_Capi_conn_abort_by_url(const DilloUrl *url)
 /* ------------------------------------------------------------------------- */
 
 /*
+ * Store the last URL requested by "view source"
+ */
+void a_Capi_set_vsource_url(const DilloUrl *url)
+{
+   a_Url_free(CapiVsUrl);
+   CapiVsUrl = a_Url_dup(url);
+}
+
+/*
  * Safety test: only allow GET|POST dpi-urls from dpi-generated pages.
  */
 int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url)
@@ -318,20 +328,17 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 }
 
 /*
- * Send this url's source to the "view source" dpi
+ * Send the requested URL's source to the "view source" dpi
  */
 static void Capi_dpi_send_source(BrowserWindow *bw,  DilloUrl *url)
 {
    char *p, *buf, *cmd, size_str[32], *server="vsource";
    int buf_size;
-   DilloUrl *s_url;
 
    if (!(p = strchr(URL_STR(url), ':')) || !(p = strchr(p + 1, ':')))
       return;
 
-   /* get the source DilloUrl */
-   s_url = a_Url_new(++p, NULL);
-   if (a_Capi_get_buf(s_url, &buf, &buf_size)) {
+   if (a_Capi_get_buf(CapiVsUrl, &buf, &buf_size)) {
       /* send the page's source to this dpi connection */
       snprintf(size_str, 32, "%d", buf_size);
       cmd = a_Dpip_build_cmd("cmd=%s url=%s data_size=%s",
@@ -343,7 +350,6 @@ static void Capi_dpi_send_source(BrowserWindow *bw,  DilloUrl *url)
                              "DpiError", "Page is NOT cached");
       a_Capi_dpi_send_cmd(NULL, bw, cmd, server, 0);
    }
-   a_Url_free(s_url);
    dFree(cmd);
 }
 

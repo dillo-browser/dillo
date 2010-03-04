@@ -35,6 +35,7 @@ int a_Capi_dpi_send_data(const DilloUrl *url, void *bw,
                          char *data, int data_sz, char *server, int flags);
 int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
                          int flags);
+void a_Capi_set_vsource_url(const DilloUrl *url);
 void a_Capi_stop_client(int Key, int force);
 void a_Capi_conn_abort_by_url(const DilloUrl *url);
 
