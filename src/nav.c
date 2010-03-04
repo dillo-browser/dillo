@@ -587,3 +587,10 @@ void a_Nav_unref_buf(const DilloUrl *Url)
    a_Capi_unref_buf(Url);
 }
 
+/*
+ * Wrapper for a_Capi_set_vsource_url().
+ */
+void a_Nav_set_vsource_url(const DilloUrl *Url)
+{
+   a_Capi_set_vsource_url(Url);
+}
