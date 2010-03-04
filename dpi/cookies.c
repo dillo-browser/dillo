@@ -1274,7 +1274,7 @@ static CookieControlAction Cookies_control_check_domain(const char *domain)
  */
 static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
 {
-   char *cmd, *cookie, *host, *path, *scheme;
+   char *cmd, *cookie, *host, *path;
    int ret = 1;
    size_t BufSize = strlen(Buf);
 
@@ -1293,31 +1293,31 @@ static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
       MSG("(pid %d): Got DpiBye.\n", (int)getpid());
       exit(0);
 
-   } else if (cmd && strcmp(cmd, "set_cookie") == 0) {
+   } else if (strcmp(cmd, "set_cookie") == 0) {
       int st;
       char *date;
 
-      dFree(cmd);
       cookie = a_Dpip_get_attr_l(Buf, BufSize, "cookie");
       host = a_Dpip_get_attr_l(Buf, BufSize, "host");
       path = a_Dpip_get_attr_l(Buf, BufSize, "path");
       date = a_Dpip_get_attr_l(Buf, BufSize, "date");
 
       st = Cookies_set(cookie, host, path, date);
+
+      dFree(cmd);
       cmd = a_Dpip_build_cmd("cmd=%s msg=%s", "set_cookie_answer",
                              st == 0 ? "ok" : "not set");
       a_Dpip_dsh_write_str(sh, 1, cmd);
 
-      dFree(cmd);
       dFree(date);
       dFree(path);
       dFree(host);
       dFree(cookie);
       ret = 2;
 
-   } else if (cmd && strcmp(cmd, "get_cookie") == 0) {
-      dFree(cmd);
-      scheme = a_Dpip_get_attr_l(Buf, BufSize, "scheme");
+   } else if (strcmp(cmd, "get_cookie") == 0) {
+      char *scheme = a_Dpip_get_attr_l(Buf, BufSize, "scheme");
+
       host = a_Dpip_get_attr_l(Buf, BufSize, "host");
       path = a_Dpip_get_attr_l(Buf, BufSize, "path");
 
@@ -1326,6 +1326,7 @@ static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
       dFree(path);
       dFree(host);
 
+      dFree(cmd);
       cmd = a_Dpip_build_cmd("cmd=%s cookie=%s", "get_cookie_answer", cookie);
 
       if (a_Dpip_dsh_write_str(sh, 1, cmd)) {
@@ -1335,8 +1336,8 @@ static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
           ret = 2;
       }
       dFree(cookie);
-      dFree(cmd);
    }
+   dFree(cmd);
 
    return ret;
 }
