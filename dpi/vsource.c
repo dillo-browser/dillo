@@ -123,9 +123,11 @@ void send_html_text(Dsh *sh, int data_size)
             a_Dpip_dsh_write_str(sh, 0, line_str);
             old_line = line;
          }
-         if ((p = strpbrk(q, "\n<&"))) {
-            if (*p == '\n') {
+         if ((p = strpbrk(q, "\r\n<&"))) {
+            if (*p == '\r' || *p == '\n') {
                a_Dpip_dsh_write(sh, 0, q, p - q + 1);
+               if (*p == '\r' && p[1] == '\n')
+                  p++;
                ++line;
             } else {
                a_Dpip_dsh_write(sh, 0, q, p - q);
