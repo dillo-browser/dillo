@@ -710,7 +710,7 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
             cookie->name = dStrdup("");
             cookie->value = attr;
          } else {
-            cookie->name = dStrdup(attr);
+            cookie->name = attr;
             cookie->value = Cookies_parse_value(&str);
          }
       } else if (dStrcasecmp(attr, "Path") == 0) {
