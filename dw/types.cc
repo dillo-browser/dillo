@@ -1,3 +1,7 @@
+// Rectangle::intersectsWith() has code that was derived from gdkrectangle.c.
+// gdkrectangle.c bears the notice that GDK, the GIMP Drawing Kit, is
+// "Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald".
+
 /*
  * Dillo Widget
  *
@@ -38,9 +42,6 @@ Rectangle::Rectangle (int x, int y, int width, int height)
 /**
  * Return whether this rectangle and otherRect intersect. If yes,
  * return the intersection rectangle in dest.
- *
- * \todo The function has been copied from gdktrectangle.c. Is this relevant
- *       for copyright?
  */
 bool Rectangle::intersectsWith (Rectangle *otherRect, Rectangle *dest)
 {
