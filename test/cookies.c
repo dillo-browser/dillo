@@ -551,6 +551,8 @@ static void maxage()
    a_Cookies_set("name=val; max-age=-100", "maxage-100.com", "/", NULL);
    expect(__LINE__, "", "http", "maxage-100.com", "/");
 
+   a_Cookies_set("name=val; max-age=2000000000", "maxage-huge.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "maxage-huge.com", "/");
    /* just having a server date shouldn't matter */
 
    a_Cookies_set("name=val; max-age=0", "maxage0s.com", "/", server_date);

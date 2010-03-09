@@ -137,6 +137,9 @@ static const char *const cookies_txt_header_str =
 "# This is a generated file!  Do not edit.\n"
 "# [domain  TRUE  path  secure  expiry_time  name  value]\n\n";
 
+/* The epoch is Jan 1, 1970. */
+static struct tm cookies_epoch_tm = {0, 0, 0, 1, 0, 70, 0, 0, 0, 0, 0};
+static time_t cookies_epoch_time;
 
 /*
  * Forward declarations
@@ -230,6 +233,8 @@ static void Cookies_init()
 
    /* Default setting */
    disabled = TRUE;
+
+   cookies_epoch_time = mktime(&cookies_epoch_tm);
 
    /* Read and parse the cookie control file (cookiesrc) */
    if (Cookie_control_init() != 0) {
@@ -361,7 +366,7 @@ static void Cookies_save_and_free()
    /* Iterate cookies per domain, saving and freeing */
    while ((node = dList_nth_data(cookies, 0))) {
       for (i = 0; (cookie = dList_nth_data(node->dlist, i)); ++i) {
-         if (!cookie->session_only && (cookie->expires_at > now)) {
+         if (!cookie->session_only && difftime(cookie->expires_at, now) > 0) {
             fprintf(file_stream, "%s\tTRUE\t%s\t%s\t%ld\t%s\t%s\n",
                     cookie->domain,
                     cookie->path,
@@ -554,7 +559,7 @@ static void Cookies_add_cookie(CookieData_t *cookie)
    /* Don't add an expired cookie. Whether expiring now == expired, exactly,
     * is arguable, but we definitely do not want to add a Max-Age=0 cookie.
     */
-   if (cookie->expires_at <= time(NULL)) {
+   if (difftime(cookie->expires_at, time(NULL)) <= 0) {
       _MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
            cookie->value, cookie->domain, cookie->path);
       Cookies_free_cookie(cookie);
@@ -728,7 +733,8 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
             long age = strtol(value, NULL, 10);
 
             cookie->expires_at = now + age;
-            if (age > 0 && cookie->expires_at < 0) {
+            if (age > 0 &&
+                difftime(cookie->expires_at, cookies_epoch_time) < 0) {
                /* handle overflow */
                cookie->expires_at = DILLO_TIME_MAX;
             }
@@ -1049,7 +1055,7 @@ static void Cookies_add_matching_cookies(const char *domain,
 
       for (i = 0; (cookie = dList_nth_data(domain_cookies, i)); ++i) {
          /* Remove expired cookie. */
-         if (cookie->expires_at < time(NULL)) {
+         if (difftime(cookie->expires_at, time(NULL)) < 0) {
             _MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
                  cookie->value, cookie->domain, cookie->path);
             dList_remove(domain_cookies, cookie);
