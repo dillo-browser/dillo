@@ -371,7 +371,7 @@ static void Cookies_save_and_free()
                     cookie->domain,
                     cookie->path,
                     cookie->secure ? "TRUE" : "FALSE",
-                    (long)cookie->expires_at,
+                    (long)difftime(cookie->expires_at, cookies_epoch_time),
                     cookie->name,
                     cookie->value);
          }
