@@ -434,7 +434,7 @@ static int Cookies_get_month(const char *month_name)
       if (!dStrncasecmp(months[i], month_name, 3))
          return i;
    }
-   return 0;
+   return -1;
 }
 
 /*
