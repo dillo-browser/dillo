@@ -511,26 +511,6 @@ static struct tm *Cookies_parse_date(const char *date)
    return tm;
 }
 
-static time_t Cookies_create_timestamp(const char *date)
-{
-   time_t ret = 0;
-   struct tm *tm = Cookies_parse_date(date);
-
-   if (tm) {
-      ret = mktime(tm);
-
-      if (ret == (time_t) -1) {
-         ret = 0;
-         if (tm->tm_year >= 138) {
-            /* Make the guess that it simply couldn't be represented */
-            ret = cookies_future_time;
-         }
-      }
-      dFree(tm);
-   }
-   return ret;
-}
-
 /*
  * Remove the least recently used cookie in the list.
  */
@@ -701,33 +681,6 @@ static void Cookies_unquote_string(char *str)
 }
 
 /*
- * Handle Expires attribute.
- */
-static time_t Cookies_expires_attr(char *value, const char *server_date)
-{
-   time_t exptime;
-
-   Cookies_unquote_string(value);
-   exptime = Cookies_create_timestamp(value);
-   MSG("expires attr \"%s\" represented as %s", value, ctime(&exptime));
-   if (exptime && server_date) {
-      double local_shift = Cookies_server_timediff(server_date);
-
-      if ((exptime > 0 && local_shift > 0 && (exptime + local_shift < 0)) ||
-          (exptime < 0 && local_shift < 0 && (exptime + local_shift > 0))) {
-         /* Don't want to wrap around at the extremes of representable
-          * values thanks to clock skew.
-          */
-         _MSG("Time %ld was trying to turn into %ld\n", (long)exptime,
-              (long)(exptime + local_shift));
-      } else {
-         exptime += local_shift;
-      }
-   }
-   return exptime;
-}
-
-/*
  * Parse cookie. A cookie might look something like:
  * "Name=Val; Domain=example.com; Max-Age=3600; HttpOnly"
  */
@@ -799,13 +752,25 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
       } else if (dStrcasecmp(attr, "Expires") == 0) {
          if (!max_age) {
             value = Cookies_parse_value(&str);
-            cookie->expires_at = Cookies_expires_attr(value, server_date);
+            Cookies_unquote_string(value);
+            MSG("Expires attribute gives %s\n", value);
+            struct tm *tm = Cookies_parse_date(value);
+            if (tm) {
+               tm->tm_sec += Cookies_server_timediff(server_date);
+               cookie->expires_at = mktime(tm);
+               if (cookie->expires_at == (time_t) -1 && tm->tm_year >= 138) {
+                  /* Just checking tm_year does not ensure that the problem was
+                   * inability to represent a distant date...
+                   */
+                  cookie->expires_at = cookies_future_time;
+               }
+               MSG("Cookie to expire at %s", ctime(&cookie->expires_at));
+               dFree(tm);
+            } else {
+               cookie->expires_at = (time_t) -1;
+            }
             expires = TRUE;
             dFree(value);
-            _MSG("Expires in %ld seconds, at %s",
-                 (long)cookie->expires_at - time(NULL),
-                 ctime(&cookie->expires_at));
-
          }
       } else if (dStrcasecmp(attr, "Secure") == 0) {
          cookie->secure = TRUE;
