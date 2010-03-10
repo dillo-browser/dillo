@@ -665,19 +665,27 @@ static void Cookies_eat_value(char **cookie_str)
       *cookie_str += strcspn(*cookie_str, ";");
 }
 
+static void Cookies_unquote_string(char *str)
+{
+   if (str && str[0] == '\"') {
+      uint_t len = strlen(str);
+
+      if (len > 1 && str[len - 1] == '\"') {
+         str[len - 1] = '\0';
+         while ((*str = str[1]))
+            str++;
+      }
+   }
+}
+
 /*
  * Handle Expires attribute.
- * Note that this CAN MODIFY the value string.
  */
 static time_t Cookies_expires_attr(char *value, const char *server_date)
 {
    time_t exptime;
 
-   if (*value == '"' && value[strlen(value) - 1] == '"') {
-      /* In this one case, pay attention to quotes */
-      value[strlen(value) - 1] = '\0';
-      value++;
-   }
+   Cookies_unquote_string(value);
    exptime = Cookies_create_timestamp(value);
    MSG("expires attr \"%s\" represented as %s", value, ctime(&exptime));
    if (exptime && server_date) {
