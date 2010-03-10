@@ -665,6 +665,28 @@ static void Cookies_eat_value(char **cookie_str)
       *cookie_str += strcspn(*cookie_str, ";");
 }
 
+/*
+ * Return the number of seconds by which our clock is ahead of the server's
+ * clock.
+ */
+static double Cookies_server_timediff(const char *server_date)
+{
+   double ret = 0;
+
+   if (server_date) {
+      struct tm *server_tm = Cookies_parse_date(server_date);
+
+      if (server_tm) {
+         time_t server_time = mktime(server_tm);
+
+         if (server_time != (time_t) -1)
+            ret = difftime(time(NULL), server_time);
+         dFree(server_tm);
+      }
+   }
+   return ret;
+}
+
 static void Cookies_unquote_string(char *str)
 {
    if (str && str[0] == '\"') {
@@ -689,21 +711,17 @@ static time_t Cookies_expires_attr(char *value, const char *server_date)
    exptime = Cookies_create_timestamp(value);
    MSG("expires attr \"%s\" represented as %s", value, ctime(&exptime));
    if (exptime && server_date) {
-      time_t server_time = Cookies_create_timestamp(server_date);
+      double local_shift = Cookies_server_timediff(server_date);
 
-      if (server_time) {
-         time_t local_shift = time(NULL) - server_time;
-
-         if ((exptime > 0 && local_shift > 0 && (exptime + local_shift < 0)) ||
-             (exptime < 0 && local_shift < 0 && (exptime + local_shift > 0))) {
-            /* Don't want to wrap around at the extremes of representable
-             * values thanks to clock skew.
-             */
-            _MSG("Time %ld was trying to turn into %ld\n", (long)exptime,
-                 (long)(exptime + local_shift));
-         } else {
-            exptime += local_shift;
-         }
+      if ((exptime > 0 && local_shift > 0 && (exptime + local_shift < 0)) ||
+          (exptime < 0 && local_shift < 0 && (exptime + local_shift > 0))) {
+         /* Don't want to wrap around at the extremes of representable
+          * values thanks to clock skew.
+          */
+         _MSG("Time %ld was trying to turn into %ld\n", (long)exptime,
+              (long)(exptime + local_shift));
+      } else {
+         exptime += local_shift;
       }
    }
    return exptime;
