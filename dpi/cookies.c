@@ -137,9 +137,11 @@ static const char *const cookies_txt_header_str =
 "# This is a generated file!  Do not edit.\n"
 "# [domain  TRUE  path  secure  expiry_time  name  value]\n\n";
 
-/* The epoch is Jan 1, 1970. */
+/* The epoch is Jan 1, 1970. When there is difficulty in representing future
+ * dates, use the (by far) most likely last representable time in Jan 19, 2038.
+ */
 static struct tm cookies_epoch_tm = {0, 0, 0, 1, 0, 70, 0, 0, 0, 0, 0};
-static time_t cookies_epoch_time;
+static time_t cookies_epoch_time, cookies_future_time;
 
 /*
  * Forward declarations
@@ -218,6 +220,17 @@ static void Cookies_free_cookie(CookieData_t *cookie)
    dFree(cookie);
 }
 
+static void Cookies_tm_init(struct tm *tm)
+{
+   tm->tm_sec = cookies_epoch_tm.tm_sec;
+   tm->tm_min = cookies_epoch_tm.tm_min;
+   tm->tm_hour = cookies_epoch_tm.tm_hour;
+   tm->tm_mday = cookies_epoch_tm.tm_mday;
+   tm->tm_mon = cookies_epoch_tm.tm_mon;
+   tm->tm_year = cookies_epoch_tm.tm_year;
+   tm->tm_isdst = cookies_epoch_tm.tm_isdst;
+}
+
 /*
  * Initialize the cookies module
  * (The 'disabled' variable is writeable only within Cookies_init)
@@ -230,11 +243,13 @@ static void Cookies_init()
 #ifndef HAVE_LOCKF
    struct flock lck;
 #endif
+   struct tm future_tm = {7, 14, 3, 19, 0, 138, 0, 0, 0, 0, 0};
 
    /* Default setting */
    disabled = TRUE;
 
    cookies_epoch_time = mktime(&cookies_epoch_tm);
+   cookies_future_time = mktime(&future_tm);
 
    /* Read and parse the cookie control file (cookiesrc) */
    if (Cookie_control_init() != 0) {
@@ -311,8 +326,12 @@ static void Cookies_init()
          if (piece != NULL && piece[0] == 'T')
             cookie->secure = TRUE;
          piece = dStrsep(&line_marker, "\t");
-         if (piece != NULL)
-            cookie->expires_at = (time_t) strtol(piece, NULL, 10);
+         if (piece != NULL) {
+            struct tm tm;
+            Cookies_tm_init(&tm);
+            tm.tm_sec += strtol(piece, NULL, 10);
+            cookie->expires_at = mktime(&tm);
+         }
          cookie->name = dStrdup(dStrsep(&line_marker, "\t"));
          cookie->value = dStrdup(line_marker ? line_marker : "");
 
@@ -705,8 +724,14 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
             return NULL;
          }
          cookie = dNew0(CookieData_t, 1);
+
          /* let's arbitrarily choose a year for now */
-         cookie->expires_at = time(NULL) + 60 * 60 * 24 * 365;
+         time_t now = time(NULL);
+         struct tm *tm = gmtime(&now);
+         ++tm->tm_year;
+         cookie->expires_at = mktime(tm);
+         if (cookie->expires_at == (time_t) -1)
+            cookie->expires_at = cookies_future_time;
 
          if (*str != '=') {
             /* NOTE it seems possible that the Working Group will decide
