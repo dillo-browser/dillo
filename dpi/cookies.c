@@ -770,6 +770,8 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
             }
             expires = TRUE;
             dFree(value);
+         } else {
+            Cookies_eat_value(&str);
          }
       } else if (dStrcasecmp(attr, "Secure") == 0) {
          cookie->secure = TRUE;
