@@ -417,21 +417,20 @@ static void Cookies_save_and_free()
 }
 
 /*
- * Take a months name and return a number between 1-12.
- * E.g. 'April' -> 4
+ * Take a month's name and return a number between 0-11.
+ * E.g. 'April' -> 3
  */
 static int Cookies_get_month(const char *month_name)
 {
    static const char *const months[] =
-   { "",
-     "Jan", "Feb", "Mar",
+   { "Jan", "Feb", "Mar",
      "Apr", "May", "Jun",
      "Jul", "Aug", "Sep",
      "Oct", "Nov", "Dec"
    };
    int i;
 
-   for (i = 1; i <= 12; i++) {
+   for (i = 0; i < 12; i++) {
       if (!dStrncasecmp(months[i], month_name, 3))
          return i;
    }
@@ -439,8 +438,7 @@ static int Cookies_get_month(const char *month_name)
 }
 
 /*
- * Return a local timestamp from a GMT date string
- * Accept: RFC-1123 | RFC-850 | ANSI asctime | Old Netscape format.
+ * Accept: RFC-1123 | RFC-850 | ANSI asctime | Old Netscape format date string.
  *
  *   Wdy, DD-Mon-YY HH:MM:SS GMT
  *   Wdy, DD-Mon-YYYY HH:MM:SS GMT
@@ -452,7 +450,7 @@ static int Cookies_get_month(const char *month_name)
  *   Let's add:
  *   Mon Jan 11 08:00:00 2010 GMT
  *
- * (return 0 on malformed date string syntax)
+ * Return a pointer to a struct tm, or NULL on error.
  *
  * NOTE that the draft spec wants user agents to be more flexible in what
  * they accept. For now, let's hack in special cases when they're encountered.
@@ -460,71 +458,76 @@ static int Cookies_get_month(const char *month_name)
  * abandon that (or at best decrease that -- see section 5.1.1) until there
  * is known to be good reason.
  */
-static time_t Cookies_create_timestamp(const char *expires)
+static struct tm *Cookies_parse_date(const char *date)
 {
-   time_t ret;
-   int day, month, year, hour, minutes, seconds;
-   char *cp;
-   const char *const E_msg =
-      "Expire date is malformed!\n"
-      " (should be RFC-1123 | RFC-850 | ANSI asctime)\n"
-      " Discarding cookie: ";
+   struct tm *tm;
+   char *cp = strchr(date, ',');
 
-   cp = strchr(expires, ',');
-   if (!cp && strlen(expires)>20 && expires[13] == ':' && expires[16] == ':') {
+   if (!cp && strlen(date)>20 && date[13] == ':' && date[16] == ':') {
       /* Looks like ANSI asctime format... */
-      cp = (char *)expires;
-      day = strtol(cp + 8, NULL, 10);       /* day */
-      month = Cookies_get_month(cp + 4);    /* month */
-      year = strtol(cp + 20, NULL, 10);     /* year */
-      hour = strtol(cp + 11, NULL, 10);     /* hour */
-      minutes = strtol(cp + 14, NULL, 10);  /* minutes */
-      seconds = strtol(cp + 17, NULL, 10);  /* seconds */
+      tm = dNew0(struct tm, 1);
 
-   } else if (cp && (cp - expires == 3 || cp - expires > 5) &&
+      cp = (char *)date;
+      tm->tm_mon = Cookies_get_month(cp + 4);
+      tm->tm_mday = strtol(cp + 8, NULL, 10);
+      tm->tm_hour = strtol(cp + 11, NULL, 10);
+      tm->tm_min = strtol(cp + 14, NULL, 10);
+      tm->tm_sec = strtol(cp + 17, NULL, 10);
+      tm->tm_year = strtol(cp + 20, NULL, 10) - 1900;
+
+   } else if (cp && (cp - date == 3 || cp - date > 5) &&
                     (strlen(cp) == 24 || strlen(cp) == 26)) {
       /* RFC-1123 | RFC-850 format | Old Netscape format */
-      day = strtol(cp + 2, NULL, 10);
-      month = Cookies_get_month(cp + 5);
-      year = strtol(cp + 9, &cp, 10);
-      /* TODO: tricky, because two digits for year IS ambiguous! */
-      year += (year < 70) ? 2000 : ((year < 100) ? 1900 : 0);
-      hour = strtol(cp + 1, NULL, 10);
-      minutes = strtol(cp + 4, NULL, 10);
-      seconds = strtol(cp + 7, NULL, 10);
+      tm = dNew0(struct tm, 1);
+
+      tm->tm_mday = strtol(cp + 2, NULL, 10);
+      tm->tm_mon = Cookies_get_month(cp + 5);
+      tm->tm_year = strtol(cp + 9, &cp, 10);
+      /* tm_year is the number of years since 1900 */
+      if (tm->tm_year < 70)
+         tm->tm_year += 100;
+      else if (tm->tm_year > 100)
+         tm->tm_year -= 1900;
+      tm->tm_hour = strtol(cp + 1, NULL, 10);
+      tm->tm_min = strtol(cp + 4, NULL, 10);
+      tm->tm_sec = strtol(cp + 7, NULL, 10);
 
    } else {
-      MSG("%s%s\n", E_msg, expires);
-      return (time_t) 0;
+      tm = NULL;
+      MSG("In date \"%s\", format not understood.\n", date);
    }
 
-   /* Error checks  --this may be overkill */
-   if (!(day > 0 && day < 32 && month > 0 && month < 13 && year >= 1970 &&
-         hour >= 0 && hour < 24 && minutes >= 0 && minutes < 60 &&
-         seconds >= 0 && seconds < 60)) {
-      MSG("%s%s\n", E_msg, expires);
-      return (time_t) 0;
+   /* Error checks. This may be overkill. */
+   if (tm &&
+       !(tm->tm_mday > 0 && tm->tm_mday < 32 && tm->tm_mon >= 0 &&
+         tm->tm_mon < 12 && tm->tm_year >= 70 && tm->tm_hour >= 0 &&
+         tm->tm_hour < 24 && tm->tm_min >= 0 && tm->tm_min < 60 &&
+         tm->tm_sec >= 0 && tm->tm_sec < 60)) {
+      MSG("Date \"%s\" values not in range.\n", date);
+      dFree(tm);
+      tm = NULL;
    }
 
-   /* Calculate local timestamp.
-    * [stolen from Lynx... (http://lynx.browser.org)] */
-   month -= 3;
-   if (month < 0) {
-      month += 12;
-      year--;
+   return tm;
+}
+
+static time_t Cookies_create_timestamp(const char *date)
+{
+   time_t ret = 0;
+   struct tm *tm = Cookies_parse_date(date);
+
+   if (tm) {
+      ret = mktime(tm);
+
+      if (ret == (time_t) -1) {
+         ret = 0;
+         if (tm->tm_year >= 138) {
+            /* Make the guess that it simply couldn't be represented */
+            ret = cookies_future_time;
+         }
+      }
+      dFree(tm);
    }
-
-   day += (year - 1968) * 1461 / 4;
-   day += ((((month * 153) + 2) / 5) - 672);
-   ret = (time_t)((day * 60 * 60 * 24) +
-                  (hour * 60 * 60) +
-                  (minutes * 60) +
-                  seconds);
-
-   /* handle overflow */
-   if (year >= 1970 && ret < 0)
-      ret = DILLO_TIME_MAX;
-
    return ret;
 }
 
@@ -676,6 +679,7 @@ static time_t Cookies_expires_attr(char *value, const char *server_date)
       value++;
    }
    exptime = Cookies_create_timestamp(value);
+   MSG("expires attr \"%s\" represented as %s", value, ctime(&exptime));
    if (exptime && server_date) {
       time_t server_time = Cookies_create_timestamp(server_date);
 
