@@ -62,8 +62,6 @@ int main(void)
 #define _MSG(...)
 #define MSG(...)  printf("[cookies dpi]: " __VA_ARGS__)
 
-#define DILLO_TIME_MAX ((time_t) ((1UL << (sizeof(time_t) * 8 - 1)) - 1))
-
 /*
  * a_List_add()
  *
@@ -739,13 +737,14 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
          if (isdigit(*value) || *value == '-') {
             time_t now = time(NULL);
             long age = strtol(value, NULL, 10);
+            struct tm *tm = gmtime(&now);
 
-            cookie->expires_at = now + age;
-            if (age > 0 &&
-                difftime(cookie->expires_at, cookies_epoch_time) < 0) {
-               /* handle overflow */
-               cookie->expires_at = DILLO_TIME_MAX;
+            tm->tm_sec += age;
+            cookie->expires_at = mktime(tm);
+            if (age > 0 && cookie->expires_at == (time_t) -1) {
+               cookie->expires_at = cookies_future_time;
             }
+            MSG("Cookie to expire at %s", ctime(&cookie->expires_at));
             expires = max_age = TRUE;
          }
          dFree(value);
