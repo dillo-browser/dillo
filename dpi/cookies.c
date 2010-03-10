@@ -329,6 +329,8 @@ static void Cookies_init()
             Cookies_tm_init(&tm);
             tm.tm_sec += strtol(piece, NULL, 10);
             cookie->expires_at = mktime(&tm);
+         } else {
+            cookie->expires_at = (time_t) -1;
          }
          cookie->name = dStrdup(dStrsep(&line_marker, "\t"));
          cookie->value = dStrdup(line_marker ? line_marker : "");
@@ -559,8 +561,9 @@ static void Cookies_add_cookie(CookieData_t *cookie)
    /* Don't add an expired cookie. Whether expiring now == expired, exactly,
     * is arguable, but we definitely do not want to add a Max-Age=0 cookie.
     */
-   if (difftime(cookie->expires_at, time(NULL)) <= 0) {
-      _MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
+   if ((cookie->expires_at == (time_t) -1) ||
+       (difftime(cookie->expires_at, time(NULL)) <= 0)) {
+      _MSG("Goodbye, cookie %s=%s d:%s p:%s\n", cookie->name,
            cookie->value, cookie->domain, cookie->path);
       Cookies_free_cookie(cookie);
    } else {
