@@ -57,7 +57,7 @@ void Bullet::draw (core::View *view, core::Rectangle *area)
    case core::style::LIST_STYLE_TYPE_DISC:
    default:
       view->drawArc (getStyle()->color, core::style::Color::SHADING_NORMAL,
-                     filled, x, y, l, l, 0, 360);
+                     filled, x + l/2, y + l/2, l, l, 0, 360);
    }
 }
 

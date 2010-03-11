@@ -142,11 +142,9 @@ void Circle::draw (core::View *view, core::style::Style *style, int x, int y)
 {
    const bool filled = false;
 
-   /* drawArc()  wants x, y, w, h for a rectangle, and then it draws the arc
-    * inside that */
    view->drawArc(style->color, core::style::Color::SHADING_NORMAL, filled,
-                 x + this->x - this->radius, y + this->y - this->radius,
-                 2 * this->radius, 2 * this->radius, 0, 360);
+                 x + this->x, y + this->y, 2 * this->radius, 2 * this->radius,
+                 0, 360);
 }
 
 bool Circle::isPointWithin (int x, int y)

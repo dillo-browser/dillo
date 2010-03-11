@@ -77,7 +77,7 @@ public:
                        int x, int y, int width, int height);
    void drawArc (core::style::Color *color,
                  core::style::Color::Shading shading, bool filled,
-                 int x, int y, int width, int height,
+                 int centerX, int centerY, int width, int height,
                  int angle1, int angle2);
     void drawPolygon (core::style::Color *color,
                       core::style::Color::Shading shading,

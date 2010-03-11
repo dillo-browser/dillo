@@ -401,13 +401,13 @@ void FltkViewBase::drawRectangle (core::style::Color *color,
 
 void FltkViewBase::drawArc (core::style::Color *color,
                             core::style::Color::Shading shading, bool filled,
-                            int x, int y, int width, int height,
+                            int centerX, int centerY, int width, int height,
                             int angle1, int angle2)
 {
    setcolor(((FltkColor*)color)->colors[shading]);
-   int x1 = translateCanvasXToViewX (x);
-   int y1 = translateCanvasYToViewY (y);
-   ::fltk::Rectangle rect (x1, y1, width, height);
+   int x = translateCanvasXToViewX (centerX) - width / 2;
+   int y = translateCanvasYToViewY (centerY) - height / 2;
+   ::fltk::Rectangle rect (x, y, width, height);
    addchord(rect, angle1, angle2);
    closepath();
    if (filled)

@@ -171,7 +171,7 @@ public:
                                int x, int y, int width, int height) = 0;
    virtual void drawArc       (style::Color *color,
                                style::Color::Shading shading, bool filled,
-                               int x, int y, int width, int height,
+                               int centerX, int centerY, int width, int height,
                                int angle1, int angle2) = 0;
    virtual void drawPolygon    (style::Color *color,
                                 style::Color::Shading shading,
