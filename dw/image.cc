@@ -38,6 +38,18 @@ ImageMapsList::ImageMap::~ImageMap ()
    delete shapesAndLinks;
 }
 
+void ImageMapsList::ImageMap::draw (core::View *view,core::style::Style *style,
+                                    int x, int y)
+{
+   container::typed::Iterator <ShapeAndLink> it;
+
+   for (it = shapesAndLinks->iterator (); it.hasNext (); ) {
+      ShapeAndLink *shapeAndLink = it.getNext ();
+
+      shapeAndLink->shape->draw(view, style, x, y);
+   }
+}
+
 void ImageMapsList::ImageMap::add (core::Shape *shape, int link) {
    ShapeAndLink *shapeAndLink = new ShapeAndLink ();
    shapeAndLink->shape = shape;
@@ -103,6 +115,15 @@ void ImageMapsList::addShapeToCurrentMap (core::Shape *shape, int link)
 void ImageMapsList::setCurrentMapDefaultLink (int link)
 {
    currentMap->setDefaultLink (link);
+}
+
+void ImageMapsList::drawMap (lout::object::Object *key, core::View *view,
+                             core::style::Style *style, int x, int y)
+{
+   ImageMap *map = imageMaps->get (key);
+
+   if (map)
+      map->draw(view, style, x, y);
 }
 
 int ImageMapsList::link (object::Object *key, int x, int y)
@@ -348,12 +369,17 @@ void Image::draw (core::View *view, core::Rectangle *area)
                           intersection.x - dx, intersection.y - dy,
                           intersection.width, intersection.height);
    } else {
+      core::View *clippingView;
+
       if (altText && altText[0]) {
+         core::View *usedView = view;
+
+         clippingView = NULL;
+
          if (altTextWidth == -1)
             altTextWidth =
                layout->textWidth (getStyle()->font, altText, strlen (altText));
 
-         core::View *clippingView = NULL, *usedView = view;
          if ((getContentWidth() < altTextWidth) ||
              (getContentHeight() <
               getStyle()->font->ascent + getStyle()->font->descent)) {
@@ -373,6 +399,18 @@ void Image::draw (core::View *view, core::Rectangle *area)
 
          if (clippingView)
             view->mergeClippingView (clippingView);
+      }
+      if (mapKey) {
+         clippingView = view->getClippingView (allocation.x +
+                                               getStyle()->boxOffsetX (),
+                                               allocation.y +
+                                               getStyle()->boxOffsetY (),
+                                               getContentWidth(),
+                                               getContentHeight());
+         mapList->drawMap(mapKey, clippingView, getStyle(),
+                          allocation.x + getStyle()->boxOffsetX (),
+                          allocation.y + getStyle()->boxOffsetY ());
+         view->mergeClippingView (clippingView);
       }
    }
 

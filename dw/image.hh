@@ -39,6 +39,7 @@ private:
          ImageMap ();
          ~ImageMap ();
 
+         void draw (core::View *view, core::style::Style *style, int x, int y);
          void add (core::Shape *shape, int link);
          void setDefaultLink (int link) { defaultLink = link; };
          int link (int x, int y);
@@ -55,6 +56,8 @@ public:
    void startNewMap (lout::object::Object *key);
    void addShapeToCurrentMap (core::Shape *shape, int link);
    void setCurrentMapDefaultLink (int link);
+   void drawMap(lout::object::Object *key, core::View *view,
+                core::style::Style *style, int x, int y);
    int link (lout::object::Object *key, int x, int y);
 };
 

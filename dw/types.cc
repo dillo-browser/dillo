@@ -39,6 +39,17 @@ Rectangle::Rectangle (int x, int y, int width, int height)
    this->height = height;
 }
 
+/*
+ * Draw rectangle in view relative to point (x,y).
+ */
+void Rectangle::draw (core::View *view, core::style::Style *style, int x,int y)
+{
+   const bool filled = false;
+
+   view->drawRectangle(style->color, core::style::Color::SHADING_NORMAL,filled,
+                       x + this->x, y + this->y, this->width, this->height);
+}
+
 /**
  * Return whether this rectangle and otherRect intersect. If yes,
  * return the intersection rectangle in dest.
@@ -124,6 +135,20 @@ Circle::Circle (int x, int y, int radius)
    this->radius = radius;
 }
 
+/*
+ * Draw circle in view relative to point (x,y).
+ */
+void Circle::draw (core::View *view, core::style::Style *style, int x, int y)
+{
+   const bool filled = false;
+
+   /* drawArc()  wants x, y, w, h for a rectangle, and then it draws the arc
+    * inside that */
+   view->drawArc(style->color, core::style::Color::SHADING_NORMAL, filled,
+                 x + this->x - this->radius, y + this->y - this->radius,
+                 2 * this->radius, 2 * this->radius, 0, 360);
+}
+
 bool Circle::isPointWithin (int x, int y)
 {
    return
@@ -143,6 +168,27 @@ Polygon::Polygon ()
 Polygon::~Polygon ()
 {
    delete points;
+}
+
+/*
+ * Draw polygon in view relative to point (x,y).
+ */
+void Polygon::draw (core::View *view, core::style::Style *style, int x, int y)
+{
+   if (points->size()) {
+      int i;
+      const bool filled = false;
+      int (*pointArray)[2] =
+                     (int (*)[2]) malloc(points->size() * sizeof(*pointArray));
+
+      for (i = 0; i < points->size(); i++) {
+         pointArray[i][0] = x + points->getRef(i)->x;
+         pointArray[i][1] = y + points->getRef(i)->y;
+      }
+      view->drawPolygon(style->color, core::style::Color::SHADING_NORMAL,
+                        filled, pointArray, i);
+      free(pointArray);
+   }
 }
 
 void Polygon::addPoint (int x, int y)

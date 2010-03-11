@@ -8,6 +8,10 @@
 namespace dw {
 namespace core {
 
+namespace style {
+   class Style;
+}
+
 enum HPosition
 {
    HPOS_LEFT,
@@ -54,6 +58,8 @@ class Shape: public lout::object::Object
 {
 public:
    virtual bool isPointWithin (int x, int y) = 0;
+   virtual void draw (core::View *view, core::style::Style *style, int x,
+                      int y) = 0;
 };
 
 /**
@@ -70,6 +76,7 @@ public:
    inline Rectangle () { }
    Rectangle (int x, int y, int width, int height);
 
+   void draw (core::View *view, core::style::Style *style, int x, int y);
    bool intersectsWith (Rectangle *otherRect, Rectangle *dest);
    bool isSubsetOf (Rectangle *otherRect);
    bool isPointWithin (int x, int y);
@@ -86,6 +93,7 @@ public:
 
    Circle (int x, int y, int radius);
 
+   void draw (core::View *view, core::style::Style *style, int x, int y);
    bool isPointWithin (int x, int y);
 };
 
@@ -116,6 +124,7 @@ public:
    Polygon ();
    ~Polygon ();
 
+   void draw (core::View *view, core::style::Style *style, int x, int y);
    void addPoint (int x, int y);
    bool isPointWithin (int x, int y);
 };
