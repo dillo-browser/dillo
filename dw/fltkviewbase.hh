@@ -26,16 +26,16 @@ private:
 
    void draw (const core::Rectangle *rect, DrawType type);
    void drawChildWidgets ();
-   inline void clipPoint (int *x, int *y) {
+   inline void clipPoint (int *x, int *y, int border) {
       if (exposeArea) {
-         if (*x < exposeArea->x ())
-            *x = exposeArea->x ();
-         if (*x > exposeArea->r ())
-            *x = exposeArea->r ();
-         if (*y < exposeArea->y ())
-            *y = exposeArea->y ();
-         if (*y > exposeArea->b ())
-            *y = exposeArea->b ();
+         if (*x < exposeArea->x () - border)
+            *x = exposeArea->x () - border;
+         if (*x > exposeArea->r () + border)
+            *x = exposeArea->r () + border;
+         if (*y < exposeArea->y () - border)
+            *y = exposeArea->y () - border;
+         if (*y > exposeArea->b () + border)
+            *y = exposeArea->b () + border;
       }
    }
 

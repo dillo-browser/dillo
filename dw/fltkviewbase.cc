@@ -386,8 +386,11 @@ void FltkViewBase::drawRectangle (core::style::Color *color,
    int x2 = translateCanvasXToViewX (x + width);
    int y2 = translateCanvasYToViewY (y + height);
 
-   clipPoint (&x1, &y1);
-   clipPoint (&x2, &y2);
+   // We only support rectangles with line width 1px, so we clip with 
+   // a rectangle 1px wider and higher than what we actually expose.
+   // This is only really necessary for non-filled rectangles.
+   clipPoint (&x1, &y1, 1);
+   clipPoint (&x2, &y2, 1);
 
    ::fltk::Rectangle rect (x1, y1, x2 - x1, y2 - y1);
    if (filled)
