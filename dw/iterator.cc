@@ -58,7 +58,7 @@ bool Iterator::equals (Object *other)
 /**
  * \brief Delete the iterator.
  *
- * The desctructor is hidden, implementations may use optimizations for
+ * The destructor is hidden, implementations may use optimizations for
  * the allocation. (Will soon be the case for dw::core::EmptyIteratorFactory.)
  */
 void Iterator::unref ()
@@ -147,7 +147,7 @@ void Iterator::scrollTo (Iterator *it1, Iterator *it2, int start, int end,
          //   |----------------------------|
          //               width
          //
-         // Therefor, we the region smaller, so that the region will be
+         // Therefore, we make the region smaller, so that the region will be
          // displayed like this:
          //
          //                           ,-- alloc1
