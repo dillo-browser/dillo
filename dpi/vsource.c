@@ -210,6 +210,7 @@ int main(void)
          a_Dpip_dsh_printf(sh, 0, "Content-type: text/plain\n\n");
          a_Dpip_dsh_printf(sh, 1, "[vsource dpi]: ERROR: Page not cached.\n");
       }
+      dFree(cmd2);
    }
 
    dFree(cmd);
