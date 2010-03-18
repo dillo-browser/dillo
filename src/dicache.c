@@ -573,7 +573,7 @@ void a_Dicache_freeall(void)
          a_Imgbuf_unref(entry->v_imgbuf);
          dicache_size_total -= entry->TotalSize;
       }
-      dList_remove(CachedIMGs, node);
+      dList_remove_fast(CachedIMGs, node);
       a_Url_free(node->url);
       dFree(node);
    }

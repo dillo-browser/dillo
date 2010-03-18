@@ -1329,7 +1329,7 @@ void a_Cache_freeall(void)
 
    /* Remove every cache entry */
    while ((data = dList_nth_data(CachedURLs, 0))) {
-      dList_remove(CachedURLs, data);
+      dList_remove_fast(CachedURLs, data);
       Cache_entry_free(data);
    }
    /* Remove the cache list */
