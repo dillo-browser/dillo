@@ -587,114 +587,110 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
    core::Iterator *it;
    Line *line, *lastLine;
    int nextWordStartX, wordStartX, wordX, nextWordX, yFirst, yLast;
-   int charPos = 0, prevPos, wordIndex, lineIndex, link;
+   int charPos = 0, link = -1, prevPos, wordIndex, lineIndex;
    Word *word;
-   bool found, withinContent, r;
+   bool found, r, withinContent = true;
 
-   if (words->size () == 0)
-      // no contens at all
-      return false;
-
-   // In most cases true, so set here:
-   link = -1;
-   withinContent = true;
-
-   lastLine = lines->getRef (lines->size () - 1);
-   yFirst = lineYOffsetCanvasI (0);
-   yLast =
-      lineYOffsetCanvas (lastLine) + lastLine->ascent + lastLine->descent;
-   if (event->yCanvas < yFirst) {
-      // Above the first line: take the first word.
+   if (words->size () == 0) {
       withinContent = false;
-      wordIndex = 0;
-      charPos = 0;
-   } else if (event->yCanvas >= yLast) {
-      // Below the last line: take the last word.
-      withinContent = false;
-      wordIndex = words->size () - 1;
-      word = words->getRef (wordIndex);
-      charPos = word->content.type == core::Content::TEXT ?
-         strlen (word->content.text) : 0;
+      wordIndex = -1;
    } else {
-      lineIndex = findLineIndex (event->yWidget);
-      line = lines->getRef (lineIndex);
-
-      // Pointer within the break space?
-      if (event->yWidget >
-          (lineYOffsetWidget (line) + line->ascent + line->descent)) {
-         // Choose this break.
+      lastLine = lines->getRef (lines->size () - 1);
+      yFirst = lineYOffsetCanvasI (0);
+      yLast =
+         lineYOffsetCanvas (lastLine) + lastLine->ascent + lastLine->descent;
+      if (event->yCanvas < yFirst) {
+         // Above the first line: take the first word.
          withinContent = false;
-         wordIndex = line->lastWord;
+         wordIndex = 0;
          charPos = 0;
-      } else if (event->xWidget < lineXOffsetWidget (line)) {
-         // Left of the first word in the line.
-         wordIndex = line->firstWord;
+      } else if (event->yCanvas >= yLast) {
+         // Below the last line: take the last word.
          withinContent = false;
-         charPos = 0;
+         wordIndex = words->size () - 1;
+         word = words->getRef (wordIndex);
+         charPos = word->content.type == core::Content::TEXT ?
+            strlen (word->content.text) : 0;
       } else {
-         nextWordStartX = lineXOffsetWidget (line);
-         found = false;
-         for (wordIndex = line->firstWord;
-              !found && wordIndex <= line->lastWord;
-              wordIndex++) {
-            word = words->getRef (wordIndex);
-            wordStartX = nextWordStartX;
-            nextWordStartX += word->size.width + word->effSpace;
+         lineIndex = findLineIndex (event->yWidget);
+         line = lines->getRef (lineIndex);
 
-            if (event->xWidget >= wordStartX &&
-                event->xWidget < nextWordStartX) {
-               // We have found the word.
-               if (word->content.type == core::Content::TEXT) {
-                  // Search the character the mouse pointer is in.
-                  // nextWordX is the right side of this character.
-                  charPos = 0;
-                  while ((nextWordX = wordStartX +
-                          layout->textWidth (word->style->font,
-                                             word->content.text, charPos))
-                         <= event->xWidget)
-                     charPos = layout->nextGlyph (word->content.text, charPos);
-
-                  // The left side of this character.
-                  prevPos = layout->prevGlyph (word->content.text, charPos);
-                  wordX = wordStartX + layout->textWidth (word->style->font,
-                                                          word->content.text,
-                                                          prevPos);
-
-                  // If the mouse pointer is left from the middle, use the left
-                  // position, otherwise, use the right one.
-                  if (event->xWidget <= (wordX + nextWordX) / 2)
-                     charPos = prevPos;
-               } else {
-                  // Depends on whether the pointer is within the left or
-                  // right half of the (non-text) word.
-                  if (event->xWidget >=
-                      (wordStartX + nextWordStartX) / 2)
-                     charPos = core::SelectionState::END_OF_WORD;
-                  else
-                     charPos = 0;
-               }
-
-               found = true;
-               link = word->style ? word->style->x_link : -1;
-               break;
-            }
-         }
-
-         if (!found) {
-            // No word found in this line (i.e. we are on the right side),
-            // take the last of this line.
+         // Pointer within the break space?
+         if (event->yWidget >
+             (lineYOffsetWidget (line) + line->ascent + line->descent)) {
+            // Choose this break.
             withinContent = false;
             wordIndex = line->lastWord;
-            if (wordIndex >= words->size ())
-               wordIndex--;
-            word = words->getRef (wordIndex);
-            charPos = word->content.type == core::Content::TEXT ?
-               strlen (word->content.text) :
-               (int)core::SelectionState::END_OF_WORD;
+            charPos = 0;
+         } else if (event->xWidget < lineXOffsetWidget (line)) {
+            // Left of the first word in the line.
+            wordIndex = line->firstWord;
+            withinContent = false;
+            charPos = 0;
+         } else {
+            nextWordStartX = lineXOffsetWidget (line);
+            found = false;
+            for (wordIndex = line->firstWord;
+                 !found && wordIndex <= line->lastWord;
+                 wordIndex++) {
+               word = words->getRef (wordIndex);
+               wordStartX = nextWordStartX;
+               nextWordStartX += word->size.width + word->effSpace;
+
+               if (event->xWidget >= wordStartX &&
+                   event->xWidget < nextWordStartX) {
+                  // We have found the word.
+                  if (word->content.type == core::Content::TEXT) {
+                     // Search the character the mouse pointer is in.
+                     // nextWordX is the right side of this character.
+                     charPos = 0;
+                     while ((nextWordX = wordStartX +
+                             layout->textWidth (word->style->font,
+                                                word->content.text, charPos))
+                            <= event->xWidget)
+                        charPos = layout->nextGlyph (word->content.text,
+                                                     charPos);
+                     // The left side of this character.
+                     prevPos = layout->prevGlyph (word->content.text, charPos);
+                     wordX = wordStartX + layout->textWidth (word->style->font,
+                                                            word->content.text,
+                                                            prevPos);
+
+                     // If the mouse pointer is left from the middle, use the
+                     // left position, otherwise, use the right one.
+                     if (event->xWidget <= (wordX + nextWordX) / 2)
+                        charPos = prevPos;
+                  } else {
+                     // Depends on whether the pointer is within the left or
+                     // right half of the (non-text) word.
+                     if (event->xWidget >=
+                         (wordStartX + nextWordStartX) / 2)
+                        charPos = core::SelectionState::END_OF_WORD;
+                     else
+                        charPos = 0;
+                  }
+
+                  found = true;
+                  link = word->style ? word->style->x_link : -1;
+                  break;
+               }
+            }
+
+            if (!found) {
+               // No word found in this line (i.e. we are on the right side),
+               // take the last of this line.
+               withinContent = false;
+               wordIndex = line->lastWord;
+               if (wordIndex >= words->size ())
+                  wordIndex--;
+               word = words->getRef (wordIndex);
+               charPos = word->content.type == core::Content::TEXT ?
+                  strlen (word->content.text) :
+                  (int)core::SelectionState::END_OF_WORD;
+            }
          }
       }
    }
-
    it = new TextblockIterator (this, core::Content::SELECTION_CONTENT,
                                wordIndex);
    r = selectionHandleEvent (eventType, it, charPos, link, event,
@@ -1448,8 +1444,8 @@ int Textblock::findLineOfWord (int wordIndex)
 {
    int high = lines->size () - 1, index, low = 0;
 
-   //g_return_val_if_fail (word_index >= 0, -1);
-   //g_return_val_if_fail (word_index < page->num_words, -1);
+   if (wordIndex < 0 || wordIndex >= words->size ())
+      return -1;
 
    while (true) {
       index = (low + high) / 2;
@@ -2077,13 +2073,14 @@ void Textblock::queueDrawRange (int index1, int index2)
    int line1 = findLineOfWord (from);
    int line2 = findLineOfWord (to);
 
-   queueDrawArea (0,
-      lineYOffsetWidgetI (line1),
-      allocation.width,
-      lineYOffsetWidgetI (line2)
-      - lineYOffsetWidgetI (line1)
-      + lines->getRef (line2)->ascent
-      + lines->getRef (line2)->descent);
+   if (line1 >= 0 && line2 >= 0)
+      queueDrawArea (0,
+         lineYOffsetWidgetI (line1),
+         allocation.width,
+         lineYOffsetWidgetI (line2)
+         - lineYOffsetWidgetI (line1)
+         + lines->getRef (line2)->ascent
+         + lines->getRef (line2)->descent);
 }
 
 void Textblock::TextblockIterator::getAllocation (int start, int end,
