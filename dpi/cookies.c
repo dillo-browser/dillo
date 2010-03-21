@@ -95,8 +95,8 @@ typedef struct {
 
 typedef struct {
    char *domain;
-   Dlist *dlist;
-} CookieNode;
+   Dlist *cookies;
+} DomainNode;
 
 typedef struct {
    char *name;
@@ -118,8 +118,8 @@ typedef struct {
  * Local data
  */
 
-/* List of CookieNode. Each node holds a domain and its list of cookies */
-static Dlist *cookies;
+/* List of DomainNode. Each node holds a domain and its list of cookies */
+static Dlist *domains;
 
 /* Variables for access control */
 static CookieControl *ccontrol = NULL;
@@ -151,21 +151,21 @@ static void Cookies_add_cookie(CookieData_t *cookie);
 static int Cookies_cmp(const void *a, const void *b);
 
 /*
- * Compare function for searching a cookie node
+ * Compare function for searching a domain node
  */
-static int Cookie_node_cmp(const void *v1, const void *v2)
+static int Domain_node_cmp(const void *v1, const void *v2)
 {
-   const CookieNode *n1 = v1, *n2 = v2;
+   const DomainNode *n1 = v1, *n2 = v2;
 
    return dStrcasecmp(n1->domain, n2->domain);
 }
 
 /*
- * Compare function for searching a cookie node by domain
+ * Compare function for searching a domain node by domain
  */
-static int Cookie_node_by_domain_cmp(const void *v1, const void *v2)
+static int Domain_node_by_domain_cmp(const void *v1, const void *v2)
 {
-   const CookieNode *node = v1;
+   const DomainNode *node = v1;
    const char *domain = v2;
 
    return dStrcasecmp(node->domain, domain);
@@ -285,7 +285,7 @@ static void Cookies_init()
 
    MSG("Enabling cookies as per cookiesrc...\n");
 
-   cookies = dList_new(32);
+   domains = dList_new(32);
 
    /* Get all lines in the file */
    while (!feof(file_stream)) {
@@ -363,7 +363,7 @@ static void Cookies_init()
 static void Cookies_save_and_free()
 {
    int i, fd;
-   CookieNode *node;
+   DomainNode *node;
    CookieData_t *cookie;
    time_t now;
 
@@ -383,8 +383,8 @@ static void Cookies_save_and_free()
    fprintf(file_stream, "%s", cookies_txt_header_str);
 
    /* Iterate cookies per domain, saving and freeing */
-   while ((node = dList_nth_data(cookies, 0))) {
-      for (i = 0; (cookie = dList_nth_data(node->dlist, i)); ++i) {
+   while ((node = dList_nth_data(domains, 0))) {
+      for (i = 0; (cookie = dList_nth_data(node->cookies, i)); ++i) {
          if (!cookie->session_only && difftime(cookie->expires_at, now) > 0) {
             fprintf(file_stream, "%s\tTRUE\t%s\t%s\t%ld\t%s\t%s\n",
                     cookie->domain,
@@ -397,9 +397,9 @@ static void Cookies_save_and_free()
 
          Cookies_free_cookie(cookie);
       }
-      dList_remove(cookies, node);
+      dList_remove(domains, node);
       dFree(node->domain);
-      dList_free(node->dlist);
+      dList_free(node->cookies);
       dFree(node);
    }
 
@@ -538,10 +538,10 @@ static void Cookies_add_cookie(CookieData_t *cookie)
 {
    Dlist *domain_cookies;
    CookieData_t *c;
-   CookieNode *node;
+   DomainNode *node;
 
-   node = dList_find_sorted(cookies, cookie->domain,Cookie_node_by_domain_cmp);
-   domain_cookies = (node) ? node->dlist : NULL;
+   node = dList_find_sorted(domains, cookie->domain,Domain_node_by_domain_cmp);
+   domain_cookies = (node) ? node->cookies : NULL;
 
    if (domain_cookies) {
       /* Remove any cookies with the same name and path */
@@ -573,16 +573,16 @@ static void Cookies_add_cookie(CookieData_t *cookie)
       if (!domain_cookies) {
          domain_cookies = dList_new(5);
          dList_append(domain_cookies, cookie);
-         node = dNew(CookieNode, 1);
+         node = dNew(DomainNode, 1);
          node->domain = dStrdup(cookie->domain);
-         node->dlist = domain_cookies;
-         dList_insert_sorted(cookies, node, Cookie_node_cmp);
+         node->cookies = domain_cookies;
+         dList_insert_sorted(domains, node, Domain_node_cmp);
       } else {
          dList_append(domain_cookies, cookie);
       }
    }
    if (domain_cookies && (dList_length(domain_cookies) == 0)) {
-      dList_remove(cookies, node);
+      dList_remove(domains, node);
       dFree(node->domain);
       dList_free(domain_cookies);
       dFree(node);
@@ -1070,12 +1070,12 @@ static void Cookies_add_matching_cookies(const char *domain,
                                          Dlist *matching_cookies,
                                          bool_t is_ssl)
 {
-   CookieNode *node = dList_find_sorted(cookies, domain,
-                                        Cookie_node_by_domain_cmp);
+   DomainNode *node = dList_find_sorted(domains, domain,
+                                        Domain_node_by_domain_cmp);
    if (node) {
       int i;
       CookieData_t *cookie;
-      Dlist *domain_cookies = node->dlist;
+      Dlist *domain_cookies = node->cookies;
 
       for (i = 0; (cookie = dList_nth_data(domain_cookies, i)); ++i) {
          /* Remove expired cookie. */
@@ -1104,7 +1104,7 @@ static void Cookies_add_matching_cookies(const char *domain,
       }
 
       if (dList_length(domain_cookies) == 0) {
-         dList_remove(cookies, node);
+         dList_remove(domains, node);
          dFree(node->domain);
          dList_free(domain_cookies);
          dFree(node);
