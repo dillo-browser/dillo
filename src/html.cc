@@ -2199,6 +2199,17 @@ static void Html_tag_open_map(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_map(DilloHtml *html, int TagIdx)
 {
+   /* This is a hack for the perhaps frivolous feature of drawing image map
+    * shapes when there is no image to display. If this map is defined after
+    * an image that has not been loaded (img != NULL), tell the image to
+    * redraw. (It will only do so if it uses a map.)
+    */
+   for (int i = 0; i < html->images->size(); i++) {
+      DilloImage *img = html->images->get(i)->image;
+
+      if (img)
+         ((dw::Image*) img->dw)->forceMapRedraw();
+   }
    html->InFlags &= ~IN_MAP;
 }
 

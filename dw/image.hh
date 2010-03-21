@@ -159,6 +159,13 @@ public:
 
    void setIsMap ();
    void setUseMap (ImageMapsList *list, Object *key);
+
+   /* This is a hack for the perhaps frivolous feature of drawing image map
+    * shapes when there is no image to display. If the map is defined after
+    * an image using an image map, and the actual image data has not been
+    * loaded, tell the image to redraw.
+    */
+   void forceMapRedraw () { if (mapKey && ! buffer) queueDraw (); };
 };
 
 } // namespace dw
