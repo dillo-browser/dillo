@@ -172,6 +172,17 @@ static int Domain_node_by_domain_cmp(const void *v1, const void *v2)
 }
 
 /*
+ * Delete node. This will not free any cookies that might be in node->cookies.
+ */
+static void Cookies_delete_node(DomainNode *node)
+{
+   dList_remove(domains, node);
+   dFree(node->domain);
+   dList_free(node->cookies);
+   dFree(node);
+}
+
+/*
  * Return a file pointer. If the file doesn't exist, try to create it,
  * with the optional 'init_str' as its content.
  */
@@ -397,10 +408,7 @@ static void Cookies_save_and_free()
 
          Cookies_free_cookie(cookie);
       }
-      dList_remove(domains, node);
-      dFree(node->domain);
-      dList_free(node->cookies);
-      dFree(node);
+      Cookies_delete_node(node);
    }
 
 #ifdef HAVE_LOCKF
@@ -581,12 +589,8 @@ static void Cookies_add_cookie(CookieData_t *cookie)
          dList_append(domain_cookies, cookie);
       }
    }
-   if (domain_cookies && (dList_length(domain_cookies) == 0)) {
-      dList_remove(domains, node);
-      dFree(node->domain);
-      dList_free(domain_cookies);
-      dFree(node);
-   }
+   if (domain_cookies && (dList_length(domain_cookies) == 0))
+      Cookies_delete_node(node);
 }
 
 /*
@@ -1103,12 +1107,8 @@ static void Cookies_add_matching_cookies(const char *domain,
          }
       }
 
-      if (dList_length(domain_cookies) == 0) {
-         dList_remove(domains, node);
-         dFree(node->domain);
-         dList_free(domain_cookies);
-         dFree(node);
-      }
+      if (dList_length(domain_cookies) == 0)
+         Cookies_delete_node(node);
    }
 }
 
