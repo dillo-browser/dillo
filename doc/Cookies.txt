@@ -1,6 +1,6 @@
 Jan 2002, Jörgen Viksell - jorgen.viksell@telia.com,
           Jorge Arellano Cid --
-Last update: January 2010
+Last update: March 2010
 
 
 ==================
@@ -14,10 +14,10 @@ real-world cookies usage.
 Cookies are handled by a dpi (plugin) which shares them between your
 instances of Dillo.
 
+Currently, cookie limits are: 20 per domain, and 1200 in total.
+
 When the dpi exits, cookies that you have ACCEPTed are saved to
 ~/.dillo/cookies.txt, and ACCEPT_SESSION cookies are forgotten.
-(Currently the only limit to the amount of cookies to save to disk is
-a maximum of 20 per domain.)
 The dpi normally exits after a period of inactivity, but you can force it to
 exit with the command "dpidc stop".
 
