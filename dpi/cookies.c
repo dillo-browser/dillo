@@ -597,7 +597,7 @@ static void Cookies_add_cookie(CookieData_t *cookie)
    if (domain_cookies) {
       /* Remove any cookies with the same name and path */
       while ((c = dList_find_custom(domain_cookies, cookie, Cookies_cmp))) {
-         dList_remove(domain_cookies, c);
+         dList_remove_fast(domain_cookies, c);
          Cookies_free_cookie(c);
       }
    }
@@ -1136,7 +1136,7 @@ static void Cookies_add_matching_cookies(const char *domain,
          if (difftime(cookie->expires_at, time(NULL)) < 0) {
             _MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
                  cookie->value, cookie->domain, cookie->path);
-            dList_remove(domain_cookies, cookie);
+            dList_remove_fast(domain_cookies, cookie);
             Cookies_free_cookie(cookie);
             --i; continue;
          }
