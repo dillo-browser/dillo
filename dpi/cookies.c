@@ -82,6 +82,8 @@ int main(void)
 /* The maximum length of a line in the cookie file */
 #define LINE_MAXLEN 4096
 
+#define MAX_DOMAIN_COOKIES 20
+
 typedef enum {
    COOKIE_ACCEPT,
    COOKIE_ACCEPT_SESSION,
@@ -520,26 +522,67 @@ static struct tm *Cookies_parse_date(const char *date)
 }
 
 /*
- * Remove the least recently used cookie in the list.
+ * Find the least recently used cookie among those in the provided list.
  */
-static void Cookies_remove_LRU(Dlist *cookies)
+static CookieData_t *Cookies_get_LRU(Dlist *cookies)
 {
-   int n = dList_length(cookies);
+   int i, n = dList_length(cookies);
+   CookieData_t *lru = dList_nth_data(cookies, 0);
 
-   if (n > 0) {
-      int i;
-      CookieData_t *lru = dList_nth_data(cookies, 0);
+   for (i = 1; i < n; i++) {
+      CookieData_t *curr = dList_nth_data(cookies, i);
 
-      for (i = 1; i < n; i++) {
-         CookieData_t *curr = dList_nth_data(cookies, i);
-
-         if (curr->last_used < lru->last_used)
-            lru = curr;
-      }
-      dList_remove(cookies, lru);
-      MSG("removed LRU cookie \'%s=%s\'\n", lru->name, lru->value);
-      Cookies_free_cookie(lru);
+      if (curr->last_used < lru->last_used)
+         lru = curr;
    }
+   return lru;
+}
+
+/*
+ * Delete expired cookies.
+ * Note that nodes can disappear if all of their cookies were expired.
+ *
+ * Return the number of cookies that were expired.
+ */
+static int Cookies_rm_expired_cookies(DomainNode *node)
+{
+   Dlist *cookies = node->cookies;
+   int removed = 0;
+   int i = 0, n = dList_length(cookies);
+   time_t now = time(NULL);
+
+   while (i < n) {
+      CookieData_t *c = dList_nth_data(cookies, i);
+
+      if (difftime(c->expires_at, now) < 0) {
+         dList_remove_fast(node->cookies, c);
+         if (dList_length(node->cookies) == 0)
+            Cookies_delete_node(node);
+         Cookies_free_cookie(c);
+         n--;
+         removed++;
+      } else {
+         i++;
+      }
+   }
+   return removed;
+}
+
+/*
+ * There are too many cookies. Choose one to remove and delete.
+ */
+static void Cookies_too_many(DomainNode *node)
+{
+   CookieData_t *lru = Cookies_get_LRU(node->cookies);
+
+   MSG("Too many cookies!\n"
+       "Removing LRU cookie for \'%s\': \'%s=%s\'\n", lru->domain,
+       lru->name, lru->value);
+
+   dList_remove_fast(node->cookies, lru);
+   Cookies_free_cookie(lru);
+   if (dList_length(node->cookies) == 0)
+      Cookies_delete_node(node);
 }
 
 static void Cookies_add_cookie(CookieData_t *cookie)
@@ -557,24 +600,31 @@ static void Cookies_add_cookie(CookieData_t *cookie)
          dList_remove(domain_cookies, c);
          Cookies_free_cookie(c);
       }
-
-      /* Respect the limit of 20 cookies per domain */
-      if (dList_length(domain_cookies) >= 20) {
-         MSG("There are too many cookies for this domain (%s)\n",
-             cookie->domain);
-         Cookies_remove_LRU(domain_cookies);
-      }
    }
 
-   /* Don't add an expired cookie. Whether expiring now == expired, exactly,
-    * is arguable, but we definitely do not want to add a Max-Age=0 cookie.
-    */
    if ((cookie->expires_at == (time_t) -1) ||
        (difftime(cookie->expires_at, time(NULL)) <= 0)) {
+      /*
+       * Don't add an expired cookie. Whether expiring now == expired, exactly,
+       * is arguable, but we definitely do not want to add a Max-Age=0 cookie.
+       */
       _MSG("Goodbye, cookie %s=%s d:%s p:%s\n", cookie->name,
            cookie->value, cookie->domain, cookie->path);
       Cookies_free_cookie(cookie);
    } else {
+      if (domain_cookies && dList_length(domain_cookies) >=MAX_DOMAIN_COOKIES){
+         int removed = Cookies_rm_expired_cookies(node);
+
+         if (removed == 0) {
+            Cookies_too_many(node);
+         } else if (removed >= MAX_DOMAIN_COOKIES) {
+            /* So many were removed that the node might have been deleted. */
+            node = dList_find_sorted(domains, cookie->domain,
+                                                    Domain_node_by_domain_cmp);
+            domain_cookies = (node) ? node->cookies : NULL;
+         }
+      }
+
       cookie->last_used = cookies_use_counter++;
 
       /* add cookie to domain list */
