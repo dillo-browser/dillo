@@ -1311,7 +1311,6 @@ static int Cookie_control_init(void)
    char line[LINE_MAXLEN];
    char domain[LINE_MAXLEN];
    char rule[LINE_MAXLEN];
-   int i, j;
    bool_t enabled = FALSE;
 
    /* Get a file pointer */
@@ -1336,8 +1335,7 @@ static int Cookie_control_init(void)
       dStrstrip(line);
 
       if (line[0] != '\0' && line[0] != '#') {
-         i = 0;
-         j = 0;
+         int i = 0, j = 0;
 
          /* Get the domain */
          while (line[i] != '\0' && !dIsspace(line[i]))
@@ -1372,8 +1370,17 @@ static int Cookie_control_init(void)
             default_action = cc.action;
             dFree(cc.domain);
          } else {
+            int i;
+            uint_t len = strlen(cc.domain);
+
+            /* Insert into list such that longest rules come first. */
             a_List_add(ccontrol, num_ccontrol, num_ccontrol_max);
-            ccontrol[num_ccontrol++] = cc;
+            for (i = num_ccontrol++;
+                 i > 0 && (len > strlen(ccontrol[i-1].domain));
+                 i--) {
+               ccontrol[i] = ccontrol[i-1];
+            }
+            ccontrol[i] = cc;
          }
 
          if (cc.action != COOKIE_DENY)
@@ -1387,7 +1394,9 @@ static int Cookie_control_init(void)
 }
 
 /*
- * Check the rules for an appropriate action for this domain
+ * Check the rules for an appropriate action for this domain.
+ * The rules are ordered by domain length, with longest first, so the
+ * first match is the most specific.
  */
 static CookieControlAction Cookies_control_check_domain(const char *domain)
 {
