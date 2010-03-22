@@ -246,14 +246,91 @@ static void Cookies_tm_init(struct tm *tm)
 }
 
 /*
+ * Read in cookies from 'stream' (cookies.txt)
+ */
+static void Cookies_load_cookies(FILE *stream)
+{
+   char line[LINE_MAXLEN];
+
+   all_cookies = dList_new(32);
+   domains = dList_new(32);
+
+   /* Get all lines in the file */
+   while (!feof(stream)) {
+      line[0] = '\0';
+      if ((fgets(line, LINE_MAXLEN, stream) == NULL) && ferror(stream)) {
+         MSG("Error while reading from cookies.txt: %s\n", dStrerror(errno));
+         break; /* bail out */
+      }
+
+      /* Remove leading and trailing whitespaces */
+      dStrstrip(line);
+
+      if ((line[0] != '\0') && (line[0] != '#')) {
+         /*
+          * Split the row into pieces using a tab as the delimiter.
+          * pieces[0] The domain name
+          * pieces[1] TRUE/FALSE: is the domain a suffix, or a full domain?
+          * pieces[2] The path
+          * pieces[3] TRUE/FALSE: is the cookie for secure use only?
+          * pieces[4] Timestamp of expire date
+          * pieces[5] Name of the cookie
+          * pieces[6] Value of the cookie
+          */
+         CookieControlAction action;
+         char *piece;
+         char *line_marker = line;
+         CookieData_t *cookie = dNew0(CookieData_t, 1);
+
+         cookie->session_only = FALSE;
+         cookie->domain = dStrdup(dStrsep(&line_marker, "\t"));
+         dStrsep(&line_marker, "\t"); /* we use domain always as sufix */
+         cookie->path = dStrdup(dStrsep(&line_marker, "\t"));
+         piece = dStrsep(&line_marker, "\t");
+         if (piece != NULL && piece[0] == 'T')
+            cookie->secure = TRUE;
+         piece = dStrsep(&line_marker, "\t");
+         if (piece != NULL) {
+            struct tm tm;
+            Cookies_tm_init(&tm);
+            tm.tm_sec += strtol(piece, NULL, 10);
+            cookie->expires_at = mktime(&tm);
+         } else {
+            cookie->expires_at = (time_t) -1;
+         }
+         cookie->name = dStrdup(dStrsep(&line_marker, "\t"));
+         cookie->value = dStrdup(line_marker ? line_marker : "");
+
+         if (!cookie->domain || cookie->domain[0] == '\0' ||
+             !cookie->path || cookie->path[0] != '/' ||
+             !cookie->name || !cookie->value) {
+            MSG("Malformed line in cookies.txt file!\n");
+            Cookies_free_cookie(cookie);
+            continue;
+         }
+
+         action = Cookies_control_check_domain(cookie->domain);
+         if (action == COOKIE_DENY) {
+            Cookies_free_cookie(cookie);
+            continue;
+         } else if (action == COOKIE_ACCEPT_SESSION) {
+            cookie->session_only = TRUE;
+         }
+
+         /* Save cookie in memory */
+         Cookies_add_cookie(cookie);
+      }
+   }
+   MSG("Cookies loaded: %d.\n", dList_length(all_cookies));
+}
+
+/*
  * Initialize the cookies module
  * (The 'disabled' variable is writeable only within Cookies_init)
  */
 static void Cookies_init()
 {
-   CookieData_t *cookie;
-   char *filename, *rc = NULL;
-   char line[LINE_MAXLEN];
+   char *filename;
 #ifndef HAVE_LOCKF
    struct flock lck;
 #endif
@@ -298,81 +375,9 @@ static void Cookies_init()
       fclose(file_stream);
       return;
    }
-
    MSG("Enabling cookies as per cookiesrc...\n");
 
-   all_cookies = dList_new(32);
-   domains = dList_new(32);
-
-   /* Get all lines in the file */
-   while (!feof(file_stream)) {
-      line[0] = '\0';
-      rc = fgets(line, LINE_MAXLEN, file_stream);
-      if (!rc && ferror(file_stream)) {
-         MSG("Error while reading from cookies.txt: %s\n", dStrerror(errno));
-         break; /* bail out */
-      }
-
-      /* Remove leading and trailing whitespaces */
-      dStrstrip(line);
-
-      if ((line[0] != '\0') && (line[0] != '#')) {
-         /*
-          * Split the row into pieces using a tab as the delimiter.
-          * pieces[0] The domain name
-          * pieces[1] TRUE/FALSE: is the domain a suffix, or a full domain?
-          * pieces[2] The path
-          * pieces[3] TRUE/FALSE: is the cookie for secure use only?
-          * pieces[4] Timestamp of expire date
-          * pieces[5] Name of the cookie
-          * pieces[6] Value of the cookie
-          */
-         CookieControlAction action;
-         char *piece;
-         char *line_marker = line;
-
-         cookie = dNew0(CookieData_t, 1);
-
-         cookie->session_only = FALSE;
-         cookie->domain = dStrdup(dStrsep(&line_marker, "\t"));
-         dStrsep(&line_marker, "\t"); /* we use domain always as sufix */
-         cookie->path = dStrdup(dStrsep(&line_marker, "\t"));
-         piece = dStrsep(&line_marker, "\t");
-         if (piece != NULL && piece[0] == 'T')
-            cookie->secure = TRUE;
-         piece = dStrsep(&line_marker, "\t");
-         if (piece != NULL) {
-            struct tm tm;
-            Cookies_tm_init(&tm);
-            tm.tm_sec += strtol(piece, NULL, 10);
-            cookie->expires_at = mktime(&tm);
-         } else {
-            cookie->expires_at = (time_t) -1;
-         }
-         cookie->name = dStrdup(dStrsep(&line_marker, "\t"));
-         cookie->value = dStrdup(line_marker ? line_marker : "");
-
-         if (!cookie->domain || cookie->domain[0] == '\0' ||
-             !cookie->path || cookie->path[0] != '/' ||
-             !cookie->name || !cookie->value) {
-            MSG("Malformed line in cookies.txt file!\n");
-            Cookies_free_cookie(cookie);
-            continue;
-         }
-
-         action = Cookies_control_check_domain(cookie->domain);
-         if (action == COOKIE_DENY) {
-            Cookies_free_cookie(cookie);
-            continue;
-         } else if (action == COOKIE_ACCEPT_SESSION) {
-            cookie->session_only = TRUE;
-         }
-
-         /* Save cookie in memory */
-         Cookies_add_cookie(cookie);
-      }
-   }
-   MSG("Cookies loaded: %d.\n", dList_length(all_cookies));
+   Cookies_load_cookies(file_stream);
 }
 
 /*
