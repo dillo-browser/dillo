@@ -572,7 +572,7 @@ static int Cookies_rm_expired_cookies(DomainNode *node)
       if (difftime(c->expires_at, now) < 0) {
          DomainNode *currnode = node ? node :
               dList_find_sorted(domains, c->domain, Domain_node_by_domain_cmp);
-         dList_remove_fast(currnode->cookies, c);
+         dList_remove(currnode->cookies, c);
          if (dList_length(currnode->cookies) == 0)
             Cookies_delete_node(currnode);
          dList_remove_fast(all_cookies, c);
@@ -600,7 +600,7 @@ static void Cookies_too_many(DomainNode *node)
    if (!node)
       node = dList_find_sorted(domains, lru->domain,Domain_node_by_domain_cmp);
 
-   dList_remove_fast(node->cookies, lru);
+   dList_remove(node->cookies, lru);
    dList_remove_fast(all_cookies, lru);
    Cookies_free_cookie(lru);
    if (dList_length(node->cookies) == 0)
@@ -619,7 +619,7 @@ static void Cookies_add_cookie(CookieData_t *cookie)
    if (domain_cookies) {
       /* Remove any cookies with the same name and path */
       while ((c = dList_find_custom(domain_cookies, cookie, Cookies_cmp))) {
-         dList_remove_fast(domain_cookies, c);
+         dList_remove(domain_cookies, c);
          dList_remove_fast(all_cookies, c);
          Cookies_free_cookie(c);
       }
@@ -1171,7 +1171,7 @@ static void Cookies_add_matching_cookies(const char *domain,
          if (difftime(cookie->expires_at, time(NULL)) < 0) {
             _MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
                  cookie->value, cookie->domain, cookie->path);
-            dList_remove_fast(domain_cookies, cookie);
+            dList_remove(domain_cookies, cookie);
             dList_remove_fast(all_cookies, cookie);
             Cookies_free_cookie(cookie);
             --i; continue;
