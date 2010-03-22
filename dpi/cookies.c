@@ -83,6 +83,7 @@ int main(void)
 #define LINE_MAXLEN 4096
 
 #define MAX_DOMAIN_COOKIES 20
+#define MAX_TOTAL_COOKIES 1200
 
 typedef enum {
    COOKIE_ACCEPT,
@@ -119,6 +120,8 @@ typedef struct {
 /*
  * Local data
  */
+
+static Dlist *all_cookies;
 
 /* List of DomainNode. Each node holds a domain and its list of cookies */
 static Dlist *domains;
@@ -298,6 +301,7 @@ static void Cookies_init()
 
    MSG("Enabling cookies as per cookiesrc...\n");
 
+   all_cookies = dList_new(32);
    domains = dList_new(32);
 
    /* Get all lines in the file */
@@ -368,6 +372,7 @@ static void Cookies_init()
          Cookies_add_cookie(cookie);
       }
    }
+   MSG("Cookies loaded: %d.\n", dList_length(all_cookies));
 }
 
 /*
@@ -375,7 +380,7 @@ static void Cookies_init()
  */
 static void Cookies_save_and_free()
 {
-   int i, fd;
+   int i, fd, saved = 0;
    DomainNode *node;
    CookieData_t *cookie;
    time_t now;
@@ -406,12 +411,14 @@ static void Cookies_save_and_free()
                     (long)difftime(cookie->expires_at, cookies_epoch_time),
                     cookie->name,
                     cookie->value);
+            saved++;
          }
-
          Cookies_free_cookie(cookie);
       }
       Cookies_delete_node(node);
    }
+   dList_free(domains);
+   dList_free(all_cookies);
 
 #ifdef HAVE_LOCKF
    lockf(fd, F_ULOCK, 0);
@@ -424,6 +431,8 @@ static void Cookies_save_and_free()
    fcntl(fileno(file_stream), F_SETLKW, &lck);
 #endif
    fclose(file_stream);
+
+   MSG("Cookies saved: %d.\n", saved);
 }
 
 /*
@@ -540,13 +549,14 @@ static CookieData_t *Cookies_get_LRU(Dlist *cookies)
 
 /*
  * Delete expired cookies.
+ * If node is given, only check those cookies.
  * Note that nodes can disappear if all of their cookies were expired.
  *
  * Return the number of cookies that were expired.
  */
 static int Cookies_rm_expired_cookies(DomainNode *node)
 {
-   Dlist *cookies = node->cookies;
+   Dlist *cookies = node ? node->cookies : all_cookies;
    int removed = 0;
    int i = 0, n = dList_length(cookies);
    time_t now = time(NULL);
@@ -555,9 +565,12 @@ static int Cookies_rm_expired_cookies(DomainNode *node)
       CookieData_t *c = dList_nth_data(cookies, i);
 
       if (difftime(c->expires_at, now) < 0) {
-         dList_remove_fast(node->cookies, c);
-         if (dList_length(node->cookies) == 0)
-            Cookies_delete_node(node);
+         DomainNode *currnode = node ? node :
+              dList_find_sorted(domains, c->domain, Domain_node_by_domain_cmp);
+         dList_remove_fast(currnode->cookies, c);
+         if (dList_length(currnode->cookies) == 0)
+            Cookies_delete_node(currnode);
+         dList_remove_fast(all_cookies, c);
          Cookies_free_cookie(c);
          n--;
          removed++;
@@ -570,16 +583,20 @@ static int Cookies_rm_expired_cookies(DomainNode *node)
 
 /*
  * There are too many cookies. Choose one to remove and delete.
+ * If node is given, select from among its cookies only.
  */
 static void Cookies_too_many(DomainNode *node)
 {
-   CookieData_t *lru = Cookies_get_LRU(node->cookies);
+   CookieData_t *lru = Cookies_get_LRU(node ? node->cookies : all_cookies);
 
    MSG("Too many cookies!\n"
        "Removing LRU cookie for \'%s\': \'%s=%s\'\n", lru->domain,
        lru->name, lru->value);
+   if (!node)
+      node = dList_find_sorted(domains, lru->domain,Domain_node_by_domain_cmp);
 
    dList_remove_fast(node->cookies, lru);
+   dList_remove_fast(all_cookies, lru);
    Cookies_free_cookie(lru);
    if (dList_length(node->cookies) == 0)
       Cookies_delete_node(node);
@@ -598,6 +615,7 @@ static void Cookies_add_cookie(CookieData_t *cookie)
       /* Remove any cookies with the same name and path */
       while ((c = dList_find_custom(domain_cookies, cookie, Cookies_cmp))) {
          dList_remove_fast(domain_cookies, c);
+         dList_remove_fast(all_cookies, c);
          Cookies_free_cookie(c);
       }
    }
@@ -624,10 +642,22 @@ static void Cookies_add_cookie(CookieData_t *cookie)
             domain_cookies = (node) ? node->cookies : NULL;
          }
       }
+      if (dList_length(all_cookies) >= MAX_TOTAL_COOKIES) {
+         if (Cookies_rm_expired_cookies(NULL) == 0) {
+            Cookies_too_many(NULL);
+         } else if (domain_cookies) {
+            /* Our own node might have just been deleted. */
+            node = dList_find_sorted(domains, cookie->domain,
+                                                    Domain_node_by_domain_cmp);
+            domain_cookies = (node) ? node->cookies : NULL;
+         }
+      }
 
       cookie->last_used = cookies_use_counter++;
 
-      /* add cookie to domain list */
+      /* Actually add the cookie! */
+      dList_append(all_cookies, cookie);
+
       if (!domain_cookies) {
          domain_cookies = dList_new(5);
          dList_append(domain_cookies, cookie);
@@ -1137,6 +1167,7 @@ static void Cookies_add_matching_cookies(const char *domain,
             _MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
                  cookie->value, cookie->domain, cookie->path);
             dList_remove_fast(domain_cookies, cookie);
+            dList_remove_fast(all_cookies, cookie);
             Cookies_free_cookie(cookie);
             --i; continue;
          }
