@@ -832,17 +832,41 @@ int main()
    expect(__LINE__, "Cookie: name=val\r\n", "http", "dotdomain.org", "/");
    expect(__LINE__, "Cookie: name=val\r\n", "http", "www.dotdomain.org", "/");
 
+   /* HOST_ONLY */
+   a_Cookies_set("name=val; domain=.hostonly.org", "hostonly.org", "/", NULL);
+   a_Cookies_set("name2=val2", "hostonly.org", "/", NULL);
+   a_Cookies_set("name3=val3; domain=hostonly.org", "hostonly.org", "/", NULL);
+   expect(__LINE__, "Cookie: name=val; name2=val2; name3=val3\r\n", "http",
+          "hostonly.org", "/");
+   a_Cookies_set("name=new; domain=.hostonly.org", "hostonly.org", "/", NULL);
+   expect(__LINE__, "Cookie: name=new; name2=val2; name3=val3\r\n", "http",
+          "hostonly.org", "/");
+   a_Cookies_set("name2=new2", "hostonly.org", "/", NULL);
+   expect(__LINE__, "Cookie: name=new; name2=new2; name3=val3\r\n", "http",
+          "hostonly.org", "/");
+   a_Cookies_set("name3=new3; domain=hostonly.org", "hostonly.org", "/", NULL);
+   expect(__LINE__, "Cookie: name=new; name2=new2; name3=new3\r\n", "http",
+          "hostonly.org", "/");
+
    /* SUBDOMAIN */
    a_Cookies_set("name=val; domain=www.subdomain.com", "subdomain.com", "/",
+                 NULL);
+   a_Cookies_set("name=val; domain=.www.subdomain.com", "subdomain.com", "/",
                  NULL);
    expect(__LINE__, "", "http", "subdomain.com", "/");
    expect(__LINE__, "", "http", "www.subdomain.com", "/");
 
    /* SUPERDOMAIN(?) */
-   a_Cookies_set("name=val; domain=supdomain.com", "www.supdomain.com", "/",
+   a_Cookies_set("name=val; domain=.supdomain.com", "www.supdomain.com", "/",
                  NULL);
-   expect(__LINE__, "Cookie: name=val\r\n", "http", "www.supdomain.com", "/");
-   expect(__LINE__, "Cookie: name=val\r\n", "http", "supdomain.com", "/");
+   a_Cookies_set("name2=val2; domain=supdomain.com", "www.supdomain.com", "/",
+                 NULL);
+   expect(__LINE__, "Cookie: name=val; name2=val2\r\n", "http",
+          "sub2.sub.supdomain.com", "/");
+   expect(__LINE__, "Cookie: name=val; name2=val2\r\n", "http",
+          "www.supdomain.com", "/");
+   expect(__LINE__, "Cookie: name=val; name2=val2\r\n", "http",
+          "supdomain.com", "/");
 
    /* UNRELATED */
    a_Cookies_set("name=val; domain=another.com", "unrelated.com", "/", NULL);
@@ -856,6 +880,13 @@ int main()
    expect(__LINE__, "", "http", "another.com", "/");
    a_Cookies_set("name=val; domain=another.com", "verybadguys.com", "/", NULL);
    expect(__LINE__, "", "http", "another.com", "/");
+
+   a_Cookies_set("name=val; domain=similar.com", "imilar.com", "/", NULL);
+   a_Cookies_set("name2=val2; domain=similar.com", "ssimilar.com", "/", NULL);
+   a_Cookies_set("name3=val3; domain=.similar.com", "imilar.com", "/", NULL);
+   a_Cookies_set("name4=val4; domain=.similar.com", "timilar.com", "/", NULL);
+   a_Cookies_set("name4=val4; domain=.similar.com", "tiimilar.com", "/", NULL);
+   expect(__LINE__, "", "http", "similar.com", "/");
 
    /* SECURE */
    a_Cookies_set("name=val; secure", "secure.com", "/", NULL);

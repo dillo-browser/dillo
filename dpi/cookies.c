@@ -16,10 +16,6 @@
 /* This is written to follow the HTTP State Working Group's
  * draft-ietf-httpstate-cookie-01.txt.
  *
- * We depart from the draft spec's domain format in that, rather than
- * using a host-only flag, we continue to use the .domain notation
- * internally to indicate cookies that may also be returned to subdomains.
- *
  * Info on cookies in the wild:
  *  http://www.ietf.org/mail-archive/web/http-state/current/msg00078.html
  * And dates specifically:
@@ -107,6 +103,7 @@ typedef struct {
    char *domain;
    char *path;
    time_t expires_at;
+   bool_t host_only;
    bool_t secure;
    bool_t session_only;
    long last_used;
@@ -138,7 +135,7 @@ static FILE *file_stream;
 static const char *const cookies_txt_header_str =
 "# HTTP Cookie File\n"
 "# This is a generated file!  Do not edit.\n"
-"# [domain  TRUE  path  secure  expiry_time  name  value]\n\n";
+"# [domain  subdomains  path  secure  expiry_time  name  value]\n\n";
 
 /* The epoch is Jan 1, 1970. When there is difficulty in representing future
  * dates, use the (by far) most likely last representable time in Jan 19, 2038.
@@ -284,7 +281,9 @@ static void Cookies_load_cookies(FILE *stream)
 
          cookie->session_only = FALSE;
          cookie->domain = dStrdup(dStrsep(&line_marker, "\t"));
-         dStrsep(&line_marker, "\t"); /* we use domain always as sufix */
+         piece = dStrsep(&line_marker, "\t");
+         if (piece != NULL && piece[0] == 'F')
+            cookie->host_only = TRUE;
          cookie->path = dStrdup(dStrsep(&line_marker, "\t"));
          piece = dStrsep(&line_marker, "\t");
          if (piece != NULL && piece[0] == 'T')
@@ -414,8 +413,9 @@ static void Cookies_save_and_free()
    while ((node = dList_nth_data(domains, 0))) {
       for (i = 0; (cookie = dList_nth_data(node->cookies, i)); ++i) {
          if (!cookie->session_only && difftime(cookie->expires_at, now) > 0) {
-            fprintf(file_stream, "%s\tTRUE\t%s\t%s\t%ld\t%s\t%s\n",
+            fprintf(file_stream, "%s\t%s\t%s\t%s\t%ld\t%s\t%s\n",
                     cookie->domain,
+                    cookie->host_only ? "FALSE" : "TRUE",
                     cookie->path,
                     cookie->secure ? "TRUE" : "FALSE",
                     (long)difftime(cookie->expires_at, cookies_epoch_time),
@@ -622,7 +622,7 @@ static void Cookies_add_cookie(CookieData_t *cookie)
    domain_cookies = (node) ? node->cookies : NULL;
 
    if (domain_cookies) {
-      /* Remove any cookies with the same name and path */
+      /* Remove any cookies with the same name, path, and host-only values. */
       while ((c = dList_find_custom(domain_cookies, cookie, Cookies_cmp))) {
          dList_remove(domain_cookies, c);
          dList_remove_fast(all_cookies, c);
@@ -893,16 +893,15 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
 }
 
 /*
- * Compare cookies by name and path (return 0 if equal)
+ * Compare cookies by host_only, name, and path. Return 0 if equal.
  */
 static int Cookies_cmp(const void *a, const void *b)
 {
    const CookieData_t *ca = a, *cb = b;
-   int ret;
 
-   if (!(ret = strcmp(ca->name, cb->name)))
-      ret = strcmp(ca->path, cb->path);
-   return ret;
+   return (ca->host_only != cb->host_only) ||
+          (strcmp(ca->name, cb->name) != 0) ||
+          (strcmp(ca->path, cb->path) != 0);
 }
 
 /*
@@ -1071,13 +1070,8 @@ static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host)
 
    if (!cookie->domain) {
       cookie->domain = dStrdup(host);
+      cookie->host_only = TRUE;
       return TRUE;
-   }
-
-   if (cookie->domain[0] != '.' && !Cookies_domain_is_ip(cookie->domain)) {
-      char *d = dStrconcat(".", cookie->domain, NULL);
-      dFree(cookie->domain);
-      cookie->domain = d;
    }
 
    if (!Cookies_domain_matches(host, cookie->domain))
@@ -1145,8 +1139,11 @@ static int Cookies_set(char *cookie_string, char *url_host,
  * Compare the cookie with the supplied data to see whether it matches
  */
 static bool_t Cookies_match(CookieData_t *cookie, const char *url_path,
-                            bool_t is_ssl)
+                            bool_t host_only_val, bool_t is_ssl)
 {
+   if (cookie->host_only != host_only_val)
+      return FALSE;
+
    /* Insecure cookies matches both secure and insecure urls, secure
       cookies matches only secure urls */
    if (cookie->secure && !is_ssl)
@@ -1161,6 +1158,7 @@ static bool_t Cookies_match(CookieData_t *cookie, const char *url_path,
 
 static void Cookies_add_matching_cookies(const char *domain,
                                          const char *url_path,
+                                         bool_t host_only_val,
                                          Dlist *matching_cookies,
                                          bool_t is_ssl)
 {
@@ -1182,7 +1180,7 @@ static void Cookies_add_matching_cookies(const char *domain,
             --i; continue;
          }
          /* Check if the cookie matches the requesting URL */
-         if (Cookies_match(cookie, url_path, is_ssl)) {
+         if (Cookies_match(cookie, url_path, host_only_val, is_ssl)) {
             int j;
             CookieData_t *curr;
             uint_t path_length = strlen(cookie->path);
@@ -1212,7 +1210,8 @@ static char *Cookies_get(char *url_host, char *url_path,
    char *domain_str, *str;
    CookieData_t *cookie;
    Dlist *matching_cookies;
-   bool_t is_ssl;
+   bool_t is_ssl, is_ip_addr, host_only_val;
+
    Dstr *cookie_dstring;
    int i;
 
@@ -1224,17 +1223,46 @@ static char *Cookies_get(char *url_host, char *url_path,
    /* Check if the protocol is secure or not */
    is_ssl = (!dStrcasecmp(url_scheme, "https"));
 
-   for (domain_str = (char *) url_host;
-        domain_str != NULL && *domain_str;
-        domain_str = strchr(domain_str+1, '.')) {
-      Cookies_add_matching_cookies(domain_str, url_path, matching_cookies,
-                                   is_ssl);
-   }
-   if (!Cookies_domain_is_ip(url_host)) {
+   is_ip_addr = Cookies_domain_is_ip(url_host);
+
+   /* If a cookie is set that lacks a Domain attribute, its domain is set to
+    * the server's host and the host_only flag is set for that cookie. Such a
+    * cookie can only be sent back to that host. Cookies with Domain attrs do
+    * not have the host_only flag set, and may be sent to subdomains. Domain
+    * attrs can have leading dots, which should be ignored for matching
+    * purposes.
+    */
+   host_only_val = FALSE;
+   if (!is_ip_addr) {
+      /* e.g., sub.example.com set a cookie with domain ".sub.example.com". */
       domain_str = dStrconcat(".", url_host, NULL);
-      Cookies_add_matching_cookies(domain_str, url_path, matching_cookies,
-                                   is_ssl);
+      Cookies_add_matching_cookies(domain_str, url_path, host_only_val,
+                                   matching_cookies, is_ssl);
       dFree(domain_str);
+   }
+   host_only_val = TRUE;
+   /* e.g., sub.example.com set a cookie with no domain attribute. */
+   Cookies_add_matching_cookies(url_host, url_path, host_only_val,
+                                matching_cookies, is_ssl);
+   host_only_val = FALSE;
+   /* e.g., sub.example.com set a cookie with domain "sub.example.com". */
+   Cookies_add_matching_cookies(url_host, url_path, host_only_val,
+                                matching_cookies, is_ssl);
+
+   if (!is_ip_addr) {
+      for (domain_str = strchr(url_host+1, '.');
+           domain_str != NULL && *domain_str;
+           domain_str = strchr(domain_str+1, '.')) {
+         /* e.g., sub.example.com set a cookie with domain ".example.com". */
+         Cookies_add_matching_cookies(domain_str, url_path, host_only_val,
+                                      matching_cookies, is_ssl);
+         if (domain_str[1]) {
+            domain_str++;
+            /* e.g., sub.example.com set a cookie with domain "example.com".*/
+            Cookies_add_matching_cookies(domain_str, url_path, host_only_val,
+                                         matching_cookies, is_ssl);
+         }
+      }
    }
 
    /* Found the cookies, now make the string */
