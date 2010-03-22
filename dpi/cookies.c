@@ -291,9 +291,14 @@ static void Cookies_load_cookies(FILE *stream)
             cookie->secure = TRUE;
          piece = dStrsep(&line_marker, "\t");
          if (piece != NULL) {
+            /* There is some problem with simply putting the maximum value
+             * into tm.tm_sec (although a value close to it works).
+             */
+            long seconds = strtol(piece, NULL, 10);
             struct tm tm;
             Cookies_tm_init(&tm);
-            tm.tm_sec += strtol(piece, NULL, 10);
+            tm.tm_min += seconds / 60;
+            tm.tm_sec += seconds % 60;
             cookie->expires_at = mktime(&tm);
          } else {
             cookie->expires_at = (time_t) -1;
