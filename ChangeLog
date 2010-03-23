@@ -13,6 +13,8 @@ dillo-2.2.1 [not released yet]
  - Handle zero-width space.
  - Fix segfault closing window from WM.
  - Limit total number of cookies.
+ - Use the suffix/subdomain field in cookies.txt.
+ - Follow most specific matching rule in cookiesrc.
    Patches: corvid
 
 -----------------------------------------------------------------------------
