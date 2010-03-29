@@ -15,6 +15,7 @@ dillo-2.2.1 [not released yet]
  - Limit total number of cookies.
  - Use the suffix/subdomain field in cookies.txt.
  - Follow most specific matching rule in cookiesrc.
+ - Fix segfault with form inputs and repush for stylesheets.
    Patches: corvid
 
 -----------------------------------------------------------------------------
