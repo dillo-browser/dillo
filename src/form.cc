@@ -248,6 +248,8 @@ static void Html_add_input(DilloHtml *html, DilloHtmlInputType type,
       int ni = html->inputs_outside_form->size();
       html->inputs_outside_form->increase();
       html->inputs_outside_form->set(ni, input);
+
+      input->setEnabled(false);
    }
 }
 
