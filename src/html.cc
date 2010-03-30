@@ -3497,7 +3497,8 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
          break;
 
       if (S_TOP(html)->parse_mode != DILLO_HTML_PARSE_MODE_PRE &&
-         html->styleEngine->style ()->whiteSpace == WHITE_SPACE_PRE) {
+          (html->styleEngine->style ()->whiteSpace == WHITE_SPACE_PRE ||
+           html->styleEngine->style ()->whiteSpace == WHITE_SPACE_PRE_WRAP)) {
          S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_PRE;
          html->pre_column = 0;
          html->PreFirstChar = true;

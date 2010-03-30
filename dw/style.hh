@@ -304,7 +304,9 @@ enum TextDecoration {
 enum WhiteSpace {
    WHITE_SPACE_NORMAL,
    WHITE_SPACE_PRE,
-   WHITE_SPACE_NOWRAP
+   WHITE_SPACE_NOWRAP,
+   WHITE_SPACE_PRE_WRAP,
+   WHITE_SPACE_PRE_LINE,
 };
 
 /**

@@ -111,7 +111,7 @@ static const char *const Css_vertical_align_vals[] = {
 };
 
 static const char *const Css_white_space_vals[] = {
-   "normal", "pre", "nowrap", NULL
+   "normal", "pre", "nowrap", "pre-wrap", "pre-line", NULL
 };
 
 const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {

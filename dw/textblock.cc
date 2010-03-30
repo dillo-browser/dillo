@@ -238,11 +238,12 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       for (lineIndex = wrapRef; lineIndex < lines->size (); lineIndex++) {
          //DBG_MSGF (widget, "extremes", 0, "line %d", lineIndex);
          //DBG_MSG_START (widget);
+         core::style::WhiteSpace ws;
 
          line = lines->getRef (lineIndex);
-         nowrap =
-            words->getRef(line->firstWord)->style->whiteSpace
-            != core::style::WHITE_SPACE_NORMAL;
+         ws = words->getRef(line->firstWord)->style->whiteSpace;
+         nowrap = ws == core::style::WHITE_SPACE_PRE ||
+                  ws == core::style::WHITE_SPACE_NOWRAP;
 
          //DEBUG_MSG (DEBUG_SIZE_LEVEL, "   line %d (of %d), nowrap = %d\n",
          //           lineIndex, page->num_lines, nowrap);
@@ -900,7 +901,8 @@ void Textblock::wordWrap(int wordIndex)
          /* previous word is a break */
          newLine = true;
          newPar = true;
-      } else if (word->style->whiteSpace != core::style::WHITE_SPACE_NORMAL) {
+      } else if (word->style->whiteSpace == core::style::WHITE_SPACE_NOWRAP ||
+                 word->style->whiteSpace == core::style::WHITE_SPACE_PRE) {
          //DBG_MSGF (page, "wrap", 0, "no wrap (white_space = %d)",
          //          word->style->white_space);
          newLine = false;
@@ -986,7 +988,8 @@ void Textblock::wordWrap(int wordIndex)
    lastLineParMin += wordExtremes.maxWidth;    /* Why maxWidth? */
    lastLineParMax += wordExtremes.maxWidth;
 
-   if (word->style->whiteSpace != core::style::WHITE_SPACE_NORMAL) {
+   if (word->style->whiteSpace == core::style::WHITE_SPACE_NOWRAP ||
+       word->style->whiteSpace == core::style::WHITE_SPACE_PRE) {
       lastLine->parMin += wordExtremes.minWidth + lastSpace;
       /* This may also increase the accumulated minimum word width.  */
       lastLine->maxWordMin =
