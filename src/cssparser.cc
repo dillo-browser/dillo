@@ -89,6 +89,10 @@ static const char *const Css_list_style_position_enum_vals[] = {
    "inside", "outside", NULL
 };
 
+static const char *const Css_line_height_enum_vals[] = {
+   "normal", NULL
+};
+
 static const char *const Css_list_style_type_enum_vals[] = {
    "disc", "circle", "square", "decimal", "decimal-leading-zero",
    "lower-roman", "upper-roman", "lower-greek", "lower-alpha",
@@ -168,7 +172,9 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"left", {CSS_TYPE_UNUSED}, NULL},
    {"letter-spacing", {CSS_TYPE_ENUM, CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED},
     Css_letter_spacing_enum_vals},
-   {"line-height", {CSS_TYPE_UNUSED}, NULL},
+   {"line-height",
+    {CSS_TYPE_ENUM, CSS_TYPE_LENGTH_PERCENTAGE_NUMBER, CSS_TYPE_UNUSED},
+    Css_line_height_enum_vals},
    {"list-style-image", {CSS_TYPE_UNUSED}, NULL},
    {"list-style-position", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_list_style_position_enum_vals},
@@ -661,6 +667,7 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
          break;
 
       case CSS_TYPE_LENGTH_PERCENTAGE:
+      case CSS_TYPE_LENGTH_PERCENTAGE_NUMBER:
       case CSS_TYPE_LENGTH:
          if  (tval[0] == '-')
             return false;
@@ -831,17 +838,17 @@ bool CssParser::parseValue(CssPropertyName prop,
       break;
 
    case CSS_TYPE_LENGTH_PERCENTAGE:
+   case CSS_TYPE_LENGTH_PERCENTAGE_NUMBER:
    case CSS_TYPE_LENGTH:
    case CSS_TYPE_SIGNED_LENGTH:
       if (ttype == CSS_TK_DECINT || ttype == CSS_TK_FLOAT) {
          fval = atof(tval);
-         lentype = CSS_LENGTH_TYPE_PX;  /* Actually, there must be a unit,
-                                         * except for num == 0. */
-
-         ret = true;
+         lentype = CSS_LENGTH_TYPE_NONE;
 
          nextToken();
-         if (ttype == CSS_TK_SYMBOL) {
+         if (!spaceSeparated && ttype == CSS_TK_SYMBOL) {
+            ret = true;
+
             if (dStrcasecmp(tval, "px") == 0) {
                lentype = CSS_LENGTH_TYPE_PX;
                nextToken();
@@ -870,14 +877,26 @@ bool CssParser::parseValue(CssPropertyName prop,
             } else if (dStrcasecmp(tval, "ex") == 0) {
                lentype = CSS_LENGTH_TYPE_EX;
                nextToken();
+            } else {
+               ret = false;
             }
-         } else if (type == CSS_TYPE_LENGTH_PERCENTAGE &&
+         } else if (!spaceSeparated &&
+                    (type == CSS_TYPE_LENGTH_PERCENTAGE ||
+                     type == CSS_TYPE_LENGTH_PERCENTAGE_NUMBER) &&
                     ttype == CSS_TK_CHAR &&
                     tval[0] == '%') {
             fval /= 100;
             lentype = CSS_LENGTH_TYPE_PERCENTAGE;
+            ret = true;
             nextToken();
          }
+
+         /* Allow numbers without unit only for 0 or
+          * CSS_TYPE_LENGTH_PERCENTAGE_NUMBER
+          */
+         if (lentype == CSS_LENGTH_TYPE_NONE &&
+            (type == CSS_TYPE_LENGTH_PERCENTAGE_NUMBER || fval == 0.0))
+            ret = true;
 
          val->intVal = CSS_CREATE_LENGTH(fval, lentype);
       } else if (ttype == CSS_TK_SYMBOL && dStrcasecmp(tval, "auto") == 0) {

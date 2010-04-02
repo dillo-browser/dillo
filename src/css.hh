@@ -36,6 +36,7 @@ typedef enum {
                                    in this particular case (e.g.
                                    'margin-*-width'). */
    CSS_TYPE_SIGNED_LENGTH,      /* As CSS_TYPE_LENGTH but may be negative. */
+   CSS_TYPE_LENGTH_PERCENTAGE_NUMBER,  /* <length> or <percentage>, or <number> */
    CSS_TYPE_COLOR,              /* Represented as integer. */
    CSS_TYPE_FONT_WEIGHT,        /* this very special and only used by
                                    'font-weight' */
@@ -70,6 +71,7 @@ typedef enum {
 typedef int CssLength;
 
 typedef enum {
+   CSS_LENGTH_TYPE_NONE,
    CSS_LENGTH_TYPE_PX,
    CSS_LENGTH_TYPE_MM,         /* "cm", "in", "pt" and "pc" are converted into
                                   millimeters. */
@@ -94,6 +96,7 @@ inline CssLength CSS_CREATE_LENGTH (float v, CssLengthType t) {
       else if (iv < -CSS_LENGTH_INT_MAX)
          iv = -CSS_LENGTH_INT_MAX;
       return iv << 3 | t;
+   case CSS_LENGTH_TYPE_NONE:
    case CSS_LENGTH_TYPE_MM:
    case CSS_LENGTH_TYPE_EM:
    case CSS_LENGTH_TYPE_EX:
@@ -120,6 +123,7 @@ inline float CSS_LENGTH_VALUE (CssLength l) {
    switch (CSS_LENGTH_TYPE(l)) {
    case CSS_LENGTH_TYPE_PX:
       return (float) (l >> 3);
+   case CSS_LENGTH_TYPE_NONE:
    case CSS_LENGTH_TYPE_MM:
    case CSS_LENGTH_TYPE_EM:
    case CSS_LENGTH_TYPE_EX:
