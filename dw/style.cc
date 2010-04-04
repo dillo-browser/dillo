@@ -45,9 +45,7 @@ void StyleAttrs::initValues ()
    listStyleType = LIST_STYLE_TYPE_DISC;
    valign = VALIGN_BASELINE;
    backgroundColor = NULL;
-   width = LENGTH_AUTO;
-   height = LENGTH_AUTO;
-
+   width = height = lineHeight = LENGTH_AUTO;
    margin.setVal (0);
    borderWidth.setVal (0);
    padding.setVal (0);
@@ -119,6 +117,7 @@ bool StyleAttrs::equals (object::Object *other) {
        vBorderSpacing == otherAttrs->vBorderSpacing &&
        width == otherAttrs->width &&
        height == otherAttrs->height &&
+       lineHeight == otherAttrs->lineHeight &&
        margin.equals (&otherAttrs->margin) &&
        borderWidth.equals (&otherAttrs->borderWidth) &&
        padding.equals (&otherAttrs->padding) &&
@@ -152,6 +151,7 @@ int StyleAttrs::hashValue () {
       vBorderSpacing +
       width +
       height +
+      lineHeight +
       margin.hashValue () +
       borderWidth.hashValue () +
       padding.hashValue () +
@@ -238,6 +238,7 @@ void Style::copyAttrs (StyleAttrs *attrs)
    vBorderSpacing = attrs->vBorderSpacing;
    width = attrs->width;
    height = attrs->height;
+   lineHeight = attrs->lineHeight;
    margin = attrs->margin;
    borderWidth = attrs->borderWidth;
    padding = attrs->padding;

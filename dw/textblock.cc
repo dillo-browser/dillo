@@ -1565,13 +1565,38 @@ void Textblock::calcTextSize (const char *text, size_t len,
    size->ascent = style->font->ascent;
    size->descent = style->font->descent;
 
+   /*
+    * For 'normal' line height, just use ascent and descent from font.
+    * For absolute/percentage, line height is relative to font size, which
+    * is (irritatingly) smaller than ascent+descent.
+    */
+   if (style->lineHeight != core::style::LENGTH_AUTO) {
+      int height, leading;
+      float factor = style->font->size;
+
+      factor /= (style->font->ascent + style->font->descent);
+
+      size->ascent = size->ascent * factor + 0.5;
+      size->descent = size->descent * factor + 0.5;
+
+      if (core::style::isAbsLength (style->lineHeight))
+         height = core::style::absLengthVal(style->lineHeight);
+      else
+         height = core::style::perLengthVal(style->lineHeight) *
+                  style->font->size;
+      leading = height - style->font->size;
+
+      size->ascent += leading / 2;
+      size->descent += leading - (leading / 2);
+   }
+
    /* In case of a sub or super script we increase the word's height and
     * potentially the line's height.
     */
    if (style->valign == core::style::VALIGN_SUB)
-      size->descent += (size->ascent / 3);
+      size->descent += (style->font->ascent / 3);
    else if (style->valign == core::style::VALIGN_SUPER)
-      size->ascent += (size->ascent / 2);
+      size->ascent += (style->font->ascent / 2);
 }
 
 

@@ -188,6 +188,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    FontAttrs fontAttrs = *attrs->font;
    Font *parentFont = stack->get (stack->size () - 2).style->font;
    char *c, *fontName;
+   int lineHeight;
 
    /* Determine font first so it can be used to resolve relative lenths. */
    for (int i = 0; i < props->size (); i++) {
@@ -397,6 +398,20 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CSS_PROPERTY_DISPLAY:
             attrs->display = (DisplayType) p->value.intVal;
+            break;
+         case CSS_PROPERTY_LINE_HEIGHT:
+            if (p->type == CSS_TYPE_ENUM) { //only valid enum value is "normal"
+               attrs->lineHeight = dw::core::style::LENGTH_AUTO;
+            } else if (p->type == CSS_TYPE_LENGTH_PERCENTAGE_NUMBER) {
+               if (CSS_LENGTH_TYPE (p->value.intVal) == CSS_LENGTH_TYPE_NONE) {
+                  attrs->lineHeight =
+                     createPerLength(CSS_LENGTH_VALUE(p->value.intVal));
+               } else {
+                  computeValue (&lineHeight, p->value.intVal, attrs->font,
+                                attrs->font->size);
+                  attrs->lineHeight = createAbsLength(lineHeight);
+               }
+            }
             break;
          case CSS_PROPERTY_LIST_STYLE_POSITION:
             attrs->listStylePosition = (ListStylePosition) p->value.intVal;
