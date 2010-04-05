@@ -110,7 +110,7 @@ void send_html_text(Dsh *sh, int data_size)
                      "<html><head>\n"
                      "<style type=\"text/css\">PRE {white-space: pre-wrap}\n"
                      "</style>\n"
-                     "</head><body>\n<table cellpadding='0'>\n");
+                     "</head><body id=\"dillo_vs\">\n<table cellpadding='0'>\n");
 
    while (bytes_read < data_size &&
           (src_str = a_Dpip_dsh_read_token(sh, 1))) {
