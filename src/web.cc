@@ -103,12 +103,13 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
 /*
  * Allocate and set safe values for a DilloWeb structure
  */
-DilloWeb* a_Web_new(const DilloUrl *url)
+DilloWeb* a_Web_new(const DilloUrl *url, const DilloUrl *requester)
 {
    DilloWeb *web= dNew(DilloWeb, 1);
 
    _MSG(" a_Web_new: ValidWebs ==> %d\n", dList_length(ValidWebs));
    web->url = a_Url_dup(url);
+   web->requester = a_Url_dup(requester);
    web->bw = NULL;
    web->flags = 0;
    web->Image = NULL;
@@ -136,6 +137,7 @@ void a_Web_free(DilloWeb *web)
 {
    if (!web) return;
    a_Url_free(web->url);
+   a_Url_free(web->requester);
    a_Image_unref(web->Image);
    dFree(web->filename);
    dList_remove(ValidWebs, (void *)web);

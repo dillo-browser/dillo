@@ -634,3 +634,121 @@ char *a_Url_string_strip_delimiters(const char *str)
    }
    return new_str;
 }
+
+/*
+ * Is the provided hostname an IP address?
+ */
+static bool_t Url_host_is_ip(const char *host)
+{
+   uint_t len;
+
+   if (!host || !*host)
+      return FALSE;
+
+   len = strlen(host);
+
+   if (len == strspn(host, "0123456789.")) {
+      _MSG("an IPv4 address\n");
+      return TRUE;
+   }
+   if (*host == '[' &&
+       (len == strspn(host, "0123456789abcdefABCDEF:.[]"))) {
+      /* The precise format is shown in section 3.2.2 of rfc 3986 */
+      _MSG("an IPv6 address\n");
+      return TRUE;
+   }
+   return FALSE;
+}
+
+/*
+ * How many internal dots are in the public portion of this hostname?
+ * e.g., for "www.dillo.org", it is one because everything under "dillo.org",
+ * as a .org domain, is part of one organization.
+ *
+ * Of course this is only a simple and imperfect approximation of
+ * organizational boundaries.
+ */
+static uint_t Url_host_public_internal_dots(const char *host)
+{
+   uint_t ret = 1;
+
+   if (host) {
+      int start, after, tld_len;
+
+      /* We may be able to trust the format of the host string more than
+       * I am here. Trailing dots and no dots are real possibilities, though.
+       */
+      after = strlen(host);
+      if (after > 0 && host[after - 1] == '.')
+         after--;
+      start = after;
+      while (start > 0 && host[start - 1] != '.')
+         start--;
+      tld_len = after - start;
+
+      if (tld_len > 0) {
+         /* These TLDs were chosen by examining the current publicsuffix list
+          * in January 2010 and picking out those where it was simplest for
+          * them to describe the situation by beginning with a "*.[tld]" rule.
+          */
+         const char *const tlds[] = {"ar","au","bd","bn","bt","ck","cy","do",
+                                     "eg","er","et","fj","fk","gt","gu","id",
+                                     "il","jm","ke","kh","kw","ml","mm","mt",
+                                     "mz","ni","np","nz","om","pg","py","qa",
+                                     "sv","tr","uk","uy","ve","ye","yu","za",
+                                     "zm","zw"};
+         uint_t i, tld_num = sizeof(tlds) / sizeof(tlds[0]);
+
+         for (i = 0; i < tld_num; i++) {
+            if (strlen(tlds[i]) == (uint_t) tld_len &&
+                !dStrncasecmp(tlds[i], host + start, tld_len)) {
+               MSG("TLD code matched %s\n", tlds[i]);
+               ret++;
+               break;
+            }
+         }
+      }
+   }
+   return ret;
+}
+
+/*
+ * Given a URL host string, return the portion that is public, i.e., the
+ * domain that is in a registry outside the organization.
+ * For 'www.dillo.org', that would be 'dillo.org'.
+ */
+const char *a_Url_host_find_public_suffix(const char *host)
+{
+   const char *s;
+   uint_t dots;
+
+   if (!host || !*host || Url_host_is_ip(host))
+      return host;
+
+   s = host;
+
+   while (s[1])
+      s++;
+
+   if (s > host && *s == '.') {
+      /* don't want to deal with trailing dot */
+      s--;
+   }
+
+   dots = Url_host_public_internal_dots(host);
+
+   /* With a proper host string, we should not be pointing to a dot now. */
+
+   while (s > host) {
+      if (s[-1] == '.') {
+         if (dots == 0)
+            break;
+         else
+            dots--;
+      }
+      s--;
+   }
+
+   MSG("public suffix of %s is %s\n", host, s);
+   return s;
+}

@@ -191,7 +191,8 @@ static void Nav_stack_clean(BrowserWindow *bw)
  * This function requests the page's root-URL; images and related stuff
  * are fetched directly by the HTML module.
  */
-static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
+static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url,
+                         const DilloUrl *requester, int offset)
 {
    DilloUrl *old_url;
    bool_t MustLoad, ForceReload, Repush, IgnoreScroll;
@@ -232,7 +233,7 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 
       // a_Menu_pagemarks_new(bw);
 
-      Web = a_Web_new(url);
+      Web = a_Web_new(url, requester);
       Web->bw = bw;
       Web->flags |= WEB_RootUrl;
       if ((ClientKey = a_Capi_open_url(Web, NULL, NULL)) != 0) {
@@ -341,7 +342,8 @@ void a_Nav_expect_done(BrowserWindow *bw)
  * - Set bw to expect the URL data
  * - Ask the cache to feed back the requested URL (via Nav_open_url)
  */
-void a_Nav_push(BrowserWindow *bw, const DilloUrl *url)
+void a_Nav_push(BrowserWindow *bw, const DilloUrl *url,
+                                   const DilloUrl *requester)
 {
    dReturn_if_fail (bw != NULL);
 
@@ -353,7 +355,7 @@ void a_Nav_push(BrowserWindow *bw, const DilloUrl *url)
    a_Nav_cancel_expect(bw);
    bw->nav_expect_url = a_Url_dup(url);
    bw->nav_expecting = TRUE;
-   Nav_open_url(bw, url, 0);
+   Nav_open_url(bw, url, requester, 0);
 }
 
 /*
@@ -370,7 +372,7 @@ static void Nav_repush(BrowserWindow *bw)
       a_Url_set_flags(url, URL_FLAGS(url) | URL_ReloadFromCache);
       bw->nav_expect_url = a_Url_dup(url);
       bw->nav_expecting = TRUE;
-      Nav_open_url(bw, url, 0);
+      Nav_open_url(bw, url, NULL, 0);
       a_Url_free(url);
    }
 }
@@ -407,7 +409,7 @@ static void Nav_redirection0_callback(void *data)
 
    if (bw->meta_refresh_status == 2) {
       Nav_stack_move_ptr(bw, -1);
-      a_Nav_push(bw, bw->meta_refresh_url);
+      a_Nav_push(bw, bw->meta_refresh_url,a_History_get_url(NAV_TOP_UIDX(bw)));
    }
    a_Url_free(bw->meta_refresh_url);
    bw->meta_refresh_url = NULL;
@@ -441,7 +443,7 @@ void a_Nav_back(BrowserWindow *bw)
    a_Nav_cancel_expect(bw);
    if (--idx >= 0){
       a_UIcmd_set_msg(bw, "");
-      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), -1);
+      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), NULL, -1);
    }
 }
 
@@ -455,7 +457,7 @@ void a_Nav_forw(BrowserWindow *bw)
    a_Nav_cancel_expect(bw);
    if (++idx < a_Nav_stack_size(bw)) {
       a_UIcmd_set_msg(bw, "");
-      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), +1);
+      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), NULL, +1);
    }
 }
 
@@ -464,7 +466,7 @@ void a_Nav_forw(BrowserWindow *bw)
  */
 void a_Nav_home(BrowserWindow *bw)
 {
-   a_Nav_push(bw, prefs.home);
+   a_Nav_push(bw, prefs.home, NULL);
 }
 
 /*
@@ -499,7 +501,7 @@ static void Nav_reload_callback(void *data)
          a_Url_set_flags(r_url, URL_FLAGS(r_url) & ~URL_SpamSafe);
          bw->nav_expect_url = r_url;
          bw->nav_expecting = TRUE;
-         Nav_open_url(bw, r_url, 0);
+         Nav_open_url(bw, r_url, NULL, 0);
       }
    }
 }
@@ -526,7 +528,7 @@ void a_Nav_jump(BrowserWindow *bw, int offset, int new_bw)
       a_UIcmd_open_url_nw(bw, a_History_get_url(NAV_UIDX(bw,idx)));
    } else {
       a_Nav_cancel_expect(bw);
-      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), offset);
+      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), NULL, offset);
       a_UIcmd_set_buttons_sens(bw);
    }
 }
@@ -563,7 +565,7 @@ static void Nav_save_cb(int Op, CacheClient_t *Client)
 void a_Nav_save_url(BrowserWindow *bw,
                     const DilloUrl *url, const char *filename)
 {
-   DilloWeb *Web = a_Web_new(url);
+   DilloWeb *Web = a_Web_new(url, NULL);
    Web->bw = bw;
    Web->filename = dStrdup(filename);
    Web->flags |= WEB_Download;

@@ -22,6 +22,8 @@ typedef struct _DilloWeb DilloWeb;
 
 struct _DilloWeb {
   DilloUrl *url;              /* Requested URL */
+  DilloUrl *requester;        /* URL that caused this request, or
+                               * NULL if user-initiated. */
   BrowserWindow *bw;          /* The requesting browser window [reference] */
   int flags;                  /* Additional info */
 
@@ -34,7 +36,7 @@ struct _DilloWeb {
 };
 
 void a_Web_init(void);
-DilloWeb* a_Web_new (const DilloUrl* url);
+DilloWeb* a_Web_new (const DilloUrl* url, const DilloUrl *requester);
 int a_Web_valid(DilloWeb *web);
 void a_Web_free (DilloWeb*);
 int a_Web_dispatch_by_type (const char *Type, DilloWeb *web,

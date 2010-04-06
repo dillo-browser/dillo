@@ -612,7 +612,7 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
  */
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 {
-   a_Nav_push(bw, url);
+   a_Nav_push(bw, url, NULL);
    if (BW2UI(bw)->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
       BW2UI(bw)->set_panelmode(UI_HIDDEN);
    a_UIcmd_focus_main_area(bw);
@@ -624,7 +624,7 @@ static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
     * Location if we don't yet have an URL, main otherwise.
     */
    if (url) {
-      a_Nav_push(new_bw, url);
+      a_Nav_push(new_bw, url, NULL);
       BW2UI(new_bw)->focus_main();
    } else {
       BW2UI(new_bw)->focus_location();

@@ -105,8 +105,8 @@ static const char *Html_get_attr2(DilloHtml *html,
                                   const char *attrname,
                                   int tag_parsing_flags);
 static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof);
-static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
-                            DilloImage *image);
+static bool Html_load_image(BrowserWindow *bw, DilloUrl *url,
+                            const DilloUrl *requester, DilloImage *image);
 static void Html_callback(int Op, CacheClient_t *Client);
 static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
 
@@ -654,12 +654,21 @@ void DilloHtml::loadImages (const DilloUrl *pattern)
 {
    dReturn_if_fail (bw->nav_expecting == FALSE);
 
+   /* If the user asked for a specific URL, the user (NULL) is the requester,
+    * but if the user just asked for all URLs, use the page URL as the
+    * requester. If the possible patterns become more complex, it might be
+    * good to have the caller supply the requester instead.
+    */
+   const DilloUrl *requester = pattern ? NULL : this->page_url;
+
    for (int i = 0; i < images->size(); i++) {
       if (images->get(i)->image) {
          if ((!pattern) || (!a_Url_cmp(images->get(i)->url, pattern))) {
-            Html_load_image(bw, images->get(i)->url, images->get(i)->image);
-            a_Image_unref (images->get(i)->image);
-            images->get(i)->image = NULL;  // web owns it now
+            if (Html_load_image(bw, images->get(i)->url, requester,
+                                images->get(i)->image)) {
+               a_Image_unref (images->get(i)->image);
+               images->get(i)->image = NULL;  // web owns it now
+            }
          }
       }
    }
@@ -2089,9 +2098,10 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
 
    load_now = prefs.load_images ||
               (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached);
-   Html_add_new_htmlimage(html, &url, load_now ? NULL : Image);
+   bool loading = false;
    if (load_now)
-      Html_load_image(html->bw, url, Image);
+      loading = Html_load_image(html->bw, url, html->page_url, Image);
+   Html_add_new_htmlimage(html, &url, loading ? NULL : Image);
 
    dFree(tooltip_str);
    dFree(width_ptr);
@@ -2103,13 +2113,13 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
 /*
  * Tell cache to retrieve image
  */
-static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
-                            DilloImage *Image)
+static bool Html_load_image(BrowserWindow *bw, DilloUrl *url,
+                            const DilloUrl *requester, DilloImage *Image)
 {
    DilloWeb *Web;
    int ClientKey;
    /* Fill a Web structure for the cache query */
-   Web = a_Web_new(url);
+   Web = a_Web_new(url, requester);
    Web->bw = bw;
    Web->Image = Image;
    a_Image_ref(Image);
@@ -2119,6 +2129,7 @@ static void Html_load_image(BrowserWindow *bw, DilloUrl *url,
       a_Bw_add_client(bw, ClientKey, 0);
       a_Bw_add_url(bw, url);
    }
+   return ClientKey != 0;
 }
 
 /*
@@ -2938,7 +2949,7 @@ void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
    } else {
       /* Fill a Web structure for the cache query */
       int ClientKey;
-      DilloWeb *Web = a_Web_new(url);
+      DilloWeb *Web = a_Web_new(url, html->page_url);
       Web->bw = html->bw;
       if ((ClientKey = a_Capi_open_url(Web, Html_css_load_callback, NULL))) {
          ++html->bw->NumPendingStyleSheets;

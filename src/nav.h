@@ -14,7 +14,8 @@ extern "C" {
 #endif /* __cplusplus */
 
 void a_Nav_redirection0(BrowserWindow *bw, const DilloUrl *new_url);
-void a_Nav_push(BrowserWindow *bw, const DilloUrl *url);
+void a_Nav_push(BrowserWindow *bw, const DilloUrl *url,
+                const DilloUrl *requester);
 void a_Nav_repush(BrowserWindow *bw);
 void a_Nav_back(BrowserWindow *bw);
 void a_Nav_forw(BrowserWindow *bw);

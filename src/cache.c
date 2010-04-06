@@ -941,7 +941,7 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
          NewUrl = a_Url_new(URL_STR_(entry->Location), URL_STR_(entry->Url));
          if (entry->Flags & CA_TempRedirect)
             a_Url_set_flags(NewUrl, URL_FLAGS(NewUrl) | URL_E2EQuery);
-         a_Nav_push(bw, NewUrl);
+         a_Nav_push(bw, NewUrl, entry->Url);
          a_Url_free(NewUrl);
       } else {
          /* Sub entity redirection (most probably an image) */
