@@ -702,7 +702,7 @@ static uint_t Url_host_public_internal_dots(const char *host)
          for (i = 0; i < tld_num; i++) {
             if (strlen(tlds[i]) == (uint_t) tld_len &&
                 !dStrncasecmp(tlds[i], host + start, tld_len)) {
-               MSG("TLD code matched %s\n", tlds[i]);
+               _MSG("TLD code matched %s\n", tlds[i]);
                ret++;
                break;
             }
