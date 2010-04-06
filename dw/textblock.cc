@@ -796,8 +796,8 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
    //                    lastLine->parMax);
 
    lastLine->firstWord = wordIndex;
-   lastLine->boxAscent = 0;
-   lastLine->boxDescent = 0;
+   lastLine->boxAscent = lastLine->contentAscent = 0;
+   lastLine->boxDescent = lastLine->contentDescent = 0;
    lastLine->marginDescent = 0;
    lastLine->breakSpace = 0;
    lastLine->leftOffset = 0;
@@ -933,6 +933,10 @@ void Textblock::wordWrap(int wordIndex)
    lastLine->lastWord = wordIndex;
    lastLine->boxAscent = misc::max (lastLine->boxAscent, word->size.ascent);
    lastLine->boxDescent = misc::max (lastLine->boxDescent, word->size.descent);
+   lastLine->contentAscent = misc::max (lastLine->contentAscent,
+                                        word->style->font->ascent);
+   lastLine->contentDescent = misc::max (lastLine->contentDescent,
+                                         word->style->font->descent);
 
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.ascent", page->num_lines - 1,
    //                    lastLine->boxAscent);
@@ -2099,17 +2103,19 @@ void Textblock::queueDrawRange (int index1, int index2)
    to = misc::min (to, words->size () - 1);
    to = misc::max (to, 0);
 
-   int line1 = findLineOfWord (from);
-   int line2 = findLineOfWord (to);
+   int line1idx = findLineOfWord (from);
+   int line2idx = findLineOfWord (to);
 
-   if (line1 >= 0 && line2 >= 0)
-      queueDrawArea (0,
-         lineYOffsetWidgetI (line1),
-         allocation.width,
-         lineYOffsetWidgetI (line2)
-         - lineYOffsetWidgetI (line1)
-         + lines->getRef (line2)->boxAscent
-         + lines->getRef (line2)->boxDescent);
+   if (line1idx >= 0 && line2idx >= 0) {
+      Line *line1 = lines->getRef (line1idx),
+           *line2 = lines->getRef (line2idx);
+      int y = lineYOffsetWidget (line1) + line1->boxAscent -
+              line1->contentAscent;
+      int h = lineYOffsetWidget (line2) + line2->boxAscent +
+              line2->contentDescent - y;
+
+      queueDrawArea (0, y, allocation.width, h);
+   }
 }
 
 void Textblock::TextblockIterator::getAllocation (int start, int end,

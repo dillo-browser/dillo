@@ -138,7 +138,8 @@ protected:
 
       /* "top" is always relative to the top of the first line, i.e.
        * page->lines[0].top is always 0. */
-      int top, boxAscent, boxDescent, breakSpace, leftOffset;
+      int top, boxAscent, boxDescent, contentAscent, contentDescent,
+          breakSpace, leftOffset;
 
       /* This is similar to descent, but includes the bottom margins of the
        * widgets within this line. */
