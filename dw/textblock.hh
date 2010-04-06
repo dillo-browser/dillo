@@ -138,7 +138,7 @@ protected:
 
       /* "top" is always relative to the top of the first line, i.e.
        * page->lines[0].top is always 0. */
-      int top, ascent, descent, breakSpace, leftOffset;
+      int top, boxAscent, boxDescent, breakSpace, leftOffset;
 
       /* This is similar to descent, but includes the bottom margins of the
        * widgets within this line. */
@@ -305,7 +305,7 @@ protected:
    inline int lineYOffsetWidgetAllocation (Line *line,
                                            core::Allocation *allocation)
    {
-      return line->top + (allocation->ascent - lines->getRef(0)->ascent);
+      return line->top + (allocation->ascent - lines->getRef(0)->boxAscent);
    }
 
    inline int lineYOffsetWidget (Line *line)

@@ -136,9 +136,10 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
          misc::max (lastLine->maxLineWidth, lastLineWidth);
       /* Note: the breakSpace of the last line is ignored, so breaks
          at the end of a textblock are not visible. */
-      requisition->ascent = lines->getRef(0)->ascent;
+      requisition->ascent = lines->getRef(0)->boxAscent;
       requisition->descent = lastLine->top
-         + lastLine->ascent + lastLine->descent - lines->getRef(0)->ascent;
+         + lastLine->boxAscent + lastLine->boxDescent -
+         lines->getRef(0)->boxAscent;
    } else {
       requisition->width = lastLineWidth;
       requisition->ascent = 0;
@@ -366,7 +367,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
              * http://www.dillo.org/test/img/ */
             childAllocation.y =
                lineYOffsetCanvasAllocation (line, allocation)
-               + (line->ascent - word->size.ascent);
+               + (line->boxAscent - word->size.ascent);
                // - word->content.widget->getStyle()->margin.top;
             childAllocation.width = word->size.width;
             childAllocation.ascent = word->size.ascent;
@@ -598,8 +599,8 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
    } else {
       lastLine = lines->getRef (lines->size () - 1);
       yFirst = lineYOffsetCanvasI (0);
-      yLast =
-         lineYOffsetCanvas (lastLine) + lastLine->ascent + lastLine->descent;
+      yLast = lineYOffsetCanvas (lastLine) + lastLine->boxAscent +
+              lastLine->boxDescent;
       if (event->yCanvas < yFirst) {
          // Above the first line: take the first word.
          withinContent = false;
@@ -618,7 +619,7 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
 
          // Pointer within the break space?
          if (event->yWidget >
-             (lineYOffsetWidget (line) + line->ascent + line->descent)) {
+             (lineYOffsetWidget (line) + line->boxAscent + line->boxDescent)) {
             // Choose this break.
             withinContent = false;
             wordIndex = line->lastWord;
@@ -774,8 +775,8 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
    } else {
       Line *prevLine = lines->getRef (lines->size () - 2);
 
-      lastLine->top = prevLine->top + prevLine->ascent + prevLine->descent +
-                      prevLine->breakSpace;
+      lastLine->top = prevLine->top + prevLine->boxAscent +
+                      prevLine->boxDescent + prevLine->breakSpace;
       lastLine->maxLineWidth = prevLine->maxLineWidth;
       lastLine->maxWordMin = prevLine->maxWordMin;
       lastLine->maxParMax = prevLine->maxParMax;
@@ -795,16 +796,16 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
    //                    lastLine->parMax);
 
    lastLine->firstWord = wordIndex;
-   lastLine->ascent = 0;
-   lastLine->descent = 0;
+   lastLine->boxAscent = 0;
+   lastLine->boxDescent = 0;
    lastLine->marginDescent = 0;
    lastLine->breakSpace = 0;
    lastLine->leftOffset = 0;
 
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.ascent", page->num_lines - 1,
-   //                    lastLine->ascent);
+   //                    lastLine->boxAscent);
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.descent", page->num_lines - 1,
-   //                    lastLine->descent);
+   //                    lastLine->boxDescent);
 
    /* update values in line */
    lastLine->maxLineWidth = misc::max (lastLine->maxLineWidth, lastLineWidth);
@@ -930,13 +931,13 @@ void Textblock::wordWrap(int wordIndex)
    }
 
    lastLine->lastWord = wordIndex;
-   lastLine->ascent = misc::max (lastLine->ascent, (int) word->size.ascent);
-   lastLine->descent = misc::max (lastLine->descent, (int) word->size.descent);
+   lastLine->boxAscent = misc::max (lastLine->boxAscent, word->size.ascent);
+   lastLine->boxDescent = misc::max (lastLine->boxDescent, word->size.descent);
 
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.ascent", page->num_lines - 1,
-   //                    lastLine->ascent);
+   //                    lastLine->boxAscent);
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.descent", page->num_lines - 1,
-   //                    lastLine->descent);
+   //                    lastLine->boxDescent);
 
    if (word->content.type == core::Content::WIDGET) {
       lastLine->marginDescent =
@@ -954,22 +955,22 @@ void Textblock::wordWrap(int wordIndex)
          /* Here, we know already what the break and the bottom margin
           * contributed to the space before this line.
           */
-         lastLine->ascent =
-            misc::max (lastLine->ascent,
+         lastLine->boxAscent =
+            misc::max (lastLine->boxAscent,
                        word->size.ascent
                        + word->content.widget->getStyle()->margin.top);
 
          //DBG_OBJ_ARRSET_NUM (page, "lines.%d.ascent", page->num_lines - 1,
-         //                    lastLine->ascent);
+         //                    lastLine->boxAscent);
       }
    } else {
       lastLine->marginDescent =
-         misc::max (lastLine->marginDescent, lastLine->descent);
+         misc::max (lastLine->marginDescent, lastLine->boxDescent);
 
       if (word->content.type == core::Content::BREAK)
          lastLine->breakSpace =
             misc::max (word->content.breakSpace,
-                       lastLine->marginDescent - lastLine->descent,
+                       lastLine->marginDescent - lastLine->boxDescent,
                        lastLine->breakSpace);
    }
 
@@ -1364,7 +1365,7 @@ void Textblock::drawSpace(int wordIndex, core::View *view,
 void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
 {
    int xWidget = lineXOffsetWidget(line);
-   int yWidgetBase = lineYOffsetWidget (line) + line->ascent;
+   int yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
 
    /* Here's an idea on how to optimize this routine to minimize the number
     * of drawing calls:
@@ -1477,8 +1478,8 @@ Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
    if ((lineIndex = findLineIndex (y)) >= lines->size ())
       return NULL;
    line = lines->getRef (lineIndex);
-   yWidgetBase = lineYOffsetWidget (line) + line->ascent;
-   if (yWidgetBase + line->descent <= y)
+   yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
+   if (yWidgetBase + line->boxDescent <= y)
       return NULL;
 
    xCursor = lineXOffsetWidget (line);
@@ -1791,7 +1792,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
          misc::max (word->content.breakSpace, space);
       lastLine->breakSpace =
          misc::max (word->content.breakSpace,
-                    lastLine->marginDescent - lastLine->descent,
+                    lastLine->marginDescent - lastLine->boxDescent,
                     lastLine->breakSpace);
       return;
    }
@@ -1951,7 +1952,7 @@ void Textblock::changeLinkColor (int link, int newColor)
       }
       if (changed)
          queueDrawArea (0, lineYOffsetWidget(line), allocation.width,
-                        line->ascent + line->descent);
+                        line->boxAscent + line->boxDescent);
    }
 }
 
@@ -2107,8 +2108,8 @@ void Textblock::queueDrawRange (int index1, int index2)
          allocation.width,
          lineYOffsetWidgetI (line2)
          - lineYOffsetWidgetI (line1)
-         + lines->getRef (line2)->ascent
-         + lines->getRef (line2)->descent);
+         + lines->getRef (line2)->boxAscent
+         + lines->getRef (line2)->boxDescent);
 }
 
 void Textblock::TextblockIterator::getAllocation (int start, int end,
@@ -2131,9 +2132,8 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
                                                      word->content.text,
                                                      start);
    }
-   allocation->y =
-      textblock->allocation.y
-      + textblock->lineYOffsetWidget (line) + line->ascent - word->size.ascent;
+   allocation->y = textblock->lineYOffsetCanvas (line) + line->boxAscent -
+                   word->size.ascent;
 
    allocation->width = word->size.width;
    if (word->content.type == core::Content::TEXT) {
