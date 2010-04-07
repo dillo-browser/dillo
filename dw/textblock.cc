@@ -859,7 +859,7 @@ void Textblock::wordWrap(int wordIndex)
 {
    Line *lastLine;
    Word *word;
-   int availWidth, lastSpace, leftOffset;
+   int availWidth, lastSpace, leftOffset, len;
    bool newLine = false, newPar = false;
    core::Extremes wordExtremes;
 
@@ -933,10 +933,16 @@ void Textblock::wordWrap(int wordIndex)
    lastLine->lastWord = wordIndex;
    lastLine->boxAscent = misc::max (lastLine->boxAscent, word->size.ascent);
    lastLine->boxDescent = misc::max (lastLine->boxDescent, word->size.descent);
-   lastLine->contentAscent = misc::max (lastLine->contentAscent,
-                                        word->style->font->ascent);
-   lastLine->contentDescent = misc::max (lastLine->contentDescent,
-                                         word->style->font->descent);
+
+   len = word->style->font->ascent;
+   if (word->style->valign == core::style::VALIGN_SUPER)
+      len += len / 2;
+   lastLine->contentAscent = misc::max (lastLine->contentAscent, len);
+
+   len = word->style->font->descent;
+   if (word->style->valign == core::style::VALIGN_SUB)
+      len += word->style->font->ascent / 3;
+   lastLine->contentDescent = misc::max (lastLine->contentDescent, len);
 
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.ascent", page->num_lines - 1,
    //                    lastLine->boxAscent);
