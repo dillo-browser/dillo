@@ -1033,6 +1033,29 @@ char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize)
 }
 
 /*
+ * For white-space: pre-line, we must break the line if encountering a newline.
+ * Otherwise, collapse whitespace as usual.
+ */
+static void Html_process_space_pre_line(DilloHtml *html, const char *space,
+                                        int spacesize)
+{
+   int i, breakCnt = 0;
+
+   for (i = 0; i < spacesize; i++) {
+      /* Support for "\r", "\n" and "\r\n" line breaks */
+      if (space[i] == '\r' || (space[i] == '\n' && !html->PrevWasCR)) {
+         breakCnt++;
+         html->PrevWasCR = (space[i] == '\r');
+
+         HT2TB(html)->addLinebreak (html->styleEngine->wordStyle ());
+      }
+   }
+   if (breakCnt == 0) {
+      HT2TB(html)->addSpace(html->styleEngine->wordStyle ());
+   }
+}
+
+/*
  * Parse spaces
  */
 static void Html_process_space(DilloHtml *html, const char *space,
@@ -1099,6 +1122,9 @@ static void Html_process_space(DilloHtml *html, const char *space,
    } else {
       if (SGML_SPCDEL) {
          /* SGML_SPCDEL ignores white space immediately after an open tag */
+      } else if (html->styleEngine->wordStyle ()->whiteSpace ==
+                                                        WHITE_SPACE_PRE_LINE) {
+         Html_process_space_pre_line(html, space, spacesize);
       } else {
          HT2TB(html)->addSpace(html->styleEngine->wordStyle ());
       }
