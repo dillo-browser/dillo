@@ -17,6 +17,7 @@ dillo-2.2.1 [not released yet]
  - Follow most specific matching rule in cookiesrc.
  - Fix segfault with form inputs and repush for stylesheets.
  - Handle white-space: pre-wrap and pre-line.
+ - Support for the word-spacing property.
    Patches: corvid
 +- Implement line-height.
    Patch: Johannes Hofmann, corvid

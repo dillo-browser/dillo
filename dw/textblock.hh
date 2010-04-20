@@ -163,9 +163,9 @@ protected:
       /* TODO: perhaps add a xLeft? */
       core::Requisition size;
       /* Space after the word, only if it's not a break: */
-      unsigned short origSpace; /* from font, set by addSpace */
-      unsigned short effSpace;  /* effective space, set by wordWrap,
-                                 * used for drawing etc. */
+      short origSpace; /* from font, set by addSpace */
+      short effSpace;  /* effective space, set by wordWrap,
+                        * used for drawing etc. */
       core::Content content;
 
       core::style::Style *style;

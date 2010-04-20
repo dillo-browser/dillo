@@ -426,7 +426,7 @@ public:
    VAlignType valign;
    char textAlignChar; /* In future, strings will be supported. */
 
-   int hBorderSpacing, vBorderSpacing;
+   int hBorderSpacing, vBorderSpacing, wordSpacing;
    Length width, height, lineHeight;
 
    Box margin, borderWidth, padding;

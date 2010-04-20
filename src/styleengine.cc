@@ -469,6 +469,21 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CSS_PROPERTY_HEIGHT:
             computeLength (&attrs->height, p->value.intVal, attrs->font);
             break;
+         case CSS_PROPERTY_WORD_SPACING:
+            if (p->type == CSS_TYPE_ENUM) {
+               if (p->value.intVal == CSS_WORD_SPACING_NORMAL) {
+                  attrs->wordSpacing = 0;
+               }
+            } else {
+               computeValue(&attrs->wordSpacing, p->value.intVal, attrs->font);
+            }
+
+            /* Limit to reasonable values to avoid overflows */
+            if (attrs->wordSpacing > 1000)
+               attrs->wordSpacing = 1000;
+            else if (attrs->wordSpacing < -1000)
+               attrs->wordSpacing = -1000;
+            break;
          case PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
             break;

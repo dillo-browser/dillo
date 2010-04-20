@@ -118,6 +118,10 @@ static const char *const Css_white_space_vals[] = {
    "normal", "pre", "nowrap", "pre-wrap", "pre-line", NULL
 };
 
+static const char *const Css_word_spacing_enum_vals[] = {
+   "normal", NULL
+};
+
 const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"background-attachment", {CSS_TYPE_UNUSED}, NULL},
    {"background-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
@@ -213,7 +217,8 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"visibility", {CSS_TYPE_UNUSED}, NULL},
    {"white-space", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_white_space_vals},
    {"width", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
-   {"word-spacing", {CSS_TYPE_UNUSED}, NULL},
+   {"word-spacing", {CSS_TYPE_ENUM, CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED},
+    Css_word_spacing_enum_vals},
    {"z-index", {CSS_TYPE_UNUSED}, NULL},
 
    /* These are extensions, for internal used, and never parsed. */

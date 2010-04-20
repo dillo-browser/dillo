@@ -53,6 +53,7 @@ void StyleAttrs::initValues ()
    setBorderStyle (BORDER_NONE);
    hBorderSpacing = 0;
    vBorderSpacing = 0;
+   wordSpacing = 0;
 
    display = DISPLAY_INLINE;
    whiteSpace = WHITE_SPACE_NORMAL;
@@ -115,6 +116,7 @@ bool StyleAttrs::equals (object::Object *other) {
        textAlignChar == otherAttrs->textAlignChar &&
        hBorderSpacing == otherAttrs->hBorderSpacing &&
        vBorderSpacing == otherAttrs->vBorderSpacing &&
+       wordSpacing == otherAttrs->wordSpacing &&
        width == otherAttrs->width &&
        height == otherAttrs->height &&
        lineHeight == otherAttrs->lineHeight &&
@@ -149,6 +151,7 @@ int StyleAttrs::hashValue () {
       textAlignChar +
       hBorderSpacing +
       vBorderSpacing +
+      wordSpacing +
       width +
       height +
       lineHeight +
@@ -236,6 +239,7 @@ void Style::copyAttrs (StyleAttrs *attrs)
    textAlignChar = attrs->textAlignChar;
    hBorderSpacing = attrs->hBorderSpacing;
    vBorderSpacing = attrs->vBorderSpacing;
+   wordSpacing = attrs->wordSpacing;
    width = attrs->width;
    height = attrs->height;
    lineHeight = attrs->lineHeight;

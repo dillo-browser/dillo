@@ -1722,7 +1722,8 @@ void Textblock::addSpace (core::style::Style *style)
 
       if (!word->content.space) {
          word->content.space = true;
-         word->effSpace = word->origSpace = style->font->spaceWidth;
+         word->effSpace = word->origSpace = style->font->spaceWidth +
+                                            style->wordSpacing;
 
          //DBG_OBJ_ARRSET_NUM (page, "words.%d.orig_space", nw,
          //                    page->words[nw].orig_space);

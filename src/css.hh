@@ -263,6 +263,10 @@ typedef enum {
    CSS_LETTER_SPACING_NORMAL
 } CssLetterSpacingExtensions;
 
+typedef enum {
+   CSS_WORD_SPACING_NORMAL
+} CssWordSpacingExtensions;
+
 
 /**
  * \brief This class holds a CSS property and value pair.
