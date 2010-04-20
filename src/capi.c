@@ -379,11 +379,7 @@ static bool_t Capi_filters_allow(const DilloUrl *wanted,
                        *want_host = URL_HOST(wanted),
                        *req_suffix,
                        *want_suffix;
-            if (!req_host && !want_host) {
-               ret = TRUE;
-            } else if (!req_host) {
-               ret = FALSE;
-            } else if (!want_host) {
+            if (want_host[0] == '\0') {
                ret = dStrcasecmp(URL_SCHEME(wanted), "data") ? FALSE : TRUE;
             } else {
                /* This will regard "www.dillo.org" and "www.dillo.org." as
