@@ -2123,6 +2123,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       Image->bg_color = HT2TB(html)->getBgColor()->getColor();
 
    load_now = prefs.load_images ||
+              !dStrcasecmp(URL_SCHEME(url), "data") ||
               (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached);
    bool loading = false;
    if (load_now)
