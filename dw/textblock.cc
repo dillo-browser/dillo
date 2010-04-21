@@ -1344,12 +1344,6 @@ void Textblock::drawSpace(int wordIndex, core::View *view,
          spaceBgColor, core::style::Color::SHADING_INVERSE, true, xWorld,
          yWorldBase - style->font->ascent, word->effSpace,
          style->font->ascent + style->font->descent);
-   } else {
-      /* Draw space background (color, image), when given. */
-      if (style->hasBackground ())
-         drawBox (
-            view, style, area, xWidget, yWidgetBase - style->font->ascent,
-            word->effSpace, style->font->ascent + style->font->descent, false);
    }
    if (style->textDecoration) {
       core::style::Color::Shading shading = highlight ?
@@ -1407,6 +1401,11 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
             if (word->effSpace > 0 && wordIndex < line->lastWord &&
                 words->getRef(wordIndex + 1)->content.type !=
                                                         core::Content::BREAK) {
+               if (word->spaceStyle->hasBackground ())
+                  drawBox (view, word->spaceStyle, area,
+                           xWidget + word->size.width,
+                           yWidgetBase - line->boxAscent, word->effSpace,
+                           line->boxAscent + line->boxDescent, false);
                drawSpace(wordIndex, view, area, xWidget + word->size.width,
                          yWidgetBase);
             }
