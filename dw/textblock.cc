@@ -1248,12 +1248,6 @@ void Textblock::drawText(int wordIndex, core::View *view,core::Rectangle *area,
    }
    yWorldBase = yWidgetBase + allocation.y;
 
-   /* Draw background (color, image), when given. */
-   if (style->hasBackground ())
-      drawBox (
-         view, style, area, xWidget, yWidgetBase - style->font->ascent,
-         word->size.width, style->font->ascent + style->font->descent, false);
-
    view->drawText (style->font, style->color,
                    core::style::Color::SHADING_NORMAL, xWorld, yWorldBase,
                    word->content.text, strlen (word->content.text));
@@ -1395,6 +1389,11 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
              word->content.type == core::Content::WIDGET) {
 
             if (word->size.width > 0) {
+               if (word->style->hasBackground ()) {
+                  drawBox (view, word->style, area, xWidget,
+                           yWidgetBase - line->boxAscent, word->size.width,
+                           line->boxAscent + line->boxDescent, false);
+               }
                if (word->content.type == core::Content::WIDGET) {
                   core::Widget *child = word->content.widget;
                   core::Rectangle childArea;
