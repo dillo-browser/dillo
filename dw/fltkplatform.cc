@@ -152,13 +152,8 @@ FltkColor * FltkColor::create (int col)
    return color;
 }
 
-::fltk::Widget *FltkTooltip::widget = NULL;
-
 FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
 {
-   /* ::fltk::Tooltip really, really wants a Widget */
-   if (!widget)
-      widget = new ::fltk::InvisibleBox(1, 1, 0, 0, NULL);
    shown = false;
 
    if (!text || !strpbrk(text, "&@")) {
@@ -197,9 +192,10 @@ FltkTooltip *FltkTooltip::create (const char *text)
 
 void FltkTooltip::onEnter()
 {
-   Rectangle rect;
-   widget->get_absolute_rect(&rect);
-   ::fltk::Tooltip::enter(widget, rect, escaped_str ? escaped_str : str);
+   fltk::Widget *widget = fltk::belowmouse();
+
+   ::fltk::Tooltip::enter(widget, *((fltk::Rectangle *)widget),
+                          escaped_str ? escaped_str : str);
    shown = true;
 }
 

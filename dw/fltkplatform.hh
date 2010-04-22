@@ -50,7 +50,6 @@ private:
    ~FltkTooltip ();
    bool shown;
    char *escaped_str; /* fltk WORKAROUND */
-   static ::fltk::Widget *widget;
 public:
    static FltkTooltip *create(const char *text);
    void onEnter();
