@@ -62,11 +62,13 @@ void Embed::sizeAllocateImpl (Allocation *allocation)
 void Embed::enterNotifyImpl (core::EventCrossing *event)
 {
    resource->emitEnter();
+   Widget::enterNotifyImpl(event);
 }
 
 void Embed::leaveNotifyImpl (core::EventCrossing *event)
 {
    resource->emitLeave();
+   Widget::leaveNotifyImpl(event);
 }
 
 bool Embed::buttonPressImpl (core::EventButton *event)

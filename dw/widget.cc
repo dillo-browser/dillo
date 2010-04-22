@@ -594,12 +594,20 @@ bool Widget::motionNotifyImpl (EventMotion *event)
    return false;
 }
 
-void Widget::enterNotifyImpl (EventCrossing *event)
+void Widget::enterNotifyImpl (EventCrossing *)
 {
+   core::style::Tooltip *tooltip = getStyle()->x_tooltip;
+
+   if (tooltip)
+      tooltip->onEnter();
 }
 
-void Widget::leaveNotifyImpl (EventCrossing *event)
+void Widget::leaveNotifyImpl (EventCrossing *)
 {
+   core::style::Tooltip *tooltip = getStyle()->x_tooltip;
+
+   if (tooltip)
+      tooltip->onLeave();
 }
 
 void Widget::removeChild (Widget *child)
