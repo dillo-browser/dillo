@@ -77,7 +77,7 @@ int a_History_add_url(DilloUrl *url)
 /*
  * Return the DilloUrl field (by index)
  */
-DilloUrl *a_History_get_url(int idx)
+const DilloUrl *a_History_get_url(int idx)
 {
    _MSG("a_History_get_url: ");
    /* History_show(); */

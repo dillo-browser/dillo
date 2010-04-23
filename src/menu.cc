@@ -67,7 +67,7 @@ public:
  * TODO: erase the URL on popup close.
  */
 void CustItem::draw() {
-   DilloUrl *url;
+   const DilloUrl *url;
 
    if (flags() & SELECTED) {
       url = a_History_get_url(history_list[(VOIDP2INT(user_data()))-1]);
@@ -287,7 +287,7 @@ static void Menu_history_cb(Widget *wid, void *data)
 {
    int mb = ((CustItem*)wid)->button();
    int offset = history_direction * VOIDP2INT(data);
-   DilloUrl *url = a_History_get_url(history_list[VOIDP2INT(data)-1]);
+   const DilloUrl *url = a_History_get_url(history_list[VOIDP2INT(data)-1]);
 
    if (mb == 2) {
       // Middle button, open in a new window/tab

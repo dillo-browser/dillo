@@ -11,7 +11,7 @@ extern "C" {
 
 int a_History_add_url(DilloUrl *url);
 void a_History_set_title_by_url(const DilloUrl *url, const char *title);
-DilloUrl *a_History_get_url(int idx);
+const DilloUrl *a_History_get_url(int idx);
 const char *a_History_get_title(int idx, int force);
 const char *a_History_get_title_by_url(const DilloUrl *url, int force);
 void a_History_freeall(void);

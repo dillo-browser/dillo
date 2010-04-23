@@ -194,7 +194,7 @@ static void Nav_stack_clean(BrowserWindow *bw)
 static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url,
                          const DilloUrl *requester, int offset)
 {
-   DilloUrl *old_url;
+   const DilloUrl *old_url;
    bool_t MustLoad, ForceReload, Repush, IgnoreScroll;
    int x, y, idx, ClientKey;
    DilloWeb *Web;
@@ -319,7 +319,7 @@ void a_Nav_expect_done(BrowserWindow *bw)
    }
 
    if (goto_old_scroll) {
-      /* Scroll to were we were in this page */
+      /* Scroll to where we were in this page */
       Nav_get_scroll_pos(bw, &posx, &posy);
       a_UIcmd_set_scroll_xy(bw, posx, posy);
       _MSG("Nav: expect_done scrolling to x=%d y=%d\n", posx, posy);
@@ -475,7 +475,8 @@ void a_Nav_home(BrowserWindow *bw)
 static void Nav_reload_callback(void *data)
 {
    BrowserWindow *bw = data;
-   DilloUrl *h_url, *r_url;
+   const DilloUrl *h_url;
+   DilloUrl *r_url;
    int choice, confirmed = 1;
 
    a_Nav_cancel_expect(bw);
