@@ -948,7 +948,7 @@ void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url)
 void a_UIcmd_page_popup(void *vbw, bool_t has_bugs, void *v_cssUrls)
 {
    BrowserWindow *bw = (BrowserWindow*)vbw;
-   DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
+   const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
    a_Menu_page_popup(bw, url, has_bugs, v_cssUrls);
 }
 
