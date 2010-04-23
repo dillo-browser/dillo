@@ -405,11 +405,12 @@ void a_Nav_repush(BrowserWindow *bw)
 static void Nav_redirection0_callback(void *data)
 {
    BrowserWindow *bw = (BrowserWindow *)data;
+   const DilloUrl *referer_url = a_History_get_url(NAV_TOP_UIDX(bw));
    _MSG(">>>> Nav_redirection0_callback <<<<\n");
 
    if (bw->meta_refresh_status == 2) {
       Nav_stack_move_ptr(bw, -1);
-      a_Nav_push(bw, bw->meta_refresh_url,a_History_get_url(NAV_TOP_UIDX(bw)));
+      a_Nav_push(bw, bw->meta_refresh_url, referer_url);
    }
    a_Url_free(bw->meta_refresh_url);
    bw->meta_refresh_url = NULL;
