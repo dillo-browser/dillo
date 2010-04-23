@@ -287,13 +287,14 @@ void CssSimpleSelector::print () {
    }
 }
 
-CssRule::CssRule (CssSelector *selector, CssPropertyList *props) {
+CssRule::CssRule (CssSelector *selector, CssPropertyList *props, int pos) {
    assert (selector->size () > 0);
 
    this->selector = selector;
    this->selector->ref ();
    this->props = props;
    this->props->ref ();
+   this->pos = pos;
    spec = selector->specificity ();
 };
 
@@ -435,17 +436,23 @@ void CssStyleSheet::apply (CssPropertyList *props,
    if (ruleList[numLists])
       numLists++;
 
-   // Apply potentially matching rules from ruleList[0-3] with
-   // ascending specificity. Each ruleList is sorted already.
+   // Apply potentially matching rules from ruleList[0-numLists] with
+   // ascending specificity.
+   // If specificity is equal, rules are applied in order of appearance.
+   //  Each ruleList is sorted already.
    while (true) {
       int minSpec = 1 << 30;
+      int minPos = 1 << 30;
       int minSpecIndex = -1;
 
       for (int i = 0; i < numLists; i++) {
          if (ruleList[i] && ruleList[i]->size () > index[i] &&
-            ruleList[i]->get(index[i])->specificity () < minSpec) {
+            (ruleList[i]->get(index[i])->specificity () < minSpec ||
+             (ruleList[i]->get(index[i])->specificity () == minSpec &&
+              ruleList[i]->get(index[i])->position () < minPos))) {
 
             minSpec = ruleList[i]->get(index[i])->specificity ();
+            minPos = ruleList[i]->get(index[i])->position ();
             minSpecIndex = i;
          }
       }
@@ -465,6 +472,8 @@ CssStyleSheet *CssContext::userStyle;
 CssStyleSheet *CssContext::userImportantStyle;
 
 CssContext::CssContext () {
+   pos = 0;
+
    for (int o = CSS_PRIMARY_USER_AGENT; o < CSS_PRIMARY_LAST; o++)
       sheet[o] = NULL;
 
@@ -532,7 +541,7 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
                           CssPrimaryOrder order) {
 
    if (props->size () > 0) {
-      CssRule *rule = new CssRule (sel, props);
+      CssRule *rule = new CssRule (sel, props, pos++);
 
       if (sheet[order] == NULL)
          sheet[order] = new CssStyleSheet ();

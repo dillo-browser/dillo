@@ -407,17 +407,18 @@ class CssSelector {
 class CssRule {
    private:
       CssPropertyList *props;
-      int spec;
+      int spec, pos;
 
    public:
       CssSelector *selector;
 
-      CssRule (CssSelector *selector, CssPropertyList *props);
+      CssRule (CssSelector *selector, CssPropertyList *props, int pos);
       ~CssRule ();
 
       void apply (CssPropertyList *props,
                   Doctree *docTree, const DoctreeNode *node);
       inline int specificity () { return spec; };
+      inline int position () { return pos; };
       void print ();
 };
 
@@ -475,6 +476,7 @@ class CssContext {
       static CssStyleSheet *userStyle;
       static CssStyleSheet *userImportantStyle;
       CssStyleSheet *sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
+      int pos; 
 
       void buildUserAgentStyle ();
       void buildUserStyle ();
