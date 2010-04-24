@@ -483,7 +483,7 @@ static void Dns_timeout_client(void *data)
  *  Dns memory-deallocation
  *  (Call this one at exit time)
  *  The Dns_queue is deallocated at execution time (no need to do that here)
- *  'dns_cache' is the only one that grows dinamically
+ *  'dns_cache' is the only one that grows dynamically
  */
 void a_Dns_freeall(void)
 {
