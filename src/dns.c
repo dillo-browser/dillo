@@ -487,10 +487,13 @@ static void Dns_timeout_client(void *data)
  */
 void a_Dns_freeall(void)
 {
-   int i;
+   int i, j;
 
    for ( i = 0; i < dns_cache_size; ++i ){
       dFree(dns_cache[i].hostname);
+      for ( j = 0; j < dList_length(dns_cache[i].addr_list); ++j)
+         dFree(dList_nth_data(dns_cache[i].addr_list, j));
+      dList_free(dns_cache[i].addr_list);
    }
    dFree(dns_cache);
 }
