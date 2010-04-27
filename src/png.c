@@ -53,7 +53,7 @@ static char *prog_state_name[] =
  * structure below so that processing can be suspended or resumed at any
  * point within an input image.
  *
- * In the case of the libpng library, it maintains it's own state in
+ * In the case of the libpng library, it maintains its own state in
  * png_ptr and into_ptr so the FSM is very simple - much simpler than the
  * ones for XBM and PNM are.
  */
@@ -182,7 +182,7 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
       png->passes = png_set_interlace_handling(png_ptr);
    }
 
-   /* get libpng to update it's state */
+   /* get libpng to update its state */
    png_read_update_info(png_ptr, info_ptr);
 
    png_get_IHDR(png_ptr, info_ptr, &png->width, &png->height,
