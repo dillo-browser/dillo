@@ -936,16 +936,20 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
            URL_STR_(entry->Url), URL_STR_(entry->Location));
       _MSG("%s", entry->Header->str);
 
-      if ((Flags & WEB_RootUrl) ||
-          (prefs.filter_auto_requests == PREFS_FILTER_SAME_DOMAIN)) {
-         /* Follow redirection for the main page unconditionally. For images
-          * and stylesheets, follow if the request will go through filtering.
-          */
+      if (Flags & WEB_RootUrl) {
+         /* Redirection of the main page */
          NewUrl = a_Url_new(URL_STR_(entry->Location), URL_STR_(entry->Url));
          if (entry->Flags & CA_TempRedirect)
             a_Url_set_flags(NewUrl, URL_FLAGS(NewUrl) | URL_E2EQuery);
          a_Nav_push(bw, NewUrl, entry->Url);
          a_Url_free(NewUrl);
+      } else {
+         /* Sub entity redirection (most probably an image) */
+         if (!entry->Data->len) {
+            _MSG(">>>Image redirection without entity-content<<<\n");
+         } else {
+            _MSG(">>>Image redirection with entity-content<<<\n");
+         }
       }
    }
    return 0;
