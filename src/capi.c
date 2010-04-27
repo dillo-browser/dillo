@@ -226,7 +226,7 @@ void a_Capi_set_vsource_url(const DilloUrl *url)
  */
 int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url)
 {
-   DilloUrl *referer;
+   const DilloUrl *referer;
    int allow = FALSE;
 
    if (dStrcasecmp(URL_SCHEME(url), "dpi") == 0) {
