@@ -40,9 +40,10 @@ static int imgRow = 0;
 
 static void imageInitTimeout (void *data)
 {
+   const bool resize = true;
    //imgbuf = layout->createImgbuf (Imgbuf::RGBA, 400, 200);
    imgbuf = layout->createImgbuf (Imgbuf::RGB, 400, 200);
-   image->setBuffer (imgbuf);
+   image->setBuffer (imgbuf, resize);
 }
 
 /*
