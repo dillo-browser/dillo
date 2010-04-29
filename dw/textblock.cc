@@ -397,14 +397,27 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                 * child might be a table covering the whole page so we would
                 * end up redrawing the whole screen over and over.
                 * The drawing of the child content is left to the child itself.
+                * However this optimization is only possible if the widget is
+                * the only word in the line apart from an optional BREAK.
+                * Otherwise the height change of the widget could change the
+                * position of other words in the line, requiring a
+                * redraw of the complete line.
                 */
-               int childChangedY =
-                  misc::min(childAllocation.y - allocation->y +
-                     childAllocation.ascent + childAllocation.descent,
-                     oldChildAllocation->y - this->allocation.y +
-                     oldChildAllocation->ascent + oldChildAllocation->descent);
+               if (line->lastWord == line->firstWord ||
+                   (line->lastWord == line->firstWord + 1 &&
+                    words->getRef (line->lastWord)->content.type ==
+                    core::Content::BREAK)) {
 
-               redrawY = misc::min (redrawY, childChangedY);
+                  int childChangedY =
+                     misc::min(childAllocation.y - allocation->y +
+                        childAllocation.ascent + childAllocation.descent,
+                        oldChildAllocation->y - this->allocation.y +
+                        oldChildAllocation->ascent + oldChildAllocation->descent);
+
+                  redrawY = misc::min (redrawY, childChangedY);
+               } else {
+                  redrawY = misc::min (redrawY, lineYOffsetWidget (line));
+               }
             }
 
             word->content.widget->sizeAllocate (&childAllocation);
