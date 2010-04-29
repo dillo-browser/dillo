@@ -354,8 +354,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             redrawY = misc::min (redrawY, lineYOffsetWidget (line));
          }
 
-         switch (word->content.type) {
-         case core::Content::WIDGET:
+         if (word->content.type == core::Content::WIDGET) {
             /** \todo Justification within the line is done here. */
             childAllocation.x = xCursor + allocation->x;
             /* align=top:
@@ -412,20 +411,15 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                      misc::min(childAllocation.y - allocation->y +
                         childAllocation.ascent + childAllocation.descent,
                         oldChildAllocation->y - this->allocation.y +
-                        oldChildAllocation->ascent + oldChildAllocation->descent);
+                        oldChildAllocation->ascent +
+                        oldChildAllocation->descent);
 
                   redrawY = misc::min (redrawY, childChangedY);
                } else {
                   redrawY = misc::min (redrawY, lineYOffsetWidget (line));
                }
             }
-
             word->content.widget->sizeAllocate (&childAllocation);
-            break;
-
-         default:
-            // make compiler happy
-            break;
          }
 
          xCursor += (word->size.width + word->effSpace);
