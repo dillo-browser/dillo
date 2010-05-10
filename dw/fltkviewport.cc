@@ -241,8 +241,8 @@ int FltkViewport::handle (int event)
        * and thereby unfocus any form widgets.
        * Otherwise we let fltk do the focus handling.
        */
-      if (::fltk::event_button() == ::fltk::LeftButton) {
-         set_focus(this);
+      if (::fltk::event_button() == ::fltk::LeftButton || focus_index() < 0) {
+         focus_index(-1);
          return 1;
       }
       break;
