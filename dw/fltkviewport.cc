@@ -236,11 +236,20 @@ int FltkViewport::handle (int event)
 
    case ::fltk::FOCUS:
       /** \bug Draw focus box. */
-      return 1;
+
+      /* If the user clicks with the left button we take focus
+       * and thereby unfocus any form widgets.
+       * Otherwise we let fltk do the focus handling.
+       */
+      if (::fltk::event_button() == ::fltk::LeftButton) {
+         set_focus(this);
+         return 1;
+      }
+      break;
 
    case ::fltk::UNFOCUS:
       /** \bug Undraw focus box. */
-      return 1;
+      break;
 
    case ::fltk::PUSH:
       take_focus();
