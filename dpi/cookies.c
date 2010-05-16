@@ -797,30 +797,22 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
 
       /* Get the value for the attribute and store it */
       if (first_attr) {
-         if (!*str && !*attr) {
+         if (*str != '=' || *attr == '\0') {
+            /* disregard nameless cookie */
             dFree(attr);
             return NULL;
          }
          cookie = dNew0(CookieData_t, 1);
+         cookie->name = attr;
+         cookie->value = Cookies_parse_value(&str);
 
-         /* let's arbitrarily choose a year for now */
+         /* let's arbitrarily initialise with a year for now */
          time_t now = time(NULL);
          struct tm *tm = gmtime(&now);
          ++tm->tm_year;
          cookie->expires_at = mktime(tm);
          if (cookie->expires_at == (time_t) -1)
             cookie->expires_at = cookies_future_time;
-
-         if (*str != '=') {
-            /* NOTE it seems possible that the Working Group will decide
-             * against allowing nameless cookies.
-             */
-            cookie->name = dStrdup("");
-            cookie->value = attr;
-         } else {
-            cookie->name = attr;
-            cookie->value = Cookies_parse_value(&str);
-         }
       } else if (dStrcasecmp(attr, "Path") == 0) {
          value = Cookies_parse_value(&str);
          dFree(cookie->path);
@@ -1272,9 +1264,7 @@ static char *Cookies_get(char *url_host, char *url_path,
       dStr_sprintfa(cookie_dstring, "Cookie: ");
 
       for (i = 0; (cookie = dList_nth_data(matching_cookies, i)); ++i) {
-         dStr_sprintfa(cookie_dstring,
-                       "%s%s%s",
-                       cookie->name, *cookie->name ? "=" : "", cookie->value);
+         dStr_sprintfa(cookie_dstring, "%s=%s", cookie->name, cookie->value);
          dStr_append(cookie_dstring,
                      dList_length(matching_cookies) > i + 1 ? "; " : "\r\n");
       }

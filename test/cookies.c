@@ -911,11 +911,9 @@ int main()
    a_Cookies_set("value", "nonameval.org", "/", NULL);
    a_Cookies_set("name=", "nonameval.org", "/", NULL);
    a_Cookies_set("name2= ", "nonameval.org", "/", NULL);
-   expect(__LINE__, "Cookie: value; name=; name2=\r\n", "http",
-          "nonameval.org", "/");
+   expect(__LINE__, "Cookie: name=; name2=\r\n", "http", "nonameval.org", "/");
    a_Cookies_set("=val2", "nonameval.org", "/", NULL);
-   expect(__LINE__, "Cookie: name=; name2=; val2\r\n", "http",
-          "nonameval.org", "/");
+   expect(__LINE__, "Cookie: name=; name2=\r\n", "http", "nonameval.org", "/");
 
 
    /* SOME IP ADDRS */
