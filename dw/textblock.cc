@@ -1595,6 +1595,11 @@ void Textblock::calcTextSize (const char *text, size_t len,
       size->ascent = size->ascent * factor + 0.5;
       size->descent = size->descent * factor + 0.5;
 
+      /* TODO: The containing block's line-height property gives a minimum
+       * height for the line boxes. (Even when it's set to 'normal', i.e.,
+       * AUTO? Apparently.) Once all block elements make Textblocks or
+       * something, this can be handled.
+       */
       if (core::style::isAbsLength (style->lineHeight))
          height = core::style::absLengthVal(style->lineHeight);
       else
