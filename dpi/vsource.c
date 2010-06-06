@@ -96,10 +96,13 @@ void send_numbered_text(Dsh *sh, int data_size)
 /*
  * Send source as html text with line numbers
  */
-void send_html_text(Dsh *sh, int data_size)
+void send_html_text(Dsh *sh, const char *url, int data_size)
 {
    int bytes_read = 0, old_line = 0, line = 1;
    char *p, *q, *src_str, line_str[128];
+
+   if (strncmp(url, "dpi:/vsource/:", 14) == 0)
+      url += 14;
 
    /* Send HTTP header for plain text MIME type */
    a_Dpip_dsh_printf(sh, 0, "Content-type: text/html\n\n");
@@ -108,10 +111,11 @@ void send_html_text(Dsh *sh, int data_size)
    a_Dpip_dsh_printf(sh, 0,
                      "\n"
                      "<html><head>\n"
+                     "<title>Source for %s</title>\n"
                      "<style type=\"text/css\">PRE {white-space: pre-wrap}\n"
                      "</style>\n"
                      "</head>\n"
-                     "<body id=\"dillo_vs\">\n<table cellpadding='0'>\n");
+                     "<body id=\"dillo_vs\">\n<table cellpadding='0'>\n", url);
 
    while (bytes_read < data_size &&
           (src_str = a_Dpip_dsh_read_token(sh, 1))) {
@@ -211,7 +215,7 @@ int main(void)
          /* Choose your flavour */
          //send_plain_text(sh, data_size);
          //send_numbered_text(sh, data_size);
-         send_html_text(sh, data_size);
+         send_html_text(sh, url, data_size);
       } else if (strcmp(cmd2, "DpiError") == 0) {
          /* Dillo detected an error (other failures just close the socket) */
          a_Dpip_dsh_printf(sh, 0, "Content-type: text/plain\n\n");
