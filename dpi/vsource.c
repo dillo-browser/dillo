@@ -110,7 +110,8 @@ void send_html_text(Dsh *sh, int data_size)
                      "<html><head>\n"
                      "<style type=\"text/css\">PRE {white-space: pre-wrap}\n"
                      "</style>\n"
-                     "</head><body id=\"dillo_vs\">\n<table cellpadding='0'>\n");
+                     "</head>\n"
+                     "<body id=\"dillo_vs\">\n<table cellpadding='0'>\n");
 
    while (bytes_read < data_size &&
           (src_str = a_Dpip_dsh_read_token(sh, 1))) {
@@ -146,7 +147,9 @@ void send_html_text(Dsh *sh, int data_size)
       dFree(src_str);
    }
 
-   a_Dpip_dsh_printf(sh, 1, "</pre></table></body></html>");
+   if (data_size > 0)
+      a_Dpip_dsh_printf(sh, 0, "</pre>");
+   a_Dpip_dsh_printf(sh, 1, "</table></body></html>");
 }
 
 /*
