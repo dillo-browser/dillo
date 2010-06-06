@@ -35,9 +35,9 @@ const char *DOCTYPE=
 
 void send_dpip_tag(Dsh *sh, char *dpip_tag)
 {
-   a_Dpip_dsh_printf(sh, 0, "\nDpip tag received: ");
-   a_Dpip_dsh_printf(sh, 0, dpip_tag ? dpip_tag : "None");
-   a_Dpip_dsh_printf(sh, 1, "\n\n");
+   a_Dpip_dsh_write_str(sh, 0, "\nDpip tag received: ");
+   a_Dpip_dsh_write_str(sh, 0, dpip_tag ? dpip_tag : "None");
+   a_Dpip_dsh_write_str(sh, 1, "\n\n");
 }
 
 /*
@@ -49,7 +49,7 @@ void send_plain_text(Dsh *sh, int data_size)
    char *src_str;
 
    /* Send HTTP header for plain text MIME type */
-   a_Dpip_dsh_printf(sh, 0, "Content-type: text/plain\n\n");
+   a_Dpip_dsh_write_str(sh, 0, "Content-type: text/plain\n\n");
 
    while (bytes_read < data_size &&
           (src_str = a_Dpip_dsh_read_token(sh, 1))) {
@@ -68,7 +68,7 @@ void send_numbered_text(Dsh *sh, int data_size)
    char *p, *q, *src_str, line_str[32];
 
    /* Send HTTP header for plain text MIME type */
-   a_Dpip_dsh_printf(sh, 0, "Content-type: text/plain\n\n");
+   a_Dpip_dsh_write_str(sh, 0, "Content-type: text/plain\n\n");
 
    while (bytes_read < data_size &&
           (src_str = a_Dpip_dsh_read_token(sh, 1))) {
@@ -105,9 +105,9 @@ void send_html_text(Dsh *sh, const char *url, int data_size)
       url += 14;
 
    /* Send HTTP header for plain text MIME type */
-   a_Dpip_dsh_printf(sh, 0, "Content-type: text/html\n\n");
+   a_Dpip_dsh_write_str(sh, 0, "Content-type: text/html\n\n");
 
-   a_Dpip_dsh_printf(sh, 0, DOCTYPE);
+   a_Dpip_dsh_write_str(sh, 0, DOCTYPE);
    a_Dpip_dsh_printf(sh, 0,
                      "\n"
                      "<html><head>\n"
@@ -152,8 +152,8 @@ void send_html_text(Dsh *sh, const char *url, int data_size)
    }
 
    if (data_size > 0)
-      a_Dpip_dsh_printf(sh, 0, "</pre>");
-   a_Dpip_dsh_printf(sh, 1, "</table></body></html>");
+      a_Dpip_dsh_write_str(sh, 0, "</pre>");
+   a_Dpip_dsh_write_str(sh, 1, "</table></body></html>");
 }
 
 /*
@@ -218,8 +218,9 @@ int main(void)
          send_html_text(sh, url, data_size);
       } else if (strcmp(cmd2, "DpiError") == 0) {
          /* Dillo detected an error (other failures just close the socket) */
-         a_Dpip_dsh_printf(sh, 0, "Content-type: text/plain\n\n");
-         a_Dpip_dsh_printf(sh, 1, "[vsource dpi]: ERROR: Page not cached.\n");
+         a_Dpip_dsh_write_str(sh, 0, "Content-type: text/plain\n\n");
+         a_Dpip_dsh_write_str(sh, 1, "[vsource dpi]: "
+                                     "ERROR: Page not cached.\n");
       }
       dFree(cmd2);
    }
