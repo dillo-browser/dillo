@@ -15,7 +15,7 @@
 #define PREFS_HOME            "http://www.dillo.org/"
 #define PREFS_FONT_SERIF      "DejaVu Serif"
 #define PREFS_FONT_SANS_SERIF "DejaVu Sans"
-#define PREFS_FONT_CURSIVE    "DejaVu Sans" /* TODO: find good default */
+#define PREFS_FONT_CURSIVE    "URW Chancery L"
 #define PREFS_FONT_FANTASY    "DejaVu Sans" /* TODO: find good default */
 #define PREFS_FONT_MONOSPACE  "DejaVu Sans Mono"
 #define PREFS_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
