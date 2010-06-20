@@ -46,17 +46,23 @@
 #                           RENDERING SECTION
 #-------------------------------------------------------------------------
 
-# Fontnames:
-#   - some fonts may slow down rendering.
-#   - try to tune a fontname/font_factor combination.
-# Ex. {helvetica, lucida, times, "new century schoolbook", utopia, ...}
-# The values below represent the defaults.
+# Default fonts:
 #
+# If FLTK2 has been configured with Xft enabled (the default), you can
+# use scalable fonts such as DejaVu or Liberation (try running "fc-list").
 #font_serif="DejaVu Serif"
 #font_sans_serif="DejaVu Sans"
 #font_cursive="URW Chancery L"
 #font_fantasy="DejaVu Sans"
 #font_monospace="DejaVu Sans Mono"
+#
+# Otherwise, use bitmapped fonts like the following (for a list, try running
+# "xlsfonts -fn *-iso10646-1 | grep -v -e -0-0 | cut -d - -f 3 | sort | uniq").
+# font_serif="times"
+# font_sans_serif="helvetica"
+# font_cursive="helvetica"
+# font_fantasy="helvetica"
+# font_monospace="courier"
 
 # All font sizes are scaled by this value
 # font_factor=1.5
