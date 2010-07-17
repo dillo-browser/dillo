@@ -1,7 +1,7 @@
 AM_CPPFLAGS= \
-       -DDILLO_SYSCONF='"$(sysconfdir)/"' \
-       -DDILLO_DOCDIR='"$(docdir)/"' \
-       @LIBJPEG_CPPFLAGS@
+	-DDILLO_SYSCONF='"$(sysconfdir)/"' \
+	-DDILLO_DOCDIR='"$(docdir)/"' \
+	@LIBJPEG_CPPFLAGS@
 AM_CFLAGS = @LIBPNG_CFLAGS@
 AM_CXXFLAGS = -I$(srcdir)/.. @LIBPNG_CFLAGS@ @LIBFLTK_CXXFLAGS@
 
