@@ -1,22 +1,23 @@
 AM_CPPFLAGS= \
+	-I$(top_srcdir) \
 	-DDILLO_SYSCONF='"$(sysconfdir)/"' \
 	-DDILLO_DOCDIR='"$(docdir)/"' \
 	@LIBJPEG_CPPFLAGS@
 AM_CFLAGS = @LIBPNG_CFLAGS@
-AM_CXXFLAGS = -I$(srcdir)/.. @LIBPNG_CFLAGS@ @LIBFLTK_CXXFLAGS@
+AM_CXXFLAGS = @LIBPNG_CFLAGS@ @LIBFLTK_CXXFLAGS@
 
 SUBDIRS = IO
 
 bin_PROGRAMS = dillo
 
 dillo_LDADD = \
-	../dlib/libDlib.a \
-	../dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a \
+	$(top_builddir)/dpip/libDpip.a \
 	IO/libDiof.a \
-	../dw/libDw-widgets.a \
-	../dw/libDw-fltk.a \
-	../dw/libDw-core.a \
-	../lout/liblout.a \
+	$(top_builddir)/dw/libDw-widgets.a \
+	$(top_builddir)/dw/libDw-fltk.a \
+	$(top_builddir)/dw/libDw-core.a \
+	$(top_builddir)/lout/liblout.a \
 	@LIBJPEG_LIBS@ @LIBPNG_LIBS@ @LIBFLTK_LIBS@ @LIBZ_LIBS@ @LIBICONV_LIBS@
 
 dillo_SOURCES = \
