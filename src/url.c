@@ -749,6 +749,6 @@ const char *a_Url_host_find_public_suffix(const char *host)
       s--;
    }
 
-   MSG("public suffix of %s is %s\n", host, s);
+   _MSG("public suffix of %s is %s\n", host, s);
    return s;
 }
