@@ -18,6 +18,7 @@ dillo-2.2.1 [not released yet]
  - Fix segfault with form inputs and repush for stylesheets.
  - Handle white-space: pre-wrap and pre-line.
  - Support for the word-spacing property.
+ - Fix segfault with https and self-signed certificates.
    Patches: corvid
 +- Implement line-height.
    Patch: Johannes Hofmann, corvid

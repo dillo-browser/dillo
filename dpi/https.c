@@ -452,9 +452,10 @@ static int handle_certificate_problem(SSL * ssl_connection)
       case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
          /*Either self signed and untrusted*/
          /*Extract CN from certificate name information*/
-         cn = strstr(remote_cert->name, "/CN=") + 4;
-         if (cn == NULL)
+         if ((cn = strstr(remote_cert->name, "/CN=")) == NULL)
             break;
+
+         cn += 4;
 
          if ((cn_end = strstr(cn, "/")) == NULL )
             cn_end = cn + strlen(cn);
