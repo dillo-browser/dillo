@@ -609,7 +609,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
             "dialog",
             "Some of the information presented by the remote system\n"
             "does not match other information presented\n"
-            "This may be an attempt to evesdrop on communications",
+            "This may be an attempt to eavesdrop on communications",
             "Continue", "Cancel");
          a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
