@@ -416,7 +416,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
    int response_number;
    int ret = -1;
    long st;
-   char *cn, *cn_end;
+   char *cn;
    char buf[4096], *d_cmd, *msg;
 
    X509 * remote_cert;
@@ -452,19 +452,19 @@ static int handle_certificate_problem(SSL * ssl_connection)
       case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
          /*Either self signed and untrusted*/
          /*Extract CN from certificate name information*/
-         if ((cn = strstr(remote_cert->name, "/CN=")) == NULL)
-            break;
+         if ((cn = strstr(remote_cert->name, "/CN=")) == NULL) {
+            strcpy(buf, "(no CN given)");
+         } else {
+            char *cn_end;
 
-         cn += 4;
+            cn += 4;
 
-         if ((cn_end = strstr(cn, "/")) == NULL )
-            cn_end = cn + strlen(cn);
+            if ((cn_end = strstr(cn, "/")) == NULL )
+               cn_end = cn + strlen(cn);
 
-         strncpy(buf, cn, (size_t) (cn_end - cn));
-
-         /*Add terminating NULL*/
-         buf[cn_end - cn] = 0;
-
+            strncpy(buf, cn, (size_t) (cn_end - cn));
+            buf[cn_end - cn] = '\0';
+         }
          msg = dStrconcat("The remote certificate is self-signed and "
                           "untrusted.\nFor address: ", buf, NULL);
          d_cmd = a_Dpip_build_cmd(
