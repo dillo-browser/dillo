@@ -469,7 +469,7 @@ static int handle_certificate_problem(SSL * ssl_connection)
                           "untrusted.\nFor address: ", buf, NULL);
          d_cmd = a_Dpip_build_cmd(
             "cmd=%s msg=%s alt1=%s alt2=%s alt3=%s",
-            "dialog", msg, "Continue", "Cancel", "Trust Certificate");
+            "dialog", msg, "Continue", "Cancel", "Save Certificate");
          a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
          dFree(msg);
