@@ -833,7 +833,7 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
             if (age > 0 && cookie->expires_at == (time_t) -1) {
                cookie->expires_at = cookies_future_time;
             }
-            MSG("Cookie to expire at %s", ctime(&cookie->expires_at));
+            _MSG("Cookie to expire at %s", ctime(&cookie->expires_at));
             expires = max_age = TRUE;
          }
          dFree(value);
@@ -841,7 +841,7 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
          if (!max_age) {
             value = Cookies_parse_value(&str);
             Cookies_unquote_string(value);
-            MSG("Expires attribute gives %s\n", value);
+            _MSG("Expires attribute gives %s\n", value);
             struct tm *tm = Cookies_parse_date(value);
             if (tm) {
                tm->tm_sec += Cookies_server_timediff(server_date);
@@ -852,7 +852,7 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
                    */
                   cookie->expires_at = cookies_future_time;
                }
-               MSG("Cookie to expire at %s", ctime(&cookie->expires_at));
+               _MSG("Cookie to expire at %s", ctime(&cookie->expires_at));
                dFree(tm);
             } else {
                cookie->expires_at = (time_t) -1;
