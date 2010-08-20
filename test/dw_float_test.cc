@@ -23,7 +23,7 @@ static void addTextToFloatTimeout (void *data)
                       "text.", NULL };
 	
    for(int k = 0; fWords[k]; k++) {
-      firstFloat->addText(strdup(fWords[k]), wordStyle);
+      firstFloat->addText(fWords[k], wordStyle);
       firstFloat->addSpace(wordStyle);
    }
    
@@ -96,11 +96,11 @@ int main(int argc, char **argv)
                         NULL };
 
       for(int j = 0; words[j]; j++) {
-         textblock->addText(strdup(words[j]), wordStyle);
+         textblock->addText(words[j], wordStyle);
          textblock->addSpace(wordStyle);
          
          if ((i == 3 || i == 5) && j == 8) {
-         	textblock->addText(strdup("[float]"), wordStyle);
+         	textblock->addText("[float]", wordStyle);
             textblock->addSpace(wordStyle);
          
             Textblock *vloat = new Textblock (false);
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
                                "text.", NULL };
 
             for(int k = 0; fWords[k]; k++) {
-               vloat->addText(strdup(fWords[k]), wordStyle);
+               vloat->addText(fWords[k], wordStyle);
                vloat->addSpace(wordStyle);
             }
             
