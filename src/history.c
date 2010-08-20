@@ -75,22 +75,9 @@ int a_History_add_url(DilloUrl *url)
 }
 
 /*
- * Set the page-title for a given URL (by idx)
- * (this is known when the first chunks of HTML data arrive)
- */
-int a_History_set_title(int idx, const char *title)
-{
-   dReturn_val_if_fail(idx >= 0 && idx < history_size, 0);
-
-   dFree(history[idx].title);
-   history[idx].title = dStrdup(title);
-   return 1;
-}
-
-/*
  * Return the DilloUrl field (by index)
  */
-DilloUrl *a_History_get_url(int idx)
+const DilloUrl *a_History_get_url(int idx)
 {
    _MSG("a_History_get_url: ");
    /* History_show(); */
@@ -137,11 +124,32 @@ const char *a_History_get_title_by_url(const DilloUrl *url, int force)
    return NULL;
 }
 
+/*
+ * Set the page-title for a given URL
+ */
+void a_History_set_title_by_url(const DilloUrl *url, const char *title)
+{
+   int i;
+
+   dReturn_if (url == NULL);
+
+   for (i = history_size - 1; i >= 0; --i)
+      if (a_Url_cmp(url, history[i].url) == 0)
+         break;
+
+   if (i >= 0) {
+      dFree(history[i].title);
+      history[i].title = dStrdup(title);
+   } else {
+      MSG_ERR("a_History_set_title_by_url: %s not found\n", URL_STR(url));
+   }
+}
+
 
 /*
  * Free all the memory used by this module
  */
-void a_History_free()
+void a_History_freeall()
 {
    int i;
 

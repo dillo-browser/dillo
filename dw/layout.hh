@@ -13,7 +13,7 @@ namespace core {
  *
  * \sa\ref dw-overview, \ref dw-layout-widgets, \ref dw-layout-views
  */
-class Layout: public object::Object
+class Layout: public lout::object::Object
 {
    friend class Widget;
 
@@ -29,6 +29,78 @@ public:
       virtual void canvasSizeChanged (int width, int ascent, int descent);
    };
 
+   class LinkReceiver: public lout::signal::Receiver
+   {
+   public:
+      /**
+       * \brief Called, when a link is entered, left, or the position has
+       *    changed.
+       *
+       * When a link is entered, this method is called with the respective
+       * arguments. When a link is left, this method is called with all
+       * three arguments (\em link, \em x, \em y) set to -1.
+       *
+       * When coordinates are supported, a change of the coordinates also
+       * causes emitting this signal.
+       */
+      virtual bool enter (Widget *widget, int link, int img, int x, int y);
+
+      /**
+       * \brief Called, when the user has pressed the mouse button on a
+       *    link (but not yet released).
+       *
+       * The causing event is passed as \em event.
+       */
+      virtual bool press (Widget *widget, int link, int img, int x, int y,
+                          EventButton *event);
+
+      /**
+       * \brief Called, when the user has released the mouse button on a
+       *    link.
+       *
+       * The causing event is passed as \em event.
+       */
+      virtual bool release (Widget *widget, int link, int img, int x, int y,
+                            EventButton *event);
+
+      /**
+       * \brief Called, when the user has clicked on a link.
+       *
+       * For mouse interaction, this is equivalent to "press" and "release"
+       * on the same link. In this case, \em event contains the "release"
+       * event.
+       *
+       *
+       * When activating links via keyboard is supported, only a "clicked"
+       * signal will be emitted, and \em event will be NULL.
+       */
+      virtual bool click (Widget *widget, int link, int img, int x, int y,
+                          EventButton *event);
+   };
+
+   class LinkEmitter: public lout::signal::Emitter
+   {
+   private:
+      enum { ENTER, PRESS, RELEASE, CLICK };
+
+   protected:
+      bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
+                           int argc, lout::object::Object **argv);
+
+   public:
+      inline void connectLink (LinkReceiver *receiver) { connect (receiver); }
+
+      bool emitEnter (Widget *widget, int link, int img, int x, int y);
+      bool emitPress (Widget *widget, int link, int img, int x, int y,
+                      EventButton *event);
+      bool emitRelease (Widget *widget, int link, int img, int x, int y,
+                        EventButton *event);
+      bool emitClick (Widget *widget, int link, int img, int x, int y,
+                      EventButton *event);
+   };
+
+   LinkEmitter linkEmitter;
+
 private:
    class Emitter: public lout::signal::Emitter
    {
@@ -37,7 +109,7 @@ private:
 
    protected:
       bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
-                           int argc, Object **argv);
+                           int argc, lout::object::Object **argv);
 
    public:
       inline void connectLayout (Receiver *receiver) { connect (receiver); }
@@ -47,7 +119,7 @@ private:
 
    Emitter emitter;
 
-   class Anchor: public object::Object
+   class Anchor: public lout::object::Object
    {
    public:
       char *name;
@@ -58,10 +130,10 @@ private:
    };
 
    Platform *platform;
-   container::typed::List <View> *views;
+   View *view;
    Widget *topLevel, *widgetAtPoint;
 
-   /* The state, which must be projected into the views. */
+   /* The state, which must be projected into the view. */
    style::Color *bgColor;
    style::Cursor cursor;
    int canvasWidth, canvasAscent, canvasDescent;
@@ -70,7 +142,7 @@ private:
    int scrollX, scrollY, viewportWidth, viewportHeight;
    bool canvasHeightGreater;
    int hScrollbarThickness, vScrollbarThickness;
-   
+
    HPosition scrollTargetHpos;
    VPosition scrollTargetVpos;
    int scrollTargetX, scrollTargetY, scrollTargetWidth, scrollTargetHeight;
@@ -80,7 +152,7 @@ private:
    bool scrollIdleNotInterrupted;
 
    /* Anchors of the widget tree */
-   container::typed::HashTable <object::String, Anchor> *anchorsTable;
+   lout::container::typed::HashTable <lout::object::String, Anchor> *anchorsTable;
 
    SelectionState selectionState;
    FindtextState findtextState;
@@ -136,13 +208,31 @@ private:
       int ex, int ey, int ewidth, int eheight);
    void queueResize ();
    void removeWidget ();
-  
+
 public:
    Layout (Platform *platform);
    ~Layout ();
 
-   misc::ZoneAllocator *textZone;
-   
+   inline void connectLink (LinkReceiver *receiver)
+   { linkEmitter.connectLink (receiver); }
+
+   inline bool emitLinkEnter (Widget *w, int link, int img, int x, int y)
+   { return linkEmitter.emitEnter (w, link, img, x, y); }
+
+   inline bool emitLinkPress (Widget *w, int link, int img,
+                              int x, int y, EventButton *event)
+   { return linkEmitter.emitPress (w, link, img, x, y, event); }
+
+   inline bool emitLinkRelease (Widget *w, int link, int img,
+                                int x, int y, EventButton *event)
+   { return linkEmitter.emitRelease (w, link, img, x, y, event); }
+
+   inline bool emitLinkClick (Widget *w, int link, int img,
+                              int x, int y, EventButton *event)
+   { return linkEmitter.emitClick (w, link, img, x, y, event); }
+
+   lout::misc::ZoneAllocator *textZone;
+
    void addWidget (Widget *widget);
    void setWidget (Widget *widget);
 
@@ -159,6 +249,7 @@ public:
 
    void scrollTo (HPosition hpos, VPosition vpos,
                   int x, int y, int width, int height);
+   void scroll (ScrollCommand);
    void setAnchor (const char *anchor);
 
    /* View */
@@ -168,7 +259,7 @@ public:
    /**
     * \brief This function is called by a view, to delegate a button press
     * event.
-    * 
+    *
     * \em numPressed is 1 for simple presses, 2 for double presses etc. (more
     * that 2 is never needed), \em x and \em y the world coordinates, and
     * \em button the number of the button pressed.
@@ -216,19 +307,34 @@ public:
       return platform->prevGlyph (text, idx);
    }
 
+   inline float dpiX ()
+   {
+      return platform->dpiX ();
+   }
+
+   inline float dpiY ()
+   {
+      return platform->dpiY ();
+   }
+
    inline style::Font *createFont (style::FontAttrs *attrs, bool tryEverything)
    {
       return  platform->createFont (attrs, tryEverything);
    }
 
-   inline style::Color *createSimpleColor (int color)
+   inline bool fontExists (const char *name)
    {
-      return platform->createSimpleColor (color);
+      return platform->fontExists (name);
    }
 
-   inline style::Color *createShadedColor (int color)
+   inline style::Color *createColor (int color)
    {
-      return platform->createShadedColor (color);
+      return platform->createColor (color);
+   }
+
+   inline style::Tooltip *createTooltip (const char *text)
+   {
+      return platform->createTooltip (text);
    }
 
    inline Imgbuf *createImgbuf (Imgbuf::Type type, int width, int height)
@@ -250,8 +356,9 @@ public:
       emitter.connectLayout (receiver); }
 
    /** \brief See dw::core::FindtextState::search. */
-   inline FindtextState::Result search (const char *str, bool caseSens)
-      { return findtextState.search (str, caseSens); }
+   inline FindtextState::Result search (const char *str, bool caseSens,
+                                        int backwards)
+      { return findtextState.search (str, caseSens, backwards); }
 
    /** \brief See dw::core::FindtextState::resetSearch. */
    inline void resetSearch () { findtextState.resetSearch (); }

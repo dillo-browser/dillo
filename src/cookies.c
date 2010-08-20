@@ -10,10 +10,9 @@
  * (at your option) any later version.
  */
 
-/* Handling of cookies takes place here.
- * This implementation aims to follow RFC 2965:
- * http://www.ietf.org/rfc/rfc2965.txt
- */
+/* Handling of cookies takes place here. */
+
+#include "msg.h"
 
 #ifdef DISABLE_COOKIES
 
@@ -34,15 +33,13 @@ void a_Cookies_init(void)
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>       /* for time() and time_t */
 #include <ctype.h>
+#include <errno.h>
 
-#include "msg.h"
 #include "IO/Url.h"
 #include "list.h"
 #include "cookies.h"
 #include "capi.h"
-#include "dpiapi.h"
 #include "../dpip/dpip.h"
 
 
@@ -80,14 +77,19 @@ static int Cookie_control_init(void);
 static FILE *Cookies_fopen(const char *filename, char *init_str)
 {
    FILE *F_in;
-   int fd;
+   int fd, rc;
 
    if ((F_in = fopen(filename, "r")) == NULL) {
       /* Create the file */
       fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
       if (fd != -1) {
-         if (init_str)
-            write(fd, init_str, strlen(init_str));
+         if (init_str) {
+            rc = write(fd, init_str, strlen(init_str));
+            if (rc == -1) {
+               MSG("Cookies: Could not write initial string to file %s: %s\n",
+                   filename, dStrerror(errno));
+            }
+         }
          close(fd);
 
          MSG("Cookies: Created file: %s\n", filename);
@@ -134,10 +136,11 @@ void a_Cookies_freeall()
 /*
  * Set the value corresponding to the cookie string
  */
-void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
+void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url,
+                   const char *date)
 {
    CookieControlAction action;
-   char *cmd, *cookie_string, *dpip_tag, numstr[16];
+   char *cmd, *cookie_string, *dpip_tag;
    const char *path;
    int i;
 
@@ -152,10 +155,14 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
 
    for (i = 0; (cookie_string = dList_nth_data(cookie_strings, i)); ++i) {
       path = URL_PATH_(set_url);
-      snprintf(numstr, 16, "%d", URL_PORT(set_url));
-      cmd = a_Dpip_build_cmd("cmd=%s cookie=%s host=%s path=%s port=%s",
-                             "set_cookie", cookie_string, URL_HOST_(set_url),
-                             path ? path : "/", numstr);
+      if (date)
+         cmd = a_Dpip_build_cmd("cmd=%s cookie=%s host=%s path=%s date=%s",
+                                "set_cookie", cookie_string,
+                                URL_HOST_(set_url), path ? path : "/", date);
+      else
+         cmd = a_Dpip_build_cmd("cmd=%s cookie=%s host=%s path=%s",
+                                "set_cookie", cookie_string,
+                                URL_HOST_(set_url), path ? path : "/");
 
       _MSG("Cookies.c: a_Cookies_set \n\t \"%s\" \n",cmd );
       /* This call is commented because it doesn't guarantee the order
@@ -174,7 +181,7 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url)
  */
 char *a_Cookies_get_query(const DilloUrl *request_url)
 {
-   char *cmd, *dpip_tag, *query, numstr[16];
+   char *cmd, *dpip_tag, *query;
    const char *path;
    CookieControlAction action;
 
@@ -188,10 +195,9 @@ char *a_Cookies_get_query(const DilloUrl *request_url)
    }
    path = URL_PATH_(request_url);
 
-   snprintf(numstr, 16, "%d", URL_PORT(request_url));
-   cmd = a_Dpip_build_cmd("cmd=%s scheme=%s host=%s path=%s port=%s",
+   cmd = a_Dpip_build_cmd("cmd=%s scheme=%s host=%s path=%s",
                           "get_cookie", URL_SCHEME(request_url),
-                         URL_HOST(request_url), path ? path : "/", numstr);
+                         URL_HOST(request_url), path ? path : "/");
 
    /* Get the answer from cookies.dpi */
    _MSG("cookies.c: a_Dpi_send_blocking_cmd cmd = {%s}\n", cmd);
@@ -199,13 +205,11 @@ char *a_Cookies_get_query(const DilloUrl *request_url)
    _MSG("cookies.c: after a_Dpi_send_blocking_cmd resp={%s}\n", dpip_tag);
    dFree(cmd);
 
-   query = dStrdup("Cookie2: $Version=\"1\"\r\n");
-
    if (dpip_tag != NULL) {
-      char *cookie = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cookie");
+      query = a_Dpip_get_attr(dpip_tag, "cookie");
       dFree(dpip_tag);
-      query = dStrconcat(query, cookie, NULL);
-      dFree(cookie);
+   } else {
+      query = dStrdup("");
    }
    return query;
 }
@@ -226,11 +230,10 @@ static int Cookie_control_init(void)
 {
    CookieControl cc;
    FILE *stream;
-   char *filename;
+   char *filename, *rc;
    char line[LINE_MAXLEN];
    char domain[LINE_MAXLEN];
    char rule[LINE_MAXLEN];
-   int i, j;
    bool_t enabled = FALSE;
 
    /* Get a file pointer */
@@ -244,28 +247,31 @@ static int Cookie_control_init(void)
    /* Get all lines in the file */
    while (!feof(stream)) {
       line[0] = '\0';
-      fgets(line, LINE_MAXLEN, stream);
+      rc = fgets(line, LINE_MAXLEN, stream);
+      if (!rc && ferror(stream)) {
+         MSG("Cookies1: Error while reading rule from cookiesrc: %s\n",
+             dStrerror(errno));
+         return 2; /* bail out */
+      }
 
       /* Remove leading and trailing whitespaces */
       dStrstrip(line);
 
       if (line[0] != '\0' && line[0] != '#') {
-         i = 0;
-         j = 0;
+         int i = 0, j = 0;
 
          /* Get the domain */
-         while (!isspace(line[i]))
+         while (line[i] != '\0' && !dIsspace(line[i]))
             domain[j++] = line[i++];
          domain[j] = '\0';
 
          /* Skip past whitespaces */
-         i++;
-         while (isspace(line[i]))
+         while (dIsspace(line[i]))
             i++;
 
          /* Get the rule */
          j = 0;
-         while (line[i] != '\0' && !isspace(line[i]))
+         while (line[i] != '\0' && !dIsspace(line[i]))
             rule[j++] = line[i++];
          rule[j] = '\0';
 
@@ -287,8 +293,17 @@ static int Cookie_control_init(void)
             default_action = cc.action;
             dFree(cc.domain);
          } else {
+            int i;
+            uint_t len = strlen(cc.domain);
+
+            /* Insert into list such that longest rules come first. */
             a_List_add(ccontrol, num_ccontrol, num_ccontrol_max);
-            ccontrol[num_ccontrol++] = cc;
+            for (i = num_ccontrol++;
+                 i > 0 && (len > strlen(ccontrol[i-1].domain));
+                 i--) {
+               ccontrol[i] = ccontrol[i-1];
+            }
+            ccontrol[i] = cc;
          }
 
          if (cc.action != COOKIE_DENY)
@@ -302,7 +317,9 @@ static int Cookie_control_init(void)
 }
 
 /*
- * Check the rules for an appropriate action for this domain
+ * Check the rules for an appropriate action for this domain.
+ * The rules are ordered by domain length, with longest first, so the
+ * first match is the most specific.
  */
 static CookieControlAction Cookies_control_check_domain(const char *domain)
 {

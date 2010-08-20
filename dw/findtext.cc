@@ -14,13 +14,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 
 #include "core.hh"
+#include "../lout/msg.h"
 
 namespace dw {
 namespace core {
@@ -66,14 +66,15 @@ void FindtextState::setWidget (Widget *widget)
    hlIterator = NULL;
 }
 
-FindtextState::Result FindtextState::search (const char *key, bool caseSens)
+FindtextState::Result FindtextState::search (const char *key, bool caseSens,
+                                             bool backwards)
 {
    if (!widget || *key == 0) // empty keys are not found
       return NOT_FOUND;
 
    bool wasHighlighted = unhighlight ();
    bool newKey;
-   
+
    // If the key (or the widget) changes (including case sensitivity),
    // the search is started from the beginning.
    if (this->key == NULL || this->caseSens != caseSens ||
@@ -86,18 +87,25 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens)
 
       if (nexttab)
          delete[] nexttab;
-      nexttab = createNexttab (key, caseSens);
-      
+      nexttab = createNexttab (key, caseSens, backwards);
+
       if (iterator)
          delete iterator;
       iterator = new CharIterator (widget);
-      iterator->next ();
+
+      if (backwards) {
+         /* Go to end */
+         while (iterator->next () ) ;
+         iterator->prev (); //We don't want to be at CharIterator::END.
+      } else {
+         iterator->next ();
+      }
    } else
       newKey = false;
 
    bool firstTrial = !wasHighlighted || newKey;
 
-   if (search0 ()) {
+   if (search0 (backwards, firstTrial)) {
       // Highlighlighting is done with a clone.
       hlIterator = iterator->cloneCharIterator ();
       for (int i = 0; key[i]; i++)
@@ -110,16 +118,21 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens)
       iterator->next ();
       return SUCCESS;
    } else {
-      if (firstTrial)
+      if (firstTrial) {
          return NOT_FOUND;
-      else {
+      } else {
          // Nothing found anymore, reset the state for the next trial.
          delete iterator;
          iterator = new CharIterator (widget);
-         iterator->next ();
-         
+         if (backwards) {
+            /* Go to end */
+            while (iterator->next ()) ;
+            iterator->prev (); //We don't want to be at CharIterator::END.
+         } else {
+            iterator->next ();
+         }
          // We expect a success.
-         Result result2 = search (key, caseSens);
+         Result result2 = search (key, caseSens, backwards);
          assert (result2 == SUCCESS);
          return RESTART;
       }
@@ -135,11 +148,32 @@ void FindtextState::resetSearch ()
 
    if (key)
       delete key;
-   key = NULL;  
+   key = NULL;
 }
 
-int *FindtextState::createNexttab (const char *key, bool caseSens)
+/*
+ * Return a new string: with the reverse of the original.
+ */
+const char* FindtextState::rev(const char *str)
 {
+   if (!str)
+      return NULL;
+
+   int len = strlen(str);
+   char *nstr = new char[len+1];
+   for (int i = 0; i < len; ++i)
+      nstr[i] = str[len-1 -i];
+   nstr[len] = 0;
+
+   return nstr;
+}
+
+int *FindtextState::createNexttab (const char *needle, bool caseSens,
+                                   bool backwards)
+{
+   const char* key;
+
+   key = (backwards) ? rev(needle) : needle;
    int i = 0;
    int j = -1;
    int l = strlen (key);
@@ -155,6 +189,9 @@ int *FindtextState::createNexttab (const char *key, bool caseSens)
       } else
          j = nexttab[j];
    } while (i < l - 1);
+
+   if (backwards)
+      delete [] key;
 
    return nexttab;
 }
@@ -179,30 +216,76 @@ bool FindtextState::unhighlight ()
       return false;
 }
 
-bool FindtextState::search0 ()
+bool FindtextState::search0 (bool backwards,  bool firstTrial)
 {
    if (iterator->getChar () == CharIterator::END)
       return false;
 
+   bool ret = false;
+   const char* searchKey = (backwards) ? rev(key) : key;
    int j = 0;
    bool nextit = true;
    int l = strlen (key);
 
+   if (backwards && !firstTrial) {
+      _MSG("Having to do.");
+      /* Position correctly */
+      /* In order to achieve good results (i.e: find a word that ends within
+       * the previously searched word's limit) we have to position the
+       * iterator in the semilast character of the previously searched word.
+       *
+       * Since we know that if a word was found before it was exactly the
+       * same word as the one we are searching for now, we can apply the
+       * following expression:
+       *
+       * Where l=length of the key and n=num of positions to move:
+       *
+       * n = l - 3
+       *
+       * If n is negative, we have to move backwards, but if it is
+       * positive, we have to move forward. So, when l>=4, we start moving
+       * the iterator forward. */
+
+      if (l==1) {
+         iterator->prev();
+         iterator->prev();
+      } else if (l==2) {
+         iterator->prev();
+      } else if (l>=4) {
+         for (int i=0; i<l-3; i++) {
+            iterator->next();
+         }
+      }
+
+   } else if (backwards && l==1) {
+      /* Particular case where we can't find the last character */
+      iterator->next();
+   }
+
    do {
-      if (j == -1 || charsEqual (iterator->getChar (), key[j], caseSens)) {
+      if (j == -1 || charsEqual (iterator->getChar(),searchKey[j],caseSens)) {
          j++;
-         nextit = iterator->next ();
+         nextit = backwards ? iterator->prev () : iterator->next ();
       } else
          j = nexttab[j];
    } while (nextit && j < l);
-   
+
    if (j >= l) {
-      // Go back to where the word was found.
-      for (int i = 0; i < l; i++)
-         iterator->prev ();
-      return true;
-   } else
-      return false;
+      if (backwards) {
+         //This is the location of the key
+         iterator->next();
+      } else {
+         // Go back to where the key was found.
+         for (int i = 0; i < l; i++)
+            iterator->prev ();
+      }
+      ret = true;
+   }
+
+   if (backwards)
+      delete [] searchKey;
+
+   return ret;
 }
 
 } // namespace dw

@@ -32,7 +32,6 @@
 #endif
 
 #include "image.hh"
-#include "web.hh"
 #include "cache.h"
 #include "dicache.h"
 #include "capi.h"       /* get cache entry status */
@@ -81,15 +80,8 @@ typedef struct DilloJpeg {
 /*
  * Forward declarations
  */
-static DilloJpeg *Jpeg_new(DilloImage *Image, DilloUrl *url, int version);
-static void Jpeg_callback(int Op, CacheClient_t *Client);
 static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize);
-static void Jpeg_close(DilloJpeg *jpeg, CacheClient_t *Client);
 METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo);
-
-/* exported function */
-void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
-                   void **Data);
 
 
 /* this is the routine called by libjpeg when it detects an error. */
@@ -97,41 +89,23 @@ METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo)
 {
    /* display message and return to setjmp buffer */
    my_error_ptr myerr = (my_error_ptr) cinfo->err;
-   (*cinfo->err->output_message) (cinfo);
+   if (prefs.show_msg) {
+      DilloJpeg *jpeg =
+                     ((my_source_mgr *) ((j_decompress_ptr) cinfo)->src)->jpeg;
+      MSG_WARN("\"%s\": ", URL_STR(jpeg->url));
+      (*cinfo->err->output_message) (cinfo);
+   }
    longjmp(myerr->setjmp_buffer, 1);
 }
 
 /*
- * MIME handler for "image/jpeg" type
- * (Sets Jpeg_callback or a_Dicache_callback as the cache-client)
+ * Free the jpeg-decoding data structure.
  */
-void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
-                   void **Data)
+static void Jpeg_free(DilloJpeg *jpeg)
 {
-   DilloWeb *web = P;
-   DICacheEntry *DicEntry;
-
-   if (!web->Image)
-      web->Image = a_Image_new(0, 0, NULL, 0);
-
-   /* Add an extra reference to the Image (for dicache usage) */
-   a_Image_ref(web->Image);
-
-   DicEntry = a_Dicache_get_entry(web->url);
-   if (!DicEntry) {
-      /* Let's create an entry for this image... */
-      DicEntry = a_Dicache_add_entry(web->url);
-
-      /* ... and let the decoder feed it! */
-      *Data = Jpeg_new(web->Image, DicEntry->url, DicEntry->version);
-      *Call = (CA_Callback_t) Jpeg_callback;
-   } else {
-      /* Let's feed our client from the dicache */
-      a_Dicache_ref(DicEntry->url, DicEntry->version);
-      *Data = web->Image;
-      *Call = (CA_Callback_t) a_Dicache_callback;
-   }
-   return (web->Image->dw);
+   _MSG("Jpeg_free: jpeg=%p\n", jpeg);
+   jpeg_destroy_decompress(&(jpeg->cinfo));
+   dFree(jpeg);
 }
 
 /*
@@ -139,12 +113,17 @@ void *a_Jpeg_image(const char *Type, void *P, CA_Callback_t *Call,
  */
 static void Jpeg_close(DilloJpeg *jpeg, CacheClient_t *Client)
 {
+   _MSG("Jpeg_close\n");
    a_Dicache_close(jpeg->url, jpeg->version, Client);
-   jpeg_destroy_decompress(&(jpeg->cinfo));
-   dFree(jpeg);
+   Jpeg_free(jpeg);
 }
 
-static void init_source(j_decompress_ptr cinfo)
+/*
+ * The proper signature is:
+ *    static void init_source(j_decompress_ptr cinfo)
+ * (declaring it with no parameter avoids a compiler warning)
+ */
+static void init_source()
 {
 }
 
@@ -196,14 +175,20 @@ static void skip_input_data(j_decompress_ptr cinfo, long num_bytes)
    }
 }
 
-static void term_source(j_decompress_ptr cinfo)
+/*
+ * The proper signature is:
+ *    static void term_source(j_decompress_ptr cinfo)
+ * (declaring it with no parameter avoids a compiler warning)
+ */
+static void term_source()
 {
 }
 
-static DilloJpeg *Jpeg_new(DilloImage *Image, DilloUrl *url, int version)
+void *a_Jpeg_new(DilloImage *Image, DilloUrl *url, int version)
 {
    my_source_mgr *src;
    DilloJpeg *jpeg = dMalloc(sizeof(*jpeg));
+   _MSG("a_Jpeg_new: jpeg=%p\n", jpeg);
 
    jpeg->Image = Image;
    jpeg->url = url;
@@ -236,12 +221,17 @@ static DilloJpeg *Jpeg_new(DilloImage *Image, DilloUrl *url, int version)
    return jpeg;
 }
 
-static void Jpeg_callback(int Op, CacheClient_t *Client)
+void a_Jpeg_callback(int Op, void *data)
 {
-   if (Op)
-      Jpeg_close(Client->CbData, Client);
-   else
+   if (Op == CA_Send) {
+      CacheClient_t *Client = data;
       Jpeg_write(Client->CbData, Client->Buf, Client->BufSize);
+   } else if (Op == CA_Close) {
+      CacheClient_t *Client = data;
+      Jpeg_close(Client->CbData, Client);
+   } else if (Op == CA_Abort) {
+      Jpeg_free(data);
+   }
 }
 
 /*
@@ -278,14 +268,18 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
       /* decompression step 3 (see libjpeg.doc) */
       if (jpeg_read_header(&(jpeg->cinfo), TRUE) != JPEG_SUSPENDED) {
          type = DILLO_IMG_TYPE_GRAY;
-         if (jpeg->cinfo.num_components == 1)
+         if (jpeg->cinfo.num_components == 1) {
             type = DILLO_IMG_TYPE_GRAY;
-         else if (jpeg->cinfo.num_components == 3)
+         } else if (jpeg->cinfo.num_components == 3) {
             type = DILLO_IMG_TYPE_RGB;
-         else
-            _MSG("jpeg: can't handle %d component images\n",
-                 jpeg->cinfo.num_components);
-
+         } else {
+            MSG("4-component JPEG!\n");
+            if (jpeg->cinfo.jpeg_color_space == JCS_YCCK)
+               MSG("YCCK. Are the colors wrong?\n");
+            if (!jpeg->cinfo.saw_Adobe_marker)
+               MSG("No adobe marker! Is the image shown in reverse video?\n");
+            type = DILLO_IMG_TYPE_CMYK_INV;
+         }
          /*
           * If a multiple-scan image is not completely in cache,
           * use progressive display, updating as it arrives.
@@ -293,6 +287,17 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
          if (jpeg_has_multiple_scans(&jpeg->cinfo) &&
              !(a_Capi_get_flags(jpeg->url) & CAPI_Completed))
             jpeg->cinfo.buffered_image = TRUE;
+
+         /* check max image size */
+         if (jpeg->cinfo.image_width <= 0 || jpeg->cinfo.image_height <= 0 ||
+             jpeg->cinfo.image_width >
+             IMAGE_MAX_AREA / jpeg->cinfo.image_height) {
+            MSG("Jpeg_write: suspicious image size request %ux%u\n",
+                (uint_t)jpeg->cinfo.image_width,
+                (uint_t)jpeg->cinfo.image_height);
+            jpeg->state = DILLO_JPEG_ERROR;
+            return;
+         }
 
          a_Dicache_set_parms(jpeg->url, jpeg->version, jpeg->Image,
                              (uint_t)jpeg->cinfo.image_width,
@@ -330,7 +335,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
 
    if (jpeg->state == DILLO_JPEG_READ_BEGIN_SCAN) {
       if (jpeg_start_output(&jpeg->cinfo, jpeg->cinfo.input_scan_number)) {
-         a_Dicache_new_scan(jpeg->Image, jpeg->url, jpeg->version);
+         a_Dicache_new_scan(jpeg->url, jpeg->version);
          jpeg->state = DILLO_JPEG_READ_IN_SCAN;
       }
    }
@@ -346,8 +351,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
             /* out of input */
             break;
          }
-         a_Dicache_write(jpeg->Image, jpeg->url, jpeg->version,
-                         linebuf, jpeg->y);
+         a_Dicache_write(jpeg->url, jpeg->version, linebuf, jpeg->y);
 
          jpeg->y++;
 
@@ -389,7 +393,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
                   /* out of input */
                   break;
                }
-               a_Dicache_new_scan(jpeg->Image, jpeg->url, jpeg->version);
+               a_Dicache_new_scan(jpeg->url, jpeg->version);
                jpeg->state = DILLO_JPEG_READ_IN_SCAN;
             }
          }
@@ -397,5 +401,10 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
       dFree(linebuf);
    }
 }
+
+#else /* ENABLE_JPEG */
+
+void *a_Jpeg_new() { return 0; }
+void a_Jpeg_callback() { return; }
 
 #endif /* ENABLE_JPEG */

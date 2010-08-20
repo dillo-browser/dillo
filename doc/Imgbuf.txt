@@ -135,9 +135,9 @@ What happens in different situations:
      scaler is not yet in the list, it is added, and a local scaler is
      created.
 
-     
 
-  - 
+
+  -
 
 There are three images in the page, i1a, i1b, and i2. I1a and i1b
 refer to the same image recource, represented by the root image buffer

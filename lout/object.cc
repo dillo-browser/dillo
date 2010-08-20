@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -186,11 +185,11 @@ int ConstString::hashValue()
 int ConstString::compareTo(Comparable *other)
 {
    String *otherString = (String*)other;
-   if(str && otherString->str)
+   if (str && otherString->str)
       return strcmp(str, otherString->str);
-   else if(str)
+   else if (str)
       return 1;
-   else if(otherString->str)
+   else if (otherString->str)
       return -1;
    else
       return 0;
@@ -199,7 +198,7 @@ int ConstString::compareTo(Comparable *other)
 
 int ConstString::hashValue(const char *str)
 {
-   if(str) {
+   if (str) {
       int h = 0;
       for (int i = 0; str[i]; i++)
          h = (h * 256 + str[i]);
@@ -223,7 +222,7 @@ String::String (const char *str): ConstString (str ? strdup(str) : NULL)
 
 String::~String ()
 {
-  if(str)
+  if (str)
     delete str;
 }
 
@@ -239,9 +238,9 @@ PairBase::PairBase(Object *first, Object *second)
 
 PairBase::~PairBase()
 {
-   if(first)
+   if (first)
       delete first;
-   if(second)
+   if (second)
       delete second;
 }
 
@@ -251,7 +250,7 @@ bool PairBase::equals(Object *other)
 
    return
       // Identical?
-      this == other ||
+      this == other || (
       (// Both first parts are NULL, ...
          (first == NULL && otherPair->first == NULL) ||
          // ... or both first parts are not NULL and equal
@@ -260,18 +259,18 @@ bool PairBase::equals(Object *other)
       // Same with second part.
       ((second == NULL && otherPair->second == NULL) ||
        (second != NULL && otherPair->second != NULL
-        && second->equals (otherPair->second)));
+        && second->equals (otherPair->second))));
 }
 
 int PairBase::hashValue()
 {
    int value = 0;
 
-   if(first)
+   if (first)
       value ^= first->hashValue();
-   if(second)
+   if (second)
       value ^= second->hashValue();
-   
+
    return value;
 }
 
@@ -279,14 +278,14 @@ void PairBase::intoStringBuffer(misc::StringBuffer *sb)
 {
    sb->append("<pair: ");
 
-   if(first)
+   if (first)
       first->intoStringBuffer(sb);
    else
       sb->append("(nil)");
 
    sb->append(",");
 
-   if(second)
+   if (second)
       second->intoStringBuffer(sb);
    else
       sb->append("(nil)");
@@ -298,9 +297,9 @@ size_t PairBase::sizeOf()
 {
    size_t size = 0;
 
-   if(first)
+   if (first)
       size += first->sizeOf();
-   if(second)
+   if (second)
       size += second->sizeOf();
 
    return size;

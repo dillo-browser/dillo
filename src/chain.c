@@ -104,6 +104,7 @@ int a_Chain_fcb(int Op, ChainLink *Info, void *Data1, void *Data2)
    if (Info->Flags & (CCC_Ended + CCC_Aborted)) {
       /* CCC is not operative */
    } else if (Info->Fcb) {
+      /* flag the caller */
       if (Op == OpEnd)
          Info->Flags |= CCC_Ended;
       else if (Op == OpAbort)
@@ -126,6 +127,7 @@ int a_Chain_bcb(int Op, ChainLink *Info, void *Data1, void *Data2)
    if (Info->Flags & (CCC_Ended + CCC_Aborted)) {
       /* CCC is not operative */
    } else if (Info->Bcb) {
+      /* flag the caller */
       if (Op == OpEnd)
          Info->Flags |= CCC_Ended;
       else if (Op == OpAbort)
@@ -133,6 +135,28 @@ int a_Chain_bcb(int Op, ChainLink *Info, void *Data1, void *Data2)
 
       Info->Bcb(Op, Info->BcbBranch, BCK, Info->BcbInfo, Data1, Data2);
       ret = 1;
+   }
+   return ret;
+}
+
+/*
+ * Issue the backward callback of the 'Info' link and then the
+ * forward callback (used for OpAbort and OpStop).
+ * Return value: 1 if OK, 0 if not operative.
+ */
+int a_Chain_bfcb(int Op, ChainLink *Info, void *Data1, void *Data2)
+{
+   int ret;
+
+   ret = a_Chain_bcb(Op, Info, Data1, Data2);
+   if (ret == 1) {
+      /* we need to clear the flag to reuse this 'Info' ChainLink */
+      if (Op == OpEnd)
+         Info->Flags &= ~CCC_Ended;
+      else if (Op == OpAbort)
+         Info->Flags &= ~CCC_Aborted;
+
+      ret = a_Chain_fcb(Op, Info, Data1, Data2);
    }
    return ret;
 }
@@ -153,7 +177,7 @@ DataBuf *a_Chain_dbuf_new(void *buf, int size, int code)
 /*
  * Check whether the CCC is operative.
  * Also used to hook debug information.
- * 
+ *
  * Return value: 1 if ready to use, 0 if not operative.
  */
 int a_Chain_check(char *FuncStr, int Op, int Branch, int Dir,
@@ -166,7 +190,9 @@ int a_Chain_check(char *FuncStr, int Op, int Branch, int Dir,
 
    if (Info->Flags & (CCC_Ended + CCC_Aborted)) {
       /* CCC is not operative */
-      MSG_WARN("CCC: call on already finished chain.\n");
+      MSG_WARN("CCC: call on already finished chain. Flags=%s%s\n",
+               Info->Flags & CCC_Ended ? "CCC_Ended " : "",
+               Info->Flags & CCC_Aborted ? "CCC_Aborted" : "");
    } else {
       ret = 1;
    }

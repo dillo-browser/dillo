@@ -1,3 +1,7 @@
+// Rectangle::intersectsWith() has code that was derived from gdkrectangle.c.
+// gdkrectangle.c bears the notice that GDK, the GIMP Drawing Kit, is
+// "Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald".
+
 /*
  * Dillo Widget
  *
@@ -14,13 +18,15 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 
 #include "core.hh"
+#include "../lout/msg.h"
+
+using namespace lout;
 
 namespace dw {
 namespace core {
@@ -33,12 +39,20 @@ Rectangle::Rectangle (int x, int y, int width, int height)
    this->height = height;
 }
 
+/*
+ * Draw rectangle in view relative to point (x,y).
+ */
+void Rectangle::draw (core::View *view, core::style::Style *style, int x,int y)
+{
+   const bool filled = false;
+
+   view->drawRectangle(style->color, core::style::Color::SHADING_NORMAL,filled,
+                       x + this->x, y + this->y, this->width, this->height);
+}
+
 /**
  * Return whether this rectangle and otherRect intersect. If yes,
  * return the intersection rectangle in dest.
- *
- * \todo The function has been copied from gdktrectangle.c. Is this relevant
- *       for copyright?
  */
 bool Rectangle::intersectsWith (Rectangle *otherRect, Rectangle *dest)
 {
@@ -121,6 +135,18 @@ Circle::Circle (int x, int y, int radius)
    this->radius = radius;
 }
 
+/*
+ * Draw circle in view relative to point (x,y).
+ */
+void Circle::draw (core::View *view, core::style::Style *style, int x, int y)
+{
+   const bool filled = false;
+
+   view->drawArc(style->color, core::style::Color::SHADING_NORMAL, filled,
+                 x + this->x, y + this->y, 2 * this->radius, 2 * this->radius,
+                 0, 360);
+}
+
 bool Circle::isPointWithin (int x, int y)
 {
    return
@@ -140,6 +166,27 @@ Polygon::Polygon ()
 Polygon::~Polygon ()
 {
    delete points;
+}
+
+/*
+ * Draw polygon in view relative to point (x,y).
+ */
+void Polygon::draw (core::View *view, core::style::Style *style, int x, int y)
+{
+   if (points->size()) {
+      int i;
+      const bool filled = false;
+      int (*pointArray)[2] =
+                     (int (*)[2]) malloc(points->size() * sizeof(*pointArray));
+
+      for (i = 0; i < points->size(); i++) {
+         pointArray[i][0] = x + points->getRef(i)->x;
+         pointArray[i][1] = y + points->getRef(i)->y;
+      }
+      view->drawPolygon(style->color, core::style::Color::SHADING_NORMAL,
+                        filled, pointArray, i);
+      free(pointArray);
+   }
 }
 
 void Polygon::addPoint (int x, int y)
@@ -180,8 +227,8 @@ bool Polygon::linesCross(int ax1, int ay1, int ax2, int ay2,
    bool cross =
       linesCross0 (ax1, ay1, ax2, ay2, bx1, by1, bx2, by2) &&
       linesCross0 (bx1, by1, bx2, by2, ax1, ay1, ax2, ay2);
-   //printf ("(%d, %d) - (%d, %d) and (%d, %d) - (%d, %d) cross? %s.\n",
-   //        ax1, ay1, ax2, ay2, bx1, by1, bx2, by2, cross ? "Yes" : "No");
+   _MSG("(%d, %d) - (%d, %d) and (%d, %d) - (%d, %d) cross? %s.\n",
+        ax1, ay1, ax2, ay2, bx1, by1, bx2, by2, cross ? "Yes" : "No");
    return cross;
 }
 
@@ -248,7 +295,7 @@ void Region::addRectangle (Rectangle *rPointer)
             r->y = misc::min(r->y, ownRect->y);
             r->width = combinedWidth;
             r->height = combinedHeight;
-            
+
             rectangleList->removeRef (ownRect);
       }
    }

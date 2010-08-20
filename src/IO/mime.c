@@ -96,16 +96,16 @@ static Viewer_t Mime_major_type_fetch(const char *Key, uint_t Size)
 void a_Mime_init()
 {
 #ifdef ENABLE_GIF
-   Mime_add_minor_type("image/gif", a_Gif_image);
+   Mime_add_minor_type("image/gif", a_Dicache_gif_image);
 #endif
 #ifdef ENABLE_JPEG
-   Mime_add_minor_type("image/jpeg", a_Jpeg_image);
-   Mime_add_minor_type("image/pjpeg", a_Jpeg_image);
-   Mime_add_minor_type("image/jpg", a_Jpeg_image);
+   Mime_add_minor_type("image/jpeg", a_Dicache_jpeg_image);
+   Mime_add_minor_type("image/pjpeg", a_Dicache_jpeg_image);
+   Mime_add_minor_type("image/jpg", a_Dicache_jpeg_image);
 #endif
 #ifdef ENABLE_PNG
-   Mime_add_minor_type("image/png", a_Png_image);
-   Mime_add_minor_type("image/x-png", a_Png_image);    /* deprecated */
+   Mime_add_minor_type("image/png", a_Dicache_png_image);
+   Mime_add_minor_type("image/x-png", a_Dicache_png_image);    /* deprecated */
 #endif
    Mime_add_minor_type("text/html", a_Html_text);
 

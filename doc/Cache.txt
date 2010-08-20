@@ -1,5 +1,5 @@
  June 2000, --Jcid
- Last update: Oct 2004
+ Last update: Jul 09
 
                               -------
                                CACHE
@@ -12,28 +12,21 @@ rendering and networking.
 calls  the  cache  or  the  dpi routines depending on the type of
 request.
 
-   Every  URL  must be requested using a_Capi_open_url, no matter
-if  it is a http, file, dpi or whatever type of request. The capi
-asks  the  dpi  module  for dpi URLs and the Cache for everything
-else.
+   Every  URL  must be requested using a_Capi_open_url, which
+sends the request to the cache if the data is cached, to dillo's
+http module for http: URLs, and through dillo's DPI system for
+other URLs.
 
    Here we'll document non dpi requests.
-
-   The  cache,  at its turn, sends the requested-data from memory
-(if  cached),  or opens a new network connection (if not cached).
-
-   This  means  that  no  mattering whether the answer comes from
-memory  or  the  net,  the  client  requests  it through the capi
-wrapper, in a single uniform way.
 
 
                          ----------------
                          CACHE PHILOSOPHY
                          ----------------
 
-   Dillo's  cache  is  very  simple, every single resource that's
-retrieved  (URL)  is  kept  in  memory. NOTHING is saved. This is
-mainly for three reasons:
+   Dillo's  cache  is  very  simple; every single resource that's
+retrieved  (URL)  is  kept  in  memory. NOTHING is saved to disk.
+This is mainly for three reasons:
 
    - Dillo encourages personal privacy and it assures there'll be
 no recorded tracks of the sites you visited.
@@ -42,7 +35,7 @@ no recorded tracks of the sites you visited.
 serve as caches.
 
    -  If  you still want to have cached stuff, you can install an
-external cache server (as WWWOFFLE), and benefit from it.
+external cache server (such as WWWOFFLE), and benefit from it.
 
 
                          ---------------
@@ -51,15 +44,14 @@ external cache server (as WWWOFFLE), and benefit from it.
 
    Currently, dillo's cache code is spread in different sources:
 mainly  in  cache.[ch],  dicache.[ch]  and  it  uses  some  other
-functions from mime.c, Url.c and web.c.
+functions from mime.c and web.cc.
 
-   Cache.c  is  the  principal  source,  and  it also is the main
+   Cache.c  is  the  principal  source,  and  it also is the one
 responsible  for  processing  cache-clients  (held  in  a queue).
-Dicache.c  is  the  "decompressed  image  cache" and it holds the
-original    data   and   its   corresponding   decompressed   RGB
-representation (more on this subject in Images.txt).
+Dicache.c  is  the interface to the decompressed RGB representations
+of currently-displayed images held in DW's imgbuf.
 
-   Url.c,  mime.c  and  web.c  are  used  for secondary tasks; as
+   mime.c  and  web.cc  are  used  for secondary tasks such as
 assigning the right "viewer" or "decoder" for a given URL.
 
 
@@ -67,7 +59,7 @@ assigning the right "viewer" or "decoder" for a given URL.
 A bit of history
 ----------------
 
-   Some  time  ago,  the  cache  functions,  URL  retrieving  and
+   Some  time  ago,  the  cache  functions,  URL  retrieval  and
 external  protocols  were  a whole mess of mixed code, and it was
 getting  REALLY hard to fix, improve or extend the functionality.
 The  main  idea  of  this  "layering" is to make code-portions as
@@ -76,32 +68,34 @@ improved or replaced without affecting the rest of the browser.
 
    An  interesting  part of the process is that, as resources are
 retrieved,  the  client  (dillo  in  this  case) doesn't know the
-Content-Type  of the resource at request-time. It only gets known
-when  the  resource  header  is retrieved (think of http), and it
-happens  when  the  cache  has the control so, the cache sets the
-proper  viewer for it! (unless the Callback function is specified
-with the URL request).
+Content-Type  of the resource at request-time. It only becomes known
+when  the  resource  header  is retrieved (think of http). This
+happens  when  the  cache  has control, so the cache sets the
+proper  viewer for it (unless the Callback function was already
+specified with the URL request).
 
    You'll find a good example in http.c.
 
-   Note:  Files  don't have a header, but the file handler inside
-dillo  tries  to  determine the Content-Type and sends it back in
-HTTP form!
+   Note: All resources received by the cache have HTTP-style headers.
+   The file/data/ftp DPIs generate these headers when sending their
+   non-HTTP resources. Most importantly, a Content-Type header is
+   generated based on file extension or file contents.
 
 
 -------------
 Cache clients
 -------------
 
-   Cache clients MUST use a_Cache_open_url to request an URL. The
+   Cache clients MUST use a_Capi_open_url to request an URL. The
 client structure and the callback-function prototype are defined,
 in cache.h, as follows:
 
 struct _CacheClient {
-   gint Key;                /* Primary Key for this client */
-   const char *Url;         /* Pointer to a cache entry Url */
-   guchar *Buf;             /* Pointer to cache-data */
-   guint BufSize;           /* Valid size of cache-data */
+   int Key;                 /* Primary Key for this client */
+   const DilloUrl *Url;     /* Pointer to a cache entry Url */
+   int Version;             /* Dicache version of this Url (0 if not used) */
+   void *Buf;               /* Pointer to cache-data */
+   uint_t BufSize;          /* Valid size of cache-data */
    CA_Callback_t Callback;  /* Client function */
    void *CbData;            /* Client function data */
    void *Web;               /* Pointer to the Web structure of our client */
@@ -124,26 +118,13 @@ Key-functions descriptions
 --------------------------
 
 ································································
-int a_Cache_open_url(const char *Url, CA_Callback_t Call, void *CbData)
+int a_Cache_open_url(void *Web, CA_Callback_t Call, void *CbData)
 
-   if Url is not cached
+   if Web->url is not cached
       Create a cache-entry for that URL
       Send client to cache queue
-      Initiate a new connection
    else
       Feed our client with cached data
-
-································································
-ChainFunction_t a_Url_get_ccc_funct(const char *Url)
-
-   Scan the Url handlers for a handler that matches
-   If found
-      Return the CCC function for it
-   else
-      Return NULL
-
-   *  Ex:  If  Url is an http request, a_Http_ccc is the matching
-handler.
 
 ································································
 
@@ -177,9 +158,9 @@ Notes
 to document it in more detail later (source is commented).
    Currently  I  have  a drawing to understand it; hope the ASCII
 translation serves the same as the original.
-   If  you're  planning to understand the cache process troughly,
-write  me  a  note,  just  to assign a higher priority on further
-improving of this doc.
+   If  you're  planning to understand the cache process thoroughly,
+write  me  a  note and I will assign higher priority to further
+improvement of this doc.
    Hope this helps!
 
 

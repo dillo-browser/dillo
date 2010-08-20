@@ -15,6 +15,7 @@
 #include <stdlib.h>     /* strtol */
 
 #include "decode.h"
+#include "utf8.hh"
 #include "msg.h"
 
 static const int bufsize = 8*1024;
@@ -106,13 +107,12 @@ static Dstr *Decode_gzip(Decode *dc, const char *instr, int inlen)
 
       rc = inflate(zs, Z_SYNC_FLUSH);
 
+      dStr_append_l(output, dc->buffer, zs->total_out);
+
       if ((rc == Z_OK) || (rc == Z_STREAM_END)) {
          // Z_STREAM_END at end of file
 
          inputConsumed += zs->total_in;
-
-         dStr_append_l(output, dc->buffer, zs->total_out);
-
          zs->total_out = 0;
          zs->total_in = 0;
       } else if (rc == Z_DATA_ERROR) {
@@ -126,6 +126,7 @@ static void Decode_gzip_free(Decode *dc)
 {
    (void)inflateEnd((z_stream *)dc->state);
 
+   dFree(dc->state);
    dFree(dc->buffer);
 }
 
@@ -164,15 +165,8 @@ static Dstr *Decode_charset(Decode *dc, const char *instr, int inlen)
       if (rc == EILSEQ){
          inPtr++;
          inLeft--;
-         /*
-          * U+FFFD: "used to replace an incoming character whose value is
-          *        unknown or unrepresentable in Unicode."
-          */
-          //dStr_append(output, "\ufffd");
-          // \uxxxx is C99. UTF-8-specific:
-          dStr_append_c(output, 0xEF);
-          dStr_append_c(output, 0xBF);
-          dStr_append_c(output, 0xBD);
+         dStr_append_l(output, utf8_replacement_char,
+                       sizeof(utf8_replacement_char) - 1);
       }
    }
    dStr_erase(dc->leftover, 0, dc->leftover->len - inLeft);
@@ -182,6 +176,7 @@ static Dstr *Decode_charset(Decode *dc, const char *instr, int inlen)
 
 static void Decode_charset_free(Decode *dc)
 {
+   /* iconv_close() frees dc->state */
    (void)iconv_close((iconv_t)(dc->state));
 
    dFree(dc->buffer);
@@ -195,7 +190,7 @@ Decode *a_Decode_transfer_init(const char *format)
 {
    Decode *dc = NULL;
 
-   if (format && !dStrncasecmp(format, "chunked", 7)) {
+   if (format && !dStrcasecmp(format, "chunked")) {
       int *chunk_remaining = dNew(int, 1);
       *chunk_remaining = 0;
       dc = dNew(Decode, 1);
@@ -221,9 +216,9 @@ Decode *a_Decode_content_init(const char *format)
 
    if (format && *format) {
       if (!dStrcasecmp(format, "gzip") || !dStrcasecmp(format, "x-gzip")) {
+         z_stream *zs;
          _MSG("gzipped data!\n");
 
-         z_stream *zs;
          dc = dNew(Decode, 1);
          dc->buffer = dNew(char, bufsize);
          dc->state = zs = dNew(z_stream, 1);
@@ -242,7 +237,7 @@ Decode *a_Decode_content_init(const char *format)
          MSG("Content-Encoding '%s' not recognized.\n", format);
       }
    }
-   return dc;      
+   return dc;
 }
 
 /*
@@ -289,10 +284,10 @@ Decode *a_Decode_charset_init(const char *format)
            dc->decode = Decode_charset;
            dc->free = Decode_charset_free;
       } else {
-         MSG("Unable to convert from character encoding: '%s'\n", format);
+         MSG_WARN("Unable to convert from character encoding: '%s'\n", format);
       }
    }
-   return dc;      
+   return dc;
 }
 
 /*

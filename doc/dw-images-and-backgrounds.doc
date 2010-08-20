@@ -109,7 +109,7 @@ digraph G {
    }
 
    "DICache Entry" -> ImageRenderer [headlabel="*", taillabel="1"];
-   "DICache Entry" -> Imgbuf [headlabel="1", taillabel="1"]; 
+   "DICache Entry" -> Imgbuf [headlabel="1", taillabel="1"];
 
    BgRenderer -> Imgbuf [headlabel="1", taillabel="*"];
    BgRenderer -> BgAllocation [headlabel="*", taillabel="1"];

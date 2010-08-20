@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -53,14 +52,15 @@ int main(int argc, char **argv)
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
    styleAttrs.margin.setVal (5);
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    FontAttrs fontAttrs;
    fontAttrs.name = "Helvetica";
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
    Style *tableStyle = Style::create (layout, &styleAttrs);
@@ -79,10 +79,10 @@ int main(int argc, char **argv)
    // First of all, the resources. Later, they are embedded into the
    // widget tree.
    EntryResource *entryres1 =
-      layout->getResourceFactory()->createEntryResource (10, false);
+      layout->getResourceFactory()->createEntryResource (10, false, NULL);
    entryres1->setText ("Hi!");
    EntryResource *entryres2 =
-      layout->getResourceFactory()->createEntryResource (10, true);
+      layout->getResourceFactory()->createEntryResource (10, true, NULL);
    MultiLineTextResource *textres =
       layout->getResourceFactory()->createMultiLineTextResource (15,3);
    RadioButtonResource *radiores1 =
@@ -95,13 +95,13 @@ int main(int argc, char **argv)
    SelectionResource *selres[2];
    selres[0] = layout->getResourceFactory()->createOptionMenuResource ();
    selres[1] = layout->getResourceFactory()->createListResource
-      (ListResource::SELECTION_AT_MOST_ONE);
+      (ListResource::SELECTION_AT_MOST_ONE, 4);
    LabelButtonResource *buttonres =
       layout->getResourceFactory()->createLabelButtonResource ("Run!");
 
    // Note on complex buttons: before any operations on the widget, which
    // need a layout, the complex button resource should be created, since
-   // then, a layout and a platform are instanciated.
+   // then, a layout and a platform are instantiated.
    Textblock *cbuttontext = new Textblock(false);
    ComplexButtonResource *cbuttonres =
       layout->getResourceFactory()->createComplexButtonResource (cbuttontext,

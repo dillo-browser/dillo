@@ -1,31 +1,29 @@
 AM_CPPFLAGS=-DDPIDRC_SYS='"$(sysconfdir)/dpidrc"'
 
-bin_PROGRAMS = dpid
+bin_PROGRAMS = dpid dpidc
 dpid_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
+dpidc_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
 
-EXTRA_DIST = dpidc
-bin_SCRIPTS = dpidc
+EXTRA_DIST = dpidrc.in
 
 dpid_SOURCES = \
 	dpi.h \
-	dpi_service.h \
 	dpi_socket_dir.h \
 	dpid.h \
 	dpid_common.h \
 	misc_new.h \
 	dpi.c \
-	dpi_service.c \
 	dpi_socket_dir.c \
 	dpid.c \
 	dpid_common.c \
 	main.c \
 	misc_new.c
 
-install-data-local :
-	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
-	echo dpi_dir=$(libdir)/dillo/dpi > $(DESTDIR)$(sysconfdir)/dpidrc
-	echo >> $(DESTDIR)$(sysconfdir)/dpidrc
-	echo "proto.file=file/file.dpi" >> $(DESTDIR)$(sysconfdir)/dpidrc
-	echo "proto.ftp=ftp/ftp.filter.dpi" >> $(DESTDIR)$(sysconfdir)/dpidrc
-	echo "proto.https=https/https.filter.dpi" >> $(DESTDIR)$(sysconfdir)/dpidrc
-	echo "proto.data=datauri/datauri.filter.dpi" >> $(DESTDIR)$(sysconfdir)/dpidrc
+dpidc_SOURCES = dpidc.c
+
+sysconf_DATA = dpidrc
+CLEANFILES = $(sysconf_DATA)
+
+dpidrc: $(srcdir)/dpidrc.in Makefile
+	sed -e 's|[@]libdir[@]|$(libdir)|' $(srcdir)/dpidrc.in > dpidrc
+

@@ -107,7 +107,7 @@ class DLItem {
    enum {
       ST_newline, ST_number, ST_discard, ST_copy
    };
- 
+
    pid_t mPid;
    int LogPipe[2];
    char *shortname, *fullname;
@@ -291,10 +291,11 @@ static void prButton_scb(Widget *, void *cb_data)
 DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
 {
    struct stat ss;
-   char *p, *esc_url;
+   const char *p;
+   char *esc_url;
 
    if (pipe(LogPipe) < 0) {
-      MSG("pipe, %s\n", strerror(errno));
+      MSG("pipe, %s\n", dStrerror(errno));
       return;
    }
    /* Set FD to background */
@@ -513,7 +514,7 @@ void DLItem::log_text_add(const char *buf, ssize_t st)
          if (isdigit(*q++ = *p)) {
             // keep here
          } else if (*p == 'K') {
-            for(--q; isdigit(q[-1]); --q); log_state = ST_discard;
+            for (--q; isdigit(q[-1]); --q) ; log_state = ST_discard;
          } else {
             log_state = ST_copy;
          }
@@ -582,7 +583,9 @@ void DLItem::update_size(int new_sz)
       prBar->move(1);
    } else {
       prBar->showtext(true);
-      double pos = 100.0 * (double)curr_bytesize / total_bytesize;
+      double pos = 100.0;
+      if (total_bytesize > 0)
+         pos *= (double)curr_bytesize / total_bytesize;
       prBar->position(pos);
    }
 }
@@ -685,7 +688,7 @@ void DLItem::update()
 
    /* Update curr_size */
    if (stat(fullname, &ss) == -1) {
-      MSG("stat, %s\n", strerror(errno));
+      MSG("stat, %s\n", dStrerror(errno));
       return;
    }
    update_size((int)ss.st_size);
@@ -744,7 +747,7 @@ void DLItem::update()
 /*! SIGCHLD handler
  */
 static void raw_sigchld(int)
-{          
+{
    caught_sigchld = 1;
 }
 
@@ -820,29 +823,6 @@ static void update_cb(void *data)
 // DLWin ---------------------------------------------------------------------
 
 /*
- * Read a single line from a socket and store it in a Dstr.
- */
-static ssize_t readline(int socket, Dstr ** msg)
-{
-   ssize_t st;
-   char buf[16384];
-
-   /* can't use fread() */
-   do
-      st = read(socket, buf, 16384);
-   while (st < 0 && errno == EINTR);
-
-   if (st == -1)
-      MSG("readline, %s\n", strerror(errno));
-
-   dStr_truncate(*msg, 0);
-   if (st > 0)
-      dStr_append_l(*msg, buf, (int)st);
-
-   return st;
-}
-
-/*
  * Make a new name and place it in 'dl_dest'.
  */
 static void make_new_name(char **dl_dest, const char *url)
@@ -873,33 +853,48 @@ static void make_new_name(char **dl_dest, const char *url)
  */
 static void read_req_cb(int req_fd, void *)
 {
-   Dstr *tag;
    struct sockaddr_un clnt_addr;
-   int new_socket;
+   int sock_fd;
    socklen_t csz;
    struct stat sb;
-   char *cmd = NULL, *url = NULL, *dl_dest = NULL;
+   Dsh *sh = NULL;
+   char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *dl_dest = NULL;
    DLAction action = DL_ABORT; /* compiler happiness */
 
    /* Initialize the value-result parameter */
    csz = sizeof(struct sockaddr_un);
    /* accept the request */
    do {
-      new_socket = accept(req_fd, (struct sockaddr *) &clnt_addr, &csz);
-   } while (new_socket == -1 && errno == EINTR);
-   if (new_socket == -1) {
-      MSG("accept, %s fd=%d\n", strerror(errno), req_fd);
+      sock_fd = accept(req_fd, (struct sockaddr *) &clnt_addr, &csz);
+   } while (sock_fd == -1 && errno == EINTR);
+   if (sock_fd == -1) {
+      MSG("accept, %s fd=%d\n", dStrerror(errno), req_fd);
       return;
    }
 
-   //sigprocmask(SIG_BLOCK, &blockSC, NULL);
-   tag = dStr_sized_new(64);
-   readline(new_socket, &tag);
-   close(new_socket);
-   _MSG("Received tag={%s}\n", tag->str);
+   /* create a sock handler */
+   sh = a_Dpip_dsh_new(sock_fd, sock_fd, 8*1024);
 
-   if ((cmd = a_Dpip_get_attr(tag->str, (size_t)tag->len, "cmd")) == NULL) {
-      MSG("Failed to parse 'cmd' in {%s}\n", tag->str);
+   /* Authenticate our client... */
+   if (!(dpip_tag = a_Dpip_dsh_read_token(sh, 1)) ||
+       a_Dpip_check_auth(dpip_tag) < 0) {
+      MSG("can't authenticate request: %s fd=%d\n", dStrerror(errno), sock_fd);
+      a_Dpip_dsh_close(sh);
+      goto end;
+   }
+   dFree(dpip_tag);
+
+   /* Read request */
+   if (!(dpip_tag = a_Dpip_dsh_read_token(sh, 1))) {
+      MSG("can't read request: %s fd=%d\n", dStrerror(errno), sock_fd);
+      a_Dpip_dsh_close(sh);
+      goto end;
+   }
+   a_Dpip_dsh_close(sh);
+   _MSG("Received tag={%s}\n", dpip_tag);
+
+   if ((cmd = a_Dpip_get_attr(dpip_tag, "cmd")) == NULL) {
+      MSG("Failed to parse 'cmd' in {%s}\n", dpip_tag);
       goto end;
    }
    if (strcmp(cmd, "DpiBye") == 0) {
@@ -910,12 +905,12 @@ static void read_req_cb(int req_fd, void *)
       MSG("unknown command: '%s'. Aborting.\n", cmd);
       goto end;
    }
-   if (!(url = a_Dpip_get_attr(tag->str,(size_t)tag->len, "url"))){
-      MSG("Failed to parse 'url' in {%s}\n", tag->str);
+   if (!(url = a_Dpip_get_attr(dpip_tag, "url"))){
+      MSG("Failed to parse 'url' in {%s}\n", dpip_tag);
       goto end;
    }
-   if (!(dl_dest = a_Dpip_get_attr(tag->str,(size_t)tag->len,"destination"))){
-      MSG("Failed to parse 'destination' in {%s}\n", tag->str);
+   if (!(dl_dest = a_Dpip_get_attr(dpip_tag, "destination"))){
+      MSG("Failed to parse 'destination' in {%s}\n", dpip_tag);
       goto end;
    }
    /* 'dl_dest' may be a directory */
@@ -934,7 +929,8 @@ end:
    dFree(cmd);
    dFree(url);
    dFree(dl_dest);
-   dStr_free(tag, TRUE);
+   dFree(dpip_tag);
+   a_Dpip_dsh_free(sh);
 }
 
 /*
@@ -976,7 +972,7 @@ void DLWin::add(const char *full_filename, const char *url, DLAction action)
    } else if (f_pid < 0) {
       perror("fork, ");
       exit(1);
-   } else {   
+   } else {
       /* father */
       dl_win->show();
       dl_item->pid(f_pid);
@@ -999,7 +995,7 @@ DLAction DLWin::check_filename(char **p_fullname)
       return DL_NEWFILE;
 
    ds = dStr_sized_new(128);
-   dStr_sprintf(ds, 
+   dStr_sprintf(ds,
                 "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
                 *p_fullname, (int)ss.st_size);
    ch = fltk::choice(ds->str, "Rename", "Continue", "Abort");
@@ -1020,18 +1016,14 @@ DLAction DLWin::check_filename(char **p_fullname)
 }
 
 /*
- * Add a new download request to the main window and
- * fork a child to do the job.
+ * Delete a download request from the main window.
  */
 void DLWin::del(int n_item)
 {
    DLItem *dl_item = mDList->get(n_item);
 
-   // Remove the widget from the scroll group
+   // Remove the widget from the packed group
    mPG->remove(dl_item->get_widget());
-   // Resize the scroll group
-   mPG->resize(mWin->w(), 1);
-
    mDList->del(n_item);
    delete(dl_item);
 }
@@ -1093,7 +1085,7 @@ DLWin::DLWin(int ww, int wh) {
     mScroll->end();
     mScroll->type(ScrollGroup::VERTICAL);
    mWin->end();
-   mWin->resizable(mPG);
+   mWin->resizable(mScroll);
    mWin->callback(dlwin_esc_cb, NULL);
    mWin->show();
 

@@ -55,7 +55,7 @@ private:
    /**
     * \brief Decorates instances of dw::core::ui::RadioButtonResource.
     *
-    * This class has to be instanciated only once for a group of radio
+    * This class has to be instantiated only once for a group of radio
     * buttons.
     */
    class RadioButtonResourceDecorator: public ResourceDecorator
@@ -113,14 +113,14 @@ private:
 
    public:
       inline FormActivateReceiver (Form *form) { this->form = form; }
-      
+
       void activate (dw::core::ui::Resource *resource);
       void enter (dw::core::ui::Resource *resource);
       void leave (dw::core::ui::Resource *resource);
    };
 
    class FormClickedReceiver:
-      public dw::core::ui::ButtonResource::ClickedReceiver
+      public dw::core::ui::Resource::ClickedReceiver
    {
    private:
       Form *form;
@@ -129,9 +129,9 @@ private:
    public:
       FormClickedReceiver (Form *form, const char *name, const char *value);
       ~FormClickedReceiver ();
-      
-      void clicked (dw::core::ui::ButtonResource *resource, int buttonNo,
-                    int x, int y);
+
+      void clicked(dw::core::ui::Resource *resource,
+                   dw::core::EventButton *event);
    };
 
    lout::container::typed::List <ResourceDecorator> *resources;

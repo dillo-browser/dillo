@@ -17,10 +17,6 @@ Related to the FLTK port, there have been many changes, this is a
      <li> The central class managing the widget tree is not anymore
           GtkDwViewport,  but dw::core::Layout.
 
-     <li> There are multiple views (implementations of dw::core::View).
-          Typically, you keep a reference on dw::core::Layout and a "main"
-          view (a viewport).
-
      <li> Drawing is done via dw::core::View, a pointer is passed to
           dw::core::Widget::draw.
 
@@ -91,7 +87,7 @@ The old documentation has been moved to:
 <tr><td>remarks on specific widgets  <td>respective source files: dw::Bullet,
                                       dw::core::ui::Embed
 <tr><td rowspan="2">DwImage.txt
-    <td>signals                   <td>dw::core::Widget::LinkReceiver
+    <td>signals                   <td>dw::core::Layout::LinkReceiver
 <tr><td>rest                      <td>dw::Image,
                                       \ref dw-images-and-backgrounds
 <tr><td colspan="2">Imgbuf.txt    <td>dw::core::Imgbuf,

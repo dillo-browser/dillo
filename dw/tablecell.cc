@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -29,13 +28,14 @@ int TableCell::CLASS_ID = -1;
 
 TableCell::TableCell (TableCell *ref, bool limitTextWidth):
    AlignedTextblock (limitTextWidth)
-{  
+{
    registerName ("dw::TableCell", &CLASS_ID);
 
    /** \bug ignoreLine1OffsetSometimes does not work? */
    //ignoreLine1OffsetSometimes = true;
    charWordIndex = -1;
    setRefTextblock (ref);
+   setButtonSensitive(true);
 }
 
 TableCell::~TableCell()
@@ -45,7 +45,7 @@ TableCell::~TableCell()
 void TableCell::wordWrap(int wordIndex)
 {
    Textblock::Word *word;
-   char *p;
+   const char *p;
 
    Textblock::wordWrap (wordIndex);
 

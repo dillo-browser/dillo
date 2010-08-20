@@ -13,28 +13,32 @@
  * Non blocking pthread-handled Dns scheme
  */
 
-#include <pthread.h>
+
+/*
+ * Uncomment the following line for debugging or gprof profiling.
+ */
+/* #undef D_DNS_THREADED */
+
+#ifdef D_DNS_THREADED
+#  include <pthread.h>
+#endif
+
 
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <signal.h>
 #include <string.h>
 
 #include "msg.h"
 #include "dns.h"
 #include "list.h"
 #include "timeout.hh"
-
-/*
- * Uncomment the following line for debugging or gprof profiling.
- */
-/* #undef D_DNS_THREADED */
 
 
 /* Maximum dns resolving threads */
@@ -84,7 +88,6 @@ static GDnsCache *dns_cache;
 static int dns_cache_size, dns_cache_size_max;
 static GDnsQueue *dns_queue;
 static int dns_queue_size, dns_queue_size_max;
-static bool_t ipv6_enabled;
 
 
 /* ----------------------------------------------------------------------
@@ -197,16 +200,14 @@ void a_Dns_init(void)
 #endif
    }
 
-   /* IPv6 test */
-   ipv6_enabled = FALSE;
 #ifdef ENABLE_IPV6
+   /* IPv6 test */
    {
       /* If the IPv6 address family is not available there is no point
          wasting time trying to connect to v6 addresses. */
       int fd = socket(AF_INET6, SOCK_STREAM, 0);
       if (fd >= 0) {
          close(fd);
-         ipv6_enabled = TRUE;
       }
    }
 #endif
@@ -267,12 +268,15 @@ static void *Dns_server(void *data)
    int channel = VOIDP2INT(data);
    struct addrinfo hints, *res0;
    int error;
+   Dlist *hosts;
+   size_t length, i;
+   char addr_string[40];
 
    memset(&hints, 0, sizeof(hints));
    hints.ai_family = AF_UNSPEC;
    hints.ai_socktype = SOCK_STREAM;
 
-   Dlist *hosts = dList_new(2);
+   hosts = dList_new(2);
 
    _MSG("Dns_server: starting...\n ch: %d host: %s\n",
         channel, dns_server[channel].hostname);
@@ -306,8 +310,18 @@ static void *Dns_server(void *data)
    }
 
    /* tell our findings */
-   MSG("Dns_server [%d]: %s is %p\n", channel,
-       dns_server[channel].hostname, hosts);
+   MSG("Dns_server [%d]: %s is", channel,
+       dns_server[channel].hostname);
+   if ((length = dList_length(hosts))) {
+      for (i = 0; i < length; i++) {
+         a_Dns_dillohost_to_string(dList_nth_data(hosts, i),
+                                   addr_string, sizeof(addr_string));
+         MSG(" %s", addr_string);
+      }
+      MSG("\n");
+   } else {
+      MSG(" (nil)\n");
+   }
    dns_server[channel].addr_list = hosts;
    dns_server[channel].ip_ready = TRUE;
 
@@ -367,7 +381,7 @@ void a_Dns_resolve(const char *hostname, DnsCallback_t cb_func, void *cb_data)
          break;
 
    if (i < dns_cache_size) {
-      /* already resolved, call the Callback inmediately. */
+      /* already resolved, call the Callback immediately. */
       cb_func(0, dns_cache[i].addr_list, cb_data);
 
    } else if ((i = Dns_queue_find(hostname)) != -1) {
@@ -469,15 +483,35 @@ static void Dns_timeout_client(void *data)
  *  Dns memory-deallocation
  *  (Call this one at exit time)
  *  The Dns_queue is deallocated at execution time (no need to do that here)
- *  'dns_cache' is the only one that grows dinamically
+ *  'dns_cache' is the only one that grows dynamically
  */
 void a_Dns_freeall(void)
 {
-   int i;
+   int i, j;
 
    for ( i = 0; i < dns_cache_size; ++i ){
       dFree(dns_cache[i].hostname);
+      for ( j = 0; j < dList_length(dns_cache[i].addr_list); ++j)
+         dFree(dList_nth_data(dns_cache[i].addr_list, j));
+      dList_free(dns_cache[i].addr_list);
    }
    dFree(dns_cache);
 }
 
+/*
+ *  Writes a string representation of the given DilloHost
+ *  into dst. dst will be \0 terminated.
+ *  Please note that dst must be at least 40 bytes long for IPv6
+ *  addresses.
+ */
+void a_Dns_dillohost_to_string(DilloHost *host, char *dst, size_t size)
+{
+   if (!inet_ntop(host->af, host->data, dst, size)) {
+      switch (errno) {
+         case EAFNOSUPPORT:
+            snprintf(dst, size, "Unknown address family");
+         case ENOSPC:
+            snprintf(dst, size, "Buffer too small");
+      }
+   }
+}

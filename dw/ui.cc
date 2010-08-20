@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -28,7 +27,8 @@ namespace dw {
 namespace core {
 namespace ui {
 
-using namespace object;
+using namespace lout;
+using namespace lout::object;
 
 int Embed::CLASS_ID = -1;
 
@@ -62,11 +62,26 @@ void Embed::sizeAllocateImpl (Allocation *allocation)
 void Embed::enterNotifyImpl (core::EventCrossing *event)
 {
    resource->emitEnter();
+   Widget::enterNotifyImpl(event);
 }
 
 void Embed::leaveNotifyImpl (core::EventCrossing *event)
 {
    resource->emitLeave();
+   Widget::leaveNotifyImpl(event);
+}
+
+bool Embed::buttonPressImpl (core::EventButton *event)
+{
+   bool handled;
+
+   if (event->button == 3) {
+      resource->emitClicked(event);
+      handled = true;
+   } else {
+      handled = false;
+   }
+   return handled;
 }
 
 void Embed::setWidth (int width)
@@ -82,6 +97,16 @@ void Embed::setAscent (int ascent)
 void Embed::setDescent (int descent)
 {
    resource->setDescent (descent);
+}
+
+void Embed::setDisplayed (bool displayed)
+{
+   resource->setDisplayed (displayed);
+}
+
+void Embed::setEnabled (bool enabled)
+{
+   resource->setEnabled (enabled);
 }
 
 void Embed::draw (View *view, Rectangle *area)
@@ -183,6 +208,10 @@ void Resource::setDescent (int descent)
 {
 }
 
+void Resource::setDisplayed (bool displayed)
+{
+}
+
 void Resource::draw (View *view, Rectangle *area)
 {
 }
@@ -201,31 +230,23 @@ void Resource::emitLeave ()
    activateEmitter.emitLeave(this);
 }
 
-// ----------------------------------------------------------------------
-
-bool ButtonResource::ClickedEmitter::emitToReceiver (lout::signal::Receiver
-                                                     *receiver,
-                                                     int signalNo,
-                                                     int argc,
-                                                     Object **argv)
+bool Resource::ClickedEmitter::emitToReceiver(lout::signal::Receiver *receiver,
+                                              int signalNo, int argc,
+                                              Object **argv)
 {
    ((ClickedReceiver*)receiver)
-      ->clicked ((ButtonResource*)((Pointer*)argv[0])->getValue (),
-                 ((Integer*)argv[1])->getValue (),
-                 ((Integer*)argv[2])->getValue (),
-                 ((Integer*)argv[3])->getValue ());
+      ->clicked ((Resource*)((Pointer*)argv[0])->getValue (),
+                 (EventButton*)((Pointer*)argv[1])->getValue());
    return false;
 }
 
-void ButtonResource::ClickedEmitter::emitClicked (ButtonResource *resource,
-                                                  int buttonNo, int x, int y)
+void Resource::ClickedEmitter::emitClicked (Resource *resource,
+                                            EventButton *event)
 {
-   Integer i1 (buttonNo);
-   Integer i2 (x);
-   Integer i3 (y);
-   Pointer p (resource);
-   Object *argv[4] = { &p, &i1, &i2, &i3 };
-   emitVoid (0, 4, argv);
+   Pointer p1 (resource);
+   Pointer p2 (event);
+   Object *argv[2] = { &p1, &p2 };
+   emitVoid (0, 2, argv);
 }
 
 // ----------------------------------------------------------------------

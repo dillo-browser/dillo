@@ -1,5 +1,5 @@
  October 2001, --Jcid
- Last update: Dec 2004
+ Last update: Jul 2009
 
                         ---------------
                         THE HTML PARSER
@@ -11,7 +11,7 @@ and  plain  text  also.  It  has  parsing 'modes' that define its
 behaviour while working:
 
    typedef enum {
-     DILLO_HTML_PARSE_MODE_INIT,
+     DILLO_HTML_PARSE_MODE_INIT = 0,
      DILLO_HTML_PARSE_MODE_STASH,
      DILLO_HTML_PARSE_MODE_STASH_AND_BODY,
      DILLO_HTML_PARSE_MODE_BODY,
@@ -22,12 +22,12 @@ behaviour while working:
 
    The  parser  works  upon a token-grained basis, i.e., the data
 stream is parsed into tokens and the parser is fed with them. The
-process  is  simple:  whenever  the  cache  has new data, it gets
+process  is  simple:  whenever  the  cache  has new data, it is
 passed to Html_write, which groups data into tokens and calls the
-appropriate functions for the token type (TAG, SPACE or WORD).
+appropriate functions for the token type (tag, space, or word).
 
    Note:   when  in  DILLO_HTML_PARSE_MODE_VERBATIM,  the  parser
-doesn't  try  to  split  the  data stream into tokens anymore, it
+doesn't  try  to  split  the  data stream into tokens anymore; it
 simply collects until the closing tag.
 
 ------
@@ -65,44 +65,52 @@ TOKENS
     As  it's  a  common  mistake  for human authors to mistype or
     forget  one  of  the  quote  marks of an attribute value; the
     parser   solves  the  problem  with  a  look-ahead  technique
-    (otherwise  the  parser  could  skip significative amounts of
-    well written HTML).
+    (otherwise  the  parser  could  skip significant amounts of
+    properly-written HTML).
 
 
 
   * WORD                       --> Html_process_word
 
-    A  word is anything that doesn't start with SPACE, and that's
+    A  word is anything that doesn't start with SPACE, that's
     outside  of  a  tag, up to the first SPACE or tag start.
 
     SPACE = ' ' | \n | \r | \t | \f | \v
 
 
 -----------------
-THE PARSING STACK 
+THE PARSING STACK
 -----------------
 
   The parsing state of the document is kept in a stack:
 
-  struct _DilloHtml {
+  class DilloHtml {
      [...]
-     DilloHtmlState *stack;
-     gint stack_top; /* Index to the top of the stack [0 based] */
-     gint stack_max;
+     lout::misc::SimpleVector<DilloHtmlState> *stack;
      [...]
   };
 
   struct _DilloHtmlState {
-    char *tag;
-    DwStyle *style, *table_cell_style;
-    DilloHtmlParseMode parse_mode;
-    DilloHtmlTableMode table_mode;
-    gint list_level;
-    gint list_number;
-    DwWidget *page, *table;
-    gint32  current_bg_color;
-  };
+     CssPropertyList *table_cell_props;
+     DilloHtmlParseMode parse_mode;
+     DilloHtmlTableMode table_mode;
+     bool cell_text_align_set;
+     DilloHtmlListMode list_type;
+     int list_number;
 
+     /* TagInfo index for the tag that's being processed */
+     int tag_idx;
+
+     dw::core::Widget *textblock, *table;
+
+     /* This is used to align list items (especially in enumerated lists) */
+     dw::core::Widget *ref_list_item;
+
+     /* This is used for list items etc; if it is set to TRUE, breaks
+        have to be "handed over" (see Html_add_indented and
+        Html_eventually_pop_dw). */
+     bool hand_over_break;
+  };
 
   Basically,  when a TAG is processed, a new state is pushed into
 the  'stack'  and  its  'style'  is  set  to  reflect the desired

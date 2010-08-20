@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -50,14 +49,15 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = dw::core::style::FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
    styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
    styleAttrs.color =
-      dw::core::style::Color::createSimple (layout, 0x000000);
+      dw::core::style::Color::create (layout, 0x000000);
    styleAttrs.backgroundColor =
-      dw::core::style::Color::createSimple (layout, 0xffffff);
+      dw::core::style::Color::create (layout, 0xffffff);
 
-   dw::core::style::Style *widgetStyle = 
+   dw::core::style::Style *widgetStyle =
       dw::core::style::Style::create (layout, &styleAttrs);
 
    dw::Textblock *textblock = new dw::Textblock (false);

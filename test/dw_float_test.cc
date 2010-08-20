@@ -52,15 +52,16 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    Style *widgetStyle = Style::create (layout, &styleAttrs);
 
    styleAttrs.borderWidth.setVal (1);
-   styleAttrs.setBorderColor (Color::createShaded (layout, 0x808080));
+   styleAttrs.setBorderColor (Color::create (layout, 0x808080));
    styleAttrs.setBorderStyle (BORDER_DASHED);
    styleAttrs.width = createAbsLength(100);
    styleAttrs.vloat = FLOAT_LEFT;

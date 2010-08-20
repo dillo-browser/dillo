@@ -204,7 +204,7 @@ static const struct key {
 #define NCOLORS   (sizeof(color_keyword) / sizeof(struct key))
 
 /*
- * Parse a color in hex (RRGGBB)
+ * Parse a color in hex (RRGGBB) or (RGB)
  *
  * Return Value:
  *   parsed color if successful (err = 0),
@@ -219,7 +219,12 @@ static int32_t Color_parse_hex (const char *s, int32_t default_color, int *err)
   ret_color = strtol(s, &tail, 16);
   if (tail - s == 6)
      *err = 0;
-  else
+  else if (tail - s == 3) {       /* #RGB as allowed by CSS */
+     *err = 0;
+         ret_color = ((ret_color & 0xf00) << 12) | ((ret_color & 0xf00) << 8) |
+                     ((ret_color & 0x0f0) << 8)  | ((ret_color & 0x0f0) << 4) |
+                     ((ret_color & 0x00f) << 4)  | ((ret_color & 0x00f) << 0);
+  } else
      ret_color = default_color;
 
   return ret_color;
@@ -241,7 +246,7 @@ int32_t a_Color_parse (const char *subtag, int32_t default_color, int *err)
    int ret, low, mid, high, st = 1;
 
    /* skip leading spaces */
-   for (cp = subtag; isspace(*cp); cp++);
+   for (cp = subtag; dIsspace(*cp); cp++);
 
    ret_color = default_color;
    if (*cp == '#') {

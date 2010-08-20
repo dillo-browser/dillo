@@ -14,221 +14,21 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 
 #include "core.hh"
 
+#include "../lout/msg.h"
 #include "../lout/debug.hh"
 
+using namespace lout;
 using namespace lout::object;
 
 namespace dw {
 namespace core {
-
-bool Widget::EventReceiver::buttonPress (Widget *widget, EventButton *event)
-{
-   return false;
-}
-
-bool Widget::EventReceiver::buttonRelease (Widget *widget, EventButton *event)
-{
-   return false;
-}
-
-bool Widget::EventReceiver::motionNotify (Widget *widget, EventMotion *event)
-{
-   return false;
-}
-
-void Widget::EventReceiver::enterNotify (Widget *widget, EventCrossing *event)
-{
-}
-
-void Widget::EventReceiver::leaveNotify (Widget *widget, EventCrossing *event)
-{
-}
-
-
-bool Widget::EventEmitter::emitToReceiver (lout::signal::Receiver *receiver,
-                                           int signalNo,
-                                           int argc, Object **argv)
-{
-   EventReceiver *eventReceiver = (EventReceiver*)receiver;
-
-   switch (signalNo) {
-   case BUTTON_PRESS:
-      return eventReceiver->buttonPress ((Widget*)argv[0],
-                                         (EventButton*)argv[1]);
-
-   case BUTTON_RELEASE:
-      return eventReceiver->buttonRelease ((Widget*)argv[0],
-                                           (EventButton*)argv[1]);
-
-   case MOTION_NOTIFY:
-      return eventReceiver->motionNotify ((Widget*)argv[0],
-                                          (EventMotion*)argv[1]);
-
-   case ENTER_NOTIFY:
-      eventReceiver->enterNotify ((Widget*)argv[0],
-                                  (EventCrossing*)argv[1]);
-      break;
-
-   case LEAVE_NOTIFY:
-      eventReceiver->leaveNotify ((Widget*)argv[1],
-                                  (EventCrossing*)argv[0]);
-      break;
-
-   default:
-      misc::assertNotReached ();
-   }
-
-   /* Compiler happiness. */
-   return false;
-}
-
-bool Widget::EventEmitter::emitButtonPress (Widget *widget, EventButton *event)
-{
-   Object *argv[2] = { widget, event };
-   return emitBool (BUTTON_PRESS, 2, argv);
-}
-
-bool Widget::EventEmitter::emitButtonRelease (Widget *widget,
-                                              EventButton *event)
-{
-   Object *argv[2] = { widget, event };
-   return emitBool (BUTTON_RELEASE, 2, argv);
-}
-
-bool Widget::EventEmitter::emitMotionNotify (Widget *widget,
-                                             EventMotion *event)
-{
-   Object *argv[2] = { widget, event };
-   return emitBool (MOTION_NOTIFY, 2, argv);
-}
-
-void Widget::EventEmitter::emitEnterNotify (Widget *widget,
-                                            EventCrossing *event)
-{
-   Object *argv[2] = { widget, event };
-   emitVoid (ENTER_NOTIFY, 2, argv);
-}
-
-void Widget::EventEmitter::emitLeaveNotify (Widget *widget,
-                                            EventCrossing *event)
-{
-   Object *argv[2] = { widget, event };
-   emitVoid (LEAVE_NOTIFY, 2, argv);
-}
-
-// ----------------------------------------------------------------------
-
-bool Widget::LinkReceiver::enter (Widget *widget, int link, int img,
-                                  int x, int y)
-{
-   return false;
-}
-
-bool Widget::LinkReceiver::press (Widget *widget, int link, int img,
-                                  int x, int y, EventButton *event)
-{
-   return false;
-}
-
-bool Widget::LinkReceiver::release (Widget *widget, int link, int img,
-                                    int x, int y, EventButton *event)
-{
-   return false;
-}
-
-bool Widget::LinkReceiver::click (Widget *widget, int link, int img,
-                                    int x, int y, EventButton *event)
-{
-   return false;
-}
-
-
-bool Widget::LinkEmitter::emitToReceiver (lout::signal::Receiver *receiver,
-                                          int signalNo,
-                                          int argc, Object **argv)
-{
-   LinkReceiver *linkReceiver = (LinkReceiver*)receiver;
-
-   switch (signalNo) {
-   case ENTER:
-      return linkReceiver->enter ((Widget*)argv[0],
-                                  ((Integer*)argv[1])->getValue (),
-                                  ((Integer*)argv[2])->getValue (),
-                                  ((Integer*)argv[3])->getValue (),
-                                  ((Integer*)argv[4])->getValue ());
-
-   case PRESS:
-      return linkReceiver->press ((Widget*)argv[0],
-                                  ((Integer*)argv[1])->getValue (),
-                                  ((Integer*)argv[2])->getValue (),
-                                  ((Integer*)argv[3])->getValue (),
-                                  ((Integer*)argv[4])->getValue (),
-                                  (EventButton*)argv[5]);
-
-   case RELEASE:
-      return linkReceiver->release ((Widget*)argv[0],
-                                    ((Integer*)argv[1])->getValue (),
-                                    ((Integer*)argv[2])->getValue (),
-                                    ((Integer*)argv[3])->getValue (),
-                                    ((Integer*)argv[4])->getValue (),
-                                    (EventButton*)argv[5]);
-
-   case CLICK:
-      return linkReceiver->click ((Widget*)argv[0],
-                                  ((Integer*)argv[1])->getValue (),
-                                  ((Integer*)argv[2])->getValue (),
-                                  ((Integer*)argv[3])->getValue (),
-                                  ((Integer*)argv[4])->getValue (),
-                                  (EventButton*)argv[5]);
-
-   default:
-      misc::assertNotReached ();
-   }
-
-   /* Compiler happiness. */
-   return false;
-}
-
-bool Widget::LinkEmitter::emitEnter (Widget *widget, int link, int img, 
-                                     int x, int y)
-{
-   Integer ilink (link), iimg (img), ix (x), iy (y);
-   Object *argv[5] = { widget, &ilink, &iimg, &ix, &iy };
-   return emitBool (ENTER, 5, argv);
-}
-
-bool Widget::LinkEmitter::emitPress (Widget *widget, int link, int img,
-                                     int x, int y, EventButton *event)
-{
-   Integer ilink (link), iimg (img), ix (x), iy (y);
-   Object *argv[6] = { widget, &ilink, &iimg, &ix, &iy, event };
-   return emitBool (PRESS, 6, argv);
-}
-
-bool Widget::LinkEmitter::emitRelease (Widget *widget, int link, int img,
-                                       int x, int y, EventButton *event)
-{
-   Integer ilink (link), iimg (img), ix (x), iy (y);
-   Object *argv[6] = { widget, &ilink, &iimg, &ix, &iy, event };
-   return emitBool (RELEASE, 6, argv);
-}
-
-bool Widget::LinkEmitter::emitClick (Widget *widget, int link, int img,
-                                     int x, int y, EventButton *event)
-{
-   Integer ilink (link), iimg (img), ix (x), iy (y);
-   Object *argv[6] = { widget, &ilink, &iimg, &ix, &iy, event };
-   return emitBool (CLICK, 6, argv);
-}
-
 
 // ----------------------------------------------------------------------
 
@@ -237,7 +37,7 @@ int Widget::CLASS_ID = -1;
 Widget::Widget ()
 {
    registerName ("dw::core::Widget", &CLASS_ID);
-   
+
    flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED | HAS_CONTENTS);
    parent = NULL;
    layout = NULL;
@@ -308,6 +108,8 @@ void Widget::setParent (Widget *parent)
    if (!buttonSensitiveSet)
       buttonSensitive = parent->buttonSensitive;
 
+	notifySetParent();
+
    //DBG_OBJ_ASSOC (widget, parent);
 }
 
@@ -315,7 +117,7 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
 {
    /** \todo Maybe only the intersection? */
    layout->queueDraw (x + allocation.x, y + allocation.y, width, height);
- //printf("Widget::queueDrawArea x=%d y=%d w=%d h=%d\n", x, y, width, height);
+   _MSG("Widget::queueDrawArea x=%d y=%d w=%d h=%d\n", x, y, width, height);
 }
 
 /**
@@ -458,35 +260,27 @@ void Widget::sizeAllocate (Allocation *allocation)
 
 bool Widget::buttonPress (EventButton *event)
 {
-   bool b1 = buttonPressImpl (event);
-   bool b2 = eventEmitter.emitButtonPress (this, event);
-   return b1 || b2;
+   return buttonPressImpl (event);
 }
 
 bool Widget::buttonRelease (EventButton *event)
 {
-   bool b1 = buttonReleaseImpl (event);
-   bool b2 = eventEmitter.emitButtonRelease (this, event);
-   return b1 || b2;
+   return buttonReleaseImpl (event);
 }
 
 bool Widget::motionNotify (EventMotion *event)
 {
-   bool b1 = motionNotifyImpl (event);
-   bool b2 = eventEmitter.emitMotionNotify (this, event);
-   return b1 || b2;
+   return motionNotifyImpl (event);
 }
 
 void Widget::enterNotify (EventCrossing *event)
 {
    enterNotifyImpl (event);
-   eventEmitter.emitEnterNotify (this, event);
 }
 
 void Widget::leaveNotify (EventCrossing *event)
 {
    leaveNotifyImpl (event);
-   eventEmitter.emitLeaveNotify (this, event);
 }
 
 /**
@@ -495,7 +289,7 @@ void Widget::leaveNotify (EventCrossing *event)
  * The old style is automatically unreferred, the new is referred. If this
  * call causes the widget to change its size, dw::core::Widget::queueResize
  * is called.
- */ 
+ */
 void Widget::setStyle (style::Style *style)
 {
    bool sizeChanged;
@@ -547,7 +341,7 @@ style::Color *Widget::getBgColor ()
       widget = widget->parent;
    }
 
-   fprintf (stderr, "No background color found!\n");
+   MSG_WARN("No background color found!\n");
    return NULL;
 
 }
@@ -692,10 +486,10 @@ Widget *Widget::getNearestCommonAncestor (Widget *otherWidget)
    /* Search upwards. */
    while (widget1 != widget2) {
       if (widget1->parent == NULL) {
-         fprintf (stderr, "widgets in different trees\n");
+         MSG_WARN("widgets in different trees\n");
          return NULL;
       }
-      
+
       widget1 = widget1->parent;
       widget2 = widget2->parent;
    }
@@ -706,7 +500,7 @@ Widget *Widget::getNearestCommonAncestor (Widget *otherWidget)
 
 /**
  * \brief Search recursively through widget.
- * 
+ *
  * Used by dw::core::Layout:getWidgetAtPoint.
  */
 Widget *Widget::getWidgetAtPoint (int x, int y, int level)
@@ -738,7 +532,7 @@ Widget *Widget::getWidgetAtPoint (int x, int y, int level)
                                                                     level + 1);
 
       it->unref ();
-      
+
       if (childAtPoint)
          return childAtPoint;
       else
@@ -775,6 +569,25 @@ void Widget::markExtremesChange (int ref)
 {
 }
 
+/**
+ * \brief This method is called after a widget has been set as the top of a
+ *    widget tree.
+ * 
+ * A widget may override this method when it is necessary to be notified.
+ */
+void Widget::notifySetAsTopLevel()
+{
+}
+
+/**
+ * \brief This method is called after a widget has been added to a parent. 
+ * 
+ * A widget may override this method when it is necessary to be notified.
+ */
+void Widget::notifySetParent()
+{
+}
+
 void Widget::setWidth (int width)
 {
 }
@@ -802,12 +615,20 @@ bool Widget::motionNotifyImpl (EventMotion *event)
    return false;
 }
 
-void Widget::enterNotifyImpl (EventCrossing *event)
+void Widget::enterNotifyImpl (EventCrossing *)
 {
+   core::style::Tooltip *tooltip = getStyle()->x_tooltip;
+
+   if (tooltip)
+      tooltip->onEnter();
 }
 
-void Widget::leaveNotifyImpl (EventCrossing *event)
+void Widget::leaveNotifyImpl (EventCrossing *)
 {
+   core::style::Tooltip *tooltip = getStyle()->x_tooltip;
+
+   if (tooltip)
+      tooltip->onLeave();
 }
 
 void Widget::removeChild (Widget *child)

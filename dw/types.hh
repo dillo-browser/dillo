@@ -8,7 +8,9 @@
 namespace dw {
 namespace core {
 
-using namespace lout;
+namespace style {
+   class Style;
+}
 
 enum HPosition
 {
@@ -30,6 +32,8 @@ enum VPosition
    VPOS_NO_CHANGE
 };
 
+enum ScrollCommand {SCREEN_UP_CMD, SCREEN_DOWN_CMD, LINE_UP_CMD, LINE_DOWN_CMD,
+                    LEFT_CMD, RIGHT_CMD, TOP_CMD, BOTTOM_CMD};
 
 /*
  * Different "layers" may be highlighted in a widget.
@@ -50,10 +54,12 @@ struct Point
 /**
  * \brief Abstract interface for different shapes.
  */
-class Shape: public object::Object
+class Shape: public lout::object::Object
 {
 public:
    virtual bool isPointWithin (int x, int y) = 0;
+   virtual void draw (core::View *view, core::style::Style *style, int x,
+                      int y) = 0;
 };
 
 /**
@@ -70,6 +76,7 @@ public:
    inline Rectangle () { }
    Rectangle (int x, int y, int width, int height);
 
+   void draw (core::View *view, core::style::Style *style, int x, int y);
    bool intersectsWith (Rectangle *otherRect, Rectangle *dest);
    bool isSubsetOf (Rectangle *otherRect);
    bool isPointWithin (int x, int y);
@@ -86,6 +93,7 @@ public:
 
    Circle (int x, int y, int radius);
 
+   void draw (core::View *view, core::style::Style *style, int x, int y);
    bool isPointWithin (int x, int y);
 };
 
@@ -95,12 +103,12 @@ public:
 class Polygon: public Shape
 {
 private:
-   misc::SimpleVector<Point> *points;
+   lout::misc::SimpleVector<Point> *points;
    int minx, miny, maxx, maxy;
 
    /**
     * \brief Return the z-coordinate of the vector product of two
-    *    vectors, whose z-coordinate is 0 (so that x and y of 
+    *    vectors, whose z-coordinate is 0 (so that x and y of
     *    the vector product is 0, too).
     */
    inline int zOfVectorProduct(int x1, int y1, int x2, int y2) {
@@ -116,6 +124,7 @@ public:
    Polygon ();
    ~Polygon ();
 
+   void draw (core::View *view, core::style::Style *style, int x, int y);
    void addPoint (int x, int y);
    bool isPointWithin (int x, int y);
 };
@@ -130,8 +139,8 @@ public:
 class Region
 {
 private:
-   container::typed::List <Rectangle> *rectangleList; 
-      
+   lout::container::typed::List <Rectangle> *rectangleList;
+
 public:
    Region ();
    ~Region ();
@@ -140,7 +149,7 @@ public:
 
    void addRectangle (Rectangle *r);
 
-   container::typed::Iterator <Rectangle> rectangles ()
+   lout::container::typed::Iterator <Rectangle> rectangles ()
    {
       return rectangleList->iterator ();
    };
@@ -179,21 +188,20 @@ struct Content
       END               = 1 << 1,
       TEXT              = 1 << 2,
       WIDGET            = 1 << 3,
-      ANCHOR            = 1 << 4,
-      BREAK             = 1 << 5,
+      BREAK             = 1 << 4,
+      FLOAT_REF         = 1 << 6, /** \todo A bit ugly. */
       ALL               = 0xff,
-      REAL_CONTENT      = 0xff ^ (START | END),
+      REAL_CONTENT      = 0xff ^ (START | END | FLOAT_REF),
       SELECTION_CONTENT = TEXT | WIDGET | BREAK
    };
    /* Content is embedded in struct Word therefore we
-    * try to be space efficient. 
+    * try to be space efficient.
     */
    short type;
    bool space;
    union {
       const char *text;
       Widget *widget;
-      char *anchor;
       int breakSpace;
    };
 };

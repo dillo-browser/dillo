@@ -29,7 +29,7 @@ void a_Timeout_add(float t, TimeoutCb_t cb, void *cbdata)
 }
 
 /*
- * To be called from iside the 'cb' function when it wants to keep running
+ * To be called from inside the 'cb' function when it wants to keep running
  */
 void a_Timeout_repeat(float t, TimeoutCb_t cb, void *cbdata)
 {

@@ -1,21 +1,22 @@
-//
-//
-// Copyright 1998-2006 by Bill Spitzak and others.
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Library General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Library General Public License for more details.
-//
-// You should have received a copy of the GNU Library General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-// USA.
+
+// fltkcomplexbutton.cc contains code from FLTK2's src/Button.cxx
+// that is Copyright 1998-2006 by Bill Spitzak and others.
+// (see http://svn.easysw.com/public/fltk/fltk/trunk/src/Button.cxx)
+
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <fltk/events.h>
 #include <fltk/damage.h>
@@ -87,7 +88,7 @@ int ComplexButton::handle(int event, const Rectangle& rectangle) {
     if (pushed()) return 1; // ignore extra pushes on currently-pushed button
     initial_state = state();
     clear_flag(PUSHED);
-    do_callback();
+    /* do_callback(); */
   case DRAG: {
     bool inside = event_inside(rectangle);
     if (inside) {
@@ -112,7 +113,7 @@ int ComplexButton::handle(int event, const Rectangle& rectangle) {
     redraw(DAMAGE_VALUE);
     if (type() == RADIO)
       setonly();
-    else if (type()) // TOGGLE
+    else if (type() == TOGGLE)
       state(!initial_state);
     else {
       state(initial_state);
@@ -139,7 +140,7 @@ int ComplexButton::handle(int event, const Rectangle& rectangle) {
         setonly();
         if (when() & WHEN_CHANGED) do_callback(); else set_changed();
       }
-    } else if (type()) { // TOGGLE
+    } else if (type() == TOGGLE) {
       state(!state());
       if (when() & WHEN_CHANGED) do_callback(); else set_changed();
     }

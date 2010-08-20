@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -41,9 +40,10 @@ static int imgRow = 0;
 
 static void imageInitTimeout (void *data)
 {
+   const bool resize = true;
    //imgbuf = layout->createImgbuf (Imgbuf::RGBA, 400, 200);
    imgbuf = layout->createImgbuf (Imgbuf::RGB, 400, 200);
-   image->setBuffer (imgbuf);
+   image->setBuffer (imgbuf, resize);
 }
 
 /*
@@ -58,13 +58,13 @@ static void imageDrawTimeout (void *data)
             buf[4 * x + 2] = imgRow * 255 / 199;
             buf[4 * x + 3] = (199 - imgRow) * 255 / 199;
          }
-     
+
          imgbuf->copyRow (imgRow, buf);
-         image->drawRow (imgRow);       
+         image->drawRow (imgRow);
          imgRow++;
       }
    }
-   
+
    if(imgRow < 200)
       ::fltk::repeat_timeout (0.5, imageDrawTimeout, NULL);
 }
@@ -80,13 +80,13 @@ static void imageDrawTimeout (void *data)
             buf[3 * x + 1] = (399 - x) * 255 / 399;
             buf[3 * x + 2] = imgRow * 255 / 199;
          }
-     
+
          imgbuf->copyRow (imgRow, buf);
-         image->drawRow (imgRow);       
+         image->drawRow (imgRow);
          imgRow++;
       }
    }
-   
+
    if(imgRow < 200)
       ::fltk::repeat_timeout (0.5, imageDrawTimeout, NULL);
 }
@@ -111,10 +111,11 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    Style *widgetStyle = Style::create (layout, &styleAttrs);
 
@@ -131,7 +132,7 @@ int main(int argc, char **argv)
 
    image = new dw::Image ("");
    textblock->addWidget (image, imageStyle);
-   textblock->addSpace (imageStyle);     
+   textblock->addSpace (imageStyle);
 
    imageStyle->unref();
 

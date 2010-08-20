@@ -27,6 +27,15 @@
 
 #include "dlib.h"
 
+static bool_t dLib_show_msg = TRUE;
+
+/* dlib msgs go to stderr to avoid problems with filter dpis */
+#define DLIB_MSG(...)                              \
+   D_STMT_START {                                  \
+      if (dLib_show_msg)                           \
+         fprintf(stderr, __VA_ARGS__);             \
+   } D_STMT_END
+
 /*
  *- Memory --------------------------------------------------------------------
  */
@@ -115,8 +124,8 @@ char *dStrstrip(char *s)
    int len;
 
    if (s && *s) {
-      for (p = s; isspace(*p); ++p);
-      for (len = strlen(p); len && isspace(p[len-1]); --len);
+      for (p = s; dIsspace(*p); ++p);
+      for (len = strlen(p); len && dIsspace(p[len-1]); --len);
       if (p > s)
          memmove(s, p, len);
       s[len] = 0;
@@ -160,18 +169,20 @@ char *dStrsep(char **orig, const char *delim)
 char *dStristr(const char *haystack, const char *needle)
 {
    int i, j;
+   char *ret = NULL;
 
-   for (i = 0, j = 0; haystack[i] && needle[j]; ++i)
-      if (tolower(haystack[i]) == tolower(needle[j])) {
-         ++j;
-      } else if (j) {
-         i -= j;
-         j = 0;
-      }
-
-   if (!needle[j])                 /* Got all */
-      return (char *)(haystack + i - j);
-   return NULL;
+   if (haystack && needle) {
+      for (i = 0, j = 0; haystack[i] && needle[j]; ++i)
+         if (tolower(haystack[i]) == tolower(needle[j])) {
+            ++j;
+         } else if (j) {
+            i -= j;
+            j = 0;
+         }
+      if (!needle[j])                 /* Got all */
+         ret = (char *)(haystack + i - j);
+   }
+   return ret;
 }
 
 
@@ -204,10 +215,11 @@ static void dStr_resize(Dstr *ds, int n_sz, int keep)
  */
 Dstr *dStr_sized_new (int sz)
 {
+   Dstr *ds;
    if (sz < 2)
       sz = 2;
 
-   Dstr *ds = dNew(Dstr, 1);
+   ds = dNew(Dstr, 1);
    ds->str = NULL;
    dStr_resize(ds, sz + 1, 0); /* (sz + 1) for the extra '\0' */
    return ds;
@@ -476,10 +488,11 @@ const char *dStr_printable(Dstr *in, int maxlen)
  */
 Dlist *dList_new(int size)
 {
+   Dlist *l;
    if (size <= 0)
       return NULL;
 
-   Dlist *l = dNew(Dlist, 1);
+   l = dNew(Dlist, 1);
    l->len = 0;
    l->sz = size;
    l->list = dNew(void*, l->sz);
@@ -756,9 +769,10 @@ void *dList_find_sorted (Dlist *lp, const void *data, dCompareFunc func)
  *    - line is modified!
  *    - it skips blank lines and lines starting with '#'
  *
- * Return value: 0 on successful value/pair, -1 otherwise
+ * Return value: 1 on blank line or comment, 0 on successful value/pair,
+ *              -1 otherwise.
  */
-int dParser_get_rc_pair(char **line, char **name, char **value)
+int dParser_parse_rc_line(char **line, char **name, char **value)
 {
    char *eq, *p;
    int len, ret = -1;
@@ -768,15 +782,22 @@ int dParser_get_rc_pair(char **line, char **name, char **value)
    *name = NULL;
    *value = NULL;
    dStrstrip(*line);
-   if (*line[0] != '#' && (eq = strchr(*line, '='))) {
+   if (!*line[0] || *line[0] == '#') {
+      /* blank line or comment */
+      ret = 1;
+   } else if ((eq = strchr(*line, '='))) {
       /* get name */
-      for (p = *line; *p && *p != '=' && !isspace(*p); ++p);
+      for (p = *line; *p && *p != '=' && !dIsspace(*p); ++p);
       *p = 0;
       *name = *line;
 
+      /* skip whitespace */
+      if (p < eq)
+         for (++p; dIsspace(*p); ++p);
+
       /* get value */
       if (p == eq) {
-         for (++p; isspace(*p); ++p);
+         for (++p; dIsspace(*p); ++p);
          len = strlen(p);
          if (len >= 2 && *p == '"' && p[len-1] == '"') {
             p[len-1] = 0;
@@ -788,6 +809,14 @@ int dParser_get_rc_pair(char **line, char **name, char **value)
    }
 
    return ret;
+}
+
+/*
+ *- Dlib messages -------------------------------------------------------------
+ */
+void dLib_show_messages(bool_t show)
+{
+   dLib_show_msg = show;
 }
 
 /*
@@ -825,6 +854,9 @@ char *dGethomedir ()
 
       } else if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
          homedir = dStrconcat(getenv("HOMEDRIVE"), getenv("HOMEPATH"), NULL);
+      } else {
+         DLIB_MSG("dGethomedir: $HOME not set, using '/'.\n");
+         homedir = dStrdup("/");
       }
    }
    return homedir;
@@ -844,10 +876,10 @@ char *dGetline (FILE *stream)
    dReturn_val_if_fail (stream, 0);
 
    dstr = dStr_sized_new(64);
-   while((ch = fgetc(stream)) != EOF) {
+   while ((ch = fgetc(stream)) != EOF) {
       if (ch == '\\') {
          /* continue with the next line */
-         while((ch = fgetc(stream)) != EOF && ch != '\n');
+         while ((ch = fgetc(stream)) != EOF && ch != '\n') ;
          continue;
       }
       dStr_append_c(dstr, ch);

@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -23,19 +22,18 @@
 #include "fltkcore.hh"
 #include "fltkflatview.hh"
 #include "fltkcomplexbutton.hh"
+#include "../lout/msg.h"
 #include "../lout/misc.hh"
 
 #include <stdio.h>
 #include <fltk/Widget.h>
 #include <fltk/Group.h>
 #include <fltk/Input.h>
-#include <fltk/SecretInput.h>
 #include <fltk/TextEditor.h>
 #include <fltk/RadioButton.h>
 #include <fltk/CheckButton.h>
 #include <fltk/Choice.h>
 #include <fltk/Browser.h>
-#include <fltk/MultiBrowser.h>
 #include <fltk/Font.h>
 #include <fltk/draw.h>
 #include <fltk/Symbol.h>
@@ -49,8 +47,8 @@ namespace ui {
 
 enum { RELIEF_X_THICKNESS = 3, RELIEF_Y_THICKNESS = 3 };
 
-using namespace object;
-using namespace container::typed;
+using namespace lout::object;
+using namespace lout::container::typed;
 
 FltkResource::FltkResource (FltkPlatform *platform)
 {
@@ -63,6 +61,8 @@ FltkResource::FltkResource (FltkPlatform *platform)
    allocation.descent = 0;
 
    style = NULL;
+
+   enabled = true;
 }
 
 /**
@@ -71,98 +71,72 @@ FltkResource::FltkResource (FltkPlatform *platform)
  */
 void FltkResource::init (FltkPlatform *platform)
 {
-   viewsAndWidgets = new container::typed::List <ViewAndWidget> (true);
+   view = NULL;
+   widget = NULL;
    platform->attachResource (this);
 }
 
 FltkResource::~FltkResource ()
 {
    platform->detachResource (this);
-   for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
-      it.hasNext(); ) {
-      ViewAndWidget *viewAndWidget = it.getNext ();
-
-      if (viewAndWidget->widget) {
-         if (viewAndWidget->view) {
-            viewAndWidget->view->removeFltkWidget(viewAndWidget->widget);
-         }
-         delete viewAndWidget->widget;
+   if (widget) {
+      if (view) {
+         view->removeFltkWidget(widget);
       }
-
+      delete widget;
    }
-   delete viewsAndWidgets;
-   if(style)
+   if (style)
       style->unref ();
 }
 
 void FltkResource::attachView (FltkView *view)
 {
+   if (this->view)
+      MSG_ERR("FltkResource::attachView: multiple views!\n");
+
    if (view->usesFltkWidgets ()) {
-      ViewAndWidget *viewAndWidget = new ViewAndWidget();
-      viewAndWidget->view = view;
-      
-      viewAndWidget->widget = createNewWidget (&allocation);
-      viewAndWidget->view->addFltkWidget (viewAndWidget->widget, &allocation);
-      viewsAndWidgets->append (viewAndWidget);
+      this->view = view;
+
+      widget = createNewWidget (&allocation);
+      view->addFltkWidget (widget, &allocation);
       if (style)
-         setWidgetStyle (viewAndWidget->widget, style);
+         setWidgetStyle (widget, style);
+      if (! enabled)
+         widget->deactivate ();
    }
 }
 
 void FltkResource::detachView (FltkView *view)
 {
-   for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
-        it.hasNext(); ) {
-      ViewAndWidget *viewAndWidget = it.getNext ();
-      if (viewAndWidget->view == view) {
-         viewsAndWidgets->removeRef (viewAndWidget);
-         return;
-      }
-   }
-
-   fprintf (stderr, "FltkResource::detachView: View not found.");
+   if (this->view != view)
+      MSG_ERR("FltkResource::detachView: this->view: %p view: %p\n",
+              this->view, view);
+   this->view = NULL;
 }
 
 void FltkResource::sizeAllocate (core::Allocation *allocation)
 {
    this->allocation = *allocation;
-
-   for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
-        it.hasNext(); ) {
-      ViewAndWidget *viewAndWidget = it.getNext ();
-      viewAndWidget->view->allocateFltkWidget (viewAndWidget->widget,
-                                               allocation);
-   }
+   view->allocateFltkWidget (widget, allocation);
 }
 
 void FltkResource::draw (core::View *view, core::Rectangle *area)
 {
    FltkView *fltkView = (FltkView*)view;
-   if (fltkView->usesFltkWidgets ()) {
-      for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
-           it.hasNext(); ) {
-         ViewAndWidget *viewAndWidget = it.getNext ();
-         if (viewAndWidget->view == fltkView) {
-            fltkView->drawFltkWidget (viewAndWidget->widget, area);
-            break;
-         }
-      }
+   if (fltkView->usesFltkWidgets () && this->view == fltkView) {
+      fltkView->drawFltkWidget (widget, area);
    }
 }
 
 void FltkResource::setStyle (core::style::Style *style)
 {
-   if(this->style)
+   if (this->style)
       this->style->unref ();
 
    this->style = style;
    style->ref ();
 
-   for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
-        it.hasNext(); ) {
-      ViewAndWidget *viewAndWidget = it.getNext ();
-      setWidgetStyle (viewAndWidget->widget, style);
-   }
+   setWidgetStyle (widget, style);
 }
 
 void FltkResource::setWidgetStyle (::fltk::Widget *widget,
@@ -176,39 +150,62 @@ void FltkResource::setWidgetStyle (::fltk::Widget *widget,
 
    FltkColor *bg = (FltkColor*)style->backgroundColor;
    if (bg) {
-      if (style->color) {
-         /*
-          * TODO: if/when CSS is implemented, test whether style->color
-          * will consistently provide readable widgets.
-          */
-         int32_t c = bg->colors[FltkColor::SHADING_NORMAL];
-         int r = (c >> 24) & 0xff, g = (c >> 16) & 0xff, b = (c >> 8) & 0xff;
-         bool light =  (r + g >= 0x150) || (r + g + b >= 0x180);
+      int normal_bg = bg->colors[FltkColor::SHADING_NORMAL];
 
-         widget->labelcolor(light? ::fltk::BLACK : ::fltk::WHITE);
-         widget->textcolor(light? ::fltk::BLACK : ::fltk::WHITE);
-         widget->selection_color(light? ::fltk::BLACK : ::fltk::WHITE);
+      if (style->color) {
+         int style_fg = ((FltkColor*)style->color)->colors
+                                                   [FltkColor::SHADING_NORMAL];
+         ::fltk::Color fg = ::fltk::contrast(style_fg, normal_bg);
+
+         widget->labelcolor(fg);
+         widget->textcolor(fg);
+         widget->selection_color(fg);
       }
 
-      widget->color(bg->colors[FltkColor::SHADING_NORMAL]);
-      widget->buttoncolor(bg->colors[FltkColor::SHADING_NORMAL]);
-      widget->selection_textcolor(bg->colors[FltkColor::SHADING_NORMAL]);
-      if (!(widget->type() & (::fltk::Widget::RADIO|::fltk::Widget::TOGGLE))) {
+      widget->color(normal_bg);
+      widget->buttoncolor(normal_bg);
+      widget->selection_textcolor(normal_bg);
+      if (widget->type() != ::fltk::Widget::RADIO &&
+          widget->type() != ::fltk::Widget::TOGGLE) {
          /* it looks awful to highlight the buttons */
          widget->highlight_color(bg->colors[FltkColor::SHADING_LIGHT]);
       }
    }
 }
-   
+
+void FltkResource::setDisplayed(bool displayed)
+{
+   if (displayed)
+      widget->show();
+   else
+      widget->hide();
+}
+
+bool FltkResource::displayed()
+{
+   bool ret = false;
+
+   if (widget) {
+      // visible() is not the same thing as being show()n exactly, but
+      // show()/hide() set it appropriately for our purposes.
+      ret = widget->visible();
+   }
+   return ret;
+}
+
 bool FltkResource::isEnabled ()
 {
-   /** \bug Not implemented. */
-   return true;
+   return enabled;
 }
 
 void FltkResource::setEnabled (bool enabled)
 {
-   /** \bug Not implemented. */
+   this->enabled = enabled;
+
+   if (enabled)
+      widget->activate ();
+   else
+      widget->deactivate ();
 }
 
 // ----------------------------------------------------------------------
@@ -286,11 +283,47 @@ void FltkLabelButtonResource::sizeRequest (core::Requisition *requisition)
    }
 }
 
+/*
+ * Get FLTK state and translate to dw
+ *
+ * TODO: find a good home for this and the fltkviewbase.cc original.
+ */
+static core::ButtonState getDwButtonState ()
+{
+   int s1 = ::fltk::event_state ();
+   int s2 = (core::ButtonState)0;
+
+   if (s1 & ::fltk::SHIFT)   s2 |= core::SHIFT_MASK;
+   if (s1 & ::fltk::CTRL)    s2 |= core::CONTROL_MASK;
+   if (s1 & ::fltk::ALT)     s2 |= core::META_MASK;
+   if (s1 & ::fltk::BUTTON1) s2 |= core::BUTTON1_MASK;
+   if (s1 & ::fltk::BUTTON2) s2 |= core::BUTTON2_MASK;
+   if (s1 & ::fltk::BUTTON3) s2 |= core::BUTTON3_MASK;
+
+   return (core::ButtonState)s2;
+}
+
+static void setButtonEvent(dw::core::EventButton *event)
+{
+   event->xCanvas = ::fltk::event_x();
+   event->yCanvas = ::fltk::event_y();
+   event->state = getDwButtonState();
+   event->button = ::fltk::event_button();
+   event->numPressed = ::fltk::event_clicks() + 1;
+}
+
 void FltkLabelButtonResource::widgetCallback (::fltk::Widget *widget,
                                               void *data)
 {
-   if (widget->when () & ::fltk::WHEN_RELEASE)
-      ((FltkLabelButtonResource*)data)->emitActivate ();
+   if ((widget->when () & ::fltk::WHEN_RELEASE) &&
+       ((::fltk::event_key() == ::fltk::ReturnKey) ||
+        (::fltk::event_button() == ::fltk::LeftButton ||
+         ::fltk::event_button() == ::fltk::MiddleButton))) {
+      FltkLabelButtonResource *lbr = (FltkLabelButtonResource*) data;
+      dw::core::EventButton event;
+      setButtonEvent(&event);
+      lbr->emitClicked(&event);
+   }
 }
 
 const char *FltkLabelButtonResource::getLabel ()
@@ -304,12 +337,7 @@ void FltkLabelButtonResource::setLabel (const char *label)
    delete this->label;
    this->label = strdup (label);
 
-   for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
-        it.hasNext(); ) {
-      ViewAndWidget *viewAndWidget = it.getNext ();
-      viewAndWidget->widget->label (this->label);
-   }
-
+   widget->label (this->label);
    queueResize (true);
 }
 
@@ -320,7 +348,7 @@ FltkComplexButtonResource::FltkComplexButtonResource (FltkPlatform *platform,
                                                       *widget, bool relief):
    FltkSpecificResource <dw::core::ui::ComplexButtonResource> (platform)
 {
-   viewsAndViews = new container::typed::List <ViewAndView> (true);
+   flatView = topView = NULL;
    this->relief = relief;
    FltkResource::init (platform);
    ComplexButtonResource::init (widget);
@@ -328,7 +356,6 @@ FltkComplexButtonResource::FltkComplexButtonResource (FltkPlatform *platform,
 
 FltkComplexButtonResource::~FltkComplexButtonResource ()
 {
-   delete viewsAndViews;
 }
 
 void FltkComplexButtonResource::widgetCallback (::fltk::Widget *widget,
@@ -336,14 +363,17 @@ void FltkComplexButtonResource::widgetCallback (::fltk::Widget *widget,
 {
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
 
-   /* would be best not to send click pos. if the image could not be loaded */
-   if (::fltk::event() == ::fltk::RELEASE &&
-       ::fltk::event_button() == ::fltk::LeftButton) {
+   if (widget->when() == ::fltk::WHEN_RELEASE &&
+       ((::fltk::event_key() == ::fltk::ReturnKey) ||
+        (::fltk::event_button() == ::fltk::LeftButton ||
+         ::fltk::event_button() == ::fltk::MiddleButton))) {
       res->click_x = ::fltk::event_x();
       res->click_y = ::fltk::event_y();
-      res->emitActivate ();
+      dw::core::EventButton event;
+      setButtonEvent(&event);
+      res->emitClicked(&event);
    } else {
-      ((FltkViewBase*)res->lastFlatView)->handle(::fltk::event());
+      ((FltkViewBase*)res->flatView)->handle(::fltk::event());
    }
 }
 
@@ -356,56 +386,30 @@ void FltkComplexButtonResource::attachView (FltkView *view)
 {
    FltkResource::attachView (view);
 
-   if (view->usesFltkWidgets ()) {
-      ViewAndView *viewAndView = new ViewAndView();
-      viewAndView->topView = view;
-      viewAndView->flatView = lastFlatView;
-      viewsAndViews->append (viewAndView);
-   }
+   if (view->usesFltkWidgets ())
+      topView = view;
 }
 
 void FltkComplexButtonResource::detachView (FltkView *view)
 {
    FltkResource::detachView (view);
-
-   for (Iterator <ViewAndView> it = viewsAndViews->iterator ();
-        it.hasNext(); ) {
-      ViewAndView *viewAndView = it.getNext ();
-      if (viewAndView->topView == view) {
-         viewsAndViews->removeRef (viewAndView);
-         return;
-      }
-   }
-
-   fprintf (stderr,
-            "FltkComplexButtonResourceResource::detachView: View not "
-            "found.\n");
 }
 
 void FltkComplexButtonResource::sizeAllocate (core::Allocation *allocation)
 {
    FltkResource::sizeAllocate (allocation);
 
-   for (Iterator <ViewAndView> it = viewsAndViews->iterator ();
-        it.hasNext(); ) {
-      ViewAndView *viewAndView = it.getNext ();
-      ((FltkFlatView*)viewAndView->flatView)->resize (
-         reliefXThickness (),
-         reliefYThickness (),
-         allocation->width - 2 * reliefXThickness (),
-         allocation->ascent + allocation->descent - 2 * reliefYThickness ());
+   ((FltkFlatView*)flatView)->resize (
+      reliefXThickness (), reliefYThickness (),
+      allocation->width - 2 * reliefXThickness (),
+      allocation->ascent + allocation->descent - 2 * reliefYThickness ());
 
-      ((FltkFlatView*)viewAndView->flatView)->parent ()->init_sizes ();
-   }
+   ((FltkFlatView*)flatView)->parent ()->init_sizes ();
 }
 
 void FltkComplexButtonResource::setLayout (dw::core::Layout *layout)
 {
-   for (Iterator <ViewAndView> it = viewsAndViews->iterator ();
-        it.hasNext(); ) {
-      ViewAndView *viewAndView = it.getNext ();
-      layout->attachView (viewAndView->flatView);
-   }
+   layout->attachView (flatView);
 }
 
 int FltkComplexButtonResource::reliefXThickness ()
@@ -430,30 +434,28 @@ int FltkComplexButtonResource::reliefYThickness ()
    if (!relief)
       button->box(::fltk::FLAT_BOX);
 
-   FltkFlatView *flatView = 
-      new FltkFlatView (allocation->x + reliefXThickness (),
-                        allocation->y + reliefYThickness (),
-                        allocation->width - 2 * reliefXThickness (),
-                        allocation->ascent + allocation->descent
-                        - 2 * reliefYThickness ());
-   button->add (flatView);
-
-   lastFlatView = flatView;
+   flatView = new FltkFlatView (allocation->x + reliefXThickness (),
+                                allocation->y + reliefYThickness (),
+                                allocation->width - 2 * reliefXThickness (),
+                                allocation->ascent + allocation->descent
+                                   - 2 * reliefYThickness ());
+   button->add ((FltkFlatView *)flatView);
 
    if (layout)
-      layout->attachView (lastFlatView);
+      layout->attachView (flatView);
    return button;
 }
 
 // ----------------------------------------------------------------------
 
 FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int maxLength,
-                                      bool password):  
+                                      bool password, const char *label):
    FltkSpecificResource <dw::core::ui::EntryResource> (platform)
 {
    this->maxLength = maxLength;
    this->password = password;
-   
+   this->label = label ? strdup(label) : NULL;
+
    initText = NULL;
    editable = false;
 
@@ -464,46 +466,51 @@ FltkEntryResource::~FltkEntryResource ()
 {
    if (initText)
       delete initText;
+   if (label)
+      delete label;
 }
 
 ::fltk::Widget *FltkEntryResource::createNewWidget (core::Allocation
                                                     *allocation)
 {
    ::fltk::Input *input =
-        password ?
-        new ::fltk::SecretInput (allocation->x, allocation->y,
-                                 allocation->width,
-                                 allocation->ascent + allocation->descent) :
         new ::fltk::Input (allocation->x, allocation->y, allocation->width,
                            allocation->ascent + allocation->descent);
+   if (password)
+      input->type(::fltk::Input::SECRET);
    input->callback (widgetCallback, this);
    input->when (::fltk::WHEN_ENTER_KEY_ALWAYS);
 
-   if (viewsAndWidgets->isEmpty ()) {
-      // First widget created, attach the set text.
-      if (initText)
-         input->value (initText);
-   } else
-      input->value
-         (((::fltk::Input*)viewsAndWidgets->getFirst()->widget)->value ());
+   if (label) {
+      input->label(label);
+      input->set_flag(::fltk::ALIGN_INSIDE_LEFT);
+   }
+   if (initText)
+      input->value (initText);
 
    return input;
 }
 
+void FltkEntryResource::setDisplayed(bool displayed)
+{
+   FltkResource::setDisplayed(displayed);
+   queueResize(true);
+}
+
 void FltkEntryResource::sizeRequest (core::Requisition *requisition)
 {
-   if (style) {
+   if (displayed() && style) {
       FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
       requisition->width =
-         (int)::fltk::getwidth ("M", 1)
+         (int)::fltk::getwidth ("n", 1)
          * (maxLength == UNLIMITED_MAX_LENGTH ? 10 : maxLength)
          + 2 * RELIEF_X_THICKNESS;
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
       requisition->descent = font->descent + RELIEF_Y_THICKNESS;
    } else {
-      requisition->width = 1;
-      requisition->ascent = 1;
+      requisition->width = 0;
+      requisition->ascent = 0;
       requisition->descent = 0;
    }
 }
@@ -517,7 +524,7 @@ void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
     * The Back or Forward, buttons, or the first click on a rendered
     * page. BUG: this must be investigated and reported to FLTK2 team
     */
-   printf ("when = %d\n", widget->when ());
+   MSG("when = %d\n", widget->when ());
    if ((widget->when () & ::fltk::WHEN_ENTER_KEY_ALWAYS) &&
        (::fltk::event_key() == ::fltk::ReturnKey))
       ((FltkEntryResource*)data)->emitActivate ();
@@ -525,10 +532,7 @@ void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
 
 const char *FltkEntryResource::getText ()
 {
-   if (viewsAndWidgets->isEmpty ())
-      return initText;
-   else
-      return ((::fltk::Input*)viewsAndWidgets->getFirst()->widget)->value ();
+   return ((::fltk::Input*)widget)->value ();
 }
 
 void FltkEntryResource::setText (const char *text)
@@ -537,11 +541,7 @@ void FltkEntryResource::setText (const char *text)
       delete initText;
    initText = strdup (text);
 
-   for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
-        it.hasNext(); ) {
-      ViewAndWidget *viewAndWidget = it.getNext ();
-      ((::fltk::Input*)viewAndWidget->widget)->value (initText);
-   }
+   ((::fltk::Input*)widget)->value (initText);
 }
 
 bool FltkEntryResource::isEditable ()
@@ -557,7 +557,7 @@ void FltkEntryResource::setEditable (bool editable)
 // ----------------------------------------------------------------------
 
 FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
-                                                      int cols, int rows): 
+                                                      int cols, int rows):
    FltkSpecificResource <dw::core::ui::MultiLineTextResource> (platform)
 {
    buffer = new ::fltk::TextBuffer;
@@ -568,11 +568,11 @@ FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
 
    // Check values. Upper bound check is left to the caller.
    if (numCols < 1) {
-      fprintf (stderr, "WARNING: numCols = %d is set to 1.\n", numCols);
+      MSG_WARN("numCols = %d is set to 1.\n", numCols);
       numCols = 1;
    }
    if (numRows < 1) {
-      fprintf (stderr, "WARNING: numRows = %d is set to 1.\n", numRows);
+      MSG_WARN("numRows = %d is set to 1.\n", numRows);
       numRows = 1;
    }
 
@@ -582,11 +582,7 @@ FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
 FltkMultiLineTextResource::~FltkMultiLineTextResource ()
 {
    /* Free memory avoiding a double-free of text buffers */
-   for (Iterator <ViewAndWidget> it = viewsAndWidgets->iterator ();
-        it.hasNext(); ) {
-      ViewAndWidget *viewAndWidget = it.getNext ();
-      ((::fltk::TextEditor *) viewAndWidget->widget)->buffer (0);
-   }
+   ((::fltk::TextEditor *) widget)->buffer (0);
    delete buffer;
 }
 
@@ -607,13 +603,13 @@ void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
       FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
       requisition->width =
-         (int)::fltk::getwidth ("X", 1) * numCols +
+         (int)::fltk::getwidth ("n", 1) * numCols +
          2 * RELIEF_X_THICKNESS;
       requisition->ascent =
-         font->ascent + RELIEF_Y_THICKNESS;
+         RELIEF_Y_THICKNESS + font->ascent +
+         (font->ascent + font->descent) * (numRows - 1);
       requisition->descent =
          font->descent +
-         (font->ascent + font->descent) * (numRows - 1) +
          RELIEF_Y_THICKNESS;
    } else {
       requisition->width = 1;
@@ -647,7 +643,7 @@ void FltkMultiLineTextResource::setEditable (bool editable)
 template <class I>
 FltkToggleButtonResource<I>::FltkToggleButtonResource (FltkPlatform *platform,
                                                        bool activated):
-   FltkSpecificResource <I> (platform)  
+   FltkSpecificResource <I> (platform)
 {
    initActivated = activated;
 }
@@ -664,13 +660,7 @@ template <class I>
                                                               *allocation)
 {
    ::fltk::Button *button = createNewButton (allocation);
-
-   if (this->viewsAndWidgets->isEmpty ())
-      button->value (initActivated);
-   else
-      button->value (((::fltk::Button*)this->viewsAndWidgets
-                      ->getFirst()->widget)->value ());
-
+   button->value (initActivated);
    return button;
 }
 
@@ -697,12 +687,7 @@ void FltkToggleButtonResource<I>::sizeRequest (core::Requisition *requisition)
 template <class I>
 bool FltkToggleButtonResource<I>::FltkToggleButtonResource::isActivated ()
 {
-   if (this->viewsAndWidgets->isEmpty ())
-      return initActivated;
-   else
-      return
-         ((::fltk::Button*)this->viewsAndWidgets->getFirst()->widget)
-         ->value ();
+   return ((::fltk::Button*)this->widget)->value ();
 }
 
 
@@ -710,13 +695,7 @@ template <class I>
 void FltkToggleButtonResource<I>::setActivated (bool activated)
 {
    initActivated = activated;
-
-   for (Iterator <FltkResource::ViewAndWidget> it =
-           this->viewsAndWidgets->iterator ();
-        it.hasNext(); ) {
-      FltkResource::ViewAndWidget *viewAndWidget = it.getNext ();
-      ((::fltk::Button*)viewAndWidget->widget)->value (initActivated);
-   }
+   ((::fltk::Button*)this->widget)->value (initActivated);
 }
 
 // ----------------------------------------------------------------------
@@ -736,7 +715,7 @@ FltkCheckButtonResource::~FltkCheckButtonResource ()
 
 
 ::fltk::Button *FltkCheckButtonResource::createNewButton (core::Allocation
-                                                          *allocation)   
+                                                          *allocation)
 {
    ::fltk::CheckButton *cb =
       new ::fltk::CheckButton (allocation->x, allocation->y, allocation->width,
@@ -767,7 +746,7 @@ void FltkRadioButtonResource::Group::FltkGroupIterator::unref ()
 FltkRadioButtonResource::Group::Group (FltkRadioButtonResource
                                        *radioButtonResource)
 {
-   list = new container::typed::List <FltkRadioButtonResource> (false);
+   list = new lout::container::typed::List <FltkRadioButtonResource> (false);
    connect (radioButtonResource);
 }
 
@@ -775,7 +754,7 @@ FltkRadioButtonResource::Group::~Group ()
 {
    delete list;
 }
-      
+
 void FltkRadioButtonResource::Group::connect (FltkRadioButtonResource
                                               *radioButtonResource)
 {
@@ -836,7 +815,7 @@ void FltkRadioButtonResource::buttonClicked ()
 }
 
 ::fltk::Button *FltkRadioButtonResource::createNewButton (core::Allocation
-                                                          *allocation)   
+                                                          *allocation)
 {
    /*
     * Groups of fltk::RadioButton must be added to one fltk::Group, which is
@@ -1025,7 +1004,7 @@ template <class I> void FltkSelectionResource<I>::addItem (const char *str,
       }
    }
 }
-   
+
 template <class I> void FltkSelectionResource<I>::pushGroup (const char *name,
                                                              bool enabled)
 {
@@ -1038,7 +1017,7 @@ template <class I> void FltkSelectionResource<I>::pushGroup (const char *name,
       ::fltk::ItemGroup *group = item->createNewGroupWidget ();
       widgetStack->stack->getTop()->getTypedValue()->add (group);
       widgetStack->stack->push (new TypedPointer < ::fltk::Menu> (group));
-      if(!enabled)
+      if (!enabled)
          group->deactivate ();
    }
 }
@@ -1123,7 +1102,7 @@ void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
       requisition->width = 1;
       requisition->ascent = 1;
       requisition->descent = 0;
-   } 
+   }
 }
 
 void FltkOptionMenuResource::addItem (const char *str,
@@ -1146,10 +1125,12 @@ bool FltkOptionMenuResource::isSelected (int index)
 
 FltkListResource::FltkListResource (FltkPlatform *platform,
                                     core::ui::ListResource::SelectionMode
-                                    selectionMode):
+                                    selectionMode, int rowCount):
    FltkSelectionResource <dw::core::ui::ListResource> (platform),
    itemsSelected(8)
 {
+   mode = selectionMode;
+   showRows = rowCount;
    init (platform);
 }
 
@@ -1161,9 +1142,10 @@ FltkListResource::~FltkListResource ()
 ::fltk::Menu *FltkListResource::createNewMenu (core::Allocation *allocation)
 {
    ::fltk::Menu *menu =
-      new ::fltk::MultiBrowser (allocation->x, allocation->y,
-                                allocation->width,
-                                allocation->ascent + allocation->descent);
+      new ::fltk::Browser (allocation->x, allocation->y, allocation->width,
+                           allocation->ascent + allocation->descent);
+   if (mode == SELECTION_MULTIPLE)
+      menu->type(::fltk::Browser::MULTI);
    menu->set_flag (::fltk::RAW_LABEL);
    menu->callback(widgetCallback,this);
    menu->when(::fltk::WHEN_CHANGED);
@@ -1173,10 +1155,25 @@ FltkListResource::~FltkListResource ()
 void FltkListResource::widgetCallback (::fltk::Widget *widget, void *data)
 {
    ::fltk::Widget *fltkItem = ((::fltk::Menu *) widget)->item ();
-   int index = (long) (fltkItem->user_data ());
+   int index = -1;
+   if (fltkItem)
+      index = (long) (fltkItem->user_data ());
    if (index > -1) {
-      bool selected = fltkItem->selected ();
-      ((FltkListResource *) data)->itemsSelected.set (index, selected);
+      /* A MultiBrowser will trigger a callback for each item that is
+       * selected and each item that is deselected, but a "plain"
+       * Browser will only trigger the callback for the newly selected item
+       * (for which selected() is false, incidentally).
+       */
+      FltkListResource *res = (FltkListResource *) data;
+      if (res->mode == SELECTION_MULTIPLE) {
+         bool selected = fltkItem->selected ();
+         res->itemsSelected.set (index, selected);
+      } else {
+         int size = res->itemsSelected.size();
+         for (int i = 0; i < size; i++)
+            res->itemsSelected.set (i, false);
+         res->itemsSelected.set (index, true);
+      }
    }
 }
 
@@ -1195,18 +1192,24 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
-      int maxStringWidth = getMaxStringWidth ();
-      requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
-      requisition->descent =
-         (getNumberOfItems () - 1) * (font->ascent) + font->descent;
-      requisition->width = maxStringWidth
-         + (font->ascent + font->descent) * 4 / 5
-         + 2 * RELIEF_X_THICKNESS;
+      int rows = getNumberOfItems();
+      if (showRows < rows) {
+         rows = showRows;
+      }
+      /*
+       * The widget sometimes shows scrollbars when they are not required.
+       * The following values try to keep any scrollbars from obscuring
+       * options, at the cost of showing too much whitespace at times.
+       */
+      requisition->width = getMaxStringWidth() + 24;
+      requisition->ascent = font->ascent + 2 +
+                            (rows - 1) * (font->ascent + font->descent + 1);
+      requisition->descent = font->descent + 3;
    } else {
       requisition->width = 1;
       requisition->ascent = 1;
       requisition->descent = 0;
-   } 
+   }
 }
 
 bool FltkListResource::isSelected (int index)

@@ -1,17 +1,23 @@
-#include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <errno.h>
-#include <fcntl.h>
-#include "d_size.h"
-#include "misc_new.h"
-#include "dpid_common.h"
+/*
+ * File: misc_new.c
+ *
+ * Copyright 2008 Jorge Arellano Cid <jcid@dillo.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
 
-#include "misc_new.h"  /* for function prototypes */
+#include <errno.h>      /* errno, err-codes */
+#include <unistd.h>
+#include <time.h>
+#include <sys/stat.h>   /* stat */
+#include <stdlib.h>     /* rand, srand */
+
+#include "../dlib/dlib.h"
+#include "dpid_common.h"
+#include "misc_new.h"   /* for function prototypes */
 
 
 /*
@@ -159,7 +165,7 @@ char *a_Misc_mkfname(char *template)
 {
    char *tmp = template + strlen(template) - 6;
    int i;
-   unsigned int random;
+   uint_t random;
    struct stat stat_buf;
 
    if (tmp < template)
@@ -185,3 +191,26 @@ char *a_Misc_mkfname(char *template)
       MSG_ERR("a_Misc_mkfname: another round for %s \n", template);
    }
 }
+
+/*
+ * Return a new, random hexadecimal string of 'nchar' characters.
+ */
+char *a_Misc_mksecret(int nchar)
+{
+   int i;
+   uint_t random;
+   char *secret = dNew(char, nchar + 1);
+
+   srand((uint_t)(time(0) ^ getpid()));
+   random = (unsigned) rand();
+   for (i = 0; i < nchar; ++i) {
+      int hexdigit = (random >> (i * 5)) & 0x0f;
+
+      secret[i] = hexdigit > 9 ? hexdigit + 'a' - 10 : hexdigit + '0';
+   }
+   secret[i] = 0;
+   MSG("a_Misc_mksecret: %s\n", secret);
+
+   return secret;
+}
+

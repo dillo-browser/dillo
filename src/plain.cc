@@ -13,15 +13,13 @@
  * Module for decoding a text/plain object into a dw widget.
  */
 
-#include <string.h>     /* for memcpy and memmove */
-#include <math.h>       /* for rint() */
-
 #include "msg.h"
 #include "prefs.h"
 #include "cache.h"
 #include "bw.h"
 #include "web.hh"
 #include "misc.h"
+#include "styleengine.hh"
 
 #include "uicmd.hh"
 
@@ -37,23 +35,25 @@ using namespace dw::core;
 
 class DilloPlain {
 private:
-   class PlainEventReceiver: public dw::core::Widget::EventReceiver {
+   class PlainLinkReceiver: public dw::core::Layout::LinkReceiver {
    public:
       DilloPlain *plain;
-      bool buttonPress(dw::core::Widget *widget, dw::core::EventButton *event);
+      bool press(dw::core::Widget *widget, int link, int img, int x, int y,
+                 dw::core::EventButton *event);
    };
-   PlainEventReceiver plainReceiver;
+   PlainLinkReceiver plainReceiver;
+
+   void addLine(char *Buf, uint_t BufSize);
 
 public:
    BrowserWindow *bw;
-   DilloUrl *url;
 
    Widget *dw;
    style::Style *widgetStyle;
    size_t Start_Ofs;    /* Offset of where to start reading next */
    int state;
 
-   DilloPlain(BrowserWindow *bw, const DilloUrl *url);
+   DilloPlain(BrowserWindow *bw);
    ~DilloPlain();
 
    void write(void *Buf, uint_t BufSize, int Eof);
@@ -83,38 +83,27 @@ void a_Plain_free(void *data);
 /*
  * Diplain constructor.
  */
-DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
+DilloPlain::DilloPlain(BrowserWindow *p_bw)
 {
-   style::StyleAttrs styleAttrs;
-   style::FontAttrs fontAttrs;
-
    /* Init event receiver */
    plainReceiver.plain = this;
 
    /* Init internal variables */
    bw = p_bw;
-   url = a_Url_dup(p_url);
    dw = new Textblock (prefs.limit_text_width);
    Start_Ofs = 0;
    state = ST_SeekingEol;
 
-   /* Create the font and attribute for the page. */
-   fontAttrs.name = prefs.fw_fontname;
-   fontAttrs.size = (int) rint(14.0 * prefs.font_factor);
-   fontAttrs.weight = 400;
-   fontAttrs.style = style::FONT_STYLE_NORMAL;
+   Layout *layout = (Layout*) bw->render_layout;
+   StyleEngine styleEngine (layout);
 
-   Layout *layout = (Layout*)bw->render_layout;
-   styleAttrs.initValues ();
-   styleAttrs.margin.setVal (5);
-   styleAttrs.font = style::Font::create (layout, &fontAttrs);
-   styleAttrs.color = style::Color::createSimple (layout, prefs.text_color);
-   styleAttrs.backgroundColor = 
-      style::Color::createSimple (layout, prefs.bg_color);
-   widgetStyle = style::Style::create (layout, &styleAttrs);
+   styleEngine.startElement ("body");
+   styleEngine.startElement ("pre");
+   widgetStyle = styleEngine.wordStyle ();
+   widgetStyle->ref ();
 
    /* The context menu */
-   DW2TB(dw)->connectEvent (&plainReceiver);
+   layout->connectLink (&plainReceiver);
 
    /* Hook destructor to the dw delete call */
    dw->setDeleteCallback(a_Plain_free, this);
@@ -125,24 +114,42 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw, const DilloUrl *p_url)
  */
 DilloPlain::~DilloPlain()
 {
-   MSG("::~DilloPlain()\n");
-   a_Url_free(url);
+   _MSG("::~DilloPlain()\n");
    widgetStyle->unref();
 }
 
 /*
  * Receive the mouse button press event
  */
-bool DilloPlain::PlainEventReceiver::buttonPress (Widget *widget,
-                                                  EventButton *event)
+bool DilloPlain::PlainLinkReceiver::press (Widget *widget, int, int, int, int,
+                                           EventButton *event)
 {
-   _MSG("DilloPlain::PlainEventReceiver::buttonPress\n");
+   _MSG("DilloPlain::PlainLinkReceiver::buttonPress\n");
 
    if (event->button == 3) {
-      a_UIcmd_page_popup(plain->bw, plain->url, FALSE, FALSE);
+      a_UIcmd_page_popup(plain->bw, FALSE, NULL);
       return true;
    }
    return false;
+}
+
+void DilloPlain::addLine(char *Buf, uint_t BufSize)
+{
+   int len;
+   char buf[128];
+   char *end = Buf + BufSize;
+
+   if (BufSize > 0) {
+      // Limit word length to avoid X11 coordinate
+      // overflow with extremely long lines.
+      while ((len = a_Misc_expand_tabs(&Buf, end, buf, sizeof(buf))))
+         DW2TB(dw)->addText(buf, len, widgetStyle);
+   } else {
+      // Add dummy word for empty lines - otherwise the parbreak is ignored.
+      DW2TB(dw)->addText("", 0, widgetStyle);
+   }
+
+   DW2TB(dw)->addParbreak(0, widgetStyle);
 }
 
 /*
@@ -152,7 +159,6 @@ bool DilloPlain::PlainEventReceiver::buttonPress (Widget *widget,
 void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
 {
    char *Start;
-   char *data;
    uint_t i, len, MaxBytes;
 
    _MSG("DilloPlain::write Eof=%d\n", Eof);
@@ -170,10 +176,7 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
          }
          break;
       case ST_Eol:
-         data = a_Misc_expand_tabs(Start + i - len, len);
-         DW2TB(dw)->addText(data, widgetStyle);
-         DW2TB(dw)->addParbreak(0, widgetStyle);
-         dFree(data);
+         addLine(Start + i - len, len);
          if (Start[i] == '\r' && Start[i + 1] == '\n') ++i;
          if (i < MaxBytes) ++i;
          state = ST_SeekingEol;
@@ -183,10 +186,7 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
    }
    Start_Ofs += i - len;
    if (Eof && len) {
-      data = a_Misc_expand_tabs(Start + i - len, len);
-      DW2TB(dw)->addText(data, widgetStyle);
-      DW2TB(dw)->addParbreak(0, widgetStyle);
-      dFree(data);
+      addLine(Start + i - len, len);
       Start_Ofs += len;
    }
 
@@ -199,7 +199,7 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
 void *a_Plain_text(const char *type, void *P, CA_Callback_t *Call, void **Data)
 {
    DilloWeb *web = (DilloWeb*)P;
-   DilloPlain *plain = new DilloPlain(web->bw, web->url);
+   DilloPlain *plain = new DilloPlain(web->bw);
 
    *Call = (CA_Callback_t)Plain_callback;
    *Data = (void*)plain;
@@ -209,7 +209,7 @@ void *a_Plain_text(const char *type, void *P, CA_Callback_t *Call, void **Data)
 
 void a_Plain_free(void *data)
 {
-   MSG("a_Plain_free! %p\n", data);
+   _MSG("a_Plain_free! %p\n", data);
    delete ((DilloPlain *)data);
 }
 

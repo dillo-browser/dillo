@@ -38,7 +38,8 @@ private:
       public:
          ImageMap ();
          ~ImageMap ();
-         
+
+         void draw (core::View *view, core::style::Style *style, int x, int y);
          void add (core::Shape *shape, int link);
          void setDefaultLink (int link) { defaultLink = link; };
          int link (int x, int y);
@@ -47,7 +48,7 @@ private:
    lout::container::typed::HashTable <lout::object::Object, ImageMap>
       *imageMaps;
    ImageMap *currentMap;
-   
+
 public:
    ImageMapsList ();
    ~ImageMapsList ();
@@ -55,6 +56,8 @@ public:
    void startNewMap (lout::object::Object *key);
    void addShapeToCurrentMap (core::Shape *shape, int link);
    void setCurrentMapDefaultLink (int link);
+   void drawMap(lout::object::Object *key, core::View *view,
+                core::style::Style *style, int x, int y);
    int link (lout::object::Object *key, int x, int y);
 };
 
@@ -68,7 +71,7 @@ public:
  * <h3>Signals</h3>
  *
  * For image maps, dw::Image uses the signals defined in
- * dw::core::Widget::LinkReceiver. For client side image maps, -1 is
+ * dw::core::Layout::LinkReceiver. For client side image maps, -1 is
  * passed for the coordinates, for server side image maps, the respective
  * coordinates are used. See section "Image Maps" below.
  *
@@ -89,8 +92,8 @@ public:
  *
  * dw::ImageMapsList::addShapeToCurrentMap adds a shape to the current
  * map. The \em link argument is a number, which is later passed to
- * the dw::core::Widget::LinkReceiver.
- * 
+ * the dw::core::Layout::LinkReceiver.
+ *
  * This map list is then, together with the key for the image, passed to
  * dw::Image::setUseMap. For HTML, a URL with the value of the "ismap"
  * attribute of \<IMG\> should be used.
@@ -103,13 +106,13 @@ public:
  * Currently, only maps defined in the same document as the image may be
  * used, since the dw::ImageMapsList is stored in the HTML link block, and
  * contains only the image maps defined in the document.
- * 
+ *
  * <h4>Server Side %Image Maps</h4>
- * 
+ *
  * To use images for server side image maps, you must call
  * dw::Image::setIsMap, and the dw::Image::style must contain a valid link
  * (dw::core::style::Style::x_link). After this, motions and clicks are
- * delegated to dw::core::Widget::LinkReceiver.
+ * delegated to dw::core::Layout::LinkReceiver.
  *
  * \sa\ref dw-images-and-backgrounds
  */
@@ -129,15 +132,17 @@ protected:
    void sizeRequestImpl (core::Requisition *requisition);
    void sizeAllocateImpl (core::Allocation *allocation);
 
-   void draw (core::View *view, core::Rectangle *area);  
+   void draw (core::View *view, core::Rectangle *area);
 
    bool buttonPressImpl (core::EventButton *event);
    bool buttonReleaseImpl (core::EventButton *event);
    void enterNotifyImpl (core::EventCrossing *event);
    void leaveNotifyImpl (core::EventCrossing *event);
    bool motionNotifyImpl (core::EventMotion *event);
+   int contentX (core::MousePositionEvent *event);
+   int contentY (core::MousePositionEvent *event);
 
-   //core::Iterator *iterator (Content::Type mask, bool atEnd); 
+   //core::Iterator *iterator (Content::Type mask, bool atEnd);
 
 public:
    static int CLASS_ID;
@@ -145,7 +150,7 @@ public:
    Image(const char *altText);
    ~Image();
 
-   core::Iterator *iterator (core::Content::Type mask, bool atEnd); 
+   core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 
    inline core::Imgbuf *getBuffer () { return buffer; }
    void setBuffer (core::Imgbuf *buffer, bool resize = false);
@@ -154,6 +159,13 @@ public:
 
    void setIsMap ();
    void setUseMap (ImageMapsList *list, Object *key);
+
+   /* This is a hack for the perhaps frivolous feature of drawing image map
+    * shapes when there is no image to display. If the map is defined after
+    * an image using an image map, and the actual image data has not been
+    * loaded, tell the image to redraw.
+    */
+   void forceMapRedraw () { if (mapKey && ! buffer) queueDraw (); };
 };
 
 } // namespace dw

@@ -102,7 +102,7 @@ passed to the calles are
 </ul>
 
 Generally, the values should define the available space for the
-widget. 
+widget.
 
 A widget, which depends on size hints, should call
 dw::core::Widget::queueResize, when apropriate.

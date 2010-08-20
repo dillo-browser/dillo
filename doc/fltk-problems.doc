@@ -5,19 +5,6 @@
 Current problems:
 
 <ul>
-<li> dw::fltk::FltkViewport::draw should only draw the region, for which e.g.
-     an expose event was received.
-
-<li> dw::fltk::FltkViewport::queueDraw will collect data, which has to be
-     redrawn. Currently, it calls redraw (DAMAGE_EXPOSE), can this be changed,
-     so that dw::fltk::FltkViewport::draw will distinguish between the two
-     cases?
-
-<li> For Scrolling, something similar applies, only parts of the viewport
-     have to be redrawn.
-
-<li> Also for Scrolling, it is necessary to copy parts of the window.
-
 <li> How should dw::fltk::FltkViewport::cancelQueueDraw be implemented?
 
 <li> If the value of a scrollbar is changed by the program, not the user,
@@ -27,12 +14,7 @@ Current problems:
 
 <li> Also, the problems with the widgets seems to work. Also sure?
 
-<li> When drawing, clipping of 32 bit values seems to work.
-
-<li> Who is responsable for clearing before drawing?
-
-<li> The embedded buttons are not redrawn, when pressing the mouse button
-     on them.
+<li> When drawing, clipping of 32 bit values is not working properly.
 
 <li> The item group within a selection widget (menu) should not be selectable.
 </ul>
@@ -74,11 +56,6 @@ perhaps different implementations for different window systems could
 be used. Then, it is for X necessary to use GCs with clipping masks.
 
 
-<h2>Lower Priority</h2>
-
-There needs to be an XEmbed implementation.
-
-
 <h2>dw::fltk::ui::ComplexButton</h2>
 
 Unfortunately, FLTK does not provide a button with Group as parent, so
@@ -106,7 +83,7 @@ The following changes should be applied manually.
 
 <h3>Changes in fltkcomplexbutton.hh</h3>
 
-First of all, the #define's for avoiding multiple includes:
+First of all, the \#define's for avoiding multiple includes:
 
 \code
 -#ifndef fltk_ComplexButton_h // fltk_Button_h formerly
@@ -133,7 +110,7 @@ at the end. Then, the namespace is changed:
 
 at the beginning and
 
-\code 
+\code
 -}
 +} // namespace ui
 +} // namespace fltk
@@ -151,7 +128,7 @@ at the end. Most important, the base class is changed:
 
 and
 
-\code 
+\code
 -class FL_API ComplexButton : public Widget {
 +class ComplexButton: public ::fltk::Group
 +{
@@ -167,10 +144,10 @@ namespace conflict:
 
 <h3>Changes in fltkcomplexbutton.cc</h3>
 
-First, #include's:
+First, \#include's:
 
 \code
- 
+
  #include <fltk/events.h>
  #include <fltk/damage.h>
 -#include <fltk/ComplexButton.h> // <fltk/Button.h> formerly

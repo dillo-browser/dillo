@@ -22,7 +22,6 @@
 #include "IO/IO.h"    /* for IORead &friends */
 #include "IO/Url.h"
 #include "chain.h"
-#include "list.h"
 #include "history.h"
 #include "nav.h"
 #include "dpiapi.h"
@@ -56,10 +55,10 @@ enum {
  * Local data
  */
 /* Data list for active dpi connections */
-static capi_conn_t **DpiConn = NULL;
-static int DpiConnSize;
-static int DpiConnMax = 4;
-
+static Dlist *CapiConns;      /* Data list for active connections; it holds
+                               * pointers to capi_conn_t structures. */
+/* Last URL asked for view source */
+static DilloUrl *CapiVsUrl = NULL;
 
 /*
  * Forward declarations
@@ -75,7 +74,9 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
  */
 void a_Capi_init(void)
 {
-   /* nothing to do for capi yet, just for cache */
+   /* create an empty list */
+   CapiConns = dList_new(32);
+   /* init cache */
    a_Cache_init();
 }
 
@@ -85,7 +86,7 @@ void a_Capi_init(void)
  * Create a new connection data structure
  */
 static capi_conn_t *
- Capi_conn_new(DilloUrl *url, void *bw, char *server, char *datastr)
+ Capi_conn_new(const DilloUrl *url, void *bw, char *server, char *datastr)
 {
    capi_conn_t *conn;
 
@@ -103,15 +104,22 @@ static capi_conn_t *
 }
 
 /*
+ * Validate a capi_conn_t pointer.
+ * Return value: NULL if not valid, conn otherwise.
+ */
+static capi_conn_t *Capi_conn_valid(capi_conn_t *conn)
+{
+   return dList_find(CapiConns, conn);
+}
+
+/*
  * Increment the reference count and add to the list if not present
  */
 static void Capi_conn_ref(capi_conn_t *conn)
 {
    if (++conn->Ref == 1) {
       /* add the connection data to list */
-      a_List_add(DpiConn, DpiConnSize, DpiConnMax);
-      DpiConn[DpiConnSize] = conn;
-      DpiConnSize++;
+      dList_append(CapiConns, (void *)conn);
    }
    _MSG(" Capi_conn_ref #%d %p\n", conn->Ref, conn);
 }
@@ -121,26 +129,30 @@ static void Capi_conn_ref(capi_conn_t *conn)
  */
 static void Capi_conn_unref(capi_conn_t *conn)
 {
-   int i, j;
-
    _MSG(" Capi_conn_unref #%d %p\n", conn->Ref - 1, conn);
 
+   /* We may validate conn here, but it doesn't *seem* necessary */
    if (--conn->Ref == 0) {
-      for (i = 0; i < DpiConnSize; ++i) {
-         if (DpiConn[i] == conn) {
-            /* remove conn preserving the list order */
-            for (j = i; j + 1 < DpiConnSize; ++j)
-               DpiConn[j] = DpiConn[j + 1];
-            --DpiConnSize;
-            /* free dynamic memory */
-            a_Url_free(conn->url);
-            dFree(conn->server);
-            dFree(conn->datastr);
-            dFree(conn);
-            break;
-         }
-      }
+      /* remove conn preserving the list order */
+      dList_remove(CapiConns, (void *)conn);
+      /* free dynamic memory */
+      a_Url_free(conn->url);
+      dFree(conn->server);
+      dFree(conn->datastr);
+      dFree(conn);
    }
+   _MSG(" Capi_conn_unref CapiConns=%d\n", dList_length(CapiConns));
+}
+
+/*
+ * Compare function for searching a conn by server string
+ */
+static int Capi_conn_by_server_cmp(const void *v1, const void *v2)
+{
+   const capi_conn_t *node = v1;
+   const char *server = v2;
+   dReturn_val_if_fail(node && node->server && server, 1);
+   return strcmp(node->server, server);
 }
 
 /*
@@ -148,13 +160,7 @@ static void Capi_conn_unref(capi_conn_t *conn)
  */
 static capi_conn_t *Capi_conn_find(char *server)
 {
-   int i;
-
-   for (i = 0; i < DpiConnSize; ++i)
-      if (strcmp(server, DpiConn[i]->server) == 0)
-         return DpiConn[i];
-
-   return NULL;
+   return dList_find_custom(CapiConns, (void*)server, Capi_conn_by_server_cmp);
 }
 
 /*
@@ -164,12 +170,15 @@ static void Capi_conn_resume(void)
 {
    int i;
    DataBuf *dbuf;
+   capi_conn_t *conn;
 
-   for (i = 0; i < DpiConnSize; ++i) {
-      if (DpiConn[i]->Flags & PENDING) {
-         capi_conn_t *conn = DpiConn[i];
+   for (i = 0; i < dList_length(CapiConns); ++i) {
+      conn = dList_nth_data (CapiConns, i);
+      if (conn->Flags & PENDING) {
          dbuf = a_Chain_dbuf_new(conn->datastr,(int)strlen(conn->datastr), 0);
-         a_Capi_ccc(OpSend, 1, BCK, conn->InfoSend, dbuf, NULL);
+         if (conn->InfoSend) {
+            a_Capi_ccc(OpSend, 1, BCK, conn->InfoSend, dbuf, NULL);
+         }
          dFree(dbuf);
          conn->Flags &= ~PENDING;
       }
@@ -178,14 +187,18 @@ static void Capi_conn_resume(void)
 
 /*
  * Abort the connection for a given url, using its CCC.
+ * (OpAbort 2,BCK removes the cache entry)
+ * TODO: when conn is already done, the cache entry isn't removed.
+ *       This may be wrong and needs a revision.
  */
 void a_Capi_conn_abort_by_url(const DilloUrl *url)
 {
    int i;
+   capi_conn_t *conn;
 
-   for (i = 0; i < DpiConnSize; ++i) {
-      if (a_Url_cmp(DpiConn[i]->url, url) == 0) {
-         capi_conn_t *conn = DpiConn[i];
+   for (i = 0; i < dList_length(CapiConns); ++i) {
+      conn = dList_nth_data (CapiConns, i);
+      if (a_Url_cmp(conn->url, url) == 0) {
          if (conn->InfoSend) {
             a_Capi_ccc(OpAbort, 1, BCK, conn->InfoSend, NULL, NULL);
          }
@@ -200,21 +213,35 @@ void a_Capi_conn_abort_by_url(const DilloUrl *url)
 /* ------------------------------------------------------------------------- */
 
 /*
- * Safety test: only allow dpi-urls from dpi-generated pages.
+ * Store the last URL requested by "view source"
  */
-static int Capi_dpi_verify_request(DilloWeb *web)
+void a_Capi_set_vsource_url(const DilloUrl *url)
 {
-   DilloUrl *referer;
+   a_Url_free(CapiVsUrl);
+   CapiVsUrl = a_Url_dup(url);
+}
+
+/*
+ * Safety test: only allow GET|POST dpi-urls from dpi-generated pages.
+ */
+int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url)
+{
+   const DilloUrl *referer;
    int allow = FALSE;
 
-   /* test POST and GET */
-   if (dStrcasecmp(URL_SCHEME(web->url), "dpi") == 0 &&
-       URL_FLAGS(web->url) & (URL_Post + URL_Get)) {
-      /* only allow dpi requests from dpi-generated urls */
-      if (a_Nav_stack_size(web->bw)) {
-         referer = a_History_get_url(NAV_TOP_UIDX(web->bw));
-         if (dStrcasecmp(URL_SCHEME(referer), "dpi") == 0) {
-            allow = TRUE;
+   if (dStrcasecmp(URL_SCHEME(url), "dpi") == 0) {
+      if (!(URL_FLAGS(url) & (URL_Post + URL_Get))) {
+         allow = TRUE;
+      } else if (!(URL_FLAGS(url) & URL_Post) &&
+                 strncmp(URL_STR(url), "dpi:/vsource/", 13) == 0) {
+         allow = TRUE;
+      } else {
+         /* only allow GET&POST dpi-requests from dpi-generated urls */
+         if (a_Nav_stack_size(bw)) {
+            referer = a_History_get_url(NAV_TOP_UIDX(bw));
+            if (dStrcasecmp(URL_SCHEME(referer), "dpi") == 0) {
+               allow = TRUE;
+            }
          }
       }
    } else {
@@ -222,10 +249,10 @@ static int Capi_dpi_verify_request(DilloWeb *web)
    }
 
    if (!allow) {
-      MSG("Capi_dpi_verify_request: Permission Denied!\n");
-      MSG("  URL_STR : %s\n", URL_STR(web->url));
-      if (URL_FLAGS(web->url) & URL_Post) {
-         MSG("  URL_DATA: %s\n", dStr_printable(URL_DATA(web->url), 1024));
+      MSG("a_Capi_dpi_verify_request: Permission Denied!\n");
+      MSG("  URL_STR : %s\n", URL_STR(url));
+      if (URL_FLAGS(url) & URL_Post) {
+         MSG("  URL_DATA: %s\n", dStr_printable(URL_DATA(url), 1024));
       }
    }
    return allow;
@@ -265,7 +292,6 @@ static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
 
 /*
  * Build the dpip command tag, according to URL and server.
- * TODO: make it PROXY-aware (AFAIS, it should be easy)
  */
 static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 {
@@ -273,10 +299,20 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 
    if (strcmp(server, "proto.https") == 0) {
       /* Let's be kind and make the HTTP query string for the dpi */
+      char *proxy_connect = a_Http_make_connect_str(web->url);
       Dstr *http_query = a_Http_make_query_str(web->url, FALSE);
       /* BUG: embedded NULLs in query data will truncate message */
-      cmd = a_Dpip_build_cmd("cmd=%s url=%s query=%s",
-                             "open_url", URL_STR(web->url), http_query->str);
+      if (proxy_connect) {
+         const char *proxy_urlstr = a_Http_get_proxy_urlstr();
+         cmd = a_Dpip_build_cmd("cmd=%s proxy_url=%s proxy_connect=%s "
+                                "url=%s query=%s", "open_url", proxy_urlstr,
+                                proxy_connect, URL_STR(web->url),
+                                http_query->str);
+      } else {
+         cmd = a_Dpip_build_cmd("cmd=%s url=%s query=%s",
+                                "open_url", URL_STR(web->url),http_query->str);
+      }
+      dFree(proxy_connect);
       dStr_free(http_query, 1);
 
    } else if (strcmp(server, "downloads") == 0) {
@@ -292,6 +328,84 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 }
 
 /*
+ * Send the requested URL's source to the "view source" dpi
+ */
+static void Capi_dpi_send_source(BrowserWindow *bw,  DilloUrl *url)
+{
+   char *p, *buf, *cmd, size_str[32], *server="vsource";
+   int buf_size;
+
+   if (!(p = strchr(URL_STR(url), ':')) || !(p = strchr(p + 1, ':')))
+      return;
+
+   if (a_Capi_get_buf(CapiVsUrl, &buf, &buf_size)) {
+      /* send the page's source to this dpi connection */
+      snprintf(size_str, 32, "%d", buf_size);
+      cmd = a_Dpip_build_cmd("cmd=%s url=%s data_size=%s",
+                             "start_send_page", URL_STR(url), size_str);
+      a_Capi_dpi_send_cmd(NULL, bw, cmd, server, 0);
+      a_Capi_dpi_send_data(url, bw, buf, buf_size, server, 0);
+   } else {
+      cmd = a_Dpip_build_cmd("cmd=%s msg=%s",
+                             "DpiError", "Page is NOT cached");
+      a_Capi_dpi_send_cmd(NULL, bw, cmd, server, 0);
+   }
+   dFree(cmd);
+}
+
+/*
+ * When dillo wants to open an URL, this can be either due to user action
+ * (e.g., typing in an URL, clicking a link), or automatic (HTTP header
+ * indicates redirection, META HTML tag with refresh attribute and 0 delay,
+ * and images and stylesheets on an HTML page when autoloading is enabled).
+ *
+ * For a user request, the action will be permitted.
+ * For an automatic request, permission to load depends on the filter set
+ * by the user.
+ */ 
+static bool_t Capi_filters_allow(const DilloUrl *wanted,
+                                 const DilloUrl *requester)
+{
+   bool_t ret;
+
+   if (requester == NULL) {
+      /* request made by user */
+      ret = TRUE;
+   } else {
+      switch (prefs.filter_auto_requests) {
+         case PREFS_FILTER_SAME_DOMAIN:
+         {
+            const char *req_host = URL_HOST(requester),
+                       *want_host = URL_HOST(wanted),
+                       *req_suffix,
+                       *want_suffix;
+            if (want_host[0] == '\0') {
+               ret = (req_host[0] == '\0' ||
+                      !dStrcasecmp(URL_SCHEME(wanted), "data")) ? TRUE : FALSE;
+            } else {
+               /* This will regard "www.dillo.org" and "www.dillo.org." as
+                * different, but it doesn't seem worth caring about.
+                */
+               req_suffix = a_Url_host_find_public_suffix(req_host);
+               want_suffix = a_Url_host_find_public_suffix(want_host);
+
+               ret = dStrcasecmp(req_suffix, want_suffix) == 0;
+            }
+
+            MSG("Capi_filters_allow: from %s to %s: %s\n", req_host, want_host,
+                ret ? "ALLOWED" : "DENIED");
+            break;
+         }
+         case PREFS_FILTER_ALLOW_ALL:
+         default:
+            ret = TRUE;
+            break;
+      }
+   }
+   return ret;
+}
+
+/*
  * Most used function for requesting a URL.
  * TODO: clean up the ad-hoc bindings with an API that allows dynamic
  *       addition of new plugins.
@@ -301,11 +415,14 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
  */
 int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
 {
-   capi_conn_t *conn;
    int reload;
    char *cmd, *server;
+   capi_conn_t *conn = NULL;
    const char *scheme = URL_SCHEME(web->url);
    int safe = 0, ret = 0, use_cache = 0;
+
+   dReturn_val_if_fail((a_Capi_get_flags(web->url) & CAPI_IsCached) ||
+                       Capi_filters_allow(web->url, web->requester), 0);
 
    /* reload test */
    reload = (!(a_Capi_get_flags(web->url) & CAPI_IsCached) ||
@@ -314,35 +431,43 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    if (web->flags & WEB_Download) {
      /* download request: if cached save from cache, else
       * for http, ftp or https, use the downloads dpi */
-     if (a_Capi_get_flags(web->url) & CAPI_IsCached) {
-        if (web->filename && (web->stream = fopen(web->filename, "w"))) {
-           use_cache = 1;
+     if (a_Capi_get_flags_with_redirection(web->url) & CAPI_IsCached) {
+        if (web->filename) {
+           if ((web->stream = fopen(web->filename, "w"))) {
+              use_cache = 1;
+           } else {
+              MSG_WARN("Cannot open \"%s\" for writing.\n", web->filename);
+           }
         }
-     } else {
-        if (!dStrcasecmp(scheme, "https") ||
-            !dStrcasecmp(scheme, "http") ||
-            !dStrcasecmp(scheme, "ftp")) {
-           server = "downloads";
-           cmd = Capi_dpi_build_cmd(web, server);
-           a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
-           dFree(cmd);
-        }
+     } else if (a_Cache_download_enabled(web->url)) {
+        server = "downloads";
+        cmd = Capi_dpi_build_cmd(web, server);
+        a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
+        dFree(cmd);
      }
 
    } else if (Capi_url_uses_dpi(web->url, &server)) {
       /* dpi request */
-      if ((safe = Capi_dpi_verify_request(web))) {
+      if ((safe = a_Capi_dpi_verify_request(web->bw, web->url))) {
          if (dStrcasecmp(scheme, "dpi") == 0) {
-            /* make "dpi:/" prefixed urls always reload. */
-            a_Url_set_flags(web->url, URL_FLAGS(web->url) | URL_E2EQuery);
-            reload = 1;
+            if (strcmp(server, "vsource") == 0) {
+               /* don't reload the "view source" page */
+            } else {
+               /* make the other "dpi:/" prefixed urls always reload. */
+               a_Url_set_flags(web->url, URL_FLAGS(web->url) | URL_E2EQuery);
+               reload = 1;
+            }
          }
          if (reload) {
             a_Capi_conn_abort_by_url(web->url);
             /* Send dpip command */
+            _MSG("a_Capi_open_url, reload url='%s'\n", URL_STR(web->url));
             cmd = Capi_dpi_build_cmd(web, server);
             a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
             dFree(cmd);
+            if (strcmp(server, "vsource") == 0) {
+               Capi_dpi_send_source(web->bw, web->url);
+            }
          }
          use_cache = 1;
       }
@@ -354,6 +479,9 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
          a_Capi_conn_abort_by_url(web->url);
          /* create a new connection and start the CCC operations */
          conn = Capi_conn_new(web->url, web->bw, "http", "none");
+         /* start the reception branch before the query one because the DNS
+          * may callback immediatly. This may avoid a race condition. */
+         a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), conn, "http");
          a_Capi_ccc(OpStart, 1, BCK, a_Chain_new(), conn, web);
       }
       use_cache = 1;
@@ -364,7 +492,10 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    }
 
    if (use_cache) {
-      ret = a_Cache_open_url(web, Call, CbData);
+      if (!conn || (conn && Capi_conn_valid(conn))) {
+         /* not aborted, let's continue... */
+         ret = a_Cache_open_url(web, Call, CbData);
+      }
    } else {
       a_Web_free(web);
    }
@@ -372,12 +503,11 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
 }
 
 /*
- * Return status information of an URL's content-transfer process.
+ * Convert cache-defined flags to Capi ones.
  */
-int a_Capi_get_flags(const DilloUrl *Url)
+static int Capi_map_cache_flags(uint_t flags)
 {
    int status = 0;
-   uint_t flags = a_Cache_get_flags(Url);
 
    if (flags) {
       status |= CAPI_IsCached;
@@ -390,6 +520,26 @@ int a_Capi_get_flags(const DilloUrl *Url)
 
       /* CAPI_Aborted is not yet used/defined */
    }
+   return status;
+}
+
+/*
+ * Return status information of an URL's content-transfer process.
+ */
+int a_Capi_get_flags(const DilloUrl *Url)
+{
+   uint_t flags = a_Cache_get_flags(Url);
+   int status = flags ? Capi_map_cache_flags(flags) : 0;
+   return status;
+}
+
+/*
+ * Same as a_Capi_get_flags() but following redirections.
+ */
+int a_Capi_get_flags_with_redirection(const DilloUrl *Url)
+{
+   uint_t flags = a_Cache_get_flags_with_redirection(Url);
+   int status = flags ? Capi_map_cache_flags(flags) : 0;
    return status;
 }
 
@@ -419,12 +569,48 @@ const char *a_Capi_get_content_type(const DilloUrl *url)
 }
 
 /*
- * Set the Content-Type for the URL. 
+ * Set the Content-Type for the URL.
  */
 const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
-                                        bool_t force)
+                                    const char *from)
 {
-   return a_Cache_set_content_type(url, ctype, force);
+   return a_Cache_set_content_type(url, ctype, from);
+}
+
+/*
+ * Send data to a dpi (e.g. add_bookmark, open_url, send_preferences, ...)
+ * Most of the time we send dpi commands, but it also serves for raw data
+ * as with "view source".
+ */
+int a_Capi_dpi_send_data(const DilloUrl *url, void *bw,
+                         char *data, int data_sz, char *server, int flags)
+{
+   capi_conn_t *conn;
+   DataBuf *dbuf;
+
+   if (flags & 1) {
+      /* open a new connection to server */
+
+      /* Create a new connection data struct and add it to the list */
+      conn = Capi_conn_new(url, bw, server, data);
+      /* start the CCC operations */
+      a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), conn, server);
+      a_Capi_ccc(OpStart, 1, BCK, a_Chain_new(), conn, server);
+
+   } else {
+      /* Re-use an open connection */
+      conn = Capi_conn_find(server);
+      if (conn) {
+         /* found */
+         dbuf = a_Chain_dbuf_new(data, data_sz, 0);
+         a_Capi_ccc(OpSend, 1, BCK, conn->InfoSend, dbuf, NULL);
+         dFree(dbuf);
+      } else {
+         MSG(" ERROR: [a_Capi_dpi_send_data] No open connection found\n");
+      }
+   }
+
+   return 0;
 }
 
 /*
@@ -434,31 +620,7 @@ const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
 int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
                         int flags)
 {
-   capi_conn_t *conn;
-   DataBuf *dbuf;
-
-   if (flags & 1) {
-      /* open a new connection to server */
-
-      /* Create a new connection data struct and add it to the list */
-      conn = Capi_conn_new(url, bw, server, cmd);
-      /* start the CCC operations */
-      a_Capi_ccc(OpStart, 1, BCK, a_Chain_new(), conn, server);
-
-   } else {
-      /* Re-use an open connection */
-      conn = Capi_conn_find(server);
-      if (conn) {
-         /* found */
-         dbuf = a_Chain_dbuf_new(cmd, (int)strlen(cmd), 0);
-         a_Capi_ccc(OpSend, 1, BCK, conn->InfoSend, dbuf, NULL);
-         dFree(dbuf);
-      } else {
-         MSG(" ERROR: [a_Capi_dpi_send_cmd] No open connection found\n");
-      }
-   }
-
-   return 0;
+   return a_Capi_dpi_send_data(url, bw, cmd, strlen(cmd), server, flags);
 }
 
 /*
@@ -469,7 +631,11 @@ void a_Capi_stop_client(int Key, int force)
 {
    CacheClient_t *Client;
 
-   if (force && (Client = a_Cache_client_get_if_unique(Key))) {
+   _MSG("a_Capi_stop_client:  force=%d\n", force);
+
+   Client = a_Cache_client_get_if_unique(Key);
+   if (Client && (force || Client->BufSize == 0)) {
+      /* remove empty entries too */
       a_Capi_conn_abort_by_url(Client->Url);
    }
    a_Cache_stop_client(Key);
@@ -525,18 +691,17 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             MSG_WARN("Unused CCC\n");
             break;
          }
-      } else {  /* FWD */
+      } else {  /* 1 FWD */
          /* Command sending branch (status) */
          switch (Op) {
          case OpSend:
             if (!Data2) {
                MSG_WARN("Capi.c: Opsend [1F] Data2 = NULL\n");
-            } else if (strcmp(Data2, "SockFD") == 0) {
-               /* start the receiving branch */
-               capi_conn_t *conn = Info->LocalKey;
+            } else if (strcmp(Data2, "FD") == 0) {
+               conn = Info->LocalKey;
                conn->SockFD = *(int*)Data1;
-               a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), Info->LocalKey,
-                          conn->server);
+               /* communicate the FD through the answer branch */
+               a_Capi_ccc(OpSend, 2, BCK, conn->InfoRecv, &conn->SockFD, "FD");
             } else if (strcmp(Data2, "DpidOK") == 0) {
                /* resume pending dpi requests */
                Capi_conn_resume();
@@ -545,13 +710,19 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          case OpAbort:
             conn = Info->LocalKey;
             conn->InfoSend = NULL;
-            /* remove the cache entry for this URL */
-            a_Cache_entry_remove_by_url(conn->url);
-            if (Data2 && !strcmp(Data2, "DpidERROR"))
-               a_UIcmd_set_msg(conn->bw,
-                               "ERROR: can't start dpid daemon "
-                               "(URL scheme = '%s')!", 
-                               URL_SCHEME(conn->url));
+            if (Data2) {
+               if (!strcmp(Data2, "DpidERROR")) {
+                  a_UIcmd_set_msg(conn->bw,
+                                  "ERROR: can't start dpid daemon "
+                                  "(URL scheme = '%s')!",
+                                  conn->url ? URL_SCHEME(conn->url) : "");
+               } else if (!strcmp(Data2, "Both") && conn->InfoRecv) {
+                  /* abort the other branch too */
+                  a_Capi_ccc(OpAbort, 2, BCK, conn->InfoRecv, NULL, NULL);
+               }
+            }
+            /* if URL == expect-url */
+            a_Nav_cancel_expect_if_eq(conn->bw, conn->url);
             /* finish conn */
             Capi_conn_unref(conn);
             dFree(Info);
@@ -564,21 +735,29 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
 
    } else if (Branch == 2) {
       if (Dir == BCK) {
-         /* Server listening branch (status)
-          * (Data1 = conn; Data2 = {"HttpFD" | "DpiFD"}) */
+         /* Answer branch */
          switch (Op) {
          case OpStart:
+            /* Data1 = conn; Data2 = {"http" | "<dpi server name>"} */
             conn = Data1;
             Capi_conn_ref(conn);
             Info->LocalKey = conn;
             conn->InfoRecv = Info;
             a_Chain_link_new(Info, a_Capi_ccc, BCK, a_Dpi_ccc, 2, 2);
-            a_Chain_bcb(OpStart, Info, &conn->SockFD, Data2);
+            a_Chain_bcb(OpStart, Info, NULL, Data2);
+            break;
+         case OpSend:
+            /* Data1 = FD */
+            if (Data2 && strcmp(Data2, "FD") == 0) {
+               a_Chain_bcb(OpSend, Info, Data1, Data2);
+            }
             break;
          case OpAbort:
             conn = Info->LocalKey;
             conn->InfoRecv = NULL;
             a_Chain_bcb(OpAbort, Info, NULL, NULL);
+            /* remove the cache entry for this URL */
+            a_Cache_entry_remove_by_url(conn->url);
             Capi_conn_unref(conn);
             dFree(Info);
             break;
@@ -586,7 +765,7 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             MSG_WARN("Unused CCC\n");
             break;
          }
-      } else {  /* FWD */
+      } else {  /* 2 FWD */
          /* Server listening branch */
          switch (Op) {
          case OpSend:

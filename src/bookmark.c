@@ -9,10 +9,7 @@
  * (at your option) any later version.
  */
 
-#include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "msg.h"
 #include "history.h"

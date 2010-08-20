@@ -119,10 +119,10 @@ In this example,
 </ul>
 
 
-<h2>Template Instanciations</h2>
+<h2>Template Instantiations</h2>
 
-Template instanciations are shown as own classes/interfaces, the
-instanciation by the template is shown by a yellow dashed arrow:
+Template instantiations are shown as own classes/interfaces, the
+instantiation by the template is shown by a yellow dashed arrow:
 
 \dot
 digraph G {

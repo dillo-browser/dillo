@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -50,17 +49,18 @@ int main(int argc, char **argv)
    styleAttrs.margin.setVal (5);
    styleAttrs.borderWidth.setVal (1);
    styleAttrs.setBorderStyle (BORDER_OUTSET);
-   styleAttrs.setBorderColor (Color::createShaded (layout, 0x808080));
+   styleAttrs.setBorderColor (Color::create (layout, 0x808080));
 
    FontAttrs fontAttrs;
    fontAttrs.name = "Bitstream Charter";
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xa0a0a0);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xa0a0a0);
    styleAttrs.hBorderSpacing = 5;
    styleAttrs.vBorderSpacing = 5;
 
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 
    styleAttrs.borderWidth.setVal (1);
    styleAttrs.setBorderStyle (BORDER_INSET);
-  
+
    Style *cellStyle = Style::create (layout, &styleAttrs);
 
    styleAttrs.borderWidth.setVal (0);
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 
       cell->addText (buf, wordStyle);
       cell->flush ();
-   } 
+   }
 
    wordStyle->unref();
    cellStyle->unref();

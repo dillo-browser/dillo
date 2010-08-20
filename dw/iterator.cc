@@ -14,14 +14,15 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 
 #include "core.hh"
 #include <limits.h>
+
+using namespace lout;
 
 namespace dw {
 namespace core {
@@ -57,7 +58,7 @@ bool Iterator::equals (Object *other)
 /**
  * \brief Delete the iterator.
  *
- * The desctructor is hidden, implementations may use optimizations for
+ * The destructor is hidden, implementations may use optimizations for
  * the allocation. (Will soon be the case for dw::core::EmptyIteratorFactory.)
  */
 void Iterator::unref ()
@@ -146,7 +147,7 @@ void Iterator::scrollTo (Iterator *it1, Iterator *it2, int start, int end,
          //   |----------------------------|
          //               width
          //
-         // Therefor, we the region smaller, so that the region will be
+         // Therefore, we make the region smaller, so that the region will be
          // displayed like this:
          //
          //                           ,-- alloc1
@@ -159,7 +160,7 @@ void Iterator::scrollTo (Iterator *it1, Iterator *it2, int start, int end,
          //                      |----------|
          //                         width
          //
-         
+
          /** \todo Changes in the viewport size, until the idle function is
           *      called, are not regarded. */
 
@@ -210,7 +211,7 @@ int EmptyIterator::compareTo (misc::Comparable *other)
 
    if (content.type == otherIt->content.type)
       return 0;
-   else if(content.type == Content::START)
+   else if (content.type == Content::START)
       return -1;
    else
       return +1;
@@ -468,7 +469,7 @@ DeepIterator::DeepIterator (Iterator *it)
    // since an DeepIterator should never return widgets.
    if (it->getContent()->type == Content::WIDGET) {
       Iterator *it2;
-      
+
       // The second argument of searchDownward is actually a matter of
       // taste :-)
       if ((it2 = searchDownward (it, mask, false)) ||
@@ -484,10 +485,10 @@ DeepIterator::DeepIterator (Iterator *it)
          hasContents = false;
       }
    }
-   
+
    //DEBUG_MSG (1, "  => %s\n", a_Dw_iterator_text (it));
 
-   if(hasContents) {
+   if (hasContents) {
       // If this widget has parents, we must construct appropriate iterators.
       //
       // \todo There may be a faster way instead of iterating through the
@@ -509,7 +510,7 @@ DeepIterator::DeepIterator (Iterator *it)
                break;
          }
       }
-      
+
       stack.put (it, thisLevel);
       content = *(it->getContent());
    }
@@ -552,10 +553,10 @@ int DeepIterator::compareTo (misc::Comparable *other)
    while (stack.get(level)->getWidget ()
           != otherDeepIterator->stack.get(level)->getWidget ())
       level--;
-   
+
    return stack.get(level)->compareTo (otherDeepIterator->stack.get(level));
 }
-   
+
 DeepIterator *DeepIterator::createVariant(Iterator *it)
 {
    /** \todo Not yet implemented, and actually not yet needed very much. */
@@ -574,7 +575,7 @@ bool DeepIterator::isEmpty () {
 bool DeepIterator::next ()
 {
    Iterator *it = stack.getTop ();
-   
+
    if (it->next ()) {
       if (it->getContent()->type == Content::WIDGET) {
          // Widget: new iterator on stack, to search in this widget.
@@ -596,7 +597,7 @@ bool DeepIterator::next ()
          content.type = Content::END;
          return false;
       }
-   }  
+   }
 }
 
 /**
@@ -607,7 +608,7 @@ bool DeepIterator::next ()
 bool DeepIterator::prev ()
 {
    Iterator *it = stack.getTop ();
-   
+
    if (it->prev ()) {
       if (it->getContent()->type == Content::WIDGET) {
          // Widget: new iterator on stack, to search in this widget.
@@ -629,7 +630,7 @@ bool DeepIterator::prev ()
          content.type = Content::START;
          return false;
       }
-   }  
+   }
 }
 
 // -----------------
@@ -679,7 +680,7 @@ bool CharIterator::next ()
    if (ch == START || it->getContent()->type == Content::BREAK ||
        (it->getContent()->type == Content::TEXT &&
         it->getContent()->text[pos] == 0)) {
-      if(it->next()) {
+      if (it->next()) {
          if (it->getContent()->type == Content::BREAK)
             ch = '\n';
          else { // if (it->getContent()->type == Content::TEXT)
@@ -695,7 +696,7 @@ bool CharIterator::next ()
          ch = END;
          return false;
       }
-   } else if(ch == END)
+   } else if (ch == END)
       return false;
    else {
       // at this point, it->getContent()->type == Content::TEXT
@@ -708,16 +709,16 @@ bool CharIterator::next ()
             return next ();
          }
       }
-      
+
       return true;
-   }   
+   }
 }
 
 bool CharIterator::prev ()
 {
    if (ch == END || it->getContent()->type == Content::BREAK ||
        (it->getContent()->type == Content::TEXT && pos == 0)) {
-      if(it->prev()) {
+      if (it->prev()) {
          if (it->getContent()->type == Content::BREAK)
             ch = '\n';
          else { // if (it->getContent()->type == Content::TEXT)
@@ -739,14 +740,14 @@ bool CharIterator::prev ()
          ch = START;
          return false;
       }
-   } else if(ch == START)
+   } else if (ch == START)
       return false;
    else {
       // at this point, it->getContent()->type == Content::TEXT
       pos--;
       ch = it->getContent()->text[pos];
       return true;
-   }   
+   }
 }
 
 void CharIterator::highlight (CharIterator *it1, CharIterator *it2,

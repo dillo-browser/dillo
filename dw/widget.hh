@@ -20,149 +20,16 @@ namespace core {
  *
  * \sa\ref dw-overview, \ref dw-layout-widgets
  */
-class Widget: public identity::IdentifiableObject
+class Widget: public lout::identity::IdentifiableObject
 {
    friend class Layout;
-
-public:
-   class EventReceiver: public lout::signal::Receiver
-   {
-   public:
-      virtual bool buttonPress (Widget *widget, EventButton *event);
-      virtual bool buttonRelease (Widget *widget, EventButton *event);
-      virtual bool motionNotify (Widget *widget, EventMotion *event);
-      virtual void enterNotify (Widget *widget, EventCrossing *event);
-      virtual void leaveNotify (Widget *widget, EventCrossing *event);
-   };
-
-   /**
-    * \brief This receiver is for signals related to HTML pages.
-    *
-    * The \em link argument to all signals defines a number, which has
-    * been passed before, e.g. by setting dw::core::style::Style::x_link.
-    * When defining this number (e.g in dw::core::style::Style::x_link),
-    * and when receiving the signal, the caller must interpret these numbers
-    * in a consistent way. In the HTML link block, this number is an index
-    * to an array of URLs.
-    *
-    * \em link = -1 represents an undefined link.
-    *
-    * The \em img argument to all signals defines a number which has
-    * been passed before, e.g. by setting dw::core::style::Style::x_img.
-    * When defining this number (e.g in dw::core::style::Style::x_img),
-    * and when receiving the signal, the caller must interpret these numbers
-    * in a consistent way. In the HTML link block, this number is an index
-    * to an array of structures containing image information.
-    *
-    * \em img = -1 represents an undefined image.
-    *
-    * \em x and \em y define the coordinates within the link area. They are
-    * only used for server-side image maps, see dw::Image.
-    *
-    * \sa dw::Image, dw::Textblock
-    */
-   class LinkReceiver: public lout::signal::Receiver
-   {
-   public:
-      /**
-       * \brief Called, when a link is entered, left, or the position has
-       *    changed.
-       *
-       * When a link is entered, this method is called with the respective
-       * arguments. When a link is left, this method is called with all
-       * three arguments (\em link, \em x, \em y) set to -1.
-       *
-       * When coordinates are supported, a change of the coordinates also
-       * causes emitting this signal.
-       */
-      virtual bool enter (Widget *widget, int link, int img, int x, int y);
-
-      /**
-       * \brief Called, when the user has pressed the mouse button on a
-       *    link (but not yet released).
-       *
-       * The causing event is passed as \em event.
-       */
-      virtual bool press (Widget *widget, int link, int img, int x, int y,
-                          EventButton *event);
-
-      /**
-       * \brief Called, when the user has released the mouse button on a
-       *    link.
-       *
-       * The causing event is passed as \em event.
-       */
-      virtual bool release (Widget *widget, int link, int img, int x, int y,
-                            EventButton *event);
-
-      /**
-       * \brief Called, when the user has clicked on a link.
-       *
-       * For mouse interaction, this is equivalent to "press" and "release"
-       * on the same link. In this case, \em event contains the "release"
-       * event.
-       *
-       * When activating links via keyboard is supported, only a "clicked"
-       * signal will be emitted, and \em event will be NULL.
-       */
-      virtual bool click (Widget *widget, int link, int img, int x, int y,
-                          EventButton *event);
-   };
-
-private:
-   class EventEmitter: public lout::signal::Emitter
-   {
-   private:
-      enum { BUTTON_PRESS, BUTTON_RELEASE, MOTION_NOTIFY, ENTER_NOTIFY,
-             LEAVE_NOTIFY };
-
-   protected:
-      bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
-                           int argc, Object **argv);
-
-   public:
-      inline void connectEvent (EventReceiver *receiver)
-      { connect (receiver); }
-
-      bool emitButtonPress (Widget *widget, EventButton *event);
-      bool emitButtonRelease (Widget *widget, EventButton *event);
-      bool emitMotionNotify (Widget *widget, EventMotion *event);
-      void emitEnterNotify (Widget *widget, EventCrossing *event);
-      void emitLeaveNotify (Widget *widget, EventCrossing *event);
-   };
-
-   class LinkEmitter: public lout::signal::Emitter
-   {
-   private:
-      enum { ENTER, PRESS, RELEASE, CLICK };
-
-   protected:
-      bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
-                           int argc, Object **argv);
-
-   public:
-      inline void connectLink (LinkReceiver *receiver) { connect (receiver); }
-
-      bool emitEnter (Widget *widget, int link, int img, int x, int y);
-      bool emitPress (Widget *widget, int link, int img, int x, int y,
-                      EventButton *event);
-      bool emitRelease (Widget *widget, int link, int img, int x, int y,
-                        EventButton *event);
-      bool emitClick (Widget *widget, int link, int img, int x, int y,
-                      EventButton *event);
-   };
-
-   EventEmitter eventEmitter;
-
-   style::Style *style;
-
 
 protected:
    enum Flags {
       /**
        * \brief Set, when dw::core::Widget::requisition is not up to date
        *    anymore.
-       */          
+       */
       NEEDS_RESIZE     = 1 << 0,
 
       /**
@@ -175,7 +42,7 @@ protected:
       /**
        * \brief Set, when dw::core::Widget::extremes is not up to date
        *    anymore.
-       */          
+       */
       EXTREMES_CHANGED = 1 << 2,
 
       /**
@@ -183,7 +50,7 @@ protected:
        *    methods are implemented.
        *
        * Will hopefully be removed, after redesigning the size model.
-       */          
+       */
       USES_HINTS       = 1 << 3,
 
       /**
@@ -191,7 +58,7 @@ protected:
        *    some contents, e.g. an image, as opposed to a horizontal ruler.
        *
        * Will hopefully be removed, after redesigning the size model.
-       */          
+       */
       HAS_CONTENTS     = 1 << 4,
 
       /**
@@ -207,6 +74,7 @@ private:
     * \brief The parent widget, NULL for top-level widgets.
     */
    Widget *parent;
+   style::Style *style;
 
    Flags flags;
 
@@ -248,7 +116,6 @@ public:
    int parentRef;
 
 protected:
-   LinkEmitter linkEmitter;
 
    /**
     * \brief The current allocation: size and position, always relative to the
@@ -266,7 +133,7 @@ protected:
 
    inline void setFlags (Flags f)   { flags = (Flags)(flags | f); }
    inline void unsetFlags (Flags f) { flags = (Flags)(flags & ~f); }
-   
+
 
    inline void queueDraw ()
    {
@@ -306,6 +173,9 @@ protected:
     */
    virtual void markExtremesChange (int ref);
 
+   virtual void notifySetAsTopLevel();
+   virtual void notifySetParent();
+
    virtual bool buttonPressImpl (EventButton *event);
    virtual bool buttonReleaseImpl (EventButton *event);
    virtual bool motionNotifyImpl (EventMotion *event);
@@ -343,7 +213,7 @@ protected:
                                       EventMotion *event, bool withinContent)
    { return layout->selectionState.buttonMotion (it, charPos, linkNo, event,
                                                  withinContent); }
-   
+
    inline bool selectionHandleEvent (SelectionState::EventType eventType,
                                      Iterator *it, int charPos, int linkNo,
                                      MousePositionEvent *event,
@@ -369,28 +239,6 @@ public:
    inline bool needsAllocate ()   { return flags & NEEDS_ALLOCATE; }
    inline bool extremesChanged () { return flags & EXTREMES_CHANGED; }
    inline bool wasAllocated ()    { return flags & WAS_ALLOCATED; }
-
-   inline void connectEvent (EventReceiver *receiver)
-   { eventEmitter.connectEvent (receiver); }
-
-   inline void connectLink (LinkReceiver *receiver)
-   { linkEmitter.connectLink (receiver); }
-   
-   inline bool emitLinkEnter (int link, int img, int x, int y)
-   { return linkEmitter.emitEnter (this, link, img, x, y); }
-
-   inline bool emitLinkPress (int link, int img,
-                              int x, int y, EventButton *event)
-   { return linkEmitter.emitPress (this, link, img, x, y, event); }
-
-   inline bool emitLinkRelease (int link, int img,
-                                int x, int y, EventButton *event)
-   { return linkEmitter.emitRelease (this, link, img, x, y, event); }
-
-   inline bool emitLinkClick (int link, int img,
-                              int x, int y, EventButton *event)
-   { return linkEmitter.emitClick (this, link, img, x, y, event); }
-
    inline bool usesHints ()       { return flags & USES_HINTS; }
    inline bool hasContents ()     { return flags & HAS_CONTENTS; }
 
@@ -417,7 +265,7 @@ public:
    bool motionNotify (EventMotion *event);
    void enterNotify (EventCrossing *event);
    void leaveNotify (EventCrossing *event);
-   
+
    virtual void setStyle (style::Style *style);
    void setBgColor (style::Color *bgColor);
    style::Color *getBgColor ();

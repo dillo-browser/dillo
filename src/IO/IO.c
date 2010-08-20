@@ -13,14 +13,9 @@
  * Dillo's event driven IO engine
  */
 
-#include <stdio.h>
-#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/stat.h>
-#include <sys/uio.h>
-#include <sys/socket.h>
 #include "../msg.h"
 #include "../chain.h"
 #include "../klist.h"
@@ -64,13 +59,13 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
 /* IO API  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /*
- * Return a newly created, and initialized, 'io' struct
+ * Return a new, initialized, 'io' struct
  */
-static IOData_t *IO_new(int op, int fd)
+static IOData_t *IO_new(int op)
 {
    IOData_t *io = dNew0(IOData_t, 1);
    io->Op = op;
-   io->FD = fd;
+   io->FD = -1;
    io->Flags = 0;
    io->Key = 0;
    io->Buf = dStr_sized_new(IOBufLen);
@@ -138,7 +133,8 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
 
    /* With HTTP, if we close the writing part, the reading one also gets
     * closed! (other clients may set 'IOFlag_ForceClose') */
-   if ((io->Flags & IOFlag_ForceClose) || (CloseCode == IO_StopRdWr)) {
+   if (((io->Flags & IOFlag_ForceClose) || (CloseCode == IO_StopRdWr)) &&
+       io->FD != -1) {
       do
          st = close(io->FD);
       while (st < 0 && errno == EINTR);
@@ -152,10 +148,10 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
    /* Stop the polling on this FD */
    if (CloseCode & IO_StopRd) {
      events |= DIO_READ;
-   } 
+   }
    if (CloseCode & IO_StopWr) {
      events |= DIO_WRITE;
-   } 
+   }
    a_IOwatch_remove_fd(io->FD, events);
    _MSG(" end IO close (%d) <=====\n", io->FD);
 }
@@ -314,6 +310,11 @@ static void IO_fd_write_cb(int fd, void *data)
  */
 static void IO_submit(IOData_t *r_io)
 {
+   if (r_io->FD < 0) {
+      MSG_ERR("IO_submit: FD not initialized\n");
+      return;
+   }
+
    /* Insert this IO in ValidIOs */
    IO_ins(r_io);
 
@@ -351,14 +352,18 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          /* Write data using select */
          switch (Op) {
          case OpStart:
-            io = IO_new(IOWrite, *(int*)Data1); /* SockFD */
+            io = IO_new(IOWrite);
             Info->LocalKey = io;
             break;
          case OpSend:
             io = Info->LocalKey;
-            dbuf = Data1;
-            dStr_append_l(io->Buf, dbuf->Buf, dbuf->Size);
-            IO_submit(io);
+            if (Data2 && !strcmp(Data2, "FD")) {
+               io->FD = *(int*)Data1; /* SockFD */
+            } else {
+               dbuf = Data1;
+               dStr_append_l(io->Buf, dbuf->Buf, dbuf->Size);
+               IO_submit(io);
+            }
             break;
          case OpEnd:
          case OpAbort:
@@ -376,7 +381,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             MSG_WARN("Unused CCC\n");
             break;
          }
-      } else {  /* FWD */
+      } else {  /* 1 FWD */
          /* Write-data status */
          switch (Op) {
          default:
@@ -390,10 +395,16 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          /* This part catches the reader's messages */
          switch (Op) {
          case OpStart:
-            io = IO_new(IORead, *(int*)Data2); /* SockFD */
+            io = IO_new(IORead);
             Info->LocalKey = io;
             io->Info = Info;
-            IO_submit(io);
+            break;
+         case OpSend:
+            io = Info->LocalKey;
+            if (Data2 && !strcmp(Data2, "FD")) {
+               io->FD = *(int*)Data1; /* SockFD */
+               IO_submit(io);
+            }
             break;
          case OpAbort:
             io = Info->LocalKey;
@@ -405,7 +416,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             MSG_WARN("Unused CCC\n");
             break;
          }
-      } else {  /* FWD */
+      } else {  /* 2 FWD */
          /* Send read-data */
          io = Data1;
          switch (Op) {

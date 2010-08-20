@@ -26,7 +26,8 @@ private:
    ::fltk::Scrollbar *vscrollbar, *hscrollbar;
 
    GadgetOrientation gadgetOrientation[4];
-   container::typed::List <object::TypedPointer < ::fltk::Widget> > *gadgets; 
+   lout::container::typed::List <lout::object::TypedPointer < ::fltk::Widget> >
+      *gadgets;
 
    void adjustScrollbarsAndGadgetsAllocation ();
    void adjustScrollbarValues ();
@@ -49,7 +50,7 @@ protected:
 public:
    FltkViewport (int x, int y, int w, int h, const char *label = 0);
    ~FltkViewport ();
- 
+
    void layout();
    void draw ();
    int handle (int event);
@@ -60,6 +61,7 @@ public:
    int getHScrollbarThickness ();
    int getVScrollbarThickness ();
    void scroll(int dx, int dy);
+   void scroll(dw::core::ScrollCommand cmd);
    void scrollTo (int x, int y);
    void setViewportSize (int width, int height,
                          int hScrollbarThickness, int vScrollbarThickness);

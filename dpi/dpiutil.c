@@ -57,6 +57,28 @@ char *Escape_uri_str(const char *str, const char *p_esc_set)
    return p;
 }
 
+/*
+ * Unescape %XX sequences in a string.
+ * Return value: a new unescaped string
+ */
+char *Unescape_uri_str(const char *s)
+{
+   char *p, *buf = dStrdup(s);
+
+   if (strchr(s, '%')) {
+      for (p = buf; (*p = *s); ++s, ++p) {
+         if (*p == '%' && isxdigit(s[1]) && isxdigit(s[2])) {
+            *p = (isdigit(s[1]) ? (s[1] - '0') : toupper(s[1]) - 'A' + 10)*16;
+            *p += isdigit(s[2]) ? (s[2] - '0') : toupper(s[2]) - 'A' + 10;
+            s += 2;
+         }
+      }
+   }
+
+   return buf;
+}
+
+
 static const char *unsafe_chars = "&<>\"'";
 static const char *unsafe_rep[] =
   { "&amp;", "&lt;", "&gt;", "&quot;", "&#39;" };
@@ -140,131 +162,4 @@ char *Filter_smtp_hack(char *url)
    }
    return url;
 }
-
-
-/* Streamed Sockets API (not mandatory)  ----------------------------------*/
-
-/*
- * Create and initialize the SockHandler structure
- */
-SockHandler *sock_handler_new(int fd_in, int fd_out, int flush_sz)
-{
-   SockHandler *sh = dNew(SockHandler, 1);
-
-   /* init descriptors and streams */
-   sh->fd_in  = fd_in;
-   sh->fd_out = fd_out;
-   sh->out = fdopen(fd_out, "w");
-
-   /* init buffer */
-   sh->buf_max = 8 * 1024;
-   sh->buf = dNew(char, sh->buf_max);
-   sh->buf_sz = 0;
-   sh->flush_sz = flush_sz;
-
-   return sh;
-}
-
-/*
- * Streamed write to socket
- * Return: 0 on success, 1 on error.
- */
-int sock_handler_write(SockHandler *sh, int flush,
-                       const char *Data, size_t DataSize)
-{
-   int retval = 1;
-
-   /* append to buf */
-   while (sh->buf_max < sh->buf_sz + DataSize) {
-      sh->buf_max <<= 1;
-      sh->buf = dRealloc(sh->buf, sh->buf_max);
-   }
-   memcpy(sh->buf + sh->buf_sz, Data, DataSize);
-   sh->buf_sz += DataSize;
-/*
-   MSG("sh->buf=%p, sh->buf_sz=%d, sh->buf_max=%d, sh->flush_sz=%d\n",
-       sh->buf, sh->buf_sz, sh->buf_max, sh->flush_sz);
-*/
-/**/
-#if 0
-{
-   uint_t i;
-   /* Test dpip's stream handling by chopping data into characters */
-   for (i = 0; i < sh->buf_sz; ++i) {
-      fputc(sh->buf[i], sh->out);
-      fflush(sh->out);
-      usleep(50);
-   }
-   if (i == sh->buf_sz) {
-      sh->buf_sz = 0;
-      retval = 0;
-   }
-}
-#else
-   /* flush data if necessary */
-   if (flush || sh->buf_sz >= sh->flush_sz) {
-      if (sh->buf_sz && fwrite (sh->buf, sh->buf_sz, 1, sh->out) != 1) {
-         perror("[sock_handler_write]");
-      } else {
-         fflush(sh->out);
-         sh->buf_sz = 0;
-         retval = 0;
-      }
-
-   } else {
-      retval = 0;
-   }
-#endif
-   return retval;
-}
-
-/*
- * Convenience function.
- */
-int sock_handler_write_str(SockHandler *sh, int flush, const char *str)
-{
-   return sock_handler_write(sh, flush, str, strlen(str));
-}
-
-/*
- * Return a newlly allocated string with the contents read from the socket.
- */
-char *sock_handler_read(SockHandler *sh)
-{
-   ssize_t st;
-   char buf[16384];
-
-   /* can't use fread() */
-   do
-      st = read(sh->fd_in, buf, 16384);
-   while (st < 0 && errno == EINTR);
-
-   if (st == -1)
-      perror("[sock_handler_read]");
-
-   return (st > 0) ? dStrndup(buf, (uint_t)st) : NULL;
-}
-
-/*
- * Close this socket for reading and writing.
- */
-void sock_handler_close(SockHandler *sh)
-{
-   /* flush before closing */
-   sock_handler_write(sh, 1, "", 0);
-
-   fclose(sh->out);
-   close(sh->fd_out);
-}
-
-/*
- * Free the SockHandler structure
- */
-void sock_handler_free(SockHandler *sh)
-{
-   dFree(sh->buf);
-   dFree(sh);
-}
-
-/* ------------------------------------------------------------------------ */
 

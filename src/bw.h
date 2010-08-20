@@ -1,8 +1,6 @@
 #ifndef __BW_H__
 #define __BW_H__
 
-#include <sys/types.h>
-
 #include "url.h"     /* for DilloUrl */
 
 /*
@@ -10,7 +8,7 @@
  */
 #define BW_Root            (1)  /* Root URLs */
 #define BW_Img             (2)  /* Image URLs */
-#define Bw_Force           (4)  /* Stop connection too */
+#define BW_Force           (4)  /* Stop connection too */
 
 
 typedef struct _BrowserWindow BrowserWindow;
@@ -38,6 +36,8 @@ struct _BrowserWindow
    int NumImages;
    /* Number of images already loaded */
    int NumImagesGot;
+   /* Number of not yet arrived style sheets */
+   int NumPendingStyleSheets;
    /* List of all Urls requested by this page (and its types) */
    Dlist *PageUrls;
 
@@ -57,8 +57,11 @@ struct _BrowserWindow
     * redirection loops (accounts for WEB_RootUrl only) */
    int redirect_level;
 
-   /* TODO: maybe this fits better in the linkblock.
-    * Although having it here avoids having a signal for handling it. */
+   /* Url for zero-delay redirections in the META element */
+   int meta_refresh_status;
+   DilloUrl *meta_refresh_url;
+
+   /* HTML-bugs detected at parse time */
    int num_page_bugs;
    Dstr *page_bugs;
 };
@@ -80,10 +83,13 @@ int a_Bw_remove_client(BrowserWindow *bw, int ClientKey);
 void a_Bw_close_client(BrowserWindow *bw, int ClientKey);
 void a_Bw_stop_clients(BrowserWindow *bw, int flags);
 void a_Bw_add_doc(BrowserWindow *bw, void *vdoc);
+void *a_Bw_get_current_doc(BrowserWindow *bw);
+void *a_Bw_get_url_doc(BrowserWindow *bw, const DilloUrl *Url);
 void a_Bw_remove_doc(BrowserWindow *bw, void *vdoc);
 void a_Bw_add_url(BrowserWindow *bw, const DilloUrl *Url);
 void a_Bw_cleanup(BrowserWindow *bw);
 
+typedef void (*BwCallback_t)(BrowserWindow *bw, const void *data);
 
 #ifdef __cplusplus
 }

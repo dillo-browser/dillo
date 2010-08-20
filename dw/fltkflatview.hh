@@ -22,7 +22,7 @@ protected:
 public:
    FltkFlatView (int x, int y, int w, int h, const char *label = 0);
    ~FltkFlatView ();
- 
+
    void setCanvasSize (int width, int ascent, int descent);
 
    bool usesViewport ();

@@ -13,19 +13,13 @@
  *
  */
 
-/* Handling of cookies takes place here.
- * This implementation aims to follow RFC 2965:
- * http://www.ietf.org/rfc/rfc2965.txt
- */
-
-/*
- * TODO: Cleanup this code. Shorten some functions, order things,
- *       add comments, remove leaks, etc.
- */
-
-/* TODO: this server is not assembling the received packets.
- * This means it currently expects dillo to send full dpi tags
- * within the socket; if that fails, everything stops.
+/* This is written to follow the HTTP State Working Group's
+ * draft-ietf-httpstate-cookie-01.txt.
+ *
+ * Info on cookies in the wild:
+ *  http://www.ietf.org/mail-archive/web/http-state/current/msg00078.html
+ * And dates specifically:
+ *  http://www.ietf.org/mail-archive/web/http-state/current/msg00128.html
  */
 
 #ifdef DISABLE_COOKIES
@@ -42,6 +36,7 @@ int main(void)
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+#include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -63,13 +58,6 @@ int main(void)
 #define _MSG(...)
 #define MSG(...)  printf("[cookies dpi]: " __VA_ARGS__)
 
-
-/* This one is tricky, some sources state it should include the byte
- * for the terminating NULL, and others say it shouldn't. */
-# define D_SUN_LEN(ptr) ((size_t) (((struct sockaddr_un *) 0)->sun_path) \
-                        + strlen ((ptr)->sun_path))
-
-
 /*
  * a_List_add()
  *
@@ -90,6 +78,9 @@ int main(void)
 /* The maximum length of a line in the cookie file */
 #define LINE_MAXLEN 4096
 
+#define MAX_DOMAIN_COOKIES 20
+#define MAX_TOTAL_COOKIES 1200
+
 typedef enum {
    COOKIE_ACCEPT,
    COOKIE_ACCEPT_SESSION,
@@ -103,8 +94,8 @@ typedef struct {
 
 typedef struct {
    char *domain;
-   Dlist *dlist;
-} CookieNode;
+   Dlist *cookies;
+} DomainNode;
 
 typedef struct {
    char *name;
@@ -112,20 +103,25 @@ typedef struct {
    char *domain;
    char *path;
    time_t expires_at;
-   uint_t version;
-   char *comment;
-   char *comment_url;
+   bool_t host_only;
    bool_t secure;
    bool_t session_only;
-   Dlist *ports;
+   long last_used;
 } CookieData_t;
+
+typedef struct {
+   Dsh *sh;
+   int status;
+} ClientInfo;
 
 /*
  * Local data
  */
 
-/* List of CookieNode. Each node holds a domain and its list of cookies */
-static Dlist *cookies;
+static Dlist *all_cookies;
+
+/* List of DomainNode. Each node holds a domain and its list of cookies */
+static Dlist *domains;
 
 /* Variables for access control */
 static CookieControl *ccontrol = NULL;
@@ -133,13 +129,19 @@ static int num_ccontrol = 0;
 static int num_ccontrol_max = 1;
 static CookieControlAction default_action = COOKIE_DENY;
 
+static long cookies_use_counter = 0;
 static bool_t disabled;
 static FILE *file_stream;
-static char *cookies_txt_header_str =
+static const char *const cookies_txt_header_str =
 "# HTTP Cookie File\n"
-"# http://wp.netscape.com/newsref/std/cookie_spec.html\n"
-"# This is a generated file!  Do not edit.\n\n";
+"# This is a generated file!  Do not edit.\n"
+"# [domain  subdomains  path  secure  expiry_time  name  value]\n\n";
 
+/* The epoch is Jan 1, 1970. When there is difficulty in representing future
+ * dates, use the (by far) most likely last representable time in Jan 19, 2038.
+ */
+static struct tm cookies_epoch_tm = {0, 0, 0, 1, 0, 70, 0, 0, 0, 0, 0};
+static time_t cookies_epoch_time, cookies_future_time;
 
 /*
  * Forward declarations
@@ -147,33 +149,39 @@ static char *cookies_txt_header_str =
 
 static CookieControlAction Cookies_control_check_domain(const char *domain);
 static int Cookie_control_init(void);
-static void Cookies_parse_ports(int url_port, CookieData_t *cookie,
-                                const char *port_str);
-static char *Cookies_build_ports_str(CookieData_t *cookie);
-static char *Cookies_strip_path(const char *path);
 static void Cookies_add_cookie(CookieData_t *cookie);
-static void Cookies_remove_cookie(CookieData_t *cookie);
 static int Cookies_cmp(const void *a, const void *b);
 
 /*
- * Compare function for searching a cookie node
+ * Compare function for searching a domain node
  */
-static int Cookie_node_cmp(const void *v1, const void *v2)
+static int Domain_node_cmp(const void *v1, const void *v2)
 {
-   const CookieNode *n1 = v1, *n2 = v2;
+   const DomainNode *n1 = v1, *n2 = v2;
 
-   return strcmp(n1->domain, n2->domain);
+   return dStrcasecmp(n1->domain, n2->domain);
 }
 
 /*
- * Compare function for searching a cookie node by domain
+ * Compare function for searching a domain node by domain
  */
-static int Cookie_node_by_domain_cmp(const void *v1, const void *v2)
+static int Domain_node_by_domain_cmp(const void *v1, const void *v2)
 {
-   const CookieNode *node = v1;
+   const DomainNode *node = v1;
    const char *domain = v2;
 
-   return strcmp(node->domain, domain);
+   return dStrcasecmp(node->domain, domain);
+}
+
+/*
+ * Delete node. This will not free any cookies that might be in node->cookies.
+ */
+static void Cookies_delete_node(DomainNode *node)
+{
+   dList_remove(domains, node);
+   dFree(node->domain);
+   dList_free(node->cookies);
+   dFree(node);
 }
 
 /*
@@ -181,17 +189,22 @@ static int Cookie_node_by_domain_cmp(const void *v1, const void *v2)
  * with the optional 'init_str' as its content.
  */
 static FILE *Cookies_fopen(const char *filename, const char *mode,
-                           char *init_str)
+                           const char *init_str)
 {
    FILE *F_in;
-   int fd;
+   int fd, rc;
 
    if ((F_in = fopen(filename, mode)) == NULL) {
       /* Create the file */
       fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
       if (fd != -1) {
-         if (init_str)
-            write(fd, init_str, strlen(init_str));
+         if (init_str) {
+            rc = write(fd, init_str, strlen(init_str));
+            if (rc == -1) {
+               MSG("Cookies: Could not write initial string to file %s: %s\n",
+                  filename, dStrerror(errno));
+            }
+         }
          close(fd);
 
          MSG("Created file: %s\n", filename);
@@ -215,71 +228,37 @@ static void Cookies_free_cookie(CookieData_t *cookie)
    dFree(cookie->value);
    dFree(cookie->domain);
    dFree(cookie->path);
-   dFree(cookie->comment);
-   dFree(cookie->comment_url);
-   dList_free(cookie->ports);
    dFree(cookie);
 }
 
-/*
- * Initialize the cookies module
- * (The 'disabled' variable is writable only within Cookies_init)
- */
-static void Cookies_init()
+static void Cookies_tm_init(struct tm *tm)
 {
-   CookieData_t *cookie;
-   char *filename;
+   tm->tm_sec = cookies_epoch_tm.tm_sec;
+   tm->tm_min = cookies_epoch_tm.tm_min;
+   tm->tm_hour = cookies_epoch_tm.tm_hour;
+   tm->tm_mday = cookies_epoch_tm.tm_mday;
+   tm->tm_mon = cookies_epoch_tm.tm_mon;
+   tm->tm_year = cookies_epoch_tm.tm_year;
+   tm->tm_isdst = cookies_epoch_tm.tm_isdst;
+}
+
+/*
+ * Read in cookies from 'stream' (cookies.txt)
+ */
+static void Cookies_load_cookies(FILE *stream)
+{
    char line[LINE_MAXLEN];
-#ifndef HAVE_LOCKF
-   struct flock lck;
-#endif
-   FILE *old_cookies_file_stream;
 
-   /* Default setting */
-   disabled = TRUE;
-
-   /* Read and parse the cookie control file (cookiesrc) */
-   if (Cookie_control_init() != 0) {
-      MSG("Disabling cookies.\n");
-      return;
-   }
-
-   /* Get a stream for the cookies file */
-   filename = dStrconcat(dGethomedir(), "/.dillo/cookies.txt", NULL);
-   file_stream = Cookies_fopen(filename, "r+", cookies_txt_header_str);
-
-   dFree(filename);
-
-   if (!file_stream) {
-      MSG("ERROR: Can't open ~/.dillo/cookies.txt, disabling cookies\n");
-      return;
-   }
-
-   /* Try to get a lock from the file descriptor */
-#ifdef HAVE_LOCKF
-   disabled = (lockf(fileno(file_stream), F_TLOCK, 0) == -1);
-#else /* POSIX lock */
-   lck.l_start = 0; /* start at beginning of file */
-   lck.l_len = 0;  /* lock entire file */
-   lck.l_type = F_WRLCK;
-   lck.l_whence = SEEK_SET;  /* absolute offset */
-
-   disabled = (fcntl(fileno(file_stream), F_SETLK, &lck) == -1);
-#endif
-   if (disabled) {
-      MSG("The cookies file has a file lock: disabling cookies!\n");
-      fclose(file_stream);
-      return;
-   }
-
-   MSG("Enabling cookies as from cookiesrc...\n");
-
-   cookies = dList_new(32);
+   all_cookies = dList_new(32);
+   domains = dList_new(32);
 
    /* Get all lines in the file */
-   while (!feof(file_stream)) {
+   while (!feof(stream)) {
       line[0] = '\0';
-      fgets(line, LINE_MAXLEN, file_stream);
+      if ((fgets(line, LINE_MAXLEN, stream) == NULL) && ferror(stream)) {
+         MSG("Error while reading from cookies.txt: %s\n", dStrerror(errno));
+         break; /* bail out */
+      }
 
       /* Remove leading and trailing whitespaces */
       dStrstrip(line);
@@ -290,7 +269,7 @@ static void Cookies_init()
           * pieces[0] The domain name
           * pieces[1] TRUE/FALSE: is the domain a suffix, or a full domain?
           * pieces[2] The path
-          * pieces[3] Is the cookie unsecure or secure (TRUE/FALSE)
+          * pieces[3] TRUE/FALSE: is the cookie for secure use only?
           * pieces[4] Timestamp of expire date
           * pieces[5] Name of the cookie
           * pieces[6] Value of the cookie
@@ -298,27 +277,37 @@ static void Cookies_init()
          CookieControlAction action;
          char *piece;
          char *line_marker = line;
-
-         cookie = dNew0(CookieData_t, 1);
+         CookieData_t *cookie = dNew0(CookieData_t, 1);
 
          cookie->session_only = FALSE;
-         cookie->version = 0;
          cookie->domain = dStrdup(dStrsep(&line_marker, "\t"));
-         dStrsep(&line_marker, "\t"); /* we use domain always as sufix */
+         piece = dStrsep(&line_marker, "\t");
+         if (piece != NULL && piece[0] == 'F')
+            cookie->host_only = TRUE;
          cookie->path = dStrdup(dStrsep(&line_marker, "\t"));
          piece = dStrsep(&line_marker, "\t");
          if (piece != NULL && piece[0] == 'T')
             cookie->secure = TRUE;
          piece = dStrsep(&line_marker, "\t");
-         if (piece != NULL)
-            cookie->expires_at = (time_t) strtol(piece, NULL, 10);
+         if (piece != NULL) {
+            /* There is some problem with simply putting the maximum value
+             * into tm.tm_sec (although a value close to it works).
+             */
+            long seconds = strtol(piece, NULL, 10);
+            struct tm tm;
+            Cookies_tm_init(&tm);
+            tm.tm_min += seconds / 60;
+            tm.tm_sec += seconds % 60;
+            cookie->expires_at = mktime(&tm);
+         } else {
+            cookie->expires_at = (time_t) -1;
+         }
          cookie->name = dStrdup(dStrsep(&line_marker, "\t"));
-         cookie->value = dStrdup(dStrsep(&line_marker, "\t"));
+         cookie->value = dStrdup(line_marker ? line_marker : "");
 
          if (!cookie->domain || cookie->domain[0] == '\0' ||
              !cookie->path || cookie->path[0] != '/' ||
-             !cookie->name || cookie->name[0] == '\0' ||
-             !cookie->value) {
+             !cookie->name || !cookie->value) {
             MSG("Malformed line in cookies.txt file!\n");
             Cookies_free_cookie(cookie);
             continue;
@@ -336,81 +325,63 @@ static void Cookies_init()
          Cookies_add_cookie(cookie);
       }
    }
+   MSG("Cookies loaded: %d.\n", dList_length(all_cookies));
+}
 
-   filename = dStrconcat(dGethomedir(), "/.dillo/cookies", NULL);
-   if ((old_cookies_file_stream = fopen(filename, "r")) != NULL) {
-      MSG("WARNING: Reading old cookies file ~/.dillo/cookies too\n");
+/*
+ * Initialize the cookies module
+ * (The 'disabled' variable is writeable only within Cookies_init)
+ */
+static void Cookies_init()
+{
+   char *filename;
+#ifndef HAVE_LOCKF
+   struct flock lck;
+#endif
+   struct tm future_tm = {7, 14, 3, 19, 0, 138, 0, 0, 0, 0, 0};
 
-      /* Get all lines in the file */
-      while (!feof(old_cookies_file_stream)) {
-         line[0] = '\0';
-         fgets(line, LINE_MAXLEN, old_cookies_file_stream);
+   /* Default setting */
+   disabled = TRUE;
 
-         /* Remove leading and trailing whitespaces */
-         dStrstrip(line);
+   cookies_epoch_time = mktime(&cookies_epoch_tm);
+   cookies_future_time = mktime(&future_tm);
 
-         if (line[0] != '\0') {
-            /*
-             * Split the row into pieces using a tab as the delimiter.
-             * pieces[0] The version this cookie was set as (0 / 1)
-             * pieces[1] The domain name
-             * pieces[2] A comma separated list of accepted ports
-             * pieces[3] The path
-             * pieces[4] Is the cookie unsecure or secure (0 / 1)
-             * pieces[5] Timestamp of expire date
-             * pieces[6] Name of the cookie
-             * pieces[7] Value of the cookie
-             * pieces[8] Comment
-             * pieces[9] Comment url
-             */
-            CookieControlAction action;
-            char *piece;
-            char *line_marker = line;
-
-            cookie = dNew0(CookieData_t, 1);
-
-            cookie->session_only = FALSE;
-            piece = dStrsep(&line_marker, "\t");
-            if (piece != NULL)
-            cookie->version = strtol(piece, NULL, 10);
-            cookie->domain  = dStrdup(dStrsep(&line_marker, "\t"));
-            Cookies_parse_ports(0, cookie, dStrsep(&line_marker, "\t"));
-            cookie->path = dStrdup(dStrsep(&line_marker, "\t"));
-            piece = dStrsep(&line_marker, "\t");
-            if (piece != NULL && piece[0] == '1')
-               cookie->secure = TRUE;
-            piece = dStrsep(&line_marker, "\t");
-            if (piece != NULL)
-               cookie->expires_at = (time_t) strtol(piece, NULL, 10);
-            cookie->name = dStrdup(dStrsep(&line_marker, "\t"));
-            cookie->value = dStrdup(dStrsep(&line_marker, "\t"));
-            cookie->comment = dStrdup(dStrsep(&line_marker, "\t"));
-            cookie->comment_url = dStrdup(dStrsep(&line_marker, "\t"));
-
-            if (!cookie->domain || cookie->domain[0] == '\0' ||
-                !cookie->path || cookie->path[0] != '/' ||
-                !cookie->name || cookie->name[0] == '\0' ||
-                !cookie->value) {
-               MSG("Malformed line in cookies file!\n");
-               Cookies_free_cookie(cookie);
-               continue;
-            }
-
-            action = Cookies_control_check_domain(cookie->domain);
-            if (action == COOKIE_DENY) {
-               Cookies_free_cookie(cookie);
-               continue;
-            } else if (action == COOKIE_ACCEPT_SESSION) {
-               cookie->session_only = TRUE;
-            }
-
-            /* Save cookie in memory */
-            Cookies_add_cookie(cookie);
-         }
-      }
-      fclose(old_cookies_file_stream);
+   /* Read and parse the cookie control file (cookiesrc) */
+   if (Cookie_control_init() != 0) {
+      MSG("Disabling cookies.\n");
+      return;
    }
+
+   /* Get a stream for the cookies file */
+   filename = dStrconcat(dGethomedir(), "/.dillo/cookies.txt", NULL);
+   file_stream = Cookies_fopen(filename, "r+", cookies_txt_header_str);
+
    dFree(filename);
+
+   if (!file_stream) {
+      MSG("ERROR: Can't open ~/.dillo/cookies.txt; disabling cookies\n");
+      return;
+   }
+
+   /* Try to get a lock from the file descriptor */
+#ifdef HAVE_LOCKF
+   disabled = (lockf(fileno(file_stream), F_TLOCK, 0) == -1);
+#else /* POSIX lock */
+   lck.l_start = 0; /* start at beginning of file */
+   lck.l_len = 0;  /* lock entire file */
+   lck.l_type = F_WRLCK;
+   lck.l_whence = SEEK_SET;  /* absolute offset */
+
+   disabled = (fcntl(fileno(file_stream), F_SETLK, &lck) == -1);
+#endif
+   if (disabled) {
+      MSG("The cookies file has a file lock; disabling cookies!\n");
+      fclose(file_stream);
+      return;
+   }
+   MSG("Enabling cookies as per cookiesrc...\n");
+
+   Cookies_load_cookies(file_stream);
 }
 
 /*
@@ -418,9 +389,10 @@ static void Cookies_init()
  */
 static void Cookies_save_and_free()
 {
-   int i, fd;
-   CookieNode *node;
+   int i, fd, saved = 0;
+   DomainNode *node;
    CookieData_t *cookie;
+   time_t now;
 
 #ifndef HAVE_LOCKF
    struct flock lck;
@@ -429,33 +401,34 @@ static void Cookies_save_and_free()
    if (disabled)
       return;
 
+   now = time(NULL);
+
    rewind(file_stream);
    fd = fileno(file_stream);
-   ftruncate(fd, 0);
-   fprintf(file_stream, cookies_txt_header_str);
+   if (ftruncate(fd, 0) == -1)
+      MSG("Cookies: Truncate file stream failed: %s\n", dStrerror(errno));
+   fprintf(file_stream, "%s", cookies_txt_header_str);
 
    /* Iterate cookies per domain, saving and freeing */
-   while ((node = dList_nth_data(cookies, 0))) {
-      for (i = 0; (cookie = dList_nth_data(node->dlist, i)); ++i) {
-         if (!cookie->session_only) {
-            /* char * ports_str = Cookies_build_ports_str(cookie); */
-            fprintf(file_stream, "%s\tTRUE\t%s\t%s\t%ld\t%s\t%s\n",
+   while ((node = dList_nth_data(domains, 0))) {
+      for (i = 0; (cookie = dList_nth_data(node->cookies, i)); ++i) {
+         if (!cookie->session_only && difftime(cookie->expires_at, now) > 0) {
+            fprintf(file_stream, "%s\t%s\t%s\t%s\t%ld\t%s\t%s\n",
                     cookie->domain,
+                    cookie->host_only ? "FALSE" : "TRUE",
                     cookie->path,
                     cookie->secure ? "TRUE" : "FALSE",
-                    (long)cookie->expires_at,
+                    (long)difftime(cookie->expires_at, cookies_epoch_time),
                     cookie->name,
                     cookie->value);
-            /* dFree(ports_str); */
+            saved++;
          }
-
          Cookies_free_cookie(cookie);
       }
-      dList_remove(cookies, node);
-      dFree(node->domain);
-      dList_free(node->dlist);
-      dFree(node);
+      Cookies_delete_node(node);
    }
+   dList_free(domains);
+   dList_free(all_cookies);
 
 #ifdef HAVE_LOCKF
    lockf(fd, F_ULOCK, 0);
@@ -468,34 +441,33 @@ static void Cookies_save_and_free()
    fcntl(fileno(file_stream), F_SETLKW, &lck);
 #endif
    fclose(file_stream);
+
+   MSG("Cookies saved: %d.\n", saved);
 }
 
-static char *months[] =
-{ "",
-  "Jan", "Feb", "Mar",
-  "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep",
-  "Oct", "Nov", "Dec"
-};
-
 /*
- * Take a months name and return a number between 1-12.
- * E.g. 'April' -> 4
+ * Take a month's name and return a number between 0-11.
+ * E.g. 'April' -> 3
  */
 static int Cookies_get_month(const char *month_name)
 {
+   static const char *const months[] =
+   { "Jan", "Feb", "Mar",
+     "Apr", "May", "Jun",
+     "Jul", "Aug", "Sep",
+     "Oct", "Nov", "Dec"
+   };
    int i;
 
-   for (i = 1; i <= 12; i++) {
+   for (i = 0; i < 12; i++) {
       if (!dStrncasecmp(months[i], month_name, 3))
          return i;
    }
-   return 0;
+   return -1;
 }
 
 /*
- * Return a local timestamp from a GMT date string
- * Accept: RFC-1123 | RFC-850 | ANSI asctime | Old Netscape format.
+ * Accept: RFC-1123 | RFC-850 | ANSI asctime | Old Netscape format date string.
  *
  *   Wdy, DD-Mon-YY HH:MM:SS GMT
  *   Wdy, DD-Mon-YYYY HH:MM:SS GMT
@@ -504,633 +476,734 @@ static int Cookies_get_month(const char *month_name)
  *   Tue May 21 13:46:22 1991\n
  *   Tue May 21 13:46:22 1991
  *
- * (return 0 on malformed date string syntax)
+ *   Let's add:
+ *   Mon Jan 11 08:00:00 2010 GMT
+ *
+ * Return a pointer to a struct tm, or NULL on error.
+ *
+ * NOTE that the draft spec wants user agents to be more flexible in what
+ * they accept. For now, let's hack in special cases when they're encountered.
+ * Why? Because this function is currently understandable, and I don't want to
+ * abandon that (or at best decrease that -- see section 5.1.1) until there
+ * is known to be good reason.
  */
-static time_t Cookies_create_timestamp(const char *expires)
+static struct tm *Cookies_parse_date(const char *date)
 {
-   time_t ret;
-   int day, month, year, hour, minutes, seconds;
-   char *cp;
-   char *E_msg =
-      "Expire date is malformed!\n"
-      " (should be RFC-1123 | RFC-850 | ANSI asctime)\n"
-      " Ignoring cookie: ";
+   struct tm *tm;
+   char *cp = strchr(date, ',');
 
-   cp = strchr(expires, ',');
-   if (!cp && (strlen(expires) == 24 || strlen(expires) == 25)) {
+   if (!cp && strlen(date)>20 && date[13] == ':' && date[16] == ':') {
       /* Looks like ANSI asctime format... */
-      cp = (char *)expires;
-      day = strtol(cp + 8, NULL, 10);       /* day */
-      month = Cookies_get_month(cp + 4);    /* month */
-      year = strtol(cp + 20, NULL, 10);     /* year */
-      hour = strtol(cp + 11, NULL, 10);     /* hour */
-      minutes = strtol(cp + 14, NULL, 10);  /* minutes */
-      seconds = strtol(cp + 17, NULL, 10);  /* seconds */
+      tm = dNew0(struct tm, 1);
 
-   } else if (cp && (cp - expires == 3 || cp - expires > 5) &&
+      cp = (char *)date;
+      tm->tm_mon = Cookies_get_month(cp + 4);
+      tm->tm_mday = strtol(cp + 8, NULL, 10);
+      tm->tm_hour = strtol(cp + 11, NULL, 10);
+      tm->tm_min = strtol(cp + 14, NULL, 10);
+      tm->tm_sec = strtol(cp + 17, NULL, 10);
+      tm->tm_year = strtol(cp + 20, NULL, 10) - 1900;
+
+   } else if (cp && (cp - date == 3 || cp - date > 5) &&
                     (strlen(cp) == 24 || strlen(cp) == 26)) {
       /* RFC-1123 | RFC-850 format | Old Netscape format */
-      day = strtol(cp + 2, NULL, 10);
-      month = Cookies_get_month(cp + 5);
-      year = strtol(cp + 9, &cp, 10);
-      /* TODO: tricky, because two digits for year IS ambiguous! */
-      year += (year < 70) ? 2000 : ((year < 100) ? 1900 : 0);
-      hour = strtol(cp + 1, NULL, 10);
-      minutes = strtol(cp + 4, NULL, 10);
-      seconds = strtol(cp + 7, NULL, 10);
+      tm = dNew0(struct tm, 1);
+
+      tm->tm_mday = strtol(cp + 2, NULL, 10);
+      tm->tm_mon = Cookies_get_month(cp + 5);
+      tm->tm_year = strtol(cp + 9, &cp, 10);
+      /* tm_year is the number of years since 1900 */
+      if (tm->tm_year < 70)
+         tm->tm_year += 100;
+      else if (tm->tm_year > 100)
+         tm->tm_year -= 1900;
+      tm->tm_hour = strtol(cp + 1, NULL, 10);
+      tm->tm_min = strtol(cp + 4, NULL, 10);
+      tm->tm_sec = strtol(cp + 7, NULL, 10);
 
    } else {
-      MSG("%s%s\n", E_msg, expires);
-      return (time_t) 0;
+      tm = NULL;
+      MSG("In date \"%s\", format not understood.\n", date);
    }
 
-   /* Error checks  --this may be overkill */
-   if (!(day > 0 && day < 32 && month > 0 && month < 13 && year > 1970 &&
-         hour >= 0 && hour < 24 && minutes >= 0 && minutes < 60 &&
-         seconds >= 0 && seconds < 60)) {
-      MSG("%s%s\n", E_msg, expires);
-      return (time_t) 0;
+   /* Error checks. This may be overkill. */
+   if (tm &&
+       !(tm->tm_mday > 0 && tm->tm_mday < 32 && tm->tm_mon >= 0 &&
+         tm->tm_mon < 12 && tm->tm_year >= 70 && tm->tm_hour >= 0 &&
+         tm->tm_hour < 24 && tm->tm_min >= 0 && tm->tm_min < 60 &&
+         tm->tm_sec >= 0 && tm->tm_sec < 60)) {
+      MSG("Date \"%s\" values not in range.\n", date);
+      dFree(tm);
+      tm = NULL;
    }
 
-   /* Calculate local timestamp.
-    * [stolen from Lynx... (http://lynx.browser.org)] */
-   month -= 3;
-   if (month < 0) {
-      month += 12;
-      year--;
-   }
-
-   day += (year - 1968) * 1461 / 4;
-   day += ((((month * 153) + 2) / 5) - 672);
-   ret = (time_t)((day * 60 * 60 * 24) +
-                  (hour * 60 * 60) +
-                  (minutes * 60) +
-                  seconds);
-
-   MSG("Expires in %ld seconds, at %s",
-       (long)ret - time(NULL), ctime(&ret));
-
-   return ret;
+   return tm;
 }
 
 /*
- * Parse a string containing a list of port numbers.
+ * Find the least recently used cookie among those in the provided list.
  */
-static void Cookies_parse_ports(int url_port, CookieData_t *cookie,
-                                const char *port_str)
+static CookieData_t *Cookies_get_LRU(Dlist *cookies)
 {
-   if ((!port_str || !port_str[0]) && url_port != 0) {
-      /* There was no list, so only the calling urls port should be allowed. */
-      if (!cookie->ports)
-         cookie->ports = dList_new(1);
-      dList_append(cookie->ports, INT2VOIDP(url_port));
-   } else if (port_str[0] == '"' && port_str[1] != '"') {
-      char *tok, *str;
-      int port;
+   int i, n = dList_length(cookies);
+   CookieData_t *lru = dList_nth_data(cookies, 0);
 
-      str = dStrdup(port_str + 1);
-      while ((tok = dStrsep(&str, ","))) {
-         port = strtol(tok, NULL, 10);
-         if (port > 0) {
-            if (!cookie->ports)
-               cookie->ports = dList_new(1);
-            dList_append(cookie->ports, INT2VOIDP(port));
-         }
+   for (i = 1; i < n; i++) {
+      CookieData_t *curr = dList_nth_data(cookies, i);
+
+      if (curr->last_used < lru->last_used)
+         lru = curr;
+   }
+   return lru;
+}
+
+/*
+ * Delete expired cookies.
+ * If node is given, only check those cookies.
+ * Note that nodes can disappear if all of their cookies were expired.
+ *
+ * Return the number of cookies that were expired.
+ */
+static int Cookies_rm_expired_cookies(DomainNode *node)
+{
+   Dlist *cookies = node ? node->cookies : all_cookies;
+   int removed = 0;
+   int i = 0, n = dList_length(cookies);
+   time_t now = time(NULL);
+
+   while (i < n) {
+      CookieData_t *c = dList_nth_data(cookies, i);
+
+      if (difftime(c->expires_at, now) < 0) {
+         DomainNode *currnode = node ? node :
+              dList_find_sorted(domains, c->domain, Domain_node_by_domain_cmp);
+         dList_remove(currnode->cookies, c);
+         if (dList_length(currnode->cookies) == 0)
+            Cookies_delete_node(currnode);
+         dList_remove_fast(all_cookies, c);
+         Cookies_free_cookie(c);
+         n--;
+         removed++;
+      } else {
+         i++;
       }
-      dFree(str);
    }
+   return removed;
 }
 
 /*
- * Build a string of the ports in 'cookie'.
+ * There are too many cookies. Choose one to remove and delete.
+ * If node is given, select from among its cookies only.
  */
-static char *Cookies_build_ports_str(CookieData_t *cookie)
+static void Cookies_too_many(DomainNode *node)
 {
-   Dstr *dstr;
-   char *ret;
-   void *data;
-   int i;
+   CookieData_t *lru = Cookies_get_LRU(node ? node->cookies : all_cookies);
 
-   dstr = dStr_new("\"");
-   for (i = 0; (data = dList_nth_data(cookie->ports, i)); ++i) {
-      dStr_sprintfa(dstr, "%d,", VOIDP2INT(data));
-   }
-   /* Remove any trailing comma */
-   if (dstr->len > 1)
-      dStr_erase(dstr, dstr->len - 1, 1);
-   dStr_append(dstr, "\"");
+   MSG("Too many cookies!\n"
+       "Removing LRU cookie for \'%s\': \'%s=%s\'\n", lru->domain,
+       lru->name, lru->value);
+   if (!node)
+      node = dList_find_sorted(domains, lru->domain,Domain_node_by_domain_cmp);
 
-   ret = dstr->str;
-   dStr_free(dstr, FALSE);
-
-   return ret;
+   dList_remove(node->cookies, lru);
+   dList_remove_fast(all_cookies, lru);
+   Cookies_free_cookie(lru);
+   if (dList_length(node->cookies) == 0)
+      Cookies_delete_node(node);
 }
 
 static void Cookies_add_cookie(CookieData_t *cookie)
 {
    Dlist *domain_cookies;
    CookieData_t *c;
-   CookieNode *node;
+   DomainNode *node;
 
-   /* Don't add an expired cookie */
-   if (!cookie->session_only && cookie->expires_at < time(NULL)) {
-      Cookies_free_cookie(cookie);
-      return;
-   }
-
-   node = dList_find_sorted(cookies, cookie->domain,Cookie_node_by_domain_cmp);
-   domain_cookies = (node) ? node->dlist : NULL;
+   node = dList_find_sorted(domains, cookie->domain,Domain_node_by_domain_cmp);
+   domain_cookies = (node) ? node->cookies : NULL;
 
    if (domain_cookies) {
-      /* Respect the limit of 20 cookies per domain */
-      if (dList_length(domain_cookies) >= 20) {
-         MSG("There are too many cookies for this domain (%s)\n",
-             cookie->domain);
-         Cookies_free_cookie(cookie);
-         return;
-      }
-
-      /* Remove any cookies with the same name and path */
-      while ((c = dList_find_custom(domain_cookies, cookie, Cookies_cmp))){
-         Cookies_remove_cookie(c);
+      /* Remove any cookies with the same name, path, and host-only values. */
+      while ((c = dList_find_custom(domain_cookies, cookie, Cookies_cmp))) {
+         dList_remove(domain_cookies, c);
+         dList_remove_fast(all_cookies, c);
+         Cookies_free_cookie(c);
       }
    }
 
-   /* add the cookie into the respective domain list */
-   node = dList_find_sorted(cookies, cookie->domain,Cookie_node_by_domain_cmp);
-   domain_cookies = (node) ? node->dlist : NULL;
-   if (!domain_cookies) {
-      domain_cookies = dList_new(5);
-      dList_append(domain_cookies, cookie);
-      node = dNew(CookieNode, 1);
-      node->domain = dStrdup(cookie->domain);
-      node->dlist = domain_cookies;
-      dList_insert_sorted(cookies, node, Cookie_node_cmp);
+   if ((cookie->expires_at == (time_t) -1) ||
+       (difftime(cookie->expires_at, time(NULL)) <= 0)) {
+      /*
+       * Don't add an expired cookie. Whether expiring now == expired, exactly,
+       * is arguable, but we definitely do not want to add a Max-Age=0 cookie.
+       */
+      _MSG("Goodbye, cookie %s=%s d:%s p:%s\n", cookie->name,
+           cookie->value, cookie->domain, cookie->path);
+      Cookies_free_cookie(cookie);
    } else {
-      dList_append(domain_cookies, cookie);
+      if (domain_cookies && dList_length(domain_cookies) >=MAX_DOMAIN_COOKIES){
+         int removed = Cookies_rm_expired_cookies(node);
+
+         if (removed == 0) {
+            Cookies_too_many(node);
+         } else if (removed >= MAX_DOMAIN_COOKIES) {
+            /* So many were removed that the node might have been deleted. */
+            node = dList_find_sorted(domains, cookie->domain,
+                                                    Domain_node_by_domain_cmp);
+            domain_cookies = (node) ? node->cookies : NULL;
+         }
+      }
+      if (dList_length(all_cookies) >= MAX_TOTAL_COOKIES) {
+         if (Cookies_rm_expired_cookies(NULL) == 0) {
+            Cookies_too_many(NULL);
+         } else if (domain_cookies) {
+            /* Our own node might have just been deleted. */
+            node = dList_find_sorted(domains, cookie->domain,
+                                                    Domain_node_by_domain_cmp);
+            domain_cookies = (node) ? node->cookies : NULL;
+         }
+      }
+
+      cookie->last_used = cookies_use_counter++;
+
+      /* Actually add the cookie! */
+      dList_append(all_cookies, cookie);
+
+      if (!domain_cookies) {
+         domain_cookies = dList_new(5);
+         dList_append(domain_cookies, cookie);
+         node = dNew(DomainNode, 1);
+         node->domain = dStrdup(cookie->domain);
+         node->cookies = domain_cookies;
+         dList_insert_sorted(domains, node, Domain_node_cmp);
+      } else {
+         dList_append(domain_cookies, cookie);
+      }
    }
+   if (domain_cookies && (dList_length(domain_cookies) == 0))
+      Cookies_delete_node(node);
 }
 
 /*
- * Remove the cookie from the domain list.
- * If the domain list is empty, remove the node too.
- * Free the cookie.
- */
-static void Cookies_remove_cookie(CookieData_t *cookie)
-{
-   CookieNode *node;
-
-   node = dList_find_sorted(cookies, cookie->domain,Cookie_node_by_domain_cmp);
-   if (node) {
-      dList_remove(node->dlist, cookie);
-      if (dList_length(node->dlist) == 0) {
-         dList_remove(cookies, node);
-         dFree(node->domain);
-         dList_free(node->dlist);
-      }
-   } else {
-      MSG("Attempting to remove a cookie that doesn't exist!\n");
-   }
-
-   Cookies_free_cookie(cookie);
-}
-
-/*
- * Return the attribute that is present at *cookie_str. This function
- * will also attempt to advance cookie_str past any equal-sign.
+ * Return the attribute that is present at *cookie_str.
  */
 static char *Cookies_parse_attr(char **cookie_str)
 {
-   char *str = *cookie_str;
-   uint_t i, end = 0;
-   bool_t got_attr = FALSE;
+   char *str;
+   uint_t len;
 
-   for (i = 0; ; i++) {
-      switch (str[i]) {
-      case ' ':
-      case '\t':
-      case '=':
-      case ';':
-         got_attr = TRUE;
-         if (end == 0)
-            end = i;
-         break;
-      case ',':
-         *cookie_str = str + i;
-         return dStrndup(str, i);
-         break;
-      case '\0':
-         if (!got_attr) {
-            end = i;
-            got_attr = TRUE;
-         }
-         /* fall through! */
-      default:
-         if (got_attr) {
-            *cookie_str = str + i;
-            return dStrndup(str, end);
-         }
-         break;
-      }
-   }
+   while (dIsspace(**cookie_str))
+      (*cookie_str)++;
 
-   return NULL;
+   str = *cookie_str;
+   /* find '=' at end of attr, ';' after attr/val pair, '\0' end of string */
+   len = strcspn(str, "=;");
+   *cookie_str += len;
+
+   while (len && (str[len - 1] == ' ' || str[len - 1] == '\t'))
+      len--;
+   return dStrndup(str, len);
 }
 
 /*
- * Get the value starting at *cookie_str.
- * broken_syntax: watch out for stupid syntax (comma in unquoted string...)
+ * Get the value in *cookie_str.
  */
-static char *Cookies_parse_value(char **cookie_str,
-                                 bool_t broken_syntax,
-                                 bool_t keep_quotes)
+static char *Cookies_parse_value(char **cookie_str)
 {
-   uint_t i, end;
-   char *str = *cookie_str;
+   uint_t len;
+   char *str;
 
-   for (i = end = 0; !end; ++i) {
-      switch (str[i]) {
-      case ' ':
-      case '\t':
-         if (!broken_syntax && str[0] != '\'' && str[0] != '"') {
-            *cookie_str = str + i + 1;
-            end = 1;
-         }
-         break;
-      case '\'':
-      case '"':
-         if (i != 0 && str[i] == str[0]) {
-            char *tmp = str + i;
+   if (**cookie_str == '=') {
+      (*cookie_str)++;
+      while (dIsspace(**cookie_str))
+         (*cookie_str)++;
 
-            while (*tmp != '\0' && *tmp != ';' && *tmp != ',')
-               tmp++;
+      str = *cookie_str;
+      /* finds ';' after attr/val pair or '\0' at end of string */
+      len = strcspn(str, ";");
+      *cookie_str += len;
 
-            *cookie_str = (*tmp == ';') ? tmp + 1 : tmp;
-
-            if (keep_quotes)
-               i++;
-            end = 1;
-         }
-         break;
-      case '\0':
-         *cookie_str = str + i;
-         end = 1;
-         break;
-      case ',':
-         if (str[0] != '\'' && str[0] != '"' && !broken_syntax) {
-            /* A new cookie starts here! */
-            *cookie_str = str + i;
-            end = 1;
-         }
-         break;
-      case ';':
-         if (str[0] != '\'' && str[0] != '"') {
-            *cookie_str = str + i + 1;
-            end = 1;
-         }
-         break;
-      default:
-         break;
-      }
-   }
-   /* keep i as an index to the last char */
-   --i;
-
-   if ((str[0] == '\'' || str[0] == '"') && !keep_quotes) {
-      return i > 1 ? dStrndup(str + 1, i - 1) : NULL;
+      while (len && (str[len - 1] == ' ' || str[len - 1] == '\t'))
+         len--;
    } else {
-      return dStrndup(str, i);
+      str = *cookie_str;
+      len = 0;
+   }
+   return dStrndup(str, len);
+}
+
+/*
+ * Advance past any value
+ */
+static void Cookies_eat_value(char **cookie_str)
+{
+   if (**cookie_str == '=')
+      *cookie_str += strcspn(*cookie_str, ";");
+}
+
+/*
+ * Return the number of seconds by which our clock is ahead of the server's
+ * clock.
+ */
+static double Cookies_server_timediff(const char *server_date)
+{
+   double ret = 0;
+
+   if (server_date) {
+      struct tm *server_tm = Cookies_parse_date(server_date);
+
+      if (server_tm) {
+         time_t server_time = mktime(server_tm);
+
+         if (server_time != (time_t) -1)
+            ret = difftime(time(NULL), server_time);
+         dFree(server_tm);
+      }
+   }
+   return ret;
+}
+
+static void Cookies_unquote_string(char *str)
+{
+   if (str && str[0] == '\"') {
+      uint_t len = strlen(str);
+
+      if (len > 1 && str[len - 1] == '\"') {
+         str[len - 1] = '\0';
+         while ((*str = str[1]))
+            str++;
+      }
    }
 }
 
 /*
- * Parse one cookie...
+ * Parse cookie. A cookie might look something like:
+ * "Name=Val; Domain=example.com; Max-Age=3600; HttpOnly"
  */
-static CookieData_t *Cookies_parse_one(int url_port, char **cookie_str)
+static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
 {
-   CookieData_t *cookie;
-   char *str = *cookie_str;
-   char *attr;
-   char *value;
-   int num_attr = 0;
+   CookieData_t *cookie = NULL;
+   char *str = cookie_str;
+   bool_t first_attr = TRUE;
    bool_t max_age = FALSE;
-   bool_t discard = FALSE;
-   bool_t error = FALSE;
+   bool_t expires = FALSE;
 
-   cookie = dNew0(CookieData_t, 1);
-   cookie->session_only = TRUE;
-
-   /* Iterate until there is nothing left of the string OR we come
-    * across a comma representing the start of another cookie */
-   while (*str != '\0' && *str != ',') {
-      if (error) {
-         str++;
-         continue;
-      }
-      /* Skip whitespace */
-      while (isspace(*str))
-         str++;
+   /* Iterate until there is nothing left of the string */
+   while (*str) {
+      char *attr;
+      char *value;
 
       /* Get attribute */
       attr = Cookies_parse_attr(&str);
-      if (!attr) {
-         MSG("Cannot parse cookie attribute!\n");
-         error = TRUE;
-         continue;
-      }
 
       /* Get the value for the attribute and store it */
-      if (num_attr == 0) {
-         /* The first attr, which always is the user supplied attr, may
-          * have the same name as an ordinary attr. Hence this workaround. */
-         cookie->name = dStrdup(attr);
-         cookie->value = Cookies_parse_value(&str, FALSE, TRUE);
+      if (first_attr) {
+         if (*str != '=' || *attr == '\0') {
+            /* disregard nameless cookie */
+            dFree(attr);
+            return NULL;
+         }
+         cookie = dNew0(CookieData_t, 1);
+         cookie->name = attr;
+         cookie->value = Cookies_parse_value(&str);
+
+         /* let's arbitrarily initialise with a year for now */
+         time_t now = time(NULL);
+         struct tm *tm = gmtime(&now);
+         ++tm->tm_year;
+         cookie->expires_at = mktime(tm);
+         if (cookie->expires_at == (time_t) -1)
+            cookie->expires_at = cookies_future_time;
       } else if (dStrcasecmp(attr, "Path") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
+         value = Cookies_parse_value(&str);
+         dFree(cookie->path);
          cookie->path = value;
       } else if (dStrcasecmp(attr, "Domain") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
+         value = Cookies_parse_value(&str);
+         dFree(cookie->domain);
          cookie->domain = value;
-      } else if (dStrcasecmp(attr, "Discard") == 0) {
-         cookie->session_only = TRUE;
-         discard = TRUE;
       } else if (dStrcasecmp(attr, "Max-Age") == 0) {
-         if (!discard) {
-            value = Cookies_parse_value(&str, FALSE, FALSE);
+         value = Cookies_parse_value(&str);
+         if (isdigit(*value) || *value == '-') {
+            time_t now = time(NULL);
+            long age = strtol(value, NULL, 10);
+            struct tm *tm = gmtime(&now);
 
-            if (value) {
-               cookie->expires_at = time(NULL) + strtol(value, NULL, 10);
-               cookie->session_only = FALSE;
-               max_age = TRUE;
-               dFree(value);
-            } else {
-               MSG("Cannot parse cookie Max-Age value!\n");
-               dFree(attr);
-               error = TRUE;
-               continue;
+            tm->tm_sec += age;
+            cookie->expires_at = mktime(tm);
+            if (age > 0 && cookie->expires_at == (time_t) -1) {
+               cookie->expires_at = cookies_future_time;
             }
+            _MSG("Cookie to expire at %s", ctime(&cookie->expires_at));
+            expires = max_age = TRUE;
          }
-      } else if (dStrcasecmp(attr, "Expires") == 0) {
-         if (!max_age && !discard) {
-            MSG("Old netscape-style cookie...\n");
-            value = Cookies_parse_value(&str, TRUE, FALSE);
-            if (value) {
-               cookie->expires_at = Cookies_create_timestamp(value);
-               cookie->session_only = FALSE;
-               dFree(value);
-            } else {
-               MSG("Cannot parse cookie Expires value!\n");
-               dFree(attr);
-               error = TRUE;
-               continue;
-            }
-         }
-      } else if (dStrcasecmp(attr, "Port") == 0) {
-         value = Cookies_parse_value(&str, FALSE, TRUE);
-         Cookies_parse_ports(url_port, cookie, value);
          dFree(value);
-      } else if (dStrcasecmp(attr, "Comment") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
-         cookie->comment = value;
-      } else if (dStrcasecmp(attr, "CommentURL") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
-         cookie->comment_url = value;
-      } else if (dStrcasecmp(attr, "Version") == 0) {
-         value = Cookies_parse_value(&str, FALSE, FALSE);
-
-         if (value) {
-            cookie->version = strtol(value, NULL, 10);
+      } else if (dStrcasecmp(attr, "Expires") == 0) {
+         if (!max_age) {
+            value = Cookies_parse_value(&str);
+            Cookies_unquote_string(value);
+            _MSG("Expires attribute gives %s\n", value);
+            struct tm *tm = Cookies_parse_date(value);
+            if (tm) {
+               tm->tm_sec += Cookies_server_timediff(server_date);
+               cookie->expires_at = mktime(tm);
+               if (cookie->expires_at == (time_t) -1 && tm->tm_year >= 138) {
+                  /* Just checking tm_year does not ensure that the problem was
+                   * inability to represent a distant date...
+                   */
+                  cookie->expires_at = cookies_future_time;
+               }
+               _MSG("Cookie to expire at %s", ctime(&cookie->expires_at));
+               dFree(tm);
+            } else {
+               cookie->expires_at = (time_t) -1;
+            }
+            expires = TRUE;
             dFree(value);
          } else {
-            MSG("Cannot parse cookie Version value!\n");
-            dFree(attr);
-            error = TRUE;
-            continue;
+            Cookies_eat_value(&str);
          }
       } else if (dStrcasecmp(attr, "Secure") == 0) {
          cookie->secure = TRUE;
+         Cookies_eat_value(&str);
+      } else if (dStrcasecmp(attr, "HttpOnly") == 0) {
+         Cookies_eat_value(&str);
       } else {
-         /* Oops! this can't be good... */
          MSG("Cookie contains unknown attribute: '%s'\n", attr);
-         dFree(attr);
-         error = TRUE;
-         continue;
+         Cookies_eat_value(&str);
       }
 
-      dFree(attr);
-      num_attr++;
-   }
+      if (first_attr)
+         first_attr = FALSE;
+      else
+         dFree(attr);
 
-   *cookie_str = (*str == ',') ? str + 1 : str;
-
-   if (!error && (!cookie->name || !cookie->value)) {
-      MSG("Cookie missing name and/or value!\n");
-      error = TRUE;
+      if (*str == ';')
+         str++;
    }
-   if (error) {
-      Cookies_free_cookie(cookie);
-      cookie = NULL;
-   }
+   cookie->session_only = expires == FALSE;
    return cookie;
 }
 
 /*
- * Iterate the cookie string until we catch all cookies.
- * Return Value: a list with all the cookies! (or NULL upon error)
- */
-static Dlist *Cookies_parse_string(int url_port, char *cookie_string)
-{
-   CookieData_t *cookie;
-   Dlist *ret = NULL;
-   char *str = cookie_string;
-
-   /* The string may contain several cookies separated by comma.
-    * We'll iterate until we've caught them all */
-   while (*str) {
-      cookie = Cookies_parse_one(url_port, &str);
-
-      if (cookie) {
-         if (!ret)
-            ret = dList_new(4);
-         dList_append(ret, cookie);
-      } else {
-         MSG("Malformed cookie field, ignoring cookie: %s\n", cookie_string);
-      }
-   }
-
-   return ret;
-}
-
-/*
- * Compare cookies by name and path (return 0 if equal)
+ * Compare cookies by host_only, name, and path. Return 0 if equal.
  */
 static int Cookies_cmp(const void *a, const void *b)
 {
    const CookieData_t *ca = a, *cb = b;
-   int ret;
 
-   if (!(ret = strcmp(ca->name, cb->name)))
-      ret = strcmp(ca->path, cb->path);
+   return (ca->host_only != cb->host_only) ||
+          (strcmp(ca->name, cb->name) != 0) ||
+          (strcmp(ca->path, cb->path) != 0);
+}
+
+/*
+ * Is the domain an IP address?
+ */
+static bool_t Cookies_domain_is_ip(const char *domain)
+{
+   uint_t len;
+
+   if (!domain)
+      return FALSE;
+
+   len = strlen(domain);
+
+   if (len == strspn(domain, "0123456789.")) {
+      _MSG("an IPv4 address\n");
+      return TRUE;
+   }
+   if (*domain == '[' &&
+       (len == strspn(domain, "0123456789abcdefABCDEF:.[]"))) {
+      /* The precise format is shown in section 3.2.2 of rfc 3986 */
+      _MSG("an IPv6 address\n");
+      return TRUE;
+   }
+   return FALSE;
+}
+
+/*
+ * Check whether url_path path-matches cookie_path
+ *
+ * Note different user agents apparently vary in path-matching behaviour,
+ * but this is the recommended method at the moment.
+ */
+static bool_t Cookies_path_matches(const char *url_path,
+                                   const char *cookie_path)
+{
+   bool_t ret = TRUE;
+
+   if (!url_path || !cookie_path) {
+      ret = FALSE;
+   } else {
+      uint_t c_len = strlen(cookie_path);
+      uint_t u_len = strlen(url_path);
+
+      ret = (!strncmp(cookie_path, url_path, c_len) &&
+             ((c_len == u_len) ||
+              (c_len > 0 && cookie_path[c_len - 1] == '/') ||
+              (url_path[c_len] == '/')));
+   }
+   return ret;
+}
+
+/*
+ * If cookie path is not properly set, remedy that.
+ */
+static void Cookies_validate_path(CookieData_t *cookie, const char *url_path)
+{
+   if (!cookie->path || cookie->path[0] != '/') {
+      dFree(cookie->path);
+
+      if (url_path) {
+         uint_t len = strlen(url_path);
+
+         while (len && url_path[len] != '/')
+            len--;
+         cookie->path = dStrndup(url_path, len ? len : 1);
+      } else {
+         cookie->path = dStrdup("/");
+      }
+   }
+}
+
+/*
+ * Check whether host name A domain-matches host name B.
+ */
+static bool_t Cookies_domain_matches(char *A, char *B)
+{
+   int diff;
+
+   if (!A || !*A || !B || !*B)
+      return FALSE;
+
+   if (*B == '.')
+      B++;
+
+   /* Should we concern ourselves with trailing dots in matching (here or
+    * elsewhere)? The HTTP State people have found that most user agents
+    * don't, so: No.
+    */
+
+   if (!dStrcasecmp(A, B))
+      return TRUE;
+
+   if (Cookies_domain_is_ip(B))
+      return FALSE;
+
+   diff = strlen(A) - strlen(B);
+
+   if (diff > 0) {
+      /* B is the tail of A, and the match is preceded by a '.' */
+      return (dStrcasecmp(A + diff, B) == 0 && A[diff - 1] == '.');
+   } else {
+      return FALSE;
+   }
+}
+
+/*
+ * Based on the host, how many internal dots do we need in a cookie domain
+ * to make it valid? e.g., "org" is not on the list, so dillo.org is a safe
+ * cookie domain, but "uk" is on the list, so ac.uk is not safe.
+ *
+ * This is imperfect, but it's something. Specifically, checking for these
+ * TLDs is the solution that Konqueror used once upon a time, according to
+ * reports.
+ */
+static uint_t Cookies_internal_dots_required(const char *host)
+{
+   uint_t ret = 1;
+
+   if (host) {
+      int start, after, tld_len;
+
+      /* We may be able to trust the format of the host string more than
+       * I am here. Trailing dots and no dots are real possibilities, though.
+       */
+      after = strlen(host);
+      if (after > 0 && host[after - 1] == '.')
+         after--;
+      start = after;
+      while (start > 0 && host[start - 1] != '.')
+         start--;
+      tld_len = after - start;
+
+      if (tld_len > 0) {
+         /* These TLDs were chosen by examining the current publicsuffix list
+          * in January 2010 and picking out those where it was simplest for
+          * them to describe the situation by beginning with a "*.[tld]" rule.
+          */
+         const char *const tlds[] = {"ar","au","bd","bn","bt","ck","cy","do",
+                                     "eg","er","et","fj","fk","gt","gu","id",
+                                     "il","jm","ke","kh","kw","ml","mm","mt",
+                                     "mz","ni","np","nz","om","pg","py","qa",
+                                     "sv","tr","uk","uy","ve","ye","yu","za",
+                                     "zm","zw"};
+         uint_t i, tld_num = sizeof(tlds) / sizeof(tlds[0]);
+
+         for (i = 0; i < tld_num; i++) {
+            if (strlen(tlds[i]) == (uint_t) tld_len &&
+                !dStrncasecmp(tlds[i], host + start, tld_len)) {
+               _MSG("TLD code matched %s\n", tlds[i]);
+               ret++;
+               break;
+            }
+         }
+      }
+   }
    return ret;
 }
 
 /*
  * Validate cookies domain against some security checks.
  */
-static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host,
-                                      char *url_path)
+static bool_t Cookies_validate_domain(CookieData_t *cookie, char *host)
 {
-   int dots, diff, i;
-   bool_t is_ip;
+   uint_t i, internal_dots;
 
-   /* Make sure that the path is set to something */
-   if (!cookie->path || cookie->path[0] != '/') {
-      dFree(cookie->path);
-      cookie->path = Cookies_strip_path(url_path);
-   }
-
-   /* If the server never set a domain, or set one without a leading
-    * dot (which isn't allowed), we use the calling URL's hostname. */
-   if (cookie->domain == NULL || cookie->domain[0] != '.') {
-      dFree(cookie->domain);
+   if (!cookie->domain) {
       cookie->domain = dStrdup(host);
+      cookie->host_only = TRUE;
       return TRUE;
    }
 
-   /* Count the number of dots and also find out if it is an IP-address */
-   is_ip = TRUE;
-   for (i = 0, dots = 0; cookie->domain[i] != '\0'; i++) {
+   if (!Cookies_domain_matches(host, cookie->domain))
+      return FALSE;
+
+   internal_dots = 0;
+   for (i = 1; i < strlen(cookie->domain) - 1; i++) {
       if (cookie->domain[i] == '.')
-         dots++;
-      else if (!isdigit(cookie->domain[i]))
-         is_ip = FALSE;
+         internal_dots++;
    }
 
-   /* A valid domain must have at least two dots in it */
-   /* NOTE: this breaks cookies on localhost... */
-   if (dots < 2) {
+   /* All of this dots business is a weak hack.
+    * TODO: accept the publicsuffix.org list as an optional external file.
+    */
+   if (internal_dots < Cookies_internal_dots_required(host)) {
+      MSG("not enough dots in %s\n", cookie->domain);
       return FALSE;
    }
 
-   /* Now see if the url matches the domain */
-   diff = strlen(host) - i;
-   if (diff > 0) {
-      if (dStrcasecmp(host + diff, cookie->domain))
-         return FALSE;
-
-      if (!is_ip) {
-         /* "x.y.test.com" is not allowed to set cookies for ".test.com";
-          *  only an url of the form "y.test.com" would be. */
-         while ( diff-- )
-            if (host[diff] == '.')
-               return FALSE;
-      }
-   }
-
+   _MSG("host %s and domain %s is all right\n", host, cookie->domain);
    return TRUE;
 }
 
 /*
- * Strip of the filename from a full path
+ * Set the value corresponding to the cookie string
+ * Return value: 0 set OK, -1 disabled, -2 denied, -3 rejected.
  */
-static char *Cookies_strip_path(const char *path)
+static int Cookies_set(char *cookie_string, char *url_host,
+                       char *url_path, char *server_date)
 {
-   char *ret;
-   uint_t len;
+   CookieControlAction action;
+   CookieData_t *cookie;
+   int ret = -1;
 
-   if (path) {
-      len = strlen(path);
+   if (disabled)
+      return ret;
 
-      while (len && path[len] != '/')
-         len--;
-      ret = dStrndup(path, len + 1);
+   action = Cookies_control_check_domain(url_host);
+   if (action == COOKIE_DENY) {
+      MSG("denied SET for %s\n", url_host);
+      ret = -2;
+
    } else {
-      ret = dStrdup("/");
+      MSG("%s SETTING: %s\n", url_host, cookie_string);
+      ret = -3;
+      if ((cookie = Cookies_parse(cookie_string, server_date))) {
+         if (Cookies_validate_domain(cookie, url_host)) {
+            Cookies_validate_path(cookie, url_path);
+            if (action == COOKIE_ACCEPT_SESSION)
+               cookie->session_only = TRUE;
+            Cookies_add_cookie(cookie);
+            ret = 0;
+         } else {
+            MSG("Rejecting cookie for domain %s from host %s path %s\n",
+                cookie->domain, url_host, url_path);
+            Cookies_free_cookie(cookie);
+         }
+      }
    }
 
    return ret;
 }
 
 /*
- * Set the value corresponding to the cookie string
+ * Compare the cookie with the supplied data to see whether it matches
  */
-static void Cookies_set(char *cookie_string, char *url_host,
-                        char *url_path, int url_port)
+static bool_t Cookies_match(CookieData_t *cookie, const char *url_path,
+                            bool_t host_only_val, bool_t is_ssl)
 {
-   CookieControlAction action;
-   CookieData_t *cookie;
-   Dlist *list;
-   int i;
-
-   if (disabled)
-      return;
-
-   action = Cookies_control_check_domain(url_host);
-   if (action == COOKIE_DENY) {
-      MSG("denied SET for %s\n", url_host);
-      return;
-   }
-
-   if ((list = Cookies_parse_string(url_port, cookie_string))) {
-      for (i = 0; (cookie = dList_nth_data(list, i)); ++i) {
-         if (Cookies_validate_domain(cookie, url_host, url_path)) {
-            if (action == COOKIE_ACCEPT_SESSION)
-               cookie->session_only = TRUE;
-            Cookies_add_cookie(cookie);
-         } else {
-            MSG("Rejecting cookie for %s from host %s path %s\n",
-                cookie->domain, url_host, url_path);
-            Cookies_free_cookie(cookie);
-         }
-      }
-      dList_free(list);
-   }
-}
-
-/*
- * Compare the cookie with the supplied data to see if it matches
- */
-static bool_t Cookies_match(CookieData_t *cookie, int port,
-                              const char *path, bool_t is_ssl)
-{
-   void *data;
-   int i;
+   if (cookie->host_only != host_only_val)
+      return FALSE;
 
    /* Insecure cookies matches both secure and insecure urls, secure
       cookies matches only secure urls */
    if (cookie->secure && !is_ssl)
       return FALSE;
 
-   /* Check that the cookie path is a subpath of the current path */
-   if (strncmp(cookie->path, path, strlen(cookie->path)) != 0)
+   if (!Cookies_path_matches(url_path, cookie->path))
       return FALSE;
-
-   /* Check if the port of the request URL matches any
-    * of those set in the cookie */
-   if (cookie->ports) {
-      for (i = 0; (data = dList_nth_data(cookie->ports, i)); ++i) {
-         if (VOIDP2INT(data) == port)
-            return TRUE;
-      }
-      return FALSE;
-   }
 
    /* It's a match */
    return TRUE;
+}
+
+static void Cookies_add_matching_cookies(const char *domain,
+                                         const char *url_path,
+                                         bool_t host_only_val,
+                                         Dlist *matching_cookies,
+                                         bool_t is_ssl)
+{
+   DomainNode *node = dList_find_sorted(domains, domain,
+                                        Domain_node_by_domain_cmp);
+   if (node) {
+      int i;
+      CookieData_t *cookie;
+      Dlist *domain_cookies = node->cookies;
+
+      for (i = 0; (cookie = dList_nth_data(domain_cookies, i)); ++i) {
+         /* Remove expired cookie. */
+         if (difftime(cookie->expires_at, time(NULL)) < 0) {
+            _MSG("Goodbye, expired cookie %s=%s d:%s p:%s\n", cookie->name,
+                 cookie->value, cookie->domain, cookie->path);
+            dList_remove(domain_cookies, cookie);
+            dList_remove_fast(all_cookies, cookie);
+            Cookies_free_cookie(cookie);
+            --i; continue;
+         }
+         /* Check if the cookie matches the requesting URL */
+         if (Cookies_match(cookie, url_path, host_only_val, is_ssl)) {
+            int j;
+            CookieData_t *curr;
+            uint_t path_length = strlen(cookie->path);
+
+            cookie->last_used = cookies_use_counter;
+
+            /* Longest cookies go first */
+            for (j = 0;
+                 (curr = dList_nth_data(matching_cookies, j)) &&
+                  strlen(curr->path) >= path_length;
+                 j++) ;
+            dList_insert_pos(matching_cookies, cookie, j);
+         }
+      }
+
+      if (dList_length(domain_cookies) == 0)
+         Cookies_delete_node(node);
+   }
 }
 
 /*
  * Return a string that contains all relevant cookies as headers.
  */
 static char *Cookies_get(char *url_host, char *url_path,
-                         char *url_scheme, int url_port)
+                         char *url_scheme)
 {
-   char *domain_str, *q, *str, *path;
+   char *domain_str, *str;
    CookieData_t *cookie;
    Dlist *matching_cookies;
-   CookieNode *node;
-   Dlist *domain_cookies;
-   bool_t is_ssl;
+   bool_t is_ssl, is_ip_addr, host_only_val;
+
    Dstr *cookie_dstring;
    int i;
 
@@ -1139,27 +1212,47 @@ static char *Cookies_get(char *url_host, char *url_path,
 
    matching_cookies = dList_new(8);
 
-   path = Cookies_strip_path(url_path);
-
    /* Check if the protocol is secure or not */
    is_ssl = (!dStrcasecmp(url_scheme, "https"));
 
-   for (domain_str = (char *) url_host;
-        domain_str != NULL && *domain_str;
-        domain_str = strchr(domain_str+1, '.')) {
+   is_ip_addr = Cookies_domain_is_ip(url_host);
 
-      node = dList_find_sorted(cookies, domain_str, Cookie_node_by_domain_cmp);
-      domain_cookies = (node) ? node->dlist : NULL;
+   /* If a cookie is set that lacks a Domain attribute, its domain is set to
+    * the server's host and the host_only flag is set for that cookie. Such a
+    * cookie can only be sent back to that host. Cookies with Domain attrs do
+    * not have the host_only flag set, and may be sent to subdomains. Domain
+    * attrs can have leading dots, which should be ignored for matching
+    * purposes.
+    */
+   host_only_val = FALSE;
+   if (!is_ip_addr) {
+      /* e.g., sub.example.com set a cookie with domain ".sub.example.com". */
+      domain_str = dStrconcat(".", url_host, NULL);
+      Cookies_add_matching_cookies(domain_str, url_path, host_only_val,
+                                   matching_cookies, is_ssl);
+      dFree(domain_str);
+   }
+   host_only_val = TRUE;
+   /* e.g., sub.example.com set a cookie with no domain attribute. */
+   Cookies_add_matching_cookies(url_host, url_path, host_only_val,
+                                matching_cookies, is_ssl);
+   host_only_val = FALSE;
+   /* e.g., sub.example.com set a cookie with domain "sub.example.com". */
+   Cookies_add_matching_cookies(url_host, url_path, host_only_val,
+                                matching_cookies, is_ssl);
 
-      for (i = 0; (cookie = dList_nth_data(domain_cookies, i)); ++i) {
-         /* Remove expired cookie. */
-         if (!cookie->session_only && cookie->expires_at < time(NULL)) {
-            Cookies_remove_cookie(cookie);
-            --i; continue;
-         }
-         /* Check if the cookie matches the requesting URL */
-         if (Cookies_match(cookie, url_port, path, is_ssl)) {
-            dList_append(matching_cookies, cookie);
+   if (!is_ip_addr) {
+      for (domain_str = strchr(url_host+1, '.');
+           domain_str != NULL && *domain_str;
+           domain_str = strchr(domain_str+1, '.')) {
+         /* e.g., sub.example.com set a cookie with domain ".example.com". */
+         Cookies_add_matching_cookies(domain_str, url_path, host_only_val,
+                                      matching_cookies, is_ssl);
+         if (domain_str[1]) {
+            domain_str++;
+            /* e.g., sub.example.com set a cookie with domain "example.com".*/
+            Cookies_add_matching_cookies(domain_str, url_path, host_only_val,
+                                         matching_cookies, is_ssl);
          }
       }
    }
@@ -1167,36 +1260,24 @@ static char *Cookies_get(char *url_host, char *url_path,
    /* Found the cookies, now make the string */
    cookie_dstring = dStr_new("");
    if (dList_length(matching_cookies) > 0) {
-      CookieData_t *first_cookie = dList_nth_data(matching_cookies, 0);
 
       dStr_sprintfa(cookie_dstring, "Cookie: ");
 
-      if (first_cookie->version != 0)
-         dStr_sprintfa(cookie_dstring, "$Version=\"%d\"; ",
-                       first_cookie->version);
-
-
       for (i = 0; (cookie = dList_nth_data(matching_cookies, i)); ++i) {
-         q = (cookie->version == 0 ? "" : "\"");
-         dStr_sprintfa(cookie_dstring,
-                       "%s=%s; $Path=%s%s%s; $Domain=%s%s%s",
-                       cookie->name, cookie->value,
-                       q, cookie->path, q, q, cookie->domain, q);
-         if (cookie->ports) {
-            char *ports_str = Cookies_build_ports_str(cookie);
-            dStr_sprintfa(cookie_dstring, "; $Port=%s", ports_str);
-            dFree(ports_str);
-         }
-
+         dStr_sprintfa(cookie_dstring, "%s=%s", cookie->name, cookie->value);
          dStr_append(cookie_dstring,
                      dList_length(matching_cookies) > i + 1 ? "; " : "\r\n");
       }
    }
 
    dList_free(matching_cookies);
-   dFree(path);
    str = cookie_dstring->str;
    dStr_free(cookie_dstring, FALSE);
+
+   if (*str)
+      cookies_use_counter++;
+
+   MSG("%s GETTING: %s\n", url_host, str);
    return str;
 }
 
@@ -1216,11 +1297,10 @@ static int Cookie_control_init(void)
 {
    CookieControl cc;
    FILE *stream;
-   char *filename;
+   char *filename, *rc;
    char line[LINE_MAXLEN];
    char domain[LINE_MAXLEN];
    char rule[LINE_MAXLEN];
-   int i, j;
    bool_t enabled = FALSE;
 
    /* Get a file pointer */
@@ -1234,28 +1314,31 @@ static int Cookie_control_init(void)
    /* Get all lines in the file */
    while (!feof(stream)) {
       line[0] = '\0';
-      fgets(line, LINE_MAXLEN, stream);
+      rc = fgets(line, LINE_MAXLEN, stream);
+      if (!rc && ferror(stream)) {
+         MSG("Error while reading rule from cookiesrc: %s\n",
+             dStrerror(errno));
+         break; /* bail out */
+      }
 
       /* Remove leading and trailing whitespaces */
       dStrstrip(line);
 
       if (line[0] != '\0' && line[0] != '#') {
-         i = 0;
-         j = 0;
+         int i = 0, j = 0;
 
          /* Get the domain */
-         while (!isspace(line[i]))
+         while (line[i] != '\0' && !dIsspace(line[i]))
             domain[j++] = line[i++];
          domain[j] = '\0';
 
          /* Skip past whitespaces */
-         i++;
-         while (isspace(line[i]))
+         while (dIsspace(line[i]))
             i++;
 
          /* Get the rule */
          j = 0;
-         while (line[i] != '\0' && !isspace(line[i]))
+         while (line[i] != '\0' && !dIsspace(line[i]))
             rule[j++] = line[i++];
          rule[j] = '\0';
 
@@ -1277,8 +1360,17 @@ static int Cookie_control_init(void)
             default_action = cc.action;
             dFree(cc.domain);
          } else {
+            int i;
+            uint_t len = strlen(cc.domain);
+
+            /* Insert into list such that longest rules come first. */
             a_List_add(ccontrol, num_ccontrol, num_ccontrol_max);
-            ccontrol[num_ccontrol++] = cc;
+            for (i = num_ccontrol++;
+                 i > 0 && (len > strlen(ccontrol[i-1].domain));
+                 i--) {
+               ccontrol[i] = ccontrol[i-1];
+            }
+            ccontrol[i] = cc;
          }
 
          if (cc.action != COOKIE_DENY)
@@ -1292,7 +1384,9 @@ static int Cookie_control_init(void)
 }
 
 /*
- * Check the rules for an appropriate action for this domain
+ * Check the rules for an appropriate action for this domain.
+ * The rules are ordered by domain length, with longest first, so the
+ * first match is the most specific.
  */
 static CookieControlAction Cookies_control_check_domain(const char *domain)
 {
@@ -1326,69 +1420,74 @@ static CookieControlAction Cookies_control_check_domain(const char *domain)
  * Note: Buf is a zero terminated string
  * Return code: { 0:OK, 1:Abort, 2:Close }
  */
-static int srv_parse_buf(SockHandler *sh, char *Buf, size_t BufSize)
+static int srv_parse_tok(Dsh *sh, ClientInfo *client, char *Buf)
 {
-   char *p, *cmd, *cookie, *host, *path, *scheme;
-   int port, ret;
+   char *cmd, *cookie, *host, *path;
+   int ret = 1;
+   size_t BufSize = strlen(Buf);
 
-   if (!(p = strchr(Buf, '>'))) {
-      /* Haven't got a full tag */
-      MSG("Haven't got a full tag!\n");
-      return 1;
-   }
+   cmd = a_Dpip_get_attr_l(Buf, BufSize, "cmd");
 
-   cmd = a_Dpip_get_attr(Buf, BufSize, "cmd");
-
-   if (cmd && strcmp(cmd, "DpiBye") == 0) {
+   if (!cmd) {
+      /* abort */
+   } else if (client->status == 0) {
+      /* authenticate */
+      if (a_Dpip_check_auth(Buf) == 1) {
+         client->status = 1;
+         ret = 0;
+      }
+   } else if (strcmp(cmd, "DpiBye") == 0) {
       dFree(cmd);
-      MSG("Cookies dpi (pid %d): Got DpiBye.\n", (int)getpid());
+      MSG("(pid %d): Got DpiBye.\n", (int)getpid());
       exit(0);
 
-   } else if (cmd && strcmp(cmd, "set_cookie") == 0) {
+   } else if (strcmp(cmd, "set_cookie") == 0) {
+      int st;
+      char *date;
+
+      cookie = a_Dpip_get_attr_l(Buf, BufSize, "cookie");
+      host = a_Dpip_get_attr_l(Buf, BufSize, "host");
+      path = a_Dpip_get_attr_l(Buf, BufSize, "path");
+      date = a_Dpip_get_attr_l(Buf, BufSize, "date");
+
+      st = Cookies_set(cookie, host, path, date);
+
       dFree(cmd);
-      cookie = a_Dpip_get_attr(Buf, BufSize, "cookie");
-      host = a_Dpip_get_attr(Buf, BufSize, "host");
-      path = a_Dpip_get_attr(Buf, BufSize, "path");
-      p = a_Dpip_get_attr(Buf, BufSize, "port");
-      port = strtol(p, NULL, 10);
-      dFree(p);
+      cmd = a_Dpip_build_cmd("cmd=%s msg=%s", "set_cookie_answer",
+                             st == 0 ? "ok" : "not set");
+      a_Dpip_dsh_write_str(sh, 1, cmd);
 
-      Cookies_set(cookie, host, path, port);
-
+      dFree(date);
       dFree(path);
       dFree(host);
       dFree(cookie);
-      return 2;
+      ret = 2;
 
-   } else if (cmd && strcmp(cmd, "get_cookie") == 0) {
-      dFree(cmd);
-      scheme = a_Dpip_get_attr(Buf, BufSize, "scheme");
-      host = a_Dpip_get_attr(Buf, BufSize, "host");
-      path = a_Dpip_get_attr(Buf, BufSize, "path");
-      p = a_Dpip_get_attr(Buf, BufSize, "port");
-      port = strtol(p, NULL, 10);
-      dFree(p);
+   } else if (strcmp(cmd, "get_cookie") == 0) {
+      char *scheme = a_Dpip_get_attr_l(Buf, BufSize, "scheme");
 
-      cookie = Cookies_get(host, path, scheme, port);
+      host = a_Dpip_get_attr_l(Buf, BufSize, "host");
+      path = a_Dpip_get_attr_l(Buf, BufSize, "path");
+
+      cookie = Cookies_get(host, path, scheme);
       dFree(scheme);
       dFree(path);
       dFree(host);
 
+      dFree(cmd);
       cmd = a_Dpip_build_cmd("cmd=%s cookie=%s", "get_cookie_answer", cookie);
 
-      if (sock_handler_write_str(sh, 1, cmd)) {
+      if (a_Dpip_dsh_write_str(sh, 1, cmd)) {
           ret = 1;
       } else {
-          _MSG("sock_handler_write_str: SUCCESS cmd={%s}\n", cmd);
+          _MSG("a_Dpip_dsh_write_str: SUCCESS cmd={%s}\n", cmd);
           ret = 2;
       }
       dFree(cookie);
-      dFree(cmd);
-
-      return ret;
    }
+   dFree(cmd);
 
-   return 0;
+   return ret;
 }
 
 /* --  Termination handlers ----------------------------------------------- */
@@ -1415,13 +1514,13 @@ static void termination_handler(int signum)
 /*
  * -- MAIN -------------------------------------------------------------------
  */
-int main (void) {
-   struct sockaddr_un spun;
-   int temp_sock_descriptor;
+int main(void) {
+   struct sockaddr_in sin;
    socklen_t address_size;
+   ClientInfo *client;
+   int sock_fd, code;
    char *buf;
-   int code;
-   SockHandler *sh;
+   Dsh *sh;
 
    /* Arrange the cleanup function for terminations via exit() */
    atexit(cleanup);
@@ -1441,36 +1540,42 @@ int main (void) {
       exit(1);
 
    /* some OSes may need this... */
-   address_size = sizeof(struct sockaddr_un);
+   address_size = sizeof(struct sockaddr_in);
 
    while (1) {
-      temp_sock_descriptor =
-         accept(STDIN_FILENO, (struct sockaddr *)&spun, &address_size);
-      if (temp_sock_descriptor == -1) {
+      sock_fd = accept(STDIN_FILENO, (struct sockaddr *)&sin, &address_size);
+      if (sock_fd == -1) {
          perror("[accept]");
          exit(1);
       }
 
-      /* create the SockHandler structure */
-      sh = sock_handler_new(temp_sock_descriptor,temp_sock_descriptor,8*1024);
+      /* create the Dsh structure */
+      sh = a_Dpip_dsh_new(sock_fd, sock_fd, 8*1024);
+      client = dNew(ClientInfo,1);
+      client->sh = sh;
+      client->status = 0;
 
       while (1) {
          code = 1;
-         if ((buf = sock_handler_read(sh)) != NULL) {
+         if ((buf = a_Dpip_dsh_read_token(sh, 1)) != NULL) {
             /* Let's see what we fished... */
             _MSG(" buf = {%s}\n", buf);
-            code = srv_parse_buf(sh, buf, strlen(buf));
+            code = srv_parse_tok(sh, client, buf);
+            dFree(buf);
          }
+
          _MSG(" code = %d %s\n", code, code == 1 ? "EXIT" : "BREAK");
-         if (code == 1)
+         if (code == 1) {
             exit(1);
-         else if (code == 2)
+         } else if (code == 2) {
             break;
+         }
       }
 
-      _MSG("Closing SockHandler\n");
-      sock_handler_close(sh);
-      sock_handler_free(sh);
+      _MSG("Closing Dsh\n");
+      a_Dpip_dsh_close(sh);
+      a_Dpip_dsh_free(sh);
+      dFree(client);
 
    }/*while*/
 

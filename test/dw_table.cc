@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -51,9 +50,9 @@ int main(int argc, char **argv)
    styleAttrs.padding.setVal (0);
    styleAttrs.borderWidth.setVal (1);
    styleAttrs.setBorderStyle (BORDER_OUTSET);
-   styleAttrs.setBorderColor (Color::createShaded (layout, 0xffffff));
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.setBorderColor (Color::create (layout, 0xffffff));
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
    styleAttrs.hBorderSpacing = 5;
    styleAttrs.vBorderSpacing = 5;
 
@@ -62,6 +61,7 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
    Style *tableStyle = Style::create (layout, &styleAttrs);

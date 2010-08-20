@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -38,29 +37,6 @@ void init (int argc, char *argv[])
    prgName = strdup (argv[0]);
 }
 
-void chop (char *s)
-{
-   char *p = s + strlen (s) - 1;
-   while (*p == '\n') {
-      *p = 0;
-      p--;
-   }
-}
-
-char *strip (char *s)
-{
-   while (isspace (*s))
-      s++;
-
-   char *p = s + strlen (s) - 1;
-   while (isspace (*p)) {
-      *p = 0;
-      p--;
-   }
-
-   return s;
-}
-
 // ----------------
 //    Comparable
 // ----------------
@@ -77,11 +53,11 @@ int Comparable::compareFun(const void *p1, const void *p2)
 {
    Comparable **c1 = (Comparable**)p1;
    Comparable **c2 = (Comparable**)p2;
-   if(c1 && c2)
+   if (c1 && c2)
       return ((*c1)->compareTo(*c2));
-   else if(c1)
+   else if (c1)
       return 1;
-   else if(c2)
+   else if (c2)
       return -1;
    else
       return 0;
@@ -104,7 +80,7 @@ StringBuffer::StringBuffer()
 StringBuffer::~StringBuffer()
 {
    clear ();
-   if(str)
+   if (str)
       delete[] str;
 }
 
@@ -121,7 +97,7 @@ void StringBuffer::appendNoCopy(char *str)
    node->data = str;
    node->next = NULL;
 
-   if(firstNode == NULL) {
+   if (firstNode == NULL) {
       firstNode = node;
       lastNode = node;
    } else {
@@ -141,20 +117,20 @@ void StringBuffer::appendNoCopy(char *str)
  */
 const char *StringBuffer::getChars()
 {
-   if(strValid)
+   if (strValid)
       return str;
 
-   if(str)
+   if (str)
       delete[] str;
    str = new char[numChars + 1];
    char *p = str;
 
-   for(Node *node = firstNode; node; node = node->next) {
+   for (Node *node = firstNode; node; node = node->next) {
       int l = strlen(node->data);
       memcpy(p, node->data, l * sizeof(char));
       p += l;
    }
-   
+
    *p = 0;
    strValid = true;
    return str;
@@ -166,7 +142,7 @@ const char *StringBuffer::getChars()
 void StringBuffer::clear ()
 {
    Node *node, *nextNode;
-   for(node = firstNode; node; node = nextNode) {
+   for (node = firstNode; node; node = nextNode) {
       nextNode = node->next;
       delete node->data;
       delete node;
@@ -183,7 +159,7 @@ void StringBuffer::clear ()
 
 BitSet::BitSet(int initBits)
 {
-   numBytes = bytesForBits(initBits);   
+   numBytes = bytesForBits(initBits);
    bits = (unsigned char*)malloc(numBytes * sizeof(unsigned char));
    clear();
 }
@@ -196,14 +172,14 @@ BitSet::~BitSet()
 void BitSet::intoStringBuffer(misc::StringBuffer *sb)
 {
    sb->append("[");
-   for(int i = 0; i < numBytes; i++)
+   for (int i = 0; i < numBytes; i++)
       sb->append(get(i) ? "1" : "0");
    sb->append("]");
 }
 
 bool BitSet::get(int i)
 {
-   if(8 * i >= numBytes)
+   if (8 * i >= numBytes)
       return false;
    else
       return bits[i / 8] & (1 << (i % 8));
@@ -211,17 +187,17 @@ bool BitSet::get(int i)
 
 void BitSet::set(int i, bool val)
 {
-   if(8 * i >= numBytes) {
+   if (8 * i >= numBytes) {
       int newNumBytes = numBytes;
-      while(8 * i >= newNumBytes)
+      while (8 * i >= newNumBytes)
          newNumBytes *= 2;
       bits =
          (unsigned char*)realloc(bits, newNumBytes * sizeof(unsigned char));
       memset(bits + numBytes, 0, newNumBytes - numBytes);
       numBytes = newNumBytes;
    }
-  
-   if(val)
+
+   if (val)
       bits[i / 8] |= (1 << (i % 8));
    else
       bits[i / 8] &= ~(1 << (i % 8));

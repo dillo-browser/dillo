@@ -14,7 +14,11 @@ void a_Dns_init (void);
 void a_Dns_freeall(void);
 void a_Dns_resolve(const char *hostname, DnsCallback_t cb_func, void *cb_data);
 
-#define DILLO_ADDR_MAX sizeof(struct in6_addr)
+#ifdef ENABLE_IPV6
+#  define DILLO_ADDR_MAX sizeof(struct in6_addr)
+#else
+#  define DILLO_ADDR_MAX sizeof(struct in_addr)
+#endif
 
 typedef struct _DilloHost
 {
@@ -22,7 +26,7 @@ typedef struct _DilloHost
   int alen;
   char data[DILLO_ADDR_MAX];
 } DilloHost;
-
+void a_Dns_dillohost_to_string(DilloHost *host, char *dst, size_t size);
 
 #ifdef __cplusplus
 }

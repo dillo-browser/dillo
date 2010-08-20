@@ -16,8 +16,6 @@
 
 #include "findbar.hh"
 
-using namespace fltk;
-
 typedef enum {
    UI_BACK = 0,
    UI_FORW,
@@ -26,6 +24,7 @@ typedef enum {
    UI_SAVE,
    UI_STOP,
    UI_BOOK,
+   UI_TOOLS,
    UI_CLEAR,
    UI_SEARCH
 } UIButton;
@@ -47,15 +46,15 @@ class UI : public fltk::Group {
    CustTabGroup *Tabs;
    char *TabTooltip;
 
-   Group *TopGroup;
-   Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks,
-          *Clear, *Search, *FullScreen, *ImageLoad, *BugMeter, *FileButton;
-   Input  *Location;
-   PackedGroup *ProgBox;
+   fltk::Group *TopGroup;
+   fltk::Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
+          *Clear, *Search, *Help, *FullScreen, *BugMeter, *FileButton;
+   fltk::Input  *Location;
+   fltk::PackedGroup *ProgBox;
    CustProgressBox *PProg, *IProg;
-   Group *Panel, *StatusPanel;
-   Widget *Main;
-   Output *Status;
+   fltk::Group *Panel, *StatusPanel;
+   fltk::Widget *Main;
+   fltk::Output *Status;
 
    int MainIdx;
    // Panel customization variables
@@ -64,13 +63,15 @@ class UI : public fltk::Group {
 
    UIPanelmode Panelmode;
    Findbar *findbar;
+   int PointerOnLink;
 
-   PackedGroup *make_toolbar(int tw, int th);
-   PackedGroup *make_location();
-   PackedGroup *make_progress_bars(int wide, int thin_up);
+   fltk::PackedGroup *make_toolbar(int tw, int th);
+   fltk::PackedGroup *make_location();
+   fltk::PackedGroup *make_progress_bars(int wide, int thin_up);
    void make_menubar(int x, int y, int w, int h);
-   Widget *make_filemenu_button();
-   Group *make_panel(int ww);
+   fltk::Widget *make_filemenu_button();
+   fltk::Group *make_panel(int ww);
+   fltk::Group *make_status_panel(int ww);
 
 public:
 
@@ -89,20 +90,20 @@ public:
    void set_img_prog(int n_img, int t_img, int cmd);
    void set_bug_prog(int n_bug);
    void set_render_layout(Widget &nw);
-   void set_page_title(const char *label);
+   void set_tab_title(const char *label);
    void customize(int flags);
    void button_set_sens(UIButton btn, int sens);
    void paste_url();
    void set_panelmode(UIPanelmode mode);
    UIPanelmode get_panelmode();
    void set_findbar_visibility(bool visible);
-   bool images_enabled() { return ImageLoad->state();}
-   void images_enabled(int flag) { ImageLoad->state(flag);}
    Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
 
    CustTabGroup *tabs() { return Tabs; }
    void tabs(CustTabGroup *tabs) { Tabs = tabs; }
+   int pointerOnLink() { return PointerOnLink; }
+   void pointerOnLink(int flag) { PointerOnLink = flag; }
 
    // Hooks to method callbacks
    void panel_cb_i();

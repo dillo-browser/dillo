@@ -1,15 +1,21 @@
-README: Last update Oct 2008  --jcid
+README: Last update Jul 2009
 
- This documents need a review. They were current with dillo1 and
-now, with dillo2, most of them are obsolete, specially Dw*txt, but
-Dw2 is fully documented in html using doxygen.
+These documents cover dillo's internals.
+For user help, see http://www.dillo.org/dillo2-help.html
 
- The other documents will be reviewed when I have some time. They
-will give you an overview of what's going on but take them with a
-pinch of salt.
+--------------------------------------------------------------------------
 
- Of course I'd like to have these as doxygen files too!
-If somebody wants to make this convertion, please let me know
+These documents need a review.
+*.txt were current with Dillo1, but many have since become more or
+      less out-of-date.
+*.doc are doxygen source for the Dillo Widget (dw) component, and
+      were written for Dillo2.
+
+They will give you an overview of what's going on, but take them
+with a pinch of salt.
+
+ Of course I'd like to have *.txt as doxygen files too!
+If somebody wants to make this conversion, please let me know
 to assign higher priority to updating these docs.
 
 --
@@ -31,16 +37,14 @@ Jorge.-
    Cookies.txt         Explains how to enable cookies       Current
    Dpid.txt            Dillo plugin daemon                  Current
  --------------------------------------------------------------------------
- [This documents cover dillo's internal working. They're NOT a user manual]
- --------------------------------------------------------------------------
 
 
- * Ah!, there's a small program (srch) within the src/ dir. It searches
+ * BTW, there's a small program (srch) within the src/ dir. It searches
  tokens within the whole code (*.[ch]). It has proven very useful.
  Ex:  ./srch a_Image_write
       ./srch todo:
 
- * Please submit your patches with 'diff -pru'.
+ * Please submit your patches with 'hg diff'.
 
 
  Happy coding!  

@@ -14,11 +14,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 
 #include <stdio.h>
 #include <string.h>
@@ -26,6 +23,9 @@
 #include <ctype.h>
 
 #include "core.hh"
+#include "../lout/msg.h"
+
+using namespace lout;
 
 namespace dw {
 namespace core {
@@ -39,12 +39,13 @@ void StyleAttrs::initValues ()
    textDecoration = TEXT_DECORATION_NONE;
    textAlign = TEXT_ALIGN_LEFT;
    textAlignChar = '.';
+   listStylePosition = LIST_STYLE_POSITION_OUTSIDE;
    listStyleType = LIST_STYLE_TYPE_DISC;
-   valign = VALIGN_MIDDLE;
+   valign = VALIGN_BASELINE;
    backgroundColor = NULL;
-   width = LENGTH_AUTO;
-   height = LENGTH_AUTO;
-
+   width = height = lineHeight = LENGTH_AUTO;
+   vloat = FLOAT_NONE;
+   clear = CLEAR_NONE;
    margin.setVal (0);
    borderWidth.setVal (0);
    padding.setVal (0);
@@ -52,6 +53,7 @@ void StyleAttrs::initValues ()
    setBorderStyle (BORDER_NONE);
    hBorderSpacing = 0;
    vBorderSpacing = 0;
+   wordSpacing = 0;
 
    display = DISPLAY_INLINE;
    whiteSpace = WHITE_SPACE_NORMAL;
@@ -64,13 +66,12 @@ void StyleAttrs::initValues ()
  */
 void StyleAttrs::resetValues ()
 {
-   x_link = -1;
    x_img = -1;
-   x_tooltip = NULL;
 
-   textAlign = TEXT_ALIGN_LEFT; /* ??? */
-   valign = VALIGN_MIDDLE;
+   valign = VALIGN_BASELINE;
    textAlignChar = '.';
+   vloat = FLOAT_NONE; /** \todo Correct? Check specification. */
+   clear = CLEAR_NONE; /** \todo Correct? Check specification. */
    backgroundColor = NULL;
    width = LENGTH_AUTO;
    height = LENGTH_AUTO;
@@ -84,8 +85,6 @@ void StyleAttrs::resetValues ()
    vBorderSpacing = 0;
 
    display = DISPLAY_INLINE;
-   whiteSpace = WHITE_SPACE_NORMAL;
-   cursor = CURSOR_DEFAULT; /** \todo Check CSS specification again. */
 }
 
 /**
@@ -119,8 +118,10 @@ bool StyleAttrs::equals (object::Object *other) {
        textAlignChar == otherAttrs->textAlignChar &&
        hBorderSpacing == otherAttrs->hBorderSpacing &&
        vBorderSpacing == otherAttrs->vBorderSpacing &&
+       wordSpacing == otherAttrs->wordSpacing &&
        width == otherAttrs->width &&
        height == otherAttrs->height &&
+       lineHeight == otherAttrs->lineHeight &&
        margin.equals (&otherAttrs->margin) &&
        borderWidth.equals (&otherAttrs->borderWidth) &&
        padding.equals (&otherAttrs->padding) &&
@@ -134,7 +135,9 @@ bool StyleAttrs::equals (object::Object *other) {
        borderStyle.left == otherAttrs->borderStyle.left &&
        display == otherAttrs->display &&
        whiteSpace == otherAttrs->whiteSpace &&
+       listStylePosition == otherAttrs->listStylePosition &&
        listStyleType == otherAttrs->listStyleType &&
+       cursor == otherAttrs->cursor &&
        x_link == otherAttrs->x_link &&
        x_img == otherAttrs->x_img &&
        x_tooltip == otherAttrs->x_tooltip);
@@ -150,10 +153,12 @@ int StyleAttrs::hashValue () {
       textAlignChar +
       hBorderSpacing +
       vBorderSpacing +
+      wordSpacing +
       width +
       height +
+      lineHeight +
       margin.hashValue () +
-      borderWidth.hashValue () + 
+      borderWidth.hashValue () +
       padding.hashValue () +
       (intptr_t) borderColor.top +
       (intptr_t) borderColor.right +
@@ -165,7 +170,9 @@ int StyleAttrs::hashValue () {
       borderStyle.left +
       display +
       whiteSpace +
+      listStylePosition +
       listStyleType +
+      cursor +
       x_link +
       x_img +
       (intptr_t) x_tooltip;
@@ -220,7 +227,7 @@ Style::~Style ()
       x_tooltip->unref();
 
    styleTable->remove (this);
-   totalRef--;  
+   totalRef--;
 }
 
 void Style::copyAttrs (StyleAttrs *attrs)
@@ -232,10 +239,14 @@ void Style::copyAttrs (StyleAttrs *attrs)
    textAlign = attrs->textAlign;
    valign = attrs->valign;
    textAlignChar = attrs->textAlignChar;
+   vloat = attrs->vloat;
+   clear = attrs->clear;
    hBorderSpacing = attrs->hBorderSpacing;
    vBorderSpacing = attrs->vBorderSpacing;
+   wordSpacing = attrs->wordSpacing;
    width = attrs->width;
    height = attrs->height;
+   lineHeight = attrs->lineHeight;
    margin = attrs->margin;
    borderWidth = attrs->borderWidth;
    padding = attrs->padding;
@@ -243,6 +254,7 @@ void Style::copyAttrs (StyleAttrs *attrs)
    borderStyle = attrs->borderStyle;
    display = attrs->display;
    whiteSpace = attrs->whiteSpace;
+   listStylePosition = attrs->listStylePosition;
    listStyleType = attrs->listStyleType;
    cursor = attrs->cursor;
    x_link = attrs->x_link;
@@ -257,8 +269,11 @@ bool FontAttrs::equals(object::Object *other)
    FontAttrs *otherAttrs = (FontAttrs*)other;
    return
       this == otherAttrs ||
-      (size == otherAttrs->size && weight == otherAttrs->weight &&
-       style == otherAttrs->style && strcmp (name, otherAttrs->name) == 0);
+      (size == otherAttrs->size &&
+       weight == otherAttrs->weight &&
+       style == otherAttrs->style &&
+       letterSpacing == otherAttrs->letterSpacing &&
+       strcmp (name, otherAttrs->name) == 0);
 }
 
 int FontAttrs::hashValue()
@@ -267,12 +282,13 @@ int FontAttrs::hashValue()
    h = (h << 5) - h + size;
    h = (h << 5) - h + weight;
    h = (h << 5) - h + style;
+   h = (h << 5) - h + letterSpacing;
    return h;
 }
 
 Font::~Font ()
 {
-   delete name;   
+   free ((char*)name);
 }
 
 void Font::copyAttrs (FontAttrs *attrs)
@@ -281,6 +297,7 @@ void Font::copyAttrs (FontAttrs *attrs)
    size = attrs->size;
    weight = attrs->weight;
    style = attrs->style;
+   letterSpacing = attrs->letterSpacing;
 }
 
 Font *Font::create0 (Layout *layout, FontAttrs *attrs,
@@ -294,43 +311,9 @@ Font *Font::create (Layout *layout, FontAttrs *attrs)
    return create0 (layout, attrs, false);
 }
 
-Font *Font::createFromList (Layout *layout, FontAttrs *attrs,
-                            char *defaultFamily)
+bool Font::exists (Layout *layout, const char *name)
 {
-   Font *font = NULL;
-   FontAttrs attrs2;
-   char *comma, *list, *current;
-
-   attrs2 = *attrs;
-   current = list = strdup (attrs->name);
-
-   while (current && (font == NULL)) {
-      comma = strchr (current, ',');
-      if (comma) *comma = 0;
-
-      attrs2.name = current;
-      font = create0 (layout, &attrs2, false);
-      if (font)
-         break;
-
-      if (comma) {
-         current = comma + 1;
-         while (isspace (*current)) current++;
-      } else
-         current = NULL;
-   }
-
-   delete list;
-
-   if (font == NULL) {
-      attrs2.name = defaultFamily;
-      font = create0 (layout, &attrs2, true);
-   }
-
-   if (font == NULL)
-      fprintf (stderr, "Could not find any font.\n");
-
-   return font;
+   return layout->fontExists (name);
 }
 
 // ----------------------------------------------------------------------
@@ -338,12 +321,12 @@ Font *Font::createFromList (Layout *layout, FontAttrs *attrs,
 bool ColorAttrs::equals(object::Object *other)
 {
    ColorAttrs *oc = (ColorAttrs*)other;
-   return this == oc || (color == oc->color && type == oc->type);
+   return this == oc || (color == oc->color);
 }
 
 int ColorAttrs::hashValue()
 {
-   return color ^ type;
+   return color;
 }
 
 Color::~Color ()
@@ -406,72 +389,33 @@ int Color::shadeColor (int color, Shading shading)
    }
 }
 
-  
-Color *Color::create (Layout *layout, int col, Type type)
+
+Color *Color::create (Layout *layout, int col)
 {
-   ColorAttrs attrs(col, type);
-   Color *color = NULL;
+   ColorAttrs attrs(col);
 
-   switch (type) {
-      case TYPE_SIMPLE:
-         color = layout->createSimpleColor (col);
-         break;
-      case TYPE_SHADED:
-         color = layout->createShadedColor (col);
-         break;
-   }
+   return layout->createColor (col);
+}
 
-   return color;
+Tooltip *Tooltip::create (Layout *layout, const char *text)
+{
+   return layout->createTooltip (text);
 }
 
 // ----------------------------------------------------------------------
 
-/**
- * \brief Draw a part of a border.
- */
-static void drawPolygon (View *view, Color *color, Color::Shading shading,
-                         int x1, int y1, int x2, int y2,
-                         int width, int w1, int w2)
-{
-   int points[4][2];
+static void drawTriangle (View *view, Color *color, Color::Shading shading,
+                          int x1, int y1, int x2, int y2, int x3, int y3) {
+   int points[3][2];
 
-   if (width != 0) {
-      if (width == 1) {
-         if (x1 == x2)
-            view->drawLine (color, shading, x1, y1, x2, y2 - 1);
-         else
-            view->drawLine (color, shading, x1, y1, x2 - 1, y2);
-      } else if (width == -1) {
-         if (x1 == x2)
-            view->drawLine (color, shading, x1 - 1, y1, x2 - 1, y2 - 1);
-         else
-            view->drawLine (color, shading, x1, y1 - 1, x2 - 1, y2 - 1);
-      } else {
-         points[0][0] = x1;
-         points[0][1] = y1;
-         points[1][0] = x2;
-         points[1][1] = y2;
+   points[0][0] = x1;
+   points[0][1] = y1;
+   points[1][0] = x2;
+   points[1][1] = y2;
+   points[2][0] = x3;
+   points[2][1] = y3;
 
-         if (x1 == x2) {
-            points[2][0] = x1 + width;
-            points[2][1] = y2 + w2;
-            points[3][0] = x1 + width;
-            points[3][1] = y1 + w1;
-         } else {
-            points[2][0] = x2 + w2;
-            points[2][1] = y1 + width;
-            points[3][0] = x1 + w1;
-            points[3][1] = y1 + width;
-         }
-
-         /*
-         printf ("drawPolygon: (%d, %d) .. (%d, %d) .. (%d, %d) .. (%d, %d)\n",
-                 points[0][0], points[0][1], points[1][0], points[1][1],
-                 points[2][0], points[2][1], points[3][0], points[3][1]);
-         */
-         view->drawPolygon (color, shading, true, points, 4);
-      }
-   }
+   view->drawPolygon (color, shading, true, points, 3);
 }
 
 /**
@@ -488,18 +432,17 @@ void drawBorder (View *view, Rectangle *area,
    Color::Shading top, right, bottom, left;
    int xb1, yb1, xb2, yb2, xp1, yp1, xp2, yp2;
 
-   if (style->borderStyle.top == BORDER_NONE)
-      return;
-
+   // top left and bottom right point of outer border boundary
    xb1 = x + style->margin.left;
    yb1 = y + style->margin.top;
-   xb2 = xb1 + width - style->margin.left - style->margin.right;
-   yb2 = yb1 + height - style->margin.top - style->margin.bottom;
+   xb2 = x + width - style->margin.right;
+   yb2 = y + height - style->margin.bottom;
 
-   xp1 = xb1 + style->borderWidth.top;
-   yp1 = yb1 + style->borderWidth.left;
-   xp2 = xb2 + style->borderWidth.bottom;
-   yp2 = yb2 + style->borderWidth.right;
+   // top left and bottom right point of inner border boundary
+   xp1 = xb1 + style->borderWidth.left;
+   yp1 = yb1 + style->borderWidth.top;
+   xp2 = xb2 - style->borderWidth.right;
+   yp2 = yb2 - style->borderWidth.bottom;
 
    light = inverse ? Color::SHADING_DARK : Color::SHADING_LIGHT;
    dark = inverse ? Color::SHADING_LIGHT : Color::SHADING_DARK;
@@ -521,18 +464,47 @@ void drawBorder (View *view, Rectangle *area,
       break;
    }
 
-   drawPolygon (view, style->borderColor.top, top, xb1, yb1, xb2, yb1,
-                style->borderWidth.top, style->borderWidth.left,
-                - style->borderWidth.right);
-   drawPolygon (view, style->borderColor.right, right, xb2, yb1, xb2, yb2,
-                - style->borderWidth.right, style->borderWidth.top,
-                - style->borderWidth.bottom);
-   drawPolygon (view, style->borderColor.bottom, bottom, xb1, yb2, xb2, yb2,
-                - style->borderWidth.bottom, style->borderWidth.left,
-                - style->borderWidth.right);
-   drawPolygon (view, style->borderColor.left, left, xb1, yb1, xb1, yb2,
-                style->borderWidth.left, style->borderWidth.top,
-                - style->borderWidth.bottom);
+   if (style->borderStyle.top != BORDER_NONE && style->borderColor.top)
+      view->drawRectangle(style->borderColor.top, top, true,
+                          xb1, yb1, xb2 - xb1, style->borderWidth.top);
+
+   if (style->borderStyle.bottom != BORDER_NONE && style->borderColor.bottom)
+      view->drawRectangle(style->borderColor.bottom, bottom, true,
+                          xb1, yb2, xb2 - xb1, - style->borderWidth.bottom);
+
+   if (style->borderStyle.left != BORDER_NONE && style->borderColor.left)
+      view->drawRectangle(style->borderColor.left, left, true,
+                          xb1, yp1, style->borderWidth.left, yp2 - yp1);
+
+   if (style->borderWidth.left > 1) {
+      if (style->borderWidth.top > 1 &&
+          (style->borderColor.left != style->borderColor.top ||
+           left != top))
+         drawTriangle (view, style->borderColor.left, left,
+                       xb1, yp1, xp1, yp1, xb1, yb1);
+      if (style->borderWidth.bottom > 1 &&
+          (style->borderColor.left != style->borderColor.bottom ||
+           left != bottom))
+         drawTriangle (view, style->borderColor.left, left,
+                       xb1, yp2, xp1, yp2, xb1, yb2);
+   }
+
+   if (style->borderStyle.right != BORDER_NONE && style->borderColor.right)
+      view->drawRectangle(style->borderColor.right, right, true,
+                          xb2, yp1, - style->borderWidth.right, yp2 - yp1);
+
+   if (style->borderWidth.right > 1) {
+      if (style->borderWidth.top > 1 &&
+          (style->borderColor.right != style->borderColor.top ||
+           right != top))
+         drawTriangle (view, style->borderColor.right, right,
+                       xb2, yp1, xp2, yp1, xb2, yb1);
+      if (style->borderWidth.bottom > 1 &&
+          (style->borderColor.right != style->borderColor.bottom ||
+           right != bottom))
+         drawTriangle (view, style->borderColor.right, right,
+                       xb2, yp2, xp2, yp2, xb2, yb2);
+   }
 }
 
 
@@ -570,12 +542,12 @@ void drawBackground (View *view, Rectangle *area,
 // ----------------------------------------------------------------------
 
 static const char
-   *roman_I0[] = { "","I","II","III","IV","V","VI","VII","VIII","IX" },
-   *roman_I1[] = { "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC" },
-   *roman_I2[] = { "","C","CC","CCC","CD","D","DC","DCC","DCCC","CM" },
-   *roman_I3[] = { "","M","MM","MMM","MMMM" };
+   *const roman_I0[] = { "","I","II","III","IV","V","VI","VII","VIII","IX" },
+   *const roman_I1[] = { "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC" },
+   *const roman_I2[] = { "","C","CC","CCC","CD","D","DC","DCC","DCCC","CM" },
+   *const roman_I3[] = { "","M","MM","MMM","MMMM" };
 
-void strtolower (char *s)
+static void strtolower (char *s)
 {
    for ( ; *s; s++)
       *s = tolower (*s);
@@ -592,16 +564,21 @@ void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType)
    bool low = false;
    int start_ch = 'A';
 
+   if (buflen <= 0)
+      return;
+
    switch(listStyleType){
    case LIST_STYLE_TYPE_LOWER_ALPHA:
+   case LIST_STYLE_TYPE_LOWER_LATIN:
       start_ch = 'a';
    case LIST_STYLE_TYPE_UPPER_ALPHA:
+   case LIST_STYLE_TYPE_UPPER_LATIN:
       i0 = num - 1;
       i1 = i0/26 - 1; i2 = i1/26 - 1;
       if (i2 > 25) /* more than 26+26^2+26^3=18278 elements ? */
-         sprintf(buf, "****.");
+         snprintf(buf, buflen, "****.");
       else
-         sprintf(buf, "%c%c%c.",
+         snprintf(buf, buflen, "%c%c%c.",
                  i2<0 ? ' ' : start_ch + i2%26,
                  i1<0 ? ' ' : start_ch + i1%26,
                  i0<0 ? ' ' : start_ch + i0%26);
@@ -613,18 +590,23 @@ void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType)
       i1 = i0/10; i2 = i1/10; i3 = i2/10;
       i0 %= 10;   i1 %= 10;   i2 %= 10;
       if (num < 0 || i3 > 4) /* more than 4999 elements ? */
-         sprintf(buf, "****.");
+         snprintf(buf, buflen, "****.");
       else
          snprintf(buf, buflen, "%s%s%s%s.", roman_I3[i3], roman_I2[i2],
                   roman_I1[i1], roman_I0[i0]);
-      if (low)
-         strtolower(buf);
       break;
    case LIST_STYLE_TYPE_DECIMAL:
    default:
-      sprintf(buf, "%d.", num);
+      snprintf(buf, buflen, "%d.", num);
       break;
    }
+
+   // ensure termination
+   buf[buflen - 1] = '\0';
+
+   if (low)
+      strtolower(buf);
+
 }
 
 } // namespace style

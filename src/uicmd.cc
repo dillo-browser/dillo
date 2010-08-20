@@ -15,15 +15,22 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <math.h>       /* for rint */
+
+#include <fltk/draw.h>
+#include <fltk/damage.h>
 #include <fltk/Widget.h>
 #include <fltk/TabGroup.h>
+#include <fltk/Tooltip.h>
 
-#include "dir.h"
+#include "paths.hh"
+#include "keys.hh"
 #include "ui.hh"
 #include "uicmd.hh"
 #include "timeout.hh"
+#include "utf8.hh"
 #include "menu.hh"
 #include "dialog.hh"
+#include "xembed.hh"
 #include "bookmark.h"
 #include "history.h"
 #include "msg.h"
@@ -32,6 +39,8 @@
 #include "dw/fltkviewport.hh"
 
 #include "nav.h"
+
+#define DEFAULT_TAB_LABEL "Dillo"
 
 // Handy macro
 #define BW2UI(bw) ((UI*)((bw)->ui))
@@ -49,20 +58,198 @@ static char *save_dir = NULL;
 
 using namespace fltk;
 
-//
-// For custom handling of keyboard
-//
+
+//----------------------------------------------------------------------------
+#define BTN_W 25
+#define BTN_H 20
+
+static int btn_x;
+
+/*
+ * Adds a tab-close button at the rightmost part
+ */
+class CustShrinkTabPager : public TabGroupPager {
+   bool btn_hl;
+   TabGroup *tg;
+public:
+   int update_positions(
+          TabGroup *g, int numchildren, int &selected,
+          int &cumulated_width, int &available_width,
+          int *tab_pos, int *tab_width);
+   virtual int which(TabGroup* g, int m_x,int m_y);
+   virtual TabGroupPager* clone() const;
+   virtual const char * mode_name() const {return "Shrink";}
+   virtual int id() const {return PAGER_SHRINK;}
+   virtual int available_width(TabGroup *g) const;
+   virtual bool draw_tabs(TabGroup* g, int selected, int* tab_pos,
+                          int* tab_width) {
+      if (!tg) tg = g;
+      if (g->children() > 1) {
+         fltk::Rectangle r(btn_x,0,BTN_W,BTN_H);
+         setcolor(btn_hl ? 206 : GRAY75);
+         fillrect(r);
+         if (btn_hl) {
+            setcolor(WHITE);
+            strokerect(r);
+         }
+         setcolor(GRAY10);
+         //fltk::setfont(fltk::getfont()->bold(), fltk::getsize());
+         r.h(r.h()-2);
+         drawtext("X", r, ALIGN_CENTER);
+         return false;
+      } else {
+         // WORKAROUND: for http://fltk.org/str.php?L2062
+         // By returning true we avoid a call to TabGroup::draw_tab()
+         // in TabGroup::draw() in case we don't show the tabs.
+         return true;
+      }
+   }
+
+   void btn_highlight(bool flag) {
+      if (btn_hl != flag) {
+         btn_hl = flag;
+         if (tg)
+            tg->redraw(DAMAGE_VALUE);
+      }
+   };
+   bool btn_highlight() { return btn_hl; };
+
+   CustShrinkTabPager() : TabGroupPager() {
+      noclip(true);
+      btn_hl = false;
+      tg = NULL;
+   }
+};
+
+int CustShrinkTabPager::available_width(TabGroup *g) const
+{
+   _MSG("CustShrinkTabPager::available_width\n");
+   int w = MAX (g->w() - this->slope()-1 - BTN_W, 0);
+   btn_x = w + 6;
+   return w;
+}
+
+int CustShrinkTabPager::which(TabGroup* g, int event_x,int event_y)
+{
+   int H = g->tab_height();
+   if (!H) return -1;
+   if (H < 0) {
+      if (event_y > g->h() || event_y < g->h()+H) return -1;
+   } else {
+      if (event_y > H || event_y < 0) return -1;
+   }
+   if (event_x < 0) return -1;
+   int p[128], w[128];
+   int selected = g->tab_positions(p, w);
+   int d = (event_y-(H>=0?0:g->h()))*slope()/H;
+   for (int i=0; i<g->children(); i++) {
+      if (event_x < p[i+1]+(i<selected ? slope() - d : d)) return i;
+   }
+   return -1;
+}
+
+/*
+ * Prevents tabs from going over the close-tab button.
+ * Modified from fltk-2.0.x-r6525.
+ */
+int CustShrinkTabPager::update_positions(
+       TabGroup *g, int numchildren, int &selected,
+       int &cumulated_width, int &available_width,
+       int *tab_pos, int *tab_width)
+{
+   available_width-=BTN_W;
+
+   // uh oh, they are too big, we must move them:
+   // special case when the selected tab itself is too big, make it fill
+   // cumulated_width:
+   int i;
+
+   if (tab_width[selected] >= available_width) {
+      tab_width[selected] = available_width;
+      for (i = 0; i <= selected; i++)
+         tab_pos[i] = 0;
+      for (i = selected + 1; i <= numchildren; i++)
+         tab_pos[i] = available_width;
+      return selected;
+   }
+
+   int w2[128];
+
+   for (i = 0; i < numchildren; i++)
+      w2[i] = tab_width[i];
+   i = numchildren - 1;
+   int j = 0;
+
+   int minsize = 5;
+
+   bool right = true;
+
+   while (cumulated_width > available_width) {
+      int n;                    // which one to shrink
+
+      if (j < selected && (!right || i <= selected)) {  // shrink a left one
+         n = j++;
+         right = true;
+      } else if (i > selected) {        // shrink a right one
+         n = i--;
+         right = false;
+      } else {                  // no more space, start making them zero
+         minsize = 0;
+         i = numchildren - 1;
+         j = 0;
+         right = true;
+         continue;
+      }
+      cumulated_width -= w2[n] - minsize;
+      w2[n] = minsize;
+      if (cumulated_width < available_width) {
+         w2[n] = available_width - cumulated_width + minsize;
+         cumulated_width = available_width;
+         break;
+      }
+   }
+   // re-sum the positions:
+   cumulated_width = 0;
+   for (i = 0; i < numchildren; i++) {
+      cumulated_width += w2[i];
+      tab_pos[i+1] = cumulated_width;
+   }
+   return selected;
+}
+
+TabGroupPager* CustShrinkTabPager::clone() const {
+   return new CustShrinkTabPager(*this);
+}
+
+//----------------------------------------------------------------------------
+
+/*
+ * For custom handling of keyboard
+ */
 class CustTabGroup : public fltk::TabGroup {
+  Tooltip *toolTip;
+  bool tooltipEnabled;
+  bool buttonPushed;
 public:
    CustTabGroup (int x, int y, int ww, int wh, const char *lbl=0) :
-      TabGroup(x,y,ww,wh,lbl) {};
+      TabGroup(x,y,ww,wh,lbl) {
+         // The parameter pager is cloned, so free it.
+         CustShrinkTabPager *cp = new CustShrinkTabPager();
+         this->pager(cp);
+         delete cp;
+         toolTip = new Tooltip;
+         tooltipEnabled = false;
+         buttonPushed = false;
+      };
+      ~CustTabGroup() { delete toolTip; }
    int handle(int e) {
       // Don't focus with arrow keys
       _MSG("CustTabGroup::handle %d\n", e);
-      int k = event_key();
-      // We're only interested in some flags
-      unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
+      fltk::Rectangle r(btn_x,0,BTN_W,BTN_H);
       if (e == KEY) {
+         int k = event_key();
+         // We're only interested in some flags
+         unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
          if (k == UpKey || k == DownKey || k == TabKey) {
             return 0;
          } else if (k == LeftKey || k == RightKey) {
@@ -74,20 +261,77 @@ public:
                return 1;
             }
             // Avoid focus change.
-            return 0; 
+            return 0;
          }
+      } else if (e == FOCUS_CHANGE) {
+         // Update the window title
+         BrowserWindow *bw = a_UIcmd_get_bw_by_widget(selected_child());
+         const char *title = a_History_get_title(NAV_TOP_UIDX(bw), 1);
+         a_UIcmd_set_page_title(bw, title ? title : "");
+      } else if (e == MOVE) {
+         CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
+         if (event_inside(r) && children() > 1) {
+            /* We're inside the button area */
+            cstp->btn_highlight(true);
+            if (prefs.show_tooltip) {
+               /* Prepare the tooltip for pop-up */
+               tooltipEnabled = true;
+               /* We use parent() if available because we are returning 0.
+                * Returning without having TabGroup processing makes the
+                * popup event never reach 'this', but it reaches parent() */
+               toolTip->enter(parent() ?parent():this, r, "Close current Tab");
+            }
+            return 0;              // Change focus
+         } else {
+            cstp->btn_highlight(false);
+
+            if (prefs.show_tooltip) {
+               /* Hide the tooltip or enable it again.*/
+               if (tooltipEnabled) {
+                  tooltipEnabled = false;
+                  toolTip->exit();
+               } else {
+                  toolTip->enable();
+               }
+            }
+         }
+      } else if (e == PUSH && event_inside(r) &&
+                 event_button() == 1 && children() > 1) {
+         buttonPushed = true;
+         return 1;                 /* non-zero */
+      } else if (e == RELEASE) {
+         if (event_inside(r) && event_button() == 1 &&
+             children() > 1 && buttonPushed) {
+            a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(selected_child()));
+         } else {
+            CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
+            cstp->btn_highlight(false);
+         }
+         buttonPushed = false;
+      } else if (e == DRAG) {
+         /* Ignore this event */
+         return 1;
       }
-      return TabGroup::handle(e);
+      int ret = TabGroup::handle(e);
+
+      if (e == PUSH) {
+         /* WORKAROUND: FLTK raises the window on unhandled clicks,
+          * which we do not want.
+          */
+         ret = 1;
+      }
+      return ret;
    }
 
    void remove (Widget *w) {
       TabGroup::remove (w);
       /* fixup resizable in case we just removed it */
-      if (resizable () == w)
+      if (resizable () == w) {
          if (children () > 0)
             resizable (child (children () - 1));
          else
             resizable (NULL);
+      }
 
       if (children () < 2)
          hideLabels ();
@@ -110,11 +354,12 @@ public:
    }
 };
 
-static void win_cb (fltk::Widget *w, void *cb_data) {
-   CustTabGroup *tabs;
-   int choice = 0;
+//----------------------------------------------------------------------------
 
-   tabs = BW2UI((BrowserWindow*) cb_data)->tabs();
+static void win_cb (fltk::Widget *w, void *cb_data) {
+   int choice = 0;
+   CustTabGroup *tabs = (CustTabGroup*) cb_data;
+
    if (tabs->children () > 1)
       choice = a_Dialog_choice3 ("Window contains more than one tab.",
                                  "Close all tabs", "Cancel", NULL);
@@ -155,10 +400,12 @@ void a_UIcmd_send_event_to_tabs_by_wid(int e, void *v_wid)
  * Create a new UI and its associated BrowserWindow data structure.
  * Use style from v_ui. If non-NULL it must be of type UI*.
  */
-BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
+BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
+                                          uint32_t xid, const void *vbw)
 {
    BrowserWindow *old_bw = (BrowserWindow*)vbw;
    BrowserWindow *new_bw = NULL;
+   Window *win;
 
    if (ww <= 0 || wh <= 0) {
       // Set default geometry from dillorc.
@@ -166,7 +413,11 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
       wh = prefs.height;
    }
 
-   Window *win = new Window(ww, wh);
+   if (xid)
+      win = new Xembed(xid, ww, wh);
+   else
+      win = new Window(ww, wh);
+
    win->shortcut(0); // Ignore Escape
    if (prefs.buffered_drawing != 2)
       win->clear_double_buffer();
@@ -177,7 +428,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    win->add(DilloTabs);
 
    // Create and set the UI
-   UI *new_ui = new UI(0, 0, ww, wh, "Label", old_bw ? BW2UI(old_bw) : NULL);
+   UI *new_ui = new UI(0, 0, ww, wh, DEFAULT_TAB_LABEL,
+                       old_bw ? BW2UI(old_bw) : NULL);
    new_ui->set_status("http://www.dillo.org/");
    new_ui->tabs(DilloTabs);
 
@@ -203,7 +455,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
       viewport->setBufferedDrawing (true);
    else
       viewport->setBufferedDrawing (false);
-   
+
    layout->attachView (viewport);
    new_ui->set_render_layout(*viewport);
 
@@ -217,7 +469,9 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
    // Copy the layout pointer into the bw data
    new_bw->render_layout = (void*)layout;
 
-   win->callback(win_cb, new_bw);
+   win->callback(win_cb, DilloTabs);
+
+   new_ui->focus_location();
 
    return new_bw;
 }
@@ -226,7 +480,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh, const void *vbw)
  * Create a new Tab.
  * i.e the new UI and its associated BrowserWindow data structure.
  */
-BrowserWindow *UIcmd_tab_new(const void *vbw)
+static BrowserWindow *UIcmd_tab_new(const void *vbw)
 {
    _MSG(" UIcmd_tab_new vbw=%p\n", vbw);
 
@@ -239,10 +493,10 @@ BrowserWindow *UIcmd_tab_new(const void *vbw)
    // WORKAROUND: limit the number of tabs because of a fltk bug
    if (ui->tabs()->children() >= 127)
       return a_UIcmd_browser_window_new(ui->window()->w(), ui->window()->h(),
-                                        vbw);
+                                        0, vbw);
 
    // Create and set the UI
-   UI *new_ui = new UI(0, 0, ui->w(), ui->h(), "Label", ui);
+   UI *new_ui = new UI(0, 0, ui->w(), ui->h(), DEFAULT_TAB_LABEL, ui);
    new_ui->tabs(ui->tabs());
 
    new_ui->tabs()->add(new_ui);
@@ -255,7 +509,7 @@ BrowserWindow *UIcmd_tab_new(const void *vbw)
    Layout *layout = new Layout (platform);
 
    FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
-   
+
    layout->attachView (viewport);
    new_ui->set_render_layout(*viewport);
 
@@ -282,10 +536,11 @@ void a_UIcmd_close_bw(void *vbw)
    Layout *layout = (Layout*)bw->render_layout;
 
    MSG("a_UIcmd_close_bw\n");
-   a_Bw_stop_clients(bw, BW_Root + BW_Img + Bw_Force);
+   a_Bw_stop_clients(bw, BW_Root + BW_Img + BW_Force);
    delete(layout);
    if (ui->tabs()) {
       ui->tabs()->remove(ui);
+      ui->tabs()->value(ui->tabs()->children() - 1);
       if (ui->tabs()->value() != -1)
          ui->tabs()->selected_child()->take_focus();
       else
@@ -332,7 +587,7 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
          /* file URI */
          ch = new_urlstr[5];
          if (!ch || ch == '.') {
-            url = a_Url_new(a_Dir_get_owd(), "file:");
+            url = a_Url_new(Paths::getOldWorkingDir(), "file:");
          } else if (ch == '~') {
             url = a_Url_new(dGethomedir(), "file:");
          } else {
@@ -346,13 +601,10 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
       dFree(new_urlstr);
 
       if (url) {
-         a_Nav_push(bw, url);
+         a_UIcmd_open_url(bw, url);
          a_Url_free(url);
       }
    }
-
-   /* let the rendered area have focus */
-   //gtk_widget_grab_focus(GTK_BIN(bw->render_main_scroll)->child);
 }
 
 /*
@@ -360,15 +612,37 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
  */
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 {
-   a_Nav_push(bw, url);
+   a_Nav_push(bw, url, NULL);
+   if (BW2UI(bw)->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
+      BW2UI(bw)->set_panelmode(UI_HIDDEN);
+   a_UIcmd_focus_main_area(bw);
+}
+
+static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
+{
+   /* When opening a new BrowserWindow (tab or real window) we focus
+    * Location if we don't yet have an URL, main otherwise.
+    */
+   if (url) {
+      a_Nav_push(new_bw, url, NULL);
+      BW2UI(new_bw)->focus_main();
+   } else {
+      BW2UI(new_bw)->focus_location();
+   }
 }
 
 /*
- * Open a new URL in the given browser window
+ * Open a new URL in a new browser window
  */
 void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
 {
-   a_Nav_push_nw(bw, url);
+   int w, h;
+   BrowserWindow *new_bw;
+
+   a_UIcmd_get_wh(bw, &w, &h);
+   new_bw = a_UIcmd_browser_window_new(w, h, 0, bw);
+
+   UIcmd_open_url_nbw(new_bw, url);
 }
 
 /*
@@ -377,12 +651,11 @@ void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
 void a_UIcmd_open_url_nt(void *vbw, const DilloUrl *url, int focus)
 {
    BrowserWindow *new_bw = UIcmd_tab_new(vbw);
-   if (url)
-      a_Nav_push(new_bw, url);
-   if (focus) {
+
+   if (focus)
       BW2UI(new_bw)->tabs()->selected_child(BW2UI(new_bw));
-      BW2UI(new_bw)->tabs()->selected_child()->take_focus();
-   }
+
+   UIcmd_open_url_nbw(new_bw, url);
 }
 
 /*
@@ -422,7 +695,7 @@ void a_UIcmd_forw_popup(void *vbw)
  */
 void a_UIcmd_home(void *vbw)
 {
-   a_Nav_home((BrowserWindow*)vbw);
+   a_UIcmd_open_url((BrowserWindow*)vbw, prefs.home);
 }
 
 /*
@@ -434,19 +707,44 @@ void a_UIcmd_reload(void *vbw)
 }
 
 /*
+ * Repush current URL
+ */
+void a_UIcmd_repush(void *vbw)
+{
+   a_Nav_repush((BrowserWindow*)vbw);
+}
+
+/*
+ * Zero-delay URL redirection.
+ */
+void a_UIcmd_redirection0(void *vbw, const DilloUrl *url)
+{
+   a_Nav_redirection0((BrowserWindow*)vbw, url);
+}
+
+/*
  * Return a suitable filename for a given URL path.
  */
 static char *UIcmd_make_save_filename(const char *pathstr)
 {
    size_t MaxLen = 64;
-   char *FileName, *name;
-   const char *dir = a_UIcmd_get_save_dir();
+   char *FileName, *newname, *o, *n;
+   const char *name, *dir = a_UIcmd_get_save_dir();
 
    if ((name = strrchr(pathstr, '/'))) {
       if (strlen(++name) > MaxLen) {
          name = name + strlen(name) - MaxLen;
       }
-      FileName = dStrconcat(dir ? dir : "", name, NULL);
+      /* Replace %20 and ' ' with '_' in Filename */
+      o = n = newname = dStrdup(name);
+      for (int i = 0; o[i]; i++) {
+         *n++ = (o[i] == ' ') ? '_' :
+                (o[i] == '%' && o[i+1] == '2' && o[i+2] == '0') ?
+                i+=2, '_' : o[i];
+      }
+      *n = 0;
+      FileName = dStrconcat(dir ? dir : "", newname, NULL);
+      dFree(newname);
    } else {
       FileName = dStrconcat(dir ? dir : "", pathstr, NULL);
    }
@@ -466,7 +764,7 @@ const char *a_UIcmd_get_save_dir()
  */
 void a_UIcmd_set_save_dir(const char *dir)
 {
-   char *p;
+   const char *p;
 
    if (dir && (p = strrchr(dir, '/'))) {
       dFree(save_dir);
@@ -481,24 +779,21 @@ void a_UIcmd_set_save_dir(const char *dir)
 void a_UIcmd_save(void *vbw)
 {
    const char *name;
-   char *SuggestedName, *urlstr;
-   DilloUrl *url;
+   char *SuggestedName;
+   BrowserWindow *bw = (BrowserWindow *)vbw;
+   const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
 
-   a_UIcmd_set_save_dir(prefs.save_dir);
+   if (url) {
+      a_UIcmd_set_save_dir(prefs.save_dir);
+      SuggestedName = UIcmd_make_save_filename(URL_PATH(url));
+      name = a_Dialog_save_file("Save Page as File", NULL, SuggestedName);
+      MSG("a_UIcmd_save: %s\n", name);
+      dFree(SuggestedName);
 
-   urlstr = a_UIcmd_get_location_text((BrowserWindow*)vbw);
-   url = a_Url_new(urlstr, NULL);
-   SuggestedName = UIcmd_make_save_filename(URL_PATH(url));
-   name = a_Dialog_save_file("Save Page as File", NULL, SuggestedName);
-   MSG("a_UIcmd_save: %s\n", name);
-   dFree(SuggestedName);
-   dFree(urlstr);
-
-   if (name) {
-      a_Nav_save_url((BrowserWindow*)vbw, url, name);
+      if (name) {
+         a_Nav_save_url(bw, url, name);
+      }
    }
-
-   a_Url_free(url);
 }
 
 /*
@@ -519,8 +814,16 @@ void a_UIcmd_stop(void *vbw)
 
    MSG("a_UIcmd_stop()\n");
    a_Nav_cancel_expect(bw);
-   a_Bw_stop_clients(bw, BW_Root + BW_Img + Bw_Force);
+   a_Bw_stop_clients(bw, BW_Root + BW_Img + BW_Force);
    a_UIcmd_set_buttons_sens(bw);
+}
+
+/*
+ * Popup the tools menu
+ */
+void a_UIcmd_tools(void *vbw, void *v_wid)
+{
+   a_Menu_tools_popup((BrowserWindow*)vbw, v_wid);
 }
 
 /*
@@ -535,7 +838,7 @@ void a_UIcmd_open_file(void *vbw)
 
    if (name) {
       url = a_Url_new(name, "file:");
-      a_Nav_push((BrowserWindow*)vbw, url);
+      a_UIcmd_open_url((BrowserWindow*)vbw, url);
       a_Url_free(url);
       dFree(name);
    }
@@ -579,11 +882,12 @@ static char *UIcmd_make_search_str(const char *str)
  */
 void a_UIcmd_search_dialog(void *vbw)
 {
-   const char *query, *url_str;
+   const char *query;
 
    if ((query = a_Dialog_input("Search the Web:"))) {
-      url_str = UIcmd_make_search_str(query);
+      char *url_str = UIcmd_make_search_str(query);
       a_UIcmd_open_urlstr(vbw, url_str);
+      dFree(url_str);
    }
 }
 
@@ -625,7 +929,7 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
 void a_UIcmd_book(void *vbw)
 {
    DilloUrl *url = a_Url_new("dpi:/bm/", NULL);
-   a_Nav_push((BrowserWindow*)vbw, url);
+   a_UIcmd_open_url((BrowserWindow*)vbw, url);
    a_Url_free(url);
 }
 
@@ -641,10 +945,11 @@ void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url)
 /*
  * Popup the page menu
  */
-void a_UIcmd_page_popup(void *vbw, const DilloUrl *url,
-                        bool_t has_bugs, bool_t unloaded_imgs)
+void a_UIcmd_page_popup(void *vbw, bool_t has_bugs, void *v_cssUrls)
 {
-   a_Menu_page_popup((BrowserWindow*)vbw, url, has_bugs, unloaded_imgs);
+   BrowserWindow *bw = (BrowserWindow*)vbw;
+   const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
+   a_Menu_page_popup(bw, url, has_bugs, v_cssUrls);
 }
 
 /*
@@ -659,9 +964,18 @@ void a_UIcmd_link_popup(void *vbw, const DilloUrl *url)
  * Pop up the image menu
  */
 void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
-                         DilloUrl *link_url)
+                         DilloUrl *page_url, DilloUrl *link_url)
 {
-   a_Menu_image_popup((BrowserWindow*)vbw, url, loaded_img, link_url);
+   a_Menu_image_popup((BrowserWindow*)vbw, url, loaded_img, page_url,link_url);
+}
+
+/*
+ * Pop up the form menu
+ */
+void a_UIcmd_form_popup(void *vbw, const DilloUrl *url, void *vform,
+                        bool_t showing_hiddens)
+{
+   a_Menu_form_popup((BrowserWindow*)vbw, url, vform, showing_hiddens);
 }
 
 /*
@@ -682,17 +996,32 @@ void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr)
 }
 
 /*
- * Show a text window with the URL's source
+ * Ask the vsource dpi to show this URL's source
  */
-void a_UIcmd_view_page_source(const DilloUrl *url)
+void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url)
 {
    char *buf;
    int buf_size;
+   Dstr *dstr_url;
+   DilloUrl *vs_url;
+   static int post_id = 0;
+   char tag[8];
 
    if (a_Nav_get_buf(url, &buf, &buf_size)) {
-      void *vWindow = a_Dialog_make_text_window(buf, "View Page source");
+      a_Nav_set_vsource_url(url);
+      dstr_url = dStr_new("dpi:/vsource/:");
+      dStr_append(dstr_url, URL_STR(url));
+      if (URL_FLAGS(url) & URL_Post) {
+         /* append a custom string to differentiate POST URLs */
+         post_id = (post_id < 9999) ? post_id + 1 : 0;
+         snprintf(tag, 8, "_%.4d", post_id);
+         dStr_append(dstr_url, tag);
+      }
+      vs_url = a_Url_new(dstr_url->str, NULL);
+      a_UIcmd_open_url_nt(bw, vs_url, 1);
+      a_Url_free(vs_url);
+      dStr_free(dstr_url, 1);
       a_Nav_unref_buf(url);
-      a_Dialog_show_text_window(vWindow);
    }
 }
 
@@ -704,9 +1033,7 @@ void a_UIcmd_view_page_bugs(void *vbw)
    BrowserWindow *bw = (BrowserWindow*)vbw;
 
    if (bw->num_page_bugs > 0) {
-      void *vWindow = a_Dialog_make_text_window(bw->page_bugs->str,
-                                                "Detected HTML errors");
-      a_Dialog_show_text_window(vWindow);
+      a_Dialog_text_window(bw->page_bugs->str, "Detected HTML errors");
    } else {
       a_Dialog_msg("Zero detected HTML errors!");
    }
@@ -805,6 +1132,40 @@ void a_UIcmd_set_scroll_by_fragment(BrowserWindow *bw, const char *f)
 }
 
 /*
+ * Pass scrolling command to dw.
+ */
+void a_UIcmd_scroll(BrowserWindow *bw, int icmd)
+{
+   Layout *layout = (Layout*)bw->render_layout;
+
+   if (layout) {
+      typedef struct {
+         KeysCommand_t keys_cmd;
+         ScrollCommand dw_cmd;
+      } mapping_t;
+
+      const mapping_t map[] = {
+         {KEYS_SCREEN_UP, SCREEN_UP_CMD},
+         {KEYS_SCREEN_DOWN, SCREEN_DOWN_CMD},
+         {KEYS_LINE_UP, LINE_UP_CMD},
+         {KEYS_LINE_DOWN, LINE_DOWN_CMD},
+         {KEYS_LEFT, LEFT_CMD},
+         {KEYS_RIGHT, RIGHT_CMD},
+         {KEYS_TOP, TOP_CMD},
+         {KEYS_BOTTOM, BOTTOM_CMD},
+      };
+      KeysCommand_t keycmd = (KeysCommand_t)icmd;
+
+      for (uint_t i = 0; i < (sizeof(map)/sizeof(mapping_t)); i++) {
+         if (keycmd == map[i].keys_cmd) {
+            layout->scroll(map[i].dw_cmd);
+            break;
+         }
+      }
+   }
+}
+
+/*
  * Get location's text
  */
 char *a_UIcmd_get_location_text(BrowserWindow *bw)
@@ -852,12 +1213,24 @@ void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug)
 }
 
 /*
- * Set the page title.
- * now it goes to the window titlebar (maybe to TAB label in the future).
+ * Set the page title in the window titlebar and tab label.
+ * (Update window titlebar for the current tab only)
  */
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
 {
-   BW2UI(bw)->set_page_title(label);
+   const int size = 128;
+   char title[size];
+
+   if (a_UIcmd_get_bw_by_widget(BW2UI(bw)->tabs()->selected_child()) == bw) {
+      // This is the focused bw, set window title
+      if (snprintf(title, size, "Dillo: %s", label) >= size) {
+         uint_t i = MIN(size - 4, 1 + a_Utf8_end_of_char(title, size - 8));
+         snprintf(title + i, 4, "...");
+      }
+      BW2UI(bw)->window()->copy_label(title);
+      BW2UI(bw)->window()->redraw_label();
+   }
+   BW2UI(bw)->set_tab_title(label);
 }
 
 /*
@@ -874,22 +1247,6 @@ void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...)
    va_end(argp);
    BW2UI(bw)->set_status(ds->str);
    dStr_free(ds, 1);
-}
-
-/*
- * Check whether the UI has automatic image loading enabled.
- */
-bool_t a_UIcmd_get_images_enabled(BrowserWindow *bw)
-{
-   return BW2UI(bw)->images_enabled();
-}
-
-/*
- * Enable/Disable automatic image loading.
- */
-void a_UIcmd_set_images_enabled(BrowserWindow *bw, int flag)
-{
-   BW2UI(bw)->images_enabled(flag);
 }
 
 /*
@@ -912,6 +1269,22 @@ void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
 }
 
 /*
+ * Keep track of mouse pointer over a link.
+ */
+void a_UIcmd_set_pointer_on_link(BrowserWindow *bw, int flag)
+{
+   BW2UI(bw)->pointerOnLink(flag);
+}
+
+/*
+ * Is the mouse pointer over a link?
+ */
+int a_UIcmd_pointer_on_link(BrowserWindow *bw)
+{
+   return BW2UI(bw)->pointerOnLink();
+}
+
+/*
  * Toggle control panel (aka. fullscreen)
  */
 void a_UIcmd_fullscreen_toggle(BrowserWindow *bw)
@@ -920,23 +1293,24 @@ void a_UIcmd_fullscreen_toggle(BrowserWindow *bw)
 }
 
 /*
- * Search for next occurrence of key.
+ * Search for next/previous occurrence of key.
  */
-void a_UIcmd_findtext_search(BrowserWindow *bw, const char *key, int case_sens)
+void a_UIcmd_findtext_search(BrowserWindow *bw, const char *key,
+                             int case_sens, int backwards)
 {
    Layout *l = (Layout *)bw->render_layout;
-   
-   switch (l->search(key, case_sens)) {
-      case FindtextState::RESTART:
-         a_UIcmd_set_msg(bw, "No further occurrences of \"%s\". "
-                             "Restarting from the top.", key);
-         break;
-      case FindtextState::NOT_FOUND:
-         a_UIcmd_set_msg(bw, "\"%s\" not found.", key);
-         break;
-      case FindtextState::SUCCESS:
-      default:
-         a_UIcmd_set_msg(bw, "");
+
+   switch (l->search(key, case_sens, backwards)) {
+   case FindtextState::RESTART:
+      a_UIcmd_set_msg(bw, "No further occurrences of \"%s\". "
+                          "Restarting from the top.", key);
+      break;
+   case FindtextState::NOT_FOUND:
+      a_UIcmd_set_msg(bw, "\"%s\" not found.", key);
+      break;
+   case FindtextState::SUCCESS:
+   default:
+      a_UIcmd_set_msg(bw, "");
    }
 }
 

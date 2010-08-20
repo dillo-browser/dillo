@@ -10,7 +10,6 @@
 #ifndef __URL_H__
 #define __URL_H__
 
-#include <string.h>       /* for strcmp */
 #include "d_size.h"
 #include "../dlib/dlib.h"
 
@@ -39,7 +38,7 @@
 #define URL_ReloadPage          (1 << 7)
 #define URL_ReloadFromCache     (1 << 8)
 
-#define URL_ReloadIncomplete    (1 << 9)
+#define URL_IgnoreScroll        (1 << 9)
 #define URL_SpamSafe            (1 << 10)
 
 #define URL_MultipartEnc        (1 << 11)
@@ -95,12 +94,12 @@ extern "C" {
 struct _DilloUrl {
    Dstr  *url_string;
    const char *buffer;
-   const char *scheme;            //
-   const char *authority;         //
-   const char *path;              // These are references only
-   const char *query;             // (no need to free them)
-   const char *fragment;          //
-   const char *hostname;          //
+   const char *scheme;            /**/
+   const char *authority;         /**/
+   const char *path;              /* These are references only */
+   const char *query;             /* (no need to free them) */
+   const char *fragment;          /**/
+   const char *hostname;          /**/
    int port;
    int flags;
    Dstr *data;                    /* POST */
@@ -124,7 +123,7 @@ void a_Url_set_ismap_coords(DilloUrl *u, char *coord_str);
 char *a_Url_decode_hex_str(const char *str);
 char *a_Url_encode_hex_str(const char *str);
 char *a_Url_string_strip_delimiters(const char *str);
-
+const char *a_Url_host_find_public_suffix(const char *host);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

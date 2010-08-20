@@ -1,4 +1,7 @@
+dist_doc_DATA = user_help.html
+man_MANS = dillo.1
 EXTRA_DIST = \
+        $(man_MANS) \
 	index.doc \
 	lout.doc \
 	dw-map.doc \
