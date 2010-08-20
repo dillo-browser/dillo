@@ -11,19 +11,20 @@
 
 // Functions/Methods for menus
 
-#include <stdio.h>
-#include <stdarg.h>
 #include <fltk/events.h>
 #include <fltk/PopupMenu.h>
 #include <fltk/Item.h>
+#include <fltk/ToggleItem.h>
 #include <fltk/Divider.h>
 
+#include "lout/misc.hh"    /* SimpleVector */
 #include "msg.h"
 #include "menu.hh"
 #include "uicmd.hh"
 #include "history.h"
 #include "html.hh"
 #include "ui.hh" // for (UI *)
+#include "keys.hh"
 #include "timeout.hh"
 
 using namespace fltk;
@@ -38,9 +39,9 @@ static DilloUrl *popup_url = NULL;
 // Weak reference to the popup's bw
 static BrowserWindow *popup_bw = NULL;
 // Where to place the filemenu popup
-int popup_x, popup_y;
+static int popup_x, popup_y;
 // History popup direction (-1 = back, 1 = forward).
-static int history_direction = -1; 
+static int history_direction = -1;
 // History popup, list of URL-indexes.
 static int *history_list = NULL;
 
@@ -66,7 +67,7 @@ public:
  * TODO: erase the URL on popup close.
  */
 void CustItem::draw() {
-   DilloUrl *url;
+   const DilloUrl *url;
 
    if (flags() & SELECTED) {
       url = a_History_get_url(history_list[(VOIDP2INT(user_data()))-1]);
@@ -84,7 +85,7 @@ static void filemenu_cb(Widget *wid, void *data)
 {
    if (strcmp((char*)data, "nw") == 0) {
       UI *ui = (UI*)popup_bw->ui;
-      a_UIcmd_browser_window_new(ui->w(), ui->h(), popup_bw);
+      a_UIcmd_browser_window_new(ui->w(), ui->h(), 0, popup_bw);
    } else if (strcmp((char*)data, "nt") == 0) {
       a_UIcmd_open_url_nt(popup_bw, NULL, 1);
    } else if (strcmp((char*)data, "of") == 0) {
@@ -108,22 +109,22 @@ static void Menu_copy_urlstr_cb(Widget *)
 static void Menu_link_cb(Widget*, void *user_data)
 {
    DilloUrl *url = (DilloUrl *) user_data ;
-   MSG("Menu_link_cb: click! :-)\n");
+   _MSG("Menu_link_cb: click! :-)\n");
 
    if (url)
       a_Menu_link_popup(popup_bw, url);
 }
 
-/* 
+/*
  * Open URL
  */
 static void Menu_open_url_cb(Widget* )
 {
-   MSG("Open URL cb: click! :-)\n");
+   _MSG("Open URL cb: click! :-)\n");
    a_UIcmd_open_url(popup_bw, popup_url);
 }
 
-/* 
+/*
  * Open URL in new window
  */
 static void Menu_open_url_nw_cb(Widget* )
@@ -132,7 +133,7 @@ static void Menu_open_url_nw_cb(Widget* )
    a_UIcmd_open_url_nw(popup_bw, popup_url);
 }
 
-/* 
+/*
  * Open URL in new Tab
  */
 static void Menu_open_url_nt_cb(Widget* )
@@ -142,7 +143,7 @@ static void Menu_open_url_nt_cb(Widget* )
    a_UIcmd_open_url_nt(popup_bw, popup_url, focus);
 }
 
-/* 
+/*
  * Add bookmark
  */
 static void Menu_add_bookmark_cb(Widget* )
@@ -150,7 +151,7 @@ static void Menu_add_bookmark_cb(Widget* )
    a_UIcmd_add_bookmark(popup_bw, popup_url);
 }
 
-/* 
+/*
  * Find text
  */
 static void Menu_find_text_cb(Widget* )
@@ -158,7 +159,7 @@ static void Menu_find_text_cb(Widget* )
    ((UI *)popup_bw->ui)->set_findbar_visibility(1);
 }
 
-/* 
+/*
  * Save link
  */
 static void Menu_save_link_cb(Widget* )
@@ -166,7 +167,7 @@ static void Menu_save_link_cb(Widget* )
    a_UIcmd_save_link(popup_bw, popup_url);
 }
 
-/* 
+/*
  * Save current page
  */
 static void Menu_save_page_cb(Widget* )
@@ -174,15 +175,15 @@ static void Menu_save_page_cb(Widget* )
    a_UIcmd_save(popup_bw);
 }
 
-/* 
- * Save current page
+/*
+ * View current page source
  */
 static void Menu_view_page_source_cb(Widget* )
 {
-   a_UIcmd_view_page_source(popup_url);
+   a_UIcmd_view_page_source(popup_bw, popup_url);
 }
 
-/* 
+/*
  * View current page's bugs
  */
 static void Menu_view_page_bugs_cb(Widget* )
@@ -192,23 +193,58 @@ static void Menu_view_page_bugs_cb(Widget* )
 
 /*
  * Load images on current page that match URL pattern
- *
- * BUG: assumes that the document is a DilloHtml.
  */
 static void Menu_load_images_cb(Widget*, void *user_data)
 {
-   DilloUrl *pattern = (DilloUrl *) user_data ;
+   DilloUrl *page_url = (DilloUrl *) user_data;
+   void *doc = a_Bw_get_url_doc(popup_bw, page_url);
 
-   if (popup_bw && popup_bw->Docs) {
-      int i, n;
-      n = dList_length(popup_bw->Docs);
-      for (i = 0; i < n; i++) {
-         a_Html_load_images(dList_nth_data(popup_bw->Docs, i), pattern);
-      }
-   }
+   if (doc)
+      a_Html_load_images(doc, popup_url);
 }
 
-/* 
+/*
+ * Submit form
+ */
+static void Menu_form_submit_cb(Widget*, void *v_form)
+{
+   void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
+
+   if (doc)
+      a_Html_form_submit(doc, v_form);
+}
+
+/*
+ * Reset form
+ */
+static void Menu_form_reset_cb(Widget*, void *v_form)
+{
+   void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
+
+   if (doc)
+      a_Html_form_reset(doc, v_form);
+}
+
+/*
+ * Toggle display of 'hidden' form controls.
+ */
+static void Menu_form_hiddens_cb(Widget *w, void *user_data)
+{
+   void *v_form = w->parent()->user_data();
+   bool visible = *((bool *) user_data);
+   void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
+
+   if (doc)
+      a_Html_form_display_hiddens(doc, v_form, !visible);
+}
+
+static void Menu_stylesheet_cb(Widget *w, void *vUrl)
+{
+   const DilloUrl *url = (const DilloUrl *) vUrl;
+   a_UIcmd_open_url(popup_bw, url);
+}
+
+/*
  * Validate URL with the W3C
  */
 static void Menu_bugmeter_validate_w3c_cb(Widget* )
@@ -221,7 +257,7 @@ static void Menu_bugmeter_validate_w3c_cb(Widget* )
    dStr_free(dstr, 1);
 }
 
-/* 
+/*
  * Validate URL with the WDG
  */
 static void Menu_bugmeter_validate_wdg_cb(Widget* )
@@ -235,7 +271,7 @@ static void Menu_bugmeter_validate_wdg_cb(Widget* )
    dStr_free(dstr, 1);
 }
 
-/* 
+/*
  * Show info page for the bug meter
  */
 static void Menu_bugmeter_about_cb(Widget* )
@@ -251,7 +287,7 @@ static void Menu_history_cb(Widget *wid, void *data)
 {
    int mb = ((CustItem*)wid)->button();
    int offset = history_direction * VOIDP2INT(data);
-   DilloUrl *url = a_History_get_url(history_list[VOIDP2INT(data)-1]);
+   const DilloUrl *url = a_History_get_url(history_list[VOIDP2INT(data)-1]);
 
    if (mb == 2) {
       // Middle button, open in a new window/tab
@@ -293,38 +329,41 @@ static void Menu_popup_cb2(void *data)
 /*
  * Page popup menu (construction & popup)
  */
-void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url, 
-                       bool_t has_bugs, bool_t unloaded_imgs)
+void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
+                       bool_t has_bugs, void *v_cssUrls)
 {
+   lout::misc::SimpleVector <DilloUrl*> *cssUrls =
+                            (lout::misc::SimpleVector <DilloUrl*> *) v_cssUrls;
+   Item *i;
+   int j;
    // One menu for every browser window
    static PopupMenu *pm = 0;
    // Active/inactive control.
-   static Item *view_page_bugs_item = 0;
-   static Item *load_images_item = 0;
+   static Item *view_page_bugs_item = 0, *view_source_item = 0;
+   static ItemGroup *stylesheets = 0;
 
    popup_bw = bw;
    a_Url_free(popup_url);
    popup_url = a_Url_dup(url);
 
    if (!pm) {
-      Item *i;
       pm = new PopupMenu(0,0,0,0,"&PAGE OPTIONS");
       pm->begin();
-       i = new Item("View page Source");
+       i = view_source_item = new Item("View page Source");
        i->callback(Menu_view_page_source_cb);
        i = view_page_bugs_item = new Item("View page Bugs");
        i->callback(Menu_view_page_bugs_cb);
-       i = load_images_item = new Item("Load images");
-       i->callback(Menu_load_images_cb);
+       stylesheets = new ItemGroup("View Stylesheets");
+       new Divider();
        i = new Item("Bookmark this page");
        i->callback(Menu_add_bookmark_cb);
-       new Divider();    
+       new Divider();
        i = new Item("Find Text");
        i->callback(Menu_find_text_cb);
        //i->shortcut(CTRL+'f');
        i = new Item("Jump to...");
        i->deactivate();
-       new Divider();    
+       new Divider();
        i = new Item("Save page As...");
        i->callback(Menu_save_page_cb);
 
@@ -337,11 +376,49 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    else
       view_page_bugs_item->deactivate();
 
-   if (unloaded_imgs == TRUE) {
-      load_images_item->activate();
-      load_images_item->user_data(NULL); /* wildcard */
+   if (strncmp(URL_STR(url), "dpi:/vsource/", 13) == 0)
+      view_source_item->deactivate();
+   else
+      view_source_item->activate();
+
+   int n = stylesheets->children();
+   for (j = 0; j < n; j++) {
+      /* get rid of the old ones */
+      Widget *child = stylesheets->child(0);
+      dFree((char *)child->label());
+      a_Url_free((DilloUrl *)child->user_data());
+      delete child;
+   }
+
+   if (cssUrls && cssUrls->size () > 0) {
+      stylesheets->activate();
+      for (j = 0; j < cssUrls->size(); j++) {
+         /* may want ability to Load individual unloaded stylesheets as well */
+         const char *action = "View ";
+         DilloUrl *url = cssUrls->get(j);
+         const char *url_str = URL_STR(url);
+         const uint_t head_length = 30, tail_length = 40,
+                      url_len = strlen(url_str);;
+         char *label;
+
+         if (url_len > head_length + tail_length + 3) {
+            /* trim long URLs when making the label */
+            char *url_head = dStrndup(url_str, head_length);
+            const char *url_tail = url_str + (url_len - tail_length);
+            label = dStrconcat(action, url_head, "...", url_tail, NULL);
+            dFree(url_head);
+         } else {
+            label = dStrconcat(action, url_str, NULL);
+         }
+
+         i = new Item(label);
+         i->set_flag(RAW_LABEL);
+         i->user_data(a_Url_dup(url));
+         i->callback(Menu_stylesheet_cb);
+         stylesheets->add(i);
+      }
    } else {
-      load_images_item->deactivate();
+      stylesheets->deactivate();
    }
 
    a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
@@ -367,12 +444,12 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
        i->callback(Menu_open_url_nw_cb);
        i = new Item("Open Link in New Tab");
        i->callback(Menu_open_url_nt_cb);
-       new Divider();    
+       new Divider();
        i = new Item("Bookmark this Link");
        i->callback(Menu_add_bookmark_cb);
        i = new Item("Copy Link location");
        i->callback(Menu_copy_urlstr_cb);
-       new Divider();    
+       new Divider();
        i = new Item("Save Link As...");
        i->callback(Menu_save_link_cb);
 
@@ -387,21 +464,25 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
  * Image popup menu (construction & popup)
  */
 void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
-                        bool_t loaded_img, DilloUrl *link_url)
+                        bool_t loaded_img, DilloUrl *page_url,
+                        DilloUrl *link_url)
 {
    // One menu for every browser window
    static PopupMenu *pm = 0;
    // Active/inactive control.
    static Item *link_menuitem = 0;
    static Item *load_img_menuitem = 0;
+   static DilloUrl *popup_page_url = NULL;
    static DilloUrl *popup_link_url = NULL;
 
    popup_bw = bw;
    a_Url_free(popup_url);
    popup_url = a_Url_dup(url);
+   a_Url_free(popup_page_url);
+   popup_page_url = a_Url_dup(page_url);
    a_Url_free(popup_link_url);
    popup_link_url = a_Url_dup(link_url);
-   
+
    if (!pm) {
       Item *i;
       pm = new PopupMenu(0,0,0,0,"&IMAGE OPTIONS");
@@ -434,7 +515,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
       load_img_menuitem->deactivate();
    } else {
       load_img_menuitem->activate();
-      load_img_menuitem->user_data(popup_url);
+      load_img_menuitem->user_data(popup_page_url);
    }
 
    if (link_url) {
@@ -443,6 +524,39 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
    } else {
       link_menuitem->deactivate();
    }
+
+   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
+}
+
+/*
+ * Form popup menu (construction & popup)
+ */
+void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
+                       void *formptr, bool_t hidvis)
+{
+   static PopupMenu *pm = 0;
+   static Item *hiddens_item = 0;
+   static bool hiddens_visible;
+
+   popup_bw = bw;
+   a_Url_free(popup_url);
+   popup_url = a_Url_dup(page_url);
+   if (!pm) {
+     Item *i;
+      pm = new PopupMenu(0,0,0,0,"FORM OPTIONS");
+      pm->add(i = new Item("Submit form"));
+      i->callback(Menu_form_submit_cb);
+      pm->add(i = new Item("Reset form"));
+      i->callback(Menu_form_reset_cb);
+      pm->add(hiddens_item = new Item(""));
+      hiddens_item->callback(Menu_form_hiddens_cb);
+      hiddens_item->user_data(&hiddens_visible);
+      pm->type(PopupMenu::POPUP123);
+   }
+   pm->user_data(formptr);
+
+   hiddens_visible = hidvis;
+   hiddens_item->label(hiddens_visible ? "Hide hiddens": "Show hiddens");
 
    a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
 }
@@ -466,21 +580,29 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
    popup_url = NULL;
 
    if (!pm) {
+      int shortcut;
       Item *i;
       pm = new PopupMenu(0,0,0,0,"File");
       pm->begin();
-       i = new Item("New Window", CTRL+'n', filemenu_cb, (void*)"nw");
-       i = new Item("New Tab", CTRL+'t', filemenu_cb, (void*)"nt");
+       shortcut = Keys::getShortcut(KEYS_NEW_WINDOW);
+       i = new Item("New Window", shortcut, filemenu_cb, (void*)"nw");
+       shortcut = Keys::getShortcut(KEYS_NEW_TAB);
+       i = new Item("New Tab", shortcut, filemenu_cb, (void*)"nt");
        new Divider();
-       i = new Item("Open File...", CTRL+'o', filemenu_cb, (void*)"of");
-       i = new Item("Open URL...", CTRL+'l', filemenu_cb, (void*)"ou");
-       i = new Item("Close", CTRL+'q', filemenu_cb, (void*)"cw");
+       shortcut = Keys::getShortcut(KEYS_OPEN);
+       i = new Item("Open File...", shortcut, filemenu_cb, (void*)"of");
+       shortcut = Keys::getShortcut(KEYS_GOTO);
+       i = new Item("Open URL...", shortcut, filemenu_cb, (void*)"ou");
+       shortcut = Keys::getShortcut(KEYS_CLOSE_TAB);
+       i = new Item("Close", shortcut, filemenu_cb, (void*)"cw");
        new Divider();
-       i = new Item("Exit Dillo", ALT+'q', filemenu_cb, (void*)"ed");
+       shortcut = Keys::getShortcut(KEYS_CLOSE_ALL);
+       i = new Item("Exit Dillo", shortcut, filemenu_cb, (void*)"ed");
       pm->type(PopupMenu::POPUP123);
       pm->end();
    }
 
+   pm->label(wid->visible() ? NULL : "File");
    a_Timeout_add(0.0, Menu_popup_cb2, (void *)pm);
 }
 
@@ -503,7 +625,7 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
        i->callback(Menu_bugmeter_validate_w3c_cb);
        i = new Item("Validate URL with WDG");
        i->callback(Menu_bugmeter_validate_wdg_cb);
-       new Divider();    
+       new Divider();
        i = new Item("About Bug Meter...");
        i->callback(Menu_bugmeter_about_cb);
       pm->type(PopupMenu::POPUP123);
@@ -520,7 +642,6 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
  */
 void a_Menu_history_popup(BrowserWindow *bw, int direction)
 {
-   // One menu for every browser window
    static PopupMenu *pm = 0;
    Item *it;
    int i;
@@ -547,7 +668,7 @@ void a_Menu_history_popup(BrowserWindow *bw, int direction)
     for (i = 0; history_list[i] != -1; i += 1) {
        // TODO: restrict title size
        it = new CustItem(a_History_get_title(history_list[i], 1));
-       it->callback(Menu_history_cb, (void*)(i+1));
+       it->callback(Menu_history_cb, INT2VOIDP(i+1));
     }
    pm->type(PopupMenu::POPUP123);
    pm->end();
@@ -555,16 +676,70 @@ void a_Menu_history_popup(BrowserWindow *bw, int direction)
    pm->popup();
 }
 
+/*
+ * Toggle use of remote stylesheets
+ */
+static void Menu_remote_css_cb(Widget *wid)
+{
+   _MSG("Menu_remote_css_cb\n");
+   prefs.load_stylesheets = wid->state() ? 1 : 0;
+   a_UIcmd_repush(popup_bw);
+}
 
-void a_Menu_popup_set_url(BrowserWindow *bw, const DilloUrl *url) { }
-void a_Menu_popup_set_url2(BrowserWindow *bw, const DilloUrl *url) { }
-void a_Menu_popup_clear_url2(void *menu_popup) { }
+/*
+ * Toggle use of embedded CSS style
+ */
+static void Menu_embedded_css_cb(Widget *wid)
+{
+   prefs.parse_embedded_css = wid->state() ? 1 : 0;
+   a_UIcmd_repush(popup_bw);
+}
 
-DilloUrl *a_Menu_popup_get_url(BrowserWindow *bw) { return NULL; }
+/*
+ * Toggle loading of images -- and load them if enabling.
+ */
+static void Menu_imgload_toggle_cb(Widget *wid)
+{
+   if ((prefs.load_images = wid->state() ? 1 : 0)) {
+      void *doc = a_Bw_get_current_doc(popup_bw);
 
-void a_Menu_pagemarks_new (BrowserWindow *bw) { }
-void a_Menu_pagemarks_destroy (BrowserWindow *bw) { }
-void a_Menu_pagemarks_add(BrowserWindow *bw, void *page, void *style,
-                          int level) { }
-void a_Menu_pagemarks_set_text(BrowserWindow *bw, const char *str) { }
+      if (doc) {
+         DilloUrl *pattern = NULL;
+         a_Html_load_images(doc, pattern);
+      }
+   }
+}
+
+/*
+ * Tools popup menu (construction & popup)
+ */
+void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
+{
+   // One menu shared by every browser window
+   static PopupMenu *pm = NULL;
+   Widget *wid = (Widget*)v_wid;
+   Item *it;
+
+   popup_bw = bw;
+
+   if (!pm) {
+      pm = new PopupMenu(0,0,0,0, "TOOLS");
+      pm->begin();
+       it = new ToggleItem("Use remote CSS");
+       it->callback(Menu_remote_css_cb);
+       it->state(prefs.load_stylesheets);
+       it = new ToggleItem("Use embedded CSS");
+       it->callback(Menu_embedded_css_cb);
+       it->state(prefs.parse_embedded_css);
+       new Divider();
+       it = new ToggleItem("Load images");
+       it->callback(Menu_imgload_toggle_cb);
+       it->state(prefs.load_images);
+       pm->type(PopupMenu::POPUP13);
+      pm->end();
+   }
+   //pm->popup();
+   pm->value(-1);
+   ((Menu*)pm)->popup(Rectangle(0,wid->h(),pm->w(),pm->h()));
+}
 

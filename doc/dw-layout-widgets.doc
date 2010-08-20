@@ -81,7 +81,7 @@ different situations:
 <ol>
 <li> Adding an anchor is inititiated by a specific widget method, e.g.
      dw::Textblock::addAnchor. Here, dw::core::Widget::addAnchor must be
-     called, 
+     called,
 
 <li> Whenever the position of an anchor is changed,
      dw::core::Widget::changeAnchor is called (typically, this is done
@@ -107,14 +107,11 @@ In two cases, a widget has to be drawn:
 </ol>
 
 In both cases, drawing is done by the implementation of
-dw::core::Widget::draw. Generally, a widget draws into different views
-(see \ref dw-layout-views), the view to draw into is passed as the
-first argument. In the first case, only the view, which causes the
-expose event, is passed, in the second case, dw::core::Widget::draw is
-called multiple times, once for each view connected to the layout.
+dw::core::Widget::draw, which draws into the view.
+
 
 Each view provides some primitive methods for drawing, most should be
-obvious. Notice that the views do not know anything about dillo
+obvious. Note that the views do not know anything about dillo
 widgets, and so coordinates have to be passed as canvas coordinates.
 
 A widget may only draw in its own allocation. If this cannot be
@@ -144,7 +141,7 @@ void Foo::draw (dw::core::View *view, dw::core::Rectangle *area)
 }
 \endcode
 
-Clipping views are expensive, so they should be avoided, when possible.
+Clipping views are expensive, so they should be avoided when possible.
 
 The second argument to dw::core::Widget::draw is the region, which has
 to be drawn. This may (but needs not) be used for optimization.
@@ -169,9 +166,9 @@ dw-widget-sizes.)
 
 <h2>Mouse Events</h2>
 
-A widget may process mouse events. The views (\ref dw-layout-views)
-pass mouse events to the layout, which then passes them to the
-widgtes. There are two kinds of mouse events:
+A widget may process mouse events. The view (\ref dw-layout-views)
+passes mouse events to the layout, which then passes them to the
+widgets. There are two kinds of mouse events:
 
 <ul>
 <li>events returning bool, and
@@ -221,9 +218,9 @@ in which the mouse pointer is now ("new widget").
 The following paths are calculated:
 
 <ol>
-<li> the path from the old widget to the nearest common anchestor of the old
+<li> the path from the old widget to the nearest common ancestor of the old
      and the new widget, and
-<li> the path from this anchestor to the new widget.
+<li> the path from this ancestor to the new widget.
 </ol>
 
 For the widgets along these paths, dw::core::Widget::enterNotifyImpl
@@ -232,7 +229,7 @@ and dw::core::Widget::leaveNotifyImpl are called.
 <h3>Signals</h3>
 
 If a caller outside of the widget is interested in these events, he
-can connect a dw::core::Widget::EventReceiver. For those events with a
+can connect a dw::core::Layout::LinkReceiver. For those events with a
 boolean return value, the results of the signal emission is regarded,
 i.e. the delegation of an event to the parent of the widget can be
 stopped by a signal receiver returning true, even if the widget method

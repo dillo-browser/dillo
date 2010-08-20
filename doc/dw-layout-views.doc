@@ -4,23 +4,18 @@ Rendering of Dw is done in a way resembling the model-view pattern, at
 least formally.  Actually, the counterpart of the model, the layout
 (dw::core::Layout), does a bit more than a typical model, namely the
 layouting (delegated to the widget tree, see \ref dw-layout-widgets),
-and the views do a bit less than a typical view, i.e. only the actual
+and the view does a bit less than a typical view, i.e. only the actual
 drawing.
 
 Additionally, there is a structure representing common properties of
-the platform, views generally work only together with one specific
-platform. A platform is typically related to the underlying UI
+the platform. A platform is typically related to the underlying UI
 toolkit, but other uses may be thought of.
 
-This design helps to archieve three important goals:
+This design helps to archieve two important goals:
 
 <ul>
-<li> It makes different views of the same document simple, e.g. the
-     normal viewport and the preview window.
-
 <li> Abstraction of the actual drawing, by different implementations
-     of dw::core::View. Most important, there must be a viewport, but
-     some other views are possible, e.g. a preview window.
+     of dw::core::View.
 
 <li> It makes portability simple.
 </ul>
@@ -29,7 +24,7 @@ This design helps to archieve three important goals:
 <h2>Viewports</h2>
 
 Although the design implies that the usage of viewports should be
-fully transparent to the layout module, this cannot be fully archived,
+fully transparent to the layout module, this cannot be fully achieved,
 for the following reasons:
 
 <ul>
@@ -41,15 +36,10 @@ for the following reasons:
      the size of a viewport, the text within should be rewrapped.
 </ul>
 
-Therefor, dw::core::Layout keeps track of the viewport size, the
+Therefore, dw::core::Layout keeps track of the viewport size, the
 viewport position, and even the thickness of the scrollbars, they are
-relevant, see below for more details. These sizes are always equal in
-all views. However, a given view may not use viewports at all, and
-there may be the case, that no view related to a layout uses
-viewports, in this case, the viewport size is not defined at all.
-
-(The case, that there is no viewport at all, is currently not well
-defined, but this case does not occur currently within dillo.)
+relevant, see below for more details.
+If a viewport is not used, however, the size is not defined.
 
 Whether a given dw::core::View implementation is a viewport or not, is
 defined by the return value of dw::core::View::usesViewport. If this
@@ -75,7 +65,7 @@ of the viewport. Views using viewports must
 </ol>
 
 Applications of scrolling positions (anchors, test search etc.) are
-handled by the layout, in a way fully transparent to the views.
+handled by the layout, in a way fully transparent to the view.
 
 <h3>Scrollbars</h3>
 
@@ -86,11 +76,10 @@ respectively. If they are not needed, they are hidden, to save screen
 space.
 
 Since scrollbars decrease the usable space of a view, dw::core::Layout
-must know how much space they take. Each view returns, via
+must know how much space they take. The view returns, via
 dw::core::View::getHScrollbarThickness and
 dw::core::View::getVScrollbarThickness, how thick they will be, when
-visible. The total space difference is then the maximum of all values,
-which the views return.
+visible.
 
 Viewport sizes, which denote the size of the viewport widgets, include
 scrollbar thicknesses. When referring to the viewport \em excluding
@@ -100,7 +89,7 @@ the area, which is used to display the canvas.
 <h2>Drawing</h2>
 
 A view must implement several drawing methods, which work on the whole
-canvas. If it is neccesary to convert them (e.g. into
+canvas. If it is necessary to convert them (e.g. into
 dw::fltk::FltkViewport), this is done in a way fully transparent to
 dw::core::Widget and dw::core::Layout, instead, this is done by the
 view implementation.
@@ -115,8 +104,8 @@ There exist following situations:
 
 <li> A widget requests a redraw: In this case, the widget will
      delegate this to the layout (dw::core::Layout::queueDraw), which
-     delegates it to all views (dw::core::View::queueDraw).
-     Typically, the views will queue these requests, for efficiency.
+     delegates it to the view (dw::core::View::queueDraw).
+     Typically, the view will queue these requests for efficiency.
 
 <li> A widget requests a resize: This case is described below, in short,
      dw::core::View::queueDrawTotal is called for the view.
@@ -160,10 +149,9 @@ flickering.
 
 <h2>Sizes</h2>
 
-Generally, all views show the same layout, which has a given size
-(canvas size). In the simplest case, views do not have an influence on
-the canvas size, so that they are just told about changes of the
-canvas size, by a call to dw::core::View::setCanvasSize. This happens
+In the simplest case, the view does not have any influence on
+the canvas size, so it is told about changes of the
+canvas size by a call to dw::core::View::setCanvasSize. This happens
 in the following situations:
 
 <ul>
@@ -177,28 +165,26 @@ in the following situations:
 
 <h3>Viewports</h3>
 
-Furthermore, viewport sizes and scrollbar thicknesses are always the
-same. There are two cases, in which the viewport size changes:
+There are two cases where the viewport size changes:
 
 <ul>
 <li> As an reaction on a user event, e.g. when the user changes the
-     window size. In this case, the affected view delegates this
+     window size. In this case, the view delegates this
      change to the layout, by calling
-     dw::core::Layout::viewportSizeChanged. All other views are
-     told about this, by calling dw::core::Layout::setViewportSize.
+     dw::core::Layout::viewportSizeChanged.
 
 <li> The viewport size may also depend on the visibility of UI
      widgets, which depend on the world size, e.g scrollbars,
-     generally called "viewport markers". This is described in an own
+     generally called "viewport markers". This is described in a separate
      section.
 </ul>
 
 After the creation of the layout, the viewport size is undefined. When
-a view is attached to a layout, and this view is already to be able to
-define its viewport size, it may already call
+a view is attached to a layout, and this view can already specify
+its viewport size, it may call
 dw::core::Layout::viewportSizeChanged within the implementation of
-dw::core::Layout::setLayout. If not, it may do this, as soon as the
-viewport size gets known.
+dw::core::Layout::setLayout. If not, it may do this as soon as the
+viewport size is known.
 
 Generally, the scrollbars have to be considered. If e.g. an HTML page
 is rather small, it looks like this:

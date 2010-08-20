@@ -6,8 +6,6 @@
 
 namespace dw {
 
-using namespace lout;
-
 /**
  * \brief A Widget for rendering text blocks, i.e. paragraphs or sequences
  *    of paragraphs.
@@ -16,118 +14,118 @@ using namespace lout;
  * floats have been implementet. Will be updated and extended soon.
  * 
  * <h3>Signals</h3>
- * 
+ *
  * dw::Textblock uses the signals defined in
- * dw::core::Widget::LinkReceiver, related to links. The coordinates are
+ * dw::core::Layout::LinkReceiver, related to links. The coordinates are
  * always -1.
- * 
- * 
+ *
+ *
  * <h3>Collapsing Spaces</h3>
- * 
+ *
  * The idea behind this is that every paragraph has a specific vertical
  * space around and that they are combined to one space, according to
  * rules stated below. A paragraph consists either of the lines between
  * two paragraph breaks within a dw::Textblock, or of a dw::Textblock
  * within a dw::Textblock, in a single line; the latter is used for
  * indented boxes and list items.
- * 
+ *
  * The rules:
- * 
+ *
  * <ol>
  * <li> If a paragraph is following by another, the space between them is the
  *      maximum of both box spaces:
- * 
+ *
  *      \image html dw-textblock-collapsing-spaces-1-1.png
- * 
+ *
  *       are combined like this:
- * 
+ *
  *       \image html dw-textblock-collapsing-spaces-1-2.png
- * 
+ *
  * <li> a) If one paragraph is the first paragraph within another, the upper
  *      space of these paragraphs collapse. b) The analogue is the case for the
  *      last box:
- * 
+ *
  *      \image html dw-textblock-collapsing-spaces-2-1.png
- * 
+ *
  *      If B and C are put into A, the result is:
- * 
+ *
  *      \image html dw-textblock-collapsing-spaces-2-2.png
  * </ol>
- * 
+ *
  * For achieving this, there are some features of dw::Textblock:
- * 
+ *
  * <ul>
  * <li> Consequent breaks are automatically combined, according to
  *      rule 1. See the code of dw::Textblock::addParBreak for details.
- * 
+ *
  * <li> If a break is added as the first word of the dw::Textblock within
  *      another dw::Textblock, collapsing according to rule 2a is done
  *      automatically. See the code of dw::Textblock::addParBreak.
- * 
+ *
  *  <li> To collapse spaces according to rule 2b,
  *        dw::Textblock::addParBreak::handOverBreak must be called for
  *        the \em inner widget. The HTML parser does this in
  *        Html_eventually_pop_dw.
  * </ul>
- * 
- * 
+ *
+ *
  * <h3>Collapsing Margins</h3>
- * 
+ *
  * Collapsing margins, as defined in the CSS2 specification, are,
  * supported in addition to collapsing spaces. Also, spaces and margins
  * collapse themselves. I.e., the space between two paragraphs is the
  * maximum of the space calculated as described in "Collapsing Spaces"
  * and the space calculated according to the rules for collapsing margins.
- * 
+ *
  * (This is an intermediate hybrid state, collapsing spaces are used in
  * the current version of dillo, while I implemented collapsing margins
  * for the CSS prototype and integrated it already into the main trunk. For
  * a pure CSS-based dillo, collapsing spaces will not be needed anymore, and
  * may be removed for simplicity.)
- * 
- * 
+ *
+ *
  * <h3>Some Internals</h3>
- * 
- * There are two lists, dw::Textblock::words and
- * dw::Textblock::lines. The word list is quite static; only new words
- * may be added. A word is either text, a widget, a break or an
- * anchor. Anchors are stored in the text, because it may be necessary to
- * correct the scroller positions at rewrapping.
- * 
- * Lines refer to the word list (first and last), they are completely
+ *
+ * There are 3 lists, dw::Textblock::words, dw::Textblock::lines, and
+ * dw::Textblock::anchors. The word list is quite static; only new words
+ * may be added. A word is either text, a widget, or a break.
+ *
+ * Lines refer to the word list (first and last). They are completely
  * redundant, i.e., they can be rebuilt from the words. Lines can be
  * rewrapped either completely or partially (see "Incremental Resizing"
  * below). For the latter purpose, several values are accumulated in the
  * lines. See dw::Textblock::Line for details.
- * 
- * 
+ *
+ * Anchors associate the anchor name with the index of the next word at
+ * the point of the anchor.
+ *
  * <h4>Incremental Resizing</h4>
- * 
+ *
  * dw::Textblock makes use of incremental resizing as described in \ref
  * dw-widget-sizes. The parentRef is, for children of a dw::Textblock, simply
  * the number of the line.
- * 
+ *
  * Generally, there are three cases which may change the size of the
  * widget:
- * 
+ *
  * <ul>
  * <li> The available size of the widget has changed, e.g., because the
  *      user has changed the size of the browser window. In this case,
  *      it is necessary to rewrap all the lines.
- * 
+ *
  * <li> A child widget has changed its size. In this case, only a rewrap
  *      down from the line where this widget is located is necessary.
- * 
+ *
  *      (This case is very important for tables. Tables are quite at the
  *      bottom, so that a partial rewrap is relevant. Otherwise, tables
  *      change their size quite often, so that this is necessary for a
  *      fast, non-blocking rendering)
- * 
+ *
  * <li> A word (or widget, break etc.) is added to the text block. This
  *      makes it possible to reuse the old size by simply adjusting the
  *      current width and height, so no rewrapping is necessary.
  * </ul>
- * 
+ *
  * The state of the size calculation is stored in wrapRef within
  * dw::Textblock, which has the value -1 if no rewrapping of lines
  * necessary, or otherwise the line from which a rewrap is necessary.
@@ -141,7 +139,7 @@ private:
    class FloatSide
    {
    protected:
-      class Float: public object::Object
+      class Float: public lout::object::Object
       {
       public:
          Textblock *floatGenerator;
@@ -150,8 +148,8 @@ private:
       };
 
       Textblock *floatContainer;
-      container::typed::Vector<Float> *floats;
-      container::typed::HashTable<object::TypedPointer<dw::core::Widget>, Float> *floatsByWidget;
+      lout::container::typed::Vector<Float> *floats;
+      lout::container::typed::HashTable<lout::object::TypedPointer<dw::core::Widget>, Float> *floatsByWidget;
 
       Float *findFloat(int y);
 
@@ -198,13 +196,13 @@ private:
 protected:
    struct Line
    {
-      int firstWord;    /* first-word's position in DwPageWord [0 based] */
-      int lastWord;     /* last-word's position in DwPageWord [1 based] */
+      int firstWord;    /* first word's index in word vector */
+      int lastWord;     /* last word's index in word vector */
 
       /* "top" is always relative to the top of the first line, i.e.
        * page->lines[0].top is always 0. */
-      int top, ascent, descent, breakSpace;
-      int leftOffset; /* nonzero for centered and rightly-aligned text */
+      int top, boxAscent, boxDescent, contentAscent, contentDescent,
+          breakSpace, leftOffset;
       int boxLeft, boxRight;
       
       /* This is similar to descent, but includes the bottom margins of the
@@ -229,14 +227,20 @@ protected:
       /* TODO: perhaps add a xLeft? */
       core::Requisition size;
       /* Space after the word, only if it's not a break: */
-      unsigned short origSpace; /* from font, set by addSpace */
-      unsigned short effSpace;  /* effective space, set by wordWrap,
-                                 * used for drawing etc. */
+      short origSpace; /* from font, set by addSpace */
+      short effSpace;  /* effective space, set by wordWrap,
+                        * used for drawing etc. */
       core::Content content;
 
       core::style::Style *style;
       core::style::Style *spaceStyle; /* initially the same as of the word,
                                          later set by a_Dw_page_add_space */
+   };
+
+   struct Anchor
+   {
+      char *name;
+      int wordIndex;
    };
 
    class TextblockIterator: public core::Iterator
@@ -250,8 +254,8 @@ protected:
       TextblockIterator (Textblock *textblock, core::Content::Type mask,
                          int index);
 
-      object::Object *clone();
-      int compareTo(misc::Comparable *other);
+      lout::object::Object *clone();
+      int compareTo(lout::misc::Comparable *other);
 
       bool next ();
       bool prev ();
@@ -263,7 +267,7 @@ protected:
    friend class TextblockIterator;
 
    /* These fields provide some ad-hoc-functionality, used by sub-classes. */
-   bool listItem;      /* If true, the first word of the page is treated
+   bool hasListitemValue; /* If true, the first word of the page is treated
                           specially (search in source). */
    int innerPadding;    /* This is an additional padding on the left side
                             (used by ListItem). */
@@ -304,16 +308,12 @@ protected:
    int lastLineParMax;
    int wrapRef;  /* [0 based] */
 
-   misc::SimpleVector <Line> *lines;
-   misc::SimpleVector <Word> *words;
+   lout::misc::SimpleVector <Line> *lines;
+   lout::misc::SimpleVector <Word> *words;
+   lout::misc::SimpleVector <Anchor> *anchors;
 
    struct {int index, nChar;}
       hlStart[core::HIGHLIGHT_NUM_LAYERS], hlEnd[core::HIGHLIGHT_NUM_LAYERS];
-
-   /* The word index of the link under a button press, and the char
-    * position */
-   int linkPressedIndex;
-   int link_pressedCharPos;
 
    int hoverLink;                      /* The link under the button. */
    core::style::Tooltip *hoverTooltip; /* The tooltip under the button. No ref
@@ -324,17 +324,24 @@ protected:
    void getWordExtremes (Word *word, core::Extremes *extremes);
    void markChange (int ref);
    void justifyLine (Line *line, int availWidth);
-   void addLine (int wordInd, bool newPar);
+   Line *addLine (int wordInd, bool newPar);
    void calcWidgetSize (core::Widget *widget, core::Requisition *size);
    void rewrap ();
+   void decorateText(core::View *view, core::style::Style *style,
+                     core::style::Color::Shading shading,
+                     int x, int yBase, int width);
+   void drawText(int wordIndex, core::View *view, core::Rectangle *area,
+                 int xWidget, int yWidgetBase);
+   void drawSpace(int wordIndex, core::View *view, core::Rectangle *area,
+                  int xWidget, int yWidgetBase);
    void drawLine (Line *line, core::View *view, core::Rectangle *area);
    int findLineIndex (int y);
    int findLineOfWord (int wordIndex);
-   int findWord (int x, int y);
+   Word *findWord (int x, int y, bool *inSpace);
 
    Word *addWord (int width, int ascent, int descent,
                   core::style::Style *style);
-   void calcTextSize (const char *text, core::style::Style *style,
+   void calcTextSize (const char *text, size_t len, core::style::Style *style,
                       core::Requisition *size);
 
    void addFloatIntoContainer(core::Widget *widget, Textblock *floatGenerator);
@@ -355,7 +362,7 @@ protected:
     */
    inline int lineXOffsetContents (Line *line)
    {
-      return innerPadding + line->leftOffset + line->boxLeft + 
+      return innerPadding + line->leftOffset + line->boxLeft +
          (line == lines->getRef (0) ? line1OffsetEff : 0);
    }
 
@@ -371,7 +378,7 @@ protected:
    inline int lineYOffsetWidgetAllocation (Line *line,
                                            core::Allocation *allocation)
    {
-      return line->top + (allocation->ascent - lines->getRef(0)->ascent);
+      return line->top + (allocation->ascent - lines->getRef(0)->boxAscent);
    }
 
    inline int lineYOffsetWidget (Line *line)
@@ -400,7 +407,7 @@ protected:
    {
       return lineYOffsetWidget (lines->getRef (lineIndex));
    }
-   
+
    inline int lineYOffsetCanvasI (int lineIndex)
    {
       return lineYOffsetCanvas (lines->getRef (lineIndex));
@@ -423,7 +430,7 @@ protected:
    void setWidth (int width);
    void setAscent (int ascent);
    void setDescent (int descent);
-   void draw (core::View *view, core::Rectangle *area);  
+   void draw (core::View *view, core::Rectangle *area);
 
    bool buttonPressImpl (core::EventButton *event);
    bool buttonReleaseImpl (core::EventButton *event);
@@ -439,11 +446,15 @@ public:
    Textblock(bool limitTextWidth);
    ~Textblock();
 
-   core::Iterator *iterator (core::Content::Type mask, bool atEnd); 
+   core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 
    void flush ();
 
-   void addText (const char *text, core::style::Style *style);
+   void addText (const char *text, size_t len, core::style::Style *style);
+   inline void addText (const char *text, core::style::Style *style)
+   {
+      addText (text, strlen(text), style);
+   }
    void addWidget (core::Widget *widget, core::style::Style *style);
    bool addAnchor (const char *name, core::style::Style *style);
    void addSpace(core::style::Style *style);

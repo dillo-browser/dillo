@@ -7,18 +7,8 @@
 #ifndef DPI_H
 #define DPI_H
 
-#include <config.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-
-/* Check the Unix98 goodie */
-#ifndef socklen_t
-   #define socklen_t uint32_t
-#endif
+#include <unistd.h>      /* for socklen_t */
+#include <sys/socket.h>  /* for socklen_t and AF_LOCAL */
 
 /* Some systems may not have this one... */
 #ifndef AF_LOCAL
@@ -38,7 +28,8 @@
  */
 enum {
    UNKNOWN_CMD,
-   BYE_CMD, /* "DpiBye" */
+   AUTH_CMD, /* authentication */
+   BYE_CMD,  /* "DpiBye" */
    CHECK_SERVER_CMD, /* "check_server" */
    REGISTER_ALL_CMD, /* "register_all" */
    REGISTER_SERVICE_CMD /* "register_service" */

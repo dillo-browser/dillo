@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -41,16 +40,20 @@ ListItem::~ListItem()
 void ListItem::initWithWidget (core::Widget *widget,
                                 core::style::Style *style)
 {
+   hasListitemValue = true;
    addWidget (widget, style);
    addSpace (style);
-   updateValue ();
+   if (style->listStylePosition == core::style::LIST_STYLE_POSITION_OUTSIDE)
+      updateValue ();
 }
 
-void ListItem::initWithText (char *text, core::style::Style *style)
+void ListItem::initWithText (const char *text, core::style::Style *style)
 {
+   hasListitemValue = true;
    addText (text, style);
-   addSpace (style); 
-   updateValue ();
+   addSpace (style);
+   if (style->listStylePosition == core::style::LIST_STYLE_POSITION_OUTSIDE)
+      updateValue ();
 }
 
 int ListItem::getValue ()
@@ -58,7 +61,7 @@ int ListItem::getValue ()
    if (words->size () == 0)
       return 0;
    else
-      return words->get(0).size.width + words->get(0).origSpace;
+      return words->getRef(0)->size.width + words->getRef(0)->origSpace;
 }
 
 void ListItem::setMaxValue (int maxValue, int value)

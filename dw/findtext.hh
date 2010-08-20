@@ -14,12 +14,12 @@ class FindtextState
 {
 public:
    typedef enum {
-      /** \brief The next occurance of the pattern has been found. */
+      /** \brief The next occurrence of the pattern has been found. */
       SUCCESS,
 
       /**
-       * \brief There is no further occurance of the pattern, instead, the
-       *    first occurance has been selected.
+       * \brief There is no further occurrence of the pattern, instead, the
+       *    first occurrence has been selected.
        */
       RESTART,
 
@@ -48,31 +48,33 @@ private:
     * dw::core::Findtext::widget
     */
    Widget *widget;
-   
+
    /** \brief The position from where the next search will start. */
    CharIterator *iterator;
 
    /**
     * \brief The position from where the characters are highlighted.
-    * 
+    *
     * NULL, when no text is highlighted.
     */
-   CharIterator *hlIterator;  
+   CharIterator *hlIterator;
 
-   static int *createNexttab (const char *key, bool caseSens);
+   static const char* rev(const char* _str); /* reverse a C string */
+
+   static int *createNexttab (const char *needle,bool caseSens,bool backwards);
    bool unhighlight ();
-   bool search0 ();
+   bool search0 (bool backwards, bool firstTrial);
 
    inline static bool charsEqual (char c1, char c2, bool caseSens)
    { return caseSens ? c1 == c2 : tolower (c1) == tolower (c2) ||
-      isspace (c1) && isspace (c2); }
+      (isspace (c1) && isspace (c2)); }
 
 public:
    FindtextState ();
    ~FindtextState ();
 
    void setWidget (Widget *widget);
-   Result search (const char *key, bool caseSens);
+   Result search (const char *key, bool caseSens, bool backwards);
    void resetSearch ();
 };
 

@@ -34,6 +34,7 @@ public:
    int getHScrollbarThickness ();
    int getVScrollbarThickness ();
    void scrollTo (int x, int y);
+   void scroll (dw::core::ScrollCommand cmd);
    void setViewportSize (int width, int height,
                          int hScrollbarThickness, int vScrollbarThickness);
 

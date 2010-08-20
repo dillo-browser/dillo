@@ -18,6 +18,8 @@
 #include "uicmd.hh"
 #include "bw.h"
 
+using namespace fltk;
+
 /*
  * Local sub class
  * (Used to handle escape in the findbar, may also avoid some shortcuts).
@@ -63,7 +65,22 @@ void Findbar::search_cb(Widget *, void *vfb)
 
    if (key[0] != '\0')
       a_UIcmd_findtext_search(a_UIcmd_get_bw_by_widget(fb),
-                              key, case_sens);
+                              key, case_sens, false);
+}
+
+/*
+ * Find previous occurrence of input key
+ */
+void Findbar::searchBackwards_cb(Widget *, void *vfb)
+{
+   Findbar *fb = (Findbar *)vfb;
+   const char *key = fb->i->text();
+   bool case_sens = fb->check_btn->value();
+
+   if (key[0] != '\0') {
+      a_UIcmd_findtext_search(a_UIcmd_get_bw_by_widget(fb),
+                              key, case_sens, true);
+   }
 }
 
 /*
@@ -74,7 +91,7 @@ void Findbar::search_cb2(Widget *widget, void *vfb)
    /*
     * Somehow fltk even regards the first loss of focus for the
     * window as a WHEN_ENTER_KEY_ALWAYS event.
-    */ 
+    */
    if (event_key() == ReturnKey)
       search_cb(widget, vfb);
 }
@@ -96,7 +113,7 @@ Findbar::Findbar(int width, int height) :
    int button_width = 70;
    int gap = 2;
    int border = 2;
-   int input_width = width - (2 * border + 3 * (button_width + gap));
+   int input_width = width - (2 * border + 4 * (button_width + gap));
    int x = border;
    height -= 2 * border;
 
@@ -107,7 +124,6 @@ Findbar::Findbar(int width, int height) :
     hide_btn = new HighlightButton(x, border, 16, height, 0);
     hideImg = new xpmImage(new_s_xpm);
     hide_btn->image(hideImg);
-    hide_btn->tooltip("Hide");
     x += 16 + gap;
     hide_btn->callback(hide_cb, this);
     hide_btn->clear_tab_to_focus();
@@ -121,14 +137,18 @@ Findbar::Findbar(int width, int height) :
     i->clear_tab_to_focus();
     i->set_click_to_focus();
 
-    // TODO: search previous would be nice
     next_btn = new HighlightButton(x, border, button_width, height, "Next");
     x += button_width + gap;
-    next_btn->tooltip("Find next occurrence of the search phrase");
     next_btn->add_shortcut(ReturnKey);
     next_btn->add_shortcut(KeypadEnter);
     next_btn->callback(search_cb, this);
     next_btn->clear_tab_to_focus();
+
+    prev_btn= new HighlightButton(x, border, button_width, height, "Previous");
+    prev_btn->add_shortcut(SHIFT+ReturnKey);
+    prev_btn->callback(searchBackwards_cb, this);
+    prev_btn->clear_tab_to_focus();
+    x += button_width + gap;
 
     check_btn = new CheckButton(x, border, 2*button_width, height,
                               "Case-sensitive");
@@ -136,6 +156,14 @@ Findbar::Findbar(int width, int height) :
     x += 2 * button_width + gap;
 
    end();
+
+   if (prefs.show_tooltip) {
+      hide_btn->tooltip("Hide");
+      next_btn->tooltip("Find next occurrence of the search phrase\n"
+                        "shortcut: Enter");
+      prev_btn->tooltip("Find previous occurrence of the search phrase\n"
+                        "shortcut: Shift+Enter");
+   }
 }
 
 Findbar::~Findbar()

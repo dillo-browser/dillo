@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -50,7 +49,7 @@ const char *Form::TextResourceDecorator::getValue ()
 
 Form::RadioButtonResourceDecorator::RadioButtonResourceDecorator
    (const char *name, RadioButtonResource *resource, const char **values):
-      Form::ResourceDecorator (name)     
+      Form::ResourceDecorator (name)
 {
    this->resource = resource;
 
@@ -60,7 +59,7 @@ Form::RadioButtonResourceDecorator::RadioButtonResourceDecorator
    this->values = new const char*[n + 1];
    for(int i = 0; i < n; i++)
       this->values[i] = strdup (values[i]);
-   values[n] = 0;
+   this->values[n] = 0;
 }
 
 Form::RadioButtonResourceDecorator::~RadioButtonResourceDecorator ()
@@ -100,7 +99,7 @@ const char *Form::CheckButtonResourceDecorator::getValue ()
 
 Form::SelectionResourceDecorator::SelectionResourceDecorator
    (const char *name, SelectionResource *resource, const char **values):
-      Form::ResourceDecorator (name)     
+      Form::ResourceDecorator (name)
 {
    this->resource = resource;
 
@@ -163,18 +162,18 @@ Form::FormClickedReceiver::~FormClickedReceiver ()
    delete name;
    delete[] value;
 }
-      
-void Form::FormClickedReceiver::clicked (ButtonResource *resource,
-                                         int buttonNo, int x, int y)
+
+void Form::FormClickedReceiver::clicked (Resource *resource,
+                                         dw::core::EventButton *event)
 {
-   form->send (name, value, x, y);
+   form->send (name, value, event->xCanvas, event->yCanvas);
 }
 
 Form::Form ()
 {
    resources = new lout::container::typed::List <ResourceDecorator> (true);
    activateReceiver = new FormActivateReceiver (this);
-   clickedReceivers = 
+   clickedReceivers =
       new lout::container::typed::List <FormClickedReceiver> (true);
 }
 

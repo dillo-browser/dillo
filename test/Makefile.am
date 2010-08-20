@@ -19,7 +19,8 @@ noinst_PROGRAMS = \
 	dw-resource-test \
 	dw-ui-test \
 	fltk-browser \
-	shapes
+	shapes \
+	cookies
 
 dw_anchors_test_SOURCES = dw_anchors_test.cc
 dw_anchors_test_LDADD = \
@@ -160,3 +161,8 @@ shapes_SOURCES = shapes.cc
 shapes_LDADD = \
 	../dw/libDw-core.a \
 	../lout/liblout.a
+
+cookies_SOURCES = cookies.c
+cookies_LDADD = \
+	../dpip/libDpip.a \
+	../dlib/libDlib.a

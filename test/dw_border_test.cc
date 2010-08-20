@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -49,7 +48,7 @@ int main(int argc, char **argv)
    styleAttrs.initValues ();
    styleAttrs.margin.setVal (5);
    styleAttrs.borderWidth.setVal (2);
-   styleAttrs.setBorderColor (Color::createShaded (layout, 0xffffff));
+   styleAttrs.setBorderColor (Color::create (layout, 0xffffff));
    styleAttrs.setBorderStyle (BORDER_INSET);
    styleAttrs.padding.setVal (5);
 
@@ -58,17 +57,18 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    Style *widgetStyle1 = Style::create (layout, &styleAttrs);
 
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffff80);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffff80);
    styleAttrs.margin.setVal (0);
    styleAttrs.borderWidth.setVal (1);
-   styleAttrs.setBorderColor (Color::createSimple (layout, 0x4040ff));
+   styleAttrs.setBorderColor (Color::create (layout, 0x4040ff));
    styleAttrs.setBorderStyle (BORDER_SOLID);
    styleAttrs.padding.setVal (1);
 
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 
    const char *words1[] = { "Some", "random", "text.", NULL };
    const char *words2[] = { "A", "nested", "paragraph.", NULL };
-   
+
    for(int i = 0; words1[i]; i++) {
       if(i != 0)
          textblock1->addSpace (wordStyle);
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 
    for(int i = 0; i < 1; i++) {
       textblock1->addParbreak(0, wordStyle);
-      
+
       Textblock *textblock2 = new Textblock (false);
       textblock1->addWidget (textblock2, widgetStyle2);
 

@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -43,41 +42,41 @@ Iterator::Iterator()
 Iterator::Iterator(const Iterator &it2)
 {
    impl = it2.impl;
-   if(impl)
+   if (impl)
       impl->ref();
 }
 
 Iterator::Iterator(Iterator &it2)
 {
    impl = it2.impl;
-   if(impl)
+   if (impl)
       impl->ref();
 }
 
 Iterator &Iterator::operator=(const Iterator &it2)
 {
-   if(impl)
+   if (impl)
       impl->unref();
    impl = it2.impl;
-   if(impl)
+   if (impl)
       impl->ref();
    return *this;
 }
 
 Iterator &Iterator::operator=(Iterator &it2)
 {
-   if(impl)
+   if (impl)
       impl->unref();
    impl = it2.impl;
-   if(impl)
+   if (impl)
       impl->ref();
    return *this;
 }
 
 Iterator::~Iterator()
 {
-   if(impl)
-      impl->unref(); 
+   if (impl)
+      impl->unref();
 }
 
 // ----------------
@@ -88,8 +87,8 @@ void Collection::intoStringBuffer(misc::StringBuffer *sb)
 {
    sb->append("{ ");
    bool first = true;
-   for(Iterator it = iterator(); it.hasNext(); ) {
-      if(!first)
+   for (Iterator it = iterator(); it.hasNext(); ) {
+      if (!first)
          sb->append(", ");
       it.getNext()->intoStringBuffer(sb);
       first = false;
@@ -117,27 +116,27 @@ Vector::~Vector()
 
 void Vector::put(Object *newElement, int newPos)
 {
-   if(newPos == -1)
+   if (newPos == -1)
       newPos = numElements;
 
    // Old entry is overwritten.
-   if(newPos < numElements) {
-      if(ownerOfObjects && array[newPos])
+   if (newPos < numElements) {
+      if (ownerOfObjects && array[newPos])
          delete array[newPos];
    }
 
    // Allocated memory has to be increased.
-   if(newPos >= numAlloc) {
+   if (newPos >= numAlloc) {
       while (newPos >= numAlloc)
          numAlloc *= 2;
       array = (Object**)realloc(array, numAlloc * sizeof(Object*));
    }
 
    // Insert NULL's into possible gap before new position.
-   for(int i = numElements; i < newPos; i++)
+   for (int i = numElements; i < newPos; i++)
       array[i] = NULL;
 
-   if(newPos >= numElements)
+   if (newPos >= numElements)
       numElements = newPos + 1;
 
    array[newPos] = newElement;
@@ -146,8 +145,8 @@ void Vector::put(Object *newElement, int newPos)
 void Vector::clear()
 {
    if (ownerOfObjects) {
-      for(int i = 0; i < numElements; i++)
-         if(array[i])
+      for (int i = 0; i < numElements; i++)
+         if (array[i])
             delete array[i];
    }
 
@@ -156,18 +155,18 @@ void Vector::clear()
 
 void Vector::insert(Object *newElement, int pos)
 {
-   if(pos >= numElements)
+   if (pos >= numElements)
       put(newElement, pos);
    else {
       numElements++;
 
       // Allocated memory has to be increased.
-      if(numElements >= numAlloc) {
+      if (numElements >= numAlloc) {
          numAlloc *= 2;
          array = (Object**)realloc(array, numAlloc * sizeof(Object*));
       }
 
-      for(int i = numElements - 1; i > pos; i--)
+      for (int i = numElements - 1; i > pos; i--)
          array[i] = array[i - 1];
 
       array[pos] = newElement;
@@ -176,10 +175,10 @@ void Vector::insert(Object *newElement, int pos)
 
 void Vector::remove(int pos)
 {
-   if(ownerOfObjects && array[pos])
+   if (ownerOfObjects && array[pos])
       delete array[pos];
 
-   for(int i = pos + 1; i < numElements; i++)
+   for (int i = pos + 1; i < numElements; i++)
       array[i - 1] = array[i];
 
    numElements--;
@@ -220,8 +219,8 @@ List::~List()
 
 void List::clear()
 {
-   while(first) {
-      if(ownerOfObjects && first->object)
+   while (first) {
+      if (ownerOfObjects && first->object)
          delete first->object;
       Node *next = first->next;
       delete first;
@@ -238,10 +237,10 @@ void List::append(Object *element)
    newLast->next = NULL;
    newLast->object = element;
 
-   if(last) {
+   if (last) {
       last->next = newLast;
       last = newLast;
-   } else 
+   } else
       first = last = newLast;
 
    numElements++;
@@ -252,21 +251,21 @@ bool List::remove0(Object *element, bool compare, bool doNotDeleteAtAll)
 {
    Node *beforeCur, *cur;
 
-   for(beforeCur = NULL, cur = first; cur; beforeCur = cur, cur = cur->next) {
+   for (beforeCur = NULL, cur = first; cur; beforeCur = cur, cur = cur->next) {
       if (compare ?
           (cur->object && element->equals(cur->object)) :
           element == cur->object) {
-         if(beforeCur) {
+         if (beforeCur) {
             beforeCur->next = cur->next;
-            if(cur->next == NULL)
+            if (cur->next == NULL)
                last = beforeCur;
          } else {
             first = cur->next;
-            if(first == NULL)
+            if (first == NULL)
                last = NULL;
          }
 
-         if(ownerOfObjects && cur->object && !doNotDeleteAtAll)
+         if (ownerOfObjects && cur->object && !doNotDeleteAtAll)
             delete cur->object;
          delete cur;
 
@@ -282,7 +281,7 @@ Object *List::ListIterator::getNext()
 {
    Object *object;
 
-   if(current) {
+   if (current) {
       object = current->object;
       current = current->next;
    } else
@@ -313,20 +312,20 @@ HashTable::HashTable(bool ownerOfKeys, bool ownerOfValues, int tableSize)
    this->tableSize = tableSize;
 
    table = new Node*[tableSize];
-   for(int i = 0; i < tableSize; i++)
+   for (int i = 0; i < tableSize; i++)
       table[i] = NULL;
 }
 
 HashTable::~HashTable()
 {
-   for(int i = 0; i < tableSize; i++) {
+   for (int i = 0; i < tableSize; i++) {
       Node *n1 = table[i];
-      while(n1) {
+      while (n1) {
          Node *n2 = n1->next;
 
-         if(ownerOfValues && n1->value)
+         if (ownerOfValues && n1->value)
             delete n1->value;
-         if(ownerOfKeys)
+         if (ownerOfKeys)
             delete n1->key;
          delete n1;
 
@@ -342,9 +341,9 @@ void HashTable::intoStringBuffer(misc::StringBuffer *sb)
    sb->append("{ ");
 
    bool first = true;
-   for(int i = 0; i < tableSize; i++) {
-      for(Node *node = table[i]; node; node = node->next) {
-         if(!first)
+   for (int i = 0; i < tableSize; i++) {
+      for (Node *node = table[i]; node; node = node->next) {
+         if (!first)
             sb->append(", ");
          node->key->intoStringBuffer(sb);
          sb->append(" => ");
@@ -369,7 +368,7 @@ void HashTable::put(Object *key, Object *value)
 bool HashTable::contains(Object *key)
 {
    int h = calcHashValue(key);
-   for(Node *n = table[h]; n; n = n->next) {
+   for (Node *n = table[h]; n; n = n->next) {
       if (key->equals(n->key))
          return true;
    }
@@ -380,7 +379,7 @@ bool HashTable::contains(Object *key)
 Object *HashTable::get(Object *key)
 {
    int h = calcHashValue(key);
-   for(Node *n = table[h]; n; n = n->next) {
+   for (Node *n = table[h]; n; n = n->next) {
       if (key->equals(n->key))
          return n->value;
    }
@@ -393,16 +392,16 @@ bool HashTable::remove(Object *key)
    int h = calcHashValue(key);
    Node *last, *cur;
 
-   for(last = NULL, cur = table[h]; cur; last = cur, cur = cur->next) {
+   for (last = NULL, cur = table[h]; cur; last = cur, cur = cur->next) {
       if (key->equals(cur->key)) {
-         if(last)
+         if (last)
             last->next = cur->next;
          else
             table[h] = cur->next;
 
-         if(ownerOfValues && cur->value)
+         if (ownerOfValues && cur->value)
             delete cur->value;
-         if(ownerOfKeys)
+         if (ownerOfKeys)
             delete cur->key;
          delete cur;
 
@@ -416,7 +415,7 @@ bool HashTable::remove(Object *key)
 Object *HashTable::getKey (Object *key)
 {
    int h = calcHashValue(key);
-   for(Node *n = table[h]; n; n = n->next) {
+   for (Node *n = table[h]; n; n = n->next) {
       if (key->equals(n->key))
          return n->key;
    }
@@ -434,11 +433,11 @@ HashTable::HashTableIterator::HashTableIterator(HashTable *table)
 
 void HashTable::HashTableIterator::gotoNext()
 {
-   if(node)
+   if (node)
       node = node->next;
 
-   while(node == NULL) {
-      if(pos >= table->tableSize - 1)
+   while (node == NULL) {
+      if (pos >= table->tableSize - 1)
          return;
       pos++;
       node = table->table[pos];
@@ -449,7 +448,7 @@ void HashTable::HashTableIterator::gotoNext()
 Object *HashTable::HashTableIterator::getNext()
 {
    Object *result;
-   if(node)
+   if (node)
       result = node->key;
    else
       result = NULL;
@@ -492,7 +491,7 @@ void Stack::push (object::Object *object)
    newTop->prev = top;
 
    top = newTop;
-   if(bottom == NULL)
+   if (bottom == NULL)
       bottom = top;
 
    numElements++;
@@ -503,11 +502,11 @@ void Stack::pushUnder (object::Object *object)
    Node *newBottom = new Node ();
    newBottom->object = object;
    newBottom->prev = NULL;
-   if(bottom != NULL)
+   if (bottom != NULL)
       bottom->prev = newBottom;
 
    bottom = newBottom;
-   if(top == NULL)
+   if (top == NULL)
       top = bottom;
 
    numElements++;
@@ -522,7 +521,7 @@ void Stack::pop ()
    delete top;
 
    top = newTop;
-   if(top == NULL)
+   if (top == NULL)
       bottom = NULL;
 
    numElements--;
@@ -532,7 +531,7 @@ Object *Stack::StackIterator::getNext()
 {
    Object *object;
 
-   if(current) {
+   if (current) {
       object = current->object;
       current = current->prev;
    } else

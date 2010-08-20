@@ -73,7 +73,7 @@ are found in:
 
   Closing the TCP connection:
     The four packet-sending closing sequence of the TCP protocol.
- 
+
    In  a  WAN  context,  every  single  item  of this list has an
 associated  delay that is non deterministic and often measured in
 seconds. If we add several connections per browsed page (each one
@@ -96,7 +96,7 @@ The traditional (blocking) approach
      packets that belong to other connections may be arriving,
      and have to wait for service.
 
-     Web browsers handle many small transactions, 
+     Web browsers handle many small transactions,
      if waiting times are not overlapped
      the latency perceived by the user can be very annoying.
 
@@ -219,7 +219,7 @@ arrives,  a call-back function is called, and the program resumes
 what  it  was doing at DNS-request time. The interesting thing is
 that  the  call-back  happens in the main thread, while the child
 thread  simply  exits  when  done.  This is implemented through a
-server-channel design. 
+server-channel design.
 
 
 The server channel
@@ -252,7 +252,7 @@ Basically,  a socket file descriptor of AF_INET type is requested
 and set to non-blocking I/O. When the DNS server has resolved the
 name, the socket connection process begins by calling connect(2);
   {We use the Unix convention of identifying the manual section
-   where the concept is described, in this case 
+   where the concept is described, in this case
    section 2 (system calls).}
 which  returns  immediately  with an EINPROGRESS error.
 
@@ -311,7 +311,7 @@ an error condition).
 ----------------------
 Closing the connection
 ----------------------
- 
+
    Closing  a  TCP connection requires four data segments, not an
 impressive  amount  but  twice  the round trip time, which can be
 substantial.  When  data  retrieval  finishes,  socket closing is
@@ -370,7 +370,7 @@ passed to the I/O engine.
   'ExtData' MAY be provided.
 
   'Status',  'FD'  and  'GioCh'  are  set  by I/O engine internal
-routines. 
+routines.
 
    When  there  is new data in the file descriptor, 'IO_callback'
 gets  called  (by  glib).  Only  after  the  I/O  engine finishes
@@ -383,7 +383,7 @@ The I/O engine transfer buffer
    The  'Buf' and  'BufSize'  fields  of  the  request  structure
 provide  the transfer buffer for each operation. This buffer must
 be set by the client (to increase performance by avoiding copying
-data). 
+data).
 
    On  reads,  the client specifies the amount and where to place
 the retrieved data; on writes, it specifies the amount and source

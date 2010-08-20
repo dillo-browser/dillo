@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -33,35 +32,38 @@ using namespace dw::core;
 using namespace dw::core::style;
 using namespace dw::fltk;
 
-class LinkTestReceiver: public Widget::LinkReceiver
+class LinkTestReceiver: public Layout::LinkReceiver
 {
-   bool enter (Widget *widget, int link, int x, int y);
-   bool press (Widget *widget, int link, int x, int y, EventButton *event);
-   bool release (Widget *widget, int link, int x, int y, EventButton *event);
-   bool click (Widget *widget, int link, int x, int y, EventButton *event);
+   bool enter (Widget *widget, int link, int img, int x, int y);
+   bool press (Widget *widget, int link, int img, int x, int y,
+               EventButton *event);
+   bool release (Widget *widget, int link, int img, int x, int y,
+                 EventButton *event);
+   bool click (Widget *widget, int link, int img, int x, int y,
+               EventButton *event);
 };
 
-bool LinkTestReceiver::enter (Widget *widget, int link, int x, int y)
+bool LinkTestReceiver::enter (Widget *widget, int link, int img, int x, int y)
 {
    printf ("enter: %d\n", link);
    return true;
 }
 
-bool LinkTestReceiver::press (Widget *widget, int link, int x, int y,
+bool LinkTestReceiver::press (Widget *widget, int link, int img, int x, int y,
                               EventButton *event)
 {
    printf ("press: %d\n", link);
    return true;
 }
 
-bool LinkTestReceiver::release (Widget *widget, int link, int x, int y,
+bool LinkTestReceiver::release (Widget *widget, int link, int img, int x,int y,
                                 EventButton *event)
 {
    printf ("release: %d\n", link);
    return true;
 }
 
-bool LinkTestReceiver::click (Widget *widget, int link, int x, int y,
+bool LinkTestReceiver::click (Widget *widget, int link, int img, int x, int y,
                               EventButton *event)
 {
    printf ("click: %d\n", link);
@@ -76,7 +78,7 @@ int main(int argc, char **argv)
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
 
-   ::fltk::Window *window = new ::fltk::Window(200, 300, "Dw Links");
+   ::fltk::Window *window = new ::fltk::Window(200, 300, "Dw Links2");
    window->begin();
     ::fltk::Widget *Panel = new ::fltk::Widget(0, 0, ww, lh, "CONTROL PANEL");
 
@@ -117,10 +119,11 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    Style *widgetStyle = Style::create (layout, &styleAttrs);
 
@@ -128,7 +131,7 @@ int main(int argc, char **argv)
    textblock->setStyle (widgetStyle);
    layout->setWidget (textblock);
 
-   textblock->connectLink (new LinkTestReceiver ());
+   layout->connectLink (new LinkTestReceiver ());
 
    widgetStyle->unref();
 
@@ -138,10 +141,10 @@ int main(int argc, char **argv)
 
    Style *wordStyle = Style::create (layout, &styleAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x0000ff);
+   styleAttrs.color = Color::create (layout, 0x0000ff);
    styleAttrs.textDecoration = TEXT_DECORATION_UNDERLINE;
    styleAttrs.cursor = CURSOR_POINTER;
-   
+
    for(int i = 1; i <= 30; i++) {
       char buf[4];
       sprintf(buf, "%d.", i);
@@ -158,15 +161,15 @@ int main(int argc, char **argv)
          textblock->addText (words1[j], wordStyle);
          textblock->addSpace(wordStyle);
       }
-      
+
       styleAttrs.x_link = i;
       Style *linkStyle = Style::create (layout, &styleAttrs);
-      
+
       for(int j = 0; words2[j]; j++) {
          textblock->addText (words2[j], linkStyle);
          textblock->addSpace(wordStyle);
       }
-      
+
       linkStyle->unref ();
 
       textblock->addParbreak(10, wordStyle);

@@ -7,6 +7,7 @@
 #include <string.h>    /* for strerror */
 #include <strings.h>   /* for strcasecmp, strncasecmp (POSIX 2001) */
 
+#include "d_size.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,10 @@ extern "C" {
 
 #undef  MIN
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
+
+/* Handle signed char */
+#define dIsspace(c) isspace((uchar_t)(c))
+#define dIsalnum(c) isalnum((uchar_t)(c))
 
 /*
  *-- Casts -------------------------------------------------------------------
@@ -55,6 +60,14 @@ void dFree (void *mem);
  */
 #define D_STMT_START      do
 #define D_STMT_END        while (0)
+#define dReturn_if(expr)               \
+   D_STMT_START{                       \
+      if (expr) { return; };           \
+   }D_STMT_END
+#define dReturn_val_if(expr,val)       \
+   D_STMT_START{                       \
+      if (expr) { return val; };       \
+   }D_STMT_END
 #define dReturn_if_fail(expr)          \
    D_STMT_START{                       \
       if (!(expr)) { return; };        \
@@ -150,7 +163,12 @@ void *dList_find_sorted (Dlist *lp, const void *data, dCompareFunc func);
 /*
  *- Parse function ------------------------------------------------------------
  */
-int dParser_get_rc_pair(char **line, char **name, char **value);
+int dParser_parse_rc_line(char **line, char **name, char **value);
+
+/*
+ *- Dlib messages -------------------------------------------------------------
+ */
+void dLib_show_messages(bool_t show);
 
 /*
  *- Misc utility functions ----------------------------------------------------

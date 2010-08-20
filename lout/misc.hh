@@ -31,9 +31,6 @@ template <class T> inline T max (T a, T b, T c)
 extern const char *prgName;
 
 void init (int argc, char *argv[]);
-void chop (char *s);
-char *strip (char *s);
-
 
 inline void assertNotReached ()
 {
@@ -51,7 +48,7 @@ class Comparable
 {
 public:
     virtual ~Comparable();
-    
+
    /**
     * \brief Compare two objects c1 and c2.
     *
@@ -77,19 +74,12 @@ public:
 template <class T> class SimpleVector
 {
 private:
-   enum {
-      /**
-       * \brief Edit this for debugging. Should be optimized by the compiler.
-       */
-      BOUND_CHECKING = 1
-   };
-
    T *array;
    int num, numAlloc;
 
    inline void resize ()
    {
-      /* This algorithm was tunned for memory&speed with this huge page:
+      /* This algorithm was tuned for memory&speed with this huge page:
        *   http://downloads.mysql.com/docs/refman-6.0-en.html.tar.gz
        */
       if (array == NULL) {
@@ -112,6 +102,14 @@ public:
       this->array = NULL;
    }
 
+   inline SimpleVector (const SimpleVector &o) {
+      this->array = NULL;
+      this->num = o.num;
+      this->numAlloc = o.numAlloc;
+      resize ();
+      memcpy (this->array, o.array, sizeof (T) * num);
+   }
+
    inline ~SimpleVector ()
    {
       if (this->array)
@@ -130,19 +128,23 @@ public:
     *
     * May be necessary before calling misc::SimpleVector::set.
     */
-   inline void increase() { this->num++; this->resize (); }
+   inline void increase() { setSize(this->num + 1); }
 
    /**
-    * \brief Set the size explicitely.
+    * \brief Set the size explicitly.
     *
-    * May be necessary before called before misc::SimpleVector::set.
+    * May be necessary before calling misc::SimpleVector::set.
     */
-   inline void setSize(int newSize) { this->num = newSize; this->resize (); }
+   inline void setSize(int newSize) {
+      assert (newSize >= 0);
+      this->num = newSize;
+      this->resize ();
+   }
 
    /**
-    * \brief Set the size explicitely and initialize new values.
+    * \brief Set the size explicitly and initialize new values.
     *
-    * May be necessary before called before misc::SimpleVector::set.
+    * May be necessary before calling misc::SimpleVector::set.
     */
    inline void setSize (int newSize, T t) {
       int oldSize = this->num;
@@ -157,20 +159,18 @@ public:
     * \sa misc::SimpleVector::get
     */
    inline T* getRef (int i) {
-      if (BOUND_CHECKING)
-         assert (i >= 0 && i < this->num);
+      assert (i >= 0 && this->num - i > 0);
       return array + i;
    }
 
    /**
-    * \brief Return the one element, explicitety.
+    * \brief Return the one element, explicitly.
     *
     * The element is copied, so for complex elements, you should rather used
     * misc::SimpleVector::getRef.
     */
    inline T get (int i) {
-      if (BOUND_CHECKING)
-         assert (i >= 0 && i < this->num);
+      assert (i >= 0 && this->num - i > 0);
       return this->array[i];
    }
 
@@ -183,8 +183,7 @@ public:
     * be necessary before.
     */
    inline void set (int i, T t) {
-      if (BOUND_CHECKING)
-         assert (i >= 0 && i < this->num);
+      assert (i >= 0 && this->num - i > 0);
       this->array[i] = t;
    }
 };
@@ -232,9 +231,9 @@ class BitSet
 private:
    unsigned char *bits;
    int numBytes;
-   
+
    inline int bytesForBits(int bits) { return bits == 0 ? 1 : (bits + 7) / 8; }
-  
+
 public:
    BitSet(int initBits);
    ~BitSet();
@@ -255,7 +254,7 @@ private:
    size_t poolSize, poolLimit, freeIdx;
    SimpleVector <char*> *pools;
    SimpleVector <char*> *bulk;
-   
+
 public:
    ZoneAllocator (size_t poolSize) {
       this->poolSize = poolSize;

@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -44,11 +43,11 @@ static ::fltk::Widget *resultLabel;
 static void findCallback (::fltk::Widget *widget, void *data)
 {
    //switch(layout->search ("worm", true)) {
-   switch(layout->search ("WORM", false)) {
+   switch(layout->search ("WORM", false, false)) {
        case FindtextState::SUCCESS:
           resultLabel->label("SUCCESS");
           break;
-          
+
        case FindtextState::RESTART:
           resultLabel->label("RESTART");
           break;
@@ -94,13 +93,14 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
 
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
    styleAttrs.font = Font::create (layout, &fontAttrs);
    styleAttrs.margin.setVal (10);
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
    Style *topWidgetStyle = Style::create (layout, &styleAttrs);
 
    styleAttrs.margin.setVal (0);

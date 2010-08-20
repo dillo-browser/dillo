@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -30,6 +29,7 @@
 #include <fltk/run.h>
 
 #include <stdio.h>
+#include "../lout/msg.h"
 
 using namespace fltk;
 using namespace lout::object;
@@ -47,9 +47,8 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
    canvasWidth = 1;
    canvasHeight = 1;
    bgColor = WHITE;
-   lastDraw = time(0);
-   drawDelay = 2;      /* in seconds */
    mouse_x = mouse_y = 0;
+   exposeArea = NULL;
    if (backBuffer == NULL) {
       backBuffer = new Image ();
    }
@@ -74,10 +73,10 @@ void FltkViewBase::draw ()
    int d = damage ();
 
    if ((d & DAMAGE_VALUE) && !(d & DAMAGE_EXPOSE)) {
-      container::typed::Iterator <core::Rectangle> it;
+      lout::container::typed::Iterator <core::Rectangle> it;
 
       for (it = drawRegion.rectangles (); it.hasNext (); ) {
-         drawRectangle (it.getNext (), true);
+         draw (it.getNext (), DRAW_BUFFERED);
       }
 
       drawRegion.clear ();
@@ -96,16 +95,18 @@ void FltkViewBase::draw ()
          w (),
          h ());
 
-      drawRectangle (&rect, false);
-
-      if (! (d & DAMAGE_SCROLL)) {
+      if (d == DAMAGE_SCROLL) {
+         // a clipping rectangle has already been set by fltk::scrollrect ()
+         draw (&rect, DRAW_PLAIN);
+      } else {
+         draw (&rect, DRAW_CLIPPED);
          drawRegion.clear ();
       }
    }
 }
 
-void FltkViewBase::drawRectangle (const core::Rectangle *rect,
-                                  bool doubleBuffer)
+void FltkViewBase::draw (const core::Rectangle *rect,
+                         DrawType type)
 {
    int offsetX = 0, offsetY = 0;
 
@@ -116,7 +117,7 @@ void FltkViewBase::drawRectangle (const core::Rectangle *rect,
       translateCanvasXToViewX (rect->x) + offsetX,
       translateCanvasYToViewY (rect->y) + offsetY,
       rect->width, rect->height);
-   
+
    ::fltk::intersect_with_clip (viewRect);
 
    viewRect.x (viewRect.x () - offsetX);
@@ -129,14 +130,16 @@ void FltkViewBase::drawRectangle (const core::Rectangle *rect,
          viewRect.w (),
          viewRect.h ());
 
-      if (doubleBuffer && backBuffer && !backBufferInUse) {
+      exposeArea = &viewRect;
+
+      if (type == DRAW_BUFFERED && backBuffer && !backBufferInUse) {
          backBufferInUse = true;
          {
             GSave gsave;
 
             backBuffer->setsize (viewRect.w (), viewRect.h ());
             backBuffer->make_current ();
-            translate (-viewRect.x (), -viewRect.y ());   
+            translate (-viewRect.x (), -viewRect.y ());
 
             setcolor (bgColor);
             fillrect (viewRect);
@@ -147,19 +150,21 @@ void FltkViewBase::drawRectangle (const core::Rectangle *rect,
             viewRect);
 
          backBufferInUse = false;
-      } else if (doubleBuffer) {
+      } else if (type == DRAW_BUFFERED || type == DRAW_CLIPPED) {
+         // if type == DRAW_BUFFERED but we do not have backBuffer available
+         // we fall back to clipped drawing
          push_clip (viewRect);
          setcolor (bgColor);
          fillrect (viewRect);
          theLayout->expose (this, &r);
          pop_clip ();
       } else {
-         // if doubleBuffer is false we assume that a clipping
-         // rectangle has been set already
          setcolor (bgColor);
          fillrect (viewRect);
          theLayout->expose (this, &r);
       }
+
+      exposeArea = NULL;
    }
 }
 
@@ -178,13 +183,13 @@ core::ButtonState getDwButtonState ()
 {
    int s1 = event_state ();
    int s2 = (core::ButtonState)0;
-   
-   if(s1 & SHIFT)   s2 |= core::SHIFT_MASK;
-   if(s1 & CTRL)    s2 |= core::CONTROL_MASK;
-   if(s1 & ALT)     s2 |= core::META_MASK;
-   if(s1 & BUTTON1) s2 |= core::BUTTON1_MASK;
-   if(s1 & BUTTON2) s2 |= core::BUTTON2_MASK;
-   if(s1 & BUTTON3) s2 |= core::BUTTON3_MASK;
+
+   if (s1 & SHIFT)   s2 |= core::SHIFT_MASK;
+   if (s1 & CTRL)    s2 |= core::CONTROL_MASK;
+   if (s1 & ALT)     s2 |= core::META_MASK;
+   if (s1 & BUTTON1) s2 |= core::BUTTON1_MASK;
+   if (s1 & BUTTON2) s2 |= core::BUTTON2_MASK;
+   if (s1 & BUTTON3) s2 |= core::BUTTON3_MASK;
 
    return (core::ButtonState)s2;
 }
@@ -194,7 +199,7 @@ int FltkViewBase::handle (int event)
    bool processed;
 
    /**
-    * \todo Consider, whether this from the FLTK documentation has any 
+    * \todo Consider, whether this from the FLTK documentation has any
     *    impacts: "To receive fltk::RELEASE events you must return non-zero
     *    when passed a fltk::PUSH event. "
     */
@@ -205,7 +210,11 @@ int FltkViewBase::handle (int event)
                                  translateViewXToCanvasX (event_x ()),
                                  translateViewYToCanvasY (event_y ()),
                                  getDwButtonState (), event_button ());
-      //printf ("PUSH => %s\n", processed ? "true" : "false");
+      _MSG("PUSH => %s\n", processed ? "true" : "false");
+      if (processed) {
+         /* pressed dw content; give focus to the view */
+         ::fltk::focus(this);
+      }
       return processed ? true : Group::handle (event);
 
    case RELEASE:
@@ -214,7 +223,7 @@ int FltkViewBase::handle (int event)
                                    translateViewXToCanvasX (event_x ()),
                                    translateViewYToCanvasY (event_y ()),
                                    getDwButtonState (), event_button ());
-      //printf ("RELEASE => %s\n", processed ? "true" : "false");
+      _MSG("RELEASE => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
    case MOVE:
@@ -225,7 +234,7 @@ int FltkViewBase::handle (int event)
                                   translateViewXToCanvasX (mouse_x),
                                   translateViewYToCanvasY (mouse_y),
                                   getDwButtonState ());
-      //printf ("MOVE => %s\n", processed ? "true" : "false");
+      _MSG("MOVE => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
    case DRAG:
@@ -234,7 +243,7 @@ int FltkViewBase::handle (int event)
                                   translateViewXToCanvasX (event_x ()),
                                   translateViewYToCanvasY (event_y ()),
                                   getDwButtonState ());
-      //printf ("DRAG => %s\n", processed ? "true" : "false");
+      _MSG("DRAG => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
    case ENTER:
@@ -246,7 +255,7 @@ int FltkViewBase::handle (int event)
    case LEAVE:
       theLayout->leaveNotify (this, getDwButtonState ());
       return Group::handle (event);
-      
+
    default:
       return Group::handle (event);
    }
@@ -269,7 +278,7 @@ void FltkViewBase::setCursor (core::style::Cursor cursor)
 {
    static Cursor *mapDwToFltk[] = {
       CURSOR_CROSS,
-      CURSOR_ARROW,
+      CURSOR_DEFAULT,
       CURSOR_HAND,
       CURSOR_MOVE,
       CURSOR_WE,
@@ -288,7 +297,7 @@ void FltkViewBase::setCursor (core::style::Cursor cursor)
    /*
    static char *cursorName[] = {
       "CURSOR_CROSS",
-      "CURSOR_ARROW",
+      "CURSOR_DEFAULT",
       "CURSOR_HAND",
       "CURSOR_MOVE",
       "CURSOR_WE",
@@ -304,7 +313,7 @@ void FltkViewBase::setCursor (core::style::Cursor cursor)
       "CURSOR_HELP"
    };
 
-   printf ("Cursor changes to '%s'.\n", cursorName[cursor]);
+   MSG("Cursor changes to '%s'.\n", cursorName[cursor]);
    */
 
    /** \bug Does not work */
@@ -333,33 +342,13 @@ void FltkViewBase::queueDraw (core::Rectangle *area)
    redraw (DAMAGE_VALUE);
 }
 
-static void drawTotalTimeout (void *data)
-{
-   FltkViewBase *view = (FltkViewBase*) data;
-   if (time(0) >= view->lastDraw + view->drawDelay) {
-      view->drawTotal ();
-   } else {
-      ::fltk::add_timeout (0.2f, drawTotalTimeout, data);
-   }
-}
-
-void FltkViewBase::drawTotal ()
-{
-   //static int calls = 0;
-   //printf(" FltkViewBase::drawTotal calls = %d\n", ++calls);
-   redraw (DAMAGE_EXPOSE);
-   lastDraw = time (0);
-   cancelQueueDraw ();
-}
-
 void FltkViewBase::queueDrawTotal ()
 {
-   drawTotal ();
+   redraw (DAMAGE_EXPOSE);
 }
 
 void FltkViewBase::cancelQueueDraw ()
 {
-   ::fltk::remove_timeout (drawTotalTimeout, this);
 }
 
 void FltkViewBase::drawPoint (core::style::Color *color,
@@ -383,10 +372,26 @@ void FltkViewBase::drawRectangle (core::style::Color *color,
                                   int x, int y, int width, int height)
 {
    setcolor(((FltkColor*)color)->colors[shading]);
+   if (width < 0) {
+      x += width;
+      width = -width;
+   }
+   if (height < 0) {
+      y += height;
+      height = -height;
+   }
+
    int x1 = translateCanvasXToViewX (x);
    int y1 = translateCanvasYToViewY (y);
    int x2 = translateCanvasXToViewX (x + width);
    int y2 = translateCanvasYToViewY (y + height);
+
+   // We only support rectangles with line width 1px, so we clip with 
+   // a rectangle 1px wider and higher than what we actually expose.
+   // This is only really necessary for non-filled rectangles.
+   clipPoint (&x1, &y1, 1);
+   clipPoint (&x2, &y2, 1);
+
    ::fltk::Rectangle rect (x1, y1, x2 - x1, y2 - y1);
    if (filled)
       fillrect (rect);
@@ -396,13 +401,13 @@ void FltkViewBase::drawRectangle (core::style::Color *color,
 
 void FltkViewBase::drawArc (core::style::Color *color,
                             core::style::Color::Shading shading, bool filled,
-                            int x, int y, int width, int height,
+                            int centerX, int centerY, int width, int height,
                             int angle1, int angle2)
 {
    setcolor(((FltkColor*)color)->colors[shading]);
-   int x1 = translateCanvasXToViewX (x);
-   int y1 = translateCanvasYToViewY (y);
-   ::fltk::Rectangle rect (x1, y1, width, height);
+   int x = translateCanvasXToViewX (centerX) - width / 2;
+   int y = translateCanvasYToViewY (centerY) - height / 2;
+   ::fltk::Rectangle rect (x, y, width, height);
    addchord(rect, angle1, angle2);
    closepath();
    if (filled)
@@ -427,7 +432,7 @@ void FltkViewBase::drawPolygon (core::style::Color *color,
          fillpath();
       else
          strokepath();
-   }         
+   }
 }
 
 core::View *FltkViewBase::getClippingView (int x, int y, int width, int height)
@@ -456,7 +461,7 @@ FltkWidgetView::~FltkWidgetView ()
 
 void FltkWidgetView::layout () {
    /**
-    * pass layout to child widgets. This is needed for complex fltk 
+    * pass layout to child widgets. This is needed for complex fltk
     * widgets as TextEditor.
     * We can't use Group::layout() as that would rearrange the widgets.
     */
@@ -477,8 +482,23 @@ void FltkWidgetView::drawText (core::style::Font *font,
    FltkFont *ff = (FltkFont*)font;
    setfont(ff->font, ff->size);
    setcolor(((FltkColor*)color)->colors[shading]);
-   drawtext(text, len,
-            translateCanvasXToViewX (x), translateCanvasYToViewY (y));
+
+   if (!font->letterSpacing) {
+      drawtext(text, len,
+               translateCanvasXToViewX (x), translateCanvasYToViewY (y));
+   } else {
+      /* Nonzero letter spacing adjustment, draw each glyph individually */
+      int viewX = translateCanvasXToViewX (x),
+          viewY = translateCanvasYToViewY (y);
+      int curr = 0, next = 0;
+
+      while (next < len) {
+         next = theLayout->nextGlyph(text, curr);
+         drawtext(text + curr, next - curr, viewX, viewY);
+         viewX += font->letterSpacing + (int)getwidth(text + curr,next - curr);
+         curr = next;
+      }
+   }
 }
 
 void FltkWidgetView::drawImage (core::Imgbuf *imgbuf, int xRoot, int yRoot,

@@ -13,6 +13,7 @@
 
 
 #include "bw.h"
+#include "msg.h"
 #include "list.h"
 #include "capi.h"
 #include "uicmd.hh"
@@ -58,11 +59,14 @@ BrowserWindow *a_Bw_new()
    bw->nav_expect_url = NULL;
 
    bw->redirect_level = 0;
+   bw->meta_refresh_status = 0;
+   bw->meta_refresh_url = NULL;
 
    bw->RootClients = dList_new(8);
    bw->ImageClients = dList_new(8);
    bw->NumImages = 0;
    bw->NumImagesGot = 0;
+   bw->NumPendingStyleSheets = 0;
    bw->PageUrls = dList_new(8);
    bw->Docs = dList_new(8);
 
@@ -98,6 +102,8 @@ void a_Bw_free(BrowserWindow *bw)
          for (j = 0; j < dList_length(bw->nav_stack); ++j)
             dFree(dList_nth_data(bw->nav_stack, j));
          dList_free(bw->nav_stack);
+
+         a_Url_free(bw->meta_refresh_url);
 
          dStr_free(bw->page_bugs, 1);
          dFree(bw);
@@ -176,7 +182,7 @@ void a_Bw_stop_clients(BrowserWindow *bw, int flags)
    if (flags & BW_Root) {
       /* Remove root clients */
       while ((data = dList_nth_data(bw->RootClients, 0))) {
-         a_Capi_stop_client(VOIDP2INT(data), (flags & Bw_Force));
+         a_Capi_stop_client(VOIDP2INT(data), (flags & BW_Force));
          dList_remove_fast(bw->RootClients, data);
       }
    }
@@ -184,7 +190,7 @@ void a_Bw_stop_clients(BrowserWindow *bw, int flags)
    if (flags & BW_Img) {
       /* Remove image clients */
       while ((data = dList_nth_data(bw->ImageClients, 0))) {
-         a_Capi_stop_client(VOIDP2INT(data), (flags & Bw_Force));
+         a_Capi_stop_client(VOIDP2INT(data), (flags & BW_Force));
          dList_remove_fast(bw->ImageClients, data);
       }
    }
@@ -213,6 +219,38 @@ void a_Bw_add_doc(BrowserWindow *bw, void *vdoc)
    dReturn_if_fail ( bw != NULL && vdoc != NULL);
 
    dList_append(bw->Docs, vdoc);
+}
+
+/*
+ * Get current document.
+ */
+void *a_Bw_get_current_doc(BrowserWindow *bw)
+{
+   void *doc = NULL;
+   int len = dList_length(bw->Docs);
+
+   if (len == 1)
+      doc = dList_nth_data(bw->Docs, 0);
+   else if (len > 1)
+      MSG("a_Bw_get_current_doc() multiple docs not implemented\n");
+
+   return doc;
+}
+
+/*
+ * Get document by URL.
+ *
+ * This is currently used by popup menus that need to ensure that the
+ * page has not changed while the menu was popped up.
+ */
+void *a_Bw_get_url_doc(BrowserWindow *bw, const DilloUrl *url)
+{
+   void *doc = NULL;
+
+   if (url && dList_find_custom(bw->PageUrls, url, (dCompareFunc)a_Url_cmp)) {
+      doc = a_Bw_get_current_doc(bw);
+   }
+   return doc;
 }
 
 /*
@@ -253,6 +291,9 @@ void a_Bw_cleanup(BrowserWindow *bw)
    /* Zero image-progress data */
    bw->NumImages = 0;
    bw->NumImagesGot = 0;
+
+   /* Zero stylesheet counter */
+   bw->NumPendingStyleSheets = 0;
 }
 
 /*--------------------------------------------------------------------------*/

@@ -2,7 +2,7 @@
  * File: url.c
  *
  * Copyright (C) 2001 Livio Baldini Soares <livio@linux.ime.usp.br>
- * Copyright (C) 2001-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2001-2009 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 
 /*
- * Regular Expression as given in RFC2396 for URL parsing.
+ * Regular Expression as given in RFC3986 for URL parsing.
  *
  *  ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
  *   12            3  4          5       6  7        8 9
@@ -42,8 +42,6 @@
  *    - path is never "undefined" though it may be "empty".
  */
 
-
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -114,7 +112,7 @@ const char *a_Url_hostname(const DilloUrl *u)
          if ((p = strchr(url->authority, ':'))) {
             url->port = strtol(p + 1, NULL, 10);
             url->hostname = dStrndup(url->authority,
-				     (uint_t)(p - url->authority));
+                                     (uint_t)(p - url->authority));
          } else {
             url->hostname = url->authority;
          }
@@ -190,6 +188,7 @@ static DilloUrl *Url_object_new(const char *uri_str)
 
 /*
  *  Free a DilloUrl
+ *  Do nothing if the argument is NULL
  */
 void a_Url_free(DilloUrl *url)
 {
@@ -206,7 +205,7 @@ void a_Url_free(DilloUrl *url)
 }
 
 /*
- * Resolve the URL as RFC2396 suggests.
+ * Resolve the URL as RFC3986 suggests.
  */
 static Dstr *Url_resolve_relative(const char *RelStr,
                                   DilloUrl *BaseUrlPar,
@@ -230,14 +229,19 @@ static Dstr *Url_resolve_relative(const char *RelStr,
    SolvedUrl = dStr_sized_new(64);
    Path = dStr_sized_new(64);
 
-   /* path empty && scheme, authority and query undefined */
-   if (!RelUrl->path && !RelUrl->scheme &&
-       !RelUrl->authority && !RelUrl->query) {
+   /* path empty && scheme and authority undefined */
+   if (!RelUrl->path && !RelUrl->scheme && !RelUrl->authority) {
       dStr_append(SolvedUrl, BaseStr);
+      if ((p = strchr(SolvedUrl->str, '#')))
+         dStr_truncate(SolvedUrl, p - SolvedUrl->str);
 
+      if (RelUrl->query) {                        /* query */
+         if (BaseUrl->query)
+            dStr_truncate(SolvedUrl, BaseUrl->query - BaseUrl->buffer - 1);
+         dStr_append_c(SolvedUrl, '?');
+         dStr_append(SolvedUrl, RelUrl->query);
+      }
       if (RelUrl->fragment) {                    /* fragment */
-         if (BaseUrl->fragment)
-            dStr_truncate(SolvedUrl, BaseUrl->fragment-BaseUrl->buffer-1);
          dStr_append_c(SolvedUrl, '#');
          dStr_append(SolvedUrl, RelUrl->fragment);
       }
@@ -252,14 +256,12 @@ static Dstr *Url_resolve_relative(const char *RelStr,
       if (RelUrl->path)
          dStr_append(Path, RelUrl->path);
 
-   } else if (RelUrl->path && RelUrl->path[0] == '/') {   /* path */
-      dStr_append(Path, RelUrl->path);
-
    } else {
-      // solve relative path
-      if (BaseUrl->path) {
+      if (RelUrl->path && RelUrl->path[0] == '/') {   /* absolute path */
+         ; /* Ignore BaseUrl path */
+      } else if (BaseUrl->path) {                     /* relative path */
          dStr_append(Path, BaseUrl->path);
-         for (i = Path->len; --i >= 0 && Path->str[i] != '/'; );
+         for (i = Path->len; --i >= 0 && Path->str[i] != '/'; ) ;
          if (Path->str[i] == '/')
             dStr_truncate(Path, ++i);
       }
@@ -278,14 +280,10 @@ static Dstr *Url_resolve_relative(const char *RelStr,
       // erase "<segment>/../" and "<segment>/.."
       s = p = Path->str;
       while ( (p = strstr(p, "/..")) != NULL ) {
-         if ((p[3] == '/' || !p[3]) && (p - s)) { //  "/../" | "/.."
-
-            for (e = p + 3 ; p[-1] != '/' && p > s; --p);
-            if (p[0] != '.' || p[1] != '.' || p[2] != '/') {
-               dStr_erase(Path, p - Path->str, e - p + (*e != 0));
-               p -= (p > Path->str);
-            } else
-               p = e;
+         if (p[3] == '/' || !p[3]) { //  "/../" | "/.."
+            for (e = p + 3 ; p > s && p[-1] != '/'; --p) ;
+            dStr_erase(Path, p - Path->str, e - p + (p > s && *e != 0));
+            p -= (p > Path->str);
          } else
             p += 3;
       }
@@ -578,7 +576,7 @@ char *a_Url_decode_hex_str(const char *str)
  */
 char *a_Url_encode_hex_str(const char *str)
 {
-   static const char *verbatim = "-_.*";
+   static const char *const verbatim = "-_.*";
    char *newstr, *c;
 
    if (!str)
@@ -587,7 +585,7 @@ char *a_Url_encode_hex_str(const char *str)
    newstr = dNew(char, 6*strlen(str)+1);
 
    for (c = newstr; *str; str++)
-      if ((isalnum(*str) && !(*str & 0x80)) || strchr(verbatim, *str))
+      if ((dIsalnum(*str) && !(*str & 0x80)) || strchr(verbatim, *str))
       /* we really need isalnum for the "C" locale */
          *c++ = *str;
       else if (*str == ' ')
@@ -611,7 +609,7 @@ char *a_Url_encode_hex_str(const char *str)
 
 
 /*
- * RFC-2396 suggests this stripping when "importing" URLs from other media.
+ * RFC-3986 suggests this stripping when "importing" URLs from other media.
  * Strip: "URL:", enclosing < >, and embedded whitespace.
  * (We also strip illegal chars: 00-1F and 7F)
  */
@@ -635,4 +633,122 @@ char *a_Url_string_strip_delimiters(const char *str)
       *p = 0;
    }
    return new_str;
+}
+
+/*
+ * Is the provided hostname an IP address?
+ */
+static bool_t Url_host_is_ip(const char *host)
+{
+   uint_t len;
+
+   if (!host || !*host)
+      return FALSE;
+
+   len = strlen(host);
+
+   if (len == strspn(host, "0123456789.")) {
+      _MSG("an IPv4 address\n");
+      return TRUE;
+   }
+   if (*host == '[' &&
+       (len == strspn(host, "0123456789abcdefABCDEF:.[]"))) {
+      /* The precise format is shown in section 3.2.2 of rfc 3986 */
+      _MSG("an IPv6 address\n");
+      return TRUE;
+   }
+   return FALSE;
+}
+
+/*
+ * How many internal dots are in the public portion of this hostname?
+ * e.g., for "www.dillo.org", it is one because everything under "dillo.org",
+ * as a .org domain, is part of one organization.
+ *
+ * Of course this is only a simple and imperfect approximation of
+ * organizational boundaries.
+ */
+static uint_t Url_host_public_internal_dots(const char *host)
+{
+   uint_t ret = 1;
+
+   if (host) {
+      int start, after, tld_len;
+
+      /* We may be able to trust the format of the host string more than
+       * I am here. Trailing dots and no dots are real possibilities, though.
+       */
+      after = strlen(host);
+      if (after > 0 && host[after - 1] == '.')
+         after--;
+      start = after;
+      while (start > 0 && host[start - 1] != '.')
+         start--;
+      tld_len = after - start;
+
+      if (tld_len > 0) {
+         /* These TLDs were chosen by examining the current publicsuffix list
+          * in January 2010 and picking out those where it was simplest for
+          * them to describe the situation by beginning with a "*.[tld]" rule.
+          */
+         const char *const tlds[] = {"ar","au","bd","bn","bt","ck","cy","do",
+                                     "eg","er","et","fj","fk","gt","gu","id",
+                                     "il","jm","ke","kh","kw","ml","mm","mt",
+                                     "mz","ni","np","nz","om","pg","py","qa",
+                                     "sv","tr","uk","uy","ve","ye","yu","za",
+                                     "zm","zw"};
+         uint_t i, tld_num = sizeof(tlds) / sizeof(tlds[0]);
+
+         for (i = 0; i < tld_num; i++) {
+            if (strlen(tlds[i]) == (uint_t) tld_len &&
+                !dStrncasecmp(tlds[i], host + start, tld_len)) {
+               _MSG("TLD code matched %s\n", tlds[i]);
+               ret++;
+               break;
+            }
+         }
+      }
+   }
+   return ret;
+}
+
+/*
+ * Given a URL host string, return the portion that is public, i.e., the
+ * domain that is in a registry outside the organization.
+ * For 'www.dillo.org', that would be 'dillo.org'.
+ */
+const char *a_Url_host_find_public_suffix(const char *host)
+{
+   const char *s;
+   uint_t dots;
+
+   if (!host || !*host || Url_host_is_ip(host))
+      return host;
+
+   s = host;
+
+   while (s[1])
+      s++;
+
+   if (s > host && *s == '.') {
+      /* don't want to deal with trailing dot */
+      s--;
+   }
+
+   dots = Url_host_public_internal_dots(host);
+
+   /* With a proper host string, we should not be pointing to a dot now. */
+
+   while (s > host) {
+      if (s[-1] == '.') {
+         if (dots == 0)
+            break;
+         else
+            dots--;
+      }
+      s--;
+   }
+
+   _MSG("public suffix of %s is %s\n", host, s);
+   return s;
 }

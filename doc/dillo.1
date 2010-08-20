@@ -1,0 +1,101 @@
+.TH dillo 1 "August 5, 2010" "version 2.2" "USER COMMANDS"
+.SH NAME
+dillo \- web browser
+.SH SYNOPSIS
+.B dillo
+.RI [ OPTION ]...
+.RB [ \-\- ]
+.RI [ URL | FILE ]...
+.SH DESCRIPTION
+.PP
+Dillo is a lightweight graphical web browser that aims to be secure.
+It handles HTTP internally, and FILE, FTP, and
+DATA URIs are handled through a plugin system (dpi). In addition,
+.I INSECURE
+HTTPS support can be enabled. Both FTP and Dillo's download manager use the
+.BR wget (1)
+downloader.
+.PP
+Dillo displays HTML, text, PNG, JPEG, and GIF files.
+It handles cookies, basic authentication, proxying, and some CSS.
+.PP
+Framesets are displayed as links to frames, and there is currently
+no support for javascript or video.
+.SH OPTIONS
+.TP
+\fB\-f\fR, \fB\-\-fullwindow\fR
+Start in full window mode: hide address bar, navigation buttons, menu, and
+status bar.
+.TP
+\fB\-g\fR, \fB\-\-geometry \fIGEO\fR
+Set initial window position where \fIGEO\fR is
+\fIW\fBx\fIH\fR[{\fB+\-\fR}\fIX\fR{\fB+\-\fR}\fIY\fR].
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Display this help text and exit.
+.TP
+\fB\-l\fR, \fB\-\-local\fR
+Don't load images for these URL(s).
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+Display version info and exit.
+.TP
+\fB\-x\fR, \fB\-\-xid \fIXID\fR
+Open first Dillo window in an existing window whose window ID is \fIXID\fR.
+.SH EXIT STATUS
+.TP
+.B 0
+No error.
+.TP
+.B 1
+Internal error.
+.TP
+.B 2
+Error in command line arguments.
+.SH ENVIRONMENT
+.TP
+.BR "HOME " "(or " "HOMEDRIVE " "and " "HOMEPATH " "on Cygwin)"
+User's home directory.
+.TP
+.B http_proxy
+URL of proxy to send HTTP traffic through.
+.SH FILES
+.TP
+.I dpid 
+Dillo plugin daemon
+.TP
+.I dpidc 
+Control program for dpid.
+.TP
+.I ~/.dillo/bm.txt 
+User bookmarks
+.TP
+.I ~/.dillo/certs/
+Saved certificates for HTTPS.
+.TP
+.I ~/.dillo/cookies.txt 
+Stored cookies
+.TP
+.I ~/.dillo/cookiesrc 
+Cookie settings
+.TP
+.I ~/.dillo/dillorc 
+Configuration file.
+.TP
+.I ~/.dillo/dpid_comm_keys
+Keys used in dpi daemon communication.
+.TP
+.I ~/.dillo/dpidrc 
+Contains name of directory containing dpis, and associates
+dpi files with protocols.
+.TP
+.I ~/.dillo/keysrc 
+Keybindings.
+.TP
+.I ~/.dillo/style.css 
+User style sheet
+.SH SEE ALSO
+.BR wget (1)
+.PP
+Dillo website:
+.B http://www.dillo.org

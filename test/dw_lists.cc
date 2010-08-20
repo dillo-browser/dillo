@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -54,10 +53,11 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    Style *widgetStyle = Style::create (layout, &styleAttrs);
 
@@ -75,8 +75,8 @@ int main(int argc, char **argv)
 
    styleAttrs.margin.setVal (5);
    styleAttrs.padding.setVal (5);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffff40);
-   styleAttrs.setBorderColor (Color::createSimple (layout, 0x000000));
+   styleAttrs.backgroundColor = Color::create (layout, 0xffff40);
+   styleAttrs.setBorderColor (Color::create (layout, 0x000000));
    styleAttrs.setBorderStyle (BORDER_SOLID);
    styleAttrs.borderWidth.setVal (1);
 
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
       "comes", "some", "more", "text", "to",
       "demonstrate", "word", "wrapping.", NULL };
 
-   
+
    for(int i = 0; wordsPar[i]; i++) {
       if(i != 0)
          textblock->addSpace (wordStyle);
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 
       char buf[16];
       sprintf (buf, "%d.", i);
-      listItem->initWithText (strdup (buf), wordStyle);
+      listItem->initWithText (buf, wordStyle);
 
       for(int j = 0; wordsItem[j]; j++) {
          if(j != 0)

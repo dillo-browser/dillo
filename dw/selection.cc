@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -23,6 +22,8 @@
 #include "core.hh"
 
 #include <string.h>
+
+using namespace lout;
 
 /*
  * strndup() is a GNU extension.
@@ -95,13 +96,13 @@ void SelectionState::resetLink ()
    link = NULL;
    linkState = LINK_NONE;
 }
-   
+
 bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
                                   EventButton *event, bool withinContent)
 {
    Widget *itWidget = it->getWidget ();
    bool ret = false;
- 
+
    if (event && event->button == 1 &&
        !withinContent && event->numPressed == 2) {
       // When the user double-clicks on empty parts, emit the double click
@@ -117,8 +118,7 @@ bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
       if (linkNo != -1) {
          // link handling
          if (event) {
-            // return value is ignored
-            itWidget->emitLinkPress (linkNo, -1, -1, -1, event);
+            (void) layout->emitLinkPress (itWidget, linkNo, -1, -1, -1, event);
             resetLink ();
             linkState = LINK_PRESSED;
             linkButton = event->button;
@@ -161,7 +161,7 @@ bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
          } else {
             if (event && event->button == 3) {
                // menu popup
-               itWidget->emitLinkPress (-1, -1, -1, -1, event);
+               layout->emitLinkPress (itWidget, -1, -1, -1, -1, event);
                ret = true;
             }
          }
@@ -181,14 +181,12 @@ bool SelectionState::buttonRelease (Iterator *it, int charPos, int linkNo,
       // link handling
       ret = true;
       if (linkNo != -1)
-         // return value is ignored
-         itWidget->emitLinkRelease (linkNo, -1, -1, -1, event);
+         (void) layout->emitLinkRelease (itWidget, linkNo, -1, -1, -1, event);
 
       // The link where the user clicked the mouse button?
       if (linkNo == linkNumber) {
          resetLink ();
-         // return value is ignored
-         itWidget->emitLinkClick (linkNo, -1, -1, -1, event);
+         (void) layout->emitLinkClick (itWidget, linkNo, -1, -1, -1, event);
       } else {
          if (event->button == 1)
             // Reset links and switch to selection mode. The selection

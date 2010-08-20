@@ -9,10 +9,6 @@
  * (at your option) any later version.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>      /* for rint */
-
 #include "msg.h"
 #include "nav.h"
 
@@ -22,7 +18,7 @@
 #include "IO/mime.h"
 
 #include "dw/core.hh"
-#include "prefs.h"
+#include "styleengine.hh"
 #include "web.hh"
 
 // Platform independent part
@@ -54,9 +50,6 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
                             CA_Callback_t *Call, void **Data)
 {
    Widget *dw = NULL;
-   style::StyleAttrs styleAttrs;
-   style::Style *widgetStyle;
-   style::FontAttrs fontAttrs;
 
    _MSG("a_Web_dispatch_by_type\n");
 
@@ -67,25 +60,17 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
 
    if (Web->flags & WEB_RootUrl) {
       /* We have RootUrl! */
+
+      /* Set a style for the widget */
+      StyleEngine styleEngine (layout);
+      styleEngine.startElement ("body");
+      Web->bgColor= styleEngine.backgroundStyle()->backgroundColor->getColor();
+
       dw = (Widget*) a_Mime_set_viewer(Type, Web, Call, Data);
       if (dw == NULL)
          return -1;
 
-      /* Set a style for the widget */
-      fontAttrs.name = prefs.vw_fontname;
-      fontAttrs.size = (int) rint(14.0 * prefs.font_factor);
-      fontAttrs.weight = 400;
-      fontAttrs.style = style::FONT_STYLE_NORMAL;
-
-      styleAttrs.initValues ();
-      styleAttrs.margin.setVal (5);
-      styleAttrs.font = style::Font::create (layout, &fontAttrs);
-      styleAttrs.color = style::Color::createSimple (layout, 0xff0000);
-      styleAttrs.backgroundColor = 
-         style::Color::createSimple (layout, prefs.bg_color);
-      widgetStyle = style::Style::create (layout, &styleAttrs);
-      dw->setStyle (widgetStyle);
-      widgetStyle->unref ();
+      dw->setStyle (styleEngine.style ());
 
       /* This method frees the old dw if any */
       layout->setWidget(dw);
@@ -118,19 +103,21 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
 /*
  * Allocate and set safe values for a DilloWeb structure
  */
-DilloWeb* a_Web_new(const DilloUrl *url)
+DilloWeb* a_Web_new(const DilloUrl *url, const DilloUrl *requester)
 {
    DilloWeb *web= dNew(DilloWeb, 1);
 
    _MSG(" a_Web_new: ValidWebs ==> %d\n", dList_length(ValidWebs));
    web->url = a_Url_dup(url);
+   web->requester = a_Url_dup(requester);
    web->bw = NULL;
    web->flags = 0;
    web->Image = NULL;
    web->filename = NULL;
    web->stream  = NULL;
    web->SavedBytes = 0;
-
+   web->bgColor = 0x000000; /* Dummy value will be overwritten
+                             * in a_Web_dispatch_by_type. */
    dList_append(ValidWebs, (void *)web);
    return web;
 }
@@ -149,12 +136,12 @@ int a_Web_valid(DilloWeb *web)
 void a_Web_free(DilloWeb *web)
 {
    if (!web) return;
-   if (web->url)
-      a_Url_free(web->url);
-   if (web->Image)
-      a_Image_unref(web->Image);
+   a_Url_free(web->url);
+   a_Url_free(web->requester);
+   a_Image_unref(web->Image);
    dFree(web->filename);
    dList_remove(ValidWebs, (void *)web);
+   _MSG("a_Web_free: ValidWebs=%d\n", dList_length(ValidWebs));
    dFree(web);
 }
 

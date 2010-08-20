@@ -24,7 +24,7 @@ class FltkFont: public core::style::Font
 
 public:
    ::fltk::Font *font;
-  
+
    static FltkFont *create (core::style::FontAttrs *attrs);
 };
 
@@ -34,13 +34,27 @@ class FltkColor: public core::style::Color
    static lout::container::typed::HashTable <dw::core::style::ColorAttrs,
                                        FltkColor> *colorsTable;
 
-   FltkColor (int color, core::style::Color::Type type);
+   FltkColor (int color);
    ~FltkColor ();
 
 public:
    int colors[SHADING_NUM];
 
-   static FltkColor *create(int color, core::style::Color::Type type);
+   static FltkColor *create(int color);
+};
+
+class FltkTooltip: public core::style::Tooltip
+{
+private:
+   FltkTooltip (const char *text);
+   ~FltkTooltip ();
+   bool shown;
+   char *escaped_str; /* fltk WORKAROUND */
+public:
+   static FltkTooltip *create(const char *text);
+   void onEnter();
+   void onLeave();
+   void onMotion();
 };
 
 
@@ -78,10 +92,12 @@ private:
       core::ui::ComplexButtonResource *
       createComplexButtonResource (core::Widget *widget, bool relief);
       core::ui::ListResource *
-      createListResource (core::ui::ListResource::SelectionMode selectionMode);
+      createListResource (core::ui::ListResource::SelectionMode selectionMode,
+                          int rows);
       core::ui::OptionMenuResource *createOptionMenuResource ();
       core::ui::EntryResource *createEntryResource (int maxLength,
-                                                    bool password);
+                                                    bool password,
+                                                    const char *label);
       core::ui::MultiLineTextResource *createMultiLineTextResource (int cols,
                                                                     int rows);
       core::ui::CheckButtonResource *createCheckButtonResource (bool
@@ -109,7 +125,7 @@ private:
    static void generalStaticIdle(void *data);
    void generalIdle();
 
-   lout::container::typed::List <FltkView> *views;
+   FltkView *view;
    lout::container::typed::List <ui::FltkResource> *resources;
 
 public:
@@ -117,23 +133,26 @@ public:
    ~FltkPlatform ();
 
    void setLayout (core::Layout *layout);
-   
+
    void attachView (core::View *view);
 
    void detachView  (core::View *view);
-   
+
    int textWidth (core::style::Font *font, const char *text, int len);
    int nextGlyph (const char *text, int idx);
    int prevGlyph (const char *text, int idx);
-   
+   float dpiX ();
+   float dpiY ();
+
    int addIdle (void (core::Layout::*func) ());
    void removeIdle (int idleId);
-   
+
    core::style::Font *createFont (core::style::FontAttrs *attrs,
                                       bool tryEverything);
-   core::style::Color *createSimpleColor (int color);
-   core::style::Color *createShadedColor (int color);
-   
+   bool fontExists (const char *name);
+   core::style::Color *createColor (int color);
+   core::style::Tooltip *createTooltip (const char *text);
+
    core::Imgbuf *createImgbuf (core::Imgbuf::Type type, int width, int height);
 
    void copySelection(const char *text);

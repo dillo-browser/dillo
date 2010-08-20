@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -57,7 +56,7 @@ static void textTimeout (void *data)
 {
    Textblock *oldTop = topTextblock;
    topTextblock = new Textblock (false);
-   
+
    if (oldTop) {
       oldTop->addLinebreak (wordStyle);
       oldTop->addWidget (topTextblock, widgetStyle);
@@ -73,7 +72,7 @@ static void textTimeout (void *data)
    buf[0] = toupper (buf[0]);
    topTextblock->addText (buf, headingStyle);
    topTextblock->addParbreak (5, headingStyle);
-  
+
    for (int i = 0; i < 30; i++) {
       strcpy (buf, numbers[textblockNo]);
       if (i == 0)
@@ -85,7 +84,7 @@ static void textTimeout (void *data)
    }
 
    topTextblock->flush ();
-   
+
    textblockNo++;
    if (textblockNo < 10)
       ::fltk::repeat_timeout (1, textTimeout, NULL);
@@ -99,7 +98,7 @@ int main(int argc, char **argv)
    platform = new FltkPlatform ();
    layout = new Layout (platform);
 
-   window = new ::fltk::Window(250, 200, "Dw Find Test");
+   window = new ::fltk::Window(250, 200, "Dw Anchors Test");
    window->begin();
 
    viewport = new FltkViewport (50, 0, 200, 200);
@@ -121,13 +120,14 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
 
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
    styleAttrs.font = Font::create (layout, &fontAttrs);
    styleAttrs.margin.setVal (5);
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
    topWidgetStyle = Style::create (layout, &styleAttrs);
 
    styleAttrs.margin.left = 20;

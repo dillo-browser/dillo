@@ -16,17 +16,28 @@ namespace fltk {
 class FltkViewBase: public FltkView, public ::fltk::Group
 {
 private:
+   typedef enum { DRAW_PLAIN, DRAW_CLIPPED, DRAW_BUFFERED } DrawType;
+
    int bgColor;
    core::Region drawRegion;
+   ::fltk::Rectangle *exposeArea;
    static ::fltk::Image *backBuffer;
    static bool backBufferInUse;
 
-   void drawRectangle (const core::Rectangle *rect, bool doubleBuffer);
+   void draw (const core::Rectangle *rect, DrawType type);
    void drawChildWidgets ();
-
-public:
-   time_t lastDraw;
-   time_t drawDelay;
+   inline void clipPoint (int *x, int *y, int border) {
+      if (exposeArea) {
+         if (*x < exposeArea->x () - border)
+            *x = exposeArea->x () - border;
+         if (*x > exposeArea->r () + border)
+            *x = exposeArea->r () + border;
+         if (*y < exposeArea->y () - border)
+            *y = exposeArea->y () - border;
+         if (*y > exposeArea->b () + border)
+            *y = exposeArea->b () + border;
+      }
+   }
 
 protected:
    core::Layout *theLayout;
@@ -54,7 +65,6 @@ public:
    void finishDrawing (core::Rectangle *area);
    void queueDraw (core::Rectangle *area);
    void queueDrawTotal ();
-   void drawTotal ();
    void cancelQueueDraw ();
    void drawPoint (core::style::Color *color,
                    core::style::Color::Shading shading,
@@ -67,7 +77,7 @@ public:
                        int x, int y, int width, int height);
    void drawArc (core::style::Color *color,
                  core::style::Color::Shading shading, bool filled,
-                 int x, int y, int width, int height,
+                 int centerX, int centerY, int width, int height,
                  int angle1, int angle2);
     void drawPolygon (core::style::Color *color,
                       core::style::Color::Shading shading,
@@ -84,7 +94,7 @@ class FltkWidgetView: public FltkViewBase
 public:
    FltkWidgetView (int x, int y, int w, int h, const char *label = 0);
    ~FltkWidgetView ();
- 
+
    void layout();
 
    void drawText (core::style::Font *font,

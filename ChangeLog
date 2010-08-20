@@ -2,7 +2,245 @@
 Dillo project
 =============================================================================
 
-dillo-2.0
+dillo-2.2.1 [not released yet]
+
++- Implemented "View source" as a dpi.
+   Patch: Jorge Arellano Cid
++- Configurable User-Agent HTTP header.
+   Patch: Alexander Voigt, corvid
++- Include Accept header in HTTP queries.
+ - Work with libpng-1.4.
+ - Handle zero-width space.
+ - Fix segfault closing window from WM.
+ - Limit total number of cookies.
+ - Use the suffix/subdomain field in cookies.txt.
+ - Follow most specific matching rule in cookiesrc.
+ - Fix segfault with form inputs and repush for stylesheets.
+ - Handle white-space: pre-wrap and pre-line.
+ - Support for the word-spacing property.
+ - Fix segfault with https and self-signed certificates.
+   Patches: corvid
++- Implement line-height.
+   Patch: Johannes Hofmann, corvid
+
+-----------------------------------------------------------------------------
+
+dillo-2.2 [Feb 11, 2010]
+
++- Added keybindings for scrolling.
+ - Help button and local help file.
+   Patches: corvid, Jorge Arellano Cid
++- Add support for multiple class names in CSS.
+ - Fix X11 coordinate overflows with huge borders.
+ - Improve CSS font parsing.
+ - Enable font face setting via <font> element.
+ - Ignore XML comment markers in CSS.
+ - Split up long lines in plain.cc to avoid X11 coordinate overflows.
+ - Fix user agent style for nested <ul>.
+ - Add support for CSS property list-style-position.
+ - Support border-width: thin | medium | thick.
+ - Fix CSS_SHORTHAND_DIRECTIONS case in CssParser.
+ - Add quirk to reset font properties in tables (fixes e.g. gmail).
+   Patches: Johannes Hofmann
++- Cleaned up system includes in dpid directory.
+ - Fixed CustProgressBox() for systems without weak symbols.
+ - Handle signed chars. Added dIsspace() and dIsalnum() to dlib.
+ - Added a_Dpip_get_attr_l() to DPIP's API.
+ - Changed the CCCs to build in one step (for both HTTP and DPI). This
+   is simpler and helps to avoid race conditions.
+ - Updated CCCwork.txt to the new scheme.
+ - Fixed a bug with OPTION element (it was parsing entities twice).
+ - Bugfix: remove the empty cache entry lingering after connection abort.
+ - Switched capi to use dlib's Dlist instead of a_List_* methods.
+ - Remove empty cache entries on Stop-button press and new link request!
+ - Fixed URL unescaping in the datauri DPI.
+ - Changed and reimplemented the DPI API.
+   * Fixed bugs and updated all DPI programs:
+   * Reimplemented the file dpi using select(). No pthreads-based anymore.
+   * Fixed ftp dpi: downloads, streamed transfer, error feedback.
+   * Fixed a bug in dillo with lingering cache entries.
+   * Made dpidc a C language program.
+   * Made the internal dsh implementation use unique functions for read/write.
+   * Removed the write/fwrite mix in DPIP.
+   * Made the DPIP API token-based. Packet assembling is coded inside DPIP!
+   * Several cleanups and more error handling sprinkled all over too.
+   Patches: Jorge Arellano Cid
++- Fix segfault from AREA when MAP is missing name attribute.
+ - Fix image map coordinates when margin/border/padding present.
+ - Handle stylesheet @charset.
+ - Fix cache segfault when cache entry removed.
+ - Split words that contain whitespace as numeric character references.
+ - Allow linebreaks around Chinese/Japanese characters.
+ - Fix segfault in Html_parse_doctype (BUG#918).
+ - Change exit code used for bad command line argument.
+ - By default, do not use proxy for localhost (BUG 921).
+ - Fix scrolling for text search.
+ - Added 'save' key action (not bound by default).
+ - Tooltips
+ - Fix segfault when radio button lacks name attribute.
+ - Enable popup menu below bottom of page content (BUG#856).
+ - Handle JPEGs with CMYK color space.
+ - Allow keysyms in keysrc.
+ - Explicitly check installation bindir for dpid (BUG 930)
+ - General cookies overhaul.
+   Patches: corvid
++- Support for the letter-spacing property.
+   Patch: Johannes Hofmann, corvid
++- Fixed a bug in w3c_mode. In fact it wasn't working at all.
+ - Improve stylesheet menu.
+   Patches: Jeremy Henty
++- Limit number of simultaneous connections (BUG 685).
+   Patch: Johannes Hofmann, Jorge Arellano Cid
+
+-----------------------------------------------------------------------------
+
+dillo-2.1.1 [Jul 3, 2009]
+
++- Add additional size checks for images.
+   Patch: Jorge Arellano Cid, Johannes Hofmann, corvid
++- Fixed a bug in parsing RGB color values (CSS).
+ - Added support for css colors of the form rgb(255, 255, 255).
+ - Assert that SimpleVector size is positive.
+   Patches: Johannes Hofmann
++- Removed redundant system includes.
+ - Added the "nop" keybinding (nop = NO_OPERATION; cancels a default hook).
+ - Added 'stop' key action (not bound by default).
+ - Fixed segfault when URL is NULL and dpis can't be found.
+   Patches: place (AKA corvid)
++- Reduced 'warning: ignoring return value of ...'
+   Patch: Michal Nowak, Jorge Arellano Cid
++- Check chdir() return code in Paths::init.
+ - Removed return from a_Nav_unref_buf()
+ - Do not build proto.c (file is empty); GCC warning
+   Patches: Michal Nowak
+
+-----------------------------------------------------------------------------
+
+dillo-2.1 [Jun 15, 2009]
+
++- Added ipv6 addresses iteration and ipv4 fallback.
+   Patch: James Turner, Jorge Arellano Cid
++- Added support for numeric IPv6 addresses entered into the url bar.
+ - Made the DNS resolver report in numeric address notation.
+ - Used the URL authority part instead of stripped default port in HTTP query.
+ - Fixed Bookmarks modify's HTML so it wraps nicely on handhelds.
+   Patches: Justus Winter
++- Implemented "search previous" in string searches.
+   Patch: João Ricardo Lourenço
++- Fix for file inputs without values (forms).
+ - Tuned input width a bit.
+ - Cleaned up resource embedding (forms)
+ - Made cookierc parsing more robust.
+ - Switched a_UIcmd_save() to take its URL from history (not location bar).
+ - Set prefs.vw_fontname as default font for the UI.
+ - Fix: recover page focus when clicking outside of a widget.
+ - Fixed a segfault bug in the test/ directory.
+ - Set middle click to submit in a new TAB. (Helps to keep form data!)
+ - Added support for the Q element. BUG#343
+ - Cleaned up Html_pop_tag().
+ - Ported the command line interface from dillo1
+ - Switched file dpi error messages to HTML.
+ - Added a right-click menu to form controls (show hiddens, submit, reset)
+ - Remove now-redundant generate_submit pref
+ - Added the "http_language" dillorc option for setting HTTP's Accept-Language.
+ - Refactored prefs.c to a much smaller size!
+ - Fixed a SEGFAULT bug on redirections without Location.
+ - Obey SELECT's size attribute.
+ - Replace image loading button and page menu option with a tools menu option.
+ - Implemented the "overline" text-decoration.
+ - Enhanced and cleaned up text decorations for SUB and SUP.
+ - Added "View Stylesheets" to the page menu.
+ - Remove standard_widget_colors dillorc option.
+ - Added dillo(1) man page.
+ - Proxy support for HTTPS.
+ - System config files have moved to sysconfdir/dillo/
+ - Add keysrc.
+   Patches: place (AKA corvid)
++- Switched SSL-enabled to configure.in (./configure --enable-ssl).
+ - Standardised the installation of dpid/dpidrc with auto* tools.
+ - Set the ScrollGroup as the resizable widget in downloads dpi.
+ - Cleaned up and normalized D_SUN_LEN usage.
+ - Fixed incorrect use of VOIDP2INT in Dialog_user_password_cb().
+ - Ensure that the dlib dStr* functions are used everywhere.
+ - Fixed a memory leak in Html_tag_open_link().
+ - Fixed a memory leak in Klist().
+ - Fix the comment for DLWin::del() (dpi/downloads.cc).
+ - Removed redundant caller NULL checks already in the API.
+   Patches: Jeremy Henty
++- Implemented Basic authentication!
+   Patch: Jeremy Henty, Jorge Arellano Cid
++- Added "-fno-rtti -fno-exceptions" to CXXFLAGS (reduces binary size).
+   Patch: Jorge Arellano Cid, place (AKA corvid)
++- Allowed compilation with older machines by removing a few C99isms.
+ - Added use of inttypes.h when stdint.h isn't found.
+   Patches: Dan Fandrich
++- Reduced warnings with gcc-4.3.
+   Patch: Thomas Orgis
++- Made the parser recognize "[^ ]/>"-terminated XML elements.
+ - Implemented basic CSS infrastructure.
+ - Brought in Sebastian's CSS parser from dillo-0.8.0-css-3.
+ - Read user style from ~/.dillo/style.css.
+ - Added support for descendant and child selectors.
+ - Improved CSS selector matching performance using hash tables.
+ - Support selector specificity.
+ - Add support for font-size and font-weight enum values.
+ - Added "font_max_size", "font_min_size" dillorc options.
+ - Add workaround for fltk bug #2062.
+ - Reduce number of styleEngine::style0() calls.
+ - Replace bg_color dillorc option.
+ - Remove text_color, link_color, and force_my_colors dillorc options.
+ - Fix CSS string parsing bug.
+ - Replace visited_color dillorc option.
+ - Add support for negative numbers in CSS parser.
+ - Fix allow_white_bg dillorc option.
+ - Load <style></style> content only if applicable.
+ - Allow negative values for specific CSS properties only.
+ - Disable negative margins for now as dw/* does not support them yet.
+ - Support CSS @import directive.
+ - Disable form widgets while stylesheets are loading.
+ - Fix image scaling on reload with border, margin, or padding > 0.
+ - Implement --xid command line option (used by claws mail client).
+ - Make tab expansion in plain text utf8 aware.
+   Patches: Johannes Hofmann
++- Updated the GPL copyright note in the source files.
+   Patch: Detlef Riekenberg
++- Implemented a close-tab button for the GUI.
+   Patch: João Ricardo Lourenço, Jorge Arellano Cid
++- Added the "middle_click_drags_page" dillorc option.
+   Patch: Jorge Arellano Cid, Thomas Orgis
++- Added configurable keybindings! (in ~/.dillo/keysrc)
+   Patch: Jorge Arellano Cid, Tim Nieradzik, place (AKA corvid)
++- Fixed a memory leak with DilloImage structures.
+   Patch: Johannes Hofmann, place (AKA corvid)
++- Set the File menu label to hide when the File menu-button is shown.
+ - Set a new iconv() test in configure.in.
+ - Allowed the rc parser to skip whitespace around the equal sign.
+ - Fixed the parser not to call Html_tag_close_* functions twice.
+ - Implemented loading of remote CSS Stylesheet.
+ - Made a big cleanup of cache.c WRT charset decoding (fixes bugs).
+ - Made an extensive cleanup/fixup of the whole image handling process.
+ - Implemented the tools button with a couple CSS options.
+ - Removed the nav.h dependency from html.cc
+ - Made the repush() operation more general and suited for CSS use.
+ - Fixed collapsing of whitespace entities in HTML mode.
+ - Updated the URL resolver to comply with RFC-3986.
+ - Fixed handling of META's content-type with no MIME type (e.g. only charset).
+ - Added support for a quoted URL in META refresh.
+ - Added instant client-side redirects (aka. zero-delay META refresh).
+   Patches: Jorge Arellano Cid
+
+dw
+
++- Moved clicked from ButtonResource to Resource.
+   Patch: place (AKA corvid)
++- Cleaned up unused code in fltkviewbase.
+   Patch: Johannes Hofmann
++- Added lout/msg.h and normalized debug messages to use it.
+   Patch: Jorge Arellano Cid
+
+-----------------------------------------------------------------------------
+
+dillo-2.0 [Oct 14, 2008]
 
 +- Ported Dillo from GTK1 to FLTK2.
  - Ported a susbstantial part of the code from C to C++ (FLTK2 is in C++).
@@ -177,9 +415,6 @@ dillo-2.0
  - Replaced the findtext dialog with an in-window widget!
    Patches: Justus Winter
 
- TODO:
-
- - test no_proxy (set a list in dillorc).
 
 -----------------------------------------------------------------------------
 dw

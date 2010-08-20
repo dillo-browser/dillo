@@ -1,3 +1,14 @@
+/*
+ * Preferences
+ *
+ * Copyright (C) 2006-2009 Jorge Arellano Cid <jcid@dillo.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #ifndef __PREFS_H__
 #define __PREFS_H__
 
@@ -7,8 +18,16 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define PREFS_GEOMETRY_DEFAULT_WIDTH   780
+#define PREFS_GEOMETRY_DEFAULT_HEIGHT  580
+#define PREFS_GEOMETRY_DEFAULT_XPOS  -9999
+#define PREFS_GEOMETRY_DEFAULT_YPOS  -9999
+
 /* Panel sizes */
 enum { P_tiny = 0, P_small, P_medium, P_large };
+
+enum {PREFS_FILTER_ALLOW_ALL,
+      PREFS_FILTER_SAME_DOMAIN};
 
 typedef struct _DilloPrefs DilloPrefs;
 
@@ -17,20 +36,17 @@ struct _DilloPrefs {
    int height;
    int xpos;
    int ypos;
+   char *http_language;
+   int32_t http_max_conns;
    DilloUrl *http_proxy;
    char *http_proxyuser;
    char *http_referer;
+   char *http_user_agent;
    char *no_proxy;
    DilloUrl *start_page;
    DilloUrl *home;
-   int32_t link_color;
-   int32_t visited_color;
-   int32_t bg_color;
-   int32_t text_color;
    bool_t allow_white_bg;
-   bool_t force_my_colors;
    bool_t contrast_visited_color;
-   bool_t standard_widget_colors;
    bool_t show_tooltip;
    int panel_size;
    bool_t small_icons;
@@ -38,6 +54,8 @@ struct _DilloPrefs {
    bool_t w3c_plus_heuristics;
    bool_t focus_new_tab;
    double font_factor;
+   int32_t font_max_size;
+   int32_t font_min_size;
    bool_t show_back;
    bool_t show_forw;
    bool_t show_home;
@@ -45,23 +63,31 @@ struct _DilloPrefs {
    bool_t show_save;
    bool_t show_stop;
    bool_t show_bookmarks;
+   bool_t show_tools;
    bool_t show_filemenu;
    bool_t show_clear_url;
    bool_t show_url;
    bool_t show_search;
+   bool_t show_help;
    bool_t show_progress_box;
    bool_t fullwindow_start;
    bool_t load_images;
+   bool_t load_stylesheets;
+   bool_t parse_embedded_css;
+   int filter_auto_requests;
    int32_t buffered_drawing;
-   char *vw_fontname;
-   char *fw_fontname;
-   bool_t generate_submit;
+   char *font_serif;
+   char *font_sans_serif;
+   char *font_cursive;
+   char *font_fantasy;
+   char *font_monospace;
    bool_t enterpress_forces_submit;
    bool_t middle_click_opens_new_tab;
    char *search_url;
    char *save_dir;
    bool_t show_msg;
    bool_t show_extra_warnings;
+   bool_t middle_click_drags_page;
 };
 
 /* Global Data */

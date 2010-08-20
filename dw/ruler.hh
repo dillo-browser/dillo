@@ -17,12 +17,12 @@ class Ruler: public core::Widget
 {
 protected:
    void sizeRequestImpl (core::Requisition *requisition);
-   void draw (core::View *view, core::Rectangle *area);  
+   void draw (core::View *view, core::Rectangle *area);
 
 public:
    Ruler ();
 
-   core::Iterator *iterator (core::Content::Type mask, bool atEnd); 
+   core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 };
 
 } // namespace dw

@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -27,8 +26,8 @@ namespace dw {
 
 AlignedTextblock::List::List ()
 {
-   textblocks = new misc::SimpleVector <AlignedTextblock*> (4);
-   values = new misc::SimpleVector <int> (4);
+   textblocks = new lout::misc::SimpleVector <AlignedTextblock*> (4);
+   values = new lout::misc::SimpleVector <int> (4);
    maxValue = 0;
    refCount = 0;
 }
@@ -54,7 +53,7 @@ void AlignedTextblock::List::unref(int pos)
    textblocks->set (pos, NULL);
    refCount--;
 
-   if(refCount == 0)
+   if (refCount == 0)
       delete this;
 }
 
@@ -63,12 +62,12 @@ int AlignedTextblock::CLASS_ID = -1;
 AlignedTextblock::AlignedTextblock (bool limitTextWidth):
    Textblock (limitTextWidth)
 {
-   registerName ("dw::AlignedTextblock", &CLASS_ID);  
+   registerName ("dw::AlignedTextblock", &CLASS_ID);
 }
 
 void AlignedTextblock::setRefTextblock (AlignedTextblock *ref)
 {
-   if(ref == NULL)
+   if (ref == NULL)
       list = new List();
    else
       list = ref->list;
@@ -76,7 +75,7 @@ void AlignedTextblock::setRefTextblock (AlignedTextblock *ref)
    listPos = list->add (this);
    updateValue ();
 }
-                                    
+
 AlignedTextblock::~AlignedTextblock()
 {
    list->unref (listPos);
@@ -86,7 +85,7 @@ void AlignedTextblock::updateValue ()
 {
    if (list) {
       list->setValue (listPos, getValue ());
-      
+
       if (list->getValue (listPos) > list->getMaxValue ()) {
          // New value greater than current maximum -> apply it to others.
          list->setMaxValue (list->getValue (listPos));

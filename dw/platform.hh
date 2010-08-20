@@ -13,7 +13,7 @@ namespace core {
  *
  * \sa\ref dw-overview
  */
-class Platform: public object::Object
+class Platform: public lout::object::Object
 {
 public:
    /*
@@ -27,7 +27,7 @@ public:
     *    a layout.
     */
    virtual void setLayout (Layout *layout) = 0;
-   
+
    /*
     * -------------------------
     *    Operations on views
@@ -45,10 +45,10 @@ public:
     *    from the related layout.
     */
    virtual void detachView  (View *view) = 0;
-   
+
    /*
     * -----------------------------------
-    *    Platform dependant properties
+    *    Platform dependent properties
     * -----------------------------------
     */
 
@@ -66,7 +66,17 @@ public:
     * \brief Return the index of the previous glyph in string text.
     */
    virtual int prevGlyph (const char *text, int idx) = 0;
- 
+
+   /**
+    * \brief Return screen resolution in x-direction.
+    */
+   virtual float dpiX () = 0;
+
+   /**
+    * \brief Return screen resolution in y-direction.
+    */
+   virtual float dpiY () = 0;
+
    /*
     * ---------------------------------------------------------
     *    These are to encapsulate some platform dependencies
@@ -75,7 +85,7 @@ public:
 
    /**
     * \brief Add an idle function.
-    * 
+    *
     * An idle function is called once, when no other
     * tasks are to be done (e.g. there are no events to process), and then
     * removed from the queue. The return value is a number, which can be
@@ -95,10 +105,10 @@ public:
     */
 
    /**
-    * \brief Create a (platform dependant) font.
+    * \brief Create a (platform dependent) font.
     *
     * Typically, within a platform, a sub class of dw::core::style::Font
-    * is defined, which holds more platform dependant data.
+    * is defined, which holds more platform dependent data.
     *
     * Also, this method must fill the attributes "font" (when needed),
     * "ascent", "descent", "spaceSidth" and "xHeight". If "tryEverything"
@@ -108,17 +118,18 @@ public:
     */
    virtual style::Font *createFont (style::FontAttrs *attrs,
                                     bool tryEverything) = 0;
- 
-   /**
-    * \brief Create a simple color resource for a given 0xrrggbb value.
-    */
-   virtual style::Color *createSimpleColor (int color) = 0;
+
+   virtual bool fontExists (const char *name) = 0;
 
    /**
-    * \brief Create a shaded color resource for a given 0xrrggbb value.
+    * \brief Create a color resource for a given 0xrrggbb value.
     */
-   virtual style::Color *createShadedColor (int color) = 0;
+   virtual style::Color *createColor (int color) = 0;
 
+   /**
+    * \brief Create a tooltip
+    */
+   virtual style::Tooltip *createTooltip (const char *text) = 0;
 
    /*
     * --------------------

@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -27,8 +26,10 @@
 #include <fltk/events.h>
 
 #include <stdio.h>
+#include "../lout/msg.h"
 
 using namespace fltk;
+using namespace lout;
 using namespace lout::object;
 using namespace lout::container::typed;
 
@@ -104,8 +105,8 @@ void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
    vscrollbar->w (SCROLLBAR_THICKNESS);
 
    int x = w () - SCROLLBAR_THICKNESS, y = h () - SCROLLBAR_THICKNESS;
-   for(Iterator <TypedPointer < ::fltk::Widget> > it = gadgets->iterator ();
-       it.hasNext (); ) {
+   for (Iterator <TypedPointer < ::fltk::Widget> > it = gadgets->iterator ();
+        it.hasNext (); ) {
       ::fltk::Widget *widget = it.getNext()->getTypedValue ();
       widget->x (0);
       widget->y (0);
@@ -156,7 +157,7 @@ void FltkViewport::layout ()
 {
    theLayout->viewportSizeChanged (this, w(), h());
    adjustScrollbarsAndGadgetsAllocation ();
-   
+
    FltkWidgetView::layout ();
 }
 
@@ -167,10 +168,10 @@ void FltkViewport::draw_area (void *data, const Rectangle& cr )
 
   vp->FltkWidgetView::draw ();
 
-  for(Iterator <TypedPointer < ::fltk::Widget> > it = vp->gadgets->iterator ();
-          it.hasNext (); ) {
-          ::fltk::Widget *widget = it.getNext()->getTypedValue ();
-          vp->draw_child (*widget);
+  for (Iterator <TypedPointer < ::fltk::Widget> > it = vp->gadgets->iterator();
+       it.hasNext (); ) {
+     ::fltk::Widget *widget = it.getNext()->getTypedValue ();
+     vp->draw_child (*widget);
   }
 
   pop_clip();
@@ -205,13 +206,13 @@ void FltkViewport::draw ()
       }
    }
 
-   scrollDX = 0; 
-   scrollDY = 0; 
+   scrollDX = 0;
+   scrollDY = 0;
 }
 
 int FltkViewport::handle (int event)
 {
-   //printf("FltkViewport::handle %d\n", event);
+   _MSG("FltkViewport::handle %d\n", event);
 
    if (hscrollbar->Rectangle::contains (event_x (), event_y ()) &&
        !(event_state() & (SHIFT | CTRL | ALT)) &&
@@ -225,13 +226,30 @@ int FltkViewport::handle (int event)
    }
 
    switch(event) {
+   case ::fltk::KEY:
+      /* Tell fltk we want to receive KEY events as SHORTCUT.
+       * As we don't know the exact keybindings set by the user, we ask
+       * for all of them (except TabKey to keep form navigation). */
+      if (::fltk::event_key() != TabKey)
+         return 0;
+      break;
+
    case ::fltk::FOCUS:
       /** \bug Draw focus box. */
-      return 1;
+
+      /* If the user clicks with the left button we take focus
+       * and thereby unfocus any form widgets.
+       * Otherwise we let fltk do the focus handling.
+       */
+      if (::fltk::event_button() == ::fltk::LeftButton || focus_index() < 0) {
+         focus_index(-1);
+         return 1;
+      }
+      break;
 
    case ::fltk::UNFOCUS:
       /** \bug Undraw focus box. */
-      return 1;
+      break;
 
    case ::fltk::PUSH:
       take_focus();
@@ -261,12 +279,12 @@ int FltkViewport::handle (int event)
    case ::fltk:: MOUSEWHEEL:
       return (event_dx() ? hscrollbar : vscrollbar)->handle(event);
       break;
-   
+
    case ::fltk::RELEASE:
       if (::fltk::event_button() == ::fltk::MiddleButton) {
          dragScrolling = 0;
          setCursor (core::style::CURSOR_DEFAULT);
-      } 
+      }
       break;
 
    case ::fltk::ENTER:
@@ -279,60 +297,6 @@ int FltkViewport::handle (int event)
    case ::fltk::LEAVE:
       mouse_x = mouse_y = -1;
       break;
-
-   case ::fltk::KEY:
-      /* tell fltk we want to receive these KEY events as SHORTCUT */
-      switch (::fltk::event_key()) {
-      case PageUpKey:
-      case PageDownKey:
-      case SpaceKey:
-      case DownKey:
-      case UpKey:
-      case RightKey:
-      case LeftKey:
-      case HomeKey:
-      case EndKey:
-         return 0;
-      }
-      break;
-
-   case ::fltk::SHORTCUT:
-      switch (::fltk::event_key()) {
-      case PageUpKey:
-      case 'b':
-      case 'B':
-         scroll (0, -vscrollbar->pagesize ());
-         return 1;
-
-      case PageDownKey:
-      case SpaceKey:
-         scroll (0, vscrollbar->pagesize ());
-         return 1;
-
-      case DownKey:
-         scroll (0, (int) vscrollbar->linesize ());
-         return 1;
-
-      case UpKey:
-         scroll (0, (int) -vscrollbar->linesize ());
-         return 1;
-
-      case RightKey:
-         scroll ((int) hscrollbar->linesize (), 0);
-         return 1;
-
-      case LeftKey:
-         scroll ((int) -hscrollbar->linesize (), 0);
-         return 1;
-
-      case HomeKey:
-         scrollTo (scrollX, 0);
-         return 1;
-
-      case EndKey:
-         scrollTo (scrollX, canvasHeight); /* gets adjusted in scrollTo () */
-         return 1;
-      }
    }
 
    return FltkWidgetView::handle (event);
@@ -361,7 +325,7 @@ void FltkViewport::positionChanged ()
 /*
  * For scrollbars, this currently sets the same step to both vertical and
  * horizontal. It may me differentiated if necessary.
- */ 
+ */
 void FltkViewport::setScrollStep(int step)
 {
    vscrollbar->linesize(step);
@@ -419,6 +383,27 @@ void FltkViewport::scroll (int dx, int dy)
    scrollTo (scrollX + dx, scrollY + dy);
 }
 
+void FltkViewport::scroll (core::ScrollCommand cmd)
+{
+   if (cmd == core::SCREEN_UP_CMD) {
+      scroll (0, -vscrollbar->pagesize ());
+   } else if (cmd == core::SCREEN_DOWN_CMD) {
+      scroll (0, vscrollbar->pagesize ());
+   } else if (cmd == core::LINE_UP_CMD) {
+      scroll (0, (int) -vscrollbar->linesize ());
+   } else if (cmd == core::LINE_DOWN_CMD) {
+      scroll (0, (int) vscrollbar->linesize ());
+   } else if (cmd == core::LEFT_CMD) {
+      scroll ((int) -hscrollbar->linesize (), 0);
+   } else if (cmd == core::RIGHT_CMD) {
+      scroll ((int) hscrollbar->linesize (), 0);
+   } else if (cmd == core::TOP_CMD) {
+      scrollTo (scrollX, 0);
+   } else if (cmd == core::BOTTOM_CMD) {
+      scrollTo (scrollX, canvasHeight); /* gets adjusted in scrollTo () */
+   }
+}
+
 void FltkViewport::setViewportSize (int width, int height,
                                     int hScrollbarThickness,
                                     int vScrollbarThickness)
@@ -442,8 +427,8 @@ void FltkViewport::updateCanvasWidgets (int dx, int dy)
    // scroll all child widgets except scroll bars
    for (int i = children () - 1; i > 0; i--) {
       ::fltk::Widget *widget = child (i);
-     
-      if (widget == hscrollbar || widget == vscrollbar) 
+
+      if (widget == hscrollbar || widget == vscrollbar)
          continue;
 
       widget->x (widget->x () - dx);

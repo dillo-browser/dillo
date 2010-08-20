@@ -108,13 +108,13 @@ A short overview:
 
 <ul>
 <li> dw::core::Layout is the central class, it manages the widgets and the
-     views, and provides delegation methods for the platform.
+     view, and provides delegation methods for the platform.
 
 <li> The layouting is done by a tree of widgets (details are described in
      \ref dw-layout-widgets), also the drawing, which is finally delegated
-     to the views.
+     to the view.
 
-<li> The views (implementations of dw::core::View) provide primitive methods
+<li> The view (implementation of dw::core::View) provides primitive methods
      for drawing, but also have an influence on
      the canvas size (via size hints). See \ref dw-layout-views for details.
 
@@ -147,7 +147,7 @@ files:
 
 A complete map can be found at \ref dw-map.
 
-<ul> 
+<ul>
 <li> For learning, how to use Dw, read \ref dw-usage and related documents,
      dw::core::style, dw::core::ui and \ref dw-images-and-backgrounds.
 <li> Advanced topics are described in \ref dw-layout-widgets,

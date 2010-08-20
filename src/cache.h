@@ -46,6 +46,7 @@ typedef void (*CA_Callback_t)(int Op, CacheClient_t *Client);
 struct _CacheClient {
    int Key;                 /* Primary Key for this client */
    const DilloUrl *Url;     /* Pointer to a cache entry Url */
+   int Version;             /* Dicache version of this Url (0 if not used) */
    void *Buf;               /* Pointer to cache-data */
    uint_t BufSize;          /* Valid size of cache-data */
    CA_Callback_t Callback;  /* Client function */
@@ -62,11 +63,12 @@ int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize);
 void a_Cache_unref_buf(const DilloUrl *Url);
 const char *a_Cache_get_content_type(const DilloUrl *url);
 const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
-                                     bool_t force);
+                                     const char *from);
 uint_t a_Cache_get_flags(const DilloUrl *url);
+uint_t a_Cache_get_flags_with_redirection(const DilloUrl *url);
 void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
                           const DilloUrl *Url);
-void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds);
+int a_Cache_download_enabled(const DilloUrl *url);
 void a_Cache_entry_remove_by_url(DilloUrl *url);
 void a_Cache_freeall(void);
 CacheClient_t *a_Cache_client_get_if_unique(int Key);

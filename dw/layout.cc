@@ -14,17 +14,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 
 #include "core.hh"
 
+#include "../lout/msg.h"
 #include "../lout/debug.hh"
 #include "../lout/misc.hh"
 
+using namespace lout;
 using namespace lout::container;
 using namespace lout::object;
 
@@ -38,8 +39,8 @@ void Layout::Receiver::canvasSizeChanged (int width, int ascent, int descent)
 // ----------------------------------------------------------------------
 
 bool Layout::Emitter::emitToReceiver (lout::signal::Receiver *receiver,
-                                      int signalNo,
-                                      int argc, Object **argv)
+                                      int signalNo, int argc,
+                                      lout::object::Object **argv)
 {
    Receiver *layoutReceiver = (Receiver*)receiver;
 
@@ -54,7 +55,7 @@ bool Layout::Emitter::emitToReceiver (lout::signal::Receiver *receiver,
       misc::assertNotReached ();
    }
 
-   return false;      
+   return false;
 }
 
 void Layout::Emitter::emitCanvasSizeChanged (int width,
@@ -63,6 +64,110 @@ void Layout::Emitter::emitCanvasSizeChanged (int width,
    Integer w (width), a (ascent), d (descent);
    Object *argv[3] = { &w, &a, &d };
    emitVoid (CANVAS_SIZE_CHANGED, 3, argv);
+}
+
+// ----------------------------------------------------------------------
+
+bool Layout::LinkReceiver::enter (Widget *widget, int link, int img,
+                                  int x, int y)
+{
+   return false;
+}
+
+bool Layout::LinkReceiver::press (Widget *widget, int link, int img,
+                                  int x, int y, EventButton *event)
+{
+   return false;
+}
+
+bool Layout::LinkReceiver::release (Widget *widget, int link, int img,
+                                    int x, int y, EventButton *event)
+{
+   return false;
+}
+
+bool Layout::LinkReceiver::click (Widget *widget, int link, int img,
+                                    int x, int y, EventButton *event)
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------
+
+bool Layout::LinkEmitter::emitToReceiver (lout::signal::Receiver *receiver,
+                                          int signalNo, int argc,
+                                          lout::object::Object **argv)
+{
+   LinkReceiver *linkReceiver = (LinkReceiver*)receiver;
+
+   switch (signalNo) {
+   case ENTER:
+      return linkReceiver->enter ((Widget*)argv[0],
+                                  ((Integer*)argv[1])->getValue (),
+                                  ((Integer*)argv[2])->getValue (),
+                                  ((Integer*)argv[3])->getValue (),
+                                  ((Integer*)argv[4])->getValue ());
+
+   case PRESS:
+      return linkReceiver->press ((Widget*)argv[0],
+                                  ((Integer*)argv[1])->getValue (),
+                                  ((Integer*)argv[2])->getValue (),
+                                  ((Integer*)argv[3])->getValue (),
+                                  ((Integer*)argv[4])->getValue (),
+                                  (EventButton*)argv[5]);
+
+   case RELEASE:
+      return linkReceiver->release ((Widget*)argv[0],
+                                    ((Integer*)argv[1])->getValue (),
+                                    ((Integer*)argv[2])->getValue (),
+                                    ((Integer*)argv[3])->getValue (),
+                                    ((Integer*)argv[4])->getValue (),
+                                    (EventButton*)argv[5]);
+
+   case CLICK:
+      return linkReceiver->click ((Widget*)argv[0],
+                                  ((Integer*)argv[1])->getValue (),
+                                  ((Integer*)argv[2])->getValue (),
+                                  ((Integer*)argv[3])->getValue (),
+                                  ((Integer*)argv[4])->getValue (),
+                                  (EventButton*)argv[5]);
+
+   default:
+      misc::assertNotReached ();
+   }
+   return false;
+}
+
+bool Layout::LinkEmitter::emitEnter (Widget *widget, int link, int img,
+                                     int x, int y)
+{
+   Integer ilink (link), iimg (img), ix (x), iy (y);
+   Object *argv[5] = { widget, &ilink, &iimg, &ix, &iy };
+   return emitBool (ENTER, 5, argv);
+}
+
+bool Layout::LinkEmitter::emitPress (Widget *widget, int link, int img,
+                                     int x, int y, EventButton *event)
+{
+   Integer ilink (link), iimg (img), ix (x), iy (y);
+   Object *argv[6] = { widget, &ilink, &iimg, &ix, &iy, event };
+   return emitBool (PRESS, 6, argv);
+}
+
+bool Layout::LinkEmitter::emitRelease (Widget *widget, int link, int img,
+                                       int x, int y, EventButton *event)
+{
+   Integer ilink (link), iimg (img), ix (x), iy (y);
+   Object *argv[6] = { widget, &ilink, &iimg, &ix, &iy, event };
+   return emitBool (RELEASE, 6, argv);
+}
+
+bool Layout::LinkEmitter::emitClick (Widget *widget, int link, int img,
+                                     int x, int y, EventButton *event)
+{
+   Integer ilink (link), iimg (img), ix (x), iy (y);
+   Object *argv[6] = { widget, &ilink, &iimg, &ix, &iy, event };
+   return emitBool (CLICK, 6, argv);
 }
 
 // ---------------------------------------------------------------------
@@ -77,7 +182,7 @@ Layout::Anchor::~Anchor ()
 Layout::Layout (Platform *platform)
 {
    this->platform = platform;
-   views = new container::typed::List <View> (true);
+   view = NULL;
    topLevel = NULL;
    widgetAtPoint = NULL;
 
@@ -87,9 +192,11 @@ Layout::Layout (Platform *platform)
    cursor = style::CURSOR_DEFAULT;
 
    canvasWidth = canvasAscent = canvasDescent = 0;
-   
+
    usesViewport = false;
    scrollX = scrollY = 0;
+   viewportWidth = viewportHeight = 0;
+   hScrollbarThickness = vScrollbarThickness = 0;
 
    requestedAnchor = NULL;
    scrollIdleId = -1;
@@ -120,7 +227,7 @@ Layout::~Layout ()
    if (topLevel)
       delete topLevel;
    delete platform;
-   delete views;
+   delete view;
    delete anchorsTable;
    delete textZone;
 }
@@ -128,7 +235,7 @@ Layout::~Layout ()
 void Layout::addWidget (Widget *widget)
 {
    if (topLevel) {
-      fprintf (stderr, "widget already set\n");
+      MSG_WARN("widget already set\n");
       return;
    }
 
@@ -154,13 +261,10 @@ void Layout::removeWidget ()
    canvasWidth = canvasAscent = canvasDescent = 0;
    scrollX = scrollY = 0;
 
-   for (typed::Iterator <View> it = views->iterator (); it.hasNext (); ) {
-      View *view = it.getNext ();
-      view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
-      if (view->usesViewport ())
-         view->setViewportSize (viewportWidth, viewportHeight, 0, 0);
-      view->queueDrawTotal ();
-   }
+   view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
+   if (view->usesViewport ())
+      view->setViewportSize (viewportWidth, viewportHeight, 0, 0);
+   view->queueDrawTotal ();
 
    setAnchor (NULL);
    updateAnchor ();
@@ -192,7 +296,10 @@ void Layout::setWidget (Widget *widget)
  */
 void Layout::attachView (View *view)
 {
-   views->append (view);
+   if (this->view)
+      MSG_ERR("attachView: Multiple views for layout!\n");
+
+   this->view = view;
    platform->attachView (view);
 
    /*
@@ -234,11 +341,12 @@ void Layout::attachView (View *view)
 
 void Layout::detachView (View *view)
 {
+   if (this->view != view)
+      MSG_ERR("detachView: this->view: %p view %p\n", this->view, view);
+
    view->setLayout (NULL);
    platform->detachView (view);
-
-   views->detachRef (view);
-
+   this->view = NULL;
    /**
     * \todo Actually, viewportMarkerWidthDiff and
     *       viewportMarkerHeightDiff have to be recalculated here, since the
@@ -247,8 +355,14 @@ void Layout::detachView (View *view)
     */
 }
 
+void Layout::scroll(ScrollCommand cmd)
+{
+   if (view->usesViewport ())
+      view->scroll(cmd);
+}
+
 /**
- * \brief Scrolls all viewports, so that the region [x, y, width, height] 
+ * \brief Scrolls all viewports, so that the region [x, y, width, height]
  *    is seen, according to hpos and vpos.
  */
 void Layout::scrollTo (HPosition hpos, VPosition vpos,
@@ -262,8 +376,8 @@ void Layout::scrollTo0 (HPosition hpos, VPosition vpos,
                         bool scrollingInterrupted)
 {
    if (usesViewport) {
-      //printf ("scrollTo (%d, %d, %s)\n",
-      //        x, y, scrollingInterrupted ? "true" : "false");
+      _MSG("scrollTo (%d, %d, %s)\n",
+           x, y, scrollingInterrupted ? "true" : "false");
 
       scrollTargetHpos = hpos;
       scrollTargetVpos = vpos;
@@ -271,12 +385,12 @@ void Layout::scrollTo0 (HPosition hpos, VPosition vpos,
       scrollTargetY = y;
       scrollTargetWidth = width;
       scrollTargetHeight = height;
-      
+
       if (scrollIdleId == -1) {
          scrollIdleId = platform->addIdle (&Layout::scrollIdle);
          scrollIdleNotInterrupted = true;
       }
-      
+
       scrollIdleNotInterrupted =
          scrollIdleNotInterrupted || !scrollingInterrupted;
    }
@@ -334,11 +448,7 @@ void Layout::scrollIdle ()
 
    if (xChanged || yChanged) {
       adjustScrollPos ();
-      for (container::typed::Iterator <View> it = views->iterator ();
-           it.hasNext (); ) {
-         View *thisView = it.getNext();
-         thisView->scrollTo (scrollX, scrollY);
-      }
+      view->scrollTo (scrollX, scrollY);
    }
 
    scrollIdleId = -1;
@@ -354,7 +464,7 @@ void Layout::adjustScrollPos ()
       canvasAscent + canvasDescent - (viewportHeight - hScrollbarThickness));
    scrollY = misc::max (scrollY, 0);
 
- //printf("adjustScrollPos: scrollX=%d scrollY=%d\n", scrollX, scrollY);
+   _MSG("adjustScrollPos: scrollX=%d scrollY=%d\n", scrollX, scrollY);
 }
 
 bool Layout::calcScrollInto (int requestedValue, int requestedSize,
@@ -414,7 +524,7 @@ void Layout::draw (View *view, Rectangle *area)
  */
 void Layout::setAnchor (const char *anchor)
 {
-   //printf ("setAnchor (%s)\n", anchor);
+   _MSG("setAnchor (%s)\n", anchor);
 
    if (requestedAnchor)
       delete requestedAnchor;
@@ -450,7 +560,7 @@ char *Layout::addAnchor (Widget *widget, const char* name, int y)
 
 void Layout::changeAnchor (Widget *widget, char* name, int y)
 {
-   String key (name);   
+   String key (name);
    Anchor *anchor = anchorsTable->get (&key);
    assert (anchor);
    assert (anchor->widget == widget);
@@ -488,11 +598,7 @@ void Layout::setCursor (style::Cursor cursor)
 {
    if (cursor != this->cursor) {
       this->cursor = cursor;
-      
-      for (typed::Iterator <View> it = views->iterator (); it.hasNext (); ) {
-         View *view = it.getNext ();
-         view->setCursor (cursor);
-      }
+      view->setCursor (cursor);
    }
 }
 
@@ -514,17 +620,13 @@ void Layout::updateBgColor ()
       bgColor = topLevel->getStyle()->backgroundColor;
    else
       bgColor = NULL;
-
-   for (typed::Iterator <View> it = views->iterator (); it.hasNext (); ) {
-      View *view = it.getNext ();
-      view->setBgColor (bgColor);
-   }
+   view->setBgColor (bgColor);
 }
 
 void Layout::resizeIdle ()
 {
    //static int calls = 0;
-   //printf(" Layout::resizeIdle calls = %d\n", ++calls);
+   //MSG(" Layout::resizeIdle calls = %d\n", ++calls);
 
    while (resizeIdleId != -1) {
       // Reset already here, since in this function, queueResize() may be
@@ -550,12 +652,9 @@ void Layout::resizeIdle ()
          emitter.emitCanvasSizeChanged (
             canvasWidth, canvasAscent, canvasDescent);
 
-         // Tell the views about the new world size.
-         for (typed::Iterator <View> it = views->iterator (); it.hasNext ();) {
-            View *view = it.getNext ();
-            view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
-          //  view->queueDrawTotal (false);
-         }
+         // Tell the view about the new world size.
+         view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
+         //  view->queueDrawTotal (false);
 
          if (usesViewport) {
             int actualHScrollbarThickness =
@@ -564,7 +663,7 @@ void Layout::resizeIdle ()
             (canvasAscent + canvasDescent > viewportHeight) ?
             vScrollbarThickness : 0;
 
-            if (!canvasHeightGreater &&         
+            if (!canvasHeightGreater &&
                canvasAscent + canvasDescent
                > viewportHeight - actualHScrollbarThickness) {
                canvasHeightGreater = true;
@@ -573,14 +672,10 @@ void Layout::resizeIdle ()
             }
 
             // Set viewport sizes.
-            for (typed::Iterator <View> it = views->iterator ();
-               it.hasNext (); ) {
-               View *view = it.getNext ();
-               if (view->usesViewport ())
-                  view->setViewportSize (viewportWidth, viewportHeight,
-                                         actualHScrollbarThickness,
-                                         actualVScrollbarThickness);
-            }
+            if (view->usesViewport ())
+               view->setViewportSize (viewportWidth, viewportHeight,
+                                      actualHScrollbarThickness,
+                                      actualVScrollbarThickness);
          }
       }
 
@@ -592,7 +687,7 @@ void Layout::resizeIdle ()
 }
 
 void Layout::setSizeHints ()
-{ 
+{
    if (topLevel) {
       topLevel->setWidth (viewportWidth
                           - (canvasHeightGreater ? vScrollbarThickness : 0));
@@ -611,11 +706,7 @@ void Layout::queueDraw (int x, int y, int width, int height)
 
    if (area.isEmpty ()) return;
 
-   for (container::typed::Iterator <View> it = views->iterator ();
-      it.hasNext (); ) {
-      View *view = it.getNext ();
-      view->queueDraw (&area);
-   }
+   view->queueDraw (&area);
 }
 
 void Layout::queueDrawExcept (int x, int y, int width, int height,
@@ -623,15 +714,15 @@ void Layout::queueDrawExcept (int x, int y, int width, int height,
 
    if (x == ex && y == ey && width == ewidth && height == eheight)
       return;
-  
+
    // queueDraw() the four rectangles within rectangle (x, y, width, height)
    // around rectangle (ex, ey, ewidth, eheight).
    // Some or all of these may be empty.
 
-   // upper left corner of the intersection rectangle 
+   // upper left corner of the intersection rectangle
    int ix1 = misc::max (x, ex);
    int iy1 = misc::max (y, ey);
-   // lower right corner of the intersection rectangle 
+   // lower right corner of the intersection rectangle
    int ix2 = misc::min (x + width, ex + ewidth);
    int iy2 = misc::min (y + height, ey + eheight);
 
@@ -644,11 +735,7 @@ void Layout::queueDrawExcept (int x, int y, int width, int height,
 void Layout::queueResize ()
 {
    if (resizeIdleId == -1) {
-      for (container::typed::Iterator <View> it = views->iterator ();
-           it.hasNext (); ) {
-         View *view = it.getNext ();
-         view->cancelQueueDraw ();
-      }
+      view->cancelQueueDraw ();
 
       resizeIdleId = platform->addIdle (&Layout::resizeIdle);
    }
@@ -659,10 +746,10 @@ void Layout::queueResize ()
 
 bool Layout::buttonEvent (ButtonEventType type, View *view, int numPressed,
                           int x, int y, ButtonState state, int button)
-   
+
 {
    EventButton event;
-   
+
    moveToWidgetAtPoint (x, y, state);
 
    event.xCanvas = x;
@@ -670,7 +757,7 @@ bool Layout::buttonEvent (ButtonEventType type, View *view, int numPressed,
    event.state = state;
    event.button = button;
    event.numPressed = numPressed;
-   
+
    return processMouseEvent (&event, type, true);
 }
 
@@ -683,13 +770,13 @@ bool Layout::buttonEvent (ButtonEventType type, View *view, int numPressed,
 bool Layout::motionNotify (View *view,  int x, int y, ButtonState state)
 {
    EventButton event;
-   
+
    moveToWidgetAtPoint (x, y, state);
 
    event.xCanvas = x;
    event.yCanvas = y;
    event.state = state;
-   
+
    return processMouseEvent (&event, MOTION_NOTIFY, true);
 }
 
@@ -706,7 +793,7 @@ void Layout::enterNotify (View *view, int x, int y, ButtonState state)
    lastWidget = widgetAtPoint;
    moveToWidgetAtPoint (x, y, state);
 
-   if(widgetAtPoint) {
+   if (widgetAtPoint) {
       event.state = state;
       event.lastWidget = lastWidget;
       event.currentWidget = widgetAtPoint;
@@ -727,7 +814,7 @@ void Layout::leaveNotify (View *view, ButtonState state)
    lastWidget = widgetAtPoint;
    moveOutOfView (state);
 
-   if(lastWidget) {
+   if (lastWidget) {
       event.state = state;
       event.lastWidget = lastWidget;
       event.currentWidget = widgetAtPoint;
@@ -740,8 +827,8 @@ void Layout::leaveNotify (View *view, ButtonState state)
  */
 Widget *Layout::getWidgetAtPoint (int x, int y)
 {
-   //_MSG ("------------------------------------------------------------\n");
-   //_MSG ("widget at (%d, %d)\n", x, y);
+   _MSG ("------------------------------------------------------------\n");
+   _MSG ("widget at (%d, %d)\n", x, y);
    if (topLevel)
       return topLevel->getWidgetAtPoint (x, y, 0);
    else
@@ -761,11 +848,11 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
    EventCrossing crossingEvent;
 
    if (newWidgetAtPoint != widgetAtPoint) {
-      // The mouse pointer has been moved into another widget. 
+      // The mouse pointer has been moved into another widget.
       if (newWidgetAtPoint && widgetAtPoint)
          ancestor =
             newWidgetAtPoint->getNearestCommonAncestor (widgetAtPoint);
-      else if(newWidgetAtPoint)
+      else if (newWidgetAtPoint)
          ancestor = newWidgetAtPoint->getTopLevel ();
       else
          ancestor = widgetAtPoint->getTopLevel ();
@@ -777,7 +864,7 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          for (w = widgetAtPoint; w != ancestor; w = w->getParent ())
             trackLen++;
       trackLen++; // for the ancestor
-      if(newWidgetAtPoint)
+      if (newWidgetAtPoint)
          // second part
          for (w = newWidgetAtPoint; w != ancestor; w = w->getParent ())
             trackLen++;
@@ -789,7 +876,7 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          for (w = widgetAtPoint; w != ancestor; w = w->getParent ())
             track[i++] = w;
       track[i++] = ancestor;
-      if(newWidgetAtPoint) {
+      if (newWidgetAtPoint) {
          /* second part */
          i = trackLen - 1;
          for (w = newWidgetAtPoint; w != ancestor; w = w->getParent ())
@@ -801,13 +888,13 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          crossingEvent.state = state;
          crossingEvent.currentWidget = widgetAtPoint; // ???
          crossingEvent.lastWidget = widgetAtPoint; // ???
-         
+
          if (i != 0)
             track[i]->enterNotify (&crossingEvent);
          if (i != trackLen - 1)
             track[i]->leaveNotify (&crossingEvent);
       }
-      
+
       delete[] track;
 
       widgetAtPoint = newWidgetAtPoint;
@@ -827,7 +914,7 @@ bool Layout::processMouseEvent (MousePositionEvent *event,
    Widget *widget;
 
    for (widget = widgetAtPoint; widget; widget = widget->getParent ()) {
-      if(!mayBeSuppressed || widget->isButtonSensitive ()) {
+      if (!mayBeSuppressed || widget->isButtonSensitive ()) {
          event->xWidget = event->xCanvas - widget->getAllocation()->x;
          event->yWidget = event->yCanvas - widget->getAllocation()->y;
 
@@ -846,6 +933,10 @@ bool Layout::processMouseEvent (MousePositionEvent *event,
          }
       }
    }
+   if (type == BUTTON_PRESS)
+      return emitLinkPress (NULL, -1, -1, -1, -1, (EventButton*)event);
+   else if (type == BUTTON_RELEASE)
+      return emitLinkRelease(NULL, -1, -1, -1, -1, (EventButton*)event);
 
    return false;
 }
@@ -860,14 +951,6 @@ void Layout::scrollPosChanged (View *view, int x, int y)
    if (x != scrollX || y != scrollY) {
       scrollX = x;
       scrollY = y;
-      
-      // Tell all views about the scrolling position, except the caller.
-      for (container::typed::Iterator <View> it = views->iterator ();
-           it.hasNext (); ) {
-         View *thisView = it.getNext();
-         if(view != thisView && thisView->usesViewport ())
-            thisView->scrollTo (scrollX, scrollY);
-      }
 
       setAnchor (NULL);
       updateAnchor ();
@@ -880,12 +963,12 @@ void Layout::scrollPosChanged (View *view, int x, int y)
  */
 void Layout::viewportSizeChanged (View *view, int width, int height)
 {
-   //printf("Layout::viewportSizeChanged w=%d h=%d new_w=%d new_h=%d\n",
-   //       viewportWidth, viewportHeight, width, height);
+   _MSG("Layout::viewportSizeChanged w=%d h=%d new_w=%d new_h=%d\n",
+        viewportWidth, viewportHeight, width, height);
 
    /* If the width has become higher, we test again, whether the vertical
     * scrollbar (so to speak) can be hidden again. */
-   if(usesViewport && width > viewportWidth)
+   if (usesViewport && width > viewportWidth)
       canvasHeightGreater = false;
 
    /* if size changes, redraw this view.
@@ -897,21 +980,6 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
    viewportHeight = height;
 
    setSizeHints ();
-
-   int actualHScrollbarThickness =
-      (canvasWidth > viewportWidth) ? hScrollbarThickness : 0;
-   int actualVScrollbarThickness =
-      (canvasAscent + canvasDescent > viewportWidth) ? vScrollbarThickness : 0;
-
-   /* Tell all views about the size, except the caller. */
-   for (container::typed::Iterator <View> it = views->iterator ();
-        it.hasNext (); ) {
-      View *thisView = it.getNext();
-      if(view != thisView && thisView->usesViewport ())
-         thisView->setViewportSize (viewportWidth, viewportHeight,
-                                    actualHScrollbarThickness,
-                                    actualVScrollbarThickness);
-   }
 }
 
 } // namespace dw

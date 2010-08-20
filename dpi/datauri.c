@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <errno.h>
 
 #include "../dpip/dpip.h"
 #include "dpiutil.h"
@@ -22,75 +24,89 @@
 /*
  * Debugging macros
  */
+#define SILENT 1
 #define _MSG(...)
-#define MSG(...)  printf("[datauri dpi]: " __VA_ARGS__)
+#if SILENT
+ #define MSG(...)
+#else
+ #define MSG(...)  fprintf(stderr, "[datauri dpi]: " __VA_ARGS__)
+#endif
 
 /*
  * Global variables
  */
-static SockHandler *sh = NULL;
+static Dsh *sh = NULL;
 
+static void b64strip_illegal_chars(unsigned char* str)
+{
+   unsigned char *p, *s = str;
 
+   MSG("len=%d{%s}\n", strlen((char*)str), str);
+
+   for (p = s; (*p = *s); ++s) {
+      if (isalnum(*p) || strchr("+/=", *p))
+         ++p;
+   }
+
+   MSG("len=%d{%s}\n", strlen((char *)str), str);
+}
 
 static int b64decode(unsigned char* str)
 {
-    unsigned char *cur, *start;
-    int d, dlast, phase;
-    unsigned char c;
-    static int table[256] = {
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 00-0F */
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 10-1F */
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,62,-1,-1,-1,63,  /* 20-2F */
-        52,53,54,55,56,57,58,59,60,61,-1,-1,-1,-1,-1,-1,  /* 30-3F */
-        -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,  /* 40-4F */
-        15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,  /* 50-5F */
-        -1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,  /* 60-6F */
-        41,42,43,44,45,46,47,48,49,50,51,-1,-1,-1,-1,-1,  /* 70-7F */
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 80-8F */
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 90-9F */
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* A0-AF */
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* B0-BF */
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* C0-CF */
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* D0-DF */
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* E0-EF */
-        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1   /* F0-FF */
-    };
+   unsigned char *cur, *start;
+   int d, dlast, phase;
+   unsigned char c;
+   static int table[256] = {
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 00-0F */
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 10-1F */
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,62,-1,-1,-1,63,  /* 20-2F */
+      52,53,54,55,56,57,58,59,60,61,-1,-1,-1,-1,-1,-1,  /* 30-3F */
+      -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,  /* 40-4F */
+      15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,  /* 50-5F */
+      -1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,  /* 60-6F */
+      41,42,43,44,45,46,47,48,49,50,51,-1,-1,-1,-1,-1,  /* 70-7F */
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 80-8F */
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 90-9F */
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* A0-AF */
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* B0-BF */
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* C0-CF */
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* D0-DF */
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* E0-EF */
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1   /* F0-FF */
+   };
 
-    d = dlast = phase = 0;
-    start = str;
-    for (cur = str; *cur != '\0'; ++cur )
-    {
-        // jer: treat line endings as physical breaks.
-        //if (*cur == '\n' || *cur == '\r'){phase = dlast = 0; continue;}
-        d = table[(int)*cur];
-        if(d != -1)
-        {
-            switch(phase)
-            {
-            case 0:
-                ++phase;
-                break;
-            case 1:
-                c = ((dlast << 2) | ((d & 0x30) >> 4));
-                *str++ = c;
-                ++phase;
-                break;
-            case 2:
-                c = (((dlast & 0xf) << 4) | ((d & 0x3c) >> 2));
-                *str++ = c;
-                ++phase;
-                break;
-            case 3:
-                c = (((dlast & 0x03 ) << 6) | d);
-                *str++ = c;
-                phase = 0;
-                break;
-            }
-            dlast = d;
-        }
-    }
-    *str = '\0';
-    return str - start;
+   d = dlast = phase = 0;
+   start = str;
+   for (cur = str; *cur != '\0'; ++cur ) {
+      // jer: treat line endings as physical breaks.
+      //if (*cur == '\n' || *cur == '\r'){phase = dlast = 0; continue;}
+      d = table[(int)*cur];
+      if (d != -1) {
+         switch(phase) {
+         case 0:
+            ++phase;
+            break;
+         case 1:
+            c = ((dlast << 2) | ((d & 0x30) >> 4));
+            *str++ = c;
+            ++phase;
+            break;
+         case 2:
+            c = (((dlast & 0xf) << 4) | ((d & 0x3c) >> 2));
+            *str++ = c;
+            ++phase;
+            break;
+         case 3:
+            c = (((dlast & 0x03 ) << 6) | d);
+            *str++ = c;
+            phase = 0;
+            break;
+         }
+         dlast = d;
+      }
+   }
+   *str = '\0';
+   return str - start;
 }
 
 /* Modified from src/url.c --------------------------------------------------*/
@@ -108,7 +124,7 @@ static int Url_decode_hex_octet(const char *s)
       hex[2] = 0;
       hex_value = strtol(hex, &tail, 16);
       if (tail - hex == 2)
-        return hex_value;
+         return hex_value;
    }
    return -1;
 }
@@ -151,16 +167,16 @@ static void send_decoded_data(const char *url, const char *mime_type,
 
    /* Send dpip tag */
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", url);
-   sock_handler_write_str(sh, 1, d_cmd);
+   a_Dpip_dsh_write_str(sh, 1, d_cmd);
    dFree(d_cmd);
 
    /* Send HTTP header. */
-   sock_handler_write_str(sh, 0, "Content-type: ");
-   sock_handler_write_str(sh, 0, mime_type);
-   sock_handler_write_str(sh, 1, "\n\n");
+   a_Dpip_dsh_write_str(sh, 0, "Content-type: ");
+   a_Dpip_dsh_write_str(sh, 0, mime_type);
+   a_Dpip_dsh_write_str(sh, 1, "\n\n");
 
    /* Send message */
-   sock_handler_write(sh, 0, (char *)data, data_sz);
+   a_Dpip_dsh_write(sh, 0, (char *)data, data_sz);
 }
 
 static void send_failure_message(const char *url, const char *mime_type,
@@ -178,24 +194,24 @@ static void send_failure_message(const char *url, const char *mime_type,
 
    /* Send dpip tag */
    d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", url);
-   sock_handler_write_str(sh, 1, d_cmd);
+   a_Dpip_dsh_write_str(sh, 1, d_cmd);
    dFree(d_cmd);
 
    /* Send HTTP header. */
-   sock_handler_write_str(sh, 0, "Content-type: ");
-   sock_handler_write_str(sh, 0, msg_mime_type);
-   sock_handler_write_str(sh, 1, "\n\n");
+   a_Dpip_dsh_write_str(sh, 0, "Content-type: ");
+   a_Dpip_dsh_write_str(sh, 0, msg_mime_type);
+   a_Dpip_dsh_write_str(sh, 1, "\n\n");
 
    /* Send message */
-   sock_handler_write_str(sh, 0, msg);
+   a_Dpip_dsh_write_str(sh, 0, msg);
 
    /* send some debug info */
    snprintf(buf, 1024, "mime_type: %s<br>data size: %d<br>data: %s<br>",
             mime_type, (int)data_sz, data);
-   sock_handler_write_str(sh, 0, buf);
+   a_Dpip_dsh_write_str(sh, 0, buf);
 
    /* close page */
-   sock_handler_write_str(sh, 0, "</body></html>");
+   a_Dpip_dsh_write_str(sh, 0, "</body></html>");
 }
 
 /*
@@ -253,7 +269,8 @@ static unsigned char *datauri_get_data(char *url, size_t *p_sz)
    if (p) {
       ++p;
       if (is_base64) {
-         data = (unsigned char *)dStrdup(p);
+         data = (unsigned char *)Unescape_uri_str(p);
+         b64strip_illegal_chars(data);
          *p_sz = (size_t) b64decode(data);
       } else {
          data = (unsigned char *)a_Url_decode_hex_str(p, p_sz);
@@ -273,19 +290,33 @@ int main(void)
 {
    char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *mime_type;
    unsigned char *data;
+   int rc;
    size_t data_size = 0;
 
    /* Initialize the SockHandler */
-   sh = sock_handler_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
+   sh = a_Dpip_dsh_new(STDIN_FILENO, STDOUT_FILENO, 8*1024);
 
-   chdir("/tmp");
+   rc = chdir("/tmp");
+   if (rc == -1) {
+      MSG("paths: error changing directory to /tmp: %s\n",
+          dStrerror(errno));
+   }
+
+   /* Authenticate our client... */
+   if (!(dpip_tag = a_Dpip_dsh_read_token(sh, 1)) ||
+       a_Dpip_check_auth(dpip_tag) < 0) {
+      MSG("can't authenticate request: %s\n", dStrerror(errno));
+      a_Dpip_dsh_close(sh);
+      return 1;
+   }
+   dFree(dpip_tag);
 
    /* Read the dpi command from STDIN */
-   dpip_tag = sock_handler_read(sh);
+   dpip_tag = a_Dpip_dsh_read_token(sh, 1);
    MSG("[%s]\n", dpip_tag);
 
-   cmd = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "cmd");
-   url = a_Dpip_get_attr(dpip_tag, strlen(dpip_tag), "url");
+   cmd = a_Dpip_get_attr(dpip_tag, "cmd");
+   url = a_Dpip_get_attr(dpip_tag, "url");
    if (!cmd || !url) {
       MSG("Error, cmd=%s, url=%s\n", cmd, url);
       exit (EXIT_FAILURE);
@@ -314,8 +345,8 @@ int main(void)
    dFree(dpip_tag);
 
    /* Finish the SockHandler */
-   sock_handler_close(sh);
-   sock_handler_free(sh);
+   a_Dpip_dsh_close(sh);
+   a_Dpip_dsh_free(sh);
 
    return 0;
 }

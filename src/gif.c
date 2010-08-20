@@ -67,10 +67,8 @@
 
 #include "msg.h"
 #include "image.hh"
-#include "web.hh"
 #include "cache.h"
 #include "dicache.h"
-#include "prefs.h"
 
 #define INTERLACE      0x40
 #define LOCALCOLORMAP  0x80
@@ -147,54 +145,15 @@ static void Gif_write(DilloGif *gif, void *Buf, uint_t BufSize);
 static void Gif_close(DilloGif *gif, CacheClient_t *Client);
 static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *buf,
                                 int bufsize, void *Buf);
-static DilloGif *Gif_new(DilloImage *Image, DilloUrl *url, int version);
-static void Gif_callback(int Op, CacheClient_t *Client);
 
-/* exported function */
-void *a_Gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
-                  void **Data);
-
-
-/*
- * MIME handler for "image/gif" type
- * (Sets Gif_callback as cache-client)
- */
-void *a_Gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
-                  void **Data)
-{
-   DilloWeb *web = Ptr;
-   DICacheEntry *DicEntry;
-
-   if (!web->Image)
-      web->Image = a_Image_new(0, 0, NULL, prefs.bg_color);
-      /* TODO: get the backgound color from the parent widget -- Livio. */
-
-   /* Add an extra reference to the Image (for dicache usage) */
-   a_Image_ref(web->Image);
-
-   DicEntry = a_Dicache_get_entry(web->url);
-   if (!DicEntry) {
-      /* Let's create an entry for this image... */
-      DicEntry = a_Dicache_add_entry(web->url);
-
-      /* ... and let the decoder feed it! */
-      *Data = Gif_new(web->Image, DicEntry->url, DicEntry->version);
-      *Call = (CA_Callback_t) Gif_callback;
-   } else {
-      /* Let's feed our client from the dicache */
-      a_Dicache_ref(DicEntry->url, DicEntry->version);
-      *Data = web->Image;
-      *Call = (CA_Callback_t) a_Dicache_callback;
-   }
-   return (web->Image->dw);
-}
 
 /*
  * Create a new gif structure for decoding a gif into a RGB buffer
  */
-static DilloGif *Gif_new(DilloImage *Image, DilloUrl *url, int version)
+void *a_Gif_new(DilloImage *Image, DilloUrl *url, int version)
 {
    DilloGif *gif = dMalloc(sizeof(DilloGif));
+   _MSG("a_Gif_new: gif=%p\n", gif);
 
    gif->Image = Image;
    gif->url = url;
@@ -216,15 +175,38 @@ static DilloGif *Gif_new(DilloImage *Image, DilloUrl *url, int version)
 }
 
 /*
+ * Free the gif-decoding data structure.
+ */
+static void Gif_free(DilloGif *gif)
+{
+   int i;
+
+   _MSG("Gif_free: gif=%p\n", gif);
+
+   dFree(gif->linebuf);
+   if (gif->spill_lines != NULL) {
+      for (i = 0; i < gif->num_spill_lines_max; i++)
+         dFree(gif->spill_lines[i]);
+      dFree(gif->spill_lines);
+   }
+   dFree(gif);
+}
+
+/*
  * This function is a cache client, it receives data from the cache
  * and dispatches it to the appropriate gif-processing functions
  */
-static void Gif_callback(int Op, CacheClient_t *Client)
+void a_Gif_callback(int Op, void *data)
 {
-   if (Op)
-      Gif_close(Client->CbData, Client);
-   else
+   if (Op == CA_Send) {
+      CacheClient_t *Client = data;
       Gif_write(Client->CbData, Client->Buf, Client->BufSize);
+   } else if (Op == CA_Close) {
+      CacheClient_t *Client = data;
+      Gif_close(Client->CbData, Client);
+   } else if (Op == CA_Abort) {
+      Gif_free(data);
+   }
 }
 
 /*
@@ -259,20 +241,9 @@ static void Gif_write(DilloGif *gif, void *Buf, uint_t BufSize)
  */
 static void Gif_close(DilloGif *gif, CacheClient_t *Client)
 {
-   int i;
-
-   _MSG("destroy gif %p\n", gif);
-
+   _MSG("Gif_close: destroy gif %p\n", gif);
    a_Dicache_close(gif->url, gif->version, Client);
-
-   dFree(gif->linebuf);
-
-   if (gif->spill_lines != NULL) {
-      for (i = 0; i < gif->num_spill_lines_max; i++)
-         dFree(gif->spill_lines[i]);
-      dFree(gif->spill_lines);
-   }
-   dFree(gif);
+   Gif_free(gif);
 }
 
 
@@ -418,7 +389,7 @@ static void Gif_lwz_init(DilloGif *gif)
  */
 static void Gif_emit_line(DilloGif *gif, const uchar_t *linebuf)
 {
-   a_Dicache_write(gif->Image, gif->url, gif->version, linebuf, gif->y);
+   a_Dicache_write(gif->url, gif->version, linebuf, gif->y);
    if (gif->Flags & INTERLACE) {
       switch (gif->pass) {
       case 0:
@@ -841,6 +812,16 @@ static size_t Gif_do_img_desc(DilloGif *gif, void *Buf,
 
    gif->Width   = LM_to_uint(buf[4], buf[5]);
    gif->Height  = LM_to_uint(buf[6], buf[7]);
+
+   /* check max image size */
+   if (gif->Width <= 0 || gif->Height <= 0 ||
+       gif->Width > IMAGE_MAX_AREA / gif->Height) {
+      MSG("Gif_do_img_desc: suspicious image size request %ux%u\n",
+          gif->Width, gif->Height);
+      gif->state = 999;
+      return 0;
+   }
+
    gif->linebuf = dMalloc(gif->Width);
 
    a_Dicache_set_parms(gif->url, gif->version, gif->Image,
@@ -1044,5 +1025,10 @@ static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *ibuf,
 
    return bufsize - tmp_bufsize;
 }
+
+#else /* ENABLE_GIF */
+
+void *a_Gif_new() { return 0; }
+void a_Gif_callback() { return; }
 
 #endif /* ENABLE_GIF */

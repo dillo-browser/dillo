@@ -11,7 +11,7 @@
 
 // UI dialogs
 
-#include <math.h> // for rint() 
+#include <math.h> // for rint()
 
 #include <fltk/Window.h>
 #include <fltk/ask.h>
@@ -20,6 +20,9 @@
 #include <fltk/ReturnButton.h>
 #include <fltk/TextDisplay.h>
 #include <fltk/HighlightButton.h>
+#include <fltk/WordwrapOutput.h>
+#include <fltk/Input.h>
+#include <fltk/SecretInput.h>
 
 #include "msg.h"
 #include "dialog.hh"
@@ -118,19 +121,19 @@ char *a_Dialog_open_file(const char *msg,
 }
 
 /*
- * Make a new window with the provided text
+ * Show a new window with the provided text
  */
-void *a_Dialog_make_text_window(const char *txt, const char *title)
+void a_Dialog_text_window(const char *txt, const char *title)
 {
    //int wh = 600, ww = 650, bh = 30;
    int wh = prefs.height, ww = prefs.width, bh = 30;
    int lines, line_num_width;
-   Font *textfont = font(prefs.fw_fontname, 0);
- 
+   Font *textfont = font(prefs.font_monospace, 0);
+
    Window *window = new Window(ww, wh, title ? title : "Untitled");
    window->callback(window_close_cb, window);
    window->begin();
- 
+
     TextDisplay *td = new TextDisplay(0,0,ww, wh-bh);
     td->buffer()->text(txt);
 
@@ -156,15 +159,7 @@ void *a_Dialog_make_text_window(const char *txt, const char *title)
 
    window->resizable(td);
    window->end();
-   return window;
-}
-
-/*
- * Show a window.
- */
-void a_Dialog_show_text_window(void *vWindow)
-{
-   ((Window *)vWindow)->show();
+   window->show();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -193,7 +188,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
    txt[0] = txt[6] = NULL;
    txt[1] = alt1; txt[2] = alt2; txt[3] = alt3;
    txt[4] = alt4; txt[5] = alt5;
-   for (int i=1; txt[i]; ++i, ++nb);
+   for (int i=1; txt[i]; ++i, ++nb) ;
 
    Window *window = new Window(ww,wh,"Choice5");
    window->begin();
@@ -214,7 +209,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
        b = new HighlightButton(xpos, wh-bh, bw, bh, txt[i]);
        b->align(ALIGN_WRAP|ALIGN_CLIP);
        b->box(UP_BOX);
-       b->callback(choice5_cb, (void*)i);
+       b->callback(choice5_cb, INT2VOIDP(i));
        xpos += bw + gap;
     }
    window->end();
@@ -225,5 +220,83 @@ int a_Dialog_choice5(const char *QuestionTxt,
    _MSG("Choice5 answer = %d\n", choice5_answer);
 
    return choice5_answer;
+}
+
+
+/*--------------------------------------------------------------------------*/
+/*
+ * ret: 0 = Cancel, 1 = OK
+ */
+static void Dialog_user_password_cb(Widget *button, void *vIntPtr)
+{
+   int ret = VOIDP2INT(vIntPtr);
+  _MSG("Dialog_user_password_cb: %d\n", ret);
+  button->window()->make_exec_return(ret);
+}
+
+/*
+ * Make a user/password dialog.
+ * Call the callback with the result (OK or not) and the given user and
+ *   password if OK.
+ */
+int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
+{
+   int ok,
+      window_w = 300, window_h = 280,
+      input_x = 80, input_w = 200, input_h = 30,
+      button_y = 230, button_h = 30;
+
+   Window *window =
+      new Window(window_w,window_h,"User/Password");
+   window->begin();
+
+   /* message */
+   WordwrapOutput *message_output =
+      new WordwrapOutput(20,20,window_w-40,100);
+   message_output->box(DOWN_BOX);
+   message_output->text(message);
+   message_output->textfont(HELVETICA_BOLD_ITALIC);
+   message_output->textsize(14);
+
+   /* inputs */
+   Input *user_input =
+      new Input(input_x,140,input_w,input_h,"User");
+   user_input->labelsize(14);
+   user_input->textsize(14);
+   SecretInput *password_input =
+      new SecretInput(input_x,180,input_w,input_h,"Password");
+   password_input->labelsize(14);
+   password_input->textsize(14);
+
+   /* "OK" button */
+   Button *ok_button =
+      new Button(200,button_y,50,button_h,"OK");
+   ok_button->labelsize(14);
+   ok_button->callback(Dialog_user_password_cb);
+   ok_button->user_data(INT2VOIDP(1));
+
+   /* "Cancel" button */
+   Button *cancel_button =
+      new Button(50,button_y,100,button_h,"Cancel");
+   cancel_button->labelsize(14);
+   cancel_button->callback(Dialog_user_password_cb);
+   cancel_button->user_data(INT2VOIDP(0));
+
+   window->end();
+   window->size_range(window_w,window_h,window_w,window_h);
+   window->resizable(window);
+
+   if ((ok = window->exec())) {
+      /* call the callback */
+      const char *user, *password;
+      user = user_input->value();
+      password = password_input->value();
+      _MSG("a_Dialog_user_passwd: ok = %d\n", ok);
+      (*cb)(user, password, vp);
+   }
+
+   delete window;
+
+   return ok;
 }
 

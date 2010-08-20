@@ -163,7 +163,7 @@ static void Nav_save_scroll_pos(BrowserWindow *bw, int idx, int posx, int posy)
 }
 
 /*
- * Remove equal adyacent URLs at the top of the stack.
+ * Remove equal adjacent URLs at the top of the stack.
  * (It may happen with redirections)
  */
 static void Nav_stack_clean(BrowserWindow *bw)
@@ -191,25 +191,26 @@ static void Nav_stack_clean(BrowserWindow *bw)
  * This function requests the page's root-URL; images and related stuff
  * are fetched directly by the HTML module.
  */
-static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
+static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url,
+                         const DilloUrl *requester, int offset)
 {
-   DilloUrl *old_url;
-   bool_t MustLoad, ForceReload;
+   const DilloUrl *old_url;
+   bool_t MustLoad, ForceReload, Repush, IgnoreScroll;
    int x, y, idx, ClientKey;
    DilloWeb *Web;
 
    MSG("Nav_open_url: new url='%s'\n", URL_STR_(url));
 
+   Repush = (URL_FLAGS(url) & URL_ReloadFromCache) != 0;
    ForceReload = (URL_FLAGS(url) & (URL_E2EQuery + URL_ReloadFromCache)) != 0;
+   IgnoreScroll = (URL_FLAGS(url) & URL_IgnoreScroll) != 0;
 
    /* Get the url of the current page */
    idx = a_Nav_stack_ptr(bw);
    old_url = a_History_get_url(NAV_UIDX(bw, idx));
    _MSG("Nav_open_url:  old_url='%s' idx=%d\n", URL_STR(old_url), idx);
    /* Record current scrolling position */
-   if (URL_FLAGS(url) & URL_ReloadFromCache) {
-      /* Repush operation, don't change scroll position */
-   } else if (old_url) {
+   if (old_url && !IgnoreScroll) {
       a_UIcmd_get_scroll_xy(bw, &x, &y);
       Nav_save_scroll_pos(bw, idx, x, y);
       _MSG("Nav_open_url:  saved scroll of '%s' at x=%d y=%d\n",
@@ -232,7 +233,7 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 
       // a_Menu_pagemarks_new(bw);
 
-      Web = a_Web_new(url);
+      Web = a_Web_new(url, requester);
       Web->bw = bw;
       Web->flags |= WEB_RootUrl;
       if ((ClientKey = a_Capi_open_url(Web, NULL, NULL)) != 0) {
@@ -249,12 +250,21 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url, int offset)
 void a_Nav_cancel_expect(BrowserWindow *bw)
 {
    if (bw->nav_expecting) {
-      if (bw->nav_expect_url) {
-         a_Url_free(bw->nav_expect_url);
-         bw->nav_expect_url = NULL;
-      }
+      a_Url_free(bw->nav_expect_url);
+      bw->nav_expect_url = NULL;
       bw->nav_expecting = FALSE;
    }
+   if (bw->meta_refresh_status > 0)
+      --bw->meta_refresh_status;
+}
+
+/*
+ * Cancel the expect if 'url' matches.
+ */
+void a_Nav_cancel_expect_if_eq(BrowserWindow *bw, const DilloUrl *url)
+{
+   if (bw->nav_expecting && a_Url_cmp(url, bw->nav_expect_url) == 0)
+      a_Nav_cancel_expect(bw);
 }
 
 /*
@@ -265,7 +275,7 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
  */
 void a_Nav_expect_done(BrowserWindow *bw)
 {
-   int url_idx, posx, posy, reload, repush, e2equery, goto_old_scroll = TRUE;
+   int m, url_idx, posx, posy, reload, repush, e2equery, goto_old_scroll=TRUE;
    DilloUrl *url;
    char *fragment = NULL;
 
@@ -278,11 +288,10 @@ void a_Nav_expect_done(BrowserWindow *bw)
       e2equery = (URL_FLAGS(url) & URL_E2EQuery);
       fragment = a_Url_decode_hex_str(URL_FRAGMENT_(url));
 
-      /* Unset E2EQuery, ReloadPage and ReloadFromCache
+      /* Unset E2EQuery, ReloadPage, ReloadFromCache and IgnoreScroll
        * before adding this url to history */
-      a_Url_set_flags(url, URL_FLAGS(url) & ~URL_E2EQuery);
-      a_Url_set_flags(url, URL_FLAGS(url) & ~URL_ReloadPage);
-      a_Url_set_flags(url, URL_FLAGS(url) & ~URL_ReloadFromCache);
+      m = URL_E2EQuery|URL_ReloadPage|URL_ReloadFromCache|URL_IgnoreScroll;
+      a_Url_set_flags(url, URL_FLAGS(url) & ~m);
       url_idx = a_History_add_url(url);
 
       if (repush) {
@@ -310,7 +319,7 @@ void a_Nav_expect_done(BrowserWindow *bw)
    }
 
    if (goto_old_scroll) {
-      /* Scroll to were we were in this page */
+      /* Scroll to where we were in this page */
       Nav_get_scroll_pos(bw, &posx, &posy);
       a_UIcmd_set_scroll_xy(bw, posx, posy);
       _MSG("Nav: expect_done scrolling to x=%d y=%d\n", posx, posy);
@@ -333,7 +342,8 @@ void a_Nav_expect_done(BrowserWindow *bw)
  * - Set bw to expect the URL data
  * - Ask the cache to feed back the requested URL (via Nav_open_url)
  */
-void a_Nav_push(BrowserWindow *bw, const DilloUrl *url)
+void a_Nav_push(BrowserWindow *bw, const DilloUrl *url,
+                                   const DilloUrl *requester)
 {
    dReturn_if_fail (bw != NULL);
 
@@ -345,7 +355,7 @@ void a_Nav_push(BrowserWindow *bw, const DilloUrl *url)
    a_Nav_cancel_expect(bw);
    bw->nav_expect_url = a_Url_dup(url);
    bw->nav_expecting = TRUE;
-   Nav_open_url(bw, url, 0);
+   Nav_open_url(bw, url, requester, 0);
 }
 
 /*
@@ -362,13 +372,14 @@ static void Nav_repush(BrowserWindow *bw)
       a_Url_set_flags(url, URL_FLAGS(url) | URL_ReloadFromCache);
       bw->nav_expect_url = a_Url_dup(url);
       bw->nav_expecting = TRUE;
-      Nav_open_url(bw, url, 0);
+      Nav_open_url(bw, url, NULL, 0);
       a_Url_free(url);
    }
 }
 
 static void Nav_repush_callback(void *data)
 {
+   _MSG(">>>> Nav_repush_callback <<<<\n");
    Nav_repush(data);
    a_Timeout_remove();
 }
@@ -377,32 +388,50 @@ static void Nav_repush_callback(void *data)
  * Repush current URL: not an end-to-end reload but from cache.
  * - Currently used to switch to a charset decoder given by the META element.
  * - Delayed to let dillo finish the call flow into a known state.
+ *
+ * There's no need to stop the parser before calling this function:
+ * When the timeout activates, a_Bw_stop_clients will stop the data feed.
  */
 void a_Nav_repush(BrowserWindow *bw)
 {
    dReturn_if_fail (bw != NULL);
+   MSG(">>> a_Nav_repush <<<<\n");
    a_Timeout_add(0.0, Nav_repush_callback, (void*)bw);
 }
 
 /*
- * Same as a_Nav_push() but in a new window.
+ * This one does a_Nav_redirection0's job.
  */
-void a_Nav_push_nw(BrowserWindow *bw, const DilloUrl *url)
+static void Nav_redirection0_callback(void *data)
 {
-   int w, h;
-   BrowserWindow *newbw;
+   BrowserWindow *bw = (BrowserWindow *)data;
+   const DilloUrl *referer_url = a_History_get_url(NAV_TOP_UIDX(bw));
+   _MSG(">>>> Nav_redirection0_callback <<<<\n");
 
-   a_UIcmd_get_wh(bw, &w, &h);
-   newbw = a_UIcmd_browser_window_new(w, h, bw);
-   a_Nav_push(newbw, url);
+   if (bw->meta_refresh_status == 2) {
+      Nav_stack_move_ptr(bw, -1);
+      a_Nav_push(bw, bw->meta_refresh_url, referer_url);
+   }
+   a_Url_free(bw->meta_refresh_url);
+   bw->meta_refresh_url = NULL;
+   bw->meta_refresh_status = 0;
+   a_Timeout_remove();
 }
 
 /*
- * Wraps a_Nav_push to match 'DwPage->link' function type
+ * Handle a zero-delay URL redirection given by META
  */
-void a_Nav_vpush(void *vbw, const DilloUrl *url)
+void a_Nav_redirection0(BrowserWindow *bw, const DilloUrl *new_url)
 {
-   a_Nav_push(vbw, url);
+   dReturn_if_fail (bw != NULL);
+   _MSG(">>> a_Nav_redirection0 <<<<\n");
+
+   a_Url_free(bw->meta_refresh_url);
+   bw->meta_refresh_url = a_Url_dup(new_url);
+   a_Url_set_flags(bw->meta_refresh_url,
+                   URL_FLAGS(new_url)|URL_E2EQuery|URL_IgnoreScroll);
+   bw->meta_refresh_status = 2;
+   a_Timeout_add(0.0, Nav_redirection0_callback, (void*)bw);
 }
 
 /*
@@ -415,7 +444,7 @@ void a_Nav_back(BrowserWindow *bw)
    a_Nav_cancel_expect(bw);
    if (--idx >= 0){
       a_UIcmd_set_msg(bw, "");
-      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), -1);
+      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), NULL, -1);
    }
 }
 
@@ -429,7 +458,7 @@ void a_Nav_forw(BrowserWindow *bw)
    a_Nav_cancel_expect(bw);
    if (++idx < a_Nav_stack_size(bw)) {
       a_UIcmd_set_msg(bw, "");
-      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), +1);
+      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), NULL, +1);
    }
 }
 
@@ -438,56 +467,56 @@ void a_Nav_forw(BrowserWindow *bw)
  */
 void a_Nav_home(BrowserWindow *bw)
 {
-   a_Nav_push(bw, prefs.home);
+   a_Nav_push(bw, prefs.home, NULL);
 }
 
 /*
  * This one does a_Nav_reload's job!
  */
-static void Nav_reload(BrowserWindow *bw)
+static void Nav_reload_callback(void *data)
 {
-   DilloUrl *ReqURL;
+   BrowserWindow *bw = data;
+   const DilloUrl *h_url;
+   DilloUrl *r_url;
+   int choice, confirmed = 1;
 
    a_Nav_cancel_expect(bw);
    if (a_Nav_stack_size(bw)) {
-      ReqURL = a_Url_dup(a_History_get_url(NAV_TOP_UIDX(bw)));
-      /* Mark URL as reload to differentiate from push */
-      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_ReloadPage);
-      /* Let's make reload be end-to-end */
-      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) | URL_E2EQuery);
-      /* This is an explicit reload, so clear the SpamSafe flag */
-      a_Url_set_flags(ReqURL, URL_FLAGS(ReqURL) & ~URL_SpamSafe);
-      bw->nav_expect_url = ReqURL;
-      bw->nav_expecting = TRUE;
-      Nav_open_url(bw, ReqURL, 0);
+      h_url = a_History_get_url(NAV_TOP_UIDX(bw));
+      if (strncmp(URL_STR(h_url), "dpi:/vsource/", 13) == 0) {
+         /* disable reload for view source dpi */
+         confirmed = 0;
+      } else if (URL_FLAGS(h_url) & URL_Post) {
+         /* Attempt to repost data, let's confirm... */
+         choice = a_Dialog_choice3("Repost form data?",
+                                   "Yes", "*No", "Cancel");
+         confirmed = (choice == 0);  /* "Yes" */
+      }
+
+      if (confirmed) {
+         r_url = a_Url_dup(h_url);
+         /* Mark URL as reload to differentiate from push */
+         a_Url_set_flags(r_url, URL_FLAGS(r_url) | URL_ReloadPage);
+         /* Let's make reload be end-to-end */
+         a_Url_set_flags(r_url, URL_FLAGS(r_url) | URL_E2EQuery);
+         /* This is an explicit reload, so clear the SpamSafe flag */
+         a_Url_set_flags(r_url, URL_FLAGS(r_url) & ~URL_SpamSafe);
+         bw->nav_expect_url = r_url;
+         bw->nav_expecting = TRUE;
+         Nav_open_url(bw, r_url, NULL, 0);
+      }
    }
 }
 
 /*
  * Implement the RELOAD button functionality.
  * (Currently it only reloads the page, not its images)
+ * Note: the timeout lets CCC operations end before making the request.
  */
 void a_Nav_reload(BrowserWindow *bw)
 {
-   DilloUrl *url;
-   int choice;
-
-   a_Nav_cancel_expect(bw);
-   if (a_Nav_stack_size(bw)) {
-      url = a_History_get_url(NAV_TOP_UIDX(bw));
-      if (URL_FLAGS(url) & URL_Post) {
-         /* Attempt to repost data, let's confirm... */
-         choice = a_Dialog_choice3("Repost form data?",
-                                   "Yes", "*No", "Cancel");
-         if (choice == 0) { /* "Yes" */
-            _MSG("Nav_reload_confirmed\n");
-            Nav_reload(bw);
-         }
-
-      } else {
-         Nav_reload(bw);
-      }
-   }
+   dReturn_if_fail (bw != NULL);
+   a_Timeout_add(0.0, Nav_reload_callback, (void*)bw);
 }
 
 /*
@@ -498,10 +527,10 @@ void a_Nav_jump(BrowserWindow *bw, int offset, int new_bw)
    int idx = a_Nav_stack_ptr(bw) + offset;
 
    if (new_bw) {
-      a_Nav_push_nw(bw, a_History_get_url(NAV_UIDX(bw,idx)));
+      a_UIcmd_open_url_nw(bw, a_History_get_url(NAV_UIDX(bw,idx)));
    } else {
       a_Nav_cancel_expect(bw);
-      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), offset);
+      Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), NULL, offset);
       a_UIcmd_set_buttons_sens(bw);
    }
 }
@@ -538,9 +567,9 @@ static void Nav_save_cb(int Op, CacheClient_t *Client)
 void a_Nav_save_url(BrowserWindow *bw,
                     const DilloUrl *url, const char *filename)
 {
-   DilloWeb *Web = a_Web_new(url);
+   DilloWeb *Web = a_Web_new(url, NULL);
    Web->bw = bw;
-   Web->filename = dStrdup(filename); 
+   Web->filename = dStrdup(filename);
    Web->flags |= WEB_Download;
    /* TODO: keep track of this client */
    a_Capi_open_url(Web, Nav_save_cb, Web);
@@ -559,5 +588,13 @@ int a_Nav_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
  */
 void a_Nav_unref_buf(const DilloUrl *Url)
 {
-   return a_Capi_unref_buf(Url);
+   a_Capi_unref_buf(Url);
+}
+
+/*
+ * Wrapper for a_Capi_set_vsource_url().
+ */
+void a_Nav_set_vsource_url(const DilloUrl *Url)
+{
+   a_Capi_set_vsource_url(Url);
 }

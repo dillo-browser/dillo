@@ -40,7 +40,7 @@ class Pointer: public Object
 {
 private:
    void *value;
-   
+
 public:
    Pointer(void *value) { this->value = value; }
    bool equals(Object *other);
@@ -93,9 +93,9 @@ public:
    int hashValue();
    int compareTo(Comparable *other);
    void intoStringBuffer(misc::StringBuffer *sb);
-   
+
    inline const char *chars() { return str; }
-   
+
    static int hashValue(const char *str);
 };
 

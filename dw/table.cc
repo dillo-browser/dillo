@@ -14,17 +14,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 //#define DBG
 
 #include "table.hh"
+#include "../lout/msg.h"
 #include "../lout/misc.hh"
 
 #define MAX misc::max
 
+using namespace lout;
 
 namespace dw {
 
@@ -34,6 +35,7 @@ Table::Table(bool limitTextWidth)
 {
    registerName ("dw::Table", &CLASS_ID);
    setFlags (USES_HINTS);
+   setButtonSensitive(false);
 
    this->limitTextWidth = limitTextWidth;
 
@@ -113,7 +115,7 @@ void Table::sizeRequestImpl (core::Requisition *requisition)
       getStyle()->boxDiffHeight () + cumHeight->get (numRows)
       + getStyle()->vBorderSpacing;
    requisition->descent = 0;
-   
+
 }
 
 void Table::getExtremesImpl (core::Extremes *extremes)
@@ -141,10 +143,8 @@ void Table::getExtremesImpl (core::Extremes *extremes)
               core::style::absLengthVal(getStyle()->width));
    }
 
-#ifdef DBG
-   printf(" Table::getExtremesImpl, {%d, %d} numCols=%d\n",
-          extremes->minWidth, extremes->maxWidth, numCols);
-#endif
+   _MSG(" Table::getExtremesImpl, {%d, %d} numCols=%d\n",
+       extremes->minWidth, extremes->maxWidth, numCols);
 }
 
 void Table::sizeAllocateImpl (core::Allocation *allocation)
@@ -172,14 +172,14 @@ void Table::sizeAllocateImpl (core::Allocation *allocation)
 
             core::Allocation childAllocation;
             core::Requisition childRequisition;
-            
+
             children->get(n)->cell.widget->sizeRequest (&childRequisition);
 
             childAllocation.x = x;
             childAllocation.y = cumHeight->get (row) + offy;
             childAllocation.width = width;
             childAllocation.ascent = childRequisition.ascent;
-            childAllocation.descent = 
+            childAllocation.descent =
                cumHeight->get (row + children->get(n)->cell.rowspan)
                - cumHeight->get (row) - getStyle()->vBorderSpacing
                - childRequisition.ascent;
@@ -188,7 +188,7 @@ void Table::sizeAllocateImpl (core::Allocation *allocation)
       }
 
       x += colWidths->get (col) + getStyle()->hBorderSpacing;
-   }             
+   }
 }
 
 void Table::resizeDrawImpl ()
@@ -200,12 +200,10 @@ void Table::resizeDrawImpl ()
 }
 
 void Table::setWidth (int width)
-{  
+{
    // If limitTextWidth is set, a queueResize may also be necessary.
    if (availWidth != width || limitTextWidth) {
-#ifdef DBG
-      printf(" Table::setWidth %d\n", width);
-#endif
+      _MSG(" Table::setWidth %d\n", width);
       availWidth = width;
       queueResize (0, false);
    }
@@ -258,7 +256,7 @@ void Table::draw (core::View *view, core::Rectangle *area)
       }
    }
 }
-  
+
 void Table::removeChild (Widget *child)
 {
    /** \bug Not implemented. */
@@ -277,22 +275,22 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
    // We limit the values for colspan and rowspan to 50, to avoid
    // attacks by malicious web pages.
    if (colspan > 50 || colspan < 0) {
-      fprintf (stderr, "WARNING: colspan = %d is set to 50.\n", colspan);
+      MSG_WARN("colspan = %d is set to 50.\n", colspan);
       colspan = 50;
    }
    if (rowspan > 50 || rowspan <= 0) {
-      fprintf (stderr, "WARNING: rowspan = %d is set to 50.\n", rowspan);
+      MSG_WARN("rowspan = %d is set to 50.\n", rowspan);
       rowspan = 50;
    }
 
    if (numRows == 0) {
       // to prevent a crash
-      fprintf (stderr, "WARNING: Cell without row.\n");
+      MSG("addCell: cell without row.\n");
       addRow (NULL);
    }
 
    if (rowClosed) {
-      fprintf (stderr, "WARNING: Last cell had colspan=0.\n");
+      MSG_WARN("Last cell had colspan=0.\n");
       addRow (NULL);
    }
 
@@ -308,10 +306,9 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
           child->type == Child::SPAN_SPACE)
       curCol++;
 
-#ifdef DBG
-   printf("Table::addCell numCols=%d,curCol=%d,colspan=%d,colspanEff=%d\n",
-          numCols, curCol, colspan, colspanEff);
-#endif
+   _MSG("Table::addCell numCols=%d,curCol=%d,colspan=%d,colspanEff=%d\n",
+       numCols, curCol, colspan, colspanEff);
+
    // Increase children array, when necessary.
    if (curRow + rowspan > numRows)
       reallocChildren (numCols, curRow + rowspan);
@@ -337,7 +334,7 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
    child->cell.colspanEff = colspanEff;
    child->cell.rowspan = rowspan;
    children->set (curRow * numCols + curCol, child);
-   
+
    curCol += colspanEff;
 
    widget->setParent (this);
@@ -351,18 +348,18 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
       for (int col = 0; col < numCols; col++) {
          int n = row * numCols + col;
          if (!(child = children->get (n))) {
-            printf("[null     ] ");
+            MSG("[null     ] ");
          } else if (children->get(n)->type == Child::CELL) {
-            printf("[CELL rs=%d] ", child->cell.rowspan);
+            MSG("[CELL rs=%d] ", child->cell.rowspan);
          } else if (children->get(n)->type == Child::SPAN_SPACE) {
-            printf("[SPAN rs=%d] ", child->cell.rowspan);
+            MSG("[SPAN rs=%d] ", child->cell.rowspan);
          } else {
-            printf("[Unk.     ] ");
+            MSG("[Unk.     ] ");
          }
       }
-      printf("\n");
+      MSG("\n");
    }
-   printf("\n");
+   MSG("\n");
 #endif
 }
 
@@ -458,7 +455,7 @@ void Table::reallocChildren (int newNumCols, int newNumRows)
    for (int row = numRows; row < newNumRows; row++)
       for (int col = 0; col < newNumCols; col++)
          children->set (row * newNumCols + col, NULL);
-      
+
    // Simple arrays.
    rowStyle->setSize (newNumRows);
    for (int row = numRows; row < newNumRows; row++)
@@ -485,7 +482,7 @@ void Table::forceCalcCellSizes ()
 
    // Will also call calcColumnExtremes(), when needed.
    getExtremes (&extremes);
-   
+
    if (core::style::isAbsLength (getStyle()->width)) {
       totalWidth = core::style::absLengthVal (getStyle()->width);
    } else if (core::style::isPerLength (getStyle()->width)) {
@@ -503,28 +500,28 @@ void Table::forceCalcCellSizes ()
       totalWidth = availWidth;
       forceTotalWidth = 0;
    }
-#ifdef DBG
-   printf(" availWidth = %d\n", availWidth);
-   printf(" totalWidth1 = %d\n", totalWidth);
-#endif
+
+   _MSG(" availWidth = %d\n", availWidth);
+   _MSG(" totalWidth1 = %d\n", totalWidth);
+
    if (totalWidth < extremes.minWidth)
       totalWidth = extremes.minWidth;
    totalWidth = totalWidth
                 - (numCols + 1) * getStyle()->hBorderSpacing
                 - getStyle()->boxDiffWidth ();
-#ifdef DBG
-   printf(" totalWidth2 = %d curCol=%d\n", totalWidth,curCol);
-#endif
+
+   _MSG(" totalWidth2 = %d curCol=%d\n", totalWidth,curCol);
+
 
    colWidths->setSize (numCols, 0);
    cumHeight->setSize (numRows + 1, 0);
    rowSpanCells->setSize (0);
    baseline->setSize (numRows);
-#ifdef DBG
-   printf(" extremes = %d,%d\n", extremes.minWidth, extremes.maxWidth);
-   printf(" getStyle()->boxDiffWidth() = %d\n", getStyle()->boxDiffWidth());
-   printf(" getStyle()->hBorderSpacing = %d\n", getStyle()->hBorderSpacing);
-#endif
+
+   _MSG(" extremes = %d,%d\n", extremes.minWidth, extremes.maxWidth);
+   _MSG(" getStyle()->boxDiffWidth() = %d\n", getStyle()->boxDiffWidth());
+   _MSG(" getStyle()->hBorderSpacing = %d\n", getStyle()->hBorderSpacing);
+
 
    apportion_percentages2 (totalWidth, forceTotalWidth);
    if (!hasColPercent)
@@ -583,10 +580,9 @@ void Table::apportionRowSpan ()
          continue;
 
       // Cell size is too small.
-#ifdef DBG
-      printf("Short cell %d, sumRows=%d spanHeight=%d\n",
-             n,sumRows,spanHeight);
-#endif
+      _MSG("Short cell %d, sumRows=%d spanHeight=%d\n",
+          n,sumRows,spanHeight);
+
       // Fill height array
       if (!rowHeight) {
          rowHeight = new int[numRows];
@@ -594,10 +590,10 @@ void Table::apportionRowSpan ()
             rowHeight[i] = cumHeight->get(i+1) - cumHeight->get(i);
       }
 #ifdef DBG
-      printf (" rowHeight { ");
+      MSG(" rowHeight { ");
       for (int i = 0; i < numRows; i++)
-         printf ("%d ", rowHeight[i]);
-      printf ("}\n");
+         MSG("%d ", rowHeight[i]);
+      MSG("}\n");
 #endif
 
       // Calc new row sizes for this span.
@@ -607,12 +603,12 @@ void Table::apportionRowSpan ()
             sumRows == 0 ? (int)((float)(spanHeight-cumHnew_i)/(row+rs-i)) :
             (sumRows-cumh_i) <= 0 ? 0 :
             (int)((float)(spanHeight-cumHnew_i)*rowHeight[i]/(sumRows-cumh_i));
-#ifdef DBG
-         printf (" i=%-3d h=%d hnew_i=%d =%d*%d/%d   cumh_i=%d cumHnew_i=%d\n",
-                 i,rowHeight[i],hnew_i,
-                 spanHeight-cumHnew_i,rowHeight[i],sumRows-cumh_i,
-                 cumh_i, cumHnew_i);
-#endif
+
+         _MSG(" i=%-3d h=%d hnew_i=%d =%d*%d/%d   cumh_i=%d cumHnew_i=%d\n",
+             i,rowHeight[i],hnew_i,
+             spanHeight-cumHnew_i,rowHeight[i],sumRows-cumh_i,
+             cumh_i, cumHnew_i);
+
          cumHnew_i += hnew_i;
          cumh_i += rowHeight[i];
          rowHeight[i] = hnew_i;
@@ -642,9 +638,8 @@ void Table::calcColumnExtremes ()
  */
 void Table::forceCalcColumnExtremes ()
 {
-#ifdef DBG
-   printf("  Table::forceCalcColumnExtremes  numCols=%d\n", numCols);
-#endif
+   _MSG("  Table::forceCalcColumnExtremes  numCols=%d\n", numCols);
+
    if (numCols == 0)
       return;
 
@@ -678,13 +673,13 @@ void Table::forceCalcColumnExtremes ()
                cellMinW = cellExtremes.minWidth;
                cellMaxW = cellExtremes.maxWidth;
             }
-#ifdef DBG
-            printf("FCCE, col%d colMin,colMax,cellMin,cellMax = %d,%d,%d,%d\n",
-                   col,
-                   colExtremes->getRef(col)->minWidth,
-                   colExtremes->getRef(col)->maxWidth,
-                   cellMinW, cellMaxW);
-#endif
+
+            _MSG("FCCE, col%d colMin,colMax,cellMin,cellMax = %d,%d,%d,%d\n",
+                col,
+                colExtremes->getRef(col)->minWidth,
+                colExtremes->getRef(col)->maxWidth,
+                cellMinW, cellMaxW);
+
             colExtremes->getRef(col)->minWidth =
                MAX (colExtremes->getRef(col)->minWidth, cellMinW);
             colExtremes->getRef(col)->maxWidth =
@@ -737,10 +732,10 @@ void Table::forceCalcColumnExtremes ()
          minSumCols += colExtremes->getRef(col+i)->minWidth;
          maxSumCols += colExtremes->getRef(col+i)->maxWidth;
       }
-#ifdef DBG
-      printf("cs=%d spanWidth=%d,%d sumCols=%d,%d\n",
-              cs,cellMinW,cellMaxW,minSumCols,maxSumCols);
-#endif
+
+      _MSG("cs=%d spanWidth=%d,%d sumCols=%d,%d\n",
+          cs,cellMinW,cellMaxW,minSumCols,maxSumCols);
+
       if (minSumCols >= cellMinW && maxSumCols >= cellMaxW)
          continue;
 
@@ -785,7 +780,7 @@ void Table::forceCalcColumnExtremes ()
             int d_a = colExtremes->getRef(i)->maxWidth;
             int d_w = curAppW > 0 ? (int)((float)curExtraW * d_a/curAppW) : 0;
             if (d_a < 0||d_w < 0) {
-               printf("d_a=%d d_w=%d\n",d_a,d_w);
+               MSG("d_a=%d d_w=%d\n",d_a,d_w);
                exit(1);
             }
             wMin = colExtremes->getRef(i)->minWidth + d_w;
@@ -809,19 +804,19 @@ void Table::forceCalcColumnExtremes ()
          cumMaxWnew += wMax;
          cumMaxWold += colExtremes->getRef(i)->maxWidth;
          colExtremes->getRef(i)->maxWidth = wMax;
-#ifdef DBG
-         printf ("i=%d, wMin=%d wMax=%d cumMaxWold=%d\n",
-                  i,wMin,wMax,cumMaxWold);
-#endif
+
+         _MSG("i=%d, wMin=%d wMax=%d cumMaxWold=%d\n",
+             i,wMin,wMax,cumMaxWold);
+
       }
 #ifdef DBG
-      printf ("col min,max: [");
+      MSG("col min,max: [");
       for (int i = 0; i < numCols; i++)
-         printf ("%d,%d ", 
-                 colExtremes->getRef(i)->minWidth,
-                 colExtremes->getRef(i)->maxWidth);
-      printf ("]\n");
-      printf ("getStyle()->hBorderSpacing = %d\n", getStyle()->hBorderSpacing);
+         MSG("%d,%d ",
+             colExtremes->getRef(i)->minWidth,
+             colExtremes->getRef(i)->maxWidth);
+      MSG("]\n");
+      MSG("getStyle()->hBorderSpacing = %d\n", getStyle()->hBorderSpacing);
 #endif
    }
 }
@@ -835,13 +830,13 @@ void Table::apportion2 (int totalWidth, int forceTotalWidth)
    if (colExtremes->size() == 0)
       return;
 #ifdef DBG
-   printf("app2, availWidth=%d, totalWidth=%d, forceTotalWidth=%d\n",
-          availWidth, totalWidth, forceTotalWidth);
-   printf("app2, extremes: ( ");
+   MSG("app2, availWidth=%d, totalWidth=%d, forceTotalWidth=%d\n",
+       availWidth, totalWidth, forceTotalWidth);
+   MSG("app2, extremes: ( ");
    for (int i = 0; i < colExtremes->size (); i++)
-      printf("%d,%d ",
-             colExtremes->get(i).minWidth, colExtremes->get(i).maxWidth);
-   printf(")\n");
+      MSG("%d,%d ",
+          colExtremes->get(i).minWidth, colExtremes->get(i).maxWidth);
+   MSG(")\n");
 #endif
    int minAutoWidth = 0, maxAutoWidth = 0, availAutoWidth = totalWidth;
    for (int col = 0; col < numCols; col++) {
@@ -871,10 +866,9 @@ void Table::apportion2 (int totalWidth, int forceTotalWidth)
    int curMaxWidth = maxAutoWidth;
    int curNewWidth = minAutoWidth;
    for (int col = 0; col < numCols; col++) {
-#ifdef DBG
-      printf("app2, col %d, minWidth=%d maxWidth=%d\n",
-             col,extremes->get(col).minWidth, colExtremes->get(col).maxWidth);
-#endif
+      _MSG("app2, col %d, minWidth=%d maxWidth=%d\n",
+          col,extremes->get(col).minWidth, colExtremes->get(col).maxWidth);
+
       if (colPercents->get(col) != LEN_AUTO)
          continue;
 
@@ -882,19 +876,19 @@ void Table::apportion2 (int totalWidth, int forceTotalWidth)
       int colMaxWidth = colExtremes->getRef(col)->maxWidth;
       int w = (curMaxWidth <= 0) ? 0 :
                  (int)((float)curTargetWidth * colMaxWidth/curMaxWidth);
-#ifdef DBG
-      printf("app2, curTargetWidth=%d colMaxWidth=%d curMaxWidth=%d "
-             "curNewWidth=%d  ",
-             curTargetWidth, colMaxWidth,curMaxWidth,curNewWidth);
-      printf("w = %d, ", w);
-#endif
+
+      _MSG("app2, curTargetWidth=%d colMaxWidth=%d curMaxWidth=%d "
+          "curNewWidth=%d  ",
+          curTargetWidth, colMaxWidth,curMaxWidth,curNewWidth);
+      _MSG("w = %d, ", w);
+
       if (w <= colMinWidth)
          w = colMinWidth;
       else if (curNewWidth - colMinWidth + w > curTargetWidth)
          w = colMinWidth + curExtraWidth;
-#ifdef DBG
-      printf("w = %d\n", w);
-#endif
+
+      _MSG("w = %d\n", w);
+
       curNewWidth -= colMinWidth;
       curMaxWidth -= colMaxWidth;
       curExtraWidth -= (w - colMinWidth);
@@ -902,10 +896,10 @@ void Table::apportion2 (int totalWidth, int forceTotalWidth)
       setColWidth (col, w);
    }
 #ifdef DBG
-   printf("app2, result: ( ");
+   MSG("app2, result: ( ");
    for (int i = 0; i < colWidths->size (); i++)
-      printf("%d ", colWidths->get (i));
-   printf(")\n");
+      MSG("%d ", colWidths->get (i));
+   MSG(")\n");
 #endif
 }
 
@@ -917,19 +911,17 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
       return;
 
    // If there's a table-wide percentage, totalWidth comes already scaled.
-#ifdef DBG
-   printf("APP_P, availWidth=%d, totalWidth=%d, forceTotalWidth=%d\n",
-          availWidth, totalWidth, forceTotalWidth);
-#endif
+   _MSG("APP_P, availWidth=%d, totalWidth=%d, forceTotalWidth=%d\n",
+       availWidth, totalWidth, forceTotalWidth);
 
    if (!hasColPercent) {
 #ifdef DBG
-      printf("APP_P, only a table-wide percentage\n");
-      printf("APP_P, extremes = { ");
+      MSG("APP_P, only a table-wide percentage\n");
+      MSG("APP_P, extremes = { ");
       for (int col = 0; col < numCols; col++)
-         printf("%d,%d ", colExtremes->getRef(col)->minWidth,
-                          colExtremes->getRef(col)->maxWidth);
-      printf("}\n");
+         MSG("%d,%d ", colExtremes->getRef(col)->minWidth,
+                       colExtremes->getRef(col)->maxWidth);
+      MSG("}\n");
 #endif
       // It has only a table-wide percentage. Apportion non-absolute widths.
       int sumMaxWidth = 0, perAvailWidth = totalWidth;
@@ -939,10 +931,10 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
          else
             sumMaxWidth += colExtremes->getRef(col)->maxWidth;
       }
-#ifdef DBG
-      printf("APP_P, perAvailWidth=%d, sumMaxWidth=%d\n",
-             perAvailWidth, sumMaxWidth);
-#endif
+
+      _MSG("APP_P, perAvailWidth=%d, sumMaxWidth=%d\n",
+          perAvailWidth, sumMaxWidth);
+
       for (int col = 0; col < numCols; col++) {
          int max_wi = colExtremes->getRef(col)->maxWidth, new_wi;
          if (colPercents->get(col) != LEN_ABS) {
@@ -954,17 +946,16 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
          }
       }
 #ifdef DBG
-      printf("APP_P, result = { ");
+      MSG("APP_P, result = { ");
       for (int col = 0; col < numCols; col++)
-         printf("%d ", result->get(col));
-      printf("}\n");
+         MSG("%d ", colWidths->get(col));
+      MSG("}\n");
 #endif
 
    } else {
       // we'll have to apportion...
-#ifdef DBG
-      printf("APP_P, we'll have to apportion...\n");
-#endif
+      _MSG("APP_P, we'll have to apportion...\n");
+
       // Calculate cumPercent and available space
       float cumPercent = 0.0f;
       int hasAutoCol = 0;
@@ -979,11 +970,10 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
          }
          sumMinWidth += colExtremes->getRef(col)->minWidth;
          sumMaxWidth += colExtremes->getRef(col)->maxWidth;
-#ifdef DBG
-         printf("APP_P, col %d minWidth=%d maxWidth=%d\n", col,
-                colExtremes->getRef(col)->minWidth,
-                colExtremes->getRef(col)->maxWidth);
-#endif
+
+         _MSG("APP_P, col %d minWidth=%d maxWidth=%d\n", col,
+             colExtremes->getRef(col)->minWidth,
+             colExtremes->getRef(col)->maxWidth);
       }
       int oldTotalWidth = totalWidth;
       if (!forceTotalWidth) {
@@ -1011,11 +1001,11 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
          workingWidth = totalWidth;
          curPerWidth = sumMinWidth;
       }
-#ifdef DBG
-      printf("APP_P, oldTotalWidth=%d totalWidth=%d"
-             " workingWidth=%d extraWidth=%d sumMinNonPer=%d\n",
-             oldTotalWidth,totalWidth,workingWidth,extraWidth,sumMinNonPer);
-#endif
+
+      _MSG("APP_P, oldTotalWidth=%d totalWidth=%d"
+          " workingWidth=%d extraWidth=%d sumMinNonPer=%d\n",
+          oldTotalWidth,totalWidth,workingWidth,extraWidth,sumMinNonPer);
+
       for (int col = 0; col < numCols; col++) {
          int colMinWidth = colExtremes->getRef(col)->minWidth;
          if (colPercents->get(col) >= 0.0f) {
@@ -1035,20 +1025,20 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
       if (cumPercent < 0.99f) {
          // Will have to apportion the other columns
 #ifdef DBG
-         printf("APP_P, extremes: ( ");
+         MSG("APP_P, extremes: ( ");
          for (int i = 0; i < colExtremes->size (); i++)
-            printf("%d,%d ",
-                   colExtremes->get(i).minWidth, colExtremes->get(i).maxWidth);
-         printf(")\n");
+            MSG("%d,%d ",
+                colExtremes->get(i).minWidth, colExtremes->get(i).maxWidth);
+         MSG(")\n");
 #endif
          curPerWidth -= sumMinNonPer;
          int perWidth = (int)(curPerWidth/cumPercent);
          totalWidth = MAX (totalWidth, perWidth);
          totalWidth = misc::min (totalWidth, oldTotalWidth);
-#ifdef DBG
-         printf("APP_P, curPerWidth=%d perWidth=%d, totalWidth=%d\n",
-                curPerWidth, perWidth, totalWidth);
-#endif
+
+         _MSG("APP_P, curPerWidth=%d perWidth=%d, totalWidth=%d\n",
+             curPerWidth, perWidth, totalWidth);
+
          if (hasAutoCol == 0) {
             // Special case, cumPercent < 100% and no other columns to expand.
             // We'll honor totalWidth by expanding the percentage cols.
@@ -1062,22 +1052,22 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
          }
       }
 #ifdef DBG
-      printf("APP_P, result ={ ");
+      MSG("APP_P, result ={ ");
       for (int col = 0; col < numCols; col++)
-         printf("%d ", colWidths->get(col));
-      printf("}\n");
+         MSG("%d ", colWidths->get(col));
+      MSG("}\n");
 #endif
       apportion2 (totalWidth, 2);
 
 #ifdef DBG
-      printf("APP_P, percent={");
+      MSG("APP_P, percent={");
       for (int col = 0; col < numCols; col++)
-         printf("%f ", colPercents->get(col));
-      printf("}\n");
-      printf("APP_P, result ={ ");
+         MSG("%f ", colPercents->get(col));
+      MSG("}\n");
+      MSG("APP_P, result ={ ");
       for (int col = 0; col < numCols; col++)
-         printf("%d ", colWidths->get(col));
-      printf("}\n");
+         MSG("%d ", colWidths->get(col));
+      MSG("}\n");
 #endif
    }
 }
@@ -1117,7 +1107,7 @@ int Table::TableIterator::compareTo(misc::Comparable *other)
 {
    return index - ((TableIterator*)other)->index;
 }
- 
+
 bool Table::TableIterator::next ()
 {
    Table *table = (Table*)getWidget();
@@ -1130,7 +1120,7 @@ bool Table::TableIterator::next ()
       content.type = core::Content::END;
       return false;
    }
-   
+
    do {
       index++;
       if (index >= table->children->size ()) {
@@ -1157,7 +1147,7 @@ bool Table::TableIterator::prev ()
       content.type = core::Content::START;
       return false;
    }
-  
+
    do {
       index--;
       if (index < 0) {

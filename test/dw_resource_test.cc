@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -40,7 +39,7 @@ int main(int argc, char **argv)
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
 
-   ::fltk::Window *window = new ::fltk::Window(410, 210, "Dw Simple Image");
+   ::fltk::Window *window = new ::fltk::Window(410, 210, "Dw Resource test");
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 410, 210);
@@ -55,10 +54,11 @@ int main(int argc, char **argv)
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
    styleAttrs.font = Font::create (layout, &fontAttrs);
 
-   styleAttrs.color = Color::createSimple (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::createSimple (layout, 0xffffff);
+   styleAttrs.color = Color::create (layout, 0x000000);
+   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    Style *widgetStyle = Style::create (layout, &styleAttrs);
 
@@ -72,10 +72,10 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor = NULL;
 
    SelectionResource *res = layout->getResourceFactory()->createListResource
-      (ListResource::SELECTION_AT_MOST_ONE);
+      (ListResource::SELECTION_AT_MOST_ONE, 4);
    //SelectionResource *res =
    //   layout->getResourceFactory()->createOptionMenuResource ();
-   
+
    Embed *embed = new Embed (res);
    textblock->addWidget (embed, widgetStyle);
    textblock->addSpace (widgetStyle);

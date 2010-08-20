@@ -14,11 +14,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "../lout/msg.h"
 
 #include "fltkpreview.hh"
 #include "fltkmisc.hh"
@@ -104,6 +103,11 @@ void FltkPreview::scrollTo (int x, int y)
    scrollY = y;
 }
 
+void FltkPreview::scroll (dw::core::ScrollCommand cmd)
+{
+   MSG_ERR("FltkPreview::scroll not implemented\n");
+}
+
 void FltkPreview::setViewportSize (int width, int height,
                                    int hScrollbarThickness,
                                    int vScrollbarThickness)
@@ -155,7 +159,7 @@ bool FltkPreview::usesFltkWidgets ()
    return false;
 }
 
-void FltkPreview::drawFltkWidget (Widget *widget,
+void FltkPreview::drawFltkWidget (::fltk::Widget *widget,
                                   core::Rectangle *area)
 {
 }
@@ -191,7 +195,7 @@ void FltkPreviewWindow::reallocate ()
    int mx, my, width, height;
    bool warp = false;
 
-   if(preview->canvasHeight * maxWidth > maxHeight * preview->canvasWidth) {
+   if (preview->canvasHeight * maxWidth > maxHeight * preview->canvasWidth) {
       // Expand to maximal height (most likely case).
       width = preview->canvasWidth * maxHeight / preview->canvasHeight;
       height = maxHeight;
@@ -288,7 +292,7 @@ int FltkPreviewButton::handle (int event)
    case RELEASE:
       window->hideWindow ();
       return Button::handle (event);
-    
+
    default:
       return Button::handle (event);
    }

@@ -13,7 +13,7 @@ namespace core {
  *
  * \sa\ref dw-overview, \ref dw-layout-views
  */
-class View: public object::Object
+class View: public lout::object::Object
 {
 public:
    /*
@@ -34,7 +34,7 @@ public:
    virtual void setCanvasSize (int width, int ascent, int descent) = 0;
 
    /**
-    * \brief Set the cursor appearance. 
+    * \brief Set the cursor appearance.
     */
    virtual void setCursor (style::Cursor cursor) = 0;
 
@@ -42,7 +42,7 @@ public:
     * \brief Set the background of the view.
     */
    virtual void setBgColor (style::Color *color) = 0;
-   
+
    /*
     * ---------------------------------------------------------
     *    Scrolling and Related. Only usesViewport must be
@@ -80,6 +80,11 @@ public:
    virtual void scrollTo (int x, int y) = 0;
 
    /**
+    * \brief Scroll the viewport as commanded.
+    */
+   virtual void scroll (ScrollCommand) { };
+
+   /**
     * \brief Set the viewport size.
     *
     * Does not have to be implemented, when usesViewport returns false.
@@ -107,7 +112,7 @@ public:
    /**
     * \brief Called before drawing.
     *
-    * All actual drawing operations will be enclosed into calls of 
+    * All actual drawing operations will be enclosed into calls of
     * dw::core:View::startDrawing and dw::core:View::finishDrawing. They
     * may be implemented, e.g. when a backing
     * pixmap is used, to prevent flickering. StartDrawing() will then
@@ -166,7 +171,7 @@ public:
                                int x, int y, int width, int height) = 0;
    virtual void drawArc       (style::Color *color,
                                style::Color::Shading shading, bool filled,
-                               int x, int y, int width, int height,
+                               int centerX, int centerY, int width, int height,
                                int angle1, int angle2) = 0;
    virtual void drawPolygon    (style::Color *color,
                                 style::Color::Shading shading,

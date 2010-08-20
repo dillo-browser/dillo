@@ -5,8 +5,9 @@ AC_INIT(src/dillo.cc)
 dnl Detect the canonical host and target build environment
 AC_CANONICAL_SYSTEM
 
-AM_INIT_AUTOMAKE(dillo, 2.0)
+AM_INIT_AUTOMAKE(dillo, 2.2)
 AM_CONFIG_HEADER(config.h)
+sysconfdir=${sysconfdir}/${PACKAGE}
 
 dnl Options
 
@@ -21,6 +22,8 @@ AC_ARG_ENABLE(insure, [  --enable-insure         Try to compile and run with Ins
                     , enable_insure=no)
 AC_ARG_ENABLE(ansi,   [  --enable-ansi           Try to compile and run with ANSI flags],
                     , enable_ansi=no)
+AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable ssl, https (ALPHA CODE)],
+                    , enable_ssl=no)
 AC_ARG_ENABLE(ipv6,   [  --enable-ipv6           Build with support for IPv6], , )
 AC_ARG_ENABLE(cookies,[  --disable-cookies       Don't compile support for cookies],
                     , enable_cookies=yes)
@@ -30,8 +33,6 @@ AC_ARG_ENABLE(jpeg,   [  --disable-jpeg          Disable support for JPEG images
               enable_jpeg=$enableval, enable_jpeg=yes)
 AC_ARG_ENABLE(gif,    [  --disable-gif           Disable support for GIF images],
               enable_gif=$enableval, enable_gif=yes)
-AC_ARG_ENABLE(ssl,    [  --disable-ssl           Disable ssl features (eg. https)], 
-              enable_ssl=$enableval, enable_ssl=yes)
 AC_ARG_ENABLE(threaded-dns,[  --disable-threaded-dns  Disable the advantage of a reentrant resolver library],
               enable_threaded_dns=$enableval, enable_threaded_dns=yes)
 AC_ARG_ENABLE(rtfl,   [  --enable-rtfl           Build with rtfl messages])
@@ -70,6 +71,8 @@ cat >d_size.h <<_______EOF
 
 #if HAVE_STDINT_H == 0
 #include <stdint.h>
+#elif defined(HAVE_INTTYPES_H)
+#include <inttypes.h>
 #else
 typedef signed $gint16    int16_t;
 typedef unsigned $gint16  uint16_t;
@@ -132,7 +135,7 @@ ac_cv_socklen_t="size_t"
 )
 AC_MSG_RESULT($ac_cv_socklen_t)
 if test "$ac_cv_socklen_t" != "socklen_t"; then
-  AC_DEFINE_UNQUOTED(socklen_t, $ac_cv_socklen_t,
+  AC_DEFINE_UNQUOTED([socklen_t], [$ac_cv_socklen_t],
                      [Define the real type of socklen_t])
 fi
 
@@ -180,7 +183,7 @@ if test "x$enable_jpeg" = "xyes"; then
 fi
 
 if test "x$jpeg_ok" = "xyes"; then
-  AC_DEFINE([ENABLE_JPEG], [], [Enable JPEG images])
+  AC_DEFINE([ENABLE_JPEG], [1], [Enable JPEG images])
 fi
 
 dnl -------------
@@ -210,7 +213,10 @@ if test "x$enable_png" = "xyes"; then
 
 dnl Check if the user hasn't set the variable $PNG_CONFIG
   if test -z "$PNG_CONFIG"; then
-    PNG_CONFIG=`which libpng12-config`
+    PNG_CONFIG=`which libpng14-config`
+    if test -z "$PNG_CONFIG"; then
+      PNG_CONFIG=`which libpng12-config`
+    fi
     if test -z "$PNG_CONFIG"; then
       PNG_CONFIG=`which libpng-config`
     fi
@@ -233,6 +239,7 @@ dnl For debugging and to be user friendly
     AC_MSG_CHECKING([for libpng version])
     png_version=`$PNG_CONFIG --version`
     case $png_version in
+      1.4.*) AC_MSG_RESULT([$png_version (newer version)]) ;;
       1.2.*) AC_MSG_RESULT([$png_version (newer version)]) ;;
       1.0.*) AC_MSG_RESULT([$png_version (older version)]) ;;
           *) AC_MSG_RESULT([ERROR]) ;;
@@ -250,7 +257,7 @@ dnl Try to find libpng even though libpng-config wasn't found
 
     if test "x$png_ok" = "xyes"; then
       old_libs="$LIBS"
-      AC_CHECK_LIB(png, png_check_sig, png_ok=yes, png_ok=no, $LIBZ_LIBS -lm)
+      AC_CHECK_LIB(png, png_sig_cmp, png_ok=yes, png_ok=no, $LIBZ_LIBS -lm)
       LIBS="$old_libs"
 
       if test "x$png_ok" = "xyes"; then
@@ -265,12 +272,12 @@ dnl Try to find libpng even though libpng-config wasn't found
 fi
 
 if test "x$png_ok" = "xyes"; then
-  AC_DEFINE([ENABLE_PNG], [], [Enable PNG images])
+  AC_DEFINE([ENABLE_PNG], [1], [Enable PNG images])
 fi
 
 dnl Check if support for GIF images should be compiled in
 if test "x$enable_gif" = "xyes"; then
-  AC_DEFINE([ENABLE_GIF], [], [Enable GIF images])
+  AC_DEFINE([ENABLE_GIF], [1], [Enable GIF images])
 fi
 
 dnl --------------------------
@@ -288,13 +295,14 @@ if test "x$enable_ssl" = "xyes"; then
 
   if test "x$ssl_ok" = "xyes"; then
     LIBSSL_LIBS="-lcrypto -lssl"
+    AC_MSG_WARN([*** Enabling ssl support. THIS IS ALPHA CODE!***])
   else
     AC_MSG_WARN([*** No libssl found. Disabling ssl support.***])
   fi
 fi
 
 if test "x$ssl_ok" = "xyes"; then
-  AC_DEFINE([ENABLE_SSL], [], [Enable SSL support])
+  AC_DEFINE([ENABLE_SSL], [1], [Enable SSL support])
 fi
 
 dnl --------------------------------------------------------------
@@ -331,6 +339,7 @@ if test "x$iconv_ok" = "xyes"; then
   LIBS="$old_libs $LIBICONV_LIBS"
   old_cflags="$CFLAGS"
   CFLAGS="$CFLAGS -Werror"
+  AC_LANG_PUSH([C++])
   AC_TRY_COMPILE([#include <iconv.h>],
 [
      const char *inPtr;
@@ -340,6 +349,7 @@ if test "x$iconv_ok" = "xyes"; then
       iconv(encoder, &inPtr, &inLeft, &outPtr, &outRoom);
 ],
 iconv_old=yes,iconv_old=no)
+  AC_LANG_POP([C++])
   LIBS="$old_libs"
   CFLAGS="$old_cflags"
 
@@ -366,6 +376,10 @@ case $target in
     AC_MSG_CHECKING(whether pthreads work)
     LIBPTHREAD_LIBS="-lpthread -lexc -ldb"
     AC_MSG_WARN([*** _Untested pthreads_ try setting LIBPTHREAD_LIBS manually if it doesn't work ***])
+    ;;
+
+  *-*-minix*)
+    AC_MSG_NOTICE([Minix detected, skipping pthread detection])
     ;;
 
   *)
@@ -407,6 +421,7 @@ dnl --------------------
 dnl
 if test "x$enable_cookies" = "xno" ; then
   CFLAGS="$CFLAGS -DDISABLE_COOKIES"
+  CXXFLAGS="$CXXFLAGS -DDISABLE_COOKIES"
 fi
 if test "x$enable_ipv6" = "xyes" ; then
   CFLAGS="$CFLAGS -DENABLE_IPV6"
@@ -450,6 +465,9 @@ if eval "test x$GCC = xyes"; then
   if test "`echo $CFLAGS | grep '\-Wall' 2> /dev/null`" = ""; then
     CFLAGS="$CFLAGS -Wall"
   fi
+  if test "`echo $CFLAGS | grep -e '-W ' -e '-W$' 2> /dev/null`" = ""; then
+    CFLAGS="$CFLAGS -W"
+  fi
   if test "`echo $CFLAGS | grep '\-W[^a]' 2> /dev/null`" = ""; then
     if test "`$CC -v 2>&1 | grep 'version 3'`" != ""; then
       CFLAGS="$CFLAGS -W -Wno-unused-parameter"
@@ -473,7 +491,10 @@ dnl -----------
 dnl CXX options
 dnl -----------
 dnl
-CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter"
+
+if eval "test x$GCC = xyes"; then
+  CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter -fno-rtti -fno-exceptions"
+fi
 
 AC_SUBST(LIBJPEG_LIBS)
 AC_SUBST(LIBJPEG_LDFLAGS)

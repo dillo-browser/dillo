@@ -9,7 +9,7 @@ namespace dw {
 namespace core {
 
 /**
- * \brief Platform independant representation.
+ * \brief Platform independent representation.
  */
 enum ButtonState
 {
@@ -25,10 +25,10 @@ enum ButtonState
 /**
  * \brief Base class for all events.
  *
- * The dw::core::Event hierarchy describes events in a platform independant
+ * The dw::core::Event hierarchy describes events in a platform independent
  * way.
  */
-class Event: public object::Object
+class Event: public lout::object::Object
 {
 public:
 };

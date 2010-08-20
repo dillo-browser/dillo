@@ -1,4 +1,4 @@
- December 2007, --Jcid
+ January 2009, --Jcid
 
                               ------
                               IMAGES
@@ -27,22 +27,24 @@ passed to the widget (DwImage) and drawn in a streamed way.
    Note that INDEXED images are also decoded into RGB format.
 
    Html_tag_open_img    // IMG element processing
-     Html_add_new_image // Reat attributes, create image, add to HTML page
-     Html_load_image    // Tells cache to retrieve image
+     Html_add_new_image // Read attributes, create image, add to HTML page
        a_Image_new      // Create a 'DilloImage' data structure, to coordinate
                         // decoded image-data transfer to an 'Imgbuf'.
        Html_add_widget  // Adds the dw::Image to the page
+       Html_load_image  // Tells cache to retrieve image
 
 
 ---------------------
 Fetching from the net
 ---------------------
 
-*  a_Cache_open_url  initiates  the  resource  request,  and when
+*  a_Capi_open_url  initiates  the  resource  request,  and  when
 finally  the answer arrives, the HTTP header is examined for MIME
 type  and  either the GIF or PNG or JPEG decoder is set to handle
 the incoming data stream.
-   Decoding functions: a_Gif_image, a_Jpeg_image and a_Png_image.
+
+   Decoding functions:
+     a_Gif_callback, a_Jpeg_callback and a_Png_callback.
 
 *  The  decoding  function calls the following dicache methods as
 the data is processed (listed in order):
@@ -50,7 +52,9 @@ the data is processed (listed in order):
    a_Dicache_set_parms
    a_Dicache_set_cmap (only for indexed-GIF images)
    a_Dicache_write
+   a_Dicache_new_scan (MAY be called here or after set_cmap)
    a_Dicache_close
+
 
 *  The  dicache  methods  call the necessary functions to connect
 with the widget code. This is done by calling image.c functions:
@@ -58,50 +62,52 @@ with the widget code. This is done by calling image.c functions:
    a_Image_set_parms
    a_Image_set_cmap
    a_Image_write
+   a_Image_new_scan
    a_Image_close
-   
-*  The  functions  in  image.c  make  the required a_Dw_image_...
-calls. 
+
+* The functions in image.c make the required Dw calls.
 
 
 -------------------------
 Fetching from the dicache
 -------------------------
 
-*  a_Cache_open_url  tests  the cache for the image, and directly
-enqueues  a  cache  client for it, without asking the network for
-the  data.  When the client queue is processed (a bit later), the
-decoder is selected based on the cache entry Type.
+* a_Capi_open_url() tests the cache for the image, and the cache,
+via  a_Cache_open_url(), enqueues a client for it, without asking
+the  network  for the data. When the client queue is processed (a
+bit later), Dicache_image() is set as the callback.
 
-* When the decoder is called, it tests the dicache for the image;
-if  the  image  is  found, then it sets a_Dicache_callback as the
-handling  function  and gets out of the way (no image decoding is
-needed).
+*  When  Dicache_image() is called, it sets the proper image data
+decoder  (RGB)  and its data structure based on the entry's Type.
+Then  it  substitutes  itself  with  a_Dicache_callback()  as the
+handling function, and gets out of the way.
 
-*   Later  on,  the  DwImage  buffer  is  set  to  reference  the
-dicache-entry's  buffer  and  the  rest of the functions calls is
-driven by a_Dicache_callback.
+*  Thenceforth  the  rest  of  the  functions  calls is driven by
+a_Dicache_callback().
 
 
 -----------
 Misc. notes
 -----------
 
-*  Repeated  images  generate  new cache clients, but only one of
-them  (the first) is handled with a_Dicache_* functions, the rest
-is done with a_Dicache_callback..
+*  Repeated images generate new cache clients, but they may share
+the  imgbuf.
+   Note:  Currently  there's  no  proper  support for transparent
+images  (i.e.  decode  to RGBA), but most of the time they render
+the  background  color  OK.  This is: when first loaded, repeated
+images  share  a  background  color,  but when cached they render
+correctly ;-). There's no point in trying to fix this because the
+correct  solution is to decode to RGBA and let the toolkit (FLTK)
+handle the transparency.
 
-*  The  cache-client callback is set when the Content-type of the
-image is got. It can be: a_Png_image, a_Gif_image or a_Jpeg_image
-Those  are  called  'decoders'  because their main function is to
-translate the original data into RGB format.
+*  The  first cache-client callback (Dicache_image()) is set when
+the Content-type of the image is got.
 
-*  Later  on,  the decoder can substitute itself, if it finds the
-image has been already decoded, with a_Dicache_callback function.
-This avoids decoding it twice.
+*  Later  on,  when  there's a shared imgbuf, the dicache's logic
+avoids decoding it multiple times and reuses what's already done.
 
 *  The dicache-entry and the Image structure hold bit arrays that
-represent which rows had been decoded.
+represent which rows have been decoded.
 
 * The image processing can be found in the following sources:
 
@@ -111,7 +117,7 @@ represent which rows had been decoded.
   - dw/image.{cc,hh}
 
 *  Bear  in  mind  that  there are four data structures for image
-code: 
+code:
 
   - DilloImage (image.hh)
   - DICacheEntry (dicache.h)

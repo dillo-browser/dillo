@@ -12,13 +12,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
+#include "utf8.hh"
 #include "msg.h"
 #include "misc.h"
-
 
 /*
  * Escape characters as %XX sequences.
@@ -26,7 +26,7 @@
  */
 char *a_Misc_escape_chars(const char *str, const char *esc_set)
 {
-   static const char *hex = "0123456789ABCDEF";
+   static const char *const hex = "0123456789ABCDEF";
    char *p = NULL;
    Dstr *dstr;
    int i;
@@ -47,34 +47,54 @@ char *a_Misc_escape_chars(const char *str, const char *esc_set)
    return p;
 }
 
-
 #define TAB_SIZE 8
 /*
  * Takes a string and converts any tabs to spaces.
  */
-char *a_Misc_expand_tabs(const char *str, int len)
+int
+a_Misc_expand_tabs(char **start, char *end, char *buf, int buflen)
 {
-   Dstr *New = dStr_new("");
-   int i, j, pos, old_pos;
-   char *val;
+   int j, pos = 0, written = 0, old_pos, char_len;
+   uint_t code;
+   static const int combining_char_space = 32;
 
-   if (len) {
-      for (pos = 0, i = 0; i < len; i++) {
-         if (str[i] == '\t') {
-            /* Fill with whitespaces until the next tab. */
-            old_pos = pos;
-            pos += TAB_SIZE - (pos % TAB_SIZE);
-            for (j = old_pos; j < pos; j++)
-               dStr_append_c(New, ' ');
-         } else {
-            dStr_append_c(New, str[i]);
-            pos++;
-         }
+   while (*start < end && written < buflen - TAB_SIZE - combining_char_space) {
+      code = a_Utf8_decode(*start, end, &char_len);
+
+      if (code == '\t') {
+         /* Fill with whitespaces until the next tab. */
+         old_pos = pos;
+         pos += TAB_SIZE - (pos % TAB_SIZE);
+         for (j = old_pos; j < pos; j++)
+            buf[written++] = ' ';
+      } else {
+         assert(char_len <= 4);
+         for (j = 0; j < char_len; j++)
+            buf[written++] = (*start)[j];
+         pos++;
       }
+
+      *start += char_len;
    }
-   val = New->str;
-   dStr_free(New, FALSE);
-   return val;
+
+   /* If following chars are combining chars (e.g. accents) add them to the
+    * buffer. We have reserved combining_char_space bytes for this.
+    * If there should be more combining chars, we split nevertheless.
+    */
+   while (*start < end && written < buflen - 4) {
+      code = a_Utf8_decode(*start, end, &char_len);
+
+      if (! a_Utf8_combining_char(code))
+         break;
+
+      assert(char_len <= 4);
+      for (j = 0; j < char_len; j++)
+         buf[written++] = (*start)[j];
+
+      *start += char_len;
+   }
+
+   return written;
 }
 
 /* TODO: could use dStr ADT! */
@@ -120,7 +140,7 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
    DetectedContentType Type = DT_OCTET_STREAM; /* default to binary */
 
    /* HTML try */
-   for (i = 0; i < Size && isspace(p[i]); ++i);
+   for (i = 0; i < Size && dIsspace(p[i]); ++i);
    if ((Size - i >= 5  && !dStrncasecmp(p+i, "<html", 5)) ||
        (Size - i >= 5  && !dStrncasecmp(p+i, "<head", 5)) ||
        (Size - i >= 6  && !dStrncasecmp(p+i, "<title", 6)) ||
@@ -150,7 +170,7 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
        * All in the above set regard [00-31] as control characters.
        * LATIN1: [7F-9F] unused
        * CP-1251 {7F,98} unused (two characters).
-       * 
+       *
        * We'll use [0-31] as indicators of non-text content.
        * Better heuristics are welcomed! :-) */
 
@@ -158,19 +178,23 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
       Size = MIN (Size, 256);
       for (i = 0; i < Size; i++) {
          int ch = (uchar_t) p[i];
-         if (ch < 32 && !isspace(ch))
+         if (ch < 32 && !dIsspace(ch))
             ++bin_chars;
          if (ch > 126)
             ++non_ascci;
          if (ch > 190)
             ++non_ascci_text;
       }
-      if (bin_chars == 0) {
+      if (bin_chars == 0 && (non_ascci - non_ascci_text) <= Size/10) {
          /* Let's say text: if "rare" chars are <= 10% */
-         if ((non_ascci - non_ascci_text) <= Size/10)
+         Type = DT_TEXT_PLAIN;
+      } else if (Size > 0) {
+         /* a special check for UTF-8 */
+         Size = a_Utf8_end_of_char(p, Size - 1) + 1;
+         if (a_Utf8_test(p, Size) > 0)
             Type = DT_TEXT_PLAIN;
       }
-      if (Size == 256)
+      if (Size >= 256)
          st = 0;
    }
 
@@ -180,11 +204,13 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
 
 /*
  * Parse Content-Type string, e.g., "text/html; charset=utf-8".
+ * Content-Type is defined in RFC 2045 section 5.1.
  */
-void a_Misc_parse_content_type(const char *str, char **major, char **minor,
+void a_Misc_parse_content_type(const char *type, char **major, char **minor,
                                char **charset)
 {
-   const char *s;
+   static const char tspecials_space[] = "()<>@,;:\\\"/[]?= ";
+   const char *str, *s;
 
    if (major)
       *major = NULL;
@@ -192,20 +218,31 @@ void a_Misc_parse_content_type(const char *str, char **major, char **minor,
       *minor = NULL;
    if (charset)
       *charset = NULL;
-   if (!str)
+   if (!(str = type))
       return;
 
-   for (s = str; isalnum(*s) || (*s == '-'); s++);
+   for (s = str; *s && !iscntrl((uchar_t)*s) && !strchr(tspecials_space, *s);
+        s++) ;
    if (major)
       *major = dStrndup(str, s - str);
 
    if (*s == '/') {
-      for (str = ++s; isalnum(*s) || (*s == '-'); s++);
+      for (str = ++s;
+           *s && !iscntrl((uchar_t)*s) && !strchr(tspecials_space, *s); s++) ;
       if (minor)
          *minor = dStrndup(str, s - str);
    }
-
-   if (charset && *s) {
+   if (charset && *s &&
+       (dStrncasecmp(type, "text/", 5) == 0 ||
+        dStrncasecmp(type, "application/xhtml+xml", 21) == 0)) {
+      /* "charset" parameter defined for text media type in RFC 2046,
+       * application/xhtml+xml in RFC 3236.
+       *
+       * Note that RFC 3023 lists some main xml media types and provides
+       * the convention of using the "+xml" minor type suffix for other
+       * xml types, so it would be reasonable to check for that suffix if
+       * we have need to care about various xml types someday.
+       */
       const char terminators[] = " ;\t";
       const char key[] = "charset";
 
@@ -346,9 +383,9 @@ int a_Misc_parse_geometry(char *str, int *x, int *y, int *w, int *h)
  */
 char *a_Misc_encode_base64(const char *in)
 {
-   static const char *base64_hex = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                   "abcdefghijklmnopqrstuvwxyz"
-                                   "0123456789+/";
+   static const char *const base64_hex = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                         "abcdefghijklmnopqrstuvwxyz"
+                                         "0123456789+/";
    char *out = NULL;
    int len, i = 0;
 

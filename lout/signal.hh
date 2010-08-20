@@ -23,7 +23,7 @@
  *
  * Typically, signals are grouped. To define a signal group \em bar for your
  * class \em Foo, you have to define two classes, the emitter and the
- * receiver (BarEmitter and BarReceiver), and instanciate the emitter:
+ * receiver (BarEmitter and BarReceiver), and instantiate the emitter:
  *
  * \dot
  * digraph G {
@@ -130,7 +130,7 @@
  *
  * <h4>Emitters</h4>
  *
- * Emitters are typically instanciated one, for one object emitting the
+ * Emitters are typically instantiated one, for one object emitting the
  * signals. In the example above, the class Foo will contain a field
  * "BarEmitter barEmitter" (not as a pointer, "BarEmitter *barEmitter").
  *
@@ -160,7 +160,7 @@
  *    // ...
  * };
  * \endcode
- * 
+ *
  * The constructor of Qix should then set \em qix:
  *
  * \code
@@ -217,7 +217,7 @@ private:
    container::typed::List <Receiver> *receivers;
 
    void unconnect (Receiver *receiver);
-   
+
 protected:
    void emitVoid (int signalNo, int argc, Object **argv);
    bool emitBool (int signalNo, int argc, Object **argv);

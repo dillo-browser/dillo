@@ -4,7 +4,7 @@
 #include "url.h"
 
 /*
- * Typedefs 
+ * Typedefs
  */
 
 typedef enum {
@@ -14,12 +14,12 @@ typedef enum {
 } DilloHtmlMethod;
 
 typedef enum {
-   DILLO_HTML_ENC_URLENCODING,
+   DILLO_HTML_ENC_URLENCODED,
    DILLO_HTML_ENC_MULTIPART
 } DilloHtmlEnc;
 
 /*
- * Classes 
+ * Classes
  */
 
 class DilloHtmlForm;
@@ -27,20 +27,24 @@ class DilloHtmlInput;
 class DilloHtml;
 
 /*
- * Form API 
+ * Form API
  */
 
 DilloHtmlForm *a_Html_form_new(DilloHtml *html,
                                DilloHtmlMethod method,
                                const DilloUrl *action,
                                DilloHtmlEnc enc,
-                               const char *charset);
+                               const char *charset, bool enabled);
 
 void a_Html_form_delete(DilloHtmlForm* form);
 void a_Html_input_delete(DilloHtmlInput* input);
+void a_Html_form_submit2(void *v_form);
+void a_Html_form_reset2(void *v_form);
+void a_Html_form_display_hiddens2(void *v_form, bool display);
+
 
 /*
- * Form parsing functions 
+ * Form parsing functions
  */
 
 void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize);

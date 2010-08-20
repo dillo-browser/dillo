@@ -1,25 +1,29 @@
-AM_CPPFLAGS=-DDILLORC_SYS='"$(sysconfdir)/dillorc"' @LIBJPEG_CPPFLAGS@
+AM_CPPFLAGS= \
+	-I$(top_srcdir) \
+	-DDILLO_SYSCONF='"$(sysconfdir)/"' \
+	-DDILLO_DOCDIR='"$(docdir)/"' \
+	@LIBJPEG_CPPFLAGS@
 AM_CFLAGS = @LIBPNG_CFLAGS@
-AM_CXXFLAGS = -I.. @LIBPNG_CFLAGS@ @LIBFLTK_CXXFLAGS@
+AM_CXXFLAGS = @LIBPNG_CFLAGS@ @LIBFLTK_CXXFLAGS@
 
 SUBDIRS = IO
 
 bin_PROGRAMS = dillo
 
 dillo_LDADD = \
-	../dlib/libDlib.a \
-	../dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a \
+	$(top_builddir)/dpip/libDpip.a \
 	IO/libDiof.a \
-	../dw/libDw-widgets.a \
-	../dw/libDw-fltk.a \
-	../dw/libDw-core.a \
-	../lout/liblout.a \
+	$(top_builddir)/dw/libDw-widgets.a \
+	$(top_builddir)/dw/libDw-fltk.a \
+	$(top_builddir)/dw/libDw-core.a \
+	$(top_builddir)/lout/liblout.a \
 	@LIBJPEG_LIBS@ @LIBPNG_LIBS@ @LIBFLTK_LIBS@ @LIBZ_LIBS@ @LIBICONV_LIBS@
 
 dillo_SOURCES = \
 	dillo.cc \
-	dir.c \
-	dir.h \
+	paths.cc \
+	paths.hh \
 	ui.cc \
 	ui.hh \
 	uicmd.cc \
@@ -28,6 +32,8 @@ dillo_SOURCES = \
 	bw.c \
 	cookies.c \
 	cookies.h \
+	auth.c \
+	auth.h \
 	colors.c \
 	colors.h \
 	binaryconst.h \
@@ -37,6 +43,10 @@ dillo_SOURCES = \
 	history.c \
 	prefs.c \
 	prefs.h \
+	prefsparser.cc \
+	prefsparser.hh \
+	keys.cc \
+	keys.hh \
 	msg.h \
 	list.h \
 	url.c \
@@ -47,6 +57,8 @@ dillo_SOURCES = \
 	klist.h \
 	chain.c \
 	chain.h \
+	utf8.cc \
+	utf8.hh \
 	timeout.cc \
 	timeout.hh \
 	dialog.cc \
@@ -65,6 +77,13 @@ dillo_SOURCES = \
 	dicache.h \
 	capi.c \
 	capi.h \
+	css.cc \
+	css.hh \
+	cssparser.cc \
+	cssparser.hh \
+	doctree.hh \
+	styleengine.cc \
+	styleengine.hh \
 	plain.cc \
 	html.cc \
 	html.hh \
@@ -78,8 +97,13 @@ dillo_SOURCES = \
 	dns.c \
 	dns.h \
 	gif.c \
+	dgif.h \
 	jpeg.c \
+	djpeg.h \
 	png.c \
+	dpng.h \
+	imgbuf.cc \
+	imgbuf.hh \
 	image.cc \
 	image.hh \
 	menu.hh \
@@ -88,6 +112,9 @@ dillo_SOURCES = \
 	dpiapi.h \
 	pixmaps.h \
 	findbar.cc \
-	findbar.hh
+	findbar.hh \
+	xembed.cc \
+	xembed.hh
 
-EXTRA_DIST = chg srch
+EXTRA_DIST = chg srch keysrc
+sysconf_DATA = keysrc

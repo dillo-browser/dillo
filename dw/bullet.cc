@@ -14,14 +14,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 
 #include "bullet.hh"
-   
+
 #include <stdio.h>
 
 namespace dw {
@@ -58,7 +57,7 @@ void Bullet::draw (core::View *view, core::Rectangle *area)
    case core::style::LIST_STYLE_TYPE_DISC:
    default:
       view->drawArc (getStyle()->color, core::style::Color::SHADING_NORMAL,
-                     filled, x, y, l, l, 0, 360);
+                     filled, x + l/2, y + l/2, l, l, 0, 360);
    }
 }
 

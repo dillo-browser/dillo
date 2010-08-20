@@ -14,17 +14,19 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-
+#include "../lout/msg.h"
 #include "fltkcore.hh"
 
 #include <fltk/draw.h>
 #include <fltk/run.h>
 #include <fltk/events.h>
+#include <fltk/Monitor.h>
+#include <fltk/InvisibleBox.h>
+#include <fltk/Tooltip.h>
 #include <fltk/utf.h>
 #include <stdio.h>
 
@@ -32,6 +34,7 @@ namespace dw {
 namespace fltk {
 
 using namespace ::fltk;
+using namespace lout;
 
 /**
  * \todo Distinction between italics and oblique would be nice.
@@ -47,23 +50,22 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
    copyAttrs (attrs);
 
    int fa = 0;
-   if(weight >= 500)
+   if (weight >= 500)
       fa |= BOLD;
-   if(style != core::style::FONT_STYLE_NORMAL)
+   if (style != core::style::FONT_STYLE_NORMAL)
       fa  |= ITALIC;
 
    font = ::fltk::font(name, fa);
-   if(font == NULL) {
-      fprintf(stderr, "No font '%s', using default sans-serif font.\n", name);
+   if (font == NULL) {
       /*
        * If using xft, fltk::HELVETICA just means sans, fltk::COURIER
        * means mono, and fltk::TIMES means serif.
        */
-      font = HELVETICA;
-   }      
+      font = HELVETICA->plus (fa);
+   }
 
    setfont(font, size);
-   spaceWidth = (int)getwidth(" ");
+   spaceWidth = misc::max(0, (int)getwidth(" ") + letterSpacing);
    int xw, xh;
    measure("x", xw, xh);
    xHeight = xh;
@@ -79,6 +81,12 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
 FltkFont::~FltkFont ()
 {
    fontsTable->remove (this);
+}
+
+bool
+FltkPlatform::fontExists (const char *name)
+{
+   return ::fltk::font(name) != NULL;
 }
 
 FltkFont*
@@ -100,11 +108,9 @@ container::typed::HashTable <dw::core::style::ColorAttrs,
       new container::typed::HashTable <dw::core::style::ColorAttrs,
                                        FltkColor> (false, false);
 
-FltkColor::FltkColor (int color, core::style::Color::Type type):
-   Color (color, type)
+FltkColor::FltkColor (int color): Color (color)
 {
    this->color = color;
-   this->type = type;
 
    /*
     * fltk/setcolor.cxx:
@@ -122,13 +128,10 @@ FltkColor::FltkColor (int color, core::style::Color::Type type):
       colors[SHADING_NORMAL] = ::fltk::BLACK;
    if (!(colors[SHADING_INVERSE] = shadeColor (color, SHADING_INVERSE) << 8))
       colors[SHADING_INVERSE] = ::fltk::BLACK;
-
-   if(type == core::style::Color::TYPE_SHADED) {
-      if (!(colors[SHADING_DARK] = shadeColor (color, SHADING_DARK) << 8))
-         colors[SHADING_DARK] = ::fltk::BLACK;
-      if (!(colors[SHADING_LIGHT] = shadeColor (color, SHADING_LIGHT) << 8))
-         colors[SHADING_LIGHT] = ::fltk::BLACK;
-   }
+   if (!(colors[SHADING_DARK] = shadeColor (color, SHADING_DARK) << 8))
+      colors[SHADING_DARK] = ::fltk::BLACK;
+   if (!(colors[SHADING_LIGHT] = shadeColor (color, SHADING_LIGHT) << 8))
+      colors[SHADING_LIGHT] = ::fltk::BLACK;
 }
 
 FltkColor::~FltkColor ()
@@ -136,17 +139,74 @@ FltkColor::~FltkColor ()
    colorsTable->remove (this);
 }
 
-FltkColor * FltkColor::create (int col, core::style::Color::Type type)
+FltkColor * FltkColor::create (int col)
 {
-   ColorAttrs attrs(col, type);
+   ColorAttrs attrs(col);
    FltkColor *color = colorsTable->get (&attrs);
 
    if (color == NULL) {
-      color = new FltkColor (col, type);
+      color = new FltkColor (col);
       colorsTable->put (color, color);
    }
 
-   return color; 
+   return color;
+}
+
+FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
+{
+   shown = false;
+
+   if (!text || !strpbrk(text, "&@")) {
+      escaped_str = NULL;
+   } else {
+      /*
+       * WORKAROUND: ::fltk::Tooltip::tooltip_timeout() makes instance_
+       * if necessary, and immediately uses it. This means that we can't
+       * get our hands on it to set RAW_LABEL until after it has been shown
+       * once. So let's escape the special characters ourselves.
+       */
+      const char *src = text;
+      char *dest = escaped_str = (char *) malloc(strlen(text) * 2 + 1);
+
+      while (*src) {
+         if (*src == '&' || *src == '@')
+            *dest++ = *src;
+         *dest++ = *src++;
+      }
+      *dest = '\0';
+   }
+}
+
+FltkTooltip::~FltkTooltip ()
+{
+   if (shown)
+      ::fltk::Tooltip::exit();
+   if (escaped_str)
+      free(escaped_str);
+}
+
+FltkTooltip *FltkTooltip::create (const char *text)
+{
+   return new FltkTooltip(text);
+}
+
+void FltkTooltip::onEnter()
+{
+   fltk::Widget *widget = fltk::belowmouse();
+
+   ::fltk::Tooltip::enter(widget, *((fltk::Rectangle *)widget),
+                          escaped_str ? escaped_str : str);
+   shown = true;
+}
+
+void FltkTooltip::onLeave()
+{
+   ::fltk::Tooltip::exit();
+   shown = false;
+}
+
+void FltkTooltip::onMotion()
+{
 }
 
 void FltkView::addFltkWidget (::fltk::Widget *widget,
@@ -187,9 +247,9 @@ core::ui::ListResource *
 FltkPlatform::FltkResourceFactory::createListResource (core::ui
                                                        ::ListResource
                                                        ::SelectionMode
-                                                       selectionMode)
+                                                       selectionMode, int rows)
 {
-   return new ui::FltkListResource (platform, selectionMode);
+   return new ui::FltkListResource (platform, selectionMode, rows);
 }
 
 core::ui::OptionMenuResource *
@@ -200,9 +260,10 @@ FltkPlatform::FltkResourceFactory::createOptionMenuResource ()
 
 core::ui::EntryResource *
 FltkPlatform::FltkResourceFactory::createEntryResource (int maxLength,
-                                                        bool password)
+                                                        bool password,
+                                                        const char *label)
 {
-   return new ui::FltkEntryResource (platform, maxLength, password);
+   return new ui::FltkEntryResource (platform, maxLength, password, label);
 }
 
 core::ui::MultiLineTextResource *
@@ -238,7 +299,7 @@ FltkPlatform::FltkPlatform ()
    idleFuncRunning = false;
    idleFuncId = 0;
 
-   views = new container::typed::List <FltkView> (false);
+   view = NULL;
    resources = new container::typed::List <ui::FltkResource> (false);
 
    resourceFactory.setPlatform (this);
@@ -246,10 +307,9 @@ FltkPlatform::FltkPlatform ()
 
 FltkPlatform::~FltkPlatform ()
 {
-   if(idleFuncRunning)
+   if (idleFuncRunning)
       remove_idle (generalStaticIdle, (void*)this);
    delete idleQueue;
-   delete views;
    delete resources;
 }
 
@@ -261,34 +321,51 @@ void FltkPlatform::setLayout (core::Layout *layout)
 
 void FltkPlatform::attachView (core::View *view)
 {
-   views->append ((FltkView*)view);
+   if (this->view)
+      MSG_ERR("FltkPlatform::attachView: multiple views!\n");
+   this->view = (FltkView*)view;
 
    for (container::typed::Iterator <ui::FltkResource> it =
            resources->iterator (); it.hasNext (); ) {
       ui::FltkResource *resource = it.getNext ();
-      resource->attachView ((FltkView*)view);
+      resource->attachView (this->view);
    }
 }
 
 
 void FltkPlatform::detachView  (core::View *view)
 {
-   views->removeRef ((FltkView*)view);
+   if (this->view != view)
+      MSG_ERR("FltkPlatform::detachView: this->view: %p view: %p\n",
+              this->view, view);
 
    for (container::typed::Iterator <ui::FltkResource> it =
            resources->iterator (); it.hasNext (); ) {
       ui::FltkResource *resource = it.getNext ();
       resource->detachView ((FltkView*)view);
    }
+   this->view = NULL;
 }
 
 
 int FltkPlatform::textWidth (core::style::Font *font, const char *text,
                              int len)
 {
+   int width;
    FltkFont *ff = (FltkFont*) font;
    setfont (ff->font, ff->size);
-   return (int) getwidth (text, len);
+   width = (int) getwidth (text, len);
+
+   if (font->letterSpacing) {
+      int curr = 0, next = 0;
+
+      while (next < len) {
+         next = nextGlyph(text, curr);
+         width += font->letterSpacing;
+         curr = next;
+      }
+   }
+   return width;
 }
 
 int FltkPlatform::nextGlyph (const char *text, int idx)
@@ -299,6 +376,16 @@ int FltkPlatform::nextGlyph (const char *text, int idx)
 int FltkPlatform::prevGlyph (const char *text, int idx)
 {
    return utf8back (&text[idx - 1], text, &text[strlen (text)]) - text;
+}
+
+float FltkPlatform::dpiX ()
+{
+   return ::fltk::Monitor::all ().dpi_x ();
+}
+
+float FltkPlatform::dpiY ()
+{
+   return ::fltk::Monitor::all ().dpi_y ();
 }
 
 void FltkPlatform::generalStaticIdle (void *data)
@@ -314,12 +401,12 @@ void FltkPlatform::generalIdle ()
       /* Execute the first function in the list. */
       idleFunc = idleQueue->getFirst ();
       (layout->*(idleFunc->func)) ();
-  
+
       /* Remove this function. */
       idleQueue->removeRef(idleFunc);
    }
 
-   if(idleQueue->isEmpty()) {
+   if (idleQueue->isEmpty()) {
       idleFuncRunning = false;
       remove_idle (generalStaticIdle, (void*)this);
    }
@@ -334,7 +421,7 @@ int FltkPlatform::addIdle (void (core::Layout::*func) ())
     * Since ... (todo) we have to wrap around fltk_add_idle. There is only one
     * idle function, the passed idle function is put into a queue.
     */
-   if(!idleFuncRunning) {
+   if (!idleFuncRunning) {
       add_idle (generalStaticIdle, (void*)this);
       idleFuncRunning = true;
    }
@@ -355,15 +442,15 @@ void FltkPlatform::removeIdle (int idleId)
    container::typed::Iterator <IdleFunc> it;
    IdleFunc *idleFunc;
 
-   for(found = false, it = idleQueue->iterator(); !found && it.hasNext(); ) {
+   for (found = false, it = idleQueue->iterator(); !found && it.hasNext(); ) {
       idleFunc = it.getNext();
-      if(idleFunc->id == idleId) {
+      if (idleFunc->id == idleId) {
          idleQueue->removeRef (idleFunc);
          found = true;
       }
    }
 
-   if(idleFuncRunning && idleQueue->isEmpty())
+   if (idleFuncRunning && idleQueue->isEmpty())
       remove_idle (generalStaticIdle, (void*)this);
 }
 
@@ -374,14 +461,14 @@ core::style::Font *FltkPlatform::createFont (core::style::FontAttrs
    return FltkFont::create (attrs);
 }
 
-core::style::Color *FltkPlatform::createSimpleColor (int color)
+core::style::Color *FltkPlatform::createColor (int color)
 {
-   return FltkColor::create (color, core::style::Color::TYPE_SIMPLE);
+   return FltkColor::create (color);
 }
 
-core::style::Color *FltkPlatform::createShadedColor (int color)
+core::style::Tooltip *FltkPlatform::createTooltip (const char *text)
 {
-   return FltkColor::create (color, core::style::Color::TYPE_SHADED);
+   return FltkTooltip::create (text);
 }
 
 void FltkPlatform::copySelection(const char *text)
@@ -404,12 +491,7 @@ core::ui::ResourceFactory *FltkPlatform::getResourceFactory ()
 void FltkPlatform::attachResource (ui::FltkResource *resource)
 {
    resources->append (resource);
-
-   for (container::typed::Iterator <FltkView> it = views->iterator ();
-        it.hasNext (); ) {
-      FltkView *view = it.getNext ();
-      resource->attachView (view);
-   }
+   resource->attachView (view);
 }
 
 void FltkPlatform::detachResource (ui::FltkResource *resource)

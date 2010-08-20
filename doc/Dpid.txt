@@ -1,6 +1,6 @@
 Aug 2003, Jorge Arellano Cid,
            Ferdi Franceschini --
-Last update: Dec 2004
+Last update: Nov 2009
 
 
                                ------
@@ -14,7 +14,7 @@ Nomenclature:
   dpi:
     generic term referring to dillo's plugin system (version1).
 
-  dpi1: 
+  dpi1:
     specific term for dillo's plugin spec version 1.
     at: http://www.dillo.org/dpi1.html
 
@@ -39,27 +39,24 @@ Nomenclature:
     never run more than one instance of a server plugin at a time.
 
   filter plugin:
-    Any program/script that can read or write to stdio.  If you can write a
-    shell script you can write one of these (see examples at the end).
+    A dpi program that reads from stdin and writes to stdout, and that
+    exits after its task is done (they don't remain as server plugins).
     Warning, dpid will run multiple instances of filter plugins if requested.
-    This is safe if the plugin only writes to stdout which is what the filter
-    type dpis do at the moment.
 
 -----------
 About dpid:
 -----------
 
   * dpid is a program which manages dpi connections.
-  * dpid is a daemon that serves dillo using unix domain
-    sockets (UDS).
+  * dpid is a daemon that serves dillo using IDS sockets.
   * dpid launches dpi programs and arranges socket communication
     between the dpi program and dillo.
 
  The  concept  and  motivation  is  similar to that of inetd. The
-plugin  manager  (dpid)  listens  for a service request on a Unix
-domain  socket  and  returns  the  socket  name  of a plugin that
-handles  the service. It also watches sockets of inactive plugins
-and starts them when a connection is requested.
+plugin  manager  (dpid) listens for a service request on a socket
+and  returns  the  socket/port  pair of a plugin that handles the
+service.  It  also watches sockets of inactive plugins and starts
+them when a connection is requested.
 
 
 -----------------------------------------------------------
@@ -72,9 +69,9 @@ problems (briefly outlined here):
   * When having two or more running instances of Dillo, one
     should prevail, and take control of dpi managing (but all
     dillos carry the managing code).
-  * If the managing dillo exits, it must pass control to another
+  * If the managing-dillo exits, it must pass control to another
     instance, or leave it void if there's no other dillo running!
-  * The need to synchronise all the running instances of
+  * The need to synchronize all the running instances of
     dillo arises.
   * If the controlling instance finishes and quits, all the
     dpi-program PIDs are lost.
@@ -83,7 +80,7 @@ problems (briefly outlined here):
   * Forks can be expensive (Dillo had to fork its dpis).
   * When a managing dillo exits, the new one is no longer the
     parent of the forked dpis.
-  * If the Unix domain sockets for the dpis were to be named
+  * If Unix domain sockets for the dpis were to be named
     randomly, it gets very hard to recover their names if the
     controlling instance of dillo exits and another must "take
     over" the managing.
@@ -109,12 +106,12 @@ What does dpid handle?
 
   *  Different implementations of the same service
      dpi  programs  ("dpis")  are  just  an  implementation  of a
-     service.  There's no problem in having more than one for the
-     same service.
+     service.  There's no problem in implementing a different one
+     for the same service (e.g. downloads).
 
   *  Upgrading a service:
      to   a  new  version  or  implementation  without  requiring
-     bringing down the dpid or patching dillo's core.
+     patching dillo's core or even bringing down the dpid.
 
 
   And  finally,  being  aware  that  this  design can support the
@@ -124,8 +121,8 @@ following functions is very helpful:
   ------------------------------------------------------------
   * "one demand/one response"         man, preferences, ...
   * "resident while working"          downloads, mp3, ...
-  * "resident until TERM signal"      bookmarks, ...
-   
+  * "resident until exit request"     bookmarks, ...
+
   * "one client only"                 cd burner, ...
   * "one client per instance"         man, ...
   * "multiple clients/one instance"   downloads, cookies ...
@@ -136,12 +133,12 @@ Features
 --------
   * Dpi programs go in: "EPREFIX/dillo/dpi" or "~/.dillo/dpi". The binaries
     are named <name>.dpi as "bookmarks.dpi" and <name>.filter.dpi as in
-    "hello.filter.dpi". The ".filter" plugins simply read and write to stdio
-    and can be implemented with a shell script easily.
+    "hello.filter.dpi".  The  ".filter"  plugins simply read from stdin
+    and write to stdout.
   * Register/update/remove dpis from list of available dpis when a
-    <dpi cmd='register_all'> is received.
-  * dpid terminates when it receives a <dpi cmd='DpiBye'> command.
-  * dpis can be terminated with a <dpi cmd='DpiBye'> command.
+    'register_all' command is received.
+  * dpid terminates when it receives a 'DpiBye' command.
+  * dpis can be terminated with a 'DpiBye' command.
   * dpidc control program for dpid, currently allows register and stop.
 
 
@@ -151,36 +148,7 @@ todo:
 
  These features are already designed, waiting for implementation:
 
-  * How to register/update/remove/ individual dpis?
-  * How to kill dpis?  (signals)
-
-  How:
-
-  A  useful  and  flexible way is to have a "control program" for
-dpid (it avoids having to find its PID among others).
-
-  Let's say:
-
-  dpidc [register | upgrade | stop | ...]
-
-  It  can  talk to a dpid UDS that serves for that (the same that
-dillo would use). That way we may also have a dpidc dpi! :-)
-
-  Seriously,  what  I  like from this approach is that it is very
-flexible  and  can be implemented incrementally ("dpidc register"
-is enough to start).
-
-  It  also  avoids the burden of having to periodically check the
-dpis directory structure for changes).
-
-  It  also  lets shell scripts an easy way to do the "dirty" work
-of   installing  dpis;  as  is  required  with  distros'  package
-systems. 
-
-<note>
-  How do we tell a crashed dpi? That's the question.
-  We're thinking about using the "lease" concept (as in JINI).
-</note>
+  * dpidc remove     // May be not necessary after all...
 
 
 -----------------
@@ -193,14 +161,11 @@ o    on startup dpid reads dpidrc for the path to the dpi directory
 o    both directories are scanned for the list of available plugins.
      ~/.dillo/dpi overrides system-wide dpis.
 
-o    ~/.dillo/dpi_socket_dir is then checked for the name of the dpi socket
-     directory, if dpi_socket_dir does not exist it will be created.
-
-o    next it creates Unix domain sockets for the available plugins and
-     then listens for service requests on its own socket (dpid.srs)
+o    next it creates internet domain sockets for the available plugins and
+     then listens for service requests on its own socket,
      and for connections to the sockets of inactive plugins.
 
-o    dpid returns the name of a plugin's socket when a client (dillo)
+o    dpid returns the port of a plugin's socket when a client (dillo)
      requests a service.
 
 o    if the requested plugin is a 'server' then
@@ -210,7 +175,7 @@ o    if the requested plugin is a 'server' then
 
 o    if the requested plugin is a 'filter' then
      1) dpid accepts the connection
-     2) duplicates the connection on stdio
+     2) maps the socket fd to stdin/stdout (with dup2)
      3) forks and starts the plugin
      4) continues to watch the socket for new connections
 
@@ -226,7 +191,7 @@ dpi service process diagram
 
 (I)
      .--- s1 s2 s3 ... sn
-     |  
+     |
   [dpid]                     [dillo]
      |
      '--- srs
@@ -236,7 +201,7 @@ dpi service process diagram
 
 (II)
      .--- s1 s2 s3 ... sn
-     |  
+     |
   [dpid]                     [dillo]
      |                          |
      '--- srs ------------------'
@@ -262,7 +227,7 @@ dpi service process diagram
  .[dpid]        |            [dillo]
  .   |          |               |
  .   '--- srs   '---------------'
- .               
+ .
  .............[dpi program]
 
   when s3 has activity (incoming data), dpid forks the dpi
@@ -271,7 +236,7 @@ dpi service process diagram
 
 (V)
      .--- s1 s2 (s3) ... sn
-     |           
+     |
   [dpid]                     [dillo]
      |                          |
      '--- srs   .---------------'
@@ -285,170 +250,80 @@ communication  process  takes  place until the task is done. When
 the dpi program exits, dpid resumes listening on the socket (s3).
 
 
------------------------------------------------
-How are the unix-domain-sockets for dpis named?
------------------------------------------------
-
-  Let's say we have two users, "fred" and "joe".
-
-  When  Fred's  dillo  starts  its  dpid,  the  dpid  creates the
-following directory (rwx------):
-
-  /tmp/fred-XXXXXX
-
-  using mkdtemp().
-
-  and saves that filename within "~/.dillo/dpi_socket_dir".
-
-  That  way,  another dillo instance of user Fred can easily find
-the running dpid's service request socket at:
-
-  /tmp/fred-XXXXXX/dpid.srs
-
-  (because it is saved in "~/.dillo/dpi_socket_dir").
-
-  Now,  we have a dpi directory per user, and its permissions are
-locked  so only the user has access, thus the following directory
-tree structure should pose no problems:
-
-  /tmp/fred-XXXXXX/bookmarks
-                  /downloads
-                  /cookies
-                  /ftp
-                  ...
-                  dpid.srs
-
-  If user Joe starts his dillo, the same happens for him:
-
-  /tmp/joe-XXXXXX/bookmarks
-                 /downloads
-                 /cookies
-                 /ftp
-                 ...
-                 dpid.srs
-
-
-  What should dpid do at start time:
-
-  Check if both, ~/.dillo/dpi_socket_dir and its directory, exist
-  (it can also check the ownership and permissions).
-
-  If (both exist)
-     use them!
-  else
-     delete ~/.dillo/dpi_socket_dir
-     create another /tmp/<user>-XXXXXX directory
-     save the new directory name into ~/.dillo/dpi_socket_dir
-     (we could also add some paranoid level checks)
-
-  To  some degree, this scheme solves the tmpnam issue, different
-users  of  dillo  at  the  same  time,  multiple dillo instances,
-polluting   /tmp  (cosmetic),  and  reasonably  accounts  for  an
-eventual dillo or dpid crash.
-
-  It has worked very well so far!
-
-
 --------------------------------
 So, how do I make my own plugin?
 --------------------------------
 
-  First,  at  least, read the "Developing a dillo plugin" section
-of dpi1 spec! :-)
+  Maybe  the  simplest  way to get started is to understand a few
+concepts  and  then to use the hands-on method by using/modifying
+the  hello  dpi.  It's  designed  as an example to get developers
+started.
 
-  Note that the dpi1 spec may not be absolutely accurate, but the
-main ideas remain.
+  ---------
+  Concepts:
+  ---------
 
-  Once  you've  got the concepts, contrast them with the drawings
-in  this  document.  Once  it all makes sense, start playing with
-hello.dpi, you can run it by starting dillo with
-        dillo dpi:/hello/
-or entering
-        dpi:/hello/
-as the url.  Then try to understand how it works (use the drawings)
-and finally look at its code.
+    * Dillo plugins work by communicating two processes: dillo
+      and the dpi.
+    * The underlying protocol (DPIP) has a uniform API which is
+      powerful  enough  for both blocking and nonblocking IO, and
+      filter or server dpis.
+    * The simplest example is one-request one-answer (for example
+      dillo  asks  for  a  URL and the dpi sends it). You'll find
+      this and more complex examples in hello.c
 
-  Really, the order is not that important, what really matters is
-to do it all.
+  First, you should get familiar with the hello dpi as a user:
 
-  Start  modifying  hello.dpi,  and then some more. When you feel
-like  trying new things, review the code of the other plugins for
-ideas.
+    $dillo dpi:/hello/
 
-  The  hardest  part  is  to try to modify the dpi framework code
+  Once  you've  played  enough  with  it,  start reading the well
+commented code in hello.c and start making changes!
+
+
+  ---------------
+  Debugging a dpi
+  ---------------
+
+  The  simplest  way  is  to add printf() feedback using the MSG*
+macros.  You  can  start  the dpid by hand on a terminal to force
+messages to go there.
+
+  Sometimes  more  complex dpis need more than MSG*. In this case
+you can use gdb like this.
+
+    1.- Add an sleep(20) statement just after the dpi starts.
+    2.- Start  dillo and issue a request for your dpi. This will
+        get your dpi started.
+    3.- Standing in the dpi source directory:
+        ps aux|grep dpi
+    4.- Take note of the dpi's PID and start gdb, then:
+        (gdb) attach <PID>
+    5.- Continue from there...
+
+
+  ------------
+  Final Notes:
+  ------------
+
+  1.-  If  you  already  understand the hello dpi and want to try
+something more advanced:
+
+    * bookmarks.c is a good example of a blocking server
+    * file.c is an advanced example of a server handling multiple
+      non-blocking connections with select().
+
+  2.-   Multiple   instances  of  a  filter  plugin  may  be  run
+concurrently, this could be a problem if your plugin records data
+in  a  file,  however  it  is safe if you simply write to stdout.
+Alternatively  you  could write a 'server' plugin instead as they
+are guaranteed not to run concurrently.
+
+  3.- The hardest part is to try to modify the dpi framework code
 inside  dillo; you have been warned! It already supports a lot of
 functionality,  but if you need to do some very custom stuff, try
-extending the "chat" command.
+extending the "chat" command, or asking in dillo-dev.
 
 
----------------------------------
-Examples: Simple 'filter' plugins
----------------------------------
 
-  For a quick and dirty introduction to dpis try the following shell scripts.
-
-        #!/bin/sh
-
-        read -d'>' dpip_tag # Read dillo's request
-
-        # Don't forget the empty line after the Content-type
-        cat <<EOF
-        <dpi cmd='start_send_page' url='dpi:/hi/hi.filter.dpi'>
-        Content-type: text 
-
-        EOF
-
-        echo Hi
-  
- Of course you should use html in a real application (perl makes this easy).
-
- A more useful example uses the "si" system info viewer:
-
-        #!/bin/sh
-        # si - System Information Viewer
-
-        read -d'>' dpip_tag
-
-        # We don't need to send the Content-type because "si --html" does this
-        # for us.
-        cat <<EOF
-        <dpi cmd='start_send_page' url='dpi:/si/si.dpi.filter'>
-        EOF
-
-        si --html
-
- just make sure that you have si installed or you wont get far.
-
-To try out the examples create two directories for the scripts under your home directory as follows:
-        mkdir -p ~/.dillo/dpi/hi
-        mkdir -p ~/.dillo/dpi/si
-
-then create the scripts and put them in the dpi service directories so that you end up with
-        ~/.dillo/dpi/hi/hi.filter.dpi
-        ~/.dillo/dpi/si/si.filter.dpi
-
-Don't forget to make them executable.
-
-If dpid is already running register the new plugins with 
-        dpidc register
-
-You can now test them by entering
-        dpi:/hi/
-or
-        dpi:/si/
-as the url.  Or simply passing the url to dillo on startup
-
-        dillo dpi:/si/
-
-
- You can edit the files in place while dpid is running and reload them in
-dillo to see the result, however if you change the file name or add a new
-script you must run 'dpidc register'.
-
-WARNING
-Multiple instances of a filter plugin may be run concurrently, this could be a
-problem if your plugin records data in a file, however it is safe if you simply
-write to stdout.  Alternatively you could write a 'server' plugin instead as
-they are guaranteed not to run concurrently.
-        >>>>>>>>>>>>>>>>>>>>>       <<<<<<<<<<<<<<<<<<<<<
+          >>>>>>>>>>>>>>>>>>>>>       <<<<<<<<<<<<<<<<<<<<<
 

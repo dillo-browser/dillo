@@ -14,13 +14,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 
 #include "image.hh"
+#include "../lout/msg.h"
 #include "../lout/misc.hh"
 
 namespace dw {
@@ -36,6 +36,18 @@ ImageMapsList::ImageMap::ImageMap ()
 ImageMapsList::ImageMap::~ImageMap ()
 {
    delete shapesAndLinks;
+}
+
+void ImageMapsList::ImageMap::draw (core::View *view,core::style::Style *style,
+                                    int x, int y)
+{
+   container::typed::Iterator <ShapeAndLink> it;
+
+   for (it = shapesAndLinks->iterator (); it.hasNext (); ) {
+      ShapeAndLink *shapeAndLink = it.getNext ();
+
+      shapeAndLink->shape->draw(view, style, x, y);
+   }
 }
 
 void ImageMapsList::ImageMap::add (core::Shape *shape, int link) {
@@ -105,6 +117,15 @@ void ImageMapsList::setCurrentMapDefaultLink (int link)
    currentMap->setDefaultLink (link);
 }
 
+void ImageMapsList::drawMap (lout::object::Object *key, core::View *view,
+                             core::style::Style *style, int x, int y)
+{
+   ImageMap *map = imageMaps->get (key);
+
+   if (map)
+      map->draw(view, style, x, y);
+}
+
 int ImageMapsList::link (object::Object *key, int x, int y)
 {
    int link = -1;
@@ -139,16 +160,34 @@ Image::~Image()
       delete altText;
    if (buffer)
       buffer->unref ();
+   if (mapKey)
+      delete mapKey;
 }
 
 void Image::sizeRequestImpl (core::Requisition *requisition)
 {
    if (buffer) {
-      requisition->width = buffer->getRootWidth ();
-      requisition->ascent = buffer->getRootHeight ();
+      if (getStyle ()->height == core::style::LENGTH_AUTO &&
+          core::style::isAbsLength (getStyle ()->width) &&
+          buffer->getRootWidth () > 0) {
+         // preserve aspect ratio when only width is given
+         requisition->width = core::style::absLengthVal (getStyle ()->width);
+         requisition->ascent = buffer->getRootHeight () *
+                               requisition->width / buffer->getRootWidth ();
+      } else if (getStyle ()->width == core::style::LENGTH_AUTO &&
+                 core::style::isAbsLength (getStyle ()->height) &&
+                 buffer->getRootHeight () > 0) {
+         // preserve aspect ratio when only height is given
+         requisition->ascent = core::style::absLengthVal (getStyle ()->height);
+         requisition->width = buffer->getRootWidth () *
+                               requisition->ascent / buffer->getRootHeight ();
+      } else {
+         requisition->width = buffer->getRootWidth ();
+         requisition->ascent = buffer->getRootHeight ();
+      }
       requisition->descent = 0;
    } else {
-      if(altText && altText[0]) {
+      if (altText && altText[0]) {
          if (altTextWidth == -1)
             altTextWidth =
                layout->textWidth (getStyle()->font, altText, strlen (altText));
@@ -181,20 +220,21 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
    dx = getStyle()->boxDiffWidth ();
    dy = getStyle()->boxDiffHeight ();
 #if 0
-   printf("boxDiffHeight = %d + %d, buffer=%p\n",
-          getStyle()->boxOffsetY(), getStyle()->boxRestHeight(), buffer);
-   printf("getContentWidth() = allocation.width - style->boxDiffWidth ()"
-          " = %d - %d = %d\n",
-          this->allocation.width, getStyle()->boxDiffWidth(),
-          this->allocation.width - getStyle()->boxDiffWidth());
-   printf("getContentHeight() = getHeight() - style->boxDiffHeight ()"
-          " = %d - %d = %d\n", this->getHeight(), getStyle()->boxDiffHeight(),
-          this->getHeight() - getStyle()->boxDiffHeight());
+   MSG("boxDiffHeight = %d + %d, buffer=%p\n",
+       getStyle()->boxOffsetY(), getStyle()->boxRestHeight(), buffer);
+   MSG("getContentWidth() = allocation.width - style->boxDiffWidth ()"
+       " = %d - %d = %d\n",
+       this->allocation.width, getStyle()->boxDiffWidth(),
+       this->allocation.width - getStyle()->boxDiffWidth());
+   MSG("getContentHeight() = getHeight() - style->boxDiffHeight ()"
+       " = %d - %d = %d\n", this->getHeight(), getStyle()->boxDiffHeight(),
+       this->getHeight() - getStyle()->boxDiffHeight());
 #endif
-   if (buffer != NULL &&
-       /* It may be, that the image is allocated at zero content size. In this
-        * case, we simply wait. */
-       getContentWidth () > 0 && getContentHeight () > 0) {
+   if (buffer &&
+       (allocation->width - dx > 0 ||
+        allocation->ascent + allocation->descent - dy > 0)) {
+      // Zero content size : simply wait...
+      // Only one dimension: naturally scale
       oldBuffer = buffer;
       buffer = oldBuffer->getScaledBuf (allocation->width - dx,
                                         allocation->ascent
@@ -209,35 +249,64 @@ void Image::enterNotifyImpl (core::EventCrossing *event)
    currLink = getStyle()->x_link;
 
    if (currLink != -1) {
-      (void) emitLinkEnter (currLink, -1, -1, -1);
+      (void) layout->emitLinkEnter (this, currLink, -1, -1, -1);
    }
+   Widget::enterNotifyImpl(event);
 }
 
 void Image::leaveNotifyImpl (core::EventCrossing *event)
-{                                                          
+{
    clicking = false;
 
    if (currLink != -1) {
       currLink = -1;
-      (void) emitLinkEnter (-1, -1, -1, -1);
+      (void) layout->emitLinkEnter (this, -1, -1, -1, -1);
    }
+   Widget::leaveNotifyImpl(event);
+}
+
+/*
+ * Return the coordinate relative to the contents.
+ * If the event occurred in the surrounding box, return the value at the
+ * edge of the contents instead.
+ */
+int Image::contentX (core::MousePositionEvent *event)
+{
+   int ret = event->xWidget - getStyle()->boxOffsetX();
+
+   ret = misc::min(getContentWidth(), misc::max(ret, 0));
+   return ret;
+}
+
+int Image::contentY (core::MousePositionEvent *event)
+{
+   int ret = event->yWidget - getStyle()->boxOffsetY();
+
+   ret = misc::min(getContentHeight(), misc::max(ret, 0));
+   return ret;
 }
 
 bool Image::motionNotifyImpl (core::EventMotion *event)
 {
-   if (mapList) {
-      /* client-side image map */
-      int newLink = mapList->link (mapKey, event->xWidget, event->yWidget);
-      if (newLink != currLink) {
-         currLink = newLink;
-         clicking = false;
-         setCursor(newLink == -1 ? core::style::CURSOR_DEFAULT :
-                                   core::style::CURSOR_POINTER);
-         (void) emitLinkEnter (newLink, -1, -1, -1);
+   if (mapList || isMap) {
+      int x = contentX(event);
+      int y = contentY(event);
+
+      if (mapList) {
+         /* client-side image map */
+         int newLink = mapList->link (mapKey, x, y);
+         if (newLink != currLink) {
+            currLink = newLink;
+            clicking = false;
+            /* \todo Using MAP/AREA styles would probably be best */
+            setCursor(newLink == -1 ? getStyle()->cursor :
+                                      core::style::CURSOR_POINTER);
+            (void) layout->emitLinkEnter (this, newLink, -1, -1, -1);
+         }
+      } else if (isMap && currLink != -1) {
+         /* server-side image map */
+         (void) layout->emitLinkEnter (this, currLink, -1, x, y);
       }
-   } else if (isMap && currLink != -1) {
-      /* server-side image map */
-      (void) emitLinkEnter (currLink, -1, event->xWidget, event->yWidget);
    }
    return true;
 }
@@ -245,27 +314,29 @@ bool Image::motionNotifyImpl (core::EventMotion *event)
 bool Image::buttonPressImpl (core::EventButton *event)
 {
    bool ret = false;
-   currLink = mapList ? mapList->link (mapKey, event->xWidget, event->yWidget):
-      getStyle()->x_link;
+
+   currLink = mapList? mapList->link (mapKey, contentX(event),contentY(event)):
+              getStyle()->x_link;
    if (event->button == 3){
-      (void)emitLinkPress(currLink, getStyle()->x_img, -1,-1,event);
+      (void)layout->emitLinkPress(this, currLink, getStyle()->x_img, -1, -1,
+                                  event);
       ret = true;
    } else if (event->button == 1 || currLink != -1){
       clicking = true;
       ret = true;
    }
    return ret;
-}              
+}
 
 bool Image::buttonReleaseImpl (core::EventButton *event)
 {
-   currLink = mapList ? mapList->link (mapKey, event->xWidget, event->yWidget):
+   currLink = mapList ? mapList->link (mapKey, contentX(event),contentY(event)):
       getStyle()->x_link;
    if (clicking) {
-      int x = isMap ? event->xWidget : -1;
-      int y = isMap ? event->yWidget : -1;
+      int x = isMap ? contentX(event) : -1;
+      int y = isMap ? contentY(event) : -1;
       clicking = false;
-      emitLinkClick (currLink, getStyle()->x_img, x, y, event);
+      layout->emitLinkClick (this, currLink, getStyle()->x_img, x, y, event);
       return true;
    }
    return false;
@@ -292,22 +363,25 @@ void Image::draw (core::View *view, core::Rectangle *area)
                           intersection.x - dx, intersection.y - dy,
                           intersection.width, intersection.height);
    } else {
-      if(altText && altText[0]) {
+      core::View *clippingView;
+
+      if (altText && altText[0]) {
+         core::View *usedView = view;
+
+         clippingView = NULL;
+
          if (altTextWidth == -1)
             altTextWidth =
                layout->textWidth (getStyle()->font, altText, strlen (altText));
-         
-         core::View *clippingView = NULL, *usedView = view;
-         if (allocation.width < altTextWidth ||
-             allocation.ascent < getStyle()->font->ascent ||
-             allocation.descent < getStyle()->font->descent) {
+
+         if ((getContentWidth() < altTextWidth) ||
+             (getContentHeight() <
+              getStyle()->font->ascent + getStyle()->font->descent)) {
             clippingView = usedView =
                view->getClippingView (allocation.x + getStyle()->boxOffsetX (),
                                       allocation.y + getStyle()->boxOffsetY (),
-                                      allocation.width
-                                      - getStyle()->boxDiffWidth (),
-                                      allocation.ascent + allocation.descent
-                                      - getStyle()->boxDiffHeight ());
+                                      getContentWidth(),
+                                      getContentHeight());
          }
 
          usedView->drawText (getStyle()->font, getStyle()->color,
@@ -317,8 +391,20 @@ void Image::draw (core::View *view, core::Rectangle *area)
                              + getStyle()->font->ascent,
                              altText, strlen(altText));
 
-         if(clippingView)
+         if (clippingView)
             view->mergeClippingView (clippingView);
+      }
+      if (mapKey) {
+         clippingView = view->getClippingView (allocation.x +
+                                               getStyle()->boxOffsetX (),
+                                               allocation.y +
+                                               getStyle()->boxOffsetY (),
+                                               getContentWidth(),
+                                               getContentHeight());
+         mapList->drawMap(mapKey, clippingView, getStyle(),
+                          allocation.x + getStyle()->boxOffsetX (),
+                          allocation.y + getStyle()->boxOffsetY ());
+         view->mergeClippingView (clippingView);
       }
    }
 
@@ -339,11 +425,10 @@ void Image::setBuffer (core::Imgbuf *buffer, bool resize)
    if (resize)
       queueResize (0, true);
 
-   // If the image has not yet been allocated, or is allocated at zero
-   // content size, the first part is useless.
    if (wasAllocated () && getContentWidth () > 0 && getContentHeight () > 0) {
-         this->buffer =
-            buffer->getScaledBuf (getContentWidth (), getContentHeight ());
+      // Only scale when both dimensions are known.
+      this->buffer =
+         buffer->getScaledBuf (getContentWidth (), getContentHeight ());
    } else {
       this->buffer = buffer;
       buffer->ref ();
@@ -358,7 +443,7 @@ void Image::drawRow (int row)
    core::Rectangle area;
 
    assert (buffer != NULL);
-   
+
    buffer->getRowArea (row, &area);
    if (area.width && area.height)
       queueDrawArea (area.x + getStyle()->boxOffsetX (),
@@ -386,6 +471,8 @@ void Image::setIsMap ()
 void Image::setUseMap (ImageMapsList *list, object::Object *key)
 {
    mapList = list;
+   if (mapKey && mapKey != key)
+      delete mapKey;
    mapKey = key;
 }
 

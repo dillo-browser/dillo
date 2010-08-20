@@ -14,8 +14,6 @@
 namespace dw {
 namespace fltk {
 
-using namespace lout;
-
 /**
  * \brief FLTK implementation of dw::core::ui.
  *
@@ -27,7 +25,7 @@ using namespace lout;
  *    edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
  *          labelfontsize=10, color="#404040", labelfontcolor="#000080"];
  *    fontname=Helvetica; fontsize=10;
- * 
+ *
  *    subgraph cluster_core {
  *       style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
  *       label="dw::core::ui";
@@ -67,10 +65,10 @@ using namespace lout;
  * dw::core::ui::Resource is ambiguous for
  * dw::fltk::ui::FltkLabelButtonResource.
  *
- * To solve this, we have to remove the depencency between
+ * To solve this, we have to remove the dependency between
  * dw::fltk::ui::FltkResource and dw::core::ui::Resource, instead, the part
  * of dw::core::ui::Resource, which is implemented in
- * dw::fltk::ui::FltkResource, must be explicitely delegated from
+ * dw::fltk::ui::FltkResource, must be explicitly delegated from
  * dw::fltk::ui::FltkLabelButtonResourceto dw::fltk::ui::FltkResource:
  *
  * \dot
@@ -79,7 +77,7 @@ using namespace lout;
  *    edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
  *          labelfontsize=10, color="#404040", labelfontcolor="#000080"];
  *    fontname=Helvetica; fontsize=10;
- * 
+ *
  *    subgraph cluster_core {
  *       style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
  *       label="dw::core::ui";
@@ -120,7 +118,7 @@ using namespace lout;
  *    edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
  *          labelfontsize=10, color="#404040", labelfontcolor="#000080"];
  *    fontname=Helvetica; fontsize=10;
- * 
+ *
  *    subgraph cluster_core {
  *       style="dashed"; color="#000080"; fontname=Helvetica; fontsize=10;
  *       label="dw::core::ui";
@@ -174,17 +172,14 @@ namespace ui {
 /**
  * ...
  */
-class FltkResource: public object::Object
+class FltkResource: public lout::object::Object
 {
-protected:
-   class ViewAndWidget: public object::Object
-   {
-   public:
-      FltkView *view;
-      ::fltk::Widget *widget;
-   };
+private:
+   bool enabled;
 
-   container::typed::List <ViewAndWidget> *viewsAndWidgets;
+protected:
+   FltkView *view;
+   ::fltk::Widget *widget;
    core::Allocation allocation;
    FltkPlatform *platform;
 
@@ -195,12 +190,14 @@ protected:
    virtual ::fltk::Widget *createNewWidget (core::Allocation *allocation) = 0;
 
    void setWidgetStyle (::fltk::Widget *widget, core::style::Style *style);
+   void setDisplayed (bool displayed);
+   bool displayed();
 public:
    ~FltkResource ();
 
    virtual void attachView (FltkView *view);
    virtual void detachView (FltkView *view);
-   
+
    void sizeAllocate (core::Allocation *allocation);
    void draw (core::View *view, core::Rectangle *area);
 
@@ -257,15 +254,7 @@ private:
    static void widgetCallback (::fltk::Widget *widget, void *data);
 
 protected:
-   class ViewAndView: public object::Object
-   {
-   public:
-      FltkView *topView, *flatView;
-   };
-
-   FltkView *lastFlatView;
-
-   container::typed::List <ViewAndView> *viewsAndViews;
+   FltkView *topView, *flatView;
 
    void attachView (FltkView *view);
    void detachView (FltkView *view);
@@ -274,7 +263,7 @@ protected:
 
    dw::core::Platform *createPlatform ();
    void setLayout (dw::core::Layout *layout);
-   
+
    int reliefXThickness ();
    int reliefYThickness ();
 
@@ -298,15 +287,18 @@ private:
    int maxLength;
    bool password;
    const char *initText;
+   char *label;
    bool editable;
 
    static void widgetCallback (::fltk::Widget *widget, void *data);
+   void setDisplayed (bool displayed);
 
 protected:
    ::fltk::Widget *createNewWidget (core::Allocation *allocation);
 
 public:
-   FltkEntryResource (FltkPlatform *platform, int maxLength, bool password);
+   FltkEntryResource (FltkPlatform *platform, int maxLength, bool password,
+                      const char *label);
    ~FltkEntryResource ();
 
    void sizeRequest (core::Requisition *requisition);
@@ -351,7 +343,7 @@ private:
 protected:
    virtual ::fltk::Button *createNewButton (core::Allocation *allocation) = 0;
    ::fltk::Widget *createNewWidget (core::Allocation *allocation);
-   
+
 public:
    FltkToggleButtonResource (FltkPlatform *platform,
                              bool activated);
@@ -388,10 +380,10 @@ private:
          public dw::core::ui::RadioButtonResource::GroupIterator
       {
       private:
-         container::typed::Iterator <FltkRadioButtonResource> it;
+         lout::container::typed::Iterator <FltkRadioButtonResource> it;
 
       public:
-         inline FltkGroupIterator (container::typed::List
+         inline FltkGroupIterator (lout::container::typed::List
                                    <FltkRadioButtonResource>
                                    *list)
             { it = list->iterator (); }
@@ -401,15 +393,15 @@ private:
          void unref ();
       };
 
-      container::typed::List <FltkRadioButtonResource> *list;
+      lout::container::typed::List <FltkRadioButtonResource> *list;
 
    protected:
       ~Group ();
 
    public:
       Group (FltkRadioButtonResource *radioButtonResource);
-      
-      inline container::typed::Iterator <FltkRadioButtonResource> iterator ()
+
+      inline lout::container::typed::Iterator <FltkRadioButtonResource> iterator ()
       {
          return list->iterator ();
       }
@@ -446,7 +438,7 @@ template <class I> class FltkSelectionResource:
    public FltkSpecificResource <I>
 {
 protected:
-   class Item: public object::Object
+   class Item: public lout::object::Object
    {
    public:
       enum Type { ITEM, START, END } type;
@@ -462,19 +454,19 @@ protected:
       ::fltk::ItemGroup *createNewGroupWidget ();
    };
 
-   class WidgetStack: public object::Object
+   class WidgetStack: public lout::object::Object
    {
    public:
       ::fltk::Menu *widget;
-      container::typed::Stack <object::TypedPointer < ::fltk::Menu> > *stack;
+      lout::container::typed::Stack <lout::object::TypedPointer < ::fltk::Menu> > *stack;
 
       WidgetStack (::fltk::Menu *widget);
       ~WidgetStack ();
    };
 
-   container::typed::List <WidgetStack> *widgetStacks;
-   container::typed::List <Item> *allItems;
-   container::typed::Vector <Item> *items;
+   lout::container::typed::List <WidgetStack> *widgetStacks;
+   lout::container::typed::List <Item> *allItems;
+   lout::container::typed::Vector <Item> *items;
 
    Item *createNewItem (typename Item::Type type,
                         const char *name = NULL,
@@ -491,10 +483,10 @@ public:
    FltkSelectionResource (FltkPlatform *platform);
    ~FltkSelectionResource ();
 
-   dw::core::Iterator *iterator (dw::core::Content::Type mask, bool atEnd); 
+   dw::core::Iterator *iterator (dw::core::Content::Type mask, bool atEnd);
 
    void addItem (const char *str, bool enabled, bool selected);
-   
+
    void pushGroup (const char *name, bool enabled);
    void popGroup ();
 
@@ -532,11 +524,13 @@ protected:
 
 private:
    static void widgetCallback (::fltk::Widget *widget, void *data);
-   misc::SimpleVector <bool> itemsSelected;
-
+   lout::misc::SimpleVector <bool> itemsSelected;
+   int showRows;
+   ListResource::SelectionMode mode;
 public:
    FltkListResource (FltkPlatform *platform,
-                     core::ui::ListResource::SelectionMode selectionMode);
+                     core::ui::ListResource::SelectionMode selectionMode,
+                     int rows);
    ~FltkListResource ();
 
    void addItem (const char *str, bool enabled, bool selected);

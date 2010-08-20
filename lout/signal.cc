@@ -14,8 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -38,7 +37,7 @@ Emitter::Emitter ()
 
 Emitter::~Emitter ()
 {
-   for(Iterator<Receiver> it = receivers->iterator (); it.hasNext (); ) {
+   for (Iterator<Receiver> it = receivers->iterator (); it.hasNext (); ) {
       Receiver *receiver = it.getNext ();
       receiver->unconnectFrom (this);
    }
@@ -77,7 +76,7 @@ void Emitter::connect (Receiver *receiver)
  */
 void Emitter::emitVoid (int signalNo, int argc, Object **argv)
 {
-   for(Iterator <Receiver> it = receivers->iterator (); it.hasNext (); ) {
+   for (Iterator <Receiver> it = receivers->iterator (); it.hasNext (); ) {
       Receiver *receiver = it.getNext();
       emitToReceiver (receiver, signalNo, argc, argv);
    }
@@ -93,7 +92,7 @@ bool Emitter::emitBool (int signalNo, int argc, Object **argv)
 {
    bool b = false, bt;
 
-   for(Iterator <Receiver> it = receivers->iterator (); it.hasNext (); ) {
+   for (Iterator <Receiver> it = receivers->iterator (); it.hasNext (); ) {
       Receiver *receiver = it.getNext();
       // Note: All receivers are called, even if one returns true.
       // Therefore, something like
@@ -118,7 +117,7 @@ Receiver::Receiver()
 
 Receiver::~Receiver()
 {
-   for(Iterator<Emitter> it = emitters->iterator(); it.hasNext(); ) {
+   for (Iterator<Emitter> it = emitters->iterator(); it.hasNext(); ) {
       Emitter *emitter = it.getNext();
       emitter->unconnect (this);
    }
