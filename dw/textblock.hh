@@ -12,6 +12,9 @@ using namespace lout;
  * \brief A Widget for rendering text blocks, i.e. paragraphs or sequences
  *    of paragraphs.
  *
+ * <strong>Important Note:</strong>: This documentation is out of date, since
+ * floats have been implementet. Will be updated and extended soon.
+ * 
  * <h3>Signals</h3>
  * 
  * dw::Textblock uses the signals defined in
@@ -132,6 +135,66 @@ using namespace lout;
  */
 class Textblock: public core::Widget
 {
+private:
+   Textblock *containingBox;
+
+   class FloatSide
+   {
+   protected:
+      class Float: public object::Object
+      {
+      public:
+         Textblock *floatGenerator;
+         core::Widget *widget;
+         int lineNo, y, width, ascent, descent;
+      };
+
+      Textblock *floatContainer;
+      container::typed::Vector<Float> *floats;
+      container::typed::HashTable<object::TypedPointer<dw::core::Widget>, Float> *floatsByWidget;
+
+      Float *findFloat(int y);
+
+      virtual int calcBorderFromContainer(Float *vloat) = 0;
+      virtual int calcBorderDiff(Textblock *child) = 0;
+
+   public:
+      FloatSide(Textblock *floatContainer);
+      virtual ~FloatSide();
+      
+      inline int size() { return floats->size(); }
+      void addFloat(Widget *widget, Textblock *floatGenerator);
+      void handleFloat(Widget *widget, int lineNo, int y, int lineWidth, int lineHeight);
+      int calcBorder(int y, Textblock *viewdFrom);
+      virtual void sizeAllocate(core::Allocation *containingBoxAllocation) = 0;
+      void draw (core::View *view, core::Rectangle *area);
+      void queueResize(int ref);
+   };
+   
+   class LeftFloatSide: public FloatSide
+   {
+   protected:
+      int calcBorderFromContainer(Float *vloat);
+      int calcBorderDiff(Textblock *child);
+   
+   public:
+      LeftFloatSide(Textblock *floatContainer) : FloatSide(floatContainer) { }
+      void sizeAllocate(core::Allocation *containingBoxAllocation);
+   };
+
+   class RightFloatSide: public FloatSide
+   {
+   protected:
+      int calcBorderFromContainer(Float *vloat);
+      int calcBorderDiff(Textblock *child);
+   
+   public:
+      RightFloatSide(Textblock *floatContainer) : FloatSide(floatContainer) { }
+      void sizeAllocate(core::Allocation *containingBoxAllocation);
+   };
+   
+   FloatSide *leftFloatSide, *rightFloatSide;
+	
 protected:
    struct Line
    {
@@ -140,8 +203,10 @@ protected:
 
       /* "top" is always relative to the top of the first line, i.e.
        * page->lines[0].top is always 0. */
-      int top, ascent, descent, breakSpace, leftOffset;
-
+      int top, ascent, descent, breakSpace;
+      int leftOffset; /* nonzero for centered and rightly-aligned text */
+      int boxLeft, boxRight;
+      
       /* This is similar to descent, but includes the bottom margins of the
        * widgets within this line. */
       int marginDescent;
@@ -272,7 +337,15 @@ protected:
    void calcTextSize (const char *text, core::style::Style *style,
                       core::Requisition *size);
 
-
+   void addFloatIntoContainer(core::Widget *widget, Textblock *floatGenerator);
+   void handleFloatInContainer(Widget *widget, int lineNo,
+                              int y, int lineWidth, int lineHeight);
+   
+   inline int calcLeftFloatBorder(int y, Textblock *viewedFrom)
+   { return leftFloatSide ? leftFloatSide->calcBorder(y, viewedFrom) : 0; }
+   inline int calcRightFloatBorder(int y, Textblock *viewedFrom)
+   { return rightFloatSide ? rightFloatSide->calcBorder(y, viewedFrom) : 0; }
+   
    /**
     * \brief Returns the x offset (the indentation plus any offset needed for
     *    centering or right justification) for the line.
@@ -282,7 +355,7 @@ protected:
     */
    inline int lineXOffsetContents (Line *line)
    {
-      return innerPadding + line->leftOffset + 
+      return innerPadding + line->leftOffset + line->boxLeft + 
          (line == lines->getRef (0) ? line1OffsetEff : 0);
    }
 
@@ -345,6 +418,8 @@ protected:
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
+   void notifySetAsTopLevel();
+   void notifySetParent();
    void setWidth (int width);
    void setAscent (int ascent);
    void setDescent (int descent);
@@ -374,6 +449,8 @@ public:
    void addSpace(core::style::Style *style);
    void addParbreak (int space, core::style::Style *style);
    void addLinebreak (core::style::Style *style);
+
+   void addFloatIntoGenerator (core::Widget *widget, core::style::Style *style);
 
    core::Widget *getWidgetAtPoint (int x, int y, int level);
    void handOverBreak (core::style::Style *style);

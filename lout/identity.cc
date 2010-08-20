@@ -18,8 +18,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-
-
 #include "identity.hh"
 
 #include <stdio.h>
@@ -79,6 +77,7 @@ void IdentifiableObject::registerName (const char *className, int *classId)
    }
 
    this->classId = klass->id;
+   *classId = klass->id;
    currentlyConstructedClass = klass;
 }
 

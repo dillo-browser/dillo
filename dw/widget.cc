@@ -308,6 +308,8 @@ void Widget::setParent (Widget *parent)
    if (!buttonSensitiveSet)
       buttonSensitive = parent->buttonSensitive;
 
+	notifySetParent();
+
    //DBG_OBJ_ASSOC (widget, parent);
 }
 
@@ -772,6 +774,25 @@ void Widget::markSizeChange (int ref)
 }
 
 void Widget::markExtremesChange (int ref)
+{
+}
+
+/**
+ * \brief This method is called after a widget has been set as the top of a
+ *    widget tree.
+ * 
+ * A widget may override this method when it is necessary to be notified.
+ */
+void Widget::notifySetAsTopLevel()
+{
+}
+
+/**
+ * \brief This method is called after a widget has been added to a parent. 
+ * 
+ * A widget may override this method when it is necessary to be notified.
+ */
+void Widget::notifySetParent()
 {
 }
 

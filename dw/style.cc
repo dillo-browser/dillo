@@ -18,8 +18,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-
-
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -44,6 +42,8 @@ void StyleAttrs::initValues ()
    backgroundColor = NULL;
    width = LENGTH_AUTO;
    height = LENGTH_AUTO;
+   vloat = FLOAT_NONE;
+   clear = CLEAR_NONE;
 
    margin.setVal (0);
    borderWidth.setVal (0);
@@ -71,6 +71,8 @@ void StyleAttrs::resetValues ()
    textAlign = TEXT_ALIGN_LEFT; /* ??? */
    valign = VALIGN_MIDDLE;
    textAlignChar = '.';
+   vloat = FLOAT_NONE; /** \todo Correct? Check specification. */
+   clear = CLEAR_NONE; /** \todo Correct? Check specification. */
    backgroundColor = NULL;
    width = LENGTH_AUTO;
    height = LENGTH_AUTO;
@@ -232,6 +234,8 @@ void Style::copyAttrs (StyleAttrs *attrs)
    textAlign = attrs->textAlign;
    valign = attrs->valign;
    textAlignChar = attrs->textAlignChar;
+   vloat = attrs->vloat;
+   clear = attrs->clear;
    hBorderSpacing = attrs->hBorderSpacing;
    vBorderSpacing = attrs->vBorderSpacing;
    width = attrs->width;

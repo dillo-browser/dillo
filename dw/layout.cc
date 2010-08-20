@@ -134,6 +134,7 @@ void Layout::addWidget (Widget *widget)
 
    topLevel = widget;
    widget->layout = this;
+   widget->notifySetAsTopLevel();
 
    findtextState.setWidget (widget);
 

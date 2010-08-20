@@ -5,6 +5,7 @@ noinst_PROGRAMS = \
 	dw-anchors-test \
 	dw-example \
 	dw-find-test \
+	dw-float-test \
 	dw-links \
 	dw-links2 \
 	dw-images-simple \
@@ -38,6 +39,14 @@ dw_example_LDADD = \
 
 dw_find_test_SOURCES = dw_find_test.cc
 dw_find_test_LDADD = \
+	../dw/libDw-widgets.a \
+	../dw/libDw-fltk.a \
+	../dw/libDw-core.a \
+	../lout/liblout.a \
+	@LIBFLTK_LIBS@
+
+dw_float_test_SOURCES = dw_float_test.cc
+dw_float_test_LDADD = \
 	../dw/libDw-widgets.a \
 	../dw/libDw-fltk.a \
 	../dw/libDw-core.a \

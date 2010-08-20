@@ -181,8 +181,9 @@ struct Content
       WIDGET            = 1 << 3,
       ANCHOR            = 1 << 4,
       BREAK             = 1 << 5,
+      FLOAT_REF         = 1 << 6, /** \todo A bit ugly. */
       ALL               = 0xff,
-      REAL_CONTENT      = 0xff ^ (START | END),
+      REAL_CONTENT      = 0xff ^ (START | END | FLOAT_REF),
       SELECTION_CONTENT = TEXT | WIDGET | BREAK
    };
    /* Content is embedded in struct Word therefore we
