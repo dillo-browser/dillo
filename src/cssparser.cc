@@ -68,6 +68,10 @@ static const char *const Css_display_enum_vals[] = {
    "table-cell", NULL
 };
 
+static const char *const Css_float_enum_vals[] = {
+   "none", "left", "right", NULL
+};
+
 static const char *const Css_font_size_enum_vals[] = {
    "large", "larger", "medium", "small", "smaller", "xx-large", "xx-small",
    "x-large", "x-small", NULL
@@ -162,7 +166,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"direction", {CSS_TYPE_UNUSED}, NULL},
    {"display", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_display_enum_vals},
    {"empty-cells", {CSS_TYPE_UNUSED}, NULL},
-   {"float", {CSS_TYPE_UNUSED}, NULL},
+   {"float", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_float_enum_vals},
    {"font-family", {CSS_TYPE_SYMBOL, CSS_TYPE_UNUSED}, NULL},
    {"font-size", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED},
     Css_font_size_enum_vals},
