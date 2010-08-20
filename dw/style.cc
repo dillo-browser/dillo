@@ -116,6 +116,8 @@ bool StyleAttrs::equals (object::Object *other) {
        textAlign == otherAttrs->textAlign &&
        valign == otherAttrs->valign &&
        textAlignChar == otherAttrs->textAlignChar &&
+       vloat == otherAttrs->vloat &&
+       clear == otherAttrs->clear &&
        hBorderSpacing == otherAttrs->hBorderSpacing &&
        vBorderSpacing == otherAttrs->vBorderSpacing &&
        wordSpacing == otherAttrs->wordSpacing &&
@@ -151,6 +153,8 @@ int StyleAttrs::hashValue () {
       textAlign +
       valign +
       textAlignChar +
+      vloat +
+      clear +
       hBorderSpacing +
       vBorderSpacing +
       wordSpacing +
