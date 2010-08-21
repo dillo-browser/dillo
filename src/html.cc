@@ -377,9 +377,14 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
 static void Html_add_textblock(DilloHtml *html, int space)
 {
    Textblock *textblock = new Textblock (prefs.limit_text_width);
+   Style *style = html->styleEngine->style ();
 
    HT2TB(html)->addParbreak (space, html->styleEngine->wordStyle ());
-   HT2TB(html)->addWidget (textblock, html->styleEngine->style ());
+   if (style->vloat == FLOAT_NONE)
+      HT2TB(html)->addWidget (textblock, style);
+   else
+      HT2TB(html)->addFloatIntoGenerator(textblock, style);
+
    HT2TB(html)->addParbreak (space, html->styleEngine->wordStyle ());
    S_TOP(html)->textblock = html->dw = textblock;
    S_TOP(html)->hand_over_break = true;
