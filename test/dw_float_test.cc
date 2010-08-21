@@ -86,8 +86,8 @@ int main(int argc, char **argv)
    wordStyle = Style::create (layout, &styleAttrs);
 
    for(int i = 1; i <= 10; i++) {
-      char buf[4];
-      sprintf(buf, "%d%s",
+      char buf[16];
+      snprintf(buf, sizeof(buf), "%d%s",
               i, (i == 1 ? "st" : (i == 2 ? "nd" : (i == 3 ? "rd" : "th"))));
 
       char *words[] = { "This", "is", "the", buf, "paragraph.",
