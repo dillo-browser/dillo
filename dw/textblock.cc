@@ -1154,7 +1154,7 @@ void Textblock::wordWrap(int wordIndex)
 
       int y =    
          allocation.y - containingBox->allocation.y +
-         getStyle()->boxOffsetX () + lastLine->top;
+         getStyle()->boxOffsetY () + lastLine->top;
       lastLine->boxLeft = calcLeftFloatBorder(y, this);
       lastLine->boxRight = calcRightFloatBorder(y, this);
    }
