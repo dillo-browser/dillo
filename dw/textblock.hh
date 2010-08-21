@@ -349,9 +349,9 @@ protected:
                               int y, int lineWidth, int lineHeight);
    
    inline int calcLeftFloatBorder(int y, Textblock *viewedFrom)
-   { return leftFloatSide ? leftFloatSide->calcBorder(y, viewedFrom) : 0; }
+   { return containingBox->leftFloatSide ? containingBox->leftFloatSide->calcBorder(y, viewedFrom) : 0; }
    inline int calcRightFloatBorder(int y, Textblock *viewedFrom)
-   { return rightFloatSide ? rightFloatSide->calcBorder(y, viewedFrom) : 0; }
+   { return containingBox->rightFloatSide ? containingBox->rightFloatSide->calcBorder(y, viewedFrom) : 0; }
    
    /**
     * \brief Returns the x offset (the indentation plus any offset needed for
