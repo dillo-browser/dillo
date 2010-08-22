@@ -478,12 +478,10 @@ static void File_send_dir(ClientInfo *client)
          File_info2html(client, dList_nth_data(Ddir->flist,n), n+1);
       }
 
-      if (dList_length(Ddir->flist)) {
-         if (client->old_style) {
-            a_Dpip_dsh_write_str(client->sh, 0, "</pre>\n");
-         } else {
-            a_Dpip_dsh_write_str(client->sh, 0, "</table>\n");
-         }
+      if (client->old_style) {
+         a_Dpip_dsh_write_str(client->sh, 0, "</pre>\n");
+      } else if (dList_length(Ddir->flist)) {
+         a_Dpip_dsh_write_str(client->sh, 0, "</table>\n");
       }
 
       a_Dpip_dsh_write_str(client->sh, 1, "</BODY></HTML>\n");
