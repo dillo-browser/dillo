@@ -90,7 +90,7 @@ inline CssLength CSS_CREATE_LENGTH (float v, CssLengthType t) {
 
    switch (t) {
    case CSS_LENGTH_TYPE_PX:
-      iv = (int) (v + 0.5);
+      iv = lout::misc::roundInt(v);
       if (iv > CSS_LENGTH_INT_MAX)
          iv = CSS_LENGTH_INT_MAX;
       else if (iv < -CSS_LENGTH_INT_MAX)

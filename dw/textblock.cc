@@ -1592,8 +1592,8 @@ void Textblock::calcTextSize (const char *text, size_t len,
 
       factor /= (style->font->ascent + style->font->descent);
 
-      size->ascent = size->ascent * factor + 0.5;
-      size->descent = size->descent * factor + 0.5;
+      size->ascent = lout::misc::roundInt(size->ascent * factor);
+      size->descent = lout::misc::roundInt(size->descent * factor);
 
       /* TODO: The containing block's line-height property gives a minimum
        * height for the line boxes. (Even when it's set to 'normal', i.e.,
@@ -1603,8 +1603,9 @@ void Textblock::calcTextSize (const char *text, size_t len,
       if (core::style::isAbsLength (style->lineHeight))
          height = core::style::absLengthVal(style->lineHeight);
       else
-         height = core::style::perLengthVal(style->lineHeight) *
-                  style->font->size;
+         height = lout::misc::roundInt (
+                     core::style::perLengthVal(style->lineHeight) *
+                     style->font->size);
       leading = height - style->font->size;
 
       size->ascent += leading / 2;

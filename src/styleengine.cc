@@ -15,6 +15,7 @@
 #include "html_common.hh"
 #include "styleengine.hh"
 
+using namespace lout::misc;
 using namespace dw::core::style;
 
 StyleEngine::StyleEngine (dw::core::Layout *layout) {
@@ -32,7 +33,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = prefs.font_sans_serif;
-   font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
+   font_attrs.size = roundInt(14 * prefs.font_factor);
    if (font_attrs.size < prefs.font_min_size)
       font_attrs.size = prefs.font_min_size;
    if (font_attrs.size > prefs.font_max_size)
@@ -233,31 +234,30 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             if (p->type == CSS_TYPE_ENUM) {
                switch (p->value.intVal) {
                   case CSS_FONT_SIZE_XX_SMALL:
-                     fontAttrs.size = (int) (11.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(11.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_X_SMALL:
-                     fontAttrs.size = (int) (12.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(12.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_SMALL:
-                     fontAttrs.size = (int) (13.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(13.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_MEDIUM:
-                     fontAttrs.size = (int) (14.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(14.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_LARGE:
-                     fontAttrs.size = (int) (15.0 * prefs.font_factor + 0.5);
                      break;
                   case CSS_FONT_SIZE_X_LARGE:
-                     fontAttrs.size = (int) (16.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(16.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_XX_LARGE:
-                     fontAttrs.size = (int) (17.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(17.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_SMALLER:
-                     fontAttrs.size -= (int) (1.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size -= roundInt(1.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_LARGER:
-                     fontAttrs.size += (int) (1.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size += roundInt(1.0 * prefs.font_factor);
                      break;
                   default:
                      assert(false); // invalid font-size enum
@@ -524,13 +524,13 @@ bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
          *dest = (int) CSS_LENGTH_VALUE (value);
          return true;
       case CSS_LENGTH_TYPE_MM:
-         *dest = (int) (CSS_LENGTH_VALUE (value) * dpmm + 0.5);
+         *dest = roundInt (CSS_LENGTH_VALUE (value) * dpmm);
         return true;
       case CSS_LENGTH_TYPE_EM:
-         *dest = (int) (CSS_LENGTH_VALUE (value) * font->size + 0.5);
+         *dest = roundInt (CSS_LENGTH_VALUE (value) * font->size);
         return true;
       case CSS_LENGTH_TYPE_EX:
-         *dest = (int) (CSS_LENGTH_VALUE(value) * font->xHeight + 0.5);
+         *dest = roundInt (CSS_LENGTH_VALUE(value) * font->xHeight);
         return true;
       default:
          break;
@@ -542,7 +542,7 @@ bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
 bool StyleEngine::computeValue (int *dest, CssLength value, Font *font,
                                 int percentageBase) {
    if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE) {
-      *dest = (int) (CSS_LENGTH_VALUE (value) * percentageBase + 0.5);
+      *dest = roundInt (CSS_LENGTH_VALUE (value) * percentageBase);
       return true;
    } else
       return computeValue (dest, value, font);
