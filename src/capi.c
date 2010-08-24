@@ -392,8 +392,8 @@ static bool_t Capi_filters_allow(const DilloUrl *wanted,
                ret = dStrcasecmp(req_suffix, want_suffix) == 0;
             }
 
-            MSG("Capi_filters_allow: from %s to %s: %s\n", req_host, want_host,
-                ret ? "ALLOWED" : "DENIED");
+            MSG("Capi_filters_allow: from '%s' to '%s': %s\n", req_host,
+                want_host, ret ? "ALLOW" : "DENY");
             break;
          }
          case PREFS_FILTER_ALLOW_ALL:
