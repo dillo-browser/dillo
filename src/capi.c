@@ -363,8 +363,8 @@ static void Capi_dpi_send_source(BrowserWindow *bw,  DilloUrl *url)
  * For an automatic request, permission to load depends on the filter set
  * by the user.
  */ 
-static bool_t Capi_filters_allow(const DilloUrl *wanted,
-                                 const DilloUrl *requester)
+static bool_t Capi_filters_test(const DilloUrl *wanted,
+                                const DilloUrl *requester)
 {
    bool_t ret;
 
@@ -392,8 +392,8 @@ static bool_t Capi_filters_allow(const DilloUrl *wanted,
                ret = dStrcasecmp(req_suffix, want_suffix) == 0;
             }
 
-            MSG("Capi_filters_allow: from %s to %s: %s\n", req_host, want_host,
-                ret ? "ALLOWED" : "DENIED");
+            MSG("Capi_filters_test: %s from '%s' to '%s'\n",
+                ret ? "ALLOW" : "DENY", req_host, want_host);
             break;
          }
          case PREFS_FILTER_ALLOW_ALL:
@@ -422,7 +422,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    int safe = 0, ret = 0, use_cache = 0;
 
    dReturn_val_if_fail((a_Capi_get_flags(web->url) & CAPI_IsCached) ||
-                       Capi_filters_allow(web->url, web->requester), 0);
+                       Capi_filters_test(web->url, web->requester), 0);
 
    /* reload test */
    reload = (!(a_Capi_get_flags(web->url) & CAPI_IsCached) ||
