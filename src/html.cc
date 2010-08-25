@@ -68,9 +68,8 @@ using namespace dw::core::style;
  * Typedefs
  *---------------------------------------------------------------------------*/
 class DilloHtml;
-typedef void (*TagOpenFunct) (DilloHtml *Html, const char *Tag, int Tagsize);
-typedef void (*TagCloseFunct) (DilloHtml *Html, int TagIdx);
-typedef struct _DilloHtmlClass   DilloHtmlClass;
+typedef void (*TagOpenFunct) (DilloHtml *html, const char *tag, int tagsize);
+typedef void (*TagCloseFunct) (DilloHtml *html, int TagIdx);
 
 typedef enum {
    SEEK_ATTR_START,
@@ -3132,14 +3131,6 @@ static void Html_tag_close_par(DilloHtml *html, int TagIdx)
  *     - Empty elements have both inline and block container clear.
  *       (flow have both set)
  */
-struct _TagInfo{
-   const char *name;
-   unsigned char Flags;
-   char EndTag;
-   uchar_t TagLevel;
-   TagOpenFunct open;
-   TagCloseFunct close;
-};
 
 
 const TagInfo Tags[] = {
