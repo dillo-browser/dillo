@@ -1,7 +1,6 @@
 /*
  * File: url.c
  *
- * Copyright (C) 2001 Livio Baldini Soares <livio@linux.ime.usp.br>
  * Copyright (C) 2001-2009 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
