@@ -2209,7 +2209,7 @@ void Textblock::FloatSide::handleFloat(Widget *widget, int lineNo,
    int effY;
    /** \todo Check for another float. Futhermore: what, if the float does not fit
     * into a line at all? */
-   if(requisition.ascent + requisition.descent > vloat->floatGenerator->availWidth - lineWidth)
+   if(requisition.width > vloat->floatGenerator->availWidth - lineWidth)
       effY = y + lineHeight;
    else
       effY = y;
@@ -2265,7 +2265,7 @@ void Textblock::FloatSide::queueResize(int ref)
 int Textblock::LeftFloatSide::calcBorderFromContainer(Textblock::FloatSide::Float *vloat)
 {
    return vloat->width + floatContainer->getStyle()->boxOffsetX() +
-      (vloat->floatGenerator->allocation.x - floatContainer->allocation.x);
+      vloat->floatGenerator->getStyle()->boxOffsetX();
 }
 
 int Textblock::LeftFloatSide::calcBorderDiff(Textblock *child)
@@ -2281,7 +2281,7 @@ void Textblock::LeftFloatSide::sizeAllocate(core::Allocation *containingBoxAlloc
    	  core::Allocation childAllocation;
    	  childAllocation.x =
    	     containingBoxAllocation->x + floatContainer->getStyle()->boxOffsetX() +
-         (vloat->floatGenerator->allocation.x - floatContainer->allocation.x);
+           vloat->floatGenerator->getStyle()->boxOffsetX();
       childAllocation.y = containingBoxAllocation->y + vloat->y;
       childAllocation.width = vloat->width;
       childAllocation.ascent = vloat->ascent;
@@ -2293,8 +2293,7 @@ void Textblock::LeftFloatSide::sizeAllocate(core::Allocation *containingBoxAlloc
 int Textblock::RightFloatSide::calcBorderFromContainer(Textblock::FloatSide::Float *vloat)
 {
    return vloat->width + floatContainer->getStyle()->boxRestWidth() +
-      (vloat->floatGenerator->allocation.x + vloat->floatGenerator->allocation.width -
-       (floatContainer->allocation.x + floatContainer->allocation.width));
+     vloat->floatGenerator->getStyle()->boxRestWidth();
 }
 
 int Textblock::RightFloatSide::calcBorderDiff(Textblock *child)
@@ -2306,13 +2305,12 @@ void Textblock::RightFloatSide::sizeAllocate(core::Allocation *containingBoxAllo
 {
    for(int i = 0; i < floats->size(); i++)
    {
-   	  Float *vloat = floats->get(i);
-   	  core::Allocation childAllocation;
-   	  childAllocation.x =
-   	     containingBoxAllocation->x + containingBoxAllocation->width -
-   	     floatContainer->getStyle()->boxRestWidth() - vloat->width +
-         (vloat->floatGenerator->allocation.x + vloat->floatGenerator->allocation.width -
-          (floatContainer->allocation.x + floatContainer->allocation.width));
+      Float *vloat = floats->get(i);
+      core::Allocation childAllocation;
+      childAllocation.x =
+         containingBoxAllocation->x + containingBoxAllocation->width -
+         floatContainer->getStyle()->boxRestWidth() - vloat->width -
+         vloat->floatGenerator->getStyle()->boxRestWidth();
       childAllocation.y = containingBoxAllocation->y + vloat->y;
       childAllocation.width = vloat->width;
       childAllocation.ascent = vloat->ascent;
