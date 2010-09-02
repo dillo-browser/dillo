@@ -3,18 +3,18 @@
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 3 of the License, or (at your option)
- * any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "textblock.hh"
@@ -969,6 +969,17 @@ void Textblock::wordWrap(int wordIndex)
       }
    }
 
+   if(word->content.type == dw::core::Content::FLOAT_REF)
+   {
+      Line *line = lines->size() > 0 ? lines->getRef(lines->size() - 1) : NULL;
+      int y =
+         allocation.y - containingBox->allocation.y + getStyle()->boxOffsetY() +
+         (line ? line->top : 0);
+      int lineHeight = line ? line->boxAscent + line->boxDescent : 0;
+
+      containingBox->handleFloatInContainer(word->content.widget, misc::max(lines->size() - 1, 0), y, lastLineWidth, lineHeight);
+   }
+   
    
 
    if (lines->size () == 0) {
@@ -1057,16 +1068,6 @@ void Textblock::wordWrap(int wordIndex)
          //DBG_OBJ_ARRSET_NUM (page, "lines.%d.ascent", page->num_lines - 1,
          //                    lastLine->boxAscent);
       }
-   } else if(word->content.type == dw::core::Content::FLOAT_REF)
-   {
-      Line *line = lines->size() > 0 ? lines->getRef(lines->size() - 1) : NULL;
-      int y =
-         allocation.y - containingBox->allocation.y + getStyle()->boxOffsetY() +
-         (line ? line->top : 0);
-      int lineHeight = line ? line->boxAscent + line->boxDescent : 0;
-fprintf(stderr, "=======> lastLineHeight %d %d\n", lineHeight, lines->size());
-      containingBox->handleFloatInContainer(word->content.widget, misc::max(lines->size() - 1, 0), y, lastLineWidth, lineHeight);
-   
    } else {
       lastLine->marginDescent =
          misc::max (lastLine->marginDescent, lastLine->boxDescent);
@@ -2206,15 +2207,12 @@ void Textblock::FloatSide::handleFloat(Widget *widget, int lineNo,
    widget->sizeRequest(&requisition);
 
    int effY;
-#if 0
    /** \todo Check for another float. Futhermore: what, if the float does not fit
     * into a line at all? */
-   if(requisition.width > vloat->floatGenerator->availWidth - lineWidth)
+   if(requisition.ascent + requisition.descent > vloat->floatGenerator->availWidth - lineWidth)
       effY = y + lineHeight;
    else
-#endif
       effY = y;
-
 
    vloat->lineNo = lineNo;
    vloat->y = effY;
@@ -2267,7 +2265,7 @@ void Textblock::FloatSide::queueResize(int ref)
 int Textblock::LeftFloatSide::calcBorderFromContainer(Textblock::FloatSide::Float *vloat)
 {
    return vloat->width + floatContainer->getStyle()->boxOffsetX() +
-      vloat->floatGenerator->getStyle()->boxOffsetX();
+      (vloat->floatGenerator->allocation.x - floatContainer->allocation.x);
 }
 
 int Textblock::LeftFloatSide::calcBorderDiff(Textblock *child)
@@ -2283,7 +2281,7 @@ void Textblock::LeftFloatSide::sizeAllocate(core::Allocation *containingBoxAlloc
    	  core::Allocation childAllocation;
    	  childAllocation.x =
    	     containingBoxAllocation->x + floatContainer->getStyle()->boxOffsetX() +
-            vloat->floatGenerator->getStyle()->boxOffsetX();
+         (vloat->floatGenerator->allocation.x - floatContainer->allocation.x);
       childAllocation.y = containingBoxAllocation->y + vloat->y;
       childAllocation.width = vloat->width;
       childAllocation.ascent = vloat->ascent;
@@ -2295,7 +2293,8 @@ void Textblock::LeftFloatSide::sizeAllocate(core::Allocation *containingBoxAlloc
 int Textblock::RightFloatSide::calcBorderFromContainer(Textblock::FloatSide::Float *vloat)
 {
    return vloat->width + floatContainer->getStyle()->boxRestWidth() +
-      vloat->floatGenerator->getStyle()->boxRestWidth();
+      (vloat->floatGenerator->allocation.x + vloat->floatGenerator->allocation.width -
+       (floatContainer->allocation.x + floatContainer->allocation.width));
 }
 
 int Textblock::RightFloatSide::calcBorderDiff(Textblock *child)
@@ -2311,8 +2310,9 @@ void Textblock::RightFloatSide::sizeAllocate(core::Allocation *containingBoxAllo
    	  core::Allocation childAllocation;
    	  childAllocation.x =
    	     containingBoxAllocation->x + containingBoxAllocation->width -
-   	     floatContainer->getStyle()->boxRestWidth() - vloat->width -
-           vloat->floatGenerator->getStyle()->boxRestWidth();
+   	     floatContainer->getStyle()->boxRestWidth() - vloat->width +
+         (vloat->floatGenerator->allocation.x + vloat->floatGenerator->allocation.width -
+          (floatContainer->allocation.x + floatContainer->allocation.width));
       childAllocation.y = containingBoxAllocation->y + vloat->y;
       childAllocation.width = vloat->width;
       childAllocation.ascent = vloat->ascent;
