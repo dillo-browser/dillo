@@ -395,7 +395,7 @@ static void Nav_repush_callback(void *data)
 void a_Nav_repush(BrowserWindow *bw)
 {
    dReturn_if_fail (bw != NULL);
-   MSG(">>> a_Nav_repush <<<<\n");
+   MSG(">>>> a_Nav_repush <<<<\n");
    a_Timeout_add(0.0, Nav_repush_callback, (void*)bw);
 }
 
@@ -424,7 +424,7 @@ static void Nav_redirection0_callback(void *data)
 void a_Nav_redirection0(BrowserWindow *bw, const DilloUrl *new_url)
 {
    dReturn_if_fail (bw != NULL);
-   _MSG(">>> a_Nav_redirection0 <<<<\n");
+   _MSG(">>>> a_Nav_redirection0 <<<<\n");
 
    a_Url_free(bw->meta_refresh_url);
    bw->meta_refresh_url = a_Url_dup(new_url);
