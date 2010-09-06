@@ -2536,14 +2536,14 @@ static void Html_tag_open_blockquote(DilloHtml *html,
  */
 static void Html_tag_open_q(DilloHtml *html, const char *tag, int tagsize)
 {
-    /*
-     * Left Double Quotation Mark, which is wrong in many cases, but
-     * should at least be widely recognized.
-     */
-    const char *U201C = "\xe2\x80\x9c";
+   /*
+    * Left Double Quotation Mark, which is wrong in many cases, but
+    * should at least be widely recognized.
+    */
+   const char *U201C = "\xe2\x80\x9c";
 
-    html->styleEngine->inheritBackgroundColor ();
-    HT2TB(html)->addText (U201C, html->styleEngine->wordStyle ());
+   html->styleEngine->inheritBackgroundColor ();
+   HT2TB(html)->addText (U201C, html->styleEngine->wordStyle ());
 }
 
 /*
