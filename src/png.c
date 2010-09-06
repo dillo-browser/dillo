@@ -65,8 +65,8 @@ struct _DilloPng {
    int version;                 /* Secondary Key for the dicache */
 
    double display_exponent;     /* gamma correction */
-   ulong_t width;               /* png image width */
-   ulong_t height;              /* png image height */
+   png_uint_32 width;           /* png image width */
+   png_uint_32 height;          /* png image height */
    png_structp png_ptr;         /* libpng private data */
    png_infop info_ptr;          /* libpng private info */
    uchar_t *image_data;         /* decoded image data    */
@@ -135,17 +135,17 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
                 &bit_depth, &color_type, &interlace_type, NULL, NULL);
 
    /* check max image size */
-   if (png->width <= 0 || png->height <= 0 ||
+   if (png->width == 0 || png->height == 0 ||
        png->width > IMAGE_MAX_AREA / png->height) {
-      MSG("Png_datainfo_callback: suspicious image size request %ldx%ld\n",
-          png->width, png->height);
+      MSG("Png_datainfo_callback: suspicious image size request %lux%lu\n",
+          (ulong_t) png->width, (ulong_t) png->height);
       Png_error_handling(png_ptr, "Aborting...");
       return; /* not reached */
    }
 
-   _MSG("Png_datainfo_callback: png->width  = %ld\n"
-        "Png_datainfo_callback: png->height = %ld\n",
-        png->width, png->height);
+   _MSG("Png_datainfo_callback: png->width  = %lu\n"
+        "Png_datainfo_callback: png->height = %lu\n",
+        (ulong_t) png->width, (ulong_t) png->height);
 
    /* we need RGB/RGBA in the end */
    if (color_type == PNG_COLOR_TYPE_PALETTE && bit_depth <= 8) {
@@ -193,9 +193,9 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
 
    /* init Dillo specifics */
    _MSG("Png_datainfo_callback: rowbytes = %d\n"
-        "Png_datainfo_callback: width    = %ld\n"
-        "Png_datainfo_callback: height   = %ld\n",
-        png->rowbytes, png->width, png->height);
+        "Png_datainfo_callback: width    = %lu\n"
+        "Png_datainfo_callback: height   = %lu\n",
+        png->rowbytes, (ulong_t) png->width, (ulong_t) png->height);
 
    png->image_data = (uchar_t *) dMalloc(png->rowbytes * png->height);
    png->row_pointers = (uchar_t **) dMalloc(png->height * sizeof(uchar_t *));
