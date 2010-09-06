@@ -1955,6 +1955,8 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
 
+   html->styleEngine->inheritBackgroundColor ();
+
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
       CssPropertyList props;
@@ -1971,6 +1973,7 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_center(DilloHtml *html, const char *tag, int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
 }
 
@@ -1988,6 +1991,7 @@ static void Html_tag_close_center(DilloHtml *html, int TagIdx)
 static void Html_tag_open_address(DilloHtml *html,
                                   const char *tag, int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
@@ -2538,6 +2542,7 @@ static void Html_tag_open_q(DilloHtml *html, const char *tag, int tagsize)
      */
     const char *U201C = "\xe2\x80\x9c";
 
+    html->styleEngine->inheritBackgroundColor ();
     HT2TB(html)->addText (U201C, html->styleEngine->wordStyle ());
 }
 
@@ -2591,6 +2596,7 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dir(DilloHtml *html, const char *tag, int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 
    S_TOP(html)->list_type = HTML_LIST_UNORDERED;
@@ -2768,6 +2774,7 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_dl(DilloHtml *html, const char *tag, int tagsize)
 {
    /* may want to actually do some stuff here. */
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
@@ -2776,6 +2783,7 @@ static void Html_tag_open_dl(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
@@ -2792,6 +2800,7 @@ static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 
    html->InFlags |= IN_PRE;
