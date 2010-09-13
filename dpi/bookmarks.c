@@ -1628,16 +1628,19 @@ static int Bmsrv_parse_token(Dsh *sh, char *Buf)
 
       if (strcmp(url, "dpi:/bm/modify") == 0) {
          st = Bmsrv_send_modify_answer(sh, url);
+         dFree(url);
          return st;
 
       } else if (strncmp(url, "dpi:/bm/modify?", 15) == 0) {
          /* process request */
          st = Bmsrv_process_modify_request(sh, url);
+         dFree(url);
          return st;
       }
 
 
       d_cmd = a_Dpip_build_cmd("cmd=%s url=%s", "start_send_page", url);
+      dFree(url);
       st = a_Dpip_dsh_write_str(sh, 1, d_cmd);
       dFree(d_cmd);
       if (st != 0)
