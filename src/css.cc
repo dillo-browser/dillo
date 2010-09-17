@@ -558,8 +558,7 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
  */
 void CssContext::buildUserAgentStyle () {
    const char *cssBuf =
-     "body  {background-color: #e0e0a3; font-family: sans-serif; color: black;"
-     "       margin: 5px}"
+     "body  {margin: 5px}"
      "big {font-size: 1.17em}"
      "blockquote, dd {margin-left: 40px; margin-right: 40px}"
      "center {text-align: center}"
@@ -567,6 +566,7 @@ void CssContext::buildUserAgentStyle () {
      ":link {color: blue; text-decoration: underline; cursor: pointer}"
      ":visited {color: #800080; text-decoration: underline; cursor: pointer}"
      "h1, h2, h3, h4, h5, h6, b, strong {font-weight: bolder}"
+     "html  {font-family: sans-serif; color: black}"
      "i, em, cite, address, var {font-style: italic}"
      ":link img, :visited img {border: 1px solid}"
      "frameset, ul, ol, dir {margin-left: 40px}"
