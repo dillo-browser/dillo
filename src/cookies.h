@@ -8,6 +8,7 @@ extern "C" {
 
 #ifdef DISABLE_COOKIES
 # define a_Cookies_get_query(url)  dStrdup("")
+# define a_Cookies_set()     ;
 # define a_Cookies_init()    ;
 # define a_Cookies_freeall() ;
 #else
