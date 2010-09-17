@@ -363,6 +363,8 @@ public:
    inline void resetSearch () { findtextState.resetSearch (); }
 
    void setBgColor (style::Color *color);
+
+   inline style::Color* getBgColor () { return bgColor; }
 };
 
 } // namespace dw

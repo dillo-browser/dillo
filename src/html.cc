@@ -1569,9 +1569,15 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_html(DilloHtml *html, const char *tag, int tagsize)
 {
+   Style *style;
+
    if (!(html->InFlags & IN_HTML))
       html->InFlags |= IN_HTML;
    ++html->Num_HTML;
+
+   style = html->styleEngine->style ();
+   if (style->backgroundColor)
+      HT2LT(html)->setBgColor(style->backgroundColor); 
 
    if (html->Num_HTML > 1) {
       BUG_MSG("HTML element was already open\n");
@@ -1761,7 +1767,11 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    html->styleEngine->setNonCssHints (&props);
    html->dw->setStyle (html->styleEngine->style ());
-   HT2LT(html)->setBgColor(html->styleEngine->style ()->backgroundColor);  
+
+   /* Set canvas color if not already set from Html_open_html().
+    */
+   if (! HT2LT(html)->getBgColor())
+      HT2LT(html)->setBgColor(html->styleEngine->style ()->backgroundColor);  
 
    /* Determine a color for visited links.
     * This color is computed once per page and used for immediate feedback
