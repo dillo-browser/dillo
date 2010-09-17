@@ -1761,6 +1761,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    html->styleEngine->setNonCssHints (&props);
    html->dw->setStyle (html->styleEngine->style ());
+   HT2LT(html)->setBgColor(html->styleEngine->style ()->backgroundColor);  
 
    /* Determine a color for visited links.
     * This color is computed once per page and used for immediate feedback
@@ -1787,6 +1788,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
             html->non_css_link_color,
             html->styleEngine->backgroundStyle()->backgroundColor->getColor());
    }
+
 
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_BODY;
 }

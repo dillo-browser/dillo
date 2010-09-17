@@ -246,7 +246,6 @@ void Layout::addWidget (Widget *widget)
 
    canvasHeightGreater = false;
    setSizeHints ();
-   updateBgColor ();
    queueResize ();
 }
 
@@ -609,16 +608,9 @@ void Layout::updateCursor ()
       setCursor (style::CURSOR_DEFAULT);
 }
 
-void Layout::updateBgColor ()
+void Layout::setBgColor (style::Color *color)
 {
-   /* The toplevel widget should always have a defined background color,
-    * except at the beginning. Searching a defined background is not
-    * necessary. */
-   if (topLevel && topLevel->getStyle() &&
-       topLevel->getStyle()->backgroundColor)
-      bgColor = topLevel->getStyle()->backgroundColor;
-   else
-      bgColor = NULL;
+   bgColor = color;
    view->setBgColor (bgColor);
 }
 

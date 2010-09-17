@@ -302,8 +302,6 @@ void Widget::setStyle (style::Style *style)
    this->style = style;
 
    if (layout != NULL) {
-      if (parent == NULL)
-         layout->updateBgColor ();
       layout->updateCursor ();
    }
 
