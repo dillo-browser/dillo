@@ -85,8 +85,6 @@ void a_Plain_free(void *data);
  */
 DilloPlain::DilloPlain(BrowserWindow *p_bw)
 {
-   style::Color *bgColor;
-
    /* Init event receiver */
    plainReceiver.plain = this;
 
@@ -97,8 +95,6 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw)
    state = ST_SeekingEol;
 
    Layout *layout = (Layout*) bw->render_layout;
-   bgColor = style::Color::create (layout, prefs.bg_color);
-   layout->setBgColor(bgColor);
    StyleEngine styleEngine (layout);
 
    styleEngine.startElement ("body");

@@ -611,7 +611,8 @@ void Layout::updateCursor ()
 void Layout::setBgColor (style::Color *color)
 {
    bgColor = color;
-   view->setBgColor (bgColor);
+   if (view)
+      view->setBgColor (bgColor);
 }
 
 void Layout::resizeIdle ()
