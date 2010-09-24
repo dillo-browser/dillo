@@ -337,9 +337,7 @@ style::Color *Widget::getBgColor ()
       widget = widget->parent;
    }
 
-   MSG_WARN("No background color found!\n");
-   return NULL;
-
+   return layout->getBgColor ();
 }
 
 
