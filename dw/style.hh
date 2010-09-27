@@ -64,7 +64,7 @@ namespace core {
  * attribute, which is supported by dillo, will refer to an attribute in
  * dw::core::style::Style. For this reason, the attributes in
  * dw::core::style::Style get the names from the CSS attributes, with
- * "camelCase" instead of hythens (e.g. "background-color" becomes
+ * "camelCase" instead of hyphens (e.g. "background-color" becomes
  * "backgroundColor").
  *
  * However, dw::core::style::Style will be extended by some more

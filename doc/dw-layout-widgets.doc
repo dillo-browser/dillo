@@ -5,7 +5,7 @@ widgets. A widget represents a given part of the document, e.g. a text
 block, a table, or an image. Widgets may be nested, so layouting and
 drawing may be delegated by one widget to its child widgets.
 
-Where do define the borders of a widget, wheather to combine different
+Where to define the borders of a widget, whether to combine different
 widgets to one, or to split one widget into multiple ones, should be
 considered based on different concerns:
 
@@ -22,7 +22,7 @@ considered based on different concerns:
 <li> Since some widgets are already rather complex, an important goal
      is to keep the implementation of the widget simple.
 
-<li> Furthermore, the granularity should not be to fine, because of the
+<li> Furthermore, the granularity should not be too fine, because of the
      overhead each single widget adds.
 </ul>
 
