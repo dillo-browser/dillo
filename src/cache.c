@@ -516,6 +516,10 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
              ((!major || !*major) && (!minor || !*minor))) {
             /* META only gives charset; use detected MIME type too */
             entry->TypeNorm = dStrconcat(entry->TypeDet, ctype, NULL);
+         } else if (*from == 'm' && 
+                    !dStrncasecmp(ctype, "text/xhtml", 10)) {
+            /* WORKAROUND: doxygen uses "text/xhtml" in META */
+            entry->TypeNorm = dStrdup(entry->TypeDet);
          }
          if (charset) {
             if (entry->CharsetDecoder)
