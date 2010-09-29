@@ -1218,20 +1218,20 @@ void Textblock::decorateText(core::View *view, core::style::Style *style,
                              core::style::Color::Shading shading,
                              int x, int yBase, int width)
 {
-   int y;
+   int y, height;
 
+   height = 1 + style->font->xHeight / 12;
    if (style->textDecoration & core::style::TEXT_DECORATION_UNDERLINE) {
-      y = yBase + 1;
-      view->drawLine (style->color, shading, x, y, x + width - 1, y);
+      y = yBase + style->font->descent / 3;
+      view->drawRectangle (style->color, shading, true, x, y, width, height);
    }
    if (style->textDecoration & core::style::TEXT_DECORATION_OVERLINE) {
-      y = yBase - style->font->ascent + 1;
-      view->drawLine (style->color, shading, x, y, x + width - 1, y);
+      y = yBase - style->font->ascent;
+      view->drawRectangle (style->color, shading, true, x, y, width, height);
    }
    if (style->textDecoration & core::style::TEXT_DECORATION_LINE_THROUGH) {
-      int height = 1 + style->font->xHeight / 10;
-
-      y = yBase + (style->font->descent - style->font->ascent) / 2;
+      y = yBase + (style->font->descent - style->font->ascent) / 2 +
+          style->font->descent / 4;
       view->drawRectangle (style->color, shading, true, x, y, width, height);
    }
 }
