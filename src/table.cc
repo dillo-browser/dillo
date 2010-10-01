@@ -60,6 +60,14 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
                  cssLength);
       props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
                  cssLength);
+      props.set (CSS_PROPERTY_BORDER_TOP_STYLE, CSS_TYPE_ENUM,
+                 BORDER_OUTSET);
+      props.set (CSS_PROPERTY_BORDER_BOTTOM_STYLE, CSS_TYPE_ENUM,
+                 BORDER_OUTSET);
+      props.set (CSS_PROPERTY_BORDER_LEFT_STYLE, CSS_TYPE_ENUM,
+                 BORDER_OUTSET);
+      props.set (CSS_PROPERTY_BORDER_RIGHT_STYLE, CSS_TYPE_ENUM,
+                 BORDER_OUTSET);
    }
 
    if (cellspacing != -1) {
@@ -103,6 +111,14 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
                              CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
       table_cell_props->set (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
                              CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      table_cell_props->set (CSS_PROPERTY_BORDER_TOP_STYLE,
+                             CSS_TYPE_ENUM, BORDER_INSET);
+      table_cell_props->set (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+                             CSS_TYPE_ENUM, BORDER_INSET);
+      table_cell_props->set (CSS_PROPERTY_BORDER_LEFT_STYLE,
+                             CSS_TYPE_ENUM, BORDER_INSET);
+      table_cell_props->set (CSS_PROPERTY_BORDER_RIGHT_STYLE,
+                             CSS_TYPE_ENUM, BORDER_INSET);
    }
 
    if (cellpadding != -1) {

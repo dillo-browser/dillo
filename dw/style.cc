@@ -47,7 +47,7 @@ void StyleAttrs::initValues ()
    backgroundColor = NULL;
    width = height = lineHeight = LENGTH_AUTO;
    margin.setVal (0);
-   borderWidth.setVal (0);
+   borderWidth.setVal (2);
    padding.setVal (0);
    setBorderColor (NULL);
    setBorderStyle (BORDER_NONE);
@@ -75,7 +75,7 @@ void StyleAttrs::resetValues ()
    height = LENGTH_AUTO;
 
    margin.setVal (0);
-   borderWidth.setVal (0);
+   borderWidth.setVal (2);
    padding.setVal (0);
    setBorderColor (NULL);
    setBorderStyle (BORDER_NONE);

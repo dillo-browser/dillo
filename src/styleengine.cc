@@ -508,6 +508,14 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    if (attrs->borderColor.right == NULL)
       attrs->borderColor.right = attrs->color;
 
+   if (attrs->borderStyle.top == BORDER_NONE)
+      attrs->borderWidth.top = 0;
+   if (attrs->borderStyle.bottom == BORDER_NONE)
+      attrs->borderWidth.bottom = 0;
+   if (attrs->borderStyle.left == BORDER_NONE)
+      attrs->borderWidth.left = 0;
+   if (attrs->borderStyle.right == BORDER_NONE)
+      attrs->borderWidth.right = 0;
 }
 
 /**
