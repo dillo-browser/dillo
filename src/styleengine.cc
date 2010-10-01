@@ -182,6 +182,42 @@ void StyleEngine::endElement (int element) {
    stack->setSize (stack->size () - 1);
 }
 
+void StyleEngine::preprocessAttrs (dw::core::style::StyleAttrs *attrs) {
+   /* workaround for styling of inline elements */
+   if (stack->getRef (stack->size () - 2)->inheritBackgroundColor) {
+      attrs->backgroundColor =
+         stack->getRef (stack->size () - 2)->style->backgroundColor;
+
+      attrs->valign = stack->getRef (stack->size () - 2)->style->valign;
+   }
+   /* initial value of border-width is 'medium' */
+   attrs->borderWidth.top = 2;
+   attrs->borderWidth.bottom = 2;
+   attrs->borderWidth.left = 2;
+   attrs->borderWidth.right = 2;
+}
+
+void StyleEngine::postprocessAttrs (dw::core::style::StyleAttrs *attrs) {
+   /* if border-color is not specified use color as computed value */
+   if (attrs->borderColor.top == NULL)
+      attrs->borderColor.top = attrs->color;
+   if (attrs->borderColor.bottom == NULL)
+      attrs->borderColor.bottom = attrs->color;
+   if (attrs->borderColor.left == NULL)
+      attrs->borderColor.left = attrs->color;
+   if (attrs->borderColor.right == NULL)
+      attrs->borderColor.right = attrs->color;
+   /* computed value of border-width is 0 if border-style is 'none' */
+   if (attrs->borderStyle.top == BORDER_NONE)
+      attrs->borderWidth.top = 0;
+   if (attrs->borderStyle.bottom == BORDER_NONE)
+      attrs->borderWidth.bottom = 0;
+   if (attrs->borderStyle.left == BORDER_NONE)
+      attrs->borderWidth.left = 0;
+   if (attrs->borderStyle.right == BORDER_NONE)
+      attrs->borderWidth.right = 0;
+}
+
 /**
  * \brief Make changes to StyleAttrs attrs according to CssPropertyList props.
  */
@@ -498,24 +534,6 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       }
    }
 
-   /* make sure border colors are set */
-   if (attrs->borderColor.top == NULL)
-      attrs->borderColor.top = attrs->color;
-   if (attrs->borderColor.bottom == NULL)
-      attrs->borderColor.bottom = attrs->color;
-   if (attrs->borderColor.left == NULL)
-      attrs->borderColor.left = attrs->color;
-   if (attrs->borderColor.right == NULL)
-      attrs->borderColor.right = attrs->color;
-
-   if (attrs->borderStyle.top == BORDER_NONE)
-      attrs->borderWidth.top = 0;
-   if (attrs->borderStyle.bottom == BORDER_NONE)
-      attrs->borderWidth.bottom = 0;
-   if (attrs->borderStyle.left == BORDER_NONE)
-      attrs->borderWidth.left = 0;
-   if (attrs->borderStyle.right == BORDER_NONE)
-      attrs->borderWidth.right = 0;
 }
 
 /**
@@ -632,13 +650,7 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
 
    // reset values that are not inherited according to CSS
    attrs.resetValues ();
-
-   if (stack->getRef (stack->size () - 2)->inheritBackgroundColor) {
-      attrs.backgroundColor =
-         stack->getRef (stack->size () - 2)->style->backgroundColor;
-
-      attrs.valign = stack->getRef (stack->size () - 2)->style->valign;
-   }
+   preprocessAttrs (&attrs);
 
    // parse style information from style="" attribute, if it exists
    if (styleAttribute && prefs.parse_embedded_css)
@@ -651,6 +663,8 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
 
    // apply style
    apply (&attrs, &props);
+
+   postprocessAttrs (&attrs);
 
    stack->getRef (stack->size () - 1)->style = Style::create (layout, &attrs);
 

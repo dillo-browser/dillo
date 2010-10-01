@@ -35,6 +35,8 @@ class StyleEngine {
 
       dw::core::style::Style *style0 (CssPropertyList *nonCssHints = NULL);
       dw::core::style::Style *wordStyle0 (CssPropertyList *nonCssHints = NULL);
+      void preprocessAttrs (dw::core::style::StyleAttrs *attrs);
+      void postprocessAttrs (dw::core::style::StyleAttrs *attrs);
       void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
       bool computeValue (int *dest, CssLength value,
                          dw::core::style::Font *font);
