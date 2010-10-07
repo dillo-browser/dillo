@@ -293,6 +293,11 @@ enum FontStyle {
   FONT_STYLE_OBLIQUE
 };
 
+enum FontVariant {
+   FONT_VARIANT_NORMAL,
+   FONT_VARIANT_SMALL_CAPS
+};
+
 enum TextDecoration {
    TEXT_DECORATION_NONE         = 0,
    TEXT_DECORATION_UNDERLINE    = 1 << 0,
@@ -558,6 +563,7 @@ public:
    int size;
    int weight;
    int letterSpacing;
+   FontVariant fontVariant;
    FontStyle style;
 
    bool equals(lout::object::Object *other);

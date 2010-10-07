@@ -77,6 +77,10 @@ static const char *const Css_font_style_enum_vals[] = {
    "normal", "italic", "oblique", NULL
 };
 
+static const char *const Css_font_variant_enum_vals[] = {
+   "normal", "small-caps", NULL
+};
+
 static const char *const Css_font_weight_enum_vals[] = {
    "bold", "bolder", "light", "lighter", "normal", NULL
 };
@@ -169,7 +173,8 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"font-size-adjust", {CSS_TYPE_UNUSED}, NULL},
    {"font-stretch", {CSS_TYPE_UNUSED}, NULL},
    {"font-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_font_style_enum_vals},
-   {"font-variant", {CSS_TYPE_UNUSED}, NULL},
+   {"font-variant", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_font_variant_enum_vals},
    {"font-weight", {CSS_TYPE_ENUM, CSS_TYPE_FONT_WEIGHT, CSS_TYPE_UNUSED},
     Css_font_weight_enum_vals},
    {"height", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},

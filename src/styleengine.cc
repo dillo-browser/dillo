@@ -41,6 +41,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    font_attrs.weight = 400;
    font_attrs.style = FONT_STYLE_NORMAL;
    font_attrs.letterSpacing = 0;
+   font_attrs.fontVariant = FONT_VARIANT_NORMAL;
 
    style_attrs.initValues ();
    style_attrs.font = Font::create (layout, &font_attrs);
@@ -227,7 +228,7 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
    char *c, *fontName;
    int lineHeight;
 
-   /* Determine font first so it can be used to resolve relative lenths. */
+   /* Determine font first so it can be used to resolve relative lengths. */
    for (int i = 0; i < props->size (); i++) {
       CssProperty *p = props->getRef (i);
 
@@ -362,6 +363,9 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
                fontAttrs.letterSpacing = 1000;
             else if (fontAttrs.letterSpacing < -1000)
                fontAttrs.letterSpacing = -1000;
+            break;
+         case CSS_PROPERTY_FONT_VARIANT:
+            fontAttrs.fontVariant = (FontVariant) p->value.intVal;
             break;
          default:
             break;
