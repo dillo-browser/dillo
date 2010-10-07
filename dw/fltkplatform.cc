@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
+#include <wchar.h>
+#include <wctype.h>
 
 #include "../lout/msg.h"
 #include "fltkcore.hh"
@@ -28,7 +31,6 @@
 #include <fltk/InvisibleBox.h>
 #include <fltk/Tooltip.h>
 #include <fltk/utf.h>
-#include <stdio.h>
 
 namespace dw {
 namespace fltk {
@@ -351,20 +353,50 @@ void FltkPlatform::detachView  (core::View *view)
 int FltkPlatform::textWidth (core::style::Font *font, const char *text,
                              int len)
 {
-   int width;
+   char chbuf[MB_CUR_MAX];
+   wchar_t wc, wcu;
+   mbstate_t st1, st2;
+   int width = 0;
    FltkFont *ff = (FltkFont*) font;
-   setfont (ff->font, ff->size);
-   width = (int) getwidth (text, len);
-
-   if (font->letterSpacing) {
-      int curr = 0, next = 0;
-
-      while (next < len) {
+   int curr = 0, next = 0, nb;
+   
+   if (font->fontVariant == 1) {
+      int sc_fontsize, sc_letterSpacing;
+      sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
+      sc_letterSpacing = lout::misc::roundInt(font->letterSpacing * 0.78);
+      memset (&st1, '\0', sizeof (mbstate_t));
+      memset (&st2, '\0', sizeof (mbstate_t));
+      for (curr = 0; next < len; curr = next) {
          next = nextGlyph(text, curr);
-         width += font->letterSpacing;
-         curr = next;
+         nb = (int)mbrtowc(&wc, text + curr, next - curr, &st1);
+         if ((wcu = towupper(wc)) == wc) {
+            /* already uppercase, just draw the character */
+            setfont(ff->font, ff->size);
+            width += font->letterSpacing;
+            width += (int)getwidth(text + curr, next - curr);
+         } else {
+            /* make utf8 string for converted char */
+            nb = wcrtomb(chbuf, wcu, &st2);
+            setfont(ff->font, sc_fontsize);
+            width += sc_letterSpacing;
+            width += (int)getwidth(chbuf, nb);
+         }
+      }
+   } else {
+      setfont (ff->font, ff->size);
+      width = (int) getwidth (text, len);
+   
+      if (font->letterSpacing) {
+         int curr = 0, next = 0;
+   
+         while (next < len) {
+            next = nextGlyph(text, curr);
+            width += font->letterSpacing;
+            curr = next;
+         }
       }
    }
+
    return width;
 }
 

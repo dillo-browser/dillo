@@ -29,6 +29,8 @@
 #include <fltk/run.h>
 
 #include <stdio.h>
+#include <wchar.h>
+#include <wctype.h>
 #include "../lout/msg.h"
 
 using namespace fltk;
@@ -490,31 +492,35 @@ void FltkWidgetView::drawText (core::style::Font *font,
       /* Nonzero letter spacing adjustment, draw each glyph individually */
       int viewX = translateCanvasXToViewX (x),
           viewY = translateCanvasYToViewY (y);
-      int curr = 0, next = 0;
-      char *text2 = NULL;
+      int curr = 0, next = 0, cb;
+      char chbuf[MB_CUR_MAX];
+      wchar_t wc, wcu;
+      mbstate_t st1, st2;
 
       if (font->fontVariant == 1) {
          int sc_fontsize, sc_letterSpacing;
          sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
          sc_letterSpacing = lout::misc::roundInt(font->letterSpacing * 0.78);
-         text2 = strdup(text);
-         while(next < len) {
+         memset (&st1, '\0', sizeof (mbstate_t));
+         memset (&st2, '\0', sizeof (mbstate_t));
+         for (curr = 0; next < len; curr = next) {
             next = theLayout->nextGlyph(text, curr);
-            if (isupper(text[curr])) {
+            cb = (int)mbrtowc(&wc, text + curr, next - curr, &st1);
+            if ((wcu = towupper(wc)) == wc) {
+               /* already uppercase, just draw the character */
                setfont(ff->font, ff->size);
                drawtext(text + curr, next - curr, viewX, viewY);
                viewX += font->letterSpacing;
                viewX += (int)getwidth(text + curr, next - curr);
             } else {
-               text2[curr] = toupper(text2[curr]);
+               /* make utf8 string for converted char */
+               int n = wcrtomb(chbuf, wcu, &st2);
                setfont(ff->font, sc_fontsize);
-               drawtext(text2 + curr, next - curr, viewX, viewY);
+               drawtext(chbuf, n, viewX, viewY);
                viewX += sc_letterSpacing;
-               viewX += (int)getwidth(text2 + curr, next - curr);
+               viewX += (int)getwidth(chbuf, n);
             }
-            curr = next;
          }
-         free(text2);
       } else {
          while (next < len) {
             next = theLayout->nextGlyph(text, curr);

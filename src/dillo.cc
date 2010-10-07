@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <signal.h>
+#include <locale.h>
 
 #include <fltk/Window.h>
 #include <fltk/TabGroup.h>
@@ -367,6 +368,9 @@ int main(int argc, char **argv)
          a_Url_free(start_url);
       }
    }
+
+   /* We use utf-8 internally, force character conversions follow suit */
+   setlocale (LC_CTYPE, "en_US.utf8");
 
    fltk::run();
 
