@@ -361,9 +361,7 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
    int curr = 0, next = 0, nb;
    
    if (font->fontVariant == 1) {
-      int sc_fontsize, sc_letterSpacing;
-      sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
-      sc_letterSpacing = lout::misc::roundInt(font->letterSpacing * 0.78);
+      int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
       memset (&st1, '\0', sizeof (mbstate_t));
       memset (&st2, '\0', sizeof (mbstate_t));
       for (curr = 0; next < len; curr = next) {
@@ -378,7 +376,7 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
             /* make utf8 string for converted char */
             nb = wcrtomb(chbuf, wcu, &st2);
             setfont(ff->font, sc_fontsize);
-            width += sc_letterSpacing;
+            width += font->letterSpacing;
             width += (int)getwidth(chbuf, nb);
          }
       }

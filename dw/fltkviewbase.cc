@@ -498,9 +498,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
       mbstate_t st1, st2;
 
       if (font->fontVariant == 1) {
-         int sc_fontsize, sc_letterSpacing;
-         sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
-         sc_letterSpacing = lout::misc::roundInt(font->letterSpacing * 0.78);
+         int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
          memset (&st1, '\0', sizeof (mbstate_t));
          memset (&st2, '\0', sizeof (mbstate_t));
          for (curr = 0; next < len; curr = next) {
@@ -517,7 +515,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
                int n = wcrtomb(chbuf, wcu, &st2);
                setfont(ff->font, sc_fontsize);
                drawtext(chbuf, n, viewX, viewY);
-               viewX += sc_letterSpacing;
+               viewX += font->letterSpacing;
                viewX += (int)getwidth(chbuf, n);
             }
          }
