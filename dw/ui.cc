@@ -280,7 +280,7 @@ ComplexButtonResource::ComplexButtonResource ()
 
 void ComplexButtonResource::init (Widget *widget)
 {
-   this->widget = widget;
+   this->childWidget = widget;
 
    layout = new Layout (createPlatform ());
    setLayout (layout);
@@ -292,7 +292,7 @@ void ComplexButtonResource::setEmbed (Embed *embed)
 {
    ButtonResource::setEmbed (embed);
 
-   if (widget->usesHints ())
+   if (childWidget->usesHints ())
       embed->setUsesHints ();
 }
 
@@ -304,7 +304,7 @@ ComplexButtonResource::~ComplexButtonResource ()
 void ComplexButtonResource::sizeRequest (Requisition *requisition)
 {
    Requisition widgetRequisition;
-   widget->sizeRequest (&widgetRequisition);
+   childWidget->sizeRequest (&widgetRequisition);
    requisition->width = widgetRequisition.width + 2 * reliefXThickness ();
    requisition->ascent = widgetRequisition.ascent + reliefYThickness ();
    requisition->descent = widgetRequisition.descent + reliefYThickness ();
@@ -313,7 +313,7 @@ void ComplexButtonResource::sizeRequest (Requisition *requisition)
 void ComplexButtonResource::getExtremes (Extremes *extremes)
 {
    Extremes widgetExtremes;
-   widget->getExtremes (&widgetExtremes);
+   childWidget->getExtremes (&widgetExtremes);
    extremes->minWidth = widgetExtremes.minWidth + 2 * reliefXThickness ();
    extremes->maxWidth = widgetExtremes.maxWidth + 2 * reliefXThickness ();
 }
@@ -324,17 +324,17 @@ void ComplexButtonResource::sizeAllocate (Allocation *allocation)
 
 void ComplexButtonResource::setWidth (int width)
 {
-   widget->setWidth (width - 2 * reliefXThickness ());
+   childWidget->setWidth (width - 2 * reliefXThickness ());
 }
 
 void ComplexButtonResource::setAscent (int ascent)
 {
-   widget->setAscent (ascent - reliefYThickness ());
+   childWidget->setAscent (ascent - reliefYThickness ());
 }
 
 void ComplexButtonResource::setDescent (int descent)
 {
-   widget->setDescent (descent - reliefYThickness ());
+   childWidget->setDescent (descent - reliefYThickness ());
 }
 
 Iterator *ComplexButtonResource::iterator (Content::Type mask, bool atEnd)

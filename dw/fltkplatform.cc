@@ -353,7 +353,7 @@ void FltkPlatform::detachView  (core::View *view)
 int FltkPlatform::textWidth (core::style::Font *font, const char *text,
                              int len)
 {
-   char chbuf[MB_CUR_MAX];
+   char chbuf[4];
    wchar_t wc, wcu;
    int width = 0;
    FltkFont *ff = (FltkFont*) font;

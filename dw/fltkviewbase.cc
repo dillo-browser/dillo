@@ -494,7 +494,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
       int viewX = translateCanvasXToViewX (x),
           viewY = translateCanvasYToViewY (y);
       int curr = 0, next = 0, nb;
-      char chbuf[MB_CUR_MAX];
+      char chbuf[4];
       wchar_t wc, wcu;
 
       if (font->fontVariant == 1) {

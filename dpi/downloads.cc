@@ -593,7 +593,7 @@ void DLItem::update_size(int new_sz)
 static void read_log_cb(int fd_in, void *data)
 {
    DLItem *dl_item = (DLItem *)data;
-   int BufLen = 4096;
+   const int BufLen = 4096;
    char Buf[BufLen];
    ssize_t st;
    int ret = -1;

@@ -989,7 +989,7 @@ template <class I> void FltkSelectionResource<I>::addItem (const char *str,
          itemWidget->set_selected();
          if (setSelectedItems ()) {
             // Handle multiple item selection.
-            int pos[widgetStack->stack->size ()];
+            int *pos = new int[widgetStack->stack->size ()];
             int i;
             Iterator <TypedPointer < ::fltk::Menu> > it;
             for (it = widgetStack->stack->iterator (),
@@ -1000,6 +1000,7 @@ template <class I> void FltkSelectionResource<I>::addItem (const char *str,
                pos[i] =  p->getTypedValue()->children () - 1;
             }
             widgetStack->widget->set_item (pos, widgetStack->stack->size ());
+            delete [] pos;
          }
       }
    }
