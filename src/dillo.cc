@@ -369,9 +369,6 @@ int main(int argc, char **argv)
       }
    }
 
-   /* We use utf-8 internally, force character conversions follow suit */
-   setlocale (LC_CTYPE, "en_US.utf8");
-
    fltk::run();
 
    /*

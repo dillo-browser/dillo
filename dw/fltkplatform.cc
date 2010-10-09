@@ -355,18 +355,15 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
 {
    char chbuf[MB_CUR_MAX];
    wchar_t wc, wcu;
-   mbstate_t st1, st2;
    int width = 0;
    FltkFont *ff = (FltkFont*) font;
    int curr = 0, next = 0, nb;
    
    if (font->fontVariant == 1) {
       int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
-      memset (&st1, '\0', sizeof (mbstate_t));
-      memset (&st2, '\0', sizeof (mbstate_t));
       for (curr = 0; next < len; curr = next) {
          next = nextGlyph(text, curr);
-         nb = (int)mbrtowc(&wc, text + curr, next - curr, &st1);
+         wc = utf8decode(text + curr, text + next, &nb);
          if ((wcu = towupper(wc)) == wc) {
             /* already uppercase, just draw the character */
             setfont(ff->font, ff->size);
@@ -374,7 +371,7 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
             width += (int)getwidth(text + curr, next - curr);
          } else {
             /* make utf8 string for converted char */
-            nb = wcrtomb(chbuf, wcu, &st2);
+            nb = utf8encode(wcu, chbuf);
             setfont(ff->font, sc_fontsize);
             width += font->letterSpacing;
             width += (int)getwidth(chbuf, nb);

@@ -27,6 +27,7 @@
 #include <fltk/events.h>
 #include <fltk/Cursor.h>
 #include <fltk/run.h>
+#include <fltk/utf.h>
 
 #include <stdio.h>
 #include <wchar.h>
@@ -492,18 +493,15 @@ void FltkWidgetView::drawText (core::style::Font *font,
       /* Nonzero letter spacing adjustment, draw each glyph individually */
       int viewX = translateCanvasXToViewX (x),
           viewY = translateCanvasYToViewY (y);
-      int curr = 0, next = 0, cb;
+      int curr = 0, next = 0, nb;
       char chbuf[MB_CUR_MAX];
       wchar_t wc, wcu;
-      mbstate_t st1, st2;
 
       if (font->fontVariant == 1) {
          int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
-         memset (&st1, '\0', sizeof (mbstate_t));
-         memset (&st2, '\0', sizeof (mbstate_t));
          for (curr = 0; next < len; curr = next) {
             next = theLayout->nextGlyph(text, curr);
-            cb = (int)mbrtowc(&wc, text + curr, next - curr, &st1);
+            wc = utf8decode(text + curr, text + next, &nb);
             if ((wcu = towupper(wc)) == wc) {
                /* already uppercase, just draw the character */
                setfont(ff->font, ff->size);
@@ -512,11 +510,11 @@ void FltkWidgetView::drawText (core::style::Font *font,
                viewX += (int)getwidth(text + curr, next - curr);
             } else {
                /* make utf8 string for converted char */
-               int n = wcrtomb(chbuf, wcu, &st2);
+               nb = utf8encode(wcu, chbuf);
                setfont(ff->font, sc_fontsize);
-               drawtext(chbuf, n, viewX, viewY);
+               drawtext(chbuf, nb, viewX, viewY);
                viewX += font->letterSpacing;
-               viewX += (int)getwidth(chbuf, n);
+               viewX += (int)getwidth(chbuf, nb);
             }
          }
       } else {
