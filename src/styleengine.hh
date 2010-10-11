@@ -25,6 +25,7 @@ class StyleEngine {
          dw::core::style::Style *style;
          dw::core::style::Style *wordStyle;
          bool inheritBackgroundColor;
+         DoctreeNode *doctreeNode;
       };
 
       dw::core::Layout *layout;
@@ -39,7 +40,7 @@ class StyleEngine {
                          CssPropertyValue value);
       void preprocessAttrs (dw::core::style::StyleAttrs *attrs);
       void postprocessAttrs (dw::core::style::StyleAttrs *attrs);
-      void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
+      void apply (int i, dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
       bool computeValue (int *dest, CssLength value,
                          dw::core::style::Font *font);
       bool computeValue (int *dest, CssLength value,
@@ -81,6 +82,7 @@ class StyleEngine {
       void restyle ();
       void inheritBackgroundColor (); /* \todo get rid of this somehow */
       dw::core::style::Style *backgroundStyle ();
+      dw::core::style::Color *backgroundColor ();
 
       inline dw::core::style::Style *style () {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->style;

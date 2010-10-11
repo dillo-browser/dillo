@@ -80,6 +80,7 @@ void StyleEngine::startElement (int element) {
 
    DoctreeNode *dn = doctree->push ();
    dn->element = element;
+   n->doctreeNode = dn;
 }
 
 void StyleEngine::startElement (const char *tagname) {
@@ -174,6 +175,17 @@ void StyleEngine::inheritBackgroundColor () {
    stack->getRef (stack->size () - 1)->inheritBackgroundColor = true;
 }
 
+dw::core::style::Color *StyleEngine::backgroundColor () {
+   for (int i = 1; i < stack->size (); i++) {
+      Node *n = stack->getRef (i);
+
+      if (n->style && n->style->backgroundColor)
+         return n->style->backgroundColor;
+   }
+
+   return NULL;
+}
+
 /**
  * \brief set the CSS pseudo class :link.
  */
@@ -251,9 +263,9 @@ void StyleEngine::postprocessAttrs (dw::core::style::StyleAttrs *attrs) {
 /**
  * \brief Make changes to StyleAttrs attrs according to CssPropertyList props.
  */
-void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
+void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
    FontAttrs fontAttrs = *attrs->font;
-   Font *parentFont = stack->get (stack->size () - 2).style->font;
+   Font *parentFont = stack->get (i - 1).style->font;
    char *c, *fontName;
    int lineHeight;
 
@@ -687,10 +699,11 @@ Style * StyleEngine::style0 (int i) {
    nonCssProperties = stack->getRef (i)->nonCssProperties;
 
    // merge style information
-   cssContext->apply (&props, doctree, styleAttrProperties, nonCssProperties);
+   cssContext->apply (&props, doctree, stack->getRef(i)->doctreeNode,
+                      styleAttrProperties, nonCssProperties);
 
    // apply style
-   apply (&attrs, &props);
+   apply (i, &attrs, &props);
 
    postprocessAttrs (&attrs);
 
