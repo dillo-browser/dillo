@@ -16,11 +16,13 @@
 #include "prefs.h"
 #include "misc.h"
 #include "msg.h"
+#include "colors.h"
 
 #include "prefsparser.hh"
 
 typedef enum {
    PREFS_BOOL,
+   PREFS_COLOR,
    PREFS_STRING,
    PREFS_URL,
    PREFS_INT32,
@@ -43,10 +45,12 @@ int PrefsParser::parseOption(char *name, char *value)
 {
    const SymNode_t *node;
    uint_t i;
+   int st;
 
    /* Symbol array, sorted alphabetically */
    const SymNode_t symbols[] = {
       { "allow_white_bg", &prefs.allow_white_bg, PREFS_BOOL },
+      { "bg_color", &prefs.bg_color, PREFS_COLOR },
       { "buffered_drawing", &prefs.buffered_drawing, PREFS_INT32 },
       { "contrast_visited_color", &prefs.contrast_visited_color, PREFS_BOOL },
       { "enterpress_forces_submit", &prefs.enterpress_forces_submit,
@@ -121,6 +125,9 @@ int PrefsParser::parseOption(char *name, char *value)
    case PREFS_BOOL:
       *(bool_t *)node->pref = (!dStrcasecmp(value, "yes") ||
                                !dStrcasecmp(value, "true"));
+      break;
+   case PREFS_COLOR:
+      *(int32_t *)node->pref = a_Color_parse(value, *(int32_t*)node->pref,&st);
       break;
    case PREFS_STRING:
       dFree(*(char **)node->pref);

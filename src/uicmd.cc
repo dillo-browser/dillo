@@ -449,6 +449,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    // Now create the Dw render layout and viewport
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
+   style::Color *bgColor = style::Color::create (layout, prefs.bg_color);
+   layout->setBgColor (bgColor);
 
    FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
    if (prefs.buffered_drawing == 1)
@@ -507,6 +509,8 @@ static BrowserWindow *UIcmd_tab_new(const void *vbw)
    // Now create the Dw render layout and viewport
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
+   style::Color *bgColor = style::Color::create (layout, prefs.bg_color);
+   layout->setBgColor (bgColor);
 
    FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
 

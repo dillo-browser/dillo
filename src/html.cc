@@ -1715,6 +1715,9 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    Textblock *textblock;
    int32_t color;
    int tag_index_a = a_Html_tag_index ("a");
+   int tag_index_body = a_Html_tag_index ("body");
+   int tag_index_html = a_Html_tag_index ("html");
+   style::Color *bgColor;
 
    if (!(html->InFlags & IN_BODY))
       html->InFlags |= IN_BODY;
@@ -1728,6 +1731,22 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
       /* if we're here, it's bad XHTML, no need to recover */
       BUG_MSG("unclosed HEAD element\n");
    }
+
+   html->styleEngine->endElement(tag_index_body);
+   html->styleEngine->endElement(tag_index_html);
+   html->styleEngine->startElement(tag_index_html);
+   bgColor = html->styleEngine->style ()->backgroundColor;
+   html->styleEngine->startElement(tag_index_body);
+   
+   if ((attrbuf = Html_get_attr2(html, tag, tagsize, "id",
+                                 HTML_LeftTrim | HTML_RightTrim)))
+      html->styleEngine->setId(attrbuf);
+   if ((attrbuf = Html_get_attr2(html, tag, tagsize, "class",
+                                 HTML_LeftTrim | HTML_RightTrim)))
+      html->styleEngine->setClass(attrbuf);
+   if ((attrbuf = Html_get_attr2(html, tag, tagsize, "style",
+                                HTML_LeftTrim | HTML_RightTrim)))
+      html->styleEngine->setStyle(attrbuf);
 
    textblock = HT2TB(html);
 
@@ -1753,6 +1772,14 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    html->dw->setStyle (html->styleEngine->style ());
 
+   /* Set canvas color if not already set from Html_open_html().
+    */
+   if (!bgColor)
+      bgColor = html->styleEngine->style ()->backgroundColor;
+
+   if (bgColor)
+      HT2LT(html)->setBgColor(bgColor);  
+
    /* Determine a color for visited links.
     * This color is computed once per page and used for immediate feedback
     * when clicking a link.
@@ -1776,6 +1803,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
             html->non_css_link_color,
             html->styleEngine->backgroundStyle()->backgroundColor->getColor());
    }
+
 
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_BODY;
 }

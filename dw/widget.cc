@@ -302,8 +302,6 @@ void Widget::setStyle (style::Style *style)
    this->style = style;
 
    if (layout != NULL) {
-      if (parent == NULL)
-         layout->updateBgColor ();
       layout->updateCursor ();
    }
 
@@ -339,9 +337,7 @@ style::Color *Widget::getBgColor ()
       widget = widget->parent;
    }
 
-   MSG_WARN("No background color found!\n");
-   return NULL;
-
+   return layout->getBgColor ();
 }
 
 
@@ -399,7 +395,9 @@ void Widget::drawWidgetBox (View *view, Rectangle *area, bool inverse)
     *   widget->style->background_color is NULL (shining through).
     */
    /** \todo Background images? */
-   if (parent && style->backgroundColor)
+
+   if (style->backgroundColor &&
+       (parent || layout->getBgColor () != style->backgroundColor))
       style::drawBackground (view, &viewArea, allocation.x, allocation.y,
                              allocation.width, getHeight (), style, inverse);
 }
