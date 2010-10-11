@@ -478,7 +478,7 @@ class CssContext {
       void addRule (CssSelector *sel, CssPropertyList *props,
                     CssPrimaryOrder order);
       void apply (CssPropertyList *props,
-         Doctree *docTree,
+         Doctree *docTree, DoctreeNode *node,
          CssPropertyList *tagStyle, CssPropertyList *nonCssHints);
 };
 
