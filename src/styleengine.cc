@@ -68,7 +68,7 @@ StyleEngine::~StyleEngine () {
  */
 void StyleEngine::startElement (int element) {
    if (stack->getRef (stack->size () - 1)->style == NULL)
-      style0 ();
+      style0 (stack->size () - 1);
 
    stack->increase ();
    Node *n = stack->getRef (stack->size () - 1);
@@ -666,10 +666,10 @@ Style * StyleEngine::backgroundStyle () {
  * HTML elements and the nonCssProperties that have been set.
  * This method is private. Call style() to get a current style object.
  */
-Style * StyleEngine::style0 () {
+Style * StyleEngine::style0 (int i) {
    CssPropertyList props, *styleAttrProperties, *nonCssProperties;
    // get previous style from the stack
-   StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
+   StyleAttrs attrs = *stack->getRef (i - 1)->style;
 
    // Ensure that StyleEngine::style0() has not been called before for
    // this element.
@@ -677,14 +677,14 @@ Style * StyleEngine::style0 () {
    // If this assertion is hit, you need to rearrange the code that is
    // doing styleEngine calls to call setNonCssHint() before calling
    // style() or wordStyle() for each new element.
-   assert (stack->getRef (stack->size () - 1)->style == NULL);
+   assert (stack->getRef (i)->style == NULL);
 
    // reset values that are not inherited according to CSS
    attrs.resetValues ();
    preprocessAttrs (&attrs);
 
-   styleAttrProperties = stack->getRef(stack->size () - 1)->styleAttrProperties;
-   nonCssProperties = stack->getRef(stack->size () - 1)->nonCssProperties;
+   styleAttrProperties = stack->getRef (i)->styleAttrProperties;
+   nonCssProperties = stack->getRef (i)->nonCssProperties;
 
    // merge style information
    cssContext->apply (&props, doctree, styleAttrProperties, nonCssProperties);
@@ -694,22 +694,33 @@ Style * StyleEngine::style0 () {
 
    postprocessAttrs (&attrs);
 
-   stack->getRef (stack->size () - 1)->style = Style::create (layout, &attrs);
+   stack->getRef (i)->style = Style::create (layout, &attrs);
 
-   return stack->getRef (stack->size () - 1)->style;
+   return stack->getRef (i)->style;
 }
 
 Style * StyleEngine::wordStyle0 () {
    StyleAttrs attrs = *style ();
    attrs.resetValues ();
 
-   if (stack->getRef (stack->size () - 1)->inheritBackgroundColor)
+   if (stack->getRef (stack->size() - 1)->inheritBackgroundColor)
       attrs.backgroundColor = style ()->backgroundColor;
 
    attrs.valign = style ()->valign;
 
    stack->getRef(stack->size() - 1)->wordStyle = Style::create(layout, &attrs);
    return stack->getRef (stack->size () - 1)->wordStyle;
+}
+
+void StyleEngine::restyle () {
+   for (int i = 0; i < stack->size (); i++) {
+      Node *n = stack->getRef (i);
+      if (n->style) {
+         n->style->unref ();
+         n->style = NULL;
+      }
+      style0 (i);
+   }
 }
 
 void StyleEngine::parse (DilloHtml *html, DilloUrl *url, const char *buf,

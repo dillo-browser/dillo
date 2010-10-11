@@ -33,7 +33,7 @@ class StyleEngine {
       Doctree *doctree;
       int importDepth;
 
-      dw::core::style::Style *style0 ();
+      dw::core::style::Style *style0 (int i);
       dw::core::style::Style *wordStyle0 ();
       void setNonCssHint(CssPropertyName name, CssValueType type,
                          CssPropertyValue value);
@@ -78,6 +78,7 @@ class StyleEngine {
       }
       void inheritNonCssHints ();
       void clearNonCssHints ();
+      void restyle ();
       void inheritBackgroundColor (); /* \todo get rid of this somehow */
       dw::core::style::Style *backgroundStyle ();
 
@@ -86,7 +87,7 @@ class StyleEngine {
          if (s)
             return s;
          else
-            return style0 ();
+            return style0 (stack->size () - 1);
       };
 
       inline dw::core::style::Style *wordStyle () {
