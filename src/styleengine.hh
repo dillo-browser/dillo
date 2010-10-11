@@ -20,9 +20,10 @@ class StyleEngine;
 class StyleEngine {
    private:
       struct Node {
+         CssPropertyList *styleAttrProperties;
+         CssPropertyList *nonCssProperties;
          dw::core::style::Style *style;
          dw::core::style::Style *wordStyle;
-         const char *styleAttribute;
          bool inheritBackgroundColor;
       };
 
@@ -62,6 +63,7 @@ class StyleEngine {
       void setPseudoLink ();
       void setPseudoVisited ();
       void setNonCssHints (CssPropertyList *nonCssHints);
+      void setNonCssHint(CssPropertyName name, CssPropertyValue value);
       void inheritBackgroundColor (); /* \todo get rid of this somehow */
       dw::core::style::Style *backgroundStyle ();
 

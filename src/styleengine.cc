@@ -50,7 +50,8 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
 
    n->style = Style::create (layout, &style_attrs);
    n->wordStyle = NULL;
-   n->styleAttribute = NULL;
+   n->styleAttrProperties = NULL;
+   n->nonCssProperties = NULL;
    n->inheritBackgroundColor = false;
 }
 
@@ -71,9 +72,10 @@ void StyleEngine::startElement (int element) {
 
    stack->increase ();
    Node *n = stack->getRef (stack->size () - 1);
+   n->styleAttrProperties = NULL;
+   n->nonCssProperties = NULL;
    n->style = NULL;
    n->wordStyle = NULL;
-   n->styleAttribute = NULL;
    n->inheritBackgroundColor = false;
 
    DoctreeNode *dn = doctree->push ();
@@ -121,10 +123,14 @@ void StyleEngine::setClass (const char *klass) {
    dn->klass = splitStr (klass, ' ');
 };
 
-void StyleEngine::setStyle (const char *style) {
+void StyleEngine::setStyle (const char *styleAttr) {
    Node *n = stack->getRef (stack->size () - 1);
-   assert (n->styleAttribute == NULL);
-   n->styleAttribute = dStrdup (style);
+   assert (n->styleAttrProperties == NULL);
+   // parse style information from style="" attribute, if it exists
+   if (styleAttr && prefs.parse_embedded_css)
+      n->styleAttrProperties =
+         CssParser::parseDeclarationBlock (styleAttr,
+                                           strlen (styleAttr));
 };
 
 /**
@@ -172,12 +178,14 @@ void StyleEngine::endElement (int element) {
 
    Node *n = stack->getRef (stack->size () - 1);
 
+   if (n->styleAttrProperties)
+      delete n->styleAttrProperties;
+   if (n->nonCssProperties)
+      delete n->nonCssProperties;
    if (n->style)
       n->style->unref ();
    if (n->wordStyle)
       n->wordStyle->unref ();
-   if (n->styleAttribute)
-      dFree ((void*) n->styleAttribute);
 
    doctree->pop ();
    stack->setSize (stack->size () - 1);
@@ -638,9 +646,7 @@ Style * StyleEngine::backgroundStyle () {
  * This method is private. Call style() to get a current style object.
  */
 Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
-   CssPropertyList props, *styleAttributeProps = NULL;
-   const char *styleAttribute =
-      stack->getRef (stack->size () - 1)->styleAttribute;
+   CssPropertyList props, *styleAttrProperties;
    // get previous style from the stack
    StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
 
@@ -656,14 +662,10 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    attrs.resetValues ();
    preprocessAttrs (&attrs);
 
-   // parse style information from style="" attribute, if it exists
-   if (styleAttribute && prefs.parse_embedded_css)
-      styleAttributeProps =
-         CssParser::parseDeclarationBlock (styleAttribute,
-                                           strlen (styleAttribute));
+   styleAttrProperties = stack->getRef(stack->size () - 1)->styleAttrProperties;
 
    // merge style information
-   cssContext->apply (&props, doctree, styleAttributeProps, nonCssProperties);
+   cssContext->apply (&props, doctree, styleAttrProperties, nonCssProperties);
 
    // apply style
    apply (&attrs, &props);
@@ -671,9 +673,6 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    postprocessAttrs (&attrs);
 
    stack->getRef (stack->size () - 1)->style = Style::create (layout, &attrs);
-
-   if (styleAttributeProps)
-      delete styleAttributeProps;
 
    return stack->getRef (stack->size () - 1)->style;
 }
