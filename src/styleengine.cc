@@ -713,7 +713,7 @@ Style * StyleEngine::wordStyle0 () {
 }
 
 void StyleEngine::restyle () {
-   for (int i = 0; i < stack->size (); i++) {
+   for (int i = 1; i < stack->size (); i++) {
       Node *n = stack->getRef (i);
       if (n->style) {
          n->style->unref ();
