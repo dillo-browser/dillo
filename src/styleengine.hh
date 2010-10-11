@@ -19,12 +19,11 @@ class StyleEngine;
  */
 class StyleEngine {
    private:
-      class Node {
-         public:
-            dw::core::style::Style *style;
-            dw::core::style::Style *wordStyle;
-            const char *styleAttribute;
-            bool inheritBackgroundColor;
+      struct Node {
+         dw::core::style::Style *style;
+         dw::core::style::Style *wordStyle;
+         const char *styleAttribute;
+         bool inheritBackgroundColor;
       };
 
       dw::core::Layout *layout;
