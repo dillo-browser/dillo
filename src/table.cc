@@ -38,7 +38,6 @@ static void Html_tag_open_table_cell(DilloHtml *html,
 void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 {
    dw::core::Widget *table;
-   CssPropertyList props, *table_cell_props;
    const char *attrbuf;
    int32_t border = -1, cellspacing = -1, cellpadding = -1, bgcolor = -1;
    CssLength cssLength;
@@ -52,92 +51,89 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    if (border != -1) {
       cssLength = CSS_CREATE_LENGTH (border, CSS_LENGTH_TYPE_PX);
-      props.set (CSS_PROPERTY_BORDER_TOP_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 cssLength);
-      props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 cssLength);
-      props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 cssLength);
-      props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 cssLength);
-      props.set (CSS_PROPERTY_BORDER_TOP_STYLE, CSS_TYPE_ENUM,
-                 BORDER_OUTSET);
-      props.set (CSS_PROPERTY_BORDER_BOTTOM_STYLE, CSS_TYPE_ENUM,
-                 BORDER_OUTSET);
-      props.set (CSS_PROPERTY_BORDER_LEFT_STYLE, CSS_TYPE_ENUM,
-                 BORDER_OUTSET);
-      props.set (CSS_PROPERTY_BORDER_RIGHT_STYLE, CSS_TYPE_ENUM,
-                 BORDER_OUTSET);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_OUTSET);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_OUTSET);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_OUTSET);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_OUTSET);
    }
 
    if (cellspacing != -1) {
       cssLength = CSS_CREATE_LENGTH (cellspacing, CSS_LENGTH_TYPE_PX);
-      props.set (CSS_PROPERTY_BORDER_SPACING, CSS_TYPE_LENGTH_PERCENTAGE,
-                 cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_SPACING,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width")))
-      props.set (CSS_PROPERTY_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-         a_Html_parse_length (html, attrbuf));
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE,
+                                        a_Html_parse_length (html, attrbuf));
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "align"))) {
       if (dStrcasecmp (attrbuf, "left") == 0)
-         props.set (CSS_PROPERTY_TEXT_ALIGN, CSS_TYPE_ENUM, TEXT_ALIGN_LEFT);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_TEXT_ALIGN,
+                                           CSS_TYPE_ENUM, TEXT_ALIGN_LEFT);
       else if (dStrcasecmp (attrbuf, "right") == 0)
-         props.set (CSS_PROPERTY_TEXT_ALIGN, CSS_TYPE_ENUM, TEXT_ALIGN_RIGHT);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_TEXT_ALIGN,
+                                           CSS_TYPE_ENUM, TEXT_ALIGN_RIGHT);
       else if (dStrcasecmp (attrbuf, "center") == 0)
-         props.set (CSS_PROPERTY_TEXT_ALIGN, CSS_TYPE_ENUM, TEXT_ALIGN_CENTER);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_TEXT_ALIGN,
+                                           CSS_TYPE_ENUM, TEXT_ALIGN_CENTER);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       bgcolor = a_Html_color_parse(html, attrbuf, -1);
       if (bgcolor != -1)
-         props.set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR, bgcolor);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BACKGROUND_COLOR,
+                                           CSS_TYPE_COLOR, bgcolor);
    }
-
-   html->styleEngine->setNonCssHints (&props);
 
    HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
 
    /* The style for the cells */
-   table_cell_props = new CssPropertyList ();
+   html->styleEngine->clearNonCssHints ();
    if (border > 0) {
       cssLength = CSS_CREATE_LENGTH (1, CSS_LENGTH_TYPE_PX);
-      table_cell_props->set (CSS_PROPERTY_BORDER_TOP_WIDTH,
-                             CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
-      table_cell_props->set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-                             CSS_TYPE_LENGTH_PERCENTAGE,  cssLength);
-      table_cell_props->set (CSS_PROPERTY_BORDER_LEFT_WIDTH,
-                             CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
-      table_cell_props->set (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
-                             CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
-      table_cell_props->set (CSS_PROPERTY_BORDER_TOP_STYLE,
-                             CSS_TYPE_ENUM, BORDER_INSET);
-      table_cell_props->set (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
-                             CSS_TYPE_ENUM, BORDER_INSET);
-      table_cell_props->set (CSS_PROPERTY_BORDER_LEFT_STYLE,
-                             CSS_TYPE_ENUM, BORDER_INSET);
-      table_cell_props->set (CSS_PROPERTY_BORDER_RIGHT_STYLE,
-                             CSS_TYPE_ENUM, BORDER_INSET);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE,  cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_INSET);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_INSET);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_INSET);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_INSET);
    }
 
    if (cellpadding != -1) {
       cssLength = CSS_CREATE_LENGTH (cellpadding, CSS_LENGTH_TYPE_PX);
-      table_cell_props->set (CSS_PROPERTY_PADDING_TOP,
-                             CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
-      table_cell_props->set (CSS_PROPERTY_PADDING_BOTTOM,
-                             CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
-      table_cell_props->set (CSS_PROPERTY_PADDING_LEFT,
-                             CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
-      table_cell_props->set (CSS_PROPERTY_PADDING_RIGHT,
-                             CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_PADDING_TOP,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_PADDING_BOTTOM,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_PADDING_LEFT,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_PADDING_RIGHT,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
    }
-
-   if (S_TOP(html)->table_cell_props)
-      S_TOP(html)->table_cell_props->unref ();
-
-   S_TOP(html)->table_cell_props = table_cell_props;
-   S_TOP(html)->table_cell_props->ref ();
 
    table = new dw::Table(prefs.limit_text_width);
    HT2TB(html)->addWidget (table, html->styleEngine->style ());
@@ -155,7 +151,8 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
    int32_t bgcolor = -1;
    bool new_style = false;
-   CssPropertyList props, *table_cell_props;
+
+   html->styleEngine->inheritNonCssHints ();
 
    switch (S_TOP(html)->table_mode) {
    case DILLO_HTML_TABLE_MODE_NONE:
@@ -169,34 +166,26 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
          bgcolor = a_Html_color_parse(html, attrbuf, -1);
          if (bgcolor != -1)
-            props.set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR, bgcolor);
+            html->styleEngine->setNonCssHint (CSS_PROPERTY_BACKGROUND_COLOR,
+                                              CSS_TYPE_COLOR, bgcolor);
       }
 
       if (a_Html_get_attr (html, tag, tagsize, "align")) {
          S_TOP(html)->cell_text_align_set = TRUE;
-         a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+         a_Html_tag_set_align_attr (html, tag, tagsize);
       }
 
       html->styleEngine->inheritBackgroundColor ();
-      html->styleEngine->setNonCssHints (&props);
 
       ((dw::Table*)S_TOP(html)->table)->addRow (html->styleEngine->style ());
 
-      table_cell_props = new CssPropertyList (*S_TOP(html)->table_cell_props);
       if (bgcolor != -1) {
-         table_cell_props->set (CSS_PROPERTY_BACKGROUND_COLOR,
-                                CSS_TYPE_COLOR, bgcolor);
+         html->styleEngine->setNonCssHint(CSS_PROPERTY_BACKGROUND_COLOR,
+                                          CSS_TYPE_COLOR, bgcolor);
          new_style = true;
       }
-      if (a_Html_tag_set_valign_attr (html, tag, tagsize, table_cell_props))
+      if (a_Html_tag_set_valign_attr (html, tag, tagsize))
          new_style = true;
-      if (new_style) {
-         S_TOP(html)->table_cell_props->unref ();
-         S_TOP(html)->table_cell_props = table_cell_props;
-         S_TOP(html)->table_cell_props->ref ();
-      } else {
-         delete table_cell_props;
-      }
       break;
    default:
       break;
@@ -240,6 +229,8 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    int32_t bgcolor;
    bool_t new_style;
 
+   html->styleEngine->inheritNonCssHints ();
+
    switch (S_TOP(html)->table_mode) {
    case DILLO_HTML_TABLE_MODE_NONE:
       BUG_MSG("<td> or <th> outside <table>\n");
@@ -261,40 +252,35 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rowspan")))
          rowspan = MAX(1, strtol (attrbuf, NULL, 10));
 
-      CssPropertyList *props;
-      // \todo any shorter way to do this?
-      if (S_TOP(html)->table_cell_props != NULL)
-         props = new CssPropertyList (*S_TOP(html)->table_cell_props);
-      else
-         props = new CssPropertyList ();
-
       /* text style */
       if (!S_TOP(html)->cell_text_align_set) {
-         props->set (CSS_PROPERTY_TEXT_ALIGN, CSS_TYPE_ENUM, text_align);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_TEXT_ALIGN,
+                                           CSS_TYPE_ENUM, text_align);
       }
       if (a_Html_get_attr(html, tag, tagsize, "nowrap"))
-         props->set(CSS_PROPERTY_WHITE_SPACE,CSS_TYPE_ENUM,WHITE_SPACE_NOWRAP);
+         html->styleEngine->setNonCssHint(CSS_PROPERTY_WHITE_SPACE,
+                                          CSS_TYPE_ENUM, WHITE_SPACE_NOWRAP);
       else
-         props->set(CSS_PROPERTY_WHITE_SPACE,CSS_TYPE_ENUM,WHITE_SPACE_NORMAL);
+         html->styleEngine->setNonCssHint(CSS_PROPERTY_WHITE_SPACE,
+                                          CSS_TYPE_ENUM, WHITE_SPACE_NORMAL);
 
-      a_Html_tag_set_align_attr (html, props, tag, tagsize);
+      a_Html_tag_set_align_attr (html, tag, tagsize);
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width"))) {
-         props->set (CSS_PROPERTY_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-            a_Html_parse_length (html, attrbuf));
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE,
+                                           a_Html_parse_length (html, attrbuf));
       }
 
-      if (a_Html_tag_set_valign_attr (html, tag, tagsize, props))
+      if (a_Html_tag_set_valign_attr (html, tag, tagsize))
          new_style = TRUE;
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
          bgcolor = a_Html_color_parse(html, attrbuf, -1);
          if (bgcolor != -1)
-            props->set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR,bgcolor);
+            html->styleEngine->setNonCssHint (CSS_PROPERTY_BACKGROUND_COLOR,
+                                              CSS_TYPE_COLOR, bgcolor);
       }
-
-      html->styleEngine->setNonCssHints (props);
-      delete props;
 
       if (html->styleEngine->style ()->textAlign
           == TEXT_ALIGN_STRING)

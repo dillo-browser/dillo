@@ -137,10 +137,31 @@ void StyleEngine::setStyle (const char *styleAttr) {
  * \brief set properties that were definded using (mostly deprecated) HTML
  *    attributes (e.g. bgColor).
  */
-void StyleEngine::setNonCssHints (CssPropertyList *nonCssHints) {
-   if (stack->getRef (stack->size () - 1)->style)
-      stack->getRef (stack->size () - 1)->style->unref ();
-   style0 (nonCssHints); // evaluate now, so caller can free nonCssHints
+void StyleEngine::setNonCssHint (CssPropertyName name, CssValueType type,
+                                 CssPropertyValue value) {
+   Node *n = stack->getRef (stack->size () - 1);
+
+   if (!n->nonCssProperties)
+      n->nonCssProperties = new CssPropertyList (true);
+  
+   n->nonCssProperties->set(name, type, value); 
+}
+
+void StyleEngine::inheritNonCssHints () {
+   Node *pn = stack->getRef (stack->size () - 2);
+   Node *n = stack->getRef (stack->size () - 1);
+
+   if (pn->nonCssProperties)
+      n->nonCssProperties = new CssPropertyList (*pn->nonCssProperties);
+}
+
+void StyleEngine::clearNonCssHints () {
+   Node *n = stack->getRef (stack->size () - 1);
+
+   if (n->nonCssProperties) {
+      delete n->nonCssProperties;
+      n->nonCssProperties = NULL;
+   }
 }
 
 /**
@@ -645,8 +666,8 @@ Style * StyleEngine::backgroundStyle () {
  * HTML elements and the nonCssProperties that have been set.
  * This method is private. Call style() to get a current style object.
  */
-Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
-   CssPropertyList props, *styleAttrProperties;
+Style * StyleEngine::style0 () {
+   CssPropertyList props, *styleAttrProperties, *nonCssProperties;
    // get previous style from the stack
    StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
 
@@ -654,7 +675,7 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    // this element.
    // Style computation is expensive so limit it as much as possible.
    // If this assertion is hit, you need to rearrange the code that is
-   // doing styleEngine calls to call setNonCssHints() before calling
+   // doing styleEngine calls to call setNonCssHint() before calling
    // style() or wordStyle() for each new element.
    assert (stack->getRef (stack->size () - 1)->style == NULL);
 
@@ -663,6 +684,7 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    preprocessAttrs (&attrs);
 
    styleAttrProperties = stack->getRef(stack->size () - 1)->styleAttrProperties;
+   nonCssProperties = stack->getRef(stack->size () - 1)->nonCssProperties;
 
    // merge style information
    cssContext->apply (&props, doctree, styleAttrProperties, nonCssProperties);
@@ -677,7 +699,7 @@ Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
    return stack->getRef (stack->size () - 1)->style;
 }
 
-Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
+Style * StyleEngine::wordStyle0 () {
    StyleAttrs attrs = *style ();
    attrs.resetValues ();
 

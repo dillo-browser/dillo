@@ -33,8 +33,10 @@ class StyleEngine {
       Doctree *doctree;
       int importDepth;
 
-      dw::core::style::Style *style0 (CssPropertyList *nonCssHints = NULL);
-      dw::core::style::Style *wordStyle0 (CssPropertyList *nonCssHints = NULL);
+      dw::core::style::Style *style0 ();
+      dw::core::style::Style *wordStyle0 ();
+      void setNonCssHint(CssPropertyName name, CssValueType type,
+                         CssPropertyValue value);
       void preprocessAttrs (dw::core::style::StyleAttrs *attrs);
       void postprocessAttrs (dw::core::style::StyleAttrs *attrs);
       void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
@@ -62,8 +64,20 @@ class StyleEngine {
       void endElement (int tag);
       void setPseudoLink ();
       void setPseudoVisited ();
-      void setNonCssHints (CssPropertyList *nonCssHints);
-      void setNonCssHint(CssPropertyName name, CssPropertyValue value);
+      void setNonCssHint(CssPropertyName name, CssValueType type,
+                         int value) {
+         CssPropertyValue v;
+         v.intVal = value;
+         setNonCssHint (name, type, v);
+      }
+      void setNonCssHint(CssPropertyName name, CssValueType type,
+                         const char *value) {
+         CssPropertyValue v;
+         v.strVal = dStrdup(value);
+         setNonCssHint (name, type, v);
+      }
+      void inheritNonCssHints ();
+      void clearNonCssHints ();
       void inheritBackgroundColor (); /* \todo get rid of this somehow */
       dw::core::style::Style *backgroundStyle ();
 

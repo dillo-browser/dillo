@@ -304,9 +304,7 @@ static void Html_add_new_htmlimage(DilloHtml *html,
  * Evaluates the ALIGN attribute (left|center|right|justify) and
  * sets the style at the top of the stack.
  */
-void a_Html_tag_set_align_attr(DilloHtml *html,
-                               CssPropertyList *props,
-                               const char *tag, int tagsize)
+void a_Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *align;
 
@@ -339,7 +337,8 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
             style_attrs.textAlignChar = '.';
       }
 #endif
-      props->set (CSS_PROPERTY_TEXT_ALIGN, CSS_TYPE_ENUM, textAlignType);
+      html->styleEngine->setNonCssHint(CSS_PROPERTY_TEXT_ALIGN, CSS_TYPE_ENUM,
+                                       textAlignType);
    }
 }
 
@@ -347,8 +346,7 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
  * Evaluates the VALIGN attribute (top|bottom|middle|baseline) and
  * sets the style in style_attrs. Returns true when set.
  */
-bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
-                                int tagsize, CssPropertyList *props)
+bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attr;
    VAlignType valign;
@@ -363,7 +361,8 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
       else
          valign = VALIGN_MIDDLE;
 
-      props->set (CSS_PROPERTY_VERTICAL_ALIGN, CSS_TYPE_ENUM, valign);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_VERTICAL_ALIGN,
+                                        CSS_TYPE_ENUM, valign);
       return true;
    } else
       return false;
@@ -427,7 +426,6 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    stack = new misc::SimpleVector <DilloHtmlState> (16);
    stack->increase();
-   stack->getRef(0)->table_cell_props = NULL;
    stack->getRef(0)->parse_mode = DILLO_HTML_PARSE_MODE_INIT;
    stack->getRef(0)->table_mode = DILLO_HTML_TABLE_MODE_NONE;
    stack->getRef(0)->cell_text_align_set = false;
@@ -580,9 +578,6 @@ int DilloHtml::getCurTagLineNumber()
  */
 void DilloHtml::freeParseData()
 {
-   for (int i = stack->size () - 1; i >= 0; i--)
-      if (stack->getRef (i)->table_cell_props)
-         stack->getRef (i)->table_cell_props->unref ();
    delete(stack);
 
    dStr_free(Stash, TRUE);
@@ -1278,8 +1273,6 @@ static void Html_push_tag(DilloHtml *html, int tag_idx)
     * instead of copying all fields except for tag.  --Jcid */
    *html->stack->getRef(n_items) = *html->stack->getRef(n_items - 1);
    html->stack->getRef(n_items)->tag_idx = tag_idx;
-   if (S_TOP(html)->table_cell_props)
-      S_TOP(html)->table_cell_props->ref ();
    html->dw = S_TOP(html)->textblock;
 }
 
@@ -1301,8 +1294,6 @@ static void Html_real_pop_tag(DilloHtml *html)
    bool hand_over_break;
 
    html->styleEngine->endElement (S_TOP(html)->tag_idx);
-   if (S_TOP(html)->table_cell_props)
-      S_TOP(html)->table_cell_props->unref ();
    hand_over_break = S_TOP(html)->hand_over_break;
    html->stack->setSize (html->stack->size() - 1);
    Html_eventually_pop_dw(html, hand_over_break);
@@ -1722,7 +1713,6 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    Textblock *textblock;
-   CssPropertyList props;
    int32_t color;
    int tag_index_a = a_Html_tag_index ("a");
 
@@ -1744,13 +1734,15 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       color = a_Html_color_parse(html, attrbuf, -1);
       if (color != -1)
-         props.set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR, color);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BACKGROUND_COLOR,
+                                           CSS_TYPE_COLOR, color);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "text"))) {
       color = a_Html_color_parse(html, attrbuf, -1);
       if (color != -1)
-         props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR, color);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_COLOR,
+                                           CSS_TYPE_COLOR, color);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))
@@ -1759,7 +1751,6 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink")))
       html->non_css_visited_color = a_Html_color_parse(html, attrbuf, -1);
 
-   html->styleEngine->setNonCssHints (&props);
    html->dw->setStyle (html->styleEngine->style ());
 
    /* Determine a color for visited links.
@@ -1771,10 +1762,8 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    html->styleEngine->startElement (tag_index_a);
    html->styleEngine->setPseudoVisited ();
    if (html->non_css_visited_color != -1) {
-      CssPropertyList vprops;
-      vprops.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
-                 html->non_css_visited_color);
-      html->styleEngine->setNonCssHints (&vprops);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+                                        html->non_css_visited_color);
    }
    html->visited_color = html->styleEngine->style ()->color->getColor ();
    html->styleEngine->endElement (tag_index_a);
@@ -1811,9 +1800,8 @@ static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
 {
    CssPropertyList props;
 
-   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+   a_Html_tag_set_align_attr (html, tag, tagsize);
    html->styleEngine->inheritBackgroundColor ();
-   html->styleEngine->setNonCssHints (&props);
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
@@ -1849,8 +1837,8 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setPseudoLink ();
    }
 
-   props.set (PROPERTY_X_LINK, CSS_TYPE_INTEGER, Html_set_new_link(html,&url));
-   html->styleEngine->setNonCssHints (&props);
+   html->styleEngine->setNonCssHint (PROPERTY_X_LINK, CSS_TYPE_INTEGER,
+                                     Html_set_new_link(html,&url));
 
    textblock->addParbreak (5, html->styleEngine->wordStyle ());
 
@@ -1896,12 +1884,8 @@ static void Html_tag_open_frameset (DilloHtml *html,
  */
 static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
 {
-   CssPropertyList props;
-
-
    html->styleEngine->inheritBackgroundColor ();
-   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-   html->styleEngine->setNonCssHints (&props);
+   a_Html_tag_set_align_attr (html, tag, tagsize);
 
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 
@@ -1926,7 +1910,6 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
    char *fontFamily = NULL;
    int32_t color;
-   CssPropertyList props;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "color"))) {
       if (prefs.contrast_visited_color && html->InVisitedLink) {
@@ -1936,15 +1919,16 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
          color = a_Html_color_parse(html, attrbuf, -1);
       }
       if (color != -1)
-         props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR, color);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_COLOR,
+                                           CSS_TYPE_COLOR, color);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "face"))) {
       fontFamily = dStrdup(attrbuf);
-      props.set (CSS_PROPERTY_FONT_FAMILY, CSS_TYPE_SYMBOL, fontFamily);
+       html->styleEngine->setNonCssHint (CSS_PROPERTY_FONT_FAMILY,
+                                         CSS_TYPE_SYMBOL, fontFamily);
    }
 
-   html->styleEngine->setNonCssHints (&props);
    dFree(fontFamily);
 }
 
@@ -1959,12 +1943,9 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
 
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
-      CssPropertyList props;
-      char *tooltip_str = dStrdup(attrbuf);
 
-      props.set (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING, tooltip_str);
-      html->styleEngine->setNonCssHints (&props);
-      dFree(tooltip_str);
+      html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                        attrbuf);
    }
 }
 
@@ -2008,13 +1989,11 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
    CssLength l_h  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
    int space, border, w = 0, h = 0;
    bool load_now;
-   CssPropertyList props;
-   char *tooltip_str = NULL;
 
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
-      tooltip_str = dStrdup(attrbuf);
-      props.set (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING, tooltip_str);
+      html->styleEngine->setNonCssHint(PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                       attrbuf);
    }
    alt_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "alt", NULL);
    if ((!alt_ptr || !*alt_ptr) && !prefs.load_images) {
@@ -2053,9 +2032,11 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       MSG("a_Html_image_new: suspicious image size request %dx%d\n", w, h);
    } else {
       if (CSS_LENGTH_TYPE(l_w) != CSS_LENGTH_TYPE_AUTO)
-         props.set (CSS_PROPERTY_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE, l_w);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, l_w);
       if (CSS_LENGTH_TYPE(l_h) != CSS_LENGTH_TYPE_AUTO)
-         props.set (CSS_PROPERTY_HEIGHT, CSS_TYPE_LENGTH_PERCENTAGE, l_h);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_HEIGHT,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, l_h);
    }
 
    /* TODO: we should scale the image respecting its ratio.
@@ -2070,10 +2051,10 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       space = strtol(attrbuf, NULL, 10);
       if (space > 0) {
          space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         props.set (CSS_PROPERTY_MARGIN_LEFT, CSS_TYPE_LENGTH_PERCENTAGE,
-                    space);
-         props.set (CSS_PROPERTY_MARGIN_RIGHT, CSS_TYPE_LENGTH_PERCENTAGE,
-                    space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_LEFT,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_RIGHT,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
       }
    }
 
@@ -2082,10 +2063,10 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       space = strtol(attrbuf, NULL, 10);
       if (space > 0) {
          space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         props.set (CSS_PROPERTY_MARGIN_TOP, CSS_TYPE_LENGTH_PERCENTAGE,
-                    space);
-         props.set (CSS_PROPERTY_MARGIN_BOTTOM, CSS_TYPE_LENGTH_PERCENTAGE,
-                    space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_TOP,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_BOTTOM,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
       }
    }
 
@@ -2094,31 +2075,30 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       border = strtol(attrbuf, NULL, 10);
       if (border >= 0) {
          border = CSS_CREATE_LENGTH(border, CSS_LENGTH_TYPE_PX);
-         props.set (CSS_PROPERTY_BORDER_TOP_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                    border);
-         props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-                    CSS_TYPE_LENGTH_PERCENTAGE, border);
-         props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH,
-                    CSS_TYPE_LENGTH_PERCENTAGE, border);
-         props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
-                    CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
 
-         props.set (CSS_PROPERTY_BORDER_TOP_STYLE, CSS_TYPE_ENUM,
-                    BORDER_SOLID);
-         props.set (CSS_PROPERTY_BORDER_BOTTOM_STYLE, CSS_TYPE_ENUM,
-                    BORDER_SOLID);
-         props.set (CSS_PROPERTY_BORDER_LEFT_STYLE, CSS_TYPE_ENUM,
-                    BORDER_SOLID);
-         props.set (CSS_PROPERTY_BORDER_RIGHT_STYLE, CSS_TYPE_ENUM,
-                    BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
       }
    }
 
    /* x_img is an index to a list of {url,image} pairs.
     * We know Html_add_new_htmlimage() will use size() as its next index */
-   props.set (PROPERTY_X_IMG, CSS_TYPE_INTEGER, html->images->size());
-
-   html->styleEngine->setNonCssHints(&props);
+   html->styleEngine->setNonCssHint (PROPERTY_X_IMG, CSS_TYPE_INTEGER,
+                                     html->images->size());
 
    /* Add a new image widget to this page */
    Image = a_Image_new(alt_ptr, 0);
@@ -2133,7 +2113,6 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       loading = Html_load_image(html->bw, url, html->page_url, Image);
    Html_add_new_htmlimage(html, &url, loading ? NULL : Image);
 
-   dFree(tooltip_str);
    dFree(width_ptr);
    dFree(height_ptr);
    dFree(alt_ptr);
@@ -2377,7 +2356,6 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloUrl *url, *base_url = NULL;
    const char *attrbuf;
-   CssPropertyList props;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "codebase"))) {
       base_url = a_Html_url_new(html, attrbuf, NULL, 0);
@@ -2394,9 +2372,8 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
          html->styleEngine->setPseudoLink ();
       }
 
-      props.set(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
-                Html_set_new_link(html, &url));
-      html->styleEngine->setNonCssHints (&props);
+      html->styleEngine->setNonCssHint(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
+                                       Html_set_new_link(html, &url));
 
       HT2TB(html)->addText("[OBJECT]", html->styleEngine->wordStyle ());
    }
@@ -2450,8 +2427,6 @@ static void Html_add_anchor(DilloHtml *html, const char *name)
 static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloUrl *url;
-   char *tooltip_str = NULL;
-   CssPropertyList props;
    const char *attrbuf;
 
    /* TODO: add support for MAP with A HREF */
@@ -2470,25 +2445,23 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
          html->InVisitedLink = true;
          html->styleEngine->setPseudoVisited ();
          if (html->non_css_visited_color != -1)
-            props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
-                       html->non_css_visited_color);
+            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+                                             html->non_css_visited_color);
       } else {
          html->styleEngine->setPseudoLink ();
          if (html->non_css_link_color != -1)
-            props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
-                       html->non_css_link_color);
+            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+                                             html->non_css_link_color);
       }
 
-      props.set (PROPERTY_X_LINK, CSS_TYPE_INTEGER,
-                 Html_set_new_link(html, &url));
+      html->styleEngine->setNonCssHint (PROPERTY_X_LINK, CSS_TYPE_INTEGER,
+                                        Html_set_new_link(html, &url));
    }
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
-      tooltip_str = dStrdup(attrbuf);
-      props.set (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING, tooltip_str);
+      html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                        attrbuf);
    }
-   html->styleEngine->setNonCssHints (&props);
-   dFree(tooltip_str);
 
    html->styleEngine->inheritBackgroundColor ();
 
@@ -2566,7 +2539,6 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
    ListStyleType list_style_type;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
-      CssPropertyList props;
 
       /* list_style_type explicitly defined */
       if (dStrcasecmp(attrbuf, "disc") == 0)
@@ -2579,8 +2551,8 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
          /* invalid value */
          list_style_type = LIST_STYLE_TYPE_DISC;
 
-      props.set(CSS_PROPERTY_LIST_STYLE_TYPE, CSS_TYPE_ENUM, list_style_type);
-      html->styleEngine->setNonCssHints (&props);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_LIST_STYLE_TYPE,
+                                        CSS_TYPE_ENUM, list_style_type);
    }
 
    Html_add_textblock(html, 9);
@@ -2624,7 +2596,6 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
    int n = 1;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
-      CssPropertyList props;
       ListStyleType listStyleType = LIST_STYLE_TYPE_DECIMAL;
 
       if (*attrbuf == '1')
@@ -2638,8 +2609,8 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
       else if (*attrbuf == 'I')
          listStyleType = LIST_STYLE_TYPE_UPPER_ROMAN;
 
-      props.set (CSS_PROPERTY_LIST_STYLE_TYPE, CSS_TYPE_ENUM, listStyleType);
-      html->styleEngine->setNonCssHints (&props);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_LIST_STYLE_TYPE,
+                                        CSS_TYPE_ENUM, listStyleType);
    }
 
    Html_add_textblock(html, 9);
@@ -2717,29 +2688,33 @@ static void Html_tag_close_li(DilloHtml *html, int TagIdx)
 static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
 {
    Widget *hruler;
-   CssPropertyList props;
    char *width_ptr;
    const char *attrbuf;
    int32_t size = 0;
 
    width_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "width", NULL);
    if (width_ptr) {
-      props.set (CSS_PROPERTY_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-         a_Html_parse_length (html, width_ptr));
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE,
+                                        a_Html_parse_length (html, width_ptr));
       dFree(width_ptr);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
       size = strtol(attrbuf, NULL, 10);
 
-   a_Html_tag_set_align_attr(html, &props, tag, tagsize);
+   a_Html_tag_set_align_attr(html, tag, tagsize);
 
    /* TODO: evaluate attribute */
    if (a_Html_get_attr(html, tag, tagsize, "noshade")) {
-      props.set (CSS_PROPERTY_BORDER_TOP_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
-      props.set (CSS_PROPERTY_BORDER_BOTTOM_STYLE,CSS_TYPE_ENUM,BORDER_SOLID);
-      props.set (CSS_PROPERTY_BORDER_LEFT_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
-      props.set (CSS_PROPERTY_BORDER_RIGHT_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_SOLID);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_SOLID);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_SOLID);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_SOLID);
 
       if (size <= 0)
          size = 1;
@@ -2748,17 +2723,15 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
    if (size > 0) {
       CssLength size_top = CSS_CREATE_LENGTH ((size+1)/2, CSS_LENGTH_TYPE_PX);
       CssLength size_bottom = CSS_CREATE_LENGTH (size / 2, CSS_LENGTH_TYPE_PX);
-      props.set (CSS_PROPERTY_BORDER_TOP_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 size_top);
-      props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 size_top);
-      props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 size_bottom);
-      props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 size_bottom);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, size_top);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, size_top);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, size_bottom);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, size_bottom);
    }
-
-   html->styleEngine->setNonCssHints (&props);
 
    HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
 
@@ -3098,10 +3071,7 @@ static void Html_tag_open_default(DilloHtml *html,const char *tag,int tagsize)
  */
 static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 {
-   CssPropertyList props;
-
-   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-   html->styleEngine->setNonCssHints (&props);
+   a_Html_tag_set_align_attr (html, tag, tagsize);
    Html_add_textblock(html, 0);
 }
 

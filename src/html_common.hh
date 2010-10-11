@@ -94,7 +94,6 @@ struct _DilloHtmlImage {
 };
 
 struct _DilloHtmlState {
-   CssPropertyList *table_cell_props;
    DilloHtmlParseMode parse_mode;
    DilloHtmlTableMode table_mode;
    bool cell_text_align_set;
@@ -242,11 +241,9 @@ int32_t a_Html_color_parse(DilloHtml *html,
                            const char *subtag, int32_t default_color);
 dw::core::style::Length a_Html_parse_length (DilloHtml *html,
                                              const char *attr);
-void a_Html_tag_set_align_attr(DilloHtml *html, CssPropertyList *props,
-                               const char *tag, int tagsize);
+void a_Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize);
 bool a_Html_tag_set_valign_attr(DilloHtml *html,
-                                const char *tag, int tagsize,
-                                CssPropertyList *props);
+                                const char *tag, int tagsize);
 
 void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url);
 

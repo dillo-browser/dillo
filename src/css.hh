@@ -313,16 +313,6 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
 
       void set (CssPropertyName name, CssValueType type,
                 CssPropertyValue value);
-      inline void set (CssPropertyName name, CssValueType type, char *value) {
-         CssPropertyValue v;
-         v.strVal = value;
-         set (name, type, v);
-      };
-      inline void set (CssPropertyName name, CssValueType type, int value) {
-         CssPropertyValue v;
-         v.intVal = value;
-         set (name, type, v);
-      };
       void apply (CssPropertyList *props);
       void print ();
       inline void ref () { refCount++; }
