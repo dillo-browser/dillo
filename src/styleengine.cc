@@ -148,6 +148,11 @@ void StyleEngine::setNonCssHint (CssPropertyName name, CssValueType type,
    n->nonCssProperties->set(name, type, value); 
 }
 
+/**
+ * \brief Instruct StyleEngine to use the nonCssHints from parent element
+ * This is only used for tables where nonCssHints on the TABLE-element
+ * (e.g. border=1) also affect child elements like TD.
+ */
 void StyleEngine::inheritNonCssHints () {
    Node *pn = stack->getRef (stack->size () - 2);
    Node *n = stack->getRef (stack->size () - 1);
@@ -725,6 +730,13 @@ Style * StyleEngine::wordStyle0 () {
    return stack->getRef (stack->size () - 1)->wordStyle;
 }
 
+/**
+ * \brief Recompute all style information from scratch
+ * This is used to take into account CSS styles for the HTML-element. 
+ * The CSS data is only completely available after parsing the HEAD-section
+ * and thereby after the HTML-element has been opened.
+ * Note that restyle() does not change any styles in the widget tree.
+ */
 void StyleEngine::restyle () {
    for (int i = 1; i < stack->size (); i++) {
       Node *n = stack->getRef (i);
