@@ -1183,13 +1183,13 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
       dFree(Pword);
 
    } else {
-      const char *word2, *word2_end;
+      const char *word2, *beyond_word2;
 
       Pword = NULL;
       if (!memchr(word,'&', size)) {
          /* No entities */
          word2 = word;
-         word2_end = word + size - 1;
+         beyond_word2 = word + size;
       } else {
          /* Collapse white-space entities inside the word (except &nbsp;) */
          Pword = a_Html_parse_entities(html, word, size);
@@ -1204,7 +1204,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             }
          }
          word2 = Pword;
-         word2_end = word2 + strlen(word2) - 1;
+         beyond_word2 = word2 + strlen(word2);
       }
       for (start = i = 0; word2[i]; start = i) {
          int len;
@@ -1214,7 +1214,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             Html_process_space(html, word2 + start, i - start);
          } else if (!strncmp(word2+i, utf8_zero_width_space, 3)) {
             i += 3;
-         } else if (a_Utf8_ideographic(word2+i, word2_end, &len)) {
+         } else if (a_Utf8_ideographic(word2+i, beyond_word2, &len)) {
             i += len;
             HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());
@@ -1223,7 +1223,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
                i += len;
             } while (word2[i] && !isspace(word2[i]) &&
                      strncmp(word2+i, utf8_zero_width_space, 3) &&
-                     (!a_Utf8_ideographic(word2+i, word2_end, &len)));
+                     (!a_Utf8_ideographic(word2+i, beyond_word2, &len)));
             HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());
          }
