@@ -208,14 +208,19 @@ void StyleEngine::postprocessAttrs (dw::core::style::StyleAttrs *attrs) {
       attrs->borderColor.left = attrs->color;
    if (attrs->borderColor.right == NULL)
       attrs->borderColor.right = attrs->color;
-   /* computed value of border-width is 0 if border-style is 'none' */
-   if (attrs->borderStyle.top == BORDER_NONE)
+   /* computed value of border-width is 0 if border-style
+      is 'none' or 'hidden' */
+   if (attrs->borderStyle.top == BORDER_NONE ||
+       attrs->borderStyle.top == BORDER_HIDDEN)
       attrs->borderWidth.top = 0;
-   if (attrs->borderStyle.bottom == BORDER_NONE)
+   if (attrs->borderStyle.bottom == BORDER_NONE ||
+       attrs->borderStyle.bottom == BORDER_HIDDEN)
       attrs->borderWidth.bottom = 0;
-   if (attrs->borderStyle.left == BORDER_NONE)
+   if (attrs->borderStyle.left == BORDER_NONE ||
+       attrs->borderStyle.left == BORDER_HIDDEN)
       attrs->borderWidth.left = 0;
-   if (attrs->borderStyle.right == BORDER_NONE)
+   if (attrs->borderStyle.right == BORDER_NONE ||
+       attrs->borderStyle.right == BORDER_HIDDEN)
       attrs->borderWidth.right = 0;
 }
 
