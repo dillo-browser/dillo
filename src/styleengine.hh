@@ -36,8 +36,14 @@ class StyleEngine {
 
       dw::core::style::Style *style0 (int i);
       dw::core::style::Style *wordStyle0 ();
-      void setNonCssHint(CssPropertyName name, CssValueType type,
-                         CssPropertyValue value);
+      inline void setNonCssHint(CssPropertyName name, CssValueType type,
+                                CssPropertyValue value) {
+         Node *n = stack->getRef (stack->size () - 1);
+
+         if (!n->nonCssProperties)
+            n->nonCssProperties = new CssPropertyList (true);
+         n->nonCssProperties->set(name, type, value); 
+      }
       void preprocessAttrs (dw::core::style::StyleAttrs *attrs);
       void postprocessAttrs (dw::core::style::StyleAttrs *attrs);
       void apply (int i, dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
@@ -65,14 +71,14 @@ class StyleEngine {
       void endElement (int tag);
       void setPseudoLink ();
       void setPseudoVisited ();
-      void setNonCssHint(CssPropertyName name, CssValueType type,
-                         int value) {
+      inline void setNonCssHint(CssPropertyName name, CssValueType type,
+                                int value) {
          CssPropertyValue v;
          v.intVal = value;
          setNonCssHint (name, type, v);
       }
-      void setNonCssHint(CssPropertyName name, CssValueType type,
-                         const char *value) {
+      inline void setNonCssHint(CssPropertyName name, CssValueType type,
+                                const char *value) {
          CssPropertyValue v;
          v.strVal = dStrdup(value);
          setNonCssHint (name, type, v);

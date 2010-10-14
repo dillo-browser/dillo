@@ -135,20 +135,6 @@ void StyleEngine::setStyle (const char *styleAttr) {
 };
 
 /**
- * \brief set properties that were definded using (mostly deprecated) HTML
- *    attributes (e.g. bgColor).
- */
-void StyleEngine::setNonCssHint (CssPropertyName name, CssValueType type,
-                                 CssPropertyValue value) {
-   Node *n = stack->getRef (stack->size () - 1);
-
-   if (!n->nonCssProperties)
-      n->nonCssProperties = new CssPropertyList (true);
-  
-   n->nonCssProperties->set(name, type, value); 
-}
-
-/**
  * \brief Instruct StyleEngine to use the nonCssHints from parent element
  * This is only used for tables where nonCssHints on the TABLE-element
  * (e.g. border=1) also affect child elements like TD.
