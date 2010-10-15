@@ -2345,10 +2345,6 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
             shape = poly = new Polygon();
             for (i = 0; i < (coords->size() / 2); i++)
                poly->addPoint(coords->get(2*i), coords->get(2*i + 1));
-            if (i) {
-               /* be sure to close it */
-               poly->addPoint(coords->get(0), coords->get(1));
-            }
          }
          delete(coords);
       }
