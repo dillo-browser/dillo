@@ -451,9 +451,8 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
                if (CSS_LENGTH_TYPE (p->value.intVal) == CSS_LENGTH_TYPE_NONE) {
                   attrs->lineHeight =
                      createPerLength(CSS_LENGTH_VALUE(p->value.intVal));
-               } else {
-                  computeValue (&lineHeight, p->value.intVal, attrs->font,
-                                attrs->font->size);
+               } else if (computeValue (&lineHeight, p->value.intVal,
+                                        attrs->font, attrs->font->size)) {
                   attrs->lineHeight = createAbsLength(lineHeight);
                }
             }
