@@ -177,9 +177,10 @@ bool Polygon::linesCross0(int ax1, int ay1, int ax2, int ay2,
    /** TODO Some more description */
    // If the scalar product is 0, it means that one point is on the second
    // line, so we check for <= 0, not < 0.
-   return
-      zOfVectorProduct (ax1 - bx1, ay1 - by1, bx2 - bx1, by2 - by1) *
-      zOfVectorProduct (ax2 - bx1, ay2 - by1, bx2 - bx1, by2 - by1) <= 0;
+   int z1 = zOfVectorProduct (ax1 - bx1, ay1 - by1, bx2 - bx1, by2 - by1);
+   int z2 = zOfVectorProduct (ax2 - bx1, ay2 - by1, bx2 - bx1, by2 - by1);
+
+   return (z1 <= 0 && z2 >= 0) || (z1 >= 0 && z2 <= 0); 
 }
 
 /**
