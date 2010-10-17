@@ -746,6 +746,10 @@ void StyleEngine::restyle () {
          n->wordStyle->unref ();
          n->wordStyle = NULL;
       }
+      if (n->backgroundStyle) {
+         n->backgroundStyle->unref ();
+         n->backgroundStyle = NULL;
+      }
 
       style0 (i);
    }
