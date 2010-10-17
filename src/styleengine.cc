@@ -199,7 +199,6 @@ void StyleEngine::setPseudoVisited () {
  * \brief tell the styleEngine that a html element has ended.
  */
 void StyleEngine::endElement (int element) {
-   assert (stack->size () > 0);
    assert (element == doctree->top ()->element);
 
    Node *n = stack->getRef (stack->size () - 1);
