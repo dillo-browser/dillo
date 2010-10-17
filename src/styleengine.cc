@@ -50,6 +50,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
 
    n->style = Style::create (layout, &style_attrs);
    n->wordStyle = NULL;
+   n->backgroundStyle = NULL;
    n->styleAttrProperties = NULL;
    n->nonCssProperties = NULL;
    n->inheritBackgroundColor = false;
@@ -76,6 +77,7 @@ void StyleEngine::startElement (int element) {
    n->nonCssProperties = NULL;
    n->style = NULL;
    n->wordStyle = NULL;
+   n->backgroundStyle = NULL;
    n->inheritBackgroundColor = false;
 
    DoctreeNode *dn = doctree->push ();
@@ -210,6 +212,8 @@ void StyleEngine::endElement (int element) {
       n->style->unref ();
    if (n->wordStyle)
       n->wordStyle->unref ();
+   if (n->backgroundStyle)
+      n->backgroundStyle->unref ();
 
    doctree->pop ();
    stack->setSize (stack->size () - 1);
@@ -659,13 +663,17 @@ void StyleEngine::computeBorderWidth (int *dest, CssProperty *p,
  * background. This method ensures that backgroundColor is set.
  */
 Style * StyleEngine::backgroundStyle () {
-   StyleAttrs attrs = *style ();
+   if (!stack->getRef (stack->size () - 1)->backgroundStyle) {
+      StyleAttrs attrs = *style ();
 
-   for (int i = stack->size () - 1; i >= 0 && ! attrs.backgroundColor; i--)
-      attrs.backgroundColor = stack->getRef (i)->style->backgroundColor;
+      for (int i = stack->size () - 1; i >= 0 && ! attrs.backgroundColor; i--)
+         attrs.backgroundColor = stack->getRef (i)->style->backgroundColor;
 
-   assert (attrs.backgroundColor);
-   return Style::create (layout, &attrs);
+      assert (attrs.backgroundColor);
+      stack->getRef (stack->size () - 1)->backgroundStyle =
+         Style::create (layout, &attrs);
+   }
+   return stack->getRef (stack->size () - 1)->backgroundStyle;
 }
 
 /**
@@ -734,6 +742,11 @@ void StyleEngine::restyle () {
          n->style->unref ();
          n->style = NULL;
       }
+      if (n->wordStyle) {
+         n->wordStyle->unref ();
+         n->wordStyle = NULL;
+      }
+
       style0 (i);
    }
 }

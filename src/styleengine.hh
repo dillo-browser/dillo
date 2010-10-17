@@ -24,6 +24,7 @@ class StyleEngine {
          CssPropertyList *nonCssProperties;
          dw::core::style::Style *style;
          dw::core::style::Style *wordStyle;
+         dw::core::style::Style *backgroundStyle;
          bool inheritBackgroundColor;
          DoctreeNode *doctreeNode;
       };
