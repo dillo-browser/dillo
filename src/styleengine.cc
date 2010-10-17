@@ -59,6 +59,14 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
 StyleEngine::~StyleEngine () {
    while (doctree->top ())
       endElement (doctree->top ()->element);
+   assert (stack->size () == 1); // dummy node on the bottom of the stack
+   Node *n = stack->getRef (stack->size () - 1);
+   if (n->style)
+      n->style->unref ();
+   if (n->wordStyle)
+      n->wordStyle->unref ();
+   if (n->backgroundStyle)
+      n->backgroundStyle->unref ();
    delete stack;
    delete doctree;
    delete cssContext;
