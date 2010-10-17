@@ -292,13 +292,14 @@ void Widget::setStyle (style::Style *style)
 {
    bool sizeChanged;
 
+   style->ref ();
+
    if (this->style) {
       sizeChanged = this->style->sizeDiffs (style);
       this->style->unref ();
    } else
       sizeChanged = true;
 
-   style->ref ();
    this->style = style;
 
    if (layout != NULL) {
