@@ -611,11 +611,13 @@ void Layout::updateCursor ()
 
 void Layout::setBgColor (style::Color *color)
 {
+   color->ref ();
+
    if (bgColor)
       bgColor->unref ();
 
    bgColor = color;
-   bgColor->ref ();
+
    if (view)
       view->setBgColor (bgColor);
 }
