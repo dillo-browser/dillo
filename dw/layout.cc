@@ -223,7 +223,8 @@ Layout::~Layout ()
       platform->removeIdle (scrollIdleId);
    if (resizeIdleId != -1)
       platform->removeIdle (resizeIdleId);
-
+   if (bgColor)
+      bgColor->unref ();
    if (topLevel)
       delete topLevel;
    delete platform;
@@ -610,7 +611,11 @@ void Layout::updateCursor ()
 
 void Layout::setBgColor (style::Color *color)
 {
+   if (bgColor)
+      bgColor->unref ();
+
    bgColor = color;
+   bgColor->ref ();
    if (view)
       view->setBgColor (bgColor);
 }
