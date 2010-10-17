@@ -304,26 +304,7 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
          refCount = 0;
          this->ownerOfStrings = ownerOfStrings;
       };
-      inline CssPropertyList(const CssPropertyList &p, bool deep = false) :
-         lout::misc::SimpleVector <CssProperty> (p) {
-         refCount = 0;
-         if (deep) {
-            for (int i = 0; i < size (); i++) {
-               CssProperty *p = getRef(i);
-               switch (p->type) {
-                  case CSS_TYPE_STRING:
-                  case CSS_TYPE_SYMBOL:
-                     p->value.strVal = dStrdup (p->value.strVal);
-                     break;
-                  default:
-                     break;
-               }
-            }
-            ownerOfStrings = true;
-         } else {
-            ownerOfStrings = false;
-         }
-      };
+      CssPropertyList(const CssPropertyList &p, bool deep = false);
       ~CssPropertyList ();
 
       void set (CssPropertyName name, CssValueType type,
