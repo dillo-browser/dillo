@@ -193,7 +193,7 @@ namespace core {
 namespace style {
 
 enum Cursor {
-   CURSOR_COSSHAIR,
+   CURSOR_CROSSHAIR,
    CURSOR_DEFAULT,
    CURSOR_POINTER,
    CURSOR_MOVE,
@@ -208,6 +208,11 @@ enum Cursor {
    CURSOR_TEXT,
    CURSOR_WAIT,
    CURSOR_HELP
+};
+
+enum BorderCollapse {
+   BORDER_MODEL_SEPARATE,
+   BORDER_MODEL_COLLAPSE
 };
 
 enum BorderStyle {
@@ -435,6 +440,7 @@ public:
    Length width, height, lineHeight;
 
    Box margin, borderWidth, padding;
+   BorderCollapse borderCollapse;
    struct { Color *top, *right, *bottom, *left; } borderColor;
    struct { BorderStyle top, right, bottom, left; } borderStyle;
 

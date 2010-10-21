@@ -434,6 +434,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
                //attrs->backgroundColor = Color::create(layout, 0xdcd1ba);
                attrs->backgroundColor = Color::create(layout, 0xe0e0a3);
             break;
+         case CSS_PROPERTY_BORDER_COLLAPSE:
+            attrs->borderCollapse = (BorderCollapse) p->value.intVal;
+            break;
          case CSS_PROPERTY_BORDER_TOP_COLOR:
             attrs->borderColor.top =
               Color::create (layout, p->value.intVal);
