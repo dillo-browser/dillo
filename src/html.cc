@@ -2265,7 +2265,7 @@ misc::SimpleVector<int> *Html_read_coords(DilloHtml *html, const char *str)
       if (!*newtail)
          break;
       if (*newtail != ',') {
-         BUG_MSG("usemap coords MUST be separated by commas.\n");
+         BUG_MSG("area coords must be integers separated by commas.\n");
       }
       tail = newtail + 1;
    }
