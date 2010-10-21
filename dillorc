@@ -46,11 +46,6 @@
 #                           RENDERING SECTION
 #-------------------------------------------------------------------------
 
-# Set the background color
-# bg_color=gray
-# bg_color=0xd6d6c0
-#bg_color=0xdcd1ba
-
 # Default fonts:
 #
 # If FLTK2 has been configured with Xft enabled (the default), you can
@@ -174,6 +169,11 @@
 #-------------------------------------------------------------------------
 #                            COLORS SECTION
 #-------------------------------------------------------------------------
+
+# Set the background color
+# bg_color=gray
+# bg_color=0xd6d6c0
+#bg_color=0xdcd1ba
 
 # If your eyes suffer with white backgrounds, change this.
 #allow_white_bg=YES
