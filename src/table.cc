@@ -108,7 +108,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
                                         CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-                                        CSS_TYPE_LENGTH_PERCENTAGE,  cssLength);
+                                        CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
                                         CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
@@ -216,6 +216,69 @@ void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize)
  * Utilities
  */
 
+/* WORKAROUND: collapsing border model requires moving rendering code from
+ *             the cell to the table, and making table-code aware of each
+ *             cell style.
+ * This workaround mimics collapsing model within separate model. This is not
+ * a complete emulation but should be enough for most cases.
+ */
+static void Html_set_collapsing_border_model(DilloHtml *html, Widget *col_tb)
+{
+   dw::core::style::Style *collapseStyle, *tableStyle;
+   dw::core::style::StyleAttrs collapseCellAttrs, collapseTableAttrs;
+   int borderWidth, marginWidth;
+
+   tableStyle = ((dw::Table*)S_TOP(html)->table)->getStyle ();
+   borderWidth = html->styleEngine->style ()->borderWidth.top;
+   marginWidth = tableStyle->margin.top;
+
+   collapseCellAttrs = *(html->styleEngine->style ());
+   collapseCellAttrs.margin.setVal (0);
+   collapseCellAttrs.borderWidth.left = 0;
+   collapseCellAttrs.borderWidth.top = 0;
+   collapseCellAttrs.borderWidth.right = borderWidth;
+   collapseCellAttrs.borderWidth.bottom = borderWidth;
+   collapseCellAttrs.hBorderSpacing = 0;
+   collapseCellAttrs.vBorderSpacing = 0;
+   collapseStyle = Style::create(HT2LT(html), &collapseCellAttrs);
+   col_tb->setStyle (collapseStyle);
+
+   if (!tableStyle->collapseStyleSet) {
+      collapseTableAttrs = *tableStyle;
+      collapseTableAttrs.collapseStyleSet = true;
+      collapseTableAttrs.margin.setVal (marginWidth);
+      _MSG("COLLAPSING table margin set to %d\n", marginWidth);
+      collapseTableAttrs.borderWidth.left = borderWidth;
+      collapseTableAttrs.borderWidth.top = borderWidth;
+      collapseTableAttrs.borderWidth.right = 0;
+      collapseTableAttrs.borderWidth.bottom = 0;
+      collapseTableAttrs.hBorderSpacing = 0;
+      collapseTableAttrs.vBorderSpacing = 0;
+      collapseTableAttrs.borderColor = collapseCellAttrs.borderColor;
+      collapseTableAttrs.borderStyle = collapseCellAttrs.borderStyle;
+      /* CSS2 17.6.2: table does not have padding (in collapsing mode) */
+      collapseTableAttrs.padding.setVal (0);
+      collapseStyle = Style::create(HT2LT(html), &collapseTableAttrs);
+      ((dw::Table*)S_TOP(html)->table)->setStyle (collapseStyle);
+   }
+}
+
+/*
+ * Adjust style for separate border model.
+ * (Dw uses this model internally).
+ */
+static void Html_set_separate_border_model(DilloHtml *html, Widget *col_tb)
+{
+   dw::core::style::Style *separateStyle;
+   dw::core::style::StyleAttrs separateCellAttrs;
+
+   separateCellAttrs = *(html->styleEngine->style ());
+   /* CSS2 17.5: Internal table elements do not have margins */
+   separateCellAttrs.margin.setVal (0);
+   separateStyle = Style::create(HT2LT(html), &separateCellAttrs);
+   col_tb->setStyle (separateStyle);
+}
+
 /*
  * used by <TD> and <TH>
  */
@@ -290,7 +353,11 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       else
          col_tb = new Textblock (prefs.limit_text_width);
 
-      col_tb->setStyle (html->styleEngine->style ());
+      if (html->styleEngine->style()->borderCollapse == BORDER_MODEL_COLLAPSE){
+         Html_set_collapsing_border_model(html, col_tb);
+      } else {
+         Html_set_separate_border_model(html, col_tb);
+      }
 
       ((dw::Table*)S_TOP(html)->table)->addCell (col_tb, colspan, rowspan);
       S_TOP(html)->textblock = html->dw = col_tb;

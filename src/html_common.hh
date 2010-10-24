@@ -97,6 +97,7 @@ struct _DilloHtmlState {
    DilloHtmlParseMode parse_mode;
    DilloHtmlTableMode table_mode;
    bool cell_text_align_set;
+
    DilloHtmlListMode list_type;
    int list_number;
 
