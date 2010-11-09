@@ -547,6 +547,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
          case CSS_PROPERTY_TEXT_DECORATION:
             attrs->textDecoration |= p->value.intVal;
             break;
+         case CSS_PROPERTY_TEXT_INDENT:
+            computeLength (&attrs->textIndent, p->value.intVal, attrs->font);
+            break;
          case CSS_PROPERTY_VERTICAL_ALIGN:
             attrs->valign = (VAlignType) p->value.intVal;
             break;

@@ -218,7 +218,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"text-align", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_text_align_enum_vals},
    {"text-decoration", {CSS_TYPE_MULTI_ENUM, CSS_TYPE_UNUSED},
     Css_text_decoration_enum_vals},
-   {"text-indent", {CSS_TYPE_UNUSED}, NULL},
+   {"text-indent", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"text-shadow", {CSS_TYPE_UNUSED}, NULL},
    {"text-transform", {CSS_TYPE_UNUSED}, NULL},
    {"top", {CSS_TYPE_UNUSED}, NULL},

@@ -890,7 +890,15 @@ void Textblock::wordWrap(int wordIndex)
           line1Offset + word->size.width > availWidth) {
          line1OffsetEff = 0;
       } else {
-         line1OffsetEff = line1Offset;
+         int indent = 0;
+
+         if (core::style::isPerLength(getStyle()->textIndent)) {
+            indent = misc::roundInt(this->availWidth *
+                     core::style::perLengthVal (getStyle()->textIndent));
+         } else {
+            indent = core::style::absLengthVal (getStyle()->textIndent);
+         }
+         line1OffsetEff = line1Offset + indent;
       }
    }
 
