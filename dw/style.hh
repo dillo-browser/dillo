@@ -432,7 +432,7 @@ public:
    char textAlignChar; /* In future, strings will be supported. */
 
    int hBorderSpacing, vBorderSpacing, wordSpacing;
-   Length width, height, lineHeight;
+   Length width, height, lineHeight, textIndent;
 
    Box margin, borderWidth, padding;
    struct { Color *top, *right, *bottom, *left; } borderColor;
