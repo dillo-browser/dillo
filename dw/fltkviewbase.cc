@@ -369,6 +369,39 @@ void FltkViewBase::drawLine (core::style::Color *color,
              translateCanvasXToViewX (x2), translateCanvasYToViewY (y2));
 }
 
+void FltkViewBase::drawTypedLine (core::style::Color *color,
+                                  core::style::Color::Shading shading,
+                                  core::style::LineType type, int width,
+                                  int x1, int y1, int x2, int y2)
+{
+   char dashes[3], w, ng, d, gap, len;
+   const int f = 2;
+
+   w = (width == 1) ? 0 : width;
+   if (type == core::style::LINE_DOTTED) {
+      /* customized drawing for dotted lines */
+      len = (x2 == x1) ? y2 - y1 + 1 : (y2 == y1) ? x2 - x1 + 1 : 0;
+      ng = len / f*width;
+      d = len % f*width;
+      gap = ng ? d/ng + (w > 3 ? 2 : 0) : 0;
+      dashes[0] = 1; dashes[1] = f*width-gap; dashes[2] = 0;
+      line_style(::fltk::DASH + ::fltk::CAP_ROUND, w, dashes);
+
+      /* These formulas also work, but ain't pretty ;)
+       * line_style(::fltk::DOT + ::fltk::CAP_ROUND, w);
+       * dashes[0] = 1; dashes[1] = 3*width-2; dashes[2] = 0;
+       */
+   } else if (type == core::style::LINE_DASHED) {
+      line_style(::fltk::DASH + ::fltk::CAP_ROUND, w);
+   }
+
+   setcolor(((FltkColor*)color)->colors[shading]);
+   drawLine (color, shading, x1, y1, x2, y2);
+
+   if (type != core::style::LINE_NORMAL)
+      line_style(::fltk::SOLID);
+}
+
 void FltkViewBase::drawRectangle (core::style::Color *color,
                                   core::style::Color::Shading shading,
                                   bool filled,

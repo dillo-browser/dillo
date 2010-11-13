@@ -166,6 +166,10 @@ public:
    virtual void drawLine      (style::Color *color,
                                style::Color::Shading shading,
                                int x1, int y1, int x2, int y2) = 0;
+   virtual void drawTypedLine (style::Color *color,
+                               style::Color::Shading shading,
+                               style::LineType type, int width,
+                               int x1, int y1, int x2, int y2) = 0;
    virtual void drawRectangle (style::Color *color,
                                style::Color::Shading shading, bool filled,
                                int x, int y, int width, int height) = 0;

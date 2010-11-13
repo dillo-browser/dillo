@@ -609,7 +609,7 @@ void CssContext::buildUserAgentStyle () {
      "sub {vertical-align: sub}"
      "sup {vertical-align: super}"
      "s, strike, del {text-decoration: line-through}"
-     "table {border-spacing: 1px}"
+     "table {border-spacing: 2px}"
      "td, th {padding: 2px}"
      "thead, tbody, tfoot {vertical-align: middle}"
      "th {font-weight: bolder; text-align: center}"
