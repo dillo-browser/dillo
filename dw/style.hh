@@ -263,6 +263,12 @@ enum DisplayType {
    DISPLAY_TABLE_CELL
 };
 
+enum LineType {
+   LINE_NORMAL,
+   LINE_DOTTED,
+   LINE_DASHED
+};
+
 enum ListStylePosition {
    LIST_STYLE_POSITION_INSIDE,
    LIST_STYLE_POSITION_OUTSIDE
@@ -441,7 +447,6 @@ public:
 
    Box margin, borderWidth, padding;
    BorderCollapse borderCollapse;
-   bool collapseStyleSet;
    struct { Color *top, *right, *bottom, *left; } borderColor;
    struct { BorderStyle top, right, bottom, left; } borderStyle;
 

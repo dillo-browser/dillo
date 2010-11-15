@@ -428,6 +428,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    stack->increase();
    stack->getRef(0)->parse_mode = DILLO_HTML_PARSE_MODE_INIT;
    stack->getRef(0)->table_mode = DILLO_HTML_TABLE_MODE_NONE;
+   stack->getRef(0)->table_border_mode = DILLO_HTML_TABLE_BORDER_SEPARATE;
    stack->getRef(0)->cell_text_align_set = false;
    stack->getRef(0)->list_type = HTML_LIST_NONE;
    stack->getRef(0)->list_number = 0;

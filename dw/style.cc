@@ -23,6 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <math.h>
 
 #include "core.hh"
 #include "../lout/msg.h"
@@ -51,7 +52,6 @@ void StyleAttrs::initValues ()
    borderWidth.setVal (0);
    padding.setVal (0);
    borderCollapse = BORDER_MODEL_SEPARATE;
-   collapseStyleSet = false;
    setBorderColor (NULL);
    setBorderStyle (BORDER_NONE);
    hBorderSpacing = 0;
@@ -128,7 +128,6 @@ bool StyleAttrs::equals (object::Object *other) {
        borderWidth.equals (&otherAttrs->borderWidth) &&
        padding.equals (&otherAttrs->padding) &&
        borderCollapse == otherAttrs->borderCollapse &&
-       collapseStyleSet == otherAttrs->collapseStyleSet &&
        borderColor.top == otherAttrs->borderColor.top &&
        borderColor.right == otherAttrs->borderColor.right &&
        borderColor.bottom == otherAttrs->borderColor.bottom &&
@@ -166,7 +165,6 @@ int StyleAttrs::hashValue () {
       borderWidth.hashValue () +
       padding.hashValue () +
       borderCollapse +
-      collapseStyleSet +
       (intptr_t) borderColor.top +
       (intptr_t) borderColor.right +
       (intptr_t) borderColor.bottom  +
@@ -257,7 +255,6 @@ void Style::copyAttrs (StyleAttrs *attrs)
    borderWidth = attrs->borderWidth;
    padding = attrs->padding;
    borderCollapse = attrs->borderCollapse;
-   collapseStyleSet = attrs->collapseStyleSet;
    borderColor = attrs->borderColor;
    borderStyle = attrs->borderStyle;
    display = attrs->display;
@@ -415,18 +412,373 @@ Tooltip *Tooltip::create (Layout *layout, const char *text)
 
 // ----------------------------------------------------------------------
 
-static void drawTriangle (View *view, Color *color, Color::Shading shading,
-                          int x1, int y1, int x2, int y2, int x3, int y3) {
-   int points[3][2];
+/*
+ * The drawBorder{Top,Bottom,Left,Right} functions are similar. They
+ * use a trapezium as draw polygon, or drawTypedLine() for dots and dashes.
+ * Although the concept is simple, achieving pixel accuracy is laborious [1].
+ *
+ * [1] http://www.dillo.org/css_compat/tests/border-style.html
+ */
+static void drawBorderTop(View *view, Style *style,
+                          int x1, int y1, int x2, int y2)
 
-   points[0][0] = x1;
-   points[0][1] = y1;
-   points[1][0] = x2;
-   points[1][1] = y2;
-   points[2][0] = x3;
-   points[2][1] = y3;
+{
+   int points[4][2], d, w;
+   bool ridge = false, inset = false, dotted = false;
+   Color::Shading shading = Color::SHADING_NORMAL;
 
-   view->drawPolygon (color, shading, true, points, 3);
+   if (!style->borderColor.top)
+      return;
+
+   switch (style->borderStyle.top) {
+   case BORDER_NONE:
+   case BORDER_HIDDEN:
+      break;
+   case BORDER_DOTTED:
+      dotted = true;
+   case BORDER_DASHED:
+      w = style->borderWidth.top;
+      view->drawTypedLine(style->borderColor.top, shading,
+                          dotted ? LINE_DOTTED : LINE_DASHED,
+                          w, x1+w/2, y1+w/2, x2-w/2, y2+w/2);
+      break;
+   case BORDER_SOLID:
+   case BORDER_INSET:
+      inset = true;
+   case BORDER_OUTSET:
+      if (style->borderStyle.top != BORDER_SOLID)
+         shading = (inset) ? Color::SHADING_DARK : Color::SHADING_LIGHT;
+
+      if (style->borderWidth.top == 1) {
+         view->drawLine(style->borderColor.top, shading, x1, y1, x2, y2);
+      } else {
+         points[0][0] = x1;
+         points[1][0] = x2 + 1;
+         points[0][1] = points[1][1] = y1;
+         points[2][0] = points[1][0] - style->borderWidth.right;
+         points[3][0] = x1 + style->borderWidth.left;
+         points[2][1] = points[3][1] = points[0][1] + style->borderWidth.top;
+         view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      }
+      break;
+   case BORDER_RIDGE:
+      ridge = true;
+   case BORDER_GROOVE:
+      d = style->borderWidth.top & 1;
+      points[0][0] = x1;
+      points[1][0] = x2 + 1;
+      points[0][1] = points[1][1] = y1;
+      points[2][0] = x2 - style->borderWidth.right / 2;
+      points[3][0] = x1 + style->borderWidth.left / 2;
+      points[2][1] = points[3][1] = y1 + style->borderWidth.top / 2 + d;
+      shading = (ridge) ? Color::SHADING_LIGHT : Color::SHADING_DARK;
+      view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      points[0][0] = x1 + style->borderWidth.left / 2 + d;
+      points[1][0] = x2 - style->borderWidth.right / 2 + 1 - d;
+      points[0][1] = points[1][1] = y1 + style->borderWidth.top / 2 + d;
+      points[2][0] = x2 - style->borderWidth.right + 1 - d;
+      points[3][0] = x1 + style->borderWidth.left;
+      points[2][1] = points[3][1] = y1 + style->borderWidth.top;
+      shading = (ridge) ? Color::SHADING_DARK : Color::SHADING_LIGHT;
+      view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      break;
+   case BORDER_DOUBLE:
+      w = (int) rint(style->borderWidth.top / 3.0);
+      d = w ? style->borderWidth.top - 2 * w : 0;
+      int w_l = (int) rint(style->borderWidth.left / 3.0);
+      int w_r = (int) rint(style->borderWidth.right / 3.0);
+      if (style->borderWidth.top == 1) {
+         view->drawLine(style->borderColor.top, shading, x1, y1, x2, y2);
+         break;
+      }
+      points[0][0] = x1;
+      points[1][0] = x2 + 1;
+      points[0][1] = points[1][1] = y1;
+      points[2][0] = points[1][0] - w_r;
+      points[3][0] = points[0][0] + w_l;
+      points[2][1] = points[3][1] = points[0][1] + w;
+      view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      points[0][0] = x1 + style->borderWidth.left - w_l;
+      points[1][0] = x2 + 1 - style->borderWidth.right + w_r;
+      points[0][1] = points[1][1] = y1 + w + d;
+      points[2][0] = x2 + 1 - style->borderWidth.right;
+      points[3][0] = x1 + style->borderWidth.left;
+      points[2][1] = points[3][1] = y1 + style->borderWidth.top;
+      view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      break;
+   }
+}
+
+static void drawBorderBottom(View *view, Style *style,
+                             int x1, int y1, int x2, int y2)
+
+{
+   int points[4][2], d, w;
+   bool ridge = false, inset = false, dotted = false;
+   Color::Shading shading = Color::SHADING_NORMAL;
+
+   if (!style->borderColor.bottom)
+      return;
+
+   switch (style->borderStyle.bottom) {
+   case BORDER_NONE:
+   case BORDER_HIDDEN:
+      break;
+   case BORDER_DOTTED:
+      dotted = true;
+   case BORDER_DASHED:
+      w = style->borderWidth.bottom;
+      view->drawTypedLine(style->borderColor.top, shading,
+                          dotted ? LINE_DOTTED : LINE_DASHED,
+                          w, x1+w/2, y1-w/2, x2-w/2, y2-w/2);
+      break;
+   case BORDER_SOLID:
+   case BORDER_INSET:
+      inset = true;
+   case BORDER_OUTSET:
+      if (style->borderStyle.bottom != BORDER_SOLID)
+         shading = (inset) ? Color::SHADING_LIGHT : Color::SHADING_DARK;
+
+      if (style->borderWidth.bottom == 1) { /* 1 pixel line */
+         view->drawLine(style->borderColor.bottom, shading, x1, y1, x2, y2);
+      } else {
+         points[0][0] = x1 - 1;
+         points[1][0] = x2 + 2;
+         points[0][1] = points[1][1] = y1 + 1;
+         points[2][0] = points[1][0] - style->borderWidth.right;
+         points[3][0] = points[0][0] + style->borderWidth.left;
+         points[2][1] = points[3][1] = points[0][1]-style->borderWidth.bottom;
+         view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      }
+      break;
+   case BORDER_RIDGE:
+      ridge = true;
+   case BORDER_GROOVE:
+      w = style->borderWidth.bottom;
+      d = w & 1;
+      points[0][0] = x1 - 1;
+      points[1][0] = x2 + 2 - d;
+      points[0][1] = points[1][1] = y1 + 1;
+      points[2][0] = points[1][0] - style->borderWidth.right / 2;
+      points[3][0] = points[0][0] + style->borderWidth.left / 2 + d;
+      points[2][1] = points[3][1] = points[0][1] - w/2 - d;
+      shading = (ridge) ? Color::SHADING_DARK : Color::SHADING_LIGHT;
+      view->drawPolygon (style->borderColor.bottom, shading, true, points, 4);
+      // clockwise
+      points[0][0] = x1 + style->borderWidth.left - 1;
+      points[1][0] = x2 + 1 - style->borderWidth.right + 1;
+      points[0][1] = points[1][1] = y1 - w + 1;
+      points[2][0] = points[1][0] + style->borderWidth.right / 2;
+      points[3][0] = points[0][0] - style->borderWidth.left / 2;
+      points[2][1] = points[3][1] = points[0][1] + w/2;
+      shading = (ridge) ? Color::SHADING_LIGHT : Color::SHADING_DARK;
+      view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      break;
+   case BORDER_DOUBLE:
+      w = (int) rint(style->borderWidth.bottom / 3.0);
+      d = w ? style->borderWidth.bottom - 2 * w : 0;
+      int w_l = (int) rint(style->borderWidth.left / 3.0);
+      int w_r = (int) rint(style->borderWidth.right / 3.0);
+      if (style->borderWidth.bottom == 1) {
+         view->drawLine(style->borderColor.bottom, shading, x1, y1, x2, y2);
+         break;
+      }
+      points[0][0] = x2 + 2;
+      points[1][0] = x1 - 1;
+      points[0][1] = points[1][1] = y1 + 1;
+      points[2][0] = points[1][0] + w_l;
+      points[3][0] = points[0][0] - w_r;
+      points[2][1] = points[3][1] = points[0][1] - w;
+      view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      points[0][0] = x2 + 2 - style->borderWidth.right + w_r;
+      points[1][0] = x1 - 1 + style->borderWidth.left - w_l;
+      points[0][1] = points[1][1] = y1 + 1 - w - d;
+      points[2][0] = x1 - 1 + style->borderWidth.left;
+      points[3][0] = x2 + 2 - style->borderWidth.right;
+      points[2][1] = points[3][1] = y1 + 1 - style->borderWidth.bottom;
+      view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      break;
+   }
+}
+
+static void drawBorderLeft(View *view, Style *style,
+                           int x1, int y1, int x2, int y2)
+
+{
+   int points[4][2], d, w;
+   bool ridge = false, inset = false, dotted = false;
+   Color::Shading shading = Color::SHADING_NORMAL;
+
+   if (!style->borderColor.left)
+      return;
+
+   switch (style->borderStyle.left) {
+   case BORDER_NONE:
+   case BORDER_HIDDEN:
+      break;
+   case BORDER_DOTTED:
+      dotted = true;
+   case BORDER_DASHED:
+      w = style->borderWidth.left;
+      view->drawTypedLine(style->borderColor.left, shading,
+                          dotted ? LINE_DOTTED : LINE_DASHED,
+                          w, x1+w/2, y1+w/2, x1+w/2, y2-w/2);
+      break;
+   case BORDER_SOLID:
+   case BORDER_INSET:
+      inset = true;
+   case BORDER_OUTSET:
+      if (style->borderStyle.left != BORDER_SOLID)
+         shading = (inset) ? Color::SHADING_DARK : Color::SHADING_LIGHT;
+      if (style->borderWidth.left == 1) { /* 1 pixel line */
+         view->drawLine(style->borderColor.left, shading, x1, y1, x2, y2);
+      } else {
+         points[0][0] = points[1][0] = x1;
+         points[0][1] = y1 - 1;
+         points[1][1] = y2 + 1;
+         points[2][0] = points[3][0] = points[0][0] + style->borderWidth.left;
+         points[2][1] = points[1][1] - style->borderWidth.bottom;
+         points[3][1] = points[0][1] + style->borderWidth.top;
+         view->drawPolygon (style->borderColor.left, shading, true, points, 4);
+      }
+      break;
+   case BORDER_RIDGE:
+      ridge = true;
+   case BORDER_GROOVE:
+      w = style->borderWidth.left;
+      d = w & 1;
+      points[0][0] = points[1][0] = x1;
+      points[0][1] = y1;
+      points[1][1] = y2;
+      points[2][0] = points[3][0] = x1 + w / 2 + d;
+      points[2][1] = y2 - style->borderWidth.bottom / 2;
+      points[3][1] = y1 + style->borderWidth.top / 2;
+      shading = (ridge) ? Color::SHADING_LIGHT : Color::SHADING_DARK;
+      view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      points[0][0] = points[1][0] = x1 + w / 2 + d;
+      points[0][1] = y1 + style->borderWidth.top / 2;
+      points[1][1] = y2 - style->borderWidth.bottom / 2;
+      points[2][0] = points[3][0] = x1 + w;
+      points[2][1] = y2 - style->borderWidth.bottom;
+      points[3][1] = y1 + style->borderWidth.top;
+      shading = (ridge) ? Color::SHADING_DARK : Color::SHADING_LIGHT;
+      view->drawPolygon (style->borderColor.top, shading, true, points, 4);
+      break;
+   case BORDER_DOUBLE:
+      w = (int) rint(style->borderWidth.left / 3.0);
+      d = w ? style->borderWidth.left - 2 * w : 0;
+      int w_b = (int) rint(style->borderWidth.bottom / 3.0);
+      int w_t = (int) rint(style->borderWidth.top / 3.0);
+      if (style->borderWidth.left == 1) {
+         view->drawLine(style->borderColor.left, shading, x1, y1, x2, y2-1);
+         break;
+      }
+      points[0][0] = points[1][0] = x1;
+      points[0][1] = y1 - 1;
+      points[1][1] = y2 + 1;
+      points[2][0] = points[3][0] = points[0][0] + w;
+      points[2][1] = points[1][1] - w_b;
+      points[3][1] = points[0][1] + w_t;
+      view->drawPolygon (style->borderColor.left, shading, true, points, 4);
+      points[0][0] = points[1][0] = x1 + w + d;
+      points[0][1] = y1 - 1 + style->borderWidth.top - w_t;
+      points[1][1] = y2 + 1 - style->borderWidth.bottom + w_b;
+      points[2][0] = points[3][0] = points[0][0] + w;
+      points[2][1] = y2 + 1 - style->borderWidth.bottom;
+      points[3][1] = y1 - 1 + style->borderWidth.top;
+      view->drawPolygon (style->borderColor.left, shading, true, points, 4);
+      break;
+   }
+}
+
+static void drawBorderRight(View *view, Style *style,
+                            int x1, int y1, int x2, int y2)
+
+{
+   int points[4][2], d, w;
+   bool ridge = false, inset = false, dotted = false;
+   Color::Shading shading = Color::SHADING_NORMAL;
+
+   if (!style->borderColor.right)
+      return;
+
+   switch (style->borderStyle.right) {
+   case BORDER_NONE:
+   case BORDER_HIDDEN:
+      break;
+   case BORDER_DOTTED:
+      dotted = true;
+   case BORDER_DASHED:
+      w = style->borderWidth.right;
+      view->drawTypedLine(style->borderColor.right, shading,
+                          dotted ? LINE_DOTTED : LINE_DASHED,
+                          w, x1 - w/2, y1 + w/2, x1 - w/2, y2 - w/2);
+      break;
+   case BORDER_SOLID:
+   case BORDER_INSET:
+      inset = true;
+   case BORDER_OUTSET:
+      if (style->borderStyle.right != BORDER_SOLID)
+         shading = (inset) ? Color::SHADING_LIGHT : Color::SHADING_DARK;
+      if (style->borderWidth.right == 1) { /* 1 pixel line */
+         view->drawLine(style->borderColor.right, shading, x1, y1, x2, y2);
+      } else {
+         points[0][0] = points[1][0] = x1 + 1;
+         points[0][1] = y1 - 1;
+         points[1][1] = y2 + 1;
+         points[2][0] = points[3][0] = points[0][0]-style->borderWidth.right;
+         points[2][1] = points[1][1] - style->borderWidth.bottom;
+         points[3][1] = points[0][1] + style->borderWidth.top;
+         view->drawPolygon (style->borderColor.right, shading, true,points,4);
+      }
+      break;
+   case BORDER_RIDGE:
+      ridge = true;
+   case BORDER_GROOVE:
+      w = style->borderWidth.right;
+      d = w & 1;
+      points[0][0] = points[1][0] = x1 + 1;
+      points[0][1] = y1;
+      points[1][1] = y2;
+      points[2][0] = points[3][0] = points[0][0] - w / 2 - d;
+      points[2][1] = y2 - style->borderWidth.bottom / 2;
+      points[3][1] = points[0][1] + style->borderWidth.top / 2;
+      shading = (ridge) ? Color::SHADING_DARK : Color::SHADING_LIGHT;
+      view->drawPolygon (style->borderColor.right, shading, true, points, 4);
+      points[0][0] = points[1][0] = x1 + 1 - w / 2 - d;
+      points[0][1] = y1 + style->borderWidth.top / 2;
+      points[1][1] = y2 - style->borderWidth.bottom / 2;
+      points[2][0] = points[3][0] = x1 + 1 - w;
+      points[2][1] = y2 - style->borderWidth.bottom;
+      points[3][1] = y1 + style->borderWidth.top;
+      shading = (ridge) ? Color::SHADING_LIGHT: Color::SHADING_DARK;
+      view->drawPolygon (style->borderColor.right, shading, true, points, 4);
+      break;
+   case BORDER_DOUBLE:
+      w = (int) rint(style->borderWidth.right / 3.0);
+      d = w ? style->borderWidth.right - 2 * w : 0;
+      int w_b = (int) rint(style->borderWidth.bottom / 3.0);
+      int w_t = (int) rint(style->borderWidth.top / 3.0);
+      if (style->borderWidth.right == 1) {
+         view->drawLine(style->borderColor.right, shading, x1, y1, x2, y2);
+         break;
+      }
+      points[0][0] = points[1][0] = x1 + 1;
+      points[0][1] = y1 - 1;
+      points[1][1] = y2 + 1;
+      points[2][0] = points[3][0] = points[0][0] - w;
+      points[2][1] = points[1][1] - w_b;
+      points[3][1] = points[0][1] + w_t;
+      view->drawPolygon (style->borderColor.right, shading, true, points, 4);
+      points[0][0] = points[1][0] = x1 + 1 - w - d;
+      points[0][1] = y1 - 1 + style->borderWidth.top - w_t;
+      points[1][1] = y2 + 1 - style->borderWidth.bottom + w_b;
+      points[2][0] = points[3][0] = points[0][0] - w;
+      points[2][1] = y2 + 1 - style->borderWidth.bottom;
+      points[3][1] = y1 - 1 + style->borderWidth.top;
+      view->drawPolygon (style->borderColor.right, shading, true, points, 4);
+      break;
+   }
 }
 
 /**
@@ -440,14 +792,13 @@ void drawBorder (View *view, Rectangle *area,
 {
    /** \todo a lot! */
    Color::Shading dark, light, normal;
-   Color::Shading top, right, bottom, left;
    int xb1, yb1, xb2, yb2, xp1, yp1, xp2, yp2;
 
    // top left and bottom right point of outer border boundary
    xb1 = x + style->margin.left;
    yb1 = y + style->margin.top;
-   xb2 = x + width - style->margin.right;
-   yb2 = y + height - style->margin.bottom;
+   xb2 = x + (width > 0 ? width - 1 : 0) - style->margin.right;
+   yb2 = y + (height > 0 ? height - 1 : 0) - style->margin.bottom;
 
    // top left and bottom right point of inner border boundary
    xp1 = xb1 + style->borderWidth.left;
@@ -459,63 +810,10 @@ void drawBorder (View *view, Rectangle *area,
    dark = inverse ? Color::SHADING_LIGHT : Color::SHADING_DARK;
    normal = inverse ? Color::SHADING_INVERSE : Color::SHADING_NORMAL;
 
-   switch (style->borderStyle.top) {
-   case BORDER_INSET:
-      top = left = dark;
-      right = bottom = light;
-      break;
-
-   case BORDER_OUTSET:
-      top = left = light;
-      right = bottom = dark;
-      break;
-
-   default:
-      top = right = bottom = left = normal;
-      break;
-   }
-
-   if (style->borderStyle.top != BORDER_NONE && style->borderColor.top)
-      view->drawRectangle(style->borderColor.top, top, true,
-                          xb1, yb1, xb2 - xb1, style->borderWidth.top);
-
-   if (style->borderStyle.bottom != BORDER_NONE && style->borderColor.bottom)
-      view->drawRectangle(style->borderColor.bottom, bottom, true,
-                          xb1, yb2, xb2 - xb1, - style->borderWidth.bottom);
-
-   if (style->borderStyle.left != BORDER_NONE && style->borderColor.left)
-      view->drawRectangle(style->borderColor.left, left, true,
-                          xb1, yp1, style->borderWidth.left, yp2 - yp1);
-
-   if (style->borderWidth.left > 1) {
-      if (style->borderWidth.top > 1 &&
-          (style->borderColor.left != style->borderColor.top ||
-           left != top))
-         drawTriangle (view, style->borderColor.left, left,
-                       xb1, yp1, xp1, yp1, xb1, yb1);
-      if (style->borderWidth.bottom > 1 &&
-          (style->borderColor.left != style->borderColor.bottom ||
-           left != bottom))
-         drawTriangle (view, style->borderColor.left, left,
-                       xb1, yp2, xp1, yp2, xb1, yb2);
-   }
-
-   if (style->borderStyle.right != BORDER_NONE && style->borderColor.right)
-      view->drawRectangle(style->borderColor.right, right, true,
-                          xb2, yp1, - style->borderWidth.right, yp2 - yp1);
-
-   if (style->borderWidth.right > 1) {
-      if (style->borderWidth.top > 1 &&
-          (style->borderColor.right != style->borderColor.top ||
-           right != top))
-         drawTriangle (view, style->borderColor.right, right,
-                       xb2, yp1, xp2, yp1, xb2, yb1);
-      if (style->borderWidth.bottom > 1 &&
-          (style->borderColor.right != style->borderColor.bottom ||
-           right != bottom))
-         drawTriangle (view, style->borderColor.right, right,
-                       xb2, yp2, xp2, yp2, xb2, yb2);
-   }
+   drawBorderRight(view, style, xb2, yb1, xb2, yb2);
+   drawBorderLeft(view, style, xb1, yb1, xb1, yb2);
+   drawBorderTop(view, style, xb1, yb1, xb2, yb1);
+   drawBorderBottom(view, style, xb1, yb2, xb2, yb2);
 }
 
 

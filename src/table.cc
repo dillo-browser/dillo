@@ -139,6 +139,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
    HT2TB(html)->addWidget (table, html->styleEngine->style ());
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TOP;
+   S_TOP(html)->table_border_mode = DILLO_HTML_TABLE_BORDER_SEPARATE;
    S_TOP(html)->cell_text_align_set = FALSE;
    S_TOP(html)->table = table;
 }
@@ -216,6 +217,34 @@ void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize)
  * Utilities
  */
 
+/*
+ * The table border model is stored in the table's stack item
+ */ 
+static int Html_table_get_border_model(DilloHtml *html)
+{
+   static int i_TABLE = -1;
+   if (i_TABLE == -1)
+      i_TABLE = a_Html_tag_index("table");
+
+   int s_idx = html->stack->size();
+   while (--s_idx > 0 && html->stack->getRef(s_idx)->tag_idx != i_TABLE)
+      ;
+   return html->stack->getRef(s_idx)->table_border_mode;
+}
+
+/*
+ * Set current table's border model
+ */
+static void Html_table_set_border_model(DilloHtml *html,
+                                        DilloHtmlTableBorderMode mode)
+{
+   int s_idx = html->stack->size(), i_TABLE = a_Html_tag_index("table");
+
+   while (--s_idx > 0 && html->stack->getRef(s_idx)->tag_idx != i_TABLE) ;
+   if (s_idx > 0)
+      html->stack->getRef(s_idx)->table_border_mode = mode;
+}
+
 /* WORKAROUND: collapsing border model requires moving rendering code from
  *             the cell to the table, and making table-code aware of each
  *             cell style.
@@ -243,11 +272,10 @@ static void Html_set_collapsing_border_model(DilloHtml *html, Widget *col_tb)
    collapseStyle = Style::create(HT2LT(html), &collapseCellAttrs);
    col_tb->setStyle (collapseStyle);
 
-   if (!tableStyle->collapseStyleSet) {
+   if (Html_table_get_border_model(html) != DILLO_HTML_TABLE_BORDER_COLLAPSE) {
+      Html_table_set_border_model(html, DILLO_HTML_TABLE_BORDER_COLLAPSE);
       collapseTableAttrs = *tableStyle;
-      collapseTableAttrs.collapseStyleSet = true;
       collapseTableAttrs.margin.setVal (marginWidth);
-      _MSG("COLLAPSING table margin set to %d\n", marginWidth);
       collapseTableAttrs.borderWidth.left = borderWidth;
       collapseTableAttrs.borderWidth.top = borderWidth;
       collapseTableAttrs.borderWidth.right = 0;
