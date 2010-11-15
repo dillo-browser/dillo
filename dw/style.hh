@@ -447,7 +447,6 @@ public:
 
    Box margin, borderWidth, padding;
    BorderCollapse borderCollapse;
-   bool collapseStyleSet;
    struct { Color *top, *right, *bottom, *left; } borderColor;
    struct { BorderStyle top, right, bottom, left; } borderStyle;
 

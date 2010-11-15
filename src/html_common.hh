@@ -64,6 +64,11 @@ typedef enum {
 } DilloHtmlTableMode;
 
 typedef enum {
+   DILLO_HTML_TABLE_BORDER_SEPARATE,
+   DILLO_HTML_TABLE_BORDER_COLLAPSE
+} DilloHtmlTableBorderMode;
+
+typedef enum {
    HTML_LIST_NONE,
    HTML_LIST_UNORDERED,
    HTML_LIST_ORDERED
@@ -96,6 +101,7 @@ struct _DilloHtmlImage {
 struct _DilloHtmlState {
    DilloHtmlParseMode parse_mode;
    DilloHtmlTableMode table_mode;
+   DilloHtmlTableBorderMode table_border_mode;
    bool cell_text_align_set;
 
    DilloHtmlListMode list_type;
