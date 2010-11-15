@@ -447,21 +447,21 @@ void CssParser::ungetChar()
 
 /*
  * Skip string str if it is found in the input buffer.
+ * If string is found leave bufptr pointing to last matched char.
  * If not wind back. The first char is passed as parameter c
  * to avoid unnecessary getChar() / ungetChar() calls.
  */
 inline bool CssParser::skipString(int c, const char *str)
 {
-   int n = 0;
+   for (int n = 0; str[n]; n++) {
+      if (n > 0)
+         c = getChar();
 
-   while (str[n]) {
       if (str[n] != c) {
          while (n--)
             ungetChar();
          return false;
       }
-      c = getChar();
-      n++;
    }
 
    return true;
