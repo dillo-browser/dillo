@@ -352,6 +352,7 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
     prTitle = new Widget(24, 7, 290, 23, shortname);
     prTitle->box(RSHADOW_BOX);
     prTitle->align(ALIGN_LEFT|ALIGN_INSIDE|ALIGN_CLIP);
+    prTitle->set_flag (RAW_LABEL);
     // Attach this 'log_text' to the tooltip
     log_text_add("Target File: ", 13);
     log_text_add(fullname, strlen(fullname));
