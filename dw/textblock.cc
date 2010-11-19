@@ -255,10 +255,9 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
             word = words->getRef (wordIndex);
             getWordExtremes (word, &wordExtremes);
 
-            /* For the first word, we simply add the line1_offset. */
-            /* This test looks questionable */
-            if (ignoreLine1OffsetSometimes && wordIndex == 0) {
-               wordExtremes.minWidth += line1Offset;
+            if (wordIndex == 0) {
+               wordExtremes.minWidth += line1OffsetEff;
+               wordExtremes.maxWidth += line1OffsetEff;
                //DEBUG_MSG (DEBUG_SIZE_LEVEL + 1,
                //           "      (next plus %d)\n", page->line1_offset);
             }
