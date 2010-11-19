@@ -35,6 +35,7 @@ int Textblock::CLASS_ID = -1;
 Textblock::Textblock (bool limitTextWidth)
 {
    registerName ("dw::Textblock", &CLASS_ID);
+   setFlags (BLOCK_LEVEL);
    setFlags (USES_HINTS);
    setButtonSensitive(true);
 
@@ -892,11 +893,16 @@ void Textblock::wordWrap(int wordIndex)
       } else {
          int indent = 0;
 
-         if (core::style::isPerLength(getStyle()->textIndent)) {
-            indent = misc::roundInt(this->availWidth *
-                     core::style::perLengthVal (getStyle()->textIndent));
+         if (word->content.type == core::Content::WIDGET &&
+             word->content.widget->blockLevel() == true) {
+            /* don't use text-indent when nesting blocks */
          } else {
-            indent = core::style::absLengthVal (getStyle()->textIndent);
+            if (core::style::isPerLength(getStyle()->textIndent)) {
+               indent = misc::roundInt(this->availWidth *
+                        core::style::perLengthVal (getStyle()->textIndent));
+            } else {
+               indent = core::style::absLengthVal (getStyle()->textIndent);
+            }
          }
          line1OffsetEff = line1Offset + indent;
       }

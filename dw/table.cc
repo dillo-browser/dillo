@@ -34,6 +34,7 @@ int Table::CLASS_ID = -1;
 Table::Table(bool limitTextWidth)
 {
    registerName ("dw::Table", &CLASS_ID);
+   setFlags (BLOCK_LEVEL);
    setFlags (USES_HINTS);
    setButtonSensitive(false);
 

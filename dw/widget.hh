@@ -67,6 +67,11 @@ protected:
        * The dw::Image widget uses this flag, see dw::Image::setBuffer.
        */
       WAS_ALLOCATED    = 1 << 5,
+
+      /**
+       * \brief Set for block-level widgets (as opposed to inline widgets)
+       */
+      BLOCK_LEVEL      = 1 << 6,
    };
 
 private:
@@ -238,6 +243,7 @@ public:
    inline bool wasAllocated ()    { return flags & WAS_ALLOCATED; }
    inline bool usesHints ()       { return flags & USES_HINTS; }
    inline bool hasContents ()     { return flags & HAS_CONTENTS; }
+   inline bool blockLevel ()      { return flags & BLOCK_LEVEL; }
 
    void setParent (Widget *parent);
 
