@@ -1416,32 +1416,26 @@ void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
 {
    char *urlStr = NULL;
 
-   if (html != NULL &&
-      ttype == CSS_TK_SYMBOL &&
-      dStrcasecmp(tval, "import") == 0) {
-      nextToken();
+   if (ttype == CSS_TK_SYMBOL &&
+       dStrcasecmp(tval, "url") == 0)
+      urlStr = parseUrl();
+   else if (ttype == CSS_TK_STRING)
+      urlStr = dStrdup (tval);
 
-      if (ttype == CSS_TK_SYMBOL &&
-         dStrcasecmp(tval, "url") == 0)
-         urlStr = parseUrl();
-      else if (ttype == CSS_TK_STRING)
-         urlStr = dStrdup (tval);
-
-      /* Skip all tokens until the expected end. */
-      while (!(ttype == CSS_TK_END ||
+   /* Skip all tokens until the expected end. */
+   while (!(ttype == CSS_TK_END ||
             (ttype == CSS_TK_CHAR && (tval[0] == ';'))))
-         nextToken();
-
       nextToken();
 
-      if (urlStr) {
-         MSG("CssParser::parseImport(): @import %s\n", urlStr);
-         DilloUrl *url = a_Html_url_new (html, urlStr, a_Url_str(baseUrl),
-                                         baseUrl ? 1 : 0);
-         a_Html_load_stylesheet(html, url);
-         a_Url_free(url);
-         dFree (urlStr);
-      }
+   nextToken();
+
+   if (urlStr) {
+      MSG("CssParser::parseImport(): @import %s\n", urlStr);
+      DilloUrl *url = a_Html_url_new (html, urlStr, a_Url_str(baseUrl),
+                                      baseUrl ? 1 : 0);
+      a_Html_load_stylesheet(html, url);
+      a_Url_free(url);
+      dFree (urlStr);
    }
 }
 
@@ -1458,7 +1452,12 @@ void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext * context,
 
    while (parser.ttype == CSS_TK_CHAR && parser.tval[0] == '@') {
       parser.nextToken();
-      parser.parseImport(html, url);
+      if (html != NULL &&
+          parser.ttype == CSS_TK_SYMBOL &&
+          dStrcasecmp(parser.tval, "import") == 0) {
+         parser.nextToken();
+         parser.parseImport(html, url);
+      }
    }
 
    while (parser.ttype != CSS_TK_END)
