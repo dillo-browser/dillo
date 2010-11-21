@@ -1443,25 +1443,70 @@ const char * CssParser::propertyNameString(CssPropertyName name)
 {
    return Css_property_info[name].symbol;
 }
+ 
+void CssParser::ignoreBlock()
+{
+   int depth = 0;
+
+   while (ttype != CSS_TK_END) {
+      if (ttype == CSS_TK_CHAR) {
+         if (tval[0] =='{')
+            depth++;
+         else if (tval[0] =='}') {
+            depth--;
+            if (depth == 0) {
+               nextToken();
+               return;
+            }
+         }
+      }
+      nextToken();
+   }
+}
+
+void CssParser::ignoreStatement()
+{
+   while (ttype != CSS_TK_END) {
+      if (ttype == CSS_TK_CHAR) {
+         if (tval[0] == ';') {
+            nextToken();
+            return;
+         }
+         else if (tval[0] =='{') {
+            ignoreBlock();
+            return;
+         }
+      }
+      nextToken();
+   }
+}
 
 void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext * context,
                       const char *buf,
                       int buflen, CssOrigin origin)
 {
    CssParser parser (context, origin, buf, buflen);
+   bool importsAreAllowed = true;
 
-   while (parser.ttype == CSS_TK_CHAR && parser.tval[0] == '@') {
-      parser.nextToken();
-      if (html != NULL &&
-          parser.ttype == CSS_TK_SYMBOL &&
-          dStrcasecmp(parser.tval, "import") == 0) {
+   while (parser.ttype != CSS_TK_END) {
+      if (parser.ttype == CSS_TK_CHAR &&
+          parser.tval[0] == '@') {
          parser.nextToken();
-         parser.parseImport(html, url);
+         if (parser.ttype == CSS_TK_SYMBOL &&
+             dStrcasecmp(parser.tval, "import") == 0 &&
+             html != NULL &&
+             importsAreAllowed) {
+            parser.nextToken();
+            parser.parseImport(html, url);
+         }
+         else
+            parser.ignoreStatement();
+      }
+      else {
+         importsAreAllowed = false;
+         parser.parseRuleset();
       }
    }
-
-   while (parser.ttype != CSS_TK_END)
-      parser.parseRuleset();
 }
 
 CssPropertyList *CssParser::parseDeclarationBlock(const char *buf, int buflen)

@@ -42,6 +42,8 @@ class CssParser {
       void parseImport(DilloHtml *html, DilloUrl *url);
       CssSelector *parseSelector();
       void parseRuleset();
+      void ignoreBlock();
+      void ignoreStatement();
 
    public:
       static CssPropertyList *parseDeclarationBlock(const char *buf,
