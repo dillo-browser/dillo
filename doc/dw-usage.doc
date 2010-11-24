@@ -222,7 +222,7 @@ called, within timeouts, idles, I/O functions etc. Notice that Dw is
 not thread safe, so that everything should be done within one thread.
 
 With the exception, that you have to call dw::Textblock::flush,
-everything gets imediately visible, within reasonable times; Dw has
+everything gets immediately visible, within reasonable times; Dw has
 been optimized for frequent updates.
 
 

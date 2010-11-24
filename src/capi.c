@@ -480,7 +480,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
          /* create a new connection and start the CCC operations */
          conn = Capi_conn_new(web->url, web->bw, "http", "none");
          /* start the reception branch before the query one because the DNS
-          * may callback immediatly. This may avoid a race condition. */
+          * may callback immediately. This may avoid a race condition. */
          a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), conn, "http");
          a_Capi_ccc(OpStart, 1, BCK, a_Chain_new(), conn, web);
       }
