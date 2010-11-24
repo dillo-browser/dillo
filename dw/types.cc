@@ -69,7 +69,7 @@ bool Rectangle::intersectsWith (Rectangle *otherRect, Rectangle *dest)
       dest->x = dest->y = dest->width = dest->height = 0;
    }
 
-   return doIntersect; 
+   return doIntersect;
 }
 
 /*
@@ -180,7 +180,7 @@ bool Polygon::linesCross0(int ax1, int ay1, int ax2, int ay2,
    int z1 = zOfVectorProduct (ax1 - bx1, ay1 - by1, bx2 - bx1, by2 - by1);
    int z2 = zOfVectorProduct (ax2 - bx1, ay2 - by1, bx2 - bx1, by2 - by1);
 
-   return (z1 <= 0 && z2 >= 0) || (z1 >= 0 && z2 <= 0); 
+   return (z1 <= 0 && z2 >= 0) || (z1 >= 0 && z2 <= 0);
 }
 
 /**

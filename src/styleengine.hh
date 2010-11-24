@@ -43,7 +43,7 @@ class StyleEngine {
 
          if (!n->nonCssProperties)
             n->nonCssProperties = new CssPropertyList (true);
-         n->nonCssProperties->set(name, type, value); 
+         n->nonCssProperties->set(name, type, value);
       }
       void preprocessAttrs (dw::core::style::StyleAttrs *attrs);
       void postprocessAttrs (dw::core::style::StyleAttrs *attrs);

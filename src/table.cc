@@ -219,7 +219,7 @@ void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize)
 
 /*
  * The table border model is stored in the table's stack item
- */ 
+ */
 static int Html_table_get_border_model(DilloHtml *html)
 {
    static int i_TABLE = -1;

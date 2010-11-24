@@ -422,7 +422,7 @@ void FltkViewBase::drawRectangle (core::style::Color *color,
    int x2 = translateCanvasXToViewX (x + width);
    int y2 = translateCanvasYToViewY (y + height);
 
-   // We only support rectangles with line width 1px, so we clip with 
+   // We only support rectangles with line width 1px, so we clip with
    // a rectangle 1px wider and higher than what we actually expose.
    // This is only really necessary for non-filled rectangles.
    clipPoint (&x1, &y1, 1);
@@ -554,7 +554,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
          while (next < len) {
             next = theLayout->nextGlyph(text, curr);
             drawtext(text + curr, next - curr, viewX, viewY);
-            viewX += font->letterSpacing + 
+            viewX += font->letterSpacing +
                      (int)getwidth(text + curr,next - curr);
             curr = next;
          }

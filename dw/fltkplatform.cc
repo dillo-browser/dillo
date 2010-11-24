@@ -358,7 +358,7 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
    int width = 0;
    FltkFont *ff = (FltkFont*) font;
    int curr = 0, next = 0, nb;
-   
+
    if (font->fontVariant == 1) {
       int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
       for (curr = 0; next < len; curr = next) {
@@ -380,10 +380,10 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
    } else {
       setfont (ff->font, ff->size);
       width = (int) getwidth (text, len);
-   
+
       if (font->letterSpacing) {
          int curr = 0, next = 0;
-   
+
          while (next < len) {
             next = nextGlyph(text, curr);
             width += font->letterSpacing;

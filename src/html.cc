@@ -1760,7 +1760,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    bgColor = html->styleEngine->backgroundColor ();
 
    if (bgColor)
-      HT2LT(html)->setBgColor(bgColor);  
+      HT2LT(html)->setBgColor(bgColor);
 
    /* Determine a color for visited links.
     * This color is computed once per page and used for immediate feedback

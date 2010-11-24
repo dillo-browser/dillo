@@ -743,7 +743,7 @@ Style * StyleEngine::wordStyle0 () {
 
 /**
  * \brief Recompute all style information from scratch
- * This is used to take into account CSS styles for the HTML-element. 
+ * This is used to take into account CSS styles for the HTML-element.
  * The CSS data is only completely available after parsing the HEAD-section
  * and thereby after the HTML-element has been opened.
  * Note that restyle() does not change any styles in the widget tree.

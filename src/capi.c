@@ -362,7 +362,7 @@ static void Capi_dpi_send_source(BrowserWindow *bw,  DilloUrl *url)
  * For a user request, the action will be permitted.
  * For an automatic request, permission to load depends on the filter set
  * by the user.
- */ 
+ */
 static bool_t Capi_filters_test(const DilloUrl *wanted,
                                 const DilloUrl *requester)
 {
