@@ -427,7 +427,7 @@ static void drawBorderTop(View *view, Style *style,
    bool ridge = false, inset = false, dotted = false;
    Color::Shading shading = Color::SHADING_NORMAL;
 
-   if (!style->borderColor.top)
+   if (!style->borderColor.top || style->borderWidth.top == 0)
       return;
 
    switch (style->borderStyle.top) {
@@ -517,7 +517,7 @@ static void drawBorderBottom(View *view, Style *style,
    bool ridge = false, inset = false, dotted = false;
    Color::Shading shading = Color::SHADING_NORMAL;
 
-   if (!style->borderColor.bottom)
+   if (!style->borderColor.bottom || style->borderWidth.bottom == 0)
       return;
 
    switch (style->borderStyle.bottom) {
@@ -609,7 +609,7 @@ static void drawBorderLeft(View *view, Style *style,
    bool ridge = false, inset = false, dotted = false;
    Color::Shading shading = Color::SHADING_NORMAL;
 
-   if (!style->borderColor.left)
+   if (!style->borderColor.left || style->borderWidth.left == 0)
       return;
 
    switch (style->borderStyle.left) {
@@ -699,7 +699,7 @@ static void drawBorderRight(View *view, Style *style,
    bool ridge = false, inset = false, dotted = false;
    Color::Shading shading = Color::SHADING_NORMAL;
 
-   if (!style->borderColor.right)
+   if (!style->borderColor.right || style->borderWidth.right == 0)
       return;
 
    switch (style->borderStyle.right) {
