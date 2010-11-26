@@ -40,6 +40,7 @@ class CssParser {
       bool parseSimpleSelector(CssSimpleSelector *selector);
       char *parseUrl();
       void parseImport(DilloHtml *html, DilloUrl *url);
+      void parseMedia();
       CssSelector *parseSelector();
       void parseRuleset();
       void ignoreBlock();

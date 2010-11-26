@@ -1439,6 +1439,48 @@ void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
    }
 }
 
+void CssParser::parseMedia()
+{
+   bool mediaSyntaxIsOK = false;
+   bool mediaIsSelected = false;
+
+   /* parse a comma-separated list of media */
+   while (ttype == CSS_TK_SYMBOL) {
+      if (dStrcasecmp(tval, "all") == 0 ||
+          dStrcasecmp(tval, "screen") == 0)
+         mediaIsSelected = true;
+      nextToken();
+      if (ttype == CSS_TK_CHAR && tval[0] == ',')
+         nextToken();
+      else {
+         mediaSyntaxIsOK = true;
+         break;
+      }
+   }
+
+   /* check that the syntax is OK so far */
+   if (!(mediaSyntaxIsOK &&
+         ttype == CSS_TK_CHAR &&
+         tval[0] == '{')) {
+      ignoreStatement();
+      return;
+   }
+
+   /* parse/ignore the block as required */
+   if (mediaIsSelected) {
+      nextToken();
+      while (ttype != CSS_TK_END) {
+         parseRuleset();
+         if (ttype == CSS_TK_CHAR && tval[0] == '}') {
+            nextToken();
+            break;
+         }
+      }
+   }
+   else
+      ignoreBlock();
+}
+
 const char * CssParser::propertyNameString(CssPropertyName name)
 {
    return Css_property_info[name].symbol;
@@ -1492,12 +1534,19 @@ void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext * context,
       if (parser.ttype == CSS_TK_CHAR &&
           parser.tval[0] == '@') {
          parser.nextToken();
-         if (parser.ttype == CSS_TK_SYMBOL &&
-             dStrcasecmp(parser.tval, "import") == 0 &&
-             html != NULL &&
-             importsAreAllowed) {
-            parser.nextToken();
-            parser.parseImport(html, url);
+         if (parser.ttype == CSS_TK_SYMBOL) {
+            if (dStrcasecmp(parser.tval, "import") == 0 &&
+                html != NULL &&
+                importsAreAllowed) {
+               parser.nextToken();
+               parser.parseImport(html, url);
+            }
+            else if (dStrcasecmp(parser.tval, "media") == 0) {
+               parser.nextToken();
+               parser.parseMedia();
+            }
+            else
+               parser.ignoreStatement();
          }
          else
             parser.ignoreStatement();
