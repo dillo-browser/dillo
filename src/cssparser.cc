@@ -669,9 +669,9 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
 
       case CSS_TYPE_MULTI_ENUM:
          if (ttype == CSS_TK_SYMBOL) {
-            if (dStrcasecmp(tval, "none") == 0)
-                  return true;
-            else {
+            if (dStrcasecmp(tval, "none") == 0) {
+               return true;
+            } else {
                for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
                   if (dStrcasecmp(tval,
                         Css_property_info[prop].enum_symbols[i]) == 0)
@@ -1450,9 +1450,9 @@ void CssParser::parseMedia()
           dStrcasecmp(tval, "screen") == 0)
          mediaIsSelected = true;
       nextToken();
-      if (ttype == CSS_TK_CHAR && tval[0] == ',')
+      if (ttype == CSS_TK_CHAR && tval[0] == ',') {
          nextToken();
-      else {
+      } else {
          mediaSyntaxIsOK = true;
          break;
       }
@@ -1476,8 +1476,7 @@ void CssParser::parseMedia()
             break;
          }
       }
-   }
-   else
+   } else
       ignoreBlock();
 }
 
@@ -1492,9 +1491,9 @@ void CssParser::ignoreBlock()
 
    while (ttype != CSS_TK_END) {
       if (ttype == CSS_TK_CHAR) {
-         if (tval[0] =='{')
+         if (tval[0] == '{') {
             depth++;
-         else if (tval[0] =='}') {
+         } else if (tval[0] == '}') {
             depth--;
             if (depth == 0) {
                nextToken();
@@ -1513,8 +1512,7 @@ void CssParser::ignoreStatement()
          if (tval[0] == ';') {
             nextToken();
             return;
-         }
-         else if (tval[0] =='{') {
+         } else if (tval[0] =='{') {
             ignoreBlock();
             return;
          }
@@ -1540,18 +1538,16 @@ void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext * context,
                 importsAreAllowed) {
                parser.nextToken();
                parser.parseImport(html, url);
-            }
-            else if (dStrcasecmp(parser.tval, "media") == 0) {
+            } else if (dStrcasecmp(parser.tval, "media") == 0) {
                parser.nextToken();
                parser.parseMedia();
-            }
-            else
+            } else {
                parser.ignoreStatement();
-         }
-         else
+            }
+         } else {
             parser.ignoreStatement();
-      }
-      else {
+         }
+      } else {
          importsAreAllowed = false;
          parser.parseRuleset();
       }
