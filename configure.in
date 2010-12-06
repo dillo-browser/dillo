@@ -511,5 +511,18 @@ AC_SUBST(LIBFLTK_LIBS)
 AC_SUBST(LIBICONV_LIBS)
 AC_SUBST(datadir)
 
-AC_OUTPUT(Makefile dlib/Makefile dpip/Makefile dpid/Makefile dpi/Makefile doc/Makefile dw/Makefile lout/Makefile src/Makefile src/IO/Makefile test/Makefile)
+AC_CONFIG_FILES([
+    Makefile
+    dlib/Makefile
+    dpip/Makefile
+    dpid/Makefile
+    dpi/Makefile
+    doc/Makefile
+    dw/Makefile
+    lout/Makefile
+    src/Makefile
+    src/IO/Makefile
+    test/Makefile
+])
 
+AC_OUTPUT
