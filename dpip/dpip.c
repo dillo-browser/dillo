@@ -33,7 +33,6 @@
  * Local variables
  */
 static const char Quote = '\'';
-static const int DpipTag = 1;
 
 /*
  * Basically the syntax of a dpip tag is:
