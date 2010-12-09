@@ -1491,7 +1491,8 @@ static int
  */
 static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
 {
-   static const char HTML_sig   [] = "<!DOCTYPE HTML PUBLIC ";
+   static const char HTML_SGML_sig [] = "<!DOCTYPE HTML PUBLIC ";
+   static const char HTML5_sig  [] = "<!DOCTYPE html>";
    static const char HTML20     [] = "-//IETF//DTD HTML 2.0";
    static const char HTML32     [] = "-//W3C//DTD HTML 3.2";
    static const char HTML40     [] = "-//W3C//DTD HTML 4.0";
@@ -1527,8 +1528,8 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
    _MSG("New: {%s}\n", ntag);
 
    /* The default DT_NONE type is TagSoup */
-   if (!dStrncasecmp(ntag, HTML_sig, strlen(HTML_sig))) {
-      p = ntag + strlen(HTML_sig) + 1;
+   if (!dStrncasecmp(ntag, HTML_SGML_sig, strlen(HTML_SGML_sig))) {
+      p = ntag + strlen(HTML_SGML_sig) + 1;
       if (!strncmp(p, HTML401, strlen(HTML401)) &&
           dStristr(p + strlen(HTML401), HTML401_url)) {
          html->DocType = DT_HTML;
@@ -1551,6 +1552,10 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
          html->DocType = DT_HTML;
          html->DocTypeVersion = 2.0f;
       }
+   } else if (!dStrcasecmp(ntag, HTML5_sig)) {
+      BUG_MSG("Document follows HTML5 working draft; treating as HTML4.\n");
+      html->DocType = DT_HTML;
+      html->DocTypeVersion = 5.0f;
    }
 
    dFree(ntag);
