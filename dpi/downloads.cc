@@ -920,7 +920,7 @@ static void read_req_cb(int req_fd, void *)
    }
    action = dl_win->check_filename(&dl_dest);
    if (action != DL_ABORT) {
-      // Start the whole thing whithin FLTK.
+      // Start the whole thing within FLTK.
       dl_win->add(dl_dest, url, action);
    } else if (dl_win->num() == 0) {
       exit(0);
