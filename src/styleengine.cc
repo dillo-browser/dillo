@@ -234,6 +234,10 @@ void StyleEngine::preprocessAttrs (dw::core::style::StyleAttrs *attrs) {
 
       attrs->valign = stack->getRef (stack->size () - 2)->style->valign;
    }
+   attrs->borderColor.top = (Color *) -1;
+   attrs->borderColor.bottom = (Color *) -1;
+   attrs->borderColor.left = (Color *) -1;
+   attrs->borderColor.right = (Color *) -1;
    /* initial value of border-width is 'medium' */
    attrs->borderWidth.top = 2;
    attrs->borderWidth.bottom = 2;
@@ -242,14 +246,14 @@ void StyleEngine::preprocessAttrs (dw::core::style::StyleAttrs *attrs) {
 }
 
 void StyleEngine::postprocessAttrs (dw::core::style::StyleAttrs *attrs) {
-   /* if border-color is not specified use color as computed value */
-   if (attrs->borderColor.top == NULL)
+   /* if border-color is not specified, use color as computed value */
+   if (attrs->borderColor.top == (Color *) -1)
       attrs->borderColor.top = attrs->color;
-   if (attrs->borderColor.bottom == NULL)
+   if (attrs->borderColor.bottom == (Color *) -1)
       attrs->borderColor.bottom = attrs->color;
-   if (attrs->borderColor.left == NULL)
+   if (attrs->borderColor.left == (Color *) -1)
       attrs->borderColor.left = attrs->color;
-   if (attrs->borderColor.right == NULL)
+   if (attrs->borderColor.right == (Color *) -1)
       attrs->borderColor.right = attrs->color;
    /* computed value of border-width is 0 if border-style
       is 'none' or 'hidden' */
@@ -438,20 +442,20 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
             attrs->borderCollapse = (BorderCollapse) p->value.intVal;
             break;
          case CSS_PROPERTY_BORDER_TOP_COLOR:
-            attrs->borderColor.top =
-              Color::create (layout, p->value.intVal);
+            attrs->borderColor.top = (p->type == CSS_TYPE_ENUM) ? NULL :
+                                     Color::create (layout, p->value.intVal);
             break;
          case CSS_PROPERTY_BORDER_BOTTOM_COLOR:
-            attrs->borderColor.bottom =
-              Color::create (layout, p->value.intVal);
+            attrs->borderColor.bottom = (p->type == CSS_TYPE_ENUM) ? NULL :
+                                       Color::create (layout, p->value.intVal);
             break;
          case CSS_PROPERTY_BORDER_LEFT_COLOR:
-            attrs->borderColor.left =
-              Color::create (layout, p->value.intVal);
+            attrs->borderColor.left = (p->type == CSS_TYPE_ENUM) ? NULL :
+                                      Color::create (layout, p->value.intVal);
             break;
          case CSS_PROPERTY_BORDER_RIGHT_COLOR:
-            attrs->borderColor.right =
-              Color::create (layout, p->value.intVal);
+            attrs->borderColor.right = (p->type == CSS_TYPE_ENUM) ? NULL :
+                                       Color::create (layout, p->value.intVal);
             break;
          case CSS_PROPERTY_BORDER_BOTTOM_STYLE:
             attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;

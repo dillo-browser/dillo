@@ -51,6 +51,10 @@ static const char *const Css_border_collapse_enum_vals[] = {
    "separate", "collapse", NULL
 };
 
+static const char *const Css_border_color_enum_vals[] = {
+   "transparent", NULL
+};
+
 static const char *const Css_border_style_enum_vals[] = {
    "none", "hidden", "dotted", "dashed", "solid", "double", "groove",
    "ridge", "inset", "outset", NULL
@@ -136,25 +140,29 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"background-image", {CSS_TYPE_UNUSED}, NULL},
    {"background-position", {CSS_TYPE_UNUSED}, NULL},
    {"background-repeat", {CSS_TYPE_UNUSED}, NULL},
-   {"border-bottom-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-bottom-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
+    Css_border_color_enum_vals},
    {"border-bottom-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
    {"border-bottom-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
     Css_border_width_enum_vals},
    {"border-collapse", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_collapse_enum_vals},
-   {"border-left-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-left-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
+    Css_border_color_enum_vals},
    {"border-left-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
    {"border-left-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
     Css_border_width_enum_vals},
-   {"border-right-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-right-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
+    Css_border_color_enum_vals},
    {"border-right-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
    {"border-rigth-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
     Css_border_width_enum_vals},
    {"border-spacing", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
-   {"border-top-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-top-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
+    Css_border_color_enum_vals},
    {"border-top-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
    {"border-top-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
