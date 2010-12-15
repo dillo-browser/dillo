@@ -524,7 +524,7 @@ void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
     * The Back or Forward, buttons, or the first click on a rendered
     * page. BUG: this must be investigated and reported to FLTK2 team
     */
-   MSG("when = %d\n", widget->when ());
+   _MSG("when = %d\n", widget->when ());
    if ((widget->when () & ::fltk::WHEN_ENTER_KEY_ALWAYS) &&
        (::fltk::event_key() == ::fltk::ReturnKey))
       ((FltkEntryResource*)data)->emitActivate ();

@@ -927,7 +927,7 @@ DilloHtmlForm::~DilloHtmlForm ()
 
 void DilloHtmlForm::eventHandler(Resource *resource, EventButton *event)
 {
-   MSG("DilloHtmlForm::eventHandler\n");
+   _MSG("DilloHtmlForm::eventHandler\n");
    if (event && (event->button == 3)) {
       a_UIcmd_form_popup(html->bw, html->page_url, this, showing_hiddens);
    } else {
