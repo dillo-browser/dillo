@@ -112,7 +112,7 @@
 # "%s" is replaced with the search keywords separated by '+'.
 # search_url="http://www.wikipedia.org/wiki/Special:Search?search=%s"
 # search_url="http://search.lycos.com/?query=%s"
-# search_url="http://www.alltheweb.com/search?cat=web&query=%s"
+# search_url="http://duckduckgo.com/html?q=%s"
 #search_url="http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
 # If set, dillo will ask web servers to send pages in this language.
