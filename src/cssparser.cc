@@ -1430,12 +1430,7 @@ void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
    else if (ttype == CSS_TK_STRING)
       urlStr = dStrdup (tval);
 
-   /* Skip all tokens until the expected end. */
-   while (!(ttype == CSS_TK_END ||
-            (ttype == CSS_TK_CHAR && (tval[0] == ';'))))
-      nextToken();
-
-   nextToken();
+   ignoreStatement();
 
    if (urlStr) {
       MSG("CssParser::parseImport(): @import %s\n", urlStr);
