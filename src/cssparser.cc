@@ -1423,6 +1423,9 @@ char * CssParser::parseUrl()
 void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
 {
    char *urlStr = NULL;
+   bool importSyntaxIsOK = false;
+   bool mediaSyntaxIsOK = true;
+   bool mediaIsSelected = true;
 
    nextToken();
 
@@ -1432,14 +1435,42 @@ void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
    else if (ttype == CSS_TK_STRING)
       urlStr = dStrdup (tval);
 
-   ignoreStatement();
+   nextToken();
+
+   /* parse a comma-separated list of media */
+   if (ttype == CSS_TK_SYMBOL) {
+      mediaSyntaxIsOK = false;
+      mediaIsSelected = false;
+      while (ttype == CSS_TK_SYMBOL) {
+         if (dStrcasecmp(tval, "all") == 0 ||
+             dStrcasecmp(tval, "screen") == 0)
+            mediaIsSelected = true;
+         nextToken();
+         if (ttype == CSS_TK_CHAR && tval[0] == ',') {
+            nextToken();
+         } else {
+            mediaSyntaxIsOK = true;
+            break;
+         }
+      }
+   }
+
+   if (mediaSyntaxIsOK &&
+       ttype == CSS_TK_CHAR &&
+       tval[0] == ';') {
+      importSyntaxIsOK = true;
+      nextToken();
+   } else
+      ignoreStatement();
 
    if (urlStr) {
-      MSG("CssParser::parseImport(): @import %s\n", urlStr);
-      DilloUrl *url = a_Html_url_new (html, urlStr, a_Url_str(baseUrl),
-                                      baseUrl ? 1 : 0);
-      a_Html_load_stylesheet(html, url);
-      a_Url_free(url);
+      if (importSyntaxIsOK && mediaIsSelected) {
+         MSG("CssParser::parseImport(): @import %s\n", urlStr);
+         DilloUrl *url = a_Html_url_new (html, urlStr, a_Url_str(baseUrl),
+                                         baseUrl ? 1 : 0);
+         a_Html_load_stylesheet(html, url);
+         a_Url_free(url);
+      }
       dFree (urlStr);
    }
 }
