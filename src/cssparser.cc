@@ -1424,6 +1424,8 @@ void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
 {
    char *urlStr = NULL;
 
+   nextToken();
+
    if (ttype == CSS_TK_SYMBOL &&
        dStrcasecmp(tval, "url") == 0)
       urlStr = parseUrl();
@@ -1446,6 +1448,8 @@ void CssParser::parseMedia()
 {
    bool mediaSyntaxIsOK = false;
    bool mediaIsSelected = false;
+
+   nextToken();
 
    /* parse a comma-separated list of media */
    while (ttype == CSS_TK_SYMBOL) {
@@ -1539,10 +1543,8 @@ void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext * context,
             if (dStrcasecmp(parser.tval, "import") == 0 &&
                 html != NULL &&
                 importsAreAllowed) {
-               parser.nextToken();
                parser.parseImport(html, url);
             } else if (dStrcasecmp(parser.tval, "media") == 0) {
-               parser.nextToken();
                parser.parseMedia();
             } else {
                parser.ignoreStatement();
