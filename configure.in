@@ -449,7 +449,6 @@ dnl -----------------------
 dnl Checks for header files
 dnl -----------------------
 dnl
-AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h unistd.h sys/uio.h)
 
 dnl --------------------------
