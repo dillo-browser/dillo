@@ -13,7 +13,7 @@ class FltkResource;
 } // namespace fltk
 } // namespace core
 
-#include <fltk/Widget.h>
+#include <FL/Fl_Widget.H>
 
 #include "core.hh"
 #include "fltkimgbuf.hh"
