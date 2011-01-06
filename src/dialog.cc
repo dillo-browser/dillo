@@ -13,30 +13,27 @@
 
 #include <math.h> // for rint()
 
-#include <fltk/Window.h>
-#include <fltk/ask.h>
-#include <fltk/file_chooser.h>
-#include <fltk/TextBuffer.h>
-#include <fltk/ReturnButton.h>
-#include <fltk/TextDisplay.h>
-#include <fltk/HighlightButton.h>
-#include <fltk/WordwrapOutput.h>
-#include <fltk/Input.h>
-#include <fltk/SecretInput.h>
+#include <FL/Fl_Window.H>
+#include <FL/fl_ask.H>
+#include <FL/Fl_File_Chooser.H>
+#include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Text_Display.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Output.H>
+#include <FL/Fl_Input.H>
+#include <FL/Fl_Secret_Input.H>
 
 #include "msg.h"
 #include "dialog.hh"
 #include "misc.h"
 #include "prefs.h"
 
-using namespace fltk;
-
 /*
  * Close dialog window.
  */
-static void window_close_cb(Widget *, void *vwin)
+static void window_close_cb(Fl_Widget *, void *vwin)
 {
-   delete (Window*)vwin;
+   delete (Fl_Window*)vwin;
 }
 
 /*
@@ -44,7 +41,7 @@ static void window_close_cb(Widget *, void *vwin)
  */
 void a_Dialog_msg(const char *msg)
 {
-   message("%s", msg);
+   fl_message("%s", msg);
 }
 
 /*
@@ -56,7 +53,7 @@ void a_Dialog_msg(const char *msg)
 int a_Dialog_choice3(const char *msg,
                      const char *b0, const char *b1, const char *b2)
 {
-   return choice(msg, b0, b1, b2);
+   return fl_choice(msg, b0, b1, b2);
 }
 
 /*
@@ -64,7 +61,7 @@ int a_Dialog_choice3(const char *msg,
  */
 const char *a_Dialog_input(const char *msg)
 {
-   return input("%s", "", msg);
+   return fl_input("%s", "", msg);
 }
 
 /*
@@ -72,7 +69,7 @@ const char *a_Dialog_input(const char *msg)
  */
 const char *a_Dialog_passwd(const char *msg)
 {
-   return password("%s", "", msg);
+   return fl_password("%s", "", msg);
 }
 
 /*
@@ -83,7 +80,7 @@ const char *a_Dialog_passwd(const char *msg)
 const char *a_Dialog_save_file(const char *msg,
                                const char *pattern, const char *fname)
 {
-   return file_chooser(msg, pattern, fname);
+   return fl_file_chooser(msg, pattern, fname);
 }
 
 /*
@@ -111,12 +108,8 @@ char *a_Dialog_open_file(const char *msg,
                          const char *pattern, const char *fname)
 {
    const char *fc_name;
-/*
-   static int icons_loaded = 0;
-   if (!icons_loaded)
-      FileIcon::load_system_icons();
-*/
-   fc_name = file_chooser(msg, pattern, fname);
+
+   fc_name = fl_file_chooser(msg, pattern, fname);
    return (fc_name) ? a_Misc_escape_chars(fc_name, "% ") : NULL;
 }
 
@@ -130,11 +123,11 @@ void a_Dialog_text_window(const char *txt, const char *title)
    int lines, line_num_width;
    Font *textfont = font(prefs.font_monospace, 0);
 
-   Window *window = new Window(ww, wh, title ? title : "Untitled");
+   Fl_Window *window = new Fl_Window(ww, wh, title ? title : "Untitled");
    window->callback(window_close_cb, window);
    window->begin();
 
-    TextDisplay *td = new TextDisplay(0,0,ww, wh-bh);
+    Fl_Text_Display *td = new Fl_Text_Display(0,0,ww, wh-bh);
     td->buffer()->text(txt);
 
     if (textfont)
@@ -154,7 +147,7 @@ void a_Dialog_text_window(const char *txt, const char *title)
     /* WORKAROUND: FLTK may not display all the lines without this */
     td->resize(ww+1,wh-bh);
 
-    ReturnButton *b = new ReturnButton (0, wh-bh, ww, bh, "Close");
+    Fl_Return_Button *b = new Fl_Return_Button (0, wh-bh, ww, bh, "Close");
     b->callback(window_close_cb, window);
 
    window->resizable(td);
@@ -165,7 +158,7 @@ void a_Dialog_text_window(const char *txt, const char *title)
 /*--------------------------------------------------------------------------*/
 static int choice5_answer;
 
-static void choice5_cb(Widget *button, void *number)
+static void choice5_cb(Fl_Widget *button, void *number)
 {
   choice5_answer = VOIDP2INT(number);
   _MSG("choice5_cb: %d\n", choice5_answer);
@@ -190,23 +183,23 @@ int a_Dialog_choice5(const char *QuestionTxt,
    txt[4] = alt4; txt[5] = alt5;
    for (int i=1; txt[i]; ++i, ++nb) ;
 
-   Window *window = new Window(ww,wh,"Choice5");
+   Fl_Window *window = new Fl_Window(ww,wh,"Choice5");
    window->begin();
-    Group* ib = new Group(0,0,window->w(),window->h());
+    Fl_Group* ib = new Fl_Group(0,0,window->w(),window->h());
     ib->begin();
     window->resizable(ib);
 
-    Widget *box = new Widget(0,0,ww,wh-bh, QuestionTxt);
+    Fl_Box *box = new Fl_Box(0,0,ww,wh-bh, QuestionTxt);
     box->box(FL_DOWN_BOX);
     box->labelfont(FL_HELVETICA_BOLD_ITALIC);
     box->labelsize(14);
 
-    HighlightButton *b;
+    Fl_Button *b;
     int xpos = 0, gap = 8;
     bw = (ww - gap)/nb - gap;
     xpos += gap;
     for (int i=1; i <= nb; ++i) {
-       b = new HighlightButton(xpos, wh-bh, bw, bh, txt[i]);
+       b = new Fl_Button(xpos, wh-bh, bw, bh, txt[i]);
        b->align(FL_ALIGN_WRAP|FL_ALIGN_CLIP);
        b->box(FL_UP_BOX);
        b->callback(choice5_cb, INT2VOIDP(i));
@@ -227,7 +220,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
 /*
  * ret: 0 = Cancel, 1 = OK
  */
-static void Dialog_user_password_cb(Widget *button, void *vIntPtr)
+static void Dialog_user_password_cb(Fl_Widget *button, void *vIntPtr)
 {
    int ret = VOIDP2INT(vIntPtr);
   _MSG("Dialog_user_password_cb: %d\n", ret);
@@ -246,38 +239,40 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
       input_x = 80, input_w = 200, input_h = 30,
       button_y = 230, button_h = 30;
 
-   Window *window =
-      new Window(window_w,window_h,"User/Password");
+   Fl_Window *window =
+      new Fl_Window(window_w,window_h,"User/Password");
    window->begin();
 
    /* message */
-   WordwrapOutput *message_output =
-      new WordwrapOutput(20,20,window_w-40,100);
+   Fl_Output *message_output =
+      new Fl_Output(20,20,window_w-40,100);
+   /* BUG type() not tested */
+   message_output->type(FL_NORMAL_OUTPUT | FL_INPUT_WRAP);
    message_output->box(FL_DOWN_BOX);
    message_output->text(message);
    message_output->textfont(FL_HELVETICA_BOLD_ITALIC);
    message_output->textsize(14);
 
    /* inputs */
-   Input *user_input =
-      new Input(input_x,140,input_w,input_h,"User");
+   Fl_Input *user_input =
+      new Fl_Input(input_x,140,input_w,input_h,"User");
    user_input->labelsize(14);
    user_input->textsize(14);
-   SecretInput *password_input =
-      new SecretInput(input_x,180,input_w,input_h,"Password");
+   Fl_Secret_Input *password_input =
+      new Fl_Secret_Input(input_x,180,input_w,input_h,"Password");
    password_input->labelsize(14);
    password_input->textsize(14);
 
    /* "OK" button */
-   Button *ok_button =
-      new Button(200,button_y,50,button_h,"OK");
+   Fl_Button *ok_button =
+      new Fl_Button(200,button_y,50,button_h,"OK");
    ok_button->labelsize(14);
    ok_button->callback(Dialog_user_password_cb);
    ok_button->user_data(INT2VOIDP(1));
 
    /* "Cancel" button */
-   Button *cancel_button =
-      new Button(50,button_y,100,button_h,"Cancel");
+   Fl_Button *cancel_button =
+      new Fl_Button(50,button_y,100,button_h,"Cancel");
    cancel_button->labelsize(14);
    cancel_button->callback(Dialog_user_password_cb);
    cancel_button->user_data(INT2VOIDP(0));
