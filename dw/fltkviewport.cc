@@ -215,7 +215,7 @@ int FltkViewport::handle (int event)
    _MSG("FltkViewport::handle %d\n", event);
 
    if (hscrollbar->Rectangle::contains (Fl::event_x (), Fl::event_y ()) &&
-       !(Fl::event_state() & (SHIFT | CTRL | ALT)) &&
+       !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT)) &&
        hscrollbar->send (event)) {
       return 1;
    }

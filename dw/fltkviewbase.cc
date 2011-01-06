@@ -187,12 +187,12 @@ core::ButtonState getDwButtonState ()
    int s1 = Fl::event_state ();
    int s2 = (core::ButtonState)0;
 
-   if (s1 & SHIFT)   s2 |= core::SHIFT_MASK;
-   if (s1 & CTRL)    s2 |= core::CONTROL_MASK;
-   if (s1 & ALT)     s2 |= core::META_MASK;
-   if (s1 & BUTTON1) s2 |= core::BUTTON1_MASK;
-   if (s1 & BUTTON2) s2 |= core::BUTTON2_MASK;
-   if (s1 & BUTTON3) s2 |= core::BUTTON3_MASK;
+   if (s1 & FL_SHIFT)   s2 |= core::SHIFT_MASK;
+   if (s1 & FL_CTRL)    s2 |= core::CONTROL_MASK;
+   if (s1 & FL_ALT)     s2 |= core::META_MASK;
+   if (s1 & FL_BUTTON1) s2 |= core::BUTTON1_MASK;
+   if (s1 & FL_BUTTON2) s2 |= core::BUTTON2_MASK;
+   if (s1 & FL_BUTTON3) s2 |= core::BUTTON3_MASK;
 
    return (core::ButtonState)s2;
 }
