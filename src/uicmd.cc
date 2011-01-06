@@ -246,10 +246,10 @@ public:
       // Don't focus with arrow keys
       _MSG("CustTabGroup::handle %d\n", e);
       fltk::Rectangle r(btn_x,0,BTN_W,BTN_H);
-      if (e == KEY) {
-         int k = event_key();
+      if (e == FL_KEYBOARD) {
+         int k = Fl::event_key();
          // We're only interested in some flags
-         unsigned modifier = event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
+         unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
          if (k == FL_Up || k == FL_Down || k == FL_Tab) {
             return 0;
          } else if (k == FL_Left || k == FL_Right) {
@@ -268,9 +268,9 @@ public:
          BrowserWindow *bw = a_UIcmd_get_bw_by_widget(selected_child());
          const char *title = a_History_get_title(NAV_TOP_UIDX(bw), 1);
          a_UIcmd_set_page_title(bw, title ? title : "");
-      } else if (e == MOVE) {
+      } else if (e == FL_MOVE) {
          CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
-         if (event_inside(r) && children() > 1) {
+         if (Fl::event_inside(r) && children() > 1) {
             /* We're inside the button area */
             cstp->btn_highlight(true);
             if (prefs.show_tooltip) {
@@ -295,12 +295,12 @@ public:
                }
             }
          }
-      } else if (e == PUSH && event_inside(r) &&
-                 event_button() == 1 && children() > 1) {
+      } else if (e == FL_PUSH && Fl::event_inside(r) &&
+                 Fl::event_button() == 1 && children() > 1) {
          buttonPushed = true;
          return 1;                 /* non-zero */
-      } else if (e == RELEASE) {
-         if (event_inside(r) && event_button() == 1 &&
+      } else if (e == FL_RELEASE) {
+         if (Fl::event_inside(r) && Fl::event_button() == 1 &&
              children() > 1 && buttonPushed) {
             a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(selected_child()));
          } else {
@@ -308,13 +308,13 @@ public:
             cstp->btn_highlight(false);
          }
          buttonPushed = false;
-      } else if (e == DRAG) {
+      } else if (e == FL_DRAG) {
          /* Ignore this event */
          return 1;
       }
       int ret = TabGroup::handle(e);
 
-      if (e == PUSH) {
+      if (e == FL_PUSH) {
          /* WORKAROUND: FLTK raises the window on unhandled clicks,
           * which we do not want.
           */

@@ -108,18 +108,18 @@ public:
  */
 int CustInput::handle(int e)
 {
-   int k = event_key();
+   int k = Fl::event_key();
 
    _MSG("CustInput::handle event=%d\n", e);
 
    // We're only interested in some flags
-   unsigned modifier = event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
+   unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
 
    // Don't focus with arrow keys
-   if (e == FOCUS &&
+   if (e == FL_FOCUS &&
        (k == FL_Up || k == FL_Down || k == FL_Left || k == FL_Right)) {
       return 0;
-   } else if (e == KEY) {
+   } else if (e == FL_KEYBOARD) {
       if (modifier == FL_CTRL) {
          if (k == 'l') {
             // Make text selected when already focused.
@@ -154,8 +154,8 @@ public:
 
 int CustHighlightButton::handle(int e)
 {
-   if (e == PASTE) {
-      const char* t = event_text();
+   if (e == FL_PASTE) {
+      const char* t = Fl::event_text();
       if (t && *t) {
          a_UIcmd_set_location_text(a_UIcmd_get_bw_by_widget(this), t);
          a_UIcmd_open_urlstr(a_UIcmd_get_bw_by_widget(this), t);
@@ -207,7 +207,7 @@ public:
  */
 static void search_cb(Widget *wid, void *data)
 {
-   int k = event_key();
+   int k = Fl::event_key();
 
    if (k == 1) {
       a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(wid));
@@ -243,7 +243,7 @@ static void help_cb(Widget *w, void *)
  */
 static void filemenu_cb(Widget *wid, void *)
 {
-   int k = event_key();
+   int k = Fl::event_key();
    if (k == 1 || k == 3) {
       a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(wid), wid);
    }
@@ -256,7 +256,7 @@ static void clear_cb(Widget *w, void *data)
 {
    UI *ui = (UI*)data;
 
-   int k = event_key();
+   int k = Fl::event_key();
    if (k == 1) {
       ui->set_location("");
       ui->focus_location();
@@ -288,7 +288,7 @@ static void location_cb(Widget *wid, void *data)
     * other events we're not interested in. For instance pressing
     * The Back or Forward, buttons, or the first click on a rendered
     * page. BUG: this must be investigated and reported to FLTK2 team */
-   if (event_key() == FL_Enter) {
+   if (Fl::event_key() == FL_Enter) {
       a_UIcmd_open_urlstr(a_UIcmd_get_bw_by_widget(i), i->value());
    }
    if (ui->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS) {
@@ -303,7 +303,7 @@ static void location_cb(Widget *wid, void *data)
 static void b1_cb(Widget *wid, void *cb_data)
 {
    int bn = VOIDP2INT(cb_data);
-   int k = event_key();
+   int k = Fl::event_key();
    if (k && k <= 7) {
       _MSG("[%s], mouse button %d was pressed\n", button_names[bn], k);
       _MSG("mouse button %d was pressed\n", k);
@@ -373,7 +373,7 @@ static void b1_cb(Widget *wid, void *cb_data)
  */
 static void bugmeter_cb(Widget *wid, void *data)
 {
-   int k = event_key();
+   int k = Fl::event_key();
    if (k == 1) {
       a_UIcmd_view_page_bugs(a_UIcmd_get_bw_by_widget(wid));
    } else if (k == 3) {
@@ -778,14 +778,14 @@ UI::~UI()
  */
 int UI::handle(int event)
 {
-   _MSG("UI::handle event=%d (%d,%d)\n", event, event_x(), event_y());
+   _MSG("UI::handle event=%d (%d,%d)\n", event, Fl::event_x(), Fl::event_y());
    _MSG("Panel->h()=%d Main->h()=%d\n", Panel->h() , Main->h());
 
    int ret = 0;
 
-   if (event == KEY) {
+   if (event == FL_KEYBOARD) {
       return 0; // Receive as shortcut
-   } else if (event == SHORTCUT) {
+   } else if (event == FL_SHORTCUT) {
       KeysCommand_t cmd = Keys::getKeyCmd();
       if (cmd == KEYS_NOP) {
          // Do nothing
@@ -851,11 +851,11 @@ int UI::handle(int event)
          a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
          ret = 1;
       }
-   } else if (event == PUSH) {
+   } else if (event == FL_PUSH) {
       if (prefs.middle_click_drags_page == 0 &&
-          event_button() == FL_MIDDLE_MOUSE &&
+          Fl::event_button() == FL_MIDDLE_MOUSE &&
           !a_UIcmd_pointer_on_link(a_UIcmd_get_bw_by_widget(this))) {
-         if (Main->Rectangle::contains (event_x (), event_y ())) {
+         if (Main->Rectangle::contains (Fl::event_x (), Fl::event_y ())) {
             /* Offer the event to Main's children (form widgets) */
             int save_x = e_x, save_y = e_y;
 

@@ -184,7 +184,7 @@ void FltkViewBase::drawChildWidgets () {
 
 core::ButtonState getDwButtonState ()
 {
-   int s1 = event_state ();
+   int s1 = Fl::event_state ();
    int s2 = (core::ButtonState)0;
 
    if (s1 & SHIFT)   s2 |= core::SHIFT_MASK;
@@ -207,7 +207,7 @@ int FltkViewBase::handle (int event)
     *    when passed a fltk::PUSH event. "
     */
    switch(event) {
-   case PUSH:
+   case FL_PUSH:
       processed =
          theLayout->buttonPress (this, event_clicks () + 1,
                                  translateViewXToCanvasX (event_x ()),
@@ -220,7 +220,7 @@ int FltkViewBase::handle (int event)
       }
       return processed ? true : Group::handle (event);
 
-   case RELEASE:
+   case FL_RELEASE:
       processed =
          theLayout->buttonRelease (this, event_clicks () + 1,
                                    translateViewXToCanvasX (event_x ()),
@@ -229,7 +229,7 @@ int FltkViewBase::handle (int event)
       _MSG("RELEASE => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
-   case MOVE:
+   case FL_MOVE:
       mouse_x = event_x();
       mouse_y = event_y();
       processed =
@@ -240,7 +240,7 @@ int FltkViewBase::handle (int event)
       _MSG("MOVE => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
-   case DRAG:
+   case FL_DRAG:
       processed =
          theLayout->motionNotify (this,
                                   translateViewXToCanvasX (event_x ()),
@@ -249,13 +249,13 @@ int FltkViewBase::handle (int event)
       _MSG("DRAG => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
-   case ENTER:
+   case FL_ENTER:
       theLayout->enterNotify (this, translateViewXToCanvasX (event_x ()),
                               translateViewYToCanvasY (event_y ()),
                               getDwButtonState ());
       return Group::handle (event);
 
-   case LEAVE:
+   case FL_LEAVE:
       theLayout->leaveNotify (this, getDwButtonState ());
       return Group::handle (event);
 

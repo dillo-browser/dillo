@@ -34,8 +34,8 @@ public:
 int MyInput::handle(int e)
 {
    _MSG("findbar MyInput::handle()\n");
-   int ret = 1, k = event_key();
-   unsigned modifier = event_state() & (FL_SHIFT | FL_CTRL | FL_ALT | FL_META);
+   int ret = 1, k = Fl::event_key();
+   unsigned modifier = Fl::event_state() & (FL_SHIFT| FL_CTRL| FL_ALT|FL_META);
 
    if (e == KEY) {
       if (k == FL_Left || k == FL_Right) {
@@ -92,7 +92,7 @@ void Findbar::search_cb2(Widget *widget, void *vfb)
     * Somehow fltk even regards the first loss of focus for the
     * window as a WHEN_ENTER_KEY_ALWAYS event.
     */
-   if (event_key() == FL_Enter)
+   if (Fl::event_key() == FL_Enter)
       search_cb(widget, vfb);
 }
 
@@ -177,8 +177,8 @@ Findbar::~Findbar()
 int Findbar::handle(int event)
 {
    int ret = 0;
-   int k = event_key();
-   unsigned modifier = event_state() & (FL_SHIFT | FL_CTRL | FL_ALT | FL_META);
+   int k = Fl::event_key();
+   unsigned modifier = Fl::event_state() & (FL_SHIFT| FL_CTRL| FL_ALT|FL_META);
 
    if (event == KEY && modifier == 0 && k == FL_Escape) {
       hide();

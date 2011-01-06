@@ -278,18 +278,18 @@ int FltkPreviewButton::handle (int event)
    /** \bug Some parts are missing. */
 
    switch (event) {
-   case PUSH:
+   case FL_PUSH:
       window->showWindow ();
       return Button::handle (event);
 
-   case DRAG:
+   case FL_DRAG:
       if (window->visible ()) {
-         window->scrollTo (event_x_root (), event_y_root ());
+         window->scrollTo (Fl::event_x_root (), Fl::event_y_root ());
          return 1;
       }
       return Button::handle (event);
 
-   case RELEASE:
+   case FL_RELEASE:
       window->hideWindow ();
       return Button::handle (event);
 

@@ -71,7 +71,7 @@ Xembed::sendXembedEvent(uint32_t message) {
 
 int
 Xembed::handle(int e) {
-   if (e == fltk::PUSH)
+   if (e == FL_PUSH)
       sendXembedEvent(XEMBED_REQUEST_FOCUS);
 
    return Window::handle(e);

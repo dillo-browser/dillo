@@ -214,87 +214,87 @@ int FltkViewport::handle (int event)
 {
    _MSG("FltkViewport::handle %d\n", event);
 
-   if (hscrollbar->Rectangle::contains (event_x (), event_y ()) &&
-       !(event_state() & (SHIFT | CTRL | ALT)) &&
+   if (hscrollbar->Rectangle::contains (Fl::event_x (), Fl::event_y ()) &&
+       !(Fl::event_state() & (SHIFT | CTRL | ALT)) &&
        hscrollbar->send (event)) {
       return 1;
    }
 
-   if (vscrollbar->Rectangle::contains (event_x (), event_y ()) &&
+   if (vscrollbar->Rectangle::contains (Fl::event_x (), Fl::event_y ()) &&
       vscrollbar->send (event)) {
       return 1;
    }
 
    switch(event) {
-   case ::fltk::KEY:
-      /* Tell fltk we want to receive KEY events as SHORTCUT.
+   case FL_KEYBOARD:
+      /* Tell fltk we want to receive KEYBOARD events as SHORTCUT.
        * As we don't know the exact keybindings set by the user, we ask
        * for all of them (except Tab to keep form navigation). */
-      if (::fltk::event_key() != FL_Tab)
+      if (Fl::event_key() != FL_Tab)
          return 0;
       break;
 
-   case ::fltk::FOCUS:
+   case FL_FOCUS:
       /** \bug Draw focus box. */
 
       /* If the user clicks with the left button we take focus
        * and thereby unfocus any form widgets.
        * Otherwise we let fltk do the focus handling.
        */
-      if (::fltk::event_button() == FL_LEFT_MOUSE || focus_index() < 0) {
+      if (Fl::event_button() == FL_LEFT_MOUSE || focus_index() < 0) {
          focus_index(-1);
          return 1;
       }
       break;
 
-   case ::fltk::UNFOCUS:
+   case FL_UNFOCUS:
       /** \bug Undraw focus box. */
       break;
 
-   case ::fltk::PUSH:
+   case FL_PUSH:
       take_focus();
-      if (::fltk::event_button() == FL_MIDDLE_MOUSE) {
+      if (Fl::event_button() == FL_MIDDLE_MOUSE) {
          /* pass event so that middle click can open link in new window */
          if (FltkWidgetView::handle (event) == 0) {
             dragScrolling = 1;
-            dragX = ::fltk::event_x();
-            dragY = ::fltk::event_y();
+            dragX = Fl::event_x();
+            dragY = Fl::event_y();
             setCursor (core::style::CURSOR_MOVE);
          }
          return 1;
       }
       break;
 
-   case ::fltk::DRAG:
-      if (::fltk::event_button() == FL_MIDDLE_MOUSE) {
+   case FL_DRAG:
+      if (Fl::event_button() == FL_MIDDLE_MOUSE) {
          if (dragScrolling) {
-            scroll(dragX - ::fltk::event_x(), dragY - ::fltk::event_y());
-            dragX = ::fltk::event_x();
-            dragY = ::fltk::event_y();
+            scroll(dragX - Fl::event_x(), dragY - Fl::event_y());
+            dragX = Fl::event_x();
+            dragY = Fl::event_y();
             return 1;
          }
       }
       break;
 
-   case ::fltk:: MOUSEWHEEL:
-      return (event_dx() ? hscrollbar : vscrollbar)->handle(event);
+   case FL_MOUSEWHEEL:
+      return (Fl::event_dx() ? hscrollbar : vscrollbar)->handle(event);
       break;
 
-   case ::fltk::RELEASE:
-      if (::fltk::event_button() == FL_MIDDLE_MOUSE) {
+   case FL_RELEASE:
+      if (Fl::event_button() == FL_MIDDLE_MOUSE) {
          dragScrolling = 0;
          setCursor (core::style::CURSOR_DEFAULT);
       }
       break;
 
-   case ::fltk::ENTER:
+   case FL_ENTER:
       /* could be the result of, e.g., closing another window. */
-      mouse_x = ::fltk::event_x();
-      mouse_y = ::fltk::event_y();
+      mouse_x = Fl::event_x();
+      mouse_y = Fl::event_y();
       positionChanged();
       break;
 
-   case ::fltk::LEAVE:
+   case FL_LEAVE:
       mouse_x = mouse_y = -1;
       break;
    }

@@ -173,16 +173,16 @@ KeysCommand_t Keys::getKeyCmd()
    KeysCommand_t ret = KEYS_NOP;
    KeyBinding_t keyNode;
    // We're only interested in some flags
-   keyNode.modifier = fltk::event_state() &
+   keyNode.modifier = Fl::event_state() &
      (FL_SHIFT | FL_CTRL | FL_ALT | FL_META);
 
    if (keyNode.modifier == FL_SHIFT &&
-       ispunct(fltk::event_text()[0])) {
+       ispunct(Fl::event_text()[0])) {
       // Get key code for a shifted character
-      keyNode.key = fltk::event_text()[0];
+      keyNode.key = Fl::event_text()[0];
       keyNode.modifier = 0;
    } else {
-      keyNode.key = fltk::event_key();
+      keyNode.key = Fl::event_key();
    }
 
    _MSG("getKeyCmd: key=%d, mod=%d\n", keyNode.key, keyNode.modifier);
