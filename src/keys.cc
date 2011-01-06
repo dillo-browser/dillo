@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-#include <fltk/events.h>
+#include <FL/Fl.H>
 #include <stdio.h>
 #include <stdlib.h>        /* strtol */
 #include <string.h>
@@ -43,18 +43,18 @@ static const Mapping_t keyNames[] = {
    { "Down",        FL_Down      },
    { "End",         FL_End       },
    { "Esc",         FL_Escape    },
-   { "F1",          FL_F1        },
-   { "F2",          FL_F2        },
-   { "F3",          FL_F3        },
-   { "F4",          FL_F4        },
-   { "F5",          FL_F5        },
-   { "F6",          FL_F6        },
-   { "F7",          FL_F7        },
-   { "F8",          FL_F8        },
-   { "F9",          FL_F9        },
-   { "F10",         FL_F10       },
-   { "F11",         FL_F11       },
-   { "F12",         FL_F12       },
+   { "F1",          FL_F + 1     },
+   { "F2",          FL_F + 2     },
+   { "F3",          FL_F + 3     },
+   { "F4",          FL_F + 4     },
+   { "F5",          FL_F + 5     },
+   { "F6",          FL_F + 6     },
+   { "F7",          FL_F + 7     },
+   { "F8",          FL_F + 8     },
+   { "F9",          FL_F + 9     },
+   { "F10",         FL_F + 10    },
+   { "F11",         FL_F + 11    },
+   { "F12",         FL_F + 12    },
    { "Home",        FL_Home      },
    { "Insert",      FL_Insert    },
    { "Left",        FL_Left      },
