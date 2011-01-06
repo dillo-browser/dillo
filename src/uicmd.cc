@@ -89,7 +89,7 @@ public:
          setcolor(btn_hl ? 206 : GRAY75);
          fillrect(r);
          if (btn_hl) {
-            setcolor(WHITE);
+            setcolor(FL_WHITE);
             strokerect(r);
          }
          setcolor(GRAY10);

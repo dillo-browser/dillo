@@ -432,7 +432,7 @@ int FltkComplexButtonResource::reliefYThickness ()
    button->callback (widgetCallback, this);
    button->when (FL_WHEN_RELEASE);
    if (!relief)
-      button->box(::fltk::FLAT_BOX);
+      button->box(FL_FLAT_BOX);
 
    flatView = new FltkFlatView (allocation->x + reliefXThickness (),
                                 allocation->y + reliefYThickness (),
@@ -483,7 +483,7 @@ FltkEntryResource::~FltkEntryResource ()
 
    if (label) {
       input->label(label);
-      input->set_flag(::fltk::ALIGN_INSIDE_LEFT);
+      input->set_flag(FL_ALIGN_INSIDE);
    }
    if (initText)
       input->value (initText);

@@ -505,12 +505,12 @@ PackedGroup *UI::make_progress_bars(int wide, int thin_up)
    ProgBox->begin();
     // Images
     IProg = new CustProgressBox(0,0,0,0);
-    IProg->box(thin_up ? THIN_UP_BOX : EMBOSSED_BOX);
+    IProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
     IProg->labelcolor(GRAY10);
     IProg->update_label(wide ? "Images\n0 of 0" : "0 of 0");
     // Page
     PProg = new CustProgressBox(0,0,0,0);
-    PProg->box(thin_up ? THIN_UP_BOX : EMBOSSED_BOX);
+    PProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
     PProg->labelcolor(GRAY10);
     PProg->update_label(wide ? "Page\n0.0KB" : "0.0KB");
    ProgBox->type(PackedGroup::ALL_CHILDREN_VERTICAL);
@@ -537,7 +537,7 @@ Widget *UI::make_filemenu_button()
       h = fh;
    btn->resize(w+padding,h);
    _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
-   btn->box(PanelSize == P_large ? FLAT_BOX : THIN_UP_BOX);
+   btn->box(PanelSize == P_large ? FL_FLAT_BOX : FL_THIN_UP_BOX);
    btn->callback(filemenu_cb, this);
    if (prefs.show_tooltip)
       btn->tooltip("File menu");
@@ -593,7 +593,7 @@ Group *UI::make_panel(int ww)
       g1 = new Group(0,0,ww,bh);
        // Toolbar
        pg = make_toolbar(ww,bh);
-       pg->box(EMBOSSED_BOX);
+       pg->box(FL_EMBOSSED_BOX);
        g1->add(pg);
        w = make_filemenu_button();
        pg->add(w);
@@ -611,7 +611,7 @@ Group *UI::make_panel(int ww)
         // File menu
         if (PanelSize == P_large) {
            g3 = new Group(0,0,ww,lh);
-           g3->box(FLAT_BOX);
+           g3->box(FL_FLAT_BOX);
            Widget *bn = make_filemenu_button();
            g3->add(bn);
            g3->add_resizable(*new InvisibleBox(bn->w(),0,ww - bn->w(),lh));
@@ -648,8 +648,8 @@ Group *UI::make_panel(int ww)
         pg->add(w);
 
        g3->resizable(pg); // Better than 'w3' and it also works
-       pg->box(BORDER_FRAME);
-       //g3->box(EMBOSSED_BOX);
+       pg->box(FL_BORDER_FRAME);
+       //g3->box(FL_EMBOSSED_BOX);
        g3->end();
 
       g1->resizable(g3);
@@ -670,7 +670,7 @@ Group *UI::make_status_panel(int ww)
    // Status box
    Status = new Output(0, 0, ww-bm_w, s_h, 0);
    Status->value("");
-   Status->box(THIN_DOWN_BOX);
+   Status->box(FL_THIN_DOWN_BOX);
    Status->clear_click_to_focus();
    Status->clear_tab_to_focus();
    Status->color(GRAY80);
@@ -680,8 +680,8 @@ Group *UI::make_status_panel(int ww)
    // Bug Meter
    BugMeter = new HighlightButton(ww-bm_w,0,bm_w,s_h,0);
    BugMeter->image(icons->ImgMeterOK);
-   BugMeter->box(THIN_DOWN_BOX);
-   BugMeter->align(ALIGN_INSIDE|ALIGN_CLIP|ALIGN_LEFT);
+   BugMeter->box(FL_THIN_DOWN_BOX);
+   BugMeter->align(FL_ALIGN_INSIDE|FL_ALIGN_CLIP|FL_ALIGN_LEFT);
    if (prefs.show_tooltip)
       BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
    BugMeter->callback(bugmeter_cb, this);
@@ -731,12 +731,12 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
 
    // Render area
    Main = new Widget(0,0,1,1,"Welcome...");
-   Main->box(FLAT_BOX);
+   Main->box(FL_FLAT_BOX);
    Main->color(GRAY15);
-   Main->labelfont(HELVETICA_BOLD_ITALIC);
+   Main->labelfont(FL_HELVETICA_BOLD_ITALIC);
    Main->labelsize(36);
-   Main->labeltype(SHADOW_LABEL);
-   Main->labelcolor(WHITE);
+   Main->labeltype(FL_SHADOW_LABEL);
+   Main->labelcolor(FL_WHITE);
    TopGroup->add(Main);
    TopGroup->resizable(Main);
    MainIdx = TopGroup->find(Main);
@@ -1117,8 +1117,8 @@ void UI::set_render_layout(Widget &nw)
    TopGroup->replace(MainIdx, nw);
    delete(Main);
    Main = &nw;
-   //TopGroup->box(DOWN_BOX);
-   //TopGroup->box(BORDER_FRAME);
+   //TopGroup->box(FL_DOWN_BOX);
+   //TopGroup->box(FL_BORDER_FRAME);
    TopGroup->resizable(TopGroup->child(MainIdx));
 }
 

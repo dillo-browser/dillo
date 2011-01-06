@@ -117,7 +117,7 @@ Findbar::Findbar(int width, int height) :
    int x = border;
    height -= 2 * border;
 
-   box(PLASTIC_UP_BOX);
+   box(FL_PLASTIC_UP_BOX);
    Group::hide();
 
    begin();

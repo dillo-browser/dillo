@@ -197,8 +197,8 @@ int a_Dialog_choice5(const char *QuestionTxt,
     window->resizable(ib);
 
     Widget *box = new Widget(0,0,ww,wh-bh, QuestionTxt);
-    box->box(DOWN_BOX);
-    box->labelfont(HELVETICA_BOLD_ITALIC);
+    box->box(FL_DOWN_BOX);
+    box->labelfont(FL_HELVETICA_BOLD_ITALIC);
     box->labelsize(14);
 
     HighlightButton *b;
@@ -207,8 +207,8 @@ int a_Dialog_choice5(const char *QuestionTxt,
     xpos += gap;
     for (int i=1; i <= nb; ++i) {
        b = new HighlightButton(xpos, wh-bh, bw, bh, txt[i]);
-       b->align(ALIGN_WRAP|ALIGN_CLIP);
-       b->box(UP_BOX);
+       b->align(FL_ALIGN_WRAP|FL_ALIGN_CLIP);
+       b->box(FL_UP_BOX);
        b->callback(choice5_cb, INT2VOIDP(i));
        xpos += bw + gap;
     }
@@ -253,9 +253,9 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
    /* message */
    WordwrapOutput *message_output =
       new WordwrapOutput(20,20,window_w-40,100);
-   message_output->box(DOWN_BOX);
+   message_output->box(FL_DOWN_BOX);
    message_output->text(message);
-   message_output->textfont(HELVETICA_BOLD_ITALIC);
+   message_output->textfont(FL_HELVETICA_BOLD_ITALIC);
    message_output->textsize(14);
 
    /* inputs */

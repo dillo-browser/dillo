@@ -169,7 +169,7 @@ void FltkPreview::drawFltkWidget (::fltk::Widget *widget,
 FltkPreviewWindow::FltkPreviewWindow (dw::core::Layout *layout):
    MenuWindow (1, 1)
 {
-   box (EMBOSSED_BOX);
+   box (FL_EMBOSSED_BOX);
 
    begin ();
    preview = new FltkPreview (BORDER_WIDTH, BORDER_WIDTH, 1, 1, layout);
