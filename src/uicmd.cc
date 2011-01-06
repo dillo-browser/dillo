@@ -421,7 +421,6 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    win->shortcut(0); // Ignore Escape
    if (prefs.buffered_drawing != 2)
       win->clear_double_buffer();
-   win->set_flag(RAW_LABEL);
    CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);
    DilloTabs->clear_tab_to_focus();
    DilloTabs->selection_color(156);

@@ -705,7 +705,7 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    TopGroup = new PackedGroup(0, 0, ww, wh);
    add(TopGroup);
    resizable(TopGroup);
-   set_flag(RAW_LABEL);
+   clear_flag(SHORTCUT_LABEL);
 
    if (cur_ui) {
       PanelSize = cur_ui->PanelSize;

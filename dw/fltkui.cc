@@ -260,7 +260,7 @@ FltkLabelButtonResource::~FltkLabelButtonResource ()
         new ::fltk::Button (allocation->x, allocation->y, allocation->width,
                             allocation->ascent + allocation->descent,
                             label);
-   button->set_flag (::fltk::RAW_LABEL);
+   button->clear_flag (SHORTCUT_LABEL);
    button->callback (widgetCallback, this);
    button->when (FL_WHEN_RELEASE);
    return button;
@@ -720,7 +720,7 @@ FltkCheckButtonResource::~FltkCheckButtonResource ()
    ::fltk::CheckButton *cb =
       new ::fltk::CheckButton (allocation->x, allocation->y, allocation->width,
                                allocation->ascent + allocation->descent);
-   cb->set_flag (::fltk::RAW_LABEL);
+   cb->clear_flag (SHORTCUT_LABEL);
    return cb;
 }
 
@@ -833,7 +833,7 @@ void FltkRadioButtonResource::buttonClicked ()
       new ::fltk::RadioButton (allocation->x, allocation->y,
                                allocation->width,
                                allocation->ascent + allocation->descent);
-   button->set_flag (::fltk::RAW_LABEL);
+   button->clear_flag (SHORTCUT_LABEL);
    button->when (FL_WHEN_CHANGED);
    button->callback (widgetCallback, this);
    button->type (::fltk::Button::TOGGLE);
@@ -864,7 +864,7 @@ template <class I>
 ::fltk::Item *FltkSelectionResource<I>::Item::createNewWidget (int index)
 {
    ::fltk::Item *item = new ::fltk::Item (name);
-   item->set_flag (::fltk::RAW_LABEL);
+   item->clear_flag (SHORTCUT_LABEL);
    item->user_data ((void *) index);
    return item;
 }
@@ -874,7 +874,7 @@ template <class I>
 FltkSelectionResource<I>::Item::createNewGroupWidget ()
 {
    ::fltk::ItemGroup *itemGroup = new ::fltk::ItemGroup (name);
-   itemGroup->set_flag (::fltk::RAW_LABEL);
+   itemGroup->clear_flag (SHORTCUT_LABEL);
    itemGroup->user_data ((void *) -1L);
    return itemGroup;
 }
@@ -1076,7 +1076,7 @@ FltkOptionMenuResource::~FltkOptionMenuResource ()
       new ::fltk::Choice (allocation->x, allocation->y,
                           allocation->width,
                           allocation->ascent + allocation->descent);
-   menu->set_flag (::fltk::RAW_LABEL);
+   menu->clear_flag (SHORTCUT_LABEL);
    menu->callback(widgetCallback,this);
    return menu;
 }
@@ -1147,7 +1147,7 @@ FltkListResource::~FltkListResource ()
                            allocation->ascent + allocation->descent);
    if (mode == SELECTION_MULTIPLE)
       menu->type(::fltk::Browser::MULTI);
-   menu->set_flag (::fltk::RAW_LABEL);
+   menu->clear_flag (SHORTCUT_LABEL);
    menu->callback(widgetCallback,this);
    menu->when(FL_WHEN_CHANGED);
    return menu;

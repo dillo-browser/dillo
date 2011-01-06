@@ -412,7 +412,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
          }
 
          i = new Item(label);
-         i->set_flag(RAW_LABEL);
+         i->clear_flag(SHORTCUT_LABEL);
          i->user_data(a_Url_dup(url));
          i->callback(Menu_stylesheet_cb);
          stylesheets->add(i);
