@@ -24,18 +24,16 @@
 #include "../lout/msg.h"
 #include "fltkcore.hh"
 
-#include <fltk/draw.h>
+#include <FL/fl_draw.H>
 #include <fltk/run.h>
 #include <fltk/events.h>
-#include <fltk/Monitor.h>
 #include <fltk/InvisibleBox.h>
-#include <fltk/Tooltip.h>
+#include <FL/Fl_Tooltip.H>
 #include <fltk/utf.h>
 
 namespace dw {
 namespace fltk {
 
-using namespace ::fltk;
 using namespace lout;
 
 /**
@@ -53,9 +51,9 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
 
    int fa = 0;
    if (weight >= 500)
-      fa |= BOLD;
+      fa |= FL_BOLD;
    if (style != core::style::FONT_STYLE_NORMAL)
-      fa  |= ITALIC;
+      fa  |= FL_ITALIC;
 
    font = ::fltk::font(name, fa);
    if (font == NULL) {
@@ -63,16 +61,16 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
        * If using xft, fltk::HELVETICA just means sans, fltk::COURIER
        * means mono, and fltk::TIMES means serif.
        */
-      font = HELVETICA->plus (fa);
+      font = FL_HELVETICA->plus (fa);
    }
 
    setfont(font, size);
-   spaceWidth = misc::max(0, (int)getwidth(" ") + letterSpacing);
-   int xw, xh;
-   measure("x", xw, xh);
+   spaceWidth = misc::max(0, (int)fl_width(' ') + letterSpacing);
+   int xh, xw = 0;
+   fl_measure("x", xw, xh, 0);
    xHeight = xh;
-   ascent = (int)getascent();
-   descent = (int)getdescent();
+   descent = (int)fl_descent();
+   ascent = (int)fl_height() - descent;
 
    /**
     * \bug The code above does not seem to work, so this workaround.
@@ -114,26 +112,10 @@ FltkColor::FltkColor (int color): Color (color)
 {
    this->color = color;
 
-   /*
-    * fltk/setcolor.cxx:
-    * "A Color of zero (fltk::NO_COLOR) will draw black but is
-    * ambiguous. It is returned as an error value or to indicate portions
-    * of a Style that should be inherited, and it is also used as the
-    * default label color for everything so that changing color zero can
-    * be used by the -fg switch. You should use fltk::BLACK (56) to get
-    * black."
-    *
-    * i.e., zero only works sometimes.
-    */
-
-   if (!(colors[SHADING_NORMAL] = shadeColor (color, SHADING_NORMAL) << 8))
-      colors[SHADING_NORMAL] = ::fltk::BLACK;
-   if (!(colors[SHADING_INVERSE] = shadeColor (color, SHADING_INVERSE) << 8))
-      colors[SHADING_INVERSE] = ::fltk::BLACK;
-   if (!(colors[SHADING_DARK] = shadeColor (color, SHADING_DARK) << 8))
-      colors[SHADING_DARK] = ::fltk::BLACK;
-   if (!(colors[SHADING_LIGHT] = shadeColor (color, SHADING_LIGHT) << 8))
-      colors[SHADING_LIGHT] = ::fltk::BLACK;
+   colors[SHADING_NORMAL] = shadeColor (color, SHADING_NORMAL) << 8;
+   colors[SHADING_INVERSE] = shadeColor (color, SHADING_INVERSE) << 8;
+   colors[SHADING_DARK] = shadeColor (color, SHADING_DARK) << 8;
+   colors[SHADING_LIGHT] = shadeColor (color, SHADING_LIGHT) << 8;
 }
 
 FltkColor::~FltkColor ()
@@ -182,7 +164,7 @@ FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
 FltkTooltip::~FltkTooltip ()
 {
    if (shown)
-      ::fltk::Tooltip::exit();
+      Fl_Tooltip::exit();
    if (escaped_str)
       free(escaped_str);
 }
@@ -194,16 +176,16 @@ FltkTooltip *FltkTooltip::create (const char *text)
 
 void FltkTooltip::onEnter()
 {
-   fltk::Widget *widget = fltk::belowmouse();
+   Fl_Widget *widget = Fl::belowmouse();
 
-   ::fltk::Tooltip::enter(widget, *((fltk::Rectangle *)widget),
-                          escaped_str ? escaped_str : str);
+   Fl_Tooltip::enter_area(widget, widget->x(), widget->y(), widget->w(),
+                          widget->h(), escaped_str ? escaped_str : str);
    shown = true;
 }
 
 void FltkTooltip::onLeave()
 {
-   ::fltk::Tooltip::exit();
+   Fl_Tooltip::exit(NULL);
    shown = false;
 }
 
@@ -211,21 +193,21 @@ void FltkTooltip::onMotion()
 {
 }
 
-void FltkView::addFltkWidget (::fltk::Widget *widget,
+void FltkView::addFltkWidget (Fl_Widget *widget,
                               core::Allocation *allocation)
 {
 }
 
-void FltkView::removeFltkWidget (::fltk::Widget *widget)
+void FltkView::removeFltkWidget (Fl_Widget *widget)
 {
 }
 
-void FltkView::allocateFltkWidget (::fltk::Widget *widget,
+void FltkView::allocateFltkWidget (Fl_Widget *widget,
                                    core::Allocation *allocation)
 {
 }
 
-void FltkView::drawFltkWidget (::fltk::Widget *widget, core::Rectangle *area)
+void FltkView::drawFltkWidget (Fl_Widget *widget, core::Rectangle *area)
 {
 }
 
@@ -310,7 +292,7 @@ FltkPlatform::FltkPlatform ()
 FltkPlatform::~FltkPlatform ()
 {
    if (idleFuncRunning)
-      remove_idle (generalStaticIdle, (void*)this);
+      Fl::remove_idle (generalStaticIdle, (void*)this);
    delete idleQueue;
    delete resources;
 }
@@ -363,23 +345,23 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
       int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
       for (curr = 0; next < len; curr = next) {
          next = nextGlyph(text, curr);
-         wc = utf8decode(text + curr, text + next, &nb);
+         wc = fl_utf8decode(text + curr, text + next, &nb);
          if ((wcu = towupper(wc)) == wc) {
             /* already uppercase, just draw the character */
             setfont(ff->font, ff->size);
             width += font->letterSpacing;
-            width += (int)getwidth(text + curr, next - curr);
+            width += (int)fl_width(text + curr, next - curr);
          } else {
             /* make utf8 string for converted char */
-            nb = utf8encode(wcu, chbuf);
+            nb = fl_utf8encode(wcu, chbuf);
             setfont(ff->font, sc_fontsize);
             width += font->letterSpacing;
-            width += (int)getwidth(chbuf, nb);
+            width += (int)fl_width(chbuf, nb);
          }
       }
    } else {
       setfont (ff->font, ff->size);
-      width = (int) getwidth (text, len);
+      width = (int) fl_width (text, len);
 
       if (font->letterSpacing) {
          int curr = 0, next = 0;
@@ -397,12 +379,12 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
 
 int FltkPlatform::nextGlyph (const char *text, int idx)
 {
-   return utf8fwd (&text[idx + 1], text, &text[strlen (text)]) - text;
+   return fl_utf8fwd (&text[idx + 1], text, &text[strlen (text)]) - text;
 }
 
 int FltkPlatform::prevGlyph (const char *text, int idx)
 {
-   return utf8back (&text[idx - 1], text, &text[strlen (text)]) - text;
+   return fl_utf8back (&text[idx - 1], text, &text[strlen (text)]) - text;
 }
 
 float FltkPlatform::dpiX ()
@@ -435,7 +417,7 @@ void FltkPlatform::generalIdle ()
 
    if (idleQueue->isEmpty()) {
       idleFuncRunning = false;
-      remove_idle (generalStaticIdle, (void*)this);
+      Fl::remove_idle (generalStaticIdle, (void*)this);
    }
 }
 
@@ -449,7 +431,7 @@ int FltkPlatform::addIdle (void (core::Layout::*func) ())
     * idle function, the passed idle function is put into a queue.
     */
    if (!idleFuncRunning) {
-      add_idle (generalStaticIdle, (void*)this);
+      Fl::add_idle (generalStaticIdle, (void*)this);
       idleFuncRunning = true;
    }
 
@@ -478,7 +460,7 @@ void FltkPlatform::removeIdle (int idleId)
    }
 
    if (idleFuncRunning && idleQueue->isEmpty())
-      remove_idle (generalStaticIdle, (void*)this);
+      Fl::remove_idle (generalStaticIdle, (void*)this);
 }
 
 core::style::Font *FltkPlatform::createFont (core::style::FontAttrs
@@ -500,7 +482,7 @@ core::style::Tooltip *FltkPlatform::createTooltip (const char *text)
 
 void FltkPlatform::copySelection(const char *text)
 {
-   fltk::copy(text, strlen(text), false);
+   Fl::copy(text, strlen(text), 0);
 }
 
 core::Imgbuf *FltkPlatform::createImgbuf (core::Imgbuf::Type type,

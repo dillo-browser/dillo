@@ -66,12 +66,12 @@ class FltkView: public core::View
 public:
    virtual bool usesFltkWidgets () = 0;
 
-   virtual void addFltkWidget (::fltk::Widget *widget,
+   virtual void addFltkWidget (Fl_Widget *widget,
                                core::Allocation *allocation);
-   virtual void removeFltkWidget (::fltk::Widget *widget);
-   virtual void allocateFltkWidget (::fltk::Widget *widget,
+   virtual void removeFltkWidget (Fl_Widget *widget);
+   virtual void allocateFltkWidget (Fl_Widget *widget,
                                     core::Allocation *allocation);
-   virtual void drawFltkWidget (::fltk::Widget *widget, core::Rectangle *area);
+   virtual void drawFltkWidget (Fl_Widget *widget, core::Rectangle *area);
 };
 
 
