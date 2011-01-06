@@ -4,16 +4,16 @@
 #include <time.h>         // for time_t
 #include <sys/time.h>     // for time_t in FreeBSD
 
-#include <fltk/Group.h>
-#include <fltk/Image.h>
-#include <fltk/Scrollbar.h>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Image.H>
+#include <FL/Fl_Scrollbar.H>
 
 #include "fltkcore.hh"
 
 namespace dw {
 namespace fltk {
 
-class FltkViewBase: public FltkView, public ::fltk::Group
+class FltkViewBase: public FltkView, public Fl_Group
 {
 private:
    typedef enum { DRAW_PLAIN, DRAW_CLIPPED, DRAW_BUFFERED } DrawType;
@@ -21,7 +21,7 @@ private:
    int bgColor;
    core::Region drawRegion;
    ::fltk::Rectangle *exposeArea;
-   static ::fltk::Image *backBuffer;
+   static Fl_Image *backBuffer;
    static bool backBufferInUse;
 
    void draw (const core::Rectangle *rect, DrawType type);
@@ -109,11 +109,11 @@ public:
                    int x, int y, int width, int height);
 
    bool usesFltkWidgets ();
-   void addFltkWidget (::fltk::Widget *widget, core::Allocation *allocation);
-   void removeFltkWidget (::fltk::Widget *widget);
-   void allocateFltkWidget (::fltk::Widget *widget,
+   void addFltkWidget (Fl_Widget *widget, core::Allocation *allocation);
+   void removeFltkWidget (Fl_Widget *widget);
+   void allocateFltkWidget (Fl_Widget *widget,
                             core::Allocation *allocation);
-   void drawFltkWidget (::fltk::Widget *widget, core::Rectangle *area);
+   void drawFltkWidget (Fl_Widget *widget, core::Rectangle *area);
 };
 
 } // namespace fltk
