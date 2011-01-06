@@ -103,8 +103,8 @@ public:
 };
 
 /*
- * Disable: UpKey, DownKey, PageUpKey, PageDownKey and
- * CTRL+{o,r,HomeKey,EndKey}
+ * Disable keys: Up, Down, Page_Up, Page_Down and
+ * CTRL+{o,r,Home,End}
  */
 int CustInput::handle(int e)
 {
@@ -113,23 +113,23 @@ int CustInput::handle(int e)
    _MSG("CustInput::handle event=%d\n", e);
 
    // We're only interested in some flags
-   unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
+   unsigned modifier = event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
 
    // Don't focus with arrow keys
    if (e == FOCUS &&
-       (k == UpKey || k == DownKey || k == LeftKey || k == RightKey)) {
+       (k == FL_Up || k == FL_Down || k == FL_Left || k == FL_Right)) {
       return 0;
    } else if (e == KEY) {
-      if (modifier == CTRL) {
+      if (modifier == FL_CTRL) {
          if (k == 'l') {
             // Make text selected when already focused.
             position(size(), 0);
             return 1;
-         } else if (k == 'o' || k == 'r' || k == HomeKey || k == EndKey)
+         } else if (k == 'o' || k == 'r' || k == FL_Home || k == FL_End)
             return 0;
-      } else if (modifier == SHIFT) {
-         if (k == LeftKey || k == RightKey) {
-            _MSG(" CustInput::handle > SHIFT+RightKey\n");
+      } else if (modifier == FL_SHIFT) {
+         if (k == FL_Left || k == FL_Right) {
+            _MSG(" CustInput::handle > FL_SHIFT+FL_Right\n");
             a_UIcmd_send_event_to_tabs_by_wid(e, this);
             return 1;
          }
@@ -288,7 +288,7 @@ static void location_cb(Widget *wid, void *data)
     * other events we're not interested in. For instance pressing
     * The Back or Forward, buttons, or the first click on a rendered
     * page. BUG: this must be investigated and reported to FLTK2 team */
-   if (event_key() == ReturnKey) {
+   if (event_key() == FL_Enter) {
       a_UIcmd_open_urlstr(a_UIcmd_get_bw_by_widget(i), i->value());
    }
    if (ui->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS) {
@@ -853,7 +853,7 @@ int UI::handle(int event)
       }
    } else if (event == PUSH) {
       if (prefs.middle_click_drags_page == 0 &&
-          event_button() == MiddleButton &&
+          event_button() == FL_MIDDLE_MOUSE &&
           !a_UIcmd_pointer_on_link(a_UIcmd_get_bw_by_widget(this))) {
          if (Main->Rectangle::contains (event_x (), event_y ())) {
             /* Offer the event to Main's children (form widgets) */

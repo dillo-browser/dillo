@@ -229,8 +229,8 @@ int FltkViewport::handle (int event)
    case ::fltk::KEY:
       /* Tell fltk we want to receive KEY events as SHORTCUT.
        * As we don't know the exact keybindings set by the user, we ask
-       * for all of them (except TabKey to keep form navigation). */
-      if (::fltk::event_key() != TabKey)
+       * for all of them (except Tab to keep form navigation). */
+      if (::fltk::event_key() != FL_Tab)
          return 0;
       break;
 
@@ -241,7 +241,7 @@ int FltkViewport::handle (int event)
        * and thereby unfocus any form widgets.
        * Otherwise we let fltk do the focus handling.
        */
-      if (::fltk::event_button() == ::fltk::LeftButton || focus_index() < 0) {
+      if (::fltk::event_button() == FL_LEFT_MOUSE || focus_index() < 0) {
          focus_index(-1);
          return 1;
       }
@@ -253,7 +253,7 @@ int FltkViewport::handle (int event)
 
    case ::fltk::PUSH:
       take_focus();
-      if (::fltk::event_button() == ::fltk::MiddleButton) {
+      if (::fltk::event_button() == FL_MIDDLE_MOUSE) {
          /* pass event so that middle click can open link in new window */
          if (FltkWidgetView::handle (event) == 0) {
             dragScrolling = 1;
@@ -266,7 +266,7 @@ int FltkViewport::handle (int event)
       break;
 
    case ::fltk::DRAG:
-      if (::fltk::event_button() == ::fltk::MiddleButton) {
+      if (::fltk::event_button() == FL_MIDDLE_MOUSE) {
          if (dragScrolling) {
             scroll(dragX - ::fltk::event_x(), dragY - ::fltk::event_y());
             dragX = ::fltk::event_x();
@@ -281,7 +281,7 @@ int FltkViewport::handle (int event)
       break;
 
    case ::fltk::RELEASE:
-      if (::fltk::event_button() == ::fltk::MiddleButton) {
+      if (::fltk::event_button() == FL_MIDDLE_MOUSE) {
          dragScrolling = 0;
          setCursor (core::style::CURSOR_DEFAULT);
       }

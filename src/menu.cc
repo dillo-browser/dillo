@@ -139,7 +139,7 @@ static void Menu_open_url_nw_cb(Widget* )
 static void Menu_open_url_nt_cb(Widget* )
 {
    int focus = prefs.focus_new_tab ? 1 : 0;
-   if (event_state(SHIFT)) focus = !focus;
+   if (event_state(FL_SHIFT)) focus = !focus;
    a_UIcmd_open_url_nt(popup_bw, popup_url, focus);
 }
 
@@ -293,7 +293,7 @@ static void Menu_history_cb(Widget *wid, void *data)
       // Middle button, open in a new window/tab
       if (prefs.middle_click_opens_new_tab) {
          int focus = prefs.focus_new_tab ? 1 : 0;
-         if (event_state(SHIFT)) focus = !focus;
+         if (event_state(FL_SHIFT)) focus = !focus;
          a_UIcmd_open_url_nt(popup_bw, url, focus);
       } else {
          a_UIcmd_open_url_nw(popup_bw, url);

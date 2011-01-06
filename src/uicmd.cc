@@ -249,13 +249,13 @@ public:
       if (e == KEY) {
          int k = event_key();
          // We're only interested in some flags
-         unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
-         if (k == UpKey || k == DownKey || k == TabKey) {
+         unsigned modifier = event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
+         if (k == FL_Up || k == FL_Down || k == FL_Tab) {
             return 0;
-         } else if (k == LeftKey || k == RightKey) {
-            if (modifier == SHIFT) {
+         } else if (k == FL_Left || k == FL_Right) {
+            if (modifier == FL_SHIFT) {
                int i = value();
-               if (k == LeftKey) {i = i ? i-1 : children()-1;}
+               if (k == FL_Left) {i = i ? i-1 : children()-1;}
                else {i++; if (i >= children()) i = 0;}
                selected_child(child(i));
                return 1;
@@ -383,7 +383,7 @@ BrowserWindow *a_UIcmd_get_bw_by_widget(void *v_wid)
 }
 
 /*
- * FLTK regards SHIFT + {LeftKey, Right} as navigation keys.
+ * FLTK regards SHIFT + {Left, Right} as navigation keys.
  * Special handling is required to override it. Here we route
  * these events directly to the recipient.
  * TODO: focus is not remembered correctly.

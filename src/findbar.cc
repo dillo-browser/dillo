@@ -35,15 +35,15 @@ int MyInput::handle(int e)
 {
    _MSG("findbar MyInput::handle()\n");
    int ret = 1, k = event_key();
-   unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
+   unsigned modifier = event_state() & (FL_SHIFT | FL_CTRL | FL_ALT | FL_META);
 
    if (e == KEY) {
-      if (k == LeftKey || k == RightKey) {
-         if (modifier == SHIFT) {
+      if (k == FL_Left || k == FL_Right) {
+         if (modifier == FL_SHIFT) {
             a_UIcmd_send_event_to_tabs_by_wid(e, this);
             return 1;
          }
-      } else if (k == EscapeKey && modifier == 0) {
+      } else if (k == FL_Escape && modifier == 0) {
          // Avoid clearing the text with Esc, just hide the findbar.
          return 0;
       }
@@ -92,7 +92,7 @@ void Findbar::search_cb2(Widget *widget, void *vfb)
     * Somehow fltk even regards the first loss of focus for the
     * window as a WHEN_ENTER_KEY_ALWAYS event.
     */
-   if (event_key() == ReturnKey)
+   if (event_key() == FL_Enter)
       search_cb(widget, vfb);
 }
 
@@ -139,13 +139,13 @@ Findbar::Findbar(int width, int height) :
 
     next_btn = new HighlightButton(x, border, button_width, height, "Next");
     x += button_width + gap;
-    next_btn->add_shortcut(ReturnKey);
-    next_btn->add_shortcut(KeypadEnter);
+    next_btn->add_shortcut(FL_Enter);
+    next_btn->add_shortcut(FL_KP_Enter);
     next_btn->callback(search_cb, this);
     next_btn->clear_tab_to_focus();
 
     prev_btn= new HighlightButton(x, border, button_width, height, "Previous");
-    prev_btn->add_shortcut(SHIFT+ReturnKey);
+    prev_btn->add_shortcut(FL_SHIFT+FL_Enter);
     prev_btn->callback(searchBackwards_cb, this);
     prev_btn->clear_tab_to_focus();
     x += button_width + gap;
@@ -172,15 +172,15 @@ Findbar::~Findbar()
 }
 
 /*
- * Handle events. Used to catch EscapeKey events.
+ * Handle events. Used to catch FL_Escape events.
  */
 int Findbar::handle(int event)
 {
    int ret = 0;
    int k = event_key();
-   unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
+   unsigned modifier = event_state() & (FL_SHIFT | FL_CTRL | FL_ALT | FL_META);
 
-   if (event == KEY && modifier == 0 && k == EscapeKey) {
+   if (event == KEY && modifier == 0 && k == FL_Escape) {
       hide();
       ret = 1;
    }

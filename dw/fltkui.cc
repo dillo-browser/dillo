@@ -316,9 +316,9 @@ void FltkLabelButtonResource::widgetCallback (::fltk::Widget *widget,
                                               void *data)
 {
    if ((widget->when () & ::fltk::WHEN_RELEASE) &&
-       ((::fltk::event_key() == ::fltk::ReturnKey) ||
-        (::fltk::event_button() == ::fltk::LeftButton ||
-         ::fltk::event_button() == ::fltk::MiddleButton))) {
+       ((::fltk::event_key() == FL_Enter) ||
+        (::fltk::event_button() == FL_LEFT_MOUSE ||
+         ::fltk::event_button() == FL_MIDDLE_MOUSE))) {
       FltkLabelButtonResource *lbr = (FltkLabelButtonResource*) data;
       dw::core::EventButton event;
       setButtonEvent(&event);
@@ -364,9 +364,9 @@ void FltkComplexButtonResource::widgetCallback (::fltk::Widget *widget,
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
 
    if (widget->when() == ::fltk::WHEN_RELEASE &&
-       ((::fltk::event_key() == ::fltk::ReturnKey) ||
-        (::fltk::event_button() == ::fltk::LeftButton ||
-         ::fltk::event_button() == ::fltk::MiddleButton))) {
+       ((::fltk::event_key() == FL_Enter) ||
+        (::fltk::event_button() == FL_LEFT_MOUSE ||
+         ::fltk::event_button() == FL_MIDDLE_MOUSE))) {
       res->click_x = ::fltk::event_x();
       res->click_y = ::fltk::event_y();
       dw::core::EventButton event;
@@ -518,7 +518,7 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
 void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
                                         void *data)
 {
-   /* The (::fltk::event_key() == ::fltk::ReturnKey) test
+   /* The (::fltk::event_key() == FL_Enter) test
     * is necessary because WHEN_ENTER_KEY also includes
     * other events we're not interested in. For instance pressing
     * The Back or Forward, buttons, or the first click on a rendered
@@ -526,7 +526,7 @@ void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
     */
    _MSG("when = %d\n", widget->when ());
    if ((widget->when () & ::fltk::WHEN_ENTER_KEY_ALWAYS) &&
-       (::fltk::event_key() == ::fltk::ReturnKey))
+       (::fltk::event_key() == FL_Enter))
       ((FltkEntryResource*)data)->emitActivate ();
 }
 
