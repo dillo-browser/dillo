@@ -1,8 +1,8 @@
 #ifndef __DW_FLTKVIEWPORT_HH__
 #define __DW_FLTKVIEWPORT_HH__
 
-#include <fltk/Group.h>
-#include <fltk/Scrollbar.h>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Scrollbar.H>
 
 #include "core.hh"
 #include "fltkcore.hh"
@@ -23,10 +23,10 @@ private:
    int scrollDX, scrollDY;
    int dragScrolling, dragX, dragY;
 
-   ::fltk::Scrollbar *vscrollbar, *hscrollbar;
+   Fl_Scrollbar *vscrollbar, *hscrollbar;
 
    GadgetOrientation gadgetOrientation[4];
-   lout::container::typed::List <lout::object::TypedPointer < ::fltk::Widget> >
+   lout::container::typed::List <lout::object::TypedPointer < Fl_Widget> >
       *gadgets;
 
    void adjustScrollbarsAndGadgetsAllocation ();
@@ -35,8 +35,8 @@ private:
    void vscrollbarChanged ();
    void positionChanged ();
 
-   static void hscrollbarCallback (Widget *hscrollbar, void *viewportPtr);
-   static void vscrollbarCallback (Widget *vscrollbar, void *viewportPtr);
+   static void hscrollbarCallback (Fl_Widget *hscrollbar, void *viewportPtr);
+   static void vscrollbarCallback (Fl_Widget *vscrollbar, void *viewportPtr);
 
    void updateCanvasWidgets (int oldScrollX, int oldScrollY);
    static void draw_area (void *data, const Rectangle& cr);
@@ -69,7 +69,7 @@ public:
 
    void setGadgetOrientation (bool hscrollbarVisible, bool vscrollbarVisible,
                               GadgetOrientation gadgetOrientation);
-   void addGadget (::fltk::Widget *gadget);
+   void addGadget (Fl_Widget *gadget);
 };
 
 } // namespace fltk

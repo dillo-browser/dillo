@@ -21,14 +21,12 @@
 
 #include "fltkviewport.hh"
 
-#include <fltk/draw.h>
-#include <fltk/damage.h>
-#include <fltk/events.h>
+#include <FL/Fl.H>
+#include <FL/fl_draw.H>
 
 #include <stdio.h>
 #include "../lout/msg.h"
 
-using namespace fltk;
 using namespace lout;
 using namespace lout::object;
 using namespace lout::container::typed;
@@ -39,13 +37,13 @@ namespace fltk {
 FltkViewport::FltkViewport (int x, int y, int w, int h, const char *label):
    FltkWidgetView (x, y, w, h, label)
 {
-   hscrollbar = new Scrollbar (0, 0, 1, 1);
-   hscrollbar->set_horizontal();
+   hscrollbar = new Fl_Scrollbar (0, 0, 1, 1);
+   hscrollbar->type(FL_HORIZONTAL);
    hscrollbar->callback (hscrollbarCallback, this);
    add (hscrollbar);
 
-   vscrollbar = new Scrollbar (0, 0, 1, 1);
-   vscrollbar->set_vertical();
+   vscrollbar = new Fl_Scrollbar (0, 0, 1, 1);
+   vscrollbar->type(FL_VERTICAL);
    vscrollbar->callback (vscrollbarCallback, this);
    add (vscrollbar);
 
@@ -58,7 +56,7 @@ FltkViewport::FltkViewport (int x, int y, int w, int h, const char *label):
    gadgetOrientation[3] = GADGET_HORIZONTAL;
 
    gadgets =
-      new container::typed::List <object::TypedPointer < ::fltk::Widget> >
+      new container::typed::List <object::TypedPointer < Fl_Widget> >
       (true);
 }
 
@@ -94,24 +92,16 @@ void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
       vdiff = hscrollbar->visible () ? SCROLLBAR_THICKNESS : 0;
    }
 
-   hscrollbar->x (0);
-   hscrollbar->y (0 + h () - SCROLLBAR_THICKNESS);
-   hscrollbar->w (w () - hdiff);
-   hscrollbar->h (SCROLLBAR_THICKNESS);
-
-   vscrollbar->x (0 + w () - SCROLLBAR_THICKNESS);
-   vscrollbar->y (0);
-   vscrollbar->h (h () - vdiff);
-   vscrollbar->w (SCROLLBAR_THICKNESS);
+   hscrollbar->resize(0, h () - SCROLLBAR_THICKNESS, w () - hdiff,
+                      SCROLLBAR_THICKNESS);
+   vscrollbar->resize(w () - SCROLLBAR_THICKNESS, 0, h () - vdiff,
+                      SCROLLBAR_THICKNESS);
 
    int x = w () - SCROLLBAR_THICKNESS, y = h () - SCROLLBAR_THICKNESS;
-   for (Iterator <TypedPointer < ::fltk::Widget> > it = gadgets->iterator ();
+   for (Iterator <TypedPointer < Fl_Widget> > it = gadgets->iterator ();
         it.hasNext (); ) {
-      ::fltk::Widget *widget = it.getNext()->getTypedValue ();
-      widget->x (0);
-      widget->y (0);
-      widget->w (SCROLLBAR_THICKNESS);
-      widget->h (SCROLLBAR_THICKNESS);
+      Fl_Widget *widget = it.getNext()->getTypedValue ();
+      widget->resize(0, 0, SCROLLBAR_THICKNESS, SCROLLBAR_THICKNESS);
 
       switch (gadgetOrientation [visibility]) {
       case GADGET_VERTICAL:
@@ -141,12 +131,12 @@ void FltkViewport::vscrollbarChanged ()
    scroll (0, vscrollbar->value () - scrollY);
 }
 
-void FltkViewport::vscrollbarCallback (Widget *vscrollbar, void *viewportPtr)
+void FltkViewport::vscrollbarCallback (Fl_Widget *vscrollbar,void *viewportPtr)
 {
    ((FltkViewport*)viewportPtr)->vscrollbarChanged ();
 }
 
-void FltkViewport::hscrollbarCallback (Widget *hscrollbar, void *viewportPtr)
+void FltkViewport::hscrollbarCallback (Fl_Widget *hscrollbar,void *viewportPtr)
 {
    ((FltkViewport*)viewportPtr)->hscrollbarChanged ();
 }
@@ -164,17 +154,17 @@ void FltkViewport::layout ()
 void FltkViewport::draw_area (void *data, const Rectangle& cr )
 {
   FltkViewport *vp = (FltkViewport*) data;
-  push_clip(cr);
+  fl_push_clip(cr.x, cr.y, cr.w, cr.h);
 
   vp->FltkWidgetView::draw ();
 
-  for (Iterator <TypedPointer < ::fltk::Widget> > it = vp->gadgets->iterator();
+  for (Iterator <TypedPointer < Fl_Widget> > it = vp->gadgets->iterator();
        it.hasNext (); ) {
-     ::fltk::Widget *widget = it.getNext()->getTypedValue ();
+     Fl_Widget *widget = it.getNext()->getTypedValue ();
      vp->draw_child (*widget);
   }
 
-  pop_clip();
+  fl_pop_clip();
 
 }
 
@@ -185,17 +175,17 @@ void FltkViewport::draw ()
    Rectangle cr (0, 0, w () - hdiff, h () - vdiff);
    int d = damage();
 
-   if (d & DAMAGE_SCROLL) {
-      set_damage (DAMAGE_SCROLL);
+   if (d & FL_DAMAGE_SCROLL) {
+      Fl::damage (FL_DAMAGE_SCROLL);
       scrollrect(cr, -scrollDX, -scrollDY, draw_area, this);
-      d &= ~DAMAGE_SCROLL;
-      set_damage (d);
+      d &= ~FL_DAMAGE_SCROLL;
+      Fl::damage (d);
    }
 
    if (d) {
       draw_area(this, cr);
 
-      if (d == DAMAGE_CHILD) {
+      if (d == FL_DAMAGE_CHILD) {
          if (hscrollbar->damage ())
             draw_child (*hscrollbar);
          if (vscrollbar->damage ())
@@ -216,12 +206,12 @@ int FltkViewport::handle (int event)
 
    if (hscrollbar->Rectangle::contains (Fl::event_x (), Fl::event_y ()) &&
        !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT)) &&
-       hscrollbar->send (event)) {
+       hscrollbar->handle (event)) {
       return 1;
    }
 
    if (vscrollbar->Rectangle::contains (Fl::event_x (), Fl::event_y ()) &&
-      vscrollbar->send (event)) {
+      vscrollbar->handle (event)) {
       return 1;
    }
 
@@ -373,7 +363,8 @@ void FltkViewport::scrollTo (int x, int y)
    scrollY = y;
 
    adjustScrollbarValues ();
-   redraw (DAMAGE_SCROLL);
+   damage(FL_DAMAGE_SCROLL);
+   redraw();
    theLayout->scrollPosChanged (this, scrollX, scrollY);
    positionChanged();
 }
@@ -426,13 +417,12 @@ void FltkViewport::updateCanvasWidgets (int dx, int dy)
 {
    // scroll all child widgets except scroll bars
    for (int i = children () - 1; i > 0; i--) {
-      ::fltk::Widget *widget = child (i);
+      Fl_Widget *widget = child (i);
 
       if (widget == hscrollbar || widget == vscrollbar)
          continue;
 
-      widget->x (widget->x () - dx);
-      widget->y (widget->y () - dy);
+      widget->position(widget->x () - dx, widget->y () - dy);
    }
 }
 
@@ -468,11 +458,11 @@ void FltkViewport::setGadgetOrientation (bool hscrollbarVisible,
    adjustScrollbarsAndGadgetsAllocation ();
 }
 
-void FltkViewport::addGadget (::fltk::Widget *gadget)
+void FltkViewport::addGadget (Fl_Widget *gadget)
 {
    /** \bug Reparent? */
 
-   gadgets->append (new TypedPointer < ::fltk::Widget> (gadget));
+   gadgets->append (new TypedPointer < Fl_Widget> (gadget));
    adjustScrollbarsAndGadgetsAllocation ();
 }
 
