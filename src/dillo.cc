@@ -24,10 +24,8 @@
 #include <signal.h>
 #include <locale.h>
 
-#include <fltk/Window.h>
-#include <fltk/TabGroup.h>
-#include <fltk/Font.h>
-#include <fltk/run.h>
+#include <FL/Fl_Window.H>
+#include <FL/Fl.H>
 
 #include "msg.h"
 #include "paths.hh"
@@ -318,10 +316,7 @@ int main(int argc, char **argv)
    }
 
    // Sets WM_CLASS hint on X11
-   fltk::Window::xclass("dillo");
-
-   // WORKAROUND: sometimes the default pager triggers redraw storms
-   fltk::TabGroup::default_pager(fltk::PAGER_SHRINK);
+   Fl_Window::default_xclass("dillo");
 
    checkPreferredFonts();
    /* use preferred font for UI */
@@ -369,7 +364,7 @@ int main(int argc, char **argv)
       }
    }
 
-   fltk::run();
+   Fl::run();
 
    /*
     * Memory deallocating routines
