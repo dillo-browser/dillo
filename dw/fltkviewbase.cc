@@ -209,10 +209,10 @@ int FltkViewBase::handle (int event)
    switch(event) {
    case FL_PUSH:
       processed =
-         theLayout->buttonPress (this, event_clicks () + 1,
-                                 translateViewXToCanvasX (event_x ()),
-                                 translateViewYToCanvasY (event_y ()),
-                                 getDwButtonState (), event_button ());
+         theLayout->buttonPress (this, Fl::event_clicks () + 1,
+                                 translateViewXToCanvasX (Fl::event_x ()),
+                                 translateViewYToCanvasY (Fl::event_y ()),
+                                 getDwButtonState (), Fl::event_button ());
       _MSG("PUSH => %s\n", processed ? "true" : "false");
       if (processed) {
          /* pressed dw content; give focus to the view */
@@ -222,16 +222,16 @@ int FltkViewBase::handle (int event)
 
    case FL_RELEASE:
       processed =
-         theLayout->buttonRelease (this, event_clicks () + 1,
-                                   translateViewXToCanvasX (event_x ()),
-                                   translateViewYToCanvasY (event_y ()),
-                                   getDwButtonState (), event_button ());
+         theLayout->buttonRelease (this, Fl::event_clicks () + 1,
+                                   translateViewXToCanvasX (Fl::event_x ()),
+                                   translateViewYToCanvasY (Fl::event_y ()),
+                                   getDwButtonState (), Fl::event_button ());
       _MSG("RELEASE => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
    case FL_MOVE:
-      mouse_x = event_x();
-      mouse_y = event_y();
+      mouse_x = Fl::event_x();
+      mouse_y = Fl::event_y();
       processed =
          theLayout->motionNotify (this,
                                   translateViewXToCanvasX (mouse_x),
@@ -243,15 +243,15 @@ int FltkViewBase::handle (int event)
    case FL_DRAG:
       processed =
          theLayout->motionNotify (this,
-                                  translateViewXToCanvasX (event_x ()),
-                                  translateViewYToCanvasY (event_y ()),
+                                  translateViewXToCanvasX (Fl::event_x ()),
+                                  translateViewYToCanvasY (Fl::event_y ()),
                                   getDwButtonState ());
       _MSG("DRAG => %s\n", processed ? "true" : "false");
       return processed ? true : Group::handle (event);
 
    case FL_ENTER:
-      theLayout->enterNotify (this, translateViewXToCanvasX (event_x ()),
-                              translateViewYToCanvasY (event_y ()),
+      theLayout->enterNotify (this, translateViewXToCanvasX (Fl::event_x ()),
+                              translateViewYToCanvasY (Fl::event_y ()),
                               getDwButtonState ());
       return Group::handle (event);
 

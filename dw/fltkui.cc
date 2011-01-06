@@ -290,7 +290,7 @@ void FltkLabelButtonResource::sizeRequest (core::Requisition *requisition)
  */
 static core::ButtonState getDwButtonState ()
 {
-   int s1 = ::fltk::event_state ();
+   int s1 = Fl::event_state ();
    int s2 = (core::ButtonState)0;
 
    if (s1 & FL_SHIFT)   s2 |= core::SHIFT_MASK;
@@ -305,20 +305,20 @@ static core::ButtonState getDwButtonState ()
 
 static void setButtonEvent(dw::core::EventButton *event)
 {
-   event->xCanvas = ::fltk::event_x();
-   event->yCanvas = ::fltk::event_y();
+   event->xCanvas = Fl::event_x();
+   event->yCanvas = Fl::event_y();
    event->state = getDwButtonState();
-   event->button = ::fltk::event_button();
-   event->numPressed = ::fltk::event_clicks() + 1;
+   event->button = Fl::event_button();
+   event->numPressed = Fl::event_clicks() + 1;
 }
 
 void FltkLabelButtonResource::widgetCallback (::fltk::Widget *widget,
                                               void *data)
 {
    if ((widget->when () & ::fltk::WHEN_RELEASE) &&
-       ((::fltk::event_key() == FL_Enter) ||
-        (::fltk::event_button() == FL_LEFT_MOUSE ||
-         ::fltk::event_button() == FL_MIDDLE_MOUSE))) {
+       ((Fl::event_key() == FL_Enter) ||
+        (Fl::event_button() == FL_LEFT_MOUSE ||
+         Fl::event_button() == FL_MIDDLE_MOUSE))) {
       FltkLabelButtonResource *lbr = (FltkLabelButtonResource*) data;
       dw::core::EventButton event;
       setButtonEvent(&event);
@@ -364,16 +364,16 @@ void FltkComplexButtonResource::widgetCallback (::fltk::Widget *widget,
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
 
    if (widget->when() == ::fltk::WHEN_RELEASE &&
-       ((::fltk::event_key() == FL_Enter) ||
-        (::fltk::event_button() == FL_LEFT_MOUSE ||
-         ::fltk::event_button() == FL_MIDDLE_MOUSE))) {
-      res->click_x = ::fltk::event_x();
-      res->click_y = ::fltk::event_y();
+       ((Fl::event_key() == FL_Enter) ||
+        (Fl::event_button() == FL_LEFT_MOUSE ||
+         Fl::event_button() == FL_MIDDLE_MOUSE))) {
+      res->click_x = Fl::event_x();
+      res->click_y = Fl::event_y();
       dw::core::EventButton event;
       setButtonEvent(&event);
       res->emitClicked(&event);
    } else {
-      ((FltkViewBase*)res->flatView)->handle(::fltk::event());
+      ((FltkViewBase*)res->flatView)->handle(Fl::event());
    }
 }
 
@@ -526,7 +526,7 @@ void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
     */
    _MSG("when = %d\n", widget->when ());
    if ((widget->when () & ::fltk::WHEN_ENTER_KEY_ALWAYS) &&
-       (::fltk::event_key() == FL_Enter))
+       (Fl::event_key() == FL_Enter))
       ((FltkEntryResource*)data)->emitActivate ();
 }
 
