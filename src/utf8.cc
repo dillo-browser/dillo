@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-#include <fltk/utf.h>
+#include <FL/fl_utf8.h>
 
 #include "../dlib/dlib.h"    /* TRUE/FALSE */
 #include "utf8.hh"
@@ -45,7 +45,7 @@ uint_t a_Utf8_end_of_char(const char *str, uint_t i)
  */
 uint_t a_Utf8_decode(const char* str, const char* end, int* len)
 {
-   return utf8decode(str, end, len);
+   return fl_utf8decode(str, end, len);
 }
 
 /*
@@ -53,7 +53,7 @@ uint_t a_Utf8_decode(const char* str, const char* end, int* len)
  */
 int a_Utf8_encode(unsigned int ucs, char *buf)
 {
-   return utf8encode(ucs, buf);
+   return fl_utf8encode(ucs, buf);
 }
 
 /*
@@ -63,7 +63,7 @@ int a_Utf8_encode(unsigned int ucs, char *buf)
  */
 int a_Utf8_test(const char* src, unsigned int srclen)
 {
-   return utf8test(src, srclen);
+   return fl_utf8test(src, srclen);
 }
 
 /*
