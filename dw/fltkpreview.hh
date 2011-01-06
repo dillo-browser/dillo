@@ -1,8 +1,8 @@
 #ifndef __FlTKPREVIEW_HH__
 #define __FlTKPREVIEW_HH__
 
-#include <fltk/Button.h>
-#include <fltk/MenuWindow.h>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Menu_Window.H>
 #include "fltkviewbase.hh"
 
 namespace dw {
@@ -46,11 +46,11 @@ public:
                    int x, int y, int width, int height);
 
    bool usesFltkWidgets ();
-   void drawFltkWidget (::fltk::Widget *widget, core::Rectangle *area);
+   void drawFltkWidget (Fl_Widget *widget, core::Rectangle *area);
 };
 
 
-class FltkPreviewWindow: public ::fltk::MenuWindow
+class FltkPreviewWindow: public Fl_Menu_Window
 {
 private:
    enum { BORDER_WIDTH = 2 };
@@ -71,7 +71,7 @@ public:
 };
 
 
-class FltkPreviewButton: public  ::fltk::Button
+class FltkPreviewButton: public Fl_Button
 {
 private:
    FltkPreviewWindow *window;

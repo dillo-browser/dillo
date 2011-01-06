@@ -22,14 +22,12 @@
 #include "fltkpreview.hh"
 #include "fltkmisc.hh"
 
-#include <fltk/events.h>
-#include <fltk/xbmImage.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Bitmap.H>
 #include <fltk/draw.h>
 #include <stdio.h>
 
 #include "preview.xbm"
-
-using namespace ::fltk;
 
 namespace dw {
 namespace fltk {
@@ -159,7 +157,7 @@ bool FltkPreview::usesFltkWidgets ()
    return false;
 }
 
-void FltkPreview::drawFltkWidget (::fltk::Widget *widget,
+void FltkPreview::drawFltkWidget (Fl_Widget *widget,
                                   core::Rectangle *area)
 {
 }
@@ -167,7 +165,7 @@ void FltkPreview::drawFltkWidget (::fltk::Widget *widget,
 // ----------------------------------------------------------------------
 
 FltkPreviewWindow::FltkPreviewWindow (dw::core::Layout *layout):
-   MenuWindow (1, 1)
+   Fl_Menu_Window (1, 1)
 {
    box (FL_EMBOSSED_BOX);
 
@@ -205,7 +203,7 @@ void FltkPreviewWindow::reallocate ()
       height = preview->canvasHeight * maxWidth / preview->canvasWidth;
    }
 
-   get_mouse(mx, my);
+   Fl::get_mouse(mx, my);
 
    posX = mx - preview->translateCanvasXToViewX (preview->scrollX
                                                  + preview->scrollWidth / 2);
@@ -237,13 +235,12 @@ void FltkPreviewWindow::reallocate ()
 
    resize (posX, posY, width, height);
 
-   preview->w (w () - 2 * BORDER_WIDTH);
-   preview->h (h () - 2 * BORDER_WIDTH);
+   preview->size(w () - 2 * BORDER_WIDTH, h () - 2 * BORDER_WIDTH);
 }
 
 void FltkPreviewWindow::hideWindow ()
 {
-   Window::hide ();
+   Fl_Window::hide ();
 }
 
 void FltkPreviewWindow::scrollTo (int mouseX, int mouseY)
@@ -263,9 +260,9 @@ void FltkPreviewWindow::scrollTo (int mouseX, int mouseY)
 FltkPreviewButton::FltkPreviewButton (int x, int y, int w, int h,
                                       dw::core::Layout *layout,
                                       const char *label):
-   Button (x, y, w, h, label)
+   Fl_Button (x, y, w, h, label)
 {
-   image (new xbmImage (preview_bits, preview_width, preview_height));
+   image (new Fl_Bitmap (preview_bits, preview_width, preview_height));
    window = new FltkPreviewWindow (layout);
 }
 
@@ -280,21 +277,21 @@ int FltkPreviewButton::handle (int event)
    switch (event) {
    case FL_PUSH:
       window->showWindow ();
-      return Button::handle (event);
+      return Fl_Button::handle (event);
 
    case FL_DRAG:
       if (window->visible ()) {
          window->scrollTo (Fl::event_x_root (), Fl::event_y_root ());
          return 1;
       }
-      return Button::handle (event);
+      return Fl_Button::handle (event);
 
    case FL_RELEASE:
       window->hideWindow ();
-      return Button::handle (event);
+      return Fl_Button::handle (event);
 
    default:
-      return Button::handle (event);
+      return Fl_Button::handle (event);
    }
 }
 
