@@ -142,19 +142,22 @@ fi
 
 
 dnl ----------------------
-dnl Test for FLTK2 library
+dnl Test for FLTK 1.3 library
 dnl ----------------------
 dnl
 dnl For debugging and to be user friendly
-AC_MSG_CHECKING([FLTK2])
-if sh -c "fltk2-config --version" >/dev/null 2>&1
-then AC_MSG_RESULT(yes)
-     LIBFLTK_CXXFLAGS=`fltk2-config --cxxflags`
-     LIBFLTK_CFLAGS=`fltk2-config --cflags`
-     LIBFLTK_LIBS=`fltk2-config --use-images --ldflags`
-else AC_MSG_RESULT(no)
-     AC_ERROR(FLTK2 must be installed!)
-fi
+AC_MSG_CHECKING([FLTK 1.3])
+fltk_version="`fltk-config --version 2>/dev/null`"
+case $fltk_version in
+  1.3.*) AC_MSG_RESULT(yes)
+         LIBFLTK_CXXFLAGS=`fltk-config --cxxflags`
+         LIBFLTK_CFLAGS=`fltk-config --cflags`
+         LIBFLTK_LIBS=`fltk-config --use-images --ldflags`;;
+  ?*)    AC_MSG_RESULT(no)
+         AC_ERROR(FLTK 1.3 required; version found: $fltk_version);;
+  *)     AC_MSG_RESULT(no)
+         AC_ERROR(FLTK 1.3 required; fltk-config not found)
+esac
 
 
 dnl ----------------
