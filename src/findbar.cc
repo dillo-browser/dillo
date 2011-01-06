@@ -132,7 +132,7 @@ Findbar::Findbar(int width, int height) :
     x += input_width + gap;
     resizable(i);
     i->color(206);
-    i->when(WHEN_ENTER_KEY_ALWAYS);
+    i->when(FL_WHEN_ENTER_KEY_ALWAYS);
     i->callback(search_cb2, this);
     i->clear_tab_to_focus();
     i->set_click_to_focus();

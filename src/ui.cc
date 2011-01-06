@@ -469,7 +469,7 @@ PackedGroup *UI::make_location()
 
     Input *i = Location = new CustInput(0,0,0,0,0);
     i->color(CuteColor);
-    i->when(WHEN_ENTER_KEY);
+    i->when(FL_WHEN_ENTER_KEY);
     i->callback(location_cb, this);
     i->set_click_to_focus();
 

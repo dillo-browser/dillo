@@ -262,7 +262,7 @@ FltkLabelButtonResource::~FltkLabelButtonResource ()
                             label);
    button->set_flag (::fltk::RAW_LABEL);
    button->callback (widgetCallback, this);
-   button->when (::fltk::WHEN_RELEASE);
+   button->when (FL_WHEN_RELEASE);
    return button;
 }
 
@@ -315,7 +315,7 @@ static void setButtonEvent(dw::core::EventButton *event)
 void FltkLabelButtonResource::widgetCallback (::fltk::Widget *widget,
                                               void *data)
 {
-   if ((widget->when () & ::fltk::WHEN_RELEASE) &&
+   if ((widget->when () & FL_WHEN_RELEASE) &&
        ((Fl::event_key() == FL_Enter) ||
         (Fl::event_button() == FL_LEFT_MOUSE ||
          Fl::event_button() == FL_MIDDLE_MOUSE))) {
@@ -363,7 +363,7 @@ void FltkComplexButtonResource::widgetCallback (::fltk::Widget *widget,
 {
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
 
-   if (widget->when() == ::fltk::WHEN_RELEASE &&
+   if (widget->when() == FL_WHEN_RELEASE &&
        ((Fl::event_key() == FL_Enter) ||
         (Fl::event_button() == FL_LEFT_MOUSE ||
          Fl::event_button() == FL_MIDDLE_MOUSE))) {
@@ -430,7 +430,7 @@ int FltkComplexButtonResource::reliefYThickness ()
       new ComplexButton (allocation->x, allocation->y, allocation->width,
                          allocation->ascent + allocation->descent);
    button->callback (widgetCallback, this);
-   button->when (::fltk::WHEN_RELEASE);
+   button->when (FL_WHEN_RELEASE);
    if (!relief)
       button->box(::fltk::FLAT_BOX);
 
@@ -479,7 +479,7 @@ FltkEntryResource::~FltkEntryResource ()
    if (password)
       input->type(::fltk::Input::SECRET);
    input->callback (widgetCallback, this);
-   input->when (::fltk::WHEN_ENTER_KEY_ALWAYS);
+   input->when (FL_WHEN_ENTER_KEY_ALWAYS);
 
    if (label) {
       input->label(label);
@@ -525,7 +525,7 @@ void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
     * page. BUG: this must be investigated and reported to FLTK2 team
     */
    _MSG("when = %d\n", widget->when ());
-   if ((widget->when () & ::fltk::WHEN_ENTER_KEY_ALWAYS) &&
+   if ((widget->when () & FL_WHEN_ENTER_KEY_ALWAYS) &&
        (Fl::event_key() == FL_Enter))
       ((FltkEntryResource*)data)->emitActivate ();
 }
@@ -801,7 +801,7 @@ dw::core::ui::RadioButtonResource::GroupIterator
 void FltkRadioButtonResource::widgetCallback (::fltk::Widget *widget,
                                               void *data)
 {
-   if (widget->when () & ::fltk::WHEN_CHANGED)
+   if (widget->when () & FL_WHEN_CHANGED)
       ((FltkRadioButtonResource*)data)->buttonClicked ();
 }
 
@@ -834,7 +834,7 @@ void FltkRadioButtonResource::buttonClicked ()
                                allocation->width,
                                allocation->ascent + allocation->descent);
    button->set_flag (::fltk::RAW_LABEL);
-   button->when (::fltk::WHEN_CHANGED);
+   button->when (FL_WHEN_CHANGED);
    button->callback (widgetCallback, this);
    button->type (::fltk::Button::TOGGLE);
 
@@ -1149,7 +1149,7 @@ FltkListResource::~FltkListResource ()
       menu->type(::fltk::Browser::MULTI);
    menu->set_flag (::fltk::RAW_LABEL);
    menu->callback(widgetCallback,this);
-   menu->when(::fltk::WHEN_CHANGED);
+   menu->when(FL_WHEN_CHANGED);
    return menu;
 }
 
