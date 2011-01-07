@@ -1,7 +1,5 @@
-
-// fltkcomplexbutton.cc contains code from FLTK2's src/Button.cxx
-// that is Copyright 1998-2006 by Bill Spitzak and others.
-// (see http://svn.easysw.com/public/fltk/fltk/trunk/src/Button.cxx)
+// fltkcomplexbutton.cc contains code from FLTK 1.3's src/Fl_Button.cxx
+// that is Copyright 1998-2010 by Bill Spitzak and others.
 
 /*
  * This program is free software; you can redistribute it and/or modify
@@ -18,263 +16,162 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fltk/events.h>
-#include <fltk/damage.h>
-#include <fltk/Group.h>
-#include <fltk/Box.h>
-#include <stdlib.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Window.H>
 
 #include "fltkcomplexbutton.hh"
 
-using namespace fltk;
 using namespace dw::fltk::ui;
 
-/*! \class fltk::ComplexButton
-
-  ComplexButtons generate callbacks when they are clicked by the user. You
-  control exactly when and how by changing the values for when():
-  - fltk::WHEN_NEVER: The callback is not done, instead changed() is
-    turned on.
-  - fltk::WHEN_RELEASE: This is the default, the callback is done
-    after the user successfully clicks the button (i.e. they let it go
-    with the mouse still pointing at it), or when a shortcut is typed.
-  - fltk::WHEN_CHANGED : The callback is done each time the value()
-    changes (when the user pushes and releases the button, and as the
-    mouse is dragged around in and out of the button).
-
-  ComplexButtons can also generate callbacks in response to fltk::SHORTCUT
-  events. The button can either have an explicit shortcut() value or a
-  letter shortcut can be indicated in the label() with an '&'
-  character before it. For the label shortcut it does not matter if
-  Alt is held down, but if you have an input field in the same window,
-  the user will have to hold down the Alt key so that the input field
-  does not eat the event first as an fltk::KEY event.
-
-  \image html buttons.gif
-*/
-
-/*! \fn bool ComplexButton::value() const
-  The current value. True means it is pushed down, false means it is
-  not pushed down. The ToggleComplexButton subclass provides the ability for
-  the user to change this value permanently, otherwise it is just
-  temporary while the user is holding the button down.
-
-  This is the same as Widget::state().
-*/
-
-/*! \fn bool ComplexButton::value(bool)
-  Change the value(). Redraws the button and returns true if the new
-  value is different. This is the same function as Widget::state().
-  See also Widget::set(), Widget::clear(), and Widget::setonly().
-
-  If you turn it on, a normal button will draw pushed-in, until
-  the user clicks it and releases it.
-*/
-
-static bool initial_state;
-
-int ComplexButton::handle(int event) {
-  return handle(event, Rectangle(w(),h()));
+/**
+  Sets the current value of the button.
+  A non-zero value sets the button to 1 (ON), and zero sets it to 0 (OFF).
+  \param[in] v button value.
+  \see set(), clear()
+ */
+int ComplexButton::value(int v) {
+  v = v ? 1 : 0;
+  oldval = v;
+  clear_changed();
+  if (value_ != v) {
+    value_ = v;
+    if (box()) redraw();
+    else redraw_label();
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
-int ComplexButton::handle(int event, const Rectangle& rectangle) {
+/**
+  Turns on this button and turns off all other radio buttons in the group
+  (calling \c value(1) or \c set() does not do this).
+ */
+void ComplexButton::setonly() { // set this radio button on, turn others off
+  value(1);
+  Fl_Group* g = parent();
+  Fl_Widget*const* a = g->array();
+  for (int i = g->children(); i--;) {
+    Fl_Widget* o = *a++;
+    if (o != this && o->type()==FL_RADIO_BUTTON) ((Fl_Button*)o)->value(0);
+  }
+}
+
+void ComplexButton::draw() {
+  if (type() == FL_HIDDEN_BUTTON) return;
+  Fl_Color col = value() ? selection_color() : color();
+  draw_box(value() ? (down_box()?down_box():fl_down(box())) : box(), col);
+  draw_backdrop();
+  if (labeltype() == FL_NORMAL_LABEL && value()) {
+    Fl_Color c = labelcolor();
+    labelcolor(fl_contrast(c, col));
+    draw_label();
+    labelcolor(c);
+  } else draw_label();
+  if (Fl::focus() == this) draw_focus();
+
+  // ComplexButton is a Group; draw its children
+  for (int i = children () - 1; i >= 0; i--)
+     draw_child (*child (i));
+}
+
+int ComplexButton::handle(int event) {
+  int newval;
   switch (event) {
-  case ENTER:
-  case LEAVE:
-    redraw_highlight();
-  case MOVE:
+  case FL_ENTER: /* FALLTHROUGH */
+  case FL_LEAVE:
+//  if ((value_?selection_color():color())==FL_GRAY) redraw();
     return 1;
-  case PUSH:
-    if (pushed()) return 1; // ignore extra pushes on currently-pushed button
-    initial_state = state();
-    clear_flag(PUSHED);
-    /* do_callback(); */
-  case DRAG: {
-    bool inside = event_inside(rectangle);
-    if (inside) {
-      if (!flag(PUSHED)) {
-        set_flag(PUSHED);
-        redraw(DAMAGE_VALUE);
-      }
-    } else {
-      if (flag(PUSHED)) {
-        clear_flag(PUSHED);
-        redraw(DAMAGE_VALUE);
-      }
+  case FL_PUSH:
+    if (Fl::visible_focus() && handle(FL_FOCUS)) Fl::focus(this);
+  case FL_DRAG:
+    if (Fl::event_inside(this)) {
+      if (type() == FL_RADIO_BUTTON) newval = 1;
+      else newval = !oldval;
+    } else
+    {
+      clear_changed();
+      newval = oldval;
     }
-    if (when() & WHEN_CHANGED) { // momentary button must record state()
-      if (state(inside ? !initial_state : initial_state))
-        do_callback();
+    if (newval != value_) {
+      value_ = newval;
+      set_changed();
+      redraw();
+      if (when() & FL_WHEN_CHANGED) do_callback();
     }
-    return 1;}
-  case RELEASE:
-    if (!flag(PUSHED)) return 1;
-    clear_flag(PUSHED);
-    redraw(DAMAGE_VALUE);
-    if (type() == RADIO)
-      setonly();
-    else if (type() == TOGGLE)
-      state(!initial_state);
+    return 1;
+  case FL_RELEASE:
+    if (value_ == oldval) {
+      if (when() & FL_WHEN_NOT_CHANGED) do_callback();
+      return 1;
+    }
+    set_changed();
+    if (type() == FL_RADIO_BUTTON) setonly();
+    else if (type() == FL_TOGGLE_BUTTON) oldval = value_;
     else {
-      state(initial_state);
-      if (when() & WHEN_CHANGED) {do_callback(); return 1;}
-    }
-    if (when() & WHEN_RELEASE) do_callback(); else set_changed();
-    return 1;
-  case FOCUS:
-    redraw(1); // minimal redraw to just add the focus box
-    // grab initial focus if we are an ReturnComplexButton:
-    return shortcut()==ReturnKey ? 2 : 1;
-  case UNFOCUS:
-    redraw(DAMAGE_HIGHLIGHT);
-    return 1;
-  case KEY:
-    if (event_key() == ' ' || event_key() == ReturnKey
-        || event_key() == KeypadEnter) goto EXECUTE;
-    return 0;
-  case SHORTCUT:
-    if (!test_shortcut()) return 0;
-  EXECUTE:
-    if (type() == RADIO) {
-      if (!state()) {
-        setonly();
-        if (when() & WHEN_CHANGED) do_callback(); else set_changed();
+      value(oldval);
+      set_changed();
+      if (when() & FL_WHEN_CHANGED) {
+	Fl_Widget_Tracker wp(this);
+        do_callback();
+        if (wp.deleted()) return 1;
       }
-    } else if (type() == TOGGLE) {
-      state(!state());
-      if (when() & WHEN_CHANGED) do_callback(); else set_changed();
     }
-    if (when() & WHEN_RELEASE) do_callback();
+    if (when() & FL_WHEN_RELEASE) do_callback();
     return 1;
+  case FL_SHORTCUT:
+    if (!(shortcut() ?
+	  Fl::test_shortcut(shortcut()) : test_shortcut())) return 0;    
+    if (Fl::visible_focus() && handle(FL_FOCUS)) Fl::focus(this);
+    goto triggered_by_keyboard;
+  case FL_FOCUS : /* FALLTHROUGH */
+  case FL_UNFOCUS :
+    if (Fl::visible_focus()) {
+      if (box() == FL_NO_BOX) {
+	// Widgets with the FL_NO_BOX boxtype need a parent to
+	// redraw, since it is responsible for redrawing the
+	// background...
+	int X = x() > 0 ? x() - 1 : 0;
+	int Y = y() > 0 ? y() - 1 : 0;
+	if (window()) window()->damage(FL_DAMAGE_ALL, X, Y, w() + 2, h() + 2);
+      } else redraw();
+      return 1;
+    } else return 0;
+  case FL_KEYBOARD :
+    if (Fl::focus() == this && Fl::event_key() == ' ' &&
+        !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT | FL_META))) {
+      set_changed();
+    triggered_by_keyboard:
+      Fl_Widget_Tracker wp(this);
+      if (type() == FL_RADIO_BUTTON && !value_) {
+	setonly();
+	if (when() & FL_WHEN_CHANGED) do_callback();
+      } else if (type() == FL_TOGGLE_BUTTON) {
+	value(!value());
+	if (when() & FL_WHEN_CHANGED) do_callback();
+      }
+      if (wp.deleted()) return 1;
+      if (when() & FL_WHEN_RELEASE) do_callback();
+      return 1;
+    }
   default:
     return 0;
   }
 }
 
-////////////////////////////////////////////////////////////////
-
-#include <fltk/draw.h>
-
-extern Widget* fl_did_clipping;
-
-/*!
-  This function provides a mess of back-compatabilty and Windows
-  emulation to subclasses of ComplexButton to draw with. It will draw the
-  button according to the current state of being pushed and it's
-  state(). If non-zero is passed for \a glyph_width then the glyph()
-  is drawn in that space on the left (or on the right if negative),
-  and it assummes the glyph indicates the state(), so the box is only
-  used to indicate the pushed state.
-*/
-void ComplexButton::draw(int glyph_width) const
-{
-  // For back-compatability, setting color() or box() directly on a plain
-  // button will cause it to act like buttoncolor() or buttonbox() are
-  // set:
-  Style localstyle;
-  const Style* style = this->style();
-  if (!glyph_width) {
-    localstyle = *style;
-    if (localstyle.color_) localstyle.buttoncolor_ = localstyle.color_;
-    if (localstyle.box_) localstyle.buttonbox_ = localstyle.box_;
-    if (localstyle.labelcolor_) localstyle.textcolor_ = localstyle.labelcolor_;
-    style = &localstyle;
-  }
-
-  Box* box = style->buttonbox();
-
-  Flags box_flags = flags() | OUTPUT;
-  Flags glyph_flags = box_flags & ~(HIGHLIGHT|OUTPUT);
-  if (glyph_width) box_flags &= ~STATE;
-
-  // only draw "inside" labels:
-  Rectangle r(0,0,w(),h());
-
-  if (box == NO_BOX) {
-    Color bg;
-    if (box_flags & HIGHLIGHT && (bg = style->highlight_color())) {
-      setcolor(bg);
-      fillrect(r);
-    } else if (label() || (damage()&(DAMAGE_EXPOSE|DAMAGE_HIGHLIGHT))) {
-      // erase the background so we can redraw the label in the new color:
-      draw_background();
-    }
-    // this allows these buttons to be put into browser/menus:
-    //fg = fl_item_labelcolor(this);
-  } else {
-    if ((damage()&(DAMAGE_EXPOSE|DAMAGE_HIGHLIGHT))
-        && !box->fills_rectangle()) {
-      // Erase the area behind non-square boxes
-      draw_background();
-    }
-  }
-
-  // Draw the box:
-  drawstyle(style,box_flags);
-  // For back-compatability we use any directly-set selection_color()
-  // to color the box:
-  if (!glyph_width && state() && style->selection_color_) {
-    setbgcolor(style->selection_color_);
-    setcolor(contrast(style->selection_textcolor(),style->selection_color_));
-  }
-  box->draw(r);
-  Rectangle r1(r); box->inset(r1);
-
-  if (glyph_width) {
-    int g = abs(glyph_width);
-    Rectangle lr(r1);
-    Rectangle gr(r1, g, g);
-    if (glyph_width < 0) {
-      lr.w(lr.w()-g-3);
-      gr.x(r1.r()-g-3);
-    } else {
-      lr.set_x(g+3);
-      gr.x(r1.x()+3);
-    }
-    this->draw_label(lr, box_flags);
-    drawstyle(style,glyph_flags);
-    this->glyph()->draw(gr);
-    drawstyle(style,box_flags);
-  } else {
-    this->draw_label(r1, box_flags);
-  }
-  box->draw_symbol_overlay(r);
+/**
+  The constructor creates the button using the given position, size and label.
+  \param[in] X, Y, W, H position and size of the widget
+  \param[in] L widget label, default is no label
+ */
+ComplexButton::ComplexButton(int X, int Y, int W, int H, const char *L)
+: Fl_Group(X,Y,W,H,L) {
+  box(FL_UP_BOX);
+  down_box(FL_NO_BOX);
+  value_ = oldval = 0;
+  shortcut_ = 0;
+  set_flag(SHORTCUT_LABEL);
 }
 
-void ComplexButton::draw() {
-  if (type() == HIDDEN) {
-    fl_did_clipping = this;
-    return;
-  }
-  draw(0);
-
-  // ComplexButton is a Group, draw its children
-  for (int i = children () - 1; i >= 0; i--)
-     draw_child (*child (i));
-}
-
-////////////////////////////////////////////////////////////////
-
-static NamedStyle style("ComplexButton", 0, &ComplexButton::default_style);
-NamedStyle* ComplexButton::default_style = &::style;
-
-ComplexButton::ComplexButton(int x,int y,int w,int h, const char *l) :
-   Group(x,y,w,h,l)
-{
-  style(default_style);
-  highlight_color(GRAY20);
-  //set_click_to_focus();
-}
-
-////////////////////////////////////////////////////////////////
-
-/*! \class fltk::ToggleComplexButton
-  This button turns the state() on and off each release of a click
-  inside of it.
-
-  You can also convert a regular button into this by doing
-  type(ComplexButton::TOGGLE) to it.
-*/
-
-//
-//
