@@ -26,20 +26,6 @@
 #include "../lout/misc.hh"
 
 #include <stdio.h>
-#include <fltk/Widget.h>
-#include <fltk/Group.h>
-#include <fltk/Input.h>
-#include <fltk/TextEditor.h>
-#include <fltk/RadioButton.h>
-#include <fltk/CheckButton.h>
-#include <fltk/Choice.h>
-#include <fltk/Browser.h>
-#include <fltk/Font.h>
-#include <fltk/draw.h>
-#include <fltk/Symbol.h>
-#include <fltk/Item.h>
-#include <fltk/ItemGroup.h>
-#include <fltk/events.h>
 
 namespace dw {
 namespace fltk {
@@ -139,7 +125,7 @@ void FltkResource::setStyle (core::style::Style *style)
    setWidgetStyle (widget, style);
 }
 
-void FltkResource::setWidgetStyle (::fltk::Widget *widget,
+void FltkResource::setWidgetStyle (Fl_Widget *widget,
                                    core::style::Style *style)
 {
    FltkFont *font = (FltkFont*)style->font;
@@ -155,7 +141,7 @@ void FltkResource::setWidgetStyle (::fltk::Widget *widget,
       if (style->color) {
          int style_fg = ((FltkColor*)style->color)->colors
                                                    [FltkColor::SHADING_NORMAL];
-         ::fltk::Color fg = ::fltk::contrast(style_fg, normal_bg);
+         Fl_Color fg = fl_contrast(style_fg, normal_bg);
 
          widget->labelcolor(fg);
          widget->textcolor(fg);
@@ -165,8 +151,8 @@ void FltkResource::setWidgetStyle (::fltk::Widget *widget,
       widget->color(normal_bg);
       widget->buttoncolor(normal_bg);
       widget->selection_textcolor(normal_bg);
-      if (widget->type() != ::fltk::Widget::RADIO &&
-          widget->type() != ::fltk::Widget::TOGGLE) {
+      if (widget->type() != Fl_Widget::RADIO &&
+          widget->type() != Fl_Widget::TOGGLE) {
          /* it looks awful to highlight the buttons */
          widget->highlight_color(bg->colors[FltkColor::SHADING_LIGHT]);
       }
@@ -253,13 +239,12 @@ FltkLabelButtonResource::~FltkLabelButtonResource ()
    delete label;
 }
 
-::fltk::Widget *FltkLabelButtonResource::createNewWidget (core::Allocation
-                                                          *allocation)
+Fl_Widget *FltkLabelButtonResource::createNewWidget (core::Allocation
+                                                     *allocation)
 {
-   ::fltk::Button *button =
-        new ::fltk::Button (allocation->x, allocation->y, allocation->width,
-                            allocation->ascent + allocation->descent,
-                            label);
+   Fl_Button *button =
+        new Fl_Button (allocation->x, allocation->y, allocation->width,
+                       allocation->ascent + allocation->descent, label);
    button->clear_flag (SHORTCUT_LABEL);
    button->callback (widgetCallback, this);
    button->when (FL_WHEN_RELEASE);
@@ -272,7 +257,7 @@ void FltkLabelButtonResource::sizeRequest (core::Requisition *requisition)
       FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
       requisition->width =
-         (int)::fltk::getwidth (label, strlen (label))
+         (int)fl_width (label, strlen (label))
          + 2 * RELIEF_X_THICKNESS;
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
       requisition->descent = font->descent + RELIEF_Y_THICKNESS;
@@ -312,7 +297,7 @@ static void setButtonEvent(dw::core::EventButton *event)
    event->numPressed = Fl::event_clicks() + 1;
 }
 
-void FltkLabelButtonResource::widgetCallback (::fltk::Widget *widget,
+void FltkLabelButtonResource::widgetCallback (Fl_Widget *widget,
                                               void *data)
 {
    if ((widget->when () & FL_WHEN_RELEASE) &&
@@ -358,7 +343,7 @@ FltkComplexButtonResource::~FltkComplexButtonResource ()
 {
 }
 
-void FltkComplexButtonResource::widgetCallback (::fltk::Widget *widget,
+void FltkComplexButtonResource::widgetCallback (Fl_Widget *widget,
                                                 void *data)
 {
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
@@ -423,7 +408,7 @@ int FltkComplexButtonResource::reliefYThickness ()
 }
 
 
-::fltk::Widget *FltkComplexButtonResource::createNewWidget (core::Allocation
+Fl_Widget *FltkComplexButtonResource::createNewWidget (core::Allocation
                                                             *allocation)
 {
    ComplexButton *button =
@@ -470,14 +455,14 @@ FltkEntryResource::~FltkEntryResource ()
       delete label;
 }
 
-::fltk::Widget *FltkEntryResource::createNewWidget (core::Allocation
+Fl_Widget *FltkEntryResource::createNewWidget (core::Allocation
                                                     *allocation)
 {
-   ::fltk::Input *input =
-        new ::fltk::Input (allocation->x, allocation->y, allocation->width,
-                           allocation->ascent + allocation->descent);
+   Fl_Input *input =
+        new Fl_Input (allocation->x, allocation->y, allocation->width,
+                      allocation->ascent + allocation->descent);
    if (password)
-      input->type(::fltk::Input::SECRET);
+      input->type(Fl_Input::SECRET);
    input->callback (widgetCallback, this);
    input->when (FL_WHEN_ENTER_KEY_ALWAYS);
 
@@ -503,7 +488,7 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
       FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
       requisition->width =
-         (int)::fltk::getwidth ("n", 1)
+         (int)fl_width ('n')
          * (maxLength == UNLIMITED_MAX_LENGTH ? 10 : maxLength)
          + 2 * RELIEF_X_THICKNESS;
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
@@ -515,8 +500,7 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
    }
 }
 
-void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
-                                        void *data)
+void FltkEntryResource::widgetCallback (Fl_Widget *widget, void *data)
 {
    /* The (::fltk::event_key() == FL_Enter) test
     * is necessary because WHEN_ENTER_KEY also includes
@@ -532,7 +516,7 @@ void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
 
 const char *FltkEntryResource::getText ()
 {
-   return ((::fltk::Input*)widget)->value ();
+   return ((Fl_Input*)widget)->value ();
 }
 
 void FltkEntryResource::setText (const char *text)
@@ -541,7 +525,7 @@ void FltkEntryResource::setText (const char *text)
       delete initText;
    initText = strdup (text);
 
-   ((::fltk::Input*)widget)->value (initText);
+   ((Fl_Input*)widget)->value (initText);
 }
 
 bool FltkEntryResource::isEditable ()
@@ -560,7 +544,7 @@ FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
                                                       int cols, int rows):
    FltkSpecificResource <dw::core::ui::MultiLineTextResource> (platform)
 {
-   buffer = new ::fltk::TextBuffer;
+   buffer = new Fl_Text_Buffer;
    editable = false;
 
    numCols = cols;
@@ -582,17 +566,16 @@ FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
 FltkMultiLineTextResource::~FltkMultiLineTextResource ()
 {
    /* Free memory avoiding a double-free of text buffers */
-   ((::fltk::TextEditor *) widget)->buffer (0);
+   ((Fl_Text_Editor *) widget)->buffer (0);
    delete buffer;
 }
 
-::fltk::Widget *FltkMultiLineTextResource::createNewWidget (core::Allocation
+Fl_Widget *FltkMultiLineTextResource::createNewWidget (core::Allocation
                                                             *allocation)
 {
-   ::fltk::TextEditor *text =
-      new ::fltk::TextEditor (allocation->x, allocation->y,
-                              allocation->width,
-                              allocation->ascent + allocation->descent);
+   Fl_Text_Editor *text =
+      new Fl_Text_Editor (allocation->x, allocation->y, allocation->width,
+                          allocation->ascent + allocation->descent);
    text->buffer (buffer);
    return text;
 }
@@ -603,8 +586,7 @@ void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
       FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
       requisition->width =
-         (int)::fltk::getwidth ("n", 1) * numCols +
-         2 * RELIEF_X_THICKNESS;
+         (int)fl_width ('n') * numCols + 2 * RELIEF_X_THICKNESS;
       requisition->ascent =
          RELIEF_Y_THICKNESS + font->ascent +
          (font->ascent + font->descent) * (numRows - 1);
@@ -656,10 +638,10 @@ FltkToggleButtonResource<I>::~FltkToggleButtonResource ()
 
 
 template <class I>
-::fltk::Widget *FltkToggleButtonResource<I>::createNewWidget (core::Allocation
+Fl_Widget *FltkToggleButtonResource<I>::createNewWidget (core::Allocation
                                                               *allocation)
 {
-   ::fltk::Button *button = createNewButton (allocation);
+   Fl_Button *button = createNewButton (allocation);
    button->value (initActivated);
    return button;
 }
@@ -687,7 +669,7 @@ void FltkToggleButtonResource<I>::sizeRequest (core::Requisition *requisition)
 template <class I>
 bool FltkToggleButtonResource<I>::FltkToggleButtonResource::isActivated ()
 {
-   return ((::fltk::Button*)this->widget)->value ();
+   return ((Fl_Button*)this->widget)->value ();
 }
 
 
@@ -695,7 +677,7 @@ template <class I>
 void FltkToggleButtonResource<I>::setActivated (bool activated)
 {
    initActivated = activated;
-   ((::fltk::Button*)this->widget)->value (initActivated);
+   ((Fl_Button*)this->widget)->value (initActivated);
 }
 
 // ----------------------------------------------------------------------
@@ -714,12 +696,12 @@ FltkCheckButtonResource::~FltkCheckButtonResource ()
 }
 
 
-::fltk::Button *FltkCheckButtonResource::createNewButton (core::Allocation
+Fl_Button *FltkCheckButtonResource::createNewButton (core::Allocation
                                                           *allocation)
 {
-   ::fltk::CheckButton *cb =
-      new ::fltk::CheckButton (allocation->x, allocation->y, allocation->width,
-                               allocation->ascent + allocation->descent);
+   Fl_Check_Button *cb =
+      new Fl_Check_Button (allocation->x, allocation->y, allocation->width,
+                           allocation->ascent + allocation->descent);
    cb->clear_flag (SHORTCUT_LABEL);
    return cb;
 }
@@ -798,7 +780,7 @@ dw::core::ui::RadioButtonResource::GroupIterator
    return group->groupIterator ();
 }
 
-void FltkRadioButtonResource::widgetCallback (::fltk::Widget *widget,
+void FltkRadioButtonResource::widgetCallback (Fl_Widget *widget,
                                               void *data)
 {
    if (widget->when () & FL_WHEN_CHANGED)
@@ -814,11 +796,11 @@ void FltkRadioButtonResource::buttonClicked ()
    }
 }
 
-::fltk::Button *FltkRadioButtonResource::createNewButton (core::Allocation
-                                                          *allocation)
+Fl_Button *FltkRadioButtonResource::createNewButton (core::Allocation
+                                                     *allocation)
 {
    /*
-    * Groups of fltk::RadioButton must be added to one fltk::Group, which is
+    * Groups of Fl_Radio_Button must be added to one Fl_Group, which is
     * not possible in this context. For this, we do the grouping ourself,
     * based on FltkRadioButtonResource::Group.
     *
@@ -829,14 +811,13 @@ void FltkRadioButtonResource::buttonClicked ()
     * (instead of creating a check button, and changing the style).
     */
 
-   ::fltk::Button *button =
-      new ::fltk::RadioButton (allocation->x, allocation->y,
-                               allocation->width,
-                               allocation->ascent + allocation->descent);
+   Fl_Button *button =
+      new Fl_Radio_Button (allocation->x, allocation->y, allocation->width,
+                           allocation->ascent + allocation->descent);
    button->clear_flag (SHORTCUT_LABEL);
    button->when (FL_WHEN_CHANGED);
    button->callback (widgetCallback, this);
-   button->type (::fltk::Button::TOGGLE);
+   button->type (Fl_Button::TOGGLE);
 
    return button;
 }
@@ -861,19 +842,19 @@ template <class I> FltkSelectionResource<I>::Item::~Item ()
 }
 
 template <class I>
-::fltk::Item *FltkSelectionResource<I>::Item::createNewWidget (int index)
+Fl_Item *FltkSelectionResource<I>::Item::createNewWidget (int index)
 {
-   ::fltk::Item *item = new ::fltk::Item (name);
+   Fl_Item *item = new Fl_Item (name);
    item->clear_flag (SHORTCUT_LABEL);
    item->user_data ((void *) index);
    return item;
 }
 
 template <class I>
-::fltk::ItemGroup *
+Fl_ItemGroup *
 FltkSelectionResource<I>::Item::createNewGroupWidget ()
 {
-   ::fltk::ItemGroup *itemGroup = new ::fltk::ItemGroup (name);
+   Fl_ItemGroup *itemGroup = new Fl_ItemGroup (name);
    itemGroup->clear_flag (SHORTCUT_LABEL);
    itemGroup->user_data ((void *) -1L);
    return itemGroup;
@@ -881,10 +862,10 @@ FltkSelectionResource<I>::Item::createNewGroupWidget ()
 
 
 template <class I>
-FltkSelectionResource<I>::WidgetStack::WidgetStack (::fltk::Menu *widget)
+FltkSelectionResource<I>::WidgetStack::WidgetStack (Fl_Menu *widget)
 {
    this->widget = widget;
-   this->stack = new Stack <TypedPointer < ::fltk::Menu> > (true);
+   this->stack = new Stack <TypedPointer < Fl_Menu> > (true);
 }
 
 template <class I> FltkSelectionResource<I>::WidgetStack::~WidgetStack ()
@@ -916,21 +897,21 @@ FltkSelectionResource<I>::iterator (dw::core::Content::Type mask, bool atEnd)
    return new core::EmptyIterator (this->getEmbed (), mask, atEnd);
 }
 
-template <class I> ::fltk::Widget *
+template <class I> Fl_Widget *
 FltkSelectionResource<I>::createNewWidget (core::Allocation *allocation)
 {
    /** \todo Attributes (enabled, selected). */
 
-   ::fltk::Menu *menu = createNewMenu (allocation);
+   Fl_Menu *menu = createNewMenu (allocation);
    WidgetStack *widgetStack = new WidgetStack (menu);
-   widgetStack->stack->push (new TypedPointer < ::fltk::Menu> (menu));
+   widgetStack->stack->push (new TypedPointer < Fl_Menu> (menu));
    widgetStacks->append (widgetStack);
 
 
-   ::fltk::Menu *itemGroup;
-   ::fltk::Item *itemWidget;
+   Fl_Menu *itemGroup;
+   Fl_Item *itemWidget;
 
-   ::fltk::Group *currGroup = widgetStack->stack->getTop()->getTypedValue();
+   Fl_Group *currGroup = widgetStack->stack->getTop()->getTypedValue();
 
    int index = 0;
    for (Iterator <Item> it = allItems->iterator (); it.hasNext (); ) {
@@ -944,7 +925,7 @@ FltkSelectionResource<I>::createNewWidget (core::Allocation *allocation)
       case Item::START:
          itemGroup = item->createNewGroupWidget ();
          currGroup->add (itemGroup);
-         widgetStack->stack->push (new TypedPointer < ::fltk::Menu> (menu));
+         widgetStack->stack->push (new TypedPointer < Fl_Menu> (menu));
          currGroup = itemGroup;
          break;
 
@@ -979,7 +960,7 @@ template <class I> void FltkSelectionResource<I>::addItem (const char *str,
    for (Iterator <WidgetStack> it = widgetStacks->iterator ();
         it.hasNext(); ) {
       WidgetStack *widgetStack = it.getNext ();
-      ::fltk::Item *itemWidget = item->createNewWidget (index);
+      Fl_Item *itemWidget = item->createNewWidget (index);
       widgetStack->stack->getTop()->getTypedValue()->add (itemWidget);
 
       if (!enabled)
@@ -991,12 +972,12 @@ template <class I> void FltkSelectionResource<I>::addItem (const char *str,
             // Handle multiple item selection.
             int *pos = new int[widgetStack->stack->size ()];
             int i;
-            Iterator <TypedPointer < ::fltk::Menu> > it;
+            Iterator <TypedPointer < Fl_Menu> > it;
             for (it = widgetStack->stack->iterator (),
                     i = widgetStack->stack->size () - 1;
                  it.hasNext ();
                  i--) {
-               TypedPointer < ::fltk::Menu> * p = it.getNext ();
+               TypedPointer < Fl_Menu> * p = it.getNext ();
                pos[i] =  p->getTypedValue()->children () - 1;
             }
             widgetStack->widget->set_item (pos, widgetStack->stack->size ());
@@ -1015,9 +996,9 @@ template <class I> void FltkSelectionResource<I>::pushGroup (const char *name,
    for (Iterator <WidgetStack> it = widgetStacks->iterator ();
         it.hasNext(); ) {
       WidgetStack *widgetStack = it.getNext ();
-      ::fltk::ItemGroup *group = item->createNewGroupWidget ();
+      Fl_ItemGroup *group = item->createNewGroupWidget ();
       widgetStack->stack->getTop()->getTypedValue()->add (group);
-      widgetStack->stack->push (new TypedPointer < ::fltk::Menu> (group));
+      widgetStack->stack->push (new TypedPointer < Fl_Menu> (group));
       if (!enabled)
          group->deactivate ();
    }
@@ -1049,7 +1030,7 @@ template <class I> int FltkSelectionResource<I>::getMaxStringWidth ()
 {
    int width = 0, numberOfItems = getNumberOfItems ();
    for (int i = 0; i < numberOfItems; i++) {
-      int len = (int)::fltk::getwidth (getItem(i));
+      int len = (int)fl_width (getItem(i));
       if (len > width) width = len;
    }
    return width;
@@ -1069,11 +1050,11 @@ FltkOptionMenuResource::~FltkOptionMenuResource ()
 }
 
 
-::fltk::Menu *FltkOptionMenuResource::createNewMenu (core::Allocation
+Fl_Menu *FltkOptionMenuResource::createNewMenu (core::Allocation
                                                      *allocation)
 {
-   ::fltk::Menu *menu =
-      new ::fltk::Choice (allocation->x, allocation->y,
+   Fl_Menu *menu =
+      new Fl_Choice (allocation->x, allocation->y,
                           allocation->width,
                           allocation->ascent + allocation->descent);
    menu->clear_flag (SHORTCUT_LABEL);
@@ -1081,11 +1062,11 @@ FltkOptionMenuResource::~FltkOptionMenuResource ()
    return menu;
 }
 
-void FltkOptionMenuResource::widgetCallback (::fltk::Widget *widget,
+void FltkOptionMenuResource::widgetCallback (Fl_Widget *widget,
                                              void *data)
 {
    ((FltkOptionMenuResource *) data)->selection =
-      (long) (((::fltk::Menu *) widget)->item()->user_data());
+      (long) (((Fl_Menu *) widget)->item()->user_data());
 }
 
 void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
@@ -1140,22 +1121,22 @@ FltkListResource::~FltkListResource ()
 }
 
 
-::fltk::Menu *FltkListResource::createNewMenu (core::Allocation *allocation)
+Fl_Menu *FltkListResource::createNewMenu (core::Allocation *allocation)
 {
-   ::fltk::Menu *menu =
-      new ::fltk::Browser (allocation->x, allocation->y, allocation->width,
+   Fl_Menu *menu =
+      new Fl_Browser (allocation->x, allocation->y, allocation->width,
                            allocation->ascent + allocation->descent);
    if (mode == SELECTION_MULTIPLE)
-      menu->type(::fltk::Browser::MULTI);
+      menu->type(Fl_Browser::MULTI);
    menu->clear_flag (SHORTCUT_LABEL);
    menu->callback(widgetCallback,this);
    menu->when(FL_WHEN_CHANGED);
    return menu;
 }
 
-void FltkListResource::widgetCallback (::fltk::Widget *widget, void *data)
+void FltkListResource::widgetCallback (Fl_Widget *widget, void *data)
 {
-   ::fltk::Widget *fltkItem = ((::fltk::Menu *) widget)->item ();
+   Fl_Widget *fltkItem = ((Fl_Menu *) widget)->item ();
    int index = -1;
    if (fltkItem)
       index = (long) (fltkItem->user_data ());
