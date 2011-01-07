@@ -11,11 +11,7 @@
 
 // Functions/Methods for menus
 
-#include <fltk/events.h>
-#include <fltk/PopupMenu.h>
-#include <fltk/Item.h>
-#include <fltk/ToggleItem.h>
-#include <fltk/Divider.h>
+#include <FL/Fl_Menu_Item.H>
 
 #include "lout/misc.hh"    /* SimpleVector */
 #include "msg.h"
@@ -81,7 +77,7 @@ void CustItem::draw() {
 /*
  * Static function for File menu callbacks.
  */
-static void filemenu_cb(Widget *wid, void *data)
+static void filemenu_cb(Fl_Widget *wid, void *data)
 {
    if (strcmp((char*)data, "nw") == 0) {
       UI *ui = (UI*)popup_bw->ui;
@@ -100,13 +96,13 @@ static void filemenu_cb(Widget *wid, void *data)
 }
 
 
-static void Menu_copy_urlstr_cb(Widget *)
+static void Menu_copy_urlstr_cb(Fl_Widget *)
 {
    if (popup_url)
       a_UIcmd_copy_urlstr(popup_bw, URL_STR(popup_url));
 }
 
-static void Menu_link_cb(Widget*, void *user_data)
+static void Menu_link_cb(Fl_Widget*, void *user_data)
 {
    DilloUrl *url = (DilloUrl *) user_data ;
    _MSG("Menu_link_cb: click! :-)\n");
@@ -118,7 +114,7 @@ static void Menu_link_cb(Widget*, void *user_data)
 /*
  * Open URL
  */
-static void Menu_open_url_cb(Widget* )
+static void Menu_open_url_cb(Fl_Widget* )
 {
    _MSG("Open URL cb: click! :-)\n");
    a_UIcmd_open_url(popup_bw, popup_url);
@@ -127,7 +123,7 @@ static void Menu_open_url_cb(Widget* )
 /*
  * Open URL in new window
  */
-static void Menu_open_url_nw_cb(Widget* )
+static void Menu_open_url_nw_cb(Fl_Widget* )
 {
    _MSG("Open URL in new window cb: click! :-)\n");
    a_UIcmd_open_url_nw(popup_bw, popup_url);
@@ -136,7 +132,7 @@ static void Menu_open_url_nw_cb(Widget* )
 /*
  * Open URL in new Tab
  */
-static void Menu_open_url_nt_cb(Widget* )
+static void Menu_open_url_nt_cb(Fl_Widget* )
 {
    int focus = prefs.focus_new_tab ? 1 : 0;
    if (Fl::event_state(FL_SHIFT)) focus = !focus;
@@ -146,7 +142,7 @@ static void Menu_open_url_nt_cb(Widget* )
 /*
  * Add bookmark
  */
-static void Menu_add_bookmark_cb(Widget* )
+static void Menu_add_bookmark_cb(Fl_Widget* )
 {
    a_UIcmd_add_bookmark(popup_bw, popup_url);
 }
@@ -154,7 +150,7 @@ static void Menu_add_bookmark_cb(Widget* )
 /*
  * Find text
  */
-static void Menu_find_text_cb(Widget* )
+static void Menu_find_text_cb(Fl_Widget* )
 {
    ((UI *)popup_bw->ui)->set_findbar_visibility(1);
 }
@@ -162,7 +158,7 @@ static void Menu_find_text_cb(Widget* )
 /*
  * Save link
  */
-static void Menu_save_link_cb(Widget* )
+static void Menu_save_link_cb(Fl_Widget* )
 {
    a_UIcmd_save_link(popup_bw, popup_url);
 }
@@ -170,7 +166,7 @@ static void Menu_save_link_cb(Widget* )
 /*
  * Save current page
  */
-static void Menu_save_page_cb(Widget* )
+static void Menu_save_page_cb(Fl_Widget* )
 {
    a_UIcmd_save(popup_bw);
 }
@@ -178,7 +174,7 @@ static void Menu_save_page_cb(Widget* )
 /*
  * View current page source
  */
-static void Menu_view_page_source_cb(Widget* )
+static void Menu_view_page_source_cb(Fl_Widget* )
 {
    a_UIcmd_view_page_source(popup_bw, popup_url);
 }
@@ -186,7 +182,7 @@ static void Menu_view_page_source_cb(Widget* )
 /*
  * View current page's bugs
  */
-static void Menu_view_page_bugs_cb(Widget* )
+static void Menu_view_page_bugs_cb(Fl_Widget* )
 {
    a_UIcmd_view_page_bugs(popup_bw);
 }
@@ -194,7 +190,7 @@ static void Menu_view_page_bugs_cb(Widget* )
 /*
  * Load images on current page that match URL pattern
  */
-static void Menu_load_images_cb(Widget*, void *user_data)
+static void Menu_load_images_cb(Fl_Widget*, void *user_data)
 {
    DilloUrl *page_url = (DilloUrl *) user_data;
    void *doc = a_Bw_get_url_doc(popup_bw, page_url);
@@ -206,7 +202,7 @@ static void Menu_load_images_cb(Widget*, void *user_data)
 /*
  * Submit form
  */
-static void Menu_form_submit_cb(Widget*, void *v_form)
+static void Menu_form_submit_cb(Fl_Widget*, void *v_form)
 {
    void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
 
@@ -217,7 +213,7 @@ static void Menu_form_submit_cb(Widget*, void *v_form)
 /*
  * Reset form
  */
-static void Menu_form_reset_cb(Widget*, void *v_form)
+static void Menu_form_reset_cb(Fl_Widget*, void *v_form)
 {
    void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
 
@@ -228,7 +224,7 @@ static void Menu_form_reset_cb(Widget*, void *v_form)
 /*
  * Toggle display of 'hidden' form controls.
  */
-static void Menu_form_hiddens_cb(Widget *w, void *user_data)
+static void Menu_form_hiddens_cb(Fl_Widget *w, void *user_data)
 {
    void *v_form = w->parent()->user_data();
    bool visible = *((bool *) user_data);
@@ -238,7 +234,7 @@ static void Menu_form_hiddens_cb(Widget *w, void *user_data)
       a_Html_form_display_hiddens(doc, v_form, !visible);
 }
 
-static void Menu_stylesheet_cb(Widget *w, void *vUrl)
+static void Menu_stylesheet_cb(Fl_Widget *w, void *vUrl)
 {
    const DilloUrl *url = (const DilloUrl *) vUrl;
    a_UIcmd_open_url(popup_bw, url);
@@ -247,7 +243,7 @@ static void Menu_stylesheet_cb(Widget *w, void *vUrl)
 /*
  * Validate URL with the W3C
  */
-static void Menu_bugmeter_validate_w3c_cb(Widget* )
+static void Menu_bugmeter_validate_w3c_cb(Fl_Widget* )
 {
    Dstr *dstr = dStr_sized_new(128);
 
@@ -260,7 +256,7 @@ static void Menu_bugmeter_validate_w3c_cb(Widget* )
 /*
  * Validate URL with the WDG
  */
-static void Menu_bugmeter_validate_wdg_cb(Widget* )
+static void Menu_bugmeter_validate_wdg_cb(Fl_Widget* )
 {
    Dstr *dstr = dStr_sized_new(128);
 
@@ -274,7 +270,7 @@ static void Menu_bugmeter_validate_wdg_cb(Widget* )
 /*
  * Show info page for the bug meter
  */
-static void Menu_bugmeter_about_cb(Widget* )
+static void Menu_bugmeter_about_cb(Fl_Widget* )
 {
    a_UIcmd_open_urlstr(popup_bw, "http://www.dillo.org/help/bug_meter.html");
 }
@@ -283,7 +279,7 @@ static void Menu_bugmeter_about_cb(Widget* )
  * Navigation History callback.
  * Go to selected URL.
  */
-static void Menu_history_cb(Widget *wid, void *data)
+static void Menu_history_cb(Fl_Widget *wid, void *data)
 {
    int mb = ((CustItem*)wid)->button();
    int offset = history_direction * VOIDP2INT(data);
@@ -384,7 +380,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    int n = stylesheets->children();
    for (j = 0; j < n; j++) {
       /* get rid of the old ones */
-      Widget *child = stylesheets->child(0);
+      Fl_Widget *child = stylesheets->child(0);
       dFree((char *)child->label());
       a_Url_free((DilloUrl *)child->user_data());
       delete child;
@@ -567,7 +563,7 @@ void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
 void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
 {
    UI *ui = (UI *)bw->ui;
-   Widget *wid = (Widget*)v_wid;
+   Fl_Widget *wid = (Fl_Widget*)v_wid;
    // One menu for every browser window
    static PopupMenu *pm = 0;
 
@@ -575,7 +571,7 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
    popup_x = wid->x();
    popup_y = wid->y() + wid->h() +
              // WORKAROUND: ?? wid->y() doesn't count tabs ??
-             (((Group*)ui->tabs())->children() > 1 ? 20 : 0);
+             (((Fl_Group*)ui->tabs())->children() > 1 ? 20 : 0);
    a_Url_free(popup_url);
    popup_url = NULL;
 
@@ -679,7 +675,7 @@ void a_Menu_history_popup(BrowserWindow *bw, int direction)
 /*
  * Toggle use of remote stylesheets
  */
-static void Menu_remote_css_cb(Widget *wid)
+static void Menu_remote_css_cb(Fl_Widget *wid)
 {
    _MSG("Menu_remote_css_cb\n");
    prefs.load_stylesheets = wid->state() ? 1 : 0;
@@ -689,7 +685,7 @@ static void Menu_remote_css_cb(Widget *wid)
 /*
  * Toggle use of embedded CSS style
  */
-static void Menu_embedded_css_cb(Widget *wid)
+static void Menu_embedded_css_cb(Fl_Widget *wid)
 {
    prefs.parse_embedded_css = wid->state() ? 1 : 0;
    a_UIcmd_repush(popup_bw);
@@ -698,7 +694,7 @@ static void Menu_embedded_css_cb(Widget *wid)
 /*
  * Toggle loading of images -- and load them if enabling.
  */
-static void Menu_imgload_toggle_cb(Widget *wid)
+static void Menu_imgload_toggle_cb(Fl_Widget *wid)
 {
    if ((prefs.load_images = wid->state() ? 1 : 0)) {
       void *doc = a_Bw_get_current_doc(popup_bw);
@@ -717,7 +713,7 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
 {
    // One menu shared by every browser window
    static PopupMenu *pm = NULL;
-   Widget *wid = (Widget*)v_wid;
+   Fl_Widget *wid = (Fl_Widget*)v_wid;
    Item *it;
 
    popup_bw = bw;
