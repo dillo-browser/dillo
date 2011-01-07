@@ -10,7 +10,7 @@
  */
 
 /*
- * A FLTK2-based GUI for the downloads dpi (dillo plugin).
+ * A FLTK-based GUI for the downloads dpi (dillo plugin).
  */
 
 #include <stdio.h>
@@ -29,22 +29,20 @@
 #include <sys/un.h>
 #include <sys/wait.h>
 
-#include <fltk/run.h>
-#include <fltk/Window.h>
-#include <fltk/Widget.h>
-#include <fltk/damage.h>
-#include <fltk/Box.h>
-#include <fltk/draw.h>
-#include <fltk/HighlightButton.h>
-#include <fltk/PackedGroup.h>
-#include <fltk/ScrollGroup.h>
-#include <fltk/ask.h>
-#include <fltk/file_chooser.h>
+#include <FL/Fl.H>
+#include <FL/fl_draw.H>
+#include <FL/fl_ask.H>
+#include <FL/Fl_File_Chooser.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Widget.H>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Scroll.H>
+#include <FL/Fl_Pack.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
 
 #include "dpiutil.h"
 #include "../dpip/dpip.h"
-
-using namespace fltk;
 
 /*
  * Debugging macros
@@ -69,8 +67,8 @@ typedef enum {
 
 // ProgressBar widget --------------------------------------------------------
 
-// class FL_API ProgressBar : public Widget {
-class ProgressBar : public Widget {
+// class FL_API ProgressBar : public Fl_Widget {
+class ProgressBar : public Fl_Widget {
 protected:
   double mMin;
   double mMax;
@@ -78,7 +76,7 @@ protected:
   double mStep;
   bool mShowPct, mShowMsg;
   char mMsg[64];
-  Color mTextColor;
+  Fl_Color mTextColor;
   void draw();
 public:
   ProgressBar(int x, int y, int w, int h, const char *lbl = 0);
@@ -97,8 +95,8 @@ public:
   void showtext(bool st)        { mShowPct = st; }
   void message(char *msg) { mShowMsg = true; strncpy(mMsg,msg,63); redraw(); }
   bool showtext()               { return mShowPct; }
-  void text_color(Color col)    { mTextColor = col; }
-  Color text_color()      { return mTextColor; }
+  void text_color(Fl_Color col) { mTextColor = col; }
+  Fl_Color text_color()    { return mTextColor; }
 };
 
 // Download-item class -------------------------------------------------------
@@ -123,10 +121,10 @@ class DLItem {
    int WgetStatus;
 
    int gw, gh;
-   Group *group;
+   Fl_Group *group;
    ProgressBar *prBar;
-   HighlightButton *prButton;
-   Widget *prTitle, *prGot, *prSize, *prRate, *pr_Rate, *prETA, *prETAt;
+   Fl_Button *prButton;
+   Fl_Widget *prTitle, *prGot, *prSize, *prRate, *pr_Rate, *prETA, *prETAt;
 
 public:
    DLItem(const char *full_filename, const char *url, DLAction action);
@@ -142,7 +140,7 @@ public:
    void pid(pid_t p) { mPid = p; }
    void child_finished(int status);
    void status_msg(const char *msg) { prBar->message((char*)msg); }
-   Widget *get_widget() { return group; }
+   Fl_Widget *get_widget() { return group; }
    int widget_done() { return WidgetDone; }
    void widget_done(int val) { WidgetDone = val; }
    int updates_done() { return UpdatesDone; }
@@ -177,9 +175,9 @@ public:
 
 class DLWin {
    DLItemList *mDList;
-   Window *mWin;
-   ScrollGroup *mScroll;
-   PackedGroup *mPG;
+   Fl_Window *mWin;
+   Fl_Scroll *mScroll;
+   Fl_Pack *mPG;
 
 public:
    DLWin(int ww, int wh);
@@ -221,67 +219,64 @@ void ProgressBar::move(double step)
 }
 
 ProgressBar::ProgressBar(int x, int y, int w, int h, const char *lbl)
-:  Widget(x, y, w, h, lbl)
+:  Fl_Widget(x, y, w, h, lbl)
 {
    mMin = mPresent = 0;
    mMax = 100;
    mShowPct = true;
    mShowMsg = false;
-   box(DOWN_BOX);
-   selection_color(BLUE);
-   color(WHITE);
-   textcolor(RED);
+   box(FL_DOWN_BOX);
+   selection_color(FL_BLUE);
+   color(FL_WHITE);
+   //textcolor(FL_RED);
 }
 
 void ProgressBar::draw()
 {
-   drawstyle(style(), flags());
-   if (damage() & DAMAGE_ALL)
+   struct Rectangle {
+      int x, y, w, h;
+   };
+
+   //drawstyle(style(), flags());
+   if (Fl::damage() & FL_DAMAGE_ALL)
       draw_box();
-   Rectangle r(w(), h());
-   box()->inset(r);
+   Rectangle r = {0, 0, w(), h()};
+   //box()->inset(r);
    if (mPresent > mMax)
       mPresent = mMax;
    if (mPresent < mMin)
       mPresent = mMin;
    double pct = (mPresent - mMin) / mMax;
 
-   if (vertical()) {
-      int barHeight = int (r.h() * pct + .5);
-      r.y(r.y() + r.h() - barHeight);
-      r.h(barHeight);
-   } else {
-      r.w(int (r.w() * pct + .5));
-   }
+   r.w = r.w * pct + .5;
 
-   setcolor(selection_color());
+   color(selection_color());
 
    if (mShowPct) {
-      fillrect(r);
+      fl_rectf(r.x, r.y, r.w, r.h);
    } else {
-      Rectangle r2(int (r.w() * pct), 0, int (w() * .1), h());
-      push_clip(r2);
-       fillrect(r);
-      pop_clip();
+      fl_push_clip(int (r.w * pct), 0, int (w() * .1), h());
+      fl_rectf(r.x, r.y, r.w, r.h);
+      fl_pop_clip();
    }
 
    if (mShowMsg) {
-      setcolor(textcolor());
-      setfont(this->labelfont(), this->labelsize());
-      drawtext(mMsg, Rectangle(w(), h()), ALIGN_CENTER);
+      //setcolor(textcolor());
+      fl_font(this->labelfont(), this->labelsize());
+      fl_draw(mMsg, 0, 0, w(), h(), FL_ALIGN_CENTER);
    } else if (mShowPct) {
       char buffer[30];
       sprintf(buffer, "%d%%", int (pct * 100 + .5));
-      setcolor(textcolor());
-      setfont(this->labelfont(), this->labelsize());
-      drawtext(buffer, Rectangle(w(), h()), ALIGN_CENTER);
+      //setcolor(textcolor());
+      fl_font(this->labelfont(), this->labelsize());
+      fl_draw(buffer, 0, 0, w(), h(), FL_ALIGN_CENTER);
    }
 }
 
 
 // Download-item class -------------------------------------------------------
 
-static void prButton_scb(Widget *, void *cb_data)
+static void prButton_scb(Fl_Widget *, void *cb_data)
 {
    DLItem *i = (DLItem *)cb_data;
 
@@ -347,76 +342,76 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    WgetStatus = -1;
 
    gw = 400, gh = 70;
-   group = new Group(0,0,gw,gh);
+   group = new Fl_Group(0,0,gw,gh);
    group->begin();
-    prTitle = new Widget(24, 7, 290, 23, shortname);
-    prTitle->box(RSHADOW_BOX);
-    prTitle->align(ALIGN_LEFT|ALIGN_INSIDE|ALIGN_CLIP);
-    prTitle->set_flag (RAW_LABEL);
+    prTitle = new Fl_Box(24, 7, 290, 23, shortname);
+    prTitle->box(FL_RSHADOW_BOX);
+    prTitle->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
+    //prTitle->clear_flag (SHORTCUT_LABEL);
     // Attach this 'log_text' to the tooltip
     log_text_add("Target File: ", 13);
     log_text_add(fullname, strlen(fullname));
     log_text_add("\n\n", 2);
 
     prBar = new ProgressBar(24, 40, 92, 20);
-    prBar->box(BORDER_BOX); // ENGRAVED_BOX
+    prBar->box(FL_BORDER_BOX); // ENGRAVED_BOX
     prBar->tooltip("Progress Status");
 
     int ix = 122, iy = 36, iw = 50, ih = 14;
-    Widget *o = new Widget(ix,iy,iw,ih, "Got");
-    o->box(RFLAT_BOX);
-    o->color((Color)0xc0c0c000);
+    Fl_Widget *o = new Fl_Box(ix,iy,iw,ih, "Got");
+    o->box(FL_RFLAT_BOX);
+    o->color((Fl_Color)0xc0c0c000);
     o->tooltip("Downloaded Size");
-    prGot = new Widget(ix,iy+14,iw,ih, "0KB");
-    prGot->align(ALIGN_CENTER|ALIGN_INSIDE);
-    prGot->labelcolor((Color)0x6c6cbd00);
-    prGot->box(NO_BOX);
+    prGot = new Fl_Box(ix,iy+14,iw,ih, "0KB");
+    prGot->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prGot->labelcolor((Fl_Color)0x6c6cbd00);
+    prGot->box(FL_NO_BOX);
 
     ix += iw;
-    o = new Widget(ix,iy,iw,ih, "Size");
-    o->box(RFLAT_BOX);
-    o->color((Color)0xc0c0c000);
+    o = new Fl_Box(ix,iy,iw,ih, "Size");
+    o->box(FL_RFLAT_BOX);
+    o->color((Fl_Color)0xc0c0c000);
     o->tooltip("Total Size");
-    prSize = new Widget(ix,iy+14,iw,ih, "??");
-    prSize->align(ALIGN_CENTER|ALIGN_INSIDE);
-    prSize->box(NO_BOX);
+    prSize = new Fl_Box(ix,iy+14,iw,ih, "??");
+    prSize->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prSize->box(FL_NO_BOX);
 
     ix += iw;
-    o = new Widget(ix,iy,iw,ih, "Rate");
-    o->box(RFLAT_BOX);
-    o->color((Color)0xc0c0c000);
+    o = new Fl_Box(ix,iy,iw,ih, "Rate");
+    o->box(FL_RFLAT_BOX);
+    o->color((Fl_Color)0xc0c0c000);
     o->tooltip("Current transfer Rate (KBytes/sec)");
-    prRate = new Widget(ix,iy+14,iw,ih, "??");
-    prRate->align(ALIGN_CENTER|ALIGN_INSIDE);
-    prRate->box(NO_BOX);
+    prRate = new Fl_Box(ix,iy+14,iw,ih, "??");
+    prRate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prRate->box(FL_NO_BOX);
 
     ix += iw;
-    o = new Widget(ix,iy,iw,ih, "~Rate");
-    o->box(RFLAT_BOX);
-    o->color((Color)0xc0c0c000);
+    o = new Fl_Box(ix,iy,iw,ih, "~Rate");
+    o->box(FL_RFLAT_BOX);
+    o->color((Fl_Color)0xc0c0c000);
     o->tooltip("Average transfer Rate (KBytes/sec)");
-    pr_Rate = new Widget(ix,iy+14,iw,ih, "??");
-    pr_Rate->align(ALIGN_CENTER|ALIGN_INSIDE);
-    pr_Rate->box(NO_BOX);
+    pr_Rate = new Fl_Box(ix,iy+14,iw,ih, "??");
+    pr_Rate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    pr_Rate->box(FL_NO_BOX);
 
     ix += iw;
-    prETAt = o = new Widget(ix,iy,iw,ih, "ETA");
-    o->box(RFLAT_BOX);
-    o->color((Color)0xc0c0c000);
+    prETAt = o = new Fl_Box(ix,iy,iw,ih, "ETA");
+    o->box(FL_RFLAT_BOX);
+    o->color((Fl_Color)0xc0c0c000);
     o->tooltip("Estimated Time of Arrival");
-    prETA = new Widget(ix,iy+14,iw,ih, "??");
-    prETA->align(ALIGN_CENTER|ALIGN_INSIDE);
-    prETA->box(NO_BOX);
+    prETA = new Fl_Box(ix,iy+14,iw,ih, "??");
+    prETA->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prETA->box(FL_NO_BOX);
 
     //ix += 50;
-    //prButton = new HighlightButton(ix, 41, 38, 19, "Stop");
-    prButton = new HighlightButton(328, 9, 38, 19, "Stop");
+    //prButton = new Fl_Button(ix, 41, 38, 19, "Stop");
+    prButton = new Fl_Button(328, 9, 38, 19, "Stop");
     prButton->tooltip("Stop this transfer");
-    prButton->box(UP_BOX);
-    prButton->clear_tab_to_focus();
+    prButton->box(FL_UP_BOX);
+    prButton->clear_visible_focus();
     prButton->callback(prButton_scb, this);
 
-   group->box(ROUND_UP_BOX);
+   group->box(FL_ROUND_UP_BOX);
    group->end();
 }
 
@@ -441,7 +436,7 @@ void DLItem::abort_dl()
 {
    if (!log_done()) {
       close(LogPipe[0]);
-      remove_fd(LogPipe[0]);
+      Fl::remove_fd(LogPipe[0]);
       log_done(1);
       // Stop wget
       if (!fork_done())
@@ -610,7 +605,7 @@ static void read_log_cb(int fd_in, void *data)
          break;
       } else if (st == 0) {
          close(fd_in);
-         remove_fd(fd_in, 1);
+         Fl::remove_fd(fd_in, 1);
          dl_item->log_done(1);
          ret = 0;
          break;
@@ -623,7 +618,7 @@ static void read_log_cb(int fd_in, void *data)
 void DLItem::father_init()
 {
    close(LogPipe[1]);
-   add_fd(LogPipe[0], 1, read_log_cb, this); // Read
+   Fl::add_fd(LogPipe[0], 1, read_log_cb, this); // Read
 
    // Start the timer after the child is running.
    // (this makes a big difference with wget)
@@ -790,7 +785,7 @@ static void cleanup_cb(void *data)
    }
    sigprocmask(SIG_UNBLOCK, &mask_sigchld, NULL);
 
-   repeat_timeout(1.0,cleanup_cb,data);
+   Fl::repeat_timeout(1.0,cleanup_cb,data);
 }
 
 /*
@@ -817,7 +812,7 @@ static void update_cb(void *data)
    if (cb_used && list->num() == 0)
       exit(0);
 
-   repeat_timeout(1.0,update_cb,data);
+   Fl::repeat_timeout(1.0,update_cb,data);
 }
 
 
@@ -937,13 +932,13 @@ end:
 /*
  * Callback for close window request (WM or EscapeKey press)
  */
-static void dlwin_esc_cb(Widget *, void *)
+static void dlwin_esc_cb(Fl_Widget *, void *)
 {
    const char *msg = "There are running downloads.\n"
                      "ABORT them and EXIT anyway?";
 
    if (dl_win && dl_win->num_running() > 0) {
-      int ch = fltk::choice(msg, "Yes", "*No", "Cancel");
+      int ch = fl_choice(msg, "Yes", "*No", "Cancel");
       if (ch != 0)
          return;
    }
@@ -999,12 +994,12 @@ DLAction DLWin::check_filename(char **p_fullname)
    dStr_sprintf(ds,
                 "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
                 *p_fullname, (int)ss.st_size);
-   ch = fltk::choice(ds->str, "Rename", "Continue", "Abort");
+   ch = fl_choice(ds->str, "Rename", "Continue", "Abort");
    dStr_free(ds, 1);
    MSG("Choice %d\n", ch);
    if (ch == 0) {
       const char *p;
-      p = fltk::file_chooser("Enter a new name:", NULL, *p_fullname);
+      p = fl_file_chooser("Enter a new name:", NULL, *p_fullname);
       if (p) {
          dFree(*p_fullname);
          *p_fullname = dStrdup(p);
@@ -1055,7 +1050,7 @@ int DLWin::num_running()
  */
 void DLWin::listen(int req_fd)
 {
-   add_fd(req_fd, 1, read_req_cb, NULL); // Read
+   Fl::add_fd(req_fd, 1, read_req_cb, NULL); // Read
 }
 
 /*
@@ -1076,15 +1071,15 @@ DLWin::DLWin(int ww, int wh) {
    mDList = new DLItemList();
 
    // Create the empty main window
-   mWin = new Window(ww, wh, "Downloads:");
+   mWin = new Fl_Window(ww, wh, "Downloads:");
    mWin->begin();
-    mScroll = new ScrollGroup(0,0,ww,wh);
+    mScroll = new Fl_Scroll(0,0,ww,wh);
     mScroll->begin();
-     mPG = new PackedGroup(0,0,ww,wh);
+     mPG = new Fl_Pack(0,0,ww,wh);
      mPG->end();
      //mPG->spacing(10);
     mScroll->end();
-    mScroll->type(ScrollGroup::VERTICAL);
+    mScroll->type(Fl_Scroll::VERTICAL);
    mWin->end();
    mWin->resizable(mScroll);
    mWin->callback(dlwin_esc_cb, NULL);
@@ -1096,9 +1091,9 @@ DLWin::DLWin(int ww, int wh) {
    est_sigchld();
 
    // Set the cleanup timeout
-   add_timeout(1.0, cleanup_cb, mDList);
+   Fl::add_timeout(1.0, cleanup_cb, mDList);
    // Set the update timeout
-   add_timeout(1.0, update_cb, mDList);
+   Fl::add_timeout(1.0, update_cb, mDList);
 }
 
 
@@ -1111,7 +1106,7 @@ int main()
 {
    int ww = 420, wh = 85;
 
-   lock();
+   Fl::lock();
 
    // Create the download window
    dl_win = new DLWin(ww, wh);
@@ -1121,6 +1116,6 @@ int main()
 
    MSG("started...\n");
 
-   return run();
+   return Fl::run();
 }
 
