@@ -16,11 +16,8 @@
 #include <stdarg.h>
 #include <math.h>       /* for rint */
 
-#include <fltk/draw.h>
-#include <fltk/damage.h>
-#include <fltk/Widget.h>
-#include <fltk/TabGroup.h>
-#include <fltk/Tooltip.h>
+#include <FL/Fl_Widget.H>
+#include <FL/Fl_Tabs.H>
 
 #include "paths.hh"
 #include "keys.hh"
@@ -226,18 +223,18 @@ TabGroupPager* CustShrinkTabPager::clone() const {
 /*
  * For custom handling of keyboard
  */
-class CustTabGroup : public fltk::TabGroup {
-  Tooltip *toolTip;
+class CustTabGroup : public Fl_Tabs {
+  Fl_Tooltip *toolTip;
   bool tooltipEnabled;
   bool buttonPushed;
 public:
    CustTabGroup (int x, int y, int ww, int wh, const char *lbl=0) :
-      TabGroup(x,y,ww,wh,lbl) {
+      Fl_Tabs(x,y,ww,wh,lbl) {
          // The parameter pager is cloned, so free it.
          CustShrinkTabPager *cp = new CustShrinkTabPager();
          this->pager(cp);
          delete cp;
-         toolTip = new Tooltip;
+         toolTip = new Fl_Tooltip;
          tooltipEnabled = false;
          buttonPushed = false;
       };
@@ -312,7 +309,7 @@ public:
          /* Ignore this event */
          return 1;
       }
-      int ret = TabGroup::handle(e);
+      int ret = Fl_Tabs::handle(e);
 
       if (e == FL_PUSH) {
          /* WORKAROUND: FLTK raises the window on unhandled clicks,
@@ -323,8 +320,8 @@ public:
       return ret;
    }
 
-   void remove (Widget *w) {
-      TabGroup::remove (w);
+   void remove (Fl_Widget *w) {
+      Fl_Tabs::remove (w);
       /* fixup resizable in case we just removed it */
       if (resizable () == w) {
          if (children () > 0)
@@ -337,8 +334,8 @@ public:
          hideLabels ();
    }
 
-   void add (Widget *w) {
-      TabGroup::add (w);
+   void add (Fl_Widget *w) {
+      Fl_Tabs::add (w);
       if (children () > 1)
          showLabels ();
    }
@@ -356,7 +353,7 @@ public:
 
 //----------------------------------------------------------------------------
 
-static void win_cb (fltk::Widget *w, void *cb_data) {
+static void win_cb (Fl_Widget *w, void *cb_data) {
    int choice = 0;
    CustTabGroup *tabs = (CustTabGroup*) cb_data;
 
@@ -376,7 +373,7 @@ BrowserWindow *a_UIcmd_get_bw_by_widget(void *v_wid)
    BrowserWindow *bw;
    for (int i = 0; i < a_Bw_num(); ++i) {
       bw = a_Bw_get(i);
-      if (((fltk::Widget*)bw->ui)->contains((fltk::Widget*)v_wid))
+      if (((Fl_Widget*)bw->ui)->contains((Fl_Widget*)v_wid))
          return bw;
    }
    return NULL;
@@ -405,7 +402,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 {
    BrowserWindow *old_bw = (BrowserWindow*)vbw;
    BrowserWindow *new_bw = NULL;
-   Window *win;
+   Fl_Window *win;
 
    if (ww <= 0 || wh <= 0) {
       // Set default geometry from dillorc.
@@ -416,7 +413,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    if (xid)
       win = new Xembed(xid, ww, wh);
    else
-      win = new Window(ww, wh);
+      win = new Fl_Window(ww, wh);
 
    win->shortcut(0); // Ignore Escape
    if (prefs.buffered_drawing != 2)
