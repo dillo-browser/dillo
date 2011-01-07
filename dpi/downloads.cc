@@ -226,9 +226,7 @@ ProgressBar::ProgressBar(int x, int y, int w, int h, const char *lbl)
    mShowPct = true;
    mShowMsg = false;
    box(FL_DOWN_BOX);
-   selection_color(FL_BLUE);
    color(FL_WHITE);
-   //textcolor(FL_RED);
 }
 
 void ProgressBar::draw()
@@ -240,7 +238,7 @@ void ProgressBar::draw()
    //drawstyle(style(), flags());
    if (Fl::damage() & FL_DAMAGE_ALL)
       draw_box();
-   Rectangle r = {0, 0, w(), h()};
+   Rectangle r = {x(), y(), w(), h()};
    //box()->inset(r);
    if (mPresent > mMax)
       mPresent = mMax;
@@ -250,26 +248,24 @@ void ProgressBar::draw()
 
    r.w = r.w * pct + .5;
 
-   color(selection_color());
-
    if (mShowPct) {
-      fl_rectf(r.x, r.y, r.w, r.h);
+      fl_rectf(r.x, r.y, r.w, r.h, FL_BLUE);
    } else {
       fl_push_clip(int (r.w * pct), 0, int (w() * .1), h());
-      fl_rectf(r.x, r.y, r.w, r.h);
+      fl_rectf(r.x, r.y, r.w, r.h, FL_BLUE);
       fl_pop_clip();
    }
 
    if (mShowMsg) {
-      //setcolor(textcolor());
+      fl_color(FL_RED);
       fl_font(this->labelfont(), this->labelsize());
-      fl_draw(mMsg, 0, 0, w(), h(), FL_ALIGN_CENTER);
+      fl_draw(mMsg, x(), y(), w(), h(), FL_ALIGN_CENTER);
    } else if (mShowPct) {
       char buffer[30];
       sprintf(buffer, "%d%%", int (pct * 100 + .5));
-      //setcolor(textcolor());
+      fl_color(FL_RED);
       fl_font(this->labelfont(), this->labelsize());
-      fl_draw(buffer, 0, 0, w(), h(), FL_ALIGN_CENTER);
+      fl_draw(buffer, x(), y(), w(), h(), FL_ALIGN_CENTER);
    }
 }
 
