@@ -14,34 +14,20 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#include <fltk/HighlightButton.h>
-#include <fltk/run.h>
-#include <fltk/damage.h>
-#include <fltk/xpmImage.h>
-#include <fltk/events.h>        // for mouse buttons and keys
-#include <fltk/Font.h>          // UI label font for tabs
-#include <fltk/InvisibleBox.h>
-#include <fltk/PopupMenu.h>
-#include <fltk/Item.h>
-#include <fltk/Divider.h>
-
 #include "keys.hh"
 #include "ui.hh"
 #include "msg.h"
 #include "timeout.hh"
 #include "utf8.hh"
 
-using namespace fltk;
-
-
 // Include image data
 #include "pixmaps.h"
 #include "uicmd.hh"
 
 struct iconset {
-   Image *ImgMeterOK, *ImgMeterBug,
-         *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgTools,
-         *ImgClear,*ImgSearch, *ImgHelp;
+   Fl_Image *ImgMeterOK, *ImgMeterBug,
+            *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgTools,
+            *ImgClear,*ImgSearch, *ImgHelp;
    MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti;
 };
 
@@ -95,10 +81,10 @@ static struct iconset *icons = &standard_icons;
 /*
  * (Used to avoid certain shortcuts in the location bar)
  */
-class CustInput : public Input {
+class CustInput : public Fl_Input {
 public:
    CustInput (int x, int y, int w, int h, const char* l=0) :
-      Input(x,y,w,h,l) {};
+      Fl_Input(x,y,w,h,l) {};
    int handle(int e);
 };
 
@@ -137,7 +123,7 @@ int CustInput::handle(int e)
    }
    _MSG("\n");
 
-   return Input::handle(e);
+   return Fl_Input::handle(e);
 }
 
 //----------------------------------------------------------------------------
@@ -145,14 +131,14 @@ int CustInput::handle(int e)
 /*
  * Used to handle "paste" within the toolbar's Clear button.
  */
-class CustHighlightButton : public HighlightButton {
+class CustButton : public Fl_Button {
 public:
-   CustHighlightButton(int x, int y, int w, int h, const char *l=0) :
-      HighlightButton(x,y,w,h,l) {};
+   CustButton(int x, int y, int w, int h, const char *l=0) :
+      Fl_Button(x,y,w,h,l) {};
    int handle(int e);
 };
 
-int CustHighlightButton::handle(int e)
+int CustButton::handle(int e)
 {
    if (e == FL_PASTE) {
       const char* t = Fl::event_text();
@@ -162,7 +148,7 @@ int CustHighlightButton::handle(int e)
          return 1;
       }
    }
-   return HighlightButton::handle(e);
+   return Fl_Button::handle(e);
 }
 
 //----------------------------------------------------------------------------
@@ -170,11 +156,11 @@ int CustHighlightButton::handle(int e)
 /*
  * Used to resize the progress boxes automatically.
  */
-class CustProgressBox : public InvisibleBox {
+class CustProgressBox : public Fl_Box {
    int padding;
 public:
    CustProgressBox(int x, int y, int w, int h, const char *l=0) :
-      InvisibleBox(x,y,w,h,l) { padding = 0; };
+      Fl_Box(x,y,w,h,l) { padding = 0; };
    void update_label(const char *lbl) {
       int w,h;
       if (!padding) {
@@ -205,7 +191,7 @@ public:
 /*
  * Callback for the search button.
  */
-static void search_cb(Widget *wid, void *data)
+static void search_cb(Fl_Widget *wid, void *data)
 {
    int k = Fl::event_key();
 
@@ -221,7 +207,7 @@ static void search_cb(Widget *wid, void *data)
 /*
  * Callback for the help button.
  */
-static void help_cb(Widget *w, void *)
+static void help_cb(Fl_Widget *w, void *)
 {
    char *path = dStrconcat(DILLO_DOCDIR, "user_help.html", NULL);
    BrowserWindow *bw = a_UIcmd_get_bw_by_widget(w);
@@ -241,7 +227,7 @@ static void help_cb(Widget *w, void *)
 /*
  * Callback for the File menu button.
  */
-static void filemenu_cb(Widget *wid, void *)
+static void filemenu_cb(Fl_Widget *wid, void *)
 {
    int k = Fl::event_key();
    if (k == 1 || k == 3) {
@@ -252,7 +238,7 @@ static void filemenu_cb(Widget *wid, void *)
 /*
  * Callback for the location's clear-button.
  */
-static void clear_cb(Widget *w, void *data)
+static void clear_cb(Fl_Widget *w, void *data)
 {
    UI *ui = (UI*)data;
 
@@ -268,7 +254,7 @@ static void clear_cb(Widget *w, void *data)
 /*
  * Change the color of the location bar.
  *
-static void color_change_cb(Widget *wid, void *data)
+static void color_change_cb(Fl_Widget *wid, void *data)
 {
    ((UI*)data)->color_change_cb_i();
 }
@@ -278,7 +264,7 @@ static void color_change_cb(Widget *wid, void *data)
 /*
  * Send the browser to the new URL in the location.
  */
-static void location_cb(Widget *wid, void *data)
+static void location_cb(Fl_Widget *wid, void *data)
 {
    Input *i = (Input*)wid;
    UI *ui = (UI*)data;
@@ -300,7 +286,7 @@ static void location_cb(Widget *wid, void *data)
 /*
  * Callback handler for button press on the panel
  */
-static void b1_cb(Widget *wid, void *cb_data)
+static void b1_cb(Fl_Widget *wid, void *cb_data)
 {
    int bn = VOIDP2INT(cb_data);
    int k = Fl::event_key();
@@ -361,7 +347,7 @@ static void b1_cb(Widget *wid, void *cb_data)
 /*
  * Callback handler for fullscreen button press
  */
-//static void fullscreen_cb(Widget *wid, void *data)
+//static void fullscreen_cb(Fl_Widget *wid, void *data)
 //{
 //   /* TODO: do we want to toggle fullscreen or panelmode?
 //            maybe we need to add another button?*/
@@ -371,7 +357,7 @@ static void b1_cb(Widget *wid, void *cb_data)
 /*
  * Callback for the bug meter button.
  */
-static void bugmeter_cb(Widget *wid, void *data)
+static void bugmeter_cb(Fl_Widget *wid, void *data)
 {
    int k = Fl::event_key();
    if (k == 1) {
@@ -392,53 +378,52 @@ static void bugmeter_cb(Widget *wid, void *data)
 /*
  * Create the archetipic browser buttons
  */
-PackedGroup *UI::make_toolbar(int tw, int th)
+Fl_Pack *UI::make_toolbar(int tw, int th)
 {
-   HighlightButton *b;
-   PackedGroup *p1=new PackedGroup(0,0,tw,th);
+   Fl_Button *b;
+   Fl_Pack *p1=new Fl_Pack(0,0,tw,th);
    p1->begin();
-    Back = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Back" : 0);
+    Back = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Back" : 0);
     b->image(icons->ImgLeftMulti);
     b->callback(b1_cb, (void *)UI_BACK);
-    b->clear_tab_to_focus();
-    HighlightButton::default_style->highlight_color(CuteColor);
+    b->clear_visible_focus();
 
-    Forw = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Forw" : 0);
+    Forw = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Forw" : 0);
     b->image(icons->ImgRightMulti);
     b->callback(b1_cb, (void *)UI_FORW);
-    b->clear_tab_to_focus();
+    b->clear_visible_focus();
 
-    Home = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Home" : 0);
+    Home = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Home" : 0);
     b->image(icons->ImgHome);
     b->callback(b1_cb, (void *)UI_HOME);
-    b->clear_tab_to_focus();
+    b->clear_visible_focus();
 
-    Reload = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Reload" : 0);
+    Reload = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Reload" : 0);
     b->image(icons->ImgReload);
     b->callback(b1_cb, (void *)UI_RELOAD);
-    b->clear_tab_to_focus();
+    b->clear_visible_focus();
 
-    Save = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Save" : 0);
+    Save = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Save" : 0);
     b->image(icons->ImgSave);
     b->callback(b1_cb, (void *)UI_SAVE);
-    b->clear_tab_to_focus();
+    b->clear_visible_focus();
 
-    Stop = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
+    Stop = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
     b->image(icons->ImgStopMulti);
     b->callback(b1_cb, (void *)UI_STOP);
-    b->clear_tab_to_focus();
+    b->clear_visible_focus();
 
-    Bookmarks = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Book" : 0);
+    Bookmarks = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Book" : 0);
     b->image(icons->ImgBook);
     b->callback(b1_cb, (void *)UI_BOOK);
-    b->clear_tab_to_focus();
+    b->clear_visible_focus();
 
-    Tools = b = new HighlightButton(xpos, 0, bw, bh, (lbl) ? "Tools" : 0);
+    Tools = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Tools" : 0);
     b->image(icons->ImgTools);
     b->callback(b1_cb, (void *)UI_TOOLS);
-    b->clear_tab_to_focus();
+    b->clear_visible_focus();
 
-   p1->type(PackedGroup::ALL_CHILDREN_VERTICAL);
+   p1->type(Fl_Pack::HORIZONTAL);
    p1->end();
 
    if (prefs.show_tooltip) {
@@ -457,33 +442,32 @@ PackedGroup *UI::make_toolbar(int tw, int th)
 /*
  * Create the location box (Clear/Input/Search)
  */
-PackedGroup *UI::make_location()
+Fl_Pack *UI::make_location()
 {
-   Button *b;
-   PackedGroup *pg = new PackedGroup(0,0,0,0);
+   Fl_Button *b;
+   Fl_Pack *pg = new Fl_Pack(0,0,0,0);
    pg->begin();
     Clear = b = new CustHighlightButton(2,2,16,22,0);
     b->image(icons->ImgClear);
     b->callback(clear_cb, this);
-    b->clear_tab_to_focus();
+    b->clear_visible_focus();
 
     Input *i = Location = new CustInput(0,0,0,0,0);
     i->color(CuteColor);
     i->when(FL_WHEN_ENTER_KEY);
     i->callback(location_cb, this);
-    i->set_click_to_focus();
 
     Search = b = new HighlightButton(0,0,16,22,0);
     b->image(icons->ImgSearch);
     b->callback(search_cb, this);
-    b->clear_tab_to_focus();
+    b->clear_visible_focus();
 
     Help = b = new HighlightButton(0,0,16,22,0);
     b->image(icons->ImgHelp);
     b->callback(help_cb, this);
-    b->clear_tab_to_focus();
+    b->clear_visible_focus();
 
-   pg->type(PackedGroup::ALL_CHILDREN_VERTICAL);
+   pg->type(Fl_Pack::HORIZONTAL);
    pg->resizable(i);
    pg->end();
 
@@ -499,9 +483,9 @@ PackedGroup *UI::make_location()
 /*
  * Create the progress bars
  */
-PackedGroup *UI::make_progress_bars(int wide, int thin_up)
+Fl_Pack *UI::make_progress_bars(int wide, int thin_up)
 {
-   ProgBox = new PackedGroup(0,0,0,0);
+   ProgBox = new Fl_Pack(0,0,0,0);
    ProgBox->begin();
     // Images
     IProg = new CustProgressBox(0,0,0,0);
@@ -513,7 +497,7 @@ PackedGroup *UI::make_progress_bars(int wide, int thin_up)
     PProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
     PProg->labelcolor(GRAY10);
     PProg->update_label(wide ? "Page\n0.0KB" : "0.0KB");
-   ProgBox->type(PackedGroup::ALL_CHILDREN_VERTICAL);
+   ProgBox->type(FL_Pack::HORIZONTAL);
    ProgBox->end();
 
    return ProgBox;
@@ -523,12 +507,12 @@ PackedGroup *UI::make_progress_bars(int wide, int thin_up)
  * Create the "File" menu
  * Static function for File menu callbacks.
  */
-Widget *UI::make_filemenu_button()
+Fl_Widget *UI::make_filemenu_button()
 {
-   HighlightButton *btn;
+   Fl_Button *btn;
    int w,h, padding;
 
-   FileButton = btn = new HighlightButton(0,0,0,0,"W");
+   FileButton = btn = new Fl_Button(0,0,0,0,"W");
    btn->measure_label(w, h);
    padding = w;
    btn->copy_label(PanelSize == P_tiny ? "&F" : "&File");
@@ -551,11 +535,11 @@ Widget *UI::make_filemenu_button()
 /*
  * Create the control panel
  */
-Group *UI::make_panel(int ww)
+Fl_Group *UI::make_panel(int ww)
 {
-   Widget *w;
-   Group *g1, *g2, *g3;
-   PackedGroup *pg;
+   Fl_Widget *w;
+   Fl_Group *g1, *g2, *g3;
+   Fl_Pack *pg;
 
    if (PanelSize > P_large) {
       PanelSize = P_tiny;
@@ -606,23 +590,23 @@ Group *UI::make_panel(int ww)
       g1->resizable(pg);
 
    } else {
-      g1 = new Group(0,0,ww,fh+lh+bh);
+      g1 = new Fl_Group(0,0,ww,fh+lh+bh);
       g1->begin();
         // File menu
         if (PanelSize == P_large) {
-           g3 = new Group(0,0,ww,lh);
+           g3 = new Fl_Group(0,0,ww,lh);
            g3->box(FL_FLAT_BOX);
-           Widget *bn = make_filemenu_button();
+           Fl_Widget *bn = make_filemenu_button();
            g3->add(bn);
            g3->add_resizable(*new InvisibleBox(bn->w(),0,ww - bn->w(),lh));
 
-           g2 = new Group(0,fh,ww,lh);
+           g2 = new Fl_Group(0,fh,ww,lh);
            g2->begin();
            pg = make_location();
            pg->resize(ww,lh);
         } else {
-           g2 = new PackedGroup(0,fh,ww,lh);
-           g2->type(PackedGroup::ALL_CHILDREN_VERTICAL);
+           g2 = new Fl_Pack(0,fh,ww,lh);
+           g2->type(Fl_Pack::HORIZONTAL);
            g2->begin();
            make_filemenu_button();
            pg = make_location();
@@ -632,11 +616,11 @@ Group *UI::make_panel(int ww)
        g2->end();
 
        // Toolbar
-       g3 = new Group(0,fh+lh,ww,bh);
+       g3 = new Fl_Group(0,fh+lh,ww,bh);
        g3->begin();
         pg = make_toolbar(ww,bh);
-        //w = new InvisibleBox(0,0,0,0,"i n v i s i b l e");
-        w = new InvisibleBox(0,0,0,0,0);
+        //w = new Box(0,0,0,0,"i n v i s i b l e");
+        w = new Box(0,0,0,0,0);
         pg->add(w);
         pg->resizable(w);
 
@@ -662,23 +646,22 @@ Group *UI::make_panel(int ww)
 /*
  * Create the status panel
  */
-Group *UI::make_status_panel(int ww)
+Fl_Group *UI::make_status_panel(int ww)
 {
    const int s_h = 20, bm_w = 16;
-   Group *g = new Group(0, 0, ww, s_h, 0);
+   Fl_Group *g = new Fl_Group(0, 0, ww, s_h, 0);
 
    // Status box
-   Status = new Output(0, 0, ww-bm_w, s_h, 0);
+   Status = new Fl_Output(0, 0, ww-bm_w, s_h, 0);
    Status->value("");
    Status->box(FL_THIN_DOWN_BOX);
-   Status->clear_click_to_focus();
-   Status->clear_tab_to_focus();
+   Status->clear_visible_focus();
    Status->color(GRAY80);
    g->add(Status);
    //Status->throw_focus();
 
    // Bug Meter
-   BugMeter = new HighlightButton(ww-bm_w,0,bm_w,s_h,0);
+   BugMeter = new Fl_Button(ww-bm_w,0,bm_w,s_h,0);
    BugMeter->image(icons->ImgMeterOK);
    BugMeter->box(FL_THIN_DOWN_BOX);
    BugMeter->align(FL_ALIGN_INSIDE|FL_ALIGN_CLIP|FL_ALIGN_LEFT);
@@ -696,13 +679,13 @@ Group *UI::make_status_panel(int ww)
  * User Interface constructor
  */
 UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
-  Group(x, y, ww, wh, label)
+  Fl_Group(x, y, ww, wh, label)
 {
    PointerOnLink = FALSE;
 
    Tabs = NULL;
    TabTooltip = NULL;
-   TopGroup = new PackedGroup(0, 0, ww, wh);
+   TopGroup = new Fl_Pack(0, 0, ww, wh);
    add(TopGroup);
    resizable(TopGroup);
    clear_flag(SHORTCUT_LABEL);
@@ -730,7 +713,7 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    TopGroup->add(Panel);
 
    // Render area
-   Main = new Widget(0,0,1,1,"Welcome...");
+   Main = new Fl_Widget(0,0,1,1,"Welcome...");
    Main->box(FL_FLAT_BOX);
    Main->color(GRAY15);
    Main->labelfont(FL_HELVETICA_BOLD_ITALIC);
@@ -751,7 +734,7 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
 
    // Make the full screen button (to be attached to the viewport later)
    // TODO: attach to the viewport
-   //FullScreen = new HighlightButton(0,0,15,15);
+   //FullScreen = new Fl_Button(0,0,15,15);
    //FullScreen->image(ImgFullScreenOn);
    //FullScreen->tooltip("Hide Controls");
    //FullScreen->callback(fullscreen_cb, this);
@@ -861,7 +844,7 @@ int UI::handle(int event)
 
             e_x -= Main->x();
             e_y -= Main->y();
-            ret = ((Group *)Main)->Group::handle(event);
+            ret = ((Fl_Group *)Main)->Fl_Group::handle(event);
             e_x = save_x;
             e_y = save_y;
          }
@@ -874,7 +857,7 @@ int UI::handle(int event)
    }
 
    if (!ret) {
-      ret = Group::handle(event);
+      ret = Fl_Group::handle(event);
    }
 
    return ret;
@@ -1069,7 +1052,6 @@ void UI::color_change_cb_i()
    MSG("Location color %d\n", CuteColor);
    Location->color(CuteColor);
    Location->redraw();
-   HighlightButton::default_style->highlight_color(CuteColor);
 }
 
 /*

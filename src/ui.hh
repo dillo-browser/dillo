@@ -3,16 +3,14 @@
 
 // UI for dillo --------------------------------------------------------------
 
-#include <fltk/Window.h>
-#include <fltk/Widget.h>
-#include <fltk/Button.h>
-#include <fltk/Input.h>
-#include <fltk/PackedGroup.h>
-#include <fltk/Output.h>
-#include <fltk/Image.h>
-#include <fltk/MultiImage.h>
-#include <fltk/MenuBuild.h>
-#include <fltk/TabGroup.h>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Widget.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Input.H>
+#include <FL/Fl_Pack.H>
+#include <FL/Fl_Output.H>
+#include <FL/Fl_Image.H>
+#include <FL/Fl_Tabs.H>
 
 #include "findbar.hh"
 
@@ -42,19 +40,19 @@ class CustTabGroup;
 //
 // UI class definition -------------------------------------------------------
 //
-class UI : public fltk::Group {
+class UI : public Fl_Group {
    CustTabGroup *Tabs;
    char *TabTooltip;
 
-   fltk::Group *TopGroup;
-   fltk::Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
+   Fl_Group *TopGroup;
+   Fl_Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
           *Clear, *Search, *Help, *FullScreen, *BugMeter, *FileButton;
-   fltk::Input  *Location;
-   fltk::PackedGroup *ProgBox;
+   Fl_Input  *Location;
+   Fl_Pack *ProgBox;
    CustProgressBox *PProg, *IProg;
-   fltk::Group *Panel, *StatusPanel;
-   fltk::Widget *Main;
-   fltk::Output *Status;
+   Fl_Group *Panel, *StatusPanel;
+   Fl_Widget *Main;
+   Fl_Output *Status;
 
    int MainIdx;
    // Panel customization variables
@@ -65,13 +63,13 @@ class UI : public fltk::Group {
    Findbar *findbar;
    int PointerOnLink;
 
-   fltk::PackedGroup *make_toolbar(int tw, int th);
-   fltk::PackedGroup *make_location();
-   fltk::PackedGroup *make_progress_bars(int wide, int thin_up);
+   Fl_Pack *make_toolbar(int tw, int th);
+   Fl_Pack *make_location();
+   Fl_Pack *make_progress_bars(int wide, int thin_up);
    void make_menubar(int x, int y, int w, int h);
-   fltk::Widget *make_filemenu_button();
-   fltk::Group *make_panel(int ww);
-   fltk::Group *make_status_panel(int ww);
+   Fl_Widget *make_filemenu_button();
+   Fl_Group *make_panel(int ww);
+   Fl_Group *make_status_panel(int ww);
 
 public:
 
@@ -89,7 +87,7 @@ public:
    void set_page_prog(size_t nbytes, int cmd);
    void set_img_prog(int n_img, int t_img, int cmd);
    void set_bug_prog(int n_bug);
-   void set_render_layout(Widget &nw);
+   void set_render_layout(Fl_Widget &nw);
    void set_tab_title(const char *label);
    void customize(int flags);
    void button_set_sens(UIButton btn, int sens);
@@ -97,7 +95,7 @@ public:
    void set_panelmode(UIPanelmode mode);
    UIPanelmode get_panelmode();
    void set_findbar_visibility(bool visible);
-   Widget *fullscreen_button() { return FullScreen; }
+   Fl_Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
 
    CustTabGroup *tabs() { return Tabs; }
