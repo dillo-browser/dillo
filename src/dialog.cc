@@ -120,7 +120,6 @@ void a_Dialog_text_window(const char *txt, const char *title)
 {
    //int wh = 600, ww = 650, bh = 30;
    int wh = prefs.height, ww = prefs.width, bh = 30;
-   int lines, line_num_width;
    Font *textfont = font(prefs.font_monospace, 0);
 
    Fl_Window *window = new Fl_Window(ww, wh, title ? title : "Untitled");
@@ -135,17 +134,10 @@ void a_Dialog_text_window(const char *txt, const char *title)
     td->textsize((int) rint(13.0 * prefs.font_factor));
     fltk::setfont(td->textfont(), td->textsize());
 
-    lines = td->total_lines();
-    line_num_width = 2;
-    while (lines /= 10)
-       ++line_num_width;
-    line_num_width = (int)(line_num_width * fltk::getwidth("0"));
-    td->linenumber_width(line_num_width);
-
     /* enable wrapping lines; text uses entire width of window */
     td->wrap_mode(true, false);
     /* WORKAROUND: FLTK may not display all the lines without this */
-    td->resize(ww+1,wh-bh);
+    td->size(ww+1,wh-bh);
 
     Fl_Return_Button *b = new Fl_Return_Button (0, wh-bh, ww, bh, "Close");
     b->callback(window_close_cb, window);
@@ -249,7 +241,7 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
    /* BUG type() not tested */
    message_output->type(FL_NORMAL_OUTPUT | FL_INPUT_WRAP);
    message_output->box(FL_DOWN_BOX);
-   message_output->text(message);
+   message_output->value(message);
    message_output->textfont(FL_HELVETICA_BOLD_ITALIC);
    message_output->textsize(14);
 
