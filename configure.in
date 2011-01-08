@@ -2,8 +2,8 @@ dnl Process this file with aclocal, autoconf and automake.
 
 AC_INIT([dillo], [2.2])
 
-dnl Detect the canonical host and target build environment
-AC_CANONICAL_SYSTEM
+dnl Detect the canonical target build environment
+AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/dillo.cc])
