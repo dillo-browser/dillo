@@ -25,6 +25,13 @@
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 
+#include <FL/Fl.H>
+#include <FL/fl_draw.H>
+#include <FL/Fl_Input.H>
+#include <FL/Fl_Text_Editor.H>
+#include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Radio_Button.H>
+
 #include <stdio.h>
 
 namespace dw {
@@ -462,7 +469,7 @@ Fl_Widget *FltkEntryResource::createNewWidget (core::Allocation
         new Fl_Input (allocation->x, allocation->y, allocation->width,
                       allocation->ascent + allocation->descent);
    if (password)
-      input->type(Fl_Input::SECRET);
+      input->type(FL_SECRET_INPUT);
    input->callback (widgetCallback, this);
    input->when (FL_WHEN_ENTER_KEY_ALWAYS);
 
@@ -817,7 +824,7 @@ Fl_Button *FltkRadioButtonResource::createNewButton (core::Allocation
    button->clear_flag (SHORTCUT_LABEL);
    button->when (FL_WHEN_CHANGED);
    button->callback (widgetCallback, this);
-   button->type (Fl_Button::TOGGLE);
+   button->type (FL_TOGGLE_BUTTON);
 
    return button;
 }
