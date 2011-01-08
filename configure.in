@@ -392,7 +392,8 @@ case $target in
     AC_MSG_CHECKING(whether threads work with -pthread)
     LDSAVEFLAGS=$LDFLAGS
     LDFLAGS="$LDFLAGS -pthread"
-    AC_TRY_LINK_FUNC(pthread_create, pthread_ok=yes, pthread_ok=no)
+    AC_LINK_IFELSE([AC_LANG_CALL([],[pthread_create])],
+pthread_ok=yes, pthread_ok=no)
     LDFLAGS=$LDSAVEFLAGS
 
     if test "x$pthread_ok" = "xyes"; then
