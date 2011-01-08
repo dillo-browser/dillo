@@ -348,11 +348,11 @@ if test "x$iconv_ok" = "xyes"; then
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <iconv.h>
 ]],[[
-     const char *inPtr;
-      char *outPtr;
-      size_t inLeft = 0, outRoom = 0;
-      iconv_t encoder = iconv_open("ASCII", "UTF-8");
-      iconv(encoder, &inPtr, &inLeft, &outPtr, &outRoom);
+const char *inPtr;
+char *outPtr;
+size_t inLeft = 0, outRoom = 0;
+iconv_t encoder = iconv_open("ASCII", "UTF-8");
+iconv(encoder, &inPtr, &inLeft, &outPtr, &outRoom);
 ]])],
 iconv_old=yes,iconv_old=no)
   AC_LANG_POP([C++])
