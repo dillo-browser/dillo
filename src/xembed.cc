@@ -12,10 +12,9 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <fltk/Window.h>
-#include <fltk/run.h>
-#include <fltk/events.h>
-#include <fltk/x.h>
+#include <FL/Fl_Window.H>
+#include <FL/Fl.H>
+#include <FL/x.H>
 
 #include "xembed.hh"
 
@@ -74,10 +73,10 @@ Xembed::handle(int e) {
    if (e == FL_PUSH)
       sendXembedEvent(XEMBED_REQUEST_FOCUS);
 
-   return Window::handle(e);
+   return Fl_Window::handle(e);
 }
 
-static int event_handler(int e, fltk::Window *w) {
+static int event_handler(int e, Fl_Window *w) {
    Atom xembed_atom = XInternAtom (fltk::xdisplay, "_XEMBED", false);
 
    if (fltk::xevent.type == ClientMessage) {
@@ -110,7 +109,7 @@ void Xembed::create() {
 }
 
 void Xembed::createInternal(uint32_t parent) {
-   fltk::Window *window = this;
+   Fl_Window *window = this;
    Colormap colormap = fltk::xcolormap;
 
    XSetWindowAttributes attr;
@@ -154,12 +153,12 @@ Xembed::sendXembedEvent(uint32_t message) {};
 
 int
 Xembed::handle(int e) {
-   return Window::handle(e);
+   return Fl_Window::handle(e);
 }
 
 void
 Xembed::create() {
-   Window::create();
+   Fl_Window::create();
 }
 
 #endif
