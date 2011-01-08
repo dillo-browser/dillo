@@ -115,21 +115,21 @@ dnl --------------------
 dnl
 AC_MSG_CHECKING([for socklen_t])
 ac_cv_socklen_t=""
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
-],[
+]],[[
 socklen_t a=0;
 getsockname(0,(struct sockaddr*)0, &a);
-],
+]])],
 ac_cv_socklen_t="socklen_t",
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
-],[
+]],[[
 int a=0;
 getsockname(0,(struct sockaddr*)0, &a);
-],
+]])],
 ac_cv_socklen_t="int",
 ac_cv_socklen_t="size_t"
 )
@@ -318,8 +318,12 @@ if test "x$iconv_ok" = "xno"; then
   dnl Test for OpenBSD
   old_libs="$LIBS"
   LIBS="$old_libs -liconv"
-  AC_TRY_COMPILE([#include <iconv.h>],[iconv_open("","");],
-                 iconv_ok=yes, iconv_ok=no)
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <iconv.h>
+]],[[
+iconv_open("","");
+]])],
+iconv_ok=yes,iconv_ok=no)
   LIBS="$old_libs"
   if test "x$iconv_ok" = "xyes"; then
      LIBICONV_LIBS="-liconv"
@@ -341,14 +345,15 @@ if test "x$iconv_ok" = "xyes"; then
   old_cflags="$CFLAGS"
   CFLAGS="$CFLAGS -Werror"
   AC_LANG_PUSH([C++])
-  AC_TRY_COMPILE([#include <iconv.h>],
-[
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <iconv.h>
+]],[[
      const char *inPtr;
       char *outPtr;
       size_t inLeft = 0, outRoom = 0;
       iconv_t encoder = iconv_open("ASCII", "UTF-8");
       iconv(encoder, &inPtr, &inLeft, &outPtr, &outRoom);
-],
+]])],
 iconv_old=yes,iconv_old=no)
   AC_LANG_POP([C++])
   LIBS="$old_libs"
