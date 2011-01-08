@@ -153,7 +153,7 @@ then AC_MSG_RESULT(yes)
      LIBFLTK_CFLAGS=`fltk2-config --cflags`
      LIBFLTK_LIBS=`fltk2-config --ldflags`
 else AC_MSG_RESULT(no)
-     AC_ERROR(FLTK2 must be installed!)
+     AC_MSG_ERROR(FLTK2 must be installed!)
 fi
 
 
@@ -202,7 +202,7 @@ fi
 if test "x$libz_ok" = xyes; then
   LIBZ_LIBS="-lz"
 else
-  AC_ERROR(zlib must be installed!)
+  AC_MSG_ERROR(zlib must be installed!)
 fi
 
 dnl ---------------
@@ -327,7 +327,7 @@ if test "x$iconv_ok" = "xno"; then
 fi
 
 if test "x$iconv_ok" = "xno"; then
-  AC_ERROR(libiconv must be installed!)
+  AC_MSG_ERROR(libiconv must be installed!)
 fi
 
 dnl ----------------------
