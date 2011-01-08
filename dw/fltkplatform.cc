@@ -389,12 +389,18 @@ int FltkPlatform::prevGlyph (const char *text, int idx)
 
 float FltkPlatform::dpiX ()
 {
-   return ::fltk::Monitor::all ().dpi_x ();
+   float horizontal, vertical;
+
+   Fl::screen_dpi(horizontal, vertical);
+   return horizontal;
 }
 
 float FltkPlatform::dpiY ()
 {
-   return ::fltk::Monitor::all ().dpi_y ();
+   float horizontal, vertical;
+
+   Fl::screen_dpi(horizontal, vertical);
+   return vertical;
 }
 
 void FltkPlatform::generalStaticIdle (void *data)
