@@ -52,7 +52,7 @@ class UI : public Fl_Group {
    CustProgressBox *PProg, *IProg;
    Fl_Group *Panel, *StatusPanel;
    Fl_Widget *Main;
-   Fl_Output *Status;
+   Fl_Output *StatusOutput;
 
    int MainIdx;
    // Panel customization variables

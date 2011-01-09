@@ -20,6 +20,10 @@
 #include "timeout.hh"
 #include "utf8.hh"
 
+#include <FL/Fl.H>
+#include <FL/Fl_Pixmap.H>
+#include <FL/Fl_Box.H>
+
 // Include image data
 #include "pixmaps.h"
 #include "uicmd.hh"
@@ -27,46 +31,39 @@
 struct iconset {
    Fl_Image *ImgMeterOK, *ImgMeterBug,
             *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgTools,
-            *ImgClear,*ImgSearch, *ImgHelp;
-   MultiImage *ImgLeftMulti, *ImgRightMulti, *ImgStopMulti;
+            *ImgClear,*ImgSearch, *ImgHelp, *ImgLeft, *ImgRight, *ImgStop;
 };
 
 static struct iconset standard_icons = {
-   new xpmImage(mini_ok_xpm),
-   new xpmImage(mini_bug_xpm),
-   new xpmImage(home_xpm),
-   new xpmImage(reload_xpm),
-   new xpmImage(save_xpm),
-   new xpmImage(bm_xpm),
-   new xpmImage(tools_xpm),
-   new xpmImage(new_s_xpm),
-   new xpmImage(search_xpm),
-   new xpmImage(help_xpm),
-   new MultiImage(*new xpmImage(left_xpm), INACTIVE_R,
-                  *new xpmImage(left_i_xpm)),
-   new MultiImage(*new xpmImage(right_xpm), INACTIVE_R,
-                  *new xpmImage(right_i_xpm)),
-   new MultiImage(*new xpmImage(stop_xpm), INACTIVE_R,
-                  *new xpmImage(stop_i_xpm)),
+   new Fl_Pixmap(mini_ok_xpm),
+   new Fl_Pixmap(mini_bug_xpm),
+   new Fl_Pixmap(home_xpm),
+   new Fl_Pixmap(reload_xpm),
+   new Fl_Pixmap(save_xpm),
+   new Fl_Pixmap(bm_xpm),
+   new Fl_Pixmap(tools_xpm),
+   new Fl_Pixmap(new_s_xpm),
+   new Fl_Pixmap(search_xpm),
+   new Fl_Pixmap(help_xpm),
+   new Fl_Pixmap(left_xpm),
+   new Fl_Pixmap(right_xpm),
+   new Fl_Pixmap(stop_xpm),
 };
 
 static struct iconset small_icons = {
    standard_icons.ImgMeterOK,
    standard_icons.ImgMeterBug,
-   new xpmImage(home_s_xpm),
-   new xpmImage(reload_s_xpm),
-   new xpmImage(save_s_xpm),
-   new xpmImage(bm_s_xpm),
-   new xpmImage(tools_s_xpm),
-   new xpmImage(new_s_xpm),
+   new Fl_Pixmap(home_s_xpm),
+   new Fl_Pixmap(reload_s_xpm),
+   new Fl_Pixmap(save_s_xpm),
+   new Fl_Pixmap(bm_s_xpm),
+   new Fl_Pixmap(tools_s_xpm),
+   new Fl_Pixmap(new_s_xpm),
    standard_icons.ImgSearch,
    standard_icons.ImgHelp,
-   new MultiImage(*new xpmImage(left_s_xpm), INACTIVE_R,
-                  *new xpmImage(left_si_xpm)),
-   new MultiImage(*new xpmImage(right_s_xpm), INACTIVE_R,
-                  *new xpmImage(right_si_xpm)),
-   new MultiImage(*new xpmImage(stop_s_xpm), INACTIVE_R,
-                  *new xpmImage(stop_si_xpm)),
+   new Fl_Pixmap(left_s_xpm),
+   new Fl_Pixmap(right_s_xpm),
+   new Fl_Pixmap(stop_s_xpm),
 };
 
 
@@ -170,7 +167,7 @@ public:
       }
       copy_label(lbl);
       measure_label(w,h);
-      resize(w+padding,h);
+      size(w+padding,h);
       redraw_label();
    }
 };
@@ -266,7 +263,7 @@ static void color_change_cb(Fl_Widget *wid, void *data)
  */
 static void location_cb(Fl_Widget *wid, void *data)
 {
-   Input *i = (Input*)wid;
+   Fl_Input *i = (Fl_Input*)wid;
    UI *ui = (UI*)data;
 
    _MSG("location_cb()\n");
@@ -384,12 +381,12 @@ Fl_Pack *UI::make_toolbar(int tw, int th)
    Fl_Pack *p1=new Fl_Pack(0,0,tw,th);
    p1->begin();
     Back = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Back" : 0);
-    b->image(icons->ImgLeftMulti);
+    b->image(icons->ImgLeft);
     b->callback(b1_cb, (void *)UI_BACK);
     b->clear_visible_focus();
 
     Forw = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Forw" : 0);
-    b->image(icons->ImgRightMulti);
+    b->image(icons->ImgRight);
     b->callback(b1_cb, (void *)UI_FORW);
     b->clear_visible_focus();
 
@@ -409,7 +406,7 @@ Fl_Pack *UI::make_toolbar(int tw, int th)
     b->clear_visible_focus();
 
     Stop = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
-    b->image(icons->ImgStopMulti);
+    b->image(icons->ImgStop);
     b->callback(b1_cb, (void *)UI_STOP);
     b->clear_visible_focus();
 
@@ -447,22 +444,22 @@ Fl_Pack *UI::make_location()
    Fl_Button *b;
    Fl_Pack *pg = new Fl_Pack(0,0,0,0);
    pg->begin();
-    Clear = b = new CustHighlightButton(2,2,16,22,0);
+    Clear = b = new CustButton(2,2,16,22,0);
     b->image(icons->ImgClear);
     b->callback(clear_cb, this);
     b->clear_visible_focus();
 
-    Input *i = Location = new CustInput(0,0,0,0,0);
+    Fl_Input *i = Location = new CustInput(0,0,0,0,0);
     i->color(CuteColor);
     i->when(FL_WHEN_ENTER_KEY);
     i->callback(location_cb, this);
 
-    Search = b = new HighlightButton(0,0,16,22,0);
+    Search = b = new Fl_Button(0,0,16,22,0);
     b->image(icons->ImgSearch);
     b->callback(search_cb, this);
     b->clear_visible_focus();
 
-    Help = b = new HighlightButton(0,0,16,22,0);
+    Help = b = new Fl_Button(0,0,16,22,0);
     b->image(icons->ImgHelp);
     b->callback(help_cb, this);
     b->clear_visible_focus();
@@ -497,7 +494,7 @@ Fl_Pack *UI::make_progress_bars(int wide, int thin_up)
     PProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
     PProg->labelcolor(GRAY10);
     PProg->update_label(wide ? "Page\n0.0KB" : "0.0KB");
-   ProgBox->type(FL_Pack::HORIZONTAL);
+   ProgBox->type(Fl_Pack::HORIZONTAL);
    ProgBox->end();
 
    return ProgBox;
@@ -519,13 +516,13 @@ Fl_Widget *UI::make_filemenu_button()
    btn->measure_label(w,h);
    if (PanelSize == P_large)
       h = fh;
-   btn->resize(w+padding,h);
+   btn->size(w+padding,h);
    _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
    btn->box(PanelSize == P_large ? FL_FLAT_BOX : FL_THIN_UP_BOX);
    btn->callback(filemenu_cb, this);
    if (prefs.show_tooltip)
       btn->tooltip("File menu");
-   btn->clear_tab_to_focus();
+   btn->clear_visible_focus();
    if (!prefs.show_filemenu && PanelSize != P_large)
       btn->hide();
    return btn;
@@ -574,7 +571,7 @@ Fl_Group *UI::make_panel(int ww)
    }
 
    if (PanelSize == P_tiny) {
-      g1 = new Group(0,0,ww,bh);
+      g1 = new Fl_Group(0,0,ww,bh);
        // Toolbar
        pg = make_toolbar(ww,bh);
        pg->box(FL_EMBOSSED_BOX);
@@ -598,12 +595,12 @@ Fl_Group *UI::make_panel(int ww)
            g3->box(FL_FLAT_BOX);
            Fl_Widget *bn = make_filemenu_button();
            g3->add(bn);
-           g3->add_resizable(*new InvisibleBox(bn->w(),0,ww - bn->w(),lh));
+           g3->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),lh));
 
            g2 = new Fl_Group(0,fh,ww,lh);
            g2->begin();
            pg = make_location();
-           pg->resize(ww,lh);
+           pg->size(ww,lh);
         } else {
            g2 = new Fl_Pack(0,fh,ww,lh);
            g2->type(Fl_Pack::HORIZONTAL);
@@ -619,8 +616,8 @@ Fl_Group *UI::make_panel(int ww)
        g3 = new Fl_Group(0,fh+lh,ww,bh);
        g3->begin();
         pg = make_toolbar(ww,bh);
-        //w = new Box(0,0,0,0,"i n v i s i b l e");
-        w = new Box(0,0,0,0,0);
+        //w = new Fl_Box(0,0,0,0,"i n v i s i b l e");
+        w = new Fl_Box(0,0,0,0,0);
         pg->add(w);
         pg->resizable(w);
 
@@ -652,13 +649,13 @@ Fl_Group *UI::make_status_panel(int ww)
    Fl_Group *g = new Fl_Group(0, 0, ww, s_h, 0);
 
    // Status box
-   Status = new Fl_Output(0, 0, ww-bm_w, s_h, 0);
-   Status->value("");
-   Status->box(FL_THIN_DOWN_BOX);
-   Status->clear_visible_focus();
-   Status->color(GRAY80);
-   g->add(Status);
-   //Status->throw_focus();
+   StatusOutput = new Fl_Output(0, 0, ww-bm_w, s_h, 0);
+   StatusOutput->value("");
+   StatusOutput->box(FL_THIN_DOWN_BOX);
+   StatusOutput->clear_visible_focus();
+   StatusOutput->color(GRAY80);
+   g->add(StatusOutput);
+   //StatusOutput->throw_focus();
 
    // Bug Meter
    BugMeter = new Fl_Button(ww-bm_w,0,bm_w,s_h,0);
@@ -668,10 +665,10 @@ Fl_Group *UI::make_status_panel(int ww)
    if (prefs.show_tooltip)
       BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
    BugMeter->callback(bugmeter_cb, this);
-   BugMeter->clear_tab_to_focus();
+   BugMeter->clear_visible_focus();
    g->add(BugMeter);
 
-   g->resizable(Status);
+   g->resizable(StatusOutput);
    return g;
 }
 
@@ -713,7 +710,7 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    TopGroup->add(Panel);
 
    // Render area
-   Main = new Fl_Widget(0,0,1,1,"Welcome...");
+   Main = new Fl_Box(0,0,1,1,"Welcome...");
    Main->box(FL_FLAT_BOX);
    Main->color(GRAY15);
    Main->labelfont(FL_HELVETICA_BOLD_ITALIC);
@@ -884,7 +881,7 @@ void UI::set_location(const char *str)
    if (!str) str = "";
    // This text() call clears fl_pending_callback, avoiding
    // an extra location_cb() call.
-   Location->text(str);
+   Location->value(str);
    Location->position(strlen(str));
 }
 
@@ -915,7 +912,7 @@ void UI::focus_main()
  */
 void UI::set_status(const char *str)
 {
-   Status->value(str);
+   StatusOutput->value(str);
 }
 
 /*
@@ -981,7 +978,7 @@ void UI::set_bug_prog(int n_bug)
       BugMeter->redraw_label();
       new_w = strlen(str)*8 + 20;
    }
-   Status->resize(0,0,StatusPanel->w()-new_w,Status->h());
+   StatusOutput->resize(0,0,StatusPanel->w()-new_w,StatusOutput->h());
    BugMeter->resize(StatusPanel->w()-new_w, 0, new_w, BugMeter->h());
    StatusPanel->init_sizes();
 }
@@ -1026,7 +1023,7 @@ void UI::customize(int flags)
  */
 void UI::panel_cb_i()
 {
-   Group *NewPanel;
+   Fl_Group *NewPanel;
 
    // Create a new Panel
    ++PanelSize;
@@ -1089,7 +1086,7 @@ void UI::panelmode_cb_i()
 /*
  * Set 'nw' as the main render area widget
  */
-void UI::set_render_layout(Widget &nw)
+void UI::set_render_layout(Fl_Widget &nw)
 {
    // BUG: replace() is not working as it should.
    // In our case, replacing the rendering area leaves the vertical
@@ -1163,7 +1160,7 @@ void UI::button_set_sens(UIButton btn, int sens)
  */
 void UI::paste_url()
 {
-   paste(*Clear, false);
+   Fl::paste(*Clear, false);
 }
 
 /*
