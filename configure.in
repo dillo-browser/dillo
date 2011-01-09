@@ -151,7 +151,7 @@ if sh -c "fltk2-config --version" >/dev/null 2>&1
 then AC_MSG_RESULT(yes)
      LIBFLTK_CXXFLAGS=`fltk2-config --cxxflags`
      LIBFLTK_CFLAGS=`fltk2-config --cflags`
-     LIBFLTK_LIBS=`fltk2-config --use-images --ldflags`
+     LIBFLTK_LIBS=`fltk2-config --ldflags`
 else AC_MSG_RESULT(no)
      AC_ERROR(FLTK2 must be installed!)
 fi
