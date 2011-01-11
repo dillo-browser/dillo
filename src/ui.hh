@@ -50,8 +50,7 @@ class UI : public Fl_Group {
    Fl_Input  *Location;
    Fl_Pack *ProgBox;
    CustProgressBox *PProg, *IProg;
-   Fl_Group *Panel, *StatusPanel;
-   Fl_Widget *Main;
+   Fl_Group *Panel, *Main, *StatusPanel;
    Fl_Output *StatusOutput;
 
    int MainIdx;
@@ -87,7 +86,7 @@ public:
    void set_page_prog(size_t nbytes, int cmd);
    void set_img_prog(int n_img, int t_img, int cmd);
    void set_bug_prog(int n_bug);
-   void set_render_layout(Fl_Widget &nw);
+   void set_render_layout(Fl_Group &nw);
    void set_tab_title(const char *label);
    void customize(int flags);
    void button_set_sens(UIButton btn, int sens);

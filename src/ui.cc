@@ -487,12 +487,12 @@ Fl_Pack *UI::make_progress_bars(int wide, int thin_up)
     // Images
     IProg = new CustProgressBox(0,0,0,0);
     IProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
-    IProg->labelcolor(GRAY10);
+    IProg->labelcolor(FL_GRAY_RAMP + 2);
     IProg->update_label(wide ? "Images\n0 of 0" : "0 of 0");
     // Page
     PProg = new CustProgressBox(0,0,0,0);
     PProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
-    PProg->labelcolor(GRAY10);
+    PProg->labelcolor(FL_GRAY_RAMP + 2);
     PProg->update_label(wide ? "Page\n0.0KB" : "0.0KB");
    ProgBox->type(Fl_Pack::HORIZONTAL);
    ProgBox->end();
@@ -653,7 +653,7 @@ Fl_Group *UI::make_status_panel(int ww)
    StatusOutput->value("");
    StatusOutput->box(FL_THIN_DOWN_BOX);
    StatusOutput->clear_visible_focus();
-   StatusOutput->color(GRAY80);
+   StatusOutput->color(FL_GRAY_RAMP + 18);
    g->add(StatusOutput);
    //StatusOutput->throw_focus();
 
@@ -710,9 +710,9 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    TopGroup->add(Panel);
 
    // Render area
-   Main = new Fl_Box(0,0,1,1,"Welcome...");
+   Main = new Fl_Group(0,0,1,1,"Welcome...");
    Main->box(FL_FLAT_BOX);
-   Main->color(GRAY15);
+   Main->color(FL_GRAY_RAMP + 3);
    Main->labelfont(FL_HELVETICA_BOLD_ITALIC);
    Main->labelsize(36);
    Main->labeltype(FL_SHADOW_LABEL);
@@ -835,15 +835,10 @@ int UI::handle(int event)
       if (prefs.middle_click_drags_page == 0 &&
           Fl::event_button() == FL_MIDDLE_MOUSE &&
           !a_UIcmd_pointer_on_link(a_UIcmd_get_bw_by_widget(this))) {
-         if (Main->Rectangle::contains (Fl::event_x (), Fl::event_y ())) {
+         if (Main->contains(Fl::belowmouse())) {
             /* Offer the event to Main's children (form widgets) */
-            int save_x = e_x, save_y = e_y;
-
-            e_x -= Main->x();
-            e_y -= Main->y();
+            /* TODO: Try just offering it to Fl::belowmouse() */
             ret = ((Fl_Group *)Main)->Fl_Group::handle(event);
-            e_x = save_x;
-            e_y = save_y;
          }
          if (!ret) {
             /* middle click was not on a link or a form widget */
@@ -1028,8 +1023,9 @@ void UI::panel_cb_i()
    // Create a new Panel
    ++PanelSize;
    NewPanel = make_panel(TopGroup->w());
-   TopGroup->replace(*Panel, *NewPanel);
+   TopGroup->remove(Panel);
    delete(Panel);
+   TopGroup->add(NewPanel);
    Panel = NewPanel;
    customize(0);
 
@@ -1086,15 +1082,16 @@ void UI::panelmode_cb_i()
 /*
  * Set 'nw' as the main render area widget
  */
-void UI::set_render_layout(Fl_Widget &nw)
+void UI::set_render_layout(Fl_Group &nw)
 {
    // BUG: replace() is not working as it should.
    // In our case, replacing the rendering area leaves the vertical
    // scrollbar without events.
    //
    // We'll use a workaround in a_UIcmd_browser_window_new() instead.
-   TopGroup->replace(MainIdx, nw);
+   TopGroup->remove(MainIdx);
    delete(Main);
+   TopGroup->add(nw);
    Main = &nw;
    //TopGroup->box(FL_DOWN_BOX);
    //TopGroup->box(FL_BORDER_FRAME);
@@ -1140,15 +1137,15 @@ void UI::button_set_sens(UIButton btn, int sens)
    switch (btn) {
    case UI_BACK:
       (sens) ? Back->activate() : Back->deactivate();
-      Back->redraw(DAMAGE_HIGHLIGHT);
+//    Back->redraw(DAMAGE_HIGHLIGHT);
       break;
    case UI_FORW:
       (sens) ? Forw->activate() : Forw->deactivate();
-      Forw->redraw(DAMAGE_HIGHLIGHT);
+//    Forw->redraw(DAMAGE_HIGHLIGHT);
       break;
    case UI_STOP:
       (sens) ? Stop->activate() : Stop->deactivate();
-      Stop->redraw(DAMAGE_HIGHLIGHT);
+//    Stop->redraw(DAMAGE_HIGHLIGHT);
       break;
    default:
       break;
