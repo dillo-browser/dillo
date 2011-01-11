@@ -17,7 +17,9 @@
 #include <math.h>       /* for rint */
 
 #include <FL/Fl_Widget.H>
+#include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Tabs.H>
+#include <FL/Fl_Tooltip.H>
 
 #include "paths.hh"
 #include "keys.hh"
@@ -53,10 +55,10 @@ using namespace dw::fltk;
  */
 static char *save_dir = NULL;
 
-using namespace fltk;
-
 
 //----------------------------------------------------------------------------
+#if 0
+
 #define BTN_W 25
 #define BTN_H 20
 
@@ -217,7 +219,7 @@ int CustShrinkTabPager::update_positions(
 TabGroupPager* CustShrinkTabPager::clone() const {
    return new CustShrinkTabPager(*this);
 }
-
+#endif /* custom pager */
 //----------------------------------------------------------------------------
 
 /*
@@ -231,9 +233,9 @@ public:
    CustTabGroup (int x, int y, int ww, int wh, const char *lbl=0) :
       Fl_Tabs(x,y,ww,wh,lbl) {
          // The parameter pager is cloned, so free it.
-         CustShrinkTabPager *cp = new CustShrinkTabPager();
-         this->pager(cp);
-         delete cp;
+//       CustShrinkTabPager *cp = new CustShrinkTabPager();
+//       this->pager(cp);
+//       delete cp;
          toolTip = new Fl_Tooltip;
          tooltipEnabled = false;
          buttonPushed = false;
@@ -242,7 +244,7 @@ public:
    int handle(int e) {
       // Don't focus with arrow keys
       _MSG("CustTabGroup::handle %d\n", e);
-      fltk::Rectangle r(btn_x,0,BTN_W,BTN_H);
+//    fltk::Rectangle r(btn_x,0,BTN_W,BTN_H);
       if (e == FL_KEYBOARD) {
          int k = Fl::event_key();
          // We're only interested in some flags
@@ -251,20 +253,27 @@ public:
             return 0;
          } else if (k == FL_Left || k == FL_Right) {
             if (modifier == FL_SHIFT) {
-               int i = value();
+               int i = find(value());
                if (k == FL_Left) {i = i ? i-1 : children()-1;}
                else {i++; if (i >= children()) i = 0;}
-               selected_child(child(i));
+               value(child(i));
                return 1;
             }
             // Avoid focus change.
             return 0;
          }
-      } else if (e == FOCUS_CHANGE) {
-         // Update the window title
-         BrowserWindow *bw = a_UIcmd_get_bw_by_widget(selected_child());
-         const char *title = a_History_get_title(NAV_TOP_UIDX(bw), 1);
-         a_UIcmd_set_page_title(bw, title ? title : "");
+      } else if (e == FL_RELEASE) {
+         Fl_Widget *new_focus = which(Fl::event_x(), Fl::event_y());
+
+         if (new_focus && new_focus != value()) {
+            // Update the window title
+            BrowserWindow *bw = a_UIcmd_get_bw_by_widget(new_focus);
+            const char *title = a_History_get_title(NAV_TOP_UIDX(bw), 1);
+
+            a_UIcmd_set_page_title(bw, title ? title : "");
+      }
+// custom pager
+#if 0
       } else if (e == FL_MOVE) {
          CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
          if (Fl::event_inside(r) && children() > 1) {
@@ -299,12 +308,13 @@ public:
       } else if (e == FL_RELEASE) {
          if (Fl::event_inside(r) && Fl::event_button() == 1 &&
              children() > 1 && buttonPushed) {
-            a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(selected_child()));
+            a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(value()));
          } else {
             CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
             cstp->btn_highlight(false);
          }
          buttonPushed = false;
+#endif
       } else if (e == FL_DRAG) {
          /* Ignore this event */
          return 1;
@@ -412,14 +422,15 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    if (xid)
       win = new Xembed(xid, ww, wh);
-   else
+   else if (prefs.buffered_drawing != 2)
       win = new Fl_Window(ww, wh);
+   else
+      win = new Fl_Double_Window(ww, wh);
 
-   win->shortcut(0); // Ignore Escape
-   if (prefs.buffered_drawing != 2)
-      win->clear_double_buffer();
+//may need a handler for this
+// win->shortcut(0); // Ignore Escape
    CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);
-   DilloTabs->clear_tab_to_focus();
+   DilloTabs->clear_visible_focus();
    DilloTabs->selection_color(156);
    win->add(DilloTabs);
 
@@ -436,10 +447,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    if (old_bw == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
       // position the first window according to preferences
-      fltk::Rectangle r;
-      new_ui->window()->borders(&r);
-      // borders() gives x and y border sizes as negative values
-      new_ui->window()->position(prefs.xpos - r.x(), prefs.ypos - r.y());
+      new_ui->window()->position(prefs.xpos, prefs.ypos);
    }
 
    // Now create the Dw render layout and viewport
@@ -540,9 +548,8 @@ void a_UIcmd_close_bw(void *vbw)
    delete(layout);
    if (ui->tabs()) {
       ui->tabs()->remove(ui);
-      ui->tabs()->value(ui->tabs()->children() - 1);
-      if (ui->tabs()->value() != -1)
-         ui->tabs()->selected_child()->take_focus();
+      if (ui->tabs()->value())
+         ui->tabs()->value()->take_focus();
       else
          ui->tabs()->window()->hide();
    }
@@ -653,7 +660,7 @@ void a_UIcmd_open_url_nt(void *vbw, const DilloUrl *url, int focus)
    BrowserWindow *new_bw = UIcmd_tab_new(vbw);
 
    if (focus)
-      BW2UI(new_bw)->tabs()->selected_child(BW2UI(new_bw));
+      BW2UI(new_bw)->tabs()->value(BW2UI(new_bw));
 
    UIcmd_open_url_nbw(new_bw, url);
 }
@@ -1221,7 +1228,7 @@ void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
    const int size = 128;
    char title[size];
 
-   if (a_UIcmd_get_bw_by_widget(BW2UI(bw)->tabs()->selected_child()) == bw) {
+   if (a_UIcmd_get_bw_by_widget(BW2UI(bw)->tabs()->value()) == bw) {
       // This is the focused bw, set window title
       if (snprintf(title, size, "Dillo: %s", label) >= size) {
          uint_t i = MIN(size - 4, 1 + a_Utf8_end_of_char(title, size - 8));
