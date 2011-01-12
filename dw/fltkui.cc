@@ -829,6 +829,15 @@ Fl_Button *FltkRadioButtonResource::createNewButton (core::Allocation
    return button;
 }
 
+FLTK 1.3's Browser doesn't seem to permit a hierarchy, so I think we'll
+use Choice and Tree. There is no Item or ItemGroup, but I see they both
+have an add("menu/sub/sub/leaf") interface (not based on a common
+ancestor, though), so maybe SelectionResource's job will be to keep
+track of our menu-adding string or something. This will be experimental
+enough that I don't want to write the code until dw's in good enough shape
+to test whether I'm going about it sensibly.
+
+
 // ----------------------------------------------------------------------
 
 template <class I> FltkSelectionResource<I>::Item::Item (Type type,
