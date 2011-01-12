@@ -24,7 +24,7 @@
 
 #include <FL/Fl.H>
 #include <FL/Fl_Bitmap.H>
-#include <fltk/draw.h>
+#include <FL/fl_draw.H>
 #include <stdio.h>
 
 #include "preview.xbm"
@@ -142,9 +142,8 @@ void FltkPreview::drawText (core::style::Font *font,
    setcolor(((FltkColor*)color)->colors[shading]);
    fillrect (rect);
 #endif
-   setcolor(((FltkColor*)color)->colors[shading]);
-   drawtext(text, len,
-            translateCanvasXToViewX (x), translateCanvasYToViewY (y));
+   fl_color(((FltkColor*)color)->colors[shading]);
+   fl_draw(text, len, translateCanvasXToViewX (x), translateCanvasYToViewY(y));
 }
 
 void FltkPreview::drawImage (core::Imgbuf *imgbuf, int xRoot, int yRoot,
