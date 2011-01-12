@@ -23,12 +23,9 @@
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 
-#include <fltk/draw.h>
-#include <fltk/Color.h>
+#include <FL/fl_draw.H>
 
 #define IMAGE_MAX_AREA (6000 * 6000)
-
-using namespace fltk;
 
 namespace dw {
 namespace fltk {
@@ -302,7 +299,7 @@ int FltkImgbuf::scaledY(int ySrc)
    return ySrc * height / root->height;
 }
 
-void FltkImgbuf::draw (::fltk::Widget *target, int xRoot, int yRoot,
+void FltkImgbuf::draw (Fl_Widget *target, int xRoot, int yRoot,
                        int x, int y, int width, int height)
 {
    // TODO: Clarify the question, whether "target" is the current widget
@@ -324,10 +321,9 @@ void FltkImgbuf::draw (::fltk::Widget *target, int xRoot, int yRoot,
       height = this->height - y;
    }
 
-   // Draw
-   ::fltk::Rectangle rect (xRoot + x, yRoot + y, width, height);
-   PixelType ptype = (type == RGBA) ? ::fltk::RGBA : ::fltk::RGB;
-   drawimage(rawdata+bpp*(y*this->width + x),ptype,rect,bpp*this->width);
+   fl_draw_image(rawdata+bpp*(y*this->width + x), xRoot + x, yRoot + y, width,
+                 height, bpp);
+
 }
 
 } // namespace dw
