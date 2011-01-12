@@ -41,6 +41,10 @@ static int history_direction = -1;
 // History popup, list of URL-indexes.
 static int *history_list = NULL;
 
+#if 0
+My guess is that a modified copy of Fl_Menu_ that handles something similar
+to Fl_Menu_Item may be necessary. I sure hope not, though.
+
 /*
  * Local sub class.
  * Used to add the hint for history popup menus, and to remember
@@ -71,7 +75,7 @@ void CustItem::draw() {
    }
    Item::draw();
 }
-
+#endif
 
 //--------------------------------------------------------------------------
 /*
@@ -280,8 +284,11 @@ static void Menu_bugmeter_about_cb(Fl_Widget*, void* )
  */
 static void Menu_history_cb(Fl_Widget *wid, void *data)
 {
+#if 0
    int mb = ((CustItem*)wid)->button();
+#endif
    int offset = history_direction * VOIDP2INT(data);
+#if 0
    const DilloUrl *url = a_History_get_url(history_list[VOIDP2INT(data)-1]);
 
    if (mb == 2) {
@@ -294,8 +301,11 @@ static void Menu_history_cb(Fl_Widget *wid, void *data)
          a_UIcmd_open_url_nw(popup_bw, url);
       }
    } else {
+#endif
       a_UIcmd_nav_jump(popup_bw, offset, 0);
+#if 0
    }
+#endif
 }
 
 /*
