@@ -1,9 +1,6 @@
 #ifndef __DW_FLTKFLATVIEW_HH__
 #define __DW_FLTKFLATVIEW_HH__
 
-#include <fltk/Group.h>
-#include <fltk/Scrollbar.h>
-
 #include "core.hh"
 #include "fltkcore.hh"
 #include "fltkviewbase.hh"
