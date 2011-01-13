@@ -449,7 +449,7 @@ protected:
       ~Item ();
 
       Item *createNewWidget (int index);
-      Fl_ItemGroup *createNewGroupWidget ();
+//    Fl_ItemGroup *createNewGroupWidget ();
    };
 
    class WidgetStack: public lout::object::Object
@@ -472,7 +472,7 @@ protected:
                         bool selected = false);
 
    Fl_Widget *createNewWidget (core::Allocation *allocation);
-   virtual Fl_Menu *createNewMenu (core::Allocation *allocation) = 0;
+   virtual Fl_Widget *createNewMenu (core::Allocation *allocation) = 0;
    virtual bool setSelectedItems() { return false; }
 
    int getMaxStringWidth ();
@@ -497,7 +497,7 @@ class FltkOptionMenuResource:
    public FltkSelectionResource <dw::core::ui::OptionMenuResource>
 {
 protected:
-   Fl_Menu *createNewMenu (core::Allocation *allocation);
+   Fl_Widget *createNewMenu (core::Allocation *allocation);
    virtual bool setSelectedItems() { return true; }
 
 private:
@@ -518,7 +518,7 @@ class FltkListResource:
    public FltkSelectionResource <dw::core::ui::ListResource>
 {
 protected:
-   Fl_Menu *createNewMenu (core::Allocation *allocation);
+   Fl_Widget *createNewMenu (core::Allocation *allocation);
 
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);
