@@ -25,11 +25,7 @@
 #include "fltkcore.hh"
 
 #include <FL/fl_draw.H>
-#include <fltk/run.h>
-#include <fltk/events.h>
-#include <fltk/InvisibleBox.h>
 #include <FL/Fl_Tooltip.H>
-#include <fltk/utf.h>
 
 namespace dw {
 namespace fltk {
@@ -54,7 +50,8 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
       fa |= FL_BOLD;
    if (style != core::style::FONT_STYLE_NORMAL)
       fa  |= FL_ITALIC;
-
+#if 0
+PORT1.3
    font = ::fltk::font(name, fa);
    if (font == NULL) {
       /*
@@ -63,8 +60,14 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
        */
       font = FL_HELVETICA->plus (fa);
    }
+#else
+   font = FL_HELVETICA;
+#endif
 
+#if 0
+PORT1.3
    setfont(font, size);
+#endif
    spaceWidth = misc::max(0, (int)fl_width(' ') + letterSpacing);
    int xh, xw = 0;
    fl_measure("x", xw, xh, 0);
@@ -86,7 +89,12 @@ FltkFont::~FltkFont ()
 bool
 FltkPlatform::fontExists (const char *name)
 {
+#if 0
+PORT1.3
    return ::fltk::font(name) != NULL;
+#else
+   return true;
+#endif
 }
 
 FltkFont*
@@ -163,8 +171,12 @@ FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
 
 FltkTooltip::~FltkTooltip ()
 {
+#if 0
+PORT1.3
+probably can remember the one from onEnter
    if (shown)
       Fl_Tooltip::exit();
+#endif
    if (escaped_str)
       free(escaped_str);
 }
@@ -348,19 +360,28 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
          wc = fl_utf8decode(text + curr, text + next, &nb);
          if ((wcu = towupper(wc)) == wc) {
             /* already uppercase, just draw the character */
+#if 0
+PORT1.3
             setfont(ff->font, ff->size);
+#endif
             width += font->letterSpacing;
             width += (int)fl_width(text + curr, next - curr);
          } else {
             /* make utf8 string for converted char */
             nb = fl_utf8encode(wcu, chbuf);
+#if 0
+PORT1.3
             setfont(ff->font, sc_fontsize);
+#endif
             width += font->letterSpacing;
             width += (int)fl_width(chbuf, nb);
          }
       }
    } else {
+#if 0
+PORT1.3
       setfont (ff->font, ff->size);
+#endif
       width = (int) fl_width (text, len);
 
       if (font->letterSpacing) {

@@ -5,8 +5,6 @@
 #   error Do not include this file directly, use "fltkcore.hh" instead.
 #endif
 
-#include <fltk/Font.h>
-
 namespace dw {
 
 /**
@@ -23,7 +21,7 @@ class FltkFont: public core::style::Font
    ~FltkFont ();
 
 public:
-   ::fltk::Font *font;
+   Fl_Font font;
 
    static FltkFont *create (core::style::FontAttrs *attrs);
 };
