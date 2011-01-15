@@ -21,12 +21,8 @@
 
 #include "fltkflatview.hh"
 
-#include <fltk/draw.h>
-#include <fltk/events.h>
-
 #include <stdio.h>
 
-using namespace fltk;
 using namespace lout::container::typed;
 
 namespace dw {

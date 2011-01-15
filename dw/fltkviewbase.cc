@@ -45,10 +45,13 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
    canvasHeight = 1;
    bgColor = FL_WHITE;
    mouse_x = mouse_y = 0;
+#if 0
+PORT1.3
    exposeArea = NULL;
    if (backBuffer == NULL) {
       backBuffer = new Fl_Image ();
    }
+#endif
 }
 
 FltkViewBase::~FltkViewBase ()
@@ -58,7 +61,10 @@ FltkViewBase::~FltkViewBase ()
 
 void FltkViewBase::setBufferedDrawing (bool b) {
    if (b && backBuffer == NULL) {
+#if 0
+PORT1.3 
       backBuffer = new Fl_Image ();
+#endif
    } else if (!b && backBuffer != NULL) {
       delete backBuffer;
       backBuffer = NULL;
@@ -69,7 +75,7 @@ void FltkViewBase::draw ()
 {
    int d = damage ();
 
-   if ((d & DAMAGE_VALUE) && !(d & FL_DAMAGE_EXPOSE)) {
+   if ((d & FL_DAMAGE_USER1) && !(d & FL_DAMAGE_EXPOSE)) {
       lout::container::typed::Iterator <core::Rectangle> it;
 
       for (it = drawRegion.rectangles (); it.hasNext (); ) {
@@ -77,7 +83,7 @@ void FltkViewBase::draw ()
       }
 
       drawRegion.clear ();
-      d &= ~DAMAGE_VALUE;
+      d &= ~FL_DAMAGE_USER1;
    }
 
    if (d & FL_DAMAGE_CHILD) {
@@ -105,6 +111,8 @@ void FltkViewBase::draw ()
 void FltkViewBase::draw (const core::Rectangle *rect,
                          DrawType type)
 {
+#if 0
+PORT1.3
    int offsetX = 0, offsetY = 0;
 
    /* fltk-clipping does not use widget coordinates */
@@ -118,7 +126,7 @@ void FltkViewBase::draw (const core::Rectangle *rect,
    ::fltk::intersect_with_clip (viewRect);
 
    viewRect.x (viewRect.x () - offsetX);
-   viewRect.y (viewRect.y () - offsetY);
+   viewRect.y (viewRect.y () - offsetY);A
 
    if (! viewRect.empty ()) {
       dw::core::Rectangle r (
@@ -163,15 +171,24 @@ void FltkViewBase::draw (const core::Rectangle *rect,
 
       exposeArea = NULL;
    }
+#endif
+   core::Rectangle r (rect->x, rect->y, rect->width, rect->height);
+   fl_color(bgColor);
+   fl_rectf(translateViewXToCanvasX (rect->x),
+      translateCanvasYToViewY (rect->y), rect->width, rect->height);
+   theLayout->expose (this, &r);
 }
 
 void FltkViewBase::drawChildWidgets () {
    for (int i = children () - 1; i >= 0; i--) {
       Fl_Widget& w = *child(i);
+#if 0
+PORT1.3
       if (w.damage() & DAMAGE_CHILD_LABEL) {
          draw_outside_label(w);
          w.set_damage(w.damage() & ~DAMAGE_CHILD_LABEL);
       }
+#endif
       update_child(w);
    }
 }
@@ -314,7 +331,10 @@ void FltkViewBase::setCursor (core::style::Cursor cursor)
    */
 
    /** \bug Does not work */
+#if 0
+PORT1.3
    this->cursor (mapDwToFltk[cursor]);
+#endif
 }
 
 void FltkViewBase::setBgColor (core::style::Color *color)
@@ -336,12 +356,12 @@ void FltkViewBase::queueDraw (core::Rectangle *area)
 {
    drawRegion.addRectangle (area);
    /** DAMAGE_VALUE is just an arbitrary value other than DAMAGE_EXPOSE here */
-   redraw (DAMAGE_VALUE);
+   damage (FL_DAMAGE_USER1);
 }
 
 void FltkViewBase::queueDrawTotal ()
 {
-   redraw (FL_DAMAGE_EXPOSE);
+   damage (FL_DAMAGE_EXPOSE);
 }
 
 void FltkViewBase::cancelQueueDraw ()
@@ -358,9 +378,9 @@ void FltkViewBase::drawLine (core::style::Color *color,
                              core::style::Color::Shading shading,
                              int x1, int y1, int x2, int y2)
 {
-   setcolor(((FltkColor*)color)->colors[shading]);
-   drawline (translateCanvasXToViewX (x1), translateCanvasYToViewY (y1),
-             translateCanvasXToViewX (x2), translateCanvasYToViewY (y2));
+   fl_color(((FltkColor*)color)->colors[shading]);
+   fl_line (translateCanvasXToViewX (x1), translateCanvasYToViewY (y1),
+            translateCanvasXToViewX (x2), translateCanvasYToViewY (y2));
 }
 
 void FltkViewBase::drawTypedLine (core::style::Color *color,
@@ -379,21 +399,21 @@ void FltkViewBase::drawTypedLine (core::style::Color *color,
       d = len % f*width;
       gap = ng ? d/ng + (w > 3 ? 2 : 0) : 0;
       dashes[0] = 1; dashes[1] = f*width-gap; dashes[2] = 0;
-      line_style(FL_DASH + FL_CAP_ROUND, w, dashes);
+      fl_line_style(FL_DASH + FL_CAP_ROUND, w, dashes);
 
       /* These formulas also work, but ain't pretty ;)
-       * line_style(FL_DOT + FL_CAP_ROUND, w);
+       * fl_line_style(FL_DOT + FL_CAP_ROUND, w);
        * dashes[0] = 1; dashes[1] = 3*width-2; dashes[2] = 0;
        */
    } else if (type == core::style::LINE_DASHED) {
-      line_style(FL_DASH + FL_CAP_ROUND, w);
+      fl_line_style(FL_DASH + FL_CAP_ROUND, w);
    }
 
-   setcolor(((FltkColor*)color)->colors[shading]);
+   fl_color(((FltkColor*)color)->colors[shading]);
    drawLine (color, shading, x1, y1, x2, y2);
 
    if (type != core::style::LINE_NORMAL)
-      line_style(FL_SOLID);
+      fl_line_style(FL_SOLID);
 }
 
 void FltkViewBase::drawRectangle (core::style::Color *color,
@@ -401,7 +421,7 @@ void FltkViewBase::drawRectangle (core::style::Color *color,
                                   bool filled,
                                   int x, int y, int width, int height)
 {
-   setcolor(((FltkColor*)color)->colors[shading]);
+   fl_color(((FltkColor*)color)->colors[shading]);
    if (width < 0) {
       x += width;
       width = -width;
@@ -416,17 +436,19 @@ void FltkViewBase::drawRectangle (core::style::Color *color,
    int x2 = translateCanvasXToViewX (x + width);
    int y2 = translateCanvasYToViewY (y + height);
 
+#if 0
+PORT1.3
    // We only support rectangles with line width 1px, so we clip with
    // a rectangle 1px wider and higher than what we actually expose.
    // This is only really necessary for non-filled rectangles.
    clipPoint (&x1, &y1, 1);
    clipPoint (&x2, &y2, 1);
+#endif
 
-   ::fltk::Rectangle rect (x1, y1, x2 - x1, y2 - y1);
    if (filled)
-      fillrect (rect);
+      fl_rectf (x1, y1, x2 - x1, y2 - y1);
    else
-      strokerect (rect);
+      fl_rect (x1, y1, x2 - x1, y2 - y1);
 }
 
 void FltkViewBase::drawArc (core::style::Color *color,
@@ -434,7 +456,9 @@ void FltkViewBase::drawArc (core::style::Color *color,
                             int centerX, int centerY, int width, int height,
                             int angle1, int angle2)
 {
-   setcolor(((FltkColor*)color)->colors[shading]);
+   fl_color(((FltkColor*)color)->colors[shading]);
+#if 0
+PORT1.3
    int x = translateCanvasXToViewX (centerX) - width / 2;
    int y = translateCanvasYToViewY (centerY) - height / 2;
    ::fltk::Rectangle rect (x, y, width, height);
@@ -444,12 +468,15 @@ void FltkViewBase::drawArc (core::style::Color *color,
       fillpath();
    else
       strokepath();
+#endif
 }
 
 void FltkViewBase::drawPolygon (core::style::Color *color,
                                 core::style::Color::Shading shading,
                                 bool filled, int points[][2], int npoints)
 {
+#if 0
+PORT1.3
    if (npoints > 0) {
       for (int i = 0; i < npoints; i++) {
          points[i][0] = translateCanvasXToViewX(points[i][0]);
@@ -463,6 +490,7 @@ void FltkViewBase::drawPolygon (core::style::Color *color,
       else
          strokepath();
    }
+#endif
 }
 
 core::View *FltkViewBase::getClippingView (int x, int y, int width, int height)
@@ -490,6 +518,8 @@ FltkWidgetView::~FltkWidgetView ()
 }
 
 void FltkWidgetView::layout () {
+#if 0
+PORT1.3
    /**
     * pass layout to child widgets. This is needed for complex fltk
     * widgets as TextEditor.
@@ -502,6 +532,7 @@ void FltkWidgetView::layout () {
          widget->layout ();
       }
    }
+#endif
 }
 
 void FltkWidgetView::drawText (core::style::Font *font,
@@ -510,12 +541,12 @@ void FltkWidgetView::drawText (core::style::Font *font,
                              int x, int y, const char *text, int len)
 {
    FltkFont *ff = (FltkFont*)font;
-   setfont(ff->font, ff->size);
-   setcolor(((FltkColor*)color)->colors[shading]);
+   fl_font(ff->font, ff->size);
+   fl_color(((FltkColor*)color)->colors[shading]);
 
    if (!font->letterSpacing && !font->fontVariant) {
-      drawtext(text, len,
-               translateCanvasXToViewX (x), translateCanvasYToViewY (y));
+      fl_draw(text, len,
+              translateCanvasXToViewX (x), translateCanvasYToViewY (y));
    } else {
       /* Nonzero letter spacing adjustment, draw each glyph individually */
       int viewX = translateCanvasXToViewX (x),
@@ -531,25 +562,28 @@ void FltkWidgetView::drawText (core::style::Font *font,
             wc = fl_utf8decode(text + curr, text + next, &nb);
             if ((wcu = towupper(wc)) == wc) {
                /* already uppercase, just draw the character */
-               setfont(ff->font, ff->size);
-               drawtext(text + curr, next - curr, viewX, viewY);
+               fl_font(ff->font, ff->size);
+               fl_draw(text + curr, next - curr, viewX, viewY);
                viewX += font->letterSpacing;
-               viewX += (int)getwidth(text + curr, next - curr);
+               viewX += (int)fl_width(text + curr, next - curr);
             } else {
+#if 0
+PORT1.3
                /* make utf8 string for converted char */
                nb = utf8encode(wcu, chbuf);
-               setfont(ff->font, sc_fontsize);
-               drawtext(chbuf, nb, viewX, viewY);
+#endif
+               fl_font(ff->font, sc_fontsize);
+               fl_draw(chbuf, nb, viewX, viewY);
                viewX += font->letterSpacing;
-               viewX += (int)getwidth(chbuf, nb);
+               viewX += (int)fl_width(chbuf, nb);
             }
          }
       } else {
          while (next < len) {
             next = theLayout->nextGlyph(text, curr);
-            drawtext(text + curr, next - curr, viewX, viewY);
+            fl_draw(text + curr, next - curr, viewX, viewY);
             viewX += font->letterSpacing +
-                     (int)getwidth(text + curr,next - curr);
+                     (int)fl_width(text + curr,next - curr);
             curr = next;
          }
       }
@@ -570,33 +604,36 @@ bool FltkWidgetView::usesFltkWidgets ()
    return true;
 }
 
-void FltkWidgetView::addFltkWidget (::fltk::Widget *widget,
-                                  core::Allocation *allocation)
+void FltkWidgetView::addFltkWidget (Fl_Widget *widget,
+                                    core::Allocation *allocation)
 {
    allocateFltkWidget (widget, allocation);
    add (widget);
 }
 
-void FltkWidgetView::removeFltkWidget (::fltk::Widget *widget)
+void FltkWidgetView::removeFltkWidget (Fl_Widget *widget)
 {
    remove (widget);
 }
 
-void FltkWidgetView::allocateFltkWidget (::fltk::Widget *widget,
+void FltkWidgetView::allocateFltkWidget (Fl_Widget *widget,
                                        core::Allocation *allocation)
 {
-   widget->x (translateCanvasXToViewX (allocation->x));
-   widget->y (translateCanvasYToViewY (allocation->y));
-   widget->w (allocation->width);
-   widget->h (allocation->ascent + allocation->descent);
+   widget->resize (translateCanvasXToViewX (allocation->x),
+      translateCanvasYToViewY (allocation->y),
+      allocation->width,
+      allocation->ascent + allocation->descent);
 
+#if 0
+PORT1.3
    /* widgets created tiny and later resized need this flag to display */
    uchar damage = widget->layout_damage ();
    damage |= LAYOUT_XYWH;
    widget->layout_damage (damage);
+#endif
 }
 
-void FltkWidgetView::drawFltkWidget (::fltk::Widget *widget,
+void FltkWidgetView::drawFltkWidget (Fl_Widget *widget,
                                    core::Rectangle *area)
 {
    draw_child (*widget);

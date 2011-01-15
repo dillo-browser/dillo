@@ -64,10 +64,7 @@ PORT1.3
    font = FL_HELVETICA;
 #endif
 
-#if 0
-PORT1.3
-   setfont(font, size);
-#endif
+   fl_font(font, size);
    spaceWidth = misc::max(0, (int)fl_width(' ') + letterSpacing);
    int xh, xw = 0;
    fl_measure("x", xw, xh, 0);

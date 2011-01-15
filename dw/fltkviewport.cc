@@ -143,18 +143,19 @@ void FltkViewport::hscrollbarCallback (Fl_Widget *hscrollbar,void *viewportPtr)
 
 // ----------------------------------------------------------------------
 
-void FltkViewport::layout ()
+void FltkViewport::resize(int X, int Y, int W, int H) 
 {
-   theLayout->viewportSizeChanged (this, w(), h());
-   adjustScrollbarsAndGadgetsAllocation ();
-
-   FltkWidgetView::layout ();
+   if (W != w() || H != h()) {
+      theLayout->viewportSizeChanged (this, W, H);
+      adjustScrollbarsAndGadgetsAllocation ();
+   }
+   Fl_Group::resize(X, Y, W, H);
 }
 
-void FltkViewport::draw_area (void *data, const Rectangle& cr )
+void FltkViewport::draw_area (void *data, int x, int y, int w, int h)
 {
   FltkViewport *vp = (FltkViewport*) data;
-  fl_push_clip(cr.x, cr.y, cr.w, cr.h);
+  fl_push_clip(x, y, w, h);
 
   vp->FltkWidgetView::draw ();
 
@@ -172,18 +173,17 @@ void FltkViewport::draw ()
 {
    int hdiff = vscrollbar->visible () ? SCROLLBAR_THICKNESS : 0;
    int vdiff = hscrollbar->visible () ? SCROLLBAR_THICKNESS : 0;
-   Rectangle cr (0, 0, w () - hdiff, h () - vdiff);
    int d = damage();
 
    if (d & FL_DAMAGE_SCROLL) {
       Fl::damage (FL_DAMAGE_SCROLL);
-      scrollrect(cr, -scrollDX, -scrollDY, draw_area, this);
+      fl_scroll(0, 0, w () - hdiff, h () - vdiff, -scrollDX, -scrollDY, draw_area, this);
       d &= ~FL_DAMAGE_SCROLL;
       Fl::damage (d);
    }
 
    if (d) {
-      draw_area(this, cr);
+      draw_area(this, 0, 0, w () - hdiff, h () - vdiff);
 
       if (d == FL_DAMAGE_CHILD) {
          if (hscrollbar->damage ())
@@ -203,7 +203,8 @@ void FltkViewport::draw ()
 int FltkViewport::handle (int event)
 {
    _MSG("FltkViewport::handle %d\n", event);
-
+#if 0
+PORT1.3
    if (hscrollbar->Rectangle::contains (Fl::event_x (), Fl::event_y ()) &&
        !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT)) &&
        hscrollbar->handle (event)) {
@@ -214,6 +215,7 @@ int FltkViewport::handle (int event)
       vscrollbar->handle (event)) {
       return 1;
    }
+#endif
 
    switch(event) {
    case FL_KEYBOARD:
@@ -226,7 +228,8 @@ int FltkViewport::handle (int event)
 
    case FL_FOCUS:
       /** \bug Draw focus box. */
-
+#if 0
+PORT1.3
       /* If the user clicks with the left button we take focus
        * and thereby unfocus any form widgets.
        * Otherwise we let fltk do the focus handling.
@@ -235,6 +238,7 @@ int FltkViewport::handle (int event)
          focus_index(-1);
          return 1;
       }
+#endif
       break;
 
    case FL_UNFOCUS:
@@ -377,9 +381,9 @@ void FltkViewport::scroll (int dx, int dy)
 void FltkViewport::scroll (core::ScrollCommand cmd)
 {
    if (cmd == core::SCREEN_UP_CMD) {
-      scroll (0, -vscrollbar->pagesize ());
+      scroll (0, -h ());
    } else if (cmd == core::SCREEN_DOWN_CMD) {
-      scroll (0, vscrollbar->pagesize ());
+      scroll (0, h ());
    } else if (cmd == core::LINE_UP_CMD) {
       scroll (0, (int) -vscrollbar->linesize ());
    } else if (cmd == core::LINE_DOWN_CMD) {

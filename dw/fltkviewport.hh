@@ -39,7 +39,7 @@ private:
    static void vscrollbarCallback (Fl_Widget *vscrollbar, void *viewportPtr);
 
    void updateCanvasWidgets (int oldScrollX, int oldScrollY);
-   static void draw_area (void *data, const Rectangle& cr);
+   static void draw_area (void *data, int x, int y, int w, int h);
 
 protected:
    int translateViewXToCanvasX (int x);
@@ -51,7 +51,7 @@ public:
    FltkViewport (int x, int y, int w, int h, const char *label = 0);
    ~FltkViewport ();
 
-   void layout();
+   void resize(int x, int y, int w, int h);
    void draw ();
    int handle (int event);
 
