@@ -30,7 +30,7 @@
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Text_Editor.H>
 #include <FL/Fl_Check_Button.H>
-#include <FL/Fl_Radio_Button.H>
+#include <FL/Fl_Round_Button.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Tree.H>
 
@@ -823,7 +823,7 @@ Fl_Button *FltkRadioButtonResource::createNewButton (core::Allocation
     */
 
    Fl_Button *button =
-      new Fl_Radio_Button (allocation->x, allocation->y, allocation->width,
+      new Fl_Round_Button (allocation->x, allocation->y, allocation->width,
                            allocation->ascent + allocation->descent);
 // button->clear_flag (SHORTCUT_LABEL);
    button->when (FL_WHEN_CHANGED);
@@ -977,8 +977,9 @@ Fl_Widget *FltkListResource::createNewWidget (core::Allocation *allocation)
    Fl_Tree *tree =
       new Fl_Tree (allocation->x, allocation->y, allocation->width,
                            allocation->ascent + allocation->descent);
-   if (mode == SELECTION_MULTIPLE)
-      tree->selectmode(FL_TREE_SELECT_MULTI);
+
+   tree->selectmode((mode == SELECTION_MULTIPLE) ? FL_TREE_SELECT_MULTI
+                                                 : FL_TREE_SELECT_SINGLE);
 // tree->clear_flag (SHORTCUT_LABEL);
    tree->callback(widgetCallback,this);
    tree->when(FL_WHEN_CHANGED);
@@ -1003,11 +1004,17 @@ void FltkListResource::addItem (const char *str, bool enabled, bool selected)
    Fl_Tree_Item *item = ((Fl_Tree *)widget)->add(str);
    int index = itemsSelected.size ();
 
+   item->activate(enabled);
+
    itemsSelected.increase ();
    itemsSelected.set (index,selected);
 
-   item->select(selected);
-   item->activate(enabled);
+   if (selected) {
+      if (mode == SELECTION_MULTIPLE)
+         item->select(selected);
+      else
+         ((Fl_Tree *)widget)->select_only(item, 0);
+   }
 
    queueResize (true);
 }

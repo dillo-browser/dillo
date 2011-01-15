@@ -202,17 +202,17 @@ int main(int argc, char **argv)
       selres[i]->addItem("item 1", true, false);
 
 //    selres[i]->pushGroup("group 1", true);
-      selres[i]->addItem("item 1/1", true, false);
-      selres[i]->addItem("item 1/2", true, true);
-      selres[i]->addItem("item 1/3", false, false);
+      selres[i]->addItem("group 1/1", true, false);
+      selres[i]->addItem("group 1/2", true, true);
+      selres[i]->addItem("group 1/3", false, false);
 //    selres[i]->popGroup();
 
       selres[i]->addItem("item 2", true, i == 1);
 
 //    selres[i]->pushGroup("group 2", false);
-      selres[i]->addItem("item 2/1", true, false);
-      selres[i]->addItem("item 2/2", true, false);
-      selres[i]->addItem("item 2/3", false, false);
+      selres[i]->addItem("group 2/1", true, false);
+      selres[i]->addItem("group 2/2", true, false);
+      selres[i]->addItem("group 2/3", false, false);
 //    selres[i]->popGroup();
 
       selres[i]->addItem("item 3", false, false);

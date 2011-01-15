@@ -504,8 +504,7 @@ class FltkListResource:
 protected:
    Fl_Widget *createNewWidget (core::Allocation *allocation);
 
-   //TODO we'll have to keep track
-   int getNumberOfItems () {return 0;};
+   int getNumberOfItems () {return itemsSelected.size();};
 
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);
