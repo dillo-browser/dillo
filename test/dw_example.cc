@@ -19,8 +19,8 @@
 
 
 
-#include <fltk/Window.h>
-#include <fltk/run.h>
+#include <FL/Fl_Window.H>
+#include <FL/Fl.H>
 
 #include "../dw/core.hh"
 #include "../dw/fltkcore.hh"
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
    dw::fltk::FltkPlatform *platform = new dw::fltk::FltkPlatform ();
    dw::core::Layout *layout = new dw::core::Layout (platform);
 
-   fltk::Window *window = new fltk::Window(200, 300, "Dw Example");
+   Fl_Window *window = new Fl_Window(200, 300, "Dw Example");
    window->begin();
 
    dw::fltk::FltkViewport *viewport =
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 
    window->resizable(viewport);
    window->show();
-   int errorCode = fltk::run();
+   int errorCode = Fl::run();
 
    delete layout;
 

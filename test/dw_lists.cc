@@ -19,8 +19,8 @@
 
 
 
-#include <fltk/Window.h>
-#include <fltk/run.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 
 #include "../dw/core.hh"
 #include "../dw/fltkcore.hh"
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
 
-   ::fltk::Window *window = new ::fltk::Window(200, 300, "Dw Lists");
+   Fl_Window *window = new Fl_Window(200, 300, "Dw Lists");
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 200, 300);
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
-   styleAttrs.font = Font::create (layout, &fontAttrs);
+   styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
 
    window->resizable(viewport);
    window->show();
-   int errorCode = ::fltk::run();
+   int errorCode = Fl::run();
 
    delete layout;
 

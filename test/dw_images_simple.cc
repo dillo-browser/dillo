@@ -19,8 +19,8 @@
 
 
 
-#include <fltk/Window.h>
-#include <fltk/run.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 
 #include "../dw/core.hh"
 #include "../dw/fltkcore.hh"
@@ -66,7 +66,7 @@ static void imageDrawTimeout (void *data)
    }
 
    if(imgRow < 200)
-      ::fltk::repeat_timeout (0.5, imageDrawTimeout, NULL);
+      Fl::repeat_timeout (0.5, imageDrawTimeout, NULL);
 }
 */
 
@@ -88,7 +88,7 @@ static void imageDrawTimeout (void *data)
    }
 
    if(imgRow < 200)
-      ::fltk::repeat_timeout (0.5, imageDrawTimeout, NULL);
+      Fl::repeat_timeout (0.5, imageDrawTimeout, NULL);
 }
 
 int main(int argc, char **argv)
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
    FltkPlatform *platform = new FltkPlatform ();
    layout = new Layout (platform);
 
-   ::fltk::Window *window = new ::fltk::Window(410, 210, "Dw Simple Image");
+   Fl_Window *window = new Fl_Window(410, 210, "Dw Simple Image");
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 410, 210);
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
-   styleAttrs.font = Font::create (layout, &fontAttrs);
+   styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
@@ -141,10 +141,10 @@ int main(int argc, char **argv)
    window->resizable(viewport);
    window->show();
 
-   ::fltk::add_timeout (2.0, imageInitTimeout, NULL);
-   ::fltk::add_timeout (0.1, imageDrawTimeout, NULL);
+   Fl::add_timeout (2.0, imageInitTimeout, NULL);
+   Fl::add_timeout (0.1, imageDrawTimeout, NULL);
 
-   int errorCode = ::fltk::run();
+   int errorCode = Fl::run();
 
    delete layout;
 

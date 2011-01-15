@@ -19,8 +19,8 @@
 
 
 
-#include <fltk/Window.h>
-#include <fltk/run.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 
 #include "../dw/core.hh"
 #include "../dw/fltkcore.hh"
@@ -43,7 +43,7 @@ int main(int argc, char **argv)
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
 
-   ::fltk::Window *window = new ::fltk::Window(400, 400, "Dw UI Test");
+   Fl_Window *window = new Fl_Window(400, 400, "Dw UI Test");
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 400, 400);
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
-   styleAttrs.font = Font::create (layout, &fontAttrs);
+   styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
    Style *tableStyle = Style::create (layout, &styleAttrs);
 
@@ -232,7 +232,7 @@ int main(int argc, char **argv)
 
    window->resizable(viewport);
    window->show();
-   int errorCode = ::fltk::run();
+   int errorCode = Fl::run();
 
    delete form;
    delete layout;
