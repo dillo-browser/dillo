@@ -465,15 +465,8 @@ protected:
    lout::container::typed::List <WidgetStack> *widgetStacks;
    lout::container::typed::List <Item> *allItems;
    lout::container::typed::Vector <Item> *items;
-
-   Item *createNewItem (typename Item::Type type,
-                        const char *name = NULL,
-                        bool enabled = true,
-                        bool selected = false);
-
-   Fl_Widget *createNewWidget (core::Allocation *allocation);
-   virtual Fl_Widget *createNewMenu (core::Allocation *allocation) = 0;
    virtual bool setSelectedItems() { return false; }
+   virtual void addItem (const char *str, bool enabled, bool selected) = 0;
 
    int getMaxStringWidth ();
 
@@ -482,14 +475,6 @@ public:
    ~FltkSelectionResource ();
 
    dw::core::Iterator *iterator (dw::core::Content::Type mask, bool atEnd);
-
-   void addItem (const char *str, bool enabled, bool selected);
-
-   void pushGroup (const char *name, bool enabled);
-   void popGroup ();
-
-   int getNumberOfItems ();
-   const char *getItem (int index);
 };
 
 
@@ -497,12 +482,11 @@ class FltkOptionMenuResource:
    public FltkSelectionResource <dw::core::ui::OptionMenuResource>
 {
 protected:
-   Fl_Widget *createNewMenu (core::Allocation *allocation);
+   Fl_Widget *createNewWidget (core::Allocation *allocation);
    virtual bool setSelectedItems() { return true; }
-
+   int getNumberOfItems();
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);
-   int selection;
 
 public:
    FltkOptionMenuResource (FltkPlatform *platform);
@@ -518,7 +502,10 @@ class FltkListResource:
    public FltkSelectionResource <dw::core::ui::ListResource>
 {
 protected:
-   Fl_Widget *createNewMenu (core::Allocation *allocation);
+   Fl_Widget *createNewWidget (core::Allocation *allocation);
+
+   //TODO we'll have to keep track
+   int getNumberOfItems () {return 0;};
 
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);

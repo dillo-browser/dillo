@@ -846,56 +846,6 @@ to test whether I'm going about it sensibly.
 */
 // ----------------------------------------------------------------------
 
-#if 0
-template <class I> FltkSelectionResource<I>::Item::Item (Type type,
-                                                         const char *name,
-                                                         bool enabled,
-                                                         bool selected)
-{
-   this->type = type;
-   this->name = name ? strdup (name) : NULL;
-   this->enabled = enabled;
-   initSelected = selected;
-}
-
-template <class I> FltkSelectionResource<I>::Item::~Item ()
-{
-   if (name)
-      delete name;
-}
-
-template <class I>
-Fl_Item *FltkSelectionResource<I>::Item::createNewWidget (int index)
-{
-   Fl_Item *item = new Fl_Item (name);
-   item->clear_flag (SHORTCUT_LABEL);
-   item->user_data ((void *) index);
-   return item;
-}
-
-template <class I>
-Fl_ItemGroup *
-FltkSelectionResource<I>::Item::createNewGroupWidget ()
-{
-   Fl_ItemGroup *itemGroup = new Fl_ItemGroup (name);
-   itemGroup->clear_flag (SHORTCUT_LABEL);
-   itemGroup->user_data ((void *) -1L);
-   return itemGroup;
-}
-
-
-template <class I>
-FltkSelectionResource<I>::WidgetStack::WidgetStack (Fl_Menu *widget)
-{
-   this->widget = widget;
-   this->stack = new Stack <TypedPointer < Fl_Menu> > (true);
-}
-
-template <class I> FltkSelectionResource<I>::WidgetStack::~WidgetStack ()
-{
-   delete stack;
-}
-
 template <class I>
 FltkSelectionResource<I>::FltkSelectionResource (FltkPlatform *platform):
    FltkSpecificResource<I> (platform)
@@ -919,153 +869,15 @@ FltkSelectionResource<I>::iterator (dw::core::Content::Type mask, bool atEnd)
    return new core::EmptyIterator (this->getEmbed (), mask, atEnd);
 }
 
-template <class I> Fl_Widget *
-FltkSelectionResource<I>::createNewWidget (core::Allocation *allocation)
-{
-   /** \todo Attributes (enabled, selected). */
-
-   Fl_Menu *menu = createNewMenu (allocation);
-   WidgetStack *widgetStack = new WidgetStack (menu);
-   widgetStack->stack->push (new TypedPointer < Fl_Menu> (menu));
-   widgetStacks->append (widgetStack);
-
-
-   Fl_Menu *itemGroup;
-   Fl_Item *itemWidget;
-
-   Fl_Group *currGroup = widgetStack->stack->getTop()->getTypedValue();
-
-   int index = 0;
-   for (Iterator <Item> it = allItems->iterator (); it.hasNext (); ) {
-      Item *item = it.getNext ();
-      switch (item->type) {
-      case Item::ITEM:
-         itemWidget = item->createNewWidget (index++);
-         currGroup->add (itemWidget);
-         break;
-
-      case Item::START:
-         itemGroup = item->createNewGroupWidget ();
-         currGroup->add (itemGroup);
-         widgetStack->stack->push (new TypedPointer < Fl_Menu> (menu));
-         currGroup = itemGroup;
-         break;
-
-      case Item::END:
-         widgetStack->stack->pop ();
-         currGroup = widgetStack->stack->getTop()->getTypedValue();
-         break;
-      }
-   }
-
-   return menu;
-}
-
-template <class I>
-typename FltkSelectionResource<I>::Item *
-FltkSelectionResource<I>::createNewItem (typename Item::Type type,
-                                         const char *name,
-                                         bool enabled,
-                                         bool selected) {
-   return new Item(type,name,enabled,selected);
-}
-#endif
-template <class I> void FltkSelectionResource<I>::addItem (const char *str,
-                                                           bool enabled,
-                                                           bool selected)
-{
-#if 0
-   int index = items->size ();
-   Item *item = createNewItem (Item::ITEM, str, enabled, selected);
-   items->put (item);
-   allItems->append (item);
-
-   for (Iterator <WidgetStack> it = widgetStacks->iterator ();
-        it.hasNext(); ) {
-      WidgetStack *widgetStack = it.getNext ();
-      Fl_Item *itemWidget = item->createNewWidget (index);
-      widgetStack->stack->getTop()->getTypedValue()->add (itemWidget);
-
-      if (!enabled)
-         itemWidget->deactivate ();
-
-      if (selected) {
-         itemWidget->set_selected();
-         if (setSelectedItems ()) {
-            // Handle multiple item selection.
-            int *pos = new int[widgetStack->stack->size ()];
-            int i;
-            Iterator <TypedPointer < Fl_Menu> > it;
-            for (it = widgetStack->stack->iterator (),
-                    i = widgetStack->stack->size () - 1;
-                 it.hasNext ();
-                 i--) {
-               TypedPointer < Fl_Menu> * p = it.getNext ();
-               pos[i] =  p->getTypedValue()->children () - 1;
-            }
-            widgetStack->widget->set_item (pos, widgetStack->stack->size ());
-            delete [] pos;
-         }
-      }
-   }
-#endif
-}
-
-#if 0
-template <class I> void FltkSelectionResource<I>::pushGroup (const char *name,
-                                                             bool enabled)
-{
-   Item *item = createNewItem (Item::START, name, enabled);
-   allItems->append (item);
-
-   for (Iterator <WidgetStack> it = widgetStacks->iterator ();
-        it.hasNext(); ) {
-      WidgetStack *widgetStack = it.getNext ();
-      Fl_ItemGroup *group = item->createNewGroupWidget ();
-      widgetStack->stack->getTop()->getTypedValue()->add (group);
-      widgetStack->stack->push (new TypedPointer < Fl_Menu> (group));
-      if (!enabled)
-         group->deactivate ();
-   }
-}
-
-template <class I> void FltkSelectionResource<I>::popGroup ()
-{
-   Item *item = createNewItem (Item::END);
-   allItems->append (item);
-
-   for (Iterator <WidgetStack> it = widgetStacks->iterator ();
-        it.hasNext(); ) {
-      WidgetStack *widgetStack = it.getNext ();
-      widgetStack->stack->pop ();
-   }
-}
-
-template <class I> int FltkSelectionResource<I>::getNumberOfItems ()
-{
-   return items->size ();
-}
-
-template <class I> const char *FltkSelectionResource<I>::getItem (int index)
-{
-   return items->get(index)->name;
-}
-
 template <class I> int FltkSelectionResource<I>::getMaxStringWidth ()
 {
-   int width = 0, numberOfItems = getNumberOfItems ();
-   for (int i = 0; i < numberOfItems; i++) {
-      int len = (int)fl_width (getItem(i));
-      if (len > width) width = len;
-   }
-   return width;
+   return 100;
 }
-#endif
+
 // ----------------------------------------------------------------------
 
 FltkOptionMenuResource::FltkOptionMenuResource (FltkPlatform *platform):
-   FltkSelectionResource <dw::core::ui::OptionMenuResource> (platform),
-   selection(-1)
+   FltkSelectionResource <dw::core::ui::OptionMenuResource> (platform)
 {
    init (platform);
 }
@@ -1075,16 +887,16 @@ FltkOptionMenuResource::~FltkOptionMenuResource ()
 }
 
 
-Fl_Widget *FltkOptionMenuResource::createNewMenu (core::Allocation
+Fl_Widget *FltkOptionMenuResource::createNewWidget (core::Allocation
                                                      *allocation)
 {
-   Fl_Menu_ *menu =
+   Fl_Choice *choice =
       new Fl_Choice (allocation->x, allocation->y,
                           allocation->width,
                           allocation->ascent + allocation->descent);
-// menu->clear_flag (SHORTCUT_LABEL);
-   menu->callback(widgetCallback,this);
-   return menu;
+// choice->clear_flag (SHORTCUT_LABEL);
+   choice->callback(widgetCallback,this);
+   return choice;
 }
 
 void FltkOptionMenuResource::widgetCallback (Fl_Widget *widget,
@@ -1109,29 +921,37 @@ void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
          + (requisition->ascent + requisition->descent) * 4 / 5
          + 2 * RELIEF_X_THICKNESS;
    } else {
-#endif
       requisition->width = 1;
       requisition->ascent = 1;
       requisition->descent = 0;
-#if 0
    }
+#else
+ requisition->width = 100;
+ requisition->ascent = 11 + RELIEF_Y_THICKNESS;
+ requisition->descent = 3 + RELIEF_Y_THICKNESS;
 #endif
 }
 
 void FltkOptionMenuResource::addItem (const char *str,
                                       bool enabled, bool selected)
 {
-   FltkSelectionResource<dw::core::ui::OptionMenuResource>::addItem
-      (str,enabled,selected);
+   int flags = enabled ? 0 : FL_MENU_INACTIVE;
+   int index = ((Fl_Choice *)widget)->add(str, 0, 0, 0, flags);
+
    if (selected)
-      selection = (items->size ()) - 1;
+      ((Fl_Choice *)widget)->value(index);
 
    queueResize (true);
 }
 
 bool FltkOptionMenuResource::isSelected (int index)
 {
-   return index == selection;
+   return index == ((Fl_Choice *)widget)->value();
+}
+
+int FltkOptionMenuResource::getNumberOfItems()
+{
+   return ((Fl_Choice*)widget)->size();
 }
 
 // ----------------------------------------------------------------------
@@ -1152,7 +972,7 @@ FltkListResource::~FltkListResource ()
 }
 
 
-Fl_Widget *FltkListResource::createNewMenu (core::Allocation *allocation)
+Fl_Widget *FltkListResource::createNewWidget (core::Allocation *allocation)
 {
    Fl_Tree *tree =
       new Fl_Tree (allocation->x, allocation->y, allocation->width,
@@ -1172,42 +992,33 @@ void FltkListResource::widgetCallback (Fl_Widget *widget, void *data)
    if (fltkItem)
       index = (long) (fltkItem->user_data ());
    if (index > -1) {
-      /* A MultiBrowser will trigger a callback for each item that is
-       * selected and each item that is deselected, but a "plain"
-       * Browser will only trigger the callback for the newly selected item
-       * (for which selected() is false, incidentally).
-       */
       FltkListResource *res = (FltkListResource *) data;
-      if (res->mode == SELECTION_MULTIPLE) {
-         bool selected = fltkItem->is_selected ();
-         res->itemsSelected.set (index, selected);
-      } else {
-         int size = res->itemsSelected.size();
-         for (int i = 0; i < size; i++)
-            res->itemsSelected.set (i, false);
-         res->itemsSelected.set (index, true);
-      }
+      bool selected = fltkItem->is_selected ();
+      res->itemsSelected.set (index, selected);
    }
 }
 
 void FltkListResource::addItem (const char *str, bool enabled, bool selected)
 {
-   FltkSelectionResource<dw::core::ui::ListResource>::addItem
-      (str,enabled,selected);
+   Fl_Tree_Item *item = ((Fl_Tree *)widget)->add(str);
    int index = itemsSelected.size ();
+
    itemsSelected.increase ();
    itemsSelected.set (index,selected);
+
+   item->select(selected);
+   item->activate(enabled);
+
    queueResize (true);
 }
 
 void FltkListResource::sizeRequest (core::Requisition *requisition)
 {
-   if (style) {
-      FltkFont *font = (FltkFont*)style->font;
 #if 0
 PORT1.3
+   if (style) {
+      FltkFont *font = (FltkFont*)style->font;
       ::fltk::setfont(font->font,font->size);
-#endif
       int rows = getNumberOfItems();
       if (showRows < rows) {
          rows = showRows;
@@ -1226,6 +1037,11 @@ PORT1.3
       requisition->ascent = 1;
       requisition->descent = 0;
    }
+#else
+ requisition->width = 100;
+ requisition->ascent = 14 * showRows;
+ requisition->descent = 0;
+#endif
 }
 
 bool FltkListResource::isSelected (int index)
