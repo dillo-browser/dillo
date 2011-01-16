@@ -214,7 +214,6 @@ int FltkViewport::handle (int event)
 
    if (Fl::event_inside(vscrollbar) &&
        vscrollbar->handle (event)) {
-fprintf(stderr, "vscrollbar-handled\n");
       return 1;
    }
 
