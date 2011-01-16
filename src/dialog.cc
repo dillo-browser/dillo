@@ -118,6 +118,8 @@ char *a_Dialog_open_file(const char *msg,
  */
 void a_Dialog_text_window(const char *txt, const char *title)
 {
+#if 0
+PORT1.3
    //int wh = 600, ww = 650, bh = 30;
    int wh = prefs.height, ww = prefs.width, bh = 30;
    Font *textfont = font(prefs.font_monospace, 0);
@@ -145,17 +147,21 @@ void a_Dialog_text_window(const char *txt, const char *title)
    window->resizable(td);
    window->end();
    window->show();
+#endif
 }
 
 /*--------------------------------------------------------------------------*/
 static int choice5_answer;
 
+#if 0
+PORT1.3
 static void choice5_cb(Fl_Widget *button, void *number)
 {
   choice5_answer = VOIDP2INT(number);
   _MSG("choice5_cb: %d\n", choice5_answer);
   button->window()->make_exec_return(true);
 }
+#endif
 
 /*
  * Make a question-dialog with a question and some alternatives.
@@ -165,6 +171,8 @@ int a_Dialog_choice5(const char *QuestionTxt,
                      const char *alt1, const char *alt2, const char *alt3,
                      const char *alt4, const char *alt5)
 {
+#if 0
+PORT1.3
    choice5_answer = 0;
 
    int ww = 440, wh = 150, bw = 50, bh = 45, nb = 0;
@@ -205,6 +213,9 @@ int a_Dialog_choice5(const char *QuestionTxt,
    _MSG("Choice5 answer = %d\n", choice5_answer);
 
    return choice5_answer;
+#else
+return fl_choice(QuestionTxt, alt1, alt2, alt3);
+#endif
 }
 
 
@@ -214,9 +225,12 @@ int a_Dialog_choice5(const char *QuestionTxt,
  */
 static void Dialog_user_password_cb(Fl_Widget *button, void *vIntPtr)
 {
+#if 0
+PORT1.3
    int ret = VOIDP2INT(vIntPtr);
   _MSG("Dialog_user_password_cb: %d\n", ret);
   button->window()->make_exec_return(ret);
+#endif
 }
 
 /*
@@ -272,7 +286,8 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
    window->end();
    window->size_range(window_w,window_h,window_w,window_h);
    window->resizable(window);
-
+#if 0
+PORT1.3
    if ((ok = window->exec())) {
       /* call the callback */
       const char *user, *password;
@@ -281,7 +296,7 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
       _MSG("a_Dialog_user_passwd: ok = %d\n", ok);
       (*cb)(user, password, vp);
    }
-
+#endif
    delete window;
 
    return ok;

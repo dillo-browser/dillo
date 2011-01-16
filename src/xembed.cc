@@ -158,7 +158,10 @@ Xembed::handle(int e) {
 
 void
 Xembed::create() {
+#if 0
+PORT1.3
    Fl_Window::create();
+#endif
 }
 
 #endif

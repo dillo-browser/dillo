@@ -167,7 +167,8 @@ static OptID getCmdOption(const CLI_options *options, int argc, char **argv,
    }
    return opt_id;
 }
-
+#if 0
+PORT1.3
 /*
  * Tell the user if default/pref fonts can't be found.
  */
@@ -185,7 +186,7 @@ static void checkPreferredFonts()
    checkFont(prefs.font_cursive, "cursive");
    checkFont(prefs.font_fantasy, "fantasy");
 }
-
+#endif
 /*
  * Given a command line argument, build a DilloUrl for it.
  */
@@ -317,7 +318,8 @@ int main(int argc, char **argv)
 
    // Sets WM_CLASS hint on X11
    Fl_Window::default_xclass("dillo");
-
+#if 0
+PORT1.3
    checkPreferredFonts();
    /* use preferred font for UI */
    fltk::Font *dfont = fltk::font(prefs.font_sans_serif, 0);
@@ -325,7 +327,7 @@ int main(int argc, char **argv)
       fltk::Widget::default_style->textfont(dfont);
       fltk::Widget::default_style->labelfont(dfont);
    }
-
+#endif
    // Create a new UI/bw pair
    BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, xid, NULL);
 
