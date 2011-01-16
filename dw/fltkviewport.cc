@@ -92,10 +92,10 @@ void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
       vdiff = hscrollbar->visible () ? SCROLLBAR_THICKNESS : 0;
    }
 
-   hscrollbar->resize(0, h () - SCROLLBAR_THICKNESS, w () - hdiff,
-                      SCROLLBAR_THICKNESS);
-   vscrollbar->resize(w () - SCROLLBAR_THICKNESS, 0, h () - vdiff,
-                      SCROLLBAR_THICKNESS);
+   hscrollbar->resize(0, h () - SCROLLBAR_THICKNESS,
+                      w () - hdiff, SCROLLBAR_THICKNESS);
+   vscrollbar->resize(w () - SCROLLBAR_THICKNESS, 0,
+                      SCROLLBAR_THICKNESS, h () - vdiff);
 
    int x = w () - SCROLLBAR_THICKNESS, y = h () - SCROLLBAR_THICKNESS;
    for (Iterator <TypedPointer < Fl_Widget> > it = gadgets->iterator ();
@@ -205,19 +205,18 @@ void FltkViewport::draw ()
 int FltkViewport::handle (int event)
 {
    _MSG("FltkViewport::handle %d\n", event);
-#if 0
-PORT1.3
-   if (hscrollbar->Rectangle::contains (Fl::event_x (), Fl::event_y ()) &&
+
+   if (Fl::event_inside(hscrollbar) &&
        !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT)) &&
        hscrollbar->handle (event)) {
       return 1;
    }
 
-   if (vscrollbar->Rectangle::contains (Fl::event_x (), Fl::event_y ()) &&
-      vscrollbar->handle (event)) {
+   if (Fl::event_inside(vscrollbar) &&
+       vscrollbar->handle (event)) {
+fprintf(stderr, "vscrollbar-handled\n");
       return 1;
    }
-#endif
 
    switch(event) {
    case FL_KEYBOARD:
