@@ -286,53 +286,53 @@ static void location_cb(Fl_Widget *wid, void *data)
 static void b1_cb(Fl_Widget *wid, void *cb_data)
 {
    int bn = VOIDP2INT(cb_data);
-   int k = Fl::event_key();
-   if (k && k <= 7) {
+   int k = Fl::event_button();
+   if (k >= FL_LEFT_MOUSE && k <= FL_RIGHT_MOUSE) {
       _MSG("[%s], mouse button %d was pressed\n", button_names[bn], k);
       _MSG("mouse button %d was pressed\n", k);
    }
    switch (bn) {
    case UI_BACK:
-      if (k == 1) {
+      if (k == FL_LEFT_MOUSE) {
          a_UIcmd_back(a_UIcmd_get_bw_by_widget(wid));
-      } else if (k == 3) {
+      } else if (k == FL_RIGHT_MOUSE) {
          a_UIcmd_back_popup(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_FORW:
-      if (k == 1) {
+      if (k == FL_LEFT_MOUSE) {
          a_UIcmd_forw(a_UIcmd_get_bw_by_widget(wid));
-      } else if (k == 3) {
+      } else if (k == FL_RIGHT_MOUSE) {
          a_UIcmd_forw_popup(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_HOME:
-      if (k == 1) {
+      if (k == FL_LEFT_MOUSE) {
          a_UIcmd_home(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_RELOAD:
-      if (k == 1) {
+      if (k == FL_LEFT_MOUSE) {
          a_UIcmd_reload(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_SAVE:
-      if (k == 1) {
+      if (k == FL_LEFT_MOUSE) {
          a_UIcmd_save(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_STOP:
-      if (k == 1) {
+      if (k == FL_LEFT_MOUSE) {
          a_UIcmd_stop(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_BOOK:
-      if (k == 1) {
+      if (k == FL_LEFT_MOUSE) {
          a_UIcmd_book(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_TOOLS:
-      if (k == 1 || k == 3) {
+      if (k == FL_LEFT_MOUSE || k == FL_RIGHT_MOUSE) {
          a_UIcmd_tools(a_UIcmd_get_bw_by_widget(wid), wid);
       }
       break;
