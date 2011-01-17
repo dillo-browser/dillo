@@ -31,7 +31,8 @@
 struct iconset {
    Fl_Image *ImgMeterOK, *ImgMeterBug,
             *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgTools,
-            *ImgClear,*ImgSearch, *ImgHelp, *ImgLeft, *ImgRight, *ImgStop;
+            *ImgClear,*ImgSearch, *ImgHelp, *ImgLeft, *ImgLeftIn,
+            *ImgRight, *ImgRightIn, *ImgStop, *ImgStopIn;
 };
 
 static struct iconset standard_icons = {
@@ -46,8 +47,11 @@ static struct iconset standard_icons = {
    new Fl_Pixmap(search_xpm),
    new Fl_Pixmap(help_xpm),
    new Fl_Pixmap(left_xpm),
+   new Fl_Pixmap(left_i_xpm),
    new Fl_Pixmap(right_xpm),
+   new Fl_Pixmap(right_i_xpm),
    new Fl_Pixmap(stop_xpm),
+   new Fl_Pixmap(stop_i_xpm),
 };
 
 static struct iconset small_icons = {
@@ -62,8 +66,11 @@ static struct iconset small_icons = {
    standard_icons.ImgSearch,
    standard_icons.ImgHelp,
    new Fl_Pixmap(left_s_xpm),
-   new Fl_Pixmap(right_s_xpm),
+   new Fl_Pixmap(left_si_xpm),
+   new Fl_Pixmap(right_i_xpm),
+   new Fl_Pixmap(right_si_xpm),
    new Fl_Pixmap(stop_s_xpm),
+   new Fl_Pixmap(stop_si_xpm),
 };
 
 
@@ -382,11 +389,13 @@ Fl_Pack *UI::make_toolbar(int tw, int th)
    p1->begin();
     Back = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Back" : 0);
     b->image(icons->ImgLeft);
+    b->deimage(icons->ImgLeftIn);
     b->callback(b1_cb, (void *)UI_BACK);
     b->clear_visible_focus();
 
     Forw = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Forw" : 0);
     b->image(icons->ImgRight);
+    b->deimage(icons->ImgRightIn);
     b->callback(b1_cb, (void *)UI_FORW);
     b->clear_visible_focus();
 
@@ -407,6 +416,7 @@ Fl_Pack *UI::make_toolbar(int tw, int th)
 
     Stop = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
     b->image(icons->ImgStop);
+    b->deimage(icons->ImgStopIn);
     b->callback(b1_cb, (void *)UI_STOP);
     b->clear_visible_focus();
 
