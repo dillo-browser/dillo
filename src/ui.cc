@@ -31,7 +31,8 @@
 struct iconset {
    Fl_Image *ImgMeterOK, *ImgMeterBug,
             *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgTools,
-            *ImgClear,*ImgSearch, *ImgHelp, *ImgLeft, *ImgRight, *ImgStop;
+            *ImgClear,*ImgSearch, *ImgHelp, *ImgLeft, *ImgLeftIn,
+            *ImgRight, *ImgRightIn, *ImgStop, *ImgStopIn;
 };
 
 static struct iconset standard_icons = {
@@ -46,8 +47,11 @@ static struct iconset standard_icons = {
    new Fl_Pixmap(search_xpm),
    new Fl_Pixmap(help_xpm),
    new Fl_Pixmap(left_xpm),
+   new Fl_Pixmap(left_i_xpm),
    new Fl_Pixmap(right_xpm),
+   new Fl_Pixmap(right_i_xpm),
    new Fl_Pixmap(stop_xpm),
+   new Fl_Pixmap(stop_i_xpm),
 };
 
 static struct iconset small_icons = {
@@ -62,8 +66,11 @@ static struct iconset small_icons = {
    standard_icons.ImgSearch,
    standard_icons.ImgHelp,
    new Fl_Pixmap(left_s_xpm),
-   new Fl_Pixmap(right_s_xpm),
+   new Fl_Pixmap(left_si_xpm),
+   new Fl_Pixmap(right_i_xpm),
+   new Fl_Pixmap(right_si_xpm),
    new Fl_Pixmap(stop_s_xpm),
+   new Fl_Pixmap(stop_si_xpm),
 };
 
 
@@ -190,13 +197,13 @@ public:
  */
 static void search_cb(Fl_Widget *wid, void *data)
 {
-   int k = Fl::event_key();
+   int b = Fl::event_button();
 
-   if (k == 1) {
+   if (b == FL_LEFT_MOUSE) {
       a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(wid));
-   } else if (k == 2) {
+   } else if (b == FL_MIDDLE_MOUSE) {
       ((UI*)data)->color_change_cb_i();
-   } else if (k == 3) {
+   } else if (b == FL_RIGHT_MOUSE) {
       ((UI*)data)->panel_cb_i();
    }
 }
@@ -226,8 +233,8 @@ static void help_cb(Fl_Widget *w, void *)
  */
 static void filemenu_cb(Fl_Widget *wid, void *)
 {
-   int k = Fl::event_key();
-   if (k == 1 || k == 3) {
+   int b = Fl::event_button();
+   if (b == FL_LEFT_MOUSE || b == FL_RIGHT_MOUSE) {
       a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(wid), wid);
    }
 }
@@ -239,11 +246,11 @@ static void clear_cb(Fl_Widget *w, void *data)
 {
    UI *ui = (UI*)data;
 
-   int k = Fl::event_key();
-   if (k == 1) {
+   int b = Fl::event_button();
+   if (b == FL_LEFT_MOUSE) {
       ui->set_location("");
       ui->focus_location();
-   } if (k == 2) {
+   } if (b == FL_MIDDLE_MOUSE) {
       ui->paste_url();
    }
 }
@@ -286,53 +293,53 @@ static void location_cb(Fl_Widget *wid, void *data)
 static void b1_cb(Fl_Widget *wid, void *cb_data)
 {
    int bn = VOIDP2INT(cb_data);
-   int k = Fl::event_key();
-   if (k && k <= 7) {
-      _MSG("[%s], mouse button %d was pressed\n", button_names[bn], k);
-      _MSG("mouse button %d was pressed\n", k);
+   int b = Fl::event_button();
+   if (b >= FL_LEFT_MOUSE && b <= FL_RIGHT_MOUSE) {
+      _MSG("[%s], mouse button %d was pressed\n", button_names[bn], b);
+      _MSG("mouse button %d was pressed\n", b);
    }
    switch (bn) {
    case UI_BACK:
-      if (k == 1) {
+      if (b == FL_LEFT_MOUSE) {
          a_UIcmd_back(a_UIcmd_get_bw_by_widget(wid));
-      } else if (k == 3) {
+      } else if (b == FL_RIGHT_MOUSE) {
          a_UIcmd_back_popup(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_FORW:
-      if (k == 1) {
+      if (b == FL_LEFT_MOUSE) {
          a_UIcmd_forw(a_UIcmd_get_bw_by_widget(wid));
-      } else if (k == 3) {
+      } else if (b == FL_RIGHT_MOUSE) {
          a_UIcmd_forw_popup(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_HOME:
-      if (k == 1) {
+      if (b == FL_LEFT_MOUSE) {
          a_UIcmd_home(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_RELOAD:
-      if (k == 1) {
+      if (b == FL_LEFT_MOUSE) {
          a_UIcmd_reload(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_SAVE:
-      if (k == 1) {
+      if (b == FL_LEFT_MOUSE) {
          a_UIcmd_save(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_STOP:
-      if (k == 1) {
+      if (b == FL_LEFT_MOUSE) {
          a_UIcmd_stop(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_BOOK:
-      if (k == 1) {
+      if (b == FL_LEFT_MOUSE) {
          a_UIcmd_book(a_UIcmd_get_bw_by_widget(wid));
       }
       break;
    case UI_TOOLS:
-      if (k == 1 || k == 3) {
+      if (b == FL_LEFT_MOUSE || b == FL_RIGHT_MOUSE) {
          a_UIcmd_tools(a_UIcmd_get_bw_by_widget(wid), wid);
       }
       break;
@@ -356,10 +363,10 @@ static void b1_cb(Fl_Widget *wid, void *cb_data)
  */
 static void bugmeter_cb(Fl_Widget *wid, void *data)
 {
-   int k = Fl::event_key();
-   if (k == 1) {
+   int b = Fl::event_button();
+   if (b == FL_LEFT_MOUSE) {
       a_UIcmd_view_page_bugs(a_UIcmd_get_bw_by_widget(wid));
-   } else if (k == 3) {
+   } else if (b == FL_RIGHT_MOUSE) {
       a_UIcmd_bugmeter_popup(a_UIcmd_get_bw_by_widget(wid));
    }
 }
@@ -382,11 +389,13 @@ Fl_Pack *UI::make_toolbar(int tw, int th)
    p1->begin();
     Back = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Back" : 0);
     b->image(icons->ImgLeft);
+    b->deimage(icons->ImgLeftIn);
     b->callback(b1_cb, (void *)UI_BACK);
     b->clear_visible_focus();
 
     Forw = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Forw" : 0);
     b->image(icons->ImgRight);
+    b->deimage(icons->ImgRightIn);
     b->callback(b1_cb, (void *)UI_FORW);
     b->clear_visible_focus();
 
@@ -407,6 +416,7 @@ Fl_Pack *UI::make_toolbar(int tw, int th)
 
     Stop = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
     b->image(icons->ImgStop);
+    b->deimage(icons->ImgStopIn);
     b->callback(b1_cb, (void *)UI_STOP);
     b->clear_visible_focus();
 

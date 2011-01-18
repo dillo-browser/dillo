@@ -132,7 +132,6 @@ Findbar::Findbar(int width, int height) :
     i->color(206);
     i->when(FL_WHEN_ENTER_KEY_ALWAYS);
     i->callback(search_cb2, this);
-    i->clear_visible_focus();
 
     next_btn = new Fl_Button(x, border, button_width, height, "Next");
     x += button_width + gap;

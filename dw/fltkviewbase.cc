@@ -331,10 +331,7 @@ void FltkViewBase::setCursor (core::style::Cursor cursor)
    */
 
    /** \bug Does not work */
-#if 0
-PORT1.3
-   this->cursor (mapDwToFltk[cursor]);
-#endif
+   fl_cursor (mapDwToFltk[cursor]);
 }
 
 void FltkViewBase::setBgColor (core::style::Color *color)
