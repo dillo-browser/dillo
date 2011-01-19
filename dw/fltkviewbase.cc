@@ -174,8 +174,9 @@ PORT1.3
 #endif
    core::Rectangle r (rect->x, rect->y, rect->width, rect->height);
    fl_color(bgColor);
-   fl_rectf(translateViewXToCanvasX (rect->x),
-      translateCanvasYToViewY (rect->y), rect->width, rect->height);
+   fl_rectf(x () + translateViewXToCanvasX (rect->x),
+            y () + translateCanvasYToViewY (rect->y),
+            rect->width, rect->height);
    theLayout->expose (this, &r);
 }
 
@@ -221,8 +222,8 @@ int FltkViewBase::handle (int event)
    case FL_PUSH:
       processed =
          theLayout->buttonPress (this, Fl::event_clicks () + 1,
-                                 translateViewXToCanvasX (Fl::event_x ()),
-                                 translateViewYToCanvasY (Fl::event_y ()),
+                                 translateViewXToCanvasX (Fl::event_x () - x ()),
+                                 translateViewYToCanvasY (Fl::event_y () - y ()),
                                  getDwButtonState (), Fl::event_button ());
       _MSG("PUSH => %s\n", processed ? "true" : "false");
       if (processed) {
@@ -234,15 +235,15 @@ int FltkViewBase::handle (int event)
    case FL_RELEASE:
       processed =
          theLayout->buttonRelease (this, Fl::event_clicks () + 1,
-                                   translateViewXToCanvasX (Fl::event_x ()),
-                                   translateViewYToCanvasY (Fl::event_y ()),
+                                   translateViewXToCanvasX (Fl::event_x () - x ()),
+                                   translateViewYToCanvasY (Fl::event_y () - y ()),
                                    getDwButtonState (), Fl::event_button ());
       _MSG("RELEASE => %s\n", processed ? "true" : "false");
       return processed ? true : Fl_Group::handle (event);
 
    case FL_MOVE:
-      mouse_x = Fl::event_x();
-      mouse_y = Fl::event_y();
+      mouse_x = Fl::event_x() - x ();
+      mouse_y = Fl::event_y() - y ();
       processed =
          theLayout->motionNotify (this,
                                   translateViewXToCanvasX (mouse_x),
@@ -254,15 +255,16 @@ int FltkViewBase::handle (int event)
    case FL_DRAG:
       processed =
          theLayout->motionNotify (this,
-                                  translateViewXToCanvasX (Fl::event_x ()),
-                                  translateViewYToCanvasY (Fl::event_y ()),
+                                  translateViewXToCanvasX (Fl::event_x () - x ()),
+                                  translateViewYToCanvasY (Fl::event_y () - y ()),
                                   getDwButtonState ());
       _MSG("DRAG => %s\n", processed ? "true" : "false");
       return processed ? true : Fl_Group::handle (event);
 
    case FL_ENTER:
-      theLayout->enterNotify (this, translateViewXToCanvasX (Fl::event_x ()),
-                              translateViewYToCanvasY (Fl::event_y ()),
+      theLayout->enterNotify (this,
+                              translateViewXToCanvasX (Fl::event_x () - x ()),
+                              translateViewYToCanvasY (Fl::event_y () - y ()),
                               getDwButtonState ());
       return Fl_Group::handle (event);
 
@@ -376,8 +378,10 @@ void FltkViewBase::drawLine (core::style::Color *color,
                              int x1, int y1, int x2, int y2)
 {
    fl_color(((FltkColor*)color)->colors[shading]);
-   fl_line (translateCanvasXToViewX (x1), translateCanvasYToViewY (y1),
-            translateCanvasXToViewX (x2), translateCanvasYToViewY (y2));
+   fl_line (x () + translateCanvasXToViewX (x1),
+            y () + translateCanvasYToViewY (y1),
+            x () + translateCanvasXToViewX (x2),
+            y () + translateCanvasYToViewY (y2));
 }
 
 void FltkViewBase::drawTypedLine (core::style::Color *color,
@@ -416,22 +420,22 @@ void FltkViewBase::drawTypedLine (core::style::Color *color,
 void FltkViewBase::drawRectangle (core::style::Color *color,
                                   core::style::Color::Shading shading,
                                   bool filled,
-                                  int x, int y, int width, int height)
+                                  int X, int Y, int width, int height)
 {
    fl_color(((FltkColor*)color)->colors[shading]);
    if (width < 0) {
-      x += width;
+      X += width;
       width = -width;
    }
    if (height < 0) {
-      y += height;
+      Y += height;
       height = -height;
    }
 
-   int x1 = translateCanvasXToViewX (x);
-   int y1 = translateCanvasYToViewY (y);
-   int x2 = translateCanvasXToViewX (x + width);
-   int y2 = translateCanvasYToViewY (y + height);
+   int x1 = translateCanvasXToViewX (X);
+   int y1 = translateCanvasYToViewY (Y);
+   int x2 = translateCanvasXToViewX (X + width);
+   int y2 = translateCanvasYToViewY (Y + height);
 
 #if 0
 PORT1.3
@@ -443,9 +447,9 @@ PORT1.3
 #endif
 
    if (filled)
-      fl_rectf (x1, y1, x2 - x1, y2 - y1);
+      fl_rectf (x () + x1, y () + y1, x2 - x1, y2 - y1);
    else
-      fl_rect (x1, y1, x2 - x1, y2 - y1);
+      fl_rect (x () + x1, y () + y1, x2 - x1, y2 - y1);
 }
 
 void FltkViewBase::drawArc (core::style::Color *color,
@@ -535,7 +539,7 @@ PORT1.3
 void FltkWidgetView::drawText (core::style::Font *font,
                              core::style::Color *color,
                              core::style::Color::Shading shading,
-                             int x, int y, const char *text, int len)
+                             int X, int Y, const char *text, int len)
 {
    FltkFont *ff = (FltkFont*)font;
    fl_font(ff->font, ff->size);
@@ -543,11 +547,11 @@ void FltkWidgetView::drawText (core::style::Font *font,
 
    if (!font->letterSpacing && !font->fontVariant) {
       fl_draw(text, len,
-              translateCanvasXToViewX (x), translateCanvasYToViewY (y));
+              x () + translateCanvasXToViewX (X), y () + translateCanvasYToViewY (Y));
    } else {
       /* Nonzero letter spacing adjustment, draw each glyph individually */
-      int viewX = translateCanvasXToViewX (x),
-          viewY = translateCanvasYToViewY (y);
+      int viewX = translateCanvasXToViewX (X),
+          viewY = translateCanvasYToViewY (Y);
       int curr = 0, next = 0, nb;
       char chbuf[4];
       wchar_t wc, wcu;
@@ -560,7 +564,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
             if ((wcu = towupper(wc)) == wc) {
                /* already uppercase, just draw the character */
                fl_font(ff->font, ff->size);
-               fl_draw(text + curr, next - curr, viewX, viewY);
+               fl_draw(text + curr, next - curr, x () + viewX, y () + viewY);
                viewX += font->letterSpacing;
                viewX += (int)fl_width(text + curr, next - curr);
             } else {
@@ -570,7 +574,7 @@ PORT1.3
                nb = utf8encode(wcu, chbuf);
 #endif
                fl_font(ff->font, sc_fontsize);
-               fl_draw(chbuf, nb, viewX, viewY);
+               fl_draw(chbuf, nb, x() + viewX, y () + viewY);
                viewX += font->letterSpacing;
                viewX += (int)fl_width(chbuf, nb);
             }
@@ -578,7 +582,7 @@ PORT1.3
       } else {
          while (next < len) {
             next = theLayout->nextGlyph(text, curr);
-            fl_draw(text + curr, next - curr, viewX, viewY);
+            fl_draw(text + curr, next - curr, x () + viewX, y () + viewY);
             viewX += font->letterSpacing +
                      (int)fl_width(text + curr,next - curr);
             curr = next;
@@ -588,12 +592,12 @@ PORT1.3
 }
 
 void FltkWidgetView::drawImage (core::Imgbuf *imgbuf, int xRoot, int yRoot,
-                              int x, int y, int width, int height)
+                              int X, int Y, int width, int height)
 {
    ((FltkImgbuf*)imgbuf)->draw (this,
-                                translateCanvasXToViewX (xRoot),
-                                translateCanvasYToViewY (yRoot),
-                                x, y, width, height);
+                                x () + translateCanvasXToViewX (xRoot),
+                                y () + translateCanvasYToViewY (yRoot),
+                                X, Y, width, height);
 }
 
 bool FltkWidgetView::usesFltkWidgets ()

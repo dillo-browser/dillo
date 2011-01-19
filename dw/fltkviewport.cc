@@ -34,15 +34,15 @@ using namespace lout::container::typed;
 namespace dw {
 namespace fltk {
 
-FltkViewport::FltkViewport (int x, int y, int w, int h, const char *label):
-   FltkWidgetView (x, y, w, h, label)
+FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
+   FltkWidgetView (X, Y, W, H, label)
 {
-   hscrollbar = new Fl_Scrollbar (0, 0, 1, 1);
+   hscrollbar = new Fl_Scrollbar (x (), y (), 1, 1);
    hscrollbar->type(FL_HORIZONTAL);
    hscrollbar->callback (hscrollbarCallback, this);
    add (hscrollbar);
 
-   vscrollbar = new Fl_Scrollbar (0, 0, 1, 1);
+   vscrollbar = new Fl_Scrollbar (x (), y(), 1, 1);
    vscrollbar->type(FL_VERTICAL);
    vscrollbar->callback (vscrollbarCallback, this);
    add (vscrollbar);
@@ -92,24 +92,25 @@ void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
       vdiff = hscrollbar->visible () ? SCROLLBAR_THICKNESS : 0;
    }
 
-   hscrollbar->resize(0, h () - SCROLLBAR_THICKNESS,
+   hscrollbar->resize(x (), y () + h () - SCROLLBAR_THICKNESS,
                       w () - hdiff, SCROLLBAR_THICKNESS);
-   vscrollbar->resize(w () - SCROLLBAR_THICKNESS, 0,
+   vscrollbar->resize(x () + w () - SCROLLBAR_THICKNESS, y (),
                       SCROLLBAR_THICKNESS, h () - vdiff);
 
-   int x = w () - SCROLLBAR_THICKNESS, y = h () - SCROLLBAR_THICKNESS;
+   int X = x () + w () - SCROLLBAR_THICKNESS;
+   int Y = y () + h () - SCROLLBAR_THICKNESS;
    for (Iterator <TypedPointer < Fl_Widget> > it = gadgets->iterator ();
         it.hasNext (); ) {
       Fl_Widget *widget = it.getNext()->getTypedValue ();
-      widget->resize(0, 0, SCROLLBAR_THICKNESS, SCROLLBAR_THICKNESS);
+      widget->resize(x (), y (), SCROLLBAR_THICKNESS, SCROLLBAR_THICKNESS);
 
       switch (gadgetOrientation [visibility]) {
       case GADGET_VERTICAL:
-         y -= SCROLLBAR_THICKNESS;
+         Y -= SCROLLBAR_THICKNESS;
          break;
 
       case GADGET_HORIZONTAL:
-         x -= SCROLLBAR_THICKNESS;
+         X -= SCROLLBAR_THICKNESS;
          break;
       }
    }
@@ -179,13 +180,13 @@ void FltkViewport::draw ()
 
    if (d & FL_DAMAGE_SCROLL) {
       Fl::damage (FL_DAMAGE_SCROLL);
-      fl_scroll(0, 0, w () - hdiff, h () - vdiff, -scrollDX, -scrollDY, draw_area, this);
+      fl_scroll(x(), y(), w () - hdiff, h () - vdiff, -scrollDX, -scrollDY, draw_area, this);
       d &= ~FL_DAMAGE_SCROLL;
       Fl::damage (d);
    }
 
    if (d) {
-      draw_area(this, 0, 0, w () - hdiff, h () - vdiff);
+      draw_area(this, x(), y(), w () - hdiff, h () - vdiff);
 
       if (d == FL_DAMAGE_CHILD) {
          if (hscrollbar->damage ())
