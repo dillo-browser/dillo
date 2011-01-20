@@ -174,7 +174,7 @@ PORT1.3
 #endif
    core::Rectangle r (rect->x, rect->y, rect->width, rect->height);
    fl_color(bgColor);
-   fl_rectf(x () + translateViewXToCanvasX (rect->x),
+   fl_rectf(x () + translateCanvasXToViewX (rect->x),
             y () + translateCanvasYToViewY (rect->y),
             rect->width, rect->height);
    theLayout->expose (this, &r);
