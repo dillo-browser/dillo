@@ -179,10 +179,9 @@ void FltkViewport::draw ()
    int d = damage();
 
    if (d & FL_DAMAGE_SCROLL) {
-      Fl::damage (FL_DAMAGE_SCROLL);
+      clear_damage (FL_DAMAGE_SCROLL);
       fl_scroll(x(), y(), w () - hdiff, h () - vdiff, -scrollDX, -scrollDY, draw_area, this);
-      d &= ~FL_DAMAGE_SCROLL;
-      Fl::damage (d);
+      clear_damage (d & ~FL_DAMAGE_SCROLL);
    }
 
    if (d) {
@@ -369,7 +368,6 @@ void FltkViewport::scrollTo (int x, int y)
 
    adjustScrollbarValues ();
    damage(FL_DAMAGE_SCROLL);
-   redraw();
    theLayout->scrollPosChanged (this, scrollX, scrollY);
    positionChanged();
 }

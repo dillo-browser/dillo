@@ -172,11 +172,19 @@ PORT1.3
       exposeArea = NULL;
    }
 #endif
-   core::Rectangle r (rect->x, rect->y, rect->width, rect->height);
+   int X, Y, W, H;
+   
+   fl_clip_box(x () + translateCanvasXToViewX (rect->x),
+               y () + translateCanvasYToViewY (rect->y),
+               rect->width,
+               rect->height,
+               X, Y, W, H);
+
    fl_color(bgColor);
-   fl_rectf(x () + translateCanvasXToViewX (rect->x),
-            y () + translateCanvasYToViewY (rect->y),
-            rect->width, rect->height);
+   fl_rectf(X, Y, W, H);
+
+   core::Rectangle r (translateViewXToCanvasX (X - x ()),
+                      translateViewYToCanvasY (Y - y ()), W, H);
    theLayout->expose (this, &r);
 }
 
