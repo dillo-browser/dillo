@@ -429,24 +429,24 @@ void FltkViewport::updateCanvasWidgets (int dx, int dy)
    }
 }
 
-int FltkViewport::translateViewXToCanvasX (int x)
+int FltkViewport::translateViewXToCanvasX (int X)
 {
-   return x + scrollX;
+   return X - x () + scrollX;
 }
 
-int FltkViewport::translateViewYToCanvasY (int y)
+int FltkViewport::translateViewYToCanvasY (int Y)
 {
-   return y + scrollY;
+   return Y - y () + scrollY;
 }
 
-int FltkViewport::translateCanvasXToViewX (int x)
+int FltkViewport::translateCanvasXToViewX (int X)
 {
-   return x - scrollX;
+   return X + x () - scrollX;
 }
 
-int FltkViewport::translateCanvasYToViewY (int y)
+int FltkViewport::translateCanvasYToViewY (int Y)
 {
-   return y - scrollY;
+   return Y + y () - scrollY;
 }
 
 // ----------------------------------------------------------------------

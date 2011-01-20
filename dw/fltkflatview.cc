@@ -78,24 +78,24 @@ void FltkFlatView::setViewportSize (int width, int height,
 {
 }
 
-int FltkFlatView::translateViewXToCanvasX (int x)
+int FltkFlatView::translateViewXToCanvasX (int X)
 {
-   return x;
+   return X - x ();
 }
 
-int FltkFlatView::translateViewYToCanvasY (int y)
+int FltkFlatView::translateViewYToCanvasY (int Y)
 {
-   return y;
+   return Y - y ();
 }
 
-int FltkFlatView::translateCanvasXToViewX (int x)
+int FltkFlatView::translateCanvasXToViewX (int X)
 {
-   return x;
+   return X + x ();
 }
 
-int FltkFlatView::translateCanvasYToViewY (int y)
+int FltkFlatView::translateCanvasYToViewY (int Y)
 {
-   return y;
+   return Y + y ();
 }
 
 

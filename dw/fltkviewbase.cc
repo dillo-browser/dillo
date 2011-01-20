@@ -93,8 +93,8 @@ void FltkViewBase::draw ()
 
    if (d) {
       dw::core::Rectangle rect (
-         translateViewXToCanvasX (0),
-         translateViewYToCanvasY (0),
+         translateViewXToCanvasX (x ()),
+         translateViewYToCanvasY (y ()),
          w (),
          h ());
 
@@ -174,8 +174,8 @@ PORT1.3
 #endif
    int X, Y, W, H;
    
-   fl_clip_box(x () + translateCanvasXToViewX (rect->x),
-               y () + translateCanvasYToViewY (rect->y),
+   fl_clip_box(translateCanvasXToViewX (rect->x),
+               translateCanvasYToViewY (rect->y),
                rect->width,
                rect->height,
                X, Y, W, H);
@@ -183,8 +183,8 @@ PORT1.3
    fl_color(bgColor);
    fl_rectf(X, Y, W, H);
 
-   core::Rectangle r (translateViewXToCanvasX (X - x ()),
-                      translateViewYToCanvasY (Y - y ()), W, H);
+   core::Rectangle r (translateViewXToCanvasX (X),
+                      translateViewYToCanvasY (Y), W, H);
    theLayout->expose (this, &r);
 }
 
@@ -230,8 +230,8 @@ int FltkViewBase::handle (int event)
    case FL_PUSH:
       processed =
          theLayout->buttonPress (this, Fl::event_clicks () + 1,
-                                 translateViewXToCanvasX (Fl::event_x () - x ()),
-                                 translateViewYToCanvasY (Fl::event_y () - y ()),
+                                 translateViewXToCanvasX (Fl::event_x ()),
+                                 translateViewYToCanvasY (Fl::event_y ()),
                                  getDwButtonState (), Fl::event_button ());
       _MSG("PUSH => %s\n", processed ? "true" : "false");
       if (processed) {
@@ -243,15 +243,15 @@ int FltkViewBase::handle (int event)
    case FL_RELEASE:
       processed =
          theLayout->buttonRelease (this, Fl::event_clicks () + 1,
-                                   translateViewXToCanvasX (Fl::event_x () - x ()),
-                                   translateViewYToCanvasY (Fl::event_y () - y ()),
+                                   translateViewXToCanvasX (Fl::event_x ()),
+                                   translateViewYToCanvasY (Fl::event_y ()),
                                    getDwButtonState (), Fl::event_button ());
       _MSG("RELEASE => %s\n", processed ? "true" : "false");
       return processed ? true : Fl_Group::handle (event);
 
    case FL_MOVE:
-      mouse_x = Fl::event_x() - x ();
-      mouse_y = Fl::event_y() - y ();
+      mouse_x = Fl::event_x();
+      mouse_y = Fl::event_y();
       processed =
          theLayout->motionNotify (this,
                                   translateViewXToCanvasX (mouse_x),
@@ -263,16 +263,16 @@ int FltkViewBase::handle (int event)
    case FL_DRAG:
       processed =
          theLayout->motionNotify (this,
-                                  translateViewXToCanvasX (Fl::event_x () - x ()),
-                                  translateViewYToCanvasY (Fl::event_y () - y ()),
+                                  translateViewXToCanvasX (Fl::event_x ()),
+                                  translateViewYToCanvasY (Fl::event_y ()),
                                   getDwButtonState ());
       _MSG("DRAG => %s\n", processed ? "true" : "false");
       return processed ? true : Fl_Group::handle (event);
 
    case FL_ENTER:
       theLayout->enterNotify (this,
-                              translateViewXToCanvasX (Fl::event_x () - x ()),
-                              translateViewYToCanvasY (Fl::event_y () - y ()),
+                              translateViewXToCanvasX (Fl::event_x ()),
+                              translateViewYToCanvasY (Fl::event_y ()),
                               getDwButtonState ());
       return Fl_Group::handle (event);
 
@@ -386,10 +386,10 @@ void FltkViewBase::drawLine (core::style::Color *color,
                              int x1, int y1, int x2, int y2)
 {
    fl_color(((FltkColor*)color)->colors[shading]);
-   fl_line (x () + translateCanvasXToViewX (x1),
-            y () + translateCanvasYToViewY (y1),
-            x () + translateCanvasXToViewX (x2),
-            y () + translateCanvasYToViewY (y2));
+   fl_line (translateCanvasXToViewX (x1),
+            translateCanvasYToViewY (y1),
+            translateCanvasXToViewX (x2),
+            translateCanvasYToViewY (y2));
 }
 
 void FltkViewBase::drawTypedLine (core::style::Color *color,
@@ -455,9 +455,9 @@ PORT1.3
 #endif
 
    if (filled)
-      fl_rectf (x () + x1, y () + y1, x2 - x1, y2 - y1);
+      fl_rectf (x1, y1, x2 - x1, y2 - y1);
    else
-      fl_rect (x () + x1, y () + y1, x2 - x1, y2 - y1);
+      fl_rect (x1, y1, x2 - x1, y2 - y1);
 }
 
 void FltkViewBase::drawArc (core::style::Color *color,
@@ -555,7 +555,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
 
    if (!font->letterSpacing && !font->fontVariant) {
       fl_draw(text, len,
-              x () + translateCanvasXToViewX (X), y () + translateCanvasYToViewY (Y));
+              translateCanvasXToViewX (X), translateCanvasYToViewY (Y));
    } else {
       /* Nonzero letter spacing adjustment, draw each glyph individually */
       int viewX = translateCanvasXToViewX (X),
@@ -572,7 +572,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
             if ((wcu = towupper(wc)) == wc) {
                /* already uppercase, just draw the character */
                fl_font(ff->font, ff->size);
-               fl_draw(text + curr, next - curr, x () + viewX, y () + viewY);
+               fl_draw(text + curr, next - curr, viewX, viewY);
                viewX += font->letterSpacing;
                viewX += (int)fl_width(text + curr, next - curr);
             } else {
@@ -603,8 +603,8 @@ void FltkWidgetView::drawImage (core::Imgbuf *imgbuf, int xRoot, int yRoot,
                               int X, int Y, int width, int height)
 {
    ((FltkImgbuf*)imgbuf)->draw (this,
-                                x () + translateCanvasXToViewX (xRoot),
-                                y () + translateCanvasYToViewY (yRoot),
+                                translateCanvasXToViewX (xRoot),
+                                translateCanvasYToViewY (yRoot),
                                 X, Y, width, height);
 }
 
