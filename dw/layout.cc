@@ -185,6 +185,7 @@ Layout::Layout (Platform *platform)
    view = NULL;
    topLevel = NULL;
    widgetAtPoint = NULL;
+   deletingTopLevel = false;
 
    DBG_OBJ_CREATE (this, "DwRenderLayout");
 
@@ -278,9 +279,11 @@ void Layout::removeWidget ()
 
 void Layout::setWidget (Widget *widget)
 {
+   widgetAtPoint = NULL;
+   deletingTopLevel = true;
    if (topLevel)
       delete topLevel;
-   widgetAtPoint = NULL;
+   deletingTopLevel = false;
    textZone->zoneFree ();
    addWidget (widget);
 
@@ -828,7 +831,7 @@ Widget *Layout::getWidgetAtPoint (int x, int y)
 {
    _MSG ("------------------------------------------------------------\n");
    _MSG ("widget at (%d, %d)\n", x, y);
-   if (topLevel)
+   if (topLevel && !deletingTopLevel)
       return topLevel->getWidgetAtPoint (x, y, 0);
    else
       return NULL;

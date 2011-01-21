@@ -132,6 +132,7 @@ private:
    Platform *platform;
    View *view;
    Widget *topLevel, *widgetAtPoint;
+   bool deletingTopLevel; // XXX quick hack for fltk-1.3 port
 
    /* The state, which must be projected into the view. */
    style::Color *bgColor;
