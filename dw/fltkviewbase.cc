@@ -582,7 +582,7 @@ PORT1.3
                nb = utf8encode(wcu, chbuf);
 #endif
                fl_font(ff->font, sc_fontsize);
-               fl_draw(chbuf, nb, x() + viewX, y () + viewY);
+               fl_draw(chbuf, nb, viewX, viewY);
                viewX += font->letterSpacing;
                viewX += (int)fl_width(chbuf, nb);
             }
@@ -590,7 +590,7 @@ PORT1.3
       } else {
          while (next < len) {
             next = theLayout->nextGlyph(text, curr);
-            fl_draw(text + curr, next - curr, x () + viewX, y () + viewY);
+            fl_draw(text + curr, next - curr, viewX, viewY);
             viewX += font->letterSpacing +
                      (int)fl_width(text + curr,next - curr);
             curr = next;
