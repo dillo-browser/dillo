@@ -573,6 +573,8 @@ void a_Menu_history_popup(BrowserWindow *bw, int direction)
    int i, n;
 
    popup_bw = bw;
+   popup_x = Fl::event_x();
+   popup_y = Fl::event_y();
    history_direction = direction;
 
    // TODO: hook popdown event with delete or similar.
@@ -665,7 +667,7 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
    if (prefs.load_images)
       pm[2].set();
 
-   item = pm->popup(wid->x(), wid->y());
+   item = pm->popup(wid->x(), wid->y() + wid->h());
    if (item)
       ((Fl_Widget *)item)->do_callback();
 }
