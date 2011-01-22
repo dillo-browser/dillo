@@ -478,22 +478,23 @@ void FltkViewBase::drawPolygon (core::style::Color *color,
                                 core::style::Color::Shading shading,
                                 bool filled, int points[][2], int npoints)
 {
-#if 0
-PORT1.3
    if (npoints > 0) {
-      for (int i = 0; i < npoints; i++) {
-         points[i][0] = translateCanvasXToViewX(points[i][0]);
-         points[i][1] = translateCanvasYToViewY(points[i][1]);
-      }
-      setcolor(((FltkColor*)color)->colors[shading]);
-      addvertices(npoints, points);
-      closepath();
+      fl_color(((FltkColor*)color)->colors[shading]);
+
       if (filled)
-         fillpath();
+         fl_begin_complex_polygon();
       else
-         strokepath();
+         fl_begin_loop();
+
+      for (int i = 0; i < npoints; i++) {
+         fl_vertex(translateCanvasXToViewX(points[i][0]),
+                   translateCanvasYToViewY(points[i][1]));
+      }
+      if (filled)
+         fl_end_complex_polygon();
+      else
+         fl_end_loop();
    }
-#endif
 }
 
 core::View *FltkViewBase::getClippingView (int x, int y, int width, int height)
