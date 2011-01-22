@@ -466,18 +466,12 @@ void FltkViewBase::drawArc (core::style::Color *color,
                             int angle1, int angle2)
 {
    fl_color(((FltkColor*)color)->colors[shading]);
-#if 0
-PORT1.3
    int x = translateCanvasXToViewX (centerX) - width / 2;
    int y = translateCanvasYToViewY (centerY) - height / 2;
-   ::fltk::Rectangle rect (x, y, width, height);
-   addchord(rect, angle1, angle2);
-   closepath();
+
+   fl_arc(x, y, width, height, 0.0, 360.0);
    if (filled)
-      fillpath();
-   else
-      strokepath();
-#endif
+      fl_pie(x, y, width, height, 0.0, 360.0);
 }
 
 void FltkViewBase::drawPolygon (core::style::Color *color,
