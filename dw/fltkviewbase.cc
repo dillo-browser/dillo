@@ -476,23 +476,30 @@ void FltkViewBase::drawArc (core::style::Color *color,
 
 void FltkViewBase::drawPolygon (core::style::Color *color,
                                 core::style::Color::Shading shading,
-                                bool filled, int points[][2], int npoints)
+                                bool filled, bool convex, int points[][2],
+                                int npoints)
 {
    if (npoints > 0) {
       fl_color(((FltkColor*)color)->colors[shading]);
 
-      if (filled)
-         fl_begin_complex_polygon();
-      else
+      if (filled) {
+         if (convex)
+            fl_begin_polygon();
+         else
+            fl_begin_complex_polygon();
+      } else
          fl_begin_loop();
 
       for (int i = 0; i < npoints; i++) {
          fl_vertex(translateCanvasXToViewX(points[i][0]),
                    translateCanvasYToViewY(points[i][1]));
       }
-      if (filled)
-         fl_end_complex_polygon();
-      else
+      if (filled) {
+         if (convex)
+            fl_end_polygon();
+         else
+            fl_end_complex_polygon();
+      } else
          fl_end_loop();
    }
 }
