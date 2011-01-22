@@ -322,7 +322,7 @@ void FltkImgbuf::draw (Fl_Widget *target, int xRoot, int yRoot,
    }
 
    fl_draw_image(rawdata+bpp*(y*this->width + x), xRoot + x, yRoot + y, width,
-                 height, bpp);
+                 height, bpp, this->width * bpp);
 
 }
 
