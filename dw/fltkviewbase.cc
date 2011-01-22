@@ -576,11 +576,8 @@ void FltkWidgetView::drawText (core::style::Font *font,
                viewX += font->letterSpacing;
                viewX += (int)fl_width(text + curr, next - curr);
             } else {
-#if 0
-PORT1.3
                /* make utf8 string for converted char */
-               nb = utf8encode(wcu, chbuf);
-#endif
+               nb = fl_utf8encode(wcu, chbuf);
                fl_font(ff->font, sc_fontsize);
                fl_draw(chbuf, nb, viewX, viewY);
                viewX += font->letterSpacing;
