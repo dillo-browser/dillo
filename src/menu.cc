@@ -604,8 +604,8 @@ static void Menu_remote_css_cb(Fl_Widget *wid, void*)
 {
    Fl_Menu_Item *item = (Fl_Menu_Item*) wid;
 
-   _MSG("Menu_remote_css_cb\n");
-   prefs.load_stylesheets = item->value() ? 1 : 0;
+   item->flags ^= FL_MENU_VALUE;
+   prefs.load_stylesheets = item->flags & FL_MENU_VALUE ? 1 : 0;
    a_UIcmd_repush(popup_bw);
 }
 
@@ -616,7 +616,8 @@ static void Menu_embedded_css_cb(Fl_Widget *wid, void*)
 {
    Fl_Menu_Item *item = (Fl_Menu_Item*) wid;
 
-   prefs.parse_embedded_css = item->value() ? 1 : 0;
+   item->flags ^= FL_MENU_VALUE;
+   prefs.parse_embedded_css = item->flags & FL_MENU_VALUE ? 1 : 0;
    a_UIcmd_repush(popup_bw);
 }
 
@@ -627,7 +628,9 @@ static void Menu_imgload_toggle_cb(Fl_Widget *wid, void*)
 {
    Fl_Menu_Item *item = (Fl_Menu_Item*) wid;
 
-   if ((prefs.load_images = item->value() ? 1 : 0)) {
+   item->flags ^= FL_MENU_VALUE;
+
+   if ((prefs.load_images = item->flags & FL_MENU_VALUE ? 1 : 0)) {
       void *doc = a_Bw_get_current_doc(popup_bw);
 
       if (doc) {
@@ -642,6 +645,7 @@ static void Menu_imgload_toggle_cb(Fl_Widget *wid, void*)
  */
 void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
 {
+   const Fl_Menu_Item *item;
    Fl_Widget *wid = (Fl_Widget*)v_wid;
 
    static Fl_Menu_Item pm[] = {
@@ -661,6 +665,8 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
    if (prefs.load_images)
       pm[2].set();
 
-   pm->popup(wid->x(), wid->y());
+   item = pm->popup(wid->x(), wid->y());
+   if (item)
+      ((Fl_Widget *)item)->do_callback();
 }
 
