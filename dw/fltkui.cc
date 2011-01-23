@@ -1025,21 +1025,14 @@ void FltkListResource::addItem (const char *str, bool enabled, bool selected)
 
 void FltkListResource::sizeRequest (core::Requisition *requisition)
 {
-#if 0
-PORT1.3
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
-      ::fltk::setfont(font->font,font->size);
+      fl_font(font->font,font->size);
       int rows = getNumberOfItems();
       if (showRows < rows) {
          rows = showRows;
       }
-      /*
-       * The widget sometimes shows scrollbars when they are not required.
-       * The following values try to keep any scrollbars from obscuring
-       * options, at the cost of showing too much whitespace at times.
-       */
-      requisition->width = getMaxStringWidth() + 24;
+      requisition->width = getMaxStringWidth() + Fl::scrollbar_size();
       requisition->ascent = font->ascent + 2 +
                             (rows - 1) * (font->ascent + font->descent + 1);
       requisition->descent = font->descent + 3;
@@ -1048,11 +1041,6 @@ PORT1.3
       requisition->ascent = 1;
       requisition->descent = 0;
    }
-#else
- requisition->width = 100;
- requisition->ascent = 14 * showRows;
- requisition->descent = 0;
-#endif
 }
 
 bool FltkListResource::isSelected (int index)
