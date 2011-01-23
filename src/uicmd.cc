@@ -232,6 +232,7 @@ class CustTabGroup : public Fl_Tabs {
 public:
    CustTabGroup (int x, int y, int ww, int wh, const char *lbl=0) :
       Fl_Tabs(x,y,ww,wh,lbl) {
+         Fl_Group::current(0);
          // The parameter pager is cloned, so free it.
 //       CustShrinkTabPager *cp = new CustShrinkTabPager();
 //       this->pager(cp);
@@ -427,6 +428,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    else
       win = new Fl_Double_Window(ww, wh);
 
+   Fl_Group::current(0);
 //may need a handler for this
 // win->shortcut(0); // Ignore Escape
    CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);

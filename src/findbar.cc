@@ -113,18 +113,21 @@ Findbar::Findbar(int width, int height) :
    int border = 2;
    int input_width = width - (2 * border + 4 * (button_width + gap));
    int x = border;
+
+   Fl_Group::current(0);
+
    height -= 2 * border;
 
    box(FL_PLASTIC_UP_BOX);
    Fl_Group::hide();
 
-   begin();
     hide_btn = new Fl_Button(x, border, 16, height, 0);
     hideImg = new Fl_Pixmap(new_s_xpm);
     hide_btn->image(hideImg);
     x += 16 + gap;
     hide_btn->callback(hide_cb, this);
     hide_btn->clear_visible_focus();
+   add(hide_btn);
 
     i = new MyInput(x, border, input_width, height);
     x += input_width + gap;
@@ -132,25 +135,27 @@ Findbar::Findbar(int width, int height) :
     i->color(206);
     i->when(FL_WHEN_ENTER_KEY_ALWAYS);
     i->callback(search_cb2, this);
+   add(i);
 
     next_btn = new Fl_Button(x, border, button_width, height, "Next");
     x += button_width + gap;
     next_btn->shortcut(FL_Enter);
     next_btn->callback(search_cb, this);
     next_btn->clear_visible_focus();
+   add(next_btn);
 
     prev_btn= new Fl_Button(x, border, button_width, height, "Previous");
+    x += button_width + gap;
     prev_btn->shortcut(FL_SHIFT+FL_Enter);
     prev_btn->callback(searchBackwards_cb, this);
     prev_btn->clear_visible_focus();
-    x += button_width + gap;
+   add(prev_btn);
 
     check_btn = new Fl_Check_Button(x, border, 2*button_width, height,
                               "Case-sensitive");
-    check_btn->clear_visible_focus();
     x += 2 * button_width + gap;
-
-   end();
+    check_btn->clear_visible_focus();
+   add(check_btn);
 
    if (prefs.show_tooltip) {
       hide_btn->tooltip("Hide");

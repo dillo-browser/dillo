@@ -168,6 +168,7 @@ int ComplexButton::handle(int event) {
  */
 ComplexButton::ComplexButton(int X, int Y, int W, int H, const char *L)
 : Fl_Group(X,Y,W,H,L) {
+  Fl_Group::current(0);
   box(FL_UP_BOX);
   down_box(FL_NO_BOX);
   value_ = oldval = 0;

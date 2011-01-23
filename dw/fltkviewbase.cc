@@ -41,6 +41,7 @@ bool FltkViewBase::backBufferInUse;
 FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
    Fl_Group (x, y, w, h, label)
 {
+   Fl_Group::current(0);
    canvasWidth = 1;
    canvasHeight = 1;
    bgColor = FL_WHITE;
