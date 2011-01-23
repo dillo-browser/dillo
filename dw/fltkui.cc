@@ -980,6 +980,9 @@ Fl_Widget *FltkListResource::createNewWidget (core::Allocation *allocation)
 
    tree->selectmode((mode == SELECTION_MULTIPLE) ? FL_TREE_SELECT_MULTI
                                                  : FL_TREE_SELECT_SINGLE);
+   tree->showroot(0);
+   tree->connectorstyle(FL_TREE_CONNECTOR_NONE);
+   tree->marginleft(-14);
 // tree->clear_flag (SHORTCUT_LABEL);
    tree->callback(widgetCallback,this);
    tree->when(FL_WHEN_CHANGED);
