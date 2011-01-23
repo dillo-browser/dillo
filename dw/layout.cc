@@ -226,8 +226,10 @@ Layout::~Layout ()
       platform->removeIdle (resizeIdleId);
    if (bgColor)
       bgColor->unref ();
+   deletingTopLevel = true;
    if (topLevel)
       delete topLevel;
+   deletingTopLevel = false;
    delete platform;
    delete view;
    delete anchorsTable;
@@ -772,6 +774,9 @@ bool Layout::buttonEvent (ButtonEventType type, View *view, int numPressed,
 bool Layout::motionNotify (View *view,  int x, int y, ButtonState state)
 {
    EventButton event;
+
+   if (deletingTopLevel)
+      return true;
 
    moveToWidgetAtPoint (x, y, state);
 
