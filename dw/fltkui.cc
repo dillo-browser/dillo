@@ -1004,7 +1004,8 @@ void FltkListResource::widgetCallback (Fl_Widget *widget, void *data)
 
 void FltkListResource::addItem (const char *str, bool enabled, bool selected)
 {
-   Fl_Tree_Item *item = ((Fl_Tree *)widget)->add(str);
+   Fl_Tree *tree = (Fl_Tree *) widget;
+   Fl_Tree_Item *item = tree->add(tree->root(), str);
    int index = itemsSelected.size ();
 
    item->activate(enabled);
