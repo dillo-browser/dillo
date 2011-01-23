@@ -57,6 +57,7 @@ public:
   virtual int handle(int);
 
   ComplexButton(int X, int Y, int W, int H, const char *L = 0);
+  ~ComplexButton();
 
   int value(int v);
 
