@@ -509,7 +509,6 @@ void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
  */
 void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
 {
-   UI *ui = (UI *)bw->ui;
    Fl_Widget *wid = (Fl_Widget*)v_wid;
 
    static Fl_Menu_Item pm[] = {
@@ -530,9 +529,7 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
 
    popup_bw = bw;
    popup_x = wid->x();
-   popup_y = wid->y() + wid->h() +
-             // WORKAROUND: ?? wid->y() doesn't count tabs ??
-             (((Fl_Group*)ui->tabs())->children() > 1 ? 20 : 0);
+   popup_y = wid->y() + wid->h();
    a_Url_free(popup_url);
    popup_url = NULL;
 
