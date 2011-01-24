@@ -14,6 +14,8 @@ namespace fltk {
 
 class FltkFont: public core::style::Font
 {
+   static lout::container::typed::HashTable <lout::object::ConstString,
+                                       lout::object::Integer> *systemFonts;
    static lout::container::typed::HashTable <dw::core::style::FontAttrs,
                                        FltkFont> *fontsTable;
 

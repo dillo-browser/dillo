@@ -41,8 +41,24 @@ container::typed::HashTable <dw::core::style::FontAttrs,
    new container::typed::HashTable <dw::core::style::FontAttrs,
                                     FltkFont> (false, false);
 
+container::typed::HashTable <lout::object::ConstString,
+                             lout::object::Integer> *FltkFont::systemFonts = NULL;
+
 FltkFont::FltkFont (core::style::FontAttrs *attrs)
 {
+   if (!systemFonts) {
+      systemFonts = new container::typed::HashTable
+         <lout::object::ConstString, lout::object::Integer> (true, true);
+
+      int k = Fl::set_fonts ("-*");
+      for (int i = 0; i < k; i++) {
+         int t;
+         const char *name = Fl::get_font_name ((Fl_Font) i, &t);
+         systemFonts->put(new object::ConstString (name),
+                          new object::Integer (i));
+      }
+   }
+
    copyAttrs (attrs);
 
    int fa = 0;
@@ -61,7 +77,14 @@ PORT1.3
       font = FL_HELVETICA->plus (fa);
    }
 #else
-   font = FL_HELVETICA;
+   object::ConstString *nameString = new object::ConstString (name);
+   object::Integer *fontIndex = systemFonts->get(nameString);
+   delete nameString;
+   if (fontIndex) {
+      font = fontIndex->getValue ();
+   } else {
+      font = FL_HELVETICA;
+   }
 #endif
 
    fl_font(font, size);
