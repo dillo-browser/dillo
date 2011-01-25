@@ -233,6 +233,7 @@ public:
    CustTabGroup (int x, int y, int ww, int wh, const char *lbl=0) :
       Fl_Tabs(x,y,ww,wh,lbl) {
          Fl_Group::current(0);
+         box(FL_NO_BOX);
          // The parameter pager is cloned, so free it.
 //       CustShrinkTabPager *cp = new CustShrinkTabPager();
 //       this->pager(cp);
@@ -341,14 +342,18 @@ public:
             resizable (NULL);
       }
 
-      if (children () < 2)
+      if (children () < 2) {
+         box(FL_NO_BOX);
          hideLabels ();
+      }
    }
 
    void add (Fl_Widget *w) {
       Fl_Tabs::add (w);
-      if (children () > 1)
+      if (children () > 1) {
+         box(FL_THIN_UP_BOX);
          showLabels ();
+      }
    }
 
    void hideLabels() {
