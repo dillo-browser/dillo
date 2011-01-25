@@ -29,14 +29,6 @@
 #include "prefs.h"
 
 /*
- * Close dialog window.
- */
-static void window_close_cb(Fl_Widget *, void *vwin)
-{
-   delete (Fl_Window*)vwin;
-}
-
-/*
  * Display a message in a popup window.
  */
 void a_Dialog_msg(const char *msg)
@@ -114,40 +106,56 @@ char *a_Dialog_open_file(const char *msg,
 }
 
 /*
+ * Close text window.
+ */
+static void text_window_close_cb(Fl_Widget *, void *vtd)
+{
+   Fl_Text_Display *td = (Fl_Text_Display *)vtd;
+   Fl_Text_Buffer *buf = td->buffer();
+
+   delete (Fl_Window*)td->window();
+   delete buf;
+}
+
+/*
  * Show a new window with the provided text
  */
 void a_Dialog_text_window(const char *txt, const char *title)
 {
+   int wh = prefs.height, ww = prefs.width, bh = 30;
+// Font *textfont = font(prefs.font_monospace, 0);
+
+   Fl_Window *window = new Fl_Window(ww, wh, title ? title : "Dillo text");
+   Fl_Group::current(0);
+
+
+    Fl_Text_Buffer *buf = new Fl_Text_Buffer();
+    buf->text(txt);
+    Fl_Text_Display *td = new Fl_Text_Display(0,0,ww, wh-bh);
+    td->buffer(buf);
+
 #if 0
 PORT1.3
-   //int wh = 600, ww = 650, bh = 30;
-   int wh = prefs.height, ww = prefs.width, bh = 30;
-   Font *textfont = font(prefs.font_monospace, 0);
-
-   Fl_Window *window = new Fl_Window(ww, wh, title ? title : "Untitled");
-   window->callback(window_close_cb, window);
-   window->begin();
-
-    Fl_Text_Display *td = new Fl_Text_Display(0,0,ww, wh-bh);
-    td->buffer()->text(txt);
-
     if (textfont)
        td->textfont(textfont);
     td->textsize((int) rint(13.0 * prefs.font_factor));
     fltk::setfont(td->textfont(), td->textsize());
+#else
+    td->textfont(FL_COURIER);
+    td->textsize((int) rint(13.0 * prefs.font_factor));
+#endif
 
     /* enable wrapping lines; text uses entire width of window */
     td->wrap_mode(true, false);
-    /* WORKAROUND: FLTK may not display all the lines without this */
-    td->size(ww+1,wh-bh);
+   window->add(td);
 
     Fl_Return_Button *b = new Fl_Return_Button (0, wh-bh, ww, bh, "Close");
-    b->callback(window_close_cb, window);
+    b->callback(text_window_close_cb, td);
+   window->add(b);
 
+   window->callback(text_window_close_cb, td);
    window->resizable(td);
-   window->end();
    window->show();
-#endif
 }
 
 /*--------------------------------------------------------------------------*/
