@@ -248,7 +248,7 @@ PORT1.3
  */
 int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
 {
-   int ok,
+   int ok = 0,
       window_w = 300, window_h = 280,
       input_x = 80, input_w = 200, input_h = 30,
       button_y = 230, button_h = 30;
