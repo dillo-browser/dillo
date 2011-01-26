@@ -222,7 +222,7 @@ PORT1.3
 
    return choice5_answer;
 #else
-return fl_choice(QuestionTxt, alt1, alt2, alt3);
+return 1 + fl_choice(QuestionTxt, alt1, alt2, alt3);
 #endif
 }
 
