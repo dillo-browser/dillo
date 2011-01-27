@@ -42,20 +42,55 @@ container::typed::HashTable <dw::core::style::FontAttrs,
                                     FltkFont> (false, false);
 
 container::typed::HashTable <lout::object::ConstString,
-                             lout::object::Integer> *FltkFont::systemFonts = NULL;
+                             FltkFont::FontFamily> *FltkFont::systemFonts = NULL;
+
+FltkFont::FontFamily::FontFamily ()
+{
+   font[0] = font[1] = font[2] = font[3] = 0;
+}
+
+void FltkFont::FontFamily::set (Fl_Font f, int attrs)
+{
+   int idx = 0;
+   if (attrs & FL_BOLD)
+      idx += 1;
+   if (attrs & FL_ITALIC)
+      idx += 2;
+   font[idx] = f;
+}
+
+Fl_Font FltkFont::FontFamily::get (int attrs)
+{
+   int idx = 0;
+   if (attrs & FL_BOLD)
+      idx += 1;
+   if (attrs & FL_ITALIC)
+      idx += 2;
+   return font[idx];
+}
 
 FltkFont::FltkFont (core::style::FontAttrs *attrs)
 {
    if (!systemFonts) {
       systemFonts = new container::typed::HashTable
-         <lout::object::ConstString, lout::object::Integer> (true, true);
+         <lout::object::ConstString, FontFamily> (true, true);
 
       int k = Fl::set_fonts ("-*");
       for (int i = 0; i < k; i++) {
          int t;
-         const char *name = Fl::get_font_name ((Fl_Font) i, &t);
-         systemFonts->put(new object::ConstString (name),
-                          new object::Integer (i));
+         Fl::get_font_name ((Fl_Font) i, &t);
+         const char *name = Fl::get_font ((Fl_Font) i);
+         object::String *familyName = new object::String(name + 1);
+         FontFamily *family = systemFonts->get (familyName);
+
+         if (family) {
+            family->set ((Fl_Font) i, t);
+            delete familyName;
+         } else {
+            family = new FontFamily ();
+            family->set ((Fl_Font) i, t);
+            systemFonts->put (familyName, family);
+         }
       }
    }
 
@@ -65,27 +100,18 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
    if (weight >= 500)
       fa |= FL_BOLD;
    if (style != core::style::FONT_STYLE_NORMAL)
-      fa  |= FL_ITALIC;
-#if 0
-PORT1.3
-   font = ::fltk::font(name, fa);
-   if (font == NULL) {
-      /*
-       * If using xft, fltk::HELVETICA just means sans, fltk::COURIER
-       * means mono, and fltk::TIMES means serif.
-       */
-      font = FL_HELVETICA->plus (fa);
-   }
-#else
-   object::ConstString *nameString = new object::ConstString (name);
-   object::Integer *fontIndex = systemFonts->get(nameString);
-   delete nameString;
-   if (fontIndex) {
-      font = fontIndex->getValue ();
-   } else {
+      fa |= FL_ITALIC;
+   object::ConstString nameString (name);
+   FontFamily *family = systemFonts->get (&nameString);
+
+   font = 0;
+   if (family)
+      font = family->get (fa);
+
+   if (font == 0) {
       font = FL_HELVETICA;
+      font |= fa;
    }
-#endif
 
    fl_font(font, size);
    spaceWidth = misc::max(0, (int)fl_width(' ') + letterSpacing);
