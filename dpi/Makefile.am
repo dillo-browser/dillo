@@ -1,3 +1,6 @@
+AM_CPPFLAGS = \
+	-I$(top_srcdir)
+
 bookmarksdir = $(libdir)/dillo/dpi/bookmarks
 downloadsdir = $(libdir)/dillo/dpi/downloads
 ftpdir = $(libdir)/dillo/dpi/ftp

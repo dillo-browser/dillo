@@ -1,4 +1,6 @@
-AM_CPPFLAGS=-DDPIDRC_SYS='"$(sysconfdir)/dpidrc"'
+AM_CPPFLAGS = \
+	-I$(top_srcdir) \
+	-DDPIDRC_SYS='"$(sysconfdir)/dpidrc"'
 
 bin_PROGRAMS = dpid dpidc
 dpid_LDADD = \
