@@ -44,9 +44,14 @@ container::typed::HashTable <dw::core::style::FontAttrs,
 container::typed::HashTable <lout::object::ConstString,
                              FltkFont::FontFamily> *FltkFont::systemFonts = NULL;
 
+FltkFont::FontFamily FltkFont::standardFontFamily;
+
 FltkFont::FontFamily::FontFamily ()
 {
-   font[0] = font[1] = font[2] = font[3] = 0;
+   font[0] = FL_HELVETICA;
+   font[1] = FL_HELVETICA_BOLD;
+   font[2] = FL_HELVETICA_ITALIC;
+   font[3] = FL_HELVETICA_BOLD_ITALIC;
 }
 
 void FltkFont::FontFamily::set (Fl_Font f, int attrs)
@@ -101,30 +106,21 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
       fa |= FL_BOLD;
    if (style != core::style::FONT_STYLE_NORMAL)
       fa |= FL_ITALIC;
+
    object::ConstString nameString (name);
    FontFamily *family = systemFonts->get (&nameString);
+   if (!family)
+      family = &standardFontFamily;
 
-   font = 0;
-   if (family)
-      font = family->get (fa);
-
-   if (font == 0) {
-      font = FL_HELVETICA;
-      font |= fa;
-   }
+   font = family->get (fa);
 
    fl_font(font, size);
    spaceWidth = misc::max(0, (int)fl_width(' ') + letterSpacing);
-   int xh, xw = 0;
-   fl_measure("x", xw, xh, 0);
+   int xx, xy, xw, xh;
+   fl_text_extents("x", xx, xy, xw, xh);
    xHeight = xh;
-   descent = (int)fl_descent();
-   ascent = (int)fl_height() - descent;
-
-   /**
-    * \bug The code above does not seem to work, so this workaround.
-    */
-   xHeight = ascent * 3 / 5;
+   descent = fl_descent();
+   ascent = fl_height() - descent;
 }
 
 FltkFont::~FltkFont ()
@@ -133,14 +129,16 @@ FltkFont::~FltkFont ()
 }
 
 bool
+FltkFont::fontExists (const char *name)
+{
+   object::ConstString familyName (name);
+   return systemFonts->get (&familyName) != NULL;
+}
+
+bool
 FltkPlatform::fontExists (const char *name)
 {
-#if 0
-PORT1.3
-   return ::fltk::font(name) != NULL;
-#else
-   return true;
-#endif
+   return FltkFont::fontExists (name);
 }
 
 FltkFont*

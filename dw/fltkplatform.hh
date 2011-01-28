@@ -22,6 +22,8 @@ class FltkFont: public core::style::Font
          Fl_Font get (int attrs);
    };
 
+   static FontFamily standardFontFamily;
+
    static lout::container::typed::HashTable <lout::object::ConstString,
                                              FontFamily> *systemFonts;
    static lout::container::typed::HashTable <dw::core::style::FontAttrs,
@@ -34,6 +36,7 @@ public:
    Fl_Font font;
 
    static FltkFont *create (core::style::FontAttrs *attrs);
+   static bool fontExists (const char *name);
 };
 
 
