@@ -1042,6 +1042,8 @@ Fl_Widget *FltkListResource::createNewWidget (core::Allocation *allocation)
 // tree->clear_flag (SHORTCUT_LABEL);
    tree->callback(widgetCallback,this);
    tree->when(FL_WHEN_CHANGED);
+
+   currParent = tree->root();
    return tree;
 }
 
@@ -1058,25 +1060,47 @@ void FltkListResource::widgetCallback (Fl_Widget *widget, void *data)
    }
 }
 
+void *FltkListResource::newItem (const char *str, bool enabled)
+{
+   Fl_Tree *tree = (Fl_Tree *) widget;
+   Fl_Tree_Item *parent = (Fl_Tree_Item *)currParent;
+   Fl_Tree_Item *item = tree->add(parent, str);
+
+   enabled &= parent->is_active();
+   item->activate(enabled);
+   itemsSelected.increase ();
+
+   return item;
+}
+
 void FltkListResource::addItem (const char *str, bool enabled, bool selected)
 {
    Fl_Tree *tree = (Fl_Tree *) widget;
-   Fl_Tree_Item *item = tree->add(tree->root(), str);
-   int index = itemsSelected.size ();
+   Fl_Tree_Item *item = (Fl_Tree_Item *) newItem(str, enabled);
 
-   item->activate(enabled);
-
-   itemsSelected.increase ();
-   itemsSelected.set (index,selected);
+   itemsSelected.set (itemsSelected.size() - 1, selected);
 
    if (selected) {
       if (mode == SELECTION_MULTIPLE)
          item->select(selected);
       else
-         ((Fl_Tree *)widget)->select_only(item, 0);
+         tree->select_only(item, 0);
    }
-
    queueResize (true);
+}
+
+void FltkListResource::pushGroup (const char *name, bool enabled)
+{
+   currParent = (Fl_Tree_Item *) newItem(name, enabled);
+   queueResize (true);
+}
+
+void FltkListResource::popGroup ()
+{
+   Fl_Tree_Item *p = (Fl_Tree_Item *)currParent;
+
+   if (p->parent())
+      currParent = p->parent();
 }
 
 int FltkListResource::getMaxItemWidth()

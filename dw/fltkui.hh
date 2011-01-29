@@ -514,6 +514,8 @@ protected:
 
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);
+   void *newItem (const char *str, bool enabled);
+   void *currParent;
    lout::misc::SimpleVector <bool> itemsSelected;
    int showRows;
    ListResource::SelectionMode mode;
@@ -524,8 +526,8 @@ public:
    ~FltkListResource ();
 
    void addItem (const char *str, bool enabled, bool selected);
-   void pushGroup (const char *name, bool enabled) {};
-   void popGroup () {};
+   void pushGroup (const char *name, bool enabled);
+   void popGroup ();
 
    void sizeRequest (core::Requisition *requisition);
    bool isSelected (int index);
