@@ -467,9 +467,6 @@ protected:
    lout::container::typed::Vector <Item> *items;
    virtual bool setSelectedItems() { return false; }
    virtual void addItem (const char *str, bool enabled, bool selected) = 0;
-
-   int getMaxStringWidth ();
-
 public:
    FltkSelectionResource (FltkPlatform *platform);
    ~FltkSelectionResource ();
@@ -485,7 +482,7 @@ protected:
    Fl_Widget *createNewWidget (core::Allocation *allocation);
    virtual bool setSelectedItems() { return true; }
    int getNumberOfItems();
-   int getMaxStringWidth ();
+   int getMaxItemWidth ();
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);
    void enlargeMenu();
@@ -508,6 +505,7 @@ protected:
    Fl_Widget *createNewWidget (core::Allocation *allocation);
 
    int getNumberOfItems () {return itemsSelected.size();};
+   int getMaxItemWidth ();
 
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);

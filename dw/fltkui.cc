@@ -857,11 +857,6 @@ FltkSelectionResource<I>::iterator (dw::core::Content::Type mask, bool atEnd)
    return new core::EmptyIterator (this->getEmbed (), mask, atEnd);
 }
 
-template <class I> int FltkSelectionResource<I>::getMaxStringWidth ()
-{
-   return 100;
-}
-
 // ----------------------------------------------------------------------
 
 FltkOptionMenuResource::FltkOptionMenuResource (FltkPlatform *platform):
@@ -905,7 +900,7 @@ void FltkOptionMenuResource::widgetCallback (Fl_Widget *widget,
 {
 }
 
-int FltkOptionMenuResource::getMaxStringWidth()
+int FltkOptionMenuResource::getMaxItemWidth()
 {
    int i, max = 0;
 
@@ -927,10 +922,10 @@ void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
       fl_font(font->font, font->size);
-      int maxStringWidth = getMaxStringWidth ();
+      int maxItemWidth = getMaxItemWidth ();
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
       requisition->descent = font->descent + RELIEF_Y_THICKNESS;
-      requisition->width = maxStringWidth
+      requisition->width = maxItemWidth
          + (requisition->ascent + requisition->descent)
          + 2 * RELIEF_X_THICKNESS;
    } else {
@@ -1056,6 +1051,29 @@ void FltkListResource::addItem (const char *str, bool enabled, bool selected)
    queueResize (true);
 }
 
+int FltkListResource::getMaxItemWidth()
+{
+   Fl_Tree *tree = (Fl_Tree *)widget;
+   int max = 0;
+
+   for (Fl_Tree_Item *i = tree->first(); i; i = tree->next(i)) {
+      int width = 0;
+
+      if (i == tree->root())
+         continue;
+
+      for (Fl_Tree_Item *p = i->parent(); p != tree->root(); p = p->parent())
+         width += tree->connectorwidth();
+
+      if (i->label())
+         width += fl_width(i->label());
+
+      if (width > max)
+         max = width;
+   }
+   return max;
+}
+
 void FltkListResource::sizeRequest (core::Requisition *requisition)
 {
    if (style) {
@@ -1065,8 +1083,8 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
       if (showRows < rows) {
          rows = showRows;
       }
-      requisition->width = getMaxStringWidth() + Fl::scrollbar_size();
-      requisition->ascent = font->ascent + 2 +
+      requisition->width = getMaxItemWidth() + 5 + Fl::scrollbar_size();;
+      requisition->ascent = font->ascent + 5 +
                             (rows - 1) * (font->ascent + font->descent + 1);
       requisition->descent = font->descent + 3;
    } else {
