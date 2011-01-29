@@ -937,6 +937,8 @@ void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
 
 void FltkOptionMenuResource::enlargeMenu ()
 {
+   Fl_Choice *ch = (Fl_Choice *)widget;
+   int selected = ch->value();
    Fl_Menu_Item *newMenu;
 
    itemsAllocated += 0x10;
@@ -945,7 +947,8 @@ void FltkOptionMenuResource::enlargeMenu ()
    memset(newMenu + itemsUsed, 0, 0x10 * sizeof(Fl_Menu_Item));
    delete menu;
    menu = newMenu;
-   ((Fl_Choice *)widget)->menu(menu);
+   ch->menu(menu);
+   ch->value(selected);
 }
 
 Fl_Menu_Item *FltkOptionMenuResource::newItem()
