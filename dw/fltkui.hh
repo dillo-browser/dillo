@@ -436,43 +436,13 @@ template <class I> class FltkSelectionResource:
    public FltkSpecificResource <I>
 {
 protected:
-   class Item: public lout::object::Object
-   {
-   public:
-      enum Type { ITEM, START, END } type;
-
-      const char *name;
-      bool enabled, initSelected;
-
-      Item (Type type, const char *name = NULL, bool enabled = true,
-            bool selected = false);
-      ~Item ();
-
-      Item *createNewWidget (int index);
-//    Fl_ItemGroup *createNewGroupWidget ();
-   };
-
-   class WidgetStack: public lout::object::Object
-   {
-   public:
-      Fl_Menu *widget;
-      lout::container::typed::Stack <lout::object::TypedPointer < Fl_Menu> > *stack;
-
-      WidgetStack (Fl_Menu *widget);
-      ~WidgetStack ();
-   };
-
-   lout::container::typed::List <WidgetStack> *widgetStacks;
-   lout::container::typed::List <Item> *allItems;
-   lout::container::typed::Vector <Item> *items;
    virtual bool setSelectedItems() { return false; }
    virtual void addItem (const char *str, bool enabled, bool selected) = 0;
    virtual void pushGroup (const char *name, bool enabled) = 0;
    virtual void popGroup () = 0;
 public:
-   FltkSelectionResource (FltkPlatform *platform);
-   ~FltkSelectionResource ();
-
+   FltkSelectionResource (FltkPlatform *platform) :
+      FltkSpecificResource<I> (platform) {};
    dw::core::Iterator *iterator (dw::core::Content::Type mask, bool atEnd);
 };
 
