@@ -485,6 +485,7 @@ protected:
    Fl_Widget *createNewWidget (core::Allocation *allocation);
    virtual bool setSelectedItems() { return true; }
    int getNumberOfItems();
+   int getMaxStringWidth ();
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);
    void enlargeMenu();

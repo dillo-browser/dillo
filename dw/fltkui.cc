@@ -917,28 +917,39 @@ void FltkOptionMenuResource::widgetCallback (Fl_Widget *widget,
 {
 }
 
+int FltkOptionMenuResource::getMaxStringWidth()
+{
+   int i, max = 0;
+
+   for (i = 0; i < itemsUsed; i++) {
+      int width = 0;
+      const char *str = menu[i].text;
+
+      if (str) {
+         width = fl_width(str);
+         if (width > max)
+            max = width;
+      }
+   }
+   return max;
+}
+
 void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
 {
-#if 0
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
-      ::fltk::setfont(font->font,font->size);
+      fl_font(font->font, font->size);
       int maxStringWidth = getMaxStringWidth ();
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
       requisition->descent = font->descent + RELIEF_Y_THICKNESS;
       requisition->width = maxStringWidth
-         + (requisition->ascent + requisition->descent) * 4 / 5
+         + (requisition->ascent + requisition->descent)
          + 2 * RELIEF_X_THICKNESS;
    } else {
       requisition->width = 1;
       requisition->ascent = 1;
       requisition->descent = 0;
    }
-#else
- requisition->width = 100;
- requisition->ascent = 11 + RELIEF_Y_THICKNESS;
- requisition->descent = 3 + RELIEF_Y_THICKNESS;
-#endif
 }
 
 void FltkOptionMenuResource::enlargeMenu ()
