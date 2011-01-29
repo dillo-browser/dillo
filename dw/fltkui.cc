@@ -948,8 +948,7 @@ void FltkOptionMenuResource::enlargeMenu ()
    ((Fl_Choice *)widget)->menu(menu);
 }
 
-void FltkOptionMenuResource::addItem (const char *str,
-                                      bool enabled, bool selected)
+Fl_Menu_Item *FltkOptionMenuResource::newItem()
 {
    Fl_Menu_Item *item;
 
@@ -957,6 +956,16 @@ void FltkOptionMenuResource::addItem (const char *str,
       enlargeMenu();
 
    item = menu + itemsUsed - 1;
+   itemsUsed++;
+
+   return item;
+}
+   
+void FltkOptionMenuResource::addItem (const char *str,
+                                      bool enabled, bool selected)
+{
+   Fl_Menu_Item *item = newItem();
+
    item->text = strdup(str);
 
    if (enabled == false)
@@ -967,8 +976,27 @@ void FltkOptionMenuResource::addItem (const char *str,
    if (selected)
       ((Fl_Choice *)widget)->value(item);
 
-   itemsUsed++;
+   queueResize (true);
+}
 
+void FltkOptionMenuResource::pushGroup (const char *name, bool enabled)
+{
+   Fl_Menu_Item *item = newItem();
+
+   item->text = strdup(name);
+
+   if (enabled == false)
+      item->flags = FL_MENU_INACTIVE;
+
+   item->flags |= FL_SUBMENU;
+
+   queueResize (true);
+}
+
+void FltkOptionMenuResource::popGroup ()
+{
+   /* Item with NULL text field closes the submenu */
+   newItem();
    queueResize (true);
 }
 

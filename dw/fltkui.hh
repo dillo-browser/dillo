@@ -467,6 +467,8 @@ protected:
    lout::container::typed::Vector <Item> *items;
    virtual bool setSelectedItems() { return false; }
    virtual void addItem (const char *str, bool enabled, bool selected) = 0;
+   virtual void pushGroup (const char *name, bool enabled) = 0;
+   virtual void popGroup () = 0;
 public:
    FltkSelectionResource (FltkPlatform *platform);
    ~FltkSelectionResource ();
@@ -486,6 +488,7 @@ protected:
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);
    void enlargeMenu();
+   Fl_Menu_Item *newItem();
    Fl_Menu_Item *menu;
    int itemsAllocated, itemsUsed;
 public:
@@ -493,6 +496,8 @@ public:
    ~FltkOptionMenuResource ();
 
    void addItem (const char *str, bool enabled, bool selected);
+   void pushGroup (const char *name, bool enabled);
+   void popGroup ();
 
    void sizeRequest (core::Requisition *requisition);
    bool isSelected (int index);
@@ -519,6 +524,8 @@ public:
    ~FltkListResource ();
 
    void addItem (const char *str, bool enabled, bool selected);
+   void pushGroup (const char *name, bool enabled) {};
+   void popGroup () {};
 
    void sizeRequest (core::Requisition *requisition);
    bool isSelected (int index);
