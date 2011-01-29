@@ -481,6 +481,7 @@ class FltkListResource:
 {
 protected:
    Fl_Widget *createNewWidget (core::Allocation *allocation);
+   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
 
    int getNumberOfItems () {return itemsSelected.size();};
    int getMaxItemWidth ();

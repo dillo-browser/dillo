@@ -489,6 +489,8 @@ void FltkEntryResource::setWidgetStyle (Fl_Widget *widget,
       fl_contrast(in->textcolor(), widget->color()));
 
    in->cursor_color(in->textcolor());
+   in->textsize(in->labelsize());
+   in->textfont(in->labelfont());
 }
 
 void FltkEntryResource::setDisplayed(bool displayed)
@@ -610,6 +612,8 @@ void FltkMultiLineTextResource::setWidgetStyle (Fl_Widget *widget,
       fl_contrast(ed->textcolor(), widget->color()));
 
    ed->cursor_color(ed->textcolor());
+   ed->textsize(ed->labelsize());
+   ed->textfont(ed->labelfont());
 }
 
 void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
@@ -902,6 +906,9 @@ void FltkOptionMenuResource::setWidgetStyle (Fl_Widget *widget,
    ch->textcolor(widget->labelcolor());
    widget->selection_color(
       fl_contrast(ch->color(), ch->textcolor()));
+
+   ch->textfont(ch->labelfont());
+   ch->textsize(ch->labelsize());
 }
 
 Fl_Widget *FltkOptionMenuResource::createNewWidget (core::Allocation
@@ -1068,6 +1075,20 @@ Fl_Widget *FltkListResource::createNewWidget (core::Allocation *allocation)
 
    currParent = tree->root();
    return tree;
+}
+
+void FltkListResource::setWidgetStyle (Fl_Widget *widget,
+                                       core::style::Style *style)
+{
+   Fl_Tree *t = (Fl_Tree *)widget;
+
+   FltkResource::setWidgetStyle(widget, style);
+
+   /* WORKAROUND The need for this label*-setting may be removed before
+    * FLTK-1.3.0 is released. But for the moment...
+    */
+   t->labelfont(t->Fl_Widget::labelfont());
+   t->labelsize(t->Fl_Widget::labelsize());
 }
 
 void FltkListResource::widgetCallback (Fl_Widget *widget, void *data)
