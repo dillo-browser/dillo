@@ -254,10 +254,7 @@ void FltkLabelButtonResource::sizeRequest (core::Requisition *requisition)
 {
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
-#if 0
-PORT1.3
-      ::fltk::setfont(font->font,font->size);
-#endif
+      fl_font(font->font,font->size);
       requisition->width =
          (int)fl_width (label, strlen (label))
          + 2 * RELIEF_X_THICKNESS;
@@ -488,10 +485,7 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
 {
    if (displayed() && style) {
       FltkFont *font = (FltkFont*)style->font;
-#if 0
-PORT1.3
-      ::fltk::setfont(font->font,font->size);
-#endif
+      fl_font(font->font,font->size);
       requisition->width =
          (int)fl_width ('n')
          * (maxLength == UNLIMITED_MAX_LENGTH ? 10 : maxLength)
@@ -589,10 +583,7 @@ void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
 {
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
-#if 0
-PORT1.3
-      ::fltk::setfont(font->font,font->size);
-#endif
+      fl_font(font->font,font->size);
       requisition->width =
          (int)fl_width ('n') * numCols + 2 * RELIEF_X_THICKNESS;
       requisition->ascent =
@@ -662,10 +653,7 @@ void FltkToggleButtonResource<I>::sizeRequest (core::Requisition *requisition)
       (this->FltkResource::style ? this->FltkResource::style->font : NULL);
 
    if (font) {
-#if 0
-PORT1.3
-      ::fltk::setfont(font->font, font->size);
-#endif
+      fl_font(font->font, font->size);
       requisition->width = font->ascent + font->descent + 2*RELIEF_X_THICKNESS;
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
       requisition->descent = font->descent + RELIEF_Y_THICKNESS;
