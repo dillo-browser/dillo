@@ -151,7 +151,6 @@ void FltkResource::setWidgetStyle (Fl_Widget *widget,
          Fl_Color fg = fl_contrast(style_fg, normal_bg);
 
          widget->labelcolor(fg);
-         widget->selection_color(fg);
       }
 
       widget->color(normal_bg);
@@ -475,6 +474,23 @@ Fl_Widget *FltkEntryResource::createNewWidget (core::Allocation
    return input;
 }
 
+void FltkEntryResource::setWidgetStyle (Fl_Widget *widget,
+                                        core::style::Style *style)
+{
+   Fl_Input *in = (Fl_Input *)widget;
+
+   FltkResource::setWidgetStyle(widget, style);
+
+   /* labelcolor has our foreground color. Borrow it for textcolor and
+    * find something that contrasts with the background for selection_color.
+    */
+   in->textcolor(widget->labelcolor());
+   widget->selection_color(
+      fl_contrast(in->textcolor(), widget->color()));
+
+   in->cursor_color(in->textcolor());
+}
+
 void FltkEntryResource::setDisplayed(bool displayed)
 {
    FltkResource::setDisplayed(displayed);
@@ -577,6 +593,23 @@ Fl_Widget *FltkMultiLineTextResource::createNewWidget (core::Allocation
                           allocation->ascent + allocation->descent);
    text->buffer (buffer);
    return text;
+}
+
+void FltkMultiLineTextResource::setWidgetStyle (Fl_Widget *widget,
+                                                core::style::Style *style)
+{
+   Fl_Text_Editor *ed = (Fl_Text_Editor *)widget;
+
+   FltkResource::setWidgetStyle(widget, style);
+
+   /* labelcolor has our foreground color. Borrow it for textcolor and
+    * find something that contrasts with the background for selection_color.
+    */
+   ed->textcolor(widget->labelcolor());
+   widget->selection_color(
+      fl_contrast(ed->textcolor(), widget->color()));
+
+   ed->cursor_color(ed->textcolor());
 }
 
 void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
@@ -856,6 +889,20 @@ FltkOptionMenuResource::~FltkOptionMenuResource ()
    delete menu;
 }
 
+void FltkOptionMenuResource::setWidgetStyle (Fl_Widget *widget,
+                                             core::style::Style *style)
+{
+   Fl_Choice *ch = (Fl_Choice *)widget;
+
+   FltkResource::setWidgetStyle(widget, style);
+
+   /* labelcolor has our foreground color. Borrow it for textcolor and
+    * find something suitably contrasting for selection_color.
+    */
+   ch->textcolor(widget->labelcolor());
+   widget->selection_color(
+      fl_contrast(ch->color(), ch->textcolor()));
+}
 
 Fl_Widget *FltkOptionMenuResource::createNewWidget (core::Allocation
                                                      *allocation)

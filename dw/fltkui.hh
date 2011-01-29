@@ -187,7 +187,7 @@ protected:
    void init (FltkPlatform *platform);
    virtual Fl_Widget *createNewWidget (core::Allocation *allocation) = 0;
 
-   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
+   virtual void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
    void setDisplayed (bool displayed);
    bool displayed();
 public:
@@ -293,6 +293,7 @@ private:
 
 protected:
    Fl_Widget *createNewWidget (core::Allocation *allocation);
+   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
 
 public:
    FltkEntryResource (FltkPlatform *platform, int maxLength, bool password,
@@ -318,6 +319,7 @@ private:
 
 protected:
    Fl_Widget *createNewWidget (core::Allocation *allocation);
+   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
 
 public:
    FltkMultiLineTextResource (FltkPlatform *platform, int cols, int rows);
@@ -453,6 +455,7 @@ class FltkOptionMenuResource:
 protected:
    Fl_Widget *createNewWidget (core::Allocation *allocation);
    virtual bool setSelectedItems() { return true; }
+   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
    int getNumberOfItems();
    int getMaxItemWidth ();
 private:
