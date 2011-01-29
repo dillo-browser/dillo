@@ -487,7 +487,9 @@ protected:
    int getNumberOfItems();
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);
-
+   void enlargeMenu();
+   Fl_Menu_Item *menu;
+   int itemsAllocated, itemsUsed;
 public:
    FltkOptionMenuResource (FltkPlatform *platform);
    ~FltkOptionMenuResource ();

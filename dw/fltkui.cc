@@ -879,11 +879,25 @@ template <class I> int FltkSelectionResource<I>::getMaxStringWidth ()
 FltkOptionMenuResource::FltkOptionMenuResource (FltkPlatform *platform):
    FltkSelectionResource <dw::core::ui::OptionMenuResource> (platform)
 {
+   /* Fl_Menu_ does not like multiple menu items with the same label, and
+    * insert() treats some characters specially unless escaped, so let's
+    * do our own menu handling.
+    */
+   itemsAllocated = 0x10;
+   menu = new Fl_Menu_Item[itemsAllocated];
+   memset(menu, 0, itemsAllocated * sizeof(Fl_Menu_Item));
+   itemsUsed = 1; // menu[0].text == NULL, which is an end-of-menu marker.
+
    init (platform);
 }
 
 FltkOptionMenuResource::~FltkOptionMenuResource ()
 {
+   for (int i = 0; i < itemsUsed; i++) {
+      if (menu[i].text)
+         free((char *) menu[i].text);
+   }
+   delete menu;
 }
 
 
@@ -894,18 +908,13 @@ Fl_Widget *FltkOptionMenuResource::createNewWidget (core::Allocation
       new Fl_Choice (allocation->x, allocation->y,
                           allocation->width,
                           allocation->ascent + allocation->descent);
-// choice->clear_flag (SHORTCUT_LABEL);
-   choice->callback(widgetCallback,this);
+   choice->menu(menu);
    return choice;
 }
 
 void FltkOptionMenuResource::widgetCallback (Fl_Widget *widget,
                                              void *data)
 {
-#if 0
-   ((FltkOptionMenuResource *) data)->selection =
-      (long) (((Fl_Menu *) widget)->item()->user_data());
-#endif
 }
 
 void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
@@ -932,14 +941,39 @@ void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
 #endif
 }
 
+void FltkOptionMenuResource::enlargeMenu ()
+{
+   Fl_Menu_Item *newMenu;
+
+   itemsAllocated += 0x10;
+   newMenu = new Fl_Menu_Item[itemsAllocated];
+   memcpy(newMenu, menu, itemsUsed * sizeof(Fl_Menu_Item));
+   memset(newMenu + itemsUsed, 0, 0x10 * sizeof(Fl_Menu_Item));
+   delete menu;
+   menu = newMenu;
+   ((Fl_Choice *)widget)->menu(menu);
+}
+
 void FltkOptionMenuResource::addItem (const char *str,
                                       bool enabled, bool selected)
 {
-   int flags = enabled ? 0 : FL_MENU_INACTIVE;
-   int index = ((Fl_Choice *)widget)->add(str, 0, 0, 0, flags);
+   Fl_Menu_Item *item;
 
+   if (itemsUsed == itemsAllocated)
+      enlargeMenu();
+
+   item = menu + itemsUsed - 1;
+   item->text = strdup(str);
+
+   if (enabled == false)
+      item->flags = FL_MENU_INACTIVE;
+
+   // TODO: verify that an array index is exactly what value() wants,
+   // even when there are submenus.
    if (selected)
-      ((Fl_Choice *)widget)->value(index);
+      ((Fl_Choice *)widget)->value(item);
+
+   itemsUsed++;
 
    queueResize (true);
 }
