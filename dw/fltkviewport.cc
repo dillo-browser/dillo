@@ -206,9 +206,10 @@ int FltkViewport::handle (int event)
 {
    _MSG("FltkViewport::handle %d\n", event);
 
-   if (Fl::event_inside(vscrollbar) ||
-       (Fl::event_inside(hscrollbar) &&
-        !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT))))
+   if (!dragScrolling &&
+       (Fl::event_inside(vscrollbar) ||
+        (Fl::event_inside(hscrollbar) &&
+         !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT)))))
       return Fl_Group::handle(event);
 
    switch(event) {
