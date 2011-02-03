@@ -437,7 +437,6 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 //may need a handler for this
 // win->shortcut(0); // Ignore Escape
    CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);
-   DilloTabs->clear_visible_focus();
    DilloTabs->selection_color(156);
    win->add(DilloTabs);
 
