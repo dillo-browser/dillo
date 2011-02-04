@@ -151,6 +151,7 @@ void FltkResource::setWidgetStyle (Fl_Widget *widget,
          Fl_Color fg = fl_contrast(style_fg, normal_bg);
 
          widget->labelcolor(fg);
+         widget->selection_color(fg);
       }
 
       widget->color(normal_bg);
@@ -481,13 +482,7 @@ void FltkEntryResource::setWidgetStyle (Fl_Widget *widget,
 
    FltkResource::setWidgetStyle(widget, style);
 
-   /* labelcolor has our foreground color. Borrow it for textcolor and
-    * find something that contrasts with the background for selection_color.
-    */
    in->textcolor(widget->labelcolor());
-   widget->selection_color(
-      fl_contrast(in->textcolor(), widget->color()));
-
    in->cursor_color(in->textcolor());
    in->textsize(in->labelsize());
    in->textfont(in->labelfont());
@@ -604,13 +599,7 @@ void FltkMultiLineTextResource::setWidgetStyle (Fl_Widget *widget,
 
    FltkResource::setWidgetStyle(widget, style);
 
-   /* labelcolor has our foreground color. Borrow it for textcolor and
-    * find something that contrasts with the background for selection_color.
-    */
    ed->textcolor(widget->labelcolor());
-   widget->selection_color(
-      fl_contrast(ed->textcolor(), widget->color()));
-
    ed->cursor_color(ed->textcolor());
    ed->textsize(ed->labelsize());
    ed->textfont(ed->labelfont());
@@ -680,6 +669,15 @@ Fl_Widget *FltkToggleButtonResource<I>::createNewWidget (core::Allocation
    Fl_Button *button = createNewButton (allocation);
    button->value (initActivated);
    return button;
+}
+
+template <class I>
+void FltkToggleButtonResource<I>::setWidgetStyle (Fl_Widget *widget,
+                                                  core::style::Style *style)
+{
+   FltkResource::setWidgetStyle(widget, style);
+
+   widget->selection_color(FL_BLACK);
 }
 
 
@@ -900,13 +898,7 @@ void FltkOptionMenuResource::setWidgetStyle (Fl_Widget *widget,
 
    FltkResource::setWidgetStyle(widget, style);
 
-   /* labelcolor has our foreground color. Borrow it for textcolor and
-    * find something suitably contrasting for selection_color.
-    */
    ch->textcolor(widget->labelcolor());
-   widget->selection_color(
-      fl_contrast(ch->color(), ch->textcolor()));
-
    ch->textfont(ch->labelfont());
    ch->textsize(ch->labelsize());
 }
@@ -1084,11 +1076,10 @@ void FltkListResource::setWidgetStyle (Fl_Widget *widget,
 
    FltkResource::setWidgetStyle(widget, style);
 
-   /* WORKAROUND The need for this label*-setting may be removed before
-    * FLTK-1.3.0 is released. But for the moment...
-    */
-   t->labelfont(t->Fl_Widget::labelfont());
-   t->labelsize(t->Fl_Widget::labelsize());
+   t->item_labelfont(widget->labelfont());
+   t->item_labelsize(widget->labelsize());
+   t->item_labelfgcolor(widget->labelcolor());
+   t->item_labelbgcolor(widget->color());
 }
 
 void FltkListResource::widgetCallback (Fl_Widget *widget, void *data)

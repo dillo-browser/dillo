@@ -343,6 +343,7 @@ private:
 protected:
    virtual Fl_Button *createNewButton (core::Allocation *allocation) = 0;
    Fl_Widget *createNewWidget (core::Allocation *allocation);
+   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
 
 public:
    FltkToggleButtonResource (FltkPlatform *platform,
