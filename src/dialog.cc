@@ -37,18 +37,6 @@ void a_Dialog_msg(const char *msg)
 }
 
 /*
- * Offer a three choice dialog.
- * The option string that begins with "*" is the default.
- *
- * Return: 0, 1 or 2 (esc = 2, window close = 2)
- */
-int a_Dialog_choice3(const char *msg,
-                     const char *b0, const char *b1, const char *b2)
-{
-   return fl_choice(msg, b0, b1, b2);
-}
-
-/*
  * Dialog for one line of Input with a message.
  */
 const char *a_Dialog_input(const char *msg)
@@ -161,35 +149,33 @@ PORT1.3
 /*--------------------------------------------------------------------------*/
 static int choice5_answer;
 
-#if 0
-PORT1.3
 static void choice5_cb(Fl_Widget *button, void *number)
 {
   choice5_answer = VOIDP2INT(number);
   _MSG("choice5_cb: %d\n", choice5_answer);
-  button->window()->make_exec_return(true);
+  button->window()->hide();
 }
-#endif
 
 /*
- * Make a question-dialog with a question and some alternatives.
+ * Make a question-dialog with a question and up to five alternatives.
+ * (if less alternatives, non used parameters must be NULL).
+ *
  * Return value: 0 = dialog was cancelled, 1-5 = selected alternative.
  */
 int a_Dialog_choice5(const char *QuestionTxt,
                      const char *alt1, const char *alt2, const char *alt3,
                      const char *alt4, const char *alt5)
 {
-#if 0
-PORT1.3
    choice5_answer = 0;
 
-   int ww = 440, wh = 150, bw = 50, bh = 45, nb = 0;
+   int ww = 440, wh = 120, bw = 50, bh = 45, ih = 50, nb = 0;
    const char *txt[7];
 
    txt[0] = txt[6] = NULL;
    txt[1] = alt1; txt[2] = alt2; txt[3] = alt3;
    txt[4] = alt4; txt[5] = alt5;
-   for (int i=1; txt[i]; ++i, ++nb) ;
+   for (int i=1; txt[i]; ++i, ++nb);
+   ww = 140 + nb*(bw+10);
 
    Fl_Window *window = new Fl_Window(ww,wh,"Choice5");
    window->begin();
@@ -197,10 +183,20 @@ PORT1.3
     ib->begin();
     window->resizable(ib);
 
-    Fl_Box *box = new Fl_Box(0,0,ww,wh-bh, QuestionTxt);
-    box->box(FL_DOWN_BOX);
-    box->labelfont(FL_HELVETICA_BOLD_ITALIC);
+    /* '?' Icon */
+    Fl_Box* o = new Fl_Box(10, (wh-bh-ih)/2, ih, ih);
+    o->box(FL_THIN_UP_BOX);
+    o->labelfont(FL_TIMES_BOLD);
+    o->labelsize(34);
+    o->color(FL_WHITE);
+    o->labelcolor(FL_BLUE);
+    o->label("?");
+    o->show();
+
+    Fl_Box *box = new Fl_Box(60,0,ww-60,wh-bh, QuestionTxt);
+    box->labelfont(FL_HELVETICA);
     box->labelsize(14);
+    box->align(FL_ALIGN_WRAP);
 
     Fl_Button *b;
     int xpos = 0, gap = 8;
@@ -212,18 +208,16 @@ PORT1.3
        b->box(FL_UP_BOX);
        b->callback(choice5_cb, INT2VOIDP(i));
        xpos += bw + gap;
+       /* TODO: set focus to the *-prefixed alternative */
     }
    window->end();
 
-   //window->hotspot(box);
-   window->exec();
-   delete window;
-   _MSG("Choice5 answer = %d\n", choice5_answer);
+   window->show();
+   while (window->shown())
+      Fl::wait();
+   _MSG("a_Dialog_choice5 answer = %d\n", choice5_answer);
 
    return choice5_answer;
-#else
-return 1 + fl_choice(QuestionTxt, alt1, alt2, alt3);
-#endif
 }
 
 

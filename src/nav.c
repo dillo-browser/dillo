@@ -488,9 +488,9 @@ static void Nav_reload_callback(void *data)
          confirmed = 0;
       } else if (URL_FLAGS(h_url) & URL_Post) {
          /* Attempt to repost data, let's confirm... */
-         choice = a_Dialog_choice3("Repost form data?",
-                                   "Yes", "*No", "Cancel");
-         confirmed = (choice == 0);  /* "Yes" */
+         choice = a_Dialog_choice5("Repost form data?",
+                                   "No", "Yes", "Cancel", NULL, NULL);
+         confirmed = (choice == 2);  /* "Yes" */
       }
 
       if (confirmed) {
