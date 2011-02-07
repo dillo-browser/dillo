@@ -370,7 +370,7 @@ public:
 //----------------------------------------------------------------------------
 
 static void win_cb (Fl_Widget *w, void *cb_data) {
-   int choice = 0;
+   int choice = 1;
    CustTabGroup *tabs = (CustTabGroup*) cb_data;
 
    if (tabs->children () > 1)
@@ -570,7 +570,7 @@ void a_UIcmd_close_bw(void *vbw)
 void a_UIcmd_close_all_bw(void *)
 {
    BrowserWindow *bw;
-   int choice = 0;
+   int choice = 1;
 
    if (a_Bw_num() > 1)
       choice = a_Dialog_choice5("More than one open tab or Window.",
