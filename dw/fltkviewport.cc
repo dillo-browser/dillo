@@ -375,9 +375,9 @@ void FltkViewport::scroll (int dx, int dy)
 void FltkViewport::scroll (core::ScrollCommand cmd)
 {
    if (cmd == core::SCREEN_UP_CMD) {
-      scroll (0, -h ());
+      scroll (0, -h () + vscrollbar->linesize ());
    } else if (cmd == core::SCREEN_DOWN_CMD) {
-      scroll (0, h ());
+      scroll (0, h () - vscrollbar->linesize ());
    } else if (cmd == core::LINE_UP_CMD) {
       scroll (0, (int) -vscrollbar->linesize ());
    } else if (cmd == core::LINE_DOWN_CMD) {
