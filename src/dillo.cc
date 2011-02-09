@@ -24,8 +24,9 @@
 #include <signal.h>
 #include <locale.h>
 
-#include <FL/Fl_Window.H>
 #include <FL/Fl.H>
+#include <FL/Fl_Window.H>
+#include <FL/fl_draw.H>
 
 #include "msg.h"
 #include "paths.hh"
@@ -167,6 +168,25 @@ static OptID getCmdOption(const CLI_options *options, int argc, char **argv,
    }
    return opt_id;
 }
+
+static void custLabelDraw(const Fl_Label* o, int X, int Y, int W, int H,
+                          Fl_Align align)
+{
+   const int interpret_symbols = 0;
+
+   fl_font(o->font, o->size);
+   fl_color((Fl_Color)o->color);
+   fl_draw(o->value, X, Y, W, H, align, o->image, interpret_symbols);
+}
+
+static void custLabelMeasure(const Fl_Label* o, int& W, int& H)
+{
+   const int interpret_symbols = 0;
+
+   fl_font(o->font, o->size);
+   fl_measure(o->value, W, H, interpret_symbols);
+}
+
 #if 0
 PORT1.3
 /*
@@ -318,6 +338,10 @@ int main(int argc, char **argv)
 
    // Sets WM_CLASS hint on X11
    Fl_Window::default_xclass("dillo");
+
+   // Disable '@' interpretation in labels
+   Fl::set_labeltype(FL_NORMAL_LABEL, custLabelDraw, custLabelMeasure);
+
 #if 0
 PORT1.3
    checkPreferredFonts();

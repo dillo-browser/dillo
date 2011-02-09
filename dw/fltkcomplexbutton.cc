@@ -173,7 +173,6 @@ ComplexButton::ComplexButton(int X, int Y, int W, int H, const char *L)
   down_box(FL_NO_BOX);
   value_ = oldval = 0;
   shortcut_ = 0;
-  set_flag(SHORTCUT_LABEL);
 }
 
 ComplexButton::~ComplexButton() {
