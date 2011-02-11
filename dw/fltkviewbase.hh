@@ -5,7 +5,7 @@
 #include <sys/time.h>     // for time_t in FreeBSD
 
 #include <FL/Fl_Group.H>
-#include <FL/Fl_Image.H>
+#include <FL/x.H>
 #include <FL/Fl_Scrollbar.H>
 
 #include "fltkcore.hh"
@@ -16,12 +16,26 @@ namespace fltk {
 class FltkViewBase: public FltkView, public Fl_Group
 {
 private:
+   class BackBuffer {
+      private:
+         int w;
+         int h;
+         bool created;
+
+      public:
+         Fl_Offscreen offscreen;
+      
+         BackBuffer ();
+         ~BackBuffer ();
+         void setSize(int w, int h);
+   };
+
    typedef enum { DRAW_PLAIN, DRAW_CLIPPED, DRAW_BUFFERED } DrawType;
 
    int bgColor;
    core::Region drawRegion;
    //::fltk::Rectangle *exposeArea;
-   static Fl_Image *backBuffer;
+   static BackBuffer *backBuffer;
    static bool backBufferInUse;
 
    void draw (const core::Rectangle *rect, DrawType type);

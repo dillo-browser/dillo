@@ -35,7 +35,32 @@ using namespace lout::container::typed;
 namespace dw {
 namespace fltk {
 
-Fl_Image *FltkViewBase::backBuffer;
+FltkViewBase::BackBuffer::BackBuffer ()
+{
+   w = 0;
+   h = 0;
+   created = false;
+}
+
+FltkViewBase::BackBuffer::~BackBuffer ()
+{
+   if (created)
+      fl_delete_offscreen (offscreen);
+}
+
+void FltkViewBase::BackBuffer::setSize (int w, int h)
+{
+   if (!created || w > this->w || h > this->h) {
+      this->w = w;
+      this->h = h;
+      if (created)
+         fl_delete_offscreen (offscreen);
+      offscreen = fl_create_offscreen (w, h);
+      created = true;
+   }
+}
+
+FltkViewBase::BackBuffer *FltkViewBase::backBuffer;
 bool FltkViewBase::backBufferInUse;
 
 FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
@@ -49,10 +74,10 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
 #if 0
 PORT1.3
    exposeArea = NULL;
-   if (backBuffer == NULL) {
-      backBuffer = new Fl_Image ();
-   }
 #endif
+   if (backBuffer == NULL) {
+      backBuffer = new BackBuffer ();
+   }
 }
 
 FltkViewBase::~FltkViewBase ()
@@ -62,10 +87,7 @@ FltkViewBase::~FltkViewBase ()
 
 void FltkViewBase::setBufferedDrawing (bool b) {
    if (b && backBuffer == NULL) {
-#if 0
-PORT1.3 
-      backBuffer = new Fl_Image ();
-#endif
+      backBuffer = new BackBuffer ();
    } else if (!b && backBuffer != NULL) {
       delete backBuffer;
       backBuffer = NULL;
@@ -181,12 +203,37 @@ PORT1.3
                rect->height,
                X, Y, W, H);
 
-   fl_color(bgColor);
-   fl_rectf(X, Y, W, H);
-
    core::Rectangle r (translateViewXToCanvasX (X),
                       translateViewYToCanvasY (Y), W, H);
-   theLayout->expose (this, &r);
+
+   if (r.isEmpty ())
+      return;
+
+   if (type == DRAW_BUFFERED && backBuffer && !backBufferInUse) {
+      backBufferInUse = true;
+      backBuffer->setSize (X + W, Y + H); // would be nicer to use (W, H)...
+      fl_begin_offscreen (backBuffer->offscreen);
+      fl_push_matrix ();
+      fl_color (bgColor);
+      fl_rectf (X, Y, W, H);
+      theLayout->expose (this, &r);
+      fl_pop_matrix ();
+      fl_end_offscreen ();
+      fl_copy_offscreen (X, Y, W, H, backBuffer->offscreen, X, Y);
+      backBufferInUse = false;
+   } else if (type == DRAW_BUFFERED || type == DRAW_CLIPPED) {
+      // if type == DRAW_BUFFERED but we do not have backBuffer available
+      // we fall back to clipped drawing
+      fl_push_clip (X, Y, W, H);
+      fl_color (bgColor);
+      fl_rectf (X, Y, W, H);
+      theLayout->expose (this, &r);
+      fl_pop_clip ();
+   } else {
+      fl_color (bgColor);
+      fl_rectf (X, Y, W, H);
+      theLayout->expose (this, &r);
+   }
 }
 
 void FltkViewBase::drawChildWidgets () {
