@@ -355,6 +355,12 @@ PORT1.3
    // Create a new UI/bw pair
    BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, xid, NULL);
 
+   /* We need this so that fl_text_extents() in dw/fltkplatform.cc can
+    * work when FLTK is configured without XFT and Dillo is opening
+    * immediately-available URLs from the cmdline (e.g. about:splash).
+    */
+   ((Fl_Widget *)bw->ui)->window()->make_current();
+
    /* Proxy authentication */
    if (prefs.http_proxyuser && !a_Http_proxy_auth()) {
       const char *passwd = a_UIcmd_get_passwd(prefs.http_proxyuser);
