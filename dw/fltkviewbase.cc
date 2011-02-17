@@ -71,10 +71,7 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
    canvasHeight = 1;
    bgColor = FL_WHITE;
    mouse_x = mouse_y = 0;
-#if 0
-PORT1.3
    exposeArea = NULL;
-#endif
    if (backBuffer == NULL) {
       backBuffer = new BackBuffer ();
    }
@@ -134,67 +131,6 @@ void FltkViewBase::draw ()
 void FltkViewBase::draw (const core::Rectangle *rect,
                          DrawType type)
 {
-#if 0
-PORT1.3
-   int offsetX = 0, offsetY = 0;
-
-   /* fltk-clipping does not use widget coordinates */
-   transform (offsetX, offsetY);
-
-   ::fltk::Rectangle viewRect (
-      translateCanvasXToViewX (rect->x) + offsetX,
-      translateCanvasYToViewY (rect->y) + offsetY,
-      rect->width, rect->height);
-
-   ::fltk::intersect_with_clip (viewRect);
-
-   viewRect.x (viewRect.x () - offsetX);
-   viewRect.y (viewRect.y () - offsetY);A
-
-   if (! viewRect.empty ()) {
-      dw::core::Rectangle r (
-         translateViewXToCanvasX (viewRect.x ()),
-         translateViewYToCanvasY (viewRect.y ()),
-         viewRect.w (),
-         viewRect.h ());
-
-      exposeArea = &viewRect;
-
-      if (type == DRAW_BUFFERED && backBuffer && !backBufferInUse) {
-         backBufferInUse = true;
-         {
-            GSave gsave;
-
-            backBuffer->setsize (viewRect.w (), viewRect.h ());
-            backBuffer->make_current ();
-            translate (-viewRect.x (), -viewRect.y ());
-
-            setcolor (bgColor);
-            fillrect (viewRect);
-            theLayout->expose (this, &r);
-         }
-
-         backBuffer->draw (Rectangle (0, 0, viewRect.w (), viewRect.h ()),
-            viewRect);
-
-         backBufferInUse = false;
-      } else if (type == DRAW_BUFFERED || type == DRAW_CLIPPED) {
-         // if type == DRAW_BUFFERED but we do not have backBuffer available
-         // we fall back to clipped drawing
-         fl_push_clip (viewRect);
-         setcolor (bgColor);
-         fillrect (viewRect);
-         theLayout->expose (this, &r);
-         fl_pop_clip ();
-      } else {
-         setcolor (bgColor);
-         fillrect (viewRect);
-         theLayout->expose (this, &r);
-      }
-
-      exposeArea = NULL;
-   }
-#endif
    int X, Y, W, H;
    
    fl_clip_box(translateCanvasXToViewX (rect->x),
@@ -208,6 +144,8 @@ PORT1.3
 
    if (r.isEmpty ())
       return;
+
+   exposeArea = &r;
 
    if (type == DRAW_BUFFERED && backBuffer && !backBufferInUse) {
       backBufferInUse = true;
@@ -234,6 +172,8 @@ PORT1.3
       fl_rectf (X, Y, W, H);
       theLayout->expose (this, &r);
    }
+
+   exposeArea = NULL;
 }
 
 void FltkViewBase::drawChildWidgets () {
@@ -434,6 +374,11 @@ void FltkViewBase::drawLine (core::style::Color *color,
                              int x1, int y1, int x2, int y2)
 {
    fl_color(((FltkColor*)color)->colors[shading]);
+   // we clip with a large border (5000px), as clipping causes artefacts
+   // with non-solid line styles.
+   // However it's still better than no clipping at all.
+   clipPoint (&x1, &y1, 5000);
+   clipPoint (&x2, &y2, 5000);
    fl_line (translateCanvasXToViewX (x1),
             translateCanvasYToViewY (y1),
             translateCanvasXToViewX (x2),
@@ -488,19 +433,21 @@ void FltkViewBase::drawRectangle (core::style::Color *color,
       height = -height;
    }
 
-   int x1 = translateCanvasXToViewX (X);
-   int y1 = translateCanvasYToViewY (Y);
-   int x2 = translateCanvasXToViewX (X + width);
-   int y2 = translateCanvasYToViewY (Y + height);
+   int x1 = X;
+   int y1 = Y;
+   int x2 = X + width;
+   int y2 = Y + height;
 
-#if 0
-PORT1.3
    // We only support rectangles with line width 1px, so we clip with
    // a rectangle 1px wider and higher than what we actually expose.
    // This is only really necessary for non-filled rectangles.
    clipPoint (&x1, &y1, 1);
    clipPoint (&x2, &y2, 1);
-#endif
+
+   x1 = translateCanvasXToViewX (x1);
+   y1 = translateCanvasYToViewY (y1);
+   x2 = translateCanvasXToViewX (x2);
+   y2 = translateCanvasYToViewY (y2);
 
    if (filled)
       fl_rectf (x1, y1, x2 - x1, y2 - y1);

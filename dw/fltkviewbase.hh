@@ -34,26 +34,24 @@ private:
 
    int bgColor;
    core::Region drawRegion;
-   //::fltk::Rectangle *exposeArea;
+   core::Rectangle *exposeArea;
    static BackBuffer *backBuffer;
    static bool backBufferInUse;
 
    void draw (const core::Rectangle *rect, DrawType type);
    void drawChildWidgets ();
-#if 0
    inline void clipPoint (int *x, int *y, int border) {
       if (exposeArea) {
-         if (*x < exposeArea->x () - border)
-            *x = exposeArea->x () - border;
-         if (*x > exposeArea->r () + border)
-            *x = exposeArea->r () + border;
-         if (*y < exposeArea->y () - border)
-            *y = exposeArea->y () - border;
-         if (*y > exposeArea->b () + border)
-            *y = exposeArea->b () + border;
+         if (*x < exposeArea->x - border)
+            *x = exposeArea->x - border;
+         if (*x > exposeArea->x + exposeArea->width + border)
+            *x = exposeArea->x + exposeArea->width + border;
+         if (*y < exposeArea->y - border)
+            *y = exposeArea->y - border;
+         if (*y > exposeArea->y + exposeArea->height + border)
+            *y = exposeArea->y + exposeArea->height + border;
       }
    }
-#endif
 protected:
    core::Layout *theLayout;
    int canvasWidth, canvasHeight;
