@@ -82,19 +82,6 @@ void Findbar::searchBackwards_cb(Fl_Widget *, void *vfb)
 }
 
 /*
- * Find next occurrence of input key
- */
-void Findbar::search_cb2(Fl_Widget *widget, void *vfb)
-{
-   /*
-    * Somehow fltk even regards the first loss of focus for the
-    * window as a WHEN_ENTER_KEY_ALWAYS event.
-    */
-   if (Fl::event_key() == FL_Enter)
-      search_cb(widget, vfb);
-}
-
-/*
  * Hide the search bar
  */
 void Findbar::hide_cb(Fl_Widget *, void *vfb)
@@ -133,8 +120,7 @@ Findbar::Findbar(int width, int height) :
     x += input_width + gap;
     resizable(i);
     i->color(206);
-    i->when(FL_WHEN_ENTER_KEY_ALWAYS);
-    i->callback(search_cb2, this);
+    i->when(FL_WHEN_NEVER);
    add(i);
 
     next_btn = new Fl_Button(x, border, button_width, height, "Next");
