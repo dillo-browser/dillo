@@ -223,17 +223,6 @@ int FltkViewport::handle (int event)
 
    case FL_FOCUS:
       /** \bug Draw focus box. */
-#if 0
-PORT1.3
-      /* If the user clicks with the left button we take focus
-       * and thereby unfocus any form widgets.
-       * Otherwise we let fltk do the focus handling.
-       */
-      if (Fl::event_button() == FL_LEFT_MOUSE || focus_index() < 0) {
-         focus_index(-1);
-         return 1;
-      }
-#endif
       break;
 
    case FL_UNFOCUS:
@@ -241,17 +230,15 @@ PORT1.3
       break;
 
    case FL_PUSH:
-      take_focus();
-      if (Fl::event_button() == FL_MIDDLE_MOUSE) {
+      if (FltkWidgetView::handle (event) == 0 &&
+          Fl::event_button() == FL_MIDDLE_MOUSE) {
          /* pass event so that middle click can open link in new window */
-         if (FltkWidgetView::handle (event) == 0) {
-            dragScrolling = 1;
-            dragX = Fl::event_x();
-            dragY = Fl::event_y();
-            setCursor (core::style::CURSOR_MOVE);
-         }
-         return 1;
+         dragScrolling = 1;
+         dragX = Fl::event_x();
+         dragY = Fl::event_y();
+         setCursor (core::style::CURSOR_MOVE);
       }
+      return 1;
       break;
 
    case FL_DRAG:

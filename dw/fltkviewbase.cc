@@ -29,6 +29,8 @@
 #include <wctype.h>
 #include "../lout/msg.h"
 
+extern Fl_Widget* fl_oldfocus;
+
 using namespace lout::object;
 using namespace lout::container::typed;
 
@@ -71,6 +73,7 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
    canvasHeight = 1;
    bgColor = FL_WHITE;
    mouse_x = mouse_y = 0;
+   focused_child = NULL;
    exposeArea = NULL;
    if (backBuffer == NULL) {
       backBuffer = new BackBuffer ();
@@ -268,6 +271,17 @@ int FltkViewBase::handle (int event)
       theLayout->leaveNotify (this, getDwButtonState ());
       return Fl_Group::handle (event);
 
+   case FL_FOCUS:
+      if (focused_child && find(focused_child) < children()) {
+         /* strangely, find() == children() if the child is not found */
+         focused_child->take_focus();
+      }
+      return 1;
+
+   case FL_UNFOCUS:
+      focused_child = fl_oldfocus;
+      return 0;
+      
    default:
       return Fl_Group::handle (event);
    }
