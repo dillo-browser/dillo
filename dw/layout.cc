@@ -185,7 +185,6 @@ Layout::Layout (Platform *platform)
    view = NULL;
    topLevel = NULL;
    widgetAtPoint = NULL;
-   deletingTopLevel = false;
 
    DBG_OBJ_CREATE (this, "DwRenderLayout");
 
@@ -226,10 +225,11 @@ Layout::~Layout ()
       platform->removeIdle (resizeIdleId);
    if (bgColor)
       bgColor->unref ();
-   deletingTopLevel = true;
-   if (topLevel)
-      delete topLevel;
-   deletingTopLevel = false;
+   if (topLevel) {
+      Widget *w = topLevel;
+      topLevel = NULL;
+      delete w;
+   }
    delete platform;
    delete view;
    delete anchorsTable;
@@ -282,10 +282,11 @@ void Layout::removeWidget ()
 void Layout::setWidget (Widget *widget)
 {
    widgetAtPoint = NULL;
-   deletingTopLevel = true;
-   if (topLevel)
-      delete topLevel;
-   deletingTopLevel = false;
+   if (topLevel) {
+      Widget *w = topLevel;
+      topLevel = NULL;
+      delete w;
+   }
    textZone->zoneFree ();
    addWidget (widget);
 
@@ -775,9 +776,6 @@ bool Layout::motionNotify (View *view,  int x, int y, ButtonState state)
 {
    EventButton event;
 
-   if (deletingTopLevel)
-      return true;
-
    moveToWidgetAtPoint (x, y, state);
 
    event.xCanvas = x;
@@ -836,7 +834,7 @@ Widget *Layout::getWidgetAtPoint (int x, int y)
 {
    _MSG ("------------------------------------------------------------\n");
    _MSG ("widget at (%d, %d)\n", x, y);
-   if (topLevel && !deletingTopLevel)
+   if (topLevel)
       return topLevel->getWidgetAtPoint (x, y, 0);
    else
       return NULL;
