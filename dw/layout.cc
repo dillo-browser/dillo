@@ -852,6 +852,9 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
    int trackLen, i;
    EventCrossing crossingEvent;
 
+   if (!topLevel)
+      return;
+
    if (newWidgetAtPoint != widgetAtPoint) {
       // The mouse pointer has been moved into another widget.
       if (newWidgetAtPoint && widgetAtPoint)
