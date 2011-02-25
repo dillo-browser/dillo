@@ -1,3 +1,6 @@
+AM_CPPFLAGS = \
+	-I$(top_srcdir)
+
 noinst_LIBRARIES = \
 	libDw-core.a \
 	libDw-fltk.a \

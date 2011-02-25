@@ -70,33 +70,33 @@ typedef enum {
 // class FL_API ProgressBar : public Fl_Widget {
 class ProgressBar : public Fl_Widget {
 protected:
-  double mMin;
-  double mMax;
-  double mPresent;
-  double mStep;
-  bool mShowPct, mShowMsg;
-  char mMsg[64];
-  Fl_Color mTextColor;
-  void draw();
+   double mMin;
+   double mMax;
+   double mPresent;
+   double mStep;
+   bool mShowPct, mShowMsg;
+   char mMsg[64];
+   Fl_Color mTextColor;
+   void draw();
 public:
-  ProgressBar(int x, int y, int w, int h, const char *lbl = 0);
-  void range(double min, double max, double step = 1)  {
-     mMin = min; mMax = max; mStep = step;
-  };
-  void step(double step)        { mPresent += step; redraw(); };
-  void move(double step);
-  double minimum()        { return mMin; }
-  double maximum()        { return mMax; }
-  void minimum(double nm) { mMin = nm; };
-  void maximum(double nm) { mMax = nm; };
-  double position  ()     { return mPresent; }
-  double step()           { return mStep; }
-  void position(double pos)     { mPresent = pos; redraw(); }
-  void showtext(bool st)        { mShowPct = st; }
-  void message(char *msg) { mShowMsg = true; strncpy(mMsg,msg,63); redraw(); }
-  bool showtext()               { return mShowPct; }
-  void text_color(Fl_Color col) { mTextColor = col; }
-  Fl_Color text_color()    { return mTextColor; }
+   ProgressBar(int x, int y, int w, int h, const char *lbl = 0);
+   void range(double min, double max, double step = 1)  {
+      mMin = min; mMax = max; mStep = step;
+   };
+   void step(double step)        { mPresent += step; redraw(); };
+   void move(double step);
+   double minimum()        { return mMin; }
+   double maximum()        { return mMax; }
+   void minimum(double nm) { mMin = nm; };
+   void maximum(double nm) { mMax = nm; };
+   double position  ()     { return mPresent; }
+   double step()           { return mStep; }
+   void position(double pos)     { mPresent = pos; redraw(); }
+   void showtext(bool st)        { mShowPct = st; }
+   void message(char *msg) { mShowMsg = true; strncpy(mMsg,msg,63); redraw(); }
+   bool showtext()               { return mShowPct; }
+   void text_color(Fl_Color col) { mTextColor = col; }
+   Fl_Color text_color()   { return mTextColor; }
 };
 
 // Download-item class -------------------------------------------------------
@@ -309,6 +309,8 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    // Init value. Reset later, upon the first data bytes arrival
    init_time = time(NULL);
 
+   twosec_time = onesec_time = init_time;
+
    // BUG:? test a URL with ' inside.
    /* escape "'" character for the shell. Is it necessary? */
    esc_url = Escape_uri_str(url, "'");
@@ -340,72 +342,72 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    gw = 400, gh = 70;
    group = new Fl_Group(0,0,gw,gh);
    group->begin();
-    prTitle = new Fl_Box(24, 7, 290, 23, shortname);
-    prTitle->box(FL_RSHADOW_BOX);
-    prTitle->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
-    //prTitle->clear_flag (SHORTCUT_LABEL);
-    // Attach this 'log_text' to the tooltip
-    log_text_add("Target File: ", 13);
-    log_text_add(fullname, strlen(fullname));
-    log_text_add("\n\n", 2);
+   prTitle = new Fl_Box(24, 7, 290, 23, shortname);
+   prTitle->box(FL_RSHADOW_BOX);
+   prTitle->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
+   //prTitle->clear_flag (SHORTCUT_LABEL);
+   // Attach this 'log_text' to the tooltip
+   log_text_add("Target File: ", 13);
+   log_text_add(fullname, strlen(fullname));
+   log_text_add("\n\n", 2);
 
-    prBar = new ProgressBar(24, 40, 92, 20);
-    prBar->box(FL_BORDER_BOX); // ENGRAVED_BOX
-    prBar->tooltip("Progress Status");
+   prBar = new ProgressBar(24, 40, 92, 20);
+   prBar->box(FL_BORDER_BOX); // ENGRAVED_BOX
+   prBar->tooltip("Progress Status");
 
-    int ix = 122, iy = 36, iw = 50, ih = 14;
-    Fl_Widget *o = new Fl_Box(ix,iy,iw,ih, "Got");
-    o->box(FL_RFLAT_BOX);
-    o->color((Fl_Color)0xc0c0c000);
-    o->tooltip("Downloaded Size");
-    prGot = new Fl_Box(ix,iy+14,iw,ih, "0KB");
-    prGot->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    prGot->labelcolor((Fl_Color)0x6c6cbd00);
-    prGot->box(FL_NO_BOX);
+   int ix = 122, iy = 36, iw = 50, ih = 14;
+   Fl_Widget *o = new Fl_Box(ix,iy,iw,ih, "Got");
+   o->box(FL_RFLAT_BOX);
+   o->color((Fl_Color)0xc0c0c000);
+   o->tooltip("Downloaded Size");
+   prGot = new Fl_Box(ix,iy+14,iw,ih, "0KB");
+   prGot->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+   prGot->labelcolor((Fl_Color)0x6c6cbd00);
+   prGot->box(FL_NO_BOX);
 
-    ix += iw;
-    o = new Fl_Box(ix,iy,iw,ih, "Size");
-    o->box(FL_RFLAT_BOX);
-    o->color((Fl_Color)0xc0c0c000);
-    o->tooltip("Total Size");
-    prSize = new Fl_Box(ix,iy+14,iw,ih, "??");
-    prSize->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    prSize->box(FL_NO_BOX);
+   ix += iw;
+   o = new Fl_Box(ix,iy,iw,ih, "Size");
+   o->box(FL_RFLAT_BOX);
+   o->color((Fl_Color)0xc0c0c000);
+   o->tooltip("Total Size");
+   prSize = new Fl_Box(ix,iy+14,iw,ih, "??");
+   prSize->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+   prSize->box(FL_NO_BOX);
 
-    ix += iw;
-    o = new Fl_Box(ix,iy,iw,ih, "Rate");
-    o->box(FL_RFLAT_BOX);
-    o->color((Fl_Color)0xc0c0c000);
-    o->tooltip("Current transfer Rate (KBytes/sec)");
-    prRate = new Fl_Box(ix,iy+14,iw,ih, "??");
-    prRate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    prRate->box(FL_NO_BOX);
+   ix += iw;
+   o = new Fl_Box(ix,iy,iw,ih, "Rate");
+   o->box(FL_RFLAT_BOX);
+   o->color((Fl_Color)0xc0c0c000);
+   o->tooltip("Current transfer Rate (KBytes/sec)");
+   prRate = new Fl_Box(ix,iy+14,iw,ih, "??");
+   prRate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+   prRate->box(FL_NO_BOX);
 
-    ix += iw;
-    o = new Fl_Box(ix,iy,iw,ih, "~Rate");
-    o->box(FL_RFLAT_BOX);
-    o->color((Fl_Color)0xc0c0c000);
-    o->tooltip("Average transfer Rate (KBytes/sec)");
-    pr_Rate = new Fl_Box(ix,iy+14,iw,ih, "??");
-    pr_Rate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    pr_Rate->box(FL_NO_BOX);
+   ix += iw;
+   o = new Fl_Box(ix,iy,iw,ih, "~Rate");
+   o->box(FL_RFLAT_BOX);
+   o->color((Fl_Color)0xc0c0c000);
+   o->tooltip("Average transfer Rate (KBytes/sec)");
+   pr_Rate = new Fl_Box(ix,iy+14,iw,ih, "??");
+   pr_Rate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+   pr_Rate->box(FL_NO_BOX);
 
-    ix += iw;
-    prETAt = o = new Fl_Box(ix,iy,iw,ih, "ETA");
-    o->box(FL_RFLAT_BOX);
-    o->color((Fl_Color)0xc0c0c000);
-    o->tooltip("Estimated Time of Arrival");
-    prETA = new Fl_Box(ix,iy+14,iw,ih, "??");
-    prETA->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    prETA->box(FL_NO_BOX);
+   ix += iw;
+   prETAt = o = new Fl_Box(ix,iy,iw,ih, "ETA");
+   o->box(FL_RFLAT_BOX);
+   o->color((Fl_Color)0xc0c0c000);
+   o->tooltip("Estimated Time of Arrival");
+   prETA = new Fl_Box(ix,iy+14,iw,ih, "??");
+   prETA->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+   prETA->box(FL_NO_BOX);
 
-    //ix += 50;
-    //prButton = new Fl_Button(ix, 41, 38, 19, "Stop");
-    prButton = new Fl_Button(328, 9, 38, 19, "Stop");
-    prButton->tooltip("Stop this transfer");
-    prButton->box(FL_UP_BOX);
-    prButton->clear_visible_focus();
-    prButton->callback(prButton_scb, this);
+   //ix += 50;
+   //prButton = new Fl_Button(ix, 41, 38, 19, "Stop");
+   prButton = new Fl_Button(328, 9, 38, 19, "Stop");
+   prButton->tooltip("Stop this transfer");
+   prButton->box(FL_UP_BOX);
+   prButton->clear_visible_focus();
+   prButton->callback(prButton_scb, this);
 
    group->box(FL_ROUND_UP_BOX);
    group->end();
@@ -1069,13 +1071,13 @@ DLWin::DLWin(int ww, int wh) {
    // Create the empty main window
    mWin = new Fl_Window(ww, wh, "Downloads:");
    mWin->begin();
-    mScroll = new Fl_Scroll(0,0,ww,wh);
-    mScroll->begin();
-     mPG = new Fl_Pack(0,0,ww,wh);
-     mPG->end();
-     //mPG->spacing(10);
-    mScroll->end();
-    mScroll->type(Fl_Scroll::VERTICAL);
+   mScroll = new Fl_Scroll(0,0,ww,wh);
+   mScroll->begin();
+   mPG = new Fl_Pack(0,0,ww,wh);
+   mPG->end();
+   //mPG->spacing(10);
+   mScroll->end();
+   mScroll->type(Fl_Scroll::VERTICAL);
    mWin->end();
    mWin->resizable(mScroll);
    mWin->callback(dlwin_esc_cb, NULL);
