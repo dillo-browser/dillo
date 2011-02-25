@@ -219,6 +219,8 @@ Layout::Layout (Platform *platform)
 
 Layout::~Layout ()
 {
+   widgetAtPoint = NULL;
+
    if (scrollIdleId != -1)
       platform->removeIdle (scrollIdleId);
    if (resizeIdleId != -1)
@@ -851,9 +853,6 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
    Widget **track;
    int trackLen, i;
    EventCrossing crossingEvent;
-
-   if (!topLevel)
-      return;
 
    if (newWidgetAtPoint != widgetAtPoint) {
       // The mouse pointer has been moved into another widget.
