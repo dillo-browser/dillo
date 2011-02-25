@@ -38,9 +38,8 @@ void a_Dialog_msg(const char *msg)
 
 /*
  * Offer a three choice dialog.
- * The option string that begins with "*" is the default.
  *
- * Return: 0, 1 or 2 (esc = 2, window close = 2)
+ * Return: 0, 1 or 2 (esc = 0, window close = 0, enter = 1)
  */
 int a_Dialog_choice3(const char *msg,
                      const char *b0, const char *b1, const char *b2)
