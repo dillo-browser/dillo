@@ -134,13 +134,18 @@ void FltkViewBase::draw ()
 void FltkViewBase::draw (const core::Rectangle *rect,
                          DrawType type)
 {
-   int X, Y, W, H;
+   int X = translateCanvasXToViewX (rect->x);
+   int Y = translateCanvasYToViewY (rect->y);
+   int W, H;
+
+   // fl_clip_box() can't handle values greater than SHRT_MAX!
+   if (X > x () + w () || Y > y () + h ())
+      return;
    
-   fl_clip_box(translateCanvasXToViewX (rect->x),
-               translateCanvasYToViewY (rect->y),
-               rect->width,
-               rect->height,
-               X, Y, W, H);
+   W = X + rect->width > x () + w () ? x () + w () - X : rect->width;
+   H = Y + rect->height > y () + h () ? y () + h () - Y : rect->height;
+
+   fl_clip_box(X, Y, W, H, X, Y, W, H);
 
    core::Rectangle r (translateViewXToCanvasX (X),
                       translateViewYToCanvasY (Y), W, H);
