@@ -272,6 +272,7 @@ public:
             BrowserWindow *bw = a_UIcmd_get_bw_by_widget(new_focus);
             const char *title = a_History_get_title(NAV_TOP_UIDX(bw), 1);
 
+            value(new_focus);
             a_UIcmd_set_page_title(bw, title ? title : "");
       }
 // custom pager
