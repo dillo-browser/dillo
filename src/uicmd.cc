@@ -503,11 +503,6 @@ static BrowserWindow *UIcmd_tab_new(const void *vbw)
    BrowserWindow *old_bw = (BrowserWindow*)vbw;
    UI *ui = BW2UI(old_bw);
 
-   // WORKAROUND: limit the number of tabs because of a fltk bug
-   if (ui->tabs()->children() >= 127)
-      return a_UIcmd_browser_window_new(ui->window()->w(), ui->window()->h(),
-                                        0, vbw);
-
    // Create and set the UI
    UI *new_ui = new UI(0, 0, ui->w(), ui->h(), DEFAULT_TAB_LABEL, ui);
    new_ui->tabs(ui->tabs());
