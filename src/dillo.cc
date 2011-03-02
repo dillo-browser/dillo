@@ -174,6 +174,8 @@ static void custLabelDraw(const Fl_Label* o, int X, int Y, int W, int H,
 {
    const int interpret_symbols = 0;
 
+   fl_draw_shortcut = 0;
+
    fl_font(o->font, o->size);
    fl_color((Fl_Color)o->color);
    fl_draw(o->value, X, Y, W, H, align, o->image, interpret_symbols);
@@ -182,6 +184,8 @@ static void custLabelDraw(const Fl_Label* o, int X, int Y, int W, int H,
 static void custLabelMeasure(const Fl_Label* o, int& W, int& H)
 {
    const int interpret_symbols = 0;
+
+   fl_draw_shortcut = 0;
 
    fl_font(o->font, o->size);
    fl_measure(o->value, W, H, interpret_symbols);
