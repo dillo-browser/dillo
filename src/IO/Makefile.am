@@ -1,4 +1,6 @@
-AM_CPPFLAGS=-DDILLO_BINDIR='"$(bindir)/"'
+AM_CPPFLAGS = \
+	-I$(top_srcdir) \
+	-DDILLO_BINDIR='"$(bindir)/"'
 AM_CFLAGS = @LIBFLTK_CFLAGS@
 AM_CXXFLAGS = @LIBFLTK_CXXFLAGS@
 

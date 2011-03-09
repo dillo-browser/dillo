@@ -1,3 +1,6 @@
+AM_CPPFLAGS = \
+	-I$(top_srcdir)
+
 bookmarksdir = $(libdir)/dillo/dpi/bookmarks
 downloadsdir = $(libdir)/dillo/dpi/downloads
 ftpdir = $(libdir)/dillo/dpi/ftp
@@ -17,15 +20,33 @@ file_PROGRAMS = file.dpi
 cookies_PROGRAMS = cookies.dpi
 datauri_PROGRAMS = datauri.filter.dpi
 
-bookmarks_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
-downloads_dpi_LDADD = @LIBFLTK_LIBS@ ../dpip/libDpip.a ../dlib/libDlib.a
-ftp_filter_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
-https_filter_dpi_LDADD = @LIBSSL_LIBS@ ../dpip/libDpip.a ../dlib/libDlib.a
-hello_filter_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
-vsource_filter_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
-file_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
-cookies_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
-datauri_filter_dpi_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
+bookmarks_dpi_LDADD = \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
+downloads_dpi_LDADD = @LIBFLTK_LIBS@ \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
+ftp_filter_dpi_LDADD = \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
+https_filter_dpi_LDADD = @LIBSSL_LIBS@ \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
+hello_filter_dpi_LDADD = \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
+vsource_filter_dpi_LDADD = \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
+file_dpi_LDADD = \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
+cookies_dpi_LDADD = \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
+datauri_filter_dpi_LDADD = \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
 
 downloads_dpi_CXXFLAGS = @LIBFLTK_CXXFLAGS@
 
