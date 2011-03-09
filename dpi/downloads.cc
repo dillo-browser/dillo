@@ -309,6 +309,8 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    // Init value. Reset later, upon the first data bytes arrival
    init_time = time(NULL);
 
+   twosec_time = onesec_time = init_time;
+
    // BUG:? test a URL with ' inside.
    /* escape "'" character for the shell. Is it necessary? */
    esc_url = Escape_uri_str(url, "'");
