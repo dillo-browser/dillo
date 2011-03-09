@@ -81,43 +81,6 @@ static struct iconset *icons = &standard_icons;
  */
 
 //----------------------------------------------------------------------------
-/*
- * Used to reposition group's widgets when some of them are hidden
- */
-class Fl_CustGroup : public Fl_Group {
-public:
-  Fl_CustGroup(int x,int y,int w ,int h,const char *l = 0) :
-    Fl_Group(x,y,w,h,l) { };
-  void rearrange(void) {
-     int n = children(), xpos = 0, r_x1, r_i = -1, i;
-
-     init_sizes();
-     for (i = 0; i < n; ++i) {
-        if (child(i) == resizable()) {
-           r_i = i;
-           r_x1 = xpos;
-           break;
-        }
-        if (child(i)->visible()) {
-           child(i)->position(xpos, child(i)->y());
-           xpos += child(i)->w();
-        }
-     }
-     if (r_i < 0)
-        return;
-     xpos = w();
-     for (i = n - 1; i > r_i; --i) {
-        if (child(i)->visible()) {
-           xpos -= child(i)->w();
-           child(i)->position(xpos, child(i)->y());
-        }
-     }
-     child(r_i)->resize(r_x1, child(r_i)->y(), xpos-r_x1, child(r_i)->h());
-     redraw();
-  }
-};
-
-//----------------------------------------------------------------------------
 
 /*
  * (Used to avoid certain shortcuts in the location bar)
@@ -419,14 +382,13 @@ static void bugmeter_cb(Fl_Widget *wid, void *data)
 /*
  * Make a generic navigation button
  */
-Fl_Button *UI::make_button(const char *label,
-                           Fl_Image *img, Fl_Image *deimg,
+Fl_Button *UI::make_button(const char *label, Fl_Image *img, Fl_Image *deimg,
                            int b_n, int start)
 {
    if (start)
       p_xpos = 0;
 
-   Fl_Button *b = new Fl_Button(p_xpos, p_ypos, bw, bh, (lbl) ? label : NULL);
+   Fl_Button *b = new Fl_Button(p_xpos, 0, bw, bh, (lbl) ? label : NULL);
    if (img)
       b->image(img);
    if (deimg)
@@ -563,7 +525,7 @@ Fl_Widget *UI::make_filemenu_button()
 void UI::make_panel(int ww)
 {
    Fl_Widget *w;
-   Fl_CustGroup *g1;
+   CustGroup *g1;
    Fl_Group *g2, *g3;
    Fl_Pack *pg;
 
@@ -600,9 +562,10 @@ void UI::make_panel(int ww)
       else
          bw = 45, bh = 45, fh = 24, lh = 28, lbl = 1;
    }
+   nh = bh, sh = 24;
 
    if (PanelSize == P_tiny) {
-      g1 = new Fl_CustGroup(0,0,ww,bh);
+      g1 = new CustGroup(0,0,ww,bh);
        // Toolbar
        make_toolbar(ww,bh);
        make_filemenu_button();
@@ -625,7 +588,8 @@ void UI::make_panel(int ww)
           //pg = make_location();
           pg->size(ww,lh);
        } else {
-          g2 = new Fl_CustGroup(0,0,ww,lh);
+          g2 = new CustGroup(0,0,ww,lh);
+           p_xpos = 0;
            make_filemenu_button();
            make_location(ww);
            g2->resizable(Location);
@@ -633,13 +597,11 @@ void UI::make_panel(int ww)
        }
 
        // Toolbar
-       //p_ypos += g2->y();
        p_ypos = 0;
-       //g3 = new Fl_Group(0,fh+lh,ww,bh);
-       g3 = new Fl_Group(0,p_ypos,ww,bh);
+       g3 = new CustGroup(0,0,ww,bh);
        g3->begin();
         make_toolbar(ww,bh);
-        w = new Fl_Box(p_xpos,p_ypos,ww-p_xpos-2*pw,bh,"i n v i s i b l e");
+        w = new Fl_Box(p_xpos,0,ww-p_xpos-2*pw,bh,"i n v i s i b l e");
         w->box(FL_THIN_UP_BOX);
         g3->resizable(w);
         p_xpos = ww - 2*pw;
@@ -719,7 +681,8 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
     make_panel(ww);
  
     // Render area
-    Main = new Fl_Group(0,50,ww,wh-70,"Welcome...");
+    int mh = wh - (lh+bh+sh);
+    Main = new Fl_Group(0,0,0,mh,"Welcome...");
     Main->box(FL_FLAT_BOX);
     Main->color(FL_GRAY_RAMP + 3);
     Main->labelfont(FL_HELVETICA_BOLD_ITALIC);

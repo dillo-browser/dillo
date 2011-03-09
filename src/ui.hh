@@ -37,6 +37,80 @@ typedef enum {
 class CustProgressBox;
 class CustTabGroup;
 
+
+// Class definition ----------------------------------------------------------
+/*
+ * Used to reposition group's widgets when some of them are hidden
+ */
+class CustGroup : public Fl_Group {
+public:
+  CustGroup(int x,int y,int w ,int h,const char *l = 0) :
+    Fl_Group(x,y,w,h,l) { };
+  void rearrange(void) {
+     int n = children(), xpos = 0, r_x1, r_i = -1, i;
+
+     init_sizes();
+     for (i = 0; i < n; ++i) {
+        if (child(i) == resizable()) {
+           r_i = i;
+           r_x1 = xpos;
+           break;
+        }
+        if (child(i)->visible()) {
+           child(i)->position(xpos, child(i)->y());
+           xpos += child(i)->w();
+        }
+     }
+     if (r_i < 0)
+        return;
+     xpos = w();
+     for (i = n - 1; i > r_i; --i) {
+        if (child(i)->visible()) {
+           xpos -= child(i)->w();
+           child(i)->position(xpos, child(i)->y());
+        }
+     }
+     child(r_i)->resize(r_x1, child(r_i)->y(), xpos-r_x1, child(r_i)->h());
+     redraw();
+  }
+  void rearrange_y(void) {
+     int n = children(), pos = 0, r_pos, r_i = -1, i;
+
+     printf("children = %d\n", n);
+     init_sizes();
+     for (i = 0; i < n; ++i) {
+        if (child(i) == resizable()) {
+           r_i = i;
+           r_pos = pos;
+           break;
+        }
+        if (child(i)->visible()) {
+           printf("child[%d] x=%d y=%d w=%d h=%d\n",
+                  i, child(i)->x(), pos, child(i)->w(), child(i)->h());
+           child(i)->position(child(i)->x(), pos);
+           pos += child(i)->h();
+        }
+     }
+     if (r_i < 0)
+        return;
+     pos = h();
+     for (i = n - 1; i > r_i; --i) {
+        if (child(i)->visible()) {
+           pos -= child(i)->h();
+           printf("child[%d] x=%d y=%d w=%d h=%d\n",
+                  i, child(i)->x(), pos, child(i)->w(), child(i)->h());
+           child(i)->position(child(i)->x(), pos);
+        }
+     }
+     child(r_i)->resize(child(r_i)->x(), r_pos, child(r_i)->w(), pos-r_pos);
+     printf("resizable child[%d] x=%d y=%d w=%d h=%d\n",
+            r_i, child(r_i)->x(), r_pos, child(r_i)->w(), child(r_i)->h());
+     child(r_i)->hide();
+     redraw();
+  }
+};
+
+
 //
 // UI class definition -------------------------------------------------------
 //
@@ -56,7 +130,7 @@ class UI : public Fl_Pack {
    int MainIdx;
    // Panel customization variables
    int PanelSize, CuteColor, Small_Icons;
-   int p_xpos, p_ypos, bw, bh, fh, lh, pw, lbl;
+   int p_xpos, p_ypos, bw, bh, fh, lh, nh, sh, pw, lbl;
 
    UIPanelmode Panelmode;
    Findbar *findbar;
