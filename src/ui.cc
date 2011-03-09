@@ -525,9 +525,6 @@ Fl_Widget *UI::make_filemenu_button()
 void UI::make_panel(int ww)
 {
    Fl_Widget *w;
-   CustGroup *g1;
-   Fl_Group *g2, *g3;
-   Fl_Pack *pg;
 
    if (PanelSize > P_large) {
       PanelSize = P_tiny;
@@ -565,52 +562,53 @@ void UI::make_panel(int ww)
    nh = bh, sh = 24;
 
    if (PanelSize == P_tiny) {
-      g1 = new CustGroup(0,0,ww,bh);
-       // Toolbar
+      NavBar = new CustGroup(0,0,ww,bh);
+      NavBar->begin();
        make_toolbar(ww,bh);
        make_filemenu_button();
        make_location(ww);
-       g1->resizable(Location);
+       NavBar->resizable(Location);
        make_progress_bars(0,1);
-      g1->box(FL_THIN_UP_FRAME);
-      g1->end();
+      NavBar->box(FL_THIN_UP_FRAME);
+      NavBar->end();
    } else {
        // File menu
        if (PanelSize == P_large) {
-          g3 = new Fl_Group(0,0,ww,lh);
-          g3->box(FL_FLAT_BOX);
-          Fl_Widget *bn = make_filemenu_button();
-          g3->add(bn);
-          g3->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),lh));
+          Fl_Group *g3 = new Fl_Group(0,0,ww,lh);
+          g3->begin();
+           g3->box(FL_FLAT_BOX);
+           Fl_Widget *bn = make_filemenu_button();
+           g3->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),lh));
+          g3->end();
 
-          g2 = new Fl_Group(0,fh,ww,lh);
-          g2->begin();
-          //pg = make_location();
-          pg->size(ww,lh);
+          LocBar = new CustGroup(0,0,ww,lh);
+          LocBar->begin();
+           make_location(ww);
+          LocBar->end();
        } else {
-          g2 = new CustGroup(0,0,ww,lh);
+          LocBar = new CustGroup(0,0,ww,lh);
            p_xpos = 0;
            make_filemenu_button();
            make_location(ww);
-           g2->resizable(Location);
-          g2->end();
+           LocBar->resizable(Location);
+          LocBar->end();
        }
 
        // Toolbar
        p_ypos = 0;
-       g3 = new CustGroup(0,0,ww,bh);
-       g3->begin();
+       NavBar = new CustGroup(0,0,ww,bh);
+       NavBar->begin();
         make_toolbar(ww,bh);
         w = new Fl_Box(p_xpos,0,ww-p_xpos-2*pw,bh,"i n v i s i b l e");
         w->box(FL_THIN_UP_BOX);
-        g3->resizable(w);
+        NavBar->resizable(w);
         p_xpos = ww - 2*pw;
         if (PanelSize == P_small) {
            make_progress_bars(0,0);
         } else {
            make_progress_bars(1,0);
         }
-       g3->end();
+       NavBar->end();
    }
 }
 
@@ -984,6 +982,8 @@ void UI::customize(int flags)
       Help->hide();
 // if ( !prefs.show_progress_box )
 //    ProgBox->hide();
+
+   NavBar->rearrange();
 }
 
 /*
@@ -991,8 +991,9 @@ void UI::customize(int flags)
  */
 void UI::panel_cb_i()
 {
-   Fl_Group *NewPanel;
 #if 0
+   Fl_Group *NewPanel;
+
    // Create a new Panel
    ++PanelSize;
    NewPanel = make_panel(TopGroup->w());
