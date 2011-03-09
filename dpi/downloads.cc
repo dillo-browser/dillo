@@ -70,33 +70,33 @@ typedef enum {
 // class FL_API ProgressBar : public Fl_Widget {
 class ProgressBar : public Fl_Widget {
 protected:
-  double mMin;
-  double mMax;
-  double mPresent;
-  double mStep;
-  bool mShowPct, mShowMsg;
-  char mMsg[64];
-  Fl_Color mTextColor;
-  void draw();
+   double mMin;
+   double mMax;
+   double mPresent;
+   double mStep;
+   bool mShowPct, mShowMsg;
+   char mMsg[64];
+   Fl_Color mTextColor;
+   void draw();
 public:
-  ProgressBar(int x, int y, int w, int h, const char *lbl = 0);
-  void range(double min, double max, double step = 1)  {
-     mMin = min; mMax = max; mStep = step;
-  };
-  void step(double step)        { mPresent += step; redraw(); };
-  void move(double step);
-  double minimum()        { return mMin; }
-  double maximum()        { return mMax; }
-  void minimum(double nm) { mMin = nm; };
-  void maximum(double nm) { mMax = nm; };
-  double position  ()     { return mPresent; }
-  double step()           { return mStep; }
-  void position(double pos)     { mPresent = pos; redraw(); }
-  void showtext(bool st)        { mShowPct = st; }
-  void message(char *msg) { mShowMsg = true; strncpy(mMsg,msg,63); redraw(); }
-  bool showtext()               { return mShowPct; }
-  void text_color(Fl_Color col) { mTextColor = col; }
-  Fl_Color text_color()    { return mTextColor; }
+   ProgressBar(int x, int y, int w, int h, const char *lbl = 0);
+   void range(double min, double max, double step = 1)  {
+      mMin = min; mMax = max; mStep = step;
+   };
+   void step(double step)        { mPresent += step; redraw(); };
+   void move(double step);
+   double minimum()        { return mMin; }
+   double maximum()        { return mMax; }
+   void minimum(double nm) { mMin = nm; };
+   void maximum(double nm) { mMax = nm; };
+   double position  ()     { return mPresent; }
+   double step()           { return mStep; }
+   void position(double pos)     { mPresent = pos; redraw(); }
+   void showtext(bool st)        { mShowPct = st; }
+   void message(char *msg) { mShowMsg = true; strncpy(mMsg,msg,63); redraw(); }
+   bool showtext()               { return mShowPct; }
+   void text_color(Fl_Color col) { mTextColor = col; }
+   Fl_Color text_color()    { return mTextColor; }
 };
 
 // Download-item class -------------------------------------------------------
