@@ -96,7 +96,7 @@ public:
    void message(char *msg) { mShowMsg = true; strncpy(mMsg,msg,63); redraw(); }
    bool showtext()               { return mShowPct; }
    void text_color(Fl_Color col) { mTextColor = col; }
-   Fl_Color text_color()    { return mTextColor; }
+   Fl_Color text_color()   { return mTextColor; }
 };
 
 // Download-item class -------------------------------------------------------
