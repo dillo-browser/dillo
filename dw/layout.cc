@@ -219,6 +219,8 @@ Layout::Layout (Platform *platform)
 
 Layout::~Layout ()
 {
+   widgetAtPoint = NULL;
+
    if (scrollIdleId != -1)
       platform->removeIdle (scrollIdleId);
    if (resizeIdleId != -1)
