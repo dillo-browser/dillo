@@ -191,26 +191,6 @@ FltkColor * FltkColor::create (int col)
 FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
 {
    shown = false;
-
-   if (!text || !strpbrk(text, "&@")) {
-      escaped_str = NULL;
-   } else {
-      /*
-       * WORKAROUND: ::fltk::Tooltip::tooltip_timeout() makes instance_
-       * if necessary, and immediately uses it. This means that we can't
-       * get our hands on it to set RAW_LABEL until after it has been shown
-       * once. So let's escape the special characters ourselves.
-       */
-      const char *src = text;
-      char *dest = escaped_str = (char *) malloc(strlen(text) * 2 + 1);
-
-      while (*src) {
-         if (*src == '&' || *src == '@')
-            *dest++ = *src;
-         *dest++ = *src++;
-      }
-      *dest = '\0';
-   }
 }
 
 FltkTooltip::~FltkTooltip ()
@@ -221,8 +201,6 @@ probably can remember the one from onEnter
    if (shown)
       Fl_Tooltip::exit();
 #endif
-   if (escaped_str)
-      free(escaped_str);
 }
 
 FltkTooltip *FltkTooltip::create (const char *text)
@@ -235,7 +213,7 @@ void FltkTooltip::onEnter()
    Fl_Widget *widget = Fl::belowmouse();
 
    Fl_Tooltip::enter_area(widget, widget->x(), widget->y(), widget->w(),
-                          widget->h(), escaped_str ? escaped_str : str);
+                          widget->h(), str);
    shown = true;
 }
 

@@ -5,7 +5,7 @@
 #include <sys/time.h>     // for time_t in FreeBSD
 
 #include <FL/Fl_Group.H>
-#include <FL/Fl_Image.H>
+#include <FL/x.H>
 #include <FL/Fl_Scrollbar.H>
 
 #include "fltkcore.hh"
@@ -16,30 +16,42 @@ namespace fltk {
 class FltkViewBase: public FltkView, public Fl_Group
 {
 private:
+   class BackBuffer {
+      private:
+         int w;
+         int h;
+         bool created;
+
+      public:
+         Fl_Offscreen offscreen;
+      
+         BackBuffer ();
+         ~BackBuffer ();
+         void setSize(int w, int h);
+   };
+
    typedef enum { DRAW_PLAIN, DRAW_CLIPPED, DRAW_BUFFERED } DrawType;
 
    int bgColor;
    core::Region drawRegion;
-   //::fltk::Rectangle *exposeArea;
-   static Fl_Image *backBuffer;
+   core::Rectangle *exposeArea;
+   static BackBuffer *backBuffer;
    static bool backBufferInUse;
 
    void draw (const core::Rectangle *rect, DrawType type);
    void drawChildWidgets ();
-#if 0
    inline void clipPoint (int *x, int *y, int border) {
       if (exposeArea) {
-         if (*x < exposeArea->x () - border)
-            *x = exposeArea->x () - border;
-         if (*x > exposeArea->r () + border)
-            *x = exposeArea->r () + border;
-         if (*y < exposeArea->y () - border)
-            *y = exposeArea->y () - border;
-         if (*y > exposeArea->b () + border)
-            *y = exposeArea->b () + border;
+         if (*x < exposeArea->x - border)
+            *x = exposeArea->x - border;
+         if (*x > exposeArea->x + exposeArea->width + border)
+            *x = exposeArea->x + exposeArea->width + border;
+         if (*y < exposeArea->y - border)
+            *y = exposeArea->y - border;
+         if (*y > exposeArea->y + exposeArea->height + border)
+            *y = exposeArea->y + exposeArea->height + border;
       }
    }
-#endif
 protected:
    core::Layout *theLayout;
    int canvasWidth, canvasHeight;
