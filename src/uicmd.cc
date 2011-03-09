@@ -21,6 +21,7 @@
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Wizard.H>
 #include <FL/Fl_Box.H>
+#include <FL/names.h>
 
 #include "paths.hh"
 #include "keys.hh"
@@ -55,6 +56,7 @@ using namespace dw::fltk;
  * Local data
  */
 static char *save_dir = NULL;
+static UI *Gui;
 
 
 //----------------------------------------------------------------------------
@@ -95,7 +97,10 @@ public:
 
       Wizard = new Fl_Wizard(0,tab_h,ww,wh-tab_h);
       Wizard->end();
-      add_new_tab(1);
+      Gui = add_new_tab(1);
+      printf("Wizard window: %p\n", Wizard->window());
+      //printf("Gui visible: %d\n", Gui->visible());
+      //printf("Gui visible_r: %d\n", Gui->visible_r());
    };
    int handle(int e);
    UI *add_new_tab(int focus);
@@ -150,6 +155,7 @@ UI *CustTabs::add_new_tab(int focus)
    UI *new_ui = new UI(0,tab_h,Wizard->w(),Wizard->h());
    new_ui->tabs(this);
    Wizard->add(new_ui);
+   new_ui->show();
 
    int ntabs = children();
    snprintf(tab_label, 64,"ctab%d", ++tab_n);
@@ -306,16 +312,21 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    else
       win = new Fl_Double_Window(ww, wh);
 
-   Fl_Group::current(0);
+   //Fl_Group::current(0);
    CustTabs *DilloTabs = new CustTabs(ww, wh, 16);
    DilloTabs->selection_color(156);
-   win->add(DilloTabs);
+   //win->add(DilloTabs);
 
+#if 0
    // Create and set the UI
    UI *new_ui = DilloTabs->add_new_tab(1);
+   //DilloTabs->window()->show();
+#else
+   UI *new_ui = Gui;
+   //win->resizable(new_ui);
    win->resizable(new_ui);
    win->show();
-   //DilloTabs->window()->show();
+#endif
 
    if (old_bw == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
       // position the first window according to preferences
@@ -349,7 +360,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    win->callback(win_cb, DilloTabs);
 
-   new_ui->focus_location();
+   //new_ui->focus_location();
 
    return new_bw;
 }
@@ -479,10 +490,12 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
  */
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 {
+#if 0
    a_Nav_push(bw, url, NULL);
    if (BW2UI(bw)->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
       BW2UI(bw)->set_panelmode(UI_HIDDEN);
    a_UIcmd_focus_main_area(bw);
+#endif
 }
 
 static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
@@ -1117,6 +1130,7 @@ void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...)
  */
 void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
 {
+#if 0
    int sens;
 
    // Stop
@@ -1129,6 +1143,7 @@ void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
    sens = (a_Nav_stack_ptr(bw) < a_Nav_stack_size(bw) - 1 &&
            !bw->nav_expecting);
    BW2UI(bw)->button_set_sens(UI_FORW, sens);
+#endif
 }
 
 /*

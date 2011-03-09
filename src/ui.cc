@@ -644,8 +644,8 @@ void UI::make_status_panel(int ww)
 /*
  * User Interface constructor
  */
-UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
-  Fl_Pack(x, y, ww, wh, label)
+UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
+  Fl_Pack(x, y, ui_w, ui_h, label)
 {
    PointerOnLink = FALSE;
 
@@ -676,11 +676,12 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
 
    // Control panel
    TopGroup->begin();
-    make_panel(ww);
+    make_panel(ui_w);
  
     // Render area
-    int mh = wh - (lh+bh+sh);
+    int mh = ui_h - (lh+bh+sh);
     Main = new Fl_Group(0,0,0,mh,"Welcome...");
+    Main->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
     Main->box(FL_FLAT_BOX);
     Main->color(FL_GRAY_RAMP + 3);
     Main->labelfont(FL_HELVETICA_BOLD_ITALIC);
@@ -691,11 +692,11 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
     MainIdx = TopGroup->find(Main);
  
     // Find text bar
-    findbar = new Findbar(ww, 28);
+    findbar = new Findbar(ui_w, 28);
     //TopGroup->add(findbar);
  
     // Status Panel
-    make_status_panel(ww);
+    make_status_panel(ui_w);
     //TopGroup->add(StatusPanel);
 
    TopGroup->end();
@@ -1058,14 +1059,13 @@ void UI::panelmode_cb_i()
  */
 void UI::set_render_layout(Fl_Group &nw)
 {
-   // We'll use a workaround in a_UIcmd_browser_window_new() instead.
    TopGroup->remove(MainIdx);
    delete(Main);
    TopGroup->insert(nw, MainIdx);
    Main = &nw;
+   TopGroup->resizable(Main);
    //TopGroup->box(FL_DOWN_BOX);
    //TopGroup->box(FL_BORDER_FRAME);
-   TopGroup->resizable(TopGroup->child(MainIdx));
 }
 
 /*
