@@ -40,7 +40,7 @@ class CustTabGroup;
 //
 // UI class definition -------------------------------------------------------
 //
-class UI : public Fl_Group {
+class UI : public Fl_Pack {
    CustTabGroup *Tabs;
    char *TabTooltip;
 
@@ -56,19 +56,20 @@ class UI : public Fl_Group {
    int MainIdx;
    // Panel customization variables
    int PanelSize, CuteColor, Small_Icons;
-   int xpos, bw, bh, fh, lh, lbl;
+   int p_xpos, p_ypos, bw, bh, fh, lh, pw, lbl;
 
    UIPanelmode Panelmode;
    Findbar *findbar;
    int PointerOnLink;
-
-   Fl_Pack *make_toolbar(int tw, int th);
-   Fl_Pack *make_location();
-   Fl_Pack *make_progress_bars(int wide, int thin_up);
+   Fl_Button *make_button(const char *label, Fl_Image *img,
+                          Fl_Image*deimg, int b_n, int start = 0);
+   void make_toolbar(int tw, int th);
+   void make_location(int ww);
+   void make_progress_bars(int wide, int thin_up);
    void make_menubar(int x, int y, int w, int h);
    Fl_Widget *make_filemenu_button();
-   Fl_Group *make_panel(int ww);
-   Fl_Group *make_status_panel(int ww);
+   void make_panel(int ww);
+   void make_status_panel(int ww);
 
 public:
 

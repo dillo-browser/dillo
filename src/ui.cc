@@ -81,6 +81,43 @@ static struct iconset *icons = &standard_icons;
  */
 
 //----------------------------------------------------------------------------
+/*
+ * Used to reposition group's widgets when some of them are hidden
+ */
+class Fl_CustGroup : public Fl_Group {
+public:
+  Fl_CustGroup(int x,int y,int w ,int h,const char *l = 0) :
+    Fl_Group(x,y,w,h,l) { };
+  void rearrange(void) {
+     int n = children(), xpos = 0, r_x1, r_i = -1, i;
+
+     init_sizes();
+     for (i = 0; i < n; ++i) {
+        if (child(i) == resizable()) {
+           r_i = i;
+           r_x1 = xpos;
+           break;
+        }
+        if (child(i)->visible()) {
+           child(i)->position(xpos, child(i)->y());
+           xpos += child(i)->w();
+        }
+     }
+     if (r_i < 0)
+        return;
+     xpos = w();
+     for (i = n - 1; i > r_i; --i) {
+        if (child(i)->visible()) {
+           xpos -= child(i)->w();
+           child(i)->position(xpos, child(i)->y());
+        }
+     }
+     child(r_i)->resize(r_x1, child(r_i)->y(), xpos-r_x1, child(r_i)->h());
+     redraw();
+  }
+};
+
+//----------------------------------------------------------------------------
 
 /*
  * (Used to avoid certain shortcuts in the location bar)
@@ -173,8 +210,8 @@ public:
          padding = w > 2 ? w/2 : 1;
       }
       copy_label(lbl);
-      measure_label(w,h);
-      size(w+padding,h);
+      //measure_label(w,h);
+      //size(w+padding,this->h());
       redraw_label();
    }
 };
@@ -380,58 +417,41 @@ static void bugmeter_cb(Fl_Widget *wid, void *data)
 //----------------------------
 
 /*
+ * Make a generic navigation button
+ */
+Fl_Button *UI::make_button(const char *label,
+                           Fl_Image *img, Fl_Image *deimg,
+                           int b_n, int start)
+{
+   if (start)
+      p_xpos = 0;
+
+   Fl_Button *b = new Fl_Button(p_xpos, p_ypos, bw, bh, (lbl) ? label : NULL);
+   if (img)
+      b->image(img);
+   if (deimg)
+      b->deimage(deimg);
+   b->callback(b1_cb, (void *)b_n);
+   b->clear_visible_focus();
+   b->labelsize(12);
+   b->box(FL_NO_BOX);
+   p_xpos += bw;
+   return b;
+}
+
+/*
  * Create the archetipic browser buttons
  */
-Fl_Pack *UI::make_toolbar(int tw, int th)
+void UI::make_toolbar(int tw, int th)
 {
-   Fl_Button *b;
-   Fl_Pack *p1=new Fl_Pack(0,0,tw,th);
-   p1->begin();
-    Back = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Back" : 0);
-    b->image(icons->ImgLeft);
-    b->deimage(icons->ImgLeftIn);
-    b->callback(b1_cb, (void *)UI_BACK);
-    b->clear_visible_focus();
-
-    Forw = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Forw" : 0);
-    b->image(icons->ImgRight);
-    b->deimage(icons->ImgRightIn);
-    b->callback(b1_cb, (void *)UI_FORW);
-    b->clear_visible_focus();
-
-    Home = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Home" : 0);
-    b->image(icons->ImgHome);
-    b->callback(b1_cb, (void *)UI_HOME);
-    b->clear_visible_focus();
-
-    Reload = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Reload" : 0);
-    b->image(icons->ImgReload);
-    b->callback(b1_cb, (void *)UI_RELOAD);
-    b->clear_visible_focus();
-
-    Save = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Save" : 0);
-    b->image(icons->ImgSave);
-    b->callback(b1_cb, (void *)UI_SAVE);
-    b->clear_visible_focus();
-
-    Stop = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Stop" : 0);
-    b->image(icons->ImgStop);
-    b->deimage(icons->ImgStopIn);
-    b->callback(b1_cb, (void *)UI_STOP);
-    b->clear_visible_focus();
-
-    Bookmarks = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Book" : 0);
-    b->image(icons->ImgBook);
-    b->callback(b1_cb, (void *)UI_BOOK);
-    b->clear_visible_focus();
-
-    Tools = b = new Fl_Button(xpos, 0, bw, bh, (lbl) ? "Tools" : 0);
-    b->image(icons->ImgTools);
-    b->callback(b1_cb, (void *)UI_TOOLS);
-    b->clear_visible_focus();
-
-   p1->type(Fl_Pack::HORIZONTAL);
-   p1->end();
+   Back = make_button("Back", icons->ImgLeft, icons->ImgLeftIn, UI_BACK, 1);
+   Forw = make_button("Forw", icons->ImgRight, icons->ImgRightIn, UI_FORW);
+   Home = make_button("Home", icons->ImgHome, NULL, UI_HOME);
+   Reload = make_button("Reload", icons->ImgReload, NULL, UI_RELOAD);
+   Save = make_button("Save", icons->ImgSave, NULL, UI_SAVE);
+   Stop = make_button("Stop", icons->ImgStop, icons->ImgStopIn, UI_STOP);
+   Bookmarks = make_button("Book", icons->ImgBook, NULL, UI_BOOK);
+   Tools = make_button("Tools", icons->ImgTools, NULL, UI_TOOLS);
 
    if (prefs.show_tooltip) {
       Back->tooltip("Previous page");
@@ -443,40 +463,41 @@ Fl_Pack *UI::make_toolbar(int tw, int th)
       Bookmarks->tooltip("View bookmarks");
       Tools->tooltip("Settings");
    }
-   return p1;
 }
 
 /*
  * Create the location box (Clear/Input/Search)
  */
-Fl_Pack *UI::make_location()
+void UI::make_location(int ww)
 {
    Fl_Button *b;
-   Fl_Pack *pg = new Fl_Pack(0,0,0,0);
-   pg->begin();
-    Clear = b = new CustButton(2,2,16,22,0);
+
+    Clear = b = new CustButton(p_xpos,0,16,lh,0);
     b->image(icons->ImgClear);
     b->callback(clear_cb, this);
     b->clear_visible_focus();
+    b->box(FL_THIN_UP_BOX);
+    p_xpos += b->w();
 
-    Fl_Input *i = Location = new CustInput(0,0,0,0,0);
+    Fl_Input *i = Location = new CustInput(p_xpos,0,ww-p_xpos-32,lh,0);
     i->color(CuteColor);
     i->when(FL_WHEN_ENTER_KEY);
     i->callback(location_cb, this);
+    p_xpos += i->w();
 
-    Search = b = new Fl_Button(0,0,16,22,0);
+    Search = b = new Fl_Button(p_xpos,0,16,lh,0);
     b->image(icons->ImgSearch);
     b->callback(search_cb, this);
     b->clear_visible_focus();
+    b->box(FL_THIN_UP_BOX);
+    p_xpos += b->w();
 
-    Help = b = new Fl_Button(0,0,16,22,0);
+    Help = b = new Fl_Button(p_xpos,0,16,lh,0);
     b->image(icons->ImgHelp);
     b->callback(help_cb, this);
     b->clear_visible_focus();
-
-   pg->type(Fl_Pack::HORIZONTAL);
-   pg->resizable(i);
-   pg->end();
+    b->box(FL_THIN_UP_BOX);
+    p_xpos += b->w();
 
    if (prefs.show_tooltip) {
       Clear->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
@@ -484,30 +505,26 @@ Fl_Pack *UI::make_location()
       Search->tooltip("Search the Web");
       Help->tooltip("Help");
    }
-   return pg;
 }
 
 /*
  * Create the progress bars
  */
-Fl_Pack *UI::make_progress_bars(int wide, int thin_up)
+void UI::make_progress_bars(int wide, int thin_up)
 {
-   ProgBox = new Fl_Pack(0,0,0,0);
-   ProgBox->begin();
     // Images
-    IProg = new CustProgressBox(0,0,0,0);
+    IProg = new CustProgressBox(p_xpos,p_ypos,pw,bh);
+    IProg->labelsize(12);
     IProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
     IProg->labelcolor(FL_GRAY_RAMP + 2);
     IProg->update_label(wide ? "Images\n0 of 0" : "0 of 0");
+    p_xpos += pw;
     // Page
-    PProg = new CustProgressBox(0,0,0,0);
+    PProg = new CustProgressBox(p_xpos,p_ypos,pw,bh);
+    PProg->labelsize(12);
     PProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
     PProg->labelcolor(FL_GRAY_RAMP + 2);
     PProg->update_label(wide ? "Page\n0.0KB" : "0.0KB");
-   ProgBox->type(Fl_Pack::HORIZONTAL);
-   ProgBox->end();
-
-   return ProgBox;
 }
 
 /*
@@ -519,14 +536,15 @@ Fl_Widget *UI::make_filemenu_button()
    Fl_Button *btn;
    int w,h, padding;
 
-   FileButton = btn = new Fl_Button(0,0,0,0,"W");
+   FileButton = btn = new Fl_Button(p_xpos,0,0,0,"W");
    btn->measure_label(w, h);
    padding = w;
    btn->copy_label(PanelSize == P_tiny ? "&F" : "&File");
    btn->measure_label(w,h);
    if (PanelSize == P_large)
       h = fh;
-   btn->size(w+padding,h);
+   btn->size(w+padding,PanelSize == P_tiny ? bh : lh);
+   p_xpos += btn->w();
    _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
    btn->box(PanelSize == P_large ? FL_FLAT_BOX : FL_THIN_UP_BOX);
    btn->callback(filemenu_cb, this);
@@ -542,10 +560,11 @@ Fl_Widget *UI::make_filemenu_button()
 /*
  * Create the control panel
  */
-Fl_Group *UI::make_panel(int ww)
+void UI::make_panel(int ww)
 {
    Fl_Widget *w;
-   Fl_Group *g1, *g2, *g3;
+   Fl_CustGroup *g1;
+   Fl_Group *g2, *g3;
    Fl_Pack *pg;
 
    if (PanelSize > P_large) {
@@ -558,105 +577,90 @@ Fl_Group *UI::make_panel(int ww)
    else
       icons = &standard_icons;
 
+   pw = 70;
+   p_xpos = p_ypos = 0;
    if (PanelSize == P_tiny) {
       if (Small_Icons)
-         xpos = 0, bw = 22, bh = 22, fh = 0, lh = 22, lbl = 0;
+         bw = 22, bh = 22, fh = 0, lh = 22, lbl = 0;
       else
-         xpos = 0, bw = 28, bh = 28, fh = 0, lh = 28, lbl = 0;
+         bw = 28, bh = 28, fh = 0, lh = 28, lbl = 0;
    } else if (PanelSize == P_small) {
       if (Small_Icons)
-         xpos = 0, bw = 20, bh = 20, fh = 0, lh = 20, lbl = 0;
+         bw = 20, bh = 20, fh = 0, lh = 20, lbl = 0;
       else
-         xpos = 0, bw = 28, bh = 28, fh = 0, lh = 28, lbl = 0;
+         bw = 28, bh = 28, fh = 0, lh = 28, lbl = 0;
    } else if (PanelSize == P_medium) {
       if (Small_Icons)
-         xpos = 0, bw = 42, bh = 36, fh = 0, lh = 22, lbl = 1;
+         bw = 42, bh = 36, fh = 0, lh = 22, lbl = 1;
       else
-         xpos = 0, bw = 45, bh = 45, fh = 0, lh = 28, lbl = 1;
+         bw = 45, bh = 45, fh = 0, lh = 28, lbl = 1;
    } else {   // P_large
       if (Small_Icons)
-         xpos = 0, bw = 42, bh = 36, fh = 22, lh = 22, lbl = 1;
+         bw = 42, bh = 36, fh = 22, lh = 22, lbl = 1;
       else
-         xpos = 0, bw = 45, bh = 45, fh = 24, lh = 28, lbl = 1;
+         bw = 45, bh = 45, fh = 24, lh = 28, lbl = 1;
    }
 
    if (PanelSize == P_tiny) {
-      g1 = new Fl_Group(0,0,ww,bh);
+      g1 = new Fl_CustGroup(0,0,ww,bh);
        // Toolbar
-       pg = make_toolbar(ww,bh);
-       pg->box(FL_EMBOSSED_BOX);
-       g1->add(pg);
-       w = make_filemenu_button();
-       pg->add(w);
-       w = make_location();
-       pg->add(w);
-       pg->resizable(w);
-       w = make_progress_bars(0,1);
-       pg->add(w);
-
-      g1->resizable(pg);
-
-   } else {
-      g1 = new Fl_Group(0,0,ww,fh+lh+bh);
-      g1->begin();
-        // File menu
-        if (PanelSize == P_large) {
-           g3 = new Fl_Group(0,0,ww,lh);
-           g3->box(FL_FLAT_BOX);
-           Fl_Widget *bn = make_filemenu_button();
-           g3->add(bn);
-           g3->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),lh));
-
-           g2 = new Fl_Group(0,fh,ww,lh);
-           g2->begin();
-           pg = make_location();
-           pg->size(ww,lh);
-        } else {
-           g2 = new Fl_Pack(0,fh,ww,lh);
-           g2->type(Fl_Pack::HORIZONTAL);
-           g2->begin();
-           make_filemenu_button();
-           pg = make_location();
-        }
-
-       g2->resizable(pg);
-       g2->end();
-
-       // Toolbar
-       g3 = new Fl_Group(0,fh+lh,ww,bh);
-       g3->begin();
-        pg = make_toolbar(ww,bh);
-        //w = new Fl_Box(0,0,0,0,"i n v i s i b l e");
-        w = new Fl_Box(0,0,0,0,0);
-        pg->add(w);
-        pg->resizable(w);
-
-        if (PanelSize == P_small) {
-           w = make_progress_bars(0,0);
-        } else {
-           w = make_progress_bars(1,0);
-        }
-        pg->add(w);
-
-       g3->resizable(pg); // Better than 'w3' and it also works
-       pg->box(FL_BORDER_FRAME);
-       //g3->box(FL_EMBOSSED_BOX);
-       g3->end();
-
-      g1->resizable(g3);
+       make_toolbar(ww,bh);
+       make_filemenu_button();
+       make_location(ww);
+       g1->resizable(Location);
+       make_progress_bars(0,1);
+      g1->box(FL_THIN_UP_FRAME);
       g1->end();
-   }
+   } else {
+       // File menu
+       if (PanelSize == P_large) {
+          g3 = new Fl_Group(0,0,ww,lh);
+          g3->box(FL_FLAT_BOX);
+          Fl_Widget *bn = make_filemenu_button();
+          g3->add(bn);
+          g3->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),lh));
 
-   return g1;
+          g2 = new Fl_Group(0,fh,ww,lh);
+          g2->begin();
+          //pg = make_location();
+          pg->size(ww,lh);
+       } else {
+          g2 = new Fl_CustGroup(0,0,ww,lh);
+           make_filemenu_button();
+           make_location(ww);
+           g2->resizable(Location);
+          g2->end();
+       }
+
+       // Toolbar
+       //p_ypos += g2->y();
+       p_ypos = 0;
+       //g3 = new Fl_Group(0,fh+lh,ww,bh);
+       g3 = new Fl_Group(0,p_ypos,ww,bh);
+       g3->begin();
+        make_toolbar(ww,bh);
+        w = new Fl_Box(p_xpos,p_ypos,ww-p_xpos-2*pw,bh,"i n v i s i b l e");
+        w->box(FL_THIN_UP_BOX);
+        g3->resizable(w);
+        p_xpos = ww - 2*pw;
+        if (PanelSize == P_small) {
+           make_progress_bars(0,0);
+        } else {
+           make_progress_bars(1,0);
+        }
+       g3->end();
+   }
 }
 
 /*
  * Create the status panel
  */
-Fl_Group *UI::make_status_panel(int ww)
+void UI::make_status_panel(int ww)
 {
    const int s_h = 20, bm_w = 16;
-   Fl_Group *g = new Fl_Group(0, 0, ww, s_h, 0);
+   // HACK: we need a defined StatusOutput
+   StatusPanel = new Fl_Group(0, 400, 1, 1, 0);
+   StatusPanel->end();
 
    // Status box
    StatusOutput = new Fl_Output(0, 0, ww-bm_w, s_h, 0);
@@ -664,7 +668,6 @@ Fl_Group *UI::make_status_panel(int ww)
    StatusOutput->box(FL_THIN_DOWN_BOX);
    StatusOutput->clear_visible_focus();
    StatusOutput->color(FL_GRAY_RAMP + 18);
-   g->add(StatusOutput);
    //StatusOutput->throw_focus();
 
    // Bug Meter
@@ -676,25 +679,21 @@ Fl_Group *UI::make_status_panel(int ww)
       BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
    BugMeter->callback(bugmeter_cb, this);
    BugMeter->clear_visible_focus();
-   g->add(BugMeter);
-
-   g->resizable(StatusOutput);
-   return g;
 }
 
 /*
  * User Interface constructor
  */
 UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
-  Fl_Group(x, y, ww, wh, label)
+  Fl_Pack(x, y, ww, wh, label)
 {
    PointerOnLink = FALSE;
 
    Tabs = NULL;
    TabTooltip = NULL;
-   TopGroup = new Fl_Pack(0, 0, ww, wh);
-   add(TopGroup);
-   resizable(TopGroup);
+   TopGroup = this;
+   TopGroup->type(VERTICAL);
+   //resizable(TopGroup);
    clear_flag(SHORTCUT_LABEL);
 
    if (cur_ui) {
@@ -716,28 +715,29 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    }
 
    // Control panel
-   Panel = make_panel(ww);
-   TopGroup->add(Panel);
+   TopGroup->begin();
+    make_panel(ww);
+ 
+    // Render area
+    Main = new Fl_Group(0,50,ww,wh-70,"Welcome...");
+    Main->box(FL_FLAT_BOX);
+    Main->color(FL_GRAY_RAMP + 3);
+    Main->labelfont(FL_HELVETICA_BOLD_ITALIC);
+    Main->labelsize(36);
+    Main->labeltype(FL_SHADOW_LABEL);
+    Main->labelcolor(FL_WHITE);
+    TopGroup->resizable(Main);
+    MainIdx = TopGroup->find(Main);
+ 
+    // Find text bar
+    findbar = new Findbar(ww, 28);
+    //TopGroup->add(findbar);
+ 
+    // Status Panel
+    make_status_panel(ww);
+    //TopGroup->add(StatusPanel);
 
-   // Render area
-   Main = new Fl_Group(0,0,1,1,"Welcome...");
-   Main->box(FL_FLAT_BOX);
-   Main->color(FL_GRAY_RAMP + 3);
-   Main->labelfont(FL_HELVETICA_BOLD_ITALIC);
-   Main->labelsize(36);
-   Main->labeltype(FL_SHADOW_LABEL);
-   Main->labelcolor(FL_WHITE);
-   TopGroup->add(Main);
-   TopGroup->resizable(Main);
-   MainIdx = TopGroup->find(Main);
-
-   // Find text bar
-   findbar = new Findbar(ww, 28);
-   TopGroup->add(findbar);
-
-   // Status Panel
-   StatusPanel = make_status_panel(ww);
-   TopGroup->add(StatusPanel);
+   TopGroup->end();
 
    // Make the full screen button (to be attached to the viewport later)
    // TODO: attach to the viewport
@@ -749,7 +749,7 @@ UI::UI(int x, int y, int ww, int wh, const char* label, const UI *cur_ui) :
    customize(0);
 
    if (Panelmode) {
-      Panel->hide();
+      //Panel->hide();
       StatusPanel->hide();
    }
 }
@@ -1019,8 +1019,8 @@ void UI::customize(int flags)
       Search->hide();
    if ( !prefs.show_help )
       Help->hide();
-   if ( !prefs.show_progress_box )
-      ProgBox->hide();
+// if ( !prefs.show_progress_box )
+//    ProgBox->hide();
 }
 
 /*
@@ -1029,7 +1029,7 @@ void UI::customize(int flags)
 void UI::panel_cb_i()
 {
    Fl_Group *NewPanel;
-
+#if 0
    // Create a new Panel
    ++PanelSize;
    NewPanel = make_panel(TopGroup->w());
@@ -1038,7 +1038,7 @@ void UI::panel_cb_i()
    TopGroup->add(NewPanel);
    Panel = NewPanel;
    customize(0);
-
+#endif
    Location->take_focus();
 }
 
@@ -1063,11 +1063,11 @@ void UI::color_change_cb_i()
 void UI::set_panelmode(UIPanelmode mode)
 {
    if (mode == UI_HIDDEN) {
-      Panel->hide();
+      //Panel->hide();
       StatusPanel->hide();
    } else {
       /* UI_NORMAL or UI_TEMPORARILY_SHOW_PANELS */
-      Panel->show();
+      //Panel->show();
       StatusPanel->show();
    }
    Panelmode = mode;
@@ -1094,14 +1094,10 @@ void UI::panelmode_cb_i()
  */
 void UI::set_render_layout(Fl_Group &nw)
 {
-   // BUG: replace() is not working as it should.
-   // In our case, replacing the rendering area leaves the vertical
-   // scrollbar without events.
-   //
    // We'll use a workaround in a_UIcmd_browser_window_new() instead.
    TopGroup->remove(MainIdx);
    delete(Main);
-   TopGroup->add(nw);
+   TopGroup->insert(nw, MainIdx);
    Main = &nw;
    //TopGroup->box(FL_DOWN_BOX);
    //TopGroup->box(FL_BORDER_FRAME);
