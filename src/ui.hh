@@ -163,7 +163,6 @@ public:
    void set_img_prog(int n_img, int t_img, int cmd);
    void set_bug_prog(int n_bug);
    void set_render_layout(Fl_Group &nw);
-   void set_tab_title(const char *label);
    void customize(int flags);
    void button_set_sens(UIButton btn, int sens);
    void paste_url();

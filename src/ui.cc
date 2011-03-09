@@ -98,6 +98,7 @@ public:
  */
 int CustInput::handle(int e)
 {
+#if 0
    int k = Fl::event_key();
 
    _MSG("CustInput::handle event=%d\n", e);
@@ -126,7 +127,7 @@ int CustInput::handle(int e)
       }
    }
    _MSG("\n");
-
+#endif
    return Fl_Input::handle(e);
 }
 
@@ -599,8 +600,8 @@ void UI::make_panel(int ww)
        NavBar = new CustGroup(0,0,ww,bh);
        NavBar->begin();
         make_toolbar(ww,bh);
-        w = new Fl_Box(p_xpos,0,ww-p_xpos-2*pw,bh,"i n v i s i b l e");
-        w->box(FL_THIN_UP_BOX);
+        w = new Fl_Box(p_xpos,0,ww-p_xpos-2*pw,bh);
+        w->box(FL_NO_BOX);
         NavBar->resizable(w);
         p_xpos = ww - 2*pw;
         if (PanelSize == P_small) {
@@ -734,7 +735,7 @@ int UI::handle(int event)
    _MSG("Panel->h()=%d Main->h()=%d\n", Panel->h() , Main->h());
 
    int ret = 0;
-
+#if 0
    if (event == FL_KEYBOARD) {
       return 0; // Receive as shortcut
    } else if (event == FL_SHORTCUT) {
@@ -819,7 +820,7 @@ int UI::handle(int event)
          }
       }
    }
-
+#endif
    if (!ret) {
       ret = Fl_Group::handle(event);
    }
@@ -1066,37 +1067,6 @@ void UI::set_render_layout(Fl_Group &nw)
    TopGroup->resizable(Main);
    //TopGroup->box(FL_DOWN_BOX);
    //TopGroup->box(FL_BORDER_FRAME);
-}
-
-/*
- * Set the tab title
- */
-void UI::set_tab_title(const char *label)
-{
-   char title[128];
-
-   dReturn_if_fail(label != NULL);
-
-   if (*label) {
-      // Make a label for this tab
-      size_t tab_chars = 18, label_len = strlen(label);
-
-      if (label_len > tab_chars)
-         tab_chars = a_Utf8_end_of_char(label, tab_chars - 1) + 1;
-      snprintf(title, tab_chars + 1, "%s", label);
-      if (label_len > tab_chars)
-         snprintf(title + tab_chars, 4, "...");
-      // Avoid unnecessary redraws
-      if (strcmp(this->label(), title)) {
-         this->copy_label(title);
-         this->redraw_label();
-      }
-
-      // Disabled because of a bug in fltk::Tabgroup
-      //dFree(TabTooltip);
-      //TabTooltip = dStrdup(label);
-      //this->tooltip(TabTooltip);
-   }
 }
 
 /*

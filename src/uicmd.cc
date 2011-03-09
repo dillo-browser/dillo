@@ -58,6 +58,10 @@ using namespace dw::fltk;
 static char *save_dir = NULL;
 static UI *Gui;
 
+/*
+ * Forward declarations
+ */
+static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, int focus);
 
 //----------------------------------------------------------------------------
 
@@ -97,7 +101,6 @@ public:
 
       Wizard = new Fl_Wizard(0,tab_h,ww,wh-tab_h);
       Wizard->end();
-      Gui = add_new_tab(1);
       printf("Wizard window: %p\n", Wizard->window());
       //printf("Gui visible: %d\n", Gui->visible());
       //printf("Gui visible_r: %d\n", Gui->visible_r());
@@ -107,10 +110,26 @@ public:
    void remove_tab();
    Fl_Wizard *wizard(void) { return Wizard; }
    int get_btn_idx(UI *ui);
+   int num_tabs() { return (children() - 1); } // substract invisible box
    void switch_tab(CustTabButton *cbtn);
    void prev_tab(void);
    void next_tab(void);
+
+   void set_tab_label(UI *ui, const char *title);
 };
+
+/*
+ * Callback for mouse click
+ */
+static void tab_btn_cb (Fl_Widget *w, void *cb_data)
+{
+   CustTabButton *btn = (CustTabButton*) w;
+   CustTabs *tabs = (CustTabs*) cb_data;
+   int b = Fl::event_button();
+
+   if (b == FL_LEFT_MOUSE)
+      tabs->switch_tab(btn);
+}
 
 int CustTabs::handle(int e)
 {
@@ -134,7 +153,7 @@ int CustTabs::handle(int e)
             //toggle_cb(NULL, Wizard->value());
             ret = 1;
          } else if (k == 't') {
-            add_new_tab(1);
+            UIcmd_tab_new(this, 1);
          } else if (k == 'q') {
             remove_tab();
          }
@@ -157,9 +176,9 @@ UI *CustTabs::add_new_tab(int focus)
    Wizard->add(new_ui);
    new_ui->show();
 
-   int ntabs = children();
    snprintf(tab_label, 64,"ctab%d", ++tab_n);
-   CustTabButton *btn = new CustTabButton((ntabs-1)*tab_w,0,tab_w,tab_h);
+   CustTabButton *btn = new CustTabButton(num_tabs()*tab_w,0,tab_w,tab_h);
+   btn->align(FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
    btn->copy_label(tab_label);
    btn->clear_visible_focus();
    btn->box(FL_PLASTIC_ROUND_UP_BOX);
@@ -167,7 +186,7 @@ UI *CustTabs::add_new_tab(int focus)
    btn->ui(new_ui);
    add(btn);
    btn->redraw();
-   //btn->callback(tab_btn_cb, this);
+   btn->callback(tab_btn_cb, this);
 
    if (focus)
       switch_tab(btn);
@@ -181,10 +200,6 @@ void CustTabs::remove_tab()
    CustTabButton *btn;
    UI *ui = (UI*)Wizard->value();
 
-   // the invisible box is also a child
-   if (children() == 2)
-      exit(0);
-
    // remove label button
    int idx = get_btn_idx(ui);
    btn = (CustTabButton*)child(idx);
@@ -196,11 +211,17 @@ void CustTabs::remove_tab()
 
    Wizard->remove(ui);
    delete(ui);
+
+   if (num_tabs() == 0) {
+      window()->hide();
+      // TODO: free memory
+      //delete window();
+   }
 }
 
 int CustTabs::get_btn_idx(UI *ui)
 {
-   for (int i = children()-1; i; --i) {
+   for (int i = 1; i <= num_tabs(); ++i) {
       CustTabButton *btn = (CustTabButton*)child(i);
       if (btn->ui() == ui)
          return i;
@@ -239,11 +260,35 @@ void CustTabs::next_tab()
 {
    int idx;
 
-   if ((idx = get_btn_idx((UI*)Wizard->value())) > 0 && idx+1 < children())
+   if ((idx = get_btn_idx((UI*)Wizard->value())) > 0 && idx < num_tabs())
       switch_tab( (CustTabButton*)child(idx+1) );
 }
 
+/*
+ * Set this UI's tab button label
+ */
+void CustTabs::set_tab_label(UI *ui, const char *label)
+{
+   char title[128];
+   int idx = get_btn_idx(ui);
+ 
+   if (idx > 0) {
+      // Make a label for this tab
+      size_t tab_chars = 7, label_len = strlen(label);
 
+      if (label_len > tab_chars)
+         tab_chars = a_Utf8_end_of_char(label, tab_chars - 1) + 1;
+      snprintf(title, tab_chars + 1, "%s", label);
+      if (label_len > tab_chars)
+         snprintf(title + tab_chars, 4, "...");
+
+      // Avoid unnecessary redraws
+      if (strcmp(child(idx)->label(), title)) {
+         child(idx)->copy_label(title);
+         child(idx)->redraw_label();
+      }
+   }
+}
 
 
 //----------------------------------------------------------------------------
@@ -252,12 +297,12 @@ static void win_cb (Fl_Widget *w, void *cb_data) {
    int choice = 1;
    CustTabs *tabs = (CustTabs*) cb_data;
 
-   if (tabs->children () > 1)
+   if (tabs->num_tabs() > 1)
       choice = a_Dialog_choice5("Window contains more than one tab.",
                                 "Close all tabs", "Cancel", NULL, NULL, NULL);
    if (choice == 1)
-      while (tabs->children())
-         a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(tabs->child(0)));
+      while (tabs->num_tabs())
+         a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(tabs->wizard()->value()));
 }
 
 /*
@@ -314,49 +359,16 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    //Fl_Group::current(0);
    CustTabs *DilloTabs = new CustTabs(ww, wh, 16);
-   DilloTabs->selection_color(156);
-   //win->add(DilloTabs);
+   win->end();
 
-#if 0
-   // Create and set the UI
-   UI *new_ui = DilloTabs->add_new_tab(1);
-   //DilloTabs->window()->show();
-#else
-   UI *new_ui = Gui;
-   //win->resizable(new_ui);
-   win->resizable(new_ui);
+   new_bw = UIcmd_tab_new(DilloTabs, 1);
+   win->resizable(Gui);
    win->show();
-#endif
 
    if (old_bw == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
       // position the first window according to preferences
       DilloTabs->window()->position(prefs.xpos, prefs.ypos);
    }
-
-   // Now create the Dw render layout and viewport
-   FltkPlatform *platform = new FltkPlatform ();
-   Layout *layout = new Layout (platform);
-   style::Color *bgColor = style::Color::create (layout, prefs.bg_color);
-   layout->setBgColor (bgColor);
-
-   FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
-   if (prefs.buffered_drawing == 1)
-      viewport->setBufferedDrawing (true);
-   else
-      viewport->setBufferedDrawing (false);
-
-   layout->attachView (viewport);
-   new_ui->set_render_layout(*viewport);
-
-   viewport->setScrollStep((int) rint(14.0 * prefs.font_factor));
-
-   // Now, create a new browser window structure
-   new_bw = a_Bw_new();
-
-   // Reference the UI from the bw
-   new_bw->ui = (void *)new_ui;
-   // Copy the layout pointer into the bw data
-   new_bw->render_layout = (void*)layout;
 
    win->callback(win_cb, DilloTabs);
 
@@ -366,26 +378,16 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 }
 
 /*
- * Create a new Tab.
- * i.e the new UI and its associated BrowserWindow data structure.
+ * Create a new Tab button, UI and its associated BrowserWindow data
+ * structure.
  */
-static BrowserWindow *UIcmd_tab_new(const void *vbw, int focus)
+static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, int focus)
 {
-   _MSG(" UIcmd_tab_new vbw=%p\n", vbw);
-
-   dReturn_val_if_fail (vbw != NULL, NULL);
-
-   BrowserWindow *new_bw = NULL;
-   BrowserWindow *old_bw = (BrowserWindow*)vbw;
-   UI *ui = BW2UI(old_bw);
-
-   // WORKAROUND: limit the number of tabs because of a fltk bug
-   if (ui->tabs()->children() >= 127)
-      return a_UIcmd_browser_window_new(ui->window()->w(), ui->window()->h(),
-                                        0, vbw);
+   MSG(" UIcmd_tab_new\n");
 
    // Create and set the UI
-   UI *new_ui = ui->tabs()->add_new_tab(focus);
+   UI *new_ui = tabs->add_new_tab(1);
+   Gui = new_ui;
 
    // Now create the Dw render layout and viewport
    FltkPlatform *platform = new FltkPlatform ();
@@ -394,14 +396,13 @@ static BrowserWindow *UIcmd_tab_new(const void *vbw, int focus)
    layout->setBgColor (bgColor);
 
    FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
-
+   viewport->setBufferedDrawing (prefs.buffered_drawing ? true : false);
    layout->attachView (viewport);
    new_ui->set_render_layout(*viewport);
-
    viewport->setScrollStep((int) rint(14.0 * prefs.font_factor));
 
    // Now, create a new browser window structure
-   new_bw = a_Bw_new();
+   BrowserWindow *new_bw = a_Bw_new();
 
    // Reference the UI from the bw
    new_bw->ui = (void *)new_ui;
@@ -490,8 +491,8 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
  */
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 {
-#if 0
    a_Nav_push(bw, url, NULL);
+#if 0
    if (BW2UI(bw)->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
       BW2UI(bw)->set_panelmode(UI_HIDDEN);
    a_UIcmd_focus_main_area(bw);
@@ -530,7 +531,8 @@ void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
  */
 void a_UIcmd_open_url_nt(void *vbw, const DilloUrl *url, int focus)
 {
-   BrowserWindow *new_bw = UIcmd_tab_new(vbw, focus);
+   BrowserWindow *bw = (BrowserWindow *)vbw;
+   BrowserWindow *new_bw = UIcmd_tab_new(BW2UI(bw)->tabs(), focus);
    UIcmd_open_url_nbw(new_bw, url);
 }
 
@@ -1106,7 +1108,7 @@ void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
       BW2UI(bw)->window()->copy_label(title);
       BW2UI(bw)->window()->redraw_label();
    }
-   BW2UI(bw)->set_tab_title(label);
+   BW2UI(bw)->tabs()->set_tab_label(BW2UI(bw), label);
 }
 
 /*
@@ -1130,7 +1132,6 @@ void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...)
  */
 void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
 {
-#if 0
    int sens;
 
    // Stop
@@ -1143,7 +1144,6 @@ void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
    sens = (a_Nav_stack_ptr(bw) < a_Nav_stack_size(bw) - 1 &&
            !bw->nav_expecting);
    BW2UI(bw)->button_set_sens(UI_FORW, sens);
-#endif
 }
 
 /*
