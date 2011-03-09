@@ -35,7 +35,7 @@ typedef enum {
 
 // Private classes
 class CustProgressBox;
-class CustTabGroup;
+class CustTabs;
 
 
 // Class definition ----------------------------------------------------------
@@ -115,7 +115,7 @@ public:
 // UI class definition -------------------------------------------------------
 //
 class UI : public Fl_Pack {
-   CustTabGroup *Tabs;
+   CustTabs *Tabs;
    char *TabTooltip;
 
    Fl_Group *TopGroup;
@@ -172,8 +172,8 @@ public:
    Fl_Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
 
-   CustTabGroup *tabs() { return Tabs; }
-   void tabs(CustTabGroup *tabs) { Tabs = tabs; }
+   CustTabs *tabs() { return Tabs; }
+   void tabs(CustTabs *tabs) { Tabs = tabs; }
    int pointerOnLink() { return PointerOnLink; }
    void pointerOnLink(int flag) { PointerOnLink = flag; }
 
