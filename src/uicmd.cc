@@ -136,7 +136,38 @@ int CustTabs::handle(int e)
    int ret = 0;
 
    //printf("CustTabs::handle e=%s\n", fl_eventnames[e]);
-   if (e == FL_KEYUP) {
+   if (e == FL_KEYBOARD) {
+      return 0; // Receive as shortcut
+   } else if (e == FL_SHORTCUT) {
+      UI *ui = (UI*)wizard()->value();
+      BrowserWindow *bw = a_UIcmd_get_bw_by_widget(ui);
+      KeysCommand_t cmd = Keys::getKeyCmd();
+      if (cmd == KEYS_NOP) {
+         // Do nothing
+      } else if (cmd == KEYS_NEW_TAB) {
+         a_UIcmd_open_url_nt(bw, NULL, 1);
+         ret = 1;
+      } else if (cmd == KEYS_CLOSE_TAB) {
+         a_UIcmd_close_bw(bw);
+         ret = 1;
+      } else if (cmd == KEYS_LEFT_TAB) {
+         printf("CustTabs::handle KEYS_LEFT_TAB\n");
+         ret = 1;
+      } else if (cmd == KEYS_RIGHT_TAB) {
+         printf("CustTabs::handle KEYS_RIGHT_TAB\n");
+         ret = 1;
+      } else if (cmd == KEYS_NEW_WINDOW) {
+         a_UIcmd_browser_window_new(ui->w(),ui->h()+this->h(),0,bw);
+         ret = 1;
+      } else if (cmd == KEYS_FULLSCREEN) {
+         printf("CustTabs::handle KEYS_FULLSCREEN\n");
+         ret = 1;
+      } else if (cmd == KEYS_CLOSE_ALL) {
+         a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
+         ret = 1;
+      }
+
+   } else if (e == FL_KEYUP) {
       int k = Fl::event_key();
       // We're only interested in some flags
       unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
@@ -146,16 +177,6 @@ int CustTabs::handle(int e)
          if (modifier == FL_SHIFT) {
             (k == FL_Left) ? prev_tab() : next_tab();
             ret = 1;
-         }
-      } else if (modifier == FL_CTRL) {
-         if (k == ' ') {
-            //printf("CustTabs::handle FL_CTRL + Space\n");
-            //toggle_cb(NULL, Wizard->value());
-            ret = 1;
-         } else if (k == 't') {
-            UIcmd_tab_new(this, 1);
-         } else if (k == 'q') {
-            remove_tab();
          }
       }
    }
@@ -423,6 +444,7 @@ void a_UIcmd_close_bw(void *vbw)
 
    MSG("a_UIcmd_close_bw\n");
    a_Bw_stop_clients(bw, BW_Root + BW_Img + BW_Force);
+   //TODO: sometimes this call segfaults upon exit
    delete(layout);
    if (ui->tabs()) {
       ui->tabs()->remove_tab();

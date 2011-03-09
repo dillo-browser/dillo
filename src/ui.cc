@@ -98,18 +98,19 @@ public:
  */
 int CustInput::handle(int e)
 {
-#if 0
    int k = Fl::event_key();
 
    _MSG("CustInput::handle event=%d\n", e);
 
    // We're only interested in some flags
-   unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
+   //unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
 
    // Don't focus with arrow keys
    if (e == FL_FOCUS &&
        (k == FL_Up || k == FL_Down || k == FL_Left || k == FL_Right)) {
       return 0;
+   }
+#if 0
    } else if (e == FL_KEYBOARD) {
       if (modifier == FL_CTRL) {
          if (k == 'l') {
