@@ -93,7 +93,6 @@ public:
       CustGroup(0,0,ww,th,lbl) {
       tab_w = 80, tab_h = th, tab_n = 0, curtab_idx = -1;
       tabcolor_active = FL_DARK_CYAN; tabcolor_inactive = 206;
-      //Fl_Box *w = new Fl_Box(tab_w,0,ww-tab_w,tab_h,"i n v i s i b l e");
       Fl_Box *w = new Fl_Box(0,0,0,0,"i n v i s i b l e");
       w->box(FL_NO_BOX);
       resizable(0);
@@ -101,13 +100,10 @@ public:
 
       Wizard = new Fl_Wizard(0,tab_h,ww,wh-tab_h);
       Wizard->end();
-      printf("Wizard window: %p\n", Wizard->window());
-      //printf("Gui visible: %d\n", Gui->visible());
-      //printf("Gui visible_r: %d\n", Gui->visible_r());
    };
    int handle(int e);
    UI *add_new_tab(int focus);
-   void remove_tab();
+   void remove_tab(UI *ui);
    Fl_Wizard *wizard(void) { return Wizard; }
    int get_btn_idx(UI *ui);
    int num_tabs() { return (children() - 1); } // substract invisible box
@@ -127,15 +123,19 @@ static void tab_btn_cb (Fl_Widget *w, void *cb_data)
    CustTabs *tabs = (CustTabs*) cb_data;
    int b = Fl::event_button();
 
-   if (b == FL_LEFT_MOUSE)
+   if (b == FL_LEFT_MOUSE) {
       tabs->switch_tab(btn);
+   } else if (b == FL_RIGHT_MOUSE) {
+      // TODO: just an example, not necessarily final
+      a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(btn->ui()));
+   }
 }
 
 int CustTabs::handle(int e)
 {
    int ret = 0;
 
-   //printf("CustTabs::handle e=%s\n", fl_eventnames[e]);
+   _MSG("CustTabs::handle e=%s\n", fl_eventnames[e]);
    if (e == FL_KEYBOARD) {
       return 0; // Receive as shortcut
    } else if (e == FL_SHORTCUT) {
@@ -151,16 +151,16 @@ int CustTabs::handle(int e)
          a_UIcmd_close_bw(bw);
          ret = 1;
       } else if (cmd == KEYS_LEFT_TAB) {
-         printf("CustTabs::handle KEYS_LEFT_TAB\n");
+         MSG("CustTabs::handle KEYS_LEFT_TAB\n");
          ret = 1;
       } else if (cmd == KEYS_RIGHT_TAB) {
-         printf("CustTabs::handle KEYS_RIGHT_TAB\n");
+         MSG("CustTabs::handle KEYS_RIGHT_TAB\n");
          ret = 1;
       } else if (cmd == KEYS_NEW_WINDOW) {
          a_UIcmd_browser_window_new(ui->w(),ui->h()+this->h(),0,bw);
          ret = 1;
       } else if (cmd == KEYS_FULLSCREEN) {
-         printf("CustTabs::handle KEYS_FULLSCREEN\n");
+         MSG("CustTabs::handle KEYS_FULLSCREEN\n");
          ret = 1;
       } else if (cmd == KEYS_CLOSE_ALL) {
          a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
@@ -216,10 +216,12 @@ UI *CustTabs::add_new_tab(int focus)
    return new_ui;
 }
 
-void CustTabs::remove_tab()
+/*
+ * Remove tab by UI
+ */
+void CustTabs::remove_tab(UI *ui)
 {
    CustTabButton *btn;
-   UI *ui = (UI*)Wizard->value();
 
    // remove label button
    int idx = get_btn_idx(ui);
@@ -228,6 +230,7 @@ void CustTabs::remove_tab()
    remove(idx);
    delete btn;
    rearrange();
+   //TODO: redraw doesn't work sometimes
    redraw();
 
    Wizard->remove(ui);
@@ -334,8 +337,9 @@ BrowserWindow *a_UIcmd_get_bw_by_widget(void *v_wid)
    BrowserWindow *bw;
    for (int i = 0; i < a_Bw_num(); ++i) {
       bw = a_Bw_get(i);
-      if (((Fl_Widget*)bw->ui)->contains((Fl_Widget*)v_wid))
+      if (((UI*)bw->ui)->contains((Fl_Widget*)v_wid)) {
          return bw;
+      }
    }
    return NULL;
 }
@@ -447,7 +451,7 @@ void a_UIcmd_close_bw(void *vbw)
    //TODO: sometimes this call segfaults upon exit
    delete(layout);
    if (ui->tabs()) {
-      ui->tabs()->remove_tab();
+      ui->tabs()->remove_tab(ui);
    }
    a_Bw_free(bw);
 }
