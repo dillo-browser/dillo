@@ -510,7 +510,7 @@ Fl_Widget *UI::make_filemenu_button()
    btn->size(w+padding,PanelSize == P_tiny ? bh : lh);
    p_xpos += btn->w();
    _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
-   btn->box(PanelSize == P_large ? FL_FLAT_BOX : FL_THIN_UP_BOX);
+   btn->box(PanelSize == P_large ? FL_THIN_UP_BOX : FL_THIN_UP_BOX);
    btn->callback(filemenu_cb, this);
    if (prefs.show_tooltip)
       btn->tooltip("File menu");
@@ -578,11 +578,12 @@ void UI::make_panel(int ww)
        if (PanelSize == P_large) {
           Fl_Group *g3 = new Fl_Group(0,0,ww,lh);
           g3->begin();
-           g3->box(FL_FLAT_BOX);
+           g3->box(FL_THIN_UP_BOX);
            Fl_Widget *bn = make_filemenu_button();
            g3->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),lh));
           g3->end();
 
+          p_xpos = 0;
           LocBar = new CustGroup(0,0,ww,lh);
           LocBar->begin();
            make_location(ww);
