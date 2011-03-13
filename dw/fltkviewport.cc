@@ -180,7 +180,8 @@ void FltkViewport::draw ()
 
    if (d & FL_DAMAGE_SCROLL) {
       clear_damage (FL_DAMAGE_SCROLL);
-      fl_scroll(x(), y(), w () - hdiff, h () - vdiff, -scrollDX, -scrollDY, draw_area, this);
+      fl_scroll(x(), y(), w() - hdiff, h() - vdiff,
+                -scrollDX, -scrollDY, draw_area, this);
       clear_damage (d & ~FL_DAMAGE_SCROLL);
    }
 

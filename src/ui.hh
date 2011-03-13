@@ -144,7 +144,7 @@ class UI : public Fl_Pack {
    void make_menubar(int x, int y, int w, int h);
    Fl_Widget *make_filemenu_button();
    void make_panel(int ww);
-   void make_status_panel(int ww);
+   void make_status_panel(int ww, int wh);
 
 public:
 
@@ -162,7 +162,7 @@ public:
    void set_page_prog(size_t nbytes, int cmd);
    void set_img_prog(int n_img, int t_img, int cmd);
    void set_bug_prog(int n_bug);
-   void set_render_layout(Fl_Group &nw);
+   void set_render_layout(Fl_Group *nw);
    void customize(int flags);
    void button_set_sens(UIButton btn, int sens);
    void paste_url();

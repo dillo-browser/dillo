@@ -561,7 +561,7 @@ void UI::make_panel(int ww)
       else
          bw = 45, bh = 45, fh = 24, lh = 28, lbl = 1;
    }
-   nh = bh, sh = 24;
+   nh = bh, sh = 20;
 
    if (PanelSize == P_tiny) {
       NavBar = new CustGroup(0,0,ww,bh);
@@ -618,30 +618,33 @@ void UI::make_panel(int ww)
 /*
  * Create the status panel
  */
-void UI::make_status_panel(int ww)
+void UI::make_status_panel(int ww, int wh)
 {
-   const int s_h = 20, bm_w = 16;
-   // HACK: we need a defined StatusOutput
-   StatusPanel = new Fl_Group(0, 400, 1, 1, 0);
+   const int bm_w = 20;
+   StatusPanel = new CustGroup(0, wh-sh, ww, sh);
+
+    // Status box
+    StatusOutput = new Fl_Output(0, wh-sh, ww-bm_w, sh);
+    StatusOutput->value("hola!");
+    StatusOutput->labelsize(8);
+    StatusOutput->box(FL_THIN_DOWN_BOX);
+    StatusOutput->clear_visible_focus();
+    StatusOutput->color(FL_GRAY_RAMP + 18);
+    //StatusOutput->throw_focus();
+
+    // Bug Meter
+    // TODO: fltk1.3 places label on top or bottom (no left right)
+    BugMeter = new Fl_Button(ww-bm_w,wh-sh,bm_w,sh);
+    BugMeter->image(icons->ImgMeterOK);
+    BugMeter->box(FL_THIN_UP_BOX);
+    BugMeter->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
+    if (prefs.show_tooltip)
+       BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
+    BugMeter->callback(bugmeter_cb, this);
+    BugMeter->clear_visible_focus();
+
    StatusPanel->end();
-
-   // Status box
-   StatusOutput = new Fl_Output(0, 0, ww-bm_w, s_h, 0);
-   StatusOutput->value("");
-   StatusOutput->box(FL_THIN_DOWN_BOX);
-   StatusOutput->clear_visible_focus();
-   StatusOutput->color(FL_GRAY_RAMP + 18);
-   //StatusOutput->throw_focus();
-
-   // Bug Meter
-   BugMeter = new Fl_Button(ww-bm_w,0,bm_w,s_h,0);
-   BugMeter->image(icons->ImgMeterOK);
-   BugMeter->box(FL_THIN_DOWN_BOX);
-   BugMeter->align(FL_ALIGN_INSIDE|FL_ALIGN_CLIP|FL_ALIGN_LEFT);
-   if (prefs.show_tooltip)
-      BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
-   BugMeter->callback(bugmeter_cb, this);
-   BugMeter->clear_visible_focus();
+   StatusPanel->resizable(StatusOutput);
 }
 
 /*
@@ -684,6 +687,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     // Render area
     int mh = ui_h - (lh+bh+sh);
     Main = new Fl_Group(0,0,0,mh,"Welcome...");
+    Main->end();
     Main->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
     Main->box(FL_FLAT_BOX);
     Main->color(FL_GRAY_RAMP + 3);
@@ -695,12 +699,11 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     MainIdx = TopGroup->find(Main);
  
     // Find text bar
-    findbar = new Findbar(ui_w, 28);
+    //findbar = new Findbar(ui_w, 28);
     //TopGroup->add(findbar);
  
     // Status Panel
-    make_status_panel(ui_w);
-    //TopGroup->add(StatusPanel);
+    make_status_panel(ui_w, ui_h);
 
    TopGroup->end();
 
@@ -715,7 +718,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
 
    if (Panelmode) {
       //Panel->hide();
-      StatusPanel->hide();
+      //StatusPanel->hide();
    }
 }
 
@@ -948,9 +951,9 @@ void UI::set_bug_prog(int n_bug)
       BugMeter->redraw_label();
       new_w = strlen(str)*8 + 20;
    }
-   StatusOutput->resize(0,0,StatusPanel->w()-new_w,StatusOutput->h());
-   BugMeter->resize(StatusPanel->w()-new_w, 0, new_w, BugMeter->h());
-   StatusPanel->init_sizes();
+// StatusOutput->resize(0,0,StatusPanel->w()-new_w,StatusOutput->h());
+// BugMeter->resize(StatusPanel->w()-new_w, 0, new_w, BugMeter->h());
+// StatusPanel->init_sizes();
 }
 
 /*
@@ -1060,15 +1063,16 @@ void UI::panelmode_cb_i()
 /*
  * Set 'nw' as the main render area widget
  */
-void UI::set_render_layout(Fl_Group &nw)
+void UI::set_render_layout(Fl_Group *nw)
 {
-   TopGroup->remove(MainIdx);
+   // Resize layout widget to current height
+   nw->resize(0,0,0,Main->h());
+
+   TopGroup->insert(*nw, Main);
+   remove(Main);
    delete(Main);
-   TopGroup->insert(nw, MainIdx);
-   Main = &nw;
+   Main = nw;
    TopGroup->resizable(Main);
-   //TopGroup->box(FL_DOWN_BOX);
-   //TopGroup->box(FL_BORDER_FRAME);
 }
 
 /*
