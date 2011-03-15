@@ -292,7 +292,7 @@ void FltkViewport::setCanvasSize (int width, int ascent, int descent)
  */
 void FltkViewport::positionChanged ()
 {
-   if (mouse_x != -1)
+   if (mouse_x != -1 && dragScrolling == false)
       (void)theLayout->motionNotify (this,
                                      translateViewXToCanvasX (mouse_x),
                                      translateViewYToCanvasY (mouse_y),
