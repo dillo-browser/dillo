@@ -630,11 +630,10 @@ void UI::make_status_bar(int ww, int wh)
     StatusOutput->color(FL_GRAY_RAMP + 18);
 
     // Bug Meter
-    // TODO: fltk1.3 places label on top or bottom (no left right)
     BugMeter = new Fl_Button(ww-bm_w,wh-sh,bm_w,sh);
     BugMeter->image(icons->ImgMeterOK);
-    BugMeter->box(FL_THIN_UP_BOX);
-    BugMeter->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
+    BugMeter->box(FL_THIN_DOWN_BOX);
+    BugMeter->align(FL_ALIGN_TEXT_NEXT_TO_IMAGE);
     if (prefs.show_tooltip)
        BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
     BugMeter->callback(bugmeter_cb, this);
@@ -928,7 +927,7 @@ void UI::set_img_prog(int n_img, int t_img, int cmd)
 void UI::set_bug_prog(int n_bug)
 {
    char str[32];
-   int new_w = 16;
+   int new_w = 20;
 
    if (n_bug == 0) {
       BugMeter->image(icons->ImgMeterOK);
@@ -939,11 +938,10 @@ void UI::set_bug_prog(int n_bug)
       snprintf(str, 32, "%d", n_bug);
       BugMeter->copy_label(str);
       BugMeter->redraw_label();
-      new_w = strlen(str)*8 + 20;
+      new_w = strlen(str)*9 + 20;
    }
-// StatusOutput->resize(0,0,StatusBar->w()-new_w,StatusOutput->h());
-// BugMeter->resize(StatusBar->w()-new_w, 0, new_w, BugMeter->h());
-// StatusBar->init_sizes();
+   BugMeter->size(new_w, BugMeter->h());
+   StatusBar->rearrange();
 }
 
 /*
