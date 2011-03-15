@@ -103,32 +103,26 @@ int CustInput::handle(int e)
    _MSG("CustInput::handle event=%d\n", e);
 
    // We're only interested in some flags
-   //unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
+   unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
 
    // Don't focus with arrow keys
    if (e == FL_FOCUS &&
        (k == FL_Up || k == FL_Down || k == FL_Left || k == FL_Right)) {
       return 0;
-   }
-#if 0
    } else if (e == FL_KEYBOARD) {
       if (modifier == FL_CTRL) {
          if (k == 'l') {
             // Make text selected when already focused.
             position(size(), 0);
             return 1;
-         } else if (k == 'o' || k == 'r' || k == FL_Home || k == FL_End)
+         } else if (k == 'h' || k == 'o' || k == 'r' ||
+                    k == FL_Home || k == FL_End) {
+            // Let these keys get to the UI
             return 0;
-      } else if (modifier == FL_SHIFT) {
-         if (k == FL_Left || k == FL_Right) {
-            _MSG(" CustInput::handle > FL_SHIFT+FL_Right\n");
-            a_UIcmd_send_event_to_tabs_by_wid(e, this);
-            return 1;
          }
       }
    }
-   _MSG("\n");
-#endif
+
    return Fl_Input::handle(e);
 }
 
@@ -506,7 +500,7 @@ Fl_Widget *UI::make_filemenu_button()
    btn->copy_label(PanelSize == P_tiny ? "&F" : "&File");
    btn->measure_label(w,h);
    if (PanelSize == P_large)
-      h = fh;
+      h = mh;
    btn->size(w+padding,PanelSize == P_tiny ? bh : lh);
    p_xpos += btn->w();
    _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
@@ -542,26 +536,26 @@ void UI::make_panel(int ww)
    p_xpos = p_ypos = 0;
    if (PanelSize == P_tiny) {
       if (Small_Icons)
-         bw = 22, bh = 22, fh = 0, lh = 22, lbl = 0;
+         bw = 22, bh = 22, mh = 0, lh = 22, lbl = 0;
       else
-         bw = 28, bh = 28, fh = 0, lh = 28, lbl = 0;
+         bw = 28, bh = 28, mh = 0, lh = 28, lbl = 0;
    } else if (PanelSize == P_small) {
       if (Small_Icons)
-         bw = 20, bh = 20, fh = 0, lh = 20, lbl = 0;
+         bw = 20, bh = 20, mh = 0, lh = 20, lbl = 0;
       else
-         bw = 28, bh = 28, fh = 0, lh = 28, lbl = 0;
+         bw = 28, bh = 28, mh = 0, lh = 28, lbl = 0;
    } else if (PanelSize == P_medium) {
       if (Small_Icons)
-         bw = 42, bh = 36, fh = 0, lh = 22, lbl = 1;
+         bw = 42, bh = 36, mh = 0, lh = 22, lbl = 1;
       else
-         bw = 45, bh = 45, fh = 0, lh = 28, lbl = 1;
+         bw = 45, bh = 45, mh = 0, lh = 28, lbl = 1;
    } else {   // P_large
       if (Small_Icons)
-         bw = 42, bh = 36, fh = 22, lh = 22, lbl = 1;
+         bw = 42, bh = 36, mh = 22, lh = 22, lbl = 1;
       else
-         bw = 45, bh = 45, fh = 24, lh = 28, lbl = 1;
+         bw = 45, bh = 45, mh = 24, lh = 28, lbl = 1;
    }
-   nh = bh, sh = 20;
+   nh = bh, fh = 28; sh = 20;
 
    if (PanelSize == P_tiny) {
       NavBar = new CustGroup(0,0,ww,bh);
@@ -618,10 +612,10 @@ void UI::make_panel(int ww)
 /*
  * Create the status panel
  */
-void UI::make_status_panel(int ww, int wh)
+void UI::make_status_bar(int ww, int wh)
 {
    const int bm_w = 20;
-   StatusPanel = new CustGroup(0, wh-sh, ww, sh);
+   StatusBar = new CustGroup(0, wh-sh, ww, sh);
 
     // Status box
     StatusOutput = new Fl_Output(0, wh-sh, ww-bm_w, sh);
@@ -630,7 +624,6 @@ void UI::make_status_panel(int ww, int wh)
     StatusOutput->box(FL_THIN_DOWN_BOX);
     StatusOutput->clear_visible_focus();
     StatusOutput->color(FL_GRAY_RAMP + 18);
-    //StatusOutput->throw_focus();
 
     // Bug Meter
     // TODO: fltk1.3 places label on top or bottom (no left right)
@@ -643,8 +636,8 @@ void UI::make_status_panel(int ww, int wh)
     BugMeter->callback(bugmeter_cb, this);
     BugMeter->clear_visible_focus();
 
-   StatusPanel->end();
-   StatusPanel->resizable(StatusOutput);
+   StatusBar->end();
+   StatusBar->resizable(StatusOutput);
 }
 
 /*
@@ -685,7 +678,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     make_panel(ui_w);
  
     // Render area
-    int mh = ui_h - (lh+bh+sh);
+    int mh = ui_h - (lh+bh+fh+sh);
     Main = new Fl_Group(0,0,0,mh,"Welcome...");
     Main->end();
     Main->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
@@ -701,9 +694,10 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     // Find text bar
     //findbar = new Findbar(ui_w, 28);
     //TopGroup->add(findbar);
- 
+    Fl_Box *fb = new Fl_Box(0,0,0,fh, "F I N D B A R");
+
     // Status Panel
-    make_status_panel(ui_w, ui_h);
+    make_status_bar(ui_w, ui_h);
 
    TopGroup->end();
 
@@ -716,9 +710,13 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
 
    customize(0);
 
+   // Hide findbar
+   fb->hide();
+   Main->size(Main->w(), Main->h()+fb->h());
+
    if (Panelmode) {
       //Panel->hide();
-      //StatusPanel->hide();
+      //StatusBar->hide();
    }
 }
 
@@ -737,10 +735,8 @@ UI::~UI()
 int UI::handle(int event)
 {
    _MSG("UI::handle event=%d (%d,%d)\n", event, Fl::event_x(), Fl::event_y());
-   _MSG("Panel->h()=%d Main->h()=%d\n", Panel->h() , Main->h());
 
    int ret = 0;
-#if 0
    if (event == FL_KEYBOARD) {
       return 0; // Receive as shortcut
    } else if (event == FL_SHORTCUT) {
@@ -763,7 +759,8 @@ int UI::handle(int event)
          a_UIcmd_book(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
       } else if (cmd == KEYS_FIND) {
-         set_findbar_visibility(1);
+         MSG("UI::handle  ->KEYS_FIND\n");
+         //set_findbar_visibility(1);
          ret = 1;
       } else if (cmd == KEYS_WEBSEARCH) {
          a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(this));
@@ -771,18 +768,9 @@ int UI::handle(int event)
       } else if (cmd == KEYS_GOTO) {
          focus_location();
          ret = 1;
-      } else if (cmd == KEYS_NEW_TAB) {
-         a_UIcmd_open_url_nt(a_UIcmd_get_bw_by_widget(this), NULL, 1);
-         ret = 1;
-      } else if (cmd == KEYS_CLOSE_TAB) {
-         a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(this));
-         ret = 1;
       } else if (cmd == KEYS_HIDE_PANELS &&
                  get_panelmode() == UI_TEMPORARILY_SHOW_PANELS) {
-         set_panelmode(UI_HIDDEN);
-         ret = 1;
-      } else if (cmd == KEYS_NEW_WINDOW) {
-         a_UIcmd_browser_window_new(w(),h(),0,a_UIcmd_get_bw_by_widget(this));
+         //set_panelmode(UI_HIDDEN);
          ret = 1;
       } else if (cmd == KEYS_OPEN) {
          a_UIcmd_open_file(a_UIcmd_get_bw_by_widget(this));
@@ -800,15 +788,14 @@ int UI::handle(int event)
          a_UIcmd_save(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
       } else if (cmd == KEYS_FULLSCREEN) {
-         panelmode_cb_i();
+         //panelmode_cb_i();
          ret = 1;
       } else if (cmd == KEYS_FILE_MENU) {
          a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(this), FileButton);
          ret = 1;
-      } else if (cmd == KEYS_CLOSE_ALL) {
-         a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
-         ret = 1;
       }
+   }
+#if 0
    } else if (event == FL_PUSH) {
       if (prefs.middle_click_drags_page == 0 &&
           Fl::event_button() == FL_MIDDLE_MOUSE &&
@@ -951,9 +938,9 @@ void UI::set_bug_prog(int n_bug)
       BugMeter->redraw_label();
       new_w = strlen(str)*8 + 20;
    }
-// StatusOutput->resize(0,0,StatusPanel->w()-new_w,StatusOutput->h());
-// BugMeter->resize(StatusPanel->w()-new_w, 0, new_w, BugMeter->h());
-// StatusPanel->init_sizes();
+// StatusOutput->resize(0,0,StatusBar->w()-new_w,StatusOutput->h());
+// BugMeter->resize(StatusBar->w()-new_w, 0, new_w, BugMeter->h());
+// StatusBar->init_sizes();
 }
 
 /*
@@ -1035,11 +1022,11 @@ void UI::set_panelmode(UIPanelmode mode)
 {
    if (mode == UI_HIDDEN) {
       //Panel->hide();
-      StatusPanel->hide();
+      StatusBar->hide();
    } else {
       /* UI_NORMAL or UI_TEMPORARILY_SHOW_PANELS */
       //Panel->show();
-      StatusPanel->show();
+      StatusBar->show();
    }
    Panelmode = mode;
 }

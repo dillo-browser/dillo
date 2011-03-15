@@ -121,17 +121,17 @@ class UI : public Fl_Pack {
    Fl_Group *TopGroup;
    Fl_Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
           *Clear, *Search, *Help, *FullScreen, *BugMeter, *FileButton;
-   CustGroup *LocBar, *NavBar, *StBar;
+   CustGroup *LocBar, *NavBar, *StatusBar;
    Fl_Input  *Location;
    Fl_Pack *ProgBox;
    CustProgressBox *PProg, *IProg;
-   Fl_Group *Panel, *Main, *StatusPanel;
+   Fl_Group *Panel, *Main;
    Fl_Output *StatusOutput;
 
    int MainIdx;
    // Panel customization variables
    int PanelSize, CuteColor, Small_Icons;
-   int p_xpos, p_ypos, bw, bh, fh, lh, nh, sh, pw, lbl;
+   int p_xpos, p_ypos, bw, bh, mh, lh, nh, fh, sh, pw, lbl;
 
    UIPanelmode Panelmode;
    Findbar *findbar;
@@ -144,7 +144,7 @@ class UI : public Fl_Pack {
    void make_menubar(int x, int y, int w, int h);
    Fl_Widget *make_filemenu_button();
    void make_panel(int ww);
-   void make_status_panel(int ww, int wh);
+   void make_status_bar(int ww, int wh);
 
 public:
 
