@@ -127,14 +127,14 @@ class UI : public Fl_Pack {
    CustProgressBox *PProg, *IProg;
    Fl_Group *Panel, *Main;
    Fl_Output *StatusOutput;
+   Findbar *FindBar;
 
-   int MainIdx;
+   int FindBarSpace, MainIdx;
    // Panel customization variables
    int PanelSize, CuteColor, Small_Icons;
    int p_xpos, p_ypos, bw, bh, mh, lh, nh, fh, sh, pw, lbl;
 
    UIPanelmode Panelmode;
-   Findbar *findbar;
    int PointerOnLink;
    Fl_Button *make_button(const char *label, Fl_Image *img,
                           Fl_Image*deimg, int b_n, int start = 0);
@@ -168,7 +168,7 @@ public:
    void paste_url();
    void set_panelmode(UIPanelmode mode);
    UIPanelmode get_panelmode();
-   void set_findbar_visibility(bool visible);
+   void findbar_toggle(bool add);
    Fl_Widget *fullscreen_button() { return FullScreen; }
    void fullscreen_toggle() { FullScreen->do_callback(); }
 

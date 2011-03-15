@@ -99,14 +99,13 @@ Findbar::Findbar(int width, int height) :
    int gap = 2;
    int border = 2;
    int input_width = width - (2 * border + 4 * (button_width + gap));
-   int x = border;
+   int x = 0;
 
    Fl_Group::current(0);
 
    height -= 2 * border;
 
-   box(FL_PLASTIC_UP_BOX);
-   Fl_Group::hide();
+   box(FL_THIN_UP_BOX);
 
     hide_btn = new Fl_Button(x, border, 16, height, 0);
     hideImg = new Fl_Pixmap(new_s_xpm);
@@ -114,6 +113,7 @@ Findbar::Findbar(int width, int height) :
     x += 16 + gap;
     hide_btn->callback(hide_cb, this);
     hide_btn->clear_visible_focus();
+    hide_btn->box(FL_THIN_UP_BOX);
    add(hide_btn);
 
     i = new MyInput(x, border, input_width, height);
@@ -128,6 +128,7 @@ Findbar::Findbar(int width, int height) :
     next_btn->shortcut(FL_Enter);
     next_btn->callback(search_cb, this);
     next_btn->clear_visible_focus();
+    next_btn->box(FL_THIN_UP_BOX);
    add(next_btn);
 
     prev_btn= new Fl_Button(x, border, button_width, height, "Previous");
@@ -135,6 +136,7 @@ Findbar::Findbar(int width, int height) :
     prev_btn->shortcut(FL_SHIFT+FL_Enter);
     prev_btn->callback(searchBackwards_cb, this);
     prev_btn->clear_visible_focus();
+    prev_btn->box(FL_THIN_UP_BOX);
    add(prev_btn);
 
     check_btn = new Fl_Check_Button(x, border, 2*button_width, height,
@@ -182,7 +184,13 @@ int Findbar::handle(int event)
  */
 void Findbar::show()
 {
+   BrowserWindow *bw = a_UIcmd_get_bw_by_widget(this);
+   dReturn_if (bw == NULL);
+
+   // It takes more than just calling show() to do the trick
+   //a_UIcmd_findbar_toggle(bw, 1);
    Fl_Group::show();
+
    /* select text even if already focused */
    i->take_focus();
    i->position(i->size(), 0);
@@ -193,10 +201,13 @@ void Findbar::show()
  */
 void Findbar::hide()
 {
-   BrowserWindow *bw;
+   BrowserWindow *bw = a_UIcmd_get_bw_by_widget(this);
+   dReturn_if (bw == NULL);
 
+   // It takes more than just calling hide() to do the trick
    Fl_Group::hide();
-   if ((bw = a_UIcmd_get_bw_by_widget(this)))
-      a_UIcmd_findtext_reset(bw);
+   a_UIcmd_findbar_toggle(bw, 0);
+
+   a_UIcmd_findtext_reset(bw);
    a_UIcmd_focus_main_area(bw);
 }

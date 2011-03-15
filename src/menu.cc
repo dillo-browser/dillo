@@ -156,7 +156,7 @@ static void Menu_add_bookmark_cb(Fl_Widget*, void* )
  */
 static void Menu_find_text_cb(Fl_Widget*, void* )
 {
-   ((UI *)popup_bw->ui)->set_findbar_visibility(1);
+   ((UI *)popup_bw->ui)->findbar_toggle(1);
 }
 
 /*

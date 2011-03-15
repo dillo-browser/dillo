@@ -39,6 +39,7 @@ void a_UIcmd_findtext_dialog(BrowserWindow *bw);
 void a_UIcmd_findtext_search(BrowserWindow *bw,const char *key,int case_sens,
                              int backwards);
 void a_UIcmd_findtext_reset(BrowserWindow *bw);
+void a_UIcmd_findbar_toggle(BrowserWindow *bw, int on);
 void a_UIcmd_focus_main_area(BrowserWindow *bw);
 void a_UIcmd_focus_location(void *vbw);
 void a_UIcmd_page_popup(void *vbw, bool_t has_bugs, void *v_cssUrls);

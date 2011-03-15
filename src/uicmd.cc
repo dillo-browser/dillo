@@ -142,7 +142,11 @@ int CustTabs::handle(int e)
       UI *ui = (UI*)wizard()->value();
       BrowserWindow *bw = a_UIcmd_get_bw_by_widget(ui);
       KeysCommand_t cmd = Keys::getKeyCmd();
-      if (cmd == KEYS_NOP) {
+      if (Fl::event_key() == FL_Escape) {
+         // Hide findbar if present
+         ui->findbar_toggle(0);
+         ret = 1;
+      } else if (cmd == KEYS_NOP) {
          // Do nothing
       } else if (cmd == KEYS_NEW_TAB) {
          a_UIcmd_open_url_nt(bw, NULL, 1);
@@ -434,6 +438,9 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, int focus)
    new_bw->ui = (void *)new_ui;
    // Copy the layout pointer into the bw data
    new_bw->render_layout = (void*)layout;
+
+   // WORKAROUND: see findbar_toggle()
+   new_ui->findbar_toggle(0);
 
    return new_bw;
 }
@@ -1228,6 +1235,14 @@ void a_UIcmd_findtext_reset(BrowserWindow *bw)
    l->resetSearch();
 
    a_UIcmd_set_msg(bw, "");
+}
+
+/*
+ * Tell the UI to hide/show the findbar
+ */
+void a_UIcmd_findbar_toggle(BrowserWindow *bw, int on)
+{
+   BW2UI(bw)->findbar_toggle(on);
 }
 
 /*

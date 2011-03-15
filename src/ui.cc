@@ -110,7 +110,11 @@ int CustInput::handle(int e)
        (k == FL_Up || k == FL_Down || k == FL_Left || k == FL_Right)) {
       return 0;
    } else if (e == FL_KEYBOARD) {
-      if (modifier == FL_CTRL) {
+      if (k == FL_Escape && modifier == 0) {
+         // Let the parent group handle this Esc key
+         return 0;
+
+      } else if (modifier == FL_CTRL) {
          if (k == 'l') {
             // Make text selected when already focused.
             position(size(), 0);
@@ -692,12 +696,13 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     MainIdx = TopGroup->find(Main);
  
     // Find text bar
-    //findbar = new Findbar(ui_w, 28);
-    //TopGroup->add(findbar);
-    Fl_Box *fb = new Fl_Box(0,0,0,fh, "F I N D B A R");
+    FindBarSpace = 1;
+    FindBar = new Findbar(ui_w, fh);
+    TopGroup->add(FindBar);
 
     // Status Panel
     make_status_bar(ui_w, ui_h);
+    TopGroup->add(StatusBar);
 
    TopGroup->end();
 
@@ -709,10 +714,6 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    //FullScreen->callback(fullscreen_cb, this);
 
    customize(0);
-
-   // Hide findbar
-   fb->hide();
-   Main->size(Main->w(), Main->h()+fb->h());
 
    if (Panelmode) {
       //Panel->hide();
@@ -759,8 +760,10 @@ int UI::handle(int event)
          a_UIcmd_book(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
       } else if (cmd == KEYS_FIND) {
-         MSG("UI::handle  ->KEYS_FIND\n");
-         //set_findbar_visibility(1);
+         if (!FindBarSpace) {
+            findbar_toggle(1);
+         } else
+            FindBar->hide();
          ret = 1;
       } else if (cmd == KEYS_WEBSEARCH) {
          a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(this));
@@ -1094,13 +1097,30 @@ void UI::paste_url()
 }
 
 /*
- * Shows or hides the findbar of this window
+ * Ajust space for the findbar (if necessary) and show or remove it
  */
-void UI::set_findbar_visibility(bool visible)
+void UI::findbar_toggle(bool add)
 {
-   if (visible) {
-      findbar->show();
-   } else {
-      findbar->hide();
+   /* WORKAROUND:
+    * This is tricky: As fltk-1.3 resizes hidden widgets (which it
+    * doesn't resize when visible!). We need to go through hoops to
+    * get the desired behaviour.
+    * Most probably this is a bug in FLTK and we have to report it.
+    */
+
+   if (add && !FindBarSpace) {
+      // show
+      Main->size(Main->w(), Main->h()-FindBar->h());
+      insert(*FindBar, StatusBar);
+      FindBar->show();
+      FindBarSpace = 1;
+   } else if (!add && FindBarSpace) {
+      // hide
+      Main->size(Main->w(), Main->h()+FindBar->h());
+      remove(FindBar);
+      FindBarSpace = 0;
    }
+
+   // Main->redraw(); is not enough
+   redraw();
 }
