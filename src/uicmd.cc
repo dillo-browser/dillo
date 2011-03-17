@@ -429,7 +429,7 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, int focus)
    viewport->setBufferedDrawing (prefs.buffered_drawing ? true : false);
    layout->attachView (viewport);
    new_ui->set_render_layout(viewport);
-   viewport->setScrollStep((int) rint(14.0 * prefs.font_factor));
+   viewport->setScrollStep((int) rint(28.0 * prefs.font_factor));
 
    // Now, create a new browser window structure
    BrowserWindow *new_bw = a_Bw_new();

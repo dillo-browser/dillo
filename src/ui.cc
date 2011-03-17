@@ -124,6 +124,13 @@ int CustInput::handle(int e)
             // Let these keys get to the UI
             return 0;
          }
+      } else if (modifier == 0) {
+         if (k == FL_Down || k == FL_Up ||
+             k == FL_Page_Down || k == FL_Page_Up) {
+            // Give up focus and honor the key
+            a_UIcmd_focus_main_area(a_UIcmd_get_bw_by_widget(this));
+            return 0;
+         }
       }
    }
 
@@ -623,7 +630,7 @@ void UI::make_status_bar(int ww, int wh)
 
     // Status box
     StatusOutput = new Fl_Output(0, wh-sh, ww-bm_w, sh);
-    StatusOutput->value("hola!");
+    StatusOutput->value("http://dillo.org");
     StatusOutput->labelsize(8);
     StatusOutput->box(FL_THIN_DOWN_BOX);
     StatusOutput->clear_visible_focus();
@@ -1112,13 +1119,13 @@ void UI::findbar_toggle(bool add)
       insert(*FindBar, StatusBar);
       FindBar->show();
       FindBarSpace = 1;
+      redraw();
    } else if (!add && FindBarSpace) {
       // hide
       Main->size(Main->w(), Main->h()+FindBar->h());
       remove(FindBar);
       FindBarSpace = 0;
+      redraw();  /* Main->redraw(); is not enough */
    }
 
-   // Main->redraw(); is not enough
-   redraw();
 }
