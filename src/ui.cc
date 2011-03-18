@@ -630,7 +630,7 @@ void UI::make_status_bar(int ww, int wh)
 
     // Status box
     StatusOutput = new Fl_Output(0, wh-sh, ww-bm_w, sh);
-    StatusOutput->value("http://dillo.org");
+    StatusOutput->value("http://www.dillo.org");
     StatusOutput->labelsize(8);
     StatusOutput->box(FL_THIN_DOWN_BOX);
     StatusOutput->clear_visible_focus();
