@@ -356,16 +356,6 @@ static void b1_cb(Fl_Widget *wid, void *cb_data)
 }
 
 /*
- * Callback handler for fullscreen button press
- */
-//static void fullscreen_cb(Fl_Widget *wid, void *data)
-//{
-//   /* TODO: do we want to toggle fullscreen or panelmode?
-//            maybe we need to add another button?*/
-//   ((UI*)data)->panelmode_cb_i();
-//}
-
-/*
  * Callback for the bug meter button.
  */
 static void bugmeter_cb(Fl_Widget *wid, void *data)
@@ -658,6 +648,8 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
 {
    PointerOnLink = FALSE;
 
+   LocBar = NavBar = StatusBar = NULL;
+
    Tabs = NULL;
    TabTooltip = NULL;
    TopGroup = this;
@@ -797,7 +789,7 @@ int UI::handle(int event)
          a_UIcmd_save(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
       } else if (cmd == KEYS_FULLSCREEN) {
-         //panelmode_cb_i();
+         fullscreen_toggle();
          ret = 1;
       } else if (cmd == KEYS_FILE_MENU) {
          a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(this), FileButton);
@@ -1127,5 +1119,37 @@ void UI::findbar_toggle(bool add)
       FindBarSpace = 0;
       redraw();  /* Main->redraw(); is not enough */
    }
+}
 
+/*
+ * Make panels disappear growing the render area.
+ * WORKAROUND: here we avoid hidden widgets resize by setting their
+ *             size to (0,0) while hidden.
+ *             (Already reported to FLTK team)
+ */
+void UI::fullscreen_toggle()
+{
+   int dh = 0;
+   int hide = StatusBar->visible();
+
+   // hide/show panels
+   init_sizes();
+   if (LocBar) {
+      dh += lh;
+      hide ? LocBar->size(0,0) : LocBar->size(w(),lh);
+      hide ? LocBar->hide() : LocBar->show();
+   }
+   if (NavBar) {
+      dh += nh;
+      hide ? NavBar->size(0,0) : NavBar->size(w(),nh);
+      hide ? NavBar->hide() : NavBar->show();
+   }
+   if (StatusBar) {
+      dh += sh;
+      hide ? StatusBar->size(0,0) : StatusBar->size(w(),sh);;
+      hide ? StatusBar->hide() : StatusBar->show();;
+   }
+
+   Main->size(Main->w(), Main->h() + (hide ? dh : -dh));
+   redraw();
 }

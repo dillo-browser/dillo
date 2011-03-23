@@ -169,8 +169,7 @@ public:
    void set_panelmode(UIPanelmode mode);
    UIPanelmode get_panelmode();
    void findbar_toggle(bool add);
-   Fl_Widget *fullscreen_button() { return FullScreen; }
-   void fullscreen_toggle() { FullScreen->do_callback(); }
+   void fullscreen_toggle();
 
    CustTabs *tabs() { return Tabs; }
    void tabs(CustTabs *tabs) { Tabs = tabs; }
