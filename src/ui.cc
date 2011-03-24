@@ -769,10 +769,11 @@ int UI::handle(int event)
       } else if (cmd == KEYS_GOTO) {
          focus_location();
          ret = 1;
-      } else if (cmd == KEYS_HIDE_PANELS &&
-                 get_panelmode() == UI_TEMPORARILY_SHOW_PANELS) {
-         //set_panelmode(UI_HIDDEN);
+      } else if (cmd == KEYS_HIDE_PANELS) {
+         fullscreen_toggle();
          ret = 1;
+         //if (get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
+         //   set_panelmode(UI_HIDDEN);
       } else if (cmd == KEYS_OPEN) {
          a_UIcmd_open_file(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
@@ -1094,7 +1095,7 @@ void UI::paste_url()
 }
 
 /*
- * Ajust space for the findbar (if necessary) and show or remove it
+ * Adjust space for the findbar (if necessary) and show or remove it
  */
 void UI::findbar_toggle(bool add)
 {
