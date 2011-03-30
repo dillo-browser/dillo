@@ -231,10 +231,14 @@ void CustTabs::remove_tab(UI *ui)
    int idx = get_btn_idx(ui);
    btn = (CustTabButton*)child(idx);
    idx > 1 ? prev_tab() : next_tab();
+
+   // WORKAROUND: with two tabs, closing the non-focused one, doesn't
+   // delete it from screen. This hide() call makes it work.  --Jcid
+   btn->hide();
+
    remove(idx);
    delete btn;
    rearrange();
-   //TODO: redraw doesn't work sometimes
    redraw();
 
    Wizard->remove(ui);
@@ -456,7 +460,6 @@ void a_UIcmd_close_bw(void *vbw)
 
    MSG("a_UIcmd_close_bw\n");
    a_Bw_stop_clients(bw, BW_Root + BW_Img + BW_Force);
-   //TODO: sometimes this call segfaults upon exit
    delete(layout);
    if (ui->tabs()) {
       ui->tabs()->remove_tab(ui);
