@@ -161,7 +161,7 @@ int CustTabs::handle(int e)
          MSG("CustTabs::handle KEYS_RIGHT_TAB\n");
          ret = 1;
       } else if (cmd == KEYS_NEW_WINDOW) {
-         a_UIcmd_browser_window_new(ui->w(),ui->h()+this->h(),0,bw);
+         a_UIcmd_open_url_nw(bw, NULL);
          ret = 1;
       } else if (cmd == KEYS_FULLSCREEN) {
          MSG("CustTabs::handle KEYS_FULLSCREEN\n");
@@ -405,8 +405,6 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    win->callback(win_cb, DilloTabs);
 
-   //new_ui->focus_location();
-
    return new_bw;
 }
 
@@ -528,7 +526,13 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
  */
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 {
-   a_Nav_push(bw, url, NULL);
+   if (url) {
+      a_Nav_push(bw, url, NULL);
+   } else {
+      // Used to start a bw with a blank screen
+      BW2UI(bw)->focus_location();
+      a_UIcmd_set_buttons_sens(bw);
+   }
 #if 0
    if (BW2UI(bw)->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
       BW2UI(bw)->set_panelmode(UI_HIDDEN);
@@ -546,6 +550,7 @@ static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
       BW2UI(new_bw)->focus_main();
    } else {
       BW2UI(new_bw)->focus_location();
+      a_UIcmd_set_buttons_sens(new_bw);
    }
 }
 
