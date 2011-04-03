@@ -3718,10 +3718,7 @@ static void Html_callback(int Op, CacheClient_t *Client)
 static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
 {
    char ch = 0, *p, *text;
-   Textblock *textblock;
    int token_start, buf_index;
-
-   dReturn_val_if_fail ((textblock = HT2TB(html)) != NULL, 0);
 
    /* Now, 'buf' and 'bufsize' define a buffer aligned to start at a token
     * boundary. Iterate through tokens until end of buffer is reached. */
@@ -3841,7 +3838,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
       }
    }/*while*/
 
-   textblock->flush ();
+   HT2TB(html)->flush ();
 
    return token_start;
 }
