@@ -2044,7 +2044,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       dFree(width_ptr);
       dFree(height_ptr);
       width_ptr = height_ptr = NULL;
-      MSG("a_Html_image_new: suspicious image size request %dx%d\n", w, h);
+      MSG("a_Html_image_new: suspicious image size request %d x %d\n", w, h);
    } else {
       if (CSS_LENGTH_TYPE(l_w) != CSS_LENGTH_TYPE_AUTO)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
