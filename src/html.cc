@@ -2845,6 +2845,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
    const char *p, *equiv, *content, *new_content;
    char delay_str[64], *mr_url;
+   DilloUrl *new_url;
    int delay;
 
    /* only valid inside HEAD */
@@ -2875,14 +2876,17 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          } else {
             mr_url = dStrdup(content);
          }
+         new_url = a_Url_new(mr_url, URL_STR(html->base_url));
 
-         if (delay == 0) {
+         if (a_Url_cmp(html->base_url, new_url) == 0) {
+            /* redirection loop, or empty url string: ignore */
+            BUG_MSG("META refresh: %s\n", 
+                    *mr_url ? "redirection loop" : "no target URL");
+         } else if (delay == 0) {
             /* zero-delay redirection */
             html->stop_parser = true;
-            DilloUrl *new_url = a_Url_new(mr_url, URL_STR(html->base_url));
             if (a_Capi_dpi_verify_request(html->bw, new_url))
                a_UIcmd_redirection0((void*)html->bw, new_url);
-            a_Url_free(new_url);
          } else {
             /* Send a custom HTML message.
              * TODO: This is a hairy hack,
@@ -2900,6 +2904,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
             }
             dStr_free(ds_msg, 1);
          }
+         a_Url_free(new_url);
          dFree(mr_url);
 
       } else if (!dStrcasecmp(equiv, "content-type") &&
