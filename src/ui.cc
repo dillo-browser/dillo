@@ -140,16 +140,43 @@ int CustInput::handle(int e)
 //----------------------------------------------------------------------------
 
 /*
+ * A button that highlights on mouse over
+ */
+class CustLightButton : public Fl_Button {
+   Fl_Color norm_color;
+public:
+   CustLightButton(int x, int y, int w, int h, const char *l=0) :
+      Fl_Button(x,y,w,h,l) { norm_color = color(); };
+   virtual int handle(int e);
+};
+
+int CustLightButton::handle(int e)
+{
+   if (active()) {
+      if (e == FL_ENTER) {
+         color(51); // {17,26,51}
+         redraw();
+      } else if (e == FL_LEAVE || e == FL_RELEASE) {
+         color(norm_color);
+         redraw();
+      }
+   }
+   return Fl_Button::handle(e);
+}
+
+//----------------------------------------------------------------------------
+
+/*
  * Used to handle "paste" within the toolbar's Clear button.
  */
-class CustButton : public Fl_Button {
+class CustPasteButton : public CustLightButton {
 public:
-   CustButton(int x, int y, int w, int h, const char *l=0) :
-      Fl_Button(x,y,w,h,l) {};
+   CustPasteButton(int x, int y, int w, int h, const char *l=0) :
+      CustLightButton(x,y,w,h,l) {};
    int handle(int e);
 };
 
-int CustButton::handle(int e)
+int CustPasteButton::handle(int e)
 {
    if (e == FL_PASTE) {
       const char* t = Fl::event_text();
@@ -159,7 +186,7 @@ int CustButton::handle(int e)
          return 1;
       }
    }
-   return Fl_Button::handle(e);
+   return CustLightButton::handle(e);
 }
 
 //----------------------------------------------------------------------------
@@ -385,7 +412,7 @@ Fl_Button *UI::make_button(const char *label, Fl_Image *img, Fl_Image *deimg,
    if (start)
       p_xpos = 0;
 
-   Fl_Button *b = new Fl_Button(p_xpos, 0, bw, bh, (lbl) ? label : NULL);
+   Fl_Button *b = new CustLightButton(p_xpos, 0, bw, bh, (lbl) ? label : NULL);
    if (img)
       b->image(img);
    if (deimg)
@@ -393,7 +420,8 @@ Fl_Button *UI::make_button(const char *label, Fl_Image *img, Fl_Image *deimg,
    b->callback(b1_cb, (void *)b_n);
    b->clear_visible_focus();
    b->labelsize(12);
-   b->box(FL_NO_BOX);
+   b->box(FL_FLAT_BOX);
+   b->down_box(FL_THIN_DOWN_FRAME);
    p_xpos += bw;
    return b;
 }
@@ -431,7 +459,7 @@ void UI::make_location(int ww)
 {
    Fl_Button *b;
 
-    Clear = b = new CustButton(p_xpos,0,16,lh,0);
+    Clear = b = new CustPasteButton(p_xpos,0,16,lh,0);
     b->image(icons->ImgClear);
     b->callback(clear_cb, this);
     b->clear_visible_focus();
@@ -444,14 +472,14 @@ void UI::make_location(int ww)
     i->callback(location_cb, this);
     p_xpos += i->w();
 
-    Search = b = new Fl_Button(p_xpos,0,16,lh,0);
+    Search = b = new CustLightButton(p_xpos,0,16,lh,0);
     b->image(icons->ImgSearch);
     b->callback(search_cb, this);
     b->clear_visible_focus();
     b->box(FL_THIN_UP_BOX);
     p_xpos += b->w();
 
-    Help = b = new Fl_Button(p_xpos,0,16,lh,0);
+    Help = b = new CustLightButton(p_xpos,0,16,lh,0);
     b->image(icons->ImgHelp);
     b->callback(help_cb, this);
     b->clear_visible_focus();
@@ -627,7 +655,7 @@ void UI::make_status_bar(int ww, int wh)
     StatusOutput->color(FL_GRAY_RAMP + 18);
 
     // Bug Meter
-    BugMeter = new Fl_Button(ww-bm_w,wh-sh,bm_w,sh);
+    BugMeter = new CustLightButton(ww-bm_w,wh-sh,bm_w,sh);
     BugMeter->image(icons->ImgMeterOK);
     BugMeter->box(FL_THIN_DOWN_BOX);
     BugMeter->align(FL_ALIGN_TEXT_NEXT_TO_IMAGE);
