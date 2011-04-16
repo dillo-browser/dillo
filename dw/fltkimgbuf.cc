@@ -190,7 +190,7 @@ core::Imgbuf* FltkImgbuf::getScaledBuf (int width, int height)
     */
    if (width <= 0 || height <= 0 ||
        width > IMAGE_MAX_AREA / height) {
-      MSG("FltkImgbuf::getScaledBuf: suspicious image size request %dx%d\n",
+      MSG("FltkImgbuf::getScaledBuf: suspicious image size request %d x %d\n",
            width, height);
       ref ();
       return this;
