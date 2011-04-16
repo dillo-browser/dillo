@@ -528,9 +528,8 @@ Fl_Widget *UI::make_filemenu_button()
    padding = w;
    btn->copy_label(PanelSize == P_tiny ? "&F" : "&File");
    btn->measure_label(w,h);
-   if (PanelSize == P_large)
-      h = mh;
-   btn->size(w+padding,PanelSize == P_tiny ? bh : lh);
+   h = (PanelSize == P_large) ? mh : (PanelSize == P_tiny) ? bh : lh;
+   btn->size(w+padding, h);
    p_xpos += btn->w();
    _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
    btn->box(PanelSize == P_large ? FL_THIN_UP_BOX : FL_THIN_UP_BOX);
@@ -587,7 +586,7 @@ void UI::make_panel(int ww)
    nh = bh, fh = 28; sh = 20;
 
    if (PanelSize == P_tiny) {
-      NavBar = new CustGroup(0,0,ww,bh);
+      NavBar = new CustGroup(0,0,ww,nh);
       NavBar->begin();
        make_toolbar(ww,bh);
        make_filemenu_button();
@@ -599,12 +598,12 @@ void UI::make_panel(int ww)
    } else {
        // File menu
        if (PanelSize == P_large) {
-          Fl_Group *g3 = new Fl_Group(0,0,ww,lh);
-          g3->begin();
-           g3->box(FL_THIN_UP_BOX);
+          MenuBar = new CustGroup(0,0,ww,mh);
+          MenuBar->begin();
+           MenuBar->box(FL_THIN_UP_BOX);
            Fl_Widget *bn = make_filemenu_button();
-           g3->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),lh));
-          g3->end();
+           MenuBar->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),mh));
+          MenuBar->end();
 
           p_xpos = 0;
           LocBar = new CustGroup(0,0,ww,lh);
@@ -676,7 +675,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
 {
    PointerOnLink = FALSE;
 
-   LocBar = NavBar = StatusBar = NULL;
+   MenuBar = LocBar = NavBar = StatusBar = NULL;
 
    Tabs = NULL;
    TabTooltip = NULL;
@@ -708,8 +707,8 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     make_panel(ui_w);
  
     // Render area
-    int mh = ui_h - (lh+bh+fh+sh);
-    Main = new Fl_Group(0,0,0,mh,"Welcome...");
+    int main_h = ui_h - (mh+(LocBar?lh:0)+nh+fh+sh);
+    Main = new Fl_Group(0,0,0,main_h,"Welcome...");
     Main->end();
     Main->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
     Main->box(FL_FLAT_BOX);
@@ -1163,6 +1162,11 @@ void UI::fullscreen_toggle()
 
    // hide/show panels
    init_sizes();
+   if (MenuBar) {
+      dh += mh;
+      hide ? MenuBar->size(0,0) : MenuBar->size(w(),mh);
+      hide ? MenuBar->hide() : MenuBar->show();
+   }
    if (LocBar) {
       dh += lh;
       hide ? LocBar->size(0,0) : LocBar->size(w(),lh);

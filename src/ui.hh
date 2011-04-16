@@ -121,7 +121,7 @@ class UI : public Fl_Pack {
    Fl_Group *TopGroup;
    Fl_Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
           *Clear, *Search, *Help, *FullScreen, *BugMeter, *FileButton;
-   CustGroup *LocBar, *NavBar, *StatusBar;
+   CustGroup *MenuBar, *LocBar, *NavBar, *StatusBar;
    Fl_Input  *Location;
    Fl_Pack *ProgBox;
    CustProgressBox *PProg, *IProg;
