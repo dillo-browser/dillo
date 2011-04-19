@@ -169,13 +169,16 @@ static OptID getCmdOption(const CLI_options *options, int argc, char **argv,
    return opt_id;
 }
 
+/*
+ * We'll set FL_NORMAL_LABEL to not interpret special symbols,
+ * and FL_FREE_LABELTYPE to interpret them.
+ */
 static void custLabelDraw(const Fl_Label* o, int X, int Y, int W, int H,
                           Fl_Align align)
 {
    const int interpret_symbols = 0;
 
    fl_draw_shortcut = 0;
-
    fl_font(o->font, o->size);
    fl_color((Fl_Color)o->color);
    fl_draw(o->value, X, Y, W, H, align, o->image, interpret_symbols);
@@ -186,7 +189,26 @@ static void custLabelMeasure(const Fl_Label* o, int& W, int& H)
    const int interpret_symbols = 0;
 
    fl_draw_shortcut = 0;
+   fl_font(o->font, o->size);
+   fl_measure(o->value, W, H, interpret_symbols);
+}
 
+static void custMenuLabelDraw(const Fl_Label* o, int X, int Y, int W, int H,
+                              Fl_Align align)
+{
+   const int interpret_symbols = 0;
+
+   fl_draw_shortcut = 1;
+   fl_font(o->font, o->size);
+   fl_color((Fl_Color)o->color);
+   fl_draw(o->value, X, Y, W, H, align, o->image, interpret_symbols);
+}
+
+static void custMenuLabelMeasure(const Fl_Label* o, int& W, int& H)
+{
+   const int interpret_symbols = 1;
+
+   fl_draw_shortcut = 1;
    fl_font(o->font, o->size);
    fl_measure(o->value, W, H, interpret_symbols);
 }
@@ -343,8 +365,9 @@ int main(int argc, char **argv)
    // Sets WM_CLASS hint on X11
    Fl_Window::default_xclass("dillo");
 
-   // Disable '@' interpretation in labels
+   // Disable '@' interpretation in normal labels
    Fl::set_labeltype(FL_NORMAL_LABEL, custLabelDraw, custLabelMeasure);
+   Fl::set_labeltype(FL_FREE_LABELTYPE,custMenuLabelDraw,custMenuLabelMeasure);
 
 #if 0
 PORT1.3

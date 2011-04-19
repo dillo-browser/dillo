@@ -524,6 +524,7 @@ Fl_Widget *UI::make_filemenu_button()
    int w,h, padding;
 
    FileButton = btn = new Fl_Button(p_xpos,0,0,0,"W");
+   btn->labeltype(FL_FREE_LABELTYPE);
    btn->measure_label(w, h);
    padding = w;
    btn->copy_label(PanelSize == P_tiny ? "&F" : "&File");
