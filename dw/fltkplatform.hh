@@ -59,7 +59,6 @@ class FltkTooltip: public core::style::Tooltip
 private:
    FltkTooltip (const char *text);
    ~FltkTooltip ();
-   bool shown;
 public:
    static FltkTooltip *create(const char *text);
    void onEnter();

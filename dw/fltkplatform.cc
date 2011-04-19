@@ -190,17 +190,10 @@ FltkColor * FltkColor::create (int col)
 
 FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
 {
-   shown = false;
 }
 
 FltkTooltip::~FltkTooltip ()
 {
-#if 0
-PORT1.3
-probably can remember the one from onEnter
-   if (shown)
-      Fl_Tooltip::exit();
-#endif
 }
 
 FltkTooltip *FltkTooltip::create (const char *text)
@@ -214,13 +207,11 @@ void FltkTooltip::onEnter()
 
    Fl_Tooltip::enter_area(widget, widget->x(), widget->y(), widget->w(),
                           widget->h(), str);
-   shown = true;
 }
 
 void FltkTooltip::onLeave()
 {
    Fl_Tooltip::exit(NULL);
-   shown = false;
 }
 
 void FltkTooltip::onMotion()
