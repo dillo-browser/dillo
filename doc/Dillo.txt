@@ -23,7 +23,7 @@ developers.
 
    Dillo can be viewed as the sum of five main parts:
 
-   1.- Dillo Widget: A custom widget, FLTK2 based, that holds the
+   1.- Dillo Widget: A custom widget, FLTK-based, that holds the
 necessary data structures and mechanisms for graphical rendering.
 (Described in Dw*.txt, dw*.c files among the sources.)
 
