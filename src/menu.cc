@@ -34,7 +34,7 @@ static DilloUrl *popup_url = NULL;
 // Weak reference to the popup's bw
 static BrowserWindow *popup_bw = NULL;
 static void *popup_form = NULL;
-// Where to place the filemenu popup
+// Where to place the popup
 static int popup_x, popup_y;
 // History popup direction (-1 = back, 1 = forward).
 static int history_direction = -1;
