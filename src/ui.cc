@@ -869,8 +869,6 @@ const char *UI::get_location()
 void UI::set_location(const char *str)
 {
    if (!str) str = "";
-   // This text() call clears fl_pending_callback, avoiding
-   // an extra location_cb() call.
    Location->value(str);
    Location->position(strlen(str));
 }
