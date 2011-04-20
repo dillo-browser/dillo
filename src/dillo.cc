@@ -170,8 +170,8 @@ static OptID getCmdOption(const CLI_options *options, int argc, char **argv,
 }
 
 /*
- * We'll set FL_NORMAL_LABEL to not interpret special symbols,
- * and FL_FREE_LABELTYPE to interpret them.
+ * Set FL_NORMAL_LABEL to interpret neither symbols (@) nor shortcuts (&),
+ * and FL_FREE_LABELTYPE to interpret shortcuts.
  */
 static void custLabelDraw(const Fl_Label* o, int X, int Y, int W, int H,
                           Fl_Align align)
@@ -206,7 +206,7 @@ static void custMenuLabelDraw(const Fl_Label* o, int X, int Y, int W, int H,
 
 static void custMenuLabelMeasure(const Fl_Label* o, int& W, int& H)
 {
-   const int interpret_symbols = 1;
+   const int interpret_symbols = 0;
 
    fl_draw_shortcut = 1;
    fl_font(o->font, o->size);
@@ -365,8 +365,10 @@ int main(int argc, char **argv)
    // Sets WM_CLASS hint on X11
    Fl_Window::default_xclass("dillo");
 
-   // Disable '@' interpretation in normal labels
+   // Disable '@' and '&' interpretation in normal labels.
    Fl::set_labeltype(FL_NORMAL_LABEL, custLabelDraw, custLabelMeasure);
+
+   // Use to permit '&' interpretation.
    Fl::set_labeltype(FL_FREE_LABELTYPE,custMenuLabelDraw,custMenuLabelMeasure);
 
 #if 0
