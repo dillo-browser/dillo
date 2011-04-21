@@ -538,7 +538,7 @@ Fl_Widget *UI::make_filemenu_button()
    if (prefs.show_tooltip)
       btn->tooltip("File menu");
    btn->clear_visible_focus();
-   if (!prefs.show_filemenu && PanelSize != P_large)
+   if (!prefs.show_filemenu)
       btn->hide();
    return btn;
 }
@@ -607,6 +607,7 @@ void UI::make_panel(int ww)
           LocBar = new CustGroup(0,0,ww,lh);
           LocBar->begin();
            make_location(ww);
+           LocBar->resizable(Location);
           LocBar->end();
           TopGroup->insert(*LocBar,1);
        } else {
@@ -1004,7 +1005,10 @@ void UI::customize(int flags)
 // if ( !prefs.show_progress_box )
 //    ProgBox->hide();
 
-   NavBar->rearrange();
+   if (NavBar)
+      NavBar->rearrange();
+   if (LocBar)
+      LocBar->rearrange();
 }
 
 /*
