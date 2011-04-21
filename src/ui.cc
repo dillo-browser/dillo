@@ -627,7 +627,7 @@ void UI::make_panel(int ww)
        NavBar->begin();
         make_toolbar(ww,bh);
         w = new Fl_Box(p_xpos,0,ww-p_xpos-2*pw,bh);
-        w->box(FL_NO_BOX);
+        w->box(FL_FLAT_BOX);
         NavBar->resizable(w);
         p_xpos = ww - 2*pw;
         if (PanelSize == P_small) {
