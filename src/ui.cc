@@ -1017,18 +1017,26 @@ void UI::customize(int flags)
  */
 void UI::panel_cb_i()
 {
-#if 0
-   Fl_Group *NewPanel;
+   // Remove current panel's bars
+   init_sizes();
+   TopGroup->remove(MenuBar);
+   Fl::delete_widget(MenuBar);
+   TopGroup->remove(LocBar);
+   Fl::delete_widget(LocBar);
+   TopGroup->remove(NavBar);
+   Fl::delete_widget(NavBar);
+   MenuBar = LocBar = NavBar = NULL;
 
-   // Create a new Panel
+   // make a new panel
    ++PanelSize;
-   NewPanel = make_panel(TopGroup->w());
-   TopGroup->remove(Panel);
-   delete(Panel);
-   TopGroup->add(NewPanel);
-   Panel = NewPanel;
+   make_panel(TopGroup->w());
    customize(0);
-#endif
+
+   // adjust Main's height
+   int main_h = h() - (mh+(LocBar?lh:0)+nh+(FindBarSpace?fh:0)+sh);
+   Main->size(Main->w(), main_h);
+   redraw();
+
    Location->take_focus();
 }
 
