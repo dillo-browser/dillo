@@ -207,7 +207,7 @@ UI *CustTabs::add_new_tab(int focus)
    btn->copy_label(tab_label);
    btn->clear_visible_focus();
    btn->box(FL_PLASTIC_ROUND_UP_BOX);
-   btn->color(tabcolor_active);
+   btn->color(focus ? tabcolor_active : tabcolor_inactive);
    btn->ui(new_ui);
    add(btn);
    btn->redraw();
@@ -394,7 +394,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    CustTabs *DilloTabs = new CustTabs(ww, wh, 16);
    win->end();
 
-   new_bw = UIcmd_tab_new(DilloTabs, 1);
+   int focus = 1;
+   new_bw = UIcmd_tab_new(DilloTabs, focus);
    win->resizable(Gui);
    win->show();
 
@@ -417,7 +418,7 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, int focus)
    MSG(" UIcmd_tab_new\n");
 
    // Create and set the UI
-   UI *new_ui = tabs->add_new_tab(1);
+   UI *new_ui = tabs->add_new_tab(focus);
    Gui = new_ui;
 
    // Now create the Dw render layout and viewport
