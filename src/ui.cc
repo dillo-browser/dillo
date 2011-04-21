@@ -586,6 +586,7 @@ void UI::make_panel(int ww)
    }
    nh = bh, fh = 28; sh = 20;
 
+   current(0);
    if (PanelSize == P_tiny) {
       NavBar = new CustGroup(0,0,ww,nh);
       NavBar->begin();
@@ -596,8 +597,8 @@ void UI::make_panel(int ww)
        make_progress_bars(0,1);
       NavBar->box(FL_THIN_UP_FRAME);
       NavBar->end();
+      TopGroup->insert(*NavBar,0);
    } else {
-       // File menu
        if (PanelSize == P_large) {
           MenuBar = new CustGroup(0,0,ww,mh);
           MenuBar->begin();
@@ -605,19 +606,23 @@ void UI::make_panel(int ww)
            Fl_Widget *bn = make_filemenu_button();
            MenuBar->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),mh));
           MenuBar->end();
+          TopGroup->insert(*MenuBar,0);
 
           p_xpos = 0;
           LocBar = new CustGroup(0,0,ww,lh);
           LocBar->begin();
            make_location(ww);
           LocBar->end();
+          TopGroup->insert(*LocBar,1);
        } else {
           LocBar = new CustGroup(0,0,ww,lh);
+          LocBar->begin();
            p_xpos = 0;
            make_filemenu_button();
            make_location(ww);
            LocBar->resizable(Location);
           LocBar->end();
+          TopGroup->insert(*LocBar,0);
        }
 
        // Toolbar
@@ -635,6 +640,7 @@ void UI::make_panel(int ww)
            make_progress_bars(1,0);
         }
        NavBar->end();
+       TopGroup->insert(*NavBar,(MenuBar ? 2 : 1));
    }
 }
 
@@ -682,7 +688,6 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    TabTooltip = NULL;
    TopGroup = this;
    TopGroup->type(VERTICAL);
-   //resizable(TopGroup);
    clear_flag(SHORTCUT_LABEL);
 
    if (cur_ui) {
@@ -710,7 +715,6 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     // Render area
     int main_h = ui_h - (mh+(LocBar?lh:0)+nh+fh+sh);
     Main = new Fl_Group(0,0,0,main_h,"Welcome...");
-    Main->end();
     Main->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
     Main->box(FL_FLAT_BOX);
     Main->color(FL_GRAY_RAMP + 3);
@@ -718,6 +722,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     Main->labelsize(36);
     Main->labeltype(FL_SHADOW_LABEL);
     Main->labelcolor(FL_WHITE);
+    TopGroup->add(Main);
     TopGroup->resizable(Main);
     MainIdx = TopGroup->find(Main);
  
