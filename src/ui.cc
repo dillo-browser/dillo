@@ -238,7 +238,7 @@ static void search_cb(Fl_Widget *wid, void *data)
    } else if (b == FL_MIDDLE_MOUSE) {
       ((UI*)data)->color_change_cb_i();
    } else if (b == FL_RIGHT_MOUSE) {
-      ((UI*)data)->change_panel(-1,-1);
+      // nothing ATM
    }
 }
 
@@ -1022,16 +1022,9 @@ void UI::change_panel(int new_size, int small_icons)
    Fl::delete_widget(NavBar);
    MenuBar = LocBar = NavBar = NULL;
 
-   // Set panel and icons size
-   if (new_size < 0 || small_icons < 0) {
-      if (++PanelSize > P_large) {
-         PanelSize = P_tiny;
-         Small_Icons = !Small_Icons;
-      }
-   } else {
-      PanelSize = new_size;
-      Small_Icons = small_icons;
-   }
+   // Set internal vars for panel size
+   PanelSize = new_size;
+   Small_Icons = small_icons;
 
    // make a new panel
    make_panel(TopGroup->w());
