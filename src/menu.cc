@@ -645,16 +645,26 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
 {
    const Fl_Menu_Item *item;
    Fl_Widget *wid = (Fl_Widget*)v_wid;
+   UI *ui = (UI*)bw->ui;
 
    static Fl_Menu_Item pm[] = {
       {"Use remote CSS", 0, Menu_remote_css_cb, 0, FL_MENU_TOGGLE,0,0,0,0},
       {"Use embedded CSS", 0, Menu_embedded_css_cb, 0,
        FL_MENU_TOGGLE|FL_MENU_DIVIDER,0,0,0,0},
-      {"Load images", 0, Menu_imgload_toggle_cb, 0, FL_MENU_TOGGLE,0,0,0,0},
+      {"Load images", 0, Menu_imgload_toggle_cb, 0, 
+       FL_MENU_TOGGLE|FL_MENU_DIVIDER,0,0,0,0},
+      {"Panel size", 0, 0, (void*)"Submenu1", FL_SUBMENU,0,0,0,0},
+         {"tiny",  0,0,(void*)P_tiny,FL_MENU_RADIO,0,0,0,0},
+         {"small", 0,0,(void*)P_small,FL_MENU_RADIO,0,0,0,0},
+         {"medium",0,0,(void*)P_medium,FL_MENU_RADIO,0,0,0,0},
+         {"large", 0,0,(void*)P_large,FL_MENU_RADIO|FL_MENU_DIVIDER,0,0,0,0},
+         {"small icons", 0,0,(void*)10,FL_MENU_TOGGLE,0,0,0,0},
       {0,0,0,0,0,0,0,0,0}
    };
 
    popup_bw = bw;
+   int cur_panelsize = ui->get_panelsize();
+   int cur_smallicons = ui->get_smallicons();
 
    if (prefs.load_stylesheets)
       pm[0].set();
@@ -662,9 +672,15 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
       pm[1].set();
    if (prefs.load_images)
       pm[2].set();
+   pm[4+cur_panelsize].setonly();
+   cur_smallicons ? pm[8].set() : pm[8].clear();
 
    item = pm->popup(wid->x(), wid->y() + wid->h());
-   if (item)
-      ((Fl_Widget *)item)->do_callback();
+   if (item) {
+      if (VOIDP2INT(item->user_data_) == 10)
+         ui->change_panel(cur_panelsize, !cur_smallicons);
+      else
+         ui->change_panel(VOIDP2INT(item->user_data_), cur_smallicons);
+   }
 }
 

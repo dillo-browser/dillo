@@ -238,7 +238,7 @@ static void search_cb(Fl_Widget *wid, void *data)
    } else if (b == FL_MIDDLE_MOUSE) {
       ((UI*)data)->color_change_cb_i();
    } else if (b == FL_RIGHT_MOUSE) {
-      ((UI*)data)->panel_cb_i();
+      ((UI*)data)->change_panel(-1,-1);
    }
 }
 
@@ -550,11 +550,6 @@ Fl_Widget *UI::make_filemenu_button()
 void UI::make_panel(int ww)
 {
    Fl_Widget *w;
-
-   if (PanelSize > P_large) {
-      PanelSize = P_tiny;
-      Small_Icons = !Small_Icons;
-   }
 
    if (Small_Icons)
       icons = &small_icons;
@@ -1015,7 +1010,7 @@ void UI::customize(int flags)
 /*
  * On-the-fly panel style change
  */
-void UI::panel_cb_i()
+void UI::change_panel(int new_size, int small_icons)
 {
    // Remove current panel's bars
    init_sizes();
@@ -1027,10 +1022,21 @@ void UI::panel_cb_i()
    Fl::delete_widget(NavBar);
    MenuBar = LocBar = NavBar = NULL;
 
+   // Set panel and icons size
+   if (new_size < 0 || small_icons < 0) {
+      if (++PanelSize > P_large) {
+         PanelSize = P_tiny;
+         Small_Icons = !Small_Icons;
+      }
+   } else {
+      PanelSize = new_size;
+      Small_Icons = small_icons;
+   }
+
    // make a new panel
-   ++PanelSize;
    make_panel(TopGroup->w());
    customize(0);
+   a_UIcmd_set_buttons_sens(a_UIcmd_get_bw_by_widget(this));
 
    // adjust Main's height
    int main_h = h() - (mh+(LocBar?lh:0)+nh+(FindBarSpace?fh:0)+sh);

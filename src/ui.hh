@@ -168,6 +168,9 @@ public:
    void paste_url();
    void set_panelmode(UIPanelmode mode);
    UIPanelmode get_panelmode();
+   int get_panelsize() { return PanelSize; }
+   int get_smallicons() { return Small_Icons; }
+   void change_panel(int new_size, int small_icons);
    void findbar_toggle(bool add);
    void fullscreen_toggle();
 
@@ -177,7 +180,6 @@ public:
    void pointerOnLink(int flag) { PointerOnLink = flag; }
 
    // Hooks to method callbacks
-   void panel_cb_i();
    void color_change_cb_i();
    void toggle_cb_i();
    void panelmode_cb_i();
