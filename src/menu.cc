@@ -669,7 +669,8 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
          {"medium",0,Menu_panel_change_cb,(void*)2,FL_MENU_RADIO,0,0,0,0},
          {"large", 0,Menu_panel_change_cb,(void*)3,
            FL_MENU_RADIO|FL_MENU_DIVIDER,0,0,0,0},
-         {"small icons", 0,0,(void*)10,FL_MENU_TOGGLE,0,0,0,0},
+         {"small icons", 0,Menu_panel_change_cb,(void*)10,
+           FL_MENU_TOGGLE,0,0,0,0},
       {0,0,0,0,0,0,0,0,0}
    };
 
