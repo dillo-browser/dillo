@@ -619,6 +619,16 @@ static void Menu_embedded_css_cb(Fl_Widget *wid, void*)
    a_UIcmd_repush(popup_bw);
 }
 
+static void Menu_panel_change_cb(Fl_Widget*, void *user_data)
+{
+   UI *ui = (UI*)popup_bw->ui;
+
+   if (VOIDP2INT(user_data) == 10) /* small icons */
+      ui->change_panel(ui->get_panelsize(), !ui->get_smallicons());
+   else
+      ui->change_panel(VOIDP2INT(user_data), ui->get_smallicons());
+}
+
 /*
  * Toggle loading of images -- and load them if enabling.
  */
@@ -654,10 +664,11 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
       {"Load images", 0, Menu_imgload_toggle_cb, 0, 
        FL_MENU_TOGGLE|FL_MENU_DIVIDER,0,0,0,0},
       {"Panel size", 0, 0, (void*)"Submenu1", FL_SUBMENU,0,0,0,0},
-         {"tiny",  0,0,(void*)P_tiny,FL_MENU_RADIO,0,0,0,0},
-         {"small", 0,0,(void*)P_small,FL_MENU_RADIO,0,0,0,0},
-         {"medium",0,0,(void*)P_medium,FL_MENU_RADIO,0,0,0,0},
-         {"large", 0,0,(void*)P_large,FL_MENU_RADIO|FL_MENU_DIVIDER,0,0,0,0},
+         {"tiny",  0,Menu_panel_change_cb,(void*)0,FL_MENU_RADIO,0,0,0,0},
+         {"small", 0,Menu_panel_change_cb,(void*)1,FL_MENU_RADIO,0,0,0,0},
+         {"medium",0,Menu_panel_change_cb,(void*)2,FL_MENU_RADIO,0,0,0,0},
+         {"large", 0,Menu_panel_change_cb,(void*)3,
+           FL_MENU_RADIO|FL_MENU_DIVIDER,0,0,0,0},
          {"small icons", 0,0,(void*)10,FL_MENU_TOGGLE,0,0,0,0},
       {0,0,0,0,0,0,0,0,0}
    };
@@ -677,10 +688,7 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
 
    item = pm->popup(wid->x(), wid->y() + wid->h());
    if (item) {
-      if (VOIDP2INT(item->user_data_) == 10)
-         ui->change_panel(cur_panelsize, !cur_smallicons);
-      else
-         ui->change_panel(VOIDP2INT(item->user_data_), cur_smallicons);
+      ((Fl_Widget *)item)->do_callback();
    }
 }
 
