@@ -61,7 +61,7 @@ static UI *Gui;
 /*
  * Forward declarations
  */
-static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, int focus);
+static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus);
 
 //----------------------------------------------------------------------------
 
@@ -102,7 +102,7 @@ public:
       Wizard->end();
    };
    int handle(int e);
-   UI *add_new_tab(int focus);
+   UI *add_new_tab(UI *old_ui, int focus);
    void remove_tab(UI *ui);
    Fl_Wizard *wizard(void) { return Wizard; }
    int get_btn_idx(UI *ui);
@@ -191,12 +191,12 @@ int CustTabs::handle(int e)
 /*
  * Create a new tab with its own UI
  */
-UI *CustTabs::add_new_tab(int focus)
+UI *CustTabs::add_new_tab(UI *old_ui, int focus)
 {
    char tab_label[64];
 
    current(0);
-   UI *new_ui = new UI(0,tab_h,Wizard->w(),Wizard->h());
+   UI *new_ui = new UI(0,tab_h,Wizard->w(),Wizard->h(),0,old_ui);
    new_ui->tabs(this);
    Wizard->add(new_ui);
    new_ui->show();
@@ -375,6 +375,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 {
    BrowserWindow *old_bw = (BrowserWindow*)vbw;
    BrowserWindow *new_bw = NULL;
+   UI *old_ui = old_bw ? BW2UI(old_bw) : NULL;
    Fl_Window *win;
 
    if (ww <= 0 || wh <= 0) {
@@ -395,7 +396,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    win->end();
 
    int focus = 1;
-   new_bw = UIcmd_tab_new(DilloTabs, focus);
+   new_bw = UIcmd_tab_new(DilloTabs, old_ui, focus);
    win->resizable(Gui);
    win->show();
 
@@ -413,12 +414,12 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
  * Create a new Tab button, UI and its associated BrowserWindow data
  * structure.
  */
-static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, int focus)
+static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus)
 {
-   MSG(" UIcmd_tab_new\n");
+   _MSG(" UIcmd_tab_new\n");
 
    // Create and set the UI
-   UI *new_ui = tabs->add_new_tab(focus);
+   UI *new_ui = tabs->add_new_tab(old_ui, focus);
    Gui = new_ui;
 
    // Now create the Dw render layout and viewport
@@ -575,7 +576,8 @@ void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
 void a_UIcmd_open_url_nt(void *vbw, const DilloUrl *url, int focus)
 {
    BrowserWindow *bw = (BrowserWindow *)vbw;
-   BrowserWindow *new_bw = UIcmd_tab_new(BW2UI(bw)->tabs(), focus);
+   BrowserWindow *new_bw = UIcmd_tab_new(BW2UI(bw)->tabs(),
+                                         bw ? BW2UI(bw) : NULL, focus);
    UIcmd_open_url_nbw(new_bw, url);
 }
 
