@@ -27,7 +27,7 @@
 
 # "close-tab" closes the current tab.
 # Note that this closes the browser window if there is only one tab.
-#<ctrl>q = close-tab
+#<ctrl>w = close-tab
 
 # "close-all" closes all tabs/windows and exits.
 #<alt>q = close-all
