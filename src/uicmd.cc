@@ -317,7 +317,6 @@ void CustTabs::set_tab_label(UI *ui, const char *label)
       // Avoid unnecessary redraws
       if (strcmp(child(idx)->label(), title)) {
          child(idx)->copy_label(title);
-         child(idx)->redraw_label();
       }
    }
 }
@@ -1151,7 +1150,6 @@ void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
          snprintf(title + i, 4, "...");
       }
       BW2UI(bw)->window()->copy_label(title);
-      BW2UI(bw)->window()->redraw_label();
    }
    BW2UI(bw)->tabs()->set_tab_label(BW2UI(bw), label);
 }

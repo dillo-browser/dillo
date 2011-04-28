@@ -209,7 +209,6 @@ public:
       copy_label(lbl);
       //measure_label(w,h);
       //size(w+padding,this->h());
-      redraw_label();
    }
 };
 
@@ -964,7 +963,6 @@ void UI::set_bug_prog(int n_bug)
          BugMeter->image(icons->ImgMeterBug);
       snprintf(str, 32, "%d", n_bug);
       BugMeter->copy_label(str);
-      BugMeter->redraw_label();
       new_w = strlen(str)*9 + 20;
    }
    BugMeter->size(new_w, BugMeter->h());
