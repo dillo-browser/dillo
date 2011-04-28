@@ -95,7 +95,7 @@ static const KeyBinding_t default_keys[] = {
    { "save"         , KEYS_SAVE         , 0         , 0               },
    { "hide-panels"  , KEYS_HIDE_PANELS  , 0         , FL_Escape       },
    { "file-menu"    , KEYS_FILE_MENU    , FL_ALT    , 'f'             },
-   { "close-all"    , KEYS_CLOSE_ALL    , FL_ALT    , 'q'             },
+   { "close-all"    , KEYS_CLOSE_ALL    , FL_CTRL   , 'q'             },
    { "back"         , KEYS_BACK         , 0         , FL_BackSpace    },
    { "back"         , KEYS_BACK         , 0         , ','             },
    { "forward"      , KEYS_FORWARD      , FL_SHIFT  , FL_BackSpace    },

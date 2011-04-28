@@ -30,7 +30,7 @@
 #<ctrl>w = close-tab
 
 # "close-all" closes all tabs/windows and exits.
-#<alt>q = close-all
+#<ctrl>q = close-all
 
 # "left-tab" and "right-tab" switch to the left/right of the current tab.
 # *** NOT HOOKED UP YET ***
