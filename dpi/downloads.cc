@@ -68,7 +68,7 @@ typedef enum {
 // ProgressBar widget --------------------------------------------------------
 
 // class FL_API ProgressBar : public Fl_Widget {
-class ProgressBar : public Fl_Widget {
+class ProgressBar : public Fl_Box {
 protected:
    double mMin;
    double mMax;
@@ -219,7 +219,7 @@ void ProgressBar::move(double step)
 }
 
 ProgressBar::ProgressBar(int x, int y, int w, int h, const char *lbl)
-:  Fl_Widget(x, y, w, h, lbl)
+:  Fl_Box(x, y, w, h, lbl)
 {
    mMin = mPresent = 0;
    mMax = 100;
@@ -236,10 +236,8 @@ void ProgressBar::draw()
    };
 
    //drawstyle(style(), flags());
-   if (Fl::damage() & FL_DAMAGE_ALL)
-      draw_box();
+   draw_box();
    Rectangle r = {x(), y(), w(), h()};
-   //box()->inset(r);
    if (mPresent > mMax)
       mPresent = mMax;
    if (mPresent < mMin)
@@ -344,6 +342,7 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    group->begin();
     prTitle = new Fl_Box(24, 7, 290, 23, shortname);
     prTitle->box(FL_RSHADOW_BOX);
+    prTitle->color(FL_WHITE);
     prTitle->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
     //prTitle->clear_flag (SHORTCUT_LABEL);
     // Attach this 'log_text' to the tooltip
@@ -352,53 +351,64 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
     log_text_add("\n\n", 2);
 
     prBar = new ProgressBar(24, 40, 92, 20);
-    prBar->box(FL_BORDER_BOX); // ENGRAVED_BOX
+    prBar->box(FL_THIN_UP_BOX);
+    prBar->color(FL_WHITE);
     prBar->tooltip("Progress Status");
 
     int ix = 122, iy = 36, iw = 50, ih = 14;
     Fl_Widget *o = new Fl_Box(ix,iy,iw,ih, "Got");
     o->box(FL_RFLAT_BOX);
-    o->color((Fl_Color)0xc0c0c000);
+    o->color(FL_DARK2);
+    o->labelsize(12);
     o->tooltip("Downloaded Size");
     prGot = new Fl_Box(ix,iy+14,iw,ih, "0KB");
     prGot->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
     prGot->labelcolor((Fl_Color)0x6c6cbd00);
+    prGot->labelsize(12);
     prGot->box(FL_NO_BOX);
 
     ix += iw;
     o = new Fl_Box(ix,iy,iw,ih, "Size");
     o->box(FL_RFLAT_BOX);
-    o->color((Fl_Color)0xc0c0c000);
+    o->color(FL_DARK2);
+    o->labelsize(12);
     o->tooltip("Total Size");
     prSize = new Fl_Box(ix,iy+14,iw,ih, "??");
     prSize->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prSize->labelsize(12);
     prSize->box(FL_NO_BOX);
 
     ix += iw;
     o = new Fl_Box(ix,iy,iw,ih, "Rate");
     o->box(FL_RFLAT_BOX);
-    o->color((Fl_Color)0xc0c0c000);
+    o->color(FL_DARK2);
+    o->labelsize(12);
     o->tooltip("Current transfer Rate (KBytes/sec)");
     prRate = new Fl_Box(ix,iy+14,iw,ih, "??");
     prRate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prRate->labelsize(12);
     prRate->box(FL_NO_BOX);
 
     ix += iw;
     o = new Fl_Box(ix,iy,iw,ih, "~Rate");
     o->box(FL_RFLAT_BOX);
-    o->color((Fl_Color)0xc0c0c000);
+    o->color(FL_DARK2);
+    o->labelsize(12);
     o->tooltip("Average transfer Rate (KBytes/sec)");
     pr_Rate = new Fl_Box(ix,iy+14,iw,ih, "??");
     pr_Rate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    pr_Rate->labelsize(12);
     pr_Rate->box(FL_NO_BOX);
 
     ix += iw;
     prETAt = o = new Fl_Box(ix,iy,iw,ih, "ETA");
     o->box(FL_RFLAT_BOX);
-    o->color((Fl_Color)0xc0c0c000);
+    o->color(FL_DARK2);
+    o->labelsize(12);
     o->tooltip("Estimated Time of Arrival");
     prETA = new Fl_Box(ix,iy+14,iw,ih, "??");
     prETA->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prETA->labelsize(12);
     prETA->box(FL_NO_BOX);
 
     //ix += 50;
@@ -936,8 +946,8 @@ static void dlwin_esc_cb(Fl_Widget *, void *)
                      "ABORT them and EXIT anyway?";
 
    if (dl_win && dl_win->num_running() > 0) {
-      int ch = fl_choice(msg, "Yes", "*No", "Cancel");
-      if (ch != 0)
+      int ch = fl_choice("%s", "Cancel", "*No", "Yes", msg);
+      if (ch == 0 || ch == 1)
          return;
    }
 
@@ -969,6 +979,7 @@ void DLWin::add(const char *full_filename, const char *url, DLAction action)
    } else {
       /* father */
       dl_win->show();
+      dl_item->get_widget()->redraw();
       dl_item->pid(f_pid);
       dl_item->father_init();
    }
@@ -992,10 +1003,10 @@ DLAction DLWin::check_filename(char **p_fullname)
    dStr_sprintf(ds,
                 "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
                 *p_fullname, (int)ss.st_size);
-   ch = fl_choice(ds->str, "Rename", "Continue", "Abort");
+   ch = fl_choice("%s", "Abort", "Continue", "Rename", ds->str);
    dStr_free(ds, 1);
    MSG("Choice %d\n", ch);
-   if (ch == 0) {
+   if (ch == 2) {
       const char *p;
       p = fl_file_chooser("Enter a new name:", NULL, *p_fullname);
       if (p) {
