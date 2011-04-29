@@ -228,6 +228,10 @@
 # If you prefer to open a new Window instead, set it to NO.
 #middle_click_opens_new_tab=YES
 
+# A mouse's middle click over a tab closes the Tab.
+# With mousewheel mouses, right click feels way better (set to YES).
+#right_click_closes_tab=NO 
+
 # Mouse middle click by default drives drag-scrolling.
 # To paste an URL into the window instead of scrolling, set it to NO.
 # Note: You could always paste the URL onto the URL box clear button.

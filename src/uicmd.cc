@@ -125,7 +125,8 @@ static void tab_btn_cb (Fl_Widget *w, void *cb_data)
 
    if (b == FL_LEFT_MOUSE) {
       tabs->switch_tab(btn);
-   } else if (b == FL_RIGHT_MOUSE) {
+   } else if ((b == FL_RIGHT_MOUSE && prefs.right_click_closes_tab) ||
+              (b == FL_MIDDLE_MOUSE && !prefs.right_click_closes_tab)) {
       // TODO: just an example, not necessarily final
       a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(btn->ui()));
    }

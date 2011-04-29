@@ -81,6 +81,7 @@ int PrefsParser::parseOption(char *name, char *value)
         PREFS_BOOL },
       { "middle_click_opens_new_tab", &prefs.middle_click_opens_new_tab,
         PREFS_BOOL },
+      { "right_click_closes_tab", &prefs.right_click_closes_tab, PREFS_BOOL },
       { "no_proxy", &prefs.no_proxy, PREFS_STRING },
       { "panel_size", &prefs.panel_size, PREFS_PANEL_SIZE },
       { "parse_embedded_css", &prefs.parse_embedded_css, PREFS_BOOL },

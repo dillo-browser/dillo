@@ -70,6 +70,7 @@ void a_Prefs_init(void)
    prefs.load_stylesheets=TRUE;
    prefs.middle_click_drags_page = TRUE;
    prefs.middle_click_opens_new_tab = TRUE;
+   prefs.right_click_closes_tab = FALSE;
    prefs.no_proxy = dStrdup(PREFS_NO_PROXY);
    prefs.panel_size = P_medium;
    prefs.parse_embedded_css=TRUE;
