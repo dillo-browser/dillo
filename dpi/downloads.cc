@@ -67,7 +67,6 @@ typedef enum {
 
 // ProgressBar widget --------------------------------------------------------
 
-// class FL_API ProgressBar : public Fl_Widget {
 class ProgressBar : public Fl_Box {
 protected:
    double mMin;
@@ -225,7 +224,7 @@ ProgressBar::ProgressBar(int x, int y, int w, int h, const char *lbl)
    mMax = 100;
    mShowPct = true;
    mShowMsg = false;
-   box(FL_DOWN_BOX);
+   box(FL_THIN_UP_BOX);
    color(FL_WHITE);
 }
 
@@ -352,7 +351,6 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
 
     prBar = new ProgressBar(24, 40, 92, 20);
     prBar->box(FL_THIN_UP_BOX);
-    prBar->color(FL_WHITE);
     prBar->tooltip("Progress Status");
 
     int ix = 122, iy = 36, iw = 50, ih = 14;
@@ -419,7 +417,8 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
     prButton->clear_visible_focus();
     prButton->callback(prButton_scb, this);
 
-   group->box(FL_ROUND_UP_BOX);
+   //group->box(FL_ROUND_UP_BOX);  --BUG in FLTK-1.3
+   group->box(FL_ROUNDED_BOX);
    group->end();
 }
 
@@ -1029,6 +1028,7 @@ void DLWin::del(int n_item)
 
    // Remove the widget from the packed group
    mPG->remove(dl_item->get_widget());
+   mScroll->redraw();
    mDList->del(n_item);
    delete(dl_item);
 }
@@ -1084,9 +1084,8 @@ DLWin::DLWin(int ww, int wh) {
    mWin->begin();
     mScroll = new Fl_Scroll(0,0,ww,wh);
     mScroll->begin();
-     mPG = new Fl_Pack(0,0,ww,wh);
+     mPG = new Fl_Pack(0,0,ww-18,wh);
      mPG->end();
-     //mPG->spacing(10);
     mScroll->end();
     mScroll->type(Fl_Scroll::VERTICAL);
    mWin->end();
