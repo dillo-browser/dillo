@@ -41,41 +41,6 @@ static int history_direction = -1;
 // History popup, list of URL-indexes.
 static int *history_list = NULL;
 
-#if 0
-My guess is that a modified copy of Fl_Menu_ that handles something similar
-to Fl_Menu_Item may be necessary. I sure hope not, though.
-
-/*
- * Local sub class.
- * Used to add the hint for history popup menus, and to remember
- * the mouse button pressed over a menu item.
- */
-class CustItem : public Fl_Menu_Item {
-   int EventButton;
-public:
-   CustItem (const char* label) : Item(label) { EventButton = 0; };
-   int button () { return EventButton; };
-   void draw();
-   int handle(int e) {
-      EventButton = Fl::event_button();
-      return Item::handle(e);
-   }
-};
-
-/*
- * This adds a call to a_UIcmd_set_msg() to show the URL in the status bar
- * TODO: erase the URL on popup close.
- */
-void CustItem::draw() {
-   const DilloUrl *url;
-
-   if (flags() & SELECTED) {
-      url = a_History_get_url(history_list[(VOIDP2INT(user_data()))-1]);
-      a_UIcmd_set_msg(popup_bw, "%s", URL_STR(url));
-   }
-   Item::draw();
-}
-#endif
 
 //--------------------------------------------------------------------------
 /*
@@ -283,14 +248,13 @@ static void Menu_bugmeter_about_cb(Fl_Widget*, void* )
  */
 static void Menu_history_cb(Fl_Widget *wid, void *data)
 {
-#if 0
-   int mb = ((CustItem*)wid)->button();
-#endif
+   int mb = Fl::event_button();
    int offset = history_direction * VOIDP2INT(data);
-#if 0
    const DilloUrl *url = a_History_get_url(history_list[VOIDP2INT(data)-1]);
 
-   if (mb == 2) {
+   if (mb == 1) {
+      a_UIcmd_nav_jump(popup_bw, offset, 0);
+   } else if (mb == 2) {
       // Middle button, open in a new window/tab
       if (prefs.middle_click_opens_new_tab) {
          int focus = prefs.focus_new_tab ? 1 : 0;
@@ -299,12 +263,7 @@ static void Menu_history_cb(Fl_Widget *wid, void *data)
       } else {
          a_UIcmd_open_url_nw(popup_bw, url);
       }
-   } else {
-#endif
-      a_UIcmd_nav_jump(popup_bw, offset, 0);
-#if 0
    }
-#endif
 }
 
 /*
