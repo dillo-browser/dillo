@@ -619,6 +619,13 @@ bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
       case CSS_LENGTH_TYPE_EX:
          *dest = roundInt (CSS_LENGTH_VALUE(value) * font->xHeight);
         return true;
+       case CSS_LENGTH_TYPE_NONE:
+         // length values other than 0 without unit are only allowed
+         // in special cases (line-height) and have to be handled
+         // separately.
+         assert ((int) CSS_LENGTH_VALUE (value) == 0);
+         *dest = 0;
+         return true;
       default:
          break;
    }
