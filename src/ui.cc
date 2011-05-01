@@ -786,10 +786,7 @@ int UI::handle(int event)
          a_UIcmd_book(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
       } else if (cmd == KEYS_FIND) {
-         if (!FindBarSpace) {
-            findbar_toggle(1);
-         } else
-            FindBar->hide();
+         findbar_toggle(1);
          ret = 1;
       } else if (cmd == KEYS_WEBSEARCH) {
          a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(this));
@@ -1146,13 +1143,18 @@ void UI::findbar_toggle(bool add)
     * Most probably this is a bug in FLTK and we have to report it.
     */
 
-   if (add && !FindBarSpace) {
-      // show
-      Main->size(Main->w(), Main->h()-FindBar->h());
-      insert(*FindBar, StatusBar);
-      FindBar->show();
-      FindBarSpace = 1;
-      redraw();
+   if (add) {
+      if (!FindBarSpace) {
+         // show
+         Main->size(Main->w(), Main->h()-FindBar->h());
+         insert(*FindBar, StatusBar);
+         FindBar->show();
+         FindBarSpace = 1;
+         redraw();
+      } else {
+         // select text
+         FindBar->show();
+      }
    } else if (!add && FindBarSpace) {
       // hide
       Main->size(Main->w(), Main->h()+FindBar->h());
