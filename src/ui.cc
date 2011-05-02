@@ -997,8 +997,10 @@ void UI::customize(int flags)
       Search->hide();
    if ( !prefs.show_help )
       Help->hide();
-// if ( !prefs.show_progress_box )
-//    ProgBox->hide();
+   if ( !prefs.show_progress_box ) {
+      IProg->hide();
+      PProg->hide();
+   }
 
    if (NavBar)
       NavBar->rearrange();
