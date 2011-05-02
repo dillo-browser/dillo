@@ -16,7 +16,7 @@ class Xembed : public Fl_Window {
       Xembed(uint32_t xid, int _w, int _h) : Fl_Window(_w, _h) {
          this->xid = xid;
       };
-      void create();
+      void show();
       int handle(int event);
 };
 
