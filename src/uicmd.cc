@@ -1300,14 +1300,14 @@ void a_UIcmd_fullscreen_toggle(BrowserWindow *bw)
  * Search for next/previous occurrence of key.
  */
 void a_UIcmd_findtext_search(BrowserWindow *bw, const char *key,
-                             int case_sens, int backwards)
+                             int case_sens, int backward)
 {
    Layout *l = (Layout *)bw->render_layout;
 
-   switch (l->search(key, case_sens, backwards)) {
+   switch (l->search(key, case_sens, backward)) {
    case FindtextState::RESTART:
-      a_UIcmd_set_msg(bw, "No further occurrences of \"%s\". "
-                          "Restarting from the top.", key);
+      a_UIcmd_set_msg(bw, backward?"Top reached; restarting from the bottom."
+                                  :"Bottom reached; restarting from the top.");
       break;
    case FindtextState::NOT_FOUND:
       a_UIcmd_set_msg(bw, "\"%s\" not found.", key);
