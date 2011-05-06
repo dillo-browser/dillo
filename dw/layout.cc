@@ -698,7 +698,7 @@ void Layout::setSizeHints ()
    if (topLevel) {
       topLevel->setWidth (viewportWidth
                           - (canvasHeightGreater ? vScrollbarThickness : 0));
-      topLevel->setAscent (viewportHeight - vScrollbarThickness);
+      topLevel->setAscent (viewportHeight - hScrollbarThickness);
       topLevel->setDescent (0);
    }
 }
