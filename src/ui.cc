@@ -754,6 +754,9 @@ UI::~UI()
 {
    _MSG("UI::~UI()\n");
    dFree(TabTooltip);
+
+   if (!FindBarSpace)
+      delete FindBar;
 }
 
 /*
