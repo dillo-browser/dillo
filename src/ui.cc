@@ -200,7 +200,7 @@ public:
    CustProgressBox(int x, int y, int w, int h, const char *l=0) :
       Fl_Box(x,y,w,h,l) { padding = 0; };
    void update_label(const char *lbl) {
-      int w,h;
+      int w = 0, h = 0;
       if (!padding) {
          copy_label("W");
          measure_label(w, h);
@@ -520,7 +520,7 @@ void UI::make_progress_bars(int wide, int thin_up)
 Fl_Widget *UI::make_filemenu_button()
 {
    Fl_Button *btn;
-   int w,h, padding;
+   int w = 0, h = 0, padding;
 
    FileButton = btn = new Fl_Button(p_xpos,0,0,0,"W");
    btn->labeltype(FL_FREE_LABELTYPE);
