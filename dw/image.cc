@@ -157,7 +157,7 @@ Image::Image(const char *altText)
 Image::~Image()
 {
    if (altText)
-      delete altText;
+      free(altText);
    if (buffer)
       buffer->unref ();
    if (mapKey)
