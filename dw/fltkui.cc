@@ -448,9 +448,9 @@ FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int maxLength,
 FltkEntryResource::~FltkEntryResource ()
 {
    if (initText)
-      delete initText;
+      free((char *)initText);
    if (label)
-      free((char *)label);
+      free(label);
 }
 
 Fl_Widget *FltkEntryResource::createNewWidget (core::Allocation
@@ -533,7 +533,7 @@ const char *FltkEntryResource::getText ()
 void FltkEntryResource::setText (const char *text)
 {
    if (initText)
-      delete initText;
+      free((char *)initText);
    initText = strdup (text);
 
    ((Fl_Input*)widget)->value (initText);
