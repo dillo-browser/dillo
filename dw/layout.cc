@@ -174,7 +174,7 @@ bool Layout::LinkEmitter::emitClick (Widget *widget, int link, int img,
 
 Layout::Anchor::~Anchor ()
 {
-   delete name;
+   free(name);
 }
 
 // ---------------------------------------------------------------------

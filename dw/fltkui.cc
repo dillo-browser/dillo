@@ -235,7 +235,7 @@ FltkLabelButtonResource::FltkLabelButtonResource (FltkPlatform *platform,
 
 FltkLabelButtonResource::~FltkLabelButtonResource ()
 {
-   delete label;
+   free((char *)label);
 }
 
 Fl_Widget *FltkLabelButtonResource::createNewWidget (core::Allocation
@@ -448,9 +448,9 @@ FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int maxLength,
 FltkEntryResource::~FltkEntryResource ()
 {
    if (initText)
-      delete initText;
+      free((char *)initText);
    if (label)
-      delete label;
+      free(label);
 }
 
 Fl_Widget *FltkEntryResource::createNewWidget (core::Allocation
@@ -533,7 +533,7 @@ const char *FltkEntryResource::getText ()
 void FltkEntryResource::setText (const char *text)
 {
    if (initText)
-      delete initText;
+      free((char *)initText);
    initText = strdup (text);
 
    ((Fl_Input*)widget)->value (initText);
@@ -885,7 +885,7 @@ FltkOptionMenuResource::~FltkOptionMenuResource ()
       if (menu[i].text)
          free((char *) menu[i].text);
    }
-   delete menu;
+   delete[] menu;
 }
 
 void FltkOptionMenuResource::setWidgetStyle (Fl_Widget *widget,
@@ -961,7 +961,7 @@ void FltkOptionMenuResource::enlargeMenu ()
    newMenu = new Fl_Menu_Item[itemsAllocated];
    memcpy(newMenu, menu, itemsUsed * sizeof(Fl_Menu_Item));
    memset(newMenu + itemsUsed, 0, 0x10 * sizeof(Fl_Menu_Item));
-   delete menu;
+   delete[] menu;
    menu = newMenu;
    ch->menu(menu);
    ch->value(selected);

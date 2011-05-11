@@ -224,7 +224,7 @@ String::String (const char *str): ConstString (str ? strdup(str) : NULL)
 String::~String ()
 {
   if (str)
-    delete str;
+    free((char *)str);
 }
 
 // ------------
