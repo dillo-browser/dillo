@@ -92,12 +92,6 @@ public:
     * This will normally imply a resize of the UI widget. Width and height are
     * the dimensions of the new size, \em including the scrollbar thicknesses.
     *
-    * \bug The rest of this comment needs to be updated.
-    *
-    * markerWidthDiff and markerHeightDiff are the respective dimensions of
-    * the viewport markers (see dw::core::getMarkerWidthDiff and
-    * dw::core::getMarkerHeightDiff), if they are 0, the respective
-    * marker should not be shown at all.
     */
    virtual void setViewportSize (int width, int height,
                                  int hScrollbarThickness,

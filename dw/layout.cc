@@ -679,10 +679,9 @@ void Layout::resizeIdle ()
             }
 
             // Set viewport sizes.
-            if (view->usesViewport ())
-               view->setViewportSize (viewportWidth, viewportHeight,
-                                      actualHScrollbarThickness,
-                                      actualVScrollbarThickness);
+            view->setViewportSize (viewportWidth, viewportHeight,
+                                   actualHScrollbarThickness,
+                                   actualVScrollbarThickness);
          }
       }
 

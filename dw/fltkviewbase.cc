@@ -297,6 +297,8 @@ int FltkViewBase::handle (int event)
 void FltkViewBase::setLayout (core::Layout *layout)
 {
    theLayout = layout;
+   if (usesViewport())
+      theLayout->viewportSizeChanged(this, w(), h());
 }
 
 void FltkViewBase::setCanvasSize (int width, int ascent, int descent)

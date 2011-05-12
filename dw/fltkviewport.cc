@@ -40,11 +40,13 @@ FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
    hscrollbar = new Fl_Scrollbar (x (), y (), 1, 1);
    hscrollbar->type(FL_HORIZONTAL);
    hscrollbar->callback (hscrollbarCallback, this);
+   hscrollbar->hide();
    add (hscrollbar);
 
    vscrollbar = new Fl_Scrollbar (x (), y(), 1, 1);
    vscrollbar->type(FL_VERTICAL);
    vscrollbar->callback (vscrollbarCallback, this);
+   vscrollbar->hide();
    add (vscrollbar);
 
    scrollX = scrollY = scrollDX = scrollDY = 0;
@@ -70,6 +72,7 @@ void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
    int hdiff = 0, vdiff = 0;
    int visibility = 0;
 
+   _MSG(" >>FltkViewport::adjustScrollbarsAndGadgetsAllocation\n");
    if (hscrollbar->visible ())
       visibility |= 1;
    if (vscrollbar->visible ())
@@ -384,18 +387,26 @@ void FltkViewport::setViewportSize (int width, int height,
                                     int hScrollbarThickness,
                                     int vScrollbarThickness)
 {
-   if (hScrollbarThickness > 0)
-      hscrollbar->show ();
-   else
-      hscrollbar->hide ();
-   if (vScrollbarThickness > 0)
-      vscrollbar->show ();
-   else
-      vscrollbar->hide ();
+   int adjustReq =
+      (hscrollbar->visible() ? !hScrollbarThickness : hScrollbarThickness) ||
+      (vscrollbar->visible() ? !vScrollbarThickness : vScrollbarThickness);
+
+   _MSG("FltkViewport::setViewportSize old_w,old_h=%dx%d -> w,h=%dx%d\n"
+       "\t hThick=%d hVis=%d, vThick=%d vVis=%d, adjustReq=%d\n",
+       w(),h(),width,height,
+       hScrollbarThickness,hscrollbar->visible(),
+       vScrollbarThickness,vscrollbar->visible(), adjustReq);
+
+   (hScrollbarThickness > 0) ? hscrollbar->show () : hscrollbar->hide ();
+   (vScrollbarThickness > 0) ? vscrollbar->show () : vscrollbar->hide ();
 
    /* If no scrollbar, go to the beginning */
    scroll(hScrollbarThickness ? 0 : -scrollX,
           vScrollbarThickness ? 0 : -scrollY);
+
+   /* Adjust when scrollbar visibility changes */
+   if (adjustReq)
+      adjustScrollbarsAndGadgetsAllocation ();
 }
 
 void FltkViewport::updateCanvasWidgets (int dx, int dy)
