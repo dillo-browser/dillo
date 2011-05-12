@@ -6,7 +6,6 @@
 
 #include <FL/Fl_Group.H>
 #include <FL/x.H>
-#include <FL/Fl_Scrollbar.H>
 
 #include "fltkcore.hh"
 

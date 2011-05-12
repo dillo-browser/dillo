@@ -76,15 +76,18 @@ int main(int argc, char **argv)
    window->begin();
 
    viewport = new FltkViewport (0, 0, 200, 280);
+   viewport->end();
    layout->attachView (viewport);
 
    findButton = new Fl_Button(0, 280, 50, 20, "Find");
    findButton->callback (findCallback, NULL);
    findButton->when (FL_WHEN_RELEASE);
+   findButton->clear_visible_focus ();
 
    resetButton = new Fl_Button(50, 280, 50, 20, "Reset");
    resetButton->callback (resetCallback, NULL);
    resetButton->when (FL_WHEN_RELEASE);
+   resetButton->clear_visible_focus ();
 
    resultLabel = new Fl_Box(100, 280, 100, 20, "---");
 

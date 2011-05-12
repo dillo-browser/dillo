@@ -102,6 +102,7 @@ int main(int argc, char **argv)
    window->begin();
 
    viewport = new FltkViewport (50, 0, 200, 200);
+   viewport->end();
    layout->attachView (viewport);
 
    for (int i = 0; i < 10; i++) {
