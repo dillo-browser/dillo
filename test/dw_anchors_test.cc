@@ -99,6 +99,7 @@ int main(int argc, char **argv)
    layout = new Layout (platform);
 
    window = new Fl_Window(250, 200, "Dw Anchors Test");
+   window->box(FL_NO_BOX);
    window->begin();
 
    viewport = new FltkViewport (50, 0, 200, 200);

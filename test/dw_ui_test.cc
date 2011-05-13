@@ -44,6 +44,7 @@ int main(int argc, char **argv)
    Layout *layout = new Layout (platform);
 
    Fl_Window *window = new Fl_Window(400, 400, "Dw UI Test");
+   window->box(FL_NO_BOX);
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 400, 400);

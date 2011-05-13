@@ -80,11 +80,13 @@ int main(int argc, char **argv)
    Layout *layout = new Layout (platform);
 
    Fl_Window *window = new Fl_Window(200, 300, "Dw Links2");
+   window->box(FL_NO_BOX);
    window->begin();
     Fl_Widget *Panel = new Fl_Box(0, 0, ww, lh, "CONTROL PANEL");
 
     Panel->color(FL_GRAY_RAMP + 3);
     Panel->labelcolor(FL_WHITE);
+    Panel->box(FL_FLAT_BOX);
     Fl_Widget *Main = new Fl_Box(0, lh, ww, wh - 2*lh, "MAIN RENDERING AREA");
     Main->color(FL_GRAY_RAMP + 4);
     Main->labelcolor(FL_WHITE);
@@ -93,6 +95,7 @@ int main(int argc, char **argv)
     Fl_Widget *Bar = new Fl_Box(0, wh - lh, 200, lh, "STATUS BAR...");
     Bar->color(FL_GRAY_RAMP + 3);
     Bar->labelcolor(FL_WHITE);
+    Bar->box(FL_FLAT_BOX);
 
     window->resizable(Main);
    window->end();

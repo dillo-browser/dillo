@@ -26,6 +26,7 @@
 int main (int argc, char *argv[])
 {
    Fl_Window *window = new Fl_Window (300, 300, "FLTK Browser");
+   window->box(FL_NO_BOX);
    window->begin ();
    Fl_Browser *browser = new Fl_Browser (0, 0, 300, 300);
    browser->begin ();

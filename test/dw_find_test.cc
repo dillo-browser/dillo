@@ -73,6 +73,7 @@ int main(int argc, char **argv)
    layout = new Layout (platform);
 
    window = new Fl_Window(200, 300, "Dw Find Test");
+   window->box(FL_NO_BOX);
    window->begin();
 
    viewport = new FltkViewport (0, 0, 200, 280);
@@ -90,6 +91,7 @@ int main(int argc, char **argv)
    resetButton->clear_visible_focus ();
 
    resultLabel = new Fl_Box(100, 280, 100, 20, "---");
+   resultLabel->box(FL_FLAT_BOX);
 
    FontAttrs fontAttrs;
    fontAttrs.name = "Bitstream Charter";

@@ -683,6 +683,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    TabTooltip = NULL;
    TopGroup = this;
    TopGroup->type(VERTICAL);
+   TopGroup->box(FL_NO_BOX);
    clear_flag(SHORTCUT_LABEL);
 
    if (cur_ui) {

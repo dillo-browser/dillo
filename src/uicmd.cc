@@ -96,6 +96,7 @@ public:
       Fl_Box *w = new Fl_Box(0,0,0,0,"i n v i s i b l e");
       w->box(FL_NO_BOX);
       resizable(0);
+      box(FL_FLAT_BOX);
       end();
 
       Wizard = new Fl_Wizard(0,tab_h,ww,wh-tab_h);
@@ -391,7 +392,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    else
       win = new Fl_Double_Window(ww, wh);
 
-   //Fl_Group::current(0);
+   win->box(FL_NO_BOX);
    CustTabs *DilloTabs = new CustTabs(ww, wh, 16);
    win->end();
 

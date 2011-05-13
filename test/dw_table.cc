@@ -39,6 +39,7 @@ int main(int argc, char **argv)
    Layout *layout = new Layout (platform);
 
    Fl_Window *window = new Fl_Window(300, 300, "Dw Table");
+   window->box(FL_NO_BOX);
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 300, 300);

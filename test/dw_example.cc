@@ -34,6 +34,7 @@ int main(int argc, char **argv)
    dw::core::Layout *layout = new dw::core::Layout (platform);
 
    Fl_Window *window = new Fl_Window(200, 300, "Dw Example");
+   window->box(FL_NO_BOX);
    window->begin();
 
    dw::fltk::FltkViewport *viewport =

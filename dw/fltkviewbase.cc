@@ -78,6 +78,7 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
    if (backBuffer == NULL) {
       backBuffer = new BackBuffer ();
    }
+   box(FL_NO_BOX);
 }
 
 FltkViewBase::~FltkViewBase ()

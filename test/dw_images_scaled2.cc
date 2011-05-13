@@ -73,6 +73,7 @@ int main(int argc, char **argv)
    layout = new Layout (platform);
 
    Fl_Window *window = new Fl_Window(410, 210, "Dw Scaled Image 2");
+   window->box(FL_NO_BOX);
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 410, 210);

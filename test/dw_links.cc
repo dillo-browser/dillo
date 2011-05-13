@@ -77,6 +77,7 @@ int main(int argc, char **argv)
    Layout *layout = new Layout (platform);
 
    Fl_Window *window = new Fl_Window(200, 300, "Dw Links");
+   window->box(FL_NO_BOX);
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 200, 300);
