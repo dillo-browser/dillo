@@ -79,6 +79,7 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
       backBuffer = new BackBuffer ();
    }
    box(FL_NO_BOX);
+   resizable(NULL);
 }
 
 FltkViewBase::~FltkViewBase ()
