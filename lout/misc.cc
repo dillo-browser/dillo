@@ -144,7 +144,7 @@ void StringBuffer::clear ()
    Node *node, *nextNode;
    for (node = firstNode; node; node = nextNode) {
       nextNode = node->next;
-      delete node->data;
+      free(node->data);
       delete node;
    }
    firstNode = lastNode = NULL;

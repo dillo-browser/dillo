@@ -534,7 +534,7 @@ void Layout::setAnchor (const char *anchor)
    _MSG("setAnchor (%s)\n", anchor);
 
    if (requestedAnchor)
-      delete requestedAnchor;
+      free(requestedAnchor);
    requestedAnchor = anchor ? strdup (anchor) : NULL;
    updateAnchor ();
 }
