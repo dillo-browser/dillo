@@ -875,6 +875,7 @@ FltkOptionMenuResource::FltkOptionMenuResource (FltkPlatform *platform):
    menu = new Fl_Menu_Item[itemsAllocated];
    memset(menu, 0, itemsAllocated * sizeof(Fl_Menu_Item));
    itemsUsed = 1; // menu[0].text == NULL, which is an end-of-menu marker.
+   visibleItems = 0;
 
    init (platform);
 }
@@ -986,12 +987,11 @@ void FltkOptionMenuResource::addItem (const char *str,
    Fl_Menu_Item *item = newItem();
 
    item->text = strdup(str);
+   item->argument(visibleItems++);
 
    if (enabled == false)
       item->flags = FL_MENU_INACTIVE;
 
-   // TODO: verify that an array index is exactly what value() wants,
-   // even when there are submenus.
    if (selected)
       ((Fl_Choice *)widget)->value(item);
 
@@ -1003,6 +1003,7 @@ void FltkOptionMenuResource::pushGroup (const char *name, bool enabled)
    Fl_Menu_Item *item = newItem();
 
    item->text = strdup(name);
+   item->argument(visibleItems++);
 
    if (enabled == false)
       item->flags = FL_MENU_INACTIVE;
@@ -1021,7 +1022,7 @@ void FltkOptionMenuResource::popGroup ()
 
 bool FltkOptionMenuResource::isSelected (int index)
 {
-   return index == ((Fl_Choice *)widget)->value();
+   return index == (int) ((Fl_Choice *)widget)->mvalue()->user_data();
 }
 
 int FltkOptionMenuResource::getNumberOfItems()
@@ -1096,9 +1097,11 @@ void *FltkListResource::newItem (const char *str, bool enabled)
    Fl_Tree *tree = (Fl_Tree *) widget;
    Fl_Tree_Item *parent = (Fl_Tree_Item *)currParent;
    Fl_Tree_Item *item = tree->add(parent, str);
+   int index = itemsSelected.size();
 
    enabled &= parent->is_active();
    item->activate(enabled);
+   item->user_data((void *)index);
    itemsSelected.increase ();
 
    return item;
@@ -1109,19 +1112,21 @@ void FltkListResource::addItem (const char *str, bool enabled, bool selected)
    Fl_Tree *tree = (Fl_Tree *) widget;
    Fl_Tree_Item *item = (Fl_Tree_Item *) newItem(str, enabled);
 
-   itemsSelected.set (itemsSelected.size() - 1, selected);
-
    if (selected) {
-      if (mode == SELECTION_MULTIPLE)
+      if (mode == SELECTION_MULTIPLE) {
          item->select(selected);
-      else
-         tree->select_only(item, 0);
+         itemsSelected.set (itemsSelected.size() - 1, selected);
+      } else {
+         const bool do_callback = true;
+         tree->select_only(item, do_callback);
+      }
    }
    queueResize (true);
 }
 
 void FltkListResource::pushGroup (const char *name, bool enabled)
 {
+   /* TODO: make it impossible to select a group */
    currParent = (Fl_Tree_Item *) newItem(name, enabled);
    queueResize (true);
 }
