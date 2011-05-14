@@ -32,7 +32,7 @@ Form::ResourceDecorator::ResourceDecorator (const char *name)
 
 Form::ResourceDecorator::~ResourceDecorator ()
 {
-   delete name;
+   free((char *)name);
 }
 
 Form::TextResourceDecorator::TextResourceDecorator (const char *name,
@@ -57,15 +57,15 @@ Form::RadioButtonResourceDecorator::RadioButtonResourceDecorator
    while (values[n])
       n++;
    this->values = new const char*[n + 1];
-   for(int i = 0; i < n; i++)
+   for (int i = 0; i < n; i++)
       this->values[i] = strdup (values[i]);
    this->values[n] = 0;
 }
 
 Form::RadioButtonResourceDecorator::~RadioButtonResourceDecorator ()
 {
-   for(int i = 0; values[i]; i++)
-      delete values[i];
+   for (int i = 0; values[i]; i++)
+      free((char *)values[i]);
    delete[] values;
 }
 
@@ -115,7 +115,7 @@ Form::SelectionResourceDecorator::SelectionResourceDecorator
 Form::SelectionResourceDecorator::~SelectionResourceDecorator ()
 {
    for(int i = 0; values[i]; i++)
-      delete values[i];
+      free((char *)values[i]);
    delete[] values;
 }
 
@@ -159,8 +159,8 @@ Form::FormClickedReceiver::FormClickedReceiver (Form *form, const char *name,
 
 Form::FormClickedReceiver::~FormClickedReceiver ()
 {
-   delete name;
-   delete[] value;
+   free((char *)name);
+   free((char *)value);
 }
 
 void Form::FormClickedReceiver::clicked (Resource *resource,

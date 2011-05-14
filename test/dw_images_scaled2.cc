@@ -89,6 +89,7 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
+   fontAttrs.fontVariant = FONT_VARIANT_NORMAL;
    styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
    styleAttrs.color = Color::create (layout, 0x000000);

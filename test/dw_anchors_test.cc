@@ -122,6 +122,7 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
+   fontAttrs.fontVariant = FONT_VARIANT_NORMAL;
 
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
@@ -156,7 +157,7 @@ int main(int argc, char **argv)
    wordStyle->unref ();
    headingStyle->unref ();
    for (int i = 0; i < 10; i++)
-      delete buttonLabel[i];
+      free(buttonLabel[i]);
    delete layout;
 
    return errorCode;

@@ -99,6 +99,7 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
+   fontAttrs.fontVariant = FONT_VARIANT_NORMAL;
 
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();

@@ -62,6 +62,7 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
+   fontAttrs.fontVariant = FONT_VARIANT_NORMAL;
    styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
    Style *tableStyle = Style::create (layout, &styleAttrs);
@@ -120,7 +121,7 @@ int main(int argc, char **argv)
    const char *radiovalues[] = { "radio1", "radio2", NULL };
    form->addRadioButtonResource ("val3", radiores1, radiovalues);
    form->addCheckButtonResource ("check", checkres);
-   const char *selvalues[] = { "i1", "i11", "i12", "i13", "i2",
+   const char *selvalues[] = { "i1", "g1", "i11", "i12", "i13", "i2", "g2",
                                "i21", "i22", "i23", "i3", NULL };
    form->addSelectionResource ("val4", selres[0], selvalues);
    form->addSelectionResource ("val5", selres[1], selvalues);
@@ -208,9 +209,9 @@ int main(int argc, char **argv)
       selres[i]->addItem("item 1/3", false, false);
       selres[i]->popGroup();
 
-      selres[i]->addItem("item 2", true, i == 1);
+      selres[i]->addItem("item 2", false, i == 1);
 
-      selres[i]->pushGroup("group 2", false);
+      selres[i]->pushGroup("group 2", true);
       selres[i]->addItem("item 2/1", true, false);
       selres[i]->addItem("item 2/2", true, false);
       selres[i]->addItem("item 2/3", false, false);
