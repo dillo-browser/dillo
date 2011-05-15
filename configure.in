@@ -22,8 +22,6 @@ AC_ARG_ENABLE(gprof,  [  --enable-gprof          Try to compile and run with pro
                     , enable_gprof=no)
 AC_ARG_ENABLE(insure, [  --enable-insure         Try to compile and run with Insure++],
                     , enable_insure=no)
-AC_ARG_ENABLE(ansi,   [  --enable-ansi           Try to compile and run with ANSI flags],
-                    , enable_ansi=no)
 AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable ssl, https (ALPHA CODE)],
                     , enable_ssl=no)
 AC_ARG_ENABLE(ipv6,   [  --enable-ipv6           Build with support for IPv6], , )
@@ -451,16 +449,6 @@ if eval "test x$GCC = xyes"; then
   fi
   if test "`echo $CFLAGS | grep '\-Waggregate-return' 2> /dev/null`" = ""; then
     CFLAGS="$CFLAGS -Waggregate-return"
-  fi
-
-  if eval "test x$enable_ansi = xyes"; then
-    if test "`echo $CFLAGS | grep '\-ansi' 2> /dev/null`" = ""; then
-      CFLAGS="$CFLAGS -ansi"
-    fi
-
-    if test "`echo $CFLAGS | grep '\-pedantic' 2> /dev/null`" = ""; then
-      CFLAGS="$CFLAGS -pedantic"
-    fi
   fi
 fi
 dnl -----------
