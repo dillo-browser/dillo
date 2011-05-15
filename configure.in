@@ -35,7 +35,7 @@ AC_ARG_ENABLE(gif,    [  --disable-gif           Disable support for GIF images]
               enable_gif=$enableval, enable_gif=yes)
 AC_ARG_ENABLE(threaded-dns,[  --disable-threaded-dns  Disable the advantage of a reentrant resolver library],
               enable_threaded_dns=$enableval, enable_threaded_dns=yes)
-AC_ARG_ENABLE(rtfl,   [  --enable-rtfl           Build with rtfl messages])
+AC_ARG_ENABLE(rtfl,   [  --enable-rtfl           Build with rtfl messages (for debugging rendering)])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
