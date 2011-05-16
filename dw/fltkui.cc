@@ -1022,7 +1022,7 @@ void FltkOptionMenuResource::popGroup ()
 
 bool FltkOptionMenuResource::isSelected (int index)
 {
-   return index == (int) ((Fl_Choice *)widget)->mvalue()->user_data();
+   return index == (long) ((Fl_Choice *)widget)->mvalue()->user_data();
 }
 
 int FltkOptionMenuResource::getNumberOfItems()
