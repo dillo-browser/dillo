@@ -87,7 +87,7 @@ int main(int argc, char **argv)
    widgetStyle->unref();
 
    for(int i = 0; i < 50; i++)
-      res->addItem ("Hello, world!", true, false);
+      res->addItem ("Hello, world!", true, i == 0 ? true : false);
 
    textblock->flush ();
 
