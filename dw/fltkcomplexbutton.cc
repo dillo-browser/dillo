@@ -114,7 +114,7 @@ int ComplexButton::handle(int event) {
       value(oldval);
       set_changed();
       if (when() & FL_WHEN_CHANGED) {
-	Fl_Widget_Tracker wp(this);
+        Fl_Widget_Tracker wp(this);
         do_callback();
         if (wp.deleted()) return 1;
       }
@@ -123,19 +123,19 @@ int ComplexButton::handle(int event) {
     return 1;
   case FL_SHORTCUT:
     if (!(shortcut() ?
-	  Fl::test_shortcut(shortcut()) : test_shortcut())) return 0;    
+          Fl::test_shortcut(shortcut()) : test_shortcut())) return 0;    
     if (Fl::visible_focus() && handle(FL_FOCUS)) Fl::focus(this);
     goto triggered_by_keyboard;
   case FL_FOCUS : /* FALLTHROUGH */
   case FL_UNFOCUS :
     if (Fl::visible_focus()) {
       if (box() == FL_NO_BOX) {
-	// Widgets with the FL_NO_BOX boxtype need a parent to
-	// redraw, since it is responsible for redrawing the
-	// background...
-	int X = x() > 0 ? x() - 1 : 0;
-	int Y = y() > 0 ? y() - 1 : 0;
-	if (window()) window()->damage(FL_DAMAGE_ALL, X, Y, w() + 2, h() + 2);
+        // Widgets with the FL_NO_BOX boxtype need a parent to
+        // redraw, since it is responsible for redrawing the
+        // background...
+        int X = x() > 0 ? x() - 1 : 0;
+        int Y = y() > 0 ? y() - 1 : 0;
+        if (window()) window()->damage(FL_DAMAGE_ALL, X, Y, w() + 2, h() + 2);
       } else redraw();
       return 1;
     } else return 0;
@@ -146,11 +146,11 @@ int ComplexButton::handle(int event) {
     triggered_by_keyboard:
       Fl_Widget_Tracker wp(this);
       if (type() == FL_RADIO_BUTTON && !value_) {
-	setonly();
-	if (when() & FL_WHEN_CHANGED) do_callback();
+        setonly();
+        if (when() & FL_WHEN_CHANGED) do_callback();
       } else if (type() == FL_TOGGLE_BUTTON) {
-	value(!value());
-	if (when() & FL_WHEN_CHANGED) do_callback();
+        value(!value());
+        if (when() & FL_WHEN_CHANGED) do_callback();
       }
       if (wp.deleted()) return 1;
       if (when() & FL_WHEN_RELEASE) do_callback();
