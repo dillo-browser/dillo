@@ -2880,7 +2880,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
          if (a_Url_cmp(html->base_url, new_url) == 0) {
             /* redirection loop, or empty url string: ignore */
-            BUG_MSG("META refresh: %s\n", 
+            BUG_MSG("META refresh: %s\n",
                     *mr_url ? "redirection loop" : "no target URL");
          } else if (delay == 0) {
             /* zero-delay redirection */

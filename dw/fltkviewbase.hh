@@ -23,7 +23,7 @@ private:
 
       public:
          Fl_Offscreen offscreen;
-      
+
          BackBuffer ();
          ~BackBuffer ();
          void setSize(int w, int h);

@@ -505,8 +505,8 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
       {"Validate URL with WDG", 0, Menu_bugmeter_validate_wdg_cb, 0,
        FL_MENU_DIVIDER,0,0,0,0},
       {"About bug meter", 0, Menu_bugmeter_about_cb,0,0,0,0,0,0},
-      {0,0,0,0,0,0,0,0,0}     
-   };      
+      {0,0,0,0,0,0,0,0,0}
+   };
 
    popup_x = Fl::event_x();
    popup_y = Fl::event_y();
@@ -620,7 +620,7 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
       {"Use remote CSS", 0, Menu_remote_css_cb, 0, FL_MENU_TOGGLE,0,0,0,0},
       {"Use embedded CSS", 0, Menu_embedded_css_cb, 0,
        FL_MENU_TOGGLE|FL_MENU_DIVIDER,0,0,0,0},
-      {"Load images", 0, Menu_imgload_toggle_cb, 0, 
+      {"Load images", 0, Menu_imgload_toggle_cb, 0,
        FL_MENU_TOGGLE|FL_MENU_DIVIDER,0,0,0,0},
       {"Panel size", 0, 0, (void*)"Submenu1", FL_SUBMENU,0,0,0,0},
          {"tiny",  0,Menu_panel_change_cb,(void*)0,FL_MENU_RADIO,0,0,0,0},

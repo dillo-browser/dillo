@@ -305,7 +305,7 @@ void CustTabs::set_tab_label(UI *ui, const char *label)
 {
    char title[128];
    int idx = get_btn_idx(ui);
- 
+
    if (idx > 0) {
       // Make a label for this tab
       size_t tab_chars = 7, label_len = strlen(label);

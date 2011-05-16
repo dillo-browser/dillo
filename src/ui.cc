@@ -707,7 +707,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    // Control panel
    TopGroup->begin();
     make_panel(ui_w);
- 
+
     // Render area
     int main_h = ui_h - (mh+(LocBar?lh:0)+nh+fh+sh);
     Main = new Fl_Group(0,0,0,main_h,"Welcome...");
@@ -721,7 +721,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     TopGroup->add(Main);
     TopGroup->resizable(Main);
     MainIdx = TopGroup->find(Main);
- 
+
     // Find text bar
     FindBarSpace = 1;
     FindBar = new Findbar(ui_w, fh);

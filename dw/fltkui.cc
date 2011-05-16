@@ -980,7 +980,7 @@ Fl_Menu_Item *FltkOptionMenuResource::newItem()
 
    return item;
 }
-   
+
 void FltkOptionMenuResource::addItem (const char *str,
                                       bool enabled, bool selected)
 {
