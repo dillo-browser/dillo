@@ -73,8 +73,11 @@ void ComplexButton::draw() {
   if (Fl::focus() == this) draw_focus();
 
   // ComplexButton is a Group; draw its children
-  for (int i = children () - 1; i >= 0; i--)
+  for (int i = children () - 1; i >= 0; i--) {
+     // set absolute coordinates for fltk-1.3  --jcid
+     child (i)->position(x()+(w()-child(i)->w())/2,y()+(h()-child(i)->h())/2);
      draw_child (*child (i));
+  }
 }
 
 int ComplexButton::handle(int event) {
