@@ -13,8 +13,11 @@
  *
  */
 
-/* This is written to follow the HTTP State Working Group's
- * draft-ietf-httpstate-cookie-01.txt.
+/* This is written to follow the HTTP State Working Group's cookie draft
+ * standard, as of the version somewhere in the general neighbourhood of
+ * draft-ietf-httpstate-cookie-05.txt.
+ * TODO: They eventually succeeded in getting RFC 6265 out. What differences
+ * are there?
  *
  * Info on cookies in the wild:
  *  http://www.ietf.org/mail-archive/web/http-state/current/msg00078.html
