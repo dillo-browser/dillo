@@ -442,10 +442,8 @@ if eval "test x$GCC = xyes"; then
   if test "`echo $CFLAGS | grep -e '-W ' -e '-W$' 2> /dev/null`" = ""; then
     CFLAGS="$CFLAGS -W"
   fi
-  if test "`echo $CFLAGS | grep '\-W[^a]' 2> /dev/null`" = ""; then
-    if test "`$CC -v 2>&1 | grep 'version 3'`" != ""; then
-      CFLAGS="$CFLAGS -W -Wno-unused-parameter"
-    fi
+  if test "`echo $CFLAGS | grep '\-Wno-unused-parameter' 2> /dev/null`" = ""; then
+    CFLAGS="$CFLAGS -Wno-unused-parameter"
   fi
   if test "`echo $CFLAGS | grep '\-Waggregate-return' 2> /dev/null`" = ""; then
     CFLAGS="$CFLAGS -Waggregate-return"
