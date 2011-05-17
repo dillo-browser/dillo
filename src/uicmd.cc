@@ -56,7 +56,6 @@ using namespace dw::fltk;
  * Local data
  */
 static char *save_dir = NULL;
-static UI *Gui;
 
 /*
  * Forward declarations
@@ -398,7 +397,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    int focus = 1;
    new_bw = UIcmd_tab_new(DilloTabs, old_ui, focus);
-   win->resizable(Gui);
+   win->resizable(BW2UI(new_bw));
    win->show();
 
    if (old_bw == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
@@ -421,7 +420,6 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus)
 
    // Create and set the UI
    UI *new_ui = tabs->add_new_tab(old_ui, focus);
-   Gui = new_ui;
 
    // Now create the Dw render layout and viewport
    FltkPlatform *platform = new FltkPlatform ();
