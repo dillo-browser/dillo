@@ -143,7 +143,7 @@ void FltkViewBase::draw (const core::Rectangle *rect,
    // fl_clip_box() can't handle values greater than SHRT_MAX!
    if (X > x () + w () || Y > y () + h ())
       return;
-   
+
    W = X + rect->width > x () + w () ? x () + w () - X : rect->width;
    H = Y + rect->height > y () + h () ? y () + h () - Y : rect->height;
 
@@ -288,7 +288,7 @@ int FltkViewBase::handle (int event)
    case FL_UNFOCUS:
       focused_child = fl_oldfocus;
       return 0;
-      
+
    default:
       return Fl_Group::handle (event);
    }

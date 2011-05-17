@@ -980,7 +980,7 @@ Fl_Menu_Item *FltkOptionMenuResource::newItem()
 
    return item;
 }
-   
+
 void FltkOptionMenuResource::addItem (const char *str,
                                       bool enabled, bool selected)
 {
@@ -1022,7 +1022,7 @@ void FltkOptionMenuResource::popGroup ()
 
 bool FltkOptionMenuResource::isSelected (int index)
 {
-   return index == (int) ((Fl_Choice *)widget)->mvalue()->user_data();
+   return index == (long) ((Fl_Choice *)widget)->mvalue()->user_data();
 }
 
 int FltkOptionMenuResource::getNumberOfItems()

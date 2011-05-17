@@ -23,7 +23,7 @@
 #include <FL/Fl_Group.H>
 
 // values for type()
-#define FL_NORMAL_BUTTON	0   /**< value() will be set to 1 during the press of the button and 
+#define FL_NORMAL_BUTTON	0   /**< value() will be set to 1 during the press of the button and
                                          reverts back to 0 when the button is released */
 #define FL_TOGGLE_BUTTON	1   ///< value() toggles between 0 and 1 at every click of the button
 #define FL_RADIO_BUTTON		(FL_RESERVED_TYPE+2) /**< is set to 1 at button press, and all other
@@ -49,7 +49,7 @@ protected:
   static Fl_Widget_Tracker *key_release_tracker;
   static void key_release_timeout(void*);
   void simulate_key_action();
-  
+
   virtual void draw();
 
 public:

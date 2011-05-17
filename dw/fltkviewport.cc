@@ -147,7 +147,7 @@ void FltkViewport::hscrollbarCallback (Fl_Widget *hscrollbar,void *viewportPtr)
 
 // ----------------------------------------------------------------------
 
-void FltkViewport::resize(int X, int Y, int W, int H) 
+void FltkViewport::resize(int X, int Y, int W, int H)
 {
    bool dimension_changed = W != w() || H != h();
 
