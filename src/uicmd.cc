@@ -149,6 +149,7 @@ int CustTabs::handle(int e)
          ret = 1;
       } else if (cmd == KEYS_NOP) {
          // Do nothing
+         _MSG("CustTabs::handle KEYS_NOP\n");
       } else if (cmd == KEYS_NEW_TAB) {
          a_UIcmd_open_url_nt(bw, NULL, 1);
          ret = 1;
@@ -156,10 +157,10 @@ int CustTabs::handle(int e)
          a_UIcmd_close_bw(bw);
          ret = 1;
       } else if (cmd == KEYS_LEFT_TAB) {
-         MSG("CustTabs::handle KEYS_LEFT_TAB\n");
+         prev_tab();
          ret = 1;
       } else if (cmd == KEYS_RIGHT_TAB) {
-         MSG("CustTabs::handle KEYS_RIGHT_TAB\n");
+         next_tab();
          ret = 1;
       } else if (cmd == KEYS_NEW_WINDOW) {
          a_UIcmd_open_url_nw(bw, NULL);
@@ -170,19 +171,6 @@ int CustTabs::handle(int e)
       } else if (cmd == KEYS_CLOSE_ALL) {
          a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
          ret = 1;
-      }
-
-   } else if (e == FL_KEYUP) {
-      int k = Fl::event_key();
-      // We're only interested in some flags
-      unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
-      if (k == FL_Up || k == FL_Down || k == FL_Tab) {
-         ;
-      } else if (k == FL_Left || k == FL_Right) {
-         if (modifier == FL_SHIFT) {
-            (k == FL_Left) ? prev_tab() : next_tab();
-            ret = 1;
-         }
       }
    }
 
@@ -285,16 +273,16 @@ void CustTabs::prev_tab()
 {
    int idx;
 
-   if ((idx = get_btn_idx((UI*)Wizard->value())) > 1)
-      switch_tab( (CustTabButton*)child(idx-1) );
+   if ((idx = get_btn_idx((UI*)Wizard->value())) != -1)
+      switch_tab( (CustTabButton*)child(idx > 1 ? idx-1 : num_tabs()) );
 }
 
 void CustTabs::next_tab()
 {
    int idx;
 
-   if ((idx = get_btn_idx((UI*)Wizard->value())) > 0 && idx < num_tabs())
-      switch_tab( (CustTabButton*)child(idx+1) );
+   if ((idx = get_btn_idx((UI*)Wizard->value())) != -1)
+      switch_tab( (CustTabButton*)child(idx < num_tabs() ? idx+1 : 1) );
 }
 
 /*

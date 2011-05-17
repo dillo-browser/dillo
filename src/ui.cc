@@ -93,8 +93,8 @@ public:
 };
 
 /*
- * Disable keys: Up, Down, Page_Up, Page_Down and
- * CTRL+{o,r,Home,End}
+ * Disable keys: Up, Down, Page_Up, Page_Down, Tab and
+ * CTRL+{o,r,Home,End}  SHIFT+{Left,Right}.
  */
 int CustInput::handle(int e)
 {
@@ -113,7 +113,11 @@ int CustInput::handle(int e)
       if (k == FL_Escape && modifier == 0) {
          // Let the parent group handle this Esc key
          return 0;
-
+      } else if (modifier == FL_SHIFT) {
+         if (k == FL_Left || k == FL_Right) {
+            // Let these keys get to the UI
+            return 0;
+         }
       } else if (modifier == FL_CTRL) {
          if (k == 'l') {
             // Make text selected when already focused.
@@ -126,7 +130,7 @@ int CustInput::handle(int e)
          }
       } else if (modifier == 0) {
          if (k == FL_Down || k == FL_Up ||
-             k == FL_Page_Down || k == FL_Page_Up) {
+             k == FL_Page_Down || k == FL_Page_Up || k == FL_Tab) {
             // Give up focus and honor the key
             a_UIcmd_focus_main_area(a_UIcmd_get_bw_by_widget(this));
             return 0;
