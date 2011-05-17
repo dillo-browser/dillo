@@ -13,13 +13,9 @@
  *
  */
 
-/* This is written to follow the HTTP State Working Group's cookie draft
- * standard, as of the version somewhere in the general neighbourhood of
- * draft-ietf-httpstate-cookie-05.txt.
- * TODO: They eventually succeeded in getting RFC 6265 out. What differences
- * are there?
+/* The current standard for cookies is RFC 6265.
  *
- * Info on cookies in the wild:
+ * Info from 2009 on cookies in the wild:
  *  http://www.ietf.org/mail-archive/web/http-state/current/msg00078.html
  * And dates specifically:
  *  http://www.ietf.org/mail-archive/web/http-state/current/msg00128.html
@@ -484,7 +480,7 @@ static int Cookies_get_month(const char *month_name)
  *
  * Return a pointer to a struct tm, or NULL on error.
  *
- * NOTE that the draft spec wants user agents to be more flexible in what
+ * NOTE that the RFC wants user agents to be more flexible in what
  * they accept. For now, let's hack in special cases when they're encountered.
  * Why? Because this function is currently understandable, and I don't want to
  * abandon that (or at best decrease that -- see section 5.1.1) until there
@@ -1139,8 +1135,8 @@ static bool_t Cookies_match(CookieData_t *cookie, const char *url_path,
    if (cookie->host_only != host_only_val)
       return FALSE;
 
-   /* Insecure cookies matches both secure and insecure urls, secure
-      cookies matches only secure urls */
+   /* Insecure cookies match both secure and insecure urls, secure
+      cookies match only secure urls */
    if (cookie->secure && !is_ssl)
       return FALSE;
 
