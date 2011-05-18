@@ -36,10 +36,10 @@ int MyInput::handle(int e)
    unsigned modifier = Fl::event_state() & (FL_SHIFT| FL_CTRL| FL_ALT|FL_META);
 
    if (e == FL_KEYBOARD) {
-      if (k == FL_Left || k == FL_Right) {
-         if (modifier == FL_SHIFT) {
-            a_UIcmd_send_event_to_tabs_by_wid(e, this);
-            return 1;
+      if (modifier == FL_SHIFT) {
+         if (k == FL_Left || k == FL_Right) {
+            // Let these keys get to the UI
+            return 0;
          }
       } else if (k == FL_Escape && modifier == 0) {
          // Avoid clearing the text with Esc, just hide the findbar.

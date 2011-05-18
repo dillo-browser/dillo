@@ -341,20 +341,6 @@ BrowserWindow *a_UIcmd_get_bw_by_widget(void *v_wid)
 }
 
 /*
- * FLTK regards SHIFT + {Left, Right} as navigation keys.
- * Special handling is required to override it. Here we route
- * these events directly to the recipient.
- * TODO: focus is not remembered correctly.
- */
-void a_UIcmd_send_event_to_tabs_by_wid(int e, void *v_wid)
-{
-   BrowserWindow *bw = a_UIcmd_get_bw_by_widget(v_wid);
-   UI *ui = (UI*)bw->ui;
-   if (ui->tabs())
-      ui->tabs()->handle(e);
-}
-
-/*
  * Create a new UI and its associated BrowserWindow data structure.
  * Use style from v_ui. If non-NULL it must be of type UI*.
  */
