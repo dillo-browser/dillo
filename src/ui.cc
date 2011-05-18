@@ -119,7 +119,16 @@ int CustInput::handle(int e)
             return 0;
          }
       } else if (modifier == FL_CTRL) {
-         if (k == 'l') {
+         if (k == 'a' || k == 'e') {
+            position(k == 'a' ? 0 : size());
+            return 1;
+         } else if (k == 'k') {
+            cut(position(), size());
+            return 1;
+         } else if (k == 'd') {
+            cut(position(), position()+1);
+            return 1;
+         } else if (k == 'l') {
             // Make text selected when already focused.
             position(size(), 0);
             return 1;
