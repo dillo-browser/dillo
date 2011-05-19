@@ -431,7 +431,7 @@ DLItem::~DLItem()
    int idx = (strcmp(dl_argv[1], "-c")) ? 2 : 3;
    dFree(dl_argv[idx]);
    dFree(dl_argv[idx+3]);
-   delete(dl_argv);
+   delete [] dl_argv;
 
    delete(group);
 }
