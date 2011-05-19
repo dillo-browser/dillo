@@ -63,9 +63,6 @@ public:
     \param[in] b down box type
    */
   void down_box(Fl_Boxtype b) {down_box_ = b;}
-
-  /// (for backwards compatibility)
-  void down_color(unsigned c) {selection_color(c);}
 };
 
 } // namespace ui

@@ -37,7 +37,6 @@ int ComplexButton::value(int v) {
   if (value_ != v) {
     value_ = v;
     if (box()) redraw();
-    else redraw_label();
     return 1;
   } else {
     return 0;
@@ -47,13 +46,6 @@ int ComplexButton::value(int v) {
 void ComplexButton::draw() {
   Fl_Color col = value() ? selection_color() : color();
   draw_box(value() ? (down_box()?down_box():fl_down(box())) : box(), col);
-  draw_backdrop();
-  if (labeltype() == FL_NORMAL_LABEL && value()) {
-    Fl_Color c = labelcolor();
-    labelcolor(fl_contrast(c, col));
-    draw_label();
-    labelcolor(c);
-  } else draw_label();
   if (Fl::focus() == this) draw_focus();
 
   // ComplexButton is a Group; draw its children
