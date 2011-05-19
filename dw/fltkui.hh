@@ -490,7 +490,7 @@ protected:
 
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);
-   void *newItem (const char *str, bool enabled);
+   void *newItem (const char *str, bool enabled, bool selected);
    void *currParent;
    lout::misc::SimpleVector <bool> itemsSelected;
    int showRows;
