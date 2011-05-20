@@ -672,7 +672,7 @@ void UI::make_status_bar(int ww, int wh)
     BugMeter = new CustLightButton(ww-bm_w,wh-sh,bm_w,sh);
     BugMeter->image(icons->ImgMeterOK);
     BugMeter->box(FL_THIN_DOWN_BOX);
-    BugMeter->align(FL_ALIGN_TEXT_NEXT_TO_IMAGE);
+    BugMeter->align(FL_ALIGN_INSIDE | FL_ALIGN_TEXT_NEXT_TO_IMAGE);
     if (prefs.show_tooltip)
        BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
     BugMeter->callback(bugmeter_cb, this);
