@@ -1092,7 +1092,7 @@ void FltkListResource::widgetCallback (Fl_Widget *widget, void *data)
    }
 }
 
-void *FltkListResource::newItem (const char *str, bool enabled)
+void *FltkListResource::newItem (const char *str, bool enabled, bool selected)
 {
    Fl_Tree *tree = (Fl_Tree *) widget;
    Fl_Tree_Item *parent = (Fl_Tree_Item *)currParent;
@@ -1103,6 +1103,7 @@ void *FltkListResource::newItem (const char *str, bool enabled)
    item->activate(enabled);
    item->user_data((void *)index);
    itemsSelected.increase ();
+   itemsSelected.set (itemsSelected.size() - 1, selected);
 
    return item;
 }
@@ -1110,12 +1111,11 @@ void *FltkListResource::newItem (const char *str, bool enabled)
 void FltkListResource::addItem (const char *str, bool enabled, bool selected)
 {
    Fl_Tree *tree = (Fl_Tree *) widget;
-   Fl_Tree_Item *item = (Fl_Tree_Item *) newItem(str, enabled);
+   Fl_Tree_Item *item = (Fl_Tree_Item *) newItem(str, enabled, selected);
 
    if (selected) {
       if (mode == SELECTION_MULTIPLE) {
          item->select(selected);
-         itemsSelected.set (itemsSelected.size() - 1, selected);
       } else {
          const bool do_callback = true;
          tree->select_only(item, do_callback);
@@ -1126,8 +1126,10 @@ void FltkListResource::addItem (const char *str, bool enabled, bool selected)
 
 void FltkListResource::pushGroup (const char *name, bool enabled)
 {
+   bool selected = false;
+
    /* TODO: make it impossible to select a group */
-   currParent = (Fl_Tree_Item *) newItem(name, enabled);
+   currParent = (Fl_Tree_Item *) newItem(name, enabled, selected);
    queueResize (true);
 }
 

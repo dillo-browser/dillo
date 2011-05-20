@@ -412,15 +412,24 @@ static void Cookies_save_and_free()
    while ((node = dList_nth_data(domains, 0))) {
       for (i = 0; (cookie = dList_nth_data(node->cookies, i)); ++i) {
          if (!cookie->session_only && difftime(cookie->expires_at, now) > 0) {
-            fprintf(file_stream, "%s\t%s\t%s\t%s\t%ld\t%s\t%s\n",
-                    cookie->domain,
-                    cookie->host_only ? "FALSE" : "TRUE",
-                    cookie->path,
-                    cookie->secure ? "TRUE" : "FALSE",
-                    (long)difftime(cookie->expires_at, cookies_epoch_time),
-                    cookie->name,
-                    cookie->value);
-            saved++;
+            int len;
+            char buf[LINE_MAXLEN];
+
+            len = snprintf(buf, LINE_MAXLEN, "%s\t%s\t%s\t%s\t%ld\t%s\t%s\n",
+                           cookie->domain,
+                           cookie->host_only ? "FALSE" : "TRUE",
+                           cookie->path,
+                           cookie->secure ? "TRUE" : "FALSE",
+                           (long) difftime(cookie->expires_at,
+                                           cookies_epoch_time),
+                           cookie->name,
+                           cookie->value);
+            if (len < LINE_MAXLEN) {
+               fprintf(file_stream, "%s", buf);
+               saved++;
+            } else {
+               MSG("Not saving overly long cookie for %s.\n", cookie->domain);
+            }
          }
          Cookies_free_cookie(cookie);
       }

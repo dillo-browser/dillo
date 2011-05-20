@@ -29,7 +29,6 @@ using namespace dw::fltk::ui;
   Sets the current value of the button.
   A non-zero value sets the button to 1 (ON), and zero sets it to 0 (OFF).
   \param[in] v button value.
-  \see set(), clear()
  */
 int ComplexButton::value(int v) {
   v = v ? 1 : 0;
@@ -38,38 +37,15 @@ int ComplexButton::value(int v) {
   if (value_ != v) {
     value_ = v;
     if (box()) redraw();
-    else redraw_label();
     return 1;
   } else {
     return 0;
   }
 }
 
-/**
-  Turns on this button and turns off all other radio buttons in the group
-  (calling \c value(1) or \c set() does not do this).
- */
-void ComplexButton::setonly() { // set this radio button on, turn others off
-  value(1);
-  Fl_Group* g = parent();
-  Fl_Widget*const* a = g->array();
-  for (int i = g->children(); i--;) {
-    Fl_Widget* o = *a++;
-    if (o != this && o->type()==FL_RADIO_BUTTON) ((Fl_Button*)o)->value(0);
-  }
-}
-
 void ComplexButton::draw() {
-  if (type() == FL_HIDDEN_BUTTON) return;
   Fl_Color col = value() ? selection_color() : color();
   draw_box(value() ? (down_box()?down_box():fl_down(box())) : box(), col);
-  draw_backdrop();
-  if (labeltype() == FL_NORMAL_LABEL && value()) {
-    Fl_Color c = labelcolor();
-    labelcolor(fl_contrast(c, col));
-    draw_label();
-    labelcolor(c);
-  } else draw_label();
   if (Fl::focus() == this) draw_focus();
 
   // ComplexButton is a Group; draw its children
@@ -85,14 +61,12 @@ int ComplexButton::handle(int event) {
   switch (event) {
   case FL_ENTER: /* FALLTHROUGH */
   case FL_LEAVE:
-//  if ((value_?selection_color():color())==FL_GRAY) redraw();
     return 1;
   case FL_PUSH:
     if (Fl::visible_focus() && handle(FL_FOCUS)) Fl::focus(this);
   case FL_DRAG:
     if (Fl::event_inside(this)) {
-      if (type() == FL_RADIO_BUTTON) newval = 1;
-      else newval = !oldval;
+      newval = !oldval;
     } else
     {
       clear_changed();
@@ -111,24 +85,15 @@ int ComplexButton::handle(int event) {
       return 1;
     }
     set_changed();
-    if (type() == FL_RADIO_BUTTON) setonly();
-    else if (type() == FL_TOGGLE_BUTTON) oldval = value_;
-    else {
-      value(oldval);
-      set_changed();
-      if (when() & FL_WHEN_CHANGED) {
-        Fl_Widget_Tracker wp(this);
-        do_callback();
-        if (wp.deleted()) return 1;
-      }
+    value(oldval);
+    set_changed();
+    if (when() & FL_WHEN_CHANGED) {
+      Fl_Widget_Tracker wp(this);
+      do_callback();
+      if (wp.deleted()) return 1;
     }
     if (when() & FL_WHEN_RELEASE) do_callback();
     return 1;
-  case FL_SHORTCUT:
-    if (!(shortcut() ?
-          Fl::test_shortcut(shortcut()) : test_shortcut())) return 0;
-    if (Fl::visible_focus() && handle(FL_FOCUS)) Fl::focus(this);
-    goto triggered_by_keyboard;
   case FL_FOCUS : /* FALLTHROUGH */
   case FL_UNFOCUS :
     if (Fl::visible_focus()) {
@@ -146,15 +111,7 @@ int ComplexButton::handle(int event) {
     if (Fl::focus() == this && Fl::event_key() == ' ' &&
         !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT | FL_META))) {
       set_changed();
-    triggered_by_keyboard:
       Fl_Widget_Tracker wp(this);
-      if (type() == FL_RADIO_BUTTON && !value_) {
-        setonly();
-        if (when() & FL_WHEN_CHANGED) do_callback();
-      } else if (type() == FL_TOGGLE_BUTTON) {
-        value(!value());
-        if (when() & FL_WHEN_CHANGED) do_callback();
-      }
       if (wp.deleted()) return 1;
       if (when() & FL_WHEN_RELEASE) do_callback();
       return 1;
@@ -175,7 +132,6 @@ ComplexButton::ComplexButton(int X, int Y, int W, int H, const char *L)
   box(FL_UP_BOX);
   down_box(FL_NO_BOX);
   value_ = oldval = 0;
-  shortcut_ = 0;
 }
 
 ComplexButton::~ComplexButton() {
