@@ -254,6 +254,7 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
 {
    int idx;
    CustTabButton *btn;
+   BrowserWindow *bw;
    UI *old_ui = (UI*)Wizard->value();
 
    if (cbtn->ui() != old_ui) {
@@ -266,6 +267,12 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
       Wizard->value(cbtn->ui());
       cbtn->color(tabcolor_active);
       cbtn->redraw();
+
+      // Update window title
+      if ((bw = a_UIcmd_get_bw_by_widget(cbtn->ui()))) {
+         const char *title = a_History_get_title(NAV_TOP_UIDX(bw), 1);
+         a_UIcmd_set_page_title(bw, title ? title : "");
+      }
    }
 }
 
