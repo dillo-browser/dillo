@@ -34,10 +34,25 @@ using namespace lout::container::typed;
 namespace dw {
 namespace fltk {
 
+/*
+ * Lets SHIFT+{Left,Right} go to the parent
+ */
+class CustScrollbar : public Fl_Scrollbar
+{
+public:
+   CustScrollbar(int x, int y, int w, int h) : Fl_Scrollbar(x,y,w,h) {};
+   int handle(int e) {
+      if (e == FL_SHORTCUT && Fl::event_state() == FL_SHIFT &&
+          (Fl::event_key() == FL_Left || Fl::event_key() == FL_Right))
+         return 0;
+      return Fl_Scrollbar::handle(e);
+   }
+};
+
 FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
    FltkWidgetView (X, Y, W, H, label)
 {
-   hscrollbar = new Fl_Scrollbar (x (), y (), 1, 1);
+   hscrollbar = new CustScrollbar (x (), y (), 1, 1);
    hscrollbar->type(FL_HORIZONTAL);
    hscrollbar->callback (hscrollbarCallback, this);
    hscrollbar->hide();
