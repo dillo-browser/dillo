@@ -249,7 +249,6 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
    /* message */
    Fl_Output *message_output =
       new Fl_Output(20,20,window_w-40,100);
-   /* BUG type() not tested */
    message_output->type(FL_NORMAL_OUTPUT | FL_INPUT_WRAP);
    message_output->box(FL_DOWN_BOX);
    message_output->value(message);
