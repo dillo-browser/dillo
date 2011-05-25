@@ -222,17 +222,10 @@ int a_Dialog_choice5(const char *QuestionTxt,
 
 
 /*--------------------------------------------------------------------------*/
-/*
- * ret: 0 = Cancel, 1 = OK
- */
-static void Dialog_user_password_cb(Fl_Widget *button, void *vIntPtr)
+static void Dialog_user_password_cb(Fl_Widget *button, void *)
 {
-#if 0
-PORT1.3
-   int ret = VOIDP2INT(vIntPtr);
-  _MSG("Dialog_user_password_cb: %d\n", ret);
-  button->window()->make_exec_return(ret);
-#endif
+   button->window()->user_data(button);
+   button->window()->hide();
 }
 
 /*
@@ -249,6 +242,7 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
 
    Fl_Window *window =
       new Fl_Window(window_w,window_h,"User/Password");
+   window->user_data(NULL);
    window->begin();
 
    /* message */
@@ -276,21 +270,24 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
       new Fl_Button(200,button_y,50,button_h,"OK");
    ok_button->labelsize(14);
    ok_button->callback(Dialog_user_password_cb);
-   ok_button->user_data(INT2VOIDP(1));
 
    /* "Cancel" button */
    Fl_Button *cancel_button =
       new Fl_Button(50,button_y,100,button_h,"Cancel");
    cancel_button->labelsize(14);
    cancel_button->callback(Dialog_user_password_cb);
-   cancel_button->user_data(INT2VOIDP(0));
 
    window->end();
    window->size_range(window_w,window_h,window_w,window_h);
    window->resizable(window);
-#if 0
-PORT1.3
-   if ((ok = window->exec())) {
+
+   window->show();
+   while (window->shown())
+      Fl::wait();
+
+   ok = ((Fl_Widget *)window->user_data()) == ok_button ? 1 : 0;
+
+   if (ok) {
       /* call the callback */
       const char *user, *password;
       user = user_input->value();
@@ -298,7 +295,6 @@ PORT1.3
       _MSG("a_Dialog_user_passwd: ok = %d\n", ok);
       (*cb)(user, password, vp);
    }
-#endif
    delete window;
 
    return ok;
