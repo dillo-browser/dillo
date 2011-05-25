@@ -216,6 +216,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
    while (window->shown())
       Fl::wait();
    _MSG("a_Dialog_choice5 answer = %d\n", choice5_answer);
+   delete window;
 
    return choice5_answer;
 }
