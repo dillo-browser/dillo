@@ -547,21 +547,6 @@ FltkWidgetView::~FltkWidgetView ()
 }
 
 void FltkWidgetView::layout () {
-#if 0
-PORT1.3
-   /**
-    * pass layout to child widgets. This is needed for complex fltk
-    * widgets as TextEditor.
-    * We can't use Group::layout() as that would rearrange the widgets.
-    */
-   for (int i = children () - 1; i >= 0; i--) {
-      Fl_Widget *widget = child (i);
-
-      if (widget->layout_damage ()) {
-         widget->layout ();
-      }
-   }
-#endif
 }
 
 void FltkWidgetView::drawText (core::style::Font *font,
@@ -649,14 +634,6 @@ void FltkWidgetView::allocateFltkWidget (Fl_Widget *widget,
       translateCanvasYToViewY (allocation->y),
       allocation->width,
       allocation->ascent + allocation->descent);
-
-#if 0
-PORT1.3
-   /* widgets created tiny and later resized need this flag to display */
-   uchar damage = widget->layout_damage ();
-   damage |= LAYOUT_XYWH;
-   widget->layout_damage (damage);
-#endif
 }
 
 void FltkWidgetView::drawFltkWidget (Fl_Widget *widget,
