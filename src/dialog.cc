@@ -237,49 +237,61 @@ static void Dialog_user_password_cb(Fl_Widget *button, void *)
  */
 int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
 {
-   int ok = 0,
-      window_w = 300, window_h = 280,
-      input_x = 80, input_w = 200, input_h = 30,
-      button_y = 230, button_h = 30;
+   int ok = 0, window_h = 280, y, msg_w, msg_h;
+   const int window_w = 300, input_x = 80, input_w = 200, input_h = 30,
+      button_h = 30;
 
-   Fl_Window *window =
-      new Fl_Window(window_w,window_h,"User/Password");
+   /* window is resized below */
+   Fl_Window *window = new Fl_Window(window_w,window_h,"Dillo User/Password");
+   Fl_Group::current(0);
    window->user_data(NULL);
-   window->begin();
 
    /* message */
-   Fl_Output *message_output =
-      new Fl_Output(20,20,window_w-40,100);
-   message_output->type(FL_NORMAL_OUTPUT | FL_INPUT_WRAP);
-   message_output->box(FL_DOWN_BOX);
-   message_output->value(message);
-   message_output->textfont(FL_HELVETICA_BOLD_ITALIC);
-   message_output->textsize(14);
+   y = 20;
+   msg_w = window_w - 40;
+   Fl_Box *msg = new Fl_Box(20, y, msg_w, 100); /* resized below */
+   msg->label(message);
+   msg->labelfont(FL_HELVETICA);
+   msg->labelsize(14);
+   msg->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP_LEFT | FL_ALIGN_WRAP);
+
+   fl_font(msg->labelfont(), msg->labelsize());
+   fl_measure(msg->label(), msg_w, msg_h, 0); /* fl_measure wraps at msg_w */
+   msg_w = MIN(msg_w, msg->w());
+   msg->size(msg_w, msg_h);
+   window->add(msg);
 
    /* inputs */
-   Fl_Input *user_input =
-      new Fl_Input(input_x,140,input_w,input_h,"User");
+   y += msg_h + 20;
+   Fl_Input *user_input = new Fl_Input(input_x, y, input_w, input_h, "User");
    user_input->labelsize(14);
    user_input->textsize(14);
+   window->add(user_input);
+   y += input_h + 10;
    Fl_Secret_Input *password_input =
-      new Fl_Secret_Input(input_x,180,input_w,input_h,"Password");
+      new Fl_Secret_Input(input_x, y, input_w, input_h, "Password");
    password_input->labelsize(14);
    password_input->textsize(14);
+   window->add(password_input);
 
    /* "OK" button */
-   Fl_Button *ok_button =
-      new Fl_Button(200,button_y,50,button_h,"OK");
+   y += input_h + 20;
+   Fl_Button *ok_button = new Fl_Button(200, y, 50, button_h, "OK");
    ok_button->labelsize(14);
    ok_button->callback(Dialog_user_password_cb);
+   window->add(ok_button);
 
    /* "Cancel" button */
    Fl_Button *cancel_button =
-      new Fl_Button(50,button_y,100,button_h,"Cancel");
+      new Fl_Button(50, y, 100, button_h, "Cancel");
    cancel_button->labelsize(14);
    cancel_button->callback(Dialog_user_password_cb);
+   window->add(cancel_button);
 
-   window->end();
-   window->size_range(window_w,window_h,window_w,window_h);
+   y += button_h + 20;
+   window_h = y;
+   window->size(window_w, window_h);
+   window->size_range(window_w, window_h, window_w, window_h);
    window->resizable(window);
 
    window->show();

@@ -486,8 +486,8 @@ static int Auth_do_auth_dialog(const char *realm, const DilloUrl *url)
    AuthDialogData_t *data;
 
    _MSG("auth.c: Auth_do_auth_dialog: realm = '%s'\n", realm);
-   message = dStrconcat("Enter a user and password for \"",
-                        realm, "\".", NULL);
+   message = dStrconcat("The server at ", URL_HOST(url), " requires a username"
+                        " and password for  \"", realm, "\".", NULL);
    data = dNew(AuthDialogData_t, 1);
    data->realm_name = dStrdup(realm);
    data->url = a_Url_dup(url);
