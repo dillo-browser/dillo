@@ -329,29 +329,6 @@ void FltkViewBase::setCursor (core::style::Cursor cursor)
       FL_CURSOR_HELP
    };
 
-   /*
-   static char *cursorName[] = {
-      "CURSOR_CROSS",
-      "CURSOR_DEFAULT",
-      "CURSOR_HAND",
-      "CURSOR_MOVE",
-      "CURSOR_WE",
-      "CURSOR_NESW",
-      "CURSOR_NWSE",
-      "CURSOR_NS",
-      "CURSOR_NWSE",
-      "CURSOR_NESW",
-      "CURSOR_NS",
-      "CURSOR_WE",
-      "CURSOR_INSERT",
-      "CURSOR_WAIT",
-      "CURSOR_HELP"
-   };
-
-   MSG("Cursor changes to '%s'.\n", cursorName[cursor]);
-   */
-
-   /** \bug Does not work */
    fl_cursor (mapDwToFltk[cursor]);
 }
 
@@ -544,9 +521,6 @@ FltkWidgetView::FltkWidgetView (int x, int y, int w, int h,
 
 FltkWidgetView::~FltkWidgetView ()
 {
-}
-
-void FltkWidgetView::layout () {
 }
 
 void FltkWidgetView::drawText (core::style::Font *font,
