@@ -174,7 +174,7 @@ static void Http_connect_queued_sockets(HostConnection_t *hc)
             MSG_BW(sd->web, 1, "ERROR: %s", dStrerror(sd->Err));
             a_Chain_bfcb(OpAbort, sd->Info, NULL, "Both");
             dFree(sd->Info);
-            Http_socket_free((int) sd->Info->LocalKey);
+            Http_socket_free(VOIDP2INT(sd->Info->LocalKey));
          } else {
             sd->connected_to = hc->host;
             hc->active_connections++;
