@@ -92,9 +92,7 @@ public:
       CustGroupHorizontal(0,0,ww,th,lbl) {
       tab_w = 80, tab_h = th, tab_n = 0, curtab_idx = -1;
       tabcolor_active = FL_DARK_CYAN; tabcolor_inactive = 206;
-      Fl_Box *w = new Fl_Box(0,0,0,0,"i n v i s i b l e");
-      w->box(FL_NO_BOX);
-      resizable(0);
+      resizable(NULL);
       box(FL_FLAT_BOX);
       end();
 
@@ -106,7 +104,7 @@ public:
    void remove_tab(UI *ui);
    Fl_Wizard *wizard(void) { return Wizard; }
    int get_btn_idx(UI *ui);
-   int num_tabs() { return (children() - 1); } // substract invisible box
+   int num_tabs() { return children(); }
    void switch_tab(CustTabButton *cbtn);
    void prev_tab(void);
    void next_tab(void);
@@ -199,7 +197,6 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    btn->color(focus ? tabcolor_active : tabcolor_inactive);
    btn->ui(new_ui);
    add(btn);
-   btn->redraw();
    btn->callback(tab_btn_cb, this);
 
    if (focus)
@@ -216,19 +213,19 @@ void CustTabs::remove_tab(UI *ui)
 {
    CustTabButton *btn;
 
-   // remove label button
-   int idx = get_btn_idx(ui);
-   btn = (CustTabButton*)child(idx);
-   idx > 1 ? prev_tab() : next_tab();
+   // get active tab idx
+   int act_idx = get_btn_idx((UI*)Wizard->value());
+   // get to-be-removed tab idx
+   int rm_idx = get_btn_idx(ui);
+   btn = (CustTabButton*)child(rm_idx);
 
-   // WORKAROUND: with two tabs, closing the non-focused one, doesn't
-   // delete it from screen. This hide() call makes it work.  --Jcid
-   btn->hide();
-
-   remove(idx);
+   if (act_idx == rm_idx) {
+      // Active tab is being closed, switch to another one
+      rm_idx > 0 ? prev_tab() : next_tab();
+   }
+   remove(rm_idx);
    delete btn;
    rearrange();
-   redraw();
 
    Wizard->remove(ui);
    delete(ui);
@@ -242,7 +239,7 @@ void CustTabs::remove_tab(UI *ui)
 
 int CustTabs::get_btn_idx(UI *ui)
 {
-   for (int i = 1; i <= num_tabs(); ++i) {
+   for (int i = 0; i < num_tabs(); ++i) {
       CustTabButton *btn = (CustTabButton*)child(i);
       if (btn->ui() == ui)
          return i;
@@ -250,6 +247,9 @@ int CustTabs::get_btn_idx(UI *ui)
    return -1;
 }
 
+/*
+ * Make cbtn's tab the active one
+ */
 void CustTabs::switch_tab(CustTabButton *cbtn)
 {
    int idx;
@@ -259,7 +259,7 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
 
    if (cbtn->ui() != old_ui) {
       // Set old tab label to normal color
-      if ((idx = get_btn_idx(old_ui)) > 0) {
+      if ((idx = get_btn_idx(old_ui)) != -1) {
          btn = (CustTabButton*)child(idx);
          btn->color(tabcolor_inactive);
          btn->redraw();
@@ -281,7 +281,7 @@ void CustTabs::prev_tab()
    int idx;
 
    if ((idx = get_btn_idx((UI*)Wizard->value())) != -1)
-      switch_tab( (CustTabButton*)child(idx > 1 ? idx-1 : num_tabs()) );
+      switch_tab( (CustTabButton*)child(idx > 0 ? idx-1 : num_tabs()-1) );
 }
 
 void CustTabs::next_tab()
@@ -289,7 +289,7 @@ void CustTabs::next_tab()
    int idx;
 
    if ((idx = get_btn_idx((UI*)Wizard->value())) != -1)
-      switch_tab( (CustTabButton*)child(idx < num_tabs() ? idx+1 : 1) );
+      switch_tab( (CustTabButton*)child((idx+1 < num_tabs()) ? idx+1 : 0) );
 }
 
 /*
@@ -300,7 +300,7 @@ void CustTabs::set_tab_label(UI *ui, const char *label)
    char title[128];
    int idx = get_btn_idx(ui);
 
-   if (idx > 0) {
+   if (idx != -1) {
       // Make a label for this tab
       size_t tab_chars = 7, label_len = strlen(label);
 
