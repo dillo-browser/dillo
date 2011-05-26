@@ -43,6 +43,10 @@ static int *history_list = NULL;
 
 
 //--------------------------------------------------------------------------
+static void Menu_nop_cb(Fl_Widget *, void *)
+{
+}
+
 /*
  * Static function for File menu callbacks.
  */
@@ -295,7 +299,8 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    static Fl_Menu_Item pm[] = {
       {"View page source", 0, Menu_view_page_source_cb,0,0,0,0,0,0},
       {"View page bugs", 0, Menu_view_page_bugs_cb,0,0,0,0,0,0},
-      {"View stylesheets", 0, 0, 0,FL_SUBMENU_POINTER|FL_MENU_DIVIDER,0,0,0,0},
+      {"View stylesheets", 0, Menu_nop_cb,0,FL_SUBMENU_POINTER|FL_MENU_DIVIDER,
+       0,0,0,0},
       {"Bookmark this page", 0,Menu_add_bookmark_cb,0,FL_MENU_DIVIDER,0,0,0,0},
       {"Find text", 0, Menu_find_text_cb,0,0,0,0,0,0},
       {"Save page as...", 0, Menu_save_page_cb,0,0,0,0,0,0},
@@ -622,7 +627,7 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
        FL_MENU_TOGGLE|FL_MENU_DIVIDER,0,0,0,0},
       {"Load images", 0, Menu_imgload_toggle_cb, 0,
        FL_MENU_TOGGLE|FL_MENU_DIVIDER,0,0,0,0},
-      {"Panel size", 0, 0, (void*)"Submenu1", FL_SUBMENU,0,0,0,0},
+      {"Panel size", 0, Menu_nop_cb, (void*)"Submenu1", FL_SUBMENU,0,0,0,0},
          {"tiny",  0,Menu_panel_change_cb,(void*)0,FL_MENU_RADIO,0,0,0,0},
          {"small", 0,Menu_panel_change_cb,(void*)1,FL_MENU_RADIO,0,0,0,0},
          {"medium",0,Menu_panel_change_cb,(void*)2,FL_MENU_RADIO,0,0,0,0},
