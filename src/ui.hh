@@ -7,7 +7,6 @@
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Input.H>
-#include <FL/Fl_Pack.H>
 #include <FL/Fl_Output.H>
 #include <FL/Fl_Image.H>
 #include <FL/Fl_Tabs.H>
@@ -40,72 +39,62 @@ class CustTabs;
 
 // Class definition ----------------------------------------------------------
 /*
- * Used to reposition group's widgets when some of them are hidden
+ * Used to reposition group's widgets when some of them are hidden.
+ * All children get the height of the group but retain their original width.
+ * The resizable child get's the remaining space.
  */
-class CustGroup : public Fl_Group {
+class CustGroupHorizontal : public Fl_Group {
 public:
-  CustGroup(int x,int y,int w ,int h,const char *l = 0) :
+  CustGroupHorizontal(int x,int y,int w ,int h,const char *l = 0) :
     Fl_Group(x,y,w,h,l) { };
-  void rearrange(void) {
-     int n = children(), xpos = 0, r_x1, r_i = -1, i;
 
+  void rearrange() {
+     Fl_Widget*const* a = array();
+     int sum = 0, _x = x();
+     int children_ = children();
+
+     for (int i=0; i < children_; i++)
+        if (a[i] != resizable() && a[i]->visible())
+           sum += a[i]->w();
+
+     for (int i=0; i < children_; i++) {
+        if (a[i] == resizable()) {
+           a[i]->resize(_x, y(), w() - sum, h());
+        } else {
+           a[i]->resize(_x, y(), a[i]->w(), h());
+        }
+        if (a[i]->visible())
+           _x += a[i]->w();
+     }
      init_sizes();
-     for (i = 0; i < n; ++i) {
-        if (child(i) == resizable()) {
-           r_i = i;
-           r_x1 = xpos;
-           break;
-        }
-        if (child(i)->visible()) {
-           child(i)->position(xpos, child(i)->y());
-           xpos += child(i)->w();
-        }
-     }
-     if (r_i < 0)
-        return;
-     xpos = w();
-     for (i = n - 1; i > r_i; --i) {
-        if (child(i)->visible()) {
-           xpos -= child(i)->w();
-           child(i)->position(xpos, child(i)->y());
-        }
-     }
-     child(r_i)->resize(r_x1, child(r_i)->y(), xpos-r_x1, child(r_i)->h());
      redraw();
   }
-  void rearrange_y(void) {
-     int n = children(), pos = 0, r_pos, r_i = -1, i;
+};
 
-     printf("children = %d\n", n);
+class CustGroupVertical : public Fl_Group {
+public:
+  CustGroupVertical(int x,int y,int w ,int h,const char *l = 0) :
+    Fl_Group(x,y,w,h,l) { };
+
+  void rearrange() {
+     Fl_Widget*const* a = array();
+     int sum = 0, _y = y();
+     int children_ = children();
+
+     for (int i=0; i < children_; i++)
+        if (a[i] != resizable() && a[i]->visible())
+           sum += a[i]->h();
+
+     for (int i=0; i < children_; i++) {
+        if (a[i] == resizable()) {
+           a[i]->resize(x(), _y, w(), h() - sum);
+        } else {
+           a[i]->resize(x(), _y, w(), a[i]->h());
+        }
+        if (a[i]->visible())
+           _y += a[i]->h();
+     }
      init_sizes();
-     for (i = 0; i < n; ++i) {
-        if (child(i) == resizable()) {
-           r_i = i;
-           r_pos = pos;
-           break;
-        }
-        if (child(i)->visible()) {
-           printf("child[%d] x=%d y=%d w=%d h=%d\n",
-                  i, child(i)->x(), pos, child(i)->w(), child(i)->h());
-           child(i)->position(child(i)->x(), pos);
-           pos += child(i)->h();
-        }
-     }
-     if (r_i < 0)
-        return;
-     pos = h();
-     for (i = n - 1; i > r_i; --i) {
-        if (child(i)->visible()) {
-           pos -= child(i)->h();
-           printf("child[%d] x=%d y=%d w=%d h=%d\n",
-                  i, child(i)->x(), pos, child(i)->w(), child(i)->h());
-           child(i)->position(child(i)->x(), pos);
-        }
-     }
-     child(r_i)->resize(child(r_i)->x(), r_pos, child(r_i)->w(), pos-r_pos);
-     printf("resizable child[%d] x=%d y=%d w=%d h=%d\n",
-            r_i, child(r_i)->x(), r_pos, child(r_i)->w(), child(r_i)->h());
-     child(r_i)->hide();
      redraw();
   }
 };
@@ -114,16 +103,15 @@ public:
 //
 // UI class definition -------------------------------------------------------
 //
-class UI : public Fl_Pack {
+class UI : public CustGroupVertical {
    CustTabs *Tabs;
    char *TabTooltip;
 
-   Fl_Group *TopGroup;
+   CustGroupVertical *TopGroup;
    Fl_Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
           *Clear, *Search, *Help, *FullScreen, *BugMeter, *FileButton;
-   CustGroup *MenuBar, *LocBar, *NavBar, *StatusBar;
+   CustGroupHorizontal *MenuBar, *LocBar, *NavBar, *StatusBar;
    Fl_Input  *Location;
-   Fl_Pack *ProgBox;
    CustProgressBox *PProg, *IProg;
    Fl_Group *Panel, *Main;
    Fl_Output *StatusOutput;

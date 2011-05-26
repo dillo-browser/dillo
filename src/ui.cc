@@ -535,7 +535,7 @@ Fl_Widget *UI::make_filemenu_button()
    Fl_Button *btn;
    int w = 0, h = 0, padding;
 
-   FileButton = btn = new Fl_Button(p_xpos,0,0,0,"W");
+   FileButton = btn = new Fl_Button(p_xpos,0,bw,bh,"W");
    btn->labeltype(FL_FREE_LABELTYPE);
    btn->measure_label(w, h);
    padding = w;
@@ -595,7 +595,7 @@ void UI::make_panel(int ww)
 
    current(0);
    if (PanelSize == P_tiny) {
-      NavBar = new CustGroup(0,0,ww,nh);
+      NavBar = new CustGroupHorizontal(0,0,ww,nh);
       NavBar->begin();
        make_toolbar(ww,bh);
        make_filemenu_button();
@@ -604,38 +604,42 @@ void UI::make_panel(int ww)
        make_progress_bars(0,1);
       NavBar->box(FL_THIN_UP_FRAME);
       NavBar->end();
+      NavBar->rearrange();
       TopGroup->insert(*NavBar,0);
    } else {
        if (PanelSize == P_large) {
-          MenuBar = new CustGroup(0,0,ww,mh);
+          MenuBar = new CustGroupHorizontal(0,0,ww,mh);
           MenuBar->begin();
            MenuBar->box(FL_THIN_UP_BOX);
            Fl_Widget *bn = make_filemenu_button();
            MenuBar->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),mh));
           MenuBar->end();
+          MenuBar->rearrange();
           TopGroup->insert(*MenuBar,0);
 
           p_xpos = 0;
-          LocBar = new CustGroup(0,0,ww,lh);
+          LocBar = new CustGroupHorizontal(0,0,ww,lh);
           LocBar->begin();
            make_location(ww);
            LocBar->resizable(Location);
           LocBar->end();
+          LocBar->rearrange();
           TopGroup->insert(*LocBar,1);
        } else {
-          LocBar = new CustGroup(0,0,ww,lh);
+          LocBar = new CustGroupHorizontal(0,0,ww,lh);
           LocBar->begin();
            p_xpos = 0;
            make_filemenu_button();
            make_location(ww);
            LocBar->resizable(Location);
           LocBar->end();
+          LocBar->rearrange();
           TopGroup->insert(*LocBar,0);
        }
 
        // Toolbar
        p_ypos = 0;
-       NavBar = new CustGroup(0,0,ww,bh);
+       NavBar = new CustGroupHorizontal(0,0,ww,bh);
        NavBar->begin();
         make_toolbar(ww,bh);
         w = new Fl_Box(p_xpos,0,ww-p_xpos-2*pw,bh);
@@ -648,6 +652,7 @@ void UI::make_panel(int ww)
            make_progress_bars(1,0);
         }
        NavBar->end();
+       NavBar->rearrange();
        TopGroup->insert(*NavBar,(MenuBar ? 2 : 1));
    }
 }
@@ -658,7 +663,7 @@ void UI::make_panel(int ww)
 void UI::make_status_bar(int ww, int wh)
 {
    const int bm_w = 20;
-   StatusBar = new CustGroup(0, wh-sh, ww, sh);
+   StatusBar = new CustGroupHorizontal(0, wh-sh, ww, sh);
 
     // Status box
     StatusOutput = new Fl_Output(0, wh-sh, ww-bm_w, sh);
@@ -680,13 +685,14 @@ void UI::make_status_bar(int ww, int wh)
 
    StatusBar->end();
    StatusBar->resizable(StatusOutput);
+   StatusBar->rearrange();
 }
 
 /*
  * User Interface constructor
  */
 UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
-  Fl_Pack(x, y, ui_w, ui_h, label)
+  CustGroupVertical(x, y, ui_w, ui_h, label)
 {
    PointerOnLink = FALSE;
 
@@ -695,7 +701,6 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    Tabs = NULL;
    TabTooltip = NULL;
    TopGroup = this;
-   TopGroup->type(VERTICAL);
    TopGroup->box(FL_NO_BOX);
    clear_flag(SHORTCUT_LABEL);
 
@@ -722,8 +727,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     make_panel(ui_w);
 
     // Render area
-    int main_h = ui_h - (mh+(LocBar?lh:0)+nh+fh+sh);
-    Main = new Fl_Group(0,0,0,main_h,"Welcome...");
+    Main = new Fl_Group(0,0,0,0,"Welcome..."); // size is set by rearrange()
     Main->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
     Main->box(FL_FLAT_BOX);
     Main->color(FL_GRAY_RAMP + 3);
@@ -743,8 +747,8 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     // Status Panel
     make_status_bar(ui_w, ui_h);
     TopGroup->add(StatusBar);
-
    TopGroup->end();
+   TopGroup->rearrange();
 
    // Make the full screen button (to be attached to the viewport later)
    // TODO: attach to the viewport
@@ -1049,11 +1053,7 @@ void UI::change_panel(int new_size, int small_icons)
    customize(0);
    a_UIcmd_set_buttons_sens(a_UIcmd_get_bw_by_widget(this));
 
-   // adjust Main's height
-   int main_h = h() - (mh+(LocBar?lh:0)+nh+(FindBarSpace?fh:0)+sh);
-   Main->size(Main->w(), main_h);
-   redraw();
-
+   TopGroup->rearrange();
    Location->take_focus();
 }
 
@@ -1086,6 +1086,7 @@ void UI::set_panelmode(UIPanelmode mode)
       StatusBar->show();
    }
    Panelmode = mode;
+   TopGroup->rearrange();
 }
 
 /*
@@ -1110,7 +1111,7 @@ void UI::panelmode_cb_i()
 void UI::set_render_layout(Fl_Group *nw)
 {
    // Resize layout widget to current height
-   nw->resize(0,0,0,Main->h());
+   nw->resize(0,Main->y(),Main->w(),Main->h());
 
    TopGroup->insert(*nw, Main);
    remove(Main);
@@ -1169,7 +1170,6 @@ void UI::findbar_toggle(bool add)
          insert(*FindBar, StatusBar);
          FindBar->show();
          FindBarSpace = 1;
-         redraw();
       } else {
          // select text
          FindBar->show();
@@ -1179,8 +1179,8 @@ void UI::findbar_toggle(bool add)
       Main->size(Main->w(), Main->h()+FindBar->h());
       remove(FindBar);
       FindBarSpace = 0;
-      redraw();  /* Main->redraw(); is not enough */
    }
+   TopGroup->rearrange();
 }
 
 /*
@@ -1217,6 +1217,5 @@ void UI::fullscreen_toggle()
       hide ? StatusBar->hide() : StatusBar->show();;
    }
 
-   Main->size(Main->w(), Main->h() + (hide ? dh : -dh));
-   redraw();
+   TopGroup->rearrange();
 }

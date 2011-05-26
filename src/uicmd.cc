@@ -83,13 +83,13 @@ public:
 /*
  * Allows fine control of the tabbed interface
  */
-class CustTabs : public CustGroup {
+class CustTabs : public CustGroupHorizontal {
    int tab_w, tab_h, tab_n;
    Fl_Wizard *Wizard;
    int tabcolor_inactive, tabcolor_active, curtab_idx;
 public:
    CustTabs (int ww, int wh, int th, const char *lbl=0) :
-      CustGroup(0,0,ww,th,lbl) {
+      CustGroupHorizontal(0,0,ww,th,lbl) {
       tab_w = 80, tab_h = th, tab_n = 0, curtab_idx = -1;
       tabcolor_active = FL_DARK_CYAN; tabcolor_inactive = 206;
       Fl_Box *w = new Fl_Box(0,0,0,0,"i n v i s i b l e");
@@ -174,7 +174,7 @@ int CustTabs::handle(int e)
       }
    }
 
-   return (ret) ? ret : CustGroup::handle(e);
+   return (ret) ? ret : CustGroupHorizontal::handle(e);
 }
 
 /*
