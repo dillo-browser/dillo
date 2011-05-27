@@ -2,6 +2,20 @@
 Dillo project
 =============================================================================
 
+dillo-3.0 [not released yet]
+
++- Ported Dillo to FLTK-1.3.
+   Patch: corvid, Johannes Hofmann, Jorge Arellano Cid
++- Default binding for close-all changed from Alt-q to Ctrl-q.
+ - Default binding for close-tab changed from Ctrl-q to Ctrl-w.
+ - Add right_click_closes_tab preference (default is middle click).
+   Patches: Jorge Arellano Cid
++- Remove --enable-ansi configure option.
+ - Limit saved cookie size.
+   Patches: corvid
+
+-----------------------------------------------------------------------------
+
 dillo-2.2.1 [not released yet]
 
 +- Implemented "View source" as a dpi.
