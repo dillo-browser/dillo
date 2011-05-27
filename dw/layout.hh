@@ -152,7 +152,8 @@ private:
    bool scrollIdleNotInterrupted;
 
    /* Anchors of the widget tree */
-   lout::container::typed::HashTable <lout::object::String, Anchor> *anchorsTable;
+   lout::container::typed::HashTable <lout::object::String, Anchor>
+                                     *anchorsTable;
 
    SelectionState selectionState;
    FindtextState findtextState;

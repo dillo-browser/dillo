@@ -42,7 +42,8 @@ container::typed::HashTable <dw::core::style::FontAttrs,
                                     FltkFont> (false, false);
 
 container::typed::HashTable <lout::object::ConstString,
-                             FltkFont::FontFamily> *FltkFont::systemFonts = NULL;
+                             FltkFont::FontFamily> *FltkFont::systemFonts =
+                             NULL;
 
 FltkFont::FontFamily FltkFont::standardFontFamily;
 
