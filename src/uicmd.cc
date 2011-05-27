@@ -84,19 +84,20 @@ public:
  * Allows fine control of the tabbed interface
  */
 class CustTabs : public CustGroupHorizontal {
-   int tab_w, tab_h, tab_n;
+   int tab_w, tab_h, ctab_h, tab_n;
    Fl_Wizard *Wizard;
    int tabcolor_inactive, tabcolor_active, curtab_idx;
 public:
    CustTabs (int ww, int wh, int th, const char *lbl=0) :
       CustGroupHorizontal(0,0,ww,th,lbl) {
-      tab_w = 80, tab_h = th, tab_n = 0, curtab_idx = -1;
+      tab_w = 80, tab_h = th, ctab_h = 1, tab_n = 0, curtab_idx = -1;
       tabcolor_active = FL_DARK_CYAN; tabcolor_inactive = 206;
+      resize(0,0,ww,ctab_h);
       resizable(NULL);
       box(FL_FLAT_BOX);
       end();
 
-      Wizard = new Fl_Wizard(0,tab_h,ww,wh-tab_h);
+      Wizard = new Fl_Wizard(0,ctab_h,ww,wh-ctab_h);
       Wizard->end();
    };
    int handle(int e);
@@ -182,14 +183,23 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
 {
    char tab_label[64];
 
+   if (num_tabs() == 1) {
+      // Show tabbar
+      ctab_h = tab_h;
+      Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
+      resize(0,0,window()->w(),ctab_h);    // tabbar
+      child(0)->show(); // first tab button
+      window()->init_sizes();
+   }
+
    current(0);
-   UI *new_ui = new UI(0,tab_h,Wizard->w(),Wizard->h(),0,old_ui);
+   UI *new_ui = new UI(0,ctab_h,Wizard->w(),Wizard->h(),0,old_ui);
    new_ui->tabs(this);
    Wizard->add(new_ui);
    new_ui->show();
 
    snprintf(tab_label, 64,"ctab%d", ++tab_n);
-   CustTabButton *btn = new CustTabButton(num_tabs()*tab_w,0,tab_w,tab_h);
+   CustTabButton *btn = new CustTabButton(num_tabs()*tab_w,0,tab_w,ctab_h);
    btn->align(FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
    btn->copy_label(tab_label);
    btn->clear_visible_focus();
@@ -201,6 +211,8 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
 
    if (focus)
       switch_tab(btn);
+   if (num_tabs() == 1)
+      btn->hide();
    rearrange();
 
    return new_ui;
@@ -234,6 +246,15 @@ void CustTabs::remove_tab(UI *ui)
       window()->hide();
       // TODO: free memory
       //delete window();
+
+   } else if (num_tabs() == 1) {
+      // hide tabbar
+      ctab_h = 1;
+      child(0)->hide(); // first tab button
+      resize(0,0,window()->w(),ctab_h);    // tabbar
+      Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
+      window()->init_sizes();
+      window()->redraw();
    }
 }
 
