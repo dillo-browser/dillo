@@ -77,7 +77,7 @@ Xembed::handle(int e) {
    return Fl_Window::handle(e);
 }
 
-static int event_handler(int e) {
+static int event_handler(int e, Fl_Window *w) {
    Atom xembed_atom = XInternAtom (fl_display, "_XEMBED", false);
 
    if (fl_xevent->type == ClientMessage) {
@@ -88,10 +88,8 @@ static int event_handler(int e) {
             case XEMBED_WINDOW_ACTIVATE:
                // Force a ConfigureNotify message so fltk can get the new
                // coordinates after a move of the embedder window.
-#if 0
-PORT1.3
-               w->resize(0, 0, w->w(), w->h());
-#endif
+               if (w)
+                  w->resize(0,0, w->w(), w->h());
                break;
             case XEMBED_WINDOW_DEACTIVATE:
                break;
@@ -101,7 +99,7 @@ PORT1.3
       }
    }
 
-   return 0;
+   return Fl::handle_(e, w);
 }
 
 // TODO: Implement more XEMBED support;
@@ -109,7 +107,7 @@ PORT1.3
 void Xembed::show() {
    createInternal(xid);
    setXembedInfo(1);
-   Fl::add_handler(event_handler);
+   Fl::event_dispatch(event_handler);
 }
 
 void Xembed::createInternal(uint32_t parent) {
