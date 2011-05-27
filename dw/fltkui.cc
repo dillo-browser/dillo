@@ -513,16 +513,7 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
 
 void FltkEntryResource::widgetCallback (Fl_Widget *widget, void *data)
 {
-   /* The (::fltk::event_key() == FL_Enter) test
-    * is necessary because WHEN_ENTER_KEY also includes
-    * other events we're not interested in. For instance pressing
-    * The Back or Forward, buttons, or the first click on a rendered
-    * page. BUG: this must be investigated and reported to FLTK2 team
-    */
-   _MSG("when = %d\n", widget->when ());
-   if ((widget->when () & FL_WHEN_ENTER_KEY_ALWAYS) &&
-       (Fl::event_key() == FL_Enter))
-      ((FltkEntryResource*)data)->emitActivate ();
+   ((FltkEntryResource*)data)->emitActivate ();
 }
 
 const char *FltkEntryResource::getText ()

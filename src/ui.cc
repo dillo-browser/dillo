@@ -320,13 +320,8 @@ static void location_cb(Fl_Widget *wid, void *data)
    UI *ui = (UI*)data;
 
    _MSG("location_cb()\n");
-   /* This test is necessary because WHEN_ENTER_KEY also includes
-    * other events we're not interested in. For instance pressing
-    * The Back or Forward, buttons, or the first click on a rendered
-    * page. BUG: this must be investigated and reported to FLTK2 team */
-   if (Fl::event_key() == FL_Enter) {
-      a_UIcmd_open_urlstr(a_UIcmd_get_bw_by_widget(i), i->value());
-   }
+   a_UIcmd_open_urlstr(a_UIcmd_get_bw_by_widget(i), i->value());
+
    if (ui->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS) {
       ui->set_panelmode(UI_HIDDEN);
    }
