@@ -171,13 +171,6 @@ int PrefsParser::parseOption(char *name, char *value)
       MSG_WARN("prefs: {%s} IS recognized but not handled!\n", name);
       break;   /* Not reached */
    }
-
-   if (prefs.limit_text_width) {
-      /* BUG: causes 100% CPU usage with <button> or <input type="image"> */
-      MSG_WARN("Disabling limit_text_width preference (currently broken).\n");
-      prefs.limit_text_width = FALSE;
-   }
-
    return 0;
 }
 
@@ -213,4 +206,11 @@ void PrefsParser::parse(FILE *fp)
    // restore the old numeric locale
    setlocale(LC_NUMERIC, oldLocale);
    dFree(oldLocale);
+
+
+   if (prefs.limit_text_width) {
+      /* BUG: causes 100% CPU usage with <button> or <input type="image"> */
+      MSG_WARN("Disabling limit_text_width preference (currently broken).\n");
+      prefs.limit_text_width = FALSE;
+   }
 }
