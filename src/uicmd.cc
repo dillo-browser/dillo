@@ -98,6 +98,7 @@ public:
       end();
 
       Wizard = new Fl_Wizard(0,ctab_h,ww,wh-ctab_h);
+      Wizard->box(FL_NO_BOX);
       Wizard->end();
    };
    int handle(int e);
@@ -431,6 +432,7 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus)
 
    // set_render_layout() sets the proper viewport size
    FltkViewport *viewport = new FltkViewport (0, 0, 0, 1);
+   viewport->box(FL_NO_BOX);
    viewport->setBufferedDrawing (prefs.buffered_drawing ? true : false);
    layout->attachView (viewport);
    new_ui->set_render_layout(viewport);
