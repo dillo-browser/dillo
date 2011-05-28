@@ -409,6 +409,9 @@ static int get_network_connection(char * url)
  * allow the user to decide what to do.  It may save the
  * certificate to the user's .dillo directory if it is
  * trusted.
+ *
+ * TODO: Rearrange this to get rid of redundancy.
+ *
  * Return value: -1 on abort, 0 or higher on continue
  */
 static int handle_certificate_problem(SSL * ssl_connection)
@@ -613,6 +616,40 @@ static int handle_certificate_problem(SSL * ssl_connection)
             "Continue", "Cancel");
          a_Dpip_dsh_write_str(sh, 1, d_cmd);
          dFree(d_cmd);
+         response_number = dialog_get_answer_number();
+         if (response_number == 1) {
+            ret = 0;
+         }
+         break;
+      case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
+         d_cmd = a_Dpip_build_cmd(
+            "cmd=%s msg=%s alt1=%s alt2=%s",
+            "dialog",
+            "Self signed certificate in certificate chain. The certificate "
+            "chain could be built up using the untrusted certificates but the "
+            "root could not be found locally.",
+            "Continue", "Cancel");
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
+         dFree(d_cmd);
+         response_number = dialog_get_answer_number();
+         if (response_number == 1) {
+            ret = 0;
+         }
+         break;
+      case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
+         d_cmd = a_Dpip_build_cmd(
+            "cmd=%s msg=%s alt1=%s alt2=%s",
+            "dialog",
+            "Unable to get local issuer certificate. The issuer certificate "
+            "of an untrusted certificate cannot be found.",
+            "Continue", "Cancel");
+         a_Dpip_dsh_write_str(sh, 1, d_cmd);
+         dFree(d_cmd);
+         response_number = dialog_get_answer_number();
+         if (response_number == 1) {
+            ret = 0;
+         }
+         break;
       default:             /*Need to add more options later*/
          snprintf(buf, 80,
                   "The remote certificate cannot be verified (code %ld)", st);

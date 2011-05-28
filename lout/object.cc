@@ -21,6 +21,7 @@
 
 #include "object.hh"
 #include <stdio.h>
+#include <config.h>
 
 namespace lout {
 

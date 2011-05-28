@@ -5,7 +5,10 @@ Dillo project
 dillo-2.2.1 [not released yet]
 
 +- Implemented "View source" as a dpi.
-   Patch: Jorge Arellano Cid
+ - Accept application/xhtml+xml.
+ - Small caps support.
+ - Border-collapse, border-style properties.
+   Patches: Jorge Arellano Cid
 +- Configurable User-Agent HTTP header.
    Patch: Alexander Voigt, corvid
 +- Include Accept header in HTTP queries.
@@ -19,9 +22,20 @@ dillo-2.2.1 [not released yet]
  - Handle white-space: pre-wrap and pre-line.
  - Support for the word-spacing property.
  - Fix segfault with https and self-signed certificates.
+ - Text-indent property.
    Patches: corvid
++- Reintroduce bg_color dillorc option.
+ - Make Dillo compile with Clang.
+ - Fix Textblock flushing.
+   Patches: Johannes Hofmann
 +- Implement line-height.
-   Patch: Johannes Hofmann, corvid
+ - Draw image maps when image not loaded.
+   Patches: Johannes Hofmann, corvid
++- Support @media rules.
+ - Implement media-conditional @import rules.
+ - Configure/Makefile cleanup.
+ - Fix meta refresh looping.
+   Patches: Jeremy Henty
 
 -----------------------------------------------------------------------------
 

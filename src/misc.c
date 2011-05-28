@@ -1,7 +1,6 @@
 /*
  * File: misc.c
  *
- * Copyright (C) 2000 Jörgen Viksell <vsksga@hotmail.com>
  * Copyright (C) 2000-2007 Jorge Arellano Cid <jcid@dillo.org>,
  *
  * This program is free software; you can redistribute it and/or modify
@@ -105,6 +104,7 @@ typedef struct ContentType_ {
 
 static const ContentType_t MimeTypes[] = {
    { "application/octet-stream", 24 },
+   { "application/xhtml+xml", 21 },
    { "text/html", 9 },
    { "text/plain", 10 },
    { "image/gif", 9 },
@@ -342,7 +342,12 @@ int a_Misc_content_type_check(const char *EntryType, const char *DetectedType)
               dStrncasecmp(DetectedType, "application/", 12)) {
       /* Not an application sent as text */
       st = 0;
+   } else if (dStrncasecmp(EntryType, "application/xhtml+xml", 21) &&
+              dStrncasecmp(DetectedType, "text/html", 9)) {
+      /* XML version of HTML */
+      st = 0;
    }
+   _MSG("Type check: %s\n", st == 0 ? "MATCH" : "MISMATCH");
 
    return st;
 }

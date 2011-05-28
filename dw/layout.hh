@@ -202,7 +202,6 @@ private:
    void removeAnchor (Widget *widget, char* name);
    void setCursor (style::Cursor cursor);
    void updateCursor ();
-   void updateBgColor ();
    void queueDraw (int x, int y, int width, int height);
    void queueDrawExcept (int x, int y, int width, int height,
       int ex, int ey, int ewidth, int eheight);
@@ -362,6 +361,10 @@ public:
 
    /** \brief See dw::core::FindtextState::resetSearch. */
    inline void resetSearch () { findtextState.resetSearch (); }
+
+   void setBgColor (style::Color *color);
+
+   inline style::Color* getBgColor () { return bgColor; }
 };
 
 } // namespace dw

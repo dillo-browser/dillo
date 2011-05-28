@@ -1,8 +1,14 @@
-AM_CPPFLAGS=-DDPIDRC_SYS='"$(sysconfdir)/dpidrc"'
+AM_CPPFLAGS = \
+	-I$(top_srcdir) \
+	-DDPIDRC_SYS='"$(sysconfdir)/dpidrc"'
 
 bin_PROGRAMS = dpid dpidc
-dpid_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
-dpidc_LDADD = ../dpip/libDpip.a ../dlib/libDlib.a
+dpid_LDADD = \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
+dpidc_LDADD = \
+	$(top_builddir)/dpip/libDpip.a \
+	$(top_builddir)/dlib/libDlib.a
 
 EXTRA_DIST = dpidrc.in
 

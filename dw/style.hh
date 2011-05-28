@@ -64,7 +64,7 @@ namespace core {
  * attribute, which is supported by dillo, will refer to an attribute in
  * dw::core::style::Style. For this reason, the attributes in
  * dw::core::style::Style get the names from the CSS attributes, with
- * "camelCase" instead of hythens (e.g. "background-color" becomes
+ * "camelCase" instead of hyphens (e.g. "background-color" becomes
  * "backgroundColor").
  *
  * However, dw::core::style::Style will be extended by some more
@@ -193,7 +193,7 @@ namespace core {
 namespace style {
 
 enum Cursor {
-   CURSOR_COSSHAIR,
+   CURSOR_CROSSHAIR,
    CURSOR_DEFAULT,
    CURSOR_POINTER,
    CURSOR_MOVE,
@@ -208,6 +208,11 @@ enum Cursor {
    CURSOR_TEXT,
    CURSOR_WAIT,
    CURSOR_HELP
+};
+
+enum BorderCollapse {
+   BORDER_MODEL_SEPARATE,
+   BORDER_MODEL_COLLAPSE
 };
 
 enum BorderStyle {
@@ -258,6 +263,12 @@ enum DisplayType {
    DISPLAY_TABLE_CELL
 };
 
+enum LineType {
+   LINE_NORMAL,
+   LINE_DOTTED,
+   LINE_DASHED
+};
+
 enum ListStylePosition {
    LIST_STYLE_POSITION_INSIDE,
    LIST_STYLE_POSITION_OUTSIDE
@@ -290,6 +301,11 @@ enum FontStyle {
   FONT_STYLE_NORMAL,
   FONT_STYLE_ITALIC,
   FONT_STYLE_OBLIQUE
+};
+
+enum FontVariant {
+   FONT_VARIANT_NORMAL,
+   FONT_VARIANT_SMALL_CAPS
 };
 
 enum TextDecoration {
@@ -442,9 +458,10 @@ public:
    ClearType clear;
 
    int hBorderSpacing, vBorderSpacing, wordSpacing;
-   Length width, height, lineHeight;
+   Length width, height, lineHeight, textIndent;
 
    Box margin, borderWidth, padding;
+   BorderCollapse borderCollapse;
    struct { Color *top, *right, *bottom, *left; } borderColor;
    struct { BorderStyle top, right, bottom, left; } borderStyle;
 
@@ -573,6 +590,7 @@ public:
    int size;
    int weight;
    int letterSpacing;
+   FontVariant fontVariant;
    FontStyle style;
 
    bool equals(lout::object::Object *other);

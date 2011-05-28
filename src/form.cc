@@ -554,12 +554,9 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       }
       if (prefs.show_tooltip &&
           (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
-         CssPropertyList props;
-         char *tooltip_str = dStrdup(attrbuf);
 
-         props.set (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING, tooltip_str);
-         html->styleEngine->setNonCssHints (&props);
-         dFree(tooltip_str);
+         html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                           attrbuf);
       }
       HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle());
    }
@@ -930,7 +927,7 @@ DilloHtmlForm::~DilloHtmlForm ()
 
 void DilloHtmlForm::eventHandler(Resource *resource, EventButton *event)
 {
-   MSG("DilloHtmlForm::eventHandler\n");
+   _MSG("DilloHtmlForm::eventHandler\n");
    if (event && (event->button == 3)) {
       a_UIcmd_form_popup(html->bw, html->page_url, this, showing_hiddens);
    } else {

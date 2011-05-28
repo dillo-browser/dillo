@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
+#include <wchar.h>
+#include <wctype.h>
 
 #include "../lout/msg.h"
 #include "fltkcore.hh"
@@ -28,7 +31,6 @@
 #include <fltk/InvisibleBox.h>
 #include <fltk/Tooltip.h>
 #include <fltk/utf.h>
-#include <stdio.h>
 
 namespace dw {
 namespace fltk {
@@ -351,20 +353,45 @@ void FltkPlatform::detachView  (core::View *view)
 int FltkPlatform::textWidth (core::style::Font *font, const char *text,
                              int len)
 {
-   int width;
+   char chbuf[4];
+   wchar_t wc, wcu;
+   int width = 0;
    FltkFont *ff = (FltkFont*) font;
-   setfont (ff->font, ff->size);
-   width = (int) getwidth (text, len);
+   int curr = 0, next = 0, nb;
 
-   if (font->letterSpacing) {
-      int curr = 0, next = 0;
-
-      while (next < len) {
+   if (font->fontVariant == 1) {
+      int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
+      for (curr = 0; next < len; curr = next) {
          next = nextGlyph(text, curr);
-         width += font->letterSpacing;
-         curr = next;
+         wc = utf8decode(text + curr, text + next, &nb);
+         if ((wcu = towupper(wc)) == wc) {
+            /* already uppercase, just draw the character */
+            setfont(ff->font, ff->size);
+            width += font->letterSpacing;
+            width += (int)getwidth(text + curr, next - curr);
+         } else {
+            /* make utf8 string for converted char */
+            nb = utf8encode(wcu, chbuf);
+            setfont(ff->font, sc_fontsize);
+            width += font->letterSpacing;
+            width += (int)getwidth(chbuf, nb);
+         }
+      }
+   } else {
+      setfont (ff->font, ff->size);
+      width = (int) getwidth (text, len);
+
+      if (font->letterSpacing) {
+         int curr = 0, next = 0;
+
+         while (next < len) {
+            next = nextGlyph(text, curr);
+            width += font->letterSpacing;
+            curr = next;
+         }
       }
    }
+
    return width;
 }
 

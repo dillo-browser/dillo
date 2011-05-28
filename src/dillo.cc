@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <signal.h>
+#include <locale.h>
 
 #include <fltk/Window.h>
 #include <fltk/TabGroup.h>

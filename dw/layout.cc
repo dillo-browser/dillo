@@ -223,7 +223,8 @@ Layout::~Layout ()
       platform->removeIdle (scrollIdleId);
    if (resizeIdleId != -1)
       platform->removeIdle (resizeIdleId);
-
+   if (bgColor)
+      bgColor->unref ();
    if (topLevel)
       delete topLevel;
    delete platform;
@@ -247,7 +248,6 @@ void Layout::addWidget (Widget *widget)
 
    canvasHeightGreater = false;
    setSizeHints ();
-   updateBgColor ();
    queueResize ();
 }
 
@@ -610,17 +610,17 @@ void Layout::updateCursor ()
       setCursor (style::CURSOR_DEFAULT);
 }
 
-void Layout::updateBgColor ()
+void Layout::setBgColor (style::Color *color)
 {
-   /* The toplevel widget should always have a defined background color,
-    * except at the beginning. Searching a defined background is not
-    * necessary. */
-   if (topLevel && topLevel->getStyle() &&
-       topLevel->getStyle()->backgroundColor)
-      bgColor = topLevel->getStyle()->backgroundColor;
-   else
-      bgColor = NULL;
-   view->setBgColor (bgColor);
+   color->ref ();
+
+   if (bgColor)
+      bgColor->unref ();
+
+   bgColor = color;
+
+   if (view)
+      view->setBgColor (bgColor);
 }
 
 void Layout::resizeIdle ()

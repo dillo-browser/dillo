@@ -382,7 +382,7 @@ private:
    friend class LayoutReceiver;
    LayoutReceiver layoutReceiver;
 
-   Widget *widget;
+   Widget *childWidget;
 
 protected:
    Layout *layout;

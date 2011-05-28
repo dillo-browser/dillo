@@ -90,7 +90,7 @@ inline CssLength CSS_CREATE_LENGTH (float v, CssLengthType t) {
 
    switch (t) {
    case CSS_LENGTH_TYPE_PX:
-      iv = (int) (v + 0.5);
+      iv = lout::misc::roundInt(v);
       if (iv > CSS_LENGTH_INT_MAX)
          iv = CSS_LENGTH_INT_MAX;
       else if (iv < -CSS_LENGTH_INT_MAX)
@@ -304,25 +304,11 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
          refCount = 0;
          this->ownerOfStrings = ownerOfStrings;
       };
-      inline CssPropertyList(const CssPropertyList &p) :
-         lout::misc::SimpleVector <CssProperty> (p) {
-         refCount = 0;
-         ownerOfStrings = false;
-      };
+      CssPropertyList(const CssPropertyList &p, bool deep = false);
       ~CssPropertyList ();
 
       void set (CssPropertyName name, CssValueType type,
                 CssPropertyValue value);
-      inline void set (CssPropertyName name, CssValueType type, char *value) {
-         CssPropertyValue v;
-         v.strVal = value;
-         set (name, type, v);
-      };
-      inline void set (CssPropertyName name, CssValueType type, int value) {
-         CssPropertyValue v;
-         v.intVal = value;
-         set (name, type, v);
-      };
       void apply (CssPropertyList *props);
       void print ();
       inline void ref () { refCount++; }
@@ -476,7 +462,7 @@ class CssContext {
       static CssStyleSheet *userStyle;
       static CssStyleSheet *userImportantStyle;
       CssStyleSheet *sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
-      int pos; 
+      int pos;
 
       void buildUserAgentStyle ();
       void buildUserStyle ();
@@ -488,7 +474,7 @@ class CssContext {
       void addRule (CssSelector *sel, CssPropertyList *props,
                     CssPrimaryOrder order);
       void apply (CssPropertyList *props,
-         Doctree *docTree,
+         Doctree *docTree, DoctreeNode *node,
          CssPropertyList *tagStyle, CssPropertyList *nonCssHints);
 };
 

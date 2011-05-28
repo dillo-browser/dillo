@@ -28,6 +28,7 @@ namespace dw {
 
 Ruler::Ruler ()
 {
+   setFlags (BLOCK_LEVEL);
    unsetFlags (HAS_CONTENTS);
 }
 

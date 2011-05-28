@@ -38,6 +38,11 @@ inline void assertNotReached ()
    abort ();
 }
 
+inline int roundInt(double d)
+{
+   return (int) ((d > 0) ? (d + 0.5) : (d - 0.5));
+}
+
 /**
  * \brief Instances of a sub class of this interface may be compared (less,
  *    greater).

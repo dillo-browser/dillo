@@ -27,8 +27,11 @@
 #include <fltk/events.h>
 #include <fltk/Cursor.h>
 #include <fltk/run.h>
+#include <fltk/utf.h>
 
 #include <stdio.h>
+#include <wchar.h>
+#include <wctype.h>
 #include "../lout/msg.h"
 
 using namespace fltk;
@@ -366,6 +369,39 @@ void FltkViewBase::drawLine (core::style::Color *color,
              translateCanvasXToViewX (x2), translateCanvasYToViewY (y2));
 }
 
+void FltkViewBase::drawTypedLine (core::style::Color *color,
+                                  core::style::Color::Shading shading,
+                                  core::style::LineType type, int width,
+                                  int x1, int y1, int x2, int y2)
+{
+   char dashes[3], w, ng, d, gap, len;
+   const int f = 2;
+
+   w = (width == 1) ? 0 : width;
+   if (type == core::style::LINE_DOTTED) {
+      /* customized drawing for dotted lines */
+      len = (x2 == x1) ? y2 - y1 + 1 : (y2 == y1) ? x2 - x1 + 1 : 0;
+      ng = len / f*width;
+      d = len % f*width;
+      gap = ng ? d/ng + (w > 3 ? 2 : 0) : 0;
+      dashes[0] = 1; dashes[1] = f*width-gap; dashes[2] = 0;
+      line_style(::fltk::DASH + ::fltk::CAP_ROUND, w, dashes);
+
+      /* These formulas also work, but ain't pretty ;)
+       * line_style(::fltk::DOT + ::fltk::CAP_ROUND, w);
+       * dashes[0] = 1; dashes[1] = 3*width-2; dashes[2] = 0;
+       */
+   } else if (type == core::style::LINE_DASHED) {
+      line_style(::fltk::DASH + ::fltk::CAP_ROUND, w);
+   }
+
+   setcolor(((FltkColor*)color)->colors[shading]);
+   drawLine (color, shading, x1, y1, x2, y2);
+
+   if (type != core::style::LINE_NORMAL)
+      line_style(::fltk::SOLID);
+}
+
 void FltkViewBase::drawRectangle (core::style::Color *color,
                                   core::style::Color::Shading shading,
                                   bool filled,
@@ -386,7 +422,7 @@ void FltkViewBase::drawRectangle (core::style::Color *color,
    int x2 = translateCanvasXToViewX (x + width);
    int y2 = translateCanvasYToViewY (y + height);
 
-   // We only support rectangles with line width 1px, so we clip with 
+   // We only support rectangles with line width 1px, so we clip with
    // a rectangle 1px wider and higher than what we actually expose.
    // This is only really necessary for non-filled rectangles.
    clipPoint (&x1, &y1, 1);
@@ -483,20 +519,45 @@ void FltkWidgetView::drawText (core::style::Font *font,
    setfont(ff->font, ff->size);
    setcolor(((FltkColor*)color)->colors[shading]);
 
-   if (!font->letterSpacing) {
+   if (!font->letterSpacing && !font->fontVariant) {
       drawtext(text, len,
                translateCanvasXToViewX (x), translateCanvasYToViewY (y));
    } else {
       /* Nonzero letter spacing adjustment, draw each glyph individually */
       int viewX = translateCanvasXToViewX (x),
           viewY = translateCanvasYToViewY (y);
-      int curr = 0, next = 0;
+      int curr = 0, next = 0, nb;
+      char chbuf[4];
+      wchar_t wc, wcu;
 
-      while (next < len) {
-         next = theLayout->nextGlyph(text, curr);
-         drawtext(text + curr, next - curr, viewX, viewY);
-         viewX += font->letterSpacing + (int)getwidth(text + curr,next - curr);
-         curr = next;
+      if (font->fontVariant == 1) {
+         int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
+         for (curr = 0; next < len; curr = next) {
+            next = theLayout->nextGlyph(text, curr);
+            wc = utf8decode(text + curr, text + next, &nb);
+            if ((wcu = towupper(wc)) == wc) {
+               /* already uppercase, just draw the character */
+               setfont(ff->font, ff->size);
+               drawtext(text + curr, next - curr, viewX, viewY);
+               viewX += font->letterSpacing;
+               viewX += (int)getwidth(text + curr, next - curr);
+            } else {
+               /* make utf8 string for converted char */
+               nb = utf8encode(wcu, chbuf);
+               setfont(ff->font, sc_fontsize);
+               drawtext(chbuf, nb, viewX, viewY);
+               viewX += font->letterSpacing;
+               viewX += (int)getwidth(chbuf, nb);
+            }
+         }
+      } else {
+         while (next < len) {
+            next = theLayout->nextGlyph(text, curr);
+            drawtext(text + curr, next - curr, viewX, viewY);
+            viewX += font->letterSpacing +
+                     (int)getwidth(text + curr,next - curr);
+            curr = next;
+         }
       }
    }
 }

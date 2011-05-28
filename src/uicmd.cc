@@ -449,6 +449,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    // Now create the Dw render layout and viewport
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
+   style::Color *bgColor = style::Color::create (layout, prefs.bg_color);
+   layout->setBgColor (bgColor);
 
    FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
    if (prefs.buffered_drawing == 1)
@@ -507,6 +509,8 @@ static BrowserWindow *UIcmd_tab_new(const void *vbw)
    // Now create the Dw render layout and viewport
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
+   style::Color *bgColor = style::Color::create (layout, prefs.bg_color);
+   layout->setBgColor (bgColor);
 
    FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
 
@@ -1296,14 +1300,14 @@ void a_UIcmd_fullscreen_toggle(BrowserWindow *bw)
  * Search for next/previous occurrence of key.
  */
 void a_UIcmd_findtext_search(BrowserWindow *bw, const char *key,
-                             int case_sens, int backwards)
+                             int case_sens, int backward)
 {
    Layout *l = (Layout *)bw->render_layout;
 
-   switch (l->search(key, case_sens, backwards)) {
+   switch (l->search(key, case_sens, backward)) {
    case FindtextState::RESTART:
-      a_UIcmd_set_msg(bw, "No further occurrences of \"%s\". "
-                          "Restarting from the top.", key);
+      a_UIcmd_set_msg(bw, backward?"Top reached; restarting from the bottom."
+                                  :"Bottom reached; restarting from the top.");
       break;
    case FindtextState::NOT_FOUND:
       a_UIcmd_set_msg(bw, "\"%s\" not found.", key);

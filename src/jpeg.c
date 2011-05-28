@@ -1,7 +1,6 @@
 /*
  * File: jpeg.c
  *
- * Copyright (C) 1997 Raph Levien <raph@acm.org>
  * Copyright (C) 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -292,7 +291,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
          if (jpeg->cinfo.image_width <= 0 || jpeg->cinfo.image_height <= 0 ||
              jpeg->cinfo.image_width >
              IMAGE_MAX_AREA / jpeg->cinfo.image_height) {
-            MSG("Jpeg_write: suspicious image size request %ux%u\n",
+            MSG("Jpeg_write: suspicious image size request %u x %u\n",
                 (uint_t)jpeg->cinfo.image_width,
                 (uint_t)jpeg->cinfo.image_height);
             jpeg->state = DILLO_JPEG_ERROR;

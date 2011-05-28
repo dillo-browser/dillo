@@ -35,6 +35,7 @@ int Textblock::CLASS_ID = -1;
 Textblock::Textblock (bool limitTextWidth)
 {
    registerName ("dw::Textblock", &CLASS_ID);
+   setFlags (BLOCK_LEVEL);
    setFlags (USES_HINTS);
    setButtonSensitive(true);
 
@@ -260,10 +261,9 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
             word = words->getRef (wordIndex);
             getWordExtremes (word, &wordExtremes);
 
-            /* For the first word, we simply add the line1_offset. */
-            /* This test looks questionable */
-            if (ignoreLine1OffsetSometimes && wordIndex == 0) {
-               wordExtremes.minWidth += line1Offset;
+            if (wordIndex == 0) {
+               wordExtremes.minWidth += line1OffsetEff;
+               wordExtremes.maxWidth += line1OffsetEff;
                //DEBUG_MSG (DEBUG_SIZE_LEVEL + 1,
                //           "      (next plus %d)\n", page->line1_offset);
             }
@@ -965,7 +965,20 @@ void Textblock::wordWrap(int wordIndex)
           line1Offset + word->size.width > availWidth) {
          line1OffsetEff = 0;
       } else {
-         line1OffsetEff = line1Offset;
+         int indent = 0;
+
+         if (word->content.type == core::Content::WIDGET &&
+             word->content.widget->blockLevel() == true) {
+            /* don't use text-indent when nesting blocks */
+         } else {
+            if (core::style::isPerLength(getStyle()->textIndent)) {
+               indent = misc::roundInt(this->availWidth *
+                        core::style::perLengthVal (getStyle()->textIndent));
+            } else {
+               indent = core::style::absLengthVal (getStyle()->textIndent);
+            }
+         }
+         line1OffsetEff = line1Offset + indent;
       }
    }
 
@@ -1314,20 +1327,20 @@ void Textblock::decorateText(core::View *view, core::style::Style *style,
                              core::style::Color::Shading shading,
                              int x, int yBase, int width)
 {
-   int y;
+   int y, height;
 
+   height = 1 + style->font->xHeight / 12;
    if (style->textDecoration & core::style::TEXT_DECORATION_UNDERLINE) {
-      y = yBase + 1;
-      view->drawLine (style->color, shading, x, y, x + width - 1, y);
+      y = yBase + style->font->descent / 3;
+      view->drawRectangle (style->color, shading, true, x, y, width, height);
    }
    if (style->textDecoration & core::style::TEXT_DECORATION_OVERLINE) {
-      y = yBase - style->font->ascent + 1;
-      view->drawLine (style->color, shading, x, y, x + width - 1, y);
+      y = yBase - style->font->ascent;
+      view->drawRectangle (style->color, shading, true, x, y, width, height);
    }
    if (style->textDecoration & core::style::TEXT_DECORATION_LINE_THROUGH) {
-      int height = 1 + style->font->xHeight / 10;
-
-      y = yBase + (style->font->descent - style->font->ascent) / 2;
+      y = yBase + (style->font->descent - style->font->ascent) / 2 +
+          style->font->descent / 4;
       view->drawRectangle (style->color, shading, true, x, y, width, height);
    }
 }
@@ -1693,8 +1706,8 @@ void Textblock::calcTextSize (const char *text, size_t len,
 
       factor /= (style->font->ascent + style->font->descent);
 
-      size->ascent = size->ascent * factor + 0.5;
-      size->descent = size->descent * factor + 0.5;
+      size->ascent = lout::misc::roundInt(size->ascent * factor);
+      size->descent = lout::misc::roundInt(size->descent * factor);
 
       /* TODO: The containing block's line-height property gives a minimum
        * height for the line boxes. (Even when it's set to 'normal', i.e.,
@@ -1704,8 +1717,9 @@ void Textblock::calcTextSize (const char *text, size_t len,
       if (core::style::isAbsLength (style->lineHeight))
          height = core::style::absLengthVal(style->lineHeight);
       else
-         height = core::style::perLengthVal(style->lineHeight) *
-                  style->font->size;
+         height = lout::misc::roundInt (
+                     core::style::perLengthVal(style->lineHeight) *
+                     style->font->size);
       leading = height - style->font->size;
 
       size->ascent += leading / 2;

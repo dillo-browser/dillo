@@ -41,7 +41,7 @@ In the example in the image, the widget has the following allocation:
 
 The current allocation of a widget is hold in
 dw::core::Widget::allocation. It can be set from outside by
-callcalling dw::core::Widget::sizeAllocate. This is a concrete method,
+calling dw::core::Widget::sizeAllocate. This is a concrete method,
 which will call dw::core::Widget::sizeAllocateImpl (see code of
 dw::core::Widget::sizeAllocate for details).
 
@@ -93,7 +93,7 @@ Some widgets do not have an inherent size, but depend on the context,
 e.g. the viewport size. These widgets should adhere to <i>size hints</i>,
 i.e. implement the methods dw::core::Widget::setWidth,
 dw::core::Widget::setAscent and dw::core::Widget::setDescent. The values
-passed to the calles are
+passed to the callees are
 
 <ul>
 <li> the viewport size (ascent is the heigt here, while descent is 0) for

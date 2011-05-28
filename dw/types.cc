@@ -1,7 +1,3 @@
-// Rectangle::intersectsWith() has code that was derived from gdkrectangle.c.
-// gdkrectangle.c bears the notice that GDK, the GIMP Drawing Kit, is
-// "Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald".
-
 /*
  * Dillo Widget
  *
@@ -56,55 +52,24 @@ void Rectangle::draw (core::View *view, core::style::Style *style, int x,int y)
  */
 bool Rectangle::intersectsWith (Rectangle *otherRect, Rectangle *dest)
 {
-   Rectangle *src1 = this, *src2 = otherRect, *temp;
-   int src1_x2, src1_y2;
-   int src2_x2, src2_y2;
-   bool return_val;
+   bool doIntersect =
+      this->x < otherRect->x + otherRect->width &&
+      this->y < otherRect->y + otherRect->height &&
+      otherRect->x < this->x + this->width &&
+      otherRect->y < this->y + this->height;
 
-   return_val = false;
-
-   if (src2->x < src1->x) {
-      temp = src1;
-      src1 = src2;
-      src2 = temp;
-   }
-   dest->x = src2->x;
-
-   src1_x2 = src1->x + src1->width;
-   src2_x2 = src2->x + src2->width;
-
-   if (src2->x < src1_x2) {
-      if (src1_x2 < src2_x2)
-         dest->width = src1_x2 - dest->x;
-      else
-         dest->width = src2_x2 - dest->x;
-
-      if (src2->y < src1->y) {
-         temp = src1;
-         src1 = src2;
-         src2 = temp;
-      }
-      dest->y = src2->y;
-
-      src1_y2 = src1->y + src1->height;
-      src2_y2 = src2->y + src2->height;
-
-      if (src2->y < src1_y2) {
-         return_val = true;
-
-         if (src1_y2 < src2_y2)
-            dest->height = src1_y2 - dest->y;
-         else
-            dest->height = src2_y2 - dest->y;
-
-         if (dest->height == 0)
-            return_val = false;
-         if (dest->width == 0)
-            return_val = false;
-      }
+   if (doIntersect) {
+      dest->x = misc::max(this->x, otherRect->x);
+      dest->y = misc::max(this->y, otherRect->y);
+      dest->width  = misc::min(this->x + this->width,
+                               otherRect->x + otherRect->width) - dest->x;
+      dest->height = misc::min(this->y + this->height,
+                               otherRect->y + otherRect->height) - dest->y;
+   } else {
+      dest->x = dest->y = dest->width = dest->height = 0;
    }
 
-   return return_val;
+   return doIntersect;
 }
 
 /*
@@ -212,9 +177,10 @@ bool Polygon::linesCross0(int ax1, int ay1, int ax2, int ay2,
    /** TODO Some more description */
    // If the scalar product is 0, it means that one point is on the second
    // line, so we check for <= 0, not < 0.
-   return
-      zOfVectorProduct (ax1 - bx1, ay1 - by1, bx2 - bx1, by2 - by1) *
-      zOfVectorProduct (ax2 - bx1, ay2 - by1, bx2 - bx1, by2 - by1) <= 0;
+   int z1 = zOfVectorProduct (ax1 - bx1, ay1 - by1, bx2 - bx1, by2 - by1);
+   int z2 = zOfVectorProduct (ax2 - bx1, ay2 - by1, bx2 - bx1, by2 - by1);
+
+   return (z1 <= 0 && z2 >= 0) || (z1 >= 0 && z2 <= 0);
 }
 
 /**

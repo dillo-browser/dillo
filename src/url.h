@@ -2,7 +2,6 @@
  * File : url.h - Dillo
  *
  * Copyright (C) 2001 Jorge Arellano Cid <jcid@dillo.org>
- *               2001 Livio Baldini Soares <livio@linux.ime.usp.br>
  *
  * Parse and normalize all URL's inside Dillo.
  */

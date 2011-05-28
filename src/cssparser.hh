@@ -40,8 +40,11 @@ class CssParser {
       bool parseSimpleSelector(CssSimpleSelector *selector);
       char *parseUrl();
       void parseImport(DilloHtml *html, DilloUrl *url);
+      void parseMedia();
       CssSelector *parseSelector();
       void parseRuleset();
+      void ignoreBlock();
+      void ignoreStatement();
 
    public:
       static CssPropertyList *parseDeclarationBlock(const char *buf,

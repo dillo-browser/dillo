@@ -64,6 +64,11 @@ typedef enum {
 } DilloHtmlTableMode;
 
 typedef enum {
+   DILLO_HTML_TABLE_BORDER_SEPARATE,
+   DILLO_HTML_TABLE_BORDER_COLLAPSE
+} DilloHtmlTableBorderMode;
+
+typedef enum {
    HTML_LIST_NONE,
    HTML_LIST_UNORDERED,
    HTML_LIST_ORDERED
@@ -94,10 +99,11 @@ struct _DilloHtmlImage {
 };
 
 struct _DilloHtmlState {
-   CssPropertyList *table_cell_props;
    DilloHtmlParseMode parse_mode;
    DilloHtmlTableMode table_mode;
+   DilloHtmlTableBorderMode table_border_mode;
    bool cell_text_align_set;
+
    DilloHtmlListMode list_type;
    int list_number;
 
@@ -242,11 +248,9 @@ int32_t a_Html_color_parse(DilloHtml *html,
                            const char *subtag, int32_t default_color);
 dw::core::style::Length a_Html_parse_length (DilloHtml *html,
                                              const char *attr);
-void a_Html_tag_set_align_attr(DilloHtml *html, CssPropertyList *props,
-                               const char *tag, int tagsize);
+void a_Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize);
 bool a_Html_tag_set_valign_attr(DilloHtml *html,
-                                const char *tag, int tagsize,
-                                CssPropertyList *props);
+                                const char *tag, int tagsize);
 
 void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url);
 

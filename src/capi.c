@@ -362,9 +362,9 @@ static void Capi_dpi_send_source(BrowserWindow *bw,  DilloUrl *url)
  * For a user request, the action will be permitted.
  * For an automatic request, permission to load depends on the filter set
  * by the user.
- */ 
-static bool_t Capi_filters_allow(const DilloUrl *wanted,
-                                 const DilloUrl *requester)
+ */
+static bool_t Capi_filters_test(const DilloUrl *wanted,
+                                const DilloUrl *requester)
 {
    bool_t ret;
 
@@ -392,8 +392,8 @@ static bool_t Capi_filters_allow(const DilloUrl *wanted,
                ret = dStrcasecmp(req_suffix, want_suffix) == 0;
             }
 
-            MSG("Capi_filters_allow: from %s to %s: %s\n", req_host, want_host,
-                ret ? "ALLOWED" : "DENIED");
+            MSG("Capi_filters_test: %s from '%s' to '%s'\n",
+                ret ? "ALLOW" : "DENY", req_host, want_host);
             break;
          }
          case PREFS_FILTER_ALLOW_ALL:
@@ -422,7 +422,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    int safe = 0, ret = 0, use_cache = 0;
 
    dReturn_val_if_fail((a_Capi_get_flags(web->url) & CAPI_IsCached) ||
-                       Capi_filters_allow(web->url, web->requester), 0);
+                       Capi_filters_test(web->url, web->requester), 0);
 
    /* reload test */
    reload = (!(a_Capi_get_flags(web->url) & CAPI_IsCached) ||
@@ -480,7 +480,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
          /* create a new connection and start the CCC operations */
          conn = Capi_conn_new(web->url, web->bw, "http", "none");
          /* start the reception branch before the query one because the DNS
-          * may callback immediatly. This may avoid a race condition. */
+          * may callback immediately. This may avoid a race condition. */
          a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), conn, "http");
          a_Capi_ccc(OpStart, 1, BCK, a_Chain_new(), conn, web);
       }

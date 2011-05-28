@@ -351,8 +351,6 @@ static size_t Gif_do_extension(DilloGif *gif, uint_t Label,
       return Gif_data_blocks(buf, BSize);
 
    case Txt_Ext:                /* Plain text Extension */
-      /* This extension allows (rcm thinks) the image to be rendered as text.
-       */
    case App_Ext:                /* Application Extension */
    default:
       return Gif_do_generic_ext(buf, BSize);    /*Ignore Extension */
@@ -426,16 +424,6 @@ static void Gif_emit_line(DilloGif *gif, const uchar_t *linebuf)
          gif->y++;
    }
 }
-
-/*
- * I apologize for the large size of this routine and the goto error
- * construct - I almost _never_ do that. I offer the excuse of
- * optimizing for speed.
- *
- * RCM -- busted these down into smaller subroutines... still very hard to
- * read.
- */
-
 
 /*
  * Decode the packetized lwz bytes
@@ -816,7 +804,7 @@ static size_t Gif_do_img_desc(DilloGif *gif, void *Buf,
    /* check max image size */
    if (gif->Width <= 0 || gif->Height <= 0 ||
        gif->Width > IMAGE_MAX_AREA / gif->Height) {
-      MSG("Gif_do_img_desc: suspicious image size request %ux%u\n",
+      MSG("Gif_do_img_desc: suspicious image size request %u x %u\n",
           gif->Width, gif->Height);
       gif->state = 999;
       return 0;

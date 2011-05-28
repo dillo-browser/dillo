@@ -47,6 +47,14 @@ typedef struct {
    const char *const *enum_symbols;
 } CssPropertyInfo;
 
+static const char *const Css_border_collapse_enum_vals[] = {
+   "separate", "collapse", NULL
+};
+
+static const char *const Css_border_color_enum_vals[] = {
+   "transparent", NULL
+};
+
 static const char *const Css_border_style_enum_vals[] = {
    "none", "hidden", "dotted", "dashed", "solid", "double", "groove",
    "ridge", "inset", "outset", NULL
@@ -79,6 +87,10 @@ static const char *const Css_font_size_enum_vals[] = {
 
 static const char *const Css_font_style_enum_vals[] = {
    "normal", "italic", "oblique", NULL
+};
+
+static const char *const Css_font_variant_enum_vals[] = {
+   "normal", "small-caps", NULL
 };
 
 static const char *const Css_font_weight_enum_vals[] = {
@@ -132,24 +144,29 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"background-image", {CSS_TYPE_UNUSED}, NULL},
    {"background-position", {CSS_TYPE_UNUSED}, NULL},
    {"background-repeat", {CSS_TYPE_UNUSED}, NULL},
-   {"border-bottom-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-bottom-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
+    Css_border_color_enum_vals},
    {"border-bottom-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
    {"border-bottom-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
     Css_border_width_enum_vals},
-   {"border-collapse", {CSS_TYPE_UNUSED}, NULL},
-   {"border-left-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-collapse", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_border_collapse_enum_vals},
+   {"border-left-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
+    Css_border_color_enum_vals},
    {"border-left-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
    {"border-left-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
     Css_border_width_enum_vals},
-   {"border-right-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-right-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
+    Css_border_color_enum_vals},
    {"border-right-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
    {"border-rigth-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
     Css_border_width_enum_vals},
    {"border-spacing", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
-   {"border-top-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
+   {"border-top-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
+    Css_border_color_enum_vals},
    {"border-top-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_border_style_enum_vals},
    {"border-top-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
@@ -173,7 +190,8 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"font-size-adjust", {CSS_TYPE_UNUSED}, NULL},
    {"font-stretch", {CSS_TYPE_UNUSED}, NULL},
    {"font-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_font_style_enum_vals},
-   {"font-variant", {CSS_TYPE_UNUSED}, NULL},
+   {"font-variant", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_font_variant_enum_vals},
    {"font-weight", {CSS_TYPE_ENUM, CSS_TYPE_FONT_WEIGHT, CSS_TYPE_UNUSED},
     Css_font_weight_enum_vals},
    {"height", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
@@ -212,7 +230,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"text-align", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_text_align_enum_vals},
    {"text-decoration", {CSS_TYPE_MULTI_ENUM, CSS_TYPE_UNUSED},
     Css_text_decoration_enum_vals},
-   {"text-indent", {CSS_TYPE_UNUSED}, NULL},
+   {"text-indent", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"text-shadow", {CSS_TYPE_UNUSED}, NULL},
    {"text-transform", {CSS_TYPE_UNUSED}, NULL},
    {"top", {CSS_TYPE_UNUSED}, NULL},
@@ -441,21 +459,21 @@ void CssParser::ungetChar()
 
 /*
  * Skip string str if it is found in the input buffer.
+ * If string is found leave bufptr pointing to last matched char.
  * If not wind back. The first char is passed as parameter c
  * to avoid unnecessary getChar() / ungetChar() calls.
  */
 inline bool CssParser::skipString(int c, const char *str)
 {
-   int n = 0;
+   for (int n = 0; str[n]; n++) {
+      if (n > 0)
+         c = getChar();
 
-   while (str[n]) {
       if (str[n] != c) {
          while (n--)
             ungetChar();
          return false;
       }
-      c = getChar();
-      n++;
    }
 
    return true;
@@ -663,9 +681,9 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
 
       case CSS_TYPE_MULTI_ENUM:
          if (ttype == CSS_TK_SYMBOL) {
-            if (dStrcasecmp(tval, "none") == 0)
-                  return true;
-            else {
+            if (dStrcasecmp(tval, "none") == 0) {
+               return true;
+            } else {
                for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
                   if (dStrcasecmp(tval,
                         Css_property_info[prop].enum_symbols[i]) == 0)
@@ -1409,39 +1427,140 @@ char * CssParser::parseUrl()
 void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
 {
    char *urlStr = NULL;
+   bool importSyntaxIsOK = false;
+   bool mediaSyntaxIsOK = true;
+   bool mediaIsSelected = true;
 
-   if (html != NULL &&
-      ttype == CSS_TK_SYMBOL &&
-      dStrcasecmp(tval, "import") == 0) {
-      nextToken();
+   nextToken();
 
-      if (ttype == CSS_TK_SYMBOL &&
-         dStrcasecmp(tval, "url") == 0)
-         urlStr = parseUrl();
-      else if (ttype == CSS_TK_STRING)
-         urlStr = dStrdup (tval);
+   if (ttype == CSS_TK_SYMBOL &&
+       dStrcasecmp(tval, "url") == 0)
+      urlStr = parseUrl();
+   else if (ttype == CSS_TK_STRING)
+      urlStr = dStrdup (tval);
 
-      /* Skip all tokens until the expected end. */
-      while (!(ttype == CSS_TK_END ||
-            (ttype == CSS_TK_CHAR && (tval[0] == ';'))))
+   nextToken();
+
+   /* parse a comma-separated list of media */
+   if (ttype == CSS_TK_SYMBOL) {
+      mediaSyntaxIsOK = false;
+      mediaIsSelected = false;
+      while (ttype == CSS_TK_SYMBOL) {
+         if (dStrcasecmp(tval, "all") == 0 ||
+             dStrcasecmp(tval, "screen") == 0)
+            mediaIsSelected = true;
          nextToken();
+         if (ttype == CSS_TK_CHAR && tval[0] == ',') {
+            nextToken();
+         } else {
+            mediaSyntaxIsOK = true;
+            break;
+         }
+      }
+   }
 
+   if (mediaSyntaxIsOK &&
+       ttype == CSS_TK_CHAR &&
+       tval[0] == ';') {
+      importSyntaxIsOK = true;
       nextToken();
+   } else
+      ignoreStatement();
 
-      if (urlStr) {
+   if (urlStr) {
+      if (importSyntaxIsOK && mediaIsSelected) {
          MSG("CssParser::parseImport(): @import %s\n", urlStr);
          DilloUrl *url = a_Html_url_new (html, urlStr, a_Url_str(baseUrl),
                                          baseUrl ? 1 : 0);
          a_Html_load_stylesheet(html, url);
          a_Url_free(url);
-         dFree (urlStr);
+      }
+      dFree (urlStr);
+   }
+}
+
+void CssParser::parseMedia()
+{
+   bool mediaSyntaxIsOK = false;
+   bool mediaIsSelected = false;
+
+   nextToken();
+
+   /* parse a comma-separated list of media */
+   while (ttype == CSS_TK_SYMBOL) {
+      if (dStrcasecmp(tval, "all") == 0 ||
+          dStrcasecmp(tval, "screen") == 0)
+         mediaIsSelected = true;
+      nextToken();
+      if (ttype == CSS_TK_CHAR && tval[0] == ',') {
+         nextToken();
+      } else {
+         mediaSyntaxIsOK = true;
+         break;
       }
    }
+
+   /* check that the syntax is OK so far */
+   if (!(mediaSyntaxIsOK &&
+         ttype == CSS_TK_CHAR &&
+         tval[0] == '{')) {
+      ignoreStatement();
+      return;
+   }
+
+   /* parse/ignore the block as required */
+   if (mediaIsSelected) {
+      nextToken();
+      while (ttype != CSS_TK_END) {
+         parseRuleset();
+         if (ttype == CSS_TK_CHAR && tval[0] == '}') {
+            nextToken();
+            break;
+         }
+      }
+   } else
+      ignoreBlock();
 }
 
 const char * CssParser::propertyNameString(CssPropertyName name)
 {
    return Css_property_info[name].symbol;
+}
+ 
+void CssParser::ignoreBlock()
+{
+   int depth = 0;
+
+   while (ttype != CSS_TK_END) {
+      if (ttype == CSS_TK_CHAR) {
+         if (tval[0] == '{') {
+            depth++;
+         } else if (tval[0] == '}') {
+            depth--;
+            if (depth == 0) {
+               nextToken();
+               return;
+            }
+         }
+      }
+      nextToken();
+   }
+}
+
+void CssParser::ignoreStatement()
+{
+   while (ttype != CSS_TK_END) {
+      if (ttype == CSS_TK_CHAR) {
+         if (tval[0] == ';') {
+            nextToken();
+            return;
+         } else if (tval[0] =='{') {
+            ignoreBlock();
+            return;
+         }
+      }
+      nextToken();
+   }
 }
 
 void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext * context,
@@ -1449,14 +1568,30 @@ void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext * context,
                       int buflen, CssOrigin origin)
 {
    CssParser parser (context, origin, buf, buflen);
+   bool importsAreAllowed = true;
 
-   while (parser.ttype == CSS_TK_CHAR && parser.tval[0] == '@') {
-      parser.nextToken();
-      parser.parseImport(html, url);
+   while (parser.ttype != CSS_TK_END) {
+      if (parser.ttype == CSS_TK_CHAR &&
+          parser.tval[0] == '@') {
+         parser.nextToken();
+         if (parser.ttype == CSS_TK_SYMBOL) {
+            if (dStrcasecmp(parser.tval, "import") == 0 &&
+                html != NULL &&
+                importsAreAllowed) {
+               parser.parseImport(html, url);
+            } else if (dStrcasecmp(parser.tval, "media") == 0) {
+               parser.parseMedia();
+            } else {
+               parser.ignoreStatement();
+            }
+         } else {
+            parser.ignoreStatement();
+         }
+      } else {
+         importsAreAllowed = false;
+         parser.parseRuleset();
+      }
    }
-
-   while (parser.ttype != CSS_TK_END)
-      parser.parseRuleset();
 }
 
 CssPropertyList *CssParser::parseDeclarationBlock(const char *buf, int buflen)

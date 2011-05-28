@@ -25,6 +25,28 @@ void CssProperty::print () {
             (int)value.intVal);
 }
 
+CssPropertyList::CssPropertyList (const CssPropertyList &p, bool deep) :
+   lout::misc::SimpleVector <CssProperty> (p)
+{
+   refCount = 0;
+   if (deep) {
+      for (int i = 0; i < size (); i++) {
+         CssProperty *p = getRef(i);
+         switch (p->type) {
+            case CSS_TYPE_STRING:
+            case CSS_TYPE_SYMBOL:
+               p->value.strVal = dStrdup (p->value.strVal);
+               break;
+            default:
+               break;
+         }
+      }
+      ownerOfStrings = true;
+   } else {
+      ownerOfStrings = false;
+   }
+};
+
 CssPropertyList::~CssPropertyList () {
    if (ownerOfStrings)
       for (int i = 0; i < size (); i++)
@@ -428,7 +450,7 @@ void CssStyleSheet::apply (CssPropertyList *props,
       }
    }
 
-   ruleList[numLists] = elementTable[docTree->top ()->element];
+   ruleList[numLists] = elementTable[node->element];
    if (ruleList[numLists])
       numLists++;
 
@@ -512,9 +534,8 @@ CssContext::~CssContext () {
  * This allows e.g. user styles to overwrite author styles.
  */
 void CssContext::apply (CssPropertyList *props, Doctree *docTree,
+         DoctreeNode *node,
          CssPropertyList *tagStyle, CssPropertyList *nonCssHints) {
-   const DoctreeNode *node = docTree->top ();
-
    if (sheet[CSS_PRIMARY_USER_AGENT])
       sheet[CSS_PRIMARY_USER_AGENT]->apply (props, docTree, node);
 
@@ -558,8 +579,7 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
  */
 void CssContext::buildUserAgentStyle () {
    const char *cssBuf =
-     "body  {background-color: #e0e0a3; font-family: sans-serif; color: black;"
-     "       margin: 5px}"
+     "body  {margin: 5px}"
      "big {font-size: 1.17em}"
      "blockquote, dd {margin-left: 40px; margin-right: 40px}"
      "center {text-align: center}"
@@ -589,8 +609,8 @@ void CssContext::buildUserAgentStyle () {
      "sub {vertical-align: sub}"
      "sup {vertical-align: super}"
      "s, strike, del {text-decoration: line-through}"
-     "table {border-style: outset; border-spacing: 1px}"
-     "td, th {border-style: inset; padding: 2px}"
+     "table {border-spacing: 2px}"
+     "td, th {padding: 2px}"
      "thead, tbody, tfoot {vertical-align: middle}"
      "th {font-weight: bolder; text-align: center}"
      "code, tt, pre, samp, kbd {font-family: monospace}"

@@ -36,6 +36,7 @@ DilloPrefs prefs;
 void a_Prefs_init(void)
 {
    prefs.allow_white_bg = TRUE;
+   prefs.bg_color = 0xdcd1ba;
    prefs.buffered_drawing = 1;
    prefs.contrast_visited_color = TRUE;
    prefs.enterpress_forces_submit = FALSE;

@@ -19,12 +19,14 @@ class StyleEngine;
  */
 class StyleEngine {
    private:
-      class Node {
-         public:
-            dw::core::style::Style *style;
-            dw::core::style::Style *wordStyle;
-            const char *styleAttribute;
-            bool inheritBackgroundColor;
+      struct Node {
+         CssPropertyList *styleAttrProperties;
+         CssPropertyList *nonCssProperties;
+         dw::core::style::Style *style;
+         dw::core::style::Style *wordStyle;
+         dw::core::style::Style *backgroundStyle;
+         bool inheritBackgroundColor;
+         DoctreeNode *doctreeNode;
       };
 
       dw::core::Layout *layout;
@@ -33,9 +35,19 @@ class StyleEngine {
       Doctree *doctree;
       int importDepth;
 
-      dw::core::style::Style *style0 (CssPropertyList *nonCssHints = NULL);
-      dw::core::style::Style *wordStyle0 (CssPropertyList *nonCssHints = NULL);
-      void apply (dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
+      dw::core::style::Style *style0 (int i);
+      dw::core::style::Style *wordStyle0 ();
+      inline void setNonCssHint(CssPropertyName name, CssValueType type,
+                                CssPropertyValue value) {
+         Node *n = stack->getRef (stack->size () - 1);
+
+         if (!n->nonCssProperties)
+            n->nonCssProperties = new CssPropertyList (true);
+         n->nonCssProperties->set(name, type, value);
+      }
+      void preprocessAttrs (dw::core::style::StyleAttrs *attrs);
+      void postprocessAttrs (dw::core::style::StyleAttrs *attrs);
+      void apply (int i, dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
       bool computeValue (int *dest, CssLength value,
                          dw::core::style::Font *font);
       bool computeValue (int *dest, CssLength value,
@@ -60,16 +72,31 @@ class StyleEngine {
       void endElement (int tag);
       void setPseudoLink ();
       void setPseudoVisited ();
-      void setNonCssHints (CssPropertyList *nonCssHints);
+      inline void setNonCssHint(CssPropertyName name, CssValueType type,
+                                int value) {
+         CssPropertyValue v;
+         v.intVal = value;
+         setNonCssHint (name, type, v);
+      }
+      inline void setNonCssHint(CssPropertyName name, CssValueType type,
+                                const char *value) {
+         CssPropertyValue v;
+         v.strVal = dStrdup(value);
+         setNonCssHint (name, type, v);
+      }
+      void inheritNonCssHints ();
+      void clearNonCssHints ();
+      void restyle ();
       void inheritBackgroundColor (); /* \todo get rid of this somehow */
       dw::core::style::Style *backgroundStyle ();
+      dw::core::style::Color *backgroundColor ();
 
       inline dw::core::style::Style *style () {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->style;
          if (s)
             return s;
          else
-            return style0 ();
+            return style0 (stack->size () - 1);
       };
 
       inline dw::core::style::Style *wordStyle () {

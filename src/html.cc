@@ -68,9 +68,8 @@ using namespace dw::core::style;
  * Typedefs
  *---------------------------------------------------------------------------*/
 class DilloHtml;
-typedef void (*TagOpenFunct) (DilloHtml *Html, const char *Tag, int Tagsize);
-typedef void (*TagCloseFunct) (DilloHtml *Html, int TagIdx);
-typedef struct _DilloHtmlClass   DilloHtmlClass;
+typedef void (*TagOpenFunct) (DilloHtml *html, const char *tag, int tagsize);
+typedef void (*TagCloseFunct) (DilloHtml *html, int TagIdx);
 
 typedef enum {
    SEEK_ATTR_START,
@@ -305,9 +304,7 @@ static void Html_add_new_htmlimage(DilloHtml *html,
  * Evaluates the ALIGN attribute (left|center|right|justify) and
  * sets the style at the top of the stack.
  */
-void a_Html_tag_set_align_attr(DilloHtml *html,
-                               CssPropertyList *props,
-                               const char *tag, int tagsize)
+void a_Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *align;
 
@@ -340,7 +337,8 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
             style_attrs.textAlignChar = '.';
       }
 #endif
-      props->set (CSS_PROPERTY_TEXT_ALIGN, CSS_TYPE_ENUM, textAlignType);
+      html->styleEngine->setNonCssHint(CSS_PROPERTY_TEXT_ALIGN, CSS_TYPE_ENUM,
+                                       textAlignType);
    }
 }
 
@@ -348,8 +346,7 @@ void a_Html_tag_set_align_attr(DilloHtml *html,
  * Evaluates the VALIGN attribute (top|bottom|middle|baseline) and
  * sets the style in style_attrs. Returns true when set.
  */
-bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
-                                int tagsize, CssPropertyList *props)
+bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attr;
    VAlignType valign;
@@ -364,7 +361,8 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag,
       else
          valign = VALIGN_MIDDLE;
 
-      props->set (CSS_PROPERTY_VERTICAL_ALIGN, CSS_TYPE_ENUM, valign);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_VERTICAL_ALIGN,
+                                        CSS_TYPE_ENUM, valign);
       return true;
    } else
       return false;
@@ -433,9 +431,9 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    stack = new misc::SimpleVector <DilloHtmlState> (16);
    stack->increase();
-   stack->getRef(0)->table_cell_props = NULL;
    stack->getRef(0)->parse_mode = DILLO_HTML_PARSE_MODE_INIT;
    stack->getRef(0)->table_mode = DILLO_HTML_TABLE_MODE_NONE;
+   stack->getRef(0)->table_border_mode = DILLO_HTML_TABLE_BORDER_SEPARATE;
    stack->getRef(0)->cell_text_align_set = false;
    stack->getRef(0)->list_type = HTML_LIST_NONE;
    stack->getRef(0)->list_number = 0;
@@ -586,9 +584,6 @@ int DilloHtml::getCurTagLineNumber()
  */
 void DilloHtml::freeParseData()
 {
-   for (int i = stack->size () - 1; i >= 0; i--)
-      if (stack->getRef (i)->table_cell_props)
-         stack->getRef (i)->table_cell_props->unref ();
    delete(stack);
 
    dStr_free(Stash, TRUE);
@@ -1189,13 +1184,13 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
       dFree(Pword);
 
    } else {
-      const char *word2, *word2_end;
+      const char *word2, *beyond_word2;
 
       Pword = NULL;
       if (!memchr(word,'&', size)) {
          /* No entities */
          word2 = word;
-         word2_end = word + size - 1;
+         beyond_word2 = word + size;
       } else {
          /* Collapse white-space entities inside the word (except &nbsp;) */
          Pword = a_Html_parse_entities(html, word, size);
@@ -1210,7 +1205,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             }
          }
          word2 = Pword;
-         word2_end = word2 + strlen(word2) - 1;
+         beyond_word2 = word2 + strlen(word2);
       }
       for (start = i = 0; word2[i]; start = i) {
          int len;
@@ -1220,7 +1215,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             Html_process_space(html, word2 + start, i - start);
          } else if (!strncmp(word2+i, utf8_zero_width_space, 3)) {
             i += 3;
-         } else if (a_Utf8_ideographic(word2+i, word2_end, &len)) {
+         } else if (a_Utf8_ideographic(word2+i, beyond_word2, &len)) {
             i += len;
             HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());
@@ -1229,7 +1224,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
                i += len;
             } while (word2[i] && !isspace(word2[i]) &&
                      strncmp(word2+i, utf8_zero_width_space, 3) &&
-                     (!a_Utf8_ideographic(word2+i, word2_end, &len)));
+                     (!a_Utf8_ideographic(word2+i, beyond_word2, &len)));
             HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());
          }
@@ -1284,8 +1279,6 @@ static void Html_push_tag(DilloHtml *html, int tag_idx)
     * instead of copying all fields except for tag.  --Jcid */
    *html->stack->getRef(n_items) = *html->stack->getRef(n_items - 1);
    html->stack->getRef(n_items)->tag_idx = tag_idx;
-   if (S_TOP(html)->table_cell_props)
-      S_TOP(html)->table_cell_props->ref ();
    html->dw = S_TOP(html)->textblock;
 }
 
@@ -1307,8 +1300,6 @@ static void Html_real_pop_tag(DilloHtml *html)
    bool hand_over_break;
 
    html->styleEngine->endElement (S_TOP(html)->tag_idx);
-   if (S_TOP(html)->table_cell_props)
-      S_TOP(html)->table_cell_props->unref ();
    hand_over_break = S_TOP(html)->hand_over_break;
    html->stack->setSize (html->stack->size() - 1);
    Html_eventually_pop_dw(html, hand_over_break);
@@ -1505,7 +1496,8 @@ static int
  */
 static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
 {
-   static const char HTML_sig   [] = "<!DOCTYPE HTML PUBLIC ";
+   static const char HTML_SGML_sig [] = "<!DOCTYPE HTML PUBLIC ";
+   static const char HTML5_sig  [] = "<!DOCTYPE html>";
    static const char HTML20     [] = "-//IETF//DTD HTML 2.0";
    static const char HTML32     [] = "-//W3C//DTD HTML 3.2";
    static const char HTML40     [] = "-//W3C//DTD HTML 4.0";
@@ -1541,8 +1533,8 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
    _MSG("New: {%s}\n", ntag);
 
    /* The default DT_NONE type is TagSoup */
-   if (!dStrncasecmp(ntag, HTML_sig, strlen(HTML_sig))) {
-      p = ntag + strlen(HTML_sig) + 1;
+   if (!dStrncasecmp(ntag, HTML_SGML_sig, strlen(HTML_SGML_sig))) {
+      p = ntag + strlen(HTML_SGML_sig) + 1;
       if (!strncmp(p, HTML401, strlen(HTML401)) &&
           dStristr(p + strlen(HTML401), HTML401_url)) {
          html->DocType = DT_HTML;
@@ -1565,6 +1557,10 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
          html->DocType = DT_HTML;
          html->DocTypeVersion = 2.0f;
       }
+   } else if (!dStrcasecmp(ntag, HTML5_sig)) {
+      BUG_MSG("Document follows HTML5 working draft; treating as HTML4.\n");
+      html->DocType = DT_HTML;
+      html->DocTypeVersion = 5.0f;
    }
 
    dFree(ntag);
@@ -1728,9 +1724,9 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    Textblock *textblock;
-   CssPropertyList props;
    int32_t color;
    int tag_index_a = a_Html_tag_index ("a");
+   style::Color *bgColor;
 
    if (!(html->InFlags & IN_BODY))
       html->InFlags |= IN_BODY;
@@ -1750,14 +1746,18 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       color = a_Html_color_parse(html, attrbuf, -1);
       if (color != -1)
-         props.set (CSS_PROPERTY_BACKGROUND_COLOR, CSS_TYPE_COLOR, color);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BACKGROUND_COLOR,
+                                           CSS_TYPE_COLOR, color);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "text"))) {
       color = a_Html_color_parse(html, attrbuf, -1);
       if (color != -1)
-         props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR, color);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_COLOR,
+                                           CSS_TYPE_COLOR, color);
    }
+
+   html->styleEngine->restyle ();
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))
       html->non_css_link_color = a_Html_color_parse(html, attrbuf, -1);
@@ -1765,8 +1765,12 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink")))
       html->non_css_visited_color = a_Html_color_parse(html, attrbuf, -1);
 
-   html->styleEngine->setNonCssHints (&props);
    html->dw->setStyle (html->styleEngine->style ());
+
+   bgColor = html->styleEngine->backgroundColor ();
+
+   if (bgColor)
+      HT2LT(html)->setBgColor(bgColor);
 
    /* Determine a color for visited links.
     * This color is computed once per page and used for immediate feedback
@@ -1777,10 +1781,8 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    html->styleEngine->startElement (tag_index_a);
    html->styleEngine->setPseudoVisited ();
    if (html->non_css_visited_color != -1) {
-      CssPropertyList vprops;
-      vprops.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
-                 html->non_css_visited_color);
-      html->styleEngine->setNonCssHints (&vprops);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+                                        html->non_css_visited_color);
    }
    html->visited_color = html->styleEngine->style ()->color->getColor ();
    html->styleEngine->endElement (tag_index_a);
@@ -1793,6 +1795,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
             html->non_css_link_color,
             html->styleEngine->backgroundStyle()->backgroundColor->getColor());
    }
+
 
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_BODY;
 }
@@ -1817,9 +1820,8 @@ static void Html_tag_open_p(DilloHtml *html, const char *tag, int tagsize)
 {
    CssPropertyList props;
 
-   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
+   a_Html_tag_set_align_attr (html, tag, tagsize);
    html->styleEngine->inheritBackgroundColor ();
-   html->styleEngine->setNonCssHints (&props);
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
@@ -1855,8 +1857,8 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setPseudoLink ();
    }
 
-   props.set (PROPERTY_X_LINK, CSS_TYPE_INTEGER, Html_set_new_link(html,&url));
-   html->styleEngine->setNonCssHints (&props);
+   html->styleEngine->setNonCssHint (PROPERTY_X_LINK, CSS_TYPE_INTEGER,
+                                     Html_set_new_link(html,&url));
 
    textblock->addParbreak (5, html->styleEngine->wordStyle ());
 
@@ -1902,12 +1904,8 @@ static void Html_tag_open_frameset (DilloHtml *html,
  */
 static void Html_tag_open_h(DilloHtml *html, const char *tag, int tagsize)
 {
-   CssPropertyList props;
-
-
    html->styleEngine->inheritBackgroundColor ();
-   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-   html->styleEngine->setNonCssHints (&props);
+   a_Html_tag_set_align_attr (html, tag, tagsize);
 
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 
@@ -1932,7 +1930,6 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
    char *fontFamily = NULL;
    int32_t color;
-   CssPropertyList props;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "color"))) {
       if (prefs.contrast_visited_color && html->InVisitedLink) {
@@ -1942,15 +1939,16 @@ static void Html_tag_open_font(DilloHtml *html, const char *tag, int tagsize)
          color = a_Html_color_parse(html, attrbuf, -1);
       }
       if (color != -1)
-         props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR, color);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_COLOR,
+                                           CSS_TYPE_COLOR, color);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "face"))) {
       fontFamily = dStrdup(attrbuf);
-      props.set (CSS_PROPERTY_FONT_FAMILY, CSS_TYPE_SYMBOL, fontFamily);
+       html->styleEngine->setNonCssHint (CSS_PROPERTY_FONT_FAMILY,
+                                         CSS_TYPE_SYMBOL, fontFamily);
    }
 
-   html->styleEngine->setNonCssHints (&props);
    dFree(fontFamily);
 }
 
@@ -1961,14 +1959,13 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
 
+   html->styleEngine->inheritBackgroundColor ();
+
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
-      CssPropertyList props;
-      char *tooltip_str = dStrdup(attrbuf);
 
-      props.set (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING, tooltip_str);
-      html->styleEngine->setNonCssHints (&props);
-      dFree(tooltip_str);
+      html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                        attrbuf);
    }
 }
 
@@ -1977,6 +1974,7 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_center(DilloHtml *html, const char *tag, int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
 }
 
@@ -1994,6 +1992,7 @@ static void Html_tag_close_center(DilloHtml *html, int TagIdx)
 static void Html_tag_open_address(DilloHtml *html,
                                   const char *tag, int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
@@ -2010,13 +2009,11 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
    CssLength l_h  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
    int space, border, w = 0, h = 0;
    bool load_now;
-   CssPropertyList props;
-   char *tooltip_str = NULL;
 
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
-      tooltip_str = dStrdup(attrbuf);
-      props.set (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING, tooltip_str);
+      html->styleEngine->setNonCssHint(PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                       attrbuf);
    }
    alt_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "alt", NULL);
    if ((!alt_ptr || !*alt_ptr) && !prefs.load_images) {
@@ -2052,12 +2049,14 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       dFree(width_ptr);
       dFree(height_ptr);
       width_ptr = height_ptr = NULL;
-      MSG("a_Html_image_new: suspicious image size request %dx%d\n", w, h);
+      MSG("a_Html_image_new: suspicious image size request %d x %d\n", w, h);
    } else {
       if (CSS_LENGTH_TYPE(l_w) != CSS_LENGTH_TYPE_AUTO)
-         props.set (CSS_PROPERTY_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE, l_w);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, l_w);
       if (CSS_LENGTH_TYPE(l_h) != CSS_LENGTH_TYPE_AUTO)
-         props.set (CSS_PROPERTY_HEIGHT, CSS_TYPE_LENGTH_PERCENTAGE, l_h);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_HEIGHT,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, l_h);
    }
 
    /* TODO: we should scale the image respecting its ratio.
@@ -2072,10 +2071,10 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       space = strtol(attrbuf, NULL, 10);
       if (space > 0) {
          space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         props.set (CSS_PROPERTY_MARGIN_LEFT, CSS_TYPE_LENGTH_PERCENTAGE,
-                    space);
-         props.set (CSS_PROPERTY_MARGIN_RIGHT, CSS_TYPE_LENGTH_PERCENTAGE,
-                    space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_LEFT,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_RIGHT,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
       }
    }
 
@@ -2084,10 +2083,10 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       space = strtol(attrbuf, NULL, 10);
       if (space > 0) {
          space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         props.set (CSS_PROPERTY_MARGIN_TOP, CSS_TYPE_LENGTH_PERCENTAGE,
-                    space);
-         props.set (CSS_PROPERTY_MARGIN_BOTTOM, CSS_TYPE_LENGTH_PERCENTAGE,
-                    space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_TOP,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_BOTTOM,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
       }
    }
 
@@ -2096,31 +2095,30 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       border = strtol(attrbuf, NULL, 10);
       if (border >= 0) {
          border = CSS_CREATE_LENGTH(border, CSS_LENGTH_TYPE_PX);
-         props.set (CSS_PROPERTY_BORDER_TOP_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                    border);
-         props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-                    CSS_TYPE_LENGTH_PERCENTAGE, border);
-         props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH,
-                    CSS_TYPE_LENGTH_PERCENTAGE, border);
-         props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
-                    CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
 
-         props.set (CSS_PROPERTY_BORDER_TOP_STYLE, CSS_TYPE_ENUM,
-                    BORDER_SOLID);
-         props.set (CSS_PROPERTY_BORDER_BOTTOM_STYLE, CSS_TYPE_ENUM,
-                    BORDER_SOLID);
-         props.set (CSS_PROPERTY_BORDER_LEFT_STYLE, CSS_TYPE_ENUM,
-                    BORDER_SOLID);
-         props.set (CSS_PROPERTY_BORDER_RIGHT_STYLE, CSS_TYPE_ENUM,
-                    BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
       }
    }
 
    /* x_img is an index to a list of {url,image} pairs.
     * We know Html_add_new_htmlimage() will use size() as its next index */
-   props.set (PROPERTY_X_IMG, CSS_TYPE_INTEGER, html->images->size());
-
-   html->styleEngine->setNonCssHints(&props);
+   html->styleEngine->setNonCssHint (PROPERTY_X_IMG, CSS_TYPE_INTEGER,
+                                     html->images->size());
 
    /* Add a new image widget to this page */
    Image = a_Image_new(alt_ptr, 0);
@@ -2135,7 +2133,6 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       loading = Html_load_image(html->bw, url, html->page_url, Image);
    Html_add_new_htmlimage(html, &url, loading ? NULL : Image);
 
-   dFree(tooltip_str);
    dFree(width_ptr);
    dFree(height_ptr);
    dFree(alt_ptr);
@@ -2279,7 +2276,7 @@ misc::SimpleVector<int> *Html_read_coords(DilloHtml *html, const char *str)
       if (!*newtail)
          break;
       if (*newtail != ',') {
-         BUG_MSG("usemap coords MUST be separated by commas.\n");
+         BUG_MSG("area coords must be integers separated by commas.\n");
       }
       tail = newtail + 1;
    }
@@ -2347,10 +2344,6 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
             shape = poly = new Polygon();
             for (i = 0; i < (coords->size() / 2); i++)
                poly->addPoint(coords->get(2*i), coords->get(2*i + 1));
-            if (i) {
-               /* be sure to close it */
-               poly->addPoint(coords->get(0), coords->get(1));
-            }
          }
          delete(coords);
       }
@@ -2379,7 +2372,6 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloUrl *url, *base_url = NULL;
    const char *attrbuf;
-   CssPropertyList props;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "codebase"))) {
       base_url = a_Html_url_new(html, attrbuf, NULL, 0);
@@ -2396,9 +2388,8 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
          html->styleEngine->setPseudoLink ();
       }
 
-      props.set(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
-                Html_set_new_link(html, &url));
-      html->styleEngine->setNonCssHints (&props);
+      html->styleEngine->setNonCssHint(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
+                                       Html_set_new_link(html, &url));
 
       HT2TB(html)->addText("[OBJECT]", html->styleEngine->wordStyle ());
    }
@@ -2452,8 +2443,6 @@ static void Html_add_anchor(DilloHtml *html, const char *name)
 static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloUrl *url;
-   char *tooltip_str = NULL;
-   CssPropertyList props;
    const char *attrbuf;
 
    /* TODO: add support for MAP with A HREF */
@@ -2472,25 +2461,23 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
          html->InVisitedLink = true;
          html->styleEngine->setPseudoVisited ();
          if (html->non_css_visited_color != -1)
-            props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
-                       html->non_css_visited_color);
+            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+                                             html->non_css_visited_color);
       } else {
          html->styleEngine->setPseudoLink ();
          if (html->non_css_link_color != -1)
-            props.set (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
-                       html->non_css_link_color);
+            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+                                             html->non_css_link_color);
       }
 
-      props.set (PROPERTY_X_LINK, CSS_TYPE_INTEGER,
-                 Html_set_new_link(html, &url));
+      html->styleEngine->setNonCssHint (PROPERTY_X_LINK, CSS_TYPE_INTEGER,
+                                        Html_set_new_link(html, &url));
    }
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
-      tooltip_str = dStrdup(attrbuf);
-      props.set (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING, tooltip_str);
+      html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                        attrbuf);
    }
-   html->styleEngine->setNonCssHints (&props);
-   dFree(tooltip_str);
 
    html->styleEngine->inheritBackgroundColor ();
 
@@ -2538,13 +2525,14 @@ static void Html_tag_open_blockquote(DilloHtml *html,
  */
 static void Html_tag_open_q(DilloHtml *html, const char *tag, int tagsize)
 {
-    /*
-     * Left Double Quotation Mark, which is wrong in many cases, but
-     * should at least be widely recognized.
-     */
-    const char *U201C = "\xe2\x80\x9c";
+   /*
+    * Left Double Quotation Mark, which is wrong in many cases, but
+    * should at least be widely recognized.
+    */
+   const char *U201C = "\xe2\x80\x9c";
 
-    HT2TB(html)->addText (U201C, html->styleEngine->wordStyle ());
+   html->styleEngine->inheritBackgroundColor ();
+   HT2TB(html)->addText (U201C, html->styleEngine->wordStyle ());
 }
 
 /*
@@ -2567,7 +2555,6 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
    ListStyleType list_style_type;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
-      CssPropertyList props;
 
       /* list_style_type explicitly defined */
       if (dStrcasecmp(attrbuf, "disc") == 0)
@@ -2580,8 +2567,8 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
          /* invalid value */
          list_style_type = LIST_STYLE_TYPE_DISC;
 
-      props.set(CSS_PROPERTY_LIST_STYLE_TYPE, CSS_TYPE_ENUM, list_style_type);
-      html->styleEngine->setNonCssHints (&props);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_LIST_STYLE_TYPE,
+                                        CSS_TYPE_ENUM, list_style_type);
    }
 
    Html_add_textblock(html, 9);
@@ -2597,6 +2584,7 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dir(DilloHtml *html, const char *tag, int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 
    S_TOP(html)->list_type = HTML_LIST_UNORDERED;
@@ -2624,7 +2612,6 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
    int n = 1;
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
-      CssPropertyList props;
       ListStyleType listStyleType = LIST_STYLE_TYPE_DECIMAL;
 
       if (*attrbuf == '1')
@@ -2638,8 +2625,8 @@ static void Html_tag_open_ol(DilloHtml *html, const char *tag, int tagsize)
       else if (*attrbuf == 'I')
          listStyleType = LIST_STYLE_TYPE_UPPER_ROMAN;
 
-      props.set (CSS_PROPERTY_LIST_STYLE_TYPE, CSS_TYPE_ENUM, listStyleType);
-      html->styleEngine->setNonCssHints (&props);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_LIST_STYLE_TYPE,
+                                        CSS_TYPE_ENUM, listStyleType);
    }
 
    Html_add_textblock(html, 9);
@@ -2717,29 +2704,33 @@ static void Html_tag_close_li(DilloHtml *html, int TagIdx)
 static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
 {
    Widget *hruler;
-   CssPropertyList props;
    char *width_ptr;
    const char *attrbuf;
    int32_t size = 0;
 
    width_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "width", NULL);
    if (width_ptr) {
-      props.set (CSS_PROPERTY_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-         a_Html_parse_length (html, width_ptr));
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE,
+                                        a_Html_parse_length (html, width_ptr));
       dFree(width_ptr);
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
       size = strtol(attrbuf, NULL, 10);
 
-   a_Html_tag_set_align_attr(html, &props, tag, tagsize);
+   a_Html_tag_set_align_attr(html, tag, tagsize);
 
    /* TODO: evaluate attribute */
    if (a_Html_get_attr(html, tag, tagsize, "noshade")) {
-      props.set (CSS_PROPERTY_BORDER_TOP_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
-      props.set (CSS_PROPERTY_BORDER_BOTTOM_STYLE,CSS_TYPE_ENUM,BORDER_SOLID);
-      props.set (CSS_PROPERTY_BORDER_LEFT_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
-      props.set (CSS_PROPERTY_BORDER_RIGHT_STYLE, CSS_TYPE_ENUM, BORDER_SOLID);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_SOLID);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_SOLID);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_SOLID);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_STYLE,
+                                        CSS_TYPE_ENUM, BORDER_SOLID);
 
       if (size <= 0)
          size = 1;
@@ -2748,17 +2739,15 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
    if (size > 0) {
       CssLength size_top = CSS_CREATE_LENGTH ((size+1)/2, CSS_LENGTH_TYPE_PX);
       CssLength size_bottom = CSS_CREATE_LENGTH (size / 2, CSS_LENGTH_TYPE_PX);
-      props.set (CSS_PROPERTY_BORDER_TOP_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 size_top);
-      props.set (CSS_PROPERTY_BORDER_LEFT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 size_top);
-      props.set (CSS_PROPERTY_BORDER_BOTTOM_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 size_bottom);
-      props.set (CSS_PROPERTY_BORDER_RIGHT_WIDTH, CSS_TYPE_LENGTH_PERCENTAGE,
-                 size_bottom);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, size_top);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, size_top);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, size_bottom);
+      html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+                                        CSS_TYPE_LENGTH_PERCENTAGE, size_bottom);
    }
-
-   html->styleEngine->setNonCssHints (&props);
 
    HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
 
@@ -2774,6 +2763,7 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_open_dl(DilloHtml *html, const char *tag, int tagsize)
 {
    /* may want to actually do some stuff here. */
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
@@ -2782,6 +2772,7 @@ static void Html_tag_open_dl(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
@@ -2798,6 +2789,7 @@ static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
 {
+   html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 
    html->InFlags |= IN_PRE;
@@ -2879,41 +2871,44 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          }
          /* Skip to anything after "URL=" */
          while (*content && *(content++) != '=') ;
-         /* Handle the case of a quoted URL */
-         if (*content == '"' || *content == '\'') {
-            if ((p = strchr(content + 1, *content)))
-               mr_url = dStrndup(content + 1, p - content - 1);
-            else
-               mr_url = dStrdup(content + 1);
-         } else {
-            mr_url = dStrdup(content);
-         }
+         if (*content) {
 
-         if (delay == 0) {
-            /* zero-delay redirection */
-            html->stop_parser = true;
-            DilloUrl *new_url = a_Url_new(mr_url, URL_STR(html->base_url));
-            if (a_Capi_dpi_verify_request(html->bw, new_url))
-               a_UIcmd_redirection0((void*)html->bw, new_url);
-            a_Url_free(new_url);
-         } else {
-            /* Send a custom HTML message.
-             * TODO: This is a hairy hack,
-             *       It'd be much better to build a widget. */
-            Dstr *ds_msg = dStr_sized_new(256);
-            dStr_sprintf(ds_msg, meta_template, mr_url, delay_str);
-            {
-               int o_InFlags = html->InFlags;
-               int o_TagSoup = html->TagSoup;
-               html->InFlags = IN_BODY;
-               html->TagSoup = false;
-               Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
-               html->TagSoup = o_TagSoup;
-               html->InFlags = o_InFlags;
+            /* Handle the case of a quoted URL */
+            if (*content == '"' || *content == '\'') {
+               if ((p = strchr(content + 1, *content)))
+                  mr_url = dStrndup(content + 1, p - content - 1);
+               else
+                  mr_url = dStrdup(content + 1);
+            } else {
+               mr_url = dStrdup(content);
             }
-            dStr_free(ds_msg, 1);
+
+            if (delay == 0) {
+               /* zero-delay redirection */
+               html->stop_parser = true;
+               DilloUrl *new_url = a_Url_new(mr_url, URL_STR(html->base_url));
+               if (a_Capi_dpi_verify_request(html->bw, new_url))
+                  a_UIcmd_redirection0((void*)html->bw, new_url);
+               a_Url_free(new_url);
+            } else {
+               /* Send a custom HTML message.
+                * TODO: This is a hairy hack,
+                *       It'd be much better to build a widget. */
+               Dstr *ds_msg = dStr_sized_new(256);
+               dStr_sprintf(ds_msg, meta_template, mr_url, delay_str);
+               {
+                  int o_InFlags = html->InFlags;
+                  int o_TagSoup = html->TagSoup;
+                  html->InFlags = IN_BODY;
+                  html->TagSoup = false;
+                  Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
+                  html->TagSoup = o_TagSoup;
+                  html->InFlags = o_InFlags;
+               }
+               dStr_free(ds_msg, 1);
+            }
+            dFree(mr_url);
          }
-         dFree(mr_url);
 
       } else if (!dStrcasecmp(equiv, "content-type") &&
                  (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
@@ -3095,10 +3090,7 @@ static void Html_tag_open_default(DilloHtml *html,const char *tag,int tagsize)
  */
 static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 {
-   CssPropertyList props;
-
-   a_Html_tag_set_align_attr (html, &props, tag, tagsize);
-   html->styleEngine->setNonCssHints (&props);
+   a_Html_tag_set_align_attr (html, tag, tagsize);
    Html_add_textblock(html, 0);
 }
 
@@ -3137,14 +3129,6 @@ static void Html_tag_close_par(DilloHtml *html, int TagIdx)
  *     - Empty elements have both inline and block container clear.
  *       (flow have both set)
  */
-struct _TagInfo{
-   const char *name;
-   unsigned char Flags;
-   char EndTag;
-   uchar_t TagLevel;
-   TagOpenFunct open;
-   TagCloseFunct close;
-};
 
 
 const TagInfo Tags[] = {
@@ -3739,10 +3723,7 @@ static void Html_callback(int Op, CacheClient_t *Client)
 static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
 {
    char ch = 0, *p, *text;
-   Textblock *textblock;
    int token_start, buf_index;
-
-   dReturn_val_if_fail ((textblock = HT2TB(html)) != NULL, 0);
 
    /* Now, 'buf' and 'bufsize' define a buffer aligned to start at a token
     * boundary. Iterate through tokens until end of buffer is reached. */
@@ -3862,7 +3843,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
       }
    }/*while*/
 
-   textblock->flush ();
+   HT2TB(html)->flush ();
 
    return token_start;
 }

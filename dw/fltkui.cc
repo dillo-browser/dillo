@@ -524,7 +524,7 @@ void FltkEntryResource::widgetCallback (::fltk::Widget *widget,
     * The Back or Forward, buttons, or the first click on a rendered
     * page. BUG: this must be investigated and reported to FLTK2 team
     */
-   MSG("when = %d\n", widget->when ());
+   _MSG("when = %d\n", widget->when ());
    if ((widget->when () & ::fltk::WHEN_ENTER_KEY_ALWAYS) &&
        (::fltk::event_key() == ::fltk::ReturnKey))
       ((FltkEntryResource*)data)->emitActivate ();
@@ -989,7 +989,7 @@ template <class I> void FltkSelectionResource<I>::addItem (const char *str,
          itemWidget->set_selected();
          if (setSelectedItems ()) {
             // Handle multiple item selection.
-            int pos[widgetStack->stack->size ()];
+            int *pos = new int[widgetStack->stack->size ()];
             int i;
             Iterator <TypedPointer < ::fltk::Menu> > it;
             for (it = widgetStack->stack->iterator (),
@@ -1000,6 +1000,7 @@ template <class I> void FltkSelectionResource<I>::addItem (const char *str,
                pos[i] =  p->getTypedValue()->children () - 1;
             }
             widgetStack->widget->set_item (pos, widgetStack->stack->size ());
+            delete [] pos;
          }
       }
    }

@@ -61,10 +61,13 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
    if (Web->flags & WEB_RootUrl) {
       /* We have RootUrl! */
 
+      style::Color *bgColor = style::Color::create (layout, prefs.bg_color);
+      Web->bgColor = bgColor->getColor ();
+      layout->setBgColor (bgColor);
+
       /* Set a style for the widget */
       StyleEngine styleEngine (layout);
       styleEngine.startElement ("body");
-      Web->bgColor= styleEngine.backgroundStyle()->backgroundColor->getColor();
 
       dw = (Widget*) a_Mime_set_viewer(Type, Web, Call, Data);
       if (dw == NULL)
@@ -89,12 +92,12 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
 
    } else {
       /* A non-RootUrl. At this moment we only handle image-children */
-      if (!dStrncasecmp(Type, "image/", 6))
+      if (!dStrncasecmp(Type, "image/", 6)) {
          dw = (Widget*) a_Mime_set_viewer(Type, Web, Call, Data);
-   }
-
-   if (!dw) {
-      MSG_HTTP("unhandled MIME type: \"%s\"\n", Type);
+      } else {
+         MSG_HTTP("'%s' cannot be displayed as image; has media type '%s'\n",
+                  URL_STR(Web->url), Type);
+      }
    }
    return (dw ? 1 : -1);
 }

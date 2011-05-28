@@ -15,6 +15,7 @@
 #include "html_common.hh"
 #include "styleengine.hh"
 
+using namespace lout::misc;
 using namespace dw::core::style;
 
 StyleEngine::StyleEngine (dw::core::Layout *layout) {
@@ -32,7 +33,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = prefs.font_sans_serif;
-   font_attrs.size = (int) (14 * prefs.font_factor + 0.5);
+   font_attrs.size = roundInt(14 * prefs.font_factor);
    if (font_attrs.size < prefs.font_min_size)
       font_attrs.size = prefs.font_min_size;
    if (font_attrs.size > prefs.font_max_size)
@@ -40,6 +41,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    font_attrs.weight = 400;
    font_attrs.style = FONT_STYLE_NORMAL;
    font_attrs.letterSpacing = 0;
+   font_attrs.fontVariant = FONT_VARIANT_NORMAL;
 
    style_attrs.initValues ();
    style_attrs.font = Font::create (layout, &font_attrs);
@@ -48,13 +50,23 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
 
    n->style = Style::create (layout, &style_attrs);
    n->wordStyle = NULL;
-   n->styleAttribute = NULL;
+   n->backgroundStyle = NULL;
+   n->styleAttrProperties = NULL;
+   n->nonCssProperties = NULL;
    n->inheritBackgroundColor = false;
 }
 
 StyleEngine::~StyleEngine () {
    while (doctree->top ())
       endElement (doctree->top ()->element);
+   assert (stack->size () == 1); // dummy node on the bottom of the stack
+   Node *n = stack->getRef (stack->size () - 1);
+   if (n->style)
+      n->style->unref ();
+   if (n->wordStyle)
+      n->wordStyle->unref ();
+   if (n->backgroundStyle)
+      n->backgroundStyle->unref ();
    delete stack;
    delete doctree;
    delete cssContext;
@@ -65,17 +77,20 @@ StyleEngine::~StyleEngine () {
  */
 void StyleEngine::startElement (int element) {
    if (stack->getRef (stack->size () - 1)->style == NULL)
-      style0 ();
+      style0 (stack->size () - 1);
 
    stack->increase ();
    Node *n = stack->getRef (stack->size () - 1);
+   n->styleAttrProperties = NULL;
+   n->nonCssProperties = NULL;
    n->style = NULL;
    n->wordStyle = NULL;
-   n->styleAttribute = NULL;
+   n->backgroundStyle = NULL;
    n->inheritBackgroundColor = false;
 
    DoctreeNode *dn = doctree->push ();
    dn->element = element;
+   n->doctreeNode = dn;
 }
 
 void StyleEngine::startElement (const char *tagname) {
@@ -119,20 +134,36 @@ void StyleEngine::setClass (const char *klass) {
    dn->klass = splitStr (klass, ' ');
 };
 
-void StyleEngine::setStyle (const char *style) {
+void StyleEngine::setStyle (const char *styleAttr) {
    Node *n = stack->getRef (stack->size () - 1);
-   assert (n->styleAttribute == NULL);
-   n->styleAttribute = dStrdup (style);
+   assert (n->styleAttrProperties == NULL);
+   // parse style information from style="" attribute, if it exists
+   if (styleAttr && prefs.parse_embedded_css)
+      n->styleAttrProperties =
+         CssParser::parseDeclarationBlock (styleAttr,
+                                           strlen (styleAttr));
 };
 
 /**
- * \brief set properties that were definded using (mostly deprecated) HTML
- *    attributes (e.g. bgColor).
+ * \brief Instruct StyleEngine to use the nonCssHints from parent element
+ * This is only used for tables where nonCssHints on the TABLE-element
+ * (e.g. border=1) also affect child elements like TD.
  */
-void StyleEngine::setNonCssHints (CssPropertyList *nonCssHints) {
-   if (stack->getRef (stack->size () - 1)->style)
-      stack->getRef (stack->size () - 1)->style->unref ();
-   style0 (nonCssHints); // evaluate now, so caller can free nonCssHints
+void StyleEngine::inheritNonCssHints () {
+   Node *pn = stack->getRef (stack->size () - 2);
+   Node *n = stack->getRef (stack->size () - 1);
+
+   if (pn->nonCssProperties)
+      n->nonCssProperties = new CssPropertyList (*pn->nonCssProperties, true);
+}
+
+void StyleEngine::clearNonCssHints () {
+   Node *n = stack->getRef (stack->size () - 1);
+
+   if (n->nonCssProperties) {
+      delete n->nonCssProperties;
+      n->nonCssProperties = NULL;
+   }
 }
 
 /**
@@ -143,6 +174,17 @@ void StyleEngine::setNonCssHints (CssPropertyList *nonCssHints) {
  */
 void StyleEngine::inheritBackgroundColor () {
    stack->getRef (stack->size () - 1)->inheritBackgroundColor = true;
+}
+
+dw::core::style::Color *StyleEngine::backgroundColor () {
+   for (int i = 1; i < stack->size (); i++) {
+      Node *n = stack->getRef (i);
+
+      if (n->style && n->style->backgroundColor)
+         return n->style->backgroundColor;
+   }
+
+   return NULL;
 }
 
 /**
@@ -165,32 +207,80 @@ void StyleEngine::setPseudoVisited () {
  * \brief tell the styleEngine that a html element has ended.
  */
 void StyleEngine::endElement (int element) {
-   assert (stack->size () > 0);
    assert (element == doctree->top ()->element);
 
    Node *n = stack->getRef (stack->size () - 1);
 
+   if (n->styleAttrProperties)
+      delete n->styleAttrProperties;
+   if (n->nonCssProperties)
+      delete n->nonCssProperties;
    if (n->style)
       n->style->unref ();
    if (n->wordStyle)
       n->wordStyle->unref ();
-   if (n->styleAttribute)
-      dFree ((void*) n->styleAttribute);
+   if (n->backgroundStyle)
+      n->backgroundStyle->unref ();
 
    doctree->pop ();
    stack->setSize (stack->size () - 1);
 }
 
+void StyleEngine::preprocessAttrs (dw::core::style::StyleAttrs *attrs) {
+   /* workaround for styling of inline elements */
+   if (stack->getRef (stack->size () - 2)->inheritBackgroundColor) {
+      attrs->backgroundColor =
+         stack->getRef (stack->size () - 2)->style->backgroundColor;
+
+      attrs->valign = stack->getRef (stack->size () - 2)->style->valign;
+   }
+   attrs->borderColor.top = (Color *) -1;
+   attrs->borderColor.bottom = (Color *) -1;
+   attrs->borderColor.left = (Color *) -1;
+   attrs->borderColor.right = (Color *) -1;
+   /* initial value of border-width is 'medium' */
+   attrs->borderWidth.top = 2;
+   attrs->borderWidth.bottom = 2;
+   attrs->borderWidth.left = 2;
+   attrs->borderWidth.right = 2;
+}
+
+void StyleEngine::postprocessAttrs (dw::core::style::StyleAttrs *attrs) {
+   /* if border-color is not specified, use color as computed value */
+   if (attrs->borderColor.top == (Color *) -1)
+      attrs->borderColor.top = attrs->color;
+   if (attrs->borderColor.bottom == (Color *) -1)
+      attrs->borderColor.bottom = attrs->color;
+   if (attrs->borderColor.left == (Color *) -1)
+      attrs->borderColor.left = attrs->color;
+   if (attrs->borderColor.right == (Color *) -1)
+      attrs->borderColor.right = attrs->color;
+   /* computed value of border-width is 0 if border-style
+      is 'none' or 'hidden' */
+   if (attrs->borderStyle.top == BORDER_NONE ||
+       attrs->borderStyle.top == BORDER_HIDDEN)
+      attrs->borderWidth.top = 0;
+   if (attrs->borderStyle.bottom == BORDER_NONE ||
+       attrs->borderStyle.bottom == BORDER_HIDDEN)
+      attrs->borderWidth.bottom = 0;
+   if (attrs->borderStyle.left == BORDER_NONE ||
+       attrs->borderStyle.left == BORDER_HIDDEN)
+      attrs->borderWidth.left = 0;
+   if (attrs->borderStyle.right == BORDER_NONE ||
+       attrs->borderStyle.right == BORDER_HIDDEN)
+      attrs->borderWidth.right = 0;
+}
+
 /**
  * \brief Make changes to StyleAttrs attrs according to CssPropertyList props.
  */
-void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
+void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
    FontAttrs fontAttrs = *attrs->font;
-   Font *parentFont = stack->get (stack->size () - 2).style->font;
+   Font *parentFont = stack->get (i - 1).style->font;
    char *c, *fontName;
    int lineHeight;
 
-   /* Determine font first so it can be used to resolve relative lenths. */
+   /* Determine font first so it can be used to resolve relative lengths. */
    for (int i = 0; i < props->size (); i++) {
       CssProperty *p = props->getRef (i);
 
@@ -233,31 +323,30 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             if (p->type == CSS_TYPE_ENUM) {
                switch (p->value.intVal) {
                   case CSS_FONT_SIZE_XX_SMALL:
-                     fontAttrs.size = (int) (11.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(11.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_X_SMALL:
-                     fontAttrs.size = (int) (12.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(12.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_SMALL:
-                     fontAttrs.size = (int) (13.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(13.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_MEDIUM:
-                     fontAttrs.size = (int) (14.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(14.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_LARGE:
-                     fontAttrs.size = (int) (15.0 * prefs.font_factor + 0.5);
                      break;
                   case CSS_FONT_SIZE_X_LARGE:
-                     fontAttrs.size = (int) (16.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(16.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_XX_LARGE:
-                     fontAttrs.size = (int) (17.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size = roundInt(17.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_SMALLER:
-                     fontAttrs.size -= (int) (1.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size -= roundInt(1.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_LARGER:
-                     fontAttrs.size += (int) (1.0 * prefs.font_factor + 0.5);
+                     fontAttrs.size += roundInt(1.0 * prefs.font_factor);
                      break;
                   default:
                      assert(false); // invalid font-size enum
@@ -327,6 +416,9 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
             else if (fontAttrs.letterSpacing < -1000)
                fontAttrs.letterSpacing = -1000;
             break;
+         case CSS_PROPERTY_FONT_VARIANT:
+            fontAttrs.fontVariant = (FontVariant) p->value.intVal;
+            break;
          default:
             break;
       }
@@ -346,21 +438,24 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
                //attrs->backgroundColor = Color::create(layout, 0xdcd1ba);
                attrs->backgroundColor = Color::create(layout, 0xe0e0a3);
             break;
+         case CSS_PROPERTY_BORDER_COLLAPSE:
+            attrs->borderCollapse = (BorderCollapse) p->value.intVal;
+            break;
          case CSS_PROPERTY_BORDER_TOP_COLOR:
-            attrs->borderColor.top =
-              Color::create (layout, p->value.intVal);
+            attrs->borderColor.top = (p->type == CSS_TYPE_ENUM) ? NULL :
+                                     Color::create (layout, p->value.intVal);
             break;
          case CSS_PROPERTY_BORDER_BOTTOM_COLOR:
-            attrs->borderColor.bottom =
-              Color::create (layout, p->value.intVal);
+            attrs->borderColor.bottom = (p->type == CSS_TYPE_ENUM) ? NULL :
+                                       Color::create (layout, p->value.intVal);
             break;
          case CSS_PROPERTY_BORDER_LEFT_COLOR:
-            attrs->borderColor.left =
-              Color::create (layout, p->value.intVal);
+            attrs->borderColor.left = (p->type == CSS_TYPE_ENUM) ? NULL :
+                                      Color::create (layout, p->value.intVal);
             break;
          case CSS_PROPERTY_BORDER_RIGHT_COLOR:
-            attrs->borderColor.right =
-              Color::create (layout, p->value.intVal);
+            attrs->borderColor.right = (p->type == CSS_TYPE_ENUM) ? NULL :
+                                       Color::create (layout, p->value.intVal);
             break;
          case CSS_PROPERTY_BORDER_BOTTOM_STYLE:
             attrs->borderStyle.bottom = (BorderStyle) p->value.intVal;
@@ -409,9 +504,8 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
                if (CSS_LENGTH_TYPE (p->value.intVal) == CSS_LENGTH_TYPE_NONE) {
                   attrs->lineHeight =
                      createPerLength(CSS_LENGTH_VALUE(p->value.intVal));
-               } else {
-                  computeValue (&lineHeight, p->value.intVal, attrs->font,
-                                attrs->font->size);
+               } else if (computeValue (&lineHeight, p->value.intVal,
+                                        attrs->font, attrs->font->size)) {
                   attrs->lineHeight = createAbsLength(lineHeight);
                }
             }
@@ -460,6 +554,9 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
          case CSS_PROPERTY_TEXT_DECORATION:
             attrs->textDecoration |= p->value.intVal;
             break;
+         case CSS_PROPERTY_TEXT_INDENT:
+            computeLength (&attrs->textIndent, p->value.intVal, attrs->font);
+            break;
          case CSS_PROPERTY_VERTICAL_ALIGN:
             attrs->valign = (VAlignType) p->value.intVal;
             break;
@@ -501,16 +598,6 @@ void StyleEngine::apply (StyleAttrs *attrs, CssPropertyList *props) {
       }
    }
 
-   /* make sure border colors are set */
-   if (attrs->borderColor.top == NULL)
-      attrs->borderColor.top = attrs->color;
-   if (attrs->borderColor.bottom == NULL)
-      attrs->borderColor.bottom = attrs->color;
-   if (attrs->borderColor.left == NULL)
-      attrs->borderColor.left = attrs->color;
-   if (attrs->borderColor.right == NULL)
-      attrs->borderColor.right = attrs->color;
-
 }
 
 /**
@@ -527,14 +614,21 @@ bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
          *dest = (int) CSS_LENGTH_VALUE (value);
          return true;
       case CSS_LENGTH_TYPE_MM:
-         *dest = (int) (CSS_LENGTH_VALUE (value) * dpmm + 0.5);
-        return true;
+         *dest = roundInt (CSS_LENGTH_VALUE (value) * dpmm);
+         return true;
       case CSS_LENGTH_TYPE_EM:
-         *dest = (int) (CSS_LENGTH_VALUE (value) * font->size + 0.5);
-        return true;
+         *dest = roundInt (CSS_LENGTH_VALUE (value) * font->size);
+         return true;
       case CSS_LENGTH_TYPE_EX:
-         *dest = (int) (CSS_LENGTH_VALUE(value) * font->xHeight + 0.5);
-        return true;
+         *dest = roundInt (CSS_LENGTH_VALUE(value) * font->xHeight);
+         return true;
+      case CSS_LENGTH_TYPE_NONE:
+         // length values other than 0 without unit are only allowed
+         // in special cases (line-height) and have to be handled
+         // separately.
+         assert ((int) CSS_LENGTH_VALUE (value) == 0);
+         *dest = 0;
+         return true;
       default:
          break;
    }
@@ -545,7 +639,7 @@ bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
 bool StyleEngine::computeValue (int *dest, CssLength value, Font *font,
                                 int percentageBase) {
    if (CSS_LENGTH_TYPE (value) == CSS_LENGTH_TYPE_PERCENTAGE) {
-      *dest = (int) (CSS_LENGTH_VALUE (value) * percentageBase + 0.5);
+      *dest = roundInt (CSS_LENGTH_VALUE (value) * percentageBase);
       return true;
    } else
       return computeValue (dest, value, font);
@@ -596,13 +690,17 @@ void StyleEngine::computeBorderWidth (int *dest, CssProperty *p,
  * background. This method ensures that backgroundColor is set.
  */
 Style * StyleEngine::backgroundStyle () {
-   StyleAttrs attrs = *style ();
+   if (!stack->getRef (stack->size () - 1)->backgroundStyle) {
+      StyleAttrs attrs = *style ();
 
-   for (int i = stack->size () - 1; i >= 0 && ! attrs.backgroundColor; i--)
-      attrs.backgroundColor = stack->getRef (i)->style->backgroundColor;
+      for (int i = stack->size () - 1; i >= 0 && ! attrs.backgroundColor; i--)
+         attrs.backgroundColor = stack->getRef (i)->style->backgroundColor;
 
-   assert (attrs.backgroundColor);
-   return Style::create (layout, &attrs);
+      assert (attrs.backgroundColor);
+      stack->getRef (stack->size () - 1)->backgroundStyle =
+         Style::create (layout, &attrs);
+   }
+   return stack->getRef (stack->size () - 1)->backgroundStyle;
 }
 
 /**
@@ -610,62 +708,78 @@ Style * StyleEngine::backgroundStyle () {
  * HTML elements and the nonCssProperties that have been set.
  * This method is private. Call style() to get a current style object.
  */
-Style * StyleEngine::style0 (CssPropertyList *nonCssProperties) {
-   CssPropertyList props, *styleAttributeProps = NULL;
-   const char *styleAttribute =
-      stack->getRef (stack->size () - 1)->styleAttribute;
+Style * StyleEngine::style0 (int i) {
+   CssPropertyList props, *styleAttrProperties, *nonCssProperties;
    // get previous style from the stack
-   StyleAttrs attrs = *stack->getRef (stack->size () - 2)->style;
+   StyleAttrs attrs = *stack->getRef (i - 1)->style;
 
    // Ensure that StyleEngine::style0() has not been called before for
    // this element.
    // Style computation is expensive so limit it as much as possible.
    // If this assertion is hit, you need to rearrange the code that is
-   // doing styleEngine calls to call setNonCssHints() before calling
+   // doing styleEngine calls to call setNonCssHint() before calling
    // style() or wordStyle() for each new element.
-   assert (stack->getRef (stack->size () - 1)->style == NULL);
+   assert (stack->getRef (i)->style == NULL);
 
    // reset values that are not inherited according to CSS
    attrs.resetValues ();
+   preprocessAttrs (&attrs);
 
-   if (stack->getRef (stack->size () - 2)->inheritBackgroundColor) {
-      attrs.backgroundColor =
-         stack->getRef (stack->size () - 2)->style->backgroundColor;
-
-      attrs.valign = stack->getRef (stack->size () - 2)->style->valign;
-   }
-
-   // parse style information from style="" attribute, if it exists
-   if (styleAttribute && prefs.parse_embedded_css)
-      styleAttributeProps =
-         CssParser::parseDeclarationBlock (styleAttribute,
-                                           strlen (styleAttribute));
+   styleAttrProperties = stack->getRef (i)->styleAttrProperties;
+   nonCssProperties = stack->getRef (i)->nonCssProperties;
 
    // merge style information
-   cssContext->apply (&props, doctree, styleAttributeProps, nonCssProperties);
+   cssContext->apply (&props, doctree, stack->getRef(i)->doctreeNode,
+                      styleAttrProperties, nonCssProperties);
 
    // apply style
-   apply (&attrs, &props);
+   apply (i, &attrs, &props);
 
-   stack->getRef (stack->size () - 1)->style = Style::create (layout, &attrs);
+   postprocessAttrs (&attrs);
 
-   if (styleAttributeProps)
-      delete styleAttributeProps;
+   stack->getRef (i)->style = Style::create (layout, &attrs);
 
-   return stack->getRef (stack->size () - 1)->style;
+   return stack->getRef (i)->style;
 }
 
-Style * StyleEngine::wordStyle0 (CssPropertyList *nonCssProperties) {
+Style * StyleEngine::wordStyle0 () {
    StyleAttrs attrs = *style ();
    attrs.resetValues ();
 
-   if (stack->getRef (stack->size () - 1)->inheritBackgroundColor)
+   if (stack->getRef (stack->size() - 1)->inheritBackgroundColor)
       attrs.backgroundColor = style ()->backgroundColor;
 
    attrs.valign = style ()->valign;
 
    stack->getRef(stack->size() - 1)->wordStyle = Style::create(layout, &attrs);
    return stack->getRef (stack->size () - 1)->wordStyle;
+}
+
+/**
+ * \brief Recompute all style information from scratch
+ * This is used to take into account CSS styles for the HTML-element.
+ * The CSS data is only completely available after parsing the HEAD-section
+ * and thereby after the HTML-element has been opened.
+ * Note that restyle() does not change any styles in the widget tree.
+ */
+void StyleEngine::restyle () {
+   for (int i = 1; i < stack->size (); i++) {
+      Node *n = stack->getRef (i);
+      if (n->style) {
+         n->style->unref ();
+         n->style = NULL;
+      }
+      if (n->wordStyle) {
+         n->wordStyle->unref ();
+         n->wordStyle = NULL;
+      }
+      if (n->backgroundStyle) {
+         n->backgroundStyle->unref ();
+         n->backgroundStyle = NULL;
+      }
+
+      style0 (i);
+   }
 }
 
 void StyleEngine::parse (DilloHtml *html, DilloUrl *url, const char *buf,

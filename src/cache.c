@@ -311,6 +311,10 @@ static void Cache_entry_free(CacheEntry_t *entry)
    dStr_free(entry->UTF8Data, 1);
    if (entry->CharsetDecoder)
       a_Decode_free(entry->CharsetDecoder);
+   if (entry->TransferDecoder)
+      a_Decode_free(entry->TransferDecoder);
+   if (entry->ContentDecoder)
+      a_Decode_free(entry->ContentDecoder);
    dFree(entry);
 }
 
@@ -516,6 +520,10 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
              ((!major || !*major) && (!minor || !*minor))) {
             /* META only gives charset; use detected MIME type too */
             entry->TypeNorm = dStrconcat(entry->TypeDet, ctype, NULL);
+         } else if (*from == 'm' &&
+                    !dStrncasecmp(ctype, "text/xhtml", 10)) {
+            /* WORKAROUND: doxygen uses "text/xhtml" in META */
+            entry->TypeNorm = dStrdup(entry->TypeDet);
          }
          if (charset) {
             if (entry->CharsetDecoder)
@@ -932,7 +940,7 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
        (entry->Flags & CA_ForceRedirect || entry->Flags & CA_TempRedirect ||
         !entry->Data->len || entry->Data->len < 1024)) {
 
-      _MSG(">>>Redirect from: %s\n to %s\n",
+      _MSG(">>>> Redirect from: %s\n to %s <<<<\n",
            URL_STR_(entry->Url), URL_STR_(entry->Location));
       _MSG("%s", entry->Header->str);
 
@@ -946,9 +954,9 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
       } else {
          /* Sub entity redirection (most probably an image) */
          if (!entry->Data->len) {
-            _MSG(">>>Image redirection without entity-content<<<\n");
+            _MSG(">>>> Image redirection without entity-content <<<<\n");
          } else {
-            _MSG(">>>Image redirection with entity-content<<<\n");
+            _MSG(">>>> Image redirection with entity-content <<<<\n");
          }
       }
    }

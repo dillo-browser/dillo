@@ -72,6 +72,10 @@ public:
    void drawLine (core::style::Color *color,
                   core::style::Color::Shading shading,
                   int x1, int y1, int x2, int y2);
+   void drawTypedLine (core::style::Color *color,
+                       core::style::Color::Shading shading,
+                       core::style::LineType type, int width,
+                       int x1, int y1, int x2, int y2);
    void drawRectangle (core::style::Color *color,
                        core::style::Color::Shading shading, bool filled,
                        int x, int y, int width, int height);
