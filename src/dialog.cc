@@ -176,6 +176,11 @@ int a_Dialog_choice5(const char *QuestionTxt,
    txt[4] = alt4; txt[5] = alt5;
    for (int i=1; txt[i]; ++i, ++nb)
       ;
+
+   if (!nb) {
+      MSG_ERR("a_Dialog_choice5: No choices.\n");
+      return choice5_answer;
+   }
    ww = 140 + nb*(bw+10);
 
    Fl_Window *window = new Fl_Window(ww,wh,"Choice5");
