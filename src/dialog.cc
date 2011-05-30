@@ -261,9 +261,9 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
    msg->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP_LEFT | FL_ALIGN_WRAP);
 
    fl_font(msg->labelfont(), msg->labelsize());
+   msg_w -= 6; /* The label doesn't fill the entire box. */
    fl_measure(msg->label(), msg_w, msg_h, 0); /* fl_measure wraps at msg_w */
-   msg_w = MIN(msg_w, msg->w());
-   msg->size(msg_w, msg_h);
+   msg->size(msg->w(), msg_h);
    window->add(msg);
 
    /* inputs */
