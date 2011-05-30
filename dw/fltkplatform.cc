@@ -191,10 +191,26 @@ FltkColor * FltkColor::create (int col)
 
 FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
 {
+   if (!strchr(text, '@')) {
+      escaped_str = NULL;
+   } else {
+      /* FLTK likes to interpret symbols, and so they must be escaped */
+      const char *src = text;
+      char *dest = escaped_str = (char *) malloc(strlen(text) * 2 + 1);
+
+      while (*src) {
+         if (*src == '@')
+            *dest++ = *src;
+         *dest++ = *src++;
+      }
+      *dest = '\0';
+   }
 }
 
 FltkTooltip::~FltkTooltip ()
 {
+   if (escaped_str)
+      free(escaped_str);
 }
 
 FltkTooltip *FltkTooltip::create (const char *text)
@@ -207,7 +223,7 @@ void FltkTooltip::onEnter()
    Fl_Widget *widget = Fl::belowmouse();
 
    Fl_Tooltip::enter_area(widget, widget->x(), widget->y(), widget->w(),
-                          widget->h(), str);
+                          widget->h(), escaped_str ? escaped_str : str);
 }
 
 void FltkTooltip::onLeave()
