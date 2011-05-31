@@ -43,14 +43,14 @@ static int *history_list = NULL;
 
 
 //--------------------------------------------------------------------------
-static void Menu_nop_cb(Fl_Widget *, void *)
+static void Menu_nop_cb(Fl_Widget*, void*)
 {
 }
 
 /*
  * Static function for File menu callbacks.
  */
-static void filemenu_cb(Fl_Widget *wid, void *data)
+static void filemenu_cb(Fl_Widget*, void *data)
 {
    if (strcmp((char*)data, "nw") == 0) {
       a_UIcmd_open_url_nw(popup_bw, NULL);
@@ -86,7 +86,7 @@ static void Menu_link_cb(Fl_Widget*, void *user_data)
 /*
  * Open URL
  */
-static void Menu_open_url_cb(Fl_Widget*, void* )
+static void Menu_open_url_cb(Fl_Widget*, void*)
 {
    _MSG("Open URL cb: click! :-)\n");
    a_UIcmd_open_url(popup_bw, popup_url);
@@ -95,7 +95,7 @@ static void Menu_open_url_cb(Fl_Widget*, void* )
 /*
  * Open URL in new window
  */
-static void Menu_open_url_nw_cb(Fl_Widget*, void* )
+static void Menu_open_url_nw_cb(Fl_Widget*, void*)
 {
    _MSG("Open URL in new window cb: click! :-)\n");
    a_UIcmd_open_url_nw(popup_bw, popup_url);
@@ -104,7 +104,7 @@ static void Menu_open_url_nw_cb(Fl_Widget*, void* )
 /*
  * Open URL in new Tab
  */
-static void Menu_open_url_nt_cb(Fl_Widget*, void* )
+static void Menu_open_url_nt_cb(Fl_Widget*, void*)
 {
    int focus = prefs.focus_new_tab ? 1 : 0;
    if (Fl::event_state(FL_SHIFT)) focus = !focus;
@@ -114,7 +114,7 @@ static void Menu_open_url_nt_cb(Fl_Widget*, void* )
 /*
  * Add bookmark
  */
-static void Menu_add_bookmark_cb(Fl_Widget*, void* )
+static void Menu_add_bookmark_cb(Fl_Widget*, void*)
 {
    a_UIcmd_add_bookmark(popup_bw, popup_url);
 }
@@ -122,7 +122,7 @@ static void Menu_add_bookmark_cb(Fl_Widget*, void* )
 /*
  * Find text
  */
-static void Menu_find_text_cb(Fl_Widget*, void* )
+static void Menu_find_text_cb(Fl_Widget*, void*)
 {
    ((UI *)popup_bw->ui)->findbar_toggle(1);
 }
@@ -130,7 +130,7 @@ static void Menu_find_text_cb(Fl_Widget*, void* )
 /*
  * Save link
  */
-static void Menu_save_link_cb(Fl_Widget*, void* )
+static void Menu_save_link_cb(Fl_Widget*, void*)
 {
    a_UIcmd_save_link(popup_bw, popup_url);
 }
@@ -138,7 +138,7 @@ static void Menu_save_link_cb(Fl_Widget*, void* )
 /*
  * Save current page
  */
-static void Menu_save_page_cb(Fl_Widget*, void* )
+static void Menu_save_page_cb(Fl_Widget*, void*)
 {
    a_UIcmd_save(popup_bw);
 }
@@ -146,7 +146,7 @@ static void Menu_save_page_cb(Fl_Widget*, void* )
 /*
  * View current page source
  */
-static void Menu_view_page_source_cb(Fl_Widget*, void* )
+static void Menu_view_page_source_cb(Fl_Widget*, void*)
 {
    a_UIcmd_view_page_source(popup_bw, popup_url);
 }
@@ -154,7 +154,7 @@ static void Menu_view_page_source_cb(Fl_Widget*, void* )
 /*
  * View current page's bugs
  */
-static void Menu_view_page_bugs_cb(Fl_Widget*, void* )
+static void Menu_view_page_bugs_cb(Fl_Widget*, void*)
 {
    a_UIcmd_view_page_bugs(popup_bw);
 }
@@ -174,7 +174,7 @@ static void Menu_load_images_cb(Fl_Widget*, void *user_data)
 /*
  * Submit form
  */
-static void Menu_form_submit_cb(Fl_Widget*, void *)
+static void Menu_form_submit_cb(Fl_Widget*, void*)
 {
    void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
 
@@ -185,7 +185,7 @@ static void Menu_form_submit_cb(Fl_Widget*, void *)
 /*
  * Reset form
  */
-static void Menu_form_reset_cb(Fl_Widget*, void *)
+static void Menu_form_reset_cb(Fl_Widget*, void*)
 {
    void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
 
@@ -196,7 +196,7 @@ static void Menu_form_reset_cb(Fl_Widget*, void *)
 /*
  * Toggle display of 'hidden' form controls.
  */
-static void Menu_form_hiddens_cb(Fl_Widget *w, void *user_data)
+static void Menu_form_hiddens_cb(Fl_Widget*, void *user_data)
 {
    bool visible = *((bool *) user_data);
    void *doc = a_Bw_get_url_doc(popup_bw, popup_url);
@@ -205,7 +205,7 @@ static void Menu_form_hiddens_cb(Fl_Widget *w, void *user_data)
       a_Html_form_display_hiddens(doc, popup_form, !visible);
 }
 
-static void Menu_stylesheet_cb(Fl_Widget *w, void *vUrl)
+static void Menu_stylesheet_cb(Fl_Widget*, void *vUrl)
 {
    const DilloUrl *url = (const DilloUrl *) vUrl;
    a_UIcmd_open_url(popup_bw, url);
@@ -214,7 +214,7 @@ static void Menu_stylesheet_cb(Fl_Widget *w, void *vUrl)
 /*
  * Validate URL with the W3C
  */
-static void Menu_bugmeter_validate_w3c_cb(Fl_Widget*, void* )
+static void Menu_bugmeter_validate_w3c_cb(Fl_Widget*, void*)
 {
    Dstr *dstr = dStr_sized_new(128);
 
@@ -227,7 +227,7 @@ static void Menu_bugmeter_validate_w3c_cb(Fl_Widget*, void* )
 /*
  * Validate URL with the WDG
  */
-static void Menu_bugmeter_validate_wdg_cb(Fl_Widget*, void* )
+static void Menu_bugmeter_validate_wdg_cb(Fl_Widget*, void*)
 {
    Dstr *dstr = dStr_sized_new(128);
 
@@ -241,7 +241,7 @@ static void Menu_bugmeter_validate_wdg_cb(Fl_Widget*, void* )
 /*
  * Show info page for the bug meter
  */
-static void Menu_bugmeter_about_cb(Fl_Widget*, void* )
+static void Menu_bugmeter_about_cb(Fl_Widget*, void*)
 {
    a_UIcmd_open_urlstr(popup_bw, "http://www.dillo.org/help/bug_meter.html");
 }
@@ -250,7 +250,7 @@ static void Menu_bugmeter_about_cb(Fl_Widget*, void* )
  * Navigation History callback.
  * Go to selected URL.
  */
-static void Menu_history_cb(Fl_Widget *wid, void *data)
+static void Menu_history_cb(Fl_Widget*, void *data)
 {
    int mb = Fl::event_button();
    int offset = history_direction * VOIDP2INT(data);
@@ -280,8 +280,8 @@ static void Menu_popup_cb(void *data)
 {
    const Fl_Menu_Item *m = ((Fl_Menu_Item *)data)->popup(popup_x, popup_y);
 
-   if (m)
-      ((Fl_Widget *)m)->do_callback();
+   if (m && m->callback())
+      m->do_callback((Fl_Widget *)data);
    a_Timeout_remove();
 }
 
@@ -364,7 +364,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
       pm[2].deactivate();
    }
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
 }
 
 /*
@@ -387,7 +387,7 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
    a_Url_free(popup_url);
    popup_url = a_Url_dup(url);
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
 }
 
 /*
@@ -437,7 +437,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
       pm[7].deactivate();
    }
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
 }
 
 /*
@@ -464,7 +464,7 @@ void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
    hiddens_visible = hidvis;
    pm[2].label(hiddens_visible ? "Hide hiddens": "Show hiddens");
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
 }
 
 /*
@@ -497,7 +497,7 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
    popup_url = NULL;
 
    //pm->label(wid->visible() ? NULL : "File");
-   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
 }
 
 /*
@@ -519,7 +519,7 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
    a_Url_free(popup_url);
    popup_url = a_Url_dup(url);
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
 }
 
 /*
@@ -556,7 +556,7 @@ void a_Menu_history_popup(BrowserWindow *bw, int direction)
       pm[i].label(FL_NORMAL_LABEL, a_History_get_title(history_list[i], 1));
       pm[i].callback(Menu_history_cb, INT2VOIDP(i+1));
    }
-   a_Timeout_add(0.0, Menu_popup_cb, (void *)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
 }
 
 /*
