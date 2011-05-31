@@ -67,7 +67,7 @@ static struct iconset small_icons = {
    standard_icons.ImgHelp,
    new Fl_Pixmap(left_s_xpm),
    new Fl_Pixmap(left_si_xpm),
-   new Fl_Pixmap(right_i_xpm),
+   new Fl_Pixmap(right_s_xpm),
    new Fl_Pixmap(right_si_xpm),
    new Fl_Pixmap(stop_s_xpm),
    new Fl_Pixmap(stop_si_xpm),
