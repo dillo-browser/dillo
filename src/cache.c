@@ -311,6 +311,10 @@ static void Cache_entry_free(CacheEntry_t *entry)
    dStr_free(entry->UTF8Data, 1);
    if (entry->CharsetDecoder)
       a_Decode_free(entry->CharsetDecoder);
+   if (entry->TransferDecoder)
+      a_Decode_free(entry->TransferDecoder);
+   if (entry->ContentDecoder)
+      a_Decode_free(entry->ContentDecoder);
    dFree(entry);
 }
 

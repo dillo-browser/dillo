@@ -40,6 +40,7 @@ dillo-2.2.1 [not released yet]
    Patches: corvid
 +- Reintroduce bg_color dillorc option.
  - Make Dillo compile with Clang.
+ - Fix Textblock flushing.
    Patches: Johannes Hofmann
 +- Implement line-height.
  - Draw image maps when image not loaded.
@@ -47,6 +48,7 @@ dillo-2.2.1 [not released yet]
 +- Support @media rules.
  - Implement media-conditional @import rules.
  - Configure/Makefile cleanup.
+ - Fix meta refresh looping.
    Patches: Jeremy Henty
 
 -----------------------------------------------------------------------------
