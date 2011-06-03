@@ -7,14 +7,13 @@ Last update: March 2010
  Cookies in Dillo
 ==================
 
-Dillo's cookies implementation is guided by ongoing work by the HTTP State WG
-( http://www.ietf.org/dyn/wg/charter/httpstate-charter ) to specify current
-real-world cookies usage.
+The current specification for cookies is RFC 6265
+( http://tools.ietf.org/html/rfc6265 ).
 
 Cookies are handled by a dpi (plugin) which shares them between your
 instances of Dillo.
 
-Currently, cookie limits are: 20 per domain, and 1200 in total.
+Current cookie limits are: 20 per domain, and 1200 in total.
 
 When the dpi exits, cookies that you have ACCEPTed are saved to
 ~/.dillo/cookies.txt, and ACCEPT_SESSION cookies are forgotten.
@@ -66,15 +65,10 @@ information (SPAM, Spying, etc).
 with more information than you have about yourself.
 
  Some people may tell you this is "paranoid". But please, take my words
-as those of someone that has written a web browser, a cookies implementation,
-and that has deep understanding of HTTP (RFC-2068) and cookies (RFC-2965).
-
- Non technical persons may like to read:
-   http://www.junkbusters.com/cookies.html
+as those of someone who has written a web browser, a cookies implementation,
+and who has deep understanding of HTTP and cookies.
 
  The dillo project is especially concerned about privacy and security
 issues. Our advice is to avoid cookies whenever possible and at most set
 ACCEPT_SESSION to specific, trusted sites.  -- You have been warned.
 
-
-Thats all folks!
