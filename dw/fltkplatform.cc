@@ -75,30 +75,12 @@ Fl_Font FltkFont::FontFamily::get (int attrs)
    return font[idx];
 }
 
+
+
 FltkFont::FltkFont (core::style::FontAttrs *attrs)
 {
-   if (!systemFonts) {
-      systemFonts = new container::typed::HashTable
-         <lout::object::ConstString, FontFamily> (true, true);
-
-      int k = Fl::set_fonts ("-*");
-      for (int i = 0; i < k; i++) {
-         int t;
-         Fl::get_font_name ((Fl_Font) i, &t);
-         const char *name = Fl::get_font ((Fl_Font) i);
-         object::String *familyName = new object::String(name + 1);
-         FontFamily *family = systemFonts->get (familyName);
-
-         if (family) {
-            family->set ((Fl_Font) i, t);
-            delete familyName;
-         } else {
-            family = new FontFamily ();
-            family->set ((Fl_Font) i, t);
-            systemFonts->put (familyName, family);
-         }
-      }
-   }
+   if (!systemFonts)
+      initSystemFonts ();
 
    copyAttrs (attrs);
 
@@ -129,9 +111,35 @@ FltkFont::~FltkFont ()
    fontsTable->remove (this);
 }
 
+void FltkFont::initSystemFonts ()
+{
+   systemFonts = new container::typed::HashTable
+      <lout::object::ConstString, FontFamily> (true, true);
+
+   int k = Fl::set_fonts ("-*");
+   for (int i = 0; i < k; i++) {
+      int t;
+      Fl::get_font_name ((Fl_Font) i, &t);
+      const char *name = Fl::get_font ((Fl_Font) i);
+      object::String *familyName = new object::String(name + 1);
+      FontFamily *family = systemFonts->get (familyName);
+
+      if (family) {
+         family->set ((Fl_Font) i, t);
+         delete familyName;
+      } else {
+         family = new FontFamily ();
+         family->set ((Fl_Font) i, t);
+         systemFonts->put (familyName, family);
+      }
+   }
+}
+
 bool
 FltkFont::fontExists (const char *name)
 {
+   if (!systemFonts)
+      initSystemFonts ();
    object::ConstString familyName (name);
    return systemFonts->get (&familyName) != NULL;
 }

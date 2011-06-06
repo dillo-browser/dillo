@@ -32,6 +32,8 @@ class FltkFont: public core::style::Font
    FltkFont (core::style::FontAttrs *attrs);
    ~FltkFont ();
 
+   static void initSystemFonts ();
+
 public:
    Fl_Font font;
 

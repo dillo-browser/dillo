@@ -48,6 +48,8 @@
 #include "cookies.h"
 #include "auth.h"
 
+#include "dw/fltkcore.hh"
+
 /*
  * Command line options structure
  */
@@ -213,14 +215,12 @@ static void custMenuLabelMeasure(const Fl_Label* o, int& W, int& H)
    fl_measure(o->value, W, H, interpret_symbols);
 }
 
-#if 0
-PORT1.3
 /*
  * Tell the user if default/pref fonts can't be found.
  */
 static void checkFont(const char *name, const char *type)
 {
-   if (::fltk::font(name) == NULL)
+   if (! dw::fltk::FltkFont::fontExists(name))
       MSG_WARN("preferred %s font \"%s\" not found.\n", type, name);
 }
 
@@ -232,7 +232,7 @@ static void checkPreferredFonts()
    checkFont(prefs.font_cursive, "cursive");
    checkFont(prefs.font_fantasy, "fantasy");
 }
-#endif
+
 /*
  * Given a command line argument, build a DilloUrl for it.
  */
@@ -371,16 +371,13 @@ int main(int argc, char **argv)
    // Use to permit '&' interpretation.
    Fl::set_labeltype(FL_FREE_LABELTYPE,custMenuLabelDraw,custMenuLabelMeasure);
 
-#if 0
-PORT1.3
    checkPreferredFonts();
+
    /* use preferred font for UI */
-   fltk::Font *dfont = fltk::font(prefs.font_sans_serif, 0);
-   if (dfont) {
-      fltk::Widget::default_style->textfont(dfont);
-      fltk::Widget::default_style->labelfont(dfont);
-   }
-#endif
+   Fl::set_font(FL_HELVETICA, prefs.font_sans_serif); // this seems to be the
+                                                      // only way to set the
+                                                      // default font in fltk1.3
+
    // Create a new UI/bw pair
    BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, xid, NULL);
 
