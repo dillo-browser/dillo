@@ -535,7 +535,8 @@ CssContext::~CssContext () {
  */
 void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          DoctreeNode *node,
-         CssPropertyList *tagStyle, CssPropertyList *nonCssHints) {
+         CssPropertyList *tagStyle, CssPropertyList *tagStyleImportant,
+         CssPropertyList *nonCssHints) {
    if (sheet[CSS_PRIMARY_USER_AGENT])
       sheet[CSS_PRIMARY_USER_AGENT]->apply (props, docTree, node);
 
@@ -553,6 +554,9 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
 
    if (sheet[CSS_PRIMARY_AUTHOR_IMPORTANT])
       sheet[CSS_PRIMARY_AUTHOR_IMPORTANT]->apply (props, docTree, node);
+
+   if (tagStyleImportant)
+        tagStyleImportant->apply (props);
 
    if (sheet[CSS_PRIMARY_USER_IMPORTANT])
       sheet[CSS_PRIMARY_USER_IMPORTANT]->apply (props, docTree, node);

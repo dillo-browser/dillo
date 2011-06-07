@@ -47,8 +47,9 @@ class CssParser {
       void ignoreStatement();
 
    public:
-      static CssPropertyList *parseDeclarationBlock(const char *buf,
-                                                    int buflen);
+      static void parseDeclarationBlock(const char *buf, int buflen,
+                                        CssPropertyList *props,
+                                        CssPropertyList *propsImortant);
       static void parse(DilloHtml *html, DilloUrl *url, CssContext *context,
                         const char *buf, int buflen, CssOrigin origin);
       static const char *propertyNameString(CssPropertyName name);

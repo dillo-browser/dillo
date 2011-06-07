@@ -475,7 +475,8 @@ class CssContext {
                     CssPrimaryOrder order);
       void apply (CssPropertyList *props,
          Doctree *docTree, DoctreeNode *node,
-         CssPropertyList *tagStyle, CssPropertyList *nonCssHints);
+         CssPropertyList *tagStyle, CssPropertyList *tagStyleImportant,
+         CssPropertyList *nonCssHints);
 };
 
 #endif
