@@ -1403,11 +1403,6 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
              word->content.type == core::Content::WIDGET) {
 
             if (word->size.width > 0) {
-               if (word->style->hasBackground ()) {
-                  drawBox (view, word->style, area, xWidget,
-                           yWidgetBase - line->boxAscent, word->size.width,
-                           line->boxAscent + line->boxDescent, false);
-               }
                if (word->content.type == core::Content::WIDGET) {
                   core::Widget *child = word->content.widget;
                   core::Rectangle childArea;
@@ -1415,6 +1410,11 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                   if (child->intersects (area, &childArea))
                      child->draw (view, &childArea);
                } else {
+                  if (word->style->hasBackground ()) {
+                     drawBox (view, word->style, area, xWidget,
+                              yWidgetBase - line->boxAscent, word->size.width,
+                              line->boxAscent + line->boxDescent, false);
+                  }
                   drawText(wordIndex, view, area, xWidget, yWidgetBase);
                }
             }
