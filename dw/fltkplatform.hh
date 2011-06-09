@@ -39,6 +39,7 @@ public:
 
    static FltkFont *create (core::style::FontAttrs *attrs);
    static bool fontExists (const char *name);
+   static Fl_Font get (const char *name, int attrs);
 };
 
 

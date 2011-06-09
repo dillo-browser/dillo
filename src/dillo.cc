@@ -374,9 +374,10 @@ int main(int argc, char **argv)
    checkPreferredFonts();
 
    /* use preferred font for UI */
-   Fl::set_font(FL_HELVETICA, prefs.font_sans_serif); // this seems to be the
-                                                      // only way to set the
-                                                      // default font in fltk1.3
+   Fl_Font defaultFont = dw::fltk::FltkFont::get (prefs.font_sans_serif, 0);
+   Fl::set_font(FL_HELVETICA, defaultFont); // this seems to be the
+                                            // only way to set the
+                                            // default font in fltk1.3
 
    // Create a new UI/bw pair
    BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, xid, NULL);

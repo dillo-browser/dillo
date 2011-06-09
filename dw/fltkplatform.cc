@@ -111,17 +111,34 @@ FltkFont::~FltkFont ()
    fontsTable->remove (this);
 }
 
+static void strstrip(char *big, const char *little)
+{
+   if (strlen(big) >= strlen(little) &&
+      strcasecmp(big + strlen(big) - strlen(little), little) == 0)
+      *(big + strlen(big) - strlen(little)) = '\0';
+}
+
 void FltkFont::initSystemFonts ()
 {
    systemFonts = new container::typed::HashTable
       <lout::object::ConstString, FontFamily> (true, true);
 
-   int k = Fl::set_fonts ("-*");
+   int k = Fl::set_fonts ("-*-iso10646-1");
    for (int i = 0; i < k; i++) {
       int t;
-      Fl::get_font_name ((Fl_Font) i, &t);
-      const char *name = Fl::get_font ((Fl_Font) i);
-      object::String *familyName = new object::String(name + 1);
+      char *name = strdup (Fl::get_font_name ((Fl_Font) i, &t));
+
+      // normalize font family names (strip off "bold", "italic")
+      if (t & FL_ITALIC)
+         strstrip(name, " italic");
+      if (t & FL_BOLD)
+         strstrip(name, " bold");
+
+      MSG("Found font: %s%s%s\n", name, t & FL_BOLD ? " bold" : "",
+                                  t & FL_ITALIC ? " italic" : "");
+
+      object::String *familyName = new object::String(name);
+      free (name);
       FontFamily *family = systemFonts->get (familyName);
 
       if (family) {
@@ -142,6 +159,19 @@ FltkFont::fontExists (const char *name)
       initSystemFonts ();
    object::ConstString familyName (name);
    return systemFonts->get (&familyName) != NULL;
+}
+
+Fl_Font
+FltkFont::get (const char *name, int attrs)
+{
+   if (!systemFonts)
+      initSystemFonts ();
+   object::ConstString familyName (name);
+   FontFamily *family = systemFonts->get (&familyName);
+   if (family)
+      return family->get (attrs);
+   else
+      return FL_HELVETICA;
 }
 
 bool
