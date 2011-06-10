@@ -718,7 +718,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
      PanelSize = prefs.panel_size;
      Small_Icons = prefs.small_icons;
      CuteColor = 206;
-     Panelmode = (UIPanelmode) prefs.fullwindow_start;
+     Panelmode = (prefs.fullwindow_start) ? UI_HIDDEN : UI_NORMAL;
    }
 
    // Control panel
@@ -758,9 +758,8 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
 
    customize(0);
 
-   if (Panelmode) {
-      //Panel->hide();
-      //StatusBar->hide();
+   if (Panelmode == UI_HIDDEN) {
+      fullscreen_toggle();
    }
 }
 
@@ -897,7 +896,8 @@ void UI::set_location(const char *str)
 void UI::focus_location()
 {
    if (get_panelmode() == UI_HIDDEN) {
-      set_panelmode(UI_TEMPORARILY_SHOW_PANELS);
+      // Temporary panel handling is disabled now.
+      //set_panelmode(UI_TEMPORARILY_SHOW_PANELS);
    }
    Location->take_focus();
    // Make text selected when already focused.
@@ -1159,7 +1159,7 @@ void UI::findbar_toggle(bool add)
     * This is tricky: As fltk-1.3 resizes hidden widgets (which it
     * doesn't resize when visible!). We need to go through hoops to
     * get the desired behaviour.
-    * Most probably this is a bug in FLTK and we have to report it.
+    * (STR#2639 in FLTK bug tracker).
     */
 
    if (add) {
@@ -1190,30 +1190,26 @@ void UI::findbar_toggle(bool add)
  */
 void UI::fullscreen_toggle()
 {
-   int dh = 0;
    int hide = StatusBar->visible();
 
    // hide/show panels
    init_sizes();
    if (MenuBar) {
-      dh += mh;
       hide ? MenuBar->size(0,0) : MenuBar->size(w(),mh);
       hide ? MenuBar->hide() : MenuBar->show();
    }
    if (LocBar) {
-      dh += lh;
       hide ? LocBar->size(0,0) : LocBar->size(w(),lh);
       hide ? LocBar->hide() : LocBar->show();
    }
    if (NavBar) {
-      dh += nh;
       hide ? NavBar->size(0,0) : NavBar->size(w(),nh);
       hide ? NavBar->hide() : NavBar->show();
    }
    if (StatusBar) {
-      dh += sh;
       hide ? StatusBar->size(0,0) : StatusBar->size(w(),sh);;
       hide ? StatusBar->hide() : StatusBar->show();;
+      StatusBar->rearrange();
    }
 
    TopGroup->rearrange();
