@@ -48,8 +48,8 @@
 
 # Default fonts:
 #
-# If FLTK2 has been configured with Xft enabled (the default), you can
-# use scalable fonts such as DejaVu or Liberation (try running "fc-list").
+# If FLTK has been configured with Xft enabled (the default), you can use
+# scalable fonts such as DejaVu or Liberation (try running "fc-list").
 #font_serif="DejaVu Serif"
 #font_sans_serif="DejaVu Sans"
 #font_cursive="URW Chancery L"
