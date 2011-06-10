@@ -173,6 +173,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
    ww = 140 + nb*(bw+10);
 
    Fl_Window *window = new Fl_Window(ww,wh,"Choice5");
+   window->set_modal();
    window->begin();
     Fl_Group* ib = new Fl_Group(0,0,window->w(),window->h());
     ib->begin();
