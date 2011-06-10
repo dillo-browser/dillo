@@ -111,7 +111,6 @@ static void text_window_close_cb(Fl_Widget *, void *vtd)
 void a_Dialog_text_window(const char *txt, const char *title)
 {
    int wh = prefs.height, ww = prefs.width, bh = 30;
-// Font *textfont = font(prefs.font_monospace, 0);
 
    Fl_Window *window = new Fl_Window(ww, wh, title ? title : "Dillo text");
    Fl_Group::current(0);
@@ -121,17 +120,7 @@ void a_Dialog_text_window(const char *txt, const char *title)
     buf->text(txt);
     Fl_Text_Display *td = new Fl_Text_Display(0,0,ww, wh-bh);
     td->buffer(buf);
-
-#if 0
-PORT1.3
-    if (textfont)
-       td->textfont(textfont);
-    td->textsize((int) rint(13.0 * prefs.font_factor));
-    fltk::setfont(td->textfont(), td->textsize());
-#else
-    td->textfont(FL_COURIER);
-    td->textsize((int) rint(13.0 * prefs.font_factor));
-#endif
+    td->textsize((int) rint(14.0 * prefs.font_factor));
 
     /* enable wrapping lines; text uses entire width of window */
     td->wrap_mode(true, false);
