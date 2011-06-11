@@ -320,11 +320,19 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
    for (int col = 0; col < colspanEff; col++)
       for (int row = 0; row < rowspan; row++)
          if (!(col == 0 && row == 0)) {
+            int i = (curRow + row) * numCols + curCol + col;
+
+            child = children->get(i);
+            if (child) {
+               MSG("Overlapping spans in table.\n");
+               assert(child->type == Child::SPAN_SPACE);
+               delete child;
+            }
             child = new Child ();
             child->type = Child::SPAN_SPACE;
             child->spanSpace.startCol = curCol;
             child->spanSpace.startRow = curRow;
-            children->set ((curRow + row) * numCols + curCol + col, child);
+            children->set (i, child);
          }
 
    // Set the "root" cell.
