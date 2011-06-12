@@ -52,6 +52,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    n->wordStyle = NULL;
    n->backgroundStyle = NULL;
    n->styleAttrProperties = NULL;
+   n->styleAttrPropertiesImportant = NULL;
    n->nonCssProperties = NULL;
    n->inheritBackgroundColor = false;
 }
@@ -82,6 +83,7 @@ void StyleEngine::startElement (int element) {
    stack->increase ();
    Node *n = stack->getRef (stack->size () - 1);
    n->styleAttrProperties = NULL;
+   n->styleAttrPropertiesImportant = NULL;
    n->nonCssProperties = NULL;
    n->style = NULL;
    n->wordStyle = NULL;
@@ -138,10 +140,14 @@ void StyleEngine::setStyle (const char *styleAttr) {
    Node *n = stack->getRef (stack->size () - 1);
    assert (n->styleAttrProperties == NULL);
    // parse style information from style="" attribute, if it exists
-   if (styleAttr && prefs.parse_embedded_css)
-      n->styleAttrProperties =
-         CssParser::parseDeclarationBlock (styleAttr,
-                                           strlen (styleAttr));
+   if (styleAttr && prefs.parse_embedded_css) {
+      n->styleAttrProperties = new CssPropertyList (true);
+      n->styleAttrPropertiesImportant = new CssPropertyList (true);
+   
+      CssParser::parseDeclarationBlock (styleAttr, strlen (styleAttr),
+                                        n->styleAttrProperties,
+                                        n->styleAttrPropertiesImportant);
+   }
 };
 
 /**
@@ -213,6 +219,8 @@ void StyleEngine::endElement (int element) {
 
    if (n->styleAttrProperties)
       delete n->styleAttrProperties;
+   if (n->styleAttrPropertiesImportant)
+      delete n->styleAttrPropertiesImportant;
    if (n->nonCssProperties)
       delete n->nonCssProperties;
    if (n->style)
@@ -706,7 +714,8 @@ Style * StyleEngine::backgroundStyle () {
  * This method is private. Call style() to get a current style object.
  */
 Style * StyleEngine::style0 (int i) {
-   CssPropertyList props, *styleAttrProperties, *nonCssProperties;
+   CssPropertyList props, *styleAttrProperties, *styleAttrPropertiesImportant;
+   CssPropertyList *nonCssProperties;
    // get previous style from the stack
    StyleAttrs attrs = *stack->getRef (i - 1)->style;
 
@@ -723,11 +732,13 @@ Style * StyleEngine::style0 (int i) {
    preprocessAttrs (&attrs);
 
    styleAttrProperties = stack->getRef (i)->styleAttrProperties;
+   styleAttrPropertiesImportant = stack->getRef(i)->styleAttrPropertiesImportant;
    nonCssProperties = stack->getRef (i)->nonCssProperties;
 
    // merge style information
    cssContext->apply (&props, doctree, stack->getRef(i)->doctreeNode,
-                      styleAttrProperties, nonCssProperties);
+                      styleAttrProperties, styleAttrPropertiesImportant,
+                      nonCssProperties);
 
    // apply style
    apply (i, &attrs, &props);

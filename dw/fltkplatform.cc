@@ -421,7 +421,7 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
    FltkFont *ff = (FltkFont*) font;
    int curr = 0, next = 0, nb;
 
-   if (font->fontVariant == 1) {
+   if (font->fontVariant == core::style::FONT_VARIANT_SMALL_CAPS) {
       int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
       for (curr = 0; next < len; curr = next) {
          next = nextGlyph(text, curr);

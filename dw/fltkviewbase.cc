@@ -543,7 +543,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
       char chbuf[4];
       wchar_t wc, wcu;
 
-      if (font->fontVariant == 1) {
+      if (font->fontVariant == core::style::FONT_VARIANT_SMALL_CAPS) {
          int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
          for (curr = 0; next < len; curr = next) {
             next = theLayout->nextGlyph(text, curr);
