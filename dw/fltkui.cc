@@ -298,10 +298,7 @@ static void setButtonEvent(dw::core::EventButton *event)
 void FltkLabelButtonResource::widgetCallback (Fl_Widget *widget,
                                               void *data)
 {
-   if ((widget->when () & FL_WHEN_RELEASE) &&
-       ((Fl::event_key() == FL_Enter) ||
-        (Fl::event_button() == FL_LEFT_MOUSE ||
-         Fl::event_button() == FL_MIDDLE_MOUSE))) {
+   if (!Fl::event_button3()) {
       FltkLabelButtonResource *lbr = (FltkLabelButtonResource*) data;
       dw::core::EventButton event;
       setButtonEvent(&event);
@@ -346,17 +343,12 @@ void FltkComplexButtonResource::widgetCallback (Fl_Widget *widget,
 {
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
 
-   if (widget->when() == FL_WHEN_RELEASE &&
-       ((Fl::event_key() == FL_Enter) ||
-        (Fl::event_button() == FL_LEFT_MOUSE ||
-         Fl::event_button() == FL_MIDDLE_MOUSE))) {
+   if (!Fl::event_button3()) {
       res->click_x = Fl::event_x();
       res->click_y = Fl::event_y();
       dw::core::EventButton event;
       setButtonEvent(&event);
       res->emitClicked(&event);
-   } else {
-      ((FltkViewBase*)res->flatView)->handle(Fl::event());
    }
 }
 
