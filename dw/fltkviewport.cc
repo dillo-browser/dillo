@@ -65,7 +65,7 @@ FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
    add (vscrollbar);
 
    scrollX = scrollY = scrollDX = scrollDY = 0;
-   dragScrolling = 0;
+   horScrolling = verScrolling = dragScrolling = 0;
 
    gadgetOrientation[0] = GADGET_HORIZONTAL;
    gadgetOrientation[1] = GADGET_HORIZONTAL;
@@ -225,11 +225,6 @@ int FltkViewport::handle (int event)
 {
    _MSG("FltkViewport::handle %d\n", event);
 
-   if (!dragScrolling &&
-       ((vscrollbar->visible() && Fl::event_inside(vscrollbar)) ||
-        (hscrollbar->visible() && Fl::event_inside(hscrollbar))))
-      return Fl_Group::handle(event);
-
    switch(event) {
    case FL_KEYBOARD:
       /* Tell fltk we want to receive KEYBOARD events as SHORTCUT.
@@ -248,7 +243,13 @@ int FltkViewport::handle (int event)
       break;
 
    case FL_PUSH:
-      if (FltkWidgetView::handle (event) == 0 &&
+      if (vscrollbar->visible() && Fl::event_inside(vscrollbar)) {
+         if (vscrollbar->handle(event))
+            verScrolling = 1;
+      } else if (hscrollbar->visible() && Fl::event_inside(hscrollbar)) {
+         if (hscrollbar->handle(event))
+            horScrolling = 1;
+      } else if (FltkWidgetView::handle (event) == 0 &&
           Fl::event_button() == FL_MIDDLE_MOUSE) {
          /* pass event so that middle click can open link in new window */
          dragScrolling = 1;
@@ -260,13 +261,17 @@ int FltkViewport::handle (int event)
       break;
 
    case FL_DRAG:
-      if (Fl::event_button() == FL_MIDDLE_MOUSE) {
-         if (dragScrolling) {
-            scroll(dragX - Fl::event_x(), dragY - Fl::event_y());
-            dragX = Fl::event_x();
-            dragY = Fl::event_y();
-            return 1;
-         }
+      if (dragScrolling && Fl::event_button() == FL_MIDDLE_MOUSE) {
+         scroll(dragX - Fl::event_x(), dragY - Fl::event_y());
+         dragX = Fl::event_x();
+         dragY = Fl::event_y();
+         return 1;
+      } else if (verScrolling) {
+         vscrollbar->handle(event);
+         return 1;
+      } else if (horScrolling) {
+         hscrollbar->handle(event);
+         return 1;
       }
       break;
 
@@ -278,6 +283,12 @@ int FltkViewport::handle (int event)
       if (Fl::event_button() == FL_MIDDLE_MOUSE) {
          dragScrolling = 0;
          setCursor (core::style::CURSOR_DEFAULT);
+      } else if (verScrolling && vscrollbar->handle(event)) {
+         verScrolling = 0;
+         return 1;
+      } else if (horScrolling && hscrollbar->handle(event)) {
+         horScrolling = 0;
+         return 1;
       }
       break;
 
