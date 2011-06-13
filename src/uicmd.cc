@@ -210,8 +210,12 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    add(btn);
    btn->callback(tab_btn_cb, this);
 
-   if (focus)
+   if (focus) {
       switch_tab(btn);
+   } else if (num_tabs() == 2) {
+      // no focus and tabbar added: redraw current page
+      Wizard->redraw();
+   }
    if (num_tabs() == 1)
       btn->hide();
    rearrange();
