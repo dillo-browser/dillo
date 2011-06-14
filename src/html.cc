@@ -2456,12 +2456,14 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
          html->InVisitedLink = true;
          html->styleEngine->setPseudoVisited ();
          if (html->non_css_visited_color != -1)
-            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR,
+                                             CSS_TYPE_COLOR,
                                              html->non_css_visited_color);
       } else {
          html->styleEngine->setPseudoLink ();
          if (html->non_css_link_color != -1)
-            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR,
+                                             CSS_TYPE_COLOR,
                                              html->non_css_link_color);
       }
 
@@ -2739,9 +2741,11 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
                                         CSS_TYPE_LENGTH_PERCENTAGE, size_top);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-                                        CSS_TYPE_LENGTH_PERCENTAGE, size_bottom);
+                                        CSS_TYPE_LENGTH_PERCENTAGE,
+                                        size_bottom);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
-                                        CSS_TYPE_LENGTH_PERCENTAGE, size_bottom);
+                                        CSS_TYPE_LENGTH_PERCENTAGE,
+                                        size_bottom);
    }
 
    HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
