@@ -137,7 +137,7 @@ ComplexButton::ComplexButton(int X, int Y, int W, int H, const char *L)
 ComplexButton::~ComplexButton() {
    /*
     * The Fl_Group destructor clear()s the children, but layout expects
-    * the flat view to be around until it deletes if.
+    * the flat view to be around until it deletes it.
     */
    remove(0);
 }
