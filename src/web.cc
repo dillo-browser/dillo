@@ -78,8 +78,11 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
       /* This method frees the old dw if any */
       layout->setWidget(dw);
 
-      /* Clear the title bar for pages without a <TITLE> tag */
-      a_UIcmd_set_page_title(Web->bw, "");
+      /* Set the page title with the bare filename (e.g. for images),
+       * HTML pages with a <TITLE> tag will overwrite it later */
+      const char *p = strrchr(URL_STR(Web->url), '/');
+      a_UIcmd_set_page_title(Web->bw, p ? p+1 : "");
+
       a_UIcmd_set_location_text(Web->bw, URL_STR(Web->url));
       /* Reset both progress bars */
       a_UIcmd_set_page_prog(Web->bw, 0, 2);

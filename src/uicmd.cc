@@ -296,8 +296,8 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
 
       // Update window title
       if ((bw = a_UIcmd_get_bw_by_widget(cbtn->ui()))) {
-         const char *title = a_History_get_title(NAV_TOP_UIDX(bw), 1);
-         a_UIcmd_set_page_title(bw, title ? title : "");
+         const char *title = (cbtn->ui())->label();
+         cbtn->window()->copy_label(title ? title : "");
       }
    }
 }
@@ -1157,6 +1157,7 @@ void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
          uint_t i = MIN(size - 4, 1 + a_Utf8_end_of_char(title, size - 8));
          snprintf(title + i, 4, "...");
       }
+      BW2UI(bw)->copy_label(title);
       BW2UI(bw)->window()->copy_label(title);
    }
    BW2UI(bw)->tabs()->set_tab_label(BW2UI(bw), label);
