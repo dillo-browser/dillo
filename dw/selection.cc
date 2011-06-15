@@ -103,8 +103,9 @@ bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
    Widget *itWidget = it->getWidget ();
    bool ret = false;
 
-   if (event && event->button == 1 &&
-       !withinContent && event->numPressed == 2) {
+   if (!event) return ret;
+
+   if (event->button == 1 && !withinContent && event->numPressed == 2) {
       // When the user double-clicks on empty parts, emit the double click
       // signal instead of normal processing. Used for full screen
       // mode.
@@ -114,58 +115,51 @@ bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
       highlight (false, 0);
       reset ();
       ret = true;
-   } else {
-      if (linkNo != -1) {
-         // link handling
-         if (event) {
-            (void) layout->emitLinkPress (itWidget, linkNo, -1, -1, -1, event);
-            resetLink ();
-            linkState = LINK_PRESSED;
-            linkButton = event->button;
-            DeepIterator *newLink = new DeepIterator (it);
-            if (newLink->isEmpty ()) {
-               delete newLink;
-               resetLink ();
-            } else {
-               link = newLink;
-               // It may be that the user has pressed on something activatable
-               // (linkNo != -1), but there is no contents, e.g. with images
-               // without ALTernative text.
-               if (link) {
-                  linkChar = correctCharPos (link, charPos);
-                  linkNumber = linkNo;
-               }
-            }
-            // We do not return the value of the signal method,
-            // but we do actually process this event.
-            ret = true;
-         }
+   } else if (linkNo != -1) {
+      // link handling
+      (void) layout->emitLinkPress (itWidget, linkNo, -1, -1, -1, event);
+      resetLink ();
+      linkState = LINK_PRESSED;
+      linkButton = event->button;
+      DeepIterator *newLink = new DeepIterator (it);
+      if (newLink->isEmpty ()) {
+         delete newLink;
+         resetLink ();
       } else {
-         // normal selection handling
-         if (event && event->button == 1) {
-            highlight (false, 0);
-            resetSelection ();
-
-            selectionState = SELECTING;
-            DeepIterator *newFrom = new DeepIterator (it);
-            if (newFrom->isEmpty ()) {
-               delete newFrom;
-               resetSelection ();
-            } else {
-               from = newFrom;
-               fromChar = correctCharPos (from, charPos);
-               to = from->cloneDeepIterator ();
-               toChar = correctCharPos (to, charPos);
-            }
-            ret = true;
-         } else {
-            if (event && event->button == 3) {
-               // menu popup
-               layout->emitLinkPress (itWidget, -1, -1, -1, -1, event);
-               ret = true;
-            }
+         link = newLink;
+         // It may be that the user has pressed on something activatable
+         // (linkNo != -1), but there is no contents, e.g. with images
+         // without ALTernative text.
+         if (link) {
+            linkChar = correctCharPos (link, charPos);
+            linkNumber = linkNo;
          }
       }
+      // We do not return the value of the signal method,
+      // but we do actually process this event.
+      ret = true;
+   } else if (event->button == 1) {
+      // normal selection handling
+      MSG("SelectionState::buttonPress normal selection handling\n");
+      highlight (false, 0);
+      resetSelection ();
+
+      selectionState = SELECTING;
+      DeepIterator *newFrom = new DeepIterator (it);
+      if (newFrom->isEmpty ()) {
+         delete newFrom;
+         resetSelection ();
+      } else {
+         from = newFrom;
+         fromChar = correctCharPos (from, charPos);
+         to = from->cloneDeepIterator ();
+         toChar = correctCharPos (to, charPos);
+      }
+      ret = true;
+   } else if (event->button == 3) {
+      // menu popup
+      layout->emitLinkPress (itWidget, -1, -1, -1, -1, event);
+      ret = true;
    }
 
    return ret;
