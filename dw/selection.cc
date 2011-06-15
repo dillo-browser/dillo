@@ -140,7 +140,6 @@ bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
       ret = true;
    } else if (event->button == 1) {
       // normal selection handling
-      MSG("SelectionState::buttonPress normal selection handling\n");
       highlight (false, 0);
       resetSelection ();
 
