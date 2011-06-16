@@ -44,10 +44,6 @@ namespace core {
  *                                          otherwise -1
  * <tr><td>dw::core::EventButton *event <td>the event itself; only the button
  *                                          is used
- * <tr><td>bool withinContent           <td>true, if there is some selectable
- *                                          content unter the mouse cursor; if
- *                                          set to false, the "full screen"
- *                                          feature is used on double click.
  * </table>
  *
  * Look also at dw::core::SelectionState::handleEvent, which may be useful
@@ -184,31 +180,7 @@ class SelectionState
 public:
    enum { END_OF_WORD =  1 << 30 };
 
-   class DoubleClickReceiver: public lout::signal::Receiver
-   {
-   public:
-      virtual void doubleClick () = 0;
-   };
-
 private:
-   class DoubleClickEmitter: public lout::signal::Emitter
-   {
-   private:
-      enum { DOUBLE_CLICK };
-
-   protected:
-      bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
-                           int argc, Object **argv);
-
-   public:
-      inline void connectDoubleClick (DoubleClickReceiver *receiver)
-      { connect (receiver); }
-
-      inline void emitDoubleClick () { emitVoid (DOUBLE_CLICK, 0, NULL); }
-   };
-
-   DoubleClickEmitter doubleClickEmitter;
-
    Layout *layout;
 
    // selection
@@ -252,19 +224,15 @@ public:
 
    inline void setLayout (Layout *layout) { this->layout = layout; }
    void reset ();
-   inline void connectDoubleClick (DoubleClickReceiver *receiver)
-   { doubleClickEmitter.connectDoubleClick (receiver); }
-
    bool buttonPress (Iterator *it, int charPos, int linkNo,
-                     EventButton *event, bool withinContent);
+                     EventButton *event);
    bool buttonRelease (Iterator *it, int charPos, int linkNo,
-                       EventButton *event, bool withinContent);
+                       EventButton *event);
    bool buttonMotion (Iterator *it, int charPos, int linkNo,
-                      EventMotion *event, bool withinContent);
+                      EventMotion *event);
 
    bool handleEvent (EventType eventType, Iterator *it, int charPos,
-                     int linkNo, MousePositionEvent *event,
-                     bool withinContent);
+                     int linkNo, MousePositionEvent *event);
 };
 
 } // namespace dw

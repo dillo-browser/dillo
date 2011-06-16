@@ -60,17 +60,6 @@ SelectionState::~SelectionState ()
    reset ();
 }
 
-
-bool SelectionState::DoubleClickEmitter::emitToReceiver (lout::signal::Receiver
-                                                         *receiver,
-                                                         int signalNo,
-                                                         int argc,
-                                                         Object **argv)
-{
-   ((DoubleClickReceiver*)receiver)->doubleClick ();
-   return false;
-}
-
 void SelectionState::reset ()
 {
    resetSelection ();
@@ -98,24 +87,14 @@ void SelectionState::resetLink ()
 }
 
 bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
-                                  EventButton *event, bool withinContent)
+                                  EventButton *event)
 {
    Widget *itWidget = it->getWidget ();
    bool ret = false;
 
    if (!event) return ret;
 
-   if (event->button == 1 && !withinContent && event->numPressed == 2) {
-      // When the user double-clicks on empty parts, emit the double click
-      // signal instead of normal processing. Used for full screen
-      // mode.
-      doubleClickEmitter.emitDoubleClick ();
-      // Reset everything, so that dw::core::Selection::buttonRelease will
-      // ignore the "release" event following soon.
-      highlight (false, 0);
-      reset ();
-      ret = true;
-   } else if (linkNo != -1) {
+   if (linkNo != -1) {
       // link handling
       (void) layout->emitLinkPress (itWidget, linkNo, -1, -1, -1, event);
       resetLink ();
@@ -165,7 +144,7 @@ bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
 }
 
 bool SelectionState::buttonRelease (Iterator *it, int charPos, int linkNo,
-                                    EventButton *event, bool withinContent)
+                                    EventButton *event)
 {
    Widget *itWidget = it->getWidget ();
    bool ret = false;
@@ -207,7 +186,7 @@ bool SelectionState::buttonRelease (Iterator *it, int charPos, int linkNo,
 }
 
 bool SelectionState::buttonMotion (Iterator *it, int charPos, int linkNo,
-                                   EventMotion *event, bool withinContent)
+                                   EventMotion *event)
 {
    if (linkState == LINK_PRESSED) {
       //link handling
@@ -231,21 +210,17 @@ bool SelectionState::buttonMotion (Iterator *it, int charPos, int linkNo,
  */
 bool SelectionState::handleEvent (EventType eventType, Iterator *it,
                                   int charPos, int linkNo,
-                                  MousePositionEvent *event,
-                                  bool withinContent)
+                                  MousePositionEvent *event)
 {
    switch (eventType) {
    case BUTTON_PRESS:
-      return buttonPress (it, charPos, linkNo, (EventButton*)event,
-                          withinContent);
+      return buttonPress (it, charPos, linkNo, (EventButton*)event);
 
    case BUTTON_RELEASE:
-      return buttonRelease (it, charPos, linkNo, (EventButton*)event,
-                            withinContent);
+      return buttonRelease (it, charPos, linkNo, (EventButton*)event);
 
    case BUTTON_MOTION:
-      return buttonMotion (it, charPos, linkNo, (EventMotion*)event,
-                           withinContent);
+      return buttonMotion (it, charPos, linkNo, (EventMotion*)event);
 
 
    default:
