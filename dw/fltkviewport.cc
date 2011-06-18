@@ -23,6 +23,7 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
+#include <FL/names.h>
 
 #include <stdio.h>
 #include "../lout/msg.h"
@@ -64,6 +65,7 @@ FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
    vscrollbar->hide();
    add (vscrollbar);
 
+   hasDragScroll = 1;
    scrollX = scrollY = scrollDX = scrollDY = 0;
    horScrolling = verScrolling = dragScrolling = 0;
 
@@ -223,7 +225,7 @@ void FltkViewport::draw ()
 
 int FltkViewport::handle (int event)
 {
-   _MSG("FltkViewport::handle %d\n", event);
+   _MSG("FltkViewport::handle %s\n", fl_eventnames[event]);
 
    switch(event) {
    case FL_KEYBOARD:
@@ -249,13 +251,18 @@ int FltkViewport::handle (int event)
       } else if (hscrollbar->visible() && Fl::event_inside(hscrollbar)) {
          if (hscrollbar->handle(event))
             horScrolling = 1;
-      } else if (FltkWidgetView::handle (event) == 0 &&
-          Fl::event_button() == FL_MIDDLE_MOUSE) {
-         /* pass event so that middle click can open link in new window */
-         dragScrolling = 1;
-         dragX = Fl::event_x();
-         dragY = Fl::event_y();
-         setCursor (core::style::CURSOR_MOVE);
+      } else if (FltkWidgetView::handle(event) == 0 &&
+                 Fl::event_button() == FL_MIDDLE_MOUSE) {
+         if (!hasDragScroll) {
+            /* let the parent widget handle it... */
+            return 0;
+         } else {
+            /* receive FL_DRAG and FL_RELEASE */
+            dragScrolling = 1;
+            dragX = Fl::event_x();
+            dragY = Fl::event_y();
+            setCursor (core::style::CURSOR_MOVE);
+         }
       }
       return 1;
       break;

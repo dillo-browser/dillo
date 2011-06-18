@@ -21,7 +21,7 @@ private:
 
    int scrollX, scrollY;
    int scrollDX, scrollDY;
-   int dragScrolling, dragX, dragY;
+   int hasDragScroll, dragScrolling, dragX, dragY;
    int horScrolling, verScrolling;
 
    Fl_Scrollbar *vscrollbar, *hscrollbar;
@@ -70,6 +70,7 @@ public:
 
    void setGadgetOrientation (bool hscrollbarVisible, bool vscrollbarVisible,
                               GadgetOrientation gadgetOrientation);
+   void setDragScroll (bool enable) { hasDragScroll = enable ? 1 : 0; }
    void addGadget (Fl_Widget *gadget);
 };
 

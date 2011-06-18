@@ -23,6 +23,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Box.H>
+#include <FL/names.h>
 
 // Include image data
 #include "pixmaps.h"
@@ -780,7 +781,7 @@ UI::~UI()
  */
 int UI::handle(int event)
 {
-   _MSG("UI::handle event=%d (%d,%d)\n", event, Fl::event_x(), Fl::event_y());
+   _MSG("UI::handle event=%s\n", fl_eventnames[event]);
 
    int ret = 0;
    if (event == FL_KEYBOARD) {
@@ -840,27 +841,22 @@ int UI::handle(int event)
          a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(this), FileButton);
          ret = 1;
       }
-   }
-#if 0
-   } else if (event == FL_PUSH) {
-      if (prefs.middle_click_drags_page == 0 &&
-          Fl::event_button() == FL_MIDDLE_MOUSE &&
-          !a_UIcmd_pointer_on_link(a_UIcmd_get_bw_by_widget(this))) {
-         if (Main->contains(Fl::belowmouse())) {
-            /* Offer the event to Main's children (form widgets) */
-            /* TODO: Try just offering it to Fl::belowmouse() */
-            ret = ((Fl_Group *)Main)->Fl_Group::handle(event);
-         }
-         if (!ret) {
-            /* middle click was not on a link or a form widget */
-            paste_url();
-            ret = 1;
-         }
+   } else if (event == FL_RELEASE) {
+      if (Fl::event_button() == FL_MIDDLE_MOUSE &&
+          prefs.middle_click_drags_page == 0) {
+         /* nobody claimed the event; try paste */
+         paste_url();
+         ret = 1;
       }
    }
-#endif
+
    if (!ret) {
       ret = Fl_Group::handle(event);
+   }
+   if (!ret && event == FL_PUSH && !prefs.middle_click_drags_page) {
+      /* nobody claimed FL_PUSH: ask for FL_RELEASE,
+       * which is necessary for middle-click paste URL) */
+      ret = 1;
    }
 
    return ret;

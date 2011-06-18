@@ -438,6 +438,7 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus)
    FltkViewport *viewport = new FltkViewport (0, 0, 0, 1);
    viewport->box(FL_NO_BOX);
    viewport->setBufferedDrawing (prefs.buffered_drawing ? true : false);
+   viewport->setDragScroll (prefs.middle_click_drags_page ? true : false);
    layout->attachView (viewport);
    new_ui->set_render_layout(viewport);
    viewport->setScrollStep((int) rint(28.0 * prefs.font_factor));
