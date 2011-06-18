@@ -36,6 +36,48 @@
 
 #include <stdio.h>
 
+//----------------------------------------------------------------------------
+/*
+ * Local sub classes
+ */
+
+/*
+ * Used to enable CTRL+{a,e,d,k} in form inputs (for start,end,del,cut)
+ */
+class CustInput2 : public Fl_Input {
+public:
+   CustInput2 (int x, int y, int w, int h, const char* l=0) :
+      Fl_Input(x,y,w,h,l) {};
+   int handle(int e);
+};
+
+int CustInput2::handle(int e)
+{
+   int k = Fl::event_key();
+
+   _MSG("CustInput2::handle event=%d\n", e);
+
+   // We're only interested in some flags
+   unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
+
+   // Don't focus with arrow keys
+   if (e == FL_KEYBOARD && modifier == FL_CTRL) {
+      if (k == 'a' || k == 'e') {
+         position(k == 'a' ? 0 : size());
+         return 1;
+      } else if (k == 'k') {
+         cut(position(), size());
+         return 1;
+      } else if (k == 'd') {
+         cut(position(), position()+1);
+         return 1;
+      }
+   }
+   return Fl_Input::handle(e);
+}
+
+//----------------------------------------------------------------------------
+
 namespace dw {
 namespace fltk {
 namespace ui {
@@ -449,7 +491,7 @@ Fl_Widget *FltkEntryResource::createNewWidget (core::Allocation
                                                     *allocation)
 {
    Fl_Input *input =
-        new Fl_Input (allocation->x, allocation->y, allocation->width,
+        new CustInput2(allocation->x, allocation->y, allocation->width,
                       allocation->ascent + allocation->descent);
    if (password)
       input->type(FL_SECRET_INPUT);
