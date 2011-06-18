@@ -3032,7 +3032,7 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
        !(url = a_Html_url_new(html, attrbuf, NULL, 0)))
       return;
 
-   MSG("  Html_tag_open_link(): addCssUrl %s\n", URL_STR(url));
+   _MSG("  Html_tag_open_link(): addCssUrl %s\n", URL_STR(url));
 
    html->addCssUrl(url);
    a_Url_free(url);
