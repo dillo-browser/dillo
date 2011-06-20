@@ -26,6 +26,19 @@
 
 #include <FL/fl_draw.H>
 #include <FL/Fl_Tooltip.H>
+#include <FL/Fl_Paged_Device.H>
+
+/* Use of Fl_Text_Display links in a lot of printer code that we don't have
+ * any need for currently. This stub prevents that.
+ */
+class FL_EXPORT Fl_Printer : public Fl_Paged_Device {
+public:
+   static const char *class_id;
+   Fl_Printer(void) {};
+};
+
+const char *Fl_Printer::class_id = "Fl_Printer";
+
 
 namespace dw {
 namespace fltk {
