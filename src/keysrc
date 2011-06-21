@@ -33,7 +33,6 @@
 #<ctrl>q = close-all
 
 # "left-tab" and "right-tab" switch to the left/right of the current tab.
-# *** NOT HOOKED UP YET ***
 # <shift>tab = left-tab
 # <ctrl>tab = right-tab
 
