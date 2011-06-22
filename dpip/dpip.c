@@ -214,11 +214,13 @@ int a_Dpip_check_auth(const char *auth_tag)
       MSG_ERR("[a_Dpip_check_auth] empty file: %s\n", fname);
    } else {
       port = strtol(rcline, &tail, 10);
-      for (i = 0; *tail && isxdigit(tail[i+1]); ++i)
-         SharedSecret[i] = tail[i+1];
-      SharedSecret[i] = 0;
-      if (strcmp(msg, SharedSecret) == 0)
-         ret = 1;
+      if (tail && port != 0) {
+         for (i = 0; *tail && isxdigit(tail[i+1]); ++i)
+            SharedSecret[i] = tail[i+1];
+         SharedSecret[i] = 0;
+         if (strcmp(msg, SharedSecret) == 0)
+            ret = 1;
+      }
    }
    if (In)
       fclose(In);
@@ -376,7 +378,7 @@ int a_Dpip_dsh_write_str(Dsh *dsh, int flush, const char *str)
 static void Dpip_dsh_read(Dsh *dsh, int blocking)
 {
    char buf[RBUF_SZ];
-   int req_mode, old_flags = 0, st, ret = -3, nb = !blocking;
+   int req_mode, old_flags = 0, st, nb = !blocking;
 
    dReturn_if (dsh->status == DPIP_ERROR || dsh->status == DPIP_EOF);
 
@@ -395,7 +397,6 @@ static void Dpip_dsh_read(Dsh *dsh, int blocking)
             continue;
          } else if (errno == EAGAIN) {
             dsh->status = DPIP_EAGAIN;
-            ret = -1;
             break;
          } else {
             MSG_ERR("[Dpip_dsh_read] %s\n", dStrerror(errno));

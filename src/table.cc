@@ -151,7 +151,6 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    int32_t bgcolor = -1;
-   bool new_style = false;
 
    html->styleEngine->inheritNonCssHints ();
 
@@ -183,10 +182,8 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
       if (bgcolor != -1) {
          html->styleEngine->setNonCssHint(CSS_PROPERTY_BACKGROUND_COLOR,
                                           CSS_TYPE_COLOR, bgcolor);
-         new_style = true;
       }
-      if (a_Html_tag_set_valign_attr (html, tag, tagsize))
-         new_style = true;
+      a_Html_tag_set_valign_attr (html, tag, tagsize);
       break;
    default:
       break;
@@ -318,7 +315,6 @@ static void Html_tag_open_table_cell(DilloHtml *html,
    int colspan = 1, rowspan = 1;
    const char *attrbuf;
    int32_t bgcolor;
-   bool_t new_style;
 
    html->styleEngine->inheritNonCssHints ();
 
@@ -363,8 +359,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
                                            a_Html_parse_length (html, attrbuf));
       }
 
-      if (a_Html_tag_set_valign_attr (html, tag, tagsize))
-         new_style = TRUE;
+      a_Html_tag_set_valign_attr (html, tag, tagsize);
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
          bgcolor = a_Html_color_parse(html, attrbuf, -1);

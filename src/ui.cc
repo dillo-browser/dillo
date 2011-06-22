@@ -425,7 +425,7 @@ Fl_Button *UI::make_button(const char *label, Fl_Image *img, Fl_Image *deimg,
       b->image(img);
    if (deimg)
       b->deimage(deimg);
-   b->callback(b1_cb, (void *)b_n);
+   b->callback(b1_cb, INT2VOIDP(b_n));
    b->clear_visible_focus();
    b->labelsize(12);
    b->box(FL_FLAT_BOX);

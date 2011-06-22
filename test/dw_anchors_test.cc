@@ -112,7 +112,7 @@ int main(int argc, char **argv)
       buf[0] = toupper (buf[0]);
       buttonLabel[i] = strdup(buf);
       Fl_Button *button = new Fl_Button(0, 20 * i, 50, 20, buttonLabel[i]);
-      button->callback (anchorCallback, (void*)i);
+      button->callback (anchorCallback, (void*)(long)i);
       button->when (FL_WHEN_RELEASE);
    }
 

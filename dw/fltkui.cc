@@ -1126,7 +1126,7 @@ void *FltkListResource::newItem (const char *str, bool enabled, bool selected)
 
    enabled &= parent->is_active();
    item->activate(enabled);
-   item->user_data((void *)index);
+   item->user_data((void*)(long)index);
    itemsSelected.increase ();
    itemsSelected.set (itemsSelected.size() - 1, selected);
 
