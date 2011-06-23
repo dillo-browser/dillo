@@ -6,9 +6,14 @@
 # The commented-out bindings below show the defaults built into Dillo.
 #
 # Modifiers recognized: "Shift", "Ctrl", "Alt", "Meta".
+#
 # Key names recognized: "Backspace", "Delete", "Down", "End", "Esc",
 # "F1" through "F12", "Home", "Insert", "Left", "PageDown", "PageUp",
 # "Print", "Return", "Right", "Space", "Tab", "Up".
+#
+# Multimedia keys: "Back", "Favorites", "Forward", "HomePage", "Mail",
+# "MediaNext", "MediaPlay", "MediaPrev", "MediaStop", "Refresh", "Search",
+# "Sleep", "Stop", "VolumeDown", "VolumeMute", VolumeUp".
 #
 # If Dillo is running under X11, keys whose names are not recognized can
 # be specified using their keysym value in hexadecimal. Use xev to get

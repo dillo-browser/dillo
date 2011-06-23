@@ -66,7 +66,24 @@ static const Mapping_t keyNames[] = {
    { "Right",       FL_Right     },
    { "Space",       ' '          },
    { "Tab",         FL_Tab       },
-   { "Up",          FL_Up        }
+   { "Up",          FL_Up        },
+   /* multimedia keys */
+   { "Back",        FL_Back        },
+   { "Favorites",   FL_Favorites   },
+   { "Forward",     FL_Forward     },
+   { "HomePage",    FL_Home_Page   },
+   { "Mail",        FL_Mail        },
+   { "MediaNext",   FL_Media_Next  },
+   { "MediaPlay",   FL_Media_Play  },
+   { "MediaPrev",   FL_Media_Prev  },
+   { "MediaStop",   FL_Media_Stop  },
+   { "Refresh",     FL_Refresh     },
+   { "Search",      FL_Search      },
+   { "Sleep",       FL_Sleep       },
+   { "Stop",        FL_Stop        },
+   { "VolumeDown",  FL_Volume_Down },
+   { "VolumeMute",  FL_Volume_Mute },
+   { "VolumeUp",    FL_Volume_Up   },
 };
 
 static const Mapping_t modifierNames[] = {

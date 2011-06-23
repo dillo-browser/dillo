@@ -12,7 +12,7 @@ dillo-3.0 [not released yet]
    Patches: Jorge Arellano Cid
 +- Remove --enable-ansi configure option.
  - Limit saved cookie size.
- - Allow binding to non-ASCII keys.
+ - Allow binding to non-ASCII keys and multimedia keys.
    Patches: corvid
 
 -----------------------------------------------------------------------------
