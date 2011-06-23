@@ -17,6 +17,7 @@
 
 #include "dlib/dlib.h"
 #include "keys.hh"
+#include "utf8.hh"
 #include "msg.h"
 
 /*
@@ -172,20 +173,25 @@ KeysCommand_t Keys::getKeyCmd()
 {
    KeysCommand_t ret = KEYS_NOP;
    KeyBinding_t keyNode;
-   // We're only interested in some flags
-   keyNode.modifier = Fl::event_state() &
-     (FL_SHIFT | FL_CTRL | FL_ALT | FL_META);
 
-   if (keyNode.modifier == FL_SHIFT &&
-       ispunct(Fl::event_text()[0])) {
-      // Get key code for a shifted character
-      keyNode.key = Fl::event_text()[0];
-      keyNode.modifier = 0;
-   } else {
+   keyNode.modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL |FL_ALT|FL_META);
+   if (iscntrl(Fl::event_text()[0])) {
       keyNode.key = Fl::event_key();
-   }
+   } else {
+      const char *beyond = Fl::event_text() + Fl::event_length();
+      keyNode.key = a_Utf8_decode(Fl::event_text(), beyond, NULL);
 
-   _MSG("getKeyCmd: key=%d, mod=%d\n", keyNode.key, keyNode.modifier);
+      /* BUG: The idea is to drop the modifiers if their use results in a
+       * different character (e.g., if shift-8 gives '*', drop the shift,
+       * but if ctrl-6 gives '6', keep the ctrl), but we have to compare a
+       * keysym with a Unicode codepoint, which only works for characters
+       * below U+0100 (those known to latin-1).
+       */
+      if (keyNode.key != Fl::event_key())
+         keyNode.modifier = 0;
+   }
+   _MSG("getKeyCmd: evkey=0x%x evtext=\'%s\' key=0x%x, mod=0x%x\n",
+        Fl::event_key(), Fl::event_text(), keyNode.key, keyNode.modifier);
    void *data = dList_find_sorted(bindings, &keyNode, nodeByKeyCmp);
    if (data)
       ret = ((KeyBinding_t*)data)->cmd;
@@ -311,6 +317,9 @@ void Keys::parseKey(char *key, char *commandName)
    // Get key code
    if (!key[1]) {
       keycode = *key;
+   } else if (a_Utf8_char_count(keystr, strlen(keystr)) == 1) {
+      const char *beyond = keystr + strlen(keystr);
+      keycode = a_Utf8_decode(keystr, beyond, NULL);
    } else if (key[0] == '0' && key[1] == 'x') {
       /* keysym. For details on values reported, see fltk's fltk/events.h */
       keycode = strtol(key, NULL, 0x10);

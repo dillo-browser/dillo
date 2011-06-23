@@ -100,3 +100,8 @@ bool_t a_Utf8_combining_char(int unicode)
            (unicode >= 0x20d0 && unicode <= 0x20ff) ||
            (unicode >= 0xfe20 && unicode <= 0xfe2f));
 }
+
+int a_Utf8_char_count(const char *str, int len)
+{
+   return fl_utf_nb_char((const uchar_t*)str, len);
+}
