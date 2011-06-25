@@ -338,7 +338,7 @@ void Keys::parseKey(char *key, char *commandName)
       const char *beyond = keystr + strlen(keystr);
       keycode = a_Utf8_decode(keystr, beyond, NULL);
    } else if (key[0] == '0' && key[1] == 'x') {
-      /* keysym. For details on values reported, see fltk's fltk/events.h */
+      /* keysym */
       keycode = strtol(key, NULL, 0x10);
    } else if ((st = getKeyCode(keystr)) == -1) {
       MSG("Keys::parseKey unknown keyname: %s\n", keystr);

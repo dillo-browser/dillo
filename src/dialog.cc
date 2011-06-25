@@ -78,7 +78,6 @@ const char *a_Dialog_select_file(const char *msg,
    return a_Dialog_save_file(msg, pattern, fname);
 }
 
-//#include <fltk/FileIcon.h>
 /*
  * Show the open file dialog.
  *
