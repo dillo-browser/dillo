@@ -373,8 +373,9 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
 void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
 {
    static Fl_Menu_Item pm[] = {
-      {"Open link in new window", 0, Menu_open_url_nw_cb,0,0,0,0,0,0},
-      {"Open link in new tab",0,Menu_open_url_nt_cb,0,FL_MENU_DIVIDER,0,0,0,0},
+      {"Open link in new tab", 0, Menu_open_url_nt_cb,0,0,0,0,0,0},
+      {"Open link in new window", 0, Menu_open_url_nw_cb,0,FL_MENU_DIVIDER,0,0,
+       0,0},
       {"Bookmark this link", 0, Menu_add_bookmark_cb,0,0,0,0,0,0},
       {"Copy link location", 0, Menu_copy_urlstr_cb,0,FL_MENU_DIVIDER,0,0,0,0},
       {"Save link as...", 0, Menu_save_link_cb,0,0,0,0,0,0},
@@ -401,8 +402,8 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
    static DilloUrl *popup_link_url = NULL;
    static Fl_Menu_Item pm[] = {
       {"Isolate image", 0, Menu_open_url_cb,0,0,0,0,0,0},
-      {"Open image in new window", 0, Menu_open_url_nw_cb,0,0,0,0,0,0},
-      {"Open image in new tab", 0, Menu_open_url_nt_cb, 0, FL_MENU_DIVIDER,
+      {"Open image in new tab", 0, Menu_open_url_nt_cb,0,0,0,0,0,0},
+      {"Open image in new window", 0, Menu_open_url_nw_cb, 0, FL_MENU_DIVIDER,
        0,0,0,0},
       {"Load image", 0, Menu_load_images_cb,0,0,0,0,0,0},
       {"Bookmark this image", 0, Menu_add_bookmark_cb,0,0,0,0,0,0},
@@ -475,10 +476,10 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
    Fl_Widget *wid = (Fl_Widget*)v_wid;
 
    static Fl_Menu_Item pm[] = {
-      {"New window", Keys::getShortcut(KEYS_NEW_WINDOW), filemenu_cb,
-       (void*)"nw",0,0,0,0,0},
       {"New tab", Keys::getShortcut(KEYS_NEW_TAB), filemenu_cb,
-       (void*)"nt", FL_MENU_DIVIDER,0,0,0,0},
+       (void*)"nt",0,0,0,0,0},
+      {"New window", Keys::getShortcut(KEYS_NEW_WINDOW), filemenu_cb,
+       (void*)"nw", FL_MENU_DIVIDER,0,0,0,0},
       {"Open file...", Keys::getShortcut(KEYS_OPEN), filemenu_cb,
        (void*)"of",0,0,0,0,0},
       {"Open URL...", Keys::getShortcut(KEYS_GOTO), filemenu_cb,
