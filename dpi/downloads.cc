@@ -31,7 +31,6 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
-#include <FL/fl_ask.H>
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Widget.H>
