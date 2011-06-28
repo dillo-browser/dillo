@@ -37,6 +37,48 @@ static int choice5_answer;
 
 
 /*
+ * Local sub classes
+ */
+
+//----------------------------------------------------------------------------
+/*
+ * Used to enable CTRL+{a,e,d,k} in search dialog (for start,end,del,cut)
+ * TODO: bind down arrow to a search engine selection list.
+ */
+class CustInput3 : public Fl_Input {
+public:
+   CustInput3 (int x, int y, int w, int h, const char* l=0) :
+      Fl_Input(x,y,w,h,l) {};
+   int handle(int e);
+};
+
+int CustInput3::handle(int e)
+{
+   int k = Fl::event_key();
+
+   _MSG("CustInput3::handle event=%d\n", e);
+
+   // We're only interested in some flags
+   unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
+
+   if (e == FL_KEYBOARD && modifier == FL_CTRL) {
+      if (k == 'a' || k == 'e') {
+         position(k == 'a' ? 0 : size());
+         return 1;
+      } else if (k == 'k') {
+         cut(position(), size());
+         return 1;
+      } else if (k == 'd') {
+         cut(position(), position()+1);
+         return 1;
+      }
+   }
+   return Fl_Input::handle(e);
+}
+//----------------------------------------------------------------------------
+
+
+/*
  * Display a message in a popup window.
  */
 void a_Dialog_msg(const char *msg)
@@ -88,9 +130,9 @@ const char *a_Dialog_input(const char *msg)
     box->labelsize(14);
     box->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP|FL_ALIGN_WRAP);
 
-    Fl_Input *input_wid = new Fl_Input(ih+2*gap,gap+ih/2+gap,ww-(ih+3*gap),24);
-    input_wid->labelsize(14);
-    input_wid->textsize(14);
+    CustInput3 *c_inp = new CustInput3(ih+2*gap,gap+ih/2+gap,ww-(ih+3*gap),24);
+    c_inp->labelsize(14);
+    c_inp->textsize(14);
 
     int xpos = ww-2*(gap+bw), ypos = ih+3*gap;
     Fl_Return_Button *rb = new Fl_Return_Button(xpos, ypos, bw, bh, "OK");
@@ -113,7 +155,7 @@ const char *a_Dialog_input(const char *msg)
    if (input_answer == 1) {
       /* we have a string, save it */
       dFree(input_str);
-      input_str = dStrdup(input_wid->value());
+      input_str = dStrdup(c_inp->value());
    }
    delete window;
 
