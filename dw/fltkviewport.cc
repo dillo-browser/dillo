@@ -229,12 +229,19 @@ int FltkViewport::handle (int event)
 
    switch(event) {
    case FL_KEYBOARD:
-      /* Tell fltk we want to receive KEYBOARD events as SHORTCUT.
-       * As we don't know the exact keybindings set by the user, we ask
+      /* When the viewport has focus (and not one of its children), FLTK
+       * sends the event here. Returning zero tells FLTK to resend the
+       * event as SHORTCUT, which we finally route to the parent. */
+       
+      /* As we don't know the exact keybindings set by the user, we ask
        * for all of them (except Tab to keep form navigation). */
       if (Fl::event_key() != FL_Tab)
          return 0;
       break;
+
+   case FL_SHORTCUT:
+      /* send it to the parent (UI) */
+      return 0;
 
    case FL_FOCUS:
       /** \bug Draw focus box. */
