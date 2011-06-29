@@ -60,7 +60,6 @@ int CustInput2::handle(int e)
    // We're only interested in some flags
    unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
 
-   // Don't focus with arrow keys
    if (e == FL_KEYBOARD && modifier == FL_CTRL) {
       if (k == 'a' || k == 'e') {
          position(k == 'a' ? 0 : size());
