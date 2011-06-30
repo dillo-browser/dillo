@@ -243,14 +243,7 @@ void ProgressBar::draw()
    double pct = (mPresent - mMin) / mMax;
 
    r.w = r.w * pct + .5;
-
-   if (mShowPct) {
-      fl_rectf(r.x, r.y, r.w, r.h, FL_BLUE);
-   } else {
-      fl_push_clip(int (r.w * pct), 0, int (w() * .1), h());
-      fl_rectf(r.x, r.y, r.w, r.h, FL_BLUE);
-      fl_pop_clip();
-   }
+   fl_rectf(r.x, r.y, r.w, r.h, FL_BLUE);
 
    if (mShowMsg) {
       fl_color(FL_RED);
@@ -338,11 +331,11 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    gw = 400, gh = 70;
    group = new Fl_Group(0,0,gw,gh);
    group->begin();
-    prTitle = new Fl_Box(24, 7, 290, 23, shortname);
+    prTitle = new Fl_Box(24, 7, 290, 23);
     prTitle->box(FL_RSHADOW_BOX);
     prTitle->color(FL_WHITE);
     prTitle->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
-    //prTitle->clear_flag (SHORTCUT_LABEL);
+    prTitle->copy_label(shortname);
     // Attach this 'log_text' to the tooltip
     log_text_add("Target File: ", 13);
     log_text_add(fullname, strlen(fullname));
@@ -352,7 +345,7 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
     prBar->box(FL_THIN_UP_BOX);
     prBar->tooltip("Progress Status");
 
-    int ix = 122, iy = 36, iw = 50, ih = 14;
+    int ix = 122, iy = 37, iw = 50, ih = 14;
     Fl_Widget *o = new Fl_Box(ix,iy,iw,ih, "Got");
     o->box(FL_RFLAT_BOX);
     o->color(FL_DARK2);
@@ -360,7 +353,7 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
     o->tooltip("Downloaded Size");
     prGot = new Fl_Box(ix,iy+14,iw,ih, "0KB");
     prGot->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    prGot->labelcolor((Fl_Color)0x6c6cbd00);
+    prGot->labelcolor(FL_BLUE);
     prGot->labelsize(12);
     prGot->box(FL_NO_BOX);
 
@@ -408,15 +401,12 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
     prETA->labelsize(12);
     prETA->box(FL_NO_BOX);
 
-    //ix += 50;
-    //prButton = new Fl_Button(ix, 41, 38, 19, "Stop");
-    prButton = new Fl_Button(328, 9, 38, 19, "Stop");
+    prButton = new Fl_Button(326, 9, 44, 19, "Stop");
     prButton->tooltip("Stop this transfer");
     prButton->box(FL_UP_BOX);
     prButton->clear_visible_focus();
     prButton->callback(prButton_scb, this);
 
-   //group->box(FL_ROUND_UP_BOX);  --BUG in FLTK-1.3
    group->box(FL_ROUNDED_BOX);
    group->end();
 }
@@ -481,7 +471,6 @@ void DLItem::update_prSize(int newsize)
    else
       snprintf(num, 64, "%.0fKB", (float)newsize / 1024);
    prSize->copy_label(num);
-   prSize->redraw_label();
 }
 
 void DLItem::log_text_add(const char *buf, ssize_t st)
@@ -545,13 +534,16 @@ void DLItem::log_text_add(const char *buf, ssize_t st)
          total_bytesize = strtol (num, NULL, 10);
          // Update displayed size
          update_prSize(total_bytesize);
+
+         // WORKAROUND: For unknown reasons a redraw is needed here for some
+         //             machines --jcid
+         group->redraw();
       }
    }
 
    // Show we're connecting...
    if (curr_bytesize == 0) {
-      prTitle->label("Connecting...");
-      prTitle->redraw_label();
+      prTitle->copy_label("Connecting...");
    }
 }
 
@@ -569,8 +561,10 @@ void DLItem::update_size(int new_sz)
       // Start the timer with the first bytes got
       init_time = time(NULL);
       // Update the title
-      prTitle->label(shortname);
-      prTitle->redraw_label();
+      prTitle->copy_label(shortname);
+      // WORKAROUND: For unknown reasons a redraw is needed here for some
+      //             machines --jcid
+      group->redraw();
    }
 
    curr_bytesize = new_sz;
@@ -579,7 +573,6 @@ void DLItem::update_size(int new_sz)
    else
       snprintf(buf, 64, "%.0fKB", (float)curr_bytesize / 1024);
    prGot->copy_label(buf);
-   prGot->redraw_label();
    if (total_bytesize == -1) {
       prBar->showtext(false);
       prBar->move(1);
@@ -644,8 +637,7 @@ void DLItem::child_finished(int status)
       status_msg("ABORTED");
       if (curr_bytesize == 0) {
          // Update the title
-         prTitle->label(shortname);
-         prTitle->redraw_label();
+         prTitle->copy_label(shortname);
       }
    }
    prButton->activate();
@@ -702,14 +694,12 @@ void DLItem::update()
       rate = ((float)(curr_bytesize-twosec_bytesize) / 1024) / tsec;
       snprintf(str, 64, (rate < 100) ? "%.1fK/s" : "%.0fK/s", rate);
       prRate->copy_label(str);
-      prRate->redraw_label();
    }
    /* ~Rate */
    if (csec >= 1) {
       _rate = ((float)(curr_bytesize-init_bytesize) / 1024) / csec;
       snprintf(str, 64, (_rate < 100) ? "%.1fK/s" : "%.0fK/s", _rate);
       pr_Rate->copy_label(str);
-      pr_Rate->redraw_label();
    }
 
    /* ETA */
@@ -732,7 +722,6 @@ void DLItem::update()
          prETA->copy_label(str);
       }
    }
-   prETA->redraw_label();
 
    /* Update one and two secs ago times and bytesizes */
    twosec_time = onesec_time;
@@ -973,8 +962,8 @@ void DLWin::add(const char *full_filename, const char *url, DLAction action)
       exit(1);
    } else {
       /* father */
+      dl_item->get_widget()->show();
       dl_win->show();
-      dl_item->get_widget()->redraw();
       dl_item->pid(f_pid);
       dl_item->father_init();
    }
