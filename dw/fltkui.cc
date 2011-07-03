@@ -471,6 +471,7 @@ FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int maxLength,
    this->maxLength = maxLength;
    this->password = password;
    this->label = label ? strdup(label) : NULL;
+   this->label_w = 0;
 
    initText = NULL;
    editable = false;
@@ -499,7 +500,7 @@ Fl_Widget *FltkEntryResource::createNewWidget (core::Allocation
 
    if (label) {
       input->label(label);
-      input->align(FL_ALIGN_INSIDE);
+      input->align(FL_ALIGN_LEFT);
    }
    if (initText)
       input->value (initText);
@@ -518,6 +519,13 @@ void FltkEntryResource::setWidgetStyle (Fl_Widget *widget,
    in->cursor_color(in->textcolor());
    in->textsize(in->labelsize());
    in->textfont(in->labelfont());
+
+   if (label) {
+      int h;
+      label_w = 0;
+      widget->measure_label(label_w, h);
+      label_w += RELIEF_X_THICKNESS;
+   }
 }
 
 void FltkEntryResource::setDisplayed(bool displayed)
@@ -534,13 +542,28 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
       requisition->width =
          (int)fl_width ('n')
          * (maxLength == UNLIMITED_MAX_LENGTH ? 10 : maxLength)
-         + 2 * RELIEF_X_THICKNESS;
+         + label_w + (2 * RELIEF_X_THICKNESS);
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
       requisition->descent = font->descent + RELIEF_Y_THICKNESS;
    } else {
       requisition->width = 0;
       requisition->ascent = 0;
       requisition->descent = 0;
+   }
+}
+
+void FltkEntryResource::sizeAllocate (core::Allocation *allocation)
+{
+   if (!label) {
+      FltkResource::sizeAllocate(allocation);
+   } else {
+      this->allocation = *allocation;
+
+      /* push the Fl_Input over to the right of the label */
+      core::Allocation a = this->allocation;
+      a.x += this->label_w;
+      a.width -= this->label_w;
+      view->allocateFltkWidget (widget, &a);
    }
 }
 

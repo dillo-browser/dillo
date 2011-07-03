@@ -614,6 +614,7 @@ void FltkWidgetView::drawFltkWidget (Fl_Widget *widget,
                                    core::Rectangle *area)
 {
    draw_child (*widget);
+   draw_outside_label(*widget);
 }
 
 } // namespace fltk

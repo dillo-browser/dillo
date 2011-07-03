@@ -286,6 +286,7 @@ private:
    bool password;
    const char *initText;
    char *label;
+   int label_w;
    bool editable;
 
    static void widgetCallback (Fl_Widget *widget, void *data);
@@ -301,6 +302,7 @@ public:
    ~FltkEntryResource ();
 
    void sizeRequest (core::Requisition *requisition);
+   void sizeAllocate (core::Allocation *allocation);
 
    const char *getText ();
    void setText (const char *text);
