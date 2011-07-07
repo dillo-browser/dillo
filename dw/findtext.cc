@@ -106,7 +106,7 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
    bool firstTrial = !wasHighlighted || newKey;
 
    if (search0 (backwards, firstTrial)) {
-      // Highlighlighting is done with a clone.
+      // Highlighting is done with a clone.
       hlIterator = iterator->cloneCharIterator ();
       for (int i = 0; key[i]; i++)
          hlIterator->next ();
