@@ -957,7 +957,7 @@ void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url)
 }
 
 /*
- * Show a text window with the URL's source
+ * Show the browser window's HTML errors in a text window
  */
 void a_UIcmd_view_page_bugs(void *vbw)
 {
