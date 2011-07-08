@@ -850,9 +850,10 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
 {
    Widget *ancestor, *w;
    Widget **track;
-   int trackLen, i;
+   int trackLen, i, i_a;
    EventCrossing crossingEvent;
 
+   _MSG("moveToWidget: wap=%p nwap=%p\n",widgetAtPoint,newWidgetAtPoint);
    if (newWidgetAtPoint != widgetAtPoint) {
       // The mouse pointer has been moved into another widget.
       if (newWidgetAtPoint && widgetAtPoint)
@@ -881,6 +882,7 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          /* first part */
          for (w = widgetAtPoint; w != ancestor; w = w->getParent ())
             track[i++] = w;
+      i_a = i;
       track[i++] = ancestor;
       if (newWidgetAtPoint) {
          /* second part */
@@ -889,16 +891,21 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
             track[i--] = w;
       }
 
-      /* Send events to all events on the track */
+      /* Send events to the widgets on the track */
       for (i = 0; i < trackLen; i++) {
          crossingEvent.state = state;
          crossingEvent.currentWidget = widgetAtPoint; // ???
          crossingEvent.lastWidget = widgetAtPoint; // ???
-
-         if (i != 0)
-            track[i]->enterNotify (&crossingEvent);
-         if (i != trackLen - 1)
+         if (i < i_a) {
             track[i]->leaveNotify (&crossingEvent);
+         } else if (i == i_a) { /* ancestor */
+            if (!widgetAtPoint)
+               track[i]->enterNotify (&crossingEvent);
+            else if (!newWidgetAtPoint)
+               track[i]->leaveNotify (&crossingEvent);
+         } else {
+            track[i]->enterNotify (&crossingEvent);
+         }
       }
 
       delete[] track;
