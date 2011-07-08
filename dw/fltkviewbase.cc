@@ -182,6 +182,9 @@ void FltkViewBase::draw (const core::Rectangle *rect,
       fl_rectf (X, Y, W, H);
       theLayout->expose (this, &r);
    }
+   // DEBUG:
+   //fl_color(FL_RED);
+   //fl_rect(X, Y, W, H);
 
    exposeArea = NULL;
 }
@@ -274,6 +277,9 @@ int FltkViewBase::handle (int event)
                               getDwButtonState ());
       return Fl_Group::handle (event);
 
+   case FL_HIDE:
+      /* WORKAROUND: strangely, the tooltip window is not automatically hidden
+       * with its parent. Here we fake a LEAVE to achieve it. */
    case FL_LEAVE:
       theLayout->leaveNotify (this, getDwButtonState ());
       return Fl_Group::handle (event);

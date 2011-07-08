@@ -25,20 +25,28 @@
 #include "fltkcore.hh"
 
 #include <FL/fl_draw.H>
+#include <FL/Fl_Box.H>
 #include <FL/Fl_Tooltip.H>
+#include <FL/Fl_Menu_Window.H>
 #include <FL/Fl_Paged_Device.H>
 
-/* Use of Fl_Text_Display links in a lot of printer code that we don't have
- * any need for currently. This stub prevents that.
+/*
+ * Local data
  */
+
+/* Use of Fl_Text_Display links in a lot of printer code that we don't have
+ * any need for currently. This stub prevents that. */
 class FL_EXPORT Fl_Printer : public Fl_Paged_Device {
 public:
    static const char *class_id;
    Fl_Printer(void) {};
 };
-
 const char *Fl_Printer::class_id = "Fl_Printer";
 
+/* Tooltips */
+static Fl_Menu_Window *tt_window = NULL;
+static int in_tooltip = 0;
+dw::core::style::Tooltip *tt_active = NULL;
 
 namespace dw {
 namespace fltk {
@@ -242,8 +250,10 @@ FltkColor * FltkColor::create (int col)
 
 FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
 {
-   if (!strchr(text, '@')) {
+   if (!text) {
       escaped_str = NULL;
+   } else if (!strchr(text, '@')) {
+      escaped_str = strdup(text);
    } else {
       /* FLTK likes to interpret symbols, and so they must be escaped */
       const char *src = text;
@@ -262,6 +272,8 @@ FltkTooltip::~FltkTooltip ()
 {
    if (escaped_str)
       free(escaped_str);
+   if (in_tooltip && this == tt_active)
+      onLeave(); /* hide tooltip window */
 }
 
 FltkTooltip *FltkTooltip::create (const char *text)
@@ -271,15 +283,56 @@ FltkTooltip *FltkTooltip::create (const char *text)
 
 void FltkTooltip::onEnter()
 {
-   Fl_Widget *widget = Fl::belowmouse();
+   _MSG("FltkTooltip::onEnter\n");
+   if (!escaped_str || !*escaped_str)
+      return;
 
-   Fl_Tooltip::enter_area(widget, widget->x(), widget->y(), widget->w(),
-                          widget->h(), escaped_str ? escaped_str : str);
+   if (!tt_window) {
+      tt_window = new Fl_Menu_Window(0,0,100,24);
+      tt_window->set_override();
+      tt_window->box(FL_NO_BOX);
+      Fl_Box *b = new Fl_Box(0,0,100,24);
+      b->box(FL_BORDER_BOX);
+      b->color(fl_color_cube(FL_NUM_RED-1, FL_NUM_GREEN-1, FL_NUM_BLUE-2));
+      b->labelfont(FL_HELVETICA);
+      b->labelsize(14);
+      b->align(FL_ALIGN_WRAP);
+      tt_window->resizable(b);
+      tt_window->end();
+   }
+
+   /* prepare tooltip window */
+   int x, y;
+   Fl_Box *box = (Fl_Box*)tt_window->child(0);
+   box->label(escaped_str);
+   Fl::get_mouse(x,y); y += 6;
+   /* calculate window size */
+   fl_font(box->labelfont(), box->labelsize());
+   int ww, hh;
+   ww = 800; // max width;
+   fl_measure(escaped_str,ww,hh,FL_ALIGN_LEFT|FL_ALIGN_WRAP|FL_ALIGN_INSIDE);
+   ww += 6; hh += 6;
+   tt_window->resize(x,y,ww,hh);
+   tt_window->show();
+   in_tooltip = 1;
+   tt_active = this;
 }
 
 void FltkTooltip::onLeave()
 {
-   Fl_Tooltip::exit(NULL);
+   _MSG(" FltkTooltip::onLeave  in_tooltip=%d\n", in_tooltip);
+   if (!in_tooltip) return;
+   in_tooltip = 0;
+   tt_active = NULL;
+   tt_window->hide();
+
+   /* WORKAROUND: (Black magic here)
+    * Hiding a tooltip with the keyboard or mousewheel doesn't work.
+    * The code below "fixes" the problem */
+   Fl_Widget *widget = Fl::belowmouse();
+   if (widget && widget->window()) {
+      widget->window()->damage(FL_DAMAGE_EXPOSE,0,0,1,1);
+   }
 }
 
 void FltkTooltip::onMotion()
