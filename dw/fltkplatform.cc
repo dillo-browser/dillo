@@ -45,8 +45,7 @@ const char *Fl_Printer::class_id = "Fl_Printer";
 
 /* Tooltips */
 static Fl_Menu_Window *tt_window = NULL;
-static int in_tooltip = 0;
-dw::core::style::Tooltip *tt_active = NULL;
+static int in_tooltip = 0, req_tooltip = 0;
 
 namespace dw {
 namespace fltk {
@@ -272,8 +271,8 @@ FltkTooltip::~FltkTooltip ()
 {
    if (escaped_str)
       free(escaped_str);
-   if (in_tooltip && this == tt_active)
-      onLeave(); /* hide tooltip window */
+   if (in_tooltip || req_tooltip)
+      onLeave(); /* cancel tooltip window */
 }
 
 FltkTooltip *FltkTooltip::create (const char *text)
@@ -281,11 +280,28 @@ FltkTooltip *FltkTooltip::create (const char *text)
    return new FltkTooltip(text);
 }
 
+/*
+ * Tooltip callback: used to delay it a bit
+ * INVARIANT: Only one instance of this function is requested.
+ */
+static void tooltip_tcb(void *data)
+{
+   req_tooltip = 2;
+   ((FltkTooltip *)data)->onEnter();
+   req_tooltip = 0;
+}
+
 void FltkTooltip::onEnter()
 {
    _MSG("FltkTooltip::onEnter\n");
    if (!escaped_str || !*escaped_str)
       return;
+   if (req_tooltip == 0) {
+      Fl::remove_timeout(tooltip_tcb);
+      Fl::add_timeout(1.0, tooltip_tcb, this);
+      req_tooltip = 1;
+      return;
+   }
 
    if (!tt_window) {
       tt_window = new Fl_Menu_Window(0,0,100,24);
@@ -315,15 +331,20 @@ void FltkTooltip::onEnter()
    tt_window->resize(x,y,ww,hh);
    tt_window->show();
    in_tooltip = 1;
-   tt_active = this;
 }
 
+/*
+ * Remove a shown tooltip or cancel a pending one
+ */
 void FltkTooltip::onLeave()
 {
    _MSG(" FltkTooltip::onLeave  in_tooltip=%d\n", in_tooltip);
+   if (req_tooltip) {
+      Fl::remove_timeout(tooltip_tcb);
+      req_tooltip = 0;
+   }
    if (!in_tooltip) return;
    in_tooltip = 0;
-   tt_active = NULL;
    tt_window->hide();
 
    /* WORKAROUND: (Black magic here)
