@@ -337,6 +337,11 @@ public:
       return platform->createTooltip (text);
    }
 
+   inline void cancelTooltip ()
+   {
+      return platform->cancelTooltip ();
+   }
+
    inline Imgbuf *createImgbuf (Imgbuf::Type type, int width, int height)
    {
       return platform->createImgbuf (type, width, height);

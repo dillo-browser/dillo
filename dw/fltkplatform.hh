@@ -65,6 +65,7 @@ private:
    char *escaped_str;
 public:
    static FltkTooltip *create(const char *text);
+   static void cancel();
    void onEnter();
    void onLeave();
    void onMotion();
@@ -165,6 +166,7 @@ public:
    bool fontExists (const char *name);
    core::style::Color *createColor (int color);
    core::style::Tooltip *createTooltip (const char *text);
+   void cancelTooltip();
 
    core::Imgbuf *createImgbuf (core::Imgbuf::Type type, int width, int height);
 

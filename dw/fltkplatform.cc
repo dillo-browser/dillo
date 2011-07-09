@@ -272,7 +272,7 @@ FltkTooltip::~FltkTooltip ()
    if (escaped_str)
       free(escaped_str);
    if (in_tooltip || req_tooltip)
-      onLeave(); /* cancel tooltip window */
+      cancel(); /* cancel tooltip window */
 }
 
 FltkTooltip *FltkTooltip::create (const char *text)
@@ -334,11 +334,24 @@ void FltkTooltip::onEnter()
 }
 
 /*
- * Remove a shown tooltip or cancel a pending one
+ * Leaving the widget cancels the tooltip
  */
 void FltkTooltip::onLeave()
 {
    _MSG(" FltkTooltip::onLeave  in_tooltip=%d\n", in_tooltip);
+   cancel();
+}
+
+void FltkPlatform::cancelTooltip()
+{
+   FltkTooltip::cancel();
+}
+
+/*
+ * Remove a shown tooltip or cancel a pending one
+ */
+void FltkTooltip::cancel()
+{
    if (req_tooltip) {
       Fl::remove_timeout(tooltip_tcb);
       req_tooltip = 0;

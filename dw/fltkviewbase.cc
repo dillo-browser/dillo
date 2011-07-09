@@ -229,6 +229,9 @@ int FltkViewBase::handle (int event)
     */
    switch(event) {
    case FL_PUSH:
+      /* Hide the tooltip */
+      theLayout->cancelTooltip();
+
       processed =
          theLayout->buttonPress (this, Fl::event_clicks () + 1,
                                  translateViewXToCanvasX (Fl::event_x ()),
