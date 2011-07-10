@@ -785,6 +785,14 @@ int UI::handle(int event)
 
    int ret = 0;
    if (event == FL_KEYBOARD) {
+      /* WORKAROUND: remove the Panel's fltk-tooltip.
+       * Although the expose event is delivered, it has an offset. This
+       * extra call avoids the lingering tooltip. */
+      if (Fl::event_inside(NavBar) ||
+          (LocBar && Fl::event_inside(LocBar)) ||
+          (MenuBar && Fl::event_inside(MenuBar)))
+         window()->damage(FL_DAMAGE_EXPOSE,0,0,1,1);
+
       return 0; // Receive as shortcut
    } else if (event == FL_SHORTCUT) {
       KeysCommand_t cmd = Keys::getKeyCmd();
