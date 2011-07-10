@@ -677,7 +677,7 @@ static int Gif_decode(DilloGif *gif, const uchar_t *buf, size_t bsize)
             case 2:         /* End code... consume remaining data chunks..? */
                goto error;  /* Could clean up better? */
             default:
-               printf("dillo_gif_decode: error!\n");
+               MSG("Gif_decode: error!\n");
                goto error;
             }
          }

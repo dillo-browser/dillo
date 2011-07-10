@@ -539,7 +539,7 @@ void a_UIcmd_close_bw(void *vbw)
    UI *ui = BW2UI(bw);
    Layout *layout = (Layout*)bw->render_layout;
 
-   MSG("a_UIcmd_close_bw\n");
+   _MSG("a_UIcmd_close_bw\n");
    a_Bw_stop_clients(bw, BW_Root + BW_Img + BW_Force);
    delete(layout);
    if (ui->tabs()) {
