@@ -893,6 +893,16 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
          MSG("entry->ExpectedSize = %d, entry->TransferSize = %d\n",
              entry->ExpectedSize, entry->TransferSize);
       }
+      if (!entry->TransferSize && !(entry->Flags & CA_Redirect) &&
+          (entry->Flags & WEB_RootUrl)) {
+         char *eol = strchr(entry->Header->str, '\n');
+         if (eol) {
+            char *status_line = dStrndup(entry->Header->str,
+                                         eol - entry->Header->str);
+            MSG_HTTP("Body was empty. Server sent status: %s\n", status_line);
+            dFree(status_line);
+         }
+      }
       entry->Flags |= CA_GotData;
       entry->Flags &= ~CA_Stopped;          /* it may catch up! */
       if (entry->TransferDecoder) {
