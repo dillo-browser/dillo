@@ -790,7 +790,8 @@ int UI::handle(int event)
        * extra call avoids the lingering tooltip. */
       if (Fl::event_inside(NavBar) ||
           (LocBar && Fl::event_inside(LocBar)) ||
-          (MenuBar && Fl::event_inside(MenuBar)))
+          (MenuBar && Fl::event_inside(MenuBar)) ||
+          (StatusBar && Fl::event_inside(StatusBar)))
          window()->damage(FL_DAMAGE_EXPOSE,0,0,1,1);
 
       return 0; // Receive as shortcut
