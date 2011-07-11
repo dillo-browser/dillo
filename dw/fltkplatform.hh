@@ -62,7 +62,6 @@ class FltkTooltip: public core::style::Tooltip
 private:
    FltkTooltip (const char *text);
    ~FltkTooltip ();
-   char *escaped_str;
 public:
    static FltkTooltip *create(const char *text);
    static void cancel();

@@ -247,28 +247,10 @@ FltkColor * FltkColor::create (int col)
 
 FltkTooltip::FltkTooltip (const char *text) : Tooltip(text)
 {
-   if (!text) {
-      escaped_str = NULL;
-   } else if (!strchr(text, '@')) {
-      escaped_str = strdup(text);
-   } else {
-      /* FLTK likes to interpret symbols, and so they must be escaped */
-      const char *src = text;
-      char *dest = escaped_str = (char *) malloc(strlen(text) * 2 + 1);
-
-      while (*src) {
-         if (*src == '@')
-            *dest++ = *src;
-         *dest++ = *src++;
-      }
-      *dest = '\0';
-   }
 }
 
 FltkTooltip::~FltkTooltip ()
 {
-   if (escaped_str)
-      free(escaped_str);
    if (in_tooltip || req_tooltip)
       cancel(); /* cancel tooltip window */
 }
@@ -292,7 +274,7 @@ static void tooltip_tcb(void *data)
 void FltkTooltip::onEnter()
 {
    _MSG("FltkTooltip::onEnter\n");
-   if (!escaped_str || !*escaped_str)
+   if (!str || !*str)
       return;
    if (req_tooltip == 0) {
       Fl::remove_timeout(tooltip_tcb);
@@ -318,13 +300,13 @@ void FltkTooltip::onEnter()
    /* prepare tooltip window */
    int x, y;
    Fl_Box *box = (Fl_Box*)tt_window->child(0);
-   box->label(escaped_str);
+   box->label(str);
    Fl::get_mouse(x,y); y += 6;
    /* calculate window size */
    fl_font(box->labelfont(), box->labelsize());
    int ww, hh;
    ww = 800; // max width;
-   fl_measure(escaped_str,ww,hh,FL_ALIGN_LEFT|FL_ALIGN_WRAP|FL_ALIGN_INSIDE);
+   fl_measure(str,ww,hh,FL_ALIGN_LEFT|FL_ALIGN_WRAP|FL_ALIGN_INSIDE);
    ww += 6; hh += 6;
    tt_window->resize(x,y,ww,hh);
    tt_window->show();
