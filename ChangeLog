@@ -9,6 +9,9 @@ dillo-3.0 [not released yet]
 +- Default binding for close-all changed from Alt-q to Ctrl-q.
  - Default binding for close-tab changed from Ctrl-q to Ctrl-w.
  - Add right_click_closes_tab preference (default is middle click).
+ - 'hide-panels' key action now hides the findbar if present, and toggles
+   display of the control panels otherwise.
+ - Remove 'fullscreen' key action.
    Patches: Jorge Arellano Cid
 +- Remove --enable-ansi configure option.
  - Limit saved cookie size.
