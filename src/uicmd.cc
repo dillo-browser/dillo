@@ -165,9 +165,6 @@ int CustTabs::handle(int e)
       } else if (cmd == KEYS_NEW_WINDOW) {
          a_UIcmd_open_url_nw(bw, NULL);
          ret = 1;
-      } else if (cmd == KEYS_FULLSCREEN) {
-         MSG("CustTabs::handle KEYS_FULLSCREEN\n");
-         ret = 1;
       } else if (cmd == KEYS_CLOSE_ALL) {
          a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
          ret = 1;
@@ -1216,11 +1213,11 @@ int a_UIcmd_pointer_on_link(BrowserWindow *bw)
 }
 
 /*
- * Toggle control panel (aka. fullscreen)
+ * Toggle control panel
  */
-void a_UIcmd_fullscreen_toggle(BrowserWindow *bw)
+void a_UIcmd_panels_toggle(BrowserWindow *bw)
 {
-   BW2UI(bw)->fullscreen_toggle();
+   BW2UI(bw)->panels_toggle();
 }
 
 /*

@@ -34,7 +34,7 @@ void a_UIcmd_search_dialog(void *vbw);
 const char *a_UIcmd_get_passwd(const char *user);
 void a_UIcmd_book(void *vbw);
 void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url);
-void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
+void a_UIcmd_panels_toggle(BrowserWindow *bw);
 void a_UIcmd_findtext_dialog(BrowserWindow *bw);
 void a_UIcmd_findtext_search(BrowserWindow *bw,const char *key,int case_sens,
                              int backwards);
@@ -78,7 +78,6 @@ void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug);
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label);
 void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...);
 void a_UIcmd_set_buttons_sens(BrowserWindow *bw);
-void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
 void a_UIcmd_set_pointer_on_link(BrowserWindow *bw, int flag);
 int a_UIcmd_pointer_on_link(BrowserWindow *bw);
 

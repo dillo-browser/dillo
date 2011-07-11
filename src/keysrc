@@ -56,7 +56,7 @@
 # "find" lets you search for a text string on the current page.
 #<ctrl>f = find
 
-# "hide-panels" hides the findbar.
+# "hide-panels" hides the findbar if present, control panels if not.
 #esc = hide-panels
 
 # "websearch" lets you send a text string to the search engine that you
@@ -65,9 +65,6 @@
 
 # go to your "bookmarks".
 #<ctrl>b = bookmarks
-
-# "fullscreen" hides/shows the panels at the top and bottom of a dillo window.
-#<ctrl>space = fullscreen
 
 # "file-menu" pops up the file menu.
 #<alt>f = file-menu

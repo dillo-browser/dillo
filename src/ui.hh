@@ -160,7 +160,7 @@ public:
    int get_smallicons() { return Small_Icons; }
    void change_panel(int new_size, int small_icons);
    void findbar_toggle(bool add);
-   void fullscreen_toggle();
+   void panels_toggle();
 
    CustTabs *tabs() { return Tabs; }
    void tabs(CustTabs *tabs) { Tabs = tabs; }

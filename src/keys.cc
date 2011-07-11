@@ -107,7 +107,6 @@ static const KeyBinding_t default_keys[] = {
    { "find"         , KEYS_FIND         , FL_CTRL   , 'f'             },
    { "websearch"    , KEYS_WEBSEARCH    , FL_CTRL   , 's'             },
    { "bookmarks"    , KEYS_BOOKMARKS    , FL_CTRL   , 'b'             },
-   { "fullscreen"   , KEYS_FULLSCREEN   , FL_CTRL   , ' '             },
    { "reload"       , KEYS_RELOAD       , FL_CTRL   , 'r'             },
    { "stop"         , KEYS_STOP         , 0         , 0               },
    { "save"         , KEYS_SAVE         , 0         , 0               },

@@ -760,7 +760,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    customize(0);
 
    if (Panelmode == UI_HIDDEN) {
-      fullscreen_toggle();
+      panels_toggle();
    }
 }
 
@@ -824,7 +824,8 @@ int UI::handle(int event)
          focus_location();
          ret = 1;
       } else if (cmd == KEYS_HIDE_PANELS) {
-         fullscreen_toggle();
+         /* Hide findbar if present, hide panels if not */
+         (FindBarSpace) ? findbar_toggle(0) : panels_toggle();
          ret = 1;
          //if (get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
          //   set_panelmode(UI_HIDDEN);
@@ -842,9 +843,6 @@ int UI::handle(int event)
          ret = 1;
       } else if (cmd == KEYS_SAVE) {
          a_UIcmd_save(a_UIcmd_get_bw_by_widget(this));
-         ret = 1;
-      } else if (cmd == KEYS_FULLSCREEN) {
-         fullscreen_toggle();
          ret = 1;
       } else if (cmd == KEYS_FILE_MENU) {
          a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(this), FileButton);
@@ -1193,7 +1191,7 @@ void UI::findbar_toggle(bool add)
  *             size to (0,0) while hidden.
  *             (Already reported to FLTK team)
  */
-void UI::fullscreen_toggle()
+void UI::panels_toggle()
 {
    int hide = StatusBar->visible();
 
