@@ -292,7 +292,7 @@ void FltkTooltip::onEnter()
       b->color(fl_color_cube(FL_NUM_RED-1, FL_NUM_GREEN-1, FL_NUM_BLUE-2));
       b->labelfont(FL_HELVETICA);
       b->labelsize(14);
-      b->align(FL_ALIGN_WRAP);
+      b->align(FL_ALIGN_WRAP|FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
       tt_window->resizable(b);
       tt_window->end();
    }
@@ -303,11 +303,11 @@ void FltkTooltip::onEnter()
    box->label(str);
    Fl::get_mouse(x,y); y += 6;
    /* calculate window size */
-   fl_font(box->labelfont(), box->labelsize());
    int ww, hh;
    ww = 800; // max width;
-   fl_measure(str,ww,hh,FL_ALIGN_LEFT|FL_ALIGN_WRAP|FL_ALIGN_INSIDE);
-   ww += 6; hh += 6;
+   box->measure_label(ww, hh);
+   ww += 6 + 2 * Fl::box_dx(box->box());
+   hh += 6 + 2 * Fl::box_dy(box->box());
    tt_window->resize(x,y,ww,hh);
    tt_window->show();
    in_tooltip = 1;
