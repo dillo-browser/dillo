@@ -18,8 +18,6 @@
  */
 
 #include <stdio.h>
-#include <wchar.h>
-#include <wctype.h>
 
 #include "../lout/msg.h"
 #include "fltkcore.hh"
@@ -516,7 +514,7 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
                              int len)
 {
    char chbuf[4];
-   wchar_t wc, wcu;
+   int c, cu;
    int width = 0;
    FltkFont *ff = (FltkFont*) font;
    int curr = 0, next = 0, nb;
@@ -525,15 +523,15 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
       int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
       for (curr = 0; next < len; curr = next) {
          next = nextGlyph(text, curr);
-         wc = fl_utf8decode(text + curr, text + next, &nb);
-         if ((wcu = towupper(wc)) == wc) {
+         c = fl_utf8decode(text + curr, text + next, &nb);
+         if ((cu = fl_toupper(c)) == c) {
             /* already uppercase, just draw the character */
             fl_font(ff->font, ff->size);
             width += font->letterSpacing;
             width += (int)fl_width(text + curr, next - curr);
          } else {
             /* make utf8 string for converted char */
-            nb = fl_utf8encode(wcu, chbuf);
+            nb = fl_utf8encode(cu, chbuf);
             fl_font(ff->font, sc_fontsize);
             width += font->letterSpacing;
             width += (int)fl_width(chbuf, nb);
