@@ -4,7 +4,9 @@ Dillo project
 
 dillo-2.2.1 [not released yet]
 
-+- Implemented "View source" as a dpi.
++- Fix fullwindow start.
+ - Implemented "View source" as a dpi.
+ - Fix: vsource html, fix entities display, indentation.
  - Accept application/xhtml+xml.
  - Small caps support.
  - Border-collapse, border-style properties.
