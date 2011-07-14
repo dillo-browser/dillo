@@ -330,7 +330,7 @@ const char *const AboutSplash=
 "   <td>\n"
 "<ul>\n"
 " <li> There's a\n"
-"   <a href='http://www.dillo.org/dillorc'>dillorc</a>\n"
+"   <a href='http://www.dillo.org/dillo-2.x/dillorc'>dillorc</a>\n"
 "   (readable  config)  file within the tarball; It is well-commented\n"
 "   and  has  plenty  of  options to customize dillo, so <STRONG>copy\n"
 "   it</STRONG>  to  your  <STRONG>~/.dillo/</STRONG>  directory, and\n"
