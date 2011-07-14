@@ -2,13 +2,23 @@
  Dillo web browser
 ===================
 
-  Dillo 2.2 features a major overhaul of the cookies subsystem,
-a reimplementation of the Dillo Plugin (DPI) API, a configurable
-connection limit, and various CSS improvements.
+dillo-2.2.1 is the last of the dillo-2.x series: 
 
-  This release is part of the Dillo2 series. In Dillo2, significant
-parts of the codebase were ported to C++, and the rendering engine was
-modified to use the FLTK2 library rather than GTK1.
+The  2.x series were based on FLTK-2.0, which was never released.
+Unfortunately  this  fact  left  dillo  out  of  distro's  native
+packaging systems because of the sensible policy of not including
+alpha software. 
+
+The core team decided to switch to the more modern FLTK-1.3 which
+at  this time, already saw its first release.
+
+The  development effort shifted to the dillo-3.x branch long ago,
+and it became the active one (dillo-2.x is unmaintained).
+
+The  new  dillo-3.0  will  be  available  in a few weeks, when it
+passes  the  final  stages  of  the release process. It has shown
+excellent stability and comes with some nice new features too.
+
 
   Here's a list of some well-known problems:
 
