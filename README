@@ -4,21 +4,21 @@
 
 dillo-2.2.1 is the last of the dillo-2.x series: 
 
-The  2.x series were based on FLTK-2.0, which was never released.
-Unfortunately  this  fact  left  dillo  out  of  distro's  native
-packaging systems because of the sensible policy of not including
-alpha software. 
+The 2.x series was based on FLTK-2.0, which was never released.
+As distributions have the sensible policy of not including alpha
+software, this kept dillo from being provided in their native
+packaging systems. 
 
-The core team decided to switch to the more modern FLTK-1.3 which
-at  this time, already saw its first release.
+In response, the core team switched to the more modern FLTK-1.3
+which has already seen its first release.
 
-The  development effort shifted to the dillo-3.x branch long ago,
-and it became the active one (dillo-2.x is unmaintained).
+The development effort shifted to the dillo-3.x branch long ago,
+and it became the active one (dillo-2.x received less and less
+attention).
 
-The  new  dillo-3.0  will  be  available  in a few weeks, when it
-passes  the  final  stages  of  the release process. It has shown
-excellent stability and comes with some nice new features too.
-
+The new dillo-3.0 will be available in a few weeks, after it passes
+the final stages of the release process. It has shown excellent
+stability and comes with some nice new features as well.
 
   Here's a list of some well-known problems:
 
