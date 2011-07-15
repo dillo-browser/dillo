@@ -581,23 +581,22 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
 
    if (!pm) {
       int shortcut;
-      Item *i;
       pm = new PopupMenu(0,0,0,0,"File");
       pm->begin();
        shortcut = Keys::getShortcut(KEYS_NEW_WINDOW);
-       i = new Item("New Window", shortcut, filemenu_cb, (void*)"nw");
+       new Item("New Window", shortcut, filemenu_cb, (void*)"nw");
        shortcut = Keys::getShortcut(KEYS_NEW_TAB);
-       i = new Item("New Tab", shortcut, filemenu_cb, (void*)"nt");
+       new Item("New Tab", shortcut, filemenu_cb, (void*)"nt");
        new Divider();
        shortcut = Keys::getShortcut(KEYS_OPEN);
-       i = new Item("Open File...", shortcut, filemenu_cb, (void*)"of");
+       new Item("Open File...", shortcut, filemenu_cb, (void*)"of");
        shortcut = Keys::getShortcut(KEYS_GOTO);
-       i = new Item("Open URL...", shortcut, filemenu_cb, (void*)"ou");
+       new Item("Open URL...", shortcut, filemenu_cb, (void*)"ou");
        shortcut = Keys::getShortcut(KEYS_CLOSE_TAB);
-       i = new Item("Close", shortcut, filemenu_cb, (void*)"cw");
+       new Item("Close", shortcut, filemenu_cb, (void*)"cw");
        new Divider();
        shortcut = Keys::getShortcut(KEYS_CLOSE_ALL);
-       i = new Item("Exit Dillo", shortcut, filemenu_cb, (void*)"ed");
+       new Item("Exit Dillo", shortcut, filemenu_cb, (void*)"ed");
       pm->type(PopupMenu::POPUP123);
       pm->end();
    }

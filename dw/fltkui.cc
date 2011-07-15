@@ -865,7 +865,7 @@ template <class I>
 {
    ::fltk::Item *item = new ::fltk::Item (name);
    item->set_flag (::fltk::RAW_LABEL);
-   item->user_data ((void *) index);
+   item->user_data ((void *)(long) index);
    return item;
 }
 

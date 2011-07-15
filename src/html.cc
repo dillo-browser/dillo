@@ -1718,7 +1718,6 @@ static void Html_tag_close_style(DilloHtml *html, int TagIdx)
 static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
-   Textblock *textblock;
    int32_t color;
    int tag_index_a = a_Html_tag_index ("a");
    style::Color *bgColor;
@@ -1735,8 +1734,6 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
       /* if we're here, it's bad XHTML, no need to recover */
       BUG_MSG("unclosed HEAD element\n");
    }
-
-   textblock = HT2TB(html);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       color = a_Html_color_parse(html, attrbuf, -1);
@@ -2165,7 +2162,6 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloImage *Image;
    DilloUrl *url, *usemap_url;
-   Textblock *textblock;
    const char *attrbuf;
 
    /* This avoids loading images. Useful for viewing suspicious HTML email. */
@@ -2175,8 +2171,6 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) ||
        !(url = a_Html_url_new(html, attrbuf, NULL, 0)))
       return;
-
-   textblock = HT2TB(html);
 
    usemap_url = NULL;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "usemap")))
@@ -2254,12 +2248,11 @@ static void Html_tag_close_map(DilloHtml *html, int TagIdx)
 static
 misc::SimpleVector<int> *Html_read_coords(DilloHtml *html, const char *str)
 {
-   int i, coord;
+   int coord;
    const char *tail = str;
    char *newtail = NULL;
    misc::SimpleVector<int> *coords = new misc::SimpleVector<int> (4);
 
-   i = 0;
    while (1) {
       coord = strtol(tail, &newtail, 10);
       if (coord == 0 && newtail == tail)
@@ -2953,14 +2946,13 @@ void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
 
             if (endq && (endq - data <= 51)) {
                /* IANA limits charset names to 40 characters */
-               const char *ignored;
                char *content_type;
 
                *endq = '\0';
                content_type = dStrconcat("text/css; charset=", data+10, NULL);
                *endq = '"';
                a_Capi_unref_buf(url);
-               ignored = a_Capi_set_content_type(url, content_type, "meta");
+               a_Capi_set_content_type(url, content_type, "meta");
                dFree(content_type);
                a_Capi_get_buf(url, &data, &len);
             }

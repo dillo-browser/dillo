@@ -195,13 +195,12 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url,
                          const DilloUrl *requester, int offset)
 {
    const DilloUrl *old_url;
-   bool_t MustLoad, ForceReload, Repush, IgnoreScroll;
+   bool_t MustLoad, ForceReload, IgnoreScroll;
    int x, y, idx, ClientKey;
    DilloWeb *Web;
 
    MSG("Nav_open_url: new url='%s'\n", URL_STR_(url));
 
-   Repush = (URL_FLAGS(url) & URL_ReloadFromCache) != 0;
    ForceReload = (URL_FLAGS(url) & (URL_E2EQuery + URL_ReloadFromCache)) != 0;
    IgnoreScroll = (URL_FLAGS(url) & URL_IgnoreScroll) != 0;
 

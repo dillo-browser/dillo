@@ -111,7 +111,7 @@ int main(int argc, char **argv)
       buttonLabel[i] = strdup(buf);
       ::fltk::Button *button =
            new ::fltk::Button(0, 20 * i, 50, 20, buttonLabel[i]);
-      button->callback (anchorCallback, (void*)i);
+      button->callback (anchorCallback, (void*)(long)i);
       button->when (::fltk::WHEN_RELEASE);
    }
 

@@ -791,8 +791,7 @@ void drawBorder (View *view, Rectangle *area,
                  Style *style, bool inverse)
 {
    /** \todo a lot! */
-   Color::Shading dark, light, normal;
-   int xb1, yb1, xb2, yb2, xp1, yp1, xp2, yp2;
+   int xb1, yb1, xb2, yb2;
 
    // top left and bottom right point of outer border boundary
    xb1 = x + style->margin.left;
@@ -800,15 +799,17 @@ void drawBorder (View *view, Rectangle *area,
    xb2 = x + (width > 0 ? width - 1 : 0) - style->margin.right;
    yb2 = y + (height > 0 ? height - 1 : 0) - style->margin.bottom;
 
-   // top left and bottom right point of inner border boundary
-   xp1 = xb1 + style->borderWidth.left;
-   yp1 = yb1 + style->borderWidth.top;
-   xp2 = xb2 - style->borderWidth.right;
-   yp2 = yb2 - style->borderWidth.bottom;
-
-   light = inverse ? Color::SHADING_DARK : Color::SHADING_LIGHT;
-   dark = inverse ? Color::SHADING_LIGHT : Color::SHADING_DARK;
-   normal = inverse ? Color::SHADING_INVERSE : Color::SHADING_NORMAL;
+   /*
+      // top left and bottom right point of inner border boundary
+      xp1 = xb1 + style->borderWidth.left;
+      yp1 = yb1 + style->borderWidth.top;
+      xp2 = xb2 - style->borderWidth.right;
+      yp2 = yb2 - style->borderWidth.bottom;
+   
+      light = inverse ? Color::SHADING_DARK : Color::SHADING_LIGHT;
+      dark = inverse ? Color::SHADING_LIGHT : Color::SHADING_DARK;
+      normal = inverse ? Color::SHADING_INVERSE : Color::SHADING_NORMAL;
+   */
 
    drawBorderRight(view, style, xb2, yb1, xb2, yb2);
    drawBorderLeft(view, style, xb1, yb1, xb1, yb2);

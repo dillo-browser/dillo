@@ -599,13 +599,11 @@ static void read_log_cb(int fd_in, void *data)
    const int BufLen = 4096;
    char Buf[BufLen];
    ssize_t st;
-   int ret = -1;
 
    do {
       st = read(fd_in, Buf, BufLen);
       if (st < 0) {
          if (errno == EAGAIN) {
-            ret = 1;
             break;
          }
          perror("read, ");
@@ -614,7 +612,6 @@ static void read_log_cb(int fd_in, void *data)
          close(fd_in);
          remove_fd(fd_in, 1);
          dl_item->log_done(1);
-         ret = 0;
          break;
       } else {
          dl_item->log_text_add(Buf, st);

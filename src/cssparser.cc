@@ -1049,7 +1049,7 @@ void CssParser::parseDeclaration(CssPropertyList * props,
                                  CssPropertyList * importantProps)
 {
    CssPropertyInfo pi = {NULL, {CSS_TYPE_UNUSED}, NULL}, *pip;
-   CssShorthandInfo si, *sip;
+   CssShorthandInfo *sip;
    CssValueType type = CSS_TYPE_UNUSED;
 
    CssPropertyName prop;
@@ -1087,7 +1087,6 @@ void CssParser::parseDeclaration(CssPropertyList * props,
          }
       } else {
          /* Try shorthands. */
-         si.symbol = tval;
          sip =
              (CssShorthandInfo *) bsearch(&pi, Css_shorthand_info,
                                           CSS_SHORTHAND_NUM,

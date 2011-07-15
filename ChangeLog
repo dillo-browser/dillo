@@ -10,6 +10,7 @@ dillo-2.2.1 [July ??, 2011]
  - Accept application/xhtml+xml.
  - Small caps support.
  - Border-collapse, border-style properties.
+ - Removed gcc warnings for 64bit
    Patches: Jorge Arellano Cid
 +- Configurable User-Agent HTTP header.
    Patch: Alexander Voigt, corvid
