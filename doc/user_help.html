@@ -2,46 +2,59 @@
 <html>
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title> Help for Dillo </title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <title> Dillo Web Browser :: 
+
+  Help for New Users
+
+</title>
 </head>
 
-<body bgcolor='#778899' text='#000000'>
+<body text="#0f0f0f" link="#2020e0" vlink="#403090" bgcolor="#607cf8">
 
-  <table bgcolor="#70a0c0" border="1" cellpadding="5">
-   <tr><td><h1>Help for Dillo 3.0</h1>
+  <table width="100%" bgcolor="#8080f0" cellspacing="4" cellpadding="5"
+   border="0o">
+   <tr><td><big><font color="#302080">Welcome to Dillo 3.0</font></big>
   </table>
   <p>
-  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=5>
+
+  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
     <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
     <h4><font color="green">Basics:</font></h4>
     </td></tr>
 
     <tr><td WIDTH="100%" bgcolor="#70a0c0">
     <ul>
-      <li>You can tell a link from plain content by the hand-shaped cursor.
+      <li>You can tell a link from plain content by the hand-shaped cursor. </li>
+
       <li> Besides browsing the web, Dillo also has basic file browsing
-           capabilities included. So, entering <a href="file:">file:</a> in your
+           capabilities included. So, entering "file:" in your
            Dillo URL window will give you the contents of your current
-           working directory, and <a href="file:~">file:~</a> entered in the
+           working directory, and "file:~" entered in the
            same place will point your Dillo browser right to your home
            directory...
-      <li> Dillo, at this stage of development, is <u>not</u> not ready
+
+      <li> Dillo, at this stage of development, is not ready
            to render pages that use <b><font color="#5040a0">frames</font></b>.
            Nevertheless, it comes with a tiny handler (lynx/w3m-like) that will
            let you choose which frame to visit, one by one.
-      <li> Dillo  has  <b><font color="#5040a0">context
+
+      <li> Dillo has <b><font color="#5040a0">context
            sensitive menus</font></b> using the right  mouse  button
            (available on pages, links, images, forms, the Back
            and Forward buttons, and the bug meter).
+
       <li> Some  of the functions in Dillo are handled by independent
-           processes.  For  instance,  downloads come through <em>wget</em>.
-           If Dillo exits, the download can continue (more details
+           processes.  For  instance,  downloads come through
+           <em><a href="http://www.gnu.org/software/wget/">wget</a></em>.
+           If Dillo exits, the downloads continue (more details
            below).
+
+
     </ul>
     </td></tr>
   </table>
-
+ 
   <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
     <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
     <h4><font color="green">Usage:</font></h4>
@@ -54,23 +67,32 @@
            or mouse wheel. If nothing happens when keys are pressed, try
            <b> <font color="#5040a0">focusing</font></b> your Dillo main
            window first by clicking it (not on any link!:)).
-      <li> You can use the space key as PgDn, and {'b' | 'B'} as PgUp.</li>
+
+      <li>You can use the space key as PgDn, and {'b' | 'B'} as PgUp.</li>
+
       <li> Similarly, you can use "<b>,</b>" and "<b>.</b>" as shortcuts for
            forward and backward buttons (mnemonic: those
            keys are usually labeled "<" and ">").
+
       <li> <b>Configuration:</b> If you want to change Dillo's
            appearance or behaviour, look at the options in your
            <b><font color="#5040a0">dillorc</font></b>
-           file (if you don't have a copy in your ~/.dillo/ directory, get it
-           <a href='http://www.dillo.org/dillorc'>here</a>).
+           file (if you don't have a copy in your ~/.dillo/ directory, get it 
+           <a href='http://www.dillo.org/dillorc'>here</a>). 
+
       <li> Clicking the "Reload" button always requests an end-to-end reload
            of the page currently viewed, but it will *not* reload embedded
            images during this process.
-      <li> Dialogs can be closed with the ESC key.
-      <li> You can try the different control panel size options listed in the
-           Tools menu, and make any changes permanent by editing your
-           <code>dillorc</code> file.
-      <li> The whole window area can be used to display the page (escape key).
+
+      <li> Dialogs can be closed with the ESC key<br>
+           (ESC also hides the findbar and control panels).
+
+      <li> If you want to try a different control panel, right-click over the
+           tools button and select one that suits your needs, then make
+           it the default in your <code>dillorc</code> file.
+
+      <li> The whole window area can be used to display the page (ESC key).
+
     </ul>
     </td></tr>
   </table>
@@ -82,8 +104,10 @@
 
     <tr><td BGCOLOR="#70a0c0">
     <p>
-    Downloads are made using <b><font color="#5040a0">wget</font></b>
-    with a FLTK-based GUI wrapper, through the Dillo plugin (dpi) framework.
+    Downloads are made using
+    <b><font color="#5040a0"><a href="http://www.gnu.org/software/wget/">wget</a></font></b>
+    with a <a href="http://www.fltk.org">FLTK</a>-based GUI wrapper, through
+    the Dillo plugin (dpi) framework.
     If you close the browser window, downloads will continue.
     <p>
     </td></tr>
@@ -170,9 +194,9 @@
    That is, if you just compile and use dillo, it will reject
    every single cookie sent to it!
    <p>
-   If you want to enable cookies in dillo, just
-   <a href="http://www.dillo.org/Cookies.txt">set up a <code>cookiesrc</code>
-   file</a>.
+   If you want to enable cookies in dillo, please read 
+   <a href="Cookies.txt">Cookies.txt</a>. It's very easy --
+   just a matter of setting up a <code>cookiesrc</code> file).
    </td></tr>
  </table>
 
@@ -192,6 +216,10 @@
    </ul>
    Press SHIFT to temporarily reverse the focusing behaviour.
    <p>
+   You can <b><font color="#5040a0">close</font></b>
+   a tab with middle-click on its label (the default),
+   or with right-click by setting this dillorc option:
+   <ul><li><code>right_click_closes_tab</code></ul>
    </td></tr>
  </table>
 
@@ -223,7 +251,7 @@
    (<a href='http://www.dillo.org/dpi1.html'>dpi</a>) framework.
    This should be transparent to the end user. Please note that:
    <ul>
-     <li>It is a good idea to keep a backup of your
+     <li>It is a good idea to keep a backup of your 
          <code>~/.dillo/bm.txt</code>
      <li>The server will stay alive after closing dillo.
      <li>You can stop the server by sending it a KILL signal. Dillo
@@ -242,11 +270,10 @@
    </td></tr>
    <tr><td bgcolor="#70a0c0">
    <p>
-   Dillo's <a href='http://www.dillo.org/help/bug_meter.html'>bug meter</a>
-   shows the number of
-   <b><font color="#5040a0">detected bugs</font></b> inside the
+   Dillo's <em><a href='/help/bug_meter.html'>Bug meter</a></em> shows the
+   number of <b><font color="#5040a0">detected bugs</font></b> inside the
    page. The bugs are caught at parsing time, so the
-   error messages also show the line where they occur and provide a
+   error  messages also show the line where they occur and provide a
    <b><font color="#5040a0">hint</font></b> of what was expected instead!
    <p>
    The primary purpose of the bug meter is to
@@ -254,7 +281,7 @@
    authors to polish the contents of their sites with a view to making
    them standards-compliant.
    <p>
-   The bug meter is located at the lower right corner of
+   The Bug meter is located at the lower right corner of
    Dillo. Left-click to see the messages, right-click for a menu.
    </td></tr>
  </table>
@@ -275,22 +302,24 @@
 <tr><td>Ctrl-W                     <td>Window          <td>quit tab/window
 <tr><td>Ctrl-O                     <td>Open            <td>Open file
 <tr><td>Ctrl-B                     <td>Bookmarks       <td>view bookmarks
-<tr><td>Ctrl-Q                     <td>Quit            <td>exit Dillo
+<tr><td>Ctrl-Q                     <td>Quit            <td>Quit dillo
 <tr><td>Back       or "<b>,</b>"   <td><               <td>previous page
 <tr><td>Shift-Back or "<b>.</b>"   <td>>               <td>next page
 <tr><td>Alt-F                      <td>File            <td>file menu
 <tr><td>Ctrl-TabKey                <td>TabKey          <td>Next tab
 <tr><td>Shift-TabKey               <td>TabKey          <td>Previous tab
 <tr><td>Esc                        <td>escape          <td>close dialog,
-                                                           close findbar, <br>
-                                                       Hide/show control panels
+                                                           close findbar,<br>
+                                                     Hide/show control panels
 </table>
 <p>
 You can <b><font color="#5040a0">change</font></b> the bindings using a
-<code>~/.dillo/<a href="http://www.dillo.org/keysrc">keysrc</a></code>
+<code>~/.dillo/<a href="/keysrc">keysrc</a></code>
 file.
    </td></tr>
  </table>
 
+
 </body>
 </html>
+
