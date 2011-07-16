@@ -54,8 +54,8 @@ Building dillo
 
   2.- Then dillo2:
 
-     tar jxvf dillo-2.2.tar.bz2
-     cd dillo-2.2
+     tar jxvf dillo-2.2.1.tar.bz2
+     cd dillo-2.2.1
      ./autogen.sh; ./configure; make
      sudo make install-strip
 
