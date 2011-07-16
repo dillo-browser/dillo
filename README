@@ -25,6 +25,7 @@ stability and comes with some nice new features as well.
          * no FRAMES rendering
          * no https (there's a barebones prototype).
 
+
 -----
 FLTK2
 -----
@@ -34,6 +35,29 @@ The recommended version is >= r6916. and <=r7513
 If not available from fltk.org, you can get it here:
 
   http://www.dillo.org/dillo-2.x/fltk-2.0.x-r7513.tar.bz2
+
+
+--------------
+Building dillo
+--------------
+
+  1.- Install fltk:
+
+     tar jxvf fltk-2.0.x-r7513.tar.bz2
+     cd fltk-2.0.x-r7513
+     less README.unix
+     make
+     sudo make install
+     cd ..
+    
+  (don't configure fltk with --enable-cairo)
+
+  2.- Then dillo2:
+
+     tar jxvf dillo-2.2.tar.bz2
+     cd dillo-2.2
+     ./autogen.sh; ./configure; make
+     sudo make install-strip
 
 
 ------------
