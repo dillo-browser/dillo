@@ -20,7 +20,7 @@ The new dillo-3.0 will be available in a few weeks, after it passes
 the final stages of the release process. It has shown excellent
 stability and comes with some nice new features as well.
 
-  Here's a list of some well-known problems:
+  Here's a list of some well-known problems of dillo-2.x:
 
          * no FRAMES rendering
          * no https (there's a barebones prototype).
@@ -30,10 +30,10 @@ FLTK2
 -----
 
   The FLTK2 library is statically linked into Dillo2.
-  You can get it from fltk.org.
-The recommended version is >= r6916. e.g. in:
+The recommended version is >= r6916. and <=r7513
+If not available from fltk.org, you can get it here:
 
-  http://fltk.org/software.php?VERSION=2.0.x-r6916
+  http://www.dillo.org/dillo-2.x/fltk-2.0.x-r7513.tar.bz2
 
 
 ------------
@@ -77,4 +77,4 @@ Solaris
 
 Jorge.-
 (jcid@dillo.org)
-June, 2009
+July, 2011
