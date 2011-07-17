@@ -94,7 +94,11 @@ bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
 
    if (!event) return ret;
 
-   if (linkNo != -1) {
+   if (event->button == 3) {
+      // menu popup
+      layout->emitLinkPress (itWidget, linkNo, -1, -1, -1, event);
+      ret = true;
+   } else if (linkNo != -1) {
       // link handling
       (void) layout->emitLinkPress (itWidget, linkNo, -1, -1, -1, event);
       resetLink ();
@@ -133,10 +137,6 @@ bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
          to = from->cloneDeepIterator ();
          toChar = correctCharPos (to, charPos);
       }
-      ret = true;
-   } else if (event->button == 3) {
-      // menu popup
-      layout->emitLinkPress (itWidget, -1, -1, -1, -1, event);
       ret = true;
    }
 
