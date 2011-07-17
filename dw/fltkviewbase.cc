@@ -25,8 +25,6 @@
 #include <FL/fl_draw.H>
 
 #include <stdio.h>
-#include <wchar.h>
-#include <wctype.h>
 #include "../lout/msg.h"
 
 extern Fl_Widget* fl_oldfocus;
@@ -550,14 +548,14 @@ void FltkWidgetView::drawText (core::style::Font *font,
           viewY = translateCanvasYToViewY (Y);
       int curr = 0, next = 0, nb;
       char chbuf[4];
-      wchar_t wc, wcu;
+      int c, cu;
 
       if (font->fontVariant == core::style::FONT_VARIANT_SMALL_CAPS) {
          int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
          for (curr = 0; next < len; curr = next) {
             next = theLayout->nextGlyph(text, curr);
-            wc = fl_utf8decode(text + curr, text + next, &nb);
-            if ((wcu = towupper(wc)) == wc) {
+            c = fl_utf8decode(text + curr, text + next, &nb);
+            if ((cu = fl_toupper(c)) == c) {
                /* already uppercase, just draw the character */
                fl_font(ff->font, ff->size);
                fl_draw(text + curr, next - curr, viewX, viewY);
@@ -565,7 +563,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
                viewX += (int)fl_width(text + curr, next - curr);
             } else {
                /* make utf8 string for converted char */
-               nb = fl_utf8encode(wcu, chbuf);
+               nb = fl_utf8encode(cu, chbuf);
                fl_font(ff->font, sc_fontsize);
                fl_draw(chbuf, nb, viewX, viewY);
                viewX += font->letterSpacing;
