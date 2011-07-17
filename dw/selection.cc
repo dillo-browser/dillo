@@ -302,7 +302,7 @@ void SelectionState::adjustSelection (Iterator *it, int charPos)
          }
       } else {
          if (cmpOld * cmpDiff < 0) {
-            // The user has reduced the selection. Unighlight the difference.
+            // The user has reduced the selection. Unhighlight the difference.
             highlight0 (false, to, 0, newTo, 0, cmpDiff);
          }
 
