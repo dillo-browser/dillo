@@ -241,9 +241,9 @@ int FltkViewBase::handle (int event)
       if (processed) {
          /* pressed dw content; give focus to the view */
          Fl::focus(this);
+         return true;
       }
-      return processed ? true : Fl_Group::handle (event);
-
+      break;
    case FL_RELEASE:
       processed =
          theLayout->buttonRelease (this, Fl::event_clicks () + 1,
@@ -251,8 +251,9 @@ int FltkViewBase::handle (int event)
                                    translateViewYToCanvasY (Fl::event_y ()),
                                    getDwButtonState (), Fl::event_button ());
       _MSG("RELEASE => %s\n", processed ? "true" : "false");
-      return processed ? true : Fl_Group::handle (event);
-
+      if (processed)
+         return true;
+      break;
    case FL_MOVE:
       mouse_x = Fl::event_x();
       mouse_y = Fl::event_y();
@@ -262,8 +263,9 @@ int FltkViewBase::handle (int event)
                                   translateViewYToCanvasY (mouse_y),
                                   getDwButtonState ());
       _MSG("MOVE => %s\n", processed ? "true" : "false");
-      return processed ? true : Fl_Group::handle (event);
-
+      if (processed)
+         return true;
+      break;
    case FL_DRAG:
       processed =
          theLayout->motionNotify (this,
@@ -271,36 +273,34 @@ int FltkViewBase::handle (int event)
                                   translateViewYToCanvasY (Fl::event_y ()),
                                   getDwButtonState ());
       _MSG("DRAG => %s\n", processed ? "true" : "false");
-      return processed ? true : Fl_Group::handle (event);
-
+      if (processed)
+         return true;
+      break;
    case FL_ENTER:
       theLayout->enterNotify (this,
                               translateViewXToCanvasX (Fl::event_x ()),
                               translateViewYToCanvasY (Fl::event_y ()),
                               getDwButtonState ());
-      return Fl_Group::handle (event);
-
+      break;
    case FL_HIDE:
       /* WORKAROUND: strangely, the tooltip window is not automatically hidden
        * with its parent. Here we fake a LEAVE to achieve it. */
    case FL_LEAVE:
       theLayout->leaveNotify (this, getDwButtonState ());
-      return Fl_Group::handle (event);
-
+      break;
    case FL_FOCUS:
       if (focused_child && find(focused_child) < children()) {
          /* strangely, find() == children() if the child is not found */
          focused_child->take_focus();
       }
       return 1;
-
    case FL_UNFOCUS:
       focused_child = fl_oldfocus;
       return 0;
-
    default:
-      return Fl_Group::handle (event);
+      break;
    }
+   return Fl_Group::handle (event);
 }
 
 // ----------------------------------------------------------------------
