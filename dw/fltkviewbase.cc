@@ -25,8 +25,6 @@
 #include <FL/fl_draw.H>
 
 #include <stdio.h>
-#include <wchar.h>
-#include <wctype.h>
 #include "../lout/msg.h"
 
 extern Fl_Widget* fl_oldfocus;
@@ -241,9 +239,9 @@ int FltkViewBase::handle (int event)
       if (processed) {
          /* pressed dw content; give focus to the view */
          Fl::focus(this);
+         return true;
       }
-      return processed ? true : Fl_Group::handle (event);
-
+      break;
    case FL_RELEASE:
       processed =
          theLayout->buttonRelease (this, Fl::event_clicks () + 1,
@@ -251,8 +249,9 @@ int FltkViewBase::handle (int event)
                                    translateViewYToCanvasY (Fl::event_y ()),
                                    getDwButtonState (), Fl::event_button ());
       _MSG("RELEASE => %s\n", processed ? "true" : "false");
-      return processed ? true : Fl_Group::handle (event);
-
+      if (processed)
+         return true;
+      break;
    case FL_MOVE:
       mouse_x = Fl::event_x();
       mouse_y = Fl::event_y();
@@ -262,8 +261,9 @@ int FltkViewBase::handle (int event)
                                   translateViewYToCanvasY (mouse_y),
                                   getDwButtonState ());
       _MSG("MOVE => %s\n", processed ? "true" : "false");
-      return processed ? true : Fl_Group::handle (event);
-
+      if (processed)
+         return true;
+      break;
    case FL_DRAG:
       processed =
          theLayout->motionNotify (this,
@@ -271,36 +271,34 @@ int FltkViewBase::handle (int event)
                                   translateViewYToCanvasY (Fl::event_y ()),
                                   getDwButtonState ());
       _MSG("DRAG => %s\n", processed ? "true" : "false");
-      return processed ? true : Fl_Group::handle (event);
-
+      if (processed)
+         return true;
+      break;
    case FL_ENTER:
       theLayout->enterNotify (this,
                               translateViewXToCanvasX (Fl::event_x ()),
                               translateViewYToCanvasY (Fl::event_y ()),
                               getDwButtonState ());
-      return Fl_Group::handle (event);
-
+      break;
    case FL_HIDE:
       /* WORKAROUND: strangely, the tooltip window is not automatically hidden
        * with its parent. Here we fake a LEAVE to achieve it. */
    case FL_LEAVE:
       theLayout->leaveNotify (this, getDwButtonState ());
-      return Fl_Group::handle (event);
-
+      break;
    case FL_FOCUS:
       if (focused_child && find(focused_child) < children()) {
          /* strangely, find() == children() if the child is not found */
          focused_child->take_focus();
       }
       return 1;
-
    case FL_UNFOCUS:
       focused_child = fl_oldfocus;
       return 0;
-
    default:
-      return Fl_Group::handle (event);
+      break;
    }
+   return Fl_Group::handle (event);
 }
 
 // ----------------------------------------------------------------------
@@ -550,14 +548,14 @@ void FltkWidgetView::drawText (core::style::Font *font,
           viewY = translateCanvasYToViewY (Y);
       int curr = 0, next = 0, nb;
       char chbuf[4];
-      wchar_t wc, wcu;
+      int c, cu;
 
       if (font->fontVariant == core::style::FONT_VARIANT_SMALL_CAPS) {
          int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
          for (curr = 0; next < len; curr = next) {
             next = theLayout->nextGlyph(text, curr);
-            wc = fl_utf8decode(text + curr, text + next, &nb);
-            if ((wcu = towupper(wc)) == wc) {
+            c = fl_utf8decode(text + curr, text + next, &nb);
+            if ((cu = fl_toupper(c)) == c) {
                /* already uppercase, just draw the character */
                fl_font(ff->font, ff->size);
                fl_draw(text + curr, next - curr, viewX, viewY);
@@ -565,7 +563,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
                viewX += (int)fl_width(text + curr, next - curr);
             } else {
                /* make utf8 string for converted char */
-               nb = fl_utf8encode(wcu, chbuf);
+               nb = fl_utf8encode(cu, chbuf);
                fl_font(ff->font, sc_fontsize);
                fl_draw(chbuf, nb, viewX, viewY);
                viewX += font->letterSpacing;
