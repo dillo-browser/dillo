@@ -63,14 +63,18 @@ container::typed::HashTable <lout::object::ConstString,
                              FltkFont::FontFamily> *FltkFont::systemFonts =
                              NULL;
 
-FltkFont::FontFamily FltkFont::standardFontFamily;
+FltkFont::FontFamily FltkFont::standardFontFamily (FL_HELVETICA,
+                                                   FL_HELVETICA_BOLD,
+                                                   FL_HELVETICA_ITALIC,
+                                                   FL_HELVETICA_BOLD_ITALIC);
 
-FltkFont::FontFamily::FontFamily ()
+FltkFont::FontFamily::FontFamily (Fl_Font fontNormal, Fl_Font fontBold,
+                                  Fl_Font fontItalic, Fl_Font fontBoldItalic)
 {
-   font[0] = FL_HELVETICA;
-   font[1] = FL_HELVETICA_BOLD;
-   font[2] = FL_HELVETICA_ITALIC;
-   font[3] = FL_HELVETICA_BOLD_ITALIC;
+   font[0] = fontNormal;
+   font[1] = fontBold;
+   font[2] = fontItalic;
+   font[3] = fontBoldItalic;
 }
 
 void FltkFont::FontFamily::set (Fl_Font f, int attrs)
@@ -90,7 +94,10 @@ Fl_Font FltkFont::FontFamily::get (int attrs)
       idx += 1;
    if (attrs & FL_ITALIC)
       idx += 2;
-   return font[idx];
+
+   // should the desired font style not exist, we
+   // return the normal font of the fontFamily
+   return font[idx] >= 0 ? font[idx] : font[0];
 }
 
 
@@ -163,7 +170,9 @@ void FltkFont::initSystemFonts ()
          family->set ((Fl_Font) i, t);
          delete familyName;
       } else {
-         family = new FontFamily ();
+         // set first font of family also as normal font in case there 
+         // is no normal (non-bold, non-italic) font
+         family = new FontFamily ((Fl_Font) i, -1, -1, -1);
          family->set ((Fl_Font) i, t);
          systemFonts->put (familyName, family);
       }

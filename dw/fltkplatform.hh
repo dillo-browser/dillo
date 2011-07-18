@@ -17,7 +17,8 @@ class FltkFont: public core::style::Font
    class FontFamily: public lout::object::Object {
          Fl_Font font[4];
       public:
-         FontFamily ();
+         FontFamily (Fl_Font fontNormal, Fl_Font fontBold,
+                     Fl_Font fontItalic, Fl_Font fontBoldItalic);
          void set (Fl_Font, int attrs);
          Fl_Font get (int attrs);
    };
