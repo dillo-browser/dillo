@@ -634,6 +634,7 @@ Fl_Widget *FltkMultiLineTextResource::createNewWidget (core::Allocation
    Fl_Text_Editor *text =
       new Fl_Text_Editor (allocation->x, allocation->y, allocation->width,
                           allocation->ascent + allocation->descent);
+   text->wrap_mode(Fl_Text_Display::WRAP_AT_BOUNDS, 0);
    text->buffer (buffer);
    return text;
 }
