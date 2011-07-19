@@ -16,6 +16,7 @@ dillo-3.0 [not released yet]
 +- Remove --enable-ansi configure option.
  - Limit saved cookie size.
  - Allow binding to non-ASCII keys and multimedia keys.
+ - Enable line wrapping for <textarea>. (BUG#903)
    Patches: corvid
 
 -----------------------------------------------------------------------------
