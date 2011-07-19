@@ -252,6 +252,7 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
       a_Url_free(bw->nav_expect_url);
       bw->nav_expect_url = NULL;
       bw->nav_expecting = FALSE;
+      a_UIcmd_set_buttons_sens(bw);
    }
    if (bw->meta_refresh_status > 0)
       --bw->meta_refresh_status;
