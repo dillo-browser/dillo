@@ -539,8 +539,10 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
    if (displayed() && style) {
       FltkFont *font = (FltkFont*)style->font;
       fl_font(font->font,font->size);
+      /* WORKAROUND: fl_width(uint_t) is not working on non-xft X.
+       * Reported to FLTK as STR #2688 */
       requisition->width =
-         (int)fl_width ('n')
+         (int)fl_width ("n")
          * (maxLength == UNLIMITED_MAX_LENGTH ? 10 : maxLength)
          + label_w + (2 * RELIEF_X_THICKNESS);
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
@@ -657,8 +659,10 @@ void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
       fl_font(font->font,font->size);
+      /* WORKAROUND: fl_width(uint_t) is not working on non-xft X.
+       * Reported to FLTK as STR #2688 */
       requisition->width =
-         (int)fl_width ('n') * numCols + 2 * RELIEF_X_THICKNESS;
+         (int)fl_width ("n") * numCols + 2 * RELIEF_X_THICKNESS;
       requisition->ascent =
          RELIEF_Y_THICKNESS + font->ascent +
          (font->ascent + font->descent) * (numRows - 1);
