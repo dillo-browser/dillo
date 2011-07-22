@@ -611,7 +611,6 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
 
 /*
  * The textarea tag
- * (TODO: It doesn't support wrapping).
  */
 void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 {
