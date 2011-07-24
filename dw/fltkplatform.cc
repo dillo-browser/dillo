@@ -161,7 +161,7 @@ void FltkFont::initSystemFonts ()
       if (t & FL_BOLD)
          strstrip(name, " bold");
 
-      MSG("Found font: %s%s%s\n", name, t & FL_BOLD ? " bold" : "",
+      _MSG("Found font: %s%s%s\n", name, t & FL_BOLD ? " bold" : "",
                                   t & FL_ITALIC ? " italic" : "");
 
       object::String *familyName = new object::String(name);
