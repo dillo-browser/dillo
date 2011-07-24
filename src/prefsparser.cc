@@ -24,6 +24,7 @@ typedef enum {
    PREFS_BOOL,
    PREFS_COLOR,
    PREFS_STRING,
+   PREFS_STRINGS,
    PREFS_URL,
    PREFS_INT32,
    PREFS_DOUBLE,
@@ -86,7 +87,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "panel_size", &prefs.panel_size, PREFS_PANEL_SIZE },
       { "parse_embedded_css", &prefs.parse_embedded_css, PREFS_BOOL },
       { "save_dir", &prefs.save_dir, PREFS_STRING },
-      { "search_url", &prefs.search_url, PREFS_STRING },
+      { "search_url", &prefs.search_urls, PREFS_STRINGS },
       { "show_back", &prefs.show_back, PREFS_BOOL },
       { "show_bookmarks", &prefs.show_bookmarks, PREFS_BOOL },
       { "show_clear_url", &prefs.show_clear_url, PREFS_BOOL },
@@ -134,6 +135,19 @@ int PrefsParser::parseOption(char *name, char *value)
       dFree(*(char **)node->pref);
       *(char **)node->pref = dStrdup(value);
       break;
+   case PREFS_STRINGS:
+   {
+      Dlist *lp = *(Dlist **)node->pref;
+      if (dList_length(lp) == 2 && !dList_nth_data(lp, 1)) {
+         /* override the default */
+         void *data = dList_nth_data(lp, 0);
+         dList_remove(lp, data);
+         dList_remove(lp, NULL);
+         dFree(data);
+      }
+      dList_append(lp, dStrdup(value));
+      break;
+   }
    case PREFS_URL:
       a_Url_free(*(DilloUrl **)node->pref);
       *(DilloUrl **)node->pref = a_Url_new(value, NULL);

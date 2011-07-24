@@ -774,14 +774,15 @@ void a_UIcmd_open_file(void *vbw)
 
 /*
  * Returns a newly allocated string holding a search url generated from
- * a string of keywords (separarated by blanks) and prefs.search_url.
+ * a string of keywords (separarated by blanks) and the current search_url.
  * The search string is urlencoded.
  */
 static char *UIcmd_make_search_str(const char *str)
 {
-   char *keys = a_Url_encode_hex_str(str), *c = prefs.search_url;
-   Dstr *ds = dStr_sized_new(128);
    char *search_url;
+   char *keys = a_Url_encode_hex_str(str),
+        *c = (char*)dList_nth_data(prefs.search_urls, prefs.search_url_idx);
+   Dstr *ds = dStr_sized_new(128);
 
    for (; *c; c++) {
       if (*c == '%')
