@@ -775,7 +775,7 @@ void a_UIcmd_open_file(void *vbw)
 
 /*
  * Returns a newly allocated string holding a search url generated from
- * a string of keywords (separarated by blanks) and the current search_url.
+ * a string of keywords (separated by blanks) and the current search_url.
  * The search string is urlencoded.
  */
 static char *UIcmd_make_search_str(const char *str)
