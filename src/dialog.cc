@@ -86,7 +86,8 @@ public:
    CustChoice (int x, int y, int w, int h, const char* l=0) :
       Fl_Choice(x,y,w,h,l) {};
    int handle(int e) {
-      if (e == FL_KEYBOARD && Fl::event_key() == FL_Enter &&
+      if (e == FL_KEYBOARD &&
+          (Fl::event_key() == FL_Enter || Fl::event_key() == FL_Down) &&
           (Fl::event_state() & (FL_SHIFT|FL_CTRL|FL_ALT|FL_META)) == 0) {
          MSG("CustChoice: ENTER\n");
          return Fl_Choice::handle(FL_PUSH);
@@ -160,14 +161,12 @@ const char *a_Dialog_input(const char *msg)
        int n_it = dList_length(prefs.search_urls);
        pm = new Fl_Menu_Item[n_it+1];
        memset(pm, '\0', sizeof(Fl_Menu_Item[n_it+1]));
-       for (int i = 0; i < n_it; i++) {
-          char *p, *q, label[32];
-          char *url = (char *)dList_nth_data(prefs.search_urls, i);
-          if ((p = strstr(url, "//")) && (q = strstr(p+2,"/"))) {
-             strncpy(label,p+2,MIN(q-p-2,31));
-             label[MIN(q-p-2,31)] = 0;
-          }
-          pm[i].label(FL_NORMAL_LABEL, strdup(label));
+       for (int i = 0, j = 0; i < n_it; i++) {
+          char *label, *url, *source;
+          source = (char *)dList_nth_data(prefs.search_urls, i);
+          if (a_Misc_parse_search_url(source, &label, &url) < 0)
+             continue;
+          pm[j++].label(FL_NORMAL_LABEL, strdup(label));
        }
     }
     ch->tooltip("Select search engine");

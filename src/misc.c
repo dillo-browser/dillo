@@ -383,6 +383,38 @@ int a_Misc_parse_geometry(char *str, int *x, int *y, int *w, int *h)
 }
 
 /*
+ * Parse dillorc's search_url string ("[<label> ]<url>")
+ * Return value: -1 on error, 0 on success (and label and urlstr pointers)
+ */
+int a_Misc_parse_search_url(char *source, char **label, char **urlstr)
+{
+   static char buf[32];
+   char *p, *q;
+   int ret = -1;
+
+   if ((p = strrchr(source, ' '))) {
+      /* label and url pair */
+      strncpy(buf,source,MIN(p-source,31));
+      buf[MIN(p-source,31)] = 0;
+      source = p+1;
+      if ((p = strchr(source, '/')) && p[1] && (q = strchr(p+2,'/'))) {
+         *urlstr = source;
+         ret = 0;
+      }
+   } else {
+      /* url only, make a custom label */
+      if ((p = strchr(source, '/')) && p[1] && (q = strchr(p+2,'/'))) {
+         strncpy(buf,p+2,MIN(q-p-2,31));
+         buf[MIN(q-p-2,31)] = 0;
+         *urlstr = source;
+         ret = 0;
+      }
+   }
+   *label = buf;
+   return ret;
+}
+
+/*
  * Encodes string using base64 encoding.
  * Return value: new string or NULL if input string is empty.
  */

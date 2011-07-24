@@ -36,6 +36,7 @@
 #include "history.h"
 #include "msg.h"
 #include "prefs.h"
+#include "misc.h"
 
 #include "dw/fltkviewport.hh"
 
@@ -779,12 +780,15 @@ void a_UIcmd_open_file(void *vbw)
  */
 static char *UIcmd_make_search_str(const char *str)
 {
-   char *search_url;
+   char *search_url, *l, *u, *c;
    char *keys = a_Url_encode_hex_str(str),
-        *c = (char*)dList_nth_data(prefs.search_urls, prefs.search_url_idx);
+        *src = (char*)dList_nth_data(prefs.search_urls, prefs.search_url_idx);
    Dstr *ds = dStr_sized_new(128);
 
-   for (; *c; c++) {
+   /* parse search_url into label and url */
+   a_Misc_parse_search_url(src, &l, &u);
+
+   for (c = u; *c; c++) {
       if (*c == '%')
          switch(*++c) {
          case 's':
