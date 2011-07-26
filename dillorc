@@ -48,8 +48,9 @@
 
 # Default fonts:
 #
-# If FLTK2 has been configured with Xft enabled (the default), you can
-# use scalable fonts such as DejaVu or Liberation (try running "fc-list").
+# If FLTK has been configured with Xft enabled (the default), you can use
+# scalable fonts such as DejaVu or Liberation (try running
+# "fc-list : family | cut -d ',' -f 2 | sort").
 #font_serif="DejaVu Serif"
 #font_sans_serif="DejaVu Sans"
 #font_cursive="URW Chancery L"
@@ -108,11 +109,14 @@
 # home="file:/home/jcid/HomePage/Home.html"
 #home="http://www.dillo.org/"
 
-# Set the URL used by the web search dialog.
+# Set the URLs used by the web search dialog.
 # "%s" is replaced with the search keywords separated by '+'.
-# search_url="http://www.wikipedia.org/wiki/Special:Search?search=%s"
-# search_url="http://search.lycos.com/?query=%s"
-# search_url="http://duckduckgo.com/html?q=%s"
+# Format: search_url="[<label> ]<url>"
+# You can have several search engines, with the first being the default.
+# e.g.
+# search_url="DuckDuckGo http://duckduckgo.com/html?q=%s"
+# search_url="Wikipedia http://www.wikipedia.org/wiki/Special:Search?search=%s"
+# search_url="Lycos http://search.lycos.com/?query=%s"
 #search_url="http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
 # If set, dillo will ask web servers to send pages in this language.
@@ -227,6 +231,10 @@
 # A mouse's middle click over a link opens a new Tab.
 # If you prefer to open a new Window instead, set it to NO.
 #middle_click_opens_new_tab=YES
+
+# A mouse's middle click over a tab closes the Tab.
+# With mousewheel mouses, right click feels way better (set to YES).
+#right_click_closes_tab=NO 
 
 # Mouse middle click by default drives drag-scrolling.
 # To paste an URL into the window instead of scrolling, set it to NO.

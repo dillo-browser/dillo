@@ -2,7 +2,7 @@
 #define __IO_WATCH_H__
 
 /*
- * BUG: enum {READ = 1, WRITE = 4, EXCEPT = 8} borrowed from fltk/run.h
+ * BUG: enum {READ = 1, WRITE = 4, EXCEPT = 8} borrowed from FL/Enumerations.H
  */
 #define DIO_READ    1
 #define DIO_WRITE   4

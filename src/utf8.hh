@@ -24,6 +24,7 @@ int a_Utf8_encode(unsigned int ucs, char *buf);
 int a_Utf8_test(const char* src, unsigned int srclen);
 bool_t a_Utf8_ideographic(const char *s, const char *end, int *len);
 bool_t a_Utf8_combining_char(int unicode);
+int a_Utf8_char_count(const char *str, int len);
 
 #ifdef __cplusplus
 }

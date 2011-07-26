@@ -1,7 +1,6 @@
 
-// fltkcomplexbutton.hh contains code from FLTK2's fltk/Button.h
-// that is Copyright 2002 by Bill Spitzak and others.
-// (see http://svn.easysw.com/public/fltk/fltk/trunk/fltk/Button.h)
+// fltkcomplexbutton.hh contains code from FLTK 1.3's FL/Fl_Button.H
+// that is Copyright 1998-2010 by Bill Spitzak and others.
 
 /*
  * This program is free software; you can redistribute it and/or modify
@@ -21,35 +20,56 @@
 #ifndef __FLTK_COMPLEX_BUTTON_HH__
 #define __FLTK_COMPLEX_BUTTON_HH__
 
-#include <fltk/Group.h>
+#include <FL/Fl_Group.H>
+
+extern FL_EXPORT Fl_Shortcut fl_old_shortcut(const char*);
 
 namespace dw {
 namespace fltk {
 namespace ui {
 
-class ComplexButton: public ::fltk::Group
-{
-public:
-  enum {HIDDEN=3}; // back-comptability value to hide the button
+class FL_EXPORT ComplexButton : public Fl_Group {
 
-  bool  value() const { return state(); }
-  bool  value(bool v) { return state(v); }
+  int shortcut_;
+  char value_;
+  char oldval;
+  uchar down_box_;
 
-  int handle(int);
-  int handle(int event, const Rectangle&);
-  ComplexButton(int,int,int,int,const char * = 0);
-  ~ComplexButton() { remove_all ();};
-  static ::fltk::NamedStyle* default_style;
-
+protected:
   virtual void draw();
-  void draw(int glyph_width) const;
+
+public:
+  virtual int handle(int);
+
+  ComplexButton(int X, int Y, int W, int H, const char *L = 0);
+  ~ComplexButton();
+
+  int value(int v);
+
+  /**
+    Returns the current value of the button (0 or 1).
+   */
+  char value() const {return value_;}
+
+  /**
+    Returns the current down box type, which is drawn when value() is non-zero.
+    \retval Fl_Boxtype
+   */
+  Fl_Boxtype down_box() const {return (Fl_Boxtype)down_box_;}
+
+  /**
+    Sets the down box type. The default value of 0 causes FLTK to figure out
+    the correct matching down version of box().
+    \param[in] b down box type
+   */
+  void down_box(Fl_Boxtype b) {down_box_ = b;}
 };
 
 } // namespace ui
 } // namespace fltk
 } // namespace dw
 
-#endif // __FLTK_COMPLEX_BUTTON_HH__
+#endif
 
 //
 //

@@ -84,7 +84,9 @@ struct _DilloPrefs {
    char *font_monospace;
    bool_t enterpress_forces_submit;
    bool_t middle_click_opens_new_tab;
-   char *search_url;
+   bool_t right_click_closes_tab;
+   bool_t search_url_idx;
+   Dlist *search_urls;
    char *save_dir;
    bool_t show_msg;
    bool_t show_extra_warnings;

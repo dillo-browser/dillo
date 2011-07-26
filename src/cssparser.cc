@@ -1521,7 +1521,7 @@ const char * CssParser::propertyNameString(CssPropertyName name)
 {
    return Css_property_info[name].symbol;
 }
- 
+
 void CssParser::ignoreBlock()
 {
    int depth = 0;

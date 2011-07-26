@@ -598,10 +598,9 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
    int nextWordStartX, wordStartX, wordX, nextWordX, yFirst, yLast;
    int charPos = 0, link = -1, prevPos, wordIndex, lineIndex;
    Word *word;
-   bool found, r, withinContent = true;
+   bool found, r;
 
    if (words->size () == 0) {
-      withinContent = false;
       wordIndex = -1;
    } else {
       lastLine = lines->getRef (lines->size () - 1);
@@ -610,12 +609,10 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
               lastLine->boxDescent;
       if (event->yCanvas < yFirst) {
          // Above the first line: take the first word.
-         withinContent = false;
          wordIndex = 0;
          charPos = 0;
       } else if (event->yCanvas >= yLast) {
          // Below the last line: take the last word.
-         withinContent = false;
          wordIndex = words->size () - 1;
          word = words->getRef (wordIndex);
          charPos = word->content.type == core::Content::TEXT ?
@@ -628,13 +625,11 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
          if (event->yWidget >
              (lineYOffsetWidget (line) + line->boxAscent + line->boxDescent)) {
             // Choose this break.
-            withinContent = false;
             wordIndex = line->lastWord;
             charPos = 0;
          } else if (event->xWidget < lineXOffsetWidget (line)) {
             // Left of the first word in the line.
             wordIndex = line->firstWord;
-            withinContent = false;
             charPos = 0;
          } else {
             nextWordStartX = lineXOffsetWidget (line);
@@ -688,7 +683,6 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
             if (!found) {
                // No word found in this line (i.e. we are on the right side),
                // take the last of this line.
-               withinContent = false;
                wordIndex = line->lastWord;
                if (wordIndex >= words->size ())
                   wordIndex--;
@@ -702,8 +696,7 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
    }
    it = new TextblockIterator (this, core::Content::SELECTION_CONTENT,
                                wordIndex);
-   r = selectionHandleEvent (eventType, it, charPos, link, event,
-                             withinContent);
+   r = selectionHandleEvent (eventType, it, charPos, link, event);
    it->unref ();
    return r;
 }

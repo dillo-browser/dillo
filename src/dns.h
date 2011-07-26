@@ -8,7 +8,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-typedef void (*DnsCallback_t)(int Status, Dlist *addr_list, void *data);
+typedef void (*DnsCallback_t)(int status, Dlist *addr_list, void *data);
 
 void a_Dns_init (void);
 void a_Dns_freeall(void);

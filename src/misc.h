@@ -17,6 +17,7 @@ void a_Misc_parse_content_type(const char *str, char **major, char **minor,
                                char **charset);
 int a_Misc_content_type_cmp(const char* ct1, const char *ct2);
 int a_Misc_parse_geometry(char *geom, int *x, int *y, int *w, int *h);
+int a_Misc_parse_search_url(char *source, char **label, char **urlstr);
 char *a_Misc_encode_base64(const char *in);
 Dstr *a_Misc_file2dstr(const char *filename);
 

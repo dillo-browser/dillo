@@ -131,6 +131,11 @@ public:
     */
    virtual style::Tooltip *createTooltip (const char *text) = 0;
 
+   /**
+    * \brief Cancel a tooltip (either shown or requested)
+    */
+   virtual void cancelTooltip () = 0;
+
    /*
     * --------------------
     *    Image Buffers

@@ -22,7 +22,7 @@
  */
 #if VERBOSE
 static void Chain_debug_msg(char *FuncStr, int Op, int Branch, int Dir,
-                             ChainLink *Info)
+                            ChainLink *Info)
 {
    const char *StrOps[] = {"", "OpStart", "OpSend",
                             "OpStop", "OpEnd", "OpAbort"};
@@ -31,7 +31,8 @@ static void Chain_debug_msg(char *FuncStr, int Op, int Branch, int Dir,
        Info, Info ? Info->Flags : -1);
 }
 #else
-static void Chain_debug_msg() { }
+static void Chain_debug_msg(char *FuncStr, int Op, int Branch, int Dir,
+                            ChainLink *Info) { }
 #endif
 /*
  * Create and initialize a new chain-link

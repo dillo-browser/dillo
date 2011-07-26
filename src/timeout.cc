@@ -11,11 +11,8 @@
 
 // Simple ADT for timeout functions
 
-#include <fltk/run.h>
+#include <FL/Fl.H>
 #include "timeout.hh"
-
-using namespace fltk;
-
 
 // C++ functions with C linkage ----------------------------------------------
 
@@ -25,7 +22,7 @@ using namespace fltk;
  */
 void a_Timeout_add(float t, TimeoutCb_t cb, void *cbdata)
 {
-   add_timeout(t, cb, cbdata);
+   Fl::add_timeout(t, cb, cbdata);
 }
 
 /*
@@ -33,7 +30,7 @@ void a_Timeout_add(float t, TimeoutCb_t cb, void *cbdata)
  */
 void a_Timeout_repeat(float t, TimeoutCb_t cb, void *cbdata)
 {
-   add_timeout(t, cb, cbdata);
+   Fl::add_timeout(t, cb, cbdata);
 }
 
 /*

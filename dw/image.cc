@@ -157,7 +157,7 @@ Image::Image(const char *altText)
 Image::~Image()
 {
    if (altText)
-      delete altText;
+      free(altText);
    if (buffer)
       buffer->unref ();
    if (mapKey)
@@ -315,8 +315,8 @@ bool Image::buttonPressImpl (core::EventButton *event)
 {
    bool ret = false;
 
-   currLink = mapList? mapList->link (mapKey, contentX(event),contentY(event)):
-              getStyle()->x_link;
+   currLink = mapList ? mapList->link(mapKey,contentX(event),contentY(event)) :
+      getStyle()->x_link;
    if (event->button == 3){
       (void)layout->emitLinkPress(this, currLink, getStyle()->x_img, -1, -1,
                                   event);
@@ -330,7 +330,7 @@ bool Image::buttonPressImpl (core::EventButton *event)
 
 bool Image::buttonReleaseImpl (core::EventButton *event)
 {
-   currLink = mapList ? mapList->link (mapKey, contentX(event),contentY(event)):
+   currLink = mapList ? mapList->link(mapKey,contentX(event),contentY(event)) :
       getStyle()->x_link;
    if (clicking) {
       int x = isMap ? contentX(event) : -1;

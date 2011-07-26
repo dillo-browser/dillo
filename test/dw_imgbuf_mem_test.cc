@@ -17,11 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
-#include <fltk/Window.h>
-#include <fltk/run.h>
-
 #include "../dw/core.hh"
 #include "../dw/fltkcore.hh"
 

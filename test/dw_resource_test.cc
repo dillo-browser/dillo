@@ -19,8 +19,8 @@
 
 
 
-#include <fltk/Window.h>
-#include <fltk/run.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 
 #include "../dw/core.hh"
 #include "../dw/fltkcore.hh"
@@ -39,7 +39,8 @@ int main(int argc, char **argv)
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
 
-   ::fltk::Window *window = new ::fltk::Window(410, 210, "Dw Resource test");
+   Fl_Window *window = new Fl_Window(410, 210, "Dw Resource test");
+   window->box(FL_NO_BOX);
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 410, 210);
@@ -55,7 +56,8 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
-   styleAttrs.font = Font::create (layout, &fontAttrs);
+   fontAttrs.fontVariant = FONT_VARIANT_NORMAL;
+   styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
@@ -71,6 +73,8 @@ int main(int argc, char **argv)
    styleAttrs.margin.setVal (0);
    styleAttrs.backgroundColor = NULL;
 
+   widgetStyle = Style::create (layout, &styleAttrs);
+
    SelectionResource *res = layout->getResourceFactory()->createListResource
       (ListResource::SELECTION_AT_MOST_ONE, 4);
    //SelectionResource *res =
@@ -83,14 +87,14 @@ int main(int argc, char **argv)
    widgetStyle->unref();
 
    for(int i = 0; i < 50; i++)
-      res->addItem ("Hello, world!", true, false);
+      res->addItem ("Hello, world!", true, i == 0 ? true : false);
 
    textblock->flush ();
 
    window->resizable(viewport);
    window->show();
 
-   int errorCode = ::fltk::run();
+   int errorCode = Fl::run();
 
    delete layout;
 

@@ -174,7 +174,7 @@ bool Layout::LinkEmitter::emitClick (Widget *widget, int link, int img,
 
 Layout::Anchor::~Anchor ()
 {
-   delete name;
+   free(name);
 }
 
 // ---------------------------------------------------------------------
@@ -219,14 +219,19 @@ Layout::Layout (Platform *platform)
 
 Layout::~Layout ()
 {
+   widgetAtPoint = NULL;
+
    if (scrollIdleId != -1)
       platform->removeIdle (scrollIdleId);
    if (resizeIdleId != -1)
       platform->removeIdle (resizeIdleId);
    if (bgColor)
       bgColor->unref ();
-   if (topLevel)
-      delete topLevel;
+   if (topLevel) {
+      Widget *w = topLevel;
+      topLevel = NULL;
+      delete w;
+   }
    delete platform;
    delete view;
    delete anchorsTable;
@@ -278,9 +283,12 @@ void Layout::removeWidget ()
 
 void Layout::setWidget (Widget *widget)
 {
-   if (topLevel)
-      delete topLevel;
    widgetAtPoint = NULL;
+   if (topLevel) {
+      Widget *w = topLevel;
+      topLevel = NULL;
+      delete w;
+   }
    textZone->zoneFree ();
    addWidget (widget);
 
@@ -526,7 +534,7 @@ void Layout::setAnchor (const char *anchor)
    _MSG("setAnchor (%s)\n", anchor);
 
    if (requestedAnchor)
-      delete requestedAnchor;
+      free(requestedAnchor);
    requestedAnchor = anchor ? strdup (anchor) : NULL;
    updateAnchor ();
 }
@@ -671,10 +679,9 @@ void Layout::resizeIdle ()
             }
 
             // Set viewport sizes.
-            if (view->usesViewport ())
-               view->setViewportSize (viewportWidth, viewportHeight,
-                                      actualHScrollbarThickness,
-                                      actualVScrollbarThickness);
+            view->setViewportSize (viewportWidth, viewportHeight,
+                                   actualHScrollbarThickness,
+                                   actualVScrollbarThickness);
          }
       }
 
@@ -690,7 +697,7 @@ void Layout::setSizeHints ()
    if (topLevel) {
       topLevel->setWidth (viewportWidth
                           - (canvasHeightGreater ? vScrollbarThickness : 0));
-      topLevel->setAscent (viewportHeight - vScrollbarThickness);
+      topLevel->setAscent (viewportHeight - hScrollbarThickness);
       topLevel->setDescent (0);
    }
 }
@@ -843,9 +850,10 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
 {
    Widget *ancestor, *w;
    Widget **track;
-   int trackLen, i;
+   int trackLen, i, i_a;
    EventCrossing crossingEvent;
 
+   _MSG("moveToWidget: wap=%p nwap=%p\n",widgetAtPoint,newWidgetAtPoint);
    if (newWidgetAtPoint != widgetAtPoint) {
       // The mouse pointer has been moved into another widget.
       if (newWidgetAtPoint && widgetAtPoint)
@@ -874,6 +882,7 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          /* first part */
          for (w = widgetAtPoint; w != ancestor; w = w->getParent ())
             track[i++] = w;
+      i_a = i;
       track[i++] = ancestor;
       if (newWidgetAtPoint) {
          /* second part */
@@ -882,16 +891,21 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
             track[i--] = w;
       }
 
-      /* Send events to all events on the track */
+      /* Send events to the widgets on the track */
       for (i = 0; i < trackLen; i++) {
          crossingEvent.state = state;
          crossingEvent.currentWidget = widgetAtPoint; // ???
          crossingEvent.lastWidget = widgetAtPoint; // ???
-
-         if (i != 0)
-            track[i]->enterNotify (&crossingEvent);
-         if (i != trackLen - 1)
+         if (i < i_a) {
             track[i]->leaveNotify (&crossingEvent);
+         } else if (i == i_a) { /* ancestor */
+            if (!widgetAtPoint)
+               track[i]->enterNotify (&crossingEvent);
+            else if (!newWidgetAtPoint)
+               track[i]->leaveNotify (&crossingEvent);
+         } else {
+            track[i]->enterNotify (&crossingEvent);
+         }
       }
 
       delete[] track;

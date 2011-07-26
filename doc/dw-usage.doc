@@ -23,8 +23,8 @@ As described in \ref dw-overview, the following objects are needed:
 First of all, the necessary \#include's:
 
 \code
-#include <fltk/Window.h>
-#include <fltk/run.h>
+#include <FL/Fl_Window.H>
+#include <FL/Fl.H>
 
 #include "dw/core.hh"
 #include "dw/fltkcore.hh"
@@ -54,7 +54,7 @@ Then, the layout is created, with the platform attached:
 For the view, we first need a FLTK window:
 
 \code
-   fltk::Window *window = new fltk::Window(200, 300, "Dw Example");
+   Fl_Window *window = new Fl_Window(200, 300, "Dw Example");
    window->begin();
 \endcode
 
@@ -88,6 +88,8 @@ defined:
    fontAttrs.size = 14;
    fontAttrs.weight = 400;
    fontAttrs.style = dw::core::style::FONT_STYLE_NORMAL;
+   fontAttrs.letterSpacing = 0;
+   fontAttrs.fontVariant = dw::core::style::FONT_VARIANT_NORMAL;
 \endcode
 
 Now, the font can be created:
@@ -101,9 +103,9 @@ defined, here dw::core::style::Color::createSimple must be called:
 
 \code
    styleAttrs.color =
-      dw::core::style::Color::createSimple (layout, 0x000000);
+      dw::core::style::Color::create (layout, 0x000000);
    styleAttrs.backgroundColor =
-      dw::core::style::Color::createSimple (layout, 0xffffff);
+      dw::core::style::Color::create (layout, 0xffffff);
 \endcode
 
 Finally, the style for the widget is created:
@@ -193,7 +195,7 @@ Some FLTK stuff to finally show the window:
 \code
    window->resizable(viewport);
    window->show();
-   int errorCode = fltk::run();
+   int errorCode = Fl::run();
 \endcode
 
 For cleaning up, it is sufficient to destroy the layout:

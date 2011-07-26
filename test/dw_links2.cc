@@ -19,8 +19,9 @@
 
 
 
-#include <fltk/Window.h>
-#include <fltk/run.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Box.H>
 
 #include "../dw/core.hh"
 #include "../dw/fltkcore.hh"
@@ -78,22 +79,23 @@ int main(int argc, char **argv)
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
 
-   ::fltk::Window *window = new ::fltk::Window(200, 300, "Dw Links2");
+   Fl_Window *window = new Fl_Window(200, 300, "Dw Links2");
+   window->box(FL_NO_BOX);
    window->begin();
-    ::fltk::Widget *Panel = new ::fltk::Widget(0, 0, ww, lh, "CONTROL PANEL");
+    Fl_Widget *Panel = new Fl_Box(0, 0, ww, lh, "CONTROL PANEL");
 
-    Panel->color(::fltk::GRAY15);
-    Panel->labelcolor(::fltk::WHITE);
-    ::fltk::Widget *Main =
-       new ::fltk::Widget(0, lh, ww, wh - 2*lh, "MAIN RENDERING AREA");
-    Main->color(::fltk::GRAY20);
-    Main->labelcolor(::fltk::WHITE);
+    Panel->color(FL_GRAY_RAMP + 3);
+    Panel->labelcolor(FL_WHITE);
+    Panel->box(FL_FLAT_BOX);
+    Fl_Widget *Main = new Fl_Box(0, lh, ww, wh - 2*lh, "MAIN RENDERING AREA");
+    Main->color(FL_GRAY_RAMP + 4);
+    Main->labelcolor(FL_WHITE);
     MainIdx = window->find(Main);
     /* status bar */
-    ::fltk::Widget *Bar =
-       new ::fltk::Widget(0, wh - lh, 200, lh, "STATUS BAR...");
-    Bar->color(::fltk::GRAY15);
-    Bar->labelcolor(::fltk::WHITE);
+    Fl_Widget *Bar = new Fl_Box(0, wh - lh, 200, lh, "STATUS BAR...");
+    Bar->color(FL_GRAY_RAMP + 3);
+    Bar->labelcolor(FL_WHITE);
+    Bar->box(FL_FLAT_BOX);
 
     window->resizable(Main);
    window->end();
@@ -120,7 +122,8 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
-   styleAttrs.font = Font::create (layout, &fontAttrs);
+   fontAttrs.fontVariant = FONT_VARIANT_NORMAL;
+   styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
@@ -181,7 +184,7 @@ int main(int argc, char **argv)
 
    window->resizable(viewport);
    window->show();
-   int errorCode = ::fltk::run();
+   int errorCode = Fl::run();
 
    delete layout;
 

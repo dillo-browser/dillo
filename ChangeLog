@@ -2,6 +2,25 @@
 Dillo project
 =============================================================================
 
+dillo-3.0 [not released yet]
+
++- Ported Dillo to FLTK-1.3.
+   Patch: corvid, Johannes Hofmann, Jorge Arellano Cid
++- Default binding for close-all changed from Alt-q to Ctrl-q.
+ - Default binding for close-tab changed from Ctrl-q to Ctrl-w.
+ - Add right_click_closes_tab preference (default is middle click).
+ - 'hide-panels' key action now hides the findbar if present, and toggles
+   display of the control panels otherwise.
+ - Remove 'fullscreen' key action.
+   Patches: Jorge Arellano Cid
++- Remove --enable-ansi configure option.
+ - Limit saved cookie size.
+ - Allow binding to non-ASCII keys and multimedia keys.
+ - Enable line wrapping for <textarea>. (BUG#903)
+   Patches: corvid
+
+-----------------------------------------------------------------------------
+
 dillo-2.2.1 [July 18, 2011]
 
 +- Fix fullwindow start.

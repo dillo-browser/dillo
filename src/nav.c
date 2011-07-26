@@ -252,6 +252,7 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
       a_Url_free(bw->nav_expect_url);
       bw->nav_expect_url = NULL;
       bw->nav_expecting = FALSE;
+      a_UIcmd_set_buttons_sens(bw);
    }
    if (bw->meta_refresh_status > 0)
       --bw->meta_refresh_status;
@@ -487,9 +488,9 @@ static void Nav_reload_callback(void *data)
          confirmed = 0;
       } else if (URL_FLAGS(h_url) & URL_Post) {
          /* Attempt to repost data, let's confirm... */
-         choice = a_Dialog_choice3("Repost form data?",
-                                   "Yes", "*No", "Cancel");
-         confirmed = (choice == 0);  /* "Yes" */
+         choice = a_Dialog_choice5("Repost form data?",
+                                   "No", "Yes", "Cancel", NULL, NULL);
+         confirmed = (choice == 2);  /* "Yes" */
       }
 
       if (confirmed) {

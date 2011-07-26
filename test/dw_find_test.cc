@@ -19,9 +19,9 @@
 
 
 
-#include <fltk/Window.h>
-#include <fltk/run.h>
-
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Box.H>
 #include "../dw/core.hh"
 #include "../dw/fltkcore.hh"
 #include "../dw/fltkviewport.hh"
@@ -35,12 +35,12 @@ using namespace dw::fltk;
 
 static FltkPlatform *platform;
 static Layout *layout;
-static ::fltk::Window *window;
+static Fl_Window *window;
 static FltkViewport *viewport;
-static ::fltk::Button *findButton, *resetButton;
-static ::fltk::Widget *resultLabel;
+static Fl_Button *findButton, *resetButton;
+static Fl_Widget *resultLabel;
 
-static void findCallback (::fltk::Widget *widget, void *data)
+static void findCallback (Fl_Widget *widget, void *data)
 {
    //switch(layout->search ("worm", true)) {
    switch(layout->search ("WORM", false, false)) {
@@ -60,7 +60,7 @@ static void findCallback (::fltk::Widget *widget, void *data)
    resultLabel->redraw ();
 }
 
-static void resetCallback (::fltk::Widget *widget, void *data)
+static void resetCallback (Fl_Widget *widget, void *data)
 {
    layout->resetSearch ();
    resultLabel->label("---");
@@ -72,21 +72,26 @@ int main(int argc, char **argv)
    platform = new FltkPlatform ();
    layout = new Layout (platform);
 
-   window = new ::fltk::Window(200, 300, "Dw Find Test");
+   window = new Fl_Window(200, 300, "Dw Find Test");
+   window->box(FL_NO_BOX);
    window->begin();
 
    viewport = new FltkViewport (0, 0, 200, 280);
+   viewport->end();
    layout->attachView (viewport);
 
-   findButton = new ::fltk::Button(0, 280, 50, 20, "Find");
+   findButton = new Fl_Button(0, 280, 50, 20, "Find");
    findButton->callback (findCallback, NULL);
-   findButton->when (::fltk::WHEN_RELEASE);
+   findButton->when (FL_WHEN_RELEASE);
+   findButton->clear_visible_focus ();
 
-   resetButton = new ::fltk::Button(50, 280, 50, 20, "Reset");
+   resetButton = new Fl_Button(50, 280, 50, 20, "Reset");
    resetButton->callback (resetCallback, NULL);
-   resetButton->when (::fltk::WHEN_RELEASE);
+   resetButton->when (FL_WHEN_RELEASE);
+   resetButton->clear_visible_focus ();
 
-   resultLabel = new ::fltk::Widget(100, 280, 100, 20, "---");
+   resultLabel = new Fl_Box(100, 280, 100, 20, "---");
+   resultLabel->box(FL_FLAT_BOX);
 
    FontAttrs fontAttrs;
    fontAttrs.name = "Bitstream Charter";
@@ -94,10 +99,11 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
+   fontAttrs.fontVariant = FONT_VARIANT_NORMAL;
 
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
-   styleAttrs.font = Font::create (layout, &fontAttrs);
+   styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
    styleAttrs.margin.setVal (10);
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
@@ -143,7 +149,7 @@ int main(int argc, char **argv)
 
    window->resizable(viewport);
    window->show();
-   int errorCode = ::fltk::run();
+   int errorCode = Fl::run();
 
    delete layout;
 

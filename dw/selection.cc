@@ -60,17 +60,6 @@ SelectionState::~SelectionState ()
    reset ();
 }
 
-
-bool SelectionState::DoubleClickEmitter::emitToReceiver (lout::signal::Receiver
-                                                         *receiver,
-                                                         int signalNo,
-                                                         int argc,
-                                                         Object **argv)
-{
-   ((DoubleClickReceiver*)receiver)->doubleClick ();
-   return false;
-}
-
 void SelectionState::reset ()
 {
    resetSelection ();
@@ -98,81 +87,64 @@ void SelectionState::resetLink ()
 }
 
 bool SelectionState::buttonPress (Iterator *it, int charPos, int linkNo,
-                                  EventButton *event, bool withinContent)
+                                  EventButton *event)
 {
    Widget *itWidget = it->getWidget ();
    bool ret = false;
 
-   if (event && event->button == 1 &&
-       !withinContent && event->numPressed == 2) {
-      // When the user double-clicks on empty parts, emit the double click
-      // signal instead of normal processing. Used for full screen
-      // mode.
-      doubleClickEmitter.emitDoubleClick ();
-      // Reset everything, so that dw::core::Selection::buttonRelease will
-      // ignore the "release" event following soon.
-      highlight (false, 0);
-      reset ();
-      ret = true;
-   } else {
-      if (linkNo != -1) {
-         // link handling
-         if (event) {
-            (void) layout->emitLinkPress (itWidget, linkNo, -1, -1, -1, event);
-            resetLink ();
-            linkState = LINK_PRESSED;
-            linkButton = event->button;
-            DeepIterator *newLink = new DeepIterator (it);
-            if (newLink->isEmpty ()) {
-               delete newLink;
-               resetLink ();
-            } else {
-               link = newLink;
-               // It may be that the user has pressed on something activatable
-               // (linkNo != -1), but there is no contents, e.g. with images
-               // without ALTernative text.
-               if (link) {
-                  linkChar = correctCharPos (link, charPos);
-                  linkNumber = linkNo;
-               }
-            }
-            // We do not return the value of the signal method,
-            // but we do actually process this event.
-            ret = true;
-         }
-      } else {
-         // normal selection handling
-         if (event && event->button == 1) {
-            highlight (false, 0);
-            resetSelection ();
+   if (!event) return ret;
 
-            selectionState = SELECTING;
-            DeepIterator *newFrom = new DeepIterator (it);
-            if (newFrom->isEmpty ()) {
-               delete newFrom;
-               resetSelection ();
-            } else {
-               from = newFrom;
-               fromChar = correctCharPos (from, charPos);
-               to = from->cloneDeepIterator ();
-               toChar = correctCharPos (to, charPos);
-            }
-            ret = true;
-         } else {
-            if (event && event->button == 3) {
-               // menu popup
-               layout->emitLinkPress (itWidget, -1, -1, -1, -1, event);
-               ret = true;
-            }
+   if (event->button == 3) {
+      // menu popup
+      layout->emitLinkPress (itWidget, linkNo, -1, -1, -1, event);
+      ret = true;
+   } else if (linkNo != -1) {
+      // link handling
+      (void) layout->emitLinkPress (itWidget, linkNo, -1, -1, -1, event);
+      resetLink ();
+      linkState = LINK_PRESSED;
+      linkButton = event->button;
+      DeepIterator *newLink = new DeepIterator (it);
+      if (newLink->isEmpty ()) {
+         delete newLink;
+         resetLink ();
+      } else {
+         link = newLink;
+         // It may be that the user has pressed on something activatable
+         // (linkNo != -1), but there is no contents, e.g. with images
+         // without ALTernative text.
+         if (link) {
+            linkChar = correctCharPos (link, charPos);
+            linkNumber = linkNo;
          }
       }
+      // We do not return the value of the signal method,
+      // but we do actually process this event.
+      ret = true;
+   } else if (event->button == 1) {
+      // normal selection handling
+      highlight (false, 0);
+      resetSelection ();
+
+      selectionState = SELECTING;
+      DeepIterator *newFrom = new DeepIterator (it);
+      if (newFrom->isEmpty ()) {
+         delete newFrom;
+         resetSelection ();
+      } else {
+         from = newFrom;
+         fromChar = correctCharPos (from, charPos);
+         to = from->cloneDeepIterator ();
+         toChar = correctCharPos (to, charPos);
+      }
+      ret = true;
    }
 
    return ret;
 }
 
 bool SelectionState::buttonRelease (Iterator *it, int charPos, int linkNo,
-                                    EventButton *event, bool withinContent)
+                                    EventButton *event)
 {
    Widget *itWidget = it->getWidget ();
    bool ret = false;
@@ -214,7 +186,7 @@ bool SelectionState::buttonRelease (Iterator *it, int charPos, int linkNo,
 }
 
 bool SelectionState::buttonMotion (Iterator *it, int charPos, int linkNo,
-                                   EventMotion *event, bool withinContent)
+                                   EventMotion *event)
 {
    if (linkState == LINK_PRESSED) {
       //link handling
@@ -238,21 +210,17 @@ bool SelectionState::buttonMotion (Iterator *it, int charPos, int linkNo,
  */
 bool SelectionState::handleEvent (EventType eventType, Iterator *it,
                                   int charPos, int linkNo,
-                                  MousePositionEvent *event,
-                                  bool withinContent)
+                                  MousePositionEvent *event)
 {
    switch (eventType) {
    case BUTTON_PRESS:
-      return buttonPress (it, charPos, linkNo, (EventButton*)event,
-                          withinContent);
+      return buttonPress (it, charPos, linkNo, (EventButton*)event);
 
    case BUTTON_RELEASE:
-      return buttonRelease (it, charPos, linkNo, (EventButton*)event,
-                            withinContent);
+      return buttonRelease (it, charPos, linkNo, (EventButton*)event);
 
    case BUTTON_MOTION:
-      return buttonMotion (it, charPos, linkNo, (EventMotion*)event,
-                           withinContent);
+      return buttonMotion (it, charPos, linkNo, (EventMotion*)event);
 
 
    default:
@@ -334,7 +302,7 @@ void SelectionState::adjustSelection (Iterator *it, int charPos)
          }
       } else {
          if (cmpOld * cmpDiff < 0) {
-            // The user has reduced the selection. Unighlight the difference.
+            // The user has reduced the selection. Unhighlight the difference.
             highlight0 (false, to, 0, newTo, 0, cmpDiff);
          }
 

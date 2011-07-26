@@ -152,7 +152,8 @@ private:
    bool scrollIdleNotInterrupted;
 
    /* Anchors of the widget tree */
-   lout::container::typed::HashTable <lout::object::String, Anchor> *anchorsTable;
+   lout::container::typed::HashTable <lout::object::String, Anchor>
+                                     *anchorsTable;
 
    SelectionState selectionState;
    FindtextState findtextState;
@@ -334,6 +335,11 @@ public:
    inline style::Tooltip *createTooltip (const char *text)
    {
       return platform->createTooltip (text);
+   }
+
+   inline void cancelTooltip ()
+   {
+      return platform->cancelTooltip ();
    }
 
    inline Imgbuf *createImgbuf (Imgbuf::Type type, int width, int height)

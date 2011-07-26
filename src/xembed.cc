@@ -12,14 +12,14 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <fltk/Window.h>
-#include <fltk/run.h>
-#include <fltk/events.h>
-#include <fltk/x.h>
+#define FL_INTERNALS
+#include <FL/Fl_Window.H>
+#include <FL/Fl.H>
+#include <FL/x.H>
 
 #include "xembed.hh"
 
-#if USE_X11
+#ifdef X_PROTOCOL
 
 typedef enum {
   XEMBED_EMBEDDED_NOTIFY        = 0,
@@ -41,12 +41,12 @@ Xembed::setXembedInfo(unsigned long flags)
 {
   unsigned long buffer[2];
 
-  Atom xembed_info_atom = XInternAtom (fltk::xdisplay, "_XEMBED_INFO", false);
+  Atom xembed_info_atom = XInternAtom (fl_display, "_XEMBED_INFO", false);
 
   buffer[0] = 1;
   buffer[1] = flags;
 
-  XChangeProperty (fltk::xdisplay,
+  XChangeProperty (fl_display,
      xid,
      xembed_info_atom, xembed_info_atom, 32,
      PropModeReplace,
@@ -60,35 +60,36 @@ Xembed::sendXembedEvent(uint32_t message) {
    memset (&xclient, 0, sizeof (xclient));
    xclient.window = xid;
    xclient.type = ClientMessage;
-   xclient.message_type = XInternAtom (fltk::xdisplay, "_XEMBED", false);
+   xclient.message_type = XInternAtom (fl_display, "_XEMBED", false);
    xclient.format = 32;
-   xclient.data.l[0] = fltk::event_time;
+   xclient.data.l[0] = fl_event_time;
    xclient.data.l[1] = message;
 
-   XSendEvent(fltk::xdisplay, xid, False, NoEventMask, (XEvent *)&xclient);
-   XSync(fltk::xdisplay, False);
+   XSendEvent(fl_display, xid, False, NoEventMask, (XEvent *)&xclient);
+   XSync(fl_display, False);
 }
 
 int
 Xembed::handle(int e) {
-   if (e == fltk::PUSH)
+   if (e == FL_PUSH)
       sendXembedEvent(XEMBED_REQUEST_FOCUS);
 
-   return Window::handle(e);
+   return Fl_Window::handle(e);
 }
 
-static int event_handler(int e, fltk::Window *w) {
-   Atom xembed_atom = XInternAtom (fltk::xdisplay, "_XEMBED", false);
+static int event_handler(int e, Fl_Window *w) {
+   Atom xembed_atom = XInternAtom (fl_display, "_XEMBED", false);
 
-   if (fltk::xevent.type == ClientMessage) {
-      if (fltk::xevent.xclient.message_type == xembed_atom) {
-         long message = fltk::xevent.xclient.data.l[1];
+   if (fl_xevent->type == ClientMessage) {
+      if (fl_xevent->xclient.message_type == xembed_atom) {
+         long message = fl_xevent->xclient.data.l[1];
 
          switch (message) {
             case XEMBED_WINDOW_ACTIVATE:
                // Force a ConfigureNotify message so fltk can get the new
                // coordinates after a move of the embedder window.
-               w->resize(0, 0, w->w(), w->h());
+               if (w)
+                  w->resize(0,0, w->w(), w->h());
                break;
             case XEMBED_WINDOW_DEACTIVATE:
                break;
@@ -98,20 +99,20 @@ static int event_handler(int e, fltk::Window *w) {
       }
    }
 
-   return 0;
+   return Fl::handle_(e, w);
 }
 
 // TODO: Implement more XEMBED support;
 
-void Xembed::create() {
+void Xembed::show() {
    createInternal(xid);
    setXembedInfo(1);
-   fltk::add_event_handler(event_handler);
+   Fl::event_dispatch(event_handler);
 }
 
 void Xembed::createInternal(uint32_t parent) {
-   fltk::Window *window = this;
-   Colormap colormap = fltk::xcolormap;
+   Fl_Window *window = this;
+   Colormap colormap = fl_colormap;
 
    XSetWindowAttributes attr;
    attr.border_pixel = 0;
@@ -133,18 +134,18 @@ void Xembed::createInternal(uint32_t parent) {
       | EnterWindowMask | LeaveWindowMask
       | PointerMotionMask;
 
-   fltk::CreatedWindow::set_xid(window,
-      XCreateWindow(fltk::xdisplay,
+   Fl_X::set_xid(window,
+      XCreateWindow(fl_display,
          parent,
          X, Y, W, H,
          0, // borderwidth
-         fltk::xvisual->depth,
+         fl_visual->depth,
          InputOutput,
-         fltk::xvisual->visual,
+         fl_visual->visual,
          mask, &attr));
 }
 
-#else  // USE_X11
+#else  // X_PROTOCOL
 
 void
 Xembed::setXembedInfo(unsigned long flags) {};
@@ -154,12 +155,12 @@ Xembed::sendXembedEvent(uint32_t message) {};
 
 int
 Xembed::handle(int e) {
-   return Window::handle(e);
+   return Fl_Window::handle(e);
 }
 
 void
-Xembed::create() {
-   Window::create();
+Xembed::show() {
+   Fl_Window::show();
 }
 
 #endif

@@ -2449,12 +2449,14 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
          html->InVisitedLink = true;
          html->styleEngine->setPseudoVisited ();
          if (html->non_css_visited_color != -1)
-            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR,
+                                             CSS_TYPE_COLOR,
                                              html->non_css_visited_color);
       } else {
          html->styleEngine->setPseudoLink ();
          if (html->non_css_link_color != -1)
-            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR,
+                                             CSS_TYPE_COLOR,
                                              html->non_css_link_color);
       }
 
@@ -2732,9 +2734,11 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
                                         CSS_TYPE_LENGTH_PERCENTAGE, size_top);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-                                        CSS_TYPE_LENGTH_PERCENTAGE, size_bottom);
+                                        CSS_TYPE_LENGTH_PERCENTAGE,
+                                        size_bottom);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
-                                        CSS_TYPE_LENGTH_PERCENTAGE, size_bottom);
+                                        CSS_TYPE_LENGTH_PERCENTAGE,
+                                        size_bottom);
    }
 
    HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
@@ -2838,6 +2842,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
    const char *p, *equiv, *content, *new_content;
    char delay_str[64], *mr_url;
+   DilloUrl *new_url;
    int delay;
 
    /* only valid inside HEAD */
@@ -2859,44 +2864,45 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          }
          /* Skip to anything after "URL=" */
          while (*content && *(content++) != '=') ;
-         if (*content) {
-
-            /* Handle the case of a quoted URL */
-            if (*content == '"' || *content == '\'') {
-               if ((p = strchr(content + 1, *content)))
-                  mr_url = dStrndup(content + 1, p - content - 1);
-               else
-                  mr_url = dStrdup(content + 1);
-            } else {
-               mr_url = dStrdup(content);
-            }
-
-            if (delay == 0) {
-               /* zero-delay redirection */
-               html->stop_parser = true;
-               DilloUrl *new_url = a_Url_new(mr_url, URL_STR(html->base_url));
-               if (a_Capi_dpi_verify_request(html->bw, new_url))
-                  a_UIcmd_redirection0((void*)html->bw, new_url);
-               a_Url_free(new_url);
-            } else {
-               /* Send a custom HTML message.
-                * TODO: This is a hairy hack,
-                *       It'd be much better to build a widget. */
-               Dstr *ds_msg = dStr_sized_new(256);
-               dStr_sprintf(ds_msg, meta_template, mr_url, delay_str);
-               {
-                  int o_InFlags = html->InFlags;
-                  int o_TagSoup = html->TagSoup;
-                  html->InFlags = IN_BODY;
-                  html->TagSoup = false;
-                  Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
-                  html->TagSoup = o_TagSoup;
-                  html->InFlags = o_InFlags;
-               }
-               dStr_free(ds_msg, 1);
-            }
-            dFree(mr_url);
+         /* Handle the case of a quoted URL */
+         if (*content == '"' || *content == '\'') {
+            if ((p = strchr(content + 1, *content)))
+               mr_url = dStrndup(content + 1, p - content - 1);
+            else
+               mr_url = dStrdup(content + 1);
+         } else {
+            mr_url = dStrdup(content);
          }
+         new_url = a_Url_new(mr_url, URL_STR(html->base_url));
+
+         if (a_Url_cmp(html->base_url, new_url) == 0) {
+            /* redirection loop, or empty url string: ignore */
+            BUG_MSG("META refresh: %s\n",
+                    *mr_url ? "redirection loop" : "no target URL");
+         } else if (delay == 0) {
+            /* zero-delay redirection */
+            html->stop_parser = true;
+            if (a_Capi_dpi_verify_request(html->bw, new_url))
+               a_UIcmd_redirection0((void*)html->bw, new_url);
+         } else {
+            /* Send a custom HTML message.
+             * TODO: This is a hairy hack,
+             *       It'd be much better to build a widget. */
+            Dstr *ds_msg = dStr_sized_new(256);
+            dStr_sprintf(ds_msg, meta_template, mr_url, delay_str);
+            {
+               int o_InFlags = html->InFlags;
+               int o_TagSoup = html->TagSoup;
+               html->InFlags = IN_BODY;
+               html->TagSoup = false;
+               Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
+               html->TagSoup = o_TagSoup;
+               html->InFlags = o_InFlags;
+            }
+            dStr_free(ds_msg, 1);
+         }
+         a_Url_free(new_url);
+         dFree(mr_url);
 
       } else if (!dStrcasecmp(equiv, "content-type") &&
                  (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
@@ -3018,7 +3024,7 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
        !(url = a_Html_url_new(html, attrbuf, NULL, 0)))
       return;
 
-   MSG("  Html_tag_open_link(): addCssUrl %s\n", URL_STR(url));
+   _MSG("  Html_tag_open_link(): addCssUrl %s\n", URL_STR(url));
 
    html->addCssUrl(url);
    a_Url_free(url);

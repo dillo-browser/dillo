@@ -37,7 +37,7 @@ FindtextState::FindtextState ()
 FindtextState::~FindtextState ()
 {
    if (key)
-      delete key;
+      free(key);
    if (nexttab)
       delete[] nexttab;
    if (iterator)
@@ -52,7 +52,7 @@ void FindtextState::setWidget (Widget *widget)
 
    // A widget change will restart the search.
    if (key)
-      delete key;
+      free(key);
    key = NULL;
    if (nexttab)
       delete[] nexttab;
@@ -81,7 +81,7 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
        strcmp (this->key, key) != 0) {
       newKey = true;
       if (this->key)
-         delete this->key;
+         free(this->key);
       this->key = strdup (key);
       this->caseSens = caseSens;
 
@@ -106,7 +106,7 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
    bool firstTrial = !wasHighlighted || newKey;
 
    if (search0 (backwards, firstTrial)) {
-      // Highlighlighting is done with a clone.
+      // Highlighting is done with a clone.
       hlIterator = iterator->cloneCharIterator ();
       for (int i = 0; key[i]; i++)
          hlIterator->next ();
@@ -147,7 +147,7 @@ void FindtextState::resetSearch ()
    unhighlight ();
 
    if (key)
-      delete key;
+      free(key);
    key = NULL;
 }
 

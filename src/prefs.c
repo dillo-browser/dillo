@@ -70,11 +70,15 @@ void a_Prefs_init(void)
    prefs.load_stylesheets=TRUE;
    prefs.middle_click_drags_page = TRUE;
    prefs.middle_click_opens_new_tab = TRUE;
+   prefs.right_click_closes_tab = FALSE;
    prefs.no_proxy = dStrdup(PREFS_NO_PROXY);
    prefs.panel_size = P_medium;
    prefs.parse_embedded_css=TRUE;
    prefs.save_dir = dStrdup(PREFS_SAVE_DIR);
-   prefs.search_url = dStrdup(PREFS_SEARCH_URL);
+   prefs.search_urls = dList_new(16);
+   dList_append(prefs.search_urls, dStrdup(PREFS_SEARCH_URL));
+   dList_append(prefs.search_urls, NULL); /* flags a default search URL */
+   prefs.search_url_idx = 0;
    prefs.show_back = TRUE;
    prefs.show_bookmarks = TRUE;
    prefs.show_clear_url = TRUE;
@@ -103,6 +107,8 @@ void a_Prefs_init(void)
  */
 void a_Prefs_freeall(void)
 {
+   int i;
+
    dFree(prefs.font_cursive);
    dFree(prefs.font_fantasy);
    dFree(prefs.font_monospace);
@@ -116,6 +122,8 @@ void a_Prefs_freeall(void)
    dFree(prefs.http_user_agent);
    dFree(prefs.no_proxy);
    dFree(prefs.save_dir);
-   dFree(prefs.search_url);
+   for (i = 0; i < dList_length(prefs.search_urls); ++i)
+      dFree(dList_nth_data(prefs.search_urls, i));
+   dList_free(prefs.search_urls);
    a_Url_free(prefs.start_page);
 }
