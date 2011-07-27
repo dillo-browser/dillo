@@ -233,6 +233,8 @@ static Dstr *Url_resolve_relative(const char *RelStr,
       dStr_append(SolvedUrl, BaseStr);
       if ((p = strchr(SolvedUrl->str, '#')))
          dStr_truncate(SolvedUrl, p - SolvedUrl->str);
+      if (!BaseUrl->path)
+         dStr_append_c(SolvedUrl, '/');
 
       if (RelUrl->query) {                        /* query */
          if (BaseUrl->query)
