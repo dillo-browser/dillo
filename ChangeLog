@@ -12,6 +12,7 @@ dillo-3.0 [August ??, 2011]
  - 'hide-panels' key action now hides the findbar if present, and toggles
    display of the control panels otherwise.
  - Remove 'fullscreen' key action.
+ - Fixed a border case in URL resolver: empty path + {query|fragment} (BUG#948)
    Patches: Jorge Arellano Cid
 +- Remove --enable-ansi configure option.
  - Limit saved cookie size.
