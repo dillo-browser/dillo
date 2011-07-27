@@ -536,6 +536,11 @@ bool Textblock::buttonReleaseImpl (core::EventButton *event)
    return sendSelectionEvent (core::SelectionState::BUTTON_RELEASE, event);
 }
 
+/*
+ * Handle motion inside the widget
+ * (special care is necessary when switching from another widget,
+ *  because hoverLink and hoverTooltip are meaningless then).
+ */
 bool Textblock::motionNotifyImpl (core::EventMotion *event)
 {
    if (event->state & core::BUTTON1_MASK)
@@ -557,6 +562,7 @@ bool Textblock::motionNotifyImpl (core::EventMotion *event)
          hoverLink = style->x_link;
          hoverTooltip = style->x_tooltip;
       }
+
       // Show/hide tooltip
       if (tooltipOld != hoverTooltip) {
          if (tooltipOld)
@@ -566,21 +572,27 @@ bool Textblock::motionNotifyImpl (core::EventMotion *event)
       } else if (hoverTooltip)
          hoverTooltip->onMotion ();
 
-      if (hoverLink != linkOld)
+      _MSG("tb=%p word=%p linkOld=%d hoverLink=%d\n",
+          this, word, linkOld, hoverLink);
+      if (hoverLink != linkOld) {
+         /* LinkEnter with hoverLink == -1 is the same as LinkLeave */
          return layout->emitLinkEnter (this, hoverLink, -1, -1, -1);
-      else
+      } else {
          return hoverLink != -1;
+      }
    }
 }
 
 void Textblock::enterNotifyImpl (core::EventCrossing *event)
 {
+   _MSG(" tb=%p, ENTER NotifyImpl\n", this);
+   /* reset hoverLink so linkEnter is detected */
+   hoverLink = -2;
 }
 
 void Textblock::leaveNotifyImpl (core::EventCrossing *event)
 {
-   hoverLink = -1;
-   (void) layout->emitLinkEnter (this, hoverLink, -1, -1, -1);
+   _MSG(" tb=%p, LEAVE NotifyImpl\n", this);
    if (hoverTooltip) {
       hoverTooltip->onLeave();
       hoverTooltip = NULL;

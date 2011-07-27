@@ -844,7 +844,7 @@ Widget *Layout::getWidgetAtPoint (int x, int y)
 
 /*
  * Emit the necessary crossing events, when the mouse pointer has moved to
- * the given widget.
+ * the given widget (by mouse or scrolling).
  */
 void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
 {
@@ -890,6 +890,12 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          for (w = newWidgetAtPoint; w != ancestor; w = w->getParent ())
             track[i--] = w;
       }
+#if 0
+      MSG("Track: %s[ ", widgetAtPoint ? "" : "nil ");
+      for (i = 0; i < trackLen; i++)
+         MSG("%s%p ", i == i_a ? ">" : "", track[i]);
+      MSG("] %s\n", newWidgetAtPoint ? "" : "nil");
+#endif
 
       /* Send events to the widgets on the track */
       for (i = 0; i < trackLen; i++) {
@@ -899,10 +905,11 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          if (i < i_a) {
             track[i]->leaveNotify (&crossingEvent);
          } else if (i == i_a) { /* ancestor */
-            if (!widgetAtPoint)
-               track[i]->enterNotify (&crossingEvent);
-            else if (!newWidgetAtPoint)
+            /* don't touch ancestor unless moving into/from NULL */
+            if (i_a == trackLen-1 && !newWidgetAtPoint)
                track[i]->leaveNotify (&crossingEvent);
+            else if (i_a == 0 && !widgetAtPoint)
+               track[i]->enterNotify (&crossingEvent);
          } else {
             track[i]->enterNotify (&crossingEvent);
          }
