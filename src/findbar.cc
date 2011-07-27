@@ -41,6 +41,17 @@ int MyInput::handle(int e)
             // Let these keys get to the UI
             return 0;
          }
+      } else if (modifier == FL_CTRL) {
+         if (k == 'a' || k == 'e') {
+            position(k == 'a' ? 0 : size());
+            return 1;
+         } else if (k == 'k') {
+            cut(position(), size());
+            return 1;
+         } else if (k == 'd') {
+            cut(position(), position()+1);
+            return 1;
+         }
       } else if (k == FL_Escape && modifier == 0) {
          // Avoid clearing the text with Esc, just hide the findbar.
          return 0;
