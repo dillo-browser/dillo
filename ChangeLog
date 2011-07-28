@@ -18,6 +18,7 @@ dillo-3.0 [August ??, 2011]
  - Limit saved cookie size.
  - Allow binding to non-ASCII keys and multimedia keys.
  - Enable line wrapping for <textarea>. (BUG#903)
+ - Wrap image alt text.
    Patches: corvid
 
 -----------------------------------------------------------------------------
