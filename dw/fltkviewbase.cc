@@ -582,6 +582,24 @@ void FltkWidgetView::drawText (core::style::Font *font,
    }
 }
 
+/*
+ * "simple" in that it ignores letter-spacing, etc. This was added for image
+ * alt text where none of that matters.
+ */
+void FltkWidgetView::drawSimpleWrappedText (core::style::Font *font,
+                                            core::style::Color *color,
+                                           core::style::Color::Shading shading,
+                                            int X, int Y, int W, int H,
+                                            const char *text, int len)
+{
+   FltkFont *ff = (FltkFont*)font;
+   fl_font(ff->font, ff->size);
+   fl_color(((FltkColor*)color)->colors[shading]);
+   fl_draw(text,
+           translateCanvasXToViewX (X), translateCanvasYToViewY (Y),
+           W, H, FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP, NULL, 0);
+}
+
 void FltkWidgetView::drawImage (core::Imgbuf *imgbuf, int xRoot, int yRoot,
                               int X, int Y, int width, int height)
 {

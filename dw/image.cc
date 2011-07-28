@@ -384,11 +384,11 @@ void Image::draw (core::View *view, core::Rectangle *area)
                                       getContentHeight());
          }
 
-         usedView->drawText (getStyle()->font, getStyle()->color,
+         usedView->drawSimpleWrappedText (getStyle()->font, getStyle()->color,
                              core::style::Color::SHADING_NORMAL,
                              allocation.x + getStyle()->boxOffsetX (),
-                             allocation.y + getStyle()->boxOffsetY ()
-                             + getStyle()->font->ascent,
+                             allocation.y + getStyle()->boxOffsetY (),
+                             getContentWidth(), getContentHeight(),
                              altText, strlen(altText));
 
          if (clippingView)

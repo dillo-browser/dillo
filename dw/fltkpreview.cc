@@ -146,6 +146,14 @@ void FltkPreview::drawText (core::style::Font *font,
    fl_draw(text, len, translateCanvasXToViewX (x), translateCanvasYToViewY(y));
 }
 
+void FltkPreview::drawSimpleWrappedText (core::style::Font *font,
+                                         core::style::Color *color,
+                                         core::style::Color::Shading shading,
+                                         int x, int y, int w, int h,
+                                         const char *text, int len)
+{
+}
+
 void FltkPreview::drawImage (core::Imgbuf *imgbuf, int xRoot, int yRoot,
                 int x, int y, int width, int height)
 {
