@@ -650,7 +650,7 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
    if (prefs.load_images)
       pm[2].set();
    pm[4+cur_panelsize].setonly();
-   cur_smallicons ? pm[8].set() : pm[8].clear();
+   cur_smallicons ? pm[7].set() : pm[7].clear();
 
    item = pm->popup(wid->x(), wid->y() + wid->h());
    if (item) {
