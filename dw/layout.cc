@@ -460,7 +460,6 @@ void Layout::scrollIdle ()
       if (drawAfterScrollReq) {
          drawAfterScrollReq = false;
          view->queueDrawTotal ();
-         MSG("Layout::scrollIdle: view->queueDrawTotal()\n");
       }
    }
 
