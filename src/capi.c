@@ -302,15 +302,24 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
       char *proxy_connect = a_Http_make_connect_str(web->url);
       Dstr *http_query = a_Http_make_query_str(web->url, FALSE);
       /* BUG: embedded NULLs in query data will truncate message */
+
+      /* BUG: WORKAROUND: request to only check the root URL's certificate.
+       *  This avoids the dialog bombing that stems from loading multiple
+       * https images/resources in a single page. A proper fix would take
+       * either to implement the https-dpi as a server (with state),
+       * or to move back https handling into dillo. */
       if (proxy_connect) {
          const char *proxy_urlstr = a_Http_get_proxy_urlstr();
          cmd = a_Dpip_build_cmd("cmd=%s proxy_url=%s proxy_connect=%s "
-                                "url=%s query=%s", "open_url", proxy_urlstr,
+                                "url=%s query=%s check_cert=%s",
+                                "open_url", proxy_urlstr,
                                 proxy_connect, URL_STR(web->url),
-                                http_query->str);
+                                http_query->str,
+                                (web->flags & WEB_RootUrl) ? "true" : "false");
       } else {
-         cmd = a_Dpip_build_cmd("cmd=%s url=%s query=%s",
-                                "open_url", URL_STR(web->url),http_query->str);
+         cmd = a_Dpip_build_cmd("cmd=%s url=%s query=%s check_cert=%s",
+                                "open_url", URL_STR(web->url),http_query->str,
+                                (web->flags & WEB_RootUrl) ? "true" : "false");
       }
       dFree(proxy_connect);
       dStr_free(http_query, 1);
