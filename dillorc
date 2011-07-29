@@ -195,11 +195,9 @@
 # tiny   :  recommended for iPAQ (with small_icons)
 # small  :  very nice! (it's "medium" without icon titles)
 # medium :  nice!
-# large  :  Traditional
 # panel_size=tiny
 # panel_size=small
 #panel_size=medium
-# panel_size=large
 
 #small_icons=NO
 

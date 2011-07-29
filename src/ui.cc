@@ -537,11 +537,11 @@ Fl_Widget *UI::make_filemenu_button()
    padding = w;
    btn->copy_label(PanelSize == P_tiny ? "&F" : "&File");
    btn->measure_label(w,h);
-   h = (PanelSize == P_large) ? mh : (PanelSize == P_tiny) ? bh : lh;
+   h = (PanelSize == P_tiny) ? bh : lh;
    btn->size(w+padding, h);
    p_xpos += btn->w();
    _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
-   btn->box(PanelSize == P_large ? FL_THIN_UP_BOX : FL_THIN_UP_BOX);
+   btn->box(FL_THIN_UP_BOX);
    btn->callback(filemenu_cb, this);
    if (prefs.show_tooltip)
       btn->tooltip("File menu");
@@ -581,11 +581,6 @@ void UI::make_panel(int ww)
          bw = 42, bh = 36, mh = 0, lh = 22, lbl = 1;
       else
          bw = 45, bh = 45, mh = 0, lh = 28, lbl = 1;
-   } else {   // P_large
-      if (Small_Icons)
-         bw = 42, bh = 36, mh = 22, lh = 22, lbl = 1;
-      else
-         bw = 45, bh = 45, mh = 24, lh = 28, lbl = 1;
    }
    nh = bh, fh = 28; sh = 20;
 
@@ -604,36 +599,17 @@ void UI::make_panel(int ww)
       NavBar->rearrange();
       TopGroup->insert(*NavBar,0);
    } else {
-       if (PanelSize == P_large) {
-          MenuBar = new CustGroupHorizontal(0,0,ww,mh);
-          MenuBar->begin();
-           MenuBar->box(FL_THIN_UP_BOX);
-           Fl_Widget *bn = make_filemenu_button();
-           MenuBar->add_resizable(*new Fl_Box(bn->w(),0,ww - bn->w(),mh));
-          MenuBar->end();
-          MenuBar->rearrange();
-          TopGroup->insert(*MenuBar,0);
-
-          p_xpos = 0;
-          LocBar = new CustGroupHorizontal(0,0,ww,lh);
-          LocBar->begin();
-           make_location(ww);
-           LocBar->resizable(Location);
-          LocBar->end();
-          LocBar->rearrange();
-          TopGroup->insert(*LocBar,1);
-       } else {
-          LocBar = new CustGroupHorizontal(0,0,ww,lh);
-          LocBar->box(FL_NO_BOX);
-          LocBar->begin();
-           p_xpos = 0;
-           make_filemenu_button();
-           make_location(ww);
-           LocBar->resizable(Location);
-          LocBar->end();
-          LocBar->rearrange();
-          TopGroup->insert(*LocBar,0);
-       }
+       // Location
+       LocBar = new CustGroupHorizontal(0,0,ww,lh);
+       LocBar->box(FL_NO_BOX);
+       LocBar->begin();
+        p_xpos = 0;
+        make_filemenu_button();
+        make_location(ww);
+        LocBar->resizable(Location);
+       LocBar->end();
+       LocBar->rearrange();
+       TopGroup->insert(*LocBar,0);
 
        // Toolbar
        p_ypos = 0;
@@ -715,7 +691,6 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
          Panelmode = UI_NORMAL;
    } else {
      // Set some default values
-     //PanelSize = P_tiny, CuteColor = 26, Small_Icons = 0;
      PanelSize = prefs.panel_size;
      Small_Icons = prefs.small_icons;
      CuteColor = 206;

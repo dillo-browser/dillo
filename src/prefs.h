@@ -24,7 +24,7 @@ extern "C" {
 #define PREFS_GEOMETRY_DEFAULT_YPOS  -9999
 
 /* Panel sizes */
-enum { P_tiny = 0, P_small, P_medium, P_large };
+enum { P_tiny = 0, P_small, P_medium };
 
 enum {PREFS_FILTER_ALLOW_ALL,
       PREFS_FILTER_SAME_DOMAIN};

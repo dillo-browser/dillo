@@ -176,8 +176,6 @@ int PrefsParser::parseOption(char *name, char *value)
          prefs.panel_size = P_tiny;
       else if (!dStrcasecmp(value, "small"))
          prefs.panel_size = P_small;
-      else if (!dStrcasecmp(value, "large"))
-         prefs.panel_size = P_large;
       else /* default to "medium" */
          prefs.panel_size = P_medium;
       break;
