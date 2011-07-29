@@ -194,6 +194,7 @@ Layout::Layout (Platform *platform)
    canvasWidth = canvasAscent = canvasDescent = 0;
 
    usesViewport = false;
+   drawAfterScrollReq = false;
    scrollX = scrollY = 0;
    viewportWidth = viewportHeight = 0;
    hScrollbarThickness = vScrollbarThickness = 0;
@@ -456,6 +457,11 @@ void Layout::scrollIdle ()
    if (xChanged || yChanged) {
       adjustScrollPos ();
       view->scrollTo (scrollX, scrollY);
+      if (drawAfterScrollReq) {
+         drawAfterScrollReq = false;
+         view->queueDrawTotal ();
+         MSG("Layout::scrollIdle: view->queueDrawTotal()\n");
+      }
    }
 
    scrollIdleId = -1;
@@ -503,7 +509,11 @@ void Layout::draw (View *view, Rectangle *area)
 {
    Rectangle widgetArea, intersection, widgetDrawArea;
 
-   if (topLevel) {
+   if (scrollIdleId != -1) {
+      /* scroll is pending, defer draw until after scrollIdle() */
+      drawAfterScrollReq = true;
+
+   } else if (topLevel) {
       /* Draw the top level widget. */
       widgetArea.x = topLevel->allocation.x;
       widgetArea.y = topLevel->allocation.y;

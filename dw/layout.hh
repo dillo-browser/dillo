@@ -138,7 +138,7 @@ private:
    style::Cursor cursor;
    int canvasWidth, canvasAscent, canvasDescent;
 
-   bool usesViewport;
+   bool usesViewport, drawAfterScrollReq;
    int scrollX, scrollY, viewportWidth, viewportHeight;
    bool canvasHeightGreater;
    int hScrollbarThickness, vScrollbarThickness;

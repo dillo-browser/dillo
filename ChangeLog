@@ -13,6 +13,7 @@ dillo-3.0 [August ??, 2011]
    display of the control panels otherwise.
  - Remove 'fullscreen' key action.
  - Fixed a border case in URL resolver: empty path + {query|fragment} (BUG#948)
+ - Avoid double draw after going Back or Forward (it takes half the time now!).
    Patches: Jorge Arellano Cid
 +- Remove --enable-ansi configure option.
  - Limit saved cookie size.
