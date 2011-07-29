@@ -191,10 +191,10 @@
 #                        USER INTERFACE SECTION
 #-------------------------------------------------------------------------
 
-# Size of dillo panel (used to enlarge the browsing area)
-# tiny   :  recommended for iPAQ (with small_icons)
-# small  :  very nice! (it's "medium" without icon titles)
-# medium :  nice!
+# Size of dillo panel
+# tiny   : buttons, location, and progress boxes in one row
+# small  : location in one row, buttons + progress boxes in another
+# medium : adds text labels to buttons and boxes
 # panel_size=tiny
 # panel_size=small
 #panel_size=medium
