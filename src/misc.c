@@ -411,6 +411,8 @@ int a_Misc_parse_search_url(char *source, char **label, char **urlstr)
       }
    }
    *label = buf;
+   if (ret == -1)
+      MSG("Invalid search_url: \"%s\"\n", source);
    return ret;
 }
 

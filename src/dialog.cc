@@ -89,7 +89,6 @@ public:
       if (e == FL_KEYBOARD &&
           (Fl::event_key() == FL_Enter || Fl::event_key() == FL_Down) &&
           (Fl::event_state() & (FL_SHIFT|FL_CTRL|FL_ALT|FL_META)) == 0) {
-         MSG("CustChoice: ENTER\n");
          return Fl_Choice::handle(FL_PUSH);
       }
       return Fl_Choice::handle(e);
@@ -164,7 +163,7 @@ const char *a_Dialog_input(const char *msg)
        for (int i = 0, j = 0; i < n_it; i++) {
           char *label, *url, *source;
           source = (char *)dList_nth_data(prefs.search_urls, i);
-          if (a_Misc_parse_search_url(source, &label, &url) < 0)
+          if (!source || a_Misc_parse_search_url(source, &label, &url) < 0)
              continue;
           pm[j++].label(FL_NORMAL_LABEL, strdup(label));
        }
@@ -191,12 +190,10 @@ const char *a_Dialog_input(const char *msg)
    window->show();
    while (window->shown())
       Fl::wait();
-   _MSG("a_Dialog_input answer = %d\n", input_answer);
    if (input_answer == 1) {
       /* we have a string, save it */
       dFree(input_str);
       input_str = dStrdup(c_inp->value());
-      MSG("a_Dialog_input value() = %d\n", ch->value());
       prefs.search_url_idx = ch->value();
    }
    delete window;

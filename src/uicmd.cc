@@ -786,22 +786,22 @@ static char *UIcmd_make_search_str(const char *str)
    Dstr *ds = dStr_sized_new(128);
 
    /* parse search_url into label and url */
-   a_Misc_parse_search_url(src, &l, &u);
-
-   for (c = u; *c; c++) {
-      if (*c == '%')
-         switch(*++c) {
-         case 's':
-            dStr_append(ds, keys); break;;
-         case '%':
-            dStr_append_c(ds, '%'); break;;
-         case 0:
-            MSG_WARN("search_url ends with '%%'\n"); c--; break;;
-         default:
-            MSG_WARN("illegal specifier '%%%c' in search_url\n", *c);
-         }
-      else
-         dStr_append_c(ds, *c);
+   if (a_Misc_parse_search_url(src, &l, &u) == 0) {
+      for (c = u; *c; c++) {
+         if (*c == '%')
+            switch(*++c) {
+            case 's':
+               dStr_append(ds, keys); break;;
+            case '%':
+               dStr_append_c(ds, '%'); break;;
+            case 0:
+               MSG_WARN("search_url ends with '%%'\n"); c--; break;;
+            default:
+               MSG_WARN("illegal specifier '%%%c' in search_url\n", *c);
+            }
+         else
+            dStr_append_c(ds, *c);
+      }
    }
    dFree(keys);
 
