@@ -516,7 +516,7 @@ void DLItem::log_text_add(const char *buf, ssize_t st)
 
    // FSM to remove wget's "dot-progress" (i.e. "^ " || "^[0-9]+K")
    q = log_text + log_len;
-   for (p = esc_str; (p - esc_str) < esc_len; ++p) {
+   for (p = esc_str; (size_t)(p - esc_str) < esc_len; ++p) {
       switch (log_state) {
       case ST_newline:
          if (*p == ' ') {
