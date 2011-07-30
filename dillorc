@@ -115,7 +115,7 @@
 # You can have several search engines, with the first being the default.
 # e.g.
 # search_url="DuckDuckGo http://duckduckgo.com/html?q=%s"
-# search_url="Wikipedia http://www.wikipedia.org/wiki/Special:Search?search=%s"
+# search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&go=Go"
 # search_url="Lycos http://search.lycos.com/?query=%s"
 #search_url="http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
