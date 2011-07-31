@@ -327,6 +327,7 @@ static void yes_ssl_support(void)
    dFree(http_query);
    dFree(proxy_url);
    dFree(proxy_connect);
+   dFree(check_cert);
 
    if (network_socket != -1){
       close(network_socket);
