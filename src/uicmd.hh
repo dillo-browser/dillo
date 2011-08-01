@@ -78,8 +78,6 @@ void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug);
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label);
 void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...);
 void a_UIcmd_set_buttons_sens(BrowserWindow *bw);
-void a_UIcmd_set_pointer_on_link(BrowserWindow *bw, int flag);
-int a_UIcmd_pointer_on_link(BrowserWindow *bw);
 
 #ifdef __cplusplus
 }

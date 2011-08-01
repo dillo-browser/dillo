@@ -303,16 +303,6 @@ static void clear_cb(Fl_Widget *w, void *data)
 }
 
 /*
- * Change the color of the location bar.
- *
-static void color_change_cb(Fl_Widget *wid, void *data)
-{
-   ((UI*)data)->color_change_cb_i();
-}
- */
-
-
-/*
  * Send the browser to the new URL in the location.
  */
 static void location_cb(Fl_Widget *wid, void *data)
@@ -670,8 +660,6 @@ void UI::make_status_bar(int ww, int wh)
 UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
   CustGroupVertical(x, y, ui_w, ui_h, label)
 {
-   PointerOnLink = FALSE;
-
    MenuBar = LocBar = NavBar = StatusBar = NULL;
 
    Tabs = NULL;
@@ -1072,14 +1060,6 @@ void UI::set_panelmode(UIPanelmode mode)
 UIPanelmode UI::get_panelmode()
 {
    return Panelmode;
-}
-
-/*
- * Toggle the Control Panel out of the way
- */
-void UI::panelmode_cb_i()
-{
-   set_panelmode((UIPanelmode) !Panelmode);
 }
 
 /*

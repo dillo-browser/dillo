@@ -1202,22 +1202,6 @@ void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
 }
 
 /*
- * Keep track of mouse pointer over a link.
- */
-void a_UIcmd_set_pointer_on_link(BrowserWindow *bw, int flag)
-{
-   BW2UI(bw)->pointerOnLink(flag);
-}
-
-/*
- * Is the mouse pointer over a link?
- */
-int a_UIcmd_pointer_on_link(BrowserWindow *bw)
-{
-   return BW2UI(bw)->pointerOnLink();
-}
-
-/*
  * Toggle control panel
  */
 void a_UIcmd_panels_toggle(BrowserWindow *bw)

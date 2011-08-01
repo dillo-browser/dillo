@@ -123,7 +123,6 @@ class UI : public CustGroupVertical {
    int p_xpos, p_ypos, bw, bh, mh, lh, nh, fh, sh, pw, lbl;
 
    UIPanelmode Panelmode;
-   int PointerOnLink;
    Fl_Button *make_button(const char *label, Fl_Image *img,
                           Fl_Image*deimg, int b_n, int start = 0);
    void make_toolbar(int tw, int th);
@@ -164,13 +163,10 @@ public:
 
    CustTabs *tabs() { return Tabs; }
    void tabs(CustTabs *tabs) { Tabs = tabs; }
-   int pointerOnLink() { return PointerOnLink; }
-   void pointerOnLink(int flag) { PointerOnLink = flag; }
 
    // Hooks to method callbacks
    void color_change_cb_i();
    void toggle_cb_i();
-   void panelmode_cb_i();
 };
 
 #endif // __UI_HH__
