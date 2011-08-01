@@ -316,6 +316,7 @@ class FltkMultiLineTextResource:
 {
 private:
    Fl_Text_Buffer *buffer;
+   char *text_copy;
    bool editable;
    int numCols, numRows;
 

@@ -605,6 +605,7 @@ FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
    FltkSpecificResource <dw::core::ui::MultiLineTextResource> (platform)
 {
    buffer = new Fl_Text_Buffer;
+   text_copy = NULL;
    editable = false;
 
    numCols = cols;
@@ -628,6 +629,8 @@ FltkMultiLineTextResource::~FltkMultiLineTextResource ()
    /* Free memory avoiding a double-free of text buffers */
    ((Fl_Text_Editor *) widget)->buffer (0);
    delete buffer;
+   if (text_copy)
+      free(text_copy);
 }
 
 Fl_Widget *FltkMultiLineTextResource::createNewWidget (core::Allocation
@@ -678,7 +681,13 @@ void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
 
 const char *FltkMultiLineTextResource::getText ()
 {
-   return buffer->text ();
+   /* FLTK-1.3 insists upon returning a new copy of the buffer text, so
+    * we have to keep track of it.
+    */ 
+   if (text_copy)
+      free(text_copy);
+   text_copy = buffer->text();
+   return text_copy;
 }
 
 void FltkMultiLineTextResource::setText (const char *text)
