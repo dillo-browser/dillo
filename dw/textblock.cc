@@ -592,7 +592,12 @@ void Textblock::enterNotifyImpl (core::EventCrossing *event)
 
 void Textblock::leaveNotifyImpl (core::EventCrossing *event)
 {
-   _MSG(" tb=%p, LEAVE NotifyImpl\n", this);
+   _MSG(" tb=%p, LEAVE NotifyImpl: hoverLink=%d\n", this, hoverLink);
+
+   /* leaving the viewport can't be handled by motionNotifyImpl() */
+   if (hoverLink >= 0)
+      layout->emitLinkEnter (this, -1, -1, -1, -1);
+
    if (hoverTooltip) {
       hoverTooltip->onLeave();
       hoverTooltip = NULL;

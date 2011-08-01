@@ -823,6 +823,7 @@ void Layout::enterNotify (View *view, int x, int y, ButtonState state)
  */
 void Layout::leaveNotify (View *view, ButtonState state)
 {
+#if 0
    Widget *lastWidget;
    EventCrossing event;
 
@@ -835,6 +836,9 @@ void Layout::leaveNotify (View *view, ButtonState state)
       event.currentWidget = widgetAtPoint;
       lastWidget->leaveNotify (&event);
    }
+#else
+   moveOutOfView (state);
+#endif
 }
 
 /*
