@@ -42,7 +42,8 @@
 
 #include "nav.h"
 
-#define DEFAULT_TAB_LABEL "Dillo"
+//#define DEFAULT_TAB_LABEL "-.untitled.-"
+#define DEFAULT_TAB_LABEL "-.new.-"
 
 // Handy macro
 #define BW2UI(bw) ((UI*)((bw)->ui))
@@ -85,13 +86,13 @@ public:
  * Allows fine control of the tabbed interface
  */
 class CustTabs : public CustGroupHorizontal {
-   int tab_w, tab_h, ctab_h, tab_n;
+   int tab_w, tab_h, ctab_h;
    Fl_Wizard *Wizard;
    int tabcolor_inactive, tabcolor_active, curtab_idx;
 public:
    CustTabs (int ww, int wh, int th, const char *lbl=0) :
       CustGroupHorizontal(0,0,ww,th,lbl) {
-      tab_w = 80, tab_h = th, ctab_h = 1, tab_n = 0, curtab_idx = -1;
+      tab_w = 80, tab_h = th, ctab_h = 1, curtab_idx = -1;
       tabcolor_active = FL_DARK_CYAN; tabcolor_inactive = 206;
       resize(0,0,ww,ctab_h);
       resizable(NULL);
@@ -176,8 +177,6 @@ int CustTabs::handle(int e)
  */
 UI *CustTabs::add_new_tab(UI *old_ui, int focus)
 {
-   char tab_label[64];
-
    if (num_tabs() == 1) {
       // Show tabbar
       ctab_h = tab_h;
@@ -193,10 +192,9 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    Wizard->add(new_ui);
    new_ui->show();
 
-   snprintf(tab_label, 64,"ctab%d", ++tab_n);
    CustTabButton *btn = new CustTabButton(num_tabs()*tab_w,0,tab_w,ctab_h);
    btn->align(FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
-   btn->copy_label(tab_label);
+   btn->copy_label(DEFAULT_TAB_LABEL);
    btn->clear_visible_focus();
    btn->box(FL_PLASTIC_ROUND_UP_BOX);
    btn->color(focus ? tabcolor_active : tabcolor_inactive);
