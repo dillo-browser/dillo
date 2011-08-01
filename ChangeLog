@@ -15,6 +15,7 @@ dillo-3.0 [August ??, 2011]
  - Fixed a border case in URL resolver: empty path + {query|fragment} (BUG#948)
  - Avoid double draw after going Back or Forward (it takes half the time now!).
  - Avoid a certificate dialog storm on some HTTPS sites (BUG#868).
+ - Remove 'large' option of panel_size preference.
    Patches: Jorge Arellano Cid
 +- Remove --enable-ansi configure option.
  - Limit saved cookie size.
