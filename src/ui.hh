@@ -28,8 +28,7 @@ typedef enum {
 
 typedef enum {
    UI_NORMAL = 0,     /* make sure it's compatible with bool */
-   UI_HIDDEN = 1,
-   UI_TEMPORARILY_SHOW_PANELS
+   UI_HIDDEN = 1
 } UIPanelmode;
 
 // Private classes
@@ -121,6 +120,7 @@ class UI : public CustGroupVertical {
    // Panel customization variables
    int PanelSize, CuteColor, Small_Icons;
    int p_xpos, p_ypos, bw, bh, mh, lh, nh, fh, sh, pw, lbl;
+   bool PanelTemporary;
 
    UIPanelmode Panelmode;
    Fl_Button *make_button(const char *label, Fl_Image *img,
@@ -153,8 +153,6 @@ public:
    void customize(int flags);
    void button_set_sens(UIButton btn, int sens);
    void paste_url();
-   void set_panelmode(UIPanelmode mode);
-   UIPanelmode get_panelmode();
    int get_panelsize() { return PanelSize; }
    int get_smallicons() { return Small_Icons; }
    void change_panel(int new_size, int small_icons);
@@ -163,6 +161,8 @@ public:
 
    CustTabs *tabs() { return Tabs; }
    void tabs(CustTabs *tabs) { Tabs = tabs; }
+   bool temporaryPanels() { return PanelTemporary; }
+   void temporaryPanels(bool val) { PanelTemporary = val; }
 
    // Hooks to method callbacks
    void color_change_cb_i();

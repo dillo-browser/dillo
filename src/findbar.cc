@@ -97,7 +97,7 @@ void Findbar::searchBackwards_cb(Fl_Widget *, void *vfb)
  */
 void Findbar::hide_cb(Fl_Widget *, void *vfb)
 {
-   ((Findbar *)vfb)->hide();
+   a_UIcmd_findbar_toggle(a_UIcmd_get_bw_by_widget(vfb), 0);
 }
 
 /*
@@ -175,19 +175,15 @@ Findbar::~Findbar()
  */
 int Findbar::handle(int event)
 {
-   int ret = 0;
    int k = Fl::event_key();
    unsigned modifier = Fl::event_state() & (FL_SHIFT| FL_CTRL| FL_ALT|FL_META);
 
    if (event == FL_KEYBOARD && modifier == 0 && k == FL_Escape) {
-      hide();
-      ret = 1;
+      /* let the UI handle it */
+      return 0;
    }
 
-   if (ret == 0)
-      ret = Fl_Group::handle(event);
-
-   return ret;
+   return Fl_Group::handle(event);
 }
 
 /*
@@ -199,7 +195,6 @@ void Findbar::show()
    dReturn_if (bw == NULL);
 
    // It takes more than just calling show() to do the trick
-   //a_UIcmd_findbar_toggle(bw, 1);
    Fl_Group::show();
 
    /* select text even if already focused */
@@ -207,18 +202,3 @@ void Findbar::show()
    i->position(i->size(), 0);
 }
 
-/*
- * Hide the findbar and reset the search state
- */
-void Findbar::hide()
-{
-   BrowserWindow *bw = a_UIcmd_get_bw_by_widget(this);
-   dReturn_if (bw == NULL);
-
-   // It takes more than just calling hide() to do the trick
-   Fl_Group::hide();
-   a_UIcmd_findbar_toggle(bw, 0);
-
-   a_UIcmd_findtext_reset(bw);
-   a_UIcmd_focus_main_area(bw);
-}

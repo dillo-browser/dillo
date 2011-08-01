@@ -144,11 +144,7 @@ int CustTabs::handle(int e)
       UI *ui = (UI*)wizard()->value();
       BrowserWindow *bw = a_UIcmd_get_bw_by_widget(ui);
       KeysCommand_t cmd = Keys::getKeyCmd();
-      if (Fl::event_key() == FL_Escape) {
-         // Hide findbar if present
-         ui->findbar_toggle(0);
-         ret = 1;
-      } else if (cmd == KEYS_NOP) {
+      if (cmd == KEYS_NOP) {
          // Do nothing
          _MSG("CustTabs::handle KEYS_NOP\n");
       } else if (cmd == KEYS_NEW_TAB) {
@@ -541,11 +537,6 @@ void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
       BW2UI(bw)->focus_location();
       a_UIcmd_set_buttons_sens(bw);
    }
-#if 0
-   if (BW2UI(bw)->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
-      BW2UI(bw)->set_panelmode(UI_HIDDEN);
-   a_UIcmd_focus_main_area(bw);
-#endif
 }
 
 static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)

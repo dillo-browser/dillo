@@ -313,9 +313,8 @@ static void location_cb(Fl_Widget *wid, void *data)
    _MSG("location_cb()\n");
    a_UIcmd_open_urlstr(a_UIcmd_get_bw_by_widget(i), i->value());
 
-   if (ui->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS) {
-      ui->set_panelmode(UI_HIDDEN);
-   }
+   if (ui->temporaryPanels())
+      ui->panels_toggle();
 }
 
 
@@ -668,15 +667,12 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    TopGroup->box(FL_NO_BOX);
    clear_flag(SHORTCUT_LABEL);
 
+   PanelTemporary = false;
    if (cur_ui) {
       PanelSize = cur_ui->PanelSize;
       CuteColor = cur_ui->CuteColor;
       Small_Icons = cur_ui->Small_Icons;
-      if (cur_ui->Panelmode == UI_HIDDEN ||
-          cur_ui->Panelmode == UI_TEMPORARILY_SHOW_PANELS)
-         Panelmode = UI_HIDDEN;
-      else
-         Panelmode = UI_NORMAL;
+      Panelmode = cur_ui->Panelmode;
    } else {
      // Set some default values
      PanelSize = prefs.panel_size;
@@ -784,14 +780,17 @@ int UI::handle(int event)
          a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
       } else if (cmd == KEYS_GOTO) {
+         if (Panelmode == UI_HIDDEN) {
+            panels_toggle();
+            temporaryPanels(true);
+         }
          focus_location();
          ret = 1;
       } else if (cmd == KEYS_HIDE_PANELS) {
          /* Hide findbar if present, hide panels if not */
          (FindBarSpace) ? findbar_toggle(0) : panels_toggle();
+         temporaryPanels(false);
          ret = 1;
-         //if (get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
-         //   set_panelmode(UI_HIDDEN);
       } else if (cmd == KEYS_OPEN) {
          a_UIcmd_open_file(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
@@ -861,10 +860,6 @@ void UI::set_location(const char *str)
  */
 void UI::focus_location()
 {
-   if (get_panelmode() == UI_HIDDEN) {
-      // Temporary panel handling is disabled now.
-      //set_panelmode(UI_TEMPORARILY_SHOW_PANELS);
-   }
    Location->take_focus();
    // Make text selected when already focused.
    Location->position(Location->size(), 0);
@@ -1038,31 +1033,6 @@ void UI::color_change_cb_i()
 }
 
 /*
- * Set or remove the Panelmode flag and update the UI accordingly
- */
-void UI::set_panelmode(UIPanelmode mode)
-{
-   if (mode == UI_HIDDEN) {
-      //Panel->hide();
-      StatusBar->hide();
-   } else {
-      /* UI_NORMAL or UI_TEMPORARILY_SHOW_PANELS */
-      //Panel->show();
-      StatusBar->show();
-   }
-   Panelmode = mode;
-   TopGroup->rearrange();
-}
-
-/*
- * Get the value of the panelmode flag
- */
-UIPanelmode UI::get_panelmode()
-{
-   return Panelmode;
-}
-
-/*
  * Set 'nw' as the main render area widget
  */
 void UI::set_render_layout(Fl_Group *nw)
@@ -1136,6 +1106,10 @@ void UI::findbar_toggle(bool add)
       Main->size(Main->w(), Main->h()+FindBar->h());
       remove(FindBar);
       FindBarSpace = 0;
+      // reset state
+      a_UIcmd_findtext_reset(a_UIcmd_get_bw_by_widget(this));
+      // focus main area
+      focus_main();
    }
    TopGroup->rearrange();
 }
@@ -1171,4 +1145,5 @@ void UI::panels_toggle()
    }
 
    TopGroup->rearrange();
+   Panelmode = (hide) ? UI_HIDDEN : UI_NORMAL;
 }

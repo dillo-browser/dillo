@@ -27,7 +27,6 @@ public:
    ~Findbar();
    int handle(int event);
    void show();
-   void hide();
 };
 
 #endif // __FINDBAR_HH__
