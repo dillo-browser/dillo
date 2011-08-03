@@ -23,6 +23,8 @@ dillo-3.0 [August ??, 2011]
  - Enable line wrapping for <textarea>. (BUG#903)
  - Wrap image alt text.
    Patches: corvid
++- Default binding for left-tab changed to Shift-Ctrl-Tab.
+   Patch: Jeremy Henty
 
 -----------------------------------------------------------------------------
 
