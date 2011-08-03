@@ -38,7 +38,7 @@
 #<ctrl>q = close-all
 
 # "left-tab" and "right-tab" switch to the left/right of the current tab.
-# <shift>tab = left-tab
+# <ctrl><shift>tab = left-tab
 # <ctrl>tab = right-tab
 
 # "back" and "forward" move back/forward through the browser history.

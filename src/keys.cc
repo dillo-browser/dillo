@@ -101,7 +101,8 @@ static const KeyBinding_t default_keys[] = {
    { "open"         , KEYS_OPEN         , FL_CTRL   , 'o'             },
    { "new-window"   , KEYS_NEW_WINDOW   , FL_CTRL   , 'n'             },
    { "new-tab"      , KEYS_NEW_TAB      , FL_CTRL   , 't'             },
-   { "left-tab"     , KEYS_LEFT_TAB     , FL_SHIFT  , FL_Tab          },
+   { "left-tab"     , KEYS_LEFT_TAB     , FL_CTRL |
+                                          FL_SHIFT  , FL_Tab          },
    { "right-tab"    , KEYS_RIGHT_TAB    , FL_CTRL   , FL_Tab          },
    { "close-tab"    , KEYS_CLOSE_TAB    , FL_CTRL   , 'w'             },
    { "find"         , KEYS_FIND         , FL_CTRL   , 'f'             },
