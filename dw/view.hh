@@ -173,7 +173,7 @@ public:
                                int angle1, int angle2) = 0;
    virtual void drawPolygon    (style::Color *color,
                                 style::Color::Shading shading,
-                                bool filled, bool convex, int points[][2],
+                                bool filled, bool convex, Point *points,
                                 int npoints) = 0;
    virtual void drawText       (style::Font *font,
                                 style::Color *color,
