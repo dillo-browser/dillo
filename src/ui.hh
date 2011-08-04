@@ -139,7 +139,7 @@ class UI : public CustGroupVertical {
    Fl_Output *StatusOutput;
    Findbar *FindBar;
 
-   int FindBarSpace, MainIdx;
+   int MainIdx;
    // Panel customization variables
    int PanelSize, CuteColor, Small_Icons;
    int p_xpos, p_ypos, bw, bh, mh, lh, nh, fh, sh, pw, lbl;

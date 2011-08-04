@@ -670,7 +670,6 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     MainIdx = TopGroup->find(Main);
 
     // Find text bar
-    FindBarSpace = 1;
     FindBar = new Findbar(ui_w, fh);
     TopGroup->add(FindBar);
 
@@ -694,9 +693,6 @@ UI::~UI()
 {
    _MSG("UI::~UI()\n");
    dFree(TabTooltip);
-
-   if (!FindBarSpace)
-      delete FindBar;
 }
 
 /*
@@ -752,7 +748,7 @@ int UI::handle(int event)
          ret = 1;
       } else if (cmd == KEYS_HIDE_PANELS) {
          /* Hide findbar if present, hide panels if not */
-         (FindBarSpace) ? findbar_toggle(0) : panels_toggle();
+         (FindBar->visible()) ? findbar_toggle(0) : panels_toggle();
          temporaryPanels(false);
          ret = 1;
       } else if (cmd == KEYS_OPEN) {
@@ -1046,27 +1042,19 @@ void UI::findbar_toggle(bool add)
 {
    /* WORKAROUND:
     * This is tricky: As fltk-1.3 resizes hidden widgets (which it
-    * doesn't resize when visible!). We need to go through hoops to
+    * doesn't resize when visible!). We need to set the size to (0,0) to
     * get the desired behaviour.
     * (STR#2639 in FLTK bug tracker).
     */
 
    if (add) {
-      if (!FindBarSpace) {
-         // show
-         Main->size(Main->w(), Main->h()-FindBar->h());
-         insert(*FindBar, StatusBar);
-         FindBar->show();
-         FindBarSpace = 1;
-      } else {
-         // select text
-         FindBar->show();
-      }
-   } else if (!add && FindBarSpace) {
+      if (!FindBar->visible())
+         FindBar->size(w(), fh);
+      FindBar->show();
+   } else {
       // hide
-      Main->size(Main->w(), Main->h()+FindBar->h());
-      remove(FindBar);
-      FindBarSpace = 0;
+      FindBar->size(0,0);
+      FindBar->hide();
       // reset state
       a_UIcmd_findtext_reset(a_UIcmd_get_bw_by_widget(this));
       // focus main area
