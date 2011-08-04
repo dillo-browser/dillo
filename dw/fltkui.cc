@@ -355,7 +355,7 @@ const char *FltkLabelButtonResource::getLabel ()
 
 void FltkLabelButtonResource::setLabel (const char *label)
 {
-   delete this->label;
+   free((char *)this->label);
    this->label = strdup (label);
 
    widget->label (this->label);
