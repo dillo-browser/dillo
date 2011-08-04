@@ -63,6 +63,7 @@ static char *save_dir = NULL;
  * Forward declarations
  */
 static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus);
+static void close_tab_btn_cb (Fl_Widget *w, void *cb_data);
 
 //----------------------------------------------------------------------------
 
@@ -86,16 +87,29 @@ public:
  * Allows fine control of the tabbed interface
  */
 class CustTabs : public CustGroupHorizontal {
-   int tab_w, tab_h, ctab_h;
+   int tab_w, tab_h, ctab_h, btn_w;
    Fl_Wizard *Wizard;
+   Fl_Box *Invisible;
+   CustLightButton *CloseBtn;
    int tabcolor_inactive, tabcolor_active, curtab_idx;
 public:
    CustTabs (int ww, int wh, int th, const char *lbl=0) :
       CustGroupHorizontal(0,0,ww,th,lbl) {
-      tab_w = 80, tab_h = th, ctab_h = 1, curtab_idx = -1;
+      tab_w = 80, tab_h = th, ctab_h = 1, curtab_idx = -1, btn_w = 20;
       tabcolor_active = FL_DARK_CYAN; tabcolor_inactive = 206;
       resize(0,0,ww,ctab_h);
-      resizable(NULL);
+      Invisible = new Fl_Box(0,0,ww-btn_w,ctab_h);
+      CloseBtn = new CustLightButton(ww-btn_w,0,btn_w,ctab_h, "X");
+      CloseBtn->box(FL_PLASTIC_ROUND_UP_BOX);
+      CloseBtn->labelcolor(0x00641000);
+      CloseBtn->hl_color(FL_WHITE);
+      CloseBtn->clear_visible_focus();
+      CloseBtn->tooltip(prefs.right_click_closes_tab ?
+         "Close current tab.\nor Right-click tab label to close." :
+         "Close current tab.\nor Middle-click tab label to close.");
+      CloseBtn->callback(close_tab_btn_cb, this);
+      CloseBtn->hide();
+      resizable(Invisible);
       box(FL_FLAT_BOX);
       end();
 
@@ -108,7 +122,7 @@ public:
    void remove_tab(UI *ui);
    Fl_Wizard *wizard(void) { return Wizard; }
    int get_btn_idx(UI *ui);
-   int num_tabs() { return children(); }
+   int num_tabs() { return children()-2; }
    void switch_tab(CustTabButton *cbtn);
    void prev_tab(void);
    void next_tab(void);
@@ -131,6 +145,19 @@ static void tab_btn_cb (Fl_Widget *w, void *cb_data)
               (b == FL_MIDDLE_MOUSE && !prefs.right_click_closes_tab)) {
       // TODO: just an example, not necessarily final
       a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(btn->ui()));
+   }
+}
+
+/*
+ * Callback for the close-tab button
+ */
+static void close_tab_btn_cb (Fl_Widget *, void *cb_data)
+{
+   CustTabs *tabs = (CustTabs*) cb_data;
+   int b = Fl::event_button();
+
+   if (b == FL_LEFT_MOUSE) {
+      a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(tabs->wizard()->value()));
    }
 }
 
@@ -182,6 +209,7 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
       ctab_h = tab_h;
       Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
       resize(0,0,window()->w(),ctab_h);    // tabbar
+      CloseBtn->show();
       child(0)->show(); // first tab button
       window()->init_sizes();
    }
@@ -199,7 +227,7 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    btn->box(FL_PLASTIC_ROUND_UP_BOX);
    btn->color(focus ? tabcolor_active : tabcolor_inactive);
    btn->ui(new_ui);
-   add(btn);
+   insert(*btn, Invisible); // before the Invisible
    btn->callback(tab_btn_cb, this);
 
    if (focus) {
@@ -247,6 +275,7 @@ void CustTabs::remove_tab(UI *ui)
    } else if (num_tabs() == 1) {
       // hide tabbar
       ctab_h = 1;
+      CloseBtn->hide();
       child(0)->hide(); // first tab button
       resize(0,0,window()->w(),ctab_h);    // tabbar
       Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
