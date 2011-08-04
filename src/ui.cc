@@ -588,7 +588,7 @@ void UI::make_panel(int ww)
         }
        NavBar->end();
        NavBar->rearrange();
-       TopGroup->insert(*NavBar,(MenuBar ? 2 : 1));
+       TopGroup->insert(*NavBar,1);
    }
 }
 
@@ -630,7 +630,7 @@ void UI::make_status_bar(int ww, int wh)
 UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
   CustGroupVertical(x, y, ui_w, ui_h, label)
 {
-   MenuBar = LocBar = NavBar = StatusBar = NULL;
+   LocBar = NavBar = StatusBar = NULL;
 
    Tabs = NULL;
    TabTooltip = NULL;
@@ -707,10 +707,11 @@ int UI::handle(int event)
       /* WORKAROUND: remove the Panel's fltk-tooltip.
        * Although the expose event is delivered, it has an offset. This
        * extra call avoids the lingering tooltip. */
-      if (Fl::event_inside(NavBar) ||
-          (LocBar && Fl::event_inside(LocBar)) ||
-          (MenuBar && Fl::event_inside(MenuBar)) ||
-          (StatusBar && Fl::event_inside(StatusBar)))
+      if (!Fl::event_inside(Main) &&
+          (Fl::event_inside((Fl_Widget*)tabs()) ||
+           Fl::event_inside(NavBar) ||
+           (LocBar && Fl::event_inside(LocBar)) ||
+           (StatusBar && Fl::event_inside(StatusBar))))
          window()->damage(FL_DAMAGE_EXPOSE,0,0,1,1);
 
       return 0; // Receive as shortcut
@@ -956,13 +957,11 @@ void UI::change_panel(int new_size, int small_icons)
 {
    // Remove current panel's bars
    init_sizes();
-   TopGroup->remove(MenuBar);
-   Fl::delete_widget(MenuBar);
    TopGroup->remove(LocBar);
    Fl::delete_widget(LocBar);
    TopGroup->remove(NavBar);
    Fl::delete_widget(NavBar);
-   MenuBar = LocBar = NavBar = NULL;
+   LocBar = NavBar = NULL;
 
    // Set internal vars for panel size
    PanelSize = new_size;
@@ -1075,10 +1074,6 @@ void UI::panels_toggle()
 
    // hide/show panels
    init_sizes();
-   if (MenuBar) {
-      hide ? MenuBar->size(0,0) : MenuBar->size(w(),mh);
-      hide ? MenuBar->hide() : MenuBar->show();
-   }
    if (LocBar) {
       hide ? LocBar->size(0,0) : LocBar->size(w(),lh);
       hide ? LocBar->hide() : LocBar->show();

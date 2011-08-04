@@ -132,7 +132,7 @@ class UI : public CustGroupVertical {
    CustGroupVertical *TopGroup;
    Fl_Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
           *Clear, *Search, *Help, *BugMeter, *FileButton;
-   CustGroupHorizontal *MenuBar, *LocBar, *NavBar, *StatusBar;
+   CustGroupHorizontal *LocBar, *NavBar, *StatusBar;
    Fl_Input  *Location;
    CustProgressBox *PProg, *IProg;
    Fl_Group *Panel, *Main;
