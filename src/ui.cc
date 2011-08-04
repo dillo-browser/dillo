@@ -194,8 +194,6 @@ public:
          padding = w > 2 ? w/2 : 1;
       }
       copy_label(lbl);
-      //measure_label(w,h);
-      //size(w+padding,this->h());
    }
 };
 
@@ -682,13 +680,6 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    TopGroup->end();
    TopGroup->rearrange();
 
-   // Make the full screen button (to be attached to the viewport later)
-   // TODO: attach to the viewport
-   //FullScreen = new Fl_Button(0,0,15,15);
-   //FullScreen->image(ImgFullScreenOn);
-   //FullScreen->tooltip("Hide Controls");
-   //FullScreen->callback(fullscreen_cb, this);
-
    customize(0);
 
    if (Panelmode == UI_HIDDEN) {
@@ -1028,15 +1019,12 @@ void UI::button_set_sens(UIButton btn, int sens)
    switch (btn) {
    case UI_BACK:
       (sens) ? Back->activate() : Back->deactivate();
-//    Back->redraw(DAMAGE_HIGHLIGHT);
       break;
    case UI_FORW:
       (sens) ? Forw->activate() : Forw->deactivate();
-//    Forw->redraw(DAMAGE_HIGHLIGHT);
       break;
    case UI_STOP:
       (sens) ? Stop->activate() : Stop->deactivate();
-//    Stop->redraw(DAMAGE_HIGHLIGHT);
       break;
    default:
       break;
