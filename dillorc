@@ -112,8 +112,8 @@
 # Set the URLs used by the web search dialog.
 # "%s" is replaced with the search keywords separated by '+'.
 # Format: search_url="[<label> ]<url>"
-# You can have several search engines, with the first being the default.
-# e.g.
+# You can enable multiple search_url strings at once and select from among
+# them at runtime, with the first being the default.
 # search_url="DuckDuckGo http://duckduckgo.com/html?q=%s"
 # search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&go=Go"
 # search_url="Lycos http://search.lycos.com/?query=%s"
