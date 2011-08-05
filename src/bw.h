@@ -46,12 +46,9 @@ struct _BrowserWindow
    /* 'nav_stack_ptr' refers to what's being displayed */
    int nav_stack_ptr;        /* [0 based; -1 = empty] */
    /* When the user clicks a link, the URL isn't pushed directly to history;
-    * nav_expect_url holds it until the first answer-bytes are got. Only then
-    * it is sent to history and referenced at the top of nav_stack */
+    * nav_expect_url holds it until a dw is assigned to it. Only then an entry
+    * is made in history and referenced at the top of nav_stack */
    DilloUrl *nav_expect_url;
-   /* 'nav_expecting' is true while dillo waits for non-cached URL data,
-    * until a dw is assigned to it. */
-   bool_t nav_expecting;
 
    /* Counter for the number of hops on a redirection. Used to stop
     * redirection loops (accounts for WEB_RootUrl only) */
@@ -88,6 +85,11 @@ void *a_Bw_get_url_doc(BrowserWindow *bw, const DilloUrl *Url);
 void a_Bw_remove_doc(BrowserWindow *bw, void *vdoc);
 void a_Bw_add_url(BrowserWindow *bw, const DilloUrl *Url);
 void a_Bw_cleanup(BrowserWindow *bw);
+/* expect API */
+void a_Bw_expect(BrowserWindow *bw, const DilloUrl *Url);
+void a_Bw_cancel_expect(BrowserWindow *bw);
+bool_t a_Bw_expecting(BrowserWindow *bw);
+const DilloUrl *a_Bw_expected_url(BrowserWindow *bw);
 
 typedef void (*BwCallback_t)(BrowserWindow *bw, const void *data);
 

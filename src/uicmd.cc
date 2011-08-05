@@ -1223,7 +1223,7 @@ void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
    BW2UI(bw)->button_set_sens(UI_BACK, sens);
    // Forward
    sens = (a_Nav_stack_ptr(bw) < a_Nav_stack_size(bw) - 1 &&
-           !bw->nav_expecting);
+           !a_Bw_expecting(bw));
    BW2UI(bw)->button_set_sens(UI_FORW, sens);
 }
 

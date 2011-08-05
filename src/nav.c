@@ -248,10 +248,8 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url,
  */
 void a_Nav_cancel_expect(BrowserWindow *bw)
 {
-   if (bw->nav_expecting) {
-      a_Url_free(bw->nav_expect_url);
-      bw->nav_expect_url = NULL;
-      bw->nav_expecting = FALSE;
+   if (a_Bw_expecting(bw)) {
+      a_Bw_cancel_expect(bw);
       a_UIcmd_set_buttons_sens(bw);
    }
    if (bw->meta_refresh_status > 0)
@@ -263,7 +261,7 @@ void a_Nav_cancel_expect(BrowserWindow *bw)
  */
 void a_Nav_cancel_expect_if_eq(BrowserWindow *bw, const DilloUrl *url)
 {
-   if (bw->nav_expecting && a_Url_cmp(url, bw->nav_expect_url) == 0)
+   if (a_Url_cmp(url, a_Bw_expected_url(bw)) == 0)
       a_Nav_cancel_expect(bw);
 }
 
@@ -281,8 +279,8 @@ void a_Nav_expect_done(BrowserWindow *bw)
 
    dReturn_if_fail(bw != NULL);
 
-   if (bw->nav_expecting) {
-      url = bw->nav_expect_url;
+   if (a_Bw_expecting(bw)) {
+      url = a_Url_dup(a_Bw_expected_url(bw));
       reload = (URL_FLAGS(url) & URL_ReloadPage);
       repush = (URL_FLAGS(url) & URL_ReloadFromCache);
       e2equery = (URL_FLAGS(url) & URL_E2EQuery);
@@ -293,6 +291,7 @@ void a_Nav_expect_done(BrowserWindow *bw)
       m = URL_E2EQuery|URL_ReloadPage|URL_ReloadFromCache|URL_IgnoreScroll;
       a_Url_set_flags(url, URL_FLAGS(url) & ~m);
       url_idx = a_History_add_url(url);
+      a_Url_free(url);
 
       if (repush) {
          MSG("a_Nav_expect_done: repush!\n");
@@ -345,16 +344,17 @@ void a_Nav_expect_done(BrowserWindow *bw)
 void a_Nav_push(BrowserWindow *bw, const DilloUrl *url,
                                    const DilloUrl *requester)
 {
+   const DilloUrl *e_url;
    dReturn_if_fail (bw != NULL);
 
-   if (bw->nav_expecting && !a_Url_cmp(bw->nav_expect_url, url) &&
-       !strcmp(URL_FRAGMENT(bw->nav_expect_url),URL_FRAGMENT(url))) {
+   e_url = a_Bw_expected_url(bw);
+   if (e_url && !a_Url_cmp(e_url, url) &&
+       !strcmp(URL_FRAGMENT(e_url),URL_FRAGMENT(url))) {
       /* we're already expecting that url (most probably a double-click) */
       return;
    }
    a_Nav_cancel_expect(bw);
-   bw->nav_expect_url = a_Url_dup(url);
-   bw->nav_expecting = TRUE;
+   a_Bw_expect(bw, url);
    Nav_open_url(bw, url, requester, 0);
 }
 
@@ -370,8 +370,7 @@ static void Nav_repush(BrowserWindow *bw)
       url = a_Url_dup(a_History_get_url(NAV_TOP_UIDX(bw)));
       /* Let's make reload be from Cache */
       a_Url_set_flags(url, URL_FLAGS(url) | URL_ReloadFromCache);
-      bw->nav_expect_url = a_Url_dup(url);
-      bw->nav_expecting = TRUE;
+      a_Bw_expect(bw, url);
       Nav_open_url(bw, url, NULL, 0);
       a_Url_free(url);
    }
@@ -501,9 +500,9 @@ static void Nav_reload_callback(void *data)
          a_Url_set_flags(r_url, URL_FLAGS(r_url) | URL_E2EQuery);
          /* This is an explicit reload, so clear the SpamSafe flag */
          a_Url_set_flags(r_url, URL_FLAGS(r_url) & ~URL_SpamSafe);
-         bw->nav_expect_url = r_url;
-         bw->nav_expecting = TRUE;
+         a_Bw_expect(bw, r_url);
          Nav_open_url(bw, r_url, NULL, 0);
+         a_Url_free(r_url);
       }
    }
 }

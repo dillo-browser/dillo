@@ -647,7 +647,7 @@ bool_t DilloHtml::unloadedImages()
  */
 void DilloHtml::loadImages (const DilloUrl *pattern)
 {
-   dReturn_if_fail (bw->nav_expecting == FALSE);
+   dReturn_if (a_Bw_expecting(bw));
 
    /* If the user asked for a specific URL, the user (NULL) is the requester,
     * but if the user just asked for all URLs, use the page URL as the
