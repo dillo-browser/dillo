@@ -267,12 +267,7 @@ void CustTabs::remove_tab(UI *ui)
    Wizard->remove(ui);
    delete(ui);
 
-   if (num_tabs() == 0) {
-      window()->hide();
-      // TODO: free memory
-      //delete window();
-
-   } else if (num_tabs() == 1) {
+   if (num_tabs() == 1) {
       // hide tabbar
       ctab_h = 1;
       CloseBtn->hide();
@@ -368,14 +363,14 @@ void CustTabs::set_tab_label(UI *ui, const char *label)
 //----------------------------------------------------------------------------
 
 static void win_cb (Fl_Widget *w, void *cb_data) {
-   int choice = 1;
    CustTabs *tabs = (CustTabs*) cb_data;
+   int choice = 1, ntabs = tabs->num_tabs();
 
-   if (tabs->num_tabs() > 1)
+   if (ntabs > 1)
       choice = a_Dialog_choice5("Window contains more than one tab.",
                                 "Close", "Cancel", NULL, NULL, NULL);
    if (choice == 1)
-      while (tabs->num_tabs())
+      while (ntabs-- > 0)
          a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(tabs->wizard()->value()));
 }
 
@@ -485,13 +480,16 @@ void a_UIcmd_close_bw(void *vbw)
 {
    BrowserWindow *bw = (BrowserWindow *)vbw;
    UI *ui = BW2UI(bw);
+   CustTabs *tabs = ui->tabs();
    Layout *layout = (Layout*)bw->render_layout;
 
    _MSG("a_UIcmd_close_bw\n");
    a_Bw_stop_clients(bw, BW_Root + BW_Img + BW_Force);
    delete(layout);
-   if (ui->tabs()) {
-      ui->tabs()->remove_tab(ui);
+   if (tabs) {
+      tabs->remove_tab(ui);
+      if (tabs->num_tabs() == 0)
+         delete tabs->window();
    }
    a_Bw_free(bw);
 }
