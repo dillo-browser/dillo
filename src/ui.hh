@@ -48,6 +48,7 @@ class CustTabs;
  * The resizable child get's the remaining space.
  */
 class CustGroupHorizontal : public Fl_Group {
+   Fl_Widget *rsz;
 public:
   CustGroupHorizontal(int x,int y,int w ,int h,const char *l = 0) :
     Fl_Group(x,y,w,h,l) { };
@@ -57,13 +58,24 @@ public:
      int sum = 0, _x = x();
      int children_ = children();
 
+     if (resizable())
+        rsz = resizable();
+
      for (int i=0; i < children_; i++)
         if (a[i] != resizable() && a[i]->visible())
            sum += a[i]->w();
 
      for (int i=0; i < children_; i++) {
-        if (a[i] == resizable()) {
-           a[i]->resize(_x, y(), w() - sum, h());
+        if (a[i] == rsz) {
+           if (w() > sum) {
+              a[i]->resize(_x, y(), w()-sum, h());
+              if (!resizable())
+                 resizable(rsz);
+           } else {
+              /* widgets overflow width */
+              a[i]->resize(_x, y(), 0, h());
+              resizable(NULL);
+           }
         } else {
            a[i]->resize(_x, y(), a[i]->w(), h());
         }

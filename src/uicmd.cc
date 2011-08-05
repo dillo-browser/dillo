@@ -194,6 +194,11 @@ int CustTabs::handle(int e)
          a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
          ret = 1;
       }
+   } else if (e == FL_ENTER) {
+      /* WORKAROUND: when tabs overflow width, the resizable is set to NULL,
+       * and the close button loses its position. This call fixes it. */
+      if (!resizable())
+         rearrange();
    }
 
    return (ret) ? ret : CustGroupHorizontal::handle(e);
