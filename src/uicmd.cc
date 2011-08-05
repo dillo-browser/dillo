@@ -194,6 +194,11 @@ int CustTabs::handle(int e)
          a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
          ret = 1;
       }
+   } else if (e == FL_ENTER) {
+      /* WORKAROUND: when tabs overflow width, the resizable is set to NULL,
+       * and the close button loses its position. This call fixes it. */
+      if (!resizable())
+         rearrange();
    }
 
    return (ret) ? ret : CustGroupHorizontal::handle(e);
@@ -210,12 +215,16 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
       Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
       resize(0,0,window()->w(),ctab_h);    // tabbar
       CloseBtn->show();
+      child(0)->size(tab_w,ctab_h);
       child(0)->show(); // first tab button
       window()->init_sizes();
    }
 
+   /* The UI is constructed in a comfortable fitting size, and then resized
+    * so FLTK doesn't get confused later with even smaller dimensions! */
    current(0);
-   UI *new_ui = new UI(0,ctab_h,Wizard->w(),Wizard->h(),0,old_ui);
+   UI *new_ui = new UI(0,0,UI_MIN_W,UI_MIN_H,0,old_ui);
+   new_ui->resize(0,ctab_h,Wizard->w(),Wizard->h());
    new_ui->tabs(this);
    Wizard->add(new_ui);
    new_ui->show();
@@ -271,6 +280,7 @@ void CustTabs::remove_tab(UI *ui)
       // hide tabbar
       ctab_h = 1;
       CloseBtn->hide();
+      child(0)->size(0,0);
       child(0)->hide(); // first tab button
       resize(0,0,window()->w(),ctab_h);    // tabbar
       Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
