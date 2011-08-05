@@ -31,6 +31,11 @@ typedef enum {
    UI_HIDDEN = 1
 } UIPanelmode;
 
+
+// Min size to fit the full UI
+#define UI_MIN_W 600
+#define UI_MIN_H 200
+
 // Private classes
 class CustProgressBox;
 class CustTabs;
