@@ -129,10 +129,13 @@ public:
          if (e == FL_ENTER) {
             color(light_color); // {17,26,51}
             redraw();
-         } else if (e == FL_LEAVE || e == FL_RELEASE) {
+         } else if (e == FL_LEAVE || e == FL_RELEASE || e == FL_HIDE) {
             color(norm_color);
             redraw();
          }
+      } else if (e == FL_DEACTIVATE && color() != norm_color) {
+         color(norm_color);
+         redraw();
       }
       return Fl_Button::handle(e);
    }
