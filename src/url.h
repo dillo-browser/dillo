@@ -47,21 +47,21 @@
  * (non '_'-ended macros MUST use these for initialization sake)
  */
 /* these MAY return NULL: */
-#define URL_SCHEME_(u)              u->scheme
-#define URL_AUTHORITY_(u)           u->authority
-#define URL_PATH_(u)                u->path
-#define URL_QUERY_(u)               u->query
-#define URL_FRAGMENT_(u)            u->fragment
+#define URL_SCHEME_(u)              (u)->scheme
+#define URL_AUTHORITY_(u)           (u)->authority
+#define URL_PATH_(u)                (u)->path
+#define URL_QUERY_(u)               (u)->query
+#define URL_FRAGMENT_(u)            (u)->fragment
 #define URL_HOST_(u)                a_Url_hostname(u)
-#define URL_ALT_(u)                 u->alt
+#define URL_ALT_(u)                 (u)->alt
 #define URL_STR_(u)                 a_Url_str(u)
 /* this returns a Dstr* */
-#define URL_DATA_(u)                u->data
+#define URL_DATA_(u)                (u)->data
 /* these return an integer */
-#define URL_PORT_(u)                (URL_HOST(u), u->port)
-#define URL_FLAGS_(u)               u->flags
-#define URL_ILLEGAL_CHARS_(u)       url->illegal_chars
-#define URL_ILLEGAL_CHARS_SPC_(u)   url->illegal_chars_spc
+#define URL_PORT_(u)                (URL_HOST(u), (u)->port)
+#define URL_FLAGS_(u)               (u)->flags
+#define URL_ILLEGAL_CHARS_(u)       (u)->illegal_chars
+#define URL_ILLEGAL_CHARS_SPC_(u)   (u)->illegal_chars_spc
 
 /*
  * Access methods that never return NULL.
