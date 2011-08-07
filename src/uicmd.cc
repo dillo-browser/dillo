@@ -567,6 +567,7 @@ void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 {
    if (url) {
       a_Nav_push(bw, url, NULL);
+      BW2UI(bw)->focus_main();
    } else {
       // Used to start a bw with a blank screen
       BW2UI(bw)->focus_location();
