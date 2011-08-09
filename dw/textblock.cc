@@ -572,7 +572,7 @@ bool Textblock::motionNotifyImpl (core::EventMotion *event)
       } else if (hoverTooltip)
          hoverTooltip->onMotion ();
 
-      _MSG("tb=%p word=%p linkOld=%d hoverLink=%d\n",
+      _MSG("MN tb=%p word=%p linkOld=%d hoverLink=%d\n",
           this, word, linkOld, hoverLink);
       if (hoverLink != linkOld) {
          /* LinkEnter with hoverLink == -1 is the same as LinkLeave */

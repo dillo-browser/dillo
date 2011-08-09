@@ -918,10 +918,13 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          if (i < i_a) {
             track[i]->leaveNotify (&crossingEvent);
          } else if (i == i_a) { /* ancestor */
-            /* don't touch ancestor unless moving into/from NULL */
+            /* Don't touch ancestor unless:
+             *   - moving into/from NULL,
+             *   - ancestor becomes the newWidgetAtPoint */
             if (i_a == trackLen-1 && !newWidgetAtPoint)
                track[i]->leaveNotify (&crossingEvent);
-            else if (i_a == 0 && !widgetAtPoint)
+            else if ((i_a == 0 && !widgetAtPoint) ||
+                     (i_a == trackLen-1 && newWidgetAtPoint))
                track[i]->enterNotify (&crossingEvent);
          } else {
             track[i]->enterNotify (&crossingEvent);
