@@ -251,9 +251,7 @@ protected:
    struct {int index, nChar;}
       hlStart[core::HIGHLIGHT_NUM_LAYERS], hlEnd[core::HIGHLIGHT_NUM_LAYERS];
 
-   int hoverLink;                      /* The link under the button. */
-   core::style::Tooltip *hoverTooltip; /* The tooltip under the button. No ref
-                                        * hold. */
+   int hoverLink;  /* The link under the mouse pointer */
 
 
    void queueDrawRange (int index1, int index2);

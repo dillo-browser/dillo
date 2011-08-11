@@ -26,6 +26,15 @@
 #include <stdio.h>
 #include <limits.h>
 
+/*
+ * Local variables
+ */
+ /* The tooltip under mouse pointer in current textblock. No ref. hold.
+  * (having one per view looks not worth the extra clutter). */
+static dw::core::style::Tooltip *hoverTooltip = NULL;
+
+
+
 using namespace lout;
 
 namespace dw {
@@ -80,8 +89,6 @@ Textblock::Textblock (bool limitTextWidth)
    availAscent = 100;
    availDescent = 0;
 
-   hoverTooltip = NULL;
-
    this->limitTextWidth = limitTextWidth;
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
@@ -95,7 +102,10 @@ Textblock::Textblock (bool limitTextWidth)
 
 Textblock::~Textblock ()
 {
-   //_MSG ("Textblock::~Textblock\n");
+   _MSG("Textblock::~Textblock\n");
+
+   /* make sure not to call a free'd tooltip (very fast overkill) */
+   hoverTooltip = NULL;
 
    for (int i = 0; i < words->size(); i++) {
       Word *word = words->getRef (i);
@@ -572,8 +582,8 @@ bool Textblock::motionNotifyImpl (core::EventMotion *event)
       } else if (hoverTooltip)
          hoverTooltip->onMotion ();
 
-      _MSG("MN tb=%p word=%p linkOld=%d hoverLink=%d\n",
-          this, word, linkOld, hoverLink);
+      _MSG("MN tb=%p tooltipOld=%p hoverTooltip=%p\n",
+          this, tooltipOld, hoverTooltip);
       if (hoverLink != linkOld) {
          /* LinkEnter with hoverLink == -1 is the same as LinkLeave */
          return layout->emitLinkEnter (this, hoverLink, -1, -1, -1);
@@ -585,14 +595,14 @@ bool Textblock::motionNotifyImpl (core::EventMotion *event)
 
 void Textblock::enterNotifyImpl (core::EventCrossing *event)
 {
-   _MSG(" tb=%p, ENTER NotifyImpl\n", this);
+   _MSG(" tb=%p, ENTER NotifyImpl hoverTooltip=%p\n", this, hoverTooltip);
    /* reset hoverLink so linkEnter is detected */
    hoverLink = -2;
 }
 
 void Textblock::leaveNotifyImpl (core::EventCrossing *event)
 {
-   _MSG(" tb=%p, LEAVE NotifyImpl: hoverLink=%d\n", this, hoverLink);
+   _MSG(" tb=%p, LEAVE NotifyImpl: hoverTooltip=%p\n", this, hoverTooltip);
 
    /* leaving the viewport can't be handled by motionNotifyImpl() */
    if (hoverLink >= 0)
