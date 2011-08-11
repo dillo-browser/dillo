@@ -874,13 +874,11 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
    a_UIcmd_set_save_dir(prefs.save_dir);
 
    SuggestedName = UIcmd_make_save_filename(URL_STR(url));
-   name = a_Dialog_save_file("Save Link as File", NULL, SuggestedName);
-   MSG("a_UIcmd_save_link: %s\n", name);
-   dFree(SuggestedName);
-
-   if (name) {
+   if ((name = a_Dialog_save_file("Save Link as File", NULL, SuggestedName))) {
+      MSG("a_UIcmd_save_link: %s\n", name);
       a_Nav_save_url(bw, url, name);
    }
+   dFree(SuggestedName);
 }
 
 /*
