@@ -343,7 +343,7 @@ void FltkViewport::positionChanged ()
 
 /*
  * For scrollbars, this currently sets the same step to both vertical and
- * horizontal. It may me differentiated if necessary.
+ * horizontal. It may be differentiated if necessary.
  */
 void FltkViewport::setScrollStep(int step)
 {
