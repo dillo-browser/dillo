@@ -430,7 +430,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    int focus = 1;
    new_bw = UIcmd_tab_new(DilloTabs, old_ui, focus);
-   win->resizable(BW2UI(new_bw));
+   win->resizable(DilloTabs->wizard());
    win->show();
 
    if (old_bw == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
