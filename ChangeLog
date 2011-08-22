@@ -16,6 +16,8 @@ dillo-3.0 [August ??, 2011]
  - Avoid double draw after going Back or Forward (it takes half the time now!).
  - Avoid a certificate dialog storm on some HTTPS sites (BUG#868).
  - Remove 'large' option of panel_size preference.
+ - Allow multiple search engines to be set in dillorc, with a menu in the web
+   search dialog to select between them.
    Patches: Jorge Arellano Cid
 +- Remove --enable-ansi configure option.
  - Limit saved cookie size.
