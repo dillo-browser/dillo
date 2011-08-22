@@ -471,9 +471,9 @@ void FltkViewBase::drawArc (core::style::Color *color,
    int x = translateCanvasXToViewX (centerX) - width / 2;
    int y = translateCanvasYToViewY (centerY) - height / 2;
 
-   fl_arc(x, y, width, height, 0.0, 360.0);
+   fl_arc(x, y, width, height, angle1, angle2);
    if (filled)
-      fl_pie(x, y, width, height, 0.0, 360.0);
+      fl_pie(x, y, width, height, angle1, angle2);
 }
 
 void FltkViewBase::drawPolygon (core::style::Color *color,
