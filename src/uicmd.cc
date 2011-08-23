@@ -1,7 +1,7 @@
 /*
  * File: uicmd.cc
  *
- * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2005-2011 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Wizard.H>
 #include <FL/Fl_Box.H>
+#include <FL/Fl_Pack.H>
+#include <FL/Fl_Scroll.H>
 #include <FL/names.h>
 
 #include "paths.hh"
@@ -86,30 +88,52 @@ public:
 /*
  * Allows fine control of the tabbed interface
  */
-class CustTabs : public CustGroupHorizontal {
-   int tab_w, tab_h, ctab_h, btn_w;
+class CustTabs : public Fl_Group {
+   int tab_w, tab_h, ctab_h, btn_w, ctl_w;
    Fl_Wizard *Wizard;
-   Fl_Box *Invisible;
+   Fl_Scroll *Scroll;
+   Fl_Pack *Pack;
+   Fl_Group *Control;
    CustLightButton *CloseBtn;
-   int tabcolor_inactive, tabcolor_active, curtab_idx;
+   int tabcolor_inactive, tabcolor_active;
+
+   void update_pack_offset(void);
+   void resize(int x, int y, int w, int h)
+      { Fl_Group::resize(x,y,w,h); update_pack_offset(); }
+   int get_btn_idx(UI *ui);
+
 public:
    CustTabs (int ww, int wh, int th, const char *lbl=0) :
-      CustGroupHorizontal(0,0,ww,th,lbl) {
-      tab_w = 50, tab_h = th, ctab_h = 1, curtab_idx = -1, btn_w = 20;
+      Fl_Group(0,0,ww,th,lbl) {
+      Pack = NULL;
+      tab_w = 50, tab_h = th, ctab_h = 1, btn_w = 20, ctl_w = 1*btn_w+2;
       tabcolor_active = FL_DARK_CYAN; tabcolor_inactive = 206;
       resize(0,0,ww,ctab_h);
-      Invisible = new Fl_Box(0,0,ww-btn_w,ctab_h);
-      CloseBtn = new CustLightButton(ww-btn_w,0,btn_w,ctab_h, "X");
-      CloseBtn->box(FL_PLASTIC_ROUND_UP_BOX);
-      CloseBtn->labelcolor(0x00641000);
-      CloseBtn->hl_color(FL_WHITE);
-      CloseBtn->clear_visible_focus();
-      CloseBtn->tooltip(prefs.right_click_closes_tab ?
-         "Close current tab.\nor Right-click tab label to close." :
-         "Close current tab.\nor Middle-click tab label to close.");
-      CloseBtn->callback(close_tab_btn_cb, this);
-      CloseBtn->hide();
-      resizable(Invisible);
+      /* tab buttons go inside a pack within a scroll */
+      Scroll = new Fl_Scroll(0,0,ww-ctl_w,ctab_h);
+      Scroll->type(0); /* no scrollbars */
+      Scroll->box(FL_NO_BOX);
+       Pack = new Fl_Pack(0,0,ww-ctl_w,tab_h);
+       Pack->type(Fl_Pack::HORIZONTAL);
+       Pack->box(FL_NO_BOX); //FL_THIN_DOWN_FRAME
+       Pack->end();
+      Scroll->end();
+      resizable(Scroll);
+
+      /* control buttons go inside a group */
+      Control = new Fl_Group(ww-ctl_w,0,ctl_w,ctab_h);
+       CloseBtn = new CustLightButton(ww-ctl_w+2,0,btn_w,ctab_h, "X");
+       CloseBtn->box(FL_PLASTIC_ROUND_UP_BOX);
+       CloseBtn->labelcolor(0x00641000);
+       CloseBtn->hl_color(FL_WHITE);
+       CloseBtn->clear_visible_focus();
+       CloseBtn->tooltip(prefs.right_click_closes_tab ?
+          "Close current tab.\nor Right-click tab label to close." :
+          "Close current tab.\nor Middle-click tab label to close.");
+       CloseBtn->callback(close_tab_btn_cb, this);
+       CloseBtn->hide();
+      Control->end();
+
       box(FL_FLAT_BOX);
       end();
 
@@ -121,12 +145,10 @@ public:
    UI *add_new_tab(UI *old_ui, int focus);
    void remove_tab(UI *ui);
    Fl_Wizard *wizard(void) { return Wizard; }
-   int get_btn_idx(UI *ui);
-   int num_tabs() { return children()-2; }
+   int num_tabs() { return (Pack ? Pack->children() : 0); }
    void switch_tab(CustTabButton *cbtn);
    void prev_tab(void);
    void next_tab(void);
-
    void set_tab_label(UI *ui, const char *title);
 };
 
@@ -194,14 +216,9 @@ int CustTabs::handle(int e)
          a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
          ret = 1;
       }
-   } else if (e == FL_ENTER) {
-      /* WORKAROUND: when tabs overflow width, the resizable is set to NULL,
-       * and the close button loses its position. This call fixes it. */
-      if (!resizable())
-         rearrange();
    }
 
-   return (ret) ? ret : CustGroupHorizontal::handle(e);
+   return (ret) ? ret : Fl_Group::handle(e);
 }
 
 /*
@@ -215,8 +232,9 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
       Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
       resize(0,0,window()->w(),ctab_h);    // tabbar
       CloseBtn->show();
-      {int w=0, h; child(0)->measure_label(w, h); child(0)->size(w+14,ctab_h);}
-      child(0)->show(); // first tab button
+      {int w = 0, h; Pack->child(0)->measure_label(w, h);
+       Pack->child(0)->size(w+14,ctab_h);}
+      Pack->child(0)->show(); // first tab button
       window()->init_sizes();
    }
 
@@ -237,8 +255,8 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    btn->box(FL_PLASTIC_ROUND_UP_BOX);
    btn->color(focus ? tabcolor_active : tabcolor_inactive);
    btn->ui(new_ui);
-   insert(*btn, Invisible); // before the Invisible
    btn->callback(tab_btn_cb, this);
+   Pack->add(btn); // append
 
    if (focus) {
       switch_tab(btn);
@@ -248,7 +266,7 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    }
    if (num_tabs() == 1)
       btn->hide();
-   rearrange();
+   update_pack_offset();
 
    return new_ui;
 }
@@ -264,15 +282,14 @@ void CustTabs::remove_tab(UI *ui)
    int act_idx = get_btn_idx((UI*)Wizard->value());
    // get to-be-removed tab idx
    int rm_idx = get_btn_idx(ui);
-   btn = (CustTabButton*)child(rm_idx);
+   btn = (CustTabButton*)Pack->child(rm_idx);
 
    if (act_idx == rm_idx) {
       // Active tab is being closed, switch to another one
       rm_idx > 0 ? prev_tab() : next_tab();
    }
-   remove(rm_idx);
+   Pack->remove(rm_idx);
    delete btn;
-   rearrange();
 
    Wizard->remove(ui);
    delete(ui);
@@ -281,8 +298,8 @@ void CustTabs::remove_tab(UI *ui)
       // hide tabbar
       ctab_h = 1;
       CloseBtn->hide();
-      child(0)->size(0,0);
-      child(0)->hide(); // first tab button
+      Pack->child(0)->size(0,0);
+      Pack->child(0)->hide(); // first tab button
       resize(0,0,window()->w(),ctab_h);    // tabbar
       Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
       window()->init_sizes();
@@ -293,11 +310,43 @@ void CustTabs::remove_tab(UI *ui)
 int CustTabs::get_btn_idx(UI *ui)
 {
    for (int i = 0; i < num_tabs(); ++i) {
-      CustTabButton *btn = (CustTabButton*)child(i);
+      CustTabButton *btn = (CustTabButton*)Pack->child(i);
       if (btn->ui() == ui)
          return i;
    }
    return -1;
+}
+
+/*
+ * Keep active tab visible
+ * (Pack children have unusable x() coordinate)
+ */
+void CustTabs::update_pack_offset()
+{
+   dReturn_if (num_tabs() == 0);
+
+   // get active tab button
+   int act_idx = get_btn_idx((UI*)Wizard->value());
+   CustTabButton *cbtn = (CustTabButton*)Pack->child(act_idx);
+
+   // calculate tab button's x() coordinates
+   int x_i = 0, x_f;
+   for (int j=0; j < act_idx; ++j)
+      x_i += Pack->child(j)->w();
+   x_f = x_i + cbtn->w();
+
+   int scr_x = Scroll->xposition(), scr_y = Scroll->yposition();
+   int px_i = x_i - scr_x;
+   int px_f = px_i + cbtn->w();
+   int pw = Scroll->window()->w() - ctl_w;
+   _MSG("  scr_x=%d btn_x=%d px_i=%d btn_w=%d px_f=%d pw=%d",
+       Scroll->xposition(),cbtn->x(),px_i,cbtn->w(),px_f,pw);
+   if (px_i < 0) {
+      Scroll->scroll_to(x_i, scr_y);
+   } else if (px_i > pw || (px_i > 0 && px_f > pw)) {
+      Scroll->scroll_to(MIN(x_i, x_f-pw), scr_y);
+   }
+   _MSG(" >>scr_x=%d btn0_x=%d\n", scr_x, Pack->child(0)->x());
 }
 
 /*
@@ -313,13 +362,14 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
    if (cbtn->ui() != old_ui) {
       // Set old tab label to normal color
       if ((idx = get_btn_idx(old_ui)) != -1) {
-         btn = (CustTabButton*)child(idx);
+         btn = (CustTabButton*)Pack->child(idx);
          btn->color(tabcolor_inactive);
          btn->redraw();
       }
       Wizard->value(cbtn->ui());
       cbtn->color(tabcolor_active);
       cbtn->redraw();
+      update_pack_offset();
 
       // Update window title
       if ((bw = a_UIcmd_get_bw_by_widget(cbtn->ui()))) {
@@ -334,7 +384,7 @@ void CustTabs::prev_tab()
    int idx;
 
    if ((idx = get_btn_idx((UI*)Wizard->value())) != -1)
-      switch_tab( (CustTabButton*)child(idx > 0 ? idx-1 : num_tabs()-1) );
+      switch_tab((CustTabButton*)Pack->child(idx>0 ? idx-1 : num_tabs()-1));
 }
 
 void CustTabs::next_tab()
@@ -342,7 +392,7 @@ void CustTabs::next_tab()
    int idx;
 
    if ((idx = get_btn_idx((UI*)Wizard->value())) != -1)
-      switch_tab( (CustTabButton*)child((idx+1 < num_tabs()) ? idx+1 : 0) );
+      switch_tab((CustTabButton*)Pack->child((idx+1<num_tabs()) ? idx+1 : 0));
 }
 
 /*
@@ -364,12 +414,13 @@ void CustTabs::set_tab_label(UI *ui, const char *label)
          snprintf(title + tab_chars, 4, "...");
 
       // Avoid unnecessary redraws
-      if (strcmp(child(idx)->label(), title)) {
-         int w=0, h;
-         child(idx)->copy_label(title);
-         child(idx)->measure_label(w, h);
-         child(idx)->size(w+14,ctab_h);
-         rearrange();
+      if (strcmp(Pack->child(idx)->label(), title)) {
+         int w = 0, h;
+         Pack->child(idx)->copy_label(title);
+         Pack->child(idx)->measure_label(w, h);
+         Pack->child(idx)->size(w+14,ctab_h);
+         update_pack_offset();
+         Scroll->redraw();
       }
    }
 }
