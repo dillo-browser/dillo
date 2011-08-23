@@ -115,8 +115,8 @@ int main(int argc, char **argv)
    styleAttrs.setBorderStyle (BORDER_SOLID);
    styleAttrs.padding.setVal (1);
    styleAttrs.backgroundColor = NULL;
-   styleAttrs.width = createPerLength (0.5);
-   styleAttrs.height = createPerLength (0.5);
+   styleAttrs.width = createPerLength (0.25);
+   styleAttrs.height = createPerLength (0.25);
 
    Style *imageStyle1 = Style::create (layout, &styleAttrs);
    image1 = new dw::Image ("A longer ALT Text to demonstrate clipping.");
