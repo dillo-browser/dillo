@@ -95,7 +95,7 @@ class CustTabs : public CustGroupHorizontal {
 public:
    CustTabs (int ww, int wh, int th, const char *lbl=0) :
       CustGroupHorizontal(0,0,ww,th,lbl) {
-      tab_w = 80, tab_h = th, ctab_h = 1, curtab_idx = -1, btn_w = 20;
+      tab_w = 50, tab_h = th, ctab_h = 1, curtab_idx = -1, btn_w = 20;
       tabcolor_active = FL_DARK_CYAN; tabcolor_inactive = 206;
       resize(0,0,ww,ctab_h);
       Invisible = new Fl_Box(0,0,ww-btn_w,ctab_h);
@@ -215,7 +215,7 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
       Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
       resize(0,0,window()->w(),ctab_h);    // tabbar
       CloseBtn->show();
-      child(0)->size(tab_w,ctab_h);
+      {int w=0, h; child(0)->measure_label(w, h); child(0)->size(w+14,ctab_h);}
       child(0)->show(); // first tab button
       window()->init_sizes();
    }
@@ -230,7 +230,8 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    new_ui->show();
 
    CustTabButton *btn = new CustTabButton(num_tabs()*tab_w,0,tab_w,ctab_h);
-   btn->align(FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
+   btn->align(FL_ALIGN_INSIDE);
+   btn->labelsize(btn->labelsize()-2);
    btn->copy_label(DEFAULT_TAB_LABEL);
    btn->clear_visible_focus();
    btn->box(FL_PLASTIC_ROUND_UP_BOX);
@@ -354,7 +355,7 @@ void CustTabs::set_tab_label(UI *ui, const char *label)
 
    if (idx != -1) {
       // Make a label for this tab
-      size_t tab_chars = 7, label_len = strlen(label);
+      size_t tab_chars = 15, label_len = strlen(label);
 
       if (label_len > tab_chars)
          tab_chars = a_Utf8_end_of_char(label, tab_chars - 1) + 1;
@@ -364,7 +365,11 @@ void CustTabs::set_tab_label(UI *ui, const char *label)
 
       // Avoid unnecessary redraws
       if (strcmp(child(idx)->label(), title)) {
+         int w=0, h;
          child(idx)->copy_label(title);
+         child(idx)->measure_label(w, h);
+         child(idx)->size(w+14,ctab_h);
+         rearrange();
       }
    }
 }
