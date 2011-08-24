@@ -104,6 +104,7 @@ CssSelector::CssSelector () {
    cs = selectorList->getRef (selectorList->size () - 1);
 
    cs->notMatchingBefore = -1;
+   cs->combinator = CHILD;
    cs->selector = new CssSimpleSelector ();
 };
 
@@ -133,6 +134,7 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
 
       switch (comb) {
          case CHILD:
+         case ADJACENT_SIBLING:
             if (!sel->match (node))
                return false;
             break;
@@ -148,7 +150,7 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
                if (sel->match (node))
                   break;
 
-               node = docTree->parent (node);
+               node = node->parent;
             }
             break;
          default:
@@ -156,7 +158,11 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
       }
 
       comb = cs->combinator;
-      node = docTree->parent (node);
+
+      if (comb == ADJACENT_SIBLING)
+         node = node->sibling;
+      else 
+         node = node->parent;
    }
 
    return true;
@@ -199,6 +205,9 @@ void CssSelector::print () {
                break;
             case DESCENDANT:
                fprintf (stderr, "\" \" ");
+               break;
+            case ADJACENT_SIBLING:
+               fprintf (stderr, "+ ");
                break;
             default:
                fprintf (stderr, "? ");

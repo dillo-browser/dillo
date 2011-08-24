@@ -1289,6 +1289,9 @@ CssSelector *CssParser::parseSelector()
       } else if (ttype == CSS_TK_CHAR && tval[0] == '>') {
          selector->addSimpleSelector (CssSelector::CHILD);
          nextToken();
+      } else if (ttype == CSS_TK_CHAR && tval[0] == '+') {
+         selector->addSimpleSelector (CssSelector::ADJACENT_SIBLING);
+         nextToken();
       } else if (ttype != CSS_TK_END && spaceSeparated) {
          selector->addSimpleSelector (CssSelector::DESCENDANT);
       } else {
