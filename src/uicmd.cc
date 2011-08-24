@@ -289,6 +289,7 @@ void CustTabs::remove_tab(UI *ui)
       rm_idx > 0 ? prev_tab() : next_tab();
    }
    Pack->remove(rm_idx);
+   update_pack_offset();
    delete btn;
 
    Wizard->remove(ui);
@@ -346,6 +347,7 @@ void CustTabs::update_pack_offset()
    } else if (px_i > pw || (px_i > 0 && px_f > pw)) {
       Scroll->scroll_to(MIN(x_i, x_f-pw), scr_y);
    }
+   Scroll->redraw();
    _MSG(" >>scr_x=%d btn0_x=%d\n", scr_x, Pack->child(0)->x());
 }
 
@@ -420,7 +422,6 @@ void CustTabs::set_tab_label(UI *ui, const char *label)
          Pack->child(idx)->measure_label(w, h);
          Pack->child(idx)->size(w+14,ctab_h);
          update_pack_offset();
-         Scroll->redraw();
       }
    }
 }
@@ -1227,7 +1228,7 @@ void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug)
 }
 
 /*
- * Set the page title in the window titlebar and tab label.
+ * Set the page title in the tab label and window titlebar.
  * (Update window titlebar for the current tab only)
  */
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
@@ -1235,16 +1236,17 @@ void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
    const int size = 128;
    char title[size];
 
+   if (snprintf(title, size, "Dillo: %s", label ? label : "") >= size) {
+      uint_t i = MIN(size - 4, 1 + a_Utf8_end_of_char(title, size - 8));
+      snprintf(title + i, 4, "...");
+   }
+   BW2UI(bw)->copy_label(title);
+   BW2UI(bw)->tabs()->set_tab_label(BW2UI(bw), label ? label : "");
+
    if (a_UIcmd_get_bw_by_widget(BW2UI(bw)->tabs()->wizard()->value()) == bw) {
       // This is the focused bw, set window title
-      if (snprintf(title, size, "Dillo: %s", label) >= size) {
-         uint_t i = MIN(size - 4, 1 + a_Utf8_end_of_char(title, size - 8));
-         snprintf(title + i, 4, "...");
-      }
-      BW2UI(bw)->copy_label(title);
       BW2UI(bw)->window()->copy_label(title);
    }
-   BW2UI(bw)->tabs()->set_tab_label(BW2UI(bw), label);
 }
 
 /*
