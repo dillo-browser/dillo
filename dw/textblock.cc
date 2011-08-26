@@ -990,16 +990,28 @@ void Textblock::wordWrap(int wordIndex)
    //                    lastLine->boxDescent);
 
    if (word->content.type == core::Content::WIDGET) {
+      int collapseMarginTop = 0;
 
       lastLine->marginDescent =
          misc::max (lastLine->marginDescent,
                     word->size.descent +
                     word->content.widget->getStyle()->margin.bottom);
 
+      if (lines->size () == 1 &&
+          word->content.widget->blockLevel () &&
+          getStyle ()->borderWidth.top == 0 &&
+          getStyle ()->padding.top == 0) {
+         // collapse top margin of parent element with top margin of first child
+         // see: http://www.w3.org/TR/CSS21/box.html#collapsing-margins
+         collapseMarginTop = getStyle ()->margin.top;
+      }
+
       lastLine->boxAscent =
             misc::max (lastLine->boxAscent,
+                       word->size.ascent,
                        word->size.ascent
-                       + word->content.widget->getStyle()->margin.top);
+                       + word->content.widget->getStyle()->margin.top
+                       - collapseMarginTop);
 
    } else {
       lastLine->marginDescent =
