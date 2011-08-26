@@ -35,6 +35,7 @@ dillo-3.0 [August ??, 2011]
  - Wrap image alt text.
    Patches: corvid
 +- Add support for CSS adjacent sibling selectors.
+ - Collapse parent's and first child's top margin.
    Patch: Johannes Hofmann
 +- Default binding for left-tab changed to Shift-Ctrl-Tab.
    Patch: Jeremy Henty
