@@ -376,13 +376,13 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
              * http://www.dillo.org/test/img/ */
             childAllocation.y =
                lineYOffsetCanvasAllocation (line, allocation)
-               + (line->boxAscent - word->size.ascent);
-               // - word->content.widget->getStyle()->margin.top;
+               + (line->boxAscent - word->size.ascent)
+               - word->content.widget->getStyle()->margin.top;
             childAllocation.width = word->size.width;
-            childAllocation.ascent = word->size.ascent;
-               // + word->content.widget->getStyle()->margin.top;
-            childAllocation.descent = word->size.descent;
-               // + word->content.widget->getStyle()->margin.bottom;
+            childAllocation.ascent = word->size.ascent
+               + word->content.widget->getStyle()->margin.top;
+            childAllocation.descent = word->size.descent
+               + word->content.widget->getStyle()->margin.bottom;
 
             oldChildAllocation = word->content.widget->getAllocation();
 
@@ -990,29 +990,17 @@ void Textblock::wordWrap(int wordIndex)
    //                    lastLine->boxDescent);
 
    if (word->content.type == core::Content::WIDGET) {
+
       lastLine->marginDescent =
          misc::max (lastLine->marginDescent,
                     word->size.descent +
                     word->content.widget->getStyle()->margin.bottom);
 
-      //DBG_OBJ_ARRSET_NUM (page, "lines.%d.descent", page->num_lines - 1,
-      //                    lastLine->descent);
-
-      /* If the widget is not in the first line of the paragraph, its top
-       * margin may make the line higher.
-       */
-      if (lines->size () > 1) {
-         /* Here, we know already what the break and the bottom margin
-          * contributed to the space before this line.
-          */
-         lastLine->boxAscent =
+      lastLine->boxAscent =
             misc::max (lastLine->boxAscent,
                        word->size.ascent
                        + word->content.widget->getStyle()->margin.top);
 
-         //DBG_OBJ_ARRSET_NUM (page, "lines.%d.ascent", page->num_lines - 1,
-         //                    lastLine->boxAscent);
-      }
    } else {
       lastLine->marginDescent =
          misc::max (lastLine->marginDescent, lastLine->boxDescent);
@@ -1123,11 +1111,7 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
       widget->setAscent (availAscent);
       widget->setDescent (availDescent);
       widget->sizeRequest (size);
-//      size->ascent -= wstyle->margin.top;
-//      size->descent -= wstyle->margin.bottom;
    } else {
-      /* TODO: Use margin.{top|bottom} here, like above.
-       * (No harm for the next future.) */
       if (wstyle->width == core::style::LENGTH_AUTO ||
           wstyle->height == core::style::LENGTH_AUTO)
          widget->sizeRequest (&requisition);
@@ -1158,6 +1142,10 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
          size->descent = (int) (len * availDescent);
       }
    }
+
+   /* ascent and descent in words do not contain margins. */
+   size->ascent -= wstyle->margin.top;
+   size->descent -= wstyle->margin.bottom;
 }
 
 /**
