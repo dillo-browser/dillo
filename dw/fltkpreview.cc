@@ -150,7 +150,7 @@ void FltkPreview::drawSimpleWrappedText (core::style::Font *font,
                                          core::style::Color *color,
                                          core::style::Color::Shading shading,
                                          int x, int y, int w, int h,
-                                         const char *text, int len)
+                                         const char *text)
 {
 }
 

@@ -388,8 +388,7 @@ void Image::draw (core::View *view, core::Rectangle *area)
                              core::style::Color::SHADING_NORMAL,
                              allocation.x + getStyle()->boxOffsetX (),
                              allocation.y + getStyle()->boxOffsetY (),
-                             getContentWidth(), getContentHeight(),
-                             altText, strlen(altText));
+                             getContentWidth(), getContentHeight(), altText);
 
          if (clippingView)
             view->mergeClippingView (clippingView);

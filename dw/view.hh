@@ -182,7 +182,7 @@ public:
    virtual void drawSimpleWrappedText (style::Font *font, style::Color *color,
                                        style::Color::Shading shading,
                                        int x, int y, int w, int h,
-                                       const char *text, int len) = 0;
+                                       const char *text) = 0;
    virtual void drawImage (Imgbuf *imgbuf, int xRoot, int yRoot,
                            int x, int y, int width, int height) = 0;
 

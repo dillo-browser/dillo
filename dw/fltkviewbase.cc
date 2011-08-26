@@ -590,7 +590,7 @@ void FltkWidgetView::drawSimpleWrappedText (core::style::Font *font,
                                             core::style::Color *color,
                                            core::style::Color::Shading shading,
                                             int X, int Y, int W, int H,
-                                            const char *text, int len)
+                                            const char *text)
 {
    FltkFont *ff = (FltkFont*)font;
    fl_font(ff->font, ff->size);
