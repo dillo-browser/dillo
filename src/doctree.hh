@@ -53,37 +53,46 @@ class Doctree {
 
    public:
       Doctree () {
-         topNode = NULL;
-         rootNode = NULL;
+         rootNode = new DoctreeNode;
+         topNode = rootNode;
          num = 0;
       };
 
       ~Doctree () { 
-         if (rootNode)
-            delete rootNode;
+         delete rootNode;
       };
 
       DoctreeNode *push () {
          DoctreeNode *dn = new DoctreeNode ();
          dn->parent = topNode;
-         if (dn->parent) {
-            dn->sibling = dn->parent->lastChild;
-            dn->parent->lastChild = dn;
-         }
+         dn->sibling = dn->parent->lastChild;
+         dn->parent->lastChild = dn;
          dn->num = num++;
-         if (!rootNode)
-            rootNode = dn;
          topNode = dn;
          return dn;
       };
 
       void pop () {
-         if (topNode)
-            topNode = topNode->parent;
+         assert (topNode != rootNode); // never pop the root node
+         topNode = topNode->parent;
       };
 
       inline DoctreeNode *top () {
-         return topNode;
+         if (topNode != rootNode)
+            return topNode;
+         else
+            return NULL;
+      };
+
+      inline DoctreeNode *parent (const DoctreeNode *node) {
+         if (node->parent != rootNode) 
+            return node->parent;
+         else
+            return NULL;
+      };
+
+      inline DoctreeNode *sibling (const DoctreeNode *node) {
+         return node->sibling;
       };
 };
 

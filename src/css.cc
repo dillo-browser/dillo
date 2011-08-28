@@ -150,7 +150,7 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
                if (sel->match (node))
                   break;
 
-               node = node->parent;
+               node = docTree->parent (node);
             }
             break;
          default:
@@ -160,9 +160,9 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
       comb = cs->combinator;
 
       if (comb == ADJACENT_SIBLING)
-         node = node->sibling;
+         node = docTree->sibling (node);
       else 
-         node = node->parent;
+         node = docTree->parent (node);
    }
 
    return true;
