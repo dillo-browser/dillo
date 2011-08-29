@@ -2,7 +2,7 @@
 Dillo project
 =============================================================================
 
-dillo-3.0 [August ??, 2011]
+dillo-3.0 [September ??, 2011]
 
 +- Ported Dillo to FLTK-1.3.
    Patch: corvid, Johannes Hofmann, Jorge Arellano Cid
@@ -39,6 +39,10 @@ dillo-3.0 [August ??, 2011]
    Patch: Johannes Hofmann
 +- Default binding for left-tab changed to Shift-Ctrl-Tab.
    Patch: Jeremy Henty
+
+Note: these are user-visible changes. The full Changelog is kept
+      in our Mercurial repository at http://hg.dillo.org/dillo
+
 
 -----------------------------------------------------------------------------
 

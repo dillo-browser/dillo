@@ -2,49 +2,48 @@
  Dillo web browser
 ===================
 
-dillo-2.2.1 is the last of the dillo-2.x series: 
+Dillo-3.0  is  the  first  release of the newest branch, which is
+based  on the already released fltk-1.3 toolkit. This is big news
+because   it  clears  the  way  for  Dillo  to  return  to  those
+distributions  which  had  excluded  Dillo2  due  to  FLTK2 never
+being  officially  released.
 
-The 2.x series was based on FLTK-2.0, which was never released.
-As distributions have the sensible policy of not including alpha
-software, this kept dillo from being provided in their native
-packaging systems. 
+The  development effort shifted to the dillo-3.x branch long ago,
+and  it  became  the active one; dillo-2.x received less and less
+attention, and dillo-2.2.1 became the last of its series.
 
-In response, the core team switched to the more modern FLTK-1.3
-which has already seen its first release.
+The  core  team  will  focus  on  implementing the CSS feature of
+floating  elements.  This  will  greatly improve dillo's web page
+rendering since many sites have adopted floats instead of tables.
 
-The development effort shifted to the dillo-3.x branch long ago,
-and it became the active one (dillo-2.x received less and less
-attention).
+The  new  dillo3 has shown excellent stability.
 
-The new dillo-3.0 will be available in a few weeks, after it passes
-the final stages of the release process. It has shown excellent
-stability and comes with some nice new features as well.
+The core team welcomes developers willing to join our workforce. 
 
-  Here's a list of some well-known problems of dillo-2.x:
+
+  Here's a list of some old well-known problems of dillo:
 
          * no FRAMES rendering
          * no https (there's a barebones prototype).
 
 
------
-FLTK2
------
+-------
+FLTK1.3
+-------
 
-  The FLTK2 library is statically linked into Dillo2.
-The recommended version is >= r6916. and <=r7513
-If not available from fltk.org, you can get it here:
+  You can get FLTK-1.3 here:
 
-  http://www.dillo.org/dillo-2.x/fltk-2.0.x-r7513.tar.bz2
+     http://fltk.org/software.php?VERSION=1.3.0
 
 
---------------
-Building dillo
---------------
+---------------------------
+Building dillo from sources
+---------------------------
 
   1.- Install fltk:
 
-     tar jxvf fltk-2.0.x-r7513.tar.bz2
-     cd fltk-2.0.x-r7513
+     tar jxvf fltk-1.3.0-source.tar.gz
+     cd fltk-1.3.0
      less README.unix
      make
      sudo make install
@@ -52,10 +51,10 @@ Building dillo
     
   (don't configure fltk with --enable-cairo)
 
-  2.- Then dillo2:
+  2.- Then dillo3:
 
-     tar jxvf dillo-2.2.1.tar.bz2
-     cd dillo-2.2.1
+     tar jxvf dillo-3.0.tar.bz2
+     cd dillo-3.0
      ./autogen.sh; ./configure; make
      sudo make install-strip
 
@@ -101,4 +100,4 @@ Solaris
 
 Jorge.-
 (jcid@dillo.org)
-July, 2011
+August, 2011
