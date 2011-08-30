@@ -21,6 +21,12 @@ The  new  dillo3 has shown excellent stability.
 The core team welcomes developers willing to join our workforce. 
 
 
+NOTE:  With  FLTK-1.3,  when  running  on X with Xft enabled (the
+default),  font naming is more restricted than it was with FLTK2.
+If your font_* preferences are no longer working well, please try
+the fc-list command as given in dillorc.
+
+
   Here's a list of some old well-known problems of dillo:
 
          * no FRAMES rendering
