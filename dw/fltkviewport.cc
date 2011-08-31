@@ -295,15 +295,13 @@ int FltkViewport::handle (int event)
 
    case FL_RELEASE:
       if (Fl::event_button() == FL_MIDDLE_MOUSE) {
-         dragScrolling = 0;
          setCursor (core::style::CURSOR_DEFAULT);
-      } else if (verScrolling && vscrollbar->handle(event)) {
-         verScrolling = 0;
-         return 1;
-      } else if (horScrolling && hscrollbar->handle(event)) {
-         horScrolling = 0;
-         return 1;
+      } else if (verScrolling) {
+         vscrollbar->handle(event);
+      } else if (horScrolling) {
+         hscrollbar->handle(event);
       }
+      horScrolling = verScrolling = dragScrolling = 0;
       break;
 
    case FL_ENTER:
