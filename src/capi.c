@@ -767,7 +767,6 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             a_Chain_bcb(OpAbort, Info, NULL, NULL);
             /* remove the cache entry for this URL */
             a_Cache_entry_remove_by_url(conn->url);
-            a_Nav_cancel_expect_if_eq(conn->bw, conn->url);
             Capi_conn_unref(conn);
             dFree(Info);
             break;

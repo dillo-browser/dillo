@@ -1176,6 +1176,8 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
                }
             }
             if (AbortEntry) {
+               if (ClientWeb->flags & WEB_RootUrl)
+                  a_Nav_cancel_expect_if_eq(Client_bw, Client->Url);
                a_Bw_remove_client(Client_bw, Client->Key);
                Cache_client_dequeue(Client, NULLKey);
                --i; /* Keep the index value in the next iteration */
