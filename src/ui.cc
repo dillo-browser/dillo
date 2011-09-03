@@ -408,16 +408,14 @@ void UI::make_toolbar(int tw, int th)
    Bookmarks = make_button("Book", icons->ImgBook, NULL, UI_BOOK);
    Tools = make_button("Tools", icons->ImgTools, NULL, UI_TOOLS);
 
-   if (prefs.show_tooltip) {
-      Back->tooltip("Previous page");
-      Forw->tooltip("Next page");
-      Home->tooltip("Go to the Home page");
-      Reload->tooltip("Reload");
-      Save->tooltip("Save this page");
-      Stop->tooltip("Stop loading");
-      Bookmarks->tooltip("View bookmarks");
-      Tools->tooltip("Settings");
-   }
+   Back->tooltip("Previous page");
+   Forw->tooltip("Next page");
+   Home->tooltip("Go to the Home page");
+   Reload->tooltip("Reload");
+   Save->tooltip("Save this page");
+   Stop->tooltip("Stop loading");
+   Bookmarks->tooltip("View bookmarks");
+   Tools->tooltip("Settings");
 }
 
 /*
@@ -432,12 +430,14 @@ void UI::make_location(int ww)
     b->callback(clear_cb, this);
     b->clear_visible_focus();
     b->box(FL_THIN_UP_BOX);
+    b->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
     p_xpos += b->w();
 
     Fl_Input *i = Location = new CustInput(p_xpos,0,ww-p_xpos-32,lh,0);
     i->color(CuteColor);
     i->when(FL_WHEN_ENTER_KEY);
     i->callback(location_cb, this);
+    i->tooltip("Location");
     p_xpos += i->w();
 
     Search = b = new CustLightButton(p_xpos,0,16,lh,0);
@@ -445,6 +445,7 @@ void UI::make_location(int ww)
     b->callback(search_cb, this);
     b->clear_visible_focus();
     b->box(FL_THIN_UP_BOX);
+    b->tooltip("Search the Web");
     p_xpos += b->w();
 
     Help = b = new CustLightButton(p_xpos,0,16,lh,0);
@@ -452,14 +453,9 @@ void UI::make_location(int ww)
     b->callback(help_cb, this);
     b->clear_visible_focus();
     b->box(FL_THIN_UP_BOX);
+    b->tooltip("Help");
     p_xpos += b->w();
 
-   if (prefs.show_tooltip) {
-      Clear->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
-      Location->tooltip("Location");
-      Search->tooltip("Search the Web");
-      Help->tooltip("Help");
-   }
 }
 
 /*
@@ -503,8 +499,7 @@ Fl_Widget *UI::make_filemenu_button()
    _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
    btn->box(FL_THIN_UP_BOX);
    btn->callback(filemenu_cb, this);
-   if (prefs.show_tooltip)
-      btn->tooltip("File menu");
+   btn->tooltip("File menu");
    btn->clear_visible_focus();
    if (!prefs.show_filemenu)
       btn->hide();
@@ -614,8 +609,7 @@ void UI::make_status_bar(int ww, int wh)
     BugMeter->image(icons->ImgMeterOK);
     BugMeter->box(FL_THIN_DOWN_BOX);
     BugMeter->align(FL_ALIGN_INSIDE | FL_ALIGN_TEXT_NEXT_TO_IMAGE);
-    if (prefs.show_tooltip)
-       BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
+    BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
     BugMeter->callback(bugmeter_cb, this);
     BugMeter->clear_visible_focus();
 
