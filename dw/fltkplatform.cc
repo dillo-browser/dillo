@@ -172,7 +172,7 @@ void FltkFont::initSystemFonts ()
          family->set ((Fl_Font) i, t);
          delete familyName;
       } else {
-         // set first font of family also as normal font in case there 
+         // set first font of family also as normal font in case there
          // is no normal (non-bold, non-italic) font
          family = new FontFamily ((Fl_Font) i, -1, -1, -1);
          family->set ((Fl_Font) i, t);

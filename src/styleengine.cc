@@ -143,7 +143,7 @@ void StyleEngine::setStyle (const char *styleAttr) {
    if (styleAttr && prefs.parse_embedded_css) {
       n->styleAttrProperties = new CssPropertyList (true);
       n->styleAttrPropertiesImportant = new CssPropertyList (true);
-   
+
       CssParser::parseDeclarationBlock (styleAttr, strlen (styleAttr),
                                         n->styleAttrProperties,
                                         n->styleAttrPropertiesImportant);

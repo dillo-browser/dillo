@@ -161,7 +161,7 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
 
       if (comb == ADJACENT_SIBLING)
          node = docTree->sibling (node);
-      else 
+      else
          node = docTree->parent (node);
    }
 

@@ -203,7 +203,7 @@ static char *escape_tooltip(const char *buf, ssize_t len)
    char *ret = (char *) malloc(2 * len + 1);
    char *dest = ret;
 
-   while (len-- > 0) { 
+   while (len-- > 0) {
       if (*buf == '@')
          *dest++ = *buf;
       *dest++ = *buf++;
@@ -1144,7 +1144,7 @@ static void custLabelMeasure(const Fl_Label* o, int& W, int& H)
    fl_font(o->font, o->size);
    fl_measure(o->value, W, H, interpret_symbols);
 }
- 
+
 
 
 //int main(int argc, char **argv)

@@ -683,7 +683,7 @@ const char *FltkMultiLineTextResource::getText ()
 {
    /* FLTK-1.3 insists upon returning a new copy of the buffer text, so
     * we have to keep track of it.
-    */ 
+    */
    if (text_copy)
       free(text_copy);
    text_copy = buffer->text();

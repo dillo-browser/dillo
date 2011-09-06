@@ -232,7 +232,7 @@ int FltkViewport::handle (int event)
       /* When the viewport has focus (and not one of its children), FLTK
        * sends the event here. Returning zero tells FLTK to resend the
        * event as SHORTCUT, which we finally route to the parent. */
-       
+
       /* As we don't know the exact keybindings set by the user, we ask
        * for all of them (except Tab to keep form navigation). */
       if (Fl::event_key() != FL_Tab)

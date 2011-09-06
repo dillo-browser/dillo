@@ -833,7 +833,7 @@ void drawBorder (View *view, Rectangle *area,
       yp1 = yb1 + style->borderWidth.top;
       xp2 = xb2 - style->borderWidth.right;
       yp2 = yb2 - style->borderWidth.bottom;
-   
+
       light = inverse ? Color::SHADING_DARK : Color::SHADING_LIGHT;
       dark = inverse ? Color::SHADING_LIGHT : Color::SHADING_DARK;
       normal = inverse ? Color::SHADING_INVERSE : Color::SHADING_NORMAL;

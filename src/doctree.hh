@@ -58,7 +58,7 @@ class Doctree {
          num = 0;
       };
 
-      ~Doctree () { 
+      ~Doctree () {
          delete rootNode;
       };
 
@@ -85,7 +85,7 @@ class Doctree {
       };
 
       inline DoctreeNode *parent (const DoctreeNode *node) {
-         if (node->parent != rootNode) 
+         if (node->parent != rootNode)
             return node->parent;
          else
             return NULL;
