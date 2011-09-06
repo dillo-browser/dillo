@@ -36,6 +36,7 @@ dillo-3.0 [September ??, 2011]
    Patches: corvid
 +- Add support for CSS adjacent sibling selectors.
  - Collapse parent's and first child's top margin.
+ - Fix redraw loops and reenable limit_text_width dillorc option.
    Patch: Johannes Hofmann
 +- Default binding for left-tab changed to Shift-Ctrl-Tab.
    Patch: Jeremy Henty

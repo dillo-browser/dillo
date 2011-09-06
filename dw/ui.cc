@@ -266,9 +266,9 @@ void ComplexButtonResource::LayoutReceiver::canvasSizeChanged (int width,
                                                                int descent)
 {
    /**
-    * \todo The argument to queueResize is not always true. (But this works.)
+    * \todo Verify that this is correct.
     */
-   resource->queueResize (true);
+   resource->queueResize (resource->childWidget->extremesChanged ());
 }
 
 ComplexButtonResource::ComplexButtonResource ()
