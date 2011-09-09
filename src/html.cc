@@ -2138,8 +2138,7 @@ static bool Html_load_image(BrowserWindow *bw, DilloUrl *url,
    DilloWeb *Web;
    int ClientKey;
    /* Fill a Web structure for the cache query */
-   Web = a_Web_new(url, requester);
-   Web->bw = bw;
+   Web = a_Web_new(bw, url, requester);
    Web->Image = Image;
    a_Image_ref(Image);
    Web->flags |= WEB_Image;
@@ -2967,8 +2966,7 @@ void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
    } else {
       /* Fill a Web structure for the cache query */
       int ClientKey;
-      DilloWeb *Web = a_Web_new(url, html->page_url);
-      Web->bw = html->bw;
+      DilloWeb *Web = a_Web_new(html->bw, url, html->page_url);
       if ((ClientKey = a_Capi_open_url(Web, Html_css_load_callback, NULL))) {
          ++html->bw->NumPendingStyleSheets;
          a_Bw_add_client(html->bw, ClientKey, 0);

@@ -232,8 +232,7 @@ static void Nav_open_url(BrowserWindow *bw, const DilloUrl *url,
 
       // a_Menu_pagemarks_new(bw);
 
-      Web = a_Web_new(url, requester);
-      Web->bw = bw;
+      Web = a_Web_new(bw, url, requester);
       Web->flags |= WEB_RootUrl;
       if ((ClientKey = a_Capi_open_url(Web, NULL, NULL)) != 0) {
          a_Bw_add_client(bw, ClientKey, 1);
@@ -566,8 +565,7 @@ static void Nav_save_cb(int Op, CacheClient_t *Client)
 void a_Nav_save_url(BrowserWindow *bw,
                     const DilloUrl *url, const char *filename)
 {
-   DilloWeb *Web = a_Web_new(url, NULL);
-   Web->bw = bw;
+   DilloWeb *Web = a_Web_new(bw, url, NULL);
    Web->filename = dStrdup(filename);
    Web->flags |= WEB_Download;
    /* TODO: keep track of this client */
