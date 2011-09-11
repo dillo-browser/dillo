@@ -305,6 +305,7 @@ void FltkTooltip::onEnter()
       Fl_Box *b = new Fl_Box(0,0,100,24);
       b->box(FL_BORDER_BOX);
       b->color(fl_color_cube(FL_NUM_RED-1, FL_NUM_GREEN-1, FL_NUM_BLUE-2));
+      b->labelcolor(FL_BLACK);
       b->labelfont(FL_HELVETICA);
       b->labelsize(14);
       b->align(FL_ALIGN_WRAP|FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
