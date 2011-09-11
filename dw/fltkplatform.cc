@@ -232,10 +232,14 @@ FltkColor::FltkColor (int color): Color (color)
 {
    this->color = color;
 
-   colors[SHADING_NORMAL] = shadeColor (color, SHADING_NORMAL) << 8;
-   colors[SHADING_INVERSE] = shadeColor (color, SHADING_INVERSE) << 8;
-   colors[SHADING_DARK] = shadeColor (color, SHADING_DARK) << 8;
-   colors[SHADING_LIGHT] = shadeColor (color, SHADING_LIGHT) << 8;
+   if (!(colors[SHADING_NORMAL] = shadeColor (color, SHADING_NORMAL) << 8))
+      colors[SHADING_NORMAL] = FL_BLACK;
+   if (!(colors[SHADING_INVERSE] = shadeColor (color, SHADING_INVERSE) << 8))
+      colors[SHADING_INVERSE] = FL_BLACK;
+   if (!(colors[SHADING_DARK] = shadeColor (color, SHADING_DARK) << 8))
+      colors[SHADING_DARK] = FL_BLACK;
+   if (!(colors[SHADING_LIGHT] = shadeColor (color, SHADING_LIGHT) << 8))
+      colors[SHADING_LIGHT] = FL_BLACK;
 }
 
 FltkColor::~FltkColor ()
