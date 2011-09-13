@@ -509,7 +509,7 @@ void DLItem::log_text_add(const char *buf, ssize_t st)
    // Make room...
    if (log_len + esc_len >= log_max) {
       log_max = log_len + esc_len + 1024;
-      log_text = (char *) realloc (log_text, log_max);
+      log_text = (char *) dRealloc (log_text, log_max);
       log_text[log_len] = 0;
       prTitle->tooltip(log_text);
    }
