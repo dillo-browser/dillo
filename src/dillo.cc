@@ -393,6 +393,9 @@ int main(int argc, char **argv)
     */
    ((Fl_Widget *)bw->ui)->window()->make_current();
 
+   /* Use FLTK_SCHEME environment variable, or X11 resource */
+   Fl::scheme(NULL);
+
    /* Proxy authentication */
    if (prefs.http_proxyuser && !a_Http_proxy_auth()) {
       const char *passwd = a_UIcmd_get_passwd(prefs.http_proxyuser);
