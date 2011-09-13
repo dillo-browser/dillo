@@ -107,6 +107,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "show_url", &prefs.show_url, PREFS_BOOL },
       { "small_icons", &prefs.small_icons, PREFS_BOOL },
       { "start_page", &prefs.start_page, PREFS_URL },
+      { "theme", &prefs.theme, PREFS_STRING },
       { "w3c_plus_heuristics", &prefs.w3c_plus_heuristics, PREFS_BOOL }
    };
 

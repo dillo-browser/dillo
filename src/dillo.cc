@@ -365,6 +365,8 @@ int main(int argc, char **argv)
    // Sets WM_CLASS hint on X11
    Fl_Window::default_xclass("dillo");
 
+   Fl::scheme(prefs.theme);
+
    if (!prefs.show_tooltip) {
       // turn off UI tooltips
       Fl::option(Fl::OPTION_SHOW_TOOLTIPS, false);
@@ -392,9 +394,6 @@ int main(int argc, char **argv)
     * immediately-available URLs from the cmdline (e.g. about:splash).
     */
    ((Fl_Widget *)bw->ui)->window()->make_current();
-
-   /* Use FLTK_SCHEME environment variable, or X11 resource */
-   Fl::scheme(NULL);
 
    /* Proxy authentication */
    if (prefs.http_proxyuser && !a_Http_proxy_auth()) {

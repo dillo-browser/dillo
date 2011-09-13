@@ -2,6 +2,13 @@
 Dillo project
 =============================================================================
 
+dillo-3.0.1 [not released yet]
+
++- Add preference for UI theme.
+   Patch: corvid
+
+-----------------------------------------------------------------------------
+
 dillo-3.0 [September 06, 2011]
 
 +- Ported Dillo to FLTK-1.3.

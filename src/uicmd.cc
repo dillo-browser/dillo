@@ -123,7 +123,7 @@ public:
       /* control buttons go inside a group */
       Control = new Fl_Group(ww-ctl_w,0,ctl_w,ctab_h);
        CloseBtn = new CustLightButton(ww-ctl_w+2,0,btn_w,ctab_h, "X");
-       CloseBtn->box(FL_PLASTIC_ROUND_UP_BOX);
+       CloseBtn->box(FL_ROUND_UP_BOX);
        CloseBtn->labelcolor(0x00641000);
        CloseBtn->hl_color(FL_WHITE);
        CloseBtn->clear_visible_focus();
@@ -252,7 +252,7 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    btn->labelsize(btn->labelsize()-2);
    btn->copy_label(DEFAULT_TAB_LABEL);
    btn->clear_visible_focus();
-   btn->box(FL_PLASTIC_ROUND_UP_BOX);
+   btn->box(FL_ROUND_UP_BOX);
    btn->color(focus ? tabcolor_active : tabcolor_inactive);
    btn->ui(new_ui);
    btn->callback(tab_btn_cb, this);
