@@ -714,6 +714,7 @@ int UI::handle(int event)
       if (cmd == KEYS_NOP) {
          // Do nothing
       } else if (cmd == KEYS_SCREEN_UP || cmd == KEYS_SCREEN_DOWN ||
+                 cmd == KEYS_SCREEN_LEFT || cmd == KEYS_SCREEN_RIGHT ||
                  cmd == KEYS_LINE_UP || cmd == KEYS_LINE_DOWN ||
                  cmd == KEYS_LEFT || cmd == KEYS_RIGHT ||
                  cmd == KEYS_TOP || cmd == KEYS_BOTTOM) {

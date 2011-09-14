@@ -1166,6 +1166,8 @@ void a_UIcmd_scroll(BrowserWindow *bw, int icmd)
       const mapping_t map[] = {
          {KEYS_SCREEN_UP, SCREEN_UP_CMD},
          {KEYS_SCREEN_DOWN, SCREEN_DOWN_CMD},
+         {KEYS_SCREEN_LEFT, SCREEN_LEFT_CMD},
+         {KEYS_SCREEN_RIGHT, SCREEN_RIGHT_CMD},
          {KEYS_LINE_UP, LINE_UP_CMD},
          {KEYS_LINE_DOWN, LINE_DOWN_CMD},
          {KEYS_LEFT, LEFT_CMD},

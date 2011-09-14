@@ -5,7 +5,8 @@ Dillo project
 dillo-3.0.1 [not released yet]
 
 +- Add preference for UI theme.
-   Patch: corvid
+ - Allow key bindings for paging left/right.
+   Patches: corvid
 
 -----------------------------------------------------------------------------
 

@@ -89,6 +89,10 @@
 #pagedown = screen-down
 #space = screen-down
 
+#(screen-left has no default binding)
+
+#(screen-right has no default binding)
+
 #up = line-up
 
 #down = line-down

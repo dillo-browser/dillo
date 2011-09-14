@@ -124,6 +124,8 @@ static const KeyBinding_t default_keys[] = {
    { "screen-up"    , KEYS_SCREEN_UP    , 0         , 'b'             },
    { "screen-down"  , KEYS_SCREEN_DOWN  , 0         , FL_Page_Down    },
    { "screen-down"  , KEYS_SCREEN_DOWN  , 0         , ' '             },
+   { "screen-left"  , KEYS_SCREEN_LEFT  , 0         , 0               },
+   { "screen-right" , KEYS_SCREEN_RIGHT , 0         , 0               },
    { "line-up"      , KEYS_LINE_UP      , 0         , FL_Up           },
    { "line-down"    , KEYS_LINE_DOWN    , 0         , FL_Down         },
    { "left"         , KEYS_LEFT         , 0         , FL_Left         },
