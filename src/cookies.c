@@ -179,7 +179,7 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url,
 /*
  * Return a string containing cookie data for an HTTP query.
  */
-char *a_Cookies_get_query(const DilloUrl *request_url)
+char *a_Cookies_get_query(const DilloUrl *query_url, const DilloUrl *requester)
 {
    char *cmd, *dpip_tag, *query;
    const char *path;
@@ -188,16 +188,31 @@ char *a_Cookies_get_query(const DilloUrl *request_url)
    if (disabled)
       return dStrdup("");
 
-   action = Cookies_control_check(request_url);
+   action = Cookies_control_check(query_url);
    if (action == COOKIE_DENY) {
-      _MSG("Cookies: denied GET for %s\n", URL_HOST_(request_url));
+      _MSG("Cookies: denied GET for %s\n", URL_HOST_(query_url));
       return dStrdup("");
    }
-   path = URL_PATH_(request_url);
+
+   if (requester == NULL) {
+      /* request made by user */
+   } else {
+      const char *req_host = URL_HOST(requester),
+                 *req_suffix = a_Url_host_find_public_suffix(req_host),
+                 *query_host = URL_HOST(query_url),
+                 *query_suffix = a_Url_host_find_public_suffix(query_host);
+      if (dStrcasecmp(req_suffix, query_suffix)) {
+         MSG("Cookies: No cookies sent for third-party request by '%s' for "
+              "'%s'\n", req_host, URL_STR(query_url));
+         return dStrdup("");
+      }
+   }
+
+   path = URL_PATH_(query_url);
 
    cmd = a_Dpip_build_cmd("cmd=%s scheme=%s host=%s path=%s",
-                          "get_cookie", URL_SCHEME(request_url),
-                         URL_HOST(request_url), path ? path : "/");
+                          "get_cookie", URL_SCHEME(query_url),
+                         URL_HOST(query_url), path ? path : "/");
 
    /* Get the answer from cookies.dpi */
    _MSG("cookies.c: a_Dpi_send_blocking_cmd cmd = {%s}\n", cmd);
