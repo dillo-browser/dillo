@@ -1157,6 +1157,8 @@ int main()
    // Disable '@' and '&' interpretation in normal labels.
    Fl::set_labeltype(FL_NORMAL_LABEL, custLabelDraw, custLabelMeasure);
 
+   Fl::scheme(NULL);
+
    // Create the download window
    dl_win = new DLWin(ww, wh);
 
