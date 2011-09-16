@@ -686,9 +686,9 @@ void a_UIcmd_back(void *vbw)
 /*
  * Popup the navigation menu of the Back button
  */
-void a_UIcmd_back_popup(void *vbw)
+void a_UIcmd_back_popup(void *vbw, int x, int y)
 {
-   a_Menu_history_popup((BrowserWindow*)vbw, -1);
+   a_Menu_history_popup((BrowserWindow*)vbw, x, y, -1);
 }
 
 /*
@@ -702,9 +702,9 @@ void a_UIcmd_forw(void *vbw)
 /*
  * Popup the navigation menu of the Forward button
  */
-void a_UIcmd_forw_popup(void *vbw)
+void a_UIcmd_forw_popup(void *vbw, int x, int y)
 {
-   a_Menu_history_popup((BrowserWindow*)vbw, 1);
+   a_Menu_history_popup((BrowserWindow*)vbw, x, y, 1);
 }
 
 /*

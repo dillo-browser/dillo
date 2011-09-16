@@ -528,14 +528,14 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
  *
  * direction: {backward = -1, forward = 1}
  */
-void a_Menu_history_popup(BrowserWindow *bw, int direction)
+void a_Menu_history_popup(BrowserWindow *bw, int x, int y, int direction)
 {
    static Fl_Menu_Item *pm = 0;
    int i, n;
 
    popup_bw = bw;
-   popup_x = Fl::event_x();
-   popup_y = Fl::event_y();
+   popup_x = x;
+   popup_y = y;
    history_direction = direction;
 
    // TODO: hook popdown event with delete or similar.

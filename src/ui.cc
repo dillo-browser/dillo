@@ -305,14 +305,16 @@ static void b1_cb(Fl_Widget *wid, void *cb_data)
       if (b == FL_LEFT_MOUSE) {
          a_UIcmd_back(a_UIcmd_get_bw_by_widget(wid));
       } else if (b == FL_RIGHT_MOUSE) {
-         a_UIcmd_back_popup(a_UIcmd_get_bw_by_widget(wid));
+         a_UIcmd_back_popup(a_UIcmd_get_bw_by_widget(wid), wid->x(),
+                            wid->y() + wid->h());
       }
       break;
    case UI_FORW:
       if (b == FL_LEFT_MOUSE) {
          a_UIcmd_forw(a_UIcmd_get_bw_by_widget(wid));
       } else if (b == FL_RIGHT_MOUSE) {
-         a_UIcmd_forw_popup(a_UIcmd_get_bw_by_widget(wid));
+         a_UIcmd_forw_popup(a_UIcmd_get_bw_by_widget(wid), wid->x(),
+                            wid->y() + wid->h());
       }
       break;
    case UI_HOME:
