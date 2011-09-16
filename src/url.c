@@ -718,7 +718,7 @@ static uint_t Url_host_public_internal_dots(const char *host)
  * domain that is in a registry outside the organization.
  * For 'www.dillo.org', that would be 'dillo.org'.
  */
-const char *Url_host_find_public_suffix(const char *host)
+static const char *Url_host_find_public_suffix(const char *host)
 {
    const char *s;
    uint_t dots;
