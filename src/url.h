@@ -122,7 +122,7 @@ void a_Url_set_ismap_coords(DilloUrl *u, char *coord_str);
 char *a_Url_decode_hex_str(const char *str);
 char *a_Url_encode_hex_str(const char *str);
 char *a_Url_string_strip_delimiters(const char *str);
-const char *a_Url_host_find_public_suffix(const char *host);
+bool_t a_Url_same_public_suffix(const DilloUrl *u1, const DilloUrl *u2);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

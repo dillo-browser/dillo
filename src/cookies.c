@@ -196,16 +196,10 @@ char *a_Cookies_get_query(const DilloUrl *query_url, const DilloUrl *requester)
 
    if (requester == NULL) {
       /* request made by user */
-   } else {
-      const char *req_host = URL_HOST(requester),
-                 *req_suffix = a_Url_host_find_public_suffix(req_host),
-                 *query_host = URL_HOST(query_url),
-                 *query_suffix = a_Url_host_find_public_suffix(query_host);
-      if (dStrcasecmp(req_suffix, query_suffix)) {
-         MSG("Cookies: No cookies sent for third-party request by '%s' for "
-              "'%s'\n", req_host, URL_STR(query_url));
-         return dStrdup("");
-      }
+   } else if (!a_Url_same_public_suffix(query_url, requester)) {
+      MSG("Cookies: No cookies sent for third-party request by '%s' for "
+           "'%s'\n", URL_HOST(requester), URL_STR(query_url));
+      return dStrdup("");
    }
 
    path = URL_PATH_(query_url);

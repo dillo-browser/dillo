@@ -718,7 +718,7 @@ static uint_t Url_host_public_internal_dots(const char *host)
  * domain that is in a registry outside the organization.
  * For 'www.dillo.org', that would be 'dillo.org'.
  */
-const char *a_Url_host_find_public_suffix(const char *host)
+const char *Url_host_find_public_suffix(const char *host)
 {
    const char *s;
    uint_t dots;
@@ -752,4 +752,13 @@ const char *a_Url_host_find_public_suffix(const char *host)
 
    _MSG("public suffix of %s is %s\n", host, s);
    return s;
+}
+
+bool_t a_Url_same_public_suffix(const DilloUrl *u1, const DilloUrl *u2)
+{
+   if (!u1 || !u2)
+      return FALSE;
+
+   return dStrcasecmp(Url_host_find_public_suffix(URL_HOST(u1)),
+                      Url_host_find_public_suffix(URL_HOST(u2))) ? FALSE :TRUE;
 }

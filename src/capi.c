@@ -385,9 +385,7 @@ static bool_t Capi_filters_test(const DilloUrl *wanted,
          case PREFS_FILTER_SAME_DOMAIN:
          {
             const char *req_host = URL_HOST(requester),
-                       *want_host = URL_HOST(wanted),
-                       *req_suffix,
-                       *want_suffix;
+                       *want_host = URL_HOST(wanted);
             if (want_host[0] == '\0') {
                ret = (req_host[0] == '\0' ||
                       !dStrcasecmp(URL_SCHEME(wanted), "data")) ? TRUE : FALSE;
@@ -395,10 +393,7 @@ static bool_t Capi_filters_test(const DilloUrl *wanted,
                /* This will regard "www.dillo.org" and "www.dillo.org." as
                 * different, but it doesn't seem worth caring about.
                 */
-               req_suffix = a_Url_host_find_public_suffix(req_host);
-               want_suffix = a_Url_host_find_public_suffix(want_host);
-
-               ret = dStrcasecmp(req_suffix, want_suffix) == 0;
+               ret = a_Url_same_public_suffix(wanted, requester);
             }
 
             MSG("Capi_filters_test: %s from '%s' to '%s'\n",
