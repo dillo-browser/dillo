@@ -107,7 +107,7 @@ public:
       Fl_Group(0,0,ww,th,lbl) {
       Pack = NULL;
       tab_w = 50, tab_h = th, ctab_h = 1, btn_w = 20, ctl_w = 1*btn_w+2;
-      tabcolor_active = FL_DARK_CYAN; tabcolor_inactive = 206;
+      tabcolor_active = 0x87aca700; tabcolor_inactive = 0xb7beb700;
       resize(0,0,ww,ctab_h);
       /* tab buttons go inside a pack within a scroll */
       Scroll = new Fl_Scroll(0,0,ww-ctl_w,ctab_h);
@@ -252,7 +252,7 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    btn->labelsize(btn->labelsize()-2);
    btn->copy_label(DEFAULT_TAB_LABEL);
    btn->clear_visible_focus();
-   btn->box(FL_THIN_UP_BOX);
+   btn->box(FL_GTK_THIN_UP_BOX);
    btn->color(focus ? tabcolor_active : tabcolor_inactive);
    btn->ui(new_ui);
    btn->callback(tab_btn_cb, this);
