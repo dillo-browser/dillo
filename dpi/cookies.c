@@ -1282,10 +1282,10 @@ static char *Cookies_get(char *url_host, char *url_path,
    str = cookie_dstring->str;
    dStr_free(cookie_dstring, FALSE);
 
-   if (*str)
+   if (*str) {
+      MSG("%s GETTING: %s", url_host, str);
       cookies_use_counter++;
-
-   MSG("%s GETTING: %s\n", url_host, str);
+   }
    return str;
 }
 
