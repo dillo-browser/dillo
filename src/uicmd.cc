@@ -838,9 +838,9 @@ void a_UIcmd_stop(void *vbw)
 /*
  * Popup the tools menu
  */
-void a_UIcmd_tools(void *vbw, void *v_wid)
+void a_UIcmd_tools(void *vbw, int x, int y)
 {
-   a_Menu_tools_popup((BrowserWindow*)vbw, v_wid);
+   a_Menu_tools_popup((BrowserWindow*)vbw, x, y);
 }
 
 /*

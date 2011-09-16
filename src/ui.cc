@@ -344,7 +344,8 @@ static void b1_cb(Fl_Widget *wid, void *cb_data)
       break;
    case UI_TOOLS:
       if (b == FL_LEFT_MOUSE || b == FL_RIGHT_MOUSE) {
-         a_UIcmd_tools(a_UIcmd_get_bw_by_widget(wid), wid);
+         a_UIcmd_tools(a_UIcmd_get_bw_by_widget(wid), wid->x(),
+                       wid->y() + wid->h());
       }
       break;
    default:

@@ -616,10 +616,9 @@ static void Menu_imgload_toggle_cb(Fl_Widget *wid, void*)
 /*
  * Tools popup menu (construction & popup)
  */
-void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
+void a_Menu_tools_popup(BrowserWindow *bw, int x, int y)
 {
    const Fl_Menu_Item *item;
-   Fl_Widget *wid = (Fl_Widget*)v_wid;
    UI *ui = (UI*)bw->ui;
 
    static Fl_Menu_Item pm[] = {
@@ -652,7 +651,7 @@ void a_Menu_tools_popup(BrowserWindow *bw, void *v_wid)
    pm[4+cur_panelsize].setonly();
    cur_smallicons ? pm[7].set() : pm[7].clear();
 
-   item = pm->popup(wid->x(), wid->y() + wid->h());
+   item = pm->popup(x, y);
    if (item) {
       ((Fl_Widget *)item)->do_callback();
    }

@@ -26,7 +26,7 @@ void a_UIcmd_repush(void *vbw);
 void a_UIcmd_redirection0(void *vbw, const DilloUrl *url);
 void a_UIcmd_save(void *vbw);
 void a_UIcmd_stop(void *vbw);
-void a_UIcmd_tools(void *vbw, void *v_wid);
+void a_UIcmd_tools(void *vbw, int x, int y);
 void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_file(void *vbw);
 const char *a_UIcmd_select_file();
