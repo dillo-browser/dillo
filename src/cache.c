@@ -742,13 +742,29 @@ static void Cache_parse_header(CacheEntry_t *entry)
 
 #ifndef DISABLE_COOKIES
    if ((Cookies = Cache_parse_multiple_fields(header, "Set-Cookie"))) {
-      char *server_date = Cache_parse_field(header, "Date");
+      CacheClient_t *client;
 
-      a_Cookies_set(Cookies, entry->Url, server_date);
+      for (i = 0; (client = dList_nth_data(ClientQueue, i)); ++i) {
+         if (client->Url == entry->Url) {
+            DilloWeb *web = client->Web;
+
+            if (!web->requester ||
+                a_Url_same_public_suffix(entry->Url, web->requester)) {
+               char *server_date = Cache_parse_field(header, "Date");
+
+               a_Cookies_set(Cookies, entry->Url, server_date);
+               dFree(server_date);
+               break;
+            }
+         }
+      }
+      if (i >= dList_length(ClientQueue)) {
+         MSG("Cache: cookies not accepted from '%s'\n", URL_STR(entry->Url));
+      }
+
       for (i = 0; (data = dList_nth_data(Cookies, i)); ++i)
          dFree(data);
       dList_free(Cookies);
-      dFree(server_date);
    }
 #endif /* !DISABLE_COOKIES */
 

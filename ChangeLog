@@ -6,7 +6,8 @@ dillo-3.0.1 [not released yet]
 
 +- Add preference for UI theme.
  - Allow key bindings for paging left/right.
- - Privacy -- never send cookies when making third-party requests.
+ - Privacy -- never send cookies when making third-party requests, and
+   never accept cookies in the responses to these requests.
    Patches: corvid
 
 -----------------------------------------------------------------------------
