@@ -395,9 +395,10 @@ static bool_t Capi_filters_test(const DilloUrl *wanted,
                 */
                ret = a_Url_same_public_suffix(wanted, requester);
             }
-
-            MSG("Capi_filters_test: %s from '%s' to '%s'\n",
-                ret ? "ALLOW" : "DENY", req_host, want_host);
+            if (ret == FALSE) {
+               MSG("Capi_filters_test: deny from '%s' to '%s'\n", req_host,
+                   want_host);
+            }
             break;
          }
          case PREFS_FILTER_ALLOW_ALL:
