@@ -131,6 +131,8 @@ int PrefsParser::parseOption(char *name, char *value)
       break;
    case PREFS_COLOR:
       *(int32_t *)node->pref = a_Color_parse(value, *(int32_t*)node->pref,&st);
+      if (st)
+         MSG("prefs: Color '%s' not recognized.\n", value);
       break;
    case PREFS_STRING:
       dFree(*(char **)node->pref);
