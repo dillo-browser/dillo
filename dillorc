@@ -251,6 +251,8 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # You can hold SHIFT to temporarily revert this behaviour.
 #focus_new_tab=YES
 
+# Ask before quitting Dillo with more than one window or tab open.
+#show_quit_dialog=YES
 
 #-------------------------------------------------------------------------
 #                        DEBUG MESSAGES SECTION

@@ -9,6 +9,8 @@ dillo-3.0.1 [not released yet]
  - Privacy -- never send cookies when making third-party requests, and
    never accept cookies in the responses to these requests.
    Patches: corvid
++- Add show_quit_dialog dillorc option.
+   Patch: Johannes Hofmann
 
 -----------------------------------------------------------------------------
 

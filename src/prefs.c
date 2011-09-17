@@ -90,6 +90,7 @@ void a_Prefs_init(void)
    prefs.show_home = TRUE;
    prefs.show_msg = TRUE;
    prefs.show_progress_box = TRUE;
+   prefs.show_quit_dialog = TRUE;
    prefs.show_reload = TRUE;
    prefs.show_save = TRUE;
    prefs.show_search = TRUE;
