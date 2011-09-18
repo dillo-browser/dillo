@@ -754,7 +754,7 @@ static const char *Url_host_find_public_suffix(const char *host)
    return s;
 }
 
-bool_t a_Url_same_public_suffix(const DilloUrl *u1, const DilloUrl *u2)
+bool_t a_Url_same_organization(const DilloUrl *u1, const DilloUrl *u2)
 {
    if (!u1 || !u2)
       return FALSE;

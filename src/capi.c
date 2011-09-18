@@ -393,7 +393,7 @@ static bool_t Capi_filters_test(const DilloUrl *wanted,
                /* This will regard "www.dillo.org" and "www.dillo.org." as
                 * different, but it doesn't seem worth caring about.
                 */
-               ret = a_Url_same_public_suffix(wanted, requester);
+               ret = a_Url_same_organization(wanted, requester);
             }
             if (ret == FALSE) {
                MSG("Capi_filters_test: deny from '%s' to '%s'\n", req_host,

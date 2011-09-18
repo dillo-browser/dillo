@@ -749,7 +749,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
             DilloWeb *web = client->Web;
 
             if (!web->requester ||
-                a_Url_same_public_suffix(entry->Url, web->requester)) {
+                a_Url_same_organization(entry->Url, web->requester)) {
                char *server_date = Cache_parse_field(header, "Date");
 
                a_Cookies_set(Cookies, entry->Url, server_date);
