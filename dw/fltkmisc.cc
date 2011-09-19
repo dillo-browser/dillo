@@ -18,11 +18,10 @@
  */
 
 
-
+#include "../lout/msg.h"
 #include "fltkmisc.hh"
 
-#include <fltk/events.h>
-#include <fltk/Monitor.h>
+#include <FL/Fl.H>
 #include <stdio.h>
 
 namespace dw {
@@ -31,17 +30,17 @@ namespace misc {
 
 int screenWidth ()
 {
-   return ::fltk::Monitor::all ().w ();
+   return Fl::w ();
 }
 
 int screenHeight ()
 {
-   return ::fltk::Monitor::all ().h ();
+   return Fl::h ();
 }
 
 void warpPointer (int x, int y)
 {
-   ::fltk::warp_mouse (x, y);
+   MSG_ERR("no warpPointer mechanism available.\n");
 }
 
 } // namespace misc

@@ -2,12 +2,72 @@
 Dillo project
 =============================================================================
 
-dillo-2.2.1 [not released yet]
+dillo-3.0.1 [not released yet]
 
-+- Implemented "View source" as a dpi.
++- Add preference for UI theme.
+ - Allow key bindings for paging left/right.
+ - Privacy -- never send cookies when making third-party requests, and
+   never accept cookies in the responses to these requests.
+   Patches: corvid
++- Add show_quit_dialog dillorc option.
+   Patch: Johannes Hofmann
+
+-----------------------------------------------------------------------------
+
+dillo-3.0 [September 06, 2011]
+
++- Ported Dillo to FLTK-1.3.
+   Patch: corvid, Johannes Hofmann, Jorge Arellano Cid
++- Rewrote the User Interface: much simpler design and event handling.
+ - Avoid double render after going Back or Forward (takes half the time now!).
+ - Added on-the-fly panel resize (tiny/small/medium and normal/small icons).
+ - Implemented a custom tabs handler (to allow fine control of it).
+ - Rewrote dw's crossing-events dispatcher (avoids redundant events).
+ - Fixed a years old bug: stamped tooltips when scrolling with keyboard.
+ - Allow multiple search engines to be set in dillorc, with a menu in the web
+   search dialog to select between them.
+ - Added an optional label to dillorc's search_url. Format: "[<label> ]<url>"
+ - Fixed a border case in URL resolver: empty path + {query|fragment} (BUG#948)
+ - Avoid a certificate dialog storm on some HTTPS sites (BUG#868).
+ - Cancel the expected URL after offering a download (BUG#982)
+ - Default binding for close-all changed from Alt-q to Ctrl-q.
+ - Default binding for close-tab changed from Ctrl-q to Ctrl-w.
+ - Add right_click_closes_tab preference (default is middle click).
+ - 'hide-panels' key action now hides the findbar if present, and toggles
+   display of the control panels otherwise.
+ - Removed 'large' option of panel_size preference.
+ - Remove 'fullscreen' key action.
+ - Eliminated a pack of 22 compiler warnings (gcc-4.6.1 amd64)
+ - Lots of minor bug-fixes.
+   Patches: Jorge Arellano Cid
++- Remove --enable-ansi configure option.
+ - Limit saved cookie size.
+ - Allow binding to non-ASCII keys and multimedia keys.
+ - Enable line wrapping for <textarea>. (BUG#903)
+ - Wrap image alt text.
+   Patches: corvid
++- Add support for CSS adjacent sibling selectors.
+ - Collapse parent's and first child's top margin.
+ - Fix redraw loops and reenable limit_text_width dillorc option.
+   Patch: Johannes Hofmann
++- Default binding for left-tab changed to Shift-Ctrl-Tab.
+   Patch: Jeremy Henty
+
+Note: these are user-visible changes. The full Changelog is kept
+      in our Mercurial repository at http://hg.dillo.org/dillo
+
+
+-----------------------------------------------------------------------------
+
+dillo-2.2.1 [July 18, 2011]
+
++- Fix fullwindow start.
+ - Implemented "View source" as a dpi.
+ - Fix: vsource html, fix entities display, indentation.
  - Accept application/xhtml+xml.
  - Small caps support.
  - Border-collapse, border-style properties.
+ - Removed gcc warnings for 64bit
    Patches: Jorge Arellano Cid
 +- Configurable User-Agent HTTP header.
    Patch: Alexander Voigt, corvid
@@ -27,6 +87,7 @@ dillo-2.2.1 [not released yet]
 +- Reintroduce bg_color dillorc option.
  - Make Dillo compile with Clang.
  - Fix Textblock flushing.
+ - Support !important in style attributes.
    Patches: Johannes Hofmann
 +- Implement line-height.
  - Draw image maps when image not loaded.

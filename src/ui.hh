@@ -3,16 +3,13 @@
 
 // UI for dillo --------------------------------------------------------------
 
-#include <fltk/Window.h>
-#include <fltk/Widget.h>
-#include <fltk/Button.h>
-#include <fltk/Input.h>
-#include <fltk/PackedGroup.h>
-#include <fltk/Output.h>
-#include <fltk/Image.h>
-#include <fltk/MultiImage.h>
-#include <fltk/MenuBuild.h>
-#include <fltk/TabGroup.h>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Widget.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Input.H>
+#include <FL/Fl_Output.H>
+#include <FL/Fl_Image.H>
+#include <FL/Fl_Tabs.H>
 
 #include "findbar.hh"
 
@@ -31,47 +28,153 @@ typedef enum {
 
 typedef enum {
    UI_NORMAL = 0,     /* make sure it's compatible with bool */
-   UI_HIDDEN = 1,
-   UI_TEMPORARILY_SHOW_PANELS
+   UI_HIDDEN = 1
 } UIPanelmode;
+
+
+// Min size to fit the full UI
+#define UI_MIN_W 600
+#define UI_MIN_H 200
 
 // Private classes
 class CustProgressBox;
-class CustTabGroup;
+class CustTabs;
+
+
+// Class definitions ---------------------------------------------------------
+/*
+ * Used to reposition group's widgets when some of them are hidden.
+ * All children get the height of the group but retain their original width.
+ * The resizable child get's the remaining space.
+ */
+class CustGroupHorizontal : public Fl_Group {
+   Fl_Widget *rsz;
+public:
+  CustGroupHorizontal(int x,int y,int w ,int h,const char *l = 0) :
+    Fl_Group(x,y,w,h,l) { };
+
+  void rearrange() {
+     Fl_Widget*const* a = array();
+     int sum = 0, _x = x();
+     int children_ = children();
+
+     if (resizable())
+        rsz = resizable();
+
+     for (int i=0; i < children_; i++)
+        if (a[i] != resizable() && a[i]->visible())
+           sum += a[i]->w();
+
+     for (int i=0; i < children_; i++) {
+        if (a[i] == rsz) {
+           if (w() > sum) {
+              a[i]->resize(_x, y(), w()-sum, h());
+              if (!resizable())
+                 resizable(rsz);
+           } else {
+              /* widgets overflow width */
+              a[i]->resize(_x, y(), 0, h());
+              resizable(NULL);
+           }
+        } else {
+           a[i]->resize(_x, y(), a[i]->w(), h());
+        }
+        if (a[i]->visible())
+           _x += a[i]->w();
+     }
+     init_sizes();
+     redraw();
+  }
+};
+
+class CustGroupVertical : public Fl_Group {
+public:
+  CustGroupVertical(int x,int y,int w ,int h,const char *l = 0) :
+    Fl_Group(x,y,w,h,l) { };
+
+  void rearrange() {
+     Fl_Widget*const* a = array();
+     int sum = 0, _y = y();
+     int children_ = children();
+
+     for (int i=0; i < children_; i++)
+        if (a[i] != resizable() && a[i]->visible())
+           sum += a[i]->h();
+
+     for (int i=0; i < children_; i++) {
+        if (a[i] == resizable()) {
+           a[i]->resize(x(), _y, w(), h() - sum);
+        } else {
+           a[i]->resize(x(), _y, w(), a[i]->h());
+        }
+        if (a[i]->visible())
+           _y += a[i]->h();
+     }
+     init_sizes();
+     redraw();
+  }
+};
+
+/*
+ * A button that highlights on mouse over
+ */
+class CustLightButton : public Fl_Button {
+   Fl_Color norm_color, light_color;
+public:
+   CustLightButton(int x, int y, int w, int h, const char *l=0) :
+      Fl_Button(x,y,w,h,l) { norm_color = color(); light_color = 51; };
+   virtual int handle(int e)
+   {
+      if (active()) {
+         if (e == FL_ENTER) {
+            color(light_color); // {17,26,51}
+            redraw();
+         } else if (e == FL_LEAVE || e == FL_RELEASE || e == FL_HIDE) {
+            color(norm_color);
+            redraw();
+         }
+      } else if (e == FL_DEACTIVATE && color() != norm_color) {
+         color(norm_color);
+         redraw();
+      }
+      return Fl_Button::handle(e);
+   }
+   void hl_color(Fl_Color col) { light_color = col; };
+};
 
 //
 // UI class definition -------------------------------------------------------
 //
-class UI : public fltk::Group {
-   CustTabGroup *Tabs;
+class UI : public CustGroupVertical {
+   CustTabs *Tabs;
    char *TabTooltip;
 
-   fltk::Group *TopGroup;
-   fltk::Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
-          *Clear, *Search, *Help, *FullScreen, *BugMeter, *FileButton;
-   fltk::Input  *Location;
-   fltk::PackedGroup *ProgBox;
+   CustGroupVertical *TopGroup;
+   Fl_Button *Back, *Forw, *Home, *Reload, *Save, *Stop, *Bookmarks, *Tools,
+          *Clear, *Search, *Help, *BugMeter, *FileButton;
+   CustGroupHorizontal *LocBar, *NavBar, *StatusBar;
+   Fl_Input  *Location;
    CustProgressBox *PProg, *IProg;
-   fltk::Group *Panel, *StatusPanel;
-   fltk::Widget *Main;
-   fltk::Output *Status;
+   Fl_Group *Panel, *Main;
+   Fl_Output *StatusOutput;
+   Findbar *FindBar;
 
    int MainIdx;
    // Panel customization variables
    int PanelSize, CuteColor, Small_Icons;
-   int xpos, bw, bh, fh, lh, lbl;
+   int p_xpos, p_ypos, bw, bh, mh, lh, nh, fh, sh, pw, lbl;
+   bool PanelTemporary;
 
    UIPanelmode Panelmode;
-   Findbar *findbar;
-   int PointerOnLink;
-
-   fltk::PackedGroup *make_toolbar(int tw, int th);
-   fltk::PackedGroup *make_location();
-   fltk::PackedGroup *make_progress_bars(int wide, int thin_up);
+   Fl_Button *make_button(const char *label, Fl_Image *img,
+                          Fl_Image*deimg, int b_n, int start = 0);
+   void make_toolbar(int tw, int th);
+   void make_location(int ww);
+   void make_progress_bars(int wide, int thin_up);
    void make_menubar(int x, int y, int w, int h);
-   fltk::Widget *make_filemenu_button();
-   fltk::Group *make_panel(int ww);
-   fltk::Group *make_status_panel(int ww);
+   Fl_Widget *make_filemenu_button();
+   void make_panel(int ww);
+   void make_status_bar(int ww, int wh);
 
 public:
 
@@ -89,27 +192,24 @@ public:
    void set_page_prog(size_t nbytes, int cmd);
    void set_img_prog(int n_img, int t_img, int cmd);
    void set_bug_prog(int n_bug);
-   void set_render_layout(Widget &nw);
-   void set_tab_title(const char *label);
+   void set_render_layout(Fl_Group *nw);
    void customize(int flags);
    void button_set_sens(UIButton btn, int sens);
    void paste_url();
-   void set_panelmode(UIPanelmode mode);
-   UIPanelmode get_panelmode();
-   void set_findbar_visibility(bool visible);
-   Widget *fullscreen_button() { return FullScreen; }
-   void fullscreen_toggle() { FullScreen->do_callback(); }
+   int get_panelsize() { return PanelSize; }
+   int get_smallicons() { return Small_Icons; }
+   void change_panel(int new_size, int small_icons);
+   void findbar_toggle(bool add);
+   void panels_toggle();
 
-   CustTabGroup *tabs() { return Tabs; }
-   void tabs(CustTabGroup *tabs) { Tabs = tabs; }
-   int pointerOnLink() { return PointerOnLink; }
-   void pointerOnLink(int flag) { PointerOnLink = flag; }
+   CustTabs *tabs() { return Tabs; }
+   void tabs(CustTabs *tabs) { Tabs = tabs; }
+   bool temporaryPanels() { return PanelTemporary; }
+   void temporaryPanels(bool val) { PanelTemporary = val; }
 
    // Hooks to method callbacks
-   void panel_cb_i();
    void color_change_cb_i();
    void toggle_cb_i();
-   void panelmode_cb_i();
 };
 
 #endif // __UI_HH__

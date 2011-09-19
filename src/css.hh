@@ -458,9 +458,6 @@ class CssStyleSheet {
  */
 class CssContext {
    private:
-      static CssStyleSheet *userAgentStyle;
-      static CssStyleSheet *userStyle;
-      static CssStyleSheet *userImportantStyle;
       CssStyleSheet *sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
       int pos;
 
@@ -475,7 +472,8 @@ class CssContext {
                     CssPrimaryOrder order);
       void apply (CssPropertyList *props,
          Doctree *docTree, DoctreeNode *node,
-         CssPropertyList *tagStyle, CssPropertyList *nonCssHints);
+         CssPropertyList *tagStyle, CssPropertyList *tagStyleImportant,
+         CssPropertyList *nonCssHints);
 };
 
 #endif

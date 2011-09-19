@@ -10,7 +10,7 @@
  */
 
 /*
- * A FLTK2-based GUI for the downloads dpi (dillo plugin).
+ * A FLTK-based GUI for the downloads dpi (dillo plugin).
  */
 
 #include <stdio.h>
@@ -29,22 +29,19 @@
 #include <sys/un.h>
 #include <sys/wait.h>
 
-#include <fltk/run.h>
-#include <fltk/Window.h>
-#include <fltk/Widget.h>
-#include <fltk/damage.h>
-#include <fltk/Box.h>
-#include <fltk/draw.h>
-#include <fltk/HighlightButton.h>
-#include <fltk/PackedGroup.h>
-#include <fltk/ScrollGroup.h>
-#include <fltk/ask.h>
-#include <fltk/file_chooser.h>
+#include <FL/Fl.H>
+#include <FL/fl_draw.H>
+#include <FL/Fl_File_Chooser.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Widget.H>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Scroll.H>
+#include <FL/Fl_Pack.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
 
 #include "dpiutil.h"
 #include "../dpip/dpip.h"
-
-using namespace fltk;
 
 /*
  * Debugging macros
@@ -69,8 +66,7 @@ typedef enum {
 
 // ProgressBar widget --------------------------------------------------------
 
-// class FL_API ProgressBar : public Widget {
-class ProgressBar : public Widget {
+class ProgressBar : public Fl_Box {
 protected:
    double mMin;
    double mMax;
@@ -78,7 +74,7 @@ protected:
    double mStep;
    bool mShowPct, mShowMsg;
    char mMsg[64];
-   Color mTextColor;
+   Fl_Color mTextColor;
    void draw();
 public:
    ProgressBar(int x, int y, int w, int h, const char *lbl = 0);
@@ -97,8 +93,8 @@ public:
    void showtext(bool st)        { mShowPct = st; }
    void message(char *msg) { mShowMsg = true; strncpy(mMsg,msg,63); redraw(); }
    bool showtext()               { return mShowPct; }
-   void text_color(Color col)    { mTextColor = col; }
-   Color text_color()      { return mTextColor; }
+   void text_color(Fl_Color col) { mTextColor = col; }
+   Fl_Color text_color()   { return mTextColor; }
 };
 
 // Download-item class -------------------------------------------------------
@@ -112,7 +108,8 @@ class DLItem {
    int LogPipe[2];
    char *shortname, *fullname;
    char *target_dir;
-   int log_len, log_max, log_state;
+   size_t log_len, log_max;
+   int log_state;
    char *log_text;
    time_t init_time;
    char **dl_argv;
@@ -123,10 +120,10 @@ class DLItem {
    int WgetStatus;
 
    int gw, gh;
-   Group *group;
+   Fl_Group *group;
    ProgressBar *prBar;
-   HighlightButton *prButton;
-   Widget *prTitle, *prGot, *prSize, *prRate, *pr_Rate, *prETA, *prETAt;
+   Fl_Button *prButton;
+   Fl_Widget *prTitle, *prGot, *prSize, *prRate, *pr_Rate, *prETA, *prETAt;
 
 public:
    DLItem(const char *full_filename, const char *url, DLAction action);
@@ -142,7 +139,7 @@ public:
    void pid(pid_t p) { mPid = p; }
    void child_finished(int status);
    void status_msg(const char *msg) { prBar->message((char*)msg); }
-   Widget *get_widget() { return group; }
+   Fl_Widget *get_widget() { return group; }
    int widget_done() { return WidgetDone; }
    void widget_done(int val) { WidgetDone = val; }
    int updates_done() { return UpdatesDone; }
@@ -177,9 +174,9 @@ public:
 
 class DLWin {
    DLItemList *mDList;
-   Window *mWin;
-   ScrollGroup *mScroll;
-   PackedGroup *mPG;
+   Fl_Window *mWin;
+   Fl_Scroll *mScroll;
+   Fl_Pack *mPG;
 
 public:
    DLWin(int ww, int wh);
@@ -193,6 +190,28 @@ public:
    void abort_all();
    DLAction check_filename(char **p_dl_dest);
 };
+
+/*
+ * FLTK cannot be dissuaded from interpreting '@' in a tooltip
+ * as indicating a symbol unless we escape it.
+ */
+static char *escape_tooltip(const char *buf, ssize_t len)
+{
+   if (len < 0)
+      len = 0;
+
+   char *ret = (char *) malloc(2 * len + 1);
+   char *dest = ret;
+
+   while (len-- > 0) {
+      if (*buf == '@')
+         *dest++ = *buf;
+      *dest++ = *buf++;
+   }
+   *dest = '\0';
+
+   return ret;
+}
 
 
 /*
@@ -221,67 +240,51 @@ void ProgressBar::move(double step)
 }
 
 ProgressBar::ProgressBar(int x, int y, int w, int h, const char *lbl)
-:  Widget(x, y, w, h, lbl)
+:  Fl_Box(x, y, w, h, lbl)
 {
    mMin = mPresent = 0;
    mMax = 100;
    mShowPct = true;
    mShowMsg = false;
-   box(DOWN_BOX);
-   selection_color(BLUE);
-   color(WHITE);
-   textcolor(RED);
+   box(FL_THIN_UP_BOX);
+   color(FL_WHITE);
 }
 
 void ProgressBar::draw()
 {
-   drawstyle(style(), flags());
-   if (damage() & DAMAGE_ALL)
-      draw_box();
-   Rectangle r(w(), h());
-   box()->inset(r);
+   struct Rectangle {
+      int x, y, w, h;
+   };
+
+   //drawstyle(style(), flags());
+   draw_box();
+   Rectangle r = {x(), y(), w(), h()};
    if (mPresent > mMax)
       mPresent = mMax;
    if (mPresent < mMin)
       mPresent = mMin;
    double pct = (mPresent - mMin) / mMax;
 
-   if (vertical()) {
-      int barHeight = int (r.h() * pct + .5);
-      r.y(r.y() + r.h() - barHeight);
-      r.h(barHeight);
-   } else {
-      r.w(int (r.w() * pct + .5));
-   }
-
-   setcolor(selection_color());
-
-   if (mShowPct) {
-      fillrect(r);
-   } else {
-      Rectangle r2(int (r.w() * pct), 0, int (w() * .1), h());
-      push_clip(r2);
-      fillrect(r);
-      pop_clip();
-   }
+   r.w = r.w * pct + .5;
+   fl_rectf(r.x, r.y, r.w, r.h, FL_BLUE);
 
    if (mShowMsg) {
-      setcolor(textcolor());
-      setfont(this->labelfont(), this->labelsize());
-      drawtext(mMsg, Rectangle(w(), h()), ALIGN_CENTER);
+      fl_color(FL_RED);
+      fl_font(this->labelfont(), this->labelsize());
+      fl_draw(mMsg, x(), y(), w(), h(), FL_ALIGN_CENTER);
    } else if (mShowPct) {
       char buffer[30];
       sprintf(buffer, "%d%%", int (pct * 100 + .5));
-      setcolor(textcolor());
-      setfont(this->labelfont(), this->labelsize());
-      drawtext(buffer, Rectangle(w(), h()), ALIGN_CENTER);
+      fl_color(FL_RED);
+      fl_font(this->labelfont(), this->labelsize());
+      fl_draw(buffer, x(), y(), w(), h(), FL_ALIGN_CENTER);
    }
 }
 
 
 // Download-item class -------------------------------------------------------
 
-static void prButton_scb(Widget *, void *cb_data)
+static void prButton_scb(Fl_Widget *, void *cb_data)
 {
    DLItem *i = (DLItem *)cb_data;
 
@@ -349,76 +352,85 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    WgetStatus = -1;
 
    gw = 400, gh = 70;
-   group = new Group(0,0,gw,gh);
+   group = new Fl_Group(0,0,gw,gh);
    group->begin();
-   prTitle = new Widget(24, 7, 290, 23, shortname);
-   prTitle->box(RSHADOW_BOX);
-   prTitle->align(ALIGN_LEFT|ALIGN_INSIDE|ALIGN_CLIP);
-   prTitle->set_flag (RAW_LABEL);
-   // Attach this 'log_text' to the tooltip
-   log_text_add("Target File: ", 13);
-   log_text_add(fullname, strlen(fullname));
-   log_text_add("\n\n", 2);
+    prTitle = new Fl_Box(24, 7, 290, 23);
+    prTitle->box(FL_RSHADOW_BOX);
+    prTitle->color(FL_WHITE);
+    prTitle->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
+    prTitle->copy_label(shortname);
+    // Attach this 'log_text' to the tooltip
+    log_text_add("Target File: ", 13);
+    log_text_add(fullname, strlen(fullname));
+    log_text_add("\n\n", 2);
 
-   prBar = new ProgressBar(24, 40, 92, 20);
-   prBar->box(BORDER_BOX); // ENGRAVED_BOX
-   prBar->tooltip("Progress Status");
+    prBar = new ProgressBar(24, 40, 92, 20);
+    prBar->box(FL_THIN_UP_BOX);
+    prBar->tooltip("Progress Status");
 
-   int ix = 122, iy = 36, iw = 50, ih = 14;
-   Widget *o = new Widget(ix,iy,iw,ih, "Got");
-   o->box(RFLAT_BOX);
-   o->color((Color)0xc0c0c000);
-   o->tooltip("Downloaded Size");
-   prGot = new Widget(ix,iy+14,iw,ih, "0KB");
-   prGot->align(ALIGN_CENTER|ALIGN_INSIDE);
-   prGot->labelcolor((Color)0x6c6cbd00);
-   prGot->box(NO_BOX);
+    int ix = 122, iy = 37, iw = 50, ih = 14;
+    Fl_Widget *o = new Fl_Box(ix,iy,iw,ih, "Got");
+    o->box(FL_RFLAT_BOX);
+    o->color(FL_DARK2);
+    o->labelsize(12);
+    o->tooltip("Downloaded Size");
+    prGot = new Fl_Box(ix,iy+14,iw,ih, "0KB");
+    prGot->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prGot->labelcolor(FL_BLUE);
+    prGot->labelsize(12);
+    prGot->box(FL_NO_BOX);
 
-   ix += iw;
-   o = new Widget(ix,iy,iw,ih, "Size");
-   o->box(RFLAT_BOX);
-   o->color((Color)0xc0c0c000);
-   o->tooltip("Total Size");
-   prSize = new Widget(ix,iy+14,iw,ih, "??");
-   prSize->align(ALIGN_CENTER|ALIGN_INSIDE);
-   prSize->box(NO_BOX);
+    ix += iw;
+    o = new Fl_Box(ix,iy,iw,ih, "Size");
+    o->box(FL_RFLAT_BOX);
+    o->color(FL_DARK2);
+    o->labelsize(12);
+    o->tooltip("Total Size");
+    prSize = new Fl_Box(ix,iy+14,iw,ih, "??");
+    prSize->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prSize->labelsize(12);
+    prSize->box(FL_NO_BOX);
 
-   ix += iw;
-   o = new Widget(ix,iy,iw,ih, "Rate");
-   o->box(RFLAT_BOX);
-   o->color((Color)0xc0c0c000);
-   o->tooltip("Current transfer Rate (KBytes/sec)");
-   prRate = new Widget(ix,iy+14,iw,ih, "??");
-   prRate->align(ALIGN_CENTER|ALIGN_INSIDE);
-   prRate->box(NO_BOX);
+    ix += iw;
+    o = new Fl_Box(ix,iy,iw,ih, "Rate");
+    o->box(FL_RFLAT_BOX);
+    o->color(FL_DARK2);
+    o->labelsize(12);
+    o->tooltip("Current transfer Rate (KBytes/sec)");
+    prRate = new Fl_Box(ix,iy+14,iw,ih, "??");
+    prRate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prRate->labelsize(12);
+    prRate->box(FL_NO_BOX);
 
-   ix += iw;
-   o = new Widget(ix,iy,iw,ih, "~Rate");
-   o->box(RFLAT_BOX);
-   o->color((Color)0xc0c0c000);
-   o->tooltip("Average transfer Rate (KBytes/sec)");
-   pr_Rate = new Widget(ix,iy+14,iw,ih, "??");
-   pr_Rate->align(ALIGN_CENTER|ALIGN_INSIDE);
-   pr_Rate->box(NO_BOX);
+    ix += iw;
+    o = new Fl_Box(ix,iy,iw,ih, "~Rate");
+    o->box(FL_RFLAT_BOX);
+    o->color(FL_DARK2);
+    o->labelsize(12);
+    o->tooltip("Average transfer Rate (KBytes/sec)");
+    pr_Rate = new Fl_Box(ix,iy+14,iw,ih, "??");
+    pr_Rate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    pr_Rate->labelsize(12);
+    pr_Rate->box(FL_NO_BOX);
 
-   ix += iw;
-   prETAt = o = new Widget(ix,iy,iw,ih, "ETA");
-   o->box(RFLAT_BOX);
-   o->color((Color)0xc0c0c000);
-   o->tooltip("Estimated Time of Arrival");
-   prETA = new Widget(ix,iy+14,iw,ih, "??");
-   prETA->align(ALIGN_CENTER|ALIGN_INSIDE);
-   prETA->box(NO_BOX);
+    ix += iw;
+    prETAt = o = new Fl_Box(ix,iy,iw,ih, "ETA");
+    o->box(FL_RFLAT_BOX);
+    o->color(FL_DARK2);
+    o->labelsize(12);
+    o->tooltip("Estimated Time of Arrival");
+    prETA = new Fl_Box(ix,iy+14,iw,ih, "??");
+    prETA->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+    prETA->labelsize(12);
+    prETA->box(FL_NO_BOX);
 
-   //ix += 50;
-   //prButton = new HighlightButton(ix, 41, 38, 19, "Stop");
-   prButton = new HighlightButton(328, 9, 38, 19, "Stop");
-   prButton->tooltip("Stop this transfer");
-   prButton->box(UP_BOX);
-   prButton->clear_tab_to_focus();
-   prButton->callback(prButton_scb, this);
+    prButton = new Fl_Button(326, 9, 44, 19, "Stop");
+    prButton->tooltip("Stop this transfer");
+    prButton->box(FL_UP_BOX);
+    prButton->clear_visible_focus();
+    prButton->callback(prButton_scb, this);
 
-   group->box(ROUND_UP_BOX);
+   group->box(FL_ROUNDED_BOX);
    group->end();
 }
 
@@ -431,7 +443,7 @@ DLItem::~DLItem()
    int idx = (strcmp(dl_argv[1], "-c")) ? 2 : 3;
    dFree(dl_argv[idx]);
    dFree(dl_argv[idx+3]);
-   delete(dl_argv);
+   delete [] dl_argv;
 
    delete(group);
 }
@@ -443,7 +455,7 @@ void DLItem::abort_dl()
 {
    if (!log_done()) {
       close(LogPipe[0]);
-      remove_fd(LogPipe[0]);
+      Fl::remove_fd(LogPipe[0]);
       log_done(1);
       // Stop wget
       if (!fork_done())
@@ -482,25 +494,29 @@ void DLItem::update_prSize(int newsize)
    else
       snprintf(num, 64, "%.0fKB", (float)newsize / 1024);
    prSize->copy_label(num);
-   prSize->redraw_label();
 }
 
 void DLItem::log_text_add(const char *buf, ssize_t st)
 {
    const char *p;
-   char *q, *d, num[64];
+   char *esc_str, *q, *d, num[64];
+   size_t esc_len;
+
+   // WORKAROUND: We have to escape '@' in FLTK tooltips.
+   esc_str = escape_tooltip(buf, st);
+   esc_len = strlen(esc_str);
 
    // Make room...
-   if (log_len + st >= log_max) {
-      log_max = log_len + st + 1024;
-      log_text = (char *) realloc (log_text, log_max);
+   if (log_len + esc_len >= log_max) {
+      log_max = log_len + esc_len + 1024;
+      log_text = (char *) dRealloc (log_text, log_max);
       log_text[log_len] = 0;
       prTitle->tooltip(log_text);
    }
 
    // FSM to remove wget's "dot-progress" (i.e. "^ " || "^[0-9]+K")
    q = log_text + log_len;
-   for (p = buf; (p - buf) < st; ++p) {
+   for (p = esc_str; (size_t)(p - esc_str) < esc_len; ++p) {
       switch (log_state) {
       case ST_newline:
          if (*p == ' ') {
@@ -535,6 +551,8 @@ void DLItem::log_text_add(const char *buf, ssize_t st)
    *q = 0;
    log_len = strlen(log_text);
 
+   free(esc_str);
+
    // Now scan for the length of the file
    if (total_bytesize == -1) {
       p = strstr(log_text, "\nLength: ");
@@ -546,13 +564,16 @@ void DLItem::log_text_add(const char *buf, ssize_t st)
          total_bytesize = strtol (num, NULL, 10);
          // Update displayed size
          update_prSize(total_bytesize);
+
+         // WORKAROUND: For unknown reasons a redraw is needed here for some
+         //             machines --jcid
+         group->redraw();
       }
    }
 
    // Show we're connecting...
    if (curr_bytesize == 0) {
-      prTitle->label("Connecting...");
-      prTitle->redraw_label();
+      prTitle->copy_label("Connecting...");
    }
 }
 
@@ -570,8 +591,10 @@ void DLItem::update_size(int new_sz)
       // Start the timer with the first bytes got
       init_time = time(NULL);
       // Update the title
-      prTitle->label(shortname);
-      prTitle->redraw_label();
+      prTitle->copy_label(shortname);
+      // WORKAROUND: For unknown reasons a redraw is needed here for some
+      //             machines --jcid
+      group->redraw();
    }
 
    curr_bytesize = new_sz;
@@ -580,7 +603,6 @@ void DLItem::update_size(int new_sz)
    else
       snprintf(buf, 64, "%.0fKB", (float)curr_bytesize / 1024);
    prGot->copy_label(buf);
-   prGot->redraw_label();
    if (total_bytesize == -1) {
       prBar->showtext(false);
       prBar->move(1);
@@ -599,22 +621,19 @@ static void read_log_cb(int fd_in, void *data)
    const int BufLen = 4096;
    char Buf[BufLen];
    ssize_t st;
-   int ret = -1;
 
    do {
       st = read(fd_in, Buf, BufLen);
       if (st < 0) {
          if (errno == EAGAIN) {
-            ret = 1;
             break;
          }
          perror("read, ");
          break;
       } else if (st == 0) {
          close(fd_in);
-         remove_fd(fd_in, 1);
+         Fl::remove_fd(fd_in, 1);
          dl_item->log_done(1);
-         ret = 0;
          break;
       } else {
          dl_item->log_text_add(Buf, st);
@@ -625,7 +644,7 @@ static void read_log_cb(int fd_in, void *data)
 void DLItem::father_init()
 {
    close(LogPipe[1]);
-   add_fd(LogPipe[0], 1, read_log_cb, this); // Read
+   Fl::add_fd(LogPipe[0], 1, read_log_cb, this); // Read
 
    // Start the timer after the child is running.
    // (this makes a big difference with wget)
@@ -648,8 +667,7 @@ void DLItem::child_finished(int status)
       status_msg("ABORTED");
       if (curr_bytesize == 0) {
          // Update the title
-         prTitle->label(shortname);
-         prTitle->redraw_label();
+         prTitle->copy_label(shortname);
       }
    }
    prButton->activate();
@@ -706,14 +724,12 @@ void DLItem::update()
       rate = ((float)(curr_bytesize-twosec_bytesize) / 1024) / tsec;
       snprintf(str, 64, (rate < 100) ? "%.1fK/s" : "%.0fK/s", rate);
       prRate->copy_label(str);
-      prRate->redraw_label();
    }
    /* ~Rate */
    if (csec >= 1) {
       _rate = ((float)(curr_bytesize-init_bytesize) / 1024) / csec;
       snprintf(str, 64, (_rate < 100) ? "%.1fK/s" : "%.0fK/s", _rate);
       pr_Rate->copy_label(str);
-      pr_Rate->redraw_label();
    }
 
    /* ETA */
@@ -736,7 +752,6 @@ void DLItem::update()
          prETA->copy_label(str);
       }
    }
-   prETA->redraw_label();
 
    /* Update one and two secs ago times and bytesizes */
    twosec_time = onesec_time;
@@ -792,7 +807,7 @@ static void cleanup_cb(void *data)
    }
    sigprocmask(SIG_UNBLOCK, &mask_sigchld, NULL);
 
-   repeat_timeout(1.0,cleanup_cb,data);
+   Fl::repeat_timeout(1.0,cleanup_cb,data);
 }
 
 /*
@@ -819,7 +834,7 @@ static void update_cb(void *data)
    if (cb_used && list->num() == 0)
       exit(0);
 
-   repeat_timeout(1.0,update_cb,data);
+   Fl::repeat_timeout(1.0,update_cb,data);
 }
 
 
@@ -939,14 +954,14 @@ end:
 /*
  * Callback for close window request (WM or EscapeKey press)
  */
-static void dlwin_esc_cb(Widget *, void *)
+static void dlwin_esc_cb(Fl_Widget *, void *)
 {
    const char *msg = "There are running downloads.\n"
                      "ABORT them and EXIT anyway?";
 
    if (dl_win && dl_win->num_running() > 0) {
-      int ch = fltk::choice(msg, "Yes", "*No", "Cancel");
-      if (ch != 0)
+      int ch = fl_choice("%s", "Cancel", "*No", "Yes", msg);
+      if (ch == 0 || ch == 1)
          return;
    }
 
@@ -977,6 +992,7 @@ void DLWin::add(const char *full_filename, const char *url, DLAction action)
       exit(1);
    } else {
       /* father */
+      dl_item->get_widget()->show();
       dl_win->show();
       dl_item->pid(f_pid);
       dl_item->father_init();
@@ -1001,12 +1017,12 @@ DLAction DLWin::check_filename(char **p_fullname)
    dStr_sprintf(ds,
                 "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
                 *p_fullname, (int)ss.st_size);
-   ch = fltk::choice(ds->str, "Rename", "Continue", "Abort");
+   ch = fl_choice("%s", "Abort", "Continue", "Rename", ds->str);
    dStr_free(ds, 1);
    MSG("Choice %d\n", ch);
-   if (ch == 0) {
+   if (ch == 2) {
       const char *p;
-      p = fltk::file_chooser("Enter a new name:", NULL, *p_fullname);
+      p = fl_file_chooser("Enter a new name:", NULL, *p_fullname);
       if (p) {
          dFree(*p_fullname);
          *p_fullname = dStrdup(p);
@@ -1027,6 +1043,7 @@ void DLWin::del(int n_item)
 
    // Remove the widget from the packed group
    mPG->remove(dl_item->get_widget());
+   mScroll->redraw();
    mDList->del(n_item);
    delete(dl_item);
 }
@@ -1057,7 +1074,7 @@ int DLWin::num_running()
  */
 void DLWin::listen(int req_fd)
 {
-   add_fd(req_fd, 1, read_req_cb, NULL); // Read
+   Fl::add_fd(req_fd, 1, read_req_cb, NULL); // Read
 }
 
 /*
@@ -1078,15 +1095,14 @@ DLWin::DLWin(int ww, int wh) {
    mDList = new DLItemList();
 
    // Create the empty main window
-   mWin = new Window(ww, wh, "Downloads:");
+   mWin = new Fl_Window(ww, wh, "Downloads:");
    mWin->begin();
-   mScroll = new ScrollGroup(0,0,ww,wh);
-   mScroll->begin();
-   mPG = new PackedGroup(0,0,ww,wh);
-   mPG->end();
-   //mPG->spacing(10);
-   mScroll->end();
-   mScroll->type(ScrollGroup::VERTICAL);
+    mScroll = new Fl_Scroll(0,0,ww,wh);
+    mScroll->begin();
+     mPG = new Fl_Pack(0,0,ww-18,wh);
+     mPG->end();
+    mScroll->end();
+    mScroll->type(Fl_Scroll::VERTICAL);
    mWin->end();
    mWin->resizable(mScroll);
    mWin->callback(dlwin_esc_cb, NULL);
@@ -1098,13 +1114,36 @@ DLWin::DLWin(int ww, int wh) {
    est_sigchld();
 
    // Set the cleanup timeout
-   add_timeout(1.0, cleanup_cb, mDList);
+   Fl::add_timeout(1.0, cleanup_cb, mDList);
    // Set the update timeout
-   add_timeout(1.0, update_cb, mDList);
+   Fl::add_timeout(1.0, update_cb, mDList);
 }
 
 
 // ---------------------------------------------------------------------------
+
+/*
+ * Set FL_NORMAL_LABEL to interpret neither symbols (@) nor shortcuts (&)
+ */
+static void custLabelDraw(const Fl_Label* o, int X, int Y, int W, int H,
+                          Fl_Align align)
+{
+   const int interpret_symbols = 0;
+
+   fl_draw_shortcut = 0;
+   fl_font(o->font, o->size);
+   fl_color((Fl_Color)o->color);
+   fl_draw(o->value, X, Y, W, H, align, o->image, interpret_symbols);
+}
+
+static void custLabelMeasure(const Fl_Label* o, int& W, int& H)
+{
+   const int interpret_symbols = 0;
+
+   fl_draw_shortcut = 0;
+   fl_font(o->font, o->size);
+   fl_measure(o->value, W, H, interpret_symbols);
+}
 
 
 
@@ -1113,7 +1152,12 @@ int main()
 {
    int ww = 420, wh = 85;
 
-   lock();
+   Fl::lock();
+
+   // Disable '@' and '&' interpretation in normal labels.
+   Fl::set_labeltype(FL_NORMAL_LABEL, custLabelDraw, custLabelMeasure);
+
+   Fl::scheme(NULL);
 
    // Create the download window
    dl_win = new DLWin(ww, wh);
@@ -1123,6 +1167,6 @@ int main()
 
    MSG("started...\n");
 
-   return run();
+   return Fl::run();
 }
 

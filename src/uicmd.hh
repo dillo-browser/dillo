@@ -17,16 +17,16 @@ void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_url_nt(void *vbw, const DilloUrl *url, int focus);
 void a_UIcmd_back(void *vbw);
-void a_UIcmd_back_popup(void *vbw);
+void a_UIcmd_back_popup(void *vbw, int x, int y);
 void a_UIcmd_forw(void *vbw);
-void a_UIcmd_forw_popup(void *vbw);
+void a_UIcmd_forw_popup(void *vbw, int x, int y);
 void a_UIcmd_home(void *vbw);
 void a_UIcmd_reload(void *vbw);
 void a_UIcmd_repush(void *vbw);
 void a_UIcmd_redirection0(void *vbw, const DilloUrl *url);
 void a_UIcmd_save(void *vbw);
 void a_UIcmd_stop(void *vbw);
-void a_UIcmd_tools(void *vbw, void *v_wid);
+void a_UIcmd_tools(void *vbw, int x, int y);
 void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_file(void *vbw);
 const char *a_UIcmd_select_file();
@@ -34,11 +34,12 @@ void a_UIcmd_search_dialog(void *vbw);
 const char *a_UIcmd_get_passwd(const char *user);
 void a_UIcmd_book(void *vbw);
 void a_UIcmd_add_bookmark(BrowserWindow *bw, const DilloUrl *url);
-void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
+void a_UIcmd_panels_toggle(BrowserWindow *bw);
 void a_UIcmd_findtext_dialog(BrowserWindow *bw);
 void a_UIcmd_findtext_search(BrowserWindow *bw,const char *key,int case_sens,
                              int backwards);
 void a_UIcmd_findtext_reset(BrowserWindow *bw);
+void a_UIcmd_findbar_toggle(BrowserWindow *bw, int on);
 void a_UIcmd_focus_main_area(BrowserWindow *bw);
 void a_UIcmd_focus_location(void *vbw);
 void a_UIcmd_page_popup(void *vbw, bool_t has_bugs, void *v_cssUrls);
@@ -77,9 +78,6 @@ void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug);
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label);
 void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...);
 void a_UIcmd_set_buttons_sens(BrowserWindow *bw);
-void a_UIcmd_fullscreen_toggle(BrowserWindow *bw);
-void a_UIcmd_set_pointer_on_link(BrowserWindow *bw, int flag);
-int a_UIcmd_pointer_on_link(BrowserWindow *bw);
 
 #ifdef __cplusplus
 }

@@ -55,7 +55,6 @@ BrowserWindow *a_Bw_new()
    bw->nav_stack_ptr = -1;
 
    /* Init expect */
-   bw->nav_expecting = FALSE;
    bw->nav_expect_url = NULL;
 
    bw->redirect_level = 0;
@@ -311,5 +310,29 @@ BrowserWindow *a_Bw_get(int i)
    if (i >= 0 && i < num_bws)
       return bws[i];
    return NULL;
+}
+
+/* expect API ------------------------------------------------------------- */
+
+void a_Bw_expect(BrowserWindow *bw, const DilloUrl *url)
+{
+   a_Url_free(bw->nav_expect_url);
+   bw->nav_expect_url = a_Url_dup(url);
+}
+
+void a_Bw_cancel_expect(BrowserWindow *bw)
+{
+   a_Url_free(bw->nav_expect_url);
+   bw->nav_expect_url = NULL;
+}
+
+bool_t a_Bw_expecting(BrowserWindow *bw)
+{
+   return (bw->nav_expect_url != NULL);
+}
+
+const DilloUrl *a_Bw_expected_url(BrowserWindow *bw)
+{
+   return bw->nav_expect_url;
 }
 

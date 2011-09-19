@@ -130,7 +130,7 @@ static void yes_ssl_support(void)
    SSL * ssl_connection = NULL;
 
    char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *http_query = NULL,
-        *proxy_url = NULL, *proxy_connect = NULL;
+        *proxy_url = NULL, *proxy_connect = NULL, *check_cert = NULL;
    char buf[4096];
    int ret = 0;
    int network_socket = -1;
@@ -200,8 +200,12 @@ static void yes_ssl_support(void)
                   a_Dpip_get_attr(dpip_tag, "proxy_connect");
       url = a_Dpip_get_attr(dpip_tag, "url");
       http_query = a_Dpip_get_attr(dpip_tag, "query");
+      if (!(check_cert = a_Dpip_get_attr(dpip_tag, "check_cert"))) {
+         /* allow older dillo versions use this dpi */
+         check_cert = dStrdup("true");
+      }
 
-      if (cmd == NULL || url == NULL || http_query == NULL){
+      if (!cmd || !url || !http_query) {
          MSG("***Value of cmd, url or http_query is NULL"
                     " - cannot continue\n");
          exit_error = 1;
@@ -288,7 +292,8 @@ static void yes_ssl_support(void)
 
    /*Use handle error function to decide what to do*/
    if (exit_error == 0){
-      if (handle_certificate_problem(ssl_connection) < 0){
+      if (strcmp(check_cert, "true") == 0 &&
+          handle_certificate_problem(ssl_connection) < 0){
          MSG("Certificate verification error\n");
          exit_error = 1;
       }
@@ -322,6 +327,7 @@ static void yes_ssl_support(void)
    dFree(http_query);
    dFree(proxy_url);
    dFree(proxy_connect);
+   dFree(check_cert);
 
    if (network_socket != -1){
       close(network_socket);

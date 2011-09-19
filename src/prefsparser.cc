@@ -24,6 +24,7 @@ typedef enum {
    PREFS_BOOL,
    PREFS_COLOR,
    PREFS_STRING,
+   PREFS_STRINGS,
    PREFS_URL,
    PREFS_INT32,
    PREFS_DOUBLE,
@@ -81,11 +82,12 @@ int PrefsParser::parseOption(char *name, char *value)
         PREFS_BOOL },
       { "middle_click_opens_new_tab", &prefs.middle_click_opens_new_tab,
         PREFS_BOOL },
+      { "right_click_closes_tab", &prefs.right_click_closes_tab, PREFS_BOOL },
       { "no_proxy", &prefs.no_proxy, PREFS_STRING },
       { "panel_size", &prefs.panel_size, PREFS_PANEL_SIZE },
       { "parse_embedded_css", &prefs.parse_embedded_css, PREFS_BOOL },
       { "save_dir", &prefs.save_dir, PREFS_STRING },
-      { "search_url", &prefs.search_url, PREFS_STRING },
+      { "search_url", &prefs.search_urls, PREFS_STRINGS },
       { "show_back", &prefs.show_back, PREFS_BOOL },
       { "show_bookmarks", &prefs.show_bookmarks, PREFS_BOOL },
       { "show_clear_url", &prefs.show_clear_url, PREFS_BOOL },
@@ -96,6 +98,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "show_home", &prefs.show_home, PREFS_BOOL },
       { "show_msg", &prefs.show_msg, PREFS_BOOL },
       { "show_progress_box", &prefs.show_progress_box, PREFS_BOOL },
+      { "show_quit_dialog", &prefs.show_quit_dialog, PREFS_BOOL },
       { "show_reload", &prefs.show_reload, PREFS_BOOL },
       { "show_save", &prefs.show_save, PREFS_BOOL },
       { "show_search", &prefs.show_search, PREFS_BOOL },
@@ -105,6 +108,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "show_url", &prefs.show_url, PREFS_BOOL },
       { "small_icons", &prefs.small_icons, PREFS_BOOL },
       { "start_page", &prefs.start_page, PREFS_URL },
+      { "theme", &prefs.theme, PREFS_STRING },
       { "w3c_plus_heuristics", &prefs.w3c_plus_heuristics, PREFS_BOOL }
    };
 
@@ -128,11 +132,26 @@ int PrefsParser::parseOption(char *name, char *value)
       break;
    case PREFS_COLOR:
       *(int32_t *)node->pref = a_Color_parse(value, *(int32_t*)node->pref,&st);
+      if (st)
+         MSG("prefs: Color '%s' not recognized.\n", value);
       break;
    case PREFS_STRING:
       dFree(*(char **)node->pref);
       *(char **)node->pref = dStrdup(value);
       break;
+   case PREFS_STRINGS:
+   {
+      Dlist *lp = *(Dlist **)node->pref;
+      if (dList_length(lp) == 2 && !dList_nth_data(lp, 1)) {
+         /* override the default */
+         void *data = dList_nth_data(lp, 0);
+         dList_remove(lp, data);
+         dList_remove(lp, NULL);
+         dFree(data);
+      }
+      dList_append(lp, dStrdup(value));
+      break;
+   }
    case PREFS_URL:
       a_Url_free(*(DilloUrl **)node->pref);
       *(DilloUrl **)node->pref = a_Url_new(value, NULL);
@@ -161,8 +180,6 @@ int PrefsParser::parseOption(char *name, char *value)
          prefs.panel_size = P_tiny;
       else if (!dStrcasecmp(value, "small"))
          prefs.panel_size = P_small;
-      else if (!dStrcasecmp(value, "large"))
-         prefs.panel_size = P_large;
       else /* default to "medium" */
          prefs.panel_size = P_medium;
       break;
@@ -170,13 +187,6 @@ int PrefsParser::parseOption(char *name, char *value)
       MSG_WARN("prefs: {%s} IS recognized but not handled!\n", name);
       break;   /* Not reached */
    }
-
-   if (prefs.limit_text_width) {
-      /* BUG: causes 100% CPU usage with <button> or <input type="image"> */
-      MSG_WARN("Disabling limit_text_width preference (currently broken).\n");
-      prefs.limit_text_width = FALSE;
-   }
-
    return 0;
 }
 

@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#include <fltk/events.h>
-#include <fltk/Window.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 #include "findbar.hh"
 
 #include "msg.h"
@@ -18,49 +18,58 @@
 #include "uicmd.hh"
 #include "bw.h"
 
-using namespace fltk;
-
 /*
  * Local sub class
  * (Used to handle escape in the findbar, may also avoid some shortcuts).
  */
-class MyInput : public Input {
+class MyInput : public Fl_Input {
 public:
    MyInput (int x, int y, int w, int h, const char* l=0) :
-      Input(x,y,w,h,l) {};
+      Fl_Input(x,y,w,h,l) {};
    int handle(int e);
 };
 
 int MyInput::handle(int e)
 {
    _MSG("findbar MyInput::handle()\n");
-   int ret = 1, k = event_key();
-   unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
+   int ret = 1, k = Fl::event_key();
+   unsigned modifier = Fl::event_state() & (FL_SHIFT| FL_CTRL| FL_ALT|FL_META);
 
-   if (e == KEY) {
-      if (k == LeftKey || k == RightKey) {
-         if (modifier == SHIFT) {
-            a_UIcmd_send_event_to_tabs_by_wid(e, this);
+   if (e == FL_KEYBOARD) {
+      if (modifier == FL_SHIFT) {
+         if (k == FL_Left || k == FL_Right) {
+            // Let these keys get to the UI
+            return 0;
+         }
+      } else if (modifier == FL_CTRL) {
+         if (k == 'a' || k == 'e') {
+            position(k == 'a' ? 0 : size());
+            return 1;
+         } else if (k == 'k') {
+            cut(position(), size());
+            return 1;
+         } else if (k == 'd') {
+            cut(position(), position()+1);
             return 1;
          }
-      } else if (k == EscapeKey && modifier == 0) {
+      } else if (k == FL_Escape && modifier == 0) {
          // Avoid clearing the text with Esc, just hide the findbar.
          return 0;
       }
    }
 
    if (ret)
-      ret = Input::handle(e);
+      ret = Fl_Input::handle(e);
    return ret;
 };
 
 /*
  * Find next occurrence of input key
  */
-void Findbar::search_cb(Widget *, void *vfb)
+void Findbar::search_cb(Fl_Widget *, void *vfb)
 {
    Findbar *fb = (Findbar *)vfb;
-   const char *key = fb->i->text();
+   const char *key = fb->i->value();
    bool case_sens = fb->check_btn->value();
 
    if (key[0] != '\0')
@@ -71,10 +80,10 @@ void Findbar::search_cb(Widget *, void *vfb)
 /*
  * Find previous occurrence of input key
  */
-void Findbar::searchBackwards_cb(Widget *, void *vfb)
+void Findbar::searchBackwards_cb(Fl_Widget *, void *vfb)
 {
    Findbar *fb = (Findbar *)vfb;
-   const char *key = fb->i->text();
+   const char *key = fb->i->value();
    bool case_sens = fb->check_btn->value();
 
    if (key[0] != '\0') {
@@ -84,86 +93,74 @@ void Findbar::searchBackwards_cb(Widget *, void *vfb)
 }
 
 /*
- * Find next occurrence of input key
- */
-void Findbar::search_cb2(Widget *widget, void *vfb)
-{
-   /*
-    * Somehow fltk even regards the first loss of focus for the
-    * window as a WHEN_ENTER_KEY_ALWAYS event.
-    */
-   if (event_key() == ReturnKey)
-      search_cb(widget, vfb);
-}
-
-/*
  * Hide the search bar
  */
-void Findbar::hide_cb(Widget *, void *vfb)
+void Findbar::hide_cb(Fl_Widget *, void *vfb)
 {
-   ((Findbar *)vfb)->hide();
+   a_UIcmd_findbar_toggle(a_UIcmd_get_bw_by_widget(vfb), 0);
 }
 
 /*
  * Construct text search bar
  */
 Findbar::Findbar(int width, int height) :
-   Group(0, 0, width, height)
+   Fl_Group(0, 0, width, height)
 {
    int button_width = 70;
    int gap = 2;
    int border = 2;
    int input_width = width - (2 * border + 4 * (button_width + gap));
-   int x = border;
+   int x = 0;
+
+   Fl_Group::current(0);
+
    height -= 2 * border;
 
-   box(PLASTIC_UP_BOX);
-   Group::hide();
+   box(FL_THIN_UP_BOX);
 
-   begin();
-    hide_btn = new HighlightButton(x, border, 16, height, 0);
-    hideImg = new xpmImage(new_s_xpm);
+    hide_btn = new Fl_Button(x, border, 16, height, 0);
+    hideImg = new Fl_Pixmap(new_s_xpm);
     hide_btn->image(hideImg);
     x += 16 + gap;
     hide_btn->callback(hide_cb, this);
-    hide_btn->clear_tab_to_focus();
+    hide_btn->clear_visible_focus();
+    hide_btn->box(FL_THIN_UP_BOX);
+    hide_btn->tooltip("Hide");
+   add(hide_btn);
 
     i = new MyInput(x, border, input_width, height);
     x += input_width + gap;
     resizable(i);
     i->color(206);
-    i->when(WHEN_ENTER_KEY_ALWAYS);
-    i->callback(search_cb2, this);
-    i->clear_tab_to_focus();
-    i->set_click_to_focus();
+    i->when(FL_WHEN_NEVER);
+   add(i);
 
-    next_btn = new HighlightButton(x, border, button_width, height, "Next");
+    next_btn = new Fl_Button(x, border, button_width, height, "Next");
     x += button_width + gap;
-    next_btn->add_shortcut(ReturnKey);
-    next_btn->add_shortcut(KeypadEnter);
+    next_btn->shortcut(FL_Enter);
     next_btn->callback(search_cb, this);
-    next_btn->clear_tab_to_focus();
+    next_btn->clear_visible_focus();
+    next_btn->box(FL_THIN_UP_BOX);
+    next_btn->tooltip("Find next occurrence of the search phrase\n"
+                      "shortcut: Enter");
+   add(next_btn);
 
-    prev_btn= new HighlightButton(x, border, button_width, height, "Previous");
-    prev_btn->add_shortcut(SHIFT+ReturnKey);
-    prev_btn->callback(searchBackwards_cb, this);
-    prev_btn->clear_tab_to_focus();
+    prev_btn= new Fl_Button(x, border, button_width, height, "Previous");
     x += button_width + gap;
+    prev_btn->shortcut(FL_SHIFT+FL_Enter);
+    prev_btn->callback(searchBackwards_cb, this);
+    prev_btn->clear_visible_focus();
+    prev_btn->box(FL_THIN_UP_BOX);
+    prev_btn->tooltip("Find previous occurrence of the search phrase\n"
+                      "shortcut: Shift+Enter");
+   add(prev_btn);
 
-    check_btn = new CheckButton(x, border, 2*button_width, height,
+    check_btn = new Fl_Check_Button(x, border, 2*button_width, height,
                               "Case-sensitive");
-    check_btn->clear_tab_to_focus();
     x += 2 * button_width + gap;
+    check_btn->clear_visible_focus();
+   add(check_btn);
 
-   end();
-
-   if (prefs.show_tooltip) {
-      hide_btn->tooltip("Hide");
-      next_btn->tooltip("Find next occurrence of the search phrase\n"
-                        "shortcut: Enter");
-      prev_btn->tooltip("Find previous occurrence of the search phrase\n"
-                        "shortcut: Shift+Enter");
-   }
 }
 
 Findbar::~Findbar()
@@ -172,23 +169,19 @@ Findbar::~Findbar()
 }
 
 /*
- * Handle events. Used to catch EscapeKey events.
+ * Handle events. Used to catch FL_Escape events.
  */
 int Findbar::handle(int event)
 {
-   int ret = 0;
-   int k = event_key();
-   unsigned modifier = event_state() & (SHIFT | CTRL | ALT | META);
+   int k = Fl::event_key();
+   unsigned modifier = Fl::event_state() & (FL_SHIFT| FL_CTRL| FL_ALT|FL_META);
 
-   if (event == KEY && modifier == 0 && k == EscapeKey) {
-      hide();
-      ret = 1;
+   if (event == FL_KEYBOARD && modifier == 0 && k == FL_Escape) {
+      /* let the UI handle it */
+      return 0;
    }
 
-   if (ret == 0)
-      ret = Group::handle(event);
-
-   return ret;
+   return Fl_Group::handle(event);
 }
 
 /*
@@ -196,21 +189,14 @@ int Findbar::handle(int event)
  */
 void Findbar::show()
 {
-   Group::show();
+   BrowserWindow *bw = a_UIcmd_get_bw_by_widget(this);
+   dReturn_if (bw == NULL);
+
+   // It takes more than just calling show() to do the trick
+   Fl_Group::show();
+
    /* select text even if already focused */
    i->take_focus();
    i->position(i->size(), 0);
 }
 
-/*
- * Hide the findbar and reset the search state
- */
-void Findbar::hide()
-{
-   BrowserWindow *bw;
-
-   Group::hide();
-   if ((bw = a_UIcmd_get_bw_by_widget(this)))
-      a_UIcmd_findtext_reset(bw);
-   a_UIcmd_focus_main_area(bw);
-}

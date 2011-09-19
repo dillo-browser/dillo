@@ -19,28 +19,25 @@
 
 
 
-#include <fltk/Window.h>
-#include <fltk/Browser.h>
-#include <fltk/MultiBrowser.h>
-#include <fltk/Item.h>
-#include <fltk/run.h>
-
-using namespace fltk;
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Multi_Browser.H>
+#include <FL/Fl.H>
 
 int main (int argc, char *argv[])
 {
-   Window *window = new Window (300, 300, "FLTK Browser");
+   Fl_Window *window = new Fl_Window (300, 300, "FLTK Browser");
+   window->box(FL_NO_BOX);
    window->begin ();
-   Browser *browser = new MultiBrowser (0, 0, 300, 300);
+   Fl_Multi_Browser *browser = new Fl_Multi_Browser (0, 0, 300, 300);
    browser->begin ();
 
    for (int i = 0; i < 10; i++) {
-      new Item ("first");
-      new Item ("second");
-      new Item ("third");
+      browser->add("first");
+      browser->add("second");
+      browser->add("third");
    }
 
    window->resizable(browser);
    window->show();
-   return run();
+   return Fl::run();
 }

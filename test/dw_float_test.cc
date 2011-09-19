@@ -1,5 +1,5 @@
-#include <fltk/Window.h>
-#include <fltk/run.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 
 #include "../dw/core.hh"
 #include "../dw/fltkcore.hh"
@@ -18,9 +18,9 @@ static void addTextToFloatTimeout (void *data)
 {
    printf("addTextToFloatTimeout\n");
 
-   char *fWords[] = { "This", "is", "a", "float,", "which", "is",
-                      "set", "aside", "from", "the", "main",
-                      "text.", NULL };
+   const char *fWords[] = { "This", "is", "a", "float,", "which", "is",
+                            "set", "aside", "from", "the", "main",
+                            "text.", NULL };
 	
    for(int k = 0; fWords[k]; k++) {
       firstFloat->addText(fWords[k], wordStyle);
@@ -29,7 +29,7 @@ static void addTextToFloatTimeout (void *data)
    
    firstFloat->flush();
 
-   ::fltk::repeat_timeout (2, addTextToFloatTimeout, NULL);
+   Fl::repeat_timeout (2, addTextToFloatTimeout, NULL);
 }
 
 int main(int argc, char **argv)
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
    FltkPlatform *platform = new FltkPlatform ();
    Layout *layout = new Layout (platform);
 
-   ::fltk::Window *window = new ::fltk::Window(400, 600, "Dw Floats Example");
+   Fl_Window *window = new Fl_Window(400, 600, "Dw Floats Example");
    window->begin();
 
    FltkViewport *viewport = new FltkViewport (0, 0, 400, 600);
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
-   styleAttrs.font = Font::create (layout, &fontAttrs);
+   styleAttrs.font = core::style::Font::create (layout, &fontAttrs);
 
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
@@ -90,10 +90,10 @@ int main(int argc, char **argv)
       snprintf(buf, sizeof(buf), "%d%s",
               i, (i == 1 ? "st" : (i == 2 ? "nd" : (i == 3 ? "rd" : "th"))));
 
-      char *words[] = { "This", "is", "the", buf, "paragraph.",
-                        "Here", "comes", "some", "more", "text",
-                        "to", "demonstrate", "word", "wrapping.",
-                        NULL };
+      const char *words[] = { "This", "is", "the", buf, "paragraph.",
+                              "Here", "comes", "some", "more", "text",
+                              "to", "demonstrate", "word", "wrapping.",
+                              NULL };
 
       for(int j = 0; words[j]; j++) {
          textblock->addText(words[j], wordStyle);
@@ -106,9 +106,9 @@ int main(int argc, char **argv)
             Textblock *vloat = new Textblock (false);
             textblock->addFloatIntoGenerator(vloat, i == 3 ? leftFloatStyle : rightFloatStyle);
             
-            char *fWords[] = { "This", "is", "a", "float,", "which", "is",
-                               "set", "aside", "from", "the", "main",
-                               "text.", NULL };
+            const char *fWords[] = { "This", "is", "a", "float,", "which", "is",
+                                     "set", "aside", "from", "the", "main",
+                                     "text.", NULL };
 
             for(int k = 0; fWords[k]; k++) {
                vloat->addText(fWords[k], wordStyle);
@@ -132,8 +132,8 @@ int main(int argc, char **argv)
 
    window->resizable(viewport);
    window->show();
-   ::fltk::add_timeout (2, addTextToFloatTimeout, NULL);
-   int errorCode = ::fltk::run();
+   Fl::add_timeout (2, addTextToFloatTimeout, NULL);
+   int errorCode = Fl::run();
 
    wordStyle->unref();
    delete layout;

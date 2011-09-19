@@ -742,13 +742,29 @@ static void Cache_parse_header(CacheEntry_t *entry)
 
 #ifndef DISABLE_COOKIES
    if ((Cookies = Cache_parse_multiple_fields(header, "Set-Cookie"))) {
-      char *server_date = Cache_parse_field(header, "Date");
+      CacheClient_t *client;
 
-      a_Cookies_set(Cookies, entry->Url, server_date);
+      for (i = 0; (client = dList_nth_data(ClientQueue, i)); ++i) {
+         if (client->Url == entry->Url) {
+            DilloWeb *web = client->Web;
+
+            if (!web->requester ||
+                a_Url_same_organization(entry->Url, web->requester)) {
+               char *server_date = Cache_parse_field(header, "Date");
+
+               a_Cookies_set(Cookies, entry->Url, server_date);
+               dFree(server_date);
+               break;
+            }
+         }
+      }
+      if (i >= dList_length(ClientQueue)) {
+         MSG("Cache: cookies not accepted from '%s'\n", URL_STR(entry->Url));
+      }
+
       for (i = 0; (data = dList_nth_data(Cookies, i)); ++i)
          dFree(data);
       dList_free(Cookies);
-      dFree(server_date);
    }
 #endif /* !DISABLE_COOKIES */
 
@@ -892,6 +908,16 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
                   " at: %s\n", URL_STR_(entry->Url));
          MSG("entry->ExpectedSize = %d, entry->TransferSize = %d\n",
              entry->ExpectedSize, entry->TransferSize);
+      }
+      if (!entry->TransferSize && !(entry->Flags & CA_Redirect) &&
+          (entry->Flags & WEB_RootUrl)) {
+         char *eol = strchr(entry->Header->str, '\n');
+         if (eol) {
+            char *status_line = dStrndup(entry->Header->str,
+                                         eol - entry->Header->str);
+            MSG_HTTP("Body was empty. Server sent status: %s\n", status_line);
+            dFree(status_line);
+         }
       }
       entry->Flags |= CA_GotData;
       entry->Flags &= ~CA_Stopped;          /* it may catch up! */
@@ -1166,6 +1192,8 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
                }
             }
             if (AbortEntry) {
+               if (ClientWeb->flags & WEB_RootUrl)
+                  a_Nav_cancel_expect_if_eq(Client_bw, Client->Url);
                a_Bw_remove_client(Client_bw, Client->Key);
                Cache_client_dequeue(Client, NULLKey);
                --i; /* Keep the index value in the next iteration */

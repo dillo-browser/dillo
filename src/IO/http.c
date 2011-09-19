@@ -174,7 +174,7 @@ static void Http_connect_queued_sockets(HostConnection_t *hc)
             MSG_BW(sd->web, 1, "ERROR: %s", dStrerror(sd->Err));
             a_Chain_bfcb(OpAbort, sd->Info, NULL, "Both");
             dFree(sd->Info);
-            Http_socket_free((int) sd->Info->LocalKey);
+            Http_socket_free(VOIDP2INT(sd->Info->LocalKey));
          } else {
             sd->connected_to = hc->host;
             hc->active_connections++;
@@ -271,7 +271,8 @@ static Dstr *Http_make_content_type(const DilloUrl *url)
 /*
  * Make the http query string
  */
-Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
+Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
+                            bool_t use_proxy)
 {
    const char *auth;
    char *ptr, *cookies, *referer;
@@ -296,7 +297,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, bool_t use_proxy)
                     (URL_PATH_(url) || URL_QUERY_(url)) ? "" : "/");
    }
 
-   cookies = a_Cookies_get_query(url);
+   cookies = a_Cookies_get_query(url, requester);
    auth = a_Auth_get_auth_str(url);
    referer = Http_get_referer(url);
    if (URL_FLAGS(url) & URL_Post) {
@@ -365,7 +366,8 @@ static void Http_send_query(ChainLink *Info, SocketData_t *S)
    DataBuf *dbuf;
 
    /* Create the query */
-   query = a_Http_make_query_str(S->web->url, S->flags & HTTP_SOCKET_USE_PROXY);
+   query = a_Http_make_query_str(S->web->url, S->web->requester,
+                                 S->flags & HTTP_SOCKET_USE_PROXY);
    dbuf = a_Chain_dbuf_new(query->str, query->len, 0);
 
    /* actually this message is sent too early.

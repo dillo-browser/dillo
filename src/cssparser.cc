@@ -1053,7 +1053,7 @@ void CssParser::parseDeclaration(CssPropertyList * props,
                                  CssPropertyList * importantProps)
 {
    CssPropertyInfo pi = {NULL, {CSS_TYPE_UNUSED}, NULL}, *pip;
-   CssShorthandInfo si, *sip;
+   CssShorthandInfo *sip;
    CssValueType type = CSS_TYPE_UNUSED;
 
    CssPropertyName prop;
@@ -1091,7 +1091,6 @@ void CssParser::parseDeclaration(CssPropertyList * props,
          }
       } else {
          /* Try shorthands. */
-         si.symbol = tval;
          sip =
              (CssShorthandInfo *) bsearch(&pi, Css_shorthand_info,
                                           CSS_SHORTHAND_NUM,
@@ -1293,6 +1292,9 @@ CssSelector *CssParser::parseSelector()
          break;
       } else if (ttype == CSS_TK_CHAR && tval[0] == '>') {
          selector->addSimpleSelector (CssSelector::CHILD);
+         nextToken();
+      } else if (ttype == CSS_TK_CHAR && tval[0] == '+') {
+         selector->addSimpleSelector (CssSelector::ADJACENT_SIBLING);
          nextToken();
       } else if (ttype != CSS_TK_END && spaceSeparated) {
          selector->addSimpleSelector (CssSelector::DESCENDANT);
@@ -1526,7 +1528,7 @@ const char * CssParser::propertyNameString(CssPropertyName name)
 {
    return Css_property_info[name].symbol;
 }
- 
+
 void CssParser::ignoreBlock()
 {
    int depth = 0;
@@ -1594,22 +1596,16 @@ void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext * context,
    }
 }
 
-CssPropertyList *CssParser::parseDeclarationBlock(const char *buf, int buflen)
+void CssParser::parseDeclarationBlock(const char *buf, int buflen,
+                                      CssPropertyList *props,
+                                      CssPropertyList *propsImortant)
 {
-   CssPropertyList *props = new CssPropertyList (true);
    CssParser parser (NULL, CSS_ORIGIN_AUTHOR, buf, buflen);
 
    parser.withinBlock = true;
 
    do
-      parser.parseDeclaration(props, NULL);
+      parser.parseDeclaration(props, propsImortant);
    while (!(parser.ttype == CSS_TK_END ||
          (parser.ttype == CSS_TK_CHAR && parser.tval[0] == '}')));
-
-   if (props->size () == 0) {
-      delete props;
-      props = NULL;
-   }
-
-   return props;
 }

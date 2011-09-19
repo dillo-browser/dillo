@@ -1,11 +1,11 @@
 #ifndef __XEMBED_HH__
 #define __XEMBED_HH__
 
-#include <fltk/Window.h>
+#include <FL/Fl_Window.H>
 
 #include "d_size.h"
 
-class Xembed : public fltk::Window {
+class Xembed : public Fl_Window {
    private:
       uint32_t xid;
       void createInternal(uint32_t parent);
@@ -13,10 +13,10 @@ class Xembed : public fltk::Window {
       void sendXembedEvent(uint32_t message);
 
    public:
-      Xembed(uint32_t xid, int _w, int _h) : fltk::Window(_w, _h) {
+      Xembed(uint32_t xid, int _w, int _h) : Fl_Window(_w, _h) {
          this->xid = xid;
       };
-      void create();
+      void show();
       int handle(int event);
 };
 

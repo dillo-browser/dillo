@@ -249,7 +249,9 @@ static void Html_add_input(DilloHtml *html, DilloHtmlInputType type,
       html->inputs_outside_form->increase();
       html->inputs_outside_form->set(ni, input);
 
-      input->setEnabled(false);
+      if (html->bw->NumPendingStyleSheets > 0) {
+         input->setEnabled(false);
+      }
    }
 }
 
@@ -609,7 +611,6 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
 
 /*
  * The textarea tag
- * (TODO: It doesn't support wrapping).
  */
 void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 {
@@ -850,7 +851,10 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       Embed *embed;
       char *name, *value;
 
-      page = new Textblock (prefs.limit_text_width);
+      /* We used to have Textblock (prefs.limit_text_width) here,
+       * but it caused 100% CPU usage.
+       */
+      page = new Textblock (false);
       page->setStyle (html->styleEngine->backgroundStyle ());
 
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();

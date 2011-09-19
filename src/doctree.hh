@@ -6,6 +6,8 @@
 class DoctreeNode {
    public:
       DoctreeNode *parent;
+      DoctreeNode *sibling;
+      DoctreeNode *lastChild;
       int num; // unique ascending id
       int element;
       lout::misc::SimpleVector<char*> *klass;
@@ -14,11 +16,27 @@ class DoctreeNode {
 
       DoctreeNode () {
          parent = NULL;
+         sibling = NULL;
+         lastChild = NULL;
          klass = NULL;
          pseudo = NULL;
          id = NULL;
          element = 0;
       };
+
+      ~DoctreeNode () {
+         dFree ((void*) id);
+         while (lastChild) {
+            DoctreeNode *n = lastChild;
+            lastChild = lastChild->sibling;
+            delete n;
+         }
+         if (klass) {
+            for (int i = 0; i < klass->size (); i++)
+               dFree (klass->get(i));
+            delete klass;
+         }
+      }
 };
 
 /**
@@ -26,46 +44,55 @@ class DoctreeNode {
  *
  * The Doctree class defines the interface to the parsed HTML document tree
  * as it is used for CSS selector matching.
- * Currently the Doctree can be represented as stack, however to support
- * CSS adjacent siblings or for future JavaScript support it may have to
- * be extended to a real tree.
  */
 class Doctree {
    private:
       DoctreeNode *topNode;
+      DoctreeNode *rootNode;
       int num;
 
    public:
       Doctree () {
-         topNode = NULL;
+         rootNode = new DoctreeNode;
+         topNode = rootNode;
          num = 0;
       };
-      ~Doctree () { while (top ()) pop (); };
+
+      ~Doctree () {
+         delete rootNode;
+      };
+
       DoctreeNode *push () {
          DoctreeNode *dn = new DoctreeNode ();
          dn->parent = topNode;
+         dn->sibling = dn->parent->lastChild;
+         dn->parent->lastChild = dn;
          dn->num = num++;
          topNode = dn;
          return dn;
       };
+
       void pop () {
-         DoctreeNode *dn = topNode;
-         if (dn) {
-            dFree ((void*) dn->id);
-            if (dn->klass) {
-               for (int i = 0; i < dn->klass->size (); i++)
-                  dFree (dn->klass->get(i));
-               delete dn->klass;
-            }
-            topNode = dn->parent;
-            delete dn;
-         }
+         assert (topNode != rootNode); // never pop the root node
+         topNode = topNode->parent;
       };
+
       inline DoctreeNode *top () {
-         return topNode;
+         if (topNode != rootNode)
+            return topNode;
+         else
+            return NULL;
       };
+
       inline DoctreeNode *parent (const DoctreeNode *node) {
-         return node->parent;
+         if (node->parent != rootNode)
+            return node->parent;
+         else
+            return NULL;
+      };
+
+      inline DoctreeNode *sibling (const DoctreeNode *node) {
+         return node->sibling;
       };
 };
 

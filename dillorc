@@ -48,8 +48,9 @@
 
 # Default fonts:
 #
-# If FLTK2 has been configured with Xft enabled (the default), you can
-# use scalable fonts such as DejaVu or Liberation (try running "fc-list").
+# If FLTK has been configured with Xft enabled (the default), you can use
+# scalable fonts such as DejaVu or Liberation (try running
+# "fc-list : family | cut -d ',' -f 2 | sort").
 #font_serif="DejaVu Serif"
 #font_sans_serif="DejaVu Sans"
 #font_cursive="URW Chancery L"
@@ -79,8 +80,6 @@
 
 # Set this to YES if you want to limit the word wrap width to the viewport
 # width (may be useful for iPAQ)
-# *** NOT HOOKED UP YET ***
-#
 #limit_text_width=NO
 
 
@@ -108,12 +107,16 @@
 # home="file:/home/jcid/HomePage/Home.html"
 #home="http://www.dillo.org/"
 
-# Set the URL used by the web search dialog.
+# Set the URLs used by the web search dialog.
 # "%s" is replaced with the search keywords separated by '+'.
-# search_url="http://www.wikipedia.org/wiki/Special:Search?search=%s"
-# search_url="http://search.lycos.com/?query=%s"
-# search_url="http://duckduckgo.com/html?q=%s"
-#search_url="http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
+# Format: search_url="[<label> ]<url>"
+# You can enable multiple search_url strings at once and select from among
+# them at runtime, with the first being the default.
+search_url="http://duckduckgo.com/lite/?kp=-1&q=%s"
+search_url="Scroogle https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi?Gw=%s"
+search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&go=Go"
+search_url="Free Dictionary http://www.thefreedictionary.com/%s"
+search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
 # If set, dillo will ask web servers to send pages in this language.
 # This setting does NOT change dillo's user interface.
@@ -187,15 +190,22 @@
 #                        USER INTERFACE SECTION
 #-------------------------------------------------------------------------
 
-# Size of dillo panel (used to enlarge the browsing area)
-# tiny   :  recommended for iPAQ (with small_icons)
-# small  :  very nice! (it's "medium" without icon titles)
-# medium :  nice!
-# large  :  Traditional
+# UI theme
+# "none" is the default FLTK appearance, which "resembles old Windows...and
+# old GTK/KDE".
+# "plastic" "is inspired by the Aqua user interface on Mac OS X".
+# "gtk+" "is inspired by the Red Hat Bluecurve theme".
+#theme=none
+# theme=gtk+
+# theme=plastic
+
+# Size of dillo panel
+# tiny   : buttons, location, and progress boxes in one row
+# small  : location in one row, buttons + progress boxes in another
+# medium : adds text labels to buttons and boxes
 # panel_size=tiny
 # panel_size=small
 #panel_size=medium
-# panel_size=large
 
 #small_icons=NO
 
@@ -228,6 +238,10 @@
 # If you prefer to open a new Window instead, set it to NO.
 #middle_click_opens_new_tab=YES
 
+# A mouse's middle click over a tab closes the Tab.
+# With mousewheel mouses, right click feels way better (set to YES).
+#right_click_closes_tab=NO 
+
 # Mouse middle click by default drives drag-scrolling.
 # To paste an URL into the window instead of scrolling, set it to NO.
 # Note: You could always paste the URL onto the URL box clear button.
@@ -237,6 +251,8 @@
 # You can hold SHIFT to temporarily revert this behaviour.
 #focus_new_tab=YES
 
+# Ask before quitting Dillo with more than one window or tab open.
+#show_quit_dialog=YES
 
 #-------------------------------------------------------------------------
 #                        DEBUG MESSAGES SECTION

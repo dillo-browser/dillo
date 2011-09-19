@@ -652,7 +652,7 @@ bool_t DilloHtml::unloadedImages()
  */
 void DilloHtml::loadImages (const DilloUrl *pattern)
 {
-   dReturn_if_fail (bw->nav_expecting == FALSE);
+   dReturn_if (a_Bw_expecting(bw));
 
    /* If the user asked for a specific URL, the user (NULL) is the requester,
     * but if the user just asked for all URLs, use the page URL as the
@@ -693,12 +693,10 @@ bool DilloHtml::HtmlLinkReceiver::enter (Widget *widget, int link, int img,
    if (link == -1) {
       _MSG(" Link  LEAVE  notify...\n");
       a_UIcmd_set_msg(bw, "");
-      a_UIcmd_set_pointer_on_link(bw, FALSE);
    } else {
       _MSG(" Link  ENTER  notify...\n");
       Html_set_link_coordinates(html, link, x, y);
       a_UIcmd_set_msg(bw, "%s", URL_STR(html->links->get(link)));
-      a_UIcmd_set_pointer_on_link(bw, TRUE);
    }
    return true;
 }
@@ -1723,7 +1721,6 @@ static void Html_tag_close_style(DilloHtml *html, int TagIdx)
 static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
-   Textblock *textblock;
    int32_t color;
    int tag_index_a = a_Html_tag_index ("a");
    style::Color *bgColor;
@@ -1740,8 +1737,6 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
       /* if we're here, it's bad XHTML, no need to recover */
       BUG_MSG("unclosed HEAD element\n");
    }
-
-   textblock = HT2TB(html);
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       color = a_Html_color_parse(html, attrbuf, -1);
@@ -2148,8 +2143,7 @@ static bool Html_load_image(BrowserWindow *bw, DilloUrl *url,
    DilloWeb *Web;
    int ClientKey;
    /* Fill a Web structure for the cache query */
-   Web = a_Web_new(url, requester);
-   Web->bw = bw;
+   Web = a_Web_new(bw, url, requester);
    Web->Image = Image;
    a_Image_ref(Image);
    Web->flags |= WEB_Image;
@@ -2170,7 +2164,6 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloImage *Image;
    DilloUrl *url, *usemap_url;
-   Textblock *textblock;
    const char *attrbuf;
 
    /* This avoids loading images. Useful for viewing suspicious HTML email. */
@@ -2180,8 +2173,6 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) ||
        !(url = a_Html_url_new(html, attrbuf, NULL, 0)))
       return;
-
-   textblock = HT2TB(html);
 
    usemap_url = NULL;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "usemap")))
@@ -2259,12 +2250,11 @@ static void Html_tag_close_map(DilloHtml *html, int TagIdx)
 static
 misc::SimpleVector<int> *Html_read_coords(DilloHtml *html, const char *str)
 {
-   int i, coord;
+   int coord;
    const char *tail = str;
    char *newtail = NULL;
    misc::SimpleVector<int> *coords = new misc::SimpleVector<int> (4);
 
-   i = 0;
    while (1) {
       coord = strtol(tail, &newtail, 10);
       if (coord == 0 && newtail == tail)
@@ -2461,12 +2451,14 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
          html->InVisitedLink = true;
          html->styleEngine->setPseudoVisited ();
          if (html->non_css_visited_color != -1)
-            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR,
+                                             CSS_TYPE_COLOR,
                                              html->non_css_visited_color);
       } else {
          html->styleEngine->setPseudoLink ();
          if (html->non_css_link_color != -1)
-            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
+            html->styleEngine->setNonCssHint(CSS_PROPERTY_COLOR,
+                                             CSS_TYPE_COLOR,
                                              html->non_css_link_color);
       }
 
@@ -2744,9 +2736,11 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
                                         CSS_TYPE_LENGTH_PERCENTAGE, size_top);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-                                        CSS_TYPE_LENGTH_PERCENTAGE, size_bottom);
+                                        CSS_TYPE_LENGTH_PERCENTAGE,
+                                        size_bottom);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
-                                        CSS_TYPE_LENGTH_PERCENTAGE, size_bottom);
+                                        CSS_TYPE_LENGTH_PERCENTAGE,
+                                        size_bottom);
    }
 
    HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
@@ -2850,6 +2844,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
    const char *p, *equiv, *content, *new_content;
    char delay_str[64], *mr_url;
+   DilloUrl *new_url;
    int delay;
 
    /* only valid inside HEAD */
@@ -2871,44 +2866,45 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          }
          /* Skip to anything after "URL=" */
          while (*content && *(content++) != '=') ;
-         if (*content) {
-
-            /* Handle the case of a quoted URL */
-            if (*content == '"' || *content == '\'') {
-               if ((p = strchr(content + 1, *content)))
-                  mr_url = dStrndup(content + 1, p - content - 1);
-               else
-                  mr_url = dStrdup(content + 1);
-            } else {
-               mr_url = dStrdup(content);
-            }
-
-            if (delay == 0) {
-               /* zero-delay redirection */
-               html->stop_parser = true;
-               DilloUrl *new_url = a_Url_new(mr_url, URL_STR(html->base_url));
-               if (a_Capi_dpi_verify_request(html->bw, new_url))
-                  a_UIcmd_redirection0((void*)html->bw, new_url);
-               a_Url_free(new_url);
-            } else {
-               /* Send a custom HTML message.
-                * TODO: This is a hairy hack,
-                *       It'd be much better to build a widget. */
-               Dstr *ds_msg = dStr_sized_new(256);
-               dStr_sprintf(ds_msg, meta_template, mr_url, delay_str);
-               {
-                  int o_InFlags = html->InFlags;
-                  int o_TagSoup = html->TagSoup;
-                  html->InFlags = IN_BODY;
-                  html->TagSoup = false;
-                  Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
-                  html->TagSoup = o_TagSoup;
-                  html->InFlags = o_InFlags;
-               }
-               dStr_free(ds_msg, 1);
-            }
-            dFree(mr_url);
+         /* Handle the case of a quoted URL */
+         if (*content == '"' || *content == '\'') {
+            if ((p = strchr(content + 1, *content)))
+               mr_url = dStrndup(content + 1, p - content - 1);
+            else
+               mr_url = dStrdup(content + 1);
+         } else {
+            mr_url = dStrdup(content);
          }
+         new_url = a_Url_new(mr_url, URL_STR(html->base_url));
+
+         if (a_Url_cmp(html->base_url, new_url) == 0) {
+            /* redirection loop, or empty url string: ignore */
+            BUG_MSG("META refresh: %s\n",
+                    *mr_url ? "redirection loop" : "no target URL");
+         } else if (delay == 0) {
+            /* zero-delay redirection */
+            html->stop_parser = true;
+            if (a_Capi_dpi_verify_request(html->bw, new_url))
+               a_UIcmd_redirection0((void*)html->bw, new_url);
+         } else {
+            /* Send a custom HTML message.
+             * TODO: This is a hairy hack,
+             *       It'd be much better to build a widget. */
+            Dstr *ds_msg = dStr_sized_new(256);
+            dStr_sprintf(ds_msg, meta_template, mr_url, delay_str);
+            {
+               int o_InFlags = html->InFlags;
+               int o_TagSoup = html->TagSoup;
+               html->InFlags = IN_BODY;
+               html->TagSoup = false;
+               Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
+               html->TagSoup = o_TagSoup;
+               html->InFlags = o_InFlags;
+            }
+            dStr_free(ds_msg, 1);
+         }
+         a_Url_free(new_url);
+         dFree(mr_url);
 
       } else if (!dStrcasecmp(equiv, "content-type") &&
                  (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
@@ -2958,14 +2954,13 @@ void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
 
             if (endq && (endq - data <= 51)) {
                /* IANA limits charset names to 40 characters */
-               const char *ignored;
                char *content_type;
 
                *endq = '\0';
                content_type = dStrconcat("text/css; charset=", data+10, NULL);
                *endq = '"';
                a_Capi_unref_buf(url);
-               ignored = a_Capi_set_content_type(url, content_type, "meta");
+               a_Capi_set_content_type(url, content_type, "meta");
                dFree(content_type);
                a_Capi_get_buf(url, &data, &len);
             }
@@ -2976,8 +2971,7 @@ void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
    } else {
       /* Fill a Web structure for the cache query */
       int ClientKey;
-      DilloWeb *Web = a_Web_new(url, html->page_url);
-      Web->bw = html->bw;
+      DilloWeb *Web = a_Web_new(html->bw, url, html->page_url);
       if ((ClientKey = a_Capi_open_url(Web, Html_css_load_callback, NULL))) {
          ++html->bw->NumPendingStyleSheets;
          a_Bw_add_client(html->bw, ClientKey, 0);
@@ -3031,7 +3025,7 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
        !(url = a_Html_url_new(html, attrbuf, NULL, 0)))
       return;
 
-   MSG("  Html_tag_open_link(): addCssUrl %s\n", URL_STR(url));
+   _MSG("  Html_tag_open_link(): addCssUrl %s\n", URL_STR(url));
 
    html->addCssUrl(url);
    a_Url_free(url);

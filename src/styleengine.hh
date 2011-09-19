@@ -21,6 +21,7 @@ class StyleEngine {
    private:
       struct Node {
          CssPropertyList *styleAttrProperties;
+         CssPropertyList *styleAttrPropertiesImportant;
          CssPropertyList *nonCssProperties;
          dw::core::style::Style *style;
          dw::core::style::Style *wordStyle;

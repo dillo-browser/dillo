@@ -140,16 +140,15 @@ void Polygon::draw (core::View *view, core::style::Style *style, int x, int y)
 {
    if (points->size()) {
       int i;
-      const bool filled = false;
-      int (*pointArray)[2] =
-                     (int (*)[2]) malloc(points->size() * sizeof(*pointArray));
+      const bool filled = false, convex = false;
+      Point *pointArray = (Point *)malloc(points->size()*sizeof(struct Point));
 
       for (i = 0; i < points->size(); i++) {
-         pointArray[i][0] = x + points->getRef(i)->x;
-         pointArray[i][1] = y + points->getRef(i)->y;
+         pointArray[i].x = x + points->getRef(i)->x;
+         pointArray[i].y = y + points->getRef(i)->y;
       }
       view->drawPolygon(style->color, core::style::Color::SHADING_NORMAL,
-                        filled, pointArray, i);
+                        filled, convex, pointArray, i);
       free(pointArray);
    }
 }

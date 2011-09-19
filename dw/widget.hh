@@ -206,25 +206,21 @@ protected:
 
    inline bool selectionButtonPress (Iterator *it, int charPos, int linkNo,
                                      EventButton *event, bool withinContent)
-   { return layout->selectionState.buttonPress (it, charPos, linkNo, event,
-                                                withinContent); }
+   { return layout->selectionState.buttonPress (it, charPos, linkNo, event); }
 
    inline bool selectionButtonRelease (Iterator *it, int charPos, int linkNo,
                                        EventButton *event, bool withinContent)
-   { return layout->selectionState.buttonRelease (it, charPos, linkNo, event,
-                                                  withinContent); }
+   { return layout->selectionState.buttonRelease (it, charPos, linkNo, event);}
 
    inline bool selectionButtonMotion (Iterator *it, int charPos, int linkNo,
                                       EventMotion *event, bool withinContent)
-   { return layout->selectionState.buttonMotion (it, charPos, linkNo, event,
-                                                 withinContent); }
+   { return layout->selectionState.buttonMotion (it, charPos, linkNo, event); }
 
    inline bool selectionHandleEvent (SelectionState::EventType eventType,
                                      Iterator *it, int charPos, int linkNo,
-                                     MousePositionEvent *event,
-                                     bool withinContent)
+                                     MousePositionEvent *event)
    { return layout->selectionState.handleEvent (eventType, it, charPos, linkNo,
-                                                event, withinContent); }
+                                                event); }
 
 private:
    void *deleteCallbackData;

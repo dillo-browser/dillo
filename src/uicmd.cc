@@ -1,7 +1,7 @@
 /*
  * File: uicmd.cc
  *
- * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2005-2011 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,14 @@
 #include <stdarg.h>
 #include <math.h>       /* for rint */
 
-#include <fltk/draw.h>
-#include <fltk/damage.h>
-#include <fltk/Widget.h>
-#include <fltk/TabGroup.h>
-#include <fltk/Tooltip.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Widget.H>
+#include <FL/Fl_Double_Window.H>
+#include <FL/Fl_Wizard.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Pack.H>
+#include <FL/Fl_Scroll.H>
+#include <FL/names.h>
 
 #include "paths.hh"
 #include "keys.hh"
@@ -35,12 +38,14 @@
 #include "history.h"
 #include "msg.h"
 #include "prefs.h"
+#include "misc.h"
 
 #include "dw/fltkviewport.hh"
 
 #include "nav.h"
 
-#define DEFAULT_TAB_LABEL "Dillo"
+//#define DEFAULT_TAB_LABEL "-.untitled.-"
+#define DEFAULT_TAB_LABEL "-.new.-"
 
 // Handy macro
 #define BW2UI(bw) ((UI*)((bw)->ui))
@@ -56,316 +61,384 @@ using namespace dw::fltk;
  */
 static char *save_dir = NULL;
 
-using namespace fltk;
-
+/*
+ * Forward declarations
+ */
+static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus);
+static void close_tab_btn_cb (Fl_Widget *w, void *cb_data);
 
 //----------------------------------------------------------------------------
-#define BTN_W 25
-#define BTN_H 20
-
-static int btn_x;
 
 /*
- * Adds a tab-close button at the rightmost part
+ * CustTabs ---------------------------------------------------------------
  */
-class CustShrinkTabPager : public TabGroupPager {
-   bool btn_hl;
-   TabGroup *tg;
+
+/*
+ * stores the respective UI pointer
+ */
+class CustTabButton : public Fl_Button {
+   UI *ui_;
 public:
-   int update_positions(
-          TabGroup *g, int numchildren, int &selected,
-          int &cumulated_width, int &available_width,
-          int *tab_pos, int *tab_width);
-   virtual int which(TabGroup* g, int m_x,int m_y);
-   virtual TabGroupPager* clone() const;
-   virtual const char * mode_name() const {return "Shrink";}
-   virtual int id() const {return PAGER_SHRINK;}
-   virtual int available_width(TabGroup *g) const;
-   virtual bool draw_tabs(TabGroup* g, int selected, int* tab_pos,
-                          int* tab_width) {
-      if (!tg) tg = g;
-      if (g->children() > 1) {
-         fltk::Rectangle r(btn_x,0,BTN_W,BTN_H);
-         setcolor(btn_hl ? 206 : GRAY75);
-         fillrect(r);
-         if (btn_hl) {
-            setcolor(WHITE);
-            strokerect(r);
-         }
-         setcolor(GRAY10);
-         //fltk::setfont(fltk::getfont()->bold(), fltk::getsize());
-         r.h(r.h()-2);
-         drawtext("X", r, ALIGN_CENTER);
-         return false;
-      } else {
-         // WORKAROUND: for http://fltk.org/str.php?L2062
-         // By returning true we avoid a call to TabGroup::draw_tab()
-         // in TabGroup::draw() in case we don't show the tabs.
-         return true;
-      }
-   }
-
-   void btn_highlight(bool flag) {
-      if (btn_hl != flag) {
-         btn_hl = flag;
-         if (tg)
-            tg->redraw(DAMAGE_VALUE);
-      }
-   };
-   bool btn_highlight() { return btn_hl; };
-
-   CustShrinkTabPager() : TabGroupPager() {
-      noclip(true);
-      btn_hl = false;
-      tg = NULL;
-   }
+   CustTabButton (int x,int y,int w,int h, const char* label = 0) :
+      Fl_Button (x,y,w,h,label) { ui_ = NULL; };
+   void ui(UI *pui) { ui_ = pui; }
+   UI *ui(void) { return ui_; }
 };
 
-int CustShrinkTabPager::available_width(TabGroup *g) const
+/*
+ * Allows fine control of the tabbed interface
+ */
+class CustTabs : public Fl_Group {
+   int tab_w, tab_h, ctab_h, btn_w, ctl_w;
+   Fl_Wizard *Wizard;
+   Fl_Scroll *Scroll;
+   Fl_Pack *Pack;
+   Fl_Group *Control;
+   CustLightButton *CloseBtn;
+   int tabcolor_inactive, tabcolor_active;
+
+   void update_pack_offset(void);
+   void resize(int x, int y, int w, int h)
+      { Fl_Group::resize(x,y,w,h); update_pack_offset(); }
+   int get_btn_idx(UI *ui);
+
+public:
+   CustTabs (int ww, int wh, int th, const char *lbl=0) :
+      Fl_Group(0,0,ww,th,lbl) {
+      Pack = NULL;
+      tab_w = 50, tab_h = th, ctab_h = 1, btn_w = 20, ctl_w = 1*btn_w+2;
+      tabcolor_active = 0x87aca700; tabcolor_inactive = 0xb7beb700;
+      resize(0,0,ww,ctab_h);
+      /* tab buttons go inside a pack within a scroll */
+      Scroll = new Fl_Scroll(0,0,ww-ctl_w,ctab_h);
+      Scroll->type(0); /* no scrollbars */
+      Scroll->box(FL_NO_BOX);
+       Pack = new Fl_Pack(0,0,ww-ctl_w,tab_h);
+       Pack->type(Fl_Pack::HORIZONTAL);
+       Pack->box(FL_NO_BOX); //FL_THIN_DOWN_FRAME
+       Pack->end();
+      Scroll->end();
+      resizable(Scroll);
+
+      /* control buttons go inside a group */
+      Control = new Fl_Group(ww-ctl_w,0,ctl_w,ctab_h);
+       CloseBtn = new CustLightButton(ww-ctl_w+2,0,btn_w,ctab_h, "X");
+       CloseBtn->box(FL_THIN_UP_BOX);
+       CloseBtn->labelcolor(0x00641000);
+       CloseBtn->hl_color(FL_WHITE);
+       CloseBtn->clear_visible_focus();
+       CloseBtn->tooltip(prefs.right_click_closes_tab ?
+          "Close current tab.\nor Right-click tab label to close." :
+          "Close current tab.\nor Middle-click tab label to close.");
+       CloseBtn->callback(close_tab_btn_cb, this);
+       CloseBtn->hide();
+      Control->end();
+
+      box(FL_FLAT_BOX);
+      end();
+
+      Wizard = new Fl_Wizard(0,ctab_h,ww,wh-ctab_h);
+      Wizard->box(FL_NO_BOX);
+      Wizard->end();
+   };
+   int handle(int e);
+   UI *add_new_tab(UI *old_ui, int focus);
+   void remove_tab(UI *ui);
+   Fl_Wizard *wizard(void) { return Wizard; }
+   int num_tabs() { return (Pack ? Pack->children() : 0); }
+   void switch_tab(CustTabButton *cbtn);
+   void prev_tab(void);
+   void next_tab(void);
+   void set_tab_label(UI *ui, const char *title);
+};
+
+/*
+ * Callback for mouse click
+ */
+static void tab_btn_cb (Fl_Widget *w, void *cb_data)
 {
-   _MSG("CustShrinkTabPager::available_width\n");
-   int w = MAX (g->w() - this->slope()-1 - BTN_W, 0);
-   btn_x = w + 6;
-   return w;
+   CustTabButton *btn = (CustTabButton*) w;
+   CustTabs *tabs = (CustTabs*) cb_data;
+   int b = Fl::event_button();
+
+   if (b == FL_LEFT_MOUSE) {
+      tabs->switch_tab(btn);
+   } else if ((b == FL_RIGHT_MOUSE && prefs.right_click_closes_tab) ||
+              (b == FL_MIDDLE_MOUSE && !prefs.right_click_closes_tab)) {
+      // TODO: just an example, not necessarily final
+      a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(btn->ui()));
+   }
 }
 
-int CustShrinkTabPager::which(TabGroup* g, int event_x,int event_y)
+/*
+ * Callback for the close-tab button
+ */
+static void close_tab_btn_cb (Fl_Widget *, void *cb_data)
 {
-   int H = g->tab_height();
-   if (!H) return -1;
-   if (H < 0) {
-      if (event_y > g->h() || event_y < g->h()+H) return -1;
-   } else {
-      if (event_y > H || event_y < 0) return -1;
+   CustTabs *tabs = (CustTabs*) cb_data;
+   int b = Fl::event_button();
+
+   if (b == FL_LEFT_MOUSE) {
+      a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(tabs->wizard()->value()));
    }
-   if (event_x < 0) return -1;
-   int p[128], w[128];
-   int selected = g->tab_positions(p, w);
-   int d = (event_y-(H>=0?0:g->h()))*slope()/H;
-   for (int i=0; i<g->children(); i++) {
-      if (event_x < p[i+1]+(i<selected ? slope() - d : d)) return i;
+}
+
+int CustTabs::handle(int e)
+{
+   int ret = 0;
+
+   _MSG("CustTabs::handle e=%s\n", fl_eventnames[e]);
+   if (e == FL_KEYBOARD) {
+      return 0; // Receive as shortcut
+   } else if (e == FL_SHORTCUT) {
+      UI *ui = (UI*)wizard()->value();
+      BrowserWindow *bw = a_UIcmd_get_bw_by_widget(ui);
+      KeysCommand_t cmd = Keys::getKeyCmd();
+      if (cmd == KEYS_NOP) {
+         // Do nothing
+         _MSG("CustTabs::handle KEYS_NOP\n");
+      } else if (cmd == KEYS_NEW_TAB) {
+         a_UIcmd_open_url_nt(bw, NULL, 1);
+         ret = 1;
+      } else if (cmd == KEYS_CLOSE_TAB) {
+         a_UIcmd_close_bw(bw);
+         ret = 1;
+      } else if (cmd == KEYS_LEFT_TAB) {
+         prev_tab();
+         ret = 1;
+      } else if (cmd == KEYS_RIGHT_TAB) {
+         next_tab();
+         ret = 1;
+      } else if (cmd == KEYS_NEW_WINDOW) {
+         a_UIcmd_open_url_nw(bw, NULL);
+         ret = 1;
+      } else if (cmd == KEYS_CLOSE_ALL) {
+         a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
+         ret = 1;
+      }
+   }
+
+   return (ret) ? ret : Fl_Group::handle(e);
+}
+
+/*
+ * Create a new tab with its own UI
+ */
+UI *CustTabs::add_new_tab(UI *old_ui, int focus)
+{
+   if (num_tabs() == 1) {
+      // Show tabbar
+      ctab_h = tab_h;
+      Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
+      resize(0,0,window()->w(),ctab_h);    // tabbar
+      CloseBtn->show();
+      {int w = 0, h; Pack->child(0)->measure_label(w, h);
+       Pack->child(0)->size(w+14,ctab_h);}
+      Pack->child(0)->show(); // first tab button
+      window()->init_sizes();
+   }
+
+   /* The UI is constructed in a comfortable fitting size, and then resized
+    * so FLTK doesn't get confused later with even smaller dimensions! */
+   current(0);
+   UI *new_ui = new UI(0,0,UI_MIN_W,UI_MIN_H,"Dillo:",old_ui);
+   new_ui->resize(0,ctab_h,Wizard->w(),Wizard->h());
+   new_ui->tabs(this);
+   Wizard->add(new_ui);
+   new_ui->show();
+
+   CustTabButton *btn = new CustTabButton(num_tabs()*tab_w,0,tab_w,ctab_h);
+   btn->align(FL_ALIGN_INSIDE);
+   btn->labelsize(btn->labelsize()-2);
+   btn->copy_label(DEFAULT_TAB_LABEL);
+   btn->clear_visible_focus();
+   btn->box(FL_GTK_THIN_UP_BOX);
+   btn->color(focus ? tabcolor_active : tabcolor_inactive);
+   btn->ui(new_ui);
+   btn->callback(tab_btn_cb, this);
+   Pack->add(btn); // append
+
+   if (focus) {
+      switch_tab(btn);
+   } else if (num_tabs() == 2) {
+      // no focus and tabbar added: redraw current page
+      Wizard->redraw();
+   }
+   if (num_tabs() == 1)
+      btn->hide();
+   update_pack_offset();
+
+   return new_ui;
+}
+
+/*
+ * Remove tab by UI
+ */
+void CustTabs::remove_tab(UI *ui)
+{
+   CustTabButton *btn;
+
+   // get active tab idx
+   int act_idx = get_btn_idx((UI*)Wizard->value());
+   // get to-be-removed tab idx
+   int rm_idx = get_btn_idx(ui);
+   btn = (CustTabButton*)Pack->child(rm_idx);
+
+   if (act_idx == rm_idx) {
+      // Active tab is being closed, switch to another one
+      rm_idx > 0 ? prev_tab() : next_tab();
+   }
+   Pack->remove(rm_idx);
+   update_pack_offset();
+   delete btn;
+
+   Wizard->remove(ui);
+   delete(ui);
+
+   if (num_tabs() == 1) {
+      // hide tabbar
+      ctab_h = 1;
+      CloseBtn->hide();
+      Pack->child(0)->size(0,0);
+      Pack->child(0)->hide(); // first tab button
+      resize(0,0,window()->w(),ctab_h);    // tabbar
+      Wizard->resize(0,ctab_h,Wizard->w(),window()->h()-ctab_h);
+      window()->init_sizes();
+      window()->redraw();
+   }
+}
+
+int CustTabs::get_btn_idx(UI *ui)
+{
+   for (int i = 0; i < num_tabs(); ++i) {
+      CustTabButton *btn = (CustTabButton*)Pack->child(i);
+      if (btn->ui() == ui)
+         return i;
    }
    return -1;
 }
 
 /*
- * Prevents tabs from going over the close-tab button.
- * Modified from fltk-2.0.x-r6525.
+ * Keep active tab visible
+ * (Pack children have unusable x() coordinate)
  */
-int CustShrinkTabPager::update_positions(
-       TabGroup *g, int numchildren, int &selected,
-       int &cumulated_width, int &available_width,
-       int *tab_pos, int *tab_width)
+void CustTabs::update_pack_offset()
 {
-   available_width-=BTN_W;
+   dReturn_if (num_tabs() == 0);
 
-   // uh oh, they are too big, we must move them:
-   // special case when the selected tab itself is too big, make it fill
-   // cumulated_width:
-   int i;
+   // get active tab button
+   int act_idx = get_btn_idx((UI*)Wizard->value());
+   CustTabButton *cbtn = (CustTabButton*)Pack->child(act_idx);
 
-   if (tab_width[selected] >= available_width) {
-      tab_width[selected] = available_width;
-      for (i = 0; i <= selected; i++)
-         tab_pos[i] = 0;
-      for (i = selected + 1; i <= numchildren; i++)
-         tab_pos[i] = available_width;
-      return selected;
+   // calculate tab button's x() coordinates
+   int x_i = 0, x_f;
+   for (int j=0; j < act_idx; ++j)
+      x_i += Pack->child(j)->w();
+   x_f = x_i + cbtn->w();
+
+   int scr_x = Scroll->xposition(), scr_y = Scroll->yposition();
+   int px_i = x_i - scr_x;
+   int px_f = px_i + cbtn->w();
+   int pw = Scroll->window()->w() - ctl_w;
+   _MSG("  scr_x=%d btn_x=%d px_i=%d btn_w=%d px_f=%d pw=%d",
+       Scroll->xposition(),cbtn->x(),px_i,cbtn->w(),px_f,pw);
+   if (px_i < 0) {
+      Scroll->scroll_to(x_i, scr_y);
+   } else if (px_i > pw || (px_i > 0 && px_f > pw)) {
+      Scroll->scroll_to(MIN(x_i, x_f-pw), scr_y);
    }
-
-   int w2[128];
-
-   for (i = 0; i < numchildren; i++)
-      w2[i] = tab_width[i];
-   i = numchildren - 1;
-   int j = 0;
-
-   int minsize = 5;
-
-   bool right = true;
-
-   while (cumulated_width > available_width) {
-      int n;                    // which one to shrink
-
-      if (j < selected && (!right || i <= selected)) {  // shrink a left one
-         n = j++;
-         right = true;
-      } else if (i > selected) {        // shrink a right one
-         n = i--;
-         right = false;
-      } else {                  // no more space, start making them zero
-         minsize = 0;
-         i = numchildren - 1;
-         j = 0;
-         right = true;
-         continue;
-      }
-      cumulated_width -= w2[n] - minsize;
-      w2[n] = minsize;
-      if (cumulated_width < available_width) {
-         w2[n] = available_width - cumulated_width + minsize;
-         cumulated_width = available_width;
-         break;
-      }
-   }
-   // re-sum the positions:
-   cumulated_width = 0;
-   for (i = 0; i < numchildren; i++) {
-      cumulated_width += w2[i];
-      tab_pos[i+1] = cumulated_width;
-   }
-   return selected;
+   Scroll->redraw();
+   _MSG(" >>scr_x=%d btn0_x=%d\n", scr_x, Pack->child(0)->x());
 }
-
-TabGroupPager* CustShrinkTabPager::clone() const {
-   return new CustShrinkTabPager(*this);
-}
-
-//----------------------------------------------------------------------------
 
 /*
- * For custom handling of keyboard
+ * Make cbtn's tab the active one
  */
-class CustTabGroup : public fltk::TabGroup {
-  Tooltip *toolTip;
-  bool tooltipEnabled;
-  bool buttonPushed;
-public:
-   CustTabGroup (int x, int y, int ww, int wh, const char *lbl=0) :
-      TabGroup(x,y,ww,wh,lbl) {
-         // The parameter pager is cloned, so free it.
-         CustShrinkTabPager *cp = new CustShrinkTabPager();
-         this->pager(cp);
-         delete cp;
-         toolTip = new Tooltip;
-         tooltipEnabled = false;
-         buttonPushed = false;
-      };
-      ~CustTabGroup() { delete toolTip; }
-   int handle(int e) {
-      // Don't focus with arrow keys
-      _MSG("CustTabGroup::handle %d\n", e);
-      fltk::Rectangle r(btn_x,0,BTN_W,BTN_H);
-      if (e == KEY) {
-         int k = event_key();
-         // We're only interested in some flags
-         unsigned modifier = event_state() & (SHIFT | CTRL | ALT);
-         if (k == UpKey || k == DownKey || k == TabKey) {
-            return 0;
-         } else if (k == LeftKey || k == RightKey) {
-            if (modifier == SHIFT) {
-               int i = value();
-               if (k == LeftKey) {i = i ? i-1 : children()-1;}
-               else {i++; if (i >= children()) i = 0;}
-               selected_child(child(i));
-               return 1;
-            }
-            // Avoid focus change.
-            return 0;
-         }
-      } else if (e == FOCUS_CHANGE) {
-         // Update the window title
-         BrowserWindow *bw = a_UIcmd_get_bw_by_widget(selected_child());
-         const char *title = a_History_get_title(NAV_TOP_UIDX(bw), 1);
-         a_UIcmd_set_page_title(bw, title ? title : "");
-      } else if (e == MOVE) {
-         CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
-         if (event_inside(r) && children() > 1) {
-            /* We're inside the button area */
-            cstp->btn_highlight(true);
-            if (prefs.show_tooltip) {
-               /* Prepare the tooltip for pop-up */
-               tooltipEnabled = true;
-               /* We use parent() if available because we are returning 0.
-                * Returning without having TabGroup processing makes the
-                * popup event never reach 'this', but it reaches parent() */
-               toolTip->enter(parent() ?parent():this, r, "Close current Tab");
-            }
-            return 0;              // Change focus
-         } else {
-            cstp->btn_highlight(false);
+void CustTabs::switch_tab(CustTabButton *cbtn)
+{
+   int idx;
+   CustTabButton *btn;
+   BrowserWindow *bw;
+   UI *old_ui = (UI*)Wizard->value();
 
-            if (prefs.show_tooltip) {
-               /* Hide the tooltip or enable it again.*/
-               if (tooltipEnabled) {
-                  tooltipEnabled = false;
-                  toolTip->exit();
-               } else {
-                  toolTip->enable();
-               }
-            }
-         }
-      } else if (e == PUSH && event_inside(r) &&
-                 event_button() == 1 && children() > 1) {
-         buttonPushed = true;
-         return 1;                 /* non-zero */
-      } else if (e == RELEASE) {
-         if (event_inside(r) && event_button() == 1 &&
-             children() > 1 && buttonPushed) {
-            a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(selected_child()));
-         } else {
-            CustShrinkTabPager *cstp = (CustShrinkTabPager *) pager();
-            cstp->btn_highlight(false);
-         }
-         buttonPushed = false;
-      } else if (e == DRAG) {
-         /* Ignore this event */
-         return 1;
+   if (cbtn->ui() != old_ui) {
+      // Set old tab label to normal color
+      if ((idx = get_btn_idx(old_ui)) != -1) {
+         btn = (CustTabButton*)Pack->child(idx);
+         btn->color(tabcolor_inactive);
+         btn->redraw();
       }
-      int ret = TabGroup::handle(e);
+      Wizard->value(cbtn->ui());
+      cbtn->color(tabcolor_active);
+      cbtn->redraw();
+      update_pack_offset();
 
-      if (e == PUSH) {
-         /* WORKAROUND: FLTK raises the window on unhandled clicks,
-          * which we do not want.
-          */
-         ret = 1;
+      // Update window title
+      if ((bw = a_UIcmd_get_bw_by_widget(cbtn->ui()))) {
+         const char *title = (cbtn->ui())->label();
+         cbtn->window()->copy_label(title ? title : "");
       }
-      return ret;
    }
+}
 
-   void remove (Widget *w) {
-      TabGroup::remove (w);
-      /* fixup resizable in case we just removed it */
-      if (resizable () == w) {
-         if (children () > 0)
-            resizable (child (children () - 1));
-         else
-            resizable (NULL);
+void CustTabs::prev_tab()
+{
+   int idx;
+
+   if ((idx = get_btn_idx((UI*)Wizard->value())) != -1)
+      switch_tab((CustTabButton*)Pack->child(idx>0 ? idx-1 : num_tabs()-1));
+}
+
+void CustTabs::next_tab()
+{
+   int idx;
+
+   if ((idx = get_btn_idx((UI*)Wizard->value())) != -1)
+      switch_tab((CustTabButton*)Pack->child((idx+1<num_tabs()) ? idx+1 : 0));
+}
+
+/*
+ * Set this UI's tab button label
+ */
+void CustTabs::set_tab_label(UI *ui, const char *label)
+{
+   char title[128];
+   int idx = get_btn_idx(ui);
+
+   if (idx != -1) {
+      // Make a label for this tab
+      size_t tab_chars = 15, label_len = strlen(label);
+
+      if (label_len > tab_chars)
+         tab_chars = a_Utf8_end_of_char(label, tab_chars - 1) + 1;
+      snprintf(title, tab_chars + 1, "%s", label);
+      if (label_len > tab_chars)
+         snprintf(title + tab_chars, 4, "...");
+
+      // Avoid unnecessary redraws
+      if (strcmp(Pack->child(idx)->label(), title)) {
+         int w = 0, h;
+         Pack->child(idx)->copy_label(title);
+         Pack->child(idx)->measure_label(w, h);
+         Pack->child(idx)->size(w+14,ctab_h);
+         update_pack_offset();
       }
-
-      if (children () < 2)
-         hideLabels ();
    }
+}
 
-   void add (Widget *w) {
-      TabGroup::add (w);
-      if (children () > 1)
-         showLabels ();
-   }
-
-   void hideLabels() {
-      for (int i = children () - 1; i >= 0; i--)
-         child(i)->resize(x(), y(), w(), h());
-   }
-
-   void showLabels() {
-      for (int i = children () - 1; i >= 0; i--)
-         child(i)->resize(x(), y() + 20, w(), h() - 20);
-   }
-};
 
 //----------------------------------------------------------------------------
 
-static void win_cb (fltk::Widget *w, void *cb_data) {
-   int choice = 0;
-   CustTabGroup *tabs = (CustTabGroup*) cb_data;
+static void win_cb (Fl_Widget *w, void *cb_data) {
+   CustTabs *tabs = (CustTabs*) cb_data;
+   int choice = 1, ntabs = tabs->num_tabs();
 
-   if (tabs->children () > 1)
-      choice = a_Dialog_choice3 ("Window contains more than one tab.",
-                                 "Close all tabs", "Cancel", NULL);
-   if (choice == 0)
-      while (tabs->children())
-         a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(tabs->child(0)));
+   if (prefs.show_quit_dialog && ntabs > 1)
+      choice = a_Dialog_choice5("Window contains more than one tab.",
+                                "Close", "Cancel", NULL, NULL, NULL);
+   if (choice == 1)
+      while (ntabs-- > 0)
+         a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(tabs->wizard()->value()));
 }
 
 /*
@@ -376,24 +449,11 @@ BrowserWindow *a_UIcmd_get_bw_by_widget(void *v_wid)
    BrowserWindow *bw;
    for (int i = 0; i < a_Bw_num(); ++i) {
       bw = a_Bw_get(i);
-      if (((fltk::Widget*)bw->ui)->contains((fltk::Widget*)v_wid))
+      if (((UI*)bw->ui)->contains((Fl_Widget*)v_wid)) {
          return bw;
+      }
    }
    return NULL;
-}
-
-/*
- * FLTK regards SHIFT + {LeftKey, Right} as navigation keys.
- * Special handling is required to override it. Here we route
- * these events directly to the recipient.
- * TODO: focus is not remembered correctly.
- */
-void a_UIcmd_send_event_to_tabs_by_wid(int e, void *v_wid)
-{
-   BrowserWindow *bw = a_UIcmd_get_bw_by_widget(v_wid);
-   UI *ui = (UI*)bw->ui;
-   if (ui->tabs())
-      ui->tabs()->handle(e);
 }
 
 /*
@@ -405,7 +465,8 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 {
    BrowserWindow *old_bw = (BrowserWindow*)vbw;
    BrowserWindow *new_bw = NULL;
-   Window *win;
+   UI *old_ui = old_bw ? BW2UI(old_bw) : NULL;
+   Fl_Window *win;
 
    if (ww <= 0 || wh <= 0) {
       // Set default geometry from dillorc.
@@ -415,96 +476,40 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    if (xid)
       win = new Xembed(xid, ww, wh);
+   else if (prefs.buffered_drawing != 2)
+      win = new Fl_Window(ww, wh);
    else
-      win = new Window(ww, wh);
+      win = new Fl_Double_Window(ww, wh);
 
-   win->shortcut(0); // Ignore Escape
-   if (prefs.buffered_drawing != 2)
-      win->clear_double_buffer();
-   win->set_flag(RAW_LABEL);
-   CustTabGroup *DilloTabs = new CustTabGroup(0, 0, ww, wh);
-   DilloTabs->clear_tab_to_focus();
-   DilloTabs->selection_color(156);
-   win->add(DilloTabs);
+   win->box(FL_NO_BOX);
+   CustTabs *DilloTabs = new CustTabs(ww, wh, 16);
+   win->end();
 
-   // Create and set the UI
-   UI *new_ui = new UI(0, 0, ww, wh, DEFAULT_TAB_LABEL,
-                       old_bw ? BW2UI(old_bw) : NULL);
-   new_ui->set_status("http://www.dillo.org/");
-   new_ui->tabs(DilloTabs);
-
-   DilloTabs->add(new_ui);
-   DilloTabs->resizable(new_ui);
-   DilloTabs->window()->resizable(new_ui);
-   DilloTabs->window()->show();
+   int focus = 1;
+   new_bw = UIcmd_tab_new(DilloTabs, old_ui, focus);
+   win->resizable(DilloTabs->wizard());
+   win->show();
 
    if (old_bw == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
       // position the first window according to preferences
-      fltk::Rectangle r;
-      new_ui->window()->borders(&r);
-      // borders() gives x and y border sizes as negative values
-      new_ui->window()->position(prefs.xpos - r.x(), prefs.ypos - r.y());
+      DilloTabs->window()->position(prefs.xpos, prefs.ypos);
    }
 
-   // Now create the Dw render layout and viewport
-   FltkPlatform *platform = new FltkPlatform ();
-   Layout *layout = new Layout (platform);
-   style::Color *bgColor = style::Color::create (layout, prefs.bg_color);
-   layout->setBgColor (bgColor);
-
-   FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
-   if (prefs.buffered_drawing == 1)
-      viewport->setBufferedDrawing (true);
-   else
-      viewport->setBufferedDrawing (false);
-
-   layout->attachView (viewport);
-   new_ui->set_render_layout(*viewport);
-
-   viewport->setScrollStep((int) rint(14.0 * prefs.font_factor));
-
-   // Now, create a new browser window structure
-   new_bw = a_Bw_new();
-
-   // Reference the UI from the bw
-   new_bw->ui = (void *)new_ui;
-   // Copy the layout pointer into the bw data
-   new_bw->render_layout = (void*)layout;
-
    win->callback(win_cb, DilloTabs);
-
-   new_ui->focus_location();
 
    return new_bw;
 }
 
 /*
- * Create a new Tab.
- * i.e the new UI and its associated BrowserWindow data structure.
+ * Create a new Tab button, UI and its associated BrowserWindow data
+ * structure.
  */
-static BrowserWindow *UIcmd_tab_new(const void *vbw)
+static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus)
 {
-   _MSG(" UIcmd_tab_new vbw=%p\n", vbw);
-
-   dReturn_val_if_fail (vbw != NULL, NULL);
-
-   BrowserWindow *new_bw = NULL;
-   BrowserWindow *old_bw = (BrowserWindow*)vbw;
-   UI *ui = BW2UI(old_bw);
-
-   // WORKAROUND: limit the number of tabs because of a fltk bug
-   if (ui->tabs()->children() >= 127)
-      return a_UIcmd_browser_window_new(ui->window()->w(), ui->window()->h(),
-                                        0, vbw);
+   _MSG(" UIcmd_tab_new\n");
 
    // Create and set the UI
-   UI *new_ui = new UI(0, 0, ui->w(), ui->h(), DEFAULT_TAB_LABEL, ui);
-   new_ui->tabs(ui->tabs());
-
-   new_ui->tabs()->add(new_ui);
-   new_ui->tabs()->resizable(new_ui);
-   new_ui->tabs()->window()->resizable(new_ui);
-   new_ui->tabs()->window()->show();
+   UI *new_ui = tabs->add_new_tab(old_ui, focus);
 
    // Now create the Dw render layout and viewport
    FltkPlatform *platform = new FltkPlatform ();
@@ -512,20 +517,29 @@ static BrowserWindow *UIcmd_tab_new(const void *vbw)
    style::Color *bgColor = style::Color::create (layout, prefs.bg_color);
    layout->setBgColor (bgColor);
 
-   FltkViewport *viewport = new FltkViewport (0, 0, 1, 1);
-
+   // set_render_layout() sets the proper viewport size
+   FltkViewport *viewport = new FltkViewport (0, 0, 0, 1);
+   viewport->box(FL_NO_BOX);
+   viewport->setBufferedDrawing (prefs.buffered_drawing ? true : false);
+   viewport->setDragScroll (prefs.middle_click_drags_page ? true : false);
    layout->attachView (viewport);
-   new_ui->set_render_layout(*viewport);
-
-   viewport->setScrollStep((int) rint(14.0 * prefs.font_factor));
+   new_ui->set_render_layout(viewport);
+   viewport->setScrollStep((int) rint(28.0 * prefs.font_factor));
 
    // Now, create a new browser window structure
-   new_bw = a_Bw_new();
+   BrowserWindow *new_bw = a_Bw_new();
 
    // Reference the UI from the bw
    new_bw->ui = (void *)new_ui;
    // Copy the layout pointer into the bw data
    new_bw->render_layout = (void*)layout;
+
+   // Clear the window title
+   if (focus)
+      new_ui->window()->copy_label(new_ui->label());
+
+   // WORKAROUND: see findbar_toggle()
+   new_ui->findbar_toggle(0);
 
    return new_bw;
 }
@@ -537,21 +551,17 @@ void a_UIcmd_close_bw(void *vbw)
 {
    BrowserWindow *bw = (BrowserWindow *)vbw;
    UI *ui = BW2UI(bw);
+   CustTabs *tabs = ui->tabs();
    Layout *layout = (Layout*)bw->render_layout;
 
-   MSG("a_UIcmd_close_bw\n");
+   _MSG("a_UIcmd_close_bw\n");
    a_Bw_stop_clients(bw, BW_Root + BW_Img + BW_Force);
    delete(layout);
-   if (ui->tabs()) {
-      ui->tabs()->remove(ui);
-      ui->tabs()->value(ui->tabs()->children() - 1);
-      if (ui->tabs()->value() != -1)
-         ui->tabs()->selected_child()->take_focus();
-      else
-         ui->tabs()->window()->hide();
+   if (tabs) {
+      tabs->remove_tab(ui);
+      if (tabs->num_tabs() == 0)
+         delete tabs->window();
    }
-   delete(ui);
-
    a_Bw_free(bw);
 }
 
@@ -561,12 +571,12 @@ void a_UIcmd_close_bw(void *vbw)
 void a_UIcmd_close_all_bw(void *)
 {
    BrowserWindow *bw;
-   int choice = 0;
+   int choice = 1;
 
-   if (a_Bw_num() > 1)
-      choice = a_Dialog_choice3 ("More than one open tab or Window.",
-         "Close all tabs and windows", "Cancel", NULL);
-   if (choice == 0)
+   if (prefs.show_quit_dialog && a_Bw_num() > 1)
+      choice = a_Dialog_choice5("More than one open tab or window.",
+         "Quit", "Cancel", NULL, NULL, NULL);
+   if (choice == 1)
       while ((bw = a_Bw_get(0)))
          a_UIcmd_close_bw((void*)bw);
 }
@@ -616,10 +626,14 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
  */
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 {
-   a_Nav_push(bw, url, NULL);
-   if (BW2UI(bw)->get_panelmode() == UI_TEMPORARILY_SHOW_PANELS)
-      BW2UI(bw)->set_panelmode(UI_HIDDEN);
-   a_UIcmd_focus_main_area(bw);
+   if (url) {
+      a_Nav_push(bw, url, NULL);
+      BW2UI(bw)->focus_main();
+   } else {
+      // Used to start a bw with a blank screen
+      BW2UI(bw)->focus_location();
+      a_UIcmd_set_buttons_sens(bw);
+   }
 }
 
 static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
@@ -632,6 +646,7 @@ static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
       BW2UI(new_bw)->focus_main();
    } else {
       BW2UI(new_bw)->focus_location();
+      a_UIcmd_set_buttons_sens(new_bw);
    }
 }
 
@@ -654,11 +669,9 @@ void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url)
  */
 void a_UIcmd_open_url_nt(void *vbw, const DilloUrl *url, int focus)
 {
-   BrowserWindow *new_bw = UIcmd_tab_new(vbw);
-
-   if (focus)
-      BW2UI(new_bw)->tabs()->selected_child(BW2UI(new_bw));
-
+   BrowserWindow *bw = (BrowserWindow *)vbw;
+   BrowserWindow *new_bw = UIcmd_tab_new(BW2UI(bw)->tabs(),
+                                         bw ? BW2UI(bw) : NULL, focus);
    UIcmd_open_url_nbw(new_bw, url);
 }
 
@@ -673,9 +686,9 @@ void a_UIcmd_back(void *vbw)
 /*
  * Popup the navigation menu of the Back button
  */
-void a_UIcmd_back_popup(void *vbw)
+void a_UIcmd_back_popup(void *vbw, int x, int y)
 {
-   a_Menu_history_popup((BrowserWindow*)vbw, -1);
+   a_Menu_history_popup((BrowserWindow*)vbw, x, y, -1);
 }
 
 /*
@@ -689,9 +702,9 @@ void a_UIcmd_forw(void *vbw)
 /*
  * Popup the navigation menu of the Forward button
  */
-void a_UIcmd_forw_popup(void *vbw)
+void a_UIcmd_forw_popup(void *vbw, int x, int y)
 {
-   a_Menu_history_popup((BrowserWindow*)vbw, 1);
+   a_Menu_history_popup((BrowserWindow*)vbw, x, y, 1);
 }
 
 /*
@@ -825,9 +838,9 @@ void a_UIcmd_stop(void *vbw)
 /*
  * Popup the tools menu
  */
-void a_UIcmd_tools(void *vbw, void *v_wid)
+void a_UIcmd_tools(void *vbw, int x, int y)
 {
-   a_Menu_tools_popup((BrowserWindow*)vbw, v_wid);
+   a_Menu_tools_popup((BrowserWindow*)vbw, x, y);
 }
 
 /*
@@ -850,29 +863,33 @@ void a_UIcmd_open_file(void *vbw)
 
 /*
  * Returns a newly allocated string holding a search url generated from
- * a string of keywords (separarated by blanks) and prefs.search_url.
+ * a string of keywords (separated by blanks) and the current search_url.
  * The search string is urlencoded.
  */
 static char *UIcmd_make_search_str(const char *str)
 {
-   char *keys = a_Url_encode_hex_str(str), *c = prefs.search_url;
+   char *search_url, *l, *u, *c;
+   char *keys = a_Url_encode_hex_str(str),
+        *src = (char*)dList_nth_data(prefs.search_urls, prefs.search_url_idx);
    Dstr *ds = dStr_sized_new(128);
-   char *search_url;
 
-   for (; *c; c++) {
-      if (*c == '%')
-         switch(*++c) {
-         case 's':
-            dStr_append(ds, keys); break;;
-         case '%':
-            dStr_append_c(ds, '%'); break;;
-         case 0:
-            MSG_WARN("search_url ends with '%%'\n"); c--; break;;
-         default:
-            MSG_WARN("illegal specifier '%%%c' in search_url\n", *c);
-         }
-      else
-         dStr_append_c(ds, *c);
+   /* parse search_url into label and url */
+   if (a_Misc_parse_search_url(src, &l, &u) == 0) {
+      for (c = u; *c; c++) {
+         if (*c == '%')
+            switch(*++c) {
+            case 's':
+               dStr_append(ds, keys); break;;
+            case '%':
+               dStr_append_c(ds, '%'); break;;
+            case 0:
+               MSG_WARN("search_url ends with '%%'\n"); c--; break;;
+            default:
+               MSG_WARN("illegal specifier '%%%c' in search_url\n", *c);
+            }
+         else
+            dStr_append_c(ds, *c);
+      }
    }
    dFree(keys);
 
@@ -918,13 +935,11 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
    a_UIcmd_set_save_dir(prefs.save_dir);
 
    SuggestedName = UIcmd_make_save_filename(URL_STR(url));
-   name = a_Dialog_save_file("Save Link as File", NULL, SuggestedName);
-   MSG("a_UIcmd_save_link: %s\n", name);
-   dFree(SuggestedName);
-
-   if (name) {
+   if ((name = a_Dialog_save_file("Save Link as File", NULL, SuggestedName))) {
+      MSG("a_UIcmd_save_link: %s\n", name);
       a_Nav_save_url(bw, url, name);
    }
+   dFree(SuggestedName);
 }
 
 /*
@@ -1030,7 +1045,7 @@ void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url)
 }
 
 /*
- * Show a text window with the URL's source
+ * Show the browser window's HTML errors in a text window
  */
 void a_UIcmd_view_page_bugs(void *vbw)
 {
@@ -1151,6 +1166,8 @@ void a_UIcmd_scroll(BrowserWindow *bw, int icmd)
       const mapping_t map[] = {
          {KEYS_SCREEN_UP, SCREEN_UP_CMD},
          {KEYS_SCREEN_DOWN, SCREEN_DOWN_CMD},
+         {KEYS_SCREEN_LEFT, SCREEN_LEFT_CMD},
+         {KEYS_SCREEN_RIGHT, SCREEN_RIGHT_CMD},
          {KEYS_LINE_UP, LINE_UP_CMD},
          {KEYS_LINE_DOWN, LINE_DOWN_CMD},
          {KEYS_LEFT, LEFT_CMD},
@@ -1217,7 +1234,7 @@ void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug)
 }
 
 /*
- * Set the page title in the window titlebar and tab label.
+ * Set the page title in the tab label and window titlebar.
  * (Update window titlebar for the current tab only)
  */
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
@@ -1225,16 +1242,17 @@ void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
    const int size = 128;
    char title[size];
 
-   if (a_UIcmd_get_bw_by_widget(BW2UI(bw)->tabs()->selected_child()) == bw) {
-      // This is the focused bw, set window title
-      if (snprintf(title, size, "Dillo: %s", label) >= size) {
-         uint_t i = MIN(size - 4, 1 + a_Utf8_end_of_char(title, size - 8));
-         snprintf(title + i, 4, "...");
-      }
-      BW2UI(bw)->window()->copy_label(title);
-      BW2UI(bw)->window()->redraw_label();
+   if (snprintf(title, size, "Dillo: %s", label ? label : "") >= size) {
+      uint_t i = MIN(size - 4, 1 + a_Utf8_end_of_char(title, size - 8));
+      snprintf(title + i, 4, "...");
    }
-   BW2UI(bw)->set_tab_title(label);
+   BW2UI(bw)->copy_label(title);
+   BW2UI(bw)->tabs()->set_tab_label(BW2UI(bw), label ? label : "");
+
+   if (a_UIcmd_get_bw_by_widget(BW2UI(bw)->tabs()->wizard()->value()) == bw) {
+      // This is the focused bw, set window title
+      BW2UI(bw)->window()->copy_label(title);
+   }
 }
 
 /*
@@ -1268,32 +1286,16 @@ void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
    BW2UI(bw)->button_set_sens(UI_BACK, sens);
    // Forward
    sens = (a_Nav_stack_ptr(bw) < a_Nav_stack_size(bw) - 1 &&
-           !bw->nav_expecting);
+           !a_Bw_expecting(bw));
    BW2UI(bw)->button_set_sens(UI_FORW, sens);
 }
 
 /*
- * Keep track of mouse pointer over a link.
+ * Toggle control panel
  */
-void a_UIcmd_set_pointer_on_link(BrowserWindow *bw, int flag)
+void a_UIcmd_panels_toggle(BrowserWindow *bw)
 {
-   BW2UI(bw)->pointerOnLink(flag);
-}
-
-/*
- * Is the mouse pointer over a link?
- */
-int a_UIcmd_pointer_on_link(BrowserWindow *bw)
-{
-   return BW2UI(bw)->pointerOnLink();
-}
-
-/*
- * Toggle control panel (aka. fullscreen)
- */
-void a_UIcmd_fullscreen_toggle(BrowserWindow *bw)
-{
-   BW2UI(bw)->fullscreen_toggle();
+   BW2UI(bw)->panels_toggle();
 }
 
 /*
@@ -1327,6 +1329,14 @@ void a_UIcmd_findtext_reset(BrowserWindow *bw)
    l->resetSearch();
 
    a_UIcmd_set_msg(bw, "");
+}
+
+/*
+ * Tell the UI to hide/show the findbar
+ */
+void a_UIcmd_findbar_toggle(BrowserWindow *bw, int on)
+{
+   BW2UI(bw)->findbar_toggle(on);
 }
 
 /*

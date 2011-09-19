@@ -24,7 +24,7 @@ extern "C" {
 #define PREFS_GEOMETRY_DEFAULT_YPOS  -9999
 
 /* Panel sizes */
-enum { P_tiny = 0, P_small, P_medium, P_large };
+enum { P_tiny = 0, P_small, P_medium };
 
 enum {PREFS_FILTER_ALLOW_ALL,
       PREFS_FILTER_SAME_DOMAIN};
@@ -49,6 +49,7 @@ struct _DilloPrefs {
    int32_t bg_color;
    bool_t contrast_visited_color;
    bool_t show_tooltip;
+   char *theme;
    int panel_size;
    bool_t small_icons;
    bool_t limit_text_width;
@@ -71,6 +72,7 @@ struct _DilloPrefs {
    bool_t show_search;
    bool_t show_help;
    bool_t show_progress_box;
+   bool_t show_quit_dialog;
    bool_t fullwindow_start;
    bool_t load_images;
    bool_t load_stylesheets;
@@ -84,7 +86,9 @@ struct _DilloPrefs {
    char *font_monospace;
    bool_t enterpress_forces_submit;
    bool_t middle_click_opens_new_tab;
-   char *search_url;
+   bool_t right_click_closes_tab;
+   bool_t search_url_idx;
+   Dlist *search_urls;
    char *save_dir;
    bool_t show_msg;
    bool_t show_extra_warnings;

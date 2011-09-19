@@ -11,19 +11,17 @@
 
 // Simple ADT for watching file descriptor activity
 
-#include <fltk/run.h>
+#include <FL/Fl.H>
 #include "iowatch.hh"
-
-using namespace fltk;
-
 
 //
 // Hook a Callback for a certain activities in a FD
 //
-void a_IOwatch_add_fd(int fd, int when, FileHandler Callback, void *usr_data=0)
+void a_IOwatch_add_fd(int fd, int when, Fl_FD_Handler Callback,
+                      void *usr_data = 0)
 {
    if (fd >= 0)
-      add_fd(fd, when, Callback, usr_data);
+      Fl::add_fd(fd, when, Callback, usr_data);
 }
 
 //
@@ -32,6 +30,6 @@ void a_IOwatch_add_fd(int fd, int when, FileHandler Callback, void *usr_data=0)
 void a_IOwatch_remove_fd(int fd, int when)
 {
    if (fd >= 0)
-      remove_fd(fd, when);
+      Fl::remove_fd(fd, when);
 }
 

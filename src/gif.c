@@ -677,7 +677,7 @@ static int Gif_decode(DilloGif *gif, const uchar_t *buf, size_t bsize)
             case 2:         /* End code... consume remaining data chunks..? */
                goto error;  /* Could clean up better? */
             default:
-               printf("dillo_gif_decode: error!\n");
+               MSG("Gif_decode: error!\n");
                goto error;
             }
          }
@@ -810,8 +810,6 @@ static size_t Gif_do_img_desc(DilloGif *gif, void *Buf,
       return 0;
    }
 
-   gif->linebuf = dMalloc(gif->Width);
-
    a_Dicache_set_parms(gif->url, gif->version, gif->Image,
                        gif->Width, gif->Height, DILLO_IMG_TYPE_INDEXED);
 
@@ -842,6 +840,7 @@ static size_t Gif_do_img_desc(DilloGif *gif, void *Buf,
    gif->y = 0;
    Gif_lwz_init(gif);
    gif->spill_line_index = 0;
+   gif->linebuf = dMalloc(gif->Width);
    gif->state = 3;              /*Process the lzw data next */
    if (gif->Image && gif->ColorMap_ofs) {
       a_Dicache_set_cmap(gif->url, gif->version, gif->Image,

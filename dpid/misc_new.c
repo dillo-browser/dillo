@@ -71,14 +71,12 @@ Dstr *a_Misc_rdtag(int socket)
  */
 char *a_Misc_readtag(int sock)
 {
-   char *tag, c, buf[10];
-   size_t buflen, i;
+   char *tag, c;
+   size_t i;
    size_t taglen = 0, tagmem = 10;
    ssize_t rdln = 1;
 
    tag = NULL;
-   buf[0] = '\0';
-   buflen = sizeof(buf) / sizeof(buf[0]);
    // new start
    tag = (char *) dMalloc(tagmem + 1);
    for (i = 0; (rdln = read(sock, &c, 1)) != 0; i++) {

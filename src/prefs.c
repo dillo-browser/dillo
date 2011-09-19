@@ -18,11 +18,12 @@
 #define PREFS_FONT_CURSIVE    "URW Chancery L"
 #define PREFS_FONT_FANTASY    "DejaVu Sans" /* TODO: find good default */
 #define PREFS_FONT_MONOSPACE  "DejaVu Sans Mono"
-#define PREFS_SEARCH_URL "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
+#define PREFS_SEARCH_URL      "http://duckduckgo.com/lite/?kp=-1&q=%s"
 #define PREFS_NO_PROXY        "localhost 127.0.0.1"
 #define PREFS_SAVE_DIR        "/tmp/"
 #define PREFS_HTTP_REFERER    "host"
 #define PREFS_HTTP_USER_AGENT "Dillo/" VERSION
+#define PREFS_THEME           "none"
 
 /*-----------------------------------------------------------------------------
  * Global Data
@@ -70,11 +71,15 @@ void a_Prefs_init(void)
    prefs.load_stylesheets=TRUE;
    prefs.middle_click_drags_page = TRUE;
    prefs.middle_click_opens_new_tab = TRUE;
+   prefs.right_click_closes_tab = FALSE;
    prefs.no_proxy = dStrdup(PREFS_NO_PROXY);
    prefs.panel_size = P_medium;
    prefs.parse_embedded_css=TRUE;
    prefs.save_dir = dStrdup(PREFS_SAVE_DIR);
-   prefs.search_url = dStrdup(PREFS_SEARCH_URL);
+   prefs.search_urls = dList_new(16);
+   dList_append(prefs.search_urls, dStrdup(PREFS_SEARCH_URL));
+   dList_append(prefs.search_urls, NULL); /* flags a default search URL */
+   prefs.search_url_idx = 0;
    prefs.show_back = TRUE;
    prefs.show_bookmarks = TRUE;
    prefs.show_clear_url = TRUE;
@@ -85,6 +90,7 @@ void a_Prefs_init(void)
    prefs.show_home = TRUE;
    prefs.show_msg = TRUE;
    prefs.show_progress_box = TRUE;
+   prefs.show_quit_dialog = TRUE;
    prefs.show_reload = TRUE;
    prefs.show_save = TRUE;
    prefs.show_search = TRUE;
@@ -94,6 +100,7 @@ void a_Prefs_init(void)
    prefs.show_url = TRUE;
    prefs.small_icons = FALSE;
    prefs.start_page = a_Url_new(PREFS_START_PAGE, NULL);
+   prefs.theme = dStrdup(PREFS_THEME);
    prefs.w3c_plus_heuristics = TRUE;
 }
 
@@ -103,6 +110,8 @@ void a_Prefs_init(void)
  */
 void a_Prefs_freeall(void)
 {
+   int i;
+
    dFree(prefs.font_cursive);
    dFree(prefs.font_fantasy);
    dFree(prefs.font_monospace);
@@ -116,6 +125,9 @@ void a_Prefs_freeall(void)
    dFree(prefs.http_user_agent);
    dFree(prefs.no_proxy);
    dFree(prefs.save_dir);
-   dFree(prefs.search_url);
+   for (i = 0; i < dList_length(prefs.search_urls); ++i)
+      dFree(dList_nth_data(prefs.search_urls, i));
+   dList_free(prefs.search_urls);
    a_Url_free(prefs.start_page);
+   dFree(prefs.theme);
 }

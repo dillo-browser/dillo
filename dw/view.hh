@@ -92,12 +92,6 @@ public:
     * This will normally imply a resize of the UI widget. Width and height are
     * the dimensions of the new size, \em including the scrollbar thicknesses.
     *
-    * \bug The rest of this comment needs to be updated.
-    *
-    * markerWidthDiff and markerHeightDiff are the respective dimensions of
-    * the viewport markers (see dw::core::getMarkerWidthDiff and
-    * dw::core::getMarkerHeightDiff), if they are 0, the respective
-    * marker should not be shown at all.
     */
    virtual void setViewportSize (int width, int height,
                                  int hScrollbarThickness,
@@ -179,12 +173,16 @@ public:
                                int angle1, int angle2) = 0;
    virtual void drawPolygon    (style::Color *color,
                                 style::Color::Shading shading,
-                                bool filled, int points[][2], int npoints) = 0;
+                                bool filled, bool convex, Point *points,
+                                int npoints) = 0;
    virtual void drawText       (style::Font *font,
                                 style::Color *color,
                                 style::Color::Shading shading,
                                 int x, int y, const char *text, int len) = 0;
-
+   virtual void drawSimpleWrappedText (style::Font *font, style::Color *color,
+                                       style::Color::Shading shading,
+                                       int x, int y, int w, int h,
+                                       const char *text) = 0;
    virtual void drawImage (Imgbuf *imgbuf, int xRoot, int yRoot,
                            int x, int y, int width, int height) = 0;
 

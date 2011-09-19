@@ -6,9 +6,15 @@
 # The commented-out bindings below show the defaults built into Dillo.
 #
 # Modifiers recognized: "Shift", "Ctrl", "Alt", "Meta".
+# (OS X: Use "Meta" for Command)
+#
 # Key names recognized: "Backspace", "Delete", "Down", "End", "Esc",
 # "F1" through "F12", "Home", "Insert", "Left", "PageDown", "PageUp",
 # "Print", "Return", "Right", "Space", "Tab", "Up".
+#
+# Multimedia keys: "Back", "Favorites", "Forward", "HomePage", "Mail",
+# "MediaNext", "MediaPlay", "MediaPrev", "MediaStop", "Refresh", "Search",
+# "Sleep", "Stop", "VolumeDown", "VolumeMute", VolumeUp".
 #
 # If Dillo is running under X11, keys whose names are not recognized can
 # be specified using their keysym value in hexadecimal. Use xev to get
@@ -27,14 +33,13 @@
 
 # "close-tab" closes the current tab.
 # Note that this closes the browser window if there is only one tab.
-#<ctrl>q = close-tab
+#<ctrl>w = close-tab
 
 # "close-all" closes all tabs/windows and exits.
-#<alt>q = close-all
+#<ctrl>q = close-all
 
 # "left-tab" and "right-tab" switch to the left/right of the current tab.
-# *** NOT HOOKED UP YET ***
-# <shift>tab = left-tab
+# <ctrl><shift>tab = left-tab
 # <ctrl>tab = right-tab
 
 # "back" and "forward" move back/forward through the browser history.
@@ -52,7 +57,7 @@
 # "find" lets you search for a text string on the current page.
 #<ctrl>f = find
 
-# "hide-panels" hides the findbar.
+# "hide-panels" hides the findbar if present, control panels if not.
 #esc = hide-panels
 
 # "websearch" lets you send a text string to the search engine that you
@@ -61,9 +66,6 @@
 
 # go to your "bookmarks".
 #<ctrl>b = bookmarks
-
-# "fullscreen" hides/shows the panels at the top and bottom of a dillo window.
-#<ctrl>space = fullscreen
 
 # "file-menu" pops up the file menu.
 #<alt>f = file-menu
@@ -86,6 +88,10 @@
 
 #pagedown = screen-down
 #space = screen-down
+
+#(screen-left has no default binding)
+
+#(screen-right has no default binding)
 
 #up = line-up
 

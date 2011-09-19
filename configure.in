@@ -1,6 +1,6 @@
 dnl Process this file with aclocal, autoconf and automake.
 
-AC_INIT([dillo], [2.2])
+AC_INIT([dillo], [3.0])
 
 dnl Detect the canonical target build environment
 AC_CANONICAL_TARGET
@@ -22,8 +22,6 @@ AC_ARG_ENABLE(gprof,  [  --enable-gprof          Try to compile and run with pro
                     , enable_gprof=no)
 AC_ARG_ENABLE(insure, [  --enable-insure         Try to compile and run with Insure++],
                     , enable_insure=no)
-AC_ARG_ENABLE(ansi,   [  --enable-ansi           Try to compile and run with ANSI flags],
-                    , enable_ansi=no)
 AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable ssl, https (ALPHA CODE)],
                     , enable_ssl=no)
 AC_ARG_ENABLE(ipv6,   [  --enable-ipv6           Build with support for IPv6], , )
@@ -37,7 +35,7 @@ AC_ARG_ENABLE(gif,    [  --disable-gif           Disable support for GIF images]
               enable_gif=$enableval, enable_gif=yes)
 AC_ARG_ENABLE(threaded-dns,[  --disable-threaded-dns  Disable the advantage of a reentrant resolver library],
               enable_threaded_dns=$enableval, enable_threaded_dns=yes)
-AC_ARG_ENABLE(rtfl,   [  --enable-rtfl           Build with rtfl messages])
+AC_ARG_ENABLE(rtfl,   [  --enable-rtfl           Build with rtfl messages (for debugging rendering)])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
@@ -109,19 +107,22 @@ fi
 
 
 dnl ----------------------
-dnl Test for FLTK2 library
+dnl Test for FLTK 1.3 library
 dnl ----------------------
 dnl
 dnl For debugging and to be user friendly
-AC_MSG_CHECKING([FLTK2])
-if sh -c "fltk2-config --version" >/dev/null 2>&1
-then AC_MSG_RESULT(yes)
-     LIBFLTK_CXXFLAGS=`fltk2-config --cxxflags`
-     LIBFLTK_CFLAGS=`fltk2-config --cflags`
-     LIBFLTK_LIBS=`fltk2-config --ldflags`
-else AC_MSG_RESULT(no)
-     AC_MSG_ERROR(FLTK2 must be installed!)
-fi
+AC_MSG_CHECKING([FLTK 1.3])
+fltk_version="`fltk-config --version 2>/dev/null`"
+case $fltk_version in
+  1.3.*) AC_MSG_RESULT(yes)
+         LIBFLTK_CXXFLAGS=`fltk-config --cxxflags`
+         LIBFLTK_CFLAGS=`fltk-config --cflags`
+         LIBFLTK_LIBS=`fltk-config --ldflags`;;
+  ?*)    AC_MSG_RESULT(no)
+         AC_ERROR(FLTK 1.3 required; version found: $fltk_version);;
+  *)     AC_MSG_RESULT(no)
+         AC_ERROR(FLTK 1.3 required; fltk-config not found)
+esac
 
 
 dnl ----------------
@@ -441,23 +442,11 @@ if eval "test x$GCC = xyes"; then
   if test "`echo $CFLAGS | grep -e '-W ' -e '-W$' 2> /dev/null`" = ""; then
     CFLAGS="$CFLAGS -W"
   fi
-  if test "`echo $CFLAGS | grep '\-W[^a]' 2> /dev/null`" = ""; then
-    if test "`$CC -v 2>&1 | grep 'version 3'`" != ""; then
-      CFLAGS="$CFLAGS -W -Wno-unused-parameter"
-    fi
+  if test "`echo $CFLAGS | grep '\-Wno-unused-parameter' 2> /dev/null`" = ""; then
+    CFLAGS="$CFLAGS -Wno-unused-parameter"
   fi
   if test "`echo $CFLAGS | grep '\-Waggregate-return' 2> /dev/null`" = ""; then
     CFLAGS="$CFLAGS -Waggregate-return"
-  fi
-
-  if eval "test x$enable_ansi = xyes"; then
-    if test "`echo $CFLAGS | grep '\-ansi' 2> /dev/null`" = ""; then
-      CFLAGS="$CFLAGS -ansi"
-    fi
-
-    if test "`echo $CFLAGS | grep '\-pedantic' 2> /dev/null`" = ""; then
-      CFLAGS="$CFLAGS -pedantic"
-    fi
   fi
 fi
 dnl -----------

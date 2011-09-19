@@ -233,6 +233,8 @@ static Dstr *Url_resolve_relative(const char *RelStr,
       dStr_append(SolvedUrl, BaseStr);
       if ((p = strchr(SolvedUrl->str, '#')))
          dStr_truncate(SolvedUrl, p - SolvedUrl->str);
+      if (!BaseUrl->path)
+         dStr_append_c(SolvedUrl, '/');
 
       if (RelUrl->query) {                        /* query */
          if (BaseUrl->query)
@@ -687,11 +689,11 @@ static uint_t Url_host_public_internal_dots(const char *host)
 
       if (tld_len > 0) {
          /* These TLDs were chosen by examining the current publicsuffix list
-          * in January 2010 and picking out those where it was simplest for
+          * in September 2011 and picking out those where it was simplest for
           * them to describe the situation by beginning with a "*.[tld]" rule.
           */
-         const char *const tlds[] = {"ar","au","bd","bn","bt","ck","cy","do",
-                                     "eg","er","et","fj","fk","gt","gu","id",
+         const char *const tlds[] = {"ar","au","bd","bn","bt","ck","cy",
+                                     "er","et","fj","fk","gt","gu","id",
                                      "il","jm","ke","kh","kw","ml","mm","mt",
                                      "mz","ni","np","nz","om","pg","py","qa",
                                      "sv","tr","uk","uy","ve","ye","yu","za",
@@ -716,7 +718,7 @@ static uint_t Url_host_public_internal_dots(const char *host)
  * domain that is in a registry outside the organization.
  * For 'www.dillo.org', that would be 'dillo.org'.
  */
-const char *a_Url_host_find_public_suffix(const char *host)
+static const char *Url_host_find_public_suffix(const char *host)
 {
    const char *s;
    uint_t dots;
@@ -750,4 +752,13 @@ const char *a_Url_host_find_public_suffix(const char *host)
 
    _MSG("public suffix of %s is %s\n", host, s);
    return s;
+}
+
+bool_t a_Url_same_organization(const DilloUrl *u1, const DilloUrl *u2)
+{
+   if (!u1 || !u2)
+      return FALSE;
+
+   return dStrcasecmp(Url_host_find_public_suffix(URL_HOST(u1)),
+                      Url_host_find_public_suffix(URL_HOST(u2))) ? FALSE :TRUE;
 }

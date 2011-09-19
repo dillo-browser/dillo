@@ -174,7 +174,7 @@ bool Layout::LinkEmitter::emitClick (Widget *widget, int link, int img,
 
 Layout::Anchor::~Anchor ()
 {
-   delete name;
+   free(name);
 }
 
 // ---------------------------------------------------------------------
@@ -194,6 +194,7 @@ Layout::Layout (Platform *platform)
    canvasWidth = canvasAscent = canvasDescent = 0;
 
    usesViewport = false;
+   drawAfterScrollReq = false;
    scrollX = scrollY = 0;
    viewportWidth = viewportHeight = 0;
    hScrollbarThickness = vScrollbarThickness = 0;
@@ -219,14 +220,19 @@ Layout::Layout (Platform *platform)
 
 Layout::~Layout ()
 {
+   widgetAtPoint = NULL;
+
    if (scrollIdleId != -1)
       platform->removeIdle (scrollIdleId);
    if (resizeIdleId != -1)
       platform->removeIdle (resizeIdleId);
    if (bgColor)
       bgColor->unref ();
-   if (topLevel)
-      delete topLevel;
+   if (topLevel) {
+      Widget *w = topLevel;
+      topLevel = NULL;
+      delete w;
+   }
    delete platform;
    delete view;
    delete anchorsTable;
@@ -279,9 +285,12 @@ void Layout::removeWidget ()
 
 void Layout::setWidget (Widget *widget)
 {
-   if (topLevel)
-      delete topLevel;
    widgetAtPoint = NULL;
+   if (topLevel) {
+      Widget *w = topLevel;
+      topLevel = NULL;
+      delete w;
+   }
    textZone->zoneFree ();
    addWidget (widget);
 
@@ -449,6 +458,10 @@ void Layout::scrollIdle ()
    if (xChanged || yChanged) {
       adjustScrollPos ();
       view->scrollTo (scrollX, scrollY);
+      if (drawAfterScrollReq) {
+         drawAfterScrollReq = false;
+         view->queueDrawTotal ();
+      }
    }
 
    scrollIdleId = -1;
@@ -496,7 +509,11 @@ void Layout::draw (View *view, Rectangle *area)
 {
    Rectangle widgetArea, intersection, widgetDrawArea;
 
-   if (topLevel) {
+   if (scrollIdleId != -1) {
+      /* scroll is pending, defer draw until after scrollIdle() */
+      drawAfterScrollReq = true;
+
+   } else if (topLevel) {
       /* Draw the top level widget. */
       widgetArea.x = topLevel->allocation.x;
       widgetArea.y = topLevel->allocation.y;
@@ -527,7 +544,7 @@ void Layout::setAnchor (const char *anchor)
    _MSG("setAnchor (%s)\n", anchor);
 
    if (requestedAnchor)
-      delete requestedAnchor;
+      free(requestedAnchor);
    requestedAnchor = anchor ? strdup (anchor) : NULL;
    updateAnchor ();
 }
@@ -672,10 +689,9 @@ void Layout::resizeIdle ()
             }
 
             // Set viewport sizes.
-            if (view->usesViewport ())
-               view->setViewportSize (viewportWidth, viewportHeight,
-                                      actualHScrollbarThickness,
-                                      actualVScrollbarThickness);
+            view->setViewportSize (viewportWidth, viewportHeight,
+                                   actualHScrollbarThickness,
+                                   actualVScrollbarThickness);
          }
       }
 
@@ -691,7 +707,7 @@ void Layout::setSizeHints ()
    if (topLevel) {
       topLevel->setWidth (viewportWidth
                           - (canvasHeightGreater ? vScrollbarThickness : 0));
-      topLevel->setAscent (viewportHeight - vScrollbarThickness);
+      topLevel->setAscent (viewportHeight - hScrollbarThickness);
       topLevel->setDescent (0);
    }
 }
@@ -808,6 +824,7 @@ void Layout::enterNotify (View *view, int x, int y, ButtonState state)
  */
 void Layout::leaveNotify (View *view, ButtonState state)
 {
+#if 0
    Widget *lastWidget;
    EventCrossing event;
 
@@ -820,6 +837,9 @@ void Layout::leaveNotify (View *view, ButtonState state)
       event.currentWidget = widgetAtPoint;
       lastWidget->leaveNotify (&event);
    }
+#else
+   moveOutOfView (state);
+#endif
 }
 
 /*
@@ -838,15 +858,16 @@ Widget *Layout::getWidgetAtPoint (int x, int y)
 
 /*
  * Emit the necessary crossing events, when the mouse pointer has moved to
- * the given widget.
+ * the given widget (by mouse or scrolling).
  */
 void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
 {
    Widget *ancestor, *w;
    Widget **track;
-   int trackLen, i;
+   int trackLen, i, i_a;
    EventCrossing crossingEvent;
 
+   _MSG("moveToWidget: wap=%p nwap=%p\n",widgetAtPoint,newWidgetAtPoint);
    if (newWidgetAtPoint != widgetAtPoint) {
       // The mouse pointer has been moved into another widget.
       if (newWidgetAtPoint && widgetAtPoint)
@@ -875,6 +896,7 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          /* first part */
          for (w = widgetAtPoint; w != ancestor; w = w->getParent ())
             track[i++] = w;
+      i_a = i;
       track[i++] = ancestor;
       if (newWidgetAtPoint) {
          /* second part */
@@ -882,17 +904,32 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
          for (w = newWidgetAtPoint; w != ancestor; w = w->getParent ())
             track[i--] = w;
       }
+#if 0
+      MSG("Track: %s[ ", widgetAtPoint ? "" : "nil ");
+      for (i = 0; i < trackLen; i++)
+         MSG("%s%p ", i == i_a ? ">" : "", track[i]);
+      MSG("] %s\n", newWidgetAtPoint ? "" : "nil");
+#endif
 
-      /* Send events to all events on the track */
+      /* Send events to the widgets on the track */
       for (i = 0; i < trackLen; i++) {
          crossingEvent.state = state;
          crossingEvent.currentWidget = widgetAtPoint; // ???
          crossingEvent.lastWidget = widgetAtPoint; // ???
-
-         if (i != 0)
-            track[i]->enterNotify (&crossingEvent);
-         if (i != trackLen - 1)
+         if (i < i_a) {
             track[i]->leaveNotify (&crossingEvent);
+         } else if (i == i_a) { /* ancestor */
+            /* Don't touch ancestor unless:
+             *   - moving into/from NULL,
+             *   - ancestor becomes the newWidgetAtPoint */
+            if (i_a == trackLen-1 && !newWidgetAtPoint)
+               track[i]->leaveNotify (&crossingEvent);
+            else if ((i_a == 0 && !widgetAtPoint) ||
+                     (i_a == trackLen-1 && newWidgetAtPoint))
+               track[i]->enterNotify (&crossingEvent);
+         } else {
+            track[i]->enterNotify (&crossingEvent);
+         }
       }
 
       delete[] track;

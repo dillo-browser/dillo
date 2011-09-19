@@ -4,45 +4,58 @@
 #include <time.h>         // for time_t
 #include <sys/time.h>     // for time_t in FreeBSD
 
-#include <fltk/Group.h>
-#include <fltk/Image.h>
-#include <fltk/Scrollbar.h>
+#include <FL/Fl_Group.H>
+#include <FL/x.H>
 
 #include "fltkcore.hh"
 
 namespace dw {
 namespace fltk {
 
-class FltkViewBase: public FltkView, public ::fltk::Group
+class FltkViewBase: public FltkView, public Fl_Group
 {
 private:
+   class BackBuffer {
+      private:
+         int w;
+         int h;
+         bool created;
+
+      public:
+         Fl_Offscreen offscreen;
+
+         BackBuffer ();
+         ~BackBuffer ();
+         void setSize(int w, int h);
+   };
+
    typedef enum { DRAW_PLAIN, DRAW_CLIPPED, DRAW_BUFFERED } DrawType;
 
    int bgColor;
    core::Region drawRegion;
-   ::fltk::Rectangle *exposeArea;
-   static ::fltk::Image *backBuffer;
+   core::Rectangle *exposeArea;
+   static BackBuffer *backBuffer;
    static bool backBufferInUse;
 
    void draw (const core::Rectangle *rect, DrawType type);
    void drawChildWidgets ();
    inline void clipPoint (int *x, int *y, int border) {
       if (exposeArea) {
-         if (*x < exposeArea->x () - border)
-            *x = exposeArea->x () - border;
-         if (*x > exposeArea->r () + border)
-            *x = exposeArea->r () + border;
-         if (*y < exposeArea->y () - border)
-            *y = exposeArea->y () - border;
-         if (*y > exposeArea->b () + border)
-            *y = exposeArea->b () + border;
+         if (*x < exposeArea->x - border)
+            *x = exposeArea->x - border;
+         if (*x > exposeArea->x + exposeArea->width + border)
+            *x = exposeArea->x + exposeArea->width + border;
+         if (*y < exposeArea->y - border)
+            *y = exposeArea->y - border;
+         if (*y > exposeArea->y + exposeArea->height + border)
+            *y = exposeArea->y + exposeArea->height + border;
       }
    }
-
 protected:
    core::Layout *theLayout;
    int canvasWidth, canvasHeight;
    int mouse_x, mouse_y;
+   Fl_Widget *focused_child;
 
    virtual int translateViewXToCanvasX (int x) = 0;
    virtual int translateViewYToCanvasY (int y) = 0;
@@ -85,7 +98,8 @@ public:
                  int angle1, int angle2);
     void drawPolygon (core::style::Color *color,
                       core::style::Color::Shading shading,
-                      bool filled, int points[][2], int npoints);
+                      bool filled, bool convex,
+                      core::Point *points, int npoints);
 
    core::View *getClippingView (int x, int y, int width, int height);
    void mergeClippingView (core::View *clippingView);
@@ -99,21 +113,24 @@ public:
    FltkWidgetView (int x, int y, int w, int h, const char *label = 0);
    ~FltkWidgetView ();
 
-   void layout();
-
    void drawText (core::style::Font *font,
                   core::style::Color *color,
                   core::style::Color::Shading shading,
                   int x, int y, const char *text, int len);
+   void drawSimpleWrappedText (core::style::Font *font,
+                               core::style::Color *color,
+                               core::style::Color::Shading shading,
+                               int x, int y, int w, int h,
+                               const char *text);
    void drawImage (core::Imgbuf *imgbuf, int xRoot, int yRoot,
                    int x, int y, int width, int height);
 
    bool usesFltkWidgets ();
-   void addFltkWidget (::fltk::Widget *widget, core::Allocation *allocation);
-   void removeFltkWidget (::fltk::Widget *widget);
-   void allocateFltkWidget (::fltk::Widget *widget,
+   void addFltkWidget (Fl_Widget *widget, core::Allocation *allocation);
+   void removeFltkWidget (Fl_Widget *widget);
+   void allocateFltkWidget (Fl_Widget *widget,
                             core::Allocation *allocation);
-   void drawFltkWidget (::fltk::Widget *widget, core::Rectangle *area);
+   void drawFltkWidget (Fl_Widget *widget, core::Rectangle *area);
 };
 
 } // namespace fltk

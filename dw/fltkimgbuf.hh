@@ -55,7 +55,7 @@ public:
    void setDeleteOnUnref (bool deleteOnUnref);
    bool isReferred ();
 
-   void draw (::fltk::Widget *target, int xRoot, int yRoot,
+   void draw (Fl_Widget *target, int xRoot, int yRoot,
               int x, int y, int width, int height);
 };
 

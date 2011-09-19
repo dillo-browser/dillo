@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-#include <fltk/events.h>
+#include <FL/Fl.H>
 #include <stdio.h>
 #include <stdlib.h>        /* strtol */
 #include <string.h>
@@ -17,6 +17,7 @@
 
 #include "dlib/dlib.h"
 #include "keys.hh"
+#include "utf8.hh"
 #include "msg.h"
 
 /*
@@ -38,80 +39,99 @@ typedef struct {
  *  Local data
  */
 static const Mapping_t keyNames[] = {
-   { "Backspace",   fltk::BackSpaceKey },
-   { "Delete",      fltk::DeleteKey    },
-   { "Down",        fltk::DownKey      },
-   { "End",         fltk::EndKey       },
-   { "Esc",         fltk::EscapeKey    },
-   { "F1",          fltk::F1Key        },
-   { "F2",          fltk::F2Key        },
-   { "F3",          fltk::F3Key        },
-   { "F4",          fltk::F4Key        },
-   { "F5",          fltk::F5Key        },
-   { "F6",          fltk::F6Key        },
-   { "F7",          fltk::F7Key        },
-   { "F8",          fltk::F8Key        },
-   { "F9",          fltk::F9Key        },
-   { "F10",         fltk::F10Key       },
-   { "F11",         fltk::F11Key       },
-   { "F12",         fltk::F12Key       },
-   { "Home",        fltk::HomeKey      },
-   { "Insert",      fltk::InsertKey    },
-   { "Left",        fltk::LeftKey      },
-   { "PageDown",    fltk::PageDownKey  },
-   { "PageUp",      fltk::PageUpKey    },
-   { "Print",       fltk::PrintKey     },
-   { "Return",      fltk::ReturnKey    },
-   { "Right",       fltk::RightKey     },
-   { "Space",       fltk::SpaceKey     },
-   { "Tab",         fltk::TabKey       },
-   { "Up",          fltk::UpKey        }
+   { "Backspace",   FL_BackSpace },
+   { "Delete",      FL_Delete    },
+   { "Down",        FL_Down      },
+   { "End",         FL_End       },
+   { "Esc",         FL_Escape    },
+   { "F1",          FL_F + 1     },
+   { "F2",          FL_F + 2     },
+   { "F3",          FL_F + 3     },
+   { "F4",          FL_F + 4     },
+   { "F5",          FL_F + 5     },
+   { "F6",          FL_F + 6     },
+   { "F7",          FL_F + 7     },
+   { "F8",          FL_F + 8     },
+   { "F9",          FL_F + 9     },
+   { "F10",         FL_F + 10    },
+   { "F11",         FL_F + 11    },
+   { "F12",         FL_F + 12    },
+   { "Home",        FL_Home      },
+   { "Insert",      FL_Insert    },
+   { "Left",        FL_Left      },
+   { "PageDown",    FL_Page_Down },
+   { "PageUp",      FL_Page_Up   },
+   { "Print",       FL_Print     },
+   { "Return",      FL_Enter     },
+   { "Right",       FL_Right     },
+   { "Space",       ' '          },
+   { "Tab",         FL_Tab       },
+   { "Up",          FL_Up        },
+   /* multimedia keys */
+   { "Back",        FL_Back        },
+   { "Favorites",   FL_Favorites   },
+   { "Forward",     FL_Forward     },
+   { "HomePage",    FL_Home_Page   },
+   { "Mail",        FL_Mail        },
+   { "MediaNext",   FL_Media_Next  },
+   { "MediaPlay",   FL_Media_Play  },
+   { "MediaPrev",   FL_Media_Prev  },
+   { "MediaStop",   FL_Media_Stop  },
+   { "Refresh",     FL_Refresh     },
+   { "Search",      FL_Search      },
+   { "Sleep",       FL_Sleep       },
+   { "Stop",        FL_Stop        },
+   { "VolumeDown",  FL_Volume_Down },
+   { "VolumeMute",  FL_Volume_Mute },
+   { "VolumeUp",    FL_Volume_Up   },
 };
 
 static const Mapping_t modifierNames[] = {
-   { "Shift",   fltk::SHIFT   },
-   { "Ctrl",    fltk::CTRL    },
-   { "Alt",     fltk::ALT     },
-   { "Meta",    fltk::META    },
-   { "Button1", fltk::BUTTON1 },
-   { "Button2", fltk::BUTTON2 },
-   { "Button3", fltk::BUTTON3 }
+   { "Shift",   FL_SHIFT   },
+   { "Ctrl",    FL_CTRL    },
+   { "Alt",     FL_ALT     },
+   { "Meta",    FL_META    },
+   { "Button1", FL_BUTTON1 },
+   { "Button2", FL_BUTTON2 },
+   { "Button3", FL_BUTTON3 }
 };
 
 static const KeyBinding_t default_keys[] = {
-   { "nop"          , KEYS_NOP          , 0            , 0                  },
-   { "open"         , KEYS_OPEN         , fltk::CTRL   , 'o'                },
-   { "new-window"   , KEYS_NEW_WINDOW   , fltk::CTRL   , 'n'                },
-   { "new-tab"      , KEYS_NEW_TAB      , fltk::CTRL   , 't'                },
-   { "left-tab"     , KEYS_LEFT_TAB     , fltk::SHIFT  , fltk::TabKey       },
-   { "right-tab"    , KEYS_RIGHT_TAB    , fltk::CTRL   , fltk::TabKey       },
-   { "close-tab"    , KEYS_CLOSE_TAB    , fltk::CTRL   , 'q'                },
-   { "find"         , KEYS_FIND         , fltk::CTRL   , 'f'                },
-   { "websearch"    , KEYS_WEBSEARCH    , fltk::CTRL   , 's'                },
-   { "bookmarks"    , KEYS_BOOKMARKS    , fltk::CTRL   , 'b'                },
-   { "fullscreen"   , KEYS_FULLSCREEN   , fltk::CTRL   , fltk::SpaceKey     },
-   { "reload"       , KEYS_RELOAD       , fltk::CTRL   , 'r'                },
-   { "stop"         , KEYS_STOP         , 0            , 0                  },
-   { "save"         , KEYS_SAVE         , 0            , 0                  },
-   { "hide-panels"  , KEYS_HIDE_PANELS  , 0            , fltk::EscapeKey    },
-   { "file-menu"    , KEYS_FILE_MENU    , fltk::ALT    , 'f'                },
-   { "close-all"    , KEYS_CLOSE_ALL    , fltk::ALT    , 'q'                },
-   { "back"         , KEYS_BACK         , 0            , fltk::BackSpaceKey },
-   { "back"         , KEYS_BACK         , 0            , ','                },
-   { "forward"      , KEYS_FORWARD      , fltk::SHIFT  , fltk::BackSpaceKey },
-   { "forward"      , KEYS_FORWARD      , 0            , '.'                },
-   { "goto"         , KEYS_GOTO         , fltk::CTRL   , 'l'                },
-   { "home"         , KEYS_HOME         , fltk::CTRL   , 'h'                },
-   { "screen-up"    , KEYS_SCREEN_UP    , 0            , fltk::PageUpKey    },
-   { "screen-up"    , KEYS_SCREEN_UP    , 0            , 'b'                },
-   { "screen-down"  , KEYS_SCREEN_DOWN  , 0            , fltk::PageDownKey  },
-   { "screen-down"  , KEYS_SCREEN_DOWN  , 0            , fltk::SpaceKey     },
-   { "line-up"      , KEYS_LINE_UP      , 0            , fltk::UpKey        },
-   { "line-down"    , KEYS_LINE_DOWN    , 0            , fltk::DownKey      },
-   { "left"         , KEYS_LEFT         , 0            , fltk::LeftKey      },
-   { "right"        , KEYS_RIGHT        , 0            , fltk::RightKey     },
-   { "top"          , KEYS_TOP          , 0            , fltk::HomeKey      },
-   { "bottom"       , KEYS_BOTTOM       , 0            , fltk::EndKey       },
+   { "nop"          , KEYS_NOP          , 0         , 0               },
+   { "open"         , KEYS_OPEN         , FL_CTRL   , 'o'             },
+   { "new-window"   , KEYS_NEW_WINDOW   , FL_CTRL   , 'n'             },
+   { "new-tab"      , KEYS_NEW_TAB      , FL_CTRL   , 't'             },
+   { "left-tab"     , KEYS_LEFT_TAB     , FL_CTRL |
+                                          FL_SHIFT  , FL_Tab          },
+   { "right-tab"    , KEYS_RIGHT_TAB    , FL_CTRL   , FL_Tab          },
+   { "close-tab"    , KEYS_CLOSE_TAB    , FL_CTRL   , 'w'             },
+   { "find"         , KEYS_FIND         , FL_CTRL   , 'f'             },
+   { "websearch"    , KEYS_WEBSEARCH    , FL_CTRL   , 's'             },
+   { "bookmarks"    , KEYS_BOOKMARKS    , FL_CTRL   , 'b'             },
+   { "reload"       , KEYS_RELOAD       , FL_CTRL   , 'r'             },
+   { "stop"         , KEYS_STOP         , 0         , 0               },
+   { "save"         , KEYS_SAVE         , 0         , 0               },
+   { "hide-panels"  , KEYS_HIDE_PANELS  , 0         , FL_Escape       },
+   { "file-menu"    , KEYS_FILE_MENU    , FL_ALT    , 'f'             },
+   { "close-all"    , KEYS_CLOSE_ALL    , FL_CTRL   , 'q'             },
+   { "back"         , KEYS_BACK         , 0         , FL_BackSpace    },
+   { "back"         , KEYS_BACK         , 0         , ','             },
+   { "forward"      , KEYS_FORWARD      , FL_SHIFT  , FL_BackSpace    },
+   { "forward"      , KEYS_FORWARD      , 0         , '.'             },
+   { "goto"         , KEYS_GOTO         , FL_CTRL   , 'l'             },
+   { "home"         , KEYS_HOME         , FL_CTRL   , 'h'             },
+   { "screen-up"    , KEYS_SCREEN_UP    , 0         , FL_Page_Up      },
+   { "screen-up"    , KEYS_SCREEN_UP    , 0         , 'b'             },
+   { "screen-down"  , KEYS_SCREEN_DOWN  , 0         , FL_Page_Down    },
+   { "screen-down"  , KEYS_SCREEN_DOWN  , 0         , ' '             },
+   { "screen-left"  , KEYS_SCREEN_LEFT  , 0         , 0               },
+   { "screen-right" , KEYS_SCREEN_RIGHT , 0         , 0               },
+   { "line-up"      , KEYS_LINE_UP      , 0         , FL_Up           },
+   { "line-down"    , KEYS_LINE_DOWN    , 0         , FL_Down         },
+   { "left"         , KEYS_LEFT         , 0         , FL_Left         },
+   { "right"        , KEYS_RIGHT        , 0         , FL_Right        },
+   { "top"          , KEYS_TOP          , 0         , FL_Home         },
+   { "bottom"       , KEYS_BOTTOM       , 0         , FL_End          },
 };
 
 static Dlist *bindings;
@@ -172,20 +192,25 @@ KeysCommand_t Keys::getKeyCmd()
 {
    KeysCommand_t ret = KEYS_NOP;
    KeyBinding_t keyNode;
-   // We're only interested in some flags
-   keyNode.modifier = fltk::event_state() &
-     (fltk::SHIFT | fltk::CTRL | fltk::ALT | fltk::META);
 
-   if (keyNode.modifier == fltk::SHIFT &&
-       ispunct(fltk::event_text()[0])) {
-      // Get key code for a shifted character
-      keyNode.key = fltk::event_text()[0];
-      keyNode.modifier = 0;
+   keyNode.modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL |FL_ALT|FL_META);
+   if (iscntrl(Fl::event_text()[0])) {
+      keyNode.key = Fl::event_key();
    } else {
-      keyNode.key = fltk::event_key();
-   }
+      const char *beyond = Fl::event_text() + Fl::event_length();
+      keyNode.key = a_Utf8_decode(Fl::event_text(), beyond, NULL);
 
-   _MSG("getKeyCmd: key=%d, mod=%d\n", keyNode.key, keyNode.modifier);
+      /* BUG: The idea is to drop the modifiers if their use results in a
+       * different character (e.g., if shift-8 gives '*', drop the shift,
+       * but if ctrl-6 gives '6', keep the ctrl), but we have to compare a
+       * keysym with a Unicode codepoint, which only works for characters
+       * below U+0100 (those known to latin-1).
+       */
+      if (keyNode.key != Fl::event_key())
+         keyNode.modifier = 0;
+   }
+   _MSG("getKeyCmd: evkey=0x%x evtext=\'%s\' key=0x%x, mod=0x%x\n",
+        Fl::event_key(), Fl::event_text(), keyNode.key, keyNode.modifier);
    void *data = dList_find_sorted(bindings, &keyNode, nodeByKeyCmp);
    if (data)
       ret = ((KeyBinding_t*)data)->cmd;
@@ -311,8 +336,11 @@ void Keys::parseKey(char *key, char *commandName)
    // Get key code
    if (!key[1]) {
       keycode = *key;
+   } else if (a_Utf8_char_count(keystr, strlen(keystr)) == 1) {
+      const char *beyond = keystr + strlen(keystr);
+      keycode = a_Utf8_decode(keystr, beyond, NULL);
    } else if (key[0] == '0' && key[1] == 'x') {
-      /* keysym. For details on values reported, see fltk's fltk/events.h */
+      /* keysym */
       keycode = strtol(key, NULL, 0x10);
    } else if ((st = getKeyCode(keystr)) == -1) {
       MSG("Keys::parseKey unknown keyname: %s\n", keystr);

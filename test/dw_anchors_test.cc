@@ -20,8 +20,8 @@
 
 
 #include <ctype.h>
-#include <fltk/Window.h>
-#include <fltk/run.h>
+#include <FL/Fl_Window.H>
+#include <FL/Fl.H>
 
 #include "../dw/core.hh"
 #include "../dw/fltkcore.hh"
@@ -36,7 +36,7 @@ using namespace dw::fltk;
 
 static FltkPlatform *platform;
 static Layout *layout;
-static ::fltk::Window *window;
+static Fl_Window *window;
 static FltkViewport *viewport;
 static Style *topWidgetStyle, *widgetStyle, *wordStyle, *headingStyle;
 static Textblock *topTextblock = NULL;
@@ -47,7 +47,7 @@ static const char *numbers[10] = {
    "six", "seven", "eight", "nine", "ten"
 };
 
-static void anchorCallback (::fltk::Widget *widget, void *data)
+static void anchorCallback (Fl_Widget *widget, void *data)
 {
    layout->setAnchor (numbers[(long)data]);
 }
@@ -87,7 +87,7 @@ static void textTimeout (void *data)
 
    textblockNo++;
    if (textblockNo < 10)
-      ::fltk::repeat_timeout (1, textTimeout, NULL);
+      Fl::repeat_timeout (1, textTimeout, NULL);
 
 }
 
@@ -98,10 +98,12 @@ int main(int argc, char **argv)
    platform = new FltkPlatform ();
    layout = new Layout (platform);
 
-   window = new ::fltk::Window(250, 200, "Dw Anchors Test");
+   window = new Fl_Window(250, 200, "Dw Anchors Test");
+   window->box(FL_NO_BOX);
    window->begin();
 
    viewport = new FltkViewport (50, 0, 200, 200);
+   viewport->end();
    layout->attachView (viewport);
 
    for (int i = 0; i < 10; i++) {
@@ -109,10 +111,9 @@ int main(int argc, char **argv)
       strcpy (buf, numbers[i]);
       buf[0] = toupper (buf[0]);
       buttonLabel[i] = strdup(buf);
-      ::fltk::Button *button =
-           new ::fltk::Button(0, 20 * i, 50, 20, buttonLabel[i]);
-      button->callback (anchorCallback, (void*)i);
-      button->when (::fltk::WHEN_RELEASE);
+      Fl_Button *button = new Fl_Button(0, 20 * i, 50, 20, buttonLabel[i]);
+      button->callback (anchorCallback, (void*)(long)i);
+      button->when (FL_WHEN_RELEASE);
    }
 
    FontAttrs fontAttrs;
@@ -121,10 +122,11 @@ int main(int argc, char **argv)
    fontAttrs.weight = 400;
    fontAttrs.style = FONT_STYLE_NORMAL;
    fontAttrs.letterSpacing = 0;
+   fontAttrs.fontVariant = FONT_VARIANT_NORMAL;
 
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
-   styleAttrs.font = Font::create (layout, &fontAttrs);
+   styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
    styleAttrs.margin.setVal (5);
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
@@ -140,22 +142,22 @@ int main(int argc, char **argv)
 
    fontAttrs.size = 28;
    fontAttrs.weight = 700;
-   styleAttrs.font = Font::create (layout, &fontAttrs);
+   styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
    headingStyle = Style::create (layout, &styleAttrs);
 
-   ::fltk::add_timeout (0, textTimeout, NULL);
+   Fl::add_timeout (0, textTimeout, NULL);
 
    window->resizable(viewport);
    window->show();
 
-   int errorCode = ::fltk::run();
+   int errorCode = Fl::run();
 
    topWidgetStyle->unref ();
    widgetStyle->unref ();
    wordStyle->unref ();
    headingStyle->unref ();
    for (int i = 0; i < 10; i++)
-      delete buttonLabel[i];
+      free(buttonLabel[i]);
    delete layout;
 
    return errorCode;

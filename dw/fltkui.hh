@@ -5,11 +5,9 @@
 #   error Do not include this file directly, use "fltkcore.hh" instead.
 #endif
 
-#include <fltk/Button.h>
-#include <fltk/Menu.h>
-#include <fltk/TextBuffer.h>
-#include <fltk/Item.h>
-#include <fltk/ItemGroup.h>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Menu.H>
+#include <FL/Fl_Text_Buffer.H>
 
 namespace dw {
 namespace fltk {
@@ -179,7 +177,7 @@ private:
 
 protected:
    FltkView *view;
-   ::fltk::Widget *widget;
+   Fl_Widget *widget;
    core::Allocation allocation;
    FltkPlatform *platform;
 
@@ -187,9 +185,9 @@ protected:
 
    FltkResource (FltkPlatform *platform);
    void init (FltkPlatform *platform);
-   virtual ::fltk::Widget *createNewWidget (core::Allocation *allocation) = 0;
+   virtual Fl_Widget *createNewWidget (core::Allocation *allocation) = 0;
 
-   void setWidgetStyle (::fltk::Widget *widget, core::style::Style *style);
+   virtual void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
    void setDisplayed (bool displayed);
    bool displayed();
 public:
@@ -229,10 +227,10 @@ class FltkLabelButtonResource:
 private:
    const char *label;
 
-   static void widgetCallback (::fltk::Widget *widget, void *data);
+   static void widgetCallback (Fl_Widget *widget, void *data);
 
 protected:
-   ::fltk::Widget *createNewWidget (core::Allocation *allocation);
+   Fl_Widget *createNewWidget (core::Allocation *allocation);
 
 public:
    FltkLabelButtonResource (FltkPlatform *platform, const char *label);
@@ -251,7 +249,7 @@ class FltkComplexButtonResource:
 private:
    bool relief;
 
-   static void widgetCallback (::fltk::Widget *widget, void *data);
+   static void widgetCallback (Fl_Widget *widget, void *data);
 
 protected:
    FltkView *topView, *flatView;
@@ -267,7 +265,7 @@ protected:
    int reliefXThickness ();
    int reliefYThickness ();
 
-   ::fltk::Widget *createNewWidget (core::Allocation *allocation);
+   Fl_Widget *createNewWidget (core::Allocation *allocation);
 
 public:
    FltkComplexButtonResource (FltkPlatform *platform, dw::core::Widget *widget,
@@ -288,13 +286,15 @@ private:
    bool password;
    const char *initText;
    char *label;
+   int label_w;
    bool editable;
 
-   static void widgetCallback (::fltk::Widget *widget, void *data);
+   static void widgetCallback (Fl_Widget *widget, void *data);
    void setDisplayed (bool displayed);
 
 protected:
-   ::fltk::Widget *createNewWidget (core::Allocation *allocation);
+   Fl_Widget *createNewWidget (core::Allocation *allocation);
+   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
 
 public:
    FltkEntryResource (FltkPlatform *platform, int maxLength, bool password,
@@ -302,6 +302,7 @@ public:
    ~FltkEntryResource ();
 
    void sizeRequest (core::Requisition *requisition);
+   void sizeAllocate (core::Allocation *allocation);
 
    const char *getText ();
    void setText (const char *text);
@@ -314,12 +315,14 @@ class FltkMultiLineTextResource:
    public FltkSpecificResource <dw::core::ui::MultiLineTextResource>
 {
 private:
-   ::fltk::TextBuffer *buffer;
+   Fl_Text_Buffer *buffer;
+   char *text_copy;
    bool editable;
    int numCols, numRows;
 
 protected:
-   ::fltk::Widget *createNewWidget (core::Allocation *allocation);
+   Fl_Widget *createNewWidget (core::Allocation *allocation);
+   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
 
 public:
    FltkMultiLineTextResource (FltkPlatform *platform, int cols, int rows);
@@ -341,8 +344,9 @@ private:
    bool initActivated;
 
 protected:
-   virtual ::fltk::Button *createNewButton (core::Allocation *allocation) = 0;
-   ::fltk::Widget *createNewWidget (core::Allocation *allocation);
+   virtual Fl_Button *createNewButton (core::Allocation *allocation) = 0;
+   Fl_Widget *createNewWidget (core::Allocation *allocation);
+   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
 
 public:
    FltkToggleButtonResource (FltkPlatform *platform,
@@ -360,7 +364,7 @@ class FltkCheckButtonResource:
    public FltkToggleButtonResource <dw::core::ui::CheckButtonResource>
 {
 protected:
-   ::fltk::Button *createNewButton (core::Allocation *allocation);
+   Fl_Button *createNewButton (core::Allocation *allocation);
 
 public:
    FltkCheckButtonResource (FltkPlatform *platform,
@@ -401,7 +405,8 @@ private:
    public:
       Group (FltkRadioButtonResource *radioButtonResource);
 
-      inline lout::container::typed::Iterator <FltkRadioButtonResource> iterator ()
+      inline lout::container::typed::Iterator <FltkRadioButtonResource>
+                                              iterator ()
       {
          return list->iterator ();
       }
@@ -418,11 +423,11 @@ private:
 
    Group *group;
 
-   static void widgetCallback (::fltk::Widget *widget, void *data);
+   static void widgetCallback (Fl_Widget *widget, void *data);
    void buttonClicked ();
 
 protected:
-   ::fltk::Button *createNewButton (core::Allocation *allocation);
+   Fl_Button *createNewButton (core::Allocation *allocation);
 
 public:
    FltkRadioButtonResource (FltkPlatform *platform,
@@ -438,60 +443,14 @@ template <class I> class FltkSelectionResource:
    public FltkSpecificResource <I>
 {
 protected:
-   class Item: public lout::object::Object
-   {
-   public:
-      enum Type { ITEM, START, END } type;
-
-      const char *name;
-      bool enabled, initSelected;
-
-      Item (Type type, const char *name = NULL, bool enabled = true,
-            bool selected = false);
-      ~Item ();
-
-      ::fltk::Item *createNewWidget (int index);
-      ::fltk::ItemGroup *createNewGroupWidget ();
-   };
-
-   class WidgetStack: public lout::object::Object
-   {
-   public:
-      ::fltk::Menu *widget;
-      lout::container::typed::Stack <lout::object::TypedPointer < ::fltk::Menu> > *stack;
-
-      WidgetStack (::fltk::Menu *widget);
-      ~WidgetStack ();
-   };
-
-   lout::container::typed::List <WidgetStack> *widgetStacks;
-   lout::container::typed::List <Item> *allItems;
-   lout::container::typed::Vector <Item> *items;
-
-   Item *createNewItem (typename Item::Type type,
-                        const char *name = NULL,
-                        bool enabled = true,
-                        bool selected = false);
-
-   ::fltk::Widget *createNewWidget (core::Allocation *allocation);
-   virtual ::fltk::Menu *createNewMenu (core::Allocation *allocation) = 0;
    virtual bool setSelectedItems() { return false; }
-
-   int getMaxStringWidth ();
-
+   virtual void addItem (const char *str, bool enabled, bool selected) = 0;
+   virtual void pushGroup (const char *name, bool enabled) = 0;
+   virtual void popGroup () = 0;
 public:
-   FltkSelectionResource (FltkPlatform *platform);
-   ~FltkSelectionResource ();
-
+   FltkSelectionResource (FltkPlatform *platform) :
+      FltkSpecificResource<I> (platform) {};
    dw::core::Iterator *iterator (dw::core::Content::Type mask, bool atEnd);
-
-   void addItem (const char *str, bool enabled, bool selected);
-
-   void pushGroup (const char *name, bool enabled);
-   void popGroup ();
-
-   int getNumberOfItems ();
-   const char *getItem (int index);
 };
 
 
@@ -499,18 +458,25 @@ class FltkOptionMenuResource:
    public FltkSelectionResource <dw::core::ui::OptionMenuResource>
 {
 protected:
-   ::fltk::Menu *createNewMenu (core::Allocation *allocation);
+   Fl_Widget *createNewWidget (core::Allocation *allocation);
    virtual bool setSelectedItems() { return true; }
-
+   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
+   int getNumberOfItems();
+   int getMaxItemWidth ();
 private:
-   static void widgetCallback (::fltk::Widget *widget, void *data);
-   int selection;
-
+   static void widgetCallback (Fl_Widget *widget, void *data);
+   void enlargeMenu();
+   Fl_Menu_Item *newItem();
+   Fl_Menu_Item *menu;
+   int itemsAllocated, itemsUsed;
+   int visibleItems; /* not counting the invisible ones that close a group */
 public:
    FltkOptionMenuResource (FltkPlatform *platform);
    ~FltkOptionMenuResource ();
 
    void addItem (const char *str, bool enabled, bool selected);
+   void pushGroup (const char *name, bool enabled);
+   void popGroup ();
 
    void sizeRequest (core::Requisition *requisition);
    bool isSelected (int index);
@@ -520,10 +486,16 @@ class FltkListResource:
    public FltkSelectionResource <dw::core::ui::ListResource>
 {
 protected:
-   ::fltk::Menu *createNewMenu (core::Allocation *allocation);
+   Fl_Widget *createNewWidget (core::Allocation *allocation);
+   void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
+
+   int getNumberOfItems () {return itemsSelected.size();};
+   int getMaxItemWidth ();
 
 private:
-   static void widgetCallback (::fltk::Widget *widget, void *data);
+   static void widgetCallback (Fl_Widget *widget, void *data);
+   void *newItem (const char *str, bool enabled, bool selected);
+   void *currParent;
    lout::misc::SimpleVector <bool> itemsSelected;
    int showRows;
    ListResource::SelectionMode mode;
@@ -534,6 +506,8 @@ public:
    ~FltkListResource ();
 
    void addItem (const char *str, bool enabled, bool selected);
+   void pushGroup (const char *name, bool enabled);
+   void popGroup ();
 
    void sizeRequest (core::Requisition *requisition);
    bool isSelected (int index);

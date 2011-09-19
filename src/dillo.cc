@@ -24,10 +24,9 @@
 #include <signal.h>
 #include <locale.h>
 
-#include <fltk/Window.h>
-#include <fltk/TabGroup.h>
-#include <fltk/Font.h>
-#include <fltk/run.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
+#include <FL/fl_draw.H>
 
 #include "msg.h"
 #include "paths.hh"
@@ -48,6 +47,8 @@
 #include "dicache.h"
 #include "cookies.h"
 #include "auth.h"
+
+#include "dw/fltkcore.hh"
 
 /*
  * Command line options structure
@@ -171,11 +172,55 @@ static OptID getCmdOption(const CLI_options *options, int argc, char **argv,
 }
 
 /*
+ * Set FL_NORMAL_LABEL to interpret neither symbols (@) nor shortcuts (&),
+ * and FL_FREE_LABELTYPE to interpret shortcuts.
+ */
+static void custLabelDraw(const Fl_Label* o, int X, int Y, int W, int H,
+                          Fl_Align align)
+{
+   const int interpret_symbols = 0;
+
+   fl_draw_shortcut = 0;
+   fl_font(o->font, o->size);
+   fl_color((Fl_Color)o->color);
+   fl_draw(o->value, X, Y, W, H, align, o->image, interpret_symbols);
+}
+
+static void custLabelMeasure(const Fl_Label* o, int& W, int& H)
+{
+   const int interpret_symbols = 0;
+
+   fl_draw_shortcut = 0;
+   fl_font(o->font, o->size);
+   fl_measure(o->value, W, H, interpret_symbols);
+}
+
+static void custMenuLabelDraw(const Fl_Label* o, int X, int Y, int W, int H,
+                              Fl_Align align)
+{
+   const int interpret_symbols = 0;
+
+   fl_draw_shortcut = 1;
+   fl_font(o->font, o->size);
+   fl_color((Fl_Color)o->color);
+   fl_draw(o->value, X, Y, W, H, align, o->image, interpret_symbols);
+}
+
+static void custMenuLabelMeasure(const Fl_Label* o, int& W, int& H)
+{
+   const int interpret_symbols = 0;
+
+   fl_draw_shortcut = 1;
+   fl_font(o->font, o->size);
+   fl_measure(o->value, W, H, interpret_symbols);
+}
+
+/*
  * Tell the user if default/pref fonts can't be found.
  */
 static void checkFont(const char *name, const char *type)
 {
-   if (::fltk::font(name) == NULL)
+   if (! dw::fltk::FltkFont::fontExists(name))
       MSG_WARN("preferred %s font \"%s\" not found.\n", type, name);
 }
 
@@ -318,21 +363,37 @@ int main(int argc, char **argv)
    }
 
    // Sets WM_CLASS hint on X11
-   fltk::Window::xclass("dillo");
+   Fl_Window::default_xclass("dillo");
 
-   // WORKAROUND: sometimes the default pager triggers redraw storms
-   fltk::TabGroup::default_pager(fltk::PAGER_SHRINK);
+   Fl::scheme(prefs.theme);
+
+   if (!prefs.show_tooltip) {
+      // turn off UI tooltips
+      Fl::option(Fl::OPTION_SHOW_TOOLTIPS, false);
+   }
+
+   // Disable '@' and '&' interpretation in normal labels.
+   Fl::set_labeltype(FL_NORMAL_LABEL, custLabelDraw, custLabelMeasure);
+
+   // Use to permit '&' interpretation.
+   Fl::set_labeltype(FL_FREE_LABELTYPE,custMenuLabelDraw,custMenuLabelMeasure);
 
    checkPreferredFonts();
+
    /* use preferred font for UI */
-   fltk::Font *dfont = fltk::font(prefs.font_sans_serif, 0);
-   if (dfont) {
-      fltk::Widget::default_style->textfont(dfont);
-      fltk::Widget::default_style->labelfont(dfont);
-   }
+   Fl_Font defaultFont = dw::fltk::FltkFont::get (prefs.font_sans_serif, 0);
+   Fl::set_font(FL_HELVETICA, defaultFont); // this seems to be the
+                                            // only way to set the
+                                            // default font in fltk1.3
 
    // Create a new UI/bw pair
    BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, xid, NULL);
+
+   /* We need this so that fl_text_extents() in dw/fltkplatform.cc can
+    * work when FLTK is configured without XFT and Dillo is opening
+    * immediately-available URLs from the cmdline (e.g. about:splash).
+    */
+   ((Fl_Widget *)bw->ui)->window()->make_current();
 
    /* Proxy authentication */
    if (prefs.http_proxyuser && !a_Http_proxy_auth()) {
@@ -349,7 +410,10 @@ int main(int argc, char **argv)
 
    if (idx == argc) {
       /* No URLs/files on cmdline. Send startup screen */
-      a_UIcmd_open_url(bw, prefs.start_page);
+      if (strcmp(URL_STR(prefs.start_page), "about:blank") == 0)
+         a_UIcmd_open_url(bw, NULL);
+      else
+         a_UIcmd_open_url(bw, prefs.start_page);
    } else {
       for (int i = idx; i < argc; i++) {
          DilloUrl *start_url = makeStartUrl(argv[i], local);
@@ -369,7 +433,7 @@ int main(int argc, char **argv)
       }
    }
 
-   fltk::run();
+   Fl::run();
 
    /*
     * Memory deallocating routines

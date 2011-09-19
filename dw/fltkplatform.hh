@@ -5,8 +5,6 @@
 #   error Do not include this file directly, use "fltkcore.hh" instead.
 #endif
 
-#include <fltk/Font.h>
-
 namespace dw {
 
 /**
@@ -16,16 +14,33 @@ namespace fltk {
 
 class FltkFont: public core::style::Font
 {
+   class FontFamily: public lout::object::Object {
+         Fl_Font font[4];
+      public:
+         FontFamily (Fl_Font fontNormal, Fl_Font fontBold,
+                     Fl_Font fontItalic, Fl_Font fontBoldItalic);
+         void set (Fl_Font, int attrs);
+         Fl_Font get (int attrs);
+   };
+
+   static FontFamily standardFontFamily;
+
+   static lout::container::typed::HashTable <lout::object::ConstString,
+                                             FontFamily> *systemFonts;
    static lout::container::typed::HashTable <dw::core::style::FontAttrs,
                                        FltkFont> *fontsTable;
 
    FltkFont (core::style::FontAttrs *attrs);
    ~FltkFont ();
 
+   static void initSystemFonts ();
+
 public:
-   ::fltk::Font *font;
+   Fl_Font font;
 
    static FltkFont *create (core::style::FontAttrs *attrs);
+   static bool fontExists (const char *name);
+   static Fl_Font get (const char *name, int attrs);
 };
 
 
@@ -48,10 +63,9 @@ class FltkTooltip: public core::style::Tooltip
 private:
    FltkTooltip (const char *text);
    ~FltkTooltip ();
-   bool shown;
-   char *escaped_str; /* fltk WORKAROUND */
 public:
    static FltkTooltip *create(const char *text);
+   static void cancel();
    void onEnter();
    void onLeave();
    void onMotion();
@@ -66,12 +80,12 @@ class FltkView: public core::View
 public:
    virtual bool usesFltkWidgets () = 0;
 
-   virtual void addFltkWidget (::fltk::Widget *widget,
+   virtual void addFltkWidget (Fl_Widget *widget,
                                core::Allocation *allocation);
-   virtual void removeFltkWidget (::fltk::Widget *widget);
-   virtual void allocateFltkWidget (::fltk::Widget *widget,
+   virtual void removeFltkWidget (Fl_Widget *widget);
+   virtual void allocateFltkWidget (Fl_Widget *widget,
                                     core::Allocation *allocation);
-   virtual void drawFltkWidget (::fltk::Widget *widget, core::Rectangle *area);
+   virtual void drawFltkWidget (Fl_Widget *widget, core::Rectangle *area);
 };
 
 
@@ -152,6 +166,7 @@ public:
    bool fontExists (const char *name);
    core::style::Color *createColor (int color);
    core::style::Tooltip *createTooltip (const char *text);
+   void cancelTooltip();
 
    core::Imgbuf *createImgbuf (core::Imgbuf::Type type, int width, int height);
 
