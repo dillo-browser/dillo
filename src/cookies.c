@@ -197,8 +197,8 @@ char *a_Cookies_get_query(const DilloUrl *query_url, const DilloUrl *requester)
    if (requester == NULL) {
       /* request made by user */
    } else if (!a_Url_same_organization(query_url, requester)) {
-      MSG("Cookies: No cookies sent for third-party request by '%s' for "
-           "'%s'\n", URL_HOST(requester), URL_STR(query_url));
+      MSG("Cookies: not sent for request by '%s' for '%s'\n",
+          URL_HOST(requester), URL_HOST(query_url));
       return dStrdup("");
    }
 
