@@ -59,8 +59,8 @@ Building dillo from sources
 
   2.- Then dillo3:
 
-     tar jxvf dillo-3.0.tar.bz2
-     cd dillo-3.0
+     tar jxvf dillo-3.0.1.tar.bz2
+     cd dillo-3.0.1
      ./configure; make
      sudo make install-strip
 

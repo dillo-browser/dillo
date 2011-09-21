@@ -2,7 +2,7 @@
 Dillo project
 =============================================================================
 
-dillo-3.0.1 [not released yet]
+dillo-3.0.1 [September 21, 2011]
 
 +- Add preference for UI theme.
  - Allow key bindings for paging left/right.
