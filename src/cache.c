@@ -675,18 +675,24 @@ static void Cache_parse_header(CacheEntry_t *entry)
          entry->Header = dStr_new("");
          return;
       }
-      if (header[9] == '3' && header[10] == '0') {
+      if (header[9] == '3' && header[10] == '0' &&
+          (location_str = Cache_parse_field(header, "Location"))) {
          /* 30x: URL redirection */
-         if ((location_str = Cache_parse_field(header, "Location"))) {
-            DilloUrl *location_url;
+         DilloUrl *location_url = a_Url_new(location_str,URL_STR_(entry->Url));
 
+         if (prefs.filter_auto_requests == PREFS_FILTER_SAME_DOMAIN &&
+             !a_Url_same_organization(entry->Url, location_url)) {
+            /* don't redirect; just show body like usual (if any) */
+            MSG("Redirection not followed from %s to %s\n",
+                URL_HOST(entry->Url), URL_STR(location_url));
+            a_Url_free(location_url);
+         } else {
             entry->Flags |= CA_Redirect;
             if (header[11] == '1')
                entry->Flags |= CA_ForceRedirect;  /* 301 Moved Permanently */
             else if (header[11] == '2')
                entry->Flags |= CA_TempRedirect;   /* 302 Temporary Redirect */
 
-            location_url = a_Url_new(location_str, URL_STR_(entry->Url));
             if (URL_FLAGS(location_url) & (URL_Post + URL_Get) &&
                 dStrcasecmp(URL_SCHEME(location_url), "dpi") == 0 &&
                 dStrcasecmp(URL_SCHEME(entry->Url), "dpi") != 0) {
@@ -697,8 +703,8 @@ static void Cache_parse_header(CacheEntry_t *entry)
             } else {
                entry->Location = location_url;
             }
-            dFree(location_str);
          }
+         dFree(location_str);
       } else if (strncmp(header + 9, "401", 3) == 0) {
          entry->Auth =
             Cache_parse_multiple_fields(header, "WWW-Authenticate");
