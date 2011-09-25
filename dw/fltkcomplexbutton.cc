@@ -108,7 +108,8 @@ int ComplexButton::handle(int event) {
       return 1;
     } else return 0;
   case FL_KEYBOARD :
-    if (Fl::focus() == this && Fl::event_key() == ' ' &&
+    if (Fl::focus() == this &&
+        (Fl::event_key() == ' ' || Fl::event_key() == FL_Enter) &&
         !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT | FL_META))) {
       set_changed();
       Fl_Widget_Tracker wp(this);
