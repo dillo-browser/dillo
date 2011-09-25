@@ -204,7 +204,7 @@ static void Http_socket_free(int SKey)
             Http_connect_queued_sockets(hc);
             if (hc->active_connections == 0)
                Http_host_connection_remove(hc);
-      }
+         }
          dFree(S);
       }
    }
