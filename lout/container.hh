@@ -7,7 +7,7 @@
  * \brief This namespace contains a framework for container classes, which
  *    members are instances of object::Object.
  *
- * A common problem in languanges without garbage collection is, where the
+ * A common problem in languages without garbage collection is, where the
  * children belong to, and so, who is responsible to delete them (instantiation
  * is always done by the caller). This information is here told to the
  * collections, each container has a constructor with the parameter
