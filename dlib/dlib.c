@@ -134,6 +134,15 @@ char *dStrstrip(char *s)
 }
 
 /*
+ * Clear the contents of the string
+ */
+void dStrshred(char *s)
+{
+   if (s)
+      memset(s, 0, strlen(s));
+}
+
+/*
  * Return a new string of length 'len' filled with 'c' characters
  */
 char *dStrnfill(size_t len, char c)
@@ -333,6 +342,15 @@ void dStr_truncate (Dstr *ds, int len)
       ds->str[len] = 0;
       ds->len = len;
    }
+}
+
+/*
+ * Clear a Dstr.
+ */
+void dStr_shred (Dstr *ds)
+{
+   if (ds && ds->sz > 0)
+      memset(ds->str, '\0', ds->sz);
 }
 
 /*

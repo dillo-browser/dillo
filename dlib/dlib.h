@@ -87,6 +87,7 @@ char *dStrstrip(char *s);
 char *dStrnfill(size_t len, char c);
 char *dStrsep(char **orig, const char *delim);
 char *dStristr(const char *haystack, const char *needle);
+void dStrshred(char *s);
 
 /* these are in POSIX 2001. Could be implemented if a port requires it */
 #define dStrcasecmp strcasecmp
@@ -114,6 +115,7 @@ void dStr_append_l (Dstr *ds, const char *s, int l);
 void dStr_insert (Dstr *ds, int pos_0, const char *s);
 void dStr_insert_l (Dstr *ds, int pos_0, const char *s, int l);
 void dStr_truncate (Dstr *ds, int len);
+void dStr_shred (Dstr *ds);
 void dStr_erase (Dstr *ds, int pos_0, int len);
 void dStr_vsprintfa (Dstr *ds, const char *format, va_list argp);
 void dStr_vsprintf (Dstr *ds, const char *format, va_list argp);
