@@ -2,6 +2,13 @@
 Dillo project
 =============================================================================
 
+dillo-3.0.2 [not released yet]
+
++- Digest authentication
+   Patch: Justus Winter, corvid
+
+-----------------------------------------------------------------------------
+
 dillo-3.0.1 [September 21, 2011]
 
 +- Add preference for UI theme.

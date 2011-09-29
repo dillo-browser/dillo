@@ -2,6 +2,7 @@
  * File: auth.c
  *
  * Copyright 2008 Jeremy Henty   <onepoint@starurchin.org>
+ * Copyright 2009 Justus Winter  <4winter@informatik.uni-hamburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,19 +21,20 @@
 #include "msg.h"
 #include "misc.h"
 #include "dialog.hh"
+#include "digest.h"
 #include "../dlib/dlib.h"
-
 
 typedef struct {
    int ok;
+   enum AuthParseHTTPAuthType_t type;
    const char *realm;
+   const char *nonce;
+   const char *opaque;
+   int stale;
+   enum AuthParseDigestAlgorithm_t algorithm;
+   const char *domain;
+   enum AuthParseDigestQOP_t qop;
 } AuthParse_t;
-
-typedef struct {
-   char *name;
-   Dlist *paths; /* stripped of any trailing '/', so the root path is "" */
-   char *authorization; /* the authorization request header */
-} AuthRealm_t;
 
 typedef struct {
    char *scheme;
@@ -41,7 +43,7 @@ typedef struct {
 } AuthHost_t;
 
 typedef struct {
-   const char *realm_name;
+   const AuthParse_t *auth_parse;
    const DilloUrl *url;
 } AuthDialogData_t;
 
@@ -62,7 +64,14 @@ static AuthParse_t *Auth_parse_new()
 {
    AuthParse_t *auth_parse = dNew(AuthParse_t, 1);
    auth_parse->ok = 0;
+   auth_parse->type = TYPENOTSET;
    auth_parse->realm = NULL;
+   auth_parse->nonce = NULL;
+   auth_parse->opaque = NULL;
+   auth_parse->stale = 0;
+   auth_parse->algorithm = ALGORITHMNOTSET;
+   auth_parse->domain = NULL;
+   auth_parse->qop = QOPNOTSET;
    return auth_parse;
 }
 
@@ -70,6 +79,9 @@ static void Auth_parse_free(AuthParse_t *auth_parse)
 {
    if (auth_parse) {
       dFree((void *)auth_parse->realm);
+      dFree((void *)auth_parse->nonce);
+      dFree((void *)auth_parse->opaque);
+      dFree((void *)auth_parse->domain);
       dFree(auth_parse);
    }
 }
@@ -96,187 +108,246 @@ static int Auth_is_token_char(char c)
 }
 
 /*
- * Unquote the content of a quoted string.
+ * Unquote the content of a (potentially) quoted string.
  * Return: newly allocated unquoted content.
  *
  * Arguments:
- * quoted: pointer to the first char *after* the initial double quote.
- * size: the number of chars in the result, *not* including a final '\0'.
+ * valuep: pointer to a pointer to the first char.
  *
  * Preconditions:
- * quoted points to a correctly quoted and escaped string.
- * size is the number of characters in the quoted string, *after*
- * removing escape characters.
+ * *valuep points to a correctly quoted and escaped string.
+ *
+ * Postconditions:
+ * *valuep points to the first not processed char.
  *
  */
-static const char *Auth_unquote_value(const char *quoted, int size)
+static Dstr *Auth_unquote_value(char **valuep)
 {
-   char c, *value, *value_ptr;
-   value_ptr = value = dNew(char, size + 1);
-   while ((c = *quoted++) != '"')
-      *value_ptr++ = (c == '\\') ? *quoted++ : c;
-   *value_ptr = '\0';
-   return value;
-}
+   char c, quoted;
+   char *value = *valuep;
+   Dstr *result;
 
-/*
- * Parse a quoted string. Save the result as the auth realm if required.
- * Return: 1 if the parse succeeds, 0 otherwise.
- */
-static int Auth_parse_quoted_string(AuthParse_t *auth_parse, int set_realm,
-                                    char **auth)
-{
-   char *value;
-   int size;
+   while (*value == ' ' || *value == '\t')
+      value++;
 
-   /* parse the '"' */
-   switch (*(*auth)++) {
-   case '"':
-      break;
-   case '\0':
-   case ',':
-      MSG("auth.c: missing Basic auth token value after '='\n");
-      return 0;
-      break;
-   default:
-      MSG("auth.c: garbage in Basic auth after '='\n");
-      return 0;
-      break;
+   if ((quoted = *value == '"'))
+      value++;
+
+   result = dStr_new(NULL);
+   while ((c = *value) &&
+          (( quoted && c != '"') ||
+           (!quoted && Auth_is_token_char(c)))) {
+      dStr_append_c(result, (c == '\\' && value[1]) ? *++value : c);
+      value++;
    }
 
-   /* parse the rest */
-   value = *auth;
-   size = 0;
-   while (1) {
+   if (quoted && *value == '\"')
+      value++;
+   *valuep = value;
+   return result;
+}
+
+typedef int (Auth_parse_token_value_callback_t)(AuthParse_t *auth_parse,
+                                                char *token,
+                                                const char *value);
+
+
+/*
+ * Parse authentication challenge into token-value pairs
+ * and feed them into the callback function.
+ *
+ * The parsing is aborted should the callback function return 0.
+ *
+ * Return: 1 if the parse succeeds, 0 otherwise.
+ */
+static int Auth_parse_token_value(AuthParse_t *auth_parse, char **auth,
+                                  Auth_parse_token_value_callback_t *callback)
+{
+   char keep_going, expect_quoted;
+   char *token, *beyond_token;
+   Dstr *value;
+   size_t *token_size;
+
+   while (**auth) {
+      _MSG("Auth_parse_token_value: remaining: %s\n", *auth);
+
+     /* parse a token */
+      token = *auth;
+
+      token_size = 0;
+      while (Auth_is_token_char(**auth)) {
+         (*auth)++;
+         token_size++;
+      }
+      if (token_size == 0) {
+         MSG("Auth_parse_token_value: missing auth token\n");
+         return 0;
+      }
+      beyond_token = *auth;
+      /* skip linear whitespace characters */
+      while (**auth == ' ' || **auth == '\t')
+         (*auth)++;
+
+      /* parse the '=' */
       switch (*(*auth)++) {
-      case '"':
-         if (set_realm) {
-            dFree((void *)auth_parse->realm);
-            auth_parse->realm = Auth_unquote_value(value, size);
-            auth_parse->ok = 1;
-         }
-         return 1;
+      case '=':
+         *beyond_token = '\0';
          break;
       case '\0':
-         MSG("auth.c: auth string ended inside quoted string value\n");
+      case ',':
+         MSG("Auth_parse_token_value: missing auth token value\n");
          return 0;
          break;
-      case '\\':
-         /* end of string? */
-         if (!*(*auth)++) {
-            MSG("auth.c: "
-                "auth string ended inside quoted string value "
-                "immediately after \\\n");
-            return 0;
-         }
-         /* fall through to the next case */
       default:
-         size++;
+         MSG("Auth_parse_token_value: garbage after auth token\n");
+         return 0;
          break;
+      }
+
+      value = Auth_unquote_value(auth);
+      expect_quoted = !(strcmp(token, "stale") == 0 ||
+                        strcmp(token, "algorithm") == 0);
+
+      if (((*auth)[-1] == '"') != expect_quoted)
+         MSG_WARN("Auth_parse_token_value: "
+                  "Values for key %s should%s be quoted.\n",
+                  token, expect_quoted ? "" : " not");
+
+      keep_going = callback(auth_parse, token, value->str);
+      dStr_free(value, 1);
+      if (!keep_going)
+         break;
+
+      /* skip ' ' and ',' */
+      while ((**auth == ' ') || (**auth == ','))
+         (*auth)++;
+   }
+   return 1;
+}
+
+static int Auth_parse_basic_challenge_cb(AuthParse_t *auth_parse, char *token,
+                                         const char *value)
+{
+   if (dStrcasecmp("realm", token) == 0) {
+      if (!auth_parse->realm)
+         auth_parse->realm = strdup(value);
+      return 0; /* end parsing */
+   } else
+      MSG("Auth_parse_basic_challenge_cb: Ignoring unknown parameter: %s = "
+          "'%s'\n", token, value);
+   return 1;
+}
+
+static int Auth_parse_digest_challenge_cb(AuthParse_t *auth_parse, char *token,
+                                          const char *value)
+{
+   const char *const fn = "Auth_parse_digest_challenge_cb";
+
+   if (!dStrcasecmp("realm", token) && !auth_parse->realm)
+      auth_parse->realm = strdup(value);
+   else if (!strcmp("domain", token) && !auth_parse->domain)
+      auth_parse->domain = strdup(value);
+   else if (!strcmp("nonce", token)  && !auth_parse->nonce)
+      auth_parse->nonce = strdup(value);
+   else if (!strcmp("opaque", token) && !auth_parse->opaque)
+      auth_parse->opaque = strdup(value);
+   else if (strcmp("stale", token) == 0) {
+      if (dStrcasecmp("true", value) == 0)
+         auth_parse->stale = 1;
+      else if (dStrcasecmp("false", value) == 0)
+         auth_parse->stale = 0;
+      else {
+         MSG("%s: Invalid stale value: %s\n", fn, value);
+         return 0;
+      }
+   } else if (strcmp("algorithm", token) == 0) {
+      if (strcmp("MD5", value) == 0)
+         auth_parse->algorithm = MD5;
+      else if (strcmp("MD5-sess", value) == 0) {
+         /* auth_parse->algorithm = MD5SESS; */
+         MSG("%s: MD5-sess algorithm disabled (not tested because 'not "
+             "correctly implemented yet' in Apache 2.2)\n", fn);
+         return 0;
+      } else {
+         MSG("%s: Unknown algorithm: %s\n", fn, value);
+         return 0;
+      }
+   } else if (strcmp("qop", token) == 0) {
+      while (*value) {
+         int len = strcspn(value, ", \t");
+         if (len == 4 && strncmp("auth", value, 4) == 0) {
+            auth_parse->qop = AUTH;
+            break;
+         }
+         if (len == 8 && strncmp("auth-int", value, 8) == 0) {
+            /* auth_parse->qop = AUTHINT; */
+            /* Keep searching; maybe we'll find an "auth" yet. */
+            MSG("%s: auth-int qop disabled (not tested because 'not "
+                "implemented yet' in Apache 2.2)\n", fn);
+         } else {
+            MSG("%s: Unknown qop value in %s\n", fn, value);
+         }
+         value += len;
+         while (*value == ' ' || *value == '\t')
+            value++;
+         if (*value == ',')
+            value++;
+         while (*value == ' ' || *value == '\t')
+            value++;
+      }
+   } else {
+      MSG("%s: Ignoring unknown parameter: %s = '%s'\n", fn, token, value);
+   }
+   return 1;
+}
+
+static void Auth_parse_challenge_args(AuthParse_t *auth_parse,
+                                      char **challenge,
+                                      Auth_parse_token_value_callback_t *cb)
+{
+   /* parse comma-separated token-value pairs */
+   while (1) {
+      /* skip space and comma characters */
+      while (**challenge == ' ' || **challenge == ',')
+         (*challenge)++;
+      /* end of string? */
+      if (!**challenge)
+         break;
+      /* parse token-value pair */
+      if (!Auth_parse_token_value(auth_parse, challenge, cb))
+         break;
+   }
+
+   if (auth_parse->type == BASIC) {
+      if (auth_parse->realm) {
+         auth_parse->ok = 1;
+      } else {
+         MSG("Auth_parse_challenge_args: missing Basic auth realm\n");
+         return;
+      }
+   } else if (auth_parse->type == DIGEST) {
+      if (auth_parse->realm && auth_parse->nonce) {
+         auth_parse->ok = 1;
+      } else {
+         MSG("Auth_parse_challenge_args: Digest challenge incomplete\n");
+         return;
       }
    }
 }
 
-/*
- * Parse a token-value pair.
- * Return: 1 if the parse succeeds, 0 otherwise.
- */
-static int Auth_parse_token_value(AuthParse_t *auth_parse, char **auth)
+static void Auth_parse_challenge(AuthParse_t *auth_parse, char *challenge)
 {
-   char *token;
-   int token_size, set_realm;
-   static const char realm_token[] = "realm";
+   Auth_parse_token_value_callback_t *cb;
 
-   /* parse a token */
-   token = *auth;
-   token_size = 0;
-   while (Auth_is_token_char(**auth)) {
-      (*auth)++;
-      token_size++;
-   }
-   if (token_size == 0) {
-      MSG("auth.c: Auth_parse_token_value: "
-          "missing Basic auth token\n");
-      return 0;
-   }
-
-   /* skip space characters */
-   while (**auth == ' ')
-      (*auth)++;
-
-   /* parse the '=' */
-   switch (*(*auth)++) {
-   case '=':
-      break;
-   case '\0':
-   case ',':
-      MSG("auth.c: Auth_parse_token_value: "
-          "missing Basic auth token value\n");
-      return 0;
-      break;
-   default:
-      MSG("auth.c: Auth_parse_token_value: "
-          "garbage after Basic auth token\n");
-      return 0;
-      break;
-   }
-
-   /* skip space characters */
-   while (**auth == ' ')
-      (*auth)++;
-
-   /* is this value the realm? */
-   set_realm =
-      auth_parse->realm == NULL &&
-      dStrncasecmp(realm_token,token,token_size) == 0 &&
-      strlen(realm_token) == (size_t)token_size;
-
-   return Auth_parse_quoted_string(auth_parse, set_realm, auth);
-}
-
-static void Auth_parse_auth_basic(AuthParse_t *auth_parse, char **auth)
-{
-   int token_value_pairs_found;
-
-   /* parse comma-separated token-value pairs */
-   token_value_pairs_found = 0;
-   while (1) {
-      /* skip space and comma characters */
-      while (**auth == ' ' || **auth == ',')
-         (*auth)++;
-      /* end of string? */
-      if (!**auth)
-         break;
-      /* parse token-value pair */
-      if (!Auth_parse_token_value(auth_parse, auth))
-         break;
-      token_value_pairs_found = 1;
-   }
-
-   if (!token_value_pairs_found) {
-      MSG("auth.c: Auth_parse_auth_basic: "
-          "missing Basic auth token-value pairs\n");
-      return;
-   }
-
-   if (!auth_parse->realm) {
-      MSG("auth.c: Auth_parse_auth_basic: "
-          "missing Basic auth realm\n");
-      return;
-   }
-}
-
-static void Auth_parse_auth(AuthParse_t *auth_parse, char *auth)
-{
-   _MSG("auth.c: Auth_parse_auth: auth = '%s'\n", auth);
-   if (dStrncasecmp(auth, "Basic ", 6) == 0) {
-      auth += 6;
-      Auth_parse_auth_basic(auth_parse, &auth);
+   MSG("auth.c: Auth_parse_challenge: challenge = '%s'\n", challenge);
+   if (auth_parse->type == DIGEST) {
+      challenge += 7;
+      cb = Auth_parse_digest_challenge_cb;
    } else {
-      MSG("auth.c: Auth_parse_auth: "
-          "unknown authorization scheme: auth = {%s}\n",
-          auth);
+      challenge += 6;
+      cb = Auth_parse_basic_challenge_cb;
    }
+   Auth_parse_challenge_args(auth_parse, &challenge, cb);
 }
 
 /*
@@ -305,7 +376,7 @@ static AuthRealm_t *Auth_realm_by_name(const AuthHost_t *host,
    int i;
 
    for (i = 0; (realm = dList_nth_data(host->realms, i)); i++)
-      if (strcmp(realm->name,name) == 0)
+      if (strcmp(realm->name, name) == 0)
          return realm;
 
    return NULL;
@@ -319,9 +390,8 @@ static AuthRealm_t *Auth_realm_by_path(const AuthHost_t *host,
 {
    AuthRealm_t *realm_best, *realm;
    int i, j;
-   int match_length;
+   int match_length = 0;
 
-   match_length = 0;
    realm_best = NULL;
    for (i = 0; (realm = dList_nth_data(host->realms, i)); i++) {
       char *realm_path;
@@ -337,6 +407,24 @@ static AuthRealm_t *Auth_realm_by_path(const AuthHost_t *host,
    }
 
    return realm_best;
+}
+
+static void Auth_realm_delete(AuthRealm_t *realm)
+{
+   int i;
+
+   MSG("Auth_realm_delete: \"%s\"\n", realm->name);
+   for (i = dList_length(realm->paths) - 1; i >= 0; i--)
+      dFree(dList_nth_data(realm->paths, i));
+   dList_free(realm->paths);
+   dFree(realm->name);
+   dFree(realm->username);
+   dFree(realm->authorization);
+   dFree(realm->cnonce);
+   dFree(realm->nonce);
+   dFree(realm->opaque);
+   dFree(realm->domain);
+   dFree(realm);
 }
 
 static int Auth_realm_includes_path(const AuthRealm_t *realm, const char *path)
@@ -377,22 +465,33 @@ static void Auth_realm_add_path(AuthRealm_t *realm, const char *path)
 
 /*
  * Return the authorization header for an HTTP query.
+ * request_uri is a separate argument because we want it precisely as
+ *   formatted in the request.
  */
-const char *a_Auth_get_auth_str(const DilloUrl *url)
+char *a_Auth_get_auth_str(const DilloUrl *url, const char *request_uri)
 {
+   char *ret = NULL;
    AuthHost_t *host;
    AuthRealm_t *realm;
 
-   return
-      ((host = Auth_host_by_url(url)) &&
-       (realm = Auth_realm_by_path(host, URL_PATH(url)))) ?
-      realm->authorization : NULL;
+   if ((host = Auth_host_by_url(url)) &&
+       (realm = Auth_realm_by_path(host, URL_PATH(url)))) {
+      if (realm->type == BASIC)
+         ret = dStrdup(realm->authorization);
+      else if (realm->type == DIGEST)
+         ret = a_Digest_authorization_hdr(realm, url, request_uri);
+      else
+         MSG("a_Auth_get_auth_str() got an unknown realm type: %i.\n",
+             realm->type);
+   }
+   return ret;
 }
 
 /*
  * Determine whether the user needs to authenticate.
  */
-static int Auth_do_auth_required(const char *realm_name, const DilloUrl *url)
+static int Auth_do_auth_required(const AuthParse_t *auth_parse,
+                                 const DilloUrl *url)
 {
    /*
     * TO DO: I dislike the way that this code must decide whether we
@@ -420,12 +519,20 @@ static int Auth_do_auth_required(const char *realm_name, const DilloUrl *url)
     * we will re-authenticate.
     */
    if ((host = Auth_host_by_url(url)) &&
-       (realm = Auth_realm_by_name(host, realm_name)) &&
-       (!Auth_realm_includes_path(realm, URL_PATH(url)))) {
-      _MSG("Auth_do_auth_required: updating realm '%s' with URL '%s'\n",
-           realm_name, URL_STR(url));
-      Auth_realm_add_path(realm, URL_PATH(url));
-      return 0;
+       (realm = Auth_realm_by_name(host, auth_parse->realm))) {
+      if (!Auth_realm_includes_path(realm, URL_PATH(url))) {
+         _MSG("Auth_do_auth_required: updating realm '%s' with URL '%s'\n",
+              auth_parse->realm, URL_STR(url));
+         Auth_realm_add_path(realm, URL_PATH(url));
+         return 0;
+      }
+
+      if (auth_parse->type == DIGEST && auth_parse->stale) {
+         /* we do have valid credentials but our nonce is old */
+         dFree((void *)realm->nonce);
+         realm->nonce = dStrdup(auth_parse->nonce);
+         return 0;
+      }
    }
 
    /*
@@ -441,7 +548,6 @@ static void Auth_do_auth_dialog_cb(const char *user, const char *password,
    AuthDialogData_t *data;
    AuthHost_t *host;
    AuthRealm_t *realm;
-   char *user_password, *response, *authorization, *authorization_old;
 
    data = (AuthDialogData_t *)vData;
 
@@ -456,45 +562,78 @@ static void Auth_do_auth_dialog_cb(const char *user, const char *password,
    }
 
    /* find or create the realm */
-   if (!(realm = Auth_realm_by_name(host, data->realm_name))) {
-      /* create a new realm */
-      realm = dNew(AuthRealm_t, 1);
-      realm->name = dStrdup(data->realm_name);
+   if (!(realm = Auth_realm_by_name(host, data->auth_parse->realm))) {
+      realm = dNew0(AuthRealm_t, 1);
+      realm->name = dStrdup(data->auth_parse->realm);
       realm->paths = dList_new(1);
-      realm->authorization = NULL;
       dList_append(host->realms, realm);
    }
+   realm->type = data->auth_parse->type;
+   dFree(realm->authorization);
+   realm->authorization = NULL;
 
    Auth_realm_add_path(realm, URL_PATH(data->url));
 
-   /* create and set the authorization */
-   user_password = dStrconcat(user, ":", password, NULL);
-   response = a_Misc_encode_base64(user_password);
-   authorization =
-      dStrconcat("Authorization: Basic ", response, "\r\n", NULL);
-   authorization_old = realm->authorization;
-   realm->authorization = authorization;
-   dFree(authorization_old);
-   dFree(user_password);
-   dFree(response);
+   if (realm->type == BASIC) {
+      char *user_password = dStrconcat(user, ":", password, NULL);
+      char *response = a_Misc_encode_base64(user_password);
+      char *authorization =
+         dStrconcat("Authorization: Basic ", response, "\r\n", NULL);
+      dFree(realm->authorization);
+      realm->authorization = authorization;
+      dFree(response);
+      dStrshred(user_password);
+      dFree(user_password);
+   } else if (realm->type == DIGEST) {
+      dFree(realm->username);
+      realm->username = dStrdup(user);
+      realm->nonce_count = 0;
+      dFree(realm->nonce);
+      realm->nonce = dStrdup(data->auth_parse->nonce);
+      dFree(realm->opaque);
+      realm->opaque = dStrdup(data->auth_parse->opaque);
+      realm->algorithm = data->auth_parse->algorithm;
+      dFree(realm->domain);
+      realm->domain = dStrdup(data->auth_parse->domain);
+      realm->qop = data->auth_parse->qop;
+      dFree(realm->cnonce);
+      if (realm->qop != QOPNOTSET)
+         realm->cnonce = a_Digest_create_cnonce();
+      if (!a_Digest_compute_digest(realm, user, password)) {
+         MSG("Auth_do_auth_dialog_cb: a_Digest_compute_digest failed.\n");
+         dList_remove_fast(host->realms, realm);
+         Auth_realm_delete(realm);
+      }
+   } else {
+      MSG("Auth_do_auth_dialog_cb: Unknown auth type: %i\n",
+          realm->type);
+   }
+   dStrshred((char *)password);
 }
 
-static int Auth_do_auth_dialog(const char *realm, const DilloUrl *url)
+/*
+ * Return: Nonzero if we got new credentials from the user and everything
+ * seems fine.
+ */
+static int Auth_do_auth_dialog(const AuthParse_t *auth_parse,
+                               const DilloUrl *url)
 {
    int ret;
    char *message;
    AuthDialogData_t *data;
+   const char *typestr = auth_parse->type == DIGEST ? "Digest" : "Basic";
 
-   _MSG("auth.c: Auth_do_auth_dialog: realm = '%s'\n", realm);
+   _MSG("auth.c: Auth_do_auth_dialog: realm = '%s'\n", auth_parse->realm);
+
    message = dStrconcat("The server at ", URL_HOST(url), " requires a username"
-                        " and password for  \"", realm, "\".", NULL);
+                        " and password for  \"", auth_parse->realm, "\".\n\n"
+                        "Authentication scheme: ", typestr, NULL);
    data = dNew(AuthDialogData_t, 1);
-   data->realm_name = dStrdup(realm);
+   data->auth_parse = auth_parse;
    data->url = a_Url_dup(url);
    ret = a_Dialog_user_password(message, Auth_do_auth_dialog_cb, data);
    dFree(message);
-   dFree((void*)data->realm_name);
-   a_Url_free((void*)data->url);
+   a_Url_free((void *)data->url);
    dFree(data);
    return ret;
 }
@@ -502,19 +641,20 @@ static int Auth_do_auth_dialog(const char *realm, const DilloUrl *url)
 /*
  * Do authorization for an auth string.
  */
-static int Auth_do_auth(char *auth, const DilloUrl *url)
+static int Auth_do_auth(char *challenge, enum AuthParseHTTPAuthType_t type,
+                        const DilloUrl *url)
 {
-   int reload;
    AuthParse_t *auth_parse;
+   int reload = 0;
 
-   _MSG("auth.c: Auth_do_auth: auth={%s}\n", auth);
-   reload = 0;
+   _MSG("auth.c: Auth_do_auth: challenge={%s}\n", challenge);
    auth_parse = Auth_parse_new();
-   Auth_parse_auth(auth_parse, auth);
+   auth_parse->type = type;
+   Auth_parse_challenge(auth_parse, challenge);
    if (auth_parse->ok)
       reload =
-         Auth_do_auth_required(auth_parse->realm, url) ?
-         Auth_do_auth_dialog(auth_parse->realm, url)
+         Auth_do_auth_required(auth_parse, url) ?
+         Auth_do_auth_dialog(auth_parse, url)
          : 1;
    Auth_parse_free(auth_parse);
 
@@ -522,18 +662,24 @@ static int Auth_do_auth(char *auth, const DilloUrl *url)
 }
 
 /*
- * Do authorization for a set of auth strings.
+ * Given authentication challenge(s), prepare authorization.
+ * Return: 0 on failure
+ *         nonzero on success. A new query will be sent to the server.
  */
-int a_Auth_do_auth(Dlist *auths, const DilloUrl *url)
+int a_Auth_do_auth(Dlist *challenges, const DilloUrl *url)
 {
-   int reload, i;
-   char *auth;
+   int i;
+   char *chal;
 
-   reload = 0;
-   for (i = 0; (auth = dList_nth_data(auths, i)); ++i)
-      if (Auth_do_auth(auth, url))
-         reload = 1;
+   for (i = 0; (chal = dList_nth_data(challenges, i)); ++i)
+      if (!dStrncasecmp(chal, "Digest ", 7))
+         if (Auth_do_auth(chal, DIGEST, url))
+            return 1;
+   for (i = 0; (chal = dList_nth_data(challenges, i)); ++i)
+      if (!dStrncasecmp(chal, "Basic ", 6))
+         if (Auth_do_auth(chal, BASIC, url))
+            return 1;
 
-   return reload;
+   return 0;
 }
 

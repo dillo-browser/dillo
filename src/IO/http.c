@@ -276,8 +276,7 @@ static Dstr *Http_make_content_type(const DilloUrl *url)
 Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
                             bool_t use_proxy)
 {
-   const char *auth;
-   char *ptr, *cookies, *referer;
+   char *ptr, *cookies, *referer, *auth;
    Dstr *query      = dStr_new(""),
         *request_uri = dStr_new(""),
         *proxy_auth = dStr_new("");
@@ -300,7 +299,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
    }
 
    cookies = a_Cookies_get_query(url, requester);
-   auth = a_Auth_get_auth_str(url);
+   auth = a_Auth_get_auth_str(url, request_uri->str);
    referer = Http_get_referer(url);
    if (URL_FLAGS(url) & URL_Post) {
       Dstr *content_type = Http_make_content_type(url);
@@ -352,6 +351,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
    }
    dFree(referer);
    dFree(cookies);
+   dFree(auth);
 
    dStr_free(request_uri, TRUE);
    dStr_free(proxy_auth, TRUE);

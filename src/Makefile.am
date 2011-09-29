@@ -35,6 +35,10 @@ dillo_SOURCES = \
 	cookies.h \
 	auth.c \
 	auth.h \
+	md5.c \
+	md5.h \
+	digest.c \
+	digest.h \
 	colors.c \
 	colors.h \
 	binaryconst.h \
