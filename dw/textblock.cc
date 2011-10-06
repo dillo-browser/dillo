@@ -73,7 +73,6 @@ Textblock::Textblock (bool limitTextWidth)
    //DBG_OBJ_SET_NUM(page, "num_lines", num_lines);
 
    lastLineWidth = 0;
-   lastLineParMin = 0;
    lastLineParMax = 0;
    wrapRef = -1;
 
@@ -202,10 +201,9 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
 {
    core::Extremes wordExtremes;
    Line *line;
-   Word *word;
+   Word *word, *prevWord = NULL;
    int wordIndex, lineIndex;
-   int parMin, parMax;
-   bool nowrap;
+   int parMax;
 
    //DBG_MSG (widget, "extremes", 0, "Dw_page_get_extremes");
    //DBG_MSG_START (widget);
@@ -221,7 +219,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
        * words[first_word]->nowrap set is no longer necessary, since
        * Dw_page_real_word_wrap sets max_word_min to the correct value in any
        * case. */
-      extremes->minWidth = line->maxWordMin;
+      extremes->minWidth = line->maxParMin;
       extremes->maxWidth = misc::max (line->maxParMax, lastLineParMax);
       //DBG_MSG (widget, "extremes", 0, "simple case");
    } else {
@@ -232,13 +230,11 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       if (wrapRef == 0) {
          extremes->minWidth = 0;
          extremes->maxWidth = 0;
-         parMin = 0;
          parMax = 0;
       } else {
          line = lines->getRef (wrapRef);
-         extremes->minWidth = line->maxWordMin;
+         extremes->minWidth = line->maxParMin;
          extremes->maxWidth = line->maxParMax;
-         parMin = line->parMin;
          parMax = line->parMax;
 
          //DBG_MSGF (widget, "extremes", 0, "parMin = %d", parMin);
@@ -250,15 +246,9 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       for (lineIndex = wrapRef; lineIndex < lines->size (); lineIndex++) {
          //DBG_MSGF (widget, "extremes", 0, "line %d", lineIndex);
          //DBG_MSG_START (widget);
-         core::style::WhiteSpace ws;
+         int parMin = 0;
 
          line = lines->getRef (lineIndex);
-         ws = words->getRef(line->firstWord)->style->whiteSpace;
-         nowrap = ws == core::style::WHITE_SPACE_PRE ||
-                  ws == core::style::WHITE_SPACE_NOWRAP;
-
-         //DEBUG_MSG (DEBUG_SIZE_LEVEL, "   line %d (of %d), nowrap = %d\n",
-         //           lineIndex, page->num_lines, nowrap);
 
          for (wordIndex = line->firstWord; wordIndex <= line->lastWord;
               wordIndex++) {
@@ -272,20 +262,28 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
                //           "      (next plus %d)\n", page->line1_offset);
             }
 
-            if (nowrap) {
-               parMin += prevWordSpace + wordExtremes.minWidth;
-               //DBG_MSGF (widget, "extremes", 0, "parMin = %d", parMin);
-            } else {
-               if (extremes->minWidth < wordExtremes.minWidth)
-                  extremes->minWidth = wordExtremes.minWidth;
-            }
+
+            if (extremes->minWidth < wordExtremes.minWidth)
+               extremes->minWidth = wordExtremes.minWidth;
 
             _MSG("parMax = %d, wordMaxWidth=%d, prevWordSpace=%d\n",
                  parMax, wordExtremes.maxWidth, prevWordSpace);
             if (word->content.type != core::Content::BREAK)
                parMax += prevWordSpace;
             parMax += wordExtremes.maxWidth;
+
+            if (prevWord && !canBreakAfter(prevWord)) {
+               parMin += prevWordSpace + wordExtremes.minWidth;
+            } else {
+               parMin = wordExtremes.minWidth;
+            }
+
+            if (extremes->minWidth < parMin) {
+               extremes->minWidth = parMin;
+            }
+
             prevWordSpace = word->origSpace;
+            prevWord = word;
 
             //DEBUG_MSG (DEBUG_SIZE_LEVEL + 1,
             //           "      word %s: maxWidth = %d\n",
@@ -305,19 +303,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
             if (extremes->maxWidth < parMax)
                extremes->maxWidth = parMax;
 
-            if (nowrap) {
-               //DBG_MSGF (widget, "extremes", 0, "parMin = %d", parMin);
-               if (extremes->minWidth < parMin)
-                  extremes->minWidth = parMin;
-
-               //DEBUG_MSG (DEBUG_SIZE_LEVEL + 2,
-               //           "   parMin = %d, after word %d (%s)\n",
-               //           parMin, line->last_word - 1,
-               //           a_Dw_content_text (&word->content));
-            }
-
             prevWordSpace = 0;
-            parMin = 0;
             parMax = 0;
          }
 
@@ -797,7 +783,7 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
    if (lines->size () == 1) {
       lastLine->top = 0;
       lastLine->maxLineWidth = line1OffsetEff;
-      lastLine->maxWordMin = 0;
+      lastLine->maxParMin = 0;
       lastLine->maxParMax = 0;
    } else {
       Line *prevLine = lines->getRef (lines->size () - 2);
@@ -805,7 +791,7 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
       lastLine->top = prevLine->top + prevLine->boxAscent +
                       prevLine->boxDescent + prevLine->breakSpace;
       lastLine->maxLineWidth = prevLine->maxLineWidth;
-      lastLine->maxWordMin = prevLine->maxWordMin;
+      lastLine->maxParMin = prevLine->maxParMin;
       lastLine->maxParMax = prevLine->maxParMax;
    }
 
@@ -813,8 +799,8 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
    //                    lastLine->top);
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.maxLineWidth", page->num_lines - 1,
    //                    lastLine->maxLineWidth);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.maxWordMin", page->num_lines - 1,
-   //                    lastLine->maxWordMin);
+   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.maxParMin", page->num_lines - 1,
+   //                    lastLine->maxParMin);
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.maxParMax", page->num_lines - 1,
    //                    lastLine->maxParMax);
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.parMin", page->num_lines - 1,
@@ -847,25 +833,15 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
       //DBG_OBJ_ARRSET_NUM (page, "lines.%d.maxParMax", page->num_lines - 1,
       //                    lastLine->maxParMax);
 
-      /* The following code looks questionable (especially since the values
-       * will be overwritten). In any case, line1OffsetEff is probably
-       * supposed to go into lastLinePar*, not lastLine->par*.
-       */
       if (lines->size () > 1) {
-         lastLine->parMin = 0;
-         lastLine->parMax = 0;
+         lastLineParMax = 0;
       } else {
-         lastLine->parMin = line1OffsetEff;
-         lastLine->parMax = line1OffsetEff;
+         lastLineParMax = line1OffsetEff;
       }
-      lastLineParMin = 0;
-      lastLineParMax = 0;
 
-      //DBG_OBJ_SET_NUM(page, "lastLineParMin", page->lastLineParMin);
       //DBG_OBJ_SET_NUM(page, "lastLineParMax", page->lastLineParMax);
    }
 
-   lastLine->parMin = lastLineParMin;
    lastLine->parMax = lastLineParMax;
 
    //DBG_OBJ_ARRSET_NUM (page, "lines.%d.parMin", page->num_lines - 1,
@@ -887,7 +863,7 @@ void Textblock::wordWrap(int wordIndex)
    Line *lastLine;
    Word *word;
    int availWidth, lastSpace, leftOffset, len;
-   bool newLine = false, newPar = false;
+   bool newLine = false, newPar = false, canBreakBefore = true;
    core::Extremes wordExtremes;
 
    //DBG_MSGF (page, "wrap", 0, "Dw_page_real_word_wrap (%d): %s, width = %d",
@@ -942,23 +918,37 @@ void Textblock::wordWrap(int wordIndex)
          /* previous word is a break */
          newLine = true;
          newPar = true;
-      } else if (word->style->whiteSpace == core::style::WHITE_SPACE_NOWRAP ||
-                 word->style->whiteSpace == core::style::WHITE_SPACE_PRE) {
-         //DBG_MSGF (page, "wrap", 0, "no wrap (white_space = %d)",
-         //          word->style->white_space);
+      } else if (!canBreakAfter (prevWord)) {
+         canBreakBefore = false;
+         // no break within nowrap
          newLine = false;
          newPar = false;
+         if (lastLineWidth + prevWord->origSpace + word->size.width >
+             availWidth)
+            markChange (lines->size () - 1);
       } else if (lastLine->firstWord != wordIndex) {
-         /* Does new word fit into the last line? */
-         //DBG_MSGF (page, "wrap", 0,
-         //          "word %d (%s) fits? (%d + %d + %d &lt;= %d)...",
-         //          word_ind, a_Dw_content_html (&word->content),
-         //          page->lastLine_width, prevWord->orig_space,
-         //          word->size.width, availWidth);
-         newLine = lastLineWidth + prevWord->origSpace + word->size.width >
-                   availWidth;
-         //DBG_MSGF (page, "wrap", 0, "... %s.",
-         //          newLine ? "No" : "Yes");
+         // check if we need to break because nowrap sequence is following
+         newLine = false;
+         int lineWidthNeeded = lastLineWidth + prevWord->origSpace;
+         for (int i = wordIndex; i < words->size (); i++) {
+            Word *w = words->getRef (i);
+
+            if (w->content.type == core::Content::BREAK ||
+                (word->content.type == core::Content::WIDGET &&
+                 word->content.widget->blockLevel()))
+            break;
+ 
+            lineWidthNeeded += w->size.width;
+
+            if (lineWidthNeeded > availWidth) {
+               newLine = true;
+               break;  
+            } else if (canBreakAfter (w)) {
+               break;
+            }
+
+            lineWidthNeeded += w->origSpace;
+         }
       }
    }
 
@@ -1029,27 +1019,22 @@ void Textblock::wordWrap(int wordIndex)
    if (!newLine)
       lastLineWidth += lastSpace;
    if (!newPar) {
-      lastLineParMin += lastSpace;
       lastLineParMax += lastSpace;
    }
 
    lastLineWidth += word->size.width;
 
    getWordExtremes (word, &wordExtremes);
-   lastLineParMin += wordExtremes.maxWidth;    /* Why maxWidth? */
    lastLineParMax += wordExtremes.maxWidth;
 
-   if (word->style->whiteSpace == core::style::WHITE_SPACE_NOWRAP ||
-       word->style->whiteSpace == core::style::WHITE_SPACE_PRE) {
-      lastLine->parMin += wordExtremes.minWidth + lastSpace;
+   if (!canBreakBefore) {
+      lastLineParMin += wordExtremes.minWidth + lastSpace;
       /* This may also increase the accumulated minimum word width.  */
-      lastLine->maxWordMin =
-         misc::max (lastLine->maxWordMin, lastLine->parMin);
-      /* NOTE: Most code relies on that all values of nowrap are equal for all
-       * words within one line. */
+      lastLine->maxParMin = misc::max (lastLine->maxParMin, lastLineParMin);
    } else {
-      lastLine->maxWordMin =
-         misc::max (lastLine->maxWordMin, wordExtremes.minWidth);
+      lastLineParMin = wordExtremes.minWidth;
+      lastLine->maxParMin =
+         misc::max (lastLine->maxParMin, wordExtremes.minWidth);
    }
 
    //DBG_OBJ_SET_NUM(page, "lastLine_par_min", page->lastLine_par_min);
@@ -1185,6 +1170,7 @@ void Textblock::rewrap ()
     * the line list up from this position is rebuild. */
    lines->setSize (wrapRef);
    lastLineWidth = 0;
+   lastLineParMin = 0;
    //DBG_OBJ_SET_NUM(page, "num_lines", page->num_lines);
    //DBG_OBJ_SET_NUM(page, "lastLine_width", page->lastLine_width);
 
@@ -1196,7 +1182,6 @@ void Textblock::rewrap ()
        * to the length of the line. */
       lastLine = lines->getRef (lines->size () - 1);
 
-      lastLineParMin = lastLine->parMin;
       lastLineParMax = lastLine->parMax;
 
       wordIndex = lastLine->lastWord + 1;
@@ -1205,7 +1190,6 @@ void Textblock::rewrap ()
                            words->getRef(i)->origSpace);
       lastLineWidth += words->getRef(lastLine->lastWord)->size.width;
    } else {
-      lastLineParMin = 0;
       lastLineParMax = 0;
 
       wordIndex = 0;
@@ -1581,6 +1565,7 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
    word->origSpace = 0;
    word->effSpace = 0;
    word->content.space = false;
+   word->content.breakType = core::Content::BREAK_NO;
 
    //DBG_OBJ_ARRSET_NUM (page, "words.%d.size.width", page->num_words - 1,
    //                    word->size.width);
@@ -1764,6 +1749,14 @@ void Textblock::addSpace (core::style::Style *style)
    if (wordIndex >= 0) {
       Word *word = words->getRef(wordIndex);
 
+      // According to http://www.w3.org/TR/CSS2/text.html#white-space-model:
+      // "line breaking opportunities are determined based on the text prior
+      //  to the white space collapsing steps".
+      // So we call addBreakOption () for each Textblock::addSpace () call.
+      // This is important e.g. to be able to break between foo and bar in:
+      // <span style="white-space:nowrap">foo </span> bar
+      addBreakOption (style);
+ 
       if (!word->content.space) {
          word->content.space = true;
          word->effSpace = word->origSpace = style->font->spaceWidth +
@@ -1781,7 +1774,6 @@ void Textblock::addSpace (core::style::Style *style)
       }
    }
 }
-
 
 /**
  * Cause a paragraph break

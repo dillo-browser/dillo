@@ -148,11 +148,8 @@ protected:
       /* The following members contain accumulated values, from the top
        * down to the line before. */
       int maxLineWidth; /* maximum of all line widths */
-      int maxWordMin;   /* maximum of all word minima */
+      int maxParMin;    /* maximum of all paragraph minima */
       int maxParMax;    /* maximum of all paragraph maxima */
-      int parMin;       /* the minimal total width down from the last
-                         * paragraph start, to the *beginning* of the
-                         * line */
       int parMax;       /* the maximal total width down from the last
                          * paragraph start, to the *beginning* of the
                          * line */
@@ -240,7 +237,8 @@ protected:
    int availWidth, availAscent, availDescent;
 
    int lastLineWidth;
-   int lastLineParMin;
+   int lastLineParMin; /* width of the current non-breakable word sequence
+                        * used by wordWrap () */
    int lastLineParMax;
    int wrapRef;  /* [0 based] */
 
@@ -256,6 +254,10 @@ protected:
 
    void queueDrawRange (int index1, int index2);
    void getWordExtremes (Word *word, core::Extremes *extremes);
+   inline bool canBreakAfter (Word *word)
+   {
+      return word->content.breakType == core::Content::BREAK_OK;
+   }
    void markChange (int ref);
    void justifyLine (Line *line, int availWidth);
    Line *addLine (int wordInd, bool newPar);
@@ -382,6 +384,14 @@ public:
    void addWidget (core::Widget *widget, core::style::Style *style);
    bool addAnchor (const char *name, core::style::Style *style);
    void addSpace(core::style::Style *style);
+   inline void addBreakOption (core::style::Style *style)
+   {
+      int wordIndex = words->size () - 1;
+      if (wordIndex >= 0 &&
+          style->whiteSpace != core::style::WHITE_SPACE_NOWRAP &&
+          style->whiteSpace != core::style::WHITE_SPACE_PRE)
+         words->getRef(wordIndex)->content.breakType = core::Content::BREAK_OK;
+   }
    void addParbreak (int space, core::style::Style *style);
    void addLinebreak (core::style::Style *style);
 
