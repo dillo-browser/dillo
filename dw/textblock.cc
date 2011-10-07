@@ -70,16 +70,16 @@ Textblock::Textblock (bool limitTextWidth)
    words = new misc::SimpleVector <Word> (1);
    anchors = new misc::SimpleVector <Anchor> (1);
 
-   //DBG_OBJ_SET_NUM(page, "num_lines", num_lines);
+   //DBG_OBJ_SET_NUM(this, "num_lines", num_lines);
 
    lastLineWidth = 0;
    lastLineParMax = 0;
    wrapRef = -1;
 
-   //DBG_OBJ_SET_NUM(page, "last_line_width", last_line_width);
-   //DBG_OBJ_SET_NUM(page, "last_line_par_min", last_line_par_min);
-   //DBG_OBJ_SET_NUM(page, "last_line_par_max", last_line_par_max);
-   //DBG_OBJ_SET_NUM(page, "wrap_ref", wrap_ref);
+   //DBG_OBJ_SET_NUM(this, "last_line_width", last_line_width);
+   //DBG_OBJ_SET_NUM(this, "last_line_par_min", last_line_par_min);
+   //DBG_OBJ_SET_NUM(this, "last_line_par_max", last_line_par_max);
+   //DBG_OBJ_SET_NUM(this, "wrap_ref", wrap_ref);
 
    hoverLink = -1;
 
@@ -128,7 +128,7 @@ Textblock::~Textblock ()
       parent class destructor. (???) */
    words = NULL;
 
-   //DBG_OBJ_SET_NUM(page, "num_lines", page->num_lines);
+   //DBG_OBJ_SET_NUM(this, "num_lines", lines->size ());
 }
 
 /**
@@ -205,7 +205,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    int wordIndex, lineIndex;
    int parMax;
 
-   //DBG_MSG (widget, "extremes", 0, "Dw_page_get_extremes");
+   //DBG_MSG (widget, "extremes", 0, "getExtremesImpl");
    //DBG_MSG_START (widget);
 
    if (lines->size () == 0) {
@@ -217,7 +217,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       line = lines->getRef (lines->size () - 1);
       /* Historical note: The former distinction between lines with and without
        * words[first_word]->nowrap set is no longer necessary, since
-       * Dw_page_real_word_wrap sets max_word_min to the correct value in any
+       * wordWrap() sets max_word_min to the correct value in any
        * case. */
       extremes->minWidth = line->maxParMin;
       extremes->maxWidth = misc::max (line->maxParMax, lastLineParMax);
@@ -259,7 +259,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
                wordExtremes.minWidth += line1OffsetEff;
                wordExtremes.maxWidth += line1OffsetEff;
                //DEBUG_MSG (DEBUG_SIZE_LEVEL + 1,
-               //           "      (next plus %d)\n", page->line1_offset);
+               //           "      (next plus %d)\n", line1OffsetEff);
             }
 
 
@@ -287,7 +287,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
 
             //DEBUG_MSG (DEBUG_SIZE_LEVEL + 1,
             //           "      word %s: maxWidth = %d\n",
-            //           a_Dw_content_text (&word->content),
+            //           word->content.text,
             //           word_extremes.maxWidth);
          }
 
@@ -298,7 +298,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
             //DEBUG_MSG (DEBUG_SIZE_LEVEL + 2,
             //           "   parMax = %d, after word %d (%s)\n",
             //           parMax, line->last_word - 1,
-            //           a_Dw_content_text (&word->content));
+            //           word->content.text);
 
             if (extremes->maxWidth < parMax)
                extremes->maxWidth = parMax;
@@ -315,7 +315,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    }
 
    //DBG_MSGF (widget, "extremes", 0, "width difference: %d + %d",
-   //          page->inner_padding, p_Dw_style_box_diff_width (widget->style));
+   //          innerPadding, getStyle()->boxDiffWidth ());
 
    int diff = innerPadding + getStyle()->boxDiffWidth ();
    extremes->minWidth += diff;
@@ -466,26 +466,26 @@ void Textblock::markExtremesChange (int ref)
 void Textblock::markChange (int ref)
 {
    if (ref != -1) {
-      //DBG_MSGF (page, "wrap", 0, "Dw_page_mark_size_change (ref = %d)", ref);
+      //DBG_MSGF (page, "wrap", 0, "markChange (ref = %d)", ref);
 
       if (wrapRef == -1)
          wrapRef = ref;
       else
          wrapRef = misc::min (wrapRef, ref);
 
-      //DBG_OBJ_SET_NUM (page, "wrap_ref", page->wrap_ref);
+      //DBG_OBJ_SET_NUM (this, "wrap_ref", wrapRef);
    }
 }
 
 void Textblock::setWidth (int width)
 {
-   /* If limitTextWidth is set to YES, a queue_resize may also be
+   /* If limitTextWidth is set to YES, a queueResize() may also be
     * necessary. */
    if (availWidth != width || limitTextWidth) {
       //DEBUG_MSG(DEBUG_REWRAP_LEVEL,
-      //          "Dw_page_set_width: Calling p_Dw_widget_queue_resize, "
+      //          "setWidth: Calling queueResize, "
       //          "in page with %d word(s)\n",
-      //          page->num_words);
+      //          words->size());
 
       availWidth = width;
       queueResize (0, false);
@@ -498,9 +498,9 @@ void Textblock::setAscent (int ascent)
 {
    if (availAscent != ascent) {
       //DEBUG_MSG(DEBUG_REWRAP_LEVEL,
-      //          "Dw_page_set_ascent: Calling p_Dw_widget_queue_resize, "
+      //          "setAscent: Calling queueResize, "
       //          "in page with %d word(s)\n",
-      //          page->num_words);
+      //          words->size());
 
       availAscent = ascent;
       queueResize (0, false);
@@ -512,9 +512,9 @@ void Textblock::setDescent (int descent)
 {
    if (availDescent != descent) {
       //DEBUG_MSG(DEBUG_REWRAP_LEVEL,
-      //          "Dw_page_set_descent: Calling p_Dw_widget_queue_resize, "
+      //          "setDescent: Calling queueResize, "
       //          "in page with %d word(s)\n",
-      //          page->num_words);
+      //          words->size());
 
       availDescent = descent;
       queueResize (0, false);
@@ -756,8 +756,8 @@ void Textblock::justifyLine (Line *line, int availWidth)
 
          words->getRef(i)->effSpace = words->getRef(i)->origSpace +
             (effSpaceDiffCum - lastEffSpaceDiffCum);
-         //DBG_OBJ_ARRSET_NUM (page, "words.%d.eff_space", i,
-         //                    page->words[i].eff_space);
+         //DBG_OBJ_ARRSET_NUM (this, "words.%d.effSpace", i,
+         //                    words->getRef(i)->effSpace);
 
          lastEffSpaceDiffCum = effSpaceDiffCum;
       }
@@ -769,14 +769,14 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
 {
    Line *lastLine;
 
-   //DBG_MSG (page, "wrap", 0, "Dw_page_add_line");
+   //DBG_MSG (page, "wrap", 0, "addLine");
    //DBG_MSG_START (page);
 
    lines->increase ();
-   //DBG_OBJ_SET_NUM(page, "num_lines", page->num_lines);
+   //DBG_OBJ_SET_NUM(this, "num_lines", lines->size ());
 
    //DEBUG_MSG (DEBUG_REWRAP_LEVEL, "--- new line %d in %p, with word %d of %d"
-   //           "\n", page->num_lines - 1, page, word_ind, page->num_words);
+   //           "\n", lines->size () - 1, page, word_ind, words->size());
 
    lastLine = lines->getRef (lines->size () - 1);
 
@@ -795,17 +795,17 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
       lastLine->maxParMax = prevLine->maxParMax;
    }
 
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.top", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.top", lines->size () - 1,
    //                    lastLine->top);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.maxLineWidth", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.maxLineWidth", lines->size () - 1,
    //                    lastLine->maxLineWidth);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.maxParMin", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.maxParMin", lines->size () - 1,
    //                    lastLine->maxParMin);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.maxParMax", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.maxParMax", lines->size () - 1,
    //                    lastLine->maxParMax);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.parMin", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.parMin", lines->size () - 1,
    //                    lastLine->parMin);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.parMax", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.parMax", lines->size () - 1,
    //                    lastLine->parMax);
 
    lastLine->firstWord = wordIndex;
@@ -815,9 +815,9 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
    lastLine->breakSpace = 0;
    lastLine->leftOffset = 0;
 
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.ascent", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.ascent", lines->size () - 1,
    //                    lastLine->boxAscent);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.descent", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.descent", lines->size () - 1,
    //                    lastLine->boxDescent);
 
    /* update values in line */
@@ -830,7 +830,7 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
 
    if (newPar) {
       lastLine->maxParMax = misc::max (lastLine->maxParMax, lastLineParMax);
-      //DBG_OBJ_ARRSET_NUM (page, "lines.%d.maxParMax", page->num_lines - 1,
+      //DBG_OBJ_ARRSET_NUM (this, "lines.%d.maxParMax", lines->size () - 1,
       //                    lastLine->maxParMax);
 
       if (lines->size () > 1) {
@@ -839,14 +839,14 @@ Textblock::Line *Textblock::addLine (int wordIndex, bool newPar)
          lastLineParMax = line1OffsetEff;
       }
 
-      //DBG_OBJ_SET_NUM(page, "lastLineParMax", page->lastLineParMax);
+      //DBG_OBJ_SET_NUM(this, "lastLineParMax", lastLineParMax);
    }
 
    lastLine->parMax = lastLineParMax;
 
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.parMin", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.parMin", lines->size () - 1,
    //                    lastLine->parMin);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.parMax", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.parMax", lines->size () - 1,
    //                    lastLine->parMax);
 
    //DBG_MSG_END (page);
@@ -866,9 +866,9 @@ void Textblock::wordWrap(int wordIndex)
    bool newLine = false, newPar = false, canBreakBefore = true;
    core::Extremes wordExtremes;
 
-   //DBG_MSGF (page, "wrap", 0, "Dw_page_real_word_wrap (%d): %s, width = %d",
-   //          word_ind, a_Dw_content_html (&page->words[word_ind].content),
-   //          page->words[word_ind].size.width);
+   //DBG_MSGF (page, "wrap", 0, "wordWrap (%d): %s, width = %d",
+   //          wordIndex, words->getRef(wordIndex)->content.text),
+   //          words->getRef(wordIndex)->size.width);
    //DBG_MSG_START (page);
 
    availWidth = this->availWidth - getStyle()->boxDiffWidth() - innerPadding;
@@ -974,9 +974,9 @@ void Textblock::wordWrap(int wordIndex)
       len += word->style->font->ascent / 3;
    lastLine->contentDescent = misc::max (lastLine->contentDescent, len);
 
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.ascent", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.ascent", lines->size () - 1,
    //                    lastLine->boxAscent);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.descent", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.descent", lines->size () - 1,
    //                    lastLine->boxDescent);
 
    if (word->content.type == core::Content::WIDGET) {
@@ -991,7 +991,7 @@ void Textblock::wordWrap(int wordIndex)
           word->content.widget->blockLevel () &&
           getStyle ()->borderWidth.top == 0 &&
           getStyle ()->padding.top == 0) {
-         // collapse top margin of parent element with top margin of first child
+         // collapse top margins of parent element and its first child
          // see: http://www.w3.org/TR/CSS21/box.html#collapsing-margins
          collapseMarginTop = getStyle ()->margin.top;
       }
@@ -1037,13 +1037,13 @@ void Textblock::wordWrap(int wordIndex)
          misc::max (lastLine->maxParMin, wordExtremes.minWidth);
    }
 
-   //DBG_OBJ_SET_NUM(page, "lastLine_par_min", page->lastLine_par_min);
-   //DBG_OBJ_SET_NUM(page, "lastLine_par_max", page->lastLine_par_max);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.par_min", page->num_lines - 1,
+   //DBG_OBJ_SET_NUM(this, "lastLine_par_min", lastLineParMin);
+   //DBG_OBJ_SET_NUM(this, "lastLine_par_max", lastLineParMax);
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.par_min", lines->size () - 1,
    //                    lastLine->par_min);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.par_max", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.par_max", lines->size () - 1,
    //                    lastLine->par_max);
-   //DBG_OBJ_ARRSET_NUM (page, "lines.%d.max_word_min", page->num_lines - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "lines.%d.max_word_min", lines->size () - 1,
    //                    lastLine->max_word_min);
 
    /* Align the line.
@@ -1076,8 +1076,8 @@ void Textblock::wordWrap(int wordIndex)
          /* List item markers are always on the left. */
          lastLine->leftOffset = 0;
          words->getRef(0)->effSpace = words->getRef(0)->origSpace + leftOffset;
-         //DBG_OBJ_ARRSET_NUM (page, "words.%d.eff_space", 0,
-         //                    page->words[0].eff_space);
+         //DBG_OBJ_ARRSET_NUM (this, "words.%d.effSpace", 0,
+         //                    words->getRef(0)->effSpace);
       } else {
          lastLine->leftOffset = leftOffset;
       }
@@ -1162,23 +1162,23 @@ void Textblock::rewrap ()
       return;
 
    //DBG_MSGF (page, "wrap", 0,
-   //          "Dw_page_rewrap: page->wrap_ref = %d, in page with %d word(s)",
-   //          page->wrap_ref, page->num_words);
+   //          "rewrap: wrapRef = %d, in page with %d word(s)",
+   //          wrapRef, words->size());
    //DBG_MSG_START (page);
 
-   /* All lines up from page->wrap_ref will be rebuild from the word list,
+   /* All lines up from wrapRef will be rebuild from the word list,
     * the line list up from this position is rebuild. */
    lines->setSize (wrapRef);
    lastLineWidth = 0;
    lastLineParMin = 0;
-   //DBG_OBJ_SET_NUM(page, "num_lines", page->num_lines);
-   //DBG_OBJ_SET_NUM(page, "lastLine_width", page->lastLine_width);
+   //DBG_OBJ_SET_NUM(this, "num_lines", lines->size ());
+   //DBG_OBJ_SET_NUM(this, "lastLine_width", lastLineWidth);
 
    /* In the word list, start at the last word plus one in the line before. */
    if (wrapRef > 0) {
-      /* Note: In this case, Dw_page_real_word_wrap will immediately find
-       * the need to rewrap the line, since we start with the last one (plus
-       * one). This is also the reason, why page->lastLine_width is set
+      /* Note: In this case, wordWrap() will immediately find the need
+       * to rewrap the line, since we start with the last one (plus one).
+       * This is also the reason, why lastLineWidth is set
        * to the length of the line. */
       lastLine = lines->getRef (lines->size () - 1);
 
@@ -1211,14 +1211,14 @@ void Textblock::rewrap ()
       //DEBUG_MSG(DEBUG_REWRAP_LEVEL,
       //          "Assigning parent_ref = %d to rewrapped word %d, "
       //          "in page with %d word(s)\n",
-      //          page->num_lines - 1, wordIndex, page->num_words);
+      //          lines->size () - 1, wordIndex, words->size());
 
       /* todo_refactoring:
       if (word->content.type == DW_CONTENT_ANCHOR)
          p_Dw_gtk_viewport_change_anchor
             (widget, word->content.anchor,
              Dw_page_line_total_y_offset (page,
-                                          &page->lines[page->num_lines - 1]));
+                                          &page->lines[lines->size () - 1]));
       */
    }
 
@@ -1567,17 +1567,17 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
    word->content.space = false;
    word->content.breakType = core::Content::BREAK_NO;
 
-   //DBG_OBJ_ARRSET_NUM (page, "words.%d.size.width", page->num_words - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "words.%d.size.width", words->size() - 1,
    //                    word->size.width);
-   //DBG_OBJ_ARRSET_NUM (page, "words.%d.size.descent", page->num_words - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "words.%d.size.descent", words->size() - 1,
    //                    word->size.descent);
-   //DBG_OBJ_ARRSET_NUM (page, "words.%d.size.ascent", page->num_words - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "words.%d.size.ascent", words->size() - 1,
    //                    word->size.ascent);
-   //DBG_OBJ_ARRSET_NUM (page, "words.%d.orig_space", page->num_words - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "words.%d.orig_space", words->size() - 1,
    //                    word->orig_space);
-   //DBG_OBJ_ARRSET_NUM (page, "words.%d.eff_space", page->num_words - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "words.%d.effSpace", words->size() - 1,
    //                    word->eff_space);
-   //DBG_OBJ_ARRSET_NUM (page, "words.%d.content.space", page->num_words - 1,
+   //DBG_OBJ_ARRSET_NUM (this, "words.%d.content.space", words->size() - 1,
    //                    word->content.space);
 
    word->style = style;
@@ -1654,7 +1654,7 @@ void Textblock::addText (const char *text, size_t len,
    word->content.type = core::Content::TEXT;
    word->content.text = layout->textZone->strndup(text, len);
 
-   //DBG_OBJ_ARRSET_STR (page, "words.%d.content.text", page->num_words - 1,
+   //DBG_OBJ_ARRSET_STR (page, "words.%d.content.text", words->size() - 1,
    //                    word->content.text);
 
    wordWrap (words->size () - 1);
@@ -1683,7 +1683,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    word->content.type = core::Content::WIDGET;
    word->content.widget = widget;
 
-   //DBG_OBJ_ARRSET_PTR (page, "words.%d.content.widget", page->num_words - 1,
+   //DBG_OBJ_ARRSET_PTR (page, "words.%d.content.widget", words->size() - 1,
    //                    word->content.widget);
 
    wordWrap (words->size () - 1);
@@ -1694,9 +1694,8 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    //DEBUG_MSG(DEBUG_REWRAP_LEVEL,
    //          "Assigning parent_ref = %d to added word %d, "
    //          "in page with %d word(s)\n",
-   //          page->num_lines - 1, page->num_words - 1, page->num_words);
+   //          lines->size () - 1, words->size() - 1, words->size());
 }
-
 
 /**
  * Add an anchor to the page. "name" is copied, so no strdup is necessary for
@@ -1762,12 +1761,12 @@ void Textblock::addSpace (core::style::Style *style)
          word->effSpace = word->origSpace = style->font->spaceWidth +
                                             style->wordSpacing;
 
-         //DBG_OBJ_ARRSET_NUM (page, "words.%d.orig_space", nw,
-         //                    page->words[nw].orig_space);
-         //DBG_OBJ_ARRSET_NUM (page, "words.%d.eff_space", nw,
-         //                    page->words[nw].eff_space);
-         //DBG_OBJ_ARRSET_NUM (page, "words.%d.content.space", nw,
-         //                    page->words[nw].content.space);
+         //DBG_OBJ_ARRSET_NUM (this, "words.%d.origSpace", wordIndex,
+         //                    word->origSpace);
+         //DBG_OBJ_ARRSET_NUM (this, "words.%d.effSpace", wordIndex,
+         //                    word->effSpace);
+         //DBG_OBJ_ARRSET_NUM (this, "words.%d.content.space", wordIndex,
+         //                    word->content.space);
          word->spaceStyle->unref ();
          word->spaceStyle = style;
          style->ref ();
@@ -1934,9 +1933,9 @@ void Textblock::handOverBreak (core::style::Style *style)
 }
 
 /*
- * Any words added by a_Dw_page_add_... are not immediately (queued to
+ * Any words added by addWord() are not immediately (queued to
  * be) drawn, instead, this function must be called. This saves some
- * calls to p_Dw_widget_queue_resize.
+ * calls to queueResize().
  *
  */
 void Textblock::flush ()
