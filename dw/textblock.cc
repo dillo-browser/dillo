@@ -215,10 +215,6 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    } else if (wrapRef == -1) {
       /* no rewrap necessary -> values in lines are up to date */
       line = lines->getRef (lines->size () - 1);
-      /* Historical note: The former distinction between lines with and without
-       * words[first_word]->nowrap set is no longer necessary, since
-       * wordWrap() sets max_word_min to the correct value in any
-       * case. */
       extremes->minWidth = line->maxParMin;
       extremes->maxWidth = misc::max (line->maxParMax, lastLineParMax);
       //DBG_MSG (widget, "extremes", 0, "simple case");
