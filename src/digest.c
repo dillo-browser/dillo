@@ -176,7 +176,7 @@ char *a_Digest_authorization_hdr(AuthRealm_t *realm, const DilloUrl *url,
    Digest_Dstr_append_token_value(result, 0, "username", realm->username, 1);
    Digest_Dstr_append_token_value(result, 1, "realm", realm->name, 1);
    Digest_Dstr_append_token_value(result, 1, "nonce", realm->nonce, 1);
-   Digest_Dstr_append_token_value(result, 1, "uri", digest_uri, 0);
+   Digest_Dstr_append_token_value(result, 1, "uri", digest_uri, 1);
    if (realm->algorithm != ALGORITHMNOTSET) {
       Digest_Dstr_append_token_value(result, 1, "algorithm",
                                      ALGORITHM2STR[realm->algorithm], 0);
