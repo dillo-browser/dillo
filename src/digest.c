@@ -144,7 +144,7 @@ static void Digest_Dstr_append_token_value(Dstr *str, int delimiter,
                                            const char *value, int quoted)
 {
    char c;
-   dStr_sprintfa(str, "%s%s = ", (delimiter ? ", " : ""), token);
+   dStr_sprintfa(str, "%s%s=", (delimiter ? ", " : ""), token);
    if (quoted) {
       dStr_append_c(str, '"');
       while ((c = *value++)) {
