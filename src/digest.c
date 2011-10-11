@@ -160,6 +160,11 @@ static void Digest_Dstr_append_token_value(Dstr *str, int delimiter,
 
 /*
  * Construct Digest Authorization header.
+ *
+ * Field ordering: furaisanjin reports that his DVD recorder requires the
+ * order that IE happens to use: "username, realm, nonce, uri, cnonce, nc,
+ * algorithm, response, qop". It apparently doesn't use "opaque", so that's
+ * been left where it already was.
  */
 char *a_Digest_authorization_hdr(AuthRealm_t *realm, const DilloUrl *url,
                                  const char *digest_uri)
@@ -177,20 +182,19 @@ char *a_Digest_authorization_hdr(AuthRealm_t *realm, const DilloUrl *url,
    Digest_Dstr_append_token_value(result, 1, "realm", realm->name, 1);
    Digest_Dstr_append_token_value(result, 1, "nonce", realm->nonce, 1);
    Digest_Dstr_append_token_value(result, 1, "uri", digest_uri, 1);
+   if (realm->qop != QOPNOTSET) {
+      Digest_Dstr_append_token_value(result, 1, "cnonce", realm->cnonce, 1);
+      dStr_sprintfa(result, ", nc=%08x", realm->nonce_count);
+   }
    if (realm->algorithm != ALGORITHMNOTSET) {
       Digest_Dstr_append_token_value(result, 1, "algorithm",
                                      ALGORITHM2STR[realm->algorithm], 0);
    }
    Digest_Dstr_append_token_value(result, 1, "response", response->str, 1);
-
    if (realm->opaque)
       Digest_Dstr_append_token_value(result, 1, "opaque", realm->opaque, 1);
-
-   if (realm->qop != QOPNOTSET) {
+   if (realm->qop != QOPNOTSET)
       Digest_Dstr_append_token_value(result, 1, "qop", QOP2STR[realm->qop], 1);
-      dStr_sprintfa(result, ", nc=%08x", realm->nonce_count);
-      Digest_Dstr_append_token_value(result, 1, "cnonce", realm->cnonce, 1);
-   }
    dStr_sprintfa(result, "\r\n");
 
    dStr_free(response, 1);
