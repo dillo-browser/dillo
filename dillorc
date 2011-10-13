@@ -165,9 +165,9 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #
 # See http://zytrax.com/tech/web/browser_ids.htm for a compilation of strings.
 #
-# http_user_agent="Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6"
-# http_user_agent="Wget/1.11.4"
-#The default is Dillo/(current version number)
+# http_user_agent="Mozilla/5.0 (Windows NT 5.1; rv:7.0.1) Gecko/20100101 Firefox/7.0.1"
+# http_user_agent="Wget/1.12 (linux-gnu)"
+#The default is "Dillo/"+current_version_number
 
 #-------------------------------------------------------------------------
 #                            COLORS SECTION
