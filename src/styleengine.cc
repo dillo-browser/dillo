@@ -331,30 +331,33 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
             if (p->type == CSS_TYPE_ENUM) {
                switch (p->value.intVal) {
                   case CSS_FONT_SIZE_XX_SMALL:
-                     fontAttrs.size = roundInt(11.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(8.1 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_X_SMALL:
-                     fontAttrs.size = roundInt(12.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(9.7 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_SMALL:
-                     fontAttrs.size = roundInt(13.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(11.7 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_MEDIUM:
                      fontAttrs.size = roundInt(14.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_LARGE:
+                     fontAttrs.size = roundInt(16.8 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_X_LARGE:
-                     fontAttrs.size = roundInt(16.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(20.2 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_XX_LARGE:
-                     fontAttrs.size = roundInt(17.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(24.2 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_SMALLER:
-                     fontAttrs.size -= roundInt(1.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(fontAttrs.size * 0.83 *
+                                               prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_LARGER:
-                     fontAttrs.size += roundInt(1.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(fontAttrs.size * 1.2 *
+                                               prefs.font_factor);
                      break;
                   default:
                      assert(false); // invalid font-size enum
