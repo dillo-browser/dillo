@@ -347,9 +347,6 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       if (a_Html_get_attr(html, tag, tagsize, "nowrap"))
          html->styleEngine->setNonCssHint(CSS_PROPERTY_WHITE_SPACE,
                                           CSS_TYPE_ENUM, WHITE_SPACE_NOWRAP);
-      else
-         html->styleEngine->setNonCssHint(CSS_PROPERTY_WHITE_SPACE,
-                                          CSS_TYPE_ENUM, WHITE_SPACE_NORMAL);
 
       a_Html_tag_set_align_attr (html, tag, tagsize);
 
