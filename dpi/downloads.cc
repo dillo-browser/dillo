@@ -1087,6 +1087,29 @@ void DLWin::abort_all()
 }
 
 /*
+ * A Scroll class that resizes its resizable widget to its width.
+ * see http://seriss.com/people/erco/fltk/#ScrollableWidgetBrowser
+ */
+class DlScroll : public Fl_Scroll
+{
+public:
+  void resize(int x_, int y_, int w_, int h_)
+  {
+    Fl_Widget *resizable_ = resizable();
+    if (resizable_)
+      resizable_->resize(resizable_->x(),
+                         resizable_->y(),
+                         w() - scrollbar_size(),
+                         resizable_->h());
+    Fl_Scroll::resize(x_, y_, w_, h_);
+  }
+  DlScroll(int x, int y, int w, int h, const char *l = 0)
+    : Fl_Scroll(x, y, w, h, l)
+  {
+  }
+};
+
+/*
  * Create the main window and an empty list of requests.
  */
 DLWin::DLWin(int ww, int wh) {
@@ -1097,12 +1120,13 @@ DLWin::DLWin(int ww, int wh) {
    // Create the empty main window
    mWin = new Fl_Window(ww, wh, "Downloads:");
    mWin->begin();
-   mScroll = new Fl_Scroll(0,0,ww,wh);
+   mScroll = new DlScroll(0,0,ww,wh);
    mScroll->begin();
    mPG = new Fl_Pack(0,0,ww-18,wh);
    mPG->end();
    mScroll->end();
    mScroll->type(Fl_Scroll::VERTICAL);
+   mScroll->resizable(mPG);
    mWin->end();
    mWin->resizable(mScroll);
    mWin->callback(dlwin_esc_cb, NULL);
