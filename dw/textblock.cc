@@ -654,25 +654,32 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                    event->xWidget < nextWordStartX) {
                   // We have found the word.
                   if (word->content.type == core::Content::TEXT) {
-                     // Search the character the mouse pointer is in.
-                     // nextWordX is the right side of this character.
-                     charPos = 0;
-                     while ((nextWordX = wordStartX +
-                             layout->textWidth (word->style->font,
-                                                word->content.text, charPos))
-                            <= event->xWidget)
-                        charPos = layout->nextGlyph (word->content.text,
+                     if (event->xWidget >= nextWordStartX  - word->effSpace) {
+                        charPos = core::SelectionState::END_OF_WORD;
+                     } else {
+                        // Search the character the mouse pointer is in.
+                        // nextWordX is the right side of this character.
+                        charPos = 0;
+                        while ((nextWordX = wordStartX +
+                                layout->textWidth (word->style->font,
+                                                   word->content.text,
+                                                   charPos))
+                               <= event->xWidget)
+                           charPos = layout->nextGlyph (word->content.text,
+                                                        charPos);
+                        // The left side of this character.
+                        prevPos = layout->prevGlyph (word->content.text,
                                                      charPos);
-                     // The left side of this character.
-                     prevPos = layout->prevGlyph (word->content.text, charPos);
-                     wordX = wordStartX + layout->textWidth (word->style->font,
-                                                            word->content.text,
-                                                            prevPos);
+                        wordX = wordStartX +
+                                layout->textWidth (word->style->font,
+                                                   word->content.text,
+                                                   prevPos);
 
-                     // If the mouse pointer is left from the middle, use the
-                     // left position, otherwise, use the right one.
-                     if (event->xWidget <= (wordX + nextWordX) / 2)
-                        charPos = prevPos;
+                        // If the mouse pointer is left from the middle, use
+                        // the left position, otherwise, use the right one.
+                        if (event->xWidget <= (wordX + nextWordX) / 2)
+                           charPos = prevPos;
+                     }
                   } else {
                      // Depends on whether the pointer is within the left or
                      // right half of the (non-text) word.
