@@ -518,18 +518,16 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          init_str = value;
          resource = factory->createLabelButtonResource(init_str);
       }
-   } else if (!dStrcasecmp(type, "text") || !*type) {
+   } else {
       /* Text input, which also is the default */
       inp_type = DILLO_HTML_INPUT_TEXT;
+      if (*type && dStrcasecmp(type, "text"))
+         BUG_MSG("Unknown input type: \"%s\"\n", type);
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
       resource = factory->createEntryResource(size, false, NULL);
       init_str = value;
-   } else {
-      /* Unknown input type */
-      BUG_MSG("Unknown input type: \"%s\"\n", type);
    }
-
    if (resource)
       embed = new Embed (resource);
 
