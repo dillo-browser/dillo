@@ -270,18 +270,19 @@ core::Iterator *Table::iterator (core::Content::Type mask, bool atEnd)
 
 void Table::addCell (Widget *widget, int colspan, int rowspan)
 {
+   const int maxspan = 100;
    Child *child;
    int colspanEff;
 
-   // We limit the values for colspan and rowspan to 50, to avoid
+   // We limit the values for colspan and rowspan to avoid
    // attacks by malicious web pages.
-   if (colspan > 50 || colspan < 0) {
-      MSG_WARN("colspan = %d is set to 50.\n", colspan);
-      colspan = 50;
+   if (colspan > maxspan || colspan < 0) {
+      MSG_WARN("colspan = %d is set to %d.\n", colspan, maxspan);
+      colspan = maxspan;
    }
-   if (rowspan > 50 || rowspan <= 0) {
-      MSG_WARN("rowspan = %d is set to 50.\n", rowspan);
-      rowspan = 50;
+   if (rowspan > maxspan || rowspan <= 0) {
+      MSG_WARN("rowspan = %d is set to %d.\n", rowspan, maxspan);
+      rowspan = maxspan;
    }
 
    if (numRows == 0) {
