@@ -297,6 +297,16 @@ public:
       return platform->textWidth (font, text, len);
    }
 
+   inline char *textToUpper (const char *text, int len)
+   {
+      return platform->textToUpper (text, len);
+   }
+
+   inline char *textToLower (const char *text, int len)
+   {
+      return platform->textToLower (text, len);
+   }
+
    inline int nextGlyph (const char *text, int idx)
    {
       return platform->nextGlyph (text, idx);

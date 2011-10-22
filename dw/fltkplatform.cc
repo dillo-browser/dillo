@@ -553,6 +553,36 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
    return width;
 }
 
+char *FltkPlatform::textToUpper (const char *text, int len)
+{
+   char *newstr = NULL;
+
+   if (len > 0) {
+      int newlen;
+
+      newstr = (char*) malloc(3 * len + 1);
+      newlen = fl_utf_toupper((const unsigned char*)text, len, newstr);
+      assert(newlen <= 3 * len);
+      newstr[newlen] = '\0';
+   }
+   return newstr;
+}
+
+char *FltkPlatform::textToLower (const char *text, int len)
+{
+   char *newstr = NULL;
+
+   if (len > 0) {
+      int newlen;
+
+      newstr = (char*) malloc(3 * len + 1);
+      newlen = fl_utf_tolower((const unsigned char*)text, len, newstr);
+      assert(newlen <= 3 * len);
+      newstr[newlen] = '\0';
+   }
+   return newstr;
+}
+
 int FltkPlatform::nextGlyph (const char *text, int idx)
 {
    return fl_utf8fwd (&text[idx + 1], text, &text[strlen (text)]) - text;

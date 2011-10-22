@@ -42,6 +42,7 @@ void StyleAttrs::initValues ()
    textDecoration = TEXT_DECORATION_NONE;
    textAlign = TEXT_ALIGN_LEFT;
    textAlignChar = '.';
+   textTransform = TEXT_TRANSFORM_NONE;
    listStylePosition = LIST_STYLE_POSITION_OUTSIDE;
    listStyleType = LIST_STYLE_TYPE_DISC;
    valign = VALIGN_BASELINE;
@@ -117,6 +118,7 @@ bool StyleAttrs::equals (object::Object *other) {
        textAlign == otherAttrs->textAlign &&
        valign == otherAttrs->valign &&
        textAlignChar == otherAttrs->textAlignChar &&
+       textTransform == otherAttrs->textTransform &&
        hBorderSpacing == otherAttrs->hBorderSpacing &&
        vBorderSpacing == otherAttrs->vBorderSpacing &&
        wordSpacing == otherAttrs->wordSpacing &&
@@ -154,6 +156,7 @@ int StyleAttrs::hashValue () {
       textAlign +
       valign +
       textAlignChar +
+      textTransform +
       hBorderSpacing +
       vBorderSpacing +
       wordSpacing +
@@ -244,6 +247,7 @@ void Style::copyAttrs (StyleAttrs *attrs)
    textAlign = attrs->textAlign;
    valign = attrs->valign;
    textAlignChar = attrs->textAlignChar;
+   textTransform = attrs->textTransform;
    hBorderSpacing = attrs->hBorderSpacing;
    vBorderSpacing = attrs->vBorderSpacing;
    wordSpacing = attrs->wordSpacing;

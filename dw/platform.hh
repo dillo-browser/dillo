@@ -58,6 +58,16 @@ public:
    virtual int textWidth (style::Font *font, const char *text, int len) = 0;
 
    /**
+    * \brief Return the string resulting from transforming text to uppercase.
+    */
+   virtual char *textToUpper (const char *text, int len) = 0;
+
+   /**
+    * \brief Return the string resulting from transforming text to lowercase.
+    */
+   virtual char *textToLower (const char *text, int len) = 0;
+
+   /**
     * \brief Return the index of the next glyph in string text.
     */
    virtual int nextGlyph (const char *text, int idx) = 0;

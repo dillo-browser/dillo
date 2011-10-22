@@ -247,6 +247,13 @@ enum VAlignType {
    VALIGN_TEXT_BOTTOM,
 };
 
+enum TextTransform {
+   TEXT_TRANSFORM_NONE,
+   TEXT_TRANSFORM_CAPITALIZE,
+   TEXT_TRANSFORM_UPPERCASE,
+   TEXT_TRANSFORM_LOWERCASE,
+};
+
 /**
  * \todo Incomplete. Has to be completed for a CSS implementation.
  */
@@ -441,6 +448,7 @@ public:
    TextAlignType textAlign;
    VAlignType valign;
    char textAlignChar; /* In future, strings will be supported. */
+   TextTransform textTransform;
 
    int hBorderSpacing, vBorderSpacing, wordSpacing;
    Length width, height, lineHeight, textIndent;

@@ -661,9 +661,9 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                         // nextWordX is the right side of this character.
                         charPos = 0;
                         while ((nextWordX = wordStartX +
-                                layout->textWidth (word->style->font,
-                                                   word->content.text,
-                                                   charPos))
+                                            textWidth (word->content.text, 0,
+                                                       charPos,
+                                                       word->style))
                                <= event->xWidget)
                            charPos = layout->nextGlyph (word->content.text,
                                                         charPos);
@@ -671,10 +671,8 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                         prevPos = layout->prevGlyph (word->content.text,
                                                      charPos);
                         wordX = wordStartX +
-                                layout->textWidth (word->style->font,
-                                                   word->content.text,
-                                                   prevPos);
-
+                                textWidth (word->content.text, 0, prevPos,
+                                           word->style);
                         // If the mouse pointer is left from the middle, use
                         // the left position, otherwise, use the right one.
                         if (event->xWidget <= (wordX + nextWordX) / 2)
@@ -1257,9 +1255,66 @@ void Textblock::decorateText(core::View *view, core::style::Style *style,
 }
 
 /*
+ * Draw a string of text
+ */
+void Textblock::drawText(core::View *view, core::style::Style *style,
+                         core::style::Color::Shading shading, int x, int y,
+                         const char *text, int start, int len)
+{
+   if (len > 0) {
+      char *str = NULL;
+
+      switch (style->textTransform) {
+         case core::style::TEXT_TRANSFORM_NONE:
+         default:
+            break;
+         case core::style::TEXT_TRANSFORM_UPPERCASE:
+            str = layout->textToUpper(text + start, len);
+            break;
+         case core::style::TEXT_TRANSFORM_LOWERCASE:
+            str = layout->textToLower(text + start, len);
+            break;
+         case core::style::TEXT_TRANSFORM_CAPITALIZE:
+         {
+            /* \bug No way to know about non-ASCII punctuation. */
+            bool initial_seen = false;
+
+            for (int i = 0; i < start; i++)
+               if (!ispunct(text[i]))
+                  initial_seen = true;
+            if (initial_seen)
+               break;
+
+            int after = 0;
+            text += start;
+            while (ispunct(text[after]))
+               after++;
+            if (text[after])
+               after = layout->nextGlyph(text, after);
+            if (after > len)
+               after = len;
+
+            char *initial = layout->textToUpper(text, after);
+            int newlen = strlen(initial) + len-after;
+            str = (char *)malloc(newlen + 1);
+            strcpy(str, initial);
+            strncpy(str + strlen(str), text+after, len-after);
+            str[newlen] = '\0';
+            free(initial);
+            break;
+         }
+      }
+      view->drawText(style->font, style->color, shading, x, y,
+                     str ? str : text + start, str ? strlen(str) : len);
+      if (str)
+         free(str);
+   }
+}
+
+/*
  * Draw a word of text.
  */
-void Textblock::drawText(int wordIndex, core::View *view,core::Rectangle *area,
+void Textblock::drawWord(int wordIndex, core::View *view,core::Rectangle *area,
                          int xWidget, int yWidgetBase)
 {
    Word *word = words->getRef(wordIndex);
@@ -1275,9 +1330,8 @@ void Textblock::drawText(int wordIndex, core::View *view,core::Rectangle *area,
    }
    yWorldBase = yWidgetBase + allocation.y;
 
-   view->drawText (style->font, style->color,
-                   core::style::Color::SHADING_NORMAL, xWorld, yWorldBase,
-                   word->content.text, strlen (word->content.text));
+   drawText (view, style, core::style::Color::SHADING_NORMAL, xWorld,
+             yWorldBase, word->content.text, 0, strlen (word->content.text));
 
    if (style->textDecoration)
       decorateText(view, style, core::style::Color::SHADING_NORMAL, xWorld,
@@ -1299,14 +1353,12 @@ void Textblock::drawText(int wordIndex, core::View *view,core::Rectangle *area,
 
          xStart = xWorld;
          if (firstCharIdx)
-            xStart += layout->textWidth (style->font, word->content.text,
-                                         firstCharIdx);
+            xStart += textWidth (word->content.text, 0, firstCharIdx, style);
          if (firstCharIdx == 0 && lastCharIdx == wordLen)
             width = word->size.width;
          else
-            width = layout->textWidth (style->font,
-                                    word->content.text + firstCharIdx,
-                                    lastCharIdx - firstCharIdx);
+            width = textWidth (word->content.text, firstCharIdx,
+                               lastCharIdx - firstCharIdx, style);
          if (width > 0) {
             /* Highlight text */
             core::style::Color *wordBgColor;
@@ -1321,10 +1373,9 @@ void Textblock::drawText(int wordIndex, core::View *view,core::Rectangle *area,
                style->font->ascent + style->font->descent);
 
             /* Highlight the text. */
-            view->drawText (style->font, style->color,
-                            core::style::Color::SHADING_INVERSE, xStart,
-                            yWorldBase, word->content.text + firstCharIdx,
-                            lastCharIdx - firstCharIdx);
+            drawText (view, style, core::style::Color::SHADING_INVERSE, xStart,
+                      yWorldBase, word->content.text, firstCharIdx,
+                      lastCharIdx - firstCharIdx);
 
             if (style->textDecoration)
                decorateText(view, style, core::style::Color::SHADING_INVERSE,
@@ -1422,7 +1473,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                               yWidgetBase - line->boxAscent, word->size.width,
                               line->boxAscent + line->boxDescent, false);
                   }
-                  drawText(wordIndex, view, area, xWidget, yWidgetBase);
+                  drawWord(wordIndex, view, area, xWidget, yWidgetBase);
                }
             }
             if (word->effSpace > 0 && wordIndex < line->lastWord &&
@@ -1591,6 +1642,63 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
    return word;
 }
 
+/*
+ * Get the width of a string of text.
+ */
+int Textblock::textWidth(const char *text, int start, int len,
+                         core::style::Style *style)
+{
+   int ret = 0;
+
+   if (len > 0) {
+      char *str = NULL;
+
+      switch (style->textTransform) {
+         case core::style::TEXT_TRANSFORM_NONE:
+         default:
+            ret = layout->textWidth(style->font, text+start, len);
+            break;
+         case core::style::TEXT_TRANSFORM_UPPERCASE:
+            str = layout->textToUpper(text+start, len);
+            ret = layout->textWidth(style->font, str, strlen(str));
+            break;
+         case core::style::TEXT_TRANSFORM_LOWERCASE:
+            str = layout->textToLower(text+start, len);
+            ret = layout->textWidth(style->font, str, strlen(str));
+            break;
+         case core::style::TEXT_TRANSFORM_CAPITALIZE:
+         {
+            /* \bug No way to know about non-ASCII punctuation. */
+            bool initial_seen = false;
+
+            for (int i = 0; i < start; i++)
+               if (!ispunct(text[i]))
+                  initial_seen = true;
+            if (initial_seen) {
+               ret = layout->textWidth(style->font, text+start, len);
+            } else {
+               int after = 0;
+
+               text += start;
+               while (ispunct(text[after]))
+                  after++;
+               if (text[after])
+                  after = layout->nextGlyph(text, after);
+               if (after > len)
+                  after = len;
+               str = layout->textToUpper(text, after);
+               ret = layout->textWidth(style->font, str, strlen(str)) +
+                     layout->textWidth(style->font, text+after, len-after);
+            }
+            break;
+         }
+      }
+      if (str)
+         free(str);
+   }
+   return ret;
+}
+
 /**
  * Calculate the size of a text word.
  */
@@ -1598,7 +1706,7 @@ void Textblock::calcTextSize (const char *text, size_t len,
                               core::style::Style *style,
                               core::Requisition *size)
 {
-   size->width = layout->textWidth (style->font, text, len);
+   size->width = textWidth (text, 0, len, style);
    size->ascent = style->font->ascent;
    size->descent = style->font->descent;
 
@@ -2179,9 +2287,8 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
       allocation->x += w->size.width + w->effSpace;
    }
    if (start > 0 && word->content.type == core::Content::TEXT) {
-      allocation->x += textblock->layout->textWidth (word->style->font,
-                                                     word->content.text,
-                                                     start);
+      allocation->x += textblock->textWidth (word->content.text, 0, start,
+                                             word->style);
    }
    allocation->y = textblock->lineYOffsetCanvas (line) + line->boxAscent -
                    word->size.ascent;
@@ -2193,9 +2300,8 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
       if (start > 0 || end < wordEnd) {
          end = misc::min(end, wordEnd); /* end could be INT_MAX */
          allocation->width =
-            textblock->layout->textWidth (word->style->font,
-                                          word->content.text + start,
-                                          end - start);
+            textblock->textWidth (word->content.text, start, end - start,
+                                  word->style);
       }
    }
    allocation->ascent = word->size.ascent;

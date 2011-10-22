@@ -6,6 +6,8 @@ dillo-3.0.2 [not released yet]
 
 +- Digest authentication
    Patch: Justus Winter, corvid
++- text-transform property
+   Patch: corvid
 
 -----------------------------------------------------------------------------
 

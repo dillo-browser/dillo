@@ -153,6 +153,8 @@ public:
    void detachView  (core::View *view);
 
    int textWidth (core::style::Font *font, const char *text, int len);
+   char *textToUpper (const char *text, int len);
+   char *textToLower (const char *text, int len);
    int nextGlyph (const char *text, int idx);
    int prevGlyph (const char *text, int idx);
    float dpiX ();

@@ -266,7 +266,10 @@ protected:
    void decorateText(core::View *view, core::style::Style *style,
                      core::style::Color::Shading shading,
                      int x, int yBase, int width);
-   void drawText(int wordIndex, core::View *view, core::Rectangle *area,
+   void drawText(core::View *view, core::style::Style *style,
+                 core::style::Color::Shading shading, int x, int y,
+                 const char *text, int start, int len);
+   void drawWord(int wordIndex, core::View *view, core::Rectangle *area,
                  int xWidget, int yWidgetBase);
    void drawSpace(int wordIndex, core::View *view, core::Rectangle *area,
                   int xWidget, int yWidgetBase);
@@ -277,9 +280,10 @@ protected:
 
    Word *addWord (int width, int ascent, int descent,
                   core::style::Style *style);
+   int textWidth (const char *text, int start, int len,
+                  core::style::Style *style);
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
                       core::Requisition *size);
-
 
    /**
     * \brief Returns the x offset (the indentation plus any offset needed for

@@ -121,6 +121,10 @@ static const char *const Css_text_decoration_enum_vals[] = {
    "underline", "overline", "line-through", "blink", NULL
 };
 
+static const char *const Css_text_transform_enum_vals[] = {
+   "none", "capitalize", "uppercase", "lowercase", NULL
+};
+
 static const char *const Css_vertical_align_vals[] = {
    "top", "bottom", "middle", "baseline", "sub", "super", "text-top",
    "text-bottom", NULL
@@ -228,7 +232,8 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
     Css_text_decoration_enum_vals},
    {"text-indent", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"text-shadow", {CSS_TYPE_UNUSED}, NULL},
-   {"text-transform", {CSS_TYPE_UNUSED}, NULL},
+   {"text-transform", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_text_transform_enum_vals},
    {"top", {CSS_TYPE_UNUSED}, NULL},
    {"unicode-bidi", {CSS_TYPE_UNUSED}, NULL},
    {"vertical-align",{CSS_TYPE_ENUM, CSS_TYPE_UNUSED},Css_vertical_align_vals},
