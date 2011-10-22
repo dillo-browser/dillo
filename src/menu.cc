@@ -207,8 +207,20 @@ static void Menu_form_hiddens_cb(Fl_Widget*, void *user_data)
 
 static void Menu_stylesheet_cb(Fl_Widget*, void *vUrl)
 {
+   int mb = Fl::event_button();
    const DilloUrl *url = (const DilloUrl *) vUrl;
-   a_UIcmd_open_url(popup_bw, url);
+
+   if (mb == 1) {
+      a_UIcmd_open_url(popup_bw, url);
+   } else if (mb == 2) {
+      if (prefs.middle_click_opens_new_tab) {
+         int focus = prefs.focus_new_tab ? 1 : 0;
+         if (Fl::event_state(FL_SHIFT)) focus = !focus;
+         a_UIcmd_open_url_nt(popup_bw, url, focus);
+      } else {
+         a_UIcmd_open_url_nw(popup_bw, url);
+      }
+   }
 }
 
 /*
