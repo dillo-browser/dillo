@@ -216,6 +216,10 @@ bool FindtextState::unhighlight ()
       return false;
 }
 
+/** \todo If this is made UTF8-aware one day, we might want to
+ * setlocale(LC_CTYPE, "") for the duration of the search. See the comment in
+ * main() for why we normally keep it set to "C".
+ */
 bool FindtextState::search0 (bool backwards,  bool firstTrial)
 {
    if (iterator->getChar () == CharIterator::END)

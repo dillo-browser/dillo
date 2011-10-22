@@ -321,6 +321,16 @@ int main(int argc, char **argv)
    }
    dFree(opt_argv);
 
+
+   /* On X, the first fl_open_display() sets the LC_CTYPE aspect of the locale
+    * from the environment, so let's trigger it ourselves so that we can
+    * deal with this. For our purposes, this is very bad in Turkic locales
+    * where 'i' and 'I' are different letters, and strcasecmp(), toupper(),
+    * tolower() no longer work as expected. So we reset it to the C locale.
+    */
+   fl_open_display();
+   setlocale(LC_CTYPE, "C");
+
    // set the default values for the preferences
    a_Prefs_init();
 
