@@ -548,7 +548,7 @@ void FltkWidgetView::drawText (core::style::Font *font,
           viewY = translateCanvasYToViewY (Y);
       int curr = 0, next = 0, nb;
       char chbuf[4];
-      int c, cu;
+      int c, cu, width;
 
       if (font->fontVariant == core::style::FONT_VARIANT_SMALL_CAPS) {
          int sc_fontsize = lout::misc::roundInt(ff->size * 0.78);
@@ -558,24 +558,30 @@ void FltkWidgetView::drawText (core::style::Font *font,
             if ((cu = fl_toupper(c)) == c) {
                /* already uppercase, just draw the character */
                fl_font(ff->font, ff->size);
+               width = (int)fl_width(text + curr, next - curr);
+               if (curr && width)
+                  viewX += font->letterSpacing;
                fl_draw(text + curr, next - curr, viewX, viewY);
-               viewX += font->letterSpacing;
-               viewX += (int)fl_width(text + curr, next - curr);
+               viewX += width;
             } else {
                /* make utf8 string for converted char */
                nb = fl_utf8encode(cu, chbuf);
                fl_font(ff->font, sc_fontsize);
+               width = (int)fl_width(text + curr, next - curr);
+               if (curr && width)
+                  viewX += font->letterSpacing;
                fl_draw(chbuf, nb, viewX, viewY);
-               viewX += font->letterSpacing;
-               viewX += (int)fl_width(chbuf, nb);
+               viewX += width;
             }
          }
       } else {
          while (next < len) {
             next = theLayout->nextGlyph(text, curr);
+            width = (int)fl_width(text + curr, next - curr);
+            if (curr && width)
+               viewX += font->letterSpacing;
             fl_draw(text + curr, next - curr, viewX, viewY);
-            viewX += font->letterSpacing +
-                     (int)fl_width(text + curr,next - curr);
+            viewX += width;
             curr = next;
          }
       }

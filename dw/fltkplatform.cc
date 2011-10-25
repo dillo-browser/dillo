@@ -525,14 +525,18 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
          if ((cu = fl_toupper(c)) == c) {
             /* already uppercase, just draw the character */
             fl_font(ff->font, ff->size);
-            width += font->letterSpacing;
-            width += (int)fl_width(text + curr, next - curr);
+            if (fl_nonspacing(cu) == 0) {
+               width += font->letterSpacing;
+               width += (int)fl_width(text + curr, next - curr);
+            }
          } else {
             /* make utf8 string for converted char */
             nb = fl_utf8encode(cu, chbuf);
             fl_font(ff->font, sc_fontsize);
-            width += font->letterSpacing;
-            width += (int)fl_width(chbuf, nb);
+            if (fl_nonspacing(cu) == 0) {
+               width += font->letterSpacing;
+               width += (int)fl_width(chbuf, nb);
+            }
          }
       }
    } else {
@@ -544,7 +548,9 @@ int FltkPlatform::textWidth (core::style::Font *font, const char *text,
 
          while (next < len) {
             next = nextGlyph(text, curr);
-            width += font->letterSpacing;
+            c = fl_utf8decode(text + curr, text + next, &nb);
+            if (fl_nonspacing(c) == 0)
+               width += font->letterSpacing;
             curr = next;
          }
       }
