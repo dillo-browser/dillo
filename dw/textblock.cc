@@ -653,10 +653,12 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                if (event->xWidget >= wordStartX &&
                    event->xWidget < nextWordStartX) {
                   // We have found the word.
-                  if (word->content.type == core::Content::TEXT) {
-                     if (event->xWidget >= nextWordStartX  - word->effSpace) {
-                        charPos = core::SelectionState::END_OF_WORD;
-                     } else {
+                  if (event->xWidget >= nextWordStartX  - word->effSpace) {
+                     charPos = core::SelectionState::END_OF_WORD;
+                     link = word->spaceStyle->x_link;
+                  } else {
+                     link = word->style->x_link;
+                     if (word->content.type == core::Content::TEXT) {
                         // Search the character the mouse pointer is in.
                         // nextWordX is the right side of this character.
                         charPos = 0;
@@ -677,23 +679,20 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                         // the left position, otherwise, use the right one.
                         if (event->xWidget <= (wordX + nextWordX) / 2)
                            charPos = prevPos;
+                     } else {
+                        // Depends on whether the pointer is within the left or
+                        // right half of the (non-text) word.
+                        if (event->xWidget >=
+                            (wordStartX + nextWordStartX) / 2)
+                           charPos = core::SelectionState::END_OF_WORD;
+                        else
+                           charPos = 0;
                      }
-                  } else {
-                     // Depends on whether the pointer is within the left or
-                     // right half of the (non-text) word.
-                     if (event->xWidget >=
-                         (wordStartX + nextWordStartX) / 2)
-                        charPos = core::SelectionState::END_OF_WORD;
-                     else
-                        charPos = 0;
                   }
-
                   found = true;
-                  link = word->style ? word->style->x_link : -1;
                   break;
                }
             }
-
             if (!found) {
                // No word found in this line (i.e. we are on the right side),
                // take the last of this line.
