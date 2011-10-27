@@ -604,8 +604,8 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
 {
    core::Iterator *it;
    Line *line, *lastLine;
-   int nextWordStartX, wordStartX, wordX, nextWordX, yFirst, yLast;
-   int charPos = 0, link = -1, prevPos, wordIndex, lineIndex;
+   int nextWordStartX, wordStartX, yFirst, yLast;
+   int charPos = 0, link = -1, wordIndex, lineIndex;
    Word *word;
    bool found, r;
 
@@ -659,26 +659,19 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                   } else {
                      link = word->style->x_link;
                      if (word->content.type == core::Content::TEXT) {
-                        // Search the character the mouse pointer is in.
-                        // nextWordX is the right side of this character.
-                        charPos = 0;
-                        while ((nextWordX = wordStartX +
-                                            textWidth (word->content.text, 0,
-                                                       charPos,
-                                                       word->style))
-                               <= event->xWidget)
-                           charPos = layout->nextGlyph (word->content.text,
-                                                        charPos);
-                        // The left side of this character.
-                        prevPos = layout->prevGlyph (word->content.text,
-                                                     charPos);
-                        wordX = wordStartX +
-                                textWidth (word->content.text, 0, prevPos,
-                                           word->style);
-                        // If the mouse pointer is left from the middle, use
-                        // the left position, otherwise, use the right one.
-                        if (event->xWidget <= (wordX + nextWordX) / 2)
-                           charPos = prevPos;
+                        for (int glyphWidth, glyphX = wordStartX;
+                             event->xWidget > glyphX;
+                             glyphX += glyphWidth) { 
+                           int nextCharPos =
+                              layout->nextGlyph (word->content.text, charPos);
+                           glyphWidth =
+                              textWidth (word->content.text, charPos,
+                                         nextCharPos - charPos, word->style);
+                           if (event->xWidget >= glyphX + glyphWidth/2) {
+                              // include it unless we're on the left half
+                              charPos = nextCharPos;
+                           }
+                        }
                      } else {
                         // Depends on whether the pointer is within the left or
                         // right half of the (non-text) word.
