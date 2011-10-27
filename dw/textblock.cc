@@ -647,11 +647,21 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                if (event->xWidget >= wordStartX &&
                    event->xWidget < nextWordStartX) {
                   // We have found the word.
+                  int yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
+
                   if (event->xWidget >= nextWordStartX  - word->effSpace) {
                      charPos = core::SelectionState::END_OF_WORD;
-                     link = word->spaceStyle->x_link;
+                     if ((event->yWidget <=
+                          yWidgetBase + word->spaceStyle->font->descent) &&
+                         (event->yWidget >
+                          yWidgetBase - word->spaceStyle->font->ascent)) {
+                        link = word->spaceStyle->x_link;
+                     }
                   } else {
-                     link = word->style->x_link;
+                     if (event->yWidget <= yWidgetBase + word->size.descent &&
+                         event->yWidget > yWidgetBase - word->size.ascent) {
+                        link = word->style->x_link;
+                     }
                      if (word->content.type == core::Content::TEXT) {
                         for (int glyphWidth, glyphX = wordStartX;
                              event->xWidget > glyphX;
