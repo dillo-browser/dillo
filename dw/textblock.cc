@@ -651,7 +651,10 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
 
                   if (event->xWidget >= nextWordStartX  - word->effSpace) {
                      charPos = core::SelectionState::END_OF_WORD;
-                     if ((event->yWidget <=
+                     if (wordIndex < line->lastWord &&
+                         (words->getRef(wordIndex + 1)->content.type !=
+                          core::Content::BREAK) &&
+                         (event->yWidget <=
                           yWidgetBase + word->spaceStyle->font->descent) &&
                          (event->yWidget >
                           yWidgetBase - word->spaceStyle->font->ascent)) {
@@ -1562,7 +1565,10 @@ Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
       xCursor += word->size.width + word->effSpace;
       if (lastXCursor <= x && xCursor > x) {
          if (x >= xCursor - word->effSpace) {
-            if (y > yWidgetBase - word->spaceStyle->font->ascent &&
+            if (wordIndex < line->lastWord &&
+                (words->getRef(wordIndex + 1)->content.type !=
+                 core::Content::BREAK) &&
+                y > yWidgetBase - word->spaceStyle->font->ascent &&
                 y <= yWidgetBase + word->spaceStyle->font->descent) {
                *inSpace = true;
                return word;
