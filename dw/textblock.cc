@@ -666,18 +666,34 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                         link = word->style->x_link;
                      }
                      if (word->content.type == core::Content::TEXT) {
-                        for (int glyphWidth, glyphX = wordStartX;
-                             event->xWidget > glyphX;
-                             glyphX += glyphWidth) { 
+                        int glyphX = wordStartX;
+
+                        while (1) {
                            int nextCharPos =
                               layout->nextGlyph (word->content.text, charPos);
-                           glyphWidth =
+                           int glyphWidth =
                               textWidth (word->content.text, charPos,
                                          nextCharPos - charPos, word->style);
-                           if (event->xWidget >= glyphX + glyphWidth/2) {
-                              // include it unless we're on the left half
+                           if (event->xWidget > glyphX + glyphWidth) {
+                              glyphX += glyphWidth;
                               charPos = nextCharPos;
+                              continue;
+                           } else if (event->xWidget >= glyphX + glyphWidth/2){
+                              // On the right half of a character;
+                              // now just look for combining chars
+                              charPos = nextCharPos;
+                              while (word->content.text[charPos]) {
+                                 nextCharPos =
+                                    layout->nextGlyph (word->content.text,
+                                                       charPos);
+                                 if (textWidth (word->content.text, charPos,
+                                                nextCharPos - charPos,
+                                                word->style))
+                                    break;
+                                 charPos = nextCharPos;
+                              }
                            }
+                           break;
                         }
                      } else {
                         // Depends on whether the pointer is within the left or
