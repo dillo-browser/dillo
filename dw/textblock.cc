@@ -603,51 +603,45 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                                     core::MousePositionEvent *event)
 {
    core::Iterator *it;
-   Line *line, *lastLine;
-   int nextWordStartX, wordStartX, yFirst, yLast;
-   int charPos = 0, link = -1, wordIndex, lineIndex;
-   Word *word;
-   bool found, r;
+   int wordIndex;
+   int charPos = 0, link = -1;
+   bool r;
 
    if (words->size () == 0) {
       wordIndex = -1;
    } else {
-      lastLine = lines->getRef (lines->size () - 1);
-      yFirst = lineYOffsetCanvasI (0);
-      yLast = lineYOffsetCanvas (lastLine) + lastLine->boxAscent +
-              lastLine->boxDescent;
+      Line *lastLine = lines->getRef (lines->size () - 1);
+      int yFirst = lineYOffsetCanvasI (0);
+      int yLast = lineYOffsetCanvas (lastLine) + lastLine->boxAscent +
+                  lastLine->boxDescent;
       if (event->yCanvas < yFirst) {
          // Above the first line: take the first word.
          wordIndex = 0;
-         charPos = 0;
       } else if (event->yCanvas >= yLast) {
          // Below the last line: take the last word.
          wordIndex = words->size () - 1;
-         word = words->getRef (wordIndex);
-         charPos = word->content.type == core::Content::TEXT ?
-            strlen (word->content.text) : 0;
+         charPos = core::SelectionState::END_OF_WORD;
       } else {
-         lineIndex = findLineIndex (event->yWidget);
-         line = lines->getRef (lineIndex);
+         Line *line = lines->getRef (findLineIndex (event->yWidget));
 
          // Pointer within the break space?
          if (event->yWidget >
              (lineYOffsetWidget (line) + line->boxAscent + line->boxDescent)) {
             // Choose this break.
             wordIndex = line->lastWord;
-            charPos = 0;
+            charPos = core::SelectionState::END_OF_WORD;
          } else if (event->xWidget < lineXOffsetWidget (line)) {
             // Left of the first word in the line.
             wordIndex = line->firstWord;
-            charPos = 0;
          } else {
-            nextWordStartX = lineXOffsetWidget (line);
-            found = false;
+            int nextWordStartX = lineXOffsetWidget (line);
+
             for (wordIndex = line->firstWord;
-                 !found && wordIndex <= line->lastWord;
+                 wordIndex <= line->lastWord;
                  wordIndex++) {
-               word = words->getRef (wordIndex);
-               wordStartX = nextWordStartX;
+               Word *word = words->getRef (wordIndex);
+               int wordStartX = nextWordStartX;
+
                nextWordStartX += word->size.width + word->effSpace;
 
                if (event->xWidget >= wordStartX &&
@@ -675,27 +669,18 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                      } else {
                         // Depends on whether the pointer is within the left or
                         // right half of the (non-text) word.
-                        if (event->xWidget >=
-                            (wordStartX + nextWordStartX) / 2)
+                        if (event->xWidget >= (wordStartX + nextWordStartX) /2)
                            charPos = core::SelectionState::END_OF_WORD;
-                        else
-                           charPos = 0;
                      }
                   }
-                  found = true;
                   break;
                }
             }
-            if (!found) {
+            if (wordIndex > line->lastWord) {
                // No word found in this line (i.e. we are on the right side),
                // take the last of this line.
                wordIndex = line->lastWord;
-               if (wordIndex >= words->size ())
-                  wordIndex--;
-               word = words->getRef (wordIndex);
-               charPos = word->content.type == core::Content::TEXT ?
-                  strlen (word->content.text) :
-                  (int)core::SelectionState::END_OF_WORD;
+               charPos = core::SelectionState::END_OF_WORD;
             }
          }
       }
