@@ -1560,11 +1560,19 @@ Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
       word = words->getRef (wordIndex);
       lastXCursor = xCursor;
       xCursor += word->size.width + word->effSpace;
-      if (lastXCursor <= x && xCursor > x &&
-          y > yWidgetBase - word->size.ascent &&
-          y <= yWidgetBase + word->size.descent) {
-         *inSpace = x >= xCursor - word->effSpace;
-         return word;
+      if (lastXCursor <= x && xCursor > x) {
+         if (x >= xCursor - word->effSpace) {
+            if (y > yWidgetBase - word->spaceStyle->font->ascent &&
+                y <= yWidgetBase + word->spaceStyle->font->descent) {
+               *inSpace = true;
+               return word;
+            }
+         } else {
+            if (y > yWidgetBase - word->size.ascent &&
+                y <= yWidgetBase + word->size.descent)
+               return word;
+         }
+         break;
       }
    }
 
