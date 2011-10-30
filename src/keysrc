@@ -40,7 +40,9 @@
 
 # "left-tab" and "right-tab" switch to the left/right of the current tab.
 # <ctrl><shift>tab = left-tab
+# <ctrl>PageUp = left-tab
 # <ctrl>tab = right-tab
+# <ctrl>PageDown = right-tab
 
 # "back" and "forward" move back/forward through the browser history.
 #backspace = back

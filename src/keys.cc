@@ -103,7 +103,9 @@ static const KeyBinding_t default_keys[] = {
    { "new-tab"      , KEYS_NEW_TAB      , FL_CTRL   , 't'             },
    { "left-tab"     , KEYS_LEFT_TAB     , FL_CTRL |
                                           FL_SHIFT  , FL_Tab          },
+   { "left-tab"     , KEYS_LEFT_TAB     , FL_CTRL   , FL_Page_Up      },
    { "right-tab"    , KEYS_RIGHT_TAB    , FL_CTRL   , FL_Tab          },
+   { "right-tab"    , KEYS_RIGHT_TAB    , FL_CTRL   , FL_Page_Down    },
    { "close-tab"    , KEYS_CLOSE_TAB    , FL_CTRL   , 'w'             },
    { "find"         , KEYS_FIND         , FL_CTRL   , 'f'             },
    { "websearch"    , KEYS_WEBSEARCH    , FL_CTRL   , 's'             },
