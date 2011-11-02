@@ -7,7 +7,13 @@ dillo-3.0.2 [not released yet]
 +- Digest authentication
    Patch: Justus Winter, corvid
 +- text-transform property
-   Patch: corvid
+ - If not following redirection, show body of redirecting page.
+ - Middle click on stylesheet menu item opens in new tab/window.
+   Patches: corvid
++- Rework line breaking and fix white-space:nowrap handling.
+ - Patch: Johannes Hofmann
++- Bind Ctrl-{PageUp,PageDown} to tab-{previous,next}.
+ - Patch: Jeremy Henty
 
 -----------------------------------------------------------------------------
 
