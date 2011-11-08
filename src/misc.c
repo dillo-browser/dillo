@@ -151,13 +151,13 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
       Type = DT_TEXT_HTML;
       st = 0;
    /* Images */
-   } else if (Size >= 4 && !dStrncasecmp(p, "GIF8", 4)) {
+   } else if (Size >= 4 && !strncmp(p, "GIF8", 4)) {
       Type = DT_IMAGE_GIF;
       st = 0;
-   } else if (Size >= 4 && !dStrncasecmp(p, "\x89PNG", 4)) {
+   } else if (Size >= 4 && !strncmp(p, "\x89PNG", 4)) {
       Type = DT_IMAGE_PNG;
       st = 0;
-   } else if (Size >= 2 && !dStrncasecmp(p, "\xff\xd8", 2)) {
+   } else if (Size >= 2 && !strncmp(p, "\xff\xd8", 2)) {
       /* JPEG has the first 2 bytes set to 0xffd8 in BigEndian - looking
        * at the character representation should be machine independent. */
       Type = DT_IMAGE_JPG;
