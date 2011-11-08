@@ -482,8 +482,8 @@ static void Nav_reload_callback(void *data)
    if (a_Nav_stack_size(bw)) {
       h_url = a_History_get_url(NAV_TOP_UIDX(bw));
       if (strncmp(URL_STR(h_url), "dpi:/vsource/", 13) == 0) {
-         /* disable reload for view source dpi */
-         confirmed = 0;
+         /* allow reload for view source dpi */
+         confirmed = 1;
       } else if (URL_FLAGS(h_url) & URL_Post) {
          /* Attempt to repost data, let's confirm... */
          choice = a_Dialog_choice5("Repost form data?",

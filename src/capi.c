@@ -456,7 +456,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
       if ((safe = a_Capi_dpi_verify_request(web->bw, web->url))) {
          if (dStrcasecmp(scheme, "dpi") == 0) {
             if (strcmp(server, "vsource") == 0) {
-               /* don't reload the "view source" page */
+               /* allow "view source" reload upon user request */
             } else {
                /* make the other "dpi:/" prefixed urls always reload. */
                a_Url_set_flags(web->url, URL_FLAGS(web->url) | URL_E2EQuery);
