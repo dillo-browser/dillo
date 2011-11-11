@@ -108,13 +108,13 @@ static int a_Misc_get_content_type_from_data2(void *Data, size_t Size,
       Type = 1;
       st = 0;
    /* Images */
-   } else if (Size >= 4 && !dStrncasecmp(p, "GIF8", 4)) {
+   } else if (Size >= 4 && !strncmp(p, "GIF8", 4)) {
       Type = 3;
       st = 0;
-   } else if (Size >= 4 && !dStrncasecmp(p, "\x89PNG", 4)) {
+   } else if (Size >= 4 && !strncmp(p, "\x89PNG", 4)) {
       Type = 4;
       st = 0;
-   } else if (Size >= 2 && !dStrncasecmp(p, "\xff\xd8", 2)) {
+   } else if (Size >= 2 && !strncmp(p, "\xff\xd8", 2)) {
       /* JPEG has the first 2 bytes set to 0xffd8 in BigEndian - looking
        * at the character representation should be machine independent. */
       Type = 5;
