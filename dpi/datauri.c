@@ -226,14 +226,14 @@ static char *datauri_get_mime(char *url)
    char *mime_type = NULL, *p;
    size_t len = 0;
 
-   if (dStrncasecmp(url, "data:", 5) == 0) {
+   if (dStrnAsciiCasecmp(url, "data:", 5) == 0) {
       if ((p = strchr(url, ',')) && p - url < 256) {
          url += 5;
          len = p - url;
          strncpy(buf, url, len);
          buf[len] = 0;
          /* strip ";base64" */
-         if (len >= 7 && dStrcasecmp(buf + len - 7, ";base64") == 0) {
+         if (len >= 7 && dStrAsciiCasecmp(buf + len - 7, ";base64") == 0) {
             len -= 7;
             buf[len] = 0;
          }
@@ -242,7 +242,7 @@ static char *datauri_get_mime(char *url)
       /* that's it, now handle omitted types */
       if (len == 0) {
          mime_type = dStrdup("text/plain;charset=US-ASCII");
-      } else if (!dStrncasecmp(buf, "charset", 7)) {
+      } else if (!dStrnAsciiCasecmp(buf, "charset", 7)) {
          mime_type = dStrconcat("text/plain", buf, NULL);
       } else {
          mime_type = dStrdup(buf);
@@ -262,7 +262,7 @@ static unsigned char *datauri_get_data(char *url, size_t *p_sz)
    unsigned char *data = NULL;
 
    if ((p = strchr(url, ',')) && p - url >= 12 &&  /* "data:;base64" */
-       dStrncasecmp(p - 7, ";base64", 7) == 0) {
+       dStrnAsciiCasecmp(p - 7, ";base64", 7) == 0) {
       is_base64 = 1;
    }
 

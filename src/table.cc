@@ -81,13 +81,13 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
                                         a_Html_parse_length (html, attrbuf));
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "align"))) {
-      if (dStrcasecmp (attrbuf, "left") == 0)
+      if (dStrAsciiCasecmp (attrbuf, "left") == 0)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_TEXT_ALIGN,
                                            CSS_TYPE_ENUM, TEXT_ALIGN_LEFT);
-      else if (dStrcasecmp (attrbuf, "right") == 0)
+      else if (dStrAsciiCasecmp (attrbuf, "right") == 0)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_TEXT_ALIGN,
                                            CSS_TYPE_ENUM, TEXT_ALIGN_RIGHT);
-      else if (dStrcasecmp (attrbuf, "center") == 0)
+      else if (dStrAsciiCasecmp (attrbuf, "center") == 0)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_TEXT_ALIGN,
                                            CSS_TYPE_ENUM, TEXT_ALIGN_CENTER);
    }

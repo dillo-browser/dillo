@@ -597,7 +597,7 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
       /* Filter URL string */
       new_urlstr = a_Url_string_strip_delimiters(urlstr);
 
-      if (!dStrncasecmp(new_urlstr, "file:", 5)) {
+      if (!dStrnAsciiCasecmp(new_urlstr, "file:", 5)) {
          /* file URI */
          ch = new_urlstr[5];
          if (!ch || ch == '.') {

@@ -158,7 +158,7 @@ static int Domain_node_cmp(const void *v1, const void *v2)
 {
    const DomainNode *n1 = v1, *n2 = v2;
 
-   return dStrcasecmp(n1->domain, n2->domain);
+   return dStrAsciiCasecmp(n1->domain, n2->domain);
 }
 
 /*
@@ -169,7 +169,7 @@ static int Domain_node_by_domain_cmp(const void *v1, const void *v2)
    const DomainNode *node = v1;
    const char *domain = v2;
 
-   return dStrcasecmp(node->domain, domain);
+   return dStrAsciiCasecmp(node->domain, domain);
 }
 
 /*
@@ -468,7 +468,7 @@ static int Cookies_get_month(const char *month_name)
    int i;
 
    for (i = 0; i < 12; i++) {
-      if (!dStrncasecmp(months[i], month_name, 3))
+      if (!dStrnAsciiCasecmp(months[i], month_name, 3))
          return i;
    }
    return -1;
@@ -821,15 +821,15 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
          cookie->expires_at = mktime(tm);
          if (cookie->expires_at == (time_t) -1)
             cookie->expires_at = cookies_future_time;
-      } else if (dStrcasecmp(attr, "Path") == 0) {
+      } else if (dStrAsciiCasecmp(attr, "Path") == 0) {
          value = Cookies_parse_value(&str);
          dFree(cookie->path);
          cookie->path = value;
-      } else if (dStrcasecmp(attr, "Domain") == 0) {
+      } else if (dStrAsciiCasecmp(attr, "Domain") == 0) {
          value = Cookies_parse_value(&str);
          dFree(cookie->domain);
          cookie->domain = value;
-      } else if (dStrcasecmp(attr, "Max-Age") == 0) {
+      } else if (dStrAsciiCasecmp(attr, "Max-Age") == 0) {
          value = Cookies_parse_value(&str);
          if (isdigit(*value) || *value == '-') {
             time_t now = time(NULL);
@@ -845,7 +845,7 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
             expires = max_age = TRUE;
          }
          dFree(value);
-      } else if (dStrcasecmp(attr, "Expires") == 0) {
+      } else if (dStrAsciiCasecmp(attr, "Expires") == 0) {
          if (!max_age) {
             value = Cookies_parse_value(&str);
             Cookies_unquote_string(value);
@@ -870,10 +870,10 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
          } else {
             Cookies_eat_value(&str);
          }
-      } else if (dStrcasecmp(attr, "Secure") == 0) {
+      } else if (dStrAsciiCasecmp(attr, "Secure") == 0) {
          cookie->secure = TRUE;
          Cookies_eat_value(&str);
-      } else if (dStrcasecmp(attr, "HttpOnly") == 0) {
+      } else if (dStrAsciiCasecmp(attr, "HttpOnly") == 0) {
          Cookies_eat_value(&str);
       } else {
          MSG("Cookie contains unknown attribute: '%s'\n", attr);
@@ -992,7 +992,7 @@ static bool_t Cookies_domain_matches(char *A, char *B)
     * don't, so: No.
     */
 
-   if (!dStrcasecmp(A, B))
+   if (!dStrAsciiCasecmp(A, B))
       return TRUE;
 
    if (Cookies_domain_is_ip(B))
@@ -1002,7 +1002,7 @@ static bool_t Cookies_domain_matches(char *A, char *B)
 
    if (diff > 0) {
       /* B is the tail of A, and the match is preceded by a '.' */
-      return (dStrcasecmp(A + diff, B) == 0 && A[diff - 1] == '.');
+      return (dStrAsciiCasecmp(A + diff, B) == 0 && A[diff - 1] == '.');
    } else {
       return FALSE;
    }
@@ -1050,7 +1050,7 @@ static uint_t Cookies_internal_dots_required(const char *host)
 
          for (i = 0; i < tld_num; i++) {
             if (strlen(tlds[i]) == (uint_t) tld_len &&
-                !dStrncasecmp(tlds[i], host + start, tld_len)) {
+                !dStrnAsciiCasecmp(tlds[i], host + start, tld_len)) {
                _MSG("TLD code matched %s\n", tlds[i]);
                ret++;
                break;
@@ -1221,7 +1221,7 @@ static char *Cookies_get(char *url_host, char *url_path,
    matching_cookies = dList_new(8);
 
    /* Check if the protocol is secure or not */
-   is_ssl = (!dStrcasecmp(url_scheme, "https"));
+   is_ssl = (!dStrAsciiCasecmp(url_scheme, "https"));
 
    is_ip_addr = Cookies_domain_is_ip(url_host);
 
@@ -1350,11 +1350,11 @@ static int Cookie_control_init(void)
             rule[j++] = line[i++];
          rule[j] = '\0';
 
-         if (dStrcasecmp(rule, "ACCEPT") == 0)
+         if (dStrAsciiCasecmp(rule, "ACCEPT") == 0)
             cc.action = COOKIE_ACCEPT;
-         else if (dStrcasecmp(rule, "ACCEPT_SESSION") == 0)
+         else if (dStrAsciiCasecmp(rule, "ACCEPT_SESSION") == 0)
             cc.action = COOKIE_ACCEPT_SESSION;
-         else if (dStrcasecmp(rule, "DENY") == 0)
+         else if (dStrAsciiCasecmp(rule, "DENY") == 0)
             cc.action = COOKIE_DENY;
          else {
             MSG("Cookies: rule '%s' for domain '%s' is not recognised.\n",
@@ -1363,7 +1363,7 @@ static int Cookie_control_init(void)
          }
 
          cc.domain = dStrdup(domain);
-         if (dStrcasecmp(cc.domain, "DEFAULT") == 0) {
+         if (dStrAsciiCasecmp(cc.domain, "DEFAULT") == 0) {
             /* Set the default action */
             default_action = cc.action;
             dFree(cc.domain);
@@ -1404,13 +1404,13 @@ static CookieControlAction Cookies_control_check_domain(const char *domain)
       if (ccontrol[i].domain[0] == '.') {
          diff = strlen(domain) - strlen(ccontrol[i].domain);
          if (diff >= 0) {
-            if (dStrcasecmp(domain + diff, ccontrol[i].domain) != 0)
+            if (dStrAsciiCasecmp(domain + diff, ccontrol[i].domain) != 0)
                continue;
          } else {
             continue;
          }
       } else {
-         if (dStrcasecmp(domain, ccontrol[i].domain) != 0)
+         if (dStrAsciiCasecmp(domain, ccontrol[i].domain) != 0)
             continue;
       }
 

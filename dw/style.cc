@@ -889,10 +889,10 @@ static const char
    *const roman_I2[] = { "","C","CC","CCC","CD","D","DC","DCC","DCCC","CM" },
    *const roman_I3[] = { "","M","MM","MMM","MMMM" };
 
-static void strtolower (char *s)
+static void strAsciiTolower (char *s)
 {
    for ( ; *s; s++)
-      *s = tolower (*s);
+      *s = misc::AsciiTolower (*s);
 }
 
 /**
@@ -947,7 +947,7 @@ void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType)
    buf[buflen - 1] = '\0';
 
    if (low)
-      strtolower(buf);
+      strAsciiTolower(buf);
 
 }
 

@@ -98,12 +98,12 @@ static int a_Misc_get_content_type_from_data2(void *Data, size_t Size,
 
    /* HTML try */
    for (i = 0; i < Size && dIsspace(p[i]); ++i);
-   if ((Size - i >= 5  && !dStrncasecmp(p+i, "<html", 5)) ||
-       (Size - i >= 5  && !dStrncasecmp(p+i, "<head", 5)) ||
-       (Size - i >= 6  && !dStrncasecmp(p+i, "<title", 6)) ||
-       (Size - i >= 14 && !dStrncasecmp(p+i, "<!doctype html", 14)) ||
+   if ((Size - i >= 5  && !dStrnAsciiCasecmp(p+i, "<html", 5)) ||
+       (Size - i >= 5  && !dStrnAsciiCasecmp(p+i, "<head", 5)) ||
+       (Size - i >= 6  && !dStrnAsciiCasecmp(p+i, "<title", 6)) ||
+       (Size - i >= 14 && !dStrnAsciiCasecmp(p+i, "<!doctype html", 14)) ||
        /* this line is workaround for FTP through the Squid proxy */
-       (Size - i >= 17 && !dStrncasecmp(p+i, "<!-- HTML listing", 17))) {
+       (Size - i >= 17 && !dStrnAsciiCasecmp(p+i, "<!-- HTML listing", 17))) {
 
       Type = 1;
       st = 0;

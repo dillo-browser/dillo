@@ -127,8 +127,8 @@ int PrefsParser::parseOption(char *name, char *value)
 
    switch (node->type) {
    case PREFS_BOOL:
-      *(bool_t *)node->pref = (!dStrcasecmp(value, "yes") ||
-                               !dStrcasecmp(value, "true"));
+      *(bool_t *)node->pref = (!dStrAsciiCasecmp(value, "yes") ||
+                               !dStrAsciiCasecmp(value, "true"));
       break;
    case PREFS_COLOR:
       *(int32_t *)node->pref = a_Color_parse(value, *(int32_t*)node->pref,&st);
@@ -167,18 +167,18 @@ int PrefsParser::parseOption(char *name, char *value)
                             &prefs.width, &prefs.height);
       break;
    case PREFS_FILTER:
-      if (!dStrcasecmp(value, "same_domain"))
+      if (!dStrAsciiCasecmp(value, "same_domain"))
          prefs.filter_auto_requests = PREFS_FILTER_SAME_DOMAIN;
       else {
-         if (dStrcasecmp(value, "allow_all"))
+         if (dStrAsciiCasecmp(value, "allow_all"))
             MSG_WARN("prefs: unrecognized value for filter_auto_requests\n");
          prefs.filter_auto_requests = PREFS_FILTER_ALLOW_ALL;
       }
       break;
    case PREFS_PANEL_SIZE:
-      if (!dStrcasecmp(value, "tiny"))
+      if (!dStrAsciiCasecmp(value, "tiny"))
          prefs.panel_size = P_tiny;
-      else if (!dStrcasecmp(value, "small"))
+      else if (!dStrAsciiCasecmp(value, "small"))
          prefs.panel_size = P_small;
       else /* default to "medium" */
          prefs.panel_size = P_medium;

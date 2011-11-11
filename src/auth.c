@@ -228,7 +228,7 @@ static int Auth_parse_token_value(AuthParse_t *auth_parse, char **auth,
 static int Auth_parse_basic_challenge_cb(AuthParse_t *auth_parse, char *token,
                                          const char *value)
 {
-   if (dStrcasecmp("realm", token) == 0) {
+   if (dStrAsciiCasecmp("realm", token) == 0) {
       if (!auth_parse->realm)
          auth_parse->realm = strdup(value);
       return 0; /* end parsing */
@@ -243,7 +243,7 @@ static int Auth_parse_digest_challenge_cb(AuthParse_t *auth_parse, char *token,
 {
    const char *const fn = "Auth_parse_digest_challenge_cb";
 
-   if (!dStrcasecmp("realm", token) && !auth_parse->realm)
+   if (!dStrAsciiCasecmp("realm", token) && !auth_parse->realm)
       auth_parse->realm = strdup(value);
    else if (!strcmp("domain", token) && !auth_parse->domain)
       auth_parse->domain = strdup(value);
@@ -252,9 +252,9 @@ static int Auth_parse_digest_challenge_cb(AuthParse_t *auth_parse, char *token,
    else if (!strcmp("opaque", token) && !auth_parse->opaque)
       auth_parse->opaque = strdup(value);
    else if (strcmp("stale", token) == 0) {
-      if (dStrcasecmp("true", value) == 0)
+      if (dStrAsciiCasecmp("true", value) == 0)
          auth_parse->stale = 1;
-      else if (dStrcasecmp("false", value) == 0)
+      else if (dStrAsciiCasecmp("false", value) == 0)
          auth_parse->stale = 0;
       else {
          MSG("%s: Invalid stale value: %s\n", fn, value);
@@ -359,8 +359,8 @@ static AuthHost_t *Auth_host_by_url(const DilloUrl *url)
    int i;
 
    for (i = 0; (host = dList_nth_data(auth_hosts, i)); i++)
-      if (((dStrcasecmp(URL_SCHEME(url), host->scheme) == 0) &&
-           (dStrcasecmp(URL_AUTHORITY(url), host->authority) == 0)))
+      if (((dStrAsciiCasecmp(URL_SCHEME(url), host->scheme) == 0) &&
+           (dStrAsciiCasecmp(URL_AUTHORITY(url), host->authority) == 0)))
          return host;
 
    return NULL;
@@ -672,11 +672,11 @@ int a_Auth_do_auth(Dlist *challenges, const DilloUrl *url)
    char *chal;
 
    for (i = 0; (chal = dList_nth_data(challenges, i)); ++i)
-      if (!dStrncasecmp(chal, "Digest ", 7))
+      if (!dStrnAsciiCasecmp(chal, "Digest ", 7))
          if (Auth_do_auth(chal, DIGEST, url))
             return 1;
    for (i = 0; (chal = dList_nth_data(challenges, i)); ++i)
-      if (!dStrncasecmp(chal, "Basic ", 6))
+      if (!dStrnAsciiCasecmp(chal, "Basic ", 6))
          if (Auth_do_auth(chal, BASIC, url))
             return 1;
 

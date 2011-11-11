@@ -480,7 +480,7 @@ static int Http_must_use_proxy(const DilloUrl *url)
          for (p = np; (tok = dStrsep(&p, " "));  ) {
             int start = host_len - strlen(tok);
 
-            if (start >= 0 && dStrcasecmp(host + start, tok) == 0) {
+            if (start >= 0 && dStrAsciiCasecmp(host + start, tok) == 0) {
                /* no_proxy token is suffix of host string */
                ret = 0;
                break;
@@ -719,7 +719,7 @@ static HostConnection_t *Http_host_connection_get(const char *host)
    for (i = 0; i < dList_length(host_connections); i++) {
       hc = (HostConnection_t*) dList_nth_data(host_connections, i);
 
-      if (dStrcasecmp(host, hc->host) == 0)
+      if (dStrAsciiCasecmp(host, hc->host) == 0)
          return hc;
    }
 

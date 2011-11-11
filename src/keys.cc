@@ -245,7 +245,7 @@ int Keys::getKeyCode(char *keyName)
 {
    uint_t i;
    for (i = 0; i < sizeof(keyNames) / sizeof(Mapping_t); i++) {
-      if (!dStrcasecmp(keyNames[i].name, keyName)) {
+      if (!dStrAsciiCasecmp(keyNames[i].name, keyName)) {
          return keyNames[i].value;
       }
    }
@@ -262,7 +262,7 @@ KeysCommand_t Keys::getCmdCode(const char *commandName)
    uint_t i;
 
    for (i = 0; i < sizeof(default_keys) / sizeof(KeyBinding_t); i++) {
-      if (!dStrcasecmp(default_keys[i].name, commandName))
+      if (!dStrAsciiCasecmp(default_keys[i].name, commandName))
          return default_keys[i].cmd;
    }
    return KEYS_INVALID;
@@ -276,7 +276,7 @@ int Keys::getModifier(char *modifierName)
 {
    uint_t i;
    for (i = 0; i < sizeof(modifierNames) / sizeof(Mapping_t); i++) {
-      if (!dStrcasecmp(modifierNames[i].name, modifierName)) {
+      if (!dStrAsciiCasecmp(modifierNames[i].name, modifierName)) {
          return modifierNames[i].value;
       }
    }

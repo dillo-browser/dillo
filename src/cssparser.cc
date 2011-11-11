@@ -674,7 +674,7 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
       case CSS_TYPE_ENUM:
          if (ttype == CSS_TK_SYMBOL) {
             for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
-               if (dStrcasecmp(tval,
+               if (dStrAsciiCasecmp(tval,
                      Css_property_info[prop].enum_symbols[i]) == 0)
                   return true;
          }
@@ -682,11 +682,11 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
 
       case CSS_TYPE_MULTI_ENUM:
          if (ttype == CSS_TK_SYMBOL) {
-            if (dStrcasecmp(tval, "none") == 0) {
+            if (dStrAsciiCasecmp(tval, "none") == 0) {
                return true;
             } else {
                for (i = 0; Css_property_info[prop].enum_symbols[i]; i++) {
-                  if (dStrcasecmp(tval,
+                  if (dStrAsciiCasecmp(tval,
                         Css_property_info[prop].enum_symbols[i]) == 0)
                      return true;
                }
@@ -703,14 +703,14 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
       case CSS_TYPE_SIGNED_LENGTH:
          if (ttype == CSS_TK_DECINT ||
              ttype == CSS_TK_FLOAT ||
-             (ttype == CSS_TK_SYMBOL && dStrcasecmp(tval, "auto") == 0))
+             (ttype == CSS_TK_SYMBOL && dStrAsciiCasecmp(tval, "auto") == 0))
             return true;
          break;
 
       case CSS_TYPE_COLOR:
          if ((ttype == CSS_TK_COLOR ||
               ttype == CSS_TK_SYMBOL) &&
-            (dStrcasecmp(tval, "rgb") == 0 ||
+            (dStrAsciiCasecmp(tval, "rgb") == 0 ||
              a_Color_parse(tval, -1, &err) != -1))
             return true;
          break;
@@ -838,7 +838,7 @@ bool CssParser::parseValue(CssPropertyName prop,
    case CSS_TYPE_ENUM:
       if (ttype == CSS_TK_SYMBOL) {
          for (i = 0; Css_property_info[prop].enum_symbols[i]; i++)
-            if (dStrcasecmp(tval,
+            if (dStrAsciiCasecmp(tval,
                             Css_property_info[prop].enum_symbols[i]) == 0) {
                val->intVal = i;
                ret = true;
@@ -853,10 +853,10 @@ bool CssParser::parseValue(CssPropertyName prop,
       ret = true;
 
       while (ttype == CSS_TK_SYMBOL) {
-         if (dStrcasecmp(tval, "none") != 0) {
+         if (dStrAsciiCasecmp(tval, "none") != 0) {
             for (i = 0, found = false;
                  !found && Css_property_info[prop].enum_symbols[i]; i++) {
-               if (dStrcasecmp(tval,
+               if (dStrAsciiCasecmp(tval,
                                Css_property_info[prop].enum_symbols[i]) == 0)
                   val->intVal |= (1 << i);
             }
@@ -877,32 +877,32 @@ bool CssParser::parseValue(CssPropertyName prop,
          if (!spaceSeparated && ttype == CSS_TK_SYMBOL) {
             ret = true;
 
-            if (dStrcasecmp(tval, "px") == 0) {
+            if (dStrAsciiCasecmp(tval, "px") == 0) {
                lentype = CSS_LENGTH_TYPE_PX;
                nextToken();
-            } else if (dStrcasecmp(tval, "mm") == 0) {
+            } else if (dStrAsciiCasecmp(tval, "mm") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                nextToken();
-            } else if (dStrcasecmp(tval, "cm") == 0) {
+            } else if (dStrAsciiCasecmp(tval, "cm") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= 10;
                nextToken();
-            } else if (dStrcasecmp(tval, "in") == 0) {
+            } else if (dStrAsciiCasecmp(tval, "in") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= 25.4;
                nextToken();
-            } else if (dStrcasecmp(tval, "pt") == 0) {
+            } else if (dStrAsciiCasecmp(tval, "pt") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= (25.4 / 72);
                nextToken();
-            } else if (dStrcasecmp(tval, "pc") == 0) {
+            } else if (dStrAsciiCasecmp(tval, "pc") == 0) {
                lentype = CSS_LENGTH_TYPE_MM;
                fval *= (25.4 / 6);
                nextToken();
-            } else if (dStrcasecmp(tval, "em") == 0) {
+            } else if (dStrAsciiCasecmp(tval, "em") == 0) {
                lentype = CSS_LENGTH_TYPE_EM;
                nextToken();
-            } else if (dStrcasecmp(tval, "ex") == 0) {
+            } else if (dStrAsciiCasecmp(tval, "ex") == 0) {
                lentype = CSS_LENGTH_TYPE_EX;
                nextToken();
             } else {
@@ -927,7 +927,7 @@ bool CssParser::parseValue(CssPropertyName prop,
             ret = true;
 
          val->intVal = CSS_CREATE_LENGTH(fval, lentype);
-      } else if (ttype == CSS_TK_SYMBOL && dStrcasecmp(tval, "auto") == 0) {
+      } else if (ttype == CSS_TK_SYMBOL && !dStrAsciiCasecmp(tval, "auto")) {
          ret = true;
          val->intVal = CSS_LENGTH_TYPE_AUTO;
          nextToken();
@@ -943,7 +943,7 @@ bool CssParser::parseValue(CssPropertyName prop,
             ret = true;
          nextToken();
       } else if (ttype == CSS_TK_SYMBOL) {
-         if (dStrcasecmp(tval, "rgb") == 0) {
+         if (dStrAsciiCasecmp(tval, "rgb") == 0) {
             nextToken();
             if (parseRgbColor(&val->intVal))
                ret = true;
@@ -1022,7 +1022,7 @@ bool CssParser::parseWeight()
    if (ttype == CSS_TK_CHAR && tval[0] == '!') {
       nextToken();
       if (ttype == CSS_TK_SYMBOL &&
-          dStrcasecmp(tval, "important") == 0) {
+          dStrAsciiCasecmp(tval, "important") == 0) {
          nextToken();
          return true;
       }
@@ -1036,7 +1036,7 @@ bool CssParser::parseWeight()
  */
 static int Css_property_info_cmp(const void *a, const void *b)
 {
-   return dStrcasecmp(((CssPropertyInfo *) a)->symbol,
+   return dStrAsciiCasecmp(((CssPropertyInfo *) a)->symbol,
                       ((CssPropertyInfo *) b)->symbol);
 }
 
@@ -1046,7 +1046,7 @@ static int Css_property_info_cmp(const void *a, const void *b)
  */
 static int Css_shorthand_info_cmp(const void *a, const void *b)
 {
-   return dStrcasecmp(((CssShorthandInfo *) a)->symbol,
+   return dStrAsciiCasecmp(((CssShorthandInfo *) a)->symbol,
                       ((CssShorthandInfo *) b)->symbol);
 }
 
@@ -1391,7 +1391,7 @@ char * CssParser::parseUrl()
    Dstr *urlStr = NULL;
 
    if (ttype != CSS_TK_SYMBOL ||
-      dStrcasecmp(tval, "url") != 0)
+      dStrAsciiCasecmp(tval, "url") != 0)
       return NULL;
 
    nextToken();
@@ -1437,7 +1437,7 @@ void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
    nextToken();
 
    if (ttype == CSS_TK_SYMBOL &&
-       dStrcasecmp(tval, "url") == 0)
+       dStrAsciiCasecmp(tval, "url") == 0)
       urlStr = parseUrl();
    else if (ttype == CSS_TK_STRING)
       urlStr = dStrdup (tval);
@@ -1449,8 +1449,8 @@ void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
       mediaSyntaxIsOK = false;
       mediaIsSelected = false;
       while (ttype == CSS_TK_SYMBOL) {
-         if (dStrcasecmp(tval, "all") == 0 ||
-             dStrcasecmp(tval, "screen") == 0)
+         if (dStrAsciiCasecmp(tval, "all") == 0 ||
+             dStrAsciiCasecmp(tval, "screen") == 0)
             mediaIsSelected = true;
          nextToken();
          if (ttype == CSS_TK_CHAR && tval[0] == ',') {
@@ -1491,8 +1491,8 @@ void CssParser::parseMedia()
 
    /* parse a comma-separated list of media */
    while (ttype == CSS_TK_SYMBOL) {
-      if (dStrcasecmp(tval, "all") == 0 ||
-          dStrcasecmp(tval, "screen") == 0)
+      if (dStrAsciiCasecmp(tval, "all") == 0 ||
+          dStrAsciiCasecmp(tval, "screen") == 0)
          mediaIsSelected = true;
       nextToken();
       if (ttype == CSS_TK_CHAR && tval[0] == ',') {
@@ -1578,11 +1578,11 @@ void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext * context,
           parser.tval[0] == '@') {
          parser.nextToken();
          if (parser.ttype == CSS_TK_SYMBOL) {
-            if (dStrcasecmp(parser.tval, "import") == 0 &&
+            if (dStrAsciiCasecmp(parser.tval, "import") == 0 &&
                 html != NULL &&
                 importsAreAllowed) {
                parser.parseImport(html, url);
-            } else if (dStrcasecmp(parser.tval, "media") == 0) {
+            } else if (dStrAsciiCasecmp(parser.tval, "media") == 0) {
                parser.parseMedia();
             } else {
                parser.ignoreStatement();

@@ -95,7 +95,7 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
 
    } else {
       /* A non-RootUrl. At this moment we only handle image-children */
-      if (!dStrncasecmp(Type, "image/", 6)) {
+      if (!dStrnAsciiCasecmp(Type, "image/", 6)) {
          dw = (Widget*) a_Mime_set_viewer(Type, Web, Call, Data);
       } else {
          MSG_HTTP("'%s' cannot be displayed as image; has media type '%s'\n",

@@ -265,16 +265,16 @@ bool CssSimpleSelector::match (const DoctreeNode *n) {
    if (element != ELEMENT_ANY && element != n->element)
       return false;
    if (pseudo != NULL &&
-      (n->pseudo == NULL || dStrcasecmp (pseudo, n->pseudo) != 0))
+      (n->pseudo == NULL || dStrAsciiCasecmp (pseudo, n->pseudo) != 0))
       return false;
-   if (id != NULL && (n->id == NULL || dStrcasecmp (id, n->id) != 0))
+   if (id != NULL && (n->id == NULL || dStrAsciiCasecmp (id, n->id) != 0))
       return false;
    if (klass != NULL) {
       for (int i = 0; i < klass->size (); i++) {
          bool found = false;
          if (n->klass != NULL) {
             for (int j = 0; j < n->klass->size (); j++) {
-               if (dStrcasecmp (klass->get(i), n->klass->get(j)) == 0) {
+               if (dStrAsciiCasecmp (klass->get(i), n->klass->get(j)) == 0) {
                   found = true;
                   break;
                }

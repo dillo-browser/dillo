@@ -284,11 +284,11 @@ static int Cookie_control_init(void)
             rule[j++] = line[i++];
          rule[j] = '\0';
 
-         if (dStrcasecmp(rule, "ACCEPT") == 0)
+         if (dStrAsciiCasecmp(rule, "ACCEPT") == 0)
             cc.action = COOKIE_ACCEPT;
-         else if (dStrcasecmp(rule, "ACCEPT_SESSION") == 0)
+         else if (dStrAsciiCasecmp(rule, "ACCEPT_SESSION") == 0)
             cc.action = COOKIE_ACCEPT_SESSION;
-         else if (dStrcasecmp(rule, "DENY") == 0)
+         else if (dStrAsciiCasecmp(rule, "DENY") == 0)
             cc.action = COOKIE_DENY;
          else {
             MSG("Cookies: rule '%s' for domain '%s' is not recognised.\n",
@@ -297,7 +297,7 @@ static int Cookie_control_init(void)
          }
 
          cc.domain = dStrdup(domain);
-         if (dStrcasecmp(cc.domain, "DEFAULT") == 0) {
+         if (dStrAsciiCasecmp(cc.domain, "DEFAULT") == 0) {
             /* Set the default action */
             default_action = cc.action;
             dFree(cc.domain);
@@ -338,13 +338,13 @@ static CookieControlAction Cookies_control_check_domain(const char *domain)
       if (ccontrol[i].domain[0] == '.') {
          diff = strlen(domain) - strlen(ccontrol[i].domain);
          if (diff >= 0) {
-            if (dStrcasecmp(domain + diff, ccontrol[i].domain) != 0)
+            if (dStrAsciiCasecmp(domain + diff, ccontrol[i].domain) != 0)
                continue;
          } else {
             continue;
          }
       } else {
-         if (dStrcasecmp(domain, ccontrol[i].domain) != 0)
+         if (dStrAsciiCasecmp(domain, ccontrol[i].domain) != 0)
             continue;
       }
 

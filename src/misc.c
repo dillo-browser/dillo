@@ -141,12 +141,12 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
 
    /* HTML try */
    for (i = 0; i < Size && dIsspace(p[i]); ++i);
-   if ((Size - i >= 5  && !dStrncasecmp(p+i, "<html", 5)) ||
-       (Size - i >= 5  && !dStrncasecmp(p+i, "<head", 5)) ||
-       (Size - i >= 6  && !dStrncasecmp(p+i, "<title", 6)) ||
-       (Size - i >= 14 && !dStrncasecmp(p+i, "<!doctype html", 14)) ||
+   if ((Size - i >= 5  && !dStrnAsciiCasecmp(p+i, "<html", 5)) ||
+       (Size - i >= 5  && !dStrnAsciiCasecmp(p+i, "<head", 5)) ||
+       (Size - i >= 6  && !dStrnAsciiCasecmp(p+i, "<title", 6)) ||
+       (Size - i >= 14 && !dStrnAsciiCasecmp(p+i, "<!doctype html", 14)) ||
        /* this line is workaround for FTP through the Squid proxy */
-       (Size - i >= 17 && !dStrncasecmp(p+i, "<!-- HTML listing", 17))) {
+       (Size - i >= 17 && !dStrnAsciiCasecmp(p+i, "<!-- HTML listing", 17))) {
 
       Type = DT_TEXT_HTML;
       st = 0;
@@ -233,8 +233,8 @@ void a_Misc_parse_content_type(const char *type, char **major, char **minor,
          *minor = dStrndup(str, s - str);
    }
    if (charset && *s &&
-       (dStrncasecmp(type, "text/", 5) == 0 ||
-        dStrncasecmp(type, "application/xhtml+xml", 21) == 0)) {
+       (dStrnAsciiCasecmp(type, "text/", 5) == 0 ||
+        dStrnAsciiCasecmp(type, "application/xhtml+xml", 21) == 0)) {
       /* "charset" parameter defined for text media type in RFC 2046,
        * application/xhtml+xml in RFC 3236.
        *
@@ -246,7 +246,7 @@ void a_Misc_parse_content_type(const char *type, char **major, char **minor,
       const char terminators[] = " ;\t";
       const char key[] = "charset";
 
-      if ((s = dStristr(str, key)) &&
+      if ((s = dStriAsciiStr(str, key)) &&
           (s == str || strchr(terminators, s[-1]))) {
          s += sizeof(key) - 1;
          for ( ; *s == ' ' || *s == '\t'; ++s);
@@ -283,12 +283,12 @@ int a_Misc_content_type_cmp(const char *ct1, const char *ct2)
    a_Misc_parse_content_type(ct1, &major1, &minor1, &charset1);
    a_Misc_parse_content_type(ct2, &major2, &minor2, &charset2);
 
-   if (major1 && major2 && !dStrcasecmp(major1, major2) &&
-       minor1 && minor2 && !dStrcasecmp(minor1, minor2) &&
+   if (major1 && major2 && !dStrAsciiCasecmp(major1, major2) &&
+       minor1 && minor2 && !dStrAsciiCasecmp(minor1, minor2) &&
        ((!charset1 && !charset2) ||
-        (charset1 && charset2 && !dStrcasecmp(charset1, charset2)) ||
-        (!charset1 && charset2 && !dStrcasecmp(charset2, "UTF-8")) ||
-        (charset1 && !charset2 && !dStrcasecmp(charset1, "UTF-8")))) {
+        (charset1 && charset2 && !dStrAsciiCasecmp(charset1, charset2)) ||
+        (!charset1 && charset2 && !dStrAsciiCasecmp(charset2, "UTF-8")) ||
+        (charset1 && !charset2 && !dStrAsciiCasecmp(charset1, "UTF-8")))) {
       ret = 0;
    } else {
       ret = 1;
@@ -328,22 +328,23 @@ int a_Misc_content_type_check(const char *EntryType, const char *DetectedType)
       return 0; /* there's no mismatch without server type */
 
    for (i = 1; MimeTypes[i].str; ++i)
-      if (dStrncasecmp(EntryType, MimeTypes[i].str, MimeTypes[i].len) == 0)
+      if (dStrnAsciiCasecmp(EntryType, MimeTypes[i].str, MimeTypes[i].len) ==0)
          break;
 
    if (!MimeTypes[i].str) {
       /* type not found, no mismatch */
       st = 0;
-   } else if (dStrncasecmp(EntryType, "image/", 6) == 0 &&
-             !dStrncasecmp(DetectedType,MimeTypes[i].str,MimeTypes[i].len)){
+   } else if (dStrnAsciiCasecmp(EntryType, "image/", 6) == 0 &&
+             !dStrnAsciiCasecmp(DetectedType, MimeTypes[i].str,
+                                MimeTypes[i].len)){
       /* An image, and there's an exact match */
       st = 0;
-   } else if (dStrncasecmp(EntryType, "text/", 5) ||
-              dStrncasecmp(DetectedType, "application/", 12)) {
+   } else if (dStrnAsciiCasecmp(EntryType, "text/", 5) ||
+              dStrnAsciiCasecmp(DetectedType, "application/", 12)) {
       /* Not an application sent as text */
       st = 0;
-   } else if (dStrncasecmp(EntryType, "application/xhtml+xml", 21) &&
-              dStrncasecmp(DetectedType, "text/html", 9)) {
+   } else if (dStrnAsciiCasecmp(EntryType, "application/xhtml+xml", 21) &&
+              dStrnAsciiCasecmp(DetectedType, "text/html", 9)) {
       /* XML version of HTML */
       st = 0;
    }

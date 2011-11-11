@@ -442,7 +442,7 @@ static void Unencode_str(char *e_str)
       if (*e == '+') {
          *p = ' ';
       } else if (*e == '%') {
-         if (dStrncasecmp(e, "%0D%0A", 6) == 0) {
+         if (dStrnAsciiCasecmp(e, "%0D%0A", 6) == 0) {
             *p = '\n';
             e += 5;
          } else {

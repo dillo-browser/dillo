@@ -54,7 +54,7 @@ static const char *HEX = "0123456789ABCDEF";
 #define URL_STR_FIELD_CMP(s1,s2) \
    (s1) && (s2) ? strcmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
 #define URL_STR_FIELD_I_CMP(s1,s2) \
-   (s1) && (s2) ? dStrcasecmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
+   (s1) && (s2) ? dStrAsciiCasecmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
 
 /*
  * Return the url as a string.
@@ -702,7 +702,7 @@ static uint_t Url_host_public_internal_dots(const char *host)
 
          for (i = 0; i < tld_num; i++) {
             if (strlen(tlds[i]) == (uint_t) tld_len &&
-                !dStrncasecmp(tlds[i], host + start, tld_len)) {
+                !dStrnAsciiCasecmp(tlds[i], host + start, tld_len)) {
                _MSG("TLD code matched %s\n", tlds[i]);
                ret++;
                break;
@@ -759,6 +759,7 @@ bool_t a_Url_same_organization(const DilloUrl *u1, const DilloUrl *u2)
    if (!u1 || !u2)
       return FALSE;
 
-   return dStrcasecmp(Url_host_find_public_suffix(URL_HOST(u1)),
-                      Url_host_find_public_suffix(URL_HOST(u2))) ? FALSE :TRUE;
+   return dStrAsciiCasecmp(Url_host_find_public_suffix(URL_HOST(u1)),
+                           Url_host_find_public_suffix(URL_HOST(u2)))
+          ? FALSE : TRUE;
 }

@@ -271,7 +271,7 @@ static DilloHtmlInput *Html_get_radio_input(DilloHtml *html, const char *name)
       for (int idx = 0; idx < inputs->size(); idx++) {
          DilloHtmlInput *input = inputs->get(idx);
          if (input->type == DILLO_HTML_INPUT_RADIO &&
-             input->name && !dStrcasecmp(input->name, name))
+             input->name && !dStrAsciiCasecmp(input->name, name))
             return input;
       }
    }
@@ -318,9 +318,9 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
 
    method = DILLO_HTML_METHOD_GET;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "method"))) {
-      if (!dStrcasecmp(attrbuf, "post")) {
+      if (!dStrAsciiCasecmp(attrbuf, "post")) {
          method = DILLO_HTML_METHOD_POST;
-      } else if (dStrcasecmp(attrbuf, "get")) {
+      } else if (dStrAsciiCasecmp(attrbuf, "get")) {
          BUG_MSG("Unknown form submission method \"%s\"\n", attrbuf);
       }
    }
@@ -333,7 +333,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    content_type = DILLO_HTML_ENC_URLENCODED;
    if ((method == DILLO_HTML_METHOD_POST) &&
        ((attrbuf = a_Html_get_attr(html, tag, tagsize, "enctype")))) {
-      if (!dStrcasecmp(attrbuf, "multipart/form-data"))
+      if (!dStrAsciiCasecmp(attrbuf, "multipart/form-data"))
          content_type = DILLO_HTML_ENC_MULTIPART;
    }
    charset = NULL;
@@ -343,9 +343,9 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
       char *ptr = first = dStrdup(attrbuf);
       while (ptr && !charset) {
          char *curr = dStrsep(&ptr, " ,");
-         if (!dStrcasecmp(curr, "utf-8")) {
+         if (!dStrAsciiCasecmp(curr, "utf-8")) {
             charset = curr;
-         } else if (!dStrcasecmp(curr, "UNKNOWN")) {
+         } else if (!dStrAsciiCasecmp(curr, "UNKNOWN")) {
             /* defined to be whatever encoding the document is in */
             charset = html->charset;
          }
@@ -441,18 +441,18 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 
    init_str = NULL;
    inp_type = DILLO_HTML_INPUT_UNKNOWN;
-   if (!dStrcasecmp(type, "password")) {
+   if (!dStrAsciiCasecmp(type, "password")) {
       inp_type = DILLO_HTML_INPUT_PASSWORD;
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
       resource = factory->createEntryResource (size, true, NULL);
       init_str = value;
-   } else if (!dStrcasecmp(type, "checkbox")) {
+   } else if (!dStrAsciiCasecmp(type, "checkbox")) {
       inp_type = DILLO_HTML_INPUT_CHECKBOX;
       resource = factory->createCheckButtonResource(false);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
       init_str = (value) ? value : dStrdup("on");
-   } else if (!dStrcasecmp(type, "radio")) {
+   } else if (!dStrAsciiCasecmp(type, "radio")) {
       inp_type = DILLO_HTML_INPUT_RADIO;
       RadioButtonResource *rb_r = NULL;
       DilloHtmlInput *input = Html_get_radio_input(html, name);
@@ -461,22 +461,22 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       resource = factory->createRadioButtonResource(rb_r, false);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
       init_str = value;
-   } else if (!dStrcasecmp(type, "hidden")) {
+   } else if (!dStrAsciiCasecmp(type, "hidden")) {
       inp_type = DILLO_HTML_INPUT_HIDDEN;
       init_str = value;
       int size = Html_input_get_size(html, NULL);
       resource = factory->createEntryResource(size, false, name);
-   } else if (!dStrcasecmp(type, "submit")) {
+   } else if (!dStrAsciiCasecmp(type, "submit")) {
       inp_type = DILLO_HTML_INPUT_SUBMIT;
       init_str = (value) ? value : dStrdup("submit");
       resource = factory->createLabelButtonResource(init_str);
 //    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
-   } else if (!dStrcasecmp(type, "reset")) {
+   } else if (!dStrAsciiCasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_RESET;
       init_str = (value) ? value : dStrdup("Reset");
       resource = factory->createLabelButtonResource(init_str);
 //    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
-   } else if (!dStrcasecmp(type, "image")) {
+   } else if (!dStrAsciiCasecmp(type, "image")) {
       if (URL_FLAGS(html->base_url) & URL_SpamSafe) {
          /* Don't request the image; make a text submit button instead */
          inp_type = DILLO_HTML_INPUT_SUBMIT;
@@ -491,7 +491,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          embed = Html_input_image(html, tag, tagsize);
          init_str = value;
       }
-   } else if (!dStrcasecmp(type, "file")) {
+   } else if (!dStrAsciiCasecmp(type, "file")) {
       bool valid = true;
       if (html->InFlags & IN_FORM) {
          DilloHtmlForm *form = html->getCurrentForm();
@@ -512,7 +512,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          init_str = dStrdup("File selector");
          resource = factory->createLabelButtonResource(init_str);
       }
-   } else if (!dStrcasecmp(type, "button")) {
+   } else if (!dStrAsciiCasecmp(type, "button")) {
       inp_type = DILLO_HTML_INPUT_BUTTON;
       if (value) {
          init_str = value;
@@ -521,7 +521,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    } else {
       /* Text input, which also is the default */
       inp_type = DILLO_HTML_INPUT_TEXT;
-      if (*type && dStrcasecmp(type, "text"))
+      if (*type && dStrAsciiCasecmp(type, "text"))
          BUG_MSG("Unknown input type: \"%s\"\n", type);
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
@@ -831,11 +831,11 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 
    type = a_Html_get_attr_wdef(html, tag, tagsize, "type", "");
 
-   if (!dStrcasecmp(type, "button")) {
+   if (!dStrAsciiCasecmp(type, "button")) {
       inp_type = DILLO_HTML_INPUT_BUTTON;
-   } else if (!dStrcasecmp(type, "reset")) {
+   } else if (!dStrAsciiCasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_BUTTON_RESET;
-   } else if (!dStrcasecmp(type, "submit") || !*type) {
+   } else if (!dStrAsciiCasecmp(type, "submit") || !*type) {
       /* submit button is the default */
       inp_type = DILLO_HTML_INPUT_BUTTON_SUBMIT;
    } else {
@@ -1034,7 +1034,7 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
    char *boundary = NULL;
    iconv_t char_encoder = (iconv_t) -1;
 
-   if (submit_charset && dStrcasecmp(submit_charset, "UTF-8")) {
+   if (submit_charset && dStrAsciiCasecmp(submit_charset, "UTF-8")) {
       char_encoder = iconv_open(submit_charset, "UTF-8");
       if (char_encoder == (iconv_t) -1) {
          MSG_WARN("Cannot convert to character encoding '%s'\n",
@@ -1308,8 +1308,8 @@ void DilloHtmlForm::filesInputMultipartAppend(Dstr* data,
       (void)a_Misc_get_content_type_from_data(file->str, file->len, &ctype);
       /* Heuristic: text/plain with ".htm[l]" extension -> text/html */
       if ((ext = strrchr(filename, '.')) &&
-          !dStrcasecmp(ctype, "text/plain") &&
-          (!dStrcasecmp(ext, ".html") || !dStrcasecmp(ext, ".htm"))) {
+          !dStrAsciiCasecmp(ctype, "text/plain") &&
+          (!dStrAsciiCasecmp(ext, ".html") || !dStrAsciiCasecmp(ext, ".htm"))){
          ctype = "text/html";
       }
 
@@ -1474,7 +1474,7 @@ DilloHtmlInput *DilloHtmlForm::getRadioInput (const char *name)
    for (int idx = 0; idx < inputs->size(); idx++) {
       DilloHtmlInput *input = inputs->get(idx);
       if (input->type == DILLO_HTML_INPUT_RADIO &&
-          input->name && !dStrcasecmp(input->name, name))
+          input->name && !dStrAsciiCasecmp(input->name, name))
          return input;
    }
    return NULL;

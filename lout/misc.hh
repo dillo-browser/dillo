@@ -43,6 +43,27 @@ inline int roundInt(double d)
    return (int) ((d > 0) ? (d + 0.5) : (d - 0.5));
 }
 
+inline int AsciiTolower(char c)
+{
+   return ((c >= 'A' && c <= 'Z') ? c + 0x20 : c);
+}
+
+inline int AsciiToupper(char c)
+{
+   return ((c >= 'a' && c <= 'z') ? c - 0x20 : c);
+}
+
+inline int AsciiStrcasecmp(const char *s1, const char *s2)
+{
+   int ret = 0;
+
+   while ((*s1 || *s2) && !(ret = AsciiTolower(*s1) - AsciiTolower(*s2))) {
+      s1++;
+      s2++;
+   }
+   return ret;
+}
+
 /**
  * \brief Instances of a sub class of this interface may be compared (less,
  *    greater).

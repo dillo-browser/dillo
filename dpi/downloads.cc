@@ -327,7 +327,7 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    /* escape "'" character for the shell. Is it necessary? */
    esc_url = Escape_uri_str(url, "'");
    /* avoid malicious SMTP relaying with FTP urls */
-   if (dStrncasecmp(esc_url, "ftp:/", 5) == 0)
+   if (dStrnAsciiCasecmp(esc_url, "ftp:/", 5) == 0)
       Filter_smtp_hack(esc_url);
    dl_argv = new char*[8];
    int i = 0;

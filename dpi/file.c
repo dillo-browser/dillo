@@ -15,7 +15,7 @@
  * With new HTML layout.
  */
 
-#include <ctype.h>           /* for tolower */
+#include <ctype.h>           /* for isspace */
 #include <errno.h>           /* for errno */
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,12 +142,12 @@ static const char *File_get_content_type_from_data(void *Data, size_t Size)
 
    /* HTML try */
    for (i = 0; i < Size && dIsspace(p[i]); ++i);
-   if ((Size - i >= 5  && !dStrncasecmp(p+i, "<html", 5)) ||
-       (Size - i >= 5  && !dStrncasecmp(p+i, "<head", 5)) ||
-       (Size - i >= 6  && !dStrncasecmp(p+i, "<title", 6)) ||
-       (Size - i >= 14 && !dStrncasecmp(p+i, "<!doctype html", 14)) ||
+   if ((Size - i >= 5  && !dStrnAsciiCasecmp(p+i, "<html", 5)) ||
+       (Size - i >= 5  && !dStrnAsciiCasecmp(p+i, "<head", 5)) ||
+       (Size - i >= 6  && !dStrnAsciiCasecmp(p+i, "<title", 6)) ||
+       (Size - i >= 14 && !dStrnAsciiCasecmp(p+i, "<!doctype html", 14)) ||
        /* this line is workaround for FTP through the Squid proxy */
-       (Size - i >= 17 && !dStrncasecmp(p+i, "<!-- HTML listing", 17))) {
+       (Size - i >= 17 && !dStrnAsciiCasecmp(p+i, "<!-- HTML listing", 17))) {
 
       Type = 1;
 
@@ -502,18 +502,18 @@ static const char *File_ext(const char *filename)
 
    e++;
 
-   if (!dStrcasecmp(e, "gif")) {
+   if (!dStrAsciiCasecmp(e, "gif")) {
       return "image/gif";
-   } else if (!dStrcasecmp(e, "jpg") ||
-              !dStrcasecmp(e, "jpeg")) {
+   } else if (!dStrAsciiCasecmp(e, "jpg") ||
+              !dStrAsciiCasecmp(e, "jpeg")) {
       return "image/jpeg";
-   } else if (!dStrcasecmp(e, "png")) {
+   } else if (!dStrAsciiCasecmp(e, "png")) {
       return "image/png";
-   } else if (!dStrcasecmp(e, "html") ||
-              !dStrcasecmp(e, "htm") ||
-              !dStrcasecmp(e, "shtml")) {
+   } else if (!dStrAsciiCasecmp(e, "html") ||
+              !dStrAsciiCasecmp(e, "htm") ||
+              !dStrAsciiCasecmp(e, "shtml")) {
       return "text/html";
-   } else if (!dStrcasecmp(e, "txt")) {
+   } else if (!dStrAsciiCasecmp(e, "txt")) {
       return "text/plain";
    } else {
       return NULL;
@@ -712,7 +712,8 @@ static int File_send_file(ClientInfo *client)
 
       /* Check for gzipped file */
       namelen = strlen(client->filename);
-      if (namelen > 3 && !dStrcasecmp(client->filename + namelen - 3, ".gz")) {
+      if (namelen > 3 &&
+          !dStrAsciiCasecmp(client->filename + namelen - 3, ".gz")) {
          gzipped = TRUE;
          namelen -= 3;
       }
@@ -804,7 +805,7 @@ static char *File_normalize_path(const char *orig)
    str += 5;
 
    /* Skip "localhost" */
-   if (dStrncasecmp(str, "//localhost/", 12) == 0)
+   if (dStrnAsciiCasecmp(str, "//localhost/", 12) == 0)
       str += 11;
 
    /* Skip packed slashes, and leave just one */

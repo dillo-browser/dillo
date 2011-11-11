@@ -262,7 +262,7 @@ int32_t a_Color_parse (const char *subtag, int32_t default_color, int *err)
       high = NCOLORS - 1;
       while (low <= high) {
          mid = (low + high) / 2;
-         if ((ret = dStrcasecmp(cp, color_keyword[mid].key)) < 0)
+         if ((ret = dStrAsciiCasecmp(cp, color_keyword[mid].key)) < 0)
             high = mid - 1;
          else if (ret > 0)
             low = mid + 1;

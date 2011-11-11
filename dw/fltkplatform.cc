@@ -141,7 +141,7 @@ FltkFont::~FltkFont ()
 static void strstrip(char *big, const char *little)
 {
    if (strlen(big) >= strlen(little) &&
-      strcasecmp(big + strlen(big) - strlen(little), little) == 0)
+      misc::AsciiStrcasecmp(big + strlen(big) - strlen(little), little) == 0)
       *(big + strlen(big) - strlen(little)) = '\0';
 }
 

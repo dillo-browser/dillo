@@ -16,7 +16,7 @@
 /*-----------------------------------------------------------------------------
  * Includes
  *---------------------------------------------------------------------------*/
-#include <ctype.h>      /* for isspace and tolower */
+#include <ctype.h>      /* for isspace */
 #include <string.h>     /* for memcpy and memmove */
 #include <stdlib.h>
 #include <stdio.h>      /* for sprintf */
@@ -311,16 +311,16 @@ void a_Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize)
    if ((align = a_Html_get_attr(html, tag, tagsize, "align"))) {
       TextAlignType textAlignType = TEXT_ALIGN_LEFT;
 
-      if (dStrcasecmp (align, "left") == 0)
+      if (dStrAsciiCasecmp (align, "left") == 0)
          textAlignType = TEXT_ALIGN_LEFT;
-      else if (dStrcasecmp (align, "right") == 0)
+      else if (dStrAsciiCasecmp (align, "right") == 0)
          textAlignType = TEXT_ALIGN_RIGHT;
-      else if (dStrcasecmp (align, "center") == 0)
+      else if (dStrAsciiCasecmp (align, "center") == 0)
          textAlignType = TEXT_ALIGN_CENTER;
-      else if (dStrcasecmp (align, "justify") == 0)
+      else if (dStrAsciiCasecmp (align, "justify") == 0)
          textAlignType = TEXT_ALIGN_JUSTIFY;
 #if 0
-      else if (dStrcasecmp (align, "char") == 0) {
+      else if (dStrAsciiCasecmp (align, "char") == 0) {
          /* TODO: Actually not supported for <p> etc. */
          v.textAlign = TEXT_ALIGN_STRING;
          if ((charattr = a_Html_get_attr(html, tag, tagsize, "char"))) {
@@ -352,11 +352,11 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag, int tagsize)
    VAlignType valign;
 
    if ((attr = a_Html_get_attr(html, tag, tagsize, "valign"))) {
-      if (dStrcasecmp (attr, "top") == 0)
+      if (dStrAsciiCasecmp (attr, "top") == 0)
          valign = VALIGN_TOP;
-      else if (dStrcasecmp (attr, "bottom") == 0)
+      else if (dStrAsciiCasecmp (attr, "bottom") == 0)
          valign = VALIGN_BOTTOM;
-      else if (dStrcasecmp (attr, "baseline") == 0)
+      else if (dStrAsciiCasecmp (attr, "baseline") == 0)
          valign = VALIGN_BASELINE;
       else
          valign = VALIGN_MIDDLE;
@@ -1240,7 +1240,7 @@ static bool Html_match_tag(const char *tagstr, char *tag, int tagsize)
    int i;
 
    for (i = 0; i < tagsize && tagstr[i] != '\0'; i++) {
-      if (tolower(tagstr[i]) != tolower(tag[i]))
+      if (D_ASCII_TOLOWER(tagstr[i]) != D_ASCII_TOLOWER(tag[i]))
          return false;
    }
    /* The test for '/' is for xml compatibility: "empty/>" will be matched. */
@@ -1530,18 +1530,18 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
    _MSG("New: {%s}\n", ntag);
 
    /* The default DT_NONE type is TagSoup */
-   if (!dStrncasecmp(ntag, HTML_SGML_sig, strlen(HTML_SGML_sig))) {
+   if (!dStrnAsciiCasecmp(ntag, HTML_SGML_sig, strlen(HTML_SGML_sig))) {
       p = ntag + strlen(HTML_SGML_sig) + 1;
       if (!strncmp(p, HTML401, strlen(HTML401)) &&
-          dStristr(p + strlen(HTML401), HTML401_url)) {
+          dStriAsciiStr(p + strlen(HTML401), HTML401_url)) {
          html->DocType = DT_HTML;
          html->DocTypeVersion = 4.01f;
       } else if (!strncmp(p, XHTML1, strlen(XHTML1)) &&
-                 dStristr(p + strlen(XHTML1), XHTML1_url)) {
+                 dStriAsciiStr(p + strlen(XHTML1), XHTML1_url)) {
          html->DocType = DT_XHTML;
          html->DocTypeVersion = 1.0f;
       } else if (!strncmp(p, XHTML11, strlen(XHTML11)) &&
-                 dStristr(p + strlen(XHTML11), XHTML11_url)) {
+                 dStriAsciiStr(p + strlen(XHTML11), XHTML11_url)) {
          html->DocType = DT_XHTML;
          html->DocTypeVersion = 1.1f;
       } else if (!strncmp(p, HTML40, strlen(HTML40))) {
@@ -1554,7 +1554,7 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
          html->DocType = DT_HTML;
          html->DocTypeVersion = 2.0f;
       }
-   } else if (!dStrcasecmp(ntag, HTML5_sig)) {
+   } else if (!dStrAsciiCasecmp(ntag, HTML5_sig)) {
       BUG_MSG("Document follows HTML5 working draft; treating as HTML4.\n");
       html->DocType = DT_HTML;
       html->DocTypeVersion = 5.0f;
@@ -1687,11 +1687,11 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
 
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
       BUG_MSG("type attribute is required for <style>\n");
-   } else if (dStrcasecmp(attrbuf, "text/css")) {
+   } else if (dStrAsciiCasecmp(attrbuf, "text/css")) {
       html->loadCssFromStash = false;
    }
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "media")) &&
-       dStrcasecmp(attrbuf, "all") && !dStristr(attrbuf, "screen")) {
+       dStrAsciiCasecmp(attrbuf, "all") && !dStriAsciiStr(attrbuf, "screen")) {
       /* HTML 4.01 sec. 6.13 says that media descriptors are case-sensitive,
        * but sec. 14.2.3 says that the attribute is case-insensitive.
        * TODO can be a comma-separated list.
@@ -1860,7 +1860,7 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
    textblock->addWidget(bullet, html->styleEngine->wordStyle ());
    textblock->addSpace(html->styleEngine->wordStyle ());
 
-   if (tolower(tag[1]) == 'i') {
+   if (D_ASCII_TOLOWER(tag[1]) == 'i') {
       /* IFRAME usually comes with very long advertising/spying URLS,
        * to not break rendering we will force name="IFRAME" */
       textblock->addText ("IFRAME", html->styleEngine->wordStyle ());
@@ -2120,7 +2120,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
       Image->bg_color = HT2TB(html)->getBgColor()->getColor();
 
    load_now = prefs.load_images ||
-              !dStrcasecmp(URL_SCHEME(url), "data") ||
+              !dStrAsciiCasecmp(URL_SCHEME(url), "data") ||
               (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached);
    bool loading = false;
    if (load_now)
@@ -2292,15 +2292,15 @@ static void Html_tag_open_area(DilloHtml *html, const char *tag, int tagsize)
    }
    attrbuf = a_Html_get_attr(html, tag, tagsize, "shape");
 
-   if (!attrbuf || !*attrbuf || !dStrcasecmp(attrbuf, "rect")) {
+   if (!attrbuf || !*attrbuf || !dStrAsciiCasecmp(attrbuf, "rect")) {
       /* the default shape is a rectangle */
       type = RECTANGLE;
-   } else if (dStrcasecmp(attrbuf, "default") == 0) {
+   } else if (dStrAsciiCasecmp(attrbuf, "default") == 0) {
       /* "default" is the background */
       type = BACKGROUND;
-   } else if (dStrcasecmp(attrbuf, "circle") == 0) {
+   } else if (dStrAsciiCasecmp(attrbuf, "circle") == 0) {
       type = CIRCLE;
-   } else if (dStrncasecmp(attrbuf, "poly", 4) == 0) {
+   } else if (dStrnAsciiCasecmp(attrbuf, "poly", 4) == 0) {
       type = POLYGON;
    } else {
       BUG_MSG("<area> unknown shape: \"%s\"\n", attrbuf);
@@ -2394,7 +2394,7 @@ static const char* Html_get_javascript_link(DilloHtml *html)
    char ch, *p1, *p2;
    Dstr *Buf = html->attr_data;
 
-   if (dStrncasecmp("javascript", Buf->str, 10) == 0) {
+   if (dStrnAsciiCasecmp("javascript", Buf->str, 10) == 0) {
       i = strcspn(Buf->str, "'\"");
       ch = Buf->str[i];
       if ((ch == '"' || ch == '\'') &&
@@ -2440,7 +2440,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "href"))) {
       /* if it's a javascript link, extract the reference. */
-      if (tolower(attrbuf[0]) == 'j')
+      if (D_ASCII_TOLOWER(attrbuf[0]) == 'j')
          attrbuf = Html_get_javascript_link(html);
 
       url = a_Html_url_new(html, attrbuf, NULL, 0);
@@ -2548,11 +2548,11 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
 
       /* list_style_type explicitly defined */
-      if (dStrcasecmp(attrbuf, "disc") == 0)
+      if (dStrAsciiCasecmp(attrbuf, "disc") == 0)
          list_style_type = LIST_STYLE_TYPE_DISC;
-      else if (dStrcasecmp(attrbuf, "circle") == 0)
+      else if (dStrAsciiCasecmp(attrbuf, "circle") == 0)
          list_style_type = LIST_STYLE_TYPE_CIRCLE;
-      else if (dStrcasecmp(attrbuf, "square") == 0)
+      else if (dStrAsciiCasecmp(attrbuf, "square") == 0)
          list_style_type = LIST_STYLE_TYPE_SQUARE;
       else
          /* invalid value */
@@ -2853,7 +2853,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
    }
 
    if ((equiv = a_Html_get_attr(html, tag, tagsize, "http-equiv"))) {
-      if (!dStrcasecmp(equiv, "refresh") &&
+      if (!dStrAsciiCasecmp(equiv, "refresh") &&
           (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
 
          /* Get delay, if present, and make a message with it */
@@ -2905,7 +2905,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          a_Url_free(new_url);
          dFree(mr_url);
 
-      } else if (!dStrcasecmp(equiv, "content-type") &&
+      } else if (!dStrAsciiCasecmp(equiv, "content-type") &&
                  (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
          _MSG("Html_tag_open_meta: content={%s}\n", content);
          /* Cannot ask cache whether the content type was changed, as
@@ -3010,14 +3010,14 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
    dReturn_if_fail (prefs.load_stylesheets);
    /* CSS stylesheet link */
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "rel")) ||
-       dStrcasecmp(attrbuf, "stylesheet"))
+       dStrAsciiCasecmp(attrbuf, "stylesheet"))
       return;
 
    /* IMPLIED attributes? */
    if (((attrbuf = a_Html_get_attr(html, tag, tagsize, "type")) &&
-        dStrcasecmp(attrbuf, "text/css")) ||
+        dStrAsciiCasecmp(attrbuf, "text/css")) ||
        ((attrbuf = a_Html_get_attr(html, tag, tagsize, "media")) &&
-        !dStristr(attrbuf, "screen") && dStrcasecmp(attrbuf, "all")))
+        !dStriAsciiStr(attrbuf, "screen") && dStrAsciiCasecmp(attrbuf, "all")))
       return;
 
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "href")) ||
@@ -3231,8 +3231,8 @@ const TagInfo Tags[] = {
 static int Html_tag_compare(const char *p1, const char *p2)
 {
    while ( *p2 ) {
-      if (tolower(*p1) != *p2)
-         return(tolower(*p1) - *p2);
+      if (D_ASCII_TOLOWER(*p1) != *p2)
+         return(D_ASCII_TOLOWER(*p1) - *p2);
       ++p1;
       ++p2;
    }
@@ -3474,7 +3474,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
    if (ni == -1) {
       /* TODO: doctype parsing is a bit fuzzy, but enough for the time being */
       if (!(html->InFlags & IN_HTML)) {
-         if (tagsize > 9 && !dStrncasecmp(tag, "<!doctype", 9))
+         if (tagsize > 9 && !dStrnAsciiCasecmp(tag, "<!doctype", 9))
             Html_parse_doctype(html, tag, tagsize);
       }
       /* Ignore unknown tags */
@@ -3591,8 +3591,11 @@ static const char *Html_get_attr2(DilloHtml *html,
                        (tag[i] == '=' || isspace(tag[i]) || tag[i] == '>')))) {
             state = SEEK_TOKEN_START;
             --i;
-         } else if (tolower(tag[i]) != tolower(attrname[attr_pos++]))
-            state = SEEK_ATTR_START;
+         } else {
+            if (D_ASCII_TOLOWER(tag[i]) != D_ASCII_TOLOWER(attrname[attr_pos]))
+               state = SEEK_ATTR_START;
+            attr_pos++;
+         }
          break;
 
       case SEEK_TOKEN_START:

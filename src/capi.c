@@ -229,7 +229,7 @@ int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url)
    const DilloUrl *referer;
    int allow = FALSE;
 
-   if (dStrcasecmp(URL_SCHEME(url), "dpi") == 0) {
+   if (dStrAsciiCasecmp(URL_SCHEME(url), "dpi") == 0) {
       if (!(URL_FLAGS(url) & (URL_Post + URL_Get))) {
          allow = TRUE;
       } else if (!(URL_FLAGS(url) & URL_Post) &&
@@ -239,7 +239,7 @@ int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url)
          /* only allow GET&POST dpi-requests from dpi-generated urls */
          if (a_Nav_stack_size(bw)) {
             referer = a_History_get_url(NAV_TOP_UIDX(bw));
-            if (dStrcasecmp(URL_SCHEME(referer), "dpi") == 0) {
+            if (dStrAsciiCasecmp(URL_SCHEME(referer), "dpi") == 0) {
                allow = TRUE;
             }
          }
@@ -266,10 +266,10 @@ static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
    char *p, *server = NULL, *url_str = URL_STR(url);
    Dstr *tmp;
 
-   if ((dStrncasecmp(url_str, "http:", 5) == 0) ||
-       (dStrncasecmp(url_str, "about:", 6) == 0)) {
+   if ((dStrnAsciiCasecmp(url_str, "http:", 5) == 0) ||
+       (dStrnAsciiCasecmp(url_str, "about:", 6) == 0)) {
       /* URL doesn't use dpi (server = NULL) */
-   } else if (dStrncasecmp(url_str, "dpi:/", 5) == 0) {
+   } else if (dStrnAsciiCasecmp(url_str, "dpi:/", 5) == 0) {
       /* dpi prefix, get this server's name */
       if ((p = strchr(url_str + 5, '/')) != NULL) {
          server = dStrndup(url_str + 5, (uint_t)(p - url_str - 5));
@@ -388,7 +388,8 @@ static bool_t Capi_filters_test(const DilloUrl *wanted,
                        *want_host = URL_HOST(wanted);
             if (want_host[0] == '\0') {
                ret = (req_host[0] == '\0' ||
-                      !dStrcasecmp(URL_SCHEME(wanted), "data")) ? TRUE : FALSE;
+                      !dStrAsciiCasecmp(URL_SCHEME(wanted), "data"))
+                     ? TRUE : FALSE;
             } else {
                /* This will regard "www.dillo.org" and "www.dillo.org." as
                 * different, but it doesn't seem worth caring about.
@@ -454,7 +455,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    } else if (Capi_url_uses_dpi(web->url, &server)) {
       /* dpi request */
       if ((safe = a_Capi_dpi_verify_request(web->bw, web->url))) {
-         if (dStrcasecmp(scheme, "dpi") == 0) {
+         if (dStrAsciiCasecmp(scheme, "dpi") == 0) {
             if (strcmp(server, "vsource") == 0) {
                /* allow "view source" reload upon user request */
             } else {
@@ -478,7 +479,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
       }
       dFree(server);
 
-   } else if (!dStrcasecmp(scheme, "http")) {
+   } else if (!dStrAsciiCasecmp(scheme, "http")) {
       /* http request */
       if (reload) {
          a_Capi_conn_abort_by_url(web->url);
@@ -491,7 +492,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
       }
       use_cache = 1;
 
-   } else if (!dStrcasecmp(scheme, "about")) {
+   } else if (!dStrAsciiCasecmp(scheme, "about")) {
       /* internal request */
       use_cache = 1;
    }

@@ -68,8 +68,10 @@ char *Unescape_uri_str(const char *s)
    if (strchr(s, '%')) {
       for (p = buf; (*p = *s); ++s, ++p) {
          if (*p == '%' && isxdigit(s[1]) && isxdigit(s[2])) {
-            *p = (isdigit(s[1]) ? (s[1] - '0') : toupper(s[1]) - 'A' + 10)*16;
-            *p += isdigit(s[2]) ? (s[2] - '0') : toupper(s[2]) - 'A' + 10;
+            *p = (isdigit(s[1]) ? (s[1] - '0')
+                                : D_ASCII_TOUPPER(s[1]) - 'A' + 10) * 16;
+            *p += isdigit(s[2]) ? (s[2] - '0')
+                                : D_ASCII_TOUPPER(s[2]) - 'A' + 10;
             s += 2;
          }
       }
@@ -121,7 +123,7 @@ char *Unescape_html_str(const char *str)
    for (i = 0, j = 0; str[i]; ++i) {
       if (str[i] == '&') {
          for (k = 0; k < 5; ++k) {
-            if (!dStrncasecmp(str + i, unsafe_rep[k], unsafe_rep_len[k])) {
+            if (!dStrnAsciiCasecmp(str + i, unsafe_rep[k], unsafe_rep_len[k])) {
                i += unsafe_rep_len[k] - 1;
                break;
             }
@@ -154,7 +156,8 @@ char *Filter_smtp_hack(char *url)
             memmove(url + i, url + i + 1, strlen(url + i));
             --i;
          } else if (c == '%' && url[i+1] == '0' &&
-                    (tolower(url[i+2]) == 'a' || tolower(url[i+2]) == 'd')) {
+                    (D_ASCII_TOLOWER(url[i+2]) == 'a' ||
+                     D_ASCII_TOLOWER(url[i+2]) == 'd')) {
             memmove(url + i, url + i + 3, strlen(url + i + 2));
             --i;
          }
