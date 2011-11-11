@@ -653,7 +653,7 @@ static bool_t Url_host_is_ip(const char *host)
       return TRUE;
    }
    if (strchr(host, ':') &&
-       (len == strspn(host, "0123456789abcdefABCDEF:.[]"))) {
+       (len == strspn(host, "0123456789abcdefABCDEF:."))) {
       /* The precise format is shown in section 3.2.2 of rfc 3986 */
       MSG("an IPv6 address\n");
       return TRUE;
