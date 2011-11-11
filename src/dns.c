@@ -113,7 +113,7 @@ static int Dns_queue_find(const char *hostname)
    int i;
 
    for (i = 0; i < dns_queue_size; i++)
-      if (!strcmp(hostname, dns_queue[i].hostname))
+      if (!dStrAsciiCasecmp(hostname, dns_queue[i].hostname))
          return i;
 
    return -1;
@@ -377,7 +377,7 @@ void a_Dns_resolve(const char *hostname, DnsCallback_t cb_func, void *cb_data)
 
    /* check for cache hit. */
    for (i = 0; i < dns_cache_size; i++)
-      if (!strcmp(hostname, dns_cache[i].hostname))
+      if (!dStrAsciiCasecmp(hostname, dns_cache[i].hostname))
          break;
 
    if (i < dns_cache_size) {
@@ -445,8 +445,10 @@ static void Dns_assign_channels(void)
              * with the same hostname*/
             for (j = i; j < dns_queue_size; j++)
                if (dns_queue[j].channel == -2 &&
-                   !strcmp(dns_queue[j].hostname, dns_queue[i].hostname))
+                   !dStrAsciiCasecmp(dns_queue[j].hostname,
+                                     dns_queue[i].hostname)) {
                   dns_queue[j].channel = ch;
+               }
             Dns_server_req(ch, dns_queue[i].hostname);
          } else
             return;
