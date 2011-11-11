@@ -303,15 +303,15 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
                   *c = '\0';
                dStrstrip(p->value.strVal);
 
-               if (strcmp (p->value.strVal, "serif") == 0)
+               if (dStrAsciiCasecmp (p->value.strVal, "serif") == 0)
                   fontName = prefs.font_serif;
-               else if (strcmp (p->value.strVal, "sans-serif") == 0)
+               else if (dStrAsciiCasecmp (p->value.strVal, "sans-serif") == 0)
                   fontName = prefs.font_sans_serif;
-               else if (strcmp (p->value.strVal, "cursive") == 0)
+               else if (dStrAsciiCasecmp (p->value.strVal, "cursive") == 0)
                   fontName = prefs.font_cursive;
-               else if (strcmp (p->value.strVal, "fantasy") == 0)
+               else if (dStrAsciiCasecmp (p->value.strVal, "fantasy") == 0)
                   fontName = prefs.font_fantasy;
-               else if (strcmp (p->value.strVal, "monospace") == 0)
+               else if (dStrAsciiCasecmp (p->value.strVal, "monospace") == 0)
                   fontName = prefs.font_monospace;
                else if (Font::exists(layout, p->value.strVal))
                   fontName = p->value.strVal;
