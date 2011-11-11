@@ -920,10 +920,10 @@ static bool_t Cookies_domain_is_ip(const char *domain)
       _MSG("an IPv4 address\n");
       return TRUE;
    }
-   if (*domain == '[' &&
+   if (strchr(domain, ':') &&
        (len == strspn(domain, "0123456789abcdefABCDEF:.[]"))) {
       /* The precise format is shown in section 3.2.2 of rfc 3986 */
-      _MSG("an IPv6 address\n");
+      MSG("an IPv6 address\n");
       return TRUE;
    }
    return FALSE;

@@ -918,13 +918,13 @@ int main()
 
    /* SOME IP ADDRS */
 
-   a_Cookies_set("name=val", "[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]",
+   a_Cookies_set("name=val", "FEDC:BA98:7654:3210:FEDC:BA98:7654:3210",
                  "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http",
-          "[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]", "/");
+          "FEDC:BA98:7654:3210:FEDC:BA98:7654:3210", "/");
 
-   a_Cookies_set("name=val", "[::FFFF:129.144.52.38]", "/", NULL);
-   expect(__LINE__, "Cookie: name=val\r\n", "http", "[::FFFF:129.144.52.38]",
+   a_Cookies_set("name=val", "::FFFF:129.144.52.38", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "::FFFF:129.144.52.38",
           "/");
 
    a_Cookies_set("name=val", "127.0.0.1", "/", NULL);
