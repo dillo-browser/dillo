@@ -44,7 +44,7 @@ static void b64strip_illegal_chars(unsigned char* str)
    MSG("len=%d{%s}\n", strlen((char*)str), str);
 
    for (p = s; (*p = *s); ++s) {
-      if (isalnum(*p) || strchr("+/=", *p))
+      if (isascii(*p) && (isalnum(*p) || strchr("+/=", *p)))
          ++p;
    }
 

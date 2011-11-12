@@ -586,8 +586,7 @@ char *a_Url_encode_hex_str(const char *str)
    newstr = dNew(char, 6*strlen(str)+1);
 
    for (c = newstr; *str; str++)
-      if ((dIsalnum(*str) && !(*str & 0x80)) || strchr(verbatim, *str))
-      /* we really need isalnum for the "C" locale */
+      if ((dIsalnum(*str) && isascii(*str)) || strchr(verbatim, *str))
          *c++ = *str;
       else if (*str == ' ')
          *c++ = '+';

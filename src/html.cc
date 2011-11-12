@@ -1462,10 +1462,10 @@ static int
    int i;
 
    for (i = 0; val[i]; ++i)
-      if (!(isalnum(val[i]) || strchr(":_.-", val[i])))
+      if (!isascii(val[i]) || !(isalnum(val[i]) || strchr(":_.-", val[i])))
          break;
 
-   if (val[i] || !isalpha(val[0]))
+   if (val[i] || !(isascii(val[0]) && isalpha(val[0])))
       BUG_MSG("'%s' value is not of the form "
               "[A-Za-z][A-Za-z0-9:_.-]*\n", attrname);
 
