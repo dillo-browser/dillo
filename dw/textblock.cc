@@ -1079,15 +1079,7 @@ void Textblock::wordWrap(int wordIndex)
       if (leftOffset < 0)
          leftOffset = 0;
 
-      if (hasListitemValue && lastLine == lines->getRef (0)) {
-         /* List item markers are always on the left. */
-         lastLine->leftOffset = 0;
-         words->getRef(0)->effSpace = words->getRef(0)->origSpace + leftOffset;
-         //DBG_OBJ_ARRSET_NUM (this, "words.%d.effSpace", 0,
-         //                    words->getRef(0)->effSpace);
-      } else {
-         lastLine->leftOffset = leftOffset;
-      }
+      lastLine->leftOffset = leftOffset;
    }
    mustQueueResize = true;
 
