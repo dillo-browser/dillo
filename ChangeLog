@@ -9,6 +9,7 @@ dillo-3.0.2 [not released yet]
 +- text-transform property
  - If not following redirection, show body of redirecting page.
  - Middle click on stylesheet menu item opens in new tab/window.
+ - Locale-independent ASCII character case handling (fixes Turkic locales).
    Patches: corvid
 +- Rework line breaking and fix white-space:nowrap handling.
  - Patch: Johannes Hofmann
