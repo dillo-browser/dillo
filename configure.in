@@ -47,8 +47,8 @@ dnl ----------------------------
 dnl
 AC_CHECK_SIZEOF(char)
 AC_CHECK_SIZEOF(short)
-AC_CHECK_SIZEOF(long)  
-AC_CHECK_SIZEOF(int)     
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(void *)
 
 AC_TYPE_INT16_T
@@ -304,7 +304,7 @@ fi
 
 dnl ----------------------
 dnl Check if we need to
-dnl support the old 
+dnl support the old
 dnl iconv interface
 dnl ----------------------
 if test "x$iconv_ok" = "xyes"; then
@@ -370,9 +370,9 @@ pthread_ok=yes, pthread_ok=no)
     else
       AC_MSG_RESULT(no. Now we will try some libraries.)
 
-      AC_SEARCH_LIBS(pthread_create, pthread, 
-                     LIBPTHREADS_LIBS="-lpthread", 
-      AC_SEARCH_LIBS(pthread_create, pthreads, 
+      AC_SEARCH_LIBS(pthread_create, pthread,
+                     LIBPTHREADS_LIBS="-lpthread",
+      AC_SEARCH_LIBS(pthread_create, pthreads,
                      LIBPTHREADS_LIBS="-lpthreads",
       AC_SEARCH_LIBS(pthread_create, c_r,
                      LIBPTHREADS_LIBS="-lc_r", thread_ok=no)))
