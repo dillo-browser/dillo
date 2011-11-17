@@ -481,7 +481,8 @@ static void Nav_reload_callback(void *data)
    a_Nav_cancel_expect(bw);
    if (a_Nav_stack_size(bw)) {
       h_url = a_History_get_url(NAV_TOP_UIDX(bw));
-      if (strncmp(URL_STR(h_url), "dpi:/vsource/", 13) == 0) {
+      if (dStrAsciiCasecmp(URL_SCHEME(h_url), "dpi") == 0 &&
+          strncmp(URL_PATH(h_url), "/vsource/", 9) == 0) {
          /* allow reload for view source dpi */
          confirmed = 1;
       } else if (URL_FLAGS(h_url) & URL_Post) {

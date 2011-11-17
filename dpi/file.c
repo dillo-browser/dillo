@@ -800,7 +800,7 @@ static char *File_normalize_path(const char *orig)
    dReturn_val_if (orig == NULL, ret);
 
    /* Make sure the string starts with "file:/" */
-   if (strncmp(str, "file:/", 5) != 0)
+   if (dStrnAsciiCasecmp(str, "file:/", 5) != 0)
       return ret;
    str += 5;
 
@@ -942,7 +942,8 @@ static void File_serve_client(void *data, int f_write)
                   DPIBYE = 1;
                   MSG("(pid %d): Got DpiBye.\n", (int)getpid());
                   client->flags |= FILE_DONE;
-               } else if (url && strcmp(url, "dpi:/file/toggle") == 0) {
+               } else if (url && dStrnAsciiCasecmp(url, "dpi:", 4) == 0 &&
+                          strcmp(url+4, "/file/toggle") == 0) {
                   File_toggle_html_style(client);
                } else if (path) {
                   File_get(client, path, url);

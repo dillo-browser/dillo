@@ -233,7 +233,7 @@ int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url)
       if (!(URL_FLAGS(url) & (URL_Post + URL_Get))) {
          allow = TRUE;
       } else if (!(URL_FLAGS(url) & URL_Post) &&
-                 strncmp(URL_STR(url), "dpi:/vsource/", 13) == 0) {
+                 strncmp(URL_PATH(url), "/vsource/", 9) == 0) {
          allow = TRUE;
       } else {
          /* only allow GET&POST dpi-requests from dpi-generated urls */

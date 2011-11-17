@@ -101,7 +101,8 @@ void send_html_text(Dsh *sh, const char *url, int data_size)
    int bytes_read = 0, old_line = 0, line = 1;
    char *p, *q, *src_str, line_str[128];
 
-   if (strncmp(url, "dpi:/vsource/:", 14) == 0)
+   if (dStrnAsciiCasecmp(url, "dpi:", 4) == 0 &&
+       strncmp(url+4, "/vsource/:", 10) == 0)
       url += 14;
 
    /* Send HTTP header for plain text MIME type */

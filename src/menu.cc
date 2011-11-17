@@ -327,7 +327,8 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
 
    has_bugs == TRUE ? pm[1].activate() : pm[1].deactivate();
 
-   if (strncmp(URL_STR(url), "dpi:/vsource/", 13) == 0)
+   if (dStrAsciiCasecmp(URL_SCHEME(url), "dpi") == 0 &&
+       strncmp(URL_PATH(url), "/vsource/", 9) == 0)
       pm[0].deactivate();
    else
       pm[0].activate();
