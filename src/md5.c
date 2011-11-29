@@ -1,4 +1,13 @@
 /*
+ * md5.c was taken from "RFC1321-based (RSA-free) MD5 library" by L. Peter
+ * Deutsch at http://sourceforge.net/projects/libmd5-rfc/ in October 2011.
+ *
+ * The code was not modified when integrated into the Dillo project, but you
+ * should check the source repository to be sure that there have not been
+ * modifications since this notice.
+ */
+
+/*
   Copyright (C) 1999, 2000, 2002 Aladdin Enterprises.  All rights reserved.
 
   This software is provided 'as-is', without any express or implied

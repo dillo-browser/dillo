@@ -1,5 +1,6 @@
-// fltkcomplexbutton.cc contains code from FLTK 1.3's src/Fl_Button.cxx
-// that is Copyright 1998-2010 by Bill Spitzak and others.
+// fltkcomplexbutton.cc is derived from src/Fl_Button.cxx from FLTK's 1.3
+// branch at http://fltk.org in early 2011.
+// src/Fl_Button.cxx is Copyright 1998-2010 by Bill Spitzak and others.
 
 /*
  * This program is free software; you can redistribute it and/or modify
