@@ -156,7 +156,7 @@ const char *const AboutSplash=
 "    <td><a href='http://www.gutenberg.org/'>P.&nbsp;Gutenberg</a>\n"
 "    <tr>\n"
 "    <td>&nbsp;&nbsp;\n"
-"    <td><a href='http://freshmeat.net/'>FreshMeat</a>\n"
+"    <td><a href='http://freecode.com/'>Freecode</a>\n"
 "    <tr>\n"
 "    <td>&nbsp;&nbsp;\n"
 "    <td><a href='http://www.gnu.org/gnu/thegnuproject.html'>GNU\n"
