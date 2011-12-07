@@ -208,10 +208,8 @@ dnl For debugging and to be user friendly
     AC_MSG_CHECKING([for libpng version])
     png_version=`$PNG_CONFIG --version`
     case $png_version in
-      1.4.*) AC_MSG_RESULT([$png_version (newer version)]) ;;
-      1.2.*) AC_MSG_RESULT([$png_version (newer version)]) ;;
-      1.0.*) AC_MSG_RESULT([$png_version (older version)]) ;;
-          *) AC_MSG_RESULT([ERROR]) ;;
+      1.[[024]].*) AC_MSG_RESULT([$png_version]) ;;
+                *) AC_MSG_RESULT([$png_version (unrecognised version)]) ;;
     esac
 
 dnl Try to use options that are supported by all libpng-config versions...
