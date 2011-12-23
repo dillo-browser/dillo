@@ -1183,6 +1183,10 @@ void Textblock::rewrap ()
 
       lastLineParMax = lastLine->parMax;
 
+      // take line1OffsetEff into account, if lastLine is the first line
+      if (lines->size () - 1 == 0)
+         lastLineWidth = line1OffsetEff;
+
       wordIndex = lastLine->lastWord + 1;
       for (i = lastLine->firstWord; i < lastLine->lastWord; i++)
          lastLineWidth += (words->getRef(i)->size.width +
