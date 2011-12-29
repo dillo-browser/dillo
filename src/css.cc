@@ -501,10 +501,8 @@ void CssStyleSheet::apply (CssPropertyList *props,
 CssContext::CssContext () {
    pos = 0;
 
-   memset (sheet, 0, sizeof(sheet));
-   sheet[CSS_PRIMARY_USER_AGENT] = new CssStyleSheet ();
-   sheet[CSS_PRIMARY_USER] = new CssStyleSheet ();
-   sheet[CSS_PRIMARY_USER_IMPORTANT] = new CssStyleSheet ();
+   for (int i = 0; i < CSS_PRIMARY_LAST; i++)
+      sheet[i] = new CssStyleSheet ();
 
    buildUserAgentStyle ();
    buildUserStyle ();
@@ -528,29 +526,24 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          DoctreeNode *node,
          CssPropertyList *tagStyle, CssPropertyList *tagStyleImportant,
          CssPropertyList *nonCssHints) {
-   if (sheet[CSS_PRIMARY_USER_AGENT])
-      sheet[CSS_PRIMARY_USER_AGENT]->apply (props, docTree, node);
 
-   if (sheet[CSS_PRIMARY_USER])
-      sheet[CSS_PRIMARY_USER]->apply (props, docTree, node);
+   sheet[CSS_PRIMARY_USER_AGENT]->apply (props, docTree, node);
+   sheet[CSS_PRIMARY_USER]->apply (props, docTree, node);
 
    if (nonCssHints)
         nonCssHints->apply (props);
 
-   if (sheet[CSS_PRIMARY_AUTHOR])
-      sheet[CSS_PRIMARY_AUTHOR]->apply (props, docTree, node);
+   sheet[CSS_PRIMARY_AUTHOR]->apply (props, docTree, node);
 
    if (tagStyle)
         tagStyle->apply (props);
 
-   if (sheet[CSS_PRIMARY_AUTHOR_IMPORTANT])
-      sheet[CSS_PRIMARY_AUTHOR_IMPORTANT]->apply (props, docTree, node);
+   sheet[CSS_PRIMARY_AUTHOR_IMPORTANT]->apply (props, docTree, node);
 
    if (tagStyleImportant)
         tagStyleImportant->apply (props);
 
-   if (sheet[CSS_PRIMARY_USER_IMPORTANT])
-      sheet[CSS_PRIMARY_USER_IMPORTANT]->apply (props, docTree, node);
+   sheet[CSS_PRIMARY_USER_IMPORTANT]->apply (props, docTree, node);
 }
 
 void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
@@ -558,9 +551,6 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
 
    if (props->size () > 0) {
       CssRule *rule = new CssRule (sel, props, pos++);
-
-      if (sheet[order] == NULL)
-         sheet[order] = new CssStyleSheet ();
 
       sheet[order]->addRule (rule);
    }
