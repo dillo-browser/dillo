@@ -362,23 +362,6 @@ void CssStyleSheet::RuleList::insert (CssRule *rule) {
    *getRef (i) = rule;
 }
 
-CssStyleSheet::CssStyleSheet () {
-   for (int i = 0; i < ntags; i++)
-      elementTable[i] = new RuleList ();
-
-   idTable = new RuleMap ();
-   classTable = new RuleMap ();
-   anyTable = new RuleList ();
-}
-
-CssStyleSheet::~CssStyleSheet () {
-   for (int i = 0; i < ntags; i++)
-      delete elementTable[i];
-   delete idTable;
-   delete classTable;
-   delete anyTable;
-}
-
 /**
  * \brief Insert a rule into CssStyleSheet.
  *
@@ -392,26 +375,26 @@ void CssStyleSheet::addRule (CssRule *rule) {
 
    if (top->getId ()) {
       string = new lout::object::ConstString (top->getId ());
-      ruleList = idTable->get (string);
+      ruleList = idTable.get (string);
       if (ruleList == NULL) {
          ruleList = new RuleList ();
-         idTable->put (string, ruleList);
+         idTable.put (string, ruleList);
       } else {
          delete string;
       }
    } else if (top->getClass () && top->getClass ()->size () > 0) {
       string = new lout::object::ConstString (top->getClass ()->get (0));
-      ruleList = classTable->get (string);
+      ruleList = classTable.get (string);
       if (ruleList == NULL) {
          ruleList = new RuleList;
-         classTable->put (string, ruleList);
+         classTable.put (string, ruleList);
       } else {
          delete string;
       }
    } else if (top->getElement () >= 0 && top->getElement () < ntags) {
-      ruleList = elementTable[top->getElement ()];
+      ruleList = &elementTable[top->getElement ()];
    } else if (top->getElement () == CssSimpleSelector::ELEMENT_ANY) {
-      ruleList = anyTable;
+      ruleList = &anyTable;
    }
 
    if (ruleList) {
@@ -437,7 +420,7 @@ void CssStyleSheet::apply (CssPropertyList *props,
    if (node->id) {
       lout::object::ConstString idString (node->id);
 
-      ruleList[numLists] = idTable->get (&idString);
+      ruleList[numLists] = idTable.get (&idString);
       if (ruleList[numLists])
          numLists++;
    }
@@ -451,17 +434,17 @@ void CssStyleSheet::apply (CssPropertyList *props,
 
          lout::object::ConstString classString (node->klass->get (i));
 
-         ruleList[numLists] = classTable->get (&classString);
+         ruleList[numLists] = classTable.get (&classString);
          if (ruleList[numLists])
             numLists++;
       }
    }
 
-   ruleList[numLists] = elementTable[node->element];
+   ruleList[numLists] = &elementTable[node->element];
    if (ruleList[numLists])
       numLists++;
 
-   ruleList[numLists] = anyTable;
+   ruleList[numLists] = &anyTable;
    if (ruleList[numLists])
       numLists++;
 

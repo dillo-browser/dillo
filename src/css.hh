@@ -439,15 +439,11 @@ class CssStyleSheet {
       };
 
       static const int ntags = 90; // \todo replace 90
-      RuleList *elementTable[ntags];
 
-      RuleMap *idTable;
-      RuleMap *classTable;
-      RuleList *anyTable;
+      RuleList elementTable[ntags], anyTable;
+      RuleMap idTable, classTable;
 
    public:
-      CssStyleSheet();
-      ~CssStyleSheet();
       void addRule (CssRule *rule);
       void apply (CssPropertyList *props,
                   Doctree *docTree, const DoctreeNode *node);
