@@ -461,9 +461,6 @@ class CssContext {
       CssStyleSheet sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
       int pos;
 
-      void buildUserAgentStyle ();
-      void buildUserStyle ();
-
    public:
       CssContext ();
 

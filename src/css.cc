@@ -11,11 +11,9 @@
 
 #include <stdio.h>
 #include "../dlib/dlib.h"
-#include "misc.h"
 #include "msg.h"
 #include "html_common.hh"
 #include "css.hh"
-#include "cssparser.hh"
 
 using namespace dw::core::style;
 
@@ -500,9 +498,6 @@ void CssStyleSheet::apply (CssPropertyList *props,
 
 CssContext::CssContext () {
    pos = 0;
-
-   buildUserAgentStyle ();
-   buildUserStyle ();
 }
 
 /**
@@ -546,69 +541,4 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
 
       sheet[order].addRule (rule);
    }
-}
-
-/**
- * \brief Create the user agent style.
- *
- * The user agent style defines how dillo renders HTML in the absence of
- * author or user styles.
- */
-void CssContext::buildUserAgentStyle () {
-   const char *cssBuf =
-     "body  {margin: 5px}"
-     "big {font-size: 1.17em}"
-     "blockquote, dd {margin-left: 40px; margin-right: 40px}"
-     "center {text-align: center}"
-     "dt {font-weight: bolder}"
-     ":link {color: blue; text-decoration: underline; cursor: pointer}"
-     ":visited {color: #800080; text-decoration: underline; cursor: pointer}"
-     "h1, h2, h3, h4, h5, h6, b, strong {font-weight: bolder}"
-     "i, em, cite, address, var {font-style: italic}"
-     ":link img, :visited img {border: 1px solid}"
-     "frameset, ul, ol, dir {margin-left: 40px}"
-     "h1 {font-size: 2em; margin-top: .67em; margin-bottom: 0}"
-     "h2 {font-size: 1.5em; margin-top: .75em; margin-bottom: 0}"
-     "h3 {font-size: 1.17em; margin-top: .83em; margin-bottom: 0}"
-     "h4 {margin-top: 1.12em; margin-bottom: 0}"
-     "h5 {font-size: 0.83em; margin-top: 1.5em; margin-bottom: 0}"
-     "h6 {font-size: 0.75em; margin-top: 1.67em; margin-bottom: 0}"
-     "hr {width: 100%; border: 1px inset}"
-     "li {margin-top: 0.1em}"
-     "pre {white-space: pre}"
-     "ol {list-style-type: decimal}"
-     "ul {list-style-type: disc}"
-     "ul ul {list-style-type: circle}"
-     "ul ul ul {list-style-type: square}"
-     "ul ul ul ul {list-style-type: disc}"
-     "u {text-decoration: underline}"
-     "small, sub, sup {font-size: 0.83em}"
-     "sub {vertical-align: sub}"
-     "sup {vertical-align: super}"
-     "s, strike, del {text-decoration: line-through}"
-     "table {border-spacing: 2px}"
-     "td, th {padding: 2px}"
-     "thead, tbody, tfoot {vertical-align: middle}"
-     "th {font-weight: bolder; text-align: center}"
-     "code, tt, pre, samp, kbd {font-family: monospace}"
-     /* WORKAROUND: Reset font properties in tables as some
-      * pages rely on it (e.g. gmail).
-      * http://developer.mozilla.org/En/Fixing_Table_Inheritance_in_Quirks_Mode
-      * has a detailed description of the issue.
-      */
-     "table, caption {font-size: medium; font-weight: normal}";
-
-   CssParser::parse (NULL, NULL, this, cssBuf, strlen (cssBuf),
-                     CSS_ORIGIN_USER_AGENT);
-}
-
-void CssContext::buildUserStyle () {
-   Dstr *style;
-   char *filename = dStrconcat(dGethomedir(), "/.dillo/style.css", NULL);
-
-   if ((style = a_Misc_file2dstr(filename))) {
-      CssParser::parse (NULL,NULL,this,style->str, style->len,CSS_ORIGIN_USER);
-      dStr_free (style, 1);
-   }
-   dFree (filename);
 }
