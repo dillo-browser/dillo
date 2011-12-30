@@ -458,7 +458,7 @@ class CssStyleSheet {
  */
 class CssContext {
    private:
-      CssStyleSheet *sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
+      CssStyleSheet sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
       int pos;
 
       void buildUserAgentStyle ();
@@ -466,7 +466,6 @@ class CssContext {
 
    public:
       CssContext ();
-      ~CssContext ();
 
       void addRule (CssSelector *sel, CssPropertyList *props,
                     CssPrimaryOrder order);

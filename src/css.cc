@@ -501,16 +501,8 @@ void CssStyleSheet::apply (CssPropertyList *props,
 CssContext::CssContext () {
    pos = 0;
 
-   for (int i = 0; i < CSS_PRIMARY_LAST; i++)
-      sheet[i] = new CssStyleSheet ();
-
    buildUserAgentStyle ();
    buildUserStyle ();
-}
-
-CssContext::~CssContext () {
-   for (int o = CSS_PRIMARY_USER_AGENT; o < CSS_PRIMARY_LAST; o++)
-      delete sheet[o];
 }
 
 /**
@@ -527,23 +519,23 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *tagStyleImportant,
          CssPropertyList *nonCssHints) {
 
-   sheet[CSS_PRIMARY_USER_AGENT]->apply (props, docTree, node);
-   sheet[CSS_PRIMARY_USER]->apply (props, docTree, node);
+   sheet[CSS_PRIMARY_USER_AGENT].apply (props, docTree, node);
+   sheet[CSS_PRIMARY_USER].apply (props, docTree, node);
 
    if (nonCssHints)
         nonCssHints->apply (props);
 
-   sheet[CSS_PRIMARY_AUTHOR]->apply (props, docTree, node);
+   sheet[CSS_PRIMARY_AUTHOR].apply (props, docTree, node);
 
    if (tagStyle)
         tagStyle->apply (props);
 
-   sheet[CSS_PRIMARY_AUTHOR_IMPORTANT]->apply (props, docTree, node);
+   sheet[CSS_PRIMARY_AUTHOR_IMPORTANT].apply (props, docTree, node);
 
    if (tagStyleImportant)
         tagStyleImportant->apply (props);
 
-   sheet[CSS_PRIMARY_USER_IMPORTANT]->apply (props, docTree, node);
+   sheet[CSS_PRIMARY_USER_IMPORTANT].apply (props, docTree, node);
 }
 
 void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
@@ -552,7 +544,7 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
    if (props->size () > 0) {
       CssRule *rule = new CssRule (sel, props, pos++);
 
-      sheet[order]->addRule (rule);
+      sheet[order].addRule (rule);
    }
 }
 
