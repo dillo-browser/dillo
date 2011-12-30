@@ -458,13 +458,15 @@ void CssStyleSheet::apply (CssPropertyList *props,
       int minSpecIndex = -1;
 
       for (int i = 0; i < numLists; i++) {
-         if (ruleList[i] && ruleList[i]->size () > index[i] &&
-            (ruleList[i]->get(index[i])->specificity () < minSpec ||
-             (ruleList[i]->get(index[i])->specificity () == minSpec &&
-              ruleList[i]->get(index[i])->position () < minPos))) {
+         RuleList *rl = ruleList[i];
 
-            minSpec = ruleList[i]->get(index[i])->specificity ();
-            minPos = ruleList[i]->get(index[i])->position ();
+         if (rl && rl->size () > index[i] &&
+            (rl->get(index[i])->specificity () < minSpec ||
+             (rl->get(index[i])->specificity () == minSpec &&
+              rl->get(index[i])->position () < minPos))) {
+
+            minSpec = rl->get(index[i])->specificity ();
+            minPos = rl->get(index[i])->position ();
             minSpecIndex = i;
          }
       }
