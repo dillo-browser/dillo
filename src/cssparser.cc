@@ -1292,13 +1292,13 @@ CssSelector *CssParser::parseSelector()
          (tval[0] == ',' || tval[0] == '{')) {
          break;
       } else if (ttype == CSS_TK_CHAR && tval[0] == '>') {
-         selector->addSimpleSelector (CssSelector::CHILD);
+         selector->addSimpleSelector (CssSelector::COMB_CHILD);
          nextToken();
       } else if (ttype == CSS_TK_CHAR && tval[0] == '+') {
-         selector->addSimpleSelector (CssSelector::ADJACENT_SIBLING);
+         selector->addSimpleSelector (CssSelector::COMB_ADJACENT_SIBLING);
          nextToken();
       } else if (ttype != CSS_TK_END && spaceSeparated) {
-         selector->addSimpleSelector (CssSelector::DESCENDANT);
+         selector->addSimpleSelector (CssSelector::COMB_DESCENDANT);
       } else {
          delete selector;
          selector = NULL;

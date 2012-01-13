@@ -355,9 +355,10 @@ class CssSimpleSelector {
 class CssSelector {
    public:
       typedef enum {
-         DESCENDANT,
-         CHILD,
-         ADJACENT_SIBLING,
+         COMB_NONE,
+         COMB_DESCENDANT,
+         COMB_CHILD,
+         COMB_ADJACENT_SIBLING,
       } Combinator;
 
    private:
@@ -370,6 +371,8 @@ class CssSelector {
       int refCount;
       lout::misc::SimpleVector <struct CombinatorAndSelector> *selectorList;
 
+      bool match (Doctree *dt, const DoctreeNode *node, int i, Combinator comb);
+
    public:
       CssSelector ();
       ~CssSelector ();
@@ -378,7 +381,9 @@ class CssSelector {
          return selectorList->getRef (selectorList->size () - 1)->selector;
       };
       inline int size () { return selectorList->size (); };
-      bool match (Doctree *dt, const DoctreeNode *node);
+      inline bool match (Doctree *dt, const DoctreeNode *node) {
+         return match (dt, node, selectorList->size () - 1, COMB_NONE);
+      };
       int specificity ();
       void print ();
       inline void ref () { refCount++; }

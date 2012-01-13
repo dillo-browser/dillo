@@ -102,7 +102,7 @@ CssSelector::CssSelector () {
    cs = selectorList->getRef (selectorList->size () - 1);
 
    cs->notMatchingBefore = -1;
-   cs->combinator = CHILD;
+   cs->combinator = COMB_NONE;
    cs->selector = new CssSimpleSelector ();
 };
 
@@ -115,55 +115,47 @@ CssSelector::~CssSelector () {
 /**
  * \brief Return whether selector matches at a given node in the document tree.
  */
-bool CssSelector::match (Doctree *docTree, const DoctreeNode *node) {
-   CssSimpleSelector *sel;
-   Combinator comb = CHILD;
-   int *notMatchingBefore;
-   const DoctreeNode *n;
+bool CssSelector::match (Doctree *docTree, const DoctreeNode *node,
+                         int i, Combinator comb) {
+   assert (node);
 
-   for (int i = selectorList->size () - 1; i >= 0; i--) {
-      struct CombinatorAndSelector *cs = selectorList->getRef (i);
+   if (i < 0)
+      return true;
 
-      sel = cs->selector;
-      notMatchingBefore = &cs->notMatchingBefore;
+   struct CombinatorAndSelector *cs = selectorList->getRef (i);
+   CssSimpleSelector *sel = cs->selector;
 
-      if (node == NULL)
-         return false;
-
-      switch (comb) {
-         case CHILD:
-         case ADJACENT_SIBLING:
-            if (!sel->match (node))
-               return false;
-            break;
-         case DESCENDANT:
-            n = node;
-
-            while (true) {
-               if (node == NULL || node->num <= *notMatchingBefore) {
-                  *notMatchingBefore = n->num;
-                  return false;
-               }
-
-               if (sel->match (node))
-                  break;
-
-               node = docTree->parent (node);
-            }
-            break;
-         default:
-            return false; // \todo implement other combinators
-      }
-
-      comb = cs->combinator;
-
-      if (comb == ADJACENT_SIBLING)
-         node = docTree->sibling (node);
-      else
+   switch (comb) {
+      case COMB_NONE:
+         break;
+      case COMB_CHILD:
          node = docTree->parent (node);
+         break;
+      case COMB_ADJACENT_SIBLING:
+         node = docTree->sibling (node);
+         break;
+      case COMB_DESCENDANT:
+         node = docTree->parent (node);
+
+         for (const DoctreeNode *n = node;
+              n && n->num > cs->notMatchingBefore; n = docTree->parent (n))
+            if (sel->match (n) && match (docTree, n, i - 1, cs->combinator))
+               return true;
+
+         if (node) // remember that it didn't match to avoid future tests
+            cs->notMatchingBefore = node->num;
+
+         return false;
+         break;
+      default:
+         return false; // \todo implement other combinators
    }
 
-   return true;
+   if (!node || !sel->match (node))
+      return false;
+
+   // tail recursion should be optimized by the compiler
+   return match (docTree, node, i - 1, cs->combinator);
 }
 
 void CssSelector::addSimpleSelector (Combinator c) {
@@ -198,13 +190,13 @@ void CssSelector::print () {
 
       if (i < selectorList->size () - 1) {
          switch (selectorList->getRef (i + 1)->combinator) {
-            case CHILD:
+            case COMB_CHILD:
                fprintf (stderr, "> ");
                break;
-            case DESCENDANT:
+            case COMB_DESCENDANT:
                fprintf (stderr, "\" \" ");
                break;
-            case ADJACENT_SIBLING:
+            case COMB_ADJACENT_SIBLING:
                fprintf (stderr, "+ ");
                break;
             default:
@@ -260,6 +252,7 @@ void CssSimpleSelector::setSelect (SelectType t, const char *v) {
  *        the document tree.
  */
 bool CssSimpleSelector::match (const DoctreeNode *n) {
+   assert (n);
    if (element != ELEMENT_ANY && element != n->element)
       return false;
    if (pseudo != NULL &&
