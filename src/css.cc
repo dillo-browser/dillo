@@ -27,6 +27,7 @@ CssPropertyList::CssPropertyList (const CssPropertyList &p, bool deep) :
    lout::misc::SimpleVector <CssProperty> (p)
 {
    refCount = 0;
+   safe = p.safe;
    if (deep) {
       for (int i = 0; i < size (); i++) {
          CssProperty *p = getRef(i);
@@ -57,6 +58,9 @@ CssPropertyList::~CssPropertyList () {
 void CssPropertyList::set (CssPropertyName name, CssValueType type,
                            CssPropertyValue value) {
    CssProperty *prop;
+
+   if (name == CSS_PROPERTY_DISPLAY || name == CSS_PROPERTY_BACKGROUND_IMAGE)
+      safe = false;
 
    for (int i = 0; i < size (); i++) {
       prop = getRef (i);
@@ -167,6 +171,13 @@ void CssSelector::addSimpleSelector (Combinator c) {
    cs->combinator = c;
    cs->notMatchingBefore = -1;
    cs->selector = new CssSimpleSelector ();
+}
+
+bool CssSelector::checksPseudoClass () {
+   for (int i = 0; i < selectorList->size (); i++)
+      if (selectorList->getRef (i)->selector->getPseudoClass ())
+         return true;
+   return false;
 }
 
 /**
@@ -517,6 +528,13 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
    if (props->size () > 0) {
       CssRule *rule = new CssRule (sel, props, pos++);
 
-      sheet[order].addRule (rule);
+      if ((order == CSS_PRIMARY_AUTHOR ||
+           order == CSS_PRIMARY_AUTHOR_IMPORTANT) &&
+           !rule->isSafe ()) {
+         MSG_WARN ("Ignoring unsafe author style that might reveal browsing history\n");
+         delete rule;
+      } else {
+         sheet[order].addRule (rule);
+      }
    }
 }

@@ -297,11 +297,13 @@ class CssProperty {
 class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
    int refCount;
    bool ownerOfStrings;
+   bool safe;
 
    public:
       inline CssPropertyList(bool ownerOfStrings = false) :
                   lout::misc::SimpleVector <CssProperty> (1) {
          refCount = 0;
+         safe = true;
          this->ownerOfStrings = ownerOfStrings;
       };
       CssPropertyList(const CssPropertyList &p, bool deep = false);
@@ -310,6 +312,7 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
       void set (CssPropertyName name, CssValueType type,
                 CssPropertyValue value);
       void apply (CssPropertyList *props);
+      bool isSafe () { return safe; };
       void print ();
       inline void ref () { refCount++; }
       inline void unref () { if (--refCount == 0) delete this; }
@@ -385,6 +388,7 @@ class CssSelector {
          return match (dt, node, selectorList->size () - 1, COMB_NONE);
       };
       int specificity ();
+      bool checksPseudoClass ();
       void print ();
       inline void ref () { refCount++; }
       inline void unref () { if (--refCount == 0) delete this; }
@@ -408,6 +412,9 @@ class CssRule {
 
       void apply (CssPropertyList *props,
                   Doctree *docTree, const DoctreeNode *node);
+      inline bool isSafe () {
+         return !selector->checksPseudoClass () || props->isSafe ();
+      };
       inline int specificity () { return spec; };
       inline int position () { return pos; };
       void print ();
