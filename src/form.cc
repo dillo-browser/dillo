@@ -279,8 +279,7 @@ static DilloHtmlInput *Html_get_radio_input(DilloHtml *html, const char *name)
 }
 
 /*
- * Get the current input.
- * Note that this _assumes_ that there _is_ a current input.
+ * Get the current input if available.
  */
 static DilloHtmlInput *Html_get_current_input(DilloHtml *html)
 {
@@ -291,7 +290,8 @@ static DilloHtmlInput *Html_get_current_input(DilloHtml *html)
    else
       inputs = html->inputs_outside_form;
 
-   return inputs->get (inputs->size() - 1);
+   return (inputs && inputs->size() > 0) ?
+            inputs->get (inputs->size() - 1) : NULL;
 }
 
 /*
@@ -607,17 +607,8 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    html->InFlags &= ~IN_FORM;
 }
 
-/*
- * The textarea tag
- */
 void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 {
-   const int MAX_COLS=1024, MAX_ROWS=10000;
-
-   char *name;
-   const char *attrbuf;
-   int cols, rows;
-
    if (html->InFlags & IN_TEXTAREA) {
       BUG_MSG("nested <textarea>\n");
       html->ReqTagClose = TRUE;
@@ -629,6 +620,19 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    }
 
    html->InFlags |= IN_TEXTAREA;
+}
+
+/*
+ * The textarea tag
+ */
+void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
+{
+   const int MAX_COLS=1024, MAX_ROWS=10000;
+
+   char *name;
+   const char *attrbuf;
+   int cols, rows;
+
    a_Html_stash_init(html);
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
 
@@ -682,7 +686,7 @@ void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
    DilloHtmlInput *input;
    int i;
 
-   if (html->InFlags & IN_TEXTAREA) {
+   if (html->InFlags & IN_TEXTAREA && !S_TOP(html)->display_none) {
       /* Remove the line ending that follows the opening tag */
       if (html->Stash->str[0] == '\r')
          dStr_erase(html->Stash, 0, 1);
@@ -703,8 +707,10 @@ void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
       /* The HTML3.2 spec says it can have "text and character entities". */
       str = a_Html_parse_entities(html, html->Stash->str, html->Stash->len);
       input = Html_get_current_input(html);
-      input->init_str = str;
-      ((MultiLineTextResource *)input->embed->getResource ())->setText(str);
+      if (input) {
+         input->init_str = str;
+         ((MultiLineTextResource *)input->embed->getResource ())->setText(str);
+      }
 
       html->InFlags &= ~IN_TEXTAREA;
    }
@@ -1913,7 +1919,8 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setPseudoLink ();
 
       /* create new image and add it to the button */
-      if ((Image = a_Html_image_new(html, tag, tagsize, url))) {
+      a_Html_image_new(html, tag, tagsize);
+      if ((Image = a_Html_image_add(html, url))) {
          IM2DW(Image)->setStyle (html->styleEngine->backgroundStyle ());
          ResourceFactory *factory = HT2LT(html)->getResourceFactory();
          ComplexButtonResource *complex_b_r =
