@@ -260,6 +260,7 @@ enum TextTransform {
 enum DisplayType {
    DISPLAY_BLOCK,
    DISPLAY_INLINE,
+   DISPLAY_INLINE_BLOCK,
    DISPLAY_LIST_ITEM,
    DISPLAY_NONE,
    DISPLAY_TABLE,
