@@ -2112,8 +2112,10 @@ DilloImage *a_Html_image_add(DilloHtml *html, DilloUrl *url)
               !dStrAsciiCasecmp(URL_SCHEME(url), "data") ||
               (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached);
 
-   if (load_now && Html_load_image(html->bw, url, html->page_url, image))
+   if (load_now && Html_load_image(html->bw, url, html->page_url, image)) {
+      a_Image_unref(hi->image);
       hi->image = NULL;
+   }
 
    return image;
 }
