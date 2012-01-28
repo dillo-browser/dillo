@@ -642,12 +642,13 @@ void DilloHtml::loadImages (const DilloUrl *pattern)
    const DilloUrl *requester = pattern ? NULL : this->page_url;
 
    for (int i = 0; i < images->size(); i++) {
-      if (images->get(i)->image) {
-         if ((!pattern) || (!a_Url_cmp(images->get(i)->url, pattern))) {
-            if (Html_load_image(bw, images->get(i)->url, requester,
-                                images->get(i)->image)) {
-               a_Image_unref (images->get(i)->image);
-               images->get(i)->image = NULL;  // web owns it now
+      DilloHtmlImage *hi = images->get(i);
+
+      if (hi->image) {
+         if ((!pattern) || (!a_Url_cmp(hi->url, pattern))) {
+            if (Html_load_image(bw, hi->url, requester, hi->image)) {
+               a_Image_unref (hi->image);
+               hi->image = NULL;  // web owns it now
             }
          }
       }
