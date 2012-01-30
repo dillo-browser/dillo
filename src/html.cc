@@ -1963,10 +1963,9 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
    html->styleEngine->inheritBackgroundColor ();
  * Read image-associated tag attributes and create new image.
  */
-void a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
+void a_Html_image_attrs(DilloHtml *html, const char *tag, int tagsize)
 {
-   DilloImage *Image;
-   char *width_ptr, *height_ptr, *alt_ptr;
+   char *width_ptr, *height_ptr;
    const char *attrbuf;
    CssLength l_w  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
    CssLength l_h  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
@@ -1976,11 +1975,6 @@ void a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
       html->styleEngine->setNonCssHint(PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
                                        attrbuf);
-   }
-   alt_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "alt", NULL);
-   if ((!alt_ptr || !*alt_ptr) && !prefs.load_images) {
-      dFree(alt_ptr);
-      alt_ptr = dStrdup("[IMG]"); // Place holder for img_off mode
    }
    width_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "width", NULL);
    height_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "height", NULL);
@@ -2011,7 +2005,7 @@ void a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
       dFree(width_ptr);
       dFree(height_ptr);
       width_ptr = height_ptr = NULL;
-      MSG("a_Html_image_new: suspicious image size request %d x %d\n", w, h);
+      MSG("a_Html_image_attrs: suspicious image size request %d x %d\n", w, h);
    } else {
       if (CSS_LENGTH_TYPE(l_w) != CSS_LENGTH_TYPE_AUTO)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
@@ -2078,46 +2072,57 @@ void a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
    }
 
    /* x_img is an index to a list of {url,image} pairs.
-    * We know Html_add_new_htmlimage() will use size() as its next index */
+    * We know a_Html_image_new() will use size() as its next index */
    html->styleEngine->setNonCssHint (PROPERTY_X_IMG, CSS_TYPE_INTEGER,
                                      html->images->size());
 
-   Image = a_Image_new(alt_ptr, 0);
-   if (HT2TB(html)->getBgColor())
-      Image->bg_color = HT2TB(html)->getBgColor()->getColor();
-
-   DilloHtmlImage *hi = dNew(DilloHtmlImage, 1);
-   hi->url = NULL;
-   hi->image = Image;
-   a_Image_ref(Image);
-
-   int n = html->images->size();
-   html->images->increase();
-   html->images->set(n, hi);
 
    dFree(width_ptr);
    dFree(height_ptr);
-   dFree(alt_ptr);
 }
 
-DilloImage *a_Html_image_add(DilloHtml *html, DilloUrl *url)
+DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
 {
    bool load_now;
-   int image_index = html->styleEngine->style()->x_img;
-   DilloHtmlImage *hi = html->images->get(image_index);
-   DilloImage *image = hi->image;
+   char *alt_ptr;
+   const char *attrbuf;
+   DilloUrl *url;
+   DilloImage *image;
 
+   if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) ||
+       !(url = a_Html_url_new(html, attrbuf, NULL, 0)))
+      return NULL;
+
+   alt_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "alt", NULL);
+   if ((!alt_ptr || !*alt_ptr) && !prefs.load_images) {
+      dFree(alt_ptr);
+      alt_ptr = dStrdup("[IMG]"); // Place holder for img_off mode
+   }
+
+   image = a_Image_new(alt_ptr, 0);
+
+   if (HT2TB(html)->getBgColor())
+      image->bg_color = HT2TB(html)->getBgColor()->getColor();
+
+   DilloHtmlImage *hi = dNew(DilloHtmlImage, 1);
    hi->url = url;
+   html->images->increase();
+   html->images->set(html->images->size() - 1, hi);
 
    load_now = prefs.load_images ||
               !dStrAsciiCasecmp(URL_SCHEME(url), "data") ||
               (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached);
 
    if (load_now && Html_load_image(html->bw, url, html->page_url, image)) {
-      a_Image_unref(hi->image);
+      // hi->image is NULL if dillo tries to load the image immediately
       hi->image = NULL;
+   } else {
+      // otherwise a reference is kept in html->images
+      hi->image = image;
+      a_Image_ref(image);
    }
 
+   dFree(alt_ptr);
    return image;
 }
 
@@ -2144,7 +2149,7 @@ static bool Html_load_image(BrowserWindow *bw, DilloUrl *url,
 
 static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_image_new(html, tag, tagsize);
+   a_Html_image_attrs(html, tag, tagsize);
 }
 
 /*
@@ -2155,23 +2160,21 @@ static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_content_img(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloImage *Image;
-   DilloUrl *url, *usemap_url;
+   DilloUrl *usemap_url;
    const char *attrbuf;
 
    /* This avoids loading images. Useful for viewing suspicious HTML email. */
    if (URL_FLAGS(html->base_url) & URL_SpamSafe)
       return;
 
-   if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) ||
-       !(url = a_Html_url_new(html, attrbuf, NULL, 0)))
+   Image = a_Html_image_new(html, tag, tagsize);
+   if (!Image)
       return;
 
    usemap_url = NULL;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "usemap")))
       /* TODO: usemap URLs outside of the document are not used. */
       usemap_url = a_Html_url_new(html, attrbuf, NULL, 0);
-
-   Image = a_Html_image_add(html, url);
 
    HT2TB(html)->addWidget((Widget*)Image->dw, html->styleEngine->style());
 

@@ -1908,30 +1908,21 @@ DilloHtmlOption::~DilloHtmlOption ()
  */
 static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
 {
-   const char *attrbuf;
    DilloImage *Image;
    Embed *button = NULL;
-   DilloUrl *url = NULL;
 
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) &&
-       (url = a_Html_url_new(html, attrbuf, NULL, 0))) {
+   html->styleEngine->setPseudoLink ();
 
-      html->styleEngine->setPseudoLink ();
-
-      /* create new image and add it to the button */
-      a_Html_image_new(html, tag, tagsize);
-      if ((Image = a_Html_image_add(html, url))) {
-         IM2DW(Image)->setStyle (html->styleEngine->backgroundStyle ());
-         ResourceFactory *factory = HT2LT(html)->getResourceFactory();
-         ComplexButtonResource *complex_b_r =
-            factory->createComplexButtonResource(IM2DW(Image), false);
-         button = new Embed(complex_b_r);
-         HT2TB(html)->addWidget (button, html->styleEngine->style ());
-//       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
-
-      } else {
-         a_Url_free(url);
-      }
+   /* create new image and add it to the button */
+   a_Html_image_attrs(html, tag, tagsize);
+   if ((Image = a_Html_image_new(html, tag, tagsize))) {
+      IM2DW(Image)->setStyle (html->styleEngine->backgroundStyle ());
+      ResourceFactory *factory = HT2LT(html)->getResourceFactory();
+      ComplexButtonResource *complex_b_r =
+         factory->createComplexButtonResource(IM2DW(Image), false);
+      button = new Embed(complex_b_r);
+      HT2TB(html)->addWidget (button, html->styleEngine->style ());
+//    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
    }
    if (!button)
       MSG("Html_input_image: unable to create image submit.\n");
