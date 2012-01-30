@@ -644,7 +644,8 @@ void DilloHtml::loadImages (const DilloUrl *pattern)
    for (int i = 0; i < images->size(); i++) {
       DilloHtmlImage *hi = images->get(i);
 
-      if (hi->image && hi->url) {
+      if (hi->image) {
+         assert(hi->url);
          if ((!pattern) || (!a_Url_cmp(hi->url, pattern))) {
             if (Html_load_image(bw, hi->url, requester, hi->image)) {
                a_Image_unref (hi->image);
