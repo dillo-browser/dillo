@@ -3096,8 +3096,6 @@ static void Html_tag_close_par(DilloHtml *html, int TagIdx)
  *     - Empty elements have both inline and block container clear.
  *       (flow have both set)
  */
-   TagOpenFunct content;
-
 
 const TagInfo Tags[] = {
  {"a", B8(010101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},

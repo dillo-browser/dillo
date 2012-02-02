@@ -35,8 +35,6 @@
    } D_STMT_END
 
 
-extern bool tagIsDisplayEnabled;
-
 /*
  * Typedefs
  */
