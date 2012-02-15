@@ -98,8 +98,6 @@ struct _DilloPng {
 } DilloPng;
 
 #define DATASIZE  (png->ipbufsize - png->ipbufstart)
-#define BLACK     0
-#define WHITE     255
 
 
 static
