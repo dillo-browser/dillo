@@ -24,11 +24,13 @@
 #endif
 
 
+#include <assert.h>
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -38,7 +40,7 @@
 #include "msg.h"
 #include "dns.h"
 #include "list.h"
-#include "timeout.hh"
+#include "IO/iowatch.hh"
 
 
 /* Maximum dns resolving threads */
@@ -48,11 +50,15 @@
 #  define D_DNS_MAX_SERVERS 1
 #endif
 
+typedef enum {
+   DNS_SERVER_IDLE,
+   DNS_SERVER_PROCESSING,
+   DNS_SERVER_RESOLVED,
+} DnsServerState_t;
 
 typedef struct {
    int channel;            /* Index of this channel [0 based] */
-   bool_t in_use;          /* boolean to tell if server is doing a lookup */
-   bool_t ip_ready;        /* boolean: is IP lookup done? */
+   DnsServerState_t state;
    Dlist *addr_list;       /* IP address */
    char *hostname;         /* Adress to resolve */
    int status;             /* errno code for resolving function */
@@ -77,7 +83,7 @@ typedef struct {
 /*
  * Forward declarations
  */
-static void Dns_timeout_client(void *data);
+static void Dns_timeout_client(int fd, void *data);
 
 /*
  * Local Data
@@ -88,6 +94,7 @@ static GDnsCache *dns_cache;
 static int dns_cache_size, dns_cache_size_max;
 static GDnsQueue *dns_queue;
 static int dns_queue_size, dns_queue_size_max;
+static int dns_notify_pipe[2];
 
 
 /* ----------------------------------------------------------------------
@@ -169,7 +176,7 @@ static void Dns_cache_add(char *hostname, Dlist *addr_list)
  */
 void a_Dns_init(void)
 {
-   int i;
+   int res, i;
 
 #ifdef D_DNS_THREADED
    MSG("dillo_dns_init: Here we go! (threaded)\n");
@@ -187,11 +194,15 @@ void a_Dns_init(void)
 
    num_servers = D_DNS_MAX_SERVERS;
 
+   res = pipe(dns_notify_pipe);
+   assert(res == 0);
+   fcntl(dns_notify_pipe[0], F_SETFL, O_NONBLOCK);
+   a_IOwatch_add_fd(dns_notify_pipe[0], DIO_READ, Dns_timeout_client, NULL);
+
    /* Initialize servers data */
    for (i = 0; i < num_servers; ++i) {
       dns_server[i].channel = i;
-      dns_server[i].in_use = FALSE;
-      dns_server[i].ip_ready = FALSE;
+      dns_server[i].state = DNS_SERVER_IDLE;
       dns_server[i].addr_list = NULL;
       dns_server[i].hostname = NULL;
       dns_server[i].status = 0;
@@ -323,7 +334,9 @@ static void *Dns_server(void *data)
       MSG(" (nil)\n");
    }
    dns_server[channel].addr_list = hosts;
-   dns_server[channel].ip_ready = TRUE;
+   dns_server[channel].state = DNS_SERVER_RESOLVED;
+
+   write(dns_notify_pipe[1], ".", 1);
 
    return NULL;                 /* (avoids a compiler warning) */
 }
@@ -339,15 +352,10 @@ static void Dns_server_req(int channel, const char *hostname)
    static int thrATTRInitialized = 0;
 #endif
 
-   dns_server[channel].in_use = TRUE;
-   dns_server[channel].ip_ready = FALSE;
+   dns_server[channel].state = DNS_SERVER_PROCESSING;
 
    dFree(dns_server[channel].hostname);
    dns_server[channel].hostname = dStrdup(hostname);
-
-   /* Let's set a timeout client to poll the server channel (5 times/sec) */
-   a_Timeout_add(0.2,Dns_timeout_client,
-                 INT2VOIDP(dns_server[channel].channel));
 
 #ifdef D_DNS_THREADED
    /* set the thread attribute to the detached state */
@@ -393,7 +401,7 @@ void a_Dns_resolve(const char *hostname, DnsCallback_t cb_func, void *cb_data)
 
       /* Find a channel we can send the request to */
       for (channel = 0; channel < num_servers; channel++)
-         if (!dns_server[channel].in_use)
+         if (dns_server[channel].state == DNS_SERVER_IDLE)
             break;
       if (channel < num_servers) {
          /* Found a free channel! */
@@ -423,7 +431,7 @@ static void Dns_serve_channel(int channel)
       }
    }
    /* set current channel free */
-   srv->in_use = FALSE;
+   srv->state = DNS_SERVER_IDLE;
 }
 
 /*
@@ -434,7 +442,7 @@ static void Dns_assign_channels(void)
    int ch, i, j;
 
    for (ch = 0; ch < num_servers; ++ch) {
-      if (dns_server[ch].in_use == FALSE) {
+      if (dns_server[ch].state == DNS_SERVER_IDLE) {
          /* Find the next query in the queue (we're a FIFO) */
          for (i = 0; i < dns_queue_size; i++)
             if (dns_queue[i].channel == -2)
@@ -457,27 +465,30 @@ static void Dns_assign_channels(void)
 }
 
 /*
- * This is a timeout function that
- * reads the DNS results and resumes the stopped jobs.
+ * This function is called on the main thread and
+ * reads the DNS results.
  */
-static void Dns_timeout_client(void *data)
+static void Dns_timeout_client(int fd, void *data)
 {
-   int channel = VOIDP2INT(data);
-   DnsServer *srv = &dns_server[channel];
+   int i;
+   char buf[16];
 
-   if (srv->ip_ready) {
-      if (srv->addr_list != NULL) {
-         /* DNS succeeded, let's cache it */
-         Dns_cache_add(srv->hostname, srv->addr_list);
+   while (read(dns_notify_pipe[0], buf, sizeof(buf)) > 0);
+
+   for (i = 0; i < num_servers; ++i) {
+      DnsServer *srv = &dns_server[i];
+
+      if (srv->state == DNS_SERVER_RESOLVED) {
+         if (srv->addr_list != NULL) {
+            /* DNS succeeded, let's cache it */
+            Dns_cache_add(srv->hostname, srv->addr_list);
+            Dns_serve_channel(i);
+         } else {
+            srv->state = DNS_SERVER_IDLE;
+         }
       }
-      Dns_serve_channel(channel);
-      Dns_assign_channels();
-      a_Timeout_remove(); /* Done! */
-
-   } else {
-      /* IP not already resolved, keep on trying... */
-      a_Timeout_repeat(0.2, Dns_timeout_client, data);
    }
+   Dns_assign_channels();
 }
 
 
@@ -497,6 +508,9 @@ void a_Dns_freeall(void)
          dFree(dList_nth_data(dns_cache[i].addr_list, j));
       dList_free(dns_cache[i].addr_list);
    }
+   a_IOwatch_remove_fd(dns_notify_pipe[0], DIO_READ);
+   close(dns_notify_pipe[0]);
+   close(dns_notify_pipe[1]);
    dFree(dns_cache);
 }
 
