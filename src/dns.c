@@ -60,7 +60,7 @@ typedef struct {
    int channel;            /* Index of this channel [0 based] */
    DnsServerState_t state;
    Dlist *addr_list;       /* IP address */
-   char *hostname;         /* Adress to resolve */
+   char *hostname;         /* Address to resolve */
    int status;             /* errno code for resolving function */
 #ifdef D_DNS_THREADED
    pthread_t th1;          /* Thread id */
