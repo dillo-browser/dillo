@@ -42,7 +42,6 @@
 #include "dw/textblock.hh"
 #include "dw/bullet.hh"
 #include "dw/listitem.hh"
-#include "dw/inlineblock.hh"
 #include "dw/image.hh"
 #include "dw/ruler.hh"
 
@@ -3449,13 +3448,6 @@ static void Html_display_block(DilloHtml *html)
    Html_add_textblock(html, 0);
 }
 
-static void Html_display_inline_block(DilloHtml *html)
-{
-   Textblock *textblock = new InlineBlock (prefs.limit_text_width);
-   HT2TB(html)->addWidget (textblock, html->styleEngine->style ());
-   S_TOP(html)->textblock = html->dw = textblock;
-}
-
 static void Html_display_listitem(DilloHtml *html)
 {
    Style *style = html->styleEngine->style ();
@@ -3551,9 +3543,6 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
             case DISPLAY_BLOCK:
                Html_display_block(html);
                break;
-            case DISPLAY_INLINE_BLOCK:
-               Html_display_inline_block(html);
-               break;
             case DISPLAY_LIST_ITEM:
                Html_display_listitem(html);
                break;
@@ -3561,6 +3550,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
                S_TOP(html)->display_none = true;
                break;
             case DISPLAY_INLINE:
+            case DISPLAY_INLINE_BLOCK: // TODO: implement inline-block
             default:
                break;
          }

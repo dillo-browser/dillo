@@ -61,8 +61,6 @@ libDw_widgets_a_SOURCES = \
 	image.hh \
 	listitem.cc \
 	listitem.hh \
-	inlineblock.cc \
-	inlineblock.hh \
 	ruler.cc \
 	ruler.hh \
 	table.cc \
