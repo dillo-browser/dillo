@@ -65,8 +65,7 @@ void *dMalloc0 (size_t size)
 
 void dFree (void *mem)
 {
-   if (mem)
-      free(mem);
+   free(mem);
 }
 
 /*
