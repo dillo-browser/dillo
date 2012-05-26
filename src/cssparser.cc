@@ -412,7 +412,7 @@ static const CssShorthandInfo Css_shorthand_info[] = {
 };
 
 #define CSS_SHORTHAND_NUM \
-   (sizeof(Css_shorthand_info) / sizeof(CssShorthandInfo))
+   (sizeof(Css_shorthand_info) / sizeof(Css_shorthand_info[0]))
 
 /* ----------------------------------------------------------------------
  *    Parsing

@@ -113,7 +113,7 @@ int PrefsParser::parseOption(char *name, char *value)
    };
 
    node = NULL;
-   for (i = 0; i < sizeof(symbols) / sizeof(SymNode_t); i++) {
+   for (i = 0; i < sizeof(symbols) / sizeof(symbols[0]); i++) {
       if (!strcmp(symbols[i].name, name)) {
          node = & (symbols[i]);
          break;

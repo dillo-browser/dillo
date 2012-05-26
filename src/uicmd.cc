@@ -1177,7 +1177,7 @@ void a_UIcmd_scroll(BrowserWindow *bw, int icmd)
       };
       KeysCommand_t keycmd = (KeysCommand_t)icmd;
 
-      for (uint_t i = 0; i < (sizeof(map)/sizeof(mapping_t)); i++) {
+      for (uint_t i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
          if (keycmd == map[i].keys_cmd) {
             layout->scroll(map[i].dw_cmd);
             break;

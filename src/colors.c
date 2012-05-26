@@ -201,7 +201,7 @@ static const struct key {
 #endif
 };
 
-#define NCOLORS   (sizeof(color_keyword) / sizeof(struct key))
+#define NCOLORS   (sizeof(color_keyword) / sizeof(color_keyword[0]))
 
 /*
  * Parse a color in hex (RRGGBB) or (RGB)
