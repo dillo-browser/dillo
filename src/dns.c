@@ -430,8 +430,6 @@ static void Dns_serve_channel(int channel)
          --i;
       }
    }
-   /* set current channel free */
-   srv->state = DNS_SERVER_IDLE;
 }
 
 /*
@@ -482,10 +480,9 @@ static void Dns_timeout_client(int fd, void *data)
          if (srv->addr_list != NULL) {
             /* DNS succeeded, let's cache it */
             Dns_cache_add(srv->hostname, srv->addr_list);
-            Dns_serve_channel(i);
-         } else {
-            srv->state = DNS_SERVER_IDLE;
          }
+         Dns_serve_channel(i);
+         srv->state = DNS_SERVER_IDLE;
       }
    }
    Dns_assign_channels();
