@@ -410,7 +410,11 @@ int main(int argc, char **argv)
 
    if (idx == argc) {
       /* No URLs/files on cmdline. Send startup screen */
-      a_UIcmd_open_url(bw, prefs.start_page);
+      if (dStrAsciiCasecmp(URL_SCHEME(prefs.start_page), "about") == 0 &&
+          strcmp(URL_PATH(prefs.start_page), "blank") == 0)
+         a_UIcmd_open_url(bw, NULL);
+      else
+         a_UIcmd_open_url(bw, prefs.start_page);
    } else {
       for (int i = idx; i < argc; i++) {
          DilloUrl *start_url = makeStartUrl(argv[i], local);
