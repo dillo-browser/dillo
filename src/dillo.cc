@@ -412,7 +412,7 @@ int main(int argc, char **argv)
       /* No URLs/files on cmdline. Send startup screen */
       if (dStrAsciiCasecmp(URL_SCHEME(prefs.start_page), "about") == 0 &&
           strcmp(URL_PATH(prefs.start_page), "blank") == 0)
-         a_UIcmd_open_url(bw, NULL);
+         a_UIcmd_open_url(bw, NULL); // NULL URL focuses location
       else
          a_UIcmd_open_url(bw, prefs.start_page);
    } else {
