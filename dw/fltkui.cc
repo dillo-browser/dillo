@@ -403,11 +403,22 @@ void FltkComplexButtonResource::widgetCallback (Fl_Widget *widget,
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
 
    if (!Fl::event_button3()) {
-      res->click_x = Fl::event_x();
-      res->click_y = Fl::event_y();
-      dw::core::EventButton event;
-      setButtonEvent(&event);
-      res->emitClicked(&event);
+      int w = widget->w(), h = widget->h();
+
+      res->click_x = Fl::event_x() - widget->x();
+      res->click_y = Fl::event_y() - widget->y();
+      if (res->style) {
+         res->click_x -= res->style->boxOffsetX();
+         res->click_y -= res->style->boxOffsetY();
+         w -= res->style->boxDiffWidth();
+         h -= res->style->boxDiffHeight();
+      }
+      if (res->click_x >= 0 && res->click_y >= 0 &&
+          res->click_x < w && res->click_y < h) {
+         dw::core::EventButton event;
+         setButtonEvent(&event);
+         res->emitClicked(&event);
+      }
    }
 }
 
