@@ -179,6 +179,8 @@ int main (int argc, char *argv[])
    puts ("---");
    h.hyphenateWord ("aber");
    puts ("---");
+   h.hyphenateWord ("ackermann");
+   puts ("---");
 
    return 0;
 }

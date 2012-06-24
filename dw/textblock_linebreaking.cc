@@ -514,7 +514,7 @@ void Textblock::accumulateWordData (int wordIndex)
        (lines->size () > 0 &&
         wordIndex == lines->getRef(lines->size () - 1)->lastWord + 1)) {
       // first word of the (not neccessarily yet existing) line
-      word->totalWidth = word->size.width;
+      word->totalWidth = word->size.width + word->hyphenWidth;
       word->totalStretchability = 0;
       word->totalShrinkability = 0;
    } else {
