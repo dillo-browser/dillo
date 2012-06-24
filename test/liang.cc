@@ -173,7 +173,7 @@ int main (int argc, char *argv[])
    puts ("---");
    h.hyphenateWord ("währenddessen");
    puts ("---");
-   h.hyphenateWord ("ückerdorf");
+   h.hyphenateWord ("ückendorf");
    puts ("---");
    h.hyphenateWord ("über");
    puts ("---");
