@@ -6,12 +6,12 @@
 
 #include "misc.hh"
 
+namespace lout {
+
 /**
  * \brief Here, some common classes (or interfaces) are defined, to standardize
  *    the access to other classes.
  */
-namespace lout {
-
 namespace object {
 
 /**

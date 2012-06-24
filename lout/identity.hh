@@ -5,12 +5,11 @@
 #include "container.hh"
 #include "signal.hh"
 
+namespace lout {
+
 /**
  * \brief Some stuff to identify classes of objects at run-time.
  */
-
-namespace lout {
-
 namespace identity {
 
 /**

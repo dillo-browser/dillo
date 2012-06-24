@@ -1,0 +1,205 @@
+/** \page dw-line-breaking Changes in Line-Breaking
+
+<div style="border: 2px solid #ff0000; padding: 0.5em 1em;
+background-color: #ffe0e0"><b>Warning:</b> Unsorted collection of
+notes. Should be incorporated into dw::Textblock.</div>
+
+<ul>
+<li>Motivation: opimized line breaking and introduction of penalties.</li>
+<li>Definition of word: hyphenationed word consists of multiple words.</li>
+<li>Splitting up: dw/textblock.cc and dw/textblock_linebreaking.cc</li>
+<li>Test HTML files in the <i>test</i> directory.</li>
+<li>Adjust dw::Textblock::HYPHEN_BREAK.</li>
+</ul>
+
+<h2>Literature</h2>
+
+Although dillo does not (yet?) implement the algorithm TeX uses for
+line breaking, this document shares much of the notation used by the
+article <i>Breaking Paragraphs Into Lines</i> by Donald E. Knuth and
+Michael F. Plass; originally published in: Software -- Practice and
+Experience <b>11</b> (1981), 1119-1184; reprinted in: <i>Digital
+Typography</i> by Donalt E. Knuth, CSLI Publications 1999. Anyway an
+interesting reading.
+
+
+<h2>Criteria for Line-Breaking</h2>
+
+Currently, a word (represented by dw::Textblock::Word) has the
+following attributes related to line-breaking:
+
+<ul>
+
+<li> the width of the word itself, represented by dw::Textblock::Word::size;
+<li> the width of the space following the word, represented by
+dw::Textblock::Word::origSpace.
+</ul>
+
+[TODO: When is breaking between two words not permitted?]
+
+In a more mathematical notation, the \f$i\f$th word has got a width
+\f$w_i\f$ and a space \f$s_i\f$.
+
+With hyphenation, the criteria are refined. Hyphenation should only be
+used when otherwise line breaking results in very large spaces. So, we
+define:
+
+<ul>
+<li>the badness \f$\beta\f$ of a line, which is the greater the more the
+spaces between the words differ from the ideal space;
+<li>a penalty \f$p\f$ for any possible break point.
+</ul>
+
+The goal is to find those break points, where \f$\beta + p\f$ is
+minimal.
+
+Examples for the penalty \f$p\f$:
+
+<ul>
+<li>0 for normal line breaks (between words);
+<li>\f$\infty\f$ to prevent a line break at all costs;
+<li>\f$-\infty\f$ to force a line <li>a value > 0 for hyphens.
+</ul>
+
+[TODO: which value exactly for hyphens?]
+
+So we need the following values:
+
+<ul>
+<li> \f$w_i\f$ (the width of the word \f$i\f$ itself);
+<li> \f$s_i\f$ (the width of the space following the word \f$i\f$);
+<li> the strechability \f$y_i\f$, a value denoting how much the space
+after word\f$i\f$ can be streched (typically \f${1\over 2} s_i\f$);	
+<li> the shrinkability \f$y_i\f$, a value denoting how much the space
+after word\f$i\f$ can be shrunken (typically \f${1\over 3} s_i\f$);
+<li> the penalty \f$p_i\f$, if the line is broken after word \f$i\f$;
+<li> a width \f$h_i\f$, which is added, when the line is broken after
+word \f$i\f$.
+</ul>
+
+\f$h_i\f$ is the width of the hyphen, if the word \f$i\f$ is a part of
+the hyphenated word (except the last part); otherwise 0.
+
+Let \f$l\f$ be the (ideal) width (length) of the line. Furthermore,
+all words from \f$a\f$ to \f$b\f$ are added to the line. \f$a\f$ is
+fixed: we do not modify the previous lines anymore; but our task is to
+find a suitable \f$b\f$.
+
+We define:
+
+\f[W_a^b = \sum_{i=a}^{b} w_i + \sum_{i=a}^{b-1} s_i + h_b\f]
+
+\f[Y_a^b = \sum_{i=a}^{b-1} y_i\f]
+
+\f[Z_a^b = \sum_{i=a}^{b-1} z_i\f]
+
+
+\f$W_a^b\f$ is the total width, \f$Y_a^b\f$ the total strechability, and
+\f$Z_a^b\f$ the total shrinkability.
+
+Furthermore the <i>adjustment ratio</i> \f$r_a^b\f$:
+
+<ul>
+<li>in the ideal case that \f$W_a^b = l\f$: \f$r_a^b = 0\f$;
+<li>if \f$W_a^b < l\f$: \f$r_a^b = (l - W_a^b) / Y_a^b\f$ (\f$r_a^b < 0\f$ in
+this case);
+<li>if \f$W_a^b > l\f$: \f$r_a^b = (l - W_a^b) / Z_a^b\f$ (\f$r_a^b < 0\f$ in
+this case).
+</ul>
+
+The badness \f$\beta_a^b\f$ is defined as follows:
+
+<ul>
+<li>if \f$r_a^b\f$ is undefined or \f$r_a^b < -1\f$: \f$\beta_a^b = \infty\f$;
+<li>otherwise: \f$\beta_a^b = |r_a^b|^3\f$
+</ul>
+
+The goal is to find the value of \f$b\f$ where \f$\beta_a^b + p_b\f$
+is minimal. (\f$a\f$ is given, since we do not modify the previous
+lines.)
+
+After a couple of words, it is not predictable weather this minimum
+has already been reached. There are two cases where this is possible
+for a given \f$b'\f$:
+
+<ul>
+<li>\f$\beta_{b'}^a = \infty\f$ (line gets too tight): \f$a \le b <
+b'\f$, the minimun has to be searched between these two values;
+<li>\f$p_{b'} = -\infty\f$ (forced line break): \f$a \le b \le b'\f$
+(there may be another minimum of \f$\beta_a^b\f$ before; note the
+\f$\le\f$ instead of \f$<\f$).
+</ul>
+
+This also means, that all lines must be finalized with a forced line
+break.
+
+[TODO: Change: only adding complete lines, which leads to "hanging"
+words; temporary lines.]
+
+<h2>Soft Hyphens</h2>
+
+Calculating the width causes some problems, since it is not required
+that the width of text "AB" is identical to the width of "A" plus the
+width of "B". Instead, kerning, ligatures etc. may lead to other
+results. For this reason, a word is also always drawn as a whole.
+
+[TODO: Translate the following text to English.]
+
+<pre>
+Als Beispiel Wort aus vier trennbaren Silben: A-B-C-D
+
+3 mögliche Trennstelle, daher 8 mögliche Trennungen (allerdings einige
+unwahrscheinlich):
+
+ABCD, ABC-D, AB-CD, AB-C-D, A-BCD, A-BC-D, A-B-CD, A-B-C-D,
+
+w sei Wortbreite, l das Ergebnis von textWidth. Zwingende Bedingungen
+(bezieht sich auf die Teile, wo kein Trennstrich vorkommt; bei
+Trennstrichen kann man eventuell improvisieren):
+
+ABCD                           => w(A) + w(B) + w(C) + w(D) = l(ABCD)
+A-BCD                          => w(B) + w(C) + w(D) = l(BCD)
+AB-CD, A-B-CD                  => w(C) + w(D) = l(CD)
+ABC-D, AB-C-D, A-BC-D, A-B-C-D => w(D) = l(D)
+
+Also einfache Berechnung:
+
+w(D) = l(D)
+w(C) = l(CD) - w(D)
+w(B) = l(BCD) - (w(C) + w(D))
+w(A) = l(ABCD) - (w(B) + w(C) + w(D))
+
+Bei den Breiten inklusive Trennstrich ergibt sich eine
+Überbestimmtheit (bei konsanter Trennstrichbreite pro Wort). Daher
+wird einfach eine feste Trennstrichbreite angenommen:
+
+w(A-)  = w(A) + l(-)
+w(AB-) = w(A) + w(B) + l(-)
+
+usw.
+</pre>
+
+<h2>Bugs</h2>
+
+<h3>Major</h3>
+
+<ul>
+<li>Collapsing spaces and collapsing margins do not work yet. (Are
+    collapsing spaces still needed anyway?)</li>
+<li>List items (and aligned table cells) have to be reviewed (usage of
+    dw::Textblock::line1Offset).</li>
+<li>Sometimes, lines are too wide. It seems that this difference is
+    exacly the width of a hyphen.
+</ul>
+
+<h3>Minor</h3>
+
+<ul>
+<li>Should dw::core::Content::BREAK still be used? Currently, this is
+    redundant to dw::Textblock::BadnessAndPenalty.</li>
+<li>The calculation of badness is designed for justified text. For
+    other alignments, it may be modified. (TODO: document this in
+    detail.)</li>
+</ul>
+
+*/

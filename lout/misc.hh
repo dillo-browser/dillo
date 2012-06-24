@@ -7,13 +7,13 @@
 #include <string.h>
 #include <assert.h>
 
+namespace lout {
+
 /**
  * \brief Miscellaneous stuff, which does not fit anywhere else.
  *
  * Actually, the other parts, beginning with ::object, depend on this.
  */
-namespace lout {
-
 namespace misc {
 
 template <class T> inline T min (T a, T b) { return a < b ? a : b; }
@@ -198,6 +198,38 @@ public:
    inline T get (int i) {
       assert (i >= 0 && this->num - i > 0);
       return this->array[i];
+   }
+
+   /**
+    * \brief Return the reference of the first element (convenience method).
+    */
+   inline T* getFirstRef () {
+      assert (this->num > 0);
+      return this->array;
+   }
+
+   /**
+    * \brief Return the first element, explicitly.
+    */
+   inline T getFirst () {
+      assert (this->num > 0);
+      return this->array[0];
+   }
+
+   /**
+    * \brief Return the reference of the last element (convenience method).
+    */
+   inline T* getLastRef () {
+      assert (this->num > 0);
+      return this->array + this->num - 1;
+   }
+
+   /**
+    * \brief Return the last element, explicitly.
+    */
+   inline T getLast () {
+      assert (this->num > 0);
+      return this->array[this->num - 1];
    }
 
    /**
