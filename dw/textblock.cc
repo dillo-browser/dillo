@@ -142,6 +142,9 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
       Line *lastLine = lines->getRef (lines->size () - 1);
       requisition->width = lastLine->maxLineWidth;
 
+      PRINTF ("[%p] SIZE_REQUEST: lastLine->maxLineWidth = %d\n",
+              this, lastLine->maxLineWidth);
+
       PRINTF ("[%p] SIZE_REQUEST: lines[0]->boxAscent = %d\n",
               this, lines->getRef(0)->boxAscent);
       PRINTF ("[%p] SIZE_REQUEST: lines[%d]->top = %d\n", 
@@ -163,6 +166,9 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
       requisition->descent = 0;
    }
 
+   PRINTF ("[%p] SIZE_REQUEST: inner padding = %d, boxDiffWidth = %d\n",
+           this, innerPadding, getStyle()->boxDiffWidth ());
+
    requisition->width += innerPadding + getStyle()->boxDiffWidth ();
    requisition->ascent += getStyle()->boxOffsetY ();
    requisition->descent += getStyle()->boxRestHeight ();
@@ -170,8 +176,8 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    if (requisition->width < availWidth)
       requisition->width = availWidth;
 
-   PRINTF("[%p] SIZE_REQUEST: %d x %d + %d\n", this, requisition->width,
-          requisition->ascent, requisition->descent);
+   PRINTF ("[%p] SIZE_REQUEST: %d x %d + %d\n", this, requisition->width,
+           requisition->ascent, requisition->descent);
 }
 
 /**
@@ -1495,7 +1501,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
     * end of this function, the correct value is assigned. */
    widget->parentRef = -1;
 
-   PRINTF("%p becomes child of %p\n", widget, this);
+   PRINTF ("%p becomes child of %p\n", widget, this);
    
    widget->setParent (this);
    widget->setStyle (style);

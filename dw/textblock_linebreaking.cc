@@ -261,6 +261,13 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    line->breakSpace = 0;
    line->leftOffset = 0;
 
+   alignLine (line);
+   for (int i = line->firstWord; i < line->lastWord; i++) {
+      Word *word = words->getRef (i);
+      lineWidth += (word->effSpace - word->origSpace);
+   }
+   
+
    if (lines->size () == 1) {
       line->top = 0;
 
@@ -301,7 +308,6 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    PRINTF ("   line[%d].contentDescent = %d\n",
            lines->size () - 1, line->contentDescent);
 
-   alignLine (line);
    mustQueueResize = true;
 
    return line;
