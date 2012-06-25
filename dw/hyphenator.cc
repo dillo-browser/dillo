@@ -16,12 +16,18 @@ using namespace lout::container::typed;
 
 namespace dw {
 
+HashTable <TypedPair <TypedPointer <core::Platform>, ConstString>,
+           Hyphenator> *Hyphenator::hyphenators =
+   new HashTable <TypedPair <TypedPointer <core::Platform>, ConstString>,
+                  Hyphenator> (true, true);
+
 Hyphenator::Hyphenator (core::Platform *platform, const char *filename)
 {
    this->platform = platform;
    tree = new HashTable <Integer, Collection <Integer> > (true, true);
 
    FILE *file = fopen (filename, "r");
+   // TODO Error handling
    while (!feof (file)) {
       char buf[LEN + 1];
       char *s = fgets (buf, LEN, file);
@@ -33,6 +39,40 @@ Hyphenator::Hyphenator (core::Platform *platform, const char *filename)
       }
    }
    fclose (file);
+}
+
+Hyphenator::~Hyphenator ()
+{
+   delete tree;
+}
+
+Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
+                                       const char *language)
+{
+   // TODO Not very efficient. Other key than TypedPair?
+   // (Keeping the parts of the pair on the stack does not help, since
+   // ~TypedPair deletes them, so they have to be kept on the heap.)
+   TypedPair <TypedPointer <core::Platform>, ConstString> *pair =
+      new TypedPair <TypedPointer <core::Platform>,
+                     ConstString> (new TypedPointer <core::Platform> (platform),
+                                   new ConstString (language));
+
+   Hyphenator *hyphenator = hyphenators->get (pair);
+   if (hyphenator)
+      delete pair;
+   else
+      {
+      // TODO Much hard-coded!
+      char filename [256];
+      sprintf (filename, "/usr/local/lib/dillo/hyphenation/%s.pat", language);
+
+      //printf ("Loading hyphenation patterns '%s' ...\n", filename);
+
+      hyphenator = new Hyphenator (platform, filename);
+      hyphenators->put (pair, hyphenator);
+   }
+
+   return hyphenator;
 }
 
 void Hyphenator::insertPattern (char *s)
@@ -92,7 +132,6 @@ Vector <String> *Hyphenator::hyphenateWord(const char *word)
 
    // If the word is an exception, get the stored points.
    // TODO
-
    char work[strlen (word) + 3];
    strcpy (work, ".");
    char *wordLc = platform->textToLower (word, strlen (word));

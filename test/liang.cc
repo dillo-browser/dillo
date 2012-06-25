@@ -4,8 +4,10 @@
 using namespace lout::object;
 using namespace lout::container::typed;
 
-void hyphenateWord (dw::Hyphenator *h, const char *word)
+void hyphenateWord (dw::core::Platform *p, const char *word)
 {
+   dw::Hyphenator *h = dw::Hyphenator::getHyphenator (p, "de");
+
    Vector <String> *pieces = h->hyphenateWord (word);
    for (int i = 0; i < pieces->size (); i++) {
       if (i != 0)
@@ -19,15 +21,14 @@ void hyphenateWord (dw::Hyphenator *h, const char *word)
 int main (int argc, char *argv[])
 {
    dw::fltk::FltkPlatform p;
-   dw::Hyphenator h (&p, "test/hyph-de-1996.pat");
 
-   hyphenateWord (&h, "Jahrhundertroman");
-   hyphenateWord (&h, "JAHRHUNDERTROMAN");
-   hyphenateWord (&h, "währenddessen");
-   hyphenateWord (&h, "Ückendorf");
-   hyphenateWord (&h, "über");
-   hyphenateWord (&h, "aber");
-   hyphenateWord (&h, "Ackermann");
+   hyphenateWord (&p, "Jahrhundertroman");
+   hyphenateWord (&p, "JAHRHUNDERTROMAN");
+   hyphenateWord (&p, "währenddessen");
+   hyphenateWord (&p, "Ückendorf");
+   hyphenateWord (&p, "über");
+   hyphenateWord (&p, "aber");
+   hyphenateWord (&p, "Ackermann");
 
    return 0;
 }

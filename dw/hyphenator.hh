@@ -7,9 +7,14 @@
 
 namespace dw {
 
-class Hyphenator
+class Hyphenator: public lout::object::Object
 {
 private:
+   static lout::container::typed::HashTable
+   <lout::object::TypedPair <lout::object::TypedPointer <core::Platform>,
+                             lout::object::ConstString>,
+    Hyphenator> *hyphenators;
+
    /*
     * Actually, only one method in Platform is needed:
     * textToLower(). And, IMO, this method is actually not platform
@@ -23,6 +28,10 @@ private:
 
 public:
    Hyphenator (core::Platform *platform, const char *filename);
+   ~Hyphenator();
+
+   static Hyphenator *getHyphenator (core::Platform *platform,
+                                     const char *language);
    
    lout::container::typed::Vector <lout::object::String>
    *hyphenateWord(const char *word);
