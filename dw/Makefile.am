@@ -57,6 +57,8 @@ libDw_widgets_a_SOURCES = \
 	alignedtextblock.hh \
 	bullet.cc \
 	bullet.hh \
+	hyphenator.cc \
+	hyphenator.hh \
 	image.cc \
 	image.hh \
 	listitem.cc \

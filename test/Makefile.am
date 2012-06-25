@@ -163,4 +163,9 @@ cookies_LDADD = \
 
 liang_SOURCES = liang.cc
 
-liang_LDADD = $(top_builddir)/lout/liblout.a
+liang_LDADD = \
+	$(top_builddir)/dw/libDw-widgets.a \
+	$(top_builddir)/dw/libDw-fltk.a \
+	$(top_builddir)/dw/libDw-core.a \
+	$(top_builddir)/lout/liblout.a \
+	@LIBFLTK_LIBS@
