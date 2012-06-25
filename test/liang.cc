@@ -13,6 +13,7 @@ void hyphenateWord (dw::Hyphenator *h, const char *word)
       printf ("%s", pieces->get(i)->chars ());
    }
    putchar ('\n');
+   delete pieces;
 }
 
 int main (int argc, char *argv[])
