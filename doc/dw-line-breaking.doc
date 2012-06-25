@@ -9,7 +9,12 @@ notes. Should be incorporated into dw::Textblock.</div>
 <li>Definition of word: hyphenationed word consists of multiple words.</li>
 <li>Splitting up: dw/textblock.cc and dw/textblock_linebreaking.cc</li>
 <li>Test HTML files in the <i>test</i> directory.</li>
-<li>Adjust dw::Textblock::HYPHEN_BREAK.</li>
+<li>Adjust dw::Textblock::HYPHEN_BREAK. Also
+dw::Textblock::Word::stretchability,
+dw::Textblock::Word::shrinkability, which are both set in
+dw::Textblock::addSpace().</li>
+
+<li>Creating a line as a whole, "invisible" words.</li>
 </ul>
 
 <h2>Literature</h2>
@@ -188,8 +193,6 @@ usw.
     collapsing spaces still needed anyway?)</li>
 <li>List items (and aligned table cells) have to be reviewed (usage of
     dw::Textblock::line1Offset).</li>
-<li>Sometimes, lines are too wide. It seems that this difference is
-    exacly the width of a hyphen.
 </ul>
 
 <h3>Minor</h3>
