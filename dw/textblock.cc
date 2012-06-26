@@ -1361,7 +1361,6 @@ void Textblock::calcTextSize (const char *text, size_t len,
       size->ascent += (style->font->ascent / 2);
 }
 
-
 /**
  * Add a word to the page structure. If it contains soft hyphens, it is
  * divided.
@@ -1390,11 +1389,14 @@ void Textblock::addText (const char *text, size_t len,
       PRINTF("', with %d hyphen(s)\n", numHyphens);
 
       // Store hyphen positions.
-      int n = 0, hyphenPos[numHyphens];
+      int n = 0, hyphenPos[numHyphens], breakPos[numHyphens];
       for (size_t i = 0; i < len - 1; i++)
          if((unsigned char)text[i] == 0xc2 &&
-            (unsigned char)text[i + 1] == 0xad)
-            hyphenPos[n++] = i;
+            (unsigned char)text[i + 1] == 0xad) {
+            hyphenPos[n] = i;
+            breakPos[n] = i - 2 * n;
+            n++;
+         }
 
       // Get text without hyphens. (There are numHyphens + 1 parts in the word,
       // and 2 * numHyphens bytes less, 2 for each hyphen, are needed.)
@@ -1412,36 +1414,10 @@ void Textblock::addText (const char *text, size_t len,
          PUTCHAR(textWithoutHyphens[i]);
       PRINTF("'\n");
 
-      // Calc sizes.
       core::Requisition wordSize[numHyphens + 1];
+      calcTextSizes (textWithoutHyphens, len - 2 * numHyphens, style,
+                     numHyphens, breakPos, wordSize);
 
-      // The size of the last part is calculated in a simple way.
-      int lastStart = hyphenPos[numHyphens - 1] + 2;
-      calcTextSize (text + lastStart, len - lastStart, style,
-                    &wordSize[numHyphens]);
-
-      PRINTF("H... [%d] '", numHyphens);
-      for (size_t i = 0; i < len - lastStart; i++)
-         PUTCHAR(text[i + lastStart]);
-      PRINTF("' -> %d\n", wordSize[numHyphens].width);
-      
-      // The rest is more complicated. TODO Documentation.
-      for (int i = numHyphens - 1; i >= 0; i--) {
-         int start = (i == 0) ? 0 : hyphenPos[i - 1] - 2 * (i - 1);
-         calcTextSize (textWithoutHyphens + start,
-                       len - 2 * numHyphens - start, style, &wordSize[i]);
-
-         PRINTF("H... [%d] '", i);
-         for (size_t j = 0; j < len - 2 * numHyphens - start; j++)
-            PUTCHAR(textWithoutHyphens[j + start]);
-         PRINTF("' -> %d\n", wordSize[i].width);
-
-         for (int j = i + 1; j < numHyphens + 1; j++) {
-            wordSize[i].width -= wordSize[j].width;
-            PRINTF("H...    - %d = %d\n", wordSize[j].width, wordSize[i].width);
-         }
-      }
- 
       // Finished!
       for (int i = 0; i < numHyphens + 1; i++) {
          int start = (i == 0) ? 0 : hyphenPos[i - 1] + 2;
@@ -1462,6 +1438,37 @@ void Textblock::addText (const char *text, size_t len,
    }
 }
 
+void Textblock::calcTextSizes (const char *text, size_t textLen,
+                               core::style::Style *style,
+                               int numBreaks, int *breakPos,
+                               core::Requisition *wordSize)
+{
+   // The size of the last part is calculated in a simple way.
+   int lastStart = breakPos[numBreaks - 1];
+   calcTextSize (text + lastStart, textLen - lastStart, style,
+                 &wordSize[numBreaks]);
+
+   PRINTF("H... [%d] '", numBreaks);
+   for (size_t i = 0; i < textLen - lastStart; i++)
+      PUTCHAR(text[i + lastStart]);
+   PRINTF("' -> %d\n", wordSize[numBreaks].width);
+
+   // The rest is more complicated. TODO Documentation.
+   for (int i = numBreaks - 1; i >= 0; i--) {
+      int start = (i == 0) ? 0 : breakPos[i - 1];
+      calcTextSize (text + start, textLen - start, style, &wordSize[i]);
+
+      PRINTF("H... [%d] '", i);
+      for (size_t j = 0; j < textLen - start; j++)
+         PUTCHAR(text[j + start]);
+      PRINTF("' -> %d\n", wordSize[i].width);
+
+      for (int j = i + 1; j < numBreaks + 1; j++) {
+         wordSize[i].width -= wordSize[j].width;
+         PRINTF("H...    - %d = %d\n", wordSize[j].width, wordSize[i].width);
+      }
+   }
+}
 
 /**
  * Add a word (without hyphens) to the page structure.

@@ -463,6 +463,10 @@ protected:
 
    void addText0 (const char *text, size_t len, bool canBeHyphenated,
                   core::style::Style *style, core::Requisition *size);
+   void calcTextSizes (const char *text, size_t textLen,
+                       core::style::Style *style,
+                       int numBreaks, int *breakPos,
+                       core::Requisition *wordSize);
 
 public:
    static int CLASS_ID;
