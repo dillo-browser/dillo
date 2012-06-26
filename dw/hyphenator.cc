@@ -117,6 +117,16 @@ void Hyphenator::insertPattern (char *s)
 }
 
 /**
+ * Simple test to avoid much costs. Passing it does not mean that the word
+ * can be hyphenated.
+ */
+bool Hyphenator::isHyphenationCandidate (const char *word)
+{
+   // Short words aren't hyphenated.
+   return (strlen (word) > 4); // TODO UTF-8?
+}   
+
+/**
  * Given a word, returns a list of pieces, broken at the possible
  * hyphenation points.
  */
@@ -124,8 +134,7 @@ Vector <String> *Hyphenator::hyphenateWord(const char *word)
 {
    Vector <String> *pieces = new Vector <String> (1, true);
 
-   // Short words aren't hyphenated.
-   if (strlen (word) <= 4) { // TODO UTF-8?
+   if (!isHyphenationCandidate (word) <= 4) {
       pieces->put (new String (word));
       return pieces;
    }

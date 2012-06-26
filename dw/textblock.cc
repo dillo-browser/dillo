@@ -1223,13 +1223,18 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
  * Add a new word (text, widget etc.) to a page.
  */
 Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
+                                     bool canBeHyphenated,
                                      core::style::Style *style)
 {
-   Word *word;
-
    words->increase ();
+   Word *word = words->getLastRef ();
+   fillWord (word, width, ascent, descent, canBeHyphenated, style);
+   return word;
+}
 
-   word = words->getRef (words->size() - 1);
+void Textblock::fillWord (Word *word, int width, int ascent, int descent,
+                          bool canBeHyphenated, core::style::Style *style)
+{
    word->size.width = width;
    word->size.ascent = ascent;
    word->size.descent = descent;
@@ -1238,19 +1243,7 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
    word->hyphenWidth = 0;
    word->badnessAndPenalty.setPenaltyProhibitBreak ();
    word->content.space = false;
-
-   //DBG_OBJ_ARRSET_NUM (this, "words.%d.size.width", words->size() - 1,
-   //                    word->size.width);
-   //DBG_OBJ_ARRSET_NUM (this, "words.%d.size.descent", words->size() - 1,
-   //                    word->size.descent);
-   //DBG_OBJ_ARRSET_NUM (this, "words.%d.size.ascent", words->size() - 1,
-   //                    word->size.ascent);
-   //DBG_OBJ_ARRSET_NUM (this, "words.%d.orig_space", words->size() - 1,
-   //                    word->orig_space);
-   //DBG_OBJ_ARRSET_NUM (this, "words.%d.effSpace", words->size() - 1,
-   //                    word->eff_space);
-   //DBG_OBJ_ARRSET_NUM (this, "words.%d.content.space", words->size() - 1,
-   //                    word->content.space);
+   word->canBeHyphenated = canBeHyphenated;
 
    word->style = style;
    word->spaceStyle = style;
@@ -1258,8 +1251,6 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
    style->ref ();
    style->ref ();
    style->ref ();
-
-   return word;
 }
 
 /*
@@ -1387,10 +1378,11 @@ void Textblock::addText (const char *text, size_t len,
          numHyphens++;
 
    if (numHyphens == 0) {
-      // Simple (and often) case: no soft hyphens.
+      // Simple (and often) case: no soft hyphens. May still be hyphenated
+      // automatically.
       core::Requisition size;
       calcTextSize (text, len, style, &size);
-      addText0 (text, len, style, &size);
+      addText0 (text, len, true, style, &size);
    } else {
       PRINTF("HYPHENATION: '");
       for (size_t i = 0; i < len; i++)
@@ -1454,7 +1446,8 @@ void Textblock::addText (const char *text, size_t len,
       for (int i = 0; i < numHyphens + 1; i++) {
          int start = (i == 0) ? 0 : hyphenPos[i - 1] + 2;
          int end = (i == numHyphens) ? len : hyphenPos[i];
-         addText0 (text + start, end - start, style, &wordSize[i]);
+         // Do not anymore hyphen automatically.
+         addText0 (text + start, end - start, false, style, &wordSize[i]);
 
          PRINTF("H... [%d] '", i);
          for (int j = start; j < end; j++)
@@ -1469,20 +1462,17 @@ void Textblock::addText (const char *text, size_t len,
    }
 }
 
+
 /**
  * Add a word (without hyphens) to the page structure.
  */
-void Textblock::addText0 (const char *text, size_t len,
+void Textblock::addText0 (const char *text, size_t len, bool canBeHyphenated,
                           core::style::Style *style, core::Requisition *size)
 {
-   Word *word;
-
-   word = addWord (size->width, size->ascent, size->descent, style);
+   Word *word = addWord (size->width, size->ascent, size->descent,
+                         canBeHyphenated, style);
    word->content.type = core::Content::TEXT;
    word->content.text = layout->textZone->strndup(text, len);
-
-   //DBG_OBJ_ARRSET_STR (page, "words.%d.content.text", words->size() - 1,
-   //                    word->content.text);
 
    wordWrap (words->size () - 1, false);
 }
@@ -1507,7 +1497,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    widget->setStyle (style);
 
    calcWidgetSize (widget, &size);
-   word = addWord (size.width, size.ascent, size.descent, style);
+   word = addWord (size.width, size.ascent, size.descent, false, style);
 
    word->content.type = core::Content::WIDGET;
    word->content.widget = widget;
@@ -1700,7 +1690,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
       return;
    }
 
-   word = addWord (0, 0, 0, style);
+   word = addWord (0, 0, 0, false, style);
    word->content.type = core::Content::BREAK;
    word->badnessAndPenalty.setPenaltyForceBreak ();
    word->content.breakSpace = space;
@@ -1718,10 +1708,11 @@ void Textblock::addLinebreak (core::style::Style *style)
        words->getRef(words->size () - 1)->content.type == core::Content::BREAK)
       // An <BR> in an empty line gets the height of the current font
       // (why would someone else place it here?), ...
-      word = addWord (0, style->font->ascent, style->font->descent, style);
+      word =
+         addWord (0, style->font->ascent, style->font->descent, false, style);
    else
       // ... otherwise, it has no size (and does not enlarge the line).
-      word = addWord (0, 0, 0, style);
+      word = addWord (0, 0, 0, false, style);
 
    word->content.type = core::Content::BREAK;
    word->badnessAndPenalty.setPenaltyForceBreak ();

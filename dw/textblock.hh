@@ -156,6 +156,7 @@ private:
    private:
       enum { TOO_LOOSE, TOO_TIGHT, BADNESS_VALUE } badnessState;
       enum { FORCE_BREAK, PROHIBIT_BREAK, PENALTY_VALUE } penaltyState;
+      int ratio; // ratio is only defined when badness is defined
       int badness, penalty;
       
       // for debugging:
@@ -173,6 +174,8 @@ private:
       void setPenaltyProhibitBreak ();
       void setPenaltyForceBreak ();
 
+      bool lineLoose ();
+      bool lineTight ();
       bool lineTooTight ();
       bool lineMustBeBroken ();
       bool lineCanBeBroken ();
@@ -227,6 +230,7 @@ protected:
                           * "hyphenWidth > 0" is also used to decide
                           * weather to draw a hyphen. */
       core::Content content;
+      bool canBeHyphenated;
 
       // accumulated values, relative to the beginning of the line
       int totalWidth;          /* The sum of all word widths; plus all
@@ -356,8 +360,10 @@ protected:
    int findLineOfWord (int wordIndex);
    Word *findWord (int x, int y, bool *inSpace);
 
-   Word *addWord (int width, int ascent, int descent,
+   Word *addWord (int width, int ascent, int descent, bool canBeHyphenated,
                   core::style::Style *style);
+   void fillWord (Word *word, int width, int ascent, int descent,
+                  bool canBeHyphenated, core::style::Style *style);
    int textWidth (const char *text, int start, int len,
                   core::style::Style *style);
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
@@ -455,8 +461,8 @@ protected:
 
    void removeChild (Widget *child);
 
-   void addText0 (const char *text, size_t len, core::style::Style *style,
-                  core::Requisition *size);
+   void addText0 (const char *text, size_t len, bool canBeHyphenated,
+                  core::style::Style *style, core::Requisition *size);
 
 public:
    static int CLASS_ID;

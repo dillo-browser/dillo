@@ -1,4 +1,5 @@
 #include "textblock.hh"
+#include "hyphenator.hh"
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 
@@ -69,7 +70,7 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
       if (totalStretchability == 0)
          badnessState = TOO_LOOSE;
       else {
-         int ratio = 100 * (idealWidth - totalWidth) / totalStretchability;
+         ratio = 100 * (idealWidth - totalWidth) / totalStretchability;
          if (ratio > 1024)
             badnessState = TOO_LOOSE;
          else {
@@ -81,13 +82,13 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
       if (totalShrinkability == 0)
          badnessState = TOO_TIGHT;
       else {
-         // Important: ratio is positive here.
-         int ratio = 100 * (totalWidth - idealWidth) / totalShrinkability;
-         if (ratio >= 100)
+         // ratio is negative here
+         ratio = 100 * (idealWidth - totalWidth) / totalShrinkability;
+         if (ratio <= - 100)
             badnessState = TOO_TIGHT;
          else {
             badnessState = BADNESS_VALUE;
-            badness = ratio * ratio * ratio;
+            badness = - ratio * ratio * ratio;
          }
       }
    }
@@ -109,10 +110,23 @@ void Textblock::BadnessAndPenalty::setPenaltyForceBreak ()
    penaltyState = FORCE_BREAK;
 }
 
+bool Textblock::BadnessAndPenalty::lineLoose ()
+{
+   return
+      badnessState == TOO_LOOSE || (badnessState == BADNESS_VALUE && ratio > 0);
+}
+
+bool Textblock::BadnessAndPenalty::lineTight ()
+{
+   return
+      badnessState == TOO_TIGHT || (badnessState == BADNESS_VALUE && ratio < 0);
+}
+
 bool Textblock::BadnessAndPenalty::lineTooTight ()
 {
    return badnessState == TOO_TIGHT;
 }
+
 
 bool Textblock::BadnessAndPenalty::lineMustBeBroken ()
 {

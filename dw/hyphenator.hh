@@ -32,6 +32,7 @@ public:
 
    static Hyphenator *getHyphenator (core::Platform *platform,
                                      const char *language);
+   static bool isHyphenationCandidate (const char *word);
    
    lout::container::typed::Vector <lout::object::String>
    *hyphenateWord(const char *word);
