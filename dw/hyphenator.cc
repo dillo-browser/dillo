@@ -177,39 +177,27 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    points.set (points.size() - 3, 0);
    
    // Examine the points to build the pieces list.
-   Vector <String> *pieces = new Vector <String> (1, true);
-   char temp[strlen (word) + 1], *ptemp = temp;
+   SimpleVector <int> breakPos (1);
 
    int n = lout::misc::min ((int)strlen (word), points.size () - 2);
    for (int i = 0; i < n; i++) {
-      char c = word[i];
-      int p = points.get(i + 2);
-      
-      *(ptemp++) = c;
-      if (p % 2) {
-         *ptemp = 0;
-         pieces->put (new String (temp));
-         ptemp = temp;
+      if (points.get(i + 2) % 2) {
+         breakPos.increase ();
+         breakPos.set (breakPos.size() - 1, i + 1);
       }
    }
 
-   *ptemp = 0;
-   pieces->put (new String (temp));
-
-   *numBreaks = pieces->size () - 1;
-   int *breakPos;
-   if (numBreaks == 0)
-      breakPos = NULL;
+   *numBreaks = breakPos.size ();
+   if (*numBreaks == 0)
+      return NULL;
    else {
-      breakPos = new int[*numBreaks];
-
+      // Could save some cycles by directly returning the array in the
+      // SimpleVector.
+      int *breakPosArray = new int[*numBreaks];
       for (int i = 0; i < *numBreaks; i++)
-         breakPos[i] =
-            strlen (pieces->get(i)->chars()) + (i == 0 ? 0 : breakPos[i - 1]);
+         breakPosArray[i] = breakPos.get(i);
+      return breakPosArray;
    }
-
-   delete pieces;
-   return breakPos;
 }
 
 } // namespace dw
