@@ -1,21 +1,23 @@
 #include "../dw/fltkcore.hh"
 #include "../dw/hyphenator.hh"
 
-using namespace lout::object;
-using namespace lout::container::typed;
-
 void hyphenateWord (dw::core::Platform *p, const char *word)
 {
    dw::Hyphenator *h = dw::Hyphenator::getHyphenator (p, "de");
-
-   Vector <String> *pieces = h->hyphenateWord (word);
-   for (int i = 0; i < pieces->size (); i++) {
+   
+   int numBreaks;
+   int *breakPos = h->hyphenateWord (word, &numBreaks);
+   for (int i = 0; i < numBreaks + 1; i++) {
       if (i != 0)
          putchar ('-');
-      printf ("%s", pieces->get(i)->chars ());
+      int start = (i == 0 ? 0 : breakPos[i - 1]);
+      int end = (i == numBreaks ? strlen (word) : breakPos[i]);
+      for (int j = start; j < end; j++)
+         putchar (word[j]);
    }
    putchar ('\n');
-   delete pieces;
+   if (breakPos)
+      delete breakPos;
 }
 
 int main (int argc, char *argv[])

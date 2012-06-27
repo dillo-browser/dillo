@@ -503,18 +503,9 @@ void Textblock::hyphenateWord (int wordIndex)
    Hyphenator *hyphenator =
       Hyphenator::getHyphenator (layout->getPlatform (), "de"); // TODO lang
    
-   // TODO Change interface of Hyphenator.
-   container::typed::Vector <object::String> *pieces =
-      hyphenator->hyphenateWord (word->content.text);
-   if (pieces->size () > 1) {
-      int numBreaks = pieces->size () - 1;
-      int breakPos[numBreaks];
-      for (int i = 0; i < numBreaks; i++)
-         breakPos[i] =
-            strlen (pieces->get(i)->chars()) + (i == 0 ? 0 : breakPos[i - 1]);
-
-      for (int i = 0; i < numBreaks; i++)
-         printf ("      breakPos[%d]: %d\n", i, breakPos[i]);
+   int numBreaks;
+   int *breakPos = hyphenator->hyphenateWord (word->content.text, &numBreaks);
+   if (numBreaks > 0) {
 
       // TODO unref also spaceStyle and hyphenStyle
       
@@ -575,10 +566,10 @@ void Textblock::hyphenateWord (int wordIndex)
       
       //delete origText; TODO: Via textZone?
       origStyle->unref ();
+
+      delete breakPos;
    } else
       word->canBeHyphenated = false;
-
-   delete pieces;
 }
 
 void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)

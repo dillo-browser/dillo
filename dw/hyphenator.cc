@@ -130,7 +130,7 @@ bool Hyphenator::isHyphenationCandidate (const char *word)
  * Given a word, returns a list of pieces, broken at the possible
  * hyphenation points.
  */
-Vector <String> *Hyphenator::hyphenateWord(const char *word)
+Vector <String> *Hyphenator::_hyphenateWord(const char *word)
 {
    Vector <String> *pieces = new Vector <String> (1, true);
 
@@ -205,6 +205,25 @@ Vector <String> *Hyphenator::hyphenateWord(const char *word)
    pieces->put (new String (temp));
          
    return pieces;
+}
+
+int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
+{
+   Vector <String> *pieces = _hyphenateWord (word);
+   *numBreaks = pieces->size () - 1;
+   int *breakPos;
+   if (numBreaks == 0)
+      breakPos = NULL;
+   else {
+      breakPos = new int[*numBreaks];
+
+      for (int i = 0; i < *numBreaks; i++)
+         breakPos[i] =
+            strlen (pieces->get(i)->chars()) + (i == 0 ? 0 : breakPos[i - 1]);
+   }
+
+   delete pieces;
+   return breakPos;
 }
 
 } // namespace dw
