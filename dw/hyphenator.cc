@@ -13,6 +13,7 @@
 
 using namespace lout::object;
 using namespace lout::container::typed;
+using namespace lout::misc;
 
 namespace dw {
 
@@ -146,9 +147,8 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    strcat (work, ".");
    
    int l = strlen (work);
-   Vector <Integer> points (l + 1, true);
-   for (int i = 0; i < l + 1; i++)
-      points.put (new Integer (0), i);
+   SimpleVector <int> points (l + 1);
+   points.setSize (l + 1, 0);
 
    Integer null (0);
 
@@ -161,15 +161,9 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
             if (t->contains (&null)) {
                Vector <Integer> *p = (Vector <Integer>*) t->get (&null);
 
-               for (int k = 0; k < p->size (); k++) {
-                  Integer *v1 = points.get (i + k);
-                  Integer *v2 = p->get (k);
-                  // TODO Not very efficient, especially here: too much
-                  // calls of "new"
-                  points.put(new Integer (lout::misc::max (v1->getValue (),
-                                                           v2->getValue ())),
-                             i + k);
-               }
+               for (int k = 0; k < p->size (); k++)
+                  points.set(i + k, lout::misc::max (points.get (i + k),
+                                                     p->get(k)->getValue()));
             }
          } else
             break;
@@ -177,10 +171,10 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    }  
 
    // No hyphens in the first two chars or the last two.
-   points.put (new Integer (0), 1);
-   points.put (new Integer (0), 2);
-   points.put (new Integer (0), points.size () - 2);
-   points.put (new Integer (0), points.size () - 3);
+   points.set (1, 0);
+   points.set (2, 0);
+   points.set (points.size() - 2, 0);
+   points.set (points.size() - 3, 0);
    
    // Examine the points to build the pieces list.
    Vector <String> *pieces = new Vector <String> (1, true);
@@ -189,7 +183,7 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    int n = lout::misc::min ((int)strlen (word), points.size () - 2);
    for (int i = 0; i < n; i++) {
       char c = word[i];
-      int p = points.get(i + 2)->getValue ();
+      int p = points.get(i + 2);
       
       *(ptemp++) = c;
       if (p % 2) {
