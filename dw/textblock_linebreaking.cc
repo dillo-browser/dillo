@@ -398,71 +398,187 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          
          accumulateWordData (wordIndex);
 
-         int breakPos = -1;
-         for (int i = firstIndex; i <= searchUntil; i++) {
-            Word *w = words->getRef(i);
+         bool lineAdded;
+         do {
+            int breakPos = -1;
+            for (int i = firstIndex; i <= searchUntil; i++) {
+               Word *w = words->getRef(i);
+               
+               if(word->content.type && core::Content::REAL_CONTENT) {
+                  PRINTF ("      %d (of %d): ", i, words->size ());
 
-            if(word->content.type && core::Content::REAL_CONTENT) {
-               PRINTF ("      %d (of %d): ", i, words->size ());
-
-               switch(w->content.type) {
-               case core::Content::TEXT:
-                  PRINTF ("\"%s\"", w->content.text);
-                  break;
-               case core::Content::WIDGET:
-                  PRINTF ("<widget: %p>\n", w->content.widget);
-                  break;
-               case core::Content::BREAK:
-                  PRINTF ("<break>\n");
-                  break;
-               default:
-                  PRINTF ("<?>\n");
-                  break;                 
+                  switch(w->content.type) {
+                  case core::Content::TEXT:
+                     PRINTF ("\"%s\"", w->content.text);
+                     break;
+                  case core::Content::WIDGET:
+                     PRINTF ("<widget: %p>\n", w->content.widget);
+                     break;
+                  case core::Content::BREAK:
+                     PRINTF ("<break>\n");
+                     break;
+                  default:
+                     PRINTF ("<?>\n");
+                     break;                 
+                  }
+                  
+                  PRINTF (" [%d / %d + %d - %d] => ",
+                          w->size.width, w->origSpace, w->stretchability,
+                          w->shrinkability);
+                  w->badnessAndPenalty.print ();
+                  PRINTF ("\n");
                }
-
-               PRINTF (" [%d / %d + %d - %d] => ",
-                       w->size.width, w->origSpace, w->stretchability,
-                       w->shrinkability);
-               w->badnessAndPenalty.print ();
-               PRINTF ("\n");
+               
+               
+               // TODO: is this condition needed:
+               // if(w->badnessAndPenalty.lineCanBeBroken ()) ?
+               
+               if (breakPos == -1 ||
+                   w->badnessAndPenalty.compareTo
+                   (&words->getRef(breakPos)->badnessAndPenalty) <= 0)
+                  // "<=" instead of "<" in the next lines tends to result in
+                  // more words per line -- theoretically. Practically, the
+                  // case "==" will never occur.
+                  breakPos = i;
             }
             
+            if (wrapAll && searchUntil == words->size () - 1) {
+               // Since no break and no space is added, the last word
+               // will have a penalty of inf. Actually, it should be -inf,
+               // since it is the last word. However, since more words may
+               // follow, the penalty is not changesd, but here, the search
+               // is corrected (maybe only temporary).
+               Word *lastWord = words->getRef (searchUntil);
+               BadnessAndPenalty correctedBap = lastWord->badnessAndPenalty;
+               correctedBap.setPenaltyForceBreak ();
+               if (correctedBap.compareTo
+                   (&words->getRef(breakPos)->badnessAndPenalty) <= 0)
+                  breakPos = searchUntil;
+            }
 
-            // TODO: is this condition needed:
-            // if(w->badnessAndPenalty.lineCanBeBroken ()) ?
+            PRINTF ("breakPos = %d\n", breakPos);
 
-            if (breakPos == -1 ||
-                w->badnessAndPenalty.compareTo
-                (&words->getRef(breakPos)->badnessAndPenalty) <= 0)
-               // "<=" instead of "<" in the next lines tends to result in more
-               // words per line -- theoretically. Practically, the case "=="
-               // will never occur.
-               breakPos = i;
-         }
+            int hyphenatedWord = -1;
+            Word *word1 = words->getRef(breakPos);
+            if (word1->badnessAndPenalty.lineTight () &&
+                word1->canBeHyphenated &&
+                word1->content.type == core::Content::TEXT &&
+                Hyphenator::isHyphenationCandidate (word1->content.text))
+               hyphenatedWord = breakPos;
+            
+            if (word1->badnessAndPenalty.lineLoose () &&
+                breakPos + 1 < words->size ()) {
+               Word *word2 = words->getRef(breakPos + 1);
+               if (word2->canBeHyphenated &&
+                   word2->content.type == core::Content::TEXT  &&
+                   Hyphenator::isHyphenationCandidate (word2->content.text))
+                  hyphenatedWord = breakPos + 1;
+            }
 
-         if (wrapAll && searchUntil == words->size () - 1) {
-            // Since no break and no space is added, the last word
-            // will have a penalty of inf. Actually, it should be -inf,
-            // since it is the last word. However, since more words may
-            // follow, the penalty is not changesd, but here, the search
-            // is corrected (maybe only temporary).
-            Word *lastWord = words->getRef (searchUntil);
-            BadnessAndPenalty correctedBap = lastWord->badnessAndPenalty;
-            correctedBap.setPenaltyForceBreak ();
-            if (correctedBap.compareTo
-                (&words->getRef(breakPos)->badnessAndPenalty) <= 0)
-               breakPos = searchUntil;
-         }
+            if(hyphenatedWord == -1) {
+               PRINTF ("   new line from %d to %d\n", firstIndex, breakPos);
+               addLine (firstIndex, breakPos, tempNewLine);
+               lineAdded = true;
+               PRINTF ("   accumulating again from %d to %d\n",
+                       breakPos + 1, wordIndex);
+            } else {
+               hyphenateWord (hyphenatedWord);
+               lineAdded = false;
+            }
+            
+            for(int i = breakPos + 1; i <= wordIndex; i++)
+               accumulateWordData (i);
 
-         PRINTF ("   new line from %d to %d\n", firstIndex, breakPos);
-         addLine (firstIndex, breakPos, tempNewLine);
-         PRINTF ("   accumulating again from %d to %d\n",
-                 breakPos + 1, wordIndex);
-
-         for(int i = breakPos + 1; i <= wordIndex; i++)
-            accumulateWordData (i);
+         } while(!lineAdded);
       }
    } while (newLine);
+}
+
+void Textblock::hyphenateWord (int wordIndex)
+{
+   Word *word = words->getRef(wordIndex);
+   printf ("   considering to hyphenate word %d: '%s'\n",
+           wordIndex, word->content.text);
+
+   Hyphenator *hyphenator =
+      Hyphenator::getHyphenator (layout->getPlatform (), "de"); // TODO lang
+   
+   // TODO Change interface of Hyphenator.
+   container::typed::Vector <object::String> *pieces =
+      hyphenator->hyphenateWord (word->content.text);
+   if (pieces->size () > 1) {
+      int numBreaks = pieces->size () - 1;
+      int breakPos[numBreaks];
+      for (int i = 0; i < numBreaks; i++)
+         breakPos[i] =
+            strlen (pieces->get(i)->chars()) + (i == 0 ? 0 : breakPos[i - 1]);
+
+      for (int i = 0; i < numBreaks; i++)
+         printf ("      breakPos[%d]: %d\n", i, breakPos[i]);
+
+      // TODO unref also spaceStyle and hyphenStyle
+      
+      const char *origText = word->content.text;
+      int lenOrigText = strlen (origText);
+      core::style::Style *origStyle = word->style;
+      core::Requisition wordSize[numBreaks + 1];
+      
+      calcTextSizes (origText, lenOrigText, origStyle, numBreaks, breakPos,
+                     wordSize);
+      
+      printf ("      ... %d words ...\n", words->size ());
+      words->insert (wordIndex, numBreaks);
+      printf ("      ... -> %d words.\n", words->size ());
+
+      for (int i = 0; i < numBreaks + 1; i++) {
+         Word *w = words->getRef (wordIndex + i);
+
+         fillWord (w, wordSize[i].width, wordSize[i].ascent,
+                   wordSize[i].descent, false, origStyle);
+
+         // TODO There should be a method fillText0.
+         w->content.type = core::Content::TEXT;
+
+         int start = (i == 0 ? 0 : breakPos[i - 1]);
+         int end = (i == numBreaks ? lenOrigText : breakPos[i]);
+         w->content.text =
+            layout->textZone->strndup(origText + start, end - start);
+         //printf ("      '%s' from %d to %d => '%s'\n",
+         //        origText, start, end, w->content.text);
+
+         printf ("      [%d] -> '%s'\n", wordIndex + i, w->content.text);
+
+         if (i < numBreaks - 1) {
+            // TODO There should be a method fillHyphen.
+            w->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
+            w->hyphenWidth = layout->textWidth (origStyle->font, "\xc2\xad", 2);
+         } else  {
+            // TODO There should be a method fillSpace.
+            // TODO Add original space.
+#if 0
+            w->badnessAndPenalty.setPenalty (0);
+            w->content.space = true;
+            w->effSpace = word->origSpace = origStyle->font->spaceWidth +
+               origStyle->wordSpacing;
+            w->stretchability = w->origSpace / 2;
+            if(origStyle->textAlign == core::style::TEXT_ALIGN_JUSTIFY)
+               w->shrinkability = w->origSpace / 3;
+            else
+               w->shrinkability = 0;
+#endif
+         }
+
+         accumulateWordData (wordIndex + i);
+      }
+
+      printf ("   finished\n");
+      
+      //delete origText; TODO: Via textZone?
+      origStyle->unref ();
+   } else
+      word->canBeHyphenated = false;
+
+   delete pieces;
 }
 
 void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)

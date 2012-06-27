@@ -435,6 +435,7 @@ protected:
    void accumulateWordExtremees (int firstWord, int lastWord,
                                  int *maxOfMinWidth, int *sumOfMaxWidth);
    virtual void wordWrap (int wordIndex, bool wrapAll);
+   void hyphenateWord (int wordIndex);
    void accumulateWordForLine (int lineIndex, int wordIndex);
    void accumulateWordData(int wordIndex);
    int calcAvailWidth ();

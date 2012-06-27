@@ -31,6 +31,8 @@ int main (int argc, char *argv[])
    hyphenateWord (&p, "Ackermann");
    hyphenateWord (&p, "Grundstücksverkehrsgenehmigungszuständigkeits"
                   "übertragungsverordnung");
+   hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeits"
+                  "übertragungsverordnung“");
 
    return 0;
 }

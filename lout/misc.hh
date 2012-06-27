@@ -167,6 +167,15 @@ public:
       this->resize ();
    }
 
+   inline void insert(int index, int numInsert) {
+      // TODO "transparent delay", for hyphenation
+      assert (numInsert >= 0);
+      this->num += numInsert;
+      this->resize ();
+      for (int i = this->num - 1; i >= index + numInsert; i--)
+         array[i] = array[i - numInsert];
+   }
+
    /**
     * \brief Set the size explicitly and initialize new values.
     *

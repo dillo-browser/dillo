@@ -134,7 +134,7 @@ Vector <String> *Hyphenator::hyphenateWord(const char *word)
 {
    Vector <String> *pieces = new Vector <String> (1, true);
 
-   if (!isHyphenationCandidate (word) <= 4) {
+   if (!isHyphenationCandidate (word)) {
       pieces->put (new String (word));
       return pieces;
    }
@@ -184,7 +184,7 @@ Vector <String> *Hyphenator::hyphenateWord(const char *word)
    points.put (new Integer (0), 2);
    points.put (new Integer (0), points.size () - 2);
    points.put (new Integer (0), points.size () - 3);
- 
+   
    // Examine the points to build the pieces list.
    char temp[strlen (word) + 1], *ptemp = temp;
 
