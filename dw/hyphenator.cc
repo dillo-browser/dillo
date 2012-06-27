@@ -127,16 +127,13 @@ bool Hyphenator::isHyphenationCandidate (const char *word)
 }   
 
 /**
- * Given a word, returns a list of pieces, broken at the possible
- * hyphenation points.
+ * Given a word, returns a list of the possible hyphenation points.
  */
-Vector <String> *Hyphenator::_hyphenateWord(const char *word)
+int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
 {
-   Vector <String> *pieces = new Vector <String> (1, true);
-
    if (!isHyphenationCandidate (word)) {
-      pieces->put (new String (word));
-      return pieces;
+      *numBreaks = 0;
+      return NULL;
    }
 
    // If the word is an exception, get the stored points.
@@ -186,6 +183,7 @@ Vector <String> *Hyphenator::_hyphenateWord(const char *word)
    points.put (new Integer (0), points.size () - 3);
    
    // Examine the points to build the pieces list.
+   Vector <String> *pieces = new Vector <String> (1, true);
    char temp[strlen (word) + 1], *ptemp = temp;
 
    int n = lout::misc::min ((int)strlen (word), points.size () - 2);
@@ -203,13 +201,7 @@ Vector <String> *Hyphenator::_hyphenateWord(const char *word)
 
    *ptemp = 0;
    pieces->put (new String (temp));
-         
-   return pieces;
-}
 
-int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
-{
-   Vector <String> *pieces = _hyphenateWord (word);
    *numBreaks = pieces->size () - 1;
    int *breakPos;
    if (numBreaks == 0)

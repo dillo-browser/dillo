@@ -26,9 +26,6 @@ private:
                                       <lout::object::Integer> > *tree;
    void insertPattern (char *s);
 
-   lout::container::typed::Vector <lout::object::String>
-   *_hyphenateWord(const char *word);
-
 public:
    Hyphenator (core::Platform *platform, const char *filename);
    ~Hyphenator();
@@ -36,7 +33,6 @@ public:
    static Hyphenator *getHyphenator (core::Platform *platform,
                                      const char *language);
    static bool isHyphenationCandidate (const char *word);
-   
    int *hyphenateWord(const char *word, int *numBreaks);
 };
 
