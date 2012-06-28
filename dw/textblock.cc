@@ -108,7 +108,6 @@ Textblock::~Textblock ()
          delete word->content.widget;
       word->style->unref ();
       word->spaceStyle->unref ();
-      word->hyphenStyle->unref ();
    }
 
    for (int i = 0; i < anchors->size(); i++) {
@@ -1247,8 +1246,6 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
 
    word->style = style;
    word->spaceStyle = style;
-   word->hyphenStyle = style;
-   style->ref ();
    style->ref ();
    style->ref ();
 }
@@ -1431,7 +1428,7 @@ void Textblock::addText (const char *text, size_t len,
          PRINTF("' added\n");
 
          if(i < numHyphens) {
-            addHyphen (style);
+            addHyphen ();
             PRINTF("H... yphen added\n");
          }
       }
@@ -1608,7 +1605,7 @@ void Textblock::addSpace (core::style::Style *style)
    }
 }
 
-void Textblock::addHyphen (core::style::Style *style)
+void Textblock::addHyphen ()
 {
    int wordIndex = words->size () - 1;
 
@@ -1618,11 +1615,7 @@ void Textblock::addHyphen (core::style::Style *style)
       word->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
       //word->penalty = 0;
       // TODO Optimize? Like spaces?
-      word->hyphenWidth = layout->textWidth (style->font, "\xc2\xad", 2);
-
-      word->hyphenStyle->unref ();
-      word->hyphenStyle = style;
-      style->ref ();
+      word->hyphenWidth = layout->textWidth (word->style->font, "\xc2\xad", 2);
 
       accumulateWordData (wordIndex);
    }

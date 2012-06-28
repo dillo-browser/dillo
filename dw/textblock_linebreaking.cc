@@ -507,7 +507,7 @@ void Textblock::hyphenateWord (int wordIndex)
    int *breakPos = hyphenator->hyphenateWord (word->content.text, &numBreaks);
    if (numBreaks > 0) {
 
-      // TODO unref also spaceStyle and hyphenStyle
+      // TODO unref also spaceStyle
       
       const char *origText = word->content.text;
       int lenOrigText = strlen (origText);

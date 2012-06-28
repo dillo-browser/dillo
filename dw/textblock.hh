@@ -249,7 +249,6 @@ protected:
       core::style::Style *style;
       core::style::Style *spaceStyle; /* initially the same as of the word,
                                          later set by a_Dw_page_add_space */
-      core::style::Style *hyphenStyle;
    };
 
    struct Anchor
@@ -496,7 +495,7 @@ public:
          words->getRef(wordIndex)->badnessAndPenalty.setPenaltyForceBreak ();
    }
 
-   void addHyphen(core::style::Style *style);
+   void addHyphen();
    void addParbreak (int space, core::style::Style *style);
    void addLinebreak (core::style::Style *style);
 
