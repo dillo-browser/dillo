@@ -351,6 +351,9 @@ void Textblock::accumulateWordExtremees (int firstWord, int lastWord,
  */
 void Textblock::wordWrap (int wordIndex, bool wrapAll)
 {
+   PRINTF ("[%p] WORD_WRAP (%d, %s)\n",
+           this, wordIndex, wrapAll ? "true" : "false");
+
    Word *word;
    //core::Extremes wordExtremes;
 
@@ -375,12 +378,12 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          newLine = true;
          searchUntil = wordIndex;
          tempNewLine = true;
-         PRINTF ("NEW LINE: last word\n");
+         PRINTF ("   NEW LINE: last word\n");
       } else if (wordIndex >= firstIndex &&
           word->badnessAndPenalty.lineMustBeBroken ()) {
          newLine = true;
          searchUntil = wordIndex;
-         PRINTF ("NEW LINE: forced break\n");
+         PRINTF ("   NEW LINE: forced break\n");
       } else if (wordIndex > firstIndex &&
                  word->badnessAndPenalty.lineTooTight () &&
                  words->getRef(wordIndex- 1)
@@ -389,17 +392,17 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          // searched for)
          newLine = true;
          searchUntil = wordIndex - 1;
-         PRINTF ("NEW LINE: line too tight\n");
+         PRINTF ("   NEW LINE: line too tight\n");
       } else
          newLine = false;
 
-      if(newLine) {
-         PRINTF ("   searching from %d to %d\n", firstIndex, searchUntil);
-         
+      if(newLine) {        
          accumulateWordData (wordIndex);
 
          bool lineAdded;
          do {
+            PRINTF ("   searching from %d to %d\n", firstIndex, searchUntil);
+
             int breakPos = -1;
             for (int i = firstIndex; i <= searchUntil; i++) {
                Word *w = words->getRef(i);
@@ -456,8 +459,6 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                   breakPos = searchUntil;
             }
 
-            PRINTF ("breakPos = %d\n", breakPos);
-
             int hyphenatedWord = -1;
             Word *word1 = words->getRef(breakPos);
             if (word1->badnessAndPenalty.lineTight () &&
@@ -475,14 +476,24 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                   hyphenatedWord = breakPos + 1;
             }
 
+            PRINTF ("[%p] breakPos = %d, hyphenatedWord = %d\n",
+                    this, breakPos, hyphenatedWord);
+
             if(hyphenatedWord == -1) {
-               PRINTF ("   new line from %d to %d\n", firstIndex, breakPos);
                addLine (firstIndex, breakPos, tempNewLine);
+               PRINTF ("[%p]    new line %d (%s), from %d to %d\n",
+                       this, lines->size() - 1,
+                       tempNewLine ? "temporally" : "permanently",
+                       firstIndex, breakPos);
                lineAdded = true;
                PRINTF ("   accumulating again from %d to %d\n",
                        breakPos + 1, wordIndex);
             } else {
-               hyphenateWord (hyphenatedWord);
+               // TODO hyphenateWord() should return weather something has
+               // changed at all. So that a second run, with
+               // !word->canBeHyphenated, is unneccessary.
+               // TODO Update: for this, searchUntil == 0 should be checked.
+               searchUntil += hyphenateWord (hyphenatedWord);
                lineAdded = false;
             }
             
@@ -494,82 +505,71 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
    } while (newLine);
 }
 
-void Textblock::hyphenateWord (int wordIndex)
+int Textblock::hyphenateWord (int wordIndex)
 {
-   Word *word = words->getRef(wordIndex);
-   printf ("   considering to hyphenate word %d: '%s'\n",
-           wordIndex, word->content.text);
+   PRINTF ("[%p]    considering to hyphenate word %d: '%s'\n",
+           this, wordIndex, words->getRef(wordIndex)->content.text);
 
    Hyphenator *hyphenator =
       Hyphenator::getHyphenator (layout->getPlatform (), "de"); // TODO lang
    
    int numBreaks;
-   int *breakPos = hyphenator->hyphenateWord (word->content.text, &numBreaks);
+   int *breakPos =
+      hyphenator->hyphenateWord (words->getRef(wordIndex)->content.text,
+                                 &numBreaks);
    if (numBreaks > 0) {
+      Word origWord = words->get(wordIndex);
 
-      // TODO unref also spaceStyle
-      
-      const char *origText = word->content.text;
-      int lenOrigText = strlen (origText);
-      core::style::Style *origStyle = word->style;
       core::Requisition wordSize[numBreaks + 1];
+      calcTextSizes (origWord.content.text, strlen (origWord.content.text),
+                     origWord.style, numBreaks, breakPos, wordSize);
       
-      calcTextSizes (origText, lenOrigText, origStyle, numBreaks, breakPos,
-                     wordSize);
-      
-      printf ("      ... %d words ...\n", words->size ());
+      PRINTF ("[%p]       %d words ...\n", this, words->size ());
       words->insert (wordIndex, numBreaks);
-      printf ("      ... -> %d words.\n", words->size ());
+      PRINTF ("[%p]       ... => %d words\n", this, words->size ());
 
       for (int i = 0; i < numBreaks + 1; i++) {
          Word *w = words->getRef (wordIndex + i);
 
          fillWord (w, wordSize[i].width, wordSize[i].ascent,
-                   wordSize[i].descent, false, origStyle);
+                   wordSize[i].descent, false, origWord.style);
 
          // TODO There should be a method fillText0.
          w->content.type = core::Content::TEXT;
 
          int start = (i == 0 ? 0 : breakPos[i - 1]);
-         int end = (i == numBreaks ? lenOrigText : breakPos[i]);
+         int end = (i == numBreaks ?
+                    strlen (origWord.content.text) : breakPos[i]);
          w->content.text =
-            layout->textZone->strndup(origText + start, end - start);
-         //printf ("      '%s' from %d to %d => '%s'\n",
-         //        origText, start, end, w->content.text);
-
-         printf ("      [%d] -> '%s'\n", wordIndex + i, w->content.text);
+            layout->textZone->strndup (origWord.content.text + start,
+                                       end - start);
+         PRINTF ("      [%d] -> '%s'\n", wordIndex + i, w->content.text);
 
          if (i < numBreaks - 1) {
             // TODO There should be a method fillHyphen.
             w->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
-            w->hyphenWidth = layout->textWidth (origStyle->font, "\xc2\xad", 2);
-         } else  {
-            // TODO There should be a method fillSpace.
-            // TODO Add original space.
-#if 0
-            w->badnessAndPenalty.setPenalty (0);
-            w->content.space = true;
-            w->effSpace = word->origSpace = origStyle->font->spaceWidth +
-               origStyle->wordSpacing;
-            w->stretchability = w->origSpace / 2;
-            if(origStyle->textAlign == core::style::TEXT_ALIGN_JUSTIFY)
-               w->shrinkability = w->origSpace / 3;
-            else
-               w->shrinkability = 0;
-#endif
+            w->hyphenWidth =
+               layout->textWidth (origWord.style->font, "\xc2\xad", 2);
+         } else {
+            if (origWord.content.space)
+               fillSpace (w, origWord.spaceStyle);
          }
 
          accumulateWordData (wordIndex + i);
       }
 
-      printf ("   finished\n");
+      PRINTF ("   finished\n");
       
-      //delete origText; TODO: Via textZone?
-      origStyle->unref ();
+      //delete origword->content.text; TODO: Via textZone?
+      origWord.style->unref ();
+      origWord.spaceStyle->unref ();
 
       delete breakPos;
-   } else
-      word->canBeHyphenated = false;
+   } else {
+      words->getRef(wordIndex)->canBeHyphenated = false;
+   }
+
+   return numBreaks;
 }
 
 void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)

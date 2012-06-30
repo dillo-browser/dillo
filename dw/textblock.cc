@@ -448,6 +448,8 @@ void Textblock::markExtremesChange (int ref)
  */
 void Textblock::markChange (int ref)
 {
+   PRINTF ("[%p] MARK_CHANGE (%d): %d => ...\n", this, ref, wrapRef);
+
    /* By the way: ref == -1 may have two different causes: (i) flush()
       calls "queueResize (-1, true)", when no rewrapping is necessary;
       and (ii) a word may have parentRef == -1 , when it is not yet
@@ -460,7 +462,7 @@ void Textblock::markChange (int ref)
          wrapRef = misc::min (wrapRef, ref);
    }
 
-   PRINTF ("[%p] MARK_CHANGE (%d) => %d\n", this, ref, wrapRef);
+   PRINTF ("       ... => %d\n", wrapRef);
 }
 
 void Textblock::setWidth (int width)
@@ -1566,42 +1568,43 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
 void Textblock::addSpace (core::style::Style *style)
 {
    int wordIndex = words->size () - 1;
-
    if (wordIndex >= 0) {
-      Word *word = words->getRef(wordIndex);
+      fillSpace (words->getRef(wordIndex), style);
+      accumulateWordData (wordIndex);
+   }
+}
 
-      // According to http://www.w3.org/TR/CSS2/text.html#white-space-model:
-      // "line breaking opportunities are determined based on the text prior
-      //  to the white space collapsing steps".
-      // So we call addBreakOption () for each Textblock::addSpace () call.
-      // This is important e.g. to be able to break between foo and bar in:
-      // <span style="white-space:nowrap">foo </span> bar
-      addBreakOption (style);
+void Textblock::fillSpace (Word *word, core::style::Style *style)
+{
+   // According to http://www.w3.org/TR/CSS2/text.html#white-space-model:
+   // "line breaking opportunities are determined based on the text prior
+   //  to the white space collapsing steps".
+   // So we call addBreakOption () for each Textblock::addSpace () call.
+   // This is important e.g. to be able to break between foo and bar in:
+   // <span style="white-space:nowrap">foo </span> bar
+   addBreakOption (style);
 
-      if (!word->content.space) {
-         word->badnessAndPenalty.setPenalty (0);
-         word->content.space = true;
-         word->effSpace = word->origSpace = style->font->spaceWidth +
-                                            style->wordSpacing;
-         word->stretchability = word->origSpace / 2;
-         if(style->textAlign == core::style::TEXT_ALIGN_JUSTIFY)
-            word->shrinkability = word->origSpace / 3;
-         else
-            word->shrinkability = 0;
+   if (!word->content.space) {
+      word->badnessAndPenalty.setPenalty (0);
+      word->content.space = true;
+      word->effSpace = word->origSpace = style->font->spaceWidth +
+         style->wordSpacing;
+      word->stretchability = word->origSpace / 2;
+      if(style->textAlign == core::style::TEXT_ALIGN_JUSTIFY)
+         word->shrinkability = word->origSpace / 3;
+      else
+         word->shrinkability = 0;
 
-         //DBG_OBJ_ARRSET_NUM (this, "words.%d.origSpace", wordIndex,
-         //                    word->origSpace);
-         //DBG_OBJ_ARRSET_NUM (this, "words.%d.effSpace", wordIndex,
-         //                    word->effSpace);
-         //DBG_OBJ_ARRSET_NUM (this, "words.%d.content.space", wordIndex,
-         //                    word->content.space);
+      //DBG_OBJ_ARRSET_NUM (this, "words.%d.origSpace", wordIndex,
+      //                    word->origSpace);
+      //DBG_OBJ_ARRSET_NUM (this, "words.%d.effSpace", wordIndex,
+      //                    word->effSpace);
+      //DBG_OBJ_ARRSET_NUM (this, "words.%d.content.space", wordIndex,
+      //                    word->content.space);
 
-         word->spaceStyle->unref ();
-         word->spaceStyle = style;
-         style->ref ();
-
-         accumulateWordData (wordIndex);
-      }
+      word->spaceStyle->unref ();
+      word->spaceStyle = style;
+      style->ref ();
    }
 }
 
@@ -1613,7 +1616,6 @@ void Textblock::addHyphen ()
       Word *word = words->getRef(wordIndex);
  
       word->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
-      //word->penalty = 0;
       // TODO Optimize? Like spaces?
       word->hyphenWidth = layout->textWidth (word->style->font, "\xc2\xad", 2);
 

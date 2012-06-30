@@ -363,6 +363,7 @@ protected:
                   core::style::Style *style);
    void fillWord (Word *word, int width, int ascent, int descent,
                   bool canBeHyphenated, core::style::Style *style);
+   void fillSpace (Word *word, core::style::Style *style);
    int textWidth (const char *text, int start, int len,
                   core::style::Style *style);
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
@@ -434,7 +435,7 @@ protected:
    void accumulateWordExtremees (int firstWord, int lastWord,
                                  int *maxOfMinWidth, int *sumOfMaxWidth);
    virtual void wordWrap (int wordIndex, bool wrapAll);
-   void hyphenateWord (int wordIndex);
+   int hyphenateWord (int wordIndex);
    void accumulateWordForLine (int lineIndex, int wordIndex);
    void accumulateWordData(int wordIndex);
    int calcAvailWidth ();
@@ -485,7 +486,7 @@ public:
    }
    void addWidget (core::Widget *widget, core::style::Style *style);
    bool addAnchor (const char *name, core::style::Style *style);
-   void addSpace(core::style::Style *style);
+   void addSpace (core::style::Style *style);
    inline void addBreakOption (core::style::Style *style) // TODO needed?
    {
       int wordIndex = words->size () - 1;

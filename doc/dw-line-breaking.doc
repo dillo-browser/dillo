@@ -203,6 +203,9 @@ usw.
 <li>The calculation of badness is designed for justified text. For
     other alignments, it may be modified. (TODO: document this in
     detail.)</li>
+<li>It should be simple to assign a larger penalty for hyphens, when
+    the line before is already hyphenated. This way, hyphens in
+    adjacent are pelalized furher./li>
 </ul>
 
 */
