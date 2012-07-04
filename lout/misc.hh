@@ -167,15 +167,6 @@ public:
       this->resize ();
    }
 
-   inline void insert(int index, int numInsert) {
-      // TODO "transparent delay", for hyphenation
-      assert (numInsert >= 0);
-      this->num += numInsert;
-      this->resize ();
-      for (int i = this->num - 1; i >= index + numInsert; i--)
-         array[i] = array[i - numInsert];
-   }
-
    /**
     * \brief Set the size explicitly and initialize new values.
     *
@@ -255,6 +246,258 @@ public:
    }
 };
 
+/**
+ * \brief Container similar to lout::misc::SimpleVector, but some cases
+ *    of insertion optimized (used for hyphenation).
+ *
+ * For hyphenation, words are often split, so that some space must be
+ * inserted by the method NotSoSimpleVector::insert. Typically, some
+ * elements are inserted quite at the beginning (when the word at the
+ * end of the first or at the beginning of the second line is
+ * hyphenated), then, a bit further (end of second line/beginning of
+ * third line) and so on. In the first time, nearly all words must be
+ * moved; in the second time, a bit less, etc. After all, using a
+ * simple vector would result in O(n<sup>2</sup>) number of elements
+ * moved total. With this class, however, the number can be kept at
+ * O(n).
+ *
+ * The basic idea is to keep an extra array (actually two, of which
+ * the second one is used temporally), which is inserted in a logical
+ * way. Since there is only one extra array at max, reading is rather
+ * simple and fast (see NotSoSimpleVector::getRef): check whether the
+ * position is before, within, or after the extra array. The first
+ * insertion is also rather simple, when the extra array has to be
+ * created. The following sketch illustrates the most complex case,
+ * when an extra array exists, and something is inserted after it (the
+ * case for which this class has been optimized):
+ *
+ * \image html not-so-simple-container.png
+ *
+ * Dotted lines are used to keep the boxes aligned.
+ *
+ * As you see, only a relatively small fraction of elements has to be
+ * moved.
+ *
+ * There are some other cases, which have to be documented.
+ */
+template <class T> class NotSoSimpleVector
+{
+private:
+   T *arrayMain, *arrayExtra1, *arrayExtra2;
+   int numMain, numExtra, numAllocMain, numAllocExtra, startExtra;
+
+   inline void resizeMain ()
+   {
+      /* This algorithm was tuned for memory&speed with this huge page:
+       *   http://downloads.mysql.com/docs/refman-6.0-en.html.tar.gz
+       */
+      if (arrayMain == NULL) {
+         this->numAllocMain = 1;
+         this->arrayMain = (T*) malloc (sizeof (T));
+      }
+      if (this->numAllocMain < this->numMain) {
+         this->numAllocMain = (this->numMain < 100) ?
+                          this->numMain : this->numMain + this->numMain/10;
+         this->arrayMain =
+            (T*) realloc(this->arrayMain, (this->numAllocMain * sizeof (T)));
+      }
+   }
+
+   inline void resizeExtra ()
+   {
+      /* This algorithm was tuned for memory&speed with this huge page:
+       *   http://downloads.mysql.com/docs/refman-6.0-en.html.tar.gz
+       */
+      if (arrayExtra1 == NULL) {
+         this->numAllocExtra = 1;
+         this->arrayExtra1 = (T*) malloc (sizeof (T));
+         this->arrayExtra2 = (T*) malloc (sizeof (T));
+      }
+      if (this->numAllocExtra < this->numExtra) {
+         this->numAllocExtra = (this->numExtra < 100) ?
+                          this->numExtra : this->numExtra + this->numExtra/10;
+         this->arrayExtra1 =
+            (T*) realloc(this->arrayExtra1, (this->numAllocExtra * sizeof (T)));
+         this->arrayExtra2 =
+            (T*) realloc(this->arrayExtra2, (this->numAllocExtra * sizeof (T)));
+      }
+   }
+
+   void consolidate () 
+   {
+      if (startExtra != -1) {
+         numMain += numExtra;
+         memmove (arrayMain + startExtra + numExtra, arrayMain + startExtra,
+                  (numMain - (startExtra + numExtra)) * sizeof (T));
+         memmove (arrayMain + startExtra, arrayExtra1, numExtra);
+         startExtra = -1;
+      }
+   }
+   
+public:
+   inline NotSoSimpleVector (int initAlloc)
+   {
+      this->numMain = this->numExtra = 0;
+      this->numAllocMain = initAlloc;
+      this->numAllocExtra = initAlloc;
+      this->arrayMain = this->arrayExtra1 = this->arrayExtra2 = NULL;
+      this->startExtra = -1;
+   }
+
+   inline NotSoSimpleVector (const NotSoSimpleVector &o)
+   {
+      this->arrayMain = NULL;
+      this->numMain = o.numMain;
+      this->numAllocMain = o.numAllocMain;
+      resizeMain ();
+      memcpy (this->arrayMain, o.arrayMain, sizeof (T) * numMain);
+
+      this->arrayExtra = NULL;
+      this->numExtra = o.numExtra;
+      this->numAllocExtra = o.numAllocExtra;
+      resizeExtra ();
+      memcpy (this->arrayExtra, o.arrayExtra, sizeof (T) * numExtra);
+
+      this->startExtra = o.startExtra;
+   }
+
+   inline ~NotSoSimpleVector ()
+   {
+      if (this->arrayMain)
+         free (this->arrayMain);
+      if (this->arrayExtra1)
+         free (this->arrayExtra1);
+      if (this->arrayExtra2)
+         free (this->arrayExtra2);
+   }
+
+   inline int size() { return this->numMain + this->numExtra; }
+
+   inline void increase() { setSize(size() + 1); }
+
+   inline void setSize(int newSize)
+   {
+      assert (newSize >= 0);
+      this->numMain = newSize - numExtra;
+      this->resizeMain ();
+   }
+
+   void insert(int index, int numInsert)
+   {
+      assert (numInsert >= 0);
+      if (this->startExtra == -1) {
+         // simple case
+         this->numExtra = numInsert;
+         this->startExtra = index;
+         resizeExtra ();
+      } else {        
+         if (index < startExtra)  {
+            consolidate ();
+            insert (index, numInsert);
+         } else if (index < startExtra + numExtra) {
+            int oldNumExtra = numExtra;
+            numExtra += numInsert;
+            resizeExtra ();
+
+            int toMove = startExtra + oldNumExtra - index;
+            memmove (arrayExtra1 + numExtra - toMove,
+                     arrayExtra1 + index - startExtra,
+                     toMove * sizeof (T));
+         } else {
+            int oldNumExtra = numExtra;
+            numExtra += numInsert;
+            resizeExtra ();
+
+            // Note: index refers to the *logical* adress, not to the
+            // *physical* one.
+            int diff = index - this->startExtra - oldNumExtra;
+            T *arrayMainI = arrayMain + this->startExtra;
+            for (int i = diff + oldNumExtra - 1; i >= 0; i--) {
+               T *src = i < oldNumExtra ?
+                  this->arrayExtra1 + i : arrayMainI + (i - oldNumExtra);
+               T *dest = i < diff ?
+                  arrayMainI  + i : arrayExtra2 + (i - diff);
+               *dest = *src;
+            }
+
+            memcpy (arrayExtra1, arrayExtra2, sizeof (T) * oldNumExtra);
+            startExtra = index - oldNumExtra;
+         }
+      }
+   }
+
+   /**
+    * \brief Return the reference of one element.
+    *
+    * \sa misc::SimpleVector::get
+    */
+   inline T* getRef (int i)
+   {
+      if (this->startExtra == -1)
+         return this->arrayMain + i;
+      else {
+         if (i < this->startExtra)
+            return this->arrayMain + i;
+         else if (i >= this->startExtra + this->numExtra)
+            return this->arrayMain + i - this->numExtra;
+         else
+            return this->arrayExtra1 + i - this->startExtra;
+      }
+   }
+
+   /**
+    * \brief Return the one element, explicitly.
+    *
+    * The element is copied, so for complex elements, you should rather used
+    * misc::SimpleVector::getRef.
+    */
+   inline T get (int i)
+   {
+      return *(this->getRef(i));
+   }
+
+   /**
+    * \brief Return the reference of the first element (convenience method).
+    */
+   inline T* getFirstRef () {
+      assert (size () > 0);
+      return this->getRef(0);
+   }
+
+   /**
+    * \brief Return the first element, explicitly.
+    */
+   inline T getFirst () {
+      return *(this->getFirstRef());
+   }
+
+   /**
+    * \brief Return the reference of the last element (convenience method).
+    */
+   inline T* getLastRef () {
+      assert (size () > 0);
+      return this->getRef(size () - 1);
+   }
+
+   /**
+    * \brief Return the last element, explicitly.
+    */
+   inline T getLast () {
+      return *(this->getLastRef());
+   }
+
+   /**
+    * \brief Store an object in the vector.
+    *
+    * Unlike in container::untyped::Vector and container::typed::Vector,
+    * you have to care about the size, so a call to
+    * misc::SimpleVector::increase or misc::SimpleVector::setSize may
+    * be necessary before.
+    */
+   inline void set (int i, T t) {
+      *(this->getRef(i)) = t;
+   }
+};
 
 /**
  * \brief A class for fast concatenation of a large number of strings.

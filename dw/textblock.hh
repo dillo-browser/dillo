@@ -321,7 +321,7 @@ protected:
 
    lout::misc::SimpleVector <Line> *lines;
    int nonTemporaryLines;
-   lout::misc::SimpleVector <Word> *words;
+   lout::misc::NotSoSimpleVector <Word> *words;
    lout::misc::SimpleVector <Anchor> *anchors;
 
    struct {int index, nChar;}

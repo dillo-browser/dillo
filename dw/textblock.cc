@@ -65,7 +65,7 @@ Textblock::Textblock (bool limitTextWidth)
     */
    lines = new misc::SimpleVector <Line> (1);
    nonTemporaryLines = 0;
-   words = new misc::SimpleVector <Word> (1);
+   words = new misc::NotSoSimpleVector <Word> (1);
    anchors = new misc::SimpleVector <Anchor> (1);
 
    //DBG_OBJ_SET_NUM(this, "num_lines", num_lines);
