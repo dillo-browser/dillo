@@ -25,26 +25,30 @@ HashTable <TypedPair <TypedPointer <core::Platform>, ConstString>,
 Hyphenator::Hyphenator (core::Platform *platform, const char *filename)
 {
    this->platform = platform;
-   tree = new HashTable <Integer, Collection <Integer> > (true, true);
+   tree = NULL; // As long we are not sure whether a pattern file can be read.
 
    FILE *file = fopen (filename, "r");
-   // TODO Error handling
-   while (!feof (file)) {
-      char buf[LEN + 1];
-      char *s = fgets (buf, LEN, file);
-      if (s) {
-         int l = strlen (s);
-         if (s[l - 1] == '\n')
-            s[l - 1] = 0;
-         insertPattern (s);
+   if (file) {
+      tree = new HashTable <Integer, Collection <Integer> > (true, true);
+      while (!feof (file)) {
+         char buf[LEN + 1];
+         char *s = fgets (buf, LEN, file);
+         if (s) {
+             // TODO Better exit with an error, when the line is too long.
+            int l = strlen (s);
+            if (s[l - 1] == '\n')
+               s[l - 1] = 0;
+            insertPattern (s);
+         }
       }
+      fclose (file);
    }
-   fclose (file);
 }
 
 Hyphenator::~Hyphenator ()
 {
-   delete tree;
+   if (tree)
+      delete tree;
 }
 
 Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
@@ -132,7 +136,8 @@ bool Hyphenator::isHyphenationCandidate (const char *word)
  */
 int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
 {
-   if (!isHyphenationCandidate (word)) {
+   // tree == NULL means that there is no pattern file.
+   if (tree == NULL || !isHyphenationCandidate (word)) {
       *numBreaks = 0;
       return NULL;
    }
