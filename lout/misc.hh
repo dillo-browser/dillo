@@ -386,7 +386,7 @@ public:
    {
       assert (numInsert >= 0);
 
-      // The following lines are a simple (but inefficient) replacements.
+      // The following lines are a simple (but inefficient) replacement.
       setSize (numMain + numInsert);
       memmove (arrayMain + index + numInsert, arrayMain + index,
                (numMain - index - numInsert) * sizeof (T));
