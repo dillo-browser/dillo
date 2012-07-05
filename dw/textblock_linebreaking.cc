@@ -463,6 +463,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
             Word *word1 = words->getRef(breakPos);
             if (word1->badnessAndPenalty.lineTight () &&
                 word1->canBeHyphenated &&
+                word1->style->x_lang[0] &&
                 word1->content.type == core::Content::TEXT &&
                 Hyphenator::isHyphenationCandidate (word1->content.text))
                hyphenatedWord = breakPos;
@@ -471,6 +472,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                 breakPos + 1 < words->size ()) {
                Word *word2 = words->getRef(breakPos + 1);
                if (word2->canBeHyphenated &&
+                   word2->style->x_lang[0] &&
                    word2->content.type == core::Content::TEXT  &&
                    Hyphenator::isHyphenationCandidate (word2->content.text))
                   hyphenatedWord = breakPos + 1;
@@ -507,18 +509,19 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
 int Textblock::hyphenateWord (int wordIndex)
 {
-   PRINTF ("[%p]    considering to hyphenate word %d: '%s'\n",
-           this, wordIndex, words->getRef(wordIndex)->content.text);
-
+   Word *hyphenatedWord = words->getRef(wordIndex);
+   char lang[3] = { hyphenatedWord->style->x_lang[0], 
+                    hyphenatedWord->style->x_lang[1], 0 };
    Hyphenator *hyphenator =
-      Hyphenator::getHyphenator (layout->getPlatform (), "de"); // TODO lang
-   
+      Hyphenator::getHyphenator (layout->getPlatform (), lang);
+   PRINTF ("[%p]    considering to hyphenate word %d, '%s', in language '%s'\n",
+           this, wordIndex, words->getRef(wordIndex)->content.text, langf);
    int numBreaks;
    int *breakPos =
-      hyphenator->hyphenateWord (words->getRef(wordIndex)->content.text,
-                                 &numBreaks);
+      hyphenator->hyphenateWord (hyphenatedWord->content.text, &numBreaks);
+
    if (numBreaks > 0) {
-      Word origWord = words->get(wordIndex);
+      Word origWord = *hyphenatedWord;
 
       core::Requisition wordSize[numBreaks + 1];
       calcTextSizes (origWord.content.text, strlen (origWord.content.text),

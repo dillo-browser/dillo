@@ -65,8 +65,7 @@ Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
    Hyphenator *hyphenator = hyphenators->get (pair);
    if (hyphenator)
       delete pair;
-   else
-      {
+   else {
       // TODO Much hard-coded!
       char filename [256];
       sprintf (filename, "/usr/local/lib/dillo/hyphenation/%s.pat", language);
