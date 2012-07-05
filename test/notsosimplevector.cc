@@ -45,5 +45,12 @@ int main (int argc, char *argv[])
 
    print (&v);
 
+   int n = v.size ();
+   v.insert (n, 5);
+   for (int i = 0; i < 5; i++)
+      v.set (n + i, 101 + i);
+
+   print (&v);
+
    return 0;
 }

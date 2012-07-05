@@ -382,9 +382,16 @@ public:
       this->resizeMain ();
    }
 
-   void insert(int index, int numInsert)
+   void insert (int index, int numInsert)
    {
       assert (numInsert >= 0);
+
+      // The following lines are a simple (but inefficient) replacements.
+      setSize (numMain + numInsert);
+      memmove (arrayMain + index + numInsert, arrayMain + index,
+               (numMain - index - numInsert) * sizeof (T));
+      return;
+
       if (this->startExtra == -1) {
          // simple case
          this->numExtra = numInsert;
