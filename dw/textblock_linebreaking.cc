@@ -515,7 +515,7 @@ int Textblock::hyphenateWord (int wordIndex)
    Hyphenator *hyphenator =
       Hyphenator::getHyphenator (layout->getPlatform (), lang);
    PRINTF ("[%p]    considering to hyphenate word %d, '%s', in language '%s'\n",
-           this, wordIndex, words->getRef(wordIndex)->content.text, langf);
+           this, wordIndex, words->getRef(wordIndex)->content.text, lang);
    int numBreaks;
    int *breakPos =
       hyphenator->hyphenateWord (hyphenatedWord->content.text, &numBreaks);
