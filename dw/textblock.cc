@@ -1138,6 +1138,7 @@ int Textblock::findLineOfWord (int wordIndex)
 {
    int high = lines->size () - 1, index, low = 0;
 
+   // TODO regard also not-yet-existing lines?
    if (wordIndex < 0 || wordIndex >= words->size ())
       return -1;
 
@@ -1497,7 +1498,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
     * end of this function, the correct value is assigned. */
    widget->parentRef = -1;
 
-   PRINTF ("%p becomes child of %p\n", widget, this);
+   printf ("%p becomes child of %p\n", widget, this);
    
    widget->setParent (this);
    widget->setStyle (style);

@@ -22,17 +22,18 @@ HashTable <TypedPair <TypedPointer <core::Platform>, ConstString>,
    new HashTable <TypedPair <TypedPointer <core::Platform>, ConstString>,
                   Hyphenator> (true, true);
 
-Hyphenator::Hyphenator (core::Platform *platform, const char *filename)
+Hyphenator::Hyphenator (core::Platform *platform,
+                        const char *patFile, const char *excFile)
 {
    this->platform = platform;
    tree = NULL; // As long we are not sure whether a pattern file can be read.
 
-   FILE *file = fopen (filename, "r");
-   if (file) {
+   FILE *patF = fopen (patFile, "r");
+   if (patF) {
       tree = new HashTable <Integer, Collection <Integer> > (true, true);
-      while (!feof (file)) {
+      while (!feof (patF)) {
          char buf[LEN + 1];
-         char *s = fgets (buf, LEN, file);
+         char *s = fgets (buf, LEN, patF);
          if (s) {
              // TODO Better exit with an error, when the line is too long.
             int l = strlen (s);
@@ -41,7 +42,26 @@ Hyphenator::Hyphenator (core::Platform *platform, const char *filename)
             insertPattern (s);
          }
       }
-      fclose (file);
+      fclose (patF);
+   }
+
+   exceptions = NULL; // Again, only instanciated when needed.
+
+   FILE *excF = fopen (excFile, "r");
+   if (excF) {
+      exceptions = new HashTable <ConstString, Vector <Integer> > (true, true);
+      while (!feof (excF)) {
+         char buf[LEN + 1];
+         char *s = fgets (buf, LEN, excF);
+         if (s) {
+             // TODO Better exit with an error, when the line is too long.
+            int l = strlen (s);
+            if (s[l - 1] == '\n')
+               s[l - 1] = 0;
+            insertException (s);
+         }
+      }
+      fclose (excF);
    }
 }
 
@@ -49,10 +69,12 @@ Hyphenator::~Hyphenator ()
 {
    if (tree)
       delete tree;
+   if (exceptions)
+      delete exceptions;
 }
 
 Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
-                                       const char *language)
+                                       const char *lang)
 {
    // TODO Not very efficient. Other key than TypedPair?
    // (Keeping the parts of the pair on the stack does not help, since
@@ -60,19 +82,22 @@ Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
    TypedPair <TypedPointer <core::Platform>, ConstString> *pair =
       new TypedPair <TypedPointer <core::Platform>,
                      ConstString> (new TypedPointer <core::Platform> (platform),
-                                   new ConstString (language));
+                                   new ConstString (lang));
 
    Hyphenator *hyphenator = hyphenators->get (pair);
    if (hyphenator)
       delete pair;
    else {
       // TODO Much hard-coded!
-      char filename [256];
-      sprintf (filename, "/usr/local/lib/dillo/hyphenation/%s.pat", language);
+      char patFile [256];
+      sprintf (patFile, "/usr/local/lib/dillo/hyphenation/%s.pat", lang);
+      char excFile [256];
+      sprintf (excFile, "/usr/local/lib/dillo/hyphenation/%s.exc", lang);
 
-      //printf ("Loading hyphenation patterns '%s' ...\n", filename);
+      printf ("Loading hyphenation patterns for language '%s' from '%s' and "
+              "exceptions from '%s' ...\n", lang, patFile, excFile);
 
-      hyphenator = new Hyphenator (platform, filename);
+      hyphenator = new Hyphenator (platform, patFile, excFile);
       hyphenators->put (pair, hyphenator);
    }
 
@@ -120,6 +145,29 @@ void Hyphenator::insertPattern (char *s)
    t->put (new Integer (0), points);
 }
 
+void Hyphenator::insertException (char *s)
+{
+   Vector<Integer> *breaks = new Vector<Integer> (1, true);
+
+   int len = strlen (s);
+   for (int i = 0; i < len - 1; i++)
+      if((unsigned char)s[i] == 0xc2 && (unsigned char)s[i + 1] == 0xad)
+         breaks->put (new Integer (i - 2 * breaks->size()));
+
+   char noHyphens[len - 2 * breaks->size() + 1];
+   int j = 0;
+   for (int i = 0; i < len; ) {
+      if(i < len - 1 &&
+         (unsigned char)s[i] == 0xc2 && (unsigned char)s[i + 1] == 0xad)
+         i += 2;
+      else
+         noHyphens[j++] = s[i++];
+   }
+   noHyphens[j] = 0;
+
+   exceptions->put (new String (noHyphens), breaks);
+}
+
 /**
  * Simple test to avoid much costs. Passing it does not mean that the word
  * can be hyphenated.
@@ -135,17 +183,34 @@ bool Hyphenator::isHyphenationCandidate (const char *word)
  */
 int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
 {
-   // tree == NULL means that there is no pattern file.
-   if (tree == NULL || !isHyphenationCandidate (word)) {
+   if ((tree == NULL && exceptions ==NULL) || !isHyphenationCandidate (word)) {
       *numBreaks = 0;
       return NULL;
    }
 
+   char *wordLc = platform->textToLower (word, strlen (word));
+
    // If the word is an exception, get the stored points.
-   // TODO
+   Vector <Integer> *exceptionalBreaks;
+   ConstString key (wordLc);
+   if (exceptions != NULL && (exceptionalBreaks = exceptions->get (&key))) {
+      int *result = new int[exceptionalBreaks->size()];
+      for (int i = 0; i < exceptionalBreaks->size(); i++)
+         result[i] = exceptionalBreaks->get(i)->getValue();
+      delete wordLc;
+      *numBreaks = exceptionalBreaks->size();
+      return result;
+   }
+
+   // tree == NULL means that there is no pattern file.
+   if (tree == NULL) {
+      delete wordLc;
+      *numBreaks = 0;
+      return NULL;
+   }
+
    char work[strlen (word) + 3];
    strcpy (work, ".");
-   char *wordLc = platform->textToLower (word, strlen (word));
    strcat (work, wordLc);
    delete wordLc;
    strcat (work, ".");

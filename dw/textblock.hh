@@ -186,7 +186,8 @@ private:
 
 protected:
    enum {
-      HYPHEN_BREAK = 1000000 // to be tested and tuned
+      //HYPHEN_BREAK = 1000000 // to be tested and tuned
+      HYPHEN_BREAK = 0
    };
 
    struct Line
@@ -250,6 +251,8 @@ protected:
       core::style::Style *spaceStyle; /* initially the same as of the word,
                                          later set by a_Dw_page_add_space */
    };
+
+   void printWord (Word *word);
 
    struct Anchor
    {

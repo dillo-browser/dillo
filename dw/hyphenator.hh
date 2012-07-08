@@ -24,10 +24,15 @@ private:
    lout::container::typed::HashTable <lout::object::Integer,
                                       lout::container::typed::Collection
                                       <lout::object::Integer> > *tree;
+   lout::container::typed::HashTable <lout::object::ConstString,
+                                      lout::container::typed::Vector
+                                      <lout::object::Integer> > *exceptions;
    void insertPattern (char *s);
+   void insertException (char *s);
 
 public:
-   Hyphenator (core::Platform *platform, const char *filename);
+   Hyphenator (core::Platform *platform,
+               const char *patFile, const char *excFile);
    ~Hyphenator();
 
    static Hyphenator *getHyphenator (core::Platform *platform,

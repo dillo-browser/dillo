@@ -9,7 +9,7 @@ void hyphenateWord (dw::core::Platform *p, const char *word)
    int *breakPos = h->hyphenateWord (word, &numBreaks);
    for (int i = 0; i < numBreaks + 1; i++) {
       if (i != 0)
-         putchar ('-');
+         printf ("\xc2\xad");
       int start = (i == 0 ? 0 : breakPos[i - 1]);
       int end = (i == numBreaks ? strlen (word) : breakPos[i]);
       for (int j = start; j < end; j++)
@@ -35,6 +35,7 @@ int main (int argc, char *argv[])
                   "übertragungsverordnung");
    hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeits"
                   "übertragungsverordnung“");
+   hyphenateWord (&p, "Grundstücksverkehrsgenehmigungszuständigkeit");
 
    return 0;
 }
