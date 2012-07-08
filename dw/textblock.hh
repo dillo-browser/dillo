@@ -154,7 +154,7 @@ private:
    class BadnessAndPenalty
    {
    private:
-      enum { TOO_LOOSE, TOO_TIGHT, BADNESS_VALUE } badnessState;
+      enum { TOO_LOOSE, QUITE_LOOSE, BADNESS_VALUE, TOO_TIGHT } badnessState;
       enum { FORCE_BREAK, PROHIBIT_BREAK, PENALTY_VALUE } penaltyState;
       int ratio; // ratio is only defined when badness is defined
       int badness, penalty;
@@ -162,6 +162,8 @@ private:
       // for debugging:
       int totalWidth, idealWidth, totalStretchability, totalShrinkability;
 
+      int badnessInffinities ();
+      int penaltyInffinities ();
       int badnessInfinities ();
       int penaltyInfinities ();
       int badnessValue ();
