@@ -188,8 +188,7 @@ private:
 
 protected:
    enum {
-      //HYPHEN_BREAK = 1000000 // to be tested and tuned
-      HYPHEN_BREAK = 0
+      HYPHEN_BREAK = 1000000 // to be tested and tuned
    };
 
    struct Line
