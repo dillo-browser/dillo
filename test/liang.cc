@@ -31,6 +31,8 @@ int main (int argc, char *argv[])
    hyphenateWord (&p, "über");
    hyphenateWord (&p, "aber");
    hyphenateWord (&p, "Ackermann");
+   hyphenateWord (&p, "„Ackermann“");
+   hyphenateWord (&p, "entscheidet.");
    hyphenateWord (&p, "Grundstücksverkehrsgenehmigungszuständigkeits"
                   "übertragungsverordnung");
    hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeits"

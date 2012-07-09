@@ -310,6 +310,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
            allocation->x, allocation->y, allocation->width,
            allocation->ascent, allocation->descent);
 
+   showMissingLines ();
+
    int lineIndex, wordIndex;
    Line *line;
    Word *word;
