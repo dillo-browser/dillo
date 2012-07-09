@@ -94,8 +94,8 @@ Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
       char excFile [256];
       sprintf (excFile, "/usr/local/lib/dillo/hyphenation/%s.exc", lang);
 
-      printf ("Loading hyphenation patterns for language '%s' from '%s' and "
-              "exceptions from '%s' ...\n", lang, patFile, excFile);
+      //printf ("Loading hyphenation patterns for language '%s' from '%s' and "
+      //        "exceptions from '%s' ...\n", lang, patFile, excFile);
 
       hyphenator = new Hyphenator (platform, patFile, excFile);
       hyphenators->put (pair, hyphenator);

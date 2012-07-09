@@ -1498,7 +1498,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
     * end of this function, the correct value is assigned. */
    widget->parentRef = -1;
 
-   printf ("%p becomes child of %p\n", widget, this);
+   PRINTF ("%p becomes child of %p\n", widget, this);
    
    widget->setParent (this);
    widget->setStyle (style);

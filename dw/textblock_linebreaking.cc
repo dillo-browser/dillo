@@ -302,7 +302,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    PRINTF ("   words[%d]->totalWidth = %d\n", lastWord,
            lastWordOfLine->totalWidth);
 
-   printf ("[%p] ##### LINE ADDED: %d, from %d to %d #####\n",
+   PRINTF ("[%p] ##### LINE ADDED: %d, from %d to %d #####\n",
            this, lines->size (), firstWord, lastWord);
 
    lines->increase ();
@@ -453,36 +453,29 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
          bool lineAdded;
          do {
-            printf ("   searching from %d to %d\n", firstIndex, searchUntil);
+            PRINTF ("   searching from %d to %d\n", firstIndex, searchUntil);
 
             int breakPos = -1;
             for (int i = firstIndex; i <= searchUntil; i++) {
                Word *w = words->getRef(i);
                
-               printf ("      %d (of %d): ", i, words->size ());
-               printWord (w);
-               printf ("\n");
+               //printf ("      %d (of %d): ", i, words->size ());
+               //printWord (w);
+               //printf ("\n");
                
                // TODO: is this condition needed:
                // if(w->badnessAndPenalty.lineCanBeBroken ()) ?
                
-               int c;
                if (breakPos == -1 ||
-                   (c = w->badnessAndPenalty.compareTo
-                    (&words->getRef(breakPos)->badnessAndPenalty)) <= 0) {
+                   w->badnessAndPenalty.compareTo
+                   (&words->getRef(breakPos)->badnessAndPenalty) <= 0)
                   // "<=" instead of "<" in the next lines tends to result in
                   // more words per line -- theoretically. Practically, the
                   // case "==" will never occur.
-                  if (breakPos == -1)
-                     printf ("         => initial\n");
-                  else
-                     printf ("         => c = %d\n", c);
-
                   breakPos = i;
-               }
             }
 
-            printf ("      breakPos = %d\n", breakPos);
+            PRINTF ("      breakPos = %d\n", breakPos);
             
             if (wrapAll && searchUntil == words->size () - 1) {
                // Since no break and no space is added, the last word
@@ -496,15 +489,15 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                if (correctedBap.compareTo
                    (&words->getRef(breakPos)->badnessAndPenalty) <= 0) {
                   breakPos = searchUntil;
-                  printf ("      corrected: breakPos = %d\n", breakPos);
+                  PRINTF ("      corrected: breakPos = %d\n", breakPos);
                }
             }
 
             int hyphenatedWord = -1;
             Word *word1 = words->getRef(breakPos);
-            printf ("[%p] line (broken at word %d): ", this, breakPos);
-            word1->badnessAndPenalty.print ();
-            printf ("\n");
+            PRINTF ("[%p] line (broken at word %d): ", this, breakPos);
+            //word1->badnessAndPenalty.print ();
+            PRINTF ("\n");
 
             if (word1->badnessAndPenalty.lineTight () &&
                 word1->canBeHyphenated &&
@@ -523,12 +516,12 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                   hyphenatedWord = breakPos + 1;
             }
 
-            printf ("[%p] breakPos = %d, hyphenatedWord = %d\n",
+            PRINTF ("[%p] breakPos = %d, hyphenatedWord = %d\n",
                     this, breakPos, hyphenatedWord);
 
             if(hyphenatedWord == -1) {
                addLine (firstIndex, breakPos, tempNewLine);
-               printf ("[%p]    new line %d (%s), from %d to %d\n",
+               PRINTF ("[%p]    new line %d (%s), from %d to %d\n",
                        this, lines->size() - 1,
                        tempNewLine ? "temporally" : "permanently",
                        firstIndex, breakPos);
@@ -538,16 +531,16 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                // changed at all. So that a second run, with
                // !word->canBeHyphenated, is unneccessary.
                // TODO Update: for this, searchUntil == 0 should be checked.
-               printf ("[%p] old searchUntil = %d ...\n", this, searchUntil);
+               PRINTF ("[%p] old searchUntil = %d ...\n", this, searchUntil);
                int n = hyphenateWord (hyphenatedWord);
                searchUntil += n;
                if (hyphenatedWord >= wordIndex)
                   wordIndexEnd += n;
-               printf ("[%p] -> new searchUntil = %d ...\n", this, searchUntil);
+               PRINTF ("[%p] -> new searchUntil = %d ...\n", this, searchUntil);
                lineAdded = false;
             }
             
-            printf ("[%p]       accumulating again from %d to %d\n",
+            PRINTF ("[%p]       accumulating again from %d to %d\n",
                     this, breakPos + 1, wordIndexEnd);
             for(int i = breakPos + 1; i <= wordIndexEnd; i++)
                accumulateWordData (i);
@@ -564,7 +557,7 @@ int Textblock::hyphenateWord (int wordIndex)
                     hyphenatedWord->style->x_lang[1], 0 };
    Hyphenator *hyphenator =
       Hyphenator::getHyphenator (layout->getPlatform (), lang);
-   printf ("[%p]    considering to hyphenate word %d, '%s', in language '%s'\n",
+   PRINTF ("[%p]    considering to hyphenate word %d, '%s', in language '%s'\n",
            this, wordIndex, words->getRef(wordIndex)->content.text, lang);
    int numBreaks;
    int *breakPos =
@@ -577,9 +570,9 @@ int Textblock::hyphenateWord (int wordIndex)
       calcTextSizes (origWord.content.text, strlen (origWord.content.text),
                      origWord.style, numBreaks, breakPos, wordSize);
       
-      printf ("[%p]       %d words ...\n", this, words->size ());
+      PRINTF ("[%p]       %d words ...\n", this, words->size ());
       words->insert (wordIndex, numBreaks);
-      printf ("[%p]       ... => %d words\n", this, words->size ());
+      PRINTF ("[%p]       ... => %d words\n", this, words->size ());
 
       for (int i = 0; i < numBreaks + 1; i++) {
          Word *w = words->getRef (wordIndex + i);
@@ -596,7 +589,7 @@ int Textblock::hyphenateWord (int wordIndex)
          w->content.text =
             layout->textZone->strndup (origWord.content.text + start,
                                        end - start);
-         printf ("      [%d] -> '%s'\n", wordIndex + i, w->content.text);
+         PRINTF ("      [%d] -> '%s'\n", wordIndex + i, w->content.text);
 
          // Note: there are numBreaks + 1 word parts.
          if (i < numBreaks) {
@@ -604,19 +597,19 @@ int Textblock::hyphenateWord (int wordIndex)
             w->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
             w->hyphenWidth =
                layout->textWidth (origWord.style->font, "\xc2\xad", 2);
-            printf ("      [%d] + hyphen\n", wordIndex + i);
+            PRINTF ("      [%d] + hyphen\n", wordIndex + i);
          } else {
             if (origWord.content.space) {
                fillSpace (w, origWord.spaceStyle);
-               printf ("      [%d] + space\n", wordIndex + i);
+               PRINTF ("      [%d] + space\n", wordIndex + i);
             } else
-               printf ("      [%d] + nothing\n", wordIndex + i);
+               PRINTF ("      [%d] + nothing\n", wordIndex + i);
          }
 
          accumulateWordData (wordIndex + i);
       }
 
-      printf ("   finished\n");
+      PRINTF ("   finished\n");
       
       //delete origword->content.text; TODO: Via textZone?
       origWord.style->unref ();
@@ -691,7 +684,7 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
 void Textblock::accumulateWordData (int wordIndex)
 {
    Word *word = words->getRef (wordIndex);
-   printf ("[%p] ACCUMULATE_WORD_DATA (%d): ...\n", this, wordIndex);
+   PRINTF ("[%p] ACCUMULATE_WORD_DATA (%d): ...\n", this, wordIndex);
 
    int availWidth = calcAvailWidth (); // todo: variable? parameter?
 
@@ -702,19 +695,19 @@ void Textblock::accumulateWordData (int wordIndex)
       word->totalWidth = word->size.width + word->hyphenWidth;
       word->totalStretchability = 0;
       word->totalShrinkability = 0;
-      printf("      (first word of line)\n");
+      PRINTF ("      (first word of line)\n");
    } else {
       if (lines->size () == 0)
-         printf("      (word %d word of not-yet-existing line %d)\n",
+         PRINTF ("      (word %d word of not-yet-existing line %d)\n",
                 wordIndex, 0);
       else if (wordIndex > lines->getLastRef()->lastWord)
-         printf("      (word %d word of not-yet-existing line %d)\n",
-                wordIndex - (lines->getLastRef()->lastWord + 1),
-                lines->size());
+         PRINTF ("      (word %d word of not-yet-existing line %d)\n",
+                 wordIndex - (lines->getLastRef()->lastWord + 1),
+                 lines->size());
       else {
          int line = findLineOfWord (wordIndex);
-         printf("      (word %d word of line %d)\n",
-                wordIndex - lines->getRef(line)->firstWord, line);
+         PRINTF ("      (word %d word of line %d)\n",
+                 wordIndex - lines->getRef(line)->firstWord, line);
       }
 
       Word *prevWord = words->getRef (wordIndex - 1);
@@ -732,9 +725,9 @@ void Textblock::accumulateWordData (int wordIndex)
                                         word->totalStretchability,
                                         word->totalShrinkability);
 
-   printf ("      => ");
-   printWord (word);
-   printf ("\n");
+   //printf ("      => ");
+   //printWord (word);
+   //printf ("\n");
 }
 
 int Textblock::calcAvailWidth ()
