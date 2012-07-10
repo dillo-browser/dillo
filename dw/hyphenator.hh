@@ -30,6 +30,8 @@ private:
    void insertPattern (char *s);
    void insertException (char *s);
 
+   bool isCharPartOfActualWord (char *s);
+
 public:
    Hyphenator (core::Platform *platform,
                const char *patFile, const char *excFile);

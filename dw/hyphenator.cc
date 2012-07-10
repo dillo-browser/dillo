@@ -179,6 +179,26 @@ bool Hyphenator::isHyphenationCandidate (const char *word)
 }   
 
 /**
+ * Test whether the character on which "s" points (UTF-8) is an actual
+ * part of the word. Other characters at the beginning and end are
+ * ignored.
+ *
+ * TODO Currently only suitable for English and German.
+ * TODO Only lowercase. (Uppercase not needed.)
+ */
+bool Hyphenator::isCharPartOfActualWord (char *s)
+{
+   // Return true when "s" points to a letter.
+   return (s[0] >= 'a' && s[0] <= 'z') ||
+      // UTF-8: starts with 0xc3
+      ((unsigned char)s[0] == 0xc3 &&
+       ((unsigned char)s[1] == 0xa4 /* ä */ ||
+        (unsigned char)s[1] == 0xb6 /* ö */ ||
+        (unsigned char)s[1] == 0xbc /* ü */ ||
+        (unsigned char)s[1] == 0x9f /* ß */ ));
+}
+
+/**
  * Given a word, returns a list of the possible hyphenation points.
  */
 int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
@@ -190,13 +210,39 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
 
    char *wordLc = platform->textToLower (word, strlen (word));
 
+   // Determine "actual" word. See isCharPartOfActualWord for exact definition.
+   
+   // Only this actual word is used, and "startActualWord" is added to the 
+   // break positions, so that these refer to the total word.
+   int startActualWord = 0;
+   while (wordLc[startActualWord] &&
+          !isCharPartOfActualWord (wordLc + startActualWord))
+      startActualWord = platform->nextGlyph (wordLc, startActualWord);
+
+   if (wordLc[startActualWord] == 0) {
+      // No letters etc in word: do not hyphenate at all.
+      delete wordLc;
+      *numBreaks = 0;
+      return NULL;
+   }
+
+   int endActualWord = startActualWord, i = endActualWord;
+   while (wordLc[i]) {
+      if (isCharPartOfActualWord (wordLc + i))
+         endActualWord = i;
+      i = platform->nextGlyph (wordLc, i);
+   }
+   
+   endActualWord = platform->nextGlyph (wordLc, endActualWord);
+   wordLc[endActualWord] = 0;
+
    // If the word is an exception, get the stored points.
    Vector <Integer> *exceptionalBreaks;
-   ConstString key (wordLc);
+   ConstString key (wordLc + startActualWord);
    if (exceptions != NULL && (exceptionalBreaks = exceptions->get (&key))) {
       int *result = new int[exceptionalBreaks->size()];
       for (int i = 0; i < exceptionalBreaks->size(); i++)
-         result[i] = exceptionalBreaks->get(i)->getValue();
+         result[i] = exceptionalBreaks->get(i)->getValue() + startActualWord;
       delete wordLc;
       *numBreaks = exceptionalBreaks->size();
       return result;
@@ -211,7 +257,7 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
 
    char work[strlen (word) + 3];
    strcpy (work, ".");
-   strcat (work, wordLc);
+   strcat (work, wordLc + startActualWord);
    delete wordLc;
    strcat (work, ".");
    
@@ -252,7 +298,7 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    for (int i = 0; i < n; i++) {
       if (points.get(i + 2) % 2) {
          breakPos.increase ();
-         breakPos.set (breakPos.size() - 1, i + 1);
+         breakPos.set (breakPos.size() - 1, i + 1 + startActualWord);
       }
    }
 
