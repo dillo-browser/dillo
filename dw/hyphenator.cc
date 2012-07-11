@@ -262,7 +262,6 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    char work[strlen (word) + 3];
    strcpy (work, ".");
    strcat (work, wordLc + startActualWord);
-   delete wordLc;
    strcat (work, ".");
    
    int l = strlen (work);
@@ -290,8 +289,13 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    }  
 
    // No hyphens in the first two chars or the last two.
-   points.set (1, 0);
-   points.set (2, 0);
+   // Characters are not bytes, so UTF-8 characters must be counted.
+   int numBytes1 = platform->nextGlyph (wordLc + startActualWord, 0);
+   int numBytes2 = platform->nextGlyph (wordLc + startActualWord, numBytes1);
+   for (int i = 0; i < numBytes2; i++)
+      points.set (i + 1, 0);
+
+   // TODO: Characters, not bytes (as above).
    points.set (points.size() - 2, 0);
    points.set (points.size() - 3, 0);
    
@@ -305,6 +309,8 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
          breakPos.set (breakPos.size() - 1, i + 1 + startActualWord);
       }
    }
+
+   delete wordLc;
 
    *numBreaks = breakPos.size ();
    if (*numBreaks == 0)
