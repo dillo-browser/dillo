@@ -82,7 +82,7 @@ Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
    TypedPair <TypedPointer <core::Platform>, ConstString> *pair =
       new TypedPair <TypedPointer <core::Platform>,
                      ConstString> (new TypedPointer <core::Platform> (platform),
-                                   new ConstString (lang));
+                                   new String (lang));
 
    Hyphenator *hyphenator = hyphenators->get (pair);
    if (hyphenator)
@@ -100,6 +100,10 @@ Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
       hyphenator = new Hyphenator (platform, patFile, excFile);
       hyphenators->put (pair, hyphenator);
    }
+
+   //lout::misc::StringBuffer sb;
+   //hyphenators->intoStringBuffer (&sb);
+   //printf ("%s\n", sb.getChars ());
 
    return hyphenator;
 }
