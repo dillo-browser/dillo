@@ -574,6 +574,13 @@ int Textblock::hyphenateWord (int wordIndex)
       words->insert (wordIndex, numBreaks);
       PRINTF ("[%p]       ... => %d words\n", this, words->size ());
 
+      // Adjust anchor indexes.
+      for (int i = 0; i < anchors->size (); i++) {
+         Anchor *anchor = anchors->getRef (i);
+         if (anchor->wordIndex > wordIndex)
+            anchor->wordIndex += numBreaks;
+      }
+      
       for (int i = 0; i < numBreaks + 1; i++) {
          Word *w = words->getRef (wordIndex + i);
 
@@ -602,8 +609,9 @@ int Textblock::hyphenateWord (int wordIndex)
             if (origWord.content.space) {
                fillSpace (w, origWord.spaceStyle);
                PRINTF ("      [%d] + space\n", wordIndex + i);
-            } else
+            } else {
                PRINTF ("      [%d] + nothing\n", wordIndex + i);
+            }
          }
 
          accumulateWordData (wordIndex + i);
@@ -695,20 +703,20 @@ void Textblock::accumulateWordData (int wordIndex)
       word->totalWidth = word->size.width + word->hyphenWidth;
       word->totalStretchability = 0;
       word->totalShrinkability = 0;
-      PRINTF ("      (first word of line)\n");
+      //printf ("      (first word of line)\n");
    } else {
-      if (lines->size () == 0)
-         PRINTF ("      (word %d word of not-yet-existing line %d)\n",
-                wordIndex, 0);
-      else if (wordIndex > lines->getLastRef()->lastWord)
-         PRINTF ("      (word %d word of not-yet-existing line %d)\n",
-                 wordIndex - (lines->getLastRef()->lastWord + 1),
-                 lines->size());
-      else {
-         int line = findLineOfWord (wordIndex);
-         PRINTF ("      (word %d word of line %d)\n",
-                 wordIndex - lines->getRef(line)->firstWord, line);
-      }
+      // if (lines->size () == 0)
+      //    printf ("      (word %d word of not-yet-existing line %d)\n",
+      //            wordIndex, 0);
+      // else if (wordIndex > lines->getLastRef()->lastWord)
+      //    printf ("      (word %d word of not-yet-existing line %d)\n",
+      //            wordIndex - (lines->getLastRef()->lastWord + 1),
+      //            lines->size());
+      // else {
+      //    int line = findLineOfWord (wordIndex);
+      //    printf ("      (word %d word of line %d)\n",
+      //            wordIndex - lines->getRef(line)->firstWord, line);
+      // }
 
       Word *prevWord = words->getRef (wordIndex - 1);
 
