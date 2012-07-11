@@ -3,11 +3,18 @@
 static void print (lout::misc::NotSoSimpleVector<int> *v)
 {
    for (int i = 0; i < v->size(); i++) {
+      // Uncomment für debugging, after making the respective members public.
+      //if (v->startExtra != -1 && i == v->startExtra + v->numExtra)
+      //   printf (" ]");
       if (i > 0)
          printf (", ");
+      //if (i == v->startExtra)
+      //   printf ("[ ");
+
       printf ("%d", v->get(i));
    }
-   printf ("\n");
+
+   printf (" (%d elements)\n", v->size ());
 }
 
 int main (int argc, char *argv[])

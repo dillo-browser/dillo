@@ -327,10 +327,12 @@ private:
    {
       if (startExtra != -1) {
          numMain += numExtra;
+         resizeMain ();
          memmove (arrayMain + startExtra + numExtra, arrayMain + startExtra,
                   (numMain - (startExtra + numExtra)) * sizeof (T));
-         memmove (arrayMain + startExtra, arrayExtra1, numExtra);
+         memmove (arrayMain + startExtra, arrayExtra1, numExtra * sizeof (T));
          startExtra = -1;
+         numExtra = 0;
       }
    }
    
@@ -387,10 +389,10 @@ public:
       assert (numInsert >= 0);
 
       // The following lines are a simple (but inefficient) replacement.
-      setSize (numMain + numInsert);
-      memmove (arrayMain + index + numInsert, arrayMain + index,
-               (numMain - index - numInsert) * sizeof (T));
-      return;
+      //setSize (numMain + numInsert);
+      //memmove (arrayMain + index + numInsert, arrayMain + index,
+      //         (numMain - index - numInsert) * sizeof (T));
+      //return;
 
       if (this->startExtra == -1) {
          // simple case
