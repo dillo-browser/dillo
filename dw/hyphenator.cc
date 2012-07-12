@@ -1,6 +1,7 @@
 #include "hyphenator.hh"
 
 #include "../lout/misc.hh"
+#include "../lout/unicode.hh"
 #include <stdio.h>
 #include <string.h>
 
@@ -192,6 +193,7 @@ bool Hyphenator::isHyphenationCandidate (const char *word)
  */
 bool Hyphenator::isCharPartOfActualWord (char *s)
 {
+#if 0
    // Return true when "s" points to a letter.
    return (s[0] >= 'a' && s[0] <= 'z') ||
       // UTF-8: starts with 0xc3
@@ -200,6 +202,9 @@ bool Hyphenator::isCharPartOfActualWord (char *s)
         (unsigned char)s[1] == 0xb6 /* ö */ ||
         (unsigned char)s[1] == 0xbc /* ü */ ||
         (unsigned char)s[1] == 0x9f /* ß */ ));
+#endif
+   
+   return lout::unicode::isAlpha (lout::unicode::decodeUtf8 (s));
 }
 
 /**

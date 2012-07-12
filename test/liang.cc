@@ -30,6 +30,7 @@ int main (int argc, char *argv[])
    hyphenateWord (&p, "JAHRHUNDERTROMAN");
    hyphenateWord (&p, "„Jahrhundertroman“");
    hyphenateWord (&p, "währenddessen");
+   hyphenateWord (&p, "„währenddessen“");
    hyphenateWord (&p, "Ückendorf");
    hyphenateWord (&p, "über");
    hyphenateWord (&p, "aber");
@@ -41,6 +42,7 @@ int main (int argc, char *argv[])
    hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeits"
                   "übertragungsverordnung“");
    hyphenateWord (&p, "Grundstücksverkehrsgenehmigungszuständigkeit");
+   hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeit“");
    hyphenateWord (&p, "(6R,7R)-7-[2-(2-Amino-4-thiazolyl)-glyoxylamido]-3-"
                   "(2,5-dihydro-6-hydroxy-2-methyl-5-oxo-1,2,4-triazin-3-yl-"
                   "thiomethyl)-8-oxo-5-thia-1-azabicyclo[4.2.0]oct-2-en-2-"
