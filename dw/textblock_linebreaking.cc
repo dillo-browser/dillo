@@ -326,7 +326,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    line->breakSpace = 0;
    line->leftOffset = 0;
 
-   alignLine (line);
+   alignLine (lineIndex);
    for (int i = line->firstWord; i < line->lastWord; i++) {
       Word *word = words->getRef (i);
       lineWidth += (word->effSpace - word->origSpace);
@@ -416,13 +416,13 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
    word = words->getRef (wordIndex);
    word->effSpace = word->origSpace;
 
-   accumulateWordData (wordIndex);
+   accumulateWordData (wordIndex, lines->size ());
 
    bool newLine;
    do {
       bool tempNewLine = false;
-      int firstIndex = lines->size() == 0 ?
-         0 : lines->getRef(lines->size() - 1)->lastWord + 1;
+      int firstIndex =
+         lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
       int searchUntil;
 
       if (wrapAll && wordIndex >= firstIndex && wordIndex == words->size() -1) {
@@ -448,7 +448,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          newLine = false;
 
       if(newLine) {
-         accumulateWordData (wordIndex);
+         accumulateWordData (wordIndex, lines->size() - 1);
          int wordIndexEnd = wordIndex;
 
          bool lineAdded;
@@ -543,7 +543,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
             PRINTF ("[%p]       accumulating again from %d to %d\n",
                     this, breakPos + 1, wordIndexEnd);
             for(int i = breakPos + 1; i <= wordIndexEnd; i++)
-               accumulateWordData (i);
+               accumulateWordData (i, lines->size() - 1);
 
          } while(!lineAdded);
       }
@@ -614,7 +614,7 @@ int Textblock::hyphenateWord (int wordIndex)
             }
          }
 
-         accumulateWordData (wordIndex + i);
+         accumulateWordData (wordIndex + i, lines->size() - 1);
       }
 
       PRINTF ("   finished\n");
@@ -689,12 +689,12 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
    }
 }
 
-void Textblock::accumulateWordData (int wordIndex)
+void Textblock::accumulateWordData (int wordIndex, int lineIndex)
 {
    Word *word = words->getRef (wordIndex);
    PRINTF ("[%p] ACCUMULATE_WORD_DATA (%d): ...\n", this, wordIndex);
 
-   int availWidth = calcAvailWidth (); // todo: variable? parameter?
+   int availWidth = calcAvailWidth (lineIndex);
 
    if (wordIndex == 0 ||
        (lines->size () > 0 &&
@@ -738,7 +738,7 @@ void Textblock::accumulateWordData (int wordIndex)
    //printf ("\n");
 }
 
-int Textblock::calcAvailWidth ()
+int Textblock::calcAvailWidth (int lineIndex)
 {
    int availWidth =
       this->availWidth - getStyle()->boxDiffWidth() - innerPadding;
@@ -746,6 +746,8 @@ int Textblock::calcAvailWidth ()
        layout->getUsesViewport () &&
        availWidth > layout->getWidthViewport () - 10)
       availWidth = layout->getWidthViewport () - 10;
+   if (lineIndex == 0)
+      availWidth -= line1OffsetEff;
 
    //PRINTF("[%p] CALC_AVAIL_WIDTH => %d - %d - %d = %d\n",
    //       this, this->availWidth, getStyle()->boxDiffWidth(), innerPadding,
@@ -787,9 +789,10 @@ void Textblock::initLine1Offset (int wordIndex)
  *
  * \todo Use block's style instead once paragraphs become proper blocks.
  */
-void Textblock::alignLine (Line *line)
+void Textblock::alignLine (int lineIndex)
 {
-   int availWidth = calcAvailWidth ();
+   Line *line = lines->getRef (lineIndex);
+   int availWidth = calcAvailWidth (lineIndex);
    Word *firstWord = words->getRef (line->firstWord);
    Word *lastWord = words->getRef (line->lastWord);
 

@@ -383,7 +383,7 @@ protected:
    inline int lineXOffsetContents (Line *line)
    {
       return innerPadding + line->leftOffset +
-         (line == lines->getRef (0) ? line1OffsetEff : 0);
+         (line == lines->getFirstRef() ? line1OffsetEff : 0);
    }
 
    /**
@@ -441,10 +441,10 @@ protected:
    virtual void wordWrap (int wordIndex, bool wrapAll);
    int hyphenateWord (int wordIndex);
    void accumulateWordForLine (int lineIndex, int wordIndex);
-   void accumulateWordData(int wordIndex);
-   int calcAvailWidth ();
+   void accumulateWordData(int wordIndex, int lineIndex);
+   int calcAvailWidth (int lineIndex);
    void initLine1Offset (int wordIndex);
-   void alignLine (Line *line);
+   void alignLine (int lineIndex);
 
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);
