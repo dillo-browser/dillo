@@ -1579,16 +1579,26 @@ void Textblock::addSpace (core::style::Style *style)
 
 void Textblock::fillSpace (Word *word, core::style::Style *style)
 {
-   // According to http://www.w3.org/TR/CSS2/text.html#white-space-model:
-   // "line breaking opportunities are determined based on the text prior
-   //  to the white space collapsing steps".
-   // So we call addBreakOption () for each Textblock::addSpace () call.
-   // This is important e.g. to be able to break between foo and bar in:
-   // <span style="white-space:nowrap">foo </span> bar
-   addBreakOption (style);
+   // Old comment:
+   // 
+   //     According to
+   //     http://www.w3.org/TR/CSS2/text.html#white-space-model: "line
+   //     breaking opportunities are determined based on the text
+   //     prior to the white space collapsing steps".
+   // 
+   //     So we call addBreakOption () for each Textblock::addSpace ()
+   //     call.  This is important e.g. to be able to break between
+   //     foo and bar in: <span style="white-space:nowrap">foo </span>
+   //     bar
+   //
+   // TODO: Re-evaluate again.
+
+   // TODO: This line does not work: addBreakOption (word, style);
 
    if (!word->content.space) {
-      word->badnessAndPenalty.setPenalty (0);
+      // Do not override a previously set break penalty.
+      if (!word->badnessAndPenalty.lineMustBeBroken())
+         word->badnessAndPenalty.setPenalty (0);
       word->content.space = true;
       word->effSpace = word->origSpace = style->font->spaceWidth +
          style->wordSpacing;

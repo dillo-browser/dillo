@@ -491,13 +491,21 @@ public:
    void addWidget (core::Widget *widget, core::style::Style *style);
    bool addAnchor (const char *name, core::style::Style *style);
    void addSpace (core::style::Style *style);
-   inline void addBreakOption (core::style::Style *style) // TODO needed?
+
+   inline void addBreakOption (core::style::Style *style)
    {
       int wordIndex = words->size () - 1;
-      if (wordIndex >= 0 &&
-          style->whiteSpace != core::style::WHITE_SPACE_NOWRAP &&
+      if (wordIndex >= 0)
+         addBreakOption (words->getRef(wordIndex), style);
+   }
+
+   // TODO Re-evaluate again. When needed, which penalty values, etc.
+   inline void addBreakOption (Word *word, core::style::Style *style)
+   {
+      if (style->whiteSpace != core::style::WHITE_SPACE_NOWRAP &&
           style->whiteSpace != core::style::WHITE_SPACE_PRE)
-         words->getRef(wordIndex)->badnessAndPenalty.setPenaltyForceBreak ();
+         if (word->badnessAndPenalty.lineMustBeBroken())
+            word->badnessAndPenalty.setPenalty (0);
    }
 
    void addHyphen();
