@@ -134,6 +134,8 @@ Textblock::~Textblock ()
  */
 void Textblock::sizeRequestImpl (core::Requisition *requisition)
 {
+   PRINTF ("[%p] SIZE_REQUEST: ...\n", this);
+
    rewrap ();
    showMissingLines ();
 
@@ -214,6 +216,8 @@ void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
 
 void Textblock::getExtremesImpl (core::Extremes *extremes)
 {
+   PRINTF ("[%p] GET_EXTREMES: ...\n", this);
+
    core::Extremes wordExtremes;
    Line *line;
    Word *word, *prevWord = NULL;
@@ -306,8 +310,8 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
 
 void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 {
-   PRINTF ("SIZE_ALLOCATE: %d, %d, %d x %d + %d\n",
-           allocation->x, allocation->y, allocation->width,
+   PRINTF ("[%p] SIZE_ALLOCATE: %d, %d, %d x %d + %d\n",
+           this, allocation->x, allocation->y, allocation->width,
            allocation->ascent, allocation->descent);
 
    showMissingLines ();
@@ -1370,6 +1374,8 @@ void Textblock::calcTextSize (const char *text, size_t len,
 void Textblock::addText (const char *text, size_t len,
                          core::style::Style *style)
 {
+   PRINTF ("[%p] ADD_TEXT (%d characters)\n", this, (int)len);
+
    // Count hyphens.
    int numHyphens = 0;
    for (size_t i = 0; i < len - 1; i++)

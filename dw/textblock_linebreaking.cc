@@ -447,6 +447,15 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
       } else
          newLine = false;
 
+      if(!newLine && !wrapAll)
+         // No new line is added. "mustQueueResize" must,
+         // nevertheless, be set, so that flush() will call
+         // queueResize(), and later sizeRequestImpl() is called,
+         // which then calls showMissingLines(), which eventually
+         // calls this method again, with wrapAll == true, so that
+         // newLine is calculated as "true".
+         mustQueueResize = true;
+
       if(newLine) {
          accumulateWordData (wordIndex, lines->size() - 1);
          int wordIndexEnd = wordIndex;
@@ -878,6 +887,8 @@ void Textblock::showMissingLines ()
 {
    int firstWordToWrap = lines->size () > 0 ?
       lines->getRef(lines->size () - 1)->lastWord + 1 : 0;
+   PRINTF ("[%p] SHOW_MISSING_LINES: wrap from %d to %d\n",
+           this, firstWordToWrap, words->size () - 1);
    for (int i = firstWordToWrap; i < words->size (); i++)
       wordWrap (i, true);
 }
