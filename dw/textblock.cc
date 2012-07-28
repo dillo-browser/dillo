@@ -1579,7 +1579,7 @@ void Textblock::addSpace (core::style::Style *style)
    int wordIndex = words->size () - 1;
    if (wordIndex >= 0) {
       fillSpace (words->getRef(wordIndex), style);
-      accumulateWordData (wordIndex, lines->size ());
+      accumulateWordData (wordIndex);
    }
 }
 
@@ -1638,7 +1638,7 @@ void Textblock::addHyphen ()
       // TODO Optimize? Like spaces?
       word->hyphenWidth = layout->textWidth (word->style->font, "\xc2\xad", 2);
 
-      accumulateWordData (wordIndex, lines->size ());
+      accumulateWordData (wordIndex);
    }
 }
 

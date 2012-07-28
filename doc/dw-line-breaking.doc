@@ -205,7 +205,7 @@ usw.
     detail.)</li>
 <li>It should be simple to assign a larger penalty for hyphens, when
     the line before is already hyphenated. This way, hyphens in
-    adjacent are pelalized furher./li>
+    adjacent are pelalized further.</li>
 </ul>
 
 */

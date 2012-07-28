@@ -441,7 +441,7 @@ protected:
    virtual void wordWrap (int wordIndex, bool wrapAll);
    int hyphenateWord (int wordIndex);
    void accumulateWordForLine (int lineIndex, int wordIndex);
-   void accumulateWordData(int wordIndex, int lineIndex);
+   void accumulateWordData(int wordIndex);
    int calcAvailWidth (int lineIndex);
    void initLine1Offset (int wordIndex);
    void alignLine (int lineIndex);

@@ -290,7 +290,8 @@ void Textblock::justifyLine (Line *line, int diff)
 Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
                                      bool temporary)
 {
-   PRINTF ("[%p] ADD_LINE (%d, %d)\n", this, firstWord, lastWord);
+   PRINTF ("[%p] ADD_LINE (%d, %d) => %d\n",
+           this, firstWord, lastWord, lines->size ());
 
    Word *lastWordOfLine = words->getRef(lastWord);
    // Word::totalWidth includes the hyphen (which is what we want here).
@@ -416,7 +417,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
    word = words->getRef (wordIndex);
    word->effSpace = word->origSpace;
 
-   accumulateWordData (wordIndex, lines->size ());
+   accumulateWordData (wordIndex);
 
    bool newLine;
    do {
@@ -457,7 +458,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          mustQueueResize = true;
 
       if(newLine) {
-         accumulateWordData (wordIndex, lines->size() - 1);
+         accumulateWordData (wordIndex);
          int wordIndexEnd = wordIndex;
 
          bool lineAdded;
@@ -552,7 +553,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
             PRINTF ("[%p]       accumulating again from %d to %d\n",
                     this, breakPos + 1, wordIndexEnd);
             for(int i = breakPos + 1; i <= wordIndexEnd; i++)
-               accumulateWordData (i, lines->size() - 1);
+               accumulateWordData (i);
 
          } while(!lineAdded);
       }
@@ -623,7 +624,7 @@ int Textblock::hyphenateWord (int wordIndex)
             }
          }
 
-         accumulateWordData (wordIndex + i, lines->size() - 1);
+         accumulateWordData (wordIndex + i);
       }
 
       PRINTF ("   finished\n");
@@ -698,35 +699,34 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
    }
 }
 
-void Textblock::accumulateWordData (int wordIndex, int lineIndex)
+void Textblock::accumulateWordData (int wordIndex)
 {
+   int lineIndex = lines->size ();
+   while (lineIndex > 0 && wordIndex <= lines->getRef(lineIndex - 1)->lastWord)
+      lineIndex--;
+
+   int firstWordOfLine;
+   if (lineIndex == 0)
+      firstWordOfLine = 0;
+   else
+      firstWordOfLine = lines->getRef(lineIndex - 1)->lastWord + 1;
+
    Word *word = words->getRef (wordIndex);
-   PRINTF ("[%p] ACCUMULATE_WORD_DATA (%d): ...\n", this, wordIndex);
+   PRINTF ("[%p] ACCUMULATE_WORD_DATA (%d); lineIndex = %d: ...\n",
+           this, wordIndex, lineIndex);
 
    int availWidth = calcAvailWidth (lineIndex);
 
-   if (wordIndex == 0 ||
-       (lines->size () > 0 &&
-        wordIndex == lines->getRef(lines->size () - 1)->lastWord + 1)) {
+   PRINTF ("      (%s existing line %d starts with word %d)\n",
+           lineIndex < lines->size () ? "already" : "not yet",
+           lineIndex, firstWordOfLine);
+
+   if (wordIndex == firstWordOfLine) {
       // first word of the (not neccessarily yet existing) line
       word->totalWidth = word->size.width + word->hyphenWidth;
       word->totalStretchability = 0;
       word->totalShrinkability = 0;
-      //printf ("      (first word of line)\n");
    } else {
-      // if (lines->size () == 0)
-      //    printf ("      (word %d word of not-yet-existing line %d)\n",
-      //            wordIndex, 0);
-      // else if (wordIndex > lines->getLastRef()->lastWord)
-      //    printf ("      (word %d word of not-yet-existing line %d)\n",
-      //            wordIndex - (lines->getLastRef()->lastWord + 1),
-      //            lines->size());
-      // else {
-      //    int line = findLineOfWord (wordIndex);
-      //    printf ("      (word %d word of line %d)\n",
-      //            wordIndex - lines->getRef(line)->firstWord, line);
-      // }
-
       Word *prevWord = words->getRef (wordIndex - 1);
 
       word->totalWidth = prevWord->totalWidth
