@@ -701,6 +701,9 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
 
 void Textblock::accumulateWordData (int wordIndex)
 {
+   // Typically, the word in question is in the last line; in any case
+   // quite at the end of the text, so that linear search is actually
+   // the fastest option.
    int lineIndex = lines->size ();
    while (lineIndex > 0 && wordIndex <= lines->getRef(lineIndex - 1)->lastWord)
       lineIndex--;
