@@ -1091,10 +1091,10 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                                                         core::Content::BREAK) {
                if (word->spaceStyle->hasBackground ())
                   drawBox (view, word->spaceStyle, area,
-                           xWidget + word->size.width,
+                           xWidget + wordSize,
                            yWidgetBase - line->boxAscent, word->effSpace,
                            line->boxAscent + line->boxDescent, false);
-               drawSpace(wordIndex, view, area, xWidget + word->size.width,
+               drawSpace(wordIndex, view, area, xWidget + wordSize,
                          yWidgetBase);
             }
 
