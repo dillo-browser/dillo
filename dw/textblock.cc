@@ -940,18 +940,38 @@ void Textblock::drawWord0 (int wordIndex1, int wordIndex2,
                    yWorldBase, totalWidth);
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
-      if (hlStart[layer].index <= wordIndex1 &&
-          hlEnd[layer].index >= wordIndex2) {
+      if (wordIndex1 <= hlEnd[layer].index &&
+          wordIndex2 >= hlStart[layer].index) {
          const int wordLen = strlen (text);
          int xStart, width;
-         int firstCharIdx = 0;
-         int lastCharIdx = wordLen;
+         int firstCharIdx;
+         int lastCharIdx;
 
-         if (wordIndex1 == hlStart[layer].index)
-            firstCharIdx = misc::min (hlStart[layer].nChar, wordLen);
+         if (hlStart[layer].index < wordIndex1)
+            firstCharIdx = 0;
+         else {
+            firstCharIdx =
+               misc::min (hlStart[layer].nChar,
+                          (int)strlen (words->getRef(hlStart[layer].index)
+                                       ->content.text));
+            for (int i = wordIndex1; i < hlStart[layer].index; i++)
+               // It can be assumed that all words from wordIndex1 to
+               // wordIndex2 have content type TEXT.
+               firstCharIdx += strlen (words->getRef(i)->content.text);
+         }
 
-         if (wordIndex2 == hlEnd[layer].index)
-            lastCharIdx = misc::min (hlEnd[layer].nChar, wordLen);
+         if (hlEnd[layer].index > wordIndex2)
+            lastCharIdx = wordLen;
+         else {
+            lastCharIdx =
+               misc::min (hlEnd[layer].nChar,
+                          (int)strlen (words->getRef(hlEnd[layer].index)
+                                       ->content.text));
+            for (int i = wordIndex1; i < hlEnd[layer].index; i++)
+               // It can be assumed that all words from wordIndex1 to
+               // wordIndex2 have content type TEXT.
+               lastCharIdx += strlen (words->getRef(i)->content.text);
+         }
 
          xStart = xWorld;
          if (firstCharIdx)
