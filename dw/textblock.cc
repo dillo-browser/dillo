@@ -920,7 +920,7 @@ void Textblock::drawWord0 (int wordIndex1, int wordIndex2,
                            const char *text, int totalWidth,
                            core::style::Style *style, core::View *view,
                            core::Rectangle *area, int xWidget, int yWidgetBase)
-{      
+{
    int xWorld = allocation.x + xWidget;
    int yWorldBase;
 
@@ -1046,8 +1046,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
    int yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
 
    for (int wordIndex = line->firstWord;
-        wordIndex <= line->lastWord
-           /* TODO && xWidget < area->x + area->width*/;
+        wordIndex <= line->lastWord && xWidget < area->x + area->width;
         wordIndex++) {
       Word *word = words->getRef(wordIndex);
       int wordSize = word->size.width;
