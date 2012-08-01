@@ -50,6 +50,7 @@ Textblock::Textblock (bool limitTextWidth)
    hasListitemValue = false;
    innerPadding = 0;
    line1Offset = 0;
+   ignoreLine1OffsetSometimes = false;
    mustQueueResize = false;
    redrawY = 0;
    lastWordDrawn = -1;
