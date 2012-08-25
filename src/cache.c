@@ -15,6 +15,7 @@
 
 #include <sys/types.h>
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -142,7 +143,9 @@ static int Cache_client_enqueue(const DilloUrl *Url, DilloWeb *Web,
    static int ClientKey = 0; /* Provide a primary key for each client */
    CacheClient_t *NewClient;
 
-   if (++ClientKey <= 0)
+   if (ClientKey < INT_MAX) /* check for integer overflow */
+      ClientKey++;
+   else
       ClientKey = 1;
 
    NewClient = dNew(CacheClient_t, 1);
