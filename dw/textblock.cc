@@ -1398,7 +1398,7 @@ void Textblock::addText (const char *text, size_t len,
 
    // Count hyphens.
    int numHyphens = 0;
-   for (size_t i = 0; i < len - 1; i++)
+   for (int i = 0; i < (int)len - 1; i++)
       // (0xc2, 0xad) is the UTF-8 representation of a soft hyphen (Unicode
       // 0xc2).
       if((unsigned char)text[i] == 0xc2 && (unsigned char)text[i + 1] == 0xad)
