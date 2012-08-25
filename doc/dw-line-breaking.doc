@@ -1,8 +1,9 @@
-/** \page dw-line-breaking Changes in Line-Breaking
+/** \page dw-line-breaking Changes in Line-Breaking and Hyphenation
 
-<div style="border: 2px solid #ff0000; padding: 0.5em 1em;
-background-color: #ffe0e0"><b>Warning:</b> Unsorted collection of
-notes. Should be incorporated into dw::Textblock.</div>
+<div style="border: 2px solid #ff0000; margin-bottom: 0.5em;
+padding: 0.5em 1em; background-color: #ffe0e0"><b>Warning:</b>
+Unsorted collection of notes. Should be incorporated into
+dw::Textblock.</div>
 
 <ul>
 <li>Motivation: opimized line breaking and introduction of penalties.</li>
@@ -13,11 +14,13 @@ notes. Should be incorporated into dw::Textblock.</div>
 dw::Textblock::Word::stretchability,
 dw::Textblock::Word::shrinkability, which are both set in
 dw::Textblock::addSpace().</li>
-
 <li>Creating a line as a whole, "invisible" words.</li>
+<li>Automatic, dynamic hyphenation by Liang's algorithm.</li>
 </ul>
 
 <h2>Literature</h2>
+
+<h3>Breaking Paragraphs Into Lines</h3>
 
 Although dillo does not (yet?) implement the algorithm TeX uses for
 line breaking, this document shares much of the notation used by the
@@ -27,6 +30,11 @@ Experience <b>11</b> (1981), 1119-1184; reprinted in: <i>Digital
 Typography</i> by Donalt E. Knuth, CSLI Publications 1999. Anyway an
 interesting reading.
 
+<h3>Hyphenation</h3>
+
+Dillo uses the algorithm by Frank Liang, which is described at
+http://www.tug.org/docs/liang/. Pattern files can be found at
+http://www.ctan.org/tex-archive/language/hyphenation.
 
 <h2>Criteria for Line-Breaking</h2>
 
@@ -184,18 +192,39 @@ w(AB-) = w(A) + w(B) + l(-)
 usw.
 </pre>
 
-<h2>Bugs</h2>
+<h2>Bugs and Things Needing Improvement</h2>
 
-<h3>Major</h3>
+<h3>High Priority</h3>
 
 <ul>
-<li>Collapsing spaces and collapsing margins do not work yet. (Are
-    collapsing spaces still needed anyway?)</li>
-<li>List items (and aligned table cells) have to be reviewed (usage of
-    dw::Textblock::line1Offset).</li>
+<li>There seem to be problems when breaking words containing hyphens
+already. Example: "Abtei-Stadt", which is divided into "Abtei-" and
+"Stadt", resulting possibly in "Abtei--[new line]Stadt". See also
+below under "Low Priority", on how to deal with hyphens and dashes.</li>
+<li>Paragraph breaks are depricated and should be replaced by multiple
+textblock widgets with (collapsing) margins. See doc/KHM1.html: the
+current release of dillo shows a space between the two paragraph, but
+dillo_hyphen does not.</li>
 </ul>
 
-<h3>Minor</h3>
+<h3>Medium Priority</h3>
+
+<ul>
+<li>Break hyphens and dashes. The following rules seem to be relevant:
+<ol>
+<li>In English, an em-dash is used with no spaces around. Breaking
+before and after the dash should be possible, perhaps with a penalty >
+0. (In German, an en-dash (Halbgeviert) with spaces around is used
+instead.)</li>
+<li>After a hyphen, which is part of a compound word, a break should
+be possible. As described above ("Abtei-Stadt"), this collides with
+hyphenation.</li>
+</ol>
+Where to implement? In the same dynamic, lazy way like hyphenation? As
+part of hyphenation?</li>
+</ul>
+
+<h3>Low Priority</h3>
 
 <ul>
 <li>Should dw::core::Content::BREAK still be used? Currently, this is

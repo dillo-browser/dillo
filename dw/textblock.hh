@@ -17,7 +17,8 @@ namespace dw {
  * \brief A Widget for rendering text blocks, i.e. paragraphs or sequences
  *    of paragraphs.
  *
- * <div style="border: 2px solid #ff0000; padding: 0.5em 1em;
+ * <div style="border: 2px solid #ff0000; margin-top: 0.5em;
+ * margin-bottom: 0.5em; padding: 0.5em 1em;
  * background-color: #ffe0e0"><b>Warning:</b> The recent changes (line
  * breaking and hyphenation) have not yet been incorporated into this
  * documentation. See \ref dw-line-breaking.</div>
