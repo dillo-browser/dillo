@@ -201,10 +201,6 @@ usw.
 already. Example: "Abtei-Stadt", which is divided into "Abtei-" and
 "Stadt", resulting possibly in "Abtei--[new line]Stadt". See also
 below under "Low Priority", on how to deal with hyphens and dashes.</li>
-<li>Paragraph breaks are depricated and should be replaced by multiple
-textblock widgets with (collapsing) margins. See doc/KHM1.html: the
-current release of dillo shows a space between the two paragraph, but
-dillo_hyphen does not.</li>
 </ul>
 
 <h3>Medium Priority</h3>
