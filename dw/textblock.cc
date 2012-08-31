@@ -219,12 +219,6 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
 {
    PRINTF ("[%p] GET_EXTREMES: ...\n", this);
 
-   core::Extremes wordExtremes;
-   Line *line;
-   Word *word, *prevWord = NULL;
-   int wordIndex, lineIndex;
-   int parMax;
-
    showMissingLines ();
 
    if (lines->size () == 0) {
@@ -235,13 +229,14 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       PRINTF ("GET_EXTREMES: empty (but %d words)\n", words->size());
    } else if (wrapRef == -1) {
       /* no rewrap necessary -> values in lines are up to date */
-      line = lines->getRef (lines->size () - 1);
+      Line *line = lines->getRef (lines->size () - 1);
       extremes->minWidth = line->maxParMin;
       extremes->maxWidth = line->maxParMax;
 
       PRINTF ("GET_EXTREMES: no rewrap => %d, %d\n",
               line->maxParMin, line->maxParMax);
    } else {
+      int parMax;
       /* Calculate the extremes, based on the values in the line from
          where a rewrap is necessary. */
 
@@ -252,60 +247,60 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
          extremes->maxWidth = 0;
          parMax = 0;
       } else {
-         line = lines->getRef (wrapRef);
+         Line *line = lines->getRef (wrapRef);
          extremes->minWidth = line->maxParMin;
-         extremes->maxWidth = line->maxParMax;
-         parMax = line->parMax;
+         extremes->maxWidth = misc::max (line->maxParMax, line->parMax);
+         parMax = line->parMax; // TODO Does this include the last space?
       }
 
-      int prevWordSpace = 0;
-      for (lineIndex = wrapRef; lineIndex < lines->size (); lineIndex++) {
-         line = lines->getRef (lineIndex);
+      if (wrapRef < lines->size()) {
          int parMin = 0;
+         
+         for (int wordIndex = lines->getRef(wrapRef)->firstWord;
+              wordIndex < words->size(); wordIndex++) {
+            Word *word = words->getRef (wordIndex);
+            bool atLastWord = wordIndex == words->size() - 1;
 
-         for (wordIndex = line->firstWord; wordIndex <= line->lastWord;
-              wordIndex++) {
-            word = words->getRef (wordIndex);
-
+            //printf ("   word: ");
+            //printWord (word);
+            //printf ("\n");
+            
+            core::Extremes wordExtremes;
             getWordExtremes (word, &wordExtremes);
             if (wordIndex == 0) {
                wordExtremes.minWidth += line1Offset;
                wordExtremes.maxWidth += line1Offset;
             }
-
-            extremes->minWidth = misc::max (extremes->minWidth,
-                                            wordExtremes.minWidth);
-
-            if (word->content.type != core::Content::BREAK)
-               parMax += prevWordSpace;
-            parMax += wordExtremes.maxWidth;
-
-            if (prevWord && !prevWord->badnessAndPenalty.lineMustBeBroken ())
-               parMin += prevWordSpace + wordExtremes.minWidth;
-            else
-               parMin = wordExtremes.minWidth;
-
-            if (extremes->minWidth < parMin)
-               extremes->minWidth = parMin;
-
-            prevWordSpace = word->origSpace;
-            prevWord = word;
-         }
-
-         if ((words->getRef(line->lastWord)->content.type
-              == core::Content::BREAK ) ||
-             lineIndex == lines->size () - 1 ) {
-            extremes->maxWidth = misc::max (extremes->maxWidth, parMax);
-            prevWordSpace = 0;
-            parMax = 0;
+            
+            // Minimum: between two *possible* breaks (or at the end).
+            if (word->badnessAndPenalty.lineCanBeBroken () || atLastWord) {
+               parMin += wordExtremes.minWidth + word->hyphenWidth;
+               extremes->minWidth = misc::max (extremes->minWidth, parMin);
+               parMin = 0;
+            } else
+               // Shrinkability could be considered, but really does not play a
+               // role.
+               parMin += wordExtremes.minWidth + word->origSpace;
+            
+            // Maximum: between two *neccessary* breaks (or at the end).
+            if (word->badnessAndPenalty.lineMustBeBroken () || atLastWord) {
+               parMax += wordExtremes.maxWidth + word->hyphenWidth;
+               extremes->maxWidth = misc::max (extremes->maxWidth, parMax);
+               parMax = 0;
+            } else
+               parMax += wordExtremes.maxWidth + word->origSpace;
+            
+            PRINTF ("    => ... extremes = %d / %d, parMin = %d, parMax = %d\n",
+                    extremes->minWidth, extremes->maxWidth, parMin, parMax);
          }
       }
-
    }
 
    int diff = innerPadding + getStyle()->boxDiffWidth ();
    extremes->minWidth += diff;
    extremes->maxWidth += diff;
+
+   PRINTF ("GET_EXTREMES: %d / %d\n", extremes->minWidth, extremes->maxWidth);
 }
 
 

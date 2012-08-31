@@ -333,8 +333,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       lineWidth += (word->effSpace - word->origSpace);
    }
    
-
    if (lines->size () == 1) {
+      // first line
       line->top = 0;
 
       // TODO What to do with this one: lastLine->maxLineWidth = line1OffsetEff;
@@ -382,14 +382,35 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 void Textblock::accumulateWordExtremees (int firstWord, int lastWord,
                                          int *maxOfMinWidth, int *sumOfMaxWidth)
 {
+   int parMin = 0;
    *maxOfMinWidth = *sumOfMaxWidth = 0;
 
    for (int i = firstWord; i <= lastWord; i++) {
       Word *word = words->getRef (i);
+      bool atLastWord = i == lastWord;
+
       core::Extremes extremes;
       getWordExtremes (word, &extremes);
 
-      *maxOfMinWidth = misc::min (*maxOfMinWidth, extremes.minWidth);
+      // Minimum: between two *possible* breaks (or at the end).
+      // TODO This is redundant to getExtremesImpl().
+      if (word->badnessAndPenalty.lineCanBeBroken () || atLastWord) {
+         parMin += extremes.minWidth + word->hyphenWidth;
+         *maxOfMinWidth = misc::max (*maxOfMinWidth, parMin);
+         parMin = 0;
+      } else
+         // Shrinkability could be considered, but really does not play a
+         // role.
+         parMin += extremes.minWidth + word->origSpace;
+
+      //printf ("[%p] after word: ", this);
+      //printWord (word);
+      //printf ("\n");
+
+      //printf ("[%p] (%d / %d) => parMin = %d, maxOfMinWidth = %d\n",
+      //        this, extremes.minWidth, extremes.maxWidth, parMin,
+      //        *maxOfMinWidth);
+
       *sumOfMaxWidth += (extremes.maxWidth + word->origSpace);
       // Regarding the sum: if this is the end of the paragraph, it
       // does not matter, since word->space is 0 in this case.
