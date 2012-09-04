@@ -229,12 +229,12 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       PRINTF ("GET_EXTREMES: empty (but %d words)\n", words->size());
    } else if (wrapRef == -1) {
       /* no rewrap necessary -> values in lines are up to date */
-      Line *line = lines->getRef (lines->size () - 1);
-      extremes->minWidth = line->maxParMin;
-      extremes->maxWidth = line->maxParMax;
+      Line *lastLine = lines->getRef (lines->size () - 1);
+      extremes->minWidth = lastLine->maxParMin;
+      extremes->maxWidth = lastLine->maxParMax;
 
       PRINTF ("GET_EXTREMES: no rewrap => %d, %d\n",
-              line->maxParMin, line->maxParMax);
+              lastLine->maxParMin, lastLine->maxParMax);
    } else {
       int parMax;
       /* Calculate the extremes, based on the values in the line from
@@ -247,10 +247,21 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
          extremes->maxWidth = 0;
          parMax = 0;
       } else {
-         Line *line = lines->getRef (wrapRef);
+         // Line [wrapRef - 1], not [wrapRef], because maxParMin and
+         // maxParMax include the respective values *in* any line
+         // (accumulated up to the *end*), but we start at line
+         // [wrapRef], so these are not needed.
+
+         Line *line = lines->getRef (wrapRef - 1);
+         Word *lastWord = words->getRef (line->lastWord);
          extremes->minWidth = line->maxParMin;
-         extremes->maxWidth = misc::max (line->maxParMax, line->parMax);
-         parMax = line->parMax; // TODO Does this include the last space?
+         // consider also accumulated next value of maxParMax: parMax
+         extremes->maxWidth =
+            misc::max (line->maxParMax,
+                       // parMax includes the last space, which we ignore here
+                       line->parMax - lastWord->origSpace
+                       + lastWord->hyphenWidth);
+         parMax = line->parMax;
       }
 
       if (wrapRef < lines->size()) {

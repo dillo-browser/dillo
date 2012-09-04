@@ -206,15 +206,35 @@ protected:
        * widgets within this line. */
       int marginDescent;
 
-      /* The following members contain accumulated values, from the top
-       * down to the line before. */
-      int maxLineWidth; /* maximum of all line widths */
-      int maxParMin;    /* maximum of all paragraph minima */
-      int maxParMax;    /* maximum of all paragraph maxima */
+      /* The following members contain accumulated values, from the
+       * top down to this line. Please notice a change: until
+       * recently, the values were accumulated up to the last line,
+       * not this line.
+       *
+       * Also, keep in mind that at the end of a line, the space of
+       * the last word is ignored, but instead, the hyphen width must
+       * be considered.*/
+
+      int maxLineWidth; /* Maximum of all line widths, including this
+                         * line. Does not include the last space, but
+                         * the last hyphen width. */
+      int maxParMin;    /* Maximum of all paragraph minima, including
+                         * this line. */
+      int maxParMax;    /* Maximum of all paragraph maxima. This line
+                         * is only included, if it is the last line of
+                         * the paragraph (last word is a forced
+                         * break); otherwise, it is the value of the
+                         * last paragraph. For this reason, consider
+                         * also parMax. */
       int parMax;       /* The maximal total width down from the last
-                         * paragraph start, to the *ene* of this
-                         * line. (Notice that the semantics have
-                         * changed.) */
+                         * paragraph start, to the *end* of this line.
+                         * The space at the end of this line is
+                         * included, but not the hyphen width (as
+                         * opposed to the other values). So, in some
+                         * cases, the space has to be subtracted and
+                         * the hyphen width to be added, to compare it
+                         * to maxParMax. (Search the code for
+                         * occurances.) */
    };
 
    struct Word

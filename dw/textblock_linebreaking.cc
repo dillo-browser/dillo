@@ -332,15 +332,18 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       Word *word = words->getRef (i);
       lineWidth += (word->effSpace - word->origSpace);
    }
+
+   int lastMaxParMax; // maxParMax of the last line
    
    if (lines->size () == 1) {
       // first line
       line->top = 0;
 
-      // TODO What to do with this one: lastLine->maxLineWidth = line1OffsetEff;
       line->maxLineWidth = lineWidth;
       line->maxParMin = maxOfMinWidth;
-      line->parMax = line->maxParMax = sumOfMaxWidth;
+      line->parMax = sumOfMaxWidth;
+
+      lastMaxParMax = 0;
    } else {
       Line *prevLine = lines->getRef (lines->size () - 2);
 
@@ -351,16 +354,29 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       line->maxParMin = misc::max (maxOfMinWidth, prevLine->maxParMin);
 
       Word *lastWordOfPrevLine = words->getRef (prevLine->lastWord);
-      if (lastWordOfPrevLine->content.type == core::Content::BREAK)
+      if (lastWordOfPrevLine->badnessAndPenalty.lineMustBeBroken ())
          // This line starts a new paragraph.
          line->parMax = sumOfMaxWidth;
       else
          // This line continues the paragraph from prevLine.
          line->parMax = prevLine->parMax + sumOfMaxWidth;
 
-      line->maxParMax = misc::max (line->parMax, prevLine->maxParMax);
-
+      lastMaxParMax = prevLine->maxParMax;
    }
+
+   // "maxParMax" is only set, when this line is the last line of the
+   // paragraph. 
+   Word *lastWordOfThisLine = words->getRef (line->lastWord);
+   if (lastWordOfThisLine->badnessAndPenalty.lineMustBeBroken ())
+      // Paragraph ends here.
+      line->maxParMax =
+         misc::max (lastMaxParMax,
+                    // parMax includes the last space, which we ignore here
+                    line->parMax - lastWordOfThisLine->origSpace
+                    + lastWordOfThisLine->hyphenWidth);
+   else
+      // Paragraph continues: simply copy the last value of "maxParMax".
+      line->maxParMax = lastMaxParMax;
    
    for(int i = line->firstWord; i <= line->lastWord; i++)
       accumulateWordForLine (lineIndex, i);
@@ -373,6 +389,14 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
            line->contentAscent);
    PRINTF ("   line[%d].contentDescent = %d\n",
            lines->size () - 1, line->contentDescent);
+
+   PRINTF ("   line[%d].maxLineWidth = %d\n",
+           lines->size () - 1, line->maxLineWidth);
+   PRINTF ("   line[%d].maxParMin = %d\n",
+           lines->size () - 1, line->maxParMin);
+   PRINTF ("   line[%d].maxParMax = %d\n",
+           lines->size () - 1, line->maxParMax);
+   PRINTF ("   line[%d].parMax = %d\n", lines->size () - 1, line->parMax);
 
    mustQueueResize = true;
 
@@ -412,8 +436,7 @@ void Textblock::accumulateWordExtremees (int firstWord, int lastWord,
       //        *maxOfMinWidth);
 
       *sumOfMaxWidth += (extremes.maxWidth + word->origSpace);
-      // Regarding the sum: if this is the end of the paragraph, it
-      // does not matter, since word->space is 0 in this case.
+      // Notice that the last space is added. See also: Line::parMax.
    }
 }
 
