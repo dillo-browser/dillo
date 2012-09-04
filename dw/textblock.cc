@@ -231,7 +231,12 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       /* no rewrap necessary -> values in lines are up to date */
       Line *lastLine = lines->getRef (lines->size () - 1);
       extremes->minWidth = lastLine->maxParMin;
-      extremes->maxWidth = lastLine->maxParMax;
+      Word *lastWord = words->getRef (lastLine->lastWord);
+      extremes->maxWidth =
+         misc::max (lastLine->maxParMax,
+                    // parMax includes the last space, which we ignore here
+                    lastLine->parMax - lastWord->origSpace
+                    + lastWord->hyphenWidth);
 
       PRINTF ("GET_EXTREMES: no rewrap => %d, %d\n",
               lastLine->maxParMin, lastLine->maxParMax);
@@ -311,7 +316,15 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    extremes->minWidth += diff;
    extremes->maxWidth += diff;
 
-   PRINTF ("GET_EXTREMES: %d / %d\n", extremes->minWidth, extremes->maxWidth);
+   //printf ("[%p] GET_EXTREMES, on textblock that  ", this);
+   //if (words->size() == 0)
+   //   printf ("is empty\n");
+   //else {
+   //   printf ("starts with:\n   ");
+   //   printWord (words->getRef(0));
+   //   printf ("\n");
+   //}
+   //printf ("=> %d / %d\n", extremes->minWidth, extremes->maxWidth);
 }
 
 
