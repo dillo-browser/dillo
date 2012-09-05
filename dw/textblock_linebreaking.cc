@@ -91,9 +91,28 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
    }
 }
 
+/**
+ * Sets the penalty, multiplied with 100. Multiplication is necessary
+ * to deal with fractional numbers, without having to use floating
+ * point numbers. So, to set a penalty to 0.5, pass 50.
+ *
+ * The definition of penalties depends on the definition of badness,
+ * which adheres to the description in \ref dw-line-breaking, section
+ * "Criteria for Line-Breaking". The exact calculation may vary, but
+ * this definition of should be rather stable: (i)&nbsp;A perfectly
+ * fitting line has a badness of 0. (ii)&nbsp;A line, where all spaces
+ * are extended by exactly the stretchabilty, as well as a line, where
+ * all spaces are reduced by the shrinkability, have a badness of 1.
+ */
 void Textblock::BadnessAndPenalty::setPenalty (int penalty)
 {
-   this->penalty = penalty;
+   // This factor consists of: (i) 100^3, since in calcBadness(), the
+   // ratio is multiplied with 100 (again, to use integer numbers for
+   // fractional numbers), and the badness (which has to be compared
+   // to the penalty!) is the third power or it; (ii) the denominator
+   // 100, of course, since 100 times the penalty is passed to this
+   // method.
+   this->penalty = penalty * (100 * 100 * 100 / 100);
    penaltyState = PENALTY_VALUE;
 }
 

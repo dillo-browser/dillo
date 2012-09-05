@@ -17,9 +17,9 @@ namespace dw {
  * \brief A Widget for rendering text blocks, i.e. paragraphs or sequences
  *    of paragraphs.
  *
- * <div style="border: 2px solid #ff0000; margin-top: 0.5em;
+ * <div style="border: 2px solid #ffff00; margin-top: 0.5em;
  * margin-bottom: 0.5em; padding: 0.5em 1em;
- * background-color: #ffe0e0"><b>Warning:</b> The recent changes (line
+ * background-color: #ffffe0"><b>Info:</b> The recent changes (line
  * breaking and hyphenation) have not yet been incorporated into this
  * documentation. See \ref dw-line-breaking.</div>
  *
@@ -209,7 +209,12 @@ private:
 
 protected:
    enum {
-      HYPHEN_BREAK = 1000000 // to be tested and tuned
+      /**
+       *  The penalty for hyphens, multiplied with 100. So, 100 means
+       *  1.0. See dw::Textblock::BadnessAndPenalty::setPenalty for
+       *  more details.
+       */
+      HYPHEN_BREAK = 100
    };
 
    struct Line
