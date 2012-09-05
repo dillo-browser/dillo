@@ -176,11 +176,15 @@ private:
 
       // Here, all infinity levels have got special meanings.
       enum {
-         INF_VALUE = 0,        // simple values
-         INF_LARGE,            // large values, like QUITE_LOOSE
-         INF_NOT_STRETCHABLE,  // reserved for NOT_STRECTHABLE
-         INF_INFINITE,         // "really" infinite
-         INF_MAX = INF_INFINITE
+         INF_VALUE = 0,        /* simple values */
+         INF_LARGE,            /* large values, like QUITE_LOOSE */
+         INF_NOT_STRETCHABLE,  /* reserved for NOT_STRECTHABLE */
+         INF_PENALTIES,        /* used for penalties */
+         INF_TOO_TIGHT,        /* used for lines, which are too tight;
+                                  that this is the last value means
+                                  that lines, which are too tight, are
+                                  regarded as the worst case */
+         INF_MAX = INF_TOO_TIGHT
       };
 
       int badnessValue (int infLevel);

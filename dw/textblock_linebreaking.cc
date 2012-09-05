@@ -23,7 +23,7 @@ int Textblock::BadnessAndPenalty::badnessValue (int infLevel)
       return infLevel == INF_VALUE ? badness : 0;
 
    case TOO_TIGHT:
-      return infLevel == INF_INFINITE ? 1 : 0;
+      return infLevel == INF_TOO_TIGHT ? 1 : 0;
    }
 
    // compiler happiness
@@ -35,10 +35,10 @@ int Textblock::BadnessAndPenalty::penaltyValue (int infLevel)
 {
    switch (penaltyState) {
    case FORCE_BREAK:
-      return infLevel == INF_INFINITE ? -1 : 0;
+      return infLevel == INF_PENALTIES ? -1 : 0;
 
    case PROHIBIT_BREAK:
-      return infLevel == INF_INFINITE ? 1 : 0;
+      return infLevel == INF_PENALTIES ? 1 : 0;
 
    case PENALTY_VALUE:
       return  infLevel == INF_VALUE ? penalty : 0;
