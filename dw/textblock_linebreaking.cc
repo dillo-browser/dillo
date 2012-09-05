@@ -10,16 +10,20 @@ using namespace lout;
 
 namespace dw {
 
-int Textblock::BadnessAndPenalty::badnessInffinities ()
+int Textblock::BadnessAndPenalty::badnessValue (int infLevel)
 {
    switch (badnessState) {
-   case TOO_LOOSE:
-   case TOO_TIGHT:
-      return 1;
+   case NOT_STRETCHABLE:
+      return infLevel == INF_NOT_STRETCHABLE ? 1 : 0;
 
    case QUITE_LOOSE:
+      return infLevel == INF_LARGE ? 1 : 0;
+
    case BADNESS_VALUE:
-      return 0;
+      return infLevel == INF_VALUE ? badness : 0;
+
+   case TOO_TIGHT:
+      return infLevel == INF_INFINITE ? 1 : 0;
    }
 
    // compiler happiness
@@ -27,42 +31,22 @@ int Textblock::BadnessAndPenalty::badnessInffinities ()
    return 0;
 }
 
-int Textblock::BadnessAndPenalty::penaltyInffinities ()
+int Textblock::BadnessAndPenalty::penaltyValue (int infLevel)
 {
    switch (penaltyState) {
    case FORCE_BREAK:
-      return -1;
+      return infLevel == INF_INFINITE ? -1 : 0;
 
    case PROHIBIT_BREAK:
-      return 1;
+      return infLevel == INF_INFINITE ? 1 : 0;
 
    case PENALTY_VALUE:
-      return 0;
+      return  infLevel == INF_VALUE ? penalty : 0;
    }
 
    // compiler happiness
    lout::misc::assertNotReached ();
    return 0;
-}
-
-int Textblock::BadnessAndPenalty::badnessInfinities ()
-{
-   return badnessState == QUITE_LOOSE ? ratio : 0;
-}
-
-int Textblock::BadnessAndPenalty::penaltyInfinities ()
-{
-   return 0;
-}
-
-int Textblock::BadnessAndPenalty::badnessValue ()
-{
-   return badnessState == BADNESS_VALUE ? badness : 0;
-}
-
-int Textblock::BadnessAndPenalty::penaltyValue ()
-{
-   return penaltyState == PENALTY_VALUE ? penalty : 0;
 }
 
 void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
@@ -81,7 +65,7 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
       badness = 0;
    } else if (totalWidth < idealWidth) {
       if (totalStretchability == 0)
-         badnessState = TOO_LOOSE;
+         badnessState = NOT_STRETCHABLE;
       else {
          ratio = 100 * (idealWidth - totalWidth) / totalStretchability;
          if (ratio > 1024)
@@ -126,7 +110,7 @@ void Textblock::BadnessAndPenalty::setPenaltyForceBreak ()
 bool Textblock::BadnessAndPenalty::lineLoose ()
 {
    return
-      badnessState == TOO_LOOSE || badnessState == QUITE_LOOSE ||
+      badnessState == NOT_STRETCHABLE || badnessState == QUITE_LOOSE ||
       (badnessState == BADNESS_VALUE && ratio > 0);
 }
 
@@ -154,42 +138,22 @@ bool Textblock::BadnessAndPenalty::lineCanBeBroken ()
 
 int Textblock::BadnessAndPenalty::compareTo (BadnessAndPenalty *other)
 {
-   // First, a special condition: if a line is too tight, it will
-   // always be regarded as worse than a line, which is not too
-   // tight. Especially, lines too tight are worse than lines too
-   // loose. See test/table-1.html as a text case: the first line,
-   // which contains only the word "Short,", is too loose, but not
-   // breaking here would make the line too tight, making the text
-   // overwrap the available space.
+   for (int l = INF_MAX; l >= 0; l--) {
+      int thisValue = badnessValue (l) + penaltyValue (l);
+      int otherValue = other->badnessValue (l) + other->penaltyValue (l);
 
-   if (lineTooTight() && !other->lineTooTight())
-      return 1;
-   if (!lineTooTight() && other->lineTooTight())
-      return -1;
-
-   int thisNumInffinities = badnessInffinities () + penaltyInffinities ();
-   int otherNumInffinities =
-      other->badnessInffinities () + other->penaltyInffinities ();
-   int thisNumInfinities = badnessInfinities () + penaltyInfinities ();
-   int otherNumInfinities =
-      other->badnessInfinities () + other->penaltyInfinities ();
-   int thisValue = badnessValue () + penaltyValue ();
-   int otherValue = other->badnessValue () + other->penaltyValue ();
-
-   if (thisNumInffinities == otherNumInffinities) {
-      if (thisNumInfinities == otherNumInfinities)
+      if (thisValue != otherValue)
          return thisValue - otherValue;
-      else
-         return thisNumInfinities - otherNumInfinities;
-   } else
-      return thisNumInffinities - otherNumInffinities;
+   }
+   
+   return 0;
 }
 
 void Textblock::BadnessAndPenalty::print ()
 {
    switch (badnessState) {
-   case TOO_LOOSE:
-      printf ("too loose");
+   case NOT_STRETCHABLE:
+      printf ("not stretchable");
       break;
 
    case TOO_TIGHT:

@@ -155,7 +155,8 @@ private:
    class BadnessAndPenalty
    {
    private:
-      enum { TOO_LOOSE, QUITE_LOOSE, BADNESS_VALUE, TOO_TIGHT } badnessState;
+      enum { NOT_STRETCHABLE, QUITE_LOOSE, BADNESS_VALUE, TOO_TIGHT }
+         badnessState;
       enum { FORCE_BREAK, PROHIBIT_BREAK, PENALTY_VALUE } penaltyState;
       int ratio; // ratio is only defined when badness is defined
       int badness, penalty;
@@ -163,12 +164,27 @@ private:
       // for debugging:
       int totalWidth, idealWidth, totalStretchability, totalShrinkability;
 
-      int badnessInffinities ();
-      int penaltyInffinities ();
-      int badnessInfinities ();
-      int penaltyInfinities ();
-      int badnessValue ();
-      int penaltyValue ();
+      // "Infinity levels" are used to represent very large numbers,
+      // including "quasi-infinite" numbers. A couple of infinity
+      // level and number can be mathematically represented as
+      //
+      //    number * N ^ (infinity level)
+      //
+      // where N is a number which is large enough. Practically,
+      // infinity levels are used to circumvent limited ranges for
+      // integer numbers.
+
+      // Here, all infinity levels have got special meanings.
+      enum {
+         INF_VALUE = 0,        // simple values
+         INF_LARGE,            // large values, like QUITE_LOOSE
+         INF_NOT_STRETCHABLE,  // reserved for NOT_STRECTHABLE
+         INF_INFINITE,         // "really" infinite
+         INF_MAX = INF_INFINITE
+      };
+
+      int badnessValue (int infLevel);
+      int penaltyValue (int infLevel);
       
    public:
       void calcBadness (int totalWidth, int idealWidth,
