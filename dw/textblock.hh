@@ -457,8 +457,8 @@ protected:
    bool sendSelectionEvent (core::SelectionState::EventType eventType,
                             core::MousePositionEvent *event);
 
-   void accumulateWordExtremees (int firstWord, int lastWord,
-                                 int *maxOfMinWidth, int *sumOfMaxWidth);
+   void accumulateWordExtremes (int firstWord, int lastWord,
+                                int *maxOfMinWidth, int *sumOfMaxWidth);
    virtual void wordWrap (int wordIndex, bool wrapAll);
    int hyphenateWord (int wordIndex);
    void accumulateWordForLine (int lineIndex, int wordIndex);

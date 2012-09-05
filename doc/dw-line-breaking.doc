@@ -252,7 +252,7 @@ possible ways of hyphenation: ABCD, ABC-D, AB-CD, AB-C-D, A-BCD,
 A-BC-D, A-B-CD, A-B-C-D. (Some of them, like the last one, are only
 probable for very narrow lines.)
 
-Let w(A), w(B), W(C), W(D) be the word widths (part of
+Let w(A), w(B), w(C), w(D) be the word widths (part of
 dw::Textblock::Word::size), which have to be calculated, and l be a
 shorthand for of dw::core::Platform::textWidth. Without considering
 this problem, the calculatin would be simple: w(A) = l(A)

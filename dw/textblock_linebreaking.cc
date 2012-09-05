@@ -297,8 +297,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    // Word::totalWidth includes the hyphen (which is what we want here).
    int lineWidth = lastWordOfLine->totalWidth;
    int maxOfMinWidth, sumOfMaxWidth;
-   accumulateWordExtremees (firstWord, lastWord, &maxOfMinWidth,
-                            &sumOfMaxWidth);
+   accumulateWordExtremes (firstWord, lastWord, &maxOfMinWidth,
+                           &sumOfMaxWidth);
 
    PRINTF ("   words[%d]->totalWidth = %d\n", lastWord,
            lastWordOfLine->totalWidth);
@@ -403,8 +403,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    return line;
 }
 
-void Textblock::accumulateWordExtremees (int firstWord, int lastWord,
-                                         int *maxOfMinWidth, int *sumOfMaxWidth)
+void Textblock::accumulateWordExtremes (int firstWord, int lastWord,
+                                        int *maxOfMinWidth, int *sumOfMaxWidth)
 {
    int parMin = 0;
    *maxOfMinWidth = *sumOfMaxWidth = 0;
