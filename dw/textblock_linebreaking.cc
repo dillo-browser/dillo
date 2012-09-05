@@ -154,6 +154,19 @@ bool Textblock::BadnessAndPenalty::lineCanBeBroken ()
 
 int Textblock::BadnessAndPenalty::compareTo (BadnessAndPenalty *other)
 {
+   // First, a special condition: if a line is too tight, it will
+   // always be regarded as worse than a line, which is not too
+   // tight. Especially, lines too tight are worse than lines too
+   // loose. See test/table-1.html as a text case: the first line,
+   // which contains only the word "Short,", is too loose, but not
+   // breaking here would make the line too tight, making the text
+   // overwrap the available space.
+
+   if (lineTooTight() && !other->lineTooTight())
+      return 1;
+   if (!lineTooTight() && other->lineTooTight())
+      return -1;
+
    int thisNumInffinities = badnessInffinities () + penaltyInffinities ();
    int otherNumInffinities =
       other->badnessInffinities () + other->penaltyInffinities ();
