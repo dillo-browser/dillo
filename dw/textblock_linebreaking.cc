@@ -917,7 +917,7 @@ void Textblock::rewrap ()
       
       wordWrap (i, false);
 
-      // wordWrap() may insert some new words; since NotSoSimleVector
+      // wordWrap() may insert some new words; since NotSoSimpleVector
       // is used for the words list, the internal structure may have
       // changed, so getRef() must be called again.
       word = words->getRef (i);
