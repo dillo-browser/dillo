@@ -916,7 +916,12 @@ void Textblock::rewrap ()
          calcWidgetSize (word->content.widget, &word->size);
       
       wordWrap (i, false);
-      
+
+      // wordWrap() may insert some new words; since NotSoSimleVector
+      // is used for the words list, the internal structure may have
+      // changed, so getRef() must be called again.
+      word = words->getRef (i);
+
       if (word->content.type == core::Content::WIDGET) {
          word->content.widget->parentRef = lines->size () - 1;
       }
