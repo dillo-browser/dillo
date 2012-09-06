@@ -106,7 +106,7 @@ void StyleEngine::setId (const char *id) {
    DoctreeNode *dn =  doctree->top ();
    assert (dn->id == NULL);
    dn->id = dStrdup (id);
-};
+}
 
 /**
  * \brief split a string at sep chars and return a SimpleVector of strings
@@ -137,7 +137,7 @@ void StyleEngine::setClass (const char *klass) {
    DoctreeNode *dn = doctree->top ();
    assert (dn->klass == NULL);
    dn->klass = splitStr (klass, ' ');
-};
+}
 
 void StyleEngine::setStyle (const char *styleAttr) {
    Node *n = stack->getRef (stack->size () - 1);
@@ -151,7 +151,7 @@ void StyleEngine::setStyle (const char *styleAttr) {
                                         n->styleAttrProperties,
                                         n->styleAttrPropertiesImportant);
    }
-};
+}
 
 /**
  * \brief Instruct StyleEngine to use the nonCssHints from parent element
@@ -831,6 +831,11 @@ void StyleEngine::buildUserAgentStyle () {
       "i, em, cite, address, var {font-style: italic}"
       ":link img, :visited img {border: 1px solid}"
       "frameset, ul, ol, dir {margin-left: 40px}"
+      /* WORKAROUND: It should be margin: 1em 0
+       * but as we don't collapse these margins yet, it
+       * look better like this.
+       */
+      "p {margin: 0.5em 0}"
       "h1 {font-size: 2em; margin-top: .67em; margin-bottom: 0}"
       "h2 {font-size: 1.5em; margin-top: .75em; margin-bottom: 0}"
       "h3 {font-size: 1.17em; margin-top: .83em; margin-bottom: 0}"
