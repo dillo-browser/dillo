@@ -588,6 +588,10 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                   wordIndexEnd += n;
                PRINTF ("[%p] -> new searchUntil = %d ...\n", this, searchUntil);
                lineAdded = false;
+               
+               // update word pointer as hyphenateWord() can trigger a
+               // reorganization of the words structure
+               word = words->getRef (wordIndex);
             }
             
             PRINTF ("[%p]       accumulating again from %d to %d\n",
