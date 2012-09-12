@@ -1,5 +1,7 @@
 AM_CPPFLAGS = \
-	-I$(top_srcdir)
+	-I$(top_srcdir) \
+	-DDILLO_LIB='"$(libdir)/"'
+
 
 noinst_LIBRARIES = \
 	libDw-core.a \

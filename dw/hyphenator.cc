@@ -4,6 +4,7 @@
 #include "../lout/unicode.hh"
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #define LEN 1000
 
@@ -90,10 +91,10 @@ Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
       delete pair;
    else {
       // TODO Much hard-coded!
-      char patFile [256];
-      sprintf (patFile, "/usr/local/lib/dillo/hyphenation/%s.pat", lang);
-      char excFile [256];
-      sprintf (excFile, "/usr/local/lib/dillo/hyphenation/%s.exc", lang);
+      char patFile [PATH_MAX];
+      snprintf (patFile, sizeof (patFile), "%s/hyphenation/%s.pat", DILLO_LIB, lang);
+      char excFile [PATH_MAX];
+      snprintf (excFile, sizeof(excFile), "%s/hyphenation/%s.exc", DILLO_LIB, lang);
 
       //printf ("Loading hyphenation patterns for language '%s' from '%s' and "
       //        "exceptions from '%s' ...\n", lang, patFile, excFile);
