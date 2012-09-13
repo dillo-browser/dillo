@@ -92,7 +92,7 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
 }
 
 /**
- * Sets the penalty, multiplied with 100. Multiplication is necessary
+ * Sets the penalty, multiplied by 100. Multiplication is necessary
  * to deal with fractional numbers, without having to use floating
  * point numbers. So, to set a penalty to 0.5, pass 50.
  *
@@ -101,7 +101,7 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
  * "Criteria for Line-Breaking". The exact calculation may vary, but
  * this definition of should be rather stable: (i)&nbsp;A perfectly
  * fitting line has a badness of 0. (ii)&nbsp;A line, where all spaces
- * are extended by exactly the stretchabilty, as well as a line, where
+ * are extended by exactly the stretchability, as well as a line, where
  * all spaces are reduced by the shrinkability, have a badness of 1.
  */
 void Textblock::BadnessAndPenalty::setPenalty (int penalty)
@@ -577,9 +577,9 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                        firstIndex, breakPos);
                lineAdded = true;
             } else {
-               // TODO hyphenateWord() should return weather something has
+               // TODO hyphenateWord() should return whether something has
                // changed at all. So that a second run, with
-               // !word->canBeHyphenated, is unneccessary.
+               // !word->canBeHyphenated, is unnecessary.
                // TODO Update: for this, searchUntil == 0 should be checked.
                PRINTF ("[%p] old searchUntil = %d ...\n", this, searchUntil);
                int n = hyphenateWord (hyphenatedWord);

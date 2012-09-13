@@ -18,7 +18,7 @@ private:
    /*
     * Actually, only one method in Platform is needed:
     * textToLower(). And, IMO, this method is actually not platform
-    * independant, but based on UTF-8. Clarify? Change?
+    * independent, but based on UTF-8. Clarify? Change?
     */
    core::Platform *platform;
    lout::container::typed::HashTable <lout::object::Integer,

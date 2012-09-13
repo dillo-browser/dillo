@@ -6,14 +6,14 @@ Should be incorporated into dw::Textblock.</div>
 
 <h2>Introduction</h2>
 
-For the implementation of hyphenation in dillo, not only an
+For the implementation of hyphenation in dillo, not only a
 hyphenation algorithm was implemented, but also, the line breaking was
 changed to a simple optimization per line. Aside from the improvement
 by this change per se, an important aspect is the introduction of
 "penalties". Before this change, dillo put all words into a line which
 fitted into it; now, a "badness" is calculated for a possible
-breakpoint, and the best breakpoint, i.&nbsp;e. the breakoint with the
-smallest value for "badness", is choosen. This can be simply refined
+breakpoint, and the best breakpoint, i.&nbsp;e. the breakpoint with the
+smallest value for "badness", is chosen. This can be simply refined
 to define "good" and "bad" breakpoints by assigning a "penalty"; the
 best breakpoint is then the one with the smallest value of "badness +
 penalty". Details can be found below.
@@ -59,7 +59,7 @@ Anyway an interesting reading.
 
 <h3>Hyphenation</h3>
 
-Dillo uses the algorithm by Frank Liang, which is described his
+Dillo uses the algorithm by Frank Liang, which is described in his
 doctoral dissertation found at http://www.tug.org/docs/liang/. There
 is also a description in chapter H ("Hyphenation") of <i>The
 T<sub>E</sub>Xbook</i> by Donald E. Knuth, Addison-Wesley 1984.
@@ -68,14 +68,14 @@ Pattern files can be found at
 http://www.ctan.org/tex-archive/language/hyphenation.
 
 
-<h2>Overview over Changes</h2>
+<h2>Overview of Changes</h2>
 
 Starting with this change, dw/textblock.cc has been split up; anything
 related to line breaking has been moved into
 dw/textblock_linebreaking.cc. This will also be done for other aspects
 like floats. (Better, however, would be a clean logical split.)
 
-An important change relates to the way how lines are added: before,
+An important change relates to the way that lines are added: before,
 dillo would add a line as soon as a new word for this line was
 added. Now, a line is added not before the <i>last</i> word of this
 line is known. This has two important implications:
@@ -88,8 +88,8 @@ can be calculated simply in a loop.
 any line. For this reason, in some cases (e.&nbsp;g. in
 dw::Textblock::sizeRequestImpl) dw::Textblock::showMissingLines is
 called, which creates temporary lines, which must, under other
-circumstances, removed again by dw::Textblock::removeTemporaryLines,
-since they have been created based on limited informations, and so
+circumstances, be removed again by dw::Textblock::removeTemporaryLines,
+since they have been created based on limited information, and so
 possibly in a wrong way. (See below for details.)
 </ul>
 
@@ -122,18 +122,18 @@ line-breaking:
 dw::Textblock::Word::origSpace.
 </ul>
 
-In a more mathematical notation, the \f$i\f$th word has got a width
+In a more mathematical notation, the \f$i\f$th word has a width
 \f$w_i\f$ and a space \f$s_i\f$.
 
 A break was possible, when there was a space between the two words,
-and the first possible break was choosen.
+and the first possible break was chosen.
 
 With hyphenation, the criteria are refined. Hyphenation should only be
 used when otherwise line breaking results in very large spaces. We
 define:
 
 <ul>
-<li>the badness \f$\beta\f$ of a line, which is the greater the more the
+<li>the badness \f$\beta\f$ of a line, which is greater the more the
 spaces between the words differ from the ideal space;
 <li>a penalty \f$p\f$ for any possible break point.
 </ul>
@@ -155,8 +155,8 @@ So we need the following values:
 <ul>
 <li> \f$w_i\f$ (the width of the word \f$i\f$ itself);
 <li> \f$s_i\f$ (the width of the space following the word \f$i\f$);
-<li> the strechability \f$y_i\f$, a value denoting how much the space
-after word\f$i\f$ can be streched (typically \f${1\over 2} s_i\f$);	
+<li> the stretchability \f$y_i\f$, a value denoting how much the space
+after word\f$i\f$ can be stretched (typically \f${1\over 2} s_i\f$);	
 <li> the shrinkability \f$y_i\f$, a value denoting how much the space
 after word\f$i\f$ can be shrunken (typically \f${1\over 3} s_i\f$);
 <li> the penalty \f$p_i\f$, if the line is broken after word \f$i\f$;
@@ -182,7 +182,7 @@ We define:
 \f[Z_a^b = \sum_{i=a}^{b-1} z_i\f]
 
 
-\f$W_a^b\f$ is the total width, \f$Y_a^b\f$ the total strechability, and
+\f$W_a^b\f$ is the total width, \f$Y_a^b\f$ the total stretchability, and
 \f$Z_a^b\f$ the total shrinkability.
 
 Furthermore the <i>adjustment ratio</i> \f$r_a^b\f$:
@@ -206,13 +206,13 @@ The goal is to find the value of \f$b\f$ where \f$\beta_a^b + p_b\f$
 is minimal. (\f$a\f$ is given, since we do not modify the previous
 lines.)
 
-After a couple of words, it is not predictable weather this minimum
+After a couple of words, it is not predictable whether this minimum
 has already been reached. There are two cases where this is possible
 for a given \f$b'\f$:
 
 <ul>
 <li>\f$\beta_{b'}^a = \infty\f$ (line gets too tight): \f$a \le b <
-b'\f$, the minimun has to be searched between these two values;
+b'\f$, the minimum has to be searched between these two values;
 <li>\f$p_{b'} = -\infty\f$ (forced line break): \f$a \le b \le b'\f$
 (there may be another minimum of \f$\beta_a^b\f$ before; note the
 \f$\le\f$ instead of \f$<\f$).
@@ -224,7 +224,7 @@ added to a line. For this reason, there are "temporary" lines already
 described above.
 
 (Note that the actual calculation differs from this description, since
-integer arithmetics are used for performace, which make the actual
+integer arithmetic is used for performance, which make the actual
 code more complicated. See dw::Textblock::BadnessAndPenalty for
 details.)
 
@@ -240,11 +240,11 @@ not required that the width of text "AB" is identical to the width of
 "A" plus the width of "B", just for the reasons mentioned above. It
 gets even a bit more complicated, since it is required that a word
 part (instance of dw::Textblock::Word) has always the same length,
-independant of whether hyphenation is applied or not. Furthermore, the
+independent of whether hyphenation is applied or not. Furthermore, the
 hyphen length is fixed for a word; for practical reasons, it is always
 the width of a hyphen, in the given font.
 
-For calculating the widths, consider a word of for syllables:
+For calculating the widths, consider a word of four syllables:
 A-B-C-D. There are 3 hyphenation points, and so 2<sup>3</sup> = 8
 possible ways of hyphenation: ABCD, ABC-D, AB-CD, AB-C-D, A-BCD,
 A-BC-D, A-B-CD, A-B-C-D. (Some of them, like the last one, are only
@@ -252,8 +252,8 @@ probable for very narrow lines.)
 
 Let w(A), w(B), w(C), w(D) be the word widths (part of
 dw::Textblock::Word::size), which have to be calculated, and l be a
-shorthand for of dw::core::Platform::textWidth. Without considering
-this problem, the calculatin would be simple: w(A) = l(A)
+shorthand for dw::core::Platform::textWidth. Without considering
+this problem, the calculation would be simple: w(A) = l(A)
 etc. However, it gets a bit more complicated. Since all
 non-hyphenations are drawn as a whole, the following conditions can be
 concluded:
@@ -289,7 +289,7 @@ near-perfect results, so this is kept simple.
 
 When soft hyphens are used, words are immediately divided into
 different parts, and so different instances of
-dw::Textblock::Word. Atomatic hyphenation (using Liang's algorithm)
+dw::Textblock::Word. Automatic hyphenation (using Liang's algorithm)
 is, however, not applied always, but only when possibly needed, after
 calculating a line without hyphenation:
 
@@ -298,7 +298,7 @@ calculating a line without hyphenation:
 possibly this will result in a line with less parts of this word, and
 so a less tight line.
 <li>When the line is loose, and there is another word (for the
-next line) availible, this word is hyphenated; possibly, some parts of
+next line) available, this word is hyphenated; possibly, some parts of
 this word are taken into this line, making it less loose.
 </ul>
 
@@ -311,8 +311,8 @@ dw::Textblock::words. This word list is implemented as an array, which
 is dynamically increased; a simple approach would involve moving all
 of the <i>n</i> elements after position <i>i</i>, so
 <i>n</i>&nbsp;-&nbsp;<i>i</i> steps are necessary. This would not be a
-problem, since O(n) steps are neccessary; however, this will be
-neccessary again for the next hyphenated word (at the end of a
+problem, since O(n) steps are necessary; however, this will be
+necessary again for the next hyphenated word (at the end of a
 following line), and so on, so that
 (<i>n</i>&nbsp;-&nbsp;<i>i</i><sub>1</sub>) +
 (<i>n</i>&nbsp;-&nbsp;<i>i</i><sub>2</sub>) + ..., with
@@ -376,7 +376,7 @@ Possible strategies to deal with this problem:
 words when calculating extremes. Since the minimal widths of all words
 are used to calculate the minimal width of the text block, the
 simplest approach will hyphenate all words. This would, of course,
-eliminate the performace gains of the current lazy approach.
+eliminate the performance gains of the current lazy approach.
 <li>The latter approach could be optimized in some ways. Examples: (i)
 If a word is already narrower than the current accumulated value for
 the minimal width, it makes no sense to hyphenate it. (ii) In other
@@ -392,7 +392,7 @@ dw::Textblock::BadnessAndPenalty.
 
 <b>Other than justified text:</b> The calculation of badness is
 designed for justified text. For other alignments, it may be
-modified. The point is the definition of strechibility and for the
+modified. The point is the definition of stretchability and for the
 line.
 
 Consider left-aligned text. Most importantly, not the spaces between
@@ -403,11 +403,11 @@ width, \f$l\f$ above), this space is zero, so it is not possible to
 shrink it further. For this reason, the shrinkability is now already
 set to 0.
 
-On the other hand, there should be a strechability for the space on
+On the other hand, there should be a stretchability for the space on
 the right border. However, only the spaces between the words have a
-strechability; later, the differences are summed up and used to fill
-the space on the right. This works, but is a bit unprecise, since the
-strechability of the space on the right depends on the number of words
+stretchability; later, the differences are summed up and used to fill
+the space on the right. This works, but is a bit imprecise, since the
+stretchability of the space on the right depends on the number of words
 in the line.
 
 (Likewise, if you modify the code to assign a positive value for the
@@ -415,11 +415,11 @@ shrinkability for left-aligned text, the difference is summed up and
 used for the right border; since this difference is negative, the
 lines will, when spaces are shrunken, get too long!)
 
-Analogue considerations must be made vor right-aligned and centered
+Analogous considerations must be made for right-aligned and centered
 text. (For centered texts, there are two adjustable spaces.)
 
 <b>Hyphens in adjacent lines:</b> It should be simple to assign a
 larger penalty for hyphens, when the line before is already
-hyphenated. This way, hyphens in adjacent are penalized further.
+hyphenated. This way, hyphens in adjacent lines are penalized further.
 
 */
