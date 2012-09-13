@@ -10,7 +10,6 @@ AC_CONFIG_SRCDIR([src/dillo.cc])
 AC_CONFIG_HEADERS([config.h])
 
 sysconfdir=${sysconfdir}/${PACKAGE}
-libdir=${libdir}/${PACKAGE}
 
 dnl Options
 

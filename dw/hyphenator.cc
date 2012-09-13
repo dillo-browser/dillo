@@ -90,11 +90,12 @@ Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
    if (hyphenator)
       delete pair;
    else {
-      // TODO Much hard-coded!
       char patFile [PATH_MAX];
-      snprintf (patFile, sizeof (patFile), "%s/hyphenation/%s.pat", DILLO_LIB, lang);
+      snprintf (patFile, sizeof (patFile), "%s/hyphenation/%s.pat",
+                DILLO_LIBDIR, lang);
       char excFile [PATH_MAX];
-      snprintf (excFile, sizeof(excFile), "%s/hyphenation/%s.exc", DILLO_LIB, lang);
+      snprintf (excFile, sizeof(excFile), "%s/hyphenation/%s.exc",
+                DILLO_LIBDIR, lang);
 
       //printf ("Loading hyphenation patterns for language '%s' from '%s' and "
       //        "exceptions from '%s' ...\n", lang, patFile, excFile);

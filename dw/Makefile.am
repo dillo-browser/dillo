@@ -1,6 +1,6 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
-	-DDILLO_LIB='"$(libdir)/"'
+	-DDILLO_LIBDIR='"$(pkglibdir)/"'
 
 
 noinst_LIBRARIES = \
