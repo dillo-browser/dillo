@@ -15,4 +15,6 @@ liblout_a_SOURCES = \
 	object.hh \
 	signal.cc \
 	signal.hh \
+	unicode.cc \
+	unicode.hh \
 	msg.h

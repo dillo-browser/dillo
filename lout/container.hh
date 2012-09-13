@@ -3,6 +3,8 @@
 
 #include "object.hh"
 
+namespace lout {
+
 /**
  * \brief This namespace contains a framework for container classes, which
  *    members are instances of object::Object.
@@ -15,8 +17,6 @@
  *
  * \sa container::untyped, container::typed
  */
-namespace lout {
-
 namespace container {
 
 /**

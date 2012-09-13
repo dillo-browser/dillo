@@ -1,5 +1,7 @@
 AM_CPPFLAGS = \
-	-I$(top_srcdir)
+	-I$(top_srcdir) \
+	-DDILLO_LIBDIR='"$(pkglibdir)/"'
+
 
 noinst_LIBRARIES = \
 	libDw-core.a \
@@ -57,6 +59,8 @@ libDw_widgets_a_SOURCES = \
 	alignedtextblock.hh \
 	bullet.cc \
 	bullet.hh \
+	hyphenator.cc \
+	hyphenator.hh \
 	image.cc \
 	image.hh \
 	listitem.cc \
@@ -68,6 +72,7 @@ libDw_widgets_a_SOURCES = \
 	tablecell.cc \
 	tablecell.hh \
 	textblock.cc \
+	textblock_linebreaking.cc \
 	textblock.hh
 
 EXTRA_DIST = preview.xbm

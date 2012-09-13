@@ -194,16 +194,12 @@ struct Content
       REAL_CONTENT      = 0xff ^ (START | END),
       SELECTION_CONTENT = TEXT | WIDGET | BREAK
    };
-   enum BreakType {
-      BREAK_NO,
-      BREAK_OK
-   };
+
    /* Content is embedded in struct Word therefore we
     * try to be space efficient.
     */
    short type;
    bool space;
-   unsigned char breakType;
    union {
       const char *text;
       Widget *widget;

@@ -1,0 +1,425 @@
+/** \page dw-line-breaking Changes in Line-Breaking and Hyphenation
+
+<div style="border: 2px solid #ffff00; margin-bottom: 0.5em;
+padding: 0.5em 1em; background-color: #ffffe0"><b>Info:</b>
+Should be incorporated into dw::Textblock.</div>
+
+<h2>Introduction</h2>
+
+For the implementation of hyphenation in dillo, not only an
+hyphenation algorithm was implemented, but also, the line breaking was
+changed to a simple optimization per line. Aside from the improvement
+by this change per se, an important aspect is the introduction of
+"penalties". Before this change, dillo put all words into a line which
+fitted into it; now, a "badness" is calculated for a possible
+breakpoint, and the best breakpoint, i.&nbsp;e. the breakoint with the
+smallest value for "badness", is choosen. This can be simply refined
+to define "good" and "bad" breakpoints by assigning a "penalty"; the
+best breakpoint is then the one with the smallest value of "badness +
+penalty". Details can be found below.
+
+Example: Normal spaces have a penalty of 0, while hyphenation points
+get a penalty of, say, 1, since hyphenation is generally considered as
+a bit "ugly" and should rather be avoided. Consider a situation where
+the word "dillo" could be hyphenated, with the following badnesses:
+
+<ul>
+<li>before "dillo": 0.6;
+<li>between "dil-" and "lo": 0.2;
+<li>after "dillo": 0.5.
+</ul>
+
+Since the penalty is added, the last value is the best one, so "dillo"
+is put at the end of the line, without hyphenation.
+
+Under other circumstances (e.&nbsp;g. narrower lines), the values
+might be different:
+
+<ul>
+<li>before "dillo": infinite;
+<li>between "dil-" and "lo": 0.3;
+<li>after "dillo": 1.5.
+</ul>
+
+In this case, even the addition of the penalty makes hyphenation the
+best choice.
+
+
+<h2>Literature</h2>
+
+<h3>Breaking Paragraphs Into Lines</h3>
+
+Although dillo does not (yet?) implement the algorithm T<sub>E</sub>X
+uses for line breaking, this document shares much of the notation used
+by the article <i>Breaking Paragraphs Into Lines</i> by Donald
+E. Knuth and Michael F. Plass; originally published in: Software --
+Practice and Experience <b>11</b> (1981), 1119-1184; reprinted in:
+<i>Digital Typography</i> by Donalt E. Knuth, CSLI Publications 1999.
+Anyway an interesting reading.
+
+<h3>Hyphenation</h3>
+
+Dillo uses the algorithm by Frank Liang, which is described his
+doctoral dissertation found at http://www.tug.org/docs/liang/. There
+is also a description in chapter H ("Hyphenation") of <i>The
+T<sub>E</sub>Xbook</i> by Donald E. Knuth, Addison-Wesley 1984.
+
+Pattern files can be found at
+http://www.ctan.org/tex-archive/language/hyphenation.
+
+
+<h2>Overview over Changes</h2>
+
+Starting with this change, dw/textblock.cc has been split up; anything
+related to line breaking has been moved into
+dw/textblock_linebreaking.cc. This will also be done for other aspects
+like floats. (Better, however, would be a clean logical split.)
+
+An important change relates to the way how lines are added: before,
+dillo would add a line as soon as a new word for this line was
+added. Now, a line is added not before the <i>last</i> word of this
+line is known. This has two important implications:
+
+<ul>
+<li>Some values in dw::Textblock::Line, which represented values
+accumulated within the line, could be removed, since now, these values
+can be calculated simply in a loop.
+<li>On the other hand, this means that some words may not belong to
+any line. For this reason, in some cases (e.&nbsp;g. in
+dw::Textblock::sizeRequestImpl) dw::Textblock::showMissingLines is
+called, which creates temporary lines, which must, under other
+circumstances, removed again by dw::Textblock::removeTemporaryLines,
+since they have been created based on limited informations, and so
+possibly in a wrong way. (See below for details.)
+</ul>
+
+When a word can be hyphenated, an instance of dw::Textblock::Word is
+used for each part. Notice that soft hyphens are evaluated
+immediately, but automatic hyphenation is done in a lazy way (details
+below), so the number of instances may change. There are some new
+attributes: only when dw::Textblock::Word::canBeHyphenated is set to
+<i>true</i>, automatic hyphenation is allowed; it is set to false when
+soft hyphens are used for a word, and (of course) by the automatic
+hyphenation itself. Furthermore, dw::Textblock::Word::hyphenWidth (more
+details in the comment there) has to be included when calculating line
+widths.
+
+Some values should be configurable: dw::Textblock::HYPHEN_BREAK, the
+penalty for hyphens. Also dw::Textblock::Word::stretchability,
+dw::Textblock::Word::shrinkability, which are both set in
+dw::Textblock::addSpace.
+
+
+<h2>Criteria for Line-Breaking</h2>
+
+Before these changes to line breaking, a word (represented by
+dw::Textblock::Word) had the following attributes related to
+line-breaking:
+
+<ul>
+<li>the width of the word itself, represented by dw::Textblock::Word::size;
+<li>the width of the space following the word, represented by
+dw::Textblock::Word::origSpace.
+</ul>
+
+In a more mathematical notation, the \f$i\f$th word has got a width
+\f$w_i\f$ and a space \f$s_i\f$.
+
+A break was possible, when there was a space between the two words,
+and the first possible break was choosen.
+
+With hyphenation, the criteria are refined. Hyphenation should only be
+used when otherwise line breaking results in very large spaces. We
+define:
+
+<ul>
+<li>the badness \f$\beta\f$ of a line, which is the greater the more the
+spaces between the words differ from the ideal space;
+<li>a penalty \f$p\f$ for any possible break point.
+</ul>
+
+The goal is to find those break points, where \f$\beta + p\f$ is
+minimal.
+
+Examples for the penalty \f$p\f$:
+
+<ul>
+<li>0 for normal line breaks (between words);
+<li>\f$\infty\f$ to prevent a line break at all costs;
+<li>\f$-\infty\f$ to force a line
+<li>a positive, but finite, value for hyphenation points.
+</ul>
+
+So we need the following values:
+
+<ul>
+<li> \f$w_i\f$ (the width of the word \f$i\f$ itself);
+<li> \f$s_i\f$ (the width of the space following the word \f$i\f$);
+<li> the strechability \f$y_i\f$, a value denoting how much the space
+after word\f$i\f$ can be streched (typically \f${1\over 2} s_i\f$);	
+<li> the shrinkability \f$y_i\f$, a value denoting how much the space
+after word\f$i\f$ can be shrunken (typically \f${1\over 3} s_i\f$);
+<li> the penalty \f$p_i\f$, if the line is broken after word \f$i\f$;
+<li> a width \f$h_i\f$, which is added, when the line is broken after
+word \f$i\f$.
+</ul>
+
+\f$h_i\f$ is the width of the hyphen, if the word \f$i\f$ is a part of
+the hyphenated word (except the last part); otherwise 0.
+
+Let \f$l\f$ be the (ideal) width (length) of the line, which is
+e.&nbsp;at the top given by the browser window width. Furthermore, all words
+from \f$a\f$ to \f$b\f$ are added to the line. \f$a\f$ is fixed: we do
+not modify the previous lines anymore; but our task is to find a
+suitable \f$b\f$.
+
+We define:
+
+\f[W_a^b = \sum_{i=a}^{b} w_i + \sum_{i=a}^{b-1} s_i + h_b\f]
+
+\f[Y_a^b = \sum_{i=a}^{b-1} y_i\f]
+
+\f[Z_a^b = \sum_{i=a}^{b-1} z_i\f]
+
+
+\f$W_a^b\f$ is the total width, \f$Y_a^b\f$ the total strechability, and
+\f$Z_a^b\f$ the total shrinkability.
+
+Furthermore the <i>adjustment ratio</i> \f$r_a^b\f$:
+
+<ul>
+<li>in the ideal case that \f$W_a^b = l\f$: \f$r_a^b = 0\f$;
+<li>if \f$W_a^b < l\f$: \f$r_a^b = (l - W_a^b) / Y_a^b\f$ (\f$r_a^b < 0\f$ in
+this case);
+<li>if \f$W_a^b > l\f$: \f$r_a^b = (l - W_a^b) / Z_a^b\f$ (\f$r_a^b < 0\f$ in
+this case).
+</ul>
+
+The badness \f$\beta_a^b\f$ is defined as follows:
+
+<ul>
+<li>if \f$r_a^b\f$ is undefined or \f$r_a^b < -1\f$: \f$\beta_a^b = \infty\f$;
+<li>otherwise: \f$\beta_a^b = |r_a^b|^3\f$
+</ul>
+
+The goal is to find the value of \f$b\f$ where \f$\beta_a^b + p_b\f$
+is minimal. (\f$a\f$ is given, since we do not modify the previous
+lines.)
+
+After a couple of words, it is not predictable weather this minimum
+has already been reached. There are two cases where this is possible
+for a given \f$b'\f$:
+
+<ul>
+<li>\f$\beta_{b'}^a = \infty\f$ (line gets too tight): \f$a \le b <
+b'\f$, the minimun has to be searched between these two values;
+<li>\f$p_{b'} = -\infty\f$ (forced line break): \f$a \le b \le b'\f$
+(there may be another minimum of \f$\beta_a^b\f$ before; note the
+\f$\le\f$ instead of \f$<\f$).
+</ul>
+
+This leads to a problem that the last words of a text block are not
+displayed this way, since they do not fulfill these rules for being
+added to a line. For this reason, there are "temporary" lines already
+described above.
+
+(Note that the actual calculation differs from this description, since
+integer arithmetics are used for performace, which make the actual
+code more complicated. See dw::Textblock::BadnessAndPenalty for
+details.)
+
+
+<h2>Hyphens</h2>
+
+Words (instances of dw::Textblock::Word), which are actually part of a
+hyphenated word, are always drawn as a whole, not seperately. This
+way, the underlying platform is able to apply kerning, ligatures, etc.
+
+Calculating the width of such words causes some problems, since it is
+not required that the width of text "AB" is identical to the width of
+"A" plus the width of "B", just for the reasons mentioned above. It
+gets even a bit more complicated, since it is required that a word
+part (instance of dw::Textblock::Word) has always the same length,
+independant of whether hyphenation is applied or not. Furthermore, the
+hyphen length is fixed for a word; for practical reasons, it is always
+the width of a hyphen, in the given font.
+
+For calculating the widths, consider a word of for syllables:
+A-B-C-D. There are 3 hyphenation points, and so 2<sup>3</sup> = 8
+possible ways of hyphenation: ABCD, ABC-D, AB-CD, AB-C-D, A-BCD,
+A-BC-D, A-B-CD, A-B-C-D. (Some of them, like the last one, are only
+probable for very narrow lines.)
+
+Let w(A), w(B), w(C), w(D) be the word widths (part of
+dw::Textblock::Word::size), which have to be calculated, and l be a
+shorthand for of dw::core::Platform::textWidth. Without considering
+this problem, the calculatin would be simple: w(A) = l(A)
+etc. However, it gets a bit more complicated. Since all
+non-hyphenations are drawn as a whole, the following conditions can be
+concluded:
+
+<ul>
+<li>from drawing "ABCD" (not hyphenated at all): w(A) + w(B) + w(C) +
+w(D) = l(ABCD);
+<li>from drawing "BCD", when hyphenated as "A-BCD" ("A-" is not
+considered here): w(B) + w(C) + w(D) = l(BCD);
+<li>likewise, from drawing "CD" (cases "AB-CD" and "A-B-CD"): w(C) +
+w(D) = l(CD);
+<li>finally, for the cases "ABC-D", "AB-C-D", "A-BC-D", and "A-B-C-D":
+w(D) = l(D).
+</ul>
+
+So, the calculation is simple:
+
+<ul>
+<li>w(D) = l(D)
+<li>w(C) = l(CD) - w(D)
+<li>w(B) = l(BCD) - (w(C) + w(D))
+<li>w(A) = l(ABCD) - (w(B) + w(C) + w(D))
+</ul>
+
+For calculation the hyphen widths, the exact conditions would be
+over-determined, even when the possibility for individual hyphen
+widths (instead of simply the text width of a hyphen character) would
+be used. However, a simple approach of fixed hyphen widths will have
+near-perfect results, so this is kept simple.
+
+
+<h2>Automatic Hyphenation</h2>
+
+When soft hyphens are used, words are immediately divided into
+different parts, and so different instances of
+dw::Textblock::Word. Atomatic hyphenation (using Liang's algorithm)
+is, however, not applied always, but only when possibly needed, after
+calculating a line without hyphenation:
+
+<ul>
+<li>When the line is tight, the last word of the line is hyphenated;
+possibly this will result in a line with less parts of this word, and
+so a less tight line.
+<li>When the line is loose, and there is another word (for the
+next line) availible, this word is hyphenated; possibly, some parts of
+this word are taken into this line, making it less loose.
+</ul>
+
+After this, the line is re-calculated.
+
+A problem arrises when the textblock is rewrapped, e.&nbsp;g. when the
+user changes the window width. In this case, some new instances of
+dw::Textblock::Word must be inserted into the word list,
+dw::Textblock::words. This word list is implemented as an array, which
+is dynamically increased; a simple approach would involve moving all
+of the <i>n</i> elements after position <i>i</i>, so
+<i>n</i>&nbsp;-&nbsp;<i>i</i> steps are necessary. This would not be a
+problem, since O(n) steps are neccessary; however, this will be
+neccessary again for the next hyphenated word (at the end of a
+following line), and so on, so that
+(<i>n</i>&nbsp;-&nbsp;<i>i</i><sub>1</sub>) +
+(<i>n</i>&nbsp;-&nbsp;<i>i</i><sub>2</sub>) + ..., with
+<i>i</i><sub>1</sub>&nbsp;&lt;&nbsp;<i>i</i><sub>2</sub>&nbsp;&lt;&nbsp;...,
+which results in O(n<sup>2</sup>) steps. For this reason, the word
+list is managed by the class lout::misc::NotSoSimpleVector, which uses
+a trick (a second array) to deal with exactly this problem. See there
+for more details.
+
+
+<h2>Tests</h2>
+
+There are test HTML files in the <i>test</i> directory. Also, there is
+a program testing automatic hyphenation, <i>test/liang</i>, which can
+be easily extended.
+
+
+<h2>Bugs and Things Needing Improvement</h2>
+
+<h3>High Priority</h3>
+
+<b>Bugs in hyphenation:</b> There seem to be problems when breaking
+words containing hyphens already. Example: "Abtei-Stadt", which is
+divided into "Abtei-" and "Stadt", resulting possibly in
+&quot;Abtei-<span></span>-[new line]Stadt&quot;. See also below under
+"Low Priority", on how to deal with hyphens and dashes.
+
+<h3>Medium Priority</h3>
+
+<b>Break hyphens and dashes:</b> The following rules seem to be relevant:
+
+<ol>
+<li>In English, an em-dash is used with no spaces around. Breaking
+before and after the dash should be possible, perhaps with a penalty >
+0. (In German, an en-dash (Halbgeviert) with spaces around is used
+instead.)</li>
+<li>After a hyphen, which is part of a compound word, a break should
+be possible. As described above ("Abtei-Stadt"), this collides with
+hyphenation.</li>
+</ol>
+
+Where to implement? In the same dynamic, lazy way like hyphenation? As
+part of hyphenation?
+
+<b>Incorrect calculation of extremes:</b> The minimal width of a text
+block (as part of the width extremes, which are mainly used for
+tables) is defined by everything between two possible breaks. A
+possible break may also be a hyphenation point; however, hyphenation
+points are calculated in a lazy way, when the lines are broken, and
+not when extremes are calculated. So, it is a matter of chance whether
+the calculation of the minimal width will take the two parts "dil-"
+and "lo" into account (when "dillo" has already been hyphenated), or
+only one part, "dillo" (when "dillo" has not yet been hyphenated),
+resulting possibly in a different value for the minimal width.
+
+Possible strategies to deal with this problem:
+
+<ol>
+<li>Ignore. The implications should be minimal.
+<li>Any solution will make it neccessary to hyphenate at least some
+words when calculating extremes. Since the minimal widths of all words
+are used to calculate the minimal width of the text block, the
+simplest approach will hyphenate all words. This would, of course,
+eliminate the performace gains of the current lazy approach.
+<li>The latter approach could be optimized in some ways. Examples: (i)
+If a word is already narrower than the current accumulated value for
+the minimal width, it makes no sense to hyphenate it. (ii) In other
+cases, heuristics may be used to estimate the number of syllables, the
+width of the widest of them etc.
+</ol>
+
+<h3>Low Priority</h3>
+
+<b>Mark the end of a paragraph:</b> Should dw::core::Content::BREAK
+still be used? Currently, this is redundant to
+dw::Textblock::BadnessAndPenalty.
+
+<b>Other than justified text:</b> The calculation of badness is
+designed for justified text. For other alignments, it may be
+modified. The point is the definition of strechibility and for the
+line.
+
+Consider left-aligned text. Most importantly, not the spaces between
+the words, but the space on the right border is adjusted. If the
+actual line width (sum of words and normal spaces, \f$W_a^b\f$ above)
+equals the the ideal width (e.&nbsp;g. given by the browser window
+width, \f$l\f$ above), this space is zero, so it is not possible to
+shrink it further. For this reason, the shrinkability is now already
+set to 0.
+
+On the other hand, there should be a strechability for the space on
+the right border. However, only the spaces between the words have a
+strechability; later, the differences are summed up and used to fill
+the space on the right. This works, but is a bit unprecise, since the
+strechability of the space on the right depends on the number of words
+in the line.
+
+(Likewise, if you modify the code to assign a positive value for the
+shrinkability for left-aligned text, the difference is summed up and
+used for the right border; since this difference is negative, the
+lines will, when spaces are shrunken, get too long!)
+
+Analogue considerations must be made vor right-aligned and centered
+text. (For centered texts, there are two adjustable spaces.)
+
+<b>Hyphens in adjacent lines:</b> It should be simple to assign a
+larger penalty for hyphens, when the line before is already
+hyphenated. This way, hyphens in adjacent are penalized further.
+
+*/

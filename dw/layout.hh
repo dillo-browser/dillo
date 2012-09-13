@@ -290,6 +290,11 @@ public:
    void scrollPosChanged (View *view, int x, int y);
    void viewportSizeChanged (View *view, int width, int height);
 
+   inline Platform *getPlatform ()
+   {
+      return platform;
+   }
+
    /* delegated */
 
    inline int textWidth (style::Font *font, const char *text, int len)

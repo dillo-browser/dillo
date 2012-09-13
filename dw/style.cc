@@ -37,6 +37,7 @@ namespace style {
 void StyleAttrs::initValues ()
 {
    x_link = -1;
+   x_lang[0] = x_lang[1] = 0;
    x_img = -1;
    x_tooltip = NULL;
    textDecoration = TEXT_DECORATION_NONE;
@@ -144,6 +145,8 @@ bool StyleAttrs::equals (object::Object *other) {
        listStyleType == otherAttrs->listStyleType &&
        cursor == otherAttrs->cursor &&
        x_link == otherAttrs->x_link &&
+       x_lang[0] == otherAttrs->x_lang[0] &&
+       x_lang[1] == otherAttrs->x_lang[1] &&
        x_img == otherAttrs->x_img &&
        x_tooltip == otherAttrs->x_tooltip);
 }
@@ -182,6 +185,7 @@ int StyleAttrs::hashValue () {
       listStyleType +
       cursor +
       x_link +
+      x_lang[0] + x_lang[1] +
       x_img +
       (intptr_t) x_tooltip;
 }
@@ -267,6 +271,8 @@ void Style::copyAttrs (StyleAttrs *attrs)
    listStyleType = attrs->listStyleType;
    cursor = attrs->cursor;
    x_link = attrs->x_link;
+   x_lang[0] = attrs->x_lang[0];
+   x_lang[1] = attrs->x_lang[1];
    x_img = attrs->x_img;
    x_tooltip = attrs->x_tooltip;
 }

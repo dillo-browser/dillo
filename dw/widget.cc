@@ -109,6 +109,7 @@ void Widget::setParent (Widget *parent)
       buttonSensitive = parent->buttonSensitive;
 
    //DBG_OBJ_ASSOC (widget, parent);
+   //printf ("%p becomes a child of %p\n", this, parent);
 }
 
 void Widget::queueDrawArea (int x, int y, int width, int height)

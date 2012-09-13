@@ -4,6 +4,8 @@
 #include "object.hh"
 #include "container.hh"
 
+namespace lout {
+
 /**
  * \brief This namespace provides base classes to define signals.
  *
@@ -174,8 +176,6 @@
  * After this, &\em barReceiver can be connected to all instances of
  * BarEmitter, also multiple times.
  */
-namespace lout {
-
 namespace signal {
 
 class Receiver;

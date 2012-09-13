@@ -3440,6 +3440,14 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
          html->styleEngine->setStyle (attrbuf);
    }
 
+   if (tagsize >= 10) { /* TODO prefs.hyphenate? */
+      /* length of "<t lang=i>" */
+      attrbuf = Html_get_attr2(html, tag, tagsize, "lang",
+                               HTML_LeftTrim | HTML_RightTrim);
+      if (attrbuf)
+         html->styleEngine->setNonCssHint(PROPERTY_X_LANG, CSS_TYPE_STRING,
+                                          attrbuf);
+   }
 }
 
 static void Html_display_block(DilloHtml *html)

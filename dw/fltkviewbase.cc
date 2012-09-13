@@ -531,9 +531,9 @@ FltkWidgetView::~FltkWidgetView ()
 }
 
 void FltkWidgetView::drawText (core::style::Font *font,
-                             core::style::Color *color,
-                             core::style::Color::Shading shading,
-                             int X, int Y, const char *text, int len)
+                               core::style::Color *color,
+                               core::style::Color::Shading shading,
+                               int X, int Y, const char *text, int len)
 {
    FltkFont *ff = (FltkFont*)font;
    fl_font(ff->font, ff->size);
