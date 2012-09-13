@@ -3056,11 +3056,35 @@ static void Html_tag_open_default(DilloHtml *html,const char *tag,int tagsize)
 }
 
 /*
+ * <SPAN>
+ */
+static void Html_tag_open_span(DilloHtml *html, const char *tag, int tagsize)
+{
+   const char *attrbuf;
+
+   if (prefs.show_tooltip &&
+       (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
+
+      html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                        attrbuf);
+   }
+}
+
+/*
  * <DIV> (TODO: make a complete implementation)
  */
 static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 {
+   const char *attrbuf;
+
    a_Html_tag_set_align_attr (html, tag, tagsize);
+
+   if (prefs.show_tooltip &&
+       (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
+
+      html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                        attrbuf);
+   }
 }
 
 /*
@@ -3179,7 +3203,7 @@ const TagInfo Tags[] = {
  {"script", B8(111001),'R',2, Html_tag_open_script, NULL, Html_tag_close_script},
  {"select", B8(010101),'R',2, Html_tag_open_select, NULL, Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"span", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
+ {"span", B8(010101),'R',2, Html_tag_open_span, NULL, NULL},
  {"strike", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"strong", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"style", B8(100101),'R',2, Html_tag_open_style, NULL, Html_tag_close_style},
