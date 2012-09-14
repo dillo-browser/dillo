@@ -1444,7 +1444,7 @@ int32_t a_Html_color_parse(DilloHtml *html,
    int32_t color = a_Color_parse(subtag, default_color, &err);
 
    if (err) {
-      BUG_MSG("color is not in \"#RRGGBB\" format\n");
+      BUG_MSG("color \"%s\" is not in \"#RRGGBB\" format\n", subtag);
    }
    return color;
 }
@@ -1464,8 +1464,8 @@ static int
          break;
 
    if (val[i] || !(isascii(val[0]) && isalpha(val[0])))
-      BUG_MSG("'%s' value is not of the form "
-              "[A-Za-z][A-Za-z0-9:_.-]*\n", attrname);
+      BUG_MSG("'%s' value \"%s\" is not of the form "
+              "[A-Za-z][A-Za-z0-9:_.-]*\n", attrname, val);
 
    return !(val[i]);
 }
@@ -1493,7 +1493,7 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
 {
    static const char HTML_SGML_sig [] = "<!DOCTYPE HTML PUBLIC ";
    static const char HTML5_sig  [] = "<!DOCTYPE html>";
-   static const char HTML20     [] = "-//IETF//DTD HTML 2.0";
+   static const char HTML20     [] = "-//IETF//DTD HTML";
    static const char HTML32     [] = "-//W3C//DTD HTML 3.2";
    static const char HTML40     [] = "-//W3C//DTD HTML 4.0";
    static const char HTML401    [] = "-//W3C//DTD HTML 4.01";
@@ -2418,7 +2418,7 @@ static void Html_add_anchor(DilloHtml *html, const char *name)
 {
    _MSG("Registering ANCHOR: %s\n", name);
    if (!HT2TB(html)->addAnchor (name, html->styleEngine->style ()))
-      BUG_MSG("Anchor names must be unique within the document\n");
+      BUG_MSG("Anchor names must be unique within the document ('%s')\n",name);
    /*
     * According to Sec. 12.2.1 of the HTML 4.01 spec, "anchor names that
     * differ only in case may not appear in the same document", but
@@ -2801,6 +2801,22 @@ static int Html_tag_pre_excludes(int tag_idx)
 }
 
 /*
+ * Update the document's content type information based on meta tag data.
+ */
+static void Html_update_content_type(DilloHtml *html, const char *content)
+{
+   const char *new_content = a_Capi_set_content_type(html->page_url, content,
+                                                     "meta");
+   /* Cannot ask cache whether the content type was changed, as
+    * this code in another bw might have already changed it for us.
+    */
+   if (a_Misc_content_type_cmp(html->content_type, new_content)) {
+      html->stop_parser = true; /* The cache buffer is no longer valid */
+      a_UIcmd_repush(html->bw);
+   }
+}
+
+/*
  * Handle <META>
  * We do not support http-equiv=refresh with delay>0 because it's
  * non standard, (the HTML 4.01 SPEC recommends explicitly to avoid it).
@@ -2823,7 +2839,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 " <tr><td bgcolor='#a0a0a0' colspan='2'>The author wanted you to go\n"
 " <a href='%s'>here</a>%s</td></tr></table><br>\n";
 
-   const char *p, *equiv, *content, *new_content;
+   const char *p, *equiv, *charset, *content;
    char delay_str[64], *mr_url;
    DilloUrl *new_url;
    int delay;
@@ -2890,15 +2906,14 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
       } else if (!dStrAsciiCasecmp(equiv, "content-type") &&
                  (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
          _MSG("Html_tag_open_meta: content={%s}\n", content);
-         /* Cannot ask cache whether the content type was changed, as
-          * this code in another bw might have already changed it for us.
-          */
-         new_content = a_Capi_set_content_type(html->page_url,content,"meta");
-         if (a_Misc_content_type_cmp(html->content_type, new_content)) {
-            html->stop_parser = true; /* The cache buffer is no longer valid */
-            a_UIcmd_repush(html->bw);
-         }
+         Html_update_content_type(html, content);
       }
+   } else if (html->DocType == DT_HTML && html->DocTypeVersion == 5.0f &&
+              (charset = a_Html_get_attr(html, tag, tagsize, "charset"))) {
+      char *content = dStrconcat("text/html; charset=", charset, NULL);
+
+      Html_update_content_type(html, content);
+      dFree(content);
    }
 }
 
@@ -3061,11 +3076,35 @@ static void Html_tag_open_default(DilloHtml *html,const char *tag,int tagsize)
 }
 
 /*
+ * <SPAN>
+ */
+static void Html_tag_open_span(DilloHtml *html, const char *tag, int tagsize)
+{
+   const char *attrbuf;
+
+   if (prefs.show_tooltip &&
+       (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
+
+      html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                        attrbuf);
+   }
+}
+
+/*
  * <DIV> (TODO: make a complete implementation)
  */
 static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 {
+   const char *attrbuf;
+
    a_Html_tag_set_align_attr (html, tag, tagsize);
+
+   if (prefs.show_tooltip &&
+       (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
+
+      html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                        attrbuf);
+   }
 }
 
 /*
@@ -3184,7 +3223,7 @@ const TagInfo Tags[] = {
  {"script", B8(111001),'R',2, Html_tag_open_script, NULL, Html_tag_close_script},
  {"select", B8(010101),'R',2, Html_tag_open_select, NULL, Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"span", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
+ {"span", B8(010101),'R',2, Html_tag_open_span, NULL, NULL},
  {"strike", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"strong", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"style", B8(100101),'R',2, Html_tag_open_style, NULL, Html_tag_close_style},

@@ -306,7 +306,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
                // role.
                parMin += wordExtremes.minWidth + word->origSpace;
             
-            // Maximum: between two *neccessary* breaks (or at the end).
+            // Maximum: between two *necessary* breaks (or at the end).
             if (word->badnessAndPenalty.lineMustBeBroken () || atLastWord) {
                parMax += wordExtremes.maxWidth + word->hyphenWidth;
                extremes->maxWidth = misc::max (extremes->maxWidth, parMax);
@@ -493,7 +493,7 @@ void Textblock::markChange (int ref)
       calls "queueResize (-1, true)", when no rewrapping is necessary;
       and (ii) a word may have parentRef == -1 , when it is not yet
       added to a line.  In the latter case, nothing has to be done
-      now, but addLine(...) will do everything neccessary. */
+      now, but addLine(...) will do everything necessary. */
 
    int refEquiv = (ref == 0) ? 1 | (dw::core::style::FLOAT_NONE << 1) : ref;
    
@@ -985,7 +985,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
       drawWord0 (wordIndex1, wordIndex2, word->content.text, word->size.width,
                  style, view, area, xWidget, yWidgetBase);
    } else {
-      // Concaternate all words in a new buffer.
+      // Concatenate all words in a new buffer.
       int l = 0, totalWidth = 0;
       for (int i = wordIndex1; i <= wordIndex2; i++) {
          Word *w = words->getRef (i);
@@ -1508,7 +1508,7 @@ void Textblock::addText (const char *text, size_t len,
          numHyphens++;
 
    if (numHyphens == 0) {
-      // Simple (and often) case: no soft hyphens. May still be hyphenated
+      // Simple (and common) case: no soft hyphens. May still be hyphenated
       // automatically.
       core::Requisition size;
       calcTextSize (text, len, style, &size);

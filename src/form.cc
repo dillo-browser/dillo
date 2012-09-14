@@ -758,6 +758,12 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    }
    Embed *embed = new Embed(res);
 
+   if (prefs.show_tooltip &&
+       (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
+
+      html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                        attrbuf);
+   }
    HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
 
    Html_add_input(html, type, embed, name, NULL, false);
@@ -853,8 +859,15 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       /* Render the button */
       Widget *page;
       Embed *embed;
+      const char *attrbuf;
       char *name, *value;
 
+      if (prefs.show_tooltip &&
+          (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
+
+         html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
+                                           attrbuf);
+      }
       /* We used to have Textblock (prefs.limit_text_width) here,
        * but it caused 100% CPU usage.
        */

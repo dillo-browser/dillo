@@ -47,7 +47,7 @@ Hyphenator::Hyphenator (core::Platform *platform,
       fclose (patF);
    }
 
-   exceptions = NULL; // Again, only instanciated when needed.
+   exceptions = NULL; // Again, only instantiated when needed.
 
    FILE *excF = fopen (excFile, "r");
    if (excF) {

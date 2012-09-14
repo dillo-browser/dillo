@@ -262,7 +262,7 @@ public:
  * O(n).
  *
  * The basic idea is to keep an extra array (actually two, of which
- * the second one is used temporally), which is inserted in a logical
+ * the second one is used temporarily), which is inserted in a logical
  * way. Since there is only one extra array at max, reading is rather
  * simple and fast (see NotSoSimpleVector::getRef): check whether the
  * position is before, within, or after the extra array. The first

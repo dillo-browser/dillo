@@ -153,7 +153,7 @@ private:
    /**
     * This class encapsulates the badness/penalty calculation, and so
     * (i) makes changes (hopefully) simpler, and (ii) hides the
-    * integer arithmetics (floating point arithmetics avoided for
+    * integer arithmetic (floating point arithmetic avoided for
     * performance reasons). Unfortunately, the value range of the
     * badness is not well defined, so fiddling with the penalties is a
     * bit difficult.
@@ -279,7 +279,7 @@ private:
 protected:
    enum {
       /**
-       *  The penalty for hyphens, multiplied with 100. So, 100 means
+       *  The penalty for hyphens, multiplied by 100. So, 100 means
        *  1.0. See dw::Textblock::BadnessAndPenalty::setPenalty for
        *  more details.
        */
@@ -346,14 +346,14 @@ protected:
                           * word. Has to be added to the width, when
                           * this is the last word of the line, and
                           * "hyphenWidth > 0" is also used to decide
-                          * weather to draw a hyphen. */
+                          * whether to draw a hyphen. */
       core::Content content;
       bool canBeHyphenated;
 
       // accumulated values, relative to the beginning of the line
       int totalWidth;          /* The sum of all word widths; plus all
                                   spaces, excluding the one of this
-                                  word; plus the hypthen width of this
+                                  word; plus the hyphen width of this
                                   word (but of course, no hyphen
                                   widths of previous words. In other
                                   words: the value compared to the
