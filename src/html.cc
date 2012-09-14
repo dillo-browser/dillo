@@ -3898,7 +3898,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
                } else if (ch == '<') {
                   /* unterminated tag detected */
                   p = dStrndup(buf+token_start+1,
-                               strcspn(buf+token_start+1, " <"));
+                               strcspn(buf+token_start+1, " <\n\r\t"));
                   BUG_MSG("<%s> element lacks its closing '>'\n", p);
                   dFree(p);
                   --buf_index;
