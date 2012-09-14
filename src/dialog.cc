@@ -95,6 +95,24 @@ public:
    };
 };
 
+class EnterButton : public Fl_Button {
+public:
+   EnterButton (int x,int y,int w,int h, const char* label = 0) :
+      Fl_Button (x,y,w,h,label) {};
+   int handle(int e);
+};
+
+int EnterButton::handle(int e)
+{
+   if (e == FL_KEYBOARD && Fl::focus() == this && Fl::event_key() == FL_Enter){
+      set_changed();
+      simulate_key_action();
+      do_callback();
+      return 1;
+   }
+   return Fl_Button::handle(e);
+}
+
 //----------------------------------------------------------------------------
 
 
@@ -354,7 +372,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
     bw = (ww - gap)/nb - gap;
     xpos += gap;
     for (int i=1; i <= nb; ++i) {
-       b = new Fl_Button(xpos, wh-bh, bw, bh, txt[i]);
+       b = new EnterButton(xpos, wh-bh, bw, bh, txt[i]);
        b->align(FL_ALIGN_WRAP|FL_ALIGN_CLIP);
        b->box(FL_UP_BOX);
        b->callback(choice5_cb, INT2VOIDP(i));
@@ -426,14 +444,14 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
 
    /* "OK" button */
    y += input_h + 20;
-   Fl_Button *ok_button = new Fl_Button(200, y, 50, button_h, "OK");
+   Fl_Button *ok_button = new EnterButton(200, y, 50, button_h, "OK");
    ok_button->labelsize(14);
    ok_button->callback(Dialog_user_password_cb);
    window->add(ok_button);
 
    /* "Cancel" button */
    Fl_Button *cancel_button =
-      new Fl_Button(50, y, 100, button_h, "Cancel");
+      new EnterButton(50, y, 100, button_h, "Cancel");
    cancel_button->labelsize(14);
    cancel_button->callback(Dialog_user_password_cb);
    window->add(cancel_button);

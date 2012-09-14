@@ -42,12 +42,12 @@ TableCell::~TableCell()
 {
 }
 
-void TableCell::wordWrap(int wordIndex)
+void TableCell::wordWrap(int wordIndex, bool wrapAll)
 {
    Textblock::Word *word;
    const char *p;
 
-   Textblock::wordWrap (wordIndex);
+   Textblock::wordWrap (wordIndex, wrapAll);
 
    if (charWordIndex == -1) {
       word = words->getRef (wordIndex);

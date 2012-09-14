@@ -739,10 +739,6 @@ int UI::handle(int event)
          a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
       } else if (cmd == KEYS_GOTO) {
-         if (Panelmode == UI_HIDDEN) {
-            panels_toggle();
-            temporaryPanels(true);
-         }
          focus_location();
          ret = 1;
       } else if (cmd == KEYS_HIDE_PANELS) {
@@ -819,6 +815,10 @@ void UI::set_location(const char *str)
  */
 void UI::focus_location()
 {
+   if (Panelmode == UI_HIDDEN) {                                          
+      panels_toggle();
+      temporaryPanels(true);
+   }
    Location->take_focus();
    // Make text selected when already focused.
    Location->position(Location->size(), 0);

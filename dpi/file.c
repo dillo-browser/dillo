@@ -15,7 +15,7 @@
  * With new HTML layout.
  */
 
-#include <ctype.h>           /* for tolower */
+#include <ctype.h>           /* for isspace */
 #include <errno.h>           /* for errno */
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,21 +142,21 @@ static const char *File_get_content_type_from_data(void *Data, size_t Size)
 
    /* HTML try */
    for (i = 0; i < Size && dIsspace(p[i]); ++i);
-   if ((Size - i >= 5  && !dStrncasecmp(p+i, "<html", 5)) ||
-       (Size - i >= 5  && !dStrncasecmp(p+i, "<head", 5)) ||
-       (Size - i >= 6  && !dStrncasecmp(p+i, "<title", 6)) ||
-       (Size - i >= 14 && !dStrncasecmp(p+i, "<!doctype html", 14)) ||
+   if ((Size - i >= 5  && !dStrnAsciiCasecmp(p+i, "<html", 5)) ||
+       (Size - i >= 5  && !dStrnAsciiCasecmp(p+i, "<head", 5)) ||
+       (Size - i >= 6  && !dStrnAsciiCasecmp(p+i, "<title", 6)) ||
+       (Size - i >= 14 && !dStrnAsciiCasecmp(p+i, "<!doctype html", 14)) ||
        /* this line is workaround for FTP through the Squid proxy */
-       (Size - i >= 17 && !dStrncasecmp(p+i, "<!-- HTML listing", 17))) {
+       (Size - i >= 17 && !dStrnAsciiCasecmp(p+i, "<!-- HTML listing", 17))) {
 
       Type = 1;
 
    /* Images */
-   } else if (Size >= 4 && !dStrncasecmp(p, "GIF8", 4)) {
+   } else if (Size >= 4 && !strncmp(p, "GIF8", 4)) {
       Type = 3;
-   } else if (Size >= 4 && !dStrncasecmp(p, "\x89PNG", 4)) {
+   } else if (Size >= 4 && !strncmp(p, "\x89PNG", 4)) {
       Type = 4;
-   } else if (Size >= 2 && !dStrncasecmp(p, "\xff\xd8", 2)) {
+   } else if (Size >= 2 && !strncmp(p, "\xff\xd8", 2)) {
       /* JPEG has the first 2 bytes set to 0xffd8 in BigEndian - looking
        * at the character representation should be machine independent. */
       Type = 5;
@@ -502,18 +502,18 @@ static const char *File_ext(const char *filename)
 
    e++;
 
-   if (!dStrcasecmp(e, "gif")) {
+   if (!dStrAsciiCasecmp(e, "gif")) {
       return "image/gif";
-   } else if (!dStrcasecmp(e, "jpg") ||
-              !dStrcasecmp(e, "jpeg")) {
+   } else if (!dStrAsciiCasecmp(e, "jpg") ||
+              !dStrAsciiCasecmp(e, "jpeg")) {
       return "image/jpeg";
-   } else if (!dStrcasecmp(e, "png")) {
+   } else if (!dStrAsciiCasecmp(e, "png")) {
       return "image/png";
-   } else if (!dStrcasecmp(e, "html") ||
-              !dStrcasecmp(e, "htm") ||
-              !dStrcasecmp(e, "shtml")) {
+   } else if (!dStrAsciiCasecmp(e, "html") ||
+              !dStrAsciiCasecmp(e, "htm") ||
+              !dStrAsciiCasecmp(e, "shtml")) {
       return "text/html";
-   } else if (!dStrcasecmp(e, "txt")) {
+   } else if (!dStrAsciiCasecmp(e, "txt")) {
       return "text/plain";
    } else {
       return NULL;
@@ -712,7 +712,8 @@ static int File_send_file(ClientInfo *client)
 
       /* Check for gzipped file */
       namelen = strlen(client->filename);
-      if (namelen > 3 && !dStrcasecmp(client->filename + namelen - 3, ".gz")) {
+      if (namelen > 3 &&
+          !dStrAsciiCasecmp(client->filename + namelen - 3, ".gz")) {
          gzipped = TRUE;
          namelen -= 3;
       }
@@ -799,12 +800,12 @@ static char *File_normalize_path(const char *orig)
    dReturn_val_if (orig == NULL, ret);
 
    /* Make sure the string starts with "file:/" */
-   if (strncmp(str, "file:/", 5) != 0)
+   if (dStrnAsciiCasecmp(str, "file:/", 5) != 0)
       return ret;
    str += 5;
 
    /* Skip "localhost" */
-   if (dStrncasecmp(str, "//localhost/", 12) == 0)
+   if (dStrnAsciiCasecmp(str, "//localhost/", 12) == 0)
       str += 11;
 
    /* Skip packed slashes, and leave just one */
@@ -941,7 +942,8 @@ static void File_serve_client(void *data, int f_write)
                   DPIBYE = 1;
                   MSG("(pid %d): Got DpiBye.\n", (int)getpid());
                   client->flags |= FILE_DONE;
-               } else if (url && strcmp(url, "dpi:/file/toggle") == 0) {
+               } else if (url && dStrnAsciiCasecmp(url, "dpi:", 4) == 0 &&
+                          strcmp(url+4, "/file/toggle") == 0) {
                   File_toggle_html_style(client);
                } else if (path) {
                   File_get(client, path, url);

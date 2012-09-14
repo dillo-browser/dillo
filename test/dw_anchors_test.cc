@@ -69,14 +69,14 @@ static void textTimeout (void *data)
 
    char buf[16];
    strcpy (buf, numbers[textblockNo]);
-   buf[0] = toupper (buf[0]);
+   buf[0] = lout::misc::AsciiToupper (buf[0]);
    topTextblock->addText (buf, headingStyle);
    topTextblock->addParbreak (5, headingStyle);
 
    for (int i = 0; i < 30; i++) {
       strcpy (buf, numbers[textblockNo]);
       if (i == 0)
-         buf[0] = toupper (buf[0]);
+         buf[0] = lout::misc::AsciiToupper (buf[0]);
       strcat (buf, i == 29 ? "." : ",");
 
       topTextblock->addText (buf, wordStyle);
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
    for (int i = 0; i < 10; i++) {
       char buf[16];
       strcpy (buf, numbers[i]);
-      buf[0] = toupper (buf[0]);
+      buf[0] = lout::misc::AsciiToupper (buf[0]);
       buttonLabel[i] = strdup(buf);
       Fl_Button *button = new Fl_Button(0, 20 * i, 50, 20, buttonLabel[i]);
       button->callback (anchorCallback, (void*)(long)i);

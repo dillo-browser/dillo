@@ -2,7 +2,40 @@
 Dillo project
 =============================================================================
 
-dillo-3.0.1 [not released yet]
+Here we list changes that are relatively significant and/or visible to the
+user. For a history of changes in full detail, see our Mercurial repository
+at http://hg.dillo.org/dillo
+
+
+dillo-3.0.3 [not released yet]
+
++- Support for CSS display property
+   Patch: Johannes Hofmann
++- Fix image input coordinates (BUG#1070)
+ - When location bar is given focus, temporarily show panels if hidden
+   (BUG#1093).
+   Patches: corvid
+
+-----------------------------------------------------------------------------
+
+dillo-3.0.2 [December 05, 2011]
+
++- Digest authentication
+   Patch: Justus Winter, corvid
++- text-transform property
+ - If not following redirection, show body of redirecting page.
+ - Middle click on stylesheet menu item opens in new tab/window.
+ - Improve handling of combining characters.
+ - Locale-independent ASCII character case handling (fixes Turkic locales).
+   Patches: corvid
++- Rework line breaking and fix white-space:nowrap handling.
+   Patch: Johannes Hofmann
++- Bind Ctrl-{PageUp,PageDown} to tab-{previous,next}.
+   Patch: Jeremy Henty
+
+-----------------------------------------------------------------------------
+
+dillo-3.0.1 [September 21, 2011]
 
 +- Add preference for UI theme.
  - Allow key bindings for paging left/right.
@@ -52,10 +85,6 @@ dillo-3.0 [September 06, 2011]
    Patch: Johannes Hofmann
 +- Default binding for left-tab changed to Shift-Ctrl-Tab.
    Patch: Jeremy Henty
-
-Note: these are user-visible changes. The full Changelog is kept
-      in our Mercurial repository at http://hg.dillo.org/dillo
-
 
 -----------------------------------------------------------------------------
 

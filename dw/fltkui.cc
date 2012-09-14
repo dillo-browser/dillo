@@ -266,6 +266,24 @@ template <class I> void FltkSpecificResource<I>::setEnabled (bool enabled)
 
 // ----------------------------------------------------------------------
 
+class EnterButton : public Fl_Button {
+public:
+   EnterButton (int x,int y,int w,int h, const char* label = 0) :
+      Fl_Button (x,y,w,h,label) {};
+   int handle(int e);
+};
+
+int EnterButton::handle(int e)
+{
+   if (e == FL_KEYBOARD && Fl::focus() == this && Fl::event_key() == FL_Enter){
+      set_changed();
+      simulate_key_action();
+      do_callback();
+      return 1;
+   }
+   return Fl_Button::handle(e);
+}
+
 FltkLabelButtonResource::FltkLabelButtonResource (FltkPlatform *platform,
                                                   const char *label):
    FltkSpecificResource <dw::core::ui::LabelButtonResource> (platform)
@@ -283,8 +301,8 @@ Fl_Widget *FltkLabelButtonResource::createNewWidget (core::Allocation
                                                      *allocation)
 {
    Fl_Button *button =
-        new Fl_Button (allocation->x, allocation->y, allocation->width,
-                       allocation->ascent + allocation->descent, label);
+        new EnterButton (allocation->x, allocation->y, allocation->width,
+                         allocation->ascent + allocation->descent, label);
    button->callback (widgetCallback, this);
    button->when (FL_WHEN_RELEASE);
    return button;
@@ -385,11 +403,22 @@ void FltkComplexButtonResource::widgetCallback (Fl_Widget *widget,
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
 
    if (!Fl::event_button3()) {
-      res->click_x = Fl::event_x();
-      res->click_y = Fl::event_y();
-      dw::core::EventButton event;
-      setButtonEvent(&event);
-      res->emitClicked(&event);
+      int w = widget->w(), h = widget->h();
+
+      res->click_x = Fl::event_x() - widget->x();
+      res->click_y = Fl::event_y() - widget->y();
+      if (res->style) {
+         res->click_x -= res->style->boxOffsetX();
+         res->click_y -= res->style->boxOffsetY();
+         w -= res->style->boxDiffWidth();
+         h -= res->style->boxDiffHeight();
+      }
+      if (res->click_x >= 0 && res->click_y >= 0 &&
+          res->click_x < w && res->click_y < h) {
+         dw::core::EventButton event;
+         setButtonEvent(&event);
+         res->emitClicked(&event);
+      }
    }
 }
 

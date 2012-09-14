@@ -1,6 +1,6 @@
 dnl Process this file with aclocal, autoconf and automake.
 
-AC_INIT([dillo], [3.0])
+AC_INIT([dillo], [3.0.2])
 
 dnl Detect the canonical target build environment
 AC_CANONICAL_TARGET
@@ -47,8 +47,8 @@ dnl ----------------------------
 dnl
 AC_CHECK_SIZEOF(char)
 AC_CHECK_SIZEOF(short)
-AC_CHECK_SIZEOF(long)  
-AC_CHECK_SIZEOF(int)     
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(void *)
 
 AC_TYPE_INT16_T
@@ -208,10 +208,8 @@ dnl For debugging and to be user friendly
     AC_MSG_CHECKING([for libpng version])
     png_version=`$PNG_CONFIG --version`
     case $png_version in
-      1.4.*) AC_MSG_RESULT([$png_version (newer version)]) ;;
-      1.2.*) AC_MSG_RESULT([$png_version (newer version)]) ;;
-      1.0.*) AC_MSG_RESULT([$png_version (older version)]) ;;
-          *) AC_MSG_RESULT([ERROR]) ;;
+      1.[[024]].*) AC_MSG_RESULT([$png_version]) ;;
+                *) AC_MSG_RESULT([$png_version (unrecognised version)]) ;;
     esac
 
 dnl Try to use options that are supported by all libpng-config versions...
@@ -304,7 +302,7 @@ fi
 
 dnl ----------------------
 dnl Check if we need to
-dnl support the old 
+dnl support the old
 dnl iconv interface
 dnl ----------------------
 if test "x$iconv_ok" = "xyes"; then
@@ -370,9 +368,9 @@ pthread_ok=yes, pthread_ok=no)
     else
       AC_MSG_RESULT(no. Now we will try some libraries.)
 
-      AC_SEARCH_LIBS(pthread_create, pthread, 
-                     LIBPTHREADS_LIBS="-lpthread", 
-      AC_SEARCH_LIBS(pthread_create, pthreads, 
+      AC_SEARCH_LIBS(pthread_create, pthread,
+                     LIBPTHREADS_LIBS="-lpthread",
+      AC_SEARCH_LIBS(pthread_create, pthreads,
                      LIBPTHREADS_LIBS="-lpthreads",
       AC_SEARCH_LIBS(pthread_create, c_r,
                      LIBPTHREADS_LIBS="-lc_r", thread_ok=no)))

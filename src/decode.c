@@ -190,7 +190,7 @@ Decode *a_Decode_transfer_init(const char *format)
 {
    Decode *dc = NULL;
 
-   if (format && !dStrcasecmp(format, "chunked")) {
+   if (format && !dStrAsciiCasecmp(format, "chunked")) {
       int *chunk_remaining = dNew(int, 1);
       *chunk_remaining = 0;
       dc = dNew(Decode, 1);
@@ -215,7 +215,8 @@ Decode *a_Decode_content_init(const char *format)
    Decode *dc = NULL;
 
    if (format && *format) {
-      if (!dStrcasecmp(format, "gzip") || !dStrcasecmp(format, "x-gzip")) {
+      if (!dStrAsciiCasecmp(format, "gzip") ||
+          !dStrAsciiCasecmp(format, "x-gzip")) {
          z_stream *zs;
          _MSG("gzipped data!\n");
 
@@ -245,17 +246,17 @@ Decode *a_Decode_content_init(const char *format)
  */
 static int Decode_is_ascii(const char *str)
 {
-   return (!(dStrcasecmp(str, "ASCII") &&
-             dStrcasecmp(str, "US-ASCII") &&
-             dStrcasecmp(str, "us") &&
-             dStrcasecmp(str, "IBM367") &&
-             dStrcasecmp(str, "cp367") &&
-             dStrcasecmp(str, "csASCII") &&
-             dStrcasecmp(str, "ANSI_X3.4-1968") &&
-             dStrcasecmp(str, "iso-ir-6") &&
-             dStrcasecmp(str, "ANSI_X3.4-1986") &&
-             dStrcasecmp(str, "ISO_646.irv:1991") &&
-             dStrcasecmp(str, "ISO646-US")));
+   return (!(dStrAsciiCasecmp(str, "ASCII") &&
+             dStrAsciiCasecmp(str, "US-ASCII") &&
+             dStrAsciiCasecmp(str, "us") &&
+             dStrAsciiCasecmp(str, "IBM367") &&
+             dStrAsciiCasecmp(str, "cp367") &&
+             dStrAsciiCasecmp(str, "csASCII") &&
+             dStrAsciiCasecmp(str, "ANSI_X3.4-1968") &&
+             dStrAsciiCasecmp(str, "iso-ir-6") &&
+             dStrAsciiCasecmp(str, "ANSI_X3.4-1986") &&
+             dStrAsciiCasecmp(str, "ISO_646.irv:1991") &&
+             dStrAsciiCasecmp(str, "ISO646-US")));
 }
 
 /*
@@ -271,7 +272,7 @@ Decode *a_Decode_charset_init(const char *format)
 
    if (format &&
        strlen(format) &&
-       dStrcasecmp(format,"UTF-8") &&
+       dStrAsciiCasecmp(format,"UTF-8") &&
        !Decode_is_ascii(format)) {
 
       iconv_t ic = iconv_open("UTF-8", format);

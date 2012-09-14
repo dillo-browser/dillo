@@ -22,7 +22,9 @@ noinst_PROGRAMS = \
 	dw-ui-test \
 	fltk-browser \
 	shapes \
-	cookies
+	cookies \
+	liang \
+	notsosimplevector
 
 dw_anchors_test_SOURCES = dw_anchors_test.cc
 dw_anchors_test_LDADD = \
@@ -168,3 +170,16 @@ cookies_SOURCES = cookies.c
 cookies_LDADD = \
 	$(top_builddir)/dpip/libDpip.a \
 	$(top_builddir)/dlib/libDlib.a
+
+liang_SOURCES = liang.cc
+
+liang_LDADD = \
+	$(top_builddir)/dw/libDw-widgets.a \
+	$(top_builddir)/dw/libDw-fltk.a \
+	$(top_builddir)/dw/libDw-core.a \
+	$(top_builddir)/lout/liblout.a \
+	@LIBFLTK_LIBS@
+
+notsosimplevector_SOURCES = notsosimplevector.cc
+
+notsosimplevector_LDADD = $(top_builddir)/lout/liblout.a

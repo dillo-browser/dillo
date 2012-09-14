@@ -597,7 +597,7 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
       /* Filter URL string */
       new_urlstr = a_Url_string_strip_delimiters(urlstr);
 
-      if (!dStrncasecmp(new_urlstr, "file:", 5)) {
+      if (!dStrnAsciiCasecmp(new_urlstr, "file:", 5)) {
          /* file URI */
          ch = new_urlstr[5];
          if (!ch || ch == '.') {
@@ -1177,7 +1177,7 @@ void a_UIcmd_scroll(BrowserWindow *bw, int icmd)
       };
       KeysCommand_t keycmd = (KeysCommand_t)icmd;
 
-      for (uint_t i = 0; i < (sizeof(map)/sizeof(mapping_t)); i++) {
+      for (uint_t i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
          if (keycmd == map[i].keys_cmd) {
             layout->scroll(map[i].dw_cmd);
             break;

@@ -195,6 +195,7 @@ struct Content
       REAL_CONTENT      = 0xff ^ (START | END | FLOAT_REF),
       SELECTION_CONTENT = TEXT | WIDGET | BREAK
    };
+
    /* Content is embedded in struct Word therefore we
     * try to be space efficient.
     */

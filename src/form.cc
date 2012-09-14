@@ -271,7 +271,7 @@ static DilloHtmlInput *Html_get_radio_input(DilloHtml *html, const char *name)
       for (int idx = 0; idx < inputs->size(); idx++) {
          DilloHtmlInput *input = inputs->get(idx);
          if (input->type == DILLO_HTML_INPUT_RADIO &&
-             input->name && !dStrcasecmp(input->name, name))
+             input->name && !dStrAsciiCasecmp(input->name, name))
             return input;
       }
    }
@@ -279,8 +279,7 @@ static DilloHtmlInput *Html_get_radio_input(DilloHtml *html, const char *name)
 }
 
 /*
- * Get the current input.
- * Note that this _assumes_ that there _is_ a current input.
+ * Get the current input if available.
  */
 static DilloHtmlInput *Html_get_current_input(DilloHtml *html)
 {
@@ -291,7 +290,8 @@ static DilloHtmlInput *Html_get_current_input(DilloHtml *html)
    else
       inputs = html->inputs_outside_form;
 
-   return inputs->get (inputs->size() - 1);
+   return (inputs && inputs->size() > 0) ?
+            inputs->get (inputs->size() - 1) : NULL;
 }
 
 /*
@@ -318,9 +318,9 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
 
    method = DILLO_HTML_METHOD_GET;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "method"))) {
-      if (!dStrcasecmp(attrbuf, "post")) {
+      if (!dStrAsciiCasecmp(attrbuf, "post")) {
          method = DILLO_HTML_METHOD_POST;
-      } else if (dStrcasecmp(attrbuf, "get")) {
+      } else if (dStrAsciiCasecmp(attrbuf, "get")) {
          BUG_MSG("Unknown form submission method \"%s\"\n", attrbuf);
       }
    }
@@ -333,7 +333,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    content_type = DILLO_HTML_ENC_URLENCODED;
    if ((method == DILLO_HTML_METHOD_POST) &&
        ((attrbuf = a_Html_get_attr(html, tag, tagsize, "enctype")))) {
-      if (!dStrcasecmp(attrbuf, "multipart/form-data"))
+      if (!dStrAsciiCasecmp(attrbuf, "multipart/form-data"))
          content_type = DILLO_HTML_ENC_MULTIPART;
    }
    charset = NULL;
@@ -343,9 +343,9 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
       char *ptr = first = dStrdup(attrbuf);
       while (ptr && !charset) {
          char *curr = dStrsep(&ptr, " ,");
-         if (!dStrcasecmp(curr, "utf-8")) {
+         if (!dStrAsciiCasecmp(curr, "utf-8")) {
             charset = curr;
-         } else if (!dStrcasecmp(curr, "UNKNOWN")) {
+         } else if (!dStrAsciiCasecmp(curr, "UNKNOWN")) {
             /* defined to be whatever encoding the document is in */
             charset = html->charset;
          }
@@ -441,18 +441,18 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 
    init_str = NULL;
    inp_type = DILLO_HTML_INPUT_UNKNOWN;
-   if (!dStrcasecmp(type, "password")) {
+   if (!dStrAsciiCasecmp(type, "password")) {
       inp_type = DILLO_HTML_INPUT_PASSWORD;
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
       resource = factory->createEntryResource (size, true, NULL);
       init_str = value;
-   } else if (!dStrcasecmp(type, "checkbox")) {
+   } else if (!dStrAsciiCasecmp(type, "checkbox")) {
       inp_type = DILLO_HTML_INPUT_CHECKBOX;
       resource = factory->createCheckButtonResource(false);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
       init_str = (value) ? value : dStrdup("on");
-   } else if (!dStrcasecmp(type, "radio")) {
+   } else if (!dStrAsciiCasecmp(type, "radio")) {
       inp_type = DILLO_HTML_INPUT_RADIO;
       RadioButtonResource *rb_r = NULL;
       DilloHtmlInput *input = Html_get_radio_input(html, name);
@@ -461,22 +461,22 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       resource = factory->createRadioButtonResource(rb_r, false);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
       init_str = value;
-   } else if (!dStrcasecmp(type, "hidden")) {
+   } else if (!dStrAsciiCasecmp(type, "hidden")) {
       inp_type = DILLO_HTML_INPUT_HIDDEN;
       init_str = value;
       int size = Html_input_get_size(html, NULL);
       resource = factory->createEntryResource(size, false, name);
-   } else if (!dStrcasecmp(type, "submit")) {
+   } else if (!dStrAsciiCasecmp(type, "submit")) {
       inp_type = DILLO_HTML_INPUT_SUBMIT;
       init_str = (value) ? value : dStrdup("submit");
       resource = factory->createLabelButtonResource(init_str);
 //    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
-   } else if (!dStrcasecmp(type, "reset")) {
+   } else if (!dStrAsciiCasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_RESET;
       init_str = (value) ? value : dStrdup("Reset");
       resource = factory->createLabelButtonResource(init_str);
 //    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
-   } else if (!dStrcasecmp(type, "image")) {
+   } else if (!dStrAsciiCasecmp(type, "image")) {
       if (URL_FLAGS(html->base_url) & URL_SpamSafe) {
          /* Don't request the image; make a text submit button instead */
          inp_type = DILLO_HTML_INPUT_SUBMIT;
@@ -491,7 +491,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          embed = Html_input_image(html, tag, tagsize);
          init_str = value;
       }
-   } else if (!dStrcasecmp(type, "file")) {
+   } else if (!dStrAsciiCasecmp(type, "file")) {
       bool valid = true;
       if (html->InFlags & IN_FORM) {
          DilloHtmlForm *form = html->getCurrentForm();
@@ -512,24 +512,22 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          init_str = dStrdup("File selector");
          resource = factory->createLabelButtonResource(init_str);
       }
-   } else if (!dStrcasecmp(type, "button")) {
+   } else if (!dStrAsciiCasecmp(type, "button")) {
       inp_type = DILLO_HTML_INPUT_BUTTON;
       if (value) {
          init_str = value;
          resource = factory->createLabelButtonResource(init_str);
       }
-   } else if (!dStrcasecmp(type, "text") || !*type) {
+   } else {
       /* Text input, which also is the default */
       inp_type = DILLO_HTML_INPUT_TEXT;
+      if (*type && dStrAsciiCasecmp(type, "text"))
+         BUG_MSG("Unknown input type: \"%s\"\n", type);
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
       resource = factory->createEntryResource(size, false, NULL);
       init_str = value;
-   } else {
-      /* Unknown input type */
-      BUG_MSG("Unknown input type: \"%s\"\n", type);
    }
-
    if (resource)
       embed = new Embed (resource);
 
@@ -609,17 +607,8 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
    html->InFlags &= ~IN_FORM;
 }
 
-/*
- * The textarea tag
- */
 void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 {
-   const int MAX_COLS=1024, MAX_ROWS=10000;
-
-   char *name;
-   const char *attrbuf;
-   int cols, rows;
-
    if (html->InFlags & IN_TEXTAREA) {
       BUG_MSG("nested <textarea>\n");
       html->ReqTagClose = TRUE;
@@ -631,6 +620,19 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    }
 
    html->InFlags |= IN_TEXTAREA;
+}
+
+/*
+ * The textarea tag
+ */
+void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
+{
+   const int MAX_COLS=1024, MAX_ROWS=10000;
+
+   char *name;
+   const char *attrbuf;
+   int cols, rows;
+
    a_Html_stash_init(html);
    S_TOP(html)->parse_mode = DILLO_HTML_PARSE_MODE_VERBATIM;
 
@@ -684,7 +686,7 @@ void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
    DilloHtmlInput *input;
    int i;
 
-   if (html->InFlags & IN_TEXTAREA) {
+   if (html->InFlags & IN_TEXTAREA && !S_TOP(html)->display_none) {
       /* Remove the line ending that follows the opening tag */
       if (html->Stash->str[0] == '\r')
          dStr_erase(html->Stash, 0, 1);
@@ -705,8 +707,10 @@ void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
       /* The HTML3.2 spec says it can have "text and character entities". */
       str = a_Html_parse_entities(html, html->Stash->str, html->Stash->len);
       input = Html_get_current_input(html);
-      input->init_str = str;
-      ((MultiLineTextResource *)input->embed->getResource ())->setText(str);
+      if (input) {
+         input->init_str = str;
+         ((MultiLineTextResource *)input->embed->getResource ())->setText(str);
+      }
 
       html->InFlags &= ~IN_TEXTAREA;
    }
@@ -833,11 +837,11 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 
    type = a_Html_get_attr_wdef(html, tag, tagsize, "type", "");
 
-   if (!dStrcasecmp(type, "button")) {
+   if (!dStrAsciiCasecmp(type, "button")) {
       inp_type = DILLO_HTML_INPUT_BUTTON;
-   } else if (!dStrcasecmp(type, "reset")) {
+   } else if (!dStrAsciiCasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_BUTTON_RESET;
-   } else if (!dStrcasecmp(type, "submit") || !*type) {
+   } else if (!dStrAsciiCasecmp(type, "submit") || !*type) {
       /* submit button is the default */
       inp_type = DILLO_HTML_INPUT_BUTTON_SUBMIT;
    } else {
@@ -1036,7 +1040,7 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
    char *boundary = NULL;
    iconv_t char_encoder = (iconv_t) -1;
 
-   if (submit_charset && dStrcasecmp(submit_charset, "UTF-8")) {
+   if (submit_charset && dStrAsciiCasecmp(submit_charset, "UTF-8")) {
       char_encoder = iconv_open(submit_charset, "UTF-8");
       if (char_encoder == (iconv_t) -1) {
          MSG_WARN("Cannot convert to character encoding '%s'\n",
@@ -1310,8 +1314,8 @@ void DilloHtmlForm::filesInputMultipartAppend(Dstr* data,
       (void)a_Misc_get_content_type_from_data(file->str, file->len, &ctype);
       /* Heuristic: text/plain with ".htm[l]" extension -> text/html */
       if ((ext = strrchr(filename, '.')) &&
-          !dStrcasecmp(ctype, "text/plain") &&
-          (!dStrcasecmp(ext, ".html") || !dStrcasecmp(ext, ".htm"))) {
+          !dStrAsciiCasecmp(ctype, "text/plain") &&
+          (!dStrAsciiCasecmp(ext, ".html") || !dStrAsciiCasecmp(ext, ".htm"))){
          ctype = "text/html";
       }
 
@@ -1476,7 +1480,7 @@ DilloHtmlInput *DilloHtmlForm::getRadioInput (const char *name)
    for (int idx = 0; idx < inputs->size(); idx++) {
       DilloHtmlInput *input = inputs->get(idx);
       if (input->type == DILLO_HTML_INPUT_RADIO &&
-          input->name && !dStrcasecmp(input->name, name))
+          input->name && !dStrAsciiCasecmp(input->name, name))
          return input;
    }
    return NULL;
@@ -1904,29 +1908,21 @@ DilloHtmlOption::~DilloHtmlOption ()
  */
 static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
 {
-   const char *attrbuf;
    DilloImage *Image;
    Embed *button = NULL;
-   DilloUrl *url = NULL;
 
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src")) &&
-       (url = a_Html_url_new(html, attrbuf, NULL, 0))) {
+   html->styleEngine->setPseudoLink ();
 
-      html->styleEngine->setPseudoLink ();
-
-      /* create new image and add it to the button */
-      if ((Image = a_Html_image_new(html, tag, tagsize, url))) {
-         IM2DW(Image)->setStyle (html->styleEngine->backgroundStyle ());
-         ResourceFactory *factory = HT2LT(html)->getResourceFactory();
-         ComplexButtonResource *complex_b_r =
-            factory->createComplexButtonResource(IM2DW(Image), false);
-         button = new Embed(complex_b_r);
-         HT2TB(html)->addWidget (button, html->styleEngine->style ());
-//       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
-
-      } else {
-         a_Url_free(url);
-      }
+   /* create new image and add it to the button */
+   a_Html_image_attrs(html, tag, tagsize);
+   if ((Image = a_Html_image_new(html, tag, tagsize))) {
+      IM2DW(Image)->setStyle (html->styleEngine->backgroundStyle ());
+      ResourceFactory *factory = HT2LT(html)->getResourceFactory();
+      ComplexButtonResource *complex_b_r =
+         factory->createComplexButtonResource(IM2DW(Image), false);
+      button = new Embed(complex_b_r);
+      HT2TB(html)->addWidget (button, html->styleEngine->style ());
+//    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
    }
    if (!button)
       MSG("Html_input_image: unable to create image submit.\n");

@@ -15,10 +15,10 @@ implementation would result in something, for which
 because of rounding errors, due to the integer division. This can be
 avoided by transforming the formula into
 
-\f[y_i = {(\sum_{j=0}^{j=i} x_j) a \over b} - \sum_{j=0}^{j=i} y_j\f]
+\f[y_i = {(\sum_{j=0}^{j=i} x_j) a \over b} - \sum_{j=0}^{j=i-1} y_j\f]
 
 Of corse, when all \f$y_i\f$ are calculated in a sequence,
-\f$\sum_{j=0}^{j=i} x_j\f$ and \f$\sum_{j=0}^{j=i} y_j\f$ can be
+\f$\sum_{j=0}^{j=i} x_j\f$ and \f$\sum_{j=0}^{j=i-1} y_j\f$ can be
 accumulated in the same loop.
 
 */

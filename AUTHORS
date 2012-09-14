@@ -74,3 +74,15 @@ patches.
 
 Contributions are always welcome!
 
+
+
+---------------
+Non-Dillo code:
+---------------
+
+* dw/fltkcomplexbutton.(cc|hh) contain code from the FLTK project whose
+  copyright is held by Bill Spitzak and others.
+* src/binaryconst.h contains code by Tom Torfs that the author placed in the
+  public domain.
+* src/md5.[ch] contain code by L. Peter Deutsch whose copyright is held by
+  Aladdin Enterprises.

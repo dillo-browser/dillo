@@ -1,6 +1,7 @@
 
-// fltkcomplexbutton.hh contains code from FLTK 1.3's FL/Fl_Button.H
-// that is Copyright 1998-2010 by Bill Spitzak and others.
+// fltkcomplexbutton.hh is derived from FL/Fl_Button.H from FLTK's 1.3 branch
+// at http://fltk.org in early 2011.
+// FL/Fl_Button.H is Copyright 1998-2010 by Bill Spitzak and others.
 
 /*
  * This program is free software; you can redistribute it and/or modify

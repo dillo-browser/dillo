@@ -23,23 +23,23 @@ GLib. For an overview on all this, take a look at \ref lout.
 GtkObject is replaced by the following:
 
 <ul>
-<li> object::Object is a common base class for many classes used dillo. In
-     the namespace ::object, there are also some more common classes and
-     interfaces.
+<li> lout::object::Object is a common base class for many classes used
+     dillo. In the namespace lout::object, there are also some more common
+     classes and interfaces.
 
-<li> A sub class of object::Object is identity::IdentifiableObject, which
-     allows to determine the class at run-time (equivalent to GTK_CHECK_CAST
-     in GtkObject).
+<li> A sub class of lout::object::Object is
+     lout::identity::IdentifiableObject, which allows to determine the
+     class at run-time (equivalent to GTK_CHECK_CAST in GtkObject).
 
-<li> For signals, there is the namespace ::signal.
+<li> For signals, there is the namespace lout::signal.
 </ul>
 
-Hash tables, linked lists etc. can be found in the ::container namespace,
+Hash tables, linked lists etc. can be found in the lout::container namespace,
 several useful macros from GLib have been implemented as inline functions
-in the ::misc namespace.
+in the lout::misc namespace.
 
 As an alternative to the macros defined in list.h, there is also a template
-class, misc::SimpleVector, which does the same.
+class, lout::misc::SimpleVector, which does the same.
 
 <h3>Changes in Dw</h3>
 

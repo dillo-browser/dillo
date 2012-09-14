@@ -67,7 +67,7 @@ static Viewer_t Mime_minor_type_fetch(const char *Key, uint_t Size)
 
    if (Size) {
       for ( i = 0; i < MimeMinItemsSize; ++i )
-         if (dStrncasecmp(Key, MimeMinItems[i].Name, Size) == 0)
+         if (dStrnAsciiCasecmp(Key, MimeMinItems[i].Name, Size) == 0)
             return MimeMinItems[i].Data;
    }
    return NULL;
@@ -83,7 +83,7 @@ static Viewer_t Mime_major_type_fetch(const char *Key, uint_t Size)
 
    if (Size) {
       for ( i = 0; i < MimeMajItemsSize; ++i )
-         if (dStrncasecmp(Key, MimeMajItems[i].Name, Size) == 0)
+         if (dStrnAsciiCasecmp(Key, MimeMajItems[i].Name, Size) == 0)
             return MimeMajItems[i].Data;
    }
    return NULL;

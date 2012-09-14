@@ -12,6 +12,7 @@
 #include "../dlib/dlib.h"
 #include "msg.h"
 #include "prefs.h"
+#include "misc.h"
 #include "html_common.hh"
 #include "styleengine.hh"
 
@@ -25,6 +26,8 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    doctree = new Doctree ();
    stack = new lout::misc::SimpleVector <Node> (1);
    cssContext = new CssContext ();
+   buildUserAgentStyle ();
+   buildUserStyle ();
    this->layout = layout;
    importDepth = 0;
 
@@ -103,7 +106,7 @@ void StyleEngine::setId (const char *id) {
    DoctreeNode *dn =  doctree->top ();
    assert (dn->id == NULL);
    dn->id = dStrdup (id);
-};
+}
 
 /**
  * \brief split a string at sep chars and return a SimpleVector of strings
@@ -134,7 +137,7 @@ void StyleEngine::setClass (const char *klass) {
    DoctreeNode *dn = doctree->top ();
    assert (dn->klass == NULL);
    dn->klass = splitStr (klass, ' ');
-};
+}
 
 void StyleEngine::setStyle (const char *styleAttr) {
    Node *n = stack->getRef (stack->size () - 1);
@@ -148,7 +151,7 @@ void StyleEngine::setStyle (const char *styleAttr) {
                                         n->styleAttrProperties,
                                         n->styleAttrPropertiesImportant);
    }
-};
+}
 
 /**
  * \brief Instruct StyleEngine to use the nonCssHints from parent element
@@ -303,15 +306,15 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
                   *c = '\0';
                dStrstrip(p->value.strVal);
 
-               if (strcmp (p->value.strVal, "serif") == 0)
+               if (dStrAsciiCasecmp (p->value.strVal, "serif") == 0)
                   fontName = prefs.font_serif;
-               else if (strcmp (p->value.strVal, "sans-serif") == 0)
+               else if (dStrAsciiCasecmp (p->value.strVal, "sans-serif") == 0)
                   fontName = prefs.font_sans_serif;
-               else if (strcmp (p->value.strVal, "cursive") == 0)
+               else if (dStrAsciiCasecmp (p->value.strVal, "cursive") == 0)
                   fontName = prefs.font_cursive;
-               else if (strcmp (p->value.strVal, "fantasy") == 0)
+               else if (dStrAsciiCasecmp (p->value.strVal, "fantasy") == 0)
                   fontName = prefs.font_fantasy;
-               else if (strcmp (p->value.strVal, "monospace") == 0)
+               else if (dStrAsciiCasecmp (p->value.strVal, "monospace") == 0)
                   fontName = prefs.font_monospace;
                else if (Font::exists(layout, p->value.strVal))
                   fontName = p->value.strVal;
@@ -331,30 +334,33 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
             if (p->type == CSS_TYPE_ENUM) {
                switch (p->value.intVal) {
                   case CSS_FONT_SIZE_XX_SMALL:
-                     fontAttrs.size = roundInt(11.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(8.1 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_X_SMALL:
-                     fontAttrs.size = roundInt(12.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(9.7 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_SMALL:
-                     fontAttrs.size = roundInt(13.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(11.7 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_MEDIUM:
                      fontAttrs.size = roundInt(14.0 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_LARGE:
+                     fontAttrs.size = roundInt(16.8 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_X_LARGE:
-                     fontAttrs.size = roundInt(16.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(20.2 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_XX_LARGE:
-                     fontAttrs.size = roundInt(17.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(24.2 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_SMALLER:
-                     fontAttrs.size -= roundInt(1.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(fontAttrs.size * 0.83 *
+                                               prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_LARGER:
-                     fontAttrs.size += roundInt(1.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(fontAttrs.size * 1.2 *
+                                               prefs.font_factor);
                      break;
                   default:
                      assert(false); // invalid font-size enum
@@ -565,6 +571,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
          case CSS_PROPERTY_TEXT_INDENT:
             computeLength (&attrs->textIndent, p->value.intVal, attrs->font);
             break;
+         case CSS_PROPERTY_TEXT_TRANSFORM:
+            attrs->textTransform = (TextTransform) p->value.intVal;
+            break;
          case CSS_PROPERTY_VERTICAL_ALIGN:
             attrs->valign = (VAlignType) p->value.intVal;
             break;
@@ -594,6 +603,13 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
+            break;
+         case PROPERTY_X_LANG:
+            attrs->x_lang[0] = tolower (p->value.strVal[0]);
+            if (attrs->x_lang[0])
+               attrs->x_lang[1] = tolower (p->value.strVal[1]);
+            else
+               attrs->x_lang[1] = 0;
             break;
          case PROPERTY_X_IMG:
             attrs->x_img = p->value.intVal;
@@ -803,4 +819,75 @@ void StyleEngine::parse (DilloHtml *html, DilloUrl *url, const char *buf,
    importDepth++;
    CssParser::parse (html, url, cssContext, buf, buflen, origin);
    importDepth--;
+}
+
+/**
+ * \brief Create the user agent style.
+ *
+ * The user agent style defines how dillo renders HTML in the absence of
+ * author or user styles.
+ */
+void StyleEngine::buildUserAgentStyle () {
+   const char *cssBuf =
+      "body  {margin: 5px}"
+      "big {font-size: 1.17em}"
+      "blockquote, dd {margin-left: 40px; margin-right: 40px}"
+      "center {text-align: center}"
+      "dt {font-weight: bolder}"
+      ":link {color: blue; text-decoration: underline; cursor: pointer}"
+      ":visited {color: #800080; text-decoration: underline; cursor: pointer}"
+      "h1, h2, h3, h4, h5, h6, b, strong {font-weight: bolder}"
+      "address, center, div, h1, h2, h3, h4, h5, h6, ol, p, ul, pre {display: block}"
+      "i, em, cite, address, var {font-style: italic}"
+      ":link img, :visited img {border: 1px solid}"
+      "frameset, ul, ol, dir {margin-left: 40px}"
+      /* WORKAROUND: It should be margin: 1em 0
+       * but as we don't collapse these margins yet, it
+       * look better like this.
+       */
+      "p {margin: 0.5em 0}"
+      "h1 {font-size: 2em; margin-top: .67em; margin-bottom: 0}"
+      "h2 {font-size: 1.5em; margin-top: .75em; margin-bottom: 0}"
+      "h3 {font-size: 1.17em; margin-top: .83em; margin-bottom: 0}"
+      "h4 {margin-top: 1.12em; margin-bottom: 0}"
+      "h5 {font-size: 0.83em; margin-top: 1.5em; margin-bottom: 0}"
+      "h6 {font-size: 0.75em; margin-top: 1.67em; margin-bottom: 0}"
+      "hr {width: 100%; border: 1px inset}"
+      "li {margin-top: 0.1em; display: list-item}"
+      "pre {white-space: pre}"
+      "ol {list-style-type: decimal}"
+      "ul {list-style-type: disc}"
+      "ul ul {list-style-type: circle}"
+      "ul ul ul {list-style-type: square}"
+      "ul ul ul ul {list-style-type: disc}"
+      "u {text-decoration: underline}"
+      "small, sub, sup {font-size: 0.83em}"
+      "sub {vertical-align: sub}"
+      "sup {vertical-align: super}"
+      "s, strike, del {text-decoration: line-through}"
+      "table {border-spacing: 2px}"
+      "td, th {padding: 2px}"
+      "thead, tbody, tfoot {vertical-align: middle}"
+      "th {font-weight: bolder; text-align: center}"
+      "code, tt, pre, samp, kbd {font-family: monospace}"
+      /* WORKAROUND: Reset font properties in tables as some
+       * pages rely on it (e.g. gmail).
+       * http://developer.mozilla.org/En/Fixing_Table_Inheritance_in_Quirks_Mode
+       * has a detailed description of the issue.
+       */
+      "table, caption {font-size: medium; font-weight: normal}";
+
+   CssParser::parse (NULL, NULL, cssContext, cssBuf, strlen (cssBuf),
+                     CSS_ORIGIN_USER_AGENT);
+}
+
+void StyleEngine::buildUserStyle () {
+   Dstr *style;
+   char *filename = dStrconcat(dGethomedir(), "/.dillo/style.css", NULL);
+
+   if ((style = a_Misc_file2dstr(filename))) {
+      CssParser::parse (NULL,NULL,cssContext,style->str, style->len,CSS_ORIGIN_USER);
+      dStr_free (style, 1);
+   }
+   dFree (filename);
 }

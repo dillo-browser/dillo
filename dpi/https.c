@@ -360,9 +360,9 @@ static int get_network_connection(char * url)
    char * url_look_up = NULL;
 
    /*Determine how much of url we chop off as unneeded*/
-   if (dStrncasecmp(url, "https://", 8) == 0){
+   if (dStrnAsciiCasecmp(url, "https://", 8) == 0){
       url_offset = 8;
-   } else if (dStrncasecmp(url, "http://", 7) == 0) {
+   } else if (dStrnAsciiCasecmp(url, "http://", 7) == 0) {
       url_offset = 7;
       portnum = 80;
    }

@@ -111,6 +111,7 @@ void Widget::setParent (Widget *parent)
 	notifySetParent();
 
    //DBG_OBJ_ASSOC (widget, parent);
+   //printf ("%p becomes a child of %p\n", this, parent);
 }
 
 void Widget::queueDrawArea (int x, int y, int width, int height)

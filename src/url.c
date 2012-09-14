@@ -54,7 +54,7 @@ static const char *HEX = "0123456789ABCDEF";
 #define URL_STR_FIELD_CMP(s1,s2) \
    (s1) && (s2) ? strcmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
 #define URL_STR_FIELD_I_CMP(s1,s2) \
-   (s1) && (s2) ? dStrcasecmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
+   (s1) && (s2) ? dStrAsciiCasecmp(s1,s2) : !(s1) && !(s2) ? 0 : (s1) ? 1 : -1
 
 /*
  * Return the url as a string.
@@ -586,8 +586,7 @@ char *a_Url_encode_hex_str(const char *str)
    newstr = dNew(char, 6*strlen(str)+1);
 
    for (c = newstr; *str; str++)
-      if ((dIsalnum(*str) && !(*str & 0x80)) || strchr(verbatim, *str))
-      /* we really need isalnum for the "C" locale */
+      if ((dIsalnum(*str) && isascii(*str)) || strchr(verbatim, *str))
          *c++ = *str;
       else if (*str == ' ')
          *c++ = '+';
@@ -652,10 +651,10 @@ static bool_t Url_host_is_ip(const char *host)
       _MSG("an IPv4 address\n");
       return TRUE;
    }
-   if (*host == '[' &&
-       (len == strspn(host, "0123456789abcdefABCDEF:.[]"))) {
+   if (strchr(host, ':') &&
+       (len == strspn(host, "0123456789abcdefABCDEF:."))) {
       /* The precise format is shown in section 3.2.2 of rfc 3986 */
-      _MSG("an IPv6 address\n");
+      MSG("an IPv6 address\n");
       return TRUE;
    }
    return FALSE;
@@ -702,7 +701,7 @@ static uint_t Url_host_public_internal_dots(const char *host)
 
          for (i = 0; i < tld_num; i++) {
             if (strlen(tlds[i]) == (uint_t) tld_len &&
-                !dStrncasecmp(tlds[i], host + start, tld_len)) {
+                !dStrnAsciiCasecmp(tlds[i], host + start, tld_len)) {
                _MSG("TLD code matched %s\n", tlds[i]);
                ret++;
                break;
@@ -759,6 +758,7 @@ bool_t a_Url_same_organization(const DilloUrl *u1, const DilloUrl *u2)
    if (!u1 || !u2)
       return FALSE;
 
-   return dStrcasecmp(Url_host_find_public_suffix(URL_HOST(u1)),
-                      Url_host_find_public_suffix(URL_HOST(u2))) ? FALSE :TRUE;
+   return dStrAsciiCasecmp(Url_host_find_public_suffix(URL_HOST(u1)),
+                           Url_host_find_public_suffix(URL_HOST(u2)))
+          ? FALSE : TRUE;
 }

@@ -34,6 +34,7 @@
          html->bugMessage(__VA_ARGS__);            \
    } D_STMT_END
 
+
 /*
  * Typedefs
  */
@@ -103,7 +104,7 @@ struct _DilloHtmlState {
    DilloHtmlTableMode table_mode;
    DilloHtmlTableBorderMode table_border_mode;
    bool cell_text_align_set;
-
+   bool display_none;
    DilloHtmlListMode list_type;
    int list_number;
 
@@ -238,8 +239,8 @@ DilloUrl *a_Html_url_new(DilloHtml *html,
                          const char *url_str, const char *base_url,
                          int use_base_url);
 
-DilloImage *a_Html_image_new(DilloHtml *html, const char *tag,
-                             int tagsize, DilloUrl *url);
+void a_Html_image_attrs(DilloHtml *html, const char *tag, int tagsize);
+DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize);
 
 char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize);
 void a_Html_pop_tag(DilloHtml *html, int TagIdx);

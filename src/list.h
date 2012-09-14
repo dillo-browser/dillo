@@ -16,12 +16,12 @@
  */
 #define a_List_resize(list,num_items,alloc_step) \
    if (!list) { \
-      list = dMalloc(alloc_step * sizeof((*list))); \
+      list = dMalloc(alloc_step * sizeof(*list)); \
    } \
    if (num_items >= alloc_step){ \
       while ( num_items >= alloc_step ) \
          alloc_step <<= 1; \
-      list = dRealloc(list, alloc_step * sizeof((*list))); \
+      list = dRealloc(list, alloc_step * sizeof(*list)); \
    }
 
 

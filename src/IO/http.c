@@ -171,10 +171,11 @@ static void Http_connect_queued_sockets(HostConnection_t *hc)
       } else if (a_Web_valid(sd->web)) {
          /* start connecting the socket */
          if (Http_connect_socket(sd->Info) < 0) {
+            ChainLink *Info = sd->Info;
             MSG_BW(sd->web, 1, "ERROR: %s", dStrerror(sd->Err));
-            a_Chain_bfcb(OpAbort, sd->Info, NULL, "Both");
-            dFree(sd->Info);
-            Http_socket_free(VOIDP2INT(sd->Info->LocalKey));
+            a_Chain_bfcb(OpAbort, Info, NULL, "Both");
+            Http_socket_free(VOIDP2INT(Info->LocalKey)); /* free sd */
+            dFree(Info);
          } else {
             sd->connected_to = hc->host;
             hc->active_connections++;
@@ -202,7 +203,7 @@ static void Http_socket_free(int SKey)
             Http_connect_queued_sockets(hc);
             if (hc->active_connections == 0)
                Http_host_connection_remove(hc);
-      }
+         }
          dFree(S);
       }
    }
@@ -274,23 +275,22 @@ static Dstr *Http_make_content_type(const DilloUrl *url)
 Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
                             bool_t use_proxy)
 {
-   const char *auth;
-   char *ptr, *cookies, *referer;
+   char *ptr, *cookies, *referer, *auth;
    Dstr *query      = dStr_new(""),
-        *full_path  = dStr_new(""),
+        *request_uri = dStr_new(""),
         *proxy_auth = dStr_new("");
 
    if (use_proxy) {
-      dStr_sprintfa(full_path, "%s%s",
+      dStr_sprintfa(request_uri, "%s%s",
                     URL_STR(url),
                     (URL_PATH_(url) || URL_QUERY_(url)) ? "" : "/");
-      if ((ptr = strrchr(full_path->str, '#')))
-         dStr_truncate(full_path, ptr - full_path->str);
+      if ((ptr = strrchr(request_uri->str, '#')))
+         dStr_truncate(request_uri, ptr - request_uri->str);
       if (HTTP_Proxy_Auth_base64)
          dStr_sprintf(proxy_auth, "Proxy-Authorization: Basic %s\r\n",
                       HTTP_Proxy_Auth_base64);
    } else {
-      dStr_sprintfa(full_path, "%s%s%s%s",
+      dStr_sprintfa(request_uri, "%s%s%s%s",
                     URL_PATH(url),
                     URL_QUERY_(url) ? "?" : "",
                     URL_QUERY(url),
@@ -298,7 +298,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
    }
 
    cookies = a_Cookies_get_query(url, requester);
-   auth = a_Auth_get_auth_str(url);
+   auth = a_Auth_get_auth_str(url, request_uri->str);
    referer = Http_get_referer(url);
    if (URL_FLAGS(url) & URL_Post) {
       Dstr *content_type = Http_make_content_type(url);
@@ -319,7 +319,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "Content-Type: %s\r\n"
          "%s" /* cookies */
          "\r\n",
-         full_path->str, HTTP_Language_hdr, auth ? auth : "",
+         request_uri->str, HTTP_Language_hdr, auth ? auth : "",
          URL_AUTHORITY(url), proxy_auth->str, referer, prefs.http_user_agent,
          (long)URL_DATA(url)->len, content_type->str,
          cookies);
@@ -342,7 +342,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "User-Agent: %s\r\n"
          "%s" /* cookies */
          "\r\n",
-         full_path->str,
+         request_uri->str,
          (URL_FLAGS(url) & URL_E2EQuery) ?
             "Cache-Control: no-cache\r\nPragma: no-cache\r\n" : "",
          HTTP_Language_hdr, auth ? auth : "", URL_AUTHORITY(url),
@@ -350,8 +350,9 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
    }
    dFree(referer);
    dFree(cookies);
+   dFree(auth);
 
-   dStr_free(full_path, TRUE);
+   dStr_free(request_uri, TRUE);
    dStr_free(proxy_auth, TRUE);
    _MSG("Query: {%s}\n", dStr_printable(query, 8192));
    return query;
@@ -479,7 +480,7 @@ static int Http_must_use_proxy(const DilloUrl *url)
          for (p = np; (tok = dStrsep(&p, " "));  ) {
             int start = host_len - strlen(tok);
 
-            if (start >= 0 && dStrcasecmp(host + start, tok) == 0) {
+            if (start >= 0 && dStrAsciiCasecmp(host + start, tok) == 0) {
                /* no_proxy token is suffix of host string */
                ret = 0;
                break;
@@ -718,7 +719,7 @@ static HostConnection_t *Http_host_connection_get(const char *host)
    for (i = 0; i < dList_length(host_connections); i++) {
       hc = (HostConnection_t*) dList_nth_data(host_connections, i);
 
-      if (dStrcasecmp(host, hc->host) == 0)
+      if (dStrAsciiCasecmp(host, hc->host) == 0)
          return hc;
    }
 

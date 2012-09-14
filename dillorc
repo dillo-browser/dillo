@@ -113,7 +113,6 @@
 # You can enable multiple search_url strings at once and select from among
 # them at runtime, with the first being the default.
 search_url="http://duckduckgo.com/lite/?kp=-1&q=%s"
-search_url="Scroogle https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi?Gw=%s"
 search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&go=Go"
 search_url="Free Dictionary http://www.thefreedictionary.com/%s"
 search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
@@ -165,9 +164,9 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #
 # See http://zytrax.com/tech/web/browser_ids.htm for a compilation of strings.
 #
-# http_user_agent="Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6"
-# http_user_agent="Wget/1.11.4"
-#The default is Dillo/(current version number)
+# http_user_agent="Mozilla/5.0 (Windows NT 5.1; rv:7.0.1) Gecko/20100101 Firefox/7.0.1"
+# http_user_agent="Wget/1.12 (linux-gnu)"
+#The default is "Dillo/"+current_version_number
 
 #-------------------------------------------------------------------------
 #                            COLORS SECTION
@@ -240,7 +239,7 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
 # A mouse's middle click over a tab closes the Tab.
 # With mousewheel mouses, right click feels way better (set to YES).
-#right_click_closes_tab=NO 
+#right_click_closes_tab=NO
 
 # Mouse middle click by default drives drag-scrolling.
 # To paste an URL into the window instead of scrolling, set it to NO.

@@ -845,7 +845,7 @@ int service_match(const struct service *A, const char *B)
    if (A->name[A_len - 1] == '*')
       len = A_len - 1;
 
-   return(dStrncasecmp(A->name, B, len));
+   return(dStrnAsciiCasecmp(A->name, B, len));
 }
 
 /*!

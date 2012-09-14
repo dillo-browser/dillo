@@ -247,12 +247,20 @@ enum VAlignType {
    VALIGN_TEXT_BOTTOM,
 };
 
+enum TextTransform {
+   TEXT_TRANSFORM_NONE,
+   TEXT_TRANSFORM_CAPITALIZE,
+   TEXT_TRANSFORM_UPPERCASE,
+   TEXT_TRANSFORM_LOWERCASE,
+};
+
 /**
  * \todo Incomplete. Has to be completed for a CSS implementation.
  */
 enum DisplayType {
    DISPLAY_BLOCK,
    DISPLAY_INLINE,
+   DISPLAY_INLINE_BLOCK,
    DISPLAY_LIST_ITEM,
    DISPLAY_NONE,
    DISPLAY_TABLE,
@@ -453,6 +461,7 @@ public:
    TextAlignType textAlign;
    VAlignType valign;
    char textAlignChar; /* In future, strings will be supported. */
+   TextTransform textTransform;
    
    FloatType vloat; /* "float" is a keyword. */
    ClearType clear;
@@ -474,6 +483,10 @@ public:
    int x_link;
    int x_img;
    Tooltip *x_tooltip;
+   char x_lang[2]; /* Either x_lang[0] == x_lang[1] == 0 (no language
+                      set), or x_lang contains the RFC 1766 country
+                      code in lower case letters. (Only two letters
+                      allowed, currently.) */
 
    void initValues ();
    void resetValues ();

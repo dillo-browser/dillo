@@ -327,7 +327,7 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    /* escape "'" character for the shell. Is it necessary? */
    esc_url = Escape_uri_str(url, "'");
    /* avoid malicious SMTP relaying with FTP urls */
-   if (dStrncasecmp(esc_url, "ftp:/", 5) == 0)
+   if (dStrnAsciiCasecmp(esc_url, "ftp:/", 5) == 0)
       Filter_smtp_hack(esc_url);
    dl_argv = new char*[8];
    int i = 0;
@@ -354,81 +354,81 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    gw = 400, gh = 70;
    group = new Fl_Group(0,0,gw,gh);
    group->begin();
-    prTitle = new Fl_Box(24, 7, 290, 23);
-    prTitle->box(FL_RSHADOW_BOX);
-    prTitle->color(FL_WHITE);
-    prTitle->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
-    prTitle->copy_label(shortname);
-    // Attach this 'log_text' to the tooltip
-    log_text_add("Target File: ", 13);
-    log_text_add(fullname, strlen(fullname));
-    log_text_add("\n\n", 2);
+   prTitle = new Fl_Box(24, 7, 290, 23);
+   prTitle->box(FL_RSHADOW_BOX);
+   prTitle->color(FL_WHITE);
+   prTitle->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
+   prTitle->copy_label(shortname);
+   // Attach this 'log_text' to the tooltip
+   log_text_add("Target File: ", 13);
+   log_text_add(fullname, strlen(fullname));
+   log_text_add("\n\n", 2);
 
-    prBar = new ProgressBar(24, 40, 92, 20);
-    prBar->box(FL_THIN_UP_BOX);
-    prBar->tooltip("Progress Status");
+   prBar = new ProgressBar(24, 40, 92, 20);
+   prBar->box(FL_THIN_UP_BOX);
+   prBar->tooltip("Progress Status");
 
-    int ix = 122, iy = 37, iw = 50, ih = 14;
-    Fl_Widget *o = new Fl_Box(ix,iy,iw,ih, "Got");
-    o->box(FL_RFLAT_BOX);
-    o->color(FL_DARK2);
-    o->labelsize(12);
-    o->tooltip("Downloaded Size");
-    prGot = new Fl_Box(ix,iy+14,iw,ih, "0KB");
-    prGot->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    prGot->labelcolor(FL_BLUE);
-    prGot->labelsize(12);
-    prGot->box(FL_NO_BOX);
+   int ix = 122, iy = 37, iw = 50, ih = 14;
+   Fl_Widget *o = new Fl_Box(ix,iy,iw,ih, "Got");
+   o->box(FL_RFLAT_BOX);
+   o->color(FL_DARK2);
+   o->labelsize(12);
+   o->tooltip("Downloaded Size");
+   prGot = new Fl_Box(ix,iy+14,iw,ih, "0KB");
+   prGot->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+   prGot->labelcolor(FL_BLUE);
+   prGot->labelsize(12);
+   prGot->box(FL_NO_BOX);
 
-    ix += iw;
-    o = new Fl_Box(ix,iy,iw,ih, "Size");
-    o->box(FL_RFLAT_BOX);
-    o->color(FL_DARK2);
-    o->labelsize(12);
-    o->tooltip("Total Size");
-    prSize = new Fl_Box(ix,iy+14,iw,ih, "??");
-    prSize->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    prSize->labelsize(12);
-    prSize->box(FL_NO_BOX);
+   ix += iw;
+   o = new Fl_Box(ix,iy,iw,ih, "Size");
+   o->box(FL_RFLAT_BOX);
+   o->color(FL_DARK2);
+   o->labelsize(12);
+   o->tooltip("Total Size");
+   prSize = new Fl_Box(ix,iy+14,iw,ih, "??");
+   prSize->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+   prSize->labelsize(12);
+   prSize->box(FL_NO_BOX);
 
-    ix += iw;
-    o = new Fl_Box(ix,iy,iw,ih, "Rate");
-    o->box(FL_RFLAT_BOX);
-    o->color(FL_DARK2);
-    o->labelsize(12);
-    o->tooltip("Current transfer Rate (KBytes/sec)");
-    prRate = new Fl_Box(ix,iy+14,iw,ih, "??");
-    prRate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    prRate->labelsize(12);
-    prRate->box(FL_NO_BOX);
+   ix += iw;
+   o = new Fl_Box(ix,iy,iw,ih, "Rate");
+   o->box(FL_RFLAT_BOX);
+   o->color(FL_DARK2);
+   o->labelsize(12);
+   o->tooltip("Current transfer Rate (KBytes/sec)");
+   prRate = new Fl_Box(ix,iy+14,iw,ih, "??");
+   prRate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+   prRate->labelsize(12);
+   prRate->box(FL_NO_BOX);
 
-    ix += iw;
-    o = new Fl_Box(ix,iy,iw,ih, "~Rate");
-    o->box(FL_RFLAT_BOX);
-    o->color(FL_DARK2);
-    o->labelsize(12);
-    o->tooltip("Average transfer Rate (KBytes/sec)");
-    pr_Rate = new Fl_Box(ix,iy+14,iw,ih, "??");
-    pr_Rate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    pr_Rate->labelsize(12);
-    pr_Rate->box(FL_NO_BOX);
+   ix += iw;
+   o = new Fl_Box(ix,iy,iw,ih, "~Rate");
+   o->box(FL_RFLAT_BOX);
+   o->color(FL_DARK2);
+   o->labelsize(12);
+   o->tooltip("Average transfer Rate (KBytes/sec)");
+   pr_Rate = new Fl_Box(ix,iy+14,iw,ih, "??");
+   pr_Rate->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+   pr_Rate->labelsize(12);
+   pr_Rate->box(FL_NO_BOX);
 
-    ix += iw;
-    prETAt = o = new Fl_Box(ix,iy,iw,ih, "ETA");
-    o->box(FL_RFLAT_BOX);
-    o->color(FL_DARK2);
-    o->labelsize(12);
-    o->tooltip("Estimated Time of Arrival");
-    prETA = new Fl_Box(ix,iy+14,iw,ih, "??");
-    prETA->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-    prETA->labelsize(12);
-    prETA->box(FL_NO_BOX);
+   ix += iw;
+   prETAt = o = new Fl_Box(ix,iy,iw,ih, "ETA");
+   o->box(FL_RFLAT_BOX);
+   o->color(FL_DARK2);
+   o->labelsize(12);
+   o->tooltip("Estimated Time of Arrival");
+   prETA = new Fl_Box(ix,iy+14,iw,ih, "??");
+   prETA->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+   prETA->labelsize(12);
+   prETA->box(FL_NO_BOX);
 
-    prButton = new Fl_Button(326, 9, 44, 19, "Stop");
-    prButton->tooltip("Stop this transfer");
-    prButton->box(FL_UP_BOX);
-    prButton->clear_visible_focus();
-    prButton->callback(prButton_scb, this);
+   prButton = new Fl_Button(326, 9, 44, 19, "Stop");
+   prButton->tooltip("Stop this transfer");
+   prButton->box(FL_UP_BOX);
+   prButton->clear_visible_focus();
+   prButton->callback(prButton_scb, this);
 
    group->box(FL_ROUNDED_BOX);
    group->end();
@@ -1087,6 +1087,29 @@ void DLWin::abort_all()
 }
 
 /*
+ * A Scroll class that resizes its resizable widget to its width.
+ * see http://seriss.com/people/erco/fltk/#ScrollableWidgetBrowser
+ */
+class DlScroll : public Fl_Scroll
+{
+public:
+  void resize(int x_, int y_, int w_, int h_)
+  {
+    Fl_Widget *resizable_ = resizable();
+    if (resizable_)
+      resizable_->resize(resizable_->x(),
+                         resizable_->y(),
+                         w() - scrollbar_size(),
+                         resizable_->h());
+    Fl_Scroll::resize(x_, y_, w_, h_);
+  }
+  DlScroll(int x, int y, int w, int h, const char *l = 0)
+    : Fl_Scroll(x, y, w, h, l)
+  {
+  }
+};
+
+/*
  * Create the main window and an empty list of requests.
  */
 DLWin::DLWin(int ww, int wh) {
@@ -1097,12 +1120,13 @@ DLWin::DLWin(int ww, int wh) {
    // Create the empty main window
    mWin = new Fl_Window(ww, wh, "Downloads:");
    mWin->begin();
-    mScroll = new Fl_Scroll(0,0,ww,wh);
-    mScroll->begin();
-     mPG = new Fl_Pack(0,0,ww-18,wh);
-     mPG->end();
-    mScroll->end();
-    mScroll->type(Fl_Scroll::VERTICAL);
+   mScroll = new DlScroll(0,0,ww,wh);
+   mScroll->begin();
+   mPG = new Fl_Pack(0,0,ww-18,wh);
+   mPG->end();
+   mScroll->end();
+   mScroll->type(Fl_Scroll::VERTICAL);
+   mScroll->resizable(mPG);
    mWin->end();
    mWin->resizable(mScroll);
    mWin->callback(dlwin_esc_cb, NULL);

@@ -13,9 +13,9 @@
  * Dillo's cache module
  */
 
-#include <ctype.h>              /* for tolower */
 #include <sys/types.h>
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -143,7 +143,9 @@ static int Cache_client_enqueue(const DilloUrl *Url, DilloWeb *Web,
    static int ClientKey = 0; /* Provide a primary key for each client */
    CacheClient_t *NewClient;
 
-   if (++ClientKey <= 0)
+   if (ClientKey < INT_MAX) /* check for integer overflow */
+      ClientKey++;
+   else
       ClientKey = 1;
 
    NewClient = dNew(CacheClient_t, 1);
@@ -521,7 +523,7 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
             /* META only gives charset; use detected MIME type too */
             entry->TypeNorm = dStrconcat(entry->TypeDet, ctype, NULL);
          } else if (*from == 'm' &&
-                    !dStrncasecmp(ctype, "text/xhtml", 10)) {
+                    !dStrnAsciiCasecmp(ctype, "text/xhtml", 10)) {
             /* WORKAROUND: doxygen uses "text/xhtml" in META */
             entry->TypeNorm = dStrdup(entry->TypeDet);
          }
@@ -584,7 +586,7 @@ static char *Cache_parse_field(const char *header, const char *fieldname)
    for (i = 0; header[i]; i++) {
       /* Search fieldname */
       for (j = 0; fieldname[j]; j++)
-        if (tolower(fieldname[j]) != tolower(header[i + j]))
+        if (D_ASCII_TOLOWER(fieldname[j]) != D_ASCII_TOLOWER(header[i + j]))
            break;
       if (fieldname[j]) {
          /* skip to next line */
@@ -620,7 +622,7 @@ static Dlist *Cache_parse_multiple_fields(const char *header,
    for (i = 0; header[i]; i++) {
       /* Search fieldname */
       for (j = 0; fieldname[j]; j++)
-         if (tolower(fieldname[j]) != tolower(header[i + j]))
+         if (D_ASCII_TOLOWER(fieldname[j]) != D_ASCII_TOLOWER(header[i + j]))
             break;
       if (fieldname[j]) {
          /* skip to next line */
@@ -675,21 +677,27 @@ static void Cache_parse_header(CacheEntry_t *entry)
          entry->Header = dStr_new("");
          return;
       }
-      if (header[9] == '3' && header[10] == '0') {
+      if (header[9] == '3' && header[10] == '0' &&
+          (location_str = Cache_parse_field(header, "Location"))) {
          /* 30x: URL redirection */
-         if ((location_str = Cache_parse_field(header, "Location"))) {
-            DilloUrl *location_url;
+         DilloUrl *location_url = a_Url_new(location_str,URL_STR_(entry->Url));
 
+         if (prefs.filter_auto_requests == PREFS_FILTER_SAME_DOMAIN &&
+             !a_Url_same_organization(entry->Url, location_url)) {
+            /* don't redirect; just show body like usual (if any) */
+            MSG("Redirection not followed from %s to %s\n",
+                URL_HOST(entry->Url), URL_STR(location_url));
+            a_Url_free(location_url);
+         } else {
             entry->Flags |= CA_Redirect;
             if (header[11] == '1')
                entry->Flags |= CA_ForceRedirect;  /* 301 Moved Permanently */
             else if (header[11] == '2')
                entry->Flags |= CA_TempRedirect;   /* 302 Temporary Redirect */
 
-            location_url = a_Url_new(location_str, URL_STR_(entry->Url));
             if (URL_FLAGS(location_url) & (URL_Post + URL_Get) &&
-                dStrcasecmp(URL_SCHEME(location_url), "dpi") == 0 &&
-                dStrcasecmp(URL_SCHEME(entry->Url), "dpi") != 0) {
+                dStrAsciiCasecmp(URL_SCHEME(location_url), "dpi") == 0 &&
+                dStrAsciiCasecmp(URL_SCHEME(entry->Url), "dpi") != 0) {
                /* Forbid dpi GET and POST from non dpi-generated urls */
                MSG("Redirection Denied! '%s' -> '%s'\n",
                    URL_STR(entry->Url), URL_STR(location_url));
@@ -697,8 +705,8 @@ static void Cache_parse_header(CacheEntry_t *entry)
             } else {
                entry->Location = location_url;
             }
-            dFree(location_str);
          }
+         dFree(location_str);
       } else if (strncmp(header + 9, "401", 3) == 0) {
          entry->Auth =
             Cache_parse_multiple_fields(header, "WWW-Authenticate");
@@ -728,7 +736,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
           * If Transfer-Encoding is present, Content-Length must be ignored.
           * If the Transfer-Encoding is non-identity, it is an error.
           */
-         if (dStrcasecmp(encoding, "identity"))
+         if (dStrAsciiCasecmp(encoding, "identity"))
             MSG_HTTP("Content-Length and non-identity Transfer-Encoding "
                      "headers both present.\n");
       } else {
@@ -1039,9 +1047,9 @@ static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw)
  */
 int a_Cache_download_enabled(const DilloUrl *url)
 {
-   if (!dStrcasecmp(URL_SCHEME(url), "http") ||
-       !dStrcasecmp(URL_SCHEME(url), "https") ||
-       !dStrcasecmp(URL_SCHEME(url), "ftp"))
+   if (!dStrAsciiCasecmp(URL_SCHEME(url), "http") ||
+       !dStrAsciiCasecmp(URL_SCHEME(url), "https") ||
+       !dStrAsciiCasecmp(URL_SCHEME(url), "ftp"))
       return 1;
    return 0;
 }

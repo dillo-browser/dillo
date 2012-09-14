@@ -35,11 +35,13 @@ namespace style {
 void StyleAttrs::initValues ()
 {
    x_link = -1;
+   x_lang[0] = x_lang[1] = 0;
    x_img = -1;
    x_tooltip = NULL;
    textDecoration = TEXT_DECORATION_NONE;
    textAlign = TEXT_ALIGN_LEFT;
    textAlignChar = '.';
+   textTransform = TEXT_TRANSFORM_NONE;
    listStylePosition = LIST_STYLE_POSITION_OUTSIDE;
    listStyleType = LIST_STYLE_TYPE_DISC;
    valign = VALIGN_BASELINE;
@@ -119,6 +121,7 @@ bool StyleAttrs::equals (object::Object *other) {
        textAlign == otherAttrs->textAlign &&
        valign == otherAttrs->valign &&
        textAlignChar == otherAttrs->textAlignChar &&
+       textTransform == otherAttrs->textTransform &&
        vloat == otherAttrs->vloat &&
        clear == otherAttrs->clear &&
        hBorderSpacing == otherAttrs->hBorderSpacing &&
@@ -146,6 +149,8 @@ bool StyleAttrs::equals (object::Object *other) {
        listStyleType == otherAttrs->listStyleType &&
        cursor == otherAttrs->cursor &&
        x_link == otherAttrs->x_link &&
+       x_lang[0] == otherAttrs->x_lang[0] &&
+       x_lang[1] == otherAttrs->x_lang[1] &&
        x_img == otherAttrs->x_img &&
        x_tooltip == otherAttrs->x_tooltip);
 }
@@ -158,6 +163,7 @@ int StyleAttrs::hashValue () {
       textAlign +
       valign +
       textAlignChar +
+      textTransform +
       vloat +
       clear +
       hBorderSpacing +
@@ -185,6 +191,7 @@ int StyleAttrs::hashValue () {
       listStyleType +
       cursor +
       x_link +
+      x_lang[0] + x_lang[1] +
       x_img +
       (intptr_t) x_tooltip;
 }
@@ -250,6 +257,7 @@ void Style::copyAttrs (StyleAttrs *attrs)
    textAlign = attrs->textAlign;
    valign = attrs->valign;
    textAlignChar = attrs->textAlignChar;
+   textTransform = attrs->textTransform;
    vloat = attrs->vloat;
    clear = attrs->clear;
    hBorderSpacing = attrs->hBorderSpacing;
@@ -271,6 +279,8 @@ void Style::copyAttrs (StyleAttrs *attrs)
    listStyleType = attrs->listStyleType;
    cursor = attrs->cursor;
    x_link = attrs->x_link;
+   x_lang[0] = attrs->x_lang[0];
+   x_lang[1] = attrs->x_lang[1];
    x_img = attrs->x_img;
    x_tooltip = attrs->x_tooltip;
 }
@@ -893,10 +903,10 @@ static const char
    *const roman_I2[] = { "","C","CC","CCC","CD","D","DC","DCC","DCCC","CM" },
    *const roman_I3[] = { "","M","MM","MMM","MMMM" };
 
-static void strtolower (char *s)
+static void strAsciiTolower (char *s)
 {
    for ( ; *s; s++)
-      *s = tolower (*s);
+      *s = misc::AsciiTolower (*s);
 }
 
 /**
@@ -951,7 +961,7 @@ void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType)
    buf[buflen - 1] = '\0';
 
    if (low)
-      strtolower(buf);
+      strAsciiTolower(buf);
 
 }
 

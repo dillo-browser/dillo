@@ -1,5 +1,6 @@
-// fltkcomplexbutton.cc contains code from FLTK 1.3's src/Fl_Button.cxx
-// that is Copyright 1998-2010 by Bill Spitzak and others.
+// fltkcomplexbutton.cc is derived from src/Fl_Button.cxx from FLTK's 1.3
+// branch at http://fltk.org in early 2011.
+// src/Fl_Button.cxx is Copyright 1998-2010 by Bill Spitzak and others.
 
 /*
  * This program is free software; you can redistribute it and/or modify
@@ -108,7 +109,8 @@ int ComplexButton::handle(int event) {
       return 1;
     } else return 0;
   case FL_KEYBOARD :
-    if (Fl::focus() == this && Fl::event_key() == ' ' &&
+    if (Fl::focus() == this &&
+        (Fl::event_key() == ' ' || Fl::event_key() == FL_Enter) &&
         !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT | FL_META))) {
       set_changed();
       Fl_Widget_Tracker wp(this);

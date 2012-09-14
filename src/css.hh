@@ -223,6 +223,7 @@ typedef enum {
    CSS_PROPERTY_X_COLSPAN,
    CSS_PROPERTY_X_ROWSPAN,
    PROPERTY_X_LINK,
+   PROPERTY_X_LANG,
    PROPERTY_X_IMG,
    PROPERTY_X_TOOLTIP,
    CSS_PROPERTY_LAST
@@ -297,11 +298,13 @@ class CssProperty {
 class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
    int refCount;
    bool ownerOfStrings;
+   bool safe;
 
    public:
       inline CssPropertyList(bool ownerOfStrings = false) :
                   lout::misc::SimpleVector <CssProperty> (1) {
          refCount = 0;
+         safe = true;
          this->ownerOfStrings = ownerOfStrings;
       };
       CssPropertyList(const CssPropertyList &p, bool deep = false);
@@ -310,6 +313,7 @@ class CssPropertyList : public lout::misc::SimpleVector <CssProperty> {
       void set (CssPropertyName name, CssValueType type,
                 CssPropertyValue value);
       void apply (CssPropertyList *props);
+      bool isSafe () { return safe; };
       void print ();
       inline void ref () { refCount++; }
       inline void unref () { if (--refCount == 0) delete this; }
@@ -355,9 +359,10 @@ class CssSimpleSelector {
 class CssSelector {
    public:
       typedef enum {
-         DESCENDANT,
-         CHILD,
-         ADJACENT_SIBLING,
+         COMB_NONE,
+         COMB_DESCENDANT,
+         COMB_CHILD,
+         COMB_ADJACENT_SIBLING,
       } Combinator;
 
    private:
@@ -370,6 +375,8 @@ class CssSelector {
       int refCount;
       lout::misc::SimpleVector <struct CombinatorAndSelector> *selectorList;
 
+      bool match (Doctree *dt, const DoctreeNode *node, int i, Combinator comb);
+
    public:
       CssSelector ();
       ~CssSelector ();
@@ -378,8 +385,11 @@ class CssSelector {
          return selectorList->getRef (selectorList->size () - 1)->selector;
       };
       inline int size () { return selectorList->size (); };
-      bool match (Doctree *dt, const DoctreeNode *node);
+      inline bool match (Doctree *dt, const DoctreeNode *node) {
+         return match (dt, node, selectorList->size () - 1, COMB_NONE);
+      };
       int specificity ();
+      bool checksPseudoClass ();
       void print ();
       inline void ref () { refCount++; }
       inline void unref () { if (--refCount == 0) delete this; }
@@ -403,6 +413,9 @@ class CssRule {
 
       void apply (CssPropertyList *props,
                   Doctree *docTree, const DoctreeNode *node);
+      inline bool isSafe () {
+         return !selector->checksPseudoClass () || props->isSafe ();
+      };
       inline int specificity () { return spec; };
       inline int position () { return pos; };
       void print ();
@@ -439,15 +452,11 @@ class CssStyleSheet {
       };
 
       static const int ntags = 90; // \todo replace 90
-      RuleList *elementTable[ntags];
 
-      RuleMap *idTable;
-      RuleMap *classTable;
-      RuleList *anyTable;
+      RuleList elementTable[ntags], anyTable;
+      RuleMap idTable, classTable;
 
    public:
-      CssStyleSheet();
-      ~CssStyleSheet();
       void addRule (CssRule *rule);
       void apply (CssPropertyList *props,
                   Doctree *docTree, const DoctreeNode *node);
@@ -458,15 +467,11 @@ class CssStyleSheet {
  */
 class CssContext {
    private:
-      CssStyleSheet *sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
+      CssStyleSheet sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
       int pos;
-
-      void buildUserAgentStyle ();
-      void buildUserStyle ();
 
    public:
       CssContext ();
-      ~CssContext ();
 
       void addRule (CssSelector *sel, CssPropertyList *props,
                     CssPrimaryOrder order);

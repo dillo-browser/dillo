@@ -65,8 +65,7 @@ void *dMalloc0 (size_t size)
 
 void dFree (void *mem)
 {
-   if (mem)
-      free(mem);
+   free(mem);
 }
 
 /*
@@ -134,6 +133,15 @@ char *dStrstrip(char *s)
 }
 
 /*
+ * Clear the contents of the string
+ */
+void dStrshred(char *s)
+{
+   if (s)
+      memset(s, 0, strlen(s));
+}
+
+/*
  * Return a new string of length 'len' filled with 'c' characters
  */
 char *dStrnfill(size_t len, char c)
@@ -164,16 +172,21 @@ char *dStrsep(char **orig, const char *delim)
 }
 
 /*
+ * ASCII functions to avoid the case difficulties introduced by I/i in
+ * Turkic locales.
+ */
+
+/*
  * Case insensitive strstr
  */
-char *dStristr(const char *haystack, const char *needle)
+char *dStriAsciiStr(const char *haystack, const char *needle)
 {
    int i, j;
    char *ret = NULL;
 
    if (haystack && needle) {
       for (i = 0, j = 0; haystack[i] && needle[j]; ++i)
-         if (tolower(haystack[i]) == tolower(needle[j])) {
+         if (D_ASCII_TOLOWER(haystack[i]) == D_ASCII_TOLOWER(needle[j])) {
             ++j;
          } else if (j) {
             i -= j;
@@ -185,6 +198,29 @@ char *dStristr(const char *haystack, const char *needle)
    return ret;
 }
 
+int dStrAsciiCasecmp(const char *s1, const char *s2)
+{
+   int ret = 0;
+
+   while ((*s1 || *s2) &&
+          !(ret = D_ASCII_TOLOWER(*s1) - D_ASCII_TOLOWER(*s2))) {
+      s1++;
+      s2++;
+   }
+   return ret;
+}
+
+int dStrnAsciiCasecmp(const char *s1, const char *s2, size_t n)
+{
+   int ret = 0;
+
+   while (n-- && (*s1 || *s2) &&
+          !(ret = D_ASCII_TOLOWER(*s1) - D_ASCII_TOLOWER(*s2))) {
+      s1++;
+      s2++;
+   }
+   return ret;
+}
 
 /*
  *- dStr ----------------------------------------------------------------------
@@ -333,6 +369,15 @@ void dStr_truncate (Dstr *ds, int len)
       ds->str[len] = 0;
       ds->len = len;
    }
+}
+
+/*
+ * Clear a Dstr.
+ */
+void dStr_shred (Dstr *ds)
+{
+   if (ds && ds->sz > 0)
+      memset(ds->str, '\0', ds->sz);
 }
 
 /*

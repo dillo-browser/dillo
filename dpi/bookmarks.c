@@ -442,7 +442,7 @@ static void Unencode_str(char *e_str)
       if (*e == '+') {
          *p = ' ';
       } else if (*e == '%') {
-         if (dStrncasecmp(e, "%0D%0A", 6) == 0) {
+         if (dStrnAsciiCasecmp(e, "%0D%0A", 6) == 0) {
             *p = '\n';
             e += 5;
          } else {
@@ -1626,16 +1626,17 @@ static int Bmsrv_parse_token(Dsh *sh, char *Buf)
       dFree(cmd);
       url = a_Dpip_get_attr_l(Buf, BufSize, "url");
 
-      if (strcmp(url, "dpi:/bm/modify") == 0) {
-         st = Bmsrv_send_modify_answer(sh, url);
-         dFree(url);
-         return st;
-
-      } else if (strncmp(url, "dpi:/bm/modify?", 15) == 0) {
-         /* process request */
-         st = Bmsrv_process_modify_request(sh, url);
-         dFree(url);
-         return st;
+      if (dStrnAsciiCasecmp(url, "dpi:", 4) == 0) {
+         if (strcmp(url+4, "/bm/modify") == 0) {
+            st = Bmsrv_send_modify_answer(sh, url);
+            dFree(url);
+            return st;
+         } else if (strncmp(url+4, "/bm/modify?", 11) == 0) {
+            /* process request */
+            st = Bmsrv_process_modify_request(sh, url);
+            dFree(url);
+            return st;
+         }
       }
 
 
