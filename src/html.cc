@@ -1439,7 +1439,7 @@ int32_t a_Html_color_parse(DilloHtml *html,
    int32_t color = a_Color_parse(subtag, default_color, &err);
 
    if (err) {
-      BUG_MSG("color is not in \"#RRGGBB\" format\n");
+      BUG_MSG("color \"%s\" is not in \"#RRGGBB\" format\n", subtag);
    }
    return color;
 }
@@ -1459,8 +1459,8 @@ static int
          break;
 
    if (val[i] || !(isascii(val[0]) && isalpha(val[0])))
-      BUG_MSG("'%s' value is not of the form "
-              "[A-Za-z][A-Za-z0-9:_.-]*\n", attrname);
+      BUG_MSG("'%s' value \"%s\" is not of the form "
+              "[A-Za-z][A-Za-z0-9:_.-]*\n", attrname, val);
 
    return !(val[i]);
 }
@@ -2413,7 +2413,7 @@ static void Html_add_anchor(DilloHtml *html, const char *name)
 {
    _MSG("Registering ANCHOR: %s\n", name);
    if (!HT2TB(html)->addAnchor (name, html->styleEngine->style ()))
-      BUG_MSG("Anchor names must be unique within the document\n");
+      BUG_MSG("Anchor names must be unique within the document ('%s')\n",name);
    /*
     * According to Sec. 12.2.1 of the HTML 4.01 spec, "anchor names that
     * differ only in case may not appear in the same document", but
