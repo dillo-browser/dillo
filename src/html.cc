@@ -1488,7 +1488,7 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
 {
    static const char HTML_SGML_sig [] = "<!DOCTYPE HTML PUBLIC ";
    static const char HTML5_sig  [] = "<!DOCTYPE html>";
-   static const char HTML20     [] = "-//IETF//DTD HTML 2.0";
+   static const char HTML20     [] = "-//IETF//DTD HTML";
    static const char HTML32     [] = "-//W3C//DTD HTML 3.2";
    static const char HTML40     [] = "-//W3C//DTD HTML 4.0";
    static const char HTML401    [] = "-//W3C//DTD HTML 4.01";
