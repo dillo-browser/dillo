@@ -2796,6 +2796,22 @@ static int Html_tag_pre_excludes(int tag_idx)
 }
 
 /*
+ * Update the document's content type information based on meta tag data.
+ */
+static void Html_update_content_type(DilloHtml *html, const char *content)
+{
+   const char *new_content = a_Capi_set_content_type(html->page_url, content,
+                                                     "meta");
+   /* Cannot ask cache whether the content type was changed, as
+    * this code in another bw might have already changed it for us.
+    */
+   if (a_Misc_content_type_cmp(html->content_type, new_content)) {
+      html->stop_parser = true; /* The cache buffer is no longer valid */
+      a_UIcmd_repush(html->bw);
+   }
+}
+
+/*
  * Handle <META>
  * We do not support http-equiv=refresh with delay>0 because it's
  * non standard, (the HTML 4.01 SPEC recommends explicitly to avoid it).
@@ -2818,7 +2834,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 " <tr><td bgcolor='#a0a0a0' colspan='2'>The author wanted you to go\n"
 " <a href='%s'>here</a>%s</td></tr></table><br>\n";
 
-   const char *p, *equiv, *content, *new_content;
+   const char *p, *equiv, *charset, *content;
    char delay_str[64], *mr_url;
    DilloUrl *new_url;
    int delay;
@@ -2885,15 +2901,14 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
       } else if (!dStrAsciiCasecmp(equiv, "content-type") &&
                  (content = a_Html_get_attr(html, tag, tagsize, "content"))) {
          _MSG("Html_tag_open_meta: content={%s}\n", content);
-         /* Cannot ask cache whether the content type was changed, as
-          * this code in another bw might have already changed it for us.
-          */
-         new_content = a_Capi_set_content_type(html->page_url,content,"meta");
-         if (a_Misc_content_type_cmp(html->content_type, new_content)) {
-            html->stop_parser = true; /* The cache buffer is no longer valid */
-            a_UIcmd_repush(html->bw);
-         }
+         Html_update_content_type(html, content);
       }
+   } else if (html->DocType == DT_HTML && html->DocTypeVersion == 5.0f &&
+              (charset = a_Html_get_attr(html, tag, tagsize, "charset"))) {
+      char *content = dStrconcat("text/html; charset=", charset, NULL);
+
+      Html_update_content_type(html, content);
+      dFree(content);
    }
 }
 
