@@ -3077,6 +3077,8 @@ static void Html_tag_open_span(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
 
+   html->styleEngine->inheritBackgroundColor();
+
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
 
