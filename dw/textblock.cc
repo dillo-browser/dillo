@@ -889,8 +889,13 @@ void Textblock::drawText(core::View *view, core::style::Style *style,
    }
 }
 
-/*
- * Draw a word of text. TODO New description;
+/**
+ * Draw a word of text.
+ *
+ * Since hyphenated words consist of multiple instance of
+ * dw::Textblock::Word, which should be drawn as a whole (to preserve
+ * kerning etc.; see \ref dw-line-breaking), two indices are
+ * passed. See also drawLine(), where drawWord() is called.
  */
 void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
                           core::View *view, core::Rectangle *area,
@@ -899,6 +904,14 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
    core::style::Style *style = words->getRef(wordIndex1)->style;
    bool drawHyphen = wordIndex2 == line->lastWord
       && words->getRef(wordIndex2)->hyphenWidth > 0;
+
+   if (style->hasBackground ()) {
+      int w = 0;
+      for (int i = wordIndex1; i <= wordIndex2; i++)
+         w += words->getRef(i)->size.width;
+      drawBox (view, style, area, xWidget, yWidgetBase - line->boxAscent,
+               w, line->boxAscent + line->boxDescent, false);
+   }
 
    if (wordIndex1 == wordIndex2 && !drawHyphen) {
       // Simple case, where copying in one buffer is not needed.
@@ -1103,12 +1116,6 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                   if (child->intersects (area, &childArea))
                      child->draw (view, &childArea);
                } else {
-                  /* TODO: include in drawWord:
-                  if (word->style->hasBackground ()) {
-                     drawBox (view, word->style, area, xWidget,
-                              yWidgetBase - line->boxAscent, word->size.width,
-                              line->boxAscent + line->boxDescent, false);
-                  }*/
                   int wordIndex2 = wordIndex;
                   while (wordIndex2 < line->lastWord &&
                          words->getRef(wordIndex2)->hyphenWidth > 0 &&
