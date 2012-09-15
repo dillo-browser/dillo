@@ -909,6 +909,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
       int w = 0;
       for (int i = wordIndex1; i <= wordIndex2; i++)
          w += words->getRef(i)->size.width;
+      w += words->getRef(wordIndex2)->hyphenWidth;
       drawBox (view, style, area, xWidget, yWidgetBase - line->boxAscent,
                w, line->boxAscent + line->boxDescent, false);
    }
