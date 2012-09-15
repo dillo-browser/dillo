@@ -602,9 +602,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
             attrs->x_link = p->value.intVal;
             break;
          case PROPERTY_X_LANG:
-            attrs->x_lang[0] = tolower (p->value.strVal[0]);
+            attrs->x_lang[0] = D_ASCII_TOLOWER(p->value.strVal[0]);
             if (attrs->x_lang[0])
-               attrs->x_lang[1] = tolower (p->value.strVal[1]);
+               attrs->x_lang[1] = D_ASCII_TOLOWER(p->value.strVal[1]);
             else
                attrs->x_lang[1] = 0;
             break;
