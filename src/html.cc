@@ -163,11 +163,10 @@ DilloUrl *a_Html_url_new(DilloHtml *html,
       const char *suffix = (n_ic) > 1 ? "s" : "";
       n_ic_spc = URL_ILLEGAL_CHARS_SPC(url);
       if (n_ic == n_ic_spc) {
-         BUG_MSG("URL has %d illegal character%s (%d space%s)\n",
-                 n_ic, suffix, n_ic_spc, suffix);
+         BUG_MSG("URL has %d illegal space%s\n", n_ic, suffix);
       } else if (n_ic_spc == 0) {
-         BUG_MSG("URL has %d illegal character%s (%d in {00-1F, 7F} range)\n",
-                 n_ic, suffix, n_ic);
+         BUG_MSG("URL has %d illegal character%s in {00-1F, 7F} range\n",
+                 n_ic, suffix);
       } else {
          BUG_MSG("URL has %d illegal character%s: "
                  "%d space%s, and %d in {00-1F, 7F} range\n",
