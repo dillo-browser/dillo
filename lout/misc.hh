@@ -149,6 +149,14 @@ public:
 
    inline T* getArray() { return array; }
 
+   inline T* detachArray() {
+      T* arr = array;
+      array = NULL;
+      numAlloc = 0;
+      num = 0;
+      return arr;
+   }
+
    /**
     * \brief Increase the vector size by one.
     *
