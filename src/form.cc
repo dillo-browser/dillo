@@ -327,7 +327,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "action")))
       action = a_Html_url_new(html, attrbuf, NULL, 0);
    else {
-      BUG_MSG("action attribute required for <form>\n");
+      BUG_MSG("action attribute is required for <form>\n");
       action = a_Url_dup(html->base_url);
    }
    content_type = DILLO_HTML_ENC_URLENCODED;
