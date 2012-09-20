@@ -2,9 +2,9 @@
 
 #include "../lout/misc.hh"
 #include "../lout/unicode.hh"
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
-#include <limits.h>
 
 #define LEN 1000
 
@@ -25,26 +25,44 @@ HashTable <TypedPair <TypedPointer <core::Platform>, ConstString>,
                   Hyphenator> (true, true);
 
 Hyphenator::Hyphenator (core::Platform *platform,
-                        const char *patFile, const char *excFile)
+                        const char *patFile, const char *excFile, int pack)
 {
    this->platform = platform;
-   tree = NULL; // As long we are not sure whether a pattern file can be read.
+   trie = NULL; // As long we are not sure whether a pattern file can be read.
 
-   FILE *patF = fopen (patFile, "r");
-   if (patF) {
-      tree = new HashTable <Integer, Collection <Integer> > (true, true);
-      while (!feof (patF)) {
-         char buf[LEN + 1];
-         char *s = fgets (buf, LEN, patF);
-         if (s) {
-             // TODO Better exit with an error, when the line is too long.
-            int l = strlen (s);
-            if (s[l - 1] == '\n')
-               s[l - 1] = 0;
-            insertPattern (s);
-         }
+   char buf[PATH_MAX + 1];
+   snprintf(buf, sizeof (buf), "%s.trie", patFile);
+   FILE *trieF = fopen (buf, "r");
+   
+   if (trieF) {
+      trie = new Trie ();
+      if (trie->load (trieF) != 0) {
+         delete trie;
+         trie = NULL;
       }
-      fclose (patF);
+      fclose (trieF);
+   }
+ 
+   if (trie == NULL) {
+      TrieBuilder trieBuilder(pack);
+      FILE *patF = fopen (patFile, "r");
+      if (patF) {
+
+         while (!feof (patF)) {
+            char buf[LEN + 1];
+            char *s = fgets (buf, LEN, patF);
+            if (s) {
+               // TODO Better exit with an error, when the line is too long.
+               int l = strlen (s);
+               if (s[l - 1] == '\n')
+                  s[l - 1] = 0;
+               insertPattern (&trieBuilder, s);
+            }
+         }
+
+         trie = trieBuilder.createTrie ();
+         fclose (patF);
+      }
    }
 
    exceptions = NULL; // Again, only instantiated when needed.
@@ -69,10 +87,8 @@ Hyphenator::Hyphenator (core::Platform *platform,
 
 Hyphenator::~Hyphenator ()
 {
-   if (tree)
-      delete tree;
-   if (exceptions)
-      delete exceptions;
+   delete trie;
+   delete exceptions;
 }
 
 Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
@@ -111,45 +127,38 @@ Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
    return hyphenator;
 }
 
-void Hyphenator::insertPattern (char *s)
+void Hyphenator::insertPattern (TrieBuilder *trieBuilder, char *s)
 {
    // Convert the a pattern like 'a1bc3d4' into a string of chars 'abcd'
    // and a list of points [ 0, 1, 0, 3, 4 ].
    int l = strlen (s);
    char chars [l + 1];
-   Vector <Integer> *points = new Vector <Integer> (1, true);
+   SimpleVector<char> points (1);
 
    // TODO numbers consisting of multiple digits?
    // TODO Encoding: This implementation works exactly like the Python
    // implementation, based on UTF-8. Does this always work?
    int numChars = 0;
-   for (int i = 0; s[i]; i++)
-      if (s[i] >= '0' && s[i] <= '9')
-         points->put (new Integer (s[i] - '0'), numChars);
-      else
+   for (int i = 0; s[i]; i++) {
+      if (s[i] >= '0' && s[i] <= '9') {
+         points.setSize(numChars + 1, '0');
+         points.set(numChars, s[i]);
+      } else {
          chars[numChars++] = s[i];
+      }
+   }
    chars[numChars] = 0;
 
-   for (int i = 0; i < numChars + 1; i++) {
-      Integer *val = points->get (i);
-      if (val == NULL)
-         points->put (new Integer (0), i);
-   }
+   points.setSize(numChars + 2, '0');
+   points.set(numChars + 1, '\0');
 
    // Insert the pattern into the tree.  Each character finds a dict
    // another level down in the tree, and leaf nodes have the list of
    // points.
 
-   HashTable <Integer, Collection <Integer> > *t = tree;
-   for (int i = 0; chars[i]; i++) {
-      Integer c (chars[i]);
-      if (!t->contains(&c))
-         t->put (new Integer (chars[i]),
-                 new HashTable <Integer, Collection <Integer> > (true, true));
-      t = (HashTable <Integer, Collection <Integer> >*) t->get (&c);
-   }
+   //printf("insertPattern %s\n", chars);
 
-   t->put (new Integer (0), points);
+   trieBuilder->insert (chars, points.getArray ());
 }
 
 void Hyphenator::insertException (char *s)
@@ -214,7 +223,7 @@ bool Hyphenator::isCharPartOfActualWord (char *s)
  */
 int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
 {
-   if ((tree == NULL && exceptions ==NULL) || !isHyphenationCandidate (word)) {
+   if ((trie == NULL && exceptions ==NULL) || !isHyphenationCandidate (word)) {
       *numBreaks = 0;
       return NULL;
    }
@@ -259,8 +268,8 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
       return result;
    }
 
-   // tree == NULL means that there is no pattern file.
-   if (tree == NULL) {
+   // trie == NULL means that there is no pattern file.
+   if (trie == NULL) {
       delete wordLc;
       *numBreaks = 0;
       return NULL;
@@ -275,25 +284,19 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    SimpleVector <int> points (l + 1);
    points.setSize (l + 1, 0);
 
-   Integer null (0);
-
    for (int i = 0; i < l; i++) {
-      HashTable <Integer, Collection <Integer> > *t = tree;
-      for (int j = i; j < l; j++) {
-         Integer c (work[j]);
-         if (t->contains (&c)) {
-            t = (HashTable <Integer, Collection <Integer> >*) t->get (&c);
-            if (t->contains (&null)) {
-               Vector <Integer> *p = (Vector <Integer>*) t->get (&null);
+      int state = trie->root;
 
-               for (int k = 0; k < p->size (); k++)
-                  points.set(i + k, lout::misc::max (points.get (i + k),
-                                                     p->get(k)->getValue()));
-            }
-         } else
-            break;
+      for (int j = i; j < l && trie->validState (state); j++) {
+         const char *p = trie->getData((unsigned char) work[j], &state);
+
+         if (p) {
+            for (int k = 0; p[k]; k++)
+               points.set(i + k,
+                          lout::misc::max (points.get (i + k), p[k] - '0'));
+         }
       }
-   }  
+   }
 
    // No hyphens in the first two chars or the last two.
    // Characters are not bytes, so UTF-8 characters must be counted.
@@ -323,13 +326,235 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    if (*numBreaks == 0)
       return NULL;
    else {
-      // Could save some cycles by directly returning the array in the
-      // SimpleVector.
-      int *breakPosArray = new int[*numBreaks];
-      for (int i = 0; i < *numBreaks; i++)
-         breakPosArray[i] = breakPos.get(i);
-      return breakPosArray;
+      return breakPos.detachArray ();
    }
+}
+
+Trie::TrieNode TrieBuilder::trieNodeNull = {'\0', 0, NULL};
+
+TrieBuilder::TrieBuilder (int pack)
+{
+   this->pack = pack;
+   dataList = new SimpleVector <DataEntry> (10000);
+   stateStack = new SimpleVector <StackEntry> (10);
+   tree = new SimpleVector <Trie::TrieNode> (20000);
+   dataZone = new ZoneAllocator (1024);
+   stateStackPush(0);
+}
+
+TrieBuilder::~TrieBuilder ()
+{
+   delete dataList;
+   delete stateStack;
+   delete tree;
+   delete dataZone;
+}
+
+void TrieBuilder::insert (const char *key, const char *value)
+{
+   dataList->increase ();
+   dataList->getLastRef ()->key = (unsigned char *) strdup(key);
+   dataList->getLastRef ()->value = dataZone->strdup (value);
+}
+
+int TrieBuilder::keyCompare (const void *p1, const void *p2)
+{
+   DataEntry *pd1 = (DataEntry *) p1;
+   DataEntry *pd2 = (DataEntry *) p2;
+
+   return strcmp ((char *) pd1->key, (char *) pd2->key);
+}
+
+int TrieBuilder::insertState (StackEntry *state, bool root)
+{
+   int i, j;
+
+   if (state->count == 0)
+      return 0;
+
+   if (root) {
+      i = 0; // we reseve slot 0 for the root state
+   } else {
+      /* The bigger pack is the more slots we check and the smaller
+       * the trie will be, but CPU consumption also increases.
+       * Reasonable values for pack seemt to be between 256 and 1024.
+       */
+      i = tree->size () - pack + 2 * state->count;
+
+      if (i < 256) // reserve first 256 entries for the root state
+         i = 256;
+   }
+
+   for (;; i++) {
+      if (i + 256 > tree->size ())
+         tree->setSize (i + 256, trieNodeNull);
+
+      for (j = 1; j < 256; j++) {
+         Trie::TrieNode *tn = tree->getRef(i + j);
+
+         if (tn->c == j || ((state->next[j] || state->data[j]) && tn->c != 0))
+            break;
+      }
+
+      if (j == 256) // found a suitable slot
+         break;
+   }
+
+   for (int j = 1; j < 256; j++) {
+      Trie::TrieNode *tn = tree->getRef(i + j);
+   
+      if (state->next[j] || state->data[j]) {
+         tn->c = j;
+         tn->next = state->next[j];
+         tn->data = state->data[j];
+      }
+   }
+
+   assert (root || i >= 256);
+   assert (!root || i == 0);
+   return i;
+}
+
+void TrieBuilder::stateStackPush (unsigned char c)
+{
+   stateStack->increase ();
+   StackEntry *e = stateStack->getLastRef ();
+   memset (e, 0, sizeof (StackEntry));
+   e->c = c;
+}
+
+int TrieBuilder::stateStackPop ()
+{
+   int next = insertState (stateStack->getLastRef (), stateStack->size () == 1);
+   unsigned char c = stateStack->getLastRef ()->c;
+   const char *data = stateStack->getLastRef ()->data1;
+
+   stateStack->setSize (stateStack->size () - 1);
+
+   if (stateStack->size () > 0) {
+      assert (stateStack->getLastRef ()->next[c] == 0);
+      assert (stateStack->getLastRef ()->data[c] == NULL);
+      stateStack->getLastRef ()->next[c] = next;
+      stateStack->getLastRef ()->data[c] = data;
+      stateStack->getLastRef ()->count++;
+   }
+
+   return next;
+}
+
+Trie *TrieBuilder::createTrie ()
+{
+   // we need to sort the patterns as byte strings not as unicode
+   qsort (dataList->getArray (), dataList->size (),
+      sizeof (DataEntry), keyCompare);
+
+   for (int i = 0; i < dataList->size (); i++) {
+      insertSorted (dataList->getRef (i)->key, dataList->getRef (i)->value);
+      free (dataList->getRef (i)->key);
+   }
+
+   while (stateStack->size ())
+      stateStackPop ();
+
+   int size = tree->size ();
+   Trie *trie = new Trie(tree->detachArray(), size, true, dataZone);
+   dataZone = NULL;
+   return trie;
+}
+
+void TrieBuilder::insertSorted (unsigned char *s, const char *data)
+{
+   int len = strlen((char*)s);
+
+   for (int i = 0; i < len; i++) {
+      if (stateStack->size () > i + 1 && 
+          stateStack->getRef (i + 1)->c != s[i]) {
+         for (int j = stateStack->size () - 1; j >= i + 1; j--)
+            stateStackPop();
+      }
+
+      if (i + 1 >= stateStack->size ())
+         stateStackPush(s[i]);
+   }
+
+   while (stateStack->size () > len + 1)
+      stateStackPop();
+
+   assert (stateStack->size () == len + 1);
+   stateStack->getLastRef ()->data1 = data;
+}
+
+Trie::Trie (TrieNode *array, int size, bool freeArray, ZoneAllocator *dataZone)
+{
+   this->array = array;
+   this->size = size;
+   this->freeArray = freeArray;
+   this->dataZone = dataZone;
+};
+
+Trie::~Trie ()
+{
+   delete dataZone;
+   if (freeArray)
+      free(array);
+};
+
+void Trie::save (FILE *file)
+{
+   for (int i = 0; i < size; i++) {
+      Trie::TrieNode *tn = &array[i];
+
+      if (tn->data)
+         fprintf(file, "%u, %u, %s\n", tn->c, tn->next, tn->data);
+      else
+         fprintf(file, "%u, %u\n", tn->c, tn->next);
+   }
+}
+
+int Trie::load (FILE *file)
+{
+   int next, c, maxNext = 0;
+   SimpleVector <TrieNode> tree (100);
+   dataZone = new ZoneAllocator (1024);
+
+   while (!feof (file)) {
+      char buf[LEN + 1];
+      char *s = fgets (buf, LEN, file);
+
+      if (!s)
+         continue;
+
+      char data[LEN + 1];
+      int n = sscanf (s, "%u, %u, %s", &c, &next, data);
+
+      if (n >= 2 && c >= 0 && c < 256 && next >= 0) {
+         tree.increase ();
+         tree.getLastRef ()->c = c;
+         tree.getLastRef ()->next = next;
+         if (n >= 3)
+            tree.getLastRef ()->data = dataZone->strdup (data);
+         else
+            tree.getLastRef ()->data = NULL;
+
+         if (next > maxNext)
+            maxNext = next;
+      } else {
+         goto error;
+      }
+   }
+
+   if (maxNext >= tree.size ())
+      goto error;
+
+   size = tree.size ();
+   array = tree.detachArray ();
+   freeArray = true;
+   return 0;
+
+error:
+   delete dataZone;
+   dataZone = NULL;
+   return 1;
 }
 
 } // namespace dw
