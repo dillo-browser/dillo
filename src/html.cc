@@ -1644,7 +1644,7 @@ static void Html_tag_close_title(DilloHtml *html, int TagIdx)
       a_UIcmd_set_page_title(html->bw, html->Stash->str);
       a_History_set_title_by_url(html->page_url, html->Stash->str);
    } else {
-      BUG_MSG("the TITLE element must be inside the HEAD section\n");
+      BUG_MSG("TITLE element must be inside the HEAD section\n");
    }
 }
 
@@ -2840,7 +2840,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
    /* only valid inside HEAD */
    if (!(html->InFlags & IN_HEAD)) {
-      BUG_MSG("META elements must be inside the HEAD section\n");
+      BUG_MSG("META element must be inside the HEAD section\n");
       return;
    }
 
@@ -2994,7 +2994,7 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
 
    /* Ignore LINK outside HEAD */
    if (!(html->InFlags & IN_HEAD)) {
-      BUG_MSG("the LINK element must be inside the HEAD section\n");
+      BUG_MSG("LINK element must be inside the HEAD section\n");
       return;
    }
    /* Remote stylesheets enabled? */
