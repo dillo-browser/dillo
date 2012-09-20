@@ -163,11 +163,10 @@ DilloUrl *a_Html_url_new(DilloHtml *html,
       const char *suffix = (n_ic) > 1 ? "s" : "";
       n_ic_spc = URL_ILLEGAL_CHARS_SPC(url);
       if (n_ic == n_ic_spc) {
-         BUG_MSG("URL has %d illegal character%s (%d space%s)\n",
-                 n_ic, suffix, n_ic_spc, suffix);
+         BUG_MSG("URL has %d illegal space%s\n", n_ic, suffix);
       } else if (n_ic_spc == 0) {
-         BUG_MSG("URL has %d illegal character%s (%d in {00-1F, 7F} range)\n",
-                 n_ic, suffix, n_ic);
+         BUG_MSG("URL has %d illegal character%s in {00-1F, 7F} range\n",
+                 n_ic, suffix);
       } else {
          BUG_MSG("URL has %d illegal character%s: "
                  "%d space%s, and %d in {00-1F, 7F} range\n",
@@ -1650,7 +1649,7 @@ static void Html_tag_close_title(DilloHtml *html, int TagIdx)
       a_UIcmd_set_page_title(html->bw, html->Stash->str);
       a_History_set_title_by_url(html->page_url, html->Stash->str);
    } else {
-      BUG_MSG("the TITLE element must be inside the HEAD section\n");
+      BUG_MSG("TITLE element must be inside the HEAD section\n");
    }
 }
 
@@ -2846,7 +2845,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
    /* only valid inside HEAD */
    if (!(html->InFlags & IN_HEAD)) {
-      BUG_MSG("META elements must be inside the HEAD section\n");
+      BUG_MSG("META element must be inside the HEAD section\n");
       return;
    }
 
@@ -3000,7 +2999,7 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
 
    /* Ignore LINK outside HEAD */
    if (!(html->InFlags & IN_HEAD)) {
-      BUG_MSG("the LINK element must be inside the HEAD section\n");
+      BUG_MSG("LINK element must be inside the HEAD section\n");
       return;
    }
    /* Remote stylesheets enabled? */
@@ -3081,6 +3080,8 @@ static void Html_tag_open_default(DilloHtml *html,const char *tag,int tagsize)
 static void Html_tag_open_span(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
+
+   html->styleEngine->inheritBackgroundColor();
 
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
@@ -3903,7 +3904,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
                } else if (ch == '<') {
                   /* unterminated tag detected */
                   p = dStrndup(buf+token_start+1,
-                               strcspn(buf+token_start+1, " <"));
+                               strcspn(buf+token_start+1, " <\n\r\t"));
                   BUG_MSG("<%s> element lacks its closing '>'\n", p);
                   dFree(p);
                   --buf_index;
