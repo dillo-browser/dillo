@@ -23,6 +23,7 @@ noinst_PROGRAMS = \
 	shapes \
 	cookies \
 	liang \
+	trie \
 	notsosimplevector
 
 dw_anchors_test_SOURCES = dw_anchors_test.cc
@@ -165,6 +166,15 @@ cookies_LDADD = \
 liang_SOURCES = liang.cc
 
 liang_LDADD = \
+	$(top_builddir)/dw/libDw-widgets.a \
+	$(top_builddir)/dw/libDw-fltk.a \
+	$(top_builddir)/dw/libDw-core.a \
+	$(top_builddir)/lout/liblout.a \
+	@LIBFLTK_LIBS@
+
+trie_SOURCES = trie.cc
+
+trie_LDADD = \
 	$(top_builddir)/dw/libDw-widgets.a \
 	$(top_builddir)/dw/libDw-fltk.a \
 	$(top_builddir)/dw/libDw-core.a \
