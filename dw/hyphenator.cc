@@ -241,7 +241,7 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
 
    if (wordLc[startActualWord] == 0) {
       // No letters etc in word: do not hyphenate at all.
-      delete wordLc;
+      free (wordLc);
       *numBreaks = 0;
       return NULL;
    }
@@ -263,14 +263,14 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
       int *result = new int[exceptionalBreaks->size()];
       for (int i = 0; i < exceptionalBreaks->size(); i++)
          result[i] = exceptionalBreaks->get(i)->getValue() + startActualWord;
-      delete wordLc;
+      free (wordLc);
       *numBreaks = exceptionalBreaks->size();
       return result;
    }
 
    // trie == NULL means that there is no pattern file.
    if (trie == NULL) {
-      delete wordLc;
+      free (wordLc);
       *numBreaks = 0;
       return NULL;
    }
@@ -320,7 +320,7 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
       }
    }
 
-   delete wordLc;
+   free (wordLc);
 
    *numBreaks = breakPos.size ();
    if (*numBreaks == 0)

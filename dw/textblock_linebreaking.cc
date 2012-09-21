@@ -677,7 +677,7 @@ int Textblock::hyphenateWord (int wordIndex)
       origWord.style->unref ();
       origWord.spaceStyle->unref ();
 
-      delete breakPos;
+      free (breakPos);
    } else {
       words->getRef(wordIndex)->canBeHyphenated = false;
    }
