@@ -932,7 +932,7 @@ static int Html_parse_entity(DilloHtml *html, const char *token,
 
       if (!isocode || errno || isocode > 0xffff) {
          /* this catches null bytes, errors and codes >= 0xFFFF */
-         BUG_MSG("numeric character reference out of range\n");
+         BUG_MSG("numeric character reference \"%s\" out of range\n", tok);
          isocode = -2;
       }
 
