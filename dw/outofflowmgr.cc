@@ -28,11 +28,13 @@ void OutOfFlowMgr::markChange (int ref)
 int OutOfFlowMgr::getLeftBorder (int y)
 {
    return 40 * sin ((double)y / 30);
+   //return 0;
 }
 
 int OutOfFlowMgr::getRightBorder (int y)
 {
-   return 40 * cos ((double)y / 30);
+   //return 40 * cos ((double)y / 30);
+   return 0;
 }
 
 } // namespace dw

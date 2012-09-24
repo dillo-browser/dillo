@@ -102,7 +102,7 @@ int TableCell::getValue ()
 void TableCell::setMaxValue (int maxValue, int value)
 {
    line1Offset = maxValue - value;
-   queueResize (0, true);
+   queueResize (OutOfFlowMgr::createRefNormalFlow (0), true);
 }
 
 } // namespace dw

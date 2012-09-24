@@ -560,11 +560,7 @@ void Textblock::setWidth (int width)
       //          words->size());
 
       availWidth = width;
-//<<<<<<< textblock.cc
-//      queueResize (false, dw::core::style::FLOAT_NONE, false);
-//=======
-      queueResize (0, false);
-//>>>>>>> 1.24
+      queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
       redrawY = 0;
    }
@@ -579,11 +575,7 @@ void Textblock::setAscent (int ascent)
       //          words->size());
 
       availAscent = ascent;
-//<<<<<<< textblock.cc
-//      queueResize (false, dw::core::style::FLOAT_NONE, false);
-//=======
-      queueResize (0, false);
-//>>>>>>> 1.24
+      queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
    }
 }
@@ -597,11 +589,7 @@ void Textblock::setDescent (int descent)
       //          words->size());
 
       availDescent = descent;
-//<<<<<<< textblock.cc
-//      queueResize (false, dw::core::style::FLOAT_NONE, false);
-//=======
-      queueResize (0, false);
-//>>>>>>> 1.24
+      queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
    }
 }
@@ -1641,8 +1629,8 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    //                    word->content.widget);
 
    wordWrap (words->size () - 1, false);
-   // ABC
-   word->content.widget->parentRef = 1 | (dw::core::style::FLOAT_NONE << 1) | ((lines->size () - 1) << 3);
+   word->content.widget->parentRef =
+      OutOfFlowMgr::createRefNormalFlow (lines->size () - 1);
    printf("parentRef = %d\n", word->content.widget->parentRef);
    //DBG_OBJ_SET_NUM (word->content.widget, "parent_ref",
    //                 word->content.widget->parent_ref);
@@ -1827,8 +1815,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
          if (!isfirst) {
             /* The page we searched for has been found. */
             Word *word2;
-            // ABC
-            int lineno = widget->parentRef >> 3;
+            int lineno = OutOfFlowMgr::getLineNoFromRef (widget->parentRef);
             if (lineno > 0 &&
                 (word2 =
                  textblock2->words->getRef(textblock2->lines
@@ -1836,11 +1823,8 @@ void Textblock::addParbreak (int space, core::style::Style *style)
                 word2->content.type == core::Content::BREAK) {
                if (word2->content.breakSpace < space) {
                   word2->content.breakSpace = space;
-//<<<<<<< textblock.cc
-//                  textblock2->queueResize (false, 1 | (dw::core::style::FLOAT_NONE << 1) | (lineno << 3), false);
-//=======
-                  textblock2->queueResize (lineno, false);
-//>>>>>>> 1.24
+                  textblock2->queueResize
+                     (OutOfFlowMgr::createRefNormalFlow (lineno), false);
                   textblock2->mustQueueResize = false;
                }
             }
@@ -1965,11 +1949,6 @@ void Textblock::handOverBreak (core::style::Style *style)
  */
 void Textblock::flush ()
 {
-//<<<<<<< textblock.cc
-//   if (asap || mustQueueResize) {
-//   	  printf("queueResize(%s, -1, true)\n", asap ? "true" : "false");
-//      queueResize (asap, -1, true);
-//=======
    PRINTF ("[%p] FLUSH => %s (parentRef = %d)\n",
            this, mustQueueResize ? "true" : "false", parentRef);
 
