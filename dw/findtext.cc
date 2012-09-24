@@ -91,7 +91,7 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
 
       if (iterator)
          delete iterator;
-      iterator = new CharIterator (widget);
+      iterator = new CharIterator (widget, true);
 
       if (backwards) {
          /* Go to end */
@@ -123,7 +123,7 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
       } else {
          // Nothing found anymore, reset the state for the next trial.
          delete iterator;
-         iterator = new CharIterator (widget);
+         iterator = new CharIterator (widget, true);
          if (backwards) {
             /* Go to end */
             while (iterator->next ()) ;

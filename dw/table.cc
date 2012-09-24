@@ -1103,7 +1103,7 @@ Table::TableIterator::TableIterator (Table *table,
    else if (index >= table->children->size ())
       content.type = core::Content::END;
    else {
-      content.type = core::Content::WIDGET;
+      content.type = core::Content::WIDGET_IN_FLOW;
       content.widget = table->children->get(index)->cell.widget;
    }
 }
@@ -1125,8 +1125,8 @@ bool Table::TableIterator::next ()
    if (content.type == core::Content::END)
       return false;
 
-   // tables only contain widgets:
-   if ((getMask() & core::Content::WIDGET) == 0) {
+   // tables only contain widgets (in flow):
+   if ((getMask() & core::Content::WIDGET_IN_FLOW) == 0) {
       content.type = core::Content::END;
       return false;
    }
@@ -1140,7 +1140,7 @@ bool Table::TableIterator::next ()
    } while (table->children->get(index) == NULL ||
             table->children->get(index)->type != Child::CELL);
 
-   content.type = core::Content::WIDGET;
+   content.type = core::Content::WIDGET_IN_FLOW;
    content.widget = table->children->get(index)->cell.widget;
    return true;
 }
@@ -1152,8 +1152,8 @@ bool Table::TableIterator::prev ()
    if (content.type == core::Content::START)
       return false;
 
-   // tables only contain widgets:
-   if ((getMask() & core::Content::WIDGET) == 0) {
+   // tables only contain widgets (in flow):
+   if ((getMask() & core::Content::WIDGET_IN_FLOW) == 0) {
       content.type = core::Content::START;
       return false;
    }
@@ -1167,7 +1167,7 @@ bool Table::TableIterator::prev ()
    } while (table->children->get(index) == NULL ||
             table->children->get(index)->type != Child::CELL);
 
-   content.type = core::Content::WIDGET;
+   content.type = core::Content::WIDGET_IN_FLOW;
    content.widget = table->children->get(index)->cell.widget;
    return true;
 }

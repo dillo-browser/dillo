@@ -525,7 +525,9 @@ Widget *Widget::getWidgetAtPoint (int x, int y, int level)
        * is such a child, it is returned. Otherwise, this widget is returned.
        */
       childAtPoint = NULL;
-      it = iterator (Content::WIDGET, false);
+      it = iterator ((Content::Type)
+                     (Content::WIDGET_IN_FLOW | Content::WIDGET_OOF_CONT),
+                     false);
 
       while (childAtPoint == NULL && it->next ())
          childAtPoint = it->getContent()->widget->getWidgetAtPoint (x, y,

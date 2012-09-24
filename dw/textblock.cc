@@ -108,8 +108,9 @@ Textblock::~Textblock ()
 
    for (int i = 0; i < words->size(); i++) {
       Word *word = words->getRef (i);
-      if (word->content.type == core::Content::WIDGET)
+      if (word->content.type == core::Content::WIDGET_IN_FLOW)
          delete word->content.widget;
+      /** \todo Widget references? What about texts? */
       word->style->unref ();
       word->spaceStyle->unref ();
    }
@@ -193,7 +194,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
  */
 void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
 {
-   if (word->content.type == core::Content::WIDGET) {
+   if (word->content.type == core::Content::WIDGET_IN_FLOW) {
       if (word->content.widget->usesHints ())
          word->content.widget->getExtremes (extremes);
       else {
@@ -365,7 +366,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             redrawY = misc::min (redrawY, lineYOffsetWidget (line));
          }
 
-         if (word->content.type == core::Content::WIDGET) {
+         if (word->content.type == core::Content::WIDGET_IN_FLOW) {
             /** \todo Justification within the line is done here. */
             childAllocation.x = xCursor + allocation->x;
             /* align=top:
@@ -1176,10 +1177,10 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
 
       if (xWidget + word->size.width + word->effSpace >= area->x) {
          if (word->content.type == core::Content::TEXT ||
-             word->content.type == core::Content::WIDGET) {
+             word->content.type == core::Content::WIDGET_IN_FLOW) {
 
             if (word->size.width > 0) {
-               if (word->content.type == core::Content::WIDGET) {
+               if (word->content.type == core::Content::WIDGET_IN_FLOW) {
                   core::Widget *child = word->content.widget;
                   core::Rectangle childArea;
 
@@ -1633,7 +1634,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    calcWidgetSize (widget, &size);
    word = addWord (size.width, size.ascent, size.descent, false, style);
 
-   word->content.type = core::Content::WIDGET;
+   word->content.type = core::Content::WIDGET_IN_FLOW;
    word->content.widget = widget;
 
    //DBG_OBJ_ARRSET_PTR (page, "words.%d.content.widget", words->size() - 1,
@@ -1820,7 +1821,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
          Textblock *textblock2 = (Textblock*)widget->getParent ();
          int index = textblock2->hasListitemValue ? 1 : 0;
          bool isfirst = (textblock2->words->getRef(index)->content.type
-                         == core::Content::WIDGET
+                         == core::Content::WIDGET_IN_FLOW
                          && textblock2->words->getRef(index)->content.widget
                          == widget);
          if (!isfirst) {
@@ -1924,7 +1925,7 @@ core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
    for (wordIndex = line->firstWord; wordIndex <= line->lastWord;wordIndex++) {
       Word *word =  words->getRef (wordIndex);
 
-      if (word->content.type == core::Content::WIDGET) {
+      if (word->content.type == core::Content::WIDGET_IN_FLOW) {
          core::Widget * childAtPoint;
          childAtPoint = word->content.widget->getWidgetAtPoint (x, y,
                                                                 level + 1);
@@ -2011,7 +2012,7 @@ void Textblock::changeLinkColor (int link, int newColor)
                old_style->unref();
                break;
             }
-            case core::Content::WIDGET:
+            case core::Content::WIDGET_IN_FLOW:
             {  core::Widget *widget = word->content.widget;
                styleAttrs = *widget->getStyle();
                styleAttrs.color = core::style::Color::create (layout,

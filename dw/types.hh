@@ -188,12 +188,27 @@ struct Content
       START             = 1 << 0,
       END               = 1 << 1,
       TEXT              = 1 << 2,
-      WIDGET            = 1 << 3,
-      BREAK             = 1 << 4,
-      FLOAT_REF         = 1 << 6, /** \todo A bit ugly. */
+
+      /** \brief widget in normal flow, so that _this_ widget
+          (containing this content) is both container (parent) and
+          generator */
+      WIDGET_IN_FLOW    = 1 << 3,
+
+      /** \brief widget out of flow (OOF); _this_ widget (containing
+          this content) is only the container (parent), but _not_
+          generator */
+      WIDGET_OOF_CONT,
+
+      /** \brief reference to a widget out of flow (OOF); _this_
+          widget (containing this content) is only the generator
+          (parent), but _not_ container */
+      WIDGET_OOF_REF    = 1 << 4,
+
+      BREAK             = 1 << 5,
       ALL               = 0xff,
-      REAL_CONTENT      = 0xff ^ (START | END | FLOAT_REF),
-      SELECTION_CONTENT = TEXT | WIDGET | BREAK
+      REAL_CONTENT      = 0xff ^ (START | END),
+      SELECTION_CONTENT = TEXT | BREAK, // WIDGET_* must be set additionally
+      ANY_WIDGET        = WIDGET_IN_FLOW | WIDGET_OOF_CONT | WIDGET_OOF_REF,
    };
 
    /* Content is embedded in struct Word therefore we

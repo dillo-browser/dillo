@@ -230,7 +230,7 @@ private:
    CharIterator ();
 
 public:
-   CharIterator (Widget *widget);
+   CharIterator (Widget *widget, bool followReferences);
    ~CharIterator ();
 
    lout::object::Object *clone();

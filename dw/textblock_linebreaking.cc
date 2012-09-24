@@ -212,8 +212,14 @@ void Textblock::printWord (Word *word)
    case core::Content::TEXT:
       printf ("\"%s\"", word->content.text);
       break;
-   case core::Content::WIDGET:
-      printf ("<widget: %p>\n", word->content.widget);
+   case core::Content::WIDGET_IN_FLOW:
+      printf ("<widget in flow: %p>\n", word->content.widget);
+      break;
+   case core::Content::WIDGET_OOF_REF:
+      printf ("<widget oof ref: %p>\n", word->content.widget);
+      break;
+   case core::Content::WIDGET_OOF_CONT:
+      printf ("<widge oof cont: %p>\n", word->content.widget);
       break;
    case core::Content::BREAK:
       printf ("<break>\n");
@@ -706,7 +712,7 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
       len += word->style->font->ascent / 3;
    line->contentDescent = misc::max (line->contentDescent, len);
 
-   if (word->content.type == core::Content::WIDGET) {
+   if (word->content.type == core::Content::WIDGET_IN_FLOW) {
       int collapseMarginTop = 0;
 
       line->marginDescent =
@@ -829,7 +835,7 @@ void Textblock::initLine1Offset (int wordIndex)
       } else {
          int indent = 0;
 
-         if (word->content.type == core::Content::WIDGET &&
+         if (word->content.type == core::Content::WIDGET_IN_FLOW &&
              word->content.widget->blockLevel() == true) {
             /* don't use text-indent when nesting blocks */
          } else {
@@ -920,12 +926,9 @@ void Textblock::rewrap ()
 
    for (int i = firstWord; i < words->size (); i++) {
       Word *word = words->getRef (i);
-         
-      if (word->content.type == core::Content::WIDGET &&
-         // ABC
-          word->content.widget->parentRef ==
-          (1 | (dw::core::style::FLOAT_NONE << 1) | ((lines->size () - 1) << 3)))
-          calcWidgetSize (word->content.widget, &word->size);
+
+      if (word->content.type == core::Content::WIDGET_IN_FLOW)
+         calcWidgetSize (word->content.widget, &word->size);
       
       wordWrap (i, false);
 
@@ -934,9 +937,9 @@ void Textblock::rewrap ()
       // changed, so getRef() must be called again.
       word = words->getRef (i);
 
-      if (word->content.type == core::Content::WIDGET) {
-         word->content.widget->parentRef = lines->size () - 1;
-      }
+      if (word->content.type == core::Content::WIDGET_IN_FLOW)
+         word->content.widget->parentRef =
+            OutOfFlowMgr::createRefNormalFlow (lines->size () - 1);
    }
 
    /* Next time, the page will not have to be rewrapped. */
