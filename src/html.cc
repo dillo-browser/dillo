@@ -361,10 +361,7 @@ static void Html_add_textblock(DilloHtml *html, int space)
    Style *style = html->styleEngine->style ();
 
    HT2TB(html)->addParbreak (space, html->styleEngine->wordStyle ());
-   if (style->vloat == FLOAT_NONE)
-      HT2TB(html)->addWidget (textblock, style);
-   else
-      HT2TB(html)->addFloatIntoGenerator(textblock, style);
+   HT2TB(html)->addWidget (textblock, style); // Works also for floats etc.
 
    HT2TB(html)->addParbreak (space, html->styleEngine->wordStyle ());
    S_TOP(html)->textblock = html->dw = textblock;

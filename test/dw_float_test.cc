@@ -104,7 +104,7 @@ int main(int argc, char **argv)
             textblock->addSpace(wordStyle);
          
             Textblock *vloat = new Textblock (false);
-            textblock->addFloatIntoGenerator(vloat, i == 3 ? leftFloatStyle : rightFloatStyle);
+            textblock->addWidget(vloat, i == 3 ? leftFloatStyle : rightFloatStyle);
             
             const char *fWords[] = { "This", "is", "a", "float,", "which", "is",
                                      "set", "aside", "from", "the", "main",

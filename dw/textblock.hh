@@ -4,6 +4,7 @@
 #include <limits.h>
 
 #include "core.hh"
+#include "outofflowmgr.hh"
 #include "../lout/misc.hh"
 
 // These were used when improved line breaking and hyphenation were
@@ -22,7 +23,7 @@ namespace dw {
  * #ffffe0"><b>Info:</b> The recent changes (line breaking and
  * hyphenation on one hand, floats on the other hand) have not yet
  * been incorporated into this documentation. See \ref
- * dw-line-breaking and \ref dw-special-textflow.</div>
+ * dw-line-breaking and \ref dw-out-of-flow.</div>
  *
  * <h3>Signals</h3>
  *
@@ -145,11 +146,6 @@ namespace dw {
 class Textblock: public core::Widget
 {
 private:
-   // Hint: the following is somewhat chaotic, as a result of the merge
-   // of dillo_hyphen and dillo_floats
-   
-   // Part 1 -- Line-Breaking and Hyphenation
-
    /**
     * This class encapsulates the badness/penalty calculation, and so
     * (i) makes changes (hopefully) simpler, and (ii) hides the
@@ -213,68 +209,8 @@ private:
       void print ();
    };
 
-   // Part 2 -- Floats
-
-   Textblock *containingBox;
-
-   class FloatSide
-   {
-   protected:
-      class Float: public lout::object::Object
-      {
-      public:
-         Textblock *floatGenerator;
-         core::Widget *widget;
-         int lineNo, y, width, ascent, descent;
-      };
-
-      Textblock *floatContainer;
-      lout::container::typed::Vector<Float> *floats;
-      lout::container::typed::HashTable<lout::object::TypedPointer<dw::core::Widget>, Float> *floatsByWidget;
-
-      Float *findFloat(int y);
-
-      virtual int calcBorderFromContainer(Float *vloat) = 0;
-      virtual int calcBorderDiff(Textblock *child) = 0;
-
-   public:
-      FloatSide(Textblock *floatContainer);
-      virtual ~FloatSide();
-      
-      inline int size() { return floats->size(); }
-      void addFloat(Widget *widget, Textblock *floatGenerator);
-      void handleFloat(Widget *widget, int lineNo, int y, int lineWidth, int lineHeight);
-      int calcBorder(int y, Textblock *viewdFrom);
-      virtual void sizeAllocate(core::Allocation *containingBoxAllocation) = 0;
-      void draw (core::View *view, core::Rectangle *area);
-      void queueResize(int ref);
-   };
-   
-   class LeftFloatSide: public FloatSide
-   {
-   protected:
-      int calcBorderFromContainer(Float *vloat);
-      int calcBorderDiff(Textblock *child);
-   
-   public:
-      LeftFloatSide(Textblock *floatContainer) : FloatSide(floatContainer) { }
-      void sizeAllocate(core::Allocation *containingBoxAllocation);
-   };
-
-   class RightFloatSide: public FloatSide
-   {
-   protected:
-      int calcBorderFromContainer(Float *vloat);
-      int calcBorderDiff(Textblock *child);
-   
-   public:
-      RightFloatSide(Textblock *floatContainer) : FloatSide(floatContainer) { }
-      void sizeAllocate(core::Allocation *containingBoxAllocation);
-   };
-   
-   FloatSide *leftFloatSide, *rightFloatSide;
-
-   // End of merge chaos.
+   Textblock *containingBlock;
+   OutOfFlowMgr *outOfFlowMgr;
 
 protected:
    enum {
@@ -295,7 +231,6 @@ protected:
        * page->lines[0].top is always 0. */
       int top, boxAscent, boxDescent, contentAscent, contentDescent,
           breakSpace, leftOffset;
-      int boxLeft, boxRight;
       
       /* This is similar to descent, but includes the bottom margins of the
        * widgets within this line. */
@@ -489,35 +424,69 @@ protected:
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
                       core::Requisition *size);
 
-   void addFloatIntoContainer(core::Widget *widget, Textblock *floatGenerator);
-   void handleFloatInContainer(Widget *widget, int lineNo,
-                              int y, int lineWidth, int lineHeight);
-   
-   inline int calcLeftFloatBorder(int y, Textblock *viewedFrom)
-   { return containingBox->leftFloatSide ? containingBox->leftFloatSide->calcBorder(y, viewedFrom) : 0; }
-   inline int calcRightFloatBorder(int y, Textblock *viewedFrom)
-   { return containingBox->rightFloatSide ? containingBox->rightFloatSide->calcBorder(y, viewedFrom) : 0; }
-   
    /**
-    * \brief Returns the x offset (the indentation plus any offset needed for
-    *    centering or right justification) for the line.
-    *
-    * The offset returned is relative to the page *content* (i.e. without
-    * border etc.).
-    */
-   inline int lineXOffsetContents (Line *line)
-   {
-      return innerPadding + line->leftOffset + line->boxLeft +
-         (line == lines->getFirstRef() ? line1OffsetEff : 0);
-   }
-
-   /**
-    * \brief Like lineXOffset, but relative to the allocation (i.e.
-    *    including border etc.).
+    * \brief Returns the x offset (the indentation plus any offset
+    *    needed for centering or right justification) for the line,
+    *    relative to the allocation (i.e.  including border etc.).
     */
    inline int lineXOffsetWidget (Line *line)
    {
-      return lineXOffsetContents (line) + getStyle()->boxOffsetX ();
+      return innerPadding + line->leftOffset +
+         (line == lines->getFirstRef() ? line1OffsetEff : 0) +
+         lout::misc::max (getStyle()->boxOffsetX(),
+                          containingBlock->getAllocation()->x +
+                          containingBlock->outOfFlowMgr->getLeftBorder
+                          (allocation.y + line->top + getStyle()->boxOffsetY()
+                           - containingBlock->getAllocation()->y) -
+                          allocation.x);
+   }
+
+   inline int lineLeftBorder (int lineNo)
+   {
+      // Note that the line must not exist yet (but unless it is not
+      // the first line, the previous line, lineNo - 1, must). But
+      // lineHeight should be known to the caller.
+      int top;
+      if (lineNo == 0)
+         top = 0;
+      else {
+         Line *prevLine = lines->getRef (lineNo - 1);
+         top = prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
+            prevLine->breakSpace;
+      }
+
+      // TODO: line->leftOffset is not regarded, which is correct, depending
+      // on where this method is called. Document; perhaps rename this method.
+      // (Update: was renamed.)
+      return innerPadding +
+         (lineNo == 0 ? line1OffsetEff : 0) +
+         lout::misc::max (getStyle()->boxOffsetX(),
+                          containingBlock->getAllocation()->x +
+                          containingBlock->outOfFlowMgr->getLeftBorder
+                          (allocation.y + top + getStyle()->boxOffsetY()
+                           - containingBlock->getAllocation()->y) -
+                          allocation.x);
+   }
+
+   inline int lineRightBorder (int lineNo)
+   {
+      // Similar to lineLeftBorder().
+      int top;
+      if (lineNo == 0)
+         top = 0;
+      else {
+         Line *prevLine = lines->getRef (lineNo - 1);
+         top = prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
+            prevLine->breakSpace;
+      }
+
+      return lout::misc::max (getStyle()->boxRestWidth(),
+                              (containingBlock->getAllocation()->x +
+                               containingBlock->getAllocation()->width) -
+                              containingBlock->outOfFlowMgr->getRightBorder
+                              (allocation.y + top + getStyle()->boxOffsetY()
+                               - containingBlock->getAllocation()->y) -
+                              (allocation.x + allocation.width));
    }
 
    inline int lineYOffsetWidgetAllocation (Line *line,
@@ -638,8 +607,6 @@ public:
    void addHyphen();
    void addParbreak (int space, core::style::Style *style);
    void addLinebreak (core::style::Style *style);
-
-   void addFloatIntoGenerator (core::Widget *widget, core::style::Style *style);
 
    core::Widget *getWidgetAtPoint (int x, int y, int level);
    void handOverBreak (core::style::Style *style);
