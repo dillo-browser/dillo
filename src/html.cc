@@ -3504,11 +3504,11 @@ static void Html_display_listitem(DilloHtml *html)
    ListItem *list_item;
    int *list_number;
    char buf[16];
-   
+
    /* Get our parent tag's variables (used as state storage) */
    list_number = &html->stack->getRef(html->stack->size()-2)->list_number;
    ref_list_item = &html->stack->getRef(html->stack->size()-2)->ref_list_item;
-      
+
    HT2TB(html)->addParbreak (0, wordStyle);
 
    list_item = new ListItem ((ListItem*)*ref_list_item,prefs.limit_text_width);
@@ -3516,7 +3516,7 @@ static void Html_display_listitem(DilloHtml *html)
    HT2TB(html)->addParbreak (0, wordStyle);
    *ref_list_item = list_item;
    S_TOP(html)->textblock = html->dw = list_item;
-               
+
    if (style->listStyleType == LIST_STYLE_TYPE_NONE) {
       // none
    } else if (style->listStyleType >= LIST_STYLE_TYPE_DECIMAL) {

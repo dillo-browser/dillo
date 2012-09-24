@@ -815,7 +815,7 @@ void UI::set_location(const char *str)
  */
 void UI::focus_location()
 {
-   if (Panelmode == UI_HIDDEN) {                                          
+   if (Panelmode == UI_HIDDEN) {
       panels_toggle();
       temporaryPanels(true);
    }
