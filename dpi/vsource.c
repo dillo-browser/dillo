@@ -78,9 +78,9 @@ void send_numbered_text(Dsh *sh, int data_size)
       while (*p) {
          snprintf(line_str, 32, "%2d: ", line);
          a_Dpip_dsh_write_str(sh, 0, line_str);
-         if ((p = strchr(q, '\n'))) {
+         if ((p = strpbrk(q, "\r\n"))) {
             a_Dpip_dsh_write(sh, 0, q, p - q + 1);
-            if (p[1] == '\r')
+            if (*p == '\r' && p[1] == '\n')
                ++p;
             ++line;
          } else {
