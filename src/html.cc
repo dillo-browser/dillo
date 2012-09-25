@@ -551,7 +551,7 @@ int DilloHtml::getCurTagLineNumber()
    ofs = CurrTagOfs;
    line = OldTagLine;
    for (i = OldTagOfs; i < ofs; ++i)
-      if (p[i] == '\n')
+      if (p[i] == '\n' || (p[i] == '\r' && p[i+1] != '\n'))
          ++line;
    OldTagOfs = CurrTagOfs;
    OldTagLine = line;
