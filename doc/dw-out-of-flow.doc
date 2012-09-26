@@ -124,9 +124,12 @@ this.)
 Rewrapping a line with a float reference
 ----------------------------------------
 
-Line (within the _generating_ block) ust be told to the
-dw::OutOfFlowManager. Distinction whether the line has become bigger
-or smaller? When are lines _before_ affected?
+Sketch: in dw::Textblock::rewrap, before the actual rewrapping, all
+elements out of flow must be set as "non-located" (this means for
+floats, that they are -- temporally -- not visible, and so do not have
+an impact on the borders). The actual rewrapping will tell the
+vertical position (and more? actually only plays a role for floats) of
+elements out of flow to dw::OutOfFlowManager.
 
 
 More
