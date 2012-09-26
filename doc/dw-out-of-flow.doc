@@ -1,0 +1,140 @@
+/** \page dw-out-of-flow Handling Elements Out Of Flow
+
+<div style="border: 2px solid #ffff00; margin-bottom: 0.5em;
+padding: 0.5em 1em; background-color: #ffffe0"><b>Info:</b>
+Should be incorporated into dw::Textblock.</div>
+
+This texts deals with both floats and absolute positions, which have
+in common, that there is a distinction between generating block and
+containing block (we are here using the same notation as in the
+CSS&nbsp;2 specification). Consider this snippet (regarding floats):
+
+
+    <ul>
+      <li>Some text.</li>
+      <li>
+	<div style="float:right; width=50%">Some longer text, so
+	  that the effect described in this passage can be
+	  demonstrated.
+	</div>
+	Some more and longer text.</li>
+      <li>Final text.</li>
+    </ul>
+
+which may be rendered like this
+
+     - - - - - - - - - - - - - - - - - - - - - - - - - .
+    |   * Some text.                                    
+	* Some more and      -  - - - - - - - - - - -.|
+    |     longer text.      |Some longer text, so that  
+	* Final text.        the effect described     ||
+    ` - - - - - - - - - - - |above in this passage can '
+			     be demonstrated.         |
+			    ` - - - - - - - - - - -  -  
+
+The float (the DIV section) is defined ("generated") within the list
+item, so, in CSS 2 terms, the list item is the generating block of the
+float. However, as the image shows, the float is not contained by the
+list item, but another block, several levels above (not shown
+here). In terms of ::dw, this means that the dw::Textblock
+representing the float cannot be a child of the dw::Textblock
+representing the generating block, the list item, since the allocation
+of a child widget must be within the allocation of the parent
+widget. Instead, to each dw::Textblock, another dw::Textblock is
+assigned as the containing box.
+
+Definition of "containing block"
+================================
+
+The following definition follows the definition in the CSS 2
+specification. For a given dw::Textblock, the containing block is
+defined as the one dw::Textblock following these rules:
+
+- For the toplevel widget, the containing block is itself.
+- Otherwise, the next dw::Textblock up in the tree (which may also
+  this widget) is searched, which is out of flow (float or absolutely
+  positioned) or a table cell.
+
+TODO: 
+
+1. Compare this to
+   <http://www.w3.org/TR/CSS2/visudet.html#containing-block-details>.
+2. Handle fixed positions: in this case, the viewport is the
+   containing box, but the viewport is not represented by a widget.
+3. Clarify: the element out of flow must not be a dw::Textblock.
+
+
+Implementation overview
+=======================
+
+Both dw::Textblock::notifySetAsTopLevel and
+dw::Textblock::notifySetParent set the member
+dw::Textblock::containingBlock appropriately, according to the rules
+defined above.
+
+Handling widgets out of flow is partly the task of the new class
+dw::OutOfFlowMgr, which is managed by dw::Textblock::outOfFlowMgr, but
+only for containing blocks. Generating blocks should refer to
+_containingBlock->outOfFlowMgr_.
+
+dw::Textblock::addWidget is extended, so that floats and absolutely
+positioned elements can be added. Notice that not this widget, but the
+containing block becomes the parent of the newly added child, if it is
+out of flow. dw::Textblock::addWidget decides this by calling
+dw::OutOfFlowMgr::isOutOfFlow.
+
+There are still relations between the element out of flow and the
+generating box; details are described below.
+
+(Some notes about what has do be done for fixed elements: (i) In the
+current design, there is only one containing block for a given
+generating block. However, a given generating block may contain an
+element with absolute position (or, a float), 
+
+As already mentioned, the containing box
+
+
+Relation between generating box and containing box
+==================================================
+
+...
+
+TODO: new implementation of dw::core::Widget::parentRef.
+
+Changing the size of an element out of flow
+-------------------------------------------
+The element out of flow will call dw::Widget::queueResize, which will
+result in a call of dw::Widget::markSizeChange for the containing
+block. The containing block will notice (by dw::Widget::parentRef)
+that the size change is originated in an element out of flow, and so
+delegate it to dw::OutOfFlowManager::markSizeChange.
+
+dw::OutOfFlowManager	::markSizeChange calls dw::Widget::queueResize for
+the _generating_ block, with the line, where this float has been
+generated, as an argument, so that the generating block will rewrap
+down from this line. It is important here that an infinite loop is
+prevented here (see next section).
+
+Eventually, dw::Widget::sizeRequest is called again.
+
+(TODO: This is only relevant for floats, not for elements with
+absolute position. Only dw::OutOfFlowManager should have to care about
+this.)
+
+Rewrapping a line with a float reference
+----------------------------------------
+
+Line (within the _generating_ block) ust be told to the
+dw::OutOfFlowManager. Distinction whether the line has become bigger
+or smaller? When are lines _before_ affected?
+
+
+More
+====
+
+Types: WIDGET_IN_FLOW, WIDGET_OOF_CONTAINED, WIDGET_OOF_REFERENCE
+
+TODO: "generator" and "container" should become standard expressions
+for dw::Widget. Perhaps a glossary?
+
+*/
