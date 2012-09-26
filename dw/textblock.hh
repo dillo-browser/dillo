@@ -231,7 +231,7 @@ protected:
        * page->lines[0].top is always 0. */
       int top, boxAscent, boxDescent, contentAscent, contentDescent,
           breakSpace, leftOffset;
-      
+
       /* This is similar to descent, but includes the bottom margins of the
        * widgets within this line. */
       int marginDescent;
@@ -372,7 +372,8 @@ protected:
    /* These values are set by set_... */
    int availWidth, availAscent, availDescent;
 
-   int wrapRef;  /* [0 based] */
+   int wrapRef;  /* 0-based. Important: This is the line number, not
+                    the value stored in parentRef. */
 
    lout::misc::SimpleVector <Line> *lines;
    int nonTemporaryLines;

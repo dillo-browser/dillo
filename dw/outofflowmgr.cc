@@ -4,7 +4,17 @@
 
 namespace dw {
 
-void OutOfFlowMgr::sizeAllocate(core::Allocation *containingBoxAllocation)
+OutOfFlowMgr::OutOfFlowMgr ()
+{
+   printf ("OutOfFlowMgr::OutOfFlowMgr\n");
+}
+
+OutOfFlowMgr::~OutOfFlowMgr ()
+{
+   printf ("OutOfFlowMgr::~OutOfFlowMgr\n");
+}
+
+void OutOfFlowMgr::sizeAllocate (core::Allocation *containingBoxAllocation)
 {
 }
 

@@ -503,6 +503,10 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          // newLine is calculated as "true".
          mustQueueResize = true;
 
+      PRINTF ("[%p] special case? newLine = %s, wrapAll = %s => "
+              "mustQueueResize = %s\n", this, newLine ? "true" : "false",
+              wrapAll ? "true" : "false", mustQueueResize ? "true" : "false");
+
       if(newLine) {
          accumulateWordData (wordIndex);
          int wordIndexEnd = wordIndex;
@@ -696,8 +700,12 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
    Line *line = lines->getRef (lineIndex);
    Word *word = words->getRef (wordIndex);
 
-   PRINTF ("      %d + %d / %d + %d\n", line->boxAscent, line->boxDescent,
+   PRINTF ("[%p] ACCUMULATE_WORD_FOR_LINE (%d, %d): %d + %d / %d + %d\n",
+           this, lineIndex, wordIndex, line->boxAscent, line->boxDescent,
            word->size.ascent, word->size.descent);
+   //printf ("   ");
+   //printWord (word);
+   //printf ("\n");
 
    line->boxAscent = misc::max (line->boxAscent, word->size.ascent);
    line->boxDescent = misc::max (line->boxDescent, word->size.descent);

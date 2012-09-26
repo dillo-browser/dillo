@@ -251,7 +251,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       int parMax;
       /* Calculate the extremes, based on the values in the line from
          where a rewrap is necessary. */
-      
+
       PRINTF ("GET_EXTREMES: complex case ...\n");
 
       if (wrapRef == 0) {
@@ -471,8 +471,6 @@ void Textblock::resizeDrawImpl ()
 
 void Textblock::markSizeChange (int ref)
 {
-   printf ("markSizeChange (%d)\n", ref);
-
    if (OutOfFlowMgr::isRefOutOfFlow (ref)) {
       assert (outOfFlowMgr != NULL);
       outOfFlowMgr->markSizeChange (ref);
@@ -482,8 +480,6 @@ void Textblock::markSizeChange (int ref)
 
 void Textblock::markExtremesChange (int ref)
 {
-   printf ("markExtremesChange (%d)\n", ref);
-
    if (OutOfFlowMgr::isRefOutOfFlow (ref)) {
       assert (outOfFlowMgr != NULL);
       outOfFlowMgr->markExtremesChange (ref);
@@ -505,10 +501,12 @@ void Textblock::markChange (int ref)
       added to a line.  In the latter case, nothing has to be done
       now, but addLine(...) will do everything necessary. */
 
-   if (wrapRef == -1)
-      wrapRef = OutOfFlowMgr::getLineNoFromRef (ref);
-   else
-      wrapRef = misc::min (wrapRef, OutOfFlowMgr::getLineNoFromRef (ref));
+   if (ref != -1) {
+      if (wrapRef == -1)
+         wrapRef = OutOfFlowMgr::getLineNoFromRef (ref);
+      else
+         wrapRef = misc::min (wrapRef, OutOfFlowMgr::getLineNoFromRef (ref));
+   }
 
    PRINTF ("       ... => %d\n", wrapRef);
 }
@@ -1629,9 +1627,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    //                    word->content.widget);
 
    wordWrap (words->size () - 1, false);
-   word->content.widget->parentRef =
-      OutOfFlowMgr::createRefNormalFlow (lines->size () - 1);
-   printf("parentRef = %d\n", word->content.widget->parentRef);
+
    //DBG_OBJ_SET_NUM (word->content.widget, "parent_ref",
    //                 word->content.widget->parent_ref);
 

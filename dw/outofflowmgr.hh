@@ -16,6 +16,9 @@ private:
    void markChange (int ref);
 
 public:
+   OutOfFlowMgr ();
+   ~OutOfFlowMgr ();
+
    void sizeAllocate(core::Allocation *containingBoxAllocation);
    void draw (core::View *view, core::Rectangle *area);
    void queueResize(int ref);
@@ -40,6 +43,10 @@ public:
    inline static int createRefNormalFlow (int lineNo) { return lineNo << 1; }
    inline static int getLineNoFromRef (int ref)
    { return ref == -1 ? ref : (ref >> 1); }
+
+   //inline static bool isRefOutOfFlow (int ref) { return false; }
+   //inline static int createRefNormalFlow (int lineNo) { return lineNo; }
+   //inline static int getLineNoFromRef (int ref) { return ref; }
 };
 
 } // namespace dw
