@@ -432,14 +432,19 @@ protected:
     */
    inline int lineXOffsetWidget (Line *line)
    {
+      int resultFromOOFM;
+      if (containingBlock->outOfFlowMgr)
+         resultFromOOFM =
+            containingBlock->getAllocation()->x - allocation.x +
+            containingBlock->outOfFlowMgr->getLeftBorder
+            (allocation.y + line->top + getStyle()->boxOffsetY()
+             - containingBlock->getAllocation()->y);
+      else
+         resultFromOOFM = 0;
+            
       return innerPadding + line->leftOffset +
          (line == lines->getFirstRef() ? line1OffsetEff : 0) +
-         lout::misc::max (getStyle()->boxOffsetX(),
-                          containingBlock->getAllocation()->x +
-                          containingBlock->outOfFlowMgr->getLeftBorder
-                          (allocation.y + line->top + getStyle()->boxOffsetY()
-                           - containingBlock->getAllocation()->y) -
-                          allocation.x);
+         lout::misc::max (getStyle()->boxOffsetX(), resultFromOOFM);
    }
 
    inline int lineLeftBorder (int lineNo)
@@ -456,17 +461,22 @@ protected:
             prevLine->breakSpace;
       }
 
+      int resultFromOOFM;
+      if (containingBlock->outOfFlowMgr)
+         resultFromOOFM =
+            containingBlock->getAllocation()->x - allocation.x +
+            containingBlock->outOfFlowMgr->getLeftBorder
+            (allocation.y + top + getStyle()->boxOffsetY()
+             - containingBlock->getAllocation()->y);
+      else
+         resultFromOOFM = 0;
+
       // TODO: line->leftOffset is not regarded, which is correct, depending
       // on where this method is called. Document; perhaps rename this method.
       // (Update: was renamed.)
       return innerPadding +
          (lineNo == 0 ? line1OffsetEff : 0) +
-         lout::misc::max (getStyle()->boxOffsetX(),
-                          containingBlock->getAllocation()->x +
-                          containingBlock->outOfFlowMgr->getLeftBorder
-                          (allocation.y + top + getStyle()->boxOffsetY()
-                           - containingBlock->getAllocation()->y) -
-                          allocation.x);
+         lout::misc::max (getStyle()->boxOffsetX(), resultFromOOFM);
    }
 
    inline int lineRightBorder (int lineNo)
@@ -481,13 +491,19 @@ protected:
             prevLine->breakSpace;
       }
 
-      return lout::misc::max (getStyle()->boxRestWidth(),
-                              (containingBlock->getAllocation()->x +
-                               containingBlock->getAllocation()->width) -
-                              containingBlock->outOfFlowMgr->getRightBorder
-                              (allocation.y + top + getStyle()->boxOffsetY()
-                               - containingBlock->getAllocation()->y) -
-                              (allocation.x + allocation.width));
+      int resultFromOOFM;
+      if (containingBlock->outOfFlowMgr)
+         resultFromOOFM = 
+            (containingBlock->getAllocation()->x +
+             containingBlock->getAllocation()->width) -
+            (allocation.x + allocation.width) +
+            containingBlock->outOfFlowMgr->getRightBorder
+            (allocation.y + top + getStyle()->boxOffsetY()
+             - containingBlock->getAllocation()->y);
+      else
+         resultFromOOFM = 0;
+
+      return lout::misc::max (getStyle()->boxRestWidth(), resultFromOOFM);
    }
 
    inline int lineYOffsetWidgetAllocation (Line *line,

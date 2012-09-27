@@ -514,8 +514,6 @@ void Textblock::markChange (int ref)
 void Textblock::notifySetAsTopLevel()
 {
    containingBlock = this;
-   if (containingBlock->outOfFlowMgr == NULL)
-      containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
 }
 
 void Textblock::notifySetParent()
@@ -547,9 +545,6 @@ void Textblock::notifySetParent()
             containingBlock = (Textblock*)widget;
       }
    }
-
-   if (containingBlock->outOfFlowMgr == NULL)
-      containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
 }
 
 void Textblock::setWidth (int width)
@@ -1615,6 +1610,9 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    widget->parentRef = -1;
 
    if (OutOfFlowMgr::isWidgetOutOfFlow (style)) {
+      if (containingBlock->outOfFlowMgr == NULL)
+         containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
+
       widget->setParent (containingBlock);
       widget->setStyle (style);
       containingBlock->outOfFlowMgr->addWidget (widget, this);
