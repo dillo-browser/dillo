@@ -514,6 +514,7 @@ void Textblock::markChange (int ref)
 void Textblock::notifySetAsTopLevel()
 {
    containingBlock = this;
+   containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
 }
 
 void Textblock::notifySetParent()
@@ -545,6 +546,8 @@ void Textblock::notifySetParent()
             containingBlock = (Textblock*)widget;
       }
    }
+
+   containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
 }
 
 void Textblock::setWidth (int width)
@@ -1603,53 +1606,34 @@ void Textblock::addText0 (const char *text, size_t len, bool canBeHyphenated,
  */
 void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 {
-   Word *word;
-   core::Requisition size;
-
    /* We first assign -1 as parent_ref, since the call of widget->size_request
     * will otherwise let this Textblock be rewrapped from the beginning.
     * (parent_ref is actually undefined, but likely has the value 0.) At the,
     * end of this function, the correct value is assigned. */
    widget->parentRef = -1;
 
-   PRINTF ("%p becomes child of %p\n", widget, this);
-   
-   widget->setParent (this);
-   widget->setStyle (style);
+   if (OutOfFlowMgr::isWidgetOutOfFlow (style)) {
+      widget->setParent (containingBlock);
+      widget->setStyle (style);
+      containingBlock->outOfFlowMgr->addWidget (widget, this);
+      Word *word = addWord (0, 0, 0, false, style);
+      word->content.type = core::Content::WIDGET_OOF_REF;
+      word->content.breakSpace = 0;
+      word->content.widget = widget;
+      word->style = style;
+   } else {
+      widget->setParent (this);
+      widget->setStyle (style);
 
-   calcWidgetSize (widget, &size);
-   word = addWord (size.width, size.ascent, size.descent, false, style);
-
-   word->content.type = core::Content::WIDGET_IN_FLOW;
-   word->content.widget = widget;
-
-   //DBG_OBJ_ARRSET_PTR (page, "words.%d.content.widget", words->size() - 1,
-   //                    word->content.widget);
+      core::Requisition size;
+      calcWidgetSize (widget, &size);
+      Word *word =
+         addWord (size.width, size.ascent, size.descent, false, style);
+      word->content.type = core::Content::WIDGET_IN_FLOW;
+      word->content.widget = widget;
+   }
 
    wordWrap (words->size () - 1, false);
-
-   //DBG_OBJ_SET_NUM (word->content.widget, "parent_ref",
-   //                 word->content.widget->parent_ref);
-
-   //DEBUG_MSG(DEBUG_REWRAP_LEVEL,
-   //          "Assigning parent_ref = %d to added word %d, "
-   //          "in page with %d word(s)\n",
-   //          lines->size () - 1, words->size() - 1, words->size());
-
-   // TODO Floats:
-   /*
-   Word *word;
-
-   widget->setStyle (style);
-   containingBlock->addFloatIntoContainer(widget, this);
-
-   word = addWord (0, 0, 0, false, style);
-   word->content.type = core::Content::FLOAT_REF;
-   word->content.breakSpace = 0;
-   word->content.widget = widget;
-   word->style = style;
-   wordWrap (words->size () - 1, false);
-   */
 }
 
 /**

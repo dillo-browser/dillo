@@ -140,4 +140,6 @@ Types: WIDGET_IN_FLOW, WIDGET_OOF_CONTAINED, WIDGET_OOF_REFERENCE
 TODO: "generator" and "container" should become standard expressions
 for dw::Widget. Perhaps a glossary?
 
+TODO: DeepIterator may need the generating parent widget in some cases.
+
 */

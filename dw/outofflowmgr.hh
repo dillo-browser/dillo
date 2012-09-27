@@ -5,18 +5,31 @@
 
 namespace dw {
 
-class Textblock;
-
 /**
  * \brief Represents additional data for containing boxes.
  */
 class OutOfFlowMgr
 {
 private:
+   core::Widget *containingBlock;
+
+   class Float: public lout::object::Object
+   {
+   public:
+      core::Widget *generator, *widget;
+      int y, width, height; // width includes border of the containing box
+   };
+
+   //lout::container::typed::HashTable<lout::object::TypedPointer
+   //                                <dw::core::Widget>, Float> *floatsByWidget;
+   lout::container::typed::Vector<Float> *leftFloats, *rightFloats;
+
+   Float *findFloatByWidget (core::Widget *widget);
+
    void markChange (int ref);
 
 public:
-   OutOfFlowMgr ();
+   OutOfFlowMgr (core::Widget *containingBlock);
    ~OutOfFlowMgr ();
 
    void sizeAllocate(core::Allocation *containingBoxAllocation);
@@ -26,7 +39,11 @@ public:
    inline void markSizeChange (int ref) { markChange (ref); }
    inline void markExtremesChange (int ref) { markChange (ref); }
 
-   void addWidget (core::Widget *widget, core::style::Style *style);
+   static bool isWidgetOutOfFlow (core::style::Style *style);
+   void addWidget (core::Widget *widget, core::Widget *generator);
+
+   void tellNoPosition (core::Widget *widget);
+   void tellPosition (core::Widget *widget, int y);
 
    /**
     * Get the left border for the vertical position of y, based on

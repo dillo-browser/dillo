@@ -935,6 +935,12 @@ void Textblock::rewrap ()
 
    for (int i = firstWord; i < words->size (); i++) {
       Word *word = words->getRef (i);
+      if (word->content.type == core::Content::WIDGET_OOF_REF)
+         containingBlock->outOfFlowMgr->tellNoPosition (word->content.widget);
+   }
+
+   for (int i = firstWord; i < words->size (); i++) {
+      Word *word = words->getRef (i);
 
       if (word->content.type == core::Content::WIDGET_IN_FLOW)
          calcWidgetSize (word->content.widget, &word->size);
