@@ -514,7 +514,8 @@ void Textblock::markChange (int ref)
 void Textblock::notifySetAsTopLevel()
 {
    containingBlock = this;
-   containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
+   if (containingBlock->outOfFlowMgr == NULL)
+      containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
 }
 
 void Textblock::notifySetParent()
@@ -547,7 +548,8 @@ void Textblock::notifySetParent()
       }
    }
 
-   containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
+   if (containingBlock->outOfFlowMgr == NULL)
+      containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
 }
 
 void Textblock::setWidth (int width)
