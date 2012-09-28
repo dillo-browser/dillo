@@ -28,6 +28,8 @@
 // Include image data
 #include "pixmaps.h"
 #include "uicmd.hh"
+#include "history.h"
+#include "nav.h"
 
 struct iconset {
    Fl_Image *ImgMeterOK, *ImgMeterBug,
@@ -763,6 +765,11 @@ int UI::handle(int event)
          ret = 1;
       } else if (cmd == KEYS_FILE_MENU) {
          a_UIcmd_file_popup(a_UIcmd_get_bw_by_widget(this), FileButton);
+         ret = 1;
+      } else if (cmd == KEYS_VIEW_SOURCE) {
+         BrowserWindow *bw = a_UIcmd_get_bw_by_widget(this);
+         const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
+         a_UIcmd_view_page_source(bw, url);
          ret = 1;
       }
    } else if (event == FL_RELEASE) {

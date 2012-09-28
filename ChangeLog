@@ -15,6 +15,8 @@ dillo-3.0.3 [not released yet]
  - When location bar is given focus, temporarily show panels if hidden
    (BUG#1093).
    Patches: corvid
++- Added the "view-source" keybinding (default: Ctrl-U).
+   Patch: Alexander Voigt
 
 -----------------------------------------------------------------------------
 

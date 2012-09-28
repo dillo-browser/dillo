@@ -72,6 +72,9 @@
 # "file-menu" pops up the file menu.
 #<alt>f = file-menu
 
+# "view-source" displays the page source.
+#<ctrl>u = view-source
+
 # "goto" goes to the location bar at the top of the window.
 #<ctrl>l = goto
 
