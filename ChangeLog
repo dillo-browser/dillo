@@ -14,6 +14,7 @@ dillo-3.0.3 [not released yet]
 +- Fix image input coordinates (BUG#1070)
  - When location bar is given focus, temporarily show panels if hidden
    (BUG#1093).
+ - Fix bug where data URI has charset but no media type.
    Patches: corvid
 +- Added the "view-source" keybinding (default: Ctrl-U).
    Patch: Alexander Voigt

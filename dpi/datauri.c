@@ -243,7 +243,7 @@ static char *datauri_get_mime(char *url)
       if (len == 0) {
          mime_type = dStrdup("text/plain;charset=US-ASCII");
       } else if (!dStrnAsciiCasecmp(buf, "charset", 7)) {
-         mime_type = dStrconcat("text/plain", buf, NULL);
+         mime_type = dStrconcat("text/plain;", buf, NULL);
       } else {
          mime_type = dStrdup(buf);
       }
