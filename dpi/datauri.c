@@ -216,9 +216,6 @@ static void send_failure_message(const char *url, const char *mime_type,
 
 /*
  * Get mime type from the data URI.
- * TODO: there's no point in handling "charset" because current dillo
- * only handles ISO-LATIN-1. The FLTK2 version (utf-8) could use it in the
- * future.
  */
 static char *datauri_get_mime(char *url)
 {
