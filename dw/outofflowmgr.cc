@@ -93,12 +93,11 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (core::style::Style *style)
    return style->vloat != FLOAT_NONE;
 }
 
-void OutOfFlowMgr::addWidget (Widget *widget, Widget *generator)
+void OutOfFlowMgr::addWidget (Widget *widget)
 {
    if (widget->getStyle()->vloat != FLOAT_NONE) {
       Float *vloat = new Float ();
       vloat->widget = widget;
-      vloat->generator = generator;
       vloat->y = -1;
 
       Requisition requisition;

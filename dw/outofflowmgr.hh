@@ -24,7 +24,7 @@ private:
    class Float: public lout::object::Object
    {
    public:
-      core::Widget *generator, *widget;
+      core::Widget *widget;
       // width includes border of the containing box
       int y, width, ascent, descent;
    };
@@ -67,7 +67,7 @@ public:
    void markExtremesChange (int ref);
 
    static bool isWidgetOutOfFlow (core::style::Style *style);
-   void addWidget (core::Widget *widget, core::Widget *generator);
+   void addWidget (core::Widget *widget);
 
    void tellNoPosition (core::Widget *widget);
    void tellPosition (core::Widget *widget, int y);
