@@ -28,10 +28,59 @@ OutOfFlowMgr::~OutOfFlowMgr ()
 
 void OutOfFlowMgr::sizeAllocate (Allocation *containingBoxAllocation)
 {
+   for (int i = 0; i < leftFloats->size(); i++) {
+      Float *vloat = leftFloats->get(i);
+      assert (vloat->y != -1);
+
+      Allocation childAllocation;
+      childAllocation.x =
+         containingBlock->getAllocation()->x
+         + containingBlock->getStyle()->boxOffsetX();
+      childAllocation.y = containingBlock->getAllocation()->y + vloat->y;
+      childAllocation.width =
+         vloat->width - containingBlock->getStyle()->boxOffsetX();
+      childAllocation.ascent = vloat->ascent;
+      childAllocation.descent = vloat->descent;
+
+      vloat->widget->sizeAllocate (&childAllocation);
+   }
+
+   for (int i = 0; i < rightFloats->size(); i++) {
+      Float *vloat = rightFloats->get(i);
+      assert (vloat->y != -1);
+
+      Allocation childAllocation;
+      childAllocation.x =
+         containingBlock->getAllocation()->x
+         + containingBlock->getAllocation()->width
+         - containingBlock->getStyle()->boxRestWidth();
+      childAllocation.y = containingBlock->getAllocation()->y + vloat->y;
+      childAllocation.width =
+         vloat->width - containingBlock->getStyle()->boxRestWidth();
+      childAllocation.ascent = vloat->ascent;
+      childAllocation.descent = vloat->descent;
+
+      vloat->widget->sizeAllocate (&childAllocation);
+   }
 }
+
 
 void OutOfFlowMgr::draw (View *view, Rectangle *area)
 {
+   draw (leftFloats, view, area);
+   draw (rightFloats, view, area);
+}
+
+void OutOfFlowMgr::draw (Vector<Float> *list, View *view, Rectangle *area)
+{
+   for (int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
+      assert (vloat->y != -1);
+
+      core::Rectangle childArea;
+      if (vloat->widget->intersects (area, &childArea))
+         vloat->widget->draw (view, &childArea);
+   }
 }
 
 void OutOfFlowMgr::queueResize(int ref)
@@ -55,24 +104,25 @@ void OutOfFlowMgr::addWidget (Widget *widget, Widget *generator)
       Requisition requisition;
       widget->sizeRequest (&requisition);
       vloat->width = requisition.width;
-      vloat->height = requisition.ascent + requisition.descent;
+      vloat->ascent = requisition.ascent;
+      vloat->descent = requisition.descent;
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
          vloat->width += containingBlock->getStyle()->boxOffsetX();
          leftFloats->put (vloat);
+         widget->parentRef = createRefLeftFloat (leftFloats->size() - 1);
          break;
 
       case FLOAT_RIGHT:
          vloat->width += containingBlock->getStyle()->boxRestWidth();
          rightFloats->put (vloat);
+         widget->parentRef = createRefRightFloat (rightFloats->size() - 1);
          break;
 
       default:
          assertNotReached();
       }
-
-      widget->parentRef = 1; // TODO
    } else
       // Will continue here for absolute positions.
       assertNotReached();
@@ -105,6 +155,39 @@ OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
    return NULL;
 }
 
+
+void OutOfFlowMgr::markSizeChange (int ref)
+{
+   // TODO Much copy and paste; see addWidget.
+   if (isRefLeftFloat (ref)) {
+      Float *vloat = leftFloats->get (getFloatIndexFromRef (ref));
+      Requisition requisition;
+      vloat->widget->sizeRequest (&requisition);
+      vloat->width =
+         requisition.width + containingBlock->getStyle()->boxOffsetX();
+      vloat->ascent = requisition.ascent;
+      vloat->descent = requisition.descent;
+
+      // TODO Tell affected textblocks (yes, plural!) about the change.
+   } else if (isRefRightFloat (ref)) {
+      Float *vloat = rightFloats->get (getFloatIndexFromRef (ref));
+      Requisition requisition;
+      vloat->widget->sizeRequest (&requisition);
+      vloat->width =
+         requisition.width + containingBlock->getStyle()->boxRestWidth();
+      vloat->ascent = requisition.ascent;
+      vloat->descent = requisition.descent;
+      
+      // TODO Tell affected textblocks (yes, plural!) about the change.
+   } else
+      // later: absolute positions
+      assertNotReached();
+}
+
+void OutOfFlowMgr::markExtremesChange (int ref)
+{
+}
+
 void OutOfFlowMgr::tellNoPosition (Widget *widget)
 {
    findFloatByWidget(widget)->y = -1;
@@ -115,10 +198,6 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
    // TODO test collisions
    findFloatByWidget(widget)->y = y;
 }
-
-void OutOfFlowMgr::markChange (int ref)
-{
-}
    
 int OutOfFlowMgr::getLeftBorder (int y)
 {
@@ -126,10 +205,15 @@ int OutOfFlowMgr::getLeftBorder (int y)
 
    for(int i = 0; i < leftFloats->size(); i++) {
       Float *vloat = leftFloats->get(i);
-      if(y != - 1 && y >= vloat->y && y < vloat->y + vloat->height)
+      if(vloat->y != - 1 && y >= vloat->y &&
+         y < vloat->y + vloat->ascent + vloat->descent) {
+         printf ("%d == >%d (%d + %d)\n", y,
+                 vloat->width, vloat->ascent, vloat->descent);
          return vloat->width;
+      }
    }
 
+   printf ("%d == >%d\n", y, 0);
    return 0;
 }
 
@@ -139,7 +223,8 @@ int OutOfFlowMgr::getRightBorder (int y)
 
    for(int i = 0; i < rightFloats->size(); i++) {
       Float *vloat = rightFloats->get(i);
-      if(y != - 1 && y >= vloat->y && y < vloat->y + vloat->height)
+      if(vloat->y != - 1 && y >= vloat->y &&
+         y < vloat->y + vloat->ascent + vloat->descent)
          return vloat->width;
    }
 

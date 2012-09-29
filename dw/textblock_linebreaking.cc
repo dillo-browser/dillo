@@ -452,18 +452,37 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
    PRINTF ("[%p] WORD_WRAP (%d, %s)\n",
            this, wordIndex, wrapAll ? "true" : "false");
 
-   Word *word;
-   //core::Extremes wordExtremes;
-
    if (!wrapAll)
       removeTemporaryLines ();
 
    initLine1Offset (wordIndex);
 
-   word = words->getRef (wordIndex);
+   Word *word = words->getRef (wordIndex);
    word->effSpace = word->origSpace;
 
    accumulateWordData (wordIndex);
+
+   if (word->content.type == core::Content::WIDGET_OOF_REF) {
+      int top;
+      if (lines->size() == 0)
+         top = 0;
+      else {
+         Line *prevLine = lines->getRef (lines->size () - 2);
+         top = prevLine->top + prevLine->boxAscent +
+            prevLine->boxDescent + prevLine->breakSpace;
+      }
+      containingBlock->outOfFlowMgr->tellPosition
+         (word->content.widget,
+          allocation.y + top + getStyle()->boxOffsetY()
+          - containingBlock->getAllocation()->y);
+
+
+      // TODO: compare old/new values of calcAvailWidth(...);
+      int firstIndex =
+         lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
+      for (int i = firstIndex; i <= wordIndex; i++)
+         accumulateWordData (i);
+   }
 
    bool newLine;
    do {

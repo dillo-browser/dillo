@@ -10,6 +10,14 @@ namespace dw {
  */
 class OutOfFlowMgr
 {
+public:
+   class ContainingBlock
+   {
+   public:
+      virtual void leftBorderChanged (int y) = 0;
+      virtual void rightBorderChanged (int y) = 0;
+   };
+
 private:
    core::Widget *containingBlock;
 
@@ -17,7 +25,8 @@ private:
    {
    public:
       core::Widget *generator, *widget;
-      int y, width, height; // width includes border of the containing box
+      // width includes border of the containing box
+      int y, width, ascent, descent;
    };
 
    //lout::container::typed::HashTable<lout::object::TypedPointer
@@ -28,6 +37,24 @@ private:
 
    void markChange (int ref);
 
+   void sizeAllocate(lout::container::typed::Vector<Float> *list,
+                     core::Allocation *containingBoxAllocation);
+   void draw (lout::container::typed::Vector<Float> *list,
+              core::View *view, core::Rectangle *area);
+
+   inline static bool isRefLeftFloat (int ref)
+   { return ref != -1 && (ref & 3) == 1; }
+   inline static bool isRefRightFloat (int ref)
+   { return ref != -1 && (ref & 3) == 3; }
+
+   inline static int createRefLeftFloat (int index)
+   { return (index << 2) | 1; }
+   inline static int createRefRightFloat (int index)
+   { return (index << 2) | 3; }
+
+   inline static int getFloatIndexFromRef (int ref)
+   { return ref == -1 ? ref : (ref >> 2); }
+
 public:
    OutOfFlowMgr (core::Widget *containingBlock);
    ~OutOfFlowMgr ();
@@ -36,8 +63,8 @@ public:
    void draw (core::View *view, core::Rectangle *area);
    void queueResize(int ref);
 
-   inline void markSizeChange (int ref) { markChange (ref); }
-   inline void markExtremesChange (int ref) { markChange (ref); }
+   void markSizeChange (int ref);
+   void markExtremesChange (int ref);
 
    static bool isWidgetOutOfFlow (core::style::Style *style);
    void addWidget (core::Widget *widget, core::Widget *generator);
