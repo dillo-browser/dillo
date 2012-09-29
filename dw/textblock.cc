@@ -1999,6 +1999,26 @@ void Textblock::changeWordStyle (int from, int to, core::style::Style *style,
 {
 }
 
+void Textblock::leftBorderChanged (int y)
+{
+   // TODO
+}
+
+void Textblock::rightBorderChanged (int y)
+{
+   // TODO
+}
+
+core::style::Style *Textblock::getCBStyle ()
+{
+   return getStyle();
+}
+
+core::Allocation *Textblock::getCBAllocation ()
+{
+   return getAllocation();
+}
+
 // ----------------------------------------------------------------------
 
 Textblock::TextblockIterator::TextblockIterator (Textblock *textblock,

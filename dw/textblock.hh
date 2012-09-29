@@ -143,7 +143,7 @@ namespace dw {
  * necessary, or otherwise the line from which a rewrap is necessary.
  *
  */
-class Textblock: public core::Widget
+class Textblock: public core::Widget, public OutOfFlowMgr::ContainingBlock
 {
 private:
    /**
@@ -630,6 +630,12 @@ public:
    void changeLinkColor (int link, int newColor);
    void changeWordStyle (int from, int to, core::style::Style *style,
                          bool includeFirstSpace, bool includeLastSpace);
+
+   // From OutOfFlowMgr::ContainingBlock:
+   void leftBorderChanged (int y);
+   void rightBorderChanged (int y);
+   core::style::Style *getCBStyle ();
+   core::Allocation *getCBAllocation ();
 };
 
 } // namespace dw

@@ -9,7 +9,7 @@ using namespace dw::core::style;
 
 namespace dw {
 
-OutOfFlowMgr::OutOfFlowMgr (Widget *containingBlock)
+OutOfFlowMgr::OutOfFlowMgr (ContainingBlock *containingBlock)
 {
    printf ("OutOfFlowMgr::OutOfFlowMgr\n");
    this->containingBlock = containingBlock;
@@ -34,11 +34,11 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBoxAllocation)
 
       Allocation childAllocation;
       childAllocation.x =
-         containingBlock->getAllocation()->x
-         + containingBlock->getStyle()->boxOffsetX();
-      childAllocation.y = containingBlock->getAllocation()->y + vloat->y;
+         containingBlock->getCBAllocation()->x
+         + containingBlock->getCBStyle()->boxOffsetX();
+      childAllocation.y = containingBlock->getCBAllocation()->y + vloat->y;
       childAllocation.width =
-         vloat->width - containingBlock->getStyle()->boxOffsetX();
+         vloat->width - containingBlock->getCBStyle()->boxOffsetX();
       childAllocation.ascent = vloat->ascent;
       childAllocation.descent = vloat->descent;
 
@@ -51,12 +51,12 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBoxAllocation)
 
       Allocation childAllocation;
       childAllocation.x =
-         containingBlock->getAllocation()->x
-         + containingBlock->getAllocation()->width
-         - containingBlock->getStyle()->boxRestWidth();
-      childAllocation.y = containingBlock->getAllocation()->y + vloat->y;
+         containingBlock->getCBAllocation()->x
+         + containingBlock->getCBAllocation()->width
+         - containingBlock->getCBStyle()->boxRestWidth();
+      childAllocation.y = containingBlock->getCBAllocation()->y + vloat->y;
       childAllocation.width =
-         vloat->width - containingBlock->getStyle()->boxRestWidth();
+         vloat->width - containingBlock->getCBStyle()->boxRestWidth();
       childAllocation.ascent = vloat->ascent;
       childAllocation.descent = vloat->descent;
 
@@ -108,13 +108,13 @@ void OutOfFlowMgr::addWidget (Widget *widget)
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
-         vloat->width += containingBlock->getStyle()->boxOffsetX();
+         vloat->width += containingBlock->getCBStyle()->boxOffsetX();
          leftFloats->put (vloat);
          widget->parentRef = createRefLeftFloat (leftFloats->size() - 1);
          break;
 
       case FLOAT_RIGHT:
-         vloat->width += containingBlock->getStyle()->boxRestWidth();
+         vloat->width += containingBlock->getCBStyle()->boxRestWidth();
          rightFloats->put (vloat);
          widget->parentRef = createRefRightFloat (rightFloats->size() - 1);
          break;
@@ -163,7 +163,7 @@ void OutOfFlowMgr::markSizeChange (int ref)
       Requisition requisition;
       vloat->widget->sizeRequest (&requisition);
       vloat->width =
-         requisition.width + containingBlock->getStyle()->boxOffsetX();
+         requisition.width + containingBlock->getCBStyle()->boxOffsetX();
       vloat->ascent = requisition.ascent;
       vloat->descent = requisition.descent;
 
@@ -173,7 +173,7 @@ void OutOfFlowMgr::markSizeChange (int ref)
       Requisition requisition;
       vloat->widget->sizeRequest (&requisition);
       vloat->width =
-         requisition.width + containingBlock->getStyle()->boxRestWidth();
+         requisition.width + containingBlock->getCBStyle()->boxRestWidth();
       vloat->ascent = requisition.ascent;
       vloat->descent = requisition.descent;
       

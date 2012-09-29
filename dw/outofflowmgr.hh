@@ -16,10 +16,14 @@ public:
    public:
       virtual void leftBorderChanged (int y) = 0;
       virtual void rightBorderChanged (int y) = 0;
+
+      // An additional "CB" to resolve the ambiguity to the methods in Widget.
+      virtual core::style::Style *getCBStyle () = 0;
+      virtual core::Allocation *getCBAllocation () = 0;
    };
 
 private:
-   core::Widget *containingBlock;
+   ContainingBlock *containingBlock;
 
    class Float: public lout::object::Object
    {
@@ -56,7 +60,7 @@ private:
    { return ref == -1 ? ref : (ref >> 2); }
 
 public:
-   OutOfFlowMgr (core::Widget *containingBlock);
+   OutOfFlowMgr (ContainingBlock *containingBlock);
    ~OutOfFlowMgr ();
 
    void sizeAllocate(core::Allocation *containingBoxAllocation);
