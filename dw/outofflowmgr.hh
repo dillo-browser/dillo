@@ -14,8 +14,8 @@ public:
    class ContainingBlock
    {
    public:
-      virtual void leftBorderChanged (int y) = 0;
-      virtual void rightBorderChanged (int y) = 0;
+      virtual void leftBorderChanged (int y, int height) = 0;
+      virtual void rightBorderChanged (int y, int height) = 0;
 
       // An additional "CB" to resolve the ambiguity to the methods in Widget.
       virtual core::style::Style *getCBStyle () = 0;

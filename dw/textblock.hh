@@ -632,8 +632,8 @@ public:
                          bool includeFirstSpace, bool includeLastSpace);
 
    // From OutOfFlowMgr::ContainingBlock:
-   void leftBorderChanged (int y);
-   void rightBorderChanged (int y);
+   void leftBorderChanged (int y, int height);
+   void rightBorderChanged (int y, int height);
    core::style::Style *getCBStyle ();
    core::Allocation *getCBAllocation ();
 };

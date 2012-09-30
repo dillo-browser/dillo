@@ -1999,12 +1999,12 @@ void Textblock::changeWordStyle (int from, int to, core::style::Style *style,
 {
 }
 
-void Textblock::leftBorderChanged (int y)
+void Textblock::leftBorderChanged (int y, int height)
 {
    // TODO
 }
 
-void Textblock::rightBorderChanged (int y)
+void Textblock::rightBorderChanged (int y, int height)
 {
    // TODO
 }
