@@ -100,7 +100,7 @@ int main(int argc, char **argv)
          textblock->addSpace(wordStyle);
          
          if ((i == 3 || i == 5) && j == 8) {
-         	textblock->addText("[float]", wordStyle);
+            textblock->addText("[float]", wordStyle);
             textblock->addSpace(wordStyle);
          
             Textblock *vloat = new Textblock (false);
@@ -109,6 +109,9 @@ int main(int argc, char **argv)
             const char *fWords[] = { "This", "is", "a", "float,", "which", "is",
                                      "set", "aside", "from", "the", "main",
                                      "text.", NULL };
+
+            vloat->addText(i == 3 ? "Left:" : "Right:", wordStyle);
+            vloat->addSpace(wordStyle);
 
             for(int k = 0; fWords[k]; k++) {
                vloat->addText(fWords[k], wordStyle);
@@ -132,7 +135,7 @@ int main(int argc, char **argv)
 
    window->resizable(viewport);
    window->show();
-   Fl::add_timeout (2, addTextToFloatTimeout, NULL);
+   //Fl::add_timeout (2, addTextToFloatTimeout, NULL);
    int errorCode = Fl::run();
 
    wordStyle->unref();

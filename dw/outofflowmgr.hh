@@ -6,7 +6,7 @@
 namespace dw {
 
 /**
- * \brief Represents additional data for containing boxes.
+ * \brief Represents additional data for containing blocks.
  */
 class OutOfFlowMgr
 {
@@ -29,7 +29,7 @@ private:
    {
    public:
       core::Widget *widget;
-      // width includes border of the containing box
+      // width includes border of the containing block
       int y, width, ascent, descent;
    };
 
@@ -42,7 +42,7 @@ private:
    void markChange (int ref);
 
    void sizeAllocate(lout::container::typed::Vector<Float> *list,
-                     core::Allocation *containingBoxAllocation);
+                     core::Allocation *containingBlockAllocation);
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);
 
@@ -63,7 +63,7 @@ public:
    OutOfFlowMgr (ContainingBlock *containingBlock);
    ~OutOfFlowMgr ();
 
-   void sizeAllocate(core::Allocation *containingBoxAllocation);
+   void sizeAllocate(core::Allocation *containingBlockAllocation);
    void draw (core::View *view, core::Rectangle *area);
    void queueResize(int ref);
 
@@ -79,7 +79,7 @@ public:
    /**
     * Get the left border for the vertical position of y, based on
     * floats. The border includes marging/border/padding of the
-    * containging box, but is 0 if there is no float, so a caller
+    * containging block, but is 0 if there is no float, so a caller
     * should also consider other borders.
     */
    int getLeftBorder (int y);

@@ -26,17 +26,16 @@ OutOfFlowMgr::~OutOfFlowMgr ()
    delete rightFloats;
 }
 
-void OutOfFlowMgr::sizeAllocate (Allocation *containingBoxAllocation)
+void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
 {
    for (int i = 0; i < leftFloats->size(); i++) {
       Float *vloat = leftFloats->get(i);
       assert (vloat->y != -1);
 
       Allocation childAllocation;
-      childAllocation.x =
-         containingBlock->getCBAllocation()->x
+      childAllocation.x = containingBlockAllocation->x
          + containingBlock->getCBStyle()->boxOffsetX();
-      childAllocation.y = containingBlock->getCBAllocation()->y + vloat->y;
+      childAllocation.y = containingBlockAllocation->y + vloat->y;
       childAllocation.width =
          vloat->width - containingBlock->getCBStyle()->boxOffsetX();
       childAllocation.ascent = vloat->ascent;
@@ -50,11 +49,9 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBoxAllocation)
       assert (vloat->y != -1);
 
       Allocation childAllocation;
-      childAllocation.x =
-         containingBlock->getCBAllocation()->x
-         + containingBlock->getCBAllocation()->width
-         - containingBlock->getCBStyle()->boxRestWidth();
-      childAllocation.y = containingBlock->getCBAllocation()->y + vloat->y;
+      childAllocation.x = containingBlockAllocation->x
+         + containingBlockAllocation->width - vloat->width;
+      childAllocation.y = containingBlockAllocation->y + vloat->y;
       childAllocation.width =
          vloat->width - containingBlock->getCBStyle()->boxRestWidth();
       childAllocation.ascent = vloat->ascent;
@@ -206,13 +203,13 @@ int OutOfFlowMgr::getLeftBorder (int y)
       Float *vloat = leftFloats->get(i);
       if(vloat->y != - 1 && y >= vloat->y &&
          y < vloat->y + vloat->ascent + vloat->descent) {
-         printf ("%d == >%d (%d + %d)\n", y,
-                 vloat->width, vloat->ascent, vloat->descent);
+         //printf ("   LEFT: %d ==> %d (%d + %d)\n", y,
+         //        vloat->width, vloat->ascent, vloat->descent);
          return vloat->width;
       }
    }
 
-   printf ("%d == >%d\n", y, 0);
+   //printf ("   LEFT: %d ==> %d\n", y, 0);
    return 0;
 }
 
@@ -224,9 +221,12 @@ int OutOfFlowMgr::getRightBorder (int y)
       Float *vloat = rightFloats->get(i);
       if(vloat->y != - 1 && y >= vloat->y &&
          y < vloat->y + vloat->ascent + vloat->descent)
+         //printf ("   RIGHT: %d ==> %d (%d + %d)\n", y,
+         //        vloat->width, vloat->ascent, vloat->descent);
          return vloat->width;
    }
 
+   //printf ("   RIGHT: %d ==> %d\n", y, 0);
    return 0;
 }
 

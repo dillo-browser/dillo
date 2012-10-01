@@ -295,6 +295,12 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    PRINTF ("[%p] ADD_LINE (%d, %d) => %d\n",
            this, firstWord, lastWord, lines->size ());
 
+   //for (int i = firstWord; i <= lastWord; i++) {
+   //   printf ("      word %d: ", i);
+   //   printWord (words->getRef (i));
+   //   printf ("\n");
+   //}
+
    Word *lastWordOfLine = words->getRef(lastWord);
    // Word::totalWidth includes the hyphen (which is what we want here).
    int lineWidth = lastWordOfLine->totalWidth;
@@ -848,7 +854,10 @@ int Textblock::calcAvailWidth (int lineIndex)
            this, lineIndex, lines->size(), this->availWidth, 
            getStyle()->boxDiffWidth(), innerPadding, availWidth);
 
-   return availWidth;
+   // TODO if the result is too small, but only in some cases
+   // (e. g. because of floats), the caller should skip a
+   // line. General distinction?
+   return availWidth - lineLeftBorder (lineIndex) - lineRightBorder (lineIndex);
 }
 
 void Textblock::initLine1Offset (int wordIndex)
