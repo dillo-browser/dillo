@@ -363,55 +363,6 @@ static void Capi_dpi_send_source(BrowserWindow *bw,  DilloUrl *url)
 }
 
 /*
- * When dillo wants to open an URL, this can be either due to user action
- * (e.g., typing in an URL, clicking a link), or automatic (HTTP header
- * indicates redirection, META HTML tag with refresh attribute and 0 delay,
- * and images and stylesheets on an HTML page when autoloading is enabled).
- *
- * For a user request, the action will be permitted.
- * For an automatic request, permission to load depends on the filter set
- * by the user.
- */
-static bool_t Capi_filters_test(const DilloUrl *wanted,
-                                const DilloUrl *requester)
-{
-   bool_t ret;
-
-   if (requester == NULL) {
-      /* request made by user */
-      ret = TRUE;
-   } else {
-      switch (prefs.filter_auto_requests) {
-         case PREFS_FILTER_SAME_DOMAIN:
-         {
-            const char *req_host = URL_HOST(requester),
-                       *want_host = URL_HOST(wanted);
-            if (want_host[0] == '\0') {
-               ret = (req_host[0] == '\0' ||
-                      !dStrAsciiCasecmp(URL_SCHEME(wanted), "data"))
-                     ? TRUE : FALSE;
-            } else {
-               /* This will regard "www.dillo.org" and "www.dillo.org." as
-                * different, but it doesn't seem worth caring about.
-                */
-               ret = a_Url_same_organization(wanted, requester);
-            }
-            if (ret == FALSE) {
-               MSG("Capi_filters_test: deny from '%s' to '%s'\n", req_host,
-                   want_host);
-            }
-            break;
-         }
-         case PREFS_FILTER_ALLOW_ALL:
-         default:
-            ret = TRUE;
-            break;
-      }
-   }
-   return ret;
-}
-
-/*
  * Most used function for requesting a URL.
  * TODO: clean up the ad-hoc bindings with an API that allows dynamic
  *       addition of new plugins.
@@ -426,9 +377,6 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    capi_conn_t *conn = NULL;
    const char *scheme = URL_SCHEME(web->url);
    int safe = 0, ret = 0, use_cache = 0;
-
-   dReturn_val_if_fail((a_Capi_get_flags(web->url) & CAPI_IsCached) ||
-                       Capi_filters_test(web->url, web->requester), 0);
 
    /* reload test */
    reload = (!(a_Capi_get_flags(web->url) & CAPI_IsCached) ||

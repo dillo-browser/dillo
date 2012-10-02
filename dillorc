@@ -26,13 +26,6 @@
 # (While browsing, this can be changed from the tools/settings menu.)
 #parse_embedded_css=YES
 
-# How should Dillo restrict automatic requests (e.g., redirections,
-# pages containing images or stylesheets)?
-# allow_all
-# same_domain : Permit www.example.org to load an image from img.example.org,
-#               but not from the unrelated ad.doubleclick.net.
-#filter_auto_requests=same_domain
-
 # Change the buffering scheme for drawing
 # 0 no double buffering - useful for debugging
 # 1 light buffering using a single back buffer for all windows
