@@ -585,6 +585,7 @@ protected:
                        core::style::Style *style,
                        int numBreaks, int *breakPos,
                        core::Requisition *wordSize);
+   static bool isContainingBlock (Widget *widget);
 
 public:
    static int CLASS_ID;

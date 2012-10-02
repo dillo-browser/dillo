@@ -70,7 +70,7 @@ public:
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
 
-   static bool isWidgetOutOfFlow (core::style::Style *style);
+   static bool isWidgetOutOfFlow (core::Widget *widget);
    void addWidget (core::Widget *widget);
 
    void tellNoPosition (core::Widget *widget);

@@ -11,7 +11,7 @@ namespace dw {
 
 OutOfFlowMgr::OutOfFlowMgr (ContainingBlock *containingBlock)
 {
-   printf ("OutOfFlowMgr::OutOfFlowMgr\n");
+   //printf ("OutOfFlowMgr::OutOfFlowMgr\n");
    this->containingBlock = containingBlock;
 
    leftFloats = new Vector<Float> (1, true);
@@ -20,7 +20,7 @@ OutOfFlowMgr::OutOfFlowMgr (ContainingBlock *containingBlock)
 
 OutOfFlowMgr::~OutOfFlowMgr ()
 {
-   printf ("OutOfFlowMgr::~OutOfFlowMgr\n");
+   //printf ("OutOfFlowMgr::~OutOfFlowMgr\n");
 
    delete leftFloats;
    delete rightFloats;
@@ -84,10 +84,10 @@ void OutOfFlowMgr::queueResize(int ref)
 {
 }
 
-bool OutOfFlowMgr::isWidgetOutOfFlow (core::style::Style *style)
+bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
 {
    // Will be extended for absolute positions.
-   return style->vloat != FLOAT_NONE;
+   return widget->getStyle()->vloat != FLOAT_NONE;
 }
 
 void OutOfFlowMgr::addWidget (Widget *widget)

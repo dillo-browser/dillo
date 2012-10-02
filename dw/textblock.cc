@@ -514,37 +514,47 @@ void Textblock::markChange (int ref)
 void Textblock::notifySetAsTopLevel()
 {
    containingBlock = this;
+   //printf ("%p is its own containing block (top level)\n", this);
 }
 
-void Textblock::notifySetParent()
+bool Textblock::isContainingBlock (Widget *widget)
 {
-   // Search for containing Box. It can be assumed that this widget has a
-   // parent, otherwise, notifySetAsToplevel would have been called.
-   containingBlock = NULL;
-   Textblock *topmostTextblock = this;
+   return
+      // Of course, only textblocks are considered as containing
+      // blocks.
+      widget->instanceOf (Textblock::CLASS_ID) &&
+      // The second condition: that this block is "out of flow", in a
+      // wider sense.
+      (// The toplevel widget is "out of flow", since there is no
+       // parent, and so no context.
+       widget->getParent() == NULL ||
+       // A similar reasoning applies to a widget with another parent
+       // than a textblock (typical example: a table cell (this is
+       // also a text block) within a table widget).
+       !widget->getParent()->instanceOf (Textblock::CLASS_ID) ||
+       // Finally, "out of flow" in a narrower sense: floats and
+       // absolute positions.
+       OutOfFlowMgr::isWidgetOutOfFlow (widget));
+}
 
-   for(Widget *widget = getParent(); widget != NULL;
-       widget = widget->getParent())
-   {
-      if(widget->instanceOf(Textblock::CLASS_ID))
-         topmostTextblock = (Textblock*)widget;
-   }
-  
-   for(Widget *widget = getParent(); containingBlock == NULL;
-       widget = widget->getParent())
-   {
-      if(widget->getParent() == NULL)
-         // No other widget left.
-         containingBlock = topmostTextblock;
-      else if(widget->instanceOf(Textblock::CLASS_ID))
-      {
-         if(// this widget is a table cell
-            widget->getParent()->instanceOf(Table::CLASS_ID) ||
-            // this widget is a float
-            widget->getStyle()->vloat != dw::core::style::FLOAT_NONE)
-            containingBlock = (Textblock*)widget;
+void Textblock::notifySetParent ()
+{
+   // Search for containing Box.
+   containingBlock = NULL;
+
+   for (Widget *widget = this; widget != NULL && containingBlock == NULL;
+        widget = widget->getParent())
+      if (isContainingBlock (widget)) {
+         containingBlock = (Textblock*)widget;
+
+         //if (containingBlock == this)
+         //   printf ("%p is its own containing block\n", this);
+         //else
+         //   printf ("%p becomes containing block of %p\n",
+         //           containingBlock, this);
       }
-   }
+   
+   assert (containingBlock != NULL);
 }
 
 void Textblock::setWidth (int width)
@@ -1609,12 +1619,13 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
     * end of this function, the correct value is assigned. */
    widget->parentRef = -1;
 
-   if (OutOfFlowMgr::isWidgetOutOfFlow (style)) {
+   widget->setStyle (style);
+      
+   if (OutOfFlowMgr::isWidgetOutOfFlow (widget)) {
       if (containingBlock->outOfFlowMgr == NULL)
          containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
 
       widget->setParent (containingBlock);
-      widget->setStyle (style);
       containingBlock->outOfFlowMgr->addWidget (widget);
       Word *word = addWord (0, 0, 0, false, style);
       word->content.type = core::Content::WIDGET_OOF_REF;
@@ -1623,7 +1634,6 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       word->style = style;
    } else {
       widget->setParent (this);
-      widget->setStyle (style);
 
       core::Requisition size;
       calcWidgetSize (widget, &size);

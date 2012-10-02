@@ -117,7 +117,8 @@ void Widget::setParent (Widget *parent)
 void Widget::queueDrawArea (int x, int y, int width, int height)
 {
    /** \todo Maybe only the intersection? */
-   layout->queueDraw (x + allocation.x, y + allocation.y, width, height);
+   if (layout)
+      layout->queueDraw (x + allocation.x, y + allocation.y, width, height);
    _MSG("Widget::queueDrawArea x=%d y=%d w=%d h=%d\n", x, y, width, height);
 }
 
