@@ -509,7 +509,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          PRINTF ("   NEW LINE: forced break\n");
       } else if (wordIndex > firstIndex &&
                  word->badnessAndPenalty.lineTooTight () &&
-                 words->getRef(wordIndex- 1)
+                 words->getRef(wordIndex - 1)
                  ->badnessAndPenalty.lineCanBeBroken ()) {
          // TODO Comment the last condition (also below where the minimun is
          // searched for)
