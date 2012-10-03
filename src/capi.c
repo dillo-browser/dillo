@@ -26,6 +26,7 @@
 #include "nav.h"
 #include "dpiapi.h"
 #include "uicmd.hh"
+#include "domain.h"
 #include "../dpip/dpip.h"
 
 /* for testing dpi chat */
@@ -377,6 +378,13 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    capi_conn_t *conn = NULL;
    const char *scheme = URL_SCHEME(web->url);
    int safe = 0, ret = 0, use_cache = 0;
+
+   /* web->requester is NULL if the action is initiated by user */
+   if (!(a_Capi_get_flags(web->url) & CAPI_IsCached ||
+         web->requester == NULL ||
+         a_Domain_permit(web->requester, web->url))) {
+      return 0;
+   }
 
    /* reload test */
    reload = (!(a_Capi_get_flags(web->url) & CAPI_IsCached) ||

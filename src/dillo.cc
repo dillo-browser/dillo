@@ -46,6 +46,7 @@
 #include "capi.h"
 #include "dicache.h"
 #include "cookies.h"
+#include "domain.h"
 #include "auth.h"
 
 #include "dw/fltkcore.hh"
@@ -339,6 +340,11 @@ int main(int argc, char **argv)
    if ((fp = Paths::getPrefsFP(PATHS_RC_KEYS))) {
       Keys::parse(fp);
    }
+   // parse domainrc
+   if ((fp = Paths::getPrefsFP(PATHS_RC_DOMAIN))) {
+      a_Domain_parse(fp);
+      fclose(fp);
+   }
    dLib_show_messages(prefs.show_msg);
 
    // initialize internal modules
@@ -442,6 +448,7 @@ int main(int argc, char **argv)
     * (This can be left to the OS, but we'll do it, with a view to test
     *  and fix our memory management)
     */
+   a_Domain_freeall();
    a_Cookies_freeall();
    a_Cache_freeall();
    a_Dicache_freeall();

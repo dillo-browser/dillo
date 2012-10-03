@@ -14,6 +14,7 @@
 
 #define PATHS_RC_PREFS  "dillorc"
 #define PATHS_RC_KEYS   "keysrc"
+#define PATHS_RC_DOMAIN "domainrc"
 
 class Paths {
 public:
