@@ -473,7 +473,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
       if (lines->size() == 0)
          top = 0;
       else {
-         Line *prevLine = lines->getRef (lines->size () - 2);
+         Line *prevLine = lines->getLastRef ();
          top = prevLine->top + prevLine->boxAscent +
             prevLine->boxDescent + prevLine->breakSpace;
       }

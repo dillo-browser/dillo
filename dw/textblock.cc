@@ -1788,42 +1788,39 @@ void Textblock::addParbreak (int space, core::style::Style *style)
          a widget is used as a text box (lists, blockquotes, list
          items etc) -- then we simply adjust the break before, in a
          way that the space is in any case visible. */
-      /* But only for widgets in flow (not floats etc.): */
-      if (!(getParent() != NULL &&
-            getParent()->instanceOf (Textblock::CLASS_ID) &&
-            OutOfFlowMgr::isRefOutOfFlow (parentRef))) {
-         /* Find the widget where to adjust the breakSpace. */
-         for (Widget *widget = this;
-              widget->getParent() &&
-                 widget->getParent()->instanceOf (Textblock::CLASS_ID);
-              widget = widget->getParent ()) {
-            Textblock *textblock2 = (Textblock*)widget->getParent ();
-            int index = textblock2->hasListitemValue ? 1 : 0;
-            bool isfirst = (textblock2->words->getRef(index)->content.type
-                            == core::Content::WIDGET_IN_FLOW
-                            && textblock2->words->getRef(index)->content.widget
-                            == widget);
-            if (!isfirst) {
-               /* The page we searched for has been found. */
-               Word *word2;
-               int lineno = OutOfFlowMgr::getLineNoFromRef (widget->parentRef);
-               if (lineno > 0 &&
-                   (word2 =
-                    textblock2->words->getRef(textblock2->lines
-                                              ->getRef(lineno - 1)
-                                              ->firstWord)) &&
-                   word2->content.type == core::Content::BREAK) {
-                  if (word2->content.breakSpace < space) {
-                     word2->content.breakSpace = space;
-                     textblock2->queueResize
-                        (OutOfFlowMgr::createRefNormalFlow (lineno), false);
-                     textblock2->mustQueueResize = false;
-                  }
+      /* Find the widget where to adjust the breakSpace. (Only
+         consider normal flow, no floats etc.) */
+      for (Widget *widget = this;
+           widget->getParent() != NULL &&
+              widget->getParent()->instanceOf (Textblock::CLASS_ID) &&
+              !OutOfFlowMgr::isRefOutOfFlow (widget->parentRef);
+           widget = widget->getParent ()) {
+         Textblock *textblock2 = (Textblock*)widget->getParent ();
+         int index = textblock2->hasListitemValue ? 1 : 0;
+         bool isfirst = (textblock2->words->getRef(index)->content.type
+                         == core::Content::WIDGET_IN_FLOW
+                         && textblock2->words->getRef(index)->content.widget
+                         == widget);
+         if (!isfirst) {
+            /* The text block we searched for has been found. */
+            Word *word2;
+            int lineno = OutOfFlowMgr::getLineNoFromRef (widget->parentRef);
+
+            if (lineno > 0 &&
+                (word2 =
+                 textblock2->words->getRef(textblock2->lines
+                                           ->getRef(lineno - 1)->firstWord)) &&
+                word2->content.type == core::Content::BREAK) {
+               if (word2->content.breakSpace < space) {
+                  word2->content.breakSpace = space;
+                  textblock2->queueResize
+                     (OutOfFlowMgr::createRefNormalFlow (lineno), false);
+                  textblock2->mustQueueResize = false;
                }
-               return;
             }
-            /* Otherwise continue to examine parents. */
+            return;
          }
+         /* Otherwise continue to examine parents. */
       }
 
       /* Return in any case. */
