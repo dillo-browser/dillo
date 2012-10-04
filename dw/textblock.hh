@@ -425,6 +425,30 @@ protected:
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
                       core::Requisition *size);
 
+   inline bool mustBorderBeRegardedForWord (int firstWord)
+   {
+      assert (firstWord < words->size ());
+      Word *word = words->getRef (firstWord);
+      return !(word->content.type == core::Content::WIDGET_IN_FLOW &&
+               word->content.widget->instanceOf (Textblock::CLASS_ID));
+   }
+
+   inline bool mustBorderBeRegarded (Line *line)
+   {
+      return mustBorderBeRegardedForWord (line->firstWord);
+   }
+
+   inline bool mustBorderBeRegarded (int lineNo)
+   {
+      int firstWord;
+      if (lineNo == 0)
+         firstWord = 0;
+      else
+         firstWord = lines->getRef(lineNo - 1)->lastWord + 1;
+
+      return mustBorderBeRegardedForWord (firstWord);
+   }
+
    /**
     * \brief Returns the x offset (the indentation plus any offset
     *    needed for centering or right justification) for the line,
@@ -433,7 +457,7 @@ protected:
    inline int lineXOffsetWidget (Line *line)
    {
       int resultFromOOFM;
-      if (containingBlock->outOfFlowMgr)
+      if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line))
          resultFromOOFM =
             containingBlock->getAllocation()->x - allocation.x +
             containingBlock->outOfFlowMgr->getLeftBorder
@@ -462,7 +486,7 @@ protected:
       }
 
       int resultFromOOFM;
-      if (containingBlock->outOfFlowMgr)
+      if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
          resultFromOOFM =
             containingBlock->getAllocation()->x - allocation.x +
             containingBlock->outOfFlowMgr->getLeftBorder
@@ -492,7 +516,7 @@ protected:
       }
 
       int resultFromOOFM;
-      if (containingBlock->outOfFlowMgr)
+      if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
          resultFromOOFM = 
             (containingBlock->getAllocation()->x +
              containingBlock->getAllocation()->width) -
