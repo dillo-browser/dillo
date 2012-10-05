@@ -42,6 +42,10 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
       childAllocation.descent = vloat->descent;
 
       vloat->widget->sizeAllocate (&childAllocation);
+
+      printf ("allocate left #%d -> (%d, %d), %d x (%d + %d)\n",
+              i, childAllocation.x, childAllocation.y, childAllocation.width,
+              childAllocation.ascent, childAllocation.descent);
    }
 
    for (int i = 0; i < rightFloats->size(); i++) {
@@ -58,6 +62,10 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
       childAllocation.descent = vloat->descent;
 
       vloat->widget->sizeAllocate (&childAllocation);
+
+      printf ("allocate right #%d -> (%d, %d), %d x (%d + %d)\n",
+              i, childAllocation.x, childAllocation.y, childAllocation.width,
+              childAllocation.ascent, childAllocation.descent);
    }
 }
 
@@ -165,6 +173,10 @@ void OutOfFlowMgr::markSizeChange (int ref)
       vloat->descent = requisition.descent;
 
       // TODO Tell affected textblocks (yes, plural!) about the change.
+
+      printf ("request left #%d -> %d x (%d + %d)\n",
+              getFloatIndexFromRef (ref), requisition.width,
+              requisition.ascent, requisition.descent);
    } else if (isRefRightFloat (ref)) {
       Float *vloat = rightFloats->get (getFloatIndexFromRef (ref));
       Requisition requisition;
@@ -175,6 +187,10 @@ void OutOfFlowMgr::markSizeChange (int ref)
       vloat->descent = requisition.descent;
       
       // TODO Tell affected textblocks (yes, plural!) about the change.
+
+      printf ("request right #%d -> %d x (%d + %d)\n",
+              getFloatIndexFromRef (ref), requisition.width,
+              requisition.ascent, requisition.descent);
    } else
       // later: absolute positions
       assertNotReached();
