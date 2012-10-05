@@ -425,6 +425,11 @@ protected:
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
                       core::Requisition *size);
 
+   /**
+    * Of nested text blocks, only the most inner one must regard the
+    * borders of floats. Extremely (perhaps too) simple
+    * implementation.
+    */
    inline bool mustBorderBeRegardedForWord (int firstWord)
    {
       assert (firstWord < words->size ());
