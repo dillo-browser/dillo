@@ -28,6 +28,8 @@ OutOfFlowMgr::~OutOfFlowMgr ()
 
 void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
 {
+   // TODO Much copy and paste.
+
    for (int i = 0; i < leftFloats->size(); i++) {
       Float *vloat = leftFloats->get(i);
       assert (vloat->y != -1);
@@ -163,37 +165,35 @@ OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
 void OutOfFlowMgr::markSizeChange (int ref)
 {
    // TODO Much copy and paste; see addWidget.
-   if (isRefLeftFloat (ref)) {
-      Float *vloat = leftFloats->get (getFloatIndexFromRef (ref));
-      Requisition requisition;
-      vloat->widget->sizeRequest (&requisition);
-      vloat->width =
-         requisition.width + containingBlock->getCBStyle()->boxOffsetX();
-      vloat->ascent = requisition.ascent;
-      vloat->descent = requisition.descent;
-
-      // TODO Tell affected textblocks (yes, plural!) about the change.
-
-      printf ("request left #%d -> %d x (%d + %d)\n",
-              getFloatIndexFromRef (ref), requisition.width,
-              requisition.ascent, requisition.descent);
-   } else if (isRefRightFloat (ref)) {
-      Float *vloat = rightFloats->get (getFloatIndexFromRef (ref));
-      Requisition requisition;
-      vloat->widget->sizeRequest (&requisition);
-      vloat->width =
-         requisition.width + containingBlock->getCBStyle()->boxRestWidth();
-      vloat->ascent = requisition.ascent;
-      vloat->descent = requisition.descent;
-      
-      // TODO Tell affected textblocks (yes, plural!) about the change.
-
-      printf ("request right #%d -> %d x (%d + %d)\n",
-              getFloatIndexFromRef (ref), requisition.width,
-              requisition.ascent, requisition.descent);
-   } else
+   if (isRefLeftFloat (ref))
+      markSizeChange (leftFloats->get (getFloatIndexFromRef (ref)),
+                      containingBlock->getCBStyle()->boxOffsetX());
+   else if (isRefRightFloat (ref))
+      markSizeChange (rightFloats->get (getFloatIndexFromRef (ref)),
+                      containingBlock->getCBStyle()->boxRestWidth());
+   else
       // later: absolute positions
       assertNotReached();
+}
+
+void OutOfFlowMgr::markSizeChange (Float *vloat, int widthDiff)
+{
+   int oldWidth = vloat->width;
+   int oldHeight = vloat->ascent + vloat->descent;
+   
+   Requisition requisition;
+   vloat->widget->sizeRequest (&requisition);
+   vloat->width = requisition.width + widthDiff;
+   vloat->ascent = requisition.ascent;
+   vloat->descent = requisition.descent;
+
+   if (vloat->width != oldWidth)
+      containingBlock->borderChanged (vloat->y);
+   else if (vloat->ascent + vloat->descent != oldHeight)
+      // Width remains the same, so a small optimization is possible.
+      containingBlock->borderChanged (vloat->y +
+                                      min (vloat->ascent + vloat->descent,
+                                           oldHeight));
 }
 
 void OutOfFlowMgr::markExtremesChange (int ref)
@@ -202,13 +202,29 @@ void OutOfFlowMgr::markExtremesChange (int ref)
 
 void OutOfFlowMgr::tellNoPosition (Widget *widget)
 {
-   findFloatByWidget(widget)->y = -1;
+   Float *vloat = findFloatByWidget(widget);
+   int oldY = vloat->y;
+   vloat->y = -1;
+
+   if (oldY != -1)
+      containingBlock->borderChanged (oldY);
 }
 
 void OutOfFlowMgr::tellPosition (Widget *widget, int y)
 {
-   // TODO test collisions
-   findFloatByWidget(widget)->y = y;
+   assert (y >= 0);
+
+   // TODO Test collisions; when floats overlap, the vloat->y must be larger
+   // than y.
+
+   Float *vloat = findFloatByWidget(widget);
+   int oldY = vloat->y;
+   vloat->y = y;
+   
+   if (oldY == -1)
+      containingBlock->borderChanged (y);
+   else if (y != oldY)
+      containingBlock->borderChanged (min (oldY, y));
 }
    
 int OutOfFlowMgr::getLeftBorder (int y)

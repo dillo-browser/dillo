@@ -2010,14 +2010,9 @@ void Textblock::changeWordStyle (int from, int to, core::style::Style *style,
 {
 }
 
-void Textblock::leftBorderChanged (int y, int height)
+void Textblock::borderChanged (int y)
 {
-   // TODO
-}
-
-void Textblock::rightBorderChanged (int y, int height)
-{
-   // TODO
+   printf ("[%p] border has changed: %d\n", this, y);
 }
 
 core::style::Style *Textblock::getCBStyle ()

@@ -14,8 +14,7 @@ public:
    class ContainingBlock
    {
    public:
-      virtual void leftBorderChanged (int y, int height) = 0;
-      virtual void rightBorderChanged (int y, int height) = 0;
+      virtual void borderChanged (int y) = 0;
 
       // An additional "CB" to resolve the ambiguity to the methods in Widget.
       virtual core::style::Style *getCBStyle () = 0;
@@ -38,11 +37,8 @@ private:
    lout::container::typed::Vector<Float> *leftFloats, *rightFloats;
 
    Float *findFloatByWidget (core::Widget *widget);
+   void markSizeChange (Float *vloat, int widthDiff);
 
-   void markChange (int ref);
-
-   void sizeAllocate(lout::container::typed::Vector<Float> *list,
-                     core::Allocation *containingBlockAllocation);
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);
 
