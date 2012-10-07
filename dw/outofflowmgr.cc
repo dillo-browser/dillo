@@ -45,9 +45,9 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
 
       vloat->widget->sizeAllocate (&childAllocation);
 
-      printf ("allocate left #%d -> (%d, %d), %d x (%d + %d)\n",
-              i, childAllocation.x, childAllocation.y, childAllocation.width,
-              childAllocation.ascent, childAllocation.descent);
+      //printf ("allocate left #%d -> (%d, %d), %d x (%d + %d)\n",
+      //        i, childAllocation.x, childAllocation.y, childAllocation.width,
+      //        childAllocation.ascent, childAllocation.descent);
    }
 
    for (int i = 0; i < rightFloats->size(); i++) {
@@ -65,9 +65,9 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
 
       vloat->widget->sizeAllocate (&childAllocation);
 
-      printf ("allocate right #%d -> (%d, %d), %d x (%d + %d)\n",
-              i, childAllocation.x, childAllocation.y, childAllocation.width,
-              childAllocation.ascent, childAllocation.descent);
+      //printf ("allocate right #%d -> (%d, %d), %d x (%d + %d)\n",
+      //        i, childAllocation.x, childAllocation.y, childAllocation.width,
+      //        childAllocation.ascent, childAllocation.descent);
    }
 }
 
