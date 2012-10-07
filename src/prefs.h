@@ -26,9 +26,6 @@ extern "C" {
 /* Panel sizes */
 enum { P_tiny = 0, P_small, P_medium };
 
-enum {PREFS_FILTER_ALLOW_ALL,
-      PREFS_FILTER_SAME_DOMAIN};
-
 typedef struct _DilloPrefs DilloPrefs;
 
 struct _DilloPrefs {
@@ -77,7 +74,6 @@ struct _DilloPrefs {
    bool_t load_images;
    bool_t load_stylesheets;
    bool_t parse_embedded_css;
-   int filter_auto_requests;
    int32_t buffered_drawing;
    char *font_serif;
    char *font_sans_serif;

@@ -472,8 +472,11 @@ void FltkViewBase::drawArc (core::style::Color *color,
    int y = translateCanvasYToViewY (centerY) - height / 2;
 
    fl_arc(x, y, width, height, angle1, angle2);
-   if (filled)
+   if (filled) {
+      // WORKAROUND: We call both fl_arc and fl_pie due to a FLTK bug
+      // (STR #2703) that was present in 1.3.0.
       fl_pie(x, y, width, height, angle1, angle2);
+   }
 }
 
 void FltkViewBase::drawPolygon (core::style::Color *color,

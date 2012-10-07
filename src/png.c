@@ -64,7 +64,6 @@ struct _DilloPng {
    DilloUrl *url;               /* Primary Key for the dicache */
    int version;                 /* Secondary Key for the dicache */
 
-   double display_exponent;     /* gamma correction */
    png_uint_32 width;           /* png image width */
    png_uint_32 height;          /* png image height */
    png_structp png_ptr;         /* libpng private data */
@@ -75,7 +74,6 @@ struct _DilloPng {
    int error;                   /* error flag */
    png_uint_32 previous_row;
    int rowbytes;                /* No. bytes in image row */
-   short passes;
    short channels;              /* No. image channels */
 
 /*
@@ -177,7 +175,7 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
 
    /* Interlaced */
    if (interlace_type != PNG_INTERLACE_NONE) {
-      png->passes = png_set_interlace_handling(png_ptr);
+      png_set_interlace_handling(png_ptr);
    }
 
    /* get libpng to update its state */

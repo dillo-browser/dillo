@@ -74,6 +74,7 @@ libDw_widgets_a_SOURCES = \
 	tablecell.cc \
 	tablecell.hh \
 	textblock.cc \
+	textblock_iterator.cc \
 	textblock_linebreaking.cc \
 	textblock.hh
 

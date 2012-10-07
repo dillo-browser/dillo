@@ -568,8 +568,8 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
    if (displayed() && style) {
       FltkFont *font = (FltkFont*)style->font;
       fl_font(font->font,font->size);
-      /* WORKAROUND: fl_width(uint_t) is not working on non-xft X.
-       * Reported to FLTK as STR #2688 */
+      // WORKAROUND: A bug with fl_width(uint_t) on non-xft X was present in
+      // 1.3.0 (STR #2688).
       requisition->width =
          (int)fl_width ("n")
          * (maxLength == UNLIMITED_MAX_LENGTH ? 10 : maxLength)
@@ -691,8 +691,8 @@ void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
       fl_font(font->font,font->size);
-      /* WORKAROUND: fl_width(uint_t) is not working on non-xft X.
-       * Reported to FLTK as STR #2688 */
+      // WORKAROUND: A bug with fl_width(uint_t) on non-xft X was present in
+      // 1.3.0 (STR #2688).
       requisition->width =
          (int)fl_width ("n") * numCols + 2 * RELIEF_X_THICKNESS;
       requisition->ascent =

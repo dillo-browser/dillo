@@ -118,10 +118,8 @@ namespace dw {
  *
  * <ol>
  * <li> First, only cells with colspan = 1 are regarded:
- *
  *      \f[ e_{\hbox{base},i,\min} = \max \{ e_{\hbox{cell},i,j,\min} \} \f]
  *      \f[ e_{\hbox{base},i,\max} = \max \{ e_{\hbox{cell},i,j,\max} \} \f]
- *
  *      only for cells \f$(i, j)\f$ with colspan = 1.
  *
  * <li> Then,
@@ -130,29 +128,22 @@ namespace dw {
  *      the cell at \f$(i_1, j)\f$ always span from \f$i_1\f$ to \f$i_2\f$.)
  *      If the minimal width of the column exceeds the sum of the column minima
  *      calculated in the last step:
- *
  *      \f[e_{\hbox{cell},i_1,j,\min} >
  *         \sum_{i=i_1}^{i=i_2} e_{\hbox{base},i,\min}\f]
- *
  *      then the minimal width of this cell is apportioned to the columns:
  *
  *      <ul>
  *      <li> If the minimal width of this cell also exceeds the sum of the
  *           column maxima:
- *
  *        \f[e_{\hbox{cell},i_1,j,\min} >
  *           \sum_{i=i_1}^{i=i_2} e_{\hbox{base},i,\max}\f]
- *
  *           then \f$e_{\hbox{cell},i_1,j,\min}\f$ is apportioned in a simple
  *           way:
- *
  *        \f[e_{\hbox{span},i,j,\min} =
  *              e_{\hbox{base},i,\max}
  *                 {e_{\hbox{span},i,j,\min} \over
  *                  \sum_{i=i_1}^{i=i_2} e_{\hbox{base},i,\max}}\f]
- *
  *      <li> Otherwise, the apportionment function is used:
- *
  *        \f[e_{\hbox{span},i,j,\min} =
  *           a_i (e_{\hbox{cell},i_1,j,\min},
  *                (e_{\hbox{cell},i_1,j,\min} \ldots
@@ -172,6 +163,7 @@ namespace dw {
  *      For the maxima, there is no \f$e_{\hbox{span},i,\max}\f$, but it has to
  *      be assured, that the maximum is always greater than or equal to the
  *      minimum.
+ *
  * </ol>
  *
  * Generally, if absolute widths are specified, they are, instead of the
@@ -223,17 +215,13 @@ namespace dw {
  *      no percentage width has been specified. The difference to the total
  *      width is at max available to the columns with percentage width
  *      specifications:
- *
  *      \f[W_{\hbox{columns}_\%,\hbox{available}} = W - \sum e_{i,\min}\f]
- *
  *      with only those columns \f$i\f$ with no percentage width specification.
  *
  * <li> Then, calculate the sum of the widths, which the columns with
  *      percentage width specification would allocate, when fully adhering to
  *      them:
- *
  *      \f[W_{\hbox{columns}_\%,\hbox{best}} = W \sum w_{i,\%}\f]
- *
  *      with only those columns \f$i\f$ with a percentage width specification.
  *
  * <li> Two cases are distinguished:
@@ -243,25 +231,19 @@ namespace dw {
  *             W_{\hbox{columns}_\%,\hbox{best}}\f$: In this case, the
  *           percentage widths can be used without any modification, by
  *           setting the extremes:
- *
  *           \f[e_{i,\min} = e_{i,\max} = W w_{i,\%}\f]
- *
  *           for only those columns \f$i\f$ with a percentage width
  *           specification.
  *
  *      <li> \f$W_{\hbox{columns}_\%,\hbox{available}} <
  *             W_{\hbox{columns}_\%,\hbox{best}}\f$: In this case, the widths
  *           for these columns must be cut down:
- *
  *           \f[e_{i,\min} = e_{i,\max} =
  *              w_{i,\%}
  *              {W_{\hbox{columns}_\%,\hbox{available}} \over
  *               w_{\hbox{total},\%}}\f]
- *
  *           with
- *
  *           \f[w_{\hbox{total},\%} = \sum w_{i,\%}\f]
- *
  *           in both cases for only those columns \f$i\f$ with a percentage
  *           width specification.
  *      </ul>

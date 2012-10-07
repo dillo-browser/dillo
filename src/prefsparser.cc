@@ -29,7 +29,6 @@ typedef enum {
    PREFS_INT32,
    PREFS_DOUBLE,
    PREFS_GEOMETRY,
-   PREFS_FILTER,
    PREFS_PANEL_SIZE
 } PrefType_t;
 
@@ -56,7 +55,6 @@ int PrefsParser::parseOption(char *name, char *value)
       { "contrast_visited_color", &prefs.contrast_visited_color, PREFS_BOOL },
       { "enterpress_forces_submit", &prefs.enterpress_forces_submit,
         PREFS_BOOL },
-      { "filter_auto_requests", &prefs.filter_auto_requests, PREFS_FILTER },
       { "focus_new_tab", &prefs.focus_new_tab, PREFS_BOOL },
       { "font_cursive", &prefs.font_cursive, PREFS_STRING },
       { "font_factor", &prefs.font_factor, PREFS_DOUBLE },
@@ -165,15 +163,6 @@ int PrefsParser::parseOption(char *name, char *value)
    case PREFS_GEOMETRY:
       a_Misc_parse_geometry(value, &prefs.xpos, &prefs.ypos,
                             &prefs.width, &prefs.height);
-      break;
-   case PREFS_FILTER:
-      if (!dStrAsciiCasecmp(value, "same_domain"))
-         prefs.filter_auto_requests = PREFS_FILTER_SAME_DOMAIN;
-      else {
-         if (dStrAsciiCasecmp(value, "allow_all"))
-            MSG_WARN("prefs: unrecognized value for filter_auto_requests\n");
-         prefs.filter_auto_requests = PREFS_FILTER_ALLOW_ALL;
-      }
       break;
    case PREFS_PANEL_SIZE:
       if (!dStrAsciiCasecmp(value, "tiny"))

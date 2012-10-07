@@ -553,7 +553,7 @@ int DilloHtml::getCurTagLineNumber()
    ofs = CurrTagOfs;
    line = OldTagLine;
    for (i = OldTagOfs; i < ofs; ++i)
-      if (p[i] == '\n')
+      if (p[i] == '\n' || (p[i] == '\r' && p[i+1] != '\n'))
          ++line;
    OldTagOfs = CurrTagOfs;
    OldTagLine = line;
@@ -934,7 +934,7 @@ static int Html_parse_entity(DilloHtml *html, const char *token,
 
       if (!isocode || errno || isocode > 0xffff) {
          /* this catches null bytes, errors and codes >= 0xFFFF */
-         BUG_MSG("numeric character reference out of range\n");
+         BUG_MSG("numeric character reference \"%s\" out of range\n", tok);
          isocode = -2;
       }
 
@@ -3482,7 +3482,19 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
          html->styleEngine->setStyle (attrbuf);
    }
 
-   if (tagsize >= 10) { /* TODO prefs.hyphenate? */
+   /* handle "xml:lang" and "lang" attributes */
+   int hasXmlLang = 0;
+   if (tagsize >= 14) {
+      /* length of "<t xml:lang=i>" */
+      attrbuf = Html_get_attr2(html, tag, tagsize, "xml:lang",
+                               HTML_LeftTrim | HTML_RightTrim);
+      if (attrbuf) {
+         html->styleEngine->setNonCssHint(PROPERTY_X_LANG, CSS_TYPE_STRING,
+                                          attrbuf);
+         hasXmlLang = 1;
+      }
+   }
+   if (!hasXmlLang && tagsize >= 10) { /* 'xml:lang' prevails over 'lang' */
       /* length of "<t lang=i>" */
       attrbuf = Html_get_attr2(html, tag, tagsize, "lang",
                                HTML_LeftTrim | HTML_RightTrim);
@@ -3506,11 +3518,11 @@ static void Html_display_listitem(DilloHtml *html)
    ListItem *list_item;
    int *list_number;
    char buf[16];
-   
+
    /* Get our parent tag's variables (used as state storage) */
    list_number = &html->stack->getRef(html->stack->size()-2)->list_number;
    ref_list_item = &html->stack->getRef(html->stack->size()-2)->ref_list_item;
-      
+
    HT2TB(html)->addParbreak (0, wordStyle);
 
    list_item = new ListItem ((ListItem*)*ref_list_item,prefs.limit_text_width);
@@ -3518,7 +3530,7 @@ static void Html_display_listitem(DilloHtml *html)
    HT2TB(html)->addParbreak (0, wordStyle);
    *ref_list_item = list_item;
    S_TOP(html)->textblock = html->dw = list_item;
-               
+
    if (style->listStyleType == LIST_STYLE_TYPE_NONE) {
       // none
    } else if (style->listStyleType >= LIST_STYLE_TYPE_DECIMAL) {

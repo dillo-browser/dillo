@@ -30,7 +30,7 @@
 #include "capi.h"
 #include "decode.h"
 #include "auth.h"
-
+#include "domain.h"
 #include "timeout.hh"
 #include "uicmd.hh"
 
@@ -682,8 +682,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
          /* 30x: URL redirection */
          DilloUrl *location_url = a_Url_new(location_str,URL_STR_(entry->Url));
 
-         if (prefs.filter_auto_requests == PREFS_FILTER_SAME_DOMAIN &&
-             !a_Url_same_organization(entry->Url, location_url)) {
+         if (!a_Domain_permit(entry->Url, location_url)) {
             /* don't redirect; just show body like usual (if any) */
             MSG("Redirection not followed from %s to %s\n",
                 URL_HOST(entry->Url), URL_STR(location_url));

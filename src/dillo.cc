@@ -46,6 +46,7 @@
 #include "capi.h"
 #include "dicache.h"
 #include "cookies.h"
+#include "domain.h"
 #include "auth.h"
 
 #include "dw/fltkcore.hh"
@@ -82,7 +83,8 @@ static const CLI_options Options[] = {
    {"-h", "--help",       0, DILLO_CLI_HELP,
     "  -h, --help             Display this help text and exit."},
    {"-l", "--local",      0, DILLO_CLI_LOCAL,
-    "  -l, --local            Don't load images for these URL(s)."},
+    "  -l, --local            Don't load images or stylesheets for these "
+    "URL(s)."},
    {"-v", "--version",    0, DILLO_CLI_VERSION,
     "  -v, --version          Display version info and exit."},
    {"-x", "--xid",        1, DILLO_CLI_XID,
@@ -338,6 +340,11 @@ int main(int argc, char **argv)
    if ((fp = Paths::getPrefsFP(PATHS_RC_KEYS))) {
       Keys::parse(fp);
    }
+   // parse domainrc
+   if ((fp = Paths::getPrefsFP(PATHS_RC_DOMAIN))) {
+      a_Domain_parse(fp);
+      fclose(fp);
+   }
    dLib_show_messages(prefs.show_msg);
 
    // initialize internal modules
@@ -441,6 +448,7 @@ int main(int argc, char **argv)
     * (This can be left to the OS, but we'll do it, with a view to test
     *  and fix our memory management)
     */
+   a_Domain_freeall();
    a_Cookies_freeall();
    a_Cache_freeall();
    a_Dicache_freeall();

@@ -909,7 +909,6 @@ char *dGethomedir ()
 
 /*
  * Get a line from a FILE stream.
- * It handles backslash as line-continues character.
  * Return value: read line on success, NULL on EOF.
  */
 char *dGetline (FILE *stream)

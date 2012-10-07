@@ -122,6 +122,7 @@ static const KeyBinding_t default_keys[] = {
    { "forward"      , KEYS_FORWARD      , 0         , '.'             },
    { "goto"         , KEYS_GOTO         , FL_CTRL   , 'l'             },
    { "home"         , KEYS_HOME         , FL_CTRL   , 'h'             },
+   { "view-source"  , KEYS_VIEW_SOURCE  , FL_CTRL   , 'u'             },
    { "screen-up"    , KEYS_SCREEN_UP    , 0         , FL_Page_Up      },
    { "screen-up"    , KEYS_SCREEN_UP    , 0         , 'b'             },
    { "screen-down"  , KEYS_SCREEN_DOWN  , 0         , FL_Page_Down    },

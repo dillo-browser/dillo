@@ -10,11 +10,22 @@ at http://hg.dillo.org/dillo
 dillo-3.0.3 [not released yet]
 
 +- Support for CSS display property
-   Patch: Johannes Hofmann
+ - Packed trie to optimize hyphenator memory consumption.
+   Patches: Johannes Hofmann
 +- Fix image input coordinates (BUG#1070)
  - When location bar is given focus, temporarily show panels if hidden
    (BUG#1093).
+ - Fix bug where data URI has charset but no media type.
+ - Bug meter line number fix for bare carriage returns.
+ - Add some more info to various bug meter messages.
    Patches: corvid
++- Automatic hyphenation.
+   Patch: Sebastian Geerken
++- Added the "view-source" keybinding (default: Ctrl-U).
+   Patch: Alexander Voigt
++- Introduced the domainrc mechanism for finer-grained control than
+   filter_auto_requests had provided.
+   Patch: p37sitdu, corvid
 
 -----------------------------------------------------------------------------
 

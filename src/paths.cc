@@ -83,11 +83,11 @@ FILE *Paths::getPrefsFP(const char *rcFile)
    char *path = dStrconcat(dGethomedir(), "/.dillo/", rcFile, NULL);
 
    if (!(fp = fopen(path, "r"))) {
-      MSG("paths: Cannot open file '%s'\n", path);
+      MSG("paths: Cannot open file '%s': %s\n", path, dStrerror(errno));
 
       char *path2 = dStrconcat(DILLO_SYSCONF, rcFile, NULL);
       if (!(fp = fopen(path2, "r"))) {
-         MSG("paths: Cannot open file '%s'\n",path2);
+         MSG("paths: Cannot open file '%s': %s\n", path2, dStrerror(errno));
          MSG("paths: Using internal defaults...\n");
       } else {
          MSG("paths: Using %s\n", path2);
