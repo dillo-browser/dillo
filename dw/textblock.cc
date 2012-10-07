@@ -512,8 +512,9 @@ void Textblock::markChange (int ref)
 
 void Textblock::notifySetAsTopLevel()
 {
+   printf ("%p becomes toplevel\n", this);
    containingBlock = this;
-   //printf ("%p is its own containing block (top level)\n", this);
+   printf ("-> %p is its own containing block\n", this);
 }
 
 bool Textblock::isContainingBlock (Widget *widget)
@@ -538,6 +539,8 @@ bool Textblock::isContainingBlock (Widget *widget)
 
 void Textblock::notifySetParent ()
 {
+   printf ("%p becomes a child of %p\n", this, getParent());
+
    // Search for containing Box.
    containingBlock = NULL;
 
@@ -546,11 +549,11 @@ void Textblock::notifySetParent ()
       if (isContainingBlock (widget)) {
          containingBlock = (Textblock*)widget;
 
-         //if (containingBlock == this)
-         //   printf ("%p is its own containing block\n", this);
-         //else
-         //   printf ("%p becomes containing block of %p\n",
-         //           containingBlock, this);
+         if (containingBlock == this)
+            printf ("-> %p is its own containing block\n", this);
+         else
+            printf ("-> %p becomes containing block of %p\n",
+                    containingBlock, this);
       }
    
    assert (containingBlock != NULL);
@@ -2013,6 +2016,41 @@ void Textblock::changeWordStyle (int from, int to, core::style::Style *style,
 void Textblock::borderChanged (int y)
 {
    printf ("[%p] border has changed: %d\n", this, y);
+   borderChanged (y + allocation.y, true);
+}
+
+void Textblock::borderChanged (int yCanvas, bool extremesChanges)
+{
+   // Notice that this method is, unlike the other "borderChanged",
+   // called (i) with canvas coordinates, not widget coordinates, and
+   // (ii) for all nested textblocks, not only the containing block.
+
+   // findLineIndex expects widget coordinates
+   int lineIndex = findLineIndex (yCanvas - allocation.y);
+   // Nothing to do at all, when lineIndex >= lines->size (),
+   // i. e. the change is below the bottom od this widget.
+   if (lineIndex < lines->size ()) {
+      int wrapLineIndex;
+      if (lineIndex < 0)
+         // Rewrap all.
+         wrapLineIndex = 0;
+      else
+         wrapLineIndex = lineIndex;
+
+      queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex),
+                   extremesChanges);
+
+      for (int i = wrapLineIndex; i < lines->size (); i++) {
+         Word *word = words->getRef (lines->getRef(i)->firstWord);
+         if (word->content.type == core::Content::WIDGET_IN_FLOW &&
+             word->content.widget->instanceOf (Textblock::CLASS_ID)) {
+            Textblock *childBlock = (Textblock*)word->content.widget;
+            // extremes only change for the containing block, so we pass
+            // extremesChanges = false for all other widgets.
+            childBlock->borderChanged (yCanvas, false);
+         }
+      }
+   }
 }
 
 core::style::Style *Textblock::getCBStyle ()
@@ -2022,7 +2060,7 @@ core::style::Style *Textblock::getCBStyle ()
 
 core::Allocation *Textblock::getCBAllocation ()
 {
-   return getAllocation();
+   return &allocation;
 }
 
 // ----------------------------------------------------------------------

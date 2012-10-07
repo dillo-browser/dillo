@@ -454,6 +454,8 @@ protected:
       return mustBorderBeRegardedForWord (firstWord);
    }
 
+   void borderChanged (int yCanvas, bool extremesChanges);
+
    /**
     * \brief Returns the x offset (the indentation plus any offset
     *    needed for centering or right justification) for the line,
