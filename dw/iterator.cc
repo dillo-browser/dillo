@@ -655,12 +655,8 @@ CharIterator::CharIterator ()
  */
 CharIterator::CharIterator (Widget *widget, bool followReferences)
 {
-   Content::Type widgetMask = (Content::Type)
-      (Content::WIDGET_IN_FLOW |
-       (followReferences ? Content::WIDGET_OOF_REF : Content::WIDGET_OOF_CONT));
    Iterator *i =
-      widget->iterator ((Content::Type)
-                        (Content::SELECTION_CONTENT | widgetMask), false);
+      widget->iterator (Content::maskForSelection (followReferences), false);
    it = new DeepIterator (i);
    i->unref ();
    ch = START;

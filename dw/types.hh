@@ -203,8 +203,8 @@ struct Content
           widget (containing this content) is only the generator
           (parent), but _not_ container */
       WIDGET_OOF_REF    = 1 << 5,
-
       BREAK             = 1 << 6,
+
       ALL               = 0xff,
       REAL_CONTENT      = 0xff ^ (START | END),
       SELECTION_CONTENT = TEXT | BREAK, // WIDGET_* must be set additionally
@@ -221,6 +221,8 @@ struct Content
       Widget *widget;
       int breakSpace;
    };
+
+   static Content::Type maskForSelection (bool followReferences);
 };
 
 } // namespace dw

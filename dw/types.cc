@@ -268,5 +268,13 @@ void Region::addRectangle (Rectangle *rPointer)
    rectangleList->append (r);
 }
 
+Content::Type Content::maskForSelection (bool followReferences)
+{
+   Content::Type widgetMask = (Content::Type)
+      (Content::WIDGET_IN_FLOW |
+       (followReferences ? Content::WIDGET_OOF_REF : Content::WIDGET_OOF_CONT));
+   return (Content::Type)(Content::SELECTION_CONTENT | widgetMask);
+}
+
 } // namespace dw
 } // namespace core
