@@ -312,7 +312,7 @@ static inline size_t
    size_t Size = Buf[0] + 2;
    uint_t Flags;
 
-   if (Size > BSize)
+   if (BSize < 6 || Size > BSize)
       return 0;
    Buf++;
    Flags = Buf[0];
