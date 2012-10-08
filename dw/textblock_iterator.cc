@@ -255,31 +255,6 @@ void Textblock::TextblockIterator::unhighlight (int direction,
    // TODO What about OOF widgets?
 }
 
-void Textblock::queueDrawRange (int index1, int index2)
-{
-   int from = misc::min (index1, index2);
-   int to = misc::max (index1, index2);
-
-   from = misc::min (from, words->size () - 1);
-   from = misc::max (from, 0);
-   to = misc::min (to, words->size () - 1);
-   to = misc::max (to, 0);
-
-   int line1idx = findLineOfWord (from);
-   int line2idx = findLineOfWord (to);
-
-   if (line1idx >= 0 && line2idx >= 0) {
-      Line *line1 = lines->getRef (line1idx),
-           *line2 = lines->getRef (line2idx);
-      int y = lineYOffsetWidget (line1) + line1->boxAscent -
-              line1->contentAscent;
-      int h = lineYOffsetWidget (line2) + line2->boxAscent +
-              line2->contentDescent - y;
-
-      queueDrawArea (0, y, allocation.width, h);
-   }
-}
-
 void Textblock::TextblockIterator::getAllocation (int start, int end,
                                                   core::Allocation *allocation)
 {
