@@ -103,7 +103,9 @@ typedef struct _DilloGif {
    size_t ColorMap_ofs;
    uint_t ColorResolution;
    uint_t NumColors;
+#if 0
    int Background;
+#endif
    uint_t spill_line_index;
 #if 0
    uint_t AspectRatio;    /* AspectRatio (not used) */
@@ -163,7 +165,9 @@ void *a_Gif_new(DilloImage *Image, DilloUrl *url, int version)
    gif->state = 0;
    gif->Start_Ofs = 0;
    gif->linebuf = NULL;
+#if 0
    gif->Background = -1;
+#endif
    gif->transparent = -1;
    gif->num_spill_lines_max = 0;
    gif->spill_lines = NULL;
@@ -771,7 +775,7 @@ static size_t Gif_get_descriptor(DilloGif *gif, void *Buf,
       if (!mysize)
          return 0;
       Size += mysize;           /* Size of the color table that follows */
-      gif->Background = buf[5];
+   /*   gif->Background = buf[5]; */
    }
    /*   gif->Width = LM_to_uint(buf[0], buf[1]);
         gif->Height = LM_to_uint(buf[2], buf[3]); */
