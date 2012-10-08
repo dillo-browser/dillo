@@ -456,6 +456,10 @@ Iterator *DeepIterator::searchSideward (Iterator *it, Content::Type mask,
  */
 DeepIterator::DeepIterator (Iterator *it)
 {
+   // Handling widget references will be a bit more complicated, so we
+   // prohibit it at this point.
+   assert ((it->getMask() & Content::WIDGET_OOF_REF) == 0);
+
    //DEBUG_MSG (1, "a_Dw_ext_iterator_new: %s\n", a_Dw_iterator_text (it));
 
    // Clone input iterator, so the iterator passed as parameter

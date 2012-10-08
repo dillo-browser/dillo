@@ -197,14 +197,14 @@ struct Content
       /** \brief widget out of flow (OOF); _this_ widget (containing
           this content) is only the container (parent), but _not_
           generator */
-      WIDGET_OOF_CONT,
+      WIDGET_OOF_CONT    = 1 << 4,
 
       /** \brief reference to a widget out of flow (OOF); _this_
           widget (containing this content) is only the generator
           (parent), but _not_ container */
-      WIDGET_OOF_REF    = 1 << 4,
+      WIDGET_OOF_REF    = 1 << 5,
 
-      BREAK             = 1 << 5,
+      BREAK             = 1 << 6,
       ALL               = 0xff,
       REAL_CONTENT      = 0xff ^ (START | END),
       SELECTION_CONTENT = TEXT | BREAK, // WIDGET_* must be set additionally

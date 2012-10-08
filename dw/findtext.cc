@@ -91,7 +91,8 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
 
       if (iterator)
          delete iterator;
-      iterator = new CharIterator (widget, true);
+      /** \todo Reactivate followReferences = true, as soon as it works. */
+      iterator = new CharIterator (widget, false);
 
       if (backwards) {
          /* Go to end */
@@ -123,7 +124,8 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
       } else {
          // Nothing found anymore, reset the state for the next trial.
          delete iterator;
-         iterator = new CharIterator (widget, true);
+         /** \todo Reactivate followReferences = true, as soon as it works. */
+         iterator = new CharIterator (widget, false);
          if (backwards) {
             /* Go to end */
             while (iterator->next ()) ;
