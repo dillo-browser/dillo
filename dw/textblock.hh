@@ -315,13 +315,14 @@ protected:
    class TextblockIterator: public core::Iterator
    {
    private:
+      bool oofm;
       int index;
 
    public:
       TextblockIterator (Textblock *textblock, core::Content::Type mask,
                          bool atEnd);
       TextblockIterator (Textblock *textblock, core::Content::Type mask,
-                         int index);
+                         bool oofm, int index);
 
       lout::object::Object *clone();
       int compareTo(lout::misc::Comparable *other);

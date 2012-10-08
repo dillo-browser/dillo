@@ -801,7 +801,7 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
       }
    }
    it = new TextblockIterator (this, core::Content::SELECTION_CONTENT,
-                               wordIndex);
+                               false, wordIndex);
    r = selectionHandleEvent (eventType, it, charPos, link, event);
    it->unref ();
    return r;

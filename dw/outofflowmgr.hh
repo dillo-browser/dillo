@@ -91,6 +91,13 @@ public:
    //inline static bool isRefOutOfFlow (int ref) { return false; }
    //inline static int createRefNormalFlow (int lineNo) { return lineNo; }
    //inline static int getLineNoFromRef (int ref) { return ref; }
+
+   // for iterators
+   inline int getNumWidgets () {
+      return leftFloats->size() + rightFloats->size(); }
+   inline core::Widget *getWidget (int i) {
+      return i < leftFloats->size() ? leftFloats->get(i)->widget :
+         rightFloats->get(leftFloats->size())->widget; }
 };
 
 } // namespace dw
