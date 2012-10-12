@@ -30,6 +30,7 @@ private:
       core::Widget *widget;
       // width includes border of the containing block
       int y, width, ascent, descent;
+      bool dirty;
    };
 
    //lout::container::typed::HashTable<lout::object::TypedPointer
@@ -37,7 +38,7 @@ private:
    lout::container::typed::Vector<Float> *leftFloats, *rightFloats;
 
    Float *findFloatByWidget (core::Widget *widget);
-   void markSizeChange (Float *vloat, int widthDiff);
+   void ensureFloatSize (Float *vloat);
 
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);

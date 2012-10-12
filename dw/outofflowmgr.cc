@@ -105,23 +105,15 @@ void OutOfFlowMgr::addWidget (Widget *widget)
    if (widget->getStyle()->vloat != FLOAT_NONE) {
       Float *vloat = new Float ();
       vloat->widget = widget;
-      vloat->y = -1;
-
-      Requisition requisition;
-      widget->sizeRequest (&requisition);
-      vloat->width = requisition.width;
-      vloat->ascent = requisition.ascent;
-      vloat->descent = requisition.descent;
+      vloat->dirty = true;
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
-         vloat->width += containingBlock->getCBStyle()->boxOffsetX();
          leftFloats->put (vloat);
          widget->parentRef = createRefLeftFloat (leftFloats->size() - 1);
          break;
 
       case FLOAT_RIGHT:
-         vloat->width += containingBlock->getCBStyle()->boxRestWidth();
          rightFloats->put (vloat);
          widget->parentRef = createRefRightFloat (rightFloats->size() - 1);
          break;
@@ -164,41 +156,22 @@ OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
 
 void OutOfFlowMgr::markSizeChange (int ref)
 {
-   // TODO Much copy and paste; see addWidget.
+   printf ("[%p] MARK_SIZE_CHANGE (%d)\n", containingBlock, ref);
+
    if (isRefLeftFloat (ref))
-      markSizeChange (leftFloats->get (getFloatIndexFromRef (ref)),
-                      containingBlock->getCBStyle()->boxOffsetX());
+      leftFloats->get (getFloatIndexFromRef (ref))->dirty = true;
    else if (isRefRightFloat (ref))
-      markSizeChange (rightFloats->get (getFloatIndexFromRef (ref)),
-                      containingBlock->getCBStyle()->boxRestWidth());
+      rightFloats->get (getFloatIndexFromRef (ref))->dirty = true;
    else
       // later: absolute positions
       assertNotReached();
 }
 
-void OutOfFlowMgr::markSizeChange (Float *vloat, int widthDiff)
-{
-   int oldWidth = vloat->width;
-   int oldHeight = vloat->ascent + vloat->descent;
-   
-   Requisition requisition;
-   vloat->widget->sizeRequest (&requisition);
-   vloat->width = requisition.width + widthDiff;
-   vloat->ascent = requisition.ascent;
-   vloat->descent = requisition.descent;
-
-   if (vloat->width != oldWidth)
-      containingBlock->borderChanged (vloat->y);
-   else if (vloat->ascent + vloat->descent != oldHeight)
-      // Width remains the same, so a small optimization is possible.
-      containingBlock->borderChanged (vloat->y +
-                                      min (vloat->ascent + vloat->descent,
-                                           oldHeight));
-}
 
 void OutOfFlowMgr::markExtremesChange (int ref)
 {
 }
+
 
 void OutOfFlowMgr::tellNoPosition (Widget *widget)
 {
@@ -209,6 +182,7 @@ void OutOfFlowMgr::tellNoPosition (Widget *widget)
    if (oldY != -1)
       containingBlock->borderChanged (oldY);
 }
+
 
 void OutOfFlowMgr::tellPosition (Widget *widget, int y)
 {
@@ -233,6 +207,8 @@ int OutOfFlowMgr::getLeftBorder (int y)
 
    for(int i = 0; i < leftFloats->size(); i++) {
       Float *vloat = leftFloats->get(i);
+      ensureFloatSize (vloat);
+
       if(vloat->y != - 1 && y >= vloat->y &&
          y < vloat->y + vloat->ascent + vloat->descent) {
          //printf ("   LEFT: %d ==> %d (%d + %d)\n", y,
@@ -251,6 +227,8 @@ int OutOfFlowMgr::getRightBorder (int y)
 
    for(int i = 0; i < rightFloats->size(); i++) {
       Float *vloat = rightFloats->get(i);
+      ensureFloatSize (vloat);
+
       if(vloat->y != - 1 && y >= vloat->y &&
          y < vloat->y + vloat->ascent + vloat->descent)
          //printf ("   RIGHT: %d ==> %d (%d + %d)\n", y,
@@ -260,6 +238,37 @@ int OutOfFlowMgr::getRightBorder (int y)
 
    //printf ("   RIGHT: %d ==> %d\n", y, 0);
    return 0;
+}
+
+void OutOfFlowMgr::ensureFloatSize (Float *vloat)
+{
+   if (vloat->dirty) {
+      int widthDiff;
+
+      switch (vloat->widget->getStyle()->vloat) {
+      case FLOAT_LEFT:
+         widthDiff = containingBlock->getCBStyle()->boxOffsetX();
+         break;
+
+      case FLOAT_RIGHT:
+         widthDiff = containingBlock->getCBStyle()->boxRestWidth();
+         break;
+
+      default:
+         // Only used for floats.
+         assertNotReached();
+         widthDiff = 0; // compiler happiness
+         break;
+      }
+
+      Requisition requisition;
+      vloat->widget->sizeRequest (&requisition);
+      vloat->width = requisition.width + widthDiff;
+      vloat->ascent = requisition.ascent;
+      vloat->descent = requisition.descent;
+
+      vloat->dirty = false;
+   }
 }
 
 } // namespace dw

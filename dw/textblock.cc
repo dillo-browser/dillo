@@ -1624,8 +1624,13 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    widget->parentRef = -1;
 
    widget->setStyle (style);
+
+   printf ("adding the %s %p to %p ...\n",
+           widget->getClassName(), widget, this);
       
    if (OutOfFlowMgr::isWidgetOutOfFlow (widget)) {
+      printf ("   -> out of flow.\n");
+
       if (containingBlock->outOfFlowMgr == NULL)
          containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
 
@@ -1637,6 +1642,8 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       word->content.widget = widget;
       word->style = style;
    } else {
+      printf ("   -> within flow.\n");
+
       widget->setParent (this);
 
       core::Requisition size;

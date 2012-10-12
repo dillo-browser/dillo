@@ -129,10 +129,8 @@ void Widget::queueResize (int ref, bool extremesChanged)
 {
    Widget *widget2, *child;
 
-   //DEBUG_MSG (DEBUG_SIZE,
-   //           "a %stop-level %s with parent_ref = %d has changed its size\n",
-   //           widget->parent ? "non-" : "",
-   //           gtk_type_name (GTK_OBJECT_TYPE (widget)), widget->parent_ref);
+   //printf("The %stop-level %s %p with parentRef = %d has changed its size.\n",
+   //       parent ? "non-" : "", getClassName(), this, parentRef);
 
    setFlags (NEEDS_RESIZE);
    setFlags (NEEDS_ALLOCATE);
@@ -150,12 +148,10 @@ void Widget::queueResize (int ref, bool extremesChanged)
       widget2->markSizeChange (child->parentRef);
       widget2->setFlags (NEEDS_ALLOCATE);
 
-      //DEBUG_MSG (DEBUG_ALLOC,
-      //           "setting DW_NEEDS_ALLOCATE for a %stop-level %s "
-      //           "with parent_ref = %d\n",
-      //           widget2->parent ? "non-" : "",
-      //           gtk_type_name (GTK_OBJECT_TYPE (widget2)),
-      //           widget2->parent_ref);
+      //printf ("   Setting DW_NEEDS_RESIZE and NEEDS_ALLOCATE for the "
+      //        "%stop-level %s %p with parentRef = %d\n",
+      //        widget2->parent ? "non-" : "", widget2->getClassName(), widget2,
+      //        widget2->parentRef);
 
       if (extremesChanged) {
          widget2->setFlags (EXTREMES_CHANGED);
@@ -174,6 +170,10 @@ void Widget::queueResize (int ref, bool extremesChanged)
  */
 void Widget::sizeRequest (Requisition *requisition)
 {
+   //printf ("The %stop-level %s %p with parentRef = %d: needsResize: %s\n",
+   //        parent ? "non-" : "", getClassName(), this, parentRef,
+   //        needsResize () ? "true" : "false");
+
    if (needsResize ()) {
       /** \todo Check requisition == &(this->requisition) and do what? */
       sizeRequestImpl (requisition);
@@ -185,6 +185,9 @@ void Widget::sizeRequest (Requisition *requisition)
       DBG_OBJ_SET_NUM (this, "requisition->descent", requisition->descent);
    } else
       *requisition = this->requisition;
+
+   //printf ("   ==> Result: %d x (%d + %d)\n",
+   //        requisition->width, requisition->ascent, requisition->descent);
 }
 
 /**
