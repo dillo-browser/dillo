@@ -76,15 +76,6 @@ static void Menu_copy_urlstr_cb(Fl_Widget*, void *user_data)
    }
 }
 
-static void Menu_link_cb(Fl_Widget*, void *user_data)
-{
-   DilloUrl *url = (DilloUrl *) user_data ;
-   _MSG("Menu_link_cb: click! :-)\n");
-
-   if (url)
-      a_Menu_link_popup(popup_bw, url);
-}
-
 /*
  * Open URL
  */
@@ -391,34 +382,38 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
 }
 
+static Fl_Menu_Item link_menu[] = {
+   {"Open link in new tab", 0, Menu_open_url_nt_cb,0,0,0,0,0,0},
+   {"Open link in new window", 0, Menu_open_url_nw_cb,0,FL_MENU_DIVIDER,0,0,
+    0,0},
+   {"Bookmark this link", 0, Menu_add_bookmark_cb,0,0,0,0,0,0},
+   {"Copy link location", 0, Menu_copy_urlstr_cb,0,FL_MENU_DIVIDER,0,0,0,0},
+   {"Save link as...", 0, Menu_save_link_cb,0,0,0,0,0,0},
+   {0,0,0,0,0,0,0,0,0}
+};
+
+static void Menu_set_link_menu_user_data(void *user_data)
+{
+   int i;
+
+   for (i = 0; link_menu[i].label(); i++)
+      link_menu[i].user_data(user_data);
+}
+
 /*
  * Link popup menu (construction & popup)
  */
 void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
 {
-   static Fl_Menu_Item pm[] = {
-      {"Open link in new tab", 0, Menu_open_url_nt_cb,0,0,0,0,0,0},
-      {"Open link in new window", 0, Menu_open_url_nw_cb,0,FL_MENU_DIVIDER,0,0,
-       0,0},
-      {"Bookmark this link", 0, Menu_add_bookmark_cb,0,0,0,0,0,0},
-      {"Copy link location", 0, Menu_copy_urlstr_cb,0,FL_MENU_DIVIDER,0,0,0,0},
-      {"Save link as...", 0, Menu_save_link_cb,0,0,0,0,0,0},
-      {0,0,0,0,0,0,0,0,0}
-   };
-
    popup_x = Fl::event_x();
    popup_y = Fl::event_y();
    popup_bw = bw;
    a_Url_free(popup_url);
    popup_url = a_Url_dup(url);
 
-   pm[0].user_data(popup_url);
-   pm[1].user_data(popup_url);
-   pm[2].user_data(popup_url);
-   pm[3].user_data(popup_url);
-   pm[4].user_data(popup_url);
+   Menu_set_link_menu_user_data(popup_url);
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)link_menu);
 }
 
 /*
@@ -439,7 +434,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
       {"Bookmark this image", 0, Menu_add_bookmark_cb,0,0,0,0,0,0},
       {"Copy image location", 0,Menu_copy_urlstr_cb,0,FL_MENU_DIVIDER,0,0,0,0},
       {"Save image as...", 0, Menu_save_link_cb, 0, FL_MENU_DIVIDER,0,0,0,0},
-      {"Link menu", 0, Menu_link_cb,0,0,0,0,0,0},
+      {"Link menu", 0, Menu_nop_cb, link_menu, FL_SUBMENU_POINTER,0,0,0,0},
       {0,0,0,0,0,0,0,0,0}
    };
 
@@ -471,7 +466,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
 
    if (link_url) {
       pm[7].activate();
-      pm[7].user_data(popup_link_url);
+      Menu_set_link_menu_user_data(popup_link_url);
    } else {
       pm[7].deactivate();
    }
