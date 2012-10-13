@@ -206,29 +206,36 @@ void Textblock::BadnessAndPenalty::print ()
    }
 }
 
-void Textblock::printWord (Word *word)
+void Textblock::printWordShort (Word *word)
 {
    switch(word->content.type) {
    case core::Content::TEXT:
       printf ("\"%s\"", word->content.text);
       break;
    case core::Content::WIDGET_IN_FLOW:
-      printf ("<widget in flow: %p>\n", word->content.widget);
+      printf ("<widget in flow: %p (%s)>",
+              word->content.widget, word->content.widget->getClassName());
       break;
    case core::Content::WIDGET_OOF_REF:
-      printf ("<widget oof ref: %p>\n", word->content.widget);
+      printf ("<widget oof ref: %p (%s)>",
+              word->content.widget, word->content.widget->getClassName());
       break;
    case core::Content::WIDGET_OOF_CONT:
-      printf ("<widge oof cont: %p>\n", word->content.widget);
+      printf ("<widge oof cont: %p (%s)>",
+              word->content.widget, word->content.widget->getClassName());
       break;
    case core::Content::BREAK:
-      printf ("<break>\n");
+      printf ("<break>");
       break;
    default:
-      printf ("<?>\n");
+      printf ("<?>");
       break;              
    }
-                 
+}
+
+void Textblock::printWord (Word *word)
+{
+   printWordShort (word);
    printf (" [%d / %d + %d - %d => %d + %d - %d] => ",
            word->size.width, word->origSpace, word->stretchability,
            word->shrinkability, word->totalWidth, word->totalStretchability,

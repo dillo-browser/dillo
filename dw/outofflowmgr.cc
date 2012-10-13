@@ -33,6 +33,7 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
    for (int i = 0; i < leftFloats->size(); i++) {
       Float *vloat = leftFloats->get(i);
       assert (vloat->y != -1);
+      ensureFloatSize (vloat);
 
       Allocation childAllocation;
       childAllocation.x = containingBlockAllocation->x
@@ -53,6 +54,7 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
    for (int i = 0; i < rightFloats->size(); i++) {
       Float *vloat = rightFloats->get(i);
       assert (vloat->y != -1);
+      ensureFloatSize (vloat);
 
       Allocation childAllocation;
       childAllocation.x = containingBlockAllocation->x
@@ -181,6 +183,33 @@ void OutOfFlowMgr::tellNoPosition (Widget *widget)
 
    if (oldY != -1)
       containingBlock->borderChanged (oldY);
+}
+
+
+void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
+                            int *oofWidth, int *oofHeight)
+{
+   // CbWidth and cbHeight do not contain padding, border, and
+   // margin. See call in dw::Textblock::sizeRequest.
+   *oofWidth = *oofHeight = 0;
+
+   for (int i = 0; i < leftFloats->size(); i++) {
+      Float *vloat = leftFloats->get(i);
+      assert (vloat->y != -1);
+      ensureFloatSize (vloat);
+
+      *oofWidth = max (*oofWidth, vloat->width);
+      *oofHeight = max (*oofHeight, vloat->y + vloat->ascent + vloat->descent);
+   }
+
+   for (int i = 0; i < rightFloats->size(); i++) {
+      Float *vloat = rightFloats->get(i);
+      assert (vloat->y != -1);
+      ensureFloatSize (vloat);
+
+      *oofWidth = max (*oofWidth, cbWidth);
+      *oofHeight = max (*oofHeight, vloat->y + vloat->ascent + vloat->descent);
+   }
 }
 
 

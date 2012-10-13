@@ -73,6 +73,8 @@ public:
    void tellNoPosition (core::Widget *widget);
    void tellPosition (core::Widget *widget, int y);
 
+   void getSize (int cbWidth, int cbHeight, int *oofWidth, int *oofHeight);
+
    /**
     * Get the left border for the vertical position of y, based on
     * floats. The border includes marging/border/padding of the

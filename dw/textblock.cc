@@ -177,7 +177,25 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    PRINTF ("[%p] SIZE_REQUEST: inner padding = %d, boxDiffWidth = %d\n",
            this, innerPadding, getStyle()->boxDiffWidth ());
 
-   requisition->width += innerPadding + getStyle()->boxDiffWidth ();
+   requisition->width += innerPadding;
+   
+   // Dealing with parts out of flow, which may overlap the borders of
+   // the text block. Base lines are ignored here: they do not play a
+   // role, currently, and caring about them (for the future) would
+   // cause too much problems.
+   if (outOfFlowMgr) {
+      int oofWidth, oofHeight;
+      outOfFlowMgr->getSize (requisition->width,
+                             requisition->ascent + requisition->descent,
+                             &oofWidth, &oofHeight);
+      requisition->width = misc::max (requisition->width, oofWidth);
+      if (oofHeight > requisition->ascent + requisition->descent)
+         requisition->descent = oofHeight - requisition->ascent;
+   }   
+
+   // Padding, border, and margin are added later. Correct? Check CSS
+   // spec.
+   requisition->width += getStyle()->boxDiffWidth ();
    requisition->ascent += getStyle()->boxOffsetY ();
    requisition->descent += getStyle()->boxRestHeight ();
 
@@ -2049,12 +2067,16 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::borderChanged (int y)
 {
-   printf ("[%p] border has changed: %d\n", this, y);
+   printf ("[%p] Border has changed: %d\n", this, y);
    borderChanged (y + allocation.y, true);
+   //printf ("[%p] Done.\n");
 }
 
 void Textblock::borderChanged (int yCanvas, bool extremesChanges)
 {
+   printf ("[%p] Border has changed: %d (extremes: %s)\n",
+           this, yCanvas, extremesChanges ? "true" : "false");
+
    // Notice that this method is, unlike the other "borderChanged",
    // called (i) with canvas coordinates, not widget coordinates, and
    // (ii) for all nested textblocks, not only the containing block.
@@ -2076,6 +2098,10 @@ void Textblock::borderChanged (int yCanvas, bool extremesChanges)
 
       for (int i = wrapLineIndex; i < lines->size (); i++) {
          Word *word = words->getRef (lines->getRef(i)->firstWord);
+         printf ("[%p]    (%d of %d) ", this, i, lines->size ());
+         printWordShort (word);
+         printf ("\n");
+
          if (word->content.type == core::Content::WIDGET_IN_FLOW &&
              word->content.widget->instanceOf (Textblock::CLASS_ID)) {
             Textblock *childBlock = (Textblock*)word->content.widget;
