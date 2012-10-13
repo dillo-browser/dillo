@@ -68,10 +68,12 @@ static void filemenu_cb(Fl_Widget*, void *data)
 }
 
 
-static void Menu_copy_urlstr_cb(Fl_Widget*, void*)
+static void Menu_copy_urlstr_cb(Fl_Widget*, void *user_data)
 {
-   if (popup_url)
-      a_UIcmd_copy_urlstr(popup_bw, URL_STR(popup_url));
+   if (user_data) {
+      DilloUrl *url = (DilloUrl *)user_data ;
+      a_UIcmd_copy_urlstr(popup_bw, URL_STR(url));
+   }
 }
 
 static void Menu_link_cb(Fl_Widget*, void *user_data)
@@ -86,37 +88,41 @@ static void Menu_link_cb(Fl_Widget*, void *user_data)
 /*
  * Open URL
  */
-static void Menu_open_url_cb(Fl_Widget*, void*)
+static void Menu_open_url_cb(Fl_Widget*, void *user_data)
 {
+   DilloUrl *url = (DilloUrl *)user_data;
    _MSG("Open URL cb: click! :-)\n");
-   a_UIcmd_open_url(popup_bw, popup_url);
+   a_UIcmd_open_url(popup_bw, url);
 }
 
 /*
  * Open URL in new window
  */
-static void Menu_open_url_nw_cb(Fl_Widget*, void*)
+static void Menu_open_url_nw_cb(Fl_Widget*, void *user_data)
 {
+   DilloUrl *url = (DilloUrl *)user_data;
    _MSG("Open URL in new window cb: click! :-)\n");
-   a_UIcmd_open_url_nw(popup_bw, popup_url);
+   a_UIcmd_open_url_nw(popup_bw, url);
 }
 
 /*
  * Open URL in new Tab
  */
-static void Menu_open_url_nt_cb(Fl_Widget*, void*)
+static void Menu_open_url_nt_cb(Fl_Widget*, void *user_data)
 {
+   DilloUrl *url = (DilloUrl *)user_data;
    int focus = prefs.focus_new_tab ? 1 : 0;
    if (Fl::event_state(FL_SHIFT)) focus = !focus;
-   a_UIcmd_open_url_nt(popup_bw, popup_url, focus);
+   a_UIcmd_open_url_nt(popup_bw, url, focus);
 }
 
 /*
  * Add bookmark
  */
-static void Menu_add_bookmark_cb(Fl_Widget*, void*)
+static void Menu_add_bookmark_cb(Fl_Widget*, void *user_data)
 {
-   a_UIcmd_add_bookmark(popup_bw, popup_url);
+   DilloUrl *url = (DilloUrl *)user_data;
+   a_UIcmd_add_bookmark(popup_bw, url);
 }
 
 /*
@@ -130,9 +136,10 @@ static void Menu_find_text_cb(Fl_Widget*, void*)
 /*
  * Save link
  */
-static void Menu_save_link_cb(Fl_Widget*, void*)
+static void Menu_save_link_cb(Fl_Widget*, void *user_data)
 {
-   a_UIcmd_save_link(popup_bw, popup_url);
+   DilloUrl *url = (DilloUrl *)user_data;
+   a_UIcmd_save_link(popup_bw, url);
 }
 
 /*
@@ -146,9 +153,10 @@ static void Menu_save_page_cb(Fl_Widget*, void*)
 /*
  * View current page source
  */
-static void Menu_view_page_source_cb(Fl_Widget*, void*)
+static void Menu_view_page_source_cb(Fl_Widget*, void *user_data)
 {
-   a_UIcmd_view_page_source(popup_bw, popup_url);
+   DilloUrl *url = (DilloUrl *)user_data;
+   a_UIcmd_view_page_source(popup_bw, url);
 }
 
 /*
@@ -330,8 +338,10 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    if (dStrAsciiCasecmp(URL_SCHEME(url), "dpi") == 0 &&
        strncmp(URL_PATH(url), "/vsource/", 9) == 0)
       pm[0].deactivate();
-   else
+   else {
       pm[0].activate();
+      pm[0].user_data(popup_url);
+   }
 
    if (stylesheets) {
       while (stylesheets[j].text) {
@@ -376,6 +386,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    } else {
       pm[2].deactivate();
    }
+   pm[3].user_data(popup_url);
 
    a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
 }
@@ -400,6 +411,12 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
    popup_bw = bw;
    a_Url_free(popup_url);
    popup_url = a_Url_dup(url);
+
+   pm[0].user_data(popup_url);
+   pm[1].user_data(popup_url);
+   pm[2].user_data(popup_url);
+   pm[3].user_data(popup_url);
+   pm[4].user_data(popup_url);
 
    a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
 }
@@ -437,12 +454,20 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
    popup_link_url = a_Url_dup(link_url);
 
 
+   pm[0].user_data(popup_url);
+   pm[1].user_data(popup_url);
+   pm[2].user_data(popup_url);
+
    if (loaded_img) {
       pm[3].deactivate();
    } else {
       pm[3].activate();
       pm[3].user_data(popup_page_url);
    }
+
+   pm[4].user_data(popup_url);
+   pm[5].user_data(popup_url);
+   pm[6].user_data(popup_url);
 
    if (link_url) {
       pm[7].activate();
