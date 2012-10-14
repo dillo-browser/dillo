@@ -2107,45 +2107,66 @@ void Textblock::borderChanged (int yWidget, bool extremesChanges)
       // since it cannot be assumed that the widget has been
       // allocated.
       for (int lineNo = wrapLineIndex; lineNo < lines->size () + 1; lineNo++) {
-         int firstWord, lastWord, childY;
+         Textblock *childBlock = getTextblockForLine (lineNo);
+         if (childBlock)
+            // extremes only change for the containing block, so we pass
+            // extremesChanges = false for all other widgets.
+            childBlock->borderChanged (yWidget
+                                       - topOfPossiblyMissingLine (lineNo),
+                                       false);
+      }
+   }
+}
 
-         if (lineNo == 0) {
-            childY = getStyle()->boxOffsetY();
-            firstWord = 0;
-         } else {
-            Line *prevLine = lines->getRef (lineNo - 1);
-            childY =
-               prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
-               prevLine->breakSpace + getStyle()->boxOffsetY();
-            firstWord = prevLine->lastWord + 1;
-         }
+/**
+ * Return true when there are enough words to fill a line. Typically,
+ * this is a "missing" line, which will be created under certail
+ * circumstances; see \ref dw-line-breaking.
+ */
+bool Textblock::willLineExist (int lineNo)
+{
+   int firstWord = lineNo == 0 ? 0 :lines->getRef(lineNo - 1)->lastWord + 1;
+   return firstWord < words->size();
+}
 
-         if (lineNo < lines->size())
-            lastWord =  lines->getRef(lineNo)->lastWord;
-         else
-            lastWord = words->size() - 1;
+Textblock *Textblock::getTextblockForLine (int lineNo)
+{
+   int firstWord = lineNo == 0 ? 0 :lines->getRef(lineNo - 1)->lastWord + 1;
+   int lastWord = lineNo < lines->size() ?
+      lines->getRef(lineNo)->lastWord : words->size() - 1;
 
-         if (firstWord < words->size ()) {
-            for (int wordIndex = firstWord; wordIndex <= lastWord;
-                 wordIndex++) {
-               Word *word = words->getRef (wordIndex);
+   if (firstWord < words->size ()) {
+      for (int wordIndex = firstWord; wordIndex <= lastWord;
+           wordIndex++) {
+         Word *word = words->getRef (wordIndex);
+         
+         if (word->content.type == core::Content::WIDGET_IN_FLOW &&
+             word->content.widget->instanceOf (Textblock::CLASS_ID)) {
+            //printf ("[%p]    (line %d of %d (from %d to %d), word %d) ",
+            //        this, lineNo, lines->size (), firstWord, lastWord,
+            //        wordIndex);
+            //printWordShort (word);
+            //printf ("\n");
             
-               if (word->content.type == core::Content::WIDGET_IN_FLOW &&
-                   word->content.widget->instanceOf (Textblock::CLASS_ID)) {
-                  printf ("[%p]    (line %d of %d (from %d to %d), word %d) ",
-                          this, lineNo, lines->size (), firstWord, lastWord,
-                          wordIndex);
-                  printWordShort (word);
-                  printf ("\n");
-
-                  Textblock *childBlock = (Textblock*)word->content.widget;
-                  // extremes only change for the containing block, so we pass
-                  // extremesChanges = false for all other widgets.
-                  childBlock->borderChanged (yWidget - childY, false);
-               }
-            }
+            return (Textblock*)word->content.widget;
          }
       }
+   }
+
+   return NULL;
+}
+
+/**
+ * Includes margin, border, and padding.
+ */
+int Textblock::topOfPossiblyMissingLine (int lineNo)
+{
+   if (lineNo == 0)
+      return getStyle()->boxOffsetY();
+   else {
+      Line *prevLine = lines->getRef (lineNo - 1);
+      return prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
+         prevLine->breakSpace + getStyle()->boxOffsetY();
    }
 }
 

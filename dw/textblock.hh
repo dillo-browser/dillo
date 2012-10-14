@@ -577,6 +577,10 @@ protected:
       return lineYOffsetCanvas (lines->getRef (lineIndex));
    }
 
+   bool willLineExist (int lineNo);
+   Textblock *getTextblockForLine (int lineNo);
+   int topOfPossiblyMissingLine (int lineNo);
+
    bool sendSelectionEvent (core::SelectionState::EventType eventType,
                             core::MousePositionEvent *event);
 
