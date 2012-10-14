@@ -456,7 +456,7 @@ protected:
       return mustBorderBeRegardedForWord (firstWord);
    }
 
-   void borderChanged (int yCanvas, bool extremesChanges);
+   void borderChanged (int yWidget, bool extremesChanges);
 
    /**
     * \brief Returns the x offset (the indentation plus any offset

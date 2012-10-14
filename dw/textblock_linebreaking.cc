@@ -857,14 +857,19 @@ int Textblock::calcAvailWidth (int lineIndex)
    if (lineIndex == 0)
       availWidth -= line1OffsetEff;
 
-   PRINTF ("[%p] CALC_AVAIL_WIDTH (%d of %d) => %d - %d - %d = %d\n",
-           this, lineIndex, lines->size(), this->availWidth, 
-           getStyle()->boxDiffWidth(), innerPadding, availWidth);
-
    // TODO if the result is too small, but only in some cases
    // (e. g. because of floats), the caller should skip a
    // line. General distinction?
-   return availWidth - lineLeftBorder (lineIndex) - lineRightBorder (lineIndex);
+   int leftBorder = lineLeftBorder (lineIndex);
+   int rightBorder = lineRightBorder (lineIndex);
+   availWidth -= (leftBorder + rightBorder);
+
+   PRINTF ("[%p] CALC_AVAIL_WIDTH (%d of %d) => %d - %d - %d - (%d + %d)"
+           " = %d\n", this, lineIndex, lines->size(), this->availWidth, 
+           getStyle()->boxDiffWidth(), innerPadding, leftBorder, rightBorder,
+           availWidth);
+
+   return availWidth;
 }
 
 void Textblock::initLine1Offset (int wordIndex)

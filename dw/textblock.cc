@@ -2068,21 +2068,21 @@ void Textblock::queueDrawRange (int index1, int index2)
 void Textblock::borderChanged (int y)
 {
    printf ("[%p] Border has changed: %d\n", this, y);
-   borderChanged (y + allocation.y, true);
-   //printf ("[%p] Done.\n");
+   borderChanged (y, true);
+   printf ("[%p] Done.\n", this);
 }
 
-void Textblock::borderChanged (int yCanvas, bool extremesChanges)
+void Textblock::borderChanged (int yWidget, bool extremesChanges)
 {
    printf ("[%p] Border has changed: %d (extremes: %s)\n",
-           this, yCanvas, extremesChanges ? "true" : "false");
+           this, yWidget, extremesChanges ? "true" : "false");
 
    // Notice that this method is, unlike the other "borderChanged",
    // called (i) with canvas coordinates, not widget coordinates, and
    // (ii) for all nested textblocks, not only the containing block.
 
    // findLineIndex expects widget coordinates
-   int lineIndex = findLineIndex (yCanvas - allocation.y);
+   int lineIndex = findLineIndex (yWidget);
    // Nothing to do at all, when lineIndex >= lines->size (),
    // i. e. the change is below the bottom od this widget.
    if (lineIndex < lines->size ()) {
@@ -2092,22 +2092,58 @@ void Textblock::borderChanged (int yCanvas, bool extremesChanges)
          wrapLineIndex = 0;
       else
          wrapLineIndex = lineIndex;
-
+      
+      printf ("[%p] Rewrapping from line %d.\n", this, wrapLineIndex);
       queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex),
                    extremesChanges);
 
-      for (int i = wrapLineIndex; i < lines->size (); i++) {
-         Word *word = words->getRef (lines->getRef(i)->firstWord);
-         printf ("[%p]    (%d of %d) ", this, i, lines->size ());
-         printWordShort (word);
-         printf ("\n");
+      // lines->size () + 1 here, to get a possibly "missing" line.
+      // TODO: May there me more than one missing line? Should perhaps
+      // reworked again.
 
-         if (word->content.type == core::Content::WIDGET_IN_FLOW &&
-             word->content.widget->instanceOf (Textblock::CLASS_ID)) {
-            Textblock *childBlock = (Textblock*)word->content.widget;
-            // extremes only change for the containing block, so we pass
-            // extremesChanges = false for all other widgets.
-            childBlock->borderChanged (yCanvas, false);
+      // We iterate over the lines to get the top of the line, as
+      // vertical position of the widget (provided that this is the
+      // only widget in the line). The allocation cannot be used here,
+      // since it cannot be assumed that the widget has been
+      // allocated.
+      for (int lineNo = wrapLineIndex; lineNo < lines->size () + 1; lineNo++) {
+         int firstWord, lastWord, childY;
+
+         if (lineNo == 0) {
+            childY = getStyle()->boxOffsetY();
+            firstWord = 0;
+         } else {
+            Line *prevLine = lines->getRef (lineNo - 1);
+            childY =
+               prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
+               prevLine->breakSpace + getStyle()->boxOffsetY();
+            firstWord = prevLine->lastWord + 1;
+         }
+
+         if (lineNo < lines->size())
+            lastWord =  lines->getRef(lineNo)->lastWord;
+         else
+            lastWord = words->size() - 1;
+
+         if (firstWord < words->size ()) {
+            for (int wordIndex = firstWord; wordIndex <= lastWord;
+                 wordIndex++) {
+               Word *word = words->getRef (wordIndex);
+            
+               if (word->content.type == core::Content::WIDGET_IN_FLOW &&
+                   word->content.widget->instanceOf (Textblock::CLASS_ID)) {
+                  printf ("[%p]    (line %d of %d (from %d to %d), word %d) ",
+                          this, lineNo, lines->size (), firstWord, lastWord,
+                          wordIndex);
+                  printWordShort (word);
+                  printf ("\n");
+
+                  Textblock *childBlock = (Textblock*)word->content.widget;
+                  // extremes only change for the containing block, so we pass
+                  // extremesChanges = false for all other widgets.
+                  childBlock->borderChanged (yWidget - childY, false);
+               }
+            }
          }
       }
    }
