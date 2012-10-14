@@ -960,6 +960,8 @@ void UI::customize(int flags)
  */
 void UI::change_panel(int new_size, int small_icons)
 {
+   char *loc_text = dStrdup(Location->value());
+
    // Remove current panel's bars
    init_sizes();
    TopGroup->remove(LocBar);
@@ -978,7 +980,10 @@ void UI::change_panel(int new_size, int small_icons)
    a_UIcmd_set_buttons_sens(a_UIcmd_get_bw_by_widget(this));
 
    TopGroup->rearrange();
+   Location->value(loc_text);
    Location->take_focus();
+
+   dFree(loc_text);
 }
 
 /*
