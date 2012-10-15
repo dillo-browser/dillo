@@ -296,6 +296,9 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       vloat->ascent = requisition.ascent;
       vloat->descent = requisition.descent;
 
+      //printf ("   Float at %d: %d x (%d + %d)\n",
+      //        vloat->y, vloat->width, vloat->ascent, vloat->descent);
+
       vloat->dirty = false;
    }
 }

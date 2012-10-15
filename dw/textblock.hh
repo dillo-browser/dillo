@@ -429,31 +429,16 @@ protected:
 
    /**
     * Of nested text blocks, only the most inner one must regard the
-    * borders of floats. Extremely (perhaps too) simple
-    * implementation.
+    * borders of floats.
     */
-   inline bool mustBorderBeRegardedForWord (int firstWord)
-   {
-      assert (firstWord < words->size ());
-      Word *word = words->getRef (firstWord);
-      return !(word->content.type == core::Content::WIDGET_IN_FLOW &&
-               word->content.widget->instanceOf (Textblock::CLASS_ID));
-   }
-
    inline bool mustBorderBeRegarded (Line *line)
    {
-      return mustBorderBeRegardedForWord (line->firstWord);
+      return getTextblockForLine (line) == NULL;
    }
 
    inline bool mustBorderBeRegarded (int lineNo)
    {
-      int firstWord;
-      if (lineNo == 0)
-         firstWord = 0;
-      else
-         firstWord = lines->getRef(lineNo - 1)->lastWord + 1;
-
-      return mustBorderBeRegardedForWord (firstWord);
+      return getTextblockForLine (lineNo) == NULL;
    }
 
    void borderChanged (int yWidget, bool extremesChanges);
@@ -577,8 +562,9 @@ protected:
       return lineYOffsetCanvas (lines->getRef (lineIndex));
    }
 
-   bool willLineExist (int lineNo);
+   Textblock *getTextblockForLine (Line *line);
    Textblock *getTextblockForLine (int lineNo);
+   Textblock *getTextblockForLine (int firstWord, int lastWord);
    int topOfPossiblyMissingLine (int lineNo);
 
    bool sendSelectionEvent (core::SelectionState::EventType eventType,

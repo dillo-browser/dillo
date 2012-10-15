@@ -2118,15 +2118,9 @@ void Textblock::borderChanged (int yWidget, bool extremesChanges)
    }
 }
 
-/**
- * Return true when there are enough words to fill a line. Typically,
- * this is a "missing" line, which will be created under certail
- * circumstances; see \ref dw-line-breaking.
- */
-bool Textblock::willLineExist (int lineNo)
+Textblock *Textblock::getTextblockForLine (Line *line)
 {
-   int firstWord = lineNo == 0 ? 0 :lines->getRef(lineNo - 1)->lastWord + 1;
-   return firstWord < words->size();
+   return getTextblockForLine (line->firstWord, line->lastWord);
 }
 
 Textblock *Textblock::getTextblockForLine (int lineNo)
@@ -2134,7 +2128,11 @@ Textblock *Textblock::getTextblockForLine (int lineNo)
    int firstWord = lineNo == 0 ? 0 :lines->getRef(lineNo - 1)->lastWord + 1;
    int lastWord = lineNo < lines->size() ?
       lines->getRef(lineNo)->lastWord : words->size() - 1;
+   return getTextblockForLine (firstWord, lastWord);
+}
 
+Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
+{
    if (firstWord < words->size ()) {
       for (int wordIndex = firstWord; wordIndex <= lastWord;
            wordIndex++) {
