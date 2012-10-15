@@ -160,10 +160,22 @@ void OutOfFlowMgr::markSizeChange (int ref)
 {
    printf ("[%p] MARK_SIZE_CHANGE (%d)\n", containingBlock, ref);
 
-   if (isRefLeftFloat (ref))
-      leftFloats->get (getFloatIndexFromRef (ref))->dirty = true;
-   else if (isRefRightFloat (ref))
-      rightFloats->get (getFloatIndexFromRef (ref))->dirty = true;
+   if (isRefFloat (ref)) {
+      Float *vloat;
+
+      if (isRefLeftFloat (ref))
+         vloat = leftFloats->get (getFloatIndexFromRef (ref));
+      else if (isRefRightFloat (ref))
+         vloat = rightFloats->get (getFloatIndexFromRef (ref));
+      else {
+         assertNotReached();
+         vloat = NULL; // compiler happiness
+      }
+
+      vloat->dirty = true;
+      assert (vloat->y != -1); // Correct?
+      containingBlock->borderChanged (vloat->y);
+   }
    else
       // later: absolute positions
       assertNotReached();

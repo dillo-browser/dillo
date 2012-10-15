@@ -43,6 +43,8 @@ private:
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);
 
+   inline static bool isRefFloat (int ref)
+   { return ref != -1 && (ref & 1) == 1; }
    inline static bool isRefLeftFloat (int ref)
    { return ref != -1 && (ref & 3) == 1; }
    inline static bool isRefRightFloat (int ref)

@@ -443,6 +443,33 @@ protected:
 
    void borderChanged (int yWidget, bool extremesChanges);
 
+   inline int diffXToContainingBlock ()
+   {
+      int diff = 0;
+
+      for (Widget *widget = this; widget != containingBlock;
+           widget = widget->getParent())
+         diff += widget->getParent()->getStyle()->boxOffsetX();
+
+      //printf ("[%p] diffXToContainingBlock = %d\n", this, diff);
+      return diff;
+   }
+
+   inline int diffYToContainingBlock ()
+   {
+      int diff = 0;
+      
+      for (Widget *widget = this; widget != containingBlock;
+           widget = widget->getParent()) {
+         int lineNo = OutOfFlowMgr::getLineNoFromRef (widget->parentRef);
+         Textblock *tb = (Textblock*)(widget->getParent());
+         diff += tb->topOfPossiblyMissingLine (lineNo);
+      }
+
+      //printf ("[%p] diffYToContainingBlock = %d\n", this, diff);
+      return diff;
+   }
+
    /**
     * \brief Returns the x offset (the indentation plus any offset
     *    needed for centering or right justification) for the line,
@@ -452,11 +479,9 @@ protected:
    {
       int resultFromOOFM;
       if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line))
-         resultFromOOFM =
-            containingBlock->getAllocation()->x - allocation.x +
+         resultFromOOFM = diffXToContainingBlock () +
             containingBlock->outOfFlowMgr->getLeftBorder
-            (allocation.y + line->top + getStyle()->boxOffsetY()
-             - containingBlock->getAllocation()->y);
+            (diffYToContainingBlock () + line->top + getStyle()->boxOffsetY());
       else
          resultFromOOFM = 0;
             
@@ -482,10 +507,9 @@ protected:
       int resultFromOOFM;
       if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
          resultFromOOFM =
-            containingBlock->getAllocation()->x - allocation.x +
+            diffXToContainingBlock () +
             containingBlock->outOfFlowMgr->getLeftBorder
-            (allocation.y + top + getStyle()->boxOffsetY()
-             - containingBlock->getAllocation()->y);
+            (diffYToContainingBlock () + top + getStyle()->boxOffsetY());
       else
          resultFromOOFM = 0;
 
@@ -510,7 +534,8 @@ protected:
       }
 
       int resultFromOOFM;
-      if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
+      // TODO sizeRequest?
+      if (false && containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
          resultFromOOFM = 
             (containingBlock->getAllocation()->x +
              containingBlock->getAllocation()->width) -
