@@ -455,6 +455,18 @@ protected:
       return diff;
    }
 
+   inline int restWidthToContainingBlock ()
+   {
+      int diff = 0;
+
+      for (Widget *widget = this; widget != containingBlock;
+           widget = widget->getParent())
+         diff += widget->getParent()->getStyle()->boxRestWidth();
+
+      //printf ("[%p] restWidthToContainingBlock = %d\n", this, diff);
+      return diff;
+   }
+
    inline int diffYToContainingBlock ()
    {
       int diff = 0;
@@ -479,9 +491,10 @@ protected:
    {
       int resultFromOOFM;
       if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line))
-         resultFromOOFM = diffXToContainingBlock () +
+         resultFromOOFM =
             containingBlock->outOfFlowMgr->getLeftBorder
-            (diffYToContainingBlock () + line->top + getStyle()->boxOffsetY());
+            (line->top + getStyle()->boxOffsetY() + diffYToContainingBlock ())
+            - diffXToContainingBlock ();
       else
          resultFromOOFM = 0;
             
@@ -493,23 +506,13 @@ protected:
    inline int lineLeftBorder (int lineNo)
    {
       // Note that the line must not exist yet (but unless it is not
-      // the first line, the previous line, lineNo - 1, must). But
-      // lineHeight should be known to the caller.
-      int top;
-      if (lineNo == 0)
-         top = 0;
-      else {
-         Line *prevLine = lines->getRef (lineNo - 1);
-         top = prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
-            prevLine->breakSpace;
-      }
-
+      // the first line, the previous line, lineNo - 1, must).
       int resultFromOOFM;
       if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
          resultFromOOFM =
-            diffXToContainingBlock () +
             containingBlock->outOfFlowMgr->getLeftBorder
-            (diffYToContainingBlock () + top + getStyle()->boxOffsetY());
+            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock ())
+            - diffXToContainingBlock ();
       else
          resultFromOOFM = 0;
 
@@ -524,25 +527,14 @@ protected:
    inline int lineRightBorder (int lineNo)
    {
       // Similar to lineLeftBorder().
-      int top;
-      if (lineNo == 0)
-         top = 0;
-      else {
-         Line *prevLine = lines->getRef (lineNo - 1);
-         top = prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
-            prevLine->breakSpace;
-      }
 
       int resultFromOOFM;
       // TODO sizeRequest?
-      if (false && containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
-         resultFromOOFM = 
-            (containingBlock->getAllocation()->x +
-             containingBlock->getAllocation()->width) -
-            (allocation.x + allocation.width) +
+      if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
+         resultFromOOFM =
             containingBlock->outOfFlowMgr->getRightBorder
-            (allocation.y + top + getStyle()->boxOffsetY()
-             - containingBlock->getAllocation()->y);
+            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock ())
+            - restWidthToContainingBlock ();
       else
          resultFromOOFM = 0;
 
