@@ -3454,8 +3454,7 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
    const char *attrbuf;
 
    if (tagsize >= 8 &&        /* length of "<t id=i>" */
-       (attrbuf = Html_get_attr2(html, tag, tagsize, "id",
-                                 HTML_LeftTrim | HTML_RightTrim))) {
+       (attrbuf = a_Html_get_attr(html, tag, tagsize, "id"))) {
       /* According to the SGML declaration of HTML 4, all NAME values
        * occuring outside entities must be converted to uppercase
        * (this is what "NAMECASE GENERAL YES" says). But the HTML 4
@@ -3469,13 +3468,11 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
 
    if (tagsize >= 11 && (prefs.parse_embedded_css || prefs.load_stylesheets)) {
       /* length of "<t class=i>" or "<t style=i>" */
-      attrbuf = Html_get_attr2(html, tag, tagsize, "class",
-                               HTML_LeftTrim | HTML_RightTrim);
+      attrbuf = a_Html_get_attr(html, tag, tagsize, "class");
       if (attrbuf)
          html->styleEngine->setClass (attrbuf);
 
-      attrbuf = Html_get_attr2(html, tag, tagsize, "style",
-                               HTML_LeftTrim | HTML_RightTrim);
+      attrbuf = a_Html_get_attr(html, tag, tagsize, "style");
       if (attrbuf)
          html->styleEngine->setStyle (attrbuf);
    }
@@ -3484,8 +3481,7 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
    int hasXmlLang = 0;
    if (tagsize >= 14) {
       /* length of "<t xml:lang=i>" */
-      attrbuf = Html_get_attr2(html, tag, tagsize, "xml:lang",
-                               HTML_LeftTrim | HTML_RightTrim);
+      attrbuf = a_Html_get_attr(html, tag, tagsize, "xml:lang");
       if (attrbuf) {
          html->styleEngine->setNonCssHint(PROPERTY_X_LANG, CSS_TYPE_STRING,
                                           attrbuf);
@@ -3494,8 +3490,7 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
    }
    if (!hasXmlLang && tagsize >= 10) { /* 'xml:lang' prevails over 'lang' */
       /* length of "<t lang=i>" */
-      attrbuf = Html_get_attr2(html, tag, tagsize, "lang",
-                               HTML_LeftTrim | HTML_RightTrim);
+      attrbuf = a_Html_get_attr(html, tag, tagsize, "lang");
       if (attrbuf)
          html->styleEngine->setNonCssHint(PROPERTY_X_LANG, CSS_TYPE_STRING,
                                           attrbuf);
