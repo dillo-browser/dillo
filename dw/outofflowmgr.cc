@@ -173,8 +173,10 @@ void OutOfFlowMgr::markSizeChange (int ref)
       }
 
       vloat->dirty = true;
-      assert (vloat->y != -1); // Correct?
-      containingBlock->borderChanged (vloat->y);
+      // In some cases, the vertical position is not yet defined. Nothing
+      // necessary then.
+      if (vloat->y != -1)
+         containingBlock->borderChanged (vloat->y);
    }
    else
       // later: absolute positions
