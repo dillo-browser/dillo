@@ -486,8 +486,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
       }
       containingBlock->outOfFlowMgr->tellPosition
          (word->content.widget,
-          allocation.y + top + getStyle()->boxOffsetY()
-          - containingBlock->getAllocation()->y);
+          diffYToContainingBlock () + top + getStyle()->boxOffsetY());
 
 
       // TODO: compare old/new values of calcAvailWidth(...);

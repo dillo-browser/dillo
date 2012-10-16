@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 
    window->resizable(viewport);
    window->show();
-   //Fl::add_timeout (2, addTextToFloatTimeout, NULL);
+   Fl::add_timeout (2, addTextToFloatTimeout, NULL);
    int errorCode = Fl::run();
 
    wordStyle->unref();
