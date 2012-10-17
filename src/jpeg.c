@@ -80,7 +80,6 @@ typedef struct DilloJpeg {
  * Forward declarations
  */
 static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize);
-METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo);
 
 
 /* this is the routine called by libjpeg when it detects an error. */
