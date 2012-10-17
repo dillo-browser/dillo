@@ -98,11 +98,6 @@ void *a_Html_text(const char *type, void *P, CA_Callback_t *Call,void **Data);
 /*-----------------------------------------------------------------------------
  * Forward declarations
  *---------------------------------------------------------------------------*/
-static const char *Html_get_attr2(DilloHtml *html,
-                                  const char *tag,
-                                  int tagsize,
-                                  const char *attrname,
-                                  int tag_parsing_flags);
 static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof);
 static bool Html_load_image(BrowserWindow *bw, DilloUrl *url,
                             const DilloUrl *requester, DilloImage *image);
