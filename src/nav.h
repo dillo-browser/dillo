@@ -35,6 +35,7 @@ void a_Nav_save_url(BrowserWindow *bw,
                     const DilloUrl *url, const char *filename);
 int a_Nav_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize);
 void a_Nav_unref_buf(const DilloUrl *Url);
+const char *a_Nav_get_content_type(const DilloUrl *url);
 void a_Nav_set_vsource_url(const DilloUrl *Url);
 
 #ifdef __cplusplus

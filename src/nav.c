@@ -590,6 +590,14 @@ void a_Nav_unref_buf(const DilloUrl *Url)
 }
 
 /*
+ * Wrapper for a_Capi_get_content_type().
+ */
+const char *a_Nav_get_content_type(const DilloUrl *url)
+{
+   return a_Capi_get_content_type(url);
+}
+
+/*
  * Wrapper for a_Capi_set_vsource_url().
  */
 void a_Nav_set_vsource_url(const DilloUrl *Url)
