@@ -443,44 +443,8 @@ protected:
 
    void borderChanged (int yWidget, bool extremesChanges);
 
-   inline int diffXToContainingBlock ()
-   {
-      int diff = 0;
-
-      for (Widget *widget = this; widget != containingBlock;
-           widget = widget->getParent())
-         diff += widget->getParent()->getStyle()->boxOffsetX();
-
-      //printf ("[%p] diffXToContainingBlock = %d\n", this, diff);
-      return diff;
-   }
-
-   inline int restWidthToContainingBlock ()
-   {
-      int diff = 0;
-
-      for (Widget *widget = this; widget != containingBlock;
-           widget = widget->getParent())
-         diff += widget->getParent()->getStyle()->boxRestWidth();
-
-      //printf ("[%p] restWidthToContainingBlock = %d\n", this, diff);
-      return diff;
-   }
-
-   inline int diffYToContainingBlock ()
-   {
-      int diff = 0;
-      
-      for (Widget *widget = this; widget != containingBlock;
-           widget = widget->getParent()) {
-         int lineNo = OutOfFlowMgr::getLineNoFromRef (widget->parentRef);
-         Textblock *tb = (Textblock*)(widget->getParent());
-         diff += tb->topOfPossiblyMissingLine (lineNo);
-      }
-
-      //printf ("[%p] diffYToContainingBlock = %d\n", this, diff);
-      return diff;
-   }
+   int diffXToContainingBlock, restWidthToContainingBlock,
+      diffYToContainingBlock;
 
    /**
     * \brief Returns the x offset (the indentation plus any offset
@@ -493,8 +457,8 @@ protected:
       if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line))
          resultFromOOFM =
             containingBlock->outOfFlowMgr->getLeftBorder
-            (line->top + getStyle()->boxOffsetY() + diffYToContainingBlock ())
-            - diffXToContainingBlock ();
+            (line->top + getStyle()->boxOffsetY() + diffYToContainingBlock)
+            - diffXToContainingBlock;
       else
          resultFromOOFM = 0;
             
@@ -511,8 +475,8 @@ protected:
       if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
          resultFromOOFM =
             containingBlock->outOfFlowMgr->getLeftBorder
-            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock ())
-            - diffXToContainingBlock ();
+            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock)
+            - diffXToContainingBlock;
       else
          resultFromOOFM = 0;
 
@@ -533,8 +497,8 @@ protected:
       if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
          resultFromOOFM =
             containingBlock->outOfFlowMgr->getRightBorder
-            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock ())
-            - restWidthToContainingBlock ();
+            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock)
+            - restWidthToContainingBlock;
       else
          resultFromOOFM = 0;
 
