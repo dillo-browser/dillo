@@ -1686,7 +1686,6 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       containingBlock->outOfFlowMgr->addWidget (widget);
       Word *word = addWord (0, 0, 0, false, style);
       word->content.type = core::Content::WIDGET_OOF_REF;
-      word->content.breakSpace = 0;
       word->content.widget = widget;
       word->style = style;
    } else {
