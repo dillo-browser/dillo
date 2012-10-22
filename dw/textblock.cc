@@ -87,6 +87,9 @@ Textblock::Textblock (bool limitTextWidth)
    availAscent = 100;
    availDescent = 0;
 
+   diffXToContainingBlock = restWidthToContainingBlock =
+      diffYToContainingBlock = -1;
+
    this->limitTextWidth = limitTextWidth;
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {

@@ -453,6 +453,9 @@ protected:
     */
    inline int lineXOffsetWidget (Line *line)
    {
+      assert (diffXToContainingBlock != -1);
+      assert (diffYToContainingBlock != -1);
+
       int resultFromOOFM;
       if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line))
          resultFromOOFM =
@@ -469,6 +472,9 @@ protected:
 
    inline int lineLeftBorder (int lineNo)
    {
+      assert (diffXToContainingBlock != -1);
+      assert (diffYToContainingBlock != -1);
+
       // Note that the line must not exist yet (but unless it is not
       // the first line, the previous line, lineNo - 1, must).
       int resultFromOOFM;
@@ -490,6 +496,9 @@ protected:
 
    inline int lineRightBorder (int lineNo)
    {
+      assert (restWidthToContainingBlock != -1);
+      assert (diffYToContainingBlock != -1);
+
       // Similar to lineLeftBorder().
 
       int resultFromOOFM;
