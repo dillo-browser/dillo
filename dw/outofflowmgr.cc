@@ -130,21 +130,8 @@ void OutOfFlowMgr::addWidget (Widget *widget)
 
 OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
 {
-   Vector<Float> *list = NULL;
+   Vector<Float> *list = getFloatList (widget);
    
-   switch (widget->getStyle()->vloat) {
-   case FLOAT_LEFT:
-      list = leftFloats;
-      break;
-
-   case FLOAT_RIGHT:
-      list = rightFloats;
-      break;
-
-   default:
-      assertNotReached();
-   }
-
    for(int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       if(vloat->widget == widget)
@@ -155,6 +142,20 @@ OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
    return NULL;
 }
 
+Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getFloatList (Widget *widget)
+{
+   switch (widget->getStyle()->vloat) {
+   case FLOAT_LEFT:
+      return leftFloats;
+
+   case FLOAT_RIGHT:
+      return rightFloats;
+
+   default:
+      assertNotReached();
+      return NULL;
+   }
+}
 
 void OutOfFlowMgr::markSizeChange (int ref)
 {
@@ -236,12 +237,34 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
 
    Float *vloat = findFloatByWidget(widget);
    int oldY = vloat->y;
-   vloat->y = y;
+
+   int realY = y;
+   Vector<Float> *list = getFloatList (widget);   
+   bool collides;
+
+   do {
+      collides = false;
+
+      for (int i = 0; i < list->size(); i++) {
+         Float *v = list->get(i);
+         if (v != vloat) {
+            ensureFloatSize (v);
+            if (v->y != -1 && realY >= v->y && 
+                realY < v->y + v->ascent + v->descent) {
+               collides = true;
+               realY = v->y + v->ascent + v->descent;
+               break;
+            }
+         }
+      }    
+   } while (collides);
+
+   vloat->y = realY;
    
    if (oldY == -1)
-      containingBlock->borderChanged (y);
-   else if (y != oldY)
-      containingBlock->borderChanged (min (oldY, y));
+      containingBlock->borderChanged (vloat->y);
+   else if (vloat->y != oldY)
+      containingBlock->borderChanged (min (oldY, vloat->y));
 }
    
 int OutOfFlowMgr::getLeftBorder (int y)
@@ -252,7 +275,7 @@ int OutOfFlowMgr::getLeftBorder (int y)
       Float *vloat = leftFloats->get(i);
       ensureFloatSize (vloat);
 
-      if(vloat->y != - 1 && y >= vloat->y &&
+      if(vloat->y != -1 && y >= vloat->y &&
          y < vloat->y + vloat->ascent + vloat->descent) {
          //printf ("   LEFT: %d ==> %d (%d + %d)\n", y,
          //        vloat->width, vloat->ascent, vloat->descent);
@@ -272,7 +295,7 @@ int OutOfFlowMgr::getRightBorder (int y)
       Float *vloat = rightFloats->get(i);
       ensureFloatSize (vloat);
 
-      if(vloat->y != - 1 && y >= vloat->y &&
+      if(vloat->y != -1 && y >= vloat->y &&
          y < vloat->y + vloat->ascent + vloat->descent)
          //printf ("   RIGHT: %d ==> %d (%d + %d)\n", y,
          //        vloat->width, vloat->ascent, vloat->descent);

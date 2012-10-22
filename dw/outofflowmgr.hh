@@ -38,6 +38,7 @@ private:
    lout::container::typed::Vector<Float> *leftFloats, *rightFloats;
 
    Float *findFloatByWidget (core::Widget *widget);
+   lout::container::typed::Vector<Float> *getFloatList (core::Widget *widget);
    void ensureFloatSize (Float *vloat);
 
    void draw (lout::container::typed::Vector<Float> *list,
