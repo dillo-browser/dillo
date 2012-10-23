@@ -370,7 +370,7 @@ dw::Textblock::getExtremesImpl, like dw::OutOfFlowMgr::getSize is used
 by dw::Textblock::sizeRequestImpl. The last two poins (lines with no
 contents/collisions of floats) lead to a very simple of
 dw::OutOfFlowMgr::getExtremes: the result is simply the maximum of the
-floats extremes.
+floats extremes. (This is at least correct for the minimal width.)
 
 Medium Priority
 ---------------
