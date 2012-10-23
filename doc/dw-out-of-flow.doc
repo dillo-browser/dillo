@@ -341,12 +341,59 @@ dw::core::Widget::sizeRequestImpl, which is allowed, see
     restWidthToContainingBlock, and diffYToContainingBlock are used.
 
 
-More
-====
+Bugs and Things Needing Improvement
+===================================
 
-Some notes about what has do be done for fixed elements: (i) In the
-current design, there is only one containing block for a given
-generating block. However, a given generating block may contain an
-element with absolute position (or, a float),
+High Priority
+-------------
+**Segmentation fault:** Is not fully reproducable, happens randomly.
+
+**Misplaced/missing floats, wrong widths etc.:** Best is to provide
+test pages with these errors, which are as simple as possible.
+
+**Lines with no contents:** When lines are too narrow, they should not
+contain any words, as soon as there are floats at the
+borders. Currently, a line contains at least one word, even if it
+wider than the line. This makes sense, because lines do not get wider,
+so over-wide words must be placed somewhere. However, with floats,
+this changes: lines _do_ get wider below the bottom of floats.
+
+**Collisions of floats:** Currently, only collisions with floats on
+the same side are handled, but a left float must also be moved, when a
+right float blocks the space, and vice versa.
+
+**Extremes:** Extremes will be implemented by
+dw::OutOfFlowMgr::getExtremes, which must be considered by
+dw::Textblock::getExtremesImpl, like dw::OutOfFlowMgr::getSize is used
+by dw::Textblock::sizeRequestImpl. The last two poins (lines with no
+contents/collisions of floats) lead to a very simple of
+dw::OutOfFlowMgr::getExtremes: the result is simply the maximum of the
+floats extremes.
+
+Medium Priority
+---------------
+**Position of a text block:** Setting,
+dw::Textblock::diffXToContainingBlock,
+dw::Textblock::restWidthToContainingBlock, and
+dw::Textblock::diffYToContainingBlock in the current way is ugly,
+should be replaced by something like size hints.
+
+**Determining the containing block:** In
+dw::Textblock::notifySetAsTopLevel and dw::Textblock::notifySetParent:
+should other widgets be able to be generating/containing block?
+
+**Determining whether a widget cares about floats:** Both variants of
+_mustBorderBeRegarded_, and all variants of _getTextblockForLine_:
+Perhaps, there should be only one widget of this type per line.
+
+Low Priority
+-------------
+**Absolute positions:** Will be incorporated into the
+dw::OutOfFlowMgr.
+
+**Fixed elements:** Some notes about what has do be done for fixed
+elements: (i) In the current design, there is only one containing
+block for a given generating block. However, a given generating block
+may contain an element with absolute position (or, a float),
 
 */
