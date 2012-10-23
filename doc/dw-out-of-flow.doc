@@ -360,7 +360,9 @@ this changes: lines _do_ get wider below the bottom of floats.
 
 **Collisions of floats:** Currently, only collisions with floats on
 the same side are handled, but a left float must also be moved, when a
-right float blocks the space, and vice versa.
+right float blocks the space, and vice versa. This will make it
+neccessary to know the width; perhaps dw::Textblock::setWidth should
+delegate this to dw::OutOfFlowMgr.
 
 **Extremes:** Extremes will be implemented by
 dw::OutOfFlowMgr::getExtremes, which must be considered by
@@ -385,6 +387,8 @@ should other widgets be able to be generating/containing block?
 **Determining whether a widget cares about floats:** Both variants of
 _mustBorderBeRegarded_, and all variants of _getTextblockForLine_:
 Perhaps, there should be only one widget of this type per line.
+
+**Implementing the attribute "clear":** ...
 
 Low Priority
 -------------
