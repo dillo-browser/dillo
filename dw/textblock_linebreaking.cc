@@ -845,11 +845,12 @@ void Textblock::accumulateWordData (int wordIndex)
 
 int Textblock::calcAvailWidth (int lineIndex)
 {
-   int availWidth =
-      this->availWidth - getStyle()->boxDiffWidth() - innerPadding;
+   int availWidth = this->availWidth - innerPadding;
    if (limitTextWidth &&
        layout->getUsesViewport () &&
-       availWidth > layout->getWidthViewport () - 10)
+       // margin/border/padding will be subtracted later,  via OOFM.
+       availWidth - getStyle()->boxDiffWidth()
+       > layout->getWidthViewport () - 10)
       availWidth = layout->getWidthViewport () - 10;
    if (lineIndex == 0)
       availWidth -= line1OffsetEff;
@@ -861,9 +862,9 @@ int Textblock::calcAvailWidth (int lineIndex)
    int rightBorder = lineRightBorder (lineIndex);
    availWidth -= (leftBorder + rightBorder);
 
-   PRINTF ("[%p] CALC_AVAIL_WIDTH (%d of %d) => %d - %d - %d - (%d + %d)"
+   PRINTF ("[%p] CALC_AVAIL_WIDTH (%d of %d) => %d - %d - (%d + %d)"
            " = %d\n", this, lineIndex, lines->size(), this->availWidth, 
-           getStyle()->boxDiffWidth(), innerPadding, leftBorder, rightBorder,
+           innerPadding, leftBorder, rightBorder,
            availWidth);
 
    return availWidth;
