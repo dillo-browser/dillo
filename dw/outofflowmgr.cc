@@ -206,7 +206,8 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
 {
    // CbWidth and cbHeight do not contain padding, border, and
    // margin. See call in dw::Textblock::sizeRequest.
-   *oofWidth = *oofHeight = 0;
+   *oofWidth = 0;
+   int oofHeightLeft = 0, oofHeightRight = 0;
 
    for (int i = 0; i < leftFloats->size(); i++) {
       Float *vloat = leftFloats->get(i);
@@ -214,7 +215,8 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
       ensureFloatSize (vloat);
 
       *oofWidth = max (*oofWidth, vloat->width);
-      *oofHeight = max (*oofHeight, vloat->y + vloat->ascent + vloat->descent);
+      oofHeightLeft = max (oofHeightLeft,
+                           vloat->y + vloat->ascent + vloat->descent);
    }
 
    for (int i = 0; i < rightFloats->size(); i++) {
@@ -223,8 +225,11 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
       ensureFloatSize (vloat);
 
       *oofWidth = max (*oofWidth, cbWidth);
-      *oofHeight = max (*oofHeight, vloat->y + vloat->ascent + vloat->descent);
+      oofHeightRight = max (oofHeightRight,
+                            vloat->y + vloat->ascent + vloat->descent);
    }
+
+   *oofHeight = max (oofHeightLeft, oofHeightRight);
 }
 
 
