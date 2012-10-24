@@ -204,10 +204,18 @@ void OutOfFlowMgr::tellNoPosition (Widget *widget)
 void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
                             int *oofWidth, int *oofHeight)
 {
-   // CbWidth and cbHeight do not contain padding, border, and
-   // margin. See call in dw::Textblock::sizeRequest.
-   *oofWidth = 0;
-   int oofHeightLeft = 0, oofHeightRight = 0;
+   // CbWidth and cbHeight *do* contain padding, border, and
+   // margin. See call in dw::Textblock::sizeRequest. (Notice that
+   // this has changed from an earlier version.)
+
+   // Also notice that Float::y includes margins etc.
+
+   // TODO Is it correct to add padding, border, and margin to the
+   // containing block? Check CSS spec.
+
+   *oofWidth = 0; // First, no margin etc.
+   int oofHeightLeft = containingBlock->getCBStyle()->boxDiffWidth();
+   int oofHeightRight = containingBlock->getCBStyle()->boxDiffWidth();
 
    for (int i = 0; i < leftFloats->size(); i++) {
       Float *vloat = leftFloats->get(i);
@@ -216,7 +224,8 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
 
       *oofWidth = max (*oofWidth, vloat->width);
       oofHeightLeft = max (oofHeightLeft,
-                           vloat->y + vloat->ascent + vloat->descent);
+                           vloat->y + vloat->ascent + vloat->descent
+                           + containingBlock->getCBStyle()->boxRestHeight());
    }
 
    for (int i = 0; i < rightFloats->size(); i++) {
@@ -226,9 +235,11 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
 
       *oofWidth = max (*oofWidth, cbWidth);
       oofHeightRight = max (oofHeightRight,
-                            vloat->y + vloat->ascent + vloat->descent);
+                            vloat->y + vloat->ascent + vloat->descent
+                            + containingBlock->getCBStyle()->boxRestHeight());
    }
 
+   *oofWidth += containingBlock->getCBStyle()->boxDiffWidth();
    *oofHeight = max (oofHeightLeft, oofHeightRight);
 }
 

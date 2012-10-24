@@ -180,12 +180,15 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    PRINTF ("[%p] SIZE_REQUEST: inner padding = %d, boxDiffWidth = %d\n",
            this, innerPadding, getStyle()->boxDiffWidth ());
 
-   requisition->width += innerPadding;
-   
+   requisition->width += innerPadding + getStyle()->boxDiffWidth ();
+   requisition->ascent += getStyle()->boxOffsetY ();
+   requisition->descent += getStyle()->boxRestHeight ();
+
    // Dealing with parts out of flow, which may overlap the borders of
    // the text block. Base lines are ignored here: they do not play a
-   // role, currently, and caring about them (for the future) would
+   // role (currently) and caring about them (for the future) would
    // cause too much problems.
+
    if (outOfFlowMgr) {
       int oofWidth, oofHeight;
       outOfFlowMgr->getSize (requisition->width,
@@ -195,12 +198,6 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
       if (oofHeight > requisition->ascent + requisition->descent)
          requisition->descent = oofHeight - requisition->ascent;
    }   
-
-   // Padding, border, and margin are added later. Correct? Check CSS
-   // spec.
-   requisition->width += getStyle()->boxDiffWidth ();
-   requisition->ascent += getStyle()->boxOffsetY ();
-   requisition->descent += getStyle()->boxRestHeight ();
 
    if (requisition->width < availWidth)
       requisition->width = availWidth;
