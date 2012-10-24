@@ -845,11 +845,6 @@ void Textblock::accumulateWordData (int wordIndex)
 
 int Textblock::calcAvailWidth (int lineIndex)
 {
-   // BUG: This method must also include Line::boxLeft and Line::boxRight
-   // (introduced by floats), but since the recent changes in line breaking
-   // (together with hyphenation), this line is often not yet created, so
-   // these values cannot be determined.
-
    int availWidth =
       this->availWidth - getStyle()->boxDiffWidth() - innerPadding;
    if (limitTextWidth &&
