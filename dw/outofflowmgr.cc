@@ -105,6 +105,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Widget *generatingBlock)
    if (widget->getStyle()->vloat != FLOAT_NONE) {
       Float *vloat = new Float ();
       vloat->widget = widget;
+      vloat->generatingBlock = generatingBlock;
       vloat->dirty = true;
 
       switch (widget->getStyle()->vloat) {
