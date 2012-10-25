@@ -390,6 +390,8 @@ Perhaps, there should be only one widget of this type per line.
 
 **Implementing the attribute "clear":** ...
 
+**Exact positions of floats:** See dw::OutOfFlowMgr::calcBorderDiff.
+
 Low Priority
 -------------
 **Absolute positions:** Will be incorporated into the

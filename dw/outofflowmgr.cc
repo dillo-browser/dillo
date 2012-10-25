@@ -331,6 +331,17 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
    }
 }
 
+/**
+ * Calculate the border diff, i. e., for left floats, the difference
+ * between the left side of the allocation of the containing block and
+ * the left side of the allocation of the float, and likewise for
+ * right floats. Both values are positive.
+ *
+ * Currently, this is given by the margin/border/padding of the
+ * containing box, but from how I have understood the CSS
+ * specification, the generating block should be included. A fix of
+ * this method should be sufficient.
+ */
 int OutOfFlowMgr::calcBorderDiff (Float *vloat)
 {
    switch (vloat->widget->getStyle()->vloat) {
