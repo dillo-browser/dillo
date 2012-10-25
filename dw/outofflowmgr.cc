@@ -36,13 +36,11 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
       ensureFloatSize (vloat);
 
       Allocation childAllocation;
-      childAllocation.x = containingBlockAllocation->x
-         + containingBlock->getCBStyle()->boxOffsetX();
+      childAllocation.x = containingBlockAllocation->x + vloat->borderWidth;
       childAllocation.y = containingBlockAllocation->y + vloat->y;
-      childAllocation.width =
-         vloat->width - containingBlock->getCBStyle()->boxOffsetX();
-      childAllocation.ascent = vloat->ascent;
-      childAllocation.descent = vloat->descent;
+      childAllocation.width = vloat->size.width;
+      childAllocation.ascent = vloat->size.ascent;
+      childAllocation.descent = vloat->size.descent;
 
       vloat->widget->sizeAllocate (&childAllocation);
 
@@ -57,13 +55,13 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
       ensureFloatSize (vloat);
 
       Allocation childAllocation;
-      childAllocation.x = containingBlockAllocation->x
-         + containingBlockAllocation->width - vloat->width;
+      childAllocation.x =
+         containingBlockAllocation->x + containingBlockAllocation->width
+         - (vloat->size.width + vloat->borderWidth);
       childAllocation.y = containingBlockAllocation->y + vloat->y;
-      childAllocation.width =
-         vloat->width - containingBlock->getCBStyle()->boxRestWidth();
-      childAllocation.ascent = vloat->ascent;
-      childAllocation.descent = vloat->descent;
+      childAllocation.width = vloat->size.width;
+      childAllocation.ascent = vloat->size.ascent;
+      childAllocation.descent = vloat->size.descent;
 
       vloat->widget->sizeAllocate (&childAllocation);
 
@@ -213,7 +211,9 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    // TODO Is it correct to add padding, border, and margin to the
    // containing block? Check CSS spec.
 
-   *oofWidth = 0; // First, no margin etc.
+   *oofWidth = cbHeight; // This (or "<=" instead of "=") should be
+                         // the case for floats.
+
    int oofHeightLeft = containingBlock->getCBStyle()->boxDiffWidth();
    int oofHeightRight = containingBlock->getCBStyle()->boxDiffWidth();
 
@@ -221,10 +221,8 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
       Float *vloat = leftFloats->get(i);
       assert (vloat->y != -1);
       ensureFloatSize (vloat);
-
-      *oofWidth = max (*oofWidth, vloat->width);
       oofHeightLeft = max (oofHeightLeft,
-                           vloat->y + vloat->ascent + vloat->descent
+                           vloat->y + vloat->size.ascent + vloat->size.descent
                            + containingBlock->getCBStyle()->boxRestHeight());
    }
 
@@ -232,14 +230,11 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
       Float *vloat = rightFloats->get(i);
       assert (vloat->y != -1);
       ensureFloatSize (vloat);
-
-      *oofWidth = max (*oofWidth, cbWidth);
       oofHeightRight = max (oofHeightRight,
-                            vloat->y + vloat->ascent + vloat->descent
+                            vloat->y + vloat->size.ascent + vloat->size.descent
                             + containingBlock->getCBStyle()->boxRestHeight());
    }
 
-   *oofWidth += containingBlock->getCBStyle()->boxDiffWidth();
    *oofHeight = max (oofHeightLeft, oofHeightRight);
 }
 
@@ -266,9 +261,9 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
          if (v != vloat) {
             ensureFloatSize (v);
             if (v->y != -1 && realY >= v->y && 
-                realY < v->y + v->ascent + v->descent) {
+                realY < v->y + v->size.ascent + v->size.descent) {
                collides = true;
-               realY = v->y + v->ascent + v->descent;
+               realY = v->y + v->size.ascent + v->size.descent;
                break;
             }
          }
@@ -292,10 +287,10 @@ int OutOfFlowMgr::getLeftBorder (int y)
       ensureFloatSize (vloat);
 
       if(vloat->y != -1 && y >= vloat->y &&
-         y < vloat->y + vloat->ascent + vloat->descent) {
+         y < vloat->y + vloat->size.ascent + vloat->size.descent) {
          //printf ("   LEFT: %d ==> %d (%d + %d)\n", y,
          //        vloat->width, vloat->ascent, vloat->descent);
-         return vloat->width;
+         return vloat->size.width + vloat->borderWidth;
       }
    }
 
@@ -312,10 +307,10 @@ int OutOfFlowMgr::getRightBorder (int y)
       ensureFloatSize (vloat);
 
       if(vloat->y != -1 && y >= vloat->y &&
-         y < vloat->y + vloat->ascent + vloat->descent) {
+         y < vloat->y + vloat->size.ascent + vloat->size.descent) {
          //printf ("   RIGHT: %d ==> %d (%d + %d)\n", y,
          //        vloat->width, vloat->ascent, vloat->descent);
-         return vloat->width;
+         return vloat->size.width + vloat->borderWidth;
       }
    }
 
@@ -326,34 +321,29 @@ int OutOfFlowMgr::getRightBorder (int y)
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 {
    if (vloat->dirty) {
-      int widthDiff;
-
-      switch (vloat->widget->getStyle()->vloat) {
-      case FLOAT_LEFT:
-         widthDiff = containingBlock->getCBStyle()->boxOffsetX();
-         break;
-
-      case FLOAT_RIGHT:
-         widthDiff = containingBlock->getCBStyle()->boxRestWidth();
-         break;
-
-      default:
-         // Only used for floats.
-         assertNotReached();
-         widthDiff = 0; // compiler happiness
-         break;
-      }
-
-      Requisition requisition;
-      vloat->widget->sizeRequest (&requisition);
-      vloat->width = requisition.width + widthDiff;
-      vloat->ascent = requisition.ascent;
-      vloat->descent = requisition.descent;
+      vloat->widget->sizeRequest (&vloat->size);
+      vloat->borderWidth = calcBorderDiff (vloat);
 
       //printf ("   Float at %d: %d x (%d + %d)\n",
       //        vloat->y, vloat->width, vloat->ascent, vloat->descent);
 
       vloat->dirty = false;
+   }
+}
+
+int OutOfFlowMgr::calcBorderDiff (Float *vloat)
+{
+   switch (vloat->widget->getStyle()->vloat) {
+   case FLOAT_LEFT:
+      return containingBlock->getCBStyle()->boxOffsetX();
+      
+   case FLOAT_RIGHT:
+      return containingBlock->getCBStyle()->boxRestWidth();
+
+   default:
+      // Only used for floats.
+      assertNotReached();
+      return 0; // compiler happiness
    }
 }
 

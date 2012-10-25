@@ -29,7 +29,8 @@ private:
    public:
       core::Widget *widget;
       // width includes border of the containing block
-      int y, width, ascent, descent;
+      int y, borderWidth;
+      core::Requisition size;
       bool dirty;
    };
 
@@ -40,6 +41,7 @@ private:
    Float *findFloatByWidget (core::Widget *widget);
    lout::container::typed::Vector<Float> *getFloatList (core::Widget *widget);
    void ensureFloatSize (Float *vloat);
+   int calcBorderDiff (Float *vloat);
 
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);
