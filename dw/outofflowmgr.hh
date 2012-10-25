@@ -27,7 +27,7 @@ private:
    class Float: public lout::object::Object
    {
    public:
-      core::Widget *widget;
+      core::Widget *widget, *generatingBlock;
       // width includes border of the containing block
       int y, borderWidth;
       core::Requisition size;
@@ -73,7 +73,7 @@ public:
    void markExtremesChange (int ref);
 
    static bool isWidgetOutOfFlow (core::Widget *widget);
-   void addWidget (core::Widget *widget);
+   void addWidget (core::Widget *widget, core::Widget *generatingBlock);
 
    void tellNoPosition (core::Widget *widget);
    void tellPosition (core::Widget *widget, int y);

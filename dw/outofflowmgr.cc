@@ -100,7 +100,7 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
    return widget->getStyle()->vloat != FLOAT_NONE;
 }
 
-void OutOfFlowMgr::addWidget (Widget *widget)
+void OutOfFlowMgr::addWidget (Widget *widget, Widget *generatingBlock)
 {
    if (widget->getStyle()->vloat != FLOAT_NONE) {
       Float *vloat = new Float ();
