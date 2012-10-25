@@ -372,6 +372,21 @@ contents/collisions of floats) lead to a very simple of
 dw::OutOfFlowMgr::getExtremes: the result is simply the maximum of the
 floats extremes. (This is at least correct for the minimal width.)
 
+**Rewrapping (via dw::Textblock::borderChanged) sometimes does not
+imply redrawing. Reproduce?
+
+**Text in floats, which are wider because of an image, are broken at a
+too narrow width:** Reproduce: test/floats2.html. After the image has
+been loaded, the text "Some text in a float." should not be broken anymore.
+
+**Right floats in wide page** are put on the right side of the
+allocation, which is too far right, when the page does not fit into
+the window. Reproduce: test/floats4.html; the box with the greek text
+should make the page wider than the window. Idea for fix:
+dw::OutOfFlowMgr::sizeAllocate should deal with size hints of the
+containing block (dw::Textblock::setWidth should delegate this to
+dw::OutOfFlowMgr), not its allocation.
+
 Medium Priority
 ---------------
 **Position of a text block:** Setting,
@@ -401,5 +416,13 @@ dw::OutOfFlowMgr.
 elements: (i) In the current design, there is only one containing
 block for a given generating block. However, a given generating block
 may contain an element with absolute position (or, a float),
+
+Not a Bug (Kind of)
+-------------------
+**Floats too far left?** Sometimes, floats seem too far on the left
+side, as in test/floats-and-absolute.html, and also in Wikipedia. This
+is only due to the fact that dillo does not yet support absolute
+positions, and so absolutely positioned elements are not regarded as
+containing block. (Or related to *Exact positions of floats* above?)
 
 */
