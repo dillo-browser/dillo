@@ -377,7 +377,9 @@ imply redrawing. Reproduce?
 
 **Text in floats, which are wider because of an image, are broken at a
 too narrow width:** Reproduce: test/floats2.html. After the image has
-been loaded, the text "Some text in a float." should not be broken anymore.
+been loaded, the text "Some text in a float." should not be broken
+anymore. Idea: dw::OutOfFlowMgr should call
+dw::core::Widget::setWidth. (What does dw::Table do?)
 
 **Right floats in wide page** are put on the right side of the
 allocation, which is too far right, when the page does not fit into
