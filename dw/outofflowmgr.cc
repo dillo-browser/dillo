@@ -243,9 +243,6 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
 {
    assert (y >= 0);
 
-   // TODO Test collisions; when floats overlap, the vloat->y must be larger
-   // than y.
-
    Float *vloat = findFloatByWidget(widget);
    int oldY = vloat->y;
 
@@ -254,6 +251,8 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
    bool collides;
 
    do {
+      // Test collisions on the same side. TODO Other side (see \ref
+      // dw-out-of-flow).
       collides = false;
 
       for (int i = 0; i < list->size(); i++) {
