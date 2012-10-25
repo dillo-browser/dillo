@@ -326,8 +326,9 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
    if (vloat->dirty) {
       // This is a bit hackish: We first request the size, then set
       // the available width (also considering the one of the
-      // containing block), then request the size again, which may of
-      // course have a different result. This is a fix for the bug:
+      // containing block, and the extremes of the float), then
+      // request the size again, which may of course have a different
+      // result. This is a fix for the bug:
       //
       //    Text in floats, which are wider because of an image, are
       //    broken at a too narrow width. Reproduce:
@@ -339,17 +340,32 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       // will read the size from the cache, so no redundant
       // calculation is necessary.
 
-      vloat->widget->sizeRequest (&vloat->size);
-      vloat->widget->setWidth (availWidth != -1 ?
-                               min (vloat->size.width, availWidth) :
-                               vloat->size.width);
+      // Furthermore, extremes are considered; especially, floats are too
+      // wide, sometimes.
+      Extremes extremes;
+      vloat->widget->getExtremes (&extremes);
+
       vloat->widget->sizeRequest (&vloat->size);
 
+      // Set width  ...
+      int width = vloat->size.width;
+      // Consider the available width of the containing block (when set):
+      if (availWidth != -1 && width > availWidth)
+         width = availWidth;
+      // Finally, consider extremes (as described above).
+      if (width < extremes.minWidth)
+          width = extremes.minWidth;
+      if (width > extremes.maxWidth)
+         width = extremes.maxWidth;
+          
+      vloat->widget->setWidth (width);
+      vloat->widget->sizeRequest (&vloat->size);
+      
       vloat->borderWidth = calcBorderDiff (vloat);
-
+      
       //printf ("   Float at %d: %d x (%d + %d)\n",
       //        vloat->y, vloat->width, vloat->ascent, vloat->descent);
-
+          
       vloat->dirty = false;
    }
 }
