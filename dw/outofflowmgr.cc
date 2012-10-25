@@ -324,7 +324,27 @@ int OutOfFlowMgr::getRightBorder (int y)
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 {
    if (vloat->dirty) {
+      // This is a bit hackish: We first request the size, then set
+      // the available width (also considering the one of the
+      // containing block), then request the size again, which may of
+      // course have a different result. This is a fix for the bug:
+      //
+      //    Text in floats, which are wider because of an image, are
+      //    broken at a too narrow width. Reproduce:
+      //    test/floats2.html. After the image has been loaded, the
+      //    text "Some text in a float." should not be broken
+      //    anymore.
+      //
+      // If the call of setWidth not is neccessary, the second call
+      // will read the size from the cache, so no redundant
+      // calculation is necessary.
+
       vloat->widget->sizeRequest (&vloat->size);
+      vloat->widget->setWidth (availWidth != -1 ?
+                               min (vloat->size.width, availWidth) :
+                               vloat->size.width);
+      vloat->widget->sizeRequest (&vloat->size);
+
       vloat->borderWidth = calcBorderDiff (vloat);
 
       //printf ("   Float at %d: %d x (%d + %d)\n",
