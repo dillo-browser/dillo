@@ -212,8 +212,8 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    // TODO Is it correct to add padding, border, and margin to the
    // containing block? Check CSS spec.
 
-   *oofWidth = cbHeight; // This (or "<=" instead of "=") should be
-                         // the case for floats.
+   *oofWidth = cbWidth; /* This (or "<=" instead of "=") should be
+                           the case for floats. */
 
    int oofHeightLeft = containingBlock->getCBStyle()->boxDiffWidth();
    int oofHeightRight = containingBlock->getCBStyle()->boxDiffWidth();
