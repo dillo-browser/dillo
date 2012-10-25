@@ -12,8 +12,9 @@ namespace dw {
 OutOfFlowMgr::OutOfFlowMgr (ContainingBlock *containingBlock)
 {
    //printf ("OutOfFlowMgr::OutOfFlowMgr\n");
-   this->containingBlock = containingBlock;
 
+   this->containingBlock = containingBlock;
+   availWidth = -1;   
    leftFloats = new Vector<Float> (1, true);
    rightFloats = new Vector<Float> (1, true);
 }
@@ -49,14 +50,16 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
       //        childAllocation.ascent, childAllocation.descent);
    }
 
+   int width =
+      availWidth != -1 ? availWidth : containingBlockAllocation->width;
+   
    for (int i = 0; i < rightFloats->size(); i++) {
       Float *vloat = rightFloats->get(i);
       assert (vloat->y != -1);
       ensureFloatSize (vloat);
 
       Allocation childAllocation;
-      childAllocation.x =
-         containingBlockAllocation->x + containingBlockAllocation->width
+      childAllocation.x = containingBlockAllocation->x + width
          - (vloat->size.width + vloat->borderWidth);
       childAllocation.y = containingBlockAllocation->y + vloat->y;
       childAllocation.width = vloat->size.width;

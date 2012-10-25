@@ -596,6 +596,9 @@ void Textblock::setWidth (int width)
       mustQueueResize = false;
       redrawY = 0;
    }
+
+   if (outOfFlowMgr)
+      outOfFlowMgr->setWidth (width);
 }
 
 void Textblock::setAscent (int ascent)
@@ -610,6 +613,9 @@ void Textblock::setAscent (int ascent)
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
    }
+
+   if (outOfFlowMgr)
+      outOfFlowMgr->setAscent (ascent);
 }
 
 void Textblock::setDescent (int descent)
@@ -624,6 +630,9 @@ void Textblock::setDescent (int descent)
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
    }
+
+   if (outOfFlowMgr)
+      outOfFlowMgr->setDescent (descent);
 }
 
 bool Textblock::buttonPressImpl (core::EventButton *event)
@@ -1679,8 +1688,14 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    if (OutOfFlowMgr::isWidgetOutOfFlow (widget)) {
       printf ("   -> out of flow.\n");
 
-      if (containingBlock->outOfFlowMgr == NULL)
+      if (containingBlock->outOfFlowMgr == NULL) {
          containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
+         containingBlock->outOfFlowMgr->setWidth (containingBlock->availWidth);
+         containingBlock->outOfFlowMgr->setAscent
+            (containingBlock->availAscent);
+         containingBlock->outOfFlowMgr->setDescent
+            (containingBlock->availDescent);
+      }
 
       widget->setParent (containingBlock);
       containingBlock->outOfFlowMgr->addWidget (widget, this);
