@@ -530,11 +530,11 @@ void Textblock::markChange (int ref)
 
 void Textblock::notifySetAsTopLevel()
 {
-   printf ("%p becomes toplevel\n", this);
+   PRINTF ("%p becomes toplevel\n", this);
    containingBlock = this;
    diffXToContainingBlock = restWidthToContainingBlock =
       diffYToContainingBlock = 0;
-   printf ("-> %p is its own containing block\n", this);
+   PRINTF ("-> %p is its own containing block\n", this);
 }
 
 bool Textblock::isContainingBlock (Widget *widget)
@@ -559,7 +559,7 @@ bool Textblock::isContainingBlock (Widget *widget)
 
 void Textblock::notifySetParent ()
 {
-   printf ("%p becomes a child of %p\n", this, getParent());
+   PRINTF ("%p becomes a child of %p\n", this, getParent());
 
    // Search for containing Box.
    containingBlock = NULL;
@@ -572,10 +572,11 @@ void Textblock::notifySetParent ()
          if (containingBlock == this) {
             diffXToContainingBlock = restWidthToContainingBlock =
                diffYToContainingBlock = 0;
-            printf ("-> %p is its own containing block\n", this);
-         } else
-            printf ("-> %p becomes containing block of %p\n",
+            PRINTF ("-> %p is its own containing block\n", this);
+         } else {
+            PRINTF ("-> %p becomes containing block of %p\n",
                     containingBlock, this);
+         }
       }
    
    assert (containingBlock != NULL);
@@ -1682,11 +1683,11 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 
    widget->setStyle (style);
 
-   printf ("adding the %s %p to %p ...\n",
+   PRINTF ("adding the %s %p to %p ...\n",
            widget->getClassName(), widget, this);
       
    if (OutOfFlowMgr::isWidgetOutOfFlow (widget)) {
-      printf ("   -> out of flow.\n");
+      PRINTF ("   -> out of flow.\n");
 
       if (containingBlock->outOfFlowMgr == NULL) {
          containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
@@ -1704,7 +1705,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       word->content.widget = widget;
       word->style = style;
    } else {
-      printf ("   -> within flow.\n");
+      PRINTF ("   -> within flow.\n");
 
       widget->setParent (this);
 
@@ -2111,14 +2112,14 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::borderChanged (int y)
 {
-   printf ("[%p] Border has changed: %d\n", this, y);
+   PRINTF ("[%p] Border has changed: %d\n", this, y);
    borderChanged (y, true);
-   printf ("[%p] Done.\n", this);
+   PRINTF ("[%p] Done.\n", this);
 }
 
 void Textblock::borderChanged (int yWidget, bool extremesChanges)
 {
-   printf ("[%p] Border has changed: %d (extremes: %s)\n",
+   PRINTF ("[%p] Border has changed: %d (extremes: %s)\n",
            this, yWidget, extremesChanges ? "true" : "false");
 
    // Notice that this method is, unlike the other "borderChanged",
@@ -2137,7 +2138,7 @@ void Textblock::borderChanged (int yWidget, bool extremesChanges)
       else
          wrapLineIndex = lineIndex;
       
-      printf ("[%p] Rewrapping from line %d.\n", this, wrapLineIndex);
+      PRINTF ("[%p] Rewrapping from line %d.\n", this, wrapLineIndex);
       queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex),
                    extremesChanges);
 

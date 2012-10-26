@@ -161,7 +161,7 @@ Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getFloatList (Widget *widget)
 
 void OutOfFlowMgr::markSizeChange (int ref)
 {
-   printf ("[%p] MARK_SIZE_CHANGE (%d)\n", containingBlock, ref);
+   //printf ("[%p] MARK_SIZE_CHANGE (%d)\n", containingBlock, ref);
 
    if (isRefFloat (ref)) {
       Float *vloat;
