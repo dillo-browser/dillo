@@ -48,6 +48,7 @@ int main (int argc, char *argv[])
                   "thiomethyl)-8-oxo-5-thia-1-azabicyclo[4.2.0]oct-2-en-2-"
                   "carbonsäure-7²-(Z)-(O-methyloxim)");
    hyphenateWord (&p, "Abtei-Stadt");
+   hyphenateWord (&p, "Nordrhein-Westfalen");
 
    return 0;
 }
