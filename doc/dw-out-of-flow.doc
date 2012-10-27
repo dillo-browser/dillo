@@ -346,7 +346,8 @@ Bugs and Things Needing Improvement
 
 High Priority
 -------------
-**Segmentation fault:** Is not fully reproducable, happens randomly.
+This one seems to be **FIXED:** *Segmentation fault: Is not fully
+reproducable, happens randomly.*
 
 **Misplaced/missing floats, wrong widths etc.:** Best is to provide
 test pages with these errors, which are as simple as possible.

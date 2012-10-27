@@ -711,9 +711,16 @@ int Textblock::hyphenateWord (int wordIndex)
                PRINTF ("      [%d] + nothing\n", wordIndex + i);
             }
          }
-
-         accumulateWordData (wordIndex + i);
       }
+
+      // AccumulateWordData() will calculate the width, which depends
+      // on the borders (possibly limited by floats), which depends on
+      // the widgeds so far. For this reason, it is important to first
+      // make all words consistent before calling
+      // accumulateWordData(); therefore the second loop.
+
+      for (int i = 0; i < numBreaks + 1; i++)
+         accumulateWordData (wordIndex + i);
 
       PRINTF ("   finished\n");
       
