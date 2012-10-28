@@ -480,7 +480,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                  word->badnessAndPenalty.lineTooTight () &&
                  words->getRef(wordIndex- 1)
                  ->badnessAndPenalty.lineCanBeBroken ()) {
-         // TODO Comment the last condition (also below where the minimun is
+         // TODO Comment the last condition (also below where the minimum is
          // searched for)
          newLine = true;
          searchUntil = wordIndex - 1;
