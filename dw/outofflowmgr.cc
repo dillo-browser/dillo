@@ -110,6 +110,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Widget *generatingBlock)
       vloat->widget = widget;
       vloat->generatingBlock = generatingBlock;
       vloat->dirty = true;
+      vloat->y = -1;
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
@@ -248,6 +249,10 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
    assert (y >= 0);
 
    Float *vloat = findFloatByWidget(widget);
+
+   //printf ("[%p] tellPosition (%p, %d): %d ...\n",
+   //        containingBlock, widget, y, vloat->y);
+
    int oldY = vloat->y;
 
    int realY = y;
@@ -274,6 +279,8 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
    } while (collides);
 
    vloat->y = realY;
+
+   //printf ("  => %d\n", vloat->y);
    
    if (oldY == -1)
       containingBlock->borderChanged (vloat->y);
