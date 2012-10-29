@@ -529,13 +529,18 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
             
             if (wrapAll && searchUntil == words->size () - 1) {
                // Since no break and no space is added, the last word
-               // will have a penalty of inf. Actually, it should be -inf,
-               // since it is the last word. However, since more words may
-               // follow, the penalty is not changesd, but here, the search
-               // is corrected (maybe only temporary).
+               // will have a penalty of inf. Actually, it should be
+               // less, since it is the last word. However, since more
+               // words may follow, the penalty is not changesd, but
+               // here, the search is corrected (maybe only
+               // temporary).
+
+               // (Notice that it was once (temporally) set to -inf,
+               // not 0, but this will make e.g. test/table-1.html not
+               // work.)
                Word *lastWord = words->getRef (searchUntil);
                BadnessAndPenalty correctedBap = lastWord->badnessAndPenalty;
-               correctedBap.setPenaltyForceBreak ();
+               correctedBap.setPenalty (0);
                if (correctedBap.compareTo
                    (&words->getRef(breakPos)->badnessAndPenalty) <= 0) {
                   breakPos = searchUntil;
