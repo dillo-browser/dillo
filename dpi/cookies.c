@@ -805,6 +805,9 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
 
       /* Get the value for the attribute and store it */
       if (first_attr) {
+         time_t now;
+         struct tm *tm;
+
          if (*str != '=' || *attr == '\0') {
             /* disregard nameless cookie */
             dFree(attr);
@@ -815,8 +818,8 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
          cookie->value = Cookies_parse_value(&str);
 
          /* let's arbitrarily initialise with a year for now */
-         time_t now = time(NULL);
-         struct tm *tm = gmtime(&now);
+         now = time(NULL);
+         tm = gmtime(&now);
          ++tm->tm_year;
          cookie->expires_at = mktime(tm);
          if (cookie->expires_at == (time_t) -1)
@@ -847,10 +850,12 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
          dFree(value);
       } else if (dStrAsciiCasecmp(attr, "Expires") == 0) {
          if (!max_age) {
+            struct tm *tm;
+
             value = Cookies_parse_value(&str);
             Cookies_unquote_string(value);
             _MSG("Expires attribute gives %s\n", value);
-            struct tm *tm = Cookies_parse_date(value);
+            tm = Cookies_parse_date(value);
             if (tm) {
                tm->tm_sec += Cookies_server_timediff(server_date);
                cookie->expires_at = mktime(tm);

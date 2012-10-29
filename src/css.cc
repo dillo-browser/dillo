@@ -44,7 +44,7 @@ CssPropertyList::CssPropertyList (const CssPropertyList &p, bool deep) :
    } else {
       ownerOfStrings = false;
    }
-};
+}
 
 CssPropertyList::~CssPropertyList () {
    if (ownerOfStrings)
@@ -108,7 +108,7 @@ CssSelector::CssSelector () {
    cs->notMatchingBefore = -1;
    cs->combinator = COMB_NONE;
    cs->selector = new CssSimpleSelector ();
-};
+}
 
 CssSelector::~CssSelector () {
    for (int i = selectorList->size () - 1; i >= 0; i--)
@@ -329,12 +329,12 @@ CssRule::CssRule (CssSelector *selector, CssPropertyList *props, int pos) {
    this->props->ref ();
    this->pos = pos;
    spec = selector->specificity ();
-};
+}
 
 CssRule::~CssRule () {
    selector->unref ();
    props->unref ();
-};
+}
 
 void CssRule::apply (CssPropertyList *props,
                      Doctree *docTree, const DoctreeNode *node) {
