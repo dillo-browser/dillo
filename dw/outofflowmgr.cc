@@ -299,7 +299,7 @@ int OutOfFlowMgr::getLeftBorder (int y)
       if(vloat->y != -1 && y >= vloat->y &&
          y < vloat->y + vloat->size.ascent + vloat->size.descent) {
          //printf ("   LEFT: %d ==> %d (%d + %d)\n", y,
-         //        vloat->width, vloat->ascent, vloat->descent);
+         //        vloat->size.width, vloat->size.ascent, vloat->size.descent);
          return vloat->size.width + vloat->borderWidth;
       }
    }
@@ -319,7 +319,7 @@ int OutOfFlowMgr::getRightBorder (int y)
       if(vloat->y != -1 && y >= vloat->y &&
          y < vloat->y + vloat->size.ascent + vloat->size.descent) {
          //printf ("   RIGHT: %d ==> %d (%d + %d)\n", y,
-         //        vloat->width, vloat->ascent, vloat->descent);
+         //        vloat->size.width, vloat->size.ascent, vloat->size.descent);
          return vloat->size.width + vloat->borderWidth;
       }
    }
