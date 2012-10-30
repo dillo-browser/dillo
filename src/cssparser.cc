@@ -701,7 +701,7 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
       case CSS_TYPE_LENGTH_PERCENTAGE:
       case CSS_TYPE_LENGTH_PERCENTAGE_NUMBER:
       case CSS_TYPE_LENGTH:
-         if  (tval[0] == '-')
+         if (tval[0] == '-')
             return false;
          // Fall Through
       case CSS_TYPE_SIGNED_LENGTH:
@@ -1063,7 +1063,7 @@ void CssParser::parseDeclaration(CssPropertyList * props,
 
    CssPropertyName prop;
    CssPropertyValue val, dir_vals[4];
-   CssValueType  dir_types[4];
+   CssValueType dir_types[4];
    bool found, weight;
    int sh_index, i, j, n;
    int dir_set[4][4] = {

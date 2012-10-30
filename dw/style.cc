@@ -179,8 +179,8 @@ int StyleAttrs::hashValue () {
       borderCollapse +
       (intptr_t) borderColor.top +
       (intptr_t) borderColor.right +
-      (intptr_t) borderColor.bottom  +
-      (intptr_t) borderColor.left  +
+      (intptr_t) borderColor.bottom +
+      (intptr_t) borderColor.left +
       borderStyle.top +
       borderStyle.right +
       borderStyle.bottom +

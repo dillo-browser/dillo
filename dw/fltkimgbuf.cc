@@ -228,12 +228,12 @@ void FltkImgbuf::getRowArea (int row, dw::core::Rectangle *area)
    }
 }
 
-int  FltkImgbuf::getRootWidth ()
+int FltkImgbuf::getRootWidth ()
 {
    return root ? root->width : width;
 }
 
-int  FltkImgbuf::getRootHeight ()
+int FltkImgbuf::getRootHeight ()
 {
    return root ? root->height : height;
 }

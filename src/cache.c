@@ -911,9 +911,9 @@ void a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
       }
       if ((entry->Flags & CA_GotLength) &&
           (entry->ExpectedSize != entry->TransferSize)) {
-         MSG_HTTP("Content-Length does NOT match message body,\n"
-                  " at: %s\n", URL_STR_(entry->Url));
-         MSG("entry->ExpectedSize = %d, entry->TransferSize = %d\n",
+         MSG_HTTP("Content-Length does NOT match message body at\n"
+                  "%s\n", URL_STR_(entry->Url));
+         MSG("Expected size: %d, Transfer size: %d\n",
              entry->ExpectedSize, entry->TransferSize);
       }
       if (!entry->TransferSize && !(entry->Flags & CA_Redirect) &&

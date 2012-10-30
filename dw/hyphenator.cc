@@ -490,14 +490,14 @@ Trie::Trie (TrieNode *array, int size, bool freeArray, ZoneAllocator *dataZone)
    this->size = size;
    this->freeArray = freeArray;
    this->dataZone = dataZone;
-};
+}
 
 Trie::~Trie ()
 {
    delete dataZone;
    if (freeArray)
       free(array);
-};
+}
 
 void Trie::save (FILE *file)
 {

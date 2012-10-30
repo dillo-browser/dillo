@@ -25,6 +25,16 @@
 #include "timeout.hh"
 
 /*
+ * Local data types
+ */
+
+typedef struct {
+   const char *title;
+   const Fl_Menu_Item *picked;
+   const Fl_Menu_Item *menu;
+} Menu_popup_data_t;
+
+/*
  * Local data
  */
 
@@ -287,12 +297,25 @@ static void Menu_history_cb(Fl_Widget*, void *data)
  * avoid a segfault when a new page replaces the page that issued
  * the popup menu.
  */
-static void Menu_popup_cb(void *data)
+static void Menu_simple_popup_cb(void *data)
 {
    const Fl_Menu_Item *m = ((Fl_Menu_Item *)data)->popup(popup_x, popup_y);
 
    if (m && m->callback())
       m->do_callback((Fl_Widget *)data);
+   a_Timeout_remove();
+}
+
+static void Menu_popup_cb(void *data)
+{
+   Menu_popup_data_t *d = (Menu_popup_data_t *)data;
+   const Fl_Menu_Item *picked = d->menu->popup(popup_x, popup_y, d->title,
+                                               d->picked);
+   if (picked) {
+      d->picked = picked;
+      if (picked->callback())
+         picked->do_callback((Fl_Widget *)(d->menu));
+   }
    a_Timeout_remove();
 }
 
@@ -317,6 +340,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
       {"Save page as...", 0, Menu_save_page_cb,0,0,0,0,0,0},
       {0,0,0,0,0,0,0,0,0}
    };
+   static Menu_popup_data_t page_data = {"Page menu", NULL, pm};
 
    popup_x = Fl::event_x();
    popup_y = Fl::event_y();
@@ -379,7 +403,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    }
    pm[3].user_data(popup_url);
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)&page_data);
 }
 
 static Fl_Menu_Item link_menu[] = {
@@ -405,6 +429,8 @@ static void Menu_set_link_menu_user_data(void *user_data)
  */
 void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
 {
+   static Menu_popup_data_t link_data = {"Link menu", NULL, link_menu};
+
    popup_x = Fl::event_x();
    popup_y = Fl::event_y();
    popup_bw = bw;
@@ -413,7 +439,7 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
 
    Menu_set_link_menu_user_data(popup_url);
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void*)link_menu);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)&link_data);
 }
 
 /*
@@ -437,6 +463,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
       {"Link menu", 0, Menu_nop_cb, link_menu, FL_SUBMENU_POINTER,0,0,0,0},
       {0,0,0,0,0,0,0,0,0}
    };
+   static Menu_popup_data_t image_data = {"Image menu", NULL, pm};
 
    popup_x = Fl::event_x();
    popup_y = Fl::event_y();
@@ -471,7 +498,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
       pm[7].deactivate();
    }
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)&image_data);
 }
 
 /*
@@ -487,6 +514,7 @@ void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
       {0, 0, Menu_form_hiddens_cb, &hiddens_visible, 0,0,0,0,0},
       {0,0,0,0,0,0,0,0,0}
    };
+   static Menu_popup_data_t form_data = {"Form menu", NULL, pm};
 
    popup_x = Fl::event_x();
    popup_y = Fl::event_y();
@@ -498,7 +526,7 @@ void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
    hiddens_visible = hidvis;
    pm[2].label(hiddens_visible ? "Hide hiddens": "Show hiddens");
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
+   a_Timeout_add(0.0, Menu_popup_cb, (void*)&form_data);
 }
 
 /*
@@ -531,7 +559,7 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
    popup_url = NULL;
 
    //pm->label(wid->visible() ? NULL : "File");
-   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
+   a_Timeout_add(0.0, Menu_simple_popup_cb, (void*)pm);
 }
 
 /*
@@ -553,7 +581,7 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
    a_Url_free(popup_url);
    popup_url = a_Url_dup(url);
 
-   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
+   a_Timeout_add(0.0, Menu_simple_popup_cb, (void*)pm);
 }
 
 /*
@@ -590,7 +618,7 @@ void a_Menu_history_popup(BrowserWindow *bw, int x, int y, int direction)
       pm[i].label(FL_NORMAL_LABEL, a_History_get_title(history_list[i], 1));
       pm[i].callback(Menu_history_cb, INT2VOIDP(i+1));
    }
-   a_Timeout_add(0.0, Menu_popup_cb, (void*)pm);
+   a_Timeout_add(0.0, Menu_simple_popup_cb, (void*)pm);
 }
 
 /*

@@ -344,8 +344,8 @@ int SelectionState::correctCharPos (DeepIterator *it, int charPos)
    return misc::min(charPos, len);
 }
 
-void  SelectionState::highlight0 (bool fl, DeepIterator *from, int fromChar,
-                                  DeepIterator *to, int toChar, int dir)
+void SelectionState::highlight0 (bool fl, DeepIterator *from, int fromChar,
+                                 DeepIterator *to, int toChar, int dir)
 {
    DeepIterator *a, *b, *i;
    int cmp, aChar, bChar;

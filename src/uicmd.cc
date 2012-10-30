@@ -1019,14 +1019,18 @@ void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr)
  */
 void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url)
 {
-   char *buf;
+   char *buf, *major;
    int buf_size;
    Dstr *dstr_url;
    DilloUrl *vs_url;
    static int post_id = 0;
    char tag[8];
+   const char *content_type = a_Nav_get_content_type(url);
 
-   if (a_Nav_get_buf(url, &buf, &buf_size)) {
+   a_Misc_parse_content_type(content_type, &major, NULL, NULL);
+
+   if (major && dStrAsciiCasecmp(major, "image") &&
+       a_Nav_get_buf(url, &buf, &buf_size)) {
       a_Nav_set_vsource_url(url);
       dstr_url = dStr_new("dpi:/vsource/:");
       dStr_append(dstr_url, URL_STR(url));
@@ -1042,6 +1046,7 @@ void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url)
       dStr_free(dstr_url, 1);
       a_Nav_unref_buf(url);
    }
+   dFree(major);
 }
 
 /*

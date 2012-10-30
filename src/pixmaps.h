@@ -13,36 +13,6 @@
 #ifndef __PIXMAPS_H__
 #define __PIXMAPS_H__
 
-/* XPM
-static const char *const history_xpm[] = {
-"11 20 6 1",
-"       c None",
-".      c #000000000000",
-"X      c #9658A289BEFB",
-"O      c #FFFF9A690000",
-"+      c #FFFFFFFF0000",
-"@      c #FFFFFFFFFFFF",
-"           ",
-"     .     ",
-"    .X.    ",
-"   .XXX.   ",
-"  .XXXXX.  ",
-" .XXXXXXX. ",
-" ...XXX... ",
-"   .XXX.   ",
-"   .XXX.   ",
-"   .XXX.   ",
-"   OOOOO   ",
-"   .XXX.   ",
-"   .XXX.   ",
-" ...XXX... ",
-" .XXXXXXX. ",
-"  .XXXXX.  ",
-"   .XXX.   ",
-"    .X.    ",
-"     .     ",
-"           "};
-*/
 /* XPM */
 static const char *const left_xpm[] = {
 "22 22 46 1",
@@ -1555,48 +1525,6 @@ static const char *const help_xpm[] = {
 "     4764     ",
 "     4674     ",
 "      44      "};
-
-/* XPM */
-static const char *const full_screen_on_xpm[] = {
-"13 15 2 1",
-"       c None",
-".      c #000000",
-"             ",
-".............",
-".     .     .",
-".    ...    .",
-".   .....   .",
-".  .......  .",
-".     .     .",
-".     .     .",
-".     .     .",
-".  .......  .",
-".   .....   .",
-".    ...    .",
-".     .     .",
-".............",
-"             "};
-
-/* XPM */
-static const char *const full_screen_off_xpm[] = {
-"13 15 2 1",
-"       c None",
-".      c #000000",
-"             ",
-".............",
-". . . . . . .",
-".. . . . . ..",
-".............",
-".           .",
-".           .",
-".           .",
-".           .",
-".           .",
-".           .",
-".............",
-". . . . . . .",
-".............",
-"             "};
 
 /* XPM */
 static const char *const mini_bug_xpm[] = {

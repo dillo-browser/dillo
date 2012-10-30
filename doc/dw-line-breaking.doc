@@ -338,7 +338,7 @@ be easily extended.
 words containing hyphens already. Example: "Abtei-Stadt", which is
 divided into "Abtei-" and "Stadt", resulting possibly in
 &quot;Abtei-<span></span>-[new line]Stadt&quot;. See also below under
-"Low Priority", on how to deal with hyphens and dashes.
+"Medium Priority", on how to deal with hyphens and dashes.
 
 <h3>Medium Priority</h3>
 
@@ -356,6 +356,13 @@ hyphenation.</li>
 
 Where to implement? In the same dynamic, lazy way like hyphenation? As
 part of hyphenation?
+
+Notice that Liang's algorithm may behave different regarding hyphens:
+"Abtei-Stadt" is (using the patterns from CTAN) divided into "Abtei-"
+and "Stadt", but "Nordrhein-Westfalen" is divided into "Nord",
+"rhein-West", "fa", "len": the part containing the hyphen
+("rhein-West") is untouched. (Sorry for the German words; if you have
+got English examples, send them me.)
 
 <b>Incorrect calculation of extremes:</b> The minimal width of a text
 block (as part of the width extremes, which are mainly used for

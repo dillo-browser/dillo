@@ -334,7 +334,7 @@ public:
 
    inline style::Font *createFont (style::FontAttrs *attrs, bool tryEverything)
    {
-      return  platform->createFont (attrs, tryEverything);
+      return platform->createFont (attrs, tryEverything);
    }
 
    inline bool fontExists (const char *name)

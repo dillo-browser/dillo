@@ -61,7 +61,7 @@ int MyInput::handle(int e)
    if (ret)
       ret = Fl_Input::handle(e);
    return ret;
-};
+}
 
 /*
  * Find next occurrence of input key

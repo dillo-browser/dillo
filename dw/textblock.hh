@@ -181,12 +181,14 @@ private:
          INF_VALUE = 0,        /* simple values */
          INF_LARGE,            /* large values, like QUITE_LOOSE */
          INF_NOT_STRETCHABLE,  /* reserved for NOT_STRECTHABLE */
+         INF_TOO_TIGHT,        /* used for lines, which are too tight */
          INF_PENALTIES,        /* used for penalties */
-         INF_TOO_TIGHT,        /* used for lines, which are too tight;
-                                  that this is the last value means
-                                  that lines, which are too tight, are
-                                  regarded as the worst case */
-         INF_MAX = INF_TOO_TIGHT
+         INF_MAX = INF_PENALTIES
+
+         // That INF_PENALTIES is the last value means that an
+         // infinite penalty (breaking is prohibited) makes a break
+         // not possible at all, so that pre-formatted text
+         // etc. works.
       };
 
       int badnessValue (int infLevel);
