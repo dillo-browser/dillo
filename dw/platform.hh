@@ -44,7 +44,7 @@ public:
     * \brief This methods notifies the platform, that a view has been detached
     *    from the related layout.
     */
-   virtual void detachView  (View *view) = 0;
+   virtual void detachView (View *view) = 0;
 
    /*
     * -----------------------------------

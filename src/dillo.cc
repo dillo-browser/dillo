@@ -148,7 +148,7 @@ static OptID getCmdOption(const CLI_options *options, int argc, char **argv,
    }
    if (state == O_FOUND) {
       int n_arg = options[i].opt_argc;
-      opt_id  = options[i].id;
+      opt_id = options[i].id;
       /* Find the required/optional arguments of the option */
       for (i = 0; *idx < argc && i < abs(n_arg) && argv[*idx][0] != '-'; i++)
          opt_argv[i] = argv[(*idx)++];

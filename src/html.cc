@@ -1144,7 +1144,7 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
       dStr_append_l(html->Stash, word, size);
    }
 
-   if (parse_mode == DILLO_HTML_PARSE_MODE_STASH  ||
+   if (parse_mode == DILLO_HTML_PARSE_MODE_STASH ||
        parse_mode == DILLO_HTML_PARSE_MODE_VERBATIM) {
       /* skip until the closing instructions */
 
@@ -3627,7 +3627,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       /* Request immediate close for elements with forbidden close tag. */
       /* TODO: XHTML always requires close tags. A simple implementation
        * of the commented clause below will make it work. */
-      if  (/* parsing HTML && */ Tags[ni].EndTag == 'F')
+      if (/* parsing HTML && */ Tags[ni].EndTag == 'F')
          html->ReqTagClose = true;
 
       /* Don't break! Open tags may also close themselves */

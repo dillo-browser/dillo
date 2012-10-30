@@ -493,7 +493,7 @@ void FltkPlatform::attachView (core::View *view)
 }
 
 
-void FltkPlatform::detachView  (core::View *view)
+void FltkPlatform::detachView (core::View *view)
 {
    if (this->view != view)
       MSG_ERR("FltkPlatform::detachView: this->view: %p view: %p\n",

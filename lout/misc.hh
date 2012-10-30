@@ -433,7 +433,7 @@ public:
                T *src = i < oldNumExtra ?
                   this->arrayExtra1 + i : arrayMainI + (i - oldNumExtra);
                T *dest = i < diff ?
-                  arrayMainI  + i : arrayExtra2 + (i - diff);
+                  arrayMainI + i : arrayExtra2 + (i - diff);
                *dest = *src;
             }
 

@@ -175,8 +175,8 @@ public:
 
    virtual Imgbuf* getScaledBuf (int width, int height) = 0;
    virtual void getRowArea (int row, dw::core::Rectangle *area) = 0;
-   virtual int  getRootWidth () = 0;
-   virtual int  getRootHeight () = 0;
+   virtual int getRootWidth () = 0;
+   virtual int getRootHeight () = 0;
 
    /*
     * Reference counting.
