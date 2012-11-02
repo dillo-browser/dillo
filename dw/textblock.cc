@@ -1648,22 +1648,9 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
 
    // TODO: This line does not work: addBreakOption (word, style);
 
+   // Do not override a previously set break penalty.
    if (!word->content.space) {
-      // Do not override a previously set break penalty.
-      if (!word->badnessAndPenalty.lineMustBeBroken()) {
-         switch (style->whiteSpace) {
-         case core::style::WHITE_SPACE_NORMAL:
-         case core::style::WHITE_SPACE_PRE_LINE:
-            word->badnessAndPenalty.setPenalty (0);
-            break;
-
-         case core::style::WHITE_SPACE_PRE:
-         case core::style::WHITE_SPACE_NOWRAP:
-         case core::style::WHITE_SPACE_PRE_WRAP:
-            word->badnessAndPenalty.setPenaltyProhibitBreak ();
-            break;
-         }
-      }
+      setBreakOption (word, style);
 
       word->content.space = true;
       word->effSpace = word->origSpace = style->font->spaceWidth +
@@ -1684,6 +1671,29 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
       word->spaceStyle->unref ();
       word->spaceStyle = style;
       style->ref ();
+   }
+}
+
+/**
+ * Set a break option, if allowed by the style. Called by fillSpace
+ * (and so addSpace), but may be called, via addBreakOption(), as an
+ * alternative, e. g. for ideographic characters.
+ */
+void Textblock::setBreakOption (Word *word, core::style::Style *style)
+{
+   if (!word->badnessAndPenalty.lineMustBeBroken()) {
+      switch (style->whiteSpace) {
+      case core::style::WHITE_SPACE_NORMAL:
+      case core::style::WHITE_SPACE_PRE_LINE:
+         word->badnessAndPenalty.setPenalty (0);
+         break;
+
+      case core::style::WHITE_SPACE_PRE:
+      case core::style::WHITE_SPACE_NOWRAP:
+      case core::style::WHITE_SPACE_PRE_WRAP:
+         word->badnessAndPenalty.setPenaltyProhibitBreak ();
+         break;
+      }
    }
 }
 

@@ -416,6 +416,7 @@ protected:
    void fillWord (Word *word, int width, int ascent, int descent,
                   bool canBeHyphenated, core::style::Style *style);
    void fillSpace (Word *word, core::style::Style *style);
+   void setBreakOption (Word *word, core::style::Style *style);
    int textWidth (const char *text, int start, int len,
                   core::style::Style *style);
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
@@ -540,20 +541,15 @@ public:
    bool addAnchor (const char *name, core::style::Style *style);
    void addSpace (core::style::Style *style);
 
+   /**
+    * Add a break option (see setBreakOption() for details). Used
+    * instead of addStyle for ideographic characters.
+    */
    inline void addBreakOption (core::style::Style *style)
    {
       int wordIndex = words->size () - 1;
       if (wordIndex >= 0)
-         addBreakOption (words->getRef(wordIndex), style);
-   }
-
-   // TODO Re-evaluate again. When needed, which penalty values, etc.
-   inline void addBreakOption (Word *word, core::style::Style *style)
-   {
-      if (style->whiteSpace != core::style::WHITE_SPACE_NOWRAP &&
-          style->whiteSpace != core::style::WHITE_SPACE_PRE)
-         if (word->badnessAndPenalty.lineMustBeBroken())
-            word->badnessAndPenalty.setPenalty (0);
+         setBreakOption (words->getRef(wordIndex), style);
    }
 
    void addHyphen();
