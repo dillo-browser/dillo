@@ -75,6 +75,49 @@ int CustInput2::handle(int e)
    return Fl_Input::handle(e);
 }
 
+
+/*
+ * Used to handle some keystrokes as shortcuts to option menuitems
+ * (i.e. jump to the next menuitem whose label starts with the pressed key)
+ */
+class CustChoice : public Fl_Choice {
+public:
+   CustChoice (int x, int y, int w, int h, const char* l=0) :
+      Fl_Choice(x,y,w,h,l) {};
+   int handle(int e);
+};
+
+int CustChoice::handle(int e)
+{
+   int k = Fl::event_key();
+   unsigned modifier = Fl::event_state() & (FL_SHIFT|FL_CTRL|FL_ALT|FL_META);
+
+   _MSG("CustChoice::handle %p e=%d active=%d focus=%d\n",
+       this, e, active(), (Fl::focus() == this));
+   if (Fl::focus() != this) {
+      ; // Not Focused, let FLTK handle it
+   } else if (e == FL_KEYDOWN) {
+      if (modifier == 0 && isalnum(k)) {
+         int t = value()+1 >= size() ? 0 : value()+1;
+         while (t != value()) {
+             const Fl_Menu_Item *mi = &(menu()[t]);
+             if (mi->submenu()) // submenu?
+                ;
+             else if (mi->label() && mi->active()) { // menu item?
+                if (k == tolower(mi->label()[0])) {
+                   value(mi);
+                   return 1; // Let FLTK know we used this key
+                }
+             }
+             if (++t == size())
+                t = 0;
+         }
+      }
+   }
+
+   return Fl_Choice::handle(e);
+}
+
 //----------------------------------------------------------------------------
 
 namespace dw {
@@ -995,9 +1038,9 @@ Fl_Widget *FltkOptionMenuResource::createNewWidget (core::Allocation
                                                      *allocation)
 {
    Fl_Choice *choice =
-      new Fl_Choice (allocation->x, allocation->y,
-                          allocation->width,
-                          allocation->ascent + allocation->descent);
+      new CustChoice (allocation->x, allocation->y,
+                      allocation->width,
+                      allocation->ascent + allocation->descent);
    choice->menu(menu);
    return choice;
 }
