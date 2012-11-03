@@ -167,8 +167,12 @@ void StyleEngine::inheritNonCssHints () {
    Node *pn = stack->getRef (stack->size () - 2);
    Node *n = stack->getRef (stack->size () - 1);
 
-   if (pn->nonCssProperties)
-      n->nonCssProperties = new CssPropertyList (*pn->nonCssProperties, true);
+   if (pn->nonCssProperties) {
+      if (n->nonCssProperties)
+         pn->nonCssProperties->apply (n->nonCssProperties);
+      else
+         n->nonCssProperties = new CssPropertyList(*pn->nonCssProperties, true);
+   }
 }
 
 void StyleEngine::clearNonCssHints () {
