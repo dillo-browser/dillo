@@ -169,10 +169,8 @@ void StyleEngine::inheritNonCssHints () {
 void StyleEngine::clearNonCssHints () {
    Node *n = stack->getRef (stack->size () - 1);
 
-   if (n->nonCssProperties) {
-      delete n->nonCssProperties;
-      n->nonCssProperties = NULL;
-   }
+   delete n->nonCssProperties;
+   n->nonCssProperties = NULL;
 }
 
 /**
