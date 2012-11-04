@@ -949,7 +949,36 @@ bool Layout::processMouseEvent (MousePositionEvent *event,
 {
    Widget *widget;
 
-   for (widget = widgetAtPoint; widget; widget = widget->getParent ()) {
+   /*
+    * If the event is outside of the visible region of the canvas, treat it
+    * as occurring at the region's edge. Notably, this helps when selecting
+    * text.
+    */
+   if (event->xCanvas < scrollX)
+      event->xCanvas = scrollX;
+   else {
+      int actualVScrollbarThickness =
+         canvasAscent + canvasDescent > viewportHeight ? vScrollbarThickness:0;
+      int maxX = scrollX + viewportWidth - actualVScrollbarThickness - 1;
+
+      if (event->xCanvas > maxX)
+         event->xCanvas = maxX;
+   }
+   if (event->yCanvas < scrollY)
+      event->yCanvas = scrollY;
+   else {
+      int actualHScrollbarThickness =
+         (canvasWidth > viewportWidth) ? hScrollbarThickness : 0;
+      int maxY = misc::min(scrollY + viewportHeight -actualHScrollbarThickness,
+                           canvasAscent + canvasDescent) - 1;
+
+      if (event->yCanvas > maxY)
+         event->yCanvas = maxY;
+   }
+
+   widget = getWidgetAtPoint(event->xCanvas, event->yCanvas);
+
+   for (; widget; widget = widget->getParent ()) {
       if (!mayBeSuppressed || widget->isButtonSensitive ()) {
          event->xWidget = event->xCanvas - widget->getAllocation()->x;
          event->yWidget = event->yCanvas - widget->getAllocation()->y;
