@@ -773,7 +773,7 @@ bool Layout::buttonEvent (ButtonEventType type, View *view, int numPressed,
    event.button = button;
    event.numPressed = numPressed;
 
-   return processMouseEvent (&event, type, true);
+   return processMouseEvent (&event, type);
 }
 
 /**
@@ -792,7 +792,7 @@ bool Layout::motionNotify (View *view,  int x, int y, ButtonState state)
    event.yCanvas = y;
    event.state = state;
 
-   return processMouseEvent (&event, MOTION_NOTIFY, true);
+   return processMouseEvent (&event, MOTION_NOTIFY);
 }
 
 /**
@@ -945,7 +945,7 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
  * has been called before.
  */
 bool Layout::processMouseEvent (MousePositionEvent *event,
-                                ButtonEventType type, bool mayBeSuppressed)
+                                ButtonEventType type)
 {
    Widget *widget;
 
@@ -979,7 +979,7 @@ bool Layout::processMouseEvent (MousePositionEvent *event,
    widget = getWidgetAtPoint(event->xCanvas, event->yCanvas);
 
    for (; widget; widget = widget->getParent ()) {
-      if (!mayBeSuppressed || widget->isButtonSensitive ()) {
+      if (widget->isButtonSensitive ()) {
          event->xWidget = event->xCanvas - widget->getAllocation()->x;
          event->yWidget = event->yCanvas - widget->getAllocation()->y;
 
