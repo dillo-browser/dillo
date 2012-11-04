@@ -165,13 +165,17 @@ void StyleEngine::setStyle (const char *styleAttr) {
  */
 void StyleEngine::inheritNonCssHints () {
    Node *pn = stack->getRef (stack->size () - 2);
-   Node *n = stack->getRef (stack->size () - 1);
 
    if (pn->nonCssProperties) {
-      if (n->nonCssProperties)
-         pn->nonCssProperties->apply (n->nonCssProperties);
-      else
-         n->nonCssProperties = new CssPropertyList(*pn->nonCssProperties, true);
+      Node *n = stack->getRef (stack->size () - 1);
+      CssPropertyList *origNonCssProperties = n->nonCssProperties;
+
+      n->nonCssProperties = new CssPropertyList(*pn->nonCssProperties, true);
+
+      if (origNonCssProperties) // original nonCssProperties have precedence
+         origNonCssProperties->apply (n->nonCssProperties);
+
+      delete origNonCssProperties;
    }
 }
 
