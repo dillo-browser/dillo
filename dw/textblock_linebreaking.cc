@@ -53,10 +53,12 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
                                                 int totalStretchability,
                                                 int totalShrinkability)
 {
+#ifdef DEBUG
    this->totalWidth = totalWidth;
    this->idealWidth = idealWidth;
    this->totalStretchability = totalStretchability;
    this->totalShrinkability = totalShrinkability;
+#endif
 
    ratio = 0; // because this is used in print()
 
@@ -188,8 +190,12 @@ void Textblock::BadnessAndPenalty::print ()
       break;
    }
 
+#ifdef DEBUG
    printf (" [%d + %d - %d vs. %d] + ",
            totalWidth, totalStretchability, totalShrinkability, idealWidth);
+#else
+   printf (" <no debug> + ");
+#endif
 
    switch (penaltyState) {
    case FORCE_BREAK:
