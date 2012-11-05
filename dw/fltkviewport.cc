@@ -435,16 +435,18 @@ void FltkViewport::scroll (core::ScrollCommand cmd)
  */
 void FltkViewport::selectionScroll ()
 {
+   int distance;
    int dx = 0, dy = 0;
 
-   if (mouse_x < x())
-      dx = -hscrollbar->linesize ();
-   else if (mouse_x >= x() + w())
-      dx = hscrollbar->linesize ();
-   if (mouse_y < y())
-      dy = -vscrollbar->linesize ();
-   else if (mouse_y >= y() + h())
-      dy = vscrollbar->linesize ();
+   if ((distance = x() - mouse_x) > 0)
+      dx = -distance * hscrollbar->linesize () / 48 - 1;
+   else if ((distance = mouse_x - (x() + w())) > 0)
+      dx = distance * hscrollbar->linesize () / 48 + 1;
+   if ((distance = y() - mouse_y) > 0)
+      dy = -distance * vscrollbar->linesize () / 48 - 1;
+   else if ((distance = mouse_y - (y() + h())) > 0)
+      dy = distance * vscrollbar->linesize () / 48 + 1;
+
    scroll (dx, dy);
 }
 
