@@ -331,7 +331,7 @@ private:
       }
    }
 
-   void consolidate () 
+   void consolidate ()
    {
       if (startExtra != -1) {
          numMain += numExtra;
@@ -343,7 +343,7 @@ private:
          numExtra = 0;
       }
    }
-   
+
 public:
    inline NotSoSimpleVector (int initAlloc)
    {
@@ -407,7 +407,7 @@ public:
          this->numExtra = numInsert;
          this->startExtra = index;
          resizeExtra ();
-      } else {        
+      } else {
          if (index < startExtra)  {
             consolidate ();
             insert (index, numInsert);

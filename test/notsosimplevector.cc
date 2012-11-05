@@ -22,12 +22,12 @@ int main (int argc, char *argv[])
    lout::misc::NotSoSimpleVector<int> v(1);
 
    for (int i = 1; i <= 10; i++) {
-      v.increase (); 
+      v.increase ();
       v.set(v.size () - 1, i);
    }
 
    print (&v);
-   
+
    v.insert (2, 4);
    for (int i = 0; i < 5; i++)
       v.set (2 + i, 31 + i);
@@ -45,7 +45,7 @@ int main (int argc, char *argv[])
       v.set (10 + i, 531 + i);
 
    print (&v);
-   
+
    v.insert (1, 4);
    for (int i = 0; i < 5; i++)
       v.set (1 + i, 21 + i);

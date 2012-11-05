@@ -97,7 +97,7 @@ class Hyphenator: public lout::object::Object
     */
    core::Platform *platform;
    Trie *trie;
-   
+
    lout::container::typed::HashTable <lout::object::ConstString,
                                       lout::container::typed::Vector
                                       <lout::object::Integer> > *exceptions;

@@ -70,7 +70,7 @@ void StyleEngine::stackPush () {
    static const Node emptyNode = {
       NULL, NULL, NULL, NULL, NULL, NULL, false, NULL
    };
-   
+
    stack->setSize (stack->size () + 1, emptyNode);
 }
 

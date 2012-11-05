@@ -33,7 +33,7 @@ Hyphenator::Hyphenator (core::Platform *platform,
    char buf[PATH_MAX + 1];
    snprintf(buf, sizeof (buf), "%s.trie", patFile);
    FILE *trieF = fopen (buf, "r");
-   
+
    if (trieF) {
       trie = new Trie ();
       if (trie->load (trieF) != 0) {
@@ -42,7 +42,7 @@ Hyphenator::Hyphenator (core::Platform *platform,
       }
       fclose (trieF);
    }
- 
+
    if (trie == NULL) {
       TrieBuilder trieBuilder(pack);
       FILE *patF = fopen (patFile, "r");
@@ -192,7 +192,7 @@ bool Hyphenator::isHyphenationCandidate (const char *word)
 {
    // Short words aren't hyphenated.
    return (strlen (word) > 4); // TODO UTF-8?
-}   
+}
 
 /**
  * Test whether the character on which "s" points (UTF-8) is an actual
@@ -214,7 +214,7 @@ bool Hyphenator::isCharPartOfActualWord (char *s)
         (unsigned char)s[1] == 0xbc /* ü */ ||
         (unsigned char)s[1] == 0x9f /* ß */ ));
 #endif
-   
+
    return lout::unicode::isAlpha (lout::unicode::decodeUtf8 (s));
 }
 
@@ -231,8 +231,8 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    char *wordLc = platform->textToLower (word, strlen (word));
 
    // Determine "actual" word. See isCharPartOfActualWord for exact definition.
-   
-   // Only this actual word is used, and "startActualWord" is added to the 
+
+   // Only this actual word is used, and "startActualWord" is added to the
    // break positions, so that these refer to the total word.
    int startActualWord = 0;
    while (wordLc[startActualWord] &&
@@ -252,7 +252,7 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
          endActualWord = i;
       i = platform->nextGlyph (wordLc, i);
    }
-   
+
    endActualWord = platform->nextGlyph (wordLc, endActualWord);
    wordLc[endActualWord] = 0;
 
@@ -279,7 +279,7 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    strcpy (work, ".");
    strcat (work, wordLc + startActualWord);
    strcat (work, ".");
-   
+
    int l = strlen (work);
    SimpleVector <int> points (l + 1);
    points.setSize (l + 1, 0);
@@ -308,7 +308,7 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
    // TODO: Characters, not bytes (as above).
    points.set (points.size() - 2, 0);
    points.set (points.size() - 3, 0);
-   
+
    // Examine the points to build the pieces list.
    SimpleVector <int> breakPos (1);
 
@@ -402,7 +402,7 @@ int TrieBuilder::insertState (StackEntry *state, bool root)
 
    for (int j = 1; j < 256; j++) {
       Trie::TrieNode *tn = tree->getRef(i + j);
-   
+
       if (state->next[j] || state->data[j]) {
          tn->c = j;
          tn->next = state->next[j];
@@ -467,7 +467,7 @@ void TrieBuilder::insertSorted (unsigned char *s, const char *data)
    int len = strlen((char*)s);
 
    for (int i = 0; i < len; i++) {
-      if (stateStack->size () > i + 1 && 
+      if (stateStack->size () > i + 1 &&
           stateStack->getRef (i + 1)->c != s[i]) {
          for (int j = stateStack->size () - 1; j >= i + 1; j--)
             stateStackPop();
