@@ -51,7 +51,7 @@ Hyphenator::Hyphenator (core::Platform *platform,
          while (!feof (patF)) {
             char buf[LEN + 1];
             char *s = fgets (buf, LEN, patF);
-            if (s) {
+            if (s && s[0] != '%') { // ignore lines starting with '%' as comment
                // TODO Better exit with an error, when the line is too long.
                int l = strlen (s);
                if (s[l - 1] == '\n')
@@ -73,7 +73,7 @@ Hyphenator::Hyphenator (core::Platform *platform,
       while (!feof (excF)) {
          char buf[LEN + 1];
          char *s = fgets (buf, LEN, excF);
-         if (s) {
+         if (s && s[0] != '%') { // ignore lines starting with '%' as comment
              // TODO Better exit with an error, when the line is too long.
             int l = strlen (s);
             if (s[l - 1] == '\n')
