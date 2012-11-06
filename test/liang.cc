@@ -5,7 +5,7 @@
 void hyphenateWord (dw::core::Platform *p, const char *word)
 {
    dw::Hyphenator *h = dw::Hyphenator::getHyphenator (p, "de");
-   
+
    int numBreaks;
    int *breakPos = h->hyphenateWord (word, &numBreaks);
    for (int i = 0; i < numBreaks + 1; i++) {

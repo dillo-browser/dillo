@@ -163,8 +163,10 @@ private:
       int ratio; // ratio is only defined when badness is defined
       int badness, penalty;
       
-      // for debugging:
+      // For debugging: define DEBUG for more informations in print().
+#ifdef DEBUG
       int totalWidth, idealWidth, totalStretchability, totalShrinkability;
+#endif
 
       // "Infinity levels" are used to represent very large numbers,
       // including "quasi-infinite" numbers. A couple of infinity

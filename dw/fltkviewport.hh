@@ -39,6 +39,9 @@ private:
    static void hscrollbarCallback (Fl_Widget *hscrollbar, void *viewportPtr);
    static void vscrollbarCallback (Fl_Widget *vscrollbar, void *viewportPtr);
 
+   void selectionScroll();
+   static void selectionScroll(void *vport);
+
    void updateCanvasWidgets (int oldScrollX, int oldScrollY);
    static void draw_area (void *data, int x, int y, int w, int h);
 

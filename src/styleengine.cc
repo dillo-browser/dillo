@@ -31,8 +31,8 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    this->layout = layout;
    importDepth = 0;
 
-   stack->increase ();
-   Node *n = stack->getRef (stack->size () - 1);
+   stackPush ();
+   Node *n = stack->getLastRef ();
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = prefs.font_sans_serif;
@@ -52,48 +52,53 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    style_attrs.backgroundColor = Color::create (layout, 0xffffff);
 
    n->style = Style::create (layout, &style_attrs);
-   n->wordStyle = NULL;
-   n->backgroundStyle = NULL;
-   n->styleAttrProperties = NULL;
-   n->styleAttrPropertiesImportant = NULL;
-   n->nonCssProperties = NULL;
-   n->inheritBackgroundColor = false;
 }
 
 StyleEngine::~StyleEngine () {
    while (doctree->top ())
       endElement (doctree->top ()->element);
-   assert (stack->size () == 1); // dummy node on the bottom of the stack
+
+   stackPop (); // dummy node on the bottom of the stack
+   assert (stack->size () == 0);
+
+   delete stack;
+   delete doctree;
+   delete cssContext;
+}
+
+void StyleEngine::stackPush () {
+   static const Node emptyNode = {
+      NULL, NULL, NULL, NULL, NULL, NULL, false, NULL
+   };
+
+   stack->setSize (stack->size () + 1, emptyNode);
+}
+
+void StyleEngine::stackPop () {
    Node *n = stack->getRef (stack->size () - 1);
+
+   delete n->styleAttrProperties;
+   delete n->styleAttrPropertiesImportant;
+   delete n->nonCssProperties;
    if (n->style)
       n->style->unref ();
    if (n->wordStyle)
       n->wordStyle->unref ();
    if (n->backgroundStyle)
       n->backgroundStyle->unref ();
-   delete stack;
-   delete doctree;
-   delete cssContext;
+   stack->setSize (stack->size () - 1);
 }
 
 /**
  * \brief tell the styleEngine that a new html element has started.
  */
 void StyleEngine::startElement (int element) {
-   if (stack->getRef (stack->size () - 1)->style == NULL)
-      style0 (stack->size () - 1);
+   style (); // ensure that style of current node is computed
 
-   stack->increase ();
-   Node *n = stack->getRef (stack->size () - 1);
-   n->styleAttrProperties = NULL;
-   n->styleAttrPropertiesImportant = NULL;
-   n->nonCssProperties = NULL;
-   n->style = NULL;
-   n->wordStyle = NULL;
-   n->backgroundStyle = NULL;
-   n->inheritBackgroundColor = false;
-
+   stackPush ();
+   Node *n = stack->getLastRef ();
    DoctreeNode *dn = doctree->push ();
+
    dn->element = element;
    n->doctreeNode = dn;
 }
@@ -160,19 +165,25 @@ void StyleEngine::setStyle (const char *styleAttr) {
  */
 void StyleEngine::inheritNonCssHints () {
    Node *pn = stack->getRef (stack->size () - 2);
-   Node *n = stack->getRef (stack->size () - 1);
 
-   if (pn->nonCssProperties)
-      n->nonCssProperties = new CssPropertyList (*pn->nonCssProperties, true);
+   if (pn->nonCssProperties) {
+      Node *n = stack->getRef (stack->size () - 1);
+      CssPropertyList *origNonCssProperties = n->nonCssProperties;
+
+      n->nonCssProperties = new CssPropertyList(*pn->nonCssProperties, true);
+
+      if (origNonCssProperties) // original nonCssProperties have precedence
+         origNonCssProperties->apply (n->nonCssProperties);
+
+      delete origNonCssProperties;
+   }
 }
 
 void StyleEngine::clearNonCssHints () {
    Node *n = stack->getRef (stack->size () - 1);
 
-   if (n->nonCssProperties) {
-      delete n->nonCssProperties;
-      n->nonCssProperties = NULL;
-   }
+   delete n->nonCssProperties;
+   n->nonCssProperties = NULL;
 }
 
 /**
@@ -218,23 +229,8 @@ void StyleEngine::setPseudoVisited () {
 void StyleEngine::endElement (int element) {
    assert (element == doctree->top ()->element);
 
-   Node *n = stack->getRef (stack->size () - 1);
-
-   if (n->styleAttrProperties)
-      delete n->styleAttrProperties;
-   if (n->styleAttrPropertiesImportant)
-      delete n->styleAttrPropertiesImportant;
-   if (n->nonCssProperties)
-      delete n->nonCssProperties;
-   if (n->style)
-      n->style->unref ();
-   if (n->wordStyle)
-      n->wordStyle->unref ();
-   if (n->backgroundStyle)
-      n->backgroundStyle->unref ();
-
+   stackPop ();
    doctree->pop ();
-   stack->setSize (stack->size () - 1);
 }
 
 void StyleEngine::preprocessAttrs (dw::core::style::StyleAttrs *attrs) {

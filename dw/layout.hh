@@ -176,8 +176,7 @@ private:
     */
    void moveOutOfView (ButtonState state) { moveToWidget (NULL, state); }
 
-   bool processMouseEvent (MousePositionEvent *event, ButtonEventType type,
-                           bool mayBeSuppressed);
+   bool processMouseEvent (MousePositionEvent *event, ButtonEventType type);
    bool buttonEvent (ButtonEventType type, View *view,
                      int numPressed, int x, int y, ButtonState state,
                      int button);

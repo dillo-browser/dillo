@@ -4,7 +4,7 @@
 int main (int argc, char *argv[])
 {
    dw::fltk::FltkPlatform p;
-   
+
    if (argc < 2) {
       fprintf(stderr, "Usage: trie <pattern file>\n");
       exit (1);

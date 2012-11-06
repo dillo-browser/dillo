@@ -1,0 +1,31 @@
+# domainrc - Dillo cross-domain request rules file.
+#
+# Here you can tell Dillo what to do when one site wants to retrieve resources
+# (e.g., images, style sheets, redirection) from a different site.
+#
+# Lines that begin with a '#' are comments.
+
+# Default rule can be "accept" or "deny".
+
+default accept
+
+
+# Now we list exceptions to the default. The format is:
+#
+# source destination
+#
+# There are three ways that you can specify a source or destination domain:
+#
+# 1. *                - wildcard will match any domain
+# 2. example.com      - match the specific host example.com
+# 3. .example.com     - match example.com and any of its subdomains
+
+# Let's block some of the most notorious ad sites and trackers.
+
+* .admt.com
+* .adnxs.com
+* .crwdcntrl.com
+* .doubleclick.net
+* .quantserve.com
+* .scorecardresearch.com
+* .yieldmanager.com

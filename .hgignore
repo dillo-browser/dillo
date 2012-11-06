@@ -37,4 +37,7 @@
 ^test/dw-table-aligned$
 ^test/dw-ui-test$
 ^test/fltk-browser$
+^test/liang$
+^test/notsosimplevector$
+^test/trie$
 ^test/shapes$

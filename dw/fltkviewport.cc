@@ -275,7 +275,9 @@ int FltkViewport::handle (int event)
       break;
 
    case FL_DRAG:
-      if (dragScrolling && Fl::event_button() == FL_MIDDLE_MOUSE) {
+      if (Fl::event_inside(this))
+         Fl::remove_timeout(selectionScroll);
+      if (dragScrolling) {
          scroll(dragX - Fl::event_x(), dragY - Fl::event_y());
          dragX = Fl::event_x();
          dragY = Fl::event_y();
@@ -286,6 +288,11 @@ int FltkViewport::handle (int event)
       } else if (horScrolling) {
          hscrollbar->handle(event);
          return 1;
+      } else if (!Fl::event_inside(this)) {
+         mouse_x = Fl::event_x();
+         mouse_y = Fl::event_y();
+         if (!Fl::has_timeout(selectionScroll, this))
+            Fl::add_timeout(0.025, selectionScroll, this);
       }
       break;
 
@@ -294,6 +301,7 @@ int FltkViewport::handle (int event)
       break;
 
    case FL_RELEASE:
+      Fl::remove_timeout(selectionScroll);
       if (Fl::event_button() == FL_MIDDLE_MOUSE) {
          setCursor (core::style::CURSOR_DEFAULT);
       } else if (verScrolling) {
@@ -309,10 +317,6 @@ int FltkViewport::handle (int event)
       mouse_x = Fl::event_x();
       mouse_y = Fl::event_y();
       positionChanged();
-      break;
-
-   case FL_LEAVE:
-      mouse_x = mouse_y = -1;
       break;
    }
 
@@ -332,7 +336,8 @@ void FltkViewport::setCanvasSize (int width, int ascent, int descent)
  */
 void FltkViewport::positionChanged ()
 {
-   if (mouse_x != -1 && dragScrolling == false)
+   if (!dragScrolling && mouse_x >= x() && mouse_x < x()+w() && mouse_y >= y()
+       && mouse_y < y()+h())
       (void)theLayout->motionNotify (this,
                                      translateViewXToCanvasX (mouse_x),
                                      translateViewYToCanvasY (mouse_y),
@@ -423,6 +428,32 @@ void FltkViewport::scroll (core::ScrollCommand cmd)
    } else if (cmd == core::BOTTOM_CMD) {
       scrollTo (scrollX, canvasHeight); /* gets adjusted in scrollTo () */
    }
+}
+
+/*
+ * Scrolling in response to selection where the cursor is outside the view.
+ */
+void FltkViewport::selectionScroll ()
+{
+   int distance;
+   int dx = 0, dy = 0;
+
+   if ((distance = x() - mouse_x) > 0)
+      dx = -distance * hscrollbar->linesize () / 48 - 1;
+   else if ((distance = mouse_x - (x() + w())) > 0)
+      dx = distance * hscrollbar->linesize () / 48 + 1;
+   if ((distance = y() - mouse_y) > 0)
+      dy = -distance * vscrollbar->linesize () / 48 - 1;
+   else if ((distance = mouse_y - (y() + h())) > 0)
+      dy = distance * vscrollbar->linesize () / 48 + 1;
+
+   scroll (dx, dy);
+}
+
+void FltkViewport::selectionScroll (void *data)
+{
+   ((FltkViewport *)data)->selectionScroll ();
+   Fl::repeat_timeout(0.025, selectionScroll, data);
 }
 
 void FltkViewport::setViewportSize (int width, int height,
