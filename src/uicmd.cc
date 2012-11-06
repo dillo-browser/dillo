@@ -14,7 +14,9 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>     /* for qsort */
 #include <math.h>       /* for rint */
+#include <limits.h>     /* for UINT_MAX */
 
 #include <FL/Fl.H>
 #include <FL/Fl_Widget.H>
@@ -78,17 +80,28 @@ static void close_tab_btn_cb (Fl_Widget *w, void *cb_data);
  */
 class CustTabButton : public Fl_Button {
    UI *ui_;
+   uint_t focus_num_; // Used to choose which tab to focus when closing the
+                      // active one (the highest numbered gets focus).
 public:
    CustTabButton (int x,int y,int w,int h, const char* label = 0) :
       Fl_Button (x,y,w,h,label) { ui_ = NULL; };
    void ui(UI *pui) { ui_ = pui; }
    UI *ui(void) { return ui_; }
+   void focus_num(uint_t fn) { focus_num_ = fn; }
+   uint_t focus_num(void) { return focus_num_; }
 };
+
+static int btn_cmp(const void *p1, const void *p2)
+{
+   return ((*(CustTabButton * const *)p1)->focus_num() -
+           (*(CustTabButton * const *)p2)->focus_num() );
+}
 
 /*
  * Allows fine control of the tabbed interface
  */
 class CustTabs : public Fl_Group {
+   uint_t focus_counter; // An increasing counter
    int tab_w, tab_h, ctab_h, btn_w, ctl_w;
    Fl_Wizard *Wizard;
    Fl_Scroll *Scroll;
@@ -101,11 +114,27 @@ class CustTabs : public Fl_Group {
    void resize(int x, int y, int w, int h)
       { Fl_Group::resize(x,y,w,h); update_pack_offset(); }
    int get_btn_idx(UI *ui);
+   void increase_focus_counter() {
+      if (focus_counter < UINT_MAX) /* check for overflow */
+         ++focus_counter;
+      else {
+         /* wrap & normalize old numbers here */
+         CustTabButton **btns = dNew(CustTabButton*, num_tabs());
+         for (int i = 0; i < num_tabs(); ++i)
+            btns[i] = (CustTabButton*)Pack->child(i);
+         qsort(btns, num_tabs(), sizeof(CustTabButton *), btn_cmp);
+         focus_counter = 0; 
+         for (int i = 0; i < num_tabs(); ++i)
+            btns[i]->focus_num(focus_counter++);
+         dFree(btns);
+      }
+   }
 
 public:
    CustTabs (int ww, int wh, int th, const char *lbl=0) :
       Fl_Group(0,0,ww,th,lbl) {
       Pack = NULL;
+      focus_counter = 0;
       tab_w = 50, tab_h = th, ctab_h = 1, btn_w = 20, ctl_w = 1*btn_w+2;
       tabcolor_active = 0x87aca700; tabcolor_inactive = 0xb7beb700;
       resize(0,0,ww,ctab_h);
@@ -261,6 +290,8 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    if (focus) {
       switch_tab(btn);
    } else if (num_tabs() == 2) {
+      increase_focus_counter();
+      btn->focus_num(focus_counter);
       // no focus and tabbar added: redraw current page
       Wizard->redraw();
    }
@@ -285,8 +316,18 @@ void CustTabs::remove_tab(UI *ui)
    btn = (CustTabButton*)Pack->child(rm_idx);
 
    if (act_idx == rm_idx) {
-      // Active tab is being closed, switch to another one
-      rm_idx > 0 ? prev_tab() : next_tab();
+      // Active tab is being closed, switch to the "previous" one
+      CustTabButton *fbtn = NULL;
+      for (int i = 0; i < num_tabs(); ++i) {
+         if (i != rm_idx) {
+            if (!fbtn)
+               fbtn = (CustTabButton*)Pack->child(i);
+            CustTabButton *btn = (CustTabButton*)Pack->child(i);
+            if (btn->focus_num() > fbtn->focus_num())
+               fbtn = btn;
+         }
+      }
+      switch_tab(fbtn);
    }
    Pack->remove(rm_idx);
    update_pack_offset();
@@ -361,7 +402,7 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
    BrowserWindow *bw;
    UI *old_ui = (UI*)Wizard->value();
 
-   if (cbtn->ui() != old_ui) {
+   if (cbtn && cbtn->ui() != old_ui) {
       // Set old tab label to normal color
       if ((idx = get_btn_idx(old_ui)) != -1) {
          btn = (CustTabButton*)Pack->child(idx);
@@ -378,6 +419,9 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
          const char *title = (cbtn->ui())->label();
          cbtn->window()->copy_label(title ? title : "");
       }
+      // Update focus priority
+      increase_focus_counter();
+      cbtn->focus_num(focus_counter);
    }
 }
 
