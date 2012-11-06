@@ -19,6 +19,8 @@ dillo-3.0.3 [not released yet]
  - Fix bug where data URI has charset but no media type.
  - Bug meter line number fix for bare carriage returns.
  - Add some more info to various bug meter messages.
+ - For text selection, fix releasing mouse button outside of boundary.
+ - While selecting text, moving cursor outside viewport will scroll it.
    Patches: corvid
 +- Automatic hyphenation.
    Patch: Sebastian Geerken
@@ -27,6 +29,10 @@ dillo-3.0.3 [not released yet]
 +- Introduced the domainrc mechanism for finer-grained control than
    filter_auto_requests had provided.
    Patch: p37sitdu, corvid
++- After focusing option menu, keypress will seek to next one beginning with
+   that character.
+ - When active tab is closed, focus the previously visited one.
+   Patches: Jorge Arellano Cid
 
 -----------------------------------------------------------------------------
 
