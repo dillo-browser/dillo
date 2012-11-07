@@ -944,14 +944,18 @@ static int Html_parse_entity(DilloHtml *html, const char *token,
       c = *s;
       *s = 0;
 
-      if ((i = Html_entity_search(tok)) == -1) {
-         if ((html->DocType == DT_HTML && html->DocTypeVersion == 4.01f) ||
-             html->DocType == DT_XHTML)
-            BUG_MSG("undefined character entity '%s'\n", tok);
-         isocode = -3;
-      } else
+      if ((i = Html_entity_search(tok)) >= 0) {
          isocode = Entities[i].isocode;
-
+      } else {
+         if (html->DocType == DT_XHTML && !strcmp(tok, "apos")) {
+            isocode = 0x27;
+         } else {
+            if ((html->DocType == DT_HTML && html->DocTypeVersion == 4.01f) ||
+                html->DocType == DT_XHTML)
+               BUG_MSG("undefined character entity '%s'\n", tok);
+            isocode = -3;
+         }
+      }
       if (c == ';')
          s++;
       else if (prefs.show_extra_warnings)
