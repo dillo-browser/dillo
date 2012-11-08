@@ -249,7 +249,7 @@ static DilloUrl *makeStartUrl(char *str, bool local)
 
    if (access(p, F_OK) == 0) {
       /* absolute path may have non-URL characters */
-      url_str = a_Misc_escape_chars(p, "% ");
+      url_str = a_Misc_escape_chars(p, "% #");
       start_url = a_Url_new(url_str + 1, "file:/");
    } else {
       /* Not a file, filter URL string */
