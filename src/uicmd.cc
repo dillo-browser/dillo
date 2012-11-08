@@ -84,7 +84,7 @@ class CustTabButton : public Fl_Button {
                       // active one (the highest numbered gets focus).
 public:
    CustTabButton (int x,int y,int w,int h, const char* label = 0) :
-      Fl_Button (x,y,w,h,label) { ui_ = NULL; };
+      Fl_Button (x,y,w,h,label) { ui_ = NULL; focus_num_ = 0; };
    void ui(UI *pui) { ui_ = pui; }
    UI *ui(void) { return ui_; }
    void focus_num(uint_t fn) { focus_num_ = fn; }
@@ -290,8 +290,6 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    if (focus) {
       switch_tab(btn);
    } else if (num_tabs() == 2) {
-      increase_focus_counter();
-      btn->focus_num(focus_counter);
       // no focus and tabbar added: redraw current page
       Wizard->redraw();
    }
