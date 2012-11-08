@@ -1,3 +1,25 @@
+% version of 2005-05-30.
+% Patterns of March 1, 1990.
+%
+% Copyright (C) 1990, 2004, 2005 Gerard D.C. Kuiken.
+% Copying and distribution of this file, with or without modification,
+% are permitted in any medium without royalty provided the copyright
+% notice and this notice are preserved.
+%
+% Needs extended pattern memory.
+% Hyphenation trie becomes 7283 with 377 ops.
+%
+% These patterns are based on the Hyphenation Exception Log
+% published in TUGboat, Volume 10 (1989), No. 3, pp. 337-341,
+% and a large number of incorrectly hyphenated words not yet published.
+% If added to Liang's before the closing bracket } of \patterns,
+% the patterns run errorfree as far as known at this moment.
+%
+% These patterns find all admissible hyphens of the words in
+% the Exception Log.  ushyph2.tex is a smaller set.
+%
+% Please send bugs or suggestions to tex-live (at) tug.org.
+%
 .ach4
 .ad4der
 .af1t

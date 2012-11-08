@@ -657,6 +657,31 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          } while(!lineAdded);
       }
    } while (newLine);
+
+   if(word->content.type == core::Content::WIDGET_IN_FLOW) {
+      // Set parentRef for the child, when necessary.
+      //
+      // parentRef is set for the child already, when a line is
+      // added. There are a couple of different situations to
+      // consider, e.g. when called from showMissingLines(), this word
+      // may already have been added in a previous call. To make
+      // things simple, we just check whether this word is contained
+      // within any line, or still "missing".
+
+      int firstWordWithoutLine;
+      if (lines->size() == 0)
+         firstWordWithoutLine = 0;
+      else
+         firstWordWithoutLine = lines->getLastRef()->lastWord + 1;
+   
+      if (wordIndex >= firstWordWithoutLine) {
+         word->content.widget->parentRef =
+            OutOfFlowMgr::createRefNormalFlow (lines->size ());
+         PRINTF ("The %s %p is assigned parentRef = %d.\n",
+                 word->content.widget->getClassName(), word->content.widget,
+                 word->content.widget->parentRef);
+      }
+   }
 }
 
 int Textblock::hyphenateWord (int wordIndex)
@@ -1003,14 +1028,14 @@ void Textblock::rewrap ()
       
       wordWrap (i, false);
 
-      // wordWrap() may insert some new words; since NotSoSimpleVector
-      // is used for the words list, the internal structure may have
-      // changed, so getRef() must be called again.
-      word = words->getRef (i);
-
-      if (word->content.type == core::Content::WIDGET_IN_FLOW)
-         word->content.widget->parentRef =
-            OutOfFlowMgr::createRefNormalFlow (lines->size () - 1);
+      // Somewhat historical, but still important, note:
+      //
+      // For the case that something else is done with this word, it
+      // is important that wordWrap() may insert some new words; since
+      // NotSoSimpleVector is used for the words list, the internal
+      // structure may have changed, so getRef() must be called again.
+      //
+      // So this is necessary: word = words->getRef (i);
    }
 
    /* Next time, the page will not have to be rewrapped. */

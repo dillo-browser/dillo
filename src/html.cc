@@ -946,14 +946,18 @@ static int Html_parse_entity(DilloHtml *html, const char *token,
       c = *s;
       *s = 0;
 
-      if ((i = Html_entity_search(tok)) == -1) {
-         if ((html->DocType == DT_HTML && html->DocTypeVersion == 4.01f) ||
-             html->DocType == DT_XHTML)
-            BUG_MSG("undefined character entity '%s'\n", tok);
-         isocode = -3;
-      } else
+      if ((i = Html_entity_search(tok)) >= 0) {
          isocode = Entities[i].isocode;
-
+      } else {
+         if (html->DocType == DT_XHTML && !strcmp(tok, "apos")) {
+            isocode = 0x27;
+         } else {
+            if ((html->DocType == DT_HTML && html->DocTypeVersion == 4.01f) ||
+                html->DocType == DT_XHTML)
+               BUG_MSG("undefined character entity '%s'\n", tok);
+            isocode = -3;
+         }
+      }
       if (c == ';')
          s++;
       else if (prefs.show_extra_warnings)
@@ -1835,7 +1839,8 @@ static void Html_tag_open_frame (DilloHtml *html, const char *tag, int tagsize)
                                      Html_set_new_link(html,&url));
 }
 
-static void Html_tag_content_frame (DilloHtml *html, const char *tag, int tagsize)
+static void
+ Html_tag_content_frame (DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    char *src;
@@ -2270,7 +2275,8 @@ misc::SimpleVector<int> *Html_read_coords(DilloHtml *html, const char *str)
 /*
  * <AREA>
  */
-static void Html_tag_content_area(DilloHtml *html, const char *tag, int tagsize)
+static void
+ Html_tag_content_area(DilloHtml *html, const char *tag, int tagsize)
 {
    enum types {UNKNOWN, RECTANGLE, CIRCLE, POLYGON, BACKGROUND};
    types type;
@@ -3116,7 +3122,7 @@ static void Html_tag_close_par(DilloHtml *html, int TagIdx)
  * handling and HTML bug reporting.
  * Content creation (e.g. adding new widgets or text) is done in the content
  * function, which is not called in the display:none case.
- * Note, that many tags don't need a content function (e.g. <div>, <span>, ...).
+ * Note: many tags don't need a content function (e.g. <div>, <span>, ...).
  *
  * Explanation for the 'Flags' field:
  *
@@ -3138,7 +3144,7 @@ const TagInfo Tags[] = {
  {"a", B8(010101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
  {"abbr", B8(010101),'R',2, Html_tag_open_abbr, NULL, NULL},
  /* acronym 010101 */
- {"address", B8(010110),'R',2, Html_tag_open_default, NULL, Html_tag_close_par},
+ {"address", B8(010110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
  {"area", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_area,
                             NULL},
  {"b", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
@@ -3151,7 +3157,7 @@ const TagInfo Tags[] = {
  {"body", B8(011110),'O',1, Html_tag_open_body, NULL, Html_tag_close_body},
  {"br", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_br,
                           NULL},
- {"button", B8(011101),'R',2, Html_tag_open_button, NULL, Html_tag_close_button},
+ {"button", B8(011101),'R',2, Html_tag_open_button,NULL,Html_tag_close_button},
  /* caption */
  {"center", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"cite", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
@@ -3172,8 +3178,8 @@ const TagInfo Tags[] = {
  {"form", B8(011110),'R',2, Html_tag_open_form, NULL, Html_tag_close_form},
  {"frame", B8(010010),'F',0, Html_tag_open_frame, Html_tag_content_frame,
                              NULL},
- {"frameset", B8(011110),'R',2, Html_tag_open_default, Html_tag_content_frameset,
-                                NULL},
+ {"frameset", B8(011110),'R',2, Html_tag_open_default,
+                                Html_tag_content_frameset, NULL},
  {"h1", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
  {"h2", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
  {"h3", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
@@ -3213,8 +3219,8 @@ const TagInfo Tags[] = {
  {"q", B8(010101),'R',2, Html_tag_open_q, NULL, Html_tag_close_q},
  {"s", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"samp", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"script", B8(111001),'R',2, Html_tag_open_script, NULL, Html_tag_close_script},
- {"select", B8(010101),'R',2, Html_tag_open_select, NULL, Html_tag_close_select},
+ {"script", B8(111001),'R',2, Html_tag_open_script,NULL,Html_tag_close_script},
+ {"select", B8(010101),'R',2, Html_tag_open_select,NULL,Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"span", B8(010101),'R',2, Html_tag_open_span, NULL, NULL},
  {"strike", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
@@ -3227,8 +3233,8 @@ const TagInfo Tags[] = {
  /* tbody */
  {"td", B8(011110),'O',3, Html_tag_open_td, Html_tag_content_td,
                           NULL},
- {"textarea", B8(010101),'R',2,Html_tag_open_textarea, Html_tag_content_textarea,
-                               Html_tag_close_textarea},
+ {"textarea", B8(010101),'R', 2, Html_tag_open_textarea,
+                          Html_tag_content_textarea, Html_tag_close_textarea},
  /* tfoot */
  {"th", B8(011110),'O',1, Html_tag_open_th, Html_tag_content_th,
                           NULL},

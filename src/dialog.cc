@@ -264,7 +264,7 @@ char *a_Dialog_open_file(const char *msg,
    const char *fc_name;
 
    fc_name = fl_file_chooser(msg, pattern, fname);
-   return (fc_name) ? a_Misc_escape_chars(fc_name, "% ") : NULL;
+   return (fc_name) ? a_Misc_escape_chars(fc_name, "% #") : NULL;
 }
 
 /*
