@@ -918,7 +918,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
       // Simple case, where copying in one buffer is not needed.
       Word *word = words->getRef (wordIndex1);
       drawWord0 (wordIndex1, wordIndex2, word->content.text, word->size.width,
-                 style, view, area, xWidget, yWidgetBase);
+                 false, style, view, area, xWidget, yWidgetBase);
    } else {
       // Concatenate all words in a new buffer.
       int l = 0, totalWidth = 0;
@@ -942,7 +942,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
          text[p++] = 0;
       }
       
-      drawWord0 (wordIndex1, wordIndex2, text, totalWidth,
+      drawWord0 (wordIndex1, wordIndex2, text, totalWidth, drawHyphen,
                  style, view, area, xWidget, yWidgetBase);
    }
 }
@@ -951,7 +951,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
  * TODO Comment
  */
 void Textblock::drawWord0 (int wordIndex1, int wordIndex2,
-                           const char *text, int totalWidth,
+                           const char *text, int totalWidth, bool drawHyphen,
                            core::style::Style *style, core::View *view,
                            core::Rectangle *area, int xWidget, int yWidgetBase)
 {
@@ -1010,7 +1010,9 @@ void Textblock::drawWord0 (int wordIndex1, int wordIndex2,
          xStart = xWorld;
          if (firstCharIdx)
             xStart += textWidth (text, 0, firstCharIdx, style);
-         if (firstCharIdx == 0 && lastCharIdx == wordLen)
+         // With a hyphen, the width is a bit longer than totalWidth,
+         // and so, the optimization to use totalWidth is not correct.
+         if (!drawHyphen && firstCharIdx == 0 && lastCharIdx == wordLen)
             width = totalWidth;
          else
             width = textWidth (text, firstCharIdx,
