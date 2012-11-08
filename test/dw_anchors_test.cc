@@ -55,7 +55,7 @@ static void anchorCallback (Fl_Widget *widget, void *data)
 static void textTimeout (void *data)
 {
    Textblock *oldTop = topTextblock;
-   topTextblock = new Textblock (false);
+   topTextblock = new Textblock (false, 100);
 
    if (oldTop) {
       oldTop->addLinebreak (wordStyle);

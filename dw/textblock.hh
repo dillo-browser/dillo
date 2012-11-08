@@ -212,15 +212,6 @@ private:
    };
 
 protected:
-   enum {
-      /**
-       *  The penalty for hyphens, multiplied by 100. So, 100 means
-       *  1.0. See dw::Textblock::BadnessAndPenalty::setPenalty for
-       *  more details.
-       */
-      HYPHEN_BREAK = 100
-   };
-
    struct Line
    {
       int firstWord;    /* first word's index in word vector */
@@ -362,6 +353,14 @@ protected:
    bool ignoreLine1OffsetSometimes;
 
    bool mustQueueResize;
+
+   /**
+    * The penalty for hyphens, multiplied by 100. So, 100 means
+    * 1.0. INT_MAX and INT_MIN are also allowed. See
+    * dw::Textblock::BadnessAndPenalty::setPenalty for more
+    * details. Set from preferences.
+    */
+   int penaltyHyphen;
 
    bool limitTextWidth; /* from preferences */
 
@@ -527,7 +526,7 @@ protected:
 public:
    static int CLASS_ID;
 
-   Textblock(bool limitTextWidth);
+   Textblock(bool limitTextWidth, int penaltyHyphen);
    ~Textblock();
 
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);

@@ -90,7 +90,7 @@ int main(int argc, char **argv)
    TableCell *ref = NULL;
    for(int i = 0; i < 10; i++) {
       //for(int i = 0; i < 1; i++) {
-      TableCell *cell = new TableCell (ref, false);
+      TableCell *cell = new TableCell (ref, false, 100);
       cell->setStyle (cellStyle);
       ref = cell;
       table->addRow (wordStyle);

@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 
    Style *widgetStyle2 = Style::create (layout, &styleAttrs);
 
-   Textblock *textblock1 = new Textblock (false);
+   Textblock *textblock1 = new Textblock (false, 100);
    textblock1->setStyle (widgetStyle1);
    layout->setWidget (textblock1);
 
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
    for(int i = 0; i < 1; i++) {
       textblock1->addParbreak(0, wordStyle);
 
-      Textblock *textblock2 = new Textblock (false);
+      Textblock *textblock2 = new Textblock (false, 100);
       textblock1->addWidget (textblock2, widgetStyle2);
 
       for(int j = 0; words2[j]; j++) {

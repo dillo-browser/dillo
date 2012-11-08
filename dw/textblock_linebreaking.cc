@@ -98,6 +98,9 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
  * to deal with fractional numbers, without having to use floating
  * point numbers. So, to set a penalty to 0.5, pass 50.
  *
+ * INT_MAX and INT_MIN (representing inf and -inf, respectively) are
+ * also allowed.
+ *
  * The definition of penalties depends on the definition of badness,
  * which adheres to the description in \ref dw-line-breaking, section
  * "Criteria for Line-Breaking". The exact calculation may vary, but
@@ -108,14 +111,20 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
  */
 void Textblock::BadnessAndPenalty::setPenalty (int penalty)
 {
-   // This factor consists of: (i) 100^3, since in calcBadness(), the
-   // ratio is multiplied with 100 (again, to use integer numbers for
-   // fractional numbers), and the badness (which has to be compared
-   // to the penalty!) is the third power or it; (ii) the denominator
-   // 100, of course, since 100 times the penalty is passed to this
-   // method.
-   this->penalty = penalty * (100 * 100 * 100 / 100);
-   penaltyState = PENALTY_VALUE;
+   if (penalty == INT_MAX)
+      setPenaltyProhibitBreak ();
+   else if (penalty == INT_MIN)
+      setPenaltyForceBreak ();
+   else {
+      // This factor consists of: (i) 100^3, since in calcBadness(), the
+      // ratio is multiplied with 100 (again, to use integer numbers for
+      // fractional numbers), and the badness (which has to be compared
+      // to the penalty!) is the third power or it; (ii) the denominator
+      // 100, of course, since 100 times the penalty is passed to this
+      // method.
+      this->penalty = penalty * (100 * 100 * 100 / 100);
+      penaltyState = PENALTY_VALUE;
+   }
 }
 
 void Textblock::BadnessAndPenalty::setPenaltyProhibitBreak ()
@@ -690,7 +699,7 @@ int Textblock::hyphenateWord (int wordIndex)
          // Note: there are numBreaks + 1 word parts.
          if (i < numBreaks) {
             // TODO There should be a method fillHyphen.
-            w->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
+            w->badnessAndPenalty.setPenalty (penaltyHyphen);
             w->hyphenWidth =
                layout->textWidth (origWord.style->font, "\xc2\xad", 2);
             PRINTF ("      [%d] + hyphen\n", wordIndex + i);

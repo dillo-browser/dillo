@@ -40,7 +40,7 @@ namespace dw {
 
 int Textblock::CLASS_ID = -1;
 
-Textblock::Textblock (bool limitTextWidth)
+Textblock::Textblock (bool limitTextWidth, int penaltyHyphen)
 {
    registerName ("dw::Textblock", &CLASS_ID);
    setFlags (BLOCK_LEVEL);
@@ -86,6 +86,7 @@ Textblock::Textblock (bool limitTextWidth)
    availDescent = 0;
 
    this->limitTextWidth = limitTextWidth;
+   this->penaltyHyphen = penaltyHyphen;
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
       /* hlStart[layer].index > hlEnd[layer].index means no highlighting */
@@ -1704,7 +1705,7 @@ void Textblock::addHyphen ()
    if (wordIndex >= 0) {
       Word *word = words->getRef(wordIndex);
  
-      word->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
+      word->badnessAndPenalty.setPenalty (penaltyHyphen);
       // TODO Optimize? Like spaces?
       word->hyphenWidth = layout->textWidth (word->style->font, "\xc2\xad", 2);
 

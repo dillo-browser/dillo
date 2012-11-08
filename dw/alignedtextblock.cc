@@ -59,8 +59,8 @@ void AlignedTextblock::List::unref(int pos)
 
 int AlignedTextblock::CLASS_ID = -1;
 
-AlignedTextblock::AlignedTextblock (bool limitTextWidth):
-   Textblock (limitTextWidth)
+AlignedTextblock::AlignedTextblock (bool limitTextWidth, int penaltyHyphen):
+   Textblock (limitTextWidth, penaltyHyphen)
 {
    registerName ("dw::AlignedTextblock", &CLASS_ID);
 }

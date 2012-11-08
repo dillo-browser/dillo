@@ -12,6 +12,8 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <locale.h>            /* for setlocale */
+#include <math.h>              /* for isinf */
+#include <limits.h>
 
 #include "prefs.h"
 #include "misc.h"
@@ -28,6 +30,7 @@ typedef enum {
    PREFS_URL,
    PREFS_INT32,
    PREFS_DOUBLE,
+   PREFS_FRACTION_100,
    PREFS_GEOMETRY,
    PREFS_PANEL_SIZE
 } PrefType_t;
@@ -107,7 +110,8 @@ int PrefsParser::parseOption(char *name, char *value)
       { "small_icons", &prefs.small_icons, PREFS_BOOL },
       { "start_page", &prefs.start_page, PREFS_URL },
       { "theme", &prefs.theme, PREFS_STRING },
-      { "w3c_plus_heuristics", &prefs.w3c_plus_heuristics, PREFS_BOOL }
+      { "w3c_plus_heuristics", &prefs.w3c_plus_heuristics, PREFS_BOOL },
+      { "penalty_hyphen", &prefs.penalty_hyphen, PREFS_FRACTION_100 },
    };
 
    node = NULL;
@@ -159,6 +163,18 @@ int PrefsParser::parseOption(char *name, char *value)
       break;
    case PREFS_DOUBLE:
       *(double *)node->pref = strtod(value, NULL);
+      break;
+   case PREFS_FRACTION_100:
+      {
+         double d = strtod (value, NULL);
+         if (isinf(d)) {
+            if (d > 0)
+               *(int*)node->pref = INT_MAX;
+            else
+               *(int*)node->pref = INT_MIN;
+         } else
+            *(int*)node->pref = 100 * d;
+      }
       break;
    case PREFS_GEOMETRY:
       a_Misc_parse_geometry(value, &prefs.xpos, &prefs.ypos,

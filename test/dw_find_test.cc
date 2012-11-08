@@ -117,7 +117,7 @@ int main(int argc, char **argv)
    styleAttrs.margin.left = 0;
    Style *wordStyle = Style::create (layout, &styleAttrs);
 
-   Textblock *textblock = new Textblock (false);
+   Textblock *textblock = new Textblock (false, 100);
    textblock->setStyle (topWidgetStyle);
    layout->setWidget (textblock);
 
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
       for(int j = 0; j < 10; j++) {
          Textblock *current;
          if(j < 5) {
-            current = new Textblock (false);
+            current = new Textblock (false, 100);
             stack->getTop()->addWidget (current, widgetStyle);
             stack->push (current);
          } else {

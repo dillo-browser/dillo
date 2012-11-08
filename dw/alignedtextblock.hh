@@ -42,7 +42,7 @@ private:
    int listPos;
 
 protected:
-   AlignedTextblock(bool limitTextWidth);
+   AlignedTextblock(bool limitTextWidth, int penaltyHyphen);
 
    virtual int getValue () = 0;
    virtual void setMaxValue (int maxValue, int value) = 0;
