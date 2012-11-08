@@ -402,7 +402,7 @@ protected:
    void drawWord (Line *line, int wordIndex1, int wordIndex2, core::View *view,
                   core::Rectangle *area, int xWidget, int yWidgetBase);
    void drawWord0 (int wordIndex1, int wordIndex2,
-                   const char *text, int totalWidth,
+                   const char *text, int totalWidth, bool drawHyphen,
                    core::style::Style *style, core::View *view,
                    core::Rectangle *area, int xWidget, int yWidgetBase);
    void drawSpace (int wordIndex, core::View *view, core::Rectangle *area,
