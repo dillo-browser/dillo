@@ -1685,12 +1685,12 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style)
       switch (style->whiteSpace) {
       case core::style::WHITE_SPACE_NORMAL:
       case core::style::WHITE_SPACE_PRE_LINE:
+      case core::style::WHITE_SPACE_PRE_WRAP:
          word->badnessAndPenalty.setPenalty (0);
          break;
 
       case core::style::WHITE_SPACE_PRE:
       case core::style::WHITE_SPACE_NOWRAP:
-      case core::style::WHITE_SPACE_PRE_WRAP:
          word->badnessAndPenalty.setPenaltyProhibitBreak ();
          break;
       }
