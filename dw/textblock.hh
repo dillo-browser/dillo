@@ -212,7 +212,7 @@ private:
    };
 
    enum { PENALTY_HYPHEN, PENALTY_NUM };
-   enum { NUM_DIV_SIGNS = 1 };
+   enum { NUM_DIV_SIGNS = 3};
 
    typedef struct
    {
@@ -565,7 +565,6 @@ public:
          setBreakOption (words->getRef(wordIndex), style);
    }
 
-   void addHyphen();
    void addParbreak (int space, core::style::Style *style);
    void addLinebreak (core::style::Style *style);
 

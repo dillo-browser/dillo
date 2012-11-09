@@ -41,7 +41,9 @@ namespace dw {
 int Textblock::CLASS_ID = -1;
 
 Textblock::DivSign Textblock::divSigns[NUM_DIV_SIGNS] = {
-   { "\xc2\xad", true, false, PENALTY_HYPHEN, -1 }
+   { "\xc2\xad", true, false, PENALTY_HYPHEN, -1 },
+   { "-", false, true, -1, PENALTY_HYPHEN },
+   { "\xe2\x80\x94", false, true, PENALTY_HYPHEN, PENALTY_HYPHEN }
 };
 
 Textblock::Textblock (bool limitTextWidth, int penaltyHyphen)
@@ -1466,8 +1468,8 @@ void Textblock::addText (const char *text, size_t len,
 
       // Store hyphen positions.
       int n = 0, totalLenSignRemoved = 0;
-      int partPenalty[numParts], partStart[numParts], partEnd[numParts];
-      partPenalty[numParts - 1] = INT_MAX;
+      int partPenalty[numParts - 1], partStart[numParts], partEnd[numParts];
+      bool signRemoved[numParts - 1];
       partStart[0] = 0;
       partEnd[numParts - 1] = len;
 
@@ -1490,6 +1492,7 @@ void Textblock::addText (const char *text, size_t len,
                assert (divSigns[foundDiv].penaltyIndexRight == -1);
 
                partPenalty[n] = penalties[divSigns[foundDiv].penaltyIndexLeft];
+               signRemoved[n] = true;
                partEnd[n] = i;
                partStart[n + 1] = i + lDiv;
                n++;
@@ -1501,6 +1504,7 @@ void Textblock::addText (const char *text, size_t len,
                if (divSigns[foundDiv].penaltyIndexLeft != -1) {
                   partPenalty[n] =
                      penalties[divSigns[foundDiv].penaltyIndexLeft];
+                  signRemoved[n] = false;
                   partEnd[n] = i;
                   partStart[n + 1] = i;
                   n++;
@@ -1509,6 +1513,7 @@ void Textblock::addText (const char *text, size_t len,
                if (divSigns[foundDiv].penaltyIndexRight != -1) {
                   partPenalty[n] =
                      penalties[divSigns[foundDiv].penaltyIndexRight];
+                  signRemoved[n] = false;
                   partEnd[n] = i + lDiv;
                   partStart[n + 1] = i + lDiv;
                   n++;
@@ -1561,8 +1566,20 @@ void Textblock::addText (const char *text, size_t len,
          PRINTF("' added\n");
 
          if(i < numParts - 1) {
-            // TODO Here again. Consider also penalties.
-            addHyphen ();
+            Word *word = words->getLastRef();
+            word->badnessAndPenalty.setPenalty (partPenalty[i]);
+            if (signRemoved[i])
+               // Currently, only soft hyphens (UTF-8: "\xc2\xad") can
+               // be used. See also drawWord, last section "if
+               // (drawHyphen)".
+
+               // The character defined in DivSign::s could be used,
+               // but it must then also stored in the word.
+
+               word->hyphenWidth =
+                  layout->textWidth (word->style->font, "\xc2\xad", 2);
+            accumulateWordData (words->size() - 1);
+
             PRINTF("H... yphen added\n");
          }
       }
@@ -1774,20 +1791,6 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style)
    }
 }
 
-void Textblock::addHyphen ()
-{
-   int wordIndex = words->size () - 1;
-
-   if (wordIndex >= 0) {
-      Word *word = words->getRef(wordIndex);
- 
-      word->badnessAndPenalty.setPenalty (penalties[PENALTY_HYPHEN]);
-      // TODO Optimize? Like spaces?
-      word->hyphenWidth = layout->textWidth (word->style->font, "\xc2\xad", 2);
-
-      accumulateWordData (wordIndex);
-   }
-}
 
 /**
  * Cause a paragraph break
