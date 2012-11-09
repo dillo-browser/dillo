@@ -699,7 +699,7 @@ int Textblock::hyphenateWord (int wordIndex)
          // Note: there are numBreaks + 1 word parts.
          if (i < numBreaks) {
             // TODO There should be a method fillHyphen.
-            w->badnessAndPenalty.setPenalty (penaltyHyphen);
+            w->badnessAndPenalty.setPenalty (penalties[PENALTY_HYPHEN]);
             w->hyphenWidth =
                layout->textWidth (origWord.style->font, "\xc2\xad", 2);
             PRINTF ("      [%d] + hyphen\n", wordIndex + i);

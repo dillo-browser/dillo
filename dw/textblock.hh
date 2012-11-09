@@ -211,6 +211,18 @@ private:
       void print ();
    };
 
+   enum { PENALTY_HYPHEN, PENALTY_NUM };
+   enum { NUM_DIV_SIGNS = 1 };
+
+   typedef struct
+   {
+      const char *s;
+      bool signRemoved, canBeHyphenated;
+      int penaltyIndexLeft, penaltyIndexRight;
+   } DivSign;
+
+   static DivSign divSigns[NUM_DIV_SIGNS];
+
 protected:
    struct Line
    {
@@ -355,12 +367,12 @@ protected:
    bool mustQueueResize;
 
    /**
-    * The penalty for hyphens, multiplied by 100. So, 100 means
-    * 1.0. INT_MAX and INT_MIN are also allowed. See
+    * The penalties for hyphens and other, multiplied by 100. So, 100
+    * means 1.0. INT_MAX and INT_MIN are also allowed. See
     * dw::Textblock::BadnessAndPenalty::setPenalty for more
     * details. Set from preferences.
     */
-   int penaltyHyphen;
+   int penalties[PENALTY_NUM];
 
    bool limitTextWidth; /* from preferences */
 

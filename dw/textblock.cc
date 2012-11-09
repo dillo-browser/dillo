@@ -40,6 +40,10 @@ namespace dw {
 
 int Textblock::CLASS_ID = -1;
 
+Textblock::DivSign Textblock::divSigns[NUM_DIV_SIGNS] = {
+   { "\xc2\xad", true, false, PENALTY_HYPHEN, -1 }
+};
+
 Textblock::Textblock (bool limitTextWidth, int penaltyHyphen)
 {
    registerName ("dw::Textblock", &CLASS_ID);
@@ -86,7 +90,7 @@ Textblock::Textblock (bool limitTextWidth, int penaltyHyphen)
    availDescent = 0;
 
    this->limitTextWidth = limitTextWidth;
-   this->penaltyHyphen = penaltyHyphen;
+   penalties[PENALTY_HYPHEN] = penaltyHyphen;
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
       /* hlStart[layer].index > hlEnd[layer].index means no highlighting */
@@ -1418,77 +1422,146 @@ void Textblock::calcTextSize (const char *text, size_t len,
 }
 
 /**
- * Add a word to the page structure. If it contains soft hyphens, it is
- * divided.
+ * Add a word to the page structure. If it contains dividing
+ * characters (hard or soft hyphens, em-dashes, etc.), it is divided.
  */
 void Textblock::addText (const char *text, size_t len,
                          core::style::Style *style)
 {
    PRINTF ("[%p] ADD_TEXT (%d characters)\n", this, (int)len);
 
-   // Count hyphens.
-   int numHyphens = 0;
-   for (int i = 0; i < (int)len - 1; i++)
-      // (0xc2, 0xad) is the UTF-8 representation of a soft hyphen (Unicode
-      // 0xc2).
-      if((unsigned char)text[i] == 0xc2 && (unsigned char)text[i + 1] == 0xad)
-         numHyphens++;
+   // Count dividing characters.
+   int numParts = 1;
 
-   if (numHyphens == 0) {
-      // Simple (and common) case: no soft hyphens. May still be hyphenated
-      // automatically.
+   for (int i = 0; i < (int)len;
+        i < (int)len && (i = layout->nextGlyph (text, i))) {
+      int foundDiv = -1;
+      for (int j = 0; foundDiv == -1 && j < NUM_DIV_SIGNS; j++) {
+         int lDiv = strlen (divSigns[j].s);
+         if (i <= (int)len - lDiv) {
+            if (memcmp (text + i, divSigns[j].s, lDiv * sizeof (char)) == 0)
+               foundDiv = j;
+         }
+      }
+
+      if (foundDiv != -1) {
+         if (divSigns[foundDiv].penaltyIndexLeft != -1)
+            numParts ++;
+         if (divSigns[foundDiv].penaltyIndexRight != -1)
+            numParts ++;
+      }
+   }
+
+   if (numParts == 1) {
+      // Simple (and common) case: no dividing characters. May still
+      // be hyphenated automatically.
       core::Requisition size;
       calcTextSize (text, len, style, &size);
       addText0 (text, len, true, style, &size);
    } else {
-      PRINTF("HYPHENATION: '");
+      PRINTF ("HYPHENATION: '");
       for (size_t i = 0; i < len; i++)
          PUTCHAR(text[i]);
-      PRINTF("', with %d hyphen(s)\n", numHyphens);
+      PRINTF ("', with %d parts\n", numParts);
 
       // Store hyphen positions.
-      int n = 0, hyphenPos[numHyphens], breakPos[numHyphens];
-      for (size_t i = 0; i < len - 1; i++)
-         if((unsigned char)text[i] == 0xc2 &&
-            (unsigned char)text[i + 1] == 0xad) {
-            hyphenPos[n] = i;
-            breakPos[n] = i - 2 * n;
-            n++;
-         }
+      int n = 0, totalLenSignRemoved = 0;
+      int partPenalty[numParts], partStart[numParts], partEnd[numParts];
+      partPenalty[numParts - 1] = INT_MAX;
+      partStart[0] = 0;
+      partEnd[numParts - 1] = len;
 
-      // Get text without hyphens. (There are numHyphens + 1 parts in the word,
-      // and 2 * numHyphens bytes less, 2 for each hyphen, are needed.)
-      char textWithoutHyphens[len - 2 * numHyphens];
-      int start = 0; // related to "text"
-      for (int i = 0; i < numHyphens + 1; i++) {
-         int end = (i == numHyphens) ? len : hyphenPos[i];
-         memmove (textWithoutHyphens + start - 2 * i, text + start,
-                  end - start);
-         start = end + 2;
+      for (int i = 0; i < (int)len;
+           i < (int)len && (i = layout->nextGlyph (text, i))) {
+         int foundDiv = -1;
+         for (int j = 0; foundDiv == -1 && j < NUM_DIV_SIGNS; j++) {
+            int lDiv = strlen (divSigns[j].s);
+            if (i <= (int)len - lDiv) {
+               if (memcmp (text + i, divSigns[j].s, lDiv * sizeof (char)) == 0)
+                  foundDiv = j;
+            }
+         }
+         
+         if (foundDiv != -1) {
+            int lDiv = strlen (divSigns[foundDiv].s);
+            
+            if (divSigns[foundDiv].signRemoved) {
+               assert (divSigns[foundDiv].penaltyIndexLeft != -1);
+               assert (divSigns[foundDiv].penaltyIndexRight == -1);
+
+               partPenalty[n] = penalties[divSigns[foundDiv].penaltyIndexLeft];
+               partEnd[n] = i;
+               partStart[n + 1] = i + lDiv;
+               n++;
+               totalLenSignRemoved += lDiv;
+            } else {
+               assert (divSigns[foundDiv].penaltyIndexLeft != -1 ||
+                       divSigns[foundDiv].penaltyIndexRight != -1);
+
+               if (divSigns[foundDiv].penaltyIndexLeft != -1) {
+                  partPenalty[n] =
+                     penalties[divSigns[foundDiv].penaltyIndexLeft];
+                  partEnd[n] = i;
+                  partStart[n + 1] = i;
+                  n++;
+               }
+
+               if (divSigns[foundDiv].penaltyIndexRight != -1) {
+                  partPenalty[n] =
+                     penalties[divSigns[foundDiv].penaltyIndexRight];
+                  partEnd[n] = i + lDiv;
+                  partStart[n + 1] = i + lDiv;
+                  n++;
+               }
+            }
+         }
+      }
+
+      // Get text without removed characters, e. g. hyphens.
+      const char *textWithoutHyphens;
+      char textWithoutHyphensBuf[len - totalLenSignRemoved];
+      int *partEndWithoutHyphens, partEndWithoutHyphensBuf[numParts];
+
+      if (totalLenSignRemoved == 0) {
+         // No removed characters: take original arrays.
+         textWithoutHyphens = text;
+         partEndWithoutHyphens = partEnd;
+      } else {
+         // Copy into special buffers.
+         textWithoutHyphens = textWithoutHyphensBuf;
+         partEndWithoutHyphens = partEndWithoutHyphensBuf;
+
+         int n = 0;
+         for (int i = 0; i < numParts; i++) {
+            memmove (textWithoutHyphensBuf + n, text + partStart[i],
+                     partEnd[i] - partStart[i]);
+            n += partEnd[i] - partStart[i];
+            partEndWithoutHyphensBuf[i] = n;
+         }
       }
 
       PRINTF("H... without hyphens: '");
-      for (size_t i = 0; i < len - 2 * numHyphens; i++)
+      for (size_t i = 0; i < len - totalLenSignRemoved; i++)
          PUTCHAR(textWithoutHyphens[i]);
       PRINTF("'\n");
 
-      core::Requisition wordSize[numHyphens + 1];
-      calcTextSizes (textWithoutHyphens, len - 2 * numHyphens, style,
-                     numHyphens, breakPos, wordSize);
+      core::Requisition wordSize[numParts];
+      calcTextSizes (textWithoutHyphens, len - totalLenSignRemoved, style,
+                     numParts, partEndWithoutHyphens, wordSize);
 
       // Finished!
-      for (int i = 0; i < numHyphens + 1; i++) {
-         int start = (i == 0) ? 0 : hyphenPos[i - 1] + 2;
-         int end = (i == numHyphens) ? len : hyphenPos[i];
-         // Do not anymore hyphen automatically.
-         addText0 (text + start, end - start, false, style, &wordSize[i]);
+      for (int i = 0; i < numParts; i++) {
+         // Do not anymore hyphen automatically. TODO Sometimes do.
+         addText0 (text + partStart[i], partEnd[i] - partStart[i],
+                   false, style, &wordSize[i]);
 
          PRINTF("H... [%d] '", i);
-         for (int j = start; j < end; j++)
+         for (int j = partStart[i]; j < partEnd[i]; j++)
             PUTCHAR(text[j]);
          PRINTF("' added\n");
 
-         if(i < numHyphens) {
+         if(i < numParts - 1) {
+            // TODO Here again. Consider also penalties.
             addHyphen ();
             PRINTF("H... yphen added\n");
          }
@@ -1498,22 +1571,23 @@ void Textblock::addText (const char *text, size_t len,
 
 void Textblock::calcTextSizes (const char *text, size_t textLen,
                                core::style::Style *style,
-                               int numBreaks, int *breakPos,
+                               int numParts, int *partEnd,
                                core::Requisition *wordSize)
 {
    // The size of the last part is calculated in a simple way.
-   int lastStart = breakPos[numBreaks - 1];
+   int lastStart = partEnd[numParts - 2];
    calcTextSize (text + lastStart, textLen - lastStart, style,
-                 &wordSize[numBreaks]);
+                 &wordSize[numParts - 1]);
 
    PRINTF("H... [%d] '", numBreaks);
    for (size_t i = 0; i < textLen - lastStart; i++)
       PUTCHAR(text[i + lastStart]);
    PRINTF("' -> %d\n", wordSize[numBreaks].width);
 
-   // The rest is more complicated. TODO Documentation.
-   for (int i = numBreaks - 1; i >= 0; i--) {
-      int start = (i == 0) ? 0 : breakPos[i - 1];
+   // The rest is more complicated. See dw-line-breaking, section
+   // "Hyphens".
+   for (int i = numParts - 2; i >= 0; i--) {
+      int start = (i == 0) ? 0 : partEnd[i - 1];
       calcTextSize (text + start, textLen - start, style, &wordSize[i]);
 
       PRINTF("H... [%d] '", i);
@@ -1521,7 +1595,7 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
          PUTCHAR(text[j + start]);
       PRINTF("' -> %d\n", wordSize[i].width);
 
-      for (int j = i + 1; j < numBreaks + 1; j++) {
+      for (int j = i + 1; j < numParts; j++) {
          wordSize[i].width -= wordSize[j].width;
          PRINTF("H...    - %d = %d\n", wordSize[j].width, wordSize[i].width);
       }
@@ -1707,7 +1781,7 @@ void Textblock::addHyphen ()
    if (wordIndex >= 0) {
       Word *word = words->getRef(wordIndex);
  
-      word->badnessAndPenalty.setPenalty (penaltyHyphen);
+      word->badnessAndPenalty.setPenalty (penalties[PENALTY_HYPHEN]);
       // TODO Optimize? Like spaces?
       word->hyphenWidth = layout->textWidth (word->style->font, "\xc2\xad", 2);
 
