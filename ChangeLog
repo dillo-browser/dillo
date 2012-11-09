@@ -10,6 +10,7 @@ at http://hg.dillo.org/dillo
 dillo-3.0.3 [not released yet]
 
 +- Support for CSS display property
+ - Ignore remote CSS rules that could reveal browser history.
  - Replace polling in DNS with a pipe.
  - Packed trie to optimize hyphenator memory consumption.
    Patches: Johannes Hofmann
