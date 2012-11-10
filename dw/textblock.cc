@@ -1529,23 +1529,27 @@ void Textblock::addText (const char *text, size_t len,
       // Get text without removed characters, e. g. hyphens.
       const char *textWithoutHyphens;
       char textWithoutHyphensBuf[len - totalLenSignRemoved];
-      int *partEndWithoutHyphens, partEndWithoutHyphensBuf[numParts];
+      int *breakPosWithoutHyphens, breakPosWithoutHyphensBuf[numParts - 1];
 
       if (totalLenSignRemoved == 0) {
          // No removed characters: take original arrays.
          textWithoutHyphens = text;
-         partEndWithoutHyphens = partEnd;
+         // Ends are also break positions, except the last end, which
+         // is superfluous, but does not harm (since arrays in C/C++
+         // does not have an implicit length).
+         breakPosWithoutHyphens = partEnd;
       } else {
          // Copy into special buffers.
          textWithoutHyphens = textWithoutHyphensBuf;
-         partEndWithoutHyphens = partEndWithoutHyphensBuf;
+         breakPosWithoutHyphens = breakPosWithoutHyphensBuf;
 
          int n = 0;
          for (int i = 0; i < numParts; i++) {
             memmove (textWithoutHyphensBuf + n, text + partStart[i],
                      partEnd[i] - partStart[i]);
             n += partEnd[i] - partStart[i];
-            partEndWithoutHyphensBuf[i] = n;
+            if (i < numParts - 1)
+               breakPosWithoutHyphensBuf[i] = n;
          }
       }
 
@@ -1556,7 +1560,7 @@ void Textblock::addText (const char *text, size_t len,
 
       core::Requisition wordSize[numParts];
       calcTextSizes (textWithoutHyphens, len - totalLenSignRemoved, style,
-                     numParts, partEndWithoutHyphens, wordSize);
+                     numParts - 1, breakPosWithoutHyphens, wordSize);
 
       // Finished!
       for (int i = 0; i < numParts; i++) {
@@ -1565,7 +1569,7 @@ void Textblock::addText (const char *text, size_t len,
                    // characters, for which canBeHyphenated is set to
                    // false (this is the case for soft hyphens), do
                    // not hyphenate.
-                   false && canBeHyphenated[i] && canBeHyphenated[i + 1],
+                   canBeHyphenated[i] && canBeHyphenated[i + 1],
                    style, &wordSize[i]);
 
          PRINTF("H... [%d] '", i);
@@ -1592,13 +1596,13 @@ void Textblock::addText (const char *text, size_t len,
 
 void Textblock::calcTextSizes (const char *text, size_t textLen,
                                core::style::Style *style,
-                               int numParts, int *partEnd,
+                               int numBreaks, int *breakPos,
                                core::Requisition *wordSize)
 {
    // The size of the last part is calculated in a simple way.
-   int lastStart = partEnd[numParts - 2];
+   int lastStart = breakPos[numBreaks - 1];
    calcTextSize (text + lastStart, textLen - lastStart, style,
-                 &wordSize[numParts - 1]);
+                 &wordSize[numBreaks]);
 
    PRINTF("H... [%d] '", numBreaks);
    for (size_t i = 0; i < textLen - lastStart; i++)
@@ -1607,8 +1611,8 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
 
    // The rest is more complicated. See dw-line-breaking, section
    // "Hyphens".
-   for (int i = numParts - 2; i >= 0; i--) {
-      int start = (i == 0) ? 0 : partEnd[i - 1];
+   for (int i = numBreaks - 1; i >= 0; i--) {
+      int start = (i == 0) ? 0 : breakPos[i - 1];
       calcTextSize (text + start, textLen - start, style, &wordSize[i]);
 
       PRINTF("H... [%d] '", i);
@@ -1616,7 +1620,7 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
          PUTCHAR(text[j + start]);
       PRINTF("' -> %d\n", wordSize[i].width);
 
-      for (int j = i + 1; j < numParts; j++) {
+      for (int j = i + 1; j < numBreaks + 1; j++) {
          wordSize[i].width -= wordSize[j].width;
          PRINTF("H...    - %d = %d\n", wordSize[j].width, wordSize[i].width);
       }
@@ -1629,10 +1633,10 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
 void Textblock::addText0 (const char *text, size_t len, bool canBeHyphenated,
                           core::style::Style *style, core::Requisition *size)
 {
-   printf("addText0 ('");
-   for (size_t i = 0; i < len; i++)
-      putchar(text[i]);
-   printf("', %s, ...)\n", canBeHyphenated ? "true" : "false");
+   //printf("[%p] addText0 ('", this);
+   //for (size_t i = 0; i < len; i++)
+   //   putchar(text[i]);
+   //printf("', %s, ...)\n", canBeHyphenated ? "true" : "false");
 
    Word *word = addWord (size->width, size->ascent, size->descent,
                          canBeHyphenated, style);
