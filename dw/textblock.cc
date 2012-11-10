@@ -1469,7 +1469,8 @@ void Textblock::addText (const char *text, size_t len,
       // Store hyphen positions.
       int n = 0, totalLenSignRemoved = 0;
       int partPenalty[numParts - 1], partStart[numParts], partEnd[numParts];
-      bool signRemoved[numParts - 1];
+      bool signRemoved[numParts - 1], canBeHyphenated[numParts + 1];
+      canBeHyphenated[0] = canBeHyphenated[numParts] = true;
       partStart[0] = 0;
       partEnd[numParts - 1] = len;
 
@@ -1493,6 +1494,7 @@ void Textblock::addText (const char *text, size_t len,
 
                partPenalty[n] = penalties[divSigns[foundDiv].penaltyIndexLeft];
                signRemoved[n] = true;
+               canBeHyphenated[n + 1] = divSigns[foundDiv].canBeHyphenated;
                partEnd[n] = i;
                partStart[n + 1] = i + lDiv;
                n++;
@@ -1505,6 +1507,7 @@ void Textblock::addText (const char *text, size_t len,
                   partPenalty[n] =
                      penalties[divSigns[foundDiv].penaltyIndexLeft];
                   signRemoved[n] = false;
+                  canBeHyphenated[n + 1] = divSigns[foundDiv].canBeHyphenated;
                   partEnd[n] = i;
                   partStart[n + 1] = i;
                   n++;
@@ -1514,6 +1517,7 @@ void Textblock::addText (const char *text, size_t len,
                   partPenalty[n] =
                      penalties[divSigns[foundDiv].penaltyIndexRight];
                   signRemoved[n] = false;
+                  canBeHyphenated[n + 1] = divSigns[foundDiv].canBeHyphenated;
                   partEnd[n] = i + lDiv;
                   partStart[n + 1] = i + lDiv;
                   n++;
@@ -1556,9 +1560,13 @@ void Textblock::addText (const char *text, size_t len,
 
       // Finished!
       for (int i = 0; i < numParts; i++) {
-         // Do not anymore hyphen automatically. TODO Sometimes do.
          addText0 (text + partStart[i], partEnd[i] - partStart[i],
-                   false, style, &wordSize[i]);
+                   // If this parts adjoins at least one division
+                   // characters, for which canBeHyphenated is set to
+                   // false (this is the case for soft hyphens), do
+                   // not hyphenate.
+                   false && canBeHyphenated[i] && canBeHyphenated[i + 1],
+                   style, &wordSize[i]);
 
          PRINTF("H... [%d] '", i);
          for (int j = partStart[i]; j < partEnd[i]; j++)
@@ -1572,15 +1580,11 @@ void Textblock::addText (const char *text, size_t len,
                // Currently, only soft hyphens (UTF-8: "\xc2\xad") can
                // be used. See also drawWord, last section "if
                // (drawHyphen)".
-
                // The character defined in DivSign::s could be used,
                // but it must then also stored in the word.
-
                word->hyphenWidth =
                   layout->textWidth (word->style->font, "\xc2\xad", 2);
             accumulateWordData (words->size() - 1);
-
-            PRINTF("H... yphen added\n");
          }
       }
    }
@@ -1625,6 +1629,11 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
 void Textblock::addText0 (const char *text, size_t len, bool canBeHyphenated,
                           core::style::Style *style, core::Requisition *size)
 {
+   printf("addText0 ('");
+   for (size_t i = 0; i < len; i++)
+      putchar(text[i]);
+   printf("', %s, ...)\n", canBeHyphenated ? "true" : "false");
+
    Word *word = addWord (size->width, size->ascent, size->descent,
                          canBeHyphenated, style);
    word->content.type = core::Content::TEXT;
