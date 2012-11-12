@@ -538,6 +538,11 @@ void FltkWidgetView::drawText (core::style::Font *font,
                                core::style::Color::Shading shading,
                                int X, int Y, const char *text, int len)
 {
+   //printf ("drawText (..., %d, %d, '", X, Y);
+   //for (int i = 0; i < len; i++)
+   //   putchar (text[i]);
+   //printf ("'\n");
+
    FltkFont *ff = (FltkFont*)font;
    fl_font(ff->font, ff->size);
    fl_color(((FltkColor*)color)->colors[shading]);

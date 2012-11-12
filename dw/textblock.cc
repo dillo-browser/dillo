@@ -889,6 +889,7 @@ void Textblock::drawText(core::View *view, core::style::Style *style,
             break;
          }
       }
+     
       view->drawText(style->font, style->color, shading, x, y,
                      str ? str : text + start, str ? strlen(str) : len);
       if (str)
@@ -944,6 +945,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
       }
 
       if(drawHyphen) {
+         // "\xc2\xad" is the UTF-8 code of a soft hyphen.
          text[p++] = 0xc2;
          text[p++] = 0xad;
          text[p++] = 0;
@@ -1128,7 +1130,8 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                } else {
                   int wordIndex2 = wordIndex;
                   while (wordIndex2 < line->lastWord &&
-                         words->getRef(wordIndex2)->hyphenWidth > 0 &&
+                         (words->getRef(wordIndex2)->flags
+                          & Word::DRAW_AS_ONE_TEXT) &&
                          word->style == words->getRef(wordIndex2 + 1)->style)
                      wordIndex2++;
 
@@ -1142,6 +1145,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                   word = words->getRef(wordIndex);
                }
             }
+
             if (word->effSpace > 0 && wordIndex < line->lastWord &&
                 words->getRef(wordIndex + 1)->content.type !=
                                                         core::Content::BREAK) {
@@ -1307,7 +1311,7 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
    word->hyphenWidth = 0;
    word->badnessAndPenalty.setPenaltyProhibitBreak ();
    word->content.space = false;
-   word->canBeHyphenated = canBeHyphenated;
+   word->flags = canBeHyphenated ? Word::CAN_BE_HYPHENATED : 0;
 
    word->style = style;
    word->spaceStyle = style;
@@ -1588,6 +1592,7 @@ void Textblock::addText (const char *text, size_t len,
                // but it must then also stored in the word.
                word->hyphenWidth =
                   layout->textWidth (word->style->font, "\xc2\xad", 2);
+            word->flags |= Word::DRAW_AS_ONE_TEXT;
             accumulateWordData (words->size() - 1);
          }
       }

@@ -271,6 +271,11 @@ protected:
 
    struct Word
    {
+      enum {
+         CAN_BE_HYPHENATED = 1 << 0,
+         DRAW_AS_ONE_TEXT  = 1 << 1
+      };
+
       /* TODO: perhaps add a xLeft? */
       core::Requisition size;
       /* Space after the word, only if it's not a break: */
@@ -284,8 +289,8 @@ protected:
                           * this is the last word of the line, and
                           * "hyphenWidth > 0" is also used to decide
                           * whether to draw a hyphen. */
+      short flags;
       core::Content content;
-      bool canBeHyphenated;
 
       // accumulated values, relative to the beginning of the line
       int totalWidth;          /* The sum of all word widths; plus all

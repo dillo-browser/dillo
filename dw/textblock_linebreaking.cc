@@ -570,7 +570,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
             PRINTF ("\n");
 
             if (word1->badnessAndPenalty.lineTight () &&
-                word1->canBeHyphenated &&
+                word1->flags && Word::CAN_BE_HYPHENATED &&
                 word1->style->x_lang[0] &&
                 word1->content.type == core::Content::TEXT &&
                 Hyphenator::isHyphenationCandidate (word1->content.text))
@@ -579,7 +579,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
             if (word1->badnessAndPenalty.lineLoose () &&
                 breakPos + 1 < words->size ()) {
                Word *word2 = words->getRef(breakPos + 1);
-               if (word2->canBeHyphenated &&
+               if (word2->flags && Word::CAN_BE_HYPHENATED &&
                    word2->style->x_lang[0] &&
                    word2->content.type == core::Content::TEXT  &&
                    Hyphenator::isHyphenationCandidate (word2->content.text))
@@ -702,6 +702,7 @@ int Textblock::hyphenateWord (int wordIndex)
             w->badnessAndPenalty.setPenalty (penalties[PENALTY_HYPHEN]);
             w->hyphenWidth =
                layout->textWidth (origWord.style->font, "\xc2\xad", 2);
+            w->flags |= Word::DRAW_AS_ONE_TEXT;
             PRINTF ("      [%d] + hyphen\n", wordIndex + i);
          } else {
             if (origWord.content.space) {
@@ -722,9 +723,8 @@ int Textblock::hyphenateWord (int wordIndex)
       origWord.spaceStyle->unref ();
 
       free (breakPos);
-   } else {
-      words->getRef(wordIndex)->canBeHyphenated = false;
-   }
+   } else
+      words->getRef(wordIndex)->flags &= ~Word::CAN_BE_HYPHENATED;
 
    return numBreaks;
 }
