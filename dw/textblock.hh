@@ -212,16 +212,16 @@ private:
    };
 
    enum { PENALTY_HYPHEN, PENALTY_NUM };
-   enum { NUM_DIV_SIGNS = 3};
+   enum { NUM_DIV_CHARS = 3};
 
    typedef struct
    {
       const char *s;
-      bool signRemoved, canBeHyphenated;
+      bool charRemoved, canBeHyphenated;
       int penaltyIndexLeft, penaltyIndexRight;
-   } DivSign;
+   } DivChar;
 
-   static DivSign divSigns[NUM_DIV_SIGNS];
+   static DivChar divChars[NUM_DIV_CHARS];
 
 protected:
    struct Line
@@ -272,8 +272,16 @@ protected:
    struct Word
    {
       enum {
+         /** Can be hyphenated automatically. (Cleared after
+          * hyphenation.) */
          CAN_BE_HYPHENATED = 1 << 0,
-         DRAW_AS_ONE_TEXT  = 1 << 1
+         /** Must be drawn with a hyphen, when at the end of the line. */
+         DIV_CHAR_AT_EOL   = 1 << 1,
+         /** Is or ends with a "division character", which is part of
+          * the word */
+         PERM_DIV_CHAR     = 1 << 2,
+         /** This word should be drawn */
+         DRAW_AS_ONE_TEXT  = 1 << 3
       };
 
       /* TODO: perhaps add a xLeft? */
@@ -377,7 +385,7 @@ protected:
     * dw::Textblock::BadnessAndPenalty::setPenalty for more
     * details. Set from preferences.
     */
-   int penalties[PENALTY_NUM];
+   int penalties[PENALTY_NUM][2];
 
    bool limitTextWidth; /* from preferences */
 

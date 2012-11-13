@@ -40,7 +40,7 @@ namespace dw {
 
 int Textblock::CLASS_ID = -1;
 
-Textblock::DivSign Textblock::divSigns[NUM_DIV_SIGNS] = {
+Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
    { "\xc2\xad", true, false, PENALTY_HYPHEN, -1 },
    { "-", false, true, -1, PENALTY_HYPHEN },
    { "\xe2\x80\x94", false, true, PENALTY_HYPHEN, PENALTY_HYPHEN }
@@ -92,7 +92,8 @@ Textblock::Textblock (bool limitTextWidth, int penaltyHyphen)
    availDescent = 0;
 
    this->limitTextWidth = limitTextWidth;
-   penalties[PENALTY_HYPHEN] = penaltyHyphen;
+   penalties[PENALTY_HYPHEN][0] = penaltyHyphen;
+   penalties[PENALTY_HYPHEN][1] = INT_MAX; // TODO Configuration
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
       /* hlStart[layer].index > hlEnd[layer].index means no highlighting */
@@ -911,7 +912,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
 {
    core::style::Style *style = words->getRef(wordIndex1)->style;
    bool drawHyphen = wordIndex2 == line->lastWord
-      && words->getRef(wordIndex2)->hyphenWidth > 0;
+      && (words->getRef(wordIndex2)->flags & Word::DIV_CHAR_AT_EOL);
 
    if (style->hasBackground ()) {
       int w = 0;
@@ -1442,18 +1443,18 @@ void Textblock::addText (const char *text, size_t len,
    for (int i = 0; i < (int)len;
         i < (int)len && (i = layout->nextGlyph (text, i))) {
       int foundDiv = -1;
-      for (int j = 0; foundDiv == -1 && j < NUM_DIV_SIGNS; j++) {
-         int lDiv = strlen (divSigns[j].s);
+      for (int j = 0; foundDiv == -1 && j < NUM_DIV_CHARS; j++) {
+         int lDiv = strlen (divChars[j].s);
          if (i <= (int)len - lDiv) {
-            if (memcmp (text + i, divSigns[j].s, lDiv * sizeof (char)) == 0)
+            if (memcmp (text + i, divChars[j].s, lDiv * sizeof (char)) == 0)
                foundDiv = j;
          }
       }
 
       if (foundDiv != -1) {
-         if (divSigns[foundDiv].penaltyIndexLeft != -1)
+         if (divChars[foundDiv].penaltyIndexLeft != -1)
             numParts ++;
-         if (divSigns[foundDiv].penaltyIndexRight != -1)
+         if (divChars[foundDiv].penaltyIndexRight != -1)
             numParts ++;
       }
    }
@@ -1481,47 +1482,48 @@ void Textblock::addText (const char *text, size_t len,
       for (int i = 0; i < (int)len;
            i < (int)len && (i = layout->nextGlyph (text, i))) {
          int foundDiv = -1;
-         for (int j = 0; foundDiv == -1 && j < NUM_DIV_SIGNS; j++) {
-            int lDiv = strlen (divSigns[j].s);
+         for (int j = 0; foundDiv == -1 && j < NUM_DIV_CHARS; j++) {
+            int lDiv = strlen (divChars[j].s);
             if (i <= (int)len - lDiv) {
-               if (memcmp (text + i, divSigns[j].s, lDiv * sizeof (char)) == 0)
+               if (memcmp (text + i, divChars[j].s, lDiv * sizeof (char)) == 0)
                   foundDiv = j;
             }
          }
          
          if (foundDiv != -1) {
-            int lDiv = strlen (divSigns[foundDiv].s);
+            int lDiv = strlen (divChars[foundDiv].s);
             
-            if (divSigns[foundDiv].signRemoved) {
-               assert (divSigns[foundDiv].penaltyIndexLeft != -1);
-               assert (divSigns[foundDiv].penaltyIndexRight == -1);
+            if (divChars[foundDiv].charRemoved) {
+               assert (divChars[foundDiv].penaltyIndexLeft != -1);
+               assert (divChars[foundDiv].penaltyIndexRight == -1);
 
-               partPenalty[n] = penalties[divSigns[foundDiv].penaltyIndexLeft];
+               partPenalty[n] =
+                  penalties[divChars[foundDiv].penaltyIndexLeft][0];
                signRemoved[n] = true;
-               canBeHyphenated[n + 1] = divSigns[foundDiv].canBeHyphenated;
+               canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                partEnd[n] = i;
                partStart[n + 1] = i + lDiv;
                n++;
                totalLenSignRemoved += lDiv;
             } else {
-               assert (divSigns[foundDiv].penaltyIndexLeft != -1 ||
-                       divSigns[foundDiv].penaltyIndexRight != -1);
+               assert (divChars[foundDiv].penaltyIndexLeft != -1 ||
+                       divChars[foundDiv].penaltyIndexRight != -1);
 
-               if (divSigns[foundDiv].penaltyIndexLeft != -1) {
+               if (divChars[foundDiv].penaltyIndexLeft != -1) {
                   partPenalty[n] =
-                     penalties[divSigns[foundDiv].penaltyIndexLeft];
+                     penalties[divChars[foundDiv].penaltyIndexLeft][0];
                   signRemoved[n] = false;
-                  canBeHyphenated[n + 1] = divSigns[foundDiv].canBeHyphenated;
+                  canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                   partEnd[n] = i;
                   partStart[n + 1] = i;
                   n++;
                }
 
-               if (divSigns[foundDiv].penaltyIndexRight != -1) {
+               if (divChars[foundDiv].penaltyIndexRight != -1) {
                   partPenalty[n] =
-                     penalties[divSigns[foundDiv].penaltyIndexRight];
+                     penalties[divChars[foundDiv].penaltyIndexRight][0];
                   signRemoved[n] = false;
-                  canBeHyphenated[n + 1] = divSigns[foundDiv].canBeHyphenated;
+                  canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                   partEnd[n] = i + lDiv;
                   partStart[n + 1] = i + lDiv;
                   n++;
@@ -1584,7 +1586,7 @@ void Textblock::addText (const char *text, size_t len,
          if(i < numParts - 1) {
             Word *word = words->getLastRef();
             word->badnessAndPenalty.setPenalty (partPenalty[i]);
-            if (signRemoved[i])
+            if (signRemoved[i]) {
                // Currently, only soft hyphens (UTF-8: "\xc2\xad") can
                // be used. See also drawWord, last section "if
                // (drawHyphen)".
@@ -1592,6 +1594,8 @@ void Textblock::addText (const char *text, size_t len,
                // but it must then also stored in the word.
                word->hyphenWidth =
                   layout->textWidth (word->style->font, "\xc2\xad", 2);
+               word->flags |= Word::DIV_CHAR_AT_EOL;
+            }
             word->flags |= Word::DRAW_AS_ONE_TEXT;
             accumulateWordData (words->size() - 1);
          }
