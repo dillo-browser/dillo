@@ -1107,7 +1107,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
       Word *word = words->getRef(wordIndex);
       int wordSize = word->size.width;
 
-      if (xWidget + word->size.width + word->effSpace >= area->x) {
+      if (xWidget + wordSize + word->hyphenWidth + word->effSpace >= area->x) {
          if (word->content.type == core::Content::TEXT ||
              word->content.type == core::Content::WIDGET) {
 
