@@ -22,10 +22,18 @@ default accept
 
 # Let's block some of the most notorious ad sites and trackers.
 
+* .2o7.net
 * .admt.com
 * .adnxs.com
+* .atdmt.com
+* .collective-media.net
 * .crwdcntrl.com
 * .doubleclick.net
+* .effectivemeasure.net
+* .googleadservices.com
+* .imrworldwide.com
 * .quantserve.com
+* .revsci.net
 * .scorecardresearch.com
+* .webtrendslive.com
 * .yieldmanager.com

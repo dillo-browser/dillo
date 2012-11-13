@@ -318,6 +318,10 @@ int FltkViewport::handle (int event)
       mouse_y = Fl::event_y();
       positionChanged();
       break;
+
+   case FL_LEAVE:
+      mouse_x = mouse_y = -1;
+      break;
    }
 
    return FltkWidgetView::handle (event);
