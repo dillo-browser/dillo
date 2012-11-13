@@ -31,9 +31,9 @@ int Textblock::BadnessAndPenalty::badnessValue (int infLevel)
    return 0;
 }
 
-int Textblock::BadnessAndPenalty::penaltyValue (int infLevel)
+int Textblock::BadnessAndPenalty::penaltyValue (int index, int infLevel)
 {
-   switch (penaltyState) {
+   switch (penaltyState[index]) {
    case FORCE_BREAK:
       return infLevel == INF_PENALTIES ? -1 : 0;
 
@@ -41,7 +41,7 @@ int Textblock::BadnessAndPenalty::penaltyValue (int infLevel)
       return infLevel == INF_PENALTIES ? 1 : 0;
 
    case PENALTY_VALUE:
-      return  infLevel == INF_VALUE ? penalty : 0;
+      return  infLevel == INF_VALUE ? penalty[index] : 0;
    }
 
    // compiler happiness
@@ -109,12 +109,12 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
  * are extended by exactly the stretchability, as well as a line, where
  * all spaces are reduced by the shrinkability, have a badness of 1.
  */
-void Textblock::BadnessAndPenalty::setPenalty (int penalty)
+void Textblock::BadnessAndPenalty::setPenalty (int index, int penalty)
 {
    if (penalty == INT_MAX)
-      setPenaltyProhibitBreak ();
+      setPenaltyProhibitBreak (index);
    else if (penalty == INT_MIN)
-      setPenaltyForceBreak ();
+      setPenaltyForceBreak (index);
    else {
       // This factor consists of: (i) 100^3, since in calcBadness(), the
       // ratio is multiplied with 100 (again, to use integer numbers for
@@ -122,19 +122,19 @@ void Textblock::BadnessAndPenalty::setPenalty (int penalty)
       // to the penalty!) is the third power or it; (ii) the denominator
       // 100, of course, since 100 times the penalty is passed to this
       // method.
-      this->penalty = penalty * (100 * 100 * 100 / 100);
-      penaltyState = PENALTY_VALUE;
+      this->penalty[index] = penalty * (100 * 100 * 100 / 100);
+      penaltyState[index] = PENALTY_VALUE;
    }
 }
 
-void Textblock::BadnessAndPenalty::setPenaltyProhibitBreak ()
+void Textblock::BadnessAndPenalty::setPenaltyProhibitBreak (int index)
 {
-   penaltyState = PROHIBIT_BREAK;
+   penaltyState[index] = PROHIBIT_BREAK;
 }
 
-void Textblock::BadnessAndPenalty::setPenaltyForceBreak ()
+void Textblock::BadnessAndPenalty::setPenaltyForceBreak (int index)
 {
-   penaltyState = FORCE_BREAK;
+   penaltyState[index] = FORCE_BREAK;
 }
 
 bool Textblock::BadnessAndPenalty::lineLoose ()
@@ -156,21 +156,23 @@ bool Textblock::BadnessAndPenalty::lineTooTight ()
 }
 
 
-bool Textblock::BadnessAndPenalty::lineMustBeBroken ()
+bool Textblock::BadnessAndPenalty::lineMustBeBroken (int penaltyIndex)
 {
-   return penaltyState == FORCE_BREAK;
+   return penaltyState[penaltyIndex] == FORCE_BREAK;
 }
 
-bool Textblock::BadnessAndPenalty::lineCanBeBroken ()
+bool Textblock::BadnessAndPenalty::lineCanBeBroken (int penaltyIndex)
 {
-   return penaltyState != PROHIBIT_BREAK;
+   return penaltyState[penaltyIndex] != PROHIBIT_BREAK;
 }
 
-int Textblock::BadnessAndPenalty::compareTo (BadnessAndPenalty *other)
+int Textblock::BadnessAndPenalty::compareTo (int penaltyIndex,
+                                             BadnessAndPenalty *other)
 {
    for (int l = INF_MAX; l >= 0; l--) {
-      int thisValue = badnessValue (l) + penaltyValue (l);
-      int otherValue = other->badnessValue (l) + other->penaltyValue (l);
+      int thisValue = badnessValue (l) + penaltyValue (penaltyIndex, l);
+      int otherValue =
+         other->badnessValue (l) + other->penaltyValue (penaltyIndex, l);
 
       if (thisValue != otherValue)
          return thisValue - otherValue;
@@ -206,19 +208,25 @@ void Textblock::BadnessAndPenalty::print ()
    printf (" <no debug> + ");
 #endif
 
-   switch (penaltyState) {
-   case FORCE_BREAK:
-      printf ("-inf");
-      break;
-
-   case PROHIBIT_BREAK:
-      printf ("inf");
-      break;
-
-   case PENALTY_VALUE:
-      printf ("%d", penalty);
-      break;
+   printf ("(");
+   for (int i = 0; i < 2; i++) {
+      switch (penaltyState[i]) {
+      case FORCE_BREAK:
+         printf ("-inf");
+         break;
+         
+      case PROHIBIT_BREAK:
+         printf ("inf");
+         break;
+         
+      case PENALTY_VALUE:
+         printf ("%d", penalty[i]);
+         break;
+      }
+      if (i == 0)
+         printf (", ");
    }
+   printf (")");
 }
 
 void Textblock::printWord (Word *word)
@@ -365,7 +373,9 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       line->maxParMin = misc::max (maxOfMinWidth, prevLine->maxParMin);
 
       Word *lastWordOfPrevLine = words->getRef (prevLine->lastWord);
-      if (lastWordOfPrevLine->badnessAndPenalty.lineMustBeBroken ())
+      // TODO: lineMustBeBroken should be independent of the penalty
+      // index? Otherwise, examine the last line.
+      if (lastWordOfPrevLine->badnessAndPenalty.lineMustBeBroken (0))
          // This line starts a new paragraph.
          line->parMax = sumOfMaxWidth;
       else
@@ -378,7 +388,9 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    // "maxParMax" is only set, when this line is the last line of the
    // paragraph. 
    Word *lastWordOfThisLine = words->getRef (line->lastWord);
-   if (lastWordOfThisLine->badnessAndPenalty.lineMustBeBroken ())
+   // TODO: lineMustBeBroken should be independent of the penalty
+   // index? Otherwise, examine the last line.
+   if (lastWordOfThisLine->badnessAndPenalty.lineMustBeBroken (0))
       // Paragraph ends here.
       line->maxParMax =
          misc::max (lastMaxParMax,
@@ -429,7 +441,8 @@ void Textblock::accumulateWordExtremes (int firstWord, int lastWord,
 
       // Minimum: between two *possible* breaks (or at the end).
       // TODO This is redundant to getExtremesImpl().
-      if (word->badnessAndPenalty.lineCanBeBroken () || atLastWord) {
+      // TODO Again, index 1 is used for lineCanBeBroken(). See getExtremes().
+      if (word->badnessAndPenalty.lineCanBeBroken (1) || atLastWord) {
          parMin += extremes.minWidth + word->hyphenWidth;
          *maxOfMinWidth = misc::max (*maxOfMinWidth, parMin);
          parMin = 0;
@@ -474,6 +487,8 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
    accumulateWordData (wordIndex);
 
+   int penaltyIndex = 0;
+
    bool newLine;
    do {
       bool tempNewLine = false;
@@ -487,14 +502,16 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          tempNewLine = true;
          PRINTF ("   NEW LINE: last word\n");
       } else if (wordIndex >= firstIndex &&
-          word->badnessAndPenalty.lineMustBeBroken ()) {
+                 // TODO: lineMustBeBroken should be independent of
+                 // the penalty index?
+                 word->badnessAndPenalty.lineMustBeBroken (penaltyIndex)) {
          newLine = true;
          searchUntil = wordIndex;
          PRINTF ("   NEW LINE: forced break\n");
       } else if (wordIndex > firstIndex &&
                  word->badnessAndPenalty.lineTooTight () &&
                  words->getRef(wordIndex- 1)
-                 ->badnessAndPenalty.lineCanBeBroken ()) {
+                 ->badnessAndPenalty.lineCanBeBroken (penaltyIndex)) {
          // TODO Comment the last condition (also below where the minimum is
          // searched for)
          newLine = true;
@@ -533,7 +550,8 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                
                if (breakPos == -1 ||
                    w->badnessAndPenalty.compareTo
-                   (&words->getRef(breakPos)->badnessAndPenalty) <= 0)
+                   (penaltyIndex,
+                    &words->getRef(breakPos)->badnessAndPenalty) <= 0)
                   // "<=" instead of "<" in the next lines tends to result in
                   // more words per line -- theoretically. Practically, the
                   // case "==" will never occur.
@@ -555,9 +573,10 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                // work.)
                Word *lastWord = words->getRef (searchUntil);
                BadnessAndPenalty correctedBap = lastWord->badnessAndPenalty;
-               correctedBap.setPenalty (0);
+               correctedBap.setBothPenalties (0);
                if (correctedBap.compareTo
-                   (&words->getRef(breakPos)->badnessAndPenalty) <= 0) {
+                   (penaltyIndex,
+                    &words->getRef(breakPos)->badnessAndPenalty) <= 0) {
                   breakPos = searchUntil;
                   PRINTF ("      corrected: breakPos = %d\n", breakPos);
                }
@@ -699,7 +718,8 @@ int Textblock::hyphenateWord (int wordIndex)
          // Note: there are numBreaks + 1 word parts.
          if (i < numBreaks) {
             // TODO There should be a method fillHyphen.
-            w->badnessAndPenalty.setPenalty (penalties[PENALTY_HYPHEN][0]);
+            w->badnessAndPenalty.setPenalty (0, penalties[PENALTY_HYPHEN][0]);
+            w->badnessAndPenalty.setPenalty (1, penalties[PENALTY_HYPHEN][1]);
             w->hyphenWidth =
                layout->textWidth (origWord.style->font, "\xc2\xad", 2);
             w->flags |= (Word::DRAW_AS_ONE_TEXT | Word::DIV_CHAR_AT_EOL);

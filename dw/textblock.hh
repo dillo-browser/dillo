@@ -157,9 +157,9 @@ private:
    private:
       enum { NOT_STRETCHABLE, QUITE_LOOSE, BADNESS_VALUE, TOO_TIGHT }
          badnessState;
-      enum { FORCE_BREAK, PROHIBIT_BREAK, PENALTY_VALUE } penaltyState;
+      enum { FORCE_BREAK, PROHIBIT_BREAK, PENALTY_VALUE } penaltyState[2];
       int ratio; // ratio is only defined when badness is defined
-      int badness, penalty;
+      int badness, penalty[2];
       
       // For debugging: define DEBUG for more informations in print().
 #ifdef DEBUG
@@ -192,21 +192,28 @@ private:
       };
 
       int badnessValue (int infLevel);
-      int penaltyValue (int infLevel);
+      int penaltyValue (int index, int infLevel);
       
    public:
       void calcBadness (int totalWidth, int idealWidth,
                         int totalStretchability, int totalShrinkability);
-      void setPenalty (int penalty);
-      void setPenaltyProhibitBreak ();
-      void setPenaltyForceBreak ();
+      void setPenalty (int index, int penalty);
+      inline void setBothPenalties (int penalty) {
+         setPenalty (0, penalty); setPenalty (1, penalty); }
+
+      void setPenaltyProhibitBreak (int index);
+      void setPenaltyForceBreak (int index);
+      inline void setBothPenaltiesProhibitBreak () {
+         setPenaltyProhibitBreak (0); setPenaltyProhibitBreak (1); }
+      inline void setBothPenaltiesForceBreak () {
+         setPenaltyForceBreak (0); setPenaltyForceBreak (1); }
 
       bool lineLoose ();
       bool lineTight ();
       bool lineTooTight ();
-      bool lineMustBeBroken ();
-      bool lineCanBeBroken ();
-      int compareTo (BadnessAndPenalty *other);
+      bool lineMustBeBroken (int penaltyIndex);
+      bool lineCanBeBroken (int penaltyIndex);
+      int compareTo (int penaltyIndex, BadnessAndPenalty *other);
 
       void print ();
    };
@@ -298,6 +305,7 @@ protected:
                           * "hyphenWidth > 0" is also used to decide
                           * whether to draw a hyphen. */
       short flags;
+      short penaltyIndex;
       core::Content content;
 
       // accumulated values, relative to the beginning of the line

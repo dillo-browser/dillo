@@ -297,7 +297,8 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
             }
             
             // Minimum: between two *possible* breaks (or at the end).
-            if (word->badnessAndPenalty.lineCanBeBroken () || atLastWord) {
+            // TODO: Explain why index 1 is used in lineCanBeBroken().
+            if (word->badnessAndPenalty.lineCanBeBroken (1) || atLastWord) {
                parMin += wordExtremes.minWidth + word->hyphenWidth;
                extremes->minWidth = misc::max (extremes->minWidth, parMin);
                parMin = 0;
@@ -307,7 +308,9 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
                parMin += wordExtremes.minWidth + word->origSpace;
             
             // Maximum: between two *necessary* breaks (or at the end).
-            if (word->badnessAndPenalty.lineMustBeBroken () || atLastWord) {
+            // TODO: lineMustBeBroken should be independent of the
+            // penalty index?
+            if (word->badnessAndPenalty.lineMustBeBroken (1) || atLastWord) {
                parMax += wordExtremes.maxWidth + word->hyphenWidth;
                extremes->maxWidth = misc::max (extremes->maxWidth, parMax);
                parMax = 0;
@@ -1310,7 +1313,7 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
    word->origSpace = word->effSpace = word->stretchability =
       word->shrinkability = 0;
    word->hyphenWidth = 0;
-   word->badnessAndPenalty.setPenaltyProhibitBreak ();
+   word->badnessAndPenalty.setBothPenaltiesProhibitBreak ();
    word->content.space = false;
    word->flags = canBeHyphenated ? Word::CAN_BE_HYPHENATED : 0;
 
@@ -1473,7 +1476,8 @@ void Textblock::addText (const char *text, size_t len,
 
       // Store hyphen positions.
       int n = 0, totalLenSignRemoved = 0;
-      int partPenalty[numParts - 1], partStart[numParts], partEnd[numParts];
+      int partPenaltyIndex[numParts - 1];
+      int partStart[numParts], partEnd[numParts];
       bool signRemoved[numParts - 1], canBeHyphenated[numParts + 1];
       canBeHyphenated[0] = canBeHyphenated[numParts] = true;
       partStart[0] = 0;
@@ -1497,8 +1501,7 @@ void Textblock::addText (const char *text, size_t len,
                assert (divChars[foundDiv].penaltyIndexLeft != -1);
                assert (divChars[foundDiv].penaltyIndexRight == -1);
 
-               partPenalty[n] =
-                  penalties[divChars[foundDiv].penaltyIndexLeft][0];
+               partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexLeft;
                signRemoved[n] = true;
                canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                partEnd[n] = i;
@@ -1510,8 +1513,7 @@ void Textblock::addText (const char *text, size_t len,
                        divChars[foundDiv].penaltyIndexRight != -1);
 
                if (divChars[foundDiv].penaltyIndexLeft != -1) {
-                  partPenalty[n] =
-                     penalties[divChars[foundDiv].penaltyIndexLeft][0];
+                  partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexLeft;
                   signRemoved[n] = false;
                   canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                   partEnd[n] = i;
@@ -1520,8 +1522,7 @@ void Textblock::addText (const char *text, size_t len,
                }
 
                if (divChars[foundDiv].penaltyIndexRight != -1) {
-                  partPenalty[n] =
-                     penalties[divChars[foundDiv].penaltyIndexRight][0];
+                  partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexRight;
                   signRemoved[n] = false;
                   canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                   partEnd[n] = i + lDiv;
@@ -1585,7 +1586,12 @@ void Textblock::addText (const char *text, size_t len,
 
          if(i < numParts - 1) {
             Word *word = words->getLastRef();
-            word->badnessAndPenalty.setPenalty (partPenalty[i]);
+
+            word->badnessAndPenalty
+               .setPenalty (0, penalties[partPenaltyIndex[i]][0]);
+            word->badnessAndPenalty
+               .setPenalty (1, penalties[partPenaltyIndex[i]][1]);
+
             if (signRemoved[i]) {
                // Currently, only soft hyphens (UTF-8: "\xc2\xad") can
                // be used. See also drawWord, last section "if
@@ -1596,6 +1602,7 @@ void Textblock::addText (const char *text, size_t len,
                   layout->textWidth (word->style->font, "\xc2\xad", 2);
                word->flags |= Word::DIV_CHAR_AT_EOL;
             }
+
             word->flags |= Word::DRAW_AS_ONE_TEXT;
             accumulateWordData (words->size() - 1);
          }
@@ -1797,17 +1804,19 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
  */
 void Textblock::setBreakOption (Word *word, core::style::Style *style)
 {
-   if (!word->badnessAndPenalty.lineMustBeBroken()) {
+   // TODO: lineMustBeBroken should be independent of the penalty
+   // index? Otherwise, examine the last line.
+   if (!word->badnessAndPenalty.lineMustBeBroken(0)) {
       switch (style->whiteSpace) {
       case core::style::WHITE_SPACE_NORMAL:
       case core::style::WHITE_SPACE_PRE_LINE:
       case core::style::WHITE_SPACE_PRE_WRAP:
-         word->badnessAndPenalty.setPenalty (0);
+         word->badnessAndPenalty.setBothPenalties (0);
          break;
 
       case core::style::WHITE_SPACE_PRE:
       case core::style::WHITE_SPACE_NOWRAP:
-         word->badnessAndPenalty.setPenaltyProhibitBreak ();
+         word->badnessAndPenalty.setBothPenaltiesProhibitBreak ();
          break;
       }
    }
@@ -1885,7 +1894,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
 
    word = addWord (0, 0, 0, false, style);
    word->content.type = core::Content::BREAK;
-   word->badnessAndPenalty.setPenaltyForceBreak ();
+   word->badnessAndPenalty.setBothPenaltiesForceBreak ();
    word->content.breakSpace = space;
    wordWrap (words->size () - 1, false);
 }
@@ -1908,7 +1917,7 @@ void Textblock::addLinebreak (core::style::Style *style)
       word = addWord (0, 0, 0, false, style);
 
    word->content.type = core::Content::BREAK;
-   word->badnessAndPenalty.setPenaltyForceBreak ();
+   word->badnessAndPenalty.setBothPenaltiesForceBreak ();
    word->content.breakSpace = 0;
    wordWrap (words->size () - 1, false);
 }
