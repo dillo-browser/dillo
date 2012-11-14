@@ -179,3 +179,46 @@ void CustButton::hl_color(Fl_Color col)
    light_color = col;
 }
 
+
+//---------------------------------------------------------------------------
+
+/*
+ * An Input with custom tooltip window
+ */
+TipWinInput::TipWinInput (int x, int y, int w, int h, const char *l) :
+   Fl_Input(x,y,w,h,l)
+{
+   tipwin = my_tipwin();
+   mytooltip = strdup("empty");
+}
+
+TipWinInput::~TipWinInput(void)
+{
+   tipwin->cancel(this); // cancel tooltip if shown
+   free(mytooltip);
+}
+
+int TipWinInput::handle(int e)
+{
+   switch (e) {
+   case FL_ENTER:
+      tipwin->value(mytooltip);
+      tipwin->do_show(this);
+      break;
+   case FL_PUSH:            // push mouse
+   case FL_RELEASE:         // release mouse
+   case FL_HIDE:            // widget goes away
+   case FL_LEAVE:           // leave focus
+   case FL_KEYBOARD:        // key press
+      tipwin->do_hide();
+      break;
+   }
+   return (Fl_Input::handle(e));
+}
+
+void TipWinInput::set_tooltip(const char *s)
+{
+   free(mytooltip);
+   mytooltip = strdup(s);
+}
+

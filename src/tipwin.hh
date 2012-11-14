@@ -3,6 +3,7 @@
 
 #include <FL/Fl_Menu_Window.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Input.H>
 
 
 /*
@@ -51,6 +52,21 @@ public:
    CustButton(int x, int y, int w, int h, const char *l=0);
    virtual int handle(int e);
    void hl_color(Fl_Color col);
+};
+
+
+/*
+ * An Input with custom tooltip window
+ */
+class TipWinInput : public Fl_Input {
+   char *mytooltip;
+   TipWin *tipwin;
+public:
+   TipWinInput (int x, int y, int w, int h, const char* l=0);
+   ~TipWinInput(void);
+   virtual int handle(int e);
+
+   void set_tooltip(const char *s);
 };
 
 
