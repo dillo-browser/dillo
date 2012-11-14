@@ -89,7 +89,7 @@ struct _DilloPrefs {
    bool_t show_msg;
    bool_t show_extra_warnings;
    bool_t middle_click_drags_page;
-   int penalty_hyphen;
+   int penalty_hyphen, penalty_hyphen_2;
 };
 
 /* Global Data */

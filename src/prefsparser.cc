@@ -112,6 +112,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "theme", &prefs.theme, PREFS_STRING },
       { "w3c_plus_heuristics", &prefs.w3c_plus_heuristics, PREFS_BOOL },
       { "penalty_hyphen", &prefs.penalty_hyphen, PREFS_FRACTION_100 },
+      { "penalty_hyphen_2", &prefs.penalty_hyphen_2, PREFS_FRACTION_100 }
    };
 
    node = NULL;

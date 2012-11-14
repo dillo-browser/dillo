@@ -46,7 +46,18 @@ Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
    { "\xe2\x80\x94", false, true, PENALTY_HYPHEN, PENALTY_HYPHEN }
 };
 
-Textblock::Textblock (bool limitTextWidth, int penaltyHyphen)
+
+int Textblock::penalties[PENALTY_NUM][2] = {
+   { 100, 100 }
+};
+
+void Textblock::init (int penaltyHyphen, int penaltyHyphen2)
+{
+   penalties[PENALTY_HYPHEN][0] = penaltyHyphen;
+   penalties[PENALTY_HYPHEN][1] = penaltyHyphen2;
+}
+
+Textblock::Textblock (bool limitTextWidth)
 {
    registerName ("dw::Textblock", &CLASS_ID);
    setFlags (BLOCK_LEVEL);
@@ -92,8 +103,6 @@ Textblock::Textblock (bool limitTextWidth, int penaltyHyphen)
    availDescent = 0;
 
    this->limitTextWidth = limitTextWidth;
-   penalties[PENALTY_HYPHEN][0] = penaltyHyphen;
-   penalties[PENALTY_HYPHEN][1] = INT_MAX; // TODO Configuration
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
       /* hlStart[layer].index > hlEnd[layer].index means no highlighting */

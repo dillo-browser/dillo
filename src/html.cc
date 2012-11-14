@@ -352,8 +352,7 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_add_textblock(DilloHtml *html, int space)
 {
-   Textblock *textblock =
-      new Textblock (prefs.limit_text_width, prefs.penalty_hyphen);
+   Textblock *textblock = new Textblock (prefs.limit_text_width);
 
    HT2TB(html)->addParbreak (space, html->styleEngine->wordStyle ());
    HT2TB(html)->addWidget (textblock, html->styleEngine->style ());
@@ -459,8 +458,7 @@ void DilloHtml::initDw()
    dReturn_if_fail (dw == NULL);
 
    /* Create the main widget */
-   dw = stack->getRef(0)->textblock =
-      new Textblock (prefs.limit_text_width, prefs.penalty_hyphen);
+   dw = stack->getRef(0)->textblock =  new Textblock (prefs.limit_text_width);
 
    bw->num_page_bugs = 0;
    dStr_truncate(bw->page_bugs, 0);
@@ -3521,8 +3519,7 @@ static void Html_display_listitem(DilloHtml *html)
 
    HT2TB(html)->addParbreak (0, wordStyle);
 
-   list_item = new ListItem ((ListItem*)*ref_list_item,prefs.limit_text_width,
-                             prefs.penalty_hyphen);
+   list_item = new ListItem ((ListItem*)*ref_list_item,prefs.limit_text_width);
    HT2TB(html)->addWidget (list_item, style);
    HT2TB(html)->addParbreak (0, wordStyle);
    *ref_list_item = list_item;

@@ -62,7 +62,7 @@ int main(int argc, char **argv)
    dw::core::style::Style *widgetStyle =
       dw::core::style::Style::create (layout, &styleAttrs);
 
-   dw::Textblock *textblock = new dw::Textblock (false, 100);
+   dw::Textblock *textblock = new dw::Textblock (false);
    textblock->setStyle (widgetStyle);
    layout->setWidget (textblock);
 

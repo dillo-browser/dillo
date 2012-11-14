@@ -103,6 +103,7 @@ void a_Prefs_init(void)
    prefs.w3c_plus_heuristics = TRUE;
 
    prefs.penalty_hyphen = 100;
+   prefs.penalty_hyphen_2 = 100;
 }
 
 /*

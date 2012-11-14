@@ -26,8 +26,8 @@ namespace dw {
 
 int TableCell::CLASS_ID = -1;
 
-TableCell::TableCell (TableCell *ref, bool limitTextWidth, int penaltyHyphen):
-   AlignedTextblock (limitTextWidth, penaltyHyphen)
+TableCell::TableCell (TableCell *ref, bool limitTextWidth):
+   AlignedTextblock (limitTextWidth)
 {
    registerName ("dw::TableCell", &CLASS_ID);
 

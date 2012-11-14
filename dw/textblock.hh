@@ -393,7 +393,7 @@ protected:
     * dw::Textblock::BadnessAndPenalty::setPenalty for more
     * details. Set from preferences.
     */
-   int penalties[PENALTY_NUM][2];
+   static int penalties[PENALTY_NUM][2];
 
    bool limitTextWidth; /* from preferences */
 
@@ -569,7 +569,9 @@ protected:
 public:
    static int CLASS_ID;
 
-   Textblock(bool limitTextWidth, int penaltyHyphen);
+   static void init (int penaltyHyphen, int penaltyHyphen2);
+
+   Textblock(bool limitTextWidth);
    ~Textblock();
 
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);

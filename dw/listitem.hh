@@ -15,7 +15,7 @@ protected:
 public:
    static int CLASS_ID;
 
-   ListItem(ListItem *ref, bool limitTextWidth, int penaltyHyphen);
+   ListItem(ListItem *ref, bool limitTextWidth);
    ~ListItem();
 
    void initWithWidget (core::Widget *widget, core::style::Style *style);

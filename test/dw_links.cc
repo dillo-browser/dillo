@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 
    Style *widgetStyle = Style::create (layout, &styleAttrs);
 
-   Textblock *textblock = new Textblock (false, 100);
+   Textblock *textblock = new Textblock (false);
    textblock->setStyle (widgetStyle);
    layout->setWidget (textblock);
 

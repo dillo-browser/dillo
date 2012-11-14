@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
    Style *widgetStyle = Style::create (layout, &styleAttrs);
 
-   Textblock *textblock = new Textblock (false, 100);
+   Textblock *textblock = new Textblock (false);
    textblock->setStyle (widgetStyle);
    layout->setWidget (textblock);
 
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
    ListItem *refItem = NULL;
 
    for(int i = 1; i <= 100; i++) {
-      ListItem *listItem = new ListItem (refItem, false, 100);
+      ListItem *listItem = new ListItem (refItem, false);
       refItem = listItem;
 
       textblock->addWidget (listItem, itemStyle);

@@ -871,7 +871,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       /* We used to have Textblock (prefs.limit_text_width, ...) here,
        * but it caused 100% CPU usage.
        */
-      page = new Textblock (false, prefs.penalty_hyphen);
+      page = new Textblock (false);
       page->setStyle (html->styleEngine->backgroundStyle ());
 
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();

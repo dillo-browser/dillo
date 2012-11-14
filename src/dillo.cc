@@ -50,6 +50,7 @@
 #include "auth.h"
 
 #include "dw/fltkcore.hh"
+#include "dw/textblock.hh"
 
 /*
  * Command line options structure
@@ -358,6 +359,8 @@ int main(int argc, char **argv)
    a_Bw_init();
    a_Cookies_init();
    a_Auth_init();
+
+   dw::Textblock::init (prefs.penalty_hyphen, prefs.penalty_hyphen_2);
 
    /* command line options override preferences */
    if (options_got & DILLO_CLI_FULLWINDOW)

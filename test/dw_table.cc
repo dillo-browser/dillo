@@ -92,7 +92,7 @@ int main(int argc, char **argv)
       table->addRow (wordStyle);
 
       for (int j = 0; j < 4; j++) {
-         Textblock *cell = new Textblock (false, 100);
+         Textblock *cell = new Textblock (false);
          cell->setStyle (cellStyle);
          table->addCell (cell, 1, 1);
 

@@ -26,8 +26,8 @@ namespace dw {
 
 int ListItem::CLASS_ID = -1;
 
-ListItem::ListItem (ListItem *ref, bool limitTextWidth, int penaltyHyphen):
-   AlignedTextblock (limitTextWidth, penaltyHyphen)
+ListItem::ListItem (ListItem *ref, bool limitTextWidth):
+   AlignedTextblock (limitTextWidth)
 {
    registerName ("dw::ListItem", &CLASS_ID);
    setRefTextblock (ref);

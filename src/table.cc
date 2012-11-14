@@ -421,9 +421,9 @@ static void Html_tag_content_table_cell(DilloHtml *html,
           == TEXT_ALIGN_STRING)
          col_tb = new dw::TableCell (
                      ((dw::Table*)S_TOP(html)->table)->getCellRef (),
-                     prefs.limit_text_width, prefs.penalty_hyphen);
+                     prefs.limit_text_width);
       else
-         col_tb = new Textblock (prefs.limit_text_width, prefs.penalty_hyphen);
+         col_tb = new Textblock (prefs.limit_text_width);
 
       if (html->styleEngine->style()->borderCollapse == BORDER_MODEL_COLLAPSE){
          Html_set_collapsing_border_model(html, col_tb);

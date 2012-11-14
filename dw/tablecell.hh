@@ -20,7 +20,7 @@ protected:
 public:
    static int CLASS_ID;
 
-   TableCell(TableCell *ref, bool limitTextWidth, int penaltyHyphen);
+   TableCell(TableCell *ref, bool limitTextWidth);
    ~TableCell();
 };
 

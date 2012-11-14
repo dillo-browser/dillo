@@ -104,7 +104,7 @@ int main(int argc, char **argv)
    // Note on complex buttons: before any operations on the widget, which
    // need a layout, the complex button resource should be created, since
    // then, a layout and a platform are instantiated.
-   Textblock *cbuttontext = new Textblock(false, 100);
+   Textblock *cbuttontext = new Textblock(false);
    ComplexButtonResource *cbuttonres =
       layout->getResourceFactory()->createComplexButtonResource (cbuttontext,
                                                                  true);
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
    // Create the widgets.
    table->addRow (cellStyle);
 
-   Textblock *label1 = new Textblock(false, 100);
+   Textblock *label1 = new Textblock(false);
    label1->setStyle (cellStyle);
    table->addCell (label1, 1, 1);
    label1->addText ("val1 = ", cellStyle);
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 
    table->addRow (cellStyle);
 
-   Textblock *label2 = new Textblock(false, 100);
+   Textblock *label2 = new Textblock(false);
    label2->setStyle (cellStyle);
    table->addCell (label2, 1, 1);
    label2->addText ("val2 = ", cellStyle);
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
 
    table->addRow (cellStyle);
 
-   Textblock *label = new Textblock(false, 100);
+   Textblock *label = new Textblock(false);
    label->setStyle (cellStyle);
    table->addCell (label, 1, 1);
    label->addText ("text = ", cellStyle);
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
 
    table->addRow (cellStyle);
 
-   Textblock *radiolabel1 = new Textblock(false, 100);
+   Textblock *radiolabel1 = new Textblock(false);
    radiolabel1->setStyle (cellStyle);
    table->addCell (radiolabel1, 2, 1);
    Embed *radio1 = new Embed (radiores1);
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
    radiolabel1->flush ();
 
    table->addRow (cellStyle);
-   Textblock *radiolabel2 = new Textblock(false, 100);
+   Textblock *radiolabel2 = new Textblock(false);
    radiolabel2->setStyle (cellStyle);
    table->addCell (radiolabel2, 2, 1);
    Embed *radio2 = new Embed (radiores2);
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
    radiolabel2->flush ();
 
    table->addRow (cellStyle);
-   Textblock *checklabel = new Textblock(false, 100);
+   Textblock *checklabel = new Textblock(false);
    checklabel->setStyle (cellStyle);
    table->addCell (checklabel, 2, 1);
    Embed *check = new Embed (checkres);
