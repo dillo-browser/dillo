@@ -216,6 +216,11 @@ void FltkViewport::draw ()
       } else {
          draw_child (*hscrollbar);
          draw_child (*vscrollbar);
+
+         if (d == FL_DAMAGE_ALL && hdiff && vdiff) {
+            fl_color(FL_GRAY);
+            fl_rectf(x()+w()-hdiff, y()+h()-vdiff, hdiff, vdiff);
+         }
       }
    }
 
