@@ -152,12 +152,17 @@ private:
     * badness is not well defined, so fiddling with the penalties is a
     * bit difficult.
     */
+   
+   enum {
+      PENALTY_FORCE_BREAK = INT_MIN,
+      PENALTY_PROHIBIT_BREAK = INT_MAX
+   };
+
    class BadnessAndPenalty
    {
    private:
       enum { NOT_STRETCHABLE, QUITE_LOOSE, BADNESS_VALUE, TOO_TIGHT }
          badnessState;
-      enum { FORCE_BREAK, PROHIBIT_BREAK, PENALTY_VALUE } penaltyState[2];
       int ratio; // ratio is only defined when badness is defined
       int badness, penalty[2];
       
@@ -191,22 +196,15 @@ private:
          // etc. works.
       };
 
+      void setSinglePenalty (int index, int penalty);
       int badnessValue (int infLevel);
       int penaltyValue (int index, int infLevel);
       
    public:
       void calcBadness (int totalWidth, int idealWidth,
                         int totalStretchability, int totalShrinkability);
-      void setPenalty (int index, int penalty);
-      inline void setBothPenalties (int penalty) {
-         setPenalty (0, penalty); setPenalty (1, penalty); }
-
-      void setPenaltyProhibitBreak (int index);
-      void setPenaltyForceBreak (int index);
-      inline void setBothPenaltiesProhibitBreak () {
-         setPenaltyProhibitBreak (0); setPenaltyProhibitBreak (1); }
-      inline void setBothPenaltiesForceBreak () {
-         setPenaltyForceBreak (0); setPenaltyForceBreak (1); }
+      inline void setPenalty (int penalty) { setPenalties (penalty, penalty); }
+      void setPenalties (int penalty1, int penalty2);
 
       bool lineLoose ();
       bool lineTight ();

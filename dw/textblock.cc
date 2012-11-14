@@ -1322,7 +1322,7 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
    word->origSpace = word->effSpace = word->stretchability =
       word->shrinkability = 0;
    word->hyphenWidth = 0;
-   word->badnessAndPenalty.setBothPenaltiesProhibitBreak ();
+   word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);
    word->content.space = false;
    word->flags = canBeHyphenated ? Word::CAN_BE_HYPHENATED : 0;
 
@@ -1597,9 +1597,8 @@ void Textblock::addText (const char *text, size_t len,
             Word *word = words->getLastRef();
 
             word->badnessAndPenalty
-               .setPenalty (0, penalties[partPenaltyIndex[i]][0]);
-            word->badnessAndPenalty
-               .setPenalty (1, penalties[partPenaltyIndex[i]][1]);
+               .setPenalties (penalties[partPenaltyIndex[i]][0],
+                              penalties[partPenaltyIndex[i]][1]);
 
             if (signRemoved[i]) {
                // Currently, only soft hyphens (UTF-8: "\xc2\xad") can
@@ -1820,12 +1819,12 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style)
       case core::style::WHITE_SPACE_NORMAL:
       case core::style::WHITE_SPACE_PRE_LINE:
       case core::style::WHITE_SPACE_PRE_WRAP:
-         word->badnessAndPenalty.setBothPenalties (0);
+         word->badnessAndPenalty.setPenalty (0);
          break;
 
       case core::style::WHITE_SPACE_PRE:
       case core::style::WHITE_SPACE_NOWRAP:
-         word->badnessAndPenalty.setBothPenaltiesProhibitBreak ();
+         word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);
          break;
       }
    }
@@ -1903,7 +1902,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
 
    word = addWord (0, 0, 0, false, style);
    word->content.type = core::Content::BREAK;
-   word->badnessAndPenalty.setBothPenaltiesForceBreak ();
+   word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = space;
    wordWrap (words->size () - 1, false);
 }
@@ -1926,7 +1925,7 @@ void Textblock::addLinebreak (core::style::Style *style)
       word = addWord (0, 0, 0, false, style);
 
    word->content.type = core::Content::BREAK;
-   word->badnessAndPenalty.setBothPenaltiesForceBreak ();
+   word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = 0;
    wordWrap (words->size () - 1, false);
 }
