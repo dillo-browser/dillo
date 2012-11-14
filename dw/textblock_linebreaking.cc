@@ -487,7 +487,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
    accumulateWordData (wordIndex);
 
-   int penaltyIndex = 0;
+   int penaltyIndex = calcPenaltyIndexForNewLine ();
 
    bool newLine;
    do {
@@ -615,6 +615,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                        tempNewLine ? "temporally" : "permanently",
                        firstIndex, breakPos);
                lineAdded = true;
+               penaltyIndex = calcPenaltyIndexForNewLine ();
             } else {
                // TODO hyphenateWord() should return whether something has
                // changed at all. So that a second run, with

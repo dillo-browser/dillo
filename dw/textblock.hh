@@ -515,6 +515,16 @@ protected:
    {
       return lineYOffsetCanvas (lines->getRef (lineIndex));
    }
+   
+   inline int calcPenaltyIndexForNewLine ()
+   {
+      if (lines->size() == 0)
+         return 0;
+      else
+         return
+            (words->getRef(lines->getLastRef()->lastWord)->flags &
+             (Word::DIV_CHAR_AT_EOL | Word::PERM_DIV_CHAR)) ? 1 : 0;
+   }
 
    bool sendSelectionEvent (core::SelectionState::EventType eventType,
                             core::MousePositionEvent *event);
