@@ -89,11 +89,11 @@ static struct iconset *icons = &standard_icons;
 /*
  * (Used to avoid certain shortcuts in the location bar)
  */
-class CustInput : public Fl_Input {
+class CustInput : public TipWinInput {
 public:
    CustInput (int x, int y, int w, int h, const char* l=0) :
-      Fl_Input(x,y,w,h,l) {};
-   int handle(int e);
+      TipWinInput(x,y,w,h,l) {};
+   virtual int handle(int e);
 };
 
 /*
@@ -151,7 +151,7 @@ int CustInput::handle(int e)
       }
    }
 
-   return Fl_Input::handle(e);
+   return TipWinInput::handle(e);
 }
 
 //----------------------------------------------------------------------------
@@ -439,11 +439,12 @@ void UI::make_location(int ww)
     b->set_tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
     p_xpos += b->w();
 
-    Fl_Input *i = Location = new CustInput(p_xpos,0,ww-p_xpos-32,lh,0);
+    CustInput *i = new CustInput(p_xpos,0,ww-p_xpos-32,lh,0);
+    Location = i;
     i->color(CuteColor);
     i->when(FL_WHEN_ENTER_KEY);
     i->callback(location_cb, this);
-    i->tooltip("Location");
+    i->set_tooltip("Location");
     p_xpos += i->w();
 
     Search = b = new CustButton(p_xpos,0,16,lh,0);
