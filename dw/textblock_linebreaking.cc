@@ -107,7 +107,7 @@ void Textblock::BadnessAndPenalty::setPenalties (int penalty1, int penalty2)
 {
    // TODO Check here some cases, e.g. both or no penalty INT_MIN.
    setSinglePenalty(0, penalty1);
-   setSinglePenalty(1, penalty1);
+   setSinglePenalty(1, penalty2);
 }
 
 void Textblock::BadnessAndPenalty::setSinglePenalty (int index, int penalty)
