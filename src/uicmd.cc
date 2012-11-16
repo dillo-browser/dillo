@@ -107,7 +107,7 @@ class CustTabs : public Fl_Group {
    Fl_Scroll *Scroll;
    Fl_Pack *Pack;
    Fl_Group *Control;
-   CustLightButton *CloseBtn;
+   CustButton *CloseBtn;
    int tabcolor_inactive, tabcolor_active;
 
    void update_pack_offset(void);
@@ -151,12 +151,12 @@ public:
 
       /* control buttons go inside a group */
       Control = new Fl_Group(ww-ctl_w,0,ctl_w,ctab_h);
-       CloseBtn = new CustLightButton(ww-ctl_w+2,0,btn_w,ctab_h, "X");
+       CloseBtn = new CustButton(ww-ctl_w+2,0,btn_w,ctab_h, "X");
        CloseBtn->box(FL_THIN_UP_BOX);
        CloseBtn->labelcolor(0x00641000);
        CloseBtn->hl_color(FL_WHITE);
        CloseBtn->clear_visible_focus();
-       CloseBtn->tooltip(prefs.right_click_closes_tab ?
+       CloseBtn->set_tooltip(prefs.right_click_closes_tab ?
           "Close current tab.\nor Right-click tab label to close." :
           "Close current tab.\nor Middle-click tab label to close.");
        CloseBtn->callback(close_tab_btn_cb, this);

@@ -8,12 +8,13 @@
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Check_Button.H>
 
+#include "tipwin.hh"
+
 /*
  * Searchbar to find text in page.
  */
 class Findbar : public Fl_Group {
-   Fl_Button *clrb;
-   Fl_Button *hide_btn, *next_btn, *prev_btn;
+   CustButton *hide_btn, *next_btn, *prev_btn;
    Fl_Check_Button *check_btn;
    Fl_Pixmap *hideImg;
    Fl_Input *i;
