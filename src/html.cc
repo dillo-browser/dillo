@@ -2969,10 +2969,10 @@ void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
          ++html->bw->NumPendingStyleSheets;
          a_Bw_add_client(html->bw, ClientKey, 0);
          a_Bw_add_url(html->bw, url);
-         MSG("NumPendingStyleSheets=%d", html->bw->NumPendingStyleSheets);
+         MSG("NumPendingStyleSheets=%d\n", html->bw->NumPendingStyleSheets);
       }
    }
-   MSG("\n");
+   _MSG("\n");
 }
 
 /*

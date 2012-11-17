@@ -1261,7 +1261,7 @@ bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
       if (selectType != CssSimpleSelector::SELECT_NONE) {
          nextToken();
          if (spaceSeparated)
-            return true;
+            return false;
 
          if (ttype == CSS_TK_SYMBOL) {
             selector->setSelect (selectType, tval);

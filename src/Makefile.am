@@ -25,6 +25,8 @@ dillo_SOURCES = \
 	dillo.cc \
 	paths.cc \
 	paths.hh \
+	tipwin.cc \
+	tipwin.hh \
 	ui.cc \
 	ui.hh \
 	uicmd.cc \

@@ -84,7 +84,7 @@ class CustTabButton : public Fl_Button {
                       // active one (the highest numbered gets focus).
 public:
    CustTabButton (int x,int y,int w,int h, const char* label = 0) :
-      Fl_Button (x,y,w,h,label) { ui_ = NULL; };
+      Fl_Button (x,y,w,h,label) { ui_ = NULL; focus_num_ = 0; };
    void ui(UI *pui) { ui_ = pui; }
    UI *ui(void) { return ui_; }
    void focus_num(uint_t fn) { focus_num_ = fn; }
@@ -107,7 +107,7 @@ class CustTabs : public Fl_Group {
    Fl_Scroll *Scroll;
    Fl_Pack *Pack;
    Fl_Group *Control;
-   CustLightButton *CloseBtn;
+   CustButton *CloseBtn;
    int tabcolor_inactive, tabcolor_active;
 
    void update_pack_offset(void);
@@ -151,12 +151,12 @@ public:
 
       /* control buttons go inside a group */
       Control = new Fl_Group(ww-ctl_w,0,ctl_w,ctab_h);
-       CloseBtn = new CustLightButton(ww-ctl_w+2,0,btn_w,ctab_h, "X");
+       CloseBtn = new CustButton(ww-ctl_w+2,0,btn_w,ctab_h, "X");
        CloseBtn->box(FL_THIN_UP_BOX);
        CloseBtn->labelcolor(0x00641000);
        CloseBtn->hl_color(FL_WHITE);
        CloseBtn->clear_visible_focus();
-       CloseBtn->tooltip(prefs.right_click_closes_tab ?
+       CloseBtn->set_tooltip(prefs.right_click_closes_tab ?
           "Close current tab.\nor Right-click tab label to close." :
           "Close current tab.\nor Middle-click tab label to close.");
        CloseBtn->callback(close_tab_btn_cb, this);
@@ -290,8 +290,6 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    if (focus) {
       switch_tab(btn);
    } else if (num_tabs() == 2) {
-      increase_focus_counter();
-      btn->focus_num(focus_counter);
       // no focus and tabbar added: redraw current page
       Wizard->redraw();
    }

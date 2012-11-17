@@ -19,6 +19,7 @@
 #include "msg.h"
 #include "timeout.hh"
 #include "utf8.hh"
+#include "tipwin.hh"
 
 #include <FL/Fl.H>
 #include <FL/Fl_Pixmap.H>
@@ -88,11 +89,11 @@ static struct iconset *icons = &standard_icons;
 /*
  * (Used to avoid certain shortcuts in the location bar)
  */
-class CustInput : public Fl_Input {
+class CustInput : public TipWinInput {
 public:
    CustInput (int x, int y, int w, int h, const char* l=0) :
-      Fl_Input(x,y,w,h,l) {};
-   int handle(int e);
+      TipWinInput(x,y,w,h,l) {};
+   virtual int handle(int e);
 };
 
 /*
@@ -150,7 +151,7 @@ int CustInput::handle(int e)
       }
    }
 
-   return Fl_Input::handle(e);
+   return TipWinInput::handle(e);
 }
 
 //----------------------------------------------------------------------------
@@ -158,10 +159,10 @@ int CustInput::handle(int e)
 /*
  * Used to handle "paste" within the toolbar's Clear button.
  */
-class CustPasteButton : public CustLightButton {
+class CustPasteButton : public CustButton {
 public:
    CustPasteButton(int x, int y, int w, int h, const char *l=0) :
-      CustLightButton(x,y,w,h,l) {};
+      CustButton(x,y,w,h,l) {};
    int handle(int e);
 };
 
@@ -175,7 +176,7 @@ int CustPasteButton::handle(int e)
          return 1;
       }
    }
-   return CustLightButton::handle(e);
+   return CustButton::handle(e);
 }
 
 //----------------------------------------------------------------------------
@@ -379,13 +380,13 @@ static void bugmeter_cb(Fl_Widget *wid, void *data)
 /*
  * Make a generic navigation button
  */
-Fl_Button *UI::make_button(const char *label, Fl_Image *img, Fl_Image *deimg,
-                           int b_n, int start)
+CustButton *UI::make_button(const char *label, Fl_Image *img, Fl_Image *deimg,
+                            int b_n, int start)
 {
    if (start)
       p_xpos = 0;
 
-   Fl_Button *b = new CustLightButton(p_xpos, 0, bw, bh, (lbl) ? label : NULL);
+   CustButton *b = new CustButton(p_xpos, 0, bw, bh, (lbl) ? label : NULL);
    if (img)
       b->image(img);
    if (deimg)
@@ -413,14 +414,14 @@ void UI::make_toolbar(int tw, int th)
    Bookmarks = make_button("Book", icons->ImgBook, NULL, UI_BOOK);
    Tools = make_button("Tools", icons->ImgTools, NULL, UI_TOOLS);
 
-   Back->tooltip("Previous page");
-   Forw->tooltip("Next page");
-   Home->tooltip("Go to the Home page");
-   Reload->tooltip("Reload");
-   Save->tooltip("Save this page");
-   Stop->tooltip("Stop loading");
-   Bookmarks->tooltip("View bookmarks");
-   Tools->tooltip("Settings");
+   Back->set_tooltip("Previous page");
+   Forw->set_tooltip("Next page");
+   Home->set_tooltip("Go to the Home page");
+   Reload->set_tooltip("Reload");
+   Save->set_tooltip("Save this page");
+   Stop->set_tooltip("Stop loading");
+   Bookmarks->set_tooltip("View bookmarks");
+   Tools->set_tooltip("Settings");
 }
 
 /*
@@ -428,37 +429,38 @@ void UI::make_toolbar(int tw, int th)
  */
 void UI::make_location(int ww)
 {
-   Fl_Button *b;
+   CustButton *b;
 
-    Clear = b = new CustPasteButton(p_xpos,0,16,lh,0);
+    b = Clear = (CustButton*) new CustPasteButton(p_xpos,0,16,lh,0);
     b->image(icons->ImgClear);
     b->callback(clear_cb, this);
     b->clear_visible_focus();
     b->box(FL_THIN_UP_BOX);
-    b->tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
+    b->set_tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
     p_xpos += b->w();
 
-    Fl_Input *i = Location = new CustInput(p_xpos,0,ww-p_xpos-32,lh,0);
+    CustInput *i = new CustInput(p_xpos,0,ww-p_xpos-32,lh,0);
+    Location = i;
     i->color(CuteColor);
     i->when(FL_WHEN_ENTER_KEY);
     i->callback(location_cb, this);
-    i->tooltip("Location");
+    i->set_tooltip("Location");
     p_xpos += i->w();
 
-    Search = b = new CustLightButton(p_xpos,0,16,lh,0);
+    Search = b = new CustButton(p_xpos,0,16,lh,0);
     b->image(icons->ImgSearch);
     b->callback(search_cb, this);
     b->clear_visible_focus();
     b->box(FL_THIN_UP_BOX);
-    b->tooltip("Search the Web");
+    b->set_tooltip("Search the Web");
     p_xpos += b->w();
 
-    Help = b = new CustLightButton(p_xpos,0,16,lh,0);
+    Help = b = new CustButton(p_xpos,0,16,lh,0);
     b->image(icons->ImgHelp);
     b->callback(help_cb, this);
     b->clear_visible_focus();
     b->box(FL_THIN_UP_BOX);
-    b->tooltip("Help");
+    b->set_tooltip("Help");
     p_xpos += b->w();
 
 }
@@ -489,10 +491,10 @@ void UI::make_progress_bars(int wide, int thin_up)
  */
 Fl_Widget *UI::make_filemenu_button()
 {
-   Fl_Button *btn;
+   CustButton *btn;
    int w = 0, h = 0, padding;
 
-   FileButton = btn = new Fl_Button(p_xpos,0,bw,bh,"W");
+   FileButton = btn = new CustButton(p_xpos,0,bw,bh,"W");
    btn->labeltype(FL_FREE_LABELTYPE);
    btn->measure_label(w, h);
    padding = w;
@@ -504,7 +506,7 @@ Fl_Widget *UI::make_filemenu_button()
    _MSG("UI::make_filemenu_button w=%d h=%d padding=%d\n", w, h, padding);
    btn->box(FL_THIN_UP_BOX);
    btn->callback(filemenu_cb, this);
-   btn->tooltip("File menu");
+   btn->set_tooltip("File menu");
    btn->clear_visible_focus();
    if (!prefs.show_filemenu)
       btn->hide();
@@ -610,11 +612,11 @@ void UI::make_status_bar(int ww, int wh)
     StatusOutput->color(FL_GRAY_RAMP + 18);
 
     // Bug Meter
-    BugMeter = new CustLightButton(ww-bm_w,wh-sh,bm_w,sh);
+    BugMeter = new CustButton(ww-bm_w,wh-sh,bm_w,sh);
     BugMeter->image(icons->ImgMeterOK);
     BugMeter->box(FL_THIN_DOWN_BOX);
     BugMeter->align(FL_ALIGN_INSIDE | FL_ALIGN_TEXT_NEXT_TO_IMAGE);
-    BugMeter->tooltip("Show HTML bugs\n(right-click for menu)");
+    BugMeter->set_tooltip("Show HTML bugs\n(right-click for menu)");
     BugMeter->callback(bugmeter_cb, this);
     BugMeter->clear_visible_focus();
 
@@ -632,7 +634,6 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    LocBar = NavBar = StatusBar = NULL;
 
    Tabs = NULL;
-   TabTooltip = NULL;
    TopGroup = this;
    TopGroup->box(FL_NO_BOX);
    clear_flag(SHORTCUT_LABEL);
@@ -691,7 +692,6 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
 UI::~UI()
 {
    _MSG("UI::~UI()\n");
-   dFree(TabTooltip);
 }
 
 /*
@@ -703,16 +703,6 @@ int UI::handle(int event)
 
    int ret = 0;
    if (event == FL_KEYBOARD) {
-      /* WORKAROUND: remove the Panel's fltk-tooltip.
-       * Although the expose event is delivered, it has an offset. This
-       * extra call avoids the lingering tooltip. */
-      if (!Fl::event_inside(Main) &&
-          (Fl::event_inside((Fl_Widget*)tabs()) ||
-           Fl::event_inside(NavBar) ||
-           (LocBar && Fl::event_inside(LocBar)) ||
-           (StatusBar && Fl::event_inside(StatusBar))))
-         window()->damage(FL_DAMAGE_EXPOSE,0,0,1,1);
-
       return 0; // Receive as shortcut
    } else if (event == FL_SHORTCUT) {
       KeysCommand_t cmd = Keys::getKeyCmd();

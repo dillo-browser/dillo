@@ -118,14 +118,14 @@ Findbar::Findbar(int width, int height) :
 
    box(FL_THIN_UP_BOX);
 
-    hide_btn = new Fl_Button(x, border, 16, height, 0);
+    hide_btn = new CustButton(x, border, 16, height, 0);
     hideImg = new Fl_Pixmap(new_s_xpm);
     hide_btn->image(hideImg);
     x += 16 + gap;
     hide_btn->callback(hide_cb, this);
     hide_btn->clear_visible_focus();
     hide_btn->box(FL_THIN_UP_BOX);
-    hide_btn->tooltip("Hide");
+    hide_btn->set_tooltip("Hide");
    add(hide_btn);
 
     i = new MyInput(x, border, input_width, height);
@@ -135,24 +135,24 @@ Findbar::Findbar(int width, int height) :
     i->when(FL_WHEN_NEVER);
    add(i);
 
-    next_btn = new Fl_Button(x, border, button_width, height, "Next");
+    next_btn = new CustButton(x, border, button_width, height, "Next");
     x += button_width + gap;
     next_btn->shortcut(FL_Enter);
     next_btn->callback(search_cb, this);
     next_btn->clear_visible_focus();
     next_btn->box(FL_THIN_UP_BOX);
-    next_btn->tooltip("Find next occurrence of the search phrase\n"
-                      "shortcut: Enter");
+    next_btn->set_tooltip("Find next occurrence of the search phrase\n"
+                          "shortcut: Enter");
    add(next_btn);
 
-    prev_btn= new Fl_Button(x, border, button_width, height, "Previous");
+    prev_btn= new CustButton(x, border, button_width, height, "Previous");
     x += button_width + gap;
     prev_btn->shortcut(FL_SHIFT+FL_Enter);
     prev_btn->callback(searchBackwards_cb, this);
     prev_btn->clear_visible_focus();
     prev_btn->box(FL_THIN_UP_BOX);
-    prev_btn->tooltip("Find previous occurrence of the search phrase\n"
-                      "shortcut: Shift+Enter");
+    prev_btn->set_tooltip("Find previous occurrence of the search phrase\n"
+                          "shortcut: Shift+Enter");
    add(prev_btn);
 
     check_btn = new Fl_Check_Button(x, border, 2*button_width, height,
