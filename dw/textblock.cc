@@ -43,12 +43,13 @@ int Textblock::CLASS_ID = -1;
 Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
    { "\xc2\xad", true, false, PENALTY_HYPHEN, -1 },
    { "-", false, true, -1, PENALTY_HYPHEN },
-   { "\xe2\x80\x94", false, true, PENALTY_HYPHEN, PENALTY_HYPHEN }
+   { "\xe2\x80\x94", false, true, PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT }
 };
 
-
 int Textblock::penalties[PENALTY_NUM][2] = {
-   { 100, 100 }
+   { 100, 1000 },
+   { 1000, 1000 },
+   { 100, 1000 }
 };
 
 void Textblock::init (int penaltyHyphen, int penaltyHyphen2)
@@ -1484,10 +1485,11 @@ void Textblock::addText (const char *text, size_t len,
       PRINTF ("', with %d parts\n", numParts);
 
       // Store hyphen positions.
-      int n = 0, totalLenSignRemoved = 0;
+      int n = 0, totalLenCharRemoved = 0;
       int partPenaltyIndex[numParts - 1];
       int partStart[numParts], partEnd[numParts];
-      bool signRemoved[numParts - 1], canBeHyphenated[numParts + 1];
+      bool charRemoved[numParts - 1], canBeHyphenated[numParts + 1];
+      bool permDivChar[numParts - 1];
       canBeHyphenated[0] = canBeHyphenated[numParts] = true;
       partStart[0] = 0;
       partEnd[numParts - 1] = len;
@@ -1511,19 +1513,21 @@ void Textblock::addText (const char *text, size_t len,
                assert (divChars[foundDiv].penaltyIndexRight == -1);
 
                partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexLeft;
-               signRemoved[n] = true;
+               charRemoved[n] = true;
+               permDivChar[n] = false;
                canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                partEnd[n] = i;
                partStart[n + 1] = i + lDiv;
                n++;
-               totalLenSignRemoved += lDiv;
+               totalLenCharRemoved += lDiv;
             } else {
                assert (divChars[foundDiv].penaltyIndexLeft != -1 ||
                        divChars[foundDiv].penaltyIndexRight != -1);
 
                if (divChars[foundDiv].penaltyIndexLeft != -1) {
                   partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexLeft;
-                  signRemoved[n] = false;
+                  charRemoved[n] = false;
+                  permDivChar[n] = false;
                   canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                   partEnd[n] = i;
                   partStart[n + 1] = i;
@@ -1532,7 +1536,8 @@ void Textblock::addText (const char *text, size_t len,
 
                if (divChars[foundDiv].penaltyIndexRight != -1) {
                   partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexRight;
-                  signRemoved[n] = false;
+                  charRemoved[n] = false;
+                  permDivChar[n] = true;
                   canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                   partEnd[n] = i + lDiv;
                   partStart[n + 1] = i + lDiv;
@@ -1544,10 +1549,10 @@ void Textblock::addText (const char *text, size_t len,
 
       // Get text without removed characters, e. g. hyphens.
       const char *textWithoutHyphens;
-      char textWithoutHyphensBuf[len - totalLenSignRemoved];
+      char textWithoutHyphensBuf[len - totalLenCharRemoved];
       int *breakPosWithoutHyphens, breakPosWithoutHyphensBuf[numParts - 1];
 
-      if (totalLenSignRemoved == 0) {
+      if (totalLenCharRemoved == 0) {
          // No removed characters: take original arrays.
          textWithoutHyphens = text;
          // Ends are also break positions, except the last end, which
@@ -1570,12 +1575,12 @@ void Textblock::addText (const char *text, size_t len,
       }
 
       PRINTF("H... without hyphens: '");
-      for (size_t i = 0; i < len - totalLenSignRemoved; i++)
+      for (size_t i = 0; i < len - totalLenCharRemoved; i++)
          PUTCHAR(textWithoutHyphens[i]);
       PRINTF("'\n");
 
       core::Requisition wordSize[numParts];
-      calcTextSizes (textWithoutHyphens, len - totalLenSignRemoved, style,
+      calcTextSizes (textWithoutHyphens, len - totalLenCharRemoved, style,
                      numParts - 1, breakPosWithoutHyphens, wordSize);
 
       // Finished!
@@ -1600,16 +1605,19 @@ void Textblock::addText (const char *text, size_t len,
                .setPenalties (penalties[partPenaltyIndex[i]][0],
                               penalties[partPenaltyIndex[i]][1]);
 
-            if (signRemoved[i]) {
+            if (charRemoved[i]) {
                // Currently, only soft hyphens (UTF-8: "\xc2\xad") can
                // be used. See also drawWord, last section "if
                // (drawHyphen)".
-               // The character defined in DivSign::s could be used,
+               // The character defined in DivChar::s could be used,
                // but it must then also stored in the word.
                word->hyphenWidth =
                   layout->textWidth (word->style->font, "\xc2\xad", 2);
                word->flags |= Word::DIV_CHAR_AT_EOL;
             }
+
+            if (permDivChar[i])
+               word->flags |= Word::PERM_DIV_CHAR;
 
             word->flags |= Word::DRAW_AS_ONE_TEXT;
             accumulateWordData (words->size() - 1);

@@ -216,7 +216,8 @@ private:
       void print ();
    };
 
-   enum { PENALTY_HYPHEN, PENALTY_NUM };
+   enum { PENALTY_HYPHEN, PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT,
+          PENALTY_NUM };
    enum { NUM_DIV_CHARS = 3};
 
    typedef struct
