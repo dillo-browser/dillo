@@ -2225,6 +2225,11 @@ int Textblock::topOfPossiblyMissingLine (int lineNo)
    }
 }
 
+core::Widget *Textblock::asWidget ()
+{
+   return this;
+}
+
 core::style::Style *Textblock::getCBStyle ()
 {
    return getStyle();

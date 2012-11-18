@@ -647,6 +647,7 @@ public:
 
    // From OutOfFlowMgr::ContainingBlock:
    void borderChanged (int y);
+   core::Widget *asWidget ();
    core::style::Style *getCBStyle ();
    core::Allocation *getCBAllocation ();
 };

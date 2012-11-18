@@ -15,8 +15,7 @@ public:
    {
    public:
       virtual void borderChanged (int y) = 0;
-
-      // An additional "CB" to resolve the ambiguity to the methods in Widget.
+      virtual core::Widget *asWidget () = 0;
       virtual core::style::Style *getCBStyle () = 0;
       virtual core::Allocation *getCBAllocation () = 0;
    };

@@ -383,19 +383,30 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
  * the left side of the allocation of the float, and likewise for
  * right floats. Both values are positive.
  *
- * Currently, this is given by the margin/border/padding of the
- * containing box, but from how I have understood the CSS
- * specification, the generating block should be included. A fix of
- * this method should be sufficient.
+ * From how I have understood the CSS specification, the generating
+ * block should be included. (In the case I am wrong: a change of this
+ * method should be sufficient.)
  */
 int OutOfFlowMgr::calcBorderDiff (Float *vloat)
 {
    switch (vloat->widget->getStyle()->vloat) {
    case FLOAT_LEFT:
-      return containingBlock->getCBStyle()->boxOffsetX();
+      {
+         int d = containingBlock->getCBStyle()->boxOffsetX();
+         for (Widget *w = vloat->generatingBlock;
+              w != containingBlock->asWidget(); w = w->getParent())
+            d += w->getStyle()->boxOffsetX();
+         return d;
+      }
       
    case FLOAT_RIGHT:
-      return containingBlock->getCBStyle()->boxRestWidth();
+      {
+         int d = containingBlock->getCBStyle()->boxRestWidth();
+         for (Widget *w = vloat->generatingBlock;
+              w != containingBlock->asWidget(); w = w->getParent())
+            d += w->getStyle()->boxRestWidth();
+         return d;
+      }
 
    default:
       // Only used for floats.
