@@ -16,8 +16,6 @@ public:
    public:
       virtual void borderChanged (int y) = 0;
       virtual core::Widget *asWidget () = 0;
-      virtual core::style::Style *getCBStyle () = 0;
-      virtual core::Allocation *getCBAllocation () = 0;
    };
 
 private:

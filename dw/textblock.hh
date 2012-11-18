@@ -458,6 +458,11 @@ protected:
     */
    inline int lineXOffsetWidget (Line *line)
    {
+      // TODO This method is called very often, every time a line is
+      // *drawn*. To reduce calls to OutOfFlowMgr::getLeftBorder
+      // (which searches through all floats each time), the value
+      // should (in the layouting phase) be stored in the line.
+
       assert (diffXToContainingBlock != -1);
       assert (diffYToContainingBlock != -1);
 
@@ -648,8 +653,6 @@ public:
    // From OutOfFlowMgr::ContainingBlock:
    void borderChanged (int y);
    core::Widget *asWidget ();
-   core::style::Style *getCBStyle ();
-   core::Allocation *getCBAllocation ();
 };
 
 } // namespace dw

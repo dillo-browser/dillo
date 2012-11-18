@@ -219,25 +219,27 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    *oofWidth = cbWidth; /* This (or "<=" instead of "=") should be
                            the case for floats. */
 
-   int oofHeightLeft = containingBlock->getCBStyle()->boxDiffWidth();
-   int oofHeightRight = containingBlock->getCBStyle()->boxDiffWidth();
+   int oofHeightLeft = containingBlock->asWidget()->getStyle()->boxDiffWidth();
+   int oofHeightRight = containingBlock->asWidget()->getStyle()->boxDiffWidth();
 
    for (int i = 0; i < leftFloats->size(); i++) {
       Float *vloat = leftFloats->get(i);
       assert (vloat->y != -1);
       ensureFloatSize (vloat);
-      oofHeightLeft = max (oofHeightLeft,
-                           vloat->y + vloat->size.ascent + vloat->size.descent
-                           + containingBlock->getCBStyle()->boxRestHeight());
+      oofHeightLeft =
+         max (oofHeightLeft,
+              vloat->y + vloat->size.ascent + vloat->size.descent
+              + containingBlock->asWidget()->getStyle()->boxRestHeight());
    }
 
    for (int i = 0; i < rightFloats->size(); i++) {
       Float *vloat = rightFloats->get(i);
       assert (vloat->y != -1);
       ensureFloatSize (vloat);
-      oofHeightRight = max (oofHeightRight,
-                            vloat->y + vloat->size.ascent + vloat->size.descent
-                            + containingBlock->getCBStyle()->boxRestHeight());
+      oofHeightRight =
+         max (oofHeightRight,
+              vloat->y + vloat->size.ascent + vloat->size.descent
+              + containingBlock->asWidget()->getStyle()->boxRestHeight());
    }
 
    *oofHeight = max (oofHeightLeft, oofHeightRight);
@@ -392,7 +394,7 @@ int OutOfFlowMgr::calcBorderDiff (Float *vloat)
    switch (vloat->widget->getStyle()->vloat) {
    case FLOAT_LEFT:
       {
-         int d = containingBlock->getCBStyle()->boxOffsetX();
+         int d = containingBlock->asWidget()->getStyle()->boxOffsetX();
          for (Widget *w = vloat->generatingBlock;
               w != containingBlock->asWidget(); w = w->getParent())
             d += w->getStyle()->boxOffsetX();
@@ -401,7 +403,7 @@ int OutOfFlowMgr::calcBorderDiff (Float *vloat)
       
    case FLOAT_RIGHT:
       {
-         int d = containingBlock->getCBStyle()->boxRestWidth();
+         int d = containingBlock->asWidget()->getStyle()->boxRestWidth();
          for (Widget *w = vloat->generatingBlock;
               w != containingBlock->asWidget(); w = w->getParent())
             d += w->getStyle()->boxRestWidth();

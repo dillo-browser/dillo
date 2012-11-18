@@ -2230,14 +2230,4 @@ core::Widget *Textblock::asWidget ()
    return this;
 }
 
-core::style::Style *Textblock::getCBStyle ()
-{
-   return getStyle();
-}
-
-core::Allocation *Textblock::getCBAllocation ()
-{
-   return &allocation;
-}
-
 } // namespace dw
