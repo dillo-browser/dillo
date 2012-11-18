@@ -47,15 +47,35 @@ Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
 };
 
 int Textblock::penalties[PENALTY_NUM][2] = {
-   { 100, 1000 },
-   { 1000, 1000 },
-   { 100, 1000 }
+   { 100, 800 },
+   { 800, 800 },
+   { 100, 800 }
 };
 
-void Textblock::init (int penaltyHyphen, int penaltyHyphen2)
+void Textblock::setPenaltyHyphen (int penaltyHyphen)
 {
    penalties[PENALTY_HYPHEN][0] = penaltyHyphen;
+}
+  
+void Textblock::setPenaltyHyphen2 (int penaltyHyphen2)
+{
    penalties[PENALTY_HYPHEN][1] = penaltyHyphen2;
+}
+
+void Textblock::setPenaltyEmDashLeft (int penaltyLeftEmDash)
+{
+   penalties[PENALTY_EM_DASH_LEFT][0] = penaltyLeftEmDash;
+   penalties[PENALTY_EM_DASH_LEFT][1] = penaltyLeftEmDash;
+}
+
+void Textblock::setPenaltyEmDashRight (int penaltyRightEmDash)
+{
+   penalties[PENALTY_EM_DASH_RIGHT][0] = penaltyRightEmDash;
+}
+
+void Textblock::setPenaltyEmDashRight2 (int penaltyRightEmDash2)
+{
+   penalties[PENALTY_EM_DASH_RIGHT][1] = penaltyRightEmDash2;
 }
 
 Textblock::Textblock (bool limitTextWidth)

@@ -568,7 +568,11 @@ protected:
 public:
    static int CLASS_ID;
 
-   static void init (int penaltyHyphen, int penaltyHyphen2);
+   static void setPenaltyHyphen (int penaltyHyphen);
+   static void setPenaltyHyphen2 (int penaltyHyphen2);
+   static void setPenaltyEmDashLeft (int penaltyLeftEmDash);
+   static void setPenaltyEmDashRight (int penaltyRightEmDash);
+   static void setPenaltyEmDashRight2 (int penaltyRightEmDash2);
 
    Textblock(bool limitTextWidth);
    ~Textblock();
