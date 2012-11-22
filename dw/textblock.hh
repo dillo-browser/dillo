@@ -284,9 +284,12 @@ protected:
          /** Must be drawn with a hyphen, when at the end of the line. */
          DIV_CHAR_AT_EOL   = 1 << 1,
          /** Is or ends with a "division character", which is part of
-          * the word */
+          * the word. */
          PERM_DIV_CHAR     = 1 << 2,
-         /** This word should be drawn */
+         /** This word must be drawn, together with the following
+          * word(s), by only one call of View::drawText(), to get
+          * kerning, ligatures etc. right. The last of the words drawn
+          * as one text does *not* have this flag set. */
          DRAW_AS_ONE_TEXT  = 1 << 3
       };
 
