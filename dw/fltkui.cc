@@ -1131,6 +1131,14 @@ void FltkOptionMenuResource::addItem (const char *str,
    queueResize (true);
 }
 
+void FltkOptionMenuResource::setItem (int index, bool selected)
+{
+   if (selected) {
+      ((Fl_Choice *)widget)->value(menu+index);
+      queueResize (true);
+   }
+}
+
 void FltkOptionMenuResource::pushGroup (const char *name, bool enabled)
 {
    Fl_Menu_Item *item = newItem();
@@ -1255,6 +1263,22 @@ void FltkListResource::addItem (const char *str, bool enabled, bool selected)
       }
    }
    queueResize (true);
+}
+
+void FltkListResource::setItem (int index, bool selected)
+{
+   Fl_Tree *tree = (Fl_Tree *) widget;
+   Fl_Tree_Item *item = tree->root()->child(index);
+
+   /* TODO: handle groups */
+   if (item) {
+      itemsSelected.set (index, selected);
+      if (mode == SELECTION_MULTIPLE)
+         item->select(selected);
+      else if (selected)
+         tree->select_only(item);
+      queueResize (true);
+   }
 }
 
 void FltkListResource::pushGroup (const char *name, bool enabled)

@@ -177,6 +177,7 @@ public:
    void addOption (char *value, bool selected, bool enabled);
    void ensureSelection ();
    void addOptionsTo (SelectionResource *res);
+   void reset (SelectionResource *res);
    void appendValuesTo (Dlist *values, SelectionResource *res);
 };
 
@@ -1764,34 +1765,11 @@ void DilloHtmlInput::reset ()
       }
       break;
    case DILLO_HTML_INPUT_SELECT:
-      if (select != NULL) {
-         /* this is in reverse order so that, in case more than one was
-          * selected, we get the last one, which is consistent with handling
-          * of multiple selected options in the layout code. */
-//       for (i = select->num_options - 1; i >= 0; i--) {
-//          if (select->options[i].init_val) {
-//             gtk_menu_item_activate(GTK_MENU_ITEM
-//                                    (select->options[i].menuitem));
-//             Html_select_set_history(input);
-//             break;
-//          }
-//       }
-      }
-      break;
    case DILLO_HTML_INPUT_SEL_LIST:
-      if (!select)
-         break;
-//    for (i = 0; i < select->num_options; i++) {
-//       if (select->options[i].init_val) {
-//          if (select->options[i].menuitem->state == GTK_STATE_NORMAL)
-//             gtk_list_select_child(GTK_LIST(select->menu),
-//                                   select->options[i].menuitem);
-//       } else {
-//          if (select->options[i].menuitem->state==GTK_STATE_SELECTED)
-//             gtk_list_unselect_child(GTK_LIST(select->menu),
-//                                     select->options[i].menuitem);
-//       }
-//    }
+      if (select != NULL) {
+         SelectionResource *sr = (SelectionResource *) embed->getResource();
+         select->reset(sr);
+      }
       break;
    case DILLO_HTML_INPUT_TEXTAREA:
       if (init_str != NULL) {
@@ -1871,6 +1849,15 @@ void DilloHtmlSelect::addOptionsTo (SelectionResource *res)
    for (int i = 0; i < size; i++) {
       DilloHtmlOption *option = options->get (i);
       res->addItem(option->content, option->enabled, option->selected);
+   }
+}
+
+void DilloHtmlSelect::reset (SelectionResource *res)
+{
+   int size = options->size ();
+   for (int i = 0; i < size; i++) {
+      DilloHtmlOption *option = options->get (i);
+      res->setItem(i, option->selected);
    }
 }
 

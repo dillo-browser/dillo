@@ -421,6 +421,7 @@ class SelectionResource: public Resource
 {
 public:
    virtual void addItem (const char *str, bool enabled, bool selected) = 0;
+   virtual void setItem (int index, bool selected) = 0;
    virtual void pushGroup (const char *name, bool enabled) = 0;
    virtual void popGroup () = 0;
 
