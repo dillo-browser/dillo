@@ -109,8 +109,7 @@ private:
       createListResource (core::ui::ListResource::SelectionMode selectionMode,
                           int rows);
       core::ui::OptionMenuResource *createOptionMenuResource ();
-      core::ui::EntryResource *createEntryResource (int maxLength,
-                                                    bool password,
+      core::ui::EntryResource *createEntryResource (int size, bool password,
                                                     const char *label);
       core::ui::MultiLineTextResource *createMultiLineTextResource (int cols,
                                                                     int rows);
