@@ -282,7 +282,7 @@ class FltkEntryResource:
    public FltkSpecificResource <dw::core::ui::EntryResource>
 {
 private:
-   int maxLength;
+   int size;
    bool password;
    const char *initText;
    char *label;
@@ -297,7 +297,7 @@ protected:
    void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
 
 public:
-   FltkEntryResource (FltkPlatform *platform, int maxLength, bool password,
+   FltkEntryResource (FltkPlatform *platform, int size, bool password,
                       const char *label);
    ~FltkEntryResource ();
 

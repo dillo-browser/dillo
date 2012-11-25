@@ -481,7 +481,7 @@ public:
 class EntryResource: public TextResource
 {
 public:
-   enum { UNLIMITED_MAX_LENGTH = -1 };
+   enum { UNLIMITED_SIZE = -1 };
 };
 
 class MultiLineTextResource: public TextResource
@@ -541,7 +541,7 @@ public:
    virtual ListResource *createListResource (ListResource::SelectionMode
                                              selectionMode, int rows) = 0;
    virtual OptionMenuResource *createOptionMenuResource () = 0;
-   virtual EntryResource *createEntryResource (int maxLength, bool password,
+   virtual EntryResource *createEntryResource (int size, bool password,
                                                const char *label) = 0;
    virtual MultiLineTextResource *createMultiLineTextResource (int cols,
                                                                int rows) = 0;

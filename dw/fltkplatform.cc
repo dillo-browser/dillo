@@ -419,11 +419,11 @@ FltkPlatform::FltkResourceFactory::createOptionMenuResource ()
 }
 
 core::ui::EntryResource *
-FltkPlatform::FltkResourceFactory::createEntryResource (int maxLength,
+FltkPlatform::FltkResourceFactory::createEntryResource (int size,
                                                         bool password,
                                                         const char *label)
 {
-   return new ui::FltkEntryResource (platform, maxLength, password, label);
+   return new ui::FltkEntryResource (platform, size, password, label);
 }
 
 core::ui::MultiLineTextResource *

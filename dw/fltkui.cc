@@ -536,11 +536,11 @@ Fl_Widget *FltkComplexButtonResource::createNewWidget (core::Allocation
 
 // ----------------------------------------------------------------------
 
-FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int maxLength,
+FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int size,
                                       bool password, const char *label):
    FltkSpecificResource <dw::core::ui::EntryResource> (platform)
 {
-   this->maxLength = maxLength;
+   this->size = size;
    this->password = password;
    this->label = label ? strdup(label) : NULL;
    this->label_w = 0;
@@ -615,7 +615,7 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
       // 1.3.0 (STR #2688).
       requisition->width =
          (int)fl_width ("n")
-         * (maxLength == UNLIMITED_MAX_LENGTH ? 10 : maxLength)
+         * (size == UNLIMITED_SIZE ? 10 : size)
          + label_w + (2 * RELIEF_X_THICKNESS);
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
       requisition->descent = font->descent + RELIEF_Y_THICKNESS;
