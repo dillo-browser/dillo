@@ -3023,22 +3023,6 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
- * Set the history of the menu to be consistent with the active menuitem.
- */
-//static void Html_select_set_history(DilloHtmlInput *input)
-//{
-// int i;
-//
-// for (i = 0; i < input->select->num_options; i++) {
-//    if (GTK_CHECK_MENU_ITEM(input->select->options[i].menuitem)->active) {
-//       gtk_option_menu_set_history(GTK_OPTION_MENU(input->widget), i);
-//       break;
-//    }
-// }
-//}
-
-
-/*
  * Set the Document Base URI
  */
 static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
