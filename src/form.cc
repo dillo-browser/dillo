@@ -984,8 +984,6 @@ void DilloHtmlForm::submit(DilloHtmlInput *active_input, EventButton *event)
       }
       a_Url_free(url);
    }
-   // /* now, make the rendered area have its focus back */
-   // gtk_widget_grab_focus(GTK_BIN(bw->render_main_scroll)->child);
 }
 
 /*
