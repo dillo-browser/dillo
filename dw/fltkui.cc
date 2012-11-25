@@ -670,6 +670,11 @@ void FltkEntryResource::setEditable (bool editable)
    this->editable = editable;
 }
 
+void FltkEntryResource::setMaxLength (int maxlen)
+{
+   ((Fl_Input *)widget)->maximum_size(maxlen);
+}
+
 // ----------------------------------------------------------------------
 
 FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,

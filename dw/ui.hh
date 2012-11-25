@@ -482,6 +482,7 @@ class EntryResource: public TextResource
 {
 public:
    enum { UNLIMITED_SIZE = -1 };
+   virtual void setMaxLength (int maxlen) = 0;
 };
 
 class MultiLineTextResource: public TextResource

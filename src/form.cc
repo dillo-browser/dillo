@@ -548,10 +548,11 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          if (a_Html_get_attr(html, tag, tagsize, "readonly"))
             ((EntryResource *) resource)->setEditable(false);
 
-//       /* Maximum length of the text in the entry */
-//       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "maxlength")))
-//          gtk_entry_set_max_length(GTK_ENTRY(widget),
-//                                   strtol(attrbuf, NULL, 10));
+         /* Maximum length of the text in the entry */
+         if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "maxlength"))) {
+            int maxlen = strtol(attrbuf, NULL, 10);
+            ((EntryResource *) resource)->setMaxLength(maxlen);
+         }
       }
       if (prefs.show_tooltip &&
           (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {

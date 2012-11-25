@@ -308,6 +308,7 @@ public:
    void setText (const char *text);
    bool isEditable ();
    void setEditable (bool editable);
+   void setMaxLength (int maxlen);
 };
 
 
