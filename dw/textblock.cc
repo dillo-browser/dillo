@@ -928,7 +928,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
          totalWidth += w->size.width;
       }
       
-      char text[l + (drawHyphen ? 2 : 0) + 1];
+      char text[l + (drawHyphen ? 3 : 0) + 1];
       int p = 0;
       for (int i = wordIndex1; i <= wordIndex2; i++) {
          const char * t = words->getRef(i)->content.text;
@@ -937,8 +937,10 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
       }
 
       if(drawHyphen) {
-         text[p++] = 0xc2;
-         text[p++] = 0xad;
+         // "\xe2\x80\x90" is an unconditional hyphen.
+         text[p++] = 0xe2;
+         text[p++] = 0x80;
+         text[p++] = 0x90;
          text[p++] = 0;
       }
       
@@ -1707,8 +1709,10 @@ void Textblock::addHyphen ()
       Word *word = words->getRef(wordIndex);
  
       word->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
+      // "\xe2\x80\x90" is an unconditional hyphen.
       // TODO Optimize? Like spaces?
-      word->hyphenWidth = layout->textWidth (word->style->font, "\xc2\xad", 2);
+      word->hyphenWidth =
+         layout->textWidth (word->style->font, "\xe2\x80\x90", 3);
 
       accumulateWordData (wordIndex);
    }
