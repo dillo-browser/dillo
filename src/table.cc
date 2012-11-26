@@ -297,7 +297,7 @@ static void Html_set_collapsing_border_model(DilloHtml *html, Widget *col_tb)
    collapseCellAttrs.borderWidth.bottom = borderWidth;
    collapseCellAttrs.hBorderSpacing = 0;
    collapseCellAttrs.vBorderSpacing = 0;
-   collapseStyle = Style::create(HT2LT(html), &collapseCellAttrs);
+   collapseStyle = Style::create(&collapseCellAttrs);
    col_tb->setStyle (collapseStyle);
 
    if (Html_table_get_border_model(html) != DILLO_HTML_TABLE_BORDER_COLLAPSE) {
@@ -314,7 +314,7 @@ static void Html_set_collapsing_border_model(DilloHtml *html, Widget *col_tb)
       collapseTableAttrs.borderStyle = collapseCellAttrs.borderStyle;
       /* CSS2 17.6.2: table does not have padding (in collapsing mode) */
       collapseTableAttrs.padding.setVal (0);
-      collapseStyle = Style::create(HT2LT(html), &collapseTableAttrs);
+      collapseStyle = Style::create(&collapseTableAttrs);
       ((dw::Table*)S_TOP(html)->table)->setStyle (collapseStyle);
    }
 }
@@ -331,7 +331,7 @@ static void Html_set_separate_border_model(DilloHtml *html, Widget *col_tb)
    separateCellAttrs = *(html->styleEngine->style ());
    /* CSS2 17.5: Internal table elements do not have margins */
    separateCellAttrs.margin.setVal (0);
-   separateStyle = Style::create(HT2LT(html), &separateCellAttrs);
+   separateStyle = Style::create(&separateCellAttrs);
    col_tb->setStyle (separateStyle);
 }
 

@@ -1918,14 +1918,13 @@ void Textblock::changeLinkColor (int link, int newColor)
                styleAttrs = *old_style;
                styleAttrs.color = core::style::Color::create (layout,
                                                               newColor);
-               word->style = core::style::Style::create (layout, &styleAttrs);
+               word->style = core::style::Style::create (&styleAttrs);
                old_style->unref();
                old_style = word->spaceStyle;
                styleAttrs = *old_style;
                styleAttrs.color = core::style::Color::create (layout,
                                                               newColor);
-               word->spaceStyle =
-                               core::style::Style::create(layout, &styleAttrs);
+               word->spaceStyle = core::style::Style::create(&styleAttrs);
                old_style->unref();
                break;
             }
@@ -1936,8 +1935,7 @@ void Textblock::changeLinkColor (int link, int newColor)
                                                               newColor);
                styleAttrs.setBorderColor(
                            core::style::Color::create (layout, newColor));
-               widget->setStyle(
-                             core::style::Style::create (layout, &styleAttrs));
+               widget->setStyle(core::style::Style::create (&styleAttrs));
                break;
             }
             default:

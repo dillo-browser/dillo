@@ -177,6 +177,7 @@ public:
    void addOption (char *value, bool selected, bool enabled);
    void ensureSelection ();
    void addOptionsTo (SelectionResource *res);
+   void reset (SelectionResource *res);
    void appendValuesTo (Dlist *values, SelectionResource *res);
 };
 
@@ -360,7 +361,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    a_Url_free(action);
 }
 
-void Html_tag_close_form(DilloHtml *html, int TagIdx)
+void Html_tag_close_form(DilloHtml *html)
 {
 // DilloHtmlForm *form;
 // int i;
@@ -547,10 +548,11 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          if (a_Html_get_attr(html, tag, tagsize, "readonly"))
             ((EntryResource *) resource)->setEditable(false);
 
-//       /* Maximum length of the text in the entry */
-//       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "maxlength")))
-//          gtk_entry_set_max_length(GTK_ENTRY(widget),
-//                                   strtol(attrbuf, NULL, 10));
+         /* Maximum length of the text in the entry */
+         if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "maxlength"))) {
+            int maxlen = strtol(attrbuf, NULL, 10);
+            ((EntryResource *) resource)->setMaxLength(maxlen);
+         }
       }
       if (prefs.show_tooltip &&
           (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
@@ -680,7 +682,7 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
  * Close  textarea
  * (TEXTAREA is parsed in VERBATIM mode, and entities are handled here)
  */
-void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
+void Html_tag_close_textarea(DilloHtml *html)
 {
    char *str;
    DilloHtmlInput *input;
@@ -774,7 +776,7 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 /*
  * ?
  */
-void Html_tag_close_select(DilloHtml *html, int TagIdx)
+void Html_tag_close_select(DilloHtml *html)
 {
    if (html->InFlags & IN_SELECT) {
       if (html->InFlags & IN_OPTION)
@@ -898,7 +900,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Handle close <BUTTON>
  */
-void Html_tag_close_button(DilloHtml *html, int TagIdx)
+void Html_tag_close_button(DilloHtml *html)
 {
    html->InFlags &= ~IN_BUTTON;
 }
@@ -982,8 +984,6 @@ void DilloHtmlForm::submit(DilloHtmlInput *active_input, EventButton *event)
       }
       a_Url_free(url);
    }
-   // /* now, make the rendered area have its focus back */
-   // gtk_widget_grab_focus(GTK_BIN(bw->render_main_scroll)->child);
 }
 
 /*
@@ -1764,34 +1764,11 @@ void DilloHtmlInput::reset ()
       }
       break;
    case DILLO_HTML_INPUT_SELECT:
-      if (select != NULL) {
-         /* this is in reverse order so that, in case more than one was
-          * selected, we get the last one, which is consistent with handling
-          * of multiple selected options in the layout code. */
-//       for (i = select->num_options - 1; i >= 0; i--) {
-//          if (select->options[i].init_val) {
-//             gtk_menu_item_activate(GTK_MENU_ITEM
-//                                    (select->options[i].menuitem));
-//             Html_select_set_history(input);
-//             break;
-//          }
-//       }
-      }
-      break;
    case DILLO_HTML_INPUT_SEL_LIST:
-      if (!select)
-         break;
-//    for (i = 0; i < select->num_options; i++) {
-//       if (select->options[i].init_val) {
-//          if (select->options[i].menuitem->state == GTK_STATE_NORMAL)
-//             gtk_list_select_child(GTK_LIST(select->menu),
-//                                   select->options[i].menuitem);
-//       } else {
-//          if (select->options[i].menuitem->state==GTK_STATE_SELECTED)
-//             gtk_list_unselect_child(GTK_LIST(select->menu),
-//                                     select->options[i].menuitem);
-//       }
-//    }
+      if (select != NULL) {
+         SelectionResource *sr = (SelectionResource *) embed->getResource();
+         select->reset(sr);
+      }
       break;
    case DILLO_HTML_INPUT_TEXTAREA:
       if (init_str != NULL) {
@@ -1871,6 +1848,15 @@ void DilloHtmlSelect::addOptionsTo (SelectionResource *res)
    for (int i = 0; i < size; i++) {
       DilloHtmlOption *option = options->get (i);
       res->addItem(option->content, option->enabled, option->selected);
+   }
+}
+
+void DilloHtmlSelect::reset (SelectionResource *res)
+{
+   int size = options->size ();
+   for (int i = 0; i < size; i++) {
+      DilloHtmlOption *option = options->get (i);
+      res->setItem(i, option->selected);
    }
 }
 

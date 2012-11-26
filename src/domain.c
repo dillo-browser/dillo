@@ -132,17 +132,17 @@ bool_t a_Domain_permit(const DilloUrl *source, const DilloUrl *dest)
    if (a_Url_same_organization(source, dest))
       return TRUE;
 
+   ret = default_deny ? FALSE : TRUE;
+
    for (i = 0; i < num_exceptions; i++) {
-      if(Domain_match(source_host, exceptions[i].origin) &&
-         Domain_match(dest_host, exceptions[i].destination)) {
+      if (Domain_match(source_host, exceptions[i].origin) &&
+          Domain_match(dest_host, exceptions[i].destination)) {
          ret = default_deny;
          MSG("Domain: Matched rule from %s to %s.\n", exceptions[i].origin,
              exceptions[i].destination);
          break;
       }
    }
-   if (i == num_exceptions)
-      ret = default_deny ? FALSE : TRUE;
 
    MSG("Domain: %s from %s to %s.\n",
        (ret == TRUE ? "permitted" : "DENIED"), source_host, dest_host);

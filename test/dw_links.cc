@@ -99,7 +99,7 @@ int main(int argc, char **argv)
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
-   Style *widgetStyle = Style::create (layout, &styleAttrs);
+   Style *widgetStyle = Style::create (&styleAttrs);
 
    Textblock *textblock = new Textblock (false);
    textblock->setStyle (widgetStyle);
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor = NULL;
    styleAttrs.cursor = CURSOR_TEXT;
 
-   Style *wordStyle = Style::create (layout, &styleAttrs);
+   Style *wordStyle = Style::create (&styleAttrs);
 
    styleAttrs.color = Color::create (layout, 0x0000ff);
    styleAttrs.textDecoration = TEXT_DECORATION_UNDERLINE;
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
       }
 
       styleAttrs.x_link = i;
-      Style *linkStyle = Style::create (layout, &styleAttrs);
+      Style *linkStyle = Style::create (&styleAttrs);
 
       for(int j = 0; words2[j]; j++) {
          textblock->addText(words2[j], linkStyle);

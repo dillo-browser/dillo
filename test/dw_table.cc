@@ -66,7 +66,7 @@ int main(int argc, char **argv)
    fontAttrs.fontVariant = FONT_VARIANT_NORMAL;
    styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
-   Style *tableStyle = Style::create (layout, &styleAttrs);
+   Style *tableStyle = Style::create (&styleAttrs);
 
    Table *table = new Table (false);
    table->setStyle (tableStyle);
@@ -79,14 +79,14 @@ int main(int argc, char **argv)
    styleAttrs.margin.setVal (0);
    styleAttrs.padding.setVal (5);
 
-   Style *cellStyle = Style::create (layout, &styleAttrs);
+   Style *cellStyle = Style::create (&styleAttrs);
 
    styleAttrs.borderWidth.setVal (0);
    styleAttrs.margin.setVal (0);
    styleAttrs.cursor = CURSOR_TEXT;
    styleAttrs.textAlignChar = '.';
 
-   Style *wordStyle = Style::create (layout, &styleAttrs);
+   Style *wordStyle = Style::create (&styleAttrs);
 
    for (int i = 0; i < 4; i++) {
       table->addRow (wordStyle);

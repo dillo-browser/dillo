@@ -51,7 +51,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    style_attrs.color = Color::create (layout, 0);
    style_attrs.backgroundColor = Color::create (layout, 0xffffff);
 
-   n->style = Style::create (layout, &style_attrs);
+   n->style = Style::create (&style_attrs);
 }
 
 StyleEngine::~StyleEngine () {
@@ -715,7 +715,7 @@ Style * StyleEngine::backgroundStyle () {
 
       assert (attrs.backgroundColor);
       stack->getRef (stack->size () - 1)->backgroundStyle =
-         Style::create (layout, &attrs);
+         Style::create (&attrs);
    }
    return stack->getRef (stack->size () - 1)->backgroundStyle;
 }
@@ -757,7 +757,7 @@ Style * StyleEngine::style0 (int i) {
 
    postprocessAttrs (&attrs);
 
-   stack->getRef (i)->style = Style::create (layout, &attrs);
+   stack->getRef (i)->style = Style::create (&attrs);
 
    return stack->getRef (i)->style;
 }
@@ -771,7 +771,7 @@ Style * StyleEngine::wordStyle0 () {
 
    attrs.valign = style ()->valign;
 
-   stack->getRef(stack->size() - 1)->wordStyle = Style::create(layout, &attrs);
+   stack->getRef(stack->size() - 1)->wordStyle = Style::create(&attrs);
    return stack->getRef (stack->size () - 1)->wordStyle;
 }
 
