@@ -361,7 +361,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    a_Url_free(action);
 }
 
-void Html_tag_close_form(DilloHtml *html, int TagIdx)
+void Html_tag_close_form(DilloHtml *html)
 {
 // DilloHtmlForm *form;
 // int i;
@@ -682,7 +682,7 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
  * Close  textarea
  * (TEXTAREA is parsed in VERBATIM mode, and entities are handled here)
  */
-void Html_tag_close_textarea(DilloHtml *html, int TagIdx)
+void Html_tag_close_textarea(DilloHtml *html)
 {
    char *str;
    DilloHtmlInput *input;
@@ -776,7 +776,7 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
 /*
  * ?
  */
-void Html_tag_close_select(DilloHtml *html, int TagIdx)
+void Html_tag_close_select(DilloHtml *html)
 {
    if (html->InFlags & IN_SELECT) {
       if (html->InFlags & IN_OPTION)
@@ -900,7 +900,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Handle close <BUTTON>
  */
-void Html_tag_close_button(DilloHtml *html, int TagIdx)
+void Html_tag_close_button(DilloHtml *html)
 {
    html->InFlags &= ~IN_BUTTON;
 }
