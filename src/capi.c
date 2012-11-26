@@ -302,7 +302,11 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
       /* Let's be kind and make the HTTP query string for the dpi */
       char *proxy_connect = a_Http_make_connect_str(web->url);
       Dstr *http_query = a_Http_make_query_str(web->url, web->requester,FALSE);
-      /* BUG: embedded NULLs in query data will truncate message */
+
+      if ((uint_t) http_query->len > strlen(http_query->str)) {
+         /* Can't handle NULLs embedded in query data */
+         MSG_ERR("HTTPS query truncated!\n");
+      }
 
       /* BUG: WORKAROUND: request to only check the root URL's certificate.
        *  This avoids the dialog bombing that stems from loading multiple
