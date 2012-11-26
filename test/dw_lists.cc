@@ -61,7 +61,7 @@ int main(int argc, char **argv)
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
-   Style *widgetStyle = Style::create (layout, &styleAttrs);
+   Style *widgetStyle = Style::create (&styleAttrs);
 
    Textblock *textblock = new Textblock (false);
    textblock->setStyle (widgetStyle);
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor = NULL;
    styleAttrs.cursor = CURSOR_TEXT;
 
-   Style *wordStyle = Style::create (layout, &styleAttrs);
+   Style *wordStyle = Style::create (&styleAttrs);
 
    styleAttrs.margin.setVal (5);
    styleAttrs.padding.setVal (5);
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
    styleAttrs.setBorderStyle (BORDER_SOLID);
    styleAttrs.borderWidth.setVal (1);
 
-   Style *itemStyle = Style::create (layout, &styleAttrs);
+   Style *itemStyle = Style::create (&styleAttrs);
 
    const char *wordsPar[] = {
       "This", "is", "a", "normal", "paragraph.", "And",

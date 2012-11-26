@@ -60,7 +60,7 @@ int main(int argc, char **argv)
       dw::core::style::Color::create (layout, 0xffffff);
 
    dw::core::style::Style *widgetStyle =
-      dw::core::style::Style::create (layout, &styleAttrs);
+      dw::core::style::Style::create (&styleAttrs);
 
    dw::Textblock *textblock = new dw::Textblock (false);
    textblock->setStyle (widgetStyle);
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor = NULL;
 
    dw::core::style::Style *wordStyle =
-      dw::core::style::Style::create (layout, &styleAttrs);
+      dw::core::style::Style::create (&styleAttrs);
 
    for(int i = 1; i <= 10; i++) {
       char buf[4];

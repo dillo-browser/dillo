@@ -107,15 +107,15 @@ int main(int argc, char **argv)
    styleAttrs.margin.setVal (10);
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
-   Style *topWidgetStyle = Style::create (layout, &styleAttrs);
+   Style *topWidgetStyle = Style::create (&styleAttrs);
 
    styleAttrs.margin.setVal (0);
    styleAttrs.margin.left = 30;
    styleAttrs.backgroundColor = NULL;
-   Style *widgetStyle = Style::create (layout, &styleAttrs);
+   Style *widgetStyle = Style::create (&styleAttrs);
 
    styleAttrs.margin.left = 0;
-   Style *wordStyle = Style::create (layout, &styleAttrs);
+   Style *wordStyle = Style::create (&styleAttrs);
 
    Textblock *textblock = new Textblock (false);
    textblock->setStyle (topWidgetStyle);

@@ -95,7 +95,7 @@ int main(int argc, char **argv)
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
-   Style *widgetStyle = Style::create (layout, &styleAttrs);
+   Style *widgetStyle = Style::create (&styleAttrs);
 
    Textblock *textblock = new Textblock (false);
    textblock->setStyle (widgetStyle);
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
    styleAttrs.padding.setVal (0);
    styleAttrs.backgroundColor = NULL;
 
-   Style *wordStyle = Style::create (layout, &styleAttrs);
+   Style *wordStyle = Style::create (&styleAttrs);
 
    styleAttrs.borderWidth.setVal (1);
    styleAttrs.setBorderColor (Color::create (layout, 0x000080));
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
    styleAttrs.width = createPerLength (0.25);
    styleAttrs.height = createPerLength (0.25);
 
-   Style *imageStyle1 = Style::create (layout, &styleAttrs);
+   Style *imageStyle1 = Style::create (&styleAttrs);
    image1 = new dw::Image ("A longer ALT Text to demonstrate clipping.");
    textblock->addWidget (image1, imageStyle1);
    imageStyle1->unref();
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
    styleAttrs.width = LENGTH_AUTO;
    styleAttrs.height = LENGTH_AUTO;
 
-   Style *imageStyle2 = Style::create (layout, &styleAttrs);
+   Style *imageStyle2 = Style::create (&styleAttrs);
    image2 = new dw::Image ("A longer ALT Text to demonstrate clipping.");
    textblock->addWidget (image2, imageStyle2);
    imageStyle2->unref();

@@ -66,7 +66,7 @@ int main(int argc, char **argv)
    styleAttrs.hBorderSpacing = 5;
    styleAttrs.vBorderSpacing = 5;
 
-   Style *tableStyle = Style::create (layout, &styleAttrs);
+   Style *tableStyle = Style::create (&styleAttrs);
 
    Table *table = new Table (false);
    table->setStyle (tableStyle);
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
    styleAttrs.borderWidth.setVal (1);
    styleAttrs.setBorderStyle (BORDER_INSET);
 
-   Style *cellStyle = Style::create (layout, &styleAttrs);
+   Style *cellStyle = Style::create (&styleAttrs);
 
    styleAttrs.borderWidth.setVal (0);
    styleAttrs.margin.setVal (0);
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
    styleAttrs.cursor = CURSOR_TEXT;
    styleAttrs.textAlignChar = '.';
 
-   Style *wordStyle = Style::create (layout, &styleAttrs);
+   Style *wordStyle = Style::create (&styleAttrs);
 
    TableCell *ref = NULL;
    for(int i = 0; i < 10; i++) {

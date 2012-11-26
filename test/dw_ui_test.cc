@@ -65,7 +65,7 @@ int main(int argc, char **argv)
    fontAttrs.fontVariant = FONT_VARIANT_NORMAL;
    styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 
-   Style *tableStyle = Style::create (layout, &styleAttrs);
+   Style *tableStyle = Style::create (&styleAttrs);
 
    Table *table = new Table (false);
    table->setStyle (tableStyle);
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor = NULL;
    styleAttrs.margin.setVal (0);
 
-   Style *cellStyle = Style::create (layout, &styleAttrs);
+   Style *cellStyle = Style::create (&styleAttrs);
 
    // First of all, the resources. Later, they are embedded into the
    // widget tree.
