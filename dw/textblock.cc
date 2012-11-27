@@ -980,16 +980,10 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
       }
 
       if(drawHyphen) {
-<<<<<<< local
-         // "\xc2\xad" is the UTF-8 code of a soft hyphen.
-         text[p++] = 0xc2;
-         text[p++] = 0xad;
-=======
          // "\xe2\x80\x90" is an unconditional hyphen.
          text[p++] = 0xe2;
          text[p++] = 0x80;
          text[p++] = 0x90;
->>>>>>> other
          text[p++] = 0;
       }
       
@@ -1640,13 +1634,13 @@ void Textblock::addText (const char *text, size_t len,
                               penalties[partPenaltyIndex[i]][1]);
 
             if (charRemoved[i]) {
-               // Currently, only soft hyphens (UTF-8: "\xc2\xad") can
-               // be used. See also drawWord, last section "if
-               // (drawHyphen)".
+               // Currently, only unconditional hyphens (UTF-8:
+               // "\xe2\x80\x90") can be used. See also drawWord, last
+               // section "if (drawHyphen)".
                // The character defined in DivChar::s could be used,
                // but it must then also stored in the word.
                word->hyphenWidth =
-                  layout->textWidth (word->style->font, "\xc2\xad", 2);
+                  layout->textWidth (word->style->font, "\xe2\x80\x90", 3);
                word->flags |= Word::DIV_CHAR_AT_EOL;
             }
 
@@ -1875,25 +1869,6 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style)
    }
 }
 
-<<<<<<< local
-=======
-void Textblock::addHyphen ()
-{
-   int wordIndex = words->size () - 1;
-
-   if (wordIndex >= 0) {
-      Word *word = words->getRef(wordIndex);
- 
-      word->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
-      // "\xe2\x80\x90" is an unconditional hyphen.
-      // TODO Optimize? Like spaces?
-      word->hyphenWidth =
-         layout->textWidth (word->style->font, "\xe2\x80\x90", 3);
-
-      accumulateWordData (wordIndex);
-   }
-}
->>>>>>> other
 
 /**
  * Cause a paragraph break
