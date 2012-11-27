@@ -43,6 +43,7 @@ int Textblock::CLASS_ID = -1;
 Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
    { "\xc2\xad", true, false, true, PENALTY_HYPHEN, -1 },
    { "-", false, true, true, -1, PENALTY_HYPHEN },
+   { "\xe2\x80\x90", false, true, true, -1, PENALTY_HYPHEN },
    { "\xe2\x80\x94", false, true, false,
      PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT }
 };
