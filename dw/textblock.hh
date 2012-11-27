@@ -223,7 +223,7 @@ private:
    typedef struct
    {
       const char *s;
-      bool charRemoved, canBeHyphenated;
+      bool charRemoved, canBeHyphenated, unbreakableForMinWidth;
       int penaltyIndexLeft, penaltyIndexRight;
    } DivChar;
 
@@ -280,17 +280,21 @@ protected:
       enum {
          /** Can be hyphenated automatically. (Cleared after
           * hyphenation.) */
-         CAN_BE_HYPHENATED = 1 << 0,
+         CAN_BE_HYPHENATED         = 1 << 0,
          /** Must be drawn with a hyphen, when at the end of the line. */
-         DIV_CHAR_AT_EOL   = 1 << 1,
+         DIV_CHAR_AT_EOL           = 1 << 1,
          /** Is or ends with a "division character", which is part of
           * the word. */
-         PERM_DIV_CHAR     = 1 << 2,
+         PERM_DIV_CHAR             = 1 << 2,
          /** This word must be drawn, together with the following
           * word(s), by only one call of View::drawText(), to get
           * kerning, ligatures etc. right. The last of the words drawn
           * as one text does *not* have this flag set. */
-         DRAW_AS_ONE_TEXT  = 1 << 3
+         DRAW_AS_ONE_TEXT          = 1 << 3,
+         /* When calculating the minimal width (as part of extremes),
+          * do not consider this word as breakable. This flag is
+          * ignored when the line is actually broken.  */
+         UNBREAKABLE_FOR_MIN_WIDTH = 1 << 4,
       };
 
       /* TODO: perhaps add a xLeft? */

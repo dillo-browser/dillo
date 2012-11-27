@@ -217,15 +217,17 @@ void Textblock::printWord (Word *word)
       printf ("\"%s\"", word->content.text);
       break;
    case core::Content::WIDGET:
-      printf ("<widget: %p>\n", word->content.widget);
+      printf ("<widget: %p>", word->content.widget);
       break;
    case core::Content::BREAK:
-      printf ("<break>\n");
+      printf ("<break>");
       break;
    default:
-      printf ("<?>\n");
+      printf ("<?>");
       break;              
    }
+
+   printf (" (flags = %d)", word->flags);
                  
    printf (" [%d / %d + %d - %d => %d + %d - %d] => ",
            word->size.width, word->origSpace, word->stretchability,
@@ -422,7 +424,7 @@ void Textblock::accumulateWordExtremes (int firstWord, int lastWord,
 
       // Minimum: between two *possible* breaks (or at the end).
       // TODO This is redundant to getExtremesImpl().
-      // TODO Again, index 1 is used for lineCanBeBroken(). See getExtremes().
+      // TODO: Again, index 1 is used for lineCanBeBroken(). See getExtremes().
       if (word->badnessAndPenalty.lineCanBeBroken (1) || atLastWord) {
          parMin += extremes.minWidth + word->hyphenWidth;
          *maxOfMinWidth = misc::max (*maxOfMinWidth, parMin);
@@ -704,7 +706,8 @@ int Textblock::hyphenateWord (int wordIndex)
                                                penalties[PENALTY_HYPHEN][1]);
             w->hyphenWidth =
                layout->textWidth (origWord.style->font, "\xc2\xad", 2);
-            w->flags |= (Word::DRAW_AS_ONE_TEXT | Word::DIV_CHAR_AT_EOL);
+            w->flags |= (Word::DRAW_AS_ONE_TEXT | Word::DIV_CHAR_AT_EOL |
+                         Word::UNBREAKABLE_FOR_MIN_WIDTH);
 
             PRINTF ("      [%d] + hyphen\n", wordIndex + i);
          } else {

@@ -41,9 +41,10 @@ namespace dw {
 int Textblock::CLASS_ID = -1;
 
 Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
-   { "\xc2\xad", true, false, PENALTY_HYPHEN, -1 },
-   { "-", false, true, -1, PENALTY_HYPHEN },
-   { "\xe2\x80\x94", false, true, PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT }
+   { "\xc2\xad", true, false, true, PENALTY_HYPHEN, -1 },
+   { "-", false, true, true, -1, PENALTY_HYPHEN },
+   { "\xe2\x80\x94", false, true, false,
+     PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT }
 };
 
 int Textblock::penalties[PENALTY_NUM][2] = {
@@ -1509,7 +1510,7 @@ void Textblock::addText (const char *text, size_t len,
       int partPenaltyIndex[numParts - 1];
       int partStart[numParts], partEnd[numParts];
       bool charRemoved[numParts - 1], canBeHyphenated[numParts + 1];
-      bool permDivChar[numParts - 1];
+      bool permDivChar[numParts - 1], unbreakableForMinWidth[numParts - 1];
       canBeHyphenated[0] = canBeHyphenated[numParts] = true;
       partStart[0] = 0;
       partEnd[numParts - 1] = len;
@@ -1535,6 +1536,8 @@ void Textblock::addText (const char *text, size_t len,
                partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexLeft;
                charRemoved[n] = true;
                permDivChar[n] = false;
+               unbreakableForMinWidth[n] =
+                  divChars[foundDiv].unbreakableForMinWidth;
                canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                partEnd[n] = i;
                partStart[n + 1] = i + lDiv;
@@ -1548,6 +1551,8 @@ void Textblock::addText (const char *text, size_t len,
                   partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexLeft;
                   charRemoved[n] = false;
                   permDivChar[n] = false;
+                  unbreakableForMinWidth[n] =
+                     divChars[foundDiv].unbreakableForMinWidth;
                   canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                   partEnd[n] = i;
                   partStart[n + 1] = i;
@@ -1558,6 +1563,8 @@ void Textblock::addText (const char *text, size_t len,
                   partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexRight;
                   charRemoved[n] = false;
                   permDivChar[n] = true;
+                  unbreakableForMinWidth[n] =
+                     divChars[foundDiv].unbreakableForMinWidth;
                   canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
                   partEnd[n] = i + lDiv;
                   partStart[n + 1] = i + lDiv;
@@ -1638,8 +1645,11 @@ void Textblock::addText (const char *text, size_t len,
 
             if (permDivChar[i])
                word->flags |= Word::PERM_DIV_CHAR;
+            if (unbreakableForMinWidth[i])
+               word->flags |= Word::UNBREAKABLE_FOR_MIN_WIDTH;
 
             word->flags |= Word::DRAW_AS_ONE_TEXT;
+
             accumulateWordData (words->size() - 1);
          }
       }
