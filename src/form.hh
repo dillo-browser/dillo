@@ -48,16 +48,16 @@ void a_Html_form_display_hiddens2(void *v_form, bool display);
  */
 
 void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize);
-void Html_tag_close_form(DilloHtml *html, int TagIdx);
+void Html_tag_close_form(DilloHtml *html);
 void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize);
-void Html_tag_close_textarea(DilloHtml *html, int TagIdx);
+void Html_tag_close_textarea(DilloHtml *html);
 void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize);
-void Html_tag_close_select(DilloHtml *html, int TagIdx);
+void Html_tag_close_select(DilloHtml *html);
 void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize);
-void Html_tag_close_button(DilloHtml *html, int TagIdx);
+void Html_tag_close_button(DilloHtml *html);
 
 #endif /* __FORM_HH__ */

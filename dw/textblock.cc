@@ -971,7 +971,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
          totalWidth += w->size.width;
       }
       
-      char text[l + (drawHyphen ? 2 : 0) + 1];
+      char text[l + (drawHyphen ? 3 : 0) + 1];
       int p = 0;
       for (int i = wordIndex1; i <= wordIndex2; i++) {
          const char * t = words->getRef(i)->content.text;
@@ -980,9 +980,16 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
       }
 
       if(drawHyphen) {
+<<<<<<< local
          // "\xc2\xad" is the UTF-8 code of a soft hyphen.
          text[p++] = 0xc2;
          text[p++] = 0xad;
+=======
+         // "\xe2\x80\x90" is an unconditional hyphen.
+         text[p++] = 0xe2;
+         text[p++] = 0x80;
+         text[p++] = 0x90;
+>>>>>>> other
          text[p++] = 0;
       }
       
@@ -1868,6 +1875,25 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style)
    }
 }
 
+<<<<<<< local
+=======
+void Textblock::addHyphen ()
+{
+   int wordIndex = words->size () - 1;
+
+   if (wordIndex >= 0) {
+      Word *word = words->getRef(wordIndex);
+ 
+      word->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
+      // "\xe2\x80\x90" is an unconditional hyphen.
+      // TODO Optimize? Like spaces?
+      word->hyphenWidth =
+         layout->textWidth (word->style->font, "\xe2\x80\x90", 3);
+
+      accumulateWordData (wordIndex);
+   }
+}
+>>>>>>> other
 
 /**
  * Cause a paragraph break
@@ -2069,14 +2095,13 @@ void Textblock::changeLinkColor (int link, int newColor)
                styleAttrs = *old_style;
                styleAttrs.color = core::style::Color::create (layout,
                                                               newColor);
-               word->style = core::style::Style::create (layout, &styleAttrs);
+               word->style = core::style::Style::create (&styleAttrs);
                old_style->unref();
                old_style = word->spaceStyle;
                styleAttrs = *old_style;
                styleAttrs.color = core::style::Color::create (layout,
                                                               newColor);
-               word->spaceStyle =
-                               core::style::Style::create(layout, &styleAttrs);
+               word->spaceStyle = core::style::Style::create(&styleAttrs);
                old_style->unref();
                break;
             }
@@ -2087,8 +2112,7 @@ void Textblock::changeLinkColor (int link, int newColor)
                                                               newColor);
                styleAttrs.setBorderColor(
                            core::style::Color::create (layout, newColor));
-               widget->setStyle(
-                             core::style::Style::create (layout, &styleAttrs));
+               widget->setStyle(core::style::Style::create (&styleAttrs));
                break;
             }
             default:

@@ -529,7 +529,7 @@ protected:
    void copyAttrs (StyleAttrs *attrs);
 
 public:
-   inline static Style *create (Layout *layout, StyleAttrs *attrs)
+   inline static Style *create (StyleAttrs *attrs)
    {
       Style *style = styleTable->get (attrs);
       if (style) {

@@ -200,7 +200,7 @@ protected:
 
    inline void setCursor (style::Cursor cursor)
    { layout->setCursor (cursor);  }
-
+#if 0
    inline bool selectionButtonPress (Iterator *it, int charPos, int linkNo,
                                      EventButton *event, bool withinContent)
    { return layout->selectionState.buttonPress (it, charPos, linkNo, event); }
@@ -212,7 +212,7 @@ protected:
    inline bool selectionButtonMotion (Iterator *it, int charPos, int linkNo,
                                       EventMotion *event, bool withinContent)
    { return layout->selectionState.buttonMotion (it, charPos, linkNo, event); }
-
+#endif
    inline bool selectionHandleEvent (SelectionState::EventType eventType,
                                      Iterator *it, int charPos, int linkNo,
                                      MousePositionEvent *event)

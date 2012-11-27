@@ -69,7 +69,7 @@ using namespace dw::core::style;
  *---------------------------------------------------------------------------*/
 class DilloHtml;
 typedef void (*TagOpenFunct) (DilloHtml *html, const char *tag, int tagsize);
-typedef void (*TagCloseFunct) (DilloHtml *html, int TagIdx);
+typedef void (*TagCloseFunct) (DilloHtml *html);
 
 typedef enum {
    SEEK_ATTR_START,
@@ -1305,7 +1305,7 @@ static void Html_tag_cleanup_to_idx(DilloHtml *html, int idx)
          BUG_MSG("  - forcing close of open tag: <%s>\n", toptag.name);
       _MSG("Close: %*s%s\n", size," ", toptag.name);
       if (toptag.close)
-         toptag.close(html, toptag_idx);
+         toptag.close(html);
       Html_real_pop_tag(html);
    }
 }
@@ -1571,7 +1571,7 @@ static void Html_tag_open_html(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Handle close HTML element
  */
-static void Html_tag_close_html(DilloHtml *html, int TagIdx)
+static void Html_tag_close_html(DilloHtml *html)
 {
    /* TODO: may add some checks here */
    if (html->Num_HTML == 1) {
@@ -1606,7 +1606,7 @@ static void Html_tag_open_head(DilloHtml *html, const char *tag, int tagsize)
  *       twice when the head element is closed implicitly.
  * Note2: HEAD is parsed once completely got.
  */
-static void Html_tag_close_head(DilloHtml *html, int TagIdx)
+static void Html_tag_close_head(DilloHtml *html)
 {
    if (html->InFlags & IN_HEAD) {
       _MSG("Closing HEAD section\n");
@@ -1636,7 +1636,7 @@ static void Html_tag_open_title(DilloHtml *html, const char *tag, int tagsize)
  * Handle close TITLE
  * set page-title in the browser window and in the history.
  */
-static void Html_tag_close_title(DilloHtml *html, int TagIdx)
+static void Html_tag_close_title(DilloHtml *html)
 {
    if (html->InFlags & IN_HEAD) {
       /* title is only valid inside HEAD */
@@ -1661,7 +1661,7 @@ static void Html_tag_open_script(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Handle close SCRIPT
  */
-static void Html_tag_close_script(DilloHtml *html, int TagIdx)
+static void Html_tag_close_script(DilloHtml *html)
 {
    /* eventually the stash will be sent to an interpreter for parsing */
 }
@@ -1698,7 +1698,7 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Handle close STYLE
  */
-static void Html_tag_close_style(DilloHtml *html, int TagIdx)
+static void Html_tag_close_style(DilloHtml *html)
 {
    if (prefs.parse_embedded_css && html->loadCssFromStash)
       html->styleEngine->parse(html, NULL, html->Stash->str, html->Stash->len,
@@ -1788,7 +1788,7 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 /*
  * BODY
  */
-static void Html_tag_close_body(DilloHtml *html, int TagIdx)
+static void Html_tag_close_body(DilloHtml *html)
 {
    if (html->Num_BODY == 1) {
       /* some tag soup pages use multiple BODY tags... */
@@ -2224,7 +2224,7 @@ static void Html_tag_content_map(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Handle close <MAP>
  */
-static void Html_tag_close_map(DilloHtml *html, int TagIdx)
+static void Html_tag_close_map(DilloHtml *html)
 {
    /* This is a hack for the perhaps frivolous feature of drawing image map
     * shapes when there is no image to display. If this map is defined after
@@ -2495,7 +2495,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
 /*
  * <A> close function
  */
-static void Html_tag_close_a(DilloHtml *html, int TagIdx)
+static void Html_tag_close_a(DilloHtml *html)
 {
    html->InVisitedLink = false;
 }
@@ -2527,7 +2527,7 @@ static void Html_tag_open_q(DilloHtml *html, const char *tag, int tagsize)
 /*
  * </Q>
  */
-static void Html_tag_close_q(DilloHtml *html, int TagIdx)
+static void Html_tag_close_q(DilloHtml *html)
 {
    /* Right Double Quotation Mark */
    const char *U201D = "\xe2\x80\x9d";
@@ -2657,7 +2657,7 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Close <LI>
  */
-static void Html_tag_close_li(DilloHtml *html, int TagIdx)
+static void Html_tag_close_li(DilloHtml *html)
 {
    html->InFlags &= ~IN_LI;
    ((ListItem *)html->dw)->flush ();
@@ -2769,7 +2769,7 @@ static void Html_tag_open_pre(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Custom close for <PRE>
  */
-static void Html_tag_close_pre(DilloHtml *html, int TagIdx)
+static void Html_tag_close_pre(DilloHtml *html)
 {
    html->InFlags &= ~IN_PRE;
 }
@@ -3023,22 +3023,6 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
- * Set the history of the menu to be consistent with the active menuitem.
- */
-//static void Html_select_set_history(DilloHtmlInput *input)
-//{
-// int i;
-//
-// for (i = 0; i < input->select->num_options; i++) {
-//    if (GTK_CHECK_MENU_ITEM(input->select->options[i].menuitem)->active) {
-//       gtk_option_menu_set_history(GTK_OPTION_MENU(input->widget), i);
-//       break;
-//    }
-// }
-//}
-
-
-/*
  * Set the Document Base URI
  */
 static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
@@ -3107,7 +3091,7 @@ static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Default close for paragraph tags - pop the stack and break.
  */
-static void Html_tag_close_par(DilloHtml *html, int TagIdx)
+static void Html_tag_close_par(DilloHtml *html)
 {
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }

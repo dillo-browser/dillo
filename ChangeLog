@@ -12,6 +12,7 @@ dillo-3.0.3 [not released yet]
 +- Support for CSS display property
  - Replace polling in DNS with a pipe.
  - Packed trie to optimize hyphenator memory consumption.
+ - Fix crash in datauri dpi.
    Patches: Johannes Hofmann
 +- Fix image input coordinates (BUG#1070)
  - When location bar is given focus, temporarily show panels if hidden
@@ -21,6 +22,7 @@ dillo-3.0.3 [not released yet]
  - Add some more info to various bug meter messages.
  - For text selection, fix releasing mouse button outside of boundary.
  - While selecting text, moving cursor outside viewport will scroll it.
+ - Make form resetting work for <select>.
    Patches: corvid
 +- Automatic hyphenation.
    Patch: Sebastian Geerken

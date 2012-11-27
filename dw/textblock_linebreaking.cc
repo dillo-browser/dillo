@@ -704,8 +704,9 @@ int Textblock::hyphenateWord (int wordIndex)
             // TODO There should be a method fillHyphen.
             w->badnessAndPenalty.setPenalties (penalties[PENALTY_HYPHEN][0],
                                                penalties[PENALTY_HYPHEN][1]);
+            // "\xe2\x80\x90" is an unconditional hyphen.
             w->hyphenWidth =
-               layout->textWidth (origWord.style->font, "\xc2\xad", 2);
+               layout->textWidth (origWord.style->font, "\xe2\x80\x90", 3);
             w->flags |= (Word::DRAW_AS_ONE_TEXT | Word::DIV_CHAR_AT_EOL |
                          Word::UNBREAKABLE_FOR_MIN_WIDTH);
 
