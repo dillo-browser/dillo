@@ -982,9 +982,9 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
 
       if(drawHyphen) {
          // "\xe2\x80\x90" is an unconditional hyphen.
-         text[p++] = 0xe2;
-         text[p++] = 0x80;
-         text[p++] = 0x90;
+         text[p++] = '\xe2';
+         text[p++] = '\x80';
+         text[p++] = '\x90';
          text[p++] = 0;
       }
       
