@@ -33,7 +33,6 @@
 static dw::core::style::Tooltip *hoverTooltip = NULL;
 
 
-
 using namespace lout;
 
 namespace dw {
@@ -41,16 +40,40 @@ namespace dw {
 int Textblock::CLASS_ID = -1;
 
 Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
+   // soft hyphen (U+00AD)
    { "\xc2\xad", true, false, true, PENALTY_HYPHEN, -1 },
+   // simple hyphen-minus: same penalties like automatic or soft hyphens
    { "-", false, true, true, -1, PENALTY_HYPHEN },
+   // (unconditional) hyphen (U+2010): handled exactly like minus-hyphen.
    { "\xe2\x80\x90", false, true, true, -1, PENALTY_HYPHEN },
+   // em dash (U+2014): breaks on both sides are allowed (but see below).
    { "\xe2\x80\x94", false, true, false,
      PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT }
 };
 
+// Standard values are defined here. The values are already multiplied
+// with 100.
+//
+// Some examples (details are described in doc/dw-line-breaking.doc):
+//
+// 0 = Perfect line; as penalty used for normal spaces.
+
+// 1 (100 here) = A justified line with spaces having 150% or 67% of
+//                the ideal space width has this as badness.
+//
+// 8 (800 here) = A justified line with spaces twice as wide as
+//                ideally has this as badness.
+//
+// The second value is used when the line before ends with a hyphen,
+// dash etc.
+
 int Textblock::penalties[PENALTY_NUM][2] = {
+   // Penalties for all hyphens.
    { 100, 800 },
+   // Penalties for a break point *left* of an em-dash: rather large,
+   // so that a break on the *right* side is preferred.
    { 800, 800 },
+   // Penalties for a break point *right* of an em-dash: like hyphens.
    { 100, 800 }
 };
 
@@ -60,7 +83,7 @@ int Textblock::penalties[PENALTY_NUM][2] = {
  *
  * Initially, soft hyphens were used, but they are not drawn on some
  * platforms. Also, unconditional hyphens (U+2010) are not available
- * in many fonts; so, a simple minus-hyphen is used.
+ * in many fonts; so, a simple hyphen-minus is used.
  */
 const char *Textblock::hyphenDrawChar = "-";
 
