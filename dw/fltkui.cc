@@ -1138,10 +1138,8 @@ void FltkOptionMenuResource::addItem (const char *str,
 
 void FltkOptionMenuResource::setItem (int index, bool selected)
 {
-   if (selected) {
+   if (selected)
       ((Fl_Choice *)widget)->value(menu+index);
-      queueResize (true);
-   }
 }
 
 void FltkOptionMenuResource::pushGroup (const char *name, bool enabled)
@@ -1286,13 +1284,19 @@ void FltkListResource::setItem (int index, bool selected)
       item = item->next();
 
    if (item) {
+      bool do_callback = false;
       itemsSelected.set (index, selected);
-      if (selected && mode != SELECTION_MULTIPLE) {
-         const bool do_callback = true;
-         tree->select_only(item, do_callback);
-      } else
-         item->select(selected);
-      queueResize (true);
+      if (selected) {
+         if (mode == SELECTION_MULTIPLE) {
+            tree->select(item, do_callback);
+         } else {
+            /* callback to deselect other selected item */
+            do_callback = true;
+            tree->select_only(item, do_callback);
+         }
+      } else {
+         tree->deselect(item, do_callback);
+      }
    }
 }
 
