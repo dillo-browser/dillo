@@ -298,6 +298,11 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    Word *lastWordOfLine = words->getRef(lastWord);
    // Word::totalWidth includes the hyphen (which is what we want here).
    int lineWidth = lastWordOfLine->totalWidth;
+   // "lineWidth" is relative to leftOffset, so we may have to add
+   // "line1OffsetEff" (remember: this is, for list items, negative).
+   if (lines->size () == 0)
+      lineWidth += line1OffsetEff;
+
    int maxOfMinWidth, sumOfMaxWidth;
    accumulateWordExtremes (firstWord, lastWord, &maxOfMinWidth,
                            &sumOfMaxWidth);
