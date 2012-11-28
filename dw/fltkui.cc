@@ -1287,9 +1287,10 @@ void FltkListResource::setItem (int index, bool selected)
 
    if (item) {
       itemsSelected.set (index, selected);
-      if (selected && mode != SELECTION_MULTIPLE)
-         tree->select_only(item);
-      else
+      if (selected && mode != SELECTION_MULTIPLE) {
+         const bool do_callback = true;
+         tree->select_only(item, do_callback);
+      } else
          item->select(selected);
       queueResize (true);
    }
