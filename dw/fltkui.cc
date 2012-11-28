@@ -1280,9 +1280,11 @@ void FltkListResource::addItem (const char *str, bool enabled, bool selected)
 void FltkListResource::setItem (int index, bool selected)
 {
    Fl_Tree *tree = (Fl_Tree *) widget;
-   Fl_Tree_Item *item = tree->root()->child(index);
+   Fl_Tree_Item *item = tree->root()->next();
 
-   /* TODO: handle groups */
+   for (int i = 0; item && i < index; i++)
+      item = item->next();
+
    if (item) {
       itemsSelected.set (index, selected);
       if (mode == SELECTION_MULTIPLE)
