@@ -34,12 +34,85 @@
 static dw::core::style::Tooltip *hoverTooltip = NULL;
 
 
-
 using namespace lout;
 
 namespace dw {
 
 int Textblock::CLASS_ID = -1;
+
+Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
+   // soft hyphen (U+00AD)
+   { "\xc2\xad", true, false, true, PENALTY_HYPHEN, -1 },
+   // simple hyphen-minus: same penalties like automatic or soft hyphens
+   { "-", false, true, true, -1, PENALTY_HYPHEN },
+   // (unconditional) hyphen (U+2010): handled exactly like minus-hyphen.
+   { "\xe2\x80\x90", false, true, true, -1, PENALTY_HYPHEN },
+   // em dash (U+2014): breaks on both sides are allowed (but see below).
+   { "\xe2\x80\x94", false, true, false,
+     PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT }
+};
+
+// Standard values are defined here. The values are already multiplied
+// with 100.
+//
+// Some examples (details are described in doc/dw-line-breaking.doc):
+//
+// 0 = Perfect line; as penalty used for normal spaces.
+
+// 1 (100 here) = A justified line with spaces having 150% or 67% of
+//                the ideal space width has this as badness.
+//
+// 8 (800 here) = A justified line with spaces twice as wide as
+//                ideally has this as badness.
+//
+// The second value is used when the line before ends with a hyphen,
+// dash etc.
+
+int Textblock::penalties[PENALTY_NUM][2] = {
+   // Penalties for all hyphens.
+   { 100, 800 },
+   // Penalties for a break point *left* of an em-dash: rather large,
+   // so that a break on the *right* side is preferred.
+   { 800, 800 },
+   // Penalties for a break point *right* of an em-dash: like hyphens.
+   { 100, 800 }
+};
+
+/**
+ * The character which is used to draw a hyphen at the end of a line,
+ * either caused by automatic hyphenation, or by soft hyphens.
+ *
+ * Initially, soft hyphens were used, but they are not drawn on some
+ * platforms. Also, unconditional hyphens (U+2010) are not available
+ * in many fonts; so, a simple hyphen-minus is used.
+ */
+const char *Textblock::hyphenDrawChar = "-";
+
+void Textblock::setPenaltyHyphen (int penaltyHyphen)
+{
+   penalties[PENALTY_HYPHEN][0] = penaltyHyphen;
+}
+  
+void Textblock::setPenaltyHyphen2 (int penaltyHyphen2)
+{
+   penalties[PENALTY_HYPHEN][1] = penaltyHyphen2;
+}
+
+void Textblock::setPenaltyEmDashLeft (int penaltyLeftEmDash)
+{
+   penalties[PENALTY_EM_DASH_LEFT][0] = penaltyLeftEmDash;
+   penalties[PENALTY_EM_DASH_LEFT][1] = penaltyLeftEmDash;
+}
+
+void Textblock::setPenaltyEmDashRight (int penaltyRightEmDash)
+{
+   penalties[PENALTY_EM_DASH_RIGHT][0] = penaltyRightEmDash;
+}
+
+void Textblock::setPenaltyEmDashRight2 (int penaltyRightEmDash2)
+{
+   penalties[PENALTY_EM_DASH_RIGHT][1] = penaltyRightEmDash2;
+}
 
 Textblock::Textblock (bool limitTextWidth)
 {
@@ -313,7 +386,8 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
             }
             
             // Minimum: between two *possible* breaks (or at the end).
-            if (word->badnessAndPenalty.lineCanBeBroken () || atLastWord) {
+            // TODO: Explain why index 1 is used in lineCanBeBroken().
+            if (word->badnessAndPenalty.lineCanBeBroken (1) || atLastWord) {
                parMin += wordExtremes.minWidth + word->hyphenWidth;
                extremes->minWidth = misc::max (extremes->minWidth, parMin);
                parMin = 0;
@@ -323,7 +397,9 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
                parMin += wordExtremes.minWidth + word->origSpace;
             
             // Maximum: between two *necessary* breaks (or at the end).
-            if (word->badnessAndPenalty.lineMustBeBroken () || atLastWord) {
+            // TODO: lineMustBeBroken should be independent of the
+            // penalty index?
+            if (word->badnessAndPenalty.lineMustBeBroken (1) || atLastWord) {
                parMax += wordExtremes.maxWidth + word->hyphenWidth;
                extremes->maxWidth = misc::max (extremes->maxWidth, parMax);
                parMax = 0;
@@ -1010,6 +1086,7 @@ void Textblock::drawText(core::View *view, core::style::Style *style,
             break;
          }
       }
+     
       view->drawText(style->font, style->color, shading, x, y,
                      str ? str : text + start, str ? strlen(str) : len);
       if (str)
@@ -1031,7 +1108,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
 {
    core::style::Style *style = words->getRef(wordIndex1)->style;
    bool drawHyphen = wordIndex2 == line->lastWord
-      && words->getRef(wordIndex2)->hyphenWidth > 0;
+      && (words->getRef(wordIndex2)->flags & Word::DIV_CHAR_AT_EOL);
 
    if (style->hasBackground ()) {
       int w = 0;
@@ -1055,8 +1132,8 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
          l += strlen (w->content.text);
          totalWidth += w->size.width;
       }
-      
-      char text[l + (drawHyphen ? 2 : 0) + 1];
+
+      char text[l + (drawHyphen ? strlen (hyphenDrawChar) : 0) + 1];
       int p = 0;
       for (int i = wordIndex1; i <= wordIndex2; i++) {
          const char * t = words->getRef(i)->content.text;
@@ -1065,8 +1142,8 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
       }
 
       if(drawHyphen) {
-         text[p++] = 0xc2;
-         text[p++] = 0xad;
+         for (int i = 0; hyphenDrawChar[i]; i++)
+            text[p++] = hyphenDrawChar[i];
          text[p++] = 0;
       }
       
@@ -1249,7 +1326,8 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                } else {
                   int wordIndex2 = wordIndex;
                   while (wordIndex2 < line->lastWord &&
-                         words->getRef(wordIndex2)->hyphenWidth > 0 &&
+                         (words->getRef(wordIndex2)->flags
+                          & Word::DRAW_AS_ONE_TEXT) &&
                          word->style == words->getRef(wordIndex2 + 1)->style)
                      wordIndex2++;
 
@@ -1263,6 +1341,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                   word = words->getRef(wordIndex);
                }
             }
+
             if (word->effSpace > 0 && wordIndex < line->lastWord &&
                 words->getRef(wordIndex + 1)->content.type !=
                                                         core::Content::BREAK) {
@@ -1429,9 +1508,9 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
    word->origSpace = word->effSpace = word->stretchability =
       word->shrinkability = 0;
    word->hyphenWidth = 0;
-   word->badnessAndPenalty.setPenaltyProhibitBreak ();
+   word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);
    word->content.space = false;
-   word->canBeHyphenated = canBeHyphenated;
+   word->flags = canBeHyphenated ? Word::CAN_BE_HYPHENATED : 0;
 
    word->style = style;
    word->spaceStyle = style;
@@ -1548,79 +1627,195 @@ void Textblock::calcTextSize (const char *text, size_t len,
 }
 
 /**
- * Add a word to the page structure. If it contains soft hyphens, it is
- * divided.
+ * Add a word to the page structure. If it contains dividing
+ * characters (hard or soft hyphens, em-dashes, etc.), it is divided.
  */
 void Textblock::addText (const char *text, size_t len,
                          core::style::Style *style)
 {
    PRINTF ("[%p] ADD_TEXT (%d characters)\n", this, (int)len);
 
-   // Count hyphens.
-   int numHyphens = 0;
-   for (int i = 0; i < (int)len - 1; i++)
-      // (0xc2, 0xad) is the UTF-8 representation of a soft hyphen (Unicode
-      // 0xc2).
-      if((unsigned char)text[i] == 0xc2 && (unsigned char)text[i + 1] == 0xad)
-         numHyphens++;
+   // Count dividing characters.
+   int numParts = 1;
 
-   if (numHyphens == 0) {
-      // Simple (and common) case: no soft hyphens. May still be hyphenated
-      // automatically.
+   for (int i = 0; i < (int)len;
+        i < (int)len && (i = layout->nextGlyph (text, i))) {
+      int foundDiv = -1;
+      for (int j = 0; foundDiv == -1 && j < NUM_DIV_CHARS; j++) {
+         int lDiv = strlen (divChars[j].s);
+         if (i <= (int)len - lDiv) {
+            if (memcmp (text + i, divChars[j].s, lDiv * sizeof (char)) == 0)
+               foundDiv = j;
+         }
+      }
+
+      if (foundDiv != -1) {
+         if (divChars[foundDiv].penaltyIndexLeft != -1)
+            numParts ++;
+         if (divChars[foundDiv].penaltyIndexRight != -1)
+            numParts ++;
+      }
+   }
+
+   if (numParts == 1) {
+      // Simple (and common) case: no dividing characters. May still
+      // be hyphenated automatically.
       core::Requisition size;
       calcTextSize (text, len, style, &size);
       addText0 (text, len, true, style, &size);
    } else {
-      PRINTF("HYPHENATION: '");
+      PRINTF ("HYPHENATION: '");
       for (size_t i = 0; i < len; i++)
          PUTCHAR(text[i]);
-      PRINTF("', with %d hyphen(s)\n", numHyphens);
+      PRINTF ("', with %d parts\n", numParts);
 
       // Store hyphen positions.
-      int n = 0, hyphenPos[numHyphens], breakPos[numHyphens];
-      for (size_t i = 0; i < len - 1; i++)
-         if((unsigned char)text[i] == 0xc2 &&
-            (unsigned char)text[i + 1] == 0xad) {
-            hyphenPos[n] = i;
-            breakPos[n] = i - 2 * n;
-            n++;
-         }
+      int n = 0, totalLenCharRemoved = 0;
+      int partPenaltyIndex[numParts - 1];
+      int partStart[numParts], partEnd[numParts];
+      bool charRemoved[numParts - 1], canBeHyphenated[numParts + 1];
+      bool permDivChar[numParts - 1], unbreakableForMinWidth[numParts - 1];
+      canBeHyphenated[0] = canBeHyphenated[numParts] = true;
+      partStart[0] = 0;
+      partEnd[numParts - 1] = len;
 
-      // Get text without hyphens. (There are numHyphens + 1 parts in the word,
-      // and 2 * numHyphens bytes less, 2 for each hyphen, are needed.)
-      char textWithoutHyphens[len - 2 * numHyphens];
-      int start = 0; // related to "text"
-      for (int i = 0; i < numHyphens + 1; i++) {
-         int end = (i == numHyphens) ? len : hyphenPos[i];
-         memmove (textWithoutHyphens + start - 2 * i, text + start,
-                  end - start);
-         start = end + 2;
+      for (int i = 0; i < (int)len;
+           i < (int)len && (i = layout->nextGlyph (text, i))) {
+         int foundDiv = -1;
+         for (int j = 0; foundDiv == -1 && j < NUM_DIV_CHARS; j++) {
+            int lDiv = strlen (divChars[j].s);
+            if (i <= (int)len - lDiv) {
+               if (memcmp (text + i, divChars[j].s, lDiv * sizeof (char)) == 0)
+                  foundDiv = j;
+            }
+         }
+         
+         if (foundDiv != -1) {
+            int lDiv = strlen (divChars[foundDiv].s);
+            
+            if (divChars[foundDiv].charRemoved) {
+               assert (divChars[foundDiv].penaltyIndexLeft != -1);
+               assert (divChars[foundDiv].penaltyIndexRight == -1);
+
+               partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexLeft;
+               charRemoved[n] = true;
+               permDivChar[n] = false;
+               unbreakableForMinWidth[n] =
+                  divChars[foundDiv].unbreakableForMinWidth;
+               canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
+               partEnd[n] = i;
+               partStart[n + 1] = i + lDiv;
+               n++;
+               totalLenCharRemoved += lDiv;
+            } else {
+               assert (divChars[foundDiv].penaltyIndexLeft != -1 ||
+                       divChars[foundDiv].penaltyIndexRight != -1);
+
+               if (divChars[foundDiv].penaltyIndexLeft != -1) {
+                  partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexLeft;
+                  charRemoved[n] = false;
+                  permDivChar[n] = false;
+                  unbreakableForMinWidth[n] =
+                     divChars[foundDiv].unbreakableForMinWidth;
+                  canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
+                  partEnd[n] = i;
+                  partStart[n + 1] = i;
+                  n++;
+               }
+
+               if (divChars[foundDiv].penaltyIndexRight != -1) {
+                  partPenaltyIndex[n] = divChars[foundDiv].penaltyIndexRight;
+                  charRemoved[n] = false;
+                  permDivChar[n] = true;
+                  unbreakableForMinWidth[n] =
+                     divChars[foundDiv].unbreakableForMinWidth;
+                  canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
+                  partEnd[n] = i + lDiv;
+                  partStart[n + 1] = i + lDiv;
+                  n++;
+               }
+            }
+         }
+      }
+
+      // Get text without removed characters, e. g. hyphens.
+      const char *textWithoutHyphens;
+      char textWithoutHyphensBuf[len - totalLenCharRemoved];
+      int *breakPosWithoutHyphens, breakPosWithoutHyphensBuf[numParts - 1];
+
+      if (totalLenCharRemoved == 0) {
+         // No removed characters: take original arrays.
+         textWithoutHyphens = text;
+         // Ends are also break positions, except the last end, which
+         // is superfluous, but does not harm (since arrays in C/C++
+         // does not have an implicit length).
+         breakPosWithoutHyphens = partEnd;
+      } else {
+         // Copy into special buffers.
+         textWithoutHyphens = textWithoutHyphensBuf;
+         breakPosWithoutHyphens = breakPosWithoutHyphensBuf;
+
+         int n = 0;
+         for (int i = 0; i < numParts; i++) {
+            memmove (textWithoutHyphensBuf + n, text + partStart[i],
+                     partEnd[i] - partStart[i]);
+            n += partEnd[i] - partStart[i];
+            if (i < numParts - 1)
+               breakPosWithoutHyphensBuf[i] = n;
+         }
       }
 
       PRINTF("H... without hyphens: '");
-      for (size_t i = 0; i < len - 2 * numHyphens; i++)
+      for (size_t i = 0; i < len - totalLenCharRemoved; i++)
          PUTCHAR(textWithoutHyphens[i]);
       PRINTF("'\n");
 
-      core::Requisition wordSize[numHyphens + 1];
-      calcTextSizes (textWithoutHyphens, len - 2 * numHyphens, style,
-                     numHyphens, breakPos, wordSize);
+      core::Requisition wordSize[numParts];
+      calcTextSizes (textWithoutHyphens, len - totalLenCharRemoved, style,
+                     numParts - 1, breakPosWithoutHyphens, wordSize);
 
       // Finished!
-      for (int i = 0; i < numHyphens + 1; i++) {
-         int start = (i == 0) ? 0 : hyphenPos[i - 1] + 2;
-         int end = (i == numHyphens) ? len : hyphenPos[i];
-         // Do not anymore hyphen automatically.
-         addText0 (text + start, end - start, false, style, &wordSize[i]);
+      for (int i = 0; i < numParts; i++) {
+         addText0 (text + partStart[i], partEnd[i] - partStart[i],
+                   // If this parts adjoins at least one division
+                   // characters, for which canBeHyphenated is set to
+                   // false (this is the case for soft hyphens), do
+                   // not hyphenate.
+                   canBeHyphenated[i] && canBeHyphenated[i + 1],
+                   style, &wordSize[i]);
 
          PRINTF("H... [%d] '", i);
-         for (int j = start; j < end; j++)
+         for (int j = partStart[i]; j < partEnd[i]; j++)
             PUTCHAR(text[j]);
          PRINTF("' added\n");
 
-         if(i < numHyphens) {
-            addHyphen ();
-            PRINTF("H... yphen added\n");
+         if(i < numParts - 1) {
+            Word *word = words->getLastRef();
+
+            word->badnessAndPenalty
+               .setPenalties (penalties[partPenaltyIndex[i]][0],
+                              penalties[partPenaltyIndex[i]][1]);
+
+            if (charRemoved[i]) {
+               // Currently, only unconditional hyphens (UTF-8:
+               // "\xe2\x80\x90") can be used. See also drawWord, last
+               // section "if (drawHyphen)".
+               // Could be extended by adding respective members to
+               // DivChar and Word.
+               word->hyphenWidth =
+                  layout->textWidth (word->style->font, hyphenDrawChar,
+                                     strlen (hyphenDrawChar));
+               word->flags |= Word::DIV_CHAR_AT_EOL;
+            }
+
+            if (permDivChar[i])
+               word->flags |= Word::PERM_DIV_CHAR;
+            if (unbreakableForMinWidth[i])
+               word->flags |= Word::UNBREAKABLE_FOR_MIN_WIDTH;
+
+            word->flags |= Word::DRAW_AS_ONE_TEXT;
+
+            accumulateWordData (words->size() - 1);
          }
       }
    }
@@ -1641,7 +1836,8 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
       PUTCHAR(text[i + lastStart]);
    PRINTF("' -> %d\n", wordSize[numBreaks].width);
 
-   // The rest is more complicated. TODO Documentation.
+   // The rest is more complicated. See dw-line-breaking, section
+   // "Hyphens".
    for (int i = numBreaks - 1; i >= 0; i--) {
       int start = (i == 0) ? 0 : breakPos[i - 1];
       calcTextSize (text + start, textLen - start, style, &wordSize[i]);
@@ -1664,6 +1860,11 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
 void Textblock::addText0 (const char *text, size_t len, bool canBeHyphenated,
                           core::style::Style *style, core::Requisition *size)
 {
+   //printf("[%p] addText0 ('", this);
+   //for (size_t i = 0; i < len; i++)
+   //   putchar(text[i]);
+   //printf("', %s, ...)\n", canBeHyphenated ? "true" : "false");
+
    Word *word = addWord (size->width, size->ascent, size->descent,
                          canBeHyphenated, style);
    word->content.type = core::Content::TEXT;
@@ -1826,7 +2027,9 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
  */
 void Textblock::setBreakOption (Word *word, core::style::Style *style)
 {
-   if (!word->badnessAndPenalty.lineMustBeBroken()) {
+   // TODO: lineMustBeBroken should be independent of the penalty
+   // index? Otherwise, examine the last line.
+   if (!word->badnessAndPenalty.lineMustBeBroken(0)) {
       switch (style->whiteSpace) {
       case core::style::WHITE_SPACE_NORMAL:
       case core::style::WHITE_SPACE_PRE_LINE:
@@ -1836,26 +2039,12 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style)
 
       case core::style::WHITE_SPACE_PRE:
       case core::style::WHITE_SPACE_NOWRAP:
-         word->badnessAndPenalty.setPenaltyProhibitBreak ();
+         word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);
          break;
       }
    }
 }
 
-void Textblock::addHyphen ()
-{
-   int wordIndex = words->size () - 1;
-
-   if (wordIndex >= 0) {
-      Word *word = words->getRef(wordIndex);
- 
-      word->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
-      // TODO Optimize? Like spaces?
-      word->hyphenWidth = layout->textWidth (word->style->font, "\xc2\xad", 2);
-
-      accumulateWordData (wordIndex);
-   }
-}
 
 /**
  * Cause a paragraph break
@@ -1930,7 +2119,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
 
    word = addWord (0, 0, 0, false, style);
    word->content.type = core::Content::BREAK;
-   word->badnessAndPenalty.setPenaltyForceBreak ();
+   word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = space;
    wordWrap (words->size () - 1, false);
 }
@@ -1953,7 +2142,7 @@ void Textblock::addLinebreak (core::style::Style *style)
       word = addWord (0, 0, 0, false, style);
 
    word->content.type = core::Content::BREAK;
-   word->badnessAndPenalty.setPenaltyForceBreak ();
+   word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = 0;
    wordWrap (words->size () - 1, false);
 }
@@ -2058,14 +2247,13 @@ void Textblock::changeLinkColor (int link, int newColor)
                styleAttrs = *old_style;
                styleAttrs.color = core::style::Color::create (layout,
                                                               newColor);
-               word->style = core::style::Style::create (layout, &styleAttrs);
+               word->style = core::style::Style::create (&styleAttrs);
                old_style->unref();
                old_style = word->spaceStyle;
                styleAttrs = *old_style;
                styleAttrs.color = core::style::Color::create (layout,
                                                               newColor);
-               word->spaceStyle =
-                               core::style::Style::create(layout, &styleAttrs);
+               word->spaceStyle = core::style::Style::create(&styleAttrs);
                old_style->unref();
                break;
             }
@@ -2076,8 +2264,7 @@ void Textblock::changeLinkColor (int link, int newColor)
                                                               newColor);
                styleAttrs.setBorderColor(
                            core::style::Color::create (layout, newColor));
-               widget->setStyle(
-                             core::style::Style::create (layout, &styleAttrs));
+               widget->setStyle(core::style::Style::create (&styleAttrs));
                break;
             }
             default:

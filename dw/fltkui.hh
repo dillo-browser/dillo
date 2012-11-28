@@ -282,7 +282,7 @@ class FltkEntryResource:
    public FltkSpecificResource <dw::core::ui::EntryResource>
 {
 private:
-   int maxLength;
+   int size;
    bool password;
    const char *initText;
    char *label;
@@ -297,7 +297,7 @@ protected:
    void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
 
 public:
-   FltkEntryResource (FltkPlatform *platform, int maxLength, bool password,
+   FltkEntryResource (FltkPlatform *platform, int size, bool password,
                       const char *label);
    ~FltkEntryResource ();
 
@@ -308,6 +308,7 @@ public:
    void setText (const char *text);
    bool isEditable ();
    void setEditable (bool editable);
+   void setMaxLength (int maxlen);
 };
 
 
@@ -445,6 +446,7 @@ template <class I> class FltkSelectionResource:
 protected:
    virtual bool setSelectedItems() { return false; }
    virtual void addItem (const char *str, bool enabled, bool selected) = 0;
+   virtual void setItem (int index, bool selected) = 0;
    virtual void pushGroup (const char *name, bool enabled) = 0;
    virtual void popGroup () = 0;
 public:
@@ -475,6 +477,7 @@ public:
    ~FltkOptionMenuResource ();
 
    void addItem (const char *str, bool enabled, bool selected);
+   void setItem (int index, bool selected);
    void pushGroup (const char *name, bool enabled);
    void popGroup ();
 
@@ -506,6 +509,7 @@ public:
    ~FltkListResource ();
 
    void addItem (const char *str, bool enabled, bool selected);
+   void setItem (int index, bool selected);
    void pushGroup (const char *name, bool enabled);
    void popGroup ();
 

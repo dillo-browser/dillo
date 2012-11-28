@@ -322,34 +322,10 @@ Bugs and Things Needing Improvement
 High Priority
 -------------
 
-**Bugs in hyphenation:** There seem to be problems when breaking
-words containing hyphens already. Example: "Abtei-Stadt", which is
-divided into "Abtei-" and "Stadt", resulting possibly in
-&quot;Abtei-<span></span>-[new line]Stadt&quot;. See also below under
-"Medium Priority", on how to deal with hyphens and dashes.
+None.
 
 Medium Priority
 ---------------
-
-**Break hyphens and dashes:** The following rules seem to be relevant:
-
-- In English, an em-dash is used with no spaces around. Breaking
-  before and after the dash should be possible, perhaps with a
-  penalty > 0. (In German, an en-dash (Halbgeviert) with spaces around
-  is used instead.)
-- After a hyphen, which is part of a compound word, a break should be
-  possible. As described above ("Abtei-Stadt"), this collides with
-  hyphenation.
-
-Where to implement? In the same dynamic, lazy way like hyphenation? As
-part of hyphenation?
-
-Notice that Liang's algorithm may behave different regarding hyphens:
-"Abtei-Stadt" is (using the patterns from CTAN) divided into "Abtei-"
-and "Stadt", but "Nordrhein-Westfalen" is divided into "Nord",
-"rhein-West", "fa", "len": the part containing the hyphen
-("rhein-West") is untouched. (Sorry for the German words; if you have
-got English examples, send them me.)
 
 **Incorrect calculation of extremes:** The minimal width of a text
 block (as part of the width extremes, which are mainly used for
@@ -410,8 +386,53 @@ lines will, when spaces are shrunken, get too long!)
 Analogous considerations must be made for right-aligned and centered
 text. (For centered texts, there are two adjustable spaces.)
 
-**Hyphens in adjacent lines:** It should be simple to assign a larger
+Solved (Must Be Documented)
+---------------------------
+
+These have been solved recently and should be documented above.
+
+*Bugs in hyphenation:* There seem to be problems when breaking words
+containing hyphens already. Example: "Abtei-Stadt", which is divided
+into "Abtei-" and "Stadt", resulting possibly in
+&quot;Abtei-<span></span>-[new line]Stadt&quot;. See also below under
+"Medium Priority", on how to deal with hyphens and dashes.
+
+**Solution:** See next.
+
+*Break hyphens and dashes:* The following rules seem to be relevant:
+
+- In English, an em-dash is used with no spaces around. Breaking
+  before and after the dash should be possible, perhaps with a
+  penalty > 0. (In German, an en-dash (Halbgeviert) with spaces around
+  is used instead.)
+- After a hyphen, which is part of a compound word, a break should be
+  possible. As described above ("Abtei-Stadt"), this collides with
+  hyphenation.
+
+Where to implement? In the same dynamic, lazy way like hyphenation? As
+part of hyphenation?
+
+Notice that Liang's algorithm may behave different regarding hyphens:
+"Abtei-Stadt" is (using the patterns from CTAN) divided into "Abtei-"
+and "Stadt", but "Nordrhein-Westfalen" is divided into "Nord",
+"rhein-West", "fa", "len": the part containing the hyphen
+("rhein-West") is untouched. (Sorry for the German words; if you have
+got English examples, send them me.)</div>
+
+**Solution for both:** This has been implemented in
+dw::Textblock::addText, in a similar way to soft hyphens. Liang's
+algorithm now only operates on the parts: "Abtei" and "Stadt";
+"Nordrhein" and "Westfalen".
+
+*Hyphens in adjacent lines:* It should be simple to assign a larger
 penalty for hyphens, when the line before is already hyphenated. This
 way, hyphens in adjacent lines are penalized further.
+
+**Solved:** There are always two penalties. Must be documented in
+detail.
+
+**Also:**
+
+- Configuration of penalties.
 
 */

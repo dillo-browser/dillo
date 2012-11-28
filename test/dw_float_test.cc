@@ -58,18 +58,18 @@ int main(int argc, char **argv)
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
-   Style *widgetStyle = Style::create (layout, &styleAttrs);
+   Style *widgetStyle = Style::create (&styleAttrs);
 
    styleAttrs.borderWidth.setVal (1);
    styleAttrs.setBorderColor (Color::create (layout, 0x808080));
    styleAttrs.setBorderStyle (BORDER_DASHED);
    styleAttrs.width = createAbsLength(100);
    styleAttrs.vloat = FLOAT_LEFT;
-   Style *leftFloatStyle = Style::create (layout, &styleAttrs);
+   Style *leftFloatStyle = Style::create (&styleAttrs);
    
    styleAttrs.width = createAbsLength(80);
    styleAttrs.vloat = FLOAT_RIGHT;
-   Style *rightFloatStyle = Style::create (layout, &styleAttrs);
+   Style *rightFloatStyle = Style::create (&styleAttrs);
 
    Textblock *textblock = new Textblock (false);
    textblock->setStyle (widgetStyle);
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
    styleAttrs.margin.setVal (0);
    styleAttrs.backgroundColor = NULL;
 
-   wordStyle = Style::create (layout, &styleAttrs);
+   wordStyle = Style::create (&styleAttrs);
 
    for(int i = 1; i <= 10; i++) {
       char buf[16];

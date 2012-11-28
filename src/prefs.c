@@ -101,6 +101,12 @@ void a_Prefs_init(void)
    prefs.start_page = a_Url_new(PREFS_START_PAGE, NULL);
    prefs.theme = dStrdup(PREFS_THEME);
    prefs.w3c_plus_heuristics = TRUE;
+
+   prefs.penalty_hyphen = 100;
+   prefs.penalty_hyphen_2 = 100;
+   prefs.penalty_em_dash_left = 800;
+   prefs.penalty_em_dash_right = 100;
+   prefs.penalty_em_dash_right_2 = 800;
 }
 
 /*

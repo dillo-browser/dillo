@@ -120,7 +120,7 @@ int main(int argc, char **argv)
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
-   Style *widgetStyle = Style::create (layout, &styleAttrs);
+   Style *widgetStyle = Style::create (&styleAttrs);
 
    Textblock *textblock = new Textblock (false);
    textblock->setStyle (widgetStyle);
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
    styleAttrs.margin.setVal (0);
    styleAttrs.backgroundColor = NULL;
 
-   Style *imageStyle = Style::create (layout, &styleAttrs);
+   Style *imageStyle = Style::create (&styleAttrs);
 
    image = new dw::Image ("");
    textblock->addWidget (image, imageStyle);

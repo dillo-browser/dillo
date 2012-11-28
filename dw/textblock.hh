@@ -154,14 +154,19 @@ private:
     * badness is not well defined, so fiddling with the penalties is a
     * bit difficult.
     */
+   
+   enum {
+      PENALTY_FORCE_BREAK = INT_MIN,
+      PENALTY_PROHIBIT_BREAK = INT_MAX
+   };
+
    class BadnessAndPenalty
    {
    private:
       enum { NOT_STRETCHABLE, QUITE_LOOSE, BADNESS_VALUE, TOO_TIGHT }
          badnessState;
-      enum { FORCE_BREAK, PROHIBIT_BREAK, PENALTY_VALUE } penaltyState;
       int ratio; // ratio is only defined when badness is defined
-      int badness, penalty;
+      int badness, penalty[2];
       
       // For debugging: define DEBUG for more informations in print().
 #ifdef DEBUG
@@ -193,39 +198,45 @@ private:
          // etc. works.
       };
 
+      void setSinglePenalty (int index, int penalty);
       int badnessValue (int infLevel);
-      int penaltyValue (int infLevel);
+      int penaltyValue (int index, int infLevel);
       
    public:
       void calcBadness (int totalWidth, int idealWidth,
                         int totalStretchability, int totalShrinkability);
-      void setPenalty (int penalty);
-      void setPenaltyProhibitBreak ();
-      void setPenaltyForceBreak ();
+      inline void setPenalty (int penalty) { setPenalties (penalty, penalty); }
+      void setPenalties (int penalty1, int penalty2);
 
       bool lineLoose ();
       bool lineTight ();
       bool lineTooTight ();
-      bool lineMustBeBroken ();
-      bool lineCanBeBroken ();
-      int compareTo (BadnessAndPenalty *other);
+      bool lineMustBeBroken (int penaltyIndex);
+      bool lineCanBeBroken (int penaltyIndex);
+      int compareTo (int penaltyIndex, BadnessAndPenalty *other);
 
       void print ();
    };
+
+   enum { PENALTY_HYPHEN, PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT,
+          PENALTY_NUM };
+   enum { NUM_DIV_CHARS = 4 };
+
+   typedef struct
+   {
+      const char *s;
+      bool charRemoved, canBeHyphenated, unbreakableForMinWidth;
+      int penaltyIndexLeft, penaltyIndexRight;
+   } DivChar;
+
+   static DivChar divChars[NUM_DIV_CHARS];
+
+   static const char *hyphenDrawChar;
 
    Textblock *containingBlock;
    OutOfFlowMgr *outOfFlowMgr;
 
 protected:
-   enum {
-      /**
-       *  The penalty for hyphens, multiplied by 100. So, 100 means
-       *  1.0. See dw::Textblock::BadnessAndPenalty::setPenalty for
-       *  more details.
-       */
-      HYPHEN_BREAK = 100
-   };
-
    struct Line
    {
       int firstWord;    /* first word's index in word vector */
@@ -273,6 +284,26 @@ protected:
 
    struct Word
    {
+      enum {
+         /** Can be hyphenated automatically. (Cleared after
+          * hyphenation.) */
+         CAN_BE_HYPHENATED         = 1 << 0,
+         /** Must be drawn with a hyphen, when at the end of the line. */
+         DIV_CHAR_AT_EOL           = 1 << 1,
+         /** Is or ends with a "division character", which is part of
+          * the word. */
+         PERM_DIV_CHAR             = 1 << 2,
+         /** This word must be drawn, together with the following
+          * word(s), by only one call of View::drawText(), to get
+          * kerning, ligatures etc. right. The last of the words drawn
+          * as one text does *not* have this flag set. */
+         DRAW_AS_ONE_TEXT          = 1 << 3,
+         /* When calculating the minimal width (as part of extremes),
+          * do not consider this word as breakable. This flag is
+          * ignored when the line is actually broken.  */
+         UNBREAKABLE_FOR_MIN_WIDTH = 1 << 4,
+      };
+
       /* TODO: perhaps add a xLeft? */
       core::Requisition size;
       /* Space after the word, only if it's not a break: */
@@ -286,8 +317,9 @@ protected:
                           * this is the last word of the line, and
                           * "hyphenWidth > 0" is also used to decide
                           * whether to draw a hyphen. */
+      short flags;
+      short penaltyIndex;
       core::Content content;
-      bool canBeHyphenated;
 
       // accumulated values, relative to the beginning of the line
       int totalWidth;          /* The sum of all word widths; plus all
@@ -369,6 +401,14 @@ protected:
    bool ignoreLine1OffsetSometimes;
 
    bool mustQueueResize;
+
+   /**
+    * The penalties for hyphens and other, multiplied by 100. So, 100
+    * means 1.0. INT_MAX and INT_MIN are also allowed. See
+    * dw::Textblock::BadnessAndPenalty::setPenalty for more
+    * details. Set from preferences.
+    */
+   static int penalties[PENALTY_NUM][2];
 
    bool limitTextWidth; /* from preferences */
 
@@ -561,6 +601,16 @@ protected:
    {
       return lineYOffsetCanvas (lines->getRef (lineIndex));
    }
+   
+   inline int calcPenaltyIndexForNewLine ()
+   {
+      if (lines->size() == 0)
+         return 0;
+      else
+         return
+            (words->getRef(lines->getLastRef()->lastWord)->flags &
+             (Word::DIV_CHAR_AT_EOL | Word::PERM_DIV_CHAR)) ? 1 : 0;
+   }
 
    Textblock *getTextblockForLine (Line *line);
    Textblock *getTextblockForLine (int lineNo);
@@ -613,6 +663,12 @@ protected:
 public:
    static int CLASS_ID;
 
+   static void setPenaltyHyphen (int penaltyHyphen);
+   static void setPenaltyHyphen2 (int penaltyHyphen2);
+   static void setPenaltyEmDashLeft (int penaltyLeftEmDash);
+   static void setPenaltyEmDashRight (int penaltyRightEmDash);
+   static void setPenaltyEmDashRight2 (int penaltyRightEmDash2);
+
    Textblock(bool limitTextWidth);
    ~Textblock();
 
@@ -640,7 +696,6 @@ public:
          setBreakOption (words->getRef(wordIndex), style);
    }
 
-   void addHyphen();
    void addParbreak (int space, core::style::Style *style);
    void addLinebreak (core::style::Style *style);
 

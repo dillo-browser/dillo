@@ -130,20 +130,20 @@ int main(int argc, char **argv)
    styleAttrs.margin.setVal (5);
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
-   topWidgetStyle = Style::create (layout, &styleAttrs);
+   topWidgetStyle = Style::create (&styleAttrs);
 
    styleAttrs.margin.left = 20;
    styleAttrs.margin.right = 0;
    styleAttrs.backgroundColor = NULL;
-   widgetStyle = Style::create (layout, &styleAttrs);
+   widgetStyle = Style::create (&styleAttrs);
 
    styleAttrs.margin.left = 0;
-   wordStyle = Style::create (layout, &styleAttrs);
+   wordStyle = Style::create (&styleAttrs);
 
    fontAttrs.size = 28;
    fontAttrs.weight = 700;
    styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
-   headingStyle = Style::create (layout, &styleAttrs);
+   headingStyle = Style::create (&styleAttrs);
 
    Fl::add_timeout (0, textTimeout, NULL);
 

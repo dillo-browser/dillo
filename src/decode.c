@@ -242,24 +242,6 @@ Decode *a_Decode_content_init(const char *format)
 }
 
 /*
- * Legal names for the ASCII character set
- */
-static int Decode_is_ascii(const char *str)
-{
-   return (!(dStrAsciiCasecmp(str, "ASCII") &&
-             dStrAsciiCasecmp(str, "US-ASCII") &&
-             dStrAsciiCasecmp(str, "us") &&
-             dStrAsciiCasecmp(str, "IBM367") &&
-             dStrAsciiCasecmp(str, "cp367") &&
-             dStrAsciiCasecmp(str, "csASCII") &&
-             dStrAsciiCasecmp(str, "ANSI_X3.4-1968") &&
-             dStrAsciiCasecmp(str, "iso-ir-6") &&
-             dStrAsciiCasecmp(str, "ANSI_X3.4-1986") &&
-             dStrAsciiCasecmp(str, "ISO_646.irv:1991") &&
-             dStrAsciiCasecmp(str, "ISO646-US")));
-}
-
-/*
  * Initialize decoder to translate from any character set known to iconv()
  * to UTF-8.
  *
@@ -272,8 +254,7 @@ Decode *a_Decode_charset_init(const char *format)
 
    if (format &&
        strlen(format) &&
-       dStrAsciiCasecmp(format,"UTF-8") &&
-       !Decode_is_ascii(format)) {
+       dStrAsciiCasecmp(format,"UTF-8")) {
 
       iconv_t ic = iconv_open("UTF-8", format);
       if (ic != (iconv_t) -1) {

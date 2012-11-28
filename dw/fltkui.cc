@@ -536,11 +536,11 @@ Fl_Widget *FltkComplexButtonResource::createNewWidget (core::Allocation
 
 // ----------------------------------------------------------------------
 
-FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int maxLength,
+FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int size,
                                       bool password, const char *label):
    FltkSpecificResource <dw::core::ui::EntryResource> (platform)
 {
-   this->maxLength = maxLength;
+   this->size = size;
    this->password = password;
    this->label = label ? strdup(label) : NULL;
    this->label_w = 0;
@@ -615,7 +615,7 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
       // 1.3.0 (STR #2688).
       requisition->width =
          (int)fl_width ("n")
-         * (maxLength == UNLIMITED_MAX_LENGTH ? 10 : maxLength)
+         * (size == UNLIMITED_SIZE ? 10 : size)
          + label_w + (2 * RELIEF_X_THICKNESS);
       requisition->ascent = font->ascent + RELIEF_Y_THICKNESS;
       requisition->descent = font->descent + RELIEF_Y_THICKNESS;
@@ -668,6 +668,11 @@ bool FltkEntryResource::isEditable ()
 void FltkEntryResource::setEditable (bool editable)
 {
    this->editable = editable;
+}
+
+void FltkEntryResource::setMaxLength (int maxlen)
+{
+   ((Fl_Input *)widget)->maximum_size(maxlen);
 }
 
 // ----------------------------------------------------------------------
@@ -1131,6 +1136,12 @@ void FltkOptionMenuResource::addItem (const char *str,
    queueResize (true);
 }
 
+void FltkOptionMenuResource::setItem (int index, bool selected)
+{
+   if (selected)
+      ((Fl_Choice *)widget)->value(menu+index);
+}
+
 void FltkOptionMenuResource::pushGroup (const char *name, bool enabled)
 {
    Fl_Menu_Item *item = newItem();
@@ -1216,12 +1227,19 @@ void FltkListResource::widgetCallback (Fl_Widget *widget, void *data)
 {
    Fl_Tree_Item *fltkItem = ((Fl_Tree *) widget)->callback_item ();
    int index = -1;
+
    if (fltkItem)
       index = (long) (fltkItem->user_data ());
    if (index > -1) {
-      FltkListResource *res = (FltkListResource *) data;
       bool selected = fltkItem->is_selected ();
-      res->itemsSelected.set (index, selected);
+
+      if (selected && fltkItem->has_children()) {
+         /* Don't permit a group to be selected. */
+         fltkItem->deselect();
+      } else {
+         FltkListResource *res = (FltkListResource *) data;
+         res->itemsSelected.set (index, selected);
+      }
    }
 }
 
@@ -1257,11 +1275,35 @@ void FltkListResource::addItem (const char *str, bool enabled, bool selected)
    queueResize (true);
 }
 
+void FltkListResource::setItem (int index, bool selected)
+{
+   Fl_Tree *tree = (Fl_Tree *) widget;
+   Fl_Tree_Item *item = tree->root()->next();
+
+   for (int i = 0; item && i < index; i++)
+      item = item->next();
+
+   if (item) {
+      bool do_callback = false;
+      itemsSelected.set (index, selected);
+      if (selected) {
+         if (mode == SELECTION_MULTIPLE) {
+            tree->select(item, do_callback);
+         } else {
+            /* callback to deselect other selected item */
+            do_callback = true;
+            tree->select_only(item, do_callback);
+         }
+      } else {
+         tree->deselect(item, do_callback);
+      }
+   }
+}
+
 void FltkListResource::pushGroup (const char *name, bool enabled)
 {
    bool selected = false;
 
-   /* TODO: make it impossible to select a group */
    currParent = (Fl_Tree_Item *) newItem(name, enabled, selected);
    queueResize (true);
 }

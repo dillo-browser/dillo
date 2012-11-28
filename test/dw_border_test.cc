@@ -65,7 +65,7 @@ int main(int argc, char **argv)
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
-   Style *widgetStyle1 = Style::create (layout, &styleAttrs);
+   Style *widgetStyle1 = Style::create (&styleAttrs);
 
    styleAttrs.backgroundColor = Color::create (layout, 0xffff80);
    styleAttrs.margin.setVal (0);
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
    styleAttrs.setBorderStyle (BORDER_SOLID);
    styleAttrs.padding.setVal (1);
 
-   Style *widgetStyle2 = Style::create (layout, &styleAttrs);
+   Style *widgetStyle2 = Style::create (&styleAttrs);
 
    Textblock *textblock1 = new Textblock (false);
    textblock1->setStyle (widgetStyle1);
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor = NULL;
    styleAttrs.cursor = CURSOR_TEXT;
 
-   Style *wordStyle = Style::create (layout, &styleAttrs);
+   Style *wordStyle = Style::create (&styleAttrs);
 
    const char *words1[] = { "Some", "random", "text.", NULL };
    const char *words2[] = { "A", "nested", "paragraph.", NULL };
