@@ -13,6 +13,7 @@
 
 #include <math.h> // for rint()
 
+#include <FL/fl_ask.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Return_Button.H>

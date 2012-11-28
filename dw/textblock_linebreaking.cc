@@ -706,7 +706,8 @@ int Textblock::hyphenateWord (int wordIndex)
                                                penalties[PENALTY_HYPHEN][1]);
             // "\xe2\x80\x90" is an unconditional hyphen.
             w->hyphenWidth =
-               layout->textWidth (origWord.style->font, "\xe2\x80\x90", 3);
+               layout->textWidth (w->style->font, hyphenDrawChar,
+                                  strlen (hyphenDrawChar));
             w->flags |= (Word::DRAW_AS_ONE_TEXT | Word::DIV_CHAR_AT_EOL |
                          Word::UNBREAKABLE_FOR_MIN_WIDTH);
 

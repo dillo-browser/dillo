@@ -229,6 +229,8 @@ private:
 
    static DivChar divChars[NUM_DIV_CHARS];
 
+   static const char *hyphenDrawChar;
+
 protected:
    struct Line
    {

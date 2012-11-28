@@ -752,11 +752,12 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
       type = DILLO_HTML_INPUT_SELECT;
       res = factory->createOptionMenuResource ();
    } else {
+      ListResource::SelectionMode mode;
+
       type = DILLO_HTML_INPUT_SEL_LIST;
-      res = factory->createListResource (multi ?
-                                         ListResource::SELECTION_MULTIPLE :
-                                         ListResource::SELECTION_EXACTLY_ONE,
-                                         rows);
+      mode = multi ? ListResource::SELECTION_MULTIPLE
+                   : ListResource::SELECTION_AT_MOST_ONE;
+      res = factory->createListResource (mode, rows);
    }
    Embed *embed = new Embed(res);
 
@@ -787,9 +788,10 @@ void Html_tag_close_select(DilloHtml *html)
       DilloHtmlInput *input = Html_get_current_input(html);
       DilloHtmlSelect *select = input->select;
 
-      // BUG(?): should not do this for MULTI selections
-      select->ensureSelection ();
-
+      if (input->type == DILLO_HTML_INPUT_SELECT) {
+         // option menu interface requires that something be selected */
+         select->ensureSelection ();
+      }
       SelectionResource *res = (SelectionResource*)input->embed->getResource();
       select->addOptionsTo (res);
    }
