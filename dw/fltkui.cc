@@ -1287,10 +1287,10 @@ void FltkListResource::setItem (int index, bool selected)
 
    if (item) {
       itemsSelected.set (index, selected);
-      if (mode == SELECTION_MULTIPLE)
-         item->select(selected);
-      else if (selected)
+      if (selected && mode != SELECTION_MULTIPLE)
          tree->select_only(item);
+      else
+         item->select(selected);
       queueResize (true);
    }
 }
