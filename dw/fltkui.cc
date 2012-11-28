@@ -1229,12 +1229,19 @@ void FltkListResource::widgetCallback (Fl_Widget *widget, void *data)
 {
    Fl_Tree_Item *fltkItem = ((Fl_Tree *) widget)->callback_item ();
    int index = -1;
+
    if (fltkItem)
       index = (long) (fltkItem->user_data ());
    if (index > -1) {
-      FltkListResource *res = (FltkListResource *) data;
       bool selected = fltkItem->is_selected ();
-      res->itemsSelected.set (index, selected);
+
+      if (selected && fltkItem->has_children()) {
+         /* Don't permit a group to be selected. */
+         fltkItem->deselect();
+      } else {
+         FltkListResource *res = (FltkListResource *) data;
+         res->itemsSelected.set (index, selected);
+      }
    }
 }
 
@@ -1290,7 +1297,6 @@ void FltkListResource::pushGroup (const char *name, bool enabled)
 {
    bool selected = false;
 
-   /* TODO: make it impossible to select a group */
    currParent = (Fl_Tree_Item *) newItem(name, enabled, selected);
    queueResize (true);
 }
