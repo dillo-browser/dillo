@@ -40,6 +40,16 @@ namespace dw {
 
 int Textblock::CLASS_ID = -1;
 
+/**
+ * The character which is used to draw a hyphen at the end of a line,
+ * either caused by automatic hyphenation, or by soft hyphens.
+ *
+ * Initially, soft hyphens were used, but they are not drawn on some
+ * platforms. Also, unconditional hyphens (U+2010) are not available
+ * in many fonts; so, a simple minus-hyphen is used.
+ */
+const char *Textblock::hyphenDrawChar = "-";
+
 Textblock::Textblock (bool limitTextWidth)
 {
    registerName ("dw::Textblock", &CLASS_ID);
@@ -927,8 +937,8 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
          l += strlen (w->content.text);
          totalWidth += w->size.width;
       }
-      
-      char text[l + (drawHyphen ? 3 : 0) + 1];
+
+      char text[l + (drawHyphen ? strlen (hyphenDrawChar) : 0) + 1];
       int p = 0;
       for (int i = wordIndex1; i <= wordIndex2; i++) {
          const char * t = words->getRef(i)->content.text;
@@ -937,10 +947,8 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
       }
 
       if(drawHyphen) {
-         // "\xe2\x80\x90" is an unconditional hyphen.
-         text[p++] = '\xe2';
-         text[p++] = '\x80';
-         text[p++] = '\x90';
+         for (int i = 0; hyphenDrawChar[i]; i++)
+            text[p++] = hyphenDrawChar[i];
          text[p++] = 0;
       }
       
@@ -1709,10 +1717,10 @@ void Textblock::addHyphen ()
       Word *word = words->getRef(wordIndex);
  
       word->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
-      // "\xe2\x80\x90" is an unconditional hyphen.
       // TODO Optimize? Like spaces?
       word->hyphenWidth =
-         layout->textWidth (word->style->font, "\xe2\x80\x90", 3);
+         layout->textWidth (word->style->font, hyphenDrawChar,
+                            strlen (hyphenDrawChar));
 
       accumulateWordData (wordIndex);
    }

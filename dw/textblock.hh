@@ -211,6 +211,8 @@ private:
       void print ();
    };
 
+   static const char *hyphenDrawChar;
+
 protected:
    enum {
       /**

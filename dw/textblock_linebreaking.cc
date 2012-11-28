@@ -691,9 +691,9 @@ int Textblock::hyphenateWord (int wordIndex)
          if (i < numBreaks) {
             // TODO There should be a method fillHyphen.
             w->badnessAndPenalty.setPenalty (HYPHEN_BREAK);
-            // "\xe2\x80\x90" is an unconditional hyphen.
             w->hyphenWidth =
-               layout->textWidth (origWord.style->font, "\xe2\x80\x90", 3);
+               layout->textWidth (w->style->font, hyphenDrawChar,
+                                  strlen (hyphenDrawChar));
             PRINTF ("      [%d] + hyphen\n", wordIndex + i);
          } else {
             if (origWord.content.space) {
