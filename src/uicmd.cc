@@ -921,11 +921,11 @@ static char *UIcmd_make_search_str(const char *str)
          if (*c == '%')
             switch(*++c) {
             case 's':
-               dStr_append(ds, keys); break;;
+               dStr_append(ds, keys); break;
             case '%':
-               dStr_append_c(ds, '%'); break;;
+               dStr_append_c(ds, '%'); break;
             case 0:
-               MSG_WARN("search_url ends with '%%'\n"); c--; break;;
+               MSG_WARN("search_url ends with '%%'\n"); c--; break;
             default:
                MSG_WARN("illegal specifier '%%%c' in search_url\n", *c);
             }

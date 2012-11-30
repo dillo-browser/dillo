@@ -376,7 +376,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
          DilloUrl *url = cssUrls->get(j);
          const char *url_str = URL_STR(url);
          const uint_t head_length = 30, tail_length = 40,
-                      url_len = strlen(url_str);;
+                      url_len = strlen(url_str);
          char *label;
 
          if (url_len > head_length + tail_length + 3) {
