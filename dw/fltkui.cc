@@ -1349,8 +1349,7 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
          rows = showRows;
       }
       requisition->width = getMaxItemWidth() + 5 + Fl::scrollbar_size();;
-      requisition->ascent = font->ascent + 5 +
-                            (rows - 1) * (font->ascent + font->descent + 1);
+      requisition->ascent = (rows * (font->size + font->descent + 1)) + 2;
       requisition->descent = font->descent + 3;
    } else {
       requisition->width = 1;
