@@ -284,7 +284,11 @@ static void *Dns_server(void *data)
    char addr_string[40];
 
    memset(&hints, 0, sizeof(hints));
+#ifdef ENABLE_IPV6
    hints.ai_family = AF_UNSPEC;
+#else
+   hints.ai_family = AF_INET;
+#endif
    hints.ai_socktype = SOCK_STREAM;
 
    hosts = dList_new(2);
