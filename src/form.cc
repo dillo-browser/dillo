@@ -1056,7 +1056,18 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
    iconv_t char_encoder = (iconv_t) -1;
 
    if (submit_charset && dStrAsciiCasecmp(submit_charset, "UTF-8")) {
-      char_encoder = iconv_open(submit_charset, "UTF-8");
+      /* Some iconv implementations, given "//TRANSLIT", will do their best to
+       * transliterate the string. Under the circumstances, doing so is likely
+       * for the best.
+       */
+      char *translit = dStrconcat(submit_charset, "//TRANSLIT", NULL);
+
+      char_encoder = iconv_open(translit, "UTF-8");
+      dFree(translit);
+
+      if (char_encoder == (iconv_t) -1)
+         char_encoder = iconv_open(submit_charset, "UTF-8");
+
       if (char_encoder == (iconv_t) -1) {
          MSG_WARN("Cannot convert to character encoding '%s'\n",
                   submit_charset);
