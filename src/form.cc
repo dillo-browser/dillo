@@ -1270,7 +1270,7 @@ Dstr *DilloHtmlForm::encodeText(iconv_t char_encoder, Dstr **input)
          inLeft--;
          dStr_append_c(output, '?');
       } else if (rc == EINVAL) {
-         MSG_ERR("Html_decode_text: bad source string\n");
+         MSG_ERR("Form encode text: bad source string.\n");
       }
    }
 
@@ -1280,7 +1280,7 @@ Dstr *DilloHtmlForm::encodeText(iconv_t char_encoder, Dstr **input)
        * it is safe to display the beginning of the string in a message
        * (isn't, e.g., a password).
        */
-      MSG_WARN("String cannot be converted cleanly.\n");
+      MSG_WARN("Form encode text: string cannot be converted cleanly.\n");
    }
 
    dFree(buffer);
