@@ -1338,14 +1338,15 @@ void DilloHtmlForm::filesInputMultipartAppend(Dstr* data,
          dStr_append(data, "--");
          dStr_append(data, boundary);
       }
-      // TODO: encode name, filename
       dStr_sprintfa(data,
                     "\r\n"
                     "Content-Disposition: form-data; name=\"%s\"; "
                        "filename=\"", name);
       /*
-       * Servers don't seem to like encoded names yet, but let's at least
-       * replace the characters that are the most likely to damage things.
+       * Replace the characters that are the most likely to damage things.
+       * For a while, there was some momentum to standardize on an encoding,
+       * but HTML5/Ian Hickson/his Google masters are, as of late 2012,
+       * evidently standing in opposition to all of that for some reason.
        */
       for (int i = 0; char c = filename[i]; i++) {
          if (c == '\"' || c == '\r' || c == '\n')
@@ -1378,7 +1379,6 @@ void DilloHtmlForm::inputMultipartAppend(Dstr *data,
          dStr_append(data, "--");
          dStr_append(data, boundary);
       }
-      // TODO: encode name (RFC 2231)
       dStr_sprintfa(data,
                     "\r\n"
                     "Content-Disposition: form-data; name=\"%s\"\r\n"
