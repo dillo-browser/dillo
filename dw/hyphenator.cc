@@ -300,14 +300,18 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
 
    // No hyphens in the first two chars or the last two.
    // Characters are not bytes, so UTF-8 characters must be counted.
-   int numBytes1 = platform->nextGlyph (wordLc + startActualWord, 0);
-   int numBytes2 = platform->nextGlyph (wordLc + startActualWord, numBytes1);
-   for (int i = 0; i < numBytes2; i++)
+   int numBytes1Start = platform->nextGlyph (wordLc + startActualWord, 0);
+   int numBytes2Start = platform->nextGlyph (wordLc + startActualWord,
+                                             numBytes1Start);
+   for (int i = 0; i < numBytes2Start; i++)
       points.set (i + 1, 0);
-
-   // TODO: Characters, not bytes (as above).
-   points.set (points.size() - 2, 0);
-   points.set (points.size() - 3, 0);
+   
+   int len = strlen (wordLc + startActualWord);
+   int numBytes1End = platform->prevGlyph (wordLc + startActualWord, len);
+   int numBytes2End = platform->prevGlyph (wordLc + startActualWord,
+                                           numBytes1End);
+   for (int i = 0; i < len - numBytes2End; i++)
+      points.set (points.size() - 2 - i, 0);
 
    // Examine the points to build the pieces list.
    SimpleVector <int> breakPos (1);
