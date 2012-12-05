@@ -217,8 +217,8 @@ private:
    };
 
    enum { PENALTY_HYPHEN, PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT,
-          PENALTY_NUM };
-   enum { NUM_DIV_CHARS = 4 };
+          PENALTY_PROHIBIT_BREAK_I, PENALTY_NUM };
+   enum { NUM_DIV_CHARS = 5 };
 
    typedef struct
    {
