@@ -105,6 +105,8 @@ class Hyphenator: public lout::object::Object
    void insertPattern (TrieBuilder *trieBuilder, char *s);
    void insertException (char *s);
 
+   void hyphenateSingleWord(char *wordLc, int offset,
+                            lout::misc::SimpleVector <int> *breakPos);
    bool isCharPartOfActualWord (char *s);
 
 public:
