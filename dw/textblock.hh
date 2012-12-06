@@ -232,6 +232,35 @@ private:
    static const char *hyphenDrawChar;
 
 protected:
+   struct Paragraph
+   {
+      int firstWord;    /* first word's index in word vector */
+      int lastWord;     /* last word's index in word vector */
+
+      // TODO Adjust comments. Short note: maxParMin/maxParMax is
+      // is never smaller than parMin/parMax.
+
+      int parMin;
+      int parMax;       /* The maximal total width down from the last
+                         * paragraph start, to the *end* of this line.
+                         * The space at the end of this line is
+                         * included, but not the hyphen width (as
+                         * opposed to the other values). So, in some
+                         * cases, the space has to be subtracted and
+                         * the hyphen width to be added, to compare it
+                         * to maxParMax. (Search the code for
+                         * occurances.) */
+
+      int maxParMin;    /* Maximum of all paragraph minima, including
+                         * this line. */
+      int maxParMax;    /* Maximum of all paragraph maxima. This line
+                         * is only included, if it is the last line of
+                         * the paragraph (last word is a forced
+                         * break); otherwise, it is the value of the
+                         * last paragraph. For this reason, consider
+                         * also parMax. */
+   };
+
    struct Line
    {
       int firstWord;    /* first word's index in word vector */
@@ -258,23 +287,6 @@ protected:
       int maxLineWidth; /* Maximum of all line widths, including this
                          * line. Does not include the last space, but
                          * the last hyphen width. */
-      int maxParMin;    /* Maximum of all paragraph minima, including
-                         * this line. */
-      int maxParMax;    /* Maximum of all paragraph maxima. This line
-                         * is only included, if it is the last line of
-                         * the paragraph (last word is a forced
-                         * break); otherwise, it is the value of the
-                         * last paragraph. For this reason, consider
-                         * also parMax. */
-      int parMax;       /* The maximal total width down from the last
-                         * paragraph start, to the *end* of this line.
-                         * The space at the end of this line is
-                         * included, but not the hyphen width (as
-                         * opposed to the other values). So, in some
-                         * cases, the space has to be subtracted and
-                         * the hyphen width to be added, to compare it
-                         * to maxParMax. (Search the code for
-                         * occurances.) */
    };
 
    struct Word
@@ -411,9 +423,10 @@ protected:
    /* These values are set by set_... */
    int availWidth, availAscent, availDescent;
 
-   int wrapRef;  /* [0 based] */
+   int wrapRefLines, wrapRefParagraphs;  /* [0 based] */
 
    lout::misc::SimpleVector <Line> *lines;
+   lout::misc::SimpleVector <Paragraph> *paragraphs;
    int nonTemporaryLines;
    lout::misc::NotSoSimpleVector <Word> *words;
    lout::misc::SimpleVector <Anchor> *anchors;
@@ -426,11 +439,11 @@ protected:
 
    void queueDrawRange (int index1, int index2);
    void getWordExtremes (Word *word, core::Extremes *extremes);
-   void markChange (int ref);
    void justifyLine (Line *line, int diff);
    Line *addLine (int firstWord, int lastWord, bool temporary);
    void calcWidgetSize (core::Widget *widget, core::Requisition *size);
    void rewrap ();
+   void fillParagraphs ();
    void showMissingLines ();
    void removeTemporaryLines ();
 
@@ -539,10 +552,14 @@ protected:
 
    void accumulateWordExtremes (int firstWord, int lastWord,
                                 int *maxOfMinWidth, int *sumOfMaxWidth);
+   void processWord (int wordIndex);
    virtual void wordWrap (int wordIndex, bool wrapAll);
+   void handleWordExtremes (int wordIndex);
+   void correctLastWordExtremes ();
+
    int hyphenateWord (int wordIndex);
    void accumulateWordForLine (int lineIndex, int wordIndex);
-   void accumulateWordData(int wordIndex);
+   void accumulateWordData (int wordIndex);
    int calcAvailWidth (int lineIndex);
    void initLine1Offset (int wordIndex);
    void alignLine (int lineIndex);
