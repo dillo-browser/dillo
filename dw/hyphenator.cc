@@ -230,54 +230,78 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
 
    char *wordLc = platform->textToLower (word, strlen (word));
 
-   // Determine "actual" word. See isCharPartOfActualWord for exact definition.
+   int start = 0;
+   SimpleVector <int> breakPos (1);
 
-   // Only this actual word is used, and "startActualWord" is added to the
-   // break positions, so that these refer to the total word.
-   int startActualWord = 0;
-   while (wordLc[startActualWord] &&
-          !isCharPartOfActualWord (wordLc + startActualWord))
-      startActualWord = platform->nextGlyph (wordLc, startActualWord);
+   // Split the original word up, ignore anything but characters, and
+   // collect all break points, so that they fit to the original
+   // word. (The latter is what the offset in the call of
+   // hyphenateSingleWord() is for.)
+   while (true) {
+      while (wordLc[start] && !isCharPartOfActualWord (wordLc + start))
+         start = platform->nextGlyph (wordLc, start);
+      
+      if (wordLc[start] == 0)
+         break;
 
-   if (wordLc[startActualWord] == 0) {
-      // No letters etc in word: do not hyphenate at all.
-      free (wordLc);
-      *numBreaks = 0;
+      int end = start, i = end;
+      while (wordLc[i]) {
+         if (!isCharPartOfActualWord (wordLc + i))
+            break;
+         else
+            end = i;
+         i = platform->nextGlyph (wordLc, i);
+      }
+      end = platform->nextGlyph (wordLc, end);
+
+      int nextStart;
+      if (wordLc[end]) {
+         nextStart = platform->nextGlyph (wordLc, end);
+         wordLc[end] = 0;
+      } else
+         nextStart = end;
+
+      hyphenateSingleWord (wordLc + start, start, &breakPos);
+      start = nextStart;
+   }
+
+   free (wordLc);
+
+   *numBreaks = breakPos.size ();
+   if (*numBreaks == 0)
       return NULL;
+   else {
+      return breakPos.detachArray ();
    }
+}
 
-   int endActualWord = startActualWord, i = endActualWord;
-   while (wordLc[i]) {
-      if (isCharPartOfActualWord (wordLc + i))
-         endActualWord = i;
-      i = platform->nextGlyph (wordLc, i);
-   }
-
-   endActualWord = platform->nextGlyph (wordLc, endActualWord);
-   wordLc[endActualWord] = 0;
-
+/**
+ * Hyphenate a single word, which only consists of lowercase
+ * characters. Store break positions + "offset" in "breakPos".
+ */
+void Hyphenator::hyphenateSingleWord(char *wordLc, int offset,
+                                    SimpleVector <int> *breakPos)
+{
    // If the word is an exception, get the stored points.
    Vector <Integer> *exceptionalBreaks;
-   ConstString key (wordLc + startActualWord);
+   ConstString key (wordLc);
    if (exceptions != NULL && (exceptionalBreaks = exceptions->get (&key))) {
-      int *result = new int[exceptionalBreaks->size()];
-      for (int i = 0; i < exceptionalBreaks->size(); i++)
-         result[i] = exceptionalBreaks->get(i)->getValue() + startActualWord;
-      free (wordLc);
-      *numBreaks = exceptionalBreaks->size();
-      return result;
+      for (int i = 0; i < exceptionalBreaks->size(); i++) {
+         breakPos->increase ();
+         breakPos->set (breakPos->size() - 1,
+                        exceptionalBreaks->get(i)->getValue() + offset);
+      }
+      return;
    }
+
 
    // trie == NULL means that there is no pattern file.
-   if (trie == NULL) {
-      free (wordLc);
-      *numBreaks = 0;
-      return NULL;
-   }
+   if (trie == NULL)
+      return;
 
-   char work[strlen (word) + 3];
+   char work[strlen (wordLc) + 3];
    strcpy (work, ".");
-   strcat (work, wordLc + startActualWord);
+   strcat (work, wordLc);
    strcat (work, ".");
 
    int l = strlen (work);
@@ -300,37 +324,24 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
 
    // No hyphens in the first two chars or the last two.
    // Characters are not bytes, so UTF-8 characters must be counted.
-   int numBytes1Start = platform->nextGlyph (wordLc + startActualWord, 0);
-   int numBytes2Start = platform->nextGlyph (wordLc + startActualWord,
-                                             numBytes1Start);
+   int numBytes1Start = platform->nextGlyph (wordLc, 0);
+   int numBytes2Start = platform->nextGlyph (wordLc, numBytes1Start);
    for (int i = 0; i < numBytes2Start; i++)
       points.set (i + 1, 0);
    
-   int len = strlen (wordLc + startActualWord);
-   int numBytes1End = platform->prevGlyph (wordLc + startActualWord, len);
-   int numBytes2End = platform->prevGlyph (wordLc + startActualWord,
-                                           numBytes1End);
+   int len = strlen (wordLc);
+   int numBytes1End = platform->prevGlyph (wordLc, len);
+   int numBytes2End = platform->prevGlyph (wordLc, numBytes1End);
    for (int i = 0; i < len - numBytes2End; i++)
       points.set (points.size() - 2 - i, 0);
 
-   // Examine the points to build the pieces list.
-   SimpleVector <int> breakPos (1);
-
-   int n = lout::misc::min ((int)strlen (word), points.size () - 2);
+   // Examine the points to build the break point list.
+   int n = lout::misc::min ((int)strlen (wordLc), points.size () - 2);
    for (int i = 0; i < n; i++) {
       if (points.get(i + 2) % 2) {
-         breakPos.increase ();
-         breakPos.set (breakPos.size() - 1, i + 1 + startActualWord);
+         breakPos->increase ();
+         breakPos->set (breakPos->size() - 1, i + 1 + offset);
       }
-   }
-
-   free (wordLc);
-
-   *numBreaks = breakPos.size ();
-   if (*numBreaks == 0)
-      return NULL;
-   else {
-      return breakPos.detachArray ();
    }
 }
 

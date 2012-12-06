@@ -51,6 +51,7 @@ int main (int argc, char *argv[])
    hyphenateWord (&p, "Nordrhein-Westfalen");
    hyphenateWord (&p, "kurz\xc2\xa0und\xc2\xa0knapp");
    hyphenateWord (&p, "weiß");
+   hyphenateWord (&p, "www.dillo.org");
 
    return 0;
 }
