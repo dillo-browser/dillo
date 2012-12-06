@@ -48,10 +48,7 @@ Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
    { "\xe2\x80\x90", false, true, true, -1, PENALTY_HYPHEN },
    // em dash (U+2014): breaks on both sides are allowed (but see below).
    { "\xe2\x80\x94", false, true, false,
-     PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT },
-   // non-breakable space
-   { "\xc2\xa0", false, true, true,
-     PENALTY_PROHIBIT_BREAK_I, PENALTY_PROHIBIT_BREAK_I }
+     PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT }
 };
 
 // Standard values are defined here. The values are already multiplied
@@ -77,9 +74,7 @@ int Textblock::penalties[PENALTY_NUM][2] = {
    // so that a break on the *right* side is preferred.
    { 800, 800 },
    // Penalties for a break point *right* of an em-dash: like hyphens.
-   { 100, 800 },
-   // Prohibit: added here to have a defined index in divChars[].
-   { INT_MAX, INT_MAX }
+   { 100, 800 }
 };
 
 /**
