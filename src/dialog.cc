@@ -298,7 +298,7 @@ void a_Dialog_text_window(const char *txt, const char *title)
     td->textsize((int) rint(14.0 * prefs.font_factor));
 
     /* enable wrapping lines; text uses entire width of window */
-    td->wrap_mode(true, false);
+    td->wrap_mode(Fl_Text_Display::WRAP_AT_BOUNDS, 0);
    window->add(td);
 
     Fl_Return_Button *b = new Fl_Return_Button (0, wh-bh, ww, bh, "Close");
