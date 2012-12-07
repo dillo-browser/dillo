@@ -347,6 +347,7 @@ protected:
                                          later set by a_Dw_page_add_space */
    };
 
+   void printWordShort (Word *word);
    void printWord (Word *word);
 
    struct Anchor
