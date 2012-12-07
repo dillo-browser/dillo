@@ -629,6 +629,9 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
    }
 }
 
+/**
+ * Counter part to wordWrap(), but for extremes, not size calculation.
+ */
 void Textblock::handleWordExtremes (int wordIndex)
 {
    // TODO Overall, clarify penalty index.
@@ -699,6 +702,9 @@ void Textblock::handleWordExtremes (int wordIndex)
    lastPar->lastWord = wordIndex;
 }
 
+/**
+ * Called when something changed for the last word (space, hyphens etc.).
+ */
 void Textblock::correctLastWordExtremes ()
 {
    if (paragraphs->size() > 0) {
@@ -1047,6 +1053,9 @@ void Textblock::rewrap ()
    wrapRefLines = -1;
 }
 
+/**
+ * Counter part to rewrap(), but for extremes, not size calculation.
+ */
 void Textblock::fillParagraphs ()
 {
    if (wrapRefParagraphs == -1)
