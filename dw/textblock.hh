@@ -96,15 +96,20 @@ namespace dw {
  *
  * <h3>Some Internals</h3>
  *
- * There are 3 lists, dw::Textblock::words, dw::Textblock::lines, and
- * dw::Textblock::anchors. The word list is quite static; only new words
- * may be added. A word is either text, a widget, or a break.
+ * There are 4 lists, dw::Textblock::words, dw::Textblock::paragraphs,
+ * dw::Textblock::lines, and dw::Textblock::anchors. The word list is
+ * quite static; only new words may be added. A word is either text, a
+ * widget, or a break.
  *
  * Lines refer to the word list (first and last). They are completely
  * redundant, i.e., they can be rebuilt from the words. Lines can be
  * rewrapped either completely or partially (see "Incremental Resizing"
  * below). For the latter purpose, several values are accumulated in the
  * lines. See dw::Textblock::Line for details.
+ *
+ * A recent change was the introduction of the paragraphs list, which
+ * works quite similar, is also redundant, but is used to calculate
+ * the extremes, not the size.
  *
  * Anchors associate the anchor name with the index of the next word at
  * the point of the anchor.
@@ -240,25 +245,26 @@ protected:
       // TODO Adjust comments. Short note: maxParMin/maxParMax is
       // is never smaller than parMin/parMax.
 
-      int parMin;
-      int parMax;       /* The maximal total width down from the last
-                         * paragraph start, to the *end* of this line.
-                         * The space at the end of this line is
-                         * included, but not the hyphen width (as
-                         * opposed to the other values). So, in some
-                         * cases, the space has to be subtracted and
-                         * the hyphen width to be added, to compare it
-                         * to maxParMax. (Search the code for
-                         * occurances.) */
+      /*
+       * General remark: all values include the last hyphen width, but
+       * not the last space; these values are, however corrected, when
+       * another word is added.
+       *
+       * Also, as opposed to lines, paragraphs are created with the
+       * first, not the last word, so these values change when new
+       * words are added.
+       */
+
+      int parMin;       /* The sum of all word minima (plus spaces,
+                           hyphen width etc.) of the last c  */
+      int parMax;       /* The sum of all word maxima in this
+                         * paragraph (plus spaces, hyphen width
+                         * etc.). */
 
       int maxParMin;    /* Maximum of all paragraph minima, including
                          * this line. */
-      int maxParMax;    /* Maximum of all paragraph maxima. This line
-                         * is only included, if it is the last line of
-                         * the paragraph (last word is a forced
-                         * break); otherwise, it is the value of the
-                         * last paragraph. For this reason, consider
-                         * also parMax. */
+      int maxParMax;    /* Maximum of all paragraph maxima (value of "parMax"),
+                         * including this one. */
    };
 
    struct Line
@@ -275,18 +281,12 @@ protected:
        * widgets within this line. */
       int marginDescent;
 
-      /* The following members contain accumulated values, from the
-       * top down to this line. Please notice a change: until
-       * recently, the values were accumulated up to the last line,
-       * not this line.
-       *
-       * Also, keep in mind that at the end of a line, the space of
-       * the last word is ignored, but instead, the hyphen width must
-       * be considered.*/
-
-      int maxLineWidth; /* Maximum of all line widths, including this
-                         * line. Does not include the last space, but
-                         * the last hyphen width. */
+      /* Maximum of all line widths, including this line. Does not
+       * include the last space, but the last hyphen width. Please
+       * notice a change: until recently (before hyphenation and
+       * changed line breaking), the values were accumulated up to the
+       * last line, not this line.*/
+      int maxLineWidth;
    };
 
    struct Word
