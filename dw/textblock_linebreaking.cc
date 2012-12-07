@@ -191,8 +191,6 @@ void Textblock::BadnessAndPenalty::print ()
 #ifdef DEBUG
    printf (" [%d + %d - %d vs. %d] + ",
            totalWidth, totalStretchability, totalShrinkability, idealWidth);
-#else
-   printf (" <no debug> + ");
 #endif
 
    printf ("(");
@@ -210,14 +208,15 @@ void Textblock::BadnessAndPenalty::print ()
    printf (")");
 }
 
-void Textblock::printWord (Word *word)
+void Textblock::printWordShort (Word *word)
 {
    switch(word->content.type) {
    case core::Content::TEXT:
       printf ("\"%s\"", word->content.text);
       break;
    case core::Content::WIDGET:
-      printf ("<widget: %p>", word->content.widget);
+      printf ("<widget: %p (%s)>",
+              word->content.widget, word->content.widget->getClassName());
       break;
    case core::Content::BREAK:
       printf ("<break>");
@@ -226,9 +225,13 @@ void Textblock::printWord (Word *word)
       printf ("<?>");
       break;              
    }
+}
 
-   printf (" (flags = %d)", word->flags);
-                 
+void Textblock::printWord (Word *word)
+{
+   printWordShort (word);
+
+   printf (" (flags = %d)", word->flags);               
    printf (" [%d / %d + %d - %d => %d + %d - %d] => ",
            word->size.width, word->origSpace, word->stretchability,
            word->shrinkability, word->totalWidth, word->totalStretchability,
@@ -411,6 +414,13 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 
    mustQueueResize = true;
 
+   //printWordShort (words->getRef (line->firstWord));
+   //printf (" ... ");
+   //printWordShort (words->getRef (line->lastWord));
+   //printf (": ");
+   //words->getRef(line->lastWord)->badnessAndPenalty.print ();
+   //printf ("\n");
+   
    return line;
 }
 
