@@ -373,23 +373,20 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
       memset(stylesheets, '\0', sizeof(Fl_Menu_Item[cssUrls->size() + 1]));
 
       for (j = 0; j < cssUrls->size(); j++) {
-
-         /* may want ability to Load individual unloaded stylesheets as well */
-         const char *action = "View ";
          DilloUrl *url = cssUrls->get(j);
          const char *url_str = URL_STR(url);
          const uint_t head_length = 30, tail_length = 40,
-                      url_len = strlen(url_str);;
+                      url_len = strlen(url_str);
          char *label;
 
          if (url_len > head_length + tail_length + 3) {
             /* trim long URLs when making the label */
             char *url_head = dStrndup(url_str, head_length);
             const char *url_tail = url_str + (url_len - tail_length);
-            label = dStrconcat(action, url_head, "...", url_tail, NULL);
+            label = dStrconcat(url_head, "...", url_tail, NULL);
             dFree(url_head);
          } else {
-            label = dStrconcat(action, url_str, NULL);
+            label = dStrdup(url_str);
          }
 
          stylesheets[j].label(FL_NORMAL_LABEL, label);

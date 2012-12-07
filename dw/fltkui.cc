@@ -1202,6 +1202,7 @@ Fl_Widget *FltkListResource::createNewWidget (core::Allocation *allocation)
                                                  : FL_TREE_SELECT_SINGLE);
    tree->showroot(0);
    tree->connectorstyle(FL_TREE_CONNECTOR_NONE);
+   tree->margintop(0);
    tree->marginleft(-14);
    tree->callback(widgetCallback,this);
    tree->when(FL_WHEN_CHANGED);
@@ -1348,10 +1349,10 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
       if (showRows < rows) {
          rows = showRows;
       }
-      requisition->width = getMaxItemWidth() + 5 + Fl::scrollbar_size();;
-      requisition->ascent = font->ascent + 5 +
-                            (rows - 1) * (font->ascent + font->descent + 1);
-      requisition->descent = font->descent + 3;
+      requisition->width = getMaxItemWidth() + 5 + Fl::scrollbar_size();
+      requisition->descent = font->descent + 2;
+      requisition->ascent = (rows * (font->size + font->descent + 1)) + 4 -
+                            requisition->descent;
    } else {
       requisition->width = 1;
       requisition->ascent = 1;

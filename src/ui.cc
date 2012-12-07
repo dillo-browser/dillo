@@ -1083,8 +1083,8 @@ void UI::panels_toggle()
       hide ? NavBar->hide() : NavBar->show();
    }
    if (StatusBar) {
-      hide ? StatusBar->size(0,0) : StatusBar->size(w(),sh);;
-      hide ? StatusBar->hide() : StatusBar->show();;
+      hide ? StatusBar->size(0,0) : StatusBar->size(w(),sh);
+      hide ? StatusBar->hide() : StatusBar->show();
       StatusBar->rearrange();
    }
 

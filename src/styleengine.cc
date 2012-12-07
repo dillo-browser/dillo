@@ -49,7 +49,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    style_attrs.initValues ();
    style_attrs.font = Font::create (layout, &font_attrs);
    style_attrs.color = Color::create (layout, 0);
-   style_attrs.backgroundColor = Color::create (layout, 0xffffff);
+   style_attrs.backgroundColor = Color::create (layout, prefs.bg_color);
 
    n->style = Style::create (&style_attrs);
 }

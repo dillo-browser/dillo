@@ -1056,7 +1056,18 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
    iconv_t char_encoder = (iconv_t) -1;
 
    if (submit_charset && dStrAsciiCasecmp(submit_charset, "UTF-8")) {
-      char_encoder = iconv_open(submit_charset, "UTF-8");
+      /* Some iconv implementations, given "//TRANSLIT", will do their best to
+       * transliterate the string. Under the circumstances, doing so is likely
+       * for the best.
+       */
+      char *translit = dStrconcat(submit_charset, "//TRANSLIT", NULL);
+
+      char_encoder = iconv_open(translit, "UTF-8");
+      dFree(translit);
+
+      if (char_encoder == (iconv_t) -1)
+         char_encoder = iconv_open(submit_charset, "UTF-8");
+
       if (char_encoder == (iconv_t) -1) {
          MSG_WARN("Cannot convert to character encoding '%s'\n",
                   submit_charset);
@@ -1270,7 +1281,7 @@ Dstr *DilloHtmlForm::encodeText(iconv_t char_encoder, Dstr **input)
          inLeft--;
          dStr_append_c(output, '?');
       } else if (rc == EINVAL) {
-         MSG_ERR("Html_decode_text: bad source string\n");
+         MSG_ERR("Form encode text: bad source string.\n");
       }
    }
 
@@ -1280,7 +1291,7 @@ Dstr *DilloHtmlForm::encodeText(iconv_t char_encoder, Dstr **input)
        * it is safe to display the beginning of the string in a message
        * (isn't, e.g., a password).
        */
-      MSG_WARN("String cannot be converted cleanly.\n");
+      MSG_WARN("Form encode text: string cannot be converted cleanly.\n");
    }
 
    dFree(buffer);
@@ -1338,14 +1349,15 @@ void DilloHtmlForm::filesInputMultipartAppend(Dstr* data,
          dStr_append(data, "--");
          dStr_append(data, boundary);
       }
-      // TODO: encode name, filename
       dStr_sprintfa(data,
                     "\r\n"
                     "Content-Disposition: form-data; name=\"%s\"; "
                        "filename=\"", name);
       /*
-       * Servers don't seem to like encoded names yet, but let's at least
-       * replace the characters that are the most likely to damage things.
+       * Replace the characters that are the most likely to damage things.
+       * For a while, there was some momentum to standardize on an encoding,
+       * but HTML5/Ian Hickson/his Google masters are, as of late 2012,
+       * evidently standing in opposition to all of that for some reason.
        */
       for (int i = 0; char c = filename[i]; i++) {
          if (c == '\"' || c == '\r' || c == '\n')
@@ -1378,7 +1390,6 @@ void DilloHtmlForm::inputMultipartAppend(Dstr *data,
          dStr_append(data, "--");
          dStr_append(data, boundary);
       }
-      // TODO: encode name (RFC 2231)
       dStr_sprintfa(data,
                     "\r\n"
                     "Content-Disposition: form-data; name=\"%s\"\r\n"

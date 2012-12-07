@@ -34,27 +34,23 @@ dillorc.
 FLTK-1.3
 --------
 
-  You can get FLTK-1.3 here:
+  If you don't have FLTK-1.3 (try 'fltk-config --version' to check),
+  you can get it from:
 
-     http://fltk.org/software.php?VERSION=1.3.0
+     http://fltk.org/software.php
 
+  and build it like:
 
----------------------------
-Building dillo from sources
----------------------------
-
-  1.- Install fltk:
-
-     tar zxvf fltk-1.3.0-source.tar.gz
-     cd fltk-1.3.0
+     tar zxvf fltk-1.3.1-source.tar.gz      [or latest 1.3.x version]
+     cd fltk-1.3.1
      less README.Unix.txt
      make
      sudo make install
      cd ..
-    
-  (don't configure fltk with --enable-cairo)
 
-  2.- Then dillo3:
+------
+Dillo3
+------
 
      tar jxvf dillo-3.0.2.tar.bz2
      cd dillo-3.0.2

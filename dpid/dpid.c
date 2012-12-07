@@ -336,7 +336,7 @@ int register_all(struct dp **attlist)
    char *user_dpidir = NULL, *sys_dpidir = NULL, *dpidrc = NULL;
    struct dirent *user_dirent, *sys_dirent;
    int st;
-   int snum, usr_srv_num;
+   int snum;
    size_t dp_sz = sizeof(struct dp);
 
    if (*attlist != NULL) {
@@ -370,7 +370,7 @@ int register_all(struct dp **attlist)
    }
 
    /* Get list of services in user's .dillo/dpi directory */
-   snum = usr_srv_num = 0;
+   snum = 0;
    if (user_dpidir && (user_dir_stream = opendir(user_dpidir)) != NULL) {
       while ((user_dirent = readdir(user_dir_stream)) != NULL) {
          if (user_dirent->d_name[0] == '.')
@@ -380,7 +380,6 @@ int register_all(struct dp **attlist)
          if (st == 0)
             snum++;
       }
-      usr_srv_num = snum;
       closedir(user_dir_stream);
    }
    if (sys_dpidir && (sys_dir_stream = opendir(sys_dpidir)) != NULL) {

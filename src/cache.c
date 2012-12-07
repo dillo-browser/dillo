@@ -34,8 +34,6 @@
 #include "timeout.hh"
 #include "uicmd.hh"
 
-#define NULLKey 0
-
 /* Maximum initial size for the automatically-growing data buffer */
 #define MAX_INIT_BUF  1024*1024
 /* Maximum filesize for a URL, before offering a download */
@@ -174,12 +172,8 @@ static int Cache_client_by_key_cmp(const void *client, const void *key)
 /*
  * Remove a client from the queue
  */
-static void Cache_client_dequeue(CacheClient_t *Client, int Key)
+static void Cache_client_dequeue(CacheClient_t *Client)
 {
-   if (!Client) {
-      Client = dList_find_custom(ClientQueue, INT2VOIDP(Key),
-                                 Cache_client_by_key_cmp);
-   }
    if (Client) {
       dList_remove(ClientQueue, Client);
       a_Web_free(Client->Web);
@@ -1202,7 +1196,7 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
                if (ClientWeb->flags & WEB_RootUrl)
                   a_Nav_cancel_expect_if_eq(Client_bw, Client->Url);
                a_Bw_remove_client(Client_bw, Client->Key);
-               Cache_client_dequeue(Client, NULLKey);
+               Cache_client_dequeue(Client);
                --i; /* Keep the index value in the next iteration */
                continue;
             }
@@ -1232,7 +1226,7 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
             (Client->Callback)(CA_Close, Client);
             if (ClientWeb->flags & WEB_RootUrl)
                a_UIcmd_set_page_prog(Client_bw, 0, 0);
-            Cache_client_dequeue(Client, NULLKey);
+            Cache_client_dequeue(Client);
             --i; /* Keep the index value in the next iteration */
 
             /* within CA_GotData, we assert just one redirect call */
@@ -1350,7 +1344,7 @@ void a_Cache_stop_client(int Key)
          dList_remove(DelayedQueue, entry);
 
       /* Main queue */
-      Cache_client_dequeue(Client, NULLKey);
+      Cache_client_dequeue(Client);
 
    } else {
       _MSG("WARNING: Cache_stop_client, nonexistent client\n");
@@ -1368,7 +1362,7 @@ void a_Cache_freeall(void)
 
    /* free the client queue */
    while ((Client = dList_nth_data(ClientQueue, 0)))
-      Cache_client_dequeue(Client, NULLKey);
+      Cache_client_dequeue(Client);
 
    /* Remove every cache entry */
    while ((data = dList_nth_data(CachedURLs, 0))) {
