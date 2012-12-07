@@ -343,10 +343,12 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    if (lines->size () == 1) {
       // first line
       line->top = 0;
+      line->maxLineWidth = lineWidth;
    } else {
       Line *prevLine = lines->getRef (lines->size () - 2);
       line->top = prevLine->top + prevLine->boxAscent +
          prevLine->boxDescent + prevLine->breakSpace;
+      line->maxLineWidth = misc::max (lineWidth, prevLine->maxLineWidth);
    }
  
    for(int i = line->firstWord; i <= line->lastWord; i++)
