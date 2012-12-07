@@ -227,11 +227,22 @@ void Textblock::printWordShort (Word *word)
    }
 }
 
-void Textblock::printWord (Word *word)
+void Textblock::printWordWithFlags (Word *word)
 {
    printWordShort (word);
+   printf (" (flags = %s:%s:%s:%s:%s)",
+           (word->flags & Word::CAN_BE_HYPHENATED) ? "h?" : "--",
+           (word->flags & Word::DIV_CHAR_AT_EOL) ? "de" : "--",
+           (word->flags & Word::PERM_DIV_CHAR) ? "dp" : "--",
+           (word->flags & Word::DRAW_AS_ONE_TEXT) ? "t1" : "--",
+           (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--");
+           
+}
 
-   printf (" (flags = %d)", word->flags);               
+void Textblock::printWord (Word *word)
+{
+   printWordWithFlags (word);
+
    printf (" [%d / %d + %d - %d => %d + %d - %d] => ",
            word->size.width, word->origSpace, word->stretchability,
            word->shrinkability, word->totalWidth, word->totalStretchability,
@@ -640,9 +651,9 @@ void Textblock::handleWordExtremes (int wordIndex)
    core::Extremes wordExtremes;
    getWordExtremes (word, &wordExtremes);
 
-   PRINTF ("[%p] HANDLE_WORD_EXTREMES (%d):", this, wordIndex);
-   //printWord (word);
-   PRINTF ("=> %d / %d\n", wordExtremes.minWidth, wordExtremes.maxWidth);
+   //printf ("[%p] HANDLE_WORD_EXTREMES (%d):", this, wordIndex);
+   //printWordWithFlags (word);
+   //printf ("=> %d / %d\n", wordExtremes.minWidth, wordExtremes.maxWidth);
 
    if (wordIndex == 0) {
       wordExtremes.minWidth += line1Offset;
@@ -673,7 +684,8 @@ void Textblock::handleWordExtremes (int wordIndex)
    int corrDiffMin, corrDiffMax;
    if (wordIndex - 1 >= lastPar->firstWord) {
       Word *lastWord = words->getRef (wordIndex - 1);
-      if (lastWord->badnessAndPenalty.lineCanBeBroken (1))
+      if (lastWord->badnessAndPenalty.lineCanBeBroken (1) &&
+          (lastWord->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0)
          corrDiffMin = 0;
       else
          corrDiffMin = lastWord->origSpace - lastWord->hyphenWidth;
@@ -689,7 +701,8 @@ void Textblock::handleWordExtremes (int wordIndex)
    // Shrinkability could be considered, but really does not play a role.
    lastPar->parMin += wordExtremes.minWidth + word->hyphenWidth + corrDiffMin;
    lastPar->maxParMin = misc::max (lastPar->maxParMin, lastPar->parMin);
-   if (word->badnessAndPenalty.lineCanBeBroken (1))
+   if (word->badnessAndPenalty.lineCanBeBroken (1) &&
+       (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0)
       lastPar->parMin = 0;
 
    // Maximum: between two *necessary* breaks.

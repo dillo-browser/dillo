@@ -348,6 +348,7 @@ protected:
    };
 
    void printWordShort (Word *word);
+   void printWordWithFlags (Word *word);
    void printWord (Word *word);
 
    struct Anchor
