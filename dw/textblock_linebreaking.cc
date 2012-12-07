@@ -227,11 +227,22 @@ void Textblock::printWordShort (Word *word)
    }
 }
 
-void Textblock::printWord (Word *word)
+void Textblock::printWordWithFlags (Word *word)
 {
    printWordShort (word);
+   printf (" (flags = %s:%s:%s:%s:%s)",
+           (word->flags & Word::CAN_BE_HYPHENATED) ? "h?" : "--",
+           (word->flags & Word::DIV_CHAR_AT_EOL) ? "de" : "--",
+           (word->flags & Word::PERM_DIV_CHAR) ? "dp" : "--",
+           (word->flags & Word::DRAW_AS_ONE_TEXT) ? "t1" : "--",
+           (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--");
+           
+}
 
-   printf (" (flags = %d)", word->flags);               
+void Textblock::printWord (Word *word)
+{
+   printWordWithFlags (word);
+
    printf (" [%d / %d + %d - %d => %d + %d - %d] => ",
            word->size.width, word->origSpace, word->stretchability,
            word->shrinkability, word->totalWidth, word->totalStretchability,
@@ -342,56 +353,18 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       Word *word = words->getRef (i);
       lineWidth += (word->effSpace - word->origSpace);
    }
-
-   int lastMaxParMax; // maxParMax of the last line
-   
+  
    if (lines->size () == 1) {
       // first line
       line->top = 0;
-
       line->maxLineWidth = lineWidth;
-      line->maxParMin = maxOfMinWidth;
-      line->parMax = sumOfMaxWidth;
-
-      lastMaxParMax = 0;
    } else {
       Line *prevLine = lines->getRef (lines->size () - 2);
-
       line->top = prevLine->top + prevLine->boxAscent +
          prevLine->boxDescent + prevLine->breakSpace;
-
       line->maxLineWidth = misc::max (lineWidth, prevLine->maxLineWidth);
-      line->maxParMin = misc::max (maxOfMinWidth, prevLine->maxParMin);
-
-      Word *lastWordOfPrevLine = words->getRef (prevLine->lastWord);
-      // TODO: lineMustBeBroken should be independent of the penalty
-      // index? Otherwise, examine the last line.
-      if (lastWordOfPrevLine->badnessAndPenalty.lineMustBeBroken (0))
-         // This line starts a new paragraph.
-         line->parMax = sumOfMaxWidth;
-      else
-         // This line continues the paragraph from prevLine.
-         line->parMax = prevLine->parMax + sumOfMaxWidth;
-
-      lastMaxParMax = prevLine->maxParMax;
    }
-
-   // "maxParMax" is only set, when this line is the last line of the
-   // paragraph. 
-   Word *lastWordOfThisLine = words->getRef (line->lastWord);
-   // TODO: lineMustBeBroken should be independent of the penalty
-   // index? Otherwise, examine the last line.
-   if (lastWordOfThisLine->badnessAndPenalty.lineMustBeBroken (0))
-      // Paragraph ends here.
-      line->maxParMax =
-         misc::max (lastMaxParMax,
-                    // parMax includes the last space, which we ignore here
-                    line->parMax - lastWordOfThisLine->origSpace
-                    + lastWordOfThisLine->hyphenWidth);
-   else
-      // Paragraph continues: simply copy the last value of "maxParMax".
-      line->maxParMax = lastMaxParMax;
-   
+ 
    for(int i = line->firstWord; i <= line->lastWord; i++)
       accumulateWordForLine (lineIndex, i);
 
@@ -406,11 +379,6 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 
    PRINTF ("   line[%d].maxLineWidth = %d\n",
            lines->size () - 1, line->maxLineWidth);
-   PRINTF ("   line[%d].maxParMin = %d\n",
-           lines->size () - 1, line->maxParMin);
-   PRINTF ("   line[%d].maxParMax = %d\n",
-           lines->size () - 1, line->maxParMax);
-   PRINTF ("   line[%d].parMax = %d\n", lines->size () - 1, line->parMax);
 
    mustQueueResize = true;
 
@@ -460,6 +428,12 @@ void Textblock::accumulateWordExtremes (int firstWord, int lastWord,
       *sumOfMaxWidth += (extremes.maxWidth + word->origSpace);
       // Notice that the last space is added. See also: Line::parMax.
    }
+}
+
+void Textblock::processWord (int wordIndex)
+{
+   wordWrap (wordIndex, false);
+   handleWordExtremes (wordIndex);
 }
 
 /*
@@ -665,6 +639,96 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
       }
    }
 }
+
+/**
+ * Counter part to wordWrap(), but for extremes, not size calculation.
+ */
+void Textblock::handleWordExtremes (int wordIndex)
+{
+   // TODO Overall, clarify penalty index.
+
+   Word *word = words->getRef (wordIndex);
+   core::Extremes wordExtremes;
+   getWordExtremes (word, &wordExtremes);
+
+   //printf ("[%p] HANDLE_WORD_EXTREMES (%d):", this, wordIndex);
+   //printWordWithFlags (word);
+   //printf ("=> %d / %d\n", wordExtremes.minWidth, wordExtremes.maxWidth);
+
+   if (wordIndex == 0) {
+      wordExtremes.minWidth += line1Offset;
+      wordExtremes.maxWidth += line1Offset;
+   }
+
+   if (paragraphs->size() == 0 ||
+       words->getRef(paragraphs->getLastRef()->lastWord)
+       ->badnessAndPenalty.lineMustBeBroken (1)) {
+      // Add a new paragraph.
+      Paragraph *prevPar =
+         paragraphs->size() == 0 ? NULL : paragraphs->getLastRef();
+      paragraphs->increase ();
+      Paragraph *par = paragraphs->getLastRef();
+
+      par->firstWord = par->lastWord = wordIndex;
+      par->parMin = par->parMax = 0;
+
+      if (prevPar) {
+         par->maxParMin = prevPar->maxParMin;
+         par->maxParMax = prevPar->maxParMax;
+      } else
+         par->maxParMin = par->maxParMax = 0;
+   }
+
+   Paragraph *lastPar = paragraphs->getLastRef();
+
+   int corrDiffMin, corrDiffMax;
+   if (wordIndex - 1 >= lastPar->firstWord) {
+      Word *lastWord = words->getRef (wordIndex - 1);
+      if (lastWord->badnessAndPenalty.lineCanBeBroken (1) &&
+          (lastWord->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0)
+         corrDiffMin = 0;
+      else
+         corrDiffMin = lastWord->origSpace - lastWord->hyphenWidth;
+         
+      corrDiffMax = lastWord->origSpace - lastWord->hyphenWidth;
+   } else
+      corrDiffMin = corrDiffMax = 0;
+
+   PRINTF ("      (lastPar from %d to %d; corrDiffMin = %d, corDiffMax = %d)\n",
+           lastPar->firstWord, lastPar->lastWord, corrDiffMin, corrDiffMax);
+
+   // Minimum: between two *possible* breaks.
+   // Shrinkability could be considered, but really does not play a role.
+   lastPar->parMin += wordExtremes.minWidth + word->hyphenWidth + corrDiffMin;
+   lastPar->maxParMin = misc::max (lastPar->maxParMin, lastPar->parMin);
+   if (word->badnessAndPenalty.lineCanBeBroken (1) &&
+       (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0)
+      lastPar->parMin = 0;
+
+   // Maximum: between two *necessary* breaks.
+   lastPar->parMax += wordExtremes.maxWidth + word->hyphenWidth + corrDiffMax;
+   lastPar->maxParMax = misc::max (lastPar->maxParMax, lastPar->parMax);
+
+   PRINTF ("   => parMin = %d, parMax = %d\n",
+           lastPar->parMin, lastPar->parMax);
+
+   lastPar->lastWord = wordIndex;
+}
+
+/**
+ * Called when something changed for the last word (space, hyphens etc.).
+ */
+void Textblock::correctLastWordExtremes ()
+{
+   if (paragraphs->size() > 0) {
+      if (words->getLastRef()->badnessAndPenalty.lineCanBeBroken (1)) {
+         paragraphs->getLastRef()->parMin = 0;
+         PRINTF ("   => corrected; parMin = %d\n",
+                 paragraphs->getLastRef()->parMin);
+      }
+   }
+}
+
 
 int Textblock::hyphenateWord (int wordIndex)
 {
@@ -965,14 +1029,14 @@ void Textblock::rewrap ()
 {
    PRINTF ("[%p] REWRAP: wrapRef = %d\n", this, wrapRef);
 
-   if (wrapRef == -1)
+   if (wrapRefLines == -1)
       /* page does not have to be rewrapped */
       return;
 
    /* All lines up from wrapRef will be rebuild from the word list,
     * the line list up from this position is rebuild. */
-   lines->setSize (wrapRef);
-   nonTemporaryLines = misc::min (nonTemporaryLines, wrapRef);
+   lines->setSize (wrapRefLines);
+   nonTemporaryLines = misc::min (nonTemporaryLines, wrapRefLines);
 
    int firstWord;
    if (lines->size () > 0)
@@ -999,7 +1063,46 @@ void Textblock::rewrap ()
    }
 
    /* Next time, the page will not have to be rewrapped. */
-   wrapRef = -1;
+   wrapRefLines = -1;
+}
+
+/**
+ * Counter part to rewrap(), but for extremes, not size calculation.
+ */
+void Textblock::fillParagraphs ()
+{
+   if (wrapRefParagraphs == -1)
+      return;
+
+   // Notice that wrapRefParagraphs refers to the lines, not to the paragraphs.
+   int firstWordOfLine;
+   if (lines->size () > 0 && wrapRefParagraphs > 0)
+      firstWordOfLine = lines->getRef(wrapRefParagraphs - 1)->lastWord + 1;
+   else
+      firstWordOfLine = 0;
+
+   // Binary search would be faster, but there should not be many paragraphs
+   // in a text block (so that binary search may be even slower).
+   int parNo = 0;
+   while (paragraphs->size() - 1 > parNo &&
+          paragraphs->getRef(parNo)->lastWord <= firstWordOfLine)
+      parNo++;
+
+   paragraphs->setSize (parNo);
+
+   int firstWord;
+   if (paragraphs->size () > 0)
+      firstWord = paragraphs->getLastRef()->lastWord + 1;
+   else
+      firstWord = 0;
+
+   PRINTF ("[%p] FILL_PARAGRAPHS: now %d paragraphs; starting from word %d\n",
+           this, parNo, firstWord);
+
+   for (int i = firstWord; i < words->size (); i++)
+      handleWordExtremes (i);
+
+   wrapRefParagraphs = -1;
 }
 
 void Textblock::showMissingLines ()

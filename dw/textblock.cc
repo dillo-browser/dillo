@@ -137,6 +137,7 @@ Textblock::Textblock (bool limitTextWidth)
     * is that high values decrease speed due to memory handling overhead!)
     * TODO: Some tests would be useful.
     */
+   paragraphs = new misc::SimpleVector <Paragraph> (1);
    lines = new misc::SimpleVector <Line> (1);
    nonTemporaryLines = 0;
    words = new misc::NotSoSimpleVector <Word> (1);
@@ -144,7 +145,7 @@ Textblock::Textblock (bool limitTextWidth)
 
    //DBG_OBJ_SET_NUM(this, "num_lines", num_lines);
 
-   wrapRef = -1;
+   wrapRefLines = wrapRefParagraphs = -1;
 
    //DBG_OBJ_SET_NUM(this, "last_line_width", last_line_width);
    //DBG_OBJ_SET_NUM(this, "last_line_par_min", last_line_par_min);
@@ -190,6 +191,7 @@ Textblock::~Textblock ()
       removeAnchor(anchor->name);
    }
 
+   delete paragraphs;
    delete lines;
    delete words;
    delete anchors;
@@ -292,115 +294,23 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
 {
    PRINTF ("[%p] GET_EXTREMES: ...\n", this);
 
-   showMissingLines ();
+   fillParagraphs ();
 
-   if (lines->size () == 0) {
+   if (paragraphs->size () == 0) {
       /* empty page */
       extremes->minWidth = 0;
       extremes->maxWidth = 0;
-
-      PRINTF ("GET_EXTREMES: empty (but %d words)\n", words->size());
-   } else if (wrapRef == -1) {
-      /* no rewrap necessary -> values in lines are up to date */
-      Line *lastLine = lines->getRef (lines->size () - 1);
-      extremes->minWidth = lastLine->maxParMin;
-      Word *lastWord = words->getRef (lastLine->lastWord);
-      extremes->maxWidth =
-         misc::max (lastLine->maxParMax,
-                    // parMax includes the last space, which we ignore here
-                    lastLine->parMax - lastWord->origSpace
-                    + lastWord->hyphenWidth);
-
-      PRINTF ("GET_EXTREMES: no rewrap => %d, %d\n",
-              lastLine->maxParMin, lastLine->maxParMax);
-   } else {
-      int parMax;
-      /* Calculate the extremes, based on the values in the line from
-         where a rewrap is necessary. */
-
-      PRINTF ("GET_EXTREMES: complex case ...\n");
-
-      if (wrapRef == 0) {
-         extremes->minWidth = 0;
-         extremes->maxWidth = 0;
-         parMax = 0;
-      } else {
-         // Line [wrapRef - 1], not [wrapRef], because maxParMin and
-         // maxParMax include the respective values *in* any line
-         // (accumulated up to the *end*), but we start at line
-         // [wrapRef], so these are not needed.
-
-         Line *line = lines->getRef (wrapRef - 1);
-         Word *lastWord = words->getRef (line->lastWord);
-         extremes->minWidth = line->maxParMin;
-         // consider also accumulated next value of maxParMax: parMax
-         extremes->maxWidth =
-            misc::max (line->maxParMax,
-                       // parMax includes the last space, which we ignore here
-                       line->parMax - lastWord->origSpace
-                       + lastWord->hyphenWidth);
-         parMax = line->parMax;
-      }
-
-      if (wrapRef < lines->size()) {
-         int parMin = 0;
-         
-         for (int wordIndex = lines->getRef(wrapRef)->firstWord;
-              wordIndex < words->size(); wordIndex++) {
-            Word *word = words->getRef (wordIndex);
-            bool atLastWord = wordIndex == words->size() - 1;
-
-            //printf ("   word: ");
-            //printWord (word);
-            //printf ("\n");
-            
-            core::Extremes wordExtremes;
-            getWordExtremes (word, &wordExtremes);
-            if (wordIndex == 0) {
-               wordExtremes.minWidth += line1Offset;
-               wordExtremes.maxWidth += line1Offset;
-            }
-            
-            // Minimum: between two *possible* breaks (or at the end).
-            // TODO: Explain why index 1 is used in lineCanBeBroken().
-            if (word->badnessAndPenalty.lineCanBeBroken (1) || atLastWord) {
-               parMin += wordExtremes.minWidth + word->hyphenWidth;
-               extremes->minWidth = misc::max (extremes->minWidth, parMin);
-               parMin = 0;
-            } else
-               // Shrinkability could be considered, but really does not play a
-               // role.
-               parMin += wordExtremes.minWidth + word->origSpace;
-            
-            // Maximum: between two *necessary* breaks (or at the end).
-            // TODO: lineMustBeBroken should be independent of the
-            // penalty index?
-            if (word->badnessAndPenalty.lineMustBeBroken (1) || atLastWord) {
-               parMax += wordExtremes.maxWidth + word->hyphenWidth;
-               extremes->maxWidth = misc::max (extremes->maxWidth, parMax);
-               parMax = 0;
-            } else
-               parMax += wordExtremes.maxWidth + word->origSpace;
-            
-            PRINTF ("    => ... extremes = %d / %d, parMin = %d, parMax = %d\n",
-                    extremes->minWidth, extremes->maxWidth, parMin, parMax);
-         }
-      }
+   } else  {
+      Paragraph *lastPar = paragraphs->getLastRef ();
+      extremes->minWidth = lastPar->maxParMin;
+      extremes->maxWidth = lastPar->maxParMax;
    }
 
    int diff = innerPadding + getStyle()->boxDiffWidth ();
    extremes->minWidth += diff;
    extremes->maxWidth += diff;
 
-   //printf ("[%p] GET_EXTREMES, on textblock that  ", this);
-   //if (words->size() == 0)
-   //   printf ("is empty\n");
-   //else {
-   //   printf ("starts with:\n   ");
-   //   printWord (words->getRef(0));
-   //   printf ("\n");
-   //}
-   //printf ("=> %d / %d\n", extremes->minWidth, extremes->maxWidth);
+   PRINTF ("=> %d / %d\n", extremes->minWidth, extremes->maxWidth);
 }
 
 
@@ -537,20 +447,7 @@ void Textblock::resizeDrawImpl ()
 
 void Textblock::markSizeChange (int ref)
 {
-   markChange (ref);
-}
-
-void Textblock::markExtremesChange (int ref)
-{
-   markChange (ref);
-}
-
-/*
- * Implementation for both mark_size_change and mark_extremes_change.
- */
-void Textblock::markChange (int ref)
-{
-   PRINTF ("[%p] MARK_CHANGE (%d): %d => ...\n", this, ref, wrapRef);
+   PRINTF ("[%p] MARK_SIZE_CHANGE (%d): %d => ...\n", this, ref, wrapRefLines);
 
    /* By the way: ref == -1 may have two different causes: (i) flush()
       calls "queueResize (-1, true)", when no rewrapping is necessary;
@@ -558,13 +455,33 @@ void Textblock::markChange (int ref)
       added to a line.  In the latter case, nothing has to be done
       now, but addLine(...) will do everything necessary. */
    if (ref != -1) {
-      if (wrapRef == -1)
-         wrapRef = ref;
+      if (wrapRefLines == -1)
+         wrapRefLines = ref;
       else
-         wrapRef = misc::min (wrapRef, ref);
+         wrapRefLines = misc::min (wrapRefLines, ref);
    }
 
-   PRINTF ("       ... => %d\n", wrapRef);
+   PRINTF ("       ... => %d\n", wrapRefLine);
+}
+
+void Textblock::markExtremesChange (int ref)
+{
+   PRINTF ("[%p] MARK_EXTREMES_CHANGE (%d): %d => ...\n",
+           this, ref, wrapRefParagraphs);
+
+   /* By the way: ref == -1 may have two different causes: (i) flush()
+      calls "queueResize (-1, true)", when no rewrapping is necessary;
+      and (ii) a word may have parentRef == -1 , when it is not yet
+      added to a line.  In the latter case, nothing has to be done
+      now, but addLine(...) will do everything necessary. */
+   if (ref != -1) {
+      if (wrapRefParagraphs == -1)
+         wrapRefParagraphs = ref;
+      else
+         wrapRefParagraphs = misc::min (wrapRefParagraphs, ref);
+   }
+
+   PRINTF ("       ... => %d\n", wrapRefParagraphs);
 }
 
 void Textblock::setWidth (int width)
@@ -1685,6 +1602,7 @@ void Textblock::addText (const char *text, size_t len,
             word->flags |= Word::DRAW_AS_ONE_TEXT;
 
             accumulateWordData (words->size() - 1);
+            correctLastWordExtremes ();
          }
       }
    }
@@ -1739,7 +1657,7 @@ void Textblock::addText0 (const char *text, size_t len, bool canBeHyphenated,
    word->content.type = core::Content::TEXT;
    word->content.text = layout->textZone->strndup(text, len);
 
-   wordWrap (words->size () - 1, false);
+   processWord (words->size () - 1);
 }
 
 /**
@@ -1770,7 +1688,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    //DBG_OBJ_ARRSET_PTR (page, "words.%d.content.widget", words->size() - 1,
    //                    word->content.widget);
 
-   wordWrap (words->size () - 1, false);
+   processWord (words->size () - 1);
    //DBG_OBJ_SET_NUM (word->content.widget, "parent_ref",
    //                 word->content.widget->parent_ref);
 
@@ -1830,6 +1748,7 @@ void Textblock::addSpace (core::style::Style *style)
    if (wordIndex >= 0) {
       fillSpace (words->getRef(wordIndex), style);
       accumulateWordData (wordIndex);
+      correctLastWordExtremes ();
    }
 }
 
@@ -1976,7 +1895,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
    word->content.type = core::Content::BREAK;
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = space;
-   wordWrap (words->size () - 1, false);
+   processWord (words->size () - 1);
 }
 
 /*
@@ -1999,7 +1918,7 @@ void Textblock::addLinebreak (core::style::Style *style)
    word->content.type = core::Content::BREAK;
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = 0;
-   wordWrap (words->size () - 1, false);
+   processWord (words->size () - 1);
 }
 
 
