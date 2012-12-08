@@ -292,7 +292,7 @@ void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
 
 void Textblock::getExtremesImpl (core::Extremes *extremes)
 {
-   PRINTF ("[%p] GET_EXTREMES: ...\n", this);
+   PRINTF ("[%p] GET_EXTREMES ...\n", this);
 
    fillParagraphs ();
 
@@ -310,7 +310,8 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    extremes->minWidth += diff;
    extremes->maxWidth += diff;
 
-   PRINTF ("=> %d / %d\n", extremes->minWidth, extremes->maxWidth);
+   PRINTF ("[%p] GET_EXTREMES => %d / %d\n",
+           this, extremes->minWidth, extremes->maxWidth);
 }
 
 

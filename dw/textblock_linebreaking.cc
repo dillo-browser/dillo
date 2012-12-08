@@ -651,9 +651,9 @@ void Textblock::handleWordExtremes (int wordIndex)
    core::Extremes wordExtremes;
    getWordExtremes (word, &wordExtremes);
 
-   //printf ("[%p] HANDLE_WORD_EXTREMES (%d):", this, wordIndex);
+   //printf ("[%p] HANDLE_WORD_EXTREMES (%d): ", this, wordIndex);
    //printWordWithFlags (word);
-   //printf ("=> %d / %d\n", wordExtremes.minWidth, wordExtremes.maxWidth);
+   //printf (" => %d / %d\n", wordExtremes.minWidth, wordExtremes.maxWidth);
 
    if (wordIndex == 0) {
       wordExtremes.minWidth += line1Offset;
@@ -664,9 +664,9 @@ void Textblock::handleWordExtremes (int wordIndex)
        words->getRef(paragraphs->getLastRef()->lastWord)
        ->badnessAndPenalty.lineMustBeBroken (1)) {
       // Add a new paragraph.
-      Paragraph *prevPar =
-         paragraphs->size() == 0 ? NULL : paragraphs->getLastRef();
       paragraphs->increase ();
+      Paragraph *prevPar = paragraphs->size() == 1 ?
+         NULL : paragraphs->getRef(paragraphs->size() - 2);
       Paragraph *par = paragraphs->getLastRef();
 
       par->firstWord = par->lastWord = wordIndex;
@@ -709,8 +709,9 @@ void Textblock::handleWordExtremes (int wordIndex)
    lastPar->parMax += wordExtremes.maxWidth + word->hyphenWidth + corrDiffMax;
    lastPar->maxParMax = misc::max (lastPar->maxParMax, lastPar->parMax);
 
-   PRINTF ("   => parMin = %d, parMax = %d\n",
-           lastPar->parMin, lastPar->parMax);
+   PRINTF ("   => parMin = %d (max = %d), parMax = %d (max = %d)\n",
+           lastPar->parMin, lastPar->maxParMin, lastPar->parMax,
+           lastPar->maxParMax);
 
    lastPar->lastWord = wordIndex;
 }
