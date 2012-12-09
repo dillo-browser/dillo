@@ -19,7 +19,6 @@ noinst_PROGRAMS = \
 	dw-imgbuf-mem-test \
 	dw-resource-test \
 	dw-ui-test \
-	fltk-browser \
 	shapes \
 	cookies \
 	liang \
