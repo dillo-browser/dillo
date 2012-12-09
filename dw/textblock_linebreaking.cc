@@ -736,13 +736,13 @@ int Textblock::hyphenateWord (int wordIndex)
    Word *hyphenatedWord = words->getRef(wordIndex);
    char lang[3] = { hyphenatedWord->style->x_lang[0], 
                     hyphenatedWord->style->x_lang[1], 0 };
-   Hyphenator *hyphenator =
-      Hyphenator::getHyphenator (layout->getPlatform (), lang);
+   Hyphenator *hyphenator = Hyphenator::getHyphenator (lang);
    PRINTF ("[%p]    considering to hyphenate word %d, '%s', in language '%s'\n",
            this, wordIndex, words->getRef(wordIndex)->content.text, lang);
    int numBreaks;
    int *breakPos =
-      hyphenator->hyphenateWord (hyphenatedWord->content.text, &numBreaks);
+      hyphenator->hyphenateWord (layout->getPlatform (),
+                                 hyphenatedWord->content.text, &numBreaks);
 
    if (numBreaks > 0) {
       Word origWord = *hyphenatedWord;

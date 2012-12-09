@@ -19,15 +19,11 @@ using namespace lout::misc;
 
 namespace dw {
 
-HashTable <TypedPair <TypedPointer <core::Platform>, ConstString>,
-           Hyphenator> *Hyphenator::hyphenators =
-   new HashTable <TypedPair <TypedPointer <core::Platform>, ConstString>,
-                  Hyphenator> (true, true);
+HashTable <String, Hyphenator> *Hyphenator::hyphenators =
+   new HashTable <String, Hyphenator> (true, true);
 
-Hyphenator::Hyphenator (core::Platform *platform,
-                        const char *patFile, const char *excFile, int pack)
+Hyphenator::Hyphenator (const char *patFile, const char *excFile, int pack)
 {
-   this->platform = platform;
    trie = NULL; // As long we are not sure whether a pattern file can be read.
 
    char buf[PATH_MAX + 1];
@@ -91,20 +87,13 @@ Hyphenator::~Hyphenator ()
    delete exceptions;
 }
 
-Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
-                                       const char *lang)
+Hyphenator *Hyphenator::getHyphenator (const char *lang)
 {
-   // TODO Not very efficient. Other key than TypedPair?
-   // (Keeping the parts of the pair on the stack does not help, since
-   // ~TypedPair deletes them, so they have to be kept on the heap.)
-   TypedPair <TypedPointer <core::Platform>, ConstString> *pair =
-      new TypedPair <TypedPointer <core::Platform>,
-                     ConstString> (new TypedPointer <core::Platform> (platform),
-                                   new String (lang));
+   String *langString = new String (lang);
 
-   Hyphenator *hyphenator = hyphenators->get (pair);
+   Hyphenator *hyphenator = hyphenators->get (langString);
    if (hyphenator)
-      delete pair;
+      delete langString;
    else {
       char patFile [PATH_MAX];
       snprintf (patFile, sizeof (patFile), "%s/hyphenation/%s.pat",
@@ -116,8 +105,8 @@ Hyphenator *Hyphenator::getHyphenator (core::Platform *platform,
       //printf ("Loading hyphenation patterns for language '%s' from '%s' and "
       //        "exceptions from '%s' ...\n", lang, patFile, excFile);
 
-      hyphenator = new Hyphenator (platform, patFile, excFile);
-      hyphenators->put (pair, hyphenator);
+      hyphenator = new Hyphenator (patFile, excFile);
+      hyphenators->put (langString, hyphenator);
    }
 
    //lout::misc::StringBuffer sb;
@@ -221,7 +210,8 @@ bool Hyphenator::isCharPartOfActualWord (char *s)
 /**
  * Given a word, returns a list of the possible hyphenation points.
  */
-int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
+int *Hyphenator::hyphenateWord(core::Platform *platform,
+                               const char *word, int *numBreaks)
 {
    if ((trie == NULL && exceptions ==NULL) || !isHyphenationCandidate (word)) {
       *numBreaks = 0;
@@ -261,7 +251,7 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
       } else
          nextStart = end;
 
-      hyphenateSingleWord (wordLc + start, start, &breakPos);
+      hyphenateSingleWord (platform, wordLc + start, start, &breakPos);
       start = nextStart;
    }
 
@@ -279,8 +269,9 @@ int *Hyphenator::hyphenateWord(const char *word, int *numBreaks)
  * Hyphenate a single word, which only consists of lowercase
  * characters. Store break positions + "offset" in "breakPos".
  */
-void Hyphenator::hyphenateSingleWord(char *wordLc, int offset,
-                                    SimpleVector <int> *breakPos)
+void Hyphenator::hyphenateSingleWord(core::Platform *platform,
+                                     char *wordLc, int offset,
+                                     SimpleVector <int> *breakPos)
 {
    // If the word is an exception, get the stored points.
    Vector <Integer> *exceptionalBreaks;
