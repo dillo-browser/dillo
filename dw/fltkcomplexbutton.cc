@@ -96,14 +96,7 @@ int ComplexButton::handle(int event) {
   case FL_FOCUS : /* FALLTHROUGH */
   case FL_UNFOCUS :
     if (Fl::visible_focus()) {
-      if (box() == FL_NO_BOX) {
-        // Widgets with the FL_NO_BOX boxtype need a parent to
-        // redraw, since it is responsible for redrawing the
-        // background...
-        int X = x() > 0 ? x() - 1 : 0;
-        int Y = y() > 0 ? y() - 1 : 0;
-        if (window()) window()->damage(FL_DAMAGE_ALL, X, Y, w() + 2, h() + 2);
-      } else redraw();
+      redraw();
       return 1;
     } else return 0;
   case FL_KEYBOARD :

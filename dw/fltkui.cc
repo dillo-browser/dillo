@@ -532,7 +532,7 @@ Fl_Widget *FltkComplexButtonResource::createNewWidget (core::Allocation
    button->callback (widgetCallback, this);
    button->when (FL_WHEN_RELEASE);
    if (!relief)
-      button->box(FL_FLAT_BOX);
+      button->box(FL_NO_BOX);
 
    flatView = new FltkFlatView (allocation->x + reliefXThickness (),
                                 allocation->y + reliefYThickness (),
