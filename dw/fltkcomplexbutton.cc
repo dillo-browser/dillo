@@ -98,8 +98,6 @@ int ComplexButton::handle(int event) {
         !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT | FL_META))) {
       value(1);
       set_changed();
-      Fl_Widget_Tracker wp(this);
-      if (wp.deleted()) return 1;
       if (when() & FL_WHEN_RELEASE) do_callback();
       return 1;
     } else return 0;
