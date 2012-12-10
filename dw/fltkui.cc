@@ -445,7 +445,7 @@ void FltkComplexButtonResource::widgetCallback (Fl_Widget *widget,
 {
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
 
-   if (!Fl::event_button3()) {
+   if (Fl::event() == FL_RELEASE && Fl::event_button() != FL_RIGHT_MOUSE) {
       int w = widget->w(), h = widget->h();
 
       res->click_x = Fl::event_x() - widget->x();
@@ -462,6 +462,18 @@ void FltkComplexButtonResource::widgetCallback (Fl_Widget *widget,
          setButtonEvent(&event);
          res->emitClicked(&event);
       }
+   } else if (Fl::event() == FL_KEYBOARD) {
+      // Simulate a click.
+      dw::core::EventButton event;
+
+      res->click_x = res->click_y = 0;
+      event.xCanvas = widget->x() + res->style->boxOffsetX();
+      event.yCanvas = widget->y() + res->style->boxOffsetY();
+      // \todo Find out why a left click doesn't have core::BUTTON1_MASK set.
+      event.state = (core::ButtonState) 0;
+      event.button = 1;
+      event.numPressed = 1;
+      res->emitClicked(&event);
    }
 }
 
