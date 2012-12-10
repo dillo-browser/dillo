@@ -149,9 +149,6 @@ dw_ui_test_LDADD = \
 	$(top_builddir)/lout/liblout.a \
 	@LIBFLTK_LIBS@
 
-fltk_browser_SOURCES = fltk_browser.cc
-fltk_browser_LDADD = @LIBFLTK_LIBS@
-
 shapes_SOURCES = shapes.cc
 shapes_LDADD = \
 	$(top_builddir)/dw/libDw-core.a \
