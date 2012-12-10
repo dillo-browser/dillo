@@ -45,7 +45,6 @@ int ComplexButton::value(int v) {
 void ComplexButton::draw() {
   Fl_Color col = value() ? selection_color() : color();
   draw_box(value() ? (down_box()?down_box():fl_down(box())) : box(), col);
-  if (Fl::focus() == this) draw_focus();
 
   // ComplexButton is a Group; draw its children
   for (int i = children () - 1; i >= 0; i--) {
@@ -53,6 +52,7 @@ void ComplexButton::draw() {
      child (i)->position(x()+(w()-child(i)->w())/2,y()+(h()-child(i)->h())/2);
      draw_child (*child (i));
   }
+  if (Fl::focus() == this) draw_focus();
 }
 
 int ComplexButton::handle(int event) {
