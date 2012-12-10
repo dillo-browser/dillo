@@ -143,7 +143,7 @@ void DilloPlain::addLine(char *Buf, uint_t BufSize)
       // Limit word length to avoid X11 coordinate
       // overflow with extremely long lines.
       while ((len = a_Misc_expand_tabs(&Buf, end, buf, sizeof(buf) - 1))) {
-         assert (len < sizeof(buf));
+         assert ((uint_t)len < sizeof(buf));
          buf[len] = '\0';
          DW2TB(dw)->addText(buf, len, widgetStyle);
       }
