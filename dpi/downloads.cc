@@ -961,6 +961,7 @@ static void dlwin_esc_cb(Fl_Widget *, void *)
                      "ABORT them and EXIT anyway?";
 
    if (dl_win && dl_win->num_running() > 0) {
+      fl_message_title("Dillo Downloads: Abort downloads?");
       int ch = fl_choice("%s", "Cancel", "*No", "Yes", msg);
       if (ch == 0 || ch == 1)
          return;
@@ -1018,6 +1019,7 @@ DLAction DLWin::check_filename(char **p_fullname)
    dStr_sprintf(ds,
                 "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
                 *p_fullname, (int)ss.st_size);
+   fl_message_title("Dillo Downloads: File exists!");
    ch = fl_choice("%s", "Abort", "Continue", "Rename", ds->str);
    dStr_free(ds, 1);
    MSG("Choice %d\n", ch);
@@ -1119,7 +1121,7 @@ DLWin::DLWin(int ww, int wh) {
    mDList = new DLItemList();
 
    // Create the empty main window
-   mWin = new Fl_Window(ww, wh, "Downloads:");
+   mWin = new Fl_Window(ww, wh, "Dillo Downloads");
    mWin->begin();
    mScroll = new DlScroll(0,0,ww,wh);
    mScroll->begin();
@@ -1137,6 +1139,8 @@ DLWin::DLWin(int ww, int wh) {
    sigemptyset(&mask_sigchld);
    sigaddset(&mask_sigchld, SIGCHLD);
    est_sigchld();
+
+   fl_message_title_default("Dillo Downloads: Message");
 
    // Set the cleanup timeout
    Fl::add_timeout(1.0, cleanup_cb, mDList);
