@@ -469,7 +469,7 @@ void FltkComplexButtonResource::widgetCallback (Fl_Widget *widget,
       res->click_x = res->click_y = 0;
       event.xCanvas = widget->x() + res->style->boxOffsetX();
       event.yCanvas = widget->y() + res->style->boxOffsetY();
-      // \todo Find out why a left click doesn't have core::BUTTON1_MASK set.
+      // ButtonState doesn't have mouse button values on a release.
       event.state = (core::ButtonState) 0;
       event.button = 1;
       event.numPressed = 1;
