@@ -619,20 +619,21 @@ static int Auth_do_auth_dialog(const AuthParse_t *auth_parse,
                                const DilloUrl *url)
 {
    int ret;
-   char *message;
+   char *title, *msg;
    AuthDialogData_t *data;
    const char *typestr = auth_parse->type == DIGEST ? "Digest" : "Basic";
 
    _MSG("auth.c: Auth_do_auth_dialog: realm = '%s'\n", auth_parse->realm);
 
-   message = dStrconcat("The server at ", URL_HOST(url), " requires a username"
-                        " and password for  \"", auth_parse->realm, "\".\n\n"
-                        "Authentication scheme: ", typestr, NULL);
+   title = dStrconcat("Dillo: Password for ", auth_parse->realm, NULL);
+   msg = dStrconcat("The server at ", URL_HOST(url), " requires a username"
+                    " and password for  \"", auth_parse->realm, "\".\n\n"
+                    "Authentication scheme: ", typestr, NULL);
    data = dNew(AuthDialogData_t, 1);
    data->auth_parse = auth_parse;
    data->url = a_Url_dup(url);
-   ret = a_Dialog_user_password(message, Auth_do_auth_dialog_cb, data);
-   dFree(message);
+   ret = a_Dialog_user_password(title, msg, Auth_do_auth_dialog_cb, data);
+   dFree(title); dFree(msg);
    a_Url_free((void *)data->url);
    dFree(data);
    return ret;

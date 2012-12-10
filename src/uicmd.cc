@@ -476,7 +476,8 @@ static void win_cb (Fl_Widget *w, void *cb_data) {
    int choice = 1, ntabs = tabs->num_tabs();
 
    if (prefs.show_quit_dialog && ntabs > 1)
-      choice = a_Dialog_choice5("Window contains more than one tab.",
+      choice = a_Dialog_choice5("Dillo: Close window?",
+                                "Window contains more than one tab.",
                                 "Close", "Cancel", NULL, NULL, NULL);
    if (choice == 1)
       while (ntabs-- > 0)
@@ -616,8 +617,9 @@ void a_UIcmd_close_all_bw(void *)
    int choice = 1;
 
    if (prefs.show_quit_dialog && a_Bw_num() > 1)
-      choice = a_Dialog_choice5("More than one open tab or window.",
-         "Quit", "Cancel", NULL, NULL, NULL);
+      choice = a_Dialog_choice5("Dillo: Quit?",
+                                "More than one open tab or window.",
+                                "Quit", "Cancel", NULL, NULL, NULL);
    if (choice == 1)
       while ((bw = a_Bw_get(0)))
          a_UIcmd_close_bw((void*)bw);
@@ -947,7 +949,7 @@ void a_UIcmd_search_dialog(void *vbw)
 {
    const char *query;
 
-   if ((query = a_Dialog_input("Search the Web:"))) {
+   if ((query = a_Dialog_input("Dillo: Search", "Search the Web:"))) {
       char *url_str = UIcmd_make_search_str(query);
       a_UIcmd_open_urlstr(vbw, url_str);
       dFree(url_str);
@@ -960,9 +962,10 @@ void a_UIcmd_search_dialog(void *vbw)
 const char *a_UIcmd_get_passwd(const char *user)
 {
    const char *passwd;
-   char *prompt = dStrconcat("Password for user \"", user, "\"", NULL);
-   passwd = a_Dialog_passwd(prompt);
-   dFree(prompt);
+   const char *title = "Dillo: Password";
+   char *msg = dStrconcat("Password for user \"", user, "\"", NULL);
+   passwd = a_Dialog_passwd(title, msg);
+   dFree(msg);
    return passwd;
 }
 
@@ -1099,9 +1102,9 @@ void a_UIcmd_view_page_bugs(void *vbw)
    BrowserWindow *bw = (BrowserWindow*)vbw;
 
    if (bw->num_page_bugs > 0) {
-      a_Dialog_text_window(bw->page_bugs->str, "Dillo: Detected HTML errors");
+      a_Dialog_text_window("Dillo: Detected HTML errors", bw->page_bugs->str);
    } else {
-      a_Dialog_msg("Zero detected HTML errors!");
+      a_Dialog_msg("Dillo: Valid HTML!", "Zero detected HTML errors!");
    }
 }
 
