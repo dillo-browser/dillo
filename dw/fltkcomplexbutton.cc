@@ -75,22 +75,15 @@ int ComplexButton::handle(int event) {
       value_ = newval;
       set_changed();
       redraw();
-      if (when() & FL_WHEN_CHANGED) do_callback();
     }
     return 1;
   case FL_RELEASE:
     if (value_ == oldval) {
-      if (when() & FL_WHEN_NOT_CHANGED) do_callback();
       return 1;
     }
     set_changed();
     value(oldval);
     set_changed();
-    if (when() & FL_WHEN_CHANGED) {
-      Fl_Widget_Tracker wp(this);
-      do_callback();
-      if (wp.deleted()) return 1;
-    }
     if (when() & FL_WHEN_RELEASE) do_callback();
     return 1;
   case FL_FOCUS : /* FALLTHROUGH */
