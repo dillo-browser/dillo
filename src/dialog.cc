@@ -122,6 +122,7 @@ int EnterButton::handle(int e)
  */
 void a_Dialog_msg(const char *msg)
 {
+   fl_message_title("Dillo: Message");
    fl_message("%s", msg);
 }
 
@@ -148,7 +149,7 @@ const char *a_Dialog_input(const char *msg)
 
    input_answer = 0;
 
-   Fl_Window *window = new Fl_Window(ww,wh,"Ask");
+   Fl_Window *window = new Fl_Window(ww,wh,"Dillo: Input");
    window->set_modal();
    window->begin();
     Fl_Group* ib = new Fl_Group(0,0,window->w(),window->h());
@@ -225,6 +226,7 @@ const char *a_Dialog_input(const char *msg)
  */
 const char *a_Dialog_passwd(const char *msg)
 {
+   fl_message_title("Dillo: Password");
    return fl_password("%s", "", msg);
 }
 
@@ -287,7 +289,7 @@ void a_Dialog_text_window(const char *txt, const char *title)
 {
    int wh = prefs.height, ww = prefs.width, bh = 30;
 
-   Fl_Window *window = new Fl_Window(ww, wh, title ? title : "Dillo text");
+   Fl_Window *window = new Fl_Window(ww, wh, title ? title : "Dillo: Text");
    Fl_Group::current(0);
 
 
@@ -346,7 +348,7 @@ int a_Dialog_choice5(const char *QuestionTxt,
    }
    ww = 140 + nb*(bw+10);
 
-   Fl_Window *window = new Fl_Window(ww,wh,"Choice5");
+   Fl_Window *window = new Fl_Window(ww,wh,"Dillo: Choice");
    window->set_modal();
    window->begin();
     Fl_Group* ib = new Fl_Group(0,0,window->w(),window->h());
@@ -411,7 +413,7 @@ int a_Dialog_user_password(const char *message, UserPasswordCB cb, void *vp)
       button_h = 30;
 
    /* window is resized below */
-   Fl_Window *window = new Fl_Window(window_w,window_h,"Dillo User/Password");
+   Fl_Window *window = new Fl_Window(window_w,window_h,"Dillo: User/Password");
    Fl_Group::current(0);
    window->user_data(NULL);
 

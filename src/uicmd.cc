@@ -860,7 +860,7 @@ void a_UIcmd_save(void *vbw)
  */
 const char *a_UIcmd_select_file()
 {
-   return a_Dialog_select_file("Select a File", NULL, NULL);
+   return a_Dialog_select_file("Dillo: Select a File", NULL, NULL);
 }
 
 /*
@@ -893,7 +893,7 @@ void a_UIcmd_open_file(void *vbw)
    char *name;
    DilloUrl *url;
 
-   name = a_Dialog_open_file("Open File", NULL, "");
+   name = a_Dialog_open_file("Dillo: Open File", NULL, "");
 
    if (name) {
       url = a_Url_new(name, "file:");
@@ -977,7 +977,7 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
    a_UIcmd_set_save_dir(prefs.save_dir);
 
    SuggestedName = UIcmd_make_save_filename(URL_STR(url));
-   if ((name = a_Dialog_save_file("Save Link as File", NULL, SuggestedName))) {
+   if ((name = a_Dialog_save_file("Dillo: Save Link as File", NULL, SuggestedName))) {
       MSG("a_UIcmd_save_link: %s\n", name);
       a_Nav_save_url(bw, url, name);
    }
@@ -1099,7 +1099,7 @@ void a_UIcmd_view_page_bugs(void *vbw)
    BrowserWindow *bw = (BrowserWindow*)vbw;
 
    if (bw->num_page_bugs > 0) {
-      a_Dialog_text_window(bw->page_bugs->str, "Detected HTML errors");
+      a_Dialog_text_window(bw->page_bugs->str, "Dillo: Detected HTML errors");
    } else {
       a_Dialog_msg("Zero detected HTML errors!");
    }
