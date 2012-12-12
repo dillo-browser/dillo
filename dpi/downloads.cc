@@ -1100,10 +1100,14 @@ public:
   {
     Fl_Scroll::resize(x_, y_, w_, h_);
     Fl_Widget *resizable_ = resizable();
+    int sb_size =
+       resizable_->h() <= h() ? 0 :
+       scrollbar_size() ? scrollbar_size() :
+       Fl::scrollbar_size();
     if (resizable_)
       resizable_->resize(resizable_->x(),
                          resizable_->y(),
-                         w() - scrollbar_size(),
+                         w() - sb_size,
                          resizable_->h());
   }
   DlScroll(int x, int y, int w, int h, const char *l = 0)
