@@ -1,4 +1,7 @@
 #include "unicode.hh"
+#include "misc.hh"
+
+using namespace lout::misc;
 
 namespace lout {
 
@@ -47,27 +50,72 @@ bool isAlpha (int ch)
    return ch < 0x500 && (alpha[ch / 8] & (1 << (ch & 7)));
 }
 
-int decodeUtf8 (char *s)
+int decodeUtf8 (const char *s)
 {
    if((s[0] & 0x80) == 0)
       return s[0];
    else {
-      int mask = 0xe0, bits = 0xc0, done = 0, ch = 0, i = 0;
+      int mask = 0xe0, bits = 0xc0, done = 0, ch = 0;
       for(int j = 1; !done && j < 7;
           j++, mask = 0x80 | (mask >> 1), bits = 0x80 | (bits >> 1)) {
-         if(((unsigned char)s[i] & mask) == bits) {
+         if(((unsigned char)s[0] & mask) == bits) {
             done = 1;
-            ch = (unsigned char)s[i] & ~mask & 0xff;
-            i++;
-            for(int k = 0; k < j; k++) {
-               ch = (ch << 6) | ((unsigned char)s[i] & 0x3f);
-               i++;
-            }
+            ch = (unsigned char)s[0] & ~mask & 0xff;
+            for(int k = 0; k < j; k++)
+               ch = (ch << 6) | ((unsigned char)s[k + 1] & 0x3f);
          }
       }
 
       return ch;
    }
+}
+
+static const char *_nextUtf8Char (const char *s)
+{
+   if (s == NULL)
+      return NULL;
+
+   const char *r;
+   if((s[0] & 0x80) == 0)
+      r = s + 1;
+   else {
+      int mask = 0xe0, bits = 0xc0, done = 0;
+      for(int j = 1; !done && j < 7;
+          j++, mask = 0x80 | (mask >> 1), bits = 0x80 | (bits >> 1)) {
+         if(((unsigned char)s[0] & mask) == bits) {
+            done = 1;
+            r = s + j + 1;
+         }
+      }
+
+      if(!done) {
+         assertNotReached();
+         return NULL;
+      }
+   }
+
+   return r;
+}
+
+const char *nextUtf8Char (const char *s)
+{
+   const char *r = _nextUtf8Char (s);
+   if (r != NULL && r[0] == 0)
+      return NULL;
+   else
+      return r;
+}
+
+const char *nextUtf8Char (const char *s, int len)
+{
+   if (len <= 0)
+      return NULL;
+   
+   const char *r = _nextUtf8Char (s);
+   if (r != NULL && r - s >= len)
+      return NULL;
+   else
+      return r;
 }
 
 } // namespace lout

@@ -21,6 +21,7 @@
 #include "textblock.hh"
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
+#include "../lout/unicode.hh"
 
 #include <stdio.h>
 #include <math.h>
@@ -34,6 +35,7 @@ static dw::core::style::Tooltip *hoverTooltip = NULL;
 
 
 using namespace lout;
+using namespace lout::unicode;
 
 namespace dw {
 
@@ -1425,13 +1427,12 @@ void Textblock::addText (const char *text, size_t len,
    // Count dividing characters.
    int numParts = 1;
 
-   for (int i = 0; i < (int)len;
-        i < (int)len && (i = layout->nextGlyph (text, i))) {
+   for (const char *s = text; s; s = nextUtf8Char (s, text + len - s)) {
       int foundDiv = -1;
       for (int j = 0; foundDiv == -1 && j < NUM_DIV_CHARS; j++) {
          int lDiv = strlen (divChars[j].s);
-         if (i <= (int)len - lDiv) {
-            if (memcmp (text + i, divChars[j].s, lDiv * sizeof (char)) == 0)
+         if (s  <= text + len - lDiv) {
+            if (memcmp (s, divChars[j].s, lDiv * sizeof (char)) == 0)
                foundDiv = j;
          }
       }
@@ -1466,13 +1467,12 @@ void Textblock::addText (const char *text, size_t len,
       partStart[0] = 0;
       partEnd[numParts - 1] = len;
 
-      for (int i = 0; i < (int)len;
-           i < (int)len && (i = layout->nextGlyph (text, i))) {
+      for (const char *s = text; s; s = nextUtf8Char (s, text + len - s)) {
          int foundDiv = -1;
          for (int j = 0; foundDiv == -1 && j < NUM_DIV_CHARS; j++) {
             int lDiv = strlen (divChars[j].s);
-            if (i <= (int)len - lDiv) {
-               if (memcmp (text + i, divChars[j].s, lDiv * sizeof (char)) == 0)
+            if (s <= text + len - lDiv) {
+               if (memcmp (s, divChars[j].s, lDiv * sizeof (char)) == 0)
                   foundDiv = j;
             }
          }
@@ -1490,8 +1490,8 @@ void Textblock::addText (const char *text, size_t len,
                unbreakableForMinWidth[n] =
                   divChars[foundDiv].unbreakableForMinWidth;
                canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
-               partEnd[n] = i;
-               partStart[n + 1] = i + lDiv;
+               partEnd[n] = s - text;
+               partStart[n + 1] = s - text + lDiv;
                n++;
                totalLenCharRemoved += lDiv;
             } else {
@@ -1505,8 +1505,8 @@ void Textblock::addText (const char *text, size_t len,
                   unbreakableForMinWidth[n] =
                      divChars[foundDiv].unbreakableForMinWidth;
                   canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
-                  partEnd[n] = i;
-                  partStart[n + 1] = i;
+                  partEnd[n] = s - text;
+                  partStart[n + 1] = s - text;
                   n++;
                }
 
@@ -1517,8 +1517,8 @@ void Textblock::addText (const char *text, size_t len,
                   unbreakableForMinWidth[n] =
                      divChars[foundDiv].unbreakableForMinWidth;
                   canBeHyphenated[n + 1] = divChars[foundDiv].canBeHyphenated;
-                  partEnd[n] = i + lDiv;
-                  partStart[n + 1] = i + lDiv;
+                  partEnd[n] = s - text + lDiv;
+                  partStart[n + 1] = s - text + lDiv;
                   n++;
                }
             }

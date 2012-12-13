@@ -16,6 +16,7 @@
 using namespace lout::object;
 using namespace lout::container::typed;
 using namespace lout::misc;
+using namespace lout::unicode;
 
 namespace dw {
 
@@ -204,7 +205,7 @@ bool Hyphenator::isCharPartOfActualWord (char *s)
         (unsigned char)s[1] == 0x9f /* ß */ ));
 #endif
 
-   return lout::unicode::isAlpha (lout::unicode::decodeUtf8 (s));
+   return isAlpha (decodeUtf8 (s));
 }
 
 /**
@@ -315,9 +316,10 @@ void Hyphenator::hyphenateSingleWord(core::Platform *platform,
 
    // No hyphens in the first two chars or the last two.
    // Characters are not bytes, so UTF-8 characters must be counted.
-   int numBytes1Start = platform->nextGlyph (wordLc, 0);
-   int numBytes2Start = platform->nextGlyph (wordLc, numBytes1Start);
-   for (int i = 0; i < numBytes2Start; i++)
+   const char *bytesStart =  nextUtf8Char (nextUtf8Char (wordLc));
+   // TODO Check bytesStart == NULL;
+   int numBytesStart = bytesStart - wordLc;
+   for (int i = 0; i < numBytesStart; i++)
       points.set (i + 1, 0);
    
    int len = strlen (wordLc);

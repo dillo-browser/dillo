@@ -23,7 +23,8 @@ noinst_PROGRAMS = \
 	cookies \
 	liang \
 	trie \
-	notsosimplevector
+	notsosimplevector \
+	unicode-test
 
 dw_anchors_test_SOURCES = dw_anchors_test.cc
 dw_anchors_test_LDADD = \
@@ -180,3 +181,7 @@ trie_LDADD = \
 notsosimplevector_SOURCES = notsosimplevector.cc
 
 notsosimplevector_LDADD = $(top_builddir)/lout/liblout.a
+
+unicode_test_SOURCES = unicode_test.cc
+
+unicode_test_LDADD = $(top_builddir)/lout/liblout.a
