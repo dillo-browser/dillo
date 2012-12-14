@@ -35,6 +35,8 @@ dillo-3.0.3 [not released yet]
    that character.
  - When active tab is closed, focus the previously visited one.
    Patches: Jorge Arellano Cid
++- Better window titles.
+   Patch: Jeremy Henty
 
 -----------------------------------------------------------------------------
 
