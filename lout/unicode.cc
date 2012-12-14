@@ -54,53 +54,58 @@ int decodeUtf8 (const char *s)
 {
    if((s[0] & 0x80) == 0)
       return s[0];
-   else {
-      int mask = 0xe0, bits = 0xc0, done = 0, ch = 0;
-      for(int j = 1; !done && j < 7;
-          j++, mask = 0x80 | (mask >> 1), bits = 0x80 | (bits >> 1)) {
-         if(((unsigned char)s[0] & mask) == bits) {
-            done = 1;
-            ch = (unsigned char)s[0] & ~mask & 0xff;
-            for(int k = 0; k < j; k++)
-               ch = (ch << 6) | ((unsigned char)s[k + 1] & 0x3f);
-         }
-      }
-
-      return ch;
-   }
+   else if((s[0] & 0xe0) == 0xc0 && (s[1] & 0xc0) == 0x80)
+      return ((s[0] & 0x1f) << 6) | (s[1] & 0x3f);
+   else if((s[0] & 0xf0) == 0xe0 && (s[1] & 0xc0) == 0x80
+           && (s[2] & 0xc0) == 0x80)
+      return ((s[0] & 0x0f) << 12) | ((s[1] & 0x3f) << 6)  | (s[2] & 0x3f);
+   else if((s[0] & 0xf8) == 0xf0 && (s[1] & 0xc0) == 0x80
+           && (s[2] & 0xc0) == 0x80 && (s[3] & 0xc0) == 0x80)
+      return ((s[0] & 0x0f) << 18) | ((s[1] & 0x3f) << 12)
+         | ((s[2] & 0x3f) << 6) | (s[3] & 0x3f);
+   else
+      return '?';
 }
 
-static const char *_nextUtf8Char (const char *s)
+
+int decodeUtf8 (const char *s, int len)
 {
-   if (s == NULL)
-      return NULL;
-
-   const char *r;
-   if((s[0] & 0x80) == 0)
-      r = s + 1;
-   else {
-      int mask = 0xe0, bits = 0xc0, done = 0;
-      for(int j = 1; !done && j < 7;
-          j++, mask = 0x80 | (mask >> 1), bits = 0x80 | (bits >> 1)) {
-         if(((unsigned char)s[0] & mask) == bits) {
-            done = 1;
-            r = s + j + 1;
-         }
-      }
-
-      if(!done) {
-         assertNotReached();
-         return NULL;
-      }
-   }
-
-   return r;
+   if(len >= 1 && (s[0] & 0x80) == 0)
+      return s[0];
+   else if(len >= 2 && (s[0] & 0xe0) == 0xc0 && (s[1] & 0xc0) == 0x80)
+      return ((s[0] & 0x1f) << 6) | (s[1] & 0x3f);
+   else if(len >= 3 && (s[0] & 0xf0) == 0xe0 && (s[1] & 0xc0) == 0x80
+           && (s[2] & 0xc0) == 0x80)
+      return ((s[0] & 0x0f) << 12) | ((s[1] & 0x3f) << 6)  | (s[2] & 0x3f);
+   else if(len >= 4 && (s[0] & 0xf8) == 0xf0 && (s[1] & 0xc0) == 0x80
+           && (s[2] & 0xc0) == 0x80 && (s[3] & 0xc0) == 0x80)
+      return ((s[0] & 0x0f) << 18) | ((s[1] & 0x3f) << 12)
+         | ((s[2] & 0x3f) << 6) | (s[3] & 0x3f);
+   else
+      return '?';
 }
 
 const char *nextUtf8Char (const char *s)
 {
-   const char *r = _nextUtf8Char (s);
-   if (r != NULL && r[0] == 0)
+   const char *r;
+
+   if (s == NULL || s[0] == 0)
+      r = NULL;   
+   else if((s[0] & 0x80) == 0)
+      r = s + 1;
+   else if((s[0] & 0xe0) == 0xc0 && (s[1] & 0xc0) == 0x80)
+      r = s + 2;
+   else if((s[0] & 0xf0) == 0xe0 && (s[1] & 0xc0) == 0x80
+           && (s[2] & 0xc0) == 0x80)
+      r = s + 3;
+   else if((s[0] & 0xf8) == 0xf0 && (s[1] & 0xc0) == 0x80
+           && (s[2] & 0xc0) == 0x80 && (s[3] & 0xc0) == 0x80)
+      r = s + 4;
+   else
+      // invalid UTF-8 sequence: treat as one byte.
+      r = s + 1;
+
+   if (r && r[0] == 0)
       return NULL;
    else
       return r;
@@ -108,11 +113,25 @@ const char *nextUtf8Char (const char *s)
 
 const char *nextUtf8Char (const char *s, int len)
 {
-   if (len <= 0)
-      return NULL;
-   
-   const char *r = _nextUtf8Char (s);
-   if (r != NULL && r - s >= len)
+   const char *r;
+
+   if (s == NULL || len <= 0)
+      r = NULL;   
+   else if(len >= 1 && (s[0] & 0x80) == 0)
+      r = s + 1;
+   else if(len >= 2 && (s[0] & 0xe0) == 0xc0 && (s[1] & 0xc0) == 0x80)
+      r = s + 2;
+   else if(len >= 3 && (s[0] & 0xf0) == 0xe0 && (s[1] & 0xc0) == 0x80
+           && (s[2] & 0xc0) == 0x80)
+      r = s + 3;
+   else if(len >= 4 && (s[0] & 0xf8) == 0xf0 && (s[1] & 0xc0) == 0x80
+           && (s[2] & 0xc0) == 0x80 && (s[3] & 0xc0) == 0x80)
+      r = s + 4;
+   else
+      // invalid UTF-8 sequence: treat as one byte.
+      r = s + 1;
+
+   if (r && r - s >= len)
       return NULL;
    else
       return r;
