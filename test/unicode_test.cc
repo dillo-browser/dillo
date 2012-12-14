@@ -29,7 +29,8 @@ int main (int argc, char *argv[])
       printf ("%3d -> U+%04x\n", (int)(s - t2), decodeUtf8(s));
 
    puts ("===== Fltk, not 0-terminated =====");
-   for (const char *s = t2; *s; s = fl_utf8fwd (s + 1, t2, t2 + t2len))
+   for (const char *s = t2; *s;
+        s - t2 < t2len && (s = fl_utf8fwd (s + 1, t2, t2 + t2len)))
       printf ("%3d -> U+%04x\n", (int)(s - t2), decodeUtf8(s));
    
    return 0;
