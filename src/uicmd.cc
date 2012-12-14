@@ -289,9 +289,15 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
 
    if (focus) {
       switch_tab(btn);
-   } else if (num_tabs() == 2) {
-      // no focus and tabbar added: redraw current page
-      Wizard->redraw();
+   } else {        // no focus
+      // set focus counter
+      increase_focus_counter();
+      btn->focus_num(focus_counter);
+
+      if (num_tabs() == 2) {
+         // tabbar added: redraw current page
+         Wizard->redraw();
+      }
    }
    if (num_tabs() == 1)
       btn->hide();
