@@ -1209,6 +1209,28 @@ int Textblock::findLineOfWord (int wordIndex)
 }
 
 /**
+ * \brief Find the paragraph of word \em wordIndex.
+ */
+int Textblock::findParagraphOfWord (int wordIndex)
+{
+   int high = paragraphs->size () - 1, index, low = 0;
+
+   if (wordIndex < 0 || wordIndex >= words->size ())
+      return -1;
+
+   while (true) {
+      index = (low + high) / 2;
+      if (wordIndex >= paragraphs->getRef(index)->firstWord) {
+         if (wordIndex <= paragraphs->getRef(index)->lastWord)
+            return index;
+         else
+            low = index + 1;
+      } else
+         high = index - 1;
+   }
+}
+
+/**
  * \brief Find the index of the word, or -1.
  */
 Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
