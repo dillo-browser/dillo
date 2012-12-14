@@ -184,4 +184,6 @@ notsosimplevector_LDADD = $(top_builddir)/lout/liblout.a
 
 unicode_test_SOURCES = unicode_test.cc
 
-unicode_test_LDADD = $(top_builddir)/lout/liblout.a
+unicode_test_LDADD = \
+	$(top_builddir)/lout/liblout.a \
+	@LIBFLTK_LIBS@
