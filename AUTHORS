@@ -86,3 +86,4 @@ Non-Dillo code:
   public domain.
 * src/md5.[ch] contain code by L. Peter Deutsch whose copyright is held by
   Aladdin Enterprises.
+* src/tipwin.cc contains code by Greg Ercolano.
