@@ -1082,13 +1082,9 @@ void Textblock::fillParagraphs ()
    else
       firstWordOfLine = 0;
 
-   // Binary search would be faster, but there should not be many paragraphs
-   // in a text block (so that binary search may be even slower).
-   int parNo = 0;
-   while (paragraphs->size() - 1 > parNo &&
-          paragraphs->getRef(parNo)->lastWord <= firstWordOfLine)
-      parNo++;
-
+   // If there are no paragraphs yet, findParagraphOfWord will return
+   // -1: use 0 then instead.
+   int parNo = misc::max (0, findParagraphOfWord (firstWordOfLine));
    paragraphs->setSize (parNo);
 
    int firstWord;
