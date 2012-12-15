@@ -327,30 +327,7 @@ None.
 Medium Priority
 ---------------
 
-**Incorrect calculation of extremes:** The minimal width of a text
-block (as part of the width extremes, which are mainly used for
-tables) is defined by everything between two possible breaks. A
-possible break may also be a hyphenation point; however, hyphenation
-points are calculated in a lazy way, when the lines are broken, and
-not when extremes are calculated. So, it is a matter of chance whether
-the calculation of the minimal width will take the two parts "dil-"
-and "lo" into account (when "dillo" has already been hyphenated), or
-only one part, "dillo" (when "dillo" has not yet been hyphenated),
-resulting possibly in a different value for the minimal width.
-
-Possible strategies to deal with this problem:
-
-- Ignore. The implications should be minimal.
-- Any solution will make it neccessary to hyphenate at least some
-  words when calculating extremes. Since the minimal widths of all
-  words are used to calculate the minimal width of the text block, the
-  simplest approach will hyphenate all words. This would, of course,
-  eliminate the performance gains of the current lazy approach.
-- The latter approach could be optimized in some ways. Examples: (i)
-  If a word is already narrower than the current accumulated value for
-  the minimal width, it makes no sense to hyphenate it. (ii) In other
-  cases, heuristics may be used to estimate the number of syllables,
-  the width of the widest of them etc.
+None.
 
 Low Priority
 ------------
@@ -430,6 +407,35 @@ way, hyphens in adjacent lines are penalized further.
 
 **Solved:** There are always two penalties. Must be documented in
 detail.
+
+*Incorrect calculation of extremes:* The minimal width of a text block
+(as part of the width extremes, which are mainly used for tables) is
+defined by everything between two possible breaks. A possible break
+may also be a hyphenation point; however, hyphenation points are
+calculated in a lazy way, when the lines are broken, and not when
+extremes are calculated. So, it is a matter of chance whether the
+calculation of the minimal width will take the two parts "dil-" and
+"lo" into account (when "dillo" has already been hyphenated), or only
+one part, "dillo" (when "dillo" has not yet been hyphenated),
+resulting possibly in a different value for the minimal width.
+
+Possible strategies to deal with this problem:
+
+- Ignore. The implications should be minimal.
+- Any solution will make it neccessary to hyphenate at least some
+  words when calculating extremes. Since the minimal widths of all
+  words are used to calculate the minimal width of the text block, the
+  simplest approach will hyphenate all words. This would, of course,
+  eliminate the performance gains of the current lazy approach.
+- The latter approach could be optimized in some ways. Examples: (i)
+  If a word is already narrower than the current accumulated value for
+  the minimal width, it makes no sense to hyphenate it. (ii) In other
+  cases, heuristics may be used to estimate the number of syllables,
+  the width of the widest of them etc.
+
+**Solved:** Hyphenated parts of a word are not considered anymore for
+width extremes, but only whole words. This is also one reason for the
+introduction of the paragraphs list.
 
 **Also:**
 
