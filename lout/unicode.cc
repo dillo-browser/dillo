@@ -64,7 +64,8 @@ int decodeUtf8 (const char *s)
       return ((s[0] & 0x0f) << 18) | ((s[1] & 0x3f) << 12)
          | ((s[2] & 0x3f) << 6) | (s[3] & 0x3f);
    else
-      return '?';
+      // Treat as ISO-8859-1 / ISO-8859-15 / Windows-1252
+      return s[0];
 }
 
 
@@ -82,7 +83,8 @@ int decodeUtf8 (const char *s, int len)
       return ((s[0] & 0x0f) << 18) | ((s[1] & 0x3f) << 12)
          | ((s[2] & 0x3f) << 6) | (s[3] & 0x3f);
    else
-      return '?';
+      // Treat as ISO-8859-1 / ISO-8859-15 / Windows-1252
+      return s[0];
 }
 
 const char *nextUtf8Char (const char *s)
