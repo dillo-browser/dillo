@@ -9,8 +9,9 @@
 #define LEN 1000
 
 /*
- * This is a direct translation of the Python implementation by Ned
- * Batchelder.
+ * This is (or at least began as) a direct translation of Ned Batchelder's
+ * public-domain Python implementation at
+ * http://nedbatchelder.com/code/modules/hyphenate.py
  */
 
 using namespace lout::object;
