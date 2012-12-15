@@ -823,6 +823,14 @@ void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
    a_Html_stash_init(html);
 }
 
+void Html_tag_close_option(DilloHtml *html)
+{
+   if (html->InFlags & IN_OPTION) {
+      Html_option_finish(html);
+      html->InFlags &= ~IN_OPTION;
+   }
+}
+
 /*
  * <BUTTON>
  */
