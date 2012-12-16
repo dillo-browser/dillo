@@ -368,10 +368,10 @@ static int Dpi_get_server_port(const char *server_name)
 }
 
 
-static int Dpi_connect_socket(const char *server_name, int retry)
+static int Dpi_connect_socket(const char *server_name)
 {
    struct sockaddr_in sin;
-   int sock_fd, err, dpi_port, ret=-1;
+   int sock_fd, dpi_port, ret = -1;
    char *cmd = NULL;
 
    /* Query dpid for the port number for this server */
@@ -390,16 +390,7 @@ static int Dpi_connect_socket(const char *server_name, int retry)
    if ((sock_fd = Dpi_make_socket_fd()) == -1) {
       perror("[dpi::socket]");
    } else if (connect(sock_fd, (void*)&sin, sizeof(sin)) == -1) {
-      err = errno;
-      sock_fd = -1;
       MSG("[dpi::connect] errno:%d %s\n", errno, dStrerror(errno));
-      if (retry) {
-         switch (err) {
-            case ECONNREFUSED: case EBADF: case ENOTSOCK: case EADDRNOTAVAIL:
-               sock_fd = Dpi_connect_socket(server_name, FALSE);
-               break;
-         }
-      }
 
    /* send authentication Key (the server closes sock_fd on error) */
    } else if (!(cmd = a_Dpip_build_cmd("cmd=%s msg=%s", "auth", SharedKey))) {
@@ -425,7 +416,7 @@ char *a_Dpi_send_blocking_cmd(const char *server_name, const char *cmd)
       return ret;
    }
 
-   if ((sock_fd = Dpi_connect_socket(server_name, TRUE)) == -1) {
+   if ((sock_fd = Dpi_connect_socket(server_name)) == -1) {
       MSG_ERR("[a_Dpi_send_blocking_cmd] Can't connect to server.\n");
    } else if (Dpi_blocking_write(sock_fd, cmd, strlen(cmd)) == -1) {
       MSG_ERR("[a_Dpi_send_blocking_cmd] Can't send message.\n");
