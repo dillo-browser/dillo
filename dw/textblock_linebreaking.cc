@@ -1082,9 +1082,21 @@ void Textblock::fillParagraphs ()
    else
       firstWordOfLine = 0;
 
-   // If there are no paragraphs yet, findParagraphOfWord will return
-   // -1: use 0 then instead.
-   int parNo = misc::max (0, findParagraphOfWord (firstWordOfLine));
+   int parNo;
+   if (paragraphs->size() > 0 &&
+       firstWordOfLine > paragraphs->getLastRef()->firstWord)
+      // A special case: the paragraphs list has been partly built, but
+      // not yet the paragraph containing the word in question. In
+      // this case, only the rest of the paragraphs list must be
+      // constructed. (Without this check, findParagraphOfWord would
+      // return -1 in this case, so that all paragraphs would be
+      // rebuilt.)
+      parNo = paragraphs->size ();
+   else
+      // If there are no paragraphs yet, findParagraphOfWord will return
+      // -1: use 0 then instead.
+      parNo = misc::max (0, findParagraphOfWord (firstWordOfLine));
+
    paragraphs->setSize (parNo);
 
    int firstWord;
