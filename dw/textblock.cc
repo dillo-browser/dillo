@@ -1305,17 +1305,16 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
  * Add a new word (text, widget etc.) to a page.
  */
 Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
-                                     bool canBeHyphenated,
-                                     core::style::Style *style)
+                                     short flags, core::style::Style *style)
 {
    words->increase ();
    Word *word = words->getLastRef ();
-   fillWord (word, width, ascent, descent, canBeHyphenated, style);
+   fillWord (word, width, ascent, descent, flags, style);
    return word;
 }
 
 void Textblock::fillWord (Word *word, int width, int ascent, int descent,
-                          bool canBeHyphenated, core::style::Style *style)
+                          short flags, core::style::Style *style)
 {
    word->size.width = width;
    word->size.ascent = ascent;
@@ -1325,7 +1324,7 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
    word->hyphenWidth = 0;
    word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);
    word->content.space = false;
-   word->flags = canBeHyphenated ? Word::CAN_BE_HYPHENATED : 0;
+   word->flags = flags;
 
    word->style = style;
    word->spaceStyle = style;
@@ -1476,7 +1475,7 @@ void Textblock::addText (const char *text, size_t len,
       // be hyphenated automatically.
       core::Requisition size;
       calcTextSize (text, len, style, &size);
-      addText0 (text, len, true, style, &size);
+      addText0 (text, len, Word::CAN_BE_HYPHENATED, style, &size);
    } else {
       PRINTF ("HYPHENATION: '");
       for (size_t i = 0; i < len; i++)
@@ -1589,18 +1588,33 @@ void Textblock::addText (const char *text, size_t len,
 
       // Finished!
       for (int i = 0; i < numParts; i++) {
-         addText0 (text + partStart[i], partEnd[i] - partStart[i],
-                   // If this parts adjoins at least one division
-                   // characters, for which canBeHyphenated is set to
-                   // false (this is the case for soft hyphens), do
-                   // not hyphenate.
-                   canBeHyphenated[i] && canBeHyphenated[i + 1],
-                   style, &wordSize[i]);
+         short flags = 0;
+         
+         // If this parts adjoins at least one division characters,
+         // for which canBeHyphenated is set to false (this is the
+         // case for soft hyphens), do not hyphenate.
+         if (canBeHyphenated[i] && canBeHyphenated[i + 1])
+            flags |= Word::CAN_BE_HYPHENATED;
 
-         PRINTF("H... [%d] '", i);
-         for (int j = partStart[i]; j < partEnd[i]; j++)
-            PUTCHAR(text[j]);
-         PRINTF("' added\n");
+         if(i < numParts - 1) {
+            if (charRemoved[i])
+               flags |= Word::DIV_CHAR_AT_EOL;
+
+            if (permDivChar[i])
+               flags |= Word::PERM_DIV_CHAR;
+            if (unbreakableForMinWidth[i])
+               flags |= Word::UNBREAKABLE_FOR_MIN_WIDTH;
+
+            flags |= Word::DRAW_AS_ONE_TEXT;
+         }
+         
+         addText0 (text + partStart[i], partEnd[i] - partStart[i],
+                   flags, style, &wordSize[i]);
+
+         //PRINTF("H... [%d] '", i);
+         //for (int j = partStart[i]; j < partEnd[i]; j++)
+         //   PUTCHAR(text[j]);
+         //PRINTF("' added\n");
 
          if(i < numParts - 1) {
             Word *word = words->getLastRef();
@@ -1609,7 +1623,7 @@ void Textblock::addText (const char *text, size_t len,
                .setPenalties (penalties[partPenaltyIndex[i]][0],
                               penalties[partPenaltyIndex[i]][1]);
 
-            if (charRemoved[i]) {
+            if (charRemoved[i])
                // Currently, only unconditional hyphens (UTF-8:
                // "\xe2\x80\x90") can be used. See also drawWord, last
                // section "if (drawHyphen)".
@@ -1618,15 +1632,6 @@ void Textblock::addText (const char *text, size_t len,
                word->hyphenWidth =
                   layout->textWidth (word->style->font, hyphenDrawChar,
                                      strlen (hyphenDrawChar));
-               word->flags |= Word::DIV_CHAR_AT_EOL;
-            }
-
-            if (permDivChar[i])
-               word->flags |= Word::PERM_DIV_CHAR;
-            if (unbreakableForMinWidth[i])
-               word->flags |= Word::UNBREAKABLE_FOR_MIN_WIDTH;
-
-            word->flags |= Word::DRAW_AS_ONE_TEXT;
 
             accumulateWordData (words->size() - 1);
             correctLastWordExtremes ();
@@ -1671,16 +1676,18 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
 /**
  * Add a word (without hyphens) to the page structure.
  */
-void Textblock::addText0 (const char *text, size_t len, bool canBeHyphenated,
+void Textblock::addText0 (const char *text, size_t len, short flags,
                           core::style::Style *style, core::Requisition *size)
 {
    //printf("[%p] addText0 ('", this);
    //for (size_t i = 0; i < len; i++)
    //   putchar(text[i]);
-   //printf("', %s, ...)\n", canBeHyphenated ? "true" : "false");
+   //printf("', ");
+   //printWordFlags (flags);
+   //printf (", ...)\n");
 
    Word *word = addWord (size->width, size->ascent, size->descent,
-                         canBeHyphenated, style);
+                         flags, style);
    word->content.type = core::Content::TEXT;
    word->content.text = layout->textZone->strndup(text, len);
 
@@ -1707,7 +1714,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    widget->setStyle (style);
 
    calcWidgetSize (widget, &size);
-   word = addWord (size.width, size.ascent, size.descent, false, style);
+   word = addWord (size.width, size.ascent, size.descent, 0, style);
 
    word->content.type = core::Content::WIDGET;
    word->content.widget = widget;
@@ -1918,7 +1925,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
       return;
    }
 
-   word = addWord (0, 0, 0, false, style);
+   word = addWord (0, 0, 0, 0, style);
    word->content.type = core::Content::BREAK;
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = space;
@@ -1937,10 +1944,10 @@ void Textblock::addLinebreak (core::style::Style *style)
       // An <BR> in an empty line gets the height of the current font
       // (why would someone else place it here?), ...
       word =
-         addWord (0, style->font->ascent, style->font->descent, false, style);
+         addWord (0, style->font->ascent, style->font->descent, 0, style);
    else
       // ... otherwise, it has no size (and does not enlarge the line).
-      word = addWord (0, 0, 0, false, style);
+      word = addWord (0, 0, 0, 0, style);
 
    word->content.type = core::Content::BREAK;
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);

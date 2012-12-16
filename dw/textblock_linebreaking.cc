@@ -227,16 +227,22 @@ void Textblock::printWordShort (Word *word)
    }
 }
 
+void Textblock::printWordFlags (short flags)
+{
+   printf ("%s:%s:%s:%s:%s",
+           (flags & Word::CAN_BE_HYPHENATED) ? "h?" : "--",
+           (flags & Word::DIV_CHAR_AT_EOL) ? "de" : "--",
+           (flags & Word::PERM_DIV_CHAR) ? "dp" : "--",
+           (flags & Word::DRAW_AS_ONE_TEXT) ? "t1" : "--",
+           (flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--");
+}
+
 void Textblock::printWordWithFlags (Word *word)
 {
    printWordShort (word);
-   printf (" (flags = %s:%s:%s:%s:%s)",
-           (word->flags & Word::CAN_BE_HYPHENATED) ? "h?" : "--",
-           (word->flags & Word::DIV_CHAR_AT_EOL) ? "de" : "--",
-           (word->flags & Word::PERM_DIV_CHAR) ? "dp" : "--",
-           (word->flags & Word::DRAW_AS_ONE_TEXT) ? "t1" : "--",
-           (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--");
-           
+   printf (" (flags = ");
+   printWordFlags (word->flags);
+   printf (")");
 }
 
 void Textblock::printWord (Word *word)
@@ -677,8 +683,11 @@ void Textblock::handleWordExtremes (int wordIndex)
          par->maxParMax = prevPar->maxParMax;
       } else
          par->maxParMin = par->maxParMax = 0;
+
+      PRINTF ("      new par: %d\n", paragraphs->size() - 1);
    }
 
+   PRINTF ("      last par: %d\n", paragraphs->size() - 1);
    Paragraph *lastPar = paragraphs->getLastRef();
 
    int corrDiffMin, corrDiffMax;
@@ -722,7 +731,9 @@ void Textblock::handleWordExtremes (int wordIndex)
 void Textblock::correctLastWordExtremes ()
 {
    if (paragraphs->size() > 0) {
-      if (words->getLastRef()->badnessAndPenalty.lineCanBeBroken (1)) {
+      Word *word = words->getLastRef ();
+      if (word->badnessAndPenalty.lineCanBeBroken (1) &&
+          (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0) {
          paragraphs->getLastRef()->parMin = 0;
          PRINTF ("   => corrected; parMin = %d\n",
                  paragraphs->getLastRef()->parMin);
