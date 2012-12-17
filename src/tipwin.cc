@@ -1,6 +1,19 @@
-// tipwin.cc is derived from "Fl_Slider with a floating tooltip to show
-// current value" at http://seriss.com/people/erco/fltk/#SliderTooltip by
-// Greg Ercolano.
+/*
+ * File: tipwin.cc
+ *
+ * Copyright 2012 Jorge Arellano Cid <jcid@dillo.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The tipwin idea was derived from the Fl_Slider example [1]
+ * by Greg Ercolano, which is in public domain.
+ *
+ * [1] http://seriss.com/people/erco/fltk/#SliderTooltip
+ */
+
 
 #include <stdio.h>
 #include <stdlib.h>
