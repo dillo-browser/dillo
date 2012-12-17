@@ -11,7 +11,13 @@ namespace unicode {
 
 bool isAlpha (int ch);
 
-int decodeUtf8 (char *s);
+int decodeUtf8 (const char *s);
+
+int decodeUtf8 (const char *s, int len);
+
+const char *nextUtf8Char (const char *s);
+
+const char *nextUtf8Char (const char *s, int len);
 
 } // namespace lout
 

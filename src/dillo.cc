@@ -26,6 +26,7 @@
 
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
+#include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
 
 #include "msg.h"
@@ -396,6 +397,8 @@ int main(int argc, char **argv)
    Fl::set_font(FL_HELVETICA, defaultFont); // this seems to be the
                                             // only way to set the
                                             // default font in fltk1.3
+
+   fl_message_title_default("Dillo: Message");
 
    // Create a new UI/bw pair
    BrowserWindow *bw = a_UIcmd_browser_window_new(0, 0, xid, NULL);

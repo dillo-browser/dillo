@@ -86,16 +86,7 @@ class TrieBuilder {
 class Hyphenator: public lout::object::Object
 {
    static lout::container::typed::HashTable
-   <lout::object::TypedPair <lout::object::TypedPointer <core::Platform>,
-                             lout::object::ConstString>,
-    Hyphenator> *hyphenators;
-
-   /*
-    * Actually, only one method in Platform is needed:
-    * textToLower(). And, IMO, this method is actually not platform
-    * independent, but based on UTF-8. Clarify? Change?
-    */
-   core::Platform *platform;
+      <lout::object::String, Hyphenator> *hyphenators;
    Trie *trie;
 
    lout::container::typed::HashTable <lout::object::ConstString,
@@ -105,19 +96,17 @@ class Hyphenator: public lout::object::Object
    void insertPattern (TrieBuilder *trieBuilder, char *s);
    void insertException (char *s);
 
-   void hyphenateSingleWord(char *wordLc, int offset,
+   void hyphenateSingleWord(core::Platform *platform, char *wordLc, int offset,
                             lout::misc::SimpleVector <int> *breakPos);
    bool isCharPartOfActualWord (char *s);
 
 public:
-   Hyphenator (core::Platform *platform,
-               const char *patFile, const char *excFile, int pack = 256);
+   Hyphenator (const char *patFile, const char *excFile, int pack = 256);
    ~Hyphenator();
 
-   static Hyphenator *getHyphenator (core::Platform *platform,
-                                     const char *language);
+   static Hyphenator *getHyphenator (const char *language);
    static bool isHyphenationCandidate (const char *word);
-   int *hyphenateWord(const char *word, int *numBreaks);
+   int *hyphenateWord(core::Platform *platform, const char *word, int *numBreaks);
    void saveTrie (FILE *fp) { trie->save (fp); };
 };
 

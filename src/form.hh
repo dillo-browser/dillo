@@ -57,6 +57,7 @@ void Html_tag_close_textarea(DilloHtml *html);
 void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_close_select(DilloHtml *html);
 void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize);
+void Html_tag_close_option(DilloHtml *html);
 void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_close_button(DilloHtml *html);
 

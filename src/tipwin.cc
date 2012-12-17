@@ -1,3 +1,7 @@
+// tipwin.cc is derived from "Fl_Slider with a floating tooltip to show
+// current value" at http://seriss.com/people/erco/fltk/#SliderTooltip by
+// Greg Ercolano.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

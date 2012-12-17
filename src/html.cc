@@ -3197,7 +3197,7 @@ const TagInfo Tags[] = {
  {"object", B8(111101),'R',2, Html_tag_open_object, NULL, NULL},
  {"ol", B8(011010),'R',2, Html_tag_open_ol, NULL, NULL},
  /* optgroup */
- {"option", B8(010001),'O',1, Html_tag_open_option, NULL, NULL},
+ {"option", B8(010001),'O',1, Html_tag_open_option,NULL,Html_tag_close_option},
  {"p", B8(010110),'O',1, Html_tag_open_p, NULL, NULL},
  /* param 010001 'F' */
  {"pre", B8(010110),'R',2, Html_tag_open_pre, NULL, Html_tag_close_pre},

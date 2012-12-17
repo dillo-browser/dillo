@@ -4,10 +4,10 @@
 
 void hyphenateWord (dw::core::Platform *p, const char *word)
 {
-   dw::Hyphenator *h = dw::Hyphenator::getHyphenator (p, "de");
+   dw::Hyphenator *h = dw::Hyphenator::getHyphenator ("de");
 
    int numBreaks;
-   int *breakPos = h->hyphenateWord (word, &numBreaks);
+   int *breakPos = h->hyphenateWord (p, word, &numBreaks);
    for (int i = 0; i < numBreaks + 1; i++) {
       if (i != 0)
          printf (" \xc2\xad ");

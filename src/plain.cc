@@ -136,14 +136,17 @@ bool DilloPlain::PlainLinkReceiver::press (Widget *widget, int, int, int, int,
 void DilloPlain::addLine(char *Buf, uint_t BufSize)
 {
    int len;
-   char buf[128];
+   char buf[129];
    char *end = Buf + BufSize;
 
    if (BufSize > 0) {
       // Limit word length to avoid X11 coordinate
       // overflow with extremely long lines.
-      while ((len = a_Misc_expand_tabs(&Buf, end, buf, sizeof(buf))))
+      while ((len = a_Misc_expand_tabs(&Buf, end, buf, sizeof(buf) - 1))) {
+         assert ((uint_t)len < sizeof(buf));
+         buf[len] = '\0';
          DW2TB(dw)->addText(buf, len, widgetStyle);
+      }
    } else {
       // Add dummy word for empty lines - otherwise the parbreak is ignored.
       DW2TB(dw)->addText("", 0, widgetStyle);

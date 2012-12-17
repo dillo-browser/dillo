@@ -20,12 +20,12 @@ noinst_PROGRAMS = \
 	dw-imgbuf-mem-test \
 	dw-resource-test \
 	dw-ui-test \
-	fltk-browser \
 	shapes \
 	cookies \
 	liang \
 	trie \
-	notsosimplevector
+	notsosimplevector \
+	unicode-test
 
 dw_anchors_test_SOURCES = dw_anchors_test.cc
 dw_anchors_test_LDADD = \
@@ -159,9 +159,6 @@ dw_ui_test_LDADD = \
 	$(top_builddir)/lout/liblout.a \
 	@LIBFLTK_LIBS@
 
-fltk_browser_SOURCES = fltk_browser.cc
-fltk_browser_LDADD = @LIBFLTK_LIBS@
-
 shapes_SOURCES = shapes.cc
 shapes_LDADD = \
 	$(top_builddir)/dw/libDw-core.a \
@@ -193,3 +190,9 @@ trie_LDADD = \
 notsosimplevector_SOURCES = notsosimplevector.cc
 
 notsosimplevector_LDADD = $(top_builddir)/lout/liblout.a
+
+unicode_test_SOURCES = unicode_test.cc
+
+unicode_test_LDADD = \
+	$(top_builddir)/lout/liblout.a \
+	@LIBFLTK_LIBS@

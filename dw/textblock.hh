@@ -353,6 +353,7 @@ protected:
    };
 
    void printWordShort (Word *word);
+   void printWordFlags (short flags);
    void printWordWithFlags (Word *word);
    void printWord (Word *word);
 
@@ -475,12 +476,13 @@ protected:
    void drawLine (Line *line, core::View *view, core::Rectangle *area);
    int findLineIndex (int y);
    int findLineOfWord (int wordIndex);
+   int findParagraphOfWord (int wordIndex);
    Word *findWord (int x, int y, bool *inSpace);
 
-   Word *addWord (int width, int ascent, int descent, bool canBeHyphenated,
+   Word *addWord (int width, int ascent, int descent, short flags,
                   core::style::Style *style);
    void fillWord (Word *word, int width, int ascent, int descent,
-                  bool canBeHyphenated, core::style::Style *style);
+                  short flags, core::style::Style *style);
    void fillSpace (Word *word, core::style::Style *style);
    void setBreakOption (Word *word, core::style::Style *style);
    int textWidth (const char *text, int start, int len,
@@ -672,7 +674,7 @@ protected:
 
    void removeChild (Widget *child);
 
-   void addText0 (const char *text, size_t len, bool canBeHyphenated,
+   void addText0 (const char *text, size_t len, short flags,
                   core::style::Style *style, core::Requisition *size);
    void calcTextSizes (const char *text, size_t textLen,
                        core::style::Style *style,

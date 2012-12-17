@@ -45,7 +45,6 @@ int ComplexButton::value(int v) {
 void ComplexButton::draw() {
   Fl_Color col = value() ? selection_color() : color();
   draw_box(value() ? (down_box()?down_box():fl_down(box())) : box(), col);
-  if (Fl::focus() == this) draw_focus();
 
   // ComplexButton is a Group; draw its children
   for (int i = children () - 1; i >= 0; i--) {
@@ -53,6 +52,7 @@ void ComplexButton::draw() {
      child (i)->position(x()+(w()-child(i)->w())/2,y()+(h()-child(i)->h())/2);
      draw_child (*child (i));
   }
+  if (Fl::focus() == this) draw_focus();
 }
 
 int ComplexButton::handle(int event) {
@@ -75,45 +75,36 @@ int ComplexButton::handle(int event) {
       value_ = newval;
       set_changed();
       redraw();
-      if (when() & FL_WHEN_CHANGED) do_callback();
     }
     return 1;
   case FL_RELEASE:
     if (value_ == oldval) {
-      if (when() & FL_WHEN_NOT_CHANGED) do_callback();
       return 1;
     }
     set_changed();
     value(oldval);
     set_changed();
-    if (when() & FL_WHEN_CHANGED) {
-      Fl_Widget_Tracker wp(this);
-      do_callback();
-      if (wp.deleted()) return 1;
-    }
     if (when() & FL_WHEN_RELEASE) do_callback();
     return 1;
   case FL_FOCUS : /* FALLTHROUGH */
   case FL_UNFOCUS :
     if (Fl::visible_focus()) {
-      if (box() == FL_NO_BOX) {
-        // Widgets with the FL_NO_BOX boxtype need a parent to
-        // redraw, since it is responsible for redrawing the
-        // background...
-        int X = x() > 0 ? x() - 1 : 0;
-        int Y = y() > 0 ? y() - 1 : 0;
-        if (window()) window()->damage(FL_DAMAGE_ALL, X, Y, w() + 2, h() + 2);
-      } else redraw();
+      redraw();
       return 1;
     } else return 0;
   case FL_KEYBOARD :
     if (Fl::focus() == this &&
         (Fl::event_key() == ' ' || Fl::event_key() == FL_Enter) &&
         !(Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT | FL_META))) {
+      value(1);
       set_changed();
-      Fl_Widget_Tracker wp(this);
-      if (wp.deleted()) return 1;
       if (when() & FL_WHEN_RELEASE) do_callback();
+      return 1;
+    } else return 0;
+  case FL_KEYUP:
+    if (Fl::focus() == this &&
+        (Fl::event_key() == ' ' || Fl::event_key() == FL_Enter)) {
+      value(0);
       return 1;
     }
   default:

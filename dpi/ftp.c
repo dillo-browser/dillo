@@ -154,7 +154,7 @@ static void make_wget_argv(char *url)
    char *esc_url;
 
    if (dl_argv) {
-      dFree(dl_argv[2]);
+      dFree(dl_argv[3]);
       dFree(dl_argv);
    }
    dl_argv = dNew(char*, 10);
@@ -164,9 +164,10 @@ static void make_wget_argv(char *url)
    Filter_smtp_hack(esc_url);
 
    dl_argv[0] = "wget";
-   dl_argv[1] = "-O-";
-   dl_argv[2] = esc_url;
-   dl_argv[3] = NULL;
+   dl_argv[1] = "-t1";  /* try once, default is 20 */
+   dl_argv[2] = "-O-";
+   dl_argv[3] = esc_url;
+   dl_argv[4] = NULL;
 }
 
 /*
@@ -186,6 +187,8 @@ static int try_ftp_transfer(char *url)
    pid_t ch_pid;
    int aborted = 0;
    int DataPipe[2];
+
+   MSG("try_ftp_transfer: url=%s\n", url);
 
    if (pipe(DataPipe) < 0) {
       MSG("pipe, %s\n", dStrerror(errno));
@@ -316,7 +319,8 @@ int main(int argc, char **argv)
    if ((st = try_ftp_transfer(url)) == -1) {
       /* Transfer failed, the requested file may not exist or be a symlink
        * to a directory. Try again... */
-      if ((p = strrchr(url, '/')) && p[1]) {
+      if ((p = strrchr(url, '/')) && p[1] &&
+          p > url && p[-1] != '/') {
          url2 = dStrconcat(url, "/", NULL);
          st = try_ftp_transfer(url2);
       }

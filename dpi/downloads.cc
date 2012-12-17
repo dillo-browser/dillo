@@ -961,6 +961,7 @@ static void dlwin_esc_cb(Fl_Widget *, void *)
                      "ABORT them and EXIT anyway?";
 
    if (dl_win && dl_win->num_running() > 0) {
+      fl_message_title("Dillo Downloads: Abort downloads?");
       int ch = fl_choice("%s", "Cancel", "*No", "Yes", msg);
       if (ch == 0 || ch == 1)
          return;
@@ -1018,6 +1019,7 @@ DLAction DLWin::check_filename(char **p_fullname)
    dStr_sprintf(ds,
                 "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
                 *p_fullname, (int)ss.st_size);
+   fl_message_title("Dillo Downloads: File exists!");
    ch = fl_choice("%s", "Abort", "Continue", "Rename", ds->str);
    dStr_free(ds, 1);
    MSG("Choice %d\n", ch);
@@ -1096,13 +1098,17 @@ class DlScroll : public Fl_Scroll
 public:
   void resize(int x_, int y_, int w_, int h_)
   {
+    Fl_Scroll::resize(x_, y_, w_, h_);
     Fl_Widget *resizable_ = resizable();
+    int sb_size =
+       resizable_->h() <= h() ? 0 :
+       scrollbar_size() ? scrollbar_size() :
+       Fl::scrollbar_size();
     if (resizable_)
       resizable_->resize(resizable_->x(),
                          resizable_->y(),
-                         w() - scrollbar_size(),
+                         w() - sb_size,
                          resizable_->h());
-    Fl_Scroll::resize(x_, y_, w_, h_);
   }
   DlScroll(int x, int y, int w, int h, const char *l = 0)
     : Fl_Scroll(x, y, w, h, l)
@@ -1119,7 +1125,7 @@ DLWin::DLWin(int ww, int wh) {
    mDList = new DLItemList();
 
    // Create the empty main window
-   mWin = new Fl_Window(ww, wh, "Downloads:");
+   mWin = new Fl_Window(ww, wh, "Dillo Downloads");
    mWin->begin();
    mScroll = new DlScroll(0,0,ww,wh);
    mScroll->begin();
@@ -1137,6 +1143,8 @@ DLWin::DLWin(int ww, int wh) {
    sigemptyset(&mask_sigchld);
    sigaddset(&mask_sigchld, SIGCHLD);
    est_sigchld();
+
+   fl_message_title_default("Dillo Downloads: Message");
 
    // Set the cleanup timeout
    Fl::add_timeout(1.0, cleanup_cb, mDList);

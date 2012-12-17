@@ -289,9 +289,15 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
 
    if (focus) {
       switch_tab(btn);
-   } else if (num_tabs() == 2) {
-      // no focus and tabbar added: redraw current page
-      Wizard->redraw();
+   } else {        // no focus
+      // set focus counter
+      increase_focus_counter();
+      btn->focus_num(focus_counter);
+
+      if (num_tabs() == 2) {
+         // tabbar added: redraw current page
+         Wizard->redraw();
+      }
    }
    if (num_tabs() == 1)
       btn->hide();
@@ -476,7 +482,8 @@ static void win_cb (Fl_Widget *w, void *cb_data) {
    int choice = 1, ntabs = tabs->num_tabs();
 
    if (prefs.show_quit_dialog && ntabs > 1)
-      choice = a_Dialog_choice5("Window contains more than one tab.",
+      choice = a_Dialog_choice5("Dillo: Close window?",
+                                "Window contains more than one tab.",
                                 "Close", "Cancel", NULL, NULL, NULL);
    if (choice == 1)
       while (ntabs-- > 0)
@@ -616,8 +623,9 @@ void a_UIcmd_close_all_bw(void *)
    int choice = 1;
 
    if (prefs.show_quit_dialog && a_Bw_num() > 1)
-      choice = a_Dialog_choice5("More than one open tab or window.",
-         "Quit", "Cancel", NULL, NULL, NULL);
+      choice = a_Dialog_choice5("Dillo: Quit?",
+                                "More than one open tab or window.",
+                                "Quit", "Cancel", NULL, NULL, NULL);
    if (choice == 1)
       while ((bw = a_Bw_get(0)))
          a_UIcmd_close_bw((void*)bw);
@@ -860,7 +868,7 @@ void a_UIcmd_save(void *vbw)
  */
 const char *a_UIcmd_select_file()
 {
-   return a_Dialog_select_file("Select a File", NULL, NULL);
+   return a_Dialog_select_file("Dillo: Select a File", NULL, NULL);
 }
 
 /*
@@ -893,7 +901,7 @@ void a_UIcmd_open_file(void *vbw)
    char *name;
    DilloUrl *url;
 
-   name = a_Dialog_open_file("Open File", NULL, "");
+   name = a_Dialog_open_file("Dillo: Open File", NULL, "");
 
    if (name) {
       url = a_Url_new(name, "file:");
@@ -947,7 +955,7 @@ void a_UIcmd_search_dialog(void *vbw)
 {
    const char *query;
 
-   if ((query = a_Dialog_input("Search the Web:"))) {
+   if ((query = a_Dialog_input("Dillo: Search", "Search the Web:"))) {
       char *url_str = UIcmd_make_search_str(query);
       a_UIcmd_open_urlstr(vbw, url_str);
       dFree(url_str);
@@ -960,9 +968,10 @@ void a_UIcmd_search_dialog(void *vbw)
 const char *a_UIcmd_get_passwd(const char *user)
 {
    const char *passwd;
-   char *prompt = dStrconcat("Password for user \"", user, "\"", NULL);
-   passwd = a_Dialog_passwd(prompt);
-   dFree(prompt);
+   const char *title = "Dillo: Password";
+   char *msg = dStrconcat("Password for user \"", user, "\"", NULL);
+   passwd = a_Dialog_passwd(title, msg);
+   dFree(msg);
    return passwd;
 }
 
@@ -977,7 +986,7 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
    a_UIcmd_set_save_dir(prefs.save_dir);
 
    SuggestedName = UIcmd_make_save_filename(URL_STR(url));
-   if ((name = a_Dialog_save_file("Save Link as File", NULL, SuggestedName))) {
+   if ((name = a_Dialog_save_file("Dillo: Save Link as File", NULL, SuggestedName))) {
       MSG("a_UIcmd_save_link: %s\n", name);
       a_Nav_save_url(bw, url, name);
    }
@@ -1099,9 +1108,9 @@ void a_UIcmd_view_page_bugs(void *vbw)
    BrowserWindow *bw = (BrowserWindow*)vbw;
 
    if (bw->num_page_bugs > 0) {
-      a_Dialog_text_window(bw->page_bugs->str, "Detected HTML errors");
+      a_Dialog_text_window("Dillo: Detected HTML errors", bw->page_bugs->str);
    } else {
-      a_Dialog_msg("Zero detected HTML errors!");
+      a_Dialog_msg("Dillo: Valid HTML!", "Zero detected HTML errors!");
    }
 }
 

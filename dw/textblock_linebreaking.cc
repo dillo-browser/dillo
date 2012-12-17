@@ -235,15 +235,22 @@ void Textblock::printWordShort (Word *word)
    }
 }
 
+void Textblock::printWordFlags (short flags)
+{
+   printf ("%s:%s:%s:%s:%s",
+           (flags & Word::CAN_BE_HYPHENATED) ? "h?" : "--",
+           (flags & Word::DIV_CHAR_AT_EOL) ? "de" : "--",
+           (flags & Word::PERM_DIV_CHAR) ? "dp" : "--",
+           (flags & Word::DRAW_AS_ONE_TEXT) ? "t1" : "--",
+           (flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--");
+}
+
 void Textblock::printWordWithFlags (Word *word)
 {
    printWordShort (word);
-   printf (" (flags = %s:%s:%s:%s:%s)",
-           (word->flags & Word::CAN_BE_HYPHENATED) ? "h?" : "--",
-           (word->flags & Word::DIV_CHAR_AT_EOL) ? "de" : "--",
-           (word->flags & Word::PERM_DIV_CHAR) ? "dp" : "--",
-           (word->flags & Word::DRAW_AS_ONE_TEXT) ? "t1" : "--",
-           (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--");
+   printf (" (flags = ");
+   printWordFlags (word->flags);
+   printf (")");
 }
 
 void Textblock::printWord (Word *word)
@@ -689,9 +696,9 @@ void Textblock::handleWordExtremes (int wordIndex)
    core::Extremes wordExtremes;
    getWordExtremes (word, &wordExtremes);
 
-   //printf ("[%p] HANDLE_WORD_EXTREMES (%d):", this, wordIndex);
+   //printf ("[%p] HANDLE_WORD_EXTREMES (%d): ", this, wordIndex);
    //printWordWithFlags (word);
-   //printf ("=> %d / %d\n", wordExtremes.minWidth, wordExtremes.maxWidth);
+   //printf (" => %d / %d\n", wordExtremes.minWidth, wordExtremes.maxWidth);
 
    if (wordIndex == 0) {
       wordExtremes.minWidth += line1Offset;
@@ -702,9 +709,9 @@ void Textblock::handleWordExtremes (int wordIndex)
        words->getRef(paragraphs->getLastRef()->lastWord)
        ->badnessAndPenalty.lineMustBeBroken (1)) {
       // Add a new paragraph.
-      Paragraph *prevPar =
-         paragraphs->size() == 0 ? NULL : paragraphs->getLastRef();
       paragraphs->increase ();
+      Paragraph *prevPar = paragraphs->size() == 1 ?
+         NULL : paragraphs->getRef(paragraphs->size() - 2);
       Paragraph *par = paragraphs->getLastRef();
 
       par->firstWord = par->lastWord = wordIndex;
@@ -715,8 +722,11 @@ void Textblock::handleWordExtremes (int wordIndex)
          par->maxParMax = prevPar->maxParMax;
       } else
          par->maxParMin = par->maxParMax = 0;
+
+      PRINTF ("      new par: %d\n", paragraphs->size() - 1);
    }
 
+   PRINTF ("      last par: %d\n", paragraphs->size() - 1);
    Paragraph *lastPar = paragraphs->getLastRef();
 
    int corrDiffMin, corrDiffMax;
@@ -747,8 +757,9 @@ void Textblock::handleWordExtremes (int wordIndex)
    lastPar->parMax += wordExtremes.maxWidth + word->hyphenWidth + corrDiffMax;
    lastPar->maxParMax = misc::max (lastPar->maxParMax, lastPar->parMax);
 
-   PRINTF ("   => parMin = %d, parMax = %d\n",
-           lastPar->parMin, lastPar->parMax);
+   PRINTF ("   => parMin = %d (max = %d), parMax = %d (max = %d)\n",
+           lastPar->parMin, lastPar->maxParMin, lastPar->parMax,
+           lastPar->maxParMax);
 
    lastPar->lastWord = wordIndex;
 }
@@ -759,7 +770,9 @@ void Textblock::handleWordExtremes (int wordIndex)
 void Textblock::correctLastWordExtremes ()
 {
    if (paragraphs->size() > 0) {
-      if (words->getLastRef()->badnessAndPenalty.lineCanBeBroken (1)) {
+      Word *word = words->getLastRef ();
+      if (word->badnessAndPenalty.lineCanBeBroken (1) &&
+          (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0) {
          paragraphs->getLastRef()->parMin = 0;
          PRINTF ("   => corrected; parMin = %d\n",
                  paragraphs->getLastRef()->parMin);
@@ -773,13 +786,13 @@ int Textblock::hyphenateWord (int wordIndex)
    Word *hyphenatedWord = words->getRef(wordIndex);
    char lang[3] = { hyphenatedWord->style->x_lang[0], 
                     hyphenatedWord->style->x_lang[1], 0 };
-   Hyphenator *hyphenator =
-      Hyphenator::getHyphenator (layout->getPlatform (), lang);
+   Hyphenator *hyphenator = Hyphenator::getHyphenator (lang);
    PRINTF ("[%p]    considering to hyphenate word %d, '%s', in language '%s'\n",
            this, wordIndex, words->getRef(wordIndex)->content.text, lang);
    int numBreaks;
    int *breakPos =
-      hyphenator->hyphenateWord (hyphenatedWord->content.text, &numBreaks);
+      hyphenator->hyphenateWord (layout->getPlatform (),
+                                 hyphenatedWord->content.text, &numBreaks);
 
    if (numBreaks > 0) {
       Word origWord = *hyphenatedWord;
@@ -1146,12 +1159,20 @@ void Textblock::fillParagraphs ()
    else
       firstWordOfLine = 0;
 
-   // Binary search would be faster, but there should not be many paragraphs
-   // in a text block (so that binary search may be even slower).
-   int parNo = 0;
-   while (paragraphs->size() - 1 > parNo &&
-          paragraphs->getRef(parNo)->lastWord <= firstWordOfLine)
-      parNo++;
+   int parNo;
+   if (paragraphs->size() > 0 &&
+       firstWordOfLine > paragraphs->getLastRef()->firstWord)
+      // A special case: the paragraphs list has been partly built, but
+      // not yet the paragraph containing the word in question. In
+      // this case, only the rest of the paragraphs list must be
+      // constructed. (Without this check, findParagraphOfWord would
+      // return -1 in this case, so that all paragraphs would be
+      // rebuilt.)
+      parNo = paragraphs->size ();
+   else
+      // If there are no paragraphs yet, findParagraphOfWord will return
+      // -1: use 0 then instead.
+      parNo = misc::max (0, findParagraphOfWord (firstWordOfLine));
 
    paragraphs->setSize (parNo);
 

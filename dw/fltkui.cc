@@ -445,7 +445,7 @@ void FltkComplexButtonResource::widgetCallback (Fl_Widget *widget,
 {
    FltkComplexButtonResource *res = (FltkComplexButtonResource*)data;
 
-   if (!Fl::event_button3()) {
+   if (Fl::event() == FL_RELEASE && Fl::event_button() != FL_RIGHT_MOUSE) {
       int w = widget->w(), h = widget->h();
 
       res->click_x = Fl::event_x() - widget->x();
@@ -462,6 +462,18 @@ void FltkComplexButtonResource::widgetCallback (Fl_Widget *widget,
          setButtonEvent(&event);
          res->emitClicked(&event);
       }
+   } else if (Fl::event() == FL_KEYBOARD) {
+      // Simulate a click.
+      dw::core::EventButton event;
+
+      res->click_x = res->click_y = 0;
+      event.xCanvas = widget->x() + res->style->boxOffsetX();
+      event.yCanvas = widget->y() + res->style->boxOffsetY();
+      // ButtonState doesn't have mouse button values on a release.
+      event.state = (core::ButtonState) 0;
+      event.button = 1;
+      event.numPressed = 1;
+      res->emitClicked(&event);
    }
 }
 
@@ -520,7 +532,7 @@ Fl_Widget *FltkComplexButtonResource::createNewWidget (core::Allocation
    button->callback (widgetCallback, this);
    button->when (FL_WHEN_RELEASE);
    if (!relief)
-      button->box(FL_FLAT_BOX);
+      button->box(FL_NO_BOX);
 
    flatView = new FltkFlatView (allocation->x + reliefXThickness (),
                                 allocation->y + reliefYThickness (),

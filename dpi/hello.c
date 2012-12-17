@@ -91,8 +91,8 @@ int main(void)
    /* Let's confirm the request */
    /* NOTE: you can send less alternatives (e.g. only alt1 and alt2) */
    d_cmd = a_Dpip_build_cmd(
-              "cmd=%s msg=%s alt1=%s alt2=%s alt3=%s alt4=%s alt5=%s",
-              "dialog", "Do you want to see the hello page?",
+              "cmd=%s title=%s msg=%s alt1=%s alt2=%s alt3=%s alt4=%s alt5=%s",
+              "dialog", "Dillo: Hello", "Do you want to see the hello page?",
               choice[1], choice[2], choice[3], choice[4], choice[5]);
    a_Dpip_dsh_write_str(sh, 1, d_cmd);
    dFree(d_cmd);

@@ -823,6 +823,14 @@ void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
    a_Html_stash_init(html);
 }
 
+void Html_tag_close_option(DilloHtml *html)
+{
+   if (html->InFlags & IN_OPTION) {
+      Html_option_finish(html);
+      html->InFlags &= ~IN_OPTION;
+   }
+}
+
 /*
  * <BUTTON>
  */
@@ -884,7 +892,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 // a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
 
       HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
-      HT2TB(html)->addWidget (embed, html->styleEngine->style ());
+      HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
       HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
 
       S_TOP(html)->textblock = html->dw = page;

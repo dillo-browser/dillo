@@ -23,15 +23,11 @@
 
 #include <FL/Fl_Group.H>
 
-extern FL_EXPORT Fl_Shortcut fl_old_shortcut(const char*);
-
 namespace dw {
 namespace fltk {
 namespace ui {
 
-class FL_EXPORT ComplexButton : public Fl_Group {
-
-  int shortcut_;
+class ComplexButton : public Fl_Group {
   char value_;
   char oldval;
   uchar down_box_;
