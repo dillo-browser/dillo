@@ -317,13 +317,12 @@ void Hyphenator::hyphenateSingleWord(core::Platform *platform,
 
    // No hyphens in the first two chars or the last two.
    // Characters are not bytes, so UTF-8 characters must be counted.
+   int len = strlen (wordLc);
    const char *bytesStart =  nextUtf8Char (nextUtf8Char (wordLc));
-   // TODO Check bytesStart == NULL;
-   int numBytesStart = bytesStart - wordLc;
+   int numBytesStart = bytesStart ? bytesStart - wordLc : len;
    for (int i = 0; i < numBytesStart; i++)
       points.set (i + 1, 0);
-   
-   int len = strlen (wordLc);
+
    int numBytes1End = platform->prevGlyph (wordLc, len);
    int numBytes2End = platform->prevGlyph (wordLc, numBytes1End);
    for (int i = 0; i < len - numBytes2End; i++)
