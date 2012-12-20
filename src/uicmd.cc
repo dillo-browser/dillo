@@ -481,6 +481,12 @@ static void win_cb (Fl_Widget *w, void *cb_data) {
    CustTabs *tabs = (CustTabs*) cb_data;
    int choice = 1, ntabs = tabs->num_tabs();
 
+   if (Fl::event_key() == FL_Escape) {
+      // Don't let FLTK close a browser window due to unhandled Escape
+      // (most likely with modifiers).
+      return;
+   }
+      
    if (prefs.show_quit_dialog && ntabs > 1)
       choice = a_Dialog_choice5("Dillo: Close window?",
                                 "Window contains more than one tab.",
