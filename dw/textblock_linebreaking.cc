@@ -602,7 +602,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                PRINTF ("[%p] old searchUntil = %d ...\n", this, searchUntil);
                int n = hyphenateWord (hyphenatedWord);
                searchUntil += n;
-               if (hyphenatedWord >= wordIndex)
+               if (hyphenatedWord <= wordIndex)
                   wordIndexEnd += n;
                PRINTF ("[%p] -> new searchUntil = %d ...\n", this, searchUntil);
                lineAdded = false;
