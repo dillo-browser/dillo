@@ -299,7 +299,11 @@ static void Menu_history_cb(Fl_Widget*, void *data)
  */
 static void Menu_simple_popup_cb(void *data)
 {
-   const Fl_Menu_Item *m = ((Fl_Menu_Item *)data)->popup(popup_x, popup_y);
+   const Fl_Menu_Item *m;
+
+   ((UI*)popup_bw->ui)->window()->cursor(FL_CURSOR_DEFAULT);
+
+   m = ((Fl_Menu_Item *)data)->popup(popup_x, popup_y);
 
    if (m && m->callback())
       m->do_callback((Fl_Widget *)data);
@@ -308,9 +312,12 @@ static void Menu_simple_popup_cb(void *data)
 
 static void Menu_popup_cb(void *data)
 {
+   const Fl_Menu_Item *picked;
    Menu_popup_data_t *d = (Menu_popup_data_t *)data;
-   const Fl_Menu_Item *picked = d->menu->popup(popup_x, popup_y, d->title,
-                                               d->picked);
+
+   ((UI*)popup_bw->ui)->window()->cursor(FL_CURSOR_DEFAULT);
+
+   picked = d->menu->popup(popup_x, popup_y, d->title, d->picked);
    if (picked) {
       d->picked = picked;
       if (picked->callback())
