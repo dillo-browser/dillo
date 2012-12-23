@@ -453,7 +453,6 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
            this, wordIndex, wrapAll ? "true" : "false");
 
    Word *word;
-   //core::Extremes wordExtremes;
 
    if (!wrapAll)
       removeTemporaryLines ();
@@ -464,6 +463,10 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
    word->effSpace = word->origSpace;
 
    accumulateWordData (wordIndex);
+
+   //printf ("   ");
+   //printWord (word);
+   //printf ("\n");
 
    int penaltyIndex = calcPenaltyIndexForNewLine ();
 
@@ -486,17 +489,23 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          newLine = true;
          searchUntil = wordIndex;
          PRINTF ("   NEW LINE: forced break\n");
-      } else if (wordIndex > firstIndex &&
-                 word->badnessAndPenalty.lineTooTight () &&
-                 words->getRef(wordIndex- 1)
-                 ->badnessAndPenalty.lineCanBeBroken (penaltyIndex)) {
-         // TODO Comment the last condition (also below where the minimum is
-         // searched for)
-         newLine = true;
-         searchUntil = wordIndex - 1;
-         PRINTF ("   NEW LINE: line too tight\n");
-      } else
-         newLine = false;
+      } else {
+         // Break the line when too tight, but only when there is a
+         // possible break point so far. (TODO: I've forgotten the
+         // original bug which is fixed by this.)
+         bool possibleLineBreak = false;
+         for (int i = firstIndex; !possibleLineBreak && i <= wordIndex - 1; i++)
+            if (words->getRef(i)->badnessAndPenalty
+                .lineCanBeBroken (penaltyIndex))
+               possibleLineBreak = true;
+
+         if (possibleLineBreak && word->badnessAndPenalty.lineTooTight ()) {
+            newLine = true;
+            searchUntil = wordIndex - 1;
+            PRINTF ("   NEW LINE: line too tight\n");
+         } else
+            newLine = false;
+      }
 
       if(!newLine && !wrapAll)
          // No new line is added. "mustQueueResize" must,
@@ -522,9 +531,6 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                //printf ("      %d (of %d): ", i, words->size ());
                //printWord (w);
                //printf ("\n");
-               
-               // TODO: is this condition needed:
-               // if(w->badnessAndPenalty.lineCanBeBroken ()) ?
                
                if (breakPos == -1 ||
                    w->badnessAndPenalty.compareTo
