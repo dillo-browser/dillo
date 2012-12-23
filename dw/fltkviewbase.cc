@@ -238,7 +238,8 @@ int FltkViewBase::handle (int event)
       _MSG("PUSH => %s\n", processed ? "true" : "false");
       if (processed) {
          /* pressed dw content; give focus to the view */
-         Fl::focus(this);
+         if (Fl::event_button() != FL_RIGHT_MOUSE)
+            Fl::focus(this);
          return true;
       }
       break;
