@@ -527,8 +527,10 @@ void a_Dns_dillohost_to_string(DilloHost *host, char *dst, size_t size)
       switch (errno) {
          case EAFNOSUPPORT:
             snprintf(dst, size, "Unknown address family");
+            break;
          case ENOSPC:
             snprintf(dst, size, "Buffer too small");
+            break;
       }
    }
 }
