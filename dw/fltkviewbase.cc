@@ -296,10 +296,34 @@ int FltkViewBase::handle (int event)
       focused_child = fl_oldfocus;
       return 0;
    case FL_KEYBOARD:
-      if (Fl::event_key() == FL_Tab && this == Fl::focus()) {
-         for (int i = 0; i < children(); i++) {
-            if (child(i)->take_focus())
-               return 1;
+      if (Fl::event_key() == FL_Tab) {
+         int i, ret = 0;
+
+         if (this == Fl::focus()) {
+            // if we have focus, give it to a child
+            for (i = 0; i < children(); i++)
+               if (child(i)->take_focus()) {
+                  ret = 1;
+                  break;
+               }
+         } else {
+            // tabbing between children; which got focus?
+            if (!(ret = Fl_Group::handle (event)))
+               return 0;
+            for (i = 0; i < children(); i++)
+               if (child(i) == Fl::focus())
+                  break;
+         }
+         if (ret) {
+            if (i < children()) {
+               Fl_Widget *c = child(i);
+
+               theLayout->scrollTo(core::HPOS_INTO_VIEW, core::VPOS_INTO_VIEW,
+                                   translateViewXToCanvasX(c->x()),
+                                   translateViewYToCanvasY(c->y()),
+                                   c->w(), c->h());
+            }
+            return 1;
          }
       }
       break;
