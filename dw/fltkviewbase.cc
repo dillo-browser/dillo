@@ -295,6 +295,14 @@ int FltkViewBase::handle (int event)
    case FL_UNFOCUS:
       focused_child = fl_oldfocus;
       return 0;
+   case FL_KEYBOARD:
+      if (Fl::event_key() == FL_Tab && this == Fl::focus()) {
+         for (int i = 0; i < children(); i++) {
+            if (child(i)->take_focus())
+               return 1;
+         }
+      }
+      break;
    default:
       break;
    }
