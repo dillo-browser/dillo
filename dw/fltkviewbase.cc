@@ -301,22 +301,38 @@ int FltkViewBase::handle (int event)
          int i, ret = 0;
 
          if (this == Fl::focus()) {
-            // if we have focus, give it to a child
-            for (i = 0; i < children(); i++)
-               if (child(i)->take_focus()) {
-                  ret = 1;
-                  break;
+            // if we have focus, give it to a child. Go forward typically,
+            // or backward with Shift pressed.
+            if (!(Fl::event_state() & FL_SHIFT)) {
+               for (i = 0; i < children(); i++) {
+                  if (child(i)->take_focus()) {
+                     ret = 1;
+                     break;
+                  }
                }
+            } else {
+               for (i = children() - 1; i >= 0; i--) {
+                  if (child(i)->take_focus()) {
+                     ret = 1;
+                     break;
+                  }
+               }
+            }
          } else {
-            // tabbing between children; which got focus?
-            if (!(ret = Fl_Group::handle (event)))
-               return 0;
-            for (i = 0; i < children(); i++)
-               if (child(i) == Fl::focus())
-                  break;
+            // tabbing between children
+            if (!(ret = Fl_Group::handle (event))) {
+               // group didn't have any more children to focus.
+               Fl::focus(this);
+               return 1;
+            } else {
+               // which one did it focus?
+               for (i = 0; i < children(); i++)
+                  if (child(i) == Fl::focus())
+                     break;
+            }
          }
          if (ret) {
-            if (i < children()) {
+            if (i >= 0 && i < children()) {
                Fl_Widget *c = child(i);
 
                theLayout->scrollTo(core::HPOS_INTO_VIEW, core::VPOS_INTO_VIEW,
