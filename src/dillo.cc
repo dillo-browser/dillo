@@ -427,8 +427,10 @@ int main(int argc, char **argv)
       if (dStrAsciiCasecmp(URL_SCHEME(prefs.start_page), "about") == 0 &&
           strcmp(URL_PATH(prefs.start_page), "blank") == 0)
          a_UIcmd_open_url(bw, NULL); // NULL URL focuses location
-      else
+      else {
          a_UIcmd_open_url(bw, prefs.start_page);
+         a_UIcmd_set_location_text(bw, URL_STR(prefs.start_page));
+      }
    } else {
       for (int i = idx; i < argc; i++) {
          DilloUrl *start_url = makeStartUrl(argv[i], local);
@@ -443,6 +445,7 @@ int main(int argc, char **argv)
             }
          } else {
             a_UIcmd_open_url(bw, start_url);
+            a_UIcmd_set_location_text(bw, URL_STR(start_url));
          }
          a_Url_free(start_url);
       }
