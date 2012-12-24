@@ -191,6 +191,8 @@ private:
    void adjustScrollPos ();
    static bool calcScrollInto (int targetValue, int requestedSize,
                                int *value, int viewportSize);
+   int currHScrollbarThickness();
+   int currVScrollbarThickness();
 
    void updateAnchor ();
 

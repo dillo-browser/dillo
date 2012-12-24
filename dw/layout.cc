@@ -535,6 +535,17 @@ void Layout::draw (View *view, Rectangle *area)
    }
 }
 
+int Layout::currHScrollbarThickness()
+{
+   return (canvasWidth > viewportWidth) ? hScrollbarThickness : 0;
+}
+
+int Layout::currVScrollbarThickness()
+{
+   return (canvasAscent + canvasDescent > viewportHeight) ?
+          vScrollbarThickness : 0;
+}
+
 /**
  * Sets the anchor to scroll to.
  */
@@ -673,15 +684,12 @@ void Layout::resizeIdle ()
          //  view->queueDrawTotal (false);
 
          if (usesViewport) {
-            int actualHScrollbarThickness =
-               (canvasWidth > viewportWidth) ? hScrollbarThickness : 0;
-            int actualVScrollbarThickness =
-            (canvasAscent + canvasDescent > viewportHeight) ?
-            vScrollbarThickness : 0;
+            int currHThickness = currHScrollbarThickness();
+            int currVThickness = currVScrollbarThickness();
 
             if (!canvasHeightGreater &&
                canvasAscent + canvasDescent
-               > viewportHeight - actualHScrollbarThickness) {
+               > viewportHeight - currHThickness) {
                canvasHeightGreater = true;
                setSizeHints ();
                /* May queue a new resize. */
@@ -689,8 +697,7 @@ void Layout::resizeIdle ()
 
             // Set viewport sizes.
             view->setViewportSize (viewportWidth, viewportHeight,
-                                   actualHScrollbarThickness,
-                                   actualVScrollbarThickness);
+                                   currHThickness, currVThickness);
          }
       }
 
@@ -957,9 +964,7 @@ bool Layout::processMouseEvent (MousePositionEvent *event,
    if (event->xCanvas < scrollX)
       event->xCanvas = scrollX;
    else {
-      int actualVScrollbarThickness =
-         canvasAscent + canvasDescent > viewportHeight ? vScrollbarThickness:0;
-      int maxX = scrollX + viewportWidth - actualVScrollbarThickness - 1;
+      int maxX = scrollX + viewportWidth - currVScrollbarThickness() - 1;
 
       if (event->xCanvas > maxX)
          event->xCanvas = maxX;
@@ -967,9 +972,7 @@ bool Layout::processMouseEvent (MousePositionEvent *event,
    if (event->yCanvas < scrollY)
       event->yCanvas = scrollY;
    else {
-      int actualHScrollbarThickness =
-         (canvasWidth > viewportWidth) ? hScrollbarThickness : 0;
-      int maxY = misc::min(scrollY + viewportHeight -actualHScrollbarThickness,
+      int maxY = misc::min(scrollY + viewportHeight -currHScrollbarThickness(),
                            canvasAscent + canvasDescent) - 1;
 
       if (event->yCanvas > maxY)
