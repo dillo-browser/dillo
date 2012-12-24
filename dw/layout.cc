@@ -414,16 +414,16 @@ void Layout::scrollIdle ()
    case HPOS_CENTER:
       scrollX =
          scrollTargetX
-         - (viewportWidth - vScrollbarThickness - scrollTargetWidth) / 2;
+         - (viewportWidth - currVScrollbarThickness() - scrollTargetWidth) / 2;
       break;
    case HPOS_RIGHT:
       scrollX =
          scrollTargetX
-         - (viewportWidth - vScrollbarThickness - scrollTargetWidth);
+         - (viewportWidth - currVScrollbarThickness() - scrollTargetWidth);
       break;
    case HPOS_INTO_VIEW:
       xChanged = calcScrollInto (scrollTargetX, scrollTargetWidth, &scrollX,
-                                 viewportWidth - vScrollbarThickness);
+                                 viewportWidth - currVScrollbarThickness());
       break;
    case HPOS_NO_CHANGE:
       xChanged = false;
@@ -438,16 +438,16 @@ void Layout::scrollIdle ()
    case VPOS_CENTER:
       scrollY =
          scrollTargetY
-         - (viewportHeight - hScrollbarThickness - scrollTargetHeight) / 2;
+         - (viewportHeight - currHScrollbarThickness() - scrollTargetHeight)/2;
       break;
    case VPOS_BOTTOM:
       scrollY =
          scrollTargetY
-         - (viewportHeight - hScrollbarThickness - scrollTargetHeight);
+         - (viewportHeight - currHScrollbarThickness() - scrollTargetHeight);
       break;
    case VPOS_INTO_VIEW:
       yChanged = calcScrollInto (scrollTargetY, scrollTargetHeight, &scrollY,
-                                 viewportHeight - hScrollbarThickness);
+                                 viewportHeight - currHScrollbarThickness());
       break;
    case VPOS_NO_CHANGE:
       yChanged = false;
