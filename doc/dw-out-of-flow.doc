@@ -373,7 +373,7 @@ contents/collisions of floats) lead to a very simple of
 dw::OutOfFlowMgr::getExtremes: the result is simply the maximum of the
 floats extremes. (This is at least correct for the minimal width.)
 
-**Rewrapping (via dw::Textblock::borderChanged) sometimes does not
+**Rewrapping** (via dw::Textblock::borderChanged) sometimes does not
 imply redrawing. Reproduce?
 
 Medium Priority
