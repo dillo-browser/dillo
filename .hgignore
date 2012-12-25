@@ -38,5 +38,6 @@
 ^test/dw-ui-test$
 ^test/liang$
 ^test/notsosimplevector$
-^test/trie$
 ^test/shapes$
+^test/trie$
+^test/unicode-test$
