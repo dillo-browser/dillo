@@ -299,6 +299,7 @@ int FltkViewBase::handle (int event)
    case FL_KEYBOARD:
       if (Fl::event_key() == FL_Tab) {
          int i, ret = 0;
+         Fl_Widget *old_child = NULL;
 
          if (this == Fl::focus()) {
             // if we have focus, give it to a child. Go forward typically,
@@ -320,6 +321,8 @@ int FltkViewBase::handle (int event)
             }
          } else {
             // tabbing between children
+            old_child = Fl::focus();
+
             if (!(ret = Fl_Group::handle (event))) {
                // group didn't have any more children to focus.
                Fl::focus(this);
@@ -334,11 +337,26 @@ int FltkViewBase::handle (int event)
          if (ret) {
             if (i >= 0 && i < children()) {
                Fl_Widget *c = child(i);
+               int canvasX = translateViewXToCanvasX(c->x()),
+                   canvasY = translateViewYToCanvasY(c->y());
 
                theLayout->scrollTo(core::HPOS_INTO_VIEW, core::VPOS_INTO_VIEW,
-                                   translateViewXToCanvasX(c->x()),
-                                   translateViewYToCanvasY(c->y()),
-                                   c->w(), c->h());
+                                   canvasX, canvasY, c->w(), c->h());
+
+               // Draw the children who gained and lost focus. Otherwise a
+               // widget that had been only partly visible still shows its old
+               // appearance in the previously-visible portion.
+               core::Rectangle r(canvasX, canvasY, c->w(), c->h());
+
+               queueDraw(&r);
+
+               if (old_child) {
+                  r.x = translateViewXToCanvasX(old_child->x());
+                  r.y = translateViewYToCanvasY(old_child->y());
+                  r.width = old_child->w();
+                  r.height = old_child->h();
+                  queueDraw(&r);
+               }
             }
             return 1;
          }
