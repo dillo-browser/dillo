@@ -75,7 +75,7 @@ const char *const AboutSplash=
 "    <tr>\n"
 "    <td>&nbsp;&nbsp;\n"
 "    <td>\n"
-"     <a href='http://hg.dillo.org/dillo/file/tip/ChangeLog'>\n"
+"     <a href='http://hg.dillo.org/dillo/raw-file/tip/ChangeLog'>\n"
 "     ChangeLog</a>\n"
 "    <tr>\n"
 "    <td>&nbsp;&nbsp;\n"
