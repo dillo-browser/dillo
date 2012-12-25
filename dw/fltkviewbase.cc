@@ -406,7 +406,6 @@ void FltkViewBase::finishDrawing (core::Rectangle *area)
 void FltkViewBase::queueDraw (core::Rectangle *area)
 {
    drawRegion.addRectangle (area);
-   /** DAMAGE_VALUE is just an arbitrary value other than DAMAGE_EXPOSE here */
    damage (FL_DAMAGE_USER1);
 }
 
