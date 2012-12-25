@@ -160,6 +160,21 @@ Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getFloatList (Widget *widget)
    }
 }
 
+Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getOppositeFloatList (Widget *widget)
+{
+   switch (widget->getStyle()->vloat) {
+   case FLOAT_LEFT:
+      return rightFloats;
+
+   case FLOAT_RIGHT:
+      return leftFloats;
+
+   default:
+      assertNotReached();
+      return NULL;
+   }
+}
+
 void OutOfFlowMgr::markSizeChange (int ref)
 {
    //printf ("[%p] MARK_SIZE_CHANGE (%d)\n", containingBlock, ref);
@@ -251,6 +266,7 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
    assert (y >= 0);
 
    Float *vloat = findFloatByWidget(widget);
+   ensureFloatSize (vloat);
 
    //printf ("[%p] tellPosition (%p, %d): %d ...\n",
    //        containingBlock, widget, y, vloat->y);
@@ -258,20 +274,38 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
    int oldY = vloat->y;
 
    int realY = y;
-   Vector<Float> *list = getFloatList (widget);   
+   Vector<Float> *listSame = getFloatList (widget);   
+   Vector<Float> *listOpp = getOppositeFloatList (widget);   
    bool collides;
 
    do {
-      // Test collisions on the same side. TODO Other side (see \ref
-      // dw-out-of-flow).
+      // Test collisions on the same side.
       collides = false;
 
-      for (int i = 0; i < list->size(); i++) {
-         Float *v = list->get(i);
+      for (int i = 0; i < listSame->size(); i++) {
+         Float *v = listSame->get(i);
          if (v != vloat) {
             ensureFloatSize (v);
             if (v->y != -1 && realY >= v->y && 
                 realY < v->y + v->size.ascent + v->size.descent) {
+               collides = true;
+               realY = v->y + v->size.ascent + v->size.descent;
+               break;
+            }
+         }
+      }    
+
+      // Test collisions on the other side.
+      for (int i = 0; i < listOpp->size(); i++) {
+         Float *v = listOpp->get(i);
+         if (v != vloat) {
+            ensureFloatSize (v);
+            if (v->y != -1 && realY >= v->y && 
+                realY < v->y + v->size.ascent + v->size.descent &&
+                // For the other size, horizontal dimensions have to
+                // be considered, too.
+                v->size.width + v->borderWidth +
+                vloat->size.width + vloat->borderWidth > availWidth) {
                collides = true;
                realY = v->y + v->size.ascent + v->size.descent;
                break;

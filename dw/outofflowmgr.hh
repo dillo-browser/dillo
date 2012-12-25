@@ -38,6 +38,8 @@ private:
 
    Float *findFloatByWidget (core::Widget *widget);
    lout::container::typed::Vector<Float> *getFloatList (core::Widget *widget);
+   lout::container::typed::Vector<Float> *getOppositeFloatList (core::Widget
+                                                                *widget);
    void ensureFloatSize (Float *vloat);
    int calcBorderDiff (Float *vloat);
 
