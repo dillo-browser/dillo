@@ -254,10 +254,8 @@ int FltkViewBase::manageTabToFocus()
          Fl::focus(this);
          return 1;
       } else {
-         // which one did it focus?
-         for (i = 0; i < children(); i++)
-            if (child(i) == Fl::focus())
-               break;
+         // which one did it focus? (Note i == children() if not found)
+         i = find(Fl::focus());
       }
    }
    if (ret) {
