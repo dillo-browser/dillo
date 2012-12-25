@@ -39,6 +39,7 @@ private:
 
    void draw (const core::Rectangle *rect, DrawType type);
    void drawChildWidgets ();
+   int manageTabToFocus();
    inline void clipPoint (int *x, int *y, int border) {
       if (exposeArea) {
          if (*x < exposeArea->x - border)
