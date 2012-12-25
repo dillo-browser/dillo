@@ -482,7 +482,7 @@ void UI::make_progress_bars(int wide, int thin_up)
     PProg->labelsize(12);
     PProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
     PProg->labelcolor(FL_GRAY_RAMP + 2);
-    PProg->update_label(wide ? "Page\n0.0KB" : "0.0KB");
+    PProg->update_label(wide ? "Page\n0.0 KB" : "0.0 KB");
 }
 
 /*
@@ -850,8 +850,18 @@ void UI::set_page_prog(size_t nbytes, int cmd)
    } else {
       PProg->activate();
       if (cmd == 1) {
-         snprintf(str, 32, "%s%.1f KB",
-                  (PanelSize == 0) ? "" : "Page\n", nbytes/1024.0);
+         char prefix;
+         float magnitude;
+
+         if (nbytes >= 1024 * 1024) {
+            prefix = 'M';
+            magnitude = nbytes / (1024 * 1024.0);
+         } else {
+            prefix = 'K';
+            magnitude = nbytes / 1024.0;
+         }
+         snprintf(str, 32, "%s%.1f %cB",
+                  (PanelSize == 0) ? "" : "Page\n", magnitude, prefix);
       } else if (cmd == 2) {
          str[0] = '\0';
       }
