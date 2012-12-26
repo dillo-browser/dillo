@@ -298,20 +298,20 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
       // Test collisions on the other side.
       for (int i = 0; i < listOpp->size(); i++) {
          Float *v = listOpp->get(i);
-         if (v != vloat) {
-            ensureFloatSize (v);
-            if (v->y != -1 && realY >= v->y && 
-                realY < v->y + v->size.ascent + v->size.descent &&
-                // For the other size, horizontal dimensions have to
-                // be considered, too.
-                v->size.width + v->borderWidth +
-                vloat->size.width + vloat->borderWidth > availWidth) {
-               collides = true;
-               realY = v->y + v->size.ascent + v->size.descent;
-               break;
-            }
+         // Note: Since v is on the opposite side, the condition 
+         // v != vloat (used above) is always true.
+         ensureFloatSize (v);
+         if (v->y != -1 && realY >= v->y && 
+             realY < v->y + v->size.ascent + v->size.descent &&
+             // For the other size, horizontal dimensions have to be
+             // considered, too.
+             v->size.width + v->borderWidth +
+             vloat->size.width + vloat->borderWidth > availWidth) {
+            collides = true;
+            realY = v->y + v->size.ascent + v->size.descent;
+            break;
          }
-      }    
+      } 
    } while (collides);
 
    vloat->y = realY;
