@@ -451,8 +451,9 @@ char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
          }
 
       } else if (dsh->mode & DPIP_RAW) {
-         /* Wait for data when the buffer is empty and there's no EOF yet */
-         while (dsh->rdbuf->len == 0 && dsh->status != DPIP_EOF)
+         /* Wait for data when the buffer is empty and there's no ERR/EOF */
+         while (dsh->rdbuf->len == 0 && 
+                dsh->status != DPIP_ERROR && dsh->status != DPIP_EOF)
             Dpip_dsh_read(dsh, 1);
       }
    }
