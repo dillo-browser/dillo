@@ -37,6 +37,7 @@ dillo-3.0.3 [not released yet]
 +- After focusing option menu, keypress will seek to next one beginning with
    that character.
  - When active tab is closed, focus the last one visited or opened.
+ - Fixed a bug in dpip when dillo aborts a running dpi connection.
    Patches: Jorge Arellano Cid
 +- Better window titles.
    Patch: Jeremy Henty

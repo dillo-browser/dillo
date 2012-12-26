@@ -363,6 +363,9 @@ int main(int argc, char **argv)
 
    dw::Textblock::setPenaltyHyphen (prefs.penalty_hyphen);
    dw::Textblock::setPenaltyHyphen2 (prefs.penalty_hyphen_2);
+   dw::Textblock::setPenaltyEmDashLeft (prefs.penalty_em_dash_left);
+   dw::Textblock::setPenaltyEmDashRight (prefs.penalty_em_dash_right);
+   dw::Textblock::setPenaltyEmDashRight2 (prefs.penalty_em_dash_right_2);
 
    /* command line options override preferences */
    if (options_got & DILLO_CLI_FULLWINDOW)

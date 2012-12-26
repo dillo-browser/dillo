@@ -189,11 +189,11 @@ void Textblock::BadnessAndPenalty::print ()
    }
 
 #ifdef DEBUG
-   printf (" [%d + %d - %d vs. %d] + ",
+   printf (" [%d + %d - %d vs. %d]",
            totalWidth, totalStretchability, totalShrinkability, idealWidth);
 #endif
 
-   printf ("(");
+   printf (" + (");
    for (int i = 0; i < 2; i++) {
       if (penalty[i] == INT_MIN)
          printf ("-inf");
