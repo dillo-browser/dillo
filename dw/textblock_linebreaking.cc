@@ -505,6 +505,18 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
    int penaltyIndex = calcPenaltyIndexForNewLine ();
 
+   // This variable is set to true, if, due to floats, this line is
+   // smaller than following lines will be (and, at the end, there
+   // will be surely lines without floats). If this is the case, lines
+   // may, in an extreme case, be left empty.
+
+   // (In other cases, lines are never left empty, even if this means
+   // that the contents is wider than the available witdh. Leaving
+   // lines empty does not make sense without floats, since there will
+   // be no possibility with more space anymore.)
+
+   bool thereWillBeMoreSpace = false; // true; // TODO This depends on floats.
+
    bool newLine;
    do {
       bool tempNewLine = false;
@@ -528,13 +540,21 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          // Break the line when too tight, but only when there is a
          // possible break point so far. (TODO: I've forgotten the
          // original bug which is fixed by this.)
+         
+         // Exception of the latter rule: thereWillBeMoreSpace; see
+         // above, where it is defined.
+
          bool possibleLineBreak = false;
-         for (int i = firstIndex; !possibleLineBreak && i <= wordIndex - 1; i++)
+         for (int i = firstIndex;
+              !(thereWillBeMoreSpace || possibleLineBreak)
+                 && i <= wordIndex - 1;
+              i++)
             if (words->getRef(i)->badnessAndPenalty
                 .lineCanBeBroken (penaltyIndex))
                possibleLineBreak = true;
 
-         if (possibleLineBreak && word->badnessAndPenalty.lineTooTight ()) {
+         if ((thereWillBeMoreSpace || possibleLineBreak)
+             && word->badnessAndPenalty.lineTooTight ()) {
             newLine = true;
             searchUntil = wordIndex - 1;
             PRINTF ("   NEW LINE: line too tight\n");
