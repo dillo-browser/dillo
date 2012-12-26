@@ -23,6 +23,9 @@ dillo-3.0.3 [not released yet]
  - For text selection, fix releasing mouse button outside of boundary.
  - While selecting text, moving cursor outside viewport will scroll it.
  - Make form resetting work for <select>.
+ - Never leave location bar empty when requesting page (BUG#1113).
+ - Some improvements to tab navigation of form widgets (includes BUG#1111).
+ - Don't let form input widget insert literal control chars (BUG#1110).
    Patches: corvid
 +- Automatic hyphenation.
    Patch: Sebastian Geerken
@@ -33,7 +36,7 @@ dillo-3.0.3 [not released yet]
    Patch: p37sitdu, corvid
 +- After focusing option menu, keypress will seek to next one beginning with
    that character.
- - When active tab is closed, focus the previously visited one.
+ - When active tab is closed, focus the last one visited or opened.
    Patches: Jorge Arellano Cid
 +- Better window titles.
    Patch: Jeremy Henty

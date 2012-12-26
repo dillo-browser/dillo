@@ -699,6 +699,7 @@ static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
     */
    if (url) {
       a_Nav_push(new_bw, url, NULL);
+      a_UIcmd_set_location_text(new_bw, URL_STR(url));
       BW2UI(new_bw)->focus_main();
    } else {
       BW2UI(new_bw)->focus_location();
