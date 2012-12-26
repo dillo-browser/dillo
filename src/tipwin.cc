@@ -25,6 +25,7 @@
 #include <FL/Fl_Tooltip.H>
 #include <FL/Fl_Button.H>
 
+#include "prefs.h"
 #include "tipwin.hh"
 
 /*
@@ -70,7 +71,9 @@ void TipWin::value(const char *s) {
 
 void TipWin::do_show(void *wid) {
    cur_widget = wid;  // Keep track of requesting widget
-   Fl::add_timeout(recent ? 0.2f : 0.8f, show_timeout);
+   if (prefs.show_tooltip) {
+      Fl::add_timeout(recent ? 0.2f : 0.8f, show_timeout);
+   }
 }
 
 void TipWin::do_hide() {
