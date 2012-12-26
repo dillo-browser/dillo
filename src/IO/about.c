@@ -262,7 +262,7 @@ const char *const AboutSplash=
 " <td bgcolor='#CCCCCC'>\n"
 "  <h4>ChangeLog highlights</h4>\n"
 "  (Extracted from the\n"
-"  <a href='http://hg.dillo.org/dillo/file/tip/ChangeLog'>full\n"
+"  <a href='http://hg.dillo.org/dillo/raw-file/tip/ChangeLog'>full\n"
 "  ChangeLog</a>)\n"
 "<tr>\n"
 " <td bgcolor='#FFFFFF'>\n"
