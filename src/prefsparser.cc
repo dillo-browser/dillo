@@ -234,4 +234,9 @@ void PrefsParser::parse(FILE *fp)
    // restore the old numeric locale
    setlocale(LC_NUMERIC, oldLocale);
    dFree(oldLocale);
+
+   if (!prefs.show_url) {
+      MSG_WARN("Reenabling show_url preference (UI requires it currently).\n");
+      prefs.show_url = true;
+   }
 }
