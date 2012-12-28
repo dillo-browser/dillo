@@ -583,8 +583,6 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          do {
             int breakPos = searchMinBap (firstIndex, searchUntil, penaltyIndex);
 
-            PRINTF ("      breakPos = %d\n", breakPos);
-            
             if (wrapAll && searchUntil == words->size () - 1) {
                // Since no break and no space is added, the last word
                // will have a penalty of inf. Actually, it should be
@@ -717,6 +715,8 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex)
          pos = i;
    }
 
+   PRINTF ("      found at %d\n", pos);
+            
    return pos;
 }
 
