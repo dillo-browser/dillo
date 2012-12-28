@@ -61,9 +61,8 @@ int CustInput2::handle(int e)
    unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
 
    if (e == FL_KEYBOARD) {
-      if (k == FL_Page_Down || k == FL_Page_Up) {
-         // These do nothing of interest when FL_MULTILINE_INPUT isn't set.
-         // Let them through for key commands.
+      if (k == FL_Page_Down || k == FL_Page_Up || k == FL_Up || k == FL_Down) {
+         // Let them through for key commands and viewport motion.
          return 0;
       }
       if (modifier == FL_CTRL) {
