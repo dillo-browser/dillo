@@ -60,20 +60,27 @@ int CustInput2::handle(int e)
    // We're only interested in some flags
    unsigned modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL | FL_ALT);
 
-   if (e == FL_KEYBOARD && modifier == FL_CTRL) {
-      if (k == 'a' || k == 'e') {
-         position(k == 'a' ? 0 : size());
-         return 1;
-      } else if (k == 'k') {
-         cut(position(), size());
-         return 1;
-      } else if (k == 'd') {
-         cut(position(), position()+1);
-         return 1;
-      } else if (k == 'i' || k == 'j' || k == 'l' || k == 'm') {
-         // Fl_Input wants to "insert a few selected control characters
-         // literally", but this gets in the way of key commands.
+   if (e == FL_KEYBOARD) {
+      if (k == FL_Page_Down || k == FL_Page_Up) {
+         // These do nothing of interest when FL_MULTILINE_INPUT isn't set.
+         // Let them through for key commands.
          return 0;
+      }
+      if (modifier == FL_CTRL) {
+         if (k == 'a' || k == 'e') {
+            position(k == 'a' ? 0 : size());
+            return 1;
+         } else if (k == 'k') {
+            cut(position(), size());
+            return 1;
+         } else if (k == 'd') {
+            cut(position(), position()+1);
+            return 1;
+         } else if (k == 'i' || k == 'j' || k == 'l' || k == 'm') {
+            // Fl_Input wants to "insert a few selected control characters
+            // literally", but this gets in the way of key commands.
+            return 0;
+         }
       }
    }
    return Fl_Input::handle(e);
