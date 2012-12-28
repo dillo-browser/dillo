@@ -644,7 +644,8 @@ protected:
                                 int *maxOfMinWidth, int *sumOfMaxWidth);
    void processWord (int wordIndex);
    virtual void wordWrap (int wordIndex, bool wrapAll);
-   int searchMinBap (int firstWord, int lastWordm, int penaltyIndex);
+   int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
+                     bool correctAtEnd);
    void handleWordExtremes (int wordIndex);
    void correctLastWordExtremes ();
 

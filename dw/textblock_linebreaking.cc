@@ -581,29 +581,8 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
          bool lineAdded;
          do {
-            int breakPos = searchMinBap (firstIndex, searchUntil, penaltyIndex);
-
-            if (wrapAll && searchUntil == words->size () - 1) {
-               // Since no break and no space is added, the last word
-               // will have a penalty of inf. Actually, it should be
-               // less, since it is the last word. However, since more
-               // words may follow, the penalty is not changesd, but
-               // here, the search is corrected (maybe only
-               // temporary).
-
-               // (Notice that it was once (temporally) set to -inf,
-               // not 0, but this will make e.g. test/table-1.html not
-               // work.)
-               Word *lastWord = words->getRef (searchUntil);
-               BadnessAndPenalty correctedBap = lastWord->badnessAndPenalty;
-               correctedBap.setPenalty (0);
-               if (correctedBap.compareTo
-                   (penaltyIndex,
-                    &words->getRef(breakPos)->badnessAndPenalty) <= 0) {
-                  breakPos = searchUntil;
-                  PRINTF ("      corrected: breakPos = %d\n", breakPos);
-               }
-            }
+            int breakPos =
+               searchMinBap (firstIndex, searchUntil, penaltyIndex, wrapAll);
 
             int hyphenatedWord = -1;
             Word *word1 = words->getRef(breakPos);
@@ -692,7 +671,8 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
    }
 }
 
-int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex)
+int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
+                             bool correctAtEnd)
 {
    PRINTF ("   searching from %d to %d\n", firstWord, lastWord);
 
@@ -716,9 +696,29 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex)
    }
 
    PRINTF ("      found at %d\n", pos);
-            
+
+   if (correctAtEnd && lastWord == words->size () - 1) {
+      // Since no break and no space is added, the last word will have
+      // a penalty of inf. Actually, it should be less, since it is
+      // the last word. However, since more words may follow, the
+      // penalty is not changed, but here, the search is corrected
+      // (maybe only temporary).
+      
+      // (Notice that it was once (temporally) set to -inf, not 0, but
+      // this will make e.g. test/table-1.html not work.)
+      Word *w = words->getRef (lastWord);
+      BadnessAndPenalty correctedBap = w->badnessAndPenalty;
+      correctedBap.setPenalty (0);
+      if (correctedBap.compareTo(penaltyIndex,
+                                 &words->getRef(pos)->badnessAndPenalty) <= 0) {
+         pos = lastWord;
+         PRINTF ("      corrected => %d\n", pos);
+      }
+   }
+           
    return pos;
 }
+
 
 /**
  * Counter part to wordWrap(), but for extremes, not size calculation.
