@@ -367,8 +367,13 @@ int FltkViewBase::handle (int event)
       focused_child = fl_oldfocus;
       return 0;
    case FL_KEYBOARD:
-      if (Fl::event_key() == FL_Tab)
-         return manageTabToFocus();
+      if (Fl::event_key() == FL_Tab) {
+         if (Fl::event_ctrl()) {
+            // the UI will handle it
+            return 0;
+         } else
+            return manageTabToFocus();
+      }
       break;
    default:
       break;
