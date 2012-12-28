@@ -646,6 +646,9 @@ protected:
    virtual void wordWrap (int wordIndex, bool wrapAll);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
                      bool correctAtEnd);
+   int considerHyphenation (int breakPos);
+   bool isHyphenationCandidate (Word *word);
+   
    void handleWordExtremes (int wordIndex);
    void correctLastWordExtremes ();
 
