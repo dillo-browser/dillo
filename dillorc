@@ -77,6 +77,47 @@
 
 
 #-------------------------------------------------------------------------
+#                               PENALTIES
+#-------------------------------------------------------------------------
+
+# Penalties are used to control good and bad break points. The bigger
+# the penalty for a given break point, the less likely the line is
+# broken here. "inf" means that breaking is prohibited, "-inf" means
+# that a line *must* be broken here. (The latter should not be used
+# here, however.) Normal spaces get a penalty of 0. The exact
+# definition can be fouund in doc/dw-line-breaking.doc.
+
+# Penalties for hyphenation breaks; this covers automatic hyphenation,
+# soft hyphens, and unconditional hyphens. Since hyphenation should
+# rather be avoided, the default values are larger than 0.
+
+# This is used for hyphenation points, when there is no hyphen or dash
+# before:
+#penalty_hyphen = 1
+
+# This is used for hyphenation points, when the line before ends
+# already with a hyphen or a dash. Consequent lines ending with
+# hyphens or dashes should be avoided, so this value is bigger than
+# "penalty_hyphen":
+#penalty_hyphen_2 = 8
+
+# The same for a break right of an em-dash, when there are no spaces
+# surrounding it (as in English). The default values are the same as
+# for hyphens:
+#penalty_em_dash_right = 1
+#penalty_em_dash_right_2 = 8
+
+# Penalty for a break *left* of an em-dash. Since a line ending with
+# an em-dash (and so breaking right of the em-dash) looks better than
+# a line beginning with an em-dash (breaking left of an em-dash), the
+# default value is bigger than "penalty_em_dash_right":
+#penalty_em_dash_left = 8
+
+# Notice that there is no "penalty_em_dash_left_2", since breaking
+# left of an em-dash makes the line *begin*, not *end* with a dash.
+
+
+#-------------------------------------------------------------------------
 #                            PARSING SECTION
 #-------------------------------------------------------------------------
 

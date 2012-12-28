@@ -238,9 +238,9 @@ int FltkViewport::handle (int event)
        * sends the event here. Returning zero tells FLTK to resend the
        * event as SHORTCUT, which we finally route to the parent. */
 
-      /* As we don't know the exact keybindings set by the user, we ask
-       * for all of them (except Tab to keep form navigation). */
-      if (Fl::event_key() != FL_Tab)
+      /* As we don't know the exact keybindings set by the user, we ask for
+       * all of them (except for the minimum needed to keep form navigation).*/
+      if (Fl::event_key() != FL_Tab || Fl::event_ctrl())
          return 0;
       break;
 

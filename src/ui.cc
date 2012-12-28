@@ -149,6 +149,11 @@ int CustInput::handle(int e)
             return 0;
          }
       }
+      if (k == FL_Page_Down || k == FL_Page_Up) {
+         // These do nothing of interest when FL_MULTILINE_INPUT isn't set.
+         // Let them through for key commands.
+         return 0;
+      }
    }
 
    return TipWinInput::handle(e);
