@@ -581,25 +581,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
          bool lineAdded;
          do {
-            PRINTF ("   searching from %d to %d\n", firstIndex, searchUntil);
-
-            int breakPos = -1;
-            for (int i = firstIndex; i <= searchUntil; i++) {
-               Word *w = words->getRef(i);
-               
-               //printf ("      %d (of %d): ", i, words->size ());
-               //printWord (w);
-               //printf ("\n");
-               
-               if (breakPos == -1 ||
-                   w->badnessAndPenalty.compareTo
-                   (penaltyIndex,
-                    &words->getRef(breakPos)->badnessAndPenalty) <= 0)
-                  // "<=" instead of "<" in the next lines tends to result in
-                  // more words per line -- theoretically. Practically, the
-                  // case "==" will never occur.
-                  breakPos = i;
-            }
+            int breakPos = searchMinBap (firstIndex, searchUntil, penaltyIndex);
 
             PRINTF ("      breakPos = %d\n", breakPos);
             
@@ -710,6 +692,32 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                  word->content.widget->parentRef);
       }
    }
+}
+
+int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex)
+{
+   PRINTF ("   searching from %d to %d\n", firstWord, lastWord);
+
+   int pos = -1;
+
+   for (int i = firstWord; i <= lastWord; i++) {
+      Word *w = words->getRef(i);
+      
+      //printf ("      %d (of %d): ", i, words->size ());
+      //printWord (w);
+      //printf ("\n");
+               
+      if (pos == -1 ||
+          w->badnessAndPenalty.compareTo (penaltyIndex,
+                                          &words->getRef(pos)
+                                          ->badnessAndPenalty) <= 0)
+         // "<=" instead of "<" in the next lines tends to result in
+         // more words per line -- theoretically. Practically, the
+         // case "==" will never occur.
+         pos = i;
+   }
+
+   return pos;
 }
 
 /**

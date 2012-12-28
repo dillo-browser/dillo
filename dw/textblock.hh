@@ -12,6 +12,8 @@
 #define PRINTF(fmt, ...)
 #define PUTCHAR(ch)
 
+//#define DEBUG
+
 namespace dw {
 
 /**
@@ -642,6 +644,7 @@ protected:
                                 int *maxOfMinWidth, int *sumOfMaxWidth);
    void processWord (int wordIndex);
    virtual void wordWrap (int wordIndex, bool wrapAll);
+   int searchMinBap (int firstWord, int lastWordm, int penaltyIndex);
    void handleWordExtremes (int wordIndex);
    void correctLastWordExtremes ();
 
