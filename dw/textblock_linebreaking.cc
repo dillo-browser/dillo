@@ -388,6 +388,11 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    for(int i = line->firstWord; i <= line->lastWord; i++)
       accumulateWordForLine (lineIndex, i);
 
+   // Especially empty lines (possible when there are floats) have
+   // zero height, which may cause endless loops. For this reasons,
+   // the height should be positive.
+   line->boxAscent = misc::max (line->boxAscent, 1);
+
    PRINTF ("   line[%d].top = %d\n", lines->size () - 1, line->top);
    PRINTF ("   line[%d].boxAscent = %d\n", lines->size () - 1, line->boxAscent);
    PRINTF ("   line[%d].boxDescent = %d\n",
@@ -505,20 +510,42 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
    int penaltyIndex = calcPenaltyIndexForNewLine ();
 
-   // This variable is set to true, if, due to floats, this line is
-   // smaller than following lines will be (and, at the end, there
-   // will be surely lines without floats). If this is the case, lines
-   // may, in an extreme case, be left empty.
-
-   // (In other cases, lines are never left empty, even if this means
-   // that the contents is wider than the available witdh. Leaving
-   // lines empty does not make sense without floats, since there will
-   // be no possibility with more space anymore.)
-
-   bool thereWillBeMoreSpace = false; // true; // TODO This depends on floats.
-
    bool newLine;
    do {
+      // This variable is set to true, if, due to floats, this line is
+      // smaller than following lines will be (and, at the end, there
+      // will be surely lines without floats). If this is the case, lines
+      // may, in an extreme case, be left empty.
+
+      // (In other cases, lines are never left empty, even if this means
+      // that the contents is wider than the available witdh. Leaving
+      // lines empty does not make sense without floats, since there will
+      // be no possibility with more space anymore.)
+
+      bool thereWillBeMoreSpace;
+      if (containingBlock->outOfFlowMgr == NULL) {
+         thereWillBeMoreSpace = false;
+         PRINTF ("   thereWillBeMoreSpace = false (no OOFM)\n");
+      } else {
+         assert (diffXToContainingBlock != -1);
+         assert (restWidthToContainingBlock != -1);
+         assert (diffYToContainingBlock != -1);
+
+         int y =
+            topOfPossiblyMissingLine (lines->size ()) + diffYToContainingBlock;
+         int l =
+            containingBlock->outOfFlowMgr->getLeftBorder (y)
+            - diffXToContainingBlock;
+         int r = 
+            containingBlock->outOfFlowMgr->getRightBorder (y)
+            - restWidthToContainingBlock;
+
+         thereWillBeMoreSpace = l > 0 || r > 0;
+
+         PRINTF ("   thereWillBeMoreSpace = %s (y = %d, l = %d, r = %d)\n",
+                 thereWillBeMoreSpace ? "true" : "false", y, l, r);
+      }
+
       bool tempNewLine = false;
       int firstIndex =
          lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
@@ -581,44 +608,53 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
          bool lineAdded;
          do {
-            int breakPos =
-               searchMinBap (firstIndex, searchUntil, penaltyIndex, wrapAll);
-            int hyphenatedWord = considerHyphenation (breakPos);
-
-            PRINTF ("[%p] breakPos = %d, hyphenatedWord = %d\n",
-                    this, breakPos, hyphenatedWord);
-
-            if(hyphenatedWord == -1) {
-               addLine (firstIndex, breakPos, tempNewLine);
-               PRINTF ("[%p]    new line %d (%s), from %d to %d\n",
-                       this, lines->size() - 1,
-                       tempNewLine ? "temporally" : "permanently",
-                       firstIndex, breakPos);
+            if (firstIndex > searchUntil) {
+               // empty line
+               assert (searchUntil == firstIndex - 1);
+               addLine (firstIndex, firstIndex - 1, tempNewLine);
                lineAdded = true;
                penaltyIndex = calcPenaltyIndexForNewLine ();
             } else {
-               // TODO hyphenateWord() should return whether something has
-               // changed at all. So that a second run, with
-               // !word->canBeHyphenated, is unnecessary.
-               // TODO Update: for this, searchUntil == 0 should be checked.
-               PRINTF ("[%p] old searchUntil = %d ...\n", this, searchUntil);
-               int n = hyphenateWord (hyphenatedWord);
-               searchUntil += n;
-               if (hyphenatedWord <= wordIndex)
-                  wordIndexEnd += n;
-               PRINTF ("[%p] -> new searchUntil = %d ...\n", this, searchUntil);
-               lineAdded = false;
+               int breakPos =
+                  searchMinBap (firstIndex, searchUntil, penaltyIndex, wrapAll);
+               int hyphenatedWord = considerHyphenation (breakPos);
                
-               // update word pointer as hyphenateWord() can trigger a
-               // reorganization of the words structure
-               word = words->getRef (wordIndex);
+               PRINTF ("[%p] breakPos = %d, hyphenatedWord = %d\n",
+                       this, breakPos, hyphenatedWord);
+               
+               if(hyphenatedWord == -1) {
+                  addLine (firstIndex, breakPos, tempNewLine);
+                  PRINTF ("[%p]    new line %d (%s), from %d to %d\n",
+                          this, lines->size() - 1,
+                          tempNewLine ? "temporally" : "permanently",
+                          firstIndex, breakPos);
+                  lineAdded = true;
+                  penaltyIndex = calcPenaltyIndexForNewLine ();
+               } else {
+                  // TODO hyphenateWord() should return whether
+                  // something has changed at all. So that a second
+                  // run, with !word->canBeHyphenated, is unnecessary.
+                  // TODO Update: for this, searchUntil == 0 should be
+                  // checked.
+                  PRINTF ("[%p] old searchUntil = %d ...\n", this, searchUntil);
+                  int n = hyphenateWord (hyphenatedWord);
+                  searchUntil += n;
+                  if (hyphenatedWord <= wordIndex)
+                     wordIndexEnd += n;
+                  PRINTF ("[%p] -> new searchUntil = %d ...\n",
+                          this, searchUntil);
+                  lineAdded = false;
+               
+                  // update word pointer as hyphenateWord() can trigger a
+                  // reorganization of the words structure
+                  word = words->getRef (wordIndex);
+               }
+               
+               PRINTF ("[%p]       accumulating again from %d to %d\n",
+                       this, breakPos + 1, wordIndexEnd);
+               for(int i = breakPos + 1; i <= wordIndexEnd; i++)
+                  accumulateWordData (i);
             }
-            
-            PRINTF ("[%p]       accumulating again from %d to %d\n",
-                    this, breakPos + 1, wordIndexEnd);
-            for(int i = breakPos + 1; i <= wordIndexEnd; i++)
-               accumulateWordData (i);
-
          } while(!lineAdded);
       }
    } while (newLine);
