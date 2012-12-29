@@ -485,28 +485,8 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
    //printWord (word);
    //printf ("\n");
 
-   if (word->content.type == core::Content::WIDGET_OOF_REF) {
-      int top;
-      if (lines->size() == 0)
-         top = 0;
-      else {
-         Line *prevLine = lines->getLastRef ();
-         top = prevLine->top + prevLine->boxAscent +
-            prevLine->boxDescent + prevLine->breakSpace;
-      }
-      containingBlock->outOfFlowMgr->tellPosition
-         (word->content.widget,
-          // "diffYToContainingBlock" is already defined here; it is
-          // set by the parent, or, when this is the containing block,
-          // even earlier.
-          diffYToContainingBlock + top + getStyle()->boxOffsetY());
-
-      // TODO: compare old/new values of calcAvailWidth(...);
-      int firstIndex =
-         lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
-      for (int i = firstIndex; i <= wordIndex; i++)
-         accumulateWordData (i);
-   }
+   if (word->content.type == core::Content::WIDGET_OOF_REF)
+      wrapWidgetOofRef (wordIndex);
 
    int penaltyIndex = calcPenaltyIndexForNewLine ();
 
@@ -549,6 +529,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
       bool tempNewLine = false;
       int firstIndex =
          lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
+      assert (firstIndex <= wordIndex);
       int searchUntil;
 
       if (wrapAll && wordIndex >= firstIndex && wordIndex == words->size() -1) {
@@ -683,6 +664,32 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                  word->content.widget->parentRef);
       }
    }
+}
+
+void Textblock::wrapWidgetOofRef (int wordIndex)
+{
+   int top;
+   if (lines->size() == 0)
+      top = 0;
+   else {
+      Line *prevLine = lines->getLastRef ();
+      top = prevLine->top + prevLine->boxAscent +
+         prevLine->boxDescent + prevLine->breakSpace;
+   }
+
+   containingBlock->outOfFlowMgr->tellPosition
+      (words->getRef(wordIndex)->content.widget,
+       // "diffYToContainingBlock" is already defined here; it is
+       // set by the parent, or, when this is the containing block,
+       // even earlier.
+       diffYToContainingBlock + top + getStyle()->boxOffsetY());
+   
+   // TODO: compare old/new values of calcAvailWidth(...);
+   int firstIndex =
+      lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
+   assert (firstIndex <= wordIndex);
+   for (int i = firstIndex; i <= wordIndex; i++)
+      accumulateWordData (i);
 }
 
 int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,

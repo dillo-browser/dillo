@@ -644,6 +644,7 @@ protected:
                                 int *maxOfMinWidth, int *sumOfMaxWidth);
    void processWord (int wordIndex);
    virtual void wordWrap (int wordIndex, bool wrapAll);
+   void wrapWidgetOofRef (int wordIndex);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
                      bool correctAtEnd);
    int considerHyphenation (int breakPos);
