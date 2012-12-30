@@ -1430,14 +1430,14 @@ CssLength a_Html_parse_length (DilloHtml *html, const char *attr)
  * Parse a color attribute.
  * Return value: parsed color, or default_color (+ error msg) on error.
  */
-int32_t a_Html_color_parse(DilloHtml *html,
-                           const char *subtag, int32_t default_color)
+int32_t a_Html_color_parse(DilloHtml *html, const char *str,
+                           int32_t default_color)
 {
    int err = 1;
-   int32_t color = a_Color_parse(subtag, default_color, &err);
+   int32_t color = a_Color_parse(str, default_color, &err);
 
    if (err) {
-      BUG_MSG("color \"%s\" is not in \"#RRGGBB\" format\n", subtag);
+      BUG_MSG("color \"%s\" is not in \"#RRGGBB\" format\n", str);
    }
    return color;
 }

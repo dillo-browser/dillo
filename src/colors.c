@@ -248,14 +248,14 @@ static int32_t Color_parse_hex (const char *s, int32_t default_color, int *err)
  *    1 if the color is bare hex or can't be parsed at all.
  *    2 if a color beginning with 0[xX] is successfully parsed.
  */
-int32_t a_Color_parse (const char *subtag, int32_t default_color, int *err)
+int32_t a_Color_parse (const char *str, int32_t default_color, int *err)
 {
    const char *cp;
    int32_t ret_color;
    int ret, low, mid, high, st = 1;
 
    /* skip leading spaces */
-   for (cp = subtag; dIsspace(*cp); cp++);
+   for (cp = str; dIsspace(*cp); cp++);
 
    ret_color = default_color;
    if (*cp == '#') {
@@ -289,7 +289,7 @@ int32_t a_Color_parse (const char *subtag, int32_t default_color, int *err)
       }
    }
 
-   _MSG("subtag: %s\n", subtag);
+   _MSG("color string: %s\n", str);
    _MSG("color :  %X\n", ret_color);
 
    *err = st;
