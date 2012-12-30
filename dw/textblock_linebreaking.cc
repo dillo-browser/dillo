@@ -529,10 +529,14 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
       bool tempNewLine = false;
       int firstIndex =
          lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
-      assert (firstIndex <= wordIndex);
       int searchUntil;
 
-      if (wrapAll && wordIndex >= firstIndex && wordIndex == words->size() -1) {
+      if (wordIndex < firstIndex)
+          // Current word is already part of a line (ending with
+          // firstIndex - 1), so no new line has to be added.
+          newLine = false;
+      else if (wrapAll && wordIndex >= firstIndex &&
+               wordIndex == words->size() -1) {
          newLine = true;
          searchUntil = wordIndex;
          tempNewLine = true;
