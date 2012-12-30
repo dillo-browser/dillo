@@ -135,7 +135,7 @@ class UI : public CustGroupVertical {
 
    int MainIdx;
    // Panel customization variables
-   int PanelSize, CuteColor, Small_Icons;
+   int PanelSize, Small_Icons;
    int p_xpos, p_ypos, bw, bh, mh, lh, nh, fh, sh, pw, lbl;
    bool PanelTemporary;
 

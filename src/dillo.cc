@@ -237,6 +237,12 @@ static void checkPreferredFonts()
    checkFont(prefs.font_fantasy, "fantasy");
 }
 
+static void setColor(int32_t color, void (*fn) (uchar, uchar, uchar))
+{
+   if (color != -1)
+      fn(color >> 16, (color >> 8) & 0xff, color & 0xff);
+}
+
 /*
  * Given a command line argument, build a DilloUrl for it.
  */
@@ -381,6 +387,14 @@ int main(int argc, char **argv)
    Fl_Window::default_xclass("dillo");
 
    Fl::scheme(prefs.theme);
+
+   setColor(prefs.ui_main_bg_color, Fl::background);
+   setColor(prefs.ui_text_bg_color, Fl::background2);
+   setColor(prefs.ui_fg_color, Fl::foreground);
+
+   unsigned rgb = Fl::get_color(fl_contrast(FL_SELECTION_COLOR,
+                                            FL_BACKGROUND2_COLOR));
+   Fl::set_color(FL_SELECTION_COLOR, rgb);
 
    if (!prefs.show_tooltip) {
       // turn off UI tooltips

@@ -131,7 +131,6 @@ Findbar::Findbar(int width, int height) :
     i = new MyInput(x, border, input_width, height);
     x += input_width + gap;
     resizable(i);
-    i->color(206);
     i->when(FL_WHEN_NEVER);
    add(i);
 

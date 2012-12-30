@@ -136,7 +136,8 @@ public:
       Pack = NULL;
       focus_counter = 0;
       tab_w = 50, tab_h = th, ctab_h = 1, btn_w = 20, ctl_w = 1*btn_w+2;
-      tabcolor_active = 0x87aca700; tabcolor_inactive = 0xb7beb700;
+      tabcolor_active = fl_lighter(FL_BACKGROUND_COLOR);
+      tabcolor_inactive = fl_darker(FL_BACKGROUND_COLOR);
       resize(0,0,ww,ctab_h);
       /* tab buttons go inside a pack within a scroll */
       Scroll = new Fl_Scroll(0,0,ww-ctl_w,ctab_h);
@@ -153,8 +154,6 @@ public:
       Control = new Fl_Group(ww-ctl_w,0,ctl_w,ctab_h);
        CloseBtn = new CustButton(ww-ctl_w+2,0,btn_w,ctab_h, "X");
        CloseBtn->box(FL_THIN_UP_BOX);
-       CloseBtn->labelcolor(0x00641000);
-       CloseBtn->hl_color(FL_WHITE);
        CloseBtn->clear_visible_focus();
        CloseBtn->set_tooltip(prefs.right_click_closes_tab ?
           "Close current tab.\nor Right-click tab label to close." :
@@ -283,6 +282,8 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    btn->clear_visible_focus();
    btn->box(FL_GTK_THIN_UP_BOX);
    btn->color(focus ? tabcolor_active : tabcolor_inactive);
+   btn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR,
+                   focus ? tabcolor_active : tabcolor_inactive));
    btn->ui(new_ui);
    btn->callback(tab_btn_cb, this);
    Pack->add(btn); // append
@@ -411,10 +412,12 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
       if ((idx = get_btn_idx(old_ui)) != -1) {
          btn = (CustTabButton*)Pack->child(idx);
          btn->color(tabcolor_inactive);
+         btn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR, tabcolor_inactive));
          btn->redraw();
       }
       Wizard->value(cbtn->ui());
       cbtn->color(tabcolor_active);
+      cbtn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR, tabcolor_active));
       cbtn->redraw();
       update_pack_offset();
 
