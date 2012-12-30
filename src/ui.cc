@@ -622,7 +622,7 @@ void UI::make_status_bar(int ww, int wh)
     StatusOutput->labelsize(8);
     StatusOutput->box(FL_THIN_DOWN_BOX);
     StatusOutput->clear_visible_focus();
-    StatusOutput->color(FL_GRAY_RAMP + 18);
+    StatusOutput->color(FL_BACKGROUND_COLOR);
 
     // Bug Meter
     BugMeter = new CustButton(ww-bm_w,wh-sh,bm_w,sh);
