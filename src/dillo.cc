@@ -366,6 +366,7 @@ int main(int argc, char **argv)
    a_Bw_init();
    a_Cookies_init();
    a_Auth_init();
+   a_UIcmd_init();
 
    dw::Textblock::setPenaltyHyphen (prefs.penalty_hyphen);
    dw::Textblock::setPenaltyHyphen2 (prefs.penalty_hyphen_2);

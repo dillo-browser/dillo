@@ -61,7 +61,7 @@ using namespace dw::fltk;
 /*
  * Local data
  */
-static char *save_dir = NULL;
+static const char *save_dir = "";
 
 /*
  * Forward declarations
@@ -806,7 +806,7 @@ static char *UIcmd_make_save_filename(const char *pathstr)
 {
    size_t MaxLen = 64;
    char *FileName, *newname, *o, *n;
-   const char *name, *dir = a_UIcmd_get_save_dir();
+   const char *name, *dir = save_dir;
 
    if ((name = strrchr(pathstr, '/'))) {
       if (strlen(++name) > MaxLen) {
@@ -820,31 +820,22 @@ static char *UIcmd_make_save_filename(const char *pathstr)
                 i+=2, '_' : o[i];
       }
       *n = 0;
-      FileName = dStrconcat(dir ? dir : "", newname, NULL);
+      FileName = dStrconcat(dir, newname, NULL);
       dFree(newname);
    } else {
-      FileName = dStrconcat(dir ? dir : "", pathstr, NULL);
+      FileName = dStrconcat(dir, pathstr, NULL);
    }
    return FileName;
 }
 
 /*
- * Get the default directory for saving files.
- */
-const char *a_UIcmd_get_save_dir()
-{
-   return save_dir;
-}
-
-/*
  * Set the default directory for saving files.
  */
-void a_UIcmd_set_save_dir(const char *dir)
+void a_UIcmd_init(void)
 {
-   const char *p;
+   const char *p, *dir = prefs.save_dir;
 
    if (dir && (p = strrchr(dir, '/'))) {
-      dFree(save_dir);
       // assert a trailing '/'
       save_dir = dStrconcat(dir, (p[1] != 0) ? "/" : "", NULL);
    }
@@ -861,7 +852,6 @@ void a_UIcmd_save(void *vbw)
    const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
 
    if (url) {
-      a_UIcmd_set_save_dir(prefs.save_dir);
       SuggestedName = UIcmd_make_save_filename(URL_PATH(url));
       name = a_Dialog_save_file("Save Page as File", NULL, SuggestedName);
       MSG("a_UIcmd_save: %s\n", name);
@@ -992,8 +982,6 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
 {
    const char *name;
    char *SuggestedName;
-
-   a_UIcmd_set_save_dir(prefs.save_dir);
 
    SuggestedName = UIcmd_make_save_filename(URL_STR(url));
    name = a_Dialog_save_file("Dillo: Save Link as File", NULL, SuggestedName);
