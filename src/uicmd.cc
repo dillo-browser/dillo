@@ -834,11 +834,14 @@ static char *UIcmd_make_save_filename(const char *pathstr)
  */
 void a_UIcmd_init(void)
 {
-   const char *p, *dir = prefs.save_dir;
+   const char *dir = prefs.save_dir;
 
-   if (dir && (p = strrchr(dir, '/'))) {
+   if (dir && *dir) {
       // assert a trailing '/'
-      save_dir = dStrconcat(dir, (p[1] != 0) ? "/" : "", NULL);
+      save_dir =
+         (dir[strlen(dir)-1] == '/')
+         ? dStrdup(dir)
+         : dStrconcat(dir, "/", NULL);
    }
 }
 
