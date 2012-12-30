@@ -231,13 +231,22 @@ static int32_t Color_parse_hex (const char *s, int32_t default_color, int *err)
 }
 
 /*
- * Parse the color info from a subtag.
- * If subtag string begins with # or with 0x simply return the color number
- * otherwise search one color from the set of named colors.
+ * Parse a color string.
+ *
+ * - If the string begins with # or with 0x, return the color number
+ *   (with 'RGB' expanded to 'RRGGBB').
+ * - Else search the set of named colors.
+ * - As a last resort, treat it as bare hex as in the first case.
  *
  * Return Value:
  *    Parsed color if successful,
- *    default_color (+ error code) on error.
+ *    default_color on error.
+ *
+ * "err" argument: 
+ *    0 if a color beginning with '#' is successfully parsed
+ *      or the color is a recognized word.
+ *    1 if the color is bare hex or can't be parsed at all.
+ *    2 if a color begins with 0[xX].
  */
 int32_t a_Color_parse (const char *subtag, int32_t default_color, int *err)
 {
