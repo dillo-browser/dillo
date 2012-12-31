@@ -96,7 +96,6 @@ void a_Prefs_init(void)
    prefs.show_stop = TRUE;
    prefs.show_tools = TRUE;
    prefs.show_tooltip = TRUE;
-   prefs.show_url = TRUE;
    prefs.small_icons = FALSE;
    prefs.start_page = a_Url_new(PREFS_START_PAGE, NULL);
    prefs.theme = dStrdup(PREFS_THEME);

@@ -947,8 +947,6 @@ void UI::customize(int flags)
       Tools->hide();
    if ( !prefs.show_clear_url )
       Clear->hide();
-   if ( !prefs.show_url )
-      Location->hide();
    if ( !prefs.show_search )
       Search->hide();
    if ( !prefs.show_help )

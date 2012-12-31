@@ -259,7 +259,6 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #show_tools=YES
 #show_filemenu=YES
 #show_clear_url=YES
-#show_url=YES
 #show_search=YES
 #show_help=YES
 #show_progress_box=YES
