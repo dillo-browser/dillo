@@ -36,6 +36,10 @@ int MyInput::handle(int e)
    unsigned modifier = Fl::event_state() & (FL_SHIFT| FL_CTRL| FL_ALT|FL_META);
 
    if (e == FL_KEYBOARD) {
+      if (k == FL_Page_Down || k == FL_Page_Up || k == FL_Up || k == FL_Down) {
+         // Let them through for key commands and viewport motion.
+         return 0;
+      }
       if (modifier == FL_SHIFT) {
          if (k == FL_Left || k == FL_Right) {
             // Let these keys get to the UI
@@ -51,6 +55,11 @@ int MyInput::handle(int e)
          } else if (k == 'd') {
             cut(position(), position()+1);
             return 1;
+         } else if (k == 'h' || k == 'i' || k == 'j' || k == 'l' || k == 'm') {
+            // Fl_Input wants to use ^H as backspace, and also "insert a few
+            // selected control characters literally", but this gets in the way
+            // of key commands.
+            return 0;
          }
       } else if (k == FL_Escape && modifier == 0) {
          // Avoid clearing the text with Esc, just hide the findbar.
