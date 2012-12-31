@@ -688,7 +688,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    TopGroup->end();
    TopGroup->rearrange();
 
-   customize(0);
+   customize();
 
    if (Panelmode == UI_HIDDEN) {
       panels_toggle();
@@ -925,10 +925,8 @@ void UI::set_bug_prog(int n_bug)
 /*
  * Customize the UI's panel (show/hide buttons)
  */
-void UI::customize(int flags)
+void UI::customize()
 {
-   // flags argument not currently used
-
    if ( !prefs.show_back )
       Back->hide();
    if ( !prefs.show_forw )
@@ -983,7 +981,7 @@ void UI::change_panel(int new_size, int small_icons)
 
    // make a new panel
    make_panel(TopGroup->w());
-   customize(0);
+   customize();
    a_UIcmd_set_buttons_sens(a_UIcmd_get_bw_by_widget(this));
 
    TopGroup->rearrange();

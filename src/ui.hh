@@ -167,7 +167,7 @@ public:
    void set_img_prog(int n_img, int t_img, int cmd);
    void set_bug_prog(int n_bug);
    void set_render_layout(Fl_Group *nw);
-   void customize(int flags);
+   void customize();
    void button_set_sens(UIButton btn, int sens);
    void paste_url();
    int get_panelsize() { return PanelSize; }
