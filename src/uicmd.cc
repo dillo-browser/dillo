@@ -137,8 +137,8 @@ public:
       Pack = NULL;
       focus_counter = 0;
       tab_w = 50, tab_h = th, ctab_h = 1, btn_w = 20, ctl_w = 1*btn_w+2;
-      tabcolor_active = fl_lighter(FL_BACKGROUND_COLOR);
-      tabcolor_inactive = fl_darker(FL_BACKGROUND_COLOR);
+      tabcolor_active = prefs.ui_tab_active_bg_color;
+      tabcolor_inactive = prefs.ui_tab_bg_color;
       resize(0,0,ww,ctab_h);
       /* tab buttons go inside a pack within a scroll */
       Scroll = new Fl_Scroll(0,0,ww-ctl_w,ctab_h);
@@ -283,8 +283,8 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    btn->clear_visible_focus();
    btn->box(FL_GTK_THIN_UP_BOX);
    btn->color(focus ? tabcolor_active : tabcolor_inactive);
-   btn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR,
-                   focus ? tabcolor_active : tabcolor_inactive));
+   btn->labelcolor(focus ? prefs.ui_tab_active_fg_color :
+                   prefs.ui_tab_fg_color);
    btn->ui(new_ui);
    btn->callback(tab_btn_cb, this);
    Pack->add(btn); // append
@@ -413,7 +413,7 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
       if ((idx = get_btn_idx(old_ui)) != -1) {
          btn = (CustTabButton*)Pack->child(idx);
          btn->color(tabcolor_inactive);
-         btn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR, tabcolor_inactive));
+         btn->labelcolor(prefs.ui_tab_fg_color);
          btn->redraw();
       }
       /* We make a point of calling show() before value() is changed because
@@ -428,7 +428,7 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
       cbtn->ui()->show();
       Wizard->value(cbtn->ui());
       cbtn->color(tabcolor_active);
-      cbtn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR, tabcolor_active));
+      cbtn->labelcolor(prefs.ui_tab_active_fg_color);
       cbtn->redraw();
       update_pack_offset();
 

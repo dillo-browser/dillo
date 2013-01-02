@@ -99,8 +99,14 @@ void a_Prefs_init(void)
    prefs.small_icons = FALSE;
    prefs.start_page = a_Url_new(PREFS_START_PAGE, NULL);
    prefs.theme = dStrdup(PREFS_THEME);
+   prefs.ui_button_highlight_color = -1;
    prefs.ui_fg_color = -1;
    prefs.ui_main_bg_color = -1;
+   prefs.ui_selection_color = -1;
+   prefs.ui_tab_active_bg_color = -1;
+   prefs.ui_tab_bg_color = -1;
+   prefs.ui_tab_active_fg_color = -1;
+   prefs.ui_tab_fg_color = -1;
    prefs.ui_text_bg_color = -1;
    prefs.w3c_plus_heuristics = TRUE;
 
