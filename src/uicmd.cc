@@ -416,6 +416,16 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
          btn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR, tabcolor_inactive));
          btn->redraw();
       }
+      /* We make a point of calling show() before value() is changed because
+       * the wizard may hide the old one before showing the new one. In that
+       * case, the new UI gets focus with Fl::e_keysym set to whatever
+       * triggered the switch, and this is a problem when it's Tab/Left/Right/
+       * Up/Down because some widgets (notably Fl_Group and Fl_Input) exhibit
+       * unwelcome behaviour in that case. If the new widgets are already
+       * shown, fl_fix_focus will fix everything with Fl::e_keysym temporarily
+       * cleared.
+       */
+      cbtn->ui()->show();
       Wizard->value(cbtn->ui());
       cbtn->color(tabcolor_active);
       cbtn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR, tabcolor_active));
