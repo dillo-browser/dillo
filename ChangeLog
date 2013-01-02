@@ -26,8 +26,12 @@ dillo-3.0.3 [not released yet]
  - Never leave location bar empty when requesting page (BUG#1113).
  - Some improvements to tab navigation of form widgets (includes BUG#1111).
  - Don't let form input widget insert literal control chars (BUG#1110).
+ - Assorted improvements to browser usability from the keyboard.
+ - Added user interface color preferences (ui_*).
+ - Removed show_url preference.
    Patches: corvid
-+- Automatic hyphenation.
++- Automatic hyphenation (includes penalty_* preferences that control
+   line-breaking).
    Patch: Sebastian Geerken
 +- Added the "view-source" keybinding (default: Ctrl-U).
    Patch: Alexander Voigt
@@ -41,6 +45,8 @@ dillo-3.0.3 [not released yet]
    Patches: Jorge Arellano Cid
 +- Better window titles.
    Patch: Jeremy Henty
++- Remove hardcoded UI colors.
+   Patch: Benjamin Johnson, corvid
 
 -----------------------------------------------------------------------------
 

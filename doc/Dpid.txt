@@ -85,6 +85,7 @@ problems (briefly outlined here):
     controlling instance of dillo exits and another must "take
     over" the managing.
   * It increments dillo's core size.
+  * If dillo hangs/crashes, dpi activity is lost (e.g. downloads)
   * ...
 
   That's why the managing daemon scheme was chosen.

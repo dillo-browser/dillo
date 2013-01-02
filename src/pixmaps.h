@@ -1578,6 +1578,8 @@ static const char *const mini_ok_xpm[] = {
 "            @  "
 };
 
+#if 0
+
 /* XPM */
 static const char *const left_i_xpm[] = {
 "22 22 3 1",
@@ -1732,5 +1734,6 @@ static const char *const right_si_xpm[] = {
 "        @@@@@@@@",
 "        @@  @ @ ",
 "             @  "};
+#endif
 
 #endif /* __PIXMAPS_H__ */

@@ -166,8 +166,6 @@ const char *a_Dialog_input(const char *title, const char *msg)
     o->box(FL_THIN_UP_BOX);
     o->labelfont(FL_TIMES_BOLD);
     o->labelsize(34);
-    o->color(FL_WHITE);
-    o->labelcolor(FL_BLUE);
     o->label("?");
     o->show();
 
@@ -196,7 +194,6 @@ const char *a_Dialog_input(const char *title, const char *msg)
     ch->tooltip("Select search engine");
     ch->menu(pm);
     ch->value(prefs.search_url_idx);
-    ch->textcolor(FL_DARK_BLUE);
 
     int xpos = ww-2*(gap+bw), ypos = ih+3*gap;
     Fl_Return_Button *rb = new Fl_Return_Button(xpos, ypos, bw, bh, "OK");

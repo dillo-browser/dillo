@@ -638,7 +638,7 @@ static int Dpi_connect_socket(const char *server_name)
    } else if (connect(sock_fd, (void*)&sin, sizeof(sin)) == -1) {
       MSG("[dpi::connect] errno:%d %s\n", errno, dStrerror(errno));
 
-   /* send authentication Key (the server closes sock_fd on error) */
+   /* send authentication Key (the server closes sock_fd on auth error) */
    } else if (!(cmd = a_Dpip_build_cmd("cmd=%s msg=%s", "auth", SharedKey))) {
       MSG_ERR("[Dpi_connect_socket] Can't make auth message.\n");
    } else if (Dpi_blocking_write(sock_fd, cmd, strlen(cmd)) == -1) {
@@ -647,6 +647,8 @@ static int Dpi_connect_socket(const char *server_name)
       ret = sock_fd;
    }
    dFree(cmd);
+   if (sock_fd != -1 && ret == -1) /* can't send cmd? */
+      Dpi_close_fd(sock_fd);
 
    return ret;
 }
@@ -668,20 +670,19 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          switch (Op) {
          case OpStart:
             if ((st = Dpi_blocking_start_dpid()) == 0) {
-               SockFD = Dpi_connect_socket(Data1);
-               if (SockFD != -1) {
+               if ((SockFD = Dpi_connect_socket(Data1)) != -1) {
                   int *fd = dNew(int, 1);
                   *fd = SockFD;
                   Info->LocalKey = fd;
                   a_Chain_link_new(Info, a_Dpi_ccc, BCK, a_IO_ccc, 1, 1);
                   a_Chain_bcb(OpStart, Info, NULL, NULL);
+                  /* Let the FD known and tracked */
+                  a_Chain_bcb(OpSend, Info, &SockFD, "FD");
+                  a_Chain_fcb(OpSend, Info, &SockFD, "FD");
+                  a_Chain_fcb(OpSend, Info, NULL, "DpidOK");
+               } else {
+                  a_Dpi_ccc(OpAbort, 1, FWD, Info, NULL, NULL);
                }
-            }
-
-            if (st == 0 && SockFD != -1) {
-               a_Chain_bcb(OpSend, Info, &SockFD, "FD");
-               a_Chain_fcb(OpSend, Info, &SockFD, "FD");
-               a_Chain_fcb(OpSend, Info, NULL, "DpidOK");
             } else {
                MSG_ERR("dpi.c: can't start dpi daemon\n");
                a_Dpi_ccc(OpAbort, 1, FWD, Info, NULL, "DpidERROR");

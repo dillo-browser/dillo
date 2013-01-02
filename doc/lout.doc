@@ -81,8 +81,9 @@ The lout::misc namespace provides several miscellaneous stuff:
      implemented. For example., lout::container::untyped::Vector::sort and
      lout::container::typed::Vector::sort cast the elements to
      lout::misc::Comparable. This can be mixed with lout::object::Object.
-<li> lout::misc::SimpleVector, a simple, template based vector class (not
-     depending on lout::object::Object),
+<li> lout::misc::SimpleVector, a simple, template based vector class
+     (not depending on lout::object::Object) (a variant for handling a
+     special case in an efficient way is lout::misc::NotSoSimpleVector),
 <li> lout::misc::StringBuffer, class for fast concatenation of a large number
      of strings,
 <li> lout::misc::BitSet implements a bitset.

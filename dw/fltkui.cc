@@ -75,9 +75,10 @@ int CustInput2::handle(int e)
          } else if (k == 'd') {
             cut(position(), position()+1);
             return 1;
-         } else if (k == 'i' || k == 'j' || k == 'l' || k == 'm') {
-            // Fl_Input wants to "insert a few selected control characters
-            // literally", but this gets in the way of key commands.
+         } else if (k == 'h' || k == 'i' || k == 'j' || k == 'l' || k == 'm') {
+            // Fl_Input wants to use ^H as backspace, and also "insert a few
+            // selected control characters literally", but this gets in the way
+            // of key commands.
             return 0;
          }
       }

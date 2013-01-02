@@ -392,7 +392,7 @@ static int Dpi_connect_socket(const char *server_name)
    } else if (connect(sock_fd, (void*)&sin, sizeof(sin)) == -1) {
       MSG("[dpi::connect] errno:%d %s\n", errno, dStrerror(errno));
 
-   /* send authentication Key (the server closes sock_fd on error) */
+   /* send authentication Key (the server closes sock_fd on auth error) */
    } else if (!(cmd = a_Dpip_build_cmd("cmd=%s msg=%s", "auth", SharedKey))) {
       MSG_ERR("[Dpi_connect_socket] Can't make auth message.\n");
    } else if (Dpi_blocking_write(sock_fd, cmd, strlen(cmd)) == -1) {
@@ -401,6 +401,8 @@ static int Dpi_connect_socket(const char *server_name)
       ret = sock_fd;
    }
    dFree(cmd);
+   if (sock_fd != -1 && ret == -1) /* can't send cmd? */
+      Dpi_close_fd(sock_fd);
 
    return ret;
 }

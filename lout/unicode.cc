@@ -139,6 +139,22 @@ const char *nextUtf8Char (const char *s, int len)
       return r;
 }
 
+int numUtf8Chars (const char *s)
+{
+   int numUtf8 = 0;
+   for (const char *r = s; r; r = nextUtf8Char (r))
+      numUtf8++;
+   return numUtf8;
+}
+
+int numUtf8Chars (const char *s, int len)
+{
+   int numUtf8 = 0;
+   for (const char *r = s; len > 0 && r; r = nextUtf8Char (r, len))
+      numUtf8++;
+   return numUtf8;
+}
+
 } // namespace lout
 
 } // namespace unicode

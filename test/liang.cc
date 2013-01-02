@@ -18,7 +18,7 @@ void hyphenateWord (dw::core::Platform *p, const char *word)
    }
    putchar ('\n');
    if (breakPos)
-      delete breakPos;
+      free (breakPos);
 }
 
 int main (int argc, char *argv[])

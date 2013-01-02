@@ -59,8 +59,7 @@ void a_UIcmd_nav_jump(BrowserWindow *bw, int offset, int new_bw);
 void a_UIcmd_close_bw(void *vbw);
 void a_UIcmd_close_all_bw(void *p);
 
-const char *a_UIcmd_get_save_dir();
-void a_UIcmd_set_save_dir(const char *dir);
+void a_UIcmd_init(void);
 
 
 // UI binding functions -------------------------------------------------------

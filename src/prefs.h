@@ -44,6 +44,9 @@ struct _DilloPrefs {
    DilloUrl *home;
    bool_t allow_white_bg;
    int32_t bg_color;
+   int32_t ui_fg_color;
+   int32_t ui_main_bg_color;
+   int32_t ui_text_bg_color;
    bool_t contrast_visited_color;
    bool_t show_tooltip;
    char *theme;
@@ -65,7 +68,6 @@ struct _DilloPrefs {
    bool_t show_tools;
    bool_t show_filemenu;
    bool_t show_clear_url;
-   bool_t show_url;
    bool_t show_search;
    bool_t show_help;
    bool_t show_progress_box;

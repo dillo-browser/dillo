@@ -231,22 +231,31 @@ static int32_t Color_parse_hex (const char *s, int32_t default_color, int *err)
 }
 
 /*
- * Parse the color info from a subtag.
- * If subtag string begins with # or with 0x simply return the color number
- * otherwise search one color from the set of named colors.
+ * Parse a color string.
+ *
+ * - If the string begins with # or with 0x, return the color number
+ *   (with 'RGB' expanded to 'RRGGBB').
+ * - Else search the set of named colors.
+ * - As a last resort, treat it as bare hex as in the first case.
  *
  * Return Value:
  *    Parsed color if successful,
- *    default_color (+ error code) on error.
+ *    default_color on error.
+ *
+ * "err" argument: 
+ *    0 if a color beginning with '#' is successfully parsed
+ *      or the color is a recognized word.
+ *    1 if the color is bare hex or can't be parsed at all.
+ *    2 if a color beginning with 0[xX] is successfully parsed.
  */
-int32_t a_Color_parse (const char *subtag, int32_t default_color, int *err)
+int32_t a_Color_parse (const char *str, int32_t default_color, int *err)
 {
    const char *cp;
    int32_t ret_color;
    int ret, low, mid, high, st = 1;
 
    /* skip leading spaces */
-   for (cp = subtag; dIsspace(*cp); cp++);
+   for (cp = str; dIsspace(*cp); cp++);
 
    ret_color = default_color;
    if (*cp == '#') {
@@ -254,8 +263,8 @@ int32_t a_Color_parse (const char *subtag, int32_t default_color, int *err)
 
    } else if (*cp == '0' && (cp[1] == 'x' || cp[1] == 'X') ) {
       ret_color = Color_parse_hex(cp + 2, default_color, &st);
-      st = 2;
-
+      if (!st)
+         st = 2;
    } else {
       /* Binary search */
       low = 0;
@@ -280,7 +289,7 @@ int32_t a_Color_parse (const char *subtag, int32_t default_color, int *err)
       }
    }
 
-   _MSG("subtag: %s\n", subtag);
+   _MSG("color string: %s\n", str);
    _MSG("color :  %X\n", ret_color);
 
    *err = st;

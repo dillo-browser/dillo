@@ -410,6 +410,10 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
         cmd = Capi_dpi_build_cmd(web, server);
         a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
         dFree(cmd);
+     } else {
+        MSG_WARN("Ignoring download request for '%s': "
+                 "not in cache and not downloadable.\n",
+                 URL_STR(web->url));
      }
 
    } else if (Capi_url_uses_dpi(web->url, &server)) {

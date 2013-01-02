@@ -51,11 +51,11 @@ static struct iconset standard_icons = {
    new Fl_Pixmap(search_xpm),
    new Fl_Pixmap(help_xpm),
    new Fl_Pixmap(left_xpm),
-   new Fl_Pixmap(left_i_xpm),
+   NULL,
    new Fl_Pixmap(right_xpm),
-   new Fl_Pixmap(right_i_xpm),
+   NULL,
    new Fl_Pixmap(stop_xpm),
-   new Fl_Pixmap(stop_i_xpm),
+   NULL,
 };
 
 static struct iconset small_icons = {
@@ -70,11 +70,11 @@ static struct iconset small_icons = {
    standard_icons.ImgSearch,
    standard_icons.ImgHelp,
    new Fl_Pixmap(left_s_xpm),
-   new Fl_Pixmap(left_si_xpm),
+   NULL,
    new Fl_Pixmap(right_s_xpm),
-   new Fl_Pixmap(right_si_xpm),
+   NULL,
    new Fl_Pixmap(stop_s_xpm),
-   new Fl_Pixmap(stop_si_xpm),
+   NULL,
 };
 
 
@@ -227,10 +227,6 @@ static void search_cb(Fl_Widget *wid, void *data)
 
    if (b == FL_LEFT_MOUSE) {
       a_UIcmd_search_dialog(a_UIcmd_get_bw_by_widget(wid));
-   } else if (b == FL_MIDDLE_MOUSE) {
-      ((UI*)data)->color_change_cb_i();
-   } else if (b == FL_RIGHT_MOUSE) {
-      // nothing ATM
    }
 }
 
@@ -410,6 +406,21 @@ CustButton *UI::make_button(const char *label, Fl_Image *img, Fl_Image *deimg,
  */
 void UI::make_toolbar(int tw, int th)
 {
+   if (!icons->ImgLeftIn) {
+      icons->ImgLeftIn = icons->ImgLeft->copy();
+      icons->ImgLeftIn->desaturate();
+      icons->ImgLeftIn->color_average(FL_BACKGROUND_COLOR, .1f);
+   }
+   if (!icons->ImgRightIn) {
+      icons->ImgRightIn = icons->ImgRight->copy();
+      icons->ImgRightIn->desaturate();
+      icons->ImgRightIn->color_average(FL_BACKGROUND_COLOR, .1f);
+   }
+   if (!icons->ImgStopIn) {
+      icons->ImgStopIn = icons->ImgStop->copy();
+      icons->ImgStopIn->desaturate();
+      icons->ImgStopIn->color_average(FL_BACKGROUND_COLOR, .1f);
+   }
    Back = make_button("Back", icons->ImgLeft, icons->ImgLeftIn, UI_BACK, 1);
    Forw = make_button("Forw", icons->ImgRight, icons->ImgRightIn, UI_FORW);
    Home = make_button("Home", icons->ImgHome, NULL, UI_HOME);
@@ -446,7 +457,6 @@ void UI::make_location(int ww)
 
     CustInput *i = new CustInput(p_xpos,0,ww-p_xpos-32,lh,0);
     Location = i;
-    i->color(CuteColor);
     i->when(FL_WHEN_ENTER_KEY);
     i->callback(location_cb, this);
     i->set_tooltip("Location");
@@ -479,14 +489,12 @@ void UI::make_progress_bars(int wide, int thin_up)
     IProg = new CustProgressBox(p_xpos,p_ypos,pw,bh);
     IProg->labelsize(12);
     IProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
-    IProg->labelcolor(FL_GRAY_RAMP + 2);
     IProg->update_label(wide ? "Images\n0 of 0" : "0 of 0");
     p_xpos += pw;
     // Page
     PProg = new CustProgressBox(p_xpos,p_ypos,pw,bh);
     PProg->labelsize(12);
     PProg->box(thin_up ? FL_THIN_UP_BOX : FL_EMBOSSED_BOX);
-    PProg->labelcolor(FL_GRAY_RAMP + 2);
     PProg->update_label(wide ? "Page\n0.0 KB" : "0.0 KB");
 }
 
@@ -614,7 +622,7 @@ void UI::make_status_bar(int ww, int wh)
     StatusOutput->labelsize(8);
     StatusOutput->box(FL_THIN_DOWN_BOX);
     StatusOutput->clear_visible_focus();
-    StatusOutput->color(FL_GRAY_RAMP + 18);
+    StatusOutput->color(FL_BACKGROUND_COLOR);
 
     // Bug Meter
     BugMeter = new CustButton(ww-bm_w,wh-sh,bm_w,sh);
@@ -646,14 +654,12 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    PanelTemporary = false;
    if (cur_ui) {
       PanelSize = cur_ui->PanelSize;
-      CuteColor = cur_ui->CuteColor;
       Small_Icons = cur_ui->Small_Icons;
       Panelmode = cur_ui->Panelmode;
    } else {
      // Set some default values
      PanelSize = prefs.panel_size;
      Small_Icons = prefs.small_icons;
-     CuteColor = 206;
      Panelmode = (prefs.fullwindow_start) ? UI_HIDDEN : UI_NORMAL;
    }
 
@@ -665,11 +671,9 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
     Main = new Fl_Group(0,0,0,0,"Welcome..."); // size is set by rearrange()
     Main->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
     Main->box(FL_FLAT_BOX);
-    Main->color(FL_GRAY_RAMP + 3);
     Main->labelfont(FL_HELVETICA_BOLD_ITALIC);
     Main->labelsize(36);
     Main->labeltype(FL_SHADOW_LABEL);
-    Main->labelcolor(FL_WHITE);
     TopGroup->add(Main);
     TopGroup->resizable(Main);
     MainIdx = TopGroup->find(Main);
@@ -684,7 +688,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    TopGroup->end();
    TopGroup->rearrange();
 
-   customize(0);
+   customize();
 
    if (Panelmode == UI_HIDDEN) {
       panels_toggle();
@@ -921,10 +925,8 @@ void UI::set_bug_prog(int n_bug)
 /*
  * Customize the UI's panel (show/hide buttons)
  */
-void UI::customize(int flags)
+void UI::customize()
 {
-   // flags argument not currently used
-
    if ( !prefs.show_back )
       Back->hide();
    if ( !prefs.show_forw )
@@ -943,8 +945,6 @@ void UI::customize(int flags)
       Tools->hide();
    if ( !prefs.show_clear_url )
       Clear->hide();
-   if ( !prefs.show_url )
-      Location->hide();
    if ( !prefs.show_search )
       Search->hide();
    if ( !prefs.show_help )
@@ -981,7 +981,7 @@ void UI::change_panel(int new_size, int small_icons)
 
    // make a new panel
    make_panel(TopGroup->w());
-   customize(0);
+   customize();
    a_UIcmd_set_buttons_sens(a_UIcmd_get_bw_by_widget(this));
 
    TopGroup->rearrange();
@@ -989,21 +989,6 @@ void UI::change_panel(int new_size, int small_icons)
    Location->take_focus();
 
    dFree(loc_text);
-}
-
-/*
- * On-the-fly color style change
- */
-void UI::color_change_cb_i()
-{
-   const int cols[] = {7,17,26,51,140,156,205,206,215,-1};
-   static int ncolor = 0;
-
-   ncolor = (cols[ncolor+1] < 0) ? 0 : ncolor + 1;
-   CuteColor = cols[ncolor];
-   MSG("Location color %d\n", CuteColor);
-   Location->color(CuteColor);
-   Location->redraw();
 }
 
 /*

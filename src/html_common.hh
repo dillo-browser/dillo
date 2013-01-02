@@ -245,8 +245,8 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize);
 char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize);
 void a_Html_pop_tag(DilloHtml *html, int TagIdx);
 void a_Html_stash_init(DilloHtml *html);
-int32_t a_Html_color_parse(DilloHtml *html,
-                           const char *subtag, int32_t default_color);
+int32_t a_Html_color_parse(DilloHtml *html, const char *str,
+                           int32_t default_color);
 dw::core::style::Length a_Html_parse_length (DilloHtml *html,
                                              const char *attr);
 void a_Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize);
