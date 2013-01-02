@@ -317,16 +317,30 @@ void Hyphenator::hyphenateSingleWord(core::Platform *platform,
 
    // No hyphens in the first two chars or the last two.
    // Characters are not bytes, so UTF-8 characters must be counted.
-   int len = strlen (wordLc);
-   const char *bytesStart =  nextUtf8Char (nextUtf8Char (wordLc));
-   int numBytesStart = bytesStart ? bytesStart - wordLc : len;
-   for (int i = 0; i < numBytesStart; i++)
-      points.set (i + 1, 0);
+   const char *s = nextUtf8Char (wordLc);
+   if (s != NULL && (s = nextUtf8Char (s)) != NULL) {
+      // First two characters.
+      int bytesStart = s - wordLc;
+      for (int i = 0; i < bytesStart; i++)
+         points.set (i + 1, 0);
 
-   int numBytes1End = platform->prevGlyph (wordLc, len);
-   int numBytes2End = platform->prevGlyph (wordLc, numBytes1End);
-   for (int i = 0; i < len - numBytes2End; i++)
-      points.set (points.size() - 2 - i, 0);
+      // Last two characters: instead of iterating back from the end,
+      // we simply iterate from the start to the end and count the
+      // characters.
+
+      int lenBytes = strlen (wordLc);
+      int lenUtf8 = numUtf8Chars (wordLc);
+      int bytesEnd = 0;
+
+      s = wordLc;
+      for (int i = 0; s; s = nextUtf8Char (s), i++) {
+         if (i == lenUtf8 - 2)
+            bytesEnd = lenBytes - (s - wordLc);
+      }
+
+      for (int i = 0; i < bytesEnd; i++)
+         points.set (points.size() - 2 - i, 0);
+   }
 
    // Examine the points to build the break point list.
    int n = lout::misc::min ((int)strlen (wordLc), points.size () - 2);

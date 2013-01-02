@@ -19,6 +19,10 @@ const char *nextUtf8Char (const char *s);
 
 const char *nextUtf8Char (const char *s, int len);
 
+int numUtf8Chars (const char *s);
+
+int numUtf8Chars (const char *s, int len);
+
 } // namespace lout
 
 } // namespace unicode
