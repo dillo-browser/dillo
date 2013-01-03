@@ -116,16 +116,14 @@ void a_Mime_init()
 
 
 /*
- * Call the handler for the MIME type to set Call and Data as appropriate
+ * Get the handler for the MIME type.
  *
  * Return Value:
- *   On success: a new Dw (and Call and Data properly set).
- *   On failure: NULL (and Call and Data untouched).
+ *   On success: viewer
+ *   On failure: NULL
  */
-void *a_Mime_set_viewer(const char *content_type, void *Ptr,
-                        CA_Callback_t *Call, void **Data)
+Viewer_t a_Mime_get_viewer(const char *content_type)
 {
-
    Viewer_t viewer;
    uint_t MinSize, MajSize, i;
    const char *str = content_type;
@@ -137,16 +135,9 @@ void *a_Mime_set_viewer(const char *content_type, void *Ptr,
    }
    MinSize = i;
 
-   /* Try minor type */
    viewer = Mime_minor_type_fetch(content_type, MinSize);
-   if (viewer)
-      return viewer(content_type, Ptr, Call, Data);
+   if (!viewer)
+      viewer = Mime_major_type_fetch(content_type, MajSize);
 
-   /* Try major type */
-   viewer = Mime_major_type_fetch(content_type, MajSize);
-   if (viewer)
-      return viewer(content_type, Ptr, Call, Data);
-
-   /* Type not handled */
-   return NULL;
+   return viewer;
 }
