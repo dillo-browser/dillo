@@ -465,6 +465,12 @@ void Textblock::markSizeChange (int ref)
    }
 
    PRINTF ("       ... => %d\n", wrapRefLine);
+
+   // It seems that sometimes the lines structure is changed, so that
+   // wrapRefLines may refers to a line which does not exist
+   // anymore. Should be examined again. Until then, setting
+   // wrapRefLines to the same value is a workaround.
+   markExtremesChange (ref);
 }
 
 void Textblock::markExtremesChange (int ref)
