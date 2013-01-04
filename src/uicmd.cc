@@ -137,8 +137,8 @@ public:
       Pack = NULL;
       focus_counter = 0;
       tab_w = 50, tab_h = th, ctab_h = 1, btn_w = 20, ctl_w = 1*btn_w+2;
-      tabcolor_active = fl_lighter(FL_BACKGROUND_COLOR);
-      tabcolor_inactive = fl_darker(FL_BACKGROUND_COLOR);
+      tabcolor_active = prefs.ui_tab_active_bg_color;
+      tabcolor_inactive = prefs.ui_tab_bg_color;
       resize(0,0,ww,ctab_h);
       /* tab buttons go inside a pack within a scroll */
       Scroll = new Fl_Scroll(0,0,ww-ctl_w,ctab_h);
@@ -283,8 +283,8 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    btn->clear_visible_focus();
    btn->box(FL_GTK_THIN_UP_BOX);
    btn->color(focus ? tabcolor_active : tabcolor_inactive);
-   btn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR,
-                   focus ? tabcolor_active : tabcolor_inactive));
+   btn->labelcolor(focus ? prefs.ui_tab_active_fg_color :
+                   prefs.ui_tab_fg_color);
    btn->ui(new_ui);
    btn->callback(tab_btn_cb, this);
    Pack->add(btn); // append
@@ -413,12 +413,22 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
       if ((idx = get_btn_idx(old_ui)) != -1) {
          btn = (CustTabButton*)Pack->child(idx);
          btn->color(tabcolor_inactive);
-         btn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR, tabcolor_inactive));
+         btn->labelcolor(prefs.ui_tab_fg_color);
          btn->redraw();
       }
+      /* We make a point of calling show() before value() is changed because
+       * the wizard may hide the old one before showing the new one. In that
+       * case, the new UI gets focus with Fl::e_keysym set to whatever
+       * triggered the switch, and this is a problem when it's Tab/Left/Right/
+       * Up/Down because some widgets (notably Fl_Group and Fl_Input) exhibit
+       * unwelcome behaviour in that case. If the new widgets are already
+       * shown, fl_fix_focus will fix everything with Fl::e_keysym temporarily
+       * cleared.
+       */
+      cbtn->ui()->show();
       Wizard->value(cbtn->ui());
       cbtn->color(tabcolor_active);
-      cbtn->labelcolor(fl_contrast(FL_FOREGROUND_COLOR, tabcolor_active));
+      cbtn->labelcolor(prefs.ui_tab_active_fg_color);
       cbtn->redraw();
       update_pack_offset();
 
@@ -846,24 +856,32 @@ void a_UIcmd_init(void)
 }
 
 /*
+ * Save a URL
+ */
+static void UIcmd_save(BrowserWindow *bw, const DilloUrl *url,
+                       const char *title, const char *url_str)
+{
+   char *SuggestedName;
+   const char *name;
+   SuggestedName = UIcmd_make_save_filename(url_str);
+   name = a_Dialog_save_file(title, NULL, SuggestedName);
+   dFree(SuggestedName);
+   if (name) {
+      MSG("UIcmd_save: %s\n", name);
+      a_Nav_save_url(bw, url, name);
+   }
+}
+
+/*
  * Save current URL
  */
 void a_UIcmd_save(void *vbw)
 {
-   const char *name;
-   char *SuggestedName;
    BrowserWindow *bw = (BrowserWindow *)vbw;
    const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
 
    if (url) {
-      SuggestedName = UIcmd_make_save_filename(URL_PATH(url));
-      name = a_Dialog_save_file("Save Page as File", NULL, SuggestedName);
-      MSG("a_UIcmd_save: %s\n", name);
-      dFree(SuggestedName);
-
-      if (name) {
-         a_Nav_save_url(bw, url, name);
-      }
+      UIcmd_save(bw, url, "Save Page as File", URL_PATH(url));
    }
 }
 
@@ -984,16 +1002,7 @@ const char *a_UIcmd_get_passwd(const char *user)
  */
 void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
 {
-   const char *name;
-   char *SuggestedName;
-
-   SuggestedName = UIcmd_make_save_filename(URL_STR(url));
-   name = a_Dialog_save_file("Dillo: Save Link as File", NULL, SuggestedName);
-   if (name) {
-      MSG("a_UIcmd_save_link: %s\n", name);
-      a_Nav_save_url(bw, url, name);
-   }
-   dFree(SuggestedName);
+   UIcmd_save(bw, url, "Dillo: Save Link as File", URL_STR(url));
 }
 
 /*

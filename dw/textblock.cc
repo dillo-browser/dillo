@@ -499,9 +499,9 @@ void Textblock::markSizeChange (int ref)
 
       PRINTF ("       ... => %d\n", wrapRefLine);
       
-      // It seems that floats sometimes change the lines structure, so
-      // that wrapRefLines sometimes refers to a line which does not
-      // exist anymore (letting dillo abort). Should be examined
+      // It seems that sometimes (even without floats) the lines
+      // structure is changed, so that wrapRefLines may refers to a
+      // line which does not exist anymore. Should be examined
       // again. Until then, setting wrapRefLines to the same value is
       // a workaround.
       markExtremesChange (ref);

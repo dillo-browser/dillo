@@ -55,8 +55,11 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
 
    dReturn_val_if_fail(Web->bw != NULL, -1);
 
-   // get the Layout object from the bw structure.
    Layout *layout = (Layout*)Web->bw->render_layout;
+
+   Viewer_t viewer = a_Mime_get_viewer(Type);
+   if (viewer == NULL)
+      return -1;
 
    if (Web->flags & WEB_RootUrl) {
       /* We have RootUrl! */
@@ -69,7 +72,7 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
       StyleEngine styleEngine (layout);
       styleEngine.startElement ("body");
 
-      dw = (Widget*) a_Mime_set_viewer(Type, Web, Call, Data);
+      dw = (Widget*) viewer(Type, Web, Call, Data);
       if (dw == NULL)
          return -1;
 
@@ -96,7 +99,7 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
    } else {
       /* A non-RootUrl. At this moment we only handle image-children */
       if (!dStrnAsciiCasecmp(Type, "image/", 6)) {
-         dw = (Widget*) a_Mime_set_viewer(Type, Web, Call, Data);
+         dw = (Widget*) viewer(Type, Web, Call, Data);
       } else {
          MSG_HTTP("'%s' cannot be displayed as image; has media type '%s'\n",
                   URL_STR(Web->url), Type);

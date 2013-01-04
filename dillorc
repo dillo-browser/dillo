@@ -211,6 +211,13 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # ui_fg_color=black
 # ui_main_bg_color=silver
 # ui_text_bg_color=white
+# ui_selection_color
+# ui_button_highlight_color
+# ui_tab_active_bg_color
+# ui_tab_bg_color
+# ui_tab_active_fg_color
+# ui_tab_fg_color
+
 
 # Set the page background color
 # bg_color=gray

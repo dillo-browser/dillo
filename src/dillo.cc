@@ -237,10 +237,43 @@ static void checkPreferredFonts()
    checkFont(prefs.font_fantasy, "fantasy");
 }
 
-static void setColor(int32_t color, void (*fn) (uchar, uchar, uchar))
+static void setColorFLTK(int32_t color, void (*fn) (uchar, uchar, uchar))
 {
    if (color != -1)
       fn(color >> 16, (color >> 8) & 0xff, color & 0xff);
+}
+
+static void setColorPrefWdef(int32_t &color, int32_t default_val)
+{
+   if (color == -1)
+      color = default_val;
+   else if (color == 0)
+      color = FL_BLACK;
+   else
+      color <<= 8;
+}
+
+static void setColors()
+{
+   unsigned rgb;
+
+   setColorFLTK(prefs.ui_main_bg_color, Fl::background);
+   setColorFLTK(prefs.ui_text_bg_color, Fl::background2);
+   setColorFLTK(prefs.ui_fg_color, Fl::foreground);
+
+   if (prefs.ui_selection_color == -1)
+      rgb = Fl::get_color(fl_contrast(FL_SELECTION_COLOR,
+                                      FL_BACKGROUND2_COLOR));
+   else
+      rgb = prefs.ui_selection_color << 8;
+   Fl::set_color(FL_SELECTION_COLOR, rgb);
+
+   setColorPrefWdef(prefs.ui_button_highlight_color,
+                    fl_lighter(FL_BACKGROUND_COLOR));
+   setColorPrefWdef(prefs.ui_tab_active_bg_color, FL_BACKGROUND2_COLOR);
+   setColorPrefWdef(prefs.ui_tab_bg_color, FL_BACKGROUND_COLOR);
+   setColorPrefWdef(prefs.ui_tab_active_fg_color, prefs.ui_fg_color);   
+   setColorPrefWdef(prefs.ui_tab_fg_color, prefs.ui_fg_color);   
 }
 
 /*
@@ -388,14 +421,7 @@ int main(int argc, char **argv)
    Fl_Window::default_xclass("dillo");
 
    Fl::scheme(prefs.theme);
-
-   setColor(prefs.ui_main_bg_color, Fl::background);
-   setColor(prefs.ui_text_bg_color, Fl::background2);
-   setColor(prefs.ui_fg_color, Fl::foreground);
-
-   unsigned rgb = Fl::get_color(fl_contrast(FL_SELECTION_COLOR,
-                                            FL_BACKGROUND2_COLOR));
-   Fl::set_color(FL_SELECTION_COLOR, rgb);
+   setColors();
 
    if (!prefs.show_tooltip) {
       // turn off UI tooltips

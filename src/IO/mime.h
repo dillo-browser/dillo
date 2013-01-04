@@ -41,8 +41,7 @@ void *a_Dicache_jpeg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
  * Functions defined inside Mime module
  */
 void a_Mime_init(void);
-void *a_Mime_set_viewer(const char *content_type, void *Ptr,
-                        CA_Callback_t *Call, void **Data);
+Viewer_t a_Mime_get_viewer(const char *content_type);
 
 #ifdef __cplusplus
 }
