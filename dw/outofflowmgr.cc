@@ -207,6 +207,27 @@ void OutOfFlowMgr::markExtremesChange (int ref)
 {
 }
 
+Widget *OutOfFlowMgr::getWidgetAtPoint (int x, int y, int level)
+{
+   Widget *childAtPoint = getWidgetAtPoint (leftFloats, x, y, level);
+   if (childAtPoint == NULL)
+      childAtPoint = getWidgetAtPoint (rightFloats, x, y, level);
+   return childAtPoint;
+}
+
+Widget *OutOfFlowMgr::getWidgetAtPoint (Vector<Float> *list,
+                                        int x, int y, int level)
+{
+   for (int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
+      Widget *childAtPoint = vloat->widget->getWidgetAtPoint (x, y, level + 1);
+      if (childAtPoint)
+         return childAtPoint;
+   }
+
+   return NULL;
+}
+
 
 void OutOfFlowMgr::tellNoPosition (Widget *widget)
 {

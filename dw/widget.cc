@@ -108,7 +108,7 @@ void Widget::setParent (Widget *parent)
    if (!buttonSensitiveSet)
       buttonSensitive = parent->buttonSensitive;
 
-	notifySetParent();
+   notifySetParent();
 
    //DBG_OBJ_ASSOC (widget, parent);
    //printf ("The %s %p becomes a child of the %s %p\n",
@@ -513,11 +513,9 @@ Widget *Widget::getWidgetAtPoint (int x, int y, int level)
    Iterator *it;
    Widget *childAtPoint;
 
-   //_MSG ("%*s-> examining the %s %p (%d, %d, %d x (%d + %d))\n",
-   //      3 * level, "", gtk_type_name (GTK_OBJECT_TYPE (widget)), widget,
-   //      allocation.x, allocation.y,
-   //      allocation.width, allocation.ascent,
-   //      allocation.descent);
+   //printf ("%*s-> examining the %s %p (%d, %d, %d x (%d + %d))\n",
+   //        3 * level, "", getClassName (), this, allocation.x, allocation.y,
+   //        allocation.width, allocation.ascent, allocation.descent);
 
    if (x >= allocation.x &&
        y >= allocation.y &&

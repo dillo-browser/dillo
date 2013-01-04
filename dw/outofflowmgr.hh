@@ -45,6 +45,8 @@ private:
 
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);
+   core::Widget *getWidgetAtPoint (lout::container::typed::Vector<Float> *list,
+                                   int x, int y, int level);
 
    inline static bool isRefFloat (int ref)
    { return ref != -1 && (ref & 1) == 1; }
@@ -71,6 +73,7 @@ public:
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
+   core::Widget *getWidgetAtPoint (int x, int y, int level);
 
    static bool isWidgetOutOfFlow (core::Widget *widget);
    void addWidget (core::Widget *widget, core::Widget *generatingBlock);

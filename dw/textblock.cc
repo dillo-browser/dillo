@@ -2128,6 +2128,10 @@ void Textblock::addLinebreak (core::style::Style *style)
  */
 core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
 {
+   //printf ("%*s-> examining the %s %p (%d, %d, %d x (%d + %d))\n",
+   //        3 * level, "", getClassName (), this, allocation.x, allocation.y,
+   //        allocation.width, allocation.ascent, allocation.descent);
+
    int lineIndex, wordIndex;
    Line *line;
 
@@ -2137,6 +2141,14 @@ core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
        y > allocation.y + getHeight ()) {
       return NULL;
    }
+
+   // First, search for widgets out of flow, notably floats, since
+   // there are cases where they overlap child textblocks. Should
+   // later be refined using z-index.
+   Widget *oofWidget =
+      outOfFlowMgr ? outOfFlowMgr->getWidgetAtPoint (x, y, level) : NULL;
+   if (oofWidget)
+      return oofWidget;
 
    lineIndex = findLineIndex (y - allocation.y);
 
