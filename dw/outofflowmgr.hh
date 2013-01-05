@@ -20,7 +20,7 @@ public:
 
 private:
    ContainingBlock *containingBlock;
-   int availWidth;
+   int availWidth, availAscent, availDescent;
 
    class Float: public lout::object::Object
    {
@@ -82,8 +82,8 @@ public:
    void tellPosition (core::Widget *widget, int y);
 
    void setWidth (int width) { availWidth = width; }
-   void setAscent (int ascent) { /* nothing to do */ }
-   void setDescent (int descent) { /* nothing to do */ }
+   void setAscent (int ascent) { availAscent = ascent; }
+   void setDescent (int descent) { availDescent = descent; }
 
    void getSize (int cbWidth, int cbHeight, int *oofWidth, int *oofHeight);
 

@@ -14,7 +14,7 @@ OutOfFlowMgr::OutOfFlowMgr (ContainingBlock *containingBlock)
    //printf ("OutOfFlowMgr::OutOfFlowMgr\n");
 
    this->containingBlock = containingBlock;
-   availWidth = -1;   
+   availWidth = availAscent = availDescent = -1;   
    leftFloats = new Vector<Float> (1, true);
    rightFloats = new Vector<Float> (1, true);
 }
