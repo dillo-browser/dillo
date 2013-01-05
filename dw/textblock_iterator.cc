@@ -299,4 +299,11 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
    }
 }
 
+void Textblock::TextblockIterator::print ()
+{
+   Iterator::print ();
+   printf (", oofm = %s, index = %d", oofm ? "true" : "false", index);
+
+}
+
 } // namespace dw

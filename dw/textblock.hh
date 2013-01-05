@@ -385,6 +385,7 @@ protected:
       void highlight (int start, int end, core::HighlightLayer layer);
       void unhighlight (int direction, core::HighlightLayer layer);
       void getAllocation (int start, int end, core::Allocation *allocation);
+      void print ();
    };
 
    friend class TextblockIterator;

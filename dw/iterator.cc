@@ -507,14 +507,25 @@ DeepIterator::DeepIterator (Iterator *it)
       // \todo There may be a faster way instead of iterating through the
       //    parent widgets.
 
+      //printf ("STARTING WITH: ");
+      //it->print ();
+      //printf ("\n");
+   
       // Construct the iterators.
       int thisLevel = it->getWidget()->getLevel (), level;
       Widget *w;
       for (w = it->getWidget (), level = thisLevel; w->getParent() != NULL;
            w = w->getParent (), level--) {
          Iterator *it = w->getParent()->iterator (mask, false);
+
+         //printf ("   parent: %s %p\n", w->getClassName (), w);
+
          stack.put (it, level - 1);
          while (true) {
+            //printf ("      ");
+            //it->print ();
+            //printf ("\n");
+
             bool hasNext = it->next();
             assert (hasNext);
 
@@ -522,6 +533,7 @@ DeepIterator::DeepIterator (Iterator *it)
                 it->getContent()->widget == w)
                break;
          }
+
       }
 
       stack.put (it, thisLevel);

@@ -304,8 +304,8 @@ void Content::print (Content *content)
       printf ("<break>");
       break;
    default:
-      printf ("<?>");
-      break;              
+      printf ("<%d?>", content->type);
+      break;
    }
 }
 

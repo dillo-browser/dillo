@@ -111,8 +111,8 @@ void Widget::setParent (Widget *parent)
    notifySetParent();
 
    //DBG_OBJ_ASSOC (widget, parent);
-   //printf ("The %s %p becomes a child of the %s %p\n",
-   //        getClassName(), this, parent->getClassName(), parent);
+   printf ("The %s %p becomes a child of the %s %p\n",
+           getClassName(), this, parent->getClassName(), parent);
 }
 
 void Widget::queueDrawArea (int x, int y, int width, int height)
