@@ -133,7 +133,6 @@ bool Textblock::TextblockIterator::next ()
 
    if (oofm) {
       content.type = core::Content::WIDGET_OOF_CONT;
-      content.type = false;
       content.widget = textblock->outOfFlowMgr->getWidget (index);
    } else
       content = textblock->words->getRef(index)->content;
