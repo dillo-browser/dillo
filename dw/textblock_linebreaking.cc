@@ -210,29 +210,7 @@ void Textblock::BadnessAndPenalty::print ()
 
 void Textblock::printWordShort (Word *word)
 {
-   switch(word->content.type) {
-   case core::Content::TEXT:
-      printf ("\"%s\"", word->content.text);
-      break;
-   case core::Content::WIDGET_IN_FLOW:
-      printf ("<widget in flow: %p (%s)>",
-              word->content.widget, word->content.widget->getClassName());
-      break;
-   case core::Content::WIDGET_OOF_REF:
-      printf ("<widget oof ref: %p (%s)>",
-              word->content.widget, word->content.widget->getClassName());
-      break;
-   case core::Content::WIDGET_OOF_CONT:
-      printf ("<widge oof cont: %p (%s)>",
-              word->content.widget, word->content.widget->getClassName());
-      break;
-   case core::Content::BREAK:
-      printf ("<break>");
-      break;
-   default:
-      printf ("<?>");
-      break;              
-   }
+   core::Content::print (&(word->content));
 }
 
 void Textblock::printWordFlags (short flags)

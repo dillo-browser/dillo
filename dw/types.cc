@@ -276,5 +276,50 @@ Content::Type Content::maskForSelection (bool followReferences)
    return (Content::Type)(Content::SELECTION_CONTENT | widgetMask);
 }
 
+void Content::print (Content *content)
+{
+   switch(content->type) {
+   case START:
+      printf ("<start>");
+      break;
+   case END:
+      printf ("<end>");
+      break;
+   case TEXT:
+      printf ("\"%s\"", content->text);
+      break;
+   case WIDGET_IN_FLOW:
+      printf ("<widget in flow: %p (%s)>",
+              content->widget, content->widget->getClassName());
+      break;
+   case WIDGET_OOF_REF:
+      printf ("<widget oof ref: %p (%s)>",
+              content->widget, content->widget->getClassName());
+      break;
+   case WIDGET_OOF_CONT:
+      printf ("<widge oof cont: %p (%s)>",
+              content->widget, content->widget->getClassName());
+      break;
+   case BREAK:
+      printf ("<break>");
+      break;
+   default:
+      printf ("<?>");
+      break;              
+   }
+}
+
+void Content::printMask (Type mask)
+{
+   printf ("%s:%s:%s:%s:%s:%s:%s",
+           (mask & START) ? "st" : "--",
+           (mask & END) ? "en" : "--",
+           (mask & TEXT) ? "tx" : "--",
+           (mask & WIDGET_IN_FLOW) ? "wf" : "--",
+           (mask & WIDGET_OOF_REF) ? "Wr" : "--",
+           (mask & WIDGET_OOF_CONT) ? "Wc" : "--",
+           (mask & BREAK) ? "br" : "--");
+}
+
 } // namespace dw
 } // namespace core

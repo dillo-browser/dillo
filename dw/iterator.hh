@@ -85,6 +85,8 @@ public:
 
    static void scrollTo (Iterator *it1, Iterator *it2, int start, int end,
                          HPosition hpos, VPosition vpos);
+
+   void print ();
 };
 
 

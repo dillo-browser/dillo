@@ -223,6 +223,8 @@ struct Content
    };
 
    static Content::Type maskForSelection (bool followReferences);
+   static void print (Content *content);
+   static void printMask (Type mask);
 };
 
 } // namespace dw

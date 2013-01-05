@@ -186,6 +186,15 @@ void Iterator::scrollTo (Iterator *it1, Iterator *it2, int start, int end,
    }
 }
 
+
+void Iterator::print ()
+{
+   printf ("in the %s %p, mask ", widget->getClassName(), widget);
+   Content::printMask (mask);
+   printf (", pointing at ");
+   Content::print (&content);
+}
+
 // -------------------
 //    EmptyIterator
 // -------------------
