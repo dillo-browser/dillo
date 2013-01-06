@@ -842,8 +842,7 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
       }
    }
 
-   /** \todo Reactivate followReferences = true, as soon as it works. */
-   it = new TextblockIterator (this, core::Content::maskForSelection (false),
+   it = new TextblockIterator (this, core::Content::maskForSelection (true),
                                false, wordIndex);
    r = selectionHandleEvent (eventType, it, charPos, link, event);
    it->unref ();
