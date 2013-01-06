@@ -169,6 +169,10 @@ private:
    bool hasContents;
 
    inline DeepIterator () { }
+   static Widget *getRespectiveParent (Widget *widget, Content::Type mask);
+   inline Widget *getRespectiveParent (Widget *widget) {
+      return getRespectiveParent (widget, mask);
+   }
 
 public:
    DeepIterator(Iterator *it);

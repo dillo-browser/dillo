@@ -425,8 +425,9 @@ Iterator *DeepIterator::searchSideward (Iterator *it, Content::Type mask,
 
    /* Nothing found, go upwards in the tree (if possible). */
    it2->unref ();
-   if (it->getWidget()->getParent ()) {
-      it2 = it->getWidget()->getParent()->iterator (mask, false);
+   Widget *respParent = getRespectiveParent (it->getWidget(), it->getMask());
+   if (respParent) {
+      it2 = respParent->iterator (mask, false);
       while (true) {
          if (!it2->next ())
             misc::assertNotReached ();
@@ -449,6 +450,19 @@ Iterator *DeepIterator::searchSideward (Iterator *it, Content::Type mask,
    return NULL;
 }
 
+Widget *DeepIterator::getRespectiveParent (Widget *widget, Content::Type mask)
+{
+   // Return, depending on which is requested indirectly (follow
+   // references or containments) the parent (container) or the
+   // generator.  At this point, the type of the parent/generator is
+   // not known (since the parent/generator is not known), so we have
+   // to examine the mask. This is the reason why only one of
+   // WIDGET_OOF_CONT and WIDGET_OOF_REF is allowed.
+
+   return (mask & Content::WIDGET_OOF_REF) ?
+      widget->getGenerator() : widget->getParent();
+}
+
 /**
  * \brief Create a new deep iterator from an existing dw::core::Iterator.
  *
@@ -465,9 +479,13 @@ Iterator *DeepIterator::searchSideward (Iterator *it, Content::Type mask,
  */
 DeepIterator::DeepIterator (Iterator *it)
 {
-   // Handling widget references will be a bit more complicated, so we
-   // prohibit it at this point.
-   assert ((it->getMask() & Content::WIDGET_OOF_REF) == 0);
+   // Widgets out of flow are either followed widtin containers, or
+   // generators. Both (and also nothing at all) is not allowed. See
+   // also comment in getRespectiveParent.
+   int oofMask =
+      it->getMask() & (Content::WIDGET_OOF_CONT | Content::WIDGET_OOF_REF);
+   assert (oofMask == Content::WIDGET_OOF_CONT ||
+           oofMask == Content::WIDGET_OOF_REF);
 
    //DEBUG_MSG (1, "a_Dw_ext_iterator_new: %s\n", a_Dw_iterator_text (it));
 
@@ -514,9 +532,10 @@ DeepIterator::DeepIterator (Iterator *it)
       // Construct the iterators.
       int thisLevel = it->getWidget()->getLevel (), level;
       Widget *w;
-      for (w = it->getWidget (), level = thisLevel; w->getParent() != NULL;
-           w = w->getParent (), level--) {
-         Iterator *it = w->getParent()->iterator (mask, false);
+      for (w = it->getWidget (), level = thisLevel;
+           getRespectiveParent (w) != NULL;
+           w = getRespectiveParent (w), level--) {
+         Iterator *it = getRespectiveParent(w)->iterator (mask, false);
 
          //printf ("   parent: %s %p\n", w->getClassName (), w);
 
