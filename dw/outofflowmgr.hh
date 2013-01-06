@@ -112,7 +112,7 @@ public:
       return leftFloats->size() + rightFloats->size(); }
    inline core::Widget *getWidget (int i) {
       return i < leftFloats->size() ? leftFloats->get(i)->widget :
-         rightFloats->get(leftFloats->size())->widget; }
+         rightFloats->get(i - leftFloats->size())->widget; }
 };
 
 } // namespace dw
