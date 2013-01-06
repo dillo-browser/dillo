@@ -79,6 +79,14 @@ private:
     * \brief The parent widget, NULL for top-level widgets.
     */
    Widget *parent;
+
+   /**
+    * \brief The generating widget, NULL for top-level widgets, or if
+    * not set; in the latter case, the effective generator (see
+    * getGenerator) is the parent.
+    */
+   Widget *generator;
+
    style::Style *style;
 
    Flags flags;
@@ -246,6 +254,8 @@ public:
 
    void setParent (Widget *parent);
 
+   void setGenerator (Widget *generator) { this->generator = generator; }
+
    inline style::Style *getStyle () { return style; }
    /** \todo I do not like this. */
    inline Allocation *getAllocation () { return &allocation; }
@@ -284,6 +294,8 @@ public:
    Widget *getTopLevel ();
    int getLevel ();
    Widget *getNearestCommonAncestor (Widget *otherWidget);
+
+   inline Widget *getGenerator () { return generator ? generator : parent; }
 
    inline Layout *getLayout () { return layout; }
 

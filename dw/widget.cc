@@ -39,7 +39,7 @@ Widget::Widget ()
    registerName ("dw::core::Widget", &CLASS_ID);
 
    flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED | HAS_CONTENTS);
-   parent = NULL;
+   parent = generator = NULL;
    layout = NULL;
 
    allocation.x = -1;
