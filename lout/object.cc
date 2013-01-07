@@ -121,7 +121,7 @@ int Pointer::hashValue()
  *  if (sizeof (int) == sizeof (void*))
  *     return (int)value;
  *  else
- *     return ((int*)value)[0] ^ ((int*)value)[1];
+ *     return ((int*)&value)[0] ^ ((int*)&value)[1];
  */
 #if SIZEOF_VOID_P == 4
    // Assuming that sizeof(void*) == sizeof(int); on 32 bit systems.
