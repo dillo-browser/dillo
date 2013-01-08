@@ -18,6 +18,7 @@
 #include <stdlib.h>     /* for qsort */
 #include <math.h>       /* for rint */
 #include <limits.h>     /* for UINT_MAX */
+#include <sys/stat.h>
 
 #include <FL/Fl.H>
 #include <FL/Fl_Widget.H>
@@ -856,19 +857,64 @@ void a_UIcmd_init(void)
 }
 
 /*
+ * Check a file to save to.
+ */
+static int UIcmd_save_file_check(const char *name)
+{
+   struct stat ss;
+   if (stat(name, &ss) == 0) {
+      Dstr *ds;
+      int ch;
+      ds = dStr_sized_new(128);
+      dStr_sprintf(ds,
+                   "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
+                   name, (int)ss.st_size);
+      ch = a_Dialog_choice5("Dillo Save: File exists!", ds->str,
+                            "Abort", "Continue", "Rename", NULL, NULL);
+      dStr_free(ds, 1);
+      return ch;
+   } else {
+      return 2; /* assume the file does not exist, so Continue */
+   }
+}
+
+/*
  * Save a URL
  */
 static void UIcmd_save(BrowserWindow *bw, const DilloUrl *url,
                        const char *title, const char *url_str)
 {
-   char *SuggestedName;
    const char *name;
-   SuggestedName = UIcmd_make_save_filename(url_str);
-   name = a_Dialog_save_file(title, NULL, SuggestedName);
-   dFree(SuggestedName);
-   if (name) {
-      MSG("UIcmd_save: %s\n", name);
-      a_Nav_save_url(bw, url, name);
+   bool_t first_prompt = 1;
+   while (1) {
+      char *SuggestedName;
+
+      SuggestedName =
+         first_prompt
+         ? UIcmd_make_save_filename(url_str)
+         : dStrdup(name);
+      first_prompt = 0;
+      name = a_Dialog_save_file(title, NULL, SuggestedName);
+      dFree(SuggestedName);
+
+      if (name) {
+         switch (UIcmd_save_file_check(name)) {
+         case 0:
+         case 1:
+            /* Abort */
+            return;
+         case 2:
+            /* Continue */
+            MSG("UIcmd_save: %s\n", name);
+            a_Nav_save_url(bw, url, name);
+            return;
+         default:
+            /* Rename */
+            break; /* prompt again */
+         }
+      } else {
+         return; /* no name, so Abort */
+      }
    }
 }
 
