@@ -44,9 +44,12 @@ dillo-3.0.3 [not released yet]
  - Fixed a bug in dpip when dillo aborts a running dpi connection.
    Patches: Jorge Arellano Cid
 +- Better window titles.
-   Patch: Jeremy Henty
+ - Show dialog if saved file would overwrite an existing one.
+   Patches: Jeremy Henty
 +- Remove hardcoded UI colors.
    Patch: Benjamin Johnson, corvid
++- Fix fd leak in dpi write failure case.
+   Patch: p37sitdu, Jorge Arellano Cid
 
 -----------------------------------------------------------------------------
 
