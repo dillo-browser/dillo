@@ -208,19 +208,14 @@ void FltkViewport::draw ()
    if (d) {
       draw_area(this, x(), y(), w () - hdiff, h () - vdiff);
 
-      if (d == FL_DAMAGE_CHILD) {
-         if (hscrollbar->damage ())
-            draw_child (*hscrollbar);
-         if (vscrollbar->damage ())
-            draw_child (*vscrollbar);
-      } else {
+      if (d == FL_DAMAGE_ALL || hscrollbar->damage ())
          draw_child (*hscrollbar);
+      if (d == FL_DAMAGE_ALL || vscrollbar->damage ())
          draw_child (*vscrollbar);
 
-         if (d == FL_DAMAGE_ALL && hdiff && vdiff) {
-            fl_color(FL_BACKGROUND_COLOR);
-            fl_rectf(x()+w()-hdiff, y()+h()-vdiff, hdiff, vdiff);
-         }
+      if (d == FL_DAMAGE_ALL && hdiff && vdiff) {
+         fl_color(FL_BACKGROUND_COLOR);
+         fl_rectf(x()+w()-hdiff, y()+h()-vdiff, hdiff, vdiff);
       }
    }
 
