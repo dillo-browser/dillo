@@ -260,6 +260,7 @@ static int Cookie_control_init(void)
       if (!rc && ferror(stream)) {
          MSG("Cookies1: Error while reading rule from cookiesrc: %s\n",
              dStrerror(errno));
+         fclose(stream);
          return 2; /* bail out */
       }
 
