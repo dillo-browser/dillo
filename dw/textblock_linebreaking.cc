@@ -371,6 +371,19 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    // the height should be positive.
    line->boxAscent = misc::max (line->boxAscent, 1);
 
+   // Calculate offsetCompleteWidget, which includes also floats.
+   int resultFromOOFM;
+   if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line))
+      resultFromOOFM =
+         containingBlock->outOfFlowMgr->getLeftBorder
+         (line->top + getStyle()->boxOffsetY() + diffYToContainingBlock)
+         - diffXToContainingBlock;
+   else
+      resultFromOOFM = 0;
+   line->offsetCompleteWidget =
+      innerPadding + line->leftOffset + (lineIndex == 0 ? line1OffsetEff : 0) +
+      misc::max (getStyle()->boxOffsetX(), resultFromOOFM);
+
    PRINTF ("   line[%d].top = %d\n", lines->size () - 1, line->top);
    PRINTF ("   line[%d].boxAscent = %d\n", lines->size () - 1, line->boxAscent);
    PRINTF ("   line[%d].boxDescent = %d\n",

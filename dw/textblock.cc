@@ -362,7 +362,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
    for (lineIndex = 0; lineIndex < lines->size (); lineIndex++) {
       line = lines->getRef (lineIndex);
-      xCursor = lineXOffsetWidget (line);
+      xCursor = line->offsetCompleteWidget;
 
       for (wordIndex = line->firstWord; wordIndex <= line->lastWord;
            wordIndex++) {
@@ -757,11 +757,11 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
             // Choose this break.
             wordIndex = line->lastWord;
             charPos = core::SelectionState::END_OF_WORD;
-         } else if (event->xWidget < lineXOffsetWidget (line)) {
+         } else if (event->xWidget < line->offsetCompleteWidget) {
             // Left of the first word in the line.
             wordIndex = line->firstWord;
          } else {
-            int nextWordStartX = lineXOffsetWidget (line);
+            int nextWordStartX = line->offsetCompleteWidget;
 
             for (wordIndex = line->firstWord;
                  wordIndex <= line->lastWord;
@@ -1235,7 +1235,7 @@ void Textblock::drawSpace(int wordIndex, core::View *view,
  */
 void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
 {
-   int xWidget = lineXOffsetWidget(line);
+   int xWidget = line->offsetCompleteWidget;
    int yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
 
    for (int wordIndex = line->firstWord;
@@ -1393,7 +1393,7 @@ Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
    if (yWidgetBase + line->boxDescent <= y)
       return NULL;
 
-   xCursor = lineXOffsetWidget (line);
+   xCursor = line->offsetCompleteWidget;
    for (wordIndex = line->firstWord; wordIndex <= line->lastWord;wordIndex++) {
       word = words->getRef (wordIndex);
       lastXCursor = xCursor;

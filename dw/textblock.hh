@@ -282,7 +282,7 @@ protected:
       /* "top" is always relative to the top of the first line, i.e.
        * page->lines[0].top is always 0. */
       int top, boxAscent, boxDescent, contentAscent, contentDescent,
-          breakSpace, leftOffset;
+         breakSpace, leftOffset, offsetCompleteWidget;
 
       /* This is similar to descent, but includes the bottom margins of the
        * widgets within this line. */
@@ -511,35 +511,6 @@ protected:
 
    int diffXToContainingBlock, restWidthToContainingBlock,
       diffYToContainingBlock;
-
-   /**
-    * \brief Returns the x offset (the indentation plus any offset
-    *    needed for centering or right justification) for the line,
-    *    relative to the allocation (i.e.  including border etc.).
-    */
-   inline int lineXOffsetWidget (Line *line)
-   {
-      // TODO This method is called very often, every time a line is
-      // *drawn*. To reduce calls to OutOfFlowMgr::getLeftBorder
-      // (which searches through all floats each time), the value
-      // should (in the layouting phase) be stored in the line.
-
-      assert (diffXToContainingBlock != -1);
-      assert (diffYToContainingBlock != -1);
-
-      int resultFromOOFM;
-      if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line))
-         resultFromOOFM =
-            containingBlock->outOfFlowMgr->getLeftBorder
-            (line->top + getStyle()->boxOffsetY() + diffYToContainingBlock)
-            - diffXToContainingBlock;
-      else
-         resultFromOOFM = 0;
-            
-      return innerPadding + line->leftOffset +
-         (line == lines->getFirstRef() ? line1OffsetEff : 0) +
-         lout::misc::max (getStyle()->boxOffsetX(), resultFromOOFM);
-   }
 
    inline int lineLeftBorder (int lineNo)
    {
