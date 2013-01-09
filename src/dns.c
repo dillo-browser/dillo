@@ -217,9 +217,8 @@ void a_Dns_init(void)
       /* If the IPv6 address family is not available there is no point
          wasting time trying to connect to v6 addresses. */
       int fd = socket(AF_INET6, SOCK_STREAM, 0);
-      if (fd >= 0) {
-         close(fd);
-      }
+      if (fd >= 0)
+         dClose(fd);
    }
 #endif
 }
@@ -510,8 +509,8 @@ void a_Dns_freeall(void)
       dList_free(dns_cache[i].addr_list);
    }
    a_IOwatch_remove_fd(dns_notify_pipe[0], DIO_READ);
-   close(dns_notify_pipe[0]);
-   close(dns_notify_pipe[1]);
+   dClose(dns_notify_pipe[0]);
+   dClose(dns_notify_pipe[1]);
    dFree(dns_cache);
 }
 

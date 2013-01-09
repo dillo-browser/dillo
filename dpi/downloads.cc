@@ -441,7 +441,7 @@ DLItem::~DLItem()
 void DLItem::abort_dl()
 {
    if (!log_done()) {
-      close(LogPipe[0]);
+      dClose(LogPipe[0]);
       Fl::remove_fd(LogPipe[0]);
       log_done(1);
       // Stop wget
@@ -459,9 +459,9 @@ void DLItem::prButton_cb()
 
 void DLItem::child_init()
 {
-   close(0); // stdin
-   close(1); // stdout
-   close(LogPipe[0]);
+   dClose(0); // stdin
+   dClose(1); // stdout
+   dClose(LogPipe[0]);
    dup2(LogPipe[1], 2); // stderr
    // set the locale to C for log parsing
    setenv("LC_ALL", "C", 1);
@@ -618,7 +618,7 @@ static void read_log_cb(int fd_in, void *data)
          perror("read, ");
          break;
       } else if (st == 0) {
-         close(fd_in);
+         dClose(fd_in);
          Fl::remove_fd(fd_in, 1);
          dl_item->log_done(1);
          break;
@@ -630,7 +630,7 @@ static void read_log_cb(int fd_in, void *data)
 
 void DLItem::father_init()
 {
-   close(LogPipe[1]);
+   dClose(LogPipe[1]);
    Fl::add_fd(LogPipe[0], 1, read_log_cb, this); // Read
 
    // Start the timer after the child is running.

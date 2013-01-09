@@ -330,7 +330,7 @@ static void yes_ssl_support(void)
    dFree(check_cert);
 
    if (network_socket != -1){
-      close(network_socket);
+      dClose(network_socket);
       network_socket = -1;
    }
    if (ssl_connection != NULL){
@@ -402,7 +402,7 @@ static int get_network_connection(char * url)
 
    s = socket(hp->h_addrtype, SOCK_STREAM, 0);
    if (connect(s, (struct sockaddr *)&address, sizeof(address)) != 0){
-      close(s);
+      dClose(s);
       s = -1;
       MSG("errno: %i\n", errno);
    }

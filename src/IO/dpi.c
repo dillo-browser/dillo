@@ -86,19 +86,6 @@ void a_Dpi_init(void)
 }
 
 /*
- * Close a FD handling EINTR
- */
-static void Dpi_close_fd(int fd)
-{
-   int st;
-
-   dReturn_if (fd < 0);
-   do
-      st = close(fd);
-   while (st < 0 && errno == EINTR);
-}
-
-/*
  * Create a new connection data structure
  */
 static dpi_conn_t *Dpi_conn_new(ChainLink *Info)
@@ -362,7 +349,7 @@ static int Dpi_start_dpid(void)
    if (pid == 0) {
       /* This is the child process.  Execute the command. */
       char *path1 = dStrconcat(dGethomedir(), "/.dillo/dpid", NULL);
-      Dpi_close_fd(st_pipe[0]);
+      dClose(st_pipe[0]);
       if (execl(path1, "dpid", (char*)NULL) == -1) {
          dFree(path1);
          path1 = dStrconcat(DILLO_BINDIR, "dpid", NULL);
@@ -373,7 +360,7 @@ static int Dpi_start_dpid(void)
                if (Dpi_blocking_write(st_pipe[1], "ERROR", 5) == -1) {
                   MSG("Dpi_start_dpid (child): can't write to pipe.\n");
                }
-               Dpi_close_fd(st_pipe[1]);
+               dClose(st_pipe[1]);
                _exit (EXIT_FAILURE);
             }
          }
@@ -382,19 +369,18 @@ static int Dpi_start_dpid(void)
       /* The fork failed.  Report failure.  */
       MSG("Dpi_start_dpid: %s\n", dStrerror(errno));
       /* close the unused pipe */
-      Dpi_close_fd(st_pipe[0]);
-      Dpi_close_fd(st_pipe[1]);
-
+      dClose(st_pipe[0]);
+      dClose(st_pipe[1]);
    } else {
       /* This is the parent process, check our child status... */
-      Dpi_close_fd(st_pipe[1]);
+      dClose(st_pipe[1]);
       if ((answer = Dpi_blocking_read(st_pipe[0])) != NULL) {
          MSG("Dpi_start_dpid: can't start dpid\n");
          dFree(answer);
       } else {
          ret = 0;
       }
-      Dpi_close_fd(st_pipe[0]);
+      dClose(st_pipe[0]);
    }
 
    return ret;
@@ -467,7 +453,7 @@ static int Dpi_check_dpid_ids()
       } else if (connect(sock_fd, (struct sockaddr *)&sin, sin_sz) == -1) {
          MSG("Dpi_check_dpid_ids: %s\n", dStrerror(errno));
       } else {
-         Dpi_close_fd(sock_fd);
+         dClose(sock_fd);
          ret = 1;
       }
    }
@@ -603,7 +589,7 @@ static int Dpi_get_server_port(const char *server_name)
       dFree(cmd);
    }
    dFree(rply);
-   Dpi_close_fd(sock_fd);
+   dClose(sock_fd);
 
    return ok ? dpi_port : -1;
 }
@@ -648,7 +634,7 @@ static int Dpi_connect_socket(const char *server_name)
    }
    dFree(cmd);
    if (sock_fd != -1 && ret == -1) /* can't send cmd? */
-      Dpi_close_fd(sock_fd);
+      dClose(sock_fd);
 
    return ret;
 }
@@ -797,7 +783,7 @@ char *a_Dpi_send_blocking_cmd(const char *server_name, const char *cmd)
    } if ((ret = Dpi_blocking_read(sock_fd)) == NULL) {
       MSG_ERR("[a_Dpi_send_blocking_cmd] Can't read message.\n");
    }
-   Dpi_close_fd(sock_fd);
+   dClose(sock_fd);
 
    return ret;
 }

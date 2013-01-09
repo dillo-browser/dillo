@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <errno.h>
 
+#include "../dlib/dlib.h"
 #include "../dpip/dpip.h"
 
 #define MSG_ERR(...) printf("** ERROR **: " __VA_ARGS__);
@@ -116,6 +117,6 @@ int main(int argc, char *argv[])
          error("ERROR reading from socket");
     printf("%s\n",buffer);
 */
-    close(sockfd);
+    dClose(sockfd);
     return 0;
 }

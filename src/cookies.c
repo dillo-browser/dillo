@@ -90,7 +90,7 @@ static FILE *Cookies_fopen(const char *filename, char *init_str)
                    filename, dStrerror(errno));
             }
          }
-         close(fd);
+         dClose(fd);
 
          MSG("Cookies: Created file: %s\n", filename);
          F_in = fopen(filename, "r");

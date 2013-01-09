@@ -125,7 +125,6 @@ static void IO_free(IOData_t *io)
  */
 static void IO_close_fd(IOData_t *io, int CloseCode)
 {
-   int st;
    int events = 0;
 
    _MSG("====> begin IO_close_fd (%d) Key=%d CloseCode=%d Flags=%d ",
@@ -135,9 +134,7 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
     * closed! (other clients may set 'IOFlag_ForceClose') */
    if (((io->Flags & IOFlag_ForceClose) || (CloseCode == IO_StopRdWr)) &&
        io->FD != -1) {
-      do
-         st = close(io->FD);
-      while (st < 0 && errno == EINTR);
+      dClose(io->FD);
    } else {
       _MSG(" NOT CLOSING ");
    }

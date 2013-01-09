@@ -762,7 +762,7 @@ void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
       } else if (CKD_WRITE(sock_fd, bye_cmd) == -1) {
          ERRMSG("stop_active_dpis", "write", errno);
       }
-      a_Misc_close_fd(sock_fd);
+      dClose(sock_fd);
    }
 
    dFree(auth_cmd);
@@ -782,7 +782,7 @@ void ignore_dpi_sockets(struct dp *dpi_attr_list, int numdpis)
 
    for (i = 0; i < numdpis; i++) {
       FD_CLR(dpi_attr_list[i].sock_fd, &sock_set);
-      a_Misc_close_fd(dpi_attr_list[i].sock_fd);
+      dClose(dpi_attr_list[i].sock_fd);
    }
 }
 

@@ -210,17 +210,6 @@ static void Http_socket_free(int SKey)
 }
 
 /*
- * Close the socket's FD
- */
-static void Http_socket_close(SocketData_t *S)
-{
-   int st;
-   do
-      st = close(S->SockFD);
-   while (st < 0 && errno == EINTR);
-}
-
-/*
  * Make the HTTP header's Referer line according to preferences
  * (default is "host" i.e. "scheme://hostname/" )
  */
@@ -448,7 +437,7 @@ static int Http_connect_socket(ChainLink *Info)
       status = connect(S->SockFD, (struct sockaddr *)&name, socket_len);
       if (status == -1 && errno != EINPROGRESS) {
          S->Err = errno;
-         Http_socket_close(S);
+         dClose(S->SockFD);
          MSG("Http_connect_socket ERROR: %s\n", dStrerror(S->Err));
       } else {
          a_Chain_bcb(OpSend, Info, &S->SockFD, "FD");

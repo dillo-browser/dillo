@@ -489,11 +489,11 @@ void a_Dpip_dsh_close(Dsh *dsh)
    a_Dpip_dsh_write(dsh, 1, "", 0);
 
    /* close fds */
-   while((st = close(dsh->fd_in)) < 0 && errno == EINTR) ;
+   st = dClose(dsh->fd_in);
    if (st < 0)
       MSG_ERR("[a_Dpip_dsh_close] close: %s\n", dStrerror(errno));
    if (dsh->fd_out != dsh->fd_in) {
-      while((st = close(dsh->fd_out)) < 0 && errno == EINTR) ;
+      st = dClose(dsh->fd_out);
       if (st < 0)
          MSG_ERR("[a_Dpip_dsh_close] close: %s\n", dStrerror(errno));
    }

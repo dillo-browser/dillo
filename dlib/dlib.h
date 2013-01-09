@@ -175,10 +175,10 @@ void dLib_show_messages(bool_t show);
 /*
  *- Misc utility functions ----------------------------------------------------
  */
-char *dGetcwd ();
-char *dGethomedir ();
-char *dGetline (FILE *stream);
-
+char *dGetcwd();
+char *dGethomedir();
+char *dGetline(FILE *stream);
+int dClose(int fd);
 
 #ifdef __cplusplus
 }

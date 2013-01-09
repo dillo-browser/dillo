@@ -19,20 +19,6 @@
 #include "dpid_common.h"
 #include "misc_new.h"   /* for function prototypes */
 
-
-/*
- * Close a FD handling EINTR.
- */
-int a_Misc_close_fd(int fd)
-{
-   int st;
-
-   do {
-      st = close(fd);
-   } while (st < 0 && errno == EINTR);
-   return st;
-}
-
 /*! Reads a dpi tag from a socket
  * \li Continues after a signal interrupt
  * \Return
