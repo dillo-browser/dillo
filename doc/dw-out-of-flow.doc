@@ -346,35 +346,21 @@ Bugs and Things Needing Improvement
 
 High Priority
 -------------
-This one seems to be **FIXED:** *Segmentation fault: Is not fully
-reproducable, happens randomly.*
-
 **Misplaced/missing floats, wrong widths etc.:** Best is to provide
 test pages with these errors, which are as simple as possible.
-
-**Lines with no contents:** When lines are too narrow, they should not
-contain any words, as soon as there are floats at the
-borders. Currently, a line contains at least one word, even if it
-wider than the line. This makes sense, because lines do not get wider,
-so over-wide words must be placed somewhere. However, with floats,
-this changes: lines _do_ get wider below the bottom of floats.
-
-**Collisions of floats:** Currently, only collisions with floats on
-the same side are handled, but a left float must also be moved, when a
-right float blocks the space, and vice versa. This will make it
-neccessary to know the width; perhaps dw::Textblock::setWidth should
-delegate this to dw::OutOfFlowMgr.
 
 **Extremes:** Extremes will be implemented by
 dw::OutOfFlowMgr::getExtremes, which must be considered by
 dw::Textblock::getExtremesImpl, like dw::OutOfFlowMgr::getSize is used
-by dw::Textblock::sizeRequestImpl. The last two poins (lines with no
+by dw::Textblock::sizeRequestImpl. The last two points (lines with no
 contents/collisions of floats) lead to a very simple of
 dw::OutOfFlowMgr::getExtremes: the result is simply the maximum of the
 floats extremes. (This is at least correct for the minimal width.)
 
 **Rewrapping** (via dw::Textblock::borderChanged) sometimes does not
 imply redrawing. Reproduce?
+
+(Plus some more; list must be updated.)
 
 Medium Priority
 ---------------
@@ -408,10 +394,16 @@ may contain an element with absolute position (or, a float),
 
 Not a Bug (Kind of)
 -------------------
-**Floats too far left?** Sometimes, floats seem too far on the left
-side, as in test/floats-and-absolute.html, and also in Wikipedia. This
-is only due to the fact that dillo does not yet support absolute
-positions, and so absolutely positioned elements are not regarded as
-containing block. (Or related to *Exact positions of floats* above?)
+
+*Floats too far left?* Sometimes, floats seem too far on the
+left side, as in test/floats-and-absolute.html, and also in
+Wikipedia. This is only due to the fact that dillo does not yet
+support absolute positions, and so absolutely positioned elements are
+not regarded as containing block. (Or related to *Exact positions of
+floats* above?)
+
+**Update:** Floats refer to the border of the *generating* box, not of
+the *containing* box, so this is not an issue at all; furthermore,
+this has been fixed.
 
 */
