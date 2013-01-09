@@ -106,6 +106,11 @@ void Textblock::TextblockIterator::highlight (int start, int end,
    Textblock *textblock = (Textblock*)getWidget();
    int index1 = index, index2 = index;
 
+   int oldStartIndex = textblock->hlStart[layer].index;
+   int oldStartChar = textblock->hlStart[layer].nChar;
+   int oldEndIndex = textblock->hlEnd[layer].index;
+   int oldEndChar = textblock->hlEnd[layer].nChar;
+
    if (textblock->hlStart[layer].index > textblock->hlEnd[layer].index) {
       /* nothing is highlighted */
       textblock->hlStart[layer].index = index;
@@ -124,7 +129,11 @@ void Textblock::TextblockIterator::highlight (int start, int end,
       textblock->hlEnd[layer].nChar = end;
    }
 
-   textblock->queueDrawRange (index1, index2);
+   if (oldStartIndex != textblock->hlStart[layer].index ||
+       oldStartChar != textblock->hlStart[layer].nChar ||
+       oldEndIndex != textblock->hlEnd[layer].index ||
+       oldEndChar != textblock->hlEnd[layer].nChar)
+      textblock->queueDrawRange (index1, index2);
 }
 
 void Textblock::TextblockIterator::unhighlight (int direction,
