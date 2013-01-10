@@ -814,30 +814,51 @@ void a_UIcmd_redirection0(void *vbw, const DilloUrl *url)
 /*
  * Return a suitable filename for a given URL path.
  */
-static char *UIcmd_make_save_filename(const char *pathstr)
+static char *UIcmd_make_save_filename(const DilloUrl *url)
 {
    size_t MaxLen = 64;
-   char *FileName, *newname, *o, *n;
-   const char *name, *dir = save_dir;
+   const char *dir = save_dir, *path, *path2, *query;
+   char *name, *free1, *free2, *n1, *n2;
 
-   if ((name = strrchr(pathstr, '/'))) {
-      if (strlen(++name) > MaxLen) {
-         name = name + strlen(name) - MaxLen;
-      }
-      /* Replace %20 and ' ' with '_' in Filename */
-      o = n = newname = dStrdup(name);
-      for (int i = 0; o[i]; i++) {
-         *n++ = (o[i] == ' ') ? '_' :
-                (o[i] == '%' && o[i+1] == '2' && o[i+2] == '0') ?
-                i+=2, '_' : o[i];
-      }
-      *n = 0;
-      FileName = dStrconcat(dir, newname, NULL);
-      dFree(newname);
-   } else {
-      FileName = dStrconcat(dir, pathstr, NULL);
+   free1 = free2 = NULL;
+
+   /* get the last component of the path */
+   path = URL_PATH(url);
+   path2 = strrchr(path, '/');
+   path = path2 ? path2 + 1 : path;
+
+   /* truncate the path if necessary */
+   if (strlen(path) > MaxLen) {
+      path = free1 = dStrndup(path, MaxLen);
    }
-   return FileName;
+
+   /* is there a query? */
+   query = URL_QUERY(url);
+   if (*query) {
+      /* truncate the query if necessary */
+      if (strlen(query) > MaxLen) {
+         query = free2 = dStrndup(query, MaxLen);
+      }
+      name = dStrconcat(dir, path, "?", query, NULL);
+   } else {
+      name = dStrconcat(dir, path, NULL);
+   }
+
+   dFree(free1);
+   dFree(free2);
+
+   /* Replace %20 and ' ' with '_' */
+   for (n1 = n2 = name; *n1; n1++) {
+      *n2++ =
+         (n1[0] == ' ')
+         ? '_' :
+         (n1[0] == '%' && n1[1] == '2' && n1[2] == '0')
+         ? (n1 += 2, '_') :
+         n1[0];
+   }
+   *n2 = 0;
+
+   return name;
 }
 
 /*
@@ -882,7 +903,7 @@ static int UIcmd_save_file_check(const char *name)
  * Save a URL
  */
 static void UIcmd_save(BrowserWindow *bw, const DilloUrl *url,
-                       const char *title, const char *url_str)
+                       const char *title)
 {
    const char *name;
    bool_t first_prompt = 1;
@@ -891,7 +912,7 @@ static void UIcmd_save(BrowserWindow *bw, const DilloUrl *url,
 
       SuggestedName =
          first_prompt
-         ? UIcmd_make_save_filename(url_str)
+         ? UIcmd_make_save_filename(url)
          : dStrdup(name);
       first_prompt = 0;
       name = a_Dialog_save_file(title, NULL, SuggestedName);
@@ -927,7 +948,7 @@ void a_UIcmd_save(void *vbw)
    const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
 
    if (url) {
-      UIcmd_save(bw, url, "Save Page as File", URL_PATH(url));
+      UIcmd_save(bw, url, "Save Page as File");
    }
 }
 
@@ -1048,7 +1069,7 @@ const char *a_UIcmd_get_passwd(const char *user)
  */
 void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
 {
-   UIcmd_save(bw, url, "Dillo: Save Link as File", URL_STR(url));
+   UIcmd_save(bw, url, "Dillo: Save Link as File");
 }
 
 /*
