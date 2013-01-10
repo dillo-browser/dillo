@@ -848,8 +848,8 @@ static char *UIcmd_make_save_filename(const DilloUrl *url)
    dFree(free2);
 
    /* Replace %20 and ' ' with '_' */
-   for (n1 = n2 = name; *n1; n1++) {
-      *n2++ =
+   for (n1 = n2 = name; *n1; n1++, n2++) {
+      *n2 =
          (n1[0] == ' ')
          ? '_' :
          (n1[0] == '%' && n1[1] == '2' && n1[2] == '0')
