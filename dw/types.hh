@@ -207,7 +207,7 @@ struct Content
    };
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_TYPES_HH__

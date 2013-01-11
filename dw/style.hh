@@ -686,8 +686,8 @@ void drawBackground (View *view, Rectangle *area,
 void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType);
 
 } // namespace style
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_STYLE_HH__
 

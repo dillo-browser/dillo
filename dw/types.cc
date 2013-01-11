@@ -268,5 +268,5 @@ void Region::addRectangle (Rectangle *rPointer)
    rectangleList->append (r);
 }
 
-} // namespace dw
 } // namespace core
+} // namespace dw

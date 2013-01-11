@@ -11,7 +11,7 @@ class FltkResource;
 
 } // namespace ui
 } // namespace fltk
-} // namespace core
+} // namespace dw
 
 #include <FL/Fl_Widget.H>
 

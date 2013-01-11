@@ -205,7 +205,7 @@ public:
    virtual void mergeClippingView (View *clippingView) = 0;
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_VIEW_HH__

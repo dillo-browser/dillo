@@ -306,7 +306,7 @@ public:
    virtual void removeChild (Widget *child);
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_WIDGET_HH__

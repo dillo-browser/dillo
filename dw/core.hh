@@ -31,10 +31,8 @@ namespace ui {
 class ResourceFactory;
 
 } // namespace ui
-
-
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #include "../lout/object.hh"
 #include "../lout/container.hh"

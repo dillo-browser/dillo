@@ -164,7 +164,7 @@ public:
    virtual ui::ResourceFactory *getResourceFactory () = 0;
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_PLATFORM_HH__

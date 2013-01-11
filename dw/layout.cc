@@ -1050,6 +1050,5 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
    setSizeHints ();
 }
 
-} // namespace dw
 } // namespace core
-
+} // namespace dw
