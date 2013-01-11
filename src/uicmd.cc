@@ -503,9 +503,9 @@ static void win_cb (Fl_Widget *w, void *cb_data) {
    }
       
    if (prefs.show_quit_dialog && ntabs > 1)
-      choice = a_Dialog_choice5("Dillo: Close window?",
-                                "Window contains more than one tab.",
-                                "Close", "Cancel", NULL, NULL, NULL);
+      choice = a_Dialog_choice("Dillo: Close window?",
+                               "Window contains more than one tab.",
+                               "Close", "Cancel", NULL);
    if (choice == 1)
       while (ntabs-- > 0)
          a_UIcmd_close_bw(a_UIcmd_get_bw_by_widget(tabs->wizard()->value()));
@@ -644,9 +644,9 @@ void a_UIcmd_close_all_bw(void *)
    int choice = 1;
 
    if (prefs.show_quit_dialog && a_Bw_num() > 1)
-      choice = a_Dialog_choice5("Dillo: Quit?",
-                                "More than one open tab or window.",
-                                "Quit", "Cancel", NULL, NULL, NULL);
+      choice = a_Dialog_choice("Dillo: Quit?",
+                               "More than one open tab or window.",
+                               "Quit", "Cancel", NULL);
    if (choice == 1)
       while ((bw = a_Bw_get(0)))
          a_UIcmd_close_bw((void*)bw);
@@ -890,8 +890,8 @@ static int UIcmd_save_file_check(const char *name)
       dStr_sprintf(ds,
                    "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
                    name, (int)ss.st_size);
-      ch = a_Dialog_choice5("Dillo Save: File exists!", ds->str,
-                            "Abort", "Continue", "Rename", NULL, NULL);
+      ch = a_Dialog_choice("Dillo Save: File exists!", ds->str,
+                           "Abort", "Continue", "Rename", NULL);
       dStr_free(ds, 1);
       return ch;
    } else {

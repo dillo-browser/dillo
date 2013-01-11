@@ -9,9 +9,7 @@ typedef void (*UserPasswordCB)(const char *user, const char *password,
                                void *vp);
 
 void a_Dialog_msg(const char *title, const char *msg);
-int a_Dialog_choice5(const char *title, const char *msg,
-                     const char *alt1, const char *alt2, const char *alt3,
-                     const char *alt4, const char *alt5);
+int a_Dialog_choice(const char *title, const char *msg, ...);
 int a_Dialog_user_password(const char *title, const char *msg,
                            UserPasswordCB cb, void *vp);
 const char *a_Dialog_input(const char *title, const char *msg);
