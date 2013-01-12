@@ -11,12 +11,8 @@
 #define BW_Force           (4)  /* Stop connection too */
 
 
-typedef struct _BrowserWindow BrowserWindow;
-
-
 /* browser_window contains the specific data for a single window */
-struct _BrowserWindow
-{
+typedef struct {
    /* Pointer to the UI object this bw belongs to */
    void *ui;
 
@@ -61,7 +57,7 @@ struct _BrowserWindow
    /* HTML-bugs detected at parse time */
    int num_page_bugs;
    Dstr *page_bugs;
-};
+} BrowserWindow;
 
 
 #ifdef __cplusplus

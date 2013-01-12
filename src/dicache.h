@@ -24,9 +24,7 @@ typedef enum {
    DIC_Abort       /* Image transfer aborted */
 } DicEntryState;
 
-typedef struct _DICacheEntry DICacheEntry;
-
-struct _DICacheEntry {
+typedef struct DICacheEntry {
    DilloUrl *url;          /* Image URL for this entry */
    uint_t width, height;   /* As taken from image data */
    DilloImgType type;      /* Image type */
@@ -44,8 +42,8 @@ struct _DICacheEntry {
    void *DecoderData;      /* Client function data */
    uint_t DecodedSize;     /* Size of already decoded data */
 
-   DICacheEntry *next;     /* Link to the next "newer" version */
-};
+   struct DICacheEntry *next; /* Link to the next "newer" version */
+} DICacheEntry;
 
 
 void a_Dicache_init (void);

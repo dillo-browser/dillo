@@ -58,8 +58,7 @@ static char *prog_state_name[] =
  * ones for XBM and PNM are.
  */
 
-typedef
-struct _DilloPng {
+typedef struct {
    DilloImage *Image;           /* Image meta data */
    DilloUrl *url;               /* Primary Key for the dicache */
    int version;                 /* Secondary Key for the dicache */

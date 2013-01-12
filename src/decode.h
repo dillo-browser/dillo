@@ -7,15 +7,13 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct _Decode    Decode;
-
-struct _Decode {
+typedef struct Decode {
    char *buffer;
    Dstr *leftover;
    void *state;
-   Dstr *(*decode) (Decode *dc, const char *instr, int inlen);
-   void (*free) (Decode *dc);
-};
+   Dstr *(*decode) (struct Decode *dc, const char *instr, int inlen);
+   void (*free) (struct Decode *dc);
+} Decode;
 
 Decode *a_Decode_transfer_init(const char *format);
 Decode *a_Decode_content_init(const char *format);

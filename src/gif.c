@@ -79,7 +79,7 @@
 #define        MAX_LWZ_BITS            12
 
 
-typedef struct _DilloGif {
+typedef struct {
    DilloImage *Image;
    DilloUrl *url;
    int version;

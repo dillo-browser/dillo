@@ -46,20 +46,22 @@ typedef enum {
    DILLO_JPEG_ERROR
 } DilloJpegState;
 
+typedef struct DilloJpeg DilloJpeg;
+
 /* An implementation of a suspending source manager */
 
 typedef struct {
    struct jpeg_source_mgr pub;  /* public fields */
-   struct DilloJpeg *jpeg;      /* a pointer back to the jpeg object */
+   DilloJpeg *jpeg;             /* a pointer back to the jpeg object */
 } my_source_mgr;
 
 struct my_error_mgr {
    struct jpeg_error_mgr pub;    /* "public" fields */
    jmp_buf setjmp_buffer;        /* for return to caller */
 };
-typedef struct my_error_mgr * my_error_ptr;
+typedef struct my_error_mgr *my_error_ptr;
 
-typedef struct DilloJpeg {
+struct DilloJpeg {
    DilloImage *Image;
    DilloUrl *url;
    int version;
@@ -74,7 +76,7 @@ typedef struct DilloJpeg {
 
    struct jpeg_decompress_struct cinfo;
    struct my_error_mgr jerr;
-} DilloJpeg;
+};
 
 /*
  * Forward declarations

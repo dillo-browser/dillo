@@ -26,9 +26,7 @@ extern "C" {
 /* Panel sizes */
 enum { P_tiny = 0, P_small, P_medium };
 
-typedef struct _DilloPrefs DilloPrefs;
-
-struct _DilloPrefs {
+typedef struct {
    int width;
    int height;
    int xpos;
@@ -99,7 +97,7 @@ struct _DilloPrefs {
    bool_t middle_click_drags_page;
    int penalty_hyphen, penalty_hyphen_2;
    int penalty_em_dash_left, penalty_em_dash_right, penalty_em_dash_right_2;
-};
+} DilloPrefs;
 
 /* Global Data */
 extern DilloPrefs prefs;

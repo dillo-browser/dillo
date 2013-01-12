@@ -28,8 +28,7 @@ typedef enum {
 /*
  * Dpip socket handler type.
  */
-typedef struct _DpipSocketHandler Dsh;
-struct _DpipSocketHandler {
+typedef struct {
    int fd_in;
    int fd_out;
    /* FILE *in;    --Unused. The stream functions block when reading. */
@@ -41,7 +40,7 @@ struct _DpipSocketHandler {
 
    int mode;       /* mode flags: DPIP_TAG | DPIP_LAST_TAG | DPIP_RAW */
    int status;     /* status code: DPIP_EAGAIN | DPIP_ERROR | DPIP_EOF */
-};
+} Dsh;
 
 
 /*

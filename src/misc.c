@@ -97,7 +97,7 @@ a_Misc_expand_tabs(char **start, char *end, char *buf, int buflen)
 }
 
 /* TODO: could use dStr ADT! */
-typedef struct ContentType_ {
+typedef struct {
    const char *str;
    int len;
 } ContentType_t;
