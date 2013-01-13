@@ -9,321 +9,321 @@ using namespace dw::core::style;
 
 namespace dw {
 
-   OutOfFlowMgr::OutOfFlowMgr (ContainingBlock *containingBlock)
-   {
-      //printf ("OutOfFlowMgr::OutOfFlowMgr\n");
+OutOfFlowMgr::OutOfFlowMgr (ContainingBlock *containingBlock)
+{
+   //printf ("OutOfFlowMgr::OutOfFlowMgr\n");
 
-      this->containingBlock = containingBlock;
-      availWidth = availAscent = availDescent = -1;   
-      leftFloats = new Vector<Float> (1, true);
-      rightFloats = new Vector<Float> (1, true);
+   this->containingBlock = containingBlock;
+   availWidth = availAscent = availDescent = -1;   
+   leftFloats = new Vector<Float> (1, true);
+   rightFloats = new Vector<Float> (1, true);
+}
+
+OutOfFlowMgr::~OutOfFlowMgr ()
+{
+   //printf ("OutOfFlowMgr::~OutOfFlowMgr\n");
+
+   delete leftFloats;
+   delete rightFloats;
+}
+
+void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
+{
+   // TODO Much copy and paste.
+
+   for (int i = 0; i < leftFloats->size(); i++) {
+      Float *vloat = leftFloats->get(i);
+      assert (vloat->y != -1);
+      ensureFloatSize (vloat);
+
+      Allocation childAllocation;
+      childAllocation.x = containingBlockAllocation->x + vloat->borderWidth;
+      childAllocation.y = containingBlockAllocation->y + vloat->y;
+      childAllocation.width = vloat->size.width;
+      childAllocation.ascent = vloat->size.ascent;
+      childAllocation.descent = vloat->size.descent;
+
+      vloat->widget->sizeAllocate (&childAllocation);
+
+      //printf ("allocate left #%d -> (%d, %d), %d x (%d + %d)\n",
+      //        i, childAllocation.x, childAllocation.y, childAllocation.width,
+      //        childAllocation.ascent, childAllocation.descent);
    }
 
-   OutOfFlowMgr::~OutOfFlowMgr ()
-   {
-      //printf ("OutOfFlowMgr::~OutOfFlowMgr\n");
+   int width =
+      availWidth != -1 ? availWidth : containingBlockAllocation->width;
 
-      delete leftFloats;
-      delete rightFloats;
+   for (int i = 0; i < rightFloats->size(); i++) {
+      Float *vloat = rightFloats->get(i);
+      assert (vloat->y != -1);
+      ensureFloatSize (vloat);
+
+      Allocation childAllocation;
+      childAllocation.x = containingBlockAllocation->x + width
+         - (vloat->size.width + vloat->borderWidth);
+      childAllocation.y = containingBlockAllocation->y + vloat->y;
+      childAllocation.width = vloat->size.width;
+      childAllocation.ascent = vloat->size.ascent;
+      childAllocation.descent = vloat->size.descent;
+
+      vloat->widget->sizeAllocate (&childAllocation);
+
+      //printf ("allocate right #%d -> (%d, %d), %d x (%d + %d)\n",
+      //        i, childAllocation.x, childAllocation.y, childAllocation.width,
+      //        childAllocation.ascent, childAllocation.descent);
    }
+}
 
-   void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
-   {
-      // TODO Much copy and paste.
 
-      for (int i = 0; i < leftFloats->size(); i++) {
-         Float *vloat = leftFloats->get(i);
-         assert (vloat->y != -1);
-         ensureFloatSize (vloat);
+void OutOfFlowMgr::draw (View *view, Rectangle *area)
+{
+   draw (leftFloats, view, area);
+   draw (rightFloats, view, area);
+}
 
-         Allocation childAllocation;
-         childAllocation.x = containingBlockAllocation->x + vloat->borderWidth;
-         childAllocation.y = containingBlockAllocation->y + vloat->y;
-         childAllocation.width = vloat->size.width;
-         childAllocation.ascent = vloat->size.ascent;
-         childAllocation.descent = vloat->size.descent;
+void OutOfFlowMgr::draw (Vector<Float> *list, View *view, Rectangle *area)
+{
+   for (int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
+      assert (vloat->y != -1);
 
-         vloat->widget->sizeAllocate (&childAllocation);
-
-         //printf ("allocate left #%d -> (%d, %d), %d x (%d + %d)\n",
-         //        i, childAllocation.x, childAllocation.y, childAllocation.width,
-         //        childAllocation.ascent, childAllocation.descent);
-      }
-
-      int width =
-         availWidth != -1 ? availWidth : containingBlockAllocation->width;
-   
-      for (int i = 0; i < rightFloats->size(); i++) {
-         Float *vloat = rightFloats->get(i);
-         assert (vloat->y != -1);
-         ensureFloatSize (vloat);
-
-         Allocation childAllocation;
-         childAllocation.x = containingBlockAllocation->x + width
-            - (vloat->size.width + vloat->borderWidth);
-         childAllocation.y = containingBlockAllocation->y + vloat->y;
-         childAllocation.width = vloat->size.width;
-         childAllocation.ascent = vloat->size.ascent;
-         childAllocation.descent = vloat->size.descent;
-
-         vloat->widget->sizeAllocate (&childAllocation);
-
-         //printf ("allocate right #%d -> (%d, %d), %d x (%d + %d)\n",
-         //        i, childAllocation.x, childAllocation.y, childAllocation.width,
-         //        childAllocation.ascent, childAllocation.descent);
-      }
+      core::Rectangle childArea;
+      if (vloat->widget->intersects (area, &childArea))
+         vloat->widget->draw (view, &childArea);
    }
+}
 
+void OutOfFlowMgr::queueResize(int ref)
+{
+}
 
-   void OutOfFlowMgr::draw (View *view, Rectangle *area)
-   {
-      draw (leftFloats, view, area);
-      draw (rightFloats, view, area);
-   }
+bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
+{
+   // Will be extended for absolute positions.
+   return widget->getStyle()->vloat != FLOAT_NONE;
+}
 
-   void OutOfFlowMgr::draw (Vector<Float> *list, View *view, Rectangle *area)
-   {
-      for (int i = 0; i < list->size(); i++) {
-         Float *vloat = list->get(i);
-         assert (vloat->y != -1);
+void OutOfFlowMgr::addWidget (Widget *widget, Widget *generatingBlock)
+{
+   if (widget->getStyle()->vloat != FLOAT_NONE) {
+      Float *vloat = new Float ();
+      vloat->widget = widget;
+      vloat->generatingBlock = generatingBlock;
+      vloat->dirty = true;
+      vloat->y = -1;
 
-         core::Rectangle childArea;
-         if (vloat->widget->intersects (area, &childArea))
-            vloat->widget->draw (view, &childArea);
-      }
-   }
+      switch (widget->getStyle()->vloat) {
+      case FLOAT_LEFT:
+         leftFloats->put (vloat);
+         widget->parentRef = createRefLeftFloat (leftFloats->size() - 1);
+         break;
 
-   void OutOfFlowMgr::queueResize(int ref)
-   {
-   }
+      case FLOAT_RIGHT:
+         rightFloats->put (vloat);
+         widget->parentRef = createRefRightFloat (rightFloats->size() - 1);
+         break;
 
-   bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
-   {
-      // Will be extended for absolute positions.
-      return widget->getStyle()->vloat != FLOAT_NONE;
-   }
-
-   void OutOfFlowMgr::addWidget (Widget *widget, Widget *generatingBlock)
-   {
-      if (widget->getStyle()->vloat != FLOAT_NONE) {
-         Float *vloat = new Float ();
-         vloat->widget = widget;
-         vloat->generatingBlock = generatingBlock;
-         vloat->dirty = true;
-         vloat->y = -1;
-
-         switch (widget->getStyle()->vloat) {
-         case FLOAT_LEFT:
-            leftFloats->put (vloat);
-            widget->parentRef = createRefLeftFloat (leftFloats->size() - 1);
-            break;
-
-         case FLOAT_RIGHT:
-            rightFloats->put (vloat);
-            widget->parentRef = createRefRightFloat (rightFloats->size() - 1);
-            break;
-
-         default:
-            assertNotReached();
-         }
-      } else
-         // Will continue here for absolute positions.
+      default:
          assertNotReached();
+      }
+   } else
+      // Will continue here for absolute positions.
+      assertNotReached();
+}
+
+OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
+{
+   Vector<Float> *list = getFloatList (widget);
+
+   for(int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
+      if(vloat->widget == widget)
+         return vloat;
    }
 
-   OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
-   {
-      Vector<Float> *list = getFloatList (widget);
-   
-      for(int i = 0; i < list->size(); i++) {
-         Float *vloat = list->get(i);
-         if(vloat->widget == widget)
-            return vloat;
-      }
+   assertNotReached();
+   return NULL;
+}
 
+Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getFloatList (Widget *widget)
+{
+   switch (widget->getStyle()->vloat) {
+   case FLOAT_LEFT:
+      return leftFloats;
+
+   case FLOAT_RIGHT:
+      return rightFloats;
+
+   default:
       assertNotReached();
       return NULL;
    }
+}
 
-   Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getFloatList (Widget *widget)
-   {
-      switch (widget->getStyle()->vloat) {
-      case FLOAT_LEFT:
-         return leftFloats;
+Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getOppositeFloatList (Widget *widget)
+{
+   switch (widget->getStyle()->vloat) {
+   case FLOAT_LEFT:
+      return rightFloats;
 
-      case FLOAT_RIGHT:
-         return rightFloats;
+   case FLOAT_RIGHT:
+      return leftFloats;
 
-      default:
-         assertNotReached();
-         return NULL;
-      }
-   }
-
-   Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getOppositeFloatList (Widget *widget)
-   {
-      switch (widget->getStyle()->vloat) {
-      case FLOAT_LEFT:
-         return rightFloats;
-
-      case FLOAT_RIGHT:
-         return leftFloats;
-
-      default:
-         assertNotReached();
-         return NULL;
-      }
-   }
-
-   void OutOfFlowMgr::markSizeChange (int ref)
-   {
-      //printf ("[%p] MARK_SIZE_CHANGE (%d)\n", containingBlock, ref);
-
-      if (isRefFloat (ref)) {
-         Float *vloat;
-
-         if (isRefLeftFloat (ref))
-            vloat = leftFloats->get (getFloatIndexFromRef (ref));
-         else if (isRefRightFloat (ref))
-            vloat = rightFloats->get (getFloatIndexFromRef (ref));
-         else {
-            assertNotReached();
-            vloat = NULL; // compiler happiness
-         }
-
-         vloat->dirty = true;
-         // In some cases, the vertical position is not yet defined. Nothing
-         // necessary then.
-         if (vloat->y != -1)
-            containingBlock->borderChanged (vloat->y);
-      }
-      else
-         // later: absolute positions
-         assertNotReached();
-   }
-
-
-   void OutOfFlowMgr::markExtremesChange (int ref)
-   {
-   }
-
-   Widget *OutOfFlowMgr::getWidgetAtPoint (int x, int y, int level)
-   {
-      Widget *childAtPoint = getWidgetAtPoint (leftFloats, x, y, level);
-      if (childAtPoint == NULL)
-         childAtPoint = getWidgetAtPoint (rightFloats, x, y, level);
-      return childAtPoint;
-   }
-
-   Widget *OutOfFlowMgr::getWidgetAtPoint (Vector<Float> *list,
-                                           int x, int y, int level)
-   {
-      for (int i = 0; i < list->size(); i++) {
-         Float *vloat = list->get(i);
-         Widget *childAtPoint = vloat->widget->getWidgetAtPoint (x, y, level + 1);
-         if (childAtPoint)
-            return childAtPoint;
-      }
-
+   default:
+      assertNotReached();
       return NULL;
    }
+}
 
+void OutOfFlowMgr::markSizeChange (int ref)
+{
+   //printf ("[%p] MARK_SIZE_CHANGE (%d)\n", containingBlock, ref);
 
-   void OutOfFlowMgr::tellNoPosition (Widget *widget)
-   {
-      Float *vloat = findFloatByWidget(widget);
-      int oldY = vloat->y;
-      vloat->y = -1;
+   if (isRefFloat (ref)) {
+      Float *vloat;
 
-      if (oldY != -1)
-         containingBlock->borderChanged (oldY);
-   }
-
-
-   void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
-                               int *oofWidth, int *oofHeight)
-   {
-      // CbWidth and cbHeight *do* contain padding, border, and
-      // margin. See call in dw::Textblock::sizeRequest. (Notice that
-      // this has changed from an earlier version.)
-
-      // Also notice that Float::y includes margins etc.
-
-      // TODO Is it correct to add padding, border, and margin to the
-      // containing block? Check CSS spec.
-
-      *oofWidth = cbWidth; /* This (or "<=" instead of "=") should be
-                              the case for floats. */
-
-      int oofHeightLeft = containingBlock->asWidget()->getStyle()->boxDiffWidth();
-      int oofHeightRight = containingBlock->asWidget()->getStyle()->boxDiffWidth();
-
-      for (int i = 0; i < leftFloats->size(); i++) {
-         Float *vloat = leftFloats->get(i);
-         assert (vloat->y != -1);
-         ensureFloatSize (vloat);
-         oofHeightLeft =
-            max (oofHeightLeft,
-                 vloat->y + vloat->size.ascent + vloat->size.descent
-                 + containingBlock->asWidget()->getStyle()->boxRestHeight());
+      if (isRefLeftFloat (ref))
+         vloat = leftFloats->get (getFloatIndexFromRef (ref));
+      else if (isRefRightFloat (ref))
+         vloat = rightFloats->get (getFloatIndexFromRef (ref));
+      else {
+         assertNotReached();
+         vloat = NULL; // compiler happiness
       }
 
-      for (int i = 0; i < rightFloats->size(); i++) {
-         Float *vloat = rightFloats->get(i);
-         assert (vloat->y != -1);
-         ensureFloatSize (vloat);
-         oofHeightRight =
-            max (oofHeightRight,
-                 vloat->y + vloat->size.ascent + vloat->size.descent
-                 + containingBlock->asWidget()->getStyle()->boxRestHeight());
-      }
+      vloat->dirty = true;
+      // In some cases, the vertical position is not yet defined. Nothing
+      // necessary then.
+      if (vloat->y != -1)
+         containingBlock->borderChanged (vloat->y);
+   }
+   else
+      // later: absolute positions
+      assertNotReached();
+}
 
-      *oofHeight = max (oofHeightLeft, oofHeightRight);
+
+void OutOfFlowMgr::markExtremesChange (int ref)
+{
+}
+
+Widget *OutOfFlowMgr::getWidgetAtPoint (int x, int y, int level)
+{
+   Widget *childAtPoint = getWidgetAtPoint (leftFloats, x, y, level);
+   if (childAtPoint == NULL)
+      childAtPoint = getWidgetAtPoint (rightFloats, x, y, level);
+   return childAtPoint;
+}
+
+Widget *OutOfFlowMgr::getWidgetAtPoint (Vector<Float> *list,
+                                        int x, int y, int level)
+{
+   for (int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
+      Widget *childAtPoint = vloat->widget->getWidgetAtPoint (x, y, level + 1);
+      if (childAtPoint)
+         return childAtPoint;
    }
 
+   return NULL;
+}
 
-   void OutOfFlowMgr::tellPosition (Widget *widget, int y)
-   {
-      assert (y >= 0);
 
-      Float *vloat = findFloatByWidget(widget);
+void OutOfFlowMgr::tellNoPosition (Widget *widget)
+{
+   Float *vloat = findFloatByWidget(widget);
+   int oldY = vloat->y;
+   vloat->y = -1;
+
+   if (oldY != -1)
+      containingBlock->borderChanged (oldY);
+}
+
+
+void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
+                            int *oofWidth, int *oofHeight)
+{
+   // CbWidth and cbHeight *do* contain padding, border, and
+   // margin. See call in dw::Textblock::sizeRequest. (Notice that
+   // this has changed from an earlier version.)
+
+   // Also notice that Float::y includes margins etc.
+
+   // TODO Is it correct to add padding, border, and margin to the
+   // containing block? Check CSS spec.
+
+   *oofWidth = cbWidth; /* This (or "<=" instead of "=") should be
+                           the case for floats. */
+
+   int oofHeightLeft = containingBlock->asWidget()->getStyle()->boxDiffWidth();
+   int oofHeightRight = containingBlock->asWidget()->getStyle()->boxDiffWidth();
+
+   for (int i = 0; i < leftFloats->size(); i++) {
+      Float *vloat = leftFloats->get(i);
+      assert (vloat->y != -1);
       ensureFloatSize (vloat);
+      oofHeightLeft =
+         max (oofHeightLeft,
+              vloat->y + vloat->size.ascent + vloat->size.descent
+              + containingBlock->asWidget()->getStyle()->boxRestHeight());
+   }
 
-      //printf ("[%p] tellPosition (%p, %d): %d ...\n",
-      //        containingBlock, widget, y, vloat->y);
+   for (int i = 0; i < rightFloats->size(); i++) {
+      Float *vloat = rightFloats->get(i);
+      assert (vloat->y != -1);
+      ensureFloatSize (vloat);
+      oofHeightRight =
+         max (oofHeightRight,
+              vloat->y + vloat->size.ascent + vloat->size.descent
+              + containingBlock->asWidget()->getStyle()->boxRestHeight());
+   }
 
-      int oldY = vloat->y;
+   *oofHeight = max (oofHeightLeft, oofHeightRight);
+}
 
-      int realY = y;
-      Vector<Float> *listSame = getFloatList (widget);   
-      Vector<Float> *listOpp = getOppositeFloatList (widget);   
-      bool collides;
 
-      do {
-         // Test collisions on the same side.
-         collides = false;
+void OutOfFlowMgr::tellPosition (Widget *widget, int y)
+{
+   assert (y >= 0);
 
-         for (int i = 0; i < listSame->size(); i++) {
-            Float *v = listSame->get(i);
-            if (v != vloat) {
-               ensureFloatSize (v);
-               if (v->y != -1 && realY >= v->y && 
-                   realY < v->y + v->size.ascent + v->size.descent) {
-                  collides = true;
-                  realY = v->y + v->size.ascent + v->size.descent;
-                  break;
-               }
-            }
-         }    
+   Float *vloat = findFloatByWidget(widget);
+   ensureFloatSize (vloat);
 
-         // Test collisions on the other side.
-         for (int i = 0; i < listOpp->size(); i++) {
-            Float *v = listOpp->get(i);
-            // Note: Since v is on the opposite side, the condition 
-            // v != vloat (used above) is always true.
+   //printf ("[%p] tellPosition (%p, %d): %d ...\n",
+   //        containingBlock, widget, y, vloat->y);
+   
+   int oldY = vloat->y;
+   
+   int realY = y;
+   Vector<Float> *listSame = getFloatList (widget);   
+   Vector<Float> *listOpp = getOppositeFloatList (widget);   
+   bool collides;
+   
+   do {
+      // Test collisions on the same side.
+      collides = false;
+      
+      for (int i = 0; i < listSame->size(); i++) {
+         Float *v = listSame->get(i);
+         if (v != vloat) {
             ensureFloatSize (v);
             if (v->y != -1 && realY >= v->y && 
-                realY < v->y + v->size.ascent + v->size.descent &&
+                realY < v->y + v->size.ascent + v->size.descent) {
+               collides = true;
+               realY = v->y + v->size.ascent + v->size.descent;
+               break;
+            }
+         }
+      }    
+      
+      // Test collisions on the other side.
+      for (int i = 0; i < listOpp->size(); i++) {
+         Float *v = listOpp->get(i);
+         // Note: Since v is on the opposite side, the condition 
+         // v != vloat (used above) is always true.
+         ensureFloatSize (v);
+         if (v->y != -1 && realY >= v->y && 
+             realY < v->y + v->size.ascent + v->size.descent &&
              // For the other size, horizontal dimensions have to be
              // considered, too.
              v->size.width + v->borderWidth +
