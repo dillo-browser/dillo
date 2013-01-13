@@ -47,6 +47,7 @@ private:
               core::View *view, core::Rectangle *area);
    core::Widget *getWidgetAtPoint (lout::container::typed::Vector<Float> *list,
                                    int x, int y, int level);
+   int getBorder (lout::container::typed::Vector<Float> *list, int y, int h);
 
    inline static bool isRefFloat (int ref)
    { return ref != -1 && (ref & 1) == 1; }
@@ -87,15 +88,9 @@ public:
 
    void getSize (int cbWidth, int cbHeight, int *oofWidth, int *oofHeight);
 
-   /**
-    * Get the left border for the vertical position of y, based on
-    * floats. The border includes marging/border/padding of the
-    * containging block, but is 0 if there is no float, so a caller
-    * should also consider other borders.
-    */
-   int getLeftBorder (int y);
+   int getLeftBorder (int y, int h);
 
-   int getRightBorder (int y);
+   int getRightBorder (int y, int h);
 
    inline static bool isRefOutOfFlow (int ref)
    { return ref != -1 && (ref & 1) != 0; }

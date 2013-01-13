@@ -376,7 +376,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line))
       resultFromOOFM =
          containingBlock->outOfFlowMgr->getLeftBorder
-         (line->top + getStyle()->boxOffsetY() + diffYToContainingBlock)
+         (line->top + getStyle()->boxOffsetY() + diffYToContainingBlock,
+          line->boxAscent + line->boxDescent)
          - diffXToContainingBlock;
    else
       resultFromOOFM = 0;
@@ -504,11 +505,12 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
          int y =
             topOfPossiblyMissingLine (lines->size ()) + diffYToContainingBlock;
+         int h = heightOfPossiblyMissingLine (lines->size ());
          int l =
-            containingBlock->outOfFlowMgr->getLeftBorder (y)
+            containingBlock->outOfFlowMgr->getLeftBorder (y, h)
             - diffXToContainingBlock;
          int r = 
-            containingBlock->outOfFlowMgr->getRightBorder (y)
+            containingBlock->outOfFlowMgr->getRightBorder (y, h)
             - restWidthToContainingBlock;
 
          thereWillBeMoreSpace = l > 0 || r > 0;

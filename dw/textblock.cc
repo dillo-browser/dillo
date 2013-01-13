@@ -2397,6 +2397,31 @@ int Textblock::topOfPossiblyMissingLine (int lineNo)
    }
 }
 
+int Textblock::heightOfPossiblyMissingLine (int lineNo)
+{
+   if (lineNo < lines->size()) {
+      // An existing line.
+      Line *line = lines->getRef (lineNo);
+      return line->boxAscent + line->boxDescent;
+   } else if (lineNo == lines->size()) {
+      // The line to be constructed: some words exist, but not the
+      // line. Accumulate the word heights. TODO Could be faster by
+      // accumulating them when words are added.
+      
+      // Furthermore, this is in some cases incomplete: see
+      // doc/dw-out-of-flow.doc.
+
+      int h = 1;
+      int firstWord = lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
+      for (int i = firstWord; i < words->size(); i++) {
+         Word *word = words->getRef (i);
+         h = misc::max (h, word->size.ascent + word->size.descent);
+      }
+      return h;
+   } else
+      return 1;
+}
+
 core::Widget *Textblock::asWidget ()
 {
    return this;

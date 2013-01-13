@@ -523,7 +523,8 @@ protected:
       if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
          resultFromOOFM =
             containingBlock->outOfFlowMgr->getLeftBorder
-            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock)
+            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock,
+             heightOfPossiblyMissingLine (lineNo))
             - diffXToContainingBlock;
       else
          resultFromOOFM = 0;
@@ -548,7 +549,8 @@ protected:
       if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
          resultFromOOFM =
             containingBlock->outOfFlowMgr->getRightBorder
-            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock)
+            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock,
+             heightOfPossiblyMissingLine (lineNo))
             - restWidthToContainingBlock;
       else
          resultFromOOFM = 0;
@@ -608,6 +610,7 @@ protected:
    Textblock *getTextblockForLine (int lineNo);
    Textblock *getTextblockForLine (int firstWord, int lastWord);
    int topOfPossiblyMissingLine (int lineNo);
+   int heightOfPossiblyMissingLine (int lineNo);
 
    bool sendSelectionEvent (core::SelectionState::EventType eventType,
                             core::MousePositionEvent *event);

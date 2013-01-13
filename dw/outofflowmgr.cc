@@ -345,44 +345,53 @@ namespace dw {
       containingBlock->borderChanged (min (oldY, vloat->y));
 }
    
-int OutOfFlowMgr::getLeftBorder (int y)
+/**
+ * Get the left border for the vertical position of *y*, for a height
+ * of *h", based on floats.
+ *
+ * The border includes marging/border/padding of the containging
+ * block, but is 0 if there is no float, so a caller should also
+ * consider other borders.
+ */
+int OutOfFlowMgr::getLeftBorder (int y, int h)
 {
-   //return 40 * sin ((double)y / 30);
-
-   for(int i = 0; i < leftFloats->size(); i++) {
-      Float *vloat = leftFloats->get(i);
-      ensureFloatSize (vloat);
-
-      if(vloat->y != -1 && y >= vloat->y &&
-         y < vloat->y + vloat->size.ascent + vloat->size.descent) {
-         //printf ("   LEFT: %d ==> %d (%d + %d)\n", y,
-         //        vloat->size.width, vloat->size.ascent, vloat->size.descent);
-         return vloat->size.width + vloat->borderWidth;
-      }
-   }
-
-   //printf ("   LEFT: %d ==> %d (no float)\n", y, 0);
-   return 0;
+   return getBorder (leftFloats, y, h);
 }
 
-int OutOfFlowMgr::getRightBorder (int y)
+/**
+ * Get the right border for the vertical position of *y*, for a height
+ * of *h", based on floats.
+ *
+ * See also getLeftBorder(int, int);
+ */
+int OutOfFlowMgr::getRightBorder (int y, int h)
 {
-   //return 40 * cos ((double)y / 30);
+   return getBorder (rightFloats, y, h);
+}
 
-   for(int i = 0; i < rightFloats->size(); i++) {
-      Float *vloat = rightFloats->get(i);
+int OutOfFlowMgr::getBorder (Vector<Float> *list, int y, int h)
+{
+   int border = 0;
+
+   // To be a bit more efficient, one could use linear search to find
+   // the first affected float.
+   for(int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
       ensureFloatSize (vloat);
-
-      if(vloat->y != -1 && y >= vloat->y &&
+      
+      if(vloat->y != -1 && y + h >= vloat->y &&
          y < vloat->y + vloat->size.ascent + vloat->size.descent) {
-         //printf ("   RIGHT: %d ==> %d (%d + %d)\n", y,
-         //        vloat->size.width, vloat->size.ascent, vloat->size.descent);
-         return vloat->size.width + vloat->borderWidth;
+         // It is not sufficient to find the first float, since a line
+         // (with height h) may cover the region of multiple float, of
+         // which the widest has to be choosen.
+         border = max (border, vloat->size.width + vloat->borderWidth);
       }
+      // To be a bit more efficient, the loop could be stopped when
+      // (i) at least one float has been found, and (ii) the next float is
+      // below y + h.
    }
 
-   //printf ("   RIGHT: %d ==> %d (no float)\n", y, 0);
-   return 0;
+   return border;
 }
 
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)
