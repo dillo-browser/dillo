@@ -121,19 +121,25 @@ int Pointer::hashValue()
  *  if (sizeof (int) == sizeof (void*))
  *     return (int)value;
  *  else
- *     return ((int*)value)[0] ^ ((int*)value)[1];
+ *     return ((int*)&value)[0] ^ ((int*)&value)[1];
  */
 #if SIZEOF_VOID_P == 4
+   // Assuming that sizeof(void*) == sizeof(int); on 32 bit systems.
    return (int)value;
 #else
-   return ((int*)value)[0] ^ ((int*)value)[1];
+   // Assuming that sizeof(void*) == 2 * sizeof(int); on 64 bit
+   // systems (int is still 32 bit).
+   // Combine both parts of the pointer value *itself*, not what it
+   // points to, by first referencing it (operator "&"), then
+   // dereferencing it again (operator "[]").
+   return ((int*)&value)[0] ^ ((int*)&value)[1];
 #endif
 }
 
 void Pointer::intoStringBuffer(misc::StringBuffer *sb)
 {
    char buf[64];
-   snprintf(buf, sizeof(buf), "0x%p", value);
+   snprintf(buf, sizeof(buf), "%p", value);
    sb->append(buf);
 }
 

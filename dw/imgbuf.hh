@@ -202,7 +202,7 @@ public:
    virtual bool isReferred () = 0;
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_IMGBUF_HH__

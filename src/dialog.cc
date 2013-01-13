@@ -36,7 +36,7 @@
  */
 static int input_answer;
 static char *input_str = NULL;
-static int choice5_answer;
+static int choice_answer;
 
 
 /*
@@ -321,54 +321,50 @@ void a_Dialog_text_window(const char *title, const char *txt)
 
 /*--------------------------------------------------------------------------*/
 
-static void choice5_cb(Fl_Widget *button, void *number)
+static void choice_cb(Fl_Widget *button, void *number)
 {
-  choice5_answer = VOIDP2INT(number);
-  _MSG("choice5_cb: %d\n", choice5_answer);
+  choice_answer = VOIDP2INT(number);
+  _MSG("choice_cb: %d\n", choice_answer);
   button->window()->hide();
 }
 
 /*
- * Make a question-dialog with a question and up to five alternatives.
- * (if less alternatives, non used parameters must be NULL).
+ * Make a question-dialog with a question and alternatives.
+ * Last parameter must be NULL.
  *
- * Return value: 0 = dialog was cancelled, 1-5 = selected alternative.
+ * Return value: 0 = dialog was cancelled, >0 = selected alternative.
  */
-int a_Dialog_choice5(const char *title, const char *msg,
-                     const char *alt1, const char *alt2, const char *alt3,
-                     const char *alt4, const char *alt5)
+int a_Dialog_choice(const char *title, const char *msg, ...)
 {
-   choice5_answer = 0;
+   va_list ap;
+   int i, n;
 
-   int ww = 440, wh = 120, bw = 50, bh = 45, ih = 50, nb = 0;
-   const char *txt[7];
-
-   if (!(title && *title))
+   if (title == NULL || *title == '\0')
       title = "Dillo: Choice";
-   if (!msg)
-      msg = "";
 
-   txt[0] = txt[6] = NULL;
-   txt[1] = alt1; txt[2] = alt2; txt[3] = alt3;
-   txt[4] = alt4; txt[5] = alt5;
-   for (int i=1; txt[i]; ++i, ++nb)
-      ;
+   va_start(ap, msg);
+   for (n = 0; va_arg(ap, char *) != NULL; n++);
+   va_end(ap);
 
-   if (!nb) {
-      MSG_ERR("a_Dialog_choice5: No choices.\n");
-      return choice5_answer;
+   if (n == 0) {
+      MSG_ERR("Dialog_choice: no alternatives.\n");
+      return 0;
    }
-   ww = 140 + nb*(bw+10);
 
-   Fl_Window *window = new Fl_Window(ww,wh,title);
+   int gap = 8;
+   int ww = 140 + n * 60, wh = 120;
+   int bw = (ww - gap) / n - gap, bh = 45;
+   int ih = 50;
+
+   Fl_Window *window = new Fl_Window(ww, wh, title);
    window->set_modal();
    window->begin();
-    Fl_Group* ib = new Fl_Group(0,0,window->w(),window->h());
+    Fl_Group *ib = new Fl_Group(0, 0, window->w(), window->h());
     ib->begin();
     window->resizable(ib);
-
+ 
     /* '?' Icon */
-    Fl_Box* o = new Fl_Box(10, (wh-bh-ih)/2, ih, ih);
+    Fl_Box *o = new Fl_Box(10, (wh - bh - ih) / 2, ih, ih);
     o->box(FL_THIN_UP_BOX);
     o->labelfont(FL_TIMES_BOLD);
     o->labelsize(34);
@@ -376,35 +372,35 @@ int a_Dialog_choice5(const char *title, const char *msg,
     o->labelcolor(FL_BLUE);
     o->label("?");
     o->show();
-
-    Fl_Box *box = new Fl_Box(60,0,ww-60,wh-bh, msg);
-    box->labelfont(FL_HELVETICA);
-    box->labelsize(14);
-    box->align(FL_ALIGN_WRAP);
-
-    Fl_Button *b;
-    int xpos = 0, gap = 8;
-    bw = (ww - gap)/nb - gap;
-    xpos += gap;
-    for (int i=1; i <= nb; ++i) {
-       b = new EnterButton(xpos, wh-bh, bw, bh, txt[i]);
-       b->align(FL_ALIGN_WRAP|FL_ALIGN_CLIP);
+ 
+    if (msg != NULL){
+       Fl_Box *box = new Fl_Box(60, 0, ww - 60, wh - bh, msg);
+       box->labelfont(FL_HELVETICA);
+       box->labelsize(14);
+       box->align(FL_ALIGN_WRAP);
+    }
+ 
+    int xpos = gap;
+    va_start(ap, msg);
+    for (i = 1; i <= n; i++) {
+       Fl_Button *b = new EnterButton(xpos, wh-bh, bw, bh, va_arg(ap, char *));
+       b->align(FL_ALIGN_WRAP | FL_ALIGN_CLIP);
        b->box(FL_UP_BOX);
-       b->callback(choice5_cb, INT2VOIDP(i));
+       b->callback(choice_cb, INT2VOIDP(i));
        xpos += bw + gap;
        /* TODO: set focus to the *-prefixed alternative */
     }
+    va_end(ap);
    window->end();
 
    window->show();
    while (window->shown())
       Fl::wait();
-   _MSG("a_Dialog_choice5 answer = %d\n", choice5_answer);
+   _MSG("Dialog_choice answer = %d\n", answer);
    delete window;
 
-   return choice5_answer;
+   return choice_answer;
 }
-
 
 /*--------------------------------------------------------------------------*/
 static void Dialog_user_password_cb(Fl_Widget *button, void *)
@@ -443,7 +439,7 @@ int a_Dialog_user_password(const char *title, const char *msg,
 
    fl_font(msg_box->labelfont(), msg_box->labelsize());
    msg_w -= 6; /* The label doesn't fill the entire box. */
-   fl_measure(msg_box->label(), msg_w, msg_h, 0); /* fl_measure wraps at msg_w */
+   fl_measure(msg_box->label(), msg_w, msg_h, 0); // fl_measure wraps at msg_w
    msg_box->size(msg_box->w(), msg_h);
    window->add(msg_box);
 

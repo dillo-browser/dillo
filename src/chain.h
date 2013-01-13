@@ -29,14 +29,12 @@
 #define FWD 1
 #define BCK 2
 
-
-typedef struct _ChainLink ChainLink;
-typedef struct _DataBuf DataBuf;
+typedef struct ChainLink ChainLink;
 typedef void (*ChainFunction_t)(int Op, int Branch, int Dir, ChainLink *Info,
                                 void *Data1, void *Data2);
 
 /* This is the main data structure for CCC nodes */
-struct _ChainLink {
+struct ChainLink {
    void *LocalKey;
 
    int Flags;
@@ -51,11 +49,11 @@ struct _ChainLink {
 };
 
 /* A convenience data structure for passing data chunks between nodes */
-struct _DataBuf {
+typedef struct {
    char *Buf;
    int Size;
    int Code;
-};
+} DataBuf;
 
 
 

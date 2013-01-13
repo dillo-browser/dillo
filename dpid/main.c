@@ -26,6 +26,8 @@
 #include "dpi.h"
 #include "dpi_socket_dir.h"
 #include "misc_new.h"
+
+#include "../dlib/dlib.h"
 #include "../dpip/dpip.h"
 
 sigset_t mask_sigchld;
@@ -76,13 +78,13 @@ static int start_filter_plugin(struct dp dpi_attr)
    }
 
    /* Parent, Close sockets fix stdio and return pid */
-   if (a_Misc_close_fd(newsock) == -1) {
+   if (dClose(newsock) == -1) {
       ERRMSG("start_plugin", "close", errno);
       MSG_ERR("ERROR in child proc for %s\n", dpi_attr.path);
       exit(1);
    }
-   a_Misc_close_fd(STDIN_FILENO);
-   a_Misc_close_fd(STDOUT_FILENO);
+   dClose(STDIN_FILENO);
+   dClose(STDOUT_FILENO);
    dup2(old_stdin, STDIN_FILENO);
    dup2(old_stdout, STDOUT_FILENO);
    return pid;
@@ -95,7 +97,7 @@ static void start_server_plugin(struct dp dpi_attr)
       MSG_ERR("ERROR in child proc for %s\n", dpi_attr.path);
       exit(1);
    }
-   if (a_Misc_close_fd(dpi_attr.sock_fd) == -1) {
+   if (dClose(dpi_attr.sock_fd) == -1) {
       ERRMSG("start_plugin", "close", errno);
       MSG_ERR("ERROR in child proc for %s\n", dpi_attr.path);
       exit(1);
@@ -224,7 +226,7 @@ int main(void)
    /* close inherited file descriptors */
    open_max = get_open_max();
    for (i = 3; i < open_max; i++)
-      a_Misc_close_fd(i);
+      dClose(i);
 
    /* this sleep used to unmask a race condition */
    // sleep(2);

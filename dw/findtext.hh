@@ -78,7 +78,7 @@ public:
    void resetSearch ();
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_FINDTEXT_STATE_H__

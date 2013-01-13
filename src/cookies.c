@@ -90,7 +90,7 @@ static FILE *Cookies_fopen(const char *filename, char *init_str)
                    filename, dStrerror(errno));
             }
          }
-         close(fd);
+         dClose(fd);
 
          MSG("Cookies: Created file: %s\n", filename);
          F_in = fopen(filename, "r");
@@ -260,6 +260,7 @@ static int Cookie_control_init(void)
       if (!rc && ferror(stream)) {
          MSG("Cookies1: Error while reading rule from cookiesrc: %s\n",
              dStrerror(errno));
+         fclose(stream);
          return 2; /* bail out */
       }
 

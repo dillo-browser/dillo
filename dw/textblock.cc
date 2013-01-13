@@ -1462,8 +1462,7 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
    word->size.width = width;
    word->size.ascent = ascent;
    word->size.descent = descent;
-   word->origSpace = word->effSpace = word->stretchability =
-      word->shrinkability = 0;
+   word->origSpace = word->effSpace = 0;
    word->hyphenWidth = 0;
    word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);
    word->content.space = false;
@@ -1974,11 +1973,6 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
       word->content.space = true;
       word->effSpace = word->origSpace = style->font->spaceWidth +
          style->wordSpacing;
-      word->stretchability = word->origSpace / 2;
-      if(style->textAlign == core::style::TEXT_ALIGN_JUSTIFY)
-         word->shrinkability = word->origSpace / 3;
-      else
-         word->shrinkability = 0;
 
       //DBG_OBJ_ARRSET_NUM (this, "words.%d.origSpace", wordIndex,
       //                    word->origSpace);

@@ -321,5 +321,5 @@ void Content::printMask (Type mask)
            (mask & BREAK) ? "br" : "--");
 }
 
-} // namespace dw
 } // namespace core
+} // namespace dw

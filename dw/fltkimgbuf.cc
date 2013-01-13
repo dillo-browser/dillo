@@ -326,5 +326,5 @@ void FltkImgbuf::draw (Fl_Widget *target, int xRoot, int yRoot,
 
 }
 
-} // namespace dw
 } // namespace fltk
+} // namespace dw

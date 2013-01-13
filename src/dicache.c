@@ -21,7 +21,6 @@
 #include "dgif.h"
 #include "djpeg.h"
 
-typedef struct _DICacheNode DICacheNode;
 
 enum {
    DIC_Gif,
@@ -29,11 +28,11 @@ enum {
    DIC_Jpeg
 };
 
-struct _DICacheNode {
+typedef struct {
    int valid;            /* flag */
    DilloUrl *url;        /* primary "Key" for this dicache entry */
    DICacheEntry *first;  /* pointer to the first dicache entry in this list */
-};
+} DICacheNode;
 
 /*
  * List of DICacheNode. One node per URL. Each node may have several

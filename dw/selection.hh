@@ -235,7 +235,7 @@ public:
                      int linkNo, MousePositionEvent *event);
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_SELECTION_H__

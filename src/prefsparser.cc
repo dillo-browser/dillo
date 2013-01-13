@@ -35,7 +35,7 @@ typedef enum {
    PREFS_PANEL_SIZE
 } PrefType_t;
 
-typedef struct SymNode_ {
+typedef struct {
    const char *name;
    void *pref;
    PrefType_t type;

@@ -99,7 +99,7 @@ int dStrnAsciiCasecmp(const char *s1, const char *s2, size_t n);
  */
 #define Dstr_char_t    char
 
-typedef struct _dstr {
+typedef struct {
    int sz;          /* allocated size (private) */
    int len;
    Dstr_char_t *str;
@@ -128,13 +128,11 @@ const char *dStr_printable(Dstr *in, int maxlen);
 /*
  *-- dList --------------------------------------------------------------------
  */
-struct Dlist_ {
+typedef struct {
    int sz;          /* allocated size (private) */
    int len;
    void **list;
-};
-
-typedef struct Dlist_ Dlist;
+} Dlist;
 
 /* dCompareFunc:
  * Return: 0 if parameters are equal (for dList_find_custom).
@@ -175,10 +173,10 @@ void dLib_show_messages(bool_t show);
 /*
  *- Misc utility functions ----------------------------------------------------
  */
-char *dGetcwd ();
-char *dGethomedir ();
-char *dGetline (FILE *stream);
-
+char *dGetcwd();
+char *dGethomedir();
+char *dGetline(FILE *stream);
+int dClose(int fd);
 
 #ifdef __cplusplus
 }

@@ -51,17 +51,6 @@
 #define MSG(...)  printf("[downloads dpi]: " __VA_ARGS__)
 
 /*
- * Internal types
- */
-typedef enum {
-   DL_NEWFILE,
-   DL_CONTINUE,
-   DL_RENAME,
-   DL_OVERWRITE,
-   DL_ABORT
-} DLAction;
-
-/*
  * Class declarations
  */
 
@@ -127,7 +116,7 @@ class DLItem {
    Fl_Widget *prTitle, *prGot, *prSize, *prRate, *pr_Rate, *prETA, *prETAt;
 
 public:
-   DLItem(const char *full_filename, const char *url, DLAction action);
+   DLItem(const char *full_filename, const char *url);
    ~DLItem();
    void child_init();
    void father_init();
@@ -181,7 +170,7 @@ class DLWin {
 
 public:
    DLWin(int ww, int wh);
-   void add(const char *full_filename, const char *url, DLAction action);
+   void add(const char *full_filename, const char *url);
    void del(int n_item);
    int num();
    int num_running();
@@ -189,7 +178,6 @@ public:
    void show() { mWin->show(); }
    void hide() { mWin->hide(); }
    void abort_all();
-   DLAction check_filename(char **p_dl_dest);
 };
 
 /*
@@ -292,7 +280,7 @@ static void prButton_scb(Fl_Widget *, void *cb_data)
    i->prButton_cb();
 }
 
-DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
+DLItem::DLItem(const char *full_filename, const char *url)
 {
    struct stat ss;
    const char *p;
@@ -333,11 +321,9 @@ DLItem::DLItem(const char *full_filename, const char *url, DLAction action)
    dl_argv = new char*[8];
    int i = 0;
    dl_argv[i++] = (char*)"wget";
-   if (action == DL_CONTINUE) {
-      if (stat(fullname, &ss) == 0)
-         init_bytesize = (int)ss.st_size;
-      dl_argv[i++] = (char*)"-c";
-   }
+   if (stat(fullname, &ss) == 0)
+      init_bytesize = (int)ss.st_size;
+   dl_argv[i++] = (char*)"-c";
    dl_argv[i++] = (char*)"--load-cookies";
    dl_argv[i++] = dStrconcat(dGethomedir(), "/.dillo/cookies.txt", NULL);
    dl_argv[i++] = (char*)"-O";
@@ -455,7 +441,7 @@ DLItem::~DLItem()
 void DLItem::abort_dl()
 {
    if (!log_done()) {
-      close(LogPipe[0]);
+      dClose(LogPipe[0]);
       Fl::remove_fd(LogPipe[0]);
       log_done(1);
       // Stop wget
@@ -473,9 +459,9 @@ void DLItem::prButton_cb()
 
 void DLItem::child_init()
 {
-   close(0); // stdin
-   close(1); // stdout
-   close(LogPipe[0]);
+   dClose(0); // stdin
+   dClose(1); // stdout
+   dClose(LogPipe[0]);
    dup2(LogPipe[1], 2); // stderr
    // set the locale to C for log parsing
    setenv("LC_ALL", "C", 1);
@@ -632,7 +618,7 @@ static void read_log_cb(int fd_in, void *data)
          perror("read, ");
          break;
       } else if (st == 0) {
-         close(fd_in);
+         dClose(fd_in);
          Fl::remove_fd(fd_in, 1);
          dl_item->log_done(1);
          break;
@@ -644,7 +630,7 @@ static void read_log_cb(int fd_in, void *data)
 
 void DLItem::father_init()
 {
-   close(LogPipe[1]);
+   dClose(LogPipe[1]);
    Fl::add_fd(LogPipe[0], 1, read_log_cb, this); // Read
 
    // Start the timer after the child is running.
@@ -842,31 +828,6 @@ static void update_cb(void *data)
 // DLWin ---------------------------------------------------------------------
 
 /*
- * Make a new name and place it in 'dl_dest'.
- */
-static void make_new_name(char **dl_dest, const char *url)
-{
-   Dstr *gstr = dStr_new(*dl_dest);
-   int idx = gstr->len;
-
-   if (gstr->str[idx - 1] != '/'){
-      dStr_append_c(gstr, '/');
-      ++idx;
-   }
-
-   /* Use a mangled url as name */
-   dStr_append(gstr, url);
-   for (   ; idx < gstr->len; ++idx)
-      if (!isalnum(gstr->str[idx]))
-         gstr->str[idx] = '_';
-
-   /* free memory */
-   dFree(*dl_dest);
-   *dl_dest = gstr->str;
-   dStr_free(gstr, FALSE);
-}
-
-/*
  * Callback function for the request socket.
  * Read the request, parse and start a new download.
  */
@@ -875,10 +836,8 @@ static void read_req_cb(int req_fd, void *)
    struct sockaddr_un clnt_addr;
    int sock_fd;
    socklen_t csz;
-   struct stat sb;
    Dsh *sh = NULL;
    char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *dl_dest = NULL;
-   DLAction action = DL_ABORT; /* compiler happiness */
 
    /* Initialize the value-result parameter */
    csz = sizeof(struct sockaddr_un);
@@ -932,17 +891,7 @@ static void read_req_cb(int req_fd, void *)
       MSG("Failed to parse 'destination' in {%s}\n", dpip_tag);
       goto end;
    }
-   /* 'dl_dest' may be a directory */
-   if (stat(dl_dest, &sb) == 0 && S_ISDIR(sb.st_mode)) {
-      make_new_name(&dl_dest, url);
-   }
-   action = dl_win->check_filename(&dl_dest);
-   if (action != DL_ABORT) {
-      // Start the whole thing within FLTK.
-      dl_win->add(dl_dest, url, action);
-   } else if (dl_win->num() == 0) {
-      exit(0);
-   }
+   dl_win->add(dl_dest, url);
 
 end:
    dFree(cmd);
@@ -975,9 +924,9 @@ static void dlwin_esc_cb(Fl_Widget *, void *)
  * Add a new download request to the main window and
  * fork a child to do the job.
  */
-void DLWin::add(const char *full_filename, const char *url, DLAction action)
+void DLWin::add(const char *full_filename, const char *url)
 {
-   DLItem *dl_item = new DLItem(full_filename, url, action);
+   DLItem *dl_item = new DLItem(full_filename, url);
    mDList->add(dl_item);
    mPG->insert(*dl_item->get_widget(), 0);
 
@@ -999,42 +948,6 @@ void DLWin::add(const char *full_filename, const char *url, DLAction action)
       dl_item->pid(f_pid);
       dl_item->father_init();
    }
-}
-
-/*
- * Decide what to do when the filename already exists.
- * (renaming takes place here when necessary)
- */
-DLAction DLWin::check_filename(char **p_fullname)
-{
-   struct stat ss;
-   Dstr *ds;
-   int ch;
-   DLAction ret = DL_ABORT;
-
-   if (stat(*p_fullname, &ss) == -1)
-      return DL_NEWFILE;
-
-   ds = dStr_sized_new(128);
-   dStr_sprintf(ds,
-                "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
-                *p_fullname, (int)ss.st_size);
-   fl_message_title("Dillo Downloads: File exists!");
-   ch = fl_choice("%s", "Abort", "Continue", "Rename", ds->str);
-   dStr_free(ds, 1);
-   MSG("Choice %d\n", ch);
-   if (ch == 2) {
-      const char *p;
-      p = fl_file_chooser("Enter a new name:", NULL, *p_fullname);
-      if (p) {
-         dFree(*p_fullname);
-         *p_fullname = dStrdup(p);
-         ret = check_filename(p_fullname);
-      }
-   } else if (ch == 1) {
-      ret = DL_CONTINUE;
-   }
-   return ret;
 }
 
 /*

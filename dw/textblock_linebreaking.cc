@@ -236,8 +236,8 @@ void Textblock::printWord (Word *word)
    printWordWithFlags (word);
 
    printf (" [%d / %d + %d - %d => %d + %d - %d] => ",
-           word->size.width, word->origSpace, word->stretchability,
-           word->shrinkability, word->totalWidth, word->totalStretchability,
+           word->size.width, word->origSpace, getStretchability(word),
+           getShrinkability(word), word->totalWidth, word->totalStretchability,
            word->totalShrinkability);
    word->badnessAndPenalty.print ();
 }
@@ -255,14 +255,14 @@ void Textblock::justifyLine (Line *line, int diff)
    if (diff > 0) {
       int stretchabilitySum = 0;
       for (int i = line->firstWord; i < line->lastWord; i++)
-         stretchabilitySum += words->getRef(i)->stretchability;
+         stretchabilitySum += getStretchability(words->getRef(i));
 
       if (stretchabilitySum > 0) {
          int stretchabilityCum = 0;
          int spaceDiffCum = 0;
          for (int i = line->firstWord; i < line->lastWord; i++) {
             Word *word = words->getRef (i);
-            stretchabilityCum += word->stretchability;
+            stretchabilityCum += getStretchability(word);
             int spaceDiff =
                stretchabilityCum * diff / stretchabilitySum - spaceDiffCum;
             spaceDiffCum += spaceDiff;
@@ -276,14 +276,14 @@ void Textblock::justifyLine (Line *line, int diff)
    } else if (diff < 0) {
       int shrinkabilitySum = 0;
       for (int i = line->firstWord; i < line->lastWord; i++)
-         shrinkabilitySum += words->getRef(i)->shrinkability;
+         shrinkabilitySum += getShrinkability(words->getRef(i));
 
       if (shrinkabilitySum > 0) {
          int shrinkabilityCum = 0;
          int spaceDiffCum = 0;
          for (int i = line->firstWord; i < line->lastWord; i++) {
             Word *word = words->getRef (i);
-            shrinkabilityCum += word->shrinkability;
+            shrinkabilityCum += getShrinkability(word);
             int spaceDiff =
                shrinkabilityCum * diff / shrinkabilitySum - spaceDiffCum;
             spaceDiffCum += spaceDiff;
@@ -1067,9 +1067,9 @@ void Textblock::accumulateWordData (int wordIndex)
          + prevWord->origSpace - prevWord->hyphenWidth
          + word->size.width + word->hyphenWidth;
       word->totalStretchability =
-         prevWord->totalStretchability + prevWord->stretchability;
+         prevWord->totalStretchability + getStretchability(prevWord);
       word->totalShrinkability =
-         prevWord->totalShrinkability + prevWord->shrinkability;
+         prevWord->totalShrinkability + getShrinkability(prevWord);
    }
 
    word->badnessAndPenalty.calcBadness (word->totalWidth, availWidth,
@@ -1298,6 +1298,19 @@ void Textblock::showMissingLines ()
 void Textblock::removeTemporaryLines ()
 {
    lines->setSize (nonTemporaryLines);
+}
+
+int Textblock::getShrinkability(struct Word *word)
+{
+   if (word->spaceStyle->textAlign == core::style::TEXT_ALIGN_JUSTIFY)
+      return word->origSpace / 3;
+   else
+      return 0;
+}
+
+int Textblock::getStretchability(struct Word *word)
+{
+   return word->origSpace / 2;
 }
 
 } // namespace dw

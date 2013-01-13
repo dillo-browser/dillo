@@ -476,5 +476,5 @@ void SelectionState::copy()
    }
 }
 
-} // namespace dw
 } // namespace core
+} // namespace dw

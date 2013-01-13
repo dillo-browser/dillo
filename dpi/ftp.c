@@ -62,7 +62,7 @@ static char **dl_argv = NULL;
 /*---------------------------------------------------------------------------*/
 
 /* TODO: could use dStr ADT! */
-typedef struct ContentType_ {
+typedef struct {
    const char *str;
    int len;
 } ContentType_t;

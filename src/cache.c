@@ -233,7 +233,7 @@ static CacheEntry_t *Cache_entry_search_with_redirect(const DilloUrl *Url)
          break;
       }
       /* Test for a working redirection */
-      if (entry && entry->Flags & CA_Redirect && entry->Location) {
+      if (entry->Flags & CA_Redirect && entry->Location) {
          Url = entry->Location;
       } else
          break;

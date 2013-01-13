@@ -84,13 +84,11 @@
 #define URL_ILLEGAL_CHARS_SPC(u)    URL_ILLEGAL_CHARS_SPC_(u)
 
 
-typedef struct _DilloUrl DilloUrl;
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-struct _DilloUrl {
+typedef struct {
    Dstr  *url_string;
    const char *buffer;
    const char *scheme;            /**/
@@ -106,7 +104,7 @@ struct _DilloUrl {
    int ismap_url_len;             /* Used by server side image maps */
    int illegal_chars;             /* number of illegal chars */
    int illegal_chars_spc;         /* number of illegal space chars */
-};
+} DilloUrl;
 
 
 DilloUrl* a_Url_new(const char *url_str, const char *base_url);

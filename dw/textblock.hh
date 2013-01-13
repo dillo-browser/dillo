@@ -322,7 +322,6 @@ protected:
       core::Requisition size;
       /* Space after the word, only if it's not a break: */
       short origSpace; /* from font, set by addSpace */
-      short stretchability, shrinkability;
       short effSpace;  /* effective space, set by wordWrap,
                         * used for drawing etc. */
       short hyphenWidth; /* Additional width, when a word is part
@@ -332,7 +331,6 @@ protected:
                           * "hyphenWidth > 0" is also used to decide
                           * whether to draw a hyphen. */
       short flags;
-      short penaltyIndex;
       core::Content content;
 
       // accumulated values, relative to the beginning of the line
@@ -628,6 +626,8 @@ protected:
    void handleWordExtremes (int wordIndex);
    void correctLastWordExtremes ();
 
+   static int getShrinkability(struct Word *word);
+   static int getStretchability(struct Word *word);
    int hyphenateWord (int wordIndex);
    void accumulateWordForLine (int lineIndex, int wordIndex);
    void accumulateWordData (int wordIndex);

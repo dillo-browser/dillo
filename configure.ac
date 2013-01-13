@@ -119,9 +119,9 @@ case $fltk_version in
          LIBFLTK_CFLAGS=`fltk-config --cflags`
          LIBFLTK_LIBS=`fltk-config --ldflags`;;
   ?*)    AC_MSG_RESULT(no)
-         AC_ERROR(FLTK 1.3 required; version found: $fltk_version);;
+         AC_MSG_ERROR(FLTK 1.3 required; version found: $fltk_version);;
   *)     AC_MSG_RESULT(no)
-         AC_ERROR(FLTK 1.3 required; fltk-config not found)
+         AC_MSG_ERROR(FLTK 1.3 required; fltk-config not found)
 esac
 
 

@@ -381,5 +381,5 @@ Iterator *RadioButtonResource::iterator (Content::Type mask, bool atEnd)
 
 } // namespace ui
 } // namespace core
-} // namespace core
+} // namespace dw
 

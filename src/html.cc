@@ -1961,8 +1961,6 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
-   html->styleEngine->inheritBackgroundColor ();
-   html->styleEngine->inheritBackgroundColor ();
  * Read image-associated tag attributes and create new image.
  */
 void a_Html_image_attrs(DilloHtml *html, const char *tag, int tagsize)

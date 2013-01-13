@@ -931,3 +931,15 @@ char *dGetline (FILE *stream)
    return line;
 }
 
+/*
+ * Close a FD handling EINTR.
+ */
+int dClose(int fd)
+{
+   int st;
+
+   do
+      st = close(fd);
+   while (st == -1 && errno == EINTR);
+   return st;
+}

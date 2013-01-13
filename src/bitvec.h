@@ -6,12 +6,10 @@
 #define BVEC_TYPE uchar_t
 #define BVEC_SIZE sizeof(BVEC_TYPE)
 
-typedef struct _bitvec bitvec_t;
-
-struct _bitvec {
+typedef struct {
    BVEC_TYPE *vec;
    int len;       /* number of bits [1 based] */
-};
+} bitvec_t;
 
 
 /*

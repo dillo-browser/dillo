@@ -642,7 +642,5 @@ void Widget::removeChild (Widget *child)
    misc::assertNotReached ();
 }
 
-
-
-} // namespace dw
 } // namespace core
+} // namespace dw

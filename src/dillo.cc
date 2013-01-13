@@ -272,8 +272,8 @@ static void setColors()
                     fl_lighter(FL_BACKGROUND_COLOR));
    setColorPrefWdef(prefs.ui_tab_active_bg_color, FL_BACKGROUND2_COLOR);
    setColorPrefWdef(prefs.ui_tab_bg_color, FL_BACKGROUND_COLOR);
-   setColorPrefWdef(prefs.ui_tab_active_fg_color, prefs.ui_fg_color);   
-   setColorPrefWdef(prefs.ui_tab_fg_color, prefs.ui_fg_color);   
+   setColorPrefWdef(prefs.ui_tab_active_fg_color, FL_FOREGROUND_COLOR);   
+   setColorPrefWdef(prefs.ui_tab_fg_color, FL_FOREGROUND_COLOR);   
 }
 
 /*

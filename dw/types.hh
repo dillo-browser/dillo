@@ -227,7 +227,7 @@ struct Content
    static void printMask (Type mask);
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_TYPES_HH__

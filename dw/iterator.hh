@@ -258,7 +258,7 @@ public:
                             hpos, vpos); }
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __ITERATOR_HH__

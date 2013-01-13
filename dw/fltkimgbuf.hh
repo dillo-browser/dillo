@@ -59,7 +59,7 @@ public:
               int x, int y, int width, int height);
 };
 
-} // namespace dw
 } // namespace fltk
+} // namespace dw
 
 #endif // __DW_FLTK_IMGBUF_HH__

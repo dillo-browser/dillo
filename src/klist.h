@@ -8,19 +8,16 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct _KlistNode KlistNode_t;
-typedef struct _Klist Klist_t;
-
-struct _KlistNode {
+typedef struct {
    int Key;        /* primary key */
    void *Data;     /* data reference */
-};
+} KlistNode_t;
 
-struct _Klist {
+typedef struct {
    Dlist *List;
    int Clean;      /* check flag */
    int Counter;    /* counter (for making keys) */
-};
+} Klist_t;
 
 
 /*

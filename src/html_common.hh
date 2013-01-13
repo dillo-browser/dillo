@@ -39,9 +39,6 @@
  * Typedefs
  */
 
-typedef struct _DilloHtmlImage   DilloHtmlImage;
-typedef struct _DilloHtmlState   DilloHtmlState;
-
 typedef enum {
    DT_NONE,
    DT_HTML,
@@ -94,12 +91,12 @@ typedef enum {
  * Data Structures
  */
 
-struct _DilloHtmlImage {
+typedef struct {
    DilloUrl *url;
    DilloImage *image;
-};
+} DilloHtmlImage;
 
-struct _DilloHtmlState {
+typedef struct {
    DilloHtmlParseMode parse_mode;
    DilloHtmlTableMode table_mode;
    DilloHtmlTableBorderMode table_border_mode;
@@ -120,7 +117,7 @@ struct _DilloHtmlState {
       have to be "handed over" (see Html_add_indented and
       Html_eventually_pop_dw). */
    bool hand_over_break;
-};
+} DilloHtmlState;
 
 /*
  * Classes

@@ -389,8 +389,8 @@ public:
    inline style::Color* getBgColor () { return bgColor; }
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_LAYOUT_HH__
 

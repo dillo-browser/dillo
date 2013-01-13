@@ -14,7 +14,7 @@
 #include "list.h"
 #include "domain.h"
 
-typedef struct Rule {
+typedef struct {
    char *origin;
    char *destination;
 } Rule;

@@ -288,5 +288,5 @@ bool FindtextState::search0 (bool backwards,  bool firstTrial)
    return ret;
 }
 
-} // namespace dw
 } // namespace core
+} // namespace dw

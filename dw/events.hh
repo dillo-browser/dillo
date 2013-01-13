@@ -77,7 +77,7 @@ public:
    Widget *lastWidget, *currentWidget;
 };
 
-} // namespace dw
 } // namespace core
+} // namespace dw
 
 #endif // __DW_EVENTS_HH__

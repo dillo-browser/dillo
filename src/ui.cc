@@ -409,17 +409,17 @@ void UI::make_toolbar(int tw, int th)
    if (!icons->ImgLeftIn) {
       icons->ImgLeftIn = icons->ImgLeft->copy();
       icons->ImgLeftIn->desaturate();
-      icons->ImgLeftIn->color_average(FL_BACKGROUND_COLOR, .1f);
+      icons->ImgLeftIn->color_average(FL_BACKGROUND_COLOR, .14f);
    }
    if (!icons->ImgRightIn) {
       icons->ImgRightIn = icons->ImgRight->copy();
       icons->ImgRightIn->desaturate();
-      icons->ImgRightIn->color_average(FL_BACKGROUND_COLOR, .1f);
+      icons->ImgRightIn->color_average(FL_BACKGROUND_COLOR, .14f);
    }
    if (!icons->ImgStopIn) {
       icons->ImgStopIn = icons->ImgStop->copy();
       icons->ImgStopIn->desaturate();
-      icons->ImgStopIn->color_average(FL_BACKGROUND_COLOR, .1f);
+      icons->ImgStopIn->color_average(FL_BACKGROUND_COLOR, .14f);
    }
    Back = make_button("Back", icons->ImgLeft, icons->ImgLeftIn, UI_BACK, 1);
    Forw = make_button("Forw", icons->ImgRight, icons->ImgRightIn, UI_FORW);

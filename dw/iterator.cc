@@ -846,5 +846,5 @@ void CharIterator::unhighlight (CharIterator *it1, CharIterator *it2,
    }
 }
 
-} // namespace dw
 } // namespace core
+} // namespace dw

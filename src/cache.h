@@ -34,16 +34,17 @@ extern "C" {
 #define CA_HugeFile     0x1000  /* URL content is too big */
 #define CA_IsEmpty      0x2000  /* True until a byte of content arrives */
 
+typedef struct CacheClient CacheClient_t;
+
 /*
  * Callback type for cache clients
  */
-typedef struct _CacheClient CacheClient_t;
 typedef void (*CA_Callback_t)(int Op, CacheClient_t *Client);
 
 /*
  * Data structure for cache clients.
  */
-struct _CacheClient {
+struct CacheClient {
    int Key;                 /* Primary Key for this client */
    const DilloUrl *Url;     /* Pointer to a cache entry Url */
    int Version;             /* Dicache version of this Url (0 if not used) */
