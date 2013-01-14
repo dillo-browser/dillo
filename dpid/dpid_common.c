@@ -24,17 +24,6 @@ void errmsg(char *caller, char *called, int errornum, char *file, int line)
       MSG_ERR("%s\n", dStrerror(errornum));
 }
 
-/*! Selector function for scandir
- * Do not scan files starting with '.'
- */
-int no_dotfiles(const struct dirent *filedat)
-{
-   if (filedat->d_name[0] == '.')
-      return 0;
-   else
-      return 1;
-}
-
 /*!
  * Provides an error checked write command.
  * Call this via the CKD_WRITE macro
