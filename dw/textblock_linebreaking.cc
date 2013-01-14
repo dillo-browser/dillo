@@ -495,6 +495,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
       // be no possibility with more space anymore.)
 
       bool thereWillBeMoreSpace;
+#if 0
       if (containingBlock->outOfFlowMgr == NULL) {
          thereWillBeMoreSpace = false;
          PRINTF ("   thereWillBeMoreSpace = false (no OOFM)\n");
@@ -518,6 +519,9 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          PRINTF ("   thereWillBeMoreSpace = %s (y = %d, l = %d, r = %d)\n",
                  thereWillBeMoreSpace ? "true" : "false", y, l, r);
       }
+#endif
+
+      thereWillBeMoreSpace = false;
 
       bool tempNewLine = false;
       int firstIndex =
