@@ -52,6 +52,7 @@ private:
    void accumExtremes (lout::container::typed::Vector<Float> *list,
                        int *oofMinWidth, int *oofMaxWidth);
    int getBorder (lout::container::typed::Vector<Float> *list, int y, int h);
+   bool hasFloat (lout::container::typed::Vector<Float> *list, int y, int h);
 
    inline static bool isRefFloat (int ref)
    { return ref != -1 && (ref & 1) == 1; }
@@ -95,8 +96,10 @@ public:
                      int *oofMaxWidth);
 
    int getLeftBorder (int y, int h);
-
    int getRightBorder (int y, int h);
+
+   bool hasFloatLeft (int y, int h);
+   bool hasFloatRight (int y, int h);
 
    inline static bool isRefOutOfFlow (int ref)
    { return ref != -1 && (ref & 1) != 0; }

@@ -397,23 +397,48 @@ int OutOfFlowMgr::getBorder (Vector<Float> *list, int y, int h)
 
    // To be a bit more efficient, one could use linear search to find
    // the first affected float.
-   for(int i = 0; i < list->size(); i++) {
+   for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
       
-      if(vloat->y != -1 && y + h >= vloat->y &&
-         y < vloat->y + vloat->size.ascent + vloat->size.descent) {
+      if (vloat->y != -1 && y + h >= vloat->y &&
+          y < vloat->y + vloat->size.ascent + vloat->size.descent)
          // It is not sufficient to find the first float, since a line
          // (with height h) may cover the region of multiple float, of
          // which the widest has to be choosen.
          border = max (border, vloat->size.width + vloat->borderWidth);
-      }
+
       // To be a bit more efficient, the loop could be stopped when
       // (i) at least one float has been found, and (ii) the next float is
       // below y + h.
    }
 
    return border;
+}
+
+bool OutOfFlowMgr::hasFloatLeft (int y, int h)
+{
+   return hasFloat (leftFloats, y, h);
+}
+
+bool OutOfFlowMgr::hasFloatRight (int y, int h)
+{
+   return hasFloat (rightFloats, y, h);
+}
+
+bool OutOfFlowMgr::hasFloat (Vector<Float> *list, int y, int h)
+{
+   // Compare to getBorder().
+   for (int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
+      ensureFloatSize (vloat);
+      
+      if (vloat->y != -1 && y + h >= vloat->y &&
+          y < vloat->y + vloat->size.ascent + vloat->size.descent)
+         return true;
+   }
+
+   return false;
 }
 
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)

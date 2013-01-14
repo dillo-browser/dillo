@@ -507,21 +507,21 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          int y =
             topOfPossiblyMissingLine (lines->size ()) + diffYToContainingBlock;
          int h = heightOfPossiblyMissingLine (lines->size ());
-         int l =
-            containingBlock->outOfFlowMgr->getLeftBorder (y, h)
-            - diffXToContainingBlock;
-         int r = 
-            containingBlock->outOfFlowMgr->getRightBorder (y, h)
-            - restWidthToContainingBlock;
 
-         thereWillBeMoreSpace = l > 0 || r > 0;
+         // A previous version checked only the borders, not directly,
+         // whether there are floats. The distinction is rather
+         // disputable. (More on this later.)
 
-         PRINTF ("   thereWillBeMoreSpace = %s (y = %d, l = %d, r = %d)\n",
-                 thereWillBeMoreSpace ? "true" : "false", y, l, r);
+         thereWillBeMoreSpace =
+            containingBlock->outOfFlowMgr->hasFloatLeft (y, h) ||
+            containingBlock->outOfFlowMgr->hasFloatRight (y, h);
+
+         PRINTF ("   thereWillBeMoreSpace = %s (y = %d, h = %d)\n",
+                 thereWillBeMoreSpace ? "true" : "false", y, h);
       }
-#endif
-
+#else
       thereWillBeMoreSpace = false;
+#endif
 
       bool tempNewLine = false;
       int firstIndex =
