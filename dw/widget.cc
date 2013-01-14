@@ -127,11 +127,6 @@ void Widget::queueResize (int ref, bool extremesChanged)
 {
    Widget *widget2, *child;
 
-   //DEBUG_MSG (DEBUG_SIZE,
-   //           "a %stop-level %s with parent_ref = %d has changed its size\n",
-   //           widget->parent ? "non-" : "",
-   //           gtk_type_name (GTK_OBJECT_TYPE (widget)), widget->parent_ref);
-
    setFlags (NEEDS_RESIZE);
    setFlags (NEEDS_ALLOCATE);
    markSizeChange (ref);
@@ -147,13 +142,6 @@ void Widget::queueResize (int ref, bool extremesChanged)
       widget2->setFlags (NEEDS_RESIZE);
       widget2->markSizeChange (child->parentRef);
       widget2->setFlags (NEEDS_ALLOCATE);
-
-      //DEBUG_MSG (DEBUG_ALLOC,
-      //           "setting DW_NEEDS_ALLOCATE for a %stop-level %s "
-      //           "with parent_ref = %d\n",
-      //           widget2->parent ? "non-" : "",
-      //           gtk_type_name (GTK_OBJECT_TYPE (widget2)),
-      //           widget2->parent_ref);
 
       if (extremesChanged) {
          widget2->setFlags (EXTREMES_CHANGED);
@@ -213,15 +201,6 @@ void Widget::sizeAllocate (Allocation *allocation)
        allocation->width != this->allocation.width ||
        allocation->ascent != this->allocation.ascent ||
        allocation->descent != this->allocation.descent) {
-
-      //DEBUG_MSG (DEBUG_ALLOC,
-      //           "a %stop-level %s with parent_ref = %d is newly allocated "
-      //           "from %d, %d, %d x %d x %d ...\n",
-      //           widget->parent ? "non-" : "",
-      //           (GTK_OBJECT_TYPE_NAME (widget), widget->parent_ref,
-      //           widget->allocation.x, widget->allocation.y,
-      //           widget->allocation.width, widget->allocation.ascent,
-      //           widget->allocation.descent);
 
       if (wasAllocated ()) {
          layout->queueDrawExcept (
@@ -506,12 +485,6 @@ Widget *Widget::getWidgetAtPoint (int x, int y, int level)
 {
    Iterator *it;
    Widget *childAtPoint;
-
-   //_MSG ("%*s-> examining the %s %p (%d, %d, %d x (%d + %d))\n",
-   //      3 * level, "", gtk_type_name (GTK_OBJECT_TYPE (widget)), widget,
-   //      allocation.x, allocation.y,
-   //      allocation.width, allocation.ascent,
-   //      allocation.descent);
 
    if (x >= allocation.x &&
        y >= allocation.y &&

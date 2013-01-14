@@ -363,29 +363,6 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
 
 void Html_tag_close_form(DilloHtml *html)
 {
-// DilloHtmlForm *form;
-// int i;
-//
-// if (html->InFlags & IN_FORM) {
-//    form = html->getCurrentForm ();
-//
-//    /* Make buttons sensitive again */
-//    for (i = 0; i < form->inputs->size(); i++) {
-//       input_i = form->inputs->get(i);
-//       /* Check for tricky HTML (e.g. <input type=image>) */
-//       if (!input_i->widget)
-//          continue;
-//       if (input_i->type == DILLO_HTML_INPUT_SUBMIT ||
-//           input_i->type == DILLO_HTML_INPUT_RESET) {
-//          gtk_widget_set_sensitive(input_i->widget, TRUE);
-//       } else if (input_i->type == DILLO_HTML_INPUT_IMAGE ||
-//                  input_i->type == DILLO_HTML_INPUT_BUTTON_SUBMIT ||
-//                  input_i->type == DILLO_HTML_INPUT_BUTTON_RESET) {
-//          a_Dw_button_set_sensitive(DW_BUTTON(input_i->widget), TRUE);
-//       }
-//    }
-// }
-
    html->InFlags &= ~IN_FORM;
    html->InFlags &= ~IN_SELECT;
    html->InFlags &= ~IN_OPTION;
@@ -471,12 +448,10 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       inp_type = DILLO_HTML_INPUT_SUBMIT;
       init_str = (value) ? value : dStrdup("submit");
       resource = factory->createLabelButtonResource(init_str);
-//    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
    } else if (!dStrAsciiCasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_RESET;
       init_str = (value) ? value : dStrdup("Reset");
       resource = factory->createLabelButtonResource(init_str);
-//    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
    } else if (!dStrAsciiCasecmp(type, "image")) {
       if (URL_FLAGS(html->base_url) & URL_SpamSafe) {
          /* Don't request the image; make a text submit button instead */
@@ -485,7 +460,6 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          label = attrbuf ? attrbuf : value ? value : name ? name : "Submit";
          init_str = dStrdup(label);
          resource = factory->createLabelButtonResource(init_str);
-//       gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
       } else {
          inp_type = DILLO_HTML_INPUT_IMAGE;
          /* use a dw_image widget */
@@ -1942,7 +1916,6 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
          factory->createComplexButtonResource(IM2DW(Image), false);
       button = new Embed(complex_b_r);
       HT2TB(html)->addWidget (button, html->styleEngine->style ());
-//    gtk_widget_set_sensitive(widget, FALSE); /* Until end of FORM! */
    }
    if (!button)
       MSG("Html_input_image: unable to create image submit.\n");
