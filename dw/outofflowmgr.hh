@@ -42,11 +42,15 @@ private:
                                                                 *widget);
    void ensureFloatSize (Float *vloat);
    int calcBorderDiff (Float *vloat);
+   int calcLeftBorderDiff (Float *vloat);
+   int calcRightBorderDiff (Float *vloat);
 
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);
    core::Widget *getWidgetAtPoint (lout::container::typed::Vector<Float> *list,
                                    int x, int y, int level);
+   void accumExtremes (lout::container::typed::Vector<Float> *list,
+                       int *oofMinWidth, int *oofMaxWidth);
    int getBorder (lout::container::typed::Vector<Float> *list, int y, int h);
 
    inline static bool isRefFloat (int ref)
@@ -87,6 +91,8 @@ public:
    void setDescent (int descent) { availDescent = descent; }
 
    void getSize (int cbWidth, int cbHeight, int *oofWidth, int *oofHeight);
+   void getExtremes (int cbMinWidth, int cbMaxWidth, int *oofMinWidth,
+                     int *oofMaxWidth);
 
    int getLeftBorder (int y, int h);
 

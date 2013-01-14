@@ -336,6 +336,19 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    extremes->minWidth += diff;
    extremes->maxWidth += diff;
 
+   if (outOfFlowMgr) {
+      int oofMinWidth, oofMaxWidth;
+      outOfFlowMgr->getExtremes (extremes->minWidth, extremes->maxWidth,
+                                 &oofMinWidth, &oofMaxWidth);
+      
+      //printf ("[%p] extremes: %d / %d, corrected: %d / %d\n",
+      //        this, extremes->minWidth, extremes->maxWidth,
+      //        oofMinWidth, oofMaxWidth);
+
+      extremes->minWidth = misc::max (extremes->minWidth, oofMinWidth);
+      extremes->maxWidth = misc::max (extremes->maxWidth, oofMaxWidth);     
+   }   
+
    PRINTF ("[%p] GET_EXTREMES => %d / %d\n",
            this, extremes->minWidth, extremes->maxWidth);
 }
