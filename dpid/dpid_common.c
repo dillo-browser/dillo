@@ -62,12 +62,9 @@ ssize_t ckd_close(int fd, char *file, int line)
 {
    ssize_t ret;
 
-   do {
-      ret = close(fd);
-   } while (ret == -1 && errno == EINTR);
-   if (ret == -1) {
+   ret = dClose(fd);
+   if (ret == -1)
       MSG_ERR("%s:%d: close: %s\n", file, line, dStrerror(errno));
-   }
-   return (ret);
+   return ret;
 }
 
