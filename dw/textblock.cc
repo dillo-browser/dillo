@@ -1798,8 +1798,11 @@ void Textblock::addSpace (core::style::Style *style)
 void Textblock::addBreakOption (core::style::Style *style)
 {
    int wordIndex = words->size () - 1;
-   if (wordIndex >= 0)
+   if (wordIndex >= 0) {
       setBreakOption (words->getRef(wordIndex), style);
+      // Call of accumulateWordData() is not needed here.
+      correctLastWordExtremes ();
+   }
 }
 
 void Textblock::fillSpace (Word *word, core::style::Style *style)
