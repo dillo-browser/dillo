@@ -50,8 +50,9 @@ dw::core::Widget:
 \dot
 digraph G {
    node [shape=record, fontname=Helvetica, fontsize=10];
-   edge [arrowhead="open", arrowtail="none", labelfontname=Helvetica,
-         labelfontsize=10, color="#404040", labelfontcolor="#000080"];
+   edge [arrowhead="open", dir="both", arrowtail="none",
+         labelfontname=Helvetica, labelfontsize=10, color="#404040",
+         labelfontcolor="#000080"];
    fontname=Helvetica; fontsize=10;
 
    "background renderer (as a part of style)" -> "image buffer" [headlabel="*",
@@ -73,8 +74,9 @@ The following diagram gives a total overview:
 \dot
 digraph G {
    node [shape=record, fontname=Helvetica, fontsize=10];
-   edge [arrowhead="open", arrowtail="none", labelfontname=Helvetica,
-         labelfontsize=10, color="#404040", labelfontcolor="#000080"];
+   edge [arrowhead="open", dir="both", arrowtail="none",
+         labelfontname=Helvetica, labelfontsize=10, color="#404040",
+         labelfontcolor="#000080"];
    fontname=Helvetica; fontsize=10;
 
    "DICache Entry";
@@ -113,25 +115,25 @@ digraph G {
 
    BgRenderer -> Imgbuf [headlabel="1", taillabel="*"];
    BgRenderer -> BgAllocation [headlabel="*", taillabel="1"];
-   ImageRenderer -> BgRenderer [arrowhead="none", arrowtail="empty",
+   ImageRenderer -> BgRenderer [arrowhead="none", arrowtail="empty", dir="both",
                                 style="dashed"];
-   ImageRenderer -> Image [arrowhead="none", arrowtail="empty",
+   ImageRenderer -> Image [arrowhead="none", arrowtail="empty", dir="both",
                            style="dashed"];
 
    Style -> BgRenderer [headlabel="0..1", taillabel="1"];
 
-   Widget -> Textblock [arrowhead="none", arrowtail="empty"];
+   Widget -> Textblock [arrowhead="none", arrowtail="empty", dir="both"];
    Textblock -> "Textblock::Word" [headlabel="*", taillabel="1"];
-   Widget -> Table [arrowhead="none", arrowtail="empty"];
+   Widget -> Table [arrowhead="none", arrowtail="empty", dir="both"];
    Table -> "Table::Row" [headlabel="*", taillabel="1"];
-   Widget -> Image [arrowhead="none", arrowtail="empty"];
+   Widget -> Image [arrowhead="none", arrowtail="empty", dir="both"];
 
-   BgAllocation -> Widget [arrowhead="none", arrowtail="empty",
+   BgAllocation -> Widget [arrowhead="none", arrowtail="empty", dir="both",
                            style="dashed"];
    BgAllocation -> "Textblock::Word" [arrowhead="none", arrowtail="empty",
-                                      style="dashed"];
+                                      dir="both", style="dashed"];
    BgAllocation -> "Table::Row" [arrowhead="none", arrowtail="empty",
-                                 style="dashed"];
+                                 dir="both", style="dashed"];
 }
 \enddot
 
