@@ -700,6 +700,20 @@ void FltkEntryResource::setMaxLength (int maxlen)
 
 // ----------------------------------------------------------------------
 
+static int kf_backspace_word (int c, Fl_Text_Editor *e)
+{
+   int p1, p2 = e->insert_position();
+
+   e->previous_word();
+   p1 = e->insert_position();
+   e->buffer()->remove(p1, p2);
+   e->show_insert_position();
+   e->set_changed();
+   if (e->when() & FL_WHEN_CHANGED)
+      e->do_callback();
+   return 0;
+}
+
 FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
                                                       int cols, int rows):
    FltkSpecificResource <dw::core::ui::MultiLineTextResource> (platform)
@@ -741,6 +755,9 @@ Fl_Widget *FltkMultiLineTextResource::createNewWidget (core::Allocation
                           allocation->ascent + allocation->descent);
    text->wrap_mode(Fl_Text_Display::WRAP_AT_BOUNDS, 0);
    text->buffer (buffer);
+   text->remove_key_binding(FL_BackSpace, FL_TEXT_EDITOR_ANY_STATE);
+   text->add_key_binding(FL_BackSpace, 0, Fl_Text_Editor::kf_backspace);
+   text->add_key_binding(FL_BackSpace, FL_CTRL, kf_backspace_word);
    return text;
 }
 
