@@ -163,9 +163,6 @@ Textblock::Textblock (bool limitTextWidth)
    availAscent = 100;
    availDescent = 0;
 
-   diffXToContainingBlock = restWidthToContainingBlock =
-      diffYToContainingBlock = -1;
-
    this->limitTextWidth = limitTextWidth;
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
@@ -554,8 +551,6 @@ void Textblock::notifySetAsTopLevel()
 {
    PRINTF ("%p becomes toplevel\n", this);
    containingBlock = this;
-   diffXToContainingBlock = restWidthToContainingBlock =
-      diffYToContainingBlock = 0;
    PRINTF ("-> %p is its own containing block\n", this);
 }
 
@@ -592,8 +587,6 @@ void Textblock::notifySetParent ()
          containingBlock = (Textblock*)widget;
 
          if (containingBlock == this) {
-            diffXToContainingBlock = restWidthToContainingBlock =
-               diffYToContainingBlock = 0;
             PRINTF ("-> %p is its own containing block\n", this);
          } else {
             PRINTF ("-> %p becomes containing block of %p\n",
@@ -887,32 +880,6 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
    availWidth = this->availWidth - getStyle()->boxDiffWidth () - innerPadding;
    availAscent = this->availAscent - getStyle()->boxDiffHeight ();
    availDescent = this->availDescent;
-
-   // The following should be changed, made more general, and so on.
-   //
-   // With floats, the implementation of Textblock::sizeRequestImpl
-   // becomes special: Textblock::sizeRequestImpl will rewrap lines,
-   // for which the line widths are needed, which depend on floats;
-   // however, if a text block is not its containing block, the floats
-   // positions depend on the position text block within the text
-   // container.
-   //
-   // This is something new, and should be implemented in a more
-   // general way, perhaps resembling size hints.   
-
-   // Tell a child textblock its position within the containing block.
-
-   if (widget->instanceOf (Textblock::CLASS_ID)) {
-      Textblock *tb = (Textblock*)widget;
-      if (tb != tb->containingBlock) {
-         tb->diffXToContainingBlock =
-            diffXToContainingBlock + getStyle()->boxOffsetX();
-         tb->restWidthToContainingBlock =
-            restWidthToContainingBlock + getStyle()->boxRestWidth();;
-         tb->diffYToContainingBlock =
-            diffYToContainingBlock + topOfPossiblyMissingLine (lines->size ());
-      }
-   }
 
    if (widget->usesHints ()) {
       widget->setWidth (availWidth);

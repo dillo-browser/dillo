@@ -507,55 +507,6 @@ protected:
 
    void borderChanged (int yWidget, bool extremesChanges);
 
-   int diffXToContainingBlock, restWidthToContainingBlock,
-      diffYToContainingBlock;
-
-   inline int lineLeftBorder (int lineNo)
-   {
-      assert (diffXToContainingBlock != -1);
-      assert (diffYToContainingBlock != -1);
-
-      // Note that the line must not exist yet (but unless it is not
-      // the first line, the previous line, lineNo - 1, must).
-      int resultFromOOFM;
-      if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
-         resultFromOOFM =
-            containingBlock->outOfFlowMgr->getLeftBorder
-            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock,
-             heightOfPossiblyMissingLine (lineNo))
-            - diffXToContainingBlock;
-      else
-         resultFromOOFM = 0;
-
-      // TODO: line->leftOffset is not regarded, which is correct, depending
-      // on where this method is called. Document; perhaps rename this method.
-      // (Update: was renamed.)
-      return innerPadding +
-         (lineNo == 0 ? line1OffsetEff : 0) +
-         lout::misc::max (getStyle()->boxOffsetX(), resultFromOOFM);
-   }
-
-   inline int lineRightBorder (int lineNo)
-   {
-      assert (restWidthToContainingBlock != -1);
-      assert (diffYToContainingBlock != -1);
-
-      // Similar to lineLeftBorder().
-
-      int resultFromOOFM;
-      // TODO sizeRequest?
-      if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineNo))
-         resultFromOOFM =
-            containingBlock->outOfFlowMgr->getRightBorder
-            (topOfPossiblyMissingLine (lineNo) + diffYToContainingBlock,
-             heightOfPossiblyMissingLine (lineNo))
-            - restWidthToContainingBlock;
-      else
-         resultFromOOFM = 0;
-
-      return lout::misc::max (getStyle()->boxRestWidth(), resultFromOOFM);
-   }
-
    inline int lineYOffsetWidgetAllocation (Line *line,
                                            core::Allocation *allocation)
    {

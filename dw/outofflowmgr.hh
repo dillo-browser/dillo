@@ -27,9 +27,19 @@ private:
    public:
       core::Widget *widget, *generatingBlock;
       // width includes border of the containing block
-      int y, borderWidth;
+      int y;           // relative to generator, not container
+      int borderWidth; // relative to container (difference to generator is 0)
       core::Requisition size;
       bool dirty;
+
+      inline int yForContainer (OutOfFlowMgr *oofm, int y) {
+         return y - generatingBlock->getAllocation()->y +
+            oofm->containingBlock->asWidget()->getAllocation()->y;
+      }
+
+      inline int yForContainer (OutOfFlowMgr *oofm) {
+         return yForContainer (oofm, y);
+      }
    };
 
    //lout::container::typed::HashTable<lout::object::TypedPointer
@@ -45,14 +55,18 @@ private:
    int calcLeftBorderDiff (Float *vloat);
    int calcRightBorderDiff (Float *vloat);
 
+   void sizeAllocate(lout::container::typed::Vector<Float> *list, bool right,
+                     core::Allocation *containingBlockAllocation);
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);
    core::Widget *getWidgetAtPoint (lout::container::typed::Vector<Float> *list,
                                    int x, int y, int level);
    void accumExtremes (lout::container::typed::Vector<Float> *list,
                        int *oofMinWidth, int *oofMaxWidth);
-   int getBorder (lout::container::typed::Vector<Float> *list, int y, int h);
-   bool hasFloat (lout::container::typed::Vector<Float> *list, int y, int h);
+   int getBorder (core::Widget *widget,
+                  lout::container::typed::Vector<Float> *list, int y, int h);
+   bool hasFloat (core::Widget *widget,
+                  lout::container::typed::Vector<Float> *list, int y, int h);
 
    inline static bool isRefFloat (int ref)
    { return ref != -1 && (ref & 1) == 1; }
@@ -95,11 +109,11 @@ public:
    void getExtremes (int cbMinWidth, int cbMaxWidth, int *oofMinWidth,
                      int *oofMaxWidth);
 
-   int getLeftBorder (int y, int h);
-   int getRightBorder (int y, int h);
+   int getLeftBorder (core::Widget *widget, int y, int h);
+   int getRightBorder (core::Widget *widget, int y, int h);
 
-   bool hasFloatLeft (int y, int h);
-   bool hasFloatRight (int y, int h);
+   bool hasFloatLeft (core::Widget *widget, int y, int h);
+   bool hasFloatRight (core::Widget *widget, int y, int h);
 
    inline static bool isRefOutOfFlow (int ref)
    { return ref != -1 && (ref & 1) != 0; }

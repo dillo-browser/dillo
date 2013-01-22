@@ -372,19 +372,19 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    line->boxAscent = misc::max (line->boxAscent, 1);
 
    // Calculate offsetCompleteWidget, which includes also floats.
-   int resultFromOOFM;
-   if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line))
-      resultFromOOFM =
-         containingBlock->outOfFlowMgr->getLeftBorder
-         (line->top + getStyle()->boxOffsetY() + diffYToContainingBlock,
-          line->boxAscent + line->boxDescent)
-         - diffXToContainingBlock;
-   else
-      resultFromOOFM = 0;
-   line->offsetCompleteWidget =
-      innerPadding + line->leftOffset + (lineIndex == 0 ? line1OffsetEff : 0) +
-      misc::max (getStyle()->boxOffsetX(), resultFromOOFM);
+   int leftBorder;
+   if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line)) {
+      int y = line->top + getStyle()->boxOffsetY();
+      int h = line->boxAscent + line->boxDescent;
+      leftBorder = containingBlock->outOfFlowMgr->getLeftBorder (this, y, h);
+   } else
+      leftBorder = 0;
 
+   line->offsetCompleteWidget =
+      misc::max (leftBorder,
+                 innerPadding + (lineIndex == 0 ? line1OffsetEff : 0))
+      + line->leftOffset;
+   
    PRINTF ("   line[%d].top = %d\n", lines->size () - 1, line->top);
    PRINTF ("   line[%d].boxAscent = %d\n", lines->size () - 1, line->boxAscent);
    PRINTF ("   line[%d].boxDescent = %d\n",
@@ -680,12 +680,9 @@ void Textblock::wrapWidgetOofRef (int wordIndex)
 
    containingBlock->outOfFlowMgr->tellPosition
       (words->getRef(wordIndex)->content.widget,
-       // "diffYToContainingBlock" is already defined here; it is
-       // set by the parent, or, when this is the containing block,
-       // even earlier.
-       diffYToContainingBlock + top + getStyle()->boxOffsetY());
+       top + getStyle()->boxOffsetY());
    
-   // TODO: compare old/new values of calcAvailWidth(...);
+   // TODO: compare old/new values of calcAvailWidth(...) (?)
    int firstIndex =
       lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
    assert (firstIndex <= wordIndex);
@@ -1100,8 +1097,15 @@ int Textblock::calcAvailWidth (int lineIndex)
    // TODO if the result is too small, but only in some cases
    // (e. g. because of floats), the caller should skip a
    // line. General distinction?
-   int leftBorder = lineLeftBorder (lineIndex);
-   int rightBorder = lineRightBorder (lineIndex);
+   int leftBorder, rightBorder;
+   if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineIndex)) {
+      int y = topOfPossiblyMissingLine (lineIndex);
+      int h = heightOfPossiblyMissingLine (lineIndex);
+      leftBorder = containingBlock->outOfFlowMgr->getLeftBorder (this, y, h);
+      rightBorder = containingBlock->outOfFlowMgr->getRightBorder (this, y, h);
+   } else
+      leftBorder = rightBorder = 0;
+
    availWidth -= (leftBorder + rightBorder);
 
    PRINTF ("[%p] CALC_AVAIL_WIDTH (%d of %d) => %d - %d - (%d + %d)"
