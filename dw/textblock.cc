@@ -1791,6 +1791,17 @@ void Textblock::addSpace (core::style::Style *style)
    }
 }
 
+/**
+ * Add a break option (see setBreakOption() for details). Used instead
+ * of addStyle for ideographic characters.
+ */
+inline void Textblock::addBreakOption (core::style::Style *style)
+{
+   int wordIndex = words->size () - 1;
+   if (wordIndex >= 0)
+      setBreakOption (words->getRef(wordIndex), style);
+}
+
 void Textblock::fillSpace (Word *word, core::style::Style *style)
 {
    // Old comment:
