@@ -20,8 +20,9 @@ namespace fltk {
  * \dot
  * digraph G {
  *    node [shape=record, fontname=Helvetica, fontsize=10];
- *    edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
- *          labelfontsize=10, color="#404040", labelfontcolor="#000080"];
+ *    edge [arrowhead="none", arrowtail="empty", dir="both",
+ *          labelfontname=Helvetica, labelfontsize=10, color="#404040",
+ *          labelfontcolor="#000080"];
  *    fontname=Helvetica; fontsize=10;
  *
  *    subgraph cluster_core {
@@ -72,8 +73,9 @@ namespace fltk {
  * \dot
  * digraph G {
  *    node [shape=record, fontname=Helvetica, fontsize=10];
- *    edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
- *          labelfontsize=10, color="#404040", labelfontcolor="#000080"];
+ *    edge [arrowhead="none", arrowtail="empty", dir="both",
+ *          labelfontname=Helvetica, labelfontsize=10, color="#404040",
+ *          labelfontcolor="#000080"];
  *    fontname=Helvetica; fontsize=10;
  *
  *    subgraph cluster_core {
@@ -113,8 +115,9 @@ namespace fltk {
  * \dot
  * digraph G {
  *    node [shape=record, fontname=Helvetica, fontsize=10];
- *    edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
- *          labelfontsize=10, color="#404040", labelfontcolor="#000080"];
+ *    edge [arrowhead="none", arrowtail="empty", dir="both",
+ *          labelfontname=Helvetica, labelfontsize=10, color="#404040",
+ *          labelfontcolor="#000080"];
  *    fontname=Helvetica; fontsize=10;
  *
  *    subgraph cluster_core {
@@ -150,10 +153,12 @@ namespace fltk {
  *    FltkResource -> FltkSpecificResource;
  *    FltkSpecificResource -> FltkSpecificResource_button [arrowhead="open",
  *                                                         arrowtail="none",
+ *                                                         dir="both",
  *                                                         style="dashed",
  *                                                         color="#808000"];
  *    FltkSpecificResource -> FltkSpecificResource_entry [arrowhead="open",
  *                                                        arrowtail="none",
+ *                                                        dir="both",
  *                                                        style="dashed",
  *                                                        color="#808000"];
  *    LabelButtonResource -> FltkSpecificResource_button;
