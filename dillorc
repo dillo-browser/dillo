@@ -206,28 +206,6 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #                            COLORS SECTION
 #-------------------------------------------------------------------------
 
-# User interface colors.
-#
-# The first four colors map to concepts in the underlying fltk toolkit. Note
-# that fltk may sometimes override colors, generally for contrast and
-# readability.
-#
-#ui_fg_color=black
-#ui_main_bg_color=silver
-#ui_text_bg_color=white
-#ui_selection_color=navy
-#
-# Background used when the mouse cursor is over a button.
-#ui_button_highlight_color=(by default, the main background color, lightened)
-#
-# Colors for the current tab.
-#ui_tab_active_bg_color=(by default, the text background color)
-#ui_tab_active_fg_color=(by default, the main foreground color)
-#
-# Colors for the other tabs.
-#ui_tab_bg_color=(by default, the main background color)
-#ui_tab_fg_color=(by default, the main foreground color)
-
 # Set the page background color
 # bg_color=gray
 # bg_color=0xd6d6c0
@@ -253,6 +231,27 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #theme=none
 # theme=gtk+
 # theme=plastic
+
+# UI colors
+# The first four colors map to concepts in the underlying FLTK toolkit. Note
+# that FLTK may sometimes override colors, generally for contrast and
+# readability.
+#
+#ui_fg_color=black
+#ui_main_bg_color=silver
+#ui_text_bg_color=white
+#ui_selection_color=navy
+#
+# Background used when the mouse cursor is over a button.
+#ui_button_highlight_color=(by default, the main background color, lightened)
+#
+# Colors for the current tab.
+#ui_tab_active_bg_color=(by default, the text background color)
+#ui_tab_active_fg_color=(by default, the main foreground color)
+#
+# Colors for the other tabs.
+#ui_tab_bg_color=(by default, the main background color)
+#ui_tab_fg_color=(by default, the main foreground color)
 
 # Size of dillo panel
 # tiny   : buttons, location, and progress boxes in one row
