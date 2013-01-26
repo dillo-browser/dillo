@@ -21,7 +21,7 @@ namespace fltk {
  * results from my insufficient knowledge of C++ some years ago; since
  * then, I've learned how to deal with "diamond inheritance", as the
  * (ideal, not actually implemented) design in the first diagram
- * shows. It should be possiple to implement this ideal design in a
+ * shows. It should be possible to implement this ideal design in a
  * straightforward way, and so get rid of templates. --SG</div>
  *
  * The design should be like this:
