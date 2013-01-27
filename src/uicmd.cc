@@ -110,7 +110,6 @@ class CustTabs : public Fl_Group {
    Fl_Pack *Pack;
    Fl_Group *Control;
    CustButton *CloseBtn;
-   int tabcolor_inactive, tabcolor_active;
 
    void update_pack_offset(void);
    void resize(int x, int y, int w, int h)
@@ -138,8 +137,6 @@ public:
       Pack = NULL;
       focus_counter = 0;
       tab_w = 50, tab_h = th, ctab_h = 1, btn_w = 20, ctl_w = 1*btn_w+2;
-      tabcolor_active = prefs.ui_tab_active_bg_color;
-      tabcolor_inactive = prefs.ui_tab_bg_color;
       resize(0,0,ww,ctab_h);
       /* tab buttons go inside a pack within a scroll */
       Scroll = new Fl_Scroll(0,0,ww-ctl_w,ctab_h);
@@ -283,9 +280,8 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    btn->copy_label(DEFAULT_TAB_LABEL);
    btn->clear_visible_focus();
    btn->box(FL_GTK_THIN_UP_BOX);
-   btn->color(focus ? tabcolor_active : tabcolor_inactive);
-   btn->labelcolor(focus ? prefs.ui_tab_active_fg_color :
-                   prefs.ui_tab_fg_color);
+   btn->color(focus ? PREFS_UI_TAB_ACTIVE_BG_COLOR : PREFS_UI_TAB_BG_COLOR);
+   btn->labelcolor(focus ? PREFS_UI_TAB_ACTIVE_FG_COLOR:PREFS_UI_TAB_FG_COLOR);
    btn->ui(new_ui);
    btn->callback(tab_btn_cb, this);
    Pack->add(btn); // append
@@ -413,8 +409,8 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
       // Set old tab label to normal color
       if ((idx = get_btn_idx(old_ui)) != -1) {
          btn = (CustTabButton*)Pack->child(idx);
-         btn->color(tabcolor_inactive);
-         btn->labelcolor(prefs.ui_tab_fg_color);
+         btn->color(PREFS_UI_TAB_BG_COLOR);
+         btn->labelcolor(PREFS_UI_TAB_FG_COLOR);
          btn->redraw();
       }
       /* We make a point of calling show() before value() is changed because
@@ -428,8 +424,8 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
        */
       cbtn->ui()->show();
       Wizard->value(cbtn->ui());
-      cbtn->color(tabcolor_active);
-      cbtn->labelcolor(prefs.ui_tab_active_fg_color);
+      cbtn->color(PREFS_UI_TAB_ACTIVE_BG_COLOR);
+      cbtn->labelcolor(PREFS_UI_TAB_ACTIVE_FG_COLOR);
       cbtn->redraw();
       update_pack_offset();
 

@@ -23,6 +23,13 @@ extern "C" {
 #define PREFS_GEOMETRY_DEFAULT_XPOS  -9999
 #define PREFS_GEOMETRY_DEFAULT_YPOS  -9999
 
+/* FLTK has free color indices from 16 to 31 */
+#define PREFS_UI_BUTTON_HIGHLIGHT_COLOR 16
+#define PREFS_UI_TAB_ACTIVE_BG_COLOR 17
+#define PREFS_UI_TAB_ACTIVE_FG_COLOR 18
+#define PREFS_UI_TAB_BG_COLOR 19
+#define PREFS_UI_TAB_FG_COLOR 20
+
 /* Panel sizes */
 enum { P_tiny = 0, P_small, P_medium };
 
