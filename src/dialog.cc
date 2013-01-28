@@ -82,9 +82,9 @@ int CustInput3::handle(int e)
 /*
  * Used to make the ENTER key activate the CustChoice
  */
-class CustChoice : public Fl_Choice {
+class CustChoice2 : public Fl_Choice {
 public:
-   CustChoice (int x, int y, int w, int h, const char* l=0) :
+   CustChoice2 (int x, int y, int w, int h, const char* l=0) :
       Fl_Choice(x,y,w,h,l) {};
    int handle(int e) {
       if (e == FL_KEYBOARD &&
@@ -178,7 +178,7 @@ const char *a_Dialog_input(const char *title, const char *msg)
     c_inp->labelsize(14);
     c_inp->textsize(14);
 
-    CustChoice *ch = new CustChoice(1*gap,ih+3*gap,180,24);
+    CustChoice2 *ch = new CustChoice2(1*gap,ih+3*gap,180,24);
     if (!pm) {
        int n_it = dList_length(prefs.search_urls);
        pm = new Fl_Menu_Item[n_it+1];

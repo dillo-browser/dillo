@@ -107,8 +107,11 @@ int CustChoice::handle(int e)
        this, e, active(), (Fl::focus() == this));
    if (Fl::focus() != this) {
       ; // Not Focused, let FLTK handle it
-   } else if (e == FL_KEYDOWN) {
-      if (modifier == 0 && isalnum(k)) {
+   } else if (e == FL_KEYDOWN && modifier == 0) {
+      if (k == FL_Enter || k == FL_Down) {
+         return Fl_Choice::handle(FL_PUSH); // activate menu
+
+      } else if (isalnum(k)) { // try key as shortcut to menuitem
          int t = value()+1 >= size() ? 0 : value()+1;
          while (t != value()) {
              const Fl_Menu_Item *mi = &(menu()[t]);
