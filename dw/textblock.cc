@@ -2407,9 +2407,4 @@ int Textblock::heightOfPossiblyMissingLine (int lineNo)
       return 1;
 }
 
-core::Widget *Textblock::asWidget ()
-{
-   return this;
-}
-
 } // namespace dw

@@ -661,9 +661,7 @@ public:
    void changeWordStyle (int from, int to, core::style::Style *style,
                          bool includeFirstSpace, bool includeLastSpace);
 
-   // From OutOfFlowMgr::ContainingBlock:
    void borderChanged (int y);
-   core::Widget *asWidget ();
 };
 
 } // namespace dw

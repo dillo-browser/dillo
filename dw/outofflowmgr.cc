@@ -183,7 +183,7 @@ void OutOfFlowMgr::markSizeChange (int ref)
 
    if (isRefFloat (ref)) {
       // Nothing can be done when the container has not been allocated.
-      if (containingBlock->asWidget()->wasAllocated()) {
+      if (containingBlock->wasAllocated()) {
          Float *vloat;
          
          if (isRefLeftFloat (ref))
@@ -248,7 +248,7 @@ void OutOfFlowMgr::tellNoPosition (Widget *widget)
    int oldY = vloat->y;
    vloat->y = -1;
 
-   if (oldY != -1 && containingBlock->asWidget()->wasAllocated() &&
+   if (oldY != -1 && containingBlock->wasAllocated() &&
        vloat->generatingBlock->wasAllocated())
       // ContainingBlock::borderChanged expects coordinates relative
       // to the container.
@@ -596,8 +596,8 @@ int OutOfFlowMgr::calcBorderDiff (Float *vloat)
 
 int OutOfFlowMgr::calcLeftBorderDiff (Float *vloat)
 {
-   int d = containingBlock->asWidget()->getStyle()->boxOffsetX();
-   for (Widget *w = vloat->generatingBlock; w != containingBlock->asWidget();
+   int d = containingBlock->getStyle()->boxOffsetX();
+   for (Widget *w = vloat->generatingBlock; w != containingBlock;
         w = w->getParent())
       d += w->getStyle()->boxOffsetX();
    return d;
@@ -605,8 +605,8 @@ int OutOfFlowMgr::calcLeftBorderDiff (Float *vloat)
 
 int OutOfFlowMgr::calcRightBorderDiff (Float *vloat)
 {
-   int d = containingBlock->asWidget()->getStyle()->boxRestWidth();
-   for (Widget *w = vloat->generatingBlock; w != containingBlock->asWidget();
+   int d = containingBlock->getStyle()->boxRestWidth();
+   for (Widget *w = vloat->generatingBlock; w != containingBlock;
         w = w->getParent())
       d += w->getStyle()->boxRestWidth();
    return d;
