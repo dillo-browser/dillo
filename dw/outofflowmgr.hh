@@ -5,21 +5,15 @@
 
 namespace dw {
 
+class Textblock;
+
 /**
  * \brief Represents additional data for containing blocks.
  */
 class OutOfFlowMgr
 {
-public:
-   class ContainingBlock
-   {
-   public:
-      virtual void borderChanged (int y) = 0;
-      virtual core::Widget *asWidget () = 0;
-   };
-
 private:
-   ContainingBlock *containingBlock;
+   Textblock *containingBlock;
    int availWidth, availAscent, availDescent;
 
    class Float: public lout::object::Object
@@ -32,10 +26,7 @@ private:
       core::Requisition size;
       bool dirty;
 
-      inline int yForContainer (OutOfFlowMgr *oofm, int y) {
-         return y - generatingBlock->getAllocation()->y +
-            oofm->containingBlock->asWidget()->getAllocation()->y;
-      }
+      int yForContainer (OutOfFlowMgr *oofm, int y);
 
       inline int yForContainer (OutOfFlowMgr *oofm) {
          return yForContainer (oofm, y);
@@ -84,7 +75,7 @@ private:
    { return ref == -1 ? ref : (ref >> 2); }
 
 public:
-   OutOfFlowMgr (ContainingBlock *containingBlock);
+   OutOfFlowMgr (Textblock *containingBlock);
    ~OutOfFlowMgr ();
 
    void sizeAllocate(core::Allocation *containingBlockAllocation);

@@ -1,6 +1,5 @@
 #include "outofflowmgr.hh"
-
-//#include <math.h> // testing
+#include "textblock.hh"
 
 using namespace lout::container::typed;
 using namespace lout::misc;
@@ -9,7 +8,13 @@ using namespace dw::core::style;
 
 namespace dw {
 
-OutOfFlowMgr::OutOfFlowMgr (ContainingBlock *containingBlock)
+int OutOfFlowMgr::Float::yForContainer (OutOfFlowMgr *oofm, int y)
+{
+   return y - generatingBlock->getAllocation()->y +
+      oofm->containingBlock->getAllocation()->y;
+}
+
+OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 {
    //printf ("OutOfFlowMgr::OutOfFlowMgr\n");
 

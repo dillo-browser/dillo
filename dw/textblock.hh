@@ -150,7 +150,7 @@ namespace dw {
  * necessary, or otherwise the line from which a rewrap is necessary.
  *
  */
-class Textblock: public core::Widget, public OutOfFlowMgr::ContainingBlock
+class Textblock: public core::Widget
 {
 private:
    /**
