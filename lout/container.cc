@@ -17,7 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#define PRINTF(fmt, ...)
+//#define PRINTF printf
 
 #include "container.hh"
 #include "misc.hh"
@@ -302,13 +303,12 @@ Collection0::AbstractIterator* List::createIterator()
 
 
 // ---------------
-//    HashTable
+//    HashSet
 // ---------------
 
-HashTable::HashTable(bool ownerOfKeys, bool ownerOfValues, int tableSize)
+HashSet::HashSet(bool ownerOfObjects, int tableSize)
 {
-   this->ownerOfKeys = ownerOfKeys;
-   this->ownerOfValues = ownerOfValues;
+   this->ownerOfObjects = ownerOfObjects;
    this->tableSize = tableSize;
 
    table = new Node*[tableSize];
@@ -316,24 +316,214 @@ HashTable::HashTable(bool ownerOfKeys, bool ownerOfValues, int tableSize)
       table[i] = NULL;
 }
 
-HashTable::~HashTable()
+HashSet::~HashSet()
 {
    for (int i = 0; i < tableSize; i++) {
       Node *n1 = table[i];
       while (n1) {
          Node *n2 = n1->next;
 
-         if (ownerOfValues && n1->value)
-            delete n1->value;
-         if (ownerOfKeys)
-            delete n1->key;
-         delete n1;
+         // It seems appropriate to call "clearNode(n1)" here instead
+         // of "delete n1->object", but since this is the destructor,
+         // the implementation of a sub class would not be called
+         // anymore. This is the reason why HashTable has an
+         // destructor.
+         if (ownerOfObjects) {
+            PRINTF ("- deleting object: %s\n", n1->object->toString());
+            delete n1->object;
+         }
 
+         delete n1;
          n1 = n2;
       }
    }
 
    delete[] table;
+}
+
+HashSet::Node *HashSet::createNode()
+{
+   return new Node;
+}
+
+void HashSet::clearNode(HashSet::Node *node)
+{
+   if (ownerOfObjects) {
+      PRINTF ("- deleting object: %s\n", node->object->toString());
+      delete node->object;
+   }
+}
+
+HashSet::Node *HashSet::findNode(Object *object)
+{
+   int h = calcHashValue(object);
+   for (Node *node = table[h]; node; node = node->next) {
+      if (object->equals(node->object))
+         return node;
+   }
+
+   return NULL;
+}
+
+HashSet::Node *HashSet::insertNode(Object *object)
+{
+   // Look whether object is already contained.
+   Node *node = findNode(object);
+   if (node)
+      clearNode(node);
+   else {
+      int h = calcHashValue(object);
+      node = createNode ();
+      node->next = table[h];
+      table[h] = node;
+   }
+
+   node->object = object;
+   return node;
+}
+
+
+void HashSet::put(Object *object)
+{
+   insertNode (object);
+}
+
+bool HashSet::contains(Object *object)
+{
+   int h = calcHashValue(object);
+   for (Node *n = table[h]; n; n = n->next) {
+      if (object->equals(n->object))
+         return true;
+   }
+
+   return false;
+}
+
+bool HashSet::remove(Object *object)
+{
+   int h = calcHashValue(object);
+   Node *last, *cur;
+
+   for (last = NULL, cur = table[h]; cur; last = cur, cur = cur->next) {
+      if (object->equals(cur->object)) {
+         if (last)
+            last->next = cur->next;
+         else
+            table[h] = cur->next;
+
+         clearNode (cur);
+         delete cur;
+
+         return true;
+      }
+   }
+
+   return false;
+
+   // TODO for HashTable: also remove value.
+}
+
+// For historical reasons: this method once existed under the name
+// "getKey" in HashTable. It could be used to get the real object from
+// the table, but it was dangerous, because a change of this object
+// would also change the hash value, and so confuse the table.
+
+/*Object *HashSet::getReference (Object *object)
+{
+   int h = calcHashValue(object);
+   for (Node *n = table[h]; n; n = n->next) {
+      if (object->equals(n->object))
+         return n->object;
+   }
+
+   return NULL;
+}*/
+
+HashSet::HashSetIterator::HashSetIterator(HashSet *set)
+{
+   this->set = set;
+   node = NULL;
+   pos = -1;
+   gotoNext();
+}
+
+void HashSet::HashSetIterator::gotoNext()
+{
+   if (node)
+      node = node->next;
+
+   while (node == NULL) {
+      if (pos >= set->tableSize - 1)
+         return;
+      pos++;
+      node = set->table[pos];
+   }
+}
+
+
+Object *HashSet::HashSetIterator::getNext()
+{
+   Object *result;
+   if (node)
+      result = node->object;
+   else
+      result = NULL;
+
+   gotoNext();
+   return result;
+}
+
+bool HashSet::HashSetIterator::hasNext()
+{
+   return node != NULL;
+}
+
+Collection0::AbstractIterator* HashSet::createIterator()
+{
+   return new HashSetIterator(this);
+}
+
+// ---------------
+//    HashTable
+// ---------------
+
+HashTable::HashTable(bool ownerOfKeys, bool ownerOfValues, int tableSize) :
+   HashSet (ownerOfKeys, tableSize)
+{
+   this->ownerOfValues = ownerOfValues;
+}
+
+HashTable::~HashTable()
+{
+   // See comment in the destructor of HashSet.
+   for (int i = 0; i < tableSize; i++) {
+      for (Node *n = table[i]; n; n = n->next) {
+         if (ownerOfValues) {
+            Object *value = ((KeyValuePair*)n)->value;
+            if (value) {
+               PRINTF ("- deleting value: %s\n", value->toString());
+               delete value;
+            }
+         }         
+      }
+   }
+}
+
+HashSet::Node *HashTable::createNode()
+{
+   return new KeyValuePair;
+}
+
+void HashTable::clearNode(HashSet::Node *node)
+{
+   HashSet::clearNode (node);
+   if (ownerOfValues) {
+      Object *value = ((KeyValuePair*)node)->value;
+      if (value) {
+         PRINTF ("- deleting value: %s\n", value->toString());
+         delete value;
+      }
+   }
 }
 
 void HashTable::intoStringBuffer(misc::StringBuffer *sb)
@@ -345,9 +535,16 @@ void HashTable::intoStringBuffer(misc::StringBuffer *sb)
       for (Node *node = table[i]; node; node = node->next) {
          if (!first)
             sb->append(", ");
-         node->key->intoStringBuffer(sb);
+         node->object->intoStringBuffer(sb);
+
          sb->append(" => ");
-         node->value->intoStringBuffer(sb);
+         
+         Object *value = ((KeyValuePair*)node)->value;
+         if (value)
+             value->intoStringBuffer(sb);
+         else
+            sb->append ("null");
+
          first = false;
       }
    }
@@ -357,114 +554,17 @@ void HashTable::intoStringBuffer(misc::StringBuffer *sb)
 
 void HashTable::put(Object *key, Object *value)
 {
-   int h = calcHashValue(key);
-   Node *n = new Node;
-   n->key = key;
-   n->value = value;
-   n->next = table[h];
-   table[h] = n;
-}
-
-bool HashTable::contains(Object *key)
-{
-   int h = calcHashValue(key);
-   for (Node *n = table[h]; n; n = n->next) {
-      if (key->equals(n->key))
-         return true;
-   }
-
-   return false;
+   KeyValuePair *node = (KeyValuePair*)insertNode(key);
+   node->value = value;
 }
 
 Object *HashTable::get(Object *key)
 {
-   int h = calcHashValue(key);
-   for (Node *n = table[h]; n; n = n->next) {
-      if (key->equals(n->key))
-         return n->value;
-   }
-
-   return NULL;
-}
-
-bool HashTable::remove(Object *key)
-{
-   int h = calcHashValue(key);
-   Node *last, *cur;
-
-   for (last = NULL, cur = table[h]; cur; last = cur, cur = cur->next) {
-      if (key->equals(cur->key)) {
-         if (last)
-            last->next = cur->next;
-         else
-            table[h] = cur->next;
-
-         if (ownerOfValues && cur->value)
-            delete cur->value;
-         if (ownerOfKeys)
-            delete cur->key;
-         delete cur;
-
-         return true;
-      }
-   }
-
-   return false;
-}
-
-Object *HashTable::getKey (Object *key)
-{
-   int h = calcHashValue(key);
-   for (Node *n = table[h]; n; n = n->next) {
-      if (key->equals(n->key))
-         return n->key;
-   }
-
-   return NULL;
-}
-
-HashTable::HashTableIterator::HashTableIterator(HashTable *table)
-{
-   this->table = table;
-   node = NULL;
-   pos = -1;
-   gotoNext();
-}
-
-void HashTable::HashTableIterator::gotoNext()
-{
+   Node *node = findNode(key);
    if (node)
-      node = node->next;
-
-   while (node == NULL) {
-      if (pos >= table->tableSize - 1)
-         return;
-      pos++;
-      node = table->table[pos];
-   }
-}
-
-
-Object *HashTable::HashTableIterator::getNext()
-{
-   Object *result;
-   if (node)
-      result = node->key;
+      return ((KeyValuePair*)node)->value;
    else
-      result = NULL;
-
-   gotoNext();
-   return result;
-}
-
-bool HashTable::HashTableIterator::hasNext()
-{
-   return node != NULL;
-}
-
-Collection0::AbstractIterator* HashTable::createIterator()
-{
-   return new HashTableIterator(this);
+      return NULL;
 }
 
 // -----------
