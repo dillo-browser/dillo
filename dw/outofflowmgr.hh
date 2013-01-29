@@ -19,7 +19,8 @@ private:
    class Float: public lout::object::Object
    {
    public:
-      core::Widget *widget, *generatingBlock;
+      core::Widget *widget;
+      Textblock *generatingBlock;
       // width includes border of the containing block
       int y;           // relative to generator, not container
       int borderWidth; // relative to container (difference to generator is 0)
@@ -54,9 +55,9 @@ private:
                                    int x, int y, int level);
    void accumExtremes (lout::container::typed::Vector<Float> *list,
                        int *oofMinWidth, int *oofMaxWidth);
-   int getBorder (core::Widget *widget,
+   int getBorder (Textblock *textblock,
                   lout::container::typed::Vector<Float> *list, int y, int h);
-   bool hasFloat (core::Widget *widget,
+   bool hasFloat (Textblock *textblock,
                   lout::container::typed::Vector<Float> *list, int y, int h);
 
    inline static bool isRefFloat (int ref)
@@ -87,7 +88,7 @@ public:
    core::Widget *getWidgetAtPoint (int x, int y, int level);
 
    static bool isWidgetOutOfFlow (core::Widget *widget);
-   void addWidget (core::Widget *widget, core::Widget *generatingBlock);
+   void addWidget (core::Widget *widget, Textblock *generatingBlock);
 
    void tellNoPosition (core::Widget *widget);
    void tellPosition (core::Widget *widget, int y);
@@ -100,21 +101,17 @@ public:
    void getExtremes (int cbMinWidth, int cbMaxWidth, int *oofMinWidth,
                      int *oofMaxWidth);
 
-   int getLeftBorder (core::Widget *widget, int y, int h);
-   int getRightBorder (core::Widget *widget, int y, int h);
+   int getLeftBorder (Textblock *textblock, int y, int h);
+   int getRightBorder (Textblock *textblock, int y, int h);
 
-   bool hasFloatLeft (core::Widget *widget, int y, int h);
-   bool hasFloatRight (core::Widget *widget, int y, int h);
+   bool hasFloatLeft (Textblock *textblock, int y, int h);
+   bool hasFloatRight (Textblock *textblock, int y, int h);
 
    inline static bool isRefOutOfFlow (int ref)
    { return ref != -1 && (ref & 1) != 0; }
    inline static int createRefNormalFlow (int lineNo) { return lineNo << 1; }
    inline static int getLineNoFromRef (int ref)
    { return ref == -1 ? ref : (ref >> 1); }
-
-   //inline static bool isRefOutOfFlow (int ref) { return false; }
-   //inline static int createRefNormalFlow (int lineNo) { return lineNo; }
-   //inline static int getLineNoFromRef (int ref) { return ref; }
 
    // for iterators
    inline int getNumWidgets () {

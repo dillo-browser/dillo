@@ -105,7 +105,7 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
    return widget->getStyle()->vloat != FLOAT_NONE;
 }
 
-void OutOfFlowMgr::addWidget (Widget *widget, Widget *generatingBlock)
+void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
 {
    if (widget->getStyle()->vloat != FLOAT_NONE) {
       Float *vloat = new Float ();
@@ -418,9 +418,9 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
  * block, but is 0 if there is no float, so a caller should also
  * consider other borders.
  */
-int OutOfFlowMgr::getLeftBorder (Widget *widget, int y, int h)
+int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
 {
-   return getBorder (widget, leftFloats, y, h);
+   return getBorder (textblock, leftFloats, y, h);
 }
 
 /**
@@ -429,12 +429,13 @@ int OutOfFlowMgr::getLeftBorder (Widget *widget, int y, int h)
  *
  * See also getLeftBorder(int, int);
  */
-int OutOfFlowMgr::getRightBorder (Widget *widget, int y, int h)
+int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h)
 {
-   return getBorder (widget, rightFloats, y, h);
+   return getBorder (textblock, rightFloats, y, h);
 }
 
-int OutOfFlowMgr::getBorder (Widget *widget, Vector<Float> *list, int y, int h)
+int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
+                             int y, int h)
 {
    int border = 0;
 
@@ -446,12 +447,13 @@ int OutOfFlowMgr::getBorder (Widget *widget, Vector<Float> *list, int y, int h)
       int yWidget;
       if (vloat->y == -1)
          yWidget = -1;
-      else if (widget == vloat->generatingBlock)
+      else if (textblock == vloat->generatingBlock)
          yWidget = vloat->y;
       else {
-         if (widget->wasAllocated() && vloat->generatingBlock->wasAllocated())
+         if (textblock->wasAllocated() &&
+             vloat->generatingBlock->wasAllocated())
             yWidget = vloat->y + vloat->generatingBlock->getAllocation()->y
-               - widget->getAllocation()->y;
+               - textblock->getAllocation()->y;
          else
             yWidget = -1;
       }
@@ -471,17 +473,18 @@ int OutOfFlowMgr::getBorder (Widget *widget, Vector<Float> *list, int y, int h)
    return border;
 }
 
-bool OutOfFlowMgr::hasFloatLeft (Widget *widget, int y, int h)
+bool OutOfFlowMgr::hasFloatLeft (Textblock *textblock, int y, int h)
 {
-   return hasFloat (widget, leftFloats, y, h);
+   return hasFloat (textblock, leftFloats, y, h);
 }
 
-bool OutOfFlowMgr::hasFloatRight (Widget *widget, int y, int h)
+bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h)
 {
-   return hasFloat (widget, rightFloats, y, h);
+   return hasFloat (textblock, rightFloats, y, h);
 }
 
-bool OutOfFlowMgr::hasFloat (Widget *widget, Vector<Float> *list, int y, int h)
+bool OutOfFlowMgr::hasFloat (Textblock *textblock, Vector<Float> *list,
+                             int y, int h)
 {
    // TODO Latest change: Many changes neccessary. Re-actiavate.
 
