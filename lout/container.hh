@@ -179,46 +179,78 @@ public:
 
 
 /**
- * \brief A hash table.
+ * \brief A hash set.
  */
-class HashTable: public Collection
+class HashSet: public Collection
 {
-   friend class HashTableIterator;
+   friend class HashSetIterator;
 
-private:
+protected:
    struct Node
    {
-      object::Object *key, *value;
+      object::Object *object;
       Node *next;
    };
 
-   class HashTableIterator: public Collection0::AbstractIterator
+   Node **table;
+   int tableSize;
+   bool ownerOfObjects;
+
+   inline int calcHashValue(object::Object *object)
+   {
+      return abs(object->hashValue()) % tableSize;
+   }
+
+   virtual Node *createNode();
+   virtual void clearNode(Node *node);
+
+   Node *findNode(object::Object *object);
+   Node *insertNode(object::Object *object);
+
+   AbstractIterator* createIterator();
+
+private:
+   class HashSetIterator: public Collection0::AbstractIterator
    {
    private:
-      HashTable *table;
-      HashTable::Node *node;
+      HashSet *set;
+      HashSet::Node *node;
       int pos;
 
       void gotoNext();
 
    public:
-      HashTableIterator(HashTable *table);
+      HashSetIterator(HashSet *set);
       bool hasNext();
       Object *getNext();
    };
 
-   Node **table;
-   int tableSize;
-   bool ownerOfKeys, ownerOfValues;
+public:
+   HashSet(bool ownerOfObjects, int tableSize = 251);
+   ~HashSet();
 
+   void put (object::Object *object);
+   bool contains (object::Object *key);
+   bool remove (object::Object *key);
+   //Object *getReference (object::Object *object);
+};
+
+/**
+ * \brief A hash table.
+ */
+class HashTable: public HashSet
+{
 private:
-   inline int calcHashValue(object::Object *key)
+   bool ownerOfValues;
+
+   struct KeyValuePair: public Node
    {
-      return abs(key->hashValue()) % tableSize;
-   }
+      object::Object *value;
+   };
 
 protected:
-   AbstractIterator* createIterator();
+   Node *createNode();
+   void clearNode(Node *node);
 
 public:
    HashTable(bool ownerOfKeys, bool ownerOfValues, int tableSize = 251);
@@ -227,10 +259,7 @@ public:
    void intoStringBuffer(misc::StringBuffer *sb);
 
    void put (object::Object *key, object::Object *value);
-   bool contains (object::Object *key);
-   Object *get (object::Object *key);
-   bool remove (object::Object *key);
-   Object *getKey (Object *key);
+   object::Object *get (object::Object *key);
 };
 
 /**
@@ -328,6 +357,9 @@ protected:
    untyped::Collection *base;
 
 public:
+   Collection () { this->base = NULL; }
+   ~Collection () { if (this->base) delete this->base; }
+
    void intoStringBuffer(misc::StringBuffer *sb)
    { this->base->intoStringBuffer(sb); }
 
@@ -344,7 +376,6 @@ template <class T> class Vector: public Collection <T>
 public:
    inline Vector(int initSize, bool ownerOfObjects) {
       this->base = new untyped::Vector(initSize, ownerOfObjects); }
-   ~Vector() { delete this->base; }
 
    inline void put(T *newElement, int newPos = -1)
    { ((untyped::Vector*)this->base)->put(newElement, newPos); }
@@ -367,7 +398,6 @@ template <class T> class List: public Collection <T>
 public:
    inline List(bool ownerOfObjects)
    { this->base = new untyped::List(ownerOfObjects); }
-   ~List() { delete this->base; }
 
    inline void clear() { ((untyped::List*)this->base)->clear(); }
    inline void append(T *element)
@@ -388,28 +418,42 @@ public:
    { return (T*)((untyped::List*)this->base)->getLast(); }
 };
 
+/**
+ * \brief Typed version of container::untyped::HashSet.
+ */
+template <class T> class HashSet: public Collection <T>
+{
+protected:
+   inline HashSet() { }
+
+public:
+   inline HashSet(bool owner, int tableSize = 251)
+   { this->base = new untyped::HashSet(owner, tableSize); }
+
+   inline void put(T *object)
+   { return ((untyped::HashSet*)this->base)->put(object); }
+   inline bool contains(T *object)
+   { return ((untyped::HashSet*)this->base)->contains(object); }
+   inline bool remove(T *object)
+   { return ((untyped::HashSet*)this->base)->remove(object); }
+   //inline T *getReference(T *object)
+   //{ return (T*)((untyped::HashSet*)this->base)->getReference(object); }
+};
 
 /**
  * \brief Typed version of container::untyped::HashTable.
  */
-template <class K, class V> class HashTable: public Collection <K>
+template <class K, class V> class HashTable: public HashSet <K>
 {
 public:
    inline HashTable(bool ownerOfKeys, bool ownerOfValues, int tableSize = 251)
    { this->base = new untyped::HashTable(ownerOfKeys, ownerOfValues,
                                          tableSize); }
-   ~HashTable() { delete this->base; }
 
    inline void put(K *key, V *value)
    { return ((untyped::HashTable*)this->base)->put(key, value); }
-   inline bool contains(K *key)
-   { return ((untyped::HashTable*)this->base)->contains(key); }
    inline V *get(K *key)
    { return (V*)((untyped::HashTable*)this->base)->get(key); }
-   inline bool remove(K *key)
-   { return ((untyped::HashTable*)this->base)->remove(key); }
-   inline K *getKey(K *key)
-   { return (K*)((untyped::HashTable*)this->base)->getKey(key); }
 };
 
 /**
@@ -420,7 +464,6 @@ template <class T> class Stack: public Collection <T>
 public:
    inline Stack (bool ownerOfObjects)
    { this->base = new untyped::Stack (ownerOfObjects); }
-   ~Stack() { delete this->base; }
 
    inline void push (T *object) {
       ((untyped::Stack*)this->base)->push (object); }

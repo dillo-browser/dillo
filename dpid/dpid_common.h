@@ -54,8 +54,6 @@ enum file_type {
 
 void errmsg(char *caller, char *called, int errornum, char *file, int line);
 
-int no_dotfiles(const struct dirent *filedat);
-
 ssize_t ckd_write(int fd, char *msg, char *file, int line);
 ssize_t ckd_close(int fd, char *file, int line);
 

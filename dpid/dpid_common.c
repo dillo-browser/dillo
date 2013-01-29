@@ -24,17 +24,6 @@ void errmsg(char *caller, char *called, int errornum, char *file, int line)
       MSG_ERR("%s\n", dStrerror(errornum));
 }
 
-/*! Selector function for scandir
- * Do not scan files starting with '.'
- */
-int no_dotfiles(const struct dirent *filedat)
-{
-   if (filedat->d_name[0] == '.')
-      return 0;
-   else
-      return 1;
-}
-
 /*!
  * Provides an error checked write command.
  * Call this via the CKD_WRITE macro
@@ -62,12 +51,9 @@ ssize_t ckd_close(int fd, char *file, int line)
 {
    ssize_t ret;
 
-   do {
-      ret = close(fd);
-   } while (ret == -1 && errno == EINTR);
-   if (ret == -1) {
+   ret = dClose(fd);
+   if (ret == -1)
       MSG_ERR("%s:%d: close: %s\n", file, line, dStrerror(errno));
-   }
-   return (ret);
+   return ret;
 }
 

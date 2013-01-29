@@ -33,7 +33,7 @@ void a_Domain_parse(FILE *fp)
    char *line;
    uint_t lineno = 0;
 
-   MSG("Reading domainrc...\n");
+   _MSG("Reading domainrc...\n");
 
    while ((line = dGetline(fp)) != NULL) {
       ++lineno;
@@ -68,7 +68,7 @@ void a_Domain_parse(FILE *fp)
                exceptions[num_exceptions].origin = dStrdup(tok1);
                exceptions[num_exceptions].destination = dStrdup(tok2);
                num_exceptions++;
-               MSG("Domain: Exception from %s to %s.\n", tok1, tok2);
+               _MSG("Domain: Exception from %s to %s.\n", tok1, tok2);
             }
          }
       }
@@ -138,14 +138,14 @@ bool_t a_Domain_permit(const DilloUrl *source, const DilloUrl *dest)
       if (Domain_match(source_host, exceptions[i].origin) &&
           Domain_match(dest_host, exceptions[i].destination)) {
          ret = default_deny;
-         MSG("Domain: Matched rule from %s to %s.\n", exceptions[i].origin,
-             exceptions[i].destination);
+         _MSG("Domain: Matched rule from %s to %s.\n", exceptions[i].origin,
+              exceptions[i].destination);
          break;
       }
    }
 
-   MSG("Domain: %s from %s to %s.\n",
-       (ret == TRUE ? "permitted" : "DENIED"), source_host, dest_host);
+   if (ret == FALSE)
+      MSG("Domain: DENIED from %s to %s.\n", source_host, dest_host);
 
    return ret;
 }

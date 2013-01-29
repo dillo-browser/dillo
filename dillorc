@@ -198,26 +198,13 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #
 # See http://zytrax.com/tech/web/browser_ids.htm for a compilation of strings.
 #
-# http_user_agent="Mozilla/5.0 (Windows NT 5.1; rv:7.0.1) Gecko/20100101 Firefox/7.0.1"
+# http_user_agent="Mozilla/5.0 (Windows NT 5.1; rv:18.0) Gecko/20100101 Firefox/18.0"
 # http_user_agent="Wget/1.12 (linux-gnu)"
 #The default is "Dillo/"+current_version_number
 
 #-------------------------------------------------------------------------
 #                            COLORS SECTION
 #-------------------------------------------------------------------------
-
-# Override the user interface colors.
-#
-# ui_fg_color=black
-# ui_main_bg_color=silver
-# ui_text_bg_color=white
-# ui_selection_color
-# ui_button_highlight_color
-# ui_tab_active_bg_color
-# ui_tab_bg_color
-# ui_tab_active_fg_color
-# ui_tab_fg_color
-
 
 # Set the page background color
 # bg_color=gray
@@ -244,6 +231,27 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #theme=none
 # theme=gtk+
 # theme=plastic
+
+# UI colors
+# The first four colors map to concepts in the underlying FLTK toolkit. Note
+# that FLTK may sometimes override colors, generally for contrast and
+# readability.
+#
+#ui_fg_color=black
+#ui_main_bg_color=silver
+#ui_text_bg_color=white
+#ui_selection_color=navy
+#
+# Background used when the mouse cursor is over a button.
+#ui_button_highlight_color=(by default, the main background color, lightened)
+#
+# Colors for the current tab.
+#ui_tab_active_bg_color=(by default, the text background color)
+#ui_tab_active_fg_color=(by default, the main foreground color)
+#
+# Colors for the other tabs.
+#ui_tab_bg_color=(by default, the main background color)
+#ui_tab_fg_color=(by default, the main foreground color)
 
 # Size of dillo panel
 # tiny   : buttons, location, and progress boxes in one row

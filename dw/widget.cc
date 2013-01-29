@@ -130,9 +130,6 @@ void Widget::queueResize (int ref, bool extremesChanged)
 {
    Widget *widget2, *child;
 
-   //printf("The %stop-level %s %p with parentRef = %d has changed its size.\n",
-   //       parent ? "non-" : "", getClassName(), this, parentRef);
-
    setFlags (NEEDS_RESIZE);
    setFlags (NEEDS_ALLOCATE);
    markSizeChange (ref);
@@ -148,11 +145,6 @@ void Widget::queueResize (int ref, bool extremesChanged)
       widget2->setFlags (NEEDS_RESIZE);
       widget2->markSizeChange (child->parentRef);
       widget2->setFlags (NEEDS_ALLOCATE);
-
-      //printf ("   Setting DW_NEEDS_RESIZE and NEEDS_ALLOCATE for the "
-      //        "%stop-level %s %p with parentRef = %d\n",
-      //        widget2->parent ? "non-" : "", widget2->getClassName(), widget2,
-      //        widget2->parentRef);
 
       if (extremesChanged) {
          widget2->setFlags (EXTREMES_CHANGED);
@@ -219,15 +211,6 @@ void Widget::sizeAllocate (Allocation *allocation)
        allocation->width != this->allocation.width ||
        allocation->ascent != this->allocation.ascent ||
        allocation->descent != this->allocation.descent) {
-
-      //DEBUG_MSG (DEBUG_ALLOC,
-      //           "a %stop-level %s with parent_ref = %d is newly allocated "
-      //           "from %d, %d, %d x %d x %d ...\n",
-      //           widget->parent ? "non-" : "",
-      //           (GTK_OBJECT_TYPE_NAME (widget), widget->parent_ref,
-      //           widget->allocation.x, widget->allocation.y,
-      //           widget->allocation.width, widget->allocation.ascent,
-      //           widget->allocation.descent);
 
       if (wasAllocated ()) {
          layout->queueDrawExcept (
@@ -512,10 +495,6 @@ Widget *Widget::getWidgetAtPoint (int x, int y, int level)
 {
    Iterator *it;
    Widget *childAtPoint;
-
-   //printf ("%*s-> examining the %s %p (%d, %d, %d x (%d + %d))\n",
-   //        3 * level, "", getClassName (), this, allocation.x, allocation.y,
-   //        allocation.width, allocation.ascent, allocation.descent);
 
    if (x >= allocation.x &&
        y >= allocation.y &&

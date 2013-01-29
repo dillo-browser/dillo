@@ -237,43 +237,47 @@ static void checkPreferredFonts()
    checkFont(prefs.font_fantasy, "fantasy");
 }
 
-static void setColorFLTK(int32_t color, void (*fn) (uchar, uchar, uchar))
+/*
+ * Set UI color. 'color' is an 0xrrggbb value, whereas 'default_val' is a fltk
+ * color (index 0-0xFF, or 0xrrggbb00).
+ */
+static void setUIColorWdef(Fl_Color idx, int32_t color, Fl_Color default_val)
 {
    if (color != -1)
-      fn(color >> 16, (color >> 8) & 0xff, color & 0xff);
-}
-
-static void setColorPrefWdef(int32_t &color, int32_t default_val)
-{
-   if (color == -1)
-      color = default_val;
-   else if (color == 0)
-      color = FL_BLACK;
-   else
-      color <<= 8;
+      Fl::set_color(idx, color << 8);
+   else if (default_val != 0xFFFFFFFF)
+      Fl::set_color(idx, default_val);
 }
 
 static void setColors()
 {
-   unsigned rgb;
+   /* The main background is a special case because Fl::background() will
+    * set the "gray ramp", which is a set of lighter and darker colors based
+    * on the main background and used for box edges and such.
+    */
+   if (prefs.ui_main_bg_color != -1) {
+      uchar r = prefs.ui_main_bg_color >> 16,
+            g = prefs.ui_main_bg_color >> 8 & 0xff,
+            b = prefs.ui_main_bg_color & 0xff;
 
-   setColorFLTK(prefs.ui_main_bg_color, Fl::background);
-   setColorFLTK(prefs.ui_text_bg_color, Fl::background2);
-   setColorFLTK(prefs.ui_fg_color, Fl::foreground);
+      Fl::background(r, g, b);
+   }
 
-   if (prefs.ui_selection_color == -1)
-      rgb = Fl::get_color(fl_contrast(FL_SELECTION_COLOR,
-                                      FL_BACKGROUND2_COLOR));
-   else
-      rgb = prefs.ui_selection_color << 8;
-   Fl::set_color(FL_SELECTION_COLOR, rgb);
-
-   setColorPrefWdef(prefs.ui_button_highlight_color,
-                    fl_lighter(FL_BACKGROUND_COLOR));
-   setColorPrefWdef(prefs.ui_tab_active_bg_color, FL_BACKGROUND2_COLOR);
-   setColorPrefWdef(prefs.ui_tab_bg_color, FL_BACKGROUND_COLOR);
-   setColorPrefWdef(prefs.ui_tab_active_fg_color, FL_FOREGROUND_COLOR);   
-   setColorPrefWdef(prefs.ui_tab_fg_color, FL_FOREGROUND_COLOR);   
+   setUIColorWdef(FL_BACKGROUND2_COLOR, prefs.ui_text_bg_color, 0xFFFFFFFF);
+   setUIColorWdef(FL_FOREGROUND_COLOR, prefs.ui_fg_color, 0xFFFFFFFF);
+   setUIColorWdef(FL_SELECTION_COLOR, prefs.ui_selection_color,
+                  fl_contrast(FL_SELECTION_COLOR, FL_BACKGROUND2_COLOR));
+   setUIColorWdef(PREFS_UI_BUTTON_HIGHLIGHT_COLOR,
+                  prefs.ui_button_highlight_color,
+                  fl_lighter(FL_BACKGROUND_COLOR));
+   setUIColorWdef(PREFS_UI_TAB_ACTIVE_BG_COLOR, prefs.ui_tab_active_bg_color,
+                  Fl::get_color(FL_BACKGROUND2_COLOR));
+   setUIColorWdef(PREFS_UI_TAB_BG_COLOR, prefs.ui_tab_bg_color,
+                  Fl::get_color(FL_BACKGROUND_COLOR));
+   setUIColorWdef(PREFS_UI_TAB_ACTIVE_FG_COLOR, prefs.ui_tab_active_fg_color,
+                  Fl::get_color(FL_FOREGROUND_COLOR));
+   setUIColorWdef(PREFS_UI_TAB_FG_COLOR, prefs.ui_tab_fg_color,
+                  Fl::get_color(FL_FOREGROUND_COLOR));   
 }
 
 /*

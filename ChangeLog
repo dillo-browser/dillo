@@ -13,6 +13,7 @@ dillo-3.0.3 [not released yet]
  - Replace polling in DNS with a pipe.
  - Packed trie to optimize hyphenator memory consumption.
  - Fix crash in datauri dpi.
+ - Speed up DNS requests when ipv6 isn't enabled.
    Patches: Johannes Hofmann
 +- Fix image input coordinates (BUG#1070)
  - When location bar is given focus, temporarily show panels if hidden

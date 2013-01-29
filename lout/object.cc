@@ -21,6 +21,7 @@
 
 #include "object.hh"
 #include <stdio.h>
+#include <stdint.h>
 #include <config.h>
 
 namespace lout {
@@ -132,7 +133,7 @@ int Pointer::hashValue()
    // Combine both parts of the pointer value *itself*, not what it
    // points to, by first referencing it (operator "&"), then
    // dereferencing it again (operator "[]").
-   return ((int*)&value)[0] ^ ((int*)&value)[1];
+   return ((intptr_t)value >> 32) ^ ((intptr_t)value);
 #endif
 }
 

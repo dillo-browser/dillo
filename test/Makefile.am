@@ -20,6 +20,7 @@ noinst_PROGRAMS = \
 	dw-imgbuf-mem-test \
 	dw-resource-test \
 	dw-ui-test \
+	containers \
 	shapes \
 	cookies \
 	liang \
@@ -163,6 +164,9 @@ shapes_SOURCES = shapes.cc
 shapes_LDADD = \
 	$(top_builddir)/dw/libDw-core.a \
 	$(top_builddir)/lout/liblout.a
+
+containers_SOURCES = containers.cc
+containers_LDADD = $(top_builddir)/lout/liblout.a
 
 cookies_SOURCES = cookies.c
 cookies_LDADD = \

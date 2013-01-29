@@ -75,8 +75,9 @@
 
 #ifdef ENABLE_SSL
 
-#include <openssl/ssl.h>
+#include <openssl/err.h>
 #include <openssl/rand.h>
+#include <openssl/ssl.h>
 
 static int get_network_connection(char * url);
 static int handle_certificate_problem(SSL * ssl_connection);
@@ -153,6 +154,11 @@ static void yes_ssl_support(void)
          MSG("Error creating SSL context\n");
          exit_error = 1;
       }
+   }
+
+   /* Do not use the SSLv2 protocol. */
+   if (exit_error == 0){
+      SSL_CTX_set_options(ssl_context, SSL_OP_NO_SSLv2);
    }
 
    /*Set directory to load certificates from*/
@@ -286,6 +292,7 @@ static void yes_ssl_support(void)
       /*Actually do SSL connection handshake*/
       if (SSL_connect(ssl_connection) != 1){
          MSG("SSL_connect failed\n");
+         ERR_print_errors_fp(stderr);
          exit_error = 1;
       }
    }

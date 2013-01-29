@@ -97,8 +97,9 @@ Possible other values for the \em multiplicity:
 \dot
 digraph G {
    node [shape=record, fontname=Helvetica, fontsize=10];
-   edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
-         labelfontsize=10, color="#404040", labelfontcolor="#000080"];
+   edge [arrowhead="none", dir="both", arrowtail="empty",
+         labelfontname=Helvetica, labelfontsize=10, color="#404040",
+         labelfontcolor="#000080"];
    fontname=Helvetica; fontsize=10;
    A[color="#ff8080"];
    B[color="#ff8080"];
@@ -127,8 +128,9 @@ instantiation by the template is shown by a yellow dashed arrow:
 \dot
 digraph G {
    node [shape=record, fontname=Helvetica, fontsize=10];
-   edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
-         labelfontsize=10, color="#404040", labelfontcolor="#000080"];
+   edge [arrowhead="none", arrowtail="empty", dir="both",
+         labelfontname=Helvetica, labelfontsize=10, color="#404040",
+         labelfontcolor="#000080"];
    fontname=Helvetica; fontsize=10;
 
    A[color="#ff8080"];
@@ -159,8 +161,9 @@ Packages are presented by dashed rectangles:
 \dot
 digraph G {
    node [shape=record, fontname=Helvetica, fontsize=10];
-   edge [arrowhead="none", arrowtail="empty", labelfontname=Helvetica,
-         labelfontsize=10, color="#404040", labelfontcolor="#000080"];
+   edge [arrowhead="none", arrowtail="empty", dir="both",
+         labelfontname=Helvetica, labelfontsize=10, color="#404040",
+         labelfontcolor="#000080"];
    fontname=Helvetica; fontsize=10;
 
    subgraph cluster_1 {

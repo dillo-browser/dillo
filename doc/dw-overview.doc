@@ -79,21 +79,22 @@ implementations)";
    Layout -> Widget [headlabel="1", taillabel="1", label="topLevel"];
    Widget -> Widget [headlabel="*", taillabel="1", label="children"];
 
-   Widget -> Textblock [arrowhead="none", arrowtail="empty"];
-   Widget -> Table [arrowhead="none", arrowtail="empty"];
-   Widget -> Image [arrowhead="none", arrowtail="empty"];
-   Widget -> etc1 [arrowhead="none", arrowtail="empty"];
-   Textblock -> AlignedTextblock [arrowhead="none", arrowtail="empty"];
-   AlignedTextblock -> etc2 [arrowhead="none", arrowtail="empty"];
+   Widget -> Textblock [arrowhead="none", arrowtail="empty", dir="both"];
+   Widget -> Table [arrowhead="none", arrowtail="empty", dir="both"];
+   Widget -> Image [arrowhead="none", arrowtail="empty", dir="both"];
+   Widget -> etc1 [arrowhead="none", arrowtail="empty", dir="both"];
+   Textblock -> AlignedTextblock [arrowhead="none", arrowtail="empty",
+                                  dir="both"];
+   AlignedTextblock -> etc2 [arrowhead="none", arrowtail="empty", dir="both"];
 
-   Platform -> FltkPlatform [arrowhead="none", arrowtail="empty",
+   Platform -> FltkPlatform [arrowhead="none", arrowtail="empty", dir="both",
                              style="dashed"];
    FltkPlatform -> FltkView [headlabel="*", taillabel="1"];
 
-   View -> FltkView [arrowhead="none", arrowtail="empty"];
-   FltkView -> FltkViewport [arrowhead="none", arrowtail="empty",
+   View -> FltkView [arrowhead="none", arrowtail="empty", dir="both"];
+   FltkView -> FltkViewport [arrowhead="none", arrowtail="empty", dir="both",
                              style="dashed"];
-   FltkView -> FltkPreview [arrowhead="none", arrowtail="empty",
+   FltkView -> FltkPreview [arrowhead="none", arrowtail="empty", dir="both",
                             style="dashed"];
 }
 \enddot
