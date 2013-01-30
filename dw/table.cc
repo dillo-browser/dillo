@@ -877,7 +877,8 @@ void Table::apportion2 (int totalWidth, int forceTotalWidth)
    int curNewWidth = minAutoWidth;
    for (int col = 0; col < numCols; col++) {
       _MSG("app2, col %d, minWidth=%d maxWidth=%d\n",
-          col,extremes->get(col).minWidth, colExtremes->get(col).maxWidth);
+           col, colExtremes->getRef(col)->minWidth,
+           colExtremes->get(col).maxWidth);
 
       if (colPercents->get(col) != LEN_AUTO)
          continue;
