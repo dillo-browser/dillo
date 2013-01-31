@@ -41,8 +41,8 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
 void OutOfFlowMgr::sizeAllocate(Vector<Float> *list, bool right,
                                 Allocation *containingBlockAllocation)
 {
-   int width =
-      availWidth != -1 ? availWidth : containingBlockAllocation->width;
+   //int width =
+   //   availWidth != -1 ? availWidth : containingBlockAllocation->width;
    
    for (int i = 0; i < list->size(); i++) {
       // TODO Missing: check newly calculated positions, collisions,
@@ -54,12 +54,13 @@ void OutOfFlowMgr::sizeAllocate(Vector<Float> *list, bool right,
 
       Allocation childAllocation;
       if (right)
+         // TODO Corrected by availWidth; see commented "width" above.
          childAllocation.x =
-            vloat->generatingBlock->getAllocation()->x + width
-            - (vloat->size.width + vloat->borderWidth);
+            vloat->generatingBlock->getAllocation()->x
+            + vloat->generatingBlock->getAllocation()->width
+            - vloat->size.width;
       else
-         childAllocation.x =
-            vloat->generatingBlock->getAllocation()->x + vloat->borderWidth;
+         childAllocation.x = vloat->generatingBlock->getAllocation()->x;
 
       childAllocation.y = vloat->generatingBlock->getAllocation()->y + vloat->y;
       childAllocation.width = vloat->size.width;
@@ -463,7 +464,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
          // It is not sufficient to find the first float, since a line
          // (with height h) may cover the region of multiple float, of
          // which the widest has to be choosen.
-         border = max (border, vloat->size.width + vloat->borderWidth);
+         border = max (border, vloat->size.width);
 
       // To be a bit more efficient, the loop could be stopped when
       // (i) at least one float has been found, and (ii) the next float is
@@ -554,62 +555,11 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       vloat->widget->setWidth (width);
       vloat->widget->sizeRequest (&vloat->size);
       
-      vloat->borderWidth = calcBorderDiff (vloat);
-      
       //printf ("   Float at %d: %d x (%d + %d)\n",
       //        vloat->y, vloat->width, vloat->ascent, vloat->descent);
           
       vloat->dirty = false;
    }
-}
-
-/**
- * Calculate the border diff, i. e., for left floats, the difference
- * between the left side of the allocation of the containing block and
- * the left side of the allocation of the float, and likewise for
- * right floats. Both values are positive.
- *
- * From how I have understood the CSS specification, the generating
- * block should be included. (In the case I am wrong: a change of this
- * method should be sufficient.)
- */
-int OutOfFlowMgr::calcBorderDiff (Float *vloat)
-{
-   // TODO Makes some assumtions about the allocation of the widgets,
-   // which are under typical conditions fulfilled. Because of the
-   // latter, this could be used as a first approximation, and later,
-   // when necessary, corrected by allocation.
-
-   switch (vloat->widget->getStyle()->vloat) {
-   case FLOAT_LEFT:
-      return calcLeftBorderDiff (vloat);
-      
-   case FLOAT_RIGHT:
-      return calcRightBorderDiff (vloat);
-
-   default:
-      // Only used for floats.
-      assertNotReached();
-      return 0; // compiler happiness
-   }
-}
-
-int OutOfFlowMgr::calcLeftBorderDiff (Float *vloat)
-{
-   int d = containingBlock->getStyle()->boxOffsetX();
-   for (Widget *w = vloat->generatingBlock; w != containingBlock;
-        w = w->getParent())
-      d += w->getStyle()->boxOffsetX();
-   return d;
-}
-
-int OutOfFlowMgr::calcRightBorderDiff (Float *vloat)
-{
-   int d = containingBlock->getStyle()->boxRestWidth();
-   for (Widget *w = vloat->generatingBlock; w != containingBlock;
-        w = w->getParent())
-      d += w->getStyle()->boxRestWidth();
-   return d;
 }
 
 // TODO Latest change: Check also Textblock::borderChanged: looks OK,

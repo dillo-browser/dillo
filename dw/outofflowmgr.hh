@@ -23,7 +23,6 @@ private:
       Textblock *generatingBlock;
       // width includes border of the containing block
       int y;           // relative to generator, not container
-      int borderWidth; // relative to container (difference to generator is 0)
       core::Requisition size;
       bool dirty;
 
@@ -43,9 +42,6 @@ private:
    lout::container::typed::Vector<Float> *getOppositeFloatList (core::Widget
                                                                 *widget);
    void ensureFloatSize (Float *vloat);
-   int calcBorderDiff (Float *vloat);
-   int calcLeftBorderDiff (Float *vloat);
-   int calcRightBorderDiff (Float *vloat);
 
    void sizeAllocate(lout::container::typed::Vector<Float> *list, bool right,
                      core::Allocation *containingBlockAllocation);
