@@ -505,8 +505,6 @@ protected:
       return getTextblockForLine (lineNo) == NULL;
    }
 
-   void borderChanged (int yWidget, bool extremesChanges);
-
    inline int lineYOffsetWidgetAllocation (Line *line,
                                            core::Allocation *allocation)
    {

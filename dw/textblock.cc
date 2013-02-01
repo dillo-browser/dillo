@@ -2285,21 +2285,8 @@ void Textblock::queueDrawRange (int index1, int index2)
 void Textblock::borderChanged (int y)
 {
    PRINTF ("[%p] Border has changed: %d\n", this, y);
-   borderChanged (y, true);
-   PRINTF ("[%p] Done.\n", this);
-}
 
-void Textblock::borderChanged (int yWidget, bool extremesChanges)
-{
-   PRINTF ("[%p] Border has changed: %d (extremes: %s)\n",
-           this, yWidget, extremesChanges ? "true" : "false");
-
-   // Notice that this method is, unlike the other "borderChanged",
-   // called (i) with canvas coordinates, not widget coordinates, and
-   // (ii) for all nested textblocks, not only the containing block.
-
-   // findLineIndex expects widget coordinates
-   int lineIndex = findLineIndex (yWidget);
+   int lineIndex = findLineIndex (y);
    // Nothing to do at all, when lineIndex >= lines->size (),
    // i. e. the change is below the bottom od this widget.
    if (lineIndex < lines->size ()) {
@@ -2311,27 +2298,7 @@ void Textblock::borderChanged (int yWidget, bool extremesChanges)
          wrapLineIndex = lineIndex;
       
       PRINTF ("[%p] Rewrapping from line %d.\n", this, wrapLineIndex);
-      queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex),
-                   extremesChanges);
-
-      // lines->size () + 1 here, to get a possibly "missing" line.
-      // TODO: May there me more than one missing line? Should perhaps
-      // reworked again.
-
-      // We iterate over the lines to get the top of the line, as
-      // vertical position of the widget (provided that this is the
-      // only widget in the line). The allocation cannot be used here,
-      // since it cannot be assumed that the widget has been
-      // allocated.
-      for (int lineNo = wrapLineIndex; lineNo < lines->size () + 1; lineNo++) {
-         Textblock *childBlock = getTextblockForLine (lineNo);
-         if (childBlock)
-            // extremes only change for the containing block, so we pass
-            // extremesChanges = false for all other widgets.
-            childBlock->borderChanged (yWidget
-                                       - topOfPossiblyMissingLine (lineNo),
-                                       false);
-      }
+      queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex), true);
    }
 }
 
