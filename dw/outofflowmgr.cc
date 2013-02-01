@@ -46,7 +46,8 @@ void OutOfFlowMgr::sizeAllocate(Vector<Float> *list, bool right,
 {
    //int width =
    //   availWidth != -1 ? availWidth : containingBlockAllocation->width;
-   
+
+   // 1, Floats have to be allocated
    for (int i = 0; i < list->size(); i++) {
       // TODO Missing: check newly calculated positions, collisions,
       // and queue resize, when neccessary.
@@ -76,6 +77,18 @@ void OutOfFlowMgr::sizeAllocate(Vector<Float> *list, bool right,
       //        right ? "right" : "left", i, childAllocation.x,
       //        childAllocation.y, childAllocation.width,
       //        childAllocation.ascent, childAllocation.descent);
+   }
+
+   // 2. Textblocks have already been allocated, but we store some
+   // information for later use.
+   for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
+           tbInfos->iterator ();
+        it.hasNext (); ) {
+      TypedPointer <Textblock> *key = it.getNext ();
+      TBInfo *tbInfo = tbInfos->get (key);
+      tbInfo->wasAllocated = true;
+      tbInfo->x = key->getTypedValue()->getAllocation()->x;
+      tbInfo->y = key->getTypedValue()->getAllocation()->y;
    }
 }
 
