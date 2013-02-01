@@ -33,10 +33,19 @@ private:
       }
    };
 
+   class TBInfo: public lout::object::Object
+   {
+   public:
+      bool wasAllocated;
+      int x, y;
+   };
+
    //lout::container::typed::HashTable<lout::object::TypedPointer
    //                                <dw::core::Widget>, Float> *floatsByWidget;
    lout::container::typed::Vector<Float> *leftFloats, *rightFloats;
-
+   lout::container::typed::HashTable<lout::object::TypedPointer <Textblock>,
+                                     TBInfo> *tbInfos;
+   
    Float *findFloatByWidget (core::Widget *widget);
    lout::container::typed::Vector<Float> *getFloatList (core::Widget *widget);
    lout::container::typed::Vector<Float> *getOppositeFloatList (core::Widget

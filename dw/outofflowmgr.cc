@@ -1,6 +1,7 @@
 #include "outofflowmgr.hh"
 #include "textblock.hh"
 
+using namespace lout::object;
 using namespace lout::container::typed;
 using namespace lout::misc;
 using namespace dw::core;
@@ -22,6 +23,7 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    availWidth = availAscent = availDescent = -1;   
    leftFloats = new Vector<Float> (1, true);
    rightFloats = new Vector<Float> (1, true);
+   tbInfos = new HashTable <TypedPointer <Textblock>, TBInfo> (true, true);
 }
 
 OutOfFlowMgr::~OutOfFlowMgr ()
@@ -30,6 +32,7 @@ OutOfFlowMgr::~OutOfFlowMgr ()
 
    delete leftFloats;
    delete rightFloats;
+   delete tbInfos;
 }
 
 void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
@@ -439,6 +442,14 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
                              int y, int h)
 {
    int border = 0;
+
+   TypedPointer<Textblock> key (textblock);
+   TBInfo *tbInfo = tbInfos->get (&key);
+   if (tbInfo == NULL) {
+      tbInfo = new TBInfo;
+      tbInfo->wasAllocated = false;
+      tbInfos->put (new TypedPointer<Textblock> (textblock), tbInfo);
+   }
 
    // To be a bit more efficient, one could use linear search to find
    // the first affected float.
