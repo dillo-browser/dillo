@@ -266,7 +266,6 @@ Widget *OutOfFlowMgr::getWidgetAtPoint (Vector<Float> *list,
 void OutOfFlowMgr::tellNoPosition (Widget *widget)
 {
    Float *vloat = findFloatByWidget(widget);
-   int oldY = vloat->y;
    vloat->y = -1;
 
    // Since tellPosition will be called soon, no
