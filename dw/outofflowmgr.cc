@@ -284,73 +284,31 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
    int oldY = vloat->y;
    vloat->y = y;
 
-   if (oldY == -1)
-      containingBlock->borderChanged (vloat->yForContainer (this));
-   else if (vloat->y != oldY)
-      containingBlock->borderChanged (vloat->yForContainer
-                                      (this, min (oldY, vloat->y)));
+   // TODO Test collisions (check old code).
 
-#if 0
-   assert (y >= 0);
-
-   Float *vloat = findFloatByWidget(widget);
-   ensureFloatSize (vloat);
-
-   //printf ("[%p] tellPosition (%p, %d): %d ...\n",
-   //        containingBlock, widget, y, vloat->y);
-   
-   int oldY = vloat->y;
-   
-   int realY = y;
-   Vector<Float> *listSame = getFloatList (widget);   
-   Vector<Float> *listOpp = getOppositeFloatList (widget);   
-   bool collides;
-   
-   do {
-      // Test collisions on the same side.
-      collides = false;
+   if (vloat->generatingBlock->wasAllocated ()) {
+      int yChange = oldY == -1 ? vloat->y : min (oldY, vloat->y);
       
-      for (int i = 0; i < listSame->size(); i++) {
-         Float *v = listSame->get(i);
-         if (v != vloat) {
-            ensureFloatSize (v);
-            if (v->y != -1 && realY >= v->y && 
-                realY < v->y + v->size.ascent + v->size.descent) {
-               collides = true;
-               realY = v->y + v->size.ascent + v->size.descent;
-               break;
+      // TODO This (and similar code) is not very efficient.
+      for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
+              tbInfos->iterator ();
+           it.hasNext (); ) {
+         TypedPointer <Textblock> *key = it.getNext ();
+         Textblock *textblock = key->getTypedValue();
+         TBInfo *tbInfo = tbInfos->get (key);
+         if (textblock != vloat->generatingBlock) {
+            // The generating block takes care of the possible change
+            // (see Textblock::wrapWidgetOofRef), so only the other
+            // textblocks must be told about this.
+            if (tbInfo->wasAllocated) {
+               int yTextblock =
+                  vloat->generatingBlock->getAllocation() + yChange
+                  - textblock->getAllocation();
+               textblock->borderChanged (yTextblock);
             }
          }
-      }    
-      
-      // Test collisions on the other side.
-      for (int i = 0; i < listOpp->size(); i++) {
-         Float *v = listOpp->get(i);
-         // Note: Since v is on the opposite side, the condition 
-         // v != vloat (used above) is always true.
-         ensureFloatSize (v);
-         if (v->y != -1 && realY >= v->y && 
-             realY < v->y + v->size.ascent + v->size.descent &&
-             // For the other size, horizontal dimensions have to be
-             // considered, too.
-             v->size.width + v->borderWidth +
-             vloat->size.width + vloat->borderWidth > availWidth) {
-            collides = true;
-            realY = v->y + v->size.ascent + v->size.descent;
-            break;
-         }
-      } 
-   } while (collides);
-
-   vloat->y = realY;
-
-   //printf ("  => %d\n", vloat->y);
-   
-   if (oldY == -1)
-      containingBlock->borderChanged (vloat->y);
-   else if (vloat->y != oldY)
-      containingBlock->borderChanged (min (oldY, vloat->y));
-#endif
+      }
+   }
 }
 
 void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
