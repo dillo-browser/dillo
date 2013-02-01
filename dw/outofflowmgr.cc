@@ -259,91 +259,18 @@ Widget *OutOfFlowMgr::getWidgetAtPoint (Vector<Float> *list,
 }
 
 
+/**
+ * This method is called by Textblock::rewrap at the beginning, to
+ * avoid wrong positions.
+ */
 void OutOfFlowMgr::tellNoPosition (Widget *widget)
 {
    Float *vloat = findFloatByWidget(widget);
    int oldY = vloat->y;
    vloat->y = -1;
 
-   if (oldY != -1 && containingBlock->wasAllocated() &&
-       vloat->generatingBlock->wasAllocated())
-      // ContainingBlock::borderChanged expects coordinates relative
-      // to the container.
-      containingBlock->borderChanged (vloat->yForContainer (this, oldY));
-}
-
-
-void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
-                            int *oofWidth, int *oofHeight)
-{
-   // CbWidth and cbHeight *do* contain padding, border, and
-   // margin. See call in dw::Textblock::sizeRequest. (Notice that
-   // this has changed from an earlier version.)
-
-   // Also notice that Float::y includes margins etc.
-
-   // TODO Is it correct to add padding, border, and margin to the
-   // containing block? Check CSS spec.
-
-   *oofWidth = cbWidth; /* This (or "<=" instead of "=") should be
-                           the case for floats. */
-
-#if 0
-   // TODO Latest change: Check and re-activate.
-
-   int oofHeightLeft = containingBlock->asWidget()->getStyle()->boxDiffWidth();
-   int oofHeightRight = containingBlock->asWidget()->getStyle()->boxDiffWidth();
-
-   for (int i = 0; i < leftFloats->size(); i++) {
-      Float *vloat = leftFloats->get(i);
-      if (vloat->y != -1) {
-         ensureFloatSize (vloat);
-         oofHeightLeft =
-            max (oofHeightLeft,
-                 vloat->y + vloat->size.ascent + vloat->size.descent
-                 + containingBlock->asWidget()->getStyle()->boxRestHeight());
-      }
-   }
-
-   for (int i = 0; i < rightFloats->size(); i++) {
-      Float *vloat = rightFloats->get(i);
-      if (vloat->y != -1) {
-         ensureFloatSize (vloat);
-         oofHeightRight =
-            max (oofHeightRight,
-                 vloat->y + vloat->size.ascent + vloat->size.descent
-                 + containingBlock->asWidget()->getStyle()->boxRestHeight());
-      }
-   }
-
-   *oofHeight = max (oofHeightLeft, oofHeightRight);
-#endif
-}
-
-void OutOfFlowMgr::getExtremes (int cbMinWidth, int cbMaxWidth,
-                                int *oofMinWidth, int *oofMaxWidth)
-{
-   *oofMinWidth = *oofMaxWidth = 0;
-   accumExtremes (leftFloats, oofMinWidth, oofMaxWidth);
-   accumExtremes (rightFloats, oofMinWidth, oofMaxWidth);
-}
-
-void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
-                                  int *oofMaxWidth)
-{
-   // TODO Latest change: Check and re-activate.
-
-#if 0
-   for (int i = 0; i < list->size(); i++) {
-      Float *v = list->get(i);
-      Extremes extr;
-      v->widget->getExtremes (&extr);
-      // TODO Calculation of borders is repeated quite much.
-      int borderDiff = calcLeftBorderDiff (v) + calcRightBorderDiff (v);
-      *oofMinWidth = max (*oofMinWidth, extr.minWidth + borderDiff);
-      *oofMaxWidth = max (*oofMaxWidth, extr.maxWidth + borderDiff);
-   }
-#endif
+   // Since tellPosition will be called soon, no
+   // Textblock::borderChanged is called.
 }
 
 
@@ -424,6 +351,79 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
       containingBlock->borderChanged (vloat->y);
    else if (vloat->y != oldY)
       containingBlock->borderChanged (min (oldY, vloat->y));
+#endif
+}
+
+void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
+                            int *oofWidth, int *oofHeight)
+{
+   // CbWidth and cbHeight *do* contain padding, border, and
+   // margin. See call in dw::Textblock::sizeRequest. (Notice that
+   // this has changed from an earlier version.)
+
+   // Also notice that Float::y includes margins etc.
+
+   // TODO Is it correct to add padding, border, and margin to the
+   // containing block? Check CSS spec.
+
+   *oofWidth = cbWidth; /* This (or "<=" instead of "=") should be
+                           the case for floats. */
+
+#if 0
+   // TODO Latest change: Check and re-activate.
+
+   int oofHeightLeft = containingBlock->asWidget()->getStyle()->boxDiffWidth();
+   int oofHeightRight = containingBlock->asWidget()->getStyle()->boxDiffWidth();
+
+   for (int i = 0; i < leftFloats->size(); i++) {
+      Float *vloat = leftFloats->get(i);
+      if (vloat->y != -1) {
+         ensureFloatSize (vloat);
+         oofHeightLeft =
+            max (oofHeightLeft,
+                 vloat->y + vloat->size.ascent + vloat->size.descent
+                 + containingBlock->asWidget()->getStyle()->boxRestHeight());
+      }
+   }
+
+   for (int i = 0; i < rightFloats->size(); i++) {
+      Float *vloat = rightFloats->get(i);
+      if (vloat->y != -1) {
+         ensureFloatSize (vloat);
+         oofHeightRight =
+            max (oofHeightRight,
+                 vloat->y + vloat->size.ascent + vloat->size.descent
+                 + containingBlock->asWidget()->getStyle()->boxRestHeight());
+      }
+   }
+
+   *oofHeight = max (oofHeightLeft, oofHeightRight);
+#endif
+}
+
+void OutOfFlowMgr::getExtremes (int cbMinWidth, int cbMaxWidth,
+                                int *oofMinWidth, int *oofMaxWidth)
+{
+   *oofMinWidth = *oofMaxWidth = 0;
+   accumExtremes (leftFloats, oofMinWidth, oofMaxWidth);
+   accumExtremes (rightFloats, oofMinWidth, oofMaxWidth);
+}
+
+void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
+                                  int *oofMaxWidth)
+{
+   // TODO Latest change: Check and re-activate.
+
+#if 0
+   for (int i = 0; i < list->size(); i++) {
+      Float *v = list->get(i);
+      Extremes extr;
+      v->widget->getExtremes (&extr);
+      // TODO Calculation of borders is repeated quite much.
+      int borderDiff = calcLeftBorderDiff (v) + calcRightBorderDiff (v);
+      *oofMinWidth = max (*oofMinWidth, extr.minWidth + borderDiff);
+      *oofMaxWidth = max (*oofMaxWidth, extr.maxWidth + borderDiff);
+   }
 #endif
 }
    
