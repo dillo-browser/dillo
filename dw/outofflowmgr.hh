@@ -58,6 +58,7 @@ private:
               core::View *view, core::Rectangle *area);
    core::Widget *getWidgetAtPoint (lout::container::typed::Vector<Float> *list,
                                    int x, int y, int level);
+   void tellPositionOrNot (core::Widget *widget, int y);
    void accumExtremes (lout::container::typed::Vector<Float> *list,
                        int *oofMinWidth, int *oofMaxWidth);
    int getBorder (Textblock *textblock,

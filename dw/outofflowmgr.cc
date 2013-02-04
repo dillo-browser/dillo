@@ -265,29 +265,42 @@ Widget *OutOfFlowMgr::getWidgetAtPoint (Vector<Float> *list,
  */
 void OutOfFlowMgr::tellNoPosition (Widget *widget)
 {
-   Float *vloat = findFloatByWidget(widget);
-   vloat->y = -1;
-
-   // Since tellPosition will be called soon, no
-   // Textblock::borderChanged is called.
+   tellPositionOrNot (widget, -1);
 }
 
 
 void OutOfFlowMgr::tellPosition (Widget *widget, int y)
 {
-   // TODO Latest change: Check and reactivate. First, rather simple.
    assert (y >= 0);
+   tellPositionOrNot (widget, y);
+}
 
+void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y)
+{
    Float *vloat = findFloatByWidget(widget);
-   ensureFloatSize (vloat);
-
+   if (y != -1)
+      ensureFloatSize (vloat);
    int oldY = vloat->y;
-   vloat->y = y;
 
-   // TODO Test collisions (check old code).
+   if (y != -1) {
+      // TODO Test collisions (check old code).
+   }
 
-   if (vloat->generatingBlock->wasAllocated ()) {
-      int yChange = oldY == -1 ? vloat->y : min (oldY, vloat->y);
+   vloat->y = y; // Due to collisions, vloat->y may be different from y.
+
+   if (vloat->generatingBlock->wasAllocated () &&
+       // A change from "no position" to "no position" is uninteresting.
+       !(oldY == -1 && vloat->y == -1)) {
+      int yChange;
+      if (vloat->y == -1)
+         // position -> no position
+         yChange = oldY;
+      else if (oldY == -1)
+         // no position -> position
+         yChange = vloat->y;
+      else
+         // position -> position
+         yChange = min (oldY, vloat->y);
       
       // TODO This (and similar code) is not very efficient.
       for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
@@ -295,12 +308,34 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
            it.hasNext (); ) {
          TypedPointer <Textblock> *key = it.getNext ();
          Textblock *textblock = key->getTypedValue();
-         TBInfo *tbInfo = tbInfos->get (key);
-         if (textblock != vloat->generatingBlock) {
-            // The generating block takes care of the possible change
-            // (see Textblock::wrapWidgetOofRef), so only the other
-            // textblocks must be told about this.
-            if (tbInfo->wasAllocated) {
+
+         if (textblock->wasAllocated () &&
+             // For y == -1, there will be soon a rewrap (see
+             // Textblock::rewrap), or, for y != -1 , the generating
+             // block takes care of the possible change (see
+             // Textblock::wrapWidgetOofRef), respectively; so, only
+             // the other textblocks must be told about this.
+             textblock != vloat->generatingBlock) {
+            int tby1 = textblock->getAllocation()->y;
+            int tby2 = tby1 + textblock->getAllocation()->ascent
+               + textblock->getAllocation()->descent;
+            int flh = 
+               vloat->dirty ? 0 : vloat->size.ascent + vloat->size.descent;
+            bool covered = false;
+
+            if (oldY != -1) {
+               int y1 = vloat->generatingBlock->getAllocation()->y + oldY;
+               int y2 = y1 + flh;
+               covered = y2 > tby1 && y1 < tby2;
+            }
+
+            if (!covered && vloat->y != -1) {
+               int y1 = vloat->generatingBlock->getAllocation()->y + vloat->y;
+               int y2 = y1 + flh;
+               covered = y2 > tby1 && y1 < tby2;
+            }
+
+            if (covered) {
                int yTextblock =
                   vloat->generatingBlock->getAllocation() + yChange
                   - textblock->getAllocation();
