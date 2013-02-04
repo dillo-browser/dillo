@@ -21,15 +21,14 @@ private:
    public:
       core::Widget *widget;
       Textblock *generatingBlock;
-      // width includes border of the containing block
-      int y;           // relative to generator, not container
+      int yReq, yReal; // relative to generator, not container
       core::Requisition size;
       bool dirty;
 
       int yForContainer (OutOfFlowMgr *oofm, int y);
 
       inline int yForContainer (OutOfFlowMgr *oofm) {
-         return yForContainer (oofm, y);
+         return yForContainer (oofm, yReal);
       }
    };
 

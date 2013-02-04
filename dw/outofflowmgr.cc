@@ -53,7 +53,7 @@ void OutOfFlowMgr::sizeAllocate(Vector<Float> *list, bool right,
       // and queue resize, when neccessary.
 
       Float *vloat = list->get(i);
-      assert (vloat->y != -1);
+      assert (vloat->yReal != -1);
       ensureFloatSize (vloat);
 
       Allocation childAllocation;
@@ -66,7 +66,8 @@ void OutOfFlowMgr::sizeAllocate(Vector<Float> *list, bool right,
       else
          childAllocation.x = vloat->generatingBlock->getAllocation()->x;
 
-      childAllocation.y = vloat->generatingBlock->getAllocation()->y + vloat->y;
+      childAllocation.y =
+         vloat->generatingBlock->getAllocation()->y + vloat->yReal;
       childAllocation.width = vloat->size.width;
       childAllocation.ascent = vloat->size.ascent;
       childAllocation.descent = vloat->size.descent;
@@ -103,7 +104,7 @@ void OutOfFlowMgr::draw (Vector<Float> *list, View *view, Rectangle *area)
 {
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
-      assert (vloat->y != -1);
+      assert (vloat->yReal != -1);
 
       core::Rectangle childArea;
       if (vloat->widget->intersects (area, &childArea))
@@ -129,7 +130,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
       vloat->widget = widget;
       vloat->generatingBlock = generatingBlock;
       vloat->dirty = true;
-      vloat->y = -1;
+      vloat->yReq = vloat->yReal = -1;
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
@@ -215,7 +216,7 @@ void OutOfFlowMgr::markSizeChange (int ref)
          vloat->dirty = true;
          // In some cases, the vertical position is not yet defined. Nothing
          // necessary then.
-         if (vloat->y != -1 && vloat->generatingBlock->wasAllocated())
+         if (vloat->yReal != -1 && vloat->generatingBlock->wasAllocated())
             // ContainingBlock::borderChanged expects coordinates
             // relative to the container.
             containingBlock->borderChanged (vloat->yForContainer (this));
@@ -278,29 +279,34 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
 void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y)
 {
    Float *vloat = findFloatByWidget(widget);
+   if (y == vloat->yReq)
+      // Nothing happened.
+      return;
+
    if (y != -1)
       ensureFloatSize (vloat);
-   int oldY = vloat->y;
+   int oldY = vloat->yReal;
+   vloat->yReq = y;
 
    if (y != -1) {
       // TODO Test collisions (check old code).
    }
 
-   vloat->y = y; // Due to collisions, vloat->y may be different from y.
+   vloat->yReal = y; // Due to collisions, vloat->y may be different from y.
 
    if (vloat->generatingBlock->wasAllocated () &&
        // A change from "no position" to "no position" is uninteresting.
-       !(oldY == -1 && vloat->y == -1)) {
+       !(oldY == -1 && vloat->yReal == -1)) {
       int yChange;
-      if (vloat->y == -1)
+      if (vloat->yReal == -1)
          // position -> no position
          yChange = oldY;
       else if (oldY == -1)
          // no position -> position
-         yChange = vloat->y;
+         yChange = vloat->yReal;
       else
          // position -> position
-         yChange = min (oldY, vloat->y);
+         yChange = min (oldY, vloat->yReal);
       
       // TODO This (and similar code) is not very efficient.
       for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
@@ -329,8 +335,9 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y)
                covered = y2 > tby1 && y1 < tby2;
             }
 
-            if (!covered && vloat->y != -1) {
-               int y1 = vloat->generatingBlock->getAllocation()->y + vloat->y;
+            if (!covered && vloat->yReal != -1) {
+               int y1 =
+                  vloat->generatingBlock->getAllocation()->y + vloat->yReal;
                int y2 = y1 + flh;
                covered = y2 > tby1 && y1 < tby2;
             }
@@ -462,14 +469,14 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
       int yWidget;
-      if (vloat->y == -1)
+      if (vloat->yReal == -1)
          yWidget = -1;
       else if (textblock == vloat->generatingBlock)
-         yWidget = vloat->y;
+         yWidget = vloat->yReal;
       else {
          if (textblock->wasAllocated() &&
              vloat->generatingBlock->wasAllocated())
-            yWidget = vloat->y + vloat->generatingBlock->getAllocation()->y
+            yWidget = vloat->yReal + vloat->generatingBlock->getAllocation()->y
                - textblock->getAllocation()->y;
          else
             yWidget = -1;
