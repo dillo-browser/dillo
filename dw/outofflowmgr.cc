@@ -200,33 +200,22 @@ void OutOfFlowMgr::markSizeChange (int ref)
    //printf ("[%p] MARK_SIZE_CHANGE (%d)\n", containingBlock, ref);
 
    if (isRefFloat (ref)) {
-      // Nothing can be done when the container has not been allocated.
-      if (containingBlock->wasAllocated()) {
-         Float *vloat;
-         
-         if (isRefLeftFloat (ref))
-            vloat = leftFloats->get (getFloatIndexFromRef (ref));
-         else if (isRefRightFloat (ref))
-            vloat = rightFloats->get (getFloatIndexFromRef (ref));
-         else {
-            assertNotReached();
-            vloat = NULL; // compiler happiness
-         }
-         
-         vloat->dirty = true;
-         // In some cases, the vertical position is not yet defined. Nothing
-         // necessary then.
-         if (vloat->yReal != -1 && vloat->generatingBlock->wasAllocated())
-            // ContainingBlock::borderChanged expects coordinates
-            // relative to the container.
-            containingBlock->borderChanged (vloat->yForContainer (this));
+      Float *vloat;
+      
+      if (isRefLeftFloat (ref))
+         vloat = leftFloats->get (getFloatIndexFromRef (ref));
+      else if (isRefRightFloat (ref))
+         vloat = rightFloats->get (getFloatIndexFromRef (ref));
+      else {
+         assertNotReached();
+         vloat = NULL; // compiler happiness
       }
-      // TODO When ContainingBlock::borderChanged has not been called
-      // (because at least one of the widgets has not been allocated),
-      // this has to be done later, in sizeAllocate. How is this
-      // remembered? This is valid for all calls of
-      // ContainingBlock::borderChanged; search this file for other
-      // occurences.
+      
+      vloat->dirty = true;
+      // In some cases, the vertical position is not yet defined. Nothing
+      // necessary then.
+      if (vloat->yReal != -1)
+         vloat->generatingBlock->borderChanged (vloat->yReal);
    } else
       // later: absolute positions
       assertNotReached();
@@ -235,7 +224,7 @@ void OutOfFlowMgr::markSizeChange (int ref)
 
 void OutOfFlowMgr::markExtremesChange (int ref)
 {
-   // TODO Something to do here?
+   // Nothing to do here.
 }
 
 Widget *OutOfFlowMgr::getWidgetAtPoint (int x, int y, int level)
