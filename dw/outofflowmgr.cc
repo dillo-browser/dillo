@@ -290,10 +290,16 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y)
 
    if (y != -1) {
       // TODO Test collisions (check old code).
+
+      // It is assumed that there are no floats below this float
+      // within this generator. For this reason, no other floats have
+      // to be adjusted.
    }
 
    vloat->yReal = y; // Due to collisions, vloat->y may be different from y.
 
+   // Only this float has been changed (see above), so only this float
+   // has to be tested against all textblocks.
    if (vloat->generatingBlock->wasAllocated () &&
        // A change from "no position" to "no position" is uninteresting.
        !(oldY == -1 && vloat->yReal == -1)) {
