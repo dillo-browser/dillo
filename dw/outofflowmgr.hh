@@ -55,9 +55,11 @@ private:
    void sizeAllocateFloats (lout::container::typed::Vector<Float> *list,
                             bool right,
                             core::Allocation *containingBlockAllocation);
-   bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
+   bool isTextblockCoveredByFloats (core::Allocation *containingBlockAllocation,
+                                    Textblock *tb, int tbx, int tby,
                                     int tbWidth, int tbHeight);
    bool isTextblockCoveredByFloats (lout::container::typed::Vector<Float> *list,
+                                    core::Allocation *containingBlockAllocation,
                                     Textblock *tb, int tbx, int tby,
                                     int tbWidth, int tbHeight);
 

@@ -58,15 +58,17 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
       if ((!tbInfo->wasAllocated || tbInfo->xCB != xCB || tbInfo->yCB != yCB ||
            tbInfo->width != width || tbInfo->height != height) &&
           (// old allocation
-           isTextblockCoveredByFloats (tb,
+           isTextblockCoveredByFloats (containingBlockAllocation, tb,
                                        tbInfo->xCB
                                        + containingBlockAllocation->x,
                                        tbInfo->yCB
                                        + containingBlockAllocation->y,
                                        tbInfo->width, tbInfo->height) ||
            // new allocation
-           isTextblockCoveredByFloats (tb, tb->getAllocation()->x,
-                                       tb->getAllocation()->y, width, height))){
+           isTextblockCoveredByFloats (containingBlockAllocation, tb,
+                                       tb->getAllocation()->x,
+                                       tb->getAllocation()->y,
+                                       width, height))) {
          tb->borderChanged (0);
          // TODO Better let isTextblockCoveredByFloats return a value?
       }
@@ -79,26 +81,44 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
    }
 }
 
-bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
+bool OutOfFlowMgr::isTextblockCoveredByFloats (Allocation
+                                               *containingBlockAllocation,
+                                               Textblock *tb, int tbx, int tby,
                                                int tbWidth, int tbHeight)
 {
-   return isTextblockCoveredByFloats (leftFloats, tb, tbx, tby, tbWidth,
-                                      tbHeight) ||
-      isTextblockCoveredByFloats (rightFloats, tb, tbx, tby, tbWidth, tbHeight);
+   return
+      isTextblockCoveredByFloats (leftFloats, containingBlockAllocation,
+                                  tb, tbx, tby, tbWidth, tbHeight) ||
+      isTextblockCoveredByFloats (rightFloats, containingBlockAllocation,
+                                  tb, tbx, tby, tbWidth, tbHeight);
 }
 
 bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
+                                               Allocation
+                                               *containingBlockAllocation,
                                                Textblock *tb, int tbx, int tby,
                                                int tbWidth, int tbHeight)
 {
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
+
+      // This method is called within OOFM::sizeAllocate, which is
+      // called in Textblock::sizeAllocateImpl for the containing
+      // block, so that the only textblock which is not necessary
+      // allocates is the containing block.
+      assert (vloat->generatingBlock->wasAllocated() ||
+              vloat->generatingBlock == containingBlock);
+
+      // In this case we have to refer to the allocation passed to
+      // Textblock::sizeAllocateImpl.
+      Allocation *generatingBlockAllocation =
+         vloat->generatingBlock == containingBlock ?
+         containingBlockAllocation : vloat->generatingBlock->getAllocation();
       
       // TODO When is the generating block not allocated? (Looks strange.)
-      if (vloat->generatingBlock->wasAllocated() &&
-          tb != vloat->generatingBlock && vloat->yReal != -1) {
+      if (tb != vloat->generatingBlock && vloat->yReal != -1) {
          int flh = vloat->dirty ? 0 : vloat->size.ascent + vloat->size.descent;
-         int y1 = vloat->generatingBlock->getAllocation()->y + vloat->yReal;
+         int y1 = generatingBlockAllocation->y + vloat->yReal;
          int y2 = y1 + flh;
          
          // TODO: Also regard horizontal dimension (same for tellPositionOrNot).
