@@ -114,6 +114,13 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
       Allocation *generatingBlockAllocation =
          vloat->generatingBlock == containingBlock ?
          containingBlockAllocation : vloat->generatingBlock->getAllocation();
+
+      // Idea: the distinction could be removed, and the code so made
+      // simpler, by moving this second part of OOFM::sizeAllocate
+      // into an idle function. This would also make the question
+      // obsolete whether it is allowed to call queueResize within
+      // sizeAllocate. Unfortunately, idle funtions currently only
+      // refer to layouts, not to widgets.
       
       // TODO When is the generating block not allocated? (Looks strange.)
       if (tb != vloat->generatingBlock && vloat->yReal != -1) {
