@@ -36,7 +36,8 @@ private:
    {
    public:
       bool wasAllocated;
-      int x, y;
+      int xCB, yCB; // relative to the containing block
+      int width, height;
    };
 
    //lout::container::typed::HashTable<lout::object::TypedPointer
@@ -51,8 +52,15 @@ private:
                                                                 *widget);
    void ensureFloatSize (Float *vloat);
 
-   void sizeAllocate(lout::container::typed::Vector<Float> *list, bool right,
-                     core::Allocation *containingBlockAllocation);
+   void sizeAllocateFloats (lout::container::typed::Vector<Float> *list,
+                            bool right,
+                            core::Allocation *containingBlockAllocation);
+   bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
+                                    int tbWidth, int tbHeight);
+   bool isTextblockCoveredByFloats (lout::container::typed::Vector<Float> *list,
+                                    Textblock *tb, int tbx, int tby,
+                                    int tbWidth, int tbHeight);
+
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);
    core::Widget *getWidgetAtPoint (lout::container::typed::Vector<Float> *list,

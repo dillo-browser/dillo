@@ -37,20 +37,88 @@ OutOfFlowMgr::~OutOfFlowMgr ()
 
 void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
 {
-   sizeAllocate (leftFloats, false, containingBlockAllocation);
-   sizeAllocate (rightFloats, true, containingBlockAllocation);
+   // 1, Floats have to be allocated
+   sizeAllocateFloats (leftFloats, false, containingBlockAllocation);
+   sizeAllocateFloats (rightFloats, true, containingBlockAllocation);
+
+   // 2. Textblocks have already been allocated, but we store some
+   // information for later use. TODO: Update this comment!
+   for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
+           tbInfos->iterator ();
+        it.hasNext (); ) {
+      TypedPointer <Textblock> *key = it.getNext ();
+      TBInfo *tbInfo = tbInfos->get (key);
+      Textblock *tb = key->getTypedValue();
+
+      int xCB = tb->getAllocation()->x - containingBlockAllocation->x;
+      int yCB = tb->getAllocation()->y - containingBlockAllocation->y;
+      int width = tb->getAllocation()->width;
+      int height = tb->getAllocation()->ascent + tb->getAllocation()->descent;
+
+      if ((!tbInfo->wasAllocated || tbInfo->xCB != xCB || tbInfo->yCB != yCB ||
+           tbInfo->width != width || tbInfo->height != height) &&
+          (// old allocation
+           isTextblockCoveredByFloats (tb,
+                                       tbInfo->xCB
+                                       + containingBlockAllocation->x,
+                                       tbInfo->yCB
+                                       + containingBlockAllocation->y,
+                                       tbInfo->width, tbInfo->height) ||
+           // new allocation
+           isTextblockCoveredByFloats (tb, tb->getAllocation()->x,
+                                       tb->getAllocation()->y, width, height))){
+         tb->borderChanged (0);
+         // TODO Better let isTextblockCoveredByFloats return a value?
+      }
+
+      tbInfo->wasAllocated = true;
+      tbInfo->xCB = xCB;
+      tbInfo->yCB = yCB;
+      tbInfo->width = width;
+      tbInfo->height = height;
+   }
 }
 
-void OutOfFlowMgr::sizeAllocate(Vector<Float> *list, bool right,
-                                Allocation *containingBlockAllocation)
+bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
+                                               int tbWidth, int tbHeight)
+{
+   return isTextblockCoveredByFloats (leftFloats, tb, tbx, tby, tbWidth,
+                                      tbHeight) ||
+      isTextblockCoveredByFloats (rightFloats, tb, tbx, tby, tbWidth, tbHeight);
+}
+
+bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
+                                               Textblock *tb, int tbx, int tby,
+                                               int tbWidth, int tbHeight)
+{
+   for (int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
+      
+      // TODO When is the generating block not allocated? (Looks strange.)
+      if (vloat->generatingBlock->wasAllocated() &&
+          tb != vloat->generatingBlock && vloat->yReal != -1) {
+         int flh = vloat->dirty ? 0 : vloat->size.ascent + vloat->size.descent;
+         int y1 = vloat->generatingBlock->getAllocation()->y + vloat->yReal;
+         int y2 = y1 + flh;
+         
+         // TODO: Also regard horizontal dimension (same for tellPositionOrNot).
+         if (y2 > tby && y1 < tby + tbWidth)
+            return true;
+      }
+   }
+
+   return false;
+}
+
+void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, bool right,
+                                       Allocation *containingBlockAllocation)
 {
    //int width =
    //   availWidth != -1 ? availWidth : containingBlockAllocation->width;
 
-   // 1, Floats have to be allocated
    for (int i = 0; i < list->size(); i++) {
       // TODO Missing: check newly calculated positions, collisions,
-      // and queue resize, when neccessary.
+      // and queue resize, when neccessary. TODO: See step 2?
 
       Float *vloat = list->get(i);
       assert (vloat->yReal != -1);
@@ -79,19 +147,8 @@ void OutOfFlowMgr::sizeAllocate(Vector<Float> *list, bool right,
       //        childAllocation.y, childAllocation.width,
       //        childAllocation.ascent, childAllocation.descent);
    }
-
-   // 2. Textblocks have already been allocated, but we store some
-   // information for later use.
-   for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-           tbInfos->iterator ();
-        it.hasNext (); ) {
-      TypedPointer <Textblock> *key = it.getNext ();
-      TBInfo *tbInfo = tbInfos->get (key);
-      tbInfo->wasAllocated = true;
-      tbInfo->x = key->getTypedValue()->getAllocation()->x;
-      tbInfo->y = key->getTypedValue()->getAllocation()->y;
-   }
 }
+
 
 
 void OutOfFlowMgr::draw (View *view, Rectangle *area)
