@@ -122,7 +122,6 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
       // sizeAllocate. Unfortunately, idle funtions currently only
       // refer to layouts, not to widgets.
       
-      // TODO When is the generating block not allocated? (Looks strange.)
       if (tb != vloat->generatingBlock && vloat->yReal != -1) {
          int flh = vloat->dirty ? 0 : vloat->size.ascent + vloat->size.descent;
          int y1 = generatingBlockAllocation->y + vloat->yReal;
