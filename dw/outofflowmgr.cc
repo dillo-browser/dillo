@@ -68,11 +68,10 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
            isTextblockCoveredByFloats (containingBlockAllocation, tb,
                                        tb->getAllocation()->x,
                                        tb->getAllocation()->y,
-                                       width, height))) {
-         tb->borderChanged (0);
+                                       width, height)))
          // TODO Better let isTextblockCoveredByFloats return a value?
-      }
-
+         tb->borderChanged (0);
+      
       tbInfo->wasAllocated = true;
       tbInfo->xCB = xCB;
       tbInfo->yCB = yCB;
@@ -422,8 +421,8 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y)
 
             if (covered) {
                int yTextblock =
-                  vloat->generatingBlock->getAllocation() + yChange
-                  - textblock->getAllocation();
+                  vloat->generatingBlock->getAllocation()->y + yChange
+                  - textblock->getAllocation()->y;
                textblock->borderChanged (yTextblock);
             }
          }
