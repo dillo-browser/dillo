@@ -37,7 +37,7 @@ OutOfFlowMgr::~OutOfFlowMgr ()
 
 void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
 {
-   // 1, Floats have to be allocated
+   // 1. Floats have to be allocated
    sizeAllocateFloats (leftFloats, false, containingBlockAllocation);
    sizeAllocateFloats (rightFloats, true, containingBlockAllocation);
 
