@@ -155,9 +155,11 @@ void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, bool right,
          childAllocation.x =
             vloat->generatingBlock->getAllocation()->x
             + vloat->generatingBlock->getAllocation()->width
-            - vloat->size.width;
+            - vloat->size.width
+            - vloat->generatingBlock->getStyle()->boxRestWidth();
       else
-         childAllocation.x = vloat->generatingBlock->getAllocation()->x;
+         childAllocation.x = vloat->generatingBlock->getAllocation()->x
+            + vloat->generatingBlock->getStyle()->boxOffsetX();
 
       childAllocation.y =
          vloat->generatingBlock->getAllocation()->y + vloat->yReal;
@@ -521,7 +523,7 @@ void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
  */
 int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
 {
-   return getBorder (textblock, leftFloats, "left", y, h);
+   return getBorder (textblock, leftFloats, false, y, h);
 }
 
 /**
@@ -532,11 +534,11 @@ int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
  */
 int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h)
 {
-   return getBorder (textblock, rightFloats, "right", y, h);
+   return getBorder (textblock, rightFloats, true, y, h);
 }
 
 int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
-                             const char *side, int y, int h)
+                             bool right, int y, int h)
 {
    int border = 0;
 
@@ -553,7 +555,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
-      int yWidget;
+      int yWidget, borderDiff;
       bool positioned;
 
       if (!vloat->positioned)
@@ -561,12 +563,25 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
       else if (textblock == vloat->generatingBlock) {
          positioned = true;
          yWidget = vloat->yReal;
+         borderDiff = 0;
       } else {
          if (textblock->wasAllocated() &&
              vloat->generatingBlock->wasAllocated()) {
             positioned = true;
             yWidget = vloat->yReal + vloat->generatingBlock->getAllocation()->y
                - textblock->getAllocation()->y;
+
+            if (right)
+               borderDiff =
+                  textblock->getAllocation()->x +
+                  textblock->getAllocation()->width -
+                  (vloat->generatingBlock->getAllocation()->x +
+                   vloat->generatingBlock->getAllocation()->width);
+            else
+               borderDiff =
+                  textblock->getAllocation()->x -
+                  vloat->generatingBlock->getAllocation()->x;
+
             printf ("[%p]       %d = %d + %d - %d\n",
                     textblock, yWidget, vloat->yReal,
                     vloat->generatingBlock->getAllocation()->y,
@@ -582,18 +597,26 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
               vloat->yReal, positioned ? "true" : "false", yWidget);
 
       if (positioned && y + h >= yWidget &&
-          y < yWidget + vloat->size.ascent + vloat->size.descent)
+          y < yWidget + vloat->size.ascent + vloat->size.descent) {
          // It is not sufficient to find the first float, since a line
          // (with height h) may cover the region of multiple float, of
          // which the widest has to be choosen.
-         border = max (border, vloat->size.width);
+         int borderIn;
+         if (right)
+            borderIn = vloat->generatingBlock->getStyle()->boxRestWidth();
+         else
+            borderIn = vloat->generatingBlock->getStyle()->boxOffsetX();
+
+         border = max (border, vloat->size.width + borderDiff + borderIn);
+      }
 
       // To be a bit more efficient, the loop could be stopped when
       // (i) at least one float has been found, and (ii) the next float is
       // below y + h.
    }
 
-   printf ("[%p] %s border (%d, %d) = %d\n", textblock, side, y, h, border);
+   printf ("[%p] %s border (%d, %d) = %d\n",
+           textblock, right ? "right" : "left", y, h, border);
 
    return border;
 }

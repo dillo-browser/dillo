@@ -72,7 +72,7 @@ private:
    void accumExtremes (lout::container::typed::Vector<Float> *list,
                        int *oofMinWidth, int *oofMaxWidth);
    int getBorder (Textblock *textblock,
-                  lout::container::typed::Vector<Float> *list, const char *side,
+                  lout::container::typed::Vector<Float> *list, bool right,
                   int y, int h);
    bool hasFloat (Textblock *textblock,
                   lout::container::typed::Vector<Float> *list, int y, int h);
