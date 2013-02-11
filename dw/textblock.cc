@@ -1813,8 +1813,11 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
    word->content.type = core::Content::TEXT;
    word->content.text = layout->textZone->strndup(text, len);
 
-   if (words->size() == 1)
-      printf ("[%p] first word: '%s'\n", this, text);
+   // The following debug message may be useful to identify the
+   // different textblocks.
+
+   //if (words->size() == 1)
+   //   printf ("[%p] first word: '%s'\n", this, text);
 
    processWord (words->size () - 1);
 }
@@ -1832,11 +1835,11 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 
    widget->setStyle (style);
 
-   printf ("adding the %s %p to %p ...\n",
+   PRINTF ("adding the %s %p to %p ...\n",
            widget->getClassName(), widget, this);
       
    if (OutOfFlowMgr::isWidgetOutOfFlow (widget)) {
-      printf ("   -> out of flow.\n");
+      PRINTF ("   -> out of flow.\n");
 
       if (containingBlock->outOfFlowMgr == NULL) {
          containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
@@ -1855,7 +1858,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       word->content.widget = widget;
       word->style = style;
    } else {
-      printf ("   -> within flow.\n");
+      PRINTF ("   -> within flow.\n");
 
       widget->setParent (this);
 
@@ -2287,7 +2290,7 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::borderChanged (int y)
 {
-   PRINTF ("[%p] Border has changed: %d\n", this, y);
+   //PRINTF ("[%p] Border has changed: %d\n", this, y);
 
    int lineIndex = findLineIndex (y);
    // Nothing to do at all, when lineIndex >= lines->size (),

@@ -382,7 +382,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 
    line->offsetCompleteWidget =
       misc::max (leftBorder,
-                 innerPadding + (lineIndex == 0 ? line1OffsetEff : 0))
+                 getStyle()->boxOffsetX() + innerPadding
+                 + (lineIndex == 0 ? line1OffsetEff : 0))
       + line->leftOffset;
    
    PRINTF ("   line[%d].top = %d\n", lines->size () - 1, line->top);
@@ -393,9 +394,10 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
            line->contentAscent);
    PRINTF ("   line[%d].contentDescent = %d\n",
            lines->size () - 1, line->contentDescent);
-
    PRINTF ("   line[%d].maxLineWidth = %d\n",
            lines->size () - 1, line->maxLineWidth);
+   PRINTF ("   line[%d].offsetCompleteWidget = %d\n",
+           lines->size () - 1, line->offsetCompleteWidget);
 
    mustQueueResize = true;
 

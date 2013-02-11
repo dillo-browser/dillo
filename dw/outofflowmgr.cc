@@ -582,19 +582,19 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
                   textblock->getAllocation()->x -
                   vloat->generatingBlock->getAllocation()->x;
 
-            printf ("[%p]       %d = %d + %d - %d\n",
-                    textblock, yWidget, vloat->yReal,
-                    vloat->generatingBlock->getAllocation()->y,
-                    textblock->getAllocation()->y);
+            //printf ("[%p]       %d = %d + %d - %d\n",
+            //        textblock, yWidget, vloat->yReal,
+            //        vloat->generatingBlock->getAllocation()->y,
+            //        textblock->getAllocation()->y);
          } else
             positioned = false;
       }
 
-      printf ("[%p]    float #%d (%p): tba = %s, gba = %s, y = %d => %s / %d\n",
-              textblock, i, vloat->widget,
-              textblock->wasAllocated() ? "true" : "false",
-              vloat->generatingBlock->wasAllocated() ? "true" : "false",
-              vloat->yReal, positioned ? "true" : "false", yWidget);
+      //intf ("[%p]    float #%d (%p): tba = %s, gba = %s, y = %d => %s / %d\n",
+      //        textblock, i, vloat->widget,
+      //        textblock->wasAllocated() ? "true" : "false",
+      //        vloat->generatingBlock->wasAllocated() ? "true" : "false",
+      //        vloat->yReal, positioned ? "true" : "false", yWidget);
 
       if (positioned && y + h >= yWidget &&
           y < yWidget + vloat->size.ascent + vloat->size.descent) {
@@ -615,8 +615,8 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
       // below y + h.
    }
 
-   printf ("[%p] %s border (%d, %d) = %d\n",
-           textblock, right ? "right" : "left", y, h, border);
+   //printf ("[%p] %s border (%d, %d) = %d\n",
+   //        textblock, right ? "right" : "left", y, h, border);
 
    return border;
 }
