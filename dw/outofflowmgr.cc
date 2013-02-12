@@ -533,7 +533,7 @@ void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
       // Difference between generating block and to containing block,
       // sum on both sides. Greater or equal than 0, so dealing with 0
       // when it cannot yet be calculated is safe. (No distiction
-      // whether it is defined or not.)
+      // whether it is defined or not is necessary.)
       int borderDiff;
 
       if (vloat->generatingBlock == containingBlock) {
