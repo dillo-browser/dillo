@@ -455,36 +455,63 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    *oofWidth = cbWidth; /* This (or "<=" instead of "=") should be
                            the case for floats. */
 
-#if 0
-   // TODO Latest change: Check and re-activate.
-
-   int oofHeightLeft = containingBlock->asWidget()->getStyle()->boxDiffWidth();
-   int oofHeightRight = containingBlock->asWidget()->getStyle()->boxDiffWidth();
-
-   for (int i = 0; i < leftFloats->size(); i++) {
-      Float *vloat = leftFloats->get(i);
-      if (vloat->positioned) {
-         ensureFloatSize (vloat);
-         oofHeightLeft =
-            max (oofHeightLeft,
-                 vloat->y + vloat->size.ascent + vloat->size.descent
-                 + containingBlock->asWidget()->getStyle()->boxRestHeight());
-      }
-   }
-
-   for (int i = 0; i < rightFloats->size(); i++) {
-      Float *vloat = rightFloats->get(i);
-      if (vloat->positioned) {
-         ensureFloatSize (vloat);
-         oofHeightRight =
-            max (oofHeightRight,
-                 vloat->y + vloat->size.ascent + vloat->size.descent
-                 + containingBlock->asWidget()->getStyle()->boxRestHeight());
-      }
-   }
-
+   int oofHeightLeft = getFloatsSize (leftFloats);
+   int oofHeightRight = getFloatsSize (rightFloats);
    *oofHeight = max (oofHeightLeft, oofHeightRight);
-#endif
+}
+
+int OutOfFlowMgr::getFloatsSize (Vector<Float> *list)
+{
+   int height = containingBlock->getStyle()->boxDiffHeight();
+
+   // Idea for a faster implementation: find the last float; this
+   // should be the relevant one.
+   for (int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
+      if (vloat->positioned) {
+         ensureFloatSize (vloat);
+
+         // Notice that all positions are relative to the generating
+         // block, but we need them relative to the containing block.
+
+         bool yGBinCBdefined;
+         int yGBinCB; // position of generating block, relative to cont. block
+
+         if (vloat->generatingBlock == containingBlock) {
+            // Simplest case: the generator is the container.
+            yGBinCBdefined = true;
+            yGBinCB = 0;
+         } else {
+            if (containingBlock->wasAllocated()) {
+               if (vloat->generatingBlock->wasAllocated()) {
+                  // Simple case: both containing block and generating
+                  // block are defined.
+                  yGBinCBdefined = true;
+                  yGBinCB = vloat->generatingBlock->getAllocation()->y
+                     - containingBlock->getAllocation()->y;
+               } else
+                  // Generating block not yet allocation; the next
+                  // allocation will, when necessary, trigger
+                  // sizeRequest. (TODO: Is this really the case?)
+                  yGBinCBdefined = false;
+            } else
+               // Nothing can be done now, but the next allocation
+               // will trigger sizeAllocate. (TODO: Is this really the
+               // case?)
+               yGBinCBdefined = false;
+               
+         }
+
+         if (yGBinCBdefined)
+            height =
+               max (height,
+                    yGBinCB + vloat->yReal
+                    + vloat->size.ascent + vloat->size.descent
+                    + containingBlock->getStyle()->boxRestHeight());
+      }
+   }
+
+   return height;
 }
 
 void OutOfFlowMgr::getExtremes (int cbMinWidth, int cbMaxWidth,

@@ -69,6 +69,7 @@ private:
    core::Widget *getWidgetAtPoint (lout::container::typed::Vector<Float> *list,
                                    int x, int y, int level);
    void tellPositionOrNot (core::Widget *widget, int y, bool positioned);
+   int getFloatsSize (lout::container::typed::Vector<Float> *list);
    void accumExtremes (lout::container::typed::Vector<Float> *list,
                        int *oofMinWidth, int *oofMaxWidth);
    int getBorder (Textblock *textblock,
