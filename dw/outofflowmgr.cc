@@ -535,17 +535,17 @@ void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
       // whether it is defined or not is necessary.)
       int borderDiff;
 
-      if (vloat->generatingBlock == containingBlock) {
+      if (vloat->generatingBlock == containingBlock)
          // Simplest case: the generator is the container.
          borderDiff = 0;
-      } else {
+      else {
          if (containingBlock->wasAllocated()) {
-            if (vloat->generatingBlock->wasAllocated()) {
+            if (vloat->generatingBlock->wasAllocated())
                // Simple case: both containing block and generating
                // block are defined.
                borderDiff = containingBlock->getAllocation()->y -
                   - vloat->generatingBlock->getAllocation()->width;
-            } else
+            else
                // Generating block not yet allocation; the next
                // allocation will, when necessary, trigger
                // getExtremes. (TODO: Is this really the case?)
