@@ -525,19 +525,44 @@ void OutOfFlowMgr::getExtremes (int cbMinWidth, int cbMaxWidth,
 void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
                                   int *oofMaxWidth)
 {
-   // TODO Latest change: Check and re-activate.
+   // Idea for a faster implementation: use incremental resizing?
 
-#if 0
    for (int i = 0; i < list->size(); i++) {
-      Float *v = list->get(i);
+      Float *vloat = list->get(i);
+
+      // Difference between generating block and to containing block,
+      // sum on both sides. Greater or equal than 0, so dealing with 0
+      // when it cannot yet be calculated is safe. (No distiction
+      // whether it is defined or not.)
+      int borderDiff;
+
+      if (vloat->generatingBlock == containingBlock) {
+         // Simplest case: the generator is the container.
+         borderDiff = 0;
+      } else {
+         if (containingBlock->wasAllocated()) {
+            if (vloat->generatingBlock->wasAllocated()) {
+               // Simple case: both containing block and generating
+               // block are defined.
+               borderDiff = containingBlock->getAllocation()->y -
+                  - vloat->generatingBlock->getAllocation()->width;
+            } else
+               // Generating block not yet allocation; the next
+               // allocation will, when necessary, trigger
+               // getExtremes. (TODO: Is this really the case?)
+               borderDiff = 0;
+         } else
+            // Nothing can be done now, but the next allocation will
+            // trigger getExtremes. (TODO: Is this really the case?)
+            borderDiff = 0;
+      }
+
       Extremes extr;
-      v->widget->getExtremes (&extr);
-      // TODO Calculation of borders is repeated quite much.
-      int borderDiff = calcLeftBorderDiff (v) + calcRightBorderDiff (v);
+      vloat->widget->getExtremes (&extr);
+
       *oofMinWidth = max (*oofMinWidth, extr.minWidth + borderDiff);
       *oofMaxWidth = max (*oofMaxWidth, extr.maxWidth + borderDiff);
    }
-#endif
 }
    
 /**
