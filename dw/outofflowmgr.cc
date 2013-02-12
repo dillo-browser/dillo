@@ -474,40 +474,39 @@ int OutOfFlowMgr::getFloatsSize (Vector<Float> *list)
          // Notice that all positions are relative to the generating
          // block, but we need them relative to the containing block.
 
-         bool yGBinCBdefined;
-         int yGBinCB; // position of generating block, relative to cont. block
+         // Position of generating block, relative to containing
+         // block. Greater or equal than 0, so dealing with 0 when it
+         // cannot yet be calculated is safe. (No distiction whether
+         // it is defined or not is necessary.)
+         int yGBinCB;
 
-         if (vloat->generatingBlock == containingBlock) {
+         if (vloat->generatingBlock == containingBlock)
             // Simplest case: the generator is the container.
-            yGBinCBdefined = true;
             yGBinCB = 0;
-         } else {
+         else {
             if (containingBlock->wasAllocated()) {
-               if (vloat->generatingBlock->wasAllocated()) {
+               if (vloat->generatingBlock->wasAllocated())
                   // Simple case: both containing block and generating
                   // block are defined.
-                  yGBinCBdefined = true;
                   yGBinCB = vloat->generatingBlock->getAllocation()->y
                      - containingBlock->getAllocation()->y;
-               } else
+               else
                   // Generating block not yet allocation; the next
                   // allocation will, when necessary, trigger
                   // sizeRequest. (TODO: Is this really the case?)
-                  yGBinCBdefined = false;
+                  yGBinCB = 0;
             } else
                // Nothing can be done now, but the next allocation
                // will trigger sizeAllocate. (TODO: Is this really the
                // case?)
-               yGBinCBdefined = false;
-               
+               yGBinCB = 0;
          }
 
-         if (yGBinCBdefined)
-            height =
-               max (height,
-                    yGBinCB + vloat->yReal
-                    + vloat->size.ascent + vloat->size.descent
-                    + containingBlock->getStyle()->boxRestHeight());
+         height =
+            max (height,
+                 yGBinCB + vloat->yReal
+                 + vloat->size.ascent + vloat->size.descent
+                 + containingBlock->getStyle()->boxRestHeight());
       }
    }
 
