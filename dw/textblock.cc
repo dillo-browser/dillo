@@ -2290,7 +2290,7 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::borderChanged (int y)
 {
-   //PRINTF ("[%p] Border has changed: %d\n", this, y);
+   PRINTF ("[%p] Border has changed: %d\n", this, y);
 
    int lineIndex = findLineIndex (y);
    // Nothing to do at all, when lineIndex >= lines->size (),

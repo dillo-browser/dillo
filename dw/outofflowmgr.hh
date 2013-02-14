@@ -58,11 +58,11 @@ private:
                             core::Allocation *containingBlockAllocation);
    bool isTextblockCoveredByFloats (core::Allocation *containingBlockAllocation,
                                     Textblock *tb, int tbx, int tby,
-                                    int tbWidth, int tbHeight);
+                                    int tbWidth, int tbHeight, int *floatPos);
    bool isTextblockCoveredByFloats (lout::container::typed::Vector<Float> *list,
                                     core::Allocation *containingBlockAllocation,
                                     Textblock *tb, int tbx, int tby,
-                                    int tbWidth, int tbHeight);
+                                    int tbWidth, int tbHeight, int *floatPos);
 
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);

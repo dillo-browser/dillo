@@ -1,6 +1,8 @@
 #include "outofflowmgr.hh"
 #include "textblock.hh"
 
+#include <limits.h>
+
 using namespace lout::object;
 using namespace lout::container::typed;
 using namespace lout::misc;
@@ -56,21 +58,27 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
       int height = tb->getAllocation()->ascent + tb->getAllocation()->descent;
 
       if ((!tbInfo->wasAllocated || tbInfo->xCB != xCB || tbInfo->yCB != yCB ||
-           tbInfo->width != width || tbInfo->height != height) &&
-          (// old allocation
-           isTextblockCoveredByFloats (containingBlockAllocation, tb,
-                                       tbInfo->xCB
-                                       + containingBlockAllocation->x,
-                                       tbInfo->yCB
-                                       + containingBlockAllocation->y,
-                                       tbInfo->width, tbInfo->height) ||
-           // new allocation
-           isTextblockCoveredByFloats (containingBlockAllocation, tb,
-                                       tb->getAllocation()->x,
-                                       tb->getAllocation()->y,
-                                       width, height)))
-         // TODO Better let isTextblockCoveredByFloats return a value?
-         tb->borderChanged (0);
+           tbInfo->width != width || tbInfo->height != height)) {
+         int oldPos, newPos;
+         // To calculate the minimum, both allocations, old and new,
+         // have to be tested.
+      
+         // Old allocation:
+         bool c1 = isTextblockCoveredByFloats (containingBlockAllocation, tb,
+                                               tbInfo->xCB
+                                               + containingBlockAllocation->x,
+                                               tbInfo->yCB
+                                               + containingBlockAllocation->y,
+                                               tbInfo->width, tbInfo->height,
+                                               &oldPos);
+         // new allocation:
+         int c2 = isTextblockCoveredByFloats (containingBlockAllocation, tb,
+                                              tb->getAllocation()->x,
+                                              tb->getAllocation()->y,
+                                              width, height, &newPos);
+         if (c1 || c2)
+            tb->borderChanged (min (oldPos, newPos));
+      }
       
       tbInfo->wasAllocated = true;
       tbInfo->xCB = xCB;
@@ -83,21 +91,30 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
 bool OutOfFlowMgr::isTextblockCoveredByFloats (Allocation
                                                *containingBlockAllocation,
                                                Textblock *tb, int tbx, int tby,
-                                               int tbWidth, int tbHeight)
+                                               int tbWidth, int tbHeight,
+                                               int *floatPos)
 {
-   return
-      isTextblockCoveredByFloats (leftFloats, containingBlockAllocation,
-                                  tb, tbx, tby, tbWidth, tbHeight) ||
-      isTextblockCoveredByFloats (rightFloats, containingBlockAllocation,
-                                  tb, tbx, tby, tbWidth, tbHeight);
+   int leftPos, rightPos;
+   bool c1 = isTextblockCoveredByFloats (leftFloats, containingBlockAllocation,
+                                         tb, tbx, tby, tbWidth, tbHeight,
+                                         &leftPos);
+   bool c2 = isTextblockCoveredByFloats (rightFloats, containingBlockAllocation,
+                                         tb, tbx, tby, tbWidth, tbHeight,
+                                         &rightPos);
+   *floatPos = min (leftPos, rightPos);
+   return c1 || c2;
 }
 
 bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
                                                Allocation
                                                *containingBlockAllocation,
                                                Textblock *tb, int tbx, int tby,
-                                               int tbWidth, int tbHeight)
+                                               int tbWidth, int tbHeight,
+                                               int *floatPos)
 {
+   *floatPos = INT_MAX;
+   bool covered = false;
+
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
 
@@ -127,12 +144,18 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
          int y2 = y1 + flh;
          
          // TODO: Also regard horizontal dimension (same for tellPositionOrNot).
-         if (y2 > tby && y1 < tby + tbWidth)
-            return true;
+         if (y2 > tby && y1 < tby + tbWidth) {
+            covered = true;
+            *floatPos = min (*floatPos, y1 - tby);
+         }
       }
+
+      // All floarts are searched, to find the minimum. TODO: Are
+      // floats sorted, so this can be shortene? (The first is the
+      // minimum?)
    }
 
-   return false;
+   return covered;
 }
 
 void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, bool right,
