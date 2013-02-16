@@ -687,13 +687,24 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                      }
                      if (word->content.type == core::Content::TEXT) {
                         int glyphX = wordStartX;
+                        int isStartWord = word->flags & Word::WORD_START;
+                        int isEndWord = word->flags & Word::WORD_END;
 
                         while (1) {
                            int nextCharPos =
                               layout->nextGlyph (word->content.text, charPos);
+                           // TODO The width of a text is not the sum
+                           // of the widths of the glyphs, because of
+                           // ligatures, kerning etc., so textWidth
+                           // should be applied to the text from 0 to
+                           // nextCharPos. (Or not? See comment below.)
+
                            int glyphWidth =
                               textWidth (word->content.text, charPos,
-                                         nextCharPos - charPos, word->style);
+                                         nextCharPos - charPos, word->style,
+                                         isStartWord && charPos == 0,
+                                         isEndWord &&
+                                         word->content.text[nextCharPos] == 0);
                            if (event->xWidget > glyphX + glyphWidth) {
                               glyphX += glyphWidth;
                               charPos = nextCharPos;
@@ -708,7 +719,11 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                                                        charPos);
                                  if (textWidth (word->content.text, charPos,
                                                 nextCharPos - charPos,
-                                                word->style))
+                                                word->style,
+                                                isStartWord && charPos == 0,
+                                                isEndWord &&
+                                                word->content.text[nextCharPos]
+                                                == 0))
                                     break;
                                  charPos = nextCharPos;
                               }
@@ -839,7 +854,8 @@ void Textblock::decorateText(core::View *view, core::style::Style *style,
  */
 void Textblock::drawText(core::View *view, core::style::Style *style,
                          core::style::Color::Shading shading, int x, int y,
-                         const char *text, int start, int len)
+                         const char *text, int start, int len, bool isStart,
+                         bool isEnd)
 {
    if (len > 0) {
       char *str = NULL;
@@ -855,34 +871,34 @@ void Textblock::drawText(core::View *view, core::style::Style *style,
             str = layout->textToLower(text + start, len);
             break;
          case core::style::TEXT_TRANSFORM_CAPITALIZE:
-         {
-            /* \bug No way to know about non-ASCII punctuation. */
-            bool initial_seen = false;
-
-            for (int i = 0; i < start; i++)
-               if (!ispunct(text[i]))
-                  initial_seen = true;
-            if (initial_seen)
-               break;
-
-            int after = 0;
-            text += start;
-            while (ispunct(text[after]))
-               after++;
-            if (text[after])
-               after = layout->nextGlyph(text, after);
-            if (after > len)
-               after = len;
-
-            char *initial = layout->textToUpper(text, after);
-            int newlen = strlen(initial) + len-after;
-            str = (char *)malloc(newlen + 1);
-            strcpy(str, initial);
-            strncpy(str + strlen(str), text+after, len-after);
-            str[newlen] = '\0';
-            free(initial);
+            if (isStart) {
+               /* \bug No way to know about non-ASCII punctuation. */
+               bool initial_seen = false;
+               
+               for (int i = 0; i < start; i++)
+                  if (!ispunct(text[i]))
+                     initial_seen = true;
+               if (initial_seen)
+                  break;
+               
+               int after = 0;
+               text += start;
+               while (ispunct(text[after]))
+                  after++;
+               if (text[after])
+                  after = layout->nextGlyph(text, after);
+               if (after > len)
+                  after = len;
+               
+               char *initial = layout->textToUpper(text, after);
+               int newlen = strlen(initial) + len-after;
+               str = (char *)malloc(newlen + 1);
+               strcpy(str, initial);
+               strncpy(str + strlen(str), text+after, len-after);
+               str[newlen] = '\0';
+               free(initial);
+            }
             break;
-         }
       }
      
       view->drawText(style->font, style->color, shading, x, y,
@@ -969,8 +985,10 @@ void Textblock::drawWord0 (int wordIndex1, int wordIndex2,
    }
    yWorldBase = yWidgetBase + allocation.y;
 
+   bool isStartTotal = words->getRef(wordIndex1)->flags & Word::WORD_START;
+   bool isEndTotal = words->getRef(wordIndex2)->flags & Word::WORD_START;
    drawText (view, style, core::style::Color::SHADING_NORMAL, xWorld,
-             yWorldBase, text, 0, strlen (text));
+             yWorldBase, text, 0, strlen (text), isStartTotal, isEndTotal);
 
    if (style->textDecoration)
       decorateText(view, style, core::style::Color::SHADING_NORMAL, xWorld,
@@ -1012,14 +1030,18 @@ void Textblock::drawWord0 (int wordIndex1, int wordIndex2,
 
          xStart = xWorld;
          if (firstCharIdx)
-            xStart += textWidth (text, 0, firstCharIdx, style);
+            xStart += textWidth (text, 0, firstCharIdx, style,
+                                 isStartTotal,
+                                 isEndTotal && text[firstCharIdx] == 0);
          // With a hyphen, the width is a bit longer than totalWidth,
          // and so, the optimization to use totalWidth is not correct.
          if (!drawHyphen && firstCharIdx == 0 && lastCharIdx == wordLen)
             width = totalWidth;
          else
             width = textWidth (text, firstCharIdx,
-                               lastCharIdx - firstCharIdx, style);
+                               lastCharIdx - firstCharIdx, style,
+                               isStartTotal && firstCharIdx == 0,
+                               isEndTotal && text[lastCharIdx] == 0);
          if (width > 0) {
             /* Highlight text */
             core::style::Color *wordBgColor;
@@ -1036,7 +1058,9 @@ void Textblock::drawWord0 (int wordIndex1, int wordIndex2,
             /* Highlight the text. */
             drawText (view, style, core::style::Color::SHADING_INVERSE, xStart,
                       yWorldBase, text, firstCharIdx,
-                      lastCharIdx - firstCharIdx);
+                      lastCharIdx - firstCharIdx,
+                      isStartTotal && firstCharIdx == 0,
+                      isEndTotal && lastCharIdx == wordLen);
 
             if (style->textDecoration)
                decorateText(view, style, core::style::Color::SHADING_INVERSE,
@@ -1341,7 +1365,7 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
  * Get the width of a string of text.
  */
 int Textblock::textWidth(const char *text, int start, int len,
-                         core::style::Style *style)
+                         core::style::Style *style, bool isStart, bool isEnd)
 {
    int ret = 0;
 
@@ -1362,35 +1386,38 @@ int Textblock::textWidth(const char *text, int start, int len,
             ret = layout->textWidth(style->font, str, strlen(str));
             break;
          case core::style::TEXT_TRANSFORM_CAPITALIZE:
-         {
-            /* \bug No way to know about non-ASCII punctuation. */
-            bool initial_seen = false;
-
-            for (int i = 0; i < start; i++)
-               if (!ispunct(text[i]))
-                  initial_seen = true;
-            if (initial_seen) {
-               ret = layout->textWidth(style->font, text+start, len);
-            } else {
-               int after = 0;
-
-               text += start;
-               while (ispunct(text[after]))
-                  after++;
-               if (text[after])
-                  after = layout->nextGlyph(text, after);
-               if (after > len)
-                  after = len;
-               str = layout->textToUpper(text, after);
-               ret = layout->textWidth(style->font, str, strlen(str)) +
+            if (isStart) {
+               /* \bug No way to know about non-ASCII punctuation. */
+               bool initial_seen = false;
+               
+               for (int i = 0; i < start; i++)
+                  if (!ispunct(text[i]))
+                     initial_seen = true;
+               if (initial_seen) {
+                  ret = layout->textWidth(style->font, text+start, len);
+               } else {
+                  int after = 0;
+                  
+                  text += start;
+                  while (ispunct(text[after]))
+                     after++;
+                  if (text[after])
+                     after = layout->nextGlyph(text, after);
+                  if (after > len)
+                     after = len;
+                  str = layout->textToUpper(text, after);
+                  ret = layout->textWidth(style->font, str, strlen(str)) +
                      layout->textWidth(style->font, text+after, len-after);
-            }
+               }
+            } else
+               ret = layout->textWidth(style->font, text+start, len);
             break;
-         }
       }
+
       if (str)
          free(str);
    }
+
    return ret;
 }
 
@@ -1399,9 +1426,9 @@ int Textblock::textWidth(const char *text, int start, int len,
  */
 void Textblock::calcTextSize (const char *text, size_t len,
                               core::style::Style *style,
-                              core::Requisition *size)
+                              core::Requisition *size, bool isStart, bool isEnd)
 {
-   size->width = textWidth (text, 0, len, style);
+   size->width = textWidth (text, 0, len, style, isStart, isEnd);
    size->ascent = style->font->ascent;
    size->descent = style->font->descent;
 
@@ -1479,8 +1506,14 @@ void Textblock::addText (const char *text, size_t len,
       // Simple (and common) case: no dividing characters. May still
       // be hyphenated automatically.
       core::Requisition size;
-      calcTextSize (text, len, style, &size);
-      addText0 (text, len, Word::CAN_BE_HYPHENATED, style, &size);
+      calcTextSize (text, len, style, &size, true, true);
+      addText0 (text, len,
+                Word::CAN_BE_HYPHENATED | Word::WORD_START | Word::WORD_END,
+                style, &size);
+
+      //printf ("[%p] %d: added simple word: ", this, words->size() - 1);
+      //printWordWithFlags (words->getLastRef());
+      //printf ("\n");
    } else {
       PRINTF ("HYPHENATION: '");
       for (size_t i = 0; i < len; i++)
@@ -1612,10 +1645,19 @@ void Textblock::addText (const char *text, size_t len,
 
             flags |= Word::DRAW_AS_ONE_TEXT;
          }
+
+         if (i == 0)
+            flags |= Word::WORD_START;
+         if (i == numParts - 1)
+            flags |= Word::WORD_END;
          
          addText0 (text + partStart[i], partEnd[i] - partStart[i],
                    flags, style, &wordSize[i]);
 
+         //printf ("[%p] %d: added word part: ", this, words->size() - 1);
+         //printWordWithFlags (words->getLastRef());
+         //printf ("\n");
+         
          //PRINTF("H... [%d] '", i);
          //for (int j = partStart[i]; j < partEnd[i]; j++)
          //   PUTCHAR(text[j]);
@@ -1653,7 +1695,7 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
    // The size of the last part is calculated in a simple way.
    int lastStart = breakPos[numBreaks - 1];
    calcTextSize (text + lastStart, textLen - lastStart, style,
-                 &wordSize[numBreaks]);
+                 &wordSize[numBreaks], true, true);
 
    PRINTF("H... [%d] '", numBreaks);
    for (size_t i = 0; i < textLen - lastStart; i++)
@@ -1664,7 +1706,8 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
    // "Hyphens".
    for (int i = numBreaks - 1; i >= 0; i--) {
       int start = (i == 0) ? 0 : breakPos[i - 1];
-      calcTextSize (text + start, textLen - start, style, &wordSize[i]);
+      calcTextSize (text + start, textLen - start, style, &wordSize[i],
+                    i == 0, i == numBreaks - 1);
 
       PRINTF("H... [%d] '", i);
       for (size_t j = 0; j < textLen - start; j++)

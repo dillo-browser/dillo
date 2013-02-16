@@ -309,6 +309,9 @@ protected:
           * do not consider this word as breakable. This flag is
           * ignored when the line is actually broken.  */
          UNBREAKABLE_FOR_MIN_WIDTH = 1 << 4,
+
+         WORD_START                = 1 << 5,
+         WORD_END                  = 1 << 6
       };
 
       /* TODO: perhaps add a xLeft? */
@@ -453,7 +456,8 @@ protected:
                       int x, int yBase, int width);
    void drawText (core::View *view, core::style::Style *style,
                   core::style::Color::Shading shading, int x, int y,
-                  const char *text, int start, int len);
+                  const char *text, int start, int len, bool isStart,
+                  bool isEnd);
    void drawWord (Line *line, int wordIndex1, int wordIndex2, core::View *view,
                   core::Rectangle *area, int xWidget, int yWidgetBase);
    void drawWord0 (int wordIndex1, int wordIndex2,
@@ -475,9 +479,9 @@ protected:
    void fillSpace (Word *word, core::style::Style *style);
    void setBreakOption (Word *word, core::style::Style *style);
    int textWidth (const char *text, int start, int len,
-                  core::style::Style *style);
+                  core::style::Style *style, bool isStart, bool isEnd);
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
-                      core::Requisition *size);
+                      core::Requisition *size, bool isStart, bool isEnd);
 
    /**
     * \brief Returns the x offset (the indentation plus any offset needed for

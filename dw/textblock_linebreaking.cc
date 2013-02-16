@@ -229,12 +229,14 @@ void Textblock::printWordShort (Word *word)
 
 void Textblock::printWordFlags (short flags)
 {
-   printf ("%s:%s:%s:%s:%s",
+   printf ("%s:%s:%s:%s:%s:%s:%s",
            (flags & Word::CAN_BE_HYPHENATED) ? "h?" : "--",
            (flags & Word::DIV_CHAR_AT_EOL) ? "de" : "--",
            (flags & Word::PERM_DIV_CHAR) ? "dp" : "--",
            (flags & Word::DRAW_AS_ONE_TEXT) ? "t1" : "--",
-           (flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--");
+           (flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--",
+           (flags & Word::WORD_START) ? "st" : "--",
+           (flags & Word::WORD_END) ? "en" : "--");
 }
 
 void Textblock::printWordWithFlags (Word *word)
@@ -797,6 +799,16 @@ int Textblock::hyphenateWord (int wordIndex)
          PRINTF ("      [%d] -> '%s'\n", wordIndex + i, w->content.text);
 
          // Note: there are numBreaks + 1 word parts.
+         if (i == 0)
+            w->flags |= Word::WORD_START;
+         else 
+            w->flags &= ~Word::WORD_START;
+
+         if (i == numBreaks)
+            w->flags |= Word::WORD_END;
+         else 
+            w->flags &= ~Word::WORD_END;
+
          if (i < numBreaks) {
             // TODO There should be a method fillHyphen.
             w->badnessAndPenalty.setPenalties (penalties[PENALTY_HYPHEN][0],
@@ -819,6 +831,10 @@ int Textblock::hyphenateWord (int wordIndex)
          }
 
          accumulateWordData (wordIndex + i);
+
+         //printf ("[%p] %d: hyphenated word part: ", this, wordIndex + i);
+         //printWordWithFlags (w);
+         //printf ("\n");
       }
 
       PRINTF ("   finished\n");

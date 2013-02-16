@@ -189,7 +189,10 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
    }
    if (start > 0 && word->content.type == core::Content::TEXT) {
       allocation->x += textblock->textWidth (word->content.text, 0, start,
-                                             word->style);
+                                             word->style,
+                                             word->flags & Word::WORD_START,
+                                             (word->flags & Word::WORD_END)
+                                             && word->content.text[start] == 0);
    }
    allocation->y = textblock->lineYOffsetCanvas (line) + line->boxAscent -
                    word->size.ascent;
@@ -202,7 +205,11 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
          end = misc::min(end, wordEnd); /* end could be INT_MAX */
          allocation->width =
             textblock->textWidth (word->content.text, start, end - start,
-                                  word->style);
+                                  word->style,
+                                  (word->flags & Word::WORD_START)
+                                  && start == 0,
+                                  (word->flags & Word::WORD_END)
+                                  && word->content.text[end] == 0);
       }
    }
    allocation->ascent = word->size.ascent;
