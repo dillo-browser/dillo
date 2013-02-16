@@ -851,6 +851,11 @@ void Textblock::decorateText(core::View *view, core::style::Style *style,
 
 /*
  * Draw a string of text
+ *
+ * Arguments: ... "isStart" and "isEnd" are true, when the text
+ * start/end represents the start/end of a "real" text word (before
+ * hyphenation). This has an effect on text transformation. ("isEnd"
+ * is not used yet, but here for symmetry.)
  */
 void Textblock::drawText(core::View *view, core::style::Style *style,
                          core::style::Color::Shading shading, int x, int y,
@@ -871,6 +876,9 @@ void Textblock::drawText(core::View *view, core::style::Style *style,
             str = layout->textToLower(text + start, len);
             break;
          case core::style::TEXT_TRANSFORM_CAPITALIZE:
+            // If "isStart" is false, the first letter of "text" is
+            // not the first letter of the "real" text word, so no
+            // transformation is necessary.
             if (isStart) {
                /* \bug No way to know about non-ASCII punctuation. */
                bool initial_seen = false;
@@ -1363,6 +1371,8 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
 
 /*
  * Get the width of a string of text.
+ *
+ * For "isStart" and "isEnd" see drawText.
  */
 int Textblock::textWidth(const char *text, int start, int len,
                          core::style::Style *style, bool isStart, bool isEnd)
@@ -1423,6 +1433,8 @@ int Textblock::textWidth(const char *text, int start, int len,
 
 /**
  * Calculate the size of a text word.
+ *
+ * For "isStart" and "isEnd" see textWidth and drawText.
  */
 void Textblock::calcTextSize (const char *text, size_t len,
                               core::style::Style *style,

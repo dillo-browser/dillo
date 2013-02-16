@@ -309,8 +309,13 @@ protected:
           * do not consider this word as breakable. This flag is
           * ignored when the line is actually broken.  */
          UNBREAKABLE_FOR_MIN_WIDTH = 1 << 4,
-
+         /* If a word represents a "real" text word, or (after
+          * hyphenation) the first part of a "real" text word, this
+          * flag is set. Plays a role for text transformation. */
          WORD_START                = 1 << 5,
+         /* If a word represents a "real" text word, or (after
+          * hyphenation) the last part of a "real" text word, this
+          * flag is set. Analogue to WORD_START.  */
          WORD_END                  = 1 << 6
       };
 
