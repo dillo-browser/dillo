@@ -589,11 +589,12 @@ void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
    
 /**
  * Get the left border for the vertical position of *y*, for a height
- * of *h", based on floats.
+ * of *h", based on floats; relative to the allocation of the calling
+ * textblock.
  *
- * The border includes marging/border/padding of the containging
- * block, but is 0 if there is no float, so a caller should also
- * consider other borders.
+ * The border includes marging/border/padding of the calling textblock
+ * but is 0 if there is no float, so a caller should also consider
+ * other borders.
  */
 int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
 {
@@ -629,7 +630,8 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
-      int yWidget, borderDiff;
+      int yWidget;
+      int borderDiff; // difference between generator and calling textblock
       bool positioned;
 
       if (!vloat->positioned)
@@ -646,15 +648,13 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
                - textblock->getAllocation()->y;
 
             if (right)
-               borderDiff =
-                  textblock->getAllocation()->x +
+               borderDiff = textblock->getAllocation()->x +
                   textblock->getAllocation()->width -
                   (vloat->generatingBlock->getAllocation()->x +
                    vloat->generatingBlock->getAllocation()->width);
             else
-               borderDiff =
-                  textblock->getAllocation()->x -
-                  vloat->generatingBlock->getAllocation()->x;
+               borderDiff = vloat->generatingBlock->getAllocation()->x -
+                  textblock->getAllocation()->x;
 
             //printf ("[%p]       %d = %d + %d - %d\n",
             //        textblock, yWidget, vloat->yReal,
@@ -672,17 +672,19 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
 
       if (positioned && y + h >= yWidget &&
           y < yWidget + vloat->size.ascent + vloat->size.descent) {
-         // It is not sufficient to find the first float, since a line
-         // (with height h) may cover the region of multiple float, of
-         // which the widest has to be choosen.
          int borderIn;
          if (right)
             borderIn = vloat->generatingBlock->getStyle()->boxRestWidth();
          else
             borderIn = vloat->generatingBlock->getStyle()->boxOffsetX();
 
-         border = max (border, vloat->size.width + borderDiff + borderIn);
+         //printf ("   borderDiff = %d, borderIn = %d\n", borderDiff, borderIn);
+         border = max (border, vloat->size.width + borderIn + borderDiff);
       }
+
+      // It is not sufficient to find the first float, since a line
+      // (with height h) may cover the region of multiple float, of
+      // which the widest has to be choosen.
 
       // To be a bit more efficient, the loop could be stopped when
       // (i) at least one float has been found, and (ii) the next float is

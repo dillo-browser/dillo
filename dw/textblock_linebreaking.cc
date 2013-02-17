@@ -1108,6 +1108,9 @@ int Textblock::calcAvailWidth (int lineIndex)
    } else
       leftBorder = rightBorder = 0;
 
+   leftBorder = misc::max (leftBorder, getStyle()->boxOffsetX());
+   rightBorder = misc::max (rightBorder, getStyle()->boxRestWidth());
+
    availWidth -= (leftBorder + rightBorder);
 
    PRINTF ("[%p] CALC_AVAIL_WIDTH (%d of %d) => %d - %d - (%d + %d)"
