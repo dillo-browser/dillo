@@ -502,12 +502,8 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          thereWillBeMoreSpace = false;
          PRINTF ("   thereWillBeMoreSpace = false (no OOFM)\n");
       } else {
-         assert (diffXToContainingBlock != -1);
-         assert (restWidthToContainingBlock != -1);
-         assert (diffYToContainingBlock != -1);
-
          int y =
-            topOfPossiblyMissingLine (lines->size ()) + diffYToContainingBlock;
+            topOfPossiblyMissingLine (lines->size ());
          int h = heightOfPossiblyMissingLine (lines->size ());
 
          // A previous version checked only the borders, not directly,
@@ -515,8 +511,8 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          // disputable. (More on this later.)
 
          thereWillBeMoreSpace =
-            containingBlock->outOfFlowMgr->hasFloatLeft (y, h) ||
-            containingBlock->outOfFlowMgr->hasFloatRight (y, h);
+            containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h) ||
+            containingBlock->outOfFlowMgr->hasFloatRight (this, y, h);
 
          PRINTF ("   thereWillBeMoreSpace = %s (y = %d, h = %d)\n",
                  thereWillBeMoreSpace ? "true" : "false", y, h);
