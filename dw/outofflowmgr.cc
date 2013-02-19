@@ -390,8 +390,49 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    vloat->positioned = positioned;
 
    if (positioned) {
-      // TODO Test collisions (check old code).
+      Vector<Float> *listSame = getFloatList (widget);   
+      Vector<Float> *listOpp = getOppositeFloatList (widget);   
+      bool collides;
 
+      // Collisions. TODO Can this be simplified?
+      do {
+         collides = false;
+
+         // Test collisions on the same side.
+         for (int i = 0; i < listSame->size(); i++) {
+            Float *v = listSame->get(i);
+            if (v != vloat) {
+               ensureFloatSize (v);
+               if (v->positioned != -1 && vloat->yReal >= v->yReal && 
+                   vloat->yReal < v->yReal + v->size.ascent + v->size.descent) {
+                  collides = true;
+                  vloat->yReal = v->yReal + v->size.ascent + v->size.descent;
+                  break;
+               }
+            }
+         }    
+
+#if 0      
+         // Test collisions on the other side.
+         for (int i = 0; i < listOpp->size(); i++) {
+            Float *v = listOpp->get(i);
+            // Note: Since v is on the opposite side, the condition 
+            // v != vloat (used above) is always true.
+            ensureFloatSize (v);
+            if (v->y != -1 && realY >= v->y && 
+                realY < v->y + v->size.ascent + v->size.descent &&
+             // For the other size, horizontal dimensions have to be
+             // considered, too.
+             v->size.width + v->borderWidth +
+             vloat->size.width + vloat->borderWidth > availWidth) {
+               collides = true;
+               realY = v->y + v->size.ascent + v->size.descent;
+               break;
+            }
+         }
+#endif
+      } while (collides);
+      
       // It is assumed that there are no floats below this float
       // within this generator. For this reason, no other floats have
       // to be adjusted.
