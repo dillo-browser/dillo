@@ -384,7 +384,10 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
       ensureFloatSize (vloat);
    int oldY = vloat->yReal;
    bool oldPositioned = vloat->positioned;
-   vloat->yReq = y;
+
+   // "yReal" may change due to collisions (see below).
+   vloat->yReq = vloat->yReal = y;
+   vloat->positioned = positioned;
 
    if (positioned) {
       // TODO Test collisions (check old code).
@@ -393,9 +396,6 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
       // within this generator. For this reason, no other floats have
       // to be adjusted.
    }
-
-   vloat->yReal = y; // Due to collisions, vloat->y may be different from y.
-   vloat->positioned = positioned;
 
    // Only this float has been changed (see above), so only this float
    // has to be tested against all textblocks.
