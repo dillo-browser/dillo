@@ -51,7 +51,6 @@ private:
    lout::container::typed::Vector<Float> *getFloatList (core::Widget *widget);
    lout::container::typed::Vector<Float> *getOppositeFloatList (core::Widget
                                                                 *widget);
-   void ensureFloatSize (Float *vloat);
 
    void sizeAllocateFloats (lout::container::typed::Vector<Float> *list,
                             bool right,
@@ -78,6 +77,11 @@ private:
                   int y, int h);
    bool hasFloat (Textblock *textblock,
                   lout::container::typed::Vector<Float> *list, int y, int h);
+
+   void ensureFloatSize (Float *vloat);
+   bool getYWidget (Textblock *textblock, Float *vloat, int *yWidget);
+   int getBorderDiff (Textblock *textblock, Float *vloat, bool right);
+
 
    inline static bool isRefFloat (int ref)
    { return ref != -1 && (ref & 1) == 1; }

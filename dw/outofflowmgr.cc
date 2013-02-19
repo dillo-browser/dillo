@@ -635,53 +635,15 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
+
       int yWidget;
-      int borderDiff; // difference between generator and calling textblock
-      bool positioned;
-
-      if (!vloat->positioned)
-         positioned = false;
-      else if (textblock == vloat->generatingBlock) {
-         positioned = true;
-         yWidget = vloat->yReal;
-         borderDiff = 0;
-      } else {
-         if (textblock->wasAllocated() &&
-             vloat->generatingBlock->wasAllocated()) {
-            positioned = true;
-            yWidget = vloat->yReal + vloat->generatingBlock->getAllocation()->y
-               - textblock->getAllocation()->y;
-
-            if (right)
-               borderDiff = textblock->getAllocation()->x +
-                  textblock->getAllocation()->width -
-                  (vloat->generatingBlock->getAllocation()->x +
-                   vloat->generatingBlock->getAllocation()->width);
-            else
-               borderDiff = vloat->generatingBlock->getAllocation()->x -
-                  textblock->getAllocation()->x;
-
-            //printf ("[%p]       %d = %d + %d - %d\n",
-            //        textblock, yWidget, vloat->yReal,
-            //        vloat->generatingBlock->getAllocation()->y,
-            //        textblock->getAllocation()->y);
-         } else
-            positioned = false;
-      }
-
-      //intf ("[%p]    float #%d (%p): tba = %s, gba = %s, y = %d => %s / %d\n",
-      //        textblock, i, vloat->widget,
-      //        textblock->wasAllocated() ? "true" : "false",
-      //        vloat->generatingBlock->wasAllocated() ? "true" : "false",
-      //        vloat->yReal, positioned ? "true" : "false", yWidget);
-
-      if (positioned && y + h >= yWidget &&
-          y < yWidget + vloat->size.ascent + vloat->size.descent) {
-         int borderIn;
-         if (right)
-            borderIn = vloat->generatingBlock->getStyle()->boxRestWidth();
-         else
-            borderIn = vloat->generatingBlock->getStyle()->boxOffsetX();
+      if (getYWidget (textblock, vloat, &yWidget)
+          && y + h >= yWidget
+          && y < yWidget + vloat->size.ascent + vloat->size.descent) {
+         int borderDiff = getBorderDiff (textblock, vloat, right);
+         int borderIn = right ?
+            vloat->generatingBlock->getStyle()->boxRestWidth() :
+            vloat->generatingBlock->getStyle()->boxOffsetX();
 
          //printf ("   borderDiff = %d, borderIn = %d\n", borderDiff, borderIn);
          border = max (border, vloat->size.width + borderIn + borderDiff);
@@ -723,26 +685,11 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Vector<Float> *list,
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
+
       int yWidget;
-      bool positioned;
-
-      if (!vloat->positioned)
-         positioned = false;
-      else if (textblock == vloat->generatingBlock) {
-         positioned = true;
-         yWidget = vloat->yReal;
-      } else {
-         if (textblock->wasAllocated() &&
-             vloat->generatingBlock->wasAllocated()) {
-            positioned = true;
-            yWidget = vloat->yReal + vloat->generatingBlock->getAllocation()->y
-               - textblock->getAllocation()->y;
-         } else
-            positioned = false;
-      }
-
-      if (positioned && y + h >= yWidget &&
-          y < yWidget + vloat->size.ascent + vloat->size.descent)
+      if (getYWidget (textblock, vloat, &yWidget)
+          && y + h >= yWidget
+          && y < yWidget + vloat->size.ascent + vloat->size.descent)
          // As opposed to getBorder, finding the first float is
          // sufficient.
          return true;
@@ -806,6 +753,54 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       //        vloat->y, vloat->width, vloat->ascent, vloat->descent);
           
       vloat->dirty = false;
+   }
+}
+
+/**
+ * Returns true, when position can be determined; in this case, the
+ * position is tored in *yWidget.
+ */
+bool OutOfFlowMgr::getYWidget (Textblock *textblock, Float *vloat, int *yWidget)
+{
+   if (!vloat->positioned)
+      return false;
+   else if (textblock == vloat->generatingBlock) {
+      *yWidget = vloat->yReal;
+      return true;
+   } else {
+      if (textblock->wasAllocated() && vloat->generatingBlock->wasAllocated()) {
+         *yWidget = vloat->yReal + vloat->generatingBlock->getAllocation()->y
+            - textblock->getAllocation()->y;
+         return true;
+      } else
+         return false;
+   }
+}
+
+/**
+ * Return the between generator and calling textblock. (TODO Exact
+ * definition. See getBorder(), where it is used.)
+ *
+ * Assumes that the position can be determined (getYWidget() returns true).
+ */
+int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, bool right)
+{
+   assert (vloat->positioned);
+
+   if (textblock == vloat->generatingBlock) {
+      return 0;
+   } else {
+      assert (textblock->wasAllocated() &&
+              vloat->generatingBlock->wasAllocated());
+      
+      if (right)
+         return
+            textblock->getAllocation()->x + textblock->getAllocation()->width -
+            - (vloat->generatingBlock->getAllocation()->x +
+               vloat->generatingBlock->getAllocation()->width);
+      else
+         return vloat->generatingBlock->getAllocation()->x
+            - textblock->getAllocation()->x;
    }
 }
 
