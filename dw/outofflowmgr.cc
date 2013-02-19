@@ -586,6 +586,17 @@ void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
       *oofMaxWidth = max (*oofMaxWidth, extr.maxWidth + borderDiff);
    }
 }
+
+void OutOfFlowMgr::registerCaller (Textblock *textblock)
+{
+   TypedPointer<Textblock> key (textblock);
+   TBInfo *tbInfo = tbInfos->get (&key);
+   if (tbInfo == NULL) {
+      tbInfo = new TBInfo;
+      tbInfo->wasAllocated = false;
+      tbInfos->put (new TypedPointer<Textblock> (textblock), tbInfo);
+   }
+}
    
 /**
  * Get the left border for the vertical position of *y*, for a height
@@ -615,15 +626,9 @@ int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h)
 int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
                              bool right, int y, int h)
 {
-   int border = 0;
+   registerCaller (textblock);
 
-   TypedPointer<Textblock> key (textblock);
-   TBInfo *tbInfo = tbInfos->get (&key);
-   if (tbInfo == NULL) {
-      tbInfo = new TBInfo;
-      tbInfo->wasAllocated = false;
-      tbInfos->put (new TypedPointer<Textblock> (textblock), tbInfo);
-   }
+   int border = 0;
 
    // To be a bit more efficient, one could use linear search to find
    // the first affected float.
@@ -710,19 +715,38 @@ bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h)
 bool OutOfFlowMgr::hasFloat (Textblock *textblock, Vector<Float> *list,
                              int y, int h)
 {
-   // TODO Latest change: Many changes neccessary. Re-actiavate.
+   // Compare to getBorder(). Actually much copy and paste.
 
-#if 0
-   // Compare to getBorder().
+   registerCaller (textblock);
+
+   // To be a bit more efficient, one could use linear search.
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
-      
-      if (vloat->positioned && y + h >= vloat->y &&
-          y < vloat->y + vloat->size.ascent + vloat->size.descent)
+      int yWidget;
+      bool positioned;
+
+      if (!vloat->positioned)
+         positioned = false;
+      else if (textblock == vloat->generatingBlock) {
+         positioned = true;
+         yWidget = vloat->yReal;
+      } else {
+         if (textblock->wasAllocated() &&
+             vloat->generatingBlock->wasAllocated()) {
+            positioned = true;
+            yWidget = vloat->yReal + vloat->generatingBlock->getAllocation()->y
+               - textblock->getAllocation()->y;
+         } else
+            positioned = false;
+      }
+
+      if (positioned && y + h >= yWidget &&
+          y < yWidget + vloat->size.ascent + vloat->size.descent)
+         // As opposed to getBorder, finding the first float is
+         // sufficient.
          return true;
    }
-#endif
 
    return false;
 }
