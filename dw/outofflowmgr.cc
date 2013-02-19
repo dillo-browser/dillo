@@ -566,8 +566,8 @@ void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
             if (vloat->generatingBlock->wasAllocated())
                // Simple case: both containing block and generating
                // block are defined.
-               borderDiff = containingBlock->getAllocation()->y -
-                  - vloat->generatingBlock->getAllocation()->width;
+               borderDiff = containingBlock->getAllocation()->width -
+                  vloat->generatingBlock->getAllocation()->width;
             else
                // Generating block not yet allocation; the next
                // allocation will, when necessary, trigger
