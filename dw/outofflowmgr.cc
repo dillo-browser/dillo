@@ -787,15 +787,15 @@ int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, bool right)
 {
    assert (vloat->positioned);
 
-   if (textblock == vloat->generatingBlock) {
+   if (textblock == vloat->generatingBlock)
       return 0;
-   } else {
+   else {
       assert (textblock->wasAllocated() &&
               vloat->generatingBlock->wasAllocated());
       
       if (right)
          return
-            textblock->getAllocation()->x + textblock->getAllocation()->width -
+            textblock->getAllocation()->x + textblock->getAllocation()->width
             - (vloat->generatingBlock->getAllocation()->x +
                vloat->generatingBlock->getAllocation()->width);
       else
