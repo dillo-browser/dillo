@@ -649,6 +649,9 @@ public:
                          bool includeFirstSpace, bool includeLastSpace);
 
    void borderChanged (int y);
+   inline int getAvailWidth () { return availWidth; }
+   inline int getAvailAscent () { return availAscent; }
+   inline int getAvailDescent () { return availDescent; }
 };
 
 } // namespace dw

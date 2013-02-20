@@ -22,7 +22,6 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    //printf ("OutOfFlowMgr::OutOfFlowMgr\n");
 
    this->containingBlock = containingBlock;
-   availWidth = availAscent = availDescent = -1;   
    leftFloats = new Vector<Float> (1, true);
    rightFloats = new Vector<Float> (1, true);
    tbInfos = new HashTable <TypedPointer <Textblock>, TBInfo> (true, true);
@@ -428,11 +427,9 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
                   // to be considered, too.
                   bool collidesH;
                   if (vloat->generatingBlock == v->generatingBlock)
-                     // TODO Wrong! "availWidth" refers to the CB, not
-                     // the GB.
                      collidesH = vloat->size.width + v->size.width +
                         vloat->generatingBlock->getStyle()->boxDiffWidth()
-                        > availWidth;
+                        > vloat->generatingBlock->getAvailWidth();
                   else  {
                      // Here (different generating blocks) it can be
                      // assumed that the allocations are defined
@@ -789,7 +786,8 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
                (absLengthVal (vloat->widget->getStyle()->width));
          else if (isPerLength (vloat->widget->getStyle()->width))
             vloat->widget->setWidth
-               (availWidth * perLengthVal (vloat->widget->getStyle()->width));
+               (containingBlock->getAvailWidth()
+                * perLengthVal (vloat->widget->getStyle()->width));
       }
 
       // This is a bit hackish: We first request the size, then set
@@ -818,8 +816,8 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       // Set width  ...
       int width = vloat->size.width;
       // Consider the available width of the containing block (when set):
-      if (availWidth != -1 && width > availWidth)
-         width = availWidth;
+      if (width > containingBlock->getAvailWidth())
+         width = containingBlock->getAvailWidth();
       // Finally, consider extremes (as described above).
       if (width < extremes.minWidth)
           width = extremes.minWidth;
