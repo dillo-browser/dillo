@@ -401,36 +401,75 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
          // Test collisions on the same side.
          for (int i = 0; i < listSame->size(); i++) {
             Float *v = listSame->get(i);
-            if (v != vloat) {
+            int yWidget;
+            if (v != vloat &&
+                getYWidget (vloat->generatingBlock, v, &yWidget)) {
                ensureFloatSize (v);
-               if (v->positioned != -1 && vloat->yReal >= v->yReal && 
-                   vloat->yReal < v->yReal + v->size.ascent + v->size.descent) {
+               if (v->positioned != -1 && vloat->yReal >= yWidget && 
+                   vloat->yReal < yWidget + v->size.ascent + v->size.descent) {
                   collides = true;
-                  vloat->yReal = v->yReal + v->size.ascent + v->size.descent;
+                  vloat->yReal = yWidget + v->size.ascent + v->size.descent;
                   break;
                }
             }
          }    
 
-#if 0      
          // Test collisions on the other side.
          for (int i = 0; i < listOpp->size(); i++) {
             Float *v = listOpp->get(i);
             // Note: Since v is on the opposite side, the condition 
             // v != vloat (used above) is always true.
-            ensureFloatSize (v);
-            if (v->y != -1 && realY >= v->y && 
-                realY < v->y + v->size.ascent + v->size.descent &&
-             // For the other size, horizontal dimensions have to be
-             // considered, too.
-             v->size.width + v->borderWidth +
-             vloat->size.width + vloat->borderWidth > availWidth) {
-               collides = true;
-               realY = v->y + v->size.ascent + v->size.descent;
-               break;
+            int yWidget;
+            if (getYWidget (vloat->generatingBlock, v, &yWidget)) {
+               ensureFloatSize (v);
+               if (v->positioned != -1 && vloat->yReal >= yWidget && 
+                   vloat->yReal < yWidget + v->size.ascent + v->size.descent) {
+                  // For the other side, horizontal dimensions have
+                  // to be considered, too.
+                  bool collidesH;
+                  if (vloat->generatingBlock == v->generatingBlock)
+                     // TODO Wrong! "availWidth" refers to the CB, not
+                     // the GB.
+                     collidesH = vloat->size.width + v->size.width +
+                        vloat->generatingBlock->getStyle()->boxDiffWidth()
+                        > availWidth;
+                  else  {
+                     // Here (different generating blocks) it can be
+                     // assumed that the allocations are defined
+                     // (because getYWidget() would have returned
+                     // false, otherwise).
+                     Float *left, *right;
+                     if (listSame == leftFloats) {
+                        left = vloat;
+                        right = v;
+                     } else {
+                        left = v;
+                        right = vloat;
+                     }
+
+                     // right border of the left float (canvas coordinates)
+                     int rightOfLeft =
+                        left->generatingBlock->getAllocation()->x
+                        + left->generatingBlock->getStyle()->boxOffsetX()
+                        + left->size.width;
+                     // left border of the right float (canvas coordinates)
+                     int leftOfRight =
+                        right->generatingBlock->getAllocation()->x
+                        + right->generatingBlock->getAllocation()->width
+                        - right->generatingBlock->getStyle()->boxRestWidth()
+                        - right->size.width;
+
+                     collidesH = rightOfLeft > leftOfRight;
+                  }
+
+                  if (collidesH) {
+                     collides = true;
+                     vloat->yReal = yWidget + v->size.ascent + v->size.descent;
+                     break;
+                  }
+               }
             }
          }
-#endif
       } while (collides);
       
       // It is assumed that there are no floats below this float
