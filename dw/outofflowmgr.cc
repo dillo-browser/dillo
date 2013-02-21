@@ -160,9 +160,6 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
 void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, bool right,
                                        Allocation *containingBlockAllocation)
 {
-   //int width =
-   //   availWidth != -1 ? availWidth : containingBlockAllocation->width;
-
    for (int i = 0; i < list->size(); i++) {
       // TODO Missing: check newly calculated positions, collisions,
       // and queue resize, when neccessary. TODO: See step 2?
@@ -173,10 +170,10 @@ void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, bool right,
 
       Allocation childAllocation;
       if (right)
-         // TODO Corrected by availWidth; see commented "width" above.
          childAllocation.x =
             vloat->generatingBlock->getAllocation()->x
-            + vloat->generatingBlock->getAllocation()->width
+            + min (vloat->generatingBlock->getAllocation()->width,
+                   vloat->generatingBlock->getAvailWidth())
             - vloat->size.width
             - vloat->generatingBlock->getStyle()->boxRestWidth();
       else
@@ -452,7 +449,8 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
                      // left border of the right float (canvas coordinates)
                      int leftOfRight =
                         right->generatingBlock->getAllocation()->x
-                        + right->generatingBlock->getAllocation()->width
+                        + min (right->generatingBlock->getAllocation()->width,
+                               right->generatingBlock->getAvailWidth())
                         - right->generatingBlock->getStyle()->boxRestWidth()
                         - right->size.width;
 
@@ -875,7 +873,8 @@ int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, bool right)
          return
             textblock->getAllocation()->x + textblock->getAllocation()->width
             - (vloat->generatingBlock->getAllocation()->x +
-               vloat->generatingBlock->getAllocation()->width);
+               min (vloat->generatingBlock->getAllocation()->width,
+                    vloat->generatingBlock->getAvailWidth()));
       else
          return vloat->generatingBlock->getAllocation()->x
             - textblock->getAllocation()->x;
