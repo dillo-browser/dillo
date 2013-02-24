@@ -713,7 +713,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
 
       int yWidget;
       if (getYWidget (textblock, vloat, &yWidget)
-          && y + h >= yWidget
+          && y + h > yWidget
           && y < yWidget + vloat->size.ascent + vloat->size.descent) {
          int borderDiff = getBorderDiff (textblock, vloat, right);
          int borderIn = right ?
@@ -763,7 +763,7 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Vector<Float> *list,
 
       int yWidget;
       if (getYWidget (textblock, vloat, &yWidget)
-          && y + h >= yWidget
+          && y + h > yWidget
           && y < yWidget + vloat->size.ascent + vloat->size.descent)
          // As opposed to getBorder, finding the first float is
          // sufficient.
