@@ -764,13 +764,14 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Vector<Float> *list,
       int yWidget;
       if (getYWidget (textblock, vloat, &yWidget)
           && y + h > yWidget
-          && y < yWidget + vloat->size.ascent + vloat->size.descent)
+          && y < yWidget + vloat->size.ascent + vloat->size.descent) {
          // As opposed to getBorder, finding the first float is
          // sufficient.
 
          //printf ("[%p] float on %s side (%d, %d)\n",
          //        textblock, right ? "right" : "left", y, h);
          return true;
+      }
    }
 
    //printf ("[%p] no float on %s side (%d, %d)\n",
