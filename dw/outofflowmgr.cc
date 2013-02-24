@@ -741,16 +741,16 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
 
 bool OutOfFlowMgr::hasFloatLeft (Textblock *textblock, int y, int h)
 {
-   return hasFloat (textblock, leftFloats, y, h);
+   return hasFloat (textblock, leftFloats, false, y, h);
 }
 
 bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h)
 {
-   return hasFloat (textblock, rightFloats, y, h);
+   return hasFloat (textblock, rightFloats, true, y, h);
 }
 
 bool OutOfFlowMgr::hasFloat (Textblock *textblock, Vector<Float> *list,
-                             int y, int h)
+                             bool right, int y, int h)
 {
    // Compare to getBorder(). Actually much copy and paste.
 
@@ -767,8 +767,14 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Vector<Float> *list,
           && y < yWidget + vloat->size.ascent + vloat->size.descent)
          // As opposed to getBorder, finding the first float is
          // sufficient.
+
+         //printf ("[%p] float on %s side (%d, %d)\n",
+         //        textblock, right ? "right" : "left", y, h);
          return true;
    }
+
+   //printf ("[%p] no float on %s side (%d, %d)\n",
+   //        textblock, right ? "right" : "left", y, h);
 
    return false;
 }

@@ -75,7 +75,8 @@ private:
                   lout::container::typed::Vector<Float> *list, bool right,
                   int y, int h);
    bool hasFloat (Textblock *textblock,
-                  lout::container::typed::Vector<Float> *list, int y, int h);
+                  lout::container::typed::Vector<Float> *list, bool right,
+                  int y, int h);
 
    void ensureFloatSize (Float *vloat);
    bool getYWidget (Textblock *textblock, Float *vloat, int *yWidget);
