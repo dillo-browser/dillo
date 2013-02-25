@@ -768,8 +768,9 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Vector<Float> *list,
          // As opposed to getBorder, finding the first float is
          // sufficient.
 
-         //printf ("[%p] float on %s side (%d, %d)\n",
-         //        textblock, right ? "right" : "left", y, h);
+         //printf ("[%p] float on %s side (%d, %d): (%d, %d)\n",
+         //        textblock, right ? "right" : "left", y, h,
+         //        yWidget, vloat->size.ascent + vloat->size.descent);
          return true;
       }
    }

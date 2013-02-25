@@ -2400,12 +2400,13 @@ int Textblock::topOfPossiblyMissingLine (int lineNo)
 
 int Textblock::heightOfPossiblyMissingLine (int lineNo)
 {
+   PRINTF ("[%p] HEIGHT_OF_POSSIBLY_MISSING_LINE (%d)\n", this, lineNo);
+   
    if (lineNo < lines->size()) {
       // An existing line.
       Line *line = lines->getRef (lineNo);
-      //printf ("      line %d: case 1 => %d + %d = %d\n",
-      //        lineNo, line->boxAscent, line->boxDescent,
-      //        line->boxAscent + line->boxDescent);
+      PRINTF ("      exists; height = %d + %d = %d\n", line->boxAscent,
+              line->boxDescent,  line->boxAscent + line->boxDescent);
       return line->boxAscent + line->boxDescent;
    } else if (lineNo == lines->size()) {
       // The line to be constructed: some words exist, but not the
@@ -2415,11 +2416,12 @@ int Textblock::heightOfPossiblyMissingLine (int lineNo)
       // Furthermore, this is in some cases incomplete: see
       // doc/dw-out-of-flow.doc.
 
-      //printf ("      line %d: case 2, %d - %d\n",
-      //        lineNo, firstWord, words->size());
-
       int h = 1;
       int firstWord = lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
+
+      PRINTF ("      does not exist; accumulating words from %d to %d\n",
+              firstWord, words->size());
+
       for (int i = firstWord; i < words->size(); i++) {
          Word *word = words->getRef (i);
          h = misc::max (h, word->size.ascent + word->size.descent);
@@ -2428,7 +2430,7 @@ int Textblock::heightOfPossiblyMissingLine (int lineNo)
          //printf (" => %d + %d = %d\n", word->size.ascent, word->size.descent,
          //        word->size.ascent + word->size.descent);
       }
-      //printf ("      => %d\n", h);
+      PRINTF ("      => %d\n", h);
       return h;
    } else
       return 1;
