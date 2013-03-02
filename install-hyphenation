@@ -1,116 +1,153 @@
 #!/usr/bin/env perl
-
 use POSIX;
 use File::Basename;
+use Net::FTP;
 
-sub getpattendir () {
+$commondir = "language/hyph-utf8/tex/generic/hyph-utf8/patterns/txt";
+
+# You may want do adjust these values.
+
+$host = "ctan.org";
+$dir = "/tex-archive/$commondir";
+
+#$host = "mirrors.dotsrc.org";
+#$dir = "/ctan/$commondir";
+
+#$host = "ftp.dante.de";
+#$dir = "/pub/tex/$commondir";
+
+$help = 0;
+if (@ARGV == 0) {
+   $help = 1;
+} else {
+   foreach $arg (@ARGV) {
+      if ($arg eq '-?' || $arg eq '--?' || $arg eq '-h' ||
+          $arg eq '--h' || $arg eq '-help' || $arg eq '--help') {
+         $arg = 1;
+      }
+   }
+}
+  
+if ($help) {
+   print "Usage: $0 <lang1> [<lang2> ...]\n\n";
+   print <<EOT;
+Download and install hyphenation patterns from CTAN for different languages.
+Languages are specified as defined by ISO 639-1 ("en" for English etc.).
+
+If there are multiple pattern files for a language (and so the filename is not
+"hyph-<lang>.pat.txt"), you must specify the respective part of the filename,
+e. g. "en-gb" or "en-us". In this case, the extra part ("-gb" or "-us") is
+automatically removed.
+
+If you are not sure, simply specify the language code ("en" in this example);
+you will then given a list of existing pattern files.
+EOT
+} else {
    # Extract pattern directory from Makefile, in the same directory as
    # this script. A complete interpretation of the Makefiles would be
    # too complicated, so only ${prefix} is read, which is (hopefully)
    # defined as constant.
-   
-   my $mf = (dirname $0) . "/Makefile", $prefix = "";
-   open MF, $mf or die "Cannot open $mf for reading: $!";
+   $prefix = "";
+   $makefile = (dirname $0) . "/Makefile";
+   open MF, $makefile or die "Cannot open $makefile: $!";
    while (<MF>) {
       if (/^\s*prefix\s*=\s*(.*)\s*$/) {
          $prefix = $1;
-     }        
+      }        
    }
-
    close MF;
-   
+
    if ($prefix eq "") {
-      die "prefix not defined in $mf";
+      die "Prefix not defined in $makefile.";
    }
-   
-   return "$prefix/lib/dillo/hyphenation";
-}
 
+   $patterdir = "$prefix/lib/dillo/hyphenation";
 
-sub printhelp {
-   print "   Syntax: install-hyphenation <lang1> [<lang2> ...]\n";
-   print "\n";
-   print "   If there are multiple pattern files for a language, and so the file name\n";
-   print "   is not \"hyph-<lang>.tex\", you can specify the origin by using a colon:\n";
-   print "   \"<src-lang>:<dest-lang>\", eg. \"de-1996:de\". If both are identical, the\n";
-   print "   colon can be committed; \"ru\" is equivalent to \"ru:ru\".\n";
+   if (!-e $patterdir) {
+      mkdir $patterdir or die "Cannot create directory $patterdir: $!";
+      print "Created $patterdir.\n";
+   }
 
-}
+   # Connect to CTAN FTP server, change to the directory where the
+   # patterns lie, and read files list (which may be useful later).
+   $ftp = Net::FTP->new($host,Timeout=>240)
+      or die "Cannot connect to $host: $!";
+   $ftp->login() or die "Cannot login: $!";
+   $ftp->cwd($dir) or die "Cannot change to directory $dir: $!";
+   @files = $ftp->ls or die "Cannot read directory: $!";
 
-sub trpatfile {
-   # Extract the data needed by dillo from the TeX file, based on two
-   # rules:
-   #
-   # 1. Extract the argument of the "\pattern" sequence, i. e.
-   #    anything between "\pattern{" and the next "}".
-   # 2. As an exception, comments are always preserved.
+   # Finally, read pattern files.
+   foreach $arg (@ARGV) {
+      if ($arg =~ /^([a-z]+)-.*$/) {
+         # More files per language, e. g. "en-gb".
+         $lang = $1;
+      } else {
+         # One file per language, e. g. "ru".
+         $lang = $arg;
+      }
+      
+      # First, donwload the pattern file to a temporary file.
+      $tmppat = tmpnam();
+      if ($ftp->get ("hyph-$arg.pat.txt", $tmppat)) {
+         printf ("Successfully downloaded pattern file for \"$arg\".\n");
+         
+         # Search for a licence file. (Only a warning, when it does
+         # not exist.)
+         $tmplic = tmpnam();
+         $licfound = 0;
+         if ($ftp->get ("hyph-$arg.lic.txt", $tmplic)) {
+            $licfound = 1;
+         } else {
+            print "Warning: Cannot download license file for \"$arg\": $!\n";
+         }
+         
+         # Combine both, licence and pattern, to the final pattern
+         # file.
+         $outfile = "$patterdir/$lang.pat";
+         open OUT, "> $outfile" or die "Cannot open $outfile: $!";
+         
+         if ($licfound) {
+            print OUT
+               "% Licence from ftp://$host$dir/hyph-$arg.lic.txt\n";
+            print OUT "%\n";
+            open IN, $tmplic or die "Cannot open $tmplic: $!";
+            while (<IN>) {
+               # Each line from the licence file must be a comment.
+               if (!/^%/) {
+                  print OUT "% ";
+               }
+               print OUT;
+            }
+            close IN;
+            unlink $tmplic;
 
-   my $url = $_[0], $in = $_[1], $out = $_[2];
-   
-   open IN, $in or die die "Cannot open $in for reading: $!";
-   open OUT, "> $out" or die "Cannot open $out for writing: $!";
-   
-   printf OUT "%% The original file was downloaded from\n";
-   printf OUT "%%\n";
-   printf OUT "%%    $url\n";
-   printf OUT "%%\n";
-   printf OUT "%% and automatically translated into this format. The original comments,\n";
-   printf OUT "%% including the original copyright notice, are preserved.\n";
-   printf OUT "%%\n";
-   printf OUT "%% -----------------------------------------------------------------------------\n";
-   printf OUT "%%\n";
-   
-   $inpatterns = 0;
-   while (<IN>) {
-      if (/^%/) {
-         # Adopt all comments
-         print OUT;
-      } elsif (!$inpatterns) {
-         if (/\\patterns\s*{/) {
-            $inpatterns = 1;
-        }
-     } else {
-        if (/}/) {
-           $inpatterns = 0;
-        } else {
-           print OUT;
-        }
+            print OUT "%\n";
+         }
+         
+         print OUT "% Patterns from ftp://$host$dir/hyph-$arg.pat.txt\n";
+         print OUT "%\n";
+         open IN, $tmppat or die "Cannot open $tmppat: $!";
+         while (<IN>) {
+            print OUT;
+         }
+         close IN;
+         unlink $tmppat;
+         
+         close OUT;
+      } else {
+         # Not found. If a single language was specified (e. g. "en"),
+         # search for possibilities.
+         print "Error: Cannot download pattern file for \"$arg\": $!\n";
+         if ($lang eq $arg) {
+            print "Try one of these:\n";
+            foreach(@files) {
+               if (/^hyph-($lang-.*)\.pat\.txt$/) {
+                  print "   $1\n";
+               }
+            }
+         }
       }
    }
    
-   close IN;
-   close OUT;
-
-   printf "Wrote pattern file: $out\n";
-}
-
-sub dlpatfile {
-   my $lang = $_[0], $destdir = $_[1], $lang1, $lang2;
-   if ($lang =~ /(.*):(.*)/) {
-      $lang1 = $1;
-      $lang2 = $2;
-   } else {
-      $lang1 = $lang2 = $lang;
-   }
-   
-   my $url = "ftp://ftp.mpi-sb.mpg.de/pub/tex/mirror/ftp.dante.de/pub/tex/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-$lang1.tex";
-   my $tmp = tmpnam();
-   if (system("wget -O $tmp $url") == 0) {
-      my $out = "$destdir/$lang2.pat";
-      trpatfile $url, $tmp, $out;
-      unlink $tmp;
-   } else {
-      print "Error downloading patterns for language $lang1. See messages above for details.\n"
-   }
-}
-
-$destdir = getpattendir;
-
-foreach $lang (@ARGV) {
-   if ($lang eq '-?' || $lang eq '--?' || $lang eq '-h' ||
-       $lang eq '--h' || $lang eq '-help' || $lang eq '--help') {
-      printhelp;
-   } else {
-      dlpatfile $lang, $destdir;
-   }
+   $ftp->quit;
 }
