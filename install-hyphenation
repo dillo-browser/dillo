@@ -7,11 +7,11 @@ $commondir = "language/hyph-utf8/tex/generic/hyph-utf8/patterns/txt";
 
 # You may want do adjust these values.
 
-$host = "ctan.org";
-$dir = "/tex-archive/$commondir";
+$host = "mirrors.dotsrc.org";
+$dir = "/ctan/$commondir";
 
-#$host = "mirrors.dotsrc.org";
-#$dir = "/ctan/$commondir";
+#$host = "ctan.org";
+#$dir = "/tex-archive/$commondir";
 
 #$host = "ftp.dante.de";
 #$dir = "/pub/tex/$commondir";
