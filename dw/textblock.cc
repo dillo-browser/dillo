@@ -1678,9 +1678,8 @@ void Textblock::addText (const char *text, size_t len,
          if(i < numParts - 1) {
             Word *word = words->getLastRef();
 
-            word->badnessAndPenalty
-               .setPenalties (penalties[partPenaltyIndex[i]][0],
-                              penalties[partPenaltyIndex[i]][1]);
+            setBreakOption (word, style, penalties[partPenaltyIndex[i]][0],
+                            penalties[partPenaltyIndex[i]][1]);
 
             if (charRemoved[i])
                // Currently, only unconditional hyphens (UTF-8:
@@ -1854,7 +1853,7 @@ void Textblock::addBreakOption (core::style::Style *style)
 {
    int wordIndex = words->size () - 1;
    if (wordIndex >= 0) {
-      setBreakOption (words->getRef(wordIndex), style);
+      setBreakOption (words->getRef(wordIndex), style, 0, 0);
       // Call of accumulateWordData() is not needed here.
       correctLastWordExtremes ();
    }
@@ -1880,7 +1879,7 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
 
    // Do not override a previously set break penalty.
    if (!word->content.space) {
-      setBreakOption (word, style);
+      setBreakOption (word, style, 0, 0);
 
       word->content.space = true;
       word->effSpace = word->origSpace = style->font->spaceWidth +
@@ -1904,7 +1903,8 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
  * (and so addSpace), but may be called, via addBreakOption(), as an
  * alternative, e. g. for ideographic characters.
  */
-void Textblock::setBreakOption (Word *word, core::style::Style *style)
+void Textblock::setBreakOption (Word *word, core::style::Style *style,
+                                int breakPenalty1, int breakPenalty2)
 {
    // TODO: lineMustBeBroken should be independent of the penalty
    // index? Otherwise, examine the last line.
@@ -1913,7 +1913,7 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style)
       case core::style::WHITE_SPACE_NORMAL:
       case core::style::WHITE_SPACE_PRE_LINE:
       case core::style::WHITE_SPACE_PRE_WRAP:
-         word->badnessAndPenalty.setPenalty (0);
+         word->badnessAndPenalty.setPenalties (breakPenalty1, breakPenalty2);
          break;
 
       case core::style::WHITE_SPACE_PRE:
