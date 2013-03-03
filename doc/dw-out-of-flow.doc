@@ -18,12 +18,13 @@ CSS&nbsp;2 specification). Consider this snippet (regarding floats):
     <ul>
       <li>Some text.</li>
       <li>
-	<div style="float:right; width=50%">Some longer text, so
-	  that the effect described in this passage can be
-	  demonstrated.
-	</div>
-	Some more and longer text.</li>
-      <li>Final text.</li>
+        <div style="float:right; width=50%">Some longer text, so
+          that the effect described in this passage can be
+          demonstrated.
+        </div>
+        Some more and longer text.</li>
+      <li>Final text. Plus some more to demonstrate how text flows
+        around the float on the right side.</li>
     </ul>
 
 which may be rendered like this
@@ -41,6 +42,16 @@ the allocation of a child widget must be within the allocation of the
 parent widget. Instead, to each dw::Textblock, another dw::Textblock
 is assigned as the containing box.
 
+(Notice also that other text blocks must regard floats to calculate
+their borders, and so their size. In this example, the following list
+item (green) must consider the position of the float. This is
+discussed in detail in the next section.)
+
+
+Implication for size calculations and allocation
+================================================
+
+...
 
 Implementation overview
 =======================
