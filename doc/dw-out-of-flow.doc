@@ -2,8 +2,8 @@
 
 <div style="border: 2px solid #ff4040; margin-bottom: 0.5em;
 padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
-There have been many changes recently; this document is not up
-to date.</div>
+Incomplete; some parts have been removed, beause they are not up to
+date.</div>
 
 <div style="border: 2px solid #ffff00; margin-bottom: 0.5em;
 padding: 0.5em 1em; background-color: #ffffe0"><b>Info:</b>
@@ -28,46 +28,18 @@ CSS&nbsp;2 specification). Consider this snippet (regarding floats):
 
 which may be rendered like this
 
-     - - - - - - - - - - - - - - - - - - - - - - - - - .
-    |   * Some text.                                    
-	* Some more and      -  - - - - - - - - - - -.|
-    |     longer text.      |Some longer text, so that  
-	* Final text.        the effect described     ||
-    ` - - - - - - - - - - - |above in this passage can '
-			     be demonstrated.         |
-			    ` - - - - - - - - - - -  -  
+\image html dw-floats-01.png
 
-The float (the DIV section) is defined ("generated") within the list
-item, so, in CSS 2 terms, the list item is the generating block of the
-float. However, as the image shows, the float is not contained by the
-list item, but another block, several levels above (not shown
-here). In terms of ::dw, this means that the dw::Textblock
-representing the float cannot be a child of the dw::Textblock
-representing the generating block, the list item, since the allocation
-of a child widget must be within the allocation of the parent
-widget. Instead, to each dw::Textblock, another dw::Textblock is
-assigned as the containing box.
-
-Definition of "containing block"
-================================
-
-The following definition follows the definition in the CSS 2
-specification. For a given dw::Textblock, the containing block is
-defined as the one dw::Textblock following these rules:
-
-- For the toplevel widget, the containing block is itself (see
-  dw::Textblock::notifySetAsTopLevel).
-
-- Otherwise, ... TODO: Has been changed; see
-  dw::Textblock::notifySetParent.
-
-TODO: 
-
-1. Compare this to
-   <http://www.w3.org/TR/CSS2/visudet.html#containing-block-details>.
-2. Handle fixed positions: in this case, the viewport is the
-   containing box, but the viewport is not represented by a widget.
-3. Clarify: the element out of flow must not be a dw::Textblock.
+The float (the DIV section, yellow in the image) is defined
+("generated") within the list item (blue), so, in CSS 2 terms, the
+list item is the generating block of the float. However, as the image
+shows, the float is not contained by the list item, but another block,
+several levels above (not shown here). In terms of ::dw, this means
+that the dw::Textblock representing the float cannot be a child of the
+dw::Textblock representing the generating block, the list item, since
+the allocation of a child widget must be within the allocation of the
+parent widget. Instead, to each dw::Textblock, another dw::Textblock
+is assigned as the containing box.
 
 
 Implementation overview
@@ -100,8 +72,8 @@ Textblock level
 ---------------
 Both dw::Textblock::notifySetAsTopLevel and
 dw::Textblock::notifySetParent set the member
-dw::Textblock::containingBlock appropriately, according to the rules
-defined above.
+dw::Textblock::containingBlock appropriately, (according to rules
+which should be defined in this document).
 
 Handling widgets out of flow is partly the task of the new class
 dw::OutOfFlowMgr, which is stored by dw::Textblock::outOfFlowMgr, but
@@ -134,281 +106,5 @@ The latter two must be changed, as soom as absolute positions are
 introduced. Details are hidden by static inline methods of
 dw::OutOfFlowMgr.
 
-
-Interaction between generating box and containing box
-=====================================================
-
-<div style="border: 2px solid #ff0000; margin-bottom: 0.5em; padding:
-0.5em 1em; background-color: #ffefe0"><b>Warning:</b> This section
-documents the current state, which is not free of errors.</div>
-
-A new widget out of flow is added to the generating block
----------------------------------------------------------
-With the respective style attributes set, this is delegated to the
-dw::OutOfFlowMgr of the containing block:
-
-    ,-------------.   ,-------------.   ,-------------.   ,-------------.
-    |    float    |   |    OOFM     |   | cont. block |   | gen.  block |
-    `-------------'   `-------------'   `-------------'   `-------------'
-           |                 |                 |                 |
-    ------------------------------------------------------------>|
-           |                 |                 |    addWidget    |
-           |                 |                 |    (with an     |
-           |                 |                 |  appr. style)   |
-           |                 |                 |                 |
-           |                 |<----------------------------------|
-           |                 |    addWidget    |                 |
-
-As with widgets in flow, dw::Textblock::wordWrap is called by/for the
-generating block:
-
-           |                 |                 |                 |--.
-           |                 |                 |                 |  |wordWrap
-           |                 |                 |                 |<-'
-
-First, the generating block will tell the dw::OutOfFlowMgr about the
-float position:
-
-           |                 |<----------------------------------|
-           |                 |  tellPosition   |                 |
-           |                 |  [1]            |                 |
-           |                 |                 |                 |
-           |                 |---------------->|                 |
-           |                 |  borderChanged  |                 |
-           |                 |                 |                 |
-           |                 |                 |---------------->|
-           |                 |                 |  borderChanged  |
-           |                 |                 |                 |
-           |                 |                 |                 |--.
-           |                 |                 |                 |  |queueResize
-           |                 |                 |                 |<-'
-
-After this, the line with must be calculated, with some implications:
-
-           |                 |                 |                 |--.
-           |                 |                 |                 |  |calcAvail\
-           |                 |                 |                 |  |Width
-           |                 |                 |                 |<-'
-           |                 |                 |                 |
-           |                 |                 |                 |--.
-           |                 |                 |                 |  |lineLeft\
-           |                 |                 |                 |  |Border [1]
-           |                 |                 |                 |<-'
-           |                 |                 |                 |
-           |                 |<----------------------------------|
-           |                 |  getLeftBorder  |                 |
-           |                 |                 |                 |
-           |                 |--.              |                 |
-           |                 |  |ensureFloat\  |                 |
-           |                 |  |Size          |                 |
-           |                 |<-'              |                 |
-           |                 |                 |                 |
-           |<----------------|                 |                 |
-           |   sizeRequest   |                 |                 |
-           |    (perhaps)    |                 |                 |
-
-"getRightBorder" in an analogue way.
-
-[1] Here, the values of diffXToContainingBlock,
-    restWidthToContainingBlock, and diffYToContainingBlock are
-    used. TODO: These may not be set correctly.
-
-The size of a float changes its size
-------------------------------------
-First, the standard part:
-
-    ,-------------.   ,-------------.   ,-------------.   ,-------------.
-    |    float    |   |    OOFM     |   | cont. block |   | gen.  block |
-    `-------------'   `-------------'   `-------------'   `-------------'
-           |                 |                 |                 |
-           |--.              |                 |                 |
-           |  |queueResize   |                 |                 |
-           |<-'              |                 |                 |
-           |                 |                 |                 |
-           |---------------------------------->|                 |
-           |                 | markSizeChange  |                 |
-
-Since dw::core::Widget::parentRef indicates this child as out of flow,
-this is delegated to the dw::OutOfFlowMgr:
-
-           |                 |<----------------|                 |
-           |                 |  markSizeChange |                 |
-           |                 |                 |                 |
-           |                 |---------------->|                 |
-           |                 |  borderChanged  |                 |
-           |                 |                 |                 |
-           |                 |                 |---------------->|
-           |                 |                 |  borderChanged  |
-           |                 |                 |                 |
-           |                 |                 |                 |--.
-           |                 |                 |                 |  |queueResize
-           |                 |                 |                 |<-'
-
-Notice that the size of the float is not yet calculated, instead a
-size request is queued (dw::OutOfFlowMgr::Float::dirty is set), which
-will result in a new calculation of the size of the containing block.
-
-Also, queueResize is called recursively here: before the call for the
-float is finished, it is called for the generating block. (See \ref
-dw-widget-sizes for details.)
-
-Calculating the size
---------------------
-As usually, it starts at the top of the widget tree; in this case, the
-containing block is regarded:
-
-    ,-------------.   ,-------------.   ,-------------.   ,-------------.
-    |    Float    |   |    OOFM     |   | cont. block |   | gen.  block |
-    `-------------'   `-------------'   `-------------'   `-------------'
-           |                 |                 |                 |
-    ------------------------------------------>|                 |
-           |                 |   sizeRequest   |                 |
-           |                 |                 |                 |
-           |                 |                 |--.              |
-           |                 |                 | sizeRequestImpl |
-           |                 |                 |<-'              |
-
-During rewrapping, the size of the child is requested. We omit some
-steps, since nothing has changed, except that
-
-- dw::Textblock::diffXToContainingBlock,
-- dw::Textblock::restWidthToContainingBlock, and
-- dw::Textblock::diffYToContainingBlock
-
-are set for the child, before this call:
-
-           |                 |                 |---------------->|
-           |                 |                 |   sizeRequest   |
-           |                 |                 |                 |
-           |                 |                 |                 |--.
-           |                 |                 |                 | sizeRequest\
-           |                 |                 |                 | Impl
-           |                 |                 |                 |<-'
-
-It may be that the child, the generating block, has to rewrap the
-lines:
-
-           |                 |                 |                 |--.
-           |                 |                 |                 | rewrap
-           |                 |                 |                 |<-'
-           |                 |                 |                 |
-           |                 |<----------------------------------|
-           |                 |  tellNoPosition |                 |
-           |                 |                 |                 |
-The rest is then similar to above:
-
-           |                 |                 |                 |--.
-           |                 |                 |                 | wordWrap
-           |                 |                 |                 |<-'
-           |                 |                 |                 |
-           |                 |<----------------------------------|
-           |                 |  tellPosition   |                 |
-           |                 |  [1]            |                 |
-           |                 |                 |                 |
-           |                 |---------------->|                 |
-           |                 |  borderChanged  |                 |
-           |                 |                 |                 |
-           |                 |                 |---------------->|
-           |                 |                 |  borderChanged  |
-           |                 |                 |                 |
-           |                 |                 |                 |--.
-           |                 |                 |                 |  |queueResize
-           |                 |                 |                 |<-'
-           |                 |                 |                 |
-           |                 |                 |                 |--.
-           |                 |                 |                 |  |calcAvail\
-           |                 |                 |                 |  |Width
-           |                 |                 |                 |<-'
-           |                 |                 |                 |
-           |                 |                 |                 |--.
-           |                 |                 |                 |  |lineLeft\
-           |                 |                 |                 |  |Border [1]
-           |                 |                 |                 |<-'
-           |                 |                 |                 |
-           |                 |<----------------------------------|
-           |                 |  getLeftBorder  |                 |
-           |                 |                 |                 |
-           |                 |--.              |                 |
-           |                 |  |ensureFloat\  |                 |
-           |                 |  |Size          |                 |
-           |                 |<-'              |                 |
-           |                 |                 |                 |
-           |<----------------|                 |                 |
-           |   sizeRequest   |                 |                 |
-           |    (perhaps)    |                 |                 |
-
-Notice the nested sizeRequest (containing block -- generating block --
-float), but also the call of dw::core::Widget::queueResize within
-dw::core::Widget::sizeRequestImpl, which is allowed, see
-\ref dw-widget-sizes.
-
-[1] Here, the values of diffXToContainingBlock,
-    restWidthToContainingBlock, and diffYToContainingBlock are used.
-
-
-Bugs and Things Needing Improvement
-===================================
-
-High Priority
--------------
-**Misplaced/missing floats, wrong widths etc.:** Best is to provide
-test pages with these errors, which are as simple as possible.
-
-**Extremes:** Extremes will be implemented by
-dw::OutOfFlowMgr::getExtremes, which must be considered by
-dw::Textblock::getExtremesImpl, like dw::OutOfFlowMgr::getSize is used
-by dw::Textblock::sizeRequestImpl. The last two points (lines with no
-contents/collisions of floats) lead to a very simple of
-dw::OutOfFlowMgr::getExtremes: the result is simply the maximum of the
-floats extremes. (This is at least correct for the minimal width.)
-
-**Rewrapping** (via dw::Textblock::borderChanged) sometimes does not
-imply redrawing. Reproduce?
-
-(Plus some more; list must be updated.)
-
-Medium Priority
----------------
-**Position of a text block:** Setting,
-dw::Textblock::diffXToContainingBlock,
-dw::Textblock::restWidthToContainingBlock, and
-dw::Textblock::diffYToContainingBlock in the current way is ugly,
-should be replaced by something like size hints.
-
-**Determining the containing block:** In
-dw::Textblock::notifySetAsTopLevel and dw::Textblock::notifySetParent:
-should other widgets be able to be generating/containing block?
-
-**Determining whether a widget cares about floats:** Both variants of
-_mustBorderBeRegarded_, and all variants of _getTextblockForLine_:
-Perhaps, there should be only one widget of this type per line.
-
-**Implementing the attribute "clear":** ...
-
-**Exact positions of floats:** See dw::OutOfFlowMgr::calcBorderDiff.
-
-Low Priority
--------------
-**Absolute positions:** Will be incorporated into the
-dw::OutOfFlowMgr.
-
-**Fixed elements:** Some notes about what has do be done for fixed
-elements: (i) In the current design, there is only one containing
-block for a given generating block. However, a given generating block
-may contain an element with absolute position (or, a float),
-
-Not a Bug (Kind of)
--------------------
-
-*Floats too far left?* Sometimes, floats seem too far on the
-left side, as in test/floats-and-absolute.html, and also in
-Wikipedia. This is only due to the fact that dillo does not yet
-support absolute positions, and so absolutely positioned elements are
-not regarded as containing block. (Or related to *Exact positions of
-floats* above?)
-
-**Update:** Floats refer to the border of the *generating* box, not of
-the *containing* box, so this is not an issue at all; furthermore,
-this has been fixed.
 
 */

@@ -27,6 +27,7 @@ EXTRA_DIST = \
 	dw-textblock-collapsing-spaces-1-2.png \
 	dw-textblock-collapsing-spaces-2-1.png \
 	dw-textblock-collapsing-spaces-2-2.png \
+	dw-floats-01.png \
         Cache.txt \
         Cookies.txt \
         Dillo.txt \
