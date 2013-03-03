@@ -51,7 +51,33 @@ discussed in detail in the next section.)
 Implication for size calculations and allocation
 ================================================
 
+The size/position model of ::dw consists mainly of the following two
+steps:
+
+1. First, the size of the toplevel widget is calculated. Size
+   calculation typically depends on the sizes of the widgets, which
+   are calculated recursively, but not more.
+2. After this, the toplevel widget is allocated at position (0, 0),
+   with the preiosly calculated size. Each widget must allocate its
+   children, although the condition for the toplevel widget is not
+   necessary, but each widget may be allocated at every size.
+
+Especially for floats, this model becomes a bit difficult:
+
+**The size of a widget depends on the size not only of the children.**
+In the example above, the last list item (green, following the
+generating list item) must know the size of the the float, which is
+not a child or, generally, descendant, but generally the sibling of an
+anchestor.
+
 ...
+
+**The size of a widget depends on the allocation of another widget.**
+In the example above, both list items (blue and green) must know the
+position of the float widget.
+
+...
+
 
 Implementation overview
 =======================
