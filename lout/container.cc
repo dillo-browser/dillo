@@ -193,13 +193,22 @@ void Vector::sort()
    qsort(array, numElements, sizeof(Object*), misc::Comparable::compareFun);
 }
 
+Object *Vector::VectorIterator::getNext()
+{
+   if (index < vector->numElements - 1)
+      index++;
 
-/**
- * \bug Not implemented.
- */
+   return index < vector->numElements ? vector->array[index] : NULL;
+}
+
+bool Vector::VectorIterator::hasNext()
+{
+   return index < vector->numElements - 1;
+}
+
 Collection0::AbstractIterator* Vector::createIterator()
 {
-   return NULL;
+   return new VectorIterator(this);
 }
 
 // ------------

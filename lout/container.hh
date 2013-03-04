@@ -102,10 +102,24 @@ public:
  */
 class Vector: public Collection
 {
+   friend class VectorIterator;
+
 private:
    object::Object **array;
    int numAlloc, numElements;
    bool ownerOfObjects;
+
+   class VectorIterator: public AbstractIterator
+   {
+   private:
+      Vector *vector;
+      int index;
+      
+   public:
+      VectorIterator(Vector *vector) { this->vector = vector; index = -1; }
+      bool hasNext();
+      Object *getNext();
+   };
 
 protected:
    AbstractIterator* createIterator();
