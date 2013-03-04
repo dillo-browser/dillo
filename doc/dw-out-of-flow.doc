@@ -80,6 +80,11 @@ In this situation, it is important not to call, within
 dw::Textblock::sizeRequestImpl of this textblock,
 dw::core::Widget::sizeRequest for the float. Instead, ... (?)
 
+(Actually, dw::Textblock::sizeRequestImpl calls
+dw::core::Widget::sizeRequest for the float, which conflicts with the
+rules defined in \ref dw-widget-sizes; but actually should not cause
+conflicts. Should be revised.)
+
 **The size of a widget depends on the allocation of another widget.**
 In the example above, both list items (blue and green) must know the
 position of the float widget, within dw::Textblock::sizeRequestImpl,
