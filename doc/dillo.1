@@ -22,6 +22,14 @@ and some CSS.
 .PP
 Framesets are displayed as links to frames, and there is currently
 no support for javascript or video.
+.PP
+In order to use the hyphenation feature, pattern files from CTAN need to
+be installed to
+.IR ${prefix}/lib/dillo/hyphenation/ .
+This can be done with the script
+.IR install-hyphenation .
+Call it with ISO-639-1 language codes as arguments, or without arguments
+to get more help.
 .SH OPTIONS
 .TP
 \fB\-f\fR, \fB\-\-fullwindow\fR
@@ -97,7 +105,10 @@ dpi files with protocols.
 Keybindings.
 .TP
 .I ~/.dillo/style.css
-User style sheet
+User style sheet.
+.TP
+.I ${prefix}/lib/dillo/hyphenation/
+Hyphenation pattern files.
 .SH SEE ALSO
 .BR wget (1)
 .PP
