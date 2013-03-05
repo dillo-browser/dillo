@@ -111,8 +111,9 @@ size_t Object::sizeOf()
 // ----------------
 
 /**
- * \brief This static method may be used as compare function for qsort(3), for
- *    an array of Object* (Object*[] or Object**).
+ * \brief This static method may be used as compare function for
+ *    qsort(3) and bsearch(3), for an array of Object* (Object*[] or
+ *    Object**).
  */
 int Comparable::compareFun(const void *p1, const void *p2)
 {
