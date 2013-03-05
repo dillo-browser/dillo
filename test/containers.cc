@@ -45,12 +45,38 @@ void testVector ()
    v.put (new String ("one"));
    v.put (new String ("two"));
    v.put (new String ("three"));
-
    puts (v.toString());
 
    v.sort ();
-
    puts (v.toString());
+
+   v.insertSorted (new String ("five"));
+   puts (v.toString());
+
+   v.insertSorted (new String ("six"));
+   puts (v.toString());
+
+   v.insertSorted (new String ("four"));
+   puts (v.toString());
+
+   for (int b = 0; b < 2; b++) {
+      bool mustExist = b;
+      printf ("mustExist = %s\n", mustExist ? "true" : "false");
+   
+      String k ("alpha");
+      printf ("   '%s' -> %d\n", k.chars(), v.bsearch (&k, mustExist));
+      
+      for (Iterator<String> it = v.iterator(); it.hasNext(); ) {
+         String *k1 = it.getNext();
+         printf ("   '%s' -> %d\n", k1->chars(), v.bsearch (k1, mustExist));
+         
+         char buf[64];
+         strcpy (buf, k1->chars());
+         strcat (buf, "-var");
+         String k2 (buf);
+         printf ("   '%s' -> %d\n", k2.chars(), v.bsearch (&k2, mustExist));
+      }
+   }
 }
 
 int main (int argc, char *argv[])

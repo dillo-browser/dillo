@@ -190,7 +190,54 @@ void Vector::remove(int pos)
  */
 void Vector::sort()
 {
-   qsort(array, numElements, sizeof(Object*), Comparable::compareFun);
+   qsort (array, numElements, sizeof(Object*), Comparable::compareFun);
+}
+
+/**
+ * \brief Use binary search to find an element in a sorted vector.
+ *
+ * If "mustExist" is true, only exact matches are found; otherwise, -1
+ * is returned. If it is false, the position of the next greater
+ * element is returned, or, if the key is the greatest element, the
+ * size of the array. (This is the value which can be used for
+ * insertion; see insertSortet()).
+ */
+int Vector::bsearch(Object *key, bool mustExist)
+{
+   // The case !mustExist is not handled by bsearch(3), so here is a
+   // new implementation.
+   
+   int high = numElements - 1, low = 0;
+
+   while (true) {
+      int index = (low + high) / 2;
+      int c = ((Comparable*) key)->compareTo ((Comparable*)array[index]);
+      if (c == 0)
+         return index;
+      else {
+         if (low >= high) {
+            if (mustExist)
+               return -1;
+            else
+               return c > 0 ? index + 1 : index;
+         }
+
+         if (c < 0)
+            high = index - 1;
+         else
+            low = index + 1;
+      }
+   }
+   
+
+   /*
+   void *result = ::bsearch (&key, array, numElements, sizeof (Object*),
+                             Comparable::compareFun);
+   if (result)
+      return (Object**)result - array;
+   else
+      return -1;
+   */
 }
 
 Object *Vector::VectorIterator::getNext()

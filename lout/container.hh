@@ -130,12 +130,23 @@ public:
 
    void put(object::Object *newElement, int newPos = -1);
    void insert(object::Object *newElement, int pos);
+
+   /**
+    * \brief Insert into an already sorted vector.
+    *
+    * Notice that insertion is not very efficient, unless the position
+    * is rather at the end.
+    */
+   inline void insertSorted(object::Object *newElement)
+   { insert (newElement, bsearch (newElement, false)); }
+
    void remove(int pos);
    inline object::Object *get(int pos)
    { return (pos >= 0 && pos < numElements) ? array[pos] : NULL; }
    inline int size() { return numElements; }
    void clear();
    void sort();
+   int bsearch(Object *key, bool mustExist);
 };
 
 
@@ -395,12 +406,16 @@ public:
    { ((untyped::Vector*)this->base)->put(newElement, newPos); }
    inline void insert(T *newElement, int pos)
    { ((untyped::Vector*)this->base)->insert(newElement, pos); }
+   inline void insertSorted(T *newElement)
+   { ((untyped::Vector*)this->base)->insertSorted(newElement); }
    inline void remove(int pos) { ((untyped::Vector*)this->base)->remove(pos); }
    inline T *get(int pos)
    { return (T*)((untyped::Vector*)this->base)->get(pos); }
    inline int size() { return ((untyped::Vector*)this->base)->size(); }
    inline void clear() { ((untyped::Vector*)this->base)->clear(); }
    inline void sort() { ((untyped::Vector*)this->base)->sort(); }
+   inline int bsearch(T *key, bool mustExist)
+   { return ((untyped::Vector*)this->base)->bsearch(key, mustExist); }
 };
 
 
