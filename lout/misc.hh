@@ -65,35 +65,6 @@ inline int AsciiStrcasecmp(const char *s1, const char *s2)
 }
 
 /**
- * \brief Instances of a sub class of this interface may be compared (less,
- *    greater).
- *
- * Used for sorting etc.
- */
-class Comparable
-{
-public:
-    virtual ~Comparable();
-
-   /**
-    * \brief Compare two objects c1 and c2.
-    *
-    * return a value < 0, when c1 is less than c2, a value > 0, when c1
-    * is greater than c2, or 0, when c1 and c2 are equal.
-    *
-    * If also object::Object is implemented, and if c1.equals(c2),
-    * c1.compareTo(c2) must be 0, but, unlike you may expect,
-    * the reversed is not necessarily true. This method returns 0, if,
-    * according to the rules for sorting, there is no difference, but there
-    * may still be differences (not relevant for sorting), which "equals" will
-    * care about.
-    */
-   virtual int compareTo(Comparable *other) = 0;
-
-   static int compareFun(const void *p1, const void *p2);
-};
-
-/**
  * \brief Simple (simpler than container::untyped::Vector and
  *    container::typed::Vector) template based vector.
  */

@@ -37,32 +37,6 @@ void init (int argc, char *argv[])
    prgName = strdup (argv[0]);
 }
 
-// ----------------
-//    Comparable
-// ----------------
-
-Comparable::~Comparable()
-{
-}
-
-/**
- * \brief This static method may be used as compare function for qsort(3), for
- *    an array of Object* (Object*[] or Object**).
- */
-int Comparable::compareFun(const void *p1, const void *p2)
-{
-   Comparable **c1 = (Comparable**)p1;
-   Comparable **c2 = (Comparable**)p2;
-   if (c1 && c2)
-      return ((*c1)->compareTo(*c2));
-   else if (c1)
-      return 1;
-   else if (c2)
-      return -1;
-   else
-      return 0;
-}
-
 
 // ------------------
 //    StringBuffer

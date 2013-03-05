@@ -16,7 +16,7 @@ namespace core {
  *
  * \sa dw::core::Widget::iterator
  */
-class Iterator: public lout::object::Object, public lout::misc::Comparable
+class Iterator: public lout::object::Comparable
 {
 protected:
    Iterator(Widget *widget, Content::Type mask, bool atEnd);
@@ -101,7 +101,7 @@ public:
    EmptyIterator (Widget *widget, Content::Type mask, bool atEnd);
 
    lout::object::Object *clone();
-   int compareTo(lout::misc::Comparable *other);
+   int compareTo(lout::object::Comparable *other);
    bool next ();
    bool prev ();
    void highlight (int start, int end, HighlightLayer layer);
@@ -126,7 +126,7 @@ public:
    TextIterator (Widget *widget, Content::Type mask, bool atEnd,
                  const char *text);
 
-   int compareTo(lout::misc::Comparable *other);
+   int compareTo(lout::object::Comparable *other);
 
    bool next ();
    bool prev ();
@@ -142,7 +142,7 @@ public:
  * iterators do not have the limitation, that iteration is only done within
  * a widget, instead, child widgets are iterated through recursively.
  */
-class DeepIterator: public lout::object::Object, public lout::misc::Comparable
+class DeepIterator: public lout::object::Comparable
 {
 private:
    class Stack: public lout::container::typed::Vector<Iterator>
@@ -183,7 +183,7 @@ public:
    bool next ();
    bool prev ();
    inline DeepIterator *cloneDeepIterator() { return (DeepIterator*)clone(); }
-   int compareTo(lout::misc::Comparable *other);
+   int compareTo(lout::object::Comparable *other);
 
    /**
     * \brief Highlight a part of the current content.
@@ -216,7 +216,7 @@ public:
                          start, end, hpos, vpos); }
 };
 
-class CharIterator: public lout::object::Object, public lout::misc::Comparable
+class CharIterator: public lout::object::Comparable
 {
 public:
    // START and END must not clash with any char value
@@ -234,7 +234,7 @@ public:
    ~CharIterator ();
 
    lout::object::Object *clone();
-   int compareTo(lout::misc::Comparable *other);
+   int compareTo(lout::object::Comparable *other);
 
    bool next ();
    bool prev ();

@@ -57,7 +57,7 @@ object::Object *Textblock::TextblockIterator::clone()
    return new TextblockIterator ((Textblock*)getWidget(), getMask(), index);
 }
 
-int Textblock::TextblockIterator::compareTo(misc::Comparable *other)
+int Textblock::TextblockIterator::compareTo(object::Comparable *other)
 {
    return index - ((TextblockIterator*)other)->index;
 }

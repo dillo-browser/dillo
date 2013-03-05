@@ -190,7 +190,7 @@ void Vector::remove(int pos)
  */
 void Vector::sort()
 {
-   qsort(array, numElements, sizeof(Object*), misc::Comparable::compareFun);
+   qsort(array, numElements, sizeof(Object*), Comparable::compareFun);
 }
 
 Object *Vector::VectorIterator::getNext()

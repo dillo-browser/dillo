@@ -376,7 +376,7 @@ protected:
                          int index);
 
       lout::object::Object *clone();
-      int compareTo(lout::misc::Comparable *other);
+      int compareTo(lout::object::Comparable *other);
 
       bool next ();
       bool prev ();

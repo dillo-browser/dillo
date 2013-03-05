@@ -47,6 +47,10 @@ void testVector ()
    v.put (new String ("three"));
 
    puts (v.toString());
+
+   v.sort ();
+
+   puts (v.toString());
 }
 
 int main (int argc, char *argv[])

@@ -1114,7 +1114,7 @@ object::Object *Table::TableIterator::clone()
    return new TableIterator ((Table*)getWidget(), getMask(), index);
 }
 
-int Table::TableIterator::compareTo(misc::Comparable *other)
+int Table::TableIterator::compareTo(object::Comparable *other)
 {
    return index - ((TableIterator*)other)->index;
 }
