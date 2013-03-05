@@ -37,7 +37,7 @@ Iterator::Iterator(Widget *widget, Content::Type mask, bool atEnd)
    this->mask = mask;
 }
 
-Iterator::Iterator(Iterator &it): object::Object (), misc::Comparable ()
+Iterator::Iterator(Iterator &it): object::Comparable ()
 {
    widget = it.widget;
    content = it.content;
@@ -214,7 +214,7 @@ object::Object *EmptyIterator::clone ()
    return new EmptyIterator (*this);
 }
 
-int EmptyIterator::compareTo (misc::Comparable *other)
+int EmptyIterator::compareTo (object::Comparable *other)
 {
    EmptyIterator *otherIt = (EmptyIterator*)other;
 
@@ -266,7 +266,7 @@ TextIterator::TextIterator (TextIterator &it): Iterator (it)
    text = it.text;
 }
 
-int TextIterator::compareTo (misc::Comparable *other)
+int TextIterator::compareTo (object::Comparable *other)
 {
    TextIterator *otherIt = (TextIterator*)other;
 
@@ -579,7 +579,7 @@ object::Object *DeepIterator::clone ()
    return it;
 }
 
-int DeepIterator::compareTo (misc::Comparable *other)
+int DeepIterator::compareTo (object::Comparable *other)
 {
    DeepIterator *otherDeepIterator = (DeepIterator*)other;
 
@@ -717,7 +717,7 @@ object::Object *CharIterator::clone()
    return cloned;
 }
 
-int CharIterator::compareTo(misc::Comparable *other)
+int CharIterator::compareTo(object::Comparable *other)
 {
    CharIterator *otherIt = (CharIterator*)other;
    int c = it->compareTo(otherIt->it);

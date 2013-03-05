@@ -901,17 +901,10 @@ static int UIcmd_save_file_check(const char *name)
 static void UIcmd_save(BrowserWindow *bw, const DilloUrl *url,
                        const char *title)
 {
-   const char *name;
-   bool_t first_prompt = 1;
-   while (1) {
-      char *SuggestedName;
+   char *SuggestedName = UIcmd_make_save_filename(url);
 
-      SuggestedName =
-         first_prompt
-         ? UIcmd_make_save_filename(url)
-         : dStrdup(name);
-      first_prompt = 0;
-      name = a_Dialog_save_file(title, NULL, SuggestedName);
+   while (1) {
+      const char *name = a_Dialog_save_file(title, NULL, SuggestedName);
       dFree(SuggestedName);
 
       if (name) {
@@ -932,6 +925,8 @@ static void UIcmd_save(BrowserWindow *bw, const DilloUrl *url,
       } else {
          return; /* no name, so Abort */
       }
+
+      SuggestedName = dStrdup(name);
    }
 }
 

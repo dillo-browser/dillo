@@ -384,7 +384,7 @@ protected:
                          bool oofm, int index);
 
       lout::object::Object *clone();
-      int compareTo(lout::misc::Comparable *other);
+      int compareTo(lout::object::Comparable *other);
 
       bool next ();
       bool prev ();
@@ -494,7 +494,8 @@ protected:
    void fillWord (Word *word, int width, int ascent, int descent,
                   short flags, core::style::Style *style);
    void fillSpace (Word *word, core::style::Style *style);
-   void setBreakOption (Word *word, core::style::Style *style);
+   void setBreakOption (Word *word, core::style::Style *style,
+                        int breakPenalty1, int breakPenalty2);
    int textWidth (const char *text, int start, int len,
                   core::style::Style *style, bool isStart, bool isEnd);
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
