@@ -44,8 +44,8 @@ void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
 void OutOfFlowMgr::sizeAllocateEnd ()
 {
    // 1. Floats have to be allocated
-   sizeAllocateFloats (leftFloats, false);
-   sizeAllocateFloats (rightFloats, true);
+   sizeAllocateFloats (leftFloats, LEFT);
+   sizeAllocateFloats (rightFloats, RIGHT);
 
    // 2. Textblocks have already been allocated, but we store some
    // information for later use. TODO: Update this comment!
@@ -155,7 +155,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
    return covered;
 }
 
-void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, bool right)
+void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, Side side)
 {
    for (int i = 0; i < list->size(); i++) {
       // TODO Missing: check newly calculated positions, collisions,
@@ -166,16 +166,21 @@ void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, bool right)
       ensureFloatSize (vloat);
 
       Allocation childAllocation;
-      if (right)
+      switch (side) {
+      case LEFT:
+         childAllocation.x = vloat->generatingBlock->getAllocation()->x
+            + vloat->generatingBlock->getStyle()->boxOffsetX();
+         break;
+
+      case RIGHT:
          childAllocation.x =
             vloat->generatingBlock->getAllocation()->x
             + min (vloat->generatingBlock->getAllocation()->width,
                    vloat->generatingBlock->getAvailWidth())
             - vloat->size.width
             - vloat->generatingBlock->getStyle()->boxRestWidth();
-      else
-         childAllocation.x = vloat->generatingBlock->getAllocation()->x
-            + vloat->generatingBlock->getStyle()->boxOffsetX();
+         break;
+      }
 
       childAllocation.y =
          vloat->generatingBlock->getAllocation()->y + vloat->yReal;
@@ -681,7 +686,7 @@ void OutOfFlowMgr::registerCaller (Textblock *textblock)
  */
 int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
 {
-   return getBorder (textblock, leftFloats, false, y, h);
+   return getBorder (textblock, leftFloats, LEFT, y, h);
 }
 
 /**
@@ -692,11 +697,11 @@ int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
  */
 int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h)
 {
-   return getBorder (textblock, rightFloats, true, y, h);
+   return getBorder (textblock, rightFloats, RIGHT, y, h);
 }
 
 int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
-                             bool right, int y, int h)
+                             Side side, int y, int h)
 {
    registerCaller (textblock);
 
@@ -712,10 +717,10 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
       if (getYWidget (textblock, vloat, &yWidget)
           && y + h > yWidget
           && y < yWidget + vloat->size.ascent + vloat->size.descent) {
-         int borderDiff = getBorderDiff (textblock, vloat, right);
-         int borderIn = right ?
-            vloat->generatingBlock->getStyle()->boxRestWidth() :
-            vloat->generatingBlock->getStyle()->boxOffsetX();
+         int borderDiff = getBorderDiff (textblock, vloat, side);
+         int borderIn = side == LEFT ?
+            vloat->generatingBlock->getStyle()->boxOffsetX() :
+            vloat->generatingBlock->getStyle()->boxRestWidth();
 
          //printf ("   borderDiff = %d, borderIn = %d\n", borderDiff, borderIn);
          border = max (border, vloat->size.width + borderIn + borderDiff);
@@ -738,16 +743,16 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
 
 bool OutOfFlowMgr::hasFloatLeft (Textblock *textblock, int y, int h)
 {
-   return hasFloat (textblock, leftFloats, false, y, h);
+   return hasFloat (textblock, leftFloats, LEFT, y, h);
 }
 
 bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h)
 {
-   return hasFloat (textblock, rightFloats, true, y, h);
+   return hasFloat (textblock, rightFloats, RIGHT, y, h);
 }
 
 bool OutOfFlowMgr::hasFloat (Textblock *textblock, Vector<Float> *list,
-                             bool right, int y, int h)
+                             Side side, int y, int h)
 {
    // Compare to getBorder(). Actually much copy and paste.
 
@@ -864,7 +869,7 @@ bool OutOfFlowMgr::getYWidget (Textblock *textblock, Float *vloat, int *yWidget)
  *
  * Assumes that the position can be determined (getYWidget() returns true).
  */
-int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, bool right)
+int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, Side side)
 {
    assert (vloat->positioned);
 
@@ -874,15 +879,22 @@ int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, bool right)
       assert (textblock->wasAllocated() &&
               vloat->generatingBlock->wasAllocated());
       
-      if (right)
+      switch (side) {
+      case LEFT:
+         return vloat->generatingBlock->getAllocation()->x
+            - textblock->getAllocation()->x;
+
+      case RIGHT:
          return
             textblock->getAllocation()->x + textblock->getAllocation()->width
             - (vloat->generatingBlock->getAllocation()->x +
                min (vloat->generatingBlock->getAllocation()->width,
                     vloat->generatingBlock->getAvailWidth()));
-      else
-         return vloat->generatingBlock->getAllocation()->x
-            - textblock->getAllocation()->x;
+
+      default:
+         assertNotReached();
+         return 0;
+      }
    }
 }
 

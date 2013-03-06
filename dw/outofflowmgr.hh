@@ -13,6 +13,8 @@ class Textblock;
 class OutOfFlowMgr
 {
 private:
+   enum Side { LEFT, RIGHT };
+
    Textblock *containingBlock;
    core::Allocation containingBlockAllocation; /* Set by sizeAllocateStart(),
                                                   and accessable also before
@@ -57,7 +59,7 @@ private:
                                                                 *widget);
 
    void sizeAllocateFloats (lout::container::typed::Vector<Float> *list,
-                            bool right);
+                            Side side);
    bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
                                     int tbWidth, int tbHeight, int *floatPos);
    bool isTextblockCoveredByFloats (lout::container::typed::Vector<Float> *list,
@@ -74,15 +76,15 @@ private:
                        int *oofMinWidth, int *oofMaxWidth);
    void registerCaller (Textblock *textblock);
    int getBorder (Textblock *textblock,
-                  lout::container::typed::Vector<Float> *list, bool right,
+                  lout::container::typed::Vector<Float> *list, Side side,
                   int y, int h);
    bool hasFloat (Textblock *textblock,
-                  lout::container::typed::Vector<Float> *list, bool right,
+                  lout::container::typed::Vector<Float> *list, Side side,
                   int y, int h);
 
    void ensureFloatSize (Float *vloat);
    bool getYWidget (Textblock *textblock, Float *vloat, int *yWidget);
-   int getBorderDiff (Textblock *textblock, Float *vloat, bool right);
+   int getBorderDiff (Textblock *textblock, Float *vloat, Side side);
 
 
    inline static bool isRefFloat (int ref)
