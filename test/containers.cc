@@ -36,9 +36,9 @@ void testHashTable ()
    puts (h.toString());
 }
 
-void testVector ()
+void testVector1 ()
 {
-   puts ("--- testVector ---");
+   puts ("--- testVector (1) ---");
 
    Vector<String> v (true, 1);
 
@@ -49,7 +49,23 @@ void testVector ()
 
    v.sort ();
    puts (v.toString());
+}
 
+void testVector2 ()
+{
+   puts ("--- testVector (2) ---");
+
+   Vector<String> v (true, 1);
+
+   v.insertSorted (new String ("one"));
+   puts (v.toString());
+
+   v.insertSorted (new String ("two"));
+   puts (v.toString());
+
+   v.insertSorted (new String ("three"));
+   puts (v.toString());
+   
    v.insertSorted (new String ("five"));
    puts (v.toString());
 
@@ -83,7 +99,8 @@ int main (int argc, char *argv[])
 {
    testHashSet ();
    testHashTable ();
-   testVector ();
+   testVector1 ();
+   testVector2 ();
 
    return 0;
 }
