@@ -14,6 +14,11 @@ class OutOfFlowMgr
 {
 private:
    Textblock *containingBlock;
+   core::Allocation containingBlockAllocation; /* Set by sizeAllocateStart(),
+                                                  and accessable also before
+                                                  sizeAllocateEnd(), as opposed
+                                                  by containingBlock->
+                                                     getAllocation(). */
 
    class Float: public lout::object::Object
    {
@@ -52,13 +57,10 @@ private:
                                                                 *widget);
 
    void sizeAllocateFloats (lout::container::typed::Vector<Float> *list,
-                            bool right,
-                            core::Allocation *containingBlockAllocation);
-   bool isTextblockCoveredByFloats (core::Allocation *containingBlockAllocation,
-                                    Textblock *tb, int tbx, int tby,
+                            bool right);
+   bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
                                     int tbWidth, int tbHeight, int *floatPos);
    bool isTextblockCoveredByFloats (lout::container::typed::Vector<Float> *list,
-                                    core::Allocation *containingBlockAllocation,
                                     Textblock *tb, int tbx, int tby,
                                     int tbWidth, int tbHeight, int *floatPos);
 
@@ -102,7 +104,8 @@ public:
    OutOfFlowMgr (Textblock *containingBlock);
    ~OutOfFlowMgr ();
 
-   void sizeAllocate(core::Allocation *containingBlockAllocation);
+   void sizeAllocateStart (core::Allocation *containingBlockAllocation);
+   void sizeAllocateEnd ();
    void draw (core::View *view, core::Rectangle *area);
    void queueResize(int ref);
 

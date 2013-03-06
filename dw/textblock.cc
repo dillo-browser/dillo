@@ -359,6 +359,9 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
    showMissingLines ();
 
+   if(outOfFlowMgr)
+      outOfFlowMgr->sizeAllocateStart (allocation);
+
    int lineIndex, wordIndex;
    Line *line;
    Word *word;
@@ -455,7 +458,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    }
 
    if(outOfFlowMgr)
-      outOfFlowMgr->sizeAllocate(allocation);
+      outOfFlowMgr->sizeAllocateEnd ();
       
    for (int i = 0; i < anchors->size(); i++) {
       Anchor *anchor = anchors->getRef(i);

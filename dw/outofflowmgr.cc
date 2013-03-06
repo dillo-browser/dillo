@@ -36,11 +36,16 @@ OutOfFlowMgr::~OutOfFlowMgr ()
    delete tbInfos;
 }
 
-void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
+void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
+{
+   this->containingBlockAllocation = *containingBlockAllocation;
+}
+
+void OutOfFlowMgr::sizeAllocateEnd ()
 {
    // 1. Floats have to be allocated
-   sizeAllocateFloats (leftFloats, false, containingBlockAllocation);
-   sizeAllocateFloats (rightFloats, true, containingBlockAllocation);
+   sizeAllocateFloats (leftFloats, false);
+   sizeAllocateFloats (rightFloats, true);
 
    // 2. Textblocks have already been allocated, but we store some
    // information for later use. TODO: Update this comment!
@@ -51,8 +56,8 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
       TBInfo *tbInfo = tbInfos->get (key);
       Textblock *tb = key->getTypedValue();
 
-      int xCB = tb->getAllocation()->x - containingBlockAllocation->x;
-      int yCB = tb->getAllocation()->y - containingBlockAllocation->y;
+      int xCB = tb->getAllocation()->x - containingBlockAllocation.x;
+      int yCB = tb->getAllocation()->y - containingBlockAllocation.y;
       int width = tb->getAllocation()->width;
       int height = tb->getAllocation()->ascent + tb->getAllocation()->descent;
 
@@ -63,16 +68,15 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
          // have to be tested.
       
          // Old allocation:
-         bool c1 = isTextblockCoveredByFloats (containingBlockAllocation, tb,
+         bool c1 = isTextblockCoveredByFloats (tb,
                                                tbInfo->xCB
-                                               + containingBlockAllocation->x,
+                                               + containingBlockAllocation.x,
                                                tbInfo->yCB
-                                               + containingBlockAllocation->y,
+                                               + containingBlockAllocation.y,
                                                tbInfo->width, tbInfo->height,
                                                &oldPos);
          // new allocation:
-         int c2 = isTextblockCoveredByFloats (containingBlockAllocation, tb,
-                                              tb->getAllocation()->x,
+         int c2 = isTextblockCoveredByFloats (tb, tb->getAllocation()->x,
                                               tb->getAllocation()->y,
                                               width, height, &newPos);
          if (c1 || c2)
@@ -87,26 +91,20 @@ void OutOfFlowMgr::sizeAllocate (Allocation *containingBlockAllocation)
    }
 }
 
-bool OutOfFlowMgr::isTextblockCoveredByFloats (Allocation
-                                               *containingBlockAllocation,
-                                               Textblock *tb, int tbx, int tby,
+bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
                                                int tbWidth, int tbHeight,
                                                int *floatPos)
 {
    int leftPos, rightPos;
-   bool c1 = isTextblockCoveredByFloats (leftFloats, containingBlockAllocation,
-                                         tb, tbx, tby, tbWidth, tbHeight,
-                                         &leftPos);
-   bool c2 = isTextblockCoveredByFloats (rightFloats, containingBlockAllocation,
-                                         tb, tbx, tby, tbWidth, tbHeight,
-                                         &rightPos);
+   bool c1 = isTextblockCoveredByFloats (leftFloats, tb, tbx, tby,
+                                         tbWidth, tbHeight, &leftPos);
+   bool c2 = isTextblockCoveredByFloats (rightFloats, tb, tbx, tby,
+                                         tbWidth, tbHeight, &rightPos);
    *floatPos = min (leftPos, rightPos);
    return c1 || c2;
 }
 
 bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
-                                               Allocation
-                                               *containingBlockAllocation,
                                                Textblock *tb, int tbx, int tby,
                                                int tbWidth, int tbHeight,
                                                int *floatPos)
@@ -128,7 +126,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
       // Textblock::sizeAllocateImpl.
       Allocation *generatingBlockAllocation =
          vloat->generatingBlock == containingBlock ?
-         containingBlockAllocation : vloat->generatingBlock->getAllocation();
+         &containingBlockAllocation : vloat->generatingBlock->getAllocation();
 
       // Idea: the distinction could be removed, and the code so made
       // simpler, by moving this second part of OOFM::sizeAllocate
@@ -157,8 +155,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
    return covered;
 }
 
-void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, bool right,
-                                       Allocation *containingBlockAllocation)
+void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, bool right)
 {
    for (int i = 0; i < list->size(); i++) {
       // TODO Missing: check newly calculated positions, collisions,
