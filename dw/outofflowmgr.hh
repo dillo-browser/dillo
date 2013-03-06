@@ -58,8 +58,7 @@ private:
    lout::container::typed::Vector<Float> *getOppositeFloatList (core::Widget
                                                                 *widget);
 
-   void sizeAllocateFloats (lout::container::typed::Vector<Float> *list,
-                            Side side);
+   void sizeAllocateFloats (Side side);
    bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
                                     int tbWidth, int tbHeight, int *floatPos);
    bool isTextblockCoveredByFloats (lout::container::typed::Vector<Float> *list,
@@ -75,12 +74,8 @@ private:
    void accumExtremes (lout::container::typed::Vector<Float> *list,
                        int *oofMinWidth, int *oofMaxWidth);
    void registerCaller (Textblock *textblock);
-   int getBorder (Textblock *textblock,
-                  lout::container::typed::Vector<Float> *list, Side side,
-                  int y, int h);
-   bool hasFloat (Textblock *textblock,
-                  lout::container::typed::Vector<Float> *list, Side side,
-                  int y, int h);
+   int getBorder (Textblock *textblock, Side side, int y, int h);
+   bool hasFloat (Textblock *textblock, Side side, int y, int h);
 
    void ensureFloatSize (Float *vloat);
    bool getYWidget (Textblock *textblock, Float *vloat, int *yWidget);

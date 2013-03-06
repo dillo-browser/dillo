@@ -44,8 +44,8 @@ void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
 void OutOfFlowMgr::sizeAllocateEnd ()
 {
    // 1. Floats have to be allocated
-   sizeAllocateFloats (leftFloats, LEFT);
-   sizeAllocateFloats (rightFloats, RIGHT);
+   sizeAllocateFloats (LEFT);
+   sizeAllocateFloats (RIGHT);
 
    // 2. Textblocks have already been allocated, but we store some
    // information for later use. TODO: Update this comment!
@@ -155,8 +155,10 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
    return covered;
 }
 
-void OutOfFlowMgr::sizeAllocateFloats (Vector<Float> *list, Side side)
+void OutOfFlowMgr::sizeAllocateFloats (Side side)
 {
+   Vector<Float> *list = side == LEFT ? leftFloats : rightFloats;
+
    for (int i = 0; i < list->size(); i++) {
       // TODO Missing: check newly calculated positions, collisions,
       // and queue resize, when neccessary. TODO: See step 2?
@@ -686,7 +688,7 @@ void OutOfFlowMgr::registerCaller (Textblock *textblock)
  */
 int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
 {
-   return getBorder (textblock, leftFloats, LEFT, y, h);
+   return getBorder (textblock, LEFT, y, h);
 }
 
 /**
@@ -697,14 +699,14 @@ int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
  */
 int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h)
 {
-   return getBorder (textblock, rightFloats, RIGHT, y, h);
+   return getBorder (textblock, RIGHT, y, h);
 }
 
-int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
-                             Side side, int y, int h)
+int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
 {
    registerCaller (textblock);
 
+   Vector<Float> *list = side == LEFT ? leftFloats : rightFloats;
    int border = 0;
 
    // To be a bit more efficient, one could use linear search to find
@@ -743,20 +745,21 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Vector<Float> *list,
 
 bool OutOfFlowMgr::hasFloatLeft (Textblock *textblock, int y, int h)
 {
-   return hasFloat (textblock, leftFloats, LEFT, y, h);
+   return hasFloat (textblock, LEFT, y, h);
 }
 
 bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h)
 {
-   return hasFloat (textblock, rightFloats, RIGHT, y, h);
+   return hasFloat (textblock, RIGHT, y, h);
 }
 
-bool OutOfFlowMgr::hasFloat (Textblock *textblock, Vector<Float> *list,
-                             Side side, int y, int h)
+bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h)
 {
    // Compare to getBorder(). Actually much copy and paste.
 
    registerCaller (textblock);
+
+   Vector<Float> *list = side == LEFT ? leftFloats : rightFloats;
 
    // To be a bit more efficient, one could use linear search.
    for (int i = 0; i < list->size(); i++) {
