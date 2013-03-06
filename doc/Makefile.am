@@ -39,3 +39,6 @@ EXTRA_DIST = \
         Selection.txt \
         Dpid.txt \
         README
+
+dillo.1: dillo.1.in Makefile
+	sed 's%/usr/local%${prefix}%g' < dillo.1.in > dillo.1
