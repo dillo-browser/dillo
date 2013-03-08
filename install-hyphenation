@@ -2,70 +2,70 @@
 use POSIX;
 use File::Basename;
 use Net::FTP;
-
-$commondir = "language/hyph-utf8/tex/generic/hyph-utf8/patterns/txt";
-
-# You may want do adjust these values.
+use Getopt::Long;
 
 $host = "mirrors.dotsrc.org";
-$dir = "/ctan/$commondir";
+$basesourcedir = "/ctan";
+$sourcedir = "";
 
-#$host = "ctan.org";
-#$dir = "/tex-archive/$commondir";
-
-#$host = "ftp.dante.de";
-#$dir = "/pub/tex/$commondir";
-
-$help = 0;
-if (@ARGV == 0) {
-   $help = 1;
-} else {
-   foreach $arg (@ARGV) {
-      if ($arg eq '-?' || $arg eq '--?' || $arg eq '-h' ||
-          $arg eq '--h' || $arg eq '-help' || $arg eq '--help') {
-         $arg = 1;
-      }
-   }
+# Extract pattern directory from Makefile, in the same directory as
+# this script. A complete interpretation of the Makefiles would be
+# too complicated, so only ${prefix} is read, which is (hopefully)
+# defined as constant.
+$prefix = "";
+$makefile = (dirname $0) . "/Makefile";
+open MF, $makefile or die "Cannot open $makefile: $!";
+while (<MF>) {
+   if (/^\s*prefix\s*=\s*(.*)\s*$/) {
+      $prefix = $1;
+   }        
 }
-  
-if ($help) {
-   print "Usage: $0 <lang1> [<lang2> ...]\n\n";
+close MF;
+
+if ($prefix eq "") {
+   die "Prefix not defined in $makefile.";
+}
+
+$targetdir = "$prefix/lib/dillo/hyphenation";
+
+if (!GetOptions ("host=s" => \$host,
+                 "basesourcedir=s" => \$basesourcedir,
+                 "sourcedir=s" => \$sourcedir,
+                 "targetdir=s" => \$targetdir)
+    || @ARGV == 0) {
+   print "Usage: $0 [OPTIONS] LANG [LANG ...]\n\n";
    print <<EOT;
-Download and install hyphenation patterns from CTAN for different languages.
-Languages are specified as defined by ISO 639-1 ("en" for English etc.).
+Download and install hyphenation patterns from CTAN for different languages,
+via FTP. Languages are specified as defined by ISO 639-1 ("en" for English
+etc.).
 
 If there are multiple pattern files for a language (and so the filename is not
-"hyph-<lang>.pat.txt"), you must specify the respective part of the filename,
+"hyph-LANG.pat.txt"), you must specify the respective part of the filename,
 e. g. "en-gb" or "en-us". In this case, the extra part ("-gb" or "-us") is
 automatically removed.
 
 If you are not sure, simply specify the language code ("en" in this example);
 you will then given a list of existing pattern files.
+
+Options:
+   -h, --host=HOST            the host to connect to (default:
+                              mirrors.dotrc.org)
+   -s, --sourcedir=DIR        the directory on the FTP server
+   -b, --basesourcedir=DIR    alternatively, the base directory, after which
+                              /language/hyph-utf8/tex/generic/hyph-utf8...
+                              .../patterns/txt is added (default: /ctan/)
+   -t, --targetdir=DIR        where to install the hyphenation patterns
+                              (default: where they are read by dillo)
 EOT
 } else {
-   # Extract pattern directory from Makefile, in the same directory as
-   # this script. A complete interpretation of the Makefiles would be
-   # too complicated, so only ${prefix} is read, which is (hopefully)
-   # defined as constant.
-   $prefix = "";
-   $makefile = (dirname $0) . "/Makefile";
-   open MF, $makefile or die "Cannot open $makefile: $!";
-   while (<MF>) {
-      if (/^\s*prefix\s*=\s*(.*)\s*$/) {
-         $prefix = $1;
-      }        
-   }
-   close MF;
-
-   if ($prefix eq "") {
-      die "Prefix not defined in $makefile.";
+   if ($sourcedir eq "") {
+      $sourcedir =
+         "$basesourcedir/language/hyph-utf8/tex/generic/hyph-utf8/patterns/txt";
    }
 
-   $patterdir = "$prefix/lib/dillo/hyphenation";
-
-   if (!-e $patterdir) {
-      mkdir $patterdir or die "Cannot create directory $patterdir: $!";
-      print "Created $patterdir.\n";
+   if (!-e $targetdir) {
+      mkdir $targetdir or die "Cannot create directory $targetdir: $!";
+      print "Created $targetdir.\n";
    }
 
    # Connect to CTAN FTP server, change to the directory where the
@@ -73,7 +73,7 @@ EOT
    $ftp = Net::FTP->new($host,Timeout=>240)
       or die "Cannot connect to $host: $!";
    $ftp->login() or die "Cannot login: $!";
-   $ftp->cwd($dir) or die "Cannot change to directory $dir: $!";
+   $ftp->cwd($sourcedir) or die "Cannot change to directory $sourcedir: $!";
    @files = $ftp->ls or die "Cannot read directory: $!";
 
    # Finally, read pattern files.
@@ -103,12 +103,12 @@ EOT
          
          # Combine both, licence and pattern, to the final pattern
          # file.
-         $outfile = "$patterdir/$lang.pat";
+         $outfile = "$targetdir/$lang.pat";
          open OUT, "> $outfile" or die "Cannot open $outfile: $!";
          
          if ($licfound) {
             print OUT
-               "% Licence from ftp://$host$dir/hyph-$arg.lic.txt\n";
+               "% Licence from ftp://$host$sourcedir/hyph-$arg.lic.txt\n";
             print OUT "%\n";
             open IN, $tmplic or die "Cannot open $tmplic: $!";
             while (<IN>) {
@@ -124,7 +124,7 @@ EOT
             print OUT "%\n";
          }
          
-         print OUT "% Patterns from ftp://$host$dir/hyph-$arg.pat.txt\n";
+         print OUT "% Patterns from ftp://$host$sourcedir/hyph-$arg.pat.txt\n";
          print OUT "%\n";
          open IN, $tmppat or die "Cannot open $tmppat: $!";
          while (<IN>) {
