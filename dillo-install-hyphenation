@@ -8,22 +8,32 @@ $host = "mirrors.dotsrc.org";
 $basesourcedir = "/ctan";
 $sourcedir = "";
 
-# Extract pattern directory from Makefile, in the same directory as
-# this script. A complete interpretation of the Makefiles would be
-# too complicated, so only ${prefix} is read, which is (hopefully)
-# defined as constant.
-$prefix = "";
+# Determine ${prefix}, for the default target directory for pattern
+# files. Two different strategies ...
 $makefile = (dirname $0) . "/Makefile";
-open MF, $makefile or die "Cannot open $makefile: $!";
-while (<MF>) {
-   if (/^\s*prefix\s*=\s*(.*)\s*$/) {
-      $prefix = $1;
-   }        
-}
-close MF;
+if (-e $makefile) {
+   # 1. Makefile exists in the same directory, so it can be assumed
+   # that this script is not yet installed, but called from the source
+   # directory. Search Makefile for prexix. 
+   open MF, $makefile or die "Cannot open $makefile: $!";
+   while (<MF>) {
+      if (/^\s*prefix\s*=\s*(.*)\s*$/) {
+         $prefix = $1;
+      }
+   }
+   close MF;
 
-if ($prefix eq "") {
-   die "Prefix not defined in $makefile.";
+   if ($prefix eq "") {
+      die "Prefix not defined in $makefile.";
+   }
+} else {
+   # 2. Assume that this is script is installed, so its path contains
+   # the prefix.
+   if ($0 =~ /(.*)\/bin\/[^\/]+$/) {
+      $prefix = $1;
+   } else {
+      die "Failed to determine prefix from $0.";
+   }
 }
 
 $targetdir = "$prefix/lib/dillo/hyphenation";
