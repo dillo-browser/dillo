@@ -45,11 +45,17 @@ private:
       bool wasAllocated;
       int xCB, yCB; // relative to the containing block
       int width, height;
+
+      lout::container::typed::Vector<Float> *leftFloatsGB, *rightFloatsGB;
+
+      TBInfo ();
+      ~TBInfo ();
    };
 
-   //lout::container::typed::HashTable<lout::object::TypedPointer
-   //                                <dw::core::Widget>, Float> *floatsByWidget;
-   lout::container::typed::Vector<Float> *leftFloats, *rightFloats;
+   lout::container::typed::Vector<Float> *leftFloatsCB, *rightFloatsCB,
+      *leftFloatsAll, *rightFloatsAll;
+   lout::container::typed::HashTable<lout::object::TypedPointer
+                                     <dw::core::Widget>, Float> *floatsByWidget;
    lout::container::typed::HashTable<lout::object::TypedPointer <Textblock>,
                                      TBInfo> *tbInfos;
    
@@ -73,7 +79,7 @@ private:
    int getFloatsSize (lout::container::typed::Vector<Float> *list);
    void accumExtremes (lout::container::typed::Vector<Float> *list,
                        int *oofMinWidth, int *oofMaxWidth);
-   void registerCaller (Textblock *textblock);
+   TBInfo *registerCaller (Textblock *textblock);
    int getBorder (Textblock *textblock, Side side, int y, int h);
    bool hasFloat (Textblock *textblock, Side side, int y, int h);
 
@@ -134,10 +140,10 @@ public:
 
    // for iterators
    inline int getNumWidgets () {
-      return leftFloats->size() + rightFloats->size(); }
+      return leftFloatsAll->size() + rightFloatsAll->size(); }
    inline core::Widget *getWidget (int i) {
-      return i < leftFloats->size() ? leftFloats->get(i)->widget :
-         rightFloats->get(i - leftFloats->size())->widget; }
+      return i < leftFloatsAll->size() ? leftFloatsAll->get(i)->widget :
+         rightFloatsAll->get(i - leftFloatsAll->size())->widget; }
 };
 
 } // namespace dw

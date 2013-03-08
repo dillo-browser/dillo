@@ -17,23 +17,50 @@ int OutOfFlowMgr::Float::yForContainer (OutOfFlowMgr *oofm, int y)
       oofm->containingBlock->getAllocation()->y;
 }
 
+OutOfFlowMgr::TBInfo::TBInfo ()
+{
+   leftFloatsGB = new Vector<Float> (1, false);
+   rightFloatsGB = new Vector<Float> (1, false);
+}
+
+OutOfFlowMgr::TBInfo::~TBInfo ()
+{
+   delete leftFloatsGB;
+   delete rightFloatsGB;
+}
+
 OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 {
    //printf ("OutOfFlowMgr::OutOfFlowMgr\n");
 
    this->containingBlock = containingBlock;
-   leftFloats = new Vector<Float> (1, true);
-   rightFloats = new Vector<Float> (1, true);
+
+   leftFloatsCB = new Vector<Float> (1, false);
+   rightFloatsCB = new Vector<Float> (1, false);
+
+   leftFloatsAll = new Vector<Float> (1, true);
+   rightFloatsAll = new Vector<Float> (1, true);
+
+   floatsByWidget = new HashTable <TypedPointer <Widget>, Float> (true, false);
    tbInfos = new HashTable <TypedPointer <Textblock>, TBInfo> (true, true);
+
 }
 
 OutOfFlowMgr::~OutOfFlowMgr ()
 {
    //printf ("OutOfFlowMgr::~OutOfFlowMgr\n");
 
-   delete leftFloats;
-   delete rightFloats;
+   delete leftFloatsCB;
+   delete rightFloatsCB;
+
    delete tbInfos;
+   delete floatsByWidget;
+
+   // Order is important, since the instances of Float are owned by
+   // leftFloatsAll and rightFloatsAll, so these should be deleted
+   // last.
+   delete leftFloatsAll;
+   delete rightFloatsAll;
 }
 
 void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
@@ -43,11 +70,31 @@ void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
 
 void OutOfFlowMgr::sizeAllocateEnd ()
 {
-   // 1. Floats have to be allocated
+   // 1. ...  
+   for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
+           tbInfos->iterator ();
+        it.hasNext (); ) {
+      TypedPointer <Textblock> *key = it.getNext ();
+      TBInfo *tbInfo = tbInfos->get (key);
+
+      while (tbInfo->leftFloatsGB->size () > 0) {
+         Float *vloat = tbInfo->leftFloatsGB->get (0);
+         tbInfo->leftFloatsGB->remove (0);
+         leftFloatsCB->put (vloat);
+      }         
+
+      while (tbInfo->rightFloatsGB->size () > 0) {
+         Float *vloat = tbInfo->rightFloatsGB->get (0);
+         tbInfo->rightFloatsGB->remove (0);
+         rightFloatsCB->put (vloat);
+      }         
+   }
+
+   // 2. Floats have to be allocated
    sizeAllocateFloats (LEFT);
    sizeAllocateFloats (RIGHT);
 
-   // 2. Textblocks have already been allocated, but we store some
+   // 3. Textblocks have already been allocated, but we store some
    // information for later use. TODO: Update this comment!
    for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
            tbInfos->iterator ();
@@ -96,9 +143,9 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
                                                int *floatPos)
 {
    int leftPos, rightPos;
-   bool c1 = isTextblockCoveredByFloats (leftFloats, tb, tbx, tby,
+   bool c1 = isTextblockCoveredByFloats (leftFloatsCB, tb, tbx, tby,
                                          tbWidth, tbHeight, &leftPos);
-   bool c2 = isTextblockCoveredByFloats (rightFloats, tb, tbx, tby,
+   bool c2 = isTextblockCoveredByFloats (rightFloatsCB, tb, tbx, tby,
                                          tbWidth, tbHeight, &rightPos);
    *floatPos = min (leftPos, rightPos);
    return c1 || c2;
@@ -157,7 +204,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
 
 void OutOfFlowMgr::sizeAllocateFloats (Side side)
 {
-   Vector<Float> *list = side == LEFT ? leftFloats : rightFloats;
+   Vector<Float> *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
 
    for (int i = 0; i < list->size(); i++) {
       // TODO Missing: check newly calculated positions, collisions,
@@ -203,8 +250,8 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side)
 
 void OutOfFlowMgr::draw (View *view, Rectangle *area)
 {
-   draw (leftFloats, view, area);
-   draw (rightFloats, view, area);
+   draw (leftFloatsCB, view, area);
+   draw (rightFloatsCB, view, area);
 }
 
 void OutOfFlowMgr::draw (Vector<Float> *list, View *view, Rectangle *area)
@@ -233,6 +280,8 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
 void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
 {
    if (widget->getStyle()->vloat != FLOAT_NONE) {
+      TBInfo *tbInfo = registerCaller (generatingBlock);
+
       Float *vloat = new Float ();
       vloat->widget = widget;
       vloat->generatingBlock = generatingBlock;
@@ -241,18 +290,32 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
-         leftFloats->put (vloat);
-         widget->parentRef = createRefLeftFloat (leftFloats->size() - 1);
+         leftFloatsAll->put (vloat);
+         widget->parentRef = createRefLeftFloat (leftFloatsAll->size() - 1);
+
+         if (generatingBlock->wasAllocated())
+            leftFloatsCB->put (vloat);
+         else
+            tbInfo->leftFloatsGB->put (vloat);
+
          break;
 
       case FLOAT_RIGHT:
-         rightFloats->put (vloat);
-         widget->parentRef = createRefRightFloat (rightFloats->size() - 1);
+         rightFloatsAll->put (vloat);
+         widget->parentRef = createRefRightFloat (rightFloatsAll->size() - 1);
+
+         if (generatingBlock->wasAllocated())
+            rightFloatsCB->put (vloat);
+         else
+            tbInfo->rightFloatsGB->put (vloat);
+
          break;
 
       default:
          assertNotReached();
       }
+
+      floatsByWidget->put (new TypedPointer<Widget> (widget), vloat);
    } else
       // Will continue here for absolute positions.
       assertNotReached();
@@ -260,20 +323,16 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
 
 OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
 {
-   Vector<Float> *list = getFloatList (widget);
-
-   for(int i = 0; i < list->size(); i++) {
-      Float *vloat = list->get(i);
-      if(vloat->widget == widget)
-         return vloat;
-   }
-
-   assertNotReached();
-   return NULL;
+   TypedPointer <Widget> key (widget);
+   Float *vloat = floatsByWidget->get (&key);
+   assert (vloat != NULL);
+   return vloat;
 }
 
 Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getFloatList (Widget *widget)
 {
+#if 0
+   // TODO
    switch (widget->getStyle()->vloat) {
    case FLOAT_LEFT:
       return leftFloats;
@@ -285,10 +344,15 @@ Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getFloatList (Widget *widget)
       assertNotReached();
       return NULL;
    }
+#else
+   return NULL;
+#endif
 }
 
 Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getOppositeFloatList (Widget *widget)
 {
+#if 0
+   // TODO
    switch (widget->getStyle()->vloat) {
    case FLOAT_LEFT:
       return rightFloats;
@@ -300,6 +364,9 @@ Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getOppositeFloatList (Widget *widget)
       assertNotReached();
       return NULL;
    }
+#else
+   return NULL;
+#endif
 }
 
 void OutOfFlowMgr::markSizeChange (int ref)
@@ -310,9 +377,9 @@ void OutOfFlowMgr::markSizeChange (int ref)
       Float *vloat;
       
       if (isRefLeftFloat (ref))
-         vloat = leftFloats->get (getFloatIndexFromRef (ref));
+         vloat = leftFloatsAll->get (getFloatIndexFromRef (ref));
       else if (isRefRightFloat (ref))
-         vloat = rightFloats->get (getFloatIndexFromRef (ref));
+         vloat = rightFloatsAll->get (getFloatIndexFromRef (ref));
       else {
          assertNotReached();
          vloat = NULL; // compiler happiness
@@ -336,9 +403,9 @@ void OutOfFlowMgr::markExtremesChange (int ref)
 
 Widget *OutOfFlowMgr::getWidgetAtPoint (int x, int y, int level)
 {
-   Widget *childAtPoint = getWidgetAtPoint (leftFloats, x, y, level);
+   Widget *childAtPoint = getWidgetAtPoint (leftFloatsCB, x, y, level);
    if (childAtPoint == NULL)
-      childAtPoint = getWidgetAtPoint (rightFloats, x, y, level);
+      childAtPoint = getWidgetAtPoint (rightFloatsCB, x, y, level);
    return childAtPoint;
 }
 
@@ -390,6 +457,8 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    vloat->positioned = positioned;
 
    if (positioned) {
+#if 0
+      // TODO reactivate
       Vector<Float> *listSame = getFloatList (widget);   
       Vector<Float> *listOpp = getOppositeFloatList (widget);   
       bool collides;
@@ -474,6 +543,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
       // It is assumed that there are no floats below this float
       // within this generator. For this reason, no other floats have
       // to be adjusted.
+#endif
    }
 
    // Only this float has been changed (see above), so only this float
@@ -557,8 +627,8 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    *oofWidth = cbWidth; /* This (or "<=" instead of "=") should be
                            the case for floats. */
 
-   int oofHeightLeft = getFloatsSize (leftFloats);
-   int oofHeightRight = getFloatsSize (rightFloats);
+   int oofHeightLeft = getFloatsSize (leftFloatsCB);
+   int oofHeightRight = getFloatsSize (rightFloatsCB);
    *oofHeight = max (oofHeightLeft, oofHeightRight);
 }
 
@@ -619,8 +689,8 @@ void OutOfFlowMgr::getExtremes (int cbMinWidth, int cbMaxWidth,
                                 int *oofMinWidth, int *oofMaxWidth)
 {
    *oofMinWidth = *oofMaxWidth = 0;
-   accumExtremes (leftFloats, oofMinWidth, oofMaxWidth);
-   accumExtremes (rightFloats, oofMinWidth, oofMaxWidth);
+   accumExtremes (leftFloatsCB, oofMinWidth, oofMaxWidth);
+   accumExtremes (rightFloatsCB, oofMinWidth, oofMaxWidth);
 }
 
 void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
@@ -666,7 +736,7 @@ void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
    }
 }
 
-void OutOfFlowMgr::registerCaller (Textblock *textblock)
+OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerCaller (Textblock *textblock)
 {
    TypedPointer<Textblock> key (textblock);
    TBInfo *tbInfo = tbInfos->get (&key);
@@ -675,6 +745,8 @@ void OutOfFlowMgr::registerCaller (Textblock *textblock)
       tbInfo->wasAllocated = false;
       tbInfos->put (new TypedPointer<Textblock> (textblock), tbInfo);
    }
+
+   return tbInfo;
 }
    
 /**
@@ -704,9 +776,14 @@ int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h)
 
 int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
 {
-   registerCaller (textblock);
+   TBInfo *tbInfo = registerCaller (textblock);
 
-   Vector<Float> *list = side == LEFT ? leftFloats : rightFloats;
+   Vector<Float> *list;
+   if (textblock->wasAllocated())
+      list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   else
+      list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
+
    int border = 0;
 
    // To be a bit more efficient, one could use linear search to find
@@ -757,9 +834,13 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h)
 {
    // Compare to getBorder(). Actually much copy and paste.
 
-   registerCaller (textblock);
+   TBInfo *tbInfo = registerCaller (textblock);
 
-   Vector<Float> *list = side == LEFT ? leftFloats : rightFloats;
+   Vector<Float> *list;
+   if (textblock->wasAllocated())
+      list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   else
+      list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
 
    // To be a bit more efficient, one could use linear search.
    for (int i = 0; i < list->size(); i++) {
