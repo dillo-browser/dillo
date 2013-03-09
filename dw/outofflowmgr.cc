@@ -81,12 +81,16 @@ void OutOfFlowMgr::sizeAllocateEnd ()
          Float *vloat = tbInfo->leftFloatsGB->get (0);
          tbInfo->leftFloatsGB->remove (0);
          leftFloatsCB->put (vloat);
+         //printf ("[%p] moving float %p from GB to CB list\n",
+         //        containingBlock, vloat);
       }         
 
       while (tbInfo->rightFloatsGB->size () > 0) {
          Float *vloat = tbInfo->rightFloatsGB->get (0);
          tbInfo->rightFloatsGB->remove (0);
          rightFloatsCB->put (vloat);
+         //printf ("[%p] moving float %p from GB to CB list\n",
+         //        containingBlock, vloat);
       }         
    }
 
@@ -266,11 +270,6 @@ void OutOfFlowMgr::draw (Vector<Float> *list, View *view, Rectangle *area)
    }
 }
 
-void OutOfFlowMgr::queueResize(int ref)
-{
-   // TODO Is there something to do?
-}
-
 bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
 {
    // Will be extended for absolute positions.
@@ -293,21 +292,30 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
          leftFloatsAll->put (vloat);
          widget->parentRef = createRefLeftFloat (leftFloatsAll->size() - 1);
 
-         if (generatingBlock->wasAllocated())
+         if (generatingBlock->wasAllocated()) {
             leftFloatsCB->put (vloat);
-         else
+            //printf ("[%p] adding float %p to CB list\n",
+            //        containingBlock, vloat);
+         } else {
             tbInfo->leftFloatsGB->put (vloat);
-
+            //printf ("[%p] adding float %p to GB list\n",
+            //        containingBlock, vloat);
+         }
          break;
 
       case FLOAT_RIGHT:
          rightFloatsAll->put (vloat);
          widget->parentRef = createRefRightFloat (rightFloatsAll->size() - 1);
 
-         if (generatingBlock->wasAllocated())
+         if (generatingBlock->wasAllocated()) {
             rightFloatsCB->put (vloat);
-         else
+            //printf ("[%p] adding float %p to CB list\n",
+            //        containingBlock, vloat);
+         } else {
             tbInfo->rightFloatsGB->put (vloat);
+            //printf ("[%p] adding float %p to GB list\n",
+            //        containingBlock, vloat);
+         }
 
          break;
 
@@ -327,46 +335,6 @@ OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
    Float *vloat = floatsByWidget->get (&key);
    assert (vloat != NULL);
    return vloat;
-}
-
-Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getFloatList (Widget *widget)
-{
-#if 0
-   // TODO
-   switch (widget->getStyle()->vloat) {
-   case FLOAT_LEFT:
-      return leftFloats;
-
-   case FLOAT_RIGHT:
-      return rightFloats;
-
-   default:
-      assertNotReached();
-      return NULL;
-   }
-#else
-   return NULL;
-#endif
-}
-
-Vector<OutOfFlowMgr::Float> *OutOfFlowMgr::getOppositeFloatList (Widget *widget)
-{
-#if 0
-   // TODO
-   switch (widget->getStyle()->vloat) {
-   case FLOAT_LEFT:
-      return rightFloats;
-
-   case FLOAT_RIGHT:
-      return leftFloats;
-
-   default:
-      assertNotReached();
-      return NULL;
-   }
-#else
-   return NULL;
-#endif
 }
 
 void OutOfFlowMgr::markSizeChange (int ref)
@@ -442,6 +410,13 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
 void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
 {
    Float *vloat = findFloatByWidget(widget);
+   //printf ("[%p] TELL_POSITION_OR_NOT: vloat = %p, y = %d (%d => %d), "
+   //        "positioned = %s (%s)\n", containingBlock, vloat,
+   //        y, vloat->yReq, vloat->yReal,
+   //        positioned ? "true" : "false",
+   //        vloat->positioned ? "true" : "false");
+      
+
    if ((!positioned && !vloat->positioned) ||
        (positioned && vloat->positioned && y == vloat->yReq))
       // Nothing happened.
@@ -457,10 +432,35 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    vloat->positioned = positioned;
 
    if (positioned) {
-#if 0
-      // TODO reactivate
-      Vector<Float> *listSame = getFloatList (widget);   
-      Vector<Float> *listOpp = getOppositeFloatList (widget);   
+      Vector<Float> *listSame, *listOpp;
+      TBInfo *tbInfo = registerCaller (vloat->generatingBlock);
+      
+      switch (widget->getStyle()->vloat) {
+      case FLOAT_LEFT:
+         if (vloat->generatingBlock->wasAllocated()) {
+            listSame = leftFloatsCB;
+            listOpp = rightFloatsCB;
+         } else {
+            listSame = tbInfo->leftFloatsGB;
+            listOpp = tbInfo->rightFloatsGB;
+         }
+         break;
+
+      case FLOAT_RIGHT:
+         if (vloat->generatingBlock->wasAllocated()) {
+            listSame = rightFloatsCB;
+            listOpp = leftFloatsCB;
+         } else {
+            listSame = tbInfo->rightFloatsGB;
+            listOpp = tbInfo->leftFloatsGB;
+         }
+         break;
+
+      default:
+         assertNotReached();
+         listSame = listOpp = NULL; // compiler happiness
+      }
+
       bool collides;
 
       // Collisions. TODO Can this be simplified?
@@ -506,7 +506,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
                      // (because getYWidget() would have returned
                      // false, otherwise).
                      Float *left, *right;
-                     if (listSame == leftFloats) {
+                     if (widget->getStyle()->vloat == FLOAT_LEFT) {
                         left = vloat;
                         right = v;
                      } else {
@@ -543,7 +543,6 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
       // It is assumed that there are no floats below this float
       // within this generator. For this reason, no other floats have
       // to be adjusted.
-#endif
    }
 
    // Only this float has been changed (see above), so only this float
@@ -919,8 +918,8 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       vloat->widget->setWidth (width);
       vloat->widget->sizeRequest (&vloat->size);
       
-      //printf ("   Float at %d: %d x (%d + %d)\n",
-      //        vloat->y, vloat->width, vloat->ascent, vloat->descent);
+      //printf ("   Float %p: %d x (%d + %d)\n", vloat, vloat->size.width,
+      //        vloat->size.ascent, vloat->size.descent);
           
       vloat->dirty = false;
    }

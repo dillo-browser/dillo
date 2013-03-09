@@ -60,9 +60,6 @@ private:
                                      TBInfo> *tbInfos;
    
    Float *findFloatByWidget (core::Widget *widget);
-   lout::container::typed::Vector<Float> *getFloatList (core::Widget *widget);
-   lout::container::typed::Vector<Float> *getOppositeFloatList (core::Widget
-                                                                *widget);
 
    void sizeAllocateFloats (Side side);
    bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
@@ -110,7 +107,6 @@ public:
    void sizeAllocateStart (core::Allocation *containingBlockAllocation);
    void sizeAllocateEnd ();
    void draw (core::View *view, core::Rectangle *area);
-   void queueResize(int ref);
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
