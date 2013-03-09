@@ -77,21 +77,13 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       TypedPointer <Textblock> *key = it.getNext ();
       TBInfo *tbInfo = tbInfos->get (key);
 
-      while (tbInfo->leftFloatsGB->size () > 0) {
-         Float *vloat = tbInfo->leftFloatsGB->get (0);
-         tbInfo->leftFloatsGB->remove (0);
-         leftFloatsCB->put (vloat);
-         //printf ("[%p] moving float %p from GB to CB list\n",
-         //        containingBlock, vloat);
-      }         
+      for (int i = 0; i < tbInfo->leftFloatsGB->size (); i++)
+         leftFloatsCB->put (tbInfo->leftFloatsGB->get (i));
+      tbInfo->leftFloatsGB->clear ();
 
-      while (tbInfo->rightFloatsGB->size () > 0) {
-         Float *vloat = tbInfo->rightFloatsGB->get (0);
-         tbInfo->rightFloatsGB->remove (0);
-         rightFloatsCB->put (vloat);
-         //printf ("[%p] moving float %p from GB to CB list\n",
-         //        containingBlock, vloat);
-      }         
+      for (int i = 0; i < tbInfo->rightFloatsGB->size (); i++)
+         rightFloatsCB->put (tbInfo->rightFloatsGB->get (i));
+      tbInfo->rightFloatsGB->clear ();
    }
 
    // 2. Floats have to be allocated
