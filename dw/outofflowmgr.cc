@@ -942,8 +942,11 @@ bool OutOfFlowMgr::getYWidget (Textblock *textblock, Float *vloat, int *yWidget)
          *yWidget = vloat->yReal + vloat->generatingBlock->getAllocation()->y
             - textblock->getAllocation()->y;
          return true;
-      } else
+      } else {
+         // Should not happen, when the correct list is choosen.
+         assertNotReached ();
          return false;
+      }
    }
 }
 
