@@ -27,7 +27,7 @@ In order to use the hyphenation feature, pattern files from CTAN need to
 be installed to
 .IR /usr/local/lib/dillo/hyphenation/ .
 This can be done with the script
-.IR install-hyphenation .
+.IR dillo-install-hyphenation .
 Call it with ISO-639-1 language codes as arguments, or without arguments
 to get more help.
 .SH OPTIONS
