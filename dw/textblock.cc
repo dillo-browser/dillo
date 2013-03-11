@@ -2365,9 +2365,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
          }
 
          if (!found)
-            // TODO This should actually not happen, so an
-            // assertNotReached() may be appropriate.
-            printf ("WARNING: widget reference not found.\n");
+            lout::misc::assertNotReached ();
       }      
 
       PRINTF ("   Corrected to line %d.\n", wrapLineIndex);
