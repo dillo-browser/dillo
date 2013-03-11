@@ -658,7 +658,7 @@ public:
    void changeWordStyle (int from, int to, core::style::Style *style,
                          bool includeFirstSpace, bool includeLastSpace);
 
-   void borderChanged (int y);
+   void borderChanged (int y, core::Widget *vloat);
    inline int getAvailWidth () { return availWidth; }
    inline int getAvailAscent () { return availAscent; }
    inline int getAvailDescent () { return availDescent; }

@@ -107,6 +107,7 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       if ((!tbInfo->wasAllocated || tbInfo->xCB != xCB || tbInfo->yCB != yCB ||
            tbInfo->width != width || tbInfo->height != height)) {
          int oldPos, newPos;
+         Widget *oldFloat, *newFloat;
          // To calculate the minimum, both allocations, old and new,
          // have to be tested.
       
@@ -117,13 +118,23 @@ void OutOfFlowMgr::sizeAllocateEnd ()
                                                tbInfo->yCB
                                                + containingBlockAllocation.y,
                                                tbInfo->width, tbInfo->height,
-                                               &oldPos);
+                                               &oldPos, &oldFloat);
          // new allocation:
          int c2 = isTextblockCoveredByFloats (tb, tb->getAllocation()->x,
-                                              tb->getAllocation()->y,
-                                              width, height, &newPos);
-         if (c1 || c2)
-            tb->borderChanged (min (oldPos, newPos));
+                                              tb->getAllocation()->y, width,
+                                              height, &newPos, &newFloat);
+         if (c1 || c2) {
+            if (!c1)
+               tb->borderChanged (newPos, newFloat);
+            else if (!c2)
+               tb->borderChanged (oldPos, oldFloat);
+            else {
+               if (oldPos < newPos)
+                  tb->borderChanged (oldPos, oldFloat);
+               else
+                  tb->borderChanged (newPos, newFloat);
+            }
+         }
       }
       
       tbInfo->wasAllocated = true;
@@ -136,40 +147,60 @@ void OutOfFlowMgr::sizeAllocateEnd ()
 
 bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
                                                int tbWidth, int tbHeight,
-                                               int *floatPos)
+                                               int *floatPos, Widget **vloat)
 {
    int leftPos, rightPos;
+   Widget *leftFloat, *rightFloat;
    bool c1 = isTextblockCoveredByFloats (leftFloatsCB, tb, tbx, tby,
-                                         tbWidth, tbHeight, &leftPos);
+                                         tbWidth, tbHeight, &leftPos,
+                                         &leftFloat);
    bool c2 = isTextblockCoveredByFloats (rightFloatsCB, tb, tbx, tby,
-                                         tbWidth, tbHeight, &rightPos);
-   *floatPos = min (leftPos, rightPos);
+                                         tbWidth, tbHeight, &rightPos,
+                                         &rightFloat);
+   if (c1 || c2) {
+      if (!c1) {
+         *floatPos = rightPos;
+         *vloat = rightFloat;
+      } else if (!c2) {
+         *floatPos = leftPos;
+         *vloat = leftFloat;
+      } else {
+         if (leftPos < rightPos) {
+            *floatPos = leftPos;
+            *vloat = leftFloat;
+         } else{ 
+            *floatPos = rightPos;
+            *vloat = rightFloat;
+         }
+      }
+   }
+
    return c1 || c2;
 }
 
 bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
                                                Textblock *tb, int tbx, int tby,
                                                int tbWidth, int tbHeight,
-                                               int *floatPos)
+                                               int *floatPos, Widget **vloat)
 {
    *floatPos = INT_MAX;
    bool covered = false;
 
    for (int i = 0; i < list->size(); i++) {
-      Float *vloat = list->get(i);
+      Float *v = list->get(i);
 
       // This method is called within OOFM::sizeAllocate, which is
       // called in Textblock::sizeAllocateImpl for the containing
       // block, so that the only textblock which is not necessary
       // allocates is the containing block.
-      assert (vloat->generatingBlock->wasAllocated() ||
-              vloat->generatingBlock == containingBlock);
+      assert (v->generatingBlock->wasAllocated() ||
+              v->generatingBlock == containingBlock);
 
       // In this case we have to refer to the allocation passed to
       // Textblock::sizeAllocateImpl.
       Allocation *generatingBlockAllocation =
-         vloat->generatingBlock == containingBlock ?
-         &containingBlockAllocation : vloat->generatingBlock->getAllocation();
+         v->generatingBlock == containingBlock ?
+         &containingBlockAllocation : v->generatingBlock->getAllocation();
 
       // Idea: the distinction could be removed, and the code so made
       // simpler, by moving this second part of OOFM::sizeAllocate
@@ -178,15 +209,18 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
       // sizeAllocate. Unfortunately, idle funtions currently only
       // refer to layouts, not to widgets.
       
-      if (tb != vloat->generatingBlock && vloat->positioned) {
-         int flh = vloat->dirty ? 0 : vloat->size.ascent + vloat->size.descent;
-         int y1 = generatingBlockAllocation->y + vloat->yReal;
+      if (tb != v->generatingBlock && v->positioned) {
+         int flh = v->dirty ? 0 : v->size.ascent + v->size.descent;
+         int y1 = generatingBlockAllocation->y + v->yReal;
          int y2 = y1 + flh;
          
          // TODO: Also regard horizontal dimension (same for tellPositionOrNot).
          if (y2 > tby && y1 < tby + tbWidth) {
             covered = true;
-            *floatPos = min (*floatPos, y1 - tby);
+            if (y1 - tby < *floatPos) {
+               *floatPos = y1 - tby;
+               *vloat = v->widget;
+            }
          }
       }
 
@@ -349,7 +383,7 @@ void OutOfFlowMgr::markSizeChange (int ref)
       // In some cases, the vertical position is not yet defined. Nothing
       // necessary then.
       if (vloat->positioned)
-         vloat->generatingBlock->borderChanged (vloat->yReal);
+         vloat->generatingBlock->borderChanged (vloat->yReal, vloat->widget);
    } else
       // later: absolute positions
       assertNotReached();
@@ -596,7 +630,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
                int yTextblock =
                   vloat->generatingBlock->getAllocation()->y + yChange
                   - textblock->getAllocation()->y;
-               textblock->borderChanged (yTextblock);
+               textblock->borderChanged (yTextblock, vloat->widget);
             }
          }
       }

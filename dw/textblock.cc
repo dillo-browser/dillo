@@ -1883,8 +1883,8 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 
    widget->setStyle (style);
 
-   PRINTF ("adding the %s %p to %p ...\n",
-           widget->getClassName(), widget, this);
+   PRINTF ("adding the %s %p to %p (word %d) ...\n",
+           widget->getClassName(), widget, this, words->size());
       
    if (OutOfFlowMgr::isWidgetOutOfFlow (widget)) {
       PRINTF ("   -> out of flow.\n");
@@ -2331,13 +2331,13 @@ void Textblock::queueDrawRange (int index1, int index2)
    }
 }
 
-void Textblock::borderChanged (int y)
+void Textblock::borderChanged (int y, Widget *vloat)
 {
    PRINTF ("[%p] Border has changed: %d\n", this, y);
 
    int lineIndex = findLineIndex (y);
    // Nothing to do at all, when lineIndex >= lines->size (),
-   // i. e. the change is below the bottom od this widget.
+   // i. e. the change is below the bottom of this widget.
    if (lineIndex < lines->size ()) {
       int wrapLineIndex;
       if (lineIndex < 0)
@@ -2347,6 +2347,31 @@ void Textblock::borderChanged (int y)
          wrapLineIndex = lineIndex;
       
       PRINTF ("[%p] Rewrapping from line %d.\n", this, wrapLineIndex);
+
+      if (vloat->getGenerator() == this) {
+         bool found = false;
+         for (int lineIndex2 = wrapLineIndex; !found && lineIndex2 >= 0;
+              lineIndex2--) {
+            Line *line = lines->getRef (lineIndex2);
+            for (int wordIndex = line->firstWord;
+                 !found && wordIndex <= line->lastWord; wordIndex++) {
+               Word *word = words->getRef (wordIndex);
+               if (word->content.type == core::Content::WIDGET_OOF_REF &&
+                   word->content.widget == vloat) {
+                  found = true;
+                  wrapLineIndex = lineIndex2;
+               }
+            }
+         }
+
+         if (!found)
+            // TODO This should actually not happen, so an
+            // assertNotReached() may be appropriate.
+            printf ("WARNING: widget reference not found.\n");
+      }      
+
+      PRINTF ("   Corrected to line %d.\n", wrapLineIndex);
+            
       queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex), true);
    }
 }

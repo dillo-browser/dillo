@@ -63,10 +63,12 @@ private:
 
    void sizeAllocateFloats (Side side);
    bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
-                                    int tbWidth, int tbHeight, int *floatPos);
+                                    int tbWidth, int tbHeight, int *floatPos,
+                                    core::Widget **vloat);
    bool isTextblockCoveredByFloats (lout::container::typed::Vector<Float> *list,
                                     Textblock *tb, int tbx, int tby,
-                                    int tbWidth, int tbHeight, int *floatPos);
+                                    int tbWidth, int tbHeight, int *floatPos,
+                                    core::Widget **vloat);
 
    void draw (lout::container::typed::Vector<Float> *list,
               core::View *view, core::Rectangle *area);

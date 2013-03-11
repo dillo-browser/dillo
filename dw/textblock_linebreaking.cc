@@ -1214,7 +1214,7 @@ void Textblock::alignLine (int lineIndex)
  */
 void Textblock::rewrap ()
 {
-   PRINTF ("[%p] REWRAP: wrapRef = %d\n", this, wrapRef);
+   PRINTF ("[%p] REWRAP: wrapRefLines = %d\n", this, wrapRefLines);
 
    if (wrapRefLines == -1)
       /* page does not have to be rewrapped */
@@ -1230,6 +1230,8 @@ void Textblock::rewrap ()
       firstWord = lines->getLastRef()->lastWord + 1;
    else
       firstWord = 0;
+
+   PRINTF ("   starting with word %d\n", firstWord);
 
    for (int i = firstWord; i < words->size (); i++) {
       Word *word = words->getRef (i);
