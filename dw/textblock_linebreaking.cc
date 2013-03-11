@@ -499,7 +499,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
       // be no possibility with more space anymore.)
 
       bool thereWillBeMoreSpace;
-      if (containingBlock->outOfFlowMgr == NULL ||
+      if (true || containingBlock->outOfFlowMgr == NULL ||
           !mustBorderBeRegarded (lines->size ())) {
          thereWillBeMoreSpace = false;
          PRINTF ("   thereWillBeMoreSpace = false (no OOFM or ...)\n");
