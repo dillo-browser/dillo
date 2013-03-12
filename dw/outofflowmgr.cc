@@ -324,7 +324,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
       vloat->widget = widget;
       vloat->generatingBlock = generatingBlock;
       vloat->dirty = true;
-      vloat->yReq = vloat->positioned;
+      vloat->positioned = false;
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
