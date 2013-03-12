@@ -11,7 +11,20 @@ using namespace dw::core::style;
 
 namespace dw {
 
-int OutOfFlowMgr::Float::yForContainer (OutOfFlowMgr *oofm, int y)
+int OutOfFlowMgr::Float::compareTo(Comparable *other)
+{
+   Float *otherFloat = (Float*)other;
+
+   if (generatingBlock->wasAllocated()) {
+      assert (otherFloat->generatingBlock->wasAllocated());
+      return yForContainer() - otherFloat->yForContainer();
+   } else {
+      assert (generatingBlock == otherFloat->generatingBlock);
+      return yReal - otherFloat->yReal;
+   }
+}
+
+int OutOfFlowMgr::Float::yForContainer (int y)
 {
    return y - generatingBlock->getAllocation()->y +
       oofm->containingBlock->getAllocation()->y;
@@ -307,7 +320,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
    if (widget->getStyle()->vloat != FLOAT_NONE) {
       TBInfo *tbInfo = registerCaller (generatingBlock);
 
-      Float *vloat = new Float ();
+      Float *vloat = new Float (this);
       vloat->widget = widget;
       vloat->generatingBlock = generatingBlock;
       vloat->dirty = true;

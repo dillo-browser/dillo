@@ -22,8 +22,11 @@ private:
                                                   by containingBlock->
                                                      getAllocation(). */
 
-   class Float: public lout::object::Object
+   class Float: public lout::object::Comparable
    {
+   private:
+      OutOfFlowMgr *oofm;
+      
    public:
       core::Widget *widget;
       Textblock *generatingBlock;
@@ -32,11 +35,12 @@ private:
       core::Requisition size;
       bool dirty;
 
-      int yForContainer (OutOfFlowMgr *oofm, int y);
+      Float (OutOfFlowMgr *oofm) { this->oofm = oofm; }
 
-      inline int yForContainer (OutOfFlowMgr *oofm) {
-         return yForContainer (oofm, yReal);
-      }
+      int compareTo(Comparable *other);
+
+      int yForContainer (int y);
+      inline int yForContainer () { return yForContainer (yReal); }
    };
 
    class TBInfo: public lout::object::Object
