@@ -30,10 +30,28 @@ int OutOfFlowMgr::Float::yForContainer (int y)
       oofm->containingBlock->getAllocation()->y;
 }
 
-OutOfFlowMgr::TBInfo::TBInfo ()
+int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y, int h)
 {
-   leftFloatsGB = new Vector<Float> (1, false);
-   rightFloatsGB = new Vector<Float> (1, false);
+   cleanup ();
+
+   Float key (oofm);
+   key.generatingBlock = textblock;
+   key.yReal = y;
+
+   return bsearch (&key, false);
+}
+
+void OutOfFlowMgr::SortedFloatsVector::moveTo (SortedFloatsVector *dest)
+{
+   for (int i = 0; i < size (); i++)
+      dest->insert (get (i));
+   clear ();
+}
+
+OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm)
+{
+   leftFloatsGB = new SortedFloatsVector (oofm);
+   rightFloatsGB = new SortedFloatsVector (oofm);
 }
 
 OutOfFlowMgr::TBInfo::~TBInfo ()
@@ -48,8 +66,8 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 
    this->containingBlock = containingBlock;
 
-   leftFloatsCB = new Vector<Float> (1, false);
-   rightFloatsCB = new Vector<Float> (1, false);
+   leftFloatsCB = new SortedFloatsVector (this);
+   rightFloatsCB = new SortedFloatsVector (this);
 
    leftFloatsAll = new Vector<Float> (1, true);
    rightFloatsAll = new Vector<Float> (1, true);
@@ -90,13 +108,8 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       TypedPointer <Textblock> *key = it.getNext ();
       TBInfo *tbInfo = tbInfos->get (key);
 
-      for (int i = 0; i < tbInfo->leftFloatsGB->size (); i++)
-         leftFloatsCB->put (tbInfo->leftFloatsGB->get (i));
-      tbInfo->leftFloatsGB->clear ();
-
-      for (int i = 0; i < tbInfo->rightFloatsGB->size (); i++)
-         rightFloatsCB->put (tbInfo->rightFloatsGB->get (i));
-      tbInfo->rightFloatsGB->clear ();
+      tbInfo->leftFloatsGB->moveTo (leftFloatsCB);
+      tbInfo->rightFloatsGB->moveTo (rightFloatsCB);
    }
 
    // 2. Floats have to be allocated
@@ -191,7 +204,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
    return c1 || c2;
 }
 
-bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
+bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
                                                Textblock *tb, int tbx, int tby,
                                                int tbWidth, int tbHeight,
                                                int *floatPos, Widget **vloat)
@@ -247,7 +260,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Vector<Float> *list,
 
 void OutOfFlowMgr::sizeAllocateFloats (Side side)
 {
-   Vector<Float> *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
 
    for (int i = 0; i < list->size(); i++) {
       // TODO Missing: check newly calculated positions, collisions,
@@ -297,8 +310,11 @@ void OutOfFlowMgr::draw (View *view, Rectangle *area)
    draw (rightFloatsCB, view, area);
 }
 
-void OutOfFlowMgr::draw (Vector<Float> *list, View *view, Rectangle *area)
+void OutOfFlowMgr::draw (SortedFloatsVector *list, View *view, Rectangle *area)
 {
+   // This could be improved, since the list is sorted: search the
+   // first float fitting into the area, and iterate until one is
+   // found below the area.
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       assert (vloat->positioned);
@@ -325,6 +341,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
       vloat->generatingBlock = generatingBlock;
       vloat->dirty = true;
       vloat->positioned = false;
+      vloat->yReq = vloat->yReal = - INT_MAX;
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
@@ -332,13 +349,15 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
          widget->parentRef = createRefLeftFloat (leftFloatsAll->size() - 1);
 
          if (generatingBlock->wasAllocated()) {
-            leftFloatsCB->put (vloat);
+            leftFloatsCB->insert (vloat);
             //printf ("[%p] adding float %p to CB list\n",
             //        containingBlock, vloat);
          } else {
-            tbInfo->leftFloatsGB->put (vloat);
+            tbInfo->leftFloatsGB->insert (vloat);
             //printf ("[%p] adding float %p to GB list\n",
             //        containingBlock, vloat);
+            printf ("%p = %s\n", tbInfo->leftFloatsGB,
+                    tbInfo->leftFloatsGB->toString ());
          }
          break;
 
@@ -347,11 +366,11 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
          widget->parentRef = createRefRightFloat (rightFloatsAll->size() - 1);
 
          if (generatingBlock->wasAllocated()) {
-            rightFloatsCB->put (vloat);
+            rightFloatsCB->insert (vloat);
             //printf ("[%p] adding float %p to CB list\n",
             //        containingBlock, vloat);
          } else {
-            tbInfo->rightFloatsGB->put (vloat);
+            tbInfo->rightFloatsGB->insert (vloat);
             //printf ("[%p] adding float %p to GB list\n",
             //        containingBlock, vloat);
          }
@@ -416,7 +435,7 @@ Widget *OutOfFlowMgr::getWidgetAtPoint (int x, int y, int level)
    return childAtPoint;
 }
 
-Widget *OutOfFlowMgr::getWidgetAtPoint (Vector<Float> *list,
+Widget *OutOfFlowMgr::getWidgetAtPoint (SortedFloatsVector *list,
                                         int x, int y, int level)
 {
    for (int i = 0; i < list->size(); i++) {
@@ -471,7 +490,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    vloat->positioned = positioned;
 
    if (positioned) {
-      Vector<Float> *listSame, *listOpp;
+      SortedFloatsVector *listSame, *listOpp;
       TBInfo *tbInfo = registerCaller (vloat->generatingBlock);
       
       switch (widget->getStyle()->vloat) {
@@ -670,7 +689,7 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    *oofHeight = max (oofHeightLeft, oofHeightRight);
 }
 
-int OutOfFlowMgr::getFloatsSize (Vector<Float> *list)
+int OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list)
 {
    int height = containingBlock->getStyle()->boxDiffHeight();
 
@@ -731,7 +750,7 @@ void OutOfFlowMgr::getExtremes (int cbMinWidth, int cbMaxWidth,
    accumExtremes (rightFloatsCB, oofMinWidth, oofMaxWidth);
 }
 
-void OutOfFlowMgr::accumExtremes (Vector<Float> *list, int *oofMinWidth,
+void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
                                   int *oofMaxWidth)
 {
    // Idea for a faster implementation: use incremental resizing?
@@ -779,7 +798,7 @@ OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerCaller (Textblock *textblock)
    TypedPointer<Textblock> key (textblock);
    TBInfo *tbInfo = tbInfos->get (&key);
    if (tbInfo == NULL) {
-      tbInfo = new TBInfo;
+      tbInfo = new TBInfo (this);
       tbInfo->wasAllocated = false;
       tbInfos->put (new TypedPointer<Textblock> (textblock), tbInfo);
    }
@@ -816,7 +835,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
 {
    TBInfo *tbInfo = registerCaller (textblock);
 
-   Vector<Float> *list;
+   SortedFloatsVector *list;
    if (textblock->wasAllocated())
       list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    else
@@ -874,7 +893,7 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h)
 
    TBInfo *tbInfo = registerCaller (textblock);
 
-   Vector<Float> *list;
+   SortedFloatsVector *list;
    if (textblock->wasAllocated())
       list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    else
