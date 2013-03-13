@@ -206,6 +206,8 @@ int Vector::bsearch(Object *key, bool mustExist)
 {
    // The case !mustExist is not handled by bsearch(3), so here is a
    // new implementation.
+   if (numElements == 0)
+      return mustExist ? -1 : 0;
    
    int high = numElements - 1, low = 0;
 

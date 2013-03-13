@@ -16,6 +16,7 @@
 ^missing$
 (^|/)tags$
 ^src/dillo$
+^doc/dillo.1$
 ^dpi/[^/]*\.dpi$
 ^dpid/dpid$
 ^dpid/dpidc$
