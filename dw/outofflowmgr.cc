@@ -356,8 +356,6 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
             tbInfo->leftFloatsGB->insert (vloat);
             //printf ("[%p] adding float %p to GB list\n",
             //        containingBlock, vloat);
-            printf ("%p = %s\n", tbInfo->leftFloatsGB,
-                    tbInfo->leftFloatsGB->toString ());
          }
          break;
 
