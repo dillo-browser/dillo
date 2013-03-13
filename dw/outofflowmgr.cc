@@ -213,6 +213,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
    bool covered = false;
 
    for (int i = 0; i < list->size(); i++) {
+      // TODO binary search
       Float *v = list->get(i);
 
       // This method is called within OOFM::sizeAllocate, which is
@@ -437,6 +438,7 @@ Widget *OutOfFlowMgr::getWidgetAtPoint (SortedFloatsVector *list,
                                         int x, int y, int level)
 {
    for (int i = 0; i < list->size(); i++) {
+      // Could use binary search to be faster.
       Float *vloat = list->get(i);
       Widget *childAtPoint = vloat->widget->getWidgetAtPoint (x, y, level + 1);
       if (childAtPoint)
@@ -524,6 +526,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
          collides = false;
 
          // Test collisions on the same side.
+         // TODO binary search
          for (int i = 0; i < listSame->size(); i++) {
             Float *v = listSame->get(i);
             int yWidget;
@@ -540,6 +543,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
          }    
 
          // Test collisions on the other side.
+         // TODO binary search
          for (int i = 0; i < listOpp->size(); i++) {
             Float *v = listOpp->get(i);
             // Note: Since v is on the opposite side, the condition 
@@ -692,7 +696,7 @@ int OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list)
    int height = containingBlock->getStyle()->boxDiffHeight();
 
    // Idea for a faster implementation: find the last float; this
-   // should be the relevant one.
+   // should be the relevant one, since the list is sorted.
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       if (vloat->positioned) {
@@ -841,8 +845,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
 
    int border = 0;
 
-   // To be a bit more efficient, one could use linear search to find
-   // the first affected float.
+   // TODO binary search
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
@@ -897,7 +900,7 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h)
    else
       list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
 
-   // To be a bit more efficient, one could use linear search.
+   // TODO binary search
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
