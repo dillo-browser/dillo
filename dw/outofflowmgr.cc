@@ -30,7 +30,28 @@ int OutOfFlowMgr::Float::yForContainer (int y)
       oofm->containingBlock->getAllocation()->y;
 }
 
-int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y, int h)
+bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
+{
+   if (positioned) {
+      int reqy, fly; // either widget or canvas coordinates
+      if (generatingBlock->wasAllocated()) {
+         assert (textblock->wasAllocated());
+         reqy = textblock->getAllocation()->y + y;
+         fly = generatingBlock->getAllocation()->y + yReal;
+      } else {
+         assert (textblock == generatingBlock);
+         reqy = y;
+         fly = yReal;
+      }
+
+      int flh = dirty ? 0 : size.ascent + size.descent;
+
+      return fly + flh > reqy && fly < reqy + h;
+   } else
+      return false;
+}
+
+int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y)
 {
    cleanup ();
 
@@ -39,6 +60,18 @@ int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y, int h)
    key.yReal = y;
 
    return bsearch (&key, false);
+}
+
+int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
+                                                 int y, int h)
+{
+   int i = find (textblock, y);
+   if (i > 0 && get(i - 1)->covers (textblock, y, h))
+      return i - 1;
+   else if (i < size() && get(i)->covers (textblock, y, h))
+      return i;
+   else
+      return -1;
 }
 
 void OutOfFlowMgr::SortedFloatsVector::moveTo (SortedFloatsVector *dest)
@@ -242,7 +275,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
          int y2 = y1 + flh;
          
          // TODO: Also regard horizontal dimension (same for tellPositionOrNot).
-         if (y2 > tby && y1 < tby + tbWidth) {
+         if (y2 > tby && y1 < tby + tbHeight) {
             covered = true;
             if (y1 - tby < *floatPos) {
                *floatPos = y1 - tby;
@@ -843,39 +876,30 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
    else
       list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
 
-   int border = 0;
-
-   // TODO binary search
-   for (int i = 0; i < list->size(); i++) {
-      Float *vloat = list->get(i);
-      ensureFloatSize (vloat);
-
-      int yWidget;
-      if (getYWidget (textblock, vloat, &yWidget)
-          && y + h > yWidget
-          && y < yWidget + vloat->size.ascent + vloat->size.descent) {
-         int borderDiff = getBorderDiff (textblock, vloat, side);
-         int borderIn = side == LEFT ?
-            vloat->generatingBlock->getStyle()->boxOffsetX() :
-            vloat->generatingBlock->getStyle()->boxRestWidth();
-
-         //printf ("   borderDiff = %d, borderIn = %d\n", borderDiff, borderIn);
-         border = max (border, vloat->size.width + borderIn + borderDiff);
-      }
-
+   int first = list->findFirst (textblock, y, h);
+   if (first == -1)
+      // No float.
+      return 0;
+   else {
       // It is not sufficient to find the first float, since a line
       // (with height h) may cover the region of multiple float, of
       // which the widest has to be choosen.
+      int border = 0;
+      bool covers = true;
+      for (int i = first; covers && i < list->size(); i++) {
+         Float *vloat = list->get(i);
+         covers = vloat->covers (textblock, y, h);
+         if (covers) {
+            int borderDiff = getBorderDiff (textblock, vloat, side);
+            int borderIn = side == LEFT ?
+               vloat->generatingBlock->getStyle()->boxOffsetX() :
+               vloat->generatingBlock->getStyle()->boxRestWidth();
+            border = max (border, vloat->size.width + borderIn + borderDiff);
+         }
+      }
 
-      // To be a bit more efficient, the loop could be stopped when
-      // (i) at least one float has been found, and (ii) the next float is
-      // below y + h.
+      return border;
    }
-
-   //printf ("[%p] %s border (%d, %d) = %d\n",
-   //        textblock, right ? "right" : "left", y, h, border);
-
-   return border;
 }
 
 bool OutOfFlowMgr::hasFloatLeft (Textblock *textblock, int y, int h)

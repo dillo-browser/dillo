@@ -41,6 +41,7 @@ private:
 
       int yForContainer (int y);
       inline int yForContainer () { return yForContainer (yReal); }
+      bool covers (Textblock *textblock, int y, int h);
    };
 
    class SortedFloatsVector: public lout::container::typed::Vector<Float>
@@ -56,7 +57,8 @@ private:
          lout::container::typed::Vector<Float> (1, false)
       { this->oofm = oofm; dirty = false; }
 
-      int find (Textblock *textblock, int y, int h);
+      int find (Textblock *textblock, int y);
+      int findFirst (Textblock *textblock, int y, int h);
       inline void insert (Float *vloat) { cleanup (); insertSorted (vloat); }
       inline void change (Float *vloat) { dirty = true; }
       void moveTo (SortedFloatsVector *dest);
