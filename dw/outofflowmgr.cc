@@ -375,7 +375,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
       vloat->generatingBlock = generatingBlock;
       vloat->dirty = true;
       vloat->positioned = false;
-      vloat->yReq = vloat->yReal = - INT_MAX;
+      vloat->yReq = vloat->yReal = INT_MIN;
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
@@ -488,7 +488,7 @@ Widget *OutOfFlowMgr::getWidgetAtPoint (SortedFloatsVector *list,
  */
 void OutOfFlowMgr::tellNoPosition (Widget *widget)
 {
-   tellPositionOrNot (widget, 0, false);
+   tellPositionOrNot (widget, INT_MIN, false);
 }
 
 
@@ -510,9 +510,12 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
 
    if ((!positioned && !vloat->positioned) ||
        (positioned && vloat->positioned && y == vloat->yReq))
-      // Nothing happened.
+      // Nothing changed.
       return;
-   
+
+   SortedFloatsVector *listSame, *listOpp;
+   getFloatsLists (vloat, &listSame, &listOpp);
+
    if (positioned)
       ensureFloatSize (vloat);
    int oldY = vloat->yReal;
@@ -521,37 +524,10 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    // "yReal" may change due to collisions (see below).
    vloat->yReq = vloat->yReal = y;
    vloat->positioned = positioned;
+   listSame->change (vloat);
 
    if (positioned) {
-      SortedFloatsVector *listSame, *listOpp;
-      TBInfo *tbInfo = registerCaller (vloat->generatingBlock);
-      
-      switch (widget->getStyle()->vloat) {
-      case FLOAT_LEFT:
-         if (vloat->generatingBlock->wasAllocated()) {
-            listSame = leftFloatsCB;
-            listOpp = rightFloatsCB;
-         } else {
-            listSame = tbInfo->leftFloatsGB;
-            listOpp = tbInfo->rightFloatsGB;
-         }
-         break;
-
-      case FLOAT_RIGHT:
-         if (vloat->generatingBlock->wasAllocated()) {
-            listSame = rightFloatsCB;
-            listOpp = leftFloatsCB;
-         } else {
-            listSame = tbInfo->rightFloatsGB;
-            listOpp = tbInfo->leftFloatsGB;
-         }
-         break;
-
-      default:
-         assertNotReached();
-         listSame = listOpp = NULL; // compiler happiness
-      }
-
+#if 0
       bool collides;
 
       // Collisions. TODO Can this be simplified?
@@ -632,6 +608,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
             }
          }
       } while (collides);
+#endif
       
       // It is assumed that there are no floats below this float
       // within this generator. For this reason, no other floats have
@@ -701,6 +678,37 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
             }
          }
       }
+   }
+}
+
+void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
+                                   SortedFloatsVector **listOpp)
+{
+   TBInfo *tbInfo = registerCaller (vloat->generatingBlock);
+      
+   switch (vloat->widget->getStyle()->vloat) {
+   case FLOAT_LEFT:
+      if (vloat->generatingBlock->wasAllocated()) {
+         if (listSame) *listSame = leftFloatsCB;
+         if (listOpp) *listOpp = rightFloatsCB;
+      } else {
+         if (listSame) *listSame = tbInfo->leftFloatsGB;
+         if (listOpp) *listOpp = tbInfo->rightFloatsGB;
+      }
+      break;
+
+   case FLOAT_RIGHT:
+      if (vloat->generatingBlock->wasAllocated()) {
+         if (listSame) *listSame = rightFloatsCB;
+         if (listOpp) *listOpp = leftFloatsCB;
+      } else {
+         if (listSame) *listSame = tbInfo->rightFloatsGB;
+         if (listOpp) *listOpp = tbInfo->leftFloatsGB;
+      }
+      break;
+
+   default:
+      assertNotReached();
    }
 }
 

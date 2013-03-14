@@ -107,6 +107,9 @@ private:
    core::Widget *getWidgetAtPoint (SortedFloatsVector *list, int x, int y,
                                    int level);
    void tellPositionOrNot (core::Widget *widget, int y, bool positioned);
+   void getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
+                        SortedFloatsVector **listOpp);
+
    int getFloatsSize (SortedFloatsVector *list);
    void accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
                        int *oofMaxWidth);
