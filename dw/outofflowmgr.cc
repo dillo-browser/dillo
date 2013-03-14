@@ -24,8 +24,21 @@ int OutOfFlowMgr::Float::compareTo(Comparable *other)
    }
 }
 
+int OutOfFlowMgr::Float::yForTextblock (Textblock *textblock, int y)
+{
+   if (generatingBlock->wasAllocated()) {
+      assert (textblock->wasAllocated());
+      return generatingBlock->getAllocation()->y + y
+         - textblock->getAllocation()->y;
+   } else {
+      assert (textblock == generatingBlock);
+      return y;
+   }
+}
+
 int OutOfFlowMgr::Float::yForContainer (int y)
 {
+   assert (generatingBlock->wasAllocated());
    return y - generatingBlock->getAllocation()->y +
       oofm->containingBlock->getAllocation()->y;
 }
@@ -524,96 +537,25 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    // "yReal" may change due to collisions (see below).
    vloat->yReq = vloat->yReal = y;
    vloat->positioned = positioned;
-   listSame->change (vloat);
 
    if (positioned) {
-#if 0
-      bool collides;
+      if (listSame->size() > 1) {
+         Float *last = listSame->get (listSame->size () - 1);
+         if (last == vloat) // TODO Should this not be always the case?
+            last = listSame->get (listSame->size () - 2);
+         
+         if (last->covers (vloat->generatingBlock, vloat->yReal,
+                           vloat->size.ascent + vloat->size.descent))
+            vloat->yReal = last->yForTextblock (vloat->generatingBlock)
+               + last->size.ascent + last->size.descent;
+      }
 
-      // Collisions. TODO Can this be simplified?
-      do {
-         collides = false;
-
-         // Test collisions on the same side.
-         // TODO binary search
-         for (int i = 0; i < listSame->size(); i++) {
-            Float *v = listSame->get(i);
-            int yWidget;
-            if (v != vloat &&
-                getYWidget (vloat->generatingBlock, v, &yWidget)) {
-               ensureFloatSize (v);
-               if (v->positioned != -1 && vloat->yReal >= yWidget && 
-                   vloat->yReal < yWidget + v->size.ascent + v->size.descent) {
-                  collides = true;
-                  vloat->yReal = yWidget + v->size.ascent + v->size.descent;
-                  break;
-               }
-            }
-         }    
-
-         // Test collisions on the other side.
-         // TODO binary search
-         for (int i = 0; i < listOpp->size(); i++) {
-            Float *v = listOpp->get(i);
-            // Note: Since v is on the opposite side, the condition 
-            // v != vloat (used above) is always true.
-            int yWidget;
-            if (getYWidget (vloat->generatingBlock, v, &yWidget)) {
-               ensureFloatSize (v);
-               if (v->positioned != -1 && vloat->yReal >= yWidget && 
-                   vloat->yReal < yWidget + v->size.ascent + v->size.descent) {
-                  // For the other side, horizontal dimensions have
-                  // to be considered, too.
-                  bool collidesH;
-                  if (vloat->generatingBlock == v->generatingBlock)
-                     collidesH = vloat->size.width + v->size.width +
-                        vloat->generatingBlock->getStyle()->boxDiffWidth()
-                        > vloat->generatingBlock->getAvailWidth();
-                  else  {
-                     // Here (different generating blocks) it can be
-                     // assumed that the allocations are defined
-                     // (because getYWidget() would have returned
-                     // false, otherwise).
-                     Float *left, *right;
-                     if (widget->getStyle()->vloat == FLOAT_LEFT) {
-                        left = vloat;
-                        right = v;
-                     } else {
-                        left = v;
-                        right = vloat;
-                     }
-
-                     // right border of the left float (canvas coordinates)
-                     int rightOfLeft =
-                        left->generatingBlock->getAllocation()->x
-                        + left->generatingBlock->getStyle()->boxOffsetX()
-                        + left->size.width;
-                     // left border of the right float (canvas coordinates)
-                     int leftOfRight =
-                        right->generatingBlock->getAllocation()->x
-                        + min (right->generatingBlock->getAllocation()->width,
-                               right->generatingBlock->getAvailWidth())
-                        - right->generatingBlock->getStyle()->boxRestWidth()
-                        - right->size.width;
-
-                     collidesH = rightOfLeft > leftOfRight;
-                  }
-
-                  if (collidesH) {
-                     collides = true;
-                     vloat->yReal = yWidget + v->size.ascent + v->size.descent;
-                     break;
-                  }
-               }
-            }
-         }
-      } while (collides);
-#endif
-      
       // It is assumed that there are no floats below this float
       // within this generator. For this reason, no other floats have
       // to be adjusted.
    }
+
+   listSame->change (vloat);
 
    // Only this float has been changed (see above), so only this float
    // has to be tested against all textblocks.
