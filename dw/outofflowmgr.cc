@@ -539,9 +539,16 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    vloat->positioned = positioned;
 
    if (positioned) {
+      // Test collisions (on both sides.
+
+      // It is assumed that there are no floats below this float
+      // within this generator. For this reason, (i) search is simple
+      // (candidate is at the end of the list), and (ii) no other
+      // floats have to be adjusted.
+
       if (listSame->size() > 1) {
          Float *last = listSame->get (listSame->size () - 1);
-         if (last == vloat) // TODO Should this not be always the case?
+         if (last == vloat) // TODO Should this not always be the case?
             last = listSame->get (listSame->size () - 2);
          
          if (last->covers (vloat->generatingBlock, vloat->yReal,
@@ -550,9 +557,51 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
                + last->size.ascent + last->size.descent;
       }
 
-      // It is assumed that there are no floats below this float
-      // within this generator. For this reason, no other floats have
-      // to be adjusted.
+      if (listOpp->size() > 0) {
+         Float *last = listOpp->get (listOpp->size () - 1);
+         if (last->covers (vloat->generatingBlock, vloat->yReal,
+                           vloat->size.ascent + vloat->size.descent)) {
+            // Here, test also horizontal values.
+            bool collidesH;
+            if (vloat->generatingBlock == last->generatingBlock)
+               collidesH = vloat->size.width + last->size.width +
+                  vloat->generatingBlock->getStyle()->boxDiffWidth()
+                  > vloat->generatingBlock->getAvailWidth();
+            else {
+               // Here (different generating blocks) it can be assumed
+               // that the allocations are defined (because
+               // Float::covers(...) would have returned false,
+               // otherwise).
+               Float *left, *right;
+               if (widget->getStyle()->vloat == FLOAT_LEFT) {
+                  left = vloat;
+                  right = last;
+               } else {
+                  left = last;
+                  right = vloat;
+               }
+
+               // right border of the left float (canvas coordinates)
+               int rightOfLeft =
+                  left->generatingBlock->getAllocation()->x
+                  + left->generatingBlock->getStyle()->boxOffsetX()
+                  + left->size.width;
+               // left border of the right float (canvas coordinates)
+               int leftOfRight =
+                  right->generatingBlock->getAllocation()->x
+                  + min (right->generatingBlock->getAllocation()->width,
+                         right->generatingBlock->getAvailWidth())
+                  - right->generatingBlock->getStyle()->boxRestWidth()
+                  - right->size.width;
+               
+               collidesH = rightOfLeft > leftOfRight;
+            }
+
+            if (collidesH)
+               vloat->yReal = last->yForTextblock (vloat->generatingBlock)
+                  + last->size.ascent + last->size.descent;
+         }
+      }
    }
 
    listSame->change (vloat);
