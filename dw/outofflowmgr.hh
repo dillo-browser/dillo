@@ -110,6 +110,8 @@ private:
    core::Widget *getWidgetAtPoint (SortedFloatsVector *list, int x, int y,
                                    int level);
    void tellPositionOrNot (core::Widget *widget, int y, bool positioned);
+   void checkCoverage (Float *vloat, bool oldPositioned, int oldY);
+
    void getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
                         SortedFloatsVector **listOpp);
 

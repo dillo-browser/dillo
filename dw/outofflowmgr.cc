@@ -606,8 +606,13 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
 
    listSame->change (vloat);
 
-   // Only this float has been changed (see above), so only this float
-   // has to be tested against all textblocks.
+   checkCoverage (vloat, oldPositioned, oldY);
+}
+
+void OutOfFlowMgr::checkCoverage (Float *vloat, bool oldPositioned, int oldY)
+{
+   // Only this float has been changed (see tellPositionOrNot), so
+   // only this float has to be tested against all textblocks.
    if (vloat->generatingBlock->wasAllocated () &&
        // A change from "no position" to "no position" is uninteresting.
        !(oldPositioned && !vloat->positioned)) {
