@@ -579,12 +579,9 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    bool oldPositioned = vloat->positioned;
 
    // "yReal" may change due to collisions (see below).
-   vloat->yReq = vloat->yReal = y;
-   vloat->positioned = positioned;
+   int yReal = y;
 
    if (positioned) {
-      ensureFloatSize (vloat);
-      
       // Test collisions (on both sides).
 
       // It is assumed that there are no floats below this float
@@ -592,34 +589,45 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
       // (candidate is at the end of the list), and (ii) no other
       // floats have to be adjusted.
 
-      listSame->change (vloat);
-
-      //for (lout::container::typed::Iterator<Float> it = listSame->iterator();
-      //     it.hasNext(); ) {
-      //   Float *v2 = it.getNext();
-      //   printf ("      %s\n", v2->toString());      
-      //}
-
       if (listSame->size() > 1) {
          Float *last = listSame->get (listSame->size () - 1);
-         if (last == vloat) // TODO Should this not always be the case?
+         if (last == vloat)
+            // TODO This float should be not positioned, so never at
+            // the end.  Clarify. (Perhaps, "assert (!vloat->positioned)"
+            // could be added.)
             last = listSame->get (listSame->size () - 2);
-
-         //printf ("      compare: %s\n", last->toString());      
-         //printf ("         with: %s\n", vloat->toString());      
-         //printf ("      covers? %s\n",
-         //        last->covers (vloat->generatingBlock, vloat->yReal,
-         //                      vloat->size.ascent + vloat->size.descent) ?
-         //        "yes" : "no");
          
-         if (last->covers (vloat->generatingBlock, vloat->yReal,
-                           vloat->size.ascent + vloat->size.descent))
-            vloat->yReal = last->yForTextblock (vloat->generatingBlock)
-               + last->size.ascent + last->size.descent;
+         // Notice that this float is always below the last of the list.
+         if (last->positioned) {
+            // Copy & paste from Float::covers(). (Better method of Float?)
+            int vloatY, lastY; // either widget or canvas coordinates
+            if (last->generatingBlock->wasAllocated()) {
+               assert (vloat->generatingBlock->wasAllocated());
+               vloatY =
+                  vloat->generatingBlock->getAllocation()->y + yReal;
+               lastY = last->generatingBlock->getAllocation()->y + last->yReal;
+            } else {
+               assert (vloat->generatingBlock == last->generatingBlock);
+               vloatY = yReal;
+               lastY = last->yReal;
+            }
 
-         //printf ("            => %s\n", vloat->toString());      
+            ensureFloatSize (last);
+            int lastH = last->size.ascent + last->size.descent;
+
+            if (vloatY < lastY + lastH)
+               yReal = last->yForTextblock (vloat->generatingBlock) + lastH;
+         }
       }
+   }
 
+   vloat->yReq = y;
+   vloat->yReal = yReal;
+   vloat->positioned = positioned;
+   listSame->change (vloat);
+
+#if 0
+   if (positioned) {
       if (listOpp->size() > 0) {
          Float *last = listOpp->get (listOpp->size () - 1);
          if (last->covers (vloat->generatingBlock, vloat->yReal,
@@ -666,8 +674,9 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
          }
       }
    }
+#endif
 
-   listSame->change (vloat);
+   // TODO listSame->change (vloat);
 
    checkCoverage (vloat, oldPositioned, oldY);
 }
