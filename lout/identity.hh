@@ -106,6 +106,8 @@ private:
       const char *className;
 
       Class (Class *parent, int id, const char *className);
+
+      void intoStringBuffer(misc::StringBuffer *sb);
    };
 
    static container::typed::HashTable <object::ConstString,
@@ -121,7 +123,7 @@ protected:
 public:
    IdentifiableObject ();
 
-   virtual void intoStringBuffer(misc::StringBuffer *sb);
+   void intoStringBuffer(misc::StringBuffer *sb);
 
    /**
     * \brief Returns the class identifier.

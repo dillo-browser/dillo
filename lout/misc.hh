@@ -515,6 +515,11 @@ public:
     * about memory management.
     */
    inline void append(const char *str) { appendNoCopy(strdup(str)); }
+   inline void appendInt(int n)
+   { char buf[32]; sprintf (buf, "%d", n); append (buf); }
+   inline void appendPointer(void *p)
+   { char buf[32]; sprintf (buf, "%p", p); append (buf); }
+   inline void appendBool(bool b) { append (b ? "true" : "false"); }
    void appendNoCopy(char *str);
    const char *getChars();
    void clear ();

@@ -35,8 +35,10 @@ private:
       core::Requisition size;
       bool dirty;
 
-      Float (OutOfFlowMgr *oofm) { this->oofm = oofm; }
+      Float (OutOfFlowMgr *oofm, core::Widget *widget,
+             Textblock *generatingBlock);
 
+      void intoStringBuffer(lout::misc::StringBuffer *sb);
       int compareTo(Comparable *other);
 
       int yForTextblock (Textblock *textblock, int y);
@@ -47,14 +49,22 @@ private:
       bool covers (Textblock *textblock, int y, int h);
    };
 
-   class SortedFloatsVector: public lout::container::typed::Vector<Float>
+   /**
+    * This list is kept sorted.
+    *
+    * To prevent accessing methods of the base class in an
+    * uncontrolled way, the inheritance is private, not public; this
+    * means that all methods must be delegated (see iterator(), size()
+    * etc. below.)
+    */
+   class SortedFloatsVector: private lout::container::typed::Vector<Float>
    {
    private:
       OutOfFlowMgr *oofm;
       bool dirty;
-      
+
       inline void cleanup () { if (dirty) { sort (); dirty = false; } }
-      
+          
    public:
       inline SortedFloatsVector (OutOfFlowMgr *oofm) :
          lout::container::typed::Vector<Float> (1, false)
@@ -65,6 +75,13 @@ private:
       inline void insert (Float *vloat) { cleanup (); insertSorted (vloat); }
       inline void change (Float *vloat) { dirty = true; }
       void moveTo (SortedFloatsVector *dest);
+
+      inline lout::container::typed::Iterator<Float> iterator()
+      { return lout::container::typed::Vector<Float>::iterator (); }
+      inline int size () // For size, cleanup is irrelevant.
+      { return lout::container::typed::Vector<Float>::size (); }
+      inline Float *get (int pos)
+      { cleanup(); return lout::container::typed::Vector<Float>::get (pos); }
    };
 
    class TBInfo: public lout::object::Object

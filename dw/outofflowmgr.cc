@@ -11,16 +11,66 @@ using namespace dw::core::style;
 
 namespace dw {
 
+OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
+                            Textblock *generatingBlock)
+{
+   this->oofm = oofm;
+   this->widget = widget;
+   this->generatingBlock = generatingBlock;
+
+   positioned = false;
+   positioned = false;
+   yReq = yReal = size.width = size.ascent = size.descent = 0;
+   dirty = true;
+}
+
+void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
+{
+   sb->append (positioned ? "{+ widget = " : "{- widget = ");
+   sb->appendPointer (widget);
+   
+   if (widget) {
+      sb->append (" (");
+      sb->append (widget->getClassName ());
+      sb->append (")");
+   }
+
+   sb->append (", generatingBlock = ");
+   sb->appendPointer (generatingBlock);
+   sb->append (", positioned = ");
+   sb->appendBool (positioned);
+   sb->append (", yReq = ");
+   sb->appendInt (yReq);
+   sb->append (", yReal = ");
+   sb->appendInt (yReal);
+   sb->append (", size = { ");
+   sb->appendInt (size.width);
+   sb->append (", ");
+   sb->appendInt (size.ascent);
+   sb->append (" + ");
+   sb->appendInt (size.descent);
+   sb->append (" }, dirty = ");
+   sb->appendBool (dirty);
+   sb->append (positioned ? " +}" : " -}");
+}
+
 int OutOfFlowMgr::Float::compareTo(Comparable *other)
 {
    Float *otherFloat = (Float*)other;
 
-   if (generatingBlock->wasAllocated()) {
-      assert (otherFloat->generatingBlock->wasAllocated());
-      return yForContainer() - otherFloat->yForContainer();
+   if (positioned && otherFloat->positioned) {
+      if (generatingBlock->wasAllocated()) {
+         assert (otherFloat->generatingBlock->wasAllocated());
+         return yForContainer() - otherFloat->yForContainer();
+      } else {
+         assert (generatingBlock == otherFloat->generatingBlock);
+         return yReal - otherFloat->yReal;
+      }
    } else {
-      assert (generatingBlock == otherFloat->generatingBlock);
-      return yReal - otherFloat->yReal;
+      if (positioned)
+         return 1; // !otherFloat->positioned can be assumed.
+      else // !positioned
+         return otherFloat->positioned ? -1 : 0;
    }
 }
 
@@ -57,6 +107,7 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
          fly = yReal;
       }
 
+      oofm->ensureFloatSize (this);
       int flh = dirty ? 0 : size.ascent + size.descent;
 
       return fly + flh > reqy && fly < reqy + h;
@@ -68,7 +119,7 @@ int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y)
 {
    cleanup ();
 
-   Float key (oofm);
+   Float key (oofm, NULL, NULL);
    key.generatingBlock = textblock;
    key.yReal = y;
 
@@ -383,12 +434,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
    if (widget->getStyle()->vloat != FLOAT_NONE) {
       TBInfo *tbInfo = registerCaller (generatingBlock);
 
-      Float *vloat = new Float (this);
-      vloat->widget = widget;
-      vloat->generatingBlock = generatingBlock;
-      vloat->dirty = true;
-      vloat->positioned = false;
-      vloat->yReq = vloat->yReal = INT_MIN;
+      Float *vloat = new Float (this, widget, generatingBlock);
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
@@ -501,7 +547,7 @@ Widget *OutOfFlowMgr::getWidgetAtPoint (SortedFloatsVector *list,
  */
 void OutOfFlowMgr::tellNoPosition (Widget *widget)
 {
-   tellPositionOrNot (widget, INT_MIN, false);
+   tellPositionOrNot (widget, 0, false);
 }
 
 
@@ -514,12 +560,10 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
 void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
 {
    Float *vloat = findFloatByWidget(widget);
-   //printf ("[%p] TELL_POSITION_OR_NOT: vloat = %p, y = %d (%d => %d), "
-   //        "positioned = %s (%s)\n", containingBlock, vloat,
-   //        y, vloat->yReq, vloat->yReal,
-   //        positioned ? "true" : "false",
-   //        vloat->positioned ? "true" : "false");
-      
+
+   //printf ("[%p] TELL_POSITION_OR_NOT (%p, %d, %s)\n",
+   //        containingBlock, widget, y, positioned ? "true" : "false");
+   //printf ("   vloat: %s\n", vloat->toString());      
 
    if ((!positioned && !vloat->positioned) ||
        (positioned && vloat->positioned && y == vloat->yReq))
@@ -539,22 +583,41 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    vloat->positioned = positioned;
 
    if (positioned) {
-      // Test collisions (on both sides.
+      ensureFloatSize (vloat);
+      
+      // Test collisions (on both sides).
 
       // It is assumed that there are no floats below this float
       // within this generator. For this reason, (i) search is simple
       // (candidate is at the end of the list), and (ii) no other
       // floats have to be adjusted.
 
+      listSame->change (vloat);
+
+      //for (lout::container::typed::Iterator<Float> it = listSame->iterator();
+      //     it.hasNext(); ) {
+      //   Float *v2 = it.getNext();
+      //   printf ("      %s\n", v2->toString());      
+      //}
+
       if (listSame->size() > 1) {
          Float *last = listSame->get (listSame->size () - 1);
          if (last == vloat) // TODO Should this not always be the case?
             last = listSame->get (listSame->size () - 2);
+
+         //printf ("      compare: %s\n", last->toString());      
+         //printf ("         with: %s\n", vloat->toString());      
+         //printf ("      covers? %s\n",
+         //        last->covers (vloat->generatingBlock, vloat->yReal,
+         //                      vloat->size.ascent + vloat->size.descent) ?
+         //        "yes" : "no");
          
          if (last->covers (vloat->generatingBlock, vloat->yReal,
                            vloat->size.ascent + vloat->size.descent))
             vloat->yReal = last->yForTextblock (vloat->generatingBlock)
                + last->size.ascent + last->size.descent;
+
+         //printf ("            => %s\n", vloat->toString());      
       }
 
       if (listOpp->size() > 0) {
