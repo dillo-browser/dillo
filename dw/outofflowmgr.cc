@@ -59,8 +59,8 @@ int OutOfFlowMgr::Float::compareTo(Comparable *other)
    Float *otherFloat = (Float*)other;
 
    if (positioned && otherFloat->positioned) {
-      if (generatingBlock->wasAllocated()) {
-         assert (otherFloat->generatingBlock->wasAllocated());
+      if (oofm->wasAllocated (generatingBlock)) {
+         assert (oofm->wasAllocated (otherFloat->generatingBlock));
          return yForContainer() - otherFloat->yForContainer();
       } else {
          assert (generatingBlock == otherFloat->generatingBlock);
@@ -76,10 +76,10 @@ int OutOfFlowMgr::Float::compareTo(Comparable *other)
 
 int OutOfFlowMgr::Float::yForTextblock (Textblock *textblock, int y)
 {
-   if (generatingBlock->wasAllocated()) {
-      assert (textblock->wasAllocated());
-      return generatingBlock->getAllocation()->y + y
-         - textblock->getAllocation()->y;
+   if (oofm->wasAllocated (generatingBlock)) {
+      assert (oofm->wasAllocated (textblock));
+      return oofm->getAllocation(generatingBlock)->y + y
+         - oofm->getAllocation(textblock)->y;
    } else {
       assert (textblock == generatingBlock);
       return y;
@@ -88,19 +88,19 @@ int OutOfFlowMgr::Float::yForTextblock (Textblock *textblock, int y)
 
 int OutOfFlowMgr::Float::yForContainer (int y)
 {
-   assert (generatingBlock->wasAllocated());
-   return y - generatingBlock->getAllocation()->y +
-      oofm->containingBlock->getAllocation()->y;
+   assert (oofm->wasAllocated (generatingBlock));
+   return y - oofm->getAllocation(generatingBlock)->y +
+      oofm->getAllocation(oofm->containingBlock)->y;
 }
 
 bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
 {
    if (positioned) {
       int reqy, fly; // either widget or canvas coordinates
-      if (generatingBlock->wasAllocated()) {
-         assert (textblock->wasAllocated());
-         reqy = textblock->getAllocation()->y + y;
-         fly = generatingBlock->getAllocation()->y + yReal;
+      if (oofm->wasAllocated (generatingBlock)) {
+         assert (oofm->wasAllocated (textblock));
+         reqy = oofm->getAllocation(textblock)->y + y;
+         fly = oofm->getAllocation(generatingBlock)->y + yReal;
       } else {
          assert (textblock == generatingBlock);
          reqy = y;
@@ -172,6 +172,9 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    floatsByWidget = new HashTable <TypedPointer <Widget>, Float> (true, false);
    tbInfos = new HashTable <TypedPointer <Textblock>, TBInfo> (true, true);
 
+   containingBlockWasAllocated = containingBlock->wasAllocated ();
+   if (containingBlockWasAllocated)
+      containingBlockAllocation = *(containingBlock->getAllocation());
 }
 
 OutOfFlowMgr::~OutOfFlowMgr ()
@@ -194,6 +197,7 @@ OutOfFlowMgr::~OutOfFlowMgr ()
 void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
 {
    this->containingBlockAllocation = *containingBlockAllocation;
+   containingBlockWasAllocated = true;
 }
 
 void OutOfFlowMgr::sizeAllocateEnd ()
@@ -222,10 +226,11 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       TBInfo *tbInfo = tbInfos->get (key);
       Textblock *tb = key->getTypedValue();
 
-      int xCB = tb->getAllocation()->x - containingBlockAllocation.x;
-      int yCB = tb->getAllocation()->y - containingBlockAllocation.y;
-      int width = tb->getAllocation()->width;
-      int height = tb->getAllocation()->ascent + tb->getAllocation()->descent;
+      Allocation *tbAllocation = getAllocation (tb);
+      int xCB = tbAllocation->x - containingBlockAllocation.x;
+      int yCB = tbAllocation->y - containingBlockAllocation.y;
+      int width = tbAllocation->width;
+      int height = tbAllocation->ascent + tbAllocation->descent;
 
       if ((!tbInfo->wasAllocated || tbInfo->xCB != xCB || tbInfo->yCB != yCB ||
            tbInfo->width != width || tbInfo->height != height)) {
@@ -243,8 +248,8 @@ void OutOfFlowMgr::sizeAllocateEnd ()
                                                tbInfo->width, tbInfo->height,
                                                &oldPos, &oldFloat);
          // new allocation:
-         int c2 = isTextblockCoveredByFloats (tb, tb->getAllocation()->x,
-                                              tb->getAllocation()->y, width,
+         int c2 = isTextblockCoveredByFloats (tb, tbAllocation->x,
+                                              tbAllocation->y, width,
                                               height, &newPos, &newFloat);
          if (c1 || c2) {
             if (!c1)
@@ -313,29 +318,11 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
       // TODO binary search
       Float *v = list->get(i);
 
-      // This method is called within OOFM::sizeAllocate, which is
-      // called in Textblock::sizeAllocateImpl for the containing
-      // block, so that the only textblock which is not necessary
-      // allocates is the containing block.
-      assert (v->generatingBlock->wasAllocated() ||
-              v->generatingBlock == containingBlock);
+      assert (wasAllocated (v->generatingBlock));
 
-      // In this case we have to refer to the allocation passed to
-      // Textblock::sizeAllocateImpl.
-      Allocation *generatingBlockAllocation =
-         v->generatingBlock == containingBlock ?
-         &containingBlockAllocation : v->generatingBlock->getAllocation();
-
-      // Idea: the distinction could be removed, and the code so made
-      // simpler, by moving this second part of OOFM::sizeAllocate
-      // into an idle function. This would also make the question
-      // obsolete whether it is allowed to call queueResize within
-      // sizeAllocate. Unfortunately, idle funtions currently only
-      // refer to layouts, not to widgets.
-      
       if (tb != v->generatingBlock && v->positioned) {
          int flh = v->dirty ? 0 : v->size.ascent + v->size.descent;
-         int y1 = generatingBlockAllocation->y + v->yReal;
+         int y1 = getAllocation(v->generatingBlock)->y + v->yReal;
          int y2 = y1 + flh;
          
          // TODO: Also regard horizontal dimension (same for tellPositionOrNot).
@@ -368,25 +355,24 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side)
       assert (vloat->positioned);
       ensureFloatSize (vloat);
 
+      Allocation *gbAllocation = getAllocation(vloat->generatingBlock);
       Allocation childAllocation;
       switch (side) {
       case LEFT:
-         childAllocation.x = vloat->generatingBlock->getAllocation()->x
+         childAllocation.x = gbAllocation->x
             + vloat->generatingBlock->getStyle()->boxOffsetX();
          break;
 
       case RIGHT:
          childAllocation.x =
-            vloat->generatingBlock->getAllocation()->x
-            + min (vloat->generatingBlock->getAllocation()->width,
-                   vloat->generatingBlock->getAvailWidth())
+            gbAllocation->x
+            + min (gbAllocation->width, vloat->generatingBlock->getAvailWidth())
             - vloat->size.width
             - vloat->generatingBlock->getStyle()->boxRestWidth();
          break;
       }
 
-      childAllocation.y =
-         vloat->generatingBlock->getAllocation()->y + vloat->yReal;
+      childAllocation.y = gbAllocation->y + vloat->yReal;
       childAllocation.width = vloat->size.width;
       childAllocation.ascent = vloat->size.ascent;
       childAllocation.descent = vloat->size.descent;
@@ -441,7 +427,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
          leftFloatsAll->put (vloat);
          widget->parentRef = createRefLeftFloat (leftFloatsAll->size() - 1);
 
-         if (generatingBlock->wasAllocated()) {
+         if (wasAllocated (generatingBlock)) {
             leftFloatsCB->insert (vloat);
             //printf ("[%p] adding float %p to CB list\n",
             //        containingBlock, vloat);
@@ -456,7 +442,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
          rightFloatsAll->put (vloat);
          widget->parentRef = createRefRightFloat (rightFloatsAll->size() - 1);
 
-         if (generatingBlock->wasAllocated()) {
+         if (wasAllocated (generatingBlock)) {
             rightFloatsCB->insert (vloat);
             //printf ("[%p] adding float %p to CB list\n",
             //        containingBlock, vloat);
@@ -557,7 +543,7 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int y)
    tellPositionOrNot (widget, y, true);
 }
 
-void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
+void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int yReq, bool positioned)
 {
    Float *vloat = findFloatByWidget(widget);
 
@@ -566,7 +552,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    //printf ("   vloat: %s\n", vloat->toString());      
 
    if ((!positioned && !vloat->positioned) ||
-       (positioned && vloat->positioned && y == vloat->yReq))
+       (positioned && vloat->positioned && yReq == vloat->yReq))
       // Nothing changed.
       return;
 
@@ -579,7 +565,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
    bool oldPositioned = vloat->positioned;
 
    // "yReal" may change due to collisions (see below).
-   int yReal = y;
+   int yReal = yReq;
 
    if (positioned) {
       // Test collisions (on both sides).
@@ -599,29 +585,29 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int y, bool positioned)
          
          // Notice that this float is always below the last of the list.
          if (last->positioned) {
-            // Copy & paste from Float::covers(). (Better method of Float?)
-            int vloatY, lastY; // either widget or canvas coordinates
-            if (last->generatingBlock->wasAllocated()) {
-               assert (vloat->generatingBlock->wasAllocated());
-               vloatY =
-                  vloat->generatingBlock->getAllocation()->y + yReal;
-               lastY = last->generatingBlock->getAllocation()->y + last->yReal;
-            } else {
-               assert (vloat->generatingBlock == last->generatingBlock);
-               vloatY = yReal;
-               lastY = last->yReal;
-            }
-
             ensureFloatSize (last);
             int lastH = last->size.ascent + last->size.descent;
 
-            if (vloatY < lastY + lastH)
-               yReal = last->yForTextblock (vloat->generatingBlock) + lastH;
+            if (wasAllocated (last->generatingBlock)) {
+               assert (wasAllocated (vloat->generatingBlock));
+
+               if (getAllocation(vloat->generatingBlock)->y + yReal <
+                   getAllocation(last->generatingBlock)->y + last->yReal
+                   + lastH)
+                  yReal =
+                     getAllocation(last->generatingBlock)->y + last->yReal
+                     + lastH - getAllocation(vloat->generatingBlock)->y;
+            } else {
+               assert (vloat->generatingBlock == last->generatingBlock);
+
+               if (yReal < last->yReal + lastH)
+                  yReal = last->yReal + lastH;
+            }
          }
       }
    }
 
-   vloat->yReq = y;
+   vloat->yReq = yReq;
    vloat->yReal = yReal;
    vloat->positioned = positioned;
    listSame->change (vloat);
@@ -685,7 +671,7 @@ void OutOfFlowMgr::checkCoverage (Float *vloat, bool oldPositioned, int oldY)
 {
    // Only this float has been changed (see tellPositionOrNot), so
    // only this float has to be tested against all textblocks.
-   if (vloat->generatingBlock->wasAllocated () &&
+   if (wasAllocated (vloat->generatingBlock) &&
        // A change from "no position" to "no position" is uninteresting.
        !(oldPositioned && !vloat->positioned)) {
       int yChange;
@@ -711,37 +697,37 @@ void OutOfFlowMgr::checkCoverage (Float *vloat, bool oldPositioned, int oldY)
          TypedPointer <Textblock> *key = it.getNext ();
          Textblock *textblock = key->getTypedValue();
 
-         if (textblock->wasAllocated () &&
+         if (wasAllocated (textblock) &&
              // If not positioned, there will be soon a rewrap (see
              // Textblock::rewrap), or, if positioned , the generating
              // block takes care of the possible change (see
              // Textblock::wrapWidgetOofRef), respectively; so, only
              // the other textblocks must be told about this.
              textblock != vloat->generatingBlock) {
-            int tby1 = textblock->getAllocation()->y;
-            int tby2 = tby1 + textblock->getAllocation()->ascent
-               + textblock->getAllocation()->descent;
+            int tby1 = getAllocation(textblock)->y;
+            int tby2 = tby1 + getAllocation(textblock)->ascent
+               + getAllocation(textblock)->descent;
             int flh = 
                vloat->dirty ? 0 : vloat->size.ascent + vloat->size.descent;
             bool covered = false;
 
             if (oldPositioned) {
-               int y1 = vloat->generatingBlock->getAllocation()->y + oldY;
+               int y1 = getAllocation(vloat->generatingBlock)->y + oldY;
                int y2 = y1 + flh;
                covered = y2 > tby1 && y1 < tby2;
             }
 
             if (!covered && vloat->positioned) {
                int y1 =
-                  vloat->generatingBlock->getAllocation()->y + vloat->yReal;
+                  getAllocation(vloat->generatingBlock)->y + vloat->yReal;
                int y2 = y1 + flh;
                covered = y2 > tby1 && y1 < tby2;
             }
 
             if (covered) {
                int yTextblock =
-                  vloat->generatingBlock->getAllocation()->y + yChange
-                  - textblock->getAllocation()->y;
+                  getAllocation(vloat->generatingBlock)->y + yChange
+                  - getAllocation(textblock)->y;
                textblock->borderChanged (yTextblock, vloat->widget);
             }
          }
@@ -756,7 +742,7 @@ void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
       
    switch (vloat->widget->getStyle()->vloat) {
    case FLOAT_LEFT:
-      if (vloat->generatingBlock->wasAllocated()) {
+      if (wasAllocated (vloat->generatingBlock)) {
          if (listSame) *listSame = leftFloatsCB;
          if (listOpp) *listOpp = rightFloatsCB;
       } else {
@@ -766,7 +752,7 @@ void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
       break;
 
    case FLOAT_RIGHT:
-      if (vloat->generatingBlock->wasAllocated()) {
+      if (wasAllocated (vloat->generatingBlock)) {
          if (listSame) *listSame = rightFloatsCB;
          if (listOpp) *listOpp = leftFloatsCB;
       } else {
@@ -824,11 +810,11 @@ int OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list)
             // Simplest case: the generator is the container.
             yGBinCB = 0;
          else {
-            if (containingBlock->wasAllocated()) {
-               if (vloat->generatingBlock->wasAllocated())
+            if (wasAllocated (containingBlock)) {
+               if (wasAllocated (vloat->generatingBlock))
                   // Simple case: both containing block and generating
                   // block are defined.
-                  yGBinCB = vloat->generatingBlock->getAllocation()->y
+                  yGBinCB = getAllocation(vloat->generatingBlock)->y
                      - containingBlock->getAllocation()->y;
                else
                   // Generating block not yet allocation; the next
@@ -879,12 +865,12 @@ void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
          // Simplest case: the generator is the container.
          borderDiff = 0;
       else {
-         if (containingBlock->wasAllocated()) {
-            if (vloat->generatingBlock->wasAllocated())
+         if (wasAllocated (containingBlock)) {
+            if (wasAllocated (vloat->generatingBlock))
                // Simple case: both containing block and generating
                // block are defined.
-               borderDiff = containingBlock->getAllocation()->width -
-                  vloat->generatingBlock->getAllocation()->width;
+               borderDiff = getAllocation(containingBlock)->width -
+                  getAllocation(vloat->generatingBlock)->width;
             else
                // Generating block not yet allocation; the next
                // allocation will, when necessary, trigger
@@ -947,7 +933,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
    TBInfo *tbInfo = registerCaller (textblock);
 
    SortedFloatsVector *list;
-   if (textblock->wasAllocated())
+   if (wasAllocated (textblock))
       list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    else
       list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
@@ -995,7 +981,7 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h)
    TBInfo *tbInfo = registerCaller (textblock);
 
    SortedFloatsVector *list;
-   if (textblock->wasAllocated())
+   if (wasAllocated (textblock))
       list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    else
       list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
@@ -1096,9 +1082,9 @@ bool OutOfFlowMgr::getYWidget (Textblock *textblock, Float *vloat, int *yWidget)
       *yWidget = vloat->yReal;
       return true;
    } else {
-      if (textblock->wasAllocated() && vloat->generatingBlock->wasAllocated()) {
-         *yWidget = vloat->yReal + vloat->generatingBlock->getAllocation()->y
-            - textblock->getAllocation()->y;
+      if (wasAllocated (textblock) && wasAllocated (vloat->generatingBlock)) {
+         *yWidget = vloat->yReal + getAllocation(vloat->generatingBlock)->y
+            - getAllocation(textblock)->y;
          return true;
       } else {
          // Should not happen, when the correct list is choosen.
@@ -1121,19 +1107,19 @@ int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, Side side)
    if (textblock == vloat->generatingBlock)
       return 0;
    else {
-      assert (textblock->wasAllocated() &&
-              vloat->generatingBlock->wasAllocated());
+      assert (wasAllocated (textblock) &&
+              wasAllocated (vloat->generatingBlock));
       
       switch (side) {
       case LEFT:
-         return vloat->generatingBlock->getAllocation()->x
-            - textblock->getAllocation()->x;
+         return getAllocation(vloat->generatingBlock)->x
+            - getAllocation(textblock)->x;
 
       case RIGHT:
          return
-            textblock->getAllocation()->x + textblock->getAllocation()->width
-            - (vloat->generatingBlock->getAllocation()->x +
-               min (vloat->generatingBlock->getAllocation()->width,
+            getAllocation(textblock)->x + getAllocation(textblock)->width
+            - (getAllocation(vloat->generatingBlock)->x +
+               min (getAllocation(vloat->generatingBlock)->width,
                     vloat->generatingBlock->getAvailWidth()));
 
       default:

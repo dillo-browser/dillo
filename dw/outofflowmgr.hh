@@ -16,11 +16,14 @@ private:
    enum Side { LEFT, RIGHT };
 
    Textblock *containingBlock;
-   core::Allocation containingBlockAllocation; /* Set by sizeAllocateStart(),
-                                                  and accessable also before
-                                                  sizeAllocateEnd(), as opposed
-                                                  by containingBlock->
-                                                     getAllocation(). */
+
+   // These two values are set by sizeAllocateStart(), and they are
+   // accessable also within sizeAllocateEnd(), and also for the
+   // containing block, for which allocation and WAS_ALLOCATED is set
+   // *after* sizeAllocateEnd(). See the two inline functions below
+   // for usage.
+   core::Allocation containingBlockAllocation;
+   bool containingBlockWasAllocated;
 
    class Float: public lout::object::Comparable
    {
@@ -111,6 +114,24 @@ private:
                                      <dw::core::Widget>, Float> *floatsByWidget;
    lout::container::typed::HashTable<lout::object::TypedPointer <Textblock>,
                                      TBInfo> *tbInfos;
+
+   /**
+    * Variant of Widget::wasAllocated(), which can also be used within
+    * OOFM::sizeAllocateEnd(), and also for the generating block.
+    */
+   inline bool wasAllocated (core::Widget *widget) {
+      return widget->wasAllocated () ||
+         (widget == (core::Widget*)containingBlock &&
+          containingBlockWasAllocated); }
+
+   /**
+    * Variant of Widget::getAllocation(), which can also be used
+    * within OOFM::sizeAllocateEnd(), and also for the generating
+    * block.
+    */
+   inline core::Allocation *getAllocation (core::Widget *widget) {
+      return widget == (core::Widget*)containingBlock ?
+         &containingBlockAllocation : widget->getAllocation (); }
    
    Float *findFloatByWidget (core::Widget *widget);
 
@@ -126,7 +147,7 @@ private:
               core::Rectangle *area);
    core::Widget *getWidgetAtPoint (SortedFloatsVector *list, int x, int y,
                                    int level);
-   void tellPositionOrNot (core::Widget *widget, int y, bool positioned);
+   void tellPositionOrNot (core::Widget *widget, int yReq, bool positioned);
    void checkCoverage (Float *vloat, bool oldPositioned, int oldY);
 
    void getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
