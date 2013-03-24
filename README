@@ -57,6 +57,12 @@ Dillo3
      ./configure; make
      sudo make install-strip
 
+  In order to use the hyphenation feature, pattern files from CTAN need
+  to be installed.
+  This can be done with the script dillo-install-hyphenation.
+  Call it with ISO-639-1 language codes as arguments, or without arguments
+  to get more help.
+
 
 ------------
 Dpi programs
