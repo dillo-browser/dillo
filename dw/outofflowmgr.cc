@@ -914,7 +914,9 @@ OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerCaller (Textblock *textblock)
  */
 int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
 {
-   return getBorder (textblock, LEFT, y, h);
+   int b = getBorder (textblock, LEFT, y, h);
+   //printf ("getLeftBorder (%p, %d, %d) => %d\n", textblock, y, h, b);
+   return b;
 }
 
 /**
@@ -925,7 +927,9 @@ int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
  */
 int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h)
 {
-   return getBorder (textblock, RIGHT, y, h);
+   int b = getBorder (textblock, RIGHT, y, h);
+   //printf ("getRightBorder (%p, %d, %d) => %d\n", textblock, y, h, b);
+   return b;
 }
 
 int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
