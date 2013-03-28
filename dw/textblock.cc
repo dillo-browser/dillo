@@ -2371,6 +2371,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
       PRINTF ("   Corrected to line %d.\n", wrapLineIndex);
             
       queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex), true);
+      lastWordDrawn = lines->getRef(wrapLineIndex)->firstWord;
    }
 }
 
