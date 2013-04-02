@@ -85,7 +85,7 @@
 # broken here. "inf" means that breaking is prohibited, "-inf" means
 # that a line *must* be broken here. (The latter should not be used
 # here, however.) Normal spaces get a penalty of 0. The exact
-# definition can be fouund in doc/dw-line-breaking.doc.
+# definition can be found in doc/dw-line-breaking.doc.
 
 # Penalties for hyphenation breaks; this covers automatic hyphenation,
 # soft hyphens, and unconditional hyphens. Since hyphenation should

@@ -41,8 +41,8 @@ FLTK-1.3
 
   and build it like:
 
-     tar zxvf fltk-1.3.1-source.tar.gz      [or latest 1.3.x version]
-     cd fltk-1.3.1
+     tar zxvf fltk-1.3.2-source.tar.gz      [or latest 1.3.x version]
+     cd fltk-1.3.2
      less README.Unix.txt
      make
      sudo make install
@@ -52,10 +52,16 @@ FLTK-1.3
 Dillo3
 ------
 
-     tar jxvf dillo-3.0.2.tar.bz2
-     cd dillo-3.0.2
+     tar jxvf dillo-3.0.3.tar.bz2
+     cd dillo-3.0.3
      ./configure; make
      sudo make install-strip
+
+  In order to use the hyphenation feature, pattern files from CTAN need
+  to be installed.
+  This can be done with the script dillo-install-hyphenation.
+  Call it with ISO-639-1 language codes as arguments, or without arguments
+  to get more help.
 
 
 ------------

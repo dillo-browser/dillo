@@ -1,7 +1,6 @@
 dist_doc_DATA = user_help.html
 man_MANS = dillo.1
 EXTRA_DIST = \
-        $(man_MANS) \
 	index.doc \
 	lout.doc \
 	dw-map.doc \
@@ -28,18 +27,19 @@ EXTRA_DIST = \
 	dw-textblock-collapsing-spaces-2-1.png \
 	dw-textblock-collapsing-spaces-2-2.png \
 	dw-floats-01.png \
-        Cache.txt \
-        Cookies.txt \
-        Dillo.txt \
-        Dw.txt \
-        HtmlParser.txt \
-        IO.txt \
-        Images.txt \
-        Imgbuf.txt \
-        NC_design.txt \
-        Selection.txt \
-        Dpid.txt \
-        README
+	Cache.txt \
+	Cookies.txt \
+	Dillo.txt \
+	Dw.txt \
+	HtmlParser.txt \
+	IO.txt \
+	Images.txt \
+	Imgbuf.txt \
+	NC_design.txt \
+	Selection.txt \
+	Dpid.txt \
+	README \
+	dillo.1.in
 
 dillo.1: $(srcdir)/dillo.1.in Makefile
 	sed 's%/usr/local%${prefix}%g' < $(srcdir)/dillo.1.in > dillo.1
