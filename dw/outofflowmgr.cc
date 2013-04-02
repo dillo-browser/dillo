@@ -137,8 +137,6 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
 
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y)
 {
-   cleanup ();
-
    Float key (oofm, NULL, NULL);
    key.generatingBlock = textblock;
    key.yReal = y;
@@ -158,10 +156,11 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
       return -1;
 }
 
-void OutOfFlowMgr::SortedFloatsVector::moveTo (SortedFloatsVector *dest)
+void OutOfFlowMgr::SortedFloatsVector::moveTo (SortedFloatsVector *dest,
+                                               int startIndex)
 {
    for (int i = 0; i < size (); i++)
-      dest->insert (get (i));
+      dest->insert (get (i), startIndex + i);
    clear ();
 }
 
@@ -229,8 +228,8 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       TypedPointer <Textblock> *key = it.getNext ();
       TBInfo *tbInfo = tbInfos->get (key);
 
-      tbInfo->leftFloatsGB->moveTo (leftFloatsCB);
-      tbInfo->rightFloatsGB->moveTo (rightFloatsCB);
+      tbInfo->leftFloatsGB->moveTo (leftFloatsCB, tbInfo->startCBLeft);
+      tbInfo->rightFloatsGB->moveTo (rightFloatsCB, tbInfo->startCBRight);
    }
 
    // 2. Floats have to be allocated
@@ -448,11 +447,13 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
          widget->parentRef = createRefLeftFloat (leftFloatsAll->size() - 1);
 
          if (wasAllocated (generatingBlock)) {
-            leftFloatsCB->insert (vloat);
+            leftFloatsCB->put (vloat);
             //printf ("[%p] adding float %p to CB list\n",
             //        containingBlock, vloat);
          } else {
-            tbInfo->leftFloatsGB->insert (vloat);
+            if (tbInfo->leftFloatsGB->size() == 0)
+               tbInfo->startCBLeft = leftFloatsCB->size();
+            tbInfo->leftFloatsGB->put (vloat);
             //printf ("[%p] adding float %p to GB list\n",
             //        containingBlock, vloat);
          }
@@ -463,11 +464,13 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
          widget->parentRef = createRefRightFloat (rightFloatsAll->size() - 1);
 
          if (wasAllocated (generatingBlock)) {
-            rightFloatsCB->insert (vloat);
+            rightFloatsCB->put (vloat);
             //printf ("[%p] adding float %p to CB list\n",
             //        containingBlock, vloat);
          } else {
-            tbInfo->rightFloatsGB->insert (vloat);
+            if (tbInfo->rightFloatsGB->size() == 0)
+               tbInfo->startCBRight = rightFloatsCB->size();
+            tbInfo->rightFloatsGB->put (vloat);
             //printf ("[%p] adding float %p to GB list\n",
             //        containingBlock, vloat);
          }
