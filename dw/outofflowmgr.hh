@@ -33,8 +33,8 @@ private:
    public:
       core::Widget *widget;
       Textblock *generatingBlock;
-      bool positioned;
       int yReq, yReal; // relative to generator, not container
+      int index;
       core::Requisition size;
       bool dirty;
 
@@ -77,7 +77,8 @@ private:
       int find (Textblock *textblock, int y);
       int findFirst (Textblock *textblock, int y, int h);
       inline void put (Float *vloat)
-      { lout::container::typed::Vector<Float>::put (vloat); }
+      { lout::container::typed::Vector<Float>::put (vloat);
+        vloat->index = size() - 1; }
       inline void change (Float *vloat) { }
       void moveTo (SortedFloatsVector *dest, int startIndex);
 
@@ -155,7 +156,7 @@ private:
    core::Widget *getWidgetAtPoint (SortedFloatsVector *list, int x, int y,
                                    int level);
    void tellPositionOrNot (core::Widget *widget, int yReq, bool positioned);
-   void checkCoverage (Float *vloat, bool oldPositioned, int oldY);
+   void checkCoverage (Float *vloat, int oldY);
 
    void getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
                         SortedFloatsVector **listOpp);
@@ -168,7 +169,6 @@ private:
    bool hasFloat (Textblock *textblock, Side side, int y, int h);
 
    void ensureFloatSize (Float *vloat);
-   bool getYWidget (Textblock *textblock, Float *vloat, int *yWidget);
    int getBorderDiff (Textblock *textblock, Float *vloat, Side side);
 
 

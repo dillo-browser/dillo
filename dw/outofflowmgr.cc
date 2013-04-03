@@ -38,15 +38,13 @@ OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
    this->widget = widget;
    this->generatingBlock = generatingBlock;
 
-   positioned = false;
-   positioned = false;
    yReq = yReal = size.width = size.ascent = size.descent = 0;
    dirty = true;
 }
 
 void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
 {
-   sb->append (positioned ? "{+ widget = " : "{- widget = ");
+   sb->append ("{ widget = ");
    sb->appendPointer (widget);
    
    if (widget) {
@@ -57,8 +55,6 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
 
    sb->append (", generatingBlock = ");
    sb->appendPointer (generatingBlock);
-   sb->append (", positioned = ");
-   sb->appendBool (positioned);
    sb->append (", yReq = ");
    sb->appendInt (yReq);
    sb->append (", yReal = ");
@@ -71,26 +67,19 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->appendInt (size.descent);
    sb->append (" }, dirty = ");
    sb->appendBool (dirty);
-   sb->append (positioned ? " +}" : " -}");
+   sb->append (" }");
 }
 
 int OutOfFlowMgr::Float::compareTo(Comparable *other)
 {
    Float *otherFloat = (Float*)other;
 
-   if (positioned && otherFloat->positioned) {
-      if (oofm->wasAllocated (generatingBlock)) {
-         assert (oofm->wasAllocated (otherFloat->generatingBlock));
-         return yForContainer() - otherFloat->yForContainer();
-      } else {
-         assert (generatingBlock == otherFloat->generatingBlock);
-         return yReal - otherFloat->yReal;
-      }
+   if (oofm->wasAllocated (generatingBlock)) {
+      assert (oofm->wasAllocated (otherFloat->generatingBlock));
+      return yForContainer() - otherFloat->yForContainer();
    } else {
-      if (positioned)
-         return 1; // !otherFloat->positioned can be assumed.
-      else // !positioned
-         return otherFloat->positioned ? -1 : 0;
+      assert (generatingBlock == otherFloat->generatingBlock);
+      return yReal - otherFloat->yReal;
    }
 }
 
@@ -115,24 +104,21 @@ int OutOfFlowMgr::Float::yForContainer (int y)
 
 bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
 {
-   if (positioned) {
-      int reqy, fly; // either widget or canvas coordinates
-      if (oofm->wasAllocated (generatingBlock)) {
-         assert (oofm->wasAllocated (textblock));
-         reqy = oofm->getAllocation(textblock)->y + y;
-         fly = oofm->getAllocation(generatingBlock)->y + yReal;
-      } else {
-         assert (textblock == generatingBlock);
-         reqy = y;
-         fly = yReal;
-      }
-
-      oofm->ensureFloatSize (this);
-      int flh = dirty ? 0 : size.ascent + size.descent;
-
-      return fly + flh > reqy && fly < reqy + h;
-   } else
-      return false;
+   int reqy, fly; // either widget or canvas coordinates
+   if (oofm->wasAllocated (generatingBlock)) {
+      assert (oofm->wasAllocated (textblock));
+      reqy = oofm->getAllocation(textblock)->y + y;
+      fly = oofm->getAllocation(generatingBlock)->y + yReal;
+   } else {
+      assert (textblock == generatingBlock);
+      reqy = y;
+      fly = yReal;
+   }
+   
+   oofm->ensureFloatSize (this);
+   int flh = dirty ? 0 : size.ascent + size.descent;
+   
+   return fly + flh > reqy && fly < reqy + h;
 }
 
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y)
@@ -161,6 +147,8 @@ void OutOfFlowMgr::SortedFloatsVector::moveTo (SortedFloatsVector *dest,
 {
    for (int i = 0; i < size (); i++)
       dest->insert (get (i), startIndex + i);
+   for (int i = startIndex; i < dest->size(); i++)
+      dest->get(i)->index = i;
    clear ();
 }
 
@@ -339,7 +327,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
 
       assert (wasAllocated (v->generatingBlock));
 
-      if (tb != v->generatingBlock && v->positioned) {
+      if (tb != v->generatingBlock) {
          int flh = v->dirty ? 0 : v->size.ascent + v->size.descent;
          int y1 = getAllocation(v->generatingBlock)->y + v->yReal;
          int y2 = y1 + flh;
@@ -371,7 +359,6 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side)
       // and queue resize, when neccessary. TODO: See step 2?
 
       Float *vloat = list->get(i);
-      assert (vloat->positioned);
       ensureFloatSize (vloat);
 
       Allocation *gbAllocation = getAllocation(vloat->generatingBlock);
@@ -420,8 +407,6 @@ void OutOfFlowMgr::draw (SortedFloatsVector *list, View *view, Rectangle *area)
    // found below the area.
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
-      assert (vloat->positioned);
-
       core::Rectangle childArea;
       if (vloat->widget->intersects (area, &childArea))
          vloat->widget->draw (view, &childArea);
@@ -512,10 +497,9 @@ void OutOfFlowMgr::markSizeChange (int ref)
       }
       
       vloat->dirty = true;
-      // In some cases, the vertical position is not yet defined. Nothing
-      // necessary then.
-      if (vloat->positioned)
-         vloat->generatingBlock->borderChanged (vloat->yReal, vloat->widget);
+      // TODO May cause problems (endless resizing?) when float has no
+      // defined position.
+      vloat->generatingBlock->borderChanged (vloat->yReal, vloat->widget);
    } else
       // later: absolute positions
       assertNotReached();
@@ -574,8 +558,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int yReq, bool positioned)
    //        containingBlock, widget, y, positioned ? "true" : "false");
    //printf ("   vloat: %s\n", vloat->toString());      
 
-   if ((!positioned && !vloat->positioned) ||
-       (positioned && vloat->positioned && yReq == vloat->yReq))
+   if (yReq == vloat->yReq)
       // Nothing changed.
       return;
 
@@ -585,54 +568,34 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int yReq, bool positioned)
    if (positioned)
       ensureFloatSize (vloat);
    int oldY = vloat->yReal;
-   bool oldPositioned = vloat->positioned;
 
    // "yReal" may change due to collisions (see below).
    int yReal = yReq;
 
-   if (positioned) {
-      // Test collisions (on both sides).
+   // Test collisions (on both sides).
+   if (vloat->index >= 1) {
+      Float *last = listSame->get (vloat->index - 1);
+      ensureFloatSize (last);
+      int lastH = last->size.ascent + last->size.descent;
 
-      // It is assumed that there are no floats below this float
-      // within this generator. For this reason, (i) search is simple
-      // (candidate is at the end of the list), and (ii) no other
-      // floats have to be adjusted.
+      if (wasAllocated (last->generatingBlock)) {
+         assert (wasAllocated (vloat->generatingBlock));
 
-      if (listSame->size() > 1) {
-         Float *last = listSame->get (listSame->size () - 1);
-         if (last == vloat)
-            // TODO This float should be not positioned, so never at
-            // the end.  Clarify. (Perhaps, "assert (!vloat->positioned)"
-            // could be added.)
-            last = listSame->get (listSame->size () - 2);
+         if (getAllocation(vloat->generatingBlock)->y + yReal <
+             getAllocation(last->generatingBlock)->y + last->yReal + lastH)
+            yReal =
+               getAllocation(last->generatingBlock)->y + last->yReal
+               + lastH - getAllocation(vloat->generatingBlock)->y;
+      } else {
+         assert (vloat->generatingBlock == last->generatingBlock);
          
-         // Notice that this float is always below the last of the list.
-         if (last->positioned) {
-            ensureFloatSize (last);
-            int lastH = last->size.ascent + last->size.descent;
-
-            if (wasAllocated (last->generatingBlock)) {
-               assert (wasAllocated (vloat->generatingBlock));
-
-               if (getAllocation(vloat->generatingBlock)->y + yReal <
-                   getAllocation(last->generatingBlock)->y + last->yReal
-                   + lastH)
-                  yReal =
-                     getAllocation(last->generatingBlock)->y + last->yReal
-                     + lastH - getAllocation(vloat->generatingBlock)->y;
-            } else {
-               assert (vloat->generatingBlock == last->generatingBlock);
-
-               if (yReal < last->yReal + lastH)
-                  yReal = last->yReal + lastH;
-            }
-         }
+         if (yReal < last->yReal + lastH)
+            yReal = last->yReal + lastH;
       }
    }
 
    vloat->yReq = yReq;
    vloat->yReal = yReal;
-   vloat->positioned = positioned;
    listSame->change (vloat);
 
 #if 0
@@ -687,32 +650,14 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int yReq, bool positioned)
 
    // TODO listSame->change (vloat);
 
-   checkCoverage (vloat, oldPositioned, oldY);
+   checkCoverage (vloat, oldY);
 }
 
-void OutOfFlowMgr::checkCoverage (Float *vloat, bool oldPositioned, int oldY)
+void OutOfFlowMgr::checkCoverage (Float *vloat, int oldY)
 {
    // Only this float has been changed (see tellPositionOrNot), so
    // only this float has to be tested against all textblocks.
-   if (wasAllocated (vloat->generatingBlock) &&
-       // A change from "no position" to "no position" is uninteresting.
-       !(oldPositioned && !vloat->positioned)) {
-      int yChange;
-
-      if (!vloat->positioned) {
-         // position -> no position
-         assert (oldPositioned);
-         yChange = oldY;
-      } else if (!oldPositioned) {
-         // no position -> position
-         assert (vloat->positioned);
-         yChange = vloat->yReal;
-      } else {
-         // position -> position
-         assert (oldPositioned && vloat->positioned);
-         yChange = min (oldY, vloat->yReal);
-      }
-      
+   if (wasAllocated (vloat->generatingBlock)) {
       // TODO This (and similar code) is not very efficient.
       for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
               tbInfos->iterator ();
@@ -720,37 +665,22 @@ void OutOfFlowMgr::checkCoverage (Float *vloat, bool oldPositioned, int oldY)
          TypedPointer <Textblock> *key = it.getNext ();
          Textblock *textblock = key->getTypedValue();
 
-         if (wasAllocated (textblock) &&
-             // If not positioned, there will be soon a rewrap (see
-             // Textblock::rewrap), or, if positioned , the generating
-             // block takes care of the possible change (see
-             // Textblock::wrapWidgetOofRef), respectively; so, only
-             // the other textblocks must be told about this.
-             textblock != vloat->generatingBlock) {
-            int tby1 = getAllocation(textblock)->y;
-            int tby2 = tby1 + getAllocation(textblock)->ascent
-               + getAllocation(textblock)->descent;
-            int flh = 
+         if (textblock != vloat->generatingBlock && wasAllocated (textblock)) {
+            Allocation *tba = getAllocation (textblock);
+            Allocation *gba = getAllocation (vloat->generatingBlock);
+            int tby1 = tba->y;
+            int tby2 = tba->y + tba->ascent + tba->descent;
+
+            int flh =
                vloat->dirty ? 0 : vloat->size.ascent + vloat->size.descent;
-            bool covered = false;
+            int y1old = gba->y + oldY, y2old = y1old + flh;
+            int y1new = gba->y + vloat->yReal, y2new = y1new + flh;
 
-            if (oldPositioned) {
-               int y1 = getAllocation(vloat->generatingBlock)->y + oldY;
-               int y2 = y1 + flh;
-               covered = y2 > tby1 && y1 < tby2;
-            }
-
-            if (!covered && vloat->positioned) {
-               int y1 =
-                  getAllocation(vloat->generatingBlock)->y + vloat->yReal;
-               int y2 = y1 + flh;
-               covered = y2 > tby1 && y1 < tby2;
-            }
+            bool covered =
+               (y2old > tby1 && y1old < tby2) || (y2new > tby1 && y1new < tby2);
 
             if (covered) {
-               int yTextblock =
-                  getAllocation(vloat->generatingBlock)->y + yChange
-                  - getAllocation(textblock)->y;
+               int yTextblock = gba->y + min (oldY, vloat->yReal) - tba->y;
                textblock->borderChanged (yTextblock, vloat->widget);
             }
          }
@@ -817,46 +747,45 @@ int OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list)
    // should be the relevant one, since the list is sorted.
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
-      if (vloat->positioned) {
-         ensureFloatSize (vloat);
+      ensureFloatSize (vloat);
 
-         // Notice that all positions are relative to the generating
-         // block, but we need them relative to the containing block.
+      // Notice that all positions are relative to the generating
+      // block, but we need them relative to the containing block.
 
-         // Position of generating block, relative to containing
-         // block. Greater or equal than 0, so dealing with 0 when it
-         // cannot yet be calculated is safe. (No distiction whether
-         // it is defined or not is necessary.)
-         int yGBinCB;
+      // Position of generating block, relative to containing
+      // block. Greater or equal than 0, so dealing with 0 when it
+      // cannot yet be calculated is safe. (No distiction whether it
+      // is defined or not is necessary.)
 
-         if (vloat->generatingBlock == containingBlock)
-            // Simplest case: the generator is the container.
-            yGBinCB = 0;
-         else {
-            if (wasAllocated (containingBlock)) {
-               if (wasAllocated (vloat->generatingBlock))
-                  // Simple case: both containing block and generating
-                  // block are defined.
-                  yGBinCB = getAllocation(vloat->generatingBlock)->y
-                     - containingBlock->getAllocation()->y;
-               else
-                  // Generating block not yet allocation; the next
-                  // allocation will, when necessary, trigger
-                  // sizeRequest. (TODO: Is this really the case?)
-                  yGBinCB = 0;
-            } else
-               // Nothing can be done now, but the next allocation
-               // will trigger sizeAllocate. (TODO: Is this really the
-               // case?)
+      int yGBinCB;
+
+      if (vloat->generatingBlock == containingBlock)
+         // Simplest case: the generator is the container.
+         yGBinCB = 0;
+      else {
+         if (wasAllocated (containingBlock)) {
+            if (wasAllocated (vloat->generatingBlock))
+               // Simple case: both containing block and generating
+               // block are defined.
+               yGBinCB = getAllocation(vloat->generatingBlock)->y
+                  - containingBlock->getAllocation()->y;
+            else
+               // Generating block not yet allocation; the next
+               // allocation will, when necessary, trigger
+               // sizeRequest. (TODO: Is this really the case?)
                yGBinCB = 0;
-         }
-
-         height =
-            max (height,
-                 yGBinCB + vloat->yReal
-                 + vloat->size.ascent + vloat->size.descent
-                 + containingBlock->getStyle()->boxRestHeight());
+         } else
+            // Nothing can be done now, but the next allocation
+            // will trigger sizeAllocate. (TODO: Is this really the
+            // case?)
+            yGBinCB = 0;
       }
+      
+      height =
+         max (height,
+              yGBinCB + vloat->yReal
+              + vloat->size.ascent + vloat->size.descent
+              + containingBlock->getStyle()->boxRestHeight());
    }
 
    return height;
@@ -1003,6 +932,9 @@ bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h)
 
 bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h)
 {
+   assertNotReached ();
+
+#if 0
    // Compare to getBorder(). Actually much copy and paste.
 
    TBInfo *tbInfo = registerCaller (textblock);
@@ -1034,6 +966,7 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h)
 
    //printf ("[%p] no float on %s side (%d, %d)\n",
    //        textblock, right ? "right" : "left", y, h);
+#endif
 
    return false;
 }
@@ -1098,30 +1031,6 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 }
 
 /**
- * Returns true, when position can be determined; in this case, the
- * position is tored in *yWidget.
- */
-bool OutOfFlowMgr::getYWidget (Textblock *textblock, Float *vloat, int *yWidget)
-{
-   if (!vloat->positioned)
-      return false;
-   else if (textblock == vloat->generatingBlock) {
-      *yWidget = vloat->yReal;
-      return true;
-   } else {
-      if (wasAllocated (textblock) && wasAllocated (vloat->generatingBlock)) {
-         *yWidget = vloat->yReal + getAllocation(vloat->generatingBlock)->y
-            - getAllocation(textblock)->y;
-         return true;
-      } else {
-         // Should not happen, when the correct list is choosen.
-         assertNotReached ();
-         return false;
-      }
-   }
-}
-
-/**
  * Return the between generator and calling textblock. (TODO Exact
  * definition. See getBorder(), where it is used.)
  *
@@ -1129,8 +1038,6 @@ bool OutOfFlowMgr::getYWidget (Textblock *textblock, Float *vloat, int *yWidget)
  */
 int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, Side side)
 {
-   assert (vloat->positioned);
-
    if (textblock == vloat->generatingBlock)
       return 0;
    else {
