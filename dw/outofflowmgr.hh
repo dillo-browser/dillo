@@ -80,7 +80,7 @@ private:
       { lout::container::typed::Vector<Float>::put (vloat);
         vloat->index = size() - 1; }
       inline void change (Float *vloat) { }
-      void moveTo (SortedFloatsVector *dest, int startIndex);
+      void moveTo (SortedFloatsVector *dest);
 
       inline lout::container::typed::Iterator<Float> iterator()
       { return lout::container::typed::Vector<Float>::iterator (); }
@@ -101,11 +101,6 @@ private:
       // as long as this textblock is not allocates.
       SortedFloatsVector *leftFloatsGB, *rightFloatsGB;
 
-      // These values store the lenght of the respective CB lists,
-      // when the first float is added to the GB list. Later, the
-      // floats are inserted here in the CB list.
-      int startCBLeft, startCBRight;
-
       TBInfo (OutOfFlowMgr *oofm);
       ~TBInfo ();
    };
@@ -120,8 +115,10 @@ private:
 
    lout::container::typed::HashTable<lout::object::TypedPointer
                                      <dw::core::Widget>, Float> *floatsByWidget;
+
+   lout::container::typed::List<TBInfo> *tbInfos;
    lout::container::typed::HashTable<lout::object::TypedPointer <Textblock>,
-                                     TBInfo> *tbInfos;
+                                     TBInfo> *tbInfosByTextblock;
 
    /**
     * Variant of Widget::wasAllocated(), which can also be used within

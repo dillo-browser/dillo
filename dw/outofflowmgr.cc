@@ -53,6 +53,8 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
       sb->append (")");
    }
 
+   sb->append (", index = ");
+   sb->appendInt (index);
    sb->append (", generatingBlock = ");
    sb->appendPointer (generatingBlock);
    sb->append (", yReq = ");
@@ -142,13 +144,20 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
       return -1;
 }
 
-void OutOfFlowMgr::SortedFloatsVector::moveTo (SortedFloatsVector *dest,
-                                               int startIndex)
+void OutOfFlowMgr::SortedFloatsVector::moveTo (SortedFloatsVector *dest)
 {
-   for (int i = 0; i < size (); i++)
-      dest->insert (get (i), startIndex + i);
-   for (int i = startIndex; i < dest->size(); i++)
-      dest->get(i)->index = i;
+   for (int i = 0; i < size (); i++) {
+      Float *vloat = get (i);
+      dest->put (vloat);
+      vloat->index = dest->size() - 1;
+      //printf ("[%p] moving float %p (%s %p) to CB list\n",
+      //        oofm->containingBlock, vloat, vloat->widget->getClassName(),
+      //        vloat->widget);
+   }
+
+   //for (int i = 0; i < dest->size(); i++)
+   //   printf ("   %d: %s\n", i, dest->get(i)->toString());
+
    clear ();
 }
 
@@ -177,7 +186,10 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    rightFloatsAll = new Vector<Float> (1, true);
 
    floatsByWidget = new HashTable <TypedPointer <Widget>, Float> (true, false);
-   tbInfos = new HashTable <TypedPointer <Textblock>, TBInfo> (true, true);
+
+   tbInfos = new List <TBInfo> (false);
+   tbInfosByTextblock =
+      new HashTable <TypedPointer <Textblock>, TBInfo> (true, true);
 
    containingBlockWasAllocated = containingBlock->wasAllocated ();
    if (containingBlockWasAllocated)
@@ -191,7 +203,11 @@ OutOfFlowMgr::~OutOfFlowMgr ()
    delete leftFloatsCB;
    delete rightFloatsCB;
 
+   // Order is important: tbInfosByTextblock is owner of the instances
+   // of TBInfo.tbInfosByTextblock
    delete tbInfos;
+   delete tbInfosByTextblock;
+
    delete floatsByWidget;
 
    // Order is important, since the instances of Float are owned by
@@ -209,15 +225,13 @@ void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
 
 void OutOfFlowMgr::sizeAllocateEnd ()
 {
-   // 1. ...  
-   for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-           tbInfos->iterator ();
+   // 1. Move floats from GB lists to the one CB list. TODO: Order is
+   //    still not fully correct.
+   for (lout::container::typed::Iterator<TBInfo> it = tbInfos->iterator ();
         it.hasNext (); ) {
-      TypedPointer <Textblock> *key = it.getNext ();
-      TBInfo *tbInfo = tbInfos->get (key);
-
-      tbInfo->leftFloatsGB->moveTo (leftFloatsCB, tbInfo->startCBLeft);
-      tbInfo->rightFloatsGB->moveTo (rightFloatsCB, tbInfo->startCBRight);
+      TBInfo *tbInfo = it.getNext ();
+      tbInfo->leftFloatsGB->moveTo (leftFloatsCB);
+      tbInfo->rightFloatsGB->moveTo (rightFloatsCB);
    }
 
    // 2. Floats have to be allocated
@@ -227,10 +241,10 @@ void OutOfFlowMgr::sizeAllocateEnd ()
    // 3. Textblocks have already been allocated, but we store some
    // information for later use. TODO: Update this comment!
    for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-           tbInfos->iterator ();
+           tbInfosByTextblock->iterator ();
         it.hasNext (); ) {
       TypedPointer <Textblock> *key = it.getNext ();
-      TBInfo *tbInfo = tbInfos->get (key);
+      TBInfo *tbInfo = tbInfosByTextblock->get (key);
       Textblock *tb = key->getTypedValue();
 
       Allocation *tbAllocation = getAllocation (tb);
@@ -433,14 +447,12 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
 
          if (wasAllocated (generatingBlock)) {
             leftFloatsCB->put (vloat);
-            //printf ("[%p] adding float %p to CB list\n",
-            //        containingBlock, vloat);
+            //printf ("[%p] adding float %p (%s %p) to CB list\n",
+            //        containingBlock, vloat, widget->getClassName(), widget);
          } else {
-            if (tbInfo->leftFloatsGB->size() == 0)
-               tbInfo->startCBLeft = leftFloatsCB->size();
             tbInfo->leftFloatsGB->put (vloat);
-            //printf ("[%p] adding float %p to GB list\n",
-            //        containingBlock, vloat);
+            //printf ("[%p] adding float %p (%s %p) to GB list\n",
+            //        containingBlock, vloat, widget->getClassName(), widget);
          }
          break;
 
@@ -450,14 +462,12 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
 
          if (wasAllocated (generatingBlock)) {
             rightFloatsCB->put (vloat);
-            //printf ("[%p] adding float %p to CB list\n",
-            //        containingBlock, vloat);
+            //printf ("[%p] adding float %p (%s %p) to CB list\n",
+            //        containingBlock, vloat, widget->getClassName(), widget);
          } else {
-            if (tbInfo->rightFloatsGB->size() == 0)
-               tbInfo->startCBRight = rightFloatsCB->size();
             tbInfo->rightFloatsGB->put (vloat);
-            //printf ("[%p] adding float %p to GB list\n",
-            //        containingBlock, vloat);
+            //printf ("[%p] adding float %p (%s %p) to GB list\n",
+            //        containingBlock, vloat, widget->getClassName(), widget);
          }
 
          break;
@@ -555,7 +565,7 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int yReq, bool positioned)
    Float *vloat = findFloatByWidget(widget);
 
    //printf ("[%p] TELL_POSITION_OR_NOT (%p, %d, %s)\n",
-   //        containingBlock, widget, y, positioned ? "true" : "false");
+   //        containingBlock, widget, yReq, positioned ? "true" : "false");
    //printf ("   vloat: %s\n", vloat->toString());      
 
    if (yReq == vloat->yReq)
@@ -593,6 +603,8 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int yReq, bool positioned)
             yReal = last->yReal + lastH;
       }
    }
+
+   //printf ("   => yReal = %d\n", yReal);
 
    vloat->yReq = yReq;
    vloat->yReal = yReal;
@@ -648,8 +660,6 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int yReq, bool positioned)
    }
 #endif
 
-   // TODO listSame->change (vloat);
-
    checkCoverage (vloat, oldY);
 }
 
@@ -660,8 +670,7 @@ void OutOfFlowMgr::checkCoverage (Float *vloat, int oldY)
    if (wasAllocated (vloat->generatingBlock)) {
       // TODO This (and similar code) is not very efficient.
       for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-              tbInfos->iterator ();
-           it.hasNext (); ) {
+              tbInfosByTextblock->iterator (); it.hasNext (); ) {
          TypedPointer <Textblock> *key = it.getNext ();
          Textblock *textblock = key->getTypedValue();
 
@@ -845,11 +854,12 @@ void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
 OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerCaller (Textblock *textblock)
 {
    TypedPointer<Textblock> key (textblock);
-   TBInfo *tbInfo = tbInfos->get (&key);
+   TBInfo *tbInfo = tbInfosByTextblock->get (&key);
    if (tbInfo == NULL) {
       tbInfo = new TBInfo (this);
       tbInfo->wasAllocated = false;
-      tbInfos->put (new TypedPointer<Textblock> (textblock), tbInfo);
+      tbInfos->append (tbInfo);
+      tbInfosByTextblock->put (new TypedPointer<Textblock> (textblock), tbInfo);
    }
 
    return tbInfo;
