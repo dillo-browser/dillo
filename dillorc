@@ -253,6 +253,48 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #ui_tab_bg_color=(by default, the main background color)
 #ui_tab_fg_color=(by default, the main foreground color)
 
+
+# Note to packagers: leaving these variables for the system to guess
+# gives different results in different environments, so we played it safe
+# by defining the traditional colors.  Please choose the color theme that
+# better fits your distro.
+
+#
+# Gray theme (traditional)
+#
+ui_fg_color=black
+ui_main_bg_color=#c6c6c6
+ui_text_bg_color=bfdabf
+ui_selection_color=#191970
+ui_button_highlight_color=#a9a9a9
+ui_tab_active_bg_color=#87aca7
+ui_tab_active_fg_color=black
+ui_tab_bg_color=#b7beb7
+
+#
+# Earthly theme:
+#
+#ui_fg_color=#100404
+#ui_main_bg_color=#c2a47b
+#ui_text_bg_color=#cdc9a5
+#ui_selection_color=#763024
+#ui_tab_active_bg_color=#af4b3f
+#ui_tab_active_fg_color=white
+#ui_tab_bg_color=#d2b48c
+
+#
+# Greenish theme:
+#
+#ui_fg_color=#100404
+#ui_main_bg_color=#c8d394
+#ui_text_bg_color=#bdd8b6
+#ui_selection_color=#7c5f42
+#ui_button_highlight_color=#adad70
+#ui_tab_active_bg_color=#b5b679
+#ui_tab_active_fg_color=#b60907
+#ui_tab_bg_color=#cac682
+
+
 # Size of dillo panel
 # tiny   : buttons, location, and progress boxes in one row
 # small  : location in one row, buttons + progress boxes in another
