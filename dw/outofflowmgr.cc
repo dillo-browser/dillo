@@ -144,23 +144,6 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
       return -1;
 }
 
-void OutOfFlowMgr::SortedFloatsVector::moveTo (SortedFloatsVector *dest)
-{
-   for (int i = 0; i < size (); i++) {
-      Float *vloat = get (i);
-      dest->put (vloat);
-      vloat->index = dest->size() - 1;
-      //printf ("[%p] moving float %p (%s %p) to CB list\n",
-      //        oofm->containingBlock, vloat, vloat->widget->getClassName(),
-      //        vloat->widget);
-   }
-
-   //for (int i = 0; i < dest->size(); i++)
-   //   printf ("   %d: %s\n", i, dest->get(i)->toString());
-
-   clear ();
-}
-
 OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm)
 {
    leftFloatsGB = new SortedFloatsVector (oofm);
@@ -190,6 +173,9 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    tbInfos = new List <TBInfo> (false);
    tbInfosByTextblock =
       new HashTable <TypedPointer <Textblock>, TBInfo> (true, true);
+
+   leftFloatsMark = rightFloatsMark = 0;
+   lastLeftTBIndex = lastRightTBIndex = 0;
 
    containingBlockWasAllocated = containingBlock->wasAllocated ();
    if (containingBlockWasAllocated)
@@ -225,15 +211,14 @@ void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
 
 void OutOfFlowMgr::sizeAllocateEnd ()
 {
-   // 1. Move floats from GB lists to the one CB list. TODO: Order is
-   //    still not fully correct.
-   for (lout::container::typed::Iterator<TBInfo> it = tbInfos->iterator ();
-        it.hasNext (); ) {
-      TBInfo *tbInfo = it.getNext ();
-      tbInfo->leftFloatsGB->moveTo (leftFloatsCB);
-      tbInfo->rightFloatsGB->moveTo (rightFloatsCB);
-   }
+   //printf ("[%p] SIZE_ALLOCATE_END: leftFloatsMark = %d, "
+   //        "rightFloatsMark = %d\n",
+   //        containingBlock, leftFloatsMark, rightFloatsMark);
 
+   // 1. Move floats from GB lists to the one CB list.
+   moveFromGBToCB (LEFT);
+   moveFromGBToCB (RIGHT);
+      
    // 2. Floats have to be allocated
    sizeAllocateFloats (LEFT);
    sizeAllocateFloats (RIGHT);
@@ -364,6 +349,41 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
    return covered;
 }
 
+void OutOfFlowMgr::moveFromGBToCB (Side side)
+{
+   SortedFloatsVector *dest = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   int *floatsMark = side == LEFT ? &leftFloatsMark : &rightFloatsMark;
+
+   for (int mark = 0; mark <= *floatsMark; mark++)
+      for (lout::container::typed::Iterator<TBInfo> it = tbInfos->iterator ();
+           it.hasNext (); ) {
+         TBInfo *tbInfo = it.getNext ();
+         SortedFloatsVector *src =
+            side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
+         for (int i = 0; i < src->size (); i++) {
+            Float *vloat = src->get(i);
+            if (vloat->mark == mark) {
+               dest->put (vloat);
+               vloat->index = dest->size() - 1;
+               //printf("[%p] moving %s float %p (%s %p, mark %d) to CB list\n",
+               //       containingBlock, side == LEFT ? "left" : "right",
+               //       vloat, vloat->widget->getClassName(), vloat->widget,
+               //       vloat->mark);
+            }
+         }
+      }
+
+   *floatsMark = 0;
+
+   for (lout::container::typed::Iterator<TBInfo> it = tbInfos->iterator ();
+        it.hasNext (); ) {
+      TBInfo *tbInfo = it.getNext ();
+      SortedFloatsVector *src =
+         side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
+      src->clear ();
+   }
+}
+
 void OutOfFlowMgr::sizeAllocateFloats (Side side)
 {
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
@@ -447,12 +467,20 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
 
          if (wasAllocated (generatingBlock)) {
             leftFloatsCB->put (vloat);
-            //printf ("[%p] adding float %p (%s %p) to CB list\n",
+            //printf ("[%p] adding left float %p (%s %p) to CB list\n",
             //        containingBlock, vloat, widget->getClassName(), widget);
          } else {
+            if (tbInfo->index < lastLeftTBIndex)
+               leftFloatsMark++;
+
             tbInfo->leftFloatsGB->put (vloat);
-            //printf ("[%p] adding float %p (%s %p) to GB list\n",
-            //        containingBlock, vloat, widget->getClassName(), widget);
+            vloat->mark = leftFloatsMark;
+            //printf ("[%p] adding left float %p (%s %p, mark %d) to GB list "
+            //        "(index %d, last = %d)\n",
+            //        containingBlock, vloat, widget->getClassName(), widget,
+            //        vloat->mark, tbInfo->index, lastLeftTBIndex);
+
+            lastLeftTBIndex = tbInfo->index;
          }
          break;
 
@@ -462,12 +490,20 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
 
          if (wasAllocated (generatingBlock)) {
             rightFloatsCB->put (vloat);
-            //printf ("[%p] adding float %p (%s %p) to CB list\n",
+            //printf ("[%p] adding right float %p (%s %p) to CB list\n",
             //        containingBlock, vloat, widget->getClassName(), widget);
          } else {
+            if (tbInfo->index < lastRightTBIndex)
+               rightFloatsMark++;
+
             tbInfo->rightFloatsGB->put (vloat);
-            //printf ("[%p] adding float %p (%s %p) to GB list\n",
-            //        containingBlock, vloat, widget->getClassName(), widget);
+            vloat->mark = rightFloatsMark;
+            //printf ("[%p] adding right float %p (%s %p, mark %d) to GB list "
+            //        "(index %d, last = %d)\n",
+            //        containingBlock, vloat, widget->getClassName(), widget,
+            //        vloat->mark, tbInfo->index, lastRightTBIndex);
+
+            lastRightTBIndex = tbInfo->index;
          }
 
          break;
@@ -858,6 +894,8 @@ OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerCaller (Textblock *textblock)
    if (tbInfo == NULL) {
       tbInfo = new TBInfo (this);
       tbInfo->wasAllocated = false;
+      tbInfo->index = tbInfos->size();
+
       tbInfos->append (tbInfo);
       tbInfosByTextblock->put (new TypedPointer<Textblock> (textblock), tbInfo);
    }
