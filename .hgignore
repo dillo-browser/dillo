@@ -21,6 +21,7 @@
 ^dpid/dpid$
 ^dpid/dpidc$
 ^dpid/dpidrc$
+^test/containers$
 ^test/cookies$
 ^test/dw-anchors-test$
 ^test/dw-border-test$
