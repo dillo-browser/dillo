@@ -2333,7 +2333,8 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::borderChanged (int y, Widget *vloat)
 {
-   PRINTF ("[%p] Border has changed: %d\n", this, y);
+   PRINTF ("[%p] Border has changed: %d (float %s %p, with generator %p)\n",
+           this, y, vloat->getClassName(), vloat, vloat->getGenerator());
 
    int lineIndex = findLineIndex (y);
    // Nothing to do at all, when lineIndex >= lines->size (),
@@ -2346,16 +2347,38 @@ void Textblock::borderChanged (int y, Widget *vloat)
       else
          wrapLineIndex = lineIndex;
       
-      PRINTF ("[%p] Rewrapping from line %d.\n", this, wrapLineIndex);
+      PRINTF ("[%p] Rewrapping from line %d (of %d).\n",
+              this, wrapLineIndex, lines->size ());
 
       if (vloat->getGenerator() == this) {
          bool found = false;
+         // Sometimes, the respective word is not yet part of a
+         // line. Nothing to do, but because of the assertion below
+         // (and also for performace reasons) this should be
+         // considered.
+         for (int wordIndex =
+                 lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
+              !found && wordIndex <= words->size(); wordIndex++) {
+            Word *word = words->getRef (wordIndex);
+            //printf ("      word %d: ", wordIndex);
+            //printWordShort (word);
+            //printf ("\n");
+            if (word->content.type == core::Content::WIDGET_OOF_REF &&
+                word->content.widget == vloat)
+               found = true;
+         }
+         
+         // Search existing lines.
          for (int lineIndex2 = wrapLineIndex; !found && lineIndex2 >= 0;
               lineIndex2--) {
             Line *line = lines->getRef (lineIndex2);
+            PRINTF ("   searching in line %d\n", lineIndex2);
             for (int wordIndex = line->firstWord;
                  !found && wordIndex <= line->lastWord; wordIndex++) {
                Word *word = words->getRef (wordIndex);
+               //printf ("      word %d: ", wordIndex);
+               //printWordShort (word);
+               //printf ("\n");
                if (word->content.type == core::Content::WIDGET_OOF_REF &&
                    word->content.widget == vloat) {
                   found = true;
