@@ -776,12 +776,19 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    // TODO Is it correct to add padding, border, and margin to the
    // containing block? Check CSS spec.
 
+   //printf ("[%p] GET_SIZE (%d / %d floats)...\n",
+   //        containingBlock, leftFloatsCB->size(), rightFloatsCB->size());
+
    *oofWidth = cbWidth; /* This (or "<=" instead of "=") should be
                            the case for floats. */
 
    int oofHeightLeft = getFloatsSize (leftFloatsCB);
    int oofHeightRight = getFloatsSize (rightFloatsCB);
    *oofHeight = max (oofHeightLeft, oofHeightRight);
+
+   //printf ("   => %d x %d => %d x %d (%d / %d)\n",
+   //        cbWidth, cbHeight, *oofWidth, *oofHeight,
+   //        oofHeightLeft, oofHeightRight);
 }
 
 int OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list)
@@ -828,9 +835,12 @@ int OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list)
       
       height =
          max (height,
-              yGBinCB + vloat->yReal
-              + vloat->size.ascent + vloat->size.descent
+              yGBinCB + vloat->yReal + vloat->size.ascent + vloat->size.descent
               + containingBlock->getStyle()->boxRestHeight());
+      //printf ("   float %d: (%d + %d) + (%d + %d + %d) => %d\n",
+      //        i, yGBinCB, vloat->yReal, vloat->size.ascent,
+      //        vloat->size.descent,
+      //        containingBlock->getStyle()->boxRestHeight(), height);
    }
 
    return height;
