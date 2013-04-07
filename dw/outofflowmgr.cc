@@ -116,11 +116,10 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
       reqy = y;
       fly = yReal;
    }
-   
+
    oofm->ensureFloatSize (this);
-   int flh = dirty ? 0 : size.ascent + size.descent;
    
-   return fly + flh > reqy && fly < reqy + h;
+   return fly + size.ascent + size.descent > reqy && fly < reqy + h;
 }
 
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y)
@@ -533,11 +532,15 @@ void OutOfFlowMgr::markSizeChange (int ref)
    if (isRefFloat (ref)) {
       Float *vloat;
       
-      if (isRefLeftFloat (ref))
-         vloat = leftFloatsAll->get (getFloatIndexFromRef (ref));
-      else if (isRefRightFloat (ref))
-         vloat = rightFloatsAll->get (getFloatIndexFromRef (ref));
-      else {
+      if (isRefLeftFloat (ref)) {
+         int i = getFloatIndexFromRef (ref);
+         vloat = leftFloatsAll->get (i);
+         //printf ("   => left float %d\n", i);
+      } else if (isRefRightFloat (ref)) {
+         int i = getFloatIndexFromRef (ref);
+         vloat = rightFloatsAll->get (i);
+         //printf ("   => right float %d\n", i);
+      } else {
          assertNotReached();
          vloat = NULL; // compiler happiness
       }
@@ -944,6 +947,11 @@ int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h)
 
 int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
 {
+   //printf ("[%p] GET_BORDER (%p (allocated: %s), %s, %d, %d) ...\n",
+   //        containingBlock, textblock,
+   //        wasAllocated (textblock) ? "true" : "false",
+   //        side == LEFT ? "LEFT" : "RIGHT", y, h);
+
    TBInfo *tbInfo = registerCaller (textblock);
 
    SortedFloatsVector *list;
@@ -953,6 +961,17 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
       list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
 
    int first = list->findFirst (textblock, y, h);
+
+   //printf ("[%p] GET_BORDER (...): %d floats, first is %d\n",
+   //        containingBlock, list->size(), first);
+
+   //printf ("   list:\n");
+   //for (int i = 0; i < list->size(); i++)
+   //   printf ("      %d: %s\n           (widget at (%d, %d))\n",
+   //           i, list->get(i)->toString(),
+   //           list->get(i)->widget->getAllocation()->x,
+   //           list->get(i)->widget->getAllocation()->y);
+
    if (first == -1)
       // No float.
       return 0;
@@ -965,12 +984,16 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
       for (int i = first; covers && i < list->size(); i++) {
          Float *vloat = list->get(i);
          covers = vloat->covers (textblock, y, h);
+         //printf ("   float %d: %s; covers? %s.\n",
+         //        i, vloat->toString(), covers ? "yes" : "no");
+
          if (covers) {
             int borderDiff = getBorderDiff (textblock, vloat, side);
             int borderIn = side == LEFT ?
                vloat->generatingBlock->getStyle()->boxOffsetX() :
                vloat->generatingBlock->getStyle()->boxRestWidth();
             border = max (border, vloat->size.width + borderIn + borderDiff);
+            //printf ("   => border = %d\n", border);
          }
       }
 
@@ -1081,8 +1104,9 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       vloat->widget->setWidth (width);
       vloat->widget->sizeRequest (&vloat->size);
       
-      //printf ("   Float %p: %d x (%d + %d)\n", vloat, vloat->size.width,
-      //        vloat->size.ascent, vloat->size.descent);
+      //printf ("   float %p (%s %p): %d x (%d + %d)\n",
+      //        vloat, vloat->widget->getClassName(), vloat->widget,
+      //        vloat->size.width, vloat->size.ascent, vloat->size.descent);
           
       vloat->dirty = false;
    }
