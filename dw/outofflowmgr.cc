@@ -100,7 +100,7 @@ int OutOfFlowMgr::Float::yForTextblock (Textblock *textblock, int y)
 int OutOfFlowMgr::Float::yForContainer (int y)
 {
    assert (oofm->wasAllocated (generatingBlock));
-   return y - oofm->getAllocation(generatingBlock)->y +
+   return y + oofm->getAllocation(generatingBlock)->y -
       oofm->getAllocation(oofm->containingBlock)->y;
 }
 
