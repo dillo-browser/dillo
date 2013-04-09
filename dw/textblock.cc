@@ -2414,23 +2414,24 @@ Textblock *Textblock::getTextblockForLine (int lineNo)
 Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
 {
    if (firstWord < words->size ()) {
-      for (int wordIndex = firstWord; wordIndex <= lastWord;
-           wordIndex++) {
-         Word *word = words->getRef (wordIndex);
+      //printf ("[%p] GET_TEXTBLOCK_FOR_LINE (%d, %d)\n",
+      //        this, firstWord, lastWord);
+
+      // A textblock is always between two line breaks, and so the
+      // first word of the line.
+      Word *word = words->getRef (firstWord);
          
-         if (word->content.type == core::Content::WIDGET_IN_FLOW &&
-             word->content.widget->instanceOf (Textblock::CLASS_ID)) {
-            //printf ("[%p]    (line %d of %d (from %d to %d), word %d) ",
-            //        this, lineNo, lines->size (), firstWord, lastWord,
-            //        wordIndex);
-            //printWordShort (word);
-            //printf ("\n");
-            
-            return (Textblock*)word->content.widget;
-         }
+      if (word->content.type == core::Content::WIDGET_IN_FLOW &&
+          word->content.widget->instanceOf (Textblock::CLASS_ID)) {
+         //printf ("   word %d: ", firstWord);
+         //printWordShort (word);
+         //printf ("\n");
+           
+         return (Textblock*)word->content.widget;
       }
    }
 
+   //printf ("   nothing\n");
    return NULL;
 }
 

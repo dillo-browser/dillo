@@ -1117,6 +1117,9 @@ void Textblock::accumulateWordData (int wordIndex)
 
 int Textblock::calcAvailWidth (int lineIndex)
 {
+   PRINTF ("[%p] CALC_AVAIL_WIDTH (%d of %d) ...\n",
+           this, lineIndex, lines->size());
+
    int availWidth = this->availWidth - innerPadding;
    if (limitTextWidth &&
        layout->getUsesViewport () &&
