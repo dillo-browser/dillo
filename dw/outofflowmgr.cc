@@ -583,24 +583,10 @@ Widget *OutOfFlowMgr::getWidgetAtPoint (SortedFloatsVector *list,
 }
 
 
-/**
- * This method is called by Textblock::rewrap at the beginning, to
- * avoid wrong positions.
- */
-void OutOfFlowMgr::tellNoPosition (Widget *widget)
+void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
 {
-   tellPositionOrNot (widget, 0, false);
-}
+   assert (yReq >= 0);
 
-
-void OutOfFlowMgr::tellPosition (Widget *widget, int y)
-{
-   assert (y >= 0);
-   tellPositionOrNot (widget, y, true);
-}
-
-void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int yReq, bool positioned)
-{
    Float *vloat = findFloatByWidget(widget);
 
    //printf ("[%p] TELL_POSITION_OR_NOT (%p, %d, %s)\n",
@@ -613,9 +599,8 @@ void OutOfFlowMgr::tellPositionOrNot (Widget *widget, int yReq, bool positioned)
 
    SortedFloatsVector *listSame, *listOpp;
    getFloatsLists (vloat, &listSame, &listOpp);
+   ensureFloatSize (vloat);
 
-   if (positioned)
-      ensureFloatSize (vloat);
    int oldY = vloat->yReal;
 
    // "yReal" may change due to collisions (see below).

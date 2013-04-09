@@ -156,7 +156,6 @@ private:
               core::Rectangle *area);
    core::Widget *getWidgetAtPoint (SortedFloatsVector *list, int x, int y,
                                    int level);
-   void tellPositionOrNot (core::Widget *widget, int yReq, bool positioned);
    void checkCoverage (Float *vloat, int oldY);
 
    void getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
@@ -203,8 +202,7 @@ public:
    static bool isWidgetOutOfFlow (core::Widget *widget);
    void addWidget (core::Widget *widget, Textblock *generatingBlock);
 
-   void tellNoPosition (core::Widget *widget);
-   void tellPosition (core::Widget *widget, int y);
+   void tellPosition (core::Widget *widget, int yReq);
 
    void getSize (int cbWidth, int cbHeight, int *oofWidth, int *oofHeight);
    void getExtremes (int cbMinWidth, int cbMaxWidth, int *oofMinWidth,
