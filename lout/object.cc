@@ -107,28 +107,43 @@ size_t Object::sizeOf()
 }
 
 // ----------------
-//    Comparable
+//    Comparator
 // ----------------
+
+Comparator *Comparator::compareFunComparator = NULL;
 
 /**
  * \brief This static method may be used as compare function for
  *    qsort(3) and bsearch(3), for an array of Object* (Object*[] or
  *    Object**).
+ *
+ * "compareFunComparator" should be set before.
+ *
+ * \todo Not reentrant. Consider switching to reentrant variants
+ * (qsort_r), and compare function with an additional argument.
  */
-int Comparable::compareFun(const void *p1, const void *p2)
+int Comparator::compareFun(const void *p1, const void *p2)
 {
-   Comparable *c1 = *(Comparable**)p1;
-   Comparable *c2 = *(Comparable**)p2;
+   return compareFunComparator->compare (*(Object**)p1, *(Object**)p2);
+}
 
-   if (c1 && c2)
-      return ((c1)->compareTo(c2));
-   else if (c1)
+// ------------------------
+//    StandardComparator
+// ------------------------
+
+int StandardComparator::compare(Object *o1, Object *o2)
+{
+   if (o1 && o2)
+      return ((Comparable*)o1)->compareTo ((Comparable*)o2);
+   else if (o1)
       return 1;
-   else if (c2)
+   else if (o2)
       return -1;
    else
       return 0;
 }
+
+StandardComparator standardComparator;
 
 // -------------
 //    Pointer

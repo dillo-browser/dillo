@@ -42,10 +42,11 @@ class Comparable: public Object
 {
 public:
    /**
-    * \brief Compare two objects c1 and c2.
+    * \brief Compare two objects, this and other.
     *
-    * Return a value < 0, when c1 is less than c2, a value > 0, when c1
-    * is greater than c2, or 0, when c1 and c2 are equal.
+    * Return a value < 0, when this is less than other, a value > 0,
+    * when this is greater than other, or 0, when this and other are
+    * equal.
     *
     * If c1.equals(c2) (as defined in Object), c1.compareTo(c2) must
     * be 0, but, unlike you may expect, the reversed is not
@@ -55,9 +56,42 @@ public:
     * care about.
     */
    virtual int compareTo(Comparable *other) = 0;
+};
 
+/**
+ * \brief Used for other orders as the one defined by Comparable.
+ *
+ * Compared objects must not neccessary be instances of Comparable.
+ */
+class Comparator: public Object
+{
+public:
+   /**
+    * \brief Compare two objects o1 and o2.
+    *
+    * Return a value < 0, when o1 is less than o2, a value > 0, when o1
+    * is greater than o2, or 0, when o1 and o2 are equal.
+    *
+    * If o1.equals(o2) (as defined in Object), compare(o1, o2) must be
+    * 0, but, unlike you may expect, the reversed is not necessarily
+    * true. This method returns 0, if, according to the rules for
+    * sorting, there is no difference, but there may still be
+    * differences (not relevant for sorting), which "equals" will care
+    * about.
+    */
+   virtual int compare(Object *o1, Object *o2) = 0;
+
+   static Comparator *compareFunComparator;
    static int compareFun(const void *p1, const void *p2);
 };
+
+class StandardComparator: public Comparator
+{
+public:
+   int compare(Object *o1, Object *o2);
+};
+
+extern StandardComparator standardComparator;
 
 /**
  * \brief An object::Object wrapper for void pointers.
