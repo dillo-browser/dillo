@@ -366,7 +366,6 @@ void OutOfFlowMgr::moveFromGBToCB (Side side, int offsetSideSpanningIndex)
             Float *vloat = src->get(i);
             if (vloat->mark == mark) {
                dest->put (vloat);
-               vloat->sideSpanningIndex += offsetSideSpanningIndex;
                //printf("[%p] moving %s float %p (%s %p, mark %d) to CB list\n",
                //       containingBlock, side == LEFT ? "left" : "right",
                //       vloat, vloat->widget->getClassName(), vloat->widget,
@@ -519,16 +518,13 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
          assertNotReached();
       }
 
-      if (wasAllocated (generatingBlock))
-         // Float was immediately put into the CB list
-         vloat->sideSpanningIndex =
-            leftFloatsCB->size() + rightFloatsCB->size() - 1;
-      else
-         // Float was put into the GB list. When moved to CB list
-         // ... see there.
-         vloat->sideSpanningIndex =
-            tbInfo->leftFloatsGB->size() + tbInfo->rightFloatsGB->size() - 1;
-         
+      // "sideSpanningIndex" is only compared, so this simple
+      // assignment is sufficient; differenciation between GB and CB
+      // lists is not neccessary. TODO: Can this also be applied to
+      // "index", to simplify the current code? Check: where is
+      // "index" used.
+      vloat->sideSpanningIndex =
+         leftFloatsAll->size() + rightFloatsAll->size() - 1;
 
       floatsByWidget->put (new TypedPointer<Widget> (widget), vloat);
    } else
