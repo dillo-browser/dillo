@@ -55,6 +55,8 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
 
    sb->append (", index = ");
    sb->appendInt (index);
+   sb->append (", sideSpanningIndex = ");
+   sb->appendInt (sideSpanningIndex);
    sb->append (", generatingBlock = ");
    sb->appendPointer (generatingBlock);
    sb->append (", yReq = ");
@@ -215,8 +217,9 @@ void OutOfFlowMgr::sizeAllocateEnd ()
    //        containingBlock, leftFloatsMark, rightFloatsMark);
 
    // 1. Move floats from GB lists to the one CB list.
-   moveFromGBToCB (LEFT);
-   moveFromGBToCB (RIGHT);
+   int oldSizesSum = leftFloatsCB->size() + rightFloatsCB->size();
+   moveFromGBToCB (LEFT, oldSizesSum);
+   moveFromGBToCB (RIGHT, oldSizesSum);
       
    // 2. Floats have to be allocated
    sizeAllocateFloats (LEFT);
@@ -348,7 +351,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
    return covered;
 }
 
-void OutOfFlowMgr::moveFromGBToCB (Side side)
+void OutOfFlowMgr::moveFromGBToCB (Side side, int offsetSideSpanningIndex)
 {
    SortedFloatsVector *dest = side == LEFT ? leftFloatsCB : rightFloatsCB;
    int *floatsMark = side == LEFT ? &leftFloatsMark : &rightFloatsMark;
@@ -363,6 +366,7 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
             Float *vloat = src->get(i);
             if (vloat->mark == mark) {
                dest->put (vloat);
+               vloat->sideSpanningIndex += offsetSideSpanningIndex;
                //printf("[%p] moving %s float %p (%s %p, mark %d) to CB list\n",
                //       containingBlock, side == LEFT ? "left" : "right",
                //       vloat, vloat->widget->getClassName(), vloat->widget,
@@ -380,6 +384,11 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
          side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
       src->clear ();
    }
+
+   //printf ("[%p] new %s list:\n",
+   //        containingBlock, side == LEFT ? "left" : "right");
+   //for (int i = 0; i < dest->size(); i++)
+   //   printf ("   %d: %s\n", i, dest->get(i)->toString());
 }
 
 void OutOfFlowMgr::sizeAllocateFloats (Side side)
@@ -509,6 +518,17 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
       default:
          assertNotReached();
       }
+
+      if (wasAllocated (generatingBlock))
+         // Float was immediately put into the CB list
+         vloat->sideSpanningIndex =
+            leftFloatsCB->size() + rightFloatsCB->size() - 1;
+      else
+         // Float was put into the GB list. When moved to CB list
+         // ... see there.
+         vloat->sideSpanningIndex =
+            tbInfo->leftFloatsGB->size() + tbInfo->rightFloatsGB->size() - 1;
+         
 
       floatsByWidget->put (new TypedPointer<Widget> (widget), vloat);
    } else

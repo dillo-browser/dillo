@@ -34,7 +34,7 @@ private:
       core::Widget *widget;
       Textblock *generatingBlock;
       int yReq, yReal; // relative to generator, not container
-      int index, mark;
+      int index, sideSpanningIndex, mark;
       core::Requisition size;
       bool dirty;
 
@@ -143,7 +143,7 @@ private:
    
    Float *findFloatByWidget (core::Widget *widget);
 
-   void moveFromGBToCB (Side side);
+   void moveFromGBToCB (Side side, int offsetSideSpanningIndex);
    void sizeAllocateFloats (Side side);
    bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
                                     int tbWidth, int tbHeight, int *floatPos,
