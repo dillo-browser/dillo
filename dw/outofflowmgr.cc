@@ -363,7 +363,6 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
             Float *vloat = src->get(i);
             if (vloat->mark == mark) {
                dest->put (vloat);
-               vloat->index = dest->size() - 1;
                //printf("[%p] moving %s float %p (%s %p, mark %d) to CB list\n",
                //       containingBlock, side == LEFT ? "left" : "right",
                //       vloat, vloat->widget->getClassName(), vloat->widget,
