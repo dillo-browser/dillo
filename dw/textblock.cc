@@ -2358,7 +2358,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
          // considered.
          for (int wordIndex =
                  lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
-              !found && wordIndex <= words->size(); wordIndex++) {
+              !found && wordIndex < words->size(); wordIndex++) {
             Word *word = words->getRef (wordIndex);
             //printf ("      word %d: ", wordIndex);
             //printWordShort (word);
