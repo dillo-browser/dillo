@@ -124,6 +124,13 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
    return fly + size.ascent + size.descent > reqy && fly < reqy + h;
 }
 
+int OutOfFlowMgr::Float::CompareSideSpanningIndex::compare(Object *o1,
+                                                           Object *o2)
+{
+   return ((Float*)o1)->sideSpanningIndex - ((Float*)o2)->sideSpanningIndex;
+}
+
+
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y)
 {
    Float key (oofm, NULL, NULL);
@@ -143,6 +150,15 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
       return i;
    else
       return -1;
+}
+
+int OutOfFlowMgr::SortedFloatsVector::findLastBeforeSideSpanningIndex
+   (int sideSpanningIndex)
+{
+   OutOfFlowMgr::Float::CompareSideSpanningIndex comparator;
+   Float key (NULL, NULL, NULL);
+   key.sideSpanningIndex = sideSpanningIndex;
+   return bsearch (&key, false, &comparator) - 1;
 }
 
 OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm)
@@ -619,88 +635,94 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
    int oldY = vloat->yReal;
 
    // "yReal" may change due to collisions (see below).
-   int yReal = yReq;
+   vloat->yReq = vloat->yReal = yReq;
 
-   // Test collisions (on both sides).
-   if (vloat->index >= 1) {
-      Float *last = listSame->get (vloat->index - 1);
-      ensureFloatSize (last);
-      int lastH = last->size.ascent + last->size.descent;
+   // Test collisions (on this side). Only previous float is relevant.
+   int yRealNew;
+   if (vloat->index >= 1 &&
+       collides (vloat, listSame->get (vloat->index - 1), &yRealNew))
+      vloat->yReal = yRealNew;
 
-      if (wasAllocated (last->generatingBlock)) {
-         assert (wasAllocated (vloat->generatingBlock));
-
-         if (getAllocation(vloat->generatingBlock)->y + yReal <
-             getAllocation(last->generatingBlock)->y + last->yReal + lastH)
-            yReal =
-               getAllocation(last->generatingBlock)->y + last->yReal
-               + lastH - getAllocation(vloat->generatingBlock)->y;
-      } else {
-         assert (vloat->generatingBlock == last->generatingBlock);
-         
-         if (yReal < last->yReal + lastH)
-            yReal = last->yReal + lastH;
-      }
-   }
-
-   //printf ("   => yReal = %d\n", yReal);
-
-   vloat->yReq = yReq;
-   vloat->yReal = yReal;
-   listSame->change (vloat);
-
-#if 0
-   if (positioned) {
-      if (listOpp->size() > 0) {
-         Float *last = listOpp->get (listOpp->size () - 1);
-         if (last->covers (vloat->generatingBlock, vloat->yReal,
-                           vloat->size.ascent + vloat->size.descent)) {
-            // Here, test also horizontal values.
-            bool collidesH;
-            if (vloat->generatingBlock == last->generatingBlock)
-               collidesH = vloat->size.width + last->size.width +
-                  vloat->generatingBlock->getStyle()->boxDiffWidth()
-                  > vloat->generatingBlock->getAvailWidth();
-            else {
-               // Here (different generating blocks) it can be assumed
-               // that the allocations are defined (because
-               // Float::covers(...) would have returned false,
-               // otherwise).
-               Float *left, *right;
-               if (widget->getStyle()->vloat == FLOAT_LEFT) {
-                  left = vloat;
-                  right = last;
-               } else {
-                  left = last;
-                  right = vloat;
-               }
-
-               // right border of the left float (canvas coordinates)
-               int rightOfLeft =
-                  left->generatingBlock->getAllocation()->x
-                  + left->generatingBlock->getStyle()->boxOffsetX()
-                  + left->size.width;
-               // left border of the right float (canvas coordinates)
-               int leftOfRight =
-                  right->generatingBlock->getAllocation()->x
-                  + min (right->generatingBlock->getAllocation()->width,
-                         right->generatingBlock->getAvailWidth())
-                  - right->generatingBlock->getStyle()->boxRestWidth()
-                  - right->size.width;
-               
-               collidesH = rightOfLeft > leftOfRight;
+   // Test collisions (on the opposite side). Search the last float on
+   // the other size before this float; only this is relevant.
+   int lastOppFloat =
+      listOpp->findLastBeforeSideSpanningIndex (vloat->sideSpanningIndex);
+   if (lastOppFloat >= 0) {
+      Float *last = listOpp->get (lastOppFloat);
+      if (collides (vloat, last, &yRealNew)) {
+         // Here, test also horizontal values.
+         bool collidesH;
+         if (vloat->generatingBlock == last->generatingBlock)
+            collidesH = vloat->size.width + last->size.width +
+               vloat->generatingBlock->getStyle()->boxDiffWidth()
+               > vloat->generatingBlock->getAvailWidth();
+         else {
+            // Here (different generating blocks) it can be assumed
+            // that the allocations are defined, otherwise, the float
+            // "last" would not be found in "listOpp".
+            assert (wasAllocated (vloat->generatingBlock));
+            assert (wasAllocated (last->generatingBlock));
+            Float *left, *right;
+            if (widget->getStyle()->vloat == FLOAT_LEFT) {
+               left = vloat;
+               right = last;
+            } else {
+               left = last;
+               right = vloat;
             }
-
-            if (collidesH)
-               vloat->yReal = last->yForTextblock (vloat->generatingBlock)
-                  + last->size.ascent + last->size.descent;
+            
+            // right border of the left float (canvas coordinates)
+            int rightOfLeft =
+               left->generatingBlock->getAllocation()->x
+               + left->generatingBlock->getStyle()->boxOffsetX()
+               + left->size.width;
+            // left border of the right float (canvas coordinates)
+            int leftOfRight =
+               right->generatingBlock->getAllocation()->x
+               + min (right->generatingBlock->getAllocation()->width,
+                      right->generatingBlock->getAvailWidth())
+               - right->generatingBlock->getStyle()->boxRestWidth()
+               - right->size.width;
+            
+            collidesH = rightOfLeft > leftOfRight;
          }
+         
+         if (collidesH)
+            vloat->yReal = yRealNew;
       }
    }
-#endif
 
+   listSame->change (vloat);
    checkCoverage (vloat, oldY);
 }
+
+bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
+{
+   ensureFloatSize (other);
+   int otherH = other->size.ascent + other->size.descent;
+
+   if (wasAllocated (other->generatingBlock)) {
+      assert (wasAllocated (vloat->generatingBlock));
+      
+      if (getAllocation(vloat->generatingBlock)->y + vloat->yReal <
+          getAllocation(other->generatingBlock)->y + other->yReal + otherH) {
+         *yReal =
+            getAllocation(other->generatingBlock)->y + other->yReal
+            + otherH - getAllocation(vloat->generatingBlock)->y;
+         return true;
+      }
+   } else {
+      assert (vloat->generatingBlock == other->generatingBlock);
+      
+      if (vloat->yReal < other->yReal + otherH) {
+         *yReal = other->yReal + otherH;
+         return true;
+      }
+   }
+
+   return false;
+}
+
 
 void OutOfFlowMgr::checkCoverage (Float *vloat, int oldY)
 {

@@ -31,6 +31,11 @@ private:
       OutOfFlowMgr *oofm;
       
    public:
+      class CompareSideSpanningIndex: public lout::object::Comparator
+      {
+         int compare(Object *o1, Object *o2);
+      };
+
       core::Widget *widget;
       Textblock *generatingBlock;
       int yReq, yReal; // relative to generator, not container
@@ -76,6 +81,7 @@ private:
 
       int find (Textblock *textblock, int y);
       int findFirst (Textblock *textblock, int y, int h);
+      int findLastBeforeSideSpanningIndex (int sideSpanningIndex);
       inline void put (Float *vloat)
       { lout::container::typed::Vector<Float>::put (vloat);
         vloat->index = size() - 1; }
@@ -156,6 +162,7 @@ private:
               core::Rectangle *area);
    core::Widget *getWidgetAtPoint (SortedFloatsVector *list, int x, int y,
                                    int level);
+   bool collides (Float *vloat, Float *other, int *yReal);
    void checkCoverage (Float *vloat, int oldY);
 
    void getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
