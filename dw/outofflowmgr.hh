@@ -173,6 +173,8 @@ private:
                        int *oofMaxWidth);
    TBInfo *registerCaller (Textblock *textblock);
    int getBorder (Textblock *textblock, Side side, int y, int h);
+   SortedFloatsVector *getFloatsListForTextblock (Textblock *textblock,
+                                                  Side side);
    bool hasFloat (Textblock *textblock, Side side, int y, int h);
 
    void ensureFloatSize (Float *vloat);

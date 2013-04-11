@@ -974,14 +974,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
    //        wasAllocated (textblock) ? "true" : "false",
    //        side == LEFT ? "LEFT" : "RIGHT", y, h);
 
-   TBInfo *tbInfo = registerCaller (textblock);
-
-   SortedFloatsVector *list;
-   if (wasAllocated (textblock))
-      list = side == LEFT ? leftFloatsCB : rightFloatsCB;
-   else
-      list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
-
+   SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
    int first = list->findFirst (textblock, y, h);
 
    //printf ("[%p] GET_BORDER (...): %d floats, first is %d\n",
@@ -1023,6 +1016,18 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
    }
 }
 
+
+OutOfFlowMgr::SortedFloatsVector *OutOfFlowMgr::getFloatsListForTextblock
+   (Textblock *textblock, Side side)
+{
+   TBInfo *tbInfo = registerCaller (textblock);
+   if (wasAllocated (textblock))
+      return side == LEFT ? leftFloatsCB : rightFloatsCB;
+   else
+      return side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
+}
+
+
 bool OutOfFlowMgr::hasFloatLeft (Textblock *textblock, int y, int h)
 {
    return hasFloat (textblock, LEFT, y, h);
@@ -1035,43 +1040,8 @@ bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h)
 
 bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h)
 {
-   assertNotReached ();
-
-#if 0
-   // Compare to getBorder(). Actually much copy and paste.
-
-   TBInfo *tbInfo = registerCaller (textblock);
-
-   SortedFloatsVector *list;
-   if (wasAllocated (textblock))
-      list = side == LEFT ? leftFloatsCB : rightFloatsCB;
-   else
-      list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
-
-   // TODO binary search
-   for (int i = 0; i < list->size(); i++) {
-      Float *vloat = list->get(i);
-      ensureFloatSize (vloat);
-
-      int yWidget;
-      if (getYWidget (textblock, vloat, &yWidget)
-          && y + h > yWidget
-          && y < yWidget + vloat->size.ascent + vloat->size.descent) {
-         // As opposed to getBorder, finding the first float is
-         // sufficient.
-
-         //printf ("[%p] float on %s side (%d, %d): (%d, %d)\n",
-         //        textblock, right ? "right" : "left", y, h,
-         //        yWidget, vloat->size.ascent + vloat->size.descent);
-         return true;
-      }
-   }
-
-   //printf ("[%p] no float on %s side (%d, %d)\n",
-   //        textblock, right ? "right" : "left", y, h);
-#endif
-
-   return false;
+   return getFloatsListForTextblock(textblock,
+                                    side)->findFirst (textblock, y, h) != -1;
 }
 
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)
