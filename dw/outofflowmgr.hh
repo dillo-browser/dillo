@@ -149,7 +149,7 @@ private:
    
    Float *findFloatByWidget (core::Widget *widget);
 
-   void moveFromGBToCB (Side side, int offsetSideSpanningIndex);
+   void moveFromGBToCB (Side side);
    void sizeAllocateFloats (Side side);
    bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
                                     int tbWidth, int tbHeight, int *floatPos,

@@ -233,9 +233,8 @@ void OutOfFlowMgr::sizeAllocateEnd ()
    //        containingBlock, leftFloatsMark, rightFloatsMark);
 
    // 1. Move floats from GB lists to the one CB list.
-   int oldSizesSum = leftFloatsCB->size() + rightFloatsCB->size();
-   moveFromGBToCB (LEFT, oldSizesSum);
-   moveFromGBToCB (RIGHT, oldSizesSum);
+   moveFromGBToCB (LEFT);
+   moveFromGBToCB (RIGHT);
       
    // 2. Floats have to be allocated
    sizeAllocateFloats (LEFT);
@@ -367,7 +366,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
    return covered;
 }
 
-void OutOfFlowMgr::moveFromGBToCB (Side side, int offsetSideSpanningIndex)
+void OutOfFlowMgr::moveFromGBToCB (Side side)
 {
    SortedFloatsVector *dest = side == LEFT ? leftFloatsCB : rightFloatsCB;
    int *floatsMark = side == LEFT ? &leftFloatsMark : &rightFloatsMark;
