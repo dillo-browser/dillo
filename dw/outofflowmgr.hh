@@ -38,13 +38,14 @@ private:
 
       core::Widget *widget;
       Textblock *generatingBlock;
+      int externalIndex;
       int yReq, yReal; // relative to generator, not container
       int index, sideSpanningIndex, mark;
       core::Requisition size;
       bool dirty;
 
       Float (OutOfFlowMgr *oofm, core::Widget *widget,
-             Textblock *generatingBlock);
+             Textblock *generatingBlock, int externalIndex);
 
       void intoStringBuffer(lout::misc::StringBuffer *sb);
       int compareTo(Comparable *other);
@@ -147,6 +148,8 @@ private:
       return widget == (core::Widget*)containingBlock ?
          &containingBlockAllocation : widget->getAllocation (); }
    
+   void moveExternalIndices (SortedFloatsVector *list, int oldStartIndex,
+                             int diff);
    Float *findFloatByWidget (core::Widget *widget);
 
    void moveFromGBToCB (Side side);
@@ -209,7 +212,10 @@ public:
    core::Widget *getWidgetAtPoint (int x, int y, int level);
 
    static bool isWidgetOutOfFlow (core::Widget *widget);
-   void addWidget (core::Widget *widget, Textblock *generatingBlock);
+   void addWidget (core::Widget *widget, Textblock *generatingBlock,
+                   int externalIndex);
+   void moveExternalIndices (Textblock *generatingBlock, int oldStartIndex,
+                             int diff);
 
    void tellPosition (core::Widget *widget, int yReq);
 

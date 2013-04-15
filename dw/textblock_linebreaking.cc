@@ -918,6 +918,10 @@ int Textblock::hyphenateWord (int wordIndex)
       words->insert (wordIndex, numBreaks);
       PRINTF ("[%p]       ... => %d words\n", this, words->size ());
 
+      if (containingBlock->outOfFlowMgr)
+         containingBlock->outOfFlowMgr->moveExternalIndices (this, wordIndex,
+                                                             numBreaks);
+
       // Adjust anchor indexes.
       for (int i = 0; i < anchors->size (); i++) {
          Anchor *anchor = anchors->getRef (i);

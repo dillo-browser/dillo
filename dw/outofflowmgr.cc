@@ -32,11 +32,12 @@ using namespace dw::core::style;
 namespace dw {
 
 OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
-                            Textblock *generatingBlock)
+                            Textblock *generatingBlock, int externalIndex)
 {
    this->oofm = oofm;
    this->widget = widget;
    this->generatingBlock = generatingBlock;
+   this->externalIndex = externalIndex;
 
    yReq = yReal = size.width = size.ascent = size.descent = 0;
    dirty = true;
@@ -133,7 +134,7 @@ int OutOfFlowMgr::Float::CompareSideSpanningIndex::compare(Object *o1,
 
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y)
 {
-   Float key (oofm, NULL, NULL);
+   Float key (oofm, NULL, NULL, 0);
    key.generatingBlock = textblock;
    key.yReal = y;
 
@@ -156,7 +157,7 @@ int OutOfFlowMgr::SortedFloatsVector::findLastBeforeSideSpanningIndex
    (int sideSpanningIndex)
 {
    OutOfFlowMgr::Float::CompareSideSpanningIndex comparator;
-   Float key (NULL, NULL, NULL);
+   Float key (NULL, NULL, NULL, 0);
    key.sideSpanningIndex = sideSpanningIndex;
    return bsearch (&key, false, &comparator) - 1;
 }
@@ -479,12 +480,13 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
    return widget->getStyle()->vloat != FLOAT_NONE;
 }
 
-void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
+void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
+                              int externalIndex)
 {
    if (widget->getStyle()->vloat != FLOAT_NONE) {
       TBInfo *tbInfo = registerCaller (generatingBlock);
 
-      Float *vloat = new Float (this, widget, generatingBlock);
+      Float *vloat = new Float (this, widget, generatingBlock, externalIndex);
 
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
@@ -550,6 +552,30 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock)
    } else
       // Will continue here for absolute positions.
       assertNotReached();
+}
+
+void OutOfFlowMgr::moveExternalIndices (Textblock *generatingBlock,
+                                        int oldStartIndex, int diff)
+{
+   TypedPointer<Textblock> key (generatingBlock);
+   TBInfo *tbInfo = tbInfosByTextblock->get (&key);
+   if (tbInfo) {
+      moveExternalIndices (tbInfo->leftFloatsGB, oldStartIndex, diff);
+      moveExternalIndices (tbInfo->rightFloatsGB, oldStartIndex, diff);
+   }
+   // Not neccessary registered, i. e. no new TBInfo is created.
+}
+
+void OutOfFlowMgr::moveExternalIndices (SortedFloatsVector *list,
+                                        int oldStartIndex, int diff)
+{
+   // Could be faster with binary search, but the GB (not CB!) lists
+   // should be rather small.
+   for (int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
+      if (vloat->externalIndex >= oldStartIndex)
+         vloat->externalIndex += diff;
+   }
 }
 
 OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
