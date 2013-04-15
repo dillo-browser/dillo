@@ -203,14 +203,15 @@ void Vector::sort(Comparator *comparator)
  * size of the array. (This is the value which can be used for
  * insertion; see insertSortet()).
  */
-int Vector::bsearch(Object *key, bool mustExist, Comparator *comparator)
+int Vector::bsearch(Object *key, bool mustExist, int start, int end,
+                       Comparator *comparator)
 {
    // The case !mustExist is not handled by bsearch(3), so here is a
    // new implementation.
-   if (numElements == 0)
+   if (start >= end)
       return mustExist ? -1 : 0;
    
-   int high = numElements - 1, low = 0;
+   int low = start, high = end;
 
    while (true) {
       int index = (low + high) / 2;

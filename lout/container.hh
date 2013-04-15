@@ -148,8 +148,12 @@ public:
    inline int size() { return numElements; }
    void clear();
    void sort(object::Comparator *comparator = &object::standardComparator);
-   int bsearch(Object *key, bool mustExist,
+   int bsearch(Object *key, bool mustExist, int start, int end,
                object::Comparator *comparator = &object::standardComparator);
+   inline int bsearch(Object *key, bool mustExist,
+                      object::Comparator *comparator =
+                      &object::standardComparator)
+   { return bsearch (key, mustExist, 0, size () - 1, comparator); }
 };
 
 
@@ -421,6 +425,11 @@ public:
    inline void sort(object::Comparator *comparator =
                     &object::standardComparator)
    { ((untyped::Vector*)this->base)->sort(comparator); }
+   inline int bsearch(T *key, bool mustExist, int start, int end,
+                      object::Comparator *comparator =
+                      &object::standardComparator)
+   { return ((untyped::Vector*)this->base)->bsearch(key, mustExist, start, end,
+                                                    comparator); }
    inline int bsearch(T *key, bool mustExist,
                       object::Comparator *comparator =
                       &object::standardComparator)
