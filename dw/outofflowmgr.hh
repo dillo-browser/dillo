@@ -81,14 +81,17 @@ private:
    {
    private:
       OutOfFlowMgr *oofm;
+      Side side;
           
    public:
-      inline SortedFloatsVector (OutOfFlowMgr *oofm) :
+      inline SortedFloatsVector (OutOfFlowMgr *oofm, Side side) :
          lout::container::typed::Vector<Float> (1, false)
-      { this->oofm = oofm; }
+      { this->oofm = oofm; this->side = side; }
 
-      int find (Textblock *textblock, int y);
-      int findFirst (Textblock *textblock, int y, int h);
+      int find (Textblock *textblock, int y, Textblock *lastGB,
+                int lastExtIndex);
+      int findFirst (Textblock *textblock, int y, int h, Textblock *lastGB,
+                     int lastExtIndex);
       int findLastBeforeSideSpanningIndex (int sideSpanningIndex);
       inline void put (Float *vloat)
       { lout::container::typed::Vector<Float>::put (vloat);
@@ -132,7 +135,7 @@ private:
    lout::container::typed::HashTable<lout::object::TypedPointer
                                      <dw::core::Widget>, Float> *floatsByWidget;
 
-   lout::container::typed::List<TBInfo> *tbInfos;
+   lout::container::typed::Vector<TBInfo> *tbInfos;
    lout::container::typed::HashTable<lout::object::TypedPointer <Textblock>,
                                      TBInfo> *tbInfosByTextblock;
 
@@ -183,10 +186,12 @@ private:
    void accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
                        int *oofMaxWidth);
    TBInfo *registerCaller (Textblock *textblock);
-   int getBorder (Textblock *textblock, Side side, int y, int h);
+   int getBorder (Textblock *textblock, Side side, int y, int h,
+                  Textblock *lastGB, int lastExtIndex);
    SortedFloatsVector *getFloatsListForTextblock (Textblock *textblock,
                                                   Side side);
-   bool hasFloat (Textblock *textblock, Side side, int y, int h);
+   bool hasFloat (Textblock *textblock, Side side, int y, int h,
+                  Textblock *lastGB, int lastExtIndex);
 
    void ensureFloatSize (Float *vloat);
    int getBorderDiff (Textblock *textblock, Float *vloat, Side side);
@@ -231,11 +236,15 @@ public:
    void getExtremes (int cbMinWidth, int cbMaxWidth, int *oofMinWidth,
                      int *oofMaxWidth);
 
-   int getLeftBorder (Textblock *textblock, int y, int h);
-   int getRightBorder (Textblock *textblock, int y, int h);
+   int getLeftBorder (Textblock *textblock, int y, int h, Textblock *lastGB,
+                      int lastExtIndex);
+   int getRightBorder (Textblock *textblock, int y, int h, Textblock *lastGB,
+                       int lastExtIndex);
 
-   bool hasFloatLeft (Textblock *textblock, int y, int h);
-   bool hasFloatRight (Textblock *textblock, int y, int h);
+   bool hasFloatLeft (Textblock *textblock, int y, int h, Textblock *lastGB,
+                      int lastExtIndex);
+   bool hasFloatRight (Textblock *textblock, int y, int h, Textblock *lastGB,
+                       int lastExtIndex);
 
    inline static bool isRefOutOfFlow (int ref)
    { return ref != -1 && (ref & 1) != 0; }

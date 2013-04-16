@@ -132,19 +132,59 @@ int OutOfFlowMgr::Float::CompareSideSpanningIndex::compare(Object *o1,
 }
 
 
-int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y)
+int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
+                                            Textblock *lastGB, int lastExtIndex)
 {
+   int last;
+
+   if (lastGB) {
+      TypedPointer<Textblock> key (lastGB);
+      TBInfo *tbInfo = oofm->tbInfosByTextblock->get (&key);
+      if (tbInfo) {
+         SortedFloatsVector *gbList =
+            side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
+         // Could be faster with binary search, but the GB (not CB!) lists
+         // should be rather small.
+         Float *lastFloat = NULL;
+         for (int i = 0; i < gbList->size(); i++) {
+            Float *vloat = gbList->get(i);
+            if (vloat->externalIndex <= lastExtIndex)
+               lastFloat = vloat;
+         }
+
+         if (lastFloat)
+            last = lastFloat->index;
+         else {
+            if (tbInfo->index > 0) {
+               TBInfo *prev = oofm->tbInfos->get (tbInfo->index - 1);
+               SortedFloatsVector *prevList =
+                  side == LEFT ? prev->leftFloatsGB : prev->rightFloatsGB;
+               // Each GB list contains at least one elemenent,
+               // otherwise it would not have been created; so the
+               // following is save.
+               Float *lastFloat = prevList->get (prevList->size() - 1);
+               last = lastFloat->index;
+            } else
+               last = -1;
+         }
+      } else
+         last = size () - 1;
+   } else
+      last = size() - 1;
+
    Float key (oofm, NULL, NULL, 0);
    key.generatingBlock = textblock;
    key.yReal = y;
 
-   return bsearch (&key, false);
+   return bsearch (&key, false, 0, last);
 }
 
 int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
-                                                 int y, int h)
+                                                 int y, int h,
+                                                 Textblock *lastGB,
+                                                 int lastExtIndex)
 {
-   int i = find (textblock, y);
+   int i = find (textblock, y, lastGB, lastExtIndex);
    if (i > 0 && get(i - 1)->covers (textblock, y, h))
       return i - 1;
    else if (i < size() && get(i)->covers (textblock, y, h))
@@ -164,8 +204,8 @@ int OutOfFlowMgr::SortedFloatsVector::findLastBeforeSideSpanningIndex
 
 OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm)
 {
-   leftFloatsGB = new SortedFloatsVector (oofm);
-   rightFloatsGB = new SortedFloatsVector (oofm);
+   leftFloatsGB = new SortedFloatsVector (oofm, LEFT);
+   rightFloatsGB = new SortedFloatsVector (oofm, RIGHT);
 }
 
 OutOfFlowMgr::TBInfo::~TBInfo ()
@@ -180,15 +220,15 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 
    this->containingBlock = containingBlock;
 
-   leftFloatsCB = new SortedFloatsVector (this);
-   rightFloatsCB = new SortedFloatsVector (this);
+   leftFloatsCB = new SortedFloatsVector (this, LEFT);
+   rightFloatsCB = new SortedFloatsVector (this, RIGHT);
 
    leftFloatsAll = new Vector<Float> (1, true);
    rightFloatsAll = new Vector<Float> (1, true);
 
    floatsByWidget = new HashTable <TypedPointer <Widget>, Float> (true, false);
 
-   tbInfos = new List <TBInfo> (false);
+   tbInfos = new Vector<TBInfo> (1, false);
    tbInfosByTextblock =
       new HashTable <TypedPointer <Textblock>, TBInfo> (true, true);
 
@@ -961,7 +1001,7 @@ OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerCaller (Textblock *textblock)
       tbInfo->wasAllocated = false;
       tbInfo->index = tbInfos->size();
 
-      tbInfos->append (tbInfo);
+      tbInfos->put (tbInfo);
       tbInfosByTextblock->put (new TypedPointer<Textblock> (textblock), tbInfo);
    }
 
@@ -977,9 +1017,10 @@ OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerCaller (Textblock *textblock)
  * but is 0 if there is no float, so a caller should also consider
  * other borders.
  */
-int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
+int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h,
+                                 Textblock *lastGB, int lastExtIndex)
 {
-   int b = getBorder (textblock, LEFT, y, h);
+   int b = getBorder (textblock, LEFT, y, h, lastGB, lastExtIndex);
    //printf ("getLeftBorder (%p, %d, %d) => %d\n", textblock, y, h, b);
    return b;
 }
@@ -990,14 +1031,16 @@ int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h)
  *
  * See also getLeftBorder(int, int);
  */
-int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h)
+int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h,
+                                  Textblock *lastGB, int lastExtIndex)
 {
-   int b = getBorder (textblock, RIGHT, y, h);
+   int b = getBorder (textblock, RIGHT, y, h, lastGB, lastExtIndex);
    //printf ("getRightBorder (%p, %d, %d) => %d\n", textblock, y, h, b);
    return b;
 }
 
-int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
+int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
+                             Textblock *lastGB, int lastExtIndex)
 {
    //printf ("[%p] GET_BORDER (%p (allocated: %s), %s, %d, %d) ...\n",
    //        containingBlock, textblock,
@@ -1005,7 +1048,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
    //        side == LEFT ? "LEFT" : "RIGHT", y, h);
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
-   int first = list->findFirst (textblock, y, h);
+   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
 
    //printf ("[%p] GET_BORDER (...): %d floats, first is %d\n",
    //        containingBlock, list->size(), first);
@@ -1026,6 +1069,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h)
       // which the widest has to be choosen.
       int border = 0;
       bool covers = true;
+      // TODO Also check against lastGB and lastExtIndex
       for (int i = first; covers && i < list->size(); i++) {
          Float *vloat = list->get(i);
          covers = vloat->covers (textblock, y, h);
@@ -1058,20 +1102,23 @@ OutOfFlowMgr::SortedFloatsVector *OutOfFlowMgr::getFloatsListForTextblock
 }
 
 
-bool OutOfFlowMgr::hasFloatLeft (Textblock *textblock, int y, int h)
+bool OutOfFlowMgr::hasFloatLeft (Textblock *textblock, int y, int h,
+                                 Textblock *lastGB, int lastExtIndex)
 {
-   return hasFloat (textblock, LEFT, y, h);
+   return hasFloat (textblock, LEFT, y, h, lastGB, lastExtIndex);
 }
 
-bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h)
+bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h,
+                                  Textblock *lastGB, int lastExtIndex)
 {
-   return hasFloat (textblock, RIGHT, y, h);
+   return hasFloat (textblock, RIGHT, y, h, lastGB, lastExtIndex);
 }
 
-bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h)
+bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
+                             Textblock *lastGB, int lastExtIndex)
 {
-   return getFloatsListForTextblock(textblock,
-                                    side)->findFirst (textblock, y, h) != -1;
+   SortedFloatsVector *list = getFloatsListForTextblock(textblock, side);
+   return list->findFirst (textblock, y, h, lastGB, lastExtIndex) != -1;
 }
 
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)

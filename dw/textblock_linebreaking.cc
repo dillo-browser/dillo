@@ -400,7 +400,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line)) {
       int y = line->top + getStyle()->boxOffsetY();
       int h = line->boxAscent + line->boxDescent;
-      leftBorder = containingBlock->outOfFlowMgr->getLeftBorder (this, y, h);
+      leftBorder =
+         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, NULL, 0);
    } else
       leftBorder = 0;
 
@@ -535,8 +536,8 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          // disputable. (More on this later.)
 
          thereWillBeMoreSpace =
-            containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h) ||
-            containingBlock->outOfFlowMgr->hasFloatRight (this, y, h);
+            containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, NULL, 0) ||
+            containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, NULL, 0);
 
          PRINTF ("   thereWillBeMoreSpace = %s (y = %d, h = %d)\n",
                  thereWillBeMoreSpace ? "true" : "false", y, h);
@@ -1141,8 +1142,10 @@ int Textblock::calcAvailWidth (int lineIndex)
    if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineIndex)) {
       int y = topOfPossiblyMissingLine (lineIndex);
       int h = heightOfPossiblyMissingLine (lineIndex);
-      leftBorder = containingBlock->outOfFlowMgr->getLeftBorder (this, y, h);
-      rightBorder = containingBlock->outOfFlowMgr->getRightBorder (this, y, h);
+      leftBorder =
+         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, NULL, 0);
+      rightBorder =
+         containingBlock->outOfFlowMgr->getRightBorder (this, y, h, NULL, 0);
    } else
       leftBorder = rightBorder = 0;
 
