@@ -7,7 +7,7 @@ user. For a history of changes in full detail, see our Mercurial repository
 at http://hg.dillo.org/dillo
 
 
-dillo-3.0.3 [not released yet]
+dillo-3.0.3 [April 17, 2013]
 
 +- Support for CSS display property
  - Replace polling in DNS with a pipe.
