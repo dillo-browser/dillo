@@ -130,6 +130,7 @@ Textblock::Textblock (bool limitTextWidth)
    mustQueueResize = false;
    redrawY = 0;
    lastWordDrawn = -1;
+   lastPositionedOofWidget = -1;
 
    /*
     * The initial sizes of lines and words should not be

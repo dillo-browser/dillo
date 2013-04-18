@@ -88,8 +88,8 @@ private:
          lout::container::typed::Vector<Float> (1, false)
       { this->oofm = oofm; this->side = side; }
 
-      int find (Textblock *textblock, int y, Textblock *lastGB,
-                int lastExtIndex);
+      int findFloatIndex (Textblock *lastGB, int lastExtIndex);
+      int find (Textblock *textblock, int y, int start, int end);
       int findFirst (Textblock *textblock, int y, int h, Textblock *lastGB,
                      int lastExtIndex);
       int findLastBeforeSideSpanningIndex (int sideSpanningIndex);

@@ -445,6 +445,7 @@ protected:
                                             are the line numbers, not
                                             the value stored in
                                             parentRef. */
+   int lastPositionedOofWidget;
 
    lout::misc::SimpleVector <Line> *lines;
    lout::misc::SimpleVector <Paragraph> *paragraphs;

@@ -204,7 +204,7 @@ void Vector::sort(Comparator *comparator)
  * insertion; see insertSortet()).
  */
 int Vector::bsearch(Object *key, bool mustExist, int start, int end,
-                       Comparator *comparator)
+                    Comparator *comparator)
 {
    // The case !mustExist is not handled by bsearch(3), so here is a
    // new implementation.

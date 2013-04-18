@@ -401,7 +401,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       int y = line->top + getStyle()->boxOffsetY();
       int h = line->boxAscent + line->boxDescent;
       leftBorder =
-         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, NULL, 0);
+         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
+                                                       lastPositionedOofWidget);
    } else
       leftBorder = 0;
 
@@ -536,8 +537,10 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
          // disputable. (More on this later.)
 
          thereWillBeMoreSpace =
-            containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, NULL, 0) ||
-            containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, NULL, 0);
+            containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, this,
+                                                     lastPositionedOofWidget) ||
+            containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, this,
+                                                       lastPositionedOofWidget);
 
          PRINTF ("   thereWillBeMoreSpace = %s (y = %d, h = %d)\n",
                  thereWillBeMoreSpace ? "true" : "false", y, h);
@@ -701,7 +704,8 @@ void Textblock::wrapWidgetOofRef (int wordIndex)
    containingBlock->outOfFlowMgr->tellPosition
       (words->getRef(wordIndex)->content.widget,
        top + getStyle()->boxOffsetY());
-   
+   lastPositionedOofWidget = wordIndex;
+
    // TODO: compare old/new values of calcAvailWidth(...) (?)
    int firstIndex =
       lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
@@ -1143,9 +1147,11 @@ int Textblock::calcAvailWidth (int lineIndex)
       int y = topOfPossiblyMissingLine (lineIndex);
       int h = heightOfPossiblyMissingLine (lineIndex);
       leftBorder =
-         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, NULL, 0);
+         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
+                                                       lastPositionedOofWidget);
       rightBorder =
-         containingBlock->outOfFlowMgr->getRightBorder (this, y, h, NULL, 0);
+         containingBlock->outOfFlowMgr->getRightBorder (this, y, h, this,
+                                                       lastPositionedOofWidget);
    } else
       leftBorder = rightBorder = 0;
 
@@ -1256,6 +1262,7 @@ void Textblock::rewrap ()
     * the line list up from this position is rebuild. */
    lines->setSize (wrapRefLines);
    nonTemporaryLines = misc::min (nonTemporaryLines, wrapRefLines);
+   lastPositionedOofWidget = -1;
 
    int firstWord;
    if (lines->size () > 0)

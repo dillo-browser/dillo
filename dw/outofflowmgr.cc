@@ -131,11 +131,11 @@ int OutOfFlowMgr::Float::CompareSideSpanningIndex::compare(Object *o1,
    return ((Float*)o1)->sideSpanningIndex - ((Float*)o2)->sideSpanningIndex;
 }
 
-
-int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
-                                            Textblock *lastGB, int lastExtIndex)
+int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
+                                                      int lastExtIndex)
 {
-   int last;
+   // TODO Is the case "lastGB == NULL" (search until the end) needed?
+   assert (lastGB);
 
    if (lastGB) {
       TypedPointer<Textblock> key (lastGB);
@@ -153,30 +153,48 @@ int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
          }
 
          if (lastFloat)
-            last = lastFloat->index;
+            // Float found with the same generator.
+            return lastFloat->index;
          else {
-            if (tbInfo->index > 0) {
-               TBInfo *prev = oofm->tbInfos->get (tbInfo->index - 1);
-               SortedFloatsVector *prevList =
-                  side == LEFT ? prev->leftFloatsGB : prev->rightFloatsGB;
-               // Each GB list contains at least one elemenent,
-               // otherwise it would not have been created; so the
-               // following is save.
-               Float *lastFloat = prevList->get (prevList->size() - 1);
-               last = lastFloat->index;
-            } else
-               last = -1;
+            // No float until "lastExtIndex"; search backwards in the
+            // list of text blocks.
+            int last = -1; // If nothing is found.
+
+            // If not allocated, the only list to search is the GB
+            // list, which has been searched already.
+            if (oofm->wasAllocated (lastGB)) {
+               for (int index = tbInfo->index - 1; last == -1 && index >= 0;
+                    index--) {
+                  TBInfo *prev = oofm->tbInfos->get (index);
+                  SortedFloatsVector *prevList =
+                     side == LEFT ? prev->leftFloatsGB : prev->rightFloatsGB;
+                  // Even if each GB list contains at least one elemenent
+                  // (otherwise it would not have been created), this one
+                  // element may be in the wrong (i. e. opposite)
+                  // list. So, this list may be empty.  save.
+                  if (prevList->size() > 0) {
+                     Float *lastFloat = prevList->get (prevList->size() - 1);
+                     last = lastFloat->index;
+                  }
+               }
+            }
+            
+            return last;
          }
       } else
-         last = size () - 1;
+         // "lastGB" not yet registered. TODO Correct?
+         return size () - 1;
    } else
-      last = size() - 1;
+      return size() - 1;
+}
 
+int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
+                                            int start, int end)
+{
    Float key (oofm, NULL, NULL, 0);
    key.generatingBlock = textblock;
    key.yReal = y;
-
-   return bsearch (&key, false, 0, last);
+   return bsearch (&key, false, start, end);
 }
 
 int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
@@ -184,10 +202,17 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
                                                  Textblock *lastGB,
                                                  int lastExtIndex)
 {
-   int i = find (textblock, y, lastGB, lastExtIndex);
+   int last = findFloatIndex (lastGB, lastExtIndex);
+   int i = find (textblock, y, 0, last);
+
+   //printf ("[%p] FIND (%p, %d, %p, %d) => last = %d, result = %d\n",
+   //        oofm->containingBlock, textblock, y,lastGB, lastExtIndex, last, i);
+
+   if (i < 0 || i > last)
+      return -1;
    if (i > 0 && get(i - 1)->covers (textblock, y, h))
       return i - 1;
-   else if (i < size() && get(i)->covers (textblock, y, h))
+   else if (i <= last && get(i)->covers (textblock, y, h))
       return i;
    else
       return -1;
