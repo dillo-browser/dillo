@@ -137,10 +137,16 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
    // TODO Is the case "lastGB == NULL" (search until the end) needed?
    assert (lastGB);
 
+   //printf ("[%p] FIND_FLOAT_INDEX (%p, %d) ...\n",
+   //        oofm->containingBlock, lastGB, lastExtIndex);
+           
    if (lastGB) {
       TypedPointer<Textblock> key (lastGB);
       TBInfo *tbInfo = oofm->tbInfosByTextblock->get (&key);
       if (tbInfo) {
+         //printf ("      generator %p, index = %d\n",
+         //        tbInfo->textblock, tbInfo->index);
+
          SortedFloatsVector *gbList =
             side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
          // Could be faster with binary search, but the GB (not CB!) lists
@@ -151,11 +157,12 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
             if (vloat->externalIndex <= lastExtIndex)
                lastFloat = vloat;
          }
-
-         if (lastFloat)
+         
+         if (lastFloat) {
             // Float found with the same generator.
+            //printf ("   => %d (same generator)\n", lastFloat->index);
             return lastFloat->index;
-         else {
+         } else {
             // No float until "lastExtIndex"; search backwards in the
             // list of text blocks.
             int last = -1; // If nothing is found.
@@ -166,6 +173,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
                for (int index = tbInfo->index - 1; last == -1 && index >= 0;
                     index--) {
                   TBInfo *prev = oofm->tbInfos->get (index);
+                  assert (index == prev->index);
                   SortedFloatsVector *prevList =
                      side == LEFT ? prev->leftFloatsGB : prev->rightFloatsGB;
                   // Even if each GB list contains at least one elemenent
@@ -173,19 +181,29 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
                   // element may be in the wrong (i. e. opposite)
                   // list. So, this list may be empty.  save.
                   if (prevList->size() > 0) {
+                     //printf ("      previous generator %p, index = %d; %s "
+                     //        "list has %d elements\n",
+                     //        prev->textblock, prev->index,
+                     //        side == LEFT ? "left" : "right",
+                     //        prevList->size());
                      Float *lastFloat = prevList->get (prevList->size() - 1);
                      last = lastFloat->index;
                   }
                }
             }
-            
+
+            //printf ("   => %d (other generator)\n", last);
             return last;
          }
-      } else
+      } else {
          // "lastGB" not yet registered. TODO Correct?
+         //printf ("   => %d (last GB not registered)\n", size () - 1);
          return size () - 1;
-   } else
+      }
+   } else {
+      //printf ("   => %d (last GB not defined)\n", size () - 1);
       return size() - 1;
+   }
 }
 
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
@@ -205,8 +223,11 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
    int last = findFloatIndex (lastGB, lastExtIndex);
    int i = find (textblock, y, 0, last);
 
-   //printf ("[%p] FIND (%p, %d, %p, %d) => last = %d, result = %d\n",
-   //        oofm->containingBlock, textblock, y,lastGB, lastExtIndex, last, i);
+   //printf ("[%p] FIND (%s, %p, allocated: %s, %d, %p, %d) => last = %d, "
+   //        "result = %d (of %d)\n", oofm->containingBlock,
+   //        type == GB ? "GB" : "CB", textblock,
+   //        oofm->wasAllocated (textblock) ? "true" : "false", y, lastGB,
+   //        lastExtIndex, last, i, size());
 
    if (i < 0 || i > last)
       return -1;
@@ -227,10 +248,11 @@ int OutOfFlowMgr::SortedFloatsVector::findLastBeforeSideSpanningIndex
    return bsearch (&key, false, &comparator) - 1;
 }
 
-OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm)
+OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm, Textblock *textblock)
 {
-   leftFloatsGB = new SortedFloatsVector (oofm, LEFT);
-   rightFloatsGB = new SortedFloatsVector (oofm, RIGHT);
+   this->textblock = textblock;
+   leftFloatsGB = new SortedFloatsVector (oofm, LEFT, SortedFloatsVector::GB);
+   rightFloatsGB = new SortedFloatsVector (oofm, RIGHT, SortedFloatsVector::GB);
 }
 
 OutOfFlowMgr::TBInfo::~TBInfo ()
@@ -245,8 +267,8 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 
    this->containingBlock = containingBlock;
 
-   leftFloatsCB = new SortedFloatsVector (this, LEFT);
-   rightFloatsCB = new SortedFloatsVector (this, RIGHT);
+   leftFloatsCB = new SortedFloatsVector (this, LEFT, SortedFloatsVector::CB);
+   rightFloatsCB = new SortedFloatsVector (this, RIGHT, SortedFloatsVector::CB);
 
    leftFloatsAll = new Vector<Float> (1, true);
    rightFloatsAll = new Vector<Float> (1, true);
@@ -1022,7 +1044,7 @@ OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerCaller (Textblock *textblock)
    TypedPointer<Textblock> key (textblock);
    TBInfo *tbInfo = tbInfosByTextblock->get (&key);
    if (tbInfo == NULL) {
-      tbInfo = new TBInfo (this);
+      tbInfo = new TBInfo (this, textblock);
       tbInfo->wasAllocated = false;
       tbInfo->index = tbInfos->size();
 
