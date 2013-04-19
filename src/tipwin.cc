@@ -174,7 +174,7 @@ CustButton::CustButton(int x, int y, int w, int h, const char *l) :
    TipWinButton(x,y,w,h,l)
 {
    norm_color = color();
-   light_color = PREFS_UI_BUTTON_HIGHLIGHT_COLOR; 
+   light_color = PREFS_UI_BUTTON_HIGHLIGHT_COLOR;
 }
 
 int CustButton::handle(int e)

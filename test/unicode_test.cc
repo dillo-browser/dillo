@@ -34,6 +34,6 @@ int main (int argc, char *argv[])
         s - t2 < t2len && (s = fl_utf8fwd (s + 1, t2, t2 + t2len)))
       printf ("%3d -> U+%04x\n", (int)(s - t2),
               decodeUtf8(s, t2len - (s - t2)));
-   
+
    return 0;
 }

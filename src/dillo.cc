@@ -277,7 +277,7 @@ static void setColors()
    setUIColorWdef(PREFS_UI_TAB_ACTIVE_FG_COLOR, prefs.ui_tab_active_fg_color,
                   Fl::get_color(FL_FOREGROUND_COLOR));
    setUIColorWdef(PREFS_UI_TAB_FG_COLOR, prefs.ui_tab_fg_color,
-                  Fl::get_color(FL_FOREGROUND_COLOR));   
+                  Fl::get_color(FL_FOREGROUND_COLOR));
 }
 
 /*

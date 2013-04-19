@@ -242,7 +242,7 @@ static int32_t Color_parse_hex (const char *s, int32_t default_color, int *err)
  *    Parsed color if successful,
  *    default_color on error.
  *
- * "err" argument: 
+ * "err" argument:
  *    0 if a color beginning with '#' is successfully parsed
  *      or the color is a recognized word.
  *    1 if the color is bare hex or can't be parsed at all.

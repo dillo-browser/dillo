@@ -1384,7 +1384,7 @@ void FltkListResource::pushGroup (const char *name, bool enabled)
 
    // TODO: Proper disabling of item groups
    newItem(name, en, selected);
-   
+
    if (currDepth < 3)
       currDepth++;
 }
@@ -1414,7 +1414,7 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
       } else {
          b->has_scrollbar(0);
       }
-      
+
       requisition->descent = style->font->descent + 2;
       requisition->ascent = rows * b->avg_height() - style->font->descent + 2;
    } else {

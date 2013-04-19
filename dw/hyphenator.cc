@@ -1,7 +1,7 @@
 /*
  * Dillo Widget
  *
- * Copyright 2012-2013 Sebastian Geerken <sgeerken@dillo.org>, 
+ * Copyright 2012-2013 Sebastian Geerken <sgeerken@dillo.org>,
  *                     Johannes Hofmann <Johannes.Hofmann@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -253,7 +253,7 @@ int *Hyphenator::hyphenateWord(core::Platform *platform,
    while (true) {
       while (wordLc[start] && !isCharPartOfActualWord (wordLc + start))
          start = platform->nextGlyph (wordLc, start);
-      
+
       if (wordLc[start] == 0)
          break;
 

@@ -362,7 +362,7 @@ int a_Dialog_choice(const char *title, const char *msg, ...)
     Fl_Group *ib = new Fl_Group(0, 0, window->w(), window->h());
     ib->begin();
     window->resizable(ib);
- 
+
     /* '?' Icon */
     Fl_Box *o = new Fl_Box(10, (wh - bh - ih) / 2, ih, ih);
     o->box(FL_THIN_UP_BOX);
@@ -372,14 +372,14 @@ int a_Dialog_choice(const char *title, const char *msg, ...)
     o->labelcolor(FL_BLUE);
     o->label("?");
     o->show();
- 
+
     if (msg != NULL){
        Fl_Box *box = new Fl_Box(60, 0, ww - 60, wh - bh, msg);
        box->labelfont(FL_HELVETICA);
        box->labelsize(14);
        box->align(FL_ALIGN_WRAP);
     }
- 
+
     int xpos = gap;
     va_start(ap, msg);
     for (i = 1; i <= n; i++) {
