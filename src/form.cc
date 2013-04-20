@@ -198,16 +198,16 @@ public:
 class DilloHtmlOption : public DilloHtmlOptbase {
    friend class DilloHtmlSelect;
 public:
-   char *value, *content;
+   char *value, *label, *content;
    bool selected, enabled;
-   DilloHtmlOption (char *value, bool selected, bool enabled);
+   DilloHtmlOption (char *value, char *label, bool selected, bool enabled);
    virtual ~DilloHtmlOption ();
    bool isSelected() {return selected;}
    bool select() {return (selected = true);}
    const char *getValue() {return value ? value : content;}
    void setContent(const char *str, int len) {content = dStrndup(str, len);}
    void addSelf (SelectionResource *res)
-      {res->addItem(content, enabled, selected);}
+      {res->addItem(label ? label : content, enabled, selected);}
 };
 
 class DilloHtmlSelect {
@@ -882,11 +882,12 @@ void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
    if (input->type == DILLO_HTML_INPUT_SELECT ||
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
       char *value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
+      char *label = a_Html_get_attr_wdef(html, tag, tagsize, "label", NULL);
       bool selected = (a_Html_get_attr(html, tag, tagsize,"selected") != NULL);
       bool enabled = (a_Html_get_attr(html, tag, tagsize, "disabled") == NULL);
 
       DilloHtmlOption *option =
-         new DilloHtmlOption (value, selected, enabled);
+         new DilloHtmlOption (value, label, selected, enabled);
 
       input->select->addOpt(option);
    }
@@ -1985,11 +1986,11 @@ DilloHtmlOptgroup::~DilloHtmlOptgroup ()
 /*
  * Constructor
  */
-DilloHtmlOption::DilloHtmlOption (char *value2,
-                                  bool selected2,
+DilloHtmlOption::DilloHtmlOption (char *value2, char *label2, bool selected2,
                                   bool enabled2)
 {
    value = value2;
+   label = label2;
    content = NULL;
    selected = selected2;
    enabled = enabled2;
@@ -2001,6 +2002,7 @@ DilloHtmlOption::DilloHtmlOption (char *value2,
 DilloHtmlOption::~DilloHtmlOption ()
 {
    dFree(value);
+   dFree(label);
    dFree(content);
 }
 
