@@ -121,8 +121,8 @@ int main(int argc, char **argv)
    const char *radiovalues[] = { "radio1", "radio2", NULL };
    form->addRadioButtonResource ("val3", radiores1, radiovalues);
    form->addCheckButtonResource ("check", checkres);
-   const char *selvalues[] = { "i1", "g1", "i11", "i12", "i13", "i2", "g2",
-                               "i21", "i22", "i23", "i3", NULL };
+   const char *selvalues[] = { "i1", "g1", "i11", "i12", "i13", "(pop)", "i2",
+                               "g2", "i21", "i22", "i23", "(pop)", "i3", NULL};
    form->addSelectionResource ("val4", selres[0], selvalues);
    form->addSelectionResource ("val5", selres[1], selvalues);
    form->addButtonResource ("button", buttonres, "Run!");

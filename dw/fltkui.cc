@@ -1056,7 +1056,6 @@ FltkOptionMenuResource::FltkOptionMenuResource (FltkPlatform *platform):
    menu = new Fl_Menu_Item[itemsAllocated];
    memset(menu, 0, itemsAllocated * sizeof(Fl_Menu_Item));
    itemsUsed = 1; // menu[0].text == NULL, which is an end-of-menu marker.
-   visibleItems = 0;
 
    init (platform);
 }
@@ -1168,7 +1167,6 @@ void FltkOptionMenuResource::addItem (const char *str,
    Fl_Menu_Item *item = newItem();
 
    item->text = strdup(str);
-   item->argument(visibleItems++);
 
    if (enabled == false)
       item->flags = FL_MENU_INACTIVE;
@@ -1190,7 +1188,6 @@ void FltkOptionMenuResource::pushGroup (const char *name, bool enabled)
    Fl_Menu_Item *item = newItem();
 
    item->text = strdup(name);
-   item->argument(visibleItems++);
 
    if (enabled == false)
       item->flags = FL_MENU_INACTIVE;
@@ -1209,7 +1206,7 @@ void FltkOptionMenuResource::popGroup ()
 
 bool FltkOptionMenuResource::isSelected (int index)
 {
-   return index == (long) ((Fl_Choice *)widget)->mvalue()->user_data();
+   return index == ((Fl_Choice *)widget)->value();
 }
 
 int FltkOptionMenuResource::getNumberOfItems()
@@ -1223,6 +1220,7 @@ class CustBrowser : public Fl_Browser {
 public:
    CustBrowser(int x, int y, int w, int h) : Fl_Browser(x, y, w, h) {};
    int full_width();
+   int full_height() {return Fl_Browser::full_height();}
    int avg_height() {return size() ? Fl_Browser_::incr_height() : 0;}
 };
 
@@ -1331,7 +1329,7 @@ void *FltkListResource::newItem (const char *str, bool enabled, bool selected)
 
    strcpy(s, str);
 
-   b->add(label, (void*)(long)(index));
+   b->add(label);
    free(label);
 
    if (selected) {
@@ -1391,6 +1389,11 @@ void FltkListResource::pushGroup (const char *name, bool enabled)
 
 void FltkListResource::popGroup ()
 {
+   CustBrowser *b = (CustBrowser *) widget;
+
+   newItem(" ", false, false);
+   b->hide(b->size());
+
    if (currDepth)
       currDepth--;
 }
@@ -1404,11 +1407,11 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
 {
    if (style) {
       CustBrowser *b = (CustBrowser *) widget;
-      int rows = b->size();
+      int height = b->full_height();
       requisition->width = getMaxItemWidth() + 4;
 
-      if (showRows < rows) {
-         rows = showRows;
+      if (showRows * b->avg_height() < height) {
+         height = showRows * b->avg_height();
          b->has_scrollbar(Fl_Browser_::VERTICAL_ALWAYS);
          requisition->width += Fl::scrollbar_size();
       } else {
@@ -1416,7 +1419,7 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
       }
 
       requisition->descent = style->font->descent + 2;
-      requisition->ascent = rows * b->avg_height() - style->font->descent + 2;
+      requisition->ascent = height - style->font->descent + 2;
    } else {
       requisition->width = 1;
       requisition->ascent = 1;

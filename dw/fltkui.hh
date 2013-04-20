@@ -485,7 +485,6 @@ private:
    Fl_Menu_Item *newItem();
    Fl_Menu_Item *menu;
    int itemsAllocated, itemsUsed;
-   int visibleItems; /* not counting the invisible ones that close a group */
 public:
    FltkOptionMenuResource (FltkPlatform *platform);
    ~FltkOptionMenuResource ();
