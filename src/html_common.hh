@@ -80,11 +80,12 @@ typedef enum {
    IN_FORM        = 1 << 3,
    IN_SELECT      = 1 << 4,
    IN_OPTION      = 1 << 5,
-   IN_TEXTAREA    = 1 << 6,
-   IN_MAP         = 1 << 7,
-   IN_PRE         = 1 << 8,
-   IN_BUTTON      = 1 << 9,
-   IN_LI          = 1 << 10,
+   IN_OPTGROUP    = 1 << 6,
+   IN_TEXTAREA    = 1 << 7,
+   IN_BUTTON      = 1 << 8,
+   IN_MAP         = 1 << 9,
+   IN_PRE         = 1 << 10,
+   IN_LI          = 1 << 11,
 } DilloHtmlProcessingState;
 
 /*
