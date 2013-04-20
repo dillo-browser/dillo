@@ -50,6 +50,8 @@ private:
       int sideSpanningIndex, mark;
       core::Requisition size;
       bool dirty;
+      bool inCBList; /* Neccessary to prevent floats from being moved
+                        twice from GB to CB list.  */
 
       Float (OutOfFlowMgr *oofm, core::Widget *widget,
              Textblock *generatingBlock, int externalIndex);

@@ -467,8 +467,9 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
             side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
          for (int i = 0; i < src->size (); i++) {
             Float *vloat = src->get(i);
-            if (vloat->mark == mark) {
+            if (!vloat->inCBList && vloat->mark == mark) {
                dest->put (vloat);
+               vloat->inCBList = true;
                //printf("[%p] moving %s float %p (%s %p, mark %d) to CB list\n",
                //       containingBlock, side == LEFT ? "left" : "right",
                //       vloat, vloat->widget->getClassName(), vloat->widget,
@@ -737,9 +738,9 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
 
    Float *vloat = findFloatByWidget(widget);
 
-   //printf ("[%p] TELL_POSITION_OR_NOT (%p, %d, %s)\n",
-   //        containingBlock, widget, yReq, positioned ? "true" : "false");
-   //printf ("   vloat: %s\n", vloat->toString());      
+   //printf ("[%p] TELL_POSITION_OR_NOT (%p (%s), %d)\n",
+   //        containingBlock, widget, widget->getClassName (), yReq);
+   //printf ("   this float: %s\n", vloat->toString());
 
    if (yReq == vloat->yReq)
       // Nothing changed.
@@ -748,6 +749,11 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
    SortedFloatsVector *listSame, *listOpp;
    getFloatsLists (vloat, &listSame, &listOpp);
    ensureFloatSize (vloat);
+   //printf ("   ensured size: %s\n", vloat->toString());
+
+   //printf ("   all floats on same side:\n");
+   //for (int i = 0; i < listSame->size(); i++)
+   //   printf ("      %d: %s\n", i, listSame->get(i)->toString());
 
    int oldY = vloat->yReal;
 
@@ -757,8 +763,10 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
    // Test collisions (on this side). Only previous float is relevant.
    int yRealNew;
    if (vloat->index >= 1 &&
-       collides (vloat, listSame->get (vloat->index - 1), &yRealNew))
+       collides (vloat, listSame->get (vloat->index - 1), &yRealNew)) {
       vloat->yReal = yRealNew;
+      //printf ("   collides; yReal = %d\n", vloat->yReal);
+   }
 
    // Test collisions (on the opposite side). Search the last float on
    // the other size before this float; only this is relevant.
@@ -1224,7 +1232,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       //        vloat, vloat->widget->getClassName(), vloat->widget,
       //        vloat->size.width, vloat->size.ascent, vloat->size.descent);
           
-      vloat->dirty = false;
+      vloat->dirty = vloat->inCBList = false;      
    }
 }
 
