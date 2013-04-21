@@ -82,8 +82,7 @@ private:
    class SortedFloatsVector: private lout::container::typed::Vector<Float>
    {
    public:
-      enum Type { GB, CB } type; /* Only used for debugging; may be removed
-                                    later. */
+      enum Type { GB, CB } type;
 
    private:
       OutOfFlowMgr *oofm;
@@ -99,9 +98,7 @@ private:
       int findFirst (Textblock *textblock, int y, int h, Textblock *lastGB,
                      int lastExtIndex);
       int findLastBeforeSideSpanningIndex (int sideSpanningIndex);
-      inline void put (Float *vloat)
-      { lout::container::typed::Vector<Float>::put (vloat);
-        vloat->index = size() - 1; }
+      void put (Float *vloat);
       inline void change (Float *vloat) { }
 
       inline lout::container::typed::Iterator<Float> iterator()

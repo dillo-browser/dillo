@@ -251,6 +251,13 @@ int OutOfFlowMgr::SortedFloatsVector::findLastBeforeSideSpanningIndex
    return bsearch (&key, false, &comparator) - 1;
 }
 
+void OutOfFlowMgr::SortedFloatsVector::put (Float *vloat)
+{
+   lout::container::typed::Vector<Float>::put (vloat);
+   vloat->index = size() - 1;
+   vloat->inCBList = type == CB;
+}
+
 OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm, Textblock *textblock)
 {
    this->textblock = textblock;
@@ -472,7 +479,6 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
             Float *vloat = src->get(i);
             if (!vloat->inCBList && vloat->mark == mark) {
                dest->put (vloat);
-               vloat->inCBList = true;
                //printf("[%p] moving %s float %p (%s %p, mark %d) to CB list\n",
                //       containingBlock, side == LEFT ? "left" : "right",
                //       vloat, vloat->widget->getClassName(), vloat->widget,
@@ -586,7 +592,6 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
 
          if (wasAllocated (generatingBlock)) {
             leftFloatsCB->put (vloat);
-            vloat->inCBList = true;
             //printf ("[%p] adding left float %p (%s %p) to CB list\n",
             //        containingBlock, vloat, widget->getClassName(), widget);
          } else {
@@ -610,7 +615,6 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
 
          if (wasAllocated (generatingBlock)) {
             rightFloatsCB->put (vloat);
-            vloat->inCBList = true;
             //printf ("[%p] adding right float %p (%s %p) to CB list\n",
             //        containingBlock, vloat, widget->getClassName(), widget);
          } else {
