@@ -742,9 +742,13 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
    //        containingBlock, widget, widget->getClassName (), yReq);
    //printf ("   this float: %s\n", vloat->toString());
 
-   if (yReq == vloat->yReq)
+   // The following optimization is wrong; e. g. does not take into
+   // account that the previous float may have change its
+   // size. "yReal" should rather be checked below, this should be
+   // deleted.
+   /*if (yReq == vloat->yReq)
       // Nothing changed.
-      return;
+      return;*/
 
    SortedFloatsVector *listSame, *listOpp;
    getFloatsLists (vloat, &listSame, &listOpp);
