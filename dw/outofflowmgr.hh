@@ -82,12 +82,12 @@ private:
    class SortedFloatsVector: private lout::container::typed::Vector<Float>
    {
    public:
-      enum Type { GB, CB };
+      enum Type { GB, CB } type; /* Only used for debugging; may be removed
+                                    later. */
 
    private:
       OutOfFlowMgr *oofm;
       Side side;
-      Type type; // Only used for debugging; may be removed later.
           
    public:
       inline SortedFloatsVector (OutOfFlowMgr *oofm, Side side, Type type) :

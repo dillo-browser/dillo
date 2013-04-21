@@ -41,6 +41,7 @@ OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
 
    yReq = yReal = size.width = size.ascent = size.descent = 0;
    dirty = true;
+   inCBList = false;
 }
 
 void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
@@ -72,6 +73,8 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->appendInt (size.descent);
    sb->append (" }, dirty = ");
    sb->appendBool (dirty);
+   sb->append (" }, inCBList = ");
+   sb->appendBool (inCBList);
    sb->append (" }");
 }
 
@@ -583,6 +586,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
 
          if (wasAllocated (generatingBlock)) {
             leftFloatsCB->put (vloat);
+            vloat->inCBList = true;
             //printf ("[%p] adding left float %p (%s %p) to CB list\n",
             //        containingBlock, vloat, widget->getClassName(), widget);
          } else {
@@ -606,6 +610,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
 
          if (wasAllocated (generatingBlock)) {
             rightFloatsCB->put (vloat);
+            vloat->inCBList = true;
             //printf ("[%p] adding right float %p (%s %p) to CB list\n",
             //        containingBlock, vloat, widget->getClassName(), widget);
          } else {
@@ -755,9 +760,11 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
    ensureFloatSize (vloat);
    //printf ("   ensured size: %s\n", vloat->toString());
 
-   //printf ("   all floats on same side:\n");
+   //printf ("   all floats on same side (%s):\n",
+   //        listSame->type == SortedFloatsVector::GB ? "GB" : "CB");
    //for (int i = 0; i < listSame->size(); i++)
-   //   printf ("      %d: %s\n", i, listSame->get(i)->toString());
+   //   printf ("      %d: %p, %s\n", i, listSame->get(i),
+   //           listSame->get(i)->toString());
 
    int oldY = vloat->yReal;
 
@@ -1236,7 +1243,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       //        vloat, vloat->widget->getClassName(), vloat->widget,
       //        vloat->size.width, vloat->size.ascent, vloat->size.descent);
           
-      vloat->dirty = vloat->inCBList = false;      
+      vloat->dirty = false;      
    }
 }
 
