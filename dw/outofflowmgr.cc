@@ -231,6 +231,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
                                                  int lastExtIndex)
 {
    int last = findFloatIndex (lastGB, lastExtIndex);
+   assert (last < size());
    int i = find (textblock, y, 0, last);
 
    //printf ("[%p] FIND (%s, %p, allocated: %s, %d, %p, %d) => last = %d, "
