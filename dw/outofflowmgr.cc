@@ -179,19 +179,26 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
                   assert (index == prev->index);
                   SortedFloatsVector *prevList =
                      side == LEFT ? prev->leftFloatsGB : prev->rightFloatsGB;
-                  // Even if each GB list contains at least one elemenent
-                  // (otherwise it would not have been created), this one
-                  // element may be in the wrong (i. e. opposite)
-                  // list. So, this list may be empty.  save.
-                  if (prevList->size() > 0) {
-                     //printf ("      previous generator %p, index = %d; %s "
-                     //        "list has %d elements\n",
-                     //        prev->textblock, prev->index,
-                     //        side == LEFT ? "left" : "right",
-                     //        prevList->size());
-                     Float *lastFloat = prevList->get (prevList->size() - 1);
-                     last = lastFloat->index;
+                  // Even if each GB list contains at least one
+                  // elemenent (otherwise it would not have been
+                  // created), this one element may be in the wrong
+                  // (i. e. opposite) list. So, this list may be
+                  // empty. Also, ignore floats which are not yet in
+                  // the CB list. (Latter may be more efficient.)
+                  for (int j = prevList->size() - 1; j >= 0; j--) {
+                     Float *lastFloat = prevList->get (j);
+                     if (lastFloat->inCBList) {
+                        //printf ("      previous generator %p, index = %d; %s "
+                        //        "list has %d elements\n",
+                        //        prev->textblock, prev->index,
+                        //        side == LEFT ? "left" : "right",
+                        //        prevList->size());
+                        //printf ("      lastFloat: %s\n",
+                        //        lastFloat->toString ());
+                        last = lastFloat->index;
+                     }
                   }
+                  // If no appropriate float found, continue.
                }
             }
 
