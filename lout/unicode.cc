@@ -92,7 +92,7 @@ const char *nextUtf8Char (const char *s)
    const char *r;
 
    if (s == NULL || s[0] == 0)
-      r = NULL;   
+      r = NULL;
    else if((s[0] & 0x80) == 0)
       r = s + 1;
    else if((s[0] & 0xe0) == 0xc0 && (s[1] & 0xc0) == 0x80)
@@ -118,7 +118,7 @@ const char *nextUtf8Char (const char *s, int len)
    const char *r;
 
    if (s == NULL || len <= 0)
-      r = NULL;   
+      r = NULL;
    else if(len >= 1 && (s[0] & 0x80) == 0)
       r = s + 1;
    else if(len >= 2 && (s[0] & 0xe0) == 0xc0 && (s[1] & 0xc0) == 0x80)

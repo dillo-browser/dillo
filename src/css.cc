@@ -88,7 +88,7 @@ void CssPropertyList::apply (CssPropertyList *props) {
    for (int i = 0; i < size (); i++) {
       CssPropertyValue value = getRef (i)->value;
 
-      if (props->ownerOfStrings && 
+      if (props->ownerOfStrings &&
           (getRef (i)->type == CSS_TYPE_STRING ||
            getRef (i)->type == CSS_TYPE_SYMBOL))
          value.strVal = strdup(value.strVal);

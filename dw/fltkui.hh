@@ -485,7 +485,6 @@ private:
    Fl_Menu_Item *newItem();
    Fl_Menu_Item *menu;
    int itemsAllocated, itemsUsed;
-   int visibleItems; /* not counting the invisible ones that close a group */
 public:
    FltkOptionMenuResource (FltkPlatform *platform);
    ~FltkOptionMenuResource ();
@@ -505,15 +504,13 @@ class FltkListResource:
 protected:
    Fl_Widget *createNewWidget (core::Allocation *allocation);
    void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
-
-   int getNumberOfItems () {return itemsSelected.size();};
+   int getNumberOfItems();
    int getMaxItemWidth ();
-
 private:
    static void widgetCallback (Fl_Widget *widget, void *data);
    void *newItem (const char *str, bool enabled, bool selected);
-   void *currParent;
-   lout::misc::SimpleVector <bool> itemsSelected;
+   int currDepth;
+   int colWidths[4];
    int showRows;
    ListResource::SelectionMode mode;
 public:

@@ -36,7 +36,6 @@ using namespace dw::core::ui;
 
 class DilloHtmlReceiver;
 class DilloHtmlSelect;
-class DilloHtmlOption;
 
 static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize);
 
@@ -166,29 +165,64 @@ public:
    void setEnabled(bool enabled) {if (embed) embed->setEnabled(enabled); };
 };
 
+class DilloHtmlOptbase
+{
+public:
+   virtual ~DilloHtmlOptbase () {};
+   virtual bool isSelected() {return false;}
+   virtual bool select() {return false;}
+   virtual const char *getValue() {return NULL;}
+   virtual void setContent(const char *str, int len)
+      {MSG_ERR("Form: Optbase setContent()\n");}
+   virtual void addSelf(SelectionResource *res) = 0;
+};
+
+class DilloHtmlOptgroup : public DilloHtmlOptbase {
+private:
+   char *label;
+   bool enabled;
+public:
+   DilloHtmlOptgroup (char *label, bool enabled);
+   virtual ~DilloHtmlOptgroup ();
+   void addSelf (SelectionResource *res)
+      {res->pushGroup(label, enabled);}
+};
+
+class DilloHtmlOptgroupClose : public DilloHtmlOptbase {
+public:
+   virtual ~DilloHtmlOptgroupClose () {};
+   void addSelf (SelectionResource *res)
+      {res->popGroup();}
+};
+
+class DilloHtmlOption : public DilloHtmlOptbase {
+   friend class DilloHtmlSelect;
+public:
+   char *value, *label, *content;
+   bool selected, enabled;
+   DilloHtmlOption (char *value, char *label, bool selected, bool enabled);
+   virtual ~DilloHtmlOption ();
+   bool isSelected() {return selected;}
+   bool select() {return (selected = true);}
+   const char *getValue() {return value ? value : content;}
+   void setContent(const char *str, int len) {content = dStrndup(str, len);}
+   void addSelf (SelectionResource *res)
+      {res->addItem(label ? label : content, enabled, selected);}
+};
+
 class DilloHtmlSelect {
    friend class DilloHtmlInput;
 private:
-   lout::misc::SimpleVector<DilloHtmlOption *> *options;
+   lout::misc::SimpleVector<DilloHtmlOptbase *> *opts;
    DilloHtmlSelect ();
    ~DilloHtmlSelect ();
 public:
-   DilloHtmlOption *getCurrentOption ();
-   void addOption (char *value, bool selected, bool enabled);
+   DilloHtmlOptbase *getCurrentOpt ();
+   void addOpt (DilloHtmlOptbase *opt);
    void ensureSelection ();
-   void addOptionsTo (SelectionResource *res);
+   void addOptsTo (SelectionResource *res);
    void reset (SelectionResource *res);
    void appendValuesTo (Dlist *values, SelectionResource *res);
-};
-
-class DilloHtmlOption {
-   friend class DilloHtmlSelect;
-public:
-   char *value, *content;
-   bool selected, enabled;
-private:
-   DilloHtmlOption (char *value, bool selected, bool enabled);
-   ~DilloHtmlOption ();
 };
 
 /*
@@ -767,7 +801,66 @@ void Html_tag_close_select(DilloHtml *html)
          select->ensureSelection ();
       }
       SelectionResource *res = (SelectionResource*)input->embed->getResource();
-      select->addOptionsTo (res);
+      select->addOptsTo (res);
+   }
+}
+
+void Html_tag_open_optgroup(DilloHtml *html, const char *tag, int tagsize)
+{
+   MSG("OPEN OPTGROUP\n");
+
+   if (!(html->InFlags & IN_SELECT)) {
+      BUG_MSG("<optgroup> element outside <select>\n");
+      return;
+   }
+   if (html->InFlags & IN_OPTGROUP) {
+      BUG_MSG("nested <optgroup>\n");
+      return;
+   }
+   if (html->InFlags & IN_OPTION) {
+      Html_option_finish(html);
+      html->InFlags &= ~IN_OPTION;
+   }
+
+   html->InFlags |= IN_OPTGROUP;
+
+   DilloHtmlInput *input = Html_get_current_input(html);
+
+   if (input->type == DILLO_HTML_INPUT_SELECT ||
+       input->type == DILLO_HTML_INPUT_SEL_LIST) {
+      char *label = a_Html_get_attr_wdef(html, tag, tagsize, "label", NULL);
+      bool enabled = (a_Html_get_attr(html, tag, tagsize, "disabled") == NULL);
+
+      if (!label) {
+         BUG_MSG("label attribute is required for <optgroup>\n");
+         label = strdup("");
+      }
+
+      DilloHtmlOptgroup *opt =
+         new DilloHtmlOptgroup (label, enabled);
+
+      input->select->addOpt(opt);
+   }
+}
+
+void Html_tag_close_optgroup(DilloHtml *html)
+{
+   if (html->InFlags & IN_OPTGROUP) {
+      html->InFlags &= ~IN_OPTGROUP;
+
+      if (html->InFlags & IN_OPTION) {
+         Html_option_finish(html);
+         html->InFlags &= ~IN_OPTION;
+      }
+
+      DilloHtmlInput *input = Html_get_current_input(html);
+
+      if (input->type == DILLO_HTML_INPUT_SELECT ||
+          input->type == DILLO_HTML_INPUT_SEL_LIST) {
+         DilloHtmlOptgroupClose *opt = new DilloHtmlOptgroupClose ();
+
+         input->select->addOpt(opt);
+      }
    }
 }
 
@@ -789,9 +882,14 @@ void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
    if (input->type == DILLO_HTML_INPUT_SELECT ||
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
       char *value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
+      char *label = a_Html_get_attr_wdef(html, tag, tagsize, "label", NULL);
       bool selected = (a_Html_get_attr(html, tag, tagsize,"selected") != NULL);
       bool enabled = (a_Html_get_attr(html, tag, tagsize, "disabled") == NULL);
-      input->select->addOption(value, selected, enabled);
+
+      DilloHtmlOption *option =
+         new DilloHtmlOption (value, label, selected, enabled);
+
+      input->select->addOpt(option);
    }
 
    a_Html_stash_init(html);
@@ -1792,7 +1890,7 @@ void DilloHtmlInput::reset ()
  */
 DilloHtmlSelect::DilloHtmlSelect ()
 {
-   options = new misc::SimpleVector<DilloHtmlOption *> (4);
+   opts = new misc::SimpleVector<DilloHtmlOptbase *> (4);
 }
 
 /*
@@ -1800,24 +1898,22 @@ DilloHtmlSelect::DilloHtmlSelect ()
  */
 DilloHtmlSelect::~DilloHtmlSelect ()
 {
-   int size = options->size ();
+   int size = opts->size ();
    for (int k = 0; k < size; k++)
-      delete options->get (k);
-   delete options;
+      delete opts->get (k);
+   delete opts;
 }
 
-DilloHtmlOption *DilloHtmlSelect::getCurrentOption ()
+DilloHtmlOptbase *DilloHtmlSelect::getCurrentOpt ()
 {
-   return options->get (options->size() - 1);
+   return opts->get (opts->size() - 1);
 }
 
-void DilloHtmlSelect::addOption (char *value, bool selected, bool enabled)
+void DilloHtmlSelect::addOpt (DilloHtmlOptbase *opt)
 {
-   DilloHtmlOption *option =
-      new DilloHtmlOption (value, selected, enabled);
-   int size = options->size ();
-   options->increase ();
-   options->set (size, option);
+   int size = opts->size ();
+   opts->increase ();
+   opts->set (size, opt);
 }
 
 /*
@@ -1825,46 +1921,62 @@ void DilloHtmlSelect::addOption (char *value, bool selected, bool enabled)
  */
 void DilloHtmlSelect::ensureSelection()
 {
-   int size = options->size ();
+   int size = opts->size ();
    if (size > 0) {
       for (int i = 0; i < size; i++) {
-            DilloHtmlOption *option = options->get (i);
-            if (option->selected)
+            DilloHtmlOptbase *opt = opts->get (i);
+            if (opt->isSelected())
                return;
       }
-      DilloHtmlOption *option = options->get (0);
-      option->selected = true;
+      for (int i = 0; i < size; i++) {
+         DilloHtmlOptbase *opt = opts->get (i);
+         if (opt->select())
+            break;
+      }
    }
 }
 
-void DilloHtmlSelect::addOptionsTo (SelectionResource *res)
+void DilloHtmlSelect::addOptsTo (SelectionResource *res)
 {
-   int size = options->size ();
+   int size = opts->size ();
    for (int i = 0; i < size; i++) {
-      DilloHtmlOption *option = options->get (i);
-      res->addItem(option->content, option->enabled, option->selected);
+      DilloHtmlOptbase *opt = opts->get (i);
+      opt->addSelf(res);
    }
 }
 
 void DilloHtmlSelect::reset (SelectionResource *res)
 {
-   int size = options->size ();
+   int size = opts->size ();
    for (int i = 0; i < size; i++) {
-      DilloHtmlOption *option = options->get (i);
-      res->setItem(i, option->selected);
+      DilloHtmlOptbase *opt = opts->get (i);
+      res->setItem(i, opt->isSelected());
    }
 }
 
 void DilloHtmlSelect::appendValuesTo (Dlist *values, SelectionResource *res)
 {
-   int size = options->size ();
+   int size = opts->size ();
    for (int i = 0; i < size; i++) {
       if (res->isSelected (i)) {
-         DilloHtmlOption *option = options->get (i);
-         char *val = option->value ? option->value : option->content;
-         dList_append(values, dStr_new(val));
+         DilloHtmlOptbase *opt = opts->get (i);
+         const char *val = opt->getValue();
+
+         if (val)
+            dList_append(values, dStr_new(val));
       }
    }
+}
+
+DilloHtmlOptgroup::DilloHtmlOptgroup (char *label, bool enabled)
+{
+   this->label = label;
+   this->enabled = enabled;
+}
+
+DilloHtmlOptgroup::~DilloHtmlOptgroup ()
+{
+   dFree(label);
 }
 
 /*
@@ -1874,11 +1986,11 @@ void DilloHtmlSelect::appendValuesTo (Dlist *values, SelectionResource *res)
 /*
  * Constructor
  */
-DilloHtmlOption::DilloHtmlOption (char *value2,
-                                  bool selected2,
+DilloHtmlOption::DilloHtmlOption (char *value2, char *label2, bool selected2,
                                   bool enabled2)
 {
    value = value2;
+   label = label2;
    content = NULL;
    selected = selected2;
    enabled = enabled2;
@@ -1890,6 +2002,7 @@ DilloHtmlOption::DilloHtmlOption (char *value2,
 DilloHtmlOption::~DilloHtmlOption ()
 {
    dFree(value);
+   dFree(label);
    dFree(content);
 }
 
@@ -1930,8 +2043,7 @@ static void Html_option_finish(DilloHtml *html)
    DilloHtmlInput *input = Html_get_current_input(html);
    if (input->type == DILLO_HTML_INPUT_SELECT ||
        input->type == DILLO_HTML_INPUT_SEL_LIST) {
-      DilloHtmlOption *option =
-         input->select->getCurrentOption ();
-      option->content = dStrndup(html->Stash->str, html->Stash->len);
+      DilloHtmlOptbase *opt = input->select->getCurrentOpt ();
+      opt->setContent (html->Stash->str, html->Stash->len);
    }
 }

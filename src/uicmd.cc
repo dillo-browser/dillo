@@ -124,7 +124,7 @@ class CustTabs : public Fl_Group {
          for (int i = 0; i < num_tabs(); ++i)
             btns[i] = (CustTabButton*)Pack->child(i);
          qsort(btns, num_tabs(), sizeof(CustTabButton *), btn_cmp);
-         focus_counter = 0; 
+         focus_counter = 0;
          for (int i = 0; i < num_tabs(); ++i)
             btns[i]->focus_num(focus_counter++);
          dFree(btns);
@@ -497,7 +497,7 @@ static void win_cb (Fl_Widget *w, void *cb_data) {
       // (most likely with modifiers).
       return;
    }
-      
+
    if (prefs.show_quit_dialog && ntabs > 1)
       choice = a_Dialog_choice("Dillo: Close window?",
                                "Window contains more than one tab.",

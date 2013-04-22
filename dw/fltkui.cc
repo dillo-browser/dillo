@@ -32,7 +32,7 @@
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Round_Button.H>
 #include <FL/Fl_Choice.H>
-#include <FL/Fl_Tree.H>
+#include <FL/Fl_Browser.H>
 
 #include <stdio.h>
 
@@ -1056,7 +1056,6 @@ FltkOptionMenuResource::FltkOptionMenuResource (FltkPlatform *platform):
    menu = new Fl_Menu_Item[itemsAllocated];
    memset(menu, 0, itemsAllocated * sizeof(Fl_Menu_Item));
    itemsUsed = 1; // menu[0].text == NULL, which is an end-of-menu marker.
-   visibleItems = 0;
 
    init (platform);
 }
@@ -1168,7 +1167,6 @@ void FltkOptionMenuResource::addItem (const char *str,
    Fl_Menu_Item *item = newItem();
 
    item->text = strdup(str);
-   item->argument(visibleItems++);
 
    if (enabled == false)
       item->flags = FL_MENU_INACTIVE;
@@ -1190,7 +1188,6 @@ void FltkOptionMenuResource::pushGroup (const char *name, bool enabled)
    Fl_Menu_Item *item = newItem();
 
    item->text = strdup(name);
-   item->argument(visibleItems++);
 
    if (enabled == false)
       item->flags = FL_MENU_INACTIVE;
@@ -1209,7 +1206,7 @@ void FltkOptionMenuResource::popGroup ()
 
 bool FltkOptionMenuResource::isSelected (int index)
 {
-   return index == (long) ((Fl_Choice *)widget)->mvalue()->user_data();
+   return index == ((Fl_Choice *)widget)->value();
 }
 
 int FltkOptionMenuResource::getNumberOfItems()
@@ -1219,11 +1216,38 @@ int FltkOptionMenuResource::getNumberOfItems()
 
 // ----------------------------------------------------------------------
 
+class CustBrowser : public Fl_Browser {
+public:
+   CustBrowser(int x, int y, int w, int h) : Fl_Browser(x, y, w, h) {};
+   int full_width();
+   int full_height() {return Fl_Browser::full_height();}
+   int avg_height() {return size() ? Fl_Browser_::incr_height() : 0;}
+};
+
+/*
+ * Fl_Browser_ has a full_width(), but it has a tendency to contain 0, so...
+ */
+int CustBrowser::full_width()
+{
+   int max = 0;
+   void *item = item_first();
+
+   while (item) {
+      int w = item_width(item);
+
+      if (w > max)
+         max = w;
+
+      item = item_next(item);
+   }
+   return max;
+}
+
 FltkListResource::FltkListResource (FltkPlatform *platform,
                                     core::ui::ListResource::SelectionMode
                                     selectionMode, int rowCount):
    FltkSelectionResource <dw::core::ui::ListResource> (platform),
-   itemsSelected(8)
+   currDepth(0)
 {
    mode = selectionMode;
    showRows = rowCount;
@@ -1237,165 +1261,165 @@ FltkListResource::~FltkListResource ()
 
 Fl_Widget *FltkListResource::createNewWidget (core::Allocation *allocation)
 {
-   Fl_Tree *tree =
-      new Fl_Tree (allocation->x, allocation->y, allocation->width,
-                           allocation->ascent + allocation->descent);
+   CustBrowser *b =
+      new CustBrowser (allocation->x, allocation->y, allocation->width,
+                      allocation->ascent + allocation->descent);
 
-   tree->selectmode((mode == SELECTION_MULTIPLE) ? FL_TREE_SELECT_MULTI
-                                                 : FL_TREE_SELECT_SINGLE);
-   tree->showroot(0);
-   tree->connectorstyle(FL_TREE_CONNECTOR_NONE);
-   tree->margintop(0);
-   tree->marginleft(-14);
-   tree->callback(widgetCallback,this);
-   tree->when(FL_WHEN_CHANGED);
+   b->type((mode == SELECTION_MULTIPLE) ? FL_MULTI_BROWSER : FL_HOLD_BROWSER);
+   b->callback(widgetCallback, this);
+   b->when(FL_WHEN_CHANGED);
+   b->column_widths(colWidths);
+   b->column_char('\a');   // I just chose a nonprinting character.
 
-   currParent = tree->root();
-   return tree;
+   return b;
 }
 
 void FltkListResource::setWidgetStyle (Fl_Widget *widget,
                                        core::style::Style *style)
 {
-   Fl_Tree *t = (Fl_Tree *)widget;
+   Fl_Browser *b = (Fl_Browser *)widget;
 
    FltkResource::setWidgetStyle(widget, style);
 
-   t->item_labelfont(widget->labelfont());
-   t->item_labelsize(widget->labelsize());
-   t->item_labelfgcolor(widget->labelcolor());
-   t->item_labelbgcolor(widget->color());
+   b->textfont(widget->labelfont());
+   b->textsize(widget->labelsize());
+   b->textcolor(widget->labelcolor());
+
+   colWidths[0] = b->textsize();
+   colWidths[1] = colWidths[0];
+   colWidths[2] = colWidths[0];
+   colWidths[3] = 0;
 }
 
 void FltkListResource::widgetCallback (Fl_Widget *widget, void *data)
 {
-   Fl_Tree_Item *fltkItem = ((Fl_Tree *) widget)->callback_item ();
-   int index = -1;
+   Fl_Browser *b = (Fl_Browser *) widget;
 
-   if (fltkItem)
-      index = (long) (fltkItem->user_data ());
-   if (index > -1) {
-      bool selected = fltkItem->is_selected ();
+   if (b->selected(b->value())) {
+      /* If it shouldn't be selectable, deselect it again. It would be nice to
+       * have a less unpleasant way to do this.
+       */
+      const char *inactive_code;
+      if ((inactive_code = strstr(b->text(b->value()), "@N"))) {
+         const char *ignore_codes = strstr(b->text(b->value()), "@.");
 
-      if (selected && fltkItem->has_children()) {
-         /* Don't permit a group to be selected. */
-         fltkItem->deselect();
-      } else {
-         FltkListResource *res = (FltkListResource *) data;
-         res->itemsSelected.set (index, selected);
+         if (inactive_code < ignore_codes)
+            b->select(b->value(), 0);
       }
    }
 }
 
 void *FltkListResource::newItem (const char *str, bool enabled, bool selected)
 {
-   Fl_Tree *tree = (Fl_Tree *) widget;
-   Fl_Tree_Item *parent = (Fl_Tree_Item *)currParent;
-   Fl_Tree_Item *item = tree->add(parent, str);
-   int index = itemsSelected.size();
+   Fl_Browser *b = (Fl_Browser *) widget;
+   int index = b->size() + 1;
+   char *label = (char *)malloc(strlen(str) + 1 + currDepth + 4),
+        *s = label;
 
-   enabled &= parent->is_active();
-   item->activate(enabled);
-   item->user_data((void*)(long)index);
-   itemsSelected.increase ();
-   itemsSelected.set (itemsSelected.size() - 1, selected);
+   memset(s, '\a', currDepth);
+   s += currDepth;
+   if (!enabled) {
+      // FL_INACTIVE_COLOR
+      *s++ = '@';
+      *s++ = 'N';
+   }
+   // ignore further '@' chars
+   *s++ = '@';
+   *s++ = '.';
 
-   return item;
+   strcpy(s, str);
+
+   b->add(label);
+   free(label);
+
+   if (selected) {
+      b->select(index, selected);
+      if (b->type() == FL_HOLD_BROWSER) {
+         /* Left to its own devices, it sometimes has some suboptimal ideas
+          * about how to scroll, and sometimes doesn't seem to show everything
+          * where it thinks it is.
+          */
+         if (index > showRows) {
+            /* bottomline() and middleline() don't work because the widget is
+             * too tiny at this point for the bbox() call in
+             * Fl_Browser::lineposition() to do what one would want.
+             */
+            b->topline(index - showRows + 1);
+         } else {
+            b->topline(1);
+         }
+      }
+   }
+   queueResize (true);
+   return NULL;
 }
 
 void FltkListResource::addItem (const char *str, bool enabled, bool selected)
 {
-   Fl_Tree *tree = (Fl_Tree *) widget;
-   Fl_Tree_Item *item = (Fl_Tree_Item *) newItem(str, enabled, selected);
-
-   if (selected) {
-      if (mode == SELECTION_MULTIPLE) {
-         item->select(selected);
-      } else {
-         const bool do_callback = true;
-         tree->select_only(item, do_callback);
-      }
-   }
-   queueResize (true);
+   // Fl_Browser_::incr_height() for item height won't do the right thing if
+   // the first item doesn't have anything to it.
+   if (!str || !*str)
+      str = " ";
+   newItem(str, enabled, selected);
 }
 
 void FltkListResource::setItem (int index, bool selected)
 {
-   Fl_Tree *tree = (Fl_Tree *) widget;
-   Fl_Tree_Item *item = tree->root()->next();
+   Fl_Browser *b = (Fl_Browser *) widget;
 
-   for (int i = 0; item && i < index; i++)
-      item = item->next();
-
-   if (item) {
-      bool do_callback = false;
-      itemsSelected.set (index, selected);
-      if (selected) {
-         if (mode == SELECTION_MULTIPLE) {
-            tree->select(item, do_callback);
-         } else {
-            /* callback to deselect other selected item */
-            do_callback = true;
-            tree->select_only(item, do_callback);
-         }
-      } else {
-         tree->deselect(item, do_callback);
-      }
-   }
+   b->select(index + 1, selected);
 }
 
 void FltkListResource::pushGroup (const char *name, bool enabled)
 {
+   bool en = false;
    bool selected = false;
 
-   currParent = (Fl_Tree_Item *) newItem(name, enabled, selected);
-   queueResize (true);
+   // Fl_Browser_::incr_height() for item height won't do the right thing if
+   // the first item doesn't have anything to it.
+   if (!name || !*name)
+      name = " ";
+
+   // TODO: Proper disabling of item groups
+   newItem(name, en, selected);
+
+   if (currDepth < 3)
+      currDepth++;
 }
 
 void FltkListResource::popGroup ()
 {
-   Fl_Tree_Item *p = (Fl_Tree_Item *)currParent;
+   CustBrowser *b = (CustBrowser *) widget;
 
-   if (p->parent())
-      currParent = p->parent();
+   newItem(" ", false, false);
+   b->hide(b->size());
+
+   if (currDepth)
+      currDepth--;
 }
 
 int FltkListResource::getMaxItemWidth()
 {
-   Fl_Tree *tree = (Fl_Tree *)widget;
-   int max = 0;
-
-   for (Fl_Tree_Item *i = tree->first(); i; i = tree->next(i)) {
-      int width = 0;
-
-      if (i == tree->root())
-         continue;
-
-      for (Fl_Tree_Item *p = i->parent(); p != tree->root(); p = p->parent())
-         width += tree->connectorwidth();
-
-      if (i->label())
-         width += fl_width(i->label());
-
-      if (width > max)
-         max = width;
-   }
-   return max;
+   return ((CustBrowser *) widget)->full_width();
 }
 
 void FltkListResource::sizeRequest (core::Requisition *requisition)
 {
    if (style) {
-      FltkFont *font = (FltkFont*)style->font;
-      fl_font(font->font,font->size);
-      int rows = getNumberOfItems();
-      if (showRows < rows) {
-         rows = showRows;
+      CustBrowser *b = (CustBrowser *) widget;
+      int height = b->full_height();
+      requisition->width = getMaxItemWidth() + 4;
+
+      if (showRows * b->avg_height() < height) {
+         height = showRows * b->avg_height();
+         b->has_scrollbar(Fl_Browser_::VERTICAL_ALWAYS);
+         requisition->width += Fl::scrollbar_size();
+      } else {
+         b->has_scrollbar(0);
       }
-      requisition->width = getMaxItemWidth() + 5 + Fl::scrollbar_size();
-      requisition->descent = font->descent + 2;
-      requisition->ascent = (rows * (font->size + font->descent + 1)) + 4 -
-                            requisition->descent;
+
+      requisition->descent = style->font->descent + 2;
+      requisition->ascent = height - style->font->descent + 2;
    } else {
       requisition->width = 1;
       requisition->ascent = 1;
@@ -1403,9 +1427,16 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
    }
 }
 
+int FltkListResource::getNumberOfItems()
+{
+   return ((Fl_Browser*)widget)->size();
+}
+
 bool FltkListResource::isSelected (int index)
 {
-   return itemsSelected.get (index);
+   Fl_Browser *b = (Fl_Browser *) widget;
+
+   return b->selected(index + 1) ? true : false;
 }
 
 } // namespace ui
