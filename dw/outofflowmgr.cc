@@ -1195,6 +1195,9 @@ bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h,
 bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
                              Textblock *lastGB, int lastExtIndex)
 {
+   //printf ("[%p] hasFloat (%p, %s, %d, %d, %p, %d)\n",
+   //        containingBlock, textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
+   //        lastGB, lastExtIndex);
    SortedFloatsVector *list = getFloatsListForTextblock(textblock, side);
    return list->findFirst (textblock, y, h, lastGB, lastExtIndex) != -1;
 }
