@@ -2412,6 +2412,26 @@ void Textblock::borderChanged (int y, Widget *vloat)
                }
             }
 
+            bool found2 = false;
+            for (int lineIndex2 = wrapLineIndex + 1;
+                 !found2 && lineIndex2 < lines->size (); lineIndex2++) { 
+               Line *line = lines->getRef (lineIndex2);
+               printf ("   could have searched in existing line %d "
+                       "(from %d to %d):\n",
+                       lineIndex2, line->firstWord, line->lastWord);
+               for (int wordIndex = line->firstWord;
+                    !found2 && wordIndex <= line->lastWord; wordIndex++) {
+                  Word *word = words->getRef (wordIndex);
+                  if (word->content.type == core::Content::WIDGET_OOF_REF &&
+                      word->content.widget == vloat) {
+                     found2 = true;
+                     printf ("      word %d: ", wordIndex);
+                     printWordShort (word);
+                     printf ("\n");
+                  }
+               }
+            }
+
             lout::misc::assertNotReached ();
          }
       }      
