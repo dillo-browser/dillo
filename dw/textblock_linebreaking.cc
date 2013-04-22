@@ -505,9 +505,20 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
    //printWord (word);
    //printf ("\n");
 
-   if (word->content.type == core::Content::WIDGET_OOF_REF)
-      wrapWidgetOofRef (wordIndex);
+   switch (word->content.type) {
+   case core::Content::WIDGET_OOF_REF:
+      wrapWordOofRef (wordIndex, wrapAll);
+      break;
 
+   default:
+      wrapWordInFlow (wordIndex, wrapAll);
+      break;
+   }
+}
+
+void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
+{
+   Word *word = words->getRef (wordIndex);
    int penaltyIndex = calcPenaltyIndexForNewLine ();
 
    bool newLine;
@@ -690,7 +701,7 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
    }
 }
 
-void Textblock::wrapWidgetOofRef (int wordIndex)
+void Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
 {
    int top;
    if (lines->size() == 0)

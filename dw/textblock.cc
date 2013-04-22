@@ -2009,8 +2009,10 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
 
    // TODO: This line does not work: addBreakOption (word, style);
 
-   // Do not override a previously set break penalty.
-   if (!word->content.space) {
+   if (// Do not override a previously set break penalty:
+       !word->content.space &&
+       // OOF references are considered specially, and must not have a space:
+       word->content.type != core::Content::WIDGET_OOF_REF) {
       setBreakOption (word, style, 0, 0);
 
       word->content.space = true;
