@@ -1896,7 +1896,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       widget->setParent (containingBlock);
       widget->setGenerator (this);
       containingBlock->outOfFlowMgr->addWidget (widget, this, words->size ());
-      Word *word = addWord (0, 0, 0, false, style);
+      Word *word = addWord (0, 0, 0, 0, style);
       word->content.type = core::Content::WIDGET_OOF_REF;
       word->content.widget = widget;
       word->style = style;
