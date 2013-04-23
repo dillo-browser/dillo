@@ -369,6 +369,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    line->marginDescent = 0;
    line->breakSpace = 0;
    line->leftOffset = 0;
+   line->finished = false;
 
    alignLine (lineIndex);
    for (int i = line->firstWord; i < line->lastWord; i++) {
@@ -434,6 +435,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    //words->getRef(line->lastWord)->badnessAndPenalty.print ();
    //printf ("\n");
    
+   line->finished = true;
+
    return line;
 }
 

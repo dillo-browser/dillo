@@ -294,6 +294,11 @@ protected:
        * changed line breaking), the values were accumulated up to the
        * last line, not this line.*/
       int maxLineWidth;
+
+      /* Set to false at the beginning of addLine(), and to true at
+       * the end. Should be checked by some methods which are called
+       * by addLine(). */
+      bool finished;
    };
 
    struct Word
@@ -569,6 +574,7 @@ protected:
    Textblock *getTextblockForLine (int firstWord, int lastWord);
    int topOfPossiblyMissingLine (int lineNo);
    int heightOfPossiblyMissingLine (int lineNo);
+   int accumulateLineHeight (int firstWord, int lastWord);
 
    bool sendSelectionEvent (core::SelectionState::EventType eventType,
                             core::MousePositionEvent *event);
