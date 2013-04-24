@@ -124,6 +124,12 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
    }
 
    oofm->ensureFloatSize (this);
+
+   //printf ("[%p] COVERS (%p, %d, %d) => %d + %d + %d > %d && %d < %d + %d? "
+   //        "%s.\n", oofm->containingBlock, textblock, y, h, fly, size.ascent,
+   //        size.descent, reqy, fly, reqy, h,
+   //        (fly + size.ascent + size.descent > reqy && fly < reqy + h) ?
+   //        "yes" : "no");
    
    return fly + size.ascent + size.descent > reqy && fly < reqy + h;
 }
@@ -185,7 +191,8 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
                   // (i. e. opposite) list. So, this list may be
                   // empty. Also, ignore floats which are not yet in
                   // the CB list. (Latter may be more efficient.)
-                  for (int j = prevList->size() - 1; j >= 0; j--) {
+                  for (int j = prevList->size() - 1;
+                       last == -1 && j >= 0; j--) {
                      Float *lastFloat = prevList->get (j);
                      if (lastFloat->inCBList) {
                         //printf ("      previous generator %p, index = %d; %s "
@@ -1120,23 +1127,24 @@ int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h,
 int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                              Textblock *lastGB, int lastExtIndex)
 {
-   //printf ("[%p] GET_BORDER (%p (allocated: %s), %s, %d, %d) ...\n",
+   //printf ("[%p] GET_BORDER (%p (allocated: %s), %s, %d, %d, %p, %d)\n",
    //        containingBlock, textblock,
    //        wasAllocated (textblock) ? "true" : "false",
-   //        side == LEFT ? "LEFT" : "RIGHT", y, h);
+   //        side == LEFT ? "LEFT" : "RIGHT", y, h, lastGB, lastExtIndex);
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
+
+   //printf ("   searching in list:\n");
+   //for (int i = 0; i < list->size(); i++) {
+   //   printf ("      %d: %s\n", i, list->get(i)->toString());
+   //   //printf ("         (widget at (%d, %d))\n",
+   //   //        list->get(i)->widget->getAllocation()->x,
+   //   //        list->get(i)->widget->getAllocation()->y);
+   //}
+
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
 
-   //printf ("[%p] GET_BORDER (...): %d floats, first is %d\n",
-   //        containingBlock, list->size(), first);
-
-   //printf ("   list:\n");
-   //for (int i = 0; i < list->size(); i++)
-   //   printf ("      %d: %s\n           (widget at (%d, %d))\n",
-   //           i, list->get(i)->toString(),
-   //           list->get(i)->widget->getAllocation()->x,
-   //           list->get(i)->widget->getAllocation()->y);
+   //printf ("   first = %d\n", first);
 
    if (first == -1)
       // No float.

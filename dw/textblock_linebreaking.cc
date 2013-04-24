@@ -1160,6 +1160,8 @@ int Textblock::calcAvailWidth (int lineIndex)
    if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineIndex)) {
       int y = topOfPossiblyMissingLine (lineIndex);
       int h = heightOfPossiblyMissingLine (lineIndex);
+      PRINTF ("[%p] borders for line %d: y = %d, h = %d\n",
+              this, lineIndex, y, h);
       leftBorder =
          containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
                                                        lastPositionedOofWidget);
