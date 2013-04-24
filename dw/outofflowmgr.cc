@@ -247,8 +247,12 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
    //        oofm->wasAllocated (textblock) ? "true" : "false", y, lastGB,
    //        lastExtIndex, last, i, size());
 
-   if (i < 0 || i > last)
-      return -1;
+   // Note: The smallest value of "i" is 0, which means that "y" is before or
+   // equal to the first float. The largest value is "last + 1", which means
+   // that "y" is after the last float. In both cases, the first or last,
+   // respectively, float is a candidate. Generally, both floats, before and
+   // at the search position, are candidates.
+
    if (i > 0 && get(i - 1)->covers (textblock, y, h))
       return i - 1;
    else if (i <= last && get(i)->covers (textblock, y, h))
