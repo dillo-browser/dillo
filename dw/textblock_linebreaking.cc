@@ -591,19 +591,29 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
             }
 
             int hyphenatedWord = -1;
-            Word *word1 = words->getRef(breakPos);
+            Word *wordBreak = words->getRef(breakPos);
             PRINTF ("[%p] line (broken at word %d): ", this, breakPos);
             //word1->badnessAndPenalty.print ();
             PRINTF ("\n");
 
-            if (word1->badnessAndPenalty.lineTight () &&
-                (word1->flags & Word::CAN_BE_HYPHENATED) &&
-                word1->style->x_lang[0] &&
-                word1->content.type == core::Content::TEXT &&
-                Hyphenator::isHyphenationCandidate (word1->content.text))
-               hyphenatedWord = breakPos;
+            if (wordBreak->badnessAndPenalty.lineTight ()) {
+               // Sometimes, it is not the last word, which must be
+               // hyphenated, but some word before. Here, we search
+               // for the first word which can be hyphenated, *and*
+               // makes the line too tight.
+
+               for (int i = breakPos; i >= firstIndex; i--) {
+                  Word *word1 = words->getRef (i);
+                  if (word1->badnessAndPenalty.lineTight () &&
+                      (word1->flags & Word::CAN_BE_HYPHENATED) &&
+                      word1->style->x_lang[0] &&
+                      word1->content.type == core::Content::TEXT &&
+                      Hyphenator::isHyphenationCandidate (word1->content.text))
+                     hyphenatedWord = i;
+               }
+            }
             
-            if (word1->badnessAndPenalty.lineLoose () &&
+            if (wordBreak->badnessAndPenalty.lineLoose () &&
                 breakPos + 1 < words->size ()) {
                Word *word2 = words->getRef(breakPos + 1);
                if ((word2->flags & Word::CAN_BE_HYPHENATED) &&
