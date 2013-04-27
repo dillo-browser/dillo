@@ -636,7 +636,7 @@ void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
             } else {
                int breakPos =
                   searchMinBap (firstIndex, searchUntil, penaltyIndex, wrapAll);
-               int hyphenatedWord = considerHyphenation (breakPos);
+               int hyphenatedWord = considerHyphenation (firstIndex, breakPos);
                
                PRINTF ("[%p] breakPos = %d, hyphenatedWord = %d\n",
                        this, breakPos, hyphenatedWord);
@@ -782,24 +782,32 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
  * planned. Return a word index or -1, when hyphenation makes no
  * sense.
  */
-int Textblock::considerHyphenation (int breakPos)
+int Textblock::considerHyphenation (int firstIndex, int breakPos)
 {
    int hyphenatedWord = -1;
 
-   Word *word1 = words->getRef(breakPos);
+   Word *wordBreak = words->getRef(breakPos);
    PRINTF ("[%p] line (broken at word %d): ", this, breakPos);
-   //word1->badnessAndPenalty.print ();
+   //wordBreak->badnessAndPenalty.print ();
    PRINTF ("\n");
 
    // A tight line: maybe, after hyphenation, some parts of the last
    // word of this line can be put into the next line.
-   if (word1->badnessAndPenalty.lineTight () &&
-       isHyphenationCandidate (word1))
-      hyphenatedWord = breakPos;
+   if (wordBreak->badnessAndPenalty.lineTight ()) {
+      // Sometimes, it is not the last word, which must be hyphenated,
+      // but some word before. Here, we search for the first word
+      // which can be hyphenated, *and* makes the line too tight.     
+      for (int i = breakPos; i >= firstIndex; i--) {
+         Word *word1 = words->getRef (i);
+         if (word1->badnessAndPenalty.lineTight () &&
+             isHyphenationCandidate (word1))
+            hyphenatedWord = i;
+      }
+   }
 
    // A loose line: maybe, after hyphenation, some parts of the first
    // word of the next line can be put into this line.
-   if (word1->badnessAndPenalty.lineLoose () &&
+   if (wordBreak->badnessAndPenalty.lineLoose () &&
        breakPos + 1 < words->size ()) {
       Word *word2 = words->getRef(breakPos + 1);
       if (isHyphenationCandidate (word2))

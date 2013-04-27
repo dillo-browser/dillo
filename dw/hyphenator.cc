@@ -49,7 +49,7 @@ Hyphenator::Hyphenator (const char *patFile, const char *excFile, int pack)
 {
    trie = NULL; // As long we are not sure whether a pattern file can be read.
 
-   char buf[PATH_MAX + 1];
+   char buf[strlen (patFile) + 5 + 1];
    snprintf(buf, sizeof (buf), "%s.trie", patFile);
    FILE *trieF = fopen (buf, "r");
 
@@ -118,10 +118,10 @@ Hyphenator *Hyphenator::getHyphenator (const char *lang)
    if (hyphenator)
       delete langString;
    else {
-      char patFile [PATH_MAX];
+      char patFile [strlen (DILLO_LIBDIR) + 13 + strlen (lang) + 4 + 1];
       snprintf (patFile, sizeof (patFile), "%s/hyphenation/%s.pat",
                 DILLO_LIBDIR, lang);
-      char excFile [PATH_MAX];
+      char excFile [strlen (DILLO_LIBDIR) + 13 + strlen (lang) + 4 + 1];
       snprintf (excFile, sizeof(excFile), "%s/hyphenation/%s.exc",
                 DILLO_LIBDIR, lang);
 

@@ -239,7 +239,7 @@ static Dstr *Http_make_content_type(const DilloUrl *url)
    Dstr *dstr;
 
    if (URL_FLAGS(url) & URL_MultipartEnc) {
-      MSG("submitting multipart/form-data!\n");
+      _MSG("submitting multipart/form-data!\n");
       dstr = dStr_new("multipart/form-data; boundary=\"");
       if (URL_DATA(url)->len > 2) {
          /* boundary lines have "--" prepended. Skip that. */
