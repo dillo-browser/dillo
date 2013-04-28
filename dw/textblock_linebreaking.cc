@@ -550,8 +550,15 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                searchMinBap (firstIndex, searchUntil, penaltyIndex, wrapAll);
             int hyphenatedWord = considerHyphenation (firstIndex, breakPos);
 
-            PRINTF ("[%p] breakPos = %d, hyphenatedWord = %d\n",
-                    this, breakPos, hyphenatedWord);
+            //printf ("[%p] breakPos = %d (", this, breakPos);
+            //printWordShort (words->getRef (breakPos));
+            //printf ("), hyphenatedWord = %d", hyphenatedWord);
+            //if (hyphenatedWord != -1) {
+            //   printf (" (");
+            //   printWordShort (words->getRef (hyphenatedWord));
+            //   printf (")");
+            //}
+            //printf ("\n");
 
             if(hyphenatedWord == -1) {
                addLine (firstIndex, breakPos, tempNewLine);
@@ -651,6 +658,11 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
       Word *w = words->getRef (lastWord);
       BadnessAndPenalty correctedBap = w->badnessAndPenalty;
       correctedBap.setPenalty (0);
+
+      //printf ("         corrected bap: ");
+      //correctedBap.print ();
+      //printf ("\n");
+
       if (correctedBap.compareTo(penaltyIndex,
                                  &words->getRef(pos)->badnessAndPenalty) <= 0) {
          pos = lastWord;
@@ -672,9 +684,9 @@ int Textblock::considerHyphenation (int firstIndex, int breakPos)
    int hyphenatedWord = -1;
 
    Word *wordBreak = words->getRef(breakPos);
-   PRINTF ("[%p] line (broken at word %d): ", this, breakPos);
-   //wordBreak->badnessAndPenalty.print ();
-   PRINTF ("\n");
+   //printf ("[%p] line (broken at word %d): ", this, breakPos);
+   //printWord (wordBreak);
+   //printf ("\n");
 
    // A tight line: maybe, after hyphenation, some parts of the last
    // word of this line can be put into the next line.
