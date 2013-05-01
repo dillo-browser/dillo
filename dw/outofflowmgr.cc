@@ -605,7 +605,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
                               int externalIndex)
 {
    if (widget->getStyle()->vloat != FLOAT_NONE) {
-      TBInfo *tbInfo = registerCaller (generatingBlock);
+      TBInfo *tbInfo = registerTextblock (generatingBlock);
 
       Float *vloat = new Float (this, widget, generatingBlock, externalIndex);
 
@@ -920,7 +920,7 @@ void OutOfFlowMgr::checkCoverage (Float *vloat, int oldY)
 void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
                                    SortedFloatsVector **listOpp)
 {
-   TBInfo *tbInfo = registerCaller (vloat->generatingBlock);
+   TBInfo *tbInfo = registerTextblock (vloat->generatingBlock);
       
    switch (vloat->widget->getStyle()->vloat) {
    case FLOAT_LEFT:
@@ -1081,7 +1081,7 @@ void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
    }
 }
 
-OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerCaller (Textblock *textblock)
+OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerTextblock (Textblock *textblock)
 {
    TypedPointer<Textblock> key (textblock);
    TBInfo *tbInfo = tbInfosByTextblock->get (&key);
@@ -1184,7 +1184,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
 OutOfFlowMgr::SortedFloatsVector *OutOfFlowMgr::getFloatsListForTextblock
    (Textblock *textblock, Side side)
 {
-   TBInfo *tbInfo = registerCaller (textblock);
+   TBInfo *tbInfo = registerTextblock (textblock);
    if (wasAllocated (textblock))
       return side == LEFT ? leftFloatsCB : rightFloatsCB;
    else

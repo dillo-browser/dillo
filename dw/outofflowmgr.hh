@@ -190,7 +190,7 @@ private:
    int getFloatsSize (SortedFloatsVector *list);
    void accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
                        int *oofMaxWidth);
-   TBInfo *registerCaller (Textblock *textblock);
+   TBInfo *registerTextblock (Textblock *textblock);
    int getBorder (Textblock *textblock, Side side, int y, int h,
                   Textblock *lastGB, int lastExtIndex);
    SortedFloatsVector *getFloatsListForTextblock (Textblock *textblock,
