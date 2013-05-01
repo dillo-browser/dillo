@@ -918,7 +918,7 @@ void OutOfFlowMgr::checkCoverage (Float *vloat, int oldY)
 void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
                                    SortedFloatsVector **listOpp)
 {
-   TBInfo *tbInfo = registerTextblock (vloat->generatingBlock);
+   TBInfo *tbInfo = getExistingTextblock (vloat->generatingBlock);
       
    switch (vloat->widget->getStyle()->vloat) {
    case FLOAT_LEFT:
