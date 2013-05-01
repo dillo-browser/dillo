@@ -150,8 +150,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
    //        oofm->containingBlock, lastGB, lastExtIndex);
            
    if (lastGB) {
-      TypedPointer<Textblock> key (lastGB);
-      TBInfo *tbInfo = oofm->tbInfosByTextblock->get (&key);
+      TBInfo *tbInfo = oofm->getTextblock (lastGB);
       if (tbInfo) {
          //printf ("      generator %p, index = %d\n",
          //        tbInfo->textblock, tbInfo->index);
@@ -678,8 +677,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
 void OutOfFlowMgr::moveExternalIndices (Textblock *generatingBlock,
                                         int oldStartIndex, int diff)
 {
-   TypedPointer<Textblock> key (generatingBlock);
-   TBInfo *tbInfo = tbInfosByTextblock->get (&key);
+   TBInfo *tbInfo = getTextblock (generatingBlock);
    if (tbInfo) {
       moveExternalIndices (tbInfo->leftFloatsGB, oldStartIndex, diff);
       moveExternalIndices (tbInfo->rightFloatsGB, oldStartIndex, diff);
@@ -1081,10 +1079,22 @@ void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
    }
 }
 
-OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerTextblock (Textblock *textblock)
+OutOfFlowMgr::TBInfo *OutOfFlowMgr::getTextblock (Textblock *textblock)
 {
    TypedPointer<Textblock> key (textblock);
-   TBInfo *tbInfo = tbInfosByTextblock->get (&key);
+   return tbInfosByTextblock->get (&key);
+}
+
+OutOfFlowMgr::TBInfo *OutOfFlowMgr::getExistingTextblock (Textblock *textblock)
+{
+   TBInfo *tbInfo = getTextblock (textblock);
+   assert (tbInfo);
+   return tbInfo;
+}
+
+OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerTextblock (Textblock *textblock)
+{
+   TBInfo *tbInfo = getTextblock (textblock);
    if (tbInfo == NULL) {
       tbInfo = new TBInfo (this, textblock);
       tbInfo->wasAllocated = false;
@@ -1096,7 +1106,7 @@ OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerTextblock (Textblock *textblock)
 
    return tbInfo;
 }
-   
+  
 /**
  * Get the left border for the vertical position of *y*, for a height
  * of *h", based on floats; relative to the allocation of the calling
