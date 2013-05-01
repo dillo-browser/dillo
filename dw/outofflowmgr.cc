@@ -843,7 +843,7 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
       }
    }
 
-   // No call neccessary when yReal has not changed.  (Notice that
+   // No call neccessary when yReal has not changed. (Notice that
    // checking for yReq is wrong: yReq may remain the same, when yReal
    // changes, e. g. when previous float has changes its size.
    if (vloat->yReal != oldY)
