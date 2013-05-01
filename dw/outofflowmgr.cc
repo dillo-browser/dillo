@@ -770,14 +770,6 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
    //        containingBlock, widget, widget->getClassName (), yReq);
    //printf ("   this float: %s\n", vloat->toString());
 
-   // The following optimization is wrong; e. g. does not take into
-   // account that the previous float may have change its
-   // size. "yReal" should rather be checked below, this should be
-   // deleted.
-   /*if (yReq == vloat->yReq)
-      // Nothing changed.
-      return;*/
-
    SortedFloatsVector *listSame, *listOpp;
    getFloatsLists (vloat, &listSame, &listOpp);
    ensureFloatSize (vloat);
@@ -851,7 +843,11 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
       }
    }
 
-   checkCoverage (vloat, oldY);
+   // No call neccessary when yReal has not changed.  (Notice that
+   // checking for yReq is wrong: yReq may remain the same, when yReal
+   // changes, e. g. when previous float has changes its size.
+   if (vloat->yReal != oldY)
+      checkCoverage (vloat, oldY);
 }
 
 bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
