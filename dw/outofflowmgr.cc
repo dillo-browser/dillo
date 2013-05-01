@@ -171,47 +171,9 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
             // Float found with the same generator.
             //printf ("   => %d (same generator)\n", lastFloat->index);
             return lastFloat->index;
-         } else {
-            // No float until "lastExtIndex"; search backwards in the
-            // list of text blocks.
-            int last = -1; // If nothing is found.
-
-            // If not allocated, the only list to search is the GB
-            // list, which has been searched already.
-            if (oofm->wasAllocated (lastGB)) {
-               for (int index = tbInfo->index - 1; last == -1 && index >= 0;
-                    index--) {
-                  TBInfo *prev = oofm->tbInfos->get (index);
-                  assert (index == prev->index);
-                  SortedFloatsVector *prevList =
-                     side == LEFT ? prev->leftFloatsGB : prev->rightFloatsGB;
-                  // Even if each GB list contains at least one
-                  // elemenent (otherwise it would not have been
-                  // created), this one element may be in the wrong
-                  // (i. e. opposite) list. So, this list may be
-                  // empty. Also, ignore floats which are not yet in
-                  // the CB list. (Latter may be more efficient.)
-                  for (int j = prevList->size() - 1;
-                       last == -1 && j >= 0; j--) {
-                     Float *lastFloat = prevList->get (j);
-                     if (lastFloat->inCBList) {
-                        //printf ("      previous generator %p, index = %d; %s "
-                        //        "list has %d elements\n",
-                        //        prev->textblock, prev->index,
-                        //        side == LEFT ? "left" : "right",
-                        //        prevList->size());
-                        //printf ("      lastFloat: %s\n",
-                        //        lastFloat->toString ());
-                        last = lastFloat->index;
-                     }
-                  }
-                  // If no appropriate float found, continue.
-               }
-            }
-
-            //printf ("   => %d (other generator)\n", last);
-            return last;
-         }
+         } else
+            return findFloatIndexBackwards (tbInfo->index, lastGB,
+                                            lastExtIndex);
       } else {
          // "lastGB" not yet registered. TODO Correct?
          //printf ("   => %d (last GB not registered)\n", size () - 1);
@@ -221,6 +183,50 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
       //printf ("   => %d (last GB not defined)\n", size () - 1);
       return size() - 1;
    }
+}
+
+int OutOfFlowMgr::SortedFloatsVector::findFloatIndexBackwards(int tbInfoIndex,
+                                                              Textblock *lastGB,
+                                                              int lastExtIndex)
+{
+   // No float until "lastExtIndex"; search backwards in the
+   // list of text blocks.
+   int last = -1; // If nothing is found.
+   
+   // If not allocated, the only list to search is the GB
+   // list, which has been searched already.
+   if (oofm->wasAllocated (lastGB)) {
+      for (int index = tbInfoIndex - 1; last == -1 && index >= 0;
+           index--) {
+         TBInfo *prev = oofm->tbInfos->get (index);
+         assert (index == prev->index);
+         SortedFloatsVector *prevList =
+            side == LEFT ? prev->leftFloatsGB : prev->rightFloatsGB;
+         // Even if each GB list contains at least one elemenent
+         // (otherwise it would not have been created), this one
+         // element may be in the wrong (i. e. opposite) list. So,
+         // this list may be empty. Also, ignore floats which are not
+         // yet in the CB list. (Latter may be more efficient.)
+         for (int j = prevList->size() - 1;
+              last == -1 && j >= 0; j--) {
+            Float *lastFloat = prevList->get (j);
+            if (lastFloat->inCBList) {
+               //printf ("      previous generator %p, index = %d; %s "
+               //        "list has %d elements\n",
+               //        prev->textblock, prev->index,
+               //        side == LEFT ? "left" : "right",
+               //        prevList->size());
+               //printf ("      lastFloat: %s\n",
+               //        lastFloat->toString ());
+               last = lastFloat->index;
+            }
+         }
+         // If no appropriate float found, continue.
+      }
+   }
+   
+   //printf ("   => %d (other generator)\n", last);
+   return last;
 }
 
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,

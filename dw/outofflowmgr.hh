@@ -94,6 +94,8 @@ private:
       { this->oofm = oofm; this->side = side; this->type = type; }
 
       int findFloatIndex (Textblock *lastGB, int lastExtIndex);
+      int findFloatIndexBackwards (int tbInfoIndex, Textblock *lastGB,
+                                   int lastExtIndex);
       int find (Textblock *textblock, int y, int start, int end);
       int findFirst (Textblock *textblock, int y, int h, Textblock *lastGB,
                      int lastExtIndex);
