@@ -1154,45 +1154,50 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
 
-   //printf ("   searching in list:\n");
-   //for (int i = 0; i < list->size(); i++) {
-   //   printf ("      %d: %s\n", i, list->get(i)->toString());
-   //   //printf ("         (widget at (%d, %d))\n",
-   //   //        list->get(i)->widget->getAllocation()->x,
-   //   //        list->get(i)->widget->getAllocation()->y);
-   //}
-
-   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
-
-   //printf ("   first = %d\n", first);
-
-   if (first == -1)
-      // No float.
+   if (list == NULL) {
+      //printf ("   no list\n");
       return 0;
-   else {
-      // It is not sufficient to find the first float, since a line
-      // (with height h) may cover the region of multiple float, of
-      // which the widest has to be choosen.
-      int border = 0;
-      bool covers = true;
-      // TODO Also check against lastGB and lastExtIndex
-      for (int i = first; covers && i < list->size(); i++) {
-         Float *vloat = list->get(i);
-         covers = vloat->covers (textblock, y, h);
-         //printf ("   float %d: %s; covers? %s.\n",
-         //        i, vloat->toString(), covers ? "yes" : "no");
+   } else {
+      //printf ("   searching in list:\n");
+      //for (int i = 0; i < list->size(); i++) {
+      //   printf ("      %d: %s\n", i, list->get(i)->toString());
+      //   //printf ("         (widget at (%d, %d))\n",
+      //   //        list->get(i)->widget->getAllocation()->x,
+      //   //        list->get(i)->widget->getAllocation()->y);
+      //}
+      
+      int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
+      
+      //printf ("   first = %d\n", first);
 
-         if (covers) {
-            int borderDiff = getBorderDiff (textblock, vloat, side);
-            int borderIn = side == LEFT ?
-               vloat->generatingBlock->getStyle()->boxOffsetX() :
-               vloat->generatingBlock->getStyle()->boxRestWidth();
-            border = max (border, vloat->size.width + borderIn + borderDiff);
-            //printf ("   => border = %d\n", border);
+      if (first == -1)
+      // No float.
+         return 0;
+      else {
+         // It is not sufficient to find the first float, since a line
+         // (with height h) may cover the region of multiple float, of
+         // which the widest has to be choosen.
+         int border = 0;
+         bool covers = true;
+         // TODO Also check against lastGB and lastExtIndex
+         for (int i = first; covers && i < list->size(); i++) {
+            Float *vloat = list->get(i);
+            covers = vloat->covers (textblock, y, h);
+            //printf ("   float %d: %s; covers? %s.\n",
+            //        i, vloat->toString(), covers ? "yes" : "no");
+            
+            if (covers) {
+               int borderDiff = getBorderDiff (textblock, vloat, side);
+               int borderIn = side == LEFT ?
+                  vloat->generatingBlock->getStyle()->boxOffsetX() :
+                  vloat->generatingBlock->getStyle()->boxRestWidth();
+               border = max (border, vloat->size.width + borderIn + borderDiff);
+               //printf ("   => border = %d\n", border);
+            }
          }
+         
+         return border;
       }
-
-      return border;
    }
 }
 
@@ -1203,8 +1208,8 @@ OutOfFlowMgr::SortedFloatsVector *OutOfFlowMgr::getFloatsListForTextblock
    TBInfo *tbInfo = registerTextblock (textblock);
    if (wasAllocated (textblock))
       return side == LEFT ? leftFloatsCB : rightFloatsCB;
-   else
-      return side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
+    else
+       return side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;  
 }
 
 
@@ -1227,7 +1232,10 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
    //        containingBlock, textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
    //        lastGB, lastExtIndex);
    SortedFloatsVector *list = getFloatsListForTextblock(textblock, side);
-   return list->findFirst (textblock, y, h, lastGB, lastExtIndex) != -1;
+   if (list == NULL)
+      return false;
+   else
+      return list->findFirst (textblock, y, h, lastGB, lastExtIndex) != -1;
 }
 
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)
