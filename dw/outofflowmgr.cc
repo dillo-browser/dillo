@@ -199,6 +199,8 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndexBackwards(int tbInfoIndex,
       for (int index = tbInfoIndex - 1; last == -1 && index >= 0; index--) {
          TBInfo *prev = oofm->tbInfos->get (index);
          assert (index == prev->index);
+         //assert (prev->leftFloatsGB->size() > 0 ||
+         //        prev->rightFloatsGB->size() > 0);
          SortedFloatsVector *prevList =
             side == LEFT ? prev->leftFloatsGB : prev->rightFloatsGB;
          // Even if each GB list contains at least one elemenent
@@ -608,10 +610,15 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
 
       Float *vloat = new Float (this, widget, generatingBlock, externalIndex);
 
+      // Note: Putting the float first in the GB list, and then,
+      // possibly into the CB list (in that order) will trigger
+      // setting Float::inCBList to the right value.
+
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
          leftFloatsAll->put (vloat);
          widget->parentRef = createRefLeftFloat (leftFloatsAll->size() - 1);
+         tbInfo->leftFloatsGB->put (vloat);
 
          if (wasAllocated (generatingBlock)) {
             leftFloatsCB->put (vloat);
@@ -621,7 +628,6 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
             if (tbInfo->index < lastLeftTBIndex)
                leftFloatsMark++;
 
-            tbInfo->leftFloatsGB->put (vloat);
             vloat->mark = leftFloatsMark;
             //printf ("[%p] adding left float %p (%s %p, mark %d) to GB list "
             //        "(index %d, last = %d)\n",
@@ -635,6 +641,7 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
       case FLOAT_RIGHT:
          rightFloatsAll->put (vloat);
          widget->parentRef = createRefRightFloat (rightFloatsAll->size() - 1);
+         tbInfo->rightFloatsGB->put (vloat);
 
          if (wasAllocated (generatingBlock)) {
             rightFloatsCB->put (vloat);
@@ -644,7 +651,6 @@ void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
             if (tbInfo->index < lastRightTBIndex)
                rightFloatsMark++;
 
-            tbInfo->rightFloatsGB->put (vloat);
             vloat->mark = rightFloatsMark;
             //printf ("[%p] adding right float %p (%s %p, mark %d) to GB list "
             //        "(index %d, last = %d)\n",
