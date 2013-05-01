@@ -172,12 +172,9 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
             //printf ("   => %d (same generator)\n", lastFloat->index);
             return lastFloat->index;
          } else
-            // Search backwards in other textblocks (but only when
-            // allocated, so that CB lists make sense).
-            return oofm->wasAllocated (tbInfo->textblock) ?
-               findFloatIndexBackwards (tbInfo->index, lastGB,
-                                        lastExtIndex) :
-               -1;
+            // Search backwards in other textblocks.
+            return findFloatIndexBackwards (tbInfo->index, lastGB,
+                                            lastExtIndex);
       } else {
          // "lastGB" not yet registered. TODO Correct?
          //printf ("   => %d (last GB not registered)\n", size () - 1);
@@ -197,8 +194,8 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndexBackwards(int tbInfoIndex,
    // list of text blocks.
    int last = -1; // If nothing is found.
    
-   // If not allocated, the only list to search is the GB
-   // list, which has been searched already.
+   // If not allocated, the only list to search is the GB list, which
+   // has been searched already.
    if (oofm->wasAllocated (lastGB)) {
       for (int index = tbInfoIndex - 1; last == -1 && index >= 0; index--) {
          TBInfo *prev = oofm->tbInfos->get (index);
