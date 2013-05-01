@@ -200,8 +200,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndexBackwards(int tbInfoIndex,
    // If not allocated, the only list to search is the GB
    // list, which has been searched already.
    if (oofm->wasAllocated (lastGB)) {
-      for (int index = tbInfoIndex - 1; last == -1 && index >= 0;
-           index--) {
+      for (int index = tbInfoIndex - 1; last == -1 && index >= 0; index--) {
          TBInfo *prev = oofm->tbInfos->get (index);
          assert (index == prev->index);
          SortedFloatsVector *prevList =
@@ -211,8 +210,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndexBackwards(int tbInfoIndex,
          // element may be in the wrong (i. e. opposite) list. So,
          // this list may be empty. Also, ignore floats which are not
          // yet in the CB list. (Latter may be more efficient.)
-         for (int j = prevList->size() - 1;
-              last == -1 && j >= 0; j--) {
+         for (int j = prevList->size() - 1; last == -1 && j >= 0; j--) {
             Float *lastFloat = prevList->get (j);
             if (lastFloat->inCBList) {
                //printf ("      previous generator %p, index = %d; %s "
