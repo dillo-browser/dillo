@@ -851,7 +851,6 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
       }
    }
 
-   listSame->change (vloat);
    checkCoverage (vloat, oldY);
 }
 

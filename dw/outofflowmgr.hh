@@ -99,7 +99,6 @@ private:
                      int lastExtIndex);
       int findLastBeforeSideSpanningIndex (int sideSpanningIndex);
       void put (Float *vloat);
-      inline void change (Float *vloat) { }
 
       inline lout::container::typed::Iterator<Float> iterator()
       { return lout::container::typed::Vector<Float>::iterator (); }
