@@ -191,8 +191,6 @@ private:
    void accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
                        int *oofMaxWidth);
    TBInfo *getTextblock (Textblock *textblock);
-   TBInfo *getExistingTextblock (Textblock *textblock);
-   TBInfo *registerTextblock (Textblock *textblock);
    int getBorder (Textblock *textblock, Side side, int y, int h,
                   Textblock *lastGB, int lastExtIndex);
    SortedFloatsVector *getFloatsListForTextblock (Textblock *textblock,
@@ -232,8 +230,9 @@ public:
    core::Widget *getWidgetAtPoint (int x, int y, int level);
 
    static bool isWidgetOutOfFlow (core::Widget *widget);
-   void addWidget (core::Widget *widget, Textblock *generatingBlock,
-                   int externalIndex);
+   void addTextblock (Textblock *textblock);
+   void addWidgetOOF (core::Widget *widget, Textblock *generatingBlock,
+                      int externalIndex);
    void moveExternalIndices (Textblock *generatingBlock, int oldStartIndex,
                              int diff);
 

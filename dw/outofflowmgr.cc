@@ -151,34 +151,28 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
            
    if (lastGB) {
       TBInfo *tbInfo = oofm->getTextblock (lastGB);
-      if (tbInfo) {
-         //printf ("      generator %p, index = %d\n",
-         //        tbInfo->textblock, tbInfo->index);
+      //printf ("      generator %p, index = %d\n",
+      //        tbInfo->textblock, tbInfo->index);
 
-         SortedFloatsVector *gbList =
-            side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
-         // Could be faster with binary search, but the GB (not CB!) lists
-         // should be rather small.
-         Float *lastFloat = NULL;
-         for (int i = 0; i < gbList->size(); i++) {
-            Float *vloat = gbList->get(i);
-            if (vloat->externalIndex <= lastExtIndex)
-               lastFloat = vloat;
-         }
-         
-         if (lastFloat) {
-            // Float found with the same generator.
-            //printf ("   => %d (same generator)\n", lastFloat->index);
-            return lastFloat->index;
-         } else
-            // Search backwards in other textblocks.
-            return findFloatIndexBackwards (tbInfo->index, lastGB,
-                                            lastExtIndex);
-      } else {
-         // "lastGB" not yet registered. TODO Correct?
-         //printf ("   => %d (last GB not registered)\n", size () - 1);
-         return size () - 1;
+      SortedFloatsVector *gbList =
+         side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
+      // Could be faster with binary search, but the GB (not CB!) lists
+      // should be rather small.
+      Float *lastFloat = NULL;
+      for (int i = 0; i < gbList->size(); i++) {
+         Float *vloat = gbList->get(i);
+         if (vloat->externalIndex <= lastExtIndex)
+            lastFloat = vloat;
       }
+      
+      if (lastFloat) {
+         // Float found with the same generator.
+         //printf ("   => %d (same generator)\n", lastFloat->index);
+         return lastFloat->index;
+      } else
+         // Search backwards in other textblocks.
+         return findFloatIndexBackwards (tbInfo->index, lastGB,
+                                         lastExtIndex);
    } else {
       //printf ("   => %d (last GB not defined)\n", size () - 1);
       return size() - 1;
@@ -199,8 +193,6 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndexBackwards(int tbInfoIndex,
       for (int index = tbInfoIndex - 1; last == -1 && index >= 0; index--) {
          TBInfo *prev = oofm->tbInfos->get (index);
          assert (index == prev->index);
-         //assert (prev->leftFloatsGB->size() > 0 ||
-         //        prev->rightFloatsGB->size() > 0);
          SortedFloatsVector *prevList =
             side == LEFT ? prev->leftFloatsGB : prev->rightFloatsGB;
          // Even if each GB list contains at least one elemenent
@@ -320,6 +312,8 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    containingBlockWasAllocated = containingBlock->wasAllocated ();
    if (containingBlockWasAllocated)
       containingBlockAllocation = *(containingBlock->getAllocation());
+
+   addTextblock (containingBlock);
 }
 
 OutOfFlowMgr::~OutOfFlowMgr ()
@@ -602,11 +596,21 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
    return widget->getStyle()->vloat != FLOAT_NONE;
 }
 
-void OutOfFlowMgr::addWidget (Widget *widget, Textblock *generatingBlock,
-                              int externalIndex)
+void OutOfFlowMgr::addTextblock (Textblock *textblock)
+{
+   TBInfo *tbInfo = new TBInfo (this, textblock);
+   tbInfo->wasAllocated = false;
+   tbInfo->index = tbInfos->size();
+   
+   tbInfos->put (tbInfo);
+   tbInfosByTextblock->put (new TypedPointer<Textblock> (textblock), tbInfo);
+}
+
+void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
+                                 int externalIndex)
 {
    if (widget->getStyle()->vloat != FLOAT_NONE) {
-      TBInfo *tbInfo = registerTextblock (generatingBlock);
+      TBInfo *tbInfo = getTextblock (generatingBlock);
 
       Float *vloat = new Float (this, widget, generatingBlock, externalIndex);
 
@@ -684,11 +688,8 @@ void OutOfFlowMgr::moveExternalIndices (Textblock *generatingBlock,
                                         int oldStartIndex, int diff)
 {
    TBInfo *tbInfo = getTextblock (generatingBlock);
-   if (tbInfo) {
-      moveExternalIndices (tbInfo->leftFloatsGB, oldStartIndex, diff);
-      moveExternalIndices (tbInfo->rightFloatsGB, oldStartIndex, diff);
-   }
-   // Not neccessary registered, i. e. no new TBInfo is created.
+   moveExternalIndices (tbInfo->leftFloatsGB, oldStartIndex, diff);
+   moveExternalIndices (tbInfo->rightFloatsGB, oldStartIndex, diff);
 }
 
 void OutOfFlowMgr::moveExternalIndices (SortedFloatsVector *list,
@@ -924,7 +925,7 @@ void OutOfFlowMgr::checkCoverage (Float *vloat, int oldY)
 void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
                                    SortedFloatsVector **listOpp)
 {
-   TBInfo *tbInfo = getExistingTextblock (vloat->generatingBlock);
+   TBInfo *tbInfo = getTextblock (vloat->generatingBlock);
       
    switch (vloat->widget->getStyle()->vloat) {
    case FLOAT_LEFT:
@@ -1088,28 +1089,8 @@ void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
 OutOfFlowMgr::TBInfo *OutOfFlowMgr::getTextblock (Textblock *textblock)
 {
    TypedPointer<Textblock> key (textblock);
-   return tbInfosByTextblock->get (&key);
-}
-
-OutOfFlowMgr::TBInfo *OutOfFlowMgr::getExistingTextblock (Textblock *textblock)
-{
-   TBInfo *tbInfo = getTextblock (textblock);
+   TBInfo *tbInfo = tbInfosByTextblock->get (&key);
    assert (tbInfo);
-   return tbInfo;
-}
-
-OutOfFlowMgr::TBInfo *OutOfFlowMgr::registerTextblock (Textblock *textblock)
-{
-   TBInfo *tbInfo = getTextblock (textblock);
-   if (tbInfo == NULL) {
-      tbInfo = new TBInfo (this, textblock);
-      tbInfo->wasAllocated = false;
-      tbInfo->index = tbInfos->size();
-
-      tbInfos->put (tbInfo);
-      tbInfosByTextblock->put (new TypedPointer<Textblock> (textblock), tbInfo);
-   }
-
    return tbInfo;
 }
   
@@ -1205,7 +1186,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
 OutOfFlowMgr::SortedFloatsVector *OutOfFlowMgr::getFloatsListForTextblock
    (Textblock *textblock, Side side)
 {
-   TBInfo *tbInfo = registerTextblock (textblock);
+   TBInfo *tbInfo = getTextblock (textblock);
    if (wasAllocated (textblock))
       return side == LEFT ? leftFloatsCB : rightFloatsCB;
     else

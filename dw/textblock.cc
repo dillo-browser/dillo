@@ -1886,16 +1886,17 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 
    PRINTF ("adding the %s %p to %p (word %d) ...\n",
            widget->getClassName(), widget, this, words->size());
+
+   if (containingBlock->outOfFlowMgr == NULL)
+      containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
       
    if (OutOfFlowMgr::isWidgetOutOfFlow (widget)) {
       PRINTF ("   -> out of flow.\n");
 
-      if (containingBlock->outOfFlowMgr == NULL)
-         containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
-
       widget->setParent (containingBlock);
       widget->setGenerator (this);
-      containingBlock->outOfFlowMgr->addWidget (widget, this, words->size ());
+      containingBlock->outOfFlowMgr->addWidgetOOF (widget, this,
+                                                   words->size ());
       Word *word = addWord (0, 0, 0, 0, style);
       word->content.type = core::Content::WIDGET_OOF_REF;
       word->content.widget = widget;
@@ -1904,6 +1905,10 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       PRINTF ("   -> within flow.\n");
 
       widget->setParent (this);
+
+      // TODO Replace (perhaps) later "textblock" by "OOF aware widget".
+      if (widget->instanceOf (Textblock::CLASS_ID))
+         containingBlock->outOfFlowMgr->addTextblock ((Textblock*)widget);
 
       core::Requisition size;
       calcWidgetSize (widget, &size);
