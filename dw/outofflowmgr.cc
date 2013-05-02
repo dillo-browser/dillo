@@ -1186,11 +1186,12 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
 OutOfFlowMgr::SortedFloatsVector *OutOfFlowMgr::getFloatsListForTextblock
    (Textblock *textblock, Side side)
 {
-   TBInfo *tbInfo = getTextblock (textblock);
    if (wasAllocated (textblock))
       return side == LEFT ? leftFloatsCB : rightFloatsCB;
-    else
-       return side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;  
+   else {
+      TBInfo *tbInfo = getTextblock (textblock);
+      return side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
+   }
 }
 
 
