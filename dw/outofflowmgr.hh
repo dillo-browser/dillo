@@ -230,7 +230,7 @@ public:
    core::Widget *getWidgetAtPoint (int x, int y, int level);
 
    static bool isWidgetOutOfFlow (core::Widget *widget);
-   void addTextblock (Textblock *textblock);
+   void addWidgetInFlow (Textblock *textblock);
    void addWidgetOOF (core::Widget *widget, Textblock *generatingBlock,
                       int externalIndex);
    void moveExternalIndices (Textblock *generatingBlock, int oldStartIndex,

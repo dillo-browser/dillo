@@ -313,7 +313,7 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    if (containingBlockWasAllocated)
       containingBlockAllocation = *(containingBlock->getAllocation());
 
-   addTextblock (containingBlock);
+   addWidgetInFlow (containingBlock);
 }
 
 OutOfFlowMgr::~OutOfFlowMgr ()
@@ -596,7 +596,7 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
    return widget->getStyle()->vloat != FLOAT_NONE;
 }
 
-void OutOfFlowMgr::addTextblock (Textblock *textblock)
+void OutOfFlowMgr::addWidgetInFlow (Textblock *textblock)
 {
    TBInfo *tbInfo = new TBInfo (this, textblock);
    tbInfo->wasAllocated = false;
