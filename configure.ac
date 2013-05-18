@@ -106,9 +106,9 @@ if test "$ac_cv_socklen_t" != "socklen_t"; then
 fi
 
 
-dnl ----------------------
+dnl -------------------------
 dnl Test for FLTK 1.3 library
-dnl ----------------------
+dnl -------------------------
 dnl
 dnl For debugging and to be user friendly
 AC_MSG_CHECKING([FLTK 1.3])
