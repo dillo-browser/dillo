@@ -1908,7 +1908,8 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 
       // TODO Replace (perhaps) later "textblock" by "OOF aware widget".
       if (widget->instanceOf (Textblock::CLASS_ID))
-         containingBlock->outOfFlowMgr->addWidgetInFlow ((Textblock*)widget);
+         containingBlock->outOfFlowMgr->addWidgetInFlow ((Textblock*)widget,
+                                                         this, words->size ());
 
       core::Requisition size;
       calcWidgetSize (widget, &size);

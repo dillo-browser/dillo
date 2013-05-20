@@ -275,9 +275,13 @@ void OutOfFlowMgr::SortedFloatsVector::put (Float *vloat)
    vloat->inCBList = type == CB;
 }
 
-OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm, Textblock *textblock)
+OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm, Textblock *textblock,
+                              TBInfo *parent, int parentExtIndex)
 {
    this->textblock = textblock;
+   this->parent = parent;
+   this->parentExtIndex = parentExtIndex;
+
    leftFloatsGB = new SortedFloatsVector (oofm, LEFT, SortedFloatsVector::GB);
    rightFloatsGB = new SortedFloatsVector (oofm, RIGHT, SortedFloatsVector::GB);
 }
@@ -313,7 +317,7 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    if (containingBlockWasAllocated)
       containingBlockAllocation = *(containingBlock->getAllocation());
 
-   addWidgetInFlow (containingBlock);
+   addWidgetInFlow (containingBlock, NULL, 0);
 }
 
 OutOfFlowMgr::~OutOfFlowMgr ()
@@ -596,9 +600,17 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
    return widget->getStyle()->vloat != FLOAT_NONE;
 }
 
-void OutOfFlowMgr::addWidgetInFlow (Textblock *textblock)
+void OutOfFlowMgr::addWidgetInFlow (Textblock *textblock,
+                                    Textblock *parentBlock, int externalIndex)
 {
-   TBInfo *tbInfo = new TBInfo (this, textblock);
+   //printf ("[%p] addWidgetInFlow (%p, %p, %d)\n",
+   //        containingBlock, textblock, parentBlock, externalIndex);
+
+   TBInfo *tbInfo =
+      new TBInfo (this, textblock,
+                  parentBlock ? getTextblock (parentBlock) : NULL,
+                  externalIndex);
+      
    tbInfo->wasAllocated = false;
    tbInfo->index = tbInfos->size();
    
