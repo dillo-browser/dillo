@@ -140,6 +140,27 @@ int OutOfFlowMgr::Float::CompareSideSpanningIndex::compare(Object *o1,
    return ((Float*)o1)->sideSpanningIndex - ((Float*)o2)->sideSpanningIndex;
 }
 
+int OutOfFlowMgr::Float::CompareGBAndExtIndex::compare(Object *o1, Object *o2)
+{
+   Float *f1 = (Float*)o1, *f2 = (Float*)o2;
+   if (f1->generatingBlock == f2->generatingBlock)
+      return f1->externalIndex - f2->externalIndex;
+   else {
+      TBInfo *t1 = oofm->getTextblock (f1->generatingBlock),
+         *t2 = oofm->getTextblock (f2->generatingBlock);
+
+      for (TBInfo *t = t1; t != NULL; t = t->parent)
+         if (t->parent == t2)
+            return t->parentExtIndex - f2->externalIndex;
+
+      for (TBInfo *t = t2; t != NULL; t = t->parent)
+         if (t->parent == t1)
+            return f1->externalIndex - t->parentExtIndex;
+
+      return t1->index - t2->index;
+   }
+}
+
 int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
                                                       int lastExtIndex)
 {

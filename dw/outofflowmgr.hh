@@ -36,6 +36,16 @@ private:
          int compare(Object *o1, Object *o2);
       };
 
+      class CompareGBAndExtIndex: public lout::object::Comparator
+      {
+      private:
+         OutOfFlowMgr *oofm;
+
+      public:
+         CompareGBAndExtIndex (OutOfFlowMgr *oofm) { this->oofm = oofm; }
+         int compare(Object *o1, Object *o2);
+      };
+
       core::Widget *widget;
       Textblock *generatingBlock;
       int externalIndex;
