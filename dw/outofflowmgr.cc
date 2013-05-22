@@ -179,7 +179,18 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
    //           get(i)->externalIndex);
    //}
 
-   return i == -1 ? -1 : i - 1;
+   // At position i is the next larger element, so element i should
+   // not included, but i - 1 returned; except if the exact element is
+   // found: then include it and so return i.
+   if (i == size()) 
+      return i - 1;
+   else {
+      Float *f = get (i);
+      if (cmp.compare (f, &key) == 0)
+         return i;
+      else
+         return i - 1;
+   }
 }
 
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
