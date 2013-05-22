@@ -124,6 +124,32 @@ case $fltk_version in
          AC_MSG_ERROR(FLTK 1.3 required; fltk-config not found)
 esac
 
+dnl -----------------------------------
+dnl Test for X11 (only on some systems)
+dnl -----------------------------------
+AC_MSG_CHECKING([whether to link to X11])
+AC_LANG_PUSH([C++])
+old_libs=$LIBS
+old_cxxflags=$CXXFLAGS
+LIBS=$LIBFLTK_LIBS
+CXXFLAGS=$LIBFLTK_CXXFLAGS
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+#define FL_INTERNALS
+#include <FL/x.H>
+]],[[
+#ifdef X_PROTOCOL
+   return 0;
+#else
+   return 1;
+#endif
+]])], [AC_MSG_RESULT(yes)
+       LIBX11_LIBS="-lX11"],
+      [AC_MSG_RESULT(no)],
+      [AC_MSG_RESULT(no)
+       AC_MSG_WARN([*** Test for X11 not possible when cross-compiling. ***])])
+CXXFLAGS=$old_cxxflags
+LIBS=$old_libs
+AC_LANG_POP([C++])
 
 dnl ----------------
 dnl Test for libjpeg
@@ -469,6 +495,7 @@ AC_SUBST(LIBFLTK_CXXFLAGS)
 AC_SUBST(LIBFLTK_CFLAGS)
 AC_SUBST(LIBFLTK_LIBS)
 AC_SUBST(LIBICONV_LIBS)
+AC_SUBST(LIBX11_LIBS)
 AC_SUBST(datadir)
 
 AC_CONFIG_FILES([
