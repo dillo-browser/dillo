@@ -27,6 +27,7 @@
 ^test/dw-border-test$
 ^test/dw-example$
 ^test/dw-find-test$
+^test/dw-float-test$
 ^test/dw-images-scaled$
 ^test/dw-images-scaled2$
 ^test/dw-images-simple$
