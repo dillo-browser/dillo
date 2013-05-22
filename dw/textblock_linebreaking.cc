@@ -412,6 +412,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
                  getStyle()->boxOffsetX() + innerPadding
                  + (lineIndex == 0 ? line1OffsetEff : 0))
       + line->leftOffset;
+
+   line->lastPositionedOofWidget = lastPositionedOofWidget;
    
    PRINTF ("   line[%d].top = %d\n", lines->size () - 1, line->top);
    PRINTF ("   line[%d].boxAscent = %d\n", lines->size () - 1, line->boxAscent);
@@ -726,6 +728,9 @@ void Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
       (words->getRef(wordIndex)->content.widget,
        top + getStyle()->boxOffsetY());
    lastPositionedOofWidget = wordIndex;
+   printf ("[%p] lastPositionedOofWidget = %d (wrapWordOofRef)\n",
+           this, lastPositionedOofWidget);
+
 
    // TODO: compare old/new values of calcAvailWidth(...) (?)
    int firstIndex =
@@ -1298,13 +1303,19 @@ void Textblock::rewrap ()
     * the line list up from this position is rebuild. */
    lines->setSize (wrapRefLines);
    nonTemporaryLines = misc::min (nonTemporaryLines, wrapRefLines);
-   lastPositionedOofWidget = -1;
 
    int firstWord;
-   if (lines->size () > 0)
-      firstWord = lines->getLastRef()->lastWord + 1;
-   else
+   if (lines->size () > 0) {
+      Line *lastLine = lines->getLastRef();
+      firstWord = lastLine->lastWord + 1;
+      lastPositionedOofWidget = lastLine->lastPositionedOofWidget;
+   } else {
       firstWord = 0;
+      lastPositionedOofWidget = -1;
+   }
+
+   printf ("[%p] lastPositionedOofWidget = %d (rewrap, from %d lines)\n",
+           this, lastPositionedOofWidget, lines->size ());
 
    PRINTF ("   starting with word %d\n", firstWord);
 

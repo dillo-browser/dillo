@@ -299,6 +299,8 @@ protected:
        * the end. Should be checked by some methods which are called
        * by addLine(). */
       bool finished;
+
+      int lastPositionedOofWidget;
    };
 
    struct Word
