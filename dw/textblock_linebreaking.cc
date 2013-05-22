@@ -728,7 +728,7 @@ void Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
       (words->getRef(wordIndex)->content.widget,
        top + getStyle()->boxOffsetY());
    lastPositionedOofWidget = wordIndex;
-   printf ("[%p] lastPositionedOofWidget = %d (wrapWordOofRef)\n",
+   PRINTF ("[%p] lastPositionedOofWidget = %d (wrapWordOofRef)\n",
            this, lastPositionedOofWidget);
 
 
@@ -1314,7 +1314,7 @@ void Textblock::rewrap ()
       lastPositionedOofWidget = -1;
    }
 
-   printf ("[%p] lastPositionedOofWidget = %d (rewrap, from %d lines)\n",
+   PRINTF ("[%p] lastPositionedOofWidget = %d (rewrap, from %d lines)\n",
            this, lastPositionedOofWidget, lines->size ());
 
    PRINTF ("   starting with word %d\n", firstWord);
