@@ -143,20 +143,40 @@ int OutOfFlowMgr::Float::CompareSideSpanningIndex::compare(Object *o1,
 int OutOfFlowMgr::Float::CompareGBAndExtIndex::compare(Object *o1, Object *o2)
 {
    Float *f1 = (Float*)o1, *f2 = (Float*)o2;
-   if (f1->generatingBlock == f2->generatingBlock)
+
+   //printf ("[%p] comparing (%p, %d) with (%p, %d) ...\n",
+   //        oofm->containingBlock, f1->generatingBlock, f1->externalIndex,
+   //        f2->generatingBlock, f2->externalIndex);
+
+   if (f1->generatingBlock == f2->generatingBlock) {
+      //printf ("   (a) generating blocks equal => %d - %d = %d\n",
+      //        f1->externalIndex, f2->externalIndex,
+      //        f1->externalIndex - f2->externalIndex);
       return f1->externalIndex - f2->externalIndex;
-   else {
+   } else {
       TBInfo *t1 = oofm->getTextblock (f1->generatingBlock),
          *t2 = oofm->getTextblock (f2->generatingBlock);
 
       for (TBInfo *t = t1; t != NULL; t = t->parent)
-         if (t->parent == t2)
+         if (t->parent == t2) {
             return t->parentExtIndex - f2->externalIndex;
+            //printf ("   (b) %p is an achestor of %p; direct child is %p (%d)"
+            //        " => %d - %d = %d\n", t2->textblock, t1->textblock,
+            //        t->textblock, t->parentExtIndex, t->parentExtIndex,
+            //        f2->externalIndex, t->parentExtIndex - f2->externalIndex);
+         }
 
       for (TBInfo *t = t2; t != NULL; t = t->parent)
-         if (t->parent == t1)
+         if (t->parent == t1) {
             return f1->externalIndex - t->parentExtIndex;
+            //printf ("   (c) %p is an achestor of %p; direct child is %p (%d)"
+            //        " => %d - %d = %d\n", t1->textblock, t2->textblock,
+            //        t->textblock, t->parentExtIndex, f1->externalIndex,
+            //        t->parentExtIndex, f1->externalIndex - t->parentExtIndex);
+         }
 
+      //printf ("   (d) other => %d - %d = %d\n",
+      //        t1->index, t2->index, t1->index - t2->index);
       return t1->index - t2->index;
    }
 }
