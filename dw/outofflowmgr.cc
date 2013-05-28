@@ -188,8 +188,24 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
    Float::CompareGBAndExtIndex cmp (oofm);
    int i = bsearch (&key, false, &cmp);
   
-   //printf ("[%p] findFloatIndex (%p, %d) => i = %d (of %d)\n",
-   //        oofm->containingBlock, lastGB, lastExtIndex, i, size ());
+   // At position i is the next larger element, so element i should
+   // not included, but i - 1 returned; except if the exact element is
+   // found: then include it and so return i.
+   int r;
+   if (i == size()) 
+      r = i - 1;
+   else {
+      Float *f = get (i);
+      if (cmp.compare (f, &key) == 0)
+         r = i;
+      else
+         r = i - 1;
+   }
+
+   //printf ("[%p] findFloatIndex (%p, %d) => i = %d, r = %d (size = %d); "
+   //        "in %s list %p on the %s side\n",
+   //        oofm->containingBlock, lastGB, lastExtIndex, i, r, size (),
+   //        type == GB ? "GB" : "CB", this, side == LEFT ? "left" : "right");
    
    //for (int i = 0; i < size (); i++) {
    //   Float *f = get(i);
@@ -199,18 +215,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
    //           get(i)->externalIndex);
    //}
 
-   // At position i is the next larger element, so element i should
-   // not included, but i - 1 returned; except if the exact element is
-   // found: then include it and so return i.
-   if (i == size()) 
-      return i - 1;
-   else {
-      Float *f = get (i);
-      if (cmp.compare (f, &key) == 0)
-         return i;
-      else
-         return i - 1;
-   }
+   return r;
 }
 
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
