@@ -208,8 +208,9 @@ int Vector::bsearch(Object *key, bool mustExist, int start, int end,
 {
    // The case !mustExist is not handled by bsearch(3), so here is a
    // new implementation.
-   if (start >= end)
-      return mustExist ? -1 : 0;
+
+   if (start > end)
+      return mustExist ? -1 : start;
    
    int low = start, high = end;
 

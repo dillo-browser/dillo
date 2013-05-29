@@ -110,12 +110,31 @@ void testVector2 ()
    }
 }
 
+void testVector3 ()
+{
+   // Regression test: resulted once incorrently (0, 2, 3), should
+   // result in (1, 2, 3).
+
+   puts ("--- testVector (3) ---");
+
+   Vector<String> v (true, 1);
+   String k ("omega");
+
+   v.put (new String ("alpha"));
+   printf ("   -> %d\n", v.bsearch (&k, false));
+   v.put (new String ("beta"));
+   printf ("   -> %d\n", v.bsearch (&k, false));
+   v.put (new String ("gamma"));
+   printf ("   -> %d\n", v.bsearch (&k, false));
+}
+
 int main (int argc, char *argv[])
 {
    testHashSet ();
    testHashTable ();
    testVector1 ();
    testVector2 ();
+   testVector3 ();
 
    return 0;
 }
