@@ -495,6 +495,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
             computeValue (&attrs->hBorderSpacing, p->value.intVal,attrs->font);
             computeValue (&attrs->vBorderSpacing, p->value.intVal,attrs->font);
             break;
+         case CSS_PROPERTY_BOTTOM:
+            computeLength (&attrs->bottom, p->value.intVal, attrs->font);
+            break;
          case CSS_PROPERTY_COLOR:
             attrs->color = Color::create (layout, p->value.intVal);
             break;
@@ -506,6 +509,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CSS_PROPERTY_FLOAT:
             attrs->vloat = (FloatType) p->value.intVal;
+            break;
+         case CSS_PROPERTY_LEFT:
+            computeLength (&attrs->left, p->value.intVal, attrs->font);
             break;
          case CSS_PROPERTY_LINE_HEIGHT:
             if (p->type == CSS_TYPE_ENUM) { //only valid enum value is "normal"
@@ -558,6 +564,12 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
          case CSS_PROPERTY_PADDING_RIGHT:
             computeValue (&attrs->padding.right, p->value.intVal, attrs->font);
             break;
+         case CSS_PROPERTY_POSITION:
+            attrs->position = (Position) p->value.intVal;
+            break;
+         case CSS_PROPERTY_RIGHT:
+            computeLength (&attrs->right, p->value.intVal, attrs->font);
+            break;
          case CSS_PROPERTY_TEXT_ALIGN:
             attrs->textAlign = (TextAlignType) p->value.intVal;
             break;
@@ -569,6 +581,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
             break;
          case CSS_PROPERTY_TEXT_TRANSFORM:
             attrs->textTransform = (TextTransform) p->value.intVal;
+            break;
+         case CSS_PROPERTY_TOP:
+            computeLength (&attrs->top, p->value.intVal, attrs->font);
             break;
          case CSS_PROPERTY_VERTICAL_ALIGN:
             attrs->valign = (VAlignType) p->value.intVal;
