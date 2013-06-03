@@ -213,21 +213,50 @@ private:
    void ensureFloatSize (Float *vloat);
    int getBorderDiff (Textblock *textblock, Float *vloat, Side side);
 
+   /*
+    * Format for parent ref (see also below for isRefOutOfFlow,
+    * createRefNormalFlow, and getLineNoFromRef.
+    *
+    * Widget in flow:
+    *
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *    |                line number                | 0 |
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *
+    * So, anything with the least signifant bit set to 1 is out of flow.
+    *
+    * Floats:
+    *
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *    |          left float index         | 0 | 0 | 1 |
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *    |         right float index         | 1 | 0 | 1 |
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    * 
+    * Absolutely positioned blocks:
+    *
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *    |                 index                 | 1 | 1 |
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
 
+    */
+   
    inline static bool isRefFloat (int ref)
-   { return ref != -1 && (ref & 1) == 1; }
-   inline static bool isRefLeftFloat (int ref)
    { return ref != -1 && (ref & 3) == 1; }
+   inline static bool isRefLeftFloat (int ref)
+   { return ref != -1 && (ref & 7) == 1; }
    inline static bool isRefRightFloat (int ref)
-   { return ref != -1 && (ref & 3) == 3; }
+   { return ref != -1 && (ref & 7) == 5; }
 
    inline static int createRefLeftFloat (int index)
-   { return (index << 2) | 1; }
+   { return (index << 3) | 1; }
    inline static int createRefRightFloat (int index)
-   { return (index << 2) | 3; }
+   { return (index << 3) | 5; }
 
    inline static int getFloatIndexFromRef (int ref)
-   { return ref == -1 ? ref : (ref >> 2); }
+   { return ref == -1 ? ref : (ref >> 3); }
 
 public:
    OutOfFlowMgr (Textblock *containingBlock);
