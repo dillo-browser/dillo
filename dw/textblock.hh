@@ -299,8 +299,6 @@ protected:
        * the end. Should be checked by some methods which are called
        * by addLine(). */
       bool finished;
-
-      int lastPositionedOofWidget;
    };
 
    struct Word
@@ -452,7 +450,18 @@ protected:
                                             are the line numbers, not
                                             the value stored in
                                             parentRef. */
-   int lastPositionedOofWidget;
+
+   // These four values are calculated by containingBlock->outOfFlowMgr
+   // (when defined; otherwise, they are  false, or 0, respectively), for
+   // the newly constructed line, only when needed: when a new line is
+   // added, or if something in the line currently constucted has
+   // changed, e. g. a float has been added.
+
+   bool newLineHasFloatLeft, newLineHasFloatRight;
+   int newLineLeftBorder, newLineRightBorder; /* As returned by
+                                                 outOfFlowMgr->get...Border,
+                                                 or 0, if outOfFlowMgr
+                                                 is NULL */
 
    lout::misc::SimpleVector <Line> *lines;
    lout::misc::SimpleVector <Paragraph> *paragraphs;
@@ -473,6 +482,7 @@ protected:
    void calcWidgetSize (core::Widget *widget, core::Requisition *size);
    void rewrap ();
    void fillParagraphs ();
+   void initNewLine ();
    void showMissingLines ();
    void removeTemporaryLines ();
 
@@ -586,7 +596,9 @@ protected:
    void processWord (int wordIndex);
    virtual void wordWrap (int wordIndex, bool wrapAll);
    void wrapWordInFlow (int wordIndex, bool wrapAll);
+   void checkPossibleLighHeightChange (int wordIndex);
    void wrapWordOofRef (int wordIndex, bool wrapAll);
+   void updateBorders (int wordIndex);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
                      bool correctAtEnd);
    int considerHyphenation (int firstIndex, int breakPos);

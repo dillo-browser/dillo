@@ -123,6 +123,7 @@ Textblock::Textblock (bool limitTextWidth)
    setFlags (USES_HINTS);
    setButtonSensitive(true);
 
+   containingBlock = NULL;
    hasListitemValue = false;
    innerPadding = 0;
    line1Offset = 0;
@@ -130,7 +131,6 @@ Textblock::Textblock (bool limitTextWidth)
    mustQueueResize = false;
    redrawY = 0;
    lastWordDrawn = -1;
-   lastPositionedOofWidget = -1;
 
    /*
     * The initial sizes of lines and words should not be
@@ -173,6 +173,8 @@ Textblock::Textblock (bool limitTextWidth)
       hlEnd[layer].index = 0;
       hlEnd[layer].nChar = 0;
    }
+
+   initNewLine ();
 }
 
 Textblock::~Textblock ()

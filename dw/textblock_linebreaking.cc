@@ -397,24 +397,12 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    line->boxAscent = misc::max (line->boxAscent, 1);
 
    // Calculate offsetCompleteWidget, which includes also floats.
-   int leftBorder;
-   if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (line)) {
-      int y = line->top + getStyle()->boxOffsetY();
-      int h = line->boxAscent + line->boxDescent;
-      leftBorder =
-         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
-                                                       lastPositionedOofWidget);
-   } else
-      leftBorder = 0;
-
    line->offsetCompleteWidget =
-      misc::max (leftBorder,
+      misc::max (newLineLeftBorder,
                  getStyle()->boxOffsetX() + innerPadding
                  + (lineIndex == 0 ? line1OffsetEff : 0))
       + line->leftOffset;
 
-   line->lastPositionedOofWidget = lastPositionedOofWidget;
-   
    PRINTF ("   line[%d].top = %d\n", lines->size () - 1, line->top);
    PRINTF ("   line[%d].boxAscent = %d\n", lines->size () - 1, line->boxAscent);
    PRINTF ("   line[%d].boxDescent = %d\n",
@@ -438,6 +426,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    //printf ("\n");
    
    line->finished = true;
+
+   initNewLine ();
 
    return line;
 }
@@ -526,41 +516,25 @@ void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
    Word *word = words->getRef (wordIndex);
    int penaltyIndex = calcPenaltyIndexForNewLine ();
 
+   checkPossibleLighHeightChange (wordIndex);
+
    bool newLine;
    do {
-      // This variable is set to true, if, due to floats, this line is
-      // smaller than following lines will be (and, at the end, there
-      // will be surely lines without floats). If this is the case, lines
-      // may, in an extreme case, be left empty.
+      // This variable, thereWillBeMoreSpace, is set to true, if, due
+      // to floats, this line is smaller than following lines will be
+      // (and, at the end, there will be surely lines without
+      // floats). If this is the case, lines may, in an extreme case,
+      // be left empty.
 
       // (In other cases, lines are never left empty, even if this means
       // that the contents is wider than the available witdh. Leaving
       // lines empty does not make sense without floats, since there will
       // be no possibility with more space anymore.)
 
-      bool thereWillBeMoreSpace;
-      if (containingBlock->outOfFlowMgr == NULL ||
-          !mustBorderBeRegarded (lines->size ())) {
-         thereWillBeMoreSpace = false;
-         PRINTF ("   thereWillBeMoreSpace = false (no OOFM or ...)\n");
-      } else {
-         int y =
-            topOfPossiblyMissingLine (lines->size ());
-         int h = heightOfPossiblyMissingLine (lines->size ());
-
-         // A previous version checked only the borders, not directly,
-         // whether there are floats. The distinction is rather
-         // disputable. (More on this later.)
-
-         thereWillBeMoreSpace =
-            containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, this,
-                                                     lastPositionedOofWidget) ||
-            containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, this,
-                                                       lastPositionedOofWidget);
-
-         PRINTF ("   thereWillBeMoreSpace = %s (y = %d, h = %d)\n",
-                 thereWillBeMoreSpace ? "true" : "false", y, h);
-      }
+      bool thereWillBeMoreSpace = 
+         mustBorderBeRegarded (lines->size ()) ?
+         newLineHasFloatLeft || newLineHasFloatRight :
+         false;
 
       bool tempNewLine = false;
       int firstIndex =
@@ -713,26 +687,67 @@ void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
    }
 }
 
+/**
+ * Check wheather the newly wrapped word will change the height of the
+ * newly constructed line. If yes, the borders due to floats may
+ * change. (Line height is an argument to the calculation of borders.)
+ */
+void Textblock::checkPossibleLighHeightChange (int wordIndex)
+{
+   if (containingBlock->outOfFlowMgr) {
+      int firstIndex =
+         lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
+      assert (firstIndex <= wordIndex);
+      
+      Word *w1 = words->getRef (wordIndex);
+      // It is sufficient to find a word which is equally high or
+      // higher, to negate the assumtion. This loop should in most
+      // cases be cancelled rather soon, so that peformance hopefully
+      // does not matter.
+      bool equalOrGreaterFound = false;
+      for (int i = firstIndex; !equalOrGreaterFound && i < wordIndex; i++) {
+         Word *w2 = words->getRef (i);
+         if (w2->size.ascent >= w1->size.ascent ||
+             w2->size.descent >= w1->size.descent)
+            equalOrGreaterFound = true;
+      }
+      
+      if (!equalOrGreaterFound)
+         updateBorders (wordIndex);
+   }
+}
+
 void Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
 {
-   int top;
-   if (lines->size() == 0)
-      top = 0;
-   else {
-      Line *prevLine = lines->getLastRef ();
-      top = prevLine->top + prevLine->boxAscent +
-         prevLine->boxDescent + prevLine->breakSpace;
-   }
+   assert (containingBlock->outOfFlowMgr);
 
+   int y = topOfPossiblyMissingLine (lines->size ());
    containingBlock->outOfFlowMgr->tellPosition
-      (words->getRef(wordIndex)->content.widget,
-       top + getStyle()->boxOffsetY());
-   lastPositionedOofWidget = wordIndex;
-   PRINTF ("[%p] lastPositionedOofWidget = %d (wrapWordOofRef)\n",
-           this, lastPositionedOofWidget);
+      (words->getRef(wordIndex)->content.widget, y);
 
+   updateBorders (wordIndex);
+}
 
-   // TODO: compare old/new values of calcAvailWidth(...) (?)
+/**
+ * Recalculate borders (due to floats) for new line.
+ */
+void Textblock::updateBorders (int wordIndex)
+{
+   int y = topOfPossiblyMissingLine (lines->size ());
+   int h = heightOfPossiblyMissingLine (lines->size ());
+
+   newLineHasFloatLeft =
+      containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, this, wordIndex);
+   newLineHasFloatRight =
+      containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, this,
+                                                    wordIndex);
+   newLineLeftBorder =
+      containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
+                                                    wordIndex);
+   newLineRightBorder =
+      containingBlock->outOfFlowMgr->getRightBorder (this, y, h, this,
+                                                     wordIndex);
+
    int firstIndex =
       lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
    assert (firstIndex <= wordIndex);
@@ -1178,21 +1193,10 @@ int Textblock::calcAvailWidth (int lineIndex)
    if (lineIndex == 0)
       availWidth -= line1OffsetEff;
 
-   // TODO if the result is too small, but only in some cases
-   // (e. g. because of floats), the caller should skip a
-   // line. General distinction?
    int leftBorder, rightBorder;
-   if (containingBlock->outOfFlowMgr && mustBorderBeRegarded (lineIndex)) {
-      int y = topOfPossiblyMissingLine (lineIndex);
-      int h = heightOfPossiblyMissingLine (lineIndex);
-      PRINTF ("[%p] borders for line %d: y = %d, h = %d\n",
-              this, lineIndex, y, h);
-      leftBorder =
-         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
-                                                       lastPositionedOofWidget);
-      rightBorder =
-         containingBlock->outOfFlowMgr->getRightBorder (this, y, h, this,
-                                                       lastPositionedOofWidget);
+   if (mustBorderBeRegarded (lineIndex)) {
+      leftBorder = newLineLeftBorder;
+      rightBorder = newLineRightBorder;
    } else
       leftBorder = rightBorder = 0;
 
@@ -1304,18 +1308,14 @@ void Textblock::rewrap ()
    lines->setSize (wrapRefLines);
    nonTemporaryLines = misc::min (nonTemporaryLines, wrapRefLines);
 
+   initNewLine ();
+
    int firstWord;
    if (lines->size () > 0) {
       Line *lastLine = lines->getLastRef();
       firstWord = lastLine->lastWord + 1;
-      lastPositionedOofWidget = lastLine->lastPositionedOofWidget;
-   } else {
+   } else
       firstWord = 0;
-      lastPositionedOofWidget = -1;
-   }
-
-   PRINTF ("[%p] lastPositionedOofWidget = %d (rewrap, from %d lines)\n",
-           this, lastPositionedOofWidget, lines->size ());
 
    PRINTF ("   starting with word %d\n", firstWord);
 
@@ -1386,6 +1386,41 @@ void Textblock::fillParagraphs ()
       handleWordExtremes (i);
 
    wrapRefParagraphs = -1;
+}
+
+void Textblock::initNewLine ()
+{
+   // At the very beginning, in Textblock::Textblock, where this
+   // method is called, containingBlock is not yet defined.
+
+   if (containingBlock && containingBlock->outOfFlowMgr) {
+      int y = topOfPossiblyMissingLine (lines->size ());
+      int h = heightOfPossiblyMissingLine (lines->size ());
+      int lastRef = lines->size() > 0 ? lines->getLastRef()->lastWord : -1;
+
+      newLineHasFloatLeft =
+         containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, this,
+                                                      lastRef);
+      newLineHasFloatRight =
+         containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, this,
+                                                       lastRef);
+      newLineLeftBorder =
+         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
+                                                       lastRef);
+      newLineRightBorder =
+         containingBlock->outOfFlowMgr->getRightBorder (this, y, h, this,
+                                                        lastRef);
+
+      PRINTF ("[%p] INIT_NEW_LINE: %d (%s) / %d (%s), at %d (%d), until %d\n",
+              this, newLineLeftBorder, newLineHasFloatLeft ? "true" : "false",
+              newLineRightBorder, newLineHasFloatRight ? "true" : "false",
+              y, h, lastRef);
+   } else {
+      newLineHasFloatLeft = newLineHasFloatRight = false;
+      newLineLeftBorder = newLineRightBorder = 0;
+
+      PRINTF ("[%p] INIT_NEW_LINE: no CB or OOFM\n", this);
+   }
 }
 
 void Textblock::showMissingLines ()
