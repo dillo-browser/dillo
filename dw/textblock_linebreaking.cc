@@ -697,6 +697,8 @@ void Textblock::checkPossibleLighHeightChange (int wordIndex)
    if (containingBlock->outOfFlowMgr) {
       int firstIndex =
          lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
+
+      // TODO: This assertion is not always the case, due to hyphenation.
       assert (firstIndex <= wordIndex);
       
       Word *w1 = words->getRef (wordIndex);
