@@ -725,6 +725,12 @@ void Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
    containingBlock->outOfFlowMgr->tellPosition
       (words->getRef(wordIndex)->content.widget, y);
 
+   // Suggestion for better performance: One could ignore OOF
+   // references which do not have an effect on borders (e. g. soon
+   // absolute positions); and also distinguish between left and right
+   // border. OutOfFlowMgr should provide methods for this:
+   // affectsLeftBorder and affectsRightBorder.
+
    updateBorders (wordIndex);
 }
 
