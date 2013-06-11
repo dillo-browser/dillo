@@ -698,8 +698,11 @@ void Textblock::checkPossibleLighHeightChange (int wordIndex)
       int firstIndex =
          lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
 
-      // TODO: This assertion is not always the case, due to hyphenation.
-      assert (firstIndex <= wordIndex);
+      // Notice, that firstIndex may be larger than wordIndex, due to
+      // hyphenation. This means, that the word with the index
+      // wordIndex is already part of a line. Nothing to do then.
+
+      /** \todo The reasons are found somewhere else. Is this a problem? */
       
       Word *w1 = words->getRef (wordIndex);
       // It is sufficient to find a word which is equally high or
@@ -758,7 +761,8 @@ void Textblock::updateBorders (int wordIndex)
 
    int firstIndex =
       lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
-   assert (firstIndex <= wordIndex);
+   // Again, it may be that firstIndex > wordIndex. See
+   // checkPossibleLighHeightChange.
    for (int i = firstIndex; i <= wordIndex; i++)
       accumulateWordData (i);
 }
