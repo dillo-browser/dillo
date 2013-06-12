@@ -397,8 +397,9 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    line->boxAscent = misc::max (line->boxAscent, 1);
 
    // Calculate offsetCompleteWidget, which includes also floats.
+   int leftBorder = mustBorderBeRegarded (line) ? newLineLeftBorder : 0;
    line->offsetCompleteWidget =
-      misc::max (newLineLeftBorder,
+      misc::max (leftBorder,
                  getStyle()->boxOffsetX() + innerPadding
                  + (lineIndex == 0 ? line1OffsetEff : 0))
       + line->leftOffset;
