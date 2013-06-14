@@ -277,6 +277,11 @@ public:
    inline core::Widget *getWidget (int i) {
       return i < leftFloatsAll->size() ? leftFloatsAll->get(i)->widget :
          rightFloatsAll->get(i - leftFloatsAll->size())->widget; }
+
+   inline bool affectsLeftBorder (core::Widget *widget) {
+      return widget->getStyle()->vloat == core::style::FLOAT_LEFT; }
+   inline bool affectsRightBorder (core::Widget *widget) {
+      return widget->getStyle()->vloat == core::style::FLOAT_RIGHT; }
 };
 
 } // namespace dw

@@ -598,7 +598,7 @@ protected:
    void wrapWordInFlow (int wordIndex, bool wrapAll);
    void checkPossibleLighHeightChange (int wordIndex);
    void wrapWordOofRef (int wordIndex, bool wrapAll);
-   void updateBorders (int wordIndex);
+   void updateBorders (int wordIndex, bool left, bool right);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
                      bool correctAtEnd);
    int considerHyphenation (int firstIndex, int breakPos);

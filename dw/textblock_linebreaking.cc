@@ -719,7 +719,7 @@ void Textblock::checkPossibleLighHeightChange (int wordIndex)
       }
       
       if (!equalOrGreaterFound)
-         updateBorders (wordIndex);
+         updateBorders (wordIndex, true, true);
    }
 }
 
@@ -728,37 +728,46 @@ void Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
    assert (containingBlock->outOfFlowMgr);
 
    int y = topOfPossiblyMissingLine (lines->size ());
-   containingBlock->outOfFlowMgr->tellPosition
-      (words->getRef(wordIndex)->content.widget, y);
+   Widget *widget = words->getRef(wordIndex)->content.widget;
+   containingBlock->outOfFlowMgr->tellPosition (widget, y);
 
-   // Suggestion for better performance: One could ignore OOF
-   // references which do not have an effect on borders (e. g. soon
-   // absolute positions); and also distinguish between left and right
-   // border. OutOfFlowMgr should provide methods for this:
-   // affectsLeftBorder and affectsRightBorder.
+   // For better performance: Ignore OOF references which do not have
+   // an effect on borders (e. g. soon absolute positions); and also
+   // distinguish between left and right border.
 
-   updateBorders (wordIndex);
+   bool left = containingBlock->outOfFlowMgr->affectsLeftBorder (widget);
+   bool right = containingBlock->outOfFlowMgr->affectsRightBorder (widget);
+   if (left || right)
+      updateBorders (wordIndex, left, right);
 }
 
 /**
  * Recalculate borders (due to floats) for new line.
  */
-void Textblock::updateBorders (int wordIndex)
+void Textblock::updateBorders (int wordIndex, bool left, bool right)
 {
+   assert (left || right);
+   
    int y = topOfPossiblyMissingLine (lines->size ());
    int h = heightOfPossiblyMissingLine (lines->size ());
 
-   newLineHasFloatLeft =
-      containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, this, wordIndex);
-   newLineHasFloatRight =
-      containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, this,
-                                                    wordIndex);
-   newLineLeftBorder =
-      containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
-                                                    wordIndex);
-   newLineRightBorder =
-      containingBlock->outOfFlowMgr->getRightBorder (this, y, h, this,
-                                                     wordIndex);
+   if (left) {
+      newLineHasFloatLeft =
+         containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, this,
+                                                      wordIndex);
+      newLineHasFloatRight =
+         containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, this,
+                                                       wordIndex);
+   }
+
+   if (right) {
+      newLineLeftBorder =
+         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
+                                                       wordIndex);
+      newLineRightBorder =
+         containingBlock->outOfFlowMgr->getRightBorder (this, y, h, this,
+                                                        wordIndex);
+   }
 
    int firstIndex =
       lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
