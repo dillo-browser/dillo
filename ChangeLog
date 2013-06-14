@@ -11,6 +11,8 @@ dillo-3.0.4 [not released yet]
 
 +- Implemented <optgroup>.
    Patch: corvid
++- Make embedding into other applications more reliable (BUG#1127).
+   Patch: Johannes Hofmann
 
 -----------------------------------------------------------------------------
 

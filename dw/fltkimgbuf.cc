@@ -119,6 +119,12 @@ void FltkImgbuf::setCMap (int *colors, int num_colors)
 
 inline void FltkImgbuf::scaleRow (int row, const core::byte *data)
 {
+   //scaleRowSimple (row, data);
+   scaleRowBeautiful (row, data);
+}
+
+inline void FltkImgbuf::scaleRowSimple (int row, const core::byte *data)
+{
    int sr1 = scaledY (row);
    int sr2 = scaledY (row + 1);
 
@@ -139,6 +145,84 @@ inline void FltkImgbuf::scaleRow (int row, const core::byte *data)
          memcpy(rawdata + sr*width*bpp, rawdata + sr1*width*bpp, width*bpp);
       }
    }
+}
+
+inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
+{
+   int sr1 = scaledY (row);
+   int sr2 = scaledY (row + 1);
+
+   for (int sr = sr1; sr < sr2; sr++)
+      copiedRows->set (sr, true);
+
+   if (height > root->height)
+      scaleBuffer (data, root->width, 1,
+                   rawdata + sr1 * width * bpp, width, sr2 - sr1,
+                   bpp);
+   else {
+      assert (sr1 ==sr2 || sr1 + 1 == sr2);
+      int row1 = backscaledY(sr1), row2 = backscaledY(sr1 + 1);
+
+      // Draw only when all oginial lines are retrieved (speed).
+      bool allRootRows = true;
+      for (int r = row1; allRootRows && r < row2; r++)
+         allRootRows = allRootRows && root->copiedRows->get(r);
+
+      if (allRootRows)
+         // We have to access root->rawdata (which has to be up to
+         // date), since a larger area than the single row is accessed
+         // here.
+         scaleBuffer (root->rawdata + row1 * root->width * bpp,
+                      root->width, row2 - row1,
+                      rawdata + sr1 * width * bpp, width, 1,
+                      bpp);
+   }
+}
+
+/**
+ * General method to scale an image buffer. Used to scale single lines
+ * in scaleRowBeautiful.
+ *
+ * The algorithm is rather simple. If the scaled buffer is smaller
+ * (both width and height) than the original surface, each pixel in
+ * the scaled surface is assigned a rectangle of pixels in the
+ * original surface; the resulting pixel value (red, green, blue) is
+ * simply the average of all pixel values. This is pretty fast and
+ * leads to rather good results.
+ *
+ * Nothing special (like interpolation) is done when scaling up.
+ *
+ * TODO Could be optimzized as in scaleRowSimple: when the destination
+ * image is larger, calculate only one row/column, and copy it to the
+ * other rows/columns.
+ */
+inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
+                                     int srcHeight, core::byte *dest,
+                                     int destWidth, int destHeight, int bpp)
+{
+   for(int x = 0; x < destWidth; x++)
+      for(int y = 0; y < destHeight; y++) {
+         int xo1 = x * srcWidth / destWidth;
+         int xo2 = lout::misc::max ((x + 1) * srcWidth / destWidth, xo1 + 1);
+         int yo1 = y * srcHeight / destHeight;
+         int yo2 = lout::misc::max ((y + 1) * srcHeight / destHeight, yo1 + 1);
+         int n = (xo2 - xo1) * (yo2 - yo1);
+         
+         int v[bpp];
+         for(int i = 0; i < bpp; i++)
+            v[i] = 0;
+         
+         for(int xo = xo1; xo < xo2; xo++)
+            for(int yo = yo1; yo < yo2; yo++) {
+               const core::byte *ps = src + bpp * (yo * srcWidth + xo);
+               for(int i = 0; i < bpp; i++)
+                  v[i] += ps[i];
+            }
+         
+         core::byte *pd = dest + bpp * (y * destWidth + x);
+         for(int i = 0; i < bpp; i++)
+            pd[i] = v[i] / n;
+      }
 }
 
 void FltkImgbuf::copyRow (int row, const core::byte *data)
@@ -297,6 +381,17 @@ int FltkImgbuf::scaledY(int ySrc)
    // TODO: May have to be adjusted.
    assert (root != NULL);
    return ySrc * height / root->height;
+}
+
+int FltkImgbuf::backscaledY(int yScaled)
+{
+   assert (root != NULL);
+   
+   // Notice that rounding errors because of integers do not play a
+   // role. This method cannot be the exact iverse of scaledY, since
+   // skaleY is not bijective, and so not ivertible. Instead, both
+   // values always return the smallest value.
+   return yScaled * root->height / height;
 }
 
 void FltkImgbuf::draw (Fl_Widget *target, int xRoot, int yRoot,
