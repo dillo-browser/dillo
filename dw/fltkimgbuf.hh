@@ -31,6 +31,7 @@ private:
    FltkImgbuf (Type type, int width, int height, FltkImgbuf *root);
    void init (Type type, int width, int height, FltkImgbuf *root);
    int scaledY(int ySrc);
+   int backscaledY(int yScaled);
    int isRoot() { return (root == NULL); }
    void detachScaledBuf (FltkImgbuf *scaledBuf);
 
@@ -42,6 +43,12 @@ public:
 
    void setCMap (int *colors, int num_colors);
    inline void scaleRow (int row, const core::byte *data);
+   inline void scaleRowSimple (int row, const core::byte *data);
+   inline void scaleRowBeautiful (int row, const core::byte *data);
+   inline static void scaleBuffer (const core::byte *src, int srcWidth,
+                                   int srcHeight, core::byte *dest,
+                                   int destWidth, int destHeight, int bpp);
+
    void newScan ();
    void copyRow (int row, const core::byte *data);
    core::Imgbuf* getScaledBuf (int width, int height);
