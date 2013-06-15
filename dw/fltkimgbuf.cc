@@ -1,7 +1,7 @@
 /*
  * Dillo Widget
  *
- * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2005-2007, 2012-2013 Sebastian Geerken <sgeerken@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -184,11 +184,11 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
  * in scaleRowBeautiful.
  *
  * The algorithm is rather simple. If the scaled buffer is smaller
- * (both width and height) than the original surface, each pixel in
- * the scaled surface is assigned a rectangle of pixels in the
- * original surface; the resulting pixel value (red, green, blue) is
- * simply the average of all pixel values. This is pretty fast and
- * leads to rather good results.
+ * (both width and height) than the original buffer, each pixel in the
+ * scaled buffer is assigned a rectangle of pixels in the original
+ * buffer; the resulting pixel value (red, green, blue) is simply the
+ * average of all pixel values. This is pretty fast and leads to
+ * rather good results.
  *
  * Nothing special (like interpolation) is done when scaling up.
  *
