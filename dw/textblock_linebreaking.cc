@@ -517,6 +517,9 @@ void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
    Word *word = words->getRef (wordIndex);
    int penaltyIndex = calcPenaltyIndexForNewLine ();
 
+   newLineAscent = misc::max (newLineAscent, word->size.ascent);
+   newLineDescent = misc::max (newLineDescent, word->size.descent);
+
    checkPossibleLighHeightChange (wordIndex);
 
    bool newLine;
@@ -1443,6 +1446,8 @@ void Textblock::initNewLine ()
 
       PRINTF ("[%p] INIT_NEW_LINE: no CB or OOFM\n", this);
    }
+
+   newLineAscent = newLineDescent = 0;
 }
 
 void Textblock::showMissingLines ()

@@ -463,6 +463,12 @@ protected:
                                                  or 0, if outOfFlowMgr
                                                  is NULL */
 
+   // Ascent and descent of the newly constructed line, i. e. maximum
+   // of all words ascent/descent since the end of the last line. Not
+   // neccessary the ascent and descent of the newly added line, since
+   // not all words are added to it.
+   int newLineAscent, newLineDescent;
+
    lout::misc::SimpleVector <Line> *lines;
    lout::misc::SimpleVector <Paragraph> *paragraphs;
    int nonTemporaryLines;
@@ -586,7 +592,6 @@ protected:
    Textblock *getTextblockForLine (int firstWord, int lastWord);
    int topOfPossiblyMissingLine (int lineNo);
    int heightOfPossiblyMissingLine (int lineNo);
-   int accumulateLineHeight (int firstWord, int lastWord);
 
    bool sendSelectionEvent (core::SelectionState::EventType eventType,
                             core::MousePositionEvent *event);
