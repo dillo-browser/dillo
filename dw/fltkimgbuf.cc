@@ -163,7 +163,7 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
       assert (sr1 ==sr2 || sr1 + 1 == sr2);
       int row1 = backscaledY(sr1), row2 = backscaledY(sr1 + 1);
 
-      // Draw only when all oginial lines are retrieved (speed).
+      // Draw only when all original lines are retrieved (speed).
       bool allRootRows = true;
       for (int r = row1; allRootRows && r < row2; r++)
          allRootRows = allRootRows && root->copiedRows->get(r);
@@ -192,7 +192,7 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
  *
  * Nothing special (like interpolation) is done when scaling up.
  *
- * TODO Could be optimzized as in scaleRowSimple: when the destination
+ * TODO Could be optimized as in scaleRowSimple: when the destination
  * image is larger, calculate only one row/column, and copy it to the
  * other rows/columns.
  */
@@ -388,8 +388,8 @@ int FltkImgbuf::backscaledY(int yScaled)
    assert (root != NULL);
    
    // Notice that rounding errors because of integers do not play a
-   // role. This method cannot be the exact iverse of scaledY, since
-   // skaleY is not bijective, and so not ivertible. Instead, both
+   // role. This method cannot be the exact inverse of scaledY, since
+   // scaleY is not bijective, and so not invertible. Instead, both
    // values always return the smallest value.
    return yScaled * root->height / height;
 }
