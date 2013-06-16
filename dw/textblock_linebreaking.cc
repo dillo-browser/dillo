@@ -517,9 +517,6 @@ void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
    Word *word = words->getRef (wordIndex);
    int penaltyIndex = calcPenaltyIndexForNewLine ();
 
-   newLineAscent = misc::max (newLineAscent, word->size.ascent);
-   newLineDescent = misc::max (newLineDescent, word->size.descent);
-
    checkPossibleLineHeightChange (wordIndex);
 
    bool newLine;
@@ -695,35 +692,22 @@ void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
  * Check wheather the newly wrapped word will change the height of the
  * newly constructed line. If yes, the borders due to floats may
  * change. (Line height is an argument to the calculation of borders.)
+ *
+ * Also update newLineAscent and newLineDescent with values of the new
+ * word.
  */
 void Textblock::checkPossibleLineHeightChange (int wordIndex)
 {
-   if (containingBlock->outOfFlowMgr) {
-      int firstIndex =
-         lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
+   Word *w = words->getRef (wordIndex);
+   bool heightIncreased =
+      containingBlock->outOfFlowMgr &&
+      (w->size.ascent > newLineAscent || w->size.descent >= newLineDescent);
 
-      // Notice, that firstIndex may be larger than wordIndex, due to
-      // hyphenation. This means, that the word with the index
-      // wordIndex is already part of a line. Nothing to do then.
+   newLineAscent = misc::max (newLineAscent, w->size.ascent);
+   newLineDescent = misc::max (newLineDescent, w->size.descent);
 
-      /** \todo The reasons are found somewhere else. Is this a problem? */
-      
-      Word *w1 = words->getRef (wordIndex);
-      // It is sufficient to find a word which is equally high or
-      // higher, to negate the assumtion. This loop should in most
-      // cases be cancelled rather soon, so that peformance hopefully
-      // does not matter.
-      bool equalOrGreaterFound = false;
-      for (int i = firstIndex; !equalOrGreaterFound && i < wordIndex; i++) {
-         Word *w2 = words->getRef (i);
-         if (w2->size.ascent >= w1->size.ascent ||
-             w2->size.descent >= w1->size.descent)
-            equalOrGreaterFound = true;
-      }
-      
-      if (!equalOrGreaterFound)
-         updateBorders (wordIndex, true, true);
-   }
+   if (heightIncreased)
+      updateBorders (wordIndex, true, true);
 }
 
 void Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
@@ -774,8 +758,11 @@ void Textblock::updateBorders (int wordIndex, bool left, bool right)
 
    int firstIndex =
       lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
-   // Again, it may be that firstIndex > wordIndex. See
-   // checkPossibleLineHeightChange.
+
+   // Notice, that firstIndex may be larger than wordIndex, due to
+   // hyphenation. This means, that the word with the index
+   // wordIndex is already part of a line. Nothing to do then.
+
    for (int i = firstIndex; i <= wordIndex; i++)
       accumulateWordData (i);
 }
