@@ -14,7 +14,9 @@ dillo-3.0.4 [not released yet]
 +- Make embedding into other applications more reliable (BUG#1127).
    Patch: Johannes Hofmann
 +- Better scaling (down) of images
-   Patch: Sebastian Geerken
+ - Fixed (possibly security) problem of FltkImgBuf caused by integer overflow
+   (BUG#1129).
+   Patches: Sebastian Geerken
 
 -----------------------------------------------------------------------------
 
