@@ -62,8 +62,12 @@ void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
           width, height);
       init (type, 1, 1, root);
    } else if (width > MAX_WIDTH) {
-      // Too large dimensions cause rounding dangerous overflow
-      // errors, so we limit dimensions to harmless values.
+      // Too large dimensions cause dangerous overflow errors, so we
+      // limit dimensions to harmless values.
+      // 
+      // Example: 65535 * 65536 / 65536 (see scaling below) results in
+      // the negative value -1.
+
       MSG("FltkImgbuf::init: cannot handle large width %d\n", width);
       init (type, MAX_WIDTH, height, root);
    } else if (height > MAX_HEIGHT) {
