@@ -601,7 +601,7 @@ protected:
    void processWord (int wordIndex);
    virtual void wordWrap (int wordIndex, bool wrapAll);
    void wrapWordInFlow (int wordIndex, bool wrapAll);
-   void checkPossibleLighHeightChange (int wordIndex);
+   void checkPossibleLineHeightChange (int wordIndex);
    void wrapWordOofRef (int wordIndex, bool wrapAll);
    void updateBorders (int wordIndex, bool left, bool right);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,

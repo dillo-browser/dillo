@@ -520,7 +520,7 @@ void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
    newLineAscent = misc::max (newLineAscent, word->size.ascent);
    newLineDescent = misc::max (newLineDescent, word->size.descent);
 
-   checkPossibleLighHeightChange (wordIndex);
+   checkPossibleLineHeightChange (wordIndex);
 
    bool newLine;
    do {
@@ -696,7 +696,7 @@ void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
  * newly constructed line. If yes, the borders due to floats may
  * change. (Line height is an argument to the calculation of borders.)
  */
-void Textblock::checkPossibleLighHeightChange (int wordIndex)
+void Textblock::checkPossibleLineHeightChange (int wordIndex)
 {
    if (containingBlock->outOfFlowMgr) {
       int firstIndex =
@@ -775,7 +775,7 @@ void Textblock::updateBorders (int wordIndex, bool left, bool right)
    int firstIndex =
       lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
    // Again, it may be that firstIndex > wordIndex. See
-   // checkPossibleLighHeightChange.
+   // checkPossibleLineHeightChange.
    for (int i = firstIndex; i <= wordIndex; i++)
       accumulateWordData (i);
 }
