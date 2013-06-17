@@ -91,8 +91,8 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
       case RGB:  bpp = 3; break;
       default:   bpp = 1; break;
       }
-      MSG("FltkImgbuf::init width=%d height=%d bpp=%d gamma=%g\n",
-          width, height, bpp, gamma);
+      _MSG("FltkImgbuf::init width=%d height=%d bpp=%d gamma=%g\n",
+           width, height, bpp, gamma);
       rawdata = new uchar[bpp * width * height];
       // Set light-gray as interim background color.
       memset(rawdata, 222, width*height*bpp);
