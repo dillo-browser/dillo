@@ -119,7 +119,7 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
    int bit_depth;
    int interlace_type;
    uint_t i;
-   double gamma;
+   double file_gamma = 1 / 2.2;
 
    _MSG("Png_datainfo_callback:\n");
 
@@ -163,8 +163,8 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
    /* Get and set gamma information. Beware: gamma correction 2.2 will
       only work on PC's. TODO: select screen gamma correction for other
       platforms. */
-   if (png_get_gAMA(png_ptr, info_ptr, &gamma))
-      png_set_gamma(png_ptr, 2.2, gamma);
+   if (png_get_gAMA(png_ptr, info_ptr, &file_gamma))
+      png_set_gamma(png_ptr, 2.2, file_gamma);
 
    /* Convert gray scale to RGB */
    if (color_type == PNG_COLOR_TYPE_GRAY ||
@@ -201,10 +201,9 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
    png->linebuf = dMalloc(3 * png->width);
 
    /* Initialize the dicache-entry here */
-   /** \todo Gamma for PNG? */
    a_Dicache_set_parms(png->url, png->version, png->Image,
                        (uint_t)png->width, (uint_t)png->height,
-                       DILLO_IMG_TYPE_RGB, 1 / 2.2);
+                       DILLO_IMG_TYPE_RGB, file_gamma);
 }
 
 static void
