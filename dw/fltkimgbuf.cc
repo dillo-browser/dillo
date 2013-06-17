@@ -39,19 +39,21 @@ static bool excessiveImageDimensions (int width, int height)
       width > IMAGE_MAX_AREA / height;
 }
 
-FltkImgbuf::FltkImgbuf (Type type, int width, int height)
+FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma)
 {
    _MSG("FltkImgbuf: new root %p\n", this);
-   init (type, width, height, NULL);
+   init (type, width, height, gamma, NULL);
 }
 
-FltkImgbuf::FltkImgbuf (Type type, int width, int height, FltkImgbuf *root)
+FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma,
+                        FltkImgbuf *root)
 {
    _MSG("FltkImgbuf: new scaled %p, root is %p\n", this, root);
-   init (type, width, height, root);
+   init (type, width, height, gamma, root);
 }
 
-void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
+void FltkImgbuf::init (Type type, int width, int height, double gamma,
+                       FltkImgbuf *root)
 {
    if (excessiveImageDimensions (width, height)) {
       // Excessive image sizes which would cause crashes due to too
@@ -60,7 +62,7 @@ void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
       // 1 size.
       MSG("FltkImgbuf::init: suspicious image size request %d x %d\n",
           width, height);
-      init (type, 1, 1, root);
+      init (type, 1, 1, gamma, root);
    } else if (width > MAX_WIDTH) {
       // Too large dimensions cause dangerous overflow errors, so we
       // limit dimensions to harmless values.
@@ -69,15 +71,19 @@ void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
       // the negative value -1.
 
       MSG("FltkImgbuf::init: cannot handle large width %d\n", width);
-      init (type, MAX_WIDTH, height, root);
+      init (type, MAX_WIDTH, height, gamma, root);
    } else if (height > MAX_HEIGHT) {
       MSG("FltkImgbuf::init: cannot handle large height %d\n", height);
-      init (type, width, MAX_HEIGHT, root);
+      init (type, width, MAX_HEIGHT, gamma, root);
+   } else if (gamma <= 0) {
+      MSG("FltkImgbuf::init: non-positive gamma %g\n", gamma);
+      init (type, width, height, 1, root);
    } else {
       this->root = root;
       this->type = type;
       this->width = width;
       this->height = height;
+      this->gamma = gamma;
 
       // TODO: Maybe this is only for root buffers
       switch (type) {
@@ -85,7 +91,8 @@ void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
       case RGB:  bpp = 3; break;
       default:   bpp = 1; break;
       }
-      _MSG("FltkImgbuf::init width=%d height=%d bpp=%d\n", width, height, bpp);
+      _MSG("FltkImgbuf::init width=%d height=%d bpp=%d gamma=%g\n",
+           width, height, bpp, gamma);
       rawdata = new uchar[bpp * width * height];
       // Set light-gray as interim background color.
       memset(rawdata, 222, width*height*bpp);
@@ -323,7 +330,7 @@ core::Imgbuf* FltkImgbuf::getScaledBuf (int width, int height)
    }
 
    // This size is not yet used, so a new buffer has to be created.
-   FltkImgbuf *sb = new FltkImgbuf (type, width, height, this);
+   FltkImgbuf *sb = new FltkImgbuf (type, width, height, gamma, this);
    scaledBuffers->append (sb);
    return sb;
 }

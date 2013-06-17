@@ -18,6 +18,7 @@ private:
 
    int width, height;
    Type type;
+   double gamma;
 
 //{
    int bpp;
@@ -28,8 +29,9 @@ private:
    // the image buffer.
    lout::misc::BitSet *copiedRows;
 
-   FltkImgbuf (Type type, int width, int height, FltkImgbuf *root);
-   void init (Type type, int width, int height, FltkImgbuf *root);
+   FltkImgbuf (Type type, int width, int height, double gamma,
+               FltkImgbuf *root);
+   void init (Type type, int width, int height, double gamma, FltkImgbuf *root);
    int scaledY(int ySrc);
    int backscaledY(int yScaled);
    int isRoot() { return (root == NULL); }
@@ -39,7 +41,7 @@ protected:
    ~FltkImgbuf ();
 
 public:
-   FltkImgbuf (Type type, int width, int height);
+   FltkImgbuf (Type type, int width, int height, double gamma);
 
    void setCMap (int *colors, int num_colors);
    inline void scaleRow (int row, const core::byte *data);

@@ -41,7 +41,7 @@ static int imgRow = 0;
 static void imageInitTimeout (void *data)
 {
    //imgbuf = layout->createImgbuf (Imgbuf::RGBA, 400, 200);
-   imgbuf = layout->createImgbuf (Imgbuf::RGB, 400, 200);
+   imgbuf = layout->createImgbuf (Imgbuf::RGB, 400, 200, 1);
    image->setBuffer (imgbuf);
 }
 

@@ -169,7 +169,8 @@ public:
    core::style::Tooltip *createTooltip (const char *text);
    void cancelTooltip();
 
-   core::Imgbuf *createImgbuf (core::Imgbuf::Type type, int width, int height);
+   core::Imgbuf *createImgbuf (core::Imgbuf::Type type, int width, int height,
+                               double gamma);
 
    void copySelection(const char *text);
 

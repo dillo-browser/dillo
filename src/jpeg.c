@@ -299,10 +299,11 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
             return;
          }
 
+         /** \todo Gamma for JPEG? */
          a_Dicache_set_parms(jpeg->url, jpeg->version, jpeg->Image,
                              (uint_t)jpeg->cinfo.image_width,
                              (uint_t)jpeg->cinfo.image_height,
-                             type);
+                             type, 2.2);
 
          /* decompression step 4 (see libjpeg.doc) */
          jpeg->state = DILLO_JPEG_STARTING;
