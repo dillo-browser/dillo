@@ -1,7 +1,7 @@
 /*
  * Dillo Widget
  *
- * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2005-2007, 2012-2013 Sebastian Geerken <sgeerken@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,66 +17,139 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "fltkcore.hh"
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 
 #include <FL/fl_draw.H>
+#include <math.h>
 
 #define IMAGE_MAX_AREA (6000 * 6000)
+
+#define MAX_WIDTH 0x8000
+#define MAX_HEIGHT 0x8000
 
 namespace dw {
 namespace fltk {
 
 using namespace lout::container::typed;
 
-FltkImgbuf::FltkImgbuf (Type type, int width, int height)
+const enum ScaleMode { SIMPLE, BEAUTIFIL, BEAUTIFIL_GAMMA }
+   scaleMode = BEAUTIFIL_GAMMA;
+
+Vector <FltkImgbuf::GammaCorrectionTable> *FltkImgbuf::gammaCorrectionTables
+   = new Vector <FltkImgbuf::GammaCorrectionTable> (true, 2);
+
+uchar *FltkImgbuf::findGammaCorrectionTable (double gamma)
+{
+   // Since the number of possible keys is low, a linear search is
+   // sufficiently fast.
+
+   for (int i = 0; i < gammaCorrectionTables->size(); i++) {
+      GammaCorrectionTable *gct = gammaCorrectionTables->get(i);
+      if (gct->gamma == gamma)
+         return gct->map;
+   }
+
+   _MSG("Creating new table for gamma = %g\n", gamma);
+   
+   GammaCorrectionTable *gct = new GammaCorrectionTable();
+   gct->gamma = gamma;
+   
+   for (int i = 0; i < 256; i++)
+      gct->map[i] = 255 * pow((double)i / 255, gamma);
+
+   gammaCorrectionTables->put (gct);
+   return gct->map;
+}
+
+bool FltkImgbuf::excessiveImageDimensions (int width, int height)
+{
+   return width <= 0 || height <= 0 ||
+      width > IMAGE_MAX_AREA / height;
+}
+
+void FltkImgbuf::freeall ()
+{
+   _MSG("Deleting gammaCorrectionTables\n");
+   delete gammaCorrectionTables;
+   gammaCorrectionTables = NULL;
+}
+
+FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma)
 {
    _MSG("FltkImgbuf: new root %p\n", this);
-   init (type, width, height, NULL);
+   init (type, width, height, gamma, NULL);
 }
 
-FltkImgbuf::FltkImgbuf (Type type, int width, int height, FltkImgbuf *root)
+FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma,
+                        FltkImgbuf *root)
 {
    _MSG("FltkImgbuf: new scaled %p, root is %p\n", this, root);
-   init (type, width, height, root);
+   init (type, width, height, gamma, root);
 }
 
-void FltkImgbuf::init (Type type, int width, int height, FltkImgbuf *root)
+void FltkImgbuf::init (Type type, int width, int height, double gamma,
+                       FltkImgbuf *root)
 {
-   this->root = root;
-   this->type = type;
-   this->width = width;
-   this->height = height;
+   if (excessiveImageDimensions (width, height)) {
+      // Excessive image sizes which would cause crashes due to too
+      // big allocations for the image buffer (for root buffers, when
+      // the image was specially prepared). In this case we use a 1 x
+      // 1 size.
+      MSG("FltkImgbuf::init: suspicious image size request %d x %d\n",
+          width, height);
+      init (type, 1, 1, gamma, root);
+   } else if (width > MAX_WIDTH) {
+      // Too large dimensions cause dangerous overflow errors, so we
+      // limit dimensions to harmless values.
+      // 
+      // Example: 65535 * 65536 / 65536 (see scaling below) results in
+      // the negative value -1.
 
-   // TODO: Maybe this is only for root buffers
-   switch (type) {
+      MSG("FltkImgbuf::init: cannot handle large width %d\n", width);
+      init (type, MAX_WIDTH, height, gamma, root);
+   } else if (height > MAX_HEIGHT) {
+      MSG("FltkImgbuf::init: cannot handle large height %d\n", height);
+      init (type, width, MAX_HEIGHT, gamma, root);
+   } else if (gamma <= 0) {
+      MSG("FltkImgbuf::init: non-positive gamma %g\n", gamma);
+      init (type, width, height, 1, root);
+   } else {
+      this->root = root;
+      this->type = type;
+      this->width = width;
+      this->height = height;
+      this->gamma = gamma;
+
+      // TODO: Maybe this is only for root buffers
+      switch (type) {
       case RGBA: bpp = 4; break;
       case RGB:  bpp = 3; break;
       default:   bpp = 1; break;
-   }
-   _MSG("FltkImgbuf::init width=%d height=%d bpp=%d\n", width, height, bpp);
-   rawdata = new uchar[bpp * width * height];
-   // Set light-gray as interim background color.
-   memset(rawdata, 222, width*height*bpp);
-
-   refCount = 1;
-   deleteOnUnref = true;
-   copiedRows = new lout::misc::BitSet (height);
-
-   // The list is only used for root buffers.
-   if (isRoot())
-      scaledBuffers = new lout::container::typed::List <FltkImgbuf> (true);
-   else
-      scaledBuffers = NULL;
-
-   if (!isRoot()) {
-      // Scaling
-      for (int row = 0; row < root->height; row++) {
-         if (root->copiedRows->get (row))
-            scaleRow (row, root->rawdata + row*root->width*root->bpp);
+      }
+      _MSG("FltkImgbuf::init width=%d height=%d bpp=%d gamma=%g\n",
+           width, height, bpp, gamma);
+      rawdata = new uchar[bpp * width * height];
+      // Set light-gray as interim background color.
+      memset(rawdata, 222, width*height*bpp);
+      
+      refCount = 1;
+      deleteOnUnref = true;
+      copiedRows = new lout::misc::BitSet (height);
+      
+      // The list is only used for root buffers.
+      if (isRoot())
+         scaledBuffers = new lout::container::typed::List <FltkImgbuf> (true);
+      else
+         scaledBuffers = NULL;
+      
+      if (!isRoot()) {
+         // Scaling
+         for (int row = 0; row < root->height; row++) {
+            if (root->copiedRows->get (row))
+               scaleRow (row, root->rawdata + row*root->width*root->bpp);
+         }
       }
    }
 }
@@ -119,8 +192,12 @@ void FltkImgbuf::setCMap (int *colors, int num_colors)
 
 inline void FltkImgbuf::scaleRow (int row, const core::byte *data)
 {
-   //scaleRowSimple (row, data);
-   scaleRowBeautiful (row, data);
+   if (row < root->height) {
+      if (scaleMode == SIMPLE)
+         scaleRowSimple (row, data);
+      else
+         scaleRowBeautiful (row, data);
+   }
 }
 
 inline void FltkImgbuf::scaleRowSimple (int row, const core::byte *data)
@@ -158,12 +235,12 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
    if (height > root->height)
       scaleBuffer (data, root->width, 1,
                    rawdata + sr1 * width * bpp, width, sr2 - sr1,
-                   bpp);
+                   bpp, gamma);
    else {
       assert (sr1 ==sr2 || sr1 + 1 == sr2);
       int row1 = backscaledY(sr1), row2 = backscaledY(sr1 + 1);
 
-      // Draw only when all oginial lines are retrieved (speed).
+      // Draw only when all original lines are retrieved (speed).
       bool allRootRows = true;
       for (int r = row1; allRootRows && r < row2; r++)
          allRootRows = allRootRows && root->copiedRows->get(r);
@@ -175,7 +252,7 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
          scaleBuffer (root->rawdata + row1 * root->width * bpp,
                       root->width, row2 - row1,
                       rawdata + sr1 * width * bpp, width, 1,
-                      bpp);
+                      bpp, gamma);
    }
 }
 
@@ -184,22 +261,33 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
  * in scaleRowBeautiful.
  *
  * The algorithm is rather simple. If the scaled buffer is smaller
- * (both width and height) than the original surface, each pixel in
- * the scaled surface is assigned a rectangle of pixels in the
- * original surface; the resulting pixel value (red, green, blue) is
- * simply the average of all pixel values. This is pretty fast and
- * leads to rather good results.
+ * (both width and height) than the original buffer, each pixel in the
+ * scaled buffer is assigned a rectangle of pixels in the original
+ * buffer; the resulting pixel value (red, green, blue) is simply the
+ * average of all pixel values. This is pretty fast and leads to
+ * rather good results.
  *
  * Nothing special (like interpolation) is done when scaling up.
  *
- * TODO Could be optimzized as in scaleRowSimple: when the destination
+ * If scaleMode is set to BEAUTIFIL_GAMMA, gamma correction is
+ * considered, see <http://www.4p8.com/eric.brasseur/gamma.html>.
+ *
+ * TODO Could be optimized as in scaleRowSimple: when the destination
  * image is larger, calculate only one row/column, and copy it to the
  * other rows/columns.
  */
 inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
                                      int srcHeight, core::byte *dest,
-                                     int destWidth, int destHeight, int bpp)
+                                     int destWidth, int destHeight, int bpp,
+                                     double gamma)
 {
+   uchar *gammaMap1, *gammaMap2;
+
+   if (scaleMode == BEAUTIFIL_GAMMA) {
+      gammaMap1 = findGammaCorrectionTable (gamma);
+      gammaMap2 = findGammaCorrectionTable (1 / gamma);
+   }
+
    for(int x = 0; x < destWidth; x++)
       for(int y = 0; y < destHeight; y++) {
          int xo1 = x * srcWidth / destWidth;
@@ -216,12 +304,14 @@ inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
             for(int yo = yo1; yo < yo2; yo++) {
                const core::byte *ps = src + bpp * (yo * srcWidth + xo);
                for(int i = 0; i < bpp; i++)
-                  v[i] += ps[i];
+                  v[i] += 
+                     (scaleMode == BEAUTIFIL_GAMMA ? gammaMap2[ps[i]] : ps[i]);
             }
          
          core::byte *pd = dest + bpp * (y * destWidth + x);
          for(int i = 0; i < bpp; i++)
-            pd[i] = v[i] / n;
+            pd[i] =
+               scaleMode == BEAUTIFIL_GAMMA ? gammaMap1[v[i] / n] : v[i] / n;
       }
 }
 
@@ -229,14 +319,17 @@ void FltkImgbuf::copyRow (int row, const core::byte *data)
 {
    assert (isRoot());
 
-   // Flag the row done and copy its data.
-   copiedRows->set (row, true);
-   memcpy(rawdata + row * width * bpp, data, width * bpp);
-
-   // Update all the scaled buffers of this root image.
-   for (Iterator <FltkImgbuf> it = scaledBuffers->iterator(); it.hasNext(); ) {
-      FltkImgbuf *sb = it.getNext ();
-      sb->scaleRow(row, data);
+   if (row < height) {
+      // Flag the row done and copy its data.
+      copiedRows->set (row, true);
+      memcpy(rawdata + row * width * bpp, data, width * bpp);
+      
+      // Update all the scaled buffers of this root image.
+      for (Iterator <FltkImgbuf> it = scaledBuffers->iterator();
+           it.hasNext(); ) {
+         FltkImgbuf *sb = it.getNext ();
+         sb->scaleRow(row, data);
+      }
    }
 }
 
@@ -255,6 +348,16 @@ core::Imgbuf* FltkImgbuf::getScaledBuf (int width, int height)
    if (!isRoot())
       return root->getScaledBuf (width, height);
 
+   if (width > MAX_WIDTH) {
+      // Similar to init.
+      MSG("FltkImgbuf::getScaledBuf: cannot handle large width %d\n", width);
+      return getScaledBuf (MAX_WIDTH, height);
+   }
+   if (height > MAX_HEIGHT) {
+      MSG("FltkImgbuf::getScaledBuf: cannot handle large height %d\n", height);
+      return getScaledBuf (width, MAX_HEIGHT);
+   }
+
    if (width == this->width && height == this->height) {
       ref ();
       return this;
@@ -268,20 +371,18 @@ core::Imgbuf* FltkImgbuf::getScaledBuf (int width, int height)
       }
    }
 
-   /* Check for excessive image sizes which would cause crashes due to
-    * too big allocations for the image buffer.
-    * In this case we return a pointer to the unscaled image buffer.
-    */
-   if (width <= 0 || height <= 0 ||
-       width > IMAGE_MAX_AREA / height) {
+   // Check for excessive image sizes which would cause crashes due to
+   // too big allocations for the image buffer. In this case we return
+   // a pointer to the unscaled image buffer.
+   if (excessiveImageDimensions (width, height)) {
       MSG("FltkImgbuf::getScaledBuf: suspicious image size request %d x %d\n",
            width, height);
       ref ();
       return this;
    }
 
-   /* This size is not yet used, so a new buffer has to be created. */
-   FltkImgbuf *sb = new FltkImgbuf (type, width, height, this);
+   // This size is not yet used, so a new buffer has to be created.
+   FltkImgbuf *sb = new FltkImgbuf (type, width, height, gamma, this);
    scaledBuffers->append (sb);
    return sb;
 }
@@ -299,16 +400,20 @@ void FltkImgbuf::getRowArea (int row, dw::core::Rectangle *area)
       _MSG("::getRowArea: area x=%d y=%d width=%d height=%d\n",
            area->x, area->y, area->width, area->height);
    } else {
-      // scaled buffer
-      int sr1 = scaledY (row);
-      int sr2 = scaledY (row + 1);
-
-      area->x = 0;
-      area->y = sr1;
-      area->width = width;
-      area->height = sr2 - sr1;
-      _MSG("::getRowArea: area x=%d y=%d width=%d height=%d\n",
-           area->x, area->y, area->width, area->height);
+      if (row > root->height)
+         area->x = area->y = area->width = area->height = 0;
+      else {
+         // scaled buffer
+         int sr1 = scaledY (row);
+         int sr2 = scaledY (row + 1);
+         
+         area->x = 0;
+         area->y = sr1;
+         area->width = width;
+         area->height = sr2 - sr1;
+         _MSG("::getRowArea: area x=%d y=%d width=%d height=%d\n",
+              area->x, area->y, area->width, area->height);
+      }
    }
 }
 
@@ -388,8 +493,8 @@ int FltkImgbuf::backscaledY(int yScaled)
    assert (root != NULL);
    
    // Notice that rounding errors because of integers do not play a
-   // role. This method cannot be the exact iverse of scaledY, since
-   // skaleY is not bijective, and so not ivertible. Instead, both
+   // role. This method cannot be the exact inverse of scaledY, since
+   // scaleY is not bijective, and so not invertible. Instead, both
    // values always return the smallest value.
    return yScaled * root->height / height;
 }

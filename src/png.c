@@ -201,9 +201,10 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
    png->linebuf = dMalloc(3 * png->width);
 
    /* Initialize the dicache-entry here */
+   /** \todo Gamma for PNG? */
    a_Dicache_set_parms(png->url, png->version, png->Image,
                        (uint_t)png->width, (uint_t)png->height,
-                       DILLO_IMG_TYPE_RGB);
+                       DILLO_IMG_TYPE_RGB, 1 / 2.2);
 }
 
 static void

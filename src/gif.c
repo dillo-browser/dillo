@@ -814,8 +814,10 @@ static size_t Gif_do_img_desc(DilloGif *gif, void *Buf,
       return 0;
    }
 
+   /** \todo Gamma for GIF? */
    a_Dicache_set_parms(gif->url, gif->version, gif->Image,
-                       gif->Width, gif->Height, DILLO_IMG_TYPE_INDEXED);
+                       gif->Width, gif->Height, DILLO_IMG_TYPE_INDEXED,
+                       1 / 2.2);
 
    Flags = buf[8];
 

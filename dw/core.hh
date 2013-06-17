@@ -26,6 +26,9 @@ class View;
 class Widget;
 class Iterator;
 
+// Nothing yet to free.
+inline void freeall () { }
+
 namespace ui {
 
 class ResourceFactory;

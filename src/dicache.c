@@ -259,7 +259,8 @@ void a_Dicache_invalidate_entry(const DilloUrl *Url)
  * (By now, we'll use the image information despite the html tags --Jcid)
  */
 void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
-                         uint_t width, uint_t height, DilloImgType type)
+                         uint_t width, uint_t height, DilloImgType type,
+                         double gamma)
 {
    DICacheEntry *DicEntry;
 
@@ -275,7 +276,7 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
 
    /* BUG: there's just one image-type now */
    #define I_RGB 0
-   DicEntry->v_imgbuf = a_Imgbuf_new(Image->dw, I_RGB, width, height);
+   DicEntry->v_imgbuf = a_Imgbuf_new(Image->dw, I_RGB, width, height, gamma);
 
    DicEntry->TotalSize = width * height * 3;
    DicEntry->width = width;

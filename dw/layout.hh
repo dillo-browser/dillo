@@ -358,9 +358,10 @@ public:
       return platform->cancelTooltip ();
    }
 
-   inline Imgbuf *createImgbuf (Imgbuf::Type type, int width, int height)
+   inline Imgbuf *createImgbuf (Imgbuf::Type type, int width, int height,
+                                double gamma)
    {
-      return platform->createImgbuf (type, width, height);
+      return platform->createImgbuf (type, width, height, gamma);
    }
 
    inline void copySelection(const char *text)
