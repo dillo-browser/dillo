@@ -22,6 +22,7 @@
 #include "../lout/misc.hh"
 
 #include <FL/fl_draw.H>
+#include <math.h>
 
 #define IMAGE_MAX_AREA (6000 * 6000)
 
@@ -33,7 +34,36 @@ namespace fltk {
 
 using namespace lout::container::typed;
 
-static bool excessiveImageDimensions (int width, int height)
+const enum ScaleMode { SIMPLE, BEAUTIFIL, BEAUTIFIL_GAMMA }
+   scaleMode = BEAUTIFIL_GAMMA;
+
+Vector <FltkImgbuf::GammaCorrectionTable> *FltkImgbuf::gammaCorrectionTables
+   = new Vector <FltkImgbuf::GammaCorrectionTable> (true, 2);
+
+uchar *FltkImgbuf::findGammaCorrectionTable (double gamma)
+{
+   // Since the number of possible keys is low, a linear search is
+   // sufficiently fast.
+
+   for (int i = 0; i < gammaCorrectionTables->size(); i++) {
+      GammaCorrectionTable *gct = gammaCorrectionTables->get(i);
+      if (gct->gamma == gamma)
+         return gct->map;
+   }
+
+   _MSG("Creating new table for gamma = %g\n", gamma);
+   
+   GammaCorrectionTable *gct = new GammaCorrectionTable();
+   gct->gamma = gamma;
+   
+   for (int i = 0; i < 256; i++)
+      gct->map[i] = 255 * pow((double)i / 255, gamma);
+
+   gammaCorrectionTables->put (gct);
+   return gct->map;
+}
+
+bool FltkImgbuf::excessiveImageDimensions (int width, int height)
 {
    return width <= 0 || height <= 0 ||
       width > IMAGE_MAX_AREA / height;
@@ -156,8 +186,10 @@ void FltkImgbuf::setCMap (int *colors, int num_colors)
 inline void FltkImgbuf::scaleRow (int row, const core::byte *data)
 {
    if (row < root->height) {
-      //scaleRowSimple (row, data);
-      scaleRowBeautiful (row, data);
+      if (scaleMode == SIMPLE)
+         scaleRowSimple (row, data);
+      else
+         scaleRowBeautiful (row, data);
    }
 }
 
@@ -196,7 +228,7 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
    if (height > root->height)
       scaleBuffer (data, root->width, 1,
                    rawdata + sr1 * width * bpp, width, sr2 - sr1,
-                   bpp);
+                   bpp, gamma);
    else {
       assert (sr1 ==sr2 || sr1 + 1 == sr2);
       int row1 = backscaledY(sr1), row2 = backscaledY(sr1 + 1);
@@ -213,7 +245,7 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
          scaleBuffer (root->rawdata + row1 * root->width * bpp,
                       root->width, row2 - row1,
                       rawdata + sr1 * width * bpp, width, 1,
-                      bpp);
+                      bpp, gamma);
    }
 }
 
@@ -230,14 +262,25 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
  *
  * Nothing special (like interpolation) is done when scaling up.
  *
+ * If scaleMode is set to BEAUTIFIL_GAMMA, gamma correction is
+ * considered, see <http://www.4p8.com/eric.brasseur/gamma.html>.
+ *
  * TODO Could be optimized as in scaleRowSimple: when the destination
  * image is larger, calculate only one row/column, and copy it to the
  * other rows/columns.
  */
 inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
                                      int srcHeight, core::byte *dest,
-                                     int destWidth, int destHeight, int bpp)
+                                     int destWidth, int destHeight, int bpp,
+                                     double gamma)
 {
+   uchar *gammaMap1, *gammaMap2;
+
+   if (scaleMode == BEAUTIFIL_GAMMA) {
+      gammaMap1 = findGammaCorrectionTable (gamma);
+      gammaMap2 = findGammaCorrectionTable (1 / gamma);
+   }
+
    for(int x = 0; x < destWidth; x++)
       for(int y = 0; y < destHeight; y++) {
          int xo1 = x * srcWidth / destWidth;
@@ -254,12 +297,14 @@ inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
             for(int yo = yo1; yo < yo2; yo++) {
                const core::byte *ps = src + bpp * (yo * srcWidth + xo);
                for(int i = 0; i < bpp; i++)
-                  v[i] += ps[i];
+                  v[i] += 
+                     (scaleMode == BEAUTIFIL_GAMMA ? gammaMap2[ps[i]] : ps[i]);
             }
          
          core::byte *pd = dest + bpp * (y * destWidth + x);
          for(int i = 0; i < bpp; i++)
-            pd[i] = v[i] / n;
+            pd[i] =
+               scaleMode == BEAUTIFIL_GAMMA ? gammaMap1[v[i] / n] : v[i] / n;
       }
 }
 
