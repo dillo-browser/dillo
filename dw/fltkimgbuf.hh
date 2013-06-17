@@ -56,6 +56,8 @@ protected:
 public:
    FltkImgbuf (Type type, int width, int height, double gamma);
 
+   static void freeall ();
+
    void setCMap (int *colors, int num_colors);
    inline void scaleRow (int row, const core::byte *data);
    inline void scaleRowSimple (int row, const core::byte *data);

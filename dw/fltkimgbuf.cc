@@ -69,6 +69,13 @@ bool FltkImgbuf::excessiveImageDimensions (int width, int height)
       width > IMAGE_MAX_AREA / height;
 }
 
+void FltkImgbuf::freeall ()
+{
+   _MSG("Deleting gammaCorrectionTables\n");
+   delete gammaCorrectionTables;
+   gammaCorrectionTables = NULL;
+}
+
 FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma)
 {
    _MSG("FltkImgbuf: new root %p\n", this);

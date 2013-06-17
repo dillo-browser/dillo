@@ -20,6 +20,17 @@ class FltkResource;
 #include "fltkplatform.hh"
 #include "fltkui.hh"
 
+namespace dw {
+namespace fltk {
+
+inline void freeall ()
+{
+   FltkImgbuf::freeall ();
+}
+
+} // namespace fltk
+} // namespace dw
+
 #undef __INCLUDED_FROM_DW_FLTK_CORE_HH__
 
 #endif // __DW_FLTK_CORE_HH__
