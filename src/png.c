@@ -204,7 +204,7 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
    /** \todo Gamma for PNG? */
    a_Dicache_set_parms(png->url, png->version, png->Image,
                        (uint_t)png->width, (uint_t)png->height,
-                       DILLO_IMG_TYPE_RGB, 2.2);
+                       DILLO_IMG_TYPE_RGB, 1 / 2.2);
 }
 
 static void

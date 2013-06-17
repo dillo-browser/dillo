@@ -303,7 +303,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
          a_Dicache_set_parms(jpeg->url, jpeg->version, jpeg->Image,
                              (uint_t)jpeg->cinfo.image_width,
                              (uint_t)jpeg->cinfo.image_height,
-                             type, 2.2);
+                             type, 1 / 2.2);
 
          /* decompression step 4 (see libjpeg.doc) */
          jpeg->state = DILLO_JPEG_STARTING;

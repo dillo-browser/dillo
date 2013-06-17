@@ -149,8 +149,7 @@ public:
    /**
     * \brief Create a (platform speficic) image buffer.
     *
-    * "gamma" is the value by which the image data is already
-    * corrected.
+    * "gamma" is the value by which the image data is gamma-encoded.
     */
    virtual Imgbuf *createImgbuf (Imgbuf::Type type, int width, int height,
                                  double gamma) = 0;
