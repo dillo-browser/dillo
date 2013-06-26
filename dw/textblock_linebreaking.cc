@@ -718,6 +718,7 @@ bool Textblock::isHyphenationCandidate (Word *word)
 {
    return (word->flags & Word::CAN_BE_HYPHENATED) &&
       word->style->x_lang[0] &&
+      isBreakAllowed(word) &&
       word->content.type == core::Content::TEXT &&
       Hyphenator::isHyphenationCandidate (word->content.text);
 }
