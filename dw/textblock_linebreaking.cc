@@ -462,7 +462,26 @@ void Textblock::accumulateWordExtremes (int firstWord, int lastWord,
 
 void Textblock::processWord (int wordIndex)
 {
-   wordWrap (wordIndex, false);
+   bool wordListChanged = wordWrap (wordIndex, false);
+
+   if (wordListChanged) {
+      // If wordWrap has called hyphenateWord here, this has an effect
+      // on the call of handleWordExtremes. To avoid adding values
+      // more than one time (original un-hyphenated word, plus all
+      // parts of the hyphenated word, except the first one), the
+      // whole paragraph is recalculated again.
+
+      int firstWord;
+      if (paragraphs->size() > 0) {
+         firstWord = paragraphs->getLastRef()->firstWord;
+         paragraphs->setSize (paragraphs->size() - 1);
+      } else
+         firstWord = 0;
+
+      for (int i = firstWord; i <= wordIndex - 1; i++)
+         handleWordExtremes (i);
+   }
+
    handleWordExtremes (wordIndex);
 }
 
@@ -470,13 +489,17 @@ void Textblock::processWord (int wordIndex)
  * This method is called in two cases: (i) when a word is added
  * (ii) when a page has to be (partially) rewrapped. It does word wrap,
  * and adds new lines if necessary.
+ *
+ * Returns whether the words list has changed at, or before, the word
+ * index.
  */
-void Textblock::wordWrap (int wordIndex, bool wrapAll)
+bool Textblock::wordWrap (int wordIndex, bool wrapAll)
 {
    PRINTF ("[%p] WORD_WRAP (%d, %s)\n",
            this, wordIndex, wrapAll ? "true" : "false");
 
    Word *word;
+   bool wordListChanged = false;
 
    if (!wrapAll)
       removeTemporaryLines ();
@@ -584,6 +607,9 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                // update word pointer as hyphenateWord() can trigger a
                // reorganization of the words structure
                word = words->getRef (wordIndex);
+
+               if (n > 0 && hyphenatedWord <= wordIndex)
+                  wordListChanged = true;
             }
             
             PRINTF ("[%p]       accumulating again from %d to %d\n",
@@ -618,6 +644,8 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
                  word->content.widget->parentRef);
       }
    }
+
+   return wordListChanged;
 }
 
 int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
