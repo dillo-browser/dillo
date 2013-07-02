@@ -11,6 +11,13 @@ namespace fltk {
 class FltkImgbuf: public core::Imgbuf
 {
 private:
+   class GammaCorrectionTable: public lout::object::Object
+   {
+   public:
+      double gamma;
+      uchar map[256];
+   };
+
    FltkImgbuf *root;
    int refCount;
    bool deleteOnUnref;
@@ -18,6 +25,7 @@ private:
 
    int width, height;
    Type type;
+   double gamma;
 
 //{
    int bpp;
@@ -28,9 +36,17 @@ private:
    // the image buffer.
    lout::misc::BitSet *copiedRows;
 
-   FltkImgbuf (Type type, int width, int height, FltkImgbuf *root);
-   void init (Type type, int width, int height, FltkImgbuf *root);
+   static lout::container::typed::Vector <GammaCorrectionTable>
+      *gammaCorrectionTables;
+
+   static uchar *findGammaCorrectionTable (double gamma);
+   static bool excessiveImageDimensions (int width, int height);
+
+   FltkImgbuf (Type type, int width, int height, double gamma,
+               FltkImgbuf *root);
+   void init (Type type, int width, int height, double gamma, FltkImgbuf *root);
    int scaledY(int ySrc);
+   int backscaledY(int yScaled);
    int isRoot() { return (root == NULL); }
    void detachScaledBuf (FltkImgbuf *scaledBuf);
 
@@ -38,10 +54,19 @@ protected:
    ~FltkImgbuf ();
 
 public:
-   FltkImgbuf (Type type, int width, int height);
+   FltkImgbuf (Type type, int width, int height, double gamma);
+
+   static void freeall ();
 
    void setCMap (int *colors, int num_colors);
    inline void scaleRow (int row, const core::byte *data);
+   inline void scaleRowSimple (int row, const core::byte *data);
+   inline void scaleRowBeautiful (int row, const core::byte *data);
+   inline static void scaleBuffer (const core::byte *src, int srcWidth,
+                                   int srcHeight, core::byte *dest,
+                                   int destWidth, int destHeight, int bpp,
+                                   double gamma);
+
    void newScan ();
    void copyRow (int row, const core::byte *data);
    core::Imgbuf* getScaledBuf (int width, int height);

@@ -12,7 +12,7 @@ private:
    int charWordIndex, charWordPos;
 
 protected:
-   void wordWrap (int wordIndex, bool wrapAll);
+   bool wordWrap (int wordIndex, bool wrapAll);
 
    int getValue ();
    void setMaxValue (int maxValue, int value);

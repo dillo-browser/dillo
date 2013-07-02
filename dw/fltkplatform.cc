@@ -704,9 +704,9 @@ void FltkPlatform::copySelection(const char *text)
 }
 
 core::Imgbuf *FltkPlatform::createImgbuf (core::Imgbuf::Type type,
-                                          int width, int height)
+                                          int width, int height, double gamma)
 {
-   return new FltkImgbuf (type, width, height);
+   return new FltkImgbuf (type, width, height, gamma);
 }
 
 core::ui::ResourceFactory *FltkPlatform::getResourceFactory ()

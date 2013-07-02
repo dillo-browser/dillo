@@ -473,7 +473,26 @@ void Textblock::accumulateWordExtremes (int firstWord, int lastWord,
 
 void Textblock::processWord (int wordIndex)
 {
-   wordWrap (wordIndex, false);
+   bool wordListChanged = wordWrap (wordIndex, false);
+
+   if (wordListChanged) {
+      // If wordWrap has called hyphenateWord here, this has an effect
+      // on the call of handleWordExtremes. To avoid adding values
+      // more than one time (original un-hyphenated word, plus all
+      // parts of the hyphenated word, except the first one), the
+      // whole paragraph is recalculated again.
+
+      int firstWord;
+      if (paragraphs->size() > 0) {
+         firstWord = paragraphs->getLastRef()->firstWord;
+         paragraphs->setSize (paragraphs->size() - 1);
+      } else
+         firstWord = 0;
+
+      for (int i = firstWord; i <= wordIndex - 1; i++)
+         handleWordExtremes (i);
+   }
+
    handleWordExtremes (wordIndex);
 }
 
@@ -481,8 +500,11 @@ void Textblock::processWord (int wordIndex)
  * This method is called in two cases: (i) when a word is added
  * (ii) when a page has to be (partially) rewrapped. It does word wrap,
  * and adds new lines if necessary.
+ *
+ * Returns whether the words list has changed at, or before, the word
+ * index.
  */
-void Textblock::wordWrap (int wordIndex, bool wrapAll)
+bool Textblock::wordWrap (int wordIndex, bool wrapAll)
 {
    PRINTF ("[%p] WORD_WRAP (%d, %s)\n",
            this, wordIndex, wrapAll ? "true" : "false");
@@ -503,21 +525,23 @@ void Textblock::wordWrap (int wordIndex, bool wrapAll)
 
    switch (word->content.type) {
    case core::Content::WIDGET_OOF_REF:
-      wrapWordOofRef (wordIndex, wrapAll);
+      return wrapWordOofRef (wordIndex, wrapAll);
       break;
 
    default:
-      wrapWordInFlow (wordIndex, wrapAll);
+      return wrapWordInFlow (wordIndex, wrapAll);
       break;
    }
 }
 
-void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
+bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 {
    Word *word = words->getRef (wordIndex);
+   bool wordListChanged = false;
+
    int penaltyIndex = calcPenaltyIndexForNewLine ();
 
-   checkPossibleLighHeightChange (wordIndex);
+   checkPossibleLineHeightChange (wordIndex);
 
    bool newLine;
    do {
@@ -651,6 +675,9 @@ void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                   // update word pointer as hyphenateWord() can trigger a
                   // reorganization of the words structure
                   word = words->getRef (wordIndex);
+
+                  if (n > 0 && hyphenatedWord <= wordIndex)
+                     wordListChanged = true;
                }
                
                PRINTF ("[%p]       accumulating again from %d to %d\n",
@@ -686,84 +713,87 @@ void Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                  word->content.widget->parentRef);
       }
    }
+
+   return wordListChanged;
 }
 
 /**
  * Check wheather the newly wrapped word will change the height of the
  * newly constructed line. If yes, the borders due to floats may
  * change. (Line height is an argument to the calculation of borders.)
+ *
+ * Also update newLineAscent and newLineDescent with values of the new
+ * word.
  */
-void Textblock::checkPossibleLighHeightChange (int wordIndex)
+void Textblock::checkPossibleLineHeightChange (int wordIndex)
 {
-   if (containingBlock->outOfFlowMgr) {
-      int firstIndex =
-         lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
+   Word *w = words->getRef (wordIndex);
+   bool heightIncreased =
+      containingBlock->outOfFlowMgr &&
+      (w->size.ascent > newLineAscent || w->size.descent >= newLineDescent);
 
-      // Notice, that firstIndex may be larger than wordIndex, due to
-      // hyphenation. This means, that the word with the index
-      // wordIndex is already part of a line. Nothing to do then.
+   newLineAscent = misc::max (newLineAscent, w->size.ascent);
+   newLineDescent = misc::max (newLineDescent, w->size.descent);
 
-      /** \todo The reasons are found somewhere else. Is this a problem? */
-      
-      Word *w1 = words->getRef (wordIndex);
-      // It is sufficient to find a word which is equally high or
-      // higher, to negate the assumtion. This loop should in most
-      // cases be cancelled rather soon, so that peformance hopefully
-      // does not matter.
-      bool equalOrGreaterFound = false;
-      for (int i = firstIndex; !equalOrGreaterFound && i < wordIndex; i++) {
-         Word *w2 = words->getRef (i);
-         if (w2->size.ascent >= w1->size.ascent ||
-             w2->size.descent >= w1->size.descent)
-            equalOrGreaterFound = true;
-      }
-      
-      if (!equalOrGreaterFound)
-         updateBorders (wordIndex);
-   }
+   if (heightIncreased)
+      updateBorders (wordIndex, true, true);
 }
 
-void Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
+bool Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
 {
    assert (containingBlock->outOfFlowMgr);
 
    int y = topOfPossiblyMissingLine (lines->size ());
-   containingBlock->outOfFlowMgr->tellPosition
-      (words->getRef(wordIndex)->content.widget, y);
+   Widget *widget = words->getRef(wordIndex)->content.widget;
+   containingBlock->outOfFlowMgr->tellPosition (widget, y);
 
-   // Suggestion for better performance: One could ignore OOF
-   // references which do not have an effect on borders (e. g. soon
-   // absolute positions); and also distinguish between left and right
-   // border. OutOfFlowMgr should provide methods for this:
-   // affectsLeftBorder and affectsRightBorder.
+   // For better performance: Ignore OOF references which do not have
+   // an effect on borders (e. g. soon absolute positions); and also
+   // distinguish between left and right border.
 
-   updateBorders (wordIndex);
+   bool left = containingBlock->outOfFlowMgr->affectsLeftBorder (widget);
+   bool right = containingBlock->outOfFlowMgr->affectsRightBorder (widget);
+   if (left || right)
+      updateBorders (wordIndex, left, right);
+
+   return false; // Actually, the words list is never changed here.
 }
 
 /**
  * Recalculate borders (due to floats) for new line.
  */
-void Textblock::updateBorders (int wordIndex)
+void Textblock::updateBorders (int wordIndex, bool left, bool right)
 {
+   assert (left || right);
+   
    int y = topOfPossiblyMissingLine (lines->size ());
    int h = heightOfPossiblyMissingLine (lines->size ());
 
-   newLineHasFloatLeft =
-      containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, this, wordIndex);
-   newLineHasFloatRight =
-      containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, this,
-                                                    wordIndex);
-   newLineLeftBorder =
-      containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
-                                                    wordIndex);
-   newLineRightBorder =
-      containingBlock->outOfFlowMgr->getRightBorder (this, y, h, this,
-                                                     wordIndex);
+   if (left) {
+      newLineHasFloatLeft =
+         containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, this,
+                                                      wordIndex);
+      newLineHasFloatRight =
+         containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, this,
+                                                       wordIndex);
+   }
+
+   if (right) {
+      newLineLeftBorder =
+         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
+                                                       wordIndex);
+      newLineRightBorder =
+         containingBlock->outOfFlowMgr->getRightBorder (this, y, h, this,
+                                                        wordIndex);
+   }
 
    int firstIndex =
       lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
-   // Again, it may be that firstIndex > wordIndex. See
-   // checkPossibleLighHeightChange.
+
+   // Notice, that firstIndex may be larger than wordIndex, due to
+   // hyphenation. This means, that the word with the index
+   // wordIndex is already part of a line. Nothing to do then.
+
    for (int i = firstIndex; i <= wordIndex; i++)
       accumulateWordData (i);
 }
@@ -866,6 +896,7 @@ bool Textblock::isHyphenationCandidate (Word *word)
 {
    return (word->flags & Word::CAN_BE_HYPHENATED) &&
       word->style->x_lang[0] &&
+      isBreakAllowed(word) &&
       word->content.type == core::Content::TEXT &&
       Hyphenator::isHyphenationCandidate (word->content.text);
 }
@@ -1434,6 +1465,8 @@ void Textblock::initNewLine ()
 
       PRINTF ("[%p] INIT_NEW_LINE: no CB or OOFM\n", this);
    }
+
+   newLineAscent = newLineDescent = 0;
 }
 
 void Textblock::showMissingLines ()

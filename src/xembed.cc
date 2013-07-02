@@ -108,6 +108,7 @@ void Xembed::show() {
    createInternal(xid);
    setXembedInfo(1);
    Fl::event_dispatch(event_handler);
+   Fl_Window::show();
 }
 
 void Xembed::createInternal(uint32_t parent) {

@@ -516,6 +516,8 @@ int main(int argc, char **argv)
    a_Prefs_freeall();
    Keys::free();
    Paths::free();
+   dw::core::freeall();
+   dw::fltk::freeall();
    /* TODO: auth, css */
 
    //a_Dpi_dillo_exit();

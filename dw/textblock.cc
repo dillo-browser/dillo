@@ -2051,19 +2051,29 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style,
    // TODO: lineMustBeBroken should be independent of the penalty
    // index? Otherwise, examine the last line.
    if (!word->badnessAndPenalty.lineMustBeBroken(0)) {
-      switch (style->whiteSpace) {
-      case core::style::WHITE_SPACE_NORMAL:
-      case core::style::WHITE_SPACE_PRE_LINE:
-      case core::style::WHITE_SPACE_PRE_WRAP:
+      if (isBreakAllowed (word))
          word->badnessAndPenalty.setPenalties (breakPenalty1, breakPenalty2);
-         break;
-
-      case core::style::WHITE_SPACE_PRE:
-      case core::style::WHITE_SPACE_NOWRAP:
+      else
          word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);
-         break;
-      }
    }
+}
+
+bool Textblock::isBreakAllowed (Word *word)
+{
+   switch (word->style->whiteSpace) {
+   case core::style::WHITE_SPACE_NORMAL:
+   case core::style::WHITE_SPACE_PRE_LINE:
+   case core::style::WHITE_SPACE_PRE_WRAP:
+      return true;
+
+   case core::style::WHITE_SPACE_PRE:
+   case core::style::WHITE_SPACE_NOWRAP:
+      return false;
+   }
+   
+   // compiler happiness
+   lout::misc::assertNotReached ();
+   return false;
 }
 
 
@@ -2525,9 +2535,7 @@ int Textblock::heightOfPossiblyMissingLine (int lineNo)
          return line->boxAscent + line->boxDescent;
       } else {
          PRINTF ("   Exist but is not finished.\n");
-         return accumulateLineHeight (lines->size() > 0 ?
-                                      lines->getLastRef()->lastWord + 1 : 0,
-                                      words->size() - 1);
+         return misc::max (1, newLineAscent + newLineDescent);
       }
    } else if (lineNo == lines->size()) {
       // The line to be constructed: some words exist, but not the
@@ -2537,28 +2545,9 @@ int Textblock::heightOfPossiblyMissingLine (int lineNo)
       // see doc/dw-out-of-flow.doc. -- Still the case?
 
       PRINTF ("   Does not exist.\n");
-      return accumulateLineHeight (lines->size() > 0 ?
-                                   lines->getLastRef()->lastWord + 1 : 0,
-                                   words->size() - 1);
+      return misc::max (1, newLineAscent + newLineDescent);
    } else
       return 1;
-}
-
-int Textblock::accumulateLineHeight (int firstWord, int lastWord)
-{
-   // TODO Could be faster by accumulating them when words are added.
-   int h = 1;
-   PRINTF ("   Accumulating words from %d to %d\n", firstWord, lastWord);
-   for (int i = firstWord; i <= lastWord; i++) {
-      Word *word = words->getRef (i);
-      h = misc::max (h, word->size.ascent + word->size.descent);
-      //printf ("      word %d: ", i);
-      //printWordShort (word);
-      //printf (" => %d + %d = %d\n", word->size.ascent, word->size.descent,
-      //        word->size.ascent + word->size.descent);
-   }
-   PRINTF ("      => %d\n", h);
-   return h;
 }
 
 } // namespace dw

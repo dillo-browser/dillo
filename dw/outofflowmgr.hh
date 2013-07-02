@@ -351,6 +351,11 @@ public:
          return absolutelyPositioned->get(i - (leftFloatsAll->size() +
                                                rightFloatsAll->size()))->widget;
    }
+
+   inline bool affectsLeftBorder (core::Widget *widget) {
+      return widget->getStyle()->vloat == core::style::FLOAT_LEFT; }
+   inline bool affectsRightBorder (core::Widget *widget) {
+      return widget->getStyle()->vloat == core::style::FLOAT_RIGHT; }
 };
 
 } // namespace dw
