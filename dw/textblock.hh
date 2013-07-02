@@ -249,9 +249,6 @@ protected:
       int firstWord;    /* first word's index in word vector */
       int lastWord;     /* last word's index in word vector */
 
-      // TODO Adjust comments. Short note: maxParMin/maxParMax is
-      // is never smaller than parMin/parMax.
-
       /*
        * General remark: all values include the last hyphen width, but
        * not the last space; these values are, however corrected, when
@@ -263,15 +260,16 @@ protected:
        */
 
       int parMin;       /* The sum of all word minima (plus spaces,
-                           hyphen width etc.) of the last c  */
+                           hyphen width etc.) since the last possible
+                           break within this paragraph. */
       int parMax;       /* The sum of all word maxima in this
                          * paragraph (plus spaces, hyphen width
                          * etc.). */
 
-      int maxParMin;    /* Maximum of all paragraph minima, including
-                         * this line. */
-      int maxParMax;    /* Maximum of all paragraph maxima (value of "parMax"),
-                         * including this one. */
+      int maxParMin;    /* Maximum of all paragraph minima (value of
+                         * "parMin), including this paragraph. */
+      int maxParMax;    /* Maximum of all paragraph maxima (value of
+                         * "parMax"), including this paragraph. */
    };
 
    struct Line
@@ -520,6 +518,7 @@ protected:
    void fillSpace (Word *word, core::style::Style *style);
    void setBreakOption (Word *word, core::style::Style *style,
                         int breakPenalty1, int breakPenalty2);
+   bool isBreakAllowed (Word *word);
    int textWidth (const char *text, int start, int len,
                   core::style::Style *style, bool isStart, bool isEnd);
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
@@ -599,10 +598,10 @@ protected:
    void accumulateWordExtremes (int firstWord, int lastWord,
                                 int *maxOfMinWidth, int *sumOfMaxWidth);
    void processWord (int wordIndex);
-   virtual void wordWrap (int wordIndex, bool wrapAll);
-   void wrapWordInFlow (int wordIndex, bool wrapAll);
+   virtual bool wordWrap (int wordIndex, bool wrapAll);
+   bool wrapWordInFlow (int wordIndex, bool wrapAll);
    void checkPossibleLineHeightChange (int wordIndex);
-   void wrapWordOofRef (int wordIndex, bool wrapAll);
+   bool wrapWordOofRef (int wordIndex, bool wrapAll);
    void updateBorders (int wordIndex, bool left, bool right);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
                      bool correctAtEnd);

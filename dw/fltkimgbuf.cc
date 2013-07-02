@@ -34,8 +34,8 @@ namespace fltk {
 
 using namespace lout::container::typed;
 
-const enum ScaleMode { SIMPLE, BEAUTIFIL, BEAUTIFIL_GAMMA }
-   scaleMode = BEAUTIFIL_GAMMA;
+const enum ScaleMode { SIMPLE, BEAUTIFUL, BEAUTIFUL_GAMMA }
+   scaleMode = BEAUTIFUL_GAMMA;
 
 Vector <FltkImgbuf::GammaCorrectionTable> *FltkImgbuf::gammaCorrectionTables
    = new Vector <FltkImgbuf::GammaCorrectionTable> (true, 2);
@@ -269,7 +269,7 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
  *
  * Nothing special (like interpolation) is done when scaling up.
  *
- * If scaleMode is set to BEAUTIFIL_GAMMA, gamma correction is
+ * If scaleMode is set to BEAUTIFUL_GAMMA, gamma correction is
  * considered, see <http://www.4p8.com/eric.brasseur/gamma.html>.
  *
  * TODO Could be optimized as in scaleRowSimple: when the destination
@@ -283,7 +283,7 @@ inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
 {
    uchar *gammaMap1, *gammaMap2;
 
-   if (scaleMode == BEAUTIFIL_GAMMA) {
+   if (scaleMode == BEAUTIFUL_GAMMA) {
       gammaMap1 = findGammaCorrectionTable (gamma);
       gammaMap2 = findGammaCorrectionTable (1 / gamma);
    }
@@ -305,13 +305,13 @@ inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
                const core::byte *ps = src + bpp * (yo * srcWidth + xo);
                for(int i = 0; i < bpp; i++)
                   v[i] += 
-                     (scaleMode == BEAUTIFIL_GAMMA ? gammaMap2[ps[i]] : ps[i]);
+                     (scaleMode == BEAUTIFUL_GAMMA ? gammaMap2[ps[i]] : ps[i]);
             }
          
          core::byte *pd = dest + bpp * (y * destWidth + x);
          for(int i = 0; i < bpp; i++)
             pd[i] =
-               scaleMode == BEAUTIFIL_GAMMA ? gammaMap1[v[i] / n] : v[i] / n;
+               scaleMode == BEAUTIFUL_GAMMA ? gammaMap1[v[i] / n] : v[i] / n;
       }
 }
 
