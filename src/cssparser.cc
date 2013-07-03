@@ -117,6 +117,10 @@ static const char *const Css_list_style_type_enum_vals[] = {
    "katakana-iroha", "none", NULL
 };
 
+static const char *const Css_position_enum_vals[] = {
+   "static", "relative", "absolute", "fixed", NULL
+};
+
 static const char *const Css_text_align_enum_vals[] = {
    "left", "right", "center", "justify", "string", NULL
 };
@@ -175,7 +179,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
     Css_border_style_enum_vals},
    {"border-top-width", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH, CSS_TYPE_UNUSED},
     Css_border_width_enum_vals},
-   {"bottom", {CSS_TYPE_UNUSED}, NULL},
+   {"bottom", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"caption-side", {CSS_TYPE_UNUSED}, NULL},
    {"clear", {CSS_TYPE_UNUSED}, NULL},
    {"clip", {CSS_TYPE_UNUSED}, NULL},
@@ -199,7 +203,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"font-weight", {CSS_TYPE_ENUM, CSS_TYPE_FONT_WEIGHT, CSS_TYPE_UNUSED},
     Css_font_weight_enum_vals},
    {"height", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
-   {"left", {CSS_TYPE_UNUSED}, NULL},
+   {"left", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"letter-spacing", {CSS_TYPE_ENUM, CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED},
     Css_letter_spacing_enum_vals},
    {"line-height",
@@ -228,9 +232,9 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"padding-left", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"padding-right", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"padding-top", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
-   {"position", {CSS_TYPE_UNUSED}, NULL},
+   {"position", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_position_enum_vals},
    {"quotes", {CSS_TYPE_UNUSED}, NULL},
-   {"right", {CSS_TYPE_UNUSED}, NULL},
+   {"right", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"text-align", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_text_align_enum_vals},
    {"text-decoration", {CSS_TYPE_MULTI_ENUM, CSS_TYPE_UNUSED},
     Css_text_decoration_enum_vals},
@@ -238,7 +242,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"text-shadow", {CSS_TYPE_UNUSED}, NULL},
    {"text-transform", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_text_transform_enum_vals},
-   {"top", {CSS_TYPE_UNUSED}, NULL},
+   {"top", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"unicode-bidi", {CSS_TYPE_UNUSED}, NULL},
    {"vertical-align",{CSS_TYPE_ENUM, CSS_TYPE_UNUSED},Css_vertical_align_vals},
    {"visibility", {CSS_TYPE_UNUSED}, NULL},

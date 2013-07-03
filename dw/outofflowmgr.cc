@@ -289,6 +289,16 @@ OutOfFlowMgr::TBInfo::~TBInfo ()
    delete rightFloatsGB;
 }
 
+OutOfFlowMgr::AbsolutelyPositioned::AbsolutelyPositioned (OutOfFlowMgr *oofm,
+                                                          core::Widget *widget,
+                                                          Textblock
+                                                          *generatingBlock,
+                                                          int externalIndex)
+{
+   this->widget = widget;
+   dirty = true;
+}
+
 OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 {
    //printf ("OutOfFlowMgr::OutOfFlowMgr\n");
@@ -309,6 +319,8 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 
    leftFloatsMark = rightFloatsMark = 0;
    lastLeftTBIndex = lastRightTBIndex = 0;
+
+   absolutelyPositioned = new Vector<AbsolutelyPositioned> (1, true);
 
    containingBlockWasAllocated = containingBlock->wasAllocated ();
    if (containingBlockWasAllocated)
@@ -336,6 +348,8 @@ OutOfFlowMgr::~OutOfFlowMgr ()
    // last.
    delete leftFloatsAll;
    delete rightFloatsAll;
+
+   delete absolutelyPositioned;
 }
 
 void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
@@ -354,9 +368,10 @@ void OutOfFlowMgr::sizeAllocateEnd ()
    moveFromGBToCB (LEFT);
    moveFromGBToCB (RIGHT);
       
-   // 2. Floats have to be allocated
+   // 2. Floats and absolutely positioned blocks have to be allocated
    sizeAllocateFloats (LEFT);
    sizeAllocateFloats (RIGHT);
+   sizeAllocateAbsolutelyPositioned ();
 
    // 3. Textblocks have already been allocated, but we store some
    // information for later use. TODO: Update this comment!
@@ -574,11 +589,13 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side)
 
 void OutOfFlowMgr::draw (View *view, Rectangle *area)
 {
-   draw (leftFloatsCB, view, area);
-   draw (rightFloatsCB, view, area);
+   drawFloats (leftFloatsCB, view, area);
+   drawFloats (rightFloatsCB, view, area);
+   drawAbsolutelyPositioned (view, area);
 }
 
-void OutOfFlowMgr::draw (SortedFloatsVector *list, View *view, Rectangle *area)
+void OutOfFlowMgr::drawFloats (SortedFloatsVector *list, View *view,
+                               Rectangle *area)
 {
    // This could be improved, since the list is sorted: search the
    // first float fitting into the area, and iterate until one is
@@ -591,10 +608,21 @@ void OutOfFlowMgr::draw (SortedFloatsVector *list, View *view, Rectangle *area)
    }
 }
 
+void OutOfFlowMgr::drawAbsolutelyPositioned (View *view, Rectangle *area)
+{
+   for (int i = 0; i < absolutelyPositioned->size(); i++) {
+      AbsolutelyPositioned *abspos = absolutelyPositioned->get(i);
+      core::Rectangle childArea;
+      if (abspos->widget->intersects (area, &childArea))
+         abspos->widget->draw (view, &childArea);
+   }
+}
+
 bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
 {
-   // Will be extended for absolute positions.
-   return widget->getStyle()->vloat != FLOAT_NONE;
+   // May be extended for fixed (and relative?) positions.
+   return isWidgetFloat (widget);
+   // TODO temporary disabled: || isWidgetAbsolutelyPositioned (widget);
 }
 
 void OutOfFlowMgr::addWidgetInFlow (Textblock *textblock,
@@ -618,7 +646,7 @@ void OutOfFlowMgr::addWidgetInFlow (Textblock *textblock,
 void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
                                  int externalIndex)
 {
-   if (widget->getStyle()->vloat != FLOAT_NONE) {
+   if (isWidgetFloat (widget)) {
       TBInfo *tbInfo = getTextblock (generatingBlock);
 
       Float *vloat = new Float (this, widget, generatingBlock, externalIndex);
@@ -688,8 +716,15 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
          leftFloatsAll->size() + rightFloatsAll->size() - 1;
 
       floatsByWidget->put (new TypedPointer<Widget> (widget), vloat);
+   } else if (isWidgetAbsolutelyPositioned (widget)) {
+      AbsolutelyPositioned *abspos =
+         new AbsolutelyPositioned (this, widget, generatingBlock,
+                                   externalIndex);
+      absolutelyPositioned->put (abspos);
+      widget->parentRef =
+         createRefAbsolutelyPositioned (absolutelyPositioned->size() - 1);
    } else
-      // Will continue here for absolute positions.
+      // May be extended.
       assertNotReached();
 }
 
@@ -745,8 +780,10 @@ void OutOfFlowMgr::markSizeChange (int ref)
       // TODO May cause problems (endless resizing?) when float has no
       // defined position.
       vloat->generatingBlock->borderChanged (vloat->yReal, vloat->widget);
+   } else if (isRefAbsolutelyPositioned (ref)) {
+      int i = getAbsolutelyPositionedIndexFromRef (ref);
+      absolutelyPositioned->get(i)->dirty = true;
    } else
-      // later: absolute positions
       assertNotReached();
 }
 
@@ -758,14 +795,16 @@ void OutOfFlowMgr::markExtremesChange (int ref)
 
 Widget *OutOfFlowMgr::getWidgetAtPoint (int x, int y, int level)
 {
-   Widget *childAtPoint = getWidgetAtPoint (leftFloatsCB, x, y, level);
+   Widget *childAtPoint = getFloatWidgetAtPoint (leftFloatsCB, x, y, level);
    if (childAtPoint == NULL)
-      childAtPoint = getWidgetAtPoint (rightFloatsCB, x, y, level);
+      childAtPoint = getFloatWidgetAtPoint (rightFloatsCB, x, y, level);
+   if (childAtPoint == NULL)
+      childAtPoint = getAbsolutelyPositionedWidgetAtPoint (x, y, level);
    return childAtPoint;
 }
 
-Widget *OutOfFlowMgr::getWidgetAtPoint (SortedFloatsVector *list,
-                                        int x, int y, int level)
+Widget *OutOfFlowMgr::getFloatWidgetAtPoint (SortedFloatsVector *list,
+                                             int x, int y, int level)
 {
    for (int i = 0; i < list->size(); i++) {
       // Could use binary search to be faster.
@@ -778,8 +817,29 @@ Widget *OutOfFlowMgr::getWidgetAtPoint (SortedFloatsVector *list,
    return NULL;
 }
 
+Widget *OutOfFlowMgr::getAbsolutelyPositionedWidgetAtPoint (int x, int y,
+                                                            int level)
+{
+   for (int i = 0; i < absolutelyPositioned->size(); i++) {
+      AbsolutelyPositioned *abspos = absolutelyPositioned->get(i);
+      Widget *childAtPoint = abspos->widget->getWidgetAtPoint (x, y, level + 1);
+      if (childAtPoint)
+         return childAtPoint;
+   }
+
+   return NULL;
+}
 
 void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
+{
+   if (isWidgetFloat (widget))
+      tellFloatPosition (widget, yReq);
+
+   // Nothing to do for absolutely positioned blocks.
+}
+
+
+void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
 {
    assert (yReq >= 0);
 
@@ -977,12 +1037,14 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    //printf ("[%p] GET_SIZE (%d / %d floats)...\n",
    //        containingBlock, leftFloatsCB->size(), rightFloatsCB->size());
 
-   *oofWidth = cbWidth; /* This (or "<=" instead of "=") should be
-                           the case for floats. */
+   int oofWidthAbsPos, oofHeightAbsPos;
+   getAbsolutelyPositionedSize (&oofWidthAbsPos, &oofHeightAbsPos);
 
    int oofHeightLeft = getFloatsSize (leftFloatsCB);
    int oofHeightRight = getFloatsSize (rightFloatsCB);
-   *oofHeight = max (oofHeightLeft, oofHeightRight);
+
+   *oofWidth = cbWidth; /* Floats should play no role for the width. */
+   *oofHeight = max (oofHeightLeft, oofHeightRight, oofWidthAbsPos);
 
    //printf ("   => %d x %d => %d x %d (%d / %d)\n",
    //        cbWidth, cbHeight, *oofWidth, *oofHeight,
@@ -1050,6 +1112,7 @@ void OutOfFlowMgr::getExtremes (int cbMinWidth, int cbMaxWidth,
    *oofMinWidth = *oofMaxWidth = 0;
    accumExtremes (leftFloatsCB, oofMinWidth, oofMaxWidth);
    accumExtremes (rightFloatsCB, oofMinWidth, oofMaxWidth);
+   // TODO Absolutely positioned elements
 }
 
 void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
@@ -1311,6 +1374,129 @@ int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, Side side)
          assertNotReached();
          return 0;
       }
+   }
+}
+
+void OutOfFlowMgr::getAbsolutelyPositionedSize (int *oofWidthAbsPos,
+                                                int *oofHeightAbsPos)
+{
+   *oofWidthAbsPos = *oofHeightAbsPos = 0;
+
+   for (int i = 0; i < absolutelyPositioned->size(); i++) {
+      AbsolutelyPositioned *abspos = absolutelyPositioned->get (i);
+      ensureAbsolutelyPositionedSizeAndPosition (abspos);
+      *oofWidthAbsPos = max (*oofWidthAbsPos, abspos->xCB + abspos->width);
+      *oofHeightAbsPos = max (*oofHeightAbsPos, abspos->yCB + abspos->height);
+   }
+}
+
+void OutOfFlowMgr::ensureAbsolutelyPositionedSizeAndPosition
+   (AbsolutelyPositioned *abspos)
+{
+   // TODO Similar to floats, changes of the available size of the
+   // containing block are not noticed; which is a bit more severe as
+   // for floats. Find a general solution for both floats and
+   // absolutely positioned blocks.
+
+   // TODO Compare to ensureFloatSize: some parts are
+   // missing. Nevertheless, a simpler approach should be focussed on.
+
+   if (abspos->dirty) {
+      Style *style = abspos->widget->getStyle();
+      int availWidth = containingBlock->getAvailWidth();
+      int availHeight =
+         containingBlock->getAvailAscent() + containingBlock->getAvailDescent();
+
+      if (style->left == LENGTH_AUTO)
+         abspos->xCB = 0;
+      else
+         abspos->xCB =
+            calcValueForAbsolutelyPositioned (abspos, style->left, availWidth);
+      
+      if (style->top == LENGTH_AUTO)
+         abspos->yCB = 0;
+      else
+         abspos->yCB =
+            calcValueForAbsolutelyPositioned (abspos, style->top, availHeight);
+
+      abspos->width = -1; // undefined
+      if (style->width != LENGTH_AUTO)
+         abspos->width = calcValueForAbsolutelyPositioned (abspos, style->width,
+                                                           availWidth);
+      else if (style->right != LENGTH_AUTO) {
+         int right = calcValueForAbsolutelyPositioned (abspos, style->right,
+                                                       availWidth);
+         abspos->width = max (0, availWidth - (abspos->xCB + right));
+      }
+
+      abspos->height = -1; // undefined
+      if (style->height != LENGTH_AUTO)
+         abspos->height = calcValueForAbsolutelyPositioned (abspos,
+                                                            style->height,
+                                                            availHeight);
+      else if (style->bottom != LENGTH_AUTO) {
+         int bottom = calcValueForAbsolutelyPositioned (abspos, style->bottom,
+                                                        availHeight);
+         abspos->height = max (0, availHeight - (abspos->yCB + bottom));
+      }
+
+      if (abspos->width != -1)
+         abspos->widget->setWidth (abspos->width);
+      
+      if (abspos->height != -1) {
+         abspos->widget->setAscent (abspos->height);
+         abspos->widget->setDescent (0); // TODO
+      }
+
+      if (abspos->width == -1 || abspos->height == -1) {
+         Requisition req;
+         abspos->widget->sizeRequest (&req);
+
+         if (abspos->width == -1)
+            abspos->width = req.width;
+
+         if (abspos->height == -1)
+            abspos->height = req.ascent + req.descent;
+      }
+            
+      abspos->dirty = false;
+   }
+}
+
+int OutOfFlowMgr::calcValueForAbsolutelyPositioned
+   (AbsolutelyPositioned *abspos, Length styleLen, int refLen)
+{
+   assert (styleLen != LENGTH_AUTO);
+   if (isAbsLength (styleLen))
+      return absLengthVal (styleLen);
+   else if (isPerLength (styleLen))
+      return refLen * perLengthVal (styleLen);
+   else {
+      assertNotReached ();
+      return 0; // compiler happiness
+   }
+}
+
+void OutOfFlowMgr::sizeAllocateAbsolutelyPositioned ()
+{
+   for (int i = 0; i < absolutelyPositioned->size(); i++) {
+      Allocation *cbAllocation = getAllocation(containingBlock);
+      AbsolutelyPositioned *abspos = absolutelyPositioned->get (i);
+      ensureAbsolutelyPositionedSizeAndPosition (abspos);
+
+      Allocation childAllocation;
+      childAllocation.x = cbAllocation->x + abspos->xCB;
+      childAllocation.y = cbAllocation->y + abspos->yCB;
+      childAllocation.width = abspos->width;
+      childAllocation.ascent = abspos->height;
+      childAllocation.descent = 0; // TODO
+      
+      abspos->widget->sizeAllocate (&childAllocation);
+
+      printf ("[%p] allocating child %p at: (%d, %d), %d x (%d + %d)\n",
+              containingBlock, abspos->widget, childAllocation.x,
+              childAllocation.y, childAllocation.width, childAllocation.ascent,
+              childAllocation.descent);
    }
 }
 

@@ -141,6 +141,18 @@ private:
       ~TBInfo ();
    };
 
+   class AbsolutelyPositioned: public lout::object::Object
+   {
+   public:
+      core::Widget *widget;
+      int xCB, yCB; // relative to the containing block
+      int width, height;
+      bool dirty;
+
+      AbsolutelyPositioned (OutOfFlowMgr *oofm, core::Widget *widget,
+                            Textblock *generatingBlock, int externalIndex);
+   };
+
    // These two lists store all floats, in the order in which they are
    // defined. Only used for iterators.
    lout::container::typed::Vector<Float> *leftFloatsAll, *rightFloatsAll;
@@ -155,6 +167,8 @@ private:
    lout::container::typed::Vector<TBInfo> *tbInfos;
    lout::container::typed::HashTable<lout::object::TypedPointer <Textblock>,
                                      TBInfo> *tbInfosByTextblock;
+   
+   lout::container::typed::Vector<AbsolutelyPositioned> *absolutelyPositioned;
 
    int lastLeftTBIndex, lastRightTBIndex, leftFloatsMark, rightFloatsMark;
 
@@ -189,10 +203,13 @@ private:
                                     int tbx, int tby, int tbWidth, int tbHeight,
                                     int *floatPos, core::Widget **vloat);
 
-   void draw (SortedFloatsVector *list, core::View *view,
-              core::Rectangle *area);
-   core::Widget *getWidgetAtPoint (SortedFloatsVector *list, int x, int y,
-                                   int level);
+   void drawFloats (SortedFloatsVector *list, core::View *view,
+                    core::Rectangle *area);
+   void drawAbsolutelyPositioned (core::View *view, core::Rectangle *area);
+   core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y,
+                                        int level);
+   core::Widget *getAbsolutelyPositionedWidgetAtPoint (int x, int y, int level);
+
    bool collides (Float *vloat, Float *other, int *yReal);
    void checkCoverage (Float *vloat, int oldY);
 
@@ -213,20 +230,69 @@ private:
    void ensureFloatSize (Float *vloat);
    int getBorderDiff (Textblock *textblock, Float *vloat, Side side);
 
+   void tellFloatPosition (core::Widget *widget, int yReq);
 
+   void getAbsolutelyPositionedSize (int *oofWidthAbsPos, int *oofHeightAbsPos);
+   void ensureAbsolutelyPositionedSizeAndPosition (AbsolutelyPositioned
+                                                   *abspos);
+   int calcValueForAbsolutelyPositioned (AbsolutelyPositioned *abspos,
+                                         core::style::Length styleLen,
+                                         int refLen);
+   void sizeAllocateAbsolutelyPositioned ();
+
+   static inline bool isWidgetFloat (core::Widget *widget)
+   { return widget->getStyle()->vloat != core::style::FLOAT_NONE; }
+   static inline bool isWidgetAbsolutelyPositioned (core::Widget *widget)
+   { return widget->getStyle()->position == core::style::POSITION_ABSOLUTE; }
+
+   /*
+    * Format for parent ref (see also below for isRefOutOfFlow,
+    * createRefNormalFlow, and getLineNoFromRef.
+    *
+    * Widget in flow:
+    *
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *    |                line number                | 0 |
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *
+    * So, anything with the least signifant bit set to 1 is out of flow.
+    *
+    * Floats:
+    *
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *    |          left float index         | 0 | 0 | 1 |
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *    |         right float index         | 1 | 0 | 1 |
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    * 
+    * Absolutely positioned blocks:
+    *
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    *    |                 index                 | 1 | 1 |
+    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    */
+   
    inline static bool isRefFloat (int ref)
-   { return ref != -1 && (ref & 1) == 1; }
-   inline static bool isRefLeftFloat (int ref)
    { return ref != -1 && (ref & 3) == 1; }
+   inline static bool isRefLeftFloat (int ref)
+   { return ref != -1 && (ref & 7) == 1; }
    inline static bool isRefRightFloat (int ref)
+   { return ref != -1 && (ref & 7) == 5; }
+   inline static bool isRefAbsolutelyPositioned (int ref)
    { return ref != -1 && (ref & 3) == 3; }
 
    inline static int createRefLeftFloat (int index)
-   { return (index << 2) | 1; }
+   { return (index << 3) | 1; }
    inline static int createRefRightFloat (int index)
+   { return (index << 3) | 5; }
+   inline static int createRefAbsolutelyPositioned (int index)
    { return (index << 2) | 3; }
 
    inline static int getFloatIndexFromRef (int ref)
+   { return ref == -1 ? ref : (ref >> 3); }
+   inline static int getAbsolutelyPositionedIndexFromRef (int ref)
    { return ref == -1 ? ref : (ref >> 2); }
 
 public:
@@ -273,10 +339,18 @@ public:
 
    // for iterators
    inline int getNumWidgets () {
-      return leftFloatsAll->size() + rightFloatsAll->size(); }
+      return leftFloatsAll->size() + rightFloatsAll->size() +
+         absolutelyPositioned->size(); }
+
    inline core::Widget *getWidget (int i) {
-      return i < leftFloatsAll->size() ? leftFloatsAll->get(i)->widget :
-         rightFloatsAll->get(i - leftFloatsAll->size())->widget; }
+      if (i < leftFloatsAll->size())
+         return leftFloatsAll->get(i)->widget;
+      else if (i < leftFloatsAll->size() + rightFloatsAll->size())
+         return rightFloatsAll->get(i - leftFloatsAll->size())->widget;
+      else
+         return absolutelyPositioned->get(i - (leftFloatsAll->size() +
+                                               rightFloatsAll->size()))->widget;
+   }
 
    inline bool affectsLeftBorder (core::Widget *widget) {
       return widget->getStyle()->vloat == core::style::FLOAT_LEFT; }

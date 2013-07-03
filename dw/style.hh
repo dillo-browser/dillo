@@ -316,6 +316,13 @@ enum FontVariant {
    FONT_VARIANT_SMALL_CAPS
 };
 
+enum Position {
+   POSITION_STATIC,
+   POSITION_RELATIVE,
+   POSITION_ABSOLUTE,
+   POSITION_FIXED,
+};
+
 enum TextDecoration {
    TEXT_DECORATION_NONE         = 0,
    TEXT_DECORATION_UNDERLINE    = 1 << 0,
@@ -465,6 +472,9 @@ public:
    
    FloatType vloat; /* "float" is a keyword. */
    ClearType clear;
+
+   Position position;
+   Length top, bottom, left, right;
 
    int hBorderSpacing, vBorderSpacing, wordSpacing;
    Length width, height, lineHeight, textIndent;

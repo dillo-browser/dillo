@@ -49,6 +49,8 @@ void StyleAttrs::initValues ()
    width = height = lineHeight = LENGTH_AUTO;
    vloat = FLOAT_NONE;
    clear = CLEAR_NONE;
+   position = POSITION_STATIC;
+   top = bottom = left = right = LENGTH_AUTO;
    textIndent = 0;
    margin.setVal (0);
    borderWidth.setVal (0);
@@ -77,6 +79,9 @@ void StyleAttrs::resetValues ()
    textAlignChar = '.';
    vloat = FLOAT_NONE; /** \todo Correct? Check specification. */
    clear = CLEAR_NONE; /** \todo Correct? Check specification. */
+   position = POSITION_STATIC; /** \todo Correct? Check specification. */
+   top = bottom = left = right = LENGTH_AUTO; /** \todo Correct? Check
+                                                  specification. */
    backgroundColor = NULL;
    width = LENGTH_AUTO;
    height = LENGTH_AUTO;
@@ -124,6 +129,11 @@ bool StyleAttrs::equals (object::Object *other) {
        textTransform == otherAttrs->textTransform &&
        vloat == otherAttrs->vloat &&
        clear == otherAttrs->clear &&
+       position == otherAttrs->position &&
+       top == otherAttrs->top &&
+       bottom == otherAttrs->bottom &&
+       left == otherAttrs->left &&
+       right == otherAttrs->right &&
        hBorderSpacing == otherAttrs->hBorderSpacing &&
        vBorderSpacing == otherAttrs->vBorderSpacing &&
        wordSpacing == otherAttrs->wordSpacing &&
@@ -166,6 +176,11 @@ int StyleAttrs::hashValue () {
       textTransform +
       vloat +
       clear +
+      position +
+      top +
+      bottom +
+      left +
+      right +
       hBorderSpacing +
       vBorderSpacing +
       wordSpacing +
@@ -260,6 +275,11 @@ void Style::copyAttrs (StyleAttrs *attrs)
    textTransform = attrs->textTransform;
    vloat = attrs->vloat;
    clear = attrs->clear;
+   position = attrs->position;
+   top = attrs->top;
+   bottom = attrs->bottom;
+   left = attrs->left;
+   right = attrs->right;
    hBorderSpacing = attrs->hBorderSpacing;
    vBorderSpacing = attrs->vBorderSpacing;
    wordSpacing = attrs->wordSpacing;
