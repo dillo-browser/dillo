@@ -656,53 +656,52 @@ void Layout::resizeIdle ()
    //static int calls = 0;
    //MSG(" Layout::resizeIdle calls = %d\n", ++calls);
 
-   while (resizeIdleId != -1) {
-      // Reset already here, since in this function, queueResize() may be
-      // called again.
-      resizeIdleId = -1;
+   assert (resizeIdleId != -1);
 
-      if (topLevel) {
-         Requisition requisition;
-         Allocation allocation;
-
-         topLevel->sizeRequest (&requisition);
-
-         allocation.x = allocation.y = 0;
-         allocation.width = requisition.width;
-         allocation.ascent = requisition.ascent;
-         allocation.descent = requisition.descent;
-         topLevel->sizeAllocate (&allocation);
-
-         canvasWidth = requisition.width;
-         canvasAscent = requisition.ascent;
-         canvasDescent = requisition.descent;
-
-         emitter.emitCanvasSizeChanged (
-            canvasWidth, canvasAscent, canvasDescent);
-
-         // Tell the view about the new world size.
-         view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
-         //  view->queueDrawTotal (false);
-
-         if (usesViewport) {
-            int currHThickness = currHScrollbarThickness();
-            int currVThickness = currVScrollbarThickness();
-
-            if (!canvasHeightGreater &&
-               canvasAscent + canvasDescent
-               > viewportHeight - currHThickness) {
-               canvasHeightGreater = true;
-               setSizeHints ();
-               /* May queue a new resize. */
+   // Reset already here, since in this function, queueResize() may be
+   // called again.
+   resizeIdleId = -1;
+   
+   if (topLevel) {
+      Requisition requisition;
+      Allocation allocation;
+      
+      topLevel->sizeRequest (&requisition);
+      
+      allocation.x = allocation.y = 0;
+      allocation.width = requisition.width;
+      allocation.ascent = requisition.ascent;
+      allocation.descent = requisition.descent;
+      topLevel->sizeAllocate (&allocation);
+      
+      canvasWidth = requisition.width;
+      canvasAscent = requisition.ascent;
+      canvasDescent = requisition.descent;
+      
+      emitter.emitCanvasSizeChanged (canvasWidth, canvasAscent, canvasDescent);
+      
+      // Tell the view about the new world size.
+      view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
+      //  view->queueDrawTotal (false);
+      
+      if (usesViewport) {
+         int currHThickness = currHScrollbarThickness();
+         int currVThickness = currVScrollbarThickness();
+         
+         if (!canvasHeightGreater &&
+             canvasAscent + canvasDescent
+             > viewportHeight - currHThickness) {
+            canvasHeightGreater = true;
+            setSizeHints ();
+            /* May queue a new resize. */
             }
-
-            // Set viewport sizes.
-            view->setViewportSize (viewportWidth, viewportHeight,
-                                   currHThickness, currVThickness);
-         }
+         
+         // Set viewport sizes.
+         view->setViewportSize (viewportWidth, viewportHeight,
+                                currHThickness, currVThickness);
       }
 
-     // views are redrawn via Widget::resizeDrawImpl ()
+      // views are redrawn via Widget::resizeDrawImpl ()
 
    }
 
