@@ -1892,7 +1892,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    if (containingBlock->outOfFlowMgr == NULL)
       containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
       
-   if (OutOfFlowMgr::isWidgetOutOfFlow (widget)) {
+   if (OutOfFlowMgr::isWidgetHandledByOOFM (widget)) {
       PRINTF ("   -> out of flow.\n");
 
       widget->setParent (containingBlock);

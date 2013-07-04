@@ -308,6 +308,7 @@ public:
    core::Widget *getWidgetAtPoint (int x, int y, int level);
 
    static bool isWidgetOutOfFlow (core::Widget *widget);
+   static bool isWidgetHandledByOOFM (core::Widget *widget);
    void addWidgetInFlow (Textblock *textblock, Textblock *parentBlock,
                          int externalIndex);
    void addWidgetOOF (core::Widget *widget, Textblock *generatingBlock,

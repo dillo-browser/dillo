@@ -618,7 +618,20 @@ void OutOfFlowMgr::drawAbsolutelyPositioned (View *view, Rectangle *area)
    }
 }
 
+/**
+ * This method consideres also the attributes not yet considered by
+ * dillo, so that the containing block is determined correctly, which
+ * leads sometimes to a cleaner rendering.
+ */
 bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
+{
+   return
+      widget->getStyle()->vloat != core::style::FLOAT_NONE ||
+      widget->getStyle()->position == core::style::POSITION_ABSOLUTE ||
+      widget->getStyle()->position == core::style::POSITION_FIXED;      
+}
+
+bool OutOfFlowMgr::isWidgetHandledByOOFM (core::Widget *widget)
 {
    // May be extended for fixed (and relative?) positions.
    return isWidgetFloat (widget);
