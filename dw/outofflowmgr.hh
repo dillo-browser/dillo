@@ -59,6 +59,9 @@ private:
                           TBInfo::*FloatsGB. */
       int sideSpanningIndex, mark;
       core::Requisition size;
+      int cbAvailWidth; /* On which the calculation of relative sizes
+                           is based. Height not yet used, and probably
+                           not added before size redesign. */
       bool dirty;
       bool inCBList; /* Neccessary to prevent floats from being moved
                         twice from GB to CB list.  */

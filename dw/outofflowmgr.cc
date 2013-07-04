@@ -1299,7 +1299,12 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
 
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 {
-   if (vloat->dirty) {
+   if (vloat->dirty ||
+       // If the size of the containing block has changed (represented
+       // currently by the available width), a recalculation of a
+       // relative float width may also be necessary.
+       (isPerLength (vloat->widget->getStyle()->width) &&
+        vloat->cbAvailWidth != containingBlock->getAvailWidth ())) {
       // TODO Ugly. Soon to be replaced by cleaner code? See also
       // comment in Textblock::calcWidgetSize.
       if (vloat->widget->usesHints ()) {
@@ -1353,6 +1358,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       //        vloat, vloat->widget->getClassName(), vloat->widget,
       //        vloat->size.width, vloat->size.ascent, vloat->size.descent);
           
+      vloat->cbAvailWidth = containingBlock->getAvailWidth ();
       vloat->dirty = false;      
    }
 }
