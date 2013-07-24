@@ -939,7 +939,7 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    // checking for yReq is wrong: yReq may remain the same, when yReal
    // changes, e. g. when previous float has changes its size.
    if (vloat->yReal != oldY)
-      checkCoverage (vloat, oldY);
+      checkCoveragePosChanged (vloat, oldY);
 }
 
 bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
@@ -970,7 +970,7 @@ bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
 }
 
 
-void OutOfFlowMgr::checkCoverage (Float *vloat, int oldY)
+void OutOfFlowMgr::checkCoveragePosChanged (Float *vloat, int oldY)
 {
    // Only this float has been changed (see tellPositionOrNot), so
    // only this float has to be tested against all textblocks.
