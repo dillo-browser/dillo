@@ -96,7 +96,7 @@ bool IdentifiableObject::instanceOf (int otherClassId)
 
    if (otherClass == NULL) {
       fprintf (stderr,
-               "WARNING: Something got wrong here, it seems that a "
+               "WARNING: Something got wrong here, it seems that a "
                "CLASS_ID was not initialized properly.\n");
       return false;
    }
