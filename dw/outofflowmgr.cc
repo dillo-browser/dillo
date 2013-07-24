@@ -969,7 +969,6 @@ bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
    return false;
 }
 
-
 void OutOfFlowMgr::checkCoveragePosChanged (Float *vloat, int oldY)
 {
    // Only this float has been changed (see tellPositionOrNot), so
