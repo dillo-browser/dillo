@@ -1498,7 +1498,8 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
    static const char XHTML11    [] = "-//W3C//DTD XHTML 1.1";
    static const char XHTML11_url[] = "http://www.w3.org/TR/xhtml11/DTD/";
 
-   int i, quote;
+   size_t i;
+   int quote;
    char *p, *ntag = dStrndup(tag, tagsize);
 
    /* Tag sanitization: Collapse whitespace between tokens
@@ -1523,7 +1524,8 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
    _MSG("New: {%s}\n", ntag);
 
    /* The default DT_NONE type is TagSoup */
-   if (!dStrnAsciiCasecmp(ntag, HTML_SGML_sig, strlen(HTML_SGML_sig))) {
+   if (i > strlen(HTML_SGML_sig) && // avoid out of bounds reads!
+       !dStrnAsciiCasecmp(ntag, HTML_SGML_sig, strlen(HTML_SGML_sig))) {
       p = ntag + strlen(HTML_SGML_sig) + 1;
       if (!strncmp(p, HTML401, strlen(HTML401)) &&
           dStriAsciiStr(p + strlen(HTML401), HTML401_url)) {
