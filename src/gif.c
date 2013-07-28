@@ -287,13 +287,15 @@ static inline size_t Gif_data_blocks(const uchar_t *Buf, size_t BSize)
  */
 static inline size_t Gif_do_generic_ext(const uchar_t *Buf, size_t BSize)
 {
-   size_t Size = Buf[0] + 1, DSize;
+
+   size_t Size = Buf[0] + 1,  /* (uchar_t + 1) can't overflow size_t */
+          DSize;
 
    /* The Block size (the first byte) is supposed to be a specific size
     * for each extension... we don't check.
     */
 
-   if (Buf[0] > BSize)
+   if (Size > BSize)
       return 0;
    DSize = Gif_data_blocks(Buf + Size, BSize - Size);
    if (!DSize)
