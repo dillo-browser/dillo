@@ -186,6 +186,8 @@ Layout::Layout (Platform *platform)
    topLevel = NULL;
    widgetAtPoint = NULL;
 
+   queueResizeList = new typed::Vector<Widget> (4, false);
+
    DBG_OBJ_CREATE (this, "DwRenderLayout");
 
    bgColor = NULL;
@@ -233,6 +235,7 @@ Layout::~Layout ()
       topLevel = NULL;
       delete w;
    }
+   delete queueResizeList;
    delete platform;
    delete view;
    delete anchorsTable;
@@ -248,6 +251,7 @@ void Layout::addWidget (Widget *widget)
 
    topLevel = widget;
    widget->layout = this;
+   queueResizeList->clear ();
    widget->notifySetAsTopLevel();
 
    findtextState.setWidget (widget);
@@ -263,6 +267,7 @@ void Layout::removeWidget ()
     * \bug Some more attributes must be reset here.
     */
    topLevel = NULL;
+   queueResizeList->clear ();
    widgetAtPoint = NULL;
    canvasWidth = canvasAscent = canvasDescent = 0;
    scrollX = scrollY = 0;
@@ -654,9 +659,27 @@ void Layout::setBgColor (style::Color *color)
 void Layout::resizeIdle ()
 {
    //static int calls = 0;
-   //MSG(" Layout::resizeIdle calls = %d\n", ++calls);
+   //printf ("Layout::resizeIdle calls = %d\n", ++calls);
 
    assert (resizeIdleId != -1);
+
+   for (typed::Iterator <Widget> it = queueResizeList->iterator();
+        it.hasNext (); ) {
+      Widget *widget = it.getNext ();
+
+      //printf ("   the %stop-level %s %p was queued (extremes changed: %s)\n",
+      //        widget->parent ? "non-" : "", widget->getClassName(), widget,
+      //        widget->extremesQueued () ? "yes" : "no");
+
+      widget->setFlags (Widget::NEEDS_RESIZE);
+      widget->unsetFlags (Widget::RESIZE_QUEUED);
+
+      if (widget->extremesQueued ()) {
+         widget->setFlags (Widget::EXTREMES_CHANGED);
+         widget->unsetFlags (Widget::EXTREMES_QUEUED);
+      }
+   }
+   queueResizeList->clear ();
 
    // Reset already here, since in this function, queueResize() may be
    // called again.
@@ -706,6 +729,8 @@ void Layout::resizeIdle ()
    }
 
    updateAnchor ();
+
+   //printf ("Layout::resizeIdle end\n");
 }
 
 void Layout::setSizeHints ()

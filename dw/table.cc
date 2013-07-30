@@ -480,7 +480,7 @@ void Table::reallocChildren (int newNumCols, int newNumRows)
 
 void Table::calcCellSizes ()
 {
-   if (needsResize ())
+   if (needsResize () || resizeQueued ())
       forceCalcCellSizes ();
 }
 
@@ -638,7 +638,7 @@ void Table::apportionRowSpan ()
  */
 void Table::calcColumnExtremes ()
 {
-   if (extremesChanged ())
+   if (extremesChanged () || extremesQueued ())
       forceCalcColumnExtremes ();
 }
 

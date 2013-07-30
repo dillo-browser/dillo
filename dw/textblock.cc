@@ -2354,10 +2354,12 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::borderChanged (int y, Widget *vloat)
 {
-   PRINTF ("[%p] Border has changed: %d (float %s %p, with generator %p)\n",
+   PRINTF ("[%p] BORDER_CHANGED: %d (float %s %p, with generator %p)\n",
            this, y, vloat->getClassName(), vloat, vloat->getGenerator());
 
    int lineIndex = findLineIndex (y);
+   PRINTF ("   Line index: %d (of %d).\n", lineIndex, lines->size ());
+
    // Nothing to do at all, when lineIndex >= lines->size (),
    // i. e. the change is below the bottom of this widget.
    if (lineIndex < lines->size ()) {
@@ -2368,8 +2370,8 @@ void Textblock::borderChanged (int y, Widget *vloat)
       else
          wrapLineIndex = lineIndex;
       
-      PRINTF ("[%p] Rewrapping from line %d (of %d).\n",
-              this, wrapLineIndex, lines->size ());
+      PRINTF ("   Rewrapping from line %d (of %d).\n",
+              wrapLineIndex, lines->size ());
 
       if (vloat->getGenerator() == this) {
          bool found = false;

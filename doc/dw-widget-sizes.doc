@@ -222,6 +222,7 @@ The rules in detail:
      limitations. It has to be ensured that no endless recursion is
      caused, e.&nbsp;g. by calling dw::core::Widget::queueResize for a
      child. (But this is not the only case.) See below for details.
+     (**Update:** I'd rather like to leave this forbidden.)
 
 The facts that dw::core::Widget::queueResize can be called within
 other methods, leads to following guidelines:

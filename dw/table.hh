@@ -71,7 +71,7 @@ namespace dw {
  * is the case.
  *
  * [C] Whether this function is called, depends on NEEDS_RESIZE /
- * EXTREMES_CHANGED.
+ * RESIZE_QUEUED / EXTREMES_CHANGED / EXTREMES_QUEUED.
  *
  *
  * <h4>Apportionment</h4>

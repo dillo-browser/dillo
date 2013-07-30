@@ -373,8 +373,9 @@ void OutOfFlowMgr::sizeAllocateEnd ()
    sizeAllocateFloats (RIGHT);
    sizeAllocateAbsolutelyPositioned ();
 
-   // 3. Textblocks have already been allocated, but we store some
-   // information for later use. TODO: Update this comment!
+   // 3. Textblocks have already been allocated, but we (i) check
+   // allocation change of textblocks, and (ii) store some information
+   // for later use.
    for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
            tbInfosByTextblock->iterator ();
         it.hasNext (); ) {
@@ -388,8 +389,10 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       int width = tbAllocation->width;
       int height = tbAllocation->ascent + tbAllocation->descent;
 
+      // (i) Check allocation change of textblocks.
       if ((!tbInfo->wasAllocated || tbInfo->xCB != xCB || tbInfo->yCB != yCB ||
            tbInfo->width != width || tbInfo->height != height)) {
+         // Changed: change borders when covered by floats.
          int oldPos, newPos;
          Widget *oldFloat, *newFloat;
          // To calculate the minimum, both allocations, old and new,
@@ -420,7 +423,8 @@ void OutOfFlowMgr::sizeAllocateEnd ()
             }
          }
       }
-      
+
+      // (ii) store some information for later use.
       tbInfo->wasAllocated = true;
       tbInfo->xCB = xCB;
       tbInfo->yCB = yCB;
@@ -474,29 +478,40 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
       // TODO binary search
       Float *v = list->get(i);
 
-      assert (wasAllocated (v->generatingBlock));
-
-      if (tb != v->generatingBlock) {
-         int flh = v->dirty ? 0 : v->size.ascent + v->size.descent;
-         int y1 = getAllocation(v->generatingBlock)->y + v->yReal;
-         int y2 = y1 + flh;
-         
-         // TODO: Also regard horizontal dimension (same for tellPositionOrNot).
-         if (y2 > tby && y1 < tby + tbHeight) {
-            covered = true;
-            if (y1 - tby < *floatPos) {
-               *floatPos = y1 - tby;
-               *vloat = v->widget;
-            }
-         }
+      // TODO Clarify the old condition: tb != v->generatingBlock. Neccessary?
+      if (tb != v->generatingBlock &&
+          isTextblockCoveredByFloat (v, tb, tbx, tby, tbWidth, tbHeight,
+                                     floatPos)) {
+         covered = true;
+         *vloat = v->widget;
       }
 
       // All floarts are searched, to find the minimum. TODO: Are
-      // floats sorted, so this can be shortene? (The first is the
+      // floats sorted, so this can be shortened? (The first is the
       // minimum?)
    }
 
    return covered;
+}
+
+bool OutOfFlowMgr::isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
+                                              int tbx, int tby,
+                                              int tbWidth, int tbHeight,
+                                              int *floatPos)
+{
+   assert (wasAllocated (vloat->generatingBlock));
+   
+   int flh = vloat->dirty ? 0 : vloat->size.ascent + vloat->size.descent;
+   int y1 = getAllocation(vloat->generatingBlock)->y + vloat->yReal;
+   int y2 = y1 + flh;
+
+   // TODO: Also regard horizontal dimension (same for tellPositionOrNot)?
+   if (y2 > tby && y1 < tby + tbHeight) {
+      if (floatPos != NULL && y1 - tby < *floatPos)
+         *floatPos = y1 - tby;
+      return true;
+   } else
+      return false;
 }
 
 void OutOfFlowMgr::moveFromGBToCB (Side side)
@@ -578,8 +593,8 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side)
       
       vloat->widget->sizeAllocate (&childAllocation);
 
-      //printf ("allocate %s #%d -> (%d, %d), %d x (%d + %d)\n",
-      //        right ? "right" : "left", i, childAllocation.x,
+      //printf ("   allocate %s float #%d -> (%d, %d), %d x (%d + %d)\n",
+      //        side == LEFT ? "left" : "right", i, childAllocation.x,
       //        childAllocation.y, childAllocation.width,
       //        childAllocation.ascent, childAllocation.descent);
    }
@@ -790,9 +805,8 @@ void OutOfFlowMgr::markSizeChange (int ref)
       }
       
       vloat->dirty = true;
-      // TODO May cause problems (endless resizing?) when float has no
-      // defined position.
-      vloat->generatingBlock->borderChanged (vloat->yReal, vloat->widget);
+      
+      // Effects take place in ensureFloatSize.
    } else if (isRefAbsolutelyPositioned (ref)) {
       int i = getAbsolutelyPositionedIndexFromRef (ref);
       absolutelyPositioned->get(i)->dirty = true;
@@ -1358,7 +1372,37 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       //        vloat->size.width, vloat->size.ascent, vloat->size.descent);
           
       vloat->cbAvailWidth = containingBlock->getAvailWidth ();
-      vloat->dirty = false;      
+      vloat->dirty = false;
+
+      // TODO (i) Comment (ii) linear search?
+      if (wasAllocated (vloat->generatingBlock)) {
+         //printf ("=== start checking textblocks ===\n");
+
+         for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
+                 tbInfosByTextblock->iterator ();
+              it.hasNext (); ) {
+            Textblock *tb = it.getNext()->getTypedValue();
+            if (wasAllocated (tb)) {
+               Allocation *tba = getAllocation (tb);
+               int floatPos;
+
+               if (isTextblockCoveredByFloat
+                   (vloat, tb, tba->x - containingBlockAllocation.x,
+                    tba->y - containingBlockAllocation.y,
+                    tba->width, tba->ascent + tba->descent, &floatPos)) {
+                  //printf ("   ---> yes: %p (parent: %p)\n", tb,
+                  //        tb->getParent());
+                  tb->borderChanged (floatPos, vloat->widget);
+               } //else
+                 // printf ("   ---> not covered: %p (parent: %p)\n", tb,
+                 //         tb->getParent());
+            } //else
+              // printf ("   ---> not allocated: %p (parent: %p)\n", tb,
+              //         tb->getParent());
+         }
+
+         //printf ("=== end checking textblocks ===\n");
+      }
    }
 }
 

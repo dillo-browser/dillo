@@ -130,32 +130,50 @@ void Widget::queueResize (int ref, bool extremesChanged)
 {
    Widget *widget2, *child;
 
-   //printf("The %stop-level %s %p with parentRef = %d has changed its size.\n",
-   //       parent ? "non-" : "", getClassName(), this, parentRef);
+   //printf("The %stop-level %s %p with parentRef = %d has changed its size. "
+   //       "Layout = %p.\n",
+   //       parent ? "non-" : "", getClassName(), this, parentRef, layout);
 
-   setFlags (NEEDS_RESIZE);
-   setFlags (NEEDS_ALLOCATE);
-   markSizeChange (ref);
+   Flags resizeFlag, extremesFlag;
 
-   if (extremesChanged) {
-      setFlags (EXTREMES_CHANGED);
-      markExtremesChange (ref);
+   if (layout) {
+      // If RESIZE_QUEUED is set, this widget is already in the list.
+      if (!resizeQueued ())
+         layout->queueResizeList->put (this);
+
+      resizeFlag = RESIZE_QUEUED;
+      extremesFlag = EXTREMES_QUEUED;
+   } else {
+      resizeFlag = NEEDS_RESIZE;
+      extremesFlag = EXTREMES_CHANGED;
    }
 
-   for (widget2 = parent, child = this;
-        widget2;
-        child = widget2, widget2 = widget2->parent) {
-      widget2->setFlags (NEEDS_RESIZE);
-      widget2->markSizeChange (child->parentRef);
-      widget2->setFlags (NEEDS_ALLOCATE);
-
-      //printf ("   Setting DW_NEEDS_RESIZE and NEEDS_ALLOCATE for the "
+   setFlags (resizeFlag);
+   setFlags (NEEDS_ALLOCATE);
+   markSizeChange (ref);
+      
+   if (extremesChanged) {
+      setFlags (extremesFlag);
+      markExtremesChange (ref);
+   }
+      
+   for (widget2 = parent, child = this; widget2;
+        child = widget2, widget2 = widget2->parent) {      
+      //printf ("   Setting %s and NEEDS_ALLOCATE for the "
       //        "%stop-level %s %p with parentRef = %d\n",
+      //        resizeFlag == RESIZE_QUEUED ? "RESIZE_QUEUED" : "NEEDS_RESIZE",
       //        widget2->parent ? "non-" : "", widget2->getClassName(), widget2,
       //        widget2->parentRef);
 
+      if (layout && !widget2->resizeQueued ())
+         layout->queueResizeList->put (widget2);
+
+      widget2->setFlags (resizeFlag);
+      widget2->markSizeChange (child->parentRef);
+      widget2->setFlags (NEEDS_ALLOCATE);
+
       if (extremesChanged) {
-         widget2->setFlags (EXTREMES_CHANGED);
+         widget2->setFlags (extremesFlag);
          widget2->markExtremesChange (child->parentRef);
       }
    }
