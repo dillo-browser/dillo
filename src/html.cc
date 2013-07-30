@@ -544,6 +544,8 @@ int DilloHtml::getCurTagLineNumber()
    const char *p = Start_Buf;
 
    dReturn_val_if_fail(p != NULL, -1);
+   /* Disable line counting for META hack. Buffers differ. */
+   dReturn_val_if((InFlags & IN_META_HACK), -1);
 
    ofs = CurrTagOfs;
    line = OldTagLine;
@@ -1498,7 +1500,8 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
    static const char XHTML11    [] = "-//W3C//DTD XHTML 1.1";
    static const char XHTML11_url[] = "http://www.w3.org/TR/xhtml11/DTD/";
 
-   int i, quote;
+   size_t i;
+   int quote;
    char *p, *ntag = dStrndup(tag, tagsize);
 
    /* Tag sanitization: Collapse whitespace between tokens
@@ -1523,7 +1526,8 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
    _MSG("New: {%s}\n", ntag);
 
    /* The default DT_NONE type is TagSoup */
-   if (!dStrnAsciiCasecmp(ntag, HTML_SGML_sig, strlen(HTML_SGML_sig))) {
+   if (i > strlen(HTML_SGML_sig) && // avoid out of bounds reads!
+       !dStrnAsciiCasecmp(ntag, HTML_SGML_sig, strlen(HTML_SGML_sig))) {
       p = ntag + strlen(HTML_SGML_sig) + 1;
       if (!strncmp(p, HTML401, strlen(HTML401)) &&
           dStriAsciiStr(p + strlen(HTML401), HTML401_url)) {
@@ -2867,7 +2871,7 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          } else {
             mr_url = dStrdup(content);
          }
-         new_url = a_Url_new(mr_url, URL_STR(html->base_url));
+         new_url = a_Html_url_new(html, mr_url, NULL, 0);
 
          if (a_Url_cmp(html->base_url, new_url) == 0) {
             /* redirection loop, or empty url string: ignore */
@@ -2883,11 +2887,11 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
              * TODO: This is a hairy hack,
              *       It'd be much better to build a widget. */
             Dstr *ds_msg = dStr_sized_new(256);
-            dStr_sprintf(ds_msg, meta_template, mr_url, delay_str);
+            dStr_sprintf(ds_msg, meta_template, URL_STR(new_url), delay_str);
             {
                int o_InFlags = html->InFlags;
                int o_TagSoup = html->TagSoup;
-               html->InFlags = IN_BODY;
+               html->InFlags = IN_BODY + IN_META_HACK;
                html->TagSoup = false;
                Html_write_raw(html, ds_msg->str, ds_msg->len, 0);
                html->TagSoup = o_TagSoup;

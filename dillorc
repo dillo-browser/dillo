@@ -146,7 +146,7 @@
 # Format: search_url="[<label> ]<url>"
 # You can enable multiple search_url strings at once and select from among
 # them at runtime, with the first being the default.
-search_url="http://duckduckgo.com/lite/?kp=-1&q=%s"
+search_url="DuckDuckGo http://duckduckgo.com/lite/?kp=-1&q=%s"
 search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&go=Go"
 search_url="Free Dictionary http://www.thefreedictionary.com/%s"
 search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"

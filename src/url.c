@@ -263,7 +263,7 @@ static Dstr *Url_resolve_relative(const char *RelStr,
       } else if (BaseUrl->path) {                     /* relative path */
          dStr_append(Path, BaseUrl->path);
          for (i = Path->len; --i >= 0 && Path->str[i] != '/'; ) ;
-         if (Path->str[i] == '/')
+         if (i >= 0 && Path->str[i] == '/')
             dStr_truncate(Path, ++i);
       }
       if (RelUrl->path)
