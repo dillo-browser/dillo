@@ -40,7 +40,7 @@ OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
    this->externalIndex = externalIndex;
 
    yReq = yReal = size.width = size.ascent = size.descent = 0;
-   dirty = true;
+   dirty = sizeChangedSinceLastAllocation = true;
    inCBList = false;
 }
 
@@ -73,7 +73,9 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->appendInt (size.descent);
    sb->append (" }, dirty = ");
    sb->appendBool (dirty);
-   sb->append (" }, inCBList = ");
+   sb->append (", sizeChangedSinceLastAllocation = ");
+   sb->appendBool (sizeChangedSinceLastAllocation);
+   sb->append (", inCBList = ");
    sb->appendBool (inCBList);
    sb->append (" }");
 }
@@ -424,6 +426,9 @@ void OutOfFlowMgr::sizeAllocateEnd ()
          }
       }
 
+      // TODO Comment and re-number.
+      checkChangedFloatSizes ();
+
       // (ii) store some information for later use.
       tbInfo->wasAllocated = true;
       tbInfo->xCB = xCB;
@@ -512,6 +517,53 @@ bool OutOfFlowMgr::isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
       return true;
    } else
       return false;
+}
+
+void OutOfFlowMgr::checkChangedFloatSizes ()
+{
+   checkChangedFloatSizes (leftFloatsCB);
+   checkChangedFloatSizes (rightFloatsCB);
+}
+
+void OutOfFlowMgr::checkChangedFloatSizes (SortedFloatsVector *list)
+{
+   // TODO (i) Comment (ii) linear search?
+   for (int i = 0; i < list->size(); i++) {
+      // TODO binary search
+      Float *vloat = list->get(i);
+
+      if (vloat->sizeChangedSinceLastAllocation &&
+          wasAllocated (vloat->generatingBlock)) {
+         //printf ("=== start checking textblocks ===\n");
+
+         for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
+                 tbInfosByTextblock->iterator ();
+              it.hasNext (); ) {
+            Textblock *tb = it.getNext()->getTypedValue();
+            if (wasAllocated (tb)) {
+               Allocation *tba = getAllocation (tb);
+               int floatPos;
+               
+               if (isTextblockCoveredByFloat
+                   (vloat, tb, tba->x - containingBlockAllocation.x,
+                    tba->y - containingBlockAllocation.y,
+                    tba->width, tba->ascent + tba->descent, &floatPos)) {
+                  //printf ("   ---> yes: %p (parent: %p)\n", tb,
+                  //        tb->getParent());
+                  tb->borderChanged (floatPos, vloat->widget);
+               } //else
+                 // printf ("   ---> not covered: %p (parent: %p)\n", tb,
+                 //         tb->getParent());
+            } //else
+              // printf ("   ---> not allocated: %p (parent: %p)\n", tb,
+              //         tb->getParent());
+         }
+         
+         //printf ("=== end checking textblocks ===\n");
+
+         vloat->sizeChangedSinceLastAllocation = false;
+      }
+   }
 }
 
 void OutOfFlowMgr::moveFromGBToCB (Side side)
@@ -804,7 +856,7 @@ void OutOfFlowMgr::markSizeChange (int ref)
          vloat = NULL; // compiler happiness
       }
       
-      vloat->dirty = true;
+      vloat->dirty = vloat->sizeChangedSinceLastAllocation = true;
       
       // Effects take place in ensureFloatSize.
    } else if (isRefAbsolutelyPositioned (ref)) {
@@ -1374,35 +1426,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       vloat->cbAvailWidth = containingBlock->getAvailWidth ();
       vloat->dirty = false;
 
-      // TODO (i) Comment (ii) linear search?
-      if (wasAllocated (vloat->generatingBlock)) {
-         //printf ("=== start checking textblocks ===\n");
-
-         for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-                 tbInfosByTextblock->iterator ();
-              it.hasNext (); ) {
-            Textblock *tb = it.getNext()->getTypedValue();
-            if (wasAllocated (tb)) {
-               Allocation *tba = getAllocation (tb);
-               int floatPos;
-
-               if (isTextblockCoveredByFloat
-                   (vloat, tb, tba->x - containingBlockAllocation.x,
-                    tba->y - containingBlockAllocation.y,
-                    tba->width, tba->ascent + tba->descent, &floatPos)) {
-                  //printf ("   ---> yes: %p (parent: %p)\n", tb,
-                  //        tb->getParent());
-                  tb->borderChanged (floatPos, vloat->widget);
-               } //else
-                 // printf ("   ---> not covered: %p (parent: %p)\n", tb,
-                 //         tb->getParent());
-            } //else
-              // printf ("   ---> not allocated: %p (parent: %p)\n", tb,
-              //         tb->getParent());
-         }
-
-         //printf ("=== end checking textblocks ===\n");
-      }
+      // "sizeChangedSinceLastAllocation" is reset in sizeAllocateEnd()
    }
 }
 

@@ -62,7 +62,7 @@ private:
       int cbAvailWidth; /* On which the calculation of relative sizes
                            is based. Height not yet used, and probably
                            not added before size redesign. */
-      bool dirty;
+      bool dirty, sizeChangedSinceLastAllocation;
       bool inCBList; /* Neccessary to prevent floats from being moved
                         twice from GB to CB list.  */
 
@@ -208,6 +208,8 @@ private:
    bool isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
                                    int tbx, int tby, int tbWidth, int tbHeight,
                                    int *floatPos);
+   void checkChangedFloatSizes ();
+   void checkChangedFloatSizes (SortedFloatsVector *list);
    
    void drawFloats (SortedFloatsVector *list, core::View *view,
                     core::Rectangle *area);
