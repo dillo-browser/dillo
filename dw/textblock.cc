@@ -2439,8 +2439,9 @@ void Textblock::borderChanged (int y, Widget *vloat)
                  !found2 && lineIndex2 < lines->size (); lineIndex2++) { 
                Line *line = lines->getRef (lineIndex2);
                printf ("   could have searched existing line %d "
-                       "(from %d to %d):\n",
-                       lineIndex2, line->firstWord, line->lastWord);
+                       "(from %d to %d, top = %d, boxAscent = %d):\n",
+                       lineIndex2, line->firstWord, line->lastWord, line->top,
+                       line->boxAscent);
                for (int wordIndex = line->firstWord;
                     !found2 && wordIndex <= line->lastWord; wordIndex++) {
                   Word *word = words->getRef (wordIndex);
