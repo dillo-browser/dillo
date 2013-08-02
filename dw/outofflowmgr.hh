@@ -200,11 +200,11 @@ private:
    void moveFromGBToCB (Side side);
    void sizeAllocateFloats (Side side);
    bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
-                                    int tbWidth, int tbHeight, int *floatPos,
-                                    core::Widget **vloat);
+                                    int tbWidth, int tbHeight, int *minFloatPos,
+                                    core::Widget **minFloat);
    bool isTextblockCoveredByFloats (SortedFloatsVector *list, Textblock *tb,
                                     int tbx, int tby, int tbWidth, int tbHeight,
-                                    int *floatPos, core::Widget **vloat);
+                                    int *minFloatPos, core::Widget **minFloat);
    bool isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
                                    int tbx, int tby, int tbWidth, int tbHeight,
                                    int *floatPos);

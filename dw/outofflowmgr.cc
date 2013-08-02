@@ -21,8 +21,6 @@
 #include "outofflowmgr.hh"
 #include "textblock.hh"
 
-#include <limits.h>
-
 using namespace lout::object;
 using namespace lout::container::typed;
 using namespace lout::misc;
@@ -440,30 +438,31 @@ void OutOfFlowMgr::sizeAllocateEnd ()
 
 bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
                                                int tbWidth, int tbHeight,
-                                               int *floatPos, Widget **vloat)
+                                               int *minFloatPos,
+                                               Widget **minFloat)
 {
-   int leftPos, rightPos;
-   Widget *leftFloat, *rightFloat;
+   int leftMinPos, rightMinPos;
+   Widget *leftMinFloat, *rightMinFloat;
    bool c1 = isTextblockCoveredByFloats (leftFloatsCB, tb, tbx, tby,
-                                         tbWidth, tbHeight, &leftPos,
-                                         &leftFloat);
+                                         tbWidth, tbHeight, &leftMinPos,
+                                         &leftMinFloat);
    bool c2 = isTextblockCoveredByFloats (rightFloatsCB, tb, tbx, tby,
-                                         tbWidth, tbHeight, &rightPos,
-                                         &rightFloat);
+                                         tbWidth, tbHeight, &rightMinPos,
+                                         &rightMinFloat);
    if (c1 || c2) {
       if (!c1) {
-         *floatPos = rightPos;
-         *vloat = rightFloat;
+         *minFloatPos = rightMinPos;
+         *minFloat = rightMinFloat;
       } else if (!c2) {
-         *floatPos = leftPos;
-         *vloat = leftFloat;
+         *minFloatPos = leftMinPos;
+         *minFloat = leftMinFloat;
       } else {
-         if (leftPos < rightPos) {
-            *floatPos = leftPos;
-            *vloat = leftFloat;
+         if (leftMinPos < rightMinPos) {
+            *minFloatPos = leftMinPos;
+            *minFloat = leftMinFloat;
          } else{ 
-            *floatPos = rightPos;
-            *vloat = rightFloat;
+            *minFloatPos = rightMinPos;
+            *minFloat = rightMinFloat;
          }
       }
    }
@@ -474,21 +473,25 @@ bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
 bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
                                                Textblock *tb, int tbx, int tby,
                                                int tbWidth, int tbHeight,
-                                               int *floatPos, Widget **vloat)
+                                               int *minFloatPos,
+                                               Widget **minFloat)
 {
-   *floatPos = INT_MAX;
    bool covered = false;
 
    for (int i = 0; i < list->size(); i++) {
       // TODO binary search
-      Float *v = list->get(i);
+      Float *vloat = list->get(i);
+      int floatPos;
 
       // TODO Clarify the old condition: tb != v->generatingBlock. Neccessary?
-      if (tb != v->generatingBlock &&
-          isTextblockCoveredByFloat (v, tb, tbx, tby, tbWidth, tbHeight,
-                                     floatPos)) {
+      if (tb != vloat->generatingBlock &&
+          isTextblockCoveredByFloat (vloat, tb, tbx, tby, tbWidth, tbHeight,
+                                     &floatPos)) {
+         if (!covered || floatPos < *minFloatPos) {
+            *minFloatPos = floatPos;
+            *minFloat = vloat->widget;
+         }
          covered = true;
-         *vloat = v->widget;
       }
 
       // All floarts are searched, to find the minimum. TODO: Are
@@ -512,8 +515,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
 
    // TODO: Also regard horizontal dimension (same for tellPositionOrNot)?
    if (y2 > tby && y1 < tby + tbHeight) {
-      if (floatPos != NULL && y1 - tby < *floatPos)
-         *floatPos = y1 - tby;
+      *floatPos = y1 - tby;
       return true;
    } else
       return false;
