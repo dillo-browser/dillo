@@ -1329,6 +1329,9 @@ static void Html_tag_cleanup_to_idx(DilloHtml *html, int idx)
  */
 static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
 {
+   static int i_BUTTON = a_Html_tag_index("button"),
+              i_SELECT = a_Html_tag_index("select"),
+              i_TEXTAREA = a_Html_tag_index("textarea");
    int w3c_mode = !prefs.w3c_plus_heuristics;
    int stack_idx, tag_idx, matched = 0, expected = 0;
    TagInfo new_tag = Tags[new_idx];
@@ -1343,6 +1346,11 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
          break;
       } else if (Tags[tag_idx].EndTag == 'O') {
          /* skip an optional tag */
+         continue;
+      } else if ((new_idx == i_BUTTON && html->InFlags & IN_BUTTON) ||
+                 (new_idx == i_SELECT && html->InFlags & IN_SELECT) ||
+                 (new_idx == i_TEXTAREA && html->InFlags & IN_TEXTAREA)) {
+         /* let these elements close tags inside them */
          continue;
       } else if (w3c_mode || Tags[tag_idx].TagLevel >= new_tag.TagLevel) {
          /* this is the tag that should have been closed */
@@ -1360,6 +1368,50 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
       BUG_MSG("unexpected closing tag: </%s>.\n", new_tag.name);
    }
 }
+
+/*
+ * Avoid nesting and inter-nesting of BUTTON, SELECT and TEXTAREA,
+ * by closing them before opening another.
+ * This is not an HTML SPEC restriction , but it avoids lots of trouble
+ * inside dillo (concurrent inputs), and makes almost no sense to have.
+ */ 
+static void Html_tag_cleanup_nested_inputs(DilloHtml *html, int new_idx)
+{
+   static int i_BUTTON = a_Html_tag_index("button"),
+              i_SELECT = a_Html_tag_index("select"),
+              i_TEXTAREA = a_Html_tag_index("textarea");
+   int stack_idx, u_idx, matched = 0;
+
+   dReturn_if_fail(html->InFlags & (IN_BUTTON | IN_SELECT | IN_TEXTAREA));
+   dReturn_if_fail(new_idx == i_BUTTON || new_idx == i_SELECT ||
+                   new_idx == i_TEXTAREA);
+
+   /* Get the unclosed tag index */
+   u_idx = (html->InFlags & IN_BUTTON) ? i_BUTTON :
+                 (html->InFlags & IN_SELECT) ? i_SELECT : i_TEXTAREA;
+
+   /* Look for it inside the stack */
+   stack_idx = html->stack->size();
+   while (--stack_idx) {
+      if (html->stack->getRef(stack_idx)->tag_idx == u_idx) {
+         /* matching tag found */
+         matched = 1;
+         break;
+      }
+   }
+
+   if (matched) {
+      BUG_MSG("attempt to nest <%s> element inside <%s> -- closing <%s>\n",
+              Tags[new_idx].name, Tags[u_idx].name, Tags[u_idx].name);
+      Html_tag_cleanup_to_idx(html, stack_idx);
+   } else {
+      MSG_WARN("Inconsistent parser state, flag is SET but no '%s' element"
+               "was found in the stack\n", Tags[u_idx].name);
+   }
+
+   html->InFlags &= ~(IN_BUTTON | IN_SELECT | IN_TEXTAREA);
+}
+
 
 /*
  * Some parsing routines.
@@ -3569,6 +3621,10 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       if ((html->InFlags & IN_PRE) && Html_tag_pre_excludes(ni))
          BUG_MSG("<pre> is not allowed to contain <%s>\n", Tags[ni].name);
 
+      /* Make sure these elements don't nest each other */
+      if (html->InFlags & (IN_BUTTON | IN_SELECT | IN_TEXTAREA))
+         Html_tag_cleanup_nested_inputs(html, ni);
+
       /* Push the tag into the stack */
       Html_push_tag(html, ni);
 
@@ -3579,7 +3635,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       Html_parse_common_attrs(html, tag, tagsize);
 
       /* Call the open function for this tag */
-      _MSG("Open : %s\n", Tags[ni].name);
+      _MSG("Html_process_tag Open : %s\n", Tags[ni].name);
       Tags[ni].open (html, tag, tagsize);
 
       if (! S_TOP(html)->display_none) {
@@ -3636,7 +3692,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
            (strchr(" \"'", tag[tagsize-3]) ||                   /* [ "']/> */
             (size_t)tagsize == strlen(Tags[ni].name) + 3))) {   /*  <x/>   */
 
-         _MSG("Close: %s\n", Tags[ni].name);
+         _MSG("Html_process_tag Close: %s\n", Tags[ni].name);
          Html_tag_cleanup_at_close(html, ni);
          /* This was a close tag */
          html->ReqTagClose = false;
