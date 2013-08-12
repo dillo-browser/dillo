@@ -1339,11 +1339,12 @@ int Textblock::findLineIndex (int y)
  */
 int Textblock::findLineOfWord (int wordIndex)
 {
-   int high = lines->size () - 1, index, low = 0;
-
-   // TODO regard also not-yet-existing lines?
-   if (wordIndex < 0 || wordIndex >= words->size ())
+   if (wordIndex < 0 || wordIndex >= words->size () ||
+       // Also regard not-yet-existing lines.
+       lines->size () <= 0 || wordIndex > lines->getLastRef()->lastWord)
       return -1;
+
+   int high = lines->size () - 1, index, low = 0;
 
    while (true) {
       index = (low + high) / 2;
