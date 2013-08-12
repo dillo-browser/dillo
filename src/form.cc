@@ -619,15 +619,7 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
 
 void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
 {
-   if (html->InFlags & IN_TEXTAREA) {
-      BUG_MSG("nested <textarea>\n");
-      html->ReqTagClose = TRUE;
-      return;
-   }
-   if (html->InFlags & IN_SELECT) {
-      BUG_MSG("<textarea> element inside <select>\n");
-      return;
-   }
+   assert((html->InFlags & (IN_BUTTON | IN_SELECT | IN_TEXTAREA)) == 0);
 
    html->InFlags |= IN_TEXTAREA;
 }
@@ -722,8 +714,8 @@ void Html_tag_close_textarea(DilloHtml *html)
          ((MultiLineTextResource *)input->embed->getResource ())->setText(str);
       }
 
-      html->InFlags &= ~IN_TEXTAREA;
    }
+   html->InFlags &= ~IN_TEXTAREA;
 }
 
 /*
@@ -735,10 +727,8 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
    int rows = 0;
 
-   if (html->InFlags & IN_SELECT) {
-      BUG_MSG("nested <select>\n");
-      return;
-   }
+   assert((html->InFlags & (IN_BUTTON | IN_SELECT | IN_TEXTAREA)) == 0);
+
    html->InFlags |= IN_SELECT;
    html->InFlags &= ~IN_OPTION;
 
@@ -915,16 +905,9 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
    DilloHtmlInputType inp_type;
    char *type;
 
-   if (html->InFlags & IN_BUTTON) {
-      BUG_MSG("nested <button>\n");
-      return;
-   }
-   if (html->InFlags & IN_SELECT) {
-      BUG_MSG("<button> element inside <select>\n");
-      return;
-   }
-   html->InFlags |= IN_BUTTON;
+   assert((html->InFlags & (IN_BUTTON | IN_SELECT | IN_TEXTAREA)) == 0);
 
+   html->InFlags |= IN_BUTTON;
    type = a_Html_get_attr_wdef(html, tag, tagsize, "type", "");
 
    if (!dStrAsciiCasecmp(type, "button")) {
