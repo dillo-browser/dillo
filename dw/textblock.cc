@@ -467,7 +467,10 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
       Anchor *anchor = anchors->getRef(i);
       int y;
 
-      if (anchor->wordIndex >= words->size()) {
+      if (anchor->wordIndex >= words->size() ||
+          // Also regard not-yet-existing lines.
+          lines->size () <= 0 ||
+          anchor->wordIndex > lines->getLastRef()->lastWord) {
          y = allocation->y + allocation->ascent + allocation->descent;
       } else {
          Line *line = lines->getRef(findLineOfWord (anchor->wordIndex));
