@@ -177,61 +177,92 @@ is dw::Textblock.
 Rules for Methods Related to Resizing
 =====================================
 
-<div style="border: 2px solid #ff0000; margin-bottom: 0.5em;
-padding: 0.5em 1em; background-color: #ffefe0"><b>Warning:</b>
-This section still needs some work.</div>
-
 Which method can be called, when the call of another method is not
 finished? These rules are important in two circumstances:
 
 1. To know which method can be called, and, especially, which methods
-   _must not_ be called, within the implementation of
-   dw::core::Widget::sizeRequestImpl (called by
-   dw::core::Widget::sizeRequest), dw::core::Widget::markSizeChange,
-   and dw::core::Widget::markExtremesChange (the latter two are
-   called by dw::core::Widget::queueResize).
+   *must not* be called, within the implementation of
+   *sizeRequestImpl* (called by *sizeRequest*), *markSizeChange*, and
+   *markExtremesChange* (the latter two are called by *queueResize*).
 2. On the other hand, to make sure that the calls, which are allowed,
    are handled correctly, especially in implementations of
-   dw::core::Widget::sizeRequestImpl,
-   dw::core::Widget::markSizeChange, and
-   dw::core::Widget::markExtremesChange.
+   *sizeRequestImpl*, *markSizeChange*, *markExtremesChange*
 
-The rules in detail:
+Generally, the rules defined below are, in case of doubt, rather
+strict; when changing the rules, loosening is simpler than to tighten
+them, since this will make it neccessary to review old code for calls
+previously allowed but now forbidden.
 
-- Within dw::core::Widget::sizeRequest /
-  dw::core::Widget::sizeRequestImpl:
-  1. dw::core::Widget::sizeRequest must only be called for
-     children. Otherwise, an endless recursion would easily occur.
-  2. dw::core::Widget::queueResize can be called. See below for
-     details.
+Short recap:
 
-- Within queueResize / dw::core::Widget::markSizeChange /
-  dw::core::Widget::markExtremesChange.
-  1. dw::core::Widget::sizeRequest must _not_ be called. As a example,
-     look at dw::Image::setBuffer: Here, dw::core::Widget::queueResize
-     is called at the beginning, while dw::Image::buffer, which is
-     needed by dw::Image::sizeRequest, is set later. If the
-     implementation of dw::core::Widget::markSizeChange or
-     dw::core::Widget::markExtremesChange of a parent widget calls
-     dw::core::Widget::sizeRequest for the image widget, a wrong value
-     for the buffer would be used. (Of course, it is possible to first
-     set dw::Image::buffer, and the call
-     dw::core::Widget::queueResize, but this does not change the fact
-     that these considerations should not be necessary on this level.)
-  2. dw::core::Widget::queueResize can be called with some
-     limitations. It has to be ensured that no endless recursion is
-     caused, e.&nbsp;g. by calling dw::core::Widget::queueResize for a
-     child. (But this is not the only case.) See below for details.
-     (**Update:** I'd rather like to leave this forbidden.)
+- *QueueResize* directly calls *markSizeChange* and
+  *markExtremesChanges*, and queues an idle function for the actual
+  resizing (dw::core::Layout::resizeIdle). (The idle function is
+  called some time after *queueResize* is finished.)
+- The resize idle function first calls *sizeRequest*, then
+  *sizeAllocate*, for the toplevel widget.
 
-The facts that dw::core::Widget::queueResize can be called within
-other methods, leads to following guidelines:
+In the following table, the rules are defined in detail. "Within call
+of ..." includes all methods called from the original method: the
+first row (*queueResize*) defines also the rules for
+*markExtremesChanges* and *markExtremesChanges*, and in the second row
+(*sizeAllocate*), even *sizeRequest* has to be considered.
 
-- dw::core::Widget::queueResize simply goes up in the hierarchy of
-  widgeds, sets some flags, and calls dw::core::Widget::markSizeChange
-  and dw::core::Widget::markExtremesChange.
-- dw::core::Widget::markSizeChange and
-  dw::core::Widget::markExtremesChange should be kept extremely
-  simple. (TODO: Details)
+<table>
+   <tr>
+      <th>Within call of ... ↓
+      <th>... is call allowed of ... ? →
+      <th>queueResize
+      <th>sizeAllocate
+      <th>sizeRequest
+      <th>getExtremes
+   <tr>
+      <th colspan=2>queueResize
+      <td>No
+      <td>No<sup>1</sup>
+      <td>No<sup>1</sup>
+      <td>No<sup>1</sup>
+   <tr>
+      <th colspan=2>sizeAllocate
+      <td>Yes
+      <td>Only for children<sup>2</sup>
+      <td>Yes(?)
+      <td>Yes(?)
+   <tr>
+      <th colspan=2>sizeRequest
+      <td>Yes<sup>3</sup>
+      <td>No
+      <td>Limited<sup>4</sup>
+      <td>Limited<sup>4</sup>
+   <tr>
+      <th colspan=2>getExtremes
+      <td>Yes<sup>3</sup>
+      <td>No
+      <td>Limited<sup>4</sup>
+      <td>Limited<sup>4</sup>
+</table>
+
+<sup>1</sup>) Otherwise, since these other methods may be call
+*queueResize*, the limitation that *queueResize* must not call
+*queueResize* can be violated.
+
+<sup>2</sup>) Could perhaps be loosened as for *sizeRequest* and
+*getExtremes*, but there is probably no need.
+
+<sup>3</sup>) Therefore the distinction between *RESIZE_QUEUED* and
+*NEEDS_RESIZE*, and *EXTREMES_QUEUED* and *EXTREMES_CHANGED*,
+respectively.
+
+<sup>4</sup>) Calls only for children are safe. In other cases, you
+take a large responsibility to prevent endless recursions by
+(typically indirectly) calling *sizeRequest* / *getExtremes* for direct
+ancestors.
+
+This could be done furthermore:
+
+- There should be some tests, to avoid painful debugging. For the case
+  *queueResize* calling (not!) *queueResize*, this should be simple.
+- Is it possible to define exacter rules, along with a proof that no
+  problems (like endless recursion) can occur?
 
 */
