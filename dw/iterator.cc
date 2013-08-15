@@ -607,6 +607,23 @@ int DeepIterator::compareTo (object::Comparable *other)
    // Search the highest level, where the widgets are the same.
    int level = 0;
 
+   // The Comparable interface does not define "uncomparable". Deep
+   // iterators are only comparable if they belong to the same widget
+   // tree, so have the same widget at the bottom at the
+   // stack. If this is not the case, we abort.
+
+   assert (stack.size() > 0);
+   assert (otherDeepIterator->stack.size() > 0);
+   
+   //printf ("Equal? The %s %p and the %s %p?\n",
+   //        stack.get(0)->getWidget()->getClassName(),
+   //        stack.get(0)->getWidget(),
+   //        otherDeepIterator->stack.get(0)->getWidget()->getClassName(),
+   //        otherDeepIterator->stack.get(0)->getWidget());
+
+   assert (stack.get(0)->getWidget()
+           == otherDeepIterator->stack.get(level)->getWidget());
+
    while (stack.get(level)->getWidget ()
           == otherDeepIterator->stack.get(level)->getWidget ()) {
       if (level == stack.size() - 1 ||
