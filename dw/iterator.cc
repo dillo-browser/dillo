@@ -57,10 +57,7 @@ bool Iterator::equals (Object *other)
 
 void Iterator::intoStringBuffer(misc::StringBuffer *sb)
 {
-   sb->append ("{ content = ");
-   Content::intoStringBuffer (&content, sb);
-
-   sb->append (", widget = ");
+   sb->append ("{ widget = ");
    //widget->intoStringBuffer (sb);
    sb->appendPointer (widget);
    sb->append (" (");
@@ -69,6 +66,9 @@ void Iterator::intoStringBuffer(misc::StringBuffer *sb)
 
    sb->append (", mask = ");
    Content::maskIntoStringBuffer (mask, sb);
+
+   sb->append (", content = ");
+   Content::intoStringBuffer (&content, sb);
 
    sb->append (" }");
 }
