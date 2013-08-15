@@ -69,7 +69,9 @@ IdentifiableObject::IdentifiableObject ()
 
 void IdentifiableObject::intoStringBuffer(misc::StringBuffer *sb)
 {
-   sb->append("<instance of ");
+   sb->append("<instance ");
+   sb->appendPointer(this);
+   sb->append(" of ");
    sb->append(getClassName());
    sb->append(">");
 }

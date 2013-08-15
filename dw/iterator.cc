@@ -55,6 +55,24 @@ bool Iterator::equals (Object *other)
       (getWidget() == otherIt->getWidget() && compareTo(otherIt) == 0);
 }
 
+void Iterator::intoStringBuffer(misc::StringBuffer *sb)
+{
+   sb->append ("{ content = ");
+   Content::intoStringBuffer (&content, sb);
+
+   sb->append (", widget = ");
+   //widget->intoStringBuffer (sb);
+   sb->appendPointer (widget);
+   sb->append (" (");
+   sb->append (widget->getClassName());
+   sb->append (")>");
+
+   sb->append (", mask = ");
+   Content::maskIntoStringBuffer (mask, sb);
+
+   sb->append (" }");
+}
+
 /**
  * \brief Delete the iterator.
  *
@@ -583,6 +601,9 @@ int DeepIterator::compareTo (object::Comparable *other)
 {
    DeepIterator *otherDeepIterator = (DeepIterator*)other;
 
+   //printf ("Compare: %s\n", stack.toString ());
+   //printf ("     to: %s\n", otherDeepIterator->stack.toString ());
+
    // Search the highest level, where the widgets are the same.
    int level = 0;
 
@@ -594,9 +615,13 @@ int DeepIterator::compareTo (object::Comparable *other)
       level++;
    }
 
+   //printf ("      => level = %d (temorally)\n", level);
+
    while (stack.get(level)->getWidget ()
           != otherDeepIterator->stack.get(level)->getWidget ())
       level--;
+
+   //printf ("      => level = %d (finally)\n", level);
 
    return stack.get(level)->compareTo (otherDeepIterator->stack.get(level));
 }

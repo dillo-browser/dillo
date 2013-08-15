@@ -31,6 +31,7 @@ private:
 
 public:
    bool equals (Object *other);
+   void intoStringBuffer(lout::misc::StringBuffer *sb);
 
    inline Widget *getWidget () { return widget; }
    inline Content *getContent () { return &content; }

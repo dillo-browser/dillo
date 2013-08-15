@@ -223,6 +223,9 @@ struct Content
    };
 
    static Content::Type maskForSelection (bool followReferences);
+
+   static void intoStringBuffer(Content *content, lout::misc::StringBuffer *sb);
+   static void maskIntoStringBuffer(Type mask, lout::misc::StringBuffer *sb);
    static void print (Content *content);
    static void printMask (Type mask);
 };

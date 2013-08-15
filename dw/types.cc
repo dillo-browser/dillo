@@ -276,49 +276,81 @@ Content::Type Content::maskForSelection (bool followReferences)
    return (Content::Type)(Content::SELECTION_CONTENT | widgetMask);
 }
 
-void Content::print (Content *content)
+void Content::intoStringBuffer(Content *content, misc::StringBuffer *sb)
 {
    switch(content->type) {
    case START:
-      printf ("<start>");
+      sb->append ("<start>");
       break;
    case END:
-      printf ("<end>");
+      sb->append ("<end>");
       break;
    case TEXT:
-      printf ("\"%s\"", content->text);
+      sb->append ("\"");
+      sb->append (content->text);
+      sb->append ("\"");
       break;
    case WIDGET_IN_FLOW:
-      printf ("<widget in flow: %p (%s)>",
-              content->widget, content->widget->getClassName());
+      sb->append ("<widget in flow: ");
+      sb->appendPointer (content->widget);
+      sb->append (" (");
+      sb->append (content->widget->getClassName());
+      sb->append (")>");
       break;
    case WIDGET_OOF_REF:
-      printf ("<widget oof ref: %p (%s)>",
-              content->widget, content->widget->getClassName());
+      sb->append ("<widget oof ref: ");
+      sb->appendPointer (content->widget);
+      sb->append (" (");
+      sb->append (content->widget->getClassName());
+      sb->append (")>");
       break;
    case WIDGET_OOF_CONT:
-      printf ("<widge oof cont: %p (%s)>",
-              content->widget, content->widget->getClassName());
+      sb->append ("<widget oof cont: ");
+      sb->appendPointer (content->widget);
+      sb->append (" (");
+      sb->append (content->widget->getClassName());
+      sb->append (")>");
       break;
    case BREAK:
-      printf ("<break>");
+      sb->append ("<break>");
       break;
    default:
-      printf ("<%d?>", content->type);
+      sb->append ("<");
+      sb->appendInt (content->type);
+      sb->append ("?>");
       break;
    }
 }
 
+void Content::maskIntoStringBuffer(Type mask, misc::StringBuffer *sb)
+{
+   sb->append ((mask & START) ? "st" : "--");
+   sb->append (":");
+   sb->append ((mask & END) ? "en" : "--");
+   sb->append (":");
+   sb->append ((mask & TEXT) ? "tx" : "--");
+   sb->append (":");
+   sb->append ((mask & WIDGET_IN_FLOW) ? "wf" : "--");
+   sb->append (":");
+   sb->append ((mask & WIDGET_OOF_REF) ? "Wr" : "--");
+   sb->append (":");
+   sb->append ((mask & WIDGET_OOF_CONT) ? "Wc" : "--");
+   sb->append (":");
+   sb->append ((mask & BREAK) ? "br" : "--");
+}
+
+void Content::print (Content *content)
+{
+   misc::StringBuffer sb;
+   intoStringBuffer (content, &sb);
+   printf ("%s", sb.getChars ());
+}
+
 void Content::printMask (Type mask)
 {
-   printf ("%s:%s:%s:%s:%s:%s:%s",
-           (mask & START) ? "st" : "--",
-           (mask & END) ? "en" : "--",
-           (mask & TEXT) ? "tx" : "--",
-           (mask & WIDGET_IN_FLOW) ? "wf" : "--",
-           (mask & WIDGET_OOF_REF) ? "Wr" : "--",
-           (mask & WIDGET_OOF_CONT) ? "Wc" : "--",
-           (mask & BREAK) ? "br" : "--");
+   misc::StringBuffer sb;
+   maskIntoStringBuffer (mask, &sb);
+   printf ("%s", sb.getChars ());
 }
 
 } // namespace core

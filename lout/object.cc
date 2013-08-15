@@ -94,7 +94,9 @@ const char *Object::toString()
  */
 void Object::intoStringBuffer(misc::StringBuffer *sb)
 {
-   sb->append("<not further specified object>");
+   sb->append("<not further specified object ");
+   sb->appendPointer(this);
+   sb->append(">");
 }
 
 /**
