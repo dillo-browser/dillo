@@ -309,6 +309,7 @@ public:
    inline Widget *getParent () { return parent; }
    Widget *getTopLevel ();
    int getLevel ();
+   int getGeneratorLevel ();
    Widget *getNearestCommonAncestor (Widget *otherWidget);
 
    inline Widget *getGenerator () { return generator ? generator : parent; }

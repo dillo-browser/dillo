@@ -170,9 +170,15 @@ private:
    bool hasContents;
 
    inline DeepIterator () { }
+
    static Widget *getRespectiveParent (Widget *widget, Content::Type mask);
    inline Widget *getRespectiveParent (Widget *widget) {
       return getRespectiveParent (widget, mask);
+   }
+
+   static int getRespectiveLevel (Widget *widget, Content::Type mask);
+   inline int getRespectiveLevel (Widget *widget) {
+      return getRespectiveLevel (widget, mask);
    }
 
 public:

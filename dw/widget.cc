@@ -478,6 +478,25 @@ int Widget::getLevel ()
 }
 
 /**
+ * \brief Get the level of the widget within the tree, regarting the
+ * generators, not the parents.
+ *
+ * The root widget has the level 0.
+ */
+int Widget::getGeneratorLevel ()
+{
+   Widget *widget = this;
+   int level = 0;
+
+   while (widget->getGenerator ()) {
+      level++;
+      widget = widget->getGenerator ();
+   }
+
+   return level;
+}
+
+/**
  * \brief Get the widget with the highest level, which is a direct ancestor of
  *    widget1 and widget2.
  */

@@ -207,10 +207,9 @@ void Iterator::scrollTo (Iterator *it1, Iterator *it2, int start, int end,
 
 void Iterator::print ()
 {
-   printf ("in the %s %p, mask ", widget->getClassName(), widget);
-   Content::printMask (mask);
-   printf (", pointing at ");
-   Content::print (&content);
+   misc::StringBuffer sb;
+   intoStringBuffer (&sb);
+   printf ("%s", sb.getChars ());
 }
 
 // -------------------
@@ -481,6 +480,14 @@ Widget *DeepIterator::getRespectiveParent (Widget *widget, Content::Type mask)
       widget->getGenerator() : widget->getParent();
 }
 
+int DeepIterator::getRespectiveLevel (Widget *widget, Content::Type mask)
+{
+   // Similar to getRespectiveParent.
+
+   return (mask & Content::WIDGET_OOF_REF) ?
+      widget->getGeneratorLevel() : widget->getLevel();
+}
+
 /**
  * \brief Create a new deep iterator from an existing dw::core::Iterator.
  *
@@ -497,6 +504,11 @@ Widget *DeepIterator::getRespectiveParent (Widget *widget, Content::Type mask)
  */
 DeepIterator::DeepIterator (Iterator *it)
 {
+   //printf ("Starting creating DeepIterator %p ...\n", this);
+   //printf ("Initial iterator: ");
+   //it->print ();
+   //printf ("\n");
+
    // Widgets out of flow are either followed widtin containers, or
    // generators. Both (and also nothing at all) is not allowed. See
    // also comment in getRespectiveParent.
@@ -543,12 +555,12 @@ DeepIterator::DeepIterator (Iterator *it)
       // \todo There may be a faster way instead of iterating through the
       //    parent widgets.
 
-      //printf ("STARTING WITH: ");
+      //printf ("Starting with: ");
       //it->print ();
       //printf ("\n");
    
       // Construct the iterators.
-      int thisLevel = it->getWidget()->getLevel (), level;
+      int thisLevel = getRespectiveLevel (it->getWidget()), level;
       Widget *w;
       for (w = it->getWidget (), level = thisLevel;
            getRespectiveParent (w) != NULL;
@@ -559,7 +571,7 @@ DeepIterator::DeepIterator (Iterator *it)
 
          stack.put (it, level - 1);
          while (true) {
-            //printf ("      ");
+            //printf ("         ");
             //it->print ();
             //printf ("\n");
 
@@ -571,16 +583,22 @@ DeepIterator::DeepIterator (Iterator *it)
                break;
          }
 
+         //printf ("      %d: ", level - 1);
+         //it->print ();
+         //printf ("\n");
       }
 
       stack.put (it, thisLevel);
       content = *(it->getContent());
    }
+
+   //printf ("... done creating DeepIterator %p.\n", this);
 }
 
 
 DeepIterator::~DeepIterator ()
 {
+   //printf ("Deleting DeepIterator %p ...\n", this);
 }
 
 object::Object *DeepIterator::clone ()
@@ -615,11 +633,11 @@ int DeepIterator::compareTo (object::Comparable *other)
    assert (stack.size() > 0);
    assert (otherDeepIterator->stack.size() > 0);
    
-   //printf ("Equal? The %s %p and the %s %p?\n",
+   //printf ("Equal? The %s %p (of %p) and the %s %p (of %p)?\n",
    //        stack.get(0)->getWidget()->getClassName(),
-   //        stack.get(0)->getWidget(),
+   //        stack.get(0)->getWidget(), this,
    //        otherDeepIterator->stack.get(0)->getWidget()->getClassName(),
-   //        otherDeepIterator->stack.get(0)->getWidget());
+   //        otherDeepIterator->stack.get(0)->getWidget(), otherDeepIterator);
 
    assert (stack.get(0)->getWidget()
            == otherDeepIterator->stack.get(level)->getWidget());
