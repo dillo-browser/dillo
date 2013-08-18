@@ -50,10 +50,15 @@ protected:
        * In some cases, the size of a widget remains the same, but the
        * children are allocated at different positions and in
        * different sizes, so that a simple comparison of old and new
-       * allocation is insufficient. Therefore, this flag is set in
-       * queueResize.
+       * allocation is insufficient. Therefore, this flag is set
+       * (indirectly, as ALLOCATE_QUEUED) in queueResize.
        */
       NEEDS_ALLOCATE   = 1 << 3,
+
+      /**
+       * \todo Comment this.
+       */
+      ALLOCATE_QUEUED  = 1 << 4,
 
       /**
        * \brief Set, when dw::core::Widget::extremes is not up to date
@@ -61,7 +66,7 @@ protected:
        *
        * \todo Update, see RESIZE_QUEUED.
        */
-      EXTREMES_CHANGED = 1 << 4,
+      EXTREMES_CHANGED = 1 << 5,
 
       /**
        * \brief Set by the widget itself (in the constructor), when set...
@@ -69,7 +74,7 @@ protected:
        *
        * Will hopefully be removed, after redesigning the size model.
        */
-      USES_HINTS       = 1 << 5,
+      USES_HINTS       = 1 << 6,
 
       /**
        * \brief Set by the widget itself (in the constructor), when it contains
@@ -77,19 +82,19 @@ protected:
        *
        * Will hopefully be removed, after redesigning the size model.
        */
-      HAS_CONTENTS     = 1 << 6,
+      HAS_CONTENTS     = 1 << 7,
 
       /**
        * \brief Set, when a widget was already once allocated,
        *
        * The dw::Image widget uses this flag, see dw::Image::setBuffer.
        */
-      WAS_ALLOCATED    = 1 << 7,
+      WAS_ALLOCATED    = 1 << 8,
 
       /**
        * \brief Set for block-level widgets (as opposed to inline widgets)
        */
-      BLOCK_LEVEL      = 1 << 8,
+      BLOCK_LEVEL      = 1 << 9,
    };
 
 private:
@@ -266,6 +271,7 @@ public:
    inline bool extremesQueued ()  { return flags & EXTREMES_QUEUED; }
    inline bool needsResize ()     { return flags & NEEDS_RESIZE; }
    inline bool needsAllocate ()   { return flags & NEEDS_ALLOCATE; }
+   inline bool allocateQueued ()  { return flags & ALLOCATE_QUEUED; }
    inline bool extremesChanged () { return flags & EXTREMES_CHANGED; }
    inline bool wasAllocated ()    { return flags & WAS_ALLOCATED; }
    inline bool usesHints ()       { return flags & USES_HINTS; }

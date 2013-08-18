@@ -149,7 +149,7 @@ void Widget::queueResize (int ref, bool extremesChanged)
    }
 
    setFlags (resizeFlag);
-   setFlags (NEEDS_ALLOCATE);
+   setFlags (ALLOCATE_QUEUED);
    markSizeChange (ref);
       
    if (extremesChanged) {
@@ -159,7 +159,7 @@ void Widget::queueResize (int ref, bool extremesChanged)
       
    for (widget2 = parent, child = this; widget2;
         child = widget2, widget2 = widget2->parent) {      
-      //printf ("   Setting %s and NEEDS_ALLOCATE for the "
+      //printf ("   Setting %s and ALLOCATE_QUEUED for the "
       //        "%stop-level %s %p with parentRef = %d\n",
       //        resizeFlag == RESIZE_QUEUED ? "RESIZE_QUEUED" : "NEEDS_RESIZE",
       //        widget2->parent ? "non-" : "", widget2->getClassName(), widget2,
@@ -170,7 +170,7 @@ void Widget::queueResize (int ref, bool extremesChanged)
 
       widget2->setFlags (resizeFlag);
       widget2->markSizeChange (child->parentRef);
-      widget2->setFlags (NEEDS_ALLOCATE);
+      widget2->setFlags (ALLOCATE_QUEUED);
 
       if (extremesChanged) {
          widget2->setFlags (extremesFlag);

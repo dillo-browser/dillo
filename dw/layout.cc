@@ -674,6 +674,9 @@ void Layout::resizeIdle ()
       widget->setFlags (Widget::NEEDS_RESIZE);
       widget->unsetFlags (Widget::RESIZE_QUEUED);
 
+      widget->setFlags (Widget::NEEDS_ALLOCATE);
+      widget->unsetFlags (Widget::ALLOCATE_QUEUED);
+
       if (widget->extremesQueued ()) {
          widget->setFlags (Widget::EXTREMES_CHANGED);
          widget->unsetFlags (Widget::EXTREMES_QUEUED);
