@@ -231,6 +231,16 @@ void Widget::getExtremes (Extremes *extremes)
  */
 void Widget::sizeAllocate (Allocation *allocation)
 {
+   /*printf ("The %stop-level %s %p is allocated:\n",
+           parent ? "non-" : "", getClassName(), this);
+   printf ("   old = (%d, %d, %d + (%d + %d))\n",
+           this->allocation.x, this->allocation.y, this->allocation.width,
+           this->allocation.ascent, this->allocation.descent);
+   printf ("   new = (%d, %d, %d + (%d + %d))\n",
+           allocation->x, allocation->y, allocation->width, allocation->ascent,
+           allocation->descent);
+   printf ("   NEEDS_ALLOCATE = %s\n", needsAllocate () ? "true" : "false");*/
+
    if (needsAllocate () ||
        allocation->x != this->allocation.x ||
        allocation->y != this->allocation.y ||

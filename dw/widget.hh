@@ -47,7 +47,11 @@ protected:
       /**
        * \brief Only used internally, set to enforce size allocation.
        *
-       * (I've forgotten the case, for which this is necessary.)
+       * In some cases, the size of a widget remains the same, but the
+       * children are allocated at different positions and in
+       * different sizes, so that a simple comparison of old and new
+       * allocation is insufficient. Therefore, this flag is set in
+       * queueResize.
        */
       NEEDS_ALLOCATE   = 1 << 3,
 
