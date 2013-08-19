@@ -691,8 +691,14 @@ void Layout::resizeIdle ()
    if (topLevel) {
       Requisition requisition;
       Allocation allocation;
-      
+
       topLevel->sizeRequest (&requisition);
+
+      // This method is triggered by Widget::queueResize, which will,
+      // in any case, set NEEDS_ALLOCATE (indirectly, as
+      // ALLOCATE_QUEUED). This assertion helps to find
+      // inconsistences.
+      assert (topLevel->needsAllocate ());
       
       allocation.x = allocation.y = 0;
       allocation.width = requisition.width;
