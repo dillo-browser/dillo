@@ -53,6 +53,7 @@ int PrefsParser::parseOption(char *name, char *value)
    /* Symbol array, sorted alphabetically */
    const SymNode_t symbols[] = {
       { "allow_white_bg", &prefs.allow_white_bg, PREFS_BOOL },
+      { "white_bg_replacement", &prefs.white_bg_replacement, PREFS_COLOR },
       { "bg_color", &prefs.bg_color, PREFS_COLOR },
       { "buffered_drawing", &prefs.buffered_drawing, PREFS_INT32 },
       { "contrast_visited_color", &prefs.contrast_visited_color, PREFS_BOOL },
