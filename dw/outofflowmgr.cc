@@ -1396,7 +1396,7 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
 
    int i = list->findFloatIndex (tb, 0);
-   if (i > 0)
+   if (i < 0)
       return 0;
 
    Float *vloat = list->get(i);
@@ -1405,7 +1405,7 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
    // position. Therefore this check.
    if (vloat->generatingBlock== tb)
       i--;
-   if (i > 0)
+   if (i < 0)
       return 0;
 
    vloat = list->get(i);
