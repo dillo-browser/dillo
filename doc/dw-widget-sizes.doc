@@ -258,10 +258,12 @@ take a large responsibility to prevent endless recursions by
 (typically indirectly) calling *sizeRequest* / *getExtremes* for direct
 ancestors.
 
+To avoid painful debugging, there are some tests for the cases that
+one method call is strictly forbidden while another method is called.
+
 This could be done furthermore:
 
-- There should be some tests, to avoid painful debugging. For the case
-  *queueResize* calling (not!) *queueResize*, this should be simple.
+- The tests could be refined.
 - Is it possible to define exacter rules, along with a proof that no
   problems (like endless recursion) can occur?
 
