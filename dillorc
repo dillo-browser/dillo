@@ -214,6 +214,10 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # If your eyes suffer with white backgrounds, change this.
 #allow_white_bg=YES
 
+# If allow_white_bg is set to NO, white backgrounds are replaced by
+# this color.
+#white_bg_replacement=0xe0e0a3
+
 # When set to YES, the page author's visited link color may be overridden
 # to allow better contrast with text/links/background
 #contrast_visited_color=YES
