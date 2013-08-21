@@ -128,6 +128,10 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
  */
 void Widget::queueResize (int ref, bool extremesChanged)
 {
+   assert (!queueResizeEntered ());
+   
+   enterQueueResize ();
+
    Widget *widget2, *child;
 
    //printf("The %stop-level %s %p with parentRef = %d has changed its size. "
@@ -180,6 +184,8 @@ void Widget::queueResize (int ref, bool extremesChanged)
 
    if (layout)
       layout->queueResize ();
+
+   leaveQueueResize ();
 }
 
 
@@ -189,6 +195,10 @@ void Widget::queueResize (int ref, bool extremesChanged)
  */
 void Widget::sizeRequest (Requisition *requisition)
 {
+   assert (!queueResizeEntered ());
+
+   enterSizeRequest ();
+
    //printf ("The %stop-level %s %p with parentRef = %d: needsResize: %s\n",
    //        parent ? "non-" : "", getClassName(), this, parentRef,
    //        needsResize () ? "true" : "false");
@@ -207,6 +217,8 @@ void Widget::sizeRequest (Requisition *requisition)
 
    //printf ("   ==> Result: %d x (%d + %d)\n",
    //        requisition->width, requisition->ascent, requisition->descent);
+
+   leaveSizeRequest ();
 }
 
 /**
@@ -214,6 +226,10 @@ void Widget::sizeRequest (Requisition *requisition)
  */
 void Widget::getExtremes (Extremes *extremes)
 {
+   assert (!queueResizeEntered ());
+
+   enterGetExtremes ();
+
    if (extremesChanged ()) {
       getExtremesImpl (extremes);
       this->extremes = *extremes;
@@ -223,6 +239,8 @@ void Widget::getExtremes (Extremes *extremes)
       DBG_OBJ_SET_NUM (this, "extremes->maxWidth", extremes->maxWidth);
    } else
       *extremes = this->extremes;
+
+   leaveGetExtremes ();
 }
 
 /**
@@ -231,6 +249,12 @@ void Widget::getExtremes (Extremes *extremes)
  */
 void Widget::sizeAllocate (Allocation *allocation)
 {
+   assert (!queueResizeEntered ());
+   assert (!sizeRequestEntered ());
+   assert (!getExtremesEntered ());
+
+   enterSizeAllocate ();
+
    /*printf ("The %stop-level %s %p is allocated:\n",
            parent ? "non-" : "", getClassName(), this);
    printf ("   old = (%d, %d, %d + (%d + %d))\n",
@@ -281,6 +305,8 @@ void Widget::sizeAllocate (Allocation *allocation)
    }
 
    /*unsetFlags (NEEDS_RESIZE);*/
+
+   leaveSizeAllocate ();
 }
 
 bool Widget::buttonPress (EventButton *event)

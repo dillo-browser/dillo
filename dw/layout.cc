@@ -218,6 +218,9 @@ Layout::Layout (Platform *platform)
    platform->setLayout (this);
 
    selectionState.setLayout(this);
+
+   queueResizeCounter = sizeAllocateCounter = sizeRequestCounter =
+      getExtremesCounter = 0;
 }
 
 Layout::~Layout ()

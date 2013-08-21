@@ -261,6 +261,25 @@ public:
    inline void setDeleteCallback(DW_Callback_t func, void *data)
    { deleteCallbackFunc = func; deleteCallbackData = data; }
 
+private:
+
+   void enterQueueResize () { if (layout) layout->queueResizeCounter++; }
+   void leaveQueueResize () { if (layout) layout->queueResizeCounter--; }
+   bool queueResizeEntered () { return layout && layout->queueResizeCounter; }
+
+   void enterSizeAllocate () { if (layout) layout->sizeAllocateCounter++; }
+   void leaveSizeAllocate () { if (layout) layout->sizeAllocateCounter--; }
+   bool sizeAllocateEntered () { return layout && layout->sizeAllocateCounter; }
+   
+   void enterSizeRequest () { if (layout) layout->sizeRequestCounter++; }
+   void leaveSizeRequest () { if (layout) layout->sizeRequestCounter--; }
+   bool sizeRequestEntered () { return layout && layout->sizeRequestCounter; }
+
+   void enterGetExtremes () { if (layout) layout->getExtremesCounter++; }
+   void leaveGetExtremes () { if (layout) layout->getExtremesCounter--; }
+   bool getExtremesEntered () { return layout && layout->getExtremesCounter; }
+
+
 public:
    static int CLASS_ID;
 
