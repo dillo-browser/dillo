@@ -48,6 +48,7 @@ typedef struct {
    DilloUrl *start_page;
    DilloUrl *home;
    bool_t allow_white_bg;
+   int32_t white_bg_replacement;
    int32_t bg_color;
    int32_t ui_button_highlight_color;
    int32_t ui_fg_color;
