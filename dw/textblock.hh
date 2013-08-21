@@ -277,10 +277,17 @@ protected:
       int firstWord;    /* first word's index in word vector */
       int lastWord;     /* last word's index in word vector */
 
-      /* "top" is always relative to the top of the first line, i.e.
-       * page->lines[0].top is always 0. */
-      int top, boxAscent, boxDescent, contentAscent, contentDescent,
-         breakSpace, leftOffset, offsetCompleteWidget;
+
+      int top;                  /* "top" is always relative to the top
+                                   of the first line, i.e.
+                                   page->lines[0].top is always 0. */
+      int boxAscent;            /* ??? */
+      int boxDescent;           /* ??? */
+      int contentAscent;        /* ??? */
+      int contentDescent;       /* ??? */
+      int breakSpace;           /* ??? */
+      int leftOffset;           /* ??? */
+      int offsetCompleteWidget; /* ??? */
 
       /* This is similar to descent, but includes the bottom margins of the
        * widgets within this line. */
@@ -444,6 +451,9 @@ protected:
    /* These values are set by set_... */
    int availWidth, availAscent, availDescent;
 
+   // Additional vertical offset, used for the "clear" attribute.
+   int verticalOffset;
+
    int wrapRefLines, wrapRefParagraphs;  /* 0-based. Important: Both
                                             are the line numbers, not
                                             the value stored in
@@ -555,7 +565,7 @@ protected:
    inline int lineYOffsetCanvasAllocation (Line *line,
                                            core::Allocation *allocation)
    {
-      return allocation->y + lineYOffsetWidgetAllocation(line, allocation);
+      return allocation->y + lineYOffsetWidgetAllocation (line, allocation);
    }
 
    /**

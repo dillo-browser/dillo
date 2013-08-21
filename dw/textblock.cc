@@ -164,6 +164,8 @@ Textblock::Textblock (bool limitTextWidth)
    availAscent = 100;
    availDescent = 0;
 
+   verticalOffset = 0;
+
    this->limitTextWidth = limitTextWidth;
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
@@ -258,7 +260,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
            this, innerPadding, getStyle()->boxDiffWidth ());
 
    requisition->width += innerPadding + getStyle()->boxDiffWidth ();
-   requisition->ascent += getStyle()->boxOffsetY ();
+   requisition->ascent += verticalOffset + getStyle()->boxOffsetY ();
    requisition->descent += getStyle()->boxRestHeight ();
 
    // Dealing with parts out of flow, which may overlap the borders of
@@ -402,6 +404,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                lineYOffsetCanvasAllocation (line, allocation)
                + (line->boxAscent - word->size.ascent)
                - word->content.widget->getStyle()->margin.top;
+            
             childAllocation.width = word->size.width;
             childAllocation.ascent = word->size.ascent
                + word->content.widget->getStyle()->margin.top;
@@ -2513,10 +2516,11 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
 int Textblock::topOfPossiblyMissingLine (int lineNo)
 {
    if (lineNo == 0)
-      return getStyle()->boxOffsetY();
+      return verticalOffset + getStyle()->boxOffsetY();
    else {
       Line *prevLine = lines->getRef (lineNo - 1);
-      return prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
+      return verticalOffset +
+         prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
          prevLine->breakSpace + getStyle()->boxOffsetY();
    }
 }

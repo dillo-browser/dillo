@@ -235,6 +235,8 @@ private:
    bool hasFloat (Textblock *textblock, Side side, int y, int h,
                   Textblock *lastGB, int lastExtIndex);
 
+   int getClearPosition (Textblock *tb, Side side);
+
    void ensureFloatSize (Float *vloat);
    int getBorderDiff (Textblock *textblock, Float *vloat, Side side);
 
@@ -339,6 +341,8 @@ public:
                       int lastExtIndex);
    bool hasFloatRight (Textblock *textblock, int y, int h, Textblock *lastGB,
                        int lastExtIndex);
+
+   int getClearPosition (Textblock *tb, core::style::ClearType clear);
 
    inline static bool isRefOutOfFlow (int ref)
    { return ref != -1 && (ref & 1) != 0; }
