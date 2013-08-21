@@ -1441,7 +1441,6 @@ void Textblock::initNewLine ()
       if (lines->size () == 0) {
          int clearPosition =
             containingBlock->outOfFlowMgr->getClearPosition (this);
-         printf ("%p: %d -> %d\n", this, getStyle()->clear, clearPosition);
          verticalOffset = misc::max (clearPosition, 0);
       }
 
