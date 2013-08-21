@@ -1438,6 +1438,13 @@ void Textblock::initNewLine ()
    // method is called, containingBlock is not yet defined.
 
    if (containingBlock && containingBlock->outOfFlowMgr) {
+      if (lines->size () == 0) {
+         int clearPosition =
+            containingBlock->outOfFlowMgr->getClearPosition (this);
+         printf ("%p: %d -> %d\n", this, getStyle()->clear, clearPosition);
+         verticalOffset = misc::max (clearPosition, 0);
+      }
+
       int y = topOfPossiblyMissingLine (lines->size ());
       int h = heightOfPossiblyMissingLine (lines->size ());
       int lastRef = lines->size() > 0 ? lines->getLastRef()->lastWord : -1;

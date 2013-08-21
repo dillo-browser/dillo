@@ -498,6 +498,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
          case CSS_PROPERTY_BOTTOM:
             computeLength (&attrs->bottom, p->value.intVal, attrs->font);
             break;
+         case CSS_PROPERTY_CLEAR:
+            attrs->clear = (ClearType) p->value.intVal;
+            break;
          case CSS_PROPERTY_COLOR:
             attrs->color = Color::create (layout, p->value.intVal);
             break;

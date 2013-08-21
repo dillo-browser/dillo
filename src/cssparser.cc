@@ -64,6 +64,10 @@ static const char *const Css_border_width_enum_vals[] = {
    "thin", "medium", "thick", NULL
 };
 
+static const char *const Css_clear_enum_vals[] = {
+   "left", "right", "both", "none", NULL
+};
+
 static const char *const Css_cursor_enum_vals[] = {
    "crosshair", "default", "pointer", "move", "e-resize", "ne-resize",
    "nw-resize", "n-resize", "se-resize", "sw-resize", "s-resize",
@@ -181,7 +185,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
     Css_border_width_enum_vals},
    {"bottom", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"caption-side", {CSS_TYPE_UNUSED}, NULL},
-   {"clear", {CSS_TYPE_UNUSED}, NULL},
+   {"clear", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_clear_enum_vals},
    {"clip", {CSS_TYPE_UNUSED}, NULL},
    {"color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
    {"content", {CSS_TYPE_STRING, CSS_TYPE_UNUSED}, NULL},

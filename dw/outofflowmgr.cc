@@ -1364,19 +1364,25 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
    return list->findFirst (textblock, y, h, lastGB, lastExtIndex) != -1;
 }
 
-int OutOfFlowMgr::getClearPosition (Textblock *tb, core::style::ClearType clear)
+/**
+ * Returns position relative to the textblock "tb".
+ */
+int OutOfFlowMgr::getClearPosition (Textblock *tb)
 {
-   bool left = false, right = false;
-   switch (clear) {
-   case core::style::CLEAR_NONE: break;
-   case core::style::CLEAR_LEFT: left = true; break;
-   case core::style::CLEAR_RIGHT: right = true; break;
-   case core::style::CLEAR_BOTH: left = right = true; break;
-   default: assertNotReached ();
-   }
-
-   return max (left ? getClearPosition (tb, LEFT) : 0,
-               right ? getClearPosition (tb, RIGHT) : 0);
+   if (tb->getStyle()) {
+      bool left = false, right = false;
+      switch (tb->getStyle()->clear) {
+      case core::style::CLEAR_NONE: break;
+      case core::style::CLEAR_LEFT: left = true; break;
+      case core::style::CLEAR_RIGHT: right = true; break;
+      case core::style::CLEAR_BOTH: left = right = true; break;
+      default: assertNotReached ();
+      }
+      
+      return max (left ? getClearPosition (tb, LEFT) : 0,
+                  right ? getClearPosition (tb, RIGHT) : 0);
+   } else
+      return 0;
 }
 
 int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
@@ -1404,7 +1410,9 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
 
    vloat = list->get(i);
    ensureFloatSize (vloat);
-   return vloat->yReal + vloat->size.ascent + vloat->size.descent;
+   return
+      vloat->yReal + vloat->size.ascent + vloat->size.descent -
+      getAllocation(tb)->y;
 }
 
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)

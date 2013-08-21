@@ -342,7 +342,7 @@ public:
    bool hasFloatRight (Textblock *textblock, int y, int h, Textblock *lastGB,
                        int lastExtIndex);
 
-   int getClearPosition (Textblock *tb, core::style::ClearType clear);
+   int getClearPosition (Textblock *tb);
 
    inline static bool isRefOutOfFlow (int ref)
    { return ref != -1 && (ref & 1) != 0; }
