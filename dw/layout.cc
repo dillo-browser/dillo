@@ -674,11 +674,15 @@ void Layout::resizeIdle ()
       //        widget->parent ? "non-" : "", widget->getClassName(), widget,
       //        widget->extremesQueued () ? "yes" : "no");
 
-      widget->setFlags (Widget::NEEDS_RESIZE);
-      widget->unsetFlags (Widget::RESIZE_QUEUED);
+      if (widget->resizeQueued ()) {
+         widget->setFlags (Widget::NEEDS_RESIZE);
+         widget->unsetFlags (Widget::RESIZE_QUEUED);
+      }
 
-      widget->setFlags (Widget::NEEDS_ALLOCATE);
-      widget->unsetFlags (Widget::ALLOCATE_QUEUED);
+      if (widget->allocateQueued ()) {
+         widget->setFlags (Widget::NEEDS_ALLOCATE);
+         widget->unsetFlags (Widget::ALLOCATE_QUEUED);
+      }
 
       if (widget->extremesQueued ()) {
          widget->setFlags (Widget::EXTREMES_CHANGED);

@@ -199,9 +199,20 @@ void Widget::sizeRequest (Requisition *requisition)
 
    enterSizeRequest ();
 
-   //printf ("The %stop-level %s %p with parentRef = %d: needsResize: %s\n",
+   //printf ("The %stop-level %s %p with parentRef = %d: needsResize: %s, "
+   //        "resizeQueued = %s\n",
    //        parent ? "non-" : "", getClassName(), this, parentRef,
-   //        needsResize () ? "true" : "false");
+   //        needsResize () ? "true" : "false",
+   //        resizeQueued () ? "true" : "false");
+
+   if (resizeQueued ()) {
+      // This method is called outside of Layout::resizeIdle.
+      setFlags (NEEDS_RESIZE);
+      unsetFlags (RESIZE_QUEUED);
+      // The widget is not taken out of Layout::queueResizeList, since
+      // other *_QUEUED flags may still be set and processed in
+      // Layout::resizeIdle.
+   }
 
    if (needsResize ()) {
       /** \todo Check requisition == &(this->requisition) and do what? */
