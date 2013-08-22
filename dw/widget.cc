@@ -241,6 +241,15 @@ void Widget::getExtremes (Extremes *extremes)
 
    enterGetExtremes ();
 
+   if (extremesQueued ()) {
+      // This method is called outside of Layout::resizeIdle.
+      setFlags (EXTREMES_CHANGED);
+      unsetFlags (EXTREMES_QUEUED);
+      // The widget is not taken out of Layout::queueResizeList, since
+      // other *_QUEUED flags may still be set and processed in
+      // Layout::resizeIdle.
+   }
+
    if (extremesChanged ()) {
       getExtremesImpl (extremes);
       this->extremes = *extremes;
