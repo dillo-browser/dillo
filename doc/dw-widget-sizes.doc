@@ -240,11 +240,10 @@ first row (*queueResize*) defines also the rules for
       <td>No
       <td>Limited<sup>4</sup>
       <td>Limited<sup>4</sup>
-</table>
-
-<sup>1</sup>) Otherwise, since these other methods may be call
-*queueResize*, the limitation that *queueResize* must not call
-*queueResize* can be violated.
+   <tr>
+     <td colspan=6><sup>1</sup>) Otherwise, since these other methods
+may be call *queueResize*, the limitation that *queueResize* must not
+call *queueResize* can be violated.
 
 <sup>2</sup>) Could perhaps be loosened as for *sizeRequest* and
 *getExtremes*, but there is probably no need.
@@ -255,8 +254,15 @@ respectively.
 
 <sup>4</sup>) Calls only for children are safe. In other cases, you
 take a large responsibility to prevent endless recursions by
-(typically indirectly) calling *sizeRequest* / *getExtremes* for direct
-ancestors.
+(typically indirectly) calling *sizeRequest* / *getExtremes* for
+direct ancestors.
+</table>
+
+Furthermore, *sizeAllocate* can only be called within a call of
+dw::core::Layout::resizeIdleId, so (if you do not touch dw::core) do
+not call it outside of *sizeAllocateImpl*. The other methods can be
+called outsize; e.&nbsp;g. *sizeRequest* is called in
+dw::Textblock::addWidget.
 
 To avoid painful debugging, there are some tests for the cases that
 one method call is strictly forbidden while another method is called.
