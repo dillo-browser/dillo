@@ -211,12 +211,15 @@ private:
    void queueResize ();
    void removeWidget ();
 
-   /* For tests regarding the respective Widget methods. Accessed by
-      respective methods (enter..., leave..., ...Entered) defined in
-      Widget. */
+   /* For tests regarding the respective Layout and (mostly) Widget
+      methods. Accessed by respective methods (enter..., leave...,
+      ...Entered) defined here and in Widget. */
 
-   int queueResizeCounter, sizeAllocateCounter, sizeRequestCounter,
-      getExtremesCounter;
+   int resizeIdleCounter, queueResizeCounter, sizeAllocateCounter,
+      sizeRequestCounter, getExtremesCounter;
+
+   void enterQueueResize () { resizeIdleCounter++; }
+   void leaveQueueResize () { resizeIdleCounter--; }
 
 public:
    Layout (Platform *platform);

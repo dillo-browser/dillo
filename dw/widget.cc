@@ -272,6 +272,7 @@ void Widget::sizeAllocate (Allocation *allocation)
    assert (!queueResizeEntered ());
    assert (!sizeRequestEntered ());
    assert (!getExtremesEntered ());
+   assert (resizeIdleEntered ());
 
    enterSizeAllocate ();
 

@@ -661,6 +661,8 @@ void Layout::setBgColor (style::Color *color)
 
 void Layout::resizeIdle ()
 {
+   enterQueueResize ();
+
    //static int calls = 0;
    //printf ("Layout::resizeIdle calls = %d\n", ++calls);
 
@@ -747,6 +749,8 @@ void Layout::resizeIdle ()
    updateAnchor ();
 
    //printf ("Layout::resizeIdle end\n");
+
+   leaveQueueResize ();
 }
 
 void Layout::setSizeHints ()

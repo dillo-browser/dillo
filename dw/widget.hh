@@ -262,6 +262,7 @@ public:
    { deleteCallbackFunc = func; deleteCallbackData = data; }
 
 private:
+   bool resizeIdleEntered () { return layout && layout->resizeIdleCounter; }
 
    void enterQueueResize () { if (layout) layout->queueResizeCounter++; }
    void leaveQueueResize () { if (layout) layout->queueResizeCounter--; }
