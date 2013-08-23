@@ -261,7 +261,11 @@ void Layout::addWidget (Widget *widget)
 
    canvasHeightGreater = false;
    setSizeHints ();
-   queueResize ();
+
+   // Do not directly call Layout::queueResize(), but
+   // Widget::queueResize(), so that all flags are set properly,
+   // queueResizeList is filled, etc.
+   topLevel->queueResize (-1, false);
 }
 
 void Layout::removeWidget ()
@@ -1086,8 +1090,13 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
 
    /* if size changes, redraw this view.
     * TODO: this is a resize call (redraw/resize code needs a review). */
-   if (viewportWidth != width || viewportHeight != height)
-      queueResize();
+   if (viewportWidth != width || viewportHeight != height) {
+      if (topLevel)
+         // similar to addWidget()
+         topLevel->queueResize (-1, false);
+      else
+         queueResize ();
+   }
 
    viewportWidth = width;
    viewportHeight = height;
