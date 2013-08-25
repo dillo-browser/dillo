@@ -331,9 +331,17 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    //   printf ("\n");
    //}
 
-   Word *lastWordOfLine = words->getRef(lastWord);
-   // Word::totalWidth includes the hyphen (which is what we want here).
-   int lineWidth = lastWordOfLine->totalWidth;
+   int lineWidth;
+   if (lastWord >= firstWord) {
+      Word *lastWordOfLine = words->getRef(lastWord);
+      PRINTF ("   words[%d]->totalWidth = %d\n", lastWord,
+              lastWordOfLine->totalWidth);
+      // Word::totalWidth includes the hyphen (which is what we want here).
+      lineWidth = lastWordOfLine->totalWidth;
+   } else
+      // empty line
+      lineWidth = 0;
+
    // "lineWidth" is relative to leftOffset, so we may have to add
    // "line1OffsetEff" (remember: this is, for list items, negative).
    if (lines->size () == 0)
@@ -342,9 +350,6 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    int maxOfMinWidth, sumOfMaxWidth;
    accumulateWordExtremes (firstWord, lastWord, &maxOfMinWidth,
                            &sumOfMaxWidth);
-
-   PRINTF ("   words[%d]->totalWidth = %d\n", lastWord,
-           lastWordOfLine->totalWidth);
 
    PRINTF ("[%p] ##### LINE ADDED: %d, from %d to %d #####\n",
            this, lines->size (), firstWord, lastWord);
@@ -412,8 +417,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
            line->contentAscent);
    PRINTF ("   line[%d].contentDescent = %d\n",
            lines->size () - 1, line->contentDescent);
-   PRINTF ("   line[%d].maxLineWidth = %d\n",
-           lines->size () - 1, line->maxLineWidth);
+   PRINTF ("   line[%d].maxLineWidth = %d (lineWidth = %d)\n",
+           lines->size () - 1, line->maxLineWidth, lineWidth);
    PRINTF ("   line[%d].offsetCompleteWidget = %d\n",
            lines->size () - 1, line->offsetCompleteWidget);
 

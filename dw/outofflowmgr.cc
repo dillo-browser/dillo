@@ -1114,8 +1114,9 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    // TODO Is it correct to add padding, border, and margin to the
    // containing block? Check CSS spec.
 
-   //printf ("[%p] GET_SIZE (%d / %d floats)...\n",
-   //        containingBlock, leftFloatsCB->size(), rightFloatsCB->size());
+   //printf ("[%p] GET_SIZE (%d, %d, ...): %d / %d floats...\n",
+   //        containingBlock, cbWidth, cbHeight,
+   //        leftFloatsCB->size(), rightFloatsCB->size());
 
    int oofWidthAbsPos, oofHeightAbsPos;
    getAbsolutelyPositionedSize (&oofWidthAbsPos, &oofHeightAbsPos);
