@@ -578,12 +578,19 @@ void DilloHtml::finishParsing(int ClientKey)
 
    dReturn_if (stop_parser == true);
 
+   /* flag we've already parsed up to the last byte */
+   InFlags |= IN_EOF;
+
    /* force the close of elements left open (TODO: not for XHTML) */
    while ((si = stack->size() - 1)) {
       if (stack->getRef(si)->tag_idx != -1) {
          Html_tag_cleanup_at_close(this, stack->getRef(si)->tag_idx);
       }
    }
+
+   /* Nothing left to do with the parser. Clear all flags, except EOF. */
+   InFlags = IN_EOF;
+
    /* Remove this client from our active list */
    a_Bw_close_client(bw, ClientKey);
 }
@@ -1615,12 +1622,17 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_html(DilloHtml *html, const char *tag, int tagsize)
 {
+   /* The IN_HTML flag will be kept set until at IN_EOF condition.
+    * This allows to handle pages with multiple or uneven HTML tags */
+
    if (!(html->InFlags & IN_HTML))
       html->InFlags |= IN_HTML;
-   ++html->Num_HTML;
+   if (html->Num_HTML < UCHAR_MAX)
+      ++html->Num_HTML;
 
    if (html->Num_HTML > 1) {
       BUG_MSG("HTML element was already open\n");
+      html->ReqTagClose = true;
    }
 }
 
@@ -1629,11 +1641,7 @@ static void Html_tag_open_html(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_html(DilloHtml *html)
 {
-   /* TODO: may add some checks here */
-   if (html->Num_HTML == 1) {
-      /* beware of pages with multiple HTML close tags... :-P */
-      html->InFlags &= ~IN_HTML;
-   }
+   _MSG("Html_tag_close_html: Num_HTML=%d\n", html->Num_HTML);
 }
 
 /*
