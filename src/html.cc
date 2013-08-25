@@ -1684,8 +1684,18 @@ static void Html_tag_close_head(DilloHtml *html)
  */
 static void Html_tag_open_title(DilloHtml *html, const char *tag, int tagsize)
 {
-   ++html->Num_TITLE;
+   /* fill the stash buffer so TITLE content can be ignored
+    * when not valid, redundant or outside HEAD section */
    a_Html_stash_init(html);
+
+   if (html->InFlags & IN_HEAD) {
+      if (html->Num_TITLE < UCHAR_MAX)
+         ++html->Num_TITLE;
+      if (html->Num_TITLE > 1)
+         BUG_MSG("A redundant TITLE element was found\n");
+   } else {
+      BUG_MSG("TITLE element must be inside the HEAD section -- ignoring\n");
+   }
 }
 
 /*
@@ -1694,12 +1704,10 @@ static void Html_tag_open_title(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_title(DilloHtml *html)
 {
-   if (html->InFlags & IN_HEAD) {
+   if (html->InFlags & IN_HEAD && html->Num_TITLE == 1) {
       /* title is only valid inside HEAD */
       a_UIcmd_set_page_title(html->bw, html->Stash->str);
       a_History_set_title_by_url(html->page_url, html->Stash->str);
-   } else {
-      BUG_MSG("TITLE element must be inside the HEAD section\n");
    }
 }
 
@@ -3458,7 +3466,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
 
    if (Tags[new_idx].Flags & 32) {
       /* head element */
-      if (!(html->InFlags & IN_HEAD)) {
+      if (!(html->InFlags & IN_HEAD) && html->Num_HEAD == 0) {
          tag = "<head>";
          tag_idx = a_Html_tag_index(tag + 1);
          if (tag_idx != new_idx || IsCloseTag) {
