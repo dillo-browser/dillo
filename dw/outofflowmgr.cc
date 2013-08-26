@@ -1121,20 +1121,23 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    int oofWidthAbsPos, oofHeightAbsPos;
    getAbsolutelyPositionedSize (&oofWidthAbsPos, &oofHeightAbsPos);
 
-   int oofHeightLeft = getFloatsSize (leftFloatsCB);
-   int oofHeightRight = getFloatsSize (rightFloatsCB);
+   int oofWidthtLeft, oofWidthRight, oofHeightLeft, oofHeightRight;
+   getFloatsSize (leftFloatsCB, &oofWidthtLeft, &oofHeightLeft);
+   getFloatsSize (rightFloatsCB, &oofWidthRight, &oofHeightRight);
 
-   *oofWidth = cbWidth; /* Floats should play no role for the width. */
-   *oofHeight = max (oofHeightLeft, oofHeightRight, oofWidthAbsPos);
+   *oofWidth = max (oofWidthtLeft, oofWidthRight, oofWidthAbsPos);
+   *oofHeight = max (oofHeightLeft, oofHeightRight, oofHeightAbsPos);
 
    //printf ("   => %d x %d => %d x %d (%d / %d)\n",
    //        cbWidth, cbHeight, *oofWidth, *oofHeight,
    //        oofHeightLeft, oofHeightRight);
 }
 
-int OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list)
+void OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list, int *width,
+                                  int *height)
 {
-   int height = containingBlock->getStyle()->boxDiffHeight();
+   *width = 0;
+   *height = containingBlock->getStyle()->boxDiffHeight();
 
    // Idea for a faster implementation: find the last float; this
    // should be the relevant one, since the list is sorted.
@@ -1174,17 +1177,15 @@ int OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list)
             yGBinCB = 0;
       }
       
-      height =
-         max (height,
+      *height =
+         max (*height,
               yGBinCB + vloat->yReal + vloat->size.ascent + vloat->size.descent
               + containingBlock->getStyle()->boxRestHeight());
       //printf ("   float %d: (%d + %d) + (%d + %d + %d) => %d\n",
       //        i, yGBinCB, vloat->yReal, vloat->size.ascent,
       //        vloat->size.descent,
-      //        containingBlock->getStyle()->boxRestHeight(), height);
+      //        containingBlock->getStyle()->boxRestHeight(), *height);
    }
-
-   return height;
 }
 
 void OutOfFlowMgr::getExtremes (int cbMinWidth, int cbMaxWidth,

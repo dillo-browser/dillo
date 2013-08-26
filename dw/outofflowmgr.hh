@@ -224,7 +224,7 @@ private:
    void getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
                         SortedFloatsVector **listOpp);
 
-   int getFloatsSize (SortedFloatsVector *list);
+   void getFloatsSize (SortedFloatsVector *list, int *width, int *height);
    void accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
                        int *oofMaxWidth);
    int getBorderDiff (Float *vloat);
