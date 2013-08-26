@@ -1649,40 +1649,48 @@ static void Html_tag_close_html(DilloHtml *html)
  */
 static void Html_tag_open_head(DilloHtml *html, const char *tag, int tagsize)
 {
-   if (html->InFlags & IN_BODY || html->Num_BODY > 0) {
+   if (html->InFlags & IN_BODY) {
       BUG_MSG("HEAD element must go before the BODY section\n");
       html->ReqTagClose = true;
       return;
    }
 
-   if (!(html->InFlags & IN_HEAD))
-      html->InFlags |= IN_HEAD;
-   ++html->Num_HEAD;
-
-   if (html->Num_HEAD > 1) {
+   if (html->Num_HEAD < UCHAR_MAX)
+      ++html->Num_HEAD;
+   if (html->InFlags & IN_HEAD) {
       BUG_MSG("HEAD element was already open\n");
+      html->ReqTagClose = true;
+   } else if (html->Num_HEAD > 1) {
+      BUG_MSG("HEAD section already finished -- ignoring\n");
+      html->ReqTagClose = true;
+   } else {
+      html->InFlags |= IN_HEAD;
    }
 }
 
 /*
  * Handle close HEAD element
- * Note: as a side effect of Html_test_section() this function is called
- *       twice when the head element is closed implicitly.
- * Note2: HEAD is parsed once completely got.
+ * Note: HEAD is parsed once completely got.
  */
 static void Html_tag_close_head(DilloHtml *html)
 {
    if (html->InFlags & IN_HEAD) {
-      _MSG("Closing HEAD section\n");
-      if (html->Num_TITLE == 0)
-         BUG_MSG("HEAD section lacks the TITLE element\n");
-
-      html->InFlags &= ~IN_HEAD;
-
-      /* charset is already set, load remote stylesheets now */
-      for (int i = 0; i < html->cssUrls->size(); i++) {
-         a_Html_load_stylesheet(html, html->cssUrls->get(i));
+      if (html->Num_HEAD == 1) {
+         /* match for the well formed start of HEAD section */
+         if (html->Num_TITLE == 0)
+            BUG_MSG("HEAD section lacks the TITLE element\n");
+   
+         html->InFlags &= ~IN_HEAD;
+   
+         /* charset is already set, load remote stylesheets now */
+         for (int i = 0; i < html->cssUrls->size(); i++) {
+            a_Html_load_stylesheet(html, html->cssUrls->get(i));
+         }
+      } else if (html->Num_HEAD > 1) {
+         --html->Num_HEAD;
       }
+   } else {
+      /* not reached, see Html_tag_cleanup_at_close() */
    }
 }
 

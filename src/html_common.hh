@@ -180,7 +180,8 @@ public:  //BUG: for now everything is public
    bool TagSoup;          /* Flag to enable the parser's cleanup functions */
    bool loadCssFromStash; /* current stash content should be loaded as CSS */
 
-   /* element counters: used for validation purposes */
+   /* element counters: used for validation purposes.
+    * ATM they're used as three state flags {0,1,>1} */
    uchar_t Num_HTML, Num_HEAD, Num_BODY, Num_TITLE;
 
    Dstr *attr_data;       /* Buffer for attribute value */
