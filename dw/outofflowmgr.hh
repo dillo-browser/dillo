@@ -227,6 +227,8 @@ private:
    int getFloatsSize (SortedFloatsVector *list);
    void accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
                        int *oofMaxWidth);
+   int getBorderDiff (Float *vloat);
+
    TBInfo *getTextblock (Textblock *textblock);
    int getBorder (Textblock *textblock, Side side, int y, int h,
                   Textblock *lastGB, int lastExtIndex);

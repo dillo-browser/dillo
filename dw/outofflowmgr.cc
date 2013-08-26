@@ -1204,38 +1204,42 @@ void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
 
-      // Difference between generating block and to containing block,
-      // sum on both sides. Greater or equal than 0, so dealing with 0
-      // when it cannot yet be calculated is safe. (No distiction
-      // whether it is defined or not is necessary.)
-      int borderDiff;
-
-      if (vloat->generatingBlock == containingBlock)
-         // Simplest case: the generator is the container.
-         borderDiff = 0;
-      else {
-         if (wasAllocated (containingBlock)) {
-            if (wasAllocated (vloat->generatingBlock))
-               // Simple case: both containing block and generating
-               // block are defined.
-               borderDiff = getAllocation(containingBlock)->width -
-                  getAllocation(vloat->generatingBlock)->width;
-            else
-               // Generating block not yet allocation; the next
-               // allocation will, when necessary, trigger
-               // getExtremes. (TODO: Is this really the case?)
-               borderDiff = 0;
-         } else
-            // Nothing can be done now, but the next allocation will
-            // trigger getExtremes. (TODO: Is this really the case?)
-            borderDiff = 0;
-      }
-
+      int borderDiff = getBorderDiff (vloat);
       Extremes extr;
       vloat->widget->getExtremes (&extr);
 
       *oofMinWidth = max (*oofMinWidth, extr.minWidth + borderDiff);
       *oofMaxWidth = max (*oofMaxWidth, extr.maxWidth + borderDiff);
+   }
+}
+
+/**
+ * Difference between generating block and to containing block, sum on
+ * both sides. Greater or equal than 0, so dealing with 0 when it
+ * cannot yet be calculated is safe. (No distiction whether it is
+ * defined or not is necessary.)
+ */
+int OutOfFlowMgr::getBorderDiff (Float *vloat)
+{
+   if (vloat->generatingBlock == containingBlock)
+      // Simplest case: the generator is the container.
+      return 0;
+   else {
+      if (wasAllocated (containingBlock)) {
+         if (wasAllocated (vloat->generatingBlock))
+            // Simple case: both containing block and generating block
+            // are defined.
+            return getAllocation(containingBlock)->width -
+               getAllocation(vloat->generatingBlock)->width;
+         else
+            // Generating block not yet allocation; the next
+            // allocation will, when necessary, trigger
+            // getExtremes. (TODO: Is this really the case?)
+            return 0;
+      } else
+         // Nothing can be done now, but the next allocation will
+         // trigger getExtremes. (TODO: Is this really the case?)
+         return 0;
    }
 }
 
