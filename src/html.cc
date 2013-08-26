@@ -1787,14 +1787,18 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    int tag_index_a = a_Html_tag_index ("a");
    style::Color *bgColor;
 
+   _MSG("Html_tag_open_body Num_BODY=%d\n", html->Num_BODY);
    if (!(html->InFlags & IN_BODY))
       html->InFlags |= IN_BODY;
-   ++html->Num_BODY;
+   if (html->Num_BODY < UCHAR_MAX)
+      ++html->Num_BODY;
 
    if (html->Num_BODY > 1) {
       BUG_MSG("BODY element was already open\n");
+      html->ReqTagClose = true;
       return;
    }
+
    if (html->InFlags & IN_HEAD) {
       /* if we're here, it's bad XHTML, no need to recover */
       BUG_MSG("unclosed HEAD element\n");
@@ -1862,10 +1866,8 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_body(DilloHtml *html)
 {
-   if (html->Num_BODY == 1) {
-      /* some tag soup pages use multiple BODY tags... */
-      html->InFlags &= ~IN_BODY;
-   }
+   /* Some tag soup pages use multiple BODY tags...
+    * Defer clearing the IN_BODY flag until IN_EOF */
 }
 
 /*
