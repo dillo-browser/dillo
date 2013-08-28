@@ -1263,9 +1263,10 @@ int OutOfFlowMgr::getMinBorderDiff (Float *vloat, Side side)
                return gba->x - cba->x +
                   vloat->generatingBlock->getStyle()->boxOffsetX();
             else
-               // For margin/border/padding see comment above.
-               //return cba->width - gba->width - (gba->x - cba->x);
-               return 0; // TODO
+               // For margin/border/padding see comment above. Also,
+               // in the worst case, the float can take the whole CB
+               // (not GB!) width. Therefore:
+               return 0;
          } else
             // Generating block not yet allocation; the next
             // allocation will, when necessary, trigger
