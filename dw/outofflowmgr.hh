@@ -224,10 +224,12 @@ private:
    void getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
                         SortedFloatsVector **listOpp);
 
-   void getFloatsSize (SortedFloatsVector *list, int *width, int *height);
-   void accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
+   void getFloatsSize (SortedFloatsVector *list, Side side, int *width,
+                       int *height);
+   void accumExtremes (SortedFloatsVector *list, Side side, int *oofMinWidth,
                        int *oofMaxWidth);
-   int getBorderDiff (Float *vloat);
+   int getMinBorderDiff (Float *vloat, Side side);
+   int getMaxBorderDiff (Float *vloat, Side side);
 
    TBInfo *getTextblock (Textblock *textblock);
    int getBorder (Textblock *textblock, Side side, int y, int h,

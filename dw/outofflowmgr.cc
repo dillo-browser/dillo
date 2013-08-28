@@ -1134,8 +1134,8 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    getAbsolutelyPositionedSize (&oofWidthAbsPos, &oofHeightAbsPos);
 
    int oofWidthtLeft, oofWidthRight, oofHeightLeft, oofHeightRight;
-   getFloatsSize (leftFloatsCB, &oofWidthtLeft, &oofHeightLeft);
-   getFloatsSize (rightFloatsCB, &oofWidthRight, &oofHeightRight);
+   getFloatsSize (leftFloatsCB, LEFT, &oofWidthtLeft, &oofHeightLeft);
+   getFloatsSize (rightFloatsCB, RIGHT, &oofWidthRight, &oofHeightRight);
 
    *oofWidth = max (oofWidthtLeft, oofWidthRight, oofWidthAbsPos);
    *oofHeight = max (oofHeightLeft, oofHeightRight, oofHeightAbsPos);
@@ -1145,8 +1145,8 @@ void OutOfFlowMgr::getSize (int cbWidth, int cbHeight,
    //        oofHeightLeft, oofHeightRight);
 }
 
-void OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list, int *width,
-                                  int *height)
+void OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list, Side side,
+                                  int *width, int *height)
 {
    *width = 0;
    *height = containingBlock->getStyle()->boxDiffHeight();
@@ -1158,8 +1158,10 @@ void OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list, int *width,
       ensureFloatSize (vloat);
 
       // 1. Height: May play a role when the float is too wide.
-      //int borderDiff = getBorderDiff (vloat);
-      //*width = max (*width, vloat->size.width + borderDiff);
+      // Minimum taken, since the relevant case is when the containing
+      // block is otherwise not wide enough.
+      int borderDiff = getMinBorderDiff (vloat, side);
+      *width = max (*width, vloat->size.width + borderDiff);
 
       // 2. Height: Plays a role for floats hanging over at the bottom
       // of the page.
@@ -1211,46 +1213,88 @@ void OutOfFlowMgr::getExtremes (int cbMinWidth, int cbMaxWidth,
                                 int *oofMinWidth, int *oofMaxWidth)
 {
    *oofMinWidth = *oofMaxWidth = 0;
-   accumExtremes (leftFloatsCB, oofMinWidth, oofMaxWidth);
-   accumExtremes (rightFloatsCB, oofMinWidth, oofMaxWidth);
+   accumExtremes (leftFloatsCB, LEFT, oofMinWidth, oofMaxWidth);
+   accumExtremes (rightFloatsCB, RIGHT, oofMinWidth, oofMaxWidth);
    // TODO Absolutely positioned elements
 }
 
-void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, int *oofMinWidth,
-                                  int *oofMaxWidth)
+void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, Side side,
+                                  int *oofMinWidth, int *oofMaxWidth)
 {
    // Idea for a faster implementation: use incremental resizing?
 
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
 
-      int borderDiff = getBorderDiff (vloat);
+      int minBorderDiff = getMinBorderDiff (vloat, side);
+      int maxBorderDiff = getMaxBorderDiff (vloat, side);
       Extremes extr;
       vloat->widget->getExtremes (&extr);
 
-      *oofMinWidth = max (*oofMinWidth, extr.minWidth + borderDiff);
-      *oofMaxWidth = max (*oofMaxWidth, extr.maxWidth + borderDiff);
+      *oofMinWidth = max (*oofMinWidth, extr.minWidth + minBorderDiff);
+      *oofMaxWidth = max (*oofMaxWidth, extr.maxWidth + maxBorderDiff);
    }
 }
 
 /**
- * Difference between generating block and to containing block, sum on
- * both sides. Greater or equal than 0, so dealing with 0 when it
- * cannot yet be calculated is safe. (No distiction whether it is
- * defined or not is necessary.)
+ * Minimal difference between generating block and to containing
+ * block, Greater or equal than 0, so dealing with 0 when it cannot
+ * yet be calculated is safe. (No distiction whether it is defined or
+ * not is necessary.)
  */
-int OutOfFlowMgr::getBorderDiff (Float *vloat)
+int OutOfFlowMgr::getMinBorderDiff (Float *vloat, Side side)
 {
    if (vloat->generatingBlock == containingBlock)
       // Simplest case: the generator is the container.
-      return 0;
+      // Since the way, how left and right floats are positioned when
+      // there is not much space, is not symmetric, the *minimal* value
+      // considered for the margin/border/padding of the generating block
+      // is *zero* for floats on the right.
+      return
+         side == LEFT ? vloat->generatingBlock->getStyle()->boxOffsetX() : 0;
+   else {
+      if (wasAllocated (containingBlock)) {
+         if (wasAllocated (vloat->generatingBlock)) {
+            // Simple case: both containing block and generating block
+            // are defined.
+            Allocation *gba = getAllocation(vloat->generatingBlock);
+            Allocation *cba = getAllocation(containingBlock);
+            if (side == LEFT)
+               return gba->x - cba->x +
+                  vloat->generatingBlock->getStyle()->boxOffsetX();
+            else
+               // For margin/border/padding see comment above.
+               //return cba->width - gba->width - (gba->x - cba->x);
+               return 0; // TODO
+         } else
+            // Generating block not yet allocation; the next
+            // allocation will, when necessary, trigger
+            // getExtremes. (TODO: Is this really the case?)
+            return 0;
+      } else
+         // Nothing can be done now, but the next allocation will
+         // trigger getExtremes. (TODO: Is this really the case?)
+         return 0;
+   }
+}
+
+/**
+ * Maximal difference between generating block and to containing
+ * block, i. e. sum on both sides.
+ */
+int OutOfFlowMgr::getMaxBorderDiff (Float *vloat, Side side)
+{
+   if (vloat->generatingBlock == containingBlock)
+      // Simplest case: the generator is the container.
+      return vloat->generatingBlock->getStyle()->boxDiffWidth();
    else {
       if (wasAllocated (containingBlock)) {
          if (wasAllocated (vloat->generatingBlock))
             // Simple case: both containing block and generating block
             // are defined.
             return getAllocation(containingBlock)->width -
-               getAllocation(vloat->generatingBlock)->width;
+               getAllocation(vloat->generatingBlock)->width +
+               vloat->generatingBlock->getStyle()->boxDiffWidth();
          else
             // Generating block not yet allocation; the next
             // allocation will, when necessary, trigger
