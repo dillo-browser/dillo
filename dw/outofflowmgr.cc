@@ -624,19 +624,31 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side)
       ensureFloatSize (vloat);
 
       Allocation *gbAllocation = getAllocation(vloat->generatingBlock);
+      Allocation *cbAllocation = getAllocation(containingBlock);
+      // In some cases, the actual (allocated) width is too large; we
+      // use the "available" width here.
+      int gbWidth =
+         min (gbAllocation->width, vloat->generatingBlock->getAvailWidth());
+
       Allocation childAllocation;
+
       switch (side) {
       case LEFT:
+         // Left floats are always aligned on the left side of the
+         // generator (content, not allocation).
          childAllocation.x = gbAllocation->x
             + vloat->generatingBlock->getStyle()->boxOffsetX();
          break;
 
       case RIGHT:
+         // Similar for right floats, but in this case, floats are
+         // shifted to the right when they are too big (instead of
+         // shifting the generator to the right).
          childAllocation.x =
-            gbAllocation->x
-            + min (gbAllocation->width, vloat->generatingBlock->getAvailWidth())
-            - vloat->size.width
-            - vloat->generatingBlock->getStyle()->boxRestWidth();
+            max (gbAllocation->x + gbWidth - vloat->size.width
+                 - vloat->generatingBlock->getStyle()->boxRestWidth(),
+                 // Do not exceed CB allocation:
+                 cbAllocation->x);
          break;
       }
 
