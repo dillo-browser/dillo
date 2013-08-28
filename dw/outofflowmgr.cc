@@ -1509,10 +1509,10 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 }
 
 /**
- * Return the between generator and calling textblock. (TODO Exact
- * definition. See getBorder(), where it is used.)
- *
- * Assumes that the position can be determined (getYWidget() returns true).
+ * Return the difference between generator and calling textblock. Used
+ * in getBorder() to determine the difference between calling
+ * textblock and float (which position is defined relative to the
+ * generator).
  */
 int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, Side side)
 {
