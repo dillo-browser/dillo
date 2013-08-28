@@ -1145,6 +1145,13 @@ void OutOfFlowMgr::getFloatsSize (SortedFloatsVector *list, int *width,
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
 
+      // 1. Height: May play a role when the float is too wide.
+      //int borderDiff = getBorderDiff (vloat);
+      //*width = max (*width, vloat->size.width + borderDiff);
+
+      // 2. Height: Plays a role for floats hanging over at the bottom
+      // of the page.
+
       // Notice that all positions are relative to the generating
       // block, but we need them relative to the containing block.
 
