@@ -580,12 +580,19 @@ void DilloHtml::finishParsing(int ClientKey)
 
    dReturn_if (stop_parser == true);
 
+   /* flag we've already parsed up to the last byte */
+   InFlags |= IN_EOF;
+
    /* force the close of elements left open (TODO: not for XHTML) */
    while ((si = stack->size() - 1)) {
       if (stack->getRef(si)->tag_idx != -1) {
          Html_tag_cleanup_at_close(this, stack->getRef(si)->tag_idx);
       }
    }
+
+   /* Nothing left to do with the parser. Clear all flags, except EOF. */
+   InFlags = IN_EOF;
+
    /* Remove this client from our active list */
    a_Bw_close_client(bw, ClientKey);
 }
@@ -1617,12 +1624,17 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_html(DilloHtml *html, const char *tag, int tagsize)
 {
+   /* The IN_HTML flag will be kept set until at IN_EOF condition.
+    * This allows to handle pages with multiple or uneven HTML tags */
+
    if (!(html->InFlags & IN_HTML))
       html->InFlags |= IN_HTML;
-   ++html->Num_HTML;
+   if (html->Num_HTML < UCHAR_MAX)
+      ++html->Num_HTML;
 
    if (html->Num_HTML > 1) {
       BUG_MSG("HTML element was already open\n");
+      html->ReqTagClose = true;
    }
 }
 
@@ -1631,11 +1643,7 @@ static void Html_tag_open_html(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_html(DilloHtml *html)
 {
-   /* TODO: may add some checks here */
-   if (html->Num_HTML == 1) {
-      /* beware of pages with multiple HTML close tags... :-P */
-      html->InFlags &= ~IN_HTML;
-   }
+   _MSG("Html_tag_close_html: Num_HTML=%d\n", html->Num_HTML);
 }
 
 /*
@@ -1643,40 +1651,48 @@ static void Html_tag_close_html(DilloHtml *html)
  */
 static void Html_tag_open_head(DilloHtml *html, const char *tag, int tagsize)
 {
-   if (html->InFlags & IN_BODY || html->Num_BODY > 0) {
+   if (html->InFlags & IN_BODY) {
       BUG_MSG("HEAD element must go before the BODY section\n");
       html->ReqTagClose = true;
       return;
    }
 
-   if (!(html->InFlags & IN_HEAD))
-      html->InFlags |= IN_HEAD;
-   ++html->Num_HEAD;
-
-   if (html->Num_HEAD > 1) {
+   if (html->Num_HEAD < UCHAR_MAX)
+      ++html->Num_HEAD;
+   if (html->InFlags & IN_HEAD) {
       BUG_MSG("HEAD element was already open\n");
+      html->ReqTagClose = true;
+   } else if (html->Num_HEAD > 1) {
+      BUG_MSG("HEAD section already finished -- ignoring\n");
+      html->ReqTagClose = true;
+   } else {
+      html->InFlags |= IN_HEAD;
    }
 }
 
 /*
  * Handle close HEAD element
- * Note: as a side effect of Html_test_section() this function is called
- *       twice when the head element is closed implicitly.
- * Note2: HEAD is parsed once completely got.
+ * Note: HEAD is parsed once completely got.
  */
 static void Html_tag_close_head(DilloHtml *html)
 {
    if (html->InFlags & IN_HEAD) {
-      _MSG("Closing HEAD section\n");
-      if (html->Num_TITLE == 0)
-         BUG_MSG("HEAD section lacks the TITLE element\n");
-
-      html->InFlags &= ~IN_HEAD;
-
-      /* charset is already set, load remote stylesheets now */
-      for (int i = 0; i < html->cssUrls->size(); i++) {
-         a_Html_load_stylesheet(html, html->cssUrls->get(i));
+      if (html->Num_HEAD == 1) {
+         /* match for the well formed start of HEAD section */
+         if (html->Num_TITLE == 0)
+            BUG_MSG("HEAD section lacks the TITLE element\n");
+   
+         html->InFlags &= ~IN_HEAD;
+   
+         /* charset is already set, load remote stylesheets now */
+         for (int i = 0; i < html->cssUrls->size(); i++) {
+            a_Html_load_stylesheet(html, html->cssUrls->get(i));
+         }
+      } else if (html->Num_HEAD > 1) {
+         --html->Num_HEAD;
       }
+   } else {
+      /* not reached, see Html_tag_cleanup_at_close() */
    }
 }
 
@@ -1686,8 +1702,18 @@ static void Html_tag_close_head(DilloHtml *html)
  */
 static void Html_tag_open_title(DilloHtml *html, const char *tag, int tagsize)
 {
-   ++html->Num_TITLE;
+   /* fill the stash buffer so TITLE content can be ignored
+    * when not valid, redundant or outside HEAD section */
    a_Html_stash_init(html);
+
+   if (html->InFlags & IN_HEAD) {
+      if (html->Num_TITLE < UCHAR_MAX)
+         ++html->Num_TITLE;
+      if (html->Num_TITLE > 1)
+         BUG_MSG("A redundant TITLE element was found\n");
+   } else {
+      BUG_MSG("TITLE element must be inside the HEAD section -- ignoring\n");
+   }
 }
 
 /*
@@ -1696,12 +1722,10 @@ static void Html_tag_open_title(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_title(DilloHtml *html)
 {
-   if (html->InFlags & IN_HEAD) {
+   if (html->InFlags & IN_HEAD && html->Num_TITLE == 1) {
       /* title is only valid inside HEAD */
       a_UIcmd_set_page_title(html->bw, html->Stash->str);
       a_History_set_title_by_url(html->page_url, html->Stash->str);
-   } else {
-      BUG_MSG("TITLE element must be inside the HEAD section\n");
    }
 }
 
@@ -1773,14 +1797,18 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    int tag_index_a = a_Html_tag_index ("a");
    style::Color *bgColor;
 
+   _MSG("Html_tag_open_body Num_BODY=%d\n", html->Num_BODY);
    if (!(html->InFlags & IN_BODY))
       html->InFlags |= IN_BODY;
-   ++html->Num_BODY;
+   if (html->Num_BODY < UCHAR_MAX)
+      ++html->Num_BODY;
 
    if (html->Num_BODY > 1) {
       BUG_MSG("BODY element was already open\n");
+      html->ReqTagClose = true;
       return;
    }
+
    if (html->InFlags & IN_HEAD) {
       /* if we're here, it's bad XHTML, no need to recover */
       BUG_MSG("unclosed HEAD element\n");
@@ -1848,10 +1876,8 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_body(DilloHtml *html)
 {
-   if (html->Num_BODY == 1) {
-      /* some tag soup pages use multiple BODY tags... */
-      html->InFlags &= ~IN_BODY;
-   }
+   /* Some tag soup pages use multiple BODY tags...
+    * Defer clearing the IN_BODY flag until IN_EOF */
 }
 
 /*
@@ -3460,7 +3486,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
 
    if (Tags[new_idx].Flags & 32) {
       /* head element */
-      if (!(html->InFlags & IN_HEAD)) {
+      if (!(html->InFlags & IN_HEAD) && html->Num_HEAD == 0) {
          tag = "<head>";
          tag_idx = a_Html_tag_index(tag + 1);
          if (tag_idx != new_idx || IsCloseTag) {

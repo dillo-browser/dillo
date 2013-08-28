@@ -87,6 +87,7 @@ typedef enum {
    IN_PRE         = 1 << 10,
    IN_LI          = 1 << 11,
    IN_META_HACK   = 1 << 12,
+   IN_EOF         = 1 << 13,
 } DilloHtmlProcessingState;
 
 /*
@@ -179,7 +180,8 @@ public:  //BUG: for now everything is public
    bool TagSoup;          /* Flag to enable the parser's cleanup functions */
    bool loadCssFromStash; /* current stash content should be loaded as CSS */
 
-   /* element counters: used for validation purposes */
+   /* element counters: used for validation purposes.
+    * ATM they're used as three state flags {0,1,>1} */
    uchar_t Num_HTML, Num_HEAD, Num_BODY, Num_TITLE;
 
    Dstr *attr_data;       /* Buffer for attribute value */
