@@ -1308,7 +1308,8 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
 }
 
 /**
- * Find the first line index that includes y, relative to top of widget.
+ * Find the first line index that includes y, which is given in widget
+ * coordinates.
  */
 int Textblock::findLineIndex (int y)
 {
