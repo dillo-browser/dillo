@@ -2441,9 +2441,9 @@ void Textblock::borderChanged (int y, Widget *vloat)
                  lineIndex2--) {
                Line *line = lines->getRef (lineIndex2);
                printf ("   searching existing line %d (from %d to %d, "
-                       "top = %d, boxAscent = %d):\n",
+                       "top + boxAscent = %d + %d = %d):\n",
                        lineIndex2, line->firstWord, line->lastWord, line->top,
-                       line->boxAscent);
+                       line->boxAscent, line->top + line->boxAscent);
                for (int wordIndex = line->firstWord;
                     wordIndex <= line->lastWord; wordIndex++) {
                   printf ("      word %d: ", wordIndex);
@@ -2457,9 +2457,9 @@ void Textblock::borderChanged (int y, Widget *vloat)
                  !found2 && lineIndex2 < lines->size (); lineIndex2++) { 
                Line *line = lines->getRef (lineIndex2);
                printf ("   could have searched existing line %d "
-                       "(from %d to %d, top = %d, boxAscent = %d):\n",
+                       "(from %d to %d, top + boxAscent = %d + %d = %d):\n",
                        lineIndex2, line->firstWord, line->lastWord, line->top,
-                       line->boxAscent);
+                       line->boxAscent, line->top + line->boxAscent);
                for (int wordIndex = line->firstWord;
                     !found2 && wordIndex <= line->lastWord; wordIndex++) {
                   Word *word = words->getRef (wordIndex);
