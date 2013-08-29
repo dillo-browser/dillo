@@ -513,7 +513,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
    int y1 = getAllocation(vloat->generatingBlock)->y + vloat->yReal;
    int y2 = y1 + flh;
 
-   // TODO: Also regard horizontal dimension (same for tellPositionOrNot)?
+   // TODO: Also regard horizontal dimension (same for tellFloatPosition)?
    if (y2 > tby && y1 < tby + tbHeight) {
       *floatPos = y1 - tby;
       return true;
@@ -938,7 +938,7 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
 
    Float *vloat = findFloatByWidget(widget);
 
-   //printf ("[%p] TELL_POSITION_OR_NOT (%p (%s), %d)\n",
+   //printf ("[%p] TELL_FLOAT_POSITION (%p (%s), %d)\n",
    //        containingBlock, widget, widget->getClassName (), yReq);
    //printf ("   this float: %s\n", vloat->toString());
 
@@ -1051,7 +1051,7 @@ bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
 
 void OutOfFlowMgr::checkCoveragePosChanged (Float *vloat, int oldY)
 {
-   // Only this float has been changed (see tellPositionOrNot), so
+   // Only this float has been changed (see tellFloatPosition), so
    // only this float has to be tested against all textblocks.
    if (wasAllocated (vloat->generatingBlock)) {
       // TODO This (and similar code) is not very efficient.
