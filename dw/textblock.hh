@@ -603,7 +603,7 @@ protected:
    Textblock *getTextblockForLine (Line *line);
    Textblock *getTextblockForLine (int lineNo);
    Textblock *getTextblockForLine (int firstWord, int lastWord);
-   int topOfPossiblyMissingLine (int lineNo);
+   int yOfPossiblyMissingLine (int lineNo);
    int heightOfPossiblyMissingLine (int lineNo);
 
    bool sendSelectionEvent (core::SelectionState::EventType eventType,

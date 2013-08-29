@@ -748,7 +748,7 @@ bool Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
 {
    assert (containingBlock->outOfFlowMgr);
 
-   int y = topOfPossiblyMissingLine (lines->size ());
+   int y = yOfPossiblyMissingLine (lines->size ());
    Widget *widget = words->getRef(wordIndex)->content.widget;
    containingBlock->outOfFlowMgr->tellPosition (widget, y);
 
@@ -771,7 +771,7 @@ void Textblock::updateBorders (int wordIndex, bool left, bool right)
 {
    assert (left || right);
    
-   int y = topOfPossiblyMissingLine (lines->size ());
+   int y = yOfPossiblyMissingLine (lines->size ());
    int h = heightOfPossiblyMissingLine (lines->size ());
 
    if (left) {
@@ -1449,7 +1449,7 @@ void Textblock::initNewLine ()
          verticalOffset = misc::max (clearPosition, 0);
       }
 
-      int y = topOfPossiblyMissingLine (lines->size ());
+      int y = yOfPossiblyMissingLine (lines->size ());
       int h = heightOfPossiblyMissingLine (lines->size ());
       int lastRef = lines->size() > 0 ? lines->getLastRef()->lastWord : -1;
 
