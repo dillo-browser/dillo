@@ -281,11 +281,15 @@ protected:
       int top;                  /* "top" is always relative to the top
                                    of the first line, i.e.
                                    page->lines[0].top is always 0. */
-      int boxAscent;            /* ??? */
-      int boxDescent;           /* ??? */
+      int boxAscent;            /* Maximum of all ascents of the words
+                                   in this line. This is the actual
+                                   ascent of the line.  */
+      int boxDescent;           /* Maximum of all decents of the words
+                                   in this line. This is the actual
+                                   descent of the line. */
       int contentAscent;        /* ??? */
       int contentDescent;       /* ??? */
-      int breakSpace;           /* ??? */
+      int breakSpace;           /* Space between this line and the next one. */
       int leftOffset;           /* ??? */
       int offsetCompleteWidget; /* ??? */
 
