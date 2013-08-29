@@ -2360,6 +2360,14 @@ void Textblock::queueDrawRange (int index1, int index2)
    }
 }
 
+/**
+ * Called by dw::OutOfFlowMgr when the border has changed due to a
+ * float (or some floats).
+ *
+ * "y", which given in widget coordinates, denotes the minimal
+ * position (when more than one float caused this), "vloat" the
+ * floating widget belonging to "y".
+ */
 void Textblock::borderChanged (int y, Widget *vloat)
 {
    PRINTF ("[%p] BORDER_CHANGED: %d (float %s %p, with generator %p)\n",
