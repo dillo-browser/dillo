@@ -520,7 +520,7 @@ protected:
    void drawSpace (int wordIndex, core::View *view, core::Rectangle *area,
                    int xWidget, int yWidgetBase);
    void drawLine (Line *line, core::View *view, core::Rectangle *area);
-   int findLineIndex (int y);
+   int findLineIndexWhenAllocated (int y);
    int findLineOfWord (int wordIndex);
    int findParagraphOfWord (int wordIndex);
    Word *findWord (int x, int y, bool *inSpace);

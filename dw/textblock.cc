@@ -758,7 +758,8 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
          wordIndex = words->size () - 1;
          charPos = core::SelectionState::END_OF_WORD;
       } else {
-         Line *line = lines->getRef (findLineIndex (event->yWidget));
+         Line *line =
+            lines->getRef (findLineIndexWhenAllocated (event->yWidget));
 
          // Pointer within the break space?
          if (event->yWidget >
@@ -1311,8 +1312,10 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
  * Find the first line index that includes y, which is given in widget
  * coordinates.
  */
-int Textblock::findLineIndex (int y)
+int Textblock::findLineIndexWhenAllocated (int y)
 {
+   assert (wasAllocated ());
+
    int maxIndex = lines->size () - 1;
    int step, index, low = 0;
 
@@ -1403,7 +1406,7 @@ Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
 
    *inSpace = false;
 
-   if ((lineIndex = findLineIndex (y)) >= lines->size ())
+   if ((lineIndex = findLineIndexWhenAllocated (y)) >= lines->size ())
       return NULL;
    line = lines->getRef (lineIndex);
    yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
@@ -1447,7 +1450,7 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
 
    drawWidgetBox (view, area, false);
 
-   lineIndex = findLineIndex (area->y);
+   lineIndex = findLineIndexWhenAllocated (area->y);
 
    for (; lineIndex < lines->size (); lineIndex++) {
       line = lines->getRef (lineIndex);
@@ -2216,7 +2219,7 @@ core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
    if (oofWidget)
       return oofWidget;
 
-   lineIndex = findLineIndex (y - allocation.y);
+   lineIndex = findLineIndexWhenAllocated (y - allocation.y);
 
    if (lineIndex < 0 || lineIndex >= lines->size ()) {
       return this;
@@ -2373,7 +2376,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
    PRINTF ("[%p] BORDER_CHANGED: %d (float %s %p, with generator %p)\n",
            this, y, vloat->getClassName(), vloat, vloat->getGenerator());
 
-   int lineIndex = findLineIndex (y);
+   int lineIndex = findLineIndexWhenAllocated (y);
    PRINTF ("   Line index: %d (of %d).\n", lineIndex, lines->size ());
 
    // Nothing to do at all, when lineIndex >= lines->size (),
