@@ -2524,7 +2524,7 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
 /**
  * Includes margin, border, and padding.
  */
-int Textblock::yOfPossiblyMissingLine (int lineNo)
+int Textblock::yOffsetOfPossiblyMissingLine (int lineNo)
 {
    if (lineNo == 0)
       return verticalOffset + getStyle()->boxOffsetY();
