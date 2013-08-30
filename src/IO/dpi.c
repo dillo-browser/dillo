@@ -492,7 +492,7 @@ static int Dpi_check_dpid(int num_tries)
       }
    }
 
-   _MSG("Dpi_check_dpid:: %s\n",
+   _MSG("Dpi_check_dpid: %s\n",
         (ret == 0) ? "OK" : (ret == 1 ? "EAGAIN" : "ERROR"));
    return ret;
 }
@@ -531,7 +531,7 @@ static int Dpi_get_server_port(const char *server_name)
    socklen_t sin_sz;
 
    dReturn_val_if_fail (server_name != NULL, dpi_port);
-   _MSG("Dpi_get_server_port:: server_name = [%s]\n", server_name);
+   _MSG("Dpi_get_server_port: server_name = [%s]\n", server_name);
 
    /* Read dpid's port from saved file */
    if (Dpi_read_comm_keys(&dpid_port) != -1) {
@@ -608,7 +608,7 @@ static int Dpi_connect_socket(const char *server_name)
 
    /* Query dpid for the port number for this server */
    if ((dpi_port = Dpi_get_server_port(server_name)) == -1) {
-      _MSG("Dpi_connect_socket:: can't get port number for %s\n", server_name);
+      _MSG("Dpi_connect_socket: can't get port number for %s\n", server_name);
       return -1;
    }
    _MSG("Dpi_connect_socket: server=%s port=%d\n", server_name, dpi_port);
@@ -620,9 +620,9 @@ static int Dpi_connect_socket(const char *server_name)
    sin.sin_port = htons(dpi_port);
 
    if ((sock_fd = Dpi_make_socket_fd()) == -1) {
-      perror("[dpi::socket]");
+      MSG_ERR("[Dpi_connect_socket] %s\n", dStrerror(errno));
    } else if (connect(sock_fd, (void*)&sin, sizeof(sin)) == -1) {
-      MSG("[dpi::connect] errno:%d %s\n", errno, dStrerror(errno));
+      MSG_ERR("[Dpi_connect_socket] errno:%d %s\n", errno, dStrerror(errno));
 
    /* send authentication Key (the server closes sock_fd on auth error) */
    } else if (!(cmd = a_Dpip_build_cmd("cmd=%s msg=%s", "auth", SharedKey))) {
