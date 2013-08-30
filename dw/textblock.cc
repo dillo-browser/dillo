@@ -1312,9 +1312,32 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
  * Find the first line index that includes y, which is given in widget
  * coordinates.
  */
+int Textblock::findLineIndex (int y)
+{
+   return wasAllocated () ?
+      findLineIndexWhenAllocated (y) : findLineIndexWhenNotAllocated (y);
+}
+
+int Textblock::findLineIndexWhenNotAllocated (int y)
+{
+   if (lines->size() == 0)
+      return -1;
+   else
+      return findLineIndex (y,
+                            lines->getRef(0)->boxAscent + verticalOffset +
+                            getStyle()->boxOffsetY());
+}
+
 int Textblock::findLineIndexWhenAllocated (int y)
 {
    assert (wasAllocated ());
+   return findLineIndex (y, allocation.ascent);
+}
+
+int Textblock::findLineIndex (int y, int ascent)
+{
+   core::Allocation alloc;
+   alloc.ascent = ascent; // More is not needed.
 
    int maxIndex = lines->size () - 1;
    int step, index, low = 0;
@@ -1323,12 +1346,12 @@ int Textblock::findLineIndexWhenAllocated (int y)
    while ( step > 1 ) {
       index = low + step;
       if (index <= maxIndex &&
-          lineYOffsetWidgetI (index) <= y)
+          lineYOffsetWidgetIAllocation (index, &alloc) <= y)
          low = index;
       step = (step + 1) >> 1;
    }
 
-   if (low < maxIndex && lineYOffsetWidgetI (low + 1) <= y)
+   if (low < maxIndex && lineYOffsetWidgetIAllocation (low + 1, &alloc) <= y)
       low++;
 
    /*
@@ -2376,7 +2399,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
    PRINTF ("[%p] BORDER_CHANGED: %d (float %s %p, with generator %p)\n",
            this, y, vloat->getClassName(), vloat, vloat->getGenerator());
 
-   int lineIndex = findLineIndexWhenAllocated (y);
+   int lineIndex = findLineIndex (y);
    PRINTF ("   Line index: %d (of %d).\n", lineIndex, lines->size ());
 
    // Nothing to do at all, when lineIndex >= lines->size (),

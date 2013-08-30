@@ -520,7 +520,10 @@ protected:
    void drawSpace (int wordIndex, core::View *view, core::Rectangle *area,
                    int xWidget, int yWidgetBase);
    void drawLine (Line *line, core::View *view, core::Rectangle *area);
+   int findLineIndex (int y);
+   int findLineIndexWhenNotAllocated (int y);
    int findLineIndexWhenAllocated (int y);
+   int findLineIndex (int y, int ascent);
    int findLineOfWord (int wordIndex);
    int findParagraphOfWord (int wordIndex);
    Word *findWord (int x, int y, bool *inSpace);
@@ -583,6 +586,13 @@ protected:
    inline int lineYOffsetWidgetI (int lineIndex)
    {
       return lineYOffsetWidget (lines->getRef (lineIndex));
+   }
+
+   inline int lineYOffsetWidgetIAllocation (int lineIndex,
+                                            core::Allocation *allocation)
+   {
+      return lineYOffsetWidgetAllocation (lines->getRef (lineIndex),
+                                          allocation);
    }
 
    inline int lineYOffsetCanvasI (int lineIndex)
