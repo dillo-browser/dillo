@@ -2420,7 +2420,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
          // Sometimes, the respective word is not yet part of a
          // line. Nothing to do, but because of the assertion below
          // (and also for performace reasons) this should be
-         // considered.
+         // considered. TODO: Integrate this below.
          for (int wordIndex =
                  lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
               !found && wordIndex < words->size(); wordIndex++) {
@@ -2430,17 +2430,63 @@ void Textblock::borderChanged (int y, Widget *vloat)
                found = true;
          }
          
-         // Search existing lines.
-         for (int lineIndex2 = wrapLineIndex; !found && lineIndex2 >= 0;
-              lineIndex2--) {
-            Line *line = lines->getRef (lineIndex2);
-            for (int wordIndex = line->firstWord;
-                 !found && wordIndex <= line->lastWord; wordIndex++) {
-               Word *word = words->getRef (wordIndex);
-               if (word->content.type == core::Content::WIDGET_OOF_REF &&
-                   word->content.widget == vloat) {
-                  found = true;
-                  wrapLineIndex = lineIndex2;
+         // We search for the line of the float reference. There are
+         // two cases when this is not the line corresponsing to y:
+         //
+         // (1) When the float was moved down, due to collisions with
+         //     other floats: in this case, the line number gets
+         //     smaller (since the float reference is before).
+         //
+         // (2) In some cases, the line number may become larger, due
+         //     to the per-line optimization of the words: initially,
+         //     lines->size() - 1 is assigned, but it may happen that
+         //     the float reference is put into another line.
+         //
+         // Only in the first case, a correction is neccessary, but a
+         // test for the second case is useful. (TODO: I've forgotten
+         // why a correction is neccessary.)
+         //
+         // Searched is done in the following order:
+         // 
+         // - wrapLineIndex,
+         // - wrapLineIndex - 1,
+         // - wrapLineIndex + 1,
+         // - wrapLineIndex - 2,
+         // - wrapLineIndex + 2,
+         //
+         // etc. until either the float reference has been found or
+         // all lines have been searched (the latter triggers an
+         // abortion).
+
+         bool exceedsBeginning = false, exceedsEnd = false;
+         for (int i = 0; !found; i++) {
+            bool exceeds;
+            int lineIndex2;
+            if (i % 2 == 0) {
+               // even: +0, +1, +2, ...
+               lineIndex2 = wrapLineIndex + i / 2;
+               if (i > 0)
+                  exceeds = exceedsEnd = lineIndex2 >= lines->size ();
+            } else {
+               // odd: -1, -2, ...
+               lineIndex2 = wrapLineIndex - (i + 1) / 2;
+               exceeds = exceedsBeginning = lineIndex2 < 0;
+            }
+
+            if (exceedsBeginning && exceedsEnd)
+               break;
+
+            if (!exceeds) {
+               Line *line = lines->getRef (lineIndex2);
+               for (int wordIndex = line->firstWord;
+                    !found && wordIndex <= line->lastWord; wordIndex++) {
+                  Word *word = words->getRef (wordIndex);
+                  if (word->content.type == core::Content::WIDGET_OOF_REF &&
+                      word->content.widget == vloat) {
+                     found = true;
+                     // Correct only by smaller values (case (1) above):
+                     wrapLineIndex = misc::min (wrapLineIndex, lineIndex2);
+                  }
                }
             }
          }
@@ -2459,6 +2505,8 @@ void Textblock::borderChanged (int y, Widget *vloat)
 void Textblock::printBorderChangedErrorAndAbort (int y, Widget *vloat,
                                                  int wrapLineIndex)
 {
+   // TODO Should be adjusted to recent changes in borderChanged().
+
    printf ("*** This call failed! ***\n");
    printf ("[%p] borderChanged (%d, %p (%s))\n",
            this, y, vloat, vloat->getClassName());
