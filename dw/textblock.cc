@@ -2467,6 +2467,8 @@ void Textblock::borderChanged (int y, Widget *vloat)
                lineIndex2 = wrapLineIndex + i / 2;
                if (i > 0)
                   exceeds = exceedsEnd = lineIndex2 >= lines->size ();
+               else
+                  exceeds = exceedsEnd = false;
             } else {
                // odd: -1, -2, ...
                lineIndex2 = wrapLineIndex - (i + 1) / 2;
