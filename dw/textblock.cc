@@ -2445,59 +2445,8 @@ void Textblock::borderChanged (int y, Widget *vloat)
             }
          }
 
-         if (!found) {
-            printf ("*** This call failed! ***\n");
-            printf ("[%p] borderChanged (%d, %p (%s))\n",
-                    this, y, vloat, vloat->getClassName());
-            printf ("   Initial wrapLineIndex = line %d (of %d lines). "
-                    "Has to be corrected.\n", wrapLineIndex, lines->size ());
-
-            printf ("   search non-existing line (from %d to %d):\n",
-                    lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0,
-                    words->size() - 1);
-            for (int wordIndex =
-                    lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
-                 wordIndex < words->size(); wordIndex++) {
-               printf ("      word %d: ", wordIndex);
-               printWordShort (words->getRef (wordIndex));
-               printf ("\n");
-            }
-
-            for (int lineIndex2 = wrapLineIndex; lineIndex2 >= 0;
-                 lineIndex2--) {
-               Line *line = lines->getRef (lineIndex2);
-               printf ("   searching existing line %d (from %d to %d):\n",
-                       lineIndex2, line->firstWord, line->lastWord);
-               for (int wordIndex = line->firstWord;
-                    wordIndex <= line->lastWord; wordIndex++) {
-                  printf ("      word %d: ", wordIndex);
-                  printWordShort (words->getRef (wordIndex));
-                  printf ("\n");
-               }
-            }
-
-            bool found2 = false;
-            for (int lineIndex2 = wrapLineIndex + 1;
-                 !found2 && lineIndex2 < lines->size (); lineIndex2++) { 
-               Line *line = lines->getRef (lineIndex2);
-               printf ("   could have searched existing line %d "
-                       "(from %d to %d):\n",
-                       lineIndex2, line->firstWord, line->lastWord);
-               for (int wordIndex = line->firstWord;
-                    !found2 && wordIndex <= line->lastWord; wordIndex++) {
-                  Word *word = words->getRef (wordIndex);
-                  if (word->content.type == core::Content::WIDGET_OOF_REF &&
-                      word->content.widget == vloat) {
-                     found2 = true;
-                     printf ("      word %d: ", wordIndex);
-                     printWordShort (word);
-                     printf ("\n");
-                  }
-               }
-            }
-
-            lout::misc::assertNotReached ();
-         }
+         if (!found)
+            printBorderChangedErrorAndAbort (y, vloat, wrapLineIndex);
       }      
 
       PRINTF ("   Corrected to line %d.\n", wrapLineIndex);
@@ -2505,6 +2454,62 @@ void Textblock::borderChanged (int y, Widget *vloat)
       queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex), true);
       lastWordDrawn = lines->getRef(wrapLineIndex)->firstWord;
    }
+}
+
+void Textblock::printBorderChangedErrorAndAbort (int y, Widget *vloat,
+                                                 int wrapLineIndex)
+{
+   printf ("*** This call failed! ***\n");
+   printf ("[%p] borderChanged (%d, %p (%s))\n",
+           this, y, vloat, vloat->getClassName());
+   printf ("   Initial wrapLineIndex = line %d (of %d lines). "
+           "Has to be corrected.\n", wrapLineIndex, lines->size ());
+
+   printf ("   search non-existing line (from %d to %d):\n",
+           lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0,
+           words->size() - 1);
+   for (int wordIndex =
+           lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
+        wordIndex < words->size(); wordIndex++) {
+      printf ("      word %d: ", wordIndex);
+      printWordShort (words->getRef (wordIndex));
+      printf ("\n");
+   }
+
+   for (int lineIndex2 = wrapLineIndex; lineIndex2 >= 0;
+        lineIndex2--) {
+      Line *line = lines->getRef (lineIndex2);
+      printf ("   searching existing line %d (from %d to %d):\n",
+              lineIndex2, line->firstWord, line->lastWord);
+      for (int wordIndex = line->firstWord;
+           wordIndex <= line->lastWord; wordIndex++) {
+         printf ("      word %d: ", wordIndex);
+         printWordShort (words->getRef (wordIndex));
+         printf ("\n");
+      }
+   }
+
+   bool found2 = false;
+   for (int lineIndex2 = wrapLineIndex + 1;
+        !found2 && lineIndex2 < lines->size (); lineIndex2++) { 
+      Line *line = lines->getRef (lineIndex2);
+      printf ("   could have searched existing line %d "
+              "(from %d to %d):\n",
+              lineIndex2, line->firstWord, line->lastWord);
+      for (int wordIndex = line->firstWord;
+           !found2 && wordIndex <= line->lastWord; wordIndex++) {
+         Word *word = words->getRef (wordIndex);
+         if (word->content.type == core::Content::WIDGET_OOF_REF &&
+             word->content.widget == vloat) {
+            found2 = true;
+            printf ("      word %d: ", wordIndex);
+            printWordShort (word);
+            printf ("\n");
+         }
+      }
+   }
+
+   lout::misc::assertNotReached ();
 }
 
 Textblock *Textblock::getTextblockForLine (Line *line)

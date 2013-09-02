@@ -613,6 +613,8 @@ protected:
    Textblock *getTextblockForLine (Line *line);
    Textblock *getTextblockForLine (int lineNo);
    Textblock *getTextblockForLine (int firstWord, int lastWord);
+   void printBorderChangedErrorAndAbort (int y, Widget *vloat,
+                                         int wrapLineIndex);
    int yOffsetOfPossiblyMissingLine (int lineNo);
    int heightOfPossiblyMissingLine (int lineNo);
 
