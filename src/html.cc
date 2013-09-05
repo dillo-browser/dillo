@@ -3274,7 +3274,7 @@ const TagInfo Tags[] = {
  {"img", B8(010001),'F',0, Html_tag_open_img, Html_tag_content_img,
                            NULL},
  {"input", B8(010001),'F',0, Html_tag_open_input, NULL, NULL},
- /* ins */
+ {"ins", B8(011101),'R',2, Html_tag_open_default, NULL, NULL},
  {"isindex", B8(110001),'F',0, Html_tag_open_isindex, NULL, NULL},
  {"kbd", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  /* label 010101 */

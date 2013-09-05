@@ -856,7 +856,7 @@ void StyleEngine::buildUserAgentStyle () {
       "ul ul {list-style-type: circle}"
       "ul ul ul {list-style-type: square}"
       "ul ul ul ul {list-style-type: disc}"
-      "u {text-decoration: underline}"
+      "ins, u {text-decoration: underline}"
       "small, sub, sup {font-size: 0.83em}"
       "sub {vertical-align: sub}"
       "sup {vertical-align: super}"
