@@ -1511,17 +1511,27 @@ int32_t a_Html_color_parse(DilloHtml *html, const char *str,
 static int
  Html_check_name_val(DilloHtml *html, const char *val, const char *attrname)
 {
-   int i;
+   if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f) {
+      bool valid = *val && !strchr(val, ' ');
 
-   for (i = 0; val[i]; ++i)
-      if (!isascii(val[i]) || !(isalnum(val[i]) || strchr(":_.-", val[i])))
-         break;
+      if (!valid) {
+         BUG_MSG("'%s' value must not be empty and must not contain spaces",
+                 attrname);
+      }
+      return valid ? 1 : 0;
+   } else {
+      int i;
 
-   if (val[i] || !(isascii(val[0]) && isalpha(val[0])))
-      BUG_MSG("'%s' value \"%s\" is not of the form "
-              "[A-Za-z][A-Za-z0-9:_.-]*\n", attrname, val);
+      for (i = 0; val[i]; ++i)
+         if (!isascii(val[i]) || !(isalnum(val[i]) || strchr(":_.-", val[i])))
+            break;
 
-   return !(val[i]);
+      if (val[i] || !(isascii(val[0]) && isalpha(val[0])))
+         BUG_MSG("'%s' value \"%s\" is not of the form "
+                 "[A-Za-z][A-Za-z0-9:_.-]*\n", attrname, val);
+
+      return !(val[i]);
+   }
 }
 
 /*
