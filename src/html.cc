@@ -3203,7 +3203,7 @@ static void Html_tag_close_par(DilloHtml *html)
  */
 
 const TagInfo Tags[] = {
- {"a", B8(010101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
+ {"a", B8(011101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
  {"abbr", B8(010101),'R',2, Html_tag_open_abbr, NULL, NULL},
  /* acronym 010101 */
  {"address", B8(010110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
