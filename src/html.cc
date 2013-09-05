@@ -1619,7 +1619,6 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
          html->DocTypeVersion = 2.0f;
       }
    } else if (!dStrAsciiCasecmp(ntag, HTML5_sig)) {
-      BUG_MSG("Document follows HTML5 working draft; treating as HTML4.\n");
       html->DocType = DT_HTML;
       html->DocTypeVersion = 5.0f;
    }
