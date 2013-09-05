@@ -795,8 +795,6 @@ void Html_tag_close_select(DilloHtml *html)
 
 void Html_tag_open_optgroup(DilloHtml *html, const char *tag, int tagsize)
 {
-   MSG("OPEN OPTGROUP\n");
-
    if (!(html->InFlags & IN_SELECT)) {
       BUG_MSG("<optgroup> element outside <select>\n");
       return;
