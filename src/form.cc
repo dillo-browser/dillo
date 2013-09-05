@@ -530,8 +530,6 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    } else {
       /* Text input, which also is the default */
       inp_type = DILLO_HTML_INPUT_TEXT;
-      if (*type && dStrAsciiCasecmp(type, "text"))
-         BUG_MSG("Unknown input type: \"%s\"\n", type);
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
       resource = factory->createEntryResource(size, false, NULL);
