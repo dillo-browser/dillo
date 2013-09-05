@@ -3209,6 +3209,8 @@ const TagInfo Tags[] = {
  {"address", B8(010110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
  {"area", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_area,
                             NULL},
+ {"article", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"aside", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"b", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"base", B8(100001),'F',0, Html_tag_open_base, NULL, NULL},
  /* basefont 010001 */
@@ -3236,7 +3238,10 @@ const TagInfo Tags[] = {
  {"dt", B8(010110),'O',1, Html_tag_open_dt, NULL, Html_tag_close_par},
  {"em", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  /* fieldset */
+ {"figcaption", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"figure", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"font", B8(010101),'R',2, Html_tag_open_font, NULL, NULL},
+ {"footer", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"form", B8(011110),'R',2, Html_tag_open_form, NULL, Html_tag_close_form},
  {"frame", B8(010010),'F',0, Html_tag_open_frame, Html_tag_content_frame,
                              NULL},
@@ -3249,6 +3254,7 @@ const TagInfo Tags[] = {
  {"h5", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
  {"h6", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
  {"head", B8(101101),'O',1, Html_tag_open_head, NULL, Html_tag_close_head},
+ {"header", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"hr", B8(010010),'F',0, Html_tag_open_hr, Html_tag_content_hr,
                           NULL},
  {"html", B8(001110),'O',1, Html_tag_open_html, NULL, Html_tag_close_html},
@@ -3270,6 +3276,7 @@ const TagInfo Tags[] = {
  /* menu 1010 -- TODO: not exactly 1010, it can contain LI and inline */
  {"menu", B8(011010),'R',2, Html_tag_open_menu, NULL, Html_tag_close_par},
  {"meta", B8(100001),'F',0, Html_tag_open_meta, NULL, NULL},
+ {"nav", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  /* noframes 1011 */
  /* noscript 1011 */
  {"object", B8(111101),'R',2, Html_tag_open_object, NULL, NULL},
@@ -3284,6 +3291,7 @@ const TagInfo Tags[] = {
  {"s", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"samp", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"script", B8(111001),'R',2, Html_tag_open_script,NULL,Html_tag_close_script},
+ {"section", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"select", B8(010101),'R',2, Html_tag_open_select,NULL,Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"span", B8(010101),'R',2, Html_tag_open_span, NULL, NULL},
