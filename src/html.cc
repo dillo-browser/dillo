@@ -3283,6 +3283,7 @@ const TagInfo Tags[] = {
  {"link", B8(100001),'F',0, Html_tag_open_link, NULL, NULL},
  {"map", B8(011001),'R',2, Html_tag_open_default, Html_tag_content_map,
                            Html_tag_close_map},
+ {"mark", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  /* menu 1010 -- TODO: not exactly 1010, it can contain LI and inline */
  {"menu", B8(011010),'R',2, Html_tag_open_menu, NULL, Html_tag_close_par},
  {"meta", B8(100001),'F',0, Html_tag_open_meta, NULL, NULL},
