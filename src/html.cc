@@ -1766,7 +1766,8 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
    html->loadCssFromStash = true;
 
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
-      BUG_MSG("type attribute is required for <style>\n");
+      if (html->DocType != DT_HTML || html->DocTypeVersion <= 4.01f)
+         BUG_MSG("type attribute is required for <style>\n");
    } else if (dStrAsciiCasecmp(attrbuf, "text/css")) {
       html->loadCssFromStash = false;
    }
