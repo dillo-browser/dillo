@@ -41,6 +41,7 @@
 
 typedef enum {
    DT_NONE,
+   DT_UNRECOGNIZED,
    DT_HTML,
    DT_XHTML
 } DilloHtmlDocumentType;

@@ -1592,6 +1592,9 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
 
    _MSG("New: {%s}\n", ntag);
 
+   if (html->DocType != DT_NONE)
+      BUG_MSG("Multiple DOCTYPE declarations.\n");
+
    /* The default DT_NONE type is TagSoup */
    if (i > strlen(HTML_SGML_sig) && // avoid out of bounds reads!
        !dStrnAsciiCasecmp(ntag, HTML_SGML_sig, strlen(HTML_SGML_sig))) {
@@ -1622,7 +1625,10 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
       html->DocType = DT_HTML;
       html->DocTypeVersion = 5.0f;
    }
-
+   if (html->DocType == DT_NONE) {
+      html->DocType = DT_UNRECOGNIZED;
+      BUG_MSG("DOCTYPE not recognized:\n%s.\n", ntag);
+   }
    dFree(ntag);
 }
 
@@ -3488,7 +3494,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
    int tag_idx;
 
    if (!(html->InFlags & IN_HTML) && html->DocType == DT_NONE)
-      BUG_MSG("the required DOCTYPE declaration is missing (or invalid)\n");
+      BUG_MSG("the required DOCTYPE declaration is missing.\n");
 
    if (!(html->InFlags & IN_HTML)) {
       tag = "<html>";
