@@ -1513,17 +1513,27 @@ int32_t a_Html_color_parse(DilloHtml *html, const char *str,
 static int
  Html_check_name_val(DilloHtml *html, const char *val, const char *attrname)
 {
-   int i;
+   if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f) {
+      bool valid = *val && !strchr(val, ' ');
 
-   for (i = 0; val[i]; ++i)
-      if (!isascii(val[i]) || !(isalnum(val[i]) || strchr(":_.-", val[i])))
-         break;
+      if (!valid) {
+         BUG_MSG("'%s' value must not be empty and must not contain spaces.\n",
+                 attrname);
+      }
+      return valid ? 1 : 0;
+   } else {
+      int i;
 
-   if (val[i] || !(isascii(val[0]) && isalpha(val[0])))
-      BUG_MSG("'%s' value \"%s\" is not of the form "
-              "[A-Za-z][A-Za-z0-9:_.-]*\n", attrname, val);
+      for (i = 0; val[i]; ++i)
+         if (!isascii(val[i]) || !(isalnum(val[i]) || strchr(":_.-", val[i])))
+            break;
 
-   return !(val[i]);
+      if (val[i] || !(isascii(val[0]) && isalpha(val[0])))
+         BUG_MSG("'%s' value \"%s\" is not of the form "
+                 "[A-Za-z][A-Za-z0-9:_.-]*\n", attrname, val);
+
+      return !(val[i]);
+   }
 }
 
 /*
@@ -1584,6 +1594,9 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
 
    _MSG("New: {%s}\n", ntag);
 
+   if (html->DocType != DT_NONE)
+      BUG_MSG("Multiple DOCTYPE declarations.\n");
+
    /* The default DT_NONE type is TagSoup */
    if (i > strlen(HTML_SGML_sig) && // avoid out of bounds reads!
        !dStrnAsciiCasecmp(ntag, HTML_SGML_sig, strlen(HTML_SGML_sig))) {
@@ -1611,11 +1624,13 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
          html->DocTypeVersion = 2.0f;
       }
    } else if (!dStrAsciiCasecmp(ntag, HTML5_sig)) {
-      BUG_MSG("Document follows HTML5 working draft; treating as HTML4.\n");
       html->DocType = DT_HTML;
       html->DocTypeVersion = 5.0f;
    }
-
+   if (html->DocType == DT_NONE) {
+      html->DocType = DT_UNRECOGNIZED;
+      BUG_MSG("DOCTYPE not recognized:\n%s.\n", ntag);
+   }
    dFree(ntag);
 }
 
@@ -1759,7 +1774,8 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
    html->loadCssFromStash = true;
 
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "type"))) {
-      BUG_MSG("type attribute is required for <style>\n");
+      if (html->DocType != DT_HTML || html->DocTypeVersion <= 4.01f)
+         BUG_MSG("type attribute is required for <style>\n");
    } else if (dStrAsciiCasecmp(attrbuf, "text/css")) {
       html->loadCssFromStash = false;
    }
@@ -3205,12 +3221,14 @@ static void Html_tag_close_par(DilloHtml *html)
  */
 
 const TagInfo Tags[] = {
- {"a", B8(010101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
+ {"a", B8(011101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
  {"abbr", B8(010101),'R',2, Html_tag_open_abbr, NULL, NULL},
  /* acronym 010101 */
  {"address", B8(010110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
  {"area", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_area,
                             NULL},
+ {"article", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"aside", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"b", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"base", B8(100001),'F',0, Html_tag_open_base, NULL, NULL},
  /* basefont 010001 */
@@ -3238,7 +3256,10 @@ const TagInfo Tags[] = {
  {"dt", B8(010110),'O',1, Html_tag_open_dt, NULL, Html_tag_close_par},
  {"em", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  /* fieldset */
+ {"figcaption", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"figure", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"font", B8(010101),'R',2, Html_tag_open_font, NULL, NULL},
+ {"footer", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"form", B8(011110),'R',2, Html_tag_open_form, NULL, Html_tag_close_form},
  {"frame", B8(010010),'F',0, Html_tag_open_frame, Html_tag_content_frame,
                              NULL},
@@ -3251,6 +3272,7 @@ const TagInfo Tags[] = {
  {"h5", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
  {"h6", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
  {"head", B8(101101),'O',1, Html_tag_open_head, NULL, Html_tag_close_head},
+ {"header", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"hr", B8(010010),'F',0, Html_tag_open_hr, Html_tag_content_hr,
                           NULL},
  {"html", B8(001110),'O',1, Html_tag_open_html, NULL, Html_tag_close_html},
@@ -3260,7 +3282,7 @@ const TagInfo Tags[] = {
  {"img", B8(010001),'F',0, Html_tag_open_img, Html_tag_content_img,
                            NULL},
  {"input", B8(010001),'F',0, Html_tag_open_input, NULL, NULL},
- /* ins */
+ {"ins", B8(011101),'R',2, Html_tag_open_default, NULL, NULL},
  {"isindex", B8(110001),'F',0, Html_tag_open_isindex, NULL, NULL},
  {"kbd", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  /* label 010101 */
@@ -3269,9 +3291,11 @@ const TagInfo Tags[] = {
  {"link", B8(100001),'F',0, Html_tag_open_link, NULL, NULL},
  {"map", B8(011001),'R',2, Html_tag_open_default, Html_tag_content_map,
                            Html_tag_close_map},
+ {"mark", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  /* menu 1010 -- TODO: not exactly 1010, it can contain LI and inline */
  {"menu", B8(011010),'R',2, Html_tag_open_menu, NULL, Html_tag_close_par},
  {"meta", B8(100001),'F',0, Html_tag_open_meta, NULL, NULL},
+ {"nav", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  /* noframes 1011 */
  /* noscript 1011 */
  {"object", B8(111101),'R',2, Html_tag_open_object, NULL, NULL},
@@ -3286,6 +3310,7 @@ const TagInfo Tags[] = {
  {"s", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"samp", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"script", B8(111001),'R',2, Html_tag_open_script,NULL,Html_tag_close_script},
+ {"section", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"select", B8(010101),'R',2, Html_tag_open_select,NULL,Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"span", B8(010101),'R',2, Html_tag_open_span, NULL, NULL},
@@ -3471,7 +3496,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
    int tag_idx;
 
    if (!(html->InFlags & IN_HTML) && html->DocType == DT_NONE)
-      BUG_MSG("the required DOCTYPE declaration is missing (or invalid)\n");
+      BUG_MSG("the required DOCTYPE declaration is missing.\n");
 
    if (!(html->InFlags & IN_HTML)) {
       tag = "<html>";

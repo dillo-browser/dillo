@@ -21,8 +21,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <signal.h>
 #include <locale.h>
+#include <errno.h>
 
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
@@ -94,6 +97,63 @@ static const CLI_options Options[] = {
     "                         window whose window ID is XID."},
    {NULL, NULL, 0, DILLO_CLI_NONE, NULL}
 };
+
+
+/*
+ * SIGCHLD handling ----------------------------------------------------------
+ */
+
+/*
+ * Avoid our children (Dpid) to become zombies. :-)
+ * Notes:
+ *   . We let sigaction block SIGCHLD while in the handler.
+ *   . Portability is not simple. e.g.
+ *       http://www.faqs.org/faqs/unix-faq/faq/part3/section-13.html
+ *       man sigaction, waitpid
+ */
+static void raw_sigchld2(int signum)
+{
+   pid_t pid;
+   int status;
+
+   while (1) {
+      pid = waitpid(-1, &status, WNOHANG);
+      if (pid > 0) {
+         if (WIFEXITED(status))        /* normal exit */
+            printf("[dpid]: terminated normally (%d)\n", WEXITSTATUS(status));
+         else if (WIFSIGNALED(status)) /* terminated by signal */
+            printf("[dpid]: terminated by signal %d\n", WTERMSIG(status));
+      } else if (pid == 0 || errno == ECHILD) {
+         break;
+      } else {
+         if (errno == EINTR)
+            continue;
+         perror("waitpid");
+         break;
+      }
+   }
+   ++signum; /* compiler happiness */
+}
+
+/*
+ * Establish SIGCHLD handler
+ */
+static void est_sigchld(void)
+{
+   struct sigaction sigact;
+   sigset_t set;
+
+   (void) sigemptyset(&set);
+   sigact.sa_handler = raw_sigchld2; /* our custom handler */
+   sigact.sa_mask = set;             /* no aditional signal blocks */
+   sigact.sa_flags = SA_NOCLDSTOP;   /* ignore stop/resume states */
+   if (sigaction(SIGCHLD, &sigact, NULL) == -1) {
+      perror("sigaction");
+      exit(1);
+   }
+}
+
+//----------------------------------------------------------------------------
 
 /*
  * Print help text generated from the options structure
@@ -329,6 +389,8 @@ int main(int argc, char **argv)
 
    // Some OSes exit dillo without this (not GNU/Linux).
    signal(SIGPIPE, SIG_IGN);
+   // Establish our custom SIGCHLD handler
+   est_sigchld();
 
    /* Handle command line options */
    opt_argv = dNew0(char*, numOptions(Options) + 1);

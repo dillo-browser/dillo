@@ -851,7 +851,9 @@ void StyleEngine::buildUserAgentStyle () {
       ":link {color: blue; text-decoration: underline; cursor: pointer}"
       ":visited {color: #800080; text-decoration: underline; cursor: pointer}"
       "h1, h2, h3, h4, h5, h6, b, strong {font-weight: bolder}"
-      "address, center, div, h1, h2, h3, h4, h5, h6, ol, p, ul, pre {display: block}"
+      "address, article, aside, center, div, figure, figcaption, footer,"
+      " h1, h2, h3, h4, h5, h6, header, nav, ol, p, pre, section, ul"
+      " {display: block}"
       "i, em, cite, address, var {font-style: italic}"
       ":link img, :visited img {border: 1px solid}"
       "frameset, ul, ol, dir {margin-left: 40px}"
@@ -860,6 +862,7 @@ void StyleEngine::buildUserAgentStyle () {
        * look better like this.
        */
       "p {margin: 0.5em 0}"
+      "figure {margin: 1em 40px}"
       "h1 {font-size: 2em; margin-top: .67em; margin-bottom: 0}"
       "h2 {font-size: 1.5em; margin-top: .75em; margin-bottom: 0}"
       "h3 {font-size: 1.17em; margin-top: .83em; margin-bottom: 0}"
@@ -874,11 +877,15 @@ void StyleEngine::buildUserAgentStyle () {
       "ul ul {list-style-type: circle}"
       "ul ul ul {list-style-type: square}"
       "ul ul ul ul {list-style-type: disc}"
-      "u {text-decoration: underline}"
+      "ins, u {text-decoration: underline}"
       "small, sub, sup {font-size: 0.83em}"
       "sub {vertical-align: sub}"
       "sup {vertical-align: super}"
       "s, strike, del {text-decoration: line-through}"
+      /* HTML5 spec notes that mark styling "is just a suggestion and can be
+       * changed based on implementation feedback"
+       */
+      "mark {background: yellow; color: black;}"
       "table {border-spacing: 2px}"
       "td, th {padding: 2px}"
       "thead, tbody, tfoot {vertical-align: middle}"

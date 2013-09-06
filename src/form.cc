@@ -530,8 +530,6 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    } else {
       /* Text input, which also is the default */
       inp_type = DILLO_HTML_INPUT_TEXT;
-      if (*type && dStrAsciiCasecmp(type, "text"))
-         BUG_MSG("Unknown input type: \"%s\"\n", type);
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
       resource = factory->createEntryResource(size, false, NULL);
@@ -641,7 +639,8 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cols"))) {
       cols = strtol(attrbuf, NULL, 10);
    } else {
-      BUG_MSG("cols attribute is required for <textarea>\n");
+      if (html->DocType != DT_HTML || html->DocTypeVersion <= 4.01f)
+         BUG_MSG("cols attribute is required for <textarea>\n");
       cols = 20;
    }
    if (cols < 1 || cols > MAX_COLS) {
@@ -652,7 +651,8 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rows"))) {
       rows = strtol(attrbuf, NULL, 10);
    } else {
-      BUG_MSG("rows attribute is required for <textarea>\n");
+      if (html->DocType != DT_HTML || html->DocTypeVersion <= 4.01f)
+         BUG_MSG("rows attribute is required for <textarea>\n");
       rows = 10;
    }
    if (rows < 1 || rows > MAX_ROWS) {
@@ -797,8 +797,6 @@ void Html_tag_close_select(DilloHtml *html)
 
 void Html_tag_open_optgroup(DilloHtml *html, const char *tag, int tagsize)
 {
-   MSG("OPEN OPTGROUP\n");
-
    if (!(html->InFlags & IN_SELECT)) {
       BUG_MSG("<optgroup> element outside <select>\n");
       return;

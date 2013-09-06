@@ -881,7 +881,7 @@ void FltkToggleButtonResource<I>::sizeRequest (core::Requisition *requisition)
 
 
 template <class I>
-bool FltkToggleButtonResource<I>::FltkToggleButtonResource::isActivated ()
+bool FltkToggleButtonResource<I>::isActivated ()
 {
    return ((Fl_Button*)this->widget)->value ();
 }
