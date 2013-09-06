@@ -1515,7 +1515,7 @@ static int
       bool valid = *val && !strchr(val, ' ');
 
       if (!valid) {
-         BUG_MSG("'%s' value must not be empty and must not contain spaces",
+         BUG_MSG("'%s' value must not be empty and must not contain spaces.\n",
                  attrname);
       }
       return valid ? 1 : 0;
