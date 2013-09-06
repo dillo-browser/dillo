@@ -639,7 +639,8 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cols"))) {
       cols = strtol(attrbuf, NULL, 10);
    } else {
-      BUG_MSG("cols attribute is required for <textarea>\n");
+      if (html->DocType != DT_HTML || html->DocTypeVersion <= 4.01f)
+         BUG_MSG("cols attribute is required for <textarea>\n");
       cols = 20;
    }
    if (cols < 1 || cols > MAX_COLS) {
@@ -650,7 +651,8 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rows"))) {
       rows = strtol(attrbuf, NULL, 10);
    } else {
-      BUG_MSG("rows attribute is required for <textarea>\n");
+      if (html->DocType != DT_HTML || html->DocTypeVersion <= 4.01f)
+         BUG_MSG("rows attribute is required for <textarea>\n");
       rows = 10;
    }
    if (rows < 1 || rows > MAX_ROWS) {
