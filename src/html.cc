@@ -3221,7 +3221,7 @@ static void Html_tag_close_par(DilloHtml *html)
 const TagInfo Tags[] = {
  {"a", B8(011101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
  {"abbr", B8(010101),'R',2, Html_tag_open_abbr, NULL, NULL},
- /* acronym 010101 */
+ /* acronym 010101 -- obsolete in HTML5 */
  {"address", B8(010110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
  {"area", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_area,
                             NULL},
@@ -3229,7 +3229,7 @@ const TagInfo Tags[] = {
  {"aside", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"b", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"base", B8(100001),'F',0, Html_tag_open_base, NULL, NULL},
- /* basefont 010001 */
+ /* basefont 010001 -- obsolete in HTML5 */
  /* bdo 010101 */
  {"big", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"blockquote", B8(011110),'R',2, Html_tag_open_blockquote, NULL,
@@ -3294,7 +3294,7 @@ const TagInfo Tags[] = {
  {"menu", B8(011010),'R',2, Html_tag_open_menu, NULL, Html_tag_close_par},
  {"meta", B8(100001),'F',0, Html_tag_open_meta, NULL, NULL},
  {"nav", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
- /* noframes 1011 */
+ /* noframes 1011 -- obsolete in HTML5 */
  /* noscript 1011 */
  {"object", B8(111101),'R',2, Html_tag_open_object, NULL, NULL},
  {"ol", B8(011010),'R',2, Html_tag_open_ol, NULL, NULL},
@@ -3589,6 +3589,33 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
    }
 }
 
+/*
+ * Warn when encountering elements that are obsolete in HTML5. This list
+ * was from the "W3C Candidate Recommendation 6 August 2013".
+ */
+static void Html_check_html5_obsolete(DilloHtml *html, int ni)
+{
+   static int indexes[9] = {-1};
+
+   if (indexes[0] == -1) {
+      indexes[0] = a_Html_tag_index("dir");
+      indexes[1] = a_Html_tag_index("frame");
+      indexes[2] = a_Html_tag_index("frameset");
+      indexes[3] = a_Html_tag_index("isindex");
+      indexes[4] = a_Html_tag_index("strike");
+      indexes[5] = a_Html_tag_index("big");
+      indexes[6] = a_Html_tag_index("center");
+      indexes[7] = a_Html_tag_index("font");
+      indexes[8] = a_Html_tag_index("tt");
+   }
+   for (int i = 0; i < 9; i++) {
+      if (indexes[i] == ni) {
+         BUG_MSG("<%s> is obsolete in HTML5.\n", Tags[ni].name);
+         break;
+      }
+   }
+}
+
 static void Html_display_block(DilloHtml *html)
 {
    //HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
@@ -3651,6 +3678,9 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       /* Ignore unknown tags */
       return;
    }
+
+   if (!IsCloseTag && html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+      Html_check_html5_obsolete(html, ni);
 
    /* Handle HTML, HEAD and BODY. Elements with optional open and close */
    if (!(html->InFlags & IN_BODY) /* && parsing HTML */)
