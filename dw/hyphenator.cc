@@ -49,8 +49,9 @@ Hyphenator::Hyphenator (const char *patFile, const char *excFile, int pack)
 {
    trie = NULL; // As long we are not sure whether a pattern file can be read.
 
-   char *buf = new char[strlen (patFile) + 5 + 1];
-   snprintf(buf, sizeof (buf), "%s.trie", patFile);
+   int bufLen = strlen (patFile) + 5 + 1;
+   char *buf = new char[bufLen];
+   snprintf(buf, bufLen, "%s.trie", patFile);
    FILE *trieF = fopen (buf, "r");
    delete[] buf;
 
@@ -119,13 +120,13 @@ Hyphenator *Hyphenator::getHyphenator (const char *lang)
    if (hyphenator)
       delete langString;
    else {
-      char *patFile =
-         new char[strlen (DILLO_LIBDIR) + 13 + strlen (lang) + 4 + 1];
-      snprintf (patFile, sizeof (patFile), "%s/hyphenation/%s.pat",
+      int patFileLen = strlen (DILLO_LIBDIR) + 13 + strlen (lang) + 4 + 1;
+      char *patFile = new char[patFileLen];
+      snprintf (patFile, patFileLen, "%s/hyphenation/%s.pat",
                 DILLO_LIBDIR, lang);
-      char *excFile =
-         new char[strlen (DILLO_LIBDIR) + 13 + strlen (lang) + 4 + 1];
-      snprintf (excFile, sizeof(excFile), "%s/hyphenation/%s.exc",
+      int excFileLen = strlen (DILLO_LIBDIR) + 13 + strlen (lang) + 4 + 1;
+      char *excFile = new char[excFileLen];
+      snprintf (excFile, excFileLen, "%s/hyphenation/%s.exc",
                 DILLO_LIBDIR, lang);
 
       //printf ("Loading hyphenation patterns for language '%s' from '%s' and "
