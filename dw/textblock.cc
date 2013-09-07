@@ -1679,7 +1679,7 @@ void Textblock::addText (const char *text, size_t len,
             Word *word = words->getLastRef();
 
             setBreakOption (word, style, penalties[partPenaltyIndex[i]][0],
-                            penalties[partPenaltyIndex[i]][1]);
+                            penalties[partPenaltyIndex[i]][1], false);
 
             if (charRemoved[i])
                // Currently, only unconditional hyphens (UTF-8:
@@ -1848,12 +1848,14 @@ void Textblock::addSpace (core::style::Style *style)
 /**
  * Add a break option (see setBreakOption() for details). Used instead
  * of addStyle for ideographic characters.
+ *
+ * When "forceBreak" is true, a break is even possible within PRE etc.
  */
-void Textblock::addBreakOption (core::style::Style *style)
+void Textblock::addBreakOption (core::style::Style *style, bool forceBreak)
 {
    int wordIndex = words->size () - 1;
    if (wordIndex >= 0) {
-      setBreakOption (words->getRef(wordIndex), style, 0, 0);
+      setBreakOption (words->getRef(wordIndex), style, 0, 0, forceBreak);
       // Call of accumulateWordData() is not needed here.
       correctLastWordExtremes ();
    }
@@ -1879,7 +1881,7 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
 
    // Do not override a previously set break penalty.
    if (!word->content.space) {
-      setBreakOption (word, style, 0, 0);
+      setBreakOption (word, style, 0, 0, false);
 
       word->content.space = true;
       word->effSpace = word->origSpace = style->font->spaceWidth +
@@ -1904,12 +1906,13 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
  * alternative, e. g. for ideographic characters.
  */
 void Textblock::setBreakOption (Word *word, core::style::Style *style,
-                                int breakPenalty1, int breakPenalty2)
+                                int breakPenalty1, int breakPenalty2,
+                                bool forceBreak)
 {
    // TODO: lineMustBeBroken should be independent of the penalty
    // index? Otherwise, examine the last line.
    if (!word->badnessAndPenalty.lineMustBeBroken(0)) {
-      if (isBreakAllowed (word))
+      if (forceBreak || isBreakAllowed (word))
          word->badnessAndPenalty.setPenalties (breakPenalty1, breakPenalty2);
       else
          word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);

@@ -1104,7 +1104,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
 
       if (spaceCnt) {
          // add break possibility for the white-space:pre-wrap case
-         HT2TB(html)->addBreakOption (html->styleEngine->wordStyle ());
+         HT2TB(html)->addBreakOption (html->styleEngine->wordStyle (), false);
          spc = dStrnfill(spaceCnt, ' ');
          HT2TB(html)->addText (spc, spaceCnt, html->styleEngine->wordStyle ());
          dFree(spc);
@@ -1209,12 +1209,12 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             Html_process_space(html, word2 + start, i - start);
          } else if (!strncmp(word2+i, utf8_zero_width_space, 3)) {
             i += 3;
-            HT2TB(html)->addBreakOption(html->styleEngine->wordStyle ());
+            HT2TB(html)->addBreakOption(html->styleEngine->wordStyle (), false);
          } else if (a_Utf8_ideographic(word2+i, beyond_word2, &len)) {
             i += len;
             HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());
-            HT2TB(html)->addBreakOption(html->styleEngine->wordStyle ());
+            HT2TB(html)->addBreakOption(html->styleEngine->wordStyle (), false);
          } else {
             do {
                i += len;

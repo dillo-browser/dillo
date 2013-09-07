@@ -481,7 +481,7 @@ protected:
                   short flags, core::style::Style *style);
    void fillSpace (Word *word, core::style::Style *style);
    void setBreakOption (Word *word, core::style::Style *style,
-                        int breakPenalty1, int breakPenalty2);
+                        int breakPenalty1, int breakPenalty2, bool forceBreak);
    bool isBreakAllowed (Word *word);
    int textWidth (const char *text, int start, int len,
                   core::style::Style *style, bool isStart, bool isEnd);
@@ -633,7 +633,7 @@ public:
    void addWidget (core::Widget *widget, core::style::Style *style);
    bool addAnchor (const char *name, core::style::Style *style);
    void addSpace (core::style::Style *style);
-   void addBreakOption (core::style::Style *style);
+   void addBreakOption (core::style::Style *style, bool forceBreak);
    void addParbreak (int space, core::style::Style *style);
    void addLinebreak (core::style::Style *style);
 
