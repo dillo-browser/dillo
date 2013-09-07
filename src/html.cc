@@ -3192,6 +3192,14 @@ static void Html_tag_close_par(DilloHtml *html)
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
+/*
+ * <WBR> "The wbr element represents a line break opportunity."
+ */
+static void Html_tag_content_wbr(DilloHtml *html, const char *tag, int tagsize)
+{
+   HT2TB(html)->addBreakOption(html->styleEngine->wordStyle (), true);
+}
+
 
 /*
  * Function index for the open, content, and close functions for each tag
@@ -3334,8 +3342,8 @@ const TagInfo Tags[] = {
  {"tt", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"u", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"ul", B8(011010),'R',2, Html_tag_open_ul, NULL, NULL},
- {"var", B8(010101),'R',2, Html_tag_open_default, NULL, NULL}
-
+ {"var", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
+ {"wbr", B8(010101),'F',0, Html_tag_open_default, Html_tag_content_wbr, NULL}
 };
 #define NTAGS (sizeof(Tags)/sizeof(Tags[0]))
 
