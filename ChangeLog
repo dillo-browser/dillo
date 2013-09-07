@@ -9,16 +9,29 @@ at http://hg.dillo.org/dillo
 
 dillo-3.0.4 [not released yet]
 
-+- Implemented <optgroup>.
-   Patch: corvid
++- OPTGROUP and INS elements.
+ - Some HTML5 elements, etc.
+   Patches: corvid
 +- Make embedding into other applications more reliable (BUG#1127).
-   Patch: Johannes Hofmann
+ - Add search from address bar.
+   Patches: Johannes Hofmann
 +- Better scaling (down) of images, even with consideration of gamma
    correction.
  - Fixed (possibly security) problem of FltkImgBuf caused by integer overflow
    (BUG#1129).
+ - Some linebreaking fixes.
  - Added white_bg_replacement preference.
    Patches: Sebastian Geerken
++- Fix a set of bugs reported by Oulu Univ. Secure Programming Group
+   (HTML parsing, URL resolution, GIF processing, etc.)
+   Patch: Jorge Arellano Cid
++- Fix compiling on Hurd.
+   Patch: Pino Toscano
++- Avoid Dpid children becoming zombies.
+   Patch: Jorge Arellano, J. Gaffney
++- HTML5 WBR element.
+ - Fix compiling on IRIX with MIPSpro compiler.
+   Patches: corvid, Sebastian Geerken
 
 -----------------------------------------------------------------------------
 
