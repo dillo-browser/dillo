@@ -23,19 +23,20 @@
 
 using namespace dw::core;
 
-// Image to Object-Image macro
-#define I2DW(Image)  ((dw::Image*)(Image->dw))
+// Image to Object-ImgRenderer macro
+#define I2IR(Image)  ((dw::core::ImgRenderer*)(Image->img_rnd))
 
 
 /*
  * Create and initialize a new image structure.
  */
-DilloImage *a_Image_new(const char *alt_text, int32_t bg_color)
+DilloImage *a_Image_new(void *layout, void *img_rnd, int32_t bg_color)
 {
    DilloImage *Image;
 
    Image = dNew(DilloImage, 1);
-   Image->dw = (void*) new dw::Image(alt_text);
+   Image->layout = layout;
+   Image->img_rnd = img_rnd;
    Image->width = 0;
    Image->height = 0;
    Image->bg_color = bg_color;
@@ -88,7 +89,7 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
    _MSG("a_Image_set_parms: width=%d height=%d\n", width, height);
 
    bool resize = (Image->width != width || Image->height != height);
-   I2DW(Image)->setBuffer((Imgbuf*)v_imgbuf, resize);
+   I2IR(Image)->setBuffer((Imgbuf*)v_imgbuf, resize);
 
    if (!Image->BitVec)
       Image->BitVec = a_Bitvec_new(height);
@@ -106,7 +107,7 @@ void a_Image_write(DilloImage *Image, uint_t y)
    dReturn_if_fail ( y < Image->height );
 
    /* Update the row in DwImage */
-   I2DW(Image)->drawRow(y);
+   I2IR(Image)->drawRow(y);
    a_Bitvec_set_bit(Image->BitVec, y);
    Image->State = IMG_Write;
 }

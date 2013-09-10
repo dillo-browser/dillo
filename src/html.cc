@@ -2195,7 +2195,9 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
       alt_ptr = dStrdup("[IMG]"); // Place holder for img_off mode
    }
 
-   image = a_Image_new(alt_ptr, 0);
+   dw::Image *dw = new dw::Image(alt_ptr);
+   image =
+      a_Image_new(html->dw->getLayout(), (void*)(dw::core::ImgRenderer*)dw, 0);
 
    if (HT2TB(html)->getBgColor())
       image->bg_color = HT2TB(html)->getBgColor()->getColor();
@@ -2272,11 +2274,15 @@ static void Html_tag_content_img(DilloHtml *html, const char *tag, int tagsize)
       /* TODO: usemap URLs outside of the document are not used. */
       usemap_url = a_Html_url_new(html, attrbuf, NULL, 0);
 
-   HT2TB(html)->addWidget((Widget*)Image->dw, html->styleEngine->style());
+   // At this point, we know that Image->ir represents an image
+   // widget. Notice that the order of the casts matters, because of
+   // multiple inheritance.
+   dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)Image->img_rnd;
+   HT2TB(html)->addWidget(dwi, html->styleEngine->style());
 
    /* Image maps */
    if (a_Html_get_attr(html, tag, tagsize, "ismap")) {
-      ((::dw::Image*)Image->dw)->setIsMap();
+      dwi->setIsMap();
       _MSG("  Html_tag_open_img: server-side map (ISMAP)\n");
    } else if (html->styleEngine->style ()->x_link != -1 &&
               usemap_url == NULL) {
@@ -2286,8 +2292,7 @@ static void Html_tag_content_img(DilloHtml *html, const char *tag, int tagsize)
    }
 
    if (usemap_url) {
-      ((::dw::Image*)Image->dw)->setUseMap(&html->maps,
-                            new ::object::String(URL_STR(usemap_url)));
+      dwi->setUseMap(&html->maps, new ::object::String(URL_STR(usemap_url)));
       a_Url_free (usemap_url);
    }
 }
@@ -2330,8 +2335,14 @@ static void Html_tag_close_map(DilloHtml *html)
    for (int i = 0; i < html->images->size(); i++) {
       DilloImage *img = html->images->get(i)->image;
 
-      if (img)
-         ((dw::Image*) img->dw)->forceMapRedraw();
+      if (img) {
+         // At this point, we know that img->ir represents an image
+         // widget. (Really? Is this assumtion safe?) Notice that the
+         // order of the casts matters, because of multiple
+         // inheritance.
+         dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)img->img_rnd;
+         dwi->forceMapRedraw();
+      }
    }
    html->InFlags &= ~IN_MAP;
 }

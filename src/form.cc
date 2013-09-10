@@ -2004,10 +2004,14 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
    /* create new image and add it to the button */
    a_Html_image_attrs(html, tag, tagsize);
    if ((Image = a_Html_image_new(html, tag, tagsize))) {
-      IM2DW(Image)->setStyle (html->styleEngine->backgroundStyle ());
+      // At this point, we know that Image->ir represents an image
+      // widget. Notice that the order of the casts matters, because
+      // of multiple inheritance.
+      dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)Image->img_rnd;
+      dwi->setStyle (html->styleEngine->backgroundStyle ());
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();
       ComplexButtonResource *complex_b_r =
-         factory->createComplexButtonResource(IM2DW(Image), false);
+         factory->createComplexButtonResource(dwi, false);
       button = new Embed(complex_b_r);
       HT2TB(html)->addWidget (button, html->styleEngine->style ());
    }

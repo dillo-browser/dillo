@@ -14,6 +14,7 @@ libDw_core_a_SOURCES = \
 	findtext.cc \
 	findtext.hh \
 	imgbuf.hh \
+	imgrenderer.hh \
 	iterator.cc \
 	iterator.hh \
 	layout.cc \

@@ -276,7 +276,8 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
 
    /* BUG: there's just one image-type now */
    #define I_RGB 0
-   DicEntry->v_imgbuf = a_Imgbuf_new(Image->dw, I_RGB, width, height, gamma);
+   DicEntry->v_imgbuf =
+      a_Imgbuf_new(Image->layout, I_RGB, width, height, gamma);
 
    DicEntry->TotalSize = width * height * 3;
    DicEntry->width = width;
@@ -402,7 +403,7 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    dReturn_val_if_fail(MimeType && Ptr, NULL);
 
    if (!web->Image) {
-      web->Image = a_Image_new(NULL, web->bgColor);
+      web->Image = a_Image_new(NULL, NULL, web->bgColor);
       a_Image_ref(web->Image);
    }
 
@@ -429,7 +430,7 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    *Data = DicEntry->DecoderData;
    *Call = (CA_Callback_t) a_Dicache_callback;
 
-   return (web->Image->dw);
+   return (web->Image->img_rnd);
 }
 
 /*

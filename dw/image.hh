@@ -116,7 +116,7 @@ public:
  *
  * \sa\ref dw-images-and-backgrounds
  */
-class Image: public core::Widget
+class Image: public core::Widget, public core::ImgRenderer
 {
 private:
    char *altText;
