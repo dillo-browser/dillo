@@ -289,6 +289,9 @@ void a_Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize)
    if ((align = a_Html_get_attr(html, tag, tagsize, "align"))) {
       TextAlignType textAlignType = TEXT_ALIGN_LEFT;
 
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("The align attribute is obsolete in HTML5.\n");
+
       if (dStrAsciiCasecmp (align, "left") == 0)
          textAlignType = TEXT_ALIGN_LEFT;
       else if (dStrAsciiCasecmp (align, "right") == 0)
@@ -330,6 +333,9 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag, int tagsize)
    VAlignType valign;
 
    if ((attr = a_Html_get_attr(html, tag, tagsize, "valign"))) {
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("The valign attribute is obsolete in HTML5.\n");
+
       if (dStrAsciiCasecmp (attr, "top") == 0)
          valign = VALIGN_TOP;
       else if (dStrAsciiCasecmp (attr, "bottom") == 0)
@@ -1830,6 +1836,10 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       color = a_Html_color_parse(html, attrbuf, -1);
+
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<body> bgcolor attribute is obsolete.\n");
+
       if (color != -1)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_BACKGROUND_COLOR,
                                            CSS_TYPE_COLOR, color);
@@ -1837,6 +1847,10 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "text"))) {
       color = a_Html_color_parse(html, attrbuf, -1);
+
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<body> text attribute is obsolete.\n");
+
       if (color != -1)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_COLOR,
                                            CSS_TYPE_COLOR, color);
@@ -1844,11 +1858,17 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    html->styleEngine->restyle ();
 
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link"))) {
       html->non_css_link_color = a_Html_color_parse(html, attrbuf, -1);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<body> link attribute is obsolete.\n");
+   }
 
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink")))
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink"))) {
       html->non_css_visited_color = a_Html_color_parse(html, attrbuf, -1);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<body> vlink attribute is obsolete.\n");
+   }
 
    html->dw->setStyle (html->styleEngine->style ());
 
@@ -2654,6 +2674,8 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
 
       html->styleEngine->setNonCssHint (CSS_PROPERTY_LIST_STYLE_TYPE,
                                         CSS_TYPE_ENUM, list_style_type);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<ul> type attribute is obsolete.\n");
    }
 
    S_TOP(html)->list_type = HTML_LIST_UNORDERED;
@@ -2770,19 +2792,26 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
 
    width_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "width", NULL);
    if (width_ptr) {
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<hr> width attribute is obsolete.\n");
       html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
                                         CSS_TYPE_LENGTH_PERCENTAGE,
                                         a_Html_parse_length (html, width_ptr));
       dFree(width_ptr);
    }
 
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size"))) {
       size = strtol(attrbuf, NULL, 10);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<hr> size attribute is obsolete.\n");
+   }
 
    a_Html_tag_set_align_attr(html, tag, tagsize);
 
    /* TODO: evaluate attribute */
    if (a_Html_get_attr(html, tag, tagsize, "noshade")) {
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<hr> noshade attribute is obsolete.\n");
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
                                         CSS_TYPE_ENUM, BORDER_SOLID);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
