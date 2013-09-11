@@ -3854,10 +3854,13 @@ static const char *Html_get_attr2(DilloHtml *html,
          break;
 
       case MATCH_ATTR_NAME:
-         if ((Found = (!(attrname[attr_pos]) &&
-                       (tag[i] == '=' || isspace(tag[i]) || tag[i] == '>')))) {
+         if (!attrname[attr_pos] &&
+             (tag[i] == '=' || isspace(tag[i]) || tag[i] == '>')) {
+            Found = 1;
             state = SEEK_TOKEN_START;
             --i;
+         } else if (!tag[i]) {
+            state = SEEK_ATTR_START; // NULL byte is not allowed
          } else {
             if (D_ASCII_TOLOWER(tag[i]) != D_ASCII_TOLOWER(attrname[attr_pos]))
                state = SEEK_ATTR_START;
