@@ -340,17 +340,17 @@ style::Color *Widget::getBgColor ()
 void Widget::drawBox (View *view, style::Style *style, Rectangle *area,
                       int x, int y, int width, int height, bool inverse)
 {
-   Rectangle viewArea;
-   viewArea.x = area->x + allocation.x;
-   viewArea.y = area->y + allocation.y;
-   viewArea.width = area->width;
-   viewArea.height = area->height;
+   Rectangle canvasArea;
+   canvasArea.x = area->x + allocation.x;
+   canvasArea.y = area->y + allocation.y;
+   canvasArea.width = area->width;
+   canvasArea.height = area->height;
 
-   style::drawBorder (view, layout, &viewArea,
+   style::drawBorder (view, layout, &canvasArea,
                       allocation.x + x, allocation.y + y,
                       width, height, style, inverse);
 
-   style::drawBackground (view, layout, &viewArea,
+   style::drawBackground (view, layout, &canvasArea,
                           allocation.x + x, allocation.y + y, width, height,
                           style, inverse, false);
 }
@@ -363,16 +363,16 @@ void Widget::drawBox (View *view, style::Style *style, Rectangle *area,
  */
 void Widget::drawWidgetBox (View *view, Rectangle *area, bool inverse)
 {
-   Rectangle viewArea;
-   viewArea.x = area->x + allocation.x;
-   viewArea.y = area->y + allocation.y;
-   viewArea.width = area->width;
-   viewArea.height = area->height;
+   Rectangle canvasArea;
+   canvasArea.x = area->x + allocation.x;
+   canvasArea.y = area->y + allocation.y;
+   canvasArea.width = area->width;
+   canvasArea.height = area->height;
 
-   style::drawBorder (view, layout, &viewArea, allocation.x, allocation.y,
+   style::drawBorder (view, layout, &canvasArea, allocation.x, allocation.y,
                       allocation.width, getHeight (), style, inverse);
 
-   style::drawBackground (view, layout, &viewArea, allocation.x, allocation.y,
+   style::drawBackground (view, layout, &canvasArea, allocation.x, allocation.y,
                           allocation.width, getHeight (), style, inverse,
                           parent == NULL);
 }
