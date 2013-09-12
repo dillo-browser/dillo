@@ -49,6 +49,10 @@ void StyleAttrs::initValues ()
    valign = VALIGN_BASELINE;
    backgroundColor = NULL;
    backgroundImage = NULL;
+   backgroundRepeat = BACKGROUND_REPEAT;
+   backgroundAttachment = BACKGROUND_ATTACHMENT_SCROLL;
+   backgroundPositionX = createPerLength (0);
+   backgroundPositionY = createPerLength (0);
    width = height = lineHeight = LENGTH_AUTO;
    textIndent = 0;
    margin.setVal (0);
@@ -78,6 +82,10 @@ void StyleAttrs::resetValues ()
    textAlignChar = '.';
    backgroundColor = NULL;
    backgroundImage = NULL;
+   backgroundRepeat = BACKGROUND_REPEAT;
+   backgroundAttachment = BACKGROUND_ATTACHMENT_SCROLL;
+   backgroundPositionX = createPerLength (0);
+   backgroundPositionY = createPerLength (0);
    width = LENGTH_AUTO;
    height = LENGTH_AUTO;
 
@@ -119,6 +127,10 @@ bool StyleAttrs::equals (object::Object *other) {
        color == otherAttrs->color &&
        backgroundColor == otherAttrs->backgroundColor &&
        backgroundImage == otherAttrs->backgroundImage &&
+       backgroundRepeat == otherAttrs->backgroundRepeat &&
+       backgroundAttachment == otherAttrs->backgroundAttachment &&
+       backgroundPositionX == otherAttrs->backgroundPositionX &&
+       backgroundPositionY == otherAttrs->backgroundPositionY &&
        textAlign == otherAttrs->textAlign &&
        valign == otherAttrs->valign &&
        textAlignChar == otherAttrs->textAlignChar &&
@@ -160,6 +172,10 @@ int StyleAttrs::hashValue () {
       (intptr_t) color +
       (intptr_t) backgroundColor +
       (intptr_t) backgroundImage +
+      backgroundRepeat +
+      backgroundAttachment +
+      backgroundPositionX +
+      backgroundPositionY +
       textAlign +
       valign +
       textAlignChar +
@@ -257,6 +273,10 @@ void Style::copyAttrs (StyleAttrs *attrs)
    color = attrs->color;
    backgroundColor = attrs->backgroundColor;
    backgroundImage = attrs->backgroundImage;
+   backgroundRepeat = attrs->backgroundRepeat;
+   backgroundAttachment = attrs->backgroundAttachment;
+   backgroundPositionX = attrs->backgroundPositionX;
+   backgroundPositionY = attrs->backgroundPositionY;
    textAlign = attrs->textAlign;
    valign = attrs->valign;
    textAlignChar = attrs->textAlignChar;

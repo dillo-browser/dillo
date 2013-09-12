@@ -230,6 +230,18 @@ enum BorderStyle {
    BORDER_OUTSET
 };
 
+enum BackgroundRepeat {
+   BACKGROUND_REPEAT,
+   BACKGROUND_REPEAT_X,
+   BACKGROUND_REPEAT_Y,
+   BACKGROUND_NO_REPEAT
+};
+
+enum BackgroundAttachment {
+   BACKGROUND_ATTACHMENT_SCROLL,
+   BACKGROUND_ATTACHMENT_FIXED
+};
+
 enum TextAlignType {
    TEXT_ALIGN_LEFT,
    TEXT_ALIGN_RIGHT,
@@ -449,6 +461,10 @@ public:
                         * TextDecoration <-> int */
    Color *color, *backgroundColor;
    StyleImage *backgroundImage;
+   BackgroundRepeat backgroundRepeat;
+   BackgroundAttachment backgroundAttachment;
+   Length backgroundPositionX; // "left" defiened by "0%" etc. (see CSS spec)
+   Length backgroundPositionY; // "top" defiened by "0%" etc. (see CSS spec)
 
    TextAlignType textAlign;
    VAlignType valign;
