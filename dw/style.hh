@@ -7,6 +7,8 @@
 #   error Do not include this file directly, use "core.hh" instead.
 #endif
 
+#include "../lout/signal.hh"
+
 namespace dw {
 namespace core {
 
@@ -431,9 +433,10 @@ public:
    }
 };
 
+class Tooltip;
 class Font;
 class Color;
-class Tooltip;
+class StyleImage;
 
 /**
  * \sa dw::core::style
@@ -445,6 +448,7 @@ public:
    int textDecoration; /* No TextDecoration because of problems converting
                         * TextDecoration <-> int */
    Color *color, *backgroundColor;
+   StyleImage *backgroundImage;
 
    TextAlignType textAlign;
    VAlignType valign;
@@ -504,7 +508,8 @@ public:
    }
    inline int boxDiffHeight () { return boxOffsetY () + boxRestHeight (); }
 
-   inline bool hasBackground () { return backgroundColor != NULL; }
+   inline bool hasBackground ()
+   { return backgroundColor != NULL || backgroundImage != NULL; }
 
    bool equals (lout::object::Object *other);
    int hashValue ();
@@ -675,6 +680,41 @@ public:
    inline void ref () { refCount++; }
    inline void unref ()
    { if (--refCount == 0) delete this; }
+};
+
+
+class StyleImage: public lout::signal::ObservedObject
+{
+private:
+   class StyleImgRenderer: public ImgRenderer
+   {
+   private:
+      StyleImage *image;
+
+   public:
+      inline StyleImgRenderer (StyleImage *image) { this->image = image; }
+
+      void setBuffer (core::Imgbuf *buffer, bool resize);
+      void drawRow (int row);
+   };
+
+   int refCount;
+   Imgbuf *imgbuf;
+   ImgRendererDist *imgRendererDist;
+   StyleImgRenderer *styleImgRenderer;
+
+   StyleImage ();
+   ~StyleImage ();
+
+public:
+   static StyleImage *create () { return new StyleImage (); }
+
+   inline void ref () { refCount++; }
+   inline void unref ()
+   { if (--refCount == 0) delete this; }
+
+   inline Imgbuf *getImgbuf () { return imgbuf; }
+   inline ImgRenderer *getMainImgRenderer () { return imgRendererDist; }
 };
 
 void drawBorder (View *view, Rectangle *area,

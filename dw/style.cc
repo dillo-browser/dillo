@@ -48,6 +48,7 @@ void StyleAttrs::initValues ()
    listStyleType = LIST_STYLE_TYPE_DISC;
    valign = VALIGN_BASELINE;
    backgroundColor = NULL;
+   backgroundImage = NULL;
    width = height = lineHeight = LENGTH_AUTO;
    textIndent = 0;
    margin.setVal (0);
@@ -76,6 +77,7 @@ void StyleAttrs::resetValues ()
    valign = VALIGN_BASELINE;
    textAlignChar = '.';
    backgroundColor = NULL;
+   backgroundImage = NULL;
    width = LENGTH_AUTO;
    height = LENGTH_AUTO;
 
@@ -116,6 +118,7 @@ bool StyleAttrs::equals (object::Object *other) {
        textDecoration == otherAttrs->textDecoration &&
        color == otherAttrs->color &&
        backgroundColor == otherAttrs->backgroundColor &&
+       backgroundImage == otherAttrs->backgroundImage &&
        textAlign == otherAttrs->textAlign &&
        valign == otherAttrs->valign &&
        textAlignChar == otherAttrs->textAlignChar &&
@@ -156,6 +159,7 @@ int StyleAttrs::hashValue () {
       textDecoration +
       (intptr_t) color +
       (intptr_t) backgroundColor +
+      (intptr_t) backgroundImage +
       textAlign +
       valign +
       textAlignChar +
@@ -205,6 +209,8 @@ Style::Style (StyleAttrs *attrs)
       color->ref ();
    if (backgroundColor)
       backgroundColor->ref ();
+   if (backgroundImage)
+      backgroundImage->ref ();
    if (borderColor.top)
       borderColor.top->ref();
    if (borderColor.bottom)
@@ -227,6 +233,8 @@ Style::~Style ()
       color->unref ();
    if (backgroundColor)
       backgroundColor->unref ();
+   if (backgroundImage)
+      backgroundImage->unref ();
    if (borderColor.top)
       borderColor.top->unref();
    if (borderColor.bottom)
@@ -248,6 +256,7 @@ void Style::copyAttrs (StyleAttrs *attrs)
    textDecoration = attrs->textDecoration;
    color = attrs->color;
    backgroundColor = attrs->backgroundColor;
+   backgroundImage = attrs->backgroundImage;
    textAlign = attrs->textAlign;
    valign = attrs->valign;
    textAlignChar = attrs->textAlignChar;
@@ -418,6 +427,42 @@ Color *Color::create (Layout *layout, int col)
 Tooltip *Tooltip::create (Layout *layout, const char *text)
 {
    return layout->createTooltip (text);
+}
+
+// ----------------------------------------------------------------------
+
+void StyleImage::StyleImgRenderer::setBuffer (core::Imgbuf *buffer, bool resize)
+{
+   if (image->imgbuf)
+      image->imgbuf->unref ();
+
+   image->imgbuf = buffer;
+   if (image->imgbuf)
+      image->imgbuf->ref ();
+}
+
+void StyleImage::StyleImgRenderer::drawRow (int row)
+{
+   // Nothing to do.
+}
+
+StyleImage::StyleImage ()
+{
+   refCount = 0;
+   imgbuf = NULL;
+
+   imgRendererDist = new ImgRendererDist ();
+   styleImgRenderer = new StyleImgRenderer (this);
+   imgRendererDist->put (styleImgRenderer);
+}
+
+StyleImage::~StyleImage ()
+{
+   if (imgbuf)
+      imgbuf->unref ();
+
+   delete imgRendererDist;
+   delete styleImgRenderer;
 }
 
 // ----------------------------------------------------------------------
@@ -867,8 +912,11 @@ void drawBackground (View *view, Rectangle *area,
                      Style *style, bool inverse)
 {
    Rectangle bgArea, intersection;
+   bool bgColor = style->backgroundColor != NULL;
+   bool bgImage = (style->backgroundImage != NULL &&
+                   style->backgroundImage->getImgbuf() != NULL);
 
-   if (style->backgroundColor) {
+   if (bgColor || bgImage) {
       bgArea.x = x + style->margin.left + style->borderWidth.left;
       bgArea.y = y + style->margin.top + style->borderWidth.top;
       bgArea.width =
@@ -878,12 +926,21 @@ void drawBackground (View *view, Rectangle *area,
          height - style->margin.top - style->borderWidth.top -
          style->margin.bottom - style->borderWidth.bottom;
 
-      if (area->intersectsWith (&bgArea, &intersection))
-         view->drawRectangle (style->backgroundColor,
-                              inverse ?
-                              Color::SHADING_INVERSE : Color::SHADING_NORMAL,
-                              true, intersection.x, intersection.y,
-                              intersection.width, intersection.height);
+      if (area->intersectsWith (&bgArea, &intersection)) {
+         if (bgColor)
+            view->drawRectangle (style->backgroundColor,
+                                 inverse ?
+                                 Color::SHADING_INVERSE : Color::SHADING_NORMAL,
+                                 true, intersection.x, intersection.y,
+                                 intersection.width, intersection.height);
+         
+         if (bgImage)
+            // TODO Just a very simple test, incomplete.
+            view->drawImage (style->backgroundImage->getImgbuf(),
+                             bgArea.x, bgArea.y, intersection.x - bgArea.x,
+                             intersection.y - bgArea.y, intersection.width,
+                             intersection.height);
+      }
    }
 }
 
