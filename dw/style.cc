@@ -868,6 +868,9 @@ static void drawBorderRight(View *view, Style *style,
  * \brief Draw the border of a region in window, according to style.
  *
  * Used by dw::core::Widget::drawBox and dw::core::Widget::drawWidgetBox.
+ *
+ * "area" is the area to be drawn, "x", "y", "width" and "height"
+ * define the box itself. All are given in canvas coordinates.
  */
 void drawBorder (View *view, Layout *layout, Rectangle *area,
                  int x, int y, int width, int height,
@@ -907,6 +910,11 @@ void drawBorder (View *view, Layout *layout, Rectangle *area,
  *
  * Used by dw::core::Widget::drawBox and dw::core::Widget::drawWidgetBox.
  *
+ * "area" is the area to be drawn, "x", "y", "width" and "height"
+ * define the box itself. "xRef", "yRef", "widthRef" and "heightRef"
+ * define the reference area, which is important for background
+ * images. All are given in canvas coordinates.
+ *
  * "atTop" should be true, only if the area is drawn directly on the
  * canvas, not on top of other areas; this is only true for the
  * toplevel widget itself (not parts of its contents). Toplevel widget
@@ -919,6 +927,7 @@ void drawBorder (View *view, Layout *layout, Rectangle *area,
  */
 void drawBackground (View *view, Layout *layout, Rectangle *area,
                      int x, int y, int width, int height,
+                     int xRef, int yRef, int widthRef, int heightRef,
                      Style *style, bool inverse, bool atTop)
 {
    bool bgColor = style->backgroundColor != NULL &&

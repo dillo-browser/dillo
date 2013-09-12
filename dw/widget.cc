@@ -350,9 +350,14 @@ void Widget::drawBox (View *view, style::Style *style, Rectangle *area,
                       allocation.x + x, allocation.y + y,
                       width, height, style, inverse);
 
+   /**
+    * \todo Reference should be the containing block (which will be
+    * introduced later), not the widget allocation.
+    */
    style::drawBackground (view, layout, &canvasArea,
                           allocation.x + x, allocation.y + y, width, height,
-                          style, inverse, false);
+                          allocation.x, allocation.y, allocation.width,
+                          getHeight (), style, inverse, false);
 }
 
 /**
@@ -372,9 +377,14 @@ void Widget::drawWidgetBox (View *view, Rectangle *area, bool inverse)
    style::drawBorder (view, layout, &canvasArea, allocation.x, allocation.y,
                       allocation.width, getHeight (), style, inverse);
 
+   /**
+    * \todo Reference should be the containing block (which will be
+    * introduced later), not the widget allocation.
+    */
    style::drawBackground (view, layout, &canvasArea, allocation.x, allocation.y,
-                          allocation.width, getHeight (), style, inverse,
-                          parent == NULL);
+                          allocation.width, getHeight (), allocation.x,
+                          allocation.y, allocation.width, getHeight (),
+                          style, inverse, parent == NULL);
 }
 
 /*
