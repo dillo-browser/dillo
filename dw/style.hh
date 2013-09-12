@@ -717,12 +717,12 @@ public:
    inline ImgRenderer *getMainImgRenderer () { return imgRendererDist; }
 };
 
-void drawBorder (View *view, Rectangle *area,
+void drawBorder (View *view, Layout *layout, Rectangle *area,
                  int x, int y, int width, int height,
                  Style *style, bool inverse);
-void drawBackground (View *view, Rectangle *area,
+void drawBackground (View *view, Layout *layout, Rectangle *area,
                      int x, int y, int width, int height,
-                     Style *style, bool inverse);
+                     Style *style, bool inverse, bool atTop);
 void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType);
 
 } // namespace style

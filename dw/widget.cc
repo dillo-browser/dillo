@@ -346,14 +346,13 @@ void Widget::drawBox (View *view, style::Style *style, Rectangle *area,
    viewArea.width = area->width;
    viewArea.height = area->height;
 
-   style::drawBorder (view, &viewArea, allocation.x + x, allocation.y + y,
+   style::drawBorder (view, layout, &viewArea,
+                      allocation.x + x, allocation.y + y,
                       width, height, style, inverse);
 
-   /** \todo Background images? */
-   if (style->backgroundColor)
-      style::drawBackground (view, &viewArea,
-                             allocation.x + x, allocation.y + y, width, height,
-                             style, inverse);
+   style::drawBackground (view, layout, &viewArea,
+                          allocation.x + x, allocation.y + y, width, height,
+                          style, inverse, false);
 }
 
 /**
@@ -370,26 +369,12 @@ void Widget::drawWidgetBox (View *view, Rectangle *area, bool inverse)
    viewArea.width = area->width;
    viewArea.height = area->height;
 
-   style::drawBorder (view, &viewArea, allocation.x, allocation.y,
+   style::drawBorder (view, layout, &viewArea, allocation.x, allocation.y,
                       allocation.width, getHeight (), style, inverse);
 
-   /** \todo Adjust following comment from the old dw sources. */
-   /*
-    * - Toplevel widget background colors are set as viewport
-    *   background color. This is not crucial for the rendering, but
-    *   looks a bit nicer when scrolling. Furthermore, the viewport
-    *   does anything else in this case.
-    *
-    * - Since widgets are always drawn from top to bottom, it is
-    *   *not* necessary to draw the background if
-    *   widget->style->background_color is NULL (shining through).
-    */
-   /** \todo Background images? */
-
-   if (style->backgroundColor &&
-       (parent || layout->getBgColor () != style->backgroundColor))
-      style::drawBackground (view, &viewArea, allocation.x, allocation.y,
-                             allocation.width, getHeight (), style, inverse);
+   style::drawBackground (view, layout, &viewArea, allocation.x, allocation.y,
+                          allocation.width, getHeight (), style, inverse,
+                          parent == NULL);
 }
 
 /*

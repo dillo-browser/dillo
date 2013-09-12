@@ -869,7 +869,7 @@ static void drawBorderRight(View *view, Style *style,
  *
  * Used by dw::core::Widget::drawBox and dw::core::Widget::drawWidgetBox.
  */
-void drawBorder (View *view, Rectangle *area,
+void drawBorder (View *view, Layout *layout, Rectangle *area,
                  int x, int y, int width, int height,
                  Style *style, bool inverse)
 {
@@ -906,17 +906,32 @@ void drawBorder (View *view, Rectangle *area,
  *    according to style.
  *
  * Used by dw::core::Widget::drawBox and dw::core::Widget::drawWidgetBox.
+ *
+ * "atTop" should be true, only if the area is drawn directly on the
+ * canvas, not on top of other areas; this is only true for the
+ * toplevel widget itself (not parts of its contents). Toplevel widget
+ * background colors are already set as viewport background color, so
+ * that drawing again is is not neccessary, but some time can be
+ * saved.
+ *
+ * Otherwise, the caller should not try to increase the performance by
+ * doing some tests befre; this is all done in this method.
  */
-void drawBackground (View *view, Rectangle *area,
+void drawBackground (View *view, Layout *layout, Rectangle *area,
                      int x, int y, int width, int height,
-                     Style *style, bool inverse)
+                     Style *style, bool inverse, bool atTop)
 {
-   Rectangle bgArea, intersection;
-   bool bgColor = style->backgroundColor != NULL;
+   bool bgColor = style->backgroundColor != NULL &&
+      (!atTop || layout->getBgColor () != style->backgroundColor);
    bool bgImage = (style->backgroundImage != NULL &&
                    style->backgroundImage->getImgbuf() != NULL);
 
+   // Since widgets are always drawn from top to bottom, it is *not*
+   // necessary to draw the background if background color and image
+   // are not set (NULL), i. e. shining through.
+
    if (bgColor || bgImage) {
+      Rectangle bgArea, intersection;
       bgArea.x = x + style->margin.left + style->borderWidth.left;
       bgArea.y = y + style->margin.top + style->borderWidth.top;
       bgArea.width =
