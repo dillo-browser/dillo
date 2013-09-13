@@ -93,6 +93,9 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    image = styleAttrs.backgroundImage = StyleImage::create ();
+   styleAttrs.backgroundRepeat = BACKGROUND_REPEAT_Y;
+   styleAttrs.backgroundPositionX = createPerLength (0.5);
+   styleAttrs.backgroundPositionY = createAbsLength (30);
 
    Style *widgetStyle = Style::create (&styleAttrs);
 
