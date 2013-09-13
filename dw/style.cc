@@ -935,12 +935,18 @@ void drawBorder (View *view, Layout *layout, Rectangle *area,
  * define the reference area, which is important for background
  * images. All are given in canvas coordinates.
  *
+ * \todo Does "reference" area include margin and padding? Does
+ *    currently, but should probably not.
+ *
  * "atTop" should be true, only if the area is drawn directly on the
  * canvas, not on top of other areas; this is only true for the
  * toplevel widget itself (not parts of its contents). Toplevel widget
  * background colors are already set as viewport background color, so
  * that drawing again is is not neccessary, but some time can be
  * saved.
+ *
+ * \todo The same should not only be applied to background colors, but
+ *    also to background images.
  *
  * Otherwise, the caller should not try to increase the performance by
  * doing some tests befre; this is all done in this method.
@@ -978,12 +984,68 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
                                  true, intersection.x, intersection.y,
                                  intersection.width, intersection.height);
          
-         if (bgImage)
-            // TODO Just a very simple test, incomplete.
-            view->drawImage (style->backgroundImage->getImgbuf(),
-                             bgArea.x, bgArea.y, intersection.x - bgArea.x,
-                             intersection.y - bgArea.y, intersection.width,
-                             intersection.height);
+         if (bgImage) {
+            Imgbuf *imgbuf = style->backgroundImage->getImgbuf();
+            int imgWidth = imgbuf->getRootWidth ();
+            int imgHeight = imgbuf->getRootHeight ();
+            
+            /** \todo "background-repeat" not yet used. */
+            bool repeatX =
+               style->backgroundRepeat == BACKGROUND_REPEAT ||
+               style->backgroundRepeat == BACKGROUND_REPEAT_X;
+            bool repeatY =
+               style->backgroundRepeat == BACKGROUND_REPEAT ||
+               style->backgroundRepeat == BACKGROUND_REPEAT_Y;
+
+            int origX = xRef +
+               (isPerLength (style->backgroundPositionX) ?
+                perLengthVal (style->backgroundPositionX) * (widthRef -
+                                                             imgWidth) :
+                absLengthVal (style->backgroundPositionX));
+            int origY = yRef +
+               (isPerLength (style->backgroundPositionY) ?
+                perLengthVal (style->backgroundPositionY) * (heightRef -
+                                                             imgHeight) :
+                absLengthVal (style->backgroundPositionY));
+
+            int tileX1 = intersection.x < origX ?
+               - (origX - intersection.x + imgWidth - 1) / imgWidth :
+               (intersection.x - origX) / imgWidth;
+            int tileX2 = origX < intersection.x + intersection.width ?
+               (intersection.x + intersection.width - origX - 1) / imgWidth :
+               - (origX - (intersection.x + intersection.width)
+                  + imgWidth - 1) / imgWidth;
+            int tileY1 = intersection.y < origY ?
+               - (origY - intersection.y + imgHeight - 1) / imgHeight :
+               (intersection.y - origY) / imgHeight;
+            int tileY2 = origY < intersection.y + intersection.height ?
+               (intersection.y + intersection.height - origY - 1) / imgHeight :
+               - (origY - (intersection.y + intersection.height)
+                  + imgHeight - 1) / imgHeight;
+
+            //printf ("tileX1 = %d, tileX2 = %d, tileY1 = %d, tileY2 = %d\n",
+            //        tileX1, tileX2, tileY1, tileY2);
+
+            for (int tileX = tileX1; tileX <= tileX2; tileX++)
+               for (int tileY = tileY1; tileY <= tileY2; tileY++) {
+                  int x = origX + tileX * imgWidth;
+                  int x1 = misc::max (x, intersection.x);
+                  int x2 = misc::min (x + imgWidth,
+                                      intersection.x + intersection.width);
+                  int y = origY + tileY * imgHeight;
+                  int y1 = misc::max (y, intersection.y);
+                  int y2 = misc::min (y + imgHeight,
+                                      intersection.y + intersection.height);
+
+                  //printf ("   (%d, %d) => (%d, %d - %d) / (%d, %d - %d)\n",
+                  //        tileX, tileY, x, x1, x2, y, y1, y2);
+                  //printf ("      => drawImage (%d, %d, %d, %d, %d, %d)\n",
+                  //        x, y, x - x, y1 - y, x2 - x1, y2 - y1);
+
+                  view->drawImage (imgbuf, x, y, x1 - x, y1 - y,
+                                   x2 - x1, y2 - y1);
+               }
+         }
       }
    }
 }
