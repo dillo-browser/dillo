@@ -1026,25 +1026,45 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
             //printf ("tileX1 = %d, tileX2 = %d, tileY1 = %d, tileY2 = %d\n",
             //        tileX1, tileX2, tileY1, tileY2);
 
-            for (int tileX = tileX1; tileX <= tileX2; tileX++)
-               for (int tileY = tileY1; tileY <= tileY2; tileY++) {
-                  int x = origX + tileX * imgWidth;
-                  int x1 = misc::max (x, intersection.x);
-                  int x2 = misc::min (x + imgWidth,
-                                      intersection.x + intersection.width);
-                  int y = origY + tileY * imgHeight;
-                  int y1 = misc::max (y, intersection.y);
-                  int y2 = misc::min (y + imgHeight,
-                                      intersection.y + intersection.height);
+            bool doDraw = true;
+            if (!repeatX) {
+               // Only center tile (tileX = 0) is drawn, ...
+               if (tileX1 <= 0 && tileX2 >= 0)
+                  // ... and is visible.
+                  tileX1 = tileX2 = 0;
+               else
+                  // ... but is not visible.
+                  doDraw = false;
+            }
 
-                  //printf ("   (%d, %d) => (%d, %d - %d) / (%d, %d - %d)\n",
-                  //        tileX, tileY, x, x1, x2, y, y1, y2);
-                  //printf ("      => drawImage (%d, %d, %d, %d, %d, %d)\n",
-                  //        x, y, x - x, y1 - y, x2 - x1, y2 - y1);
+            if (!repeatY) {
+               // Analogue.
+               if (tileY1 <= 0 && tileY2 >= 0)
+                  tileY1 = tileY2 = 0;
+               else
+                  doDraw = false;
+            }
 
-                  view->drawImage (imgbuf, x, y, x1 - x, y1 - y,
-                                   x2 - x1, y2 - y1);
-               }
+            if (doDraw)
+               for (int tileX = tileX1; tileX <= tileX2; tileX++)
+                  for (int tileY = tileY1; tileY <= tileY2; tileY++) {
+                     int x = origX + tileX * imgWidth;
+                     int x1 = misc::max (x, intersection.x);
+                     int x2 = misc::min (x + imgWidth,
+                                         intersection.x + intersection.width);
+                     int y = origY + tileY * imgHeight;
+                     int y1 = misc::max (y, intersection.y);
+                     int y2 = misc::min (y + imgHeight,
+                                         intersection.y + intersection.height);
+                     
+                     //printf ("   (%d, %d) => (%d, %d - %d) / (%d, %d - %d)\n",
+                     //        tileX, tileY, x, x1, x2, y, y1, y2);
+                     //printf ("      => drawImage (%d, %d, %d, %d, %d, %d)\n",
+                     //        x, y, x - x, y1 - y, x2 - x1, y2 - y1);
+                     
+                     view->drawImage (imgbuf, x, y, x1 - x, y1 - y,
+                                      x2 - x1, y2 - y1);
+                  }
          }
       }
    }
