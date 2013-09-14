@@ -61,6 +61,7 @@ typedef struct {
    int32_t ui_text_bg_color;
    bool_t contrast_visited_color;
    bool_t show_tooltip;
+   bool_t show_ui_tooltip;
    char *theme;
    int panel_size;
    bool_t small_icons;

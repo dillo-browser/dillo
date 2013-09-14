@@ -11,6 +11,7 @@ dillo-3.0.4 [not released yet]
 
 +- OPTGROUP and INS elements.
  - Some HTML5 elements, etc.
+ - Added show_ui_tooltip preference (BUG#1140).
    Patches: corvid
 +- Make embedding into other applications more reliable (BUG#1127).
  - Add search from address bar.

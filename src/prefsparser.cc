@@ -107,6 +107,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "show_stop", &prefs.show_stop, PREFS_BOOL },
       { "show_tools", &prefs.show_tools, PREFS_BOOL },
       { "show_tooltip", &prefs.show_tooltip, PREFS_BOOL },
+      { "show_ui_tooltip", &prefs.show_ui_tooltip, PREFS_BOOL },
       { "small_icons", &prefs.small_icons, PREFS_BOOL },
       { "start_page", &prefs.start_page, PREFS_URL },
       { "theme", &prefs.theme, PREFS_STRING },

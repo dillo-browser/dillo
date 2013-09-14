@@ -489,8 +489,7 @@ int main(int argc, char **argv)
    Fl::scheme(prefs.theme);
    setColors();
 
-   if (!prefs.show_tooltip) {
-      // turn off UI tooltips
+   if (!prefs.show_ui_tooltip) {
       Fl::option(Fl::OPTION_SHOW_TOOLTIPS, false);
    }
 
