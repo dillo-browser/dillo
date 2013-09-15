@@ -752,7 +752,6 @@ public:
       virtual void getRefArea (int *xRef, int *yRef, int *widthRef,
                                int *heightRef) = 0;
 
-
       /**
        * \brief Return the style this background image is part of.
        */
