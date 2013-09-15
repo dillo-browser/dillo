@@ -485,6 +485,28 @@ StyleImage::~StyleImage ()
    delete styleImgRenderer;
 }
 
+void StyleImage::ExternalImgRenderer::setBuffer (core::Imgbuf *buffer,
+                                                 bool resize)
+{
+   // Nothing to do?
+}
+
+void StyleImage::ExternalImgRenderer::drawRow (int row)
+{
+   // Extremely simple implementation
+   Style *style;
+   if (readyToDraw () && (style = getStyle ())) {
+      int x, y, width, height;
+      getArea (&x, &y, &width, &height);
+      draw (x + style->margin.left + style->borderWidth.left,
+            y + style->margin.top + style->borderWidth.top,
+            width - style->margin.left - style->borderWidth.left
+            - style->margin.right - style->borderWidth.right,
+            height - style->margin.top - style->borderWidth.top
+            - style->margin.bottom - style->borderWidth.bottom);
+   }
+}
+
 // ----------------------------------------------------------------------
 
 /*

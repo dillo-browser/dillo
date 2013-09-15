@@ -74,6 +74,28 @@ protected:
       BLOCK_LEVEL      = 1 << 6,
    };
 
+   /**
+    * \brief Implementation which represents the whole widget.
+    *
+    * The only instance is set created needed.
+    */
+   class WidgetImgRenderer: public style::StyleImage::ExternalImgRenderer
+   {
+   private:
+      Widget *widget;
+
+   public:
+      inline WidgetImgRenderer (Widget *widget) { this->widget = widget; }
+
+      bool readyToDraw ();
+      void getArea (int *x, int *y, int *width, int *height);
+      void getRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
+      style::Style *getStyle ();
+      void draw (int x, int y, int width, int height);
+   };
+
+   WidgetImgRenderer *widgetImgRenderer;
+
 private:
    /**
     * \brief The parent widget, NULL for top-level widgets.

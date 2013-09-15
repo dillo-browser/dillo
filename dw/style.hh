@@ -723,6 +723,48 @@ private:
    ~StyleImage ();
 
 public:
+   /**
+    * \brief Useful (but not mandatory) base class for updates of
+    *    areas with background images.
+    */
+   class ExternalImgRenderer: public ImgRenderer
+   {
+   public:
+      void setBuffer (core::Imgbuf *buffer, bool resize);
+      void drawRow (int row);
+
+      /**
+       * \brief If this method returns false, nothing is done at all.
+       */
+      virtual bool readyToDraw () = 0;
+
+      /**
+       * \brief Return the total area this background image is
+       *    attached to, in canvas coordinates.
+       */
+      virtual void getArea (int *x, int *y, int *width, int *height) = 0;
+
+      /**
+       * \brief Return the "reference area".
+       *
+       * See comment of "drawBackground".
+       */
+      virtual void getRefArea (int *xRef, int *yRef, int *widthRef,
+                               int *heightRef) = 0;
+
+
+      /**
+       * \brief Return the style this background image is part of.
+       */
+      virtual Style *getStyle () = 0;
+
+      /**
+       * \brief Draw (or queue for drawing) an area, which is given in
+       *    canvas coordinates.
+       */
+      virtual void draw (int x, int y, int width, int height) = 0;
+   };
+
    static StyleImage *create () { return new StyleImage (); }
 
    inline void ref () { refCount++; }
@@ -731,6 +773,19 @@ public:
 
    inline Imgbuf *getImgbuf () { return imgbuf; }
    inline ImgRenderer *getMainImgRenderer () { return imgRendererDist; }
+
+   /**
+    * \brief Add an additional ImgRenderer, especially used for
+    *    drawing.
+    */
+   inline void putExternalImgRenderer (ImgRenderer *ir)
+   { imgRendererDist->put (ir); }
+
+   /**
+    * \brief Remove a previously added additional ImgRenderer.
+    */
+   inline void removeExternalImgRenderer (ImgRenderer *ir)
+   { imgRendererDist->remove (ir); }
 };
 
 void drawBorder (View *view, Layout *layout, Rectangle *area,

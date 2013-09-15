@@ -32,6 +32,46 @@ namespace core {
 
 // ----------------------------------------------------------------------
 
+bool Widget::WidgetImgRenderer::readyToDraw ()
+{
+   return widget->wasAllocated ();
+}
+
+void Widget::WidgetImgRenderer::getArea (int *x, int *y, int *width,
+                                         int *height)
+{
+   *x = widget->allocation.x;
+   *y = widget->allocation.y;
+   *width = widget->allocation.width;
+   *height = widget->getHeight ();
+}
+
+void Widget::WidgetImgRenderer::getRefArea (int *xRef, int *yRef, int *widthRef,
+                                            int *heightRef)
+{
+   /**
+    * \todo Reference should be the containing block (which will be
+    *    introduced later), not the widget allocation.
+    */
+   *xRef = widget->allocation.x;
+   *yRef = widget->allocation.y;
+   *widthRef = widget->allocation.width;
+   *heightRef = widget->getHeight ();
+}
+
+style::Style *Widget::WidgetImgRenderer::getStyle ()
+{
+   return widget->getStyle ();
+}
+
+void Widget::WidgetImgRenderer::draw (int x, int y, int width, int height)
+{
+   widget->queueDrawArea (x - widget->allocation.x, y - widget->allocation.y,
+                          width, height);
+}
+
+// ----------------------------------------------------------------------
+
 int Widget::CLASS_ID = -1;
 
 Widget::Widget ()
@@ -55,12 +95,20 @@ Widget::Widget ()
 
    deleteCallbackData = NULL;
    deleteCallbackFunc = NULL;
+
+   widgetImgRenderer = NULL;
 }
 
 Widget::~Widget ()
 {
    if (deleteCallbackFunc)
       deleteCallbackFunc (deleteCallbackData);
+
+   if (widgetImgRenderer) {
+      if (style && style->backgroundImage)
+         style->backgroundImage->removeExternalImgRenderer (widgetImgRenderer);
+      delete widgetImgRenderer;
+   }
 
    if (style)
       style->unref ();
@@ -281,6 +329,10 @@ void Widget::setStyle (style::Style *style)
 {
    bool sizeChanged;
 
+   if (widgetImgRenderer && this->style && this->style->backgroundImage)
+      this->style->backgroundImage->removeExternalImgRenderer
+         (widgetImgRenderer);
+
    style->ref ();
 
    if (this->style) {
@@ -290,6 +342,15 @@ void Widget::setStyle (style::Style *style)
       sizeChanged = true;
 
    this->style = style;
+
+   if (style && style->backgroundImage) {
+      // Create instance of WidgetImgRenderer when needed. Until this
+      // widget is deleted, "widgetImgRenderer" will be kept, since it
+      // is not specific to the style, but only to this widget.
+      if (widgetImgRenderer == NULL)
+         widgetImgRenderer = new WidgetImgRenderer (this);
+      style->backgroundImage->putExternalImgRenderer (widgetImgRenderer);
+   }
 
    if (layout != NULL) {
       layout->updateCursor ();
@@ -352,7 +413,7 @@ void Widget::drawBox (View *view, style::Style *style, Rectangle *area,
 
    /**
     * \todo Reference should be the containing block (which will be
-    * introduced later), not the widget allocation.
+    *    introduced later), not the widget allocation.
     */
    style::drawBackground (view, layout, &canvasArea,
                           allocation.x + x, allocation.y + y, width, height,
@@ -379,7 +440,7 @@ void Widget::drawWidgetBox (View *view, Rectangle *area, bool inverse)
 
    /**
     * \todo Reference should be the containing block (which will be
-    * introduced later), not the widget allocation.
+    *    introduced later), not the widget allocation.
     */
    style::drawBackground (view, layout, &canvasArea, allocation.x, allocation.y,
                           allocation.width, getHeight (), allocation.x,
