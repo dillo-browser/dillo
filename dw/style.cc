@@ -1011,7 +1011,6 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
             int imgWidth = imgbuf->getRootWidth ();
             int imgHeight = imgbuf->getRootHeight ();
             
-            /** \todo "background-repeat" not yet used. */
             bool repeatX =
                style->backgroundRepeat == BACKGROUND_REPEAT ||
                style->backgroundRepeat == BACKGROUND_REPEAT_X;
