@@ -501,17 +501,49 @@ void StyleImage::ExternalImgRenderer::setBuffer (core::Imgbuf *buffer,
 
 void StyleImage::ExternalImgRenderer::drawRow (int row)
 {
-   // Extremely simple implementation
    Style *style;
    if (readyToDraw () && (style = getStyle ())) {
+      // All single rows are drawn.
+
+      Imgbuf *imgbuf = style->backgroundImage->getImgbuf();
+      int imgWidth = imgbuf->getRootWidth ();
+      int imgHeight = imgbuf->getRootHeight ();
+
       int x, y, width, height;
       getArea (&x, &y, &width, &height);
-      draw (x + style->margin.left + style->borderWidth.left,
-            y + style->margin.top + style->borderWidth.top,
-            width - style->margin.left - style->borderWidth.left
-            - style->margin.right - style->borderWidth.right,
-            height - style->margin.top - style->borderWidth.top
-            - style->margin.bottom - style->borderWidth.bottom);
+      int xDraw = x + style->margin.left + style->borderWidth.left;
+      int yDraw = y + style->margin.top + style->borderWidth.top;
+      int widthDraw = width - style->margin.left - style->borderWidth.left
+         - style->margin.right - style->borderWidth.right;
+      int heightDraw = height - style->margin.top - style->borderWidth.top
+         - style->margin.bottom - style->borderWidth.bottom;
+
+      int xRef, yRef, widthRef, heightRef;
+      getRefArea (&xRef, &yRef, &widthRef, &heightRef);
+
+      bool repeatX, repeatY, doDraw;
+      int origX, origY, tileX1, tileX2, tileY1, tileY2;
+      
+      calcBackgroundRelatedValues (style, xDraw, yDraw, widthDraw, heightDraw,
+                                   xRef, yRef, widthRef, heightRef, &repeatX,
+                                   &repeatY, &origX, &origY, &tileX1, &tileX2,
+                                   &tileY1, &tileY2, &doDraw);
+
+      //printf ("tileX1 = %d, tileX2 = %d, tileY1 = %d, tileY2 = %d\n",
+      //        tileX1, tileX2, tileY1, tileY2);
+
+      if (doDraw)
+         // Only iterate over y, because the rows can be combined
+         // horizontically.
+         for (int tileY = tileY1; tileY <= tileY2; tileY++) {
+            int x1 = misc::max (origX + tileX1 * imgWidth, xDraw);
+            int x2 = misc::min (origX + (tileX2 + 1) * imgWidth,
+                                xDraw + widthDraw);
+
+            int y = origY + tileY * imgHeight + row;
+            if (y >= yDraw && y < yDraw + heightDraw)
+               draw (x1, y, x2 - x1, 1);
+         }
    }
 }
 
