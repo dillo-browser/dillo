@@ -34,6 +34,14 @@ namespace dw {
 namespace core {
 namespace style {
 
+static void calcBackgroundRelatedValues (Style *style, int xDraw, int yDraw,
+                                         int widthDraw, int heightDraw,
+                                         int xRef, int yRef, int widthRef,
+                                         int heightRef, bool *repeatX,
+                                         bool *repeatY, int *origX, int *origY,
+                                         int *tileX1, int *tileX2, int *tileY1,
+                                         int *tileY2, bool *doDraw);
+
 void StyleAttrs::initValues ()
 {
    x_link = -1;
@@ -1010,61 +1018,19 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
             Imgbuf *imgbuf = style->backgroundImage->getImgbuf();
             int imgWidth = imgbuf->getRootWidth ();
             int imgHeight = imgbuf->getRootHeight ();
-            
-            bool repeatX =
-               style->backgroundRepeat == BACKGROUND_REPEAT ||
-               style->backgroundRepeat == BACKGROUND_REPEAT_X;
-            bool repeatY =
-               style->backgroundRepeat == BACKGROUND_REPEAT ||
-               style->backgroundRepeat == BACKGROUND_REPEAT_Y;
 
-            int origX = xRef +
-               (isPerLength (style->backgroundPositionX) ?
-                perLengthVal (style->backgroundPositionX) * (widthRef -
-                                                             imgWidth) :
-                absLengthVal (style->backgroundPositionX));
-            int origY = yRef +
-               (isPerLength (style->backgroundPositionY) ?
-                perLengthVal (style->backgroundPositionY) * (heightRef -
-                                                             imgHeight) :
-                absLengthVal (style->backgroundPositionY));
+            bool repeatX, repeatY, doDraw;
+            int origX, origY, tileX1, tileX2, tileY1, tileY2;
 
-            int tileX1 = intersection.x < origX ?
-               - (origX - intersection.x + imgWidth - 1) / imgWidth :
-               (intersection.x - origX) / imgWidth;
-            int tileX2 = origX < intersection.x + intersection.width ?
-               (intersection.x + intersection.width - origX - 1) / imgWidth :
-               - (origX - (intersection.x + intersection.width)
-                  + imgWidth - 1) / imgWidth;
-            int tileY1 = intersection.y < origY ?
-               - (origY - intersection.y + imgHeight - 1) / imgHeight :
-               (intersection.y - origY) / imgHeight;
-            int tileY2 = origY < intersection.y + intersection.height ?
-               (intersection.y + intersection.height - origY - 1) / imgHeight :
-               - (origY - (intersection.y + intersection.height)
-                  + imgHeight - 1) / imgHeight;
+            calcBackgroundRelatedValues (style, intersection.x, intersection.y,
+                                         intersection.width,
+                                         intersection.height, xRef, yRef,
+                                         widthRef, heightRef, &repeatX,
+                                         &repeatY, &origX, &origY, &tileX1,
+                                         &tileX2, &tileY1, &tileY2, &doDraw);
 
             //printf ("tileX1 = %d, tileX2 = %d, tileY1 = %d, tileY2 = %d\n",
             //        tileX1, tileX2, tileY1, tileY2);
-
-            bool doDraw = true;
-            if (!repeatX) {
-               // Only center tile (tileX = 0) is drawn, ...
-               if (tileX1 <= 0 && tileX2 >= 0)
-                  // ... and is visible.
-                  tileX1 = tileX2 = 0;
-               else
-                  // ... but is not visible.
-                  doDraw = false;
-            }
-
-            if (!repeatY) {
-               // Analogue.
-               if (tileY1 <= 0 && tileY2 >= 0)
-                  tileY1 = tileY2 = 0;
-               else
-                  doDraw = false;
-            }
 
             if (doDraw)
                for (int tileX = tileX1; tileX <= tileX2; tileX++)
@@ -1088,6 +1054,64 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
                   }
          }
       }
+   }
+}
+
+void calcBackgroundRelatedValues (Style *style, int xDraw, int yDraw,
+                                  int widthDraw, int heightDraw, int xRef,
+                                  int yRef, int widthRef, int heightRef,
+                                  bool *repeatX, bool *repeatY, int *origX,
+                                  int *origY, int *tileX1, int *tileX2,
+                                  int *tileY1, int *tileY2, bool *doDraw)
+{
+   Imgbuf *imgbuf = style->backgroundImage->getImgbuf();
+   int imgWidth = imgbuf->getRootWidth ();
+   int imgHeight = imgbuf->getRootHeight ();
+
+   *repeatX = style->backgroundRepeat == BACKGROUND_REPEAT ||
+      style->backgroundRepeat == BACKGROUND_REPEAT_X;
+   *repeatY = style->backgroundRepeat == BACKGROUND_REPEAT ||
+      style->backgroundRepeat == BACKGROUND_REPEAT_Y;
+   
+   *origX = xRef +
+      (isPerLength (style->backgroundPositionX) ?
+       perLengthVal (style->backgroundPositionX) * (widthRef - imgWidth) :
+       absLengthVal (style->backgroundPositionX));
+   *origY = yRef +
+      (isPerLength (style->backgroundPositionY) ?
+       perLengthVal (style->backgroundPositionY) * (heightRef - imgHeight) :
+       absLengthVal (style->backgroundPositionY));
+   
+   *tileX1 = xDraw < *origX ?
+      - (*origX - xDraw + imgWidth - 1) / imgWidth :
+      (xDraw - *origX) / imgWidth;
+   *tileX2 = *origX < xDraw + widthDraw ?
+      (xDraw + widthDraw - *origX - 1) / imgWidth :
+      - (*origX - (xDraw + widthDraw) + imgWidth - 1) / imgWidth;
+   *tileY1 = yDraw < *origY ?
+      - (*origY - yDraw + imgHeight - 1) / imgHeight :
+      (yDraw - *origY) / imgHeight;
+   *tileY2 = *origY < yDraw + heightDraw ?
+      (yDraw + heightDraw - *origY - 1) / imgHeight :
+      - (*origY - (yDraw + heightDraw) + imgHeight - 1) / imgHeight;
+   
+   *doDraw = true;
+   if (!*repeatX) {
+      // Only center tile (tileX = 0) is drawn, ...
+      if (*tileX1 <= 0 && *tileX2 >= 0)
+         // ... and is visible.
+         *tileX1 = *tileX2 = 0;
+      else
+         // ... but is not visible.
+         *doDraw = false;
+   }
+   
+   if (!*repeatY) {
+      // Analogue.
+      if (*tileY1 <= 0 && *tileY2 >= 0)
+         *tileY1 = *tileY2 = 0;
+      else
+         *doDraw = false;
    }
 }
 
