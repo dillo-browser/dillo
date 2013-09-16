@@ -455,12 +455,16 @@ void UI::make_location(int ww)
     b->set_tooltip("Clear the URL box.\nMiddle-click to paste a URL.");
     p_xpos += b->w();
 
-    CustInput *i = new CustInput(p_xpos,0,ww-p_xpos-32,lh,0);
-    Location = i;
-    i->when(FL_WHEN_ENTER_KEY);
-    i->callback(location_cb, this);
-    i->set_tooltip("Location");
-    p_xpos += i->w();
+    LocationGroup = new Fl_Group(p_xpos,0,ww-p_xpos-32,lh,0);
+    LocationGroup->begin();
+     CustInput *i = new CustInput(p_xpos,0,ww-p_xpos-32,lh,0);
+     Location = i;
+     i->when(FL_WHEN_ENTER_KEY);
+     i->callback(location_cb, this);
+     i->set_tooltip("Location");
+     p_xpos += i->w();
+    LocationGroup->box(FL_THIN_UP_BOX);   // or FL_FLAT_BOX
+    LocationGroup->end();
 
     Search = b = new CustButton(p_xpos,0,16,lh,0);
     b->image(icons->ImgSearch);
@@ -567,7 +571,7 @@ void UI::make_panel(int ww)
        make_toolbar(ww,bh);
        make_filemenu_button();
        make_location(ww);
-       NavBar->resizable(Location);
+       NavBar->resizable(LocationGroup);
        make_progress_bars(0,1);
       NavBar->box(FL_THIN_UP_FRAME);
       NavBar->end();
@@ -581,7 +585,7 @@ void UI::make_panel(int ww)
         p_xpos = 0;
         make_filemenu_button();
         make_location(ww);
-        LocBar->resizable(Location);
+        LocBar->resizable(LocationGroup);
        LocBar->end();
        LocBar->rearrange();
        TopGroup->insert(*LocBar,0);
@@ -945,6 +949,8 @@ void UI::customize()
       Tools->hide();
    if ( !prefs.show_clear_url )
       Clear->hide();
+   if ( !prefs.show_url )
+      Location->hide();
    if ( !prefs.show_search )
       Search->hide();
    if ( !prefs.show_help )

@@ -81,6 +81,7 @@ typedef struct {
    bool_t show_tools;
    bool_t show_filemenu;
    bool_t show_clear_url;
+   bool_t show_url;
    bool_t show_search;
    bool_t show_help;
    bool_t show_progress_box;

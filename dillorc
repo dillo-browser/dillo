@@ -320,6 +320,7 @@ ui_tab_bg_color=#b7beb7
 #show_tools=YES
 #show_filemenu=YES
 #show_clear_url=YES
+#show_url=YES
 #show_search=YES
 #show_help=YES
 #show_progress_box=YES

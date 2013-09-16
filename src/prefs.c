@@ -93,6 +93,7 @@ void a_Prefs_init(void)
    prefs.show_quit_dialog = TRUE;
    prefs.show_reload = TRUE;
    prefs.show_save = TRUE;
+   prefs.show_url = TRUE;
    prefs.show_search = TRUE;
    prefs.show_stop = TRUE;
    prefs.show_tools = TRUE;

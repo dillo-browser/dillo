@@ -25,7 +25,9 @@ dillo-3.0.4 [not released yet]
    Patches: Sebastian Geerken
 +- Fix a set of bugs reported by Oulu Univ. Secure Programming Group
    (HTML parsing, URL resolution, GIF processing, etc.)
-   Patch: Jorge Arellano Cid
+ - Improved/fixed handling of HEAD, TITLE, TEXTAREA and form inputs.
+ - Made show_url dillorc option work again (BUG#1128)
+   Patches: Jorge Arellano Cid
 +- Fix compiling on Hurd.
    Patch: Pino Toscano
 +- Avoid Dpid children becoming zombies.
