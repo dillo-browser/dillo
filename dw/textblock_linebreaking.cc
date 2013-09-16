@@ -418,6 +418,16 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    //printf (": ");
    //words->getRef(line->lastWord)->badnessAndPenalty.print ();
    //printf ("\n");
+
+   int xWidget = lineXOffsetWidget(line);
+   for (int i = firstWord; i <= lastWord; i++) {
+      Word *word = words->getRef (i);
+      if (word->wordImgRenderer)
+         word->wordImgRenderer->setData (xWidget, lines->size () - 1);
+      if (word->spaceImgRenderer)
+         word->spaceImgRenderer->setData (xWidget, lines->size () - 1);
+      xWidget += word->size.width + word->effSpace;
+   }
    
    return line;
 }

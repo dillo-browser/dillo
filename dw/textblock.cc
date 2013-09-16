@@ -41,6 +41,85 @@ namespace dw {
 
 int Textblock::CLASS_ID = -1;
 
+Textblock::WordImgRenderer::WordImgRenderer (Textblock *textblock,
+                                             Word *word)
+{
+   //printf ("new WordImgRenderer %p\n", this);
+
+   this->textblock = textblock;
+   this->word = word;
+   dataSet = false;
+}
+
+Textblock::WordImgRenderer::~WordImgRenderer ()
+{
+   //printf ("delete WordImgRenderer %p\n", this);
+}
+
+void Textblock::WordImgRenderer::setData (int xWordWidget, int lineNo)
+{
+   dataSet = true;
+   this->xWordWidget = xWordWidget;
+   this->lineNo = lineNo;
+}
+
+bool Textblock::WordImgRenderer::readyToDraw ()
+{
+   return dataSet && textblock->wasAllocated ()
+      && lineNo < textblock->lines->size();
+}
+
+void Textblock::WordImgRenderer::getArea (int *x, int *y, int *width,
+                                          int *height)
+{
+   Line *line = textblock->lines->getRef (lineNo);
+   *x = textblock->allocation.x + this->xWordWidget;
+   *y = textblock->lineYOffsetCanvas (line);
+   *width = word->size.width;
+   *height = line->boxAscent + line->boxDescent;
+}
+
+void Textblock::WordImgRenderer::getRefArea (int *xRef, int *yRef,
+                                             int *widthRef, int *heightRef)
+{
+   /**
+    * \todo Reference should be the containing block (which will be
+    *    introduced later), not the widget allocation. (And also,
+    *    there should be one single method for this.)
+    */
+   *xRef = textblock->allocation.x;
+   *yRef = textblock->allocation.y;
+   *widthRef = textblock->allocation.width;
+   *heightRef = textblock->getHeight ();
+}
+
+core::style::Style *Textblock::WordImgRenderer::getStyle ()
+{
+   return word->style;
+}
+
+void Textblock::WordImgRenderer::draw (int x, int y, int width, int height)
+{
+   textblock->queueDrawArea (x - textblock->allocation.x,
+                             y - textblock->allocation.y, width, height);
+
+}
+
+void Textblock::SpaceImgRenderer::getArea (int *x, int *y, int *width,
+                                           int *height)
+{
+   WordImgRenderer::getArea (x, y, width, height);
+   *x += *width;
+   *width = word->effSpace;
+}
+
+core::style::Style *Textblock::SpaceImgRenderer::getStyle ()
+{
+   return word->spaceStyle;
+}
+
+// ----------------------------------------------------------------------
+
 Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
    // soft hyphen (U+00AD)
    { "\xc2\xad", true, false, true, PENALTY_HYPHEN, -1 },
@@ -181,8 +260,22 @@ Textblock::~Textblock ()
 
    for (int i = 0; i < words->size(); i++) {
       Word *word = words->getRef (i);
+
       if (word->content.type == core::Content::WIDGET)
          delete word->content.widget;
+
+      if (word->wordImgRenderer) {
+         word->style->backgroundImage->removeExternalImgRenderer
+            (word->wordImgRenderer);
+         delete word->wordImgRenderer;
+      }
+
+      if (word->spaceImgRenderer) {
+         word->spaceStyle->backgroundImage->removeExternalImgRenderer
+            (word->spaceImgRenderer);
+         delete word->spaceImgRenderer;
+      }
+
       word->style->unref ();
       word->spaceStyle->unref ();
    }
@@ -1365,6 +1458,21 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
 
    word->style = style;
    word->spaceStyle = style;
+
+   if (word->style->backgroundImage) {
+      word->wordImgRenderer = new WordImgRenderer (this, word);
+      word->style->backgroundImage->putExternalImgRenderer
+         (word->wordImgRenderer);
+   } else
+      word->wordImgRenderer = NULL;
+
+   if (word->spaceStyle->backgroundImage) {
+      word->spaceImgRenderer = new SpaceImgRenderer (this, word);
+      word->spaceStyle->backgroundImage->putExternalImgRenderer
+         (word->spaceImgRenderer);
+   } else
+      word->spaceImgRenderer = NULL;
+
    style->ref ();
    style->ref ();
 }
@@ -1894,9 +2002,23 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
       //DBG_OBJ_ARRSET_NUM (this, "words.%d.content.space", wordIndex,
       //                    word->content.space);
 
+
+      if (word->spaceImgRenderer) {
+         word->spaceStyle->backgroundImage->removeExternalImgRenderer
+            (word->spaceImgRenderer);
+         delete word->spaceImgRenderer;
+      }
+
       word->spaceStyle->unref ();
       word->spaceStyle = style;
       style->ref ();
+
+      if (word->spaceStyle->backgroundImage) {
+         word->spaceImgRenderer = new SpaceImgRenderer (this, word);
+         word->spaceStyle->backgroundImage->putExternalImgRenderer
+            (word->spaceImgRenderer);
+      } else
+         word->spaceImgRenderer = NULL;
    }
 }
 

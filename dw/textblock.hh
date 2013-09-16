@@ -237,6 +237,42 @@ private:
    static const char *hyphenDrawChar;
 
 protected:
+   struct Word;
+   
+   /**
+    * \brief Implementation used for words.
+    */
+   class WordImgRenderer: public core::style::StyleImage::ExternalImgRenderer
+   {
+   protected:
+      Textblock *textblock;
+      Word *word;
+      bool dataSet;
+      int xWordWidget, lineNo;
+
+   public:
+      WordImgRenderer (Textblock *textblock, Word *word);
+      ~WordImgRenderer ();
+      
+      void setData (int xWordWidget, int lineNo);
+
+      bool readyToDraw ();
+      void getArea (int *x, int *y, int *width, int *height);
+      void getRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
+      core::style::Style *getStyle ();
+      void draw (int x, int y, int width, int height);
+   };
+
+   class SpaceImgRenderer: public WordImgRenderer
+   {
+   public:
+      inline SpaceImgRenderer (Textblock *textblock, Word *word) :
+         WordImgRenderer (textblock, word) { }
+
+      void getArea (int *x, int *y, int *width, int *height);
+      core::style::Style *getStyle ();
+   };
+
    struct Paragraph
    {
       int firstWord;    /* first word's index in word vector */
@@ -349,6 +385,11 @@ protected:
       core::style::Style *style;
       core::style::Style *spaceStyle; /* initially the same as of the word,
                                          later set by a_Dw_page_add_space */
+
+      // These two are used rarely, so there is perhaps a way to store
+      // them which is consuming less memory.
+      WordImgRenderer *wordImgRenderer;
+      SpaceImgRenderer *spaceImgRenderer;
    };
 
    void printWordShort (Word *word);
