@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 
@@ -31,36 +33,54 @@ using namespace dw::core;
 using namespace dw::core::style;
 using namespace dw::fltk;
 
-static StyleImage *image;
+static StyleImage *image1 = NULL, *image2 = NULL;
 static Layout *layout;
-static int imgRow = 0;
+static int imgRow1 = 0, imgRow2 = 0;
 
 static void imageInitTimeout (void *data)
 {
-   Imgbuf *imgbuf = layout->createImgbuf (Imgbuf::RGB, 400, 200, 1);
-   image->getMainImgRenderer()->setBuffer (imgbuf, false);
+   if (image1) {
+      Imgbuf *imgbuf1 = layout->createImgbuf (Imgbuf::RGB, 400, 200, 1);
+      image1->getMainImgRenderer()->setBuffer (imgbuf1, false);
+   }
+
+   if (image2) {
+      Imgbuf *imgbuf2 = layout->createImgbuf (Imgbuf::RGB, 100, 100, 1);
+      image2->getMainImgRenderer()->setBuffer (imgbuf2, false);
+   }
 }
 
 static void imageDrawTimeout (void *data)
 {
-   Imgbuf *imgbuf = image->getImgbuf ();
+   Imgbuf *imgbuf1 = image1 ? image1->getImgbuf () : NULL;
+   Imgbuf *imgbuf2 = image2 ? image2->getImgbuf () : NULL;
 
-   if (imgbuf) {
-      for (int i = 0; i < 1; i++) {
-         byte buf[3 * 400];
-         for(int x = 0; x < 400; x++) {
-            buf[3 * x + 0] = x * 255 / 399;
-            buf[3 * x + 1] = (399 - x) * 255 / 399;
-            buf[3 * x + 2] = imgRow * 255 / 199;
-         }
-
-         imgbuf->copyRow (imgRow, buf);
-         image->getMainImgRenderer()->drawRow (imgRow);
-         imgRow++;
+   if (imgbuf1 && imgRow1 < 200) {
+      byte buf[3 * 400];
+      for(int x = 0; x < 400; x++) {
+         buf[3 * x + 0] = 128 + x * 127 / 399;
+         buf[3 * x + 1] = 128 + (399 - x) * 127 / 399;
+         buf[3 * x + 2] = 128 + imgRow1 * 127 / 199;
       }
+
+      imgbuf1->copyRow (imgRow1, buf);
+      image1->getMainImgRenderer()->drawRow (imgRow1);
+      imgRow1++;
    }
 
-   if(imgRow < 200)
+   if (imgbuf2 && imgRow2 < 100) {
+      byte buf[3 * 100];
+      for(int x = 0; x < 100; x++) {
+         int r = 128 + rand () % 127;
+         buf[3 * x + 0] = buf[3 * x + 1] = buf[3 * x + 2] = r;
+      }
+
+      imgbuf2->copyRow (imgRow2, buf);
+      image2->getMainImgRenderer()->drawRow (imgRow2);
+      imgRow2++;
+   }
+
+   if(imgRow1 < 200 || imgRow2 < 100)
       Fl::repeat_timeout (0.5, imageDrawTimeout, NULL);
 }
 
@@ -92,7 +112,7 @@ int main(int argc, char **argv)
    styleAttrs.color =  Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
-   image = styleAttrs.backgroundImage = StyleImage::create ();
+   image1 = styleAttrs.backgroundImage = StyleImage::create ();
    styleAttrs.backgroundRepeat = BACKGROUND_REPEAT_Y;
    styleAttrs.backgroundPositionX = createPerLength (0.5);
    styleAttrs.backgroundPositionY = createAbsLength (30);
@@ -111,6 +131,12 @@ int main(int argc, char **argv)
 
    Style *wordStyle = Style::create (&styleAttrs);
 
+   image2 = styleAttrs.backgroundImage = StyleImage::create ();
+   styleAttrs.backgroundRepeat = BACKGROUND_REPEAT;
+   styleAttrs.backgroundPositionX = createPerLength (0);
+   styleAttrs.backgroundPositionY = createPerLength (0);
+   Style *wordStyleBg = Style::create (&styleAttrs);
+
    for(int i = 1; i <= 10; i++) {
       char buf[4];
       sprintf(buf, "%d.", i);
@@ -121,7 +147,7 @@ int main(int argc, char **argv)
                               NULL };
 
       for(int j = 0; words[j]; j++) {
-         textblock->addText(words[j], wordStyle);
+         textblock->addText(words[j], j == 3 ? wordStyleBg : wordStyle);
          textblock->addSpace(wordStyle);
       }
 
@@ -129,13 +155,14 @@ int main(int argc, char **argv)
    }
 
    wordStyle->unref();
+   wordStyleBg->unref();
 
    textblock->flush ();
 
    window->resizable(viewport);
    window->show();
 
-   Fl::add_timeout (2.0, imageInitTimeout, NULL);
+   Fl::add_timeout (1.0, imageInitTimeout, NULL);
    Fl::add_timeout (0.1, imageDrawTimeout, NULL);
 
    int errorCode = Fl::run();
