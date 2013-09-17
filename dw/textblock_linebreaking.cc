@@ -892,7 +892,7 @@ int Textblock::hyphenateWord (int wordIndex)
       for (int i = 0; i < numBreaks + 1; i++) {
          Word *w = words->getRef (wordIndex + i);
 
-         fillWord (w, wordSize[i].width, wordSize[i].ascent,
+         fillWord (wordIndex + i, wordSize[i].width, wordSize[i].ascent,
                    wordSize[i].descent, false, origWord.style);
 
          // TODO There should be a method fillText0.
@@ -931,7 +931,7 @@ int Textblock::hyphenateWord (int wordIndex)
             PRINTF ("      [%d] + hyphen\n", wordIndex + i);
          } else {
             if (origWord.content.space) {
-               fillSpace (w, origWord.spaceStyle);
+               fillSpace (wordIndex + i, origWord.spaceStyle);
                PRINTF ("      [%d] + space\n", wordIndex + i);
             } else {
                PRINTF ("      [%d] + nothing\n", wordIndex + i);

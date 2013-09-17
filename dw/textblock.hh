@@ -237,8 +237,6 @@ private:
    static const char *hyphenDrawChar;
 
 protected:
-   struct Word;
-   
    /**
     * \brief Implementation used for words.
     */
@@ -246,12 +244,11 @@ protected:
    {
    protected:
       Textblock *textblock;
-      Word *word;
+      int wordNo, xWordWidget, lineNo;
       bool dataSet;
-      int xWordWidget, lineNo;
 
    public:
-      WordImgRenderer (Textblock *textblock, Word *word);
+      WordImgRenderer (Textblock *textblock, int wordNo);
       ~WordImgRenderer ();
       
       void setData (int xWordWidget, int lineNo);
@@ -266,8 +263,8 @@ protected:
    class SpaceImgRenderer: public WordImgRenderer
    {
    public:
-      inline SpaceImgRenderer (Textblock *textblock, Word *word) :
-         WordImgRenderer (textblock, word) { }
+      inline SpaceImgRenderer (Textblock *textblock, int wordNo) :
+         WordImgRenderer (textblock, wordNo) { }
 
       void getArea (int *x, int *y, int *width, int *height);
       core::style::Style *getStyle ();
@@ -518,9 +515,9 @@ protected:
 
    Word *addWord (int width, int ascent, int descent, short flags,
                   core::style::Style *style);
-   void fillWord (Word *word, int width, int ascent, int descent,
+   void fillWord (int wordNo, int width, int ascent, int descent,
                   short flags, core::style::Style *style);
-   void fillSpace (Word *word, core::style::Style *style);
+   void fillSpace (int wordNo, core::style::Style *style);
    void setBreakOption (Word *word, core::style::Style *style,
                         int breakPenalty1, int breakPenalty2, bool forceBreak);
    bool isBreakAllowed (Word *word);

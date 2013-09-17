@@ -42,12 +42,12 @@ namespace dw {
 int Textblock::CLASS_ID = -1;
 
 Textblock::WordImgRenderer::WordImgRenderer (Textblock *textblock,
-                                             Word *word)
+                                             int wordNo)
 {
    //printf ("new WordImgRenderer %p\n", this);
 
    this->textblock = textblock;
-   this->word = word;
+   this->wordNo = wordNo;
    dataSet = false;
 }
 
@@ -66,6 +66,7 @@ void Textblock::WordImgRenderer::setData (int xWordWidget, int lineNo)
 bool Textblock::WordImgRenderer::readyToDraw ()
 {
    return dataSet && textblock->wasAllocated ()
+      && wordNo < textblock->words->size()
       && lineNo < textblock->lines->size();
 }
 
@@ -75,7 +76,7 @@ void Textblock::WordImgRenderer::getArea (int *x, int *y, int *width,
    Line *line = textblock->lines->getRef (lineNo);
    *x = textblock->allocation.x + this->xWordWidget;
    *y = textblock->lineYOffsetCanvas (line);
-   *width = word->size.width;
+   *width = textblock->words->getRef(wordNo)->size.width;
    *height = line->boxAscent + line->boxDescent;
 }
 
@@ -87,7 +88,7 @@ void Textblock::WordImgRenderer::getRefArea (int *xRef, int *yRef,
 
 core::style::Style *Textblock::WordImgRenderer::getStyle ()
 {
-   return word->style;
+   return textblock->words->getRef(wordNo)->style;
 }
 
 void Textblock::WordImgRenderer::draw (int x, int y, int width, int height)
@@ -102,12 +103,12 @@ void Textblock::SpaceImgRenderer::getArea (int *x, int *y, int *width,
 {
    WordImgRenderer::getArea (x, y, width, height);
    *x += *width;
-   *width = word->effSpace;
+   *width = textblock->words->getRef(wordNo)->effSpace;
 }
 
 core::style::Style *Textblock::SpaceImgRenderer::getStyle ()
 {
-   return word->spaceStyle;
+   return textblock->words->getRef(wordNo)->spaceStyle;
 }
 
 // ----------------------------------------------------------------------
@@ -1432,13 +1433,15 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
 {
    words->increase ();
    Word *word = words->getLastRef ();
-   fillWord (word, width, ascent, descent, flags, style);
+   fillWord (words->size () - 1, width, ascent, descent, flags, style);
    return word;
 }
 
-void Textblock::fillWord (Word *word, int width, int ascent, int descent,
+void Textblock::fillWord (int wordNo, int width, int ascent, int descent,
                           short flags, core::style::Style *style)
 {
+   Word *word = words->getRef (wordNo);
+
    word->size.width = width;
    word->size.ascent = ascent;
    word->size.descent = descent;
@@ -1452,14 +1455,14 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
    word->spaceStyle = style;
 
    if (word->style->backgroundImage) {
-      word->wordImgRenderer = new WordImgRenderer (this, word);
+      word->wordImgRenderer = new WordImgRenderer (this, wordNo);
       word->style->backgroundImage->putExternalImgRenderer
          (word->wordImgRenderer);
    } else
       word->wordImgRenderer = NULL;
 
    if (word->spaceStyle->backgroundImage) {
-      word->spaceImgRenderer = new SpaceImgRenderer (this, word);
+      word->spaceImgRenderer = new SpaceImgRenderer (this, wordNo);
       word->spaceStyle->backgroundImage->putExternalImgRenderer
          (word->spaceImgRenderer);
    } else
@@ -1939,7 +1942,7 @@ void Textblock::addSpace (core::style::Style *style)
 {
    int wordIndex = words->size () - 1;
    if (wordIndex >= 0) {
-      fillSpace (words->getRef(wordIndex), style);
+      fillSpace (wordIndex, style);
       accumulateWordData (wordIndex);
       correctLastWordExtremes ();
    }
@@ -1961,7 +1964,7 @@ void Textblock::addBreakOption (core::style::Style *style, bool forceBreak)
    }
 }
 
-void Textblock::fillSpace (Word *word, core::style::Style *style)
+void Textblock::fillSpace (int wordNo, core::style::Style *style)
 {
    // Old comment:
    // 
@@ -1976,6 +1979,8 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
    //     bar
    //
    // TODO: Re-evaluate again.
+
+   Word *word = words->getRef (wordNo);
 
    // TODO: This line does not work: addBreakOption (word, style);
 
@@ -2006,7 +2011,7 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
       style->ref ();
 
       if (word->spaceStyle->backgroundImage) {
-         word->spaceImgRenderer = new SpaceImgRenderer (this, word);
+         word->spaceImgRenderer = new SpaceImgRenderer (this, wordNo);
          word->spaceStyle->backgroundImage->putExternalImgRenderer
             (word->spaceImgRenderer);
       } else
