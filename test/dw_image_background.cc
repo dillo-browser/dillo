@@ -28,14 +28,33 @@
 #include "../dw/textblock.hh"
 #include "../dw/image.hh"
 
+using namespace lout::signal;
+using namespace lout::misc;
 using namespace dw;
 using namespace dw::core;
 using namespace dw::core::style;
 using namespace dw::fltk;
 
+class ImageStyleDeletionReceiver: public ObservedObject::DeletionReceiver
+{
+public:
+   void deleted (ObservedObject *object);
+};
+
 static StyleImage *image1 = NULL, *image2 = NULL;
 static Layout *layout;
 static int imgRow1 = 0, imgRow2 = 0;
+static ImageStyleDeletionReceiver isdr;
+
+void ImageStyleDeletionReceiver::deleted (ObservedObject *object)
+{
+   if ((StyleImage*)object == image1)
+      image1 = NULL;
+   else if ((StyleImage*)object == image2)
+      image2 = NULL;
+   else
+      assertNotReached ();
+}
 
 static void imageInitTimeout (void *data)
 {
@@ -113,6 +132,7 @@ int main(int argc, char **argv)
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    image1 = styleAttrs.backgroundImage = StyleImage::create ();
+   image1->connectDeletion (&isdr);
    styleAttrs.backgroundRepeat = BACKGROUND_REPEAT_Y;
    styleAttrs.backgroundPositionX = createPerLength (0.5);
    styleAttrs.backgroundPositionY = createAbsLength (30);
@@ -132,6 +152,7 @@ int main(int argc, char **argv)
    Style *wordStyle = Style::create (&styleAttrs);
 
    image2 = styleAttrs.backgroundImage = StyleImage::create ();
+   image2->connectDeletion (&isdr);
    styleAttrs.backgroundRepeat = BACKGROUND_REPEAT;
    styleAttrs.backgroundPositionX = createPerLength (0);
    styleAttrs.backgroundPositionY = createPerLength (0);

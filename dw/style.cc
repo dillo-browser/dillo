@@ -476,6 +476,8 @@ void StyleImage::StyleImgRenderer::drawRow (int row)
 
 StyleImage::StyleImage ()
 {
+   //printf ("new StyleImage %p\n", this);
+
    refCount = 0;
    imgbuf = NULL;
 
@@ -486,6 +488,8 @@ StyleImage::StyleImage ()
 
 StyleImage::~StyleImage ()
 {
+   //printf ("delete StyleImage %p\n", this);
+
    if (imgbuf)
       imgbuf->unref ();
 
