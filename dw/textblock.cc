@@ -82,15 +82,7 @@ void Textblock::WordImgRenderer::getArea (int *x, int *y, int *width,
 void Textblock::WordImgRenderer::getRefArea (int *xRef, int *yRef,
                                              int *widthRef, int *heightRef)
 {
-   /**
-    * \todo Reference should be the containing block (which will be
-    *    introduced later), not the widget allocation. (And also,
-    *    there should be one single method for this.)
-    */
-   *xRef = textblock->allocation.x;
-   *yRef = textblock->allocation.y;
-   *widthRef = textblock->allocation.width;
-   *heightRef = textblock->getHeight ();
+   textblock->getBgRefArea (xRef, yRef, widthRef, heightRef);
 }
 
 core::style::Style *Textblock::WordImgRenderer::getStyle ()

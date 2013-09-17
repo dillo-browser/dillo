@@ -49,14 +49,7 @@ void Widget::WidgetImgRenderer::getArea (int *x, int *y, int *width,
 void Widget::WidgetImgRenderer::getRefArea (int *xRef, int *yRef, int *widthRef,
                                             int *heightRef)
 {
-   /**
-    * \todo Reference should be the containing block (which will be
-    *    introduced later), not the widget allocation.
-    */
-   *xRef = widget->allocation.x;
-   *yRef = widget->allocation.y;
-   *widthRef = widget->allocation.width;
-   *heightRef = widget->getHeight ();
+   widget->getBgRefArea (xRef, yRef, widthRef, heightRef);
 }
 
 style::Style *Widget::WidgetImgRenderer::getStyle ()
@@ -411,14 +404,12 @@ void Widget::drawBox (View *view, style::Style *style, Rectangle *area,
                       allocation.x + x, allocation.y + y,
                       width, height, style, inverse);
 
-   /**
-    * \todo Reference should be the containing block (which will be
-    *    introduced later), not the widget allocation.
-    */
+   int xRef, yRef, widthRef, heightRef;
+   getBgRefArea (&xRef, &yRef, &widthRef, &heightRef);
    style::drawBackground (view, layout, &canvasArea,
                           allocation.x + x, allocation.y + y, width, height,
-                          allocation.x, allocation.y, allocation.width,
-                          getHeight (), style, inverse, false);
+                          xRef, yRef, widthRef, heightRef, style, inverse,
+                          false);
 }
 
 /**
@@ -438,14 +429,11 @@ void Widget::drawWidgetBox (View *view, Rectangle *area, bool inverse)
    style::drawBorder (view, layout, &canvasArea, allocation.x, allocation.y,
                       allocation.width, getHeight (), style, inverse);
 
-   /**
-    * \todo Reference should be the containing block (which will be
-    *    introduced later), not the widget allocation.
-    */
+   int xRef, yRef, widthRef, heightRef;
+   getBgRefArea (&xRef, &yRef, &widthRef, &heightRef);
    style::drawBackground (view, layout, &canvasArea, allocation.x, allocation.y,
-                          allocation.width, getHeight (), allocation.x,
-                          allocation.y, allocation.width, getHeight (),
-                          style, inverse, parent == NULL);
+                          allocation.width, getHeight (), xRef, yRef, widthRef,
+                          heightRef, style, inverse, parent == NULL);
 }
 
 /*
@@ -587,6 +575,23 @@ void Widget::scrollTo (HPosition hpos, VPosition vpos,
 {
    layout->scrollTo (hpos, vpos,
                      x + allocation.x, y + allocation.y, width, height);
+}
+
+/**
+ * \brief Return the "reference area" for backgrounds.
+ *
+ * See comment of "style::drawBackground".
+ */
+void Widget::getBgRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef)
+{
+   /**
+    * \todo Reference should be the containing block (which will be
+    *    introduced later), not the widget allocation.
+    */
+   *xRef = allocation.x;
+   *yRef = allocation.y;
+   *widthRef = allocation.width;
+   *heightRef = getHeight ();
 }
 
 void Widget::getExtremesImpl (Extremes *extremes)

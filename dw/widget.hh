@@ -311,6 +311,8 @@ public:
    void scrollTo (HPosition hpos, VPosition vpos,
                   int x, int y, int width, int height);
 
+   void getBgRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
+
    /**
     * \brief Return an iterator for this widget.
     *
