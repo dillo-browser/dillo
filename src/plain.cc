@@ -97,9 +97,10 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw)
    Layout *layout = (Layout*) bw->render_layout;
    StyleEngine styleEngine (layout);
 
-   styleEngine.startElement ("body");
-   styleEngine.startElement ("pre");
-   widgetStyle = styleEngine.wordStyle ();
+   // TODO (3x) No URL?
+   styleEngine.startElement ("body", bw, NULL);
+   styleEngine.startElement ("pre", bw, NULL);
+   widgetStyle = styleEngine.wordStyle (bw, NULL);
    widgetStyle->ref ();
 
    /* The context menu */

@@ -92,8 +92,8 @@ void StyleEngine::stackPop () {
 /**
  * \brief tell the styleEngine that a new html element has started.
  */
-void StyleEngine::startElement (int element) {
-   style (); // ensure that style of current node is computed
+void StyleEngine::startElement (int element, BrowserWindow *bw, DilloUrl *url) {
+   style (bw, url); // ensure that style of current node is computed
 
    stackPush ();
    Node *n = stack->getLastRef ();
@@ -103,8 +103,9 @@ void StyleEngine::startElement (int element) {
    n->doctreeNode = dn;
 }
 
-void StyleEngine::startElement (const char *tagname) {
-   startElement (a_Html_tag_index (tagname));
+void StyleEngine::startElement (const char *tagname, BrowserWindow *bw,
+                                DilloUrl *url) {
+   startElement (a_Html_tag_index (tagname), bw, url);
 }
 
 void StyleEngine::setId (const char *id) {
@@ -281,7 +282,8 @@ void StyleEngine::postprocessAttrs (dw::core::style::StyleAttrs *attrs) {
 /**
  * \brief Make changes to StyleAttrs attrs according to CssPropertyList props.
  */
-void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props) {
+void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
+                         BrowserWindow *bw, DilloUrl *url) {
    FontAttrs fontAttrs = *attrs->font;
    Font *parentFont = stack->get (i - 1).style->font;
    char *c, *fontName;
@@ -706,9 +708,9 @@ void StyleEngine::computeBorderWidth (int *dest, CssProperty *p,
  * A normal style might have backgroundColor == NULL to indicate a transparent
  * background. This method ensures that backgroundColor is set.
  */
-Style * StyleEngine::backgroundStyle () {
+Style * StyleEngine::backgroundStyle (BrowserWindow *bw, DilloUrl *url) {
    if (!stack->getRef (stack->size () - 1)->backgroundStyle) {
-      StyleAttrs attrs = *style ();
+      StyleAttrs attrs = *style (bw, url);
 
       for (int i = stack->size () - 1; i >= 0 && ! attrs.backgroundColor; i--)
          attrs.backgroundColor = stack->getRef (i)->style->backgroundColor;
@@ -725,7 +727,7 @@ Style * StyleEngine::backgroundStyle () {
  * HTML elements and the nonCssProperties that have been set.
  * This method is private. Call style() to get a current style object.
  */
-Style * StyleEngine::style0 (int i) {
+Style * StyleEngine::style0 (int i, BrowserWindow *bw, DilloUrl *url) {
    CssPropertyList props, *styleAttrProperties, *styleAttrPropertiesImportant;
    CssPropertyList *nonCssProperties;
    // get previous style from the stack
@@ -753,7 +755,7 @@ Style * StyleEngine::style0 (int i) {
                       nonCssProperties);
 
    // apply style
-   apply (i, &attrs, &props);
+   apply (i, &attrs, &props, bw, url);
 
    postprocessAttrs (&attrs);
 
@@ -762,14 +764,14 @@ Style * StyleEngine::style0 (int i) {
    return stack->getRef (i)->style;
 }
 
-Style * StyleEngine::wordStyle0 () {
-   StyleAttrs attrs = *style ();
+Style * StyleEngine::wordStyle0 (BrowserWindow *bw, DilloUrl *url) {
+   StyleAttrs attrs = *style (bw, url);
    attrs.resetValues ();
 
    if (stack->getRef (stack->size() - 1)->inheritBackgroundColor)
-      attrs.backgroundColor = style ()->backgroundColor;
+      attrs.backgroundColor = style (bw, url)->backgroundColor;
 
-   attrs.valign = style ()->valign;
+   attrs.valign = style (bw, url)->valign;
 
    stack->getRef(stack->size() - 1)->wordStyle = Style::create(&attrs);
    return stack->getRef (stack->size () - 1)->wordStyle;
@@ -782,7 +784,7 @@ Style * StyleEngine::wordStyle0 () {
  * and thereby after the HTML-element has been opened.
  * Note that restyle() does not change any styles in the widget tree.
  */
-void StyleEngine::restyle () {
+void StyleEngine::restyle (BrowserWindow *bw, DilloUrl *url) {
    for (int i = 1; i < stack->size (); i++) {
       Node *n = stack->getRef (i);
       if (n->style) {
@@ -798,7 +800,7 @@ void StyleEngine::restyle () {
          n->backgroundStyle = NULL;
       }
 
-      style0 (i);
+      style0 (i, bw, url);
    }
 }
 

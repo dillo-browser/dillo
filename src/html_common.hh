@@ -220,17 +220,19 @@ public:
    void addCssUrl(const DilloUrl *url);
 
    // useful shortcuts
-   inline void startElement (int tag) { styleEngine->startElement (tag); }
+   inline void startElement (int tag)
+   { styleEngine->startElement (tag, bw, base_url); }
    inline void startElement (const char *tagname)
-   { styleEngine->startElement (tagname); }
+   { styleEngine->startElement (tagname, bw, base_url); }
 
    inline dw::core::style::Style *backgroundStyle ()
-   { return styleEngine->backgroundStyle (); }
-   inline dw::core::style::Style *style () { return styleEngine->style (); }
+   { return styleEngine->backgroundStyle (bw, base_url); }
+   inline dw::core::style::Style *style ()
+   { return styleEngine->style (bw, base_url); }
    inline dw::core::style::Style *wordStyle ()
-   { return styleEngine->wordStyle (); }
+   { return styleEngine->wordStyle (bw, base_url); }
 
-   inline void restyle () { styleEngine->restyle (); }
+   inline void restyle () { styleEngine->restyle (bw, base_url); }
    
 };
 

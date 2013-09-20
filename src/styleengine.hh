@@ -40,8 +40,8 @@ class StyleEngine {
       void stackPop ();
       void buildUserAgentStyle ();
       void buildUserStyle ();
-      dw::core::style::Style *style0 (int i);
-      dw::core::style::Style *wordStyle0 ();
+      dw::core::style::Style *style0 (int i, BrowserWindow *bw, DilloUrl *url);
+      dw::core::style::Style *wordStyle0 (BrowserWindow *bw, DilloUrl *url);
       inline void setNonCssHint(CssPropertyName name, CssValueType type,
                                 CssPropertyValue value) {
          Node *n = stack->getRef (stack->size () - 1);
@@ -52,7 +52,8 @@ class StyleEngine {
       }
       void preprocessAttrs (dw::core::style::StyleAttrs *attrs);
       void postprocessAttrs (dw::core::style::StyleAttrs *attrs);
-      void apply (int i, dw::core::style::StyleAttrs *attrs, CssPropertyList *props);
+      void apply (int i, dw::core::style::StyleAttrs *attrs,
+                  CssPropertyList *props, BrowserWindow *bw, DilloUrl *url);
       bool computeValue (int *dest, CssLength value,
                          dw::core::style::Font *font);
       bool computeValue (int *dest, CssLength value,
@@ -68,8 +69,8 @@ class StyleEngine {
 
       void parse (DilloHtml *html, DilloUrl *url, const char *buf, int buflen,
                   CssOrigin origin);
-      void startElement (int tag);
-      void startElement (const char *tagname);
+      void startElement (int tag, BrowserWindow *bw, DilloUrl *url);
+      void startElement (const char *tagname, BrowserWindow *bw, DilloUrl *url);
       void setId (const char *id);
       const char * getId () { return doctree->top ()->id; };
       void setClass (const char *klass);
@@ -91,25 +92,27 @@ class StyleEngine {
       }
       void inheritNonCssHints ();
       void clearNonCssHints ();
-      void restyle ();
+      void restyle (BrowserWindow *bw, DilloUrl *url);
       void inheritBackgroundColor (); /* \todo get rid of this somehow */
-      dw::core::style::Style *backgroundStyle ();
+      dw::core::style::Style *backgroundStyle (BrowserWindow *bw,
+                                               DilloUrl *url);
       dw::core::style::Color *backgroundColor ();
 
-      inline dw::core::style::Style *style () {
+      inline dw::core::style::Style *style (BrowserWindow *bw, DilloUrl *url) {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->style;
          if (s)
             return s;
          else
-            return style0 (stack->size () - 1);
+            return style0 (stack->size () - 1, bw, url);
       };
 
-      inline dw::core::style::Style *wordStyle () {
+      inline dw::core::style::Style *wordStyle (BrowserWindow *bw,
+                                                DilloUrl *url) {
          dw::core::style::Style *s = stack->getRef(stack->size()-1)->wordStyle;
          if (s)
             return s;
          else
-            return wordStyle0 ();
+            return wordStyle0 (bw, url);
       };
 };
 
