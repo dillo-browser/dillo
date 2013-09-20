@@ -15,6 +15,8 @@
 #include "misc.h"
 #include "html_common.hh"
 #include "styleengine.hh"
+#include "web.hh"
+#include "capi.h"
 
 using namespace lout::misc;
 using namespace dw::core::style;
@@ -450,6 +452,30 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                attrs->backgroundColor =
                   Color::create(layout, prefs.white_bg_replacement);
             break;
+         case CSS_PROPERTY_BACKGROUND_IMAGE:
+            {
+               DilloUrl *imgUrl =
+                  a_Url_new (p->value.strVal, a_Url_str (url));
+
+               attrs->backgroundImage = StyleImage::create();
+               DilloImage *image =
+                  a_Image_new(layout,
+                              (void*)attrs->backgroundImage
+                                        ->getMainImgRenderer(),
+                              0xffffff);
+
+               DilloWeb *web = a_Web_new(bw, imgUrl, url);
+               web->Image = image;
+               a_Image_ref(image);
+               web->flags |= WEB_Image;
+
+               int clientKey;
+               if ((clientKey = a_Capi_open_url(web, NULL, NULL)) != 0) {
+                  a_Bw_add_client(bw, clientKey, 0);
+                  a_Bw_add_url(bw, url);
+               }
+            }
+            break;            
          case CSS_PROPERTY_BORDER_COLLAPSE:
             attrs->borderCollapse = (BorderCollapse) p->value.intVal;
             break;
