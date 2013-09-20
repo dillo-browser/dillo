@@ -340,7 +340,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    char *charset, *first;
    const char *attrbuf;
 
-   HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
+   HT2TB(html)->addParbreak (9, html->wordStyle ());
 
    if (html->InFlags & IN_FORM) {
       BUG_MSG("nested forms\n");
@@ -566,7 +566,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
                                            attrbuf);
       }
-      HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle());
+      HT2TB(html)->addWidget (embed, html->backgroundStyle());
    }
    dFree(type);
    dFree(name);
@@ -599,17 +599,17 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
                  html->charset);
    html->InFlags |= IN_FORM;
 
-   HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
+   HT2TB(html)->addParbreak (9, html->wordStyle ());
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "prompt")))
-      HT2TB(html)->addText(attrbuf, html->styleEngine->wordStyle ());
+      HT2TB(html)->addText(attrbuf, html->wordStyle ());
 
    ResourceFactory *factory = HT2LT(html)->getResourceFactory();
    EntryResource *entryResource = factory->createEntryResource (20,false,NULL);
    embed = new Embed (entryResource);
    Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
-   HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
+   HT2TB(html)->addWidget (embed, html->backgroundStyle ());
 
    a_Url_free(action);
    html->InFlags &= ~IN_FORM;
@@ -674,7 +674,7 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
       textres->setEditable(false);
    Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
 
-   HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
+   HT2TB(html)->addWidget (embed, html->backgroundStyle ());
    dFree(name);
 }
 
@@ -765,7 +765,7 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
                                         attrbuf);
    }
-   HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
+   HT2TB(html)->addWidget (embed, html->backgroundStyle ());
 
    Html_add_input(html, type, embed, name, NULL, false);
    a_Html_stash_init(html);
@@ -937,16 +937,16 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
        * but it caused 100% CPU usage.
        */
       page = new Textblock (false);
-      page->setStyle (html->styleEngine->backgroundStyle ());
+      page->setStyle (html->backgroundStyle ());
 
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();
       Resource *resource = factory->createComplexButtonResource(page, true);
       embed = new Embed(resource);
 // a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
 
-      HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
-      HT2TB(html)->addWidget (embed, html->styleEngine->backgroundStyle ());
-      HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
+      HT2TB(html)->addParbreak (5, html->wordStyle ());
+      HT2TB(html)->addWidget (embed, html->backgroundStyle ());
+      HT2TB(html)->addParbreak (5, html->wordStyle ());
 
       S_TOP(html)->textblock = html->dw = page;
 
@@ -2008,12 +2008,12 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
       // widget. Notice that the order of the casts matters, because
       // of multiple inheritance.
       dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)Image->img_rnd;
-      dwi->setStyle (html->styleEngine->backgroundStyle ());
+      dwi->setStyle (html->backgroundStyle ());
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();
       ComplexButtonResource *complex_b_r =
          factory->createComplexButtonResource(dwi, false);
       button = new Embed(complex_b_r);
-      HT2TB(html)->addWidget (button, html->styleEngine->style ());
+      HT2TB(html)->addWidget (button, html->style ());
    }
    if (!button)
       MSG("Html_input_image: unable to create image submit.\n");

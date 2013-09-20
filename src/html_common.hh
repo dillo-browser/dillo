@@ -218,6 +218,20 @@ public:
    bool_t unloadedImages();
    void loadImages (const DilloUrl *pattern);
    void addCssUrl(const DilloUrl *url);
+
+   // useful shortcuts
+   inline void startElement (int tag) { styleEngine->startElement (tag); }
+   inline void startElement (const char *tagname)
+   { styleEngine->startElement (tagname); }
+
+   inline dw::core::style::Style *backgroundStyle ()
+   { return styleEngine->backgroundStyle (); }
+   inline dw::core::style::Style *style () { return styleEngine->style (); }
+   inline dw::core::style::Style *wordStyle ()
+   { return styleEngine->wordStyle (); }
+
+   inline void restyle () { styleEngine->restyle (); }
+   
 };
 
 /*
