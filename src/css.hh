@@ -45,6 +45,7 @@ typedef enum {
                                    opposed to CSS_TYPE_ENUM and
                                    CSS_TYPE_MULTI_ENUM). Used for
                                    'font-family'. */
+   CSS_TYPE_URI,                /* <uri> */
    CSS_TYPE_UNUSED              /* Not yet used. Will itself get unused some
                                    day. */
 } CssValueType;

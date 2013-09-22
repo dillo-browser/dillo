@@ -141,8 +141,7 @@ static const char *const Css_word_spacing_enum_vals[] = {
 const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"background-attachment", {CSS_TYPE_UNUSED}, NULL},
    {"background-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
-   /** todo 'background-image' os of type <uri>, which is not yet defined. */
-   {"background-image", {CSS_TYPE_STRING, CSS_TYPE_UNUSED}, NULL},
+   {"background-image", {CSS_TYPE_URI, CSS_TYPE_UNUSED}, NULL},
    {"background-position", {CSS_TYPE_UNUSED}, NULL},
    {"background-repeat", {CSS_TYPE_UNUSED}, NULL},
    {"border-bottom-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
@@ -735,6 +734,12 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
          }
          break;
 
+      case CSS_TYPE_URI:
+         if (ttype == CSS_TK_SYMBOL &&
+             dStrAsciiCasecmp(tval, "url") == 0)
+            return true;
+         break;
+
       case CSS_TYPE_UNUSED:
       case CSS_TYPE_INTEGER:
          /* Not used for parser values. */
@@ -1000,6 +1005,15 @@ bool CssParser::parseValue(CssPropertyName prop,
 
       if (ival != 0) {
          val->intVal = ival;
+         ret = true;
+         nextToken();
+      }
+      break;
+
+   case CSS_TYPE_URI:
+      if (ttype == CSS_TK_SYMBOL &&
+          dStrAsciiCasecmp(tval, "url") == 0) {
+         val->strVal = parseUrl();
          ret = true;
          nextToken();
       }
