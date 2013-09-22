@@ -1014,8 +1014,9 @@ bool CssParser::parseValue(CssPropertyName prop,
       if (ttype == CSS_TK_SYMBOL &&
           dStrAsciiCasecmp(tval, "url") == 0) {
          val->strVal = parseUrl();
-         ret = true;
          nextToken();
+         if (val->strVal)
+            ret = true;
       }
       break;
 
