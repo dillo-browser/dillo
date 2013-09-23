@@ -476,6 +476,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                }
             }
             break;            
+         case CSS_PROPERTY_BACKGROUND_REPEAT:
+            attrs->backgroundRepeat = (BackgroundRepeat) p->value.intVal;
+            break;
          case CSS_PROPERTY_BORDER_COLLAPSE:
             attrs->borderCollapse = (BorderCollapse) p->value.intVal;
             break;

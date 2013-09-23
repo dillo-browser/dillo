@@ -47,6 +47,10 @@ typedef struct {
    const char *const *enum_symbols;
 } CssPropertyInfo;
 
+static const char *const Css_background_repeat_enum_vals[] = {
+   "repeat", "repeat-x", "repeat-y", "no-repeat", NULL
+};
+
 static const char *const Css_border_collapse_enum_vals[] = {
    "separate", "collapse", NULL
 };
@@ -143,7 +147,8 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"background-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
    {"background-image", {CSS_TYPE_URI, CSS_TYPE_UNUSED}, NULL},
    {"background-position", {CSS_TYPE_UNUSED}, NULL},
-   {"background-repeat", {CSS_TYPE_UNUSED}, NULL},
+   {"background-repeat", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_background_repeat_enum_vals},
    {"border-bottom-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
     Css_border_color_enum_vals},
    {"border-bottom-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
