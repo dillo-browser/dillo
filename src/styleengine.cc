@@ -445,6 +445,10 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
 
       switch (p->name) {
          /* \todo missing cases */
+         case CSS_PROPERTY_BACKGROUND_ATTACHMENT:
+            attrs->backgroundAttachment =
+               (BackgroundAttachment) p->value.intVal;
+            break;
          case CSS_PROPERTY_BACKGROUND_COLOR:
             if (prefs.allow_white_bg || p->value.intVal != 0xffffff)
                attrs->backgroundColor = Color::create(layout, p->value.intVal);
