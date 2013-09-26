@@ -146,12 +146,20 @@ static const char *const Css_word_spacing_enum_vals[] = {
    "normal", NULL
 };
 
+static const char *const Css_x_background_position_x_enum_vals[] = {
+   "left", "center", "right", NULL
+};
+
+static const char *const Css_x_background_position_y_enum_vals[] = {
+   "top", "center", "bottom", NULL
+};
+
 const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"background-attachment", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_background_attachment_enum_vals},
    {"background-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
    {"background-image", {CSS_TYPE_URI, CSS_TYPE_UNUSED}, NULL},
-   {"background-position", {CSS_TYPE_UNUSED}, NULL},
+   // 'background-position' is handled as a shorthand.
    {"background-repeat", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_background_repeat_enum_vals},
    {"border-bottom-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
@@ -258,6 +266,17 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"x-link", {CSS_TYPE_INTEGER, CSS_TYPE_UNUSED}, NULL},
    {"x-colspan", {CSS_TYPE_INTEGER, CSS_TYPE_UNUSED}, NULL},
    {"x-rowspan", {CSS_TYPE_INTEGER, CSS_TYPE_UNUSED}, NULL},
+
+   // The following two are internal properties for 'background-position'. They
+   // are not set directly, but by the 'background-position' shortcut. Here,
+   // both <lenght>, <percentage>, as well as symbolic values ("right", "top"
+   // etc.) are possible.
+   {"x-background-position-x", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH_PERCENTAGE,
+                                CSS_TYPE_UNUSED},
+    Css_x_background_position_x_enum_vals},
+   {"x-background-position-y", {CSS_TYPE_ENUM, CSS_TYPE_LENGTH_PERCENTAGE,
+                                CSS_TYPE_UNUSED},
+    Css_x_background_position_y_enum_vals},
    {"last", {CSS_TYPE_UNUSED}, NULL},
 };
 
@@ -269,6 +288,8 @@ typedef struct {
       CSS_SHORTHAND_DIRECTIONS, /* <t>{1,4} */
       CSS_SHORTHAND_BORDER,     /* special, used for 'border' */
       CSS_SHORTHAND_FONT,       /* special, used for 'font' */
+      CSS_SHORTHAND_BACKGROUND_POSITION,
+                                /* special, used for 'background-position' */
    } type;
    const CssPropertyName * properties;/* CSS_SHORTHAND_MULTIPLE:
                                        *   must be terminated by -1
@@ -285,7 +306,14 @@ const CssPropertyName Css_background_properties[] = {
    CSS_PROPERTY_BACKGROUND_IMAGE,
    CSS_PROPERTY_BACKGROUND_REPEAT,
    CSS_PROPERTY_BACKGROUND_ATTACHMENT,
-   CSS_PROPERTY_BACKGROUND_POSITION,
+   CSS_PROPERTY_X_BACKGROUND_POSITION_X,
+   CSS_PROPERTY_X_BACKGROUND_POSITION_Y,
+   (CssPropertyName) - 1
+};
+
+const CssPropertyName Css_background_position_properties[] = {
+   CSS_PROPERTY_X_BACKGROUND_POSITION_X,
+   CSS_PROPERTY_X_BACKGROUND_POSITION_Y,
    (CssPropertyName) - 1
 };
 
@@ -393,6 +421,8 @@ const CssPropertyName Css_font_properties[] = {
 static const CssShorthandInfo Css_shorthand_info[] = {
    {"background", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
     Css_background_properties},
+   {"background-position", CssShorthandInfo::CSS_SHORTHAND_BACKGROUND_POSITION,
+    Css_background_position_properties},
    {"border", CssShorthandInfo::CSS_SHORTHAND_BORDER,
     Css_border_properties},
    {"border-bottom", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
@@ -1217,6 +1247,49 @@ void CssParser::parseDeclaration(CssPropertyList * props,
                            }
                         }
                   } while (found);
+                  break;
+
+               case CssShorthandInfo::CSS_SHORTHAND_BACKGROUND_POSITION:
+                  // 'background-position' consists of one or two values:
+                  // vertical and horizontal position; in most cases in this
+                  // order. However, as long it is unambigous, the order can be
+                  // switched: "10px left" and "left 10px" are both possible
+                  // and have the same effect. For this reason, we test both
+                  // possible orders: i = 0 means vertical/horizontal, i = 1
+                  // means horizontal/vertical.
+                  for (found = false, i = 0; !found && i < 2; i++) {
+                     int i1 = i, i2 = 1 - i;
+                     if (tokenMatchesProperty(
+                            Css_shorthand_info[sh_index].properties[i1], &type)
+                         && parseValue(
+                               Css_shorthand_info[sh_index].properties[i1],
+                               type, &val)) {
+                        found = true;
+                        props->set(Css_shorthand_info[sh_index].properties[i1],
+                                   type, val);
+                     
+                        if (tokenMatchesProperty(
+                               Css_shorthand_info[sh_index].properties[i2],
+                               &type)) {
+                           if (parseValue(
+                                  Css_shorthand_info[sh_index].properties[i2],
+                                  type, &val))
+                              props->set(
+                                 Css_shorthand_info[sh_index].properties[i2],
+                                 type, val);
+                           // else: Should be an error.
+                        } else {
+                           // Second value not set: assume 'center', whose
+                           // enum index is 1 in both cases (horizontal and
+                           // vertical).
+                           CssPropertyValue val = { 1 };
+                           props->set(
+                              Css_shorthand_info[sh_index].properties[i2],
+                              CSS_TYPE_ENUM, val);
+                        }                           
+                     }
+                  }
+                  // Error, if !found? At least one value should be set.
                   break;
                }
             }

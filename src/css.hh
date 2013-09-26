@@ -143,7 +143,7 @@ typedef enum {
    CSS_PROPERTY_BACKGROUND_ATTACHMENT,
    CSS_PROPERTY_BACKGROUND_COLOR,
    CSS_PROPERTY_BACKGROUND_IMAGE,
-   CSS_PROPERTY_BACKGROUND_POSITION,
+   // 'background-position' is handled as a shorthand.
    CSS_PROPERTY_BACKGROUND_REPEAT,
    CSS_PROPERTY_BORDER_BOTTOM_COLOR,
    CSS_PROPERTY_BORDER_BOTTOM_STYLE,
@@ -223,6 +223,10 @@ typedef enum {
    CSS_PROPERTY_X_LINK,
    CSS_PROPERTY_X_COLSPAN,
    CSS_PROPERTY_X_ROWSPAN,
+   // The following two are internal properties for 'background-position'; see
+   // more at equivalent definition in Css_property_info.
+   CSS_PROPERTY_X_BACKGROUND_POSITION_X,
+   CSS_PROPERTY_X_BACKGROUND_POSITION_Y,
    PROPERTY_X_LINK,
    PROPERTY_X_LANG,
    PROPERTY_X_IMG,
