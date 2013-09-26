@@ -288,6 +288,7 @@ typedef struct {
       CSS_SHORTHAND_DIRECTIONS, /* <t>{1,4} */
       CSS_SHORTHAND_BORDER,     /* special, used for 'border' */
       CSS_SHORTHAND_FONT,       /* special, used for 'font' */
+      CSS_SHORTHAND_BACKGROUND, /* special, used for 'background' */
       CSS_SHORTHAND_BACKGROUND_POSITION,
                                 /* special, used for 'background-position' */
    } type;
@@ -306,12 +307,6 @@ const CssPropertyName Css_background_properties[] = {
    CSS_PROPERTY_BACKGROUND_IMAGE,
    CSS_PROPERTY_BACKGROUND_REPEAT,
    CSS_PROPERTY_BACKGROUND_ATTACHMENT,
-   CSS_PROPERTY_X_BACKGROUND_POSITION_X,
-   CSS_PROPERTY_X_BACKGROUND_POSITION_Y,
-   (CssPropertyName) - 1
-};
-
-const CssPropertyName Css_background_position_properties[] = {
    CSS_PROPERTY_X_BACKGROUND_POSITION_X,
    CSS_PROPERTY_X_BACKGROUND_POSITION_Y,
    (CssPropertyName) - 1
@@ -419,10 +414,14 @@ const CssPropertyName Css_font_properties[] = {
 };
 
 static const CssShorthandInfo Css_shorthand_info[] = {
-   {"background", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
+   {"background", CssShorthandInfo::CSS_SHORTHAND_BACKGROUND,
     Css_background_properties},
+   // For 'background-position', no properties are needed, because
+   // these (CSS_PROPERTY_X_BACKGROUND_POSITION_X and
+   // CSS_PROPERTY_X_BACKGROUND_POSITION_Y) are handled explicitely
+   // and specially.
    {"background-position", CssShorthandInfo::CSS_SHORTHAND_BACKGROUND_POSITION,
-    Css_background_position_properties},
+    NULL},
    {"border", CssShorthandInfo::CSS_SHORTHAND_BORDER,
     Css_border_properties},
    {"border-bottom", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
@@ -1249,47 +1248,74 @@ void CssParser::parseDeclaration(CssPropertyList * props,
                   } while (found);
                   break;
 
+               case CssShorthandInfo::CSS_SHORTHAND_BACKGROUND:
+                  // This is mostly a copy of CSS_SHORTHAND_MULTIPLE, with the
+                  // exception of the special handling of
+                  // CSS_PROPERTY_X_BACKGROUND_POSITION_X and
+                  // CSS_PROPERTY_X_BACKGROUND_POSITION_Y, which are part of
+                  // <background-position>. Simply applying
+                  // CSS_SHORTHAND_MULTIPLE would result in some problems:
+                  //
+                  //   (i) It would be allowed that both parts of
+                  //       <background-position> are seperated by other parts,
+                  //       which is invalid CSS. Not a real issue, since valid
+                  //       CSS would still be parsed.
+                  //
+                  //  (ii) CSS_SHORTHAND_MULTIPLE allows to use a property
+                  //       multiple times; example: for "10px 20px", first
+                  //       "10px", then "20px" would be assigned to
+                  //       CSS_PROPERTY_X_BACKGROUND_POSITION_X, but nothing at
+                  //       all to CSS_PROPERTY_X_BACKGROUND_POSITION_Y.
+                  //
+                  // (iii) If only one value is set, the other defaults to
+                  //       "center", according to the CSS spec; this cannot be
+                  //        handled by CSS_SHORTHAND_MULTIPLE.
+                  //
+                  // (And probably more subtleties.)
+
+                  do {
+                     for (found = false, i = 0;
+                          !found &&
+                          Css_shorthand_info[sh_index].properties[i] != -1;
+                          i++)
+                        if (tokenMatchesProperty(Css_shorthand_info[sh_index].
+                                                 properties[i], &type)) {
+                           found = true;
+                           DEBUG_MSG(DEBUG_PARSE_LEVEL,
+                                     "will assign to '%s'\n",
+                                     Css_property_info
+                                     [Css_shorthand_info[sh_index]
+                                      .properties[i]].symbol);
+
+                           if (Css_shorthand_info[sh_index].properties[i]
+                               == CSS_PROPERTY_X_BACKGROUND_POSITION_X ||
+                               Css_shorthand_info[sh_index].properties[i]
+                               == CSS_PROPERTY_X_BACKGROUND_POSITION_Y)
+                              // CSS_PROPERTY_X_BACKGROUND_POSITION_X and
+                              // CSS_PROPERTY_X_BACKGROUND_POSITION_Y are
+                              // handles specially.
+                              parseShorthandBackgroundPosition (sh_index,
+                                                                props);
+                           else {
+                              // Other values: like CSS_SHORTHAND_MULTIPLE.
+                              if (parseValue(Css_shorthand_info[sh_index]
+                                             .properties[i], type, &val)) {
+                                 weight = parseWeight();
+                                 if (weight && importantProps)
+                                    importantProps->
+                                       set(Css_shorthand_info[sh_index].
+                                           properties[i], type, val);
+                                 else
+                                    props->set(Css_shorthand_info[sh_index].
+                                               properties[i], type, val);
+                              }
+                           }
+                        }
+                  } while (found);
+                  break;
+
                case CssShorthandInfo::CSS_SHORTHAND_BACKGROUND_POSITION:
-                  // 'background-position' consists of one or two values:
-                  // vertical and horizontal position; in most cases in this
-                  // order. However, as long it is unambigous, the order can be
-                  // switched: "10px left" and "left 10px" are both possible
-                  // and have the same effect. For this reason, we test both
-                  // possible orders: i = 0 means vertical/horizontal, i = 1
-                  // means horizontal/vertical.
-                  for (found = false, i = 0; !found && i < 2; i++) {
-                     int i1 = i, i2 = 1 - i;
-                     if (tokenMatchesProperty(
-                            Css_shorthand_info[sh_index].properties[i1], &type)
-                         && parseValue(
-                               Css_shorthand_info[sh_index].properties[i1],
-                               type, &val)) {
-                        found = true;
-                        props->set(Css_shorthand_info[sh_index].properties[i1],
-                                   type, val);
-                     
-                        if (tokenMatchesProperty(
-                               Css_shorthand_info[sh_index].properties[i2],
-                               &type)) {
-                           if (parseValue(
-                                  Css_shorthand_info[sh_index].properties[i2],
-                                  type, &val))
-                              props->set(
-                                 Css_shorthand_info[sh_index].properties[i2],
-                                 type, val);
-                           // else: Should be an error.
-                        } else {
-                           // Second value not set: assume 'center', whose
-                           // enum index is 1 in both cases (horizontal and
-                           // vertical).
-                           CssPropertyValue val = { 1 };
-                           props->set(
-                              Css_shorthand_info[sh_index].properties[i2],
-                              CSS_TYPE_ENUM, val);
-                        }                           
-                     }
-                  }
-                  // Error, if !found? At least one value should be set.
+                  parseShorthandBackgroundPosition (sh_index, props);
                   break;
                }
             }
@@ -1305,6 +1331,56 @@ void CssParser::parseDeclaration(CssPropertyList * props,
 
    if (ttype == CSS_TK_CHAR && tval[0] == ';')
       nextToken();
+}
+
+/**
+ * Parse <background-position> (consisting of one or two parts), either for the
+ * 'background-position' property itself, or within 'background'.
+ */
+void CssParser::parseShorthandBackgroundPosition (int sh_index,
+                                                  CssPropertyList * props)
+{
+   // 'background-position' consists of one or two values: vertical and
+   // horizontal position; in most cases in this order. However, as long it is
+   // unambigous, the order can be switched: "10px left" and "left 10px" are
+   // both possible and have the same effect. For this reason, we test both
+   // possible orders: i = 0 means vertical/horizontal, i = 1 means
+   // horizontal/vertical.
+
+   // TODO Still not fully working.
+
+   CssValueType type = CSS_TYPE_UNUSED;
+   CssPropertyValue val;
+   bool found;
+   int i;
+   CssPropertyName prop1, prop2;
+
+   for (found = false, i = 0; !found && i < 2; i++) {
+      if (i == 0) {
+         prop1 = CSS_PROPERTY_X_BACKGROUND_POSITION_X;
+         prop2 = CSS_PROPERTY_X_BACKGROUND_POSITION_Y;
+      } else {
+         prop1 = CSS_PROPERTY_X_BACKGROUND_POSITION_Y;
+         prop2 = CSS_PROPERTY_X_BACKGROUND_POSITION_X;
+      }
+
+      if (tokenMatchesProperty(prop1, &type) && parseValue(prop1, type, &val)) {
+         found = true;
+         props->set(prop1, type, val);
+         
+         if (tokenMatchesProperty(prop2, &type)) {
+            if (parseValue(prop2, type, &val))
+               props->set(prop2, type, val);
+            // else: Should be an error.
+         } else {
+            // Second value not set: assume 'center', whose enum index is 1 in
+            // both cases (horizontal and vertical).
+            CssPropertyValue val = { 1 };
+            props->set(prop2, CSS_TYPE_ENUM, val);
+         }                           
+      }
+   }
+   // Error, if !found? At least one value should be set.
 }
 
 bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
