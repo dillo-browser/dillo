@@ -1344,8 +1344,8 @@ void CssParser::parseShorthandBackgroundPosition (int sh_index,
    // horizontal position; in most cases in this order. However, as long it is
    // unambigous, the order can be switched: "10px left" and "left 10px" are
    // both possible and have the same effect. For this reason, we test both
-   // possible orders: i = 0 means vertical/horizontal, i = 1 means
-   // horizontal/vertical.
+   // possible orders: i = 0 means horizontal/vertical, i = 1 means
+   // vertical/horizontal.
 
    // TODO Still not fully working.
 
