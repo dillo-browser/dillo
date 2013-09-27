@@ -1343,44 +1343,71 @@ void CssParser::parseShorthandBackgroundPosition (int sh_index,
    // 'background-position' consists of one or two values: vertical and
    // horizontal position; in most cases in this order. However, as long it is
    // unambigous, the order can be switched: "10px left" and "left 10px" are
-   // both possible and have the same effect. For this reason, we test both
-   // possible orders: i = 0 means horizontal/vertical, i = 1 means
-   // vertical/horizontal.
+   // both possible and have the same effect. For this reason, all possibilities
+   // are tested parrallel.
 
-   // TODO Still not fully working.
+   CssValueType typeH1, typeV1, typeH2, typeV2;
+   CssPropertyValue val1, val2;
+   bool h1, h2, v1, v2;
 
-   CssValueType type = CSS_TYPE_UNUSED;
-   CssPropertyValue val;
-   bool found;
-   int i;
-   CssPropertyName prop1, prop2;
+   // Test both for the first value.
+   h1 = tokenMatchesProperty (CSS_PROPERTY_X_BACKGROUND_POSITION_X, &typeH1);
+   v1 = tokenMatchesProperty (CSS_PROPERTY_X_BACKGROUND_POSITION_Y, &typeV1);
+   
+   if (!h1 && !v1) {
+      // No match at all. Should raise an error.
+      return;
+   }
 
-   for (found = false, i = 0; !found && i < 2; i++) {
-      if (i == 0) {
-         prop1 = CSS_PROPERTY_X_BACKGROUND_POSITION_X;
-         prop2 = CSS_PROPERTY_X_BACKGROUND_POSITION_Y;
-      } else {
-         prop1 = CSS_PROPERTY_X_BACKGROUND_POSITION_Y;
-         prop2 = CSS_PROPERTY_X_BACKGROUND_POSITION_X;
+   // If both fit (h1 && v1), values can be exchanged later; so setting
+   // a value as CSS_PROPERTY_X_BACKGROUND_POSITION_Y later, which has been
+   // parsed here as CSS_PROPERTY_X_BACKGROUND_POSITION_X, causes no problem.
+   if (!parseValue (h1 ? CSS_PROPERTY_X_BACKGROUND_POSITION_X :
+                    CSS_PROPERTY_X_BACKGROUND_POSITION_Y,
+                    h1 ? typeH1 : typeV1, &val1)) {
+      // Should raise an error.
+      return;
+   }
+
+   // Test both for the second value, but exclude already the cases
+   // horizontal/horizontal and vertical/vertical.
+   h2 = v1 &&
+      tokenMatchesProperty (CSS_PROPERTY_X_BACKGROUND_POSITION_X, &typeH2);
+   v2 = h1 &&
+      tokenMatchesProperty (CSS_PROPERTY_X_BACKGROUND_POSITION_Y, &typeV2);
+
+   if (!h2 && !v2) {
+      // Second value not set. Prefer horizontal for the first one.
+      props->set (h1 ? CSS_PROPERTY_X_BACKGROUND_POSITION_X :
+                  CSS_PROPERTY_X_BACKGROUND_POSITION_Y,
+                  h1 ? typeH1 : typeV1, val1);
+
+      // Set the second value to 'center', whose enum index is 1 in both cases
+      // (horizontal and vertical).
+      val2.intVal = 1;
+      props->set (h1 ? CSS_PROPERTY_X_BACKGROUND_POSITION_Y :
+                  CSS_PROPERTY_X_BACKGROUND_POSITION_X,
+                  CSS_TYPE_ENUM, val2);
+   } else {
+      // See comment above.
+      if (!parseValue (h2 ? CSS_PROPERTY_X_BACKGROUND_POSITION_X :
+                       CSS_PROPERTY_X_BACKGROUND_POSITION_Y,
+                       h2 ? typeH2 : typeV2, &val2)) {
+         // Should raise an error.
+         return;
       }
-
-      if (tokenMatchesProperty(prop1, &type) && parseValue(prop1, type, &val)) {
-         found = true;
-         props->set(prop1, type, val);
-         
-         if (tokenMatchesProperty(prop2, &type)) {
-            if (parseValue(prop2, type, &val))
-               props->set(prop2, type, val);
-            // else: Should be an error.
-         } else {
-            // Second value not set: assume 'center', whose enum index is 1 in
-            // both cases (horizontal and vertical).
-            CssPropertyValue val = { 1 };
-            props->set(prop2, CSS_TYPE_ENUM, val);
-         }                           
+      
+      // It can be assumed (see above): h2 implies v1, v2 implies h1.
+      // Prefer v2, i. e. vertical for the second value.
+      if (v2) {
+         props->set (CSS_PROPERTY_X_BACKGROUND_POSITION_X, typeH1, val1);
+         props->set (CSS_PROPERTY_X_BACKGROUND_POSITION_Y, typeV2, val2);
+      } else {
+         // !v2 implies h2, since !h2 && !v2 has been excluded.
+         props->set (CSS_PROPERTY_X_BACKGROUND_POSITION_Y, typeV1, val1);
+         props->set (CSS_PROPERTY_X_BACKGROUND_POSITION_X, typeH2, val2);
       }
    }
-   // Error, if !found? At least one value should be set.
 }
 
 bool CssParser::parseSimpleSelector(CssSimpleSelector *selector)
