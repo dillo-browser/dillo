@@ -630,21 +630,10 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                attrs->wordSpacing = -1000;
             break;
          case CSS_PROPERTY_BACKGROUND_POSITION:
-            if (p->type == CSS_TYPE_ENUM)
-               // Enums are sorted: 0 = left = 0%; 1 = center = 50%;
-               // 2 = right = 100%.
-               attrs->backgroundPositionX =
-                  createPerLength (0.5 * (double)p->value.posVal->posX);
-            else
-               computeLength (&attrs->backgroundPositionX, p->value.posVal->posX,
-                              attrs->font);
-            if (p->type == CSS_TYPE_ENUM)
-               // See comment above.
-               attrs->backgroundPositionY =
-                  createPerLength (0.5 * (double)p->value.posVal->posY);
-            else
-               computeLength (&attrs->backgroundPositionY, p->value.posVal->posY,
-                              attrs->font);
+            computeLength (&attrs->backgroundPositionX, p->value.posVal->posX,
+                           attrs->font);
+            computeLength (&attrs->backgroundPositionY, p->value.posVal->posY,
+                           attrs->font);
             break;
          case PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;

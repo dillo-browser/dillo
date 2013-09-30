@@ -38,8 +38,6 @@ class CssParser {
       bool parseRgbColor(int32_t *c);
       void parseDeclaration(CssPropertyList * props,
                             CssPropertyList * importantProps);
-      void parseShorthandBackgroundPosition (int sh_index,
-                                             CssPropertyList * props);
       bool parseSimpleSelector(CssSimpleSelector *selector);
       char *parseUrl();
       void parseImport(DilloHtml *html, DilloUrl *url);
