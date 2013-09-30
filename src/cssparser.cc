@@ -159,7 +159,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
     Css_background_attachment_enum_vals},
    {"background-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
    {"background-image", {CSS_TYPE_URI, CSS_TYPE_UNUSED}, NULL},
-   // 'background-position' is handled as a shorthand.
+   {"background-position", {CSS_TYPE_BACKGROUND_POSITION, CSS_TYPE_UNUSED}, NULL},
    {"background-repeat", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
     Css_background_repeat_enum_vals},
    {"border-bottom-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
@@ -307,8 +307,7 @@ const CssPropertyName Css_background_properties[] = {
    CSS_PROPERTY_BACKGROUND_IMAGE,
    CSS_PROPERTY_BACKGROUND_REPEAT,
    CSS_PROPERTY_BACKGROUND_ATTACHMENT,
-   CSS_PROPERTY_X_BACKGROUND_POSITION_X,
-   CSS_PROPERTY_X_BACKGROUND_POSITION_Y,
+   CSS_PROPERTY_BACKGROUND_POSITION,
    (CssPropertyName) - 1
 };
 
@@ -414,7 +413,7 @@ const CssPropertyName Css_font_properties[] = {
 };
 
 static const CssShorthandInfo Css_shorthand_info[] = {
-   {"background", CssShorthandInfo::CSS_SHORTHAND_BACKGROUND,
+   {"background", CssShorthandInfo::CSS_SHORTHAND_MULTIPLE,
     Css_background_properties},
    // For 'background-position', no properties are needed, because
    // these (CSS_PROPERTY_X_BACKGROUND_POSITION_X and
@@ -733,6 +732,7 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
          }
          break;
 
+      case CSS_TYPE_BACKGROUND_POSITION:
       case CSS_TYPE_LENGTH_PERCENTAGE:
       case CSS_TYPE_LENGTH_PERCENTAGE_NUMBER:
       case CSS_TYPE_LENGTH:
@@ -1056,6 +1056,18 @@ bool CssParser::parseValue(CssPropertyName prop,
          nextToken();
          if (val->strVal)
             ret = true;
+      }
+      break;
+
+   case CSS_TYPE_BACKGROUND_POSITION:
+      CssPropertyValue posX, posY;
+      if (parseValue(prop, CSS_TYPE_LENGTH_PERCENTAGE, &posX) &&
+          parseValue(prop, CSS_TYPE_LENGTH_PERCENTAGE, &posY)) {
+         CssBackgroundPosition *position = (CssBackgroundPosition *) malloc(sizeof(CssBackgroundPosition));
+         position->posX = posX.intVal;
+         position->posY = posY.intVal;
+         val->posVal = position;
+         ret = true;
       }
       break;
 

@@ -46,6 +46,7 @@ typedef enum {
                                    CSS_TYPE_MULTI_ENUM). Used for
                                    'font-family'. */
    CSS_TYPE_URI,                /* <uri> */
+   CSS_TYPE_BACKGROUND_POSITION,
    CSS_TYPE_UNUSED              /* Not yet used. Will itself get unused some
                                    day. */
 } CssValueType;
@@ -143,6 +144,7 @@ typedef enum {
    CSS_PROPERTY_BACKGROUND_ATTACHMENT,
    CSS_PROPERTY_BACKGROUND_COLOR,
    CSS_PROPERTY_BACKGROUND_IMAGE,
+   CSS_PROPERTY_BACKGROUND_POSITION,
    // 'background-position' is handled as a shorthand.
    CSS_PROPERTY_BACKGROUND_REPEAT,
    CSS_PROPERTY_BORDER_BOTTOM_COLOR,
@@ -234,9 +236,15 @@ typedef enum {
    CSS_PROPERTY_LAST
 } CssPropertyName;
 
+typedef struct {
+   int32_t posX;
+   int32_t posY;
+} CssBackgroundPosition;
+
 typedef union {
    int32_t intVal;
    char *strVal;
+   CssBackgroundPosition *posVal;
 } CssPropertyValue;
 
 typedef enum {
