@@ -480,6 +480,12 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                }
             }
             break;            
+         case CSS_PROPERTY_BACKGROUND_POSITION:
+            computeLength (&attrs->backgroundPositionX, p->value.posVal->posX,
+                           attrs->font);
+            computeLength (&attrs->backgroundPositionY, p->value.posVal->posY,
+                           attrs->font);
+            break;
          case CSS_PROPERTY_BACKGROUND_REPEAT:
             attrs->backgroundRepeat = (BackgroundRepeat) p->value.intVal;
             break;
@@ -628,12 +634,6 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                attrs->wordSpacing = 1000;
             else if (attrs->wordSpacing < -1000)
                attrs->wordSpacing = -1000;
-            break;
-         case CSS_PROPERTY_BACKGROUND_POSITION:
-            computeLength (&attrs->backgroundPositionX, p->value.posVal->posX,
-                           attrs->font);
-            computeLength (&attrs->backgroundPositionY, p->value.posVal->posY,
-                           attrs->font);
             break;
          case PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
