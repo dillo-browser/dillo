@@ -463,8 +463,8 @@ public:
    StyleImage *backgroundImage;
    BackgroundRepeat backgroundRepeat;
    BackgroundAttachment backgroundAttachment;
-   Length backgroundPositionX; // "left" defiened by "0%" etc. (see CSS spec)
-   Length backgroundPositionY; // "top" defiened by "0%" etc. (see CSS spec)
+   Length backgroundPositionX; // "left" defined by "0%" etc. (see CSS spec)
+   Length backgroundPositionY; // "top" defined by "0%" etc. (see CSS spec)
 
    TextAlignType textAlign;
    VAlignType valign;
