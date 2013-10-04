@@ -17,6 +17,27 @@ class Layout: public lout::object::Object
 {
    friend class Widget;
 
+private:
+   class LayoutImgRenderer: public style::StyleImage::ExternalImgRenderer
+   {
+      Layout *layout;
+
+   public:
+      LayoutImgRenderer (Layout *layout) { this->layout = layout; }
+
+      bool readyToDraw ();
+      void getPaddingArea (int *x, int *y, int *width, int *height);
+      void getRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
+      style::StyleImage *getBackgroundImage ();
+      style::BackgroundRepeat getBackgroundRepeat ();
+      style::BackgroundAttachment getBackgroundAttachment ();
+      style::Length getBackgroundPositionX ();
+      style::Length getBackgroundPositionY ();
+      void draw (int x, int y, int width, int height);
+   };
+
+   LayoutImgRenderer *layoutImgRenderer;
+
 public:
    /**
     * \brief Receiver interface different signals.

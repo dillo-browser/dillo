@@ -32,6 +32,65 @@ using namespace lout::object;
 namespace dw {
 namespace core {
 
+bool Layout::LayoutImgRenderer::readyToDraw ()
+{
+   return true;
+}
+
+void Layout::LayoutImgRenderer::getPaddingArea (int *x, int *y, int *width,
+                                                int *height)
+{
+   // TODO Actually not padding area, but visible area?
+   getRefArea (x, y, width, height);
+}
+
+void Layout::LayoutImgRenderer::getRefArea (int *xRef, int *yRef, int *widthRef,
+                                            int *heightRef)
+{
+   *xRef = 0;
+   *yRef = 0;
+   *widthRef = misc::max (layout->viewportWidth
+                          - (layout->canvasHeightGreater ?
+                             layout->vScrollbarThickness : 0),
+                          layout->canvasWidth);
+   *heightRef = misc::max (layout->viewportHeight
+                           - layout->hScrollbarThickness,
+                           layout->canvasAscent + layout->canvasDescent);
+}
+
+style::StyleImage *Layout::LayoutImgRenderer::getBackgroundImage ()
+{
+   return layout->bgImage;
+}
+
+style::BackgroundRepeat Layout::LayoutImgRenderer::getBackgroundRepeat ()
+{
+   return layout->bgRepeat;
+}
+
+style::BackgroundAttachment
+   Layout::LayoutImgRenderer::getBackgroundAttachment ()
+{
+   return layout->bgAttachment;
+}
+
+style::Length Layout::LayoutImgRenderer::getBackgroundPositionX ()
+{
+   return layout->bgPositionX;
+}
+
+style::Length Layout::LayoutImgRenderer::getBackgroundPositionY ()
+{
+   return layout->bgPositionY;
+}
+
+void Layout::LayoutImgRenderer::draw (int x, int y, int width, int height)
+{
+   layout->queueDraw (x, y, width, height);
+}
+   
+// ----------------------------------------------------------------------
+
 void Layout::Receiver::canvasSizeChanged (int width, int ascent, int descent)
 {
 }
@@ -217,6 +276,8 @@ Layout::Layout (Platform *platform)
    platform->setLayout (this);
 
    selectionState.setLayout(this);
+
+   layoutImgRenderer = NULL;
 }
 
 Layout::~Layout ()
@@ -240,6 +301,12 @@ Layout::~Layout ()
    delete view;
    delete anchorsTable;
    delete textZone;
+
+   if (layoutImgRenderer) {
+      if (bgImage)
+         bgImage->removeExternalImgRenderer (layoutImgRenderer);
+      delete layoutImgRenderer;
+   }
 }
 
 void Layout::addWidget (Widget *widget)
@@ -675,6 +742,9 @@ void Layout::setBgImage (style::StyleImage *bgImage,
                          style::BackgroundAttachment bgAttachment,
                          style::Length bgPositionX, style::Length bgPositionY)
 {
+   if (layoutImgRenderer && this->bgImage)
+      this->bgImage->removeExternalImgRenderer (layoutImgRenderer);
+
    bgImage->ref ();
    
    if (this->bgImage)
@@ -685,6 +755,15 @@ void Layout::setBgImage (style::StyleImage *bgImage,
    this->bgAttachment = bgAttachment;
    this->bgPositionX = bgPositionX;
    this->bgPositionY = bgPositionY;
+
+   if (bgImage) {
+      // Create instance of LayoutImgRenderer when needed. Until this
+      // layout is deleted, "layoutImgRenderer" will be kept, since it
+      // is not specific to the style, but only to this layout.
+      if (layoutImgRenderer == NULL)
+         layoutImgRenderer = new LayoutImgRenderer (this);
+      bgImage->putExternalImgRenderer (layoutImgRenderer);
+   }
 }
 
 
