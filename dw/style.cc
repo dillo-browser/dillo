@@ -511,22 +511,16 @@ void StyleImage::ExternalImgRenderer::setBuffer (core::Imgbuf *buffer,
 
 void StyleImage::ExternalImgRenderer::drawRow (int row)
 {
-   Style *style;
-   if (readyToDraw () && (style = getStyle ())) {
+   StyleImage *backgroundImage;
+   if (readyToDraw () && (backgroundImage = getBackgroundImage ())) {
       // All single rows are drawn.
 
-      Imgbuf *imgbuf = style->backgroundImage->getImgbuf();
+      Imgbuf *imgbuf = backgroundImage->getImgbuf();
       int imgWidth = imgbuf->getRootWidth ();
       int imgHeight = imgbuf->getRootHeight ();
 
       int x, y, width, height;
-      getArea (&x, &y, &width, &height);
-      int xDraw = x + style->margin.left + style->borderWidth.left;
-      int yDraw = y + style->margin.top + style->borderWidth.top;
-      int widthDraw = width - style->margin.left - style->borderWidth.left
-         - style->margin.right - style->borderWidth.right;
-      int heightDraw = height - style->margin.top - style->borderWidth.top
-         - style->margin.bottom - style->borderWidth.bottom;
+      getPaddingArea (&x, &y, &width, &height);
 
       int xRef, yRef, widthRef, heightRef;
       getRefArea (&xRef, &yRef, &widthRef, &heightRef);
@@ -534,15 +528,15 @@ void StyleImage::ExternalImgRenderer::drawRow (int row)
       bool repeatX, repeatY, doDraw;
       int origX, origY, tileX1, tileX2, tileY1, tileY2;
       
-      calcBackgroundRelatedValues (style->backgroundImage,
-                                   style->backgroundRepeat,
-                                   style->backgroundAttachment,
-                                   style->backgroundPositionX,
-                                   style->backgroundPositionY,
-                                   xDraw, yDraw, widthDraw, heightDraw,
-                                   xRef, yRef, widthRef, heightRef, &repeatX,
-                                   &repeatY, &origX, &origY, &tileX1, &tileX2,
-                                   &tileY1, &tileY2, &doDraw);
+      calcBackgroundRelatedValues (backgroundImage,
+                                   getBackgroundRepeat (),
+                                   getBackgroundAttachment (),
+                                   getBackgroundPositionX (),
+                                   getBackgroundPositionY (),
+                                   x, y, width, height, xRef, yRef, widthRef,
+                                   heightRef, &repeatX, &repeatY, &origX,
+                                   &origY, &tileX1, &tileX2, &tileY1, &tileY2,
+                                   &doDraw);
 
       //printf ("tileX1 = %d, tileX2 = %d, tileY1 = %d, tileY2 = %d\n",
       //        tileX1, tileX2, tileY1, tileY2);
@@ -551,15 +545,64 @@ void StyleImage::ExternalImgRenderer::drawRow (int row)
          // Only iterate over y, because the rows can be combined
          // horizontically.
          for (int tileY = tileY1; tileY <= tileY2; tileY++) {
-            int x1 = misc::max (origX + tileX1 * imgWidth, xDraw);
-            int x2 = misc::min (origX + (tileX2 + 1) * imgWidth,
-                                xDraw + widthDraw);
+            int x1 = misc::max (origX + tileX1 * imgWidth, x);
+            int x2 = misc::min (origX + (tileX2 + 1) * imgWidth, x + width);
 
-            int y = origY + tileY * imgHeight + row;
-            if (y >= yDraw && y < yDraw + heightDraw)
-               draw (x1, y, x2 - x1, 1);
+            int yt = origY + tileY * imgHeight + row;
+            if (yt >= y && yt < y + height)
+               draw (x1, yt, x2 - x1, 1);
          }
    }
+}
+
+// ----------------------------------------------------------------------
+
+void StyleImage::ExternalWidgetImgRenderer::getPaddingArea (int *x, int *y,
+                                                            int *width,
+                                                            int *height)
+{
+   Style *style = getStyle ();
+   assert (style != NULL);
+
+   int x0, y0, width0, height0;
+   getArea (&x0, &y0, &width0, &height0);
+   *x = x0 + style->margin.left + style->borderWidth.left;
+   *y = y0 + style->margin.top + style->borderWidth.top;
+   *width = width0 - style->margin.left - style->borderWidth.left
+      - style->margin.right - style->borderWidth.right;
+   *height = height0 - style->margin.top - style->borderWidth.top
+      - style->margin.bottom - style->borderWidth.bottom;
+}
+   
+StyleImage *StyleImage::ExternalWidgetImgRenderer::getBackgroundImage ()
+{
+   Style *style = getStyle ();
+   return style ? style->backgroundImage : NULL;
+}
+
+BackgroundRepeat StyleImage::ExternalWidgetImgRenderer::getBackgroundRepeat ()
+{
+   Style *style = getStyle ();
+   return style ? style->backgroundRepeat : BACKGROUND_REPEAT;
+}
+
+BackgroundAttachment
+   StyleImage::ExternalWidgetImgRenderer::getBackgroundAttachment ()
+{
+   Style *style = getStyle ();
+   return style ? style->backgroundAttachment : BACKGROUND_ATTACHMENT_SCROLL;
+}
+
+Length StyleImage::ExternalWidgetImgRenderer::getBackgroundPositionX ()
+{
+   Style *style = getStyle ();
+   return style ? style->backgroundPositionX : createPerLength (0);
+}
+
+Length StyleImage::ExternalWidgetImgRenderer::getBackgroundPositionY ()
+{
+   Style *style = getStyle ();
+   return style ? style->backgroundPositionY : createPerLength (0);
 }
 
 // ----------------------------------------------------------------------

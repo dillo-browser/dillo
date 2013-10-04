@@ -739,10 +739,9 @@ public:
       virtual bool readyToDraw () = 0;
 
       /**
-       * \brief Return the total area this background image is
-       *    attached to, in canvas coordinates.
+       * \brief ...
        */
-      virtual void getArea (int *x, int *y, int *width, int *height) = 0;
+      virtual void getPaddingArea (int *x, int *y, int *width, int *height) = 0;
 
       /**
        * \brief Return the "reference area".
@@ -752,16 +751,43 @@ public:
       virtual void getRefArea (int *xRef, int *yRef, int *widthRef,
                                int *heightRef) = 0;
 
-      /**
-       * \brief Return the style this background image is part of.
-       */
-      virtual Style *getStyle () = 0;
+      virtual StyleImage *getBackgroundImage () = 0;
+      virtual BackgroundRepeat getBackgroundRepeat () = 0;
+      virtual BackgroundAttachment getBackgroundAttachment () = 0;
+      virtual Length getBackgroundPositionX () = 0;
+      virtual Length getBackgroundPositionY () = 0;
 
       /**
        * \brief Draw (or queue for drawing) an area, which is given in
        *    canvas coordinates.
        */
       virtual void draw (int x, int y, int width, int height) = 0;
+   };
+
+   /**
+    * \brief Suitable for widgets and parts of widgets.
+    */
+   class ExternalWidgetImgRenderer: public ExternalImgRenderer
+   {
+   public:
+      void getPaddingArea (int *x, int *y, int *width, int *height);
+      
+      StyleImage *getBackgroundImage ();
+      BackgroundRepeat getBackgroundRepeat ();
+      BackgroundAttachment getBackgroundAttachment ();
+      Length getBackgroundPositionX ();
+      Length getBackgroundPositionY ();
+
+      /**
+       * \brief Return the total area this background image is
+       *    attached to, in canvas coordinates.
+       */
+      virtual void getArea (int *x, int *y, int *width, int *height) = 0;
+
+      /**
+       * \brief Return the style this background image is part of.
+       */
+      virtual Style *getStyle () = 0;
    };
 
    static StyleImage *create () { return new StyleImage (); }

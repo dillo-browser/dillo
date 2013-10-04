@@ -79,7 +79,7 @@ protected:
     *
     * The only instance is set created needed.
     */
-   class WidgetImgRenderer: public style::StyleImage::ExternalImgRenderer
+   class WidgetImgRenderer: public style::StyleImage::ExternalWidgetImgRenderer
    {
    private:
       Widget *widget;
