@@ -794,6 +794,13 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
                      int x, int y, int width, int height,
                      int xRef, int yRef, int widthRef, int heightRef,
                      Style *style, bool inverse, bool atTop);
+void drawBackgroundImage (View *view, StyleImage *backgroundImage,
+                          BackgroundRepeat backgroundRepeat,
+                          BackgroundAttachment backgroundAttachment,
+                          Length backgroundPositionX,
+                          Length backgroundPositionY,
+                          int x, int y, int width, int height,
+                          int xRef, int yRef, int widthRef, int heightRef);
 void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType);
 
 } // namespace style

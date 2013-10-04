@@ -115,6 +115,12 @@ int main(int argc, char **argv)
    FltkViewport *viewport = new FltkViewport (0, 0, 200, 300);
    layout->attachView (viewport);
 
+   image1 = StyleImage::create ();
+   image1->connectDeletion (&isdr);
+   layout->setBgImage (image1, BACKGROUND_REPEAT_Y, 
+                       BACKGROUND_ATTACHMENT_SCROLL, createPerLength (0.5),
+                       createAbsLength (30));
+
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
    styleAttrs.margin.setVal (5);
@@ -129,13 +135,7 @@ int main(int argc, char **argv)
    styleAttrs.font = style::Font::create (layout, &fontAttrs);
 
    styleAttrs.color =  Color::create (layout, 0x000000);
-   styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
-
-   image1 = styleAttrs.backgroundImage = StyleImage::create ();
-   image1->connectDeletion (&isdr);
-   styleAttrs.backgroundRepeat = BACKGROUND_REPEAT_Y;
-   styleAttrs.backgroundPositionX = createPerLength (0.5);
-   styleAttrs.backgroundPositionY = createAbsLength (30);
+   //styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
    Style *widgetStyle = Style::create (&styleAttrs);
 

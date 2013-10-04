@@ -135,6 +135,11 @@ private:
 
    /* The state, which must be projected into the view. */
    style::Color *bgColor;
+   style::StyleImage *bgImage;
+   style::BackgroundRepeat bgRepeat;
+   style::BackgroundAttachment bgAttachment;
+   style::Length bgPositionX, bgPositionY;
+
    style::Cursor cursor;
    int canvasWidth, canvasAscent, canvasDescent;
 
@@ -386,6 +391,10 @@ public:
    inline void resetSearch () { findtextState.resetSearch (); }
 
    void setBgColor (style::Color *color);
+   void setBgImage (style::StyleImage *bgImage,
+                    style::BackgroundRepeat bgRepeat,
+                    style::BackgroundAttachment bgAttachment,
+                    style::Length bgPositionX, style::Length bgPositionY);
 
    inline style::Color* getBgColor () { return bgColor; }
 };

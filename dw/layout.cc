@@ -189,6 +189,7 @@ Layout::Layout (Platform *platform)
    DBG_OBJ_CREATE (this, "DwRenderLayout");
 
    bgColor = NULL;
+   bgImage = NULL;
    cursor = style::CURSOR_DEFAULT;
 
    canvasWidth = canvasAscent = canvasDescent = 0;
@@ -228,6 +229,8 @@ Layout::~Layout ()
       platform->removeIdle (resizeIdleId);
    if (bgColor)
       bgColor->unref ();
+   if (bgImage)
+      bgImage->unref ();
    if (topLevel) {
       Widget *w = topLevel;
       topLevel = NULL;
@@ -508,6 +511,23 @@ void Layout::draw (View *view, Rectangle *area)
 {
    Rectangle widgetArea, intersection, widgetDrawArea;
 
+   // First of all, draw background image. (Unlike background *color*,
+   // this is not a feature of the views.)
+   if (bgImage != NULL && bgImage->getImgbuf() != NULL)
+      style::drawBackgroundImage (view, bgImage, bgRepeat, bgAttachment,
+                                  bgPositionX, bgPositionY,
+                                  area->x, area->y, area->width,
+                                  area->height, 0, 0,
+                                  // Reference area: maximum of canvas size and
+                                  // viewport size.
+                                  misc::max (viewportWidth
+                                             - (canvasHeightGreater ?
+                                                vScrollbarThickness : 0),
+                                             canvasWidth),
+                                  misc::max (viewportHeight
+                                             - hScrollbarThickness,
+                                             canvasAscent + canvasDescent));
+
    if (scrollIdleId != -1) {
       /* scroll is pending, defer draw until after scrollIdle() */
       drawAfterScrollReq = true;
@@ -649,6 +669,24 @@ void Layout::setBgColor (style::Color *color)
    if (view)
       view->setBgColor (bgColor);
 }
+
+void Layout::setBgImage (style::StyleImage *bgImage,
+                         style::BackgroundRepeat bgRepeat,
+                         style::BackgroundAttachment bgAttachment,
+                         style::Length bgPositionX, style::Length bgPositionY)
+{
+   bgImage->ref ();
+   
+   if (this->bgImage)
+      this->bgImage->unref ();
+   
+   this->bgImage = bgImage;
+   this->bgRepeat = bgRepeat;
+   this->bgAttachment = bgAttachment;
+   this->bgPositionX = bgPositionX;
+   this->bgPositionY = bgPositionY;
+}
+
 
 void Layout::resizeIdle ()
 {
