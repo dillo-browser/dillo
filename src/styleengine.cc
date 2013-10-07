@@ -21,6 +21,44 @@
 using namespace lout::misc;
 using namespace dw::core::style;
 
+/**
+ * Signal handler for "delete": This handles the case when an instance
+ * of StyleImage is deleted, possibly when the cache client is still
+ * active.
+ *
+ * \todo Not neccessary for dw::Image? (dw::Image also implements
+ * lout::signal::ObservedObject.)
+ */
+class StyleImageDeletionReceiver:
+   public lout::signal::ObservedObject::DeletionReceiver
+{
+   int clientKey;
+
+public:
+   StyleImageDeletionReceiver (int clientKey);
+   ~StyleImageDeletionReceiver ();
+
+   void deleted (lout::signal::ObservedObject *object);
+};
+
+StyleImageDeletionReceiver::StyleImageDeletionReceiver (int clientKey)
+{
+   this->clientKey = clientKey;
+}
+
+StyleImageDeletionReceiver::~StyleImageDeletionReceiver ()
+{
+   printf ("StyleImageDeletionReceiver deleted.\n");
+}
+
+void StyleImageDeletionReceiver::deleted (lout::signal::ObservedObject *object)
+{
+   a_Capi_stop_client (clientKey, 0);
+   delete this;
+}
+
+// ----------------------------------------------------------------------
+
 StyleEngine::StyleEngine (dw::core::Layout *layout) {
    StyleAttrs style_attrs;
    FontAttrs font_attrs;
@@ -477,6 +515,8 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                if ((clientKey = a_Capi_open_url(web, NULL, NULL)) != 0) {
                   a_Bw_add_client(bw, clientKey, 0);
                   a_Bw_add_url(bw, url);
+                  attrs->backgroundImage->connectDeletion
+                     (new StyleImageDeletionReceiver (clientKey));
                }
             }
             break;            
