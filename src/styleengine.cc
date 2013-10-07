@@ -48,7 +48,6 @@ StyleImageDeletionReceiver::StyleImageDeletionReceiver (int clientKey)
 
 StyleImageDeletionReceiver::~StyleImageDeletionReceiver ()
 {
-   printf ("StyleImageDeletionReceiver deleted.\n");
 }
 
 void StyleImageDeletionReceiver::deleted (lout::signal::ObservedObject *object)
