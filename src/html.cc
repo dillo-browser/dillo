@@ -1805,6 +1805,10 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    int32_t color;
    int tag_index_a = a_Html_tag_index ("a");
    style::Color *bgColor;
+   style::StyleImage *bgImage;
+   style::BackgroundRepeat bgRepeat;
+   style::BackgroundAttachment bgAttachment;
+   style::Length bgPositionX, bgPositionY;
 
    _MSG("Html_tag_open_body Num_BODY=%d\n", html->Num_BODY);
    if (!(html->InFlags & IN_BODY))
@@ -1848,9 +1852,14 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
    html->dw->setStyle (html->style ());
 
    bgColor = html->styleEngine->backgroundColor ();
-
    if (bgColor)
       HT2LT(html)->setBgColor(bgColor);
+
+   bgImage = html->styleEngine->backgroundImage (&bgRepeat, &bgAttachment,
+                                                 &bgPositionX, &bgPositionY);
+   if (bgImage)
+      HT2LT(html)->setBgImage(bgImage, bgRepeat, bgAttachment, bgPositionX,
+                              bgPositionY);
 
    /* Determine a color for visited links.
     * This color is computed once per page and used for immediate feedback

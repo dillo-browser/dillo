@@ -97,6 +97,11 @@ class StyleEngine {
       dw::core::style::Style *backgroundStyle (BrowserWindow *bw,
                                                DilloUrl *url);
       dw::core::style::Color *backgroundColor ();
+      dw::core::style::StyleImage *backgroundImage
+         (dw::core::style::BackgroundRepeat *bgRepeat,
+          dw::core::style::BackgroundAttachment *bgAttachment,
+          dw::core::style::Length *bgPositionX,
+          dw::core::style::Length *bgPositionY);
 
       inline dw::core::style::Style *style (BrowserWindow *bw, DilloUrl *url) {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->style;

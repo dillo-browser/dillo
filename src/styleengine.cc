@@ -248,6 +248,26 @@ dw::core::style::Color *StyleEngine::backgroundColor () {
    return NULL;
 }
 
+dw::core::style::StyleImage *StyleEngine::backgroundImage
+   (dw::core::style::BackgroundRepeat *bgRepeat,
+    dw::core::style::BackgroundAttachment *bgAttachment,
+    dw::core::style::Length *bgPositionX,
+    dw::core::style::Length *bgPositionY) {
+   for (int i = 1; i < stack->size (); i++) {
+      Node *n = stack->getRef (i);
+
+      if (n->style && n->style->backgroundImage) {
+         *bgRepeat = n->style->backgroundRepeat;
+         *bgAttachment = n->style->backgroundAttachment;
+         *bgPositionX = n->style->backgroundPositionX;
+         *bgPositionY = n->style->backgroundPositionY;
+         return n->style->backgroundImage;
+      }
+   }
+
+   return NULL;
+}
+
 /**
  * \brief set the CSS pseudo class :link.
  */

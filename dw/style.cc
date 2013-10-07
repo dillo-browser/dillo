@@ -1077,9 +1077,17 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
                      Style *style, bool inverse, bool atTop)
 {
    bool bgColor = style->backgroundColor != NULL &&
+      // The test for background colors is rather simple, since only the color
+      // has to be compared, ...
       (!atTop || layout->getBgColor () != style->backgroundColor);
    bool bgImage = (style->backgroundImage != NULL &&
-                   style->backgroundImage->getImgbuf() != NULL);
+                   style->backgroundImage->getImgbuf() != NULL) &&
+      // ... but for backgrounds, it would be rather complicated. However,
+      // since the background of the viewport should always be the background
+      // of the toplevel widget, it is not worth the extra work; so the
+      // background image of top level widgets is ignored here. (The test for
+      // the background *color* above is equally useless.)
+      !atTop;
 
    // Since widgets are always drawn from top to bottom, it is *not*
    // necessary to draw the background if background color and image
