@@ -739,9 +739,9 @@ public:
       virtual bool readyToDraw () = 0;
 
       /**
-       * \brief ...
+       * \brief Return the area covered by the background image.
        */
-      virtual void getPaddingArea (int *x, int *y, int *width, int *height) = 0;
+      virtual void getBgArea (int *x, int *y, int *width, int *height) = 0;
 
       /**
        * \brief Return the "reference area".
@@ -777,12 +777,6 @@ public:
       BackgroundAttachment getBackgroundAttachment ();
       Length getBackgroundPositionX ();
       Length getBackgroundPositionY ();
-
-      /**
-       * \brief Return the total area this background image is
-       *    attached to, in canvas coordinates.
-       */
-      virtual void getArea (int *x, int *y, int *width, int *height) = 0;
 
       /**
        * \brief Return the style this background image is part of.

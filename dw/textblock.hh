@@ -258,7 +258,7 @@ protected:
       void setData (int xWordWidget, int lineNo);
 
       bool readyToDraw ();
-      void getArea (int *x, int *y, int *width, int *height);
+      void getBgArea (int *x, int *y, int *width, int *height);
       void getRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
       core::style::Style *getStyle ();
       void draw (int x, int y, int width, int height);
@@ -270,7 +270,7 @@ protected:
       inline SpaceImgRenderer (Textblock *textblock, int wordNo) :
          WordImgRenderer (textblock, wordNo) { }
 
-      void getArea (int *x, int *y, int *width, int *height);
+      void getBgArea (int *x, int *y, int *width, int *height);
       core::style::Style *getStyle ();
    };
 

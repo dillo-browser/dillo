@@ -37,19 +37,16 @@ bool Widget::WidgetImgRenderer::readyToDraw ()
    return widget->wasAllocated ();
 }
 
-void Widget::WidgetImgRenderer::getArea (int *x, int *y, int *width,
-                                         int *height)
+void Widget::WidgetImgRenderer::getBgArea (int *x, int *y, int *width,
+                                           int *height)
 {
-   *x = widget->allocation.x;
-   *y = widget->allocation.y;
-   *width = widget->allocation.width;
-   *height = widget->getHeight ();
+   widget->getPaddingArea (x, y, width, height);
 }
 
 void Widget::WidgetImgRenderer::getRefArea (int *xRef, int *yRef, int *widthRef,
                                             int *heightRef)
 {
-   widget->getBgRefArea (xRef, yRef, widthRef, heightRef);
+   widget->getPaddingArea (xRef, yRef, widthRef, heightRef);
 }
 
 style::Style *Widget::WidgetImgRenderer::getStyle ()
@@ -404,12 +401,21 @@ void Widget::drawBox (View *view, style::Style *style, Rectangle *area,
                       allocation.x + x, allocation.y + y,
                       width, height, style, inverse);
 
-   int xRef, yRef, widthRef, heightRef;
-   getBgRefArea (&xRef, &yRef, &widthRef, &heightRef);
-   style::drawBackground (view, layout, &canvasArea,
-                          allocation.x + x, allocation.y + y, width, height,
-                          xRef, yRef, widthRef, heightRef, style, inverse,
-                          false);
+   // This method is used for inline elements, where the CSS 2 specification
+   // does not define what here is called "reference area". To make it look
+   // smoothly, the widget padding box is used.
+
+   int xPad, yPad, widthPad, heightPad;
+   getPaddingArea (&xPad, &yPad, &widthPad, &heightPad);
+   style::drawBackground
+      (view, layout, &canvasArea,
+       allocation.x + x + style->margin.left + style->borderWidth.left,
+       allocation.y + y + style->margin.top + style->borderWidth.top,
+       width - style->margin.left - style->borderWidth.left
+       - style->margin.right - style->borderWidth.right,
+       height - style->margin.top - style->borderWidth.top
+       - style->margin.bottom - style->borderWidth.bottom,
+       xPad, yPad, widthPad, heightPad, style, inverse, false);
 }
 
 /**
@@ -429,11 +435,12 @@ void Widget::drawWidgetBox (View *view, Rectangle *area, bool inverse)
    style::drawBorder (view, layout, &canvasArea, allocation.x, allocation.y,
                       allocation.width, getHeight (), style, inverse);
 
-   int xRef, yRef, widthRef, heightRef;
-   getBgRefArea (&xRef, &yRef, &widthRef, &heightRef);
-   style::drawBackground (view, layout, &canvasArea, allocation.x, allocation.y,
-                          allocation.width, getHeight (), xRef, yRef, widthRef,
-                          heightRef, style, inverse, parent == NULL);
+   int xPad, yPad, widthPad, heightPad;
+   getPaddingArea (&xPad, &yPad, &widthPad, &heightPad);
+   style::drawBackground (view, layout, &canvasArea,
+                          xPad, yPad, widthPad, heightPad,
+                          xPad, yPad, widthPad, heightPad,
+                          style, inverse, parent == NULL);
 }
 
 /*
@@ -578,20 +585,20 @@ void Widget::scrollTo (HPosition hpos, VPosition vpos,
 }
 
 /**
- * \brief Return the "reference area" for backgrounds.
+ * \brief Return the padding area (content plus padding).
  *
- * See comment of "style::drawBackground".
+ * Used as "reference area" (ee comment of "style::drawBackground")
+ * for backgrounds.
  */
-void Widget::getBgRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef)
+void Widget::getPaddingArea (int *xPad, int *yPad, int *widthPad,
+                             int *heightPad)
 {
-   /**
-    * \todo Reference should be the containing block (which will be
-    *    introduced later), not the widget allocation.
-    */
-   *xRef = allocation.x;
-   *yRef = allocation.y;
-   *widthRef = allocation.width;
-   *heightRef = getHeight ();
+   *xPad = allocation.x + style->margin.left + style->borderWidth.left;
+   *yPad = allocation.y + style->margin.top + style->borderWidth.top;
+   *widthPad = allocation.width - style->margin.left - style->borderWidth.left
+      - style->margin.right - style->borderWidth.right;
+   *heightPad = getHeight () -  style->margin.top - style->borderWidth.top
+      - style->margin.bottom - style->borderWidth.bottom;
 }
 
 void Widget::getExtremesImpl (Extremes *extremes)

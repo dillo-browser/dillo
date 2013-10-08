@@ -70,9 +70,10 @@ bool Textblock::WordImgRenderer::readyToDraw ()
       && lineNo < textblock->lines->size();
 }
 
-void Textblock::WordImgRenderer::getArea (int *x, int *y, int *width,
-                                          int *height)
+void Textblock::WordImgRenderer::getBgArea (int *x, int *y, int *width,
+                                            int *height)
 {
+   // TODO Subtract margin and border (padding box)?
    Line *line = textblock->lines->getRef (lineNo);
    *x = textblock->allocation.x + this->xWordWidget;
    *y = textblock->lineYOffsetCanvas (line);
@@ -83,7 +84,8 @@ void Textblock::WordImgRenderer::getArea (int *x, int *y, int *width,
 void Textblock::WordImgRenderer::getRefArea (int *xRef, int *yRef,
                                              int *widthRef, int *heightRef)
 {
-   textblock->getBgRefArea (xRef, yRef, widthRef, heightRef);
+   // See comment in Widget::drawBox about the reference area.q
+   textblock->getPaddingArea (xRef, yRef, widthRef, heightRef);
 }
 
 core::style::Style *Textblock::WordImgRenderer::getStyle ()
@@ -98,10 +100,10 @@ void Textblock::WordImgRenderer::draw (int x, int y, int width, int height)
 
 }
 
-void Textblock::SpaceImgRenderer::getArea (int *x, int *y, int *width,
-                                           int *height)
+void Textblock::SpaceImgRenderer::getBgArea (int *x, int *y, int *width,
+                                             int *height)
 {
-   WordImgRenderer::getArea (x, y, width, height);
+   WordImgRenderer::getBgArea (x, y, width, height);
    *x += *width;
    *width = textblock->words->getRef(wordNo)->effSpace;
 }

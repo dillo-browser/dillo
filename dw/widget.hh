@@ -88,7 +88,7 @@ protected:
       inline WidgetImgRenderer (Widget *widget) { this->widget = widget; }
 
       bool readyToDraw ();
-      void getArea (int *x, int *y, int *width, int *height);
+      void getBgArea (int *x, int *y, int *width, int *height);
       void getRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
       style::Style *getStyle ();
       void draw (int x, int y, int width, int height);
@@ -311,7 +311,7 @@ public:
    void scrollTo (HPosition hpos, VPosition vpos,
                   int x, int y, int width, int height);
 
-   void getBgRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
+   void getPaddingArea (int *xPad, int *yPad, int *widthPad, int *heightPad);
 
    /**
     * \brief Return an iterator for this widget.

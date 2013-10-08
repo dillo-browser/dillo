@@ -37,8 +37,8 @@ bool Layout::LayoutImgRenderer::readyToDraw ()
    return true;
 }
 
-void Layout::LayoutImgRenderer::getPaddingArea (int *x, int *y, int *width,
-                                                int *height)
+void Layout::LayoutImgRenderer::getBgArea (int *x, int *y, int *width,
+                                           int *height)
 {
    // TODO Actually not padding area, but visible area?
    getRefArea (x, y, width, height);

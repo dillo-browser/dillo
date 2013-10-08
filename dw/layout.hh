@@ -26,7 +26,7 @@ private:
       LayoutImgRenderer (Layout *layout) { this->layout = layout; }
 
       bool readyToDraw ();
-      void getPaddingArea (int *x, int *y, int *width, int *height);
+      void getBgArea (int *x, int *y, int *width, int *height);
       void getRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
       style::StyleImage *getBackgroundImage ();
       style::BackgroundRepeat getBackgroundRepeat ();

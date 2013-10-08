@@ -520,7 +520,7 @@ void StyleImage::ExternalImgRenderer::drawRow (int row)
       int imgHeight = imgbuf->getRootHeight ();
 
       int x, y, width, height;
-      getPaddingArea (&x, &y, &width, &height);
+      getBgArea (&x, &y, &width, &height);
 
       int xRef, yRef, widthRef, heightRef;
       getRefArea (&xRef, &yRef, &widthRef, &heightRef);
@@ -557,23 +557,6 @@ void StyleImage::ExternalImgRenderer::drawRow (int row)
 
 // ----------------------------------------------------------------------
 
-void StyleImage::ExternalWidgetImgRenderer::getPaddingArea (int *x, int *y,
-                                                            int *width,
-                                                            int *height)
-{
-   Style *style = getStyle ();
-   assert (style != NULL);
-
-   int x0, y0, width0, height0;
-   getArea (&x0, &y0, &width0, &height0);
-   *x = x0 + style->margin.left + style->borderWidth.left;
-   *y = y0 + style->margin.top + style->borderWidth.top;
-   *width = width0 - style->margin.left - style->borderWidth.left
-      - style->margin.right - style->borderWidth.right;
-   *height = height0 - style->margin.top - style->borderWidth.top
-      - style->margin.bottom - style->borderWidth.bottom;
-}
-   
 StyleImage *StyleImage::ExternalWidgetImgRenderer::getBackgroundImage ()
 {
    Style *style = getStyle ();
@@ -1096,14 +1079,10 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
 
    if (bgColor || bgImage) {
       Rectangle bgArea, intersection;
-      bgArea.x = x + style->margin.left + style->borderWidth.left;
-      bgArea.y = y + style->margin.top + style->borderWidth.top;
-      bgArea.width =
-         width - style->margin.left - style->borderWidth.left -
-         style->margin.right - style->borderWidth.right;
-      bgArea.height =
-         height - style->margin.top - style->borderWidth.top -
-         style->margin.bottom - style->borderWidth.bottom;
+      bgArea.x = x;
+      bgArea.y = y;
+      bgArea.width = width;
+      bgArea.height = height;
 
       if (area->intersectsWith (&bgArea, &intersection)) {
          if (bgColor)
