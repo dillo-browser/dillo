@@ -1051,12 +1051,13 @@ void drawBorder (View *view, Layout *layout, Rectangle *area,
  * Used by dw::core::Widget::drawBox and dw::core::Widget::drawWidgetBox.
  *
  * "area" is the area to be drawn, "x", "y", "width" and "height"
- * define the box itself. "xRef", "yRef", "widthRef" and "heightRef"
- * define the reference area, which is important for background
- * images. All are given in canvas coordinates.
- *
- * \todo Does "reference" area include margin and padding? Does
- *    currently, but should probably not.
+ * define the box itself (padding box). "xRef", "yRef", "widthRef" and
+ * "heightRef" define the reference area, which is important for the
+ * tiling of background images (for position 0%/0%, a tile is set at
+ * xRef/yRef; for position 100%/100%, a tile is set at xRef +
+ * widthRef/yRef + widthRef). See calls for more informations; in most
+ * cases, these boxes are identical (padding box). All these
+ * coordinates are given in canvas coordinates.
  *
  * "atTop" should be true, only if the area is drawn directly on the
  * canvas, not on top of other areas; this is only true for the
