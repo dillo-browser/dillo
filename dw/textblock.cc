@@ -1448,9 +1448,10 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
                                      short flags, core::style::Style *style)
 {
    words->increase ();
-   Word *word = words->getLastRef ();
-   fillWord (words->size () - 1, width, ascent, descent, flags, style);
-   return word;
+   int wordNo = words->size () - 1;
+   initWord (wordNo);
+   fillWord (wordNo, width, ascent, descent, flags, style);
+   return words->getRef (wordNo);;
 }
 
 /**
@@ -1460,6 +1461,7 @@ void Textblock::initWord (int wordNo)
 {
    Word *word = words->getRef (wordNo);
 
+   word->style = word->spaceStyle = NULL;
    word->wordImgRenderer = NULL;
    word->spaceImgRenderer = NULL;
 }
@@ -1468,7 +1470,7 @@ void Textblock::removeWordImgRenderer (int wordNo)
 {
    Word *word = words->getRef (wordNo);
 
-   if (word->wordImgRenderer) {
+   if (word->style && word->wordImgRenderer) {
       word->style->backgroundImage->removeExternalImgRenderer
          (word->wordImgRenderer);
       delete word->wordImgRenderer;
@@ -1492,7 +1494,7 @@ void Textblock::removeSpaceImgRenderer (int wordNo)
 {
    Word *word = words->getRef (wordNo);
 
-   if (word->spaceImgRenderer) {
+   if (word->spaceStyle && word->spaceImgRenderer) {
       word->spaceStyle->backgroundImage->removeExternalImgRenderer
          (word->spaceImgRenderer);
       delete word->spaceImgRenderer;
@@ -1525,6 +1527,9 @@ void Textblock::fillWord (int wordNo, int width, int ascent, int descent,
    word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);
    word->content.space = false;
    word->flags = flags;
+
+   removeWordImgRenderer (wordNo);
+   removeSpaceImgRenderer (wordNo);
 
    word->style = style;
    word->spaceStyle = style;
