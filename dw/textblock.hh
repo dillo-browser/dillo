@@ -262,6 +262,8 @@ protected:
       void getRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
       core::style::Style *getStyle ();
       void draw (int x, int y, int width, int height);
+
+      virtual void print ();
    };
 
    class SpaceImgRenderer: public WordImgRenderer
@@ -272,6 +274,8 @@ protected:
 
       void getBgArea (int *x, int *y, int *width, int *height);
       core::style::Style *getStyle ();
+
+      void print ();
    };
 
    struct Paragraph
@@ -519,6 +523,11 @@ protected:
 
    Word *addWord (int width, int ascent, int descent, short flags,
                   core::style::Style *style);
+   void initWord (int wordNo);
+   void removeWordImgRenderer (int wordNo);
+   void setWordImgRenderer (int wordNo);
+   void removeSpaceImgRenderer (int wordNo);
+   void setSpaceImgRenderer (int wordNo);
    void fillWord (int wordNo, int width, int ascent, int descent,
                   short flags, core::style::Style *style);
    void fillSpace (int wordNo, core::style::Style *style);

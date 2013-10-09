@@ -65,6 +65,9 @@ void Textblock::WordImgRenderer::setData (int xWordWidget, int lineNo)
 
 bool Textblock::WordImgRenderer::readyToDraw ()
 {
+   //print ();
+   //printf ("\n");
+
    return dataSet && textblock->wasAllocated ()
       && wordNo < textblock->words->size()
       && lineNo < textblock->lines->size();
@@ -100,6 +103,16 @@ void Textblock::WordImgRenderer::draw (int x, int y, int width, int height)
 
 }
 
+void Textblock::WordImgRenderer::print ()
+{
+   printf ("%p: word #%d, ", this, wordNo);
+   if (wordNo < textblock->words->size())
+      textblock->printWordShort (textblock->words->getRef(wordNo));
+   else
+      printf ("<word %d does not exist>", wordNo);
+   printf (", data set: %s", dataSet ? "yes" : "no");
+}
+
 void Textblock::SpaceImgRenderer::getBgArea (int *x, int *y, int *width,
                                              int *height)
 {
@@ -111,6 +124,16 @@ void Textblock::SpaceImgRenderer::getBgArea (int *x, int *y, int *width,
 core::style::Style *Textblock::SpaceImgRenderer::getStyle ()
 {
    return textblock->words->getRef(wordNo)->spaceStyle;
+}
+
+void Textblock::SpaceImgRenderer::print ()
+{
+   printf ("%p: word FOR SPACE #%d, ", this, wordNo);
+   if (wordNo < textblock->words->size())
+      textblock->printWordShort (textblock->words->getRef(wordNo));
+   else
+      printf ("<word %d does not exist>", wordNo);
+   printf (", data set: %s", dataSet ? "yes" : "no");
 }
 
 // ----------------------------------------------------------------------
@@ -259,17 +282,8 @@ Textblock::~Textblock ()
       if (word->content.type == core::Content::WIDGET)
          delete word->content.widget;
 
-      if (word->wordImgRenderer) {
-         word->style->backgroundImage->removeExternalImgRenderer
-            (word->wordImgRenderer);
-         delete word->wordImgRenderer;
-      }
-
-      if (word->spaceImgRenderer) {
-         word->spaceStyle->backgroundImage->removeExternalImgRenderer
-            (word->spaceImgRenderer);
-         delete word->spaceImgRenderer;
-      }
+      removeWordImgRenderer (i);
+      removeSpaceImgRenderer (i);
 
       word->style->unref ();
       word->spaceStyle->unref ();
@@ -1439,6 +1453,65 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
    return word;
 }
 
+/**
+ * Basic initialization, which is neccessary before fillWord.
+ */
+void Textblock::initWord (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   word->wordImgRenderer = NULL;
+   word->spaceImgRenderer = NULL;
+}
+
+void Textblock::removeWordImgRenderer (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   if (word->wordImgRenderer) {
+      word->style->backgroundImage->removeExternalImgRenderer
+         (word->wordImgRenderer);
+      delete word->wordImgRenderer;
+      word->wordImgRenderer = NULL;
+   }
+}
+
+void Textblock::setWordImgRenderer (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   if (word->style->backgroundImage) {
+      word->wordImgRenderer = new WordImgRenderer (this, wordNo);
+      word->style->backgroundImage->putExternalImgRenderer
+         (word->wordImgRenderer);
+   } else
+      word->wordImgRenderer = NULL;
+}
+
+void Textblock::removeSpaceImgRenderer (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   if (word->spaceImgRenderer) {
+      word->spaceStyle->backgroundImage->removeExternalImgRenderer
+         (word->spaceImgRenderer);
+      delete word->spaceImgRenderer;
+      word->spaceImgRenderer = NULL;
+   }
+}
+
+void Textblock::setSpaceImgRenderer (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   if (word->spaceStyle->backgroundImage) {
+      word->spaceImgRenderer = new SpaceImgRenderer (this, wordNo);
+      word->spaceStyle->backgroundImage->putExternalImgRenderer
+         (word->spaceImgRenderer);
+   } else
+      word->spaceImgRenderer = NULL;
+}
+
 void Textblock::fillWord (int wordNo, int width, int ascent, int descent,
                           short flags, core::style::Style *style)
 {
@@ -1456,19 +1529,8 @@ void Textblock::fillWord (int wordNo, int width, int ascent, int descent,
    word->style = style;
    word->spaceStyle = style;
 
-   if (word->style->backgroundImage) {
-      word->wordImgRenderer = new WordImgRenderer (this, wordNo);
-      word->style->backgroundImage->putExternalImgRenderer
-         (word->wordImgRenderer);
-   } else
-      word->wordImgRenderer = NULL;
-
-   if (word->spaceStyle->backgroundImage) {
-      word->spaceImgRenderer = new SpaceImgRenderer (this, wordNo);
-      word->spaceStyle->backgroundImage->putExternalImgRenderer
-         (word->spaceImgRenderer);
-   } else
-      word->spaceImgRenderer = NULL;
+   setWordImgRenderer (wordNo);
+   setSpaceImgRenderer (wordNo);
 
    style->ref ();
    style->ref ();
@@ -2002,22 +2064,13 @@ void Textblock::fillSpace (int wordNo, core::style::Style *style)
       //                    word->content.space);
 
 
-      if (word->spaceImgRenderer) {
-         word->spaceStyle->backgroundImage->removeExternalImgRenderer
-            (word->spaceImgRenderer);
-         delete word->spaceImgRenderer;
-      }
+      removeSpaceImgRenderer (wordNo);
 
       word->spaceStyle->unref ();
       word->spaceStyle = style;
       style->ref ();
-
-      if (word->spaceStyle->backgroundImage) {
-         word->spaceImgRenderer = new SpaceImgRenderer (this, wordNo);
-         word->spaceStyle->backgroundImage->putExternalImgRenderer
-            (word->spaceImgRenderer);
-      } else
-         word->spaceImgRenderer = NULL;
+      
+      setSpaceImgRenderer (wordNo);
    }
 }
 

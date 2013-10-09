@@ -124,6 +124,8 @@ int main(int argc, char **argv)
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
    styleAttrs.margin.setVal (5);
+   styleAttrs.x_lang[0] = 'e';
+   styleAttrs.x_lang[1] = 'n';
 
    FontAttrs fontAttrs;
    fontAttrs.name = "Bitstream Charter";
@@ -158,7 +160,7 @@ int main(int argc, char **argv)
    styleAttrs.backgroundPositionY = createPerLength (0);
    Style *wordStyleBg = Style::create (&styleAttrs);
 
-   for(int i = 1; i <= 10; i++) {
+   for(int i = 1; i <= 1; i++) {
       char buf[4];
       sprintf(buf, "%d.", i);
 
@@ -168,7 +170,7 @@ int main(int argc, char **argv)
                               NULL };
 
       for(int j = 0; words[j]; j++) {
-         textblock->addText(words[j], j == 3 ? wordStyleBg : wordStyle);
+         textblock->addText(words[j], j == 11 ? wordStyleBg : wordStyle);
          textblock->addSpace(wordStyle);
       }
 
