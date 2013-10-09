@@ -1049,11 +1049,8 @@ void drawBorder (View *view, Layout *layout, Rectangle *area,
  * that drawing again is is not neccessary, but some time can be
  * saved.
  *
- * \todo The same should not only be applied to background colors, but
- *    also to background images.
- *
  * Otherwise, the caller should not try to increase the performance by
- * doing some tests befre; this is all done in this method.
+ * doing some tests before; this is all done in this method.
  */
 void drawBackground (View *view, Layout *layout, Rectangle *area,
                      int x, int y, int width, int height,
