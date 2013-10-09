@@ -239,9 +239,6 @@ private:
 protected:
    /**
     * \brief Implementation used for words.
-    *
-    * \todo The word index must be updated when, through hyphenation,
-    *    words are added before.
     */
    class WordImgRenderer:
       public core::style::StyleImage::ExternalWidgetImgRenderer
