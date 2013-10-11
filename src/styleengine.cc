@@ -298,6 +298,16 @@ void StyleEngine::preprocessAttrs (dw::core::style::StyleAttrs *attrs) {
    if (stack->getRef (stack->size () - 2)->inheritBackgroundColor) {
       attrs->backgroundColor =
          stack->getRef (stack->size () - 2)->style->backgroundColor;
+      attrs->backgroundImage =
+         stack->getRef (stack->size () - 2)->style->backgroundImage;
+      attrs->backgroundRepeat =
+         stack->getRef (stack->size () - 2)->style->backgroundRepeat;
+      attrs->backgroundAttachment =
+         stack->getRef (stack->size () - 2)->style->backgroundAttachment;
+      attrs->backgroundPositionX =
+         stack->getRef (stack->size () - 2)->style->backgroundPositionX;
+      attrs->backgroundPositionY =
+         stack->getRef (stack->size () - 2)->style->backgroundPositionY;
 
       attrs->valign = stack->getRef (stack->size () - 2)->style->valign;
    }
@@ -866,8 +876,14 @@ Style * StyleEngine::wordStyle0 (BrowserWindow *bw, DilloUrl *url) {
    StyleAttrs attrs = *style (bw, url);
    attrs.resetValues ();
 
-   if (stack->getRef (stack->size() - 1)->inheritBackgroundColor)
+   if (stack->getRef (stack->size() - 1)->inheritBackgroundColor) {
       attrs.backgroundColor = style (bw, url)->backgroundColor;
+      attrs.backgroundImage = style (bw, url)->backgroundImage;
+      attrs.backgroundRepeat = style (bw, url)->backgroundRepeat;
+      attrs.backgroundAttachment = style (bw, url)->backgroundAttachment;
+      attrs.backgroundPositionX = style (bw, url)->backgroundPositionX;
+      attrs.backgroundPositionY = style (bw, url)->backgroundPositionY;
+   }
 
    attrs.valign = style (bw, url)->valign;
 
