@@ -1116,18 +1116,16 @@ bool CssParser::parseValue(CssPropertyName prop,
          // Only valid, when a combination h/v or v/h is possible.
          if ((h[0] && v[1]) || (v[0] && h[1])) {
             ret = true;
-            CssBackgroundPosition *position =
-               (CssBackgroundPosition *) malloc(sizeof(CssBackgroundPosition));
-            val->posVal = position;
+            val->posVal = dNew(CssBackgroundPosition, 1);
 
             // Prefer combination h/v:
             if (h[0] && v[1]) {
-                position->posX = pos[0];
-                position->posY = pos[1];
+                val->posVal->posX = pos[0];
+                val->posVal->posY = pos[1];
             } else {
                // This should be v/h:
-                position->posX = pos[1];
-                position->posY = pos[0];
+                val->posVal->posX = pos[1];
+                val->posVal->posY = pos[0];
             }
          }
       }
