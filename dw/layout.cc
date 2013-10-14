@@ -745,7 +745,8 @@ void Layout::setBgImage (style::StyleImage *bgImage,
    if (layoutImgRenderer && this->bgImage)
       this->bgImage->removeExternalImgRenderer (layoutImgRenderer);
 
-   bgImage->ref ();
+   if (bgImage)
+      bgImage->ref ();
    
    if (this->bgImage)
       this->bgImage->unref ();
