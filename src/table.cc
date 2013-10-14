@@ -45,10 +45,17 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border")))
       border = isdigit(attrbuf[0]) ? strtol (attrbuf, NULL, 10) : 1;
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cellspacing")))
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cellspacing"))) {
       cellspacing = strtol (attrbuf, NULL, 10);
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cellpadding")))
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<table> cellspacing attribute is obsolete.\n");
+   }
+
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "cellpadding"))) {
       cellpadding = strtol (attrbuf, NULL, 10);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<table> cellpadding attribute is obsolete.\n");
+   }
 
    if (border != -1) {
       cssLength = CSS_CREATE_LENGTH (border, CSS_LENGTH_TYPE_PX);
@@ -76,10 +83,13 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
                                         CSS_TYPE_LENGTH_PERCENTAGE, cssLength);
    }
 
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width")))
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width"))) {
       html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
                                         CSS_TYPE_LENGTH_PERCENTAGE,
                                         a_Html_parse_length (html, attrbuf));
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<table> width attribute is obsolete.\n");
+   }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "align"))) {
       if (dStrAsciiCasecmp (attrbuf, "left") == 0)
@@ -91,6 +101,8 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       else if (dStrAsciiCasecmp (attrbuf, "center") == 0)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_TEXT_ALIGN,
                                            CSS_TYPE_ENUM, TEXT_ALIGN_CENTER);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<table> align attribute is obsolete.\n");
    }
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
@@ -98,6 +110,8 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
       if (bgcolor != -1)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_BACKGROUND_COLOR,
                                            CSS_TYPE_COLOR, bgcolor);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<table> bgcolor attribute is obsolete.\n");
    }
 
    html->style (); // evaluate now, so we can build non-css hints for the cells
@@ -177,6 +191,8 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize)
          if (bgcolor != -1)
             html->styleEngine->setNonCssHint (CSS_PROPERTY_BACKGROUND_COLOR,
                                               CSS_TYPE_COLOR, bgcolor);
+         if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+            BUG_MSG("<tr> bgcolor attribute is obsolete.\n");
       }
 
       if (a_Html_get_attr (html, tag, tagsize, "align")) {
@@ -361,9 +377,13 @@ static void Html_tag_open_table_cell(DilloHtml *html,
          html->styleEngine->setNonCssHint (CSS_PROPERTY_TEXT_ALIGN,
                                            CSS_TYPE_ENUM, text_align);
       }
-      if (a_Html_get_attr(html, tag, tagsize, "nowrap"))
+      if (a_Html_get_attr(html, tag, tagsize, "nowrap")) {
+         if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+            BUG_MSG("<t%c> nowrap attribute is obsolete.\n",
+               (tagsize >=3 && (D_ASCII_TOLOWER(tag[2]) == 'd')) ? 'd' : 'h');
          html->styleEngine->setNonCssHint(CSS_PROPERTY_WHITE_SPACE,
                                           CSS_TYPE_ENUM, WHITE_SPACE_NOWRAP);
+      }
 
       a_Html_tag_set_align_attr (html, tag, tagsize);
 
@@ -371,6 +391,9 @@ static void Html_tag_open_table_cell(DilloHtml *html,
          html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
                                            CSS_TYPE_LENGTH_PERCENTAGE,
                                            a_Html_parse_length (html, attrbuf));
+         if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+            BUG_MSG("<t%c> width attribute is obsolete.\n",
+               (tagsize >=3 && (D_ASCII_TOLOWER(tag[2]) == 'd')) ? 'd' : 'h');
       }
 
       a_Html_tag_set_valign_attr (html, tag, tagsize);
@@ -380,6 +403,9 @@ static void Html_tag_open_table_cell(DilloHtml *html,
          if (bgcolor != -1)
             html->styleEngine->setNonCssHint (CSS_PROPERTY_BACKGROUND_COLOR,
                                               CSS_TYPE_COLOR, bgcolor);
+         if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+            BUG_MSG("<t%c> bgcolor attribute is obsolete.\n",
+               (tagsize >=3 && (D_ASCII_TOLOWER(tag[2]) == 'd')) ? 'd' : 'h');
       }
 
    default:

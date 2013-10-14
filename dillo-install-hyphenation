@@ -8,6 +8,15 @@ $host = "mirrors.dotsrc.org";
 $basesourcedir = "/ctan";
 $sourcedir = "";
 
+sub ftpmessage {
+   # I'm not sure whether $ftp->message is supposed to end with "\n"
+   # or not. To be sure (and have nicer output on the screen), it is
+   # removed here.
+   my $x = $ftp->message;
+   chomp $x;
+   return $x;
+}
+
 # Determine ${prefix}, for the default target directory for pattern
 # files. Two different strategies ...
 $makefile = (dirname $0) . "/Makefile";
@@ -81,10 +90,11 @@ EOT
    # Connect to CTAN FTP server, change to the directory where the
    # patterns lie, and read files list (which may be useful later).
    $ftp = Net::FTP->new($host,Timeout=>240)
-      or die "Cannot connect to $host: $!";
-   $ftp->login() or die "Cannot login: $!";
-   $ftp->cwd($sourcedir) or die "Cannot change to directory $sourcedir: $!";
-   @files = $ftp->ls or die "Cannot read directory: $!";
+      or die "Cannot connect to $host: $@";
+   $ftp->login() or die "Cannot login: ", ftpmessage;
+   $ftp->cwd($sourcedir)
+      or die "Cannot change to directory $sourcedir: ", ftpmessage;
+   @files = $ftp->ls or die "Cannot read directory: ", ftpmessage;
 
    # Finally, read pattern files.
    foreach $arg (@ARGV) {
@@ -108,7 +118,8 @@ EOT
          if ($ftp->get ("hyph-$arg.lic.txt", $tmplic)) {
             $licfound = 1;
          } else {
-            print "Warning: Cannot download license file for \"$arg\": $!\n";
+            print "Warning: Cannot download license file for \"$arg\": ",
+              ftpmessage, "\n";
          }
          
          # Combine both, licence and pattern, to the final pattern
@@ -147,7 +158,8 @@ EOT
       } else {
          # Not found. If a single language was specified (e. g. "en"),
          # search for possibilities.
-         print "Error: Cannot download pattern file for \"$arg\": $!\n";
+         print "Error: Cannot download pattern file for \"$arg\": ",
+            ftpmessage, "\n";
          if ($lang eq $arg) {
             print "Try one of these:\n";
             foreach(@files) {

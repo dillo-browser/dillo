@@ -71,7 +71,7 @@ void TipWin::value(const char *s) {
 
 void TipWin::do_show(void *wid) {
    cur_widget = wid;  // Keep track of requesting widget
-   if (prefs.show_tooltip) {
+   if (prefs.show_ui_tooltip) {
       Fl::add_timeout(recent ? 0.2f : 0.8f, show_timeout);
    }
 }

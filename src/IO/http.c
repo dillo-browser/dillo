@@ -300,6 +300,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "Accept-Encoding: gzip\r\n"
          "%s" /* language */
          "%s" /* auth */
+         "DNT: 1\r\n"
          "Host: %s\r\n"
          "%s"
          "%s"
@@ -325,6 +326,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "Accept-Encoding: gzip\r\n"
          "%s" /* language */
          "%s" /* auth */
+         "DNT: 1\r\n"
          "Host: %s\r\n"
          "%s"
          "%s"
