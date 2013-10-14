@@ -418,6 +418,7 @@ public:
                     style::Length bgPositionX, style::Length bgPositionY);
 
    inline style::Color* getBgColor () { return bgColor; }
+   inline style::StyleImage* getBgImage () { return bgImage; }
 };
 
 } // namespace core

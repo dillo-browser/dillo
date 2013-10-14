@@ -1063,12 +1063,14 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
       (!atTop || layout->getBgColor () != style->backgroundColor);
    bool bgImage = (style->backgroundImage != NULL &&
                    style->backgroundImage->getImgbuf() != NULL) &&
-      // ... but for backgrounds, it would be rather complicated. However,
-      // since the background of the viewport should always be the background
-      // of the toplevel widget, it is not worth the extra work; so the
-      // background image of top level widgets is ignored here. (The test for
-      // the background *color* above is equally useless.)
-      !atTop;
+      // ... but for backgrounds, it would be rather complicated. To handle the
+      // two cases (normal HTML in a viewport, where the layout background
+      // image is set, and contents of <button> within a flat view, where the
+      // background image of the toplevel widget is set), only the background
+      // images are compared. A full test, which also deals with all other
+      // attributes related to backgrond images (repeat, position etc.) would
+      // be complicated and useless, so not worth the work.
+      (!atTop || layout->getBgImage () != style->backgroundImage);
 
    // Since widgets are always drawn from top to bottom, it is *not*
    // necessary to draw the background if background color and image
@@ -1115,7 +1117,7 @@ void drawBackgroundImage (View *view, StyleImage *backgroundImage,
    int imgWidth = imgbuf->getRootWidth ();
    int imgHeight = imgbuf->getRootHeight ();
 
-   //printf ("drawBackrgoundImage (..., [img: %d, %d], ..., (%d, %d), %d x %d, "
+   //printf ("drawBackgroundImage (..., [img: %d, %d], ..., (%d, %d), %d x %d, "
    //        "(%d, %d), %d x %d)\n", imgWidth, imgHeight, x, y, width, height,
    //        xRef, yRef, widthRef, heightRef);
 
