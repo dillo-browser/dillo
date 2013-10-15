@@ -573,8 +573,10 @@ protected:
    void handleWordExtremes (int wordIndex);
    void correctLastWordExtremes ();
 
-   static int getShrinkability(struct Word *word);
-   static int getStretchability(struct Word *word);
+   static int getSpaceShrinkability(struct Word *word);
+   static int getSpaceStretchability(struct Word *word);
+   static int getLineShrinkability(struct Word *someWord);
+   static int getLineStretchability(struct Word *someWord);
    int hyphenateWord (int wordIndex);
    void accumulateWordForLine (int lineIndex, int wordIndex);
    void accumulateWordData (int wordIndex);
