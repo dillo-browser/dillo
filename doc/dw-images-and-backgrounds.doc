@@ -41,8 +41,12 @@ dw::core::ImageRenderer, in most cases.
 
 <h2>Backgrounds</h2>
 
-(This is based on future extensions described above.) Since background
-are style resources, they are associated with
+<div style="border: 2px solid #ffff00; margin-bottom: 0.5em;
+padding: 0.5em 1em; background-color: #ffffe0"><b>Info:</b> This
+section, which was written long before the implementation, is not up
+to date (although the main ideas have not changed).</div>
+
+Since background are style resources, they are associated with
 dw::core::style::Style. For backgrounds, another level is needed,
 because of the 1-to-n relation from dw::core::style::Style to
 dw::core::Widget:
