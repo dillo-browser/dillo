@@ -259,7 +259,16 @@ text, hyphenation is differently (less) desirable; this effect can be
 achieved by enlarging the stretchability, which will lead to a smaller
 badness, and so make hyphenation less likely. The user can configure
 the stretchability by changing the preference value
-*stretchability_factor*.
+*stretchability_factor* (default: 1.0).
+
+(Comparison to T<sub>E</sub>X: Knuth and Plass describe a method for
+ragged borders, which is effectively the same as described here (Knuth
+1999, pp.&nbsp;93--94). The value for the stretchability of the line
+is slightly less, 1&nsbp;em (ibid., see also p.&nsbp;72 for the
+definition of the units). However, this article suggests a value for
+the hyphenation penalty, which is ten times larger than the value for
+justified text; this would suggest a larger value for
+*stretchability_factor*.)
 
 
 Hyphens
