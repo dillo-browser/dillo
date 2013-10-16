@@ -118,6 +118,7 @@ void a_Prefs_init(void)
    prefs.penalty_em_dash_left = 800;
    prefs.penalty_em_dash_right = 100;
    prefs.penalty_em_dash_right_2 = 800;
+   prefs.stretchability_factor = 100;
 }
 
 /*

@@ -20,7 +20,8 @@ dillo-3.0.4 [not released yet]
    correction.
  - Fixed (possibly security) problem of FltkImgBuf caused by integer overflow
    (BUG#1129).
- - Some linebreaking fixes.
+ - Some linebreaking fixes, and optimization for non-justified text, including
+   new preference stretchability_factor.
  - Added white_bg_replacement preference.
    Patches: Sebastian Geerken
 +- Fix a set of bugs reported by Oulu Univ. Secure Programming Group

@@ -79,6 +79,8 @@ int Textblock::penalties[PENALTY_NUM][2] = {
    { 100, 800 }
 };
 
+int Textblock::stretchabilityFactor = 100;
+
 /**
  * The character which is used to draw a hyphen at the end of a line,
  * either caused by automatic hyphenation, or by soft hyphens.
@@ -113,6 +115,11 @@ void Textblock::setPenaltyEmDashRight (int penaltyRightEmDash)
 void Textblock::setPenaltyEmDashRight2 (int penaltyRightEmDash2)
 {
    penalties[PENALTY_EM_DASH_RIGHT][1] = penaltyRightEmDash2;
+}
+
+void Textblock::setStretchabilityFactor (int stretchabilityFactor)
+{
+   Textblock::stretchabilityFactor = stretchabilityFactor;
 }
 
 Textblock::Textblock (bool limitTextWidth)

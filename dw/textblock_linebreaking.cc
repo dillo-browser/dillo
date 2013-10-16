@@ -91,7 +91,7 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
             badness = ratio * ratio * ratio;
          }
       }
-   } else { // if (word->totalWidth > availWidth)
+   } else { // if (totalWidth > availWidth)
       if (totalShrinkability == 0)
          badnessState = TOO_TIGHT;
       else {
@@ -276,7 +276,7 @@ void Textblock::printWord (Word *word)
    printf (" [%d / %d + %d - %d => %d + %d - %d] => ",
            word->size.width, word->origSpace, getSpaceStretchability(word),
            getSpaceShrinkability(word), word->totalWidth,
-           word->totalStretchability, word->totalShrinkability);
+           word->totalSpaceStretchability, word->totalSpaceShrinkability);
    word->badnessAndPenalty.print ();
 }
 
@@ -1036,23 +1036,31 @@ void Textblock::accumulateWordData (int wordIndex)
    if (wordIndex == firstWordOfLine) {
       // first word of the (not neccessarily yet existing) line
       word->totalWidth = word->size.width + word->hyphenWidth;
-      word->totalStretchability = getLineStretchability (word);
-      word->totalShrinkability = getLineShrinkability (word);
+      word->maxAscent = word->size.ascent;
+      word->maxDescent = word->size.descent;
+      word->totalSpaceStretchability = 0;
+      word->totalSpaceShrinkability = 0;
    } else {
       Word *prevWord = words->getRef (wordIndex - 1);
 
       word->totalWidth = prevWord->totalWidth
          + prevWord->origSpace - prevWord->hyphenWidth
          + word->size.width + word->hyphenWidth;
-      word->totalStretchability =
-         prevWord->totalStretchability + getSpaceStretchability(prevWord);
-      word->totalShrinkability =
-         prevWord->totalShrinkability + getSpaceShrinkability(prevWord);
+      word->maxAscent = misc::max (prevWord->size.ascent, word->size.ascent);
+      word->maxDescent = misc::max (prevWord->size.descent, word->size.descent);
+      word->totalSpaceStretchability =
+         prevWord->totalSpaceStretchability + getSpaceStretchability(prevWord);
+      word->totalSpaceShrinkability =
+         prevWord->totalSpaceShrinkability + getSpaceShrinkability(prevWord);
    }
 
+   int totalStretchability =
+      word->totalSpaceStretchability + getLineStretchability (word);
+   int totalShrinkability =
+      word->totalSpaceShrinkability + getLineShrinkability (word);
    word->badnessAndPenalty.calcBadness (word->totalWidth, availWidth,
-                                        word->totalStretchability,
-                                        word->totalShrinkability);
+                                        totalStretchability,
+                                        totalShrinkability);
 
    //printf ("      => ");
    //printWord (word);
@@ -1281,17 +1289,18 @@ int Textblock::getSpaceStretchability(struct Word *word)
    // Alternative: return word->origSpace / 2;
 }
 
-int Textblock::getLineShrinkability(struct Word *someWord)
+int Textblock::getLineShrinkability(Word *lastWord)
 {
    return 0;
 }
 
-int Textblock::getLineStretchability(struct Word *someWord)
+int Textblock::getLineStretchability(Word *lastWord)
 {
-   if (someWord->spaceStyle->textAlign == core::style::TEXT_ALIGN_JUSTIFY)
+   if (lastWord->spaceStyle->textAlign == core::style::TEXT_ALIGN_JUSTIFY)
       return 0;
    else
-      return 3 * someWord->origSpace;
+      return stretchabilityFactor * (lastWord->maxAscent
+                                     + lastWord->maxDescent) / 100;
 
    // Alternative: return 0;
 }

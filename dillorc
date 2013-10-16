@@ -116,6 +116,12 @@
 # Notice that there is no "penalty_em_dash_left_2", since breaking
 # left of an em-dash makes the line *begin*, not *end* with a dash.
 
+# This factor is multiplied with the line height to get the
+# stretchability of a non-justified line. The larger this factor (and
+# thus, the stretchability), the less likely the words are hyphenated;
+# so you can use this value to control hyphenation of non-justified
+# text.
+#stretchability_factor=1
 
 #-------------------------------------------------------------------------
 #                            PARSING SECTION

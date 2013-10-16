@@ -151,9 +151,12 @@ So we need the following values:
 - \f$w_i\f$ (the width of the word \f$i\f$ itself);
 - \f$s_i\f$ (the width of the space following the word \f$i\f$);
 - the stretchability \f$y_i\f$, a value denoting how much the space
-  after word\f$i\f$ can be stretched (typically \f${1\over 2} s_i\f$);
+  after word\f$i\f$ can be stretched (typically \f${1\over 2} s_i\f$
+  for justified text; otherwise 0, since the spaces are not
+  stretched);
 - the shrinkability \f$y_i\f$, a value denoting how much the space
-  after word\f$i\f$ can be shrunken (typically \f${1\over 3} s_i\f$);
+  after word\f$i\f$ can be shrunken (typically \f${1\over 3} s_i\f$
+  for justified text; otherwise 0, since the spaces are not shrinked);
 - the penalty \f$p_i\f$, if the line is broken after word \f$i\f$;
 - a width \f$h_i\f$, which is added, when the line is broken after
   word \f$i\f$.
@@ -171,13 +174,16 @@ We define:
 
 \f[W_a^b = \sum_{i=a}^{b} w_i + \sum_{i=a}^{b-1} s_i + h_b\f]
 
-\f[Y_a^b = \sum_{i=a}^{b-1} y_i\f]
+\f[Y_a^b = {Y_0}_a^b + \sum_{i=a}^{b-1} y_i\f]
 
-\f[Z_a^b = \sum_{i=a}^{b-1} z_i\f]
+\f[Z_a^b = {Z_0}_a^b + \sum_{i=a}^{b-1} z_i\f]
 
 
-\f$W_a^b\f$ is the total width, \f$Y_a^b\f$ the total stretchability, and
-\f$Z_a^b\f$ the total shrinkability.
+\f$W_a^b\f$ is the total width, \f$Y_a^b\f$ the total stretchability,
+and \f$Z_a^b\f$ the total shrinkability. \f${Y_0}_a^b\f$ and
+\f${Z_0}_a^b\f$ are the stretchability and shrinkability defined per
+line, and applied at the borders; they are 0 for justified text, but
+\f${Y_0}_a^b\f$ has a positive value otherwise, see below for details.
 
 Furthermore the *adjustment ratio* \f$r_a^b\f$:
 
@@ -216,6 +222,33 @@ described above.
 integer arithmetic is used for performance, which make the actual
 code more complicated. See dw::Textblock::BadnessAndPenalty for
 details.)
+
+Ragged Borders
+--------------
+
+For other than justified text (left-, right-aligned and centered), the
+spaces between the words are not shrinked or stretched (so \f$y_i\f$
+and \f$z_i\f$ are 0), but additional space is added to the left or
+right border or to both. For this reason, an additional stretchability
+\f${Y_0}_a^b\f$ is added (see definition above). Since this space at
+the border is 0 in an ideal case (\f$W_a^b = l\f$), it cannot be
+shrunken, so \f${Z_0}_a^b\f$ is 0.
+
+This is not equivalent to the calculation of the total stretchability
+as done for justified text, since in this case, the stretchability
+depends on the number of words: consider the typical case that all
+spaces and stretchabilities are equal (\f$y_a = y_{a + 1} = \ldots =
+y_b\f$). With \f$n\f$ words, the total strechability would be \f$n
+\cdot y_a\f$, so increase with an increasing number of words
+(\f$y_a\fb$ is constant). This is correct for justified text, but for
+other alignments, where only one space (or two, for centered text) is
+changed, this would mean that a line with many narrow words is more
+stretchable than a line with few wide words.
+
+It is obvious that left-aligned text can be handled in the same way as
+right-aligned text. [... Centered text? ...]
+
+[... Exact value of stretchability; relation to penalties ...]
 
 
 Hyphens
@@ -335,33 +368,6 @@ Low Priority
 **Mark the end of a paragraph:** Should dw::core::Content::BREAK still
 be used? Currently, this is redundant to
 dw::Textblock::BadnessAndPenalty.
-
-**Other than justified text:** The calculation of badness is designed
-for justified text. For other alignments, it may be modified. The
-point is the definition of stretchability and for the line.
-
-Consider left-aligned text. Most importantly, not the spaces between
-the words, but the space on the right border is adjusted. If the
-actual line width (sum of words and normal spaces, \f$W_a^b\f$ above)
-equals the the ideal width (e.&nbsp;g. given by the browser window
-width, \f$l\f$ above), this space is zero, so it is not possible to
-shrink it further. For this reason, the shrinkability is now already
-set to 0.
-
-On the other hand, there should be a stretchability for the space on
-the right border. However, only the spaces between the words have a
-stretchability; later, the differences are summed up and used to fill
-the space on the right. This works, but is a bit imprecise, since the
-stretchability of the space on the right depends on the number of words
-in the line.
-
-(Likewise, if you modify the code to assign a positive value for the
-shrinkability for left-aligned text, the difference is summed up and
-used for the right border; since this difference is negative, the
-lines will, when spaces are shrunken, get too long!)
-
-Analogous considerations must be made for right-aligned and centered
-text. (For centered texts, there are two adjustable spaces.)
 
 Solved (Must Be Documented)
 ---------------------------

@@ -341,8 +341,9 @@ protected:
                                   words: the value compared to the
                                   ideal width of the line, if the line
                                   would be broken after this word. */
-      int totalStretchability; // includes all *before* current word
-      int totalShrinkability;  // includes all *before* current word
+      int maxAscent, maxDescent;
+      int totalSpaceStretchability; // includes all *before* current word
+      int totalSpaceShrinkability;  // includes all *before* current word
       BadnessAndPenalty badnessAndPenalty; /* when line is broken after this
                                             * word */
 
@@ -421,6 +422,11 @@ protected:
     * details. Set from preferences.
     */
    static int penalties[PENALTY_NUM][2];
+
+   /**
+    * ...
+    */
+   static int stretchabilityFactor;
 
    bool limitTextWidth; /* from preferences */
 
@@ -575,8 +581,8 @@ protected:
 
    static int getSpaceShrinkability(struct Word *word);
    static int getSpaceStretchability(struct Word *word);
-   static int getLineShrinkability(struct Word *someWord);
-   static int getLineStretchability(struct Word *someWord);
+   static int getLineShrinkability(Word *lastWord);
+   static int getLineStretchability(Word *lastWord);
    int hyphenateWord (int wordIndex);
    void accumulateWordForLine (int lineIndex, int wordIndex);
    void accumulateWordData (int wordIndex);
@@ -619,6 +625,7 @@ public:
    static void setPenaltyEmDashLeft (int penaltyLeftEmDash);
    static void setPenaltyEmDashRight (int penaltyRightEmDash);
    static void setPenaltyEmDashRight2 (int penaltyRightEmDash2);
+   static void setStretchabilityFactor (int stretchabilityFactor);
 
    Textblock(bool limitTextWidth);
    ~Textblock();
