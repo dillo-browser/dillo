@@ -472,6 +472,7 @@ int main(int argc, char **argv)
    dw::Textblock::setPenaltyEmDashLeft (prefs.penalty_em_dash_left);
    dw::Textblock::setPenaltyEmDashRight (prefs.penalty_em_dash_right);
    dw::Textblock::setPenaltyEmDashRight2 (prefs.penalty_em_dash_right_2);
+   dw::Textblock::setStretchabilityFactor (prefs.stretchability_factor);
 
    /* command line options override preferences */
    if (options_got & DILLO_CLI_FULLWINDOW)

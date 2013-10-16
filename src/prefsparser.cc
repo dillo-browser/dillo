@@ -130,6 +130,8 @@ int PrefsParser::parseOption(char *name, char *value)
       { "penalty_em_dash_right", &prefs.penalty_em_dash_right,
         PREFS_FRACTION_100 },
       { "penalty_em_dash_right_2", &prefs.penalty_em_dash_right_2,
+        PREFS_FRACTION_100 },
+      { "stretchability_factor", &prefs.stretchability_factor,
         PREFS_FRACTION_100 }
    };
 
