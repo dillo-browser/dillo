@@ -129,7 +129,7 @@ class UI : public CustGroupVertical {
    CustGroupHorizontal *LocBar, *NavBar, *StatusBar;
    Fl_Input *Location;
    CustProgressBox *PProg, *IProg;
-   Fl_Group *Panel, *Main;
+   Fl_Group *Panel, *Main, *LocationGroup;
    Fl_Output *StatusOutput;
    Findbar *FindBar;
 

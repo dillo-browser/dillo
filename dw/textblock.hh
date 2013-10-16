@@ -364,8 +364,9 @@ protected:
                                   words: the value compared to the
                                   ideal width of the line, if the line
                                   would be broken after this word. */
-      int totalStretchability; // includes all *before* current word
-      int totalShrinkability;  // includes all *before* current word
+      int maxAscent, maxDescent;
+      int totalSpaceStretchability; // includes all *before* current word
+      int totalSpaceShrinkability;  // includes all *before* current word
       BadnessAndPenalty badnessAndPenalty; /* when line is broken after this
                                             * word */
 
@@ -446,6 +447,11 @@ protected:
     * details. Set from preferences.
     */
    static int penalties[PENALTY_NUM][2];
+
+   /**
+    * ...
+    */
+   static int stretchabilityFactor;
 
    bool limitTextWidth; /* from preferences */
 
@@ -534,7 +540,7 @@ protected:
                   short flags, core::style::Style *style);
    void fillSpace (Word *word, core::style::Style *style);
    void setBreakOption (Word *word, core::style::Style *style,
-                        int breakPenalty1, int breakPenalty2);
+                        int breakPenalty1, int breakPenalty2, bool forceBreak);
    bool isBreakAllowed (Word *word);
    int textWidth (const char *text, int start, int len,
                   core::style::Style *style, bool isStart, bool isEnd);
@@ -637,8 +643,10 @@ protected:
    void handleWordExtremes (int wordIndex);
    void correctLastWordExtremes ();
 
-   static int getShrinkability(struct Word *word);
-   static int getStretchability(struct Word *word);
+   static int getSpaceShrinkability(struct Word *word);
+   static int getSpaceStretchability(struct Word *word);
+   static int getLineShrinkability(Word *lastWord);
+   static int getLineStretchability(Word *lastWord);
    int hyphenateWord (int wordIndex);
    void accumulateWordForLine (int lineIndex, int wordIndex);
    void accumulateWordData (int wordIndex);
@@ -684,6 +692,7 @@ public:
    static void setPenaltyEmDashLeft (int penaltyLeftEmDash);
    static void setPenaltyEmDashRight (int penaltyRightEmDash);
    static void setPenaltyEmDashRight2 (int penaltyRightEmDash2);
+   static void setStretchabilityFactor (int stretchabilityFactor);
 
    Textblock(bool limitTextWidth);
    ~Textblock();
@@ -700,7 +709,7 @@ public:
    void addWidget (core::Widget *widget, core::style::Style *style);
    bool addAnchor (const char *name, core::style::Style *style);
    void addSpace (core::style::Style *style);
-   void addBreakOption (core::style::Style *style);
+   void addBreakOption (core::style::Style *style, bool forceBreak);
    void addParbreak (int space, core::style::Style *style);
    void addLinebreak (core::style::Style *style);
 

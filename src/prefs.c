@@ -93,10 +93,12 @@ void a_Prefs_init(void)
    prefs.show_quit_dialog = TRUE;
    prefs.show_reload = TRUE;
    prefs.show_save = TRUE;
+   prefs.show_url = TRUE;
    prefs.show_search = TRUE;
    prefs.show_stop = TRUE;
    prefs.show_tools = TRUE;
    prefs.show_tooltip = TRUE;
+   prefs.show_ui_tooltip = TRUE;
    prefs.small_icons = FALSE;
    prefs.start_page = a_Url_new(PREFS_START_PAGE, NULL);
    prefs.theme = dStrdup(PREFS_THEME);
@@ -116,6 +118,7 @@ void a_Prefs_init(void)
    prefs.penalty_em_dash_left = 800;
    prefs.penalty_em_dash_right = 100;
    prefs.penalty_em_dash_right_2 = 800;
+   prefs.stretchability_factor = 100;
 }
 
 /*

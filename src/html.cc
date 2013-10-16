@@ -289,6 +289,9 @@ void a_Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize)
    if ((align = a_Html_get_attr(html, tag, tagsize, "align"))) {
       TextAlignType textAlignType = TEXT_ALIGN_LEFT;
 
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("The align attribute is obsolete in HTML5.\n");
+
       if (dStrAsciiCasecmp (align, "left") == 0)
          textAlignType = TEXT_ALIGN_LEFT;
       else if (dStrAsciiCasecmp (align, "right") == 0)
@@ -330,6 +333,9 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag, int tagsize)
    VAlignType valign;
 
    if ((attr = a_Html_get_attr(html, tag, tagsize, "valign"))) {
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("The valign attribute is obsolete in HTML5.\n");
+
       if (dStrAsciiCasecmp (attr, "top") == 0)
          valign = VALIGN_TOP;
       else if (dStrAsciiCasecmp (attr, "bottom") == 0)
@@ -1106,7 +1112,7 @@ static void Html_process_space(DilloHtml *html, const char *space,
 
       if (spaceCnt) {
          // add break possibility for the white-space:pre-wrap case
-         HT2TB(html)->addBreakOption (html->styleEngine->wordStyle ());
+         HT2TB(html)->addBreakOption (html->styleEngine->wordStyle (), false);
          spc = dStrnfill(spaceCnt, ' ');
          HT2TB(html)->addText (spc, spaceCnt, html->styleEngine->wordStyle ());
          dFree(spc);
@@ -1211,12 +1217,12 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
             Html_process_space(html, word2 + start, i - start);
          } else if (!strncmp(word2+i, utf8_zero_width_space, 3)) {
             i += 3;
-            HT2TB(html)->addBreakOption(html->styleEngine->wordStyle ());
+            HT2TB(html)->addBreakOption(html->styleEngine->wordStyle (), false);
          } else if (a_Utf8_ideographic(word2+i, beyond_word2, &len)) {
             i += len;
             HT2TB(html)->addText(word2 + start, i - start,
                                  html->styleEngine->wordStyle ());
-            HT2TB(html)->addBreakOption(html->styleEngine->wordStyle ());
+            HT2TB(html)->addBreakOption(html->styleEngine->wordStyle (), false);
          } else {
             do {
                i += len;
@@ -1832,6 +1838,10 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "bgcolor"))) {
       color = a_Html_color_parse(html, attrbuf, -1);
+
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<body> bgcolor attribute is obsolete.\n");
+
       if (color != -1)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_BACKGROUND_COLOR,
                                            CSS_TYPE_COLOR, color);
@@ -1839,6 +1849,10 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "text"))) {
       color = a_Html_color_parse(html, attrbuf, -1);
+
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<body> text attribute is obsolete.\n");
+
       if (color != -1)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_COLOR,
                                            CSS_TYPE_COLOR, color);
@@ -1846,11 +1860,17 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 
    html->styleEngine->restyle ();
 
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link")))
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "link"))) {
       html->non_css_link_color = a_Html_color_parse(html, attrbuf, -1);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<body> link attribute is obsolete.\n");
+   }
 
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink")))
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vlink"))) {
       html->non_css_visited_color = a_Html_color_parse(html, attrbuf, -1);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<body> vlink attribute is obsolete.\n");
+   }
 
    html->dw->setStyle (html->styleEngine->style ());
 
@@ -2656,6 +2676,8 @@ static void Html_tag_open_ul(DilloHtml *html, const char *tag, int tagsize)
 
       html->styleEngine->setNonCssHint (CSS_PROPERTY_LIST_STYLE_TYPE,
                                         CSS_TYPE_ENUM, list_style_type);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<ul> type attribute is obsolete.\n");
    }
 
    S_TOP(html)->list_type = HTML_LIST_UNORDERED;
@@ -2772,19 +2794,26 @@ static void Html_tag_open_hr(DilloHtml *html, const char *tag, int tagsize)
 
    width_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "width", NULL);
    if (width_ptr) {
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<hr> width attribute is obsolete.\n");
       html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
                                         CSS_TYPE_LENGTH_PERCENTAGE,
                                         a_Html_parse_length (html, width_ptr));
       dFree(width_ptr);
    }
 
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size")))
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "size"))) {
       size = strtol(attrbuf, NULL, 10);
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<hr> size attribute is obsolete.\n");
+   }
 
    a_Html_tag_set_align_attr(html, tag, tagsize);
 
    /* TODO: evaluate attribute */
    if (a_Html_get_attr(html, tag, tagsize, "noshade")) {
+      if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+         BUG_MSG("<hr> noshade attribute is obsolete.\n");
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
                                         CSS_TYPE_ENUM, BORDER_SOLID);
       html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
@@ -3194,6 +3223,14 @@ static void Html_tag_close_par(DilloHtml *html)
    HT2TB(html)->addParbreak (9, html->styleEngine->wordStyle ());
 }
 
+/*
+ * <WBR> "The wbr element represents a line break opportunity."
+ */
+static void Html_tag_content_wbr(DilloHtml *html, const char *tag, int tagsize)
+{
+   HT2TB(html)->addBreakOption(html->styleEngine->wordStyle (), true);
+}
+
 
 /*
  * Function index for the open, content, and close functions for each tag
@@ -3223,7 +3260,7 @@ static void Html_tag_close_par(DilloHtml *html)
 const TagInfo Tags[] = {
  {"a", B8(011101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
  {"abbr", B8(010101),'R',2, Html_tag_open_abbr, NULL, NULL},
- /* acronym 010101 */
+ /* acronym 010101 -- obsolete in HTML5 */
  {"address", B8(010110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
  {"area", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_area,
                             NULL},
@@ -3231,7 +3268,7 @@ const TagInfo Tags[] = {
  {"aside", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"b", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"base", B8(100001),'F',0, Html_tag_open_base, NULL, NULL},
- /* basefont 010001 */
+ /* basefont 010001 -- obsolete in HTML5 */
  /* bdo 010101 */
  {"big", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"blockquote", B8(011110),'R',2, Html_tag_open_blockquote, NULL,
@@ -3296,7 +3333,7 @@ const TagInfo Tags[] = {
  {"menu", B8(011010),'R',2, Html_tag_open_menu, NULL, Html_tag_close_par},
  {"meta", B8(100001),'F',0, Html_tag_open_meta, NULL, NULL},
  {"nav", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
- /* noframes 1011 */
+ /* noframes 1011 -- obsolete in HTML5 */
  /* noscript 1011 */
  {"object", B8(111101),'R',2, Html_tag_open_object, NULL, NULL},
  {"ol", B8(011010),'R',2, Html_tag_open_ol, NULL, NULL},
@@ -3336,8 +3373,8 @@ const TagInfo Tags[] = {
  {"tt", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"u", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"ul", B8(011010),'R',2, Html_tag_open_ul, NULL, NULL},
- {"var", B8(010101),'R',2, Html_tag_open_default, NULL, NULL}
-
+ {"var", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
+ {"wbr", B8(010101),'F',0, Html_tag_open_default, Html_tag_content_wbr, NULL}
 };
 #define NTAGS (sizeof(Tags)/sizeof(Tags[0]))
 
@@ -3591,6 +3628,33 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
    }
 }
 
+/*
+ * Warn when encountering elements that are obsolete in HTML5. This list
+ * was from the "W3C Candidate Recommendation 6 August 2013".
+ */
+static void Html_check_html5_obsolete(DilloHtml *html, int ni)
+{
+   static int indexes[9] = {-1};
+
+   if (indexes[0] == -1) {
+      indexes[0] = a_Html_tag_index("dir");
+      indexes[1] = a_Html_tag_index("frame");
+      indexes[2] = a_Html_tag_index("frameset");
+      indexes[3] = a_Html_tag_index("isindex");
+      indexes[4] = a_Html_tag_index("strike");
+      indexes[5] = a_Html_tag_index("big");
+      indexes[6] = a_Html_tag_index("center");
+      indexes[7] = a_Html_tag_index("font");
+      indexes[8] = a_Html_tag_index("tt");
+   }
+   for (int i = 0; i < 9; i++) {
+      if (indexes[i] == ni) {
+         BUG_MSG("<%s> is obsolete in HTML5.\n", Tags[ni].name);
+         break;
+      }
+   }
+}
+
 static void Html_display_block(DilloHtml *html)
 {
    //HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
@@ -3653,6 +3717,9 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       /* Ignore unknown tags */
       return;
    }
+
+   if (!IsCloseTag && html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
+      Html_check_html5_obsolete(html, ni);
 
    /* Handle HTML, HEAD and BODY. Elements with optional open and close */
    if (!(html->InFlags & IN_BODY) /* && parsing HTML */)
@@ -3789,10 +3856,13 @@ static const char *Html_get_attr2(DilloHtml *html,
          break;
 
       case MATCH_ATTR_NAME:
-         if ((Found = (!(attrname[attr_pos]) &&
-                       (tag[i] == '=' || isspace(tag[i]) || tag[i] == '>')))) {
+         if (!attrname[attr_pos] &&
+             (tag[i] == '=' || isspace(tag[i]) || tag[i] == '>')) {
+            Found = 1;
             state = SEEK_TOKEN_START;
             --i;
+         } else if (!tag[i]) {
+            state = SEEK_ATTR_START; // NULL byte is not allowed
          } else {
             if (D_ASCII_TOLOWER(tag[i]) != D_ASCII_TOLOWER(attrname[attr_pos]))
                state = SEEK_ATTR_START;

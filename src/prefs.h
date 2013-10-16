@@ -61,6 +61,7 @@ typedef struct {
    int32_t ui_text_bg_color;
    bool_t contrast_visited_color;
    bool_t show_tooltip;
+   bool_t show_ui_tooltip;
    char *theme;
    int panel_size;
    bool_t small_icons;
@@ -80,6 +81,7 @@ typedef struct {
    bool_t show_tools;
    bool_t show_filemenu;
    bool_t show_clear_url;
+   bool_t show_url;
    bool_t show_search;
    bool_t show_help;
    bool_t show_progress_box;
@@ -105,6 +107,7 @@ typedef struct {
    bool_t middle_click_drags_page;
    int penalty_hyphen, penalty_hyphen_2;
    int penalty_em_dash_left, penalty_em_dash_right, penalty_em_dash_right_2;
+   int stretchability_factor;
 } DilloPrefs;
 
 /* Global Data */

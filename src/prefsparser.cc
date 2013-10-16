@@ -103,10 +103,12 @@ int PrefsParser::parseOption(char *name, char *value)
       { "show_quit_dialog", &prefs.show_quit_dialog, PREFS_BOOL },
       { "show_reload", &prefs.show_reload, PREFS_BOOL },
       { "show_save", &prefs.show_save, PREFS_BOOL },
+      { "show_url", &prefs.show_url, PREFS_BOOL },
       { "show_search", &prefs.show_search, PREFS_BOOL },
       { "show_stop", &prefs.show_stop, PREFS_BOOL },
       { "show_tools", &prefs.show_tools, PREFS_BOOL },
       { "show_tooltip", &prefs.show_tooltip, PREFS_BOOL },
+      { "show_ui_tooltip", &prefs.show_ui_tooltip, PREFS_BOOL },
       { "small_icons", &prefs.small_icons, PREFS_BOOL },
       { "start_page", &prefs.start_page, PREFS_URL },
       { "theme", &prefs.theme, PREFS_STRING },
@@ -128,6 +130,8 @@ int PrefsParser::parseOption(char *name, char *value)
       { "penalty_em_dash_right", &prefs.penalty_em_dash_right,
         PREFS_FRACTION_100 },
       { "penalty_em_dash_right_2", &prefs.penalty_em_dash_right_2,
+        PREFS_FRACTION_100 },
+      { "stretchability_factor", &prefs.stretchability_factor,
         PREFS_FRACTION_100 }
    };
 
