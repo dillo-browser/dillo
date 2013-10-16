@@ -293,6 +293,8 @@ class CssProperty {
             case CSS_TYPE_SYMBOL:
                dFree (value.strVal);
                break;
+            case CSS_TYPE_BACKGROUND_POSITION:
+               dFree (value.posVal);
             default:
                break;
          }
