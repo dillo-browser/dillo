@@ -240,7 +240,7 @@ depends on the number of words: consider the typical case that all
 spaces and stretchabilities are equal (\f$y_a = y_{a + 1} = \ldots =
 y_b\f$). With \f$n\f$ words, the total strechability would be \f$n
 \cdot y_a\f$, so increase with an increasing number of words
-(\f$y_a\fb$ is constant). This is correct for justified text, but for
+(\f$y_a\f$ is constant). This is correct for justified text, but for
 other alignments, where only one space (or two, for centered text) is
 changed, this would mean that a line with many narrow words is more
 stretchable than a line with few wide words.
@@ -248,7 +248,18 @@ stretchable than a line with few wide words.
 It is obvious that left-aligned text can be handled in the same way as
 right-aligned text. [... Centered text? ...]
 
-[... Exact value of stretchability; relation to penalties ...]
+The default value for the stretchability is the line height without
+the space between the lines (more precisely: the maximum of all word
+heights). The exact value not so important when comparing different
+possible values for the badness \f$\beta_a^b\f$, when \f${Y_0}_a^b\f$
+is nearly constant for different \f$b\f$ (which is the case for the
+actual value), but it is important for the comparison with penalties,
+which are constant. To be considered is also that for non-justified
+text, hyphenation is differently (less) desirable; this effect can be
+achieved by enlarging the stretchability, which will lead to a smaller
+badness, and so make hyphenation less likely. The user can configure
+the stretchability by changing the preference value
+*stretchability_factor*.
 
 
 Hyphens
