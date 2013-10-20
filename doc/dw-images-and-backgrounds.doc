@@ -181,4 +181,44 @@ that deleting this instance can be connected to code dealing with
 cache clients etc. See StyleImageDeletionReceiver and how it is
 attached in StyleEngine::apply ("case CSS_PROPERTY_BACKGROUND_IMAGE").
 
+
+Bugs and Things Needing Improvement
+===================================
+
+High Priority
+-------------
+
+**Images as toplevel resource:** There seem to be problems when the
+toplevel resource is an image. How to reproduce: Type <code>src/dillo
+http://www.dillo.org/db1.png</code> with the version from the
+background images branch; this will print the message "Content-Type
+'image/png' not viewable." and show the "Save link as file"
+dialog. The same works for the version from the main repository, with
+which the background images branch has been synchronized.
+
+**Configurability, security/privacy aspects, etc.,** which are
+currently available for image widgets, should be adopted. Perhaps some
+more configuration options specially for background images.
+
+
+Medium Priority
+---------------
+
+**Background-attachment** is not yet implemented, and will be postponed.
+
+**Small background images** result in a large number of calls to
+dw::core::View::drawImage, which may become slow. Solution: Create a
+new image buffer, which contains several copies of the original image.
+
+**Drawing background images row by row** may become slow. As an
+alternative, the *finished* method (proposed above) in
+dw::core::ImgRenderer could be used. However, drawing row by row could
+become an option.
+
+
+Low Priority
+------------
+
+None.
+
 */
