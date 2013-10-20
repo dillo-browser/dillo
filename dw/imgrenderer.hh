@@ -18,7 +18,19 @@ class ImgRenderer
 public:
    virtual ~ImgRenderer () { }
 
+   /** 
+    * \brief Called, when an image buffer is attached.
+    *
+    * This is typically the case when all meta data (size, depth) has been read.
+    */
    virtual void setBuffer (core::Imgbuf *buffer, bool resize = false) = 0;
+
+   /** 
+    * \brief Called, when data from a row is available and has been copied into
+    *    the image buffer.
+    *
+    * The implementation will typically queue the respective area for drawing.
+    */
    virtual void drawRow (int row) = 0;
 };
 
