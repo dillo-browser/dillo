@@ -284,6 +284,12 @@ Layout::~Layout ()
 {
    widgetAtPoint = NULL;
 
+   if (layoutImgRenderer) {
+      if (bgImage)
+         bgImage->removeExternalImgRenderer (layoutImgRenderer);
+      delete layoutImgRenderer;
+   }
+
    if (scrollIdleId != -1)
       platform->removeIdle (scrollIdleId);
    if (resizeIdleId != -1)
@@ -301,12 +307,6 @@ Layout::~Layout ()
    delete view;
    delete anchorsTable;
    delete textZone;
-
-   if (layoutImgRenderer) {
-      if (bgImage)
-         bgImage->removeExternalImgRenderer (layoutImgRenderer);
-      delete layoutImgRenderer;
-   }
 }
 
 void Layout::addWidget (Widget *widget)
