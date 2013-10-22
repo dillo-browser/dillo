@@ -1478,7 +1478,15 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
    int lineIndex;
    Line *line;
 
-   drawWidgetBox (view, area, false);
+   // Instead of drawWidgetBox, use drawBox to include verticalOffset.
+   if (getParent() == NULL) {
+      // The toplevel (parent == NULL) widget is a special case, which
+      // we leave to drawWidgetBox; verticalOffset will here always 0.
+      assert (verticalOffset == 0);
+      drawWidgetBox (view, area, false);
+   } else
+      drawBox (view, getStyle(), area, 0, verticalOffset, allocation.width,
+               getHeight() - verticalOffset, false);
 
    lineIndex = findLineIndexWhenAllocated (area->y);
 
