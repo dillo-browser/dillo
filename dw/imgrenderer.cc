@@ -25,5 +25,24 @@ void ImgRendererDist::drawRow (int row)
 }
 
 
+void ImgRendererDist::finish ()
+{
+   for (typed::Iterator <TypedPointer <ImgRenderer> > it =
+           children->iterator (); it.hasNext (); ) {
+      TypedPointer <ImgRenderer> *tp = it.getNext ();
+      tp->getTypedValue()->finish ();
+   }
+}
+
+void ImgRendererDist::fatal ()
+{
+   for (typed::Iterator <TypedPointer <ImgRenderer> > it =
+           children->iterator (); it.hasNext (); ) {
+      TypedPointer <ImgRenderer> *tp = it.getNext ();
+      tp->getTypedValue()->fatal ();
+   }
+}
+
+
 } // namespace core
 } // namespace dw

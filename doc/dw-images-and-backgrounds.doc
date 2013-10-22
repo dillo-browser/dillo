@@ -40,13 +40,10 @@ similar; only the implementation of dw::core::ImgRenderer differs.
 At this time, dw::core::ImgRenderer has got two methods (see more
 documentation there):
 
-- dw::core::ImgRenderer::setBuffer and
-- dw::core::ImgRenderer::drawRow.
-
-Possible extensions:
-
-- ''finished'': when all image data has been retrieved;
-- ''fatal'': when there are problems with the retrieval of image data.
+- dw::core::ImgRenderer::setBuffer,
+- dw::core::ImgRenderer::drawRow,
+- dw::core::ImgRenderer::finish, and
+- dw::core::ImgRenderer::fatal.
 
 
 Images
@@ -211,9 +208,17 @@ dw::core::View::drawImage, which may become slow. Solution: Create a
 new image buffer, which contains several copies of the original image.
 
 **Drawing background images row by row** may become slow. As an
-alternative, the *finished* method (proposed above) in
-dw::core::ImgRenderer could be used. However, drawing row by row could
-become an option.
+alternative, dw::core::ImgRenderer::finish could be used. However,
+drawing row by row could become an option. **Update:** There is now
+dw::core::style::drawBackgroundLineByLine, which can be changed in the
+code.
+
+(For image widgets, this could also become an option: in contexts,
+when image data is retrieved in a very fast way.)
+
+**Calls to dw::core::ImgRenderer::fatal** are incomplete. As an
+example, it is not called, when connecting to a server fails. (And so,
+as far as I see, no cache client is started.)
 
 
 Low Priority

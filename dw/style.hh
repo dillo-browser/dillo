@@ -712,6 +712,8 @@ private:
 
       void setBuffer (core::Imgbuf *buffer, bool resize);
       void drawRow (int row);
+      void finish ();
+      void fatal ();
    };
 
    int refCount;
@@ -732,6 +734,8 @@ public:
    public:
       void setBuffer (core::Imgbuf *buffer, bool resize);
       void drawRow (int row);
+      void finish ();
+      void fatal ();
 
       /**
        * \brief If this method returns false, nothing is done at all.

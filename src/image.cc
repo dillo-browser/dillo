@@ -118,5 +118,15 @@ void a_Image_write(DilloImage *Image, uint_t y)
 void a_Image_close(DilloImage *Image)
 {
    _MSG("a_Image_close\n");
+   I2IR(Image)->finish();
+}
+
+/*
+ * Implement the abort method
+ */
+void a_Image_abort(DilloImage *Image)
+{
+   _MSG("a_Image_abort\n");
+   I2IR(Image)->fatal();
 }
 

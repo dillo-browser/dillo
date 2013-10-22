@@ -32,6 +32,21 @@ public:
     * The implementation will typically queue the respective area for drawing.
     */
    virtual void drawRow (int row) = 0;
+
+   /**
+    * \brief Called, when all image data has been retrieved.
+    *
+    * The implementation may use this instead of "drawRow" for drawing, to
+    * limit the number of draws.
+    */
+   virtual void finish () = 0;
+   
+   /**
+    * \brief Called, when there are problems with the retrieval of image data.
+    *
+    * The implementation may use this to indicate an error.
+    */
+   virtual void fatal () = 0;
 };
 
 /**
@@ -54,6 +69,8 @@ public:
 
    void setBuffer (core::Imgbuf *buffer, bool resize);
    void drawRow (int row);
+   void finish ();
+   void fatal ();
 
    void put (ImgRenderer *child)
    { children->put (new lout::object::TypedPointer <ImgRenderer> (child)); }

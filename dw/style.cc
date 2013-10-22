@@ -34,6 +34,8 @@ namespace dw {
 namespace core {
 namespace style {
 
+const bool drawBackgroundLineByLine = true;
+
 static void calcBackgroundRelatedValues (StyleImage *backgroundImage,
                                          BackgroundRepeat backgroundRepeat,
                                          BackgroundAttachment
@@ -480,6 +482,16 @@ void StyleImage::StyleImgRenderer::drawRow (int row)
    // Nothing to do.
 }
 
+void StyleImage::StyleImgRenderer::finish ()
+{
+   // Nothing to do.
+}
+
+void StyleImage::StyleImgRenderer::fatal ()
+{
+   // Nothing to do.
+}
+
 StyleImage::StyleImage ()
 {
    //printf ("new StyleImage %p\n", this);
@@ -511,48 +523,67 @@ void StyleImage::ExternalImgRenderer::setBuffer (core::Imgbuf *buffer,
 
 void StyleImage::ExternalImgRenderer::drawRow (int row)
 {
-   StyleImage *backgroundImage;
-   if (readyToDraw () && (backgroundImage = getBackgroundImage ())) {
-      // All single rows are drawn.
+   if (drawBackgroundLineByLine) {
+      StyleImage *backgroundImage;
+      if (readyToDraw () && (backgroundImage = getBackgroundImage ())) {
+         // All single rows are drawn.
+         
+         Imgbuf *imgbuf = backgroundImage->getImgbuf();
+         int imgWidth = imgbuf->getRootWidth ();
+         int imgHeight = imgbuf->getRootHeight ();
+         
+         int x, y, width, height;
+         getBgArea (&x, &y, &width, &height);
+         
+         int xRef, yRef, widthRef, heightRef;
+         getRefArea (&xRef, &yRef, &widthRef, &heightRef);
+         
+         bool repeatX, repeatY, doDraw;
+         int origX, origY, tileX1, tileX2, tileY1, tileY2;
+         
+         calcBackgroundRelatedValues (backgroundImage,
+                                      getBackgroundRepeat (),
+                                      getBackgroundAttachment (),
+                                      getBackgroundPositionX (),
+                                      getBackgroundPositionY (),
+                                      x, y, width, height, xRef, yRef, widthRef,
+                                      heightRef, &repeatX, &repeatY, &origX,
+                                      &origY, &tileX1, &tileX2, &tileY1,
+                                      &tileY2, &doDraw);
 
-      Imgbuf *imgbuf = backgroundImage->getImgbuf();
-      int imgWidth = imgbuf->getRootWidth ();
-      int imgHeight = imgbuf->getRootHeight ();
+         //printf ("tileX1 = %d, tileX2 = %d, tileY1 = %d, tileY2 = %d\n",
+         //        tileX1, tileX2, tileY1, tileY2);
 
-      int x, y, width, height;
-      getBgArea (&x, &y, &width, &height);
-
-      int xRef, yRef, widthRef, heightRef;
-      getRefArea (&xRef, &yRef, &widthRef, &heightRef);
-
-      bool repeatX, repeatY, doDraw;
-      int origX, origY, tileX1, tileX2, tileY1, tileY2;
-      
-      calcBackgroundRelatedValues (backgroundImage,
-                                   getBackgroundRepeat (),
-                                   getBackgroundAttachment (),
-                                   getBackgroundPositionX (),
-                                   getBackgroundPositionY (),
-                                   x, y, width, height, xRef, yRef, widthRef,
-                                   heightRef, &repeatX, &repeatY, &origX,
-                                   &origY, &tileX1, &tileX2, &tileY1, &tileY2,
-                                   &doDraw);
-
-      //printf ("tileX1 = %d, tileX2 = %d, tileY1 = %d, tileY2 = %d\n",
-      //        tileX1, tileX2, tileY1, tileY2);
-
-      if (doDraw)
-         // Only iterate over y, because the rows can be combined
-         // horizontically.
-         for (int tileY = tileY1; tileY <= tileY2; tileY++) {
-            int x1 = misc::max (origX + tileX1 * imgWidth, x);
-            int x2 = misc::min (origX + (tileX2 + 1) * imgWidth, x + width);
-
-            int yt = origY + tileY * imgHeight + row;
-            if (yt >= y && yt < y + height)
-               draw (x1, yt, x2 - x1, 1);
-         }
+         if (doDraw)
+            // Only iterate over y, because the rows can be combined
+            // horizontically.
+            for (int tileY = tileY1; tileY <= tileY2; tileY++) {
+               int x1 = misc::max (origX + tileX1 * imgWidth, x);
+               int x2 = misc::min (origX + (tileX2 + 1) * imgWidth, x + width);
+               
+               int yt = origY + tileY * imgHeight + row;
+               if (yt >= y && yt < y + height)
+                  draw (x1, yt, x2 - x1, 1);
+            }
+      }
    }
+}
+
+void StyleImage::ExternalImgRenderer::finish ()
+{
+   if (!drawBackgroundLineByLine) {
+      if (readyToDraw ()) {
+         // Draw total area, as a whole.
+         int x, y, width, height;
+         getBgArea (&x, &y, &width, &height);
+         draw (x, y, width, height);
+      }
+   }
+}
+
+void StyleImage::ExternalImgRenderer::fatal ()
+{
+   // Nothing to do.
 }
 
 // ----------------------------------------------------------------------

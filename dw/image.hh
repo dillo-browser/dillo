@@ -157,6 +157,9 @@ public:
 
    void drawRow (int row);
 
+   void finish ();
+   void fatal ();
+
    void setIsMap ();
    void setUseMap (ImageMapsList *list, Object *key);
 

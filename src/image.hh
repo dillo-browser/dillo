@@ -71,6 +71,7 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
                        DilloImgType type);
 void a_Image_write(DilloImage *Image, uint_t y);
 void a_Image_close(DilloImage *Image);
+void a_Image_abort(DilloImage *Image);
 
 
 #ifdef __cplusplus

@@ -517,8 +517,11 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
             Image->ScanNumber = DicEntry->ScanNumber;
          }
       }
-   } else if (Op == CA_Close || Op == CA_Abort) {
+   } else if (Op == CA_Close) {
       a_Image_close(Image);
+      a_Bw_close_client(Web->bw, Client->Key);
+   } else if (Op == CA_Abort) {
+      a_Image_abort(Image);
       a_Bw_close_client(Web->bw, Client->Key);
    }
 }
