@@ -1456,7 +1456,7 @@ void Textblock::initNewLine ()
       if (lines->size () == 0) {
          int clearPosition =
             containingBlock->outOfFlowMgr->getClearPosition (this);
-         verticalOffset = misc::max (clearPosition, 0);
+         setVerticalOffset (misc::max (clearPosition, 0));
       }
 
       int y = yOffsetOfPossiblyMissingLine (lines->size ());

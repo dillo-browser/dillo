@@ -498,7 +498,6 @@ protected:
 
    int hoverLink;  /* The link under the mouse pointer */
 
-
    void queueDrawRange (int index1, int index2);
    void getWordExtremes (Word *word, core::Extremes *extremes);
    void justifyLine (Line *line, int diff);
@@ -509,6 +508,7 @@ protected:
    void initNewLine ();
    void showMissingLines ();
    void removeTemporaryLines ();
+   void setVerticalOffset (int verticalOffset);
 
    void decorateText (core::View *view, core::style::Style *style,
                       core::style::Color::Shading shading,

@@ -2404,6 +2404,15 @@ void Textblock::queueDrawRange (int index1, int index2)
    }
 }
 
+void Textblock::setVerticalOffset (int verticalOffset)
+{
+   if (this->verticalOffset != verticalOffset) {
+      this->verticalOffset = verticalOffset;
+      mustQueueResize = true;
+      queueDraw (); // Could perhaps be optimized.
+   }
+}
+
 /**
  * Called by dw::OutOfFlowMgr when the border has changed due to a
  * float (or some floats).
