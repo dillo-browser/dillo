@@ -908,7 +908,25 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
    availDescent = this->availDescent;
 
    if (widget->usesHints ()) {
-      widget->setWidth (availWidth);
+      // This is a simplified version of calcAvailWidth (see there for
+      // more details). Until recently, the *attribute* availWidth was
+      // used, widthout any corrections. To limit the damage, only
+      // includde left and right border (by floats), until the Great
+      // Redesign Of Widget Sizes (GROWS).
+      int corrAvailWidth;
+      // Textblocks keep track of borders themselves, so they get the
+      // total available width. (Should once replaced by something
+      // like OOFAware.)
+      if (widget->instanceOf (Textblock::CLASS_ID))
+         corrAvailWidth = availWidth;
+      else
+         corrAvailWidth =
+            misc::max (availWidth - (newLineLeftBorder + newLineRightBorder),
+                       0);
+
+      PRINTF ("setWidth (%d) for the %s %p\n",
+              corrAvailWidth, widget->getClassName(), widget);
+      widget->setWidth (corrAvailWidth);
       widget->setAscent (availAscent);
       widget->setDescent (availDescent);
       widget->sizeRequest (size);
