@@ -15,8 +15,12 @@ namespace dw {
  */
 class Ruler: public core::Widget
 {
+private:
+   int availWidth;
+
 protected:
    void sizeRequestImpl (core::Requisition *requisition);
+   void setWidth (int width);
    void draw (core::View *view, core::Rectangle *area);
 
 public:
