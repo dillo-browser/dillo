@@ -182,6 +182,8 @@ attached in StyleEngine::apply ("case CSS_PROPERTY_BACKGROUND_IMAGE").
 Bugs and Things Needing Improvement
 ===================================
 
+(Mostly related to image backgrounds, when not otherwise mentioned.)
+
 High Priority
 -------------
 
@@ -224,6 +226,17 @@ as far as I see, no cache client is started.)
 Low Priority
 ------------
 
-None.
+**Alpha support:** (not related to image backgrounds) currently alpha
+support (and also colormap management) is done in dicache, while
+dw::Image is only created with type RGB. This leads to several problems:
+
+- One dicache entry (representing an image related to the same URL),
+  which has only one background color, may refer to different images
+  with different background colors.
+- The dicache only handles background colors, not background images.
+
+The solution is basicly simple: keep out alpha support out of dicache;
+instead implement RGBA in dw::Image. As it seems, the main problem is
+alpha support in FLTK/X11.
 
 */
