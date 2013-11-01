@@ -25,33 +25,37 @@ int main (int argc, char *argv[])
 {
    dw::fltk::FltkPlatform p;
 
-   hyphenateWord (&p, "...");
-   hyphenateWord (&p, "Jahrhundertroman");
-   hyphenateWord (&p, "JAHRHUNDERTROMAN");
-   hyphenateWord (&p, "„Jahrhundertroman“");
-   hyphenateWord (&p, "währenddessen");
-   hyphenateWord (&p, "„währenddessen“");
-   hyphenateWord (&p, "Ückendorf");
-   hyphenateWord (&p, "über");
-   hyphenateWord (&p, "aber");
-   hyphenateWord (&p, "Ackermann");
-   hyphenateWord (&p, "„Ackermann“");
-   hyphenateWord (&p, "entscheidet.");
-   hyphenateWord (&p, "Grundstücksverkehrsgenehmigungszuständigkeits"
-                  "übertragungsverordnung");
-   hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeits"
-                  "übertragungsverordnung“");
-   hyphenateWord (&p, "Grundstücksverkehrsgenehmigungszuständigkeit");
-   hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeit“");
-   hyphenateWord (&p, "(6R,7R)-7-[2-(2-Amino-4-thiazolyl)-glyoxylamido]-3-"
-                  "(2,5-dihydro-6-hydroxy-2-methyl-5-oxo-1,2,4-triazin-3-yl-"
-                  "thiomethyl)-8-oxo-5-thia-1-azabicyclo[4.2.0]oct-2-en-2-"
-                  "carbonsäure-7²-(Z)-(O-methyloxim)");
-   hyphenateWord (&p, "Abtei-Stadt");
-   hyphenateWord (&p, "Nordrhein-Westfalen");
-   hyphenateWord (&p, "kurz\xc2\xa0und\xc2\xa0knapp");
-   hyphenateWord (&p, "weiß");
-   hyphenateWord (&p, "www.dillo.org");
+   if (argc > 1) {
+      hyphenateWord (&p, argv[1]);
+   } else {
+      hyphenateWord (&p, "...");
+      hyphenateWord (&p, "Jahrhundertroman");
+      hyphenateWord (&p, "JAHRHUNDERTROMAN");
+      hyphenateWord (&p, "„Jahrhundertroman“");
+      hyphenateWord (&p, "währenddessen");
+      hyphenateWord (&p, "„währenddessen“");
+      hyphenateWord (&p, "Ückendorf");
+      hyphenateWord (&p, "über");
+      hyphenateWord (&p, "aber");
+      hyphenateWord (&p, "Ackermann");
+      hyphenateWord (&p, "„Ackermann“");
+      hyphenateWord (&p, "entscheidet.");
+      hyphenateWord (&p, "Grundstücksverkehrsgenehmigungszuständigkeits"
+                     "übertragungsverordnung");
+      hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeits"
+                     "übertragungsverordnung“");
+      hyphenateWord (&p, "Grundstücksverkehrsgenehmigungszuständigkeit");
+      hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeit“");
+      hyphenateWord (&p, "(6R,7R)-7-[2-(2-Amino-4-thiazolyl)-glyoxylamido]-3-"
+                     "(2,5-dihydro-6-hydroxy-2-methyl-5-oxo-1,2,4-triazin-3-yl-"
+                     "thiomethyl)-8-oxo-5-thia-1-azabicyclo[4.2.0]oct-2-en-2-"
+                     "carbonsäure-7²-(Z)-(O-methyloxim)");
+      hyphenateWord (&p, "Abtei-Stadt");
+      hyphenateWord (&p, "Nordrhein-Westfalen");
+      hyphenateWord (&p, "kurz\xc2\xa0und\xc2\xa0knapp");
+      hyphenateWord (&p, "weiß");
+      hyphenateWord (&p, "www.dillo.org");
+   }
 
    return 0;
 }
