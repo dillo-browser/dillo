@@ -1113,8 +1113,8 @@ void Textblock::initLine1Offset (int wordIndex)
             /* don't use text-indent when nesting blocks */
          } else {
             if (core::style::isPerLength(getStyle()->textIndent)) {
-               indent = misc::roundInt(this->availWidth *
-                        core::style::perLengthVal (getStyle()->textIndent));
+               indent = core::style::multiplyWithPerLengthRounded
+                           (this->availWidth, getStyle()->textIndent);
             } else {
                indent = core::style::absLengthVal (getStyle()->textIndent);
             }

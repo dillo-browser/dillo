@@ -785,14 +785,14 @@ void Html_tag_close_select(DilloHtml *html)
       html->InFlags &= ~IN_OPTION;
 
       DilloHtmlInput *input = Html_get_current_input(html);
-      DilloHtmlSelect *select = input->select;
-
-      if (input->type == DILLO_HTML_INPUT_SELECT) {
-         // option menu interface requires that something be selected */
-         select->ensureSelection ();
+      if (input) {
+         DilloHtmlSelect *select = input->select;
+         if (input->type == DILLO_HTML_INPUT_SELECT) {
+            // option menu interface requires that something be selected */
+            select->ensureSelection ();
+         }
+         select->addOptsTo ((SelectionResource*)input->embed->getResource());
       }
-      SelectionResource *res = (SelectionResource*)input->embed->getResource();
-      select->addOptsTo (res);
    }
 }
 
@@ -814,9 +814,9 @@ void Html_tag_open_optgroup(DilloHtml *html, const char *tag, int tagsize)
    html->InFlags |= IN_OPTGROUP;
 
    DilloHtmlInput *input = Html_get_current_input(html);
-
-   if (input->type == DILLO_HTML_INPUT_SELECT ||
-       input->type == DILLO_HTML_INPUT_SEL_LIST) {
+   if (input &&
+       (input->type == DILLO_HTML_INPUT_SELECT ||
+        input->type == DILLO_HTML_INPUT_SEL_LIST)) {
       char *label = a_Html_get_attr_wdef(html, tag, tagsize, "label", NULL);
       bool enabled = (a_Html_get_attr(html, tag, tagsize, "disabled") == NULL);
 
@@ -843,9 +843,9 @@ void Html_tag_close_optgroup(DilloHtml *html)
       }
 
       DilloHtmlInput *input = Html_get_current_input(html);
-
-      if (input->type == DILLO_HTML_INPUT_SELECT ||
-          input->type == DILLO_HTML_INPUT_SEL_LIST) {
+      if (input &&
+          (input->type == DILLO_HTML_INPUT_SELECT ||
+           input->type == DILLO_HTML_INPUT_SEL_LIST)) {
          DilloHtmlOptgroupClose *opt = new DilloHtmlOptgroupClose ();
 
          input->select->addOpt(opt);
@@ -867,9 +867,9 @@ void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
    html->InFlags |= IN_OPTION;
 
    DilloHtmlInput *input = Html_get_current_input(html);
-
-   if (input->type == DILLO_HTML_INPUT_SELECT ||
-       input->type == DILLO_HTML_INPUT_SEL_LIST) {
+   if (input &&
+       (input->type == DILLO_HTML_INPUT_SELECT ||
+        input->type == DILLO_HTML_INPUT_SEL_LIST)) {
       char *value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
       char *label = a_Html_get_attr_wdef(html, tag, tagsize, "label", NULL);
       bool selected = (a_Html_get_attr(html, tag, tagsize,"selected") != NULL);
@@ -2027,8 +2027,9 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
 static void Html_option_finish(DilloHtml *html)
 {
    DilloHtmlInput *input = Html_get_current_input(html);
-   if (input->type == DILLO_HTML_INPUT_SELECT ||
-       input->type == DILLO_HTML_INPUT_SEL_LIST) {
+   if (input &&
+       (input->type == DILLO_HTML_INPUT_SELECT ||
+        input->type == DILLO_HTML_INPUT_SEL_LIST)) {
       DilloHtmlOptbase *opt = input->select->getCurrentOpt ();
       opt->setContent (html->Stash->str, html->Stash->len);
    }

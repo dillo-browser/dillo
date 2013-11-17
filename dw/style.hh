@@ -410,12 +410,44 @@ inline bool isRelLength(Length l) { return (l & 3) == 3; }
 /** \brief Returns the value of a length in pixels, as an integer. */
 inline int absLengthVal(Length l) { return l >> 2; }
 
-/** \brief Returns the value of a percentage, relative to 1, as a double. */
+/** \brief Returns the value of a percentage, relative to 1, as a double.
+ *
+ * When possible, do not use this function directly; it may be removed
+ * soon. Instead, use multiplyWithPerLength or multiplyWithPerLengthRounded.
+ */
 inline double perLengthVal(Length l) { return (double)(l & ~3) / (1 << 18); }
 
-/** \brief Returns the value of a relative length, as a float. */
+/** \brief Returns the value of a relative length, as a float.
+ *
+ * When possible, do not use this function directly; it may be removed
+ * soon.
+ */
 inline double relLengthVal(Length l) { return (double)(l & ~3) / (1 << 18); }
 
+/**
+ * \brief Multiply an int with a percentage length, returning int.
+ *
+ * Use this instead of perLengthVal, when possible.
+ */
+inline int multiplyWithPerLength(int x, Length l) {
+   return x * perLengthVal(l);
+}
+
+/**
+ * \brief Like multiplyWithPerLength, but rounds to nearest integer
+ *    instead of down.
+ *
+ * (This function exists for backward compatibility.)
+ */
+inline int multiplyWithPerLengthRounded (int x, Length l) {
+   return lout::misc::roundInt (x * perLengthVal(l));
+}
+
+inline int multiplyWithRelLength(int x, Length l) {
+   return x * relLengthVal(l);
+}
+
+                                       
 enum {
    /** \brief Represents "auto" lengths. */
    LENGTH_AUTO = 0
