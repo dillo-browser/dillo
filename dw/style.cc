@@ -1203,11 +1203,11 @@ void calcBackgroundRelatedValues (StyleImage *backgroundImage,
    
    *origX = xRef +
       (isPerLength (backgroundPositionX) ?
-       perLengthVal (backgroundPositionX) * (widthRef - imgWidth) :
+       multiplyWithPerLength (widthRef - imgWidth, backgroundPositionX) :
        absLengthVal (backgroundPositionX));
    *origY = yRef +
       (isPerLength (backgroundPositionY) ?
-       perLengthVal (backgroundPositionY) * (heightRef - imgHeight) :
+       multiplyWithPerLength (heightRef - imgHeight, backgroundPositionY) :
        absLengthVal (backgroundPositionY));
    
    *tileX1 = xDraw < *origX ?
