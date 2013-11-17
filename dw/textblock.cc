@@ -807,8 +807,8 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
          size->width = core::style::absLengthVal (wstyle->width)
             + wstyle->boxDiffWidth ();
       else
-         size->width = (int) (core::style::perLengthVal (wstyle->width)
-                       * availWidth);
+         size->width =
+            core::style::multiplyWithPerLength (availWidth, wstyle->width);
 
       if (wstyle->height == core::style::LENGTH_AUTO) {
          size->ascent = requisition.ascent;
@@ -820,9 +820,10 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
                         + wstyle->boxDiffHeight ();
          size->descent = 0;
       } else {
-         double len = core::style::perLengthVal (wstyle->height);
-         size->ascent = (int) (len * availAscent);
-         size->descent = (int) (len * availDescent);
+         size->ascent =
+            core::style::multiplyWithPerLength (wstyle->height, availAscent);
+         size->descent =
+            core::style::multiplyWithPerLength (wstyle->height, availDescent);
       }
    }
 
@@ -1475,9 +1476,9 @@ void Textblock::calcTextSize (const char *text, size_t len,
       if (core::style::isAbsLength (style->lineHeight))
          height = core::style::absLengthVal(style->lineHeight);
       else
-         height = lout::misc::roundInt (
-                     core::style::perLengthVal(style->lineHeight) *
-                     style->font->size);
+         height =
+            core::style::multiplyWithPerLengthRounded (style->font->size,
+                                                       style->lineHeight);
       leading = height - style->font->size;
 
       size->ascent += leading / 2;
