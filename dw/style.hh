@@ -748,8 +748,8 @@ private:
       void fatal ();
    };
 
-   int refCount;
-   Imgbuf *imgbuf;
+   int refCount, tilesX, tilesY;
+   Imgbuf *imgbufSrc, *imgbufTiled;
    ImgRendererDist *imgRendererDist;
    StyleImgRenderer *styleImgRenderer;
 
@@ -826,7 +826,11 @@ public:
    inline void unref ()
    { if (--refCount == 0) delete this; }
 
-   inline Imgbuf *getImgbuf () { return imgbuf; }
+   inline Imgbuf *getImgbufSrc () { return imgbufSrc; }
+   inline Imgbuf *getImgbufTiled ()
+   { return imgbufTiled ? imgbufTiled : imgbufSrc; }
+   inline int getTilesX () { return imgbufTiled ? tilesX : 1; }
+   inline int getTilesY () { return imgbufTiled ? tilesY : 1; }
    inline ImgRenderer *getMainImgRenderer () { return imgRendererDist; }
 
    /**

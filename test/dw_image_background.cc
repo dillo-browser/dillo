@@ -71,8 +71,8 @@ static void imageInitTimeout (void *data)
 
 static void imageDrawTimeout (void *data)
 {
-   Imgbuf *imgbuf1 = image1 ? image1->getImgbuf () : NULL;
-   Imgbuf *imgbuf2 = image2 ? image2->getImgbuf () : NULL;
+   Imgbuf *imgbuf1 = image1 ? image1->getImgbufSrc () : NULL;
+   Imgbuf *imgbuf2 = image2 ? image2->getImgbufSrc () : NULL;
 
    if (imgbuf1 && imgRow1 < 200) {
       byte buf[3 * 400];

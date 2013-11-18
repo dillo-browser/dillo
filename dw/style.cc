@@ -36,6 +36,11 @@ namespace style {
 
 const bool drawBackgroundLineByLine = true;
 
+const int MIN_BG_IMG_W = 10;
+const int MIN_BG_IMG_H = 10;
+const int OPT_BG_IMG_W = 50;
+const int OPT_BG_IMG_H = 50;
+
 static void calcBackgroundRelatedValues (StyleImage *backgroundImage,
                                          BackgroundRepeat backgroundRepeat,
                                          BackgroundAttachment
@@ -469,17 +474,59 @@ Tooltip *Tooltip::create (Layout *layout, const char *text)
 
 void StyleImage::StyleImgRenderer::setBuffer (core::Imgbuf *buffer, bool resize)
 {
-   if (image->imgbuf)
-      image->imgbuf->unref ();
+   if (image->imgbufSrc)
+      image->imgbufSrc->unref ();
+   if (image->imgbufTiled)
+      image->imgbufTiled->unref ();
 
-   image->imgbuf = buffer;
-   if (image->imgbuf)
-      image->imgbuf->ref ();
+   image->imgbufTiled = NULL;
+
+   image->imgbufSrc = buffer;
+   if (image->imgbufSrc) {
+      image->imgbufSrc->ref ();
+
+      // If the image is too small, drawing a background will cause
+      // many calls of View::drawImgbuf. For this reason, we create
+      // another image buffer, the "tiled" image buffer, which is
+      // larger (the "optimal" size is defined as OPT_BG_IMG_W *
+      // OPT_BG_IMG_H) and contains the "source" buffer several times.
+
+      if (image->imgbufSrc->getRootWidth() * image->imgbufSrc->getRootHeight()
+          < MIN_BG_IMG_W * MIN_BG_IMG_H) {
+         image->tilesX =
+            misc::max (OPT_BG_IMG_W / image->imgbufSrc->getRootWidth(), 1);
+         image->tilesY =
+            misc::max (OPT_BG_IMG_H / image->imgbufSrc->getRootHeight(), 1);
+         image->imgbufTiled =
+            image->imgbufSrc->createSimilarBuf
+               (image->tilesX * image->imgbufSrc->getRootWidth(),
+                image->tilesY * image->imgbufSrc->getRootHeight());
+      }
+   }
 }
 
 void StyleImage::StyleImgRenderer::drawRow (int row)
 {
-   // Nothing to do.
+   if (image->imgbufTiled) {
+      // A row of data has been copied to the source buffer, here it
+      // is copied into the tiled buffer.
+
+      // Unfortunately, this code may be called *after* some other
+      // implementations of ImgRenderer::drawRow, which actually
+      // *draw* the tiled buffer, which is so not up to date
+      // (ImgRendererDist does not define an order). OTOH, these
+      // drawing implementations calle Widget::queueResize, so the
+      // actual drawing (and so access to the tiled buffer) is done
+      // later.
+
+      int w = image->imgbufSrc->getRootWidth ();
+      int h = image->imgbufSrc->getRootHeight ();
+      
+      for (int x = 0; x < image->tilesX; x++)
+         for (int y = 0; y < image->tilesX; y++)
+            image->imgbufSrc->copyTo (image->imgbufTiled, x * w, y * h,
+                                      0, row, w, 1);
+   }
 }
 
 void StyleImage::StyleImgRenderer::finish ()
@@ -497,7 +544,8 @@ StyleImage::StyleImage ()
    //printf ("new StyleImage %p\n", this);
 
    refCount = 0;
-   imgbuf = NULL;
+   imgbufSrc = NULL;
+   imgbufTiled = NULL;
 
    imgRendererDist = new ImgRendererDist ();
    styleImgRenderer = new StyleImgRenderer (this);
@@ -508,8 +556,10 @@ StyleImage::~StyleImage ()
 {
    //printf ("delete StyleImage %p\n", this);
 
-   if (imgbuf)
-      imgbuf->unref ();
+   if (imgbufSrc)
+      imgbufSrc->unref ();
+   if (imgbufTiled)
+      imgbufTiled->unref ();
 
    delete imgRendererDist;
    delete styleImgRenderer;
@@ -528,7 +578,7 @@ void StyleImage::ExternalImgRenderer::drawRow (int row)
       if (readyToDraw () && (backgroundImage = getBackgroundImage ())) {
          // All single rows are drawn.
          
-         Imgbuf *imgbuf = backgroundImage->getImgbuf();
+         Imgbuf *imgbuf = backgroundImage->getImgbufSrc();
          int imgWidth = imgbuf->getRootWidth ();
          int imgHeight = imgbuf->getRootHeight ();
          
@@ -1093,7 +1143,7 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
       // has to be compared, ...
       (!atTop || layout->getBgColor () != style->backgroundColor);
    bool bgImage = (style->backgroundImage != NULL &&
-                   style->backgroundImage->getImgbuf() != NULL) &&
+                   style->backgroundImage->getImgbufSrc() != NULL) &&
       // ... but for backgrounds, it would be rather complicated. To handle the
       // two cases (normal HTML in a viewport, where the layout background
       // image is set, and contents of <button> within a flat view, where the
@@ -1144,10 +1194,6 @@ void drawBackgroundImage (View *view, StyleImage *backgroundImage,
                           int x, int y, int width, int height,
                           int xRef, int yRef, int widthRef, int heightRef)
 {
-   Imgbuf *imgbuf = backgroundImage->getImgbuf();
-   int imgWidth = imgbuf->getRootWidth ();
-   int imgHeight = imgbuf->getRootHeight ();
-
    //printf ("drawBackgroundImage (..., [img: %d, %d], ..., (%d, %d), %d x %d, "
    //        "(%d, %d), %d x %d)\n", imgWidth, imgHeight, x, y, width, height,
    //        xRef, yRef, widthRef, heightRef);
@@ -1165,19 +1211,33 @@ void drawBackgroundImage (View *view, StyleImage *backgroundImage,
    //printf ("tileX1 = %d, tileX2 = %d, tileY1 = %d, tileY2 = %d\n",
    //        tileX1, tileX2, tileY1, tileY2);
 
-   if (doDraw)
-      for (int tileX = tileX1; tileX <= tileX2; tileX++)
-         for (int tileY = tileY1; tileY <= tileY2; tileY++) {
-            int xt = origX + tileX * imgWidth;
+   if (doDraw) {
+      // Drawing is done with the "tiled" buffer, but all calculations
+      // before have been done with the "source" buffer.
+
+      Imgbuf *imgbufS = backgroundImage->getImgbufSrc();
+      int imgWidthS = imgbufS->getRootWidth ();
+      int imgHeightS = imgbufS->getRootHeight ();
+
+      Imgbuf *imgbufT = backgroundImage->getImgbufTiled();
+      int imgWidthT = imgbufT->getRootWidth ();
+      int imgHeightT = imgbufT->getRootHeight ();
+      int tilesX = backgroundImage->getTilesX ();
+      int tilesY = backgroundImage->getTilesY ();
+
+      for (int tileX = tileX1; tileX <= tileX2; tileX += tilesX)
+         for (int tileY = tileY1; tileY <= tileY2; tileY += tilesY) {
+            int xt = origX + tileX * imgWidthS;
             int x1 = misc::max (xt, x);
-            int x2 = misc::min (xt + imgWidth, x + width);
-            int yt = origY + tileY * imgHeight;
+            int x2 = misc::min (xt + imgWidthT, x + width);
+            int yt = origY + tileY * imgHeightS;
             int y1 = misc::max (yt, y);
-            int y2 = misc::min (yt + imgHeight, y + height);
+            int y2 = misc::min (yt + imgHeightT, y + height);
             
-            view->drawImage (imgbuf, xt, yt, x1 - xt, y1 - yt, 
+            view->drawImage (imgbufT, xt, yt, x1 - xt, y1 - yt, 
                              x2 - x1, y2 - y1);
          }
+   }
 }
 
 void calcBackgroundRelatedValues (StyleImage *backgroundImage,
@@ -1192,7 +1252,7 @@ void calcBackgroundRelatedValues (StyleImage *backgroundImage,
                                   int *tileX1, int *tileX2, int *tileY1,
                                   int *tileY2, bool *doDraw)
 {
-   Imgbuf *imgbuf = backgroundImage->getImgbuf();
+   Imgbuf *imgbuf = backgroundImage->getImgbufSrc();
    int imgWidth = imgbuf->getRootWidth ();
    int imgHeight = imgbuf->getRootHeight ();
 

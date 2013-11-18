@@ -580,7 +580,7 @@ void Layout::draw (View *view, Rectangle *area)
 
    // First of all, draw background image. (Unlike background *color*,
    // this is not a feature of the views.)
-   if (bgImage != NULL && bgImage->getImgbuf() != NULL)
+   if (bgImage != NULL && bgImage->getImgbufSrc() != NULL)
       style::drawBackgroundImage (view, bgImage, bgRepeat, bgAttachment,
                                   bgPositionX, bgPositionY,
                                   area->x, area->y, area->width,
