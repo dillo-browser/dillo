@@ -801,7 +801,7 @@ void Table::forceCalcColumnExtremes ()
          } else {
             if (core::style::isPerLength (colPercents->get(i))) {
                // multiplyWithPerLength would cause rounding errors,
-               // therefore the depricicated way, using perLengthVal:
+               // therefore the deprecated way, using perLengthVal:
                wMin = misc::max (colExtremes->getRef(i)->minWidth,
                                  (int)(availSpanMinW *
                                        core::style::perLengthVal
