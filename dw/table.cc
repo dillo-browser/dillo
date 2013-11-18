@@ -799,10 +799,14 @@ void Table::forceCalcColumnExtremes ()
             curExtraW -= d_w;
             curAppW -= d_a;
          } else {
-            if (colPercents->get(i) > 0.0f) {
+            if (core::style::isPerLength (colPercents->get(i))) {
+               // multiplyWithPerLength would cause rounding errors,
+               // therefore the deprecated way, using perLengthVal:
                wMin = misc::max (colExtremes->getRef(i)->minWidth,
-                                 (int)(availSpanMinW
-                                       * colPercents->get(i)/cumSpanPercent));
+                                 (int)(availSpanMinW *
+                                       core::style::perLengthVal
+                                          (colPercents->get (i))
+                                       / cumSpanPercent));
                colExtremes->getRef(i)->minWidth = wMin;
             }
          }
@@ -1091,7 +1095,7 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
 #ifdef DBG
       MSG("APP_P, percent={");
       for (int col = 0; col < numCols; col++)
-         MSG("%f ", core::dw::_getPerVal (colPercents->get(col)));
+         MSG("%f ", core::dw::perLengthVal (colPercents->get(col)));
       MSG("}\n");
       MSG("APP_P, result ={ ");
       for (int col = 0; col < numCols; col++)
