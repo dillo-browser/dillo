@@ -205,10 +205,6 @@ Medium Priority
 
 **Background-attachment** is not yet implemented, and will be postponed.
 
-**Small background images** result in a large number of calls to
-dw::core::View::drawImage, which may become slow. Solution: Create a
-new image buffer, which contains several copies of the original image.
-
 **Drawing background images row by row** may become slow. As an
 alternative, dw::core::ImgRenderer::finish could be used. However,
 drawing row by row could become an option. **Update:** There is now
