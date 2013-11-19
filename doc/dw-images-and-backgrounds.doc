@@ -187,14 +187,6 @@ Bugs and Things Needing Improvement
 High Priority
 -------------
 
-**Images as toplevel resource:** There seem to be problems when the
-toplevel resource is an image. How to reproduce: Type <code>src/dillo
-http://www.dillo.org/db1.png</code> with the version from the
-background images branch; this will print the message "Content-Type
-'image/png' not viewable." and show the "Save link as file"
-dialog. The same works for the version from the main repository, with
-which the background images branch has been synchronized.
-
 **Configurability, security/privacy aspects, etc.,** which are
 currently available for image widgets, should be adopted. Perhaps some
 more configuration options specially for background images.

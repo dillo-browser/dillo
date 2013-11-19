@@ -50,6 +50,26 @@ DilloImage *a_Image_new(void *layout, void *img_rnd, int32_t bg_color)
 }
 
 /*
+ * Create and initialize a new image structure with an image widget.
+ */
+DilloImage *a_Image_new_with_dw(void *layout, const char *alt_text,
+                                int32_t bg_color)
+{
+   dw::Image *dw = new dw::Image(alt_text);
+   return a_Image_new(layout, (void*)(dw::core::ImgRenderer*)dw, bg_color);
+}
+
+/*
+ * Return the image renderer as a widget. This is somewhat tricky,
+ * since simple casting leads to wrong (and hard to debug) results,
+ * because of multiple inheritance. This function can be used from C
+ * code, where only access to void* is possible.
+ */
+void *a_Image_get_dw(DilloImage *Image)
+{
+   return (dw::Image*)(dw::core::ImgRenderer*)Image->img_rnd;
+}
+/*
  * Deallocate an Image structure
  */
 static void Image_free(DilloImage *Image)

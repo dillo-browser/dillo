@@ -403,7 +403,8 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    dReturn_val_if_fail(MimeType && Ptr, NULL);
 
    if (!web->Image) {
-      web->Image = a_Image_new(NULL, NULL, web->bgColor);
+      web->Image =
+         a_Image_new_with_dw(web->bw->render_layout, NULL, web->bgColor);
       a_Image_ref(web->Image);
    }
 
@@ -430,7 +431,7 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    *Data = DicEntry->DecoderData;
    *Call = (CA_Callback_t) a_Dicache_callback;
 
-   return (web->Image->img_rnd);
+   return (a_Image_get_dw (web->Image));
 }
 
 /*
