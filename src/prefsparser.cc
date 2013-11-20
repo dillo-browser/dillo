@@ -79,6 +79,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "http_user_agent", &prefs.http_user_agent, PREFS_STRING },
       { "limit_text_width", &prefs.limit_text_width, PREFS_BOOL },
       { "load_images", &prefs.load_images, PREFS_BOOL },
+      { "load_background_images", &prefs.load_background_images, PREFS_BOOL },
       { "load_stylesheets", &prefs.load_stylesheets, PREFS_BOOL },
       { "middle_click_drags_page", &prefs.middle_click_drags_page,
         PREFS_BOOL },

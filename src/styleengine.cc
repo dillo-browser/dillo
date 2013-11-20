@@ -524,6 +524,7 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                   Color::create(layout, prefs.white_bg_replacement);
             break;
          case CSS_PROPERTY_BACKGROUND_IMAGE:
+            if (prefs.load_background_images)
             {
                DilloUrl *imgUrl =
                   a_Url_new (p->value.strVal, a_Url_str (url));
