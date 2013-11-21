@@ -393,11 +393,9 @@ private:
 
    /**
     * hasColPercent becomes true when any cell specifies a percentage width.
-    * A negative value in colPercents means LEN_AUTO or LEN_ABS.
     */
-   enum { LEN_AUTO = -1, LEN_ABS = -2};
    int hasColPercent;
-   lout::misc::SimpleVector<float> *colPercents;
+   lout::misc::SimpleVector<core::style::Length> *colPercents;
 
    inline bool childDefined(int n)
    {
