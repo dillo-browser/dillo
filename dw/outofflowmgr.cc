@@ -1501,8 +1501,8 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
                (absLengthVal (vloat->widget->getStyle()->width));
          else if (isPerLength (vloat->widget->getStyle()->width))
             vloat->widget->setWidth
-               (containingBlock->getAvailWidth()
-                * perLengthVal (vloat->widget->getStyle()->width));
+               (multiplyWithPerLength (containingBlock->getAvailWidth(),
+                                       vloat->widget->getStyle()->width));
       }
 
       // This is a bit hackish: We first request the size, then set
@@ -1679,7 +1679,7 @@ int OutOfFlowMgr::calcValueForAbsolutelyPositioned
    if (isAbsLength (styleLen))
       return absLengthVal (styleLen);
    else if (isPerLength (styleLen))
-      return refLen * perLengthVal (styleLen);
+      return multiplyWithPerLength (refLen, styleLen);
    else {
       assertNotReached ();
       return 0; // compiler happiness
