@@ -827,10 +827,12 @@ public:
    { if (--refCount == 0) delete this; }
 
    inline Imgbuf *getImgbufSrc () { return imgbufSrc; }
-   inline Imgbuf *getImgbufTiled ()
-   { return imgbufTiled ? imgbufTiled : imgbufSrc; }
-   inline int getTilesX () { return imgbufTiled ? tilesX : 1; }
-   inline int getTilesY () { return imgbufTiled ? tilesY : 1; }
+   inline Imgbuf *getImgbufTiled (bool repeatX, bool repeatY)
+   { return (imgbufTiled && repeatX && repeatY) ? imgbufTiled : imgbufSrc; }
+   inline int getTilesX (bool repeatX, bool repeatY)
+   { return (imgbufTiled && repeatX && repeatY) ? tilesX : 1; }
+   inline int getTilesY (bool repeatX, bool repeatY)
+   { return (imgbufTiled && repeatX && repeatY) ? tilesY : 1; }
    inline ImgRenderer *getMainImgRenderer () { return imgRendererDist; }
 
    /**

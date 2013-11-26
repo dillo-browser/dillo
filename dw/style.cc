@@ -490,6 +490,11 @@ void StyleImage::StyleImgRenderer::setBuffer (core::Imgbuf *buffer, bool resize)
       // another image buffer, the "tiled" image buffer, which is
       // larger (the "optimal" size is defined as OPT_BG_IMG_W *
       // OPT_BG_IMG_H) and contains the "source" buffer several times.
+      //
+      // This "tiled" buffer is not used when 'background-repeat' has
+      // another value than 'repeat', for obvious reasons. Image
+      // buffers only "tiled" in one dimension (to optimize 'repeat-x'
+      // and 'repeat-y') are not supported.
 
       if (image->imgbufSrc->getRootWidth() * image->imgbufSrc->getRootHeight()
           < MIN_BG_IMG_W * MIN_BG_IMG_H) {
@@ -1219,11 +1224,11 @@ void drawBackgroundImage (View *view, StyleImage *backgroundImage,
       int imgWidthS = imgbufS->getRootWidth ();
       int imgHeightS = imgbufS->getRootHeight ();
 
-      Imgbuf *imgbufT = backgroundImage->getImgbufTiled();
+      Imgbuf *imgbufT = backgroundImage->getImgbufTiled(repeatX, repeatY);
       int imgWidthT = imgbufT->getRootWidth ();
       int imgHeightT = imgbufT->getRootHeight ();
-      int tilesX = backgroundImage->getTilesX ();
-      int tilesY = backgroundImage->getTilesY ();
+      int tilesX = backgroundImage->getTilesX (repeatX, repeatY);
+      int tilesY = backgroundImage->getTilesY (repeatX, repeatY);
 
       for (int tileX = tileX1; tileX <= tileX2; tileX += tilesX)
          for (int tileY = tileY1; tileY <= tileY2; tileY += tilesY) {
