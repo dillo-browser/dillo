@@ -34,7 +34,7 @@ namespace dw {
 namespace core {
 namespace style {
 
-const bool drawBackgroundLineByLine = true;
+const bool drawBackgroundLineByLine = false;
 
 const int MIN_BG_IMG_W = 10;
 const int MIN_BG_IMG_H = 10;
