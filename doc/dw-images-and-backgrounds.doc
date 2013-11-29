@@ -197,15 +197,6 @@ Medium Priority
 
 **Background-attachment** is not yet implemented, and will be postponed.
 
-**Drawing background images row by row** may become slow. As an
-alternative, dw::core::ImgRenderer::finish could be used. However,
-drawing row by row could become an option. **Update:** There is now
-dw::core::style::drawBackgroundLineByLine, which can be changed in the
-code.
-
-(For image widgets, this could also become an option: in contexts,
-when image data is retrieved in a very fast way.)
-
 **Calls to dw::core::ImgRenderer::fatal** are incomplete. As an
 example, it is not called, when connecting to a server fails. (And so,
 as far as I see, no cache client is started.)
@@ -226,5 +217,19 @@ dw::Image is only created with type RGB. This leads to several problems:
 The solution is basicly simple: keep alpha support out of dicache;
 instead implement RGBA in dw::Image. As it seems, the main problem is
 alpha support in FLTK/X11.
+
+
+Solved (Must Be Documented)
+---------------------------
+
+*Drawing background images row by row may become slow. As an
+alternative, dw::core::ImgRenderer::finish could be used. However,
+drawing row by row could become an option.* There is now
+dw::core::style::drawBackgroundLineByLine, which can be changed in the
+code, and is set to *false*. The old code still exists, so changing
+this to *true* activates again drawing line by line.
+
+(For image widgets, this could also become an option: in contexts,
+when image data is retrieved in a very fast way.)
 
 */
