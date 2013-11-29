@@ -2008,7 +2008,7 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
       // At this point, we know that Image->ir represents an image
       // widget. Notice that the order of the casts matters, because
       // of multiple inheritance.
-      dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)Image->img_rnd;
+      dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)Image->img_rndr;
       dwi->setStyle (html->backgroundStyle ());
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();
       ComplexButtonResource *complex_b_r =

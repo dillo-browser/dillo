@@ -24,19 +24,19 @@
 using namespace dw::core;
 
 // Image to Object-ImgRenderer macro
-#define I2IR(Image)  ((dw::core::ImgRenderer*)(Image->img_rnd))
+#define I2IR(Image)  ((dw::core::ImgRenderer*)(Image->img_rndr))
 
 
 /*
  * Create and initialize a new image structure.
  */
-DilloImage *a_Image_new(void *layout, void *img_rnd, int32_t bg_color)
+DilloImage *a_Image_new(void *layout, void *img_rndr, int32_t bg_color)
 {
    DilloImage *Image;
 
    Image = dNew(DilloImage, 1);
    Image->layout = layout;
-   Image->img_rnd = img_rnd;
+   Image->img_rndr = img_rndr;
    Image->width = 0;
    Image->height = 0;
    Image->bg_color = bg_color;
@@ -67,7 +67,7 @@ DilloImage *a_Image_new_with_dw(void *layout, const char *alt_text,
  */
 void *a_Image_get_dw(DilloImage *Image)
 {
-   return (dw::Image*)(dw::core::ImgRenderer*)Image->img_rnd;
+   return (dw::Image*)(dw::core::ImgRenderer*)Image->img_rndr;
 }
 /*
  * Deallocate an Image structure

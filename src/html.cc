@@ -2301,7 +2301,7 @@ static void Html_tag_content_img(DilloHtml *html, const char *tag, int tagsize)
    // At this point, we know that Image->ir represents an image
    // widget. Notice that the order of the casts matters, because of
    // multiple inheritance.
-   dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)Image->img_rnd;
+   dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)Image->img_rndr;
    HT2TB(html)->addWidget(dwi, html->style());
 
    /* Image maps */
@@ -2364,7 +2364,7 @@ static void Html_tag_close_map(DilloHtml *html)
          // widget. (Really? Is this assumtion safe?) Notice that the
          // order of the casts matters, because of multiple
          // inheritance.
-         dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)img->img_rnd;
+         dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)img->img_rndr;
          dwi->forceMapRedraw();
       }
    }

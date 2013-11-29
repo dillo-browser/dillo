@@ -44,7 +44,7 @@ typedef enum {
 } ImageState;
 
 struct _DilloImage {
-   void *layout, *img_rnd;
+   void *layout, *img_rndr;
 
    /* Parameters as told by image data */
    uint_t width;
@@ -62,7 +62,7 @@ struct _DilloImage {
 /*
  * Function prototypes
  */
-DilloImage *a_Image_new(void *layout, void *img_rnd, int32_t bg_color);
+DilloImage *a_Image_new(void *layout, void *img_rndr, int32_t bg_color);
 DilloImage *a_Image_new_with_dw(void *layout, const char *alt_text,
                                 int32_t bg_color);
 void *a_Image_get_dw(DilloImage *Image);
