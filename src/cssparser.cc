@@ -1045,7 +1045,7 @@ bool CssParser::parseValue(CssPropertyName prop,
       // horizontal position; in most cases in this order. However, as long it
       // is unambigous, the order can be switched: "10px left" and "left 10px"
       // are both possible and have the same effect. For this reason, all
-      // possibilities are tested parrallel.
+      // possibilities are tested in parallel.
 
       bool h[2], v[2];
       int pos[2];

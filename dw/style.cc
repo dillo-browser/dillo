@@ -611,7 +611,7 @@ void StyleImage::ExternalImgRenderer::drawRow (int row)
 
          if (doDraw)
             // Only iterate over y, because the rows can be combined
-            // horizontically.
+            // horizontally.
             for (int tileY = tileY1; tileY <= tileY2; tileY++) {
                int x1 = misc::max (origX + tileX1 * imgWidth, x);
                int x2 = misc::min (origX + (tileX2 + 1) * imgWidth, x + width);
@@ -1154,7 +1154,7 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
       // image is set, and contents of <button> within a flat view, where the
       // background image of the toplevel widget is set), only the background
       // images are compared. A full test, which also deals with all other
-      // attributes related to backgrond images (repeat, position etc.) would
+      // attributes related to background images (repeat, position etc.) would
       // be complicated and useless, so not worth the work.
       (!atTop || layout->getBgImage () != style->backgroundImage);
 

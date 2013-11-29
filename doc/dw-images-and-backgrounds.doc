@@ -22,7 +22,7 @@ Image Renderer
 Generally, there are no restrictions on how to manage
 dw::core::Imgbuf; but to handle image data from web resources, the
 interface dw::core::ImgRenderer should be implemented. It is again
-wrapped by DilloImago (to make access from the C part possible, since
+wrapped by DilloImage (to make access from the C part possible, since
 dw::core::ImgRenderer is written in C++), which is referenced by
 DilloWeb. There are two positions where retrieving image data is
 initiated:
@@ -78,7 +78,7 @@ renderers:
 
 - one instance of dw::core::style::StyleImage::StyleImgRenderer, which
   does everything needed for dw::core::style::StyleImage, and
-- other renderes, used externally (widgets etc.), which are added by
+- other renderers, used externally (widgets etc.), which are added by
   dw::core::style::StyleImage::putExternalImgRenderer (and removed by
   dw::core::style::StyleImage::removeExternalImgRenderer).
 
@@ -223,7 +223,7 @@ dw::Image is only created with type RGB. This leads to several problems:
   with different background colors.
 - The dicache only handles background colors, not background images.
 
-The solution is basicly simple: keep out alpha support out of dicache;
+The solution is basicly simple: keep alpha support out of dicache;
 instead implement RGBA in dw::Image. As it seems, the main problem is
 alpha support in FLTK/X11.
 

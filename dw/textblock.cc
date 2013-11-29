@@ -87,7 +87,7 @@ void Textblock::WordImgRenderer::getBgArea (int *x, int *y, int *width,
 void Textblock::WordImgRenderer::getRefArea (int *xRef, int *yRef,
                                              int *widthRef, int *heightRef)
 {
-   // See comment in Widget::drawBox about the reference area.q
+   // See comment in Widget::drawBox about the reference area.
    textblock->getPaddingArea (xRef, yRef, widthRef, heightRef);
 }
 
