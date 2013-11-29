@@ -88,6 +88,7 @@ typedef struct {
    bool_t show_quit_dialog;
    bool_t fullwindow_start;
    bool_t load_images;
+   bool_t load_background_images;
    bool_t load_stylesheets;
    bool_t parse_embedded_css;
    int32_t buffered_drawing;

@@ -23,8 +23,6 @@
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 
-#define MAX misc::max
-
 using namespace lout;
 
 namespace dw {
@@ -62,7 +60,7 @@ Table::Table(bool limitTextWidth)
    rowStyle = new misc::SimpleVector <core::style::Style*> (8);
 
    hasColPercent = 0;
-   colPercents = new misc::SimpleVector <float> (8);
+   colPercents = new misc::SimpleVector <core::style::Length> (8);
 
    redrawX = 0;
    redrawY = 0;
@@ -137,11 +135,11 @@ void Table::getExtremesImpl (core::Extremes *extremes)
    }
    if (core::style::isAbsLength (getStyle()->width)) {
       extremes->minWidth =
-         MAX (extremes->minWidth,
-              core::style::absLengthVal(getStyle()->width));
+         misc::max (extremes->minWidth,
+                    core::style::absLengthVal(getStyle()->width));
       extremes->maxWidth =
-         MAX (extremes->maxWidth,
-              core::style::absLengthVal(getStyle()->width));
+         misc::max (extremes->maxWidth,
+                    core::style::absLengthVal(getStyle()->width));
    }
 
    _MSG(" Table::getExtremesImpl, {%d, %d} numCols=%d\n",
@@ -297,7 +295,7 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
    }
 
    if (colspan == 0) {
-      colspanEff = MAX (numCols - curCol, 1);
+      colspanEff = misc::max (numCols - curCol, 1);
       rowClosed = true;
    } else
       colspanEff = colspan;
@@ -503,9 +501,9 @@ void Table::forceCalcCellSizes ()
        * as defined by CSS2.)
        */
       totalWidth =
-         (int)(availWidth
-               * misc::min (core::style::perLengthVal (getStyle()->width),
-                            1.0));
+         misc::min (core::style::multiplyWithPerLength (availWidth,
+                                                        getStyle()->width),
+                    availWidth);
    } else if (getStyle()->width == core::style::LENGTH_AUTO) {
       totalWidth = availWidth;
       forceTotalWidth = 0;
@@ -557,7 +555,7 @@ void Table::forceCalcCellSizes ()
             children->get(n)->cell.widget->sizeRequest (&childRequisition);
             childHeight = childRequisition.ascent + childRequisition.descent;
             if (children->get(n)->cell.rowspan == 1) {
-               rowHeight = MAX (rowHeight, childHeight);
+               rowHeight = misc::max (rowHeight, childHeight);
             } else {
                rowSpanCells->increase();
                rowSpanCells->set(rowSpanCells->size()-1, n);
@@ -660,7 +658,7 @@ void Table::forceCalcColumnExtremes ()
    for (int col = 0; col < numCols; col++) {
       colExtremes->getRef(col)->minWidth = 0;
       colExtremes->getRef(col)->maxWidth = 0;
-      colPercents->set(col, LEN_AUTO);
+      colPercents->set(col, core::style::LENGTH_AUTO);
 
       for (int row = 0; row < numRows; row++) {
          int n = row * numCols + col;
@@ -677,8 +675,8 @@ void Table::forceCalcColumnExtremes ()
             if (core::style::isAbsLength (width)) {
                // Fixed lengths include table padding, border and margin.
                cellMinW = cellExtremes.minWidth;
-               cellMaxW = MAX (cellMinW,
-                               core::style::absLengthVal(width) - pbm);
+               cellMaxW = misc::max (cellMinW,
+                                     core::style::absLengthVal(width) - pbm);
             } else {
                cellMinW = cellExtremes.minWidth;
                cellMaxW = cellExtremes.maxWidth;
@@ -691,22 +689,24 @@ void Table::forceCalcColumnExtremes ()
                 cellMinW, cellMaxW);
 
             colExtremes->getRef(col)->minWidth =
-               MAX (colExtremes->getRef(col)->minWidth, cellMinW);
+               misc::max (colExtremes->getRef(col)->minWidth, cellMinW);
             colExtremes->getRef(col)->maxWidth =
-               MAX (colExtremes->getRef(col)->minWidth, MAX (
-                    colExtremes->getRef(col)->maxWidth,
-                    cellMaxW));
+               misc::max (colExtremes->getRef(col)->minWidth, misc::max (
+                             colExtremes->getRef(col)->maxWidth,
+                             cellMaxW));
 
             // Also fill the colPercents array in this pass
             if (core::style::isPerLength (width)) {
                hasColPercent = 1;
-               if (colPercents->get(col) == LEN_AUTO)
-                  colPercents->set(col, core::style::perLengthVal(width));
+               if (colPercents->get(col) == core::style::LENGTH_AUTO)
+                  colPercents->set(col, width);
             } else if (core::style::isAbsLength (width)) {
                // We treat LEN_ABS as a special case of LEN_AUTO.
                /*
                 * if (colPercents->get(col) == LEN_AUTO)
                 *   colPercents->set(col, LEN_ABS);
+                *
+                * (Hint: that's old code!)
                 */
             }
          } else {
@@ -732,7 +732,8 @@ void Table::forceCalcColumnExtremes ()
       if (core::style::isAbsLength (width)) {
          // Fixed lengths include table padding, border and margin.
          cellMinW = cellExtremes.minWidth;
-         cellMaxW = MAX (cellMinW, core::style::absLengthVal(width) - pbm);
+         cellMaxW =
+            misc::max (cellMinW, core::style::absLengthVal(width) - pbm);
       } else {
          cellMinW = cellExtremes.minWidth;
          cellMaxW = cellExtremes.maxWidth;
@@ -750,10 +751,10 @@ void Table::forceCalcColumnExtremes ()
          continue;
 
       // Cell size is too small; apportion {min,max} for this colspan.
-      int spanMinW = MAX (MAX(cs, minSumCols),
-                          cellMinW - (cs-1) * getStyle()->hBorderSpacing),
-          spanMaxW = MAX (MAX(cs, maxSumCols),
-                          cellMaxW - (cs-1) * getStyle()->hBorderSpacing);
+      int spanMinW = misc::max (misc::max (cs, minSumCols),
+                                cellMinW - (cs-1) * getStyle()->hBorderSpacing),
+          spanMaxW = misc::max (misc::max (cs, maxSumCols),
+                                cellMaxW - (cs-1) * getStyle()->hBorderSpacing);
 
       if (minSumCols == 0) {
          // No single cells defined for this span => pre-apportion equally
@@ -767,13 +768,13 @@ void Table::forceCalcColumnExtremes ()
          }
       }
 
-      // This numbers will help if the span has percents.
+      // These values will help if the span has percents.
       int spanHasColPercent = 0;
       int availSpanMinW = spanMinW;
       float cumSpanPercent = 0.0f;
       for (int i = col; i < col + cs; ++i) {
-         if (colPercents->get(i) > 0.0f) {
-            cumSpanPercent += colPercents->get(i);
+         if (core::style::isPerLength (colPercents->get(i))) {
+            cumSpanPercent += core::style::perLengthVal (colPercents->get(i));
             ++spanHasColPercent;
          } else
             availSpanMinW -= colExtremes->getRef(i)->minWidth;
@@ -798,10 +799,14 @@ void Table::forceCalcColumnExtremes ()
             curExtraW -= d_w;
             curAppW -= d_a;
          } else {
-            if (colPercents->get(i) > 0.0f) {
-               wMin = MAX (colExtremes->getRef(i)->minWidth,
-                           (int)(availSpanMinW
-                                 * colPercents->get(i)/cumSpanPercent));
+            if (core::style::isPerLength (colPercents->get(i))) {
+               // multiplyWithPerLength would cause rounding errors,
+               // therefore the deprecated way, using perLengthVal:
+               wMin = misc::max (colExtremes->getRef(i)->minWidth,
+                                 (int)(availSpanMinW *
+                                       core::style::perLengthVal
+                                          (colPercents->get (i))
+                                       / cumSpanPercent));
                colExtremes->getRef(i)->minWidth = wMin;
             }
          }
@@ -810,7 +815,7 @@ void Table::forceCalcColumnExtremes ()
                    (int)((float)(goalMaxW-cumMaxWnew)
                          * colExtremes->getRef(i)->maxWidth
                            / (maxSumCols-cumMaxWold));
-         wMax = MAX (wMin, wMax);
+         wMax = misc::max (wMin, wMax);
          cumMaxWnew += wMax;
          cumMaxWold += colExtremes->getRef(i)->maxWidth;
          colExtremes->getRef(i)->maxWidth = wMax;
@@ -850,17 +855,18 @@ void Table::apportion2 (int totalWidth, int forceTotalWidth)
 #endif
    int minAutoWidth = 0, maxAutoWidth = 0, availAutoWidth = totalWidth;
    for (int col = 0; col < numCols; col++) {
-      if (colPercents->get(col) == LEN_ABS) { // set absolute lengths
+      if (core::style::isAbsLength (colPercents->get(col))) {
+         // set absolute lengths
          setColWidth (col, colExtremes->get(col).minWidth);
       }
-      if (colPercents->get(col) == LEN_AUTO) {
+      if (colPercents->get(col) == core::style::LENGTH_AUTO) {
          maxAutoWidth += colExtremes->get(col).maxWidth;
          minAutoWidth += colExtremes->get(col).minWidth;
       } else
          availAutoWidth -= colWidths->get(col);
    }
 
-   if (!maxAutoWidth) // no LEN_AUTO cols!
+   if (!maxAutoWidth) // no core::style::LENGTH_AUTO cols!
       return;
 
    colWidths->setSize (colExtremes->size (), 0);
@@ -871,7 +877,7 @@ void Table::apportion2 (int totalWidth, int forceTotalWidth)
    }
 
    // General case.
-   int curTargetWidth = MAX (availAutoWidth, minAutoWidth);
+   int curTargetWidth = misc::max (availAutoWidth, minAutoWidth);
    int curExtraWidth = curTargetWidth - minAutoWidth;
    int curMaxWidth = maxAutoWidth;
    int curNewWidth = minAutoWidth;
@@ -880,7 +886,7 @@ void Table::apportion2 (int totalWidth, int forceTotalWidth)
            col, colExtremes->getRef(col)->minWidth,
            colExtremes->get(col).maxWidth);
 
-      if (colPercents->get(col) != LEN_AUTO)
+      if (colPercents->get(col) != core::style::LENGTH_AUTO)
          continue;
 
       int colMinWidth = colExtremes->getRef(col)->minWidth;
@@ -937,7 +943,7 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
       // It has only a table-wide percentage. Apportion non-absolute widths.
       int sumMaxWidth = 0, perAvailWidth = totalWidth;
       for (int col = 0; col < numCols; col++) {
-         if (colPercents->get(col) == LEN_ABS)
+         if (core::style::isAbsLength (colPercents->get(col)))
             perAvailWidth -= colExtremes->getRef(col)->maxWidth;
          else
             sumMaxWidth += colExtremes->getRef(col)->maxWidth;
@@ -948,8 +954,9 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
 
       for (int col = 0; col < numCols; col++) {
          int max_wi = colExtremes->getRef(col)->maxWidth, new_wi;
-         if (colPercents->get(col) != LEN_ABS) {
-            new_wi = MAX (colExtremes->getRef(col)->minWidth,
+         if (!core::style::isAbsLength (colPercents->get(col))) {
+            new_wi =
+               misc::max (colExtremes->getRef(col)->minWidth,
                           (int)((float)max_wi * perAvailWidth/sumMaxWidth));
             setColWidth (col, new_wi);
             perAvailWidth -= new_wi;
@@ -972,12 +979,13 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
       int hasAutoCol = 0;
       int sumMinWidth = 0, sumMaxWidth = 0, sumMinNonPer = 0, sumMaxNonPer = 0;
       for (int col = 0; col < numCols; col++) {
-         if (colPercents->get(col) > 0.0f) {
-            cumPercent += colPercents->get(col);
+         if (core::style::isPerLength (colPercents->get(col))) {
+            cumPercent += core::style::perLengthVal (colPercents->get(col));
          } else {
             sumMinNonPer += colExtremes->getRef(col)->minWidth;
             sumMaxNonPer += colExtremes->getRef(col)->maxWidth;
-            hasAutoCol += (colPercents->get(col) == LEN_AUTO);
+            if (colPercents->get(col) == core::style::LENGTH_AUTO)
+               hasAutoCol++;
          }
          sumMinWidth += colExtremes->getRef(col)->minWidth;
          sumMaxWidth += colExtremes->getRef(col)->maxWidth;
@@ -990,17 +998,19 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
       if (!forceTotalWidth) {
          if (sumMaxNonPer == 0 || cumPercent < 0.99f) {
             // only percentage columns, or cumPercent < 100% => restrict width
-            int totW = (int)(sumMaxNonPer/(1.0f-cumPercent));
+            int totW = (int)(sumMaxNonPer / (1.0f - cumPercent));
             for (int col = 0; col < numCols; col++) {
-               totW = MAX (totW, (int)(colExtremes->getRef(col)->maxWidth
-                                       / colPercents->get(col)));
+               totW = misc::max
+                  (totW,
+                   (int)(colExtremes->getRef(col)->maxWidth
+                         / core::style::perLengthVal (colPercents->get(col))));
             }
             totalWidth = misc::min (totW, totalWidth);
          }
       }
 
       // make sure there's enough space
-      totalWidth = MAX (totalWidth, sumMinWidth);
+      totalWidth = misc::max (totalWidth, sumMinWidth);
       // extraWidth is always >= 0
       int extraWidth = totalWidth - sumMinWidth;
       int sumMinWidthPer = sumMinWidth - sumMinNonPer;
@@ -1019,8 +1029,9 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
 
       for (int col = 0; col < numCols; col++) {
          int colMinWidth = colExtremes->getRef(col)->minWidth;
-         if (colPercents->get(col) >= 0.0f) {
-            int w = (int)(workingWidth * colPercents->get(col));
+         if (core::style::isPerLength (colPercents->get(col))) {
+            int w = core::style::multiplyWithPerLength (workingWidth,
+                                                        colPercents->get(col));
             if (w < colMinWidth)
                w = colMinWidth;
             else if (curPerWidth - colMinWidth + w > workingWidth)
@@ -1044,7 +1055,7 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
 #endif
          curPerWidth -= sumMinNonPer;
          int perWidth = (int)(curPerWidth/cumPercent);
-         totalWidth = MAX (totalWidth, perWidth);
+         totalWidth = misc::max (totalWidth, perWidth);
          totalWidth = misc::min (totalWidth, oldTotalWidth);
 
          _MSG("APP_P, curPerWidth=%d perWidth=%d, totalWidth=%d\n",
@@ -1055,8 +1066,19 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
             // We'll honor totalWidth by expanding the percentage cols.
             int extraWidth = totalWidth - curPerWidth - sumMinNonPer;
             for (int col = 0; col < numCols; col++) {
-               if (colPercents->get(col) >= 0.0f) {
-                  int d = (int)(extraWidth * colPercents->get(col)/cumPercent);
+               if (core::style::isPerLength (colPercents->get(col))) {
+                  // This could cause rounding errors:
+                  // 
+                  // int d =
+                  //    core::dw::multiplyWithPerLength (extraWidth,
+                  //                                     colPercents->get(col))
+                  //    / cumPercent;
+                  //
+                  // Thus the "old" way:
+                  int d =
+                     (int)(extraWidth *
+                           core::style::perLengthVal (colPercents->get(col))
+                           / cumPercent);
                   setColWidth (col, colWidths->get(col) + d);
                }
             }
@@ -1073,7 +1095,7 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
 #ifdef DBG
       MSG("APP_P, percent={");
       for (int col = 0; col < numCols; col++)
-         MSG("%f ", colPercents->get(col));
+         MSG("%f ", core::dw::perLengthVal (colPercents->get(col)));
       MSG("}\n");
       MSG("APP_P, result ={ ");
       for (int col = 0; col < numCols; col++)

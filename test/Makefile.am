@@ -9,6 +9,7 @@ noinst_PROGRAMS = \
 	dw-find-test \
 	dw-links \
 	dw-links2 \
+	dw-image-background \
 	dw-images-simple \
 	dw-images-scaled \
 	dw-images-scaled2 \
@@ -61,6 +62,14 @@ dw_links_LDADD = \
 
 dw_links2_SOURCES = dw_links2.cc
 dw_links2_LDADD = \
+	$(top_builddir)/dw/libDw-widgets.a \
+	$(top_builddir)/dw/libDw-fltk.a \
+	$(top_builddir)/dw/libDw-core.a \
+	$(top_builddir)/lout/liblout.a \
+	@LIBFLTK_LIBS@
+
+dw_image_background_SOURCES = dw_image_background.cc
+dw_image_background_LDADD = \
 	$(top_builddir)/dw/libDw-widgets.a \
 	$(top_builddir)/dw/libDw-fltk.a \
 	$(top_builddir)/dw/libDw-core.a \

@@ -47,6 +47,14 @@ typedef struct {
    const char *const *enum_symbols;
 } CssPropertyInfo;
 
+static const char *const Css_background_attachment_enum_vals[] = {
+   "scroll", "fixed", NULL
+};
+
+static const char *const Css_background_repeat_enum_vals[] = {
+   "repeat", "repeat-x", "repeat-y", "no-repeat", NULL
+};
+
 static const char *const Css_border_collapse_enum_vals[] = {
    "separate", "collapse", NULL
 };
@@ -139,11 +147,14 @@ static const char *const Css_word_spacing_enum_vals[] = {
 };
 
 const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
-   {"background-attachment", {CSS_TYPE_UNUSED}, NULL},
+   {"background-attachment", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_background_attachment_enum_vals},
    {"background-color", {CSS_TYPE_COLOR, CSS_TYPE_UNUSED}, NULL},
-   {"background-image", {CSS_TYPE_UNUSED}, NULL},
-   {"background-position", {CSS_TYPE_UNUSED}, NULL},
-   {"background-repeat", {CSS_TYPE_UNUSED}, NULL},
+   {"background-image", {CSS_TYPE_URI, CSS_TYPE_UNUSED}, NULL},
+   {"background-position", {CSS_TYPE_BACKGROUND_POSITION, CSS_TYPE_UNUSED},
+    NULL},
+   {"background-repeat", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
+    Css_background_repeat_enum_vals},
    {"border-bottom-color", {CSS_TYPE_ENUM, CSS_TYPE_COLOR, CSS_TYPE_UNUSED},
     Css_border_color_enum_vals},
    {"border-bottom-style", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED},
@@ -694,6 +705,15 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
          }
          break;
 
+      case CSS_TYPE_BACKGROUND_POSITION:
+         if (ttype == CSS_TK_SYMBOL &&
+             (dStrAsciiCasecmp(tval, "center") == 0 ||
+              dStrAsciiCasecmp(tval, "left") == 0 ||
+              dStrAsciiCasecmp(tval, "right") == 0 ||
+              dStrAsciiCasecmp(tval, "top") == 0 ||
+              dStrAsciiCasecmp(tval, "bottom") == 0))
+            return true;            
+         // Fall Through (lenght and percentage)
       case CSS_TYPE_LENGTH_PERCENTAGE:
       case CSS_TYPE_LENGTH_PERCENTAGE_NUMBER:
       case CSS_TYPE_LENGTH:
@@ -732,6 +752,12 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
             if (i >= 100 && i <= 900)
                return true;
          }
+         break;
+
+      case CSS_TYPE_URI:
+         if (ttype == CSS_TK_SYMBOL &&
+             dStrAsciiCasecmp(tval, "url") == 0)
+            return true;
          break;
 
       case CSS_TYPE_UNUSED:
@@ -1001,6 +1027,107 @@ bool CssParser::parseValue(CssPropertyName prop,
          val->intVal = ival;
          ret = true;
          nextToken();
+      }
+      break;
+
+   case CSS_TYPE_URI:
+      if (ttype == CSS_TK_SYMBOL &&
+          dStrAsciiCasecmp(tval, "url") == 0) {
+         val->strVal = parseUrl();
+         nextToken();
+         if (val->strVal)
+            ret = true;
+      }
+      break;
+
+   case CSS_TYPE_BACKGROUND_POSITION:
+      // 'background-position' consists of one or two values: vertical and
+      // horizontal position; in most cases in this order. However, as long it
+      // is unambigous, the order can be switched: "10px left" and "left 10px"
+      // are both possible and have the same effect. For this reason, all
+      // possibilities are tested in parallel.
+
+      bool h[2], v[2];
+      int pos[2];
+      h[0] = v[0] = h[1] = v[1] = false;
+
+      // First: collect values in pos[0] and pos[1], and determine whether
+      // they can be used for a horizontal (h[i]) or vertical (v[i]) position
+      // (or both). When neither h[i] or v[i] is set, pos[i] is undefined.
+      for (i = 0; i < 2; i++) {
+         CssValueType typeTmp;
+         // tokenMatchesProperty will, for CSS_PROPERTY_BACKGROUND_POSITION,
+         // work on both parts, since they are exchangable.
+         if (tokenMatchesProperty (CSS_PROPERTY_BACKGROUND_POSITION,
+                                   &typeTmp)) {
+            h[i] = ttype != CSS_TK_SYMBOL ||
+               (dStrAsciiCasecmp(tval, "top") != 0 &&
+                dStrAsciiCasecmp(tval, "bottom") != 0);
+            v[i] = ttype != CSS_TK_SYMBOL ||
+               (dStrAsciiCasecmp(tval, "left") != 0 &&
+                dStrAsciiCasecmp(tval, "right") != 0);
+         } else
+            // No match.
+            h[i] = v[i] = false;
+
+         if (h[i] || v[i]) {
+            // Calculate values.
+            if (ttype == CSS_TK_SYMBOL) {
+               if (dStrAsciiCasecmp(tval, "top") == 0 ||
+                   dStrAsciiCasecmp(tval, "left") == 0) {
+                  pos[i] = CSS_CREATE_LENGTH (0.0, CSS_LENGTH_TYPE_PERCENTAGE);
+                  nextToken();
+               } else if (dStrAsciiCasecmp(tval, "center") == 0) {
+                  pos[i] = CSS_CREATE_LENGTH (0.5, CSS_LENGTH_TYPE_PERCENTAGE);
+                  nextToken();
+               } else if (dStrAsciiCasecmp(tval, "bottom") == 0 ||
+                          dStrAsciiCasecmp(tval, "right") == 0) {
+                  pos[i] = CSS_CREATE_LENGTH (1.0, CSS_LENGTH_TYPE_PERCENTAGE);
+                  nextToken();
+               } else
+                  // tokenMatchesProperty should have returned "false" already.
+                  lout::misc::assertNotReached ();
+            } else {
+               // We can assume <length> or <percentage> here ...
+               CssPropertyValue valTmp;
+               if (parseValue(prop, CSS_TYPE_LENGTH_PERCENTAGE, &valTmp)) {
+                  pos[i] = valTmp.intVal;
+                  ret = true;
+               } else
+                  // ... but something may still fail.
+                  h[i] = v[i] = false;
+            }
+         }
+
+         // If the first value cannot be read, do not read the second.
+         if (!h[i] && !v[i])
+            break;
+      }
+
+      // Second: Create the final value. Order will be determined here.
+      if (v[0] || h[0]) {
+         // If second value is not set, it is set to "center", i. e. 50%, (see
+         // CSS specification), which is suitable for both dimensions.
+         if (!h[1] && !v[1]) {
+            pos[1] = CSS_CREATE_LENGTH (0.5, CSS_LENGTH_TYPE_PERCENTAGE);
+            h[1] = v[1] = true;
+         }
+
+         // Only valid, when a combination h/v or v/h is possible.
+         if ((h[0] && v[1]) || (v[0] && h[1])) {
+            ret = true;
+            val->posVal = dNew(CssBackgroundPosition, 1);
+
+            // Prefer combination h/v:
+            if (h[0] && v[1]) {
+                val->posVal->posX = pos[0];
+                val->posVal->posY = pos[1];
+            } else {
+               // This should be v/h:
+                val->posVal->posX = pos[1];
+                val->posVal->posY = pos[0];
+            }
+         }
       }
       break;
 

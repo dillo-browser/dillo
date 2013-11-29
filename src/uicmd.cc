@@ -583,6 +583,9 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus)
    Layout *layout = new Layout (platform);
    style::Color *bgColor = style::Color::create (layout, prefs.bg_color);
    layout->setBgColor (bgColor);
+   layout->setBgImage (NULL, style::BACKGROUND_REPEAT,
+                       style::BACKGROUND_ATTACHMENT_SCROLL,
+                       style::createPerLength (0), style::createPerLength (0));
 
    // set_render_layout() sets the proper viewport size
    FltkViewport *viewport = new FltkViewport (0, 0, 0, 1);

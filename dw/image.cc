@@ -450,6 +450,16 @@ void Image::drawRow (int row)
                      area.width, area.height);
 }
 
+void Image::finish ()
+{
+   // Nothing to do; images are always drawn line by line.
+}
+
+void Image::fatal ()
+{
+   // Could display an error.
+}
+
 
 /**
  * \brief Sets image as server side image map.

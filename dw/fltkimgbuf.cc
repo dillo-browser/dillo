@@ -427,6 +427,37 @@ int FltkImgbuf::getRootHeight ()
    return root ? root->height : height;
 }
 
+core::Imgbuf *FltkImgbuf::createSimilarBuf (int width, int height)
+{
+   return new FltkImgbuf (type, width, height, gamma);
+}
+
+void FltkImgbuf::copyTo (Imgbuf *dest, int xDestRoot, int yDestRoot,
+                         int xSrc, int ySrc, int widthSrc, int heightSrc)
+{
+   FltkImgbuf *fDest = (FltkImgbuf*)dest;
+   assert (bpp == fDest->bpp);
+
+   int xSrc2 = lout::misc::min (xSrc + widthSrc, fDest->width - xDestRoot);
+   int ySrc2 = lout::misc::min (ySrc + heightSrc, fDest->height - yDestRoot);
+
+   //printf ("copying from (%d, %d), %d x %d to (%d, %d) (root) => "
+   //        "xSrc2 = %d, ySrc2 = %d\n",
+   //        xSrc, ySrc, widthSrc, heightSrc, xDestRoot, yDestRoot,
+   //        xSrc2, ySrc2);
+
+   for (int x = xSrc; x < xSrc2; x++)
+      for (int y = ySrc; y < ySrc2; y++) {
+         int iSrc = x + width * y;
+         int iDest = xDestRoot + x + fDest->width * (yDestRoot + y);
+
+         //printf ("   (%d, %d): %d -> %d\n", x, y, iSrc, iDest);
+
+         for (int b = 0; b < bpp; b++)
+            fDest->rawdata[bpp * iDest + b] = rawdata[bpp * iSrc + b];
+      }
+}
+
 void FltkImgbuf::ref ()
 {
    refCount++;

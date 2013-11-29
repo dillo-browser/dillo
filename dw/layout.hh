@@ -17,6 +17,27 @@ class Layout: public lout::object::Object
 {
    friend class Widget;
 
+private:
+   class LayoutImgRenderer: public style::StyleImage::ExternalImgRenderer
+   {
+      Layout *layout;
+
+   public:
+      LayoutImgRenderer (Layout *layout) { this->layout = layout; }
+
+      bool readyToDraw ();
+      void getBgArea (int *x, int *y, int *width, int *height);
+      void getRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
+      style::StyleImage *getBackgroundImage ();
+      style::BackgroundRepeat getBackgroundRepeat ();
+      style::BackgroundAttachment getBackgroundAttachment ();
+      style::Length getBackgroundPositionX ();
+      style::Length getBackgroundPositionY ();
+      void draw (int x, int y, int width, int height);
+   };
+
+   LayoutImgRenderer *layoutImgRenderer;
+
 public:
    /**
     * \brief Receiver interface different signals.
@@ -135,6 +156,11 @@ private:
 
    /* The state, which must be projected into the view. */
    style::Color *bgColor;
+   style::StyleImage *bgImage;
+   style::BackgroundRepeat bgRepeat;
+   style::BackgroundAttachment bgAttachment;
+   style::Length bgPositionX, bgPositionY;
+
    style::Cursor cursor;
    int canvasWidth, canvasAscent, canvasDescent;
 
@@ -386,8 +412,13 @@ public:
    inline void resetSearch () { findtextState.resetSearch (); }
 
    void setBgColor (style::Color *color);
+   void setBgImage (style::StyleImage *bgImage,
+                    style::BackgroundRepeat bgRepeat,
+                    style::BackgroundAttachment bgAttachment,
+                    style::Length bgPositionX, style::Length bgPositionY);
 
    inline style::Color* getBgColor () { return bgColor; }
+   inline style::StyleImage* getBgImage () { return bgImage; }
 };
 
 } // namespace core

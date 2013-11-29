@@ -237,6 +237,44 @@ private:
    static const char *hyphenDrawChar;
 
 protected:
+   /**
+    * \brief Implementation used for words.
+    */
+   class WordImgRenderer:
+      public core::style::StyleImage::ExternalWidgetImgRenderer
+   {
+   protected:
+      Textblock *textblock;
+      int wordNo, xWordWidget, lineNo;
+      bool dataSet;
+
+   public:
+      WordImgRenderer (Textblock *textblock, int wordNo);
+      ~WordImgRenderer ();
+      
+      void setData (int xWordWidget, int lineNo);
+
+      bool readyToDraw ();
+      void getBgArea (int *x, int *y, int *width, int *height);
+      void getRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
+      core::style::Style *getStyle ();
+      void draw (int x, int y, int width, int height);
+
+      virtual void print ();
+   };
+
+   class SpaceImgRenderer: public WordImgRenderer
+   {
+   public:
+      inline SpaceImgRenderer (Textblock *textblock, int wordNo) :
+         WordImgRenderer (textblock, wordNo) { }
+
+      void getBgArea (int *x, int *y, int *width, int *height);
+      core::style::Style *getStyle ();
+
+      void print ();
+   };
+
    struct Paragraph
    {
       int firstWord;    /* first word's index in word vector */
@@ -350,6 +388,11 @@ protected:
       core::style::Style *style;
       core::style::Style *spaceStyle; /* initially the same as of the word,
                                          later set by a_Dw_page_add_space */
+
+      // These two are used rarely, so there is perhaps a way to store
+      // them which is consuming less memory.
+      WordImgRenderer *wordImgRenderer;
+      SpaceImgRenderer *spaceImgRenderer;
    };
 
    void printWordShort (Word *word);
@@ -483,9 +526,14 @@ protected:
 
    Word *addWord (int width, int ascent, int descent, short flags,
                   core::style::Style *style);
-   void fillWord (Word *word, int width, int ascent, int descent,
+   void initWord (int wordNo);
+   void removeWordImgRenderer (int wordNo);
+   void setWordImgRenderer (int wordNo);
+   void removeSpaceImgRenderer (int wordNo);
+   void setSpaceImgRenderer (int wordNo);
+   void fillWord (int wordNo, int width, int ascent, int descent,
                   short flags, core::style::Style *style);
-   void fillSpace (Word *word, core::style::Style *style);
+   void fillSpace (int wordNo, core::style::Style *style);
    void setBreakOption (Word *word, core::style::Style *style,
                         int breakPenalty1, int breakPenalty2, bool forceBreak);
    bool isBreakAllowed (Word *word);

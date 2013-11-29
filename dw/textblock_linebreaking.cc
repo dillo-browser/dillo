@@ -420,6 +420,16 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    //printf (": ");
    //words->getRef(line->lastWord)->badnessAndPenalty.print ();
    //printf ("\n");
+
+   int xWidget = lineXOffsetWidget(line);
+   for (int i = firstWord; i <= lastWord; i++) {
+      Word *word = words->getRef (i);
+      if (word->wordImgRenderer)
+         word->wordImgRenderer->setData (xWidget, lines->size () - 1);
+      if (word->spaceImgRenderer)
+         word->spaceImgRenderer->setData (xWidget, lines->size () - 1);
+      xWidget += word->size.width + word->effSpace;
+   }
    
    return line;
 }
@@ -872,6 +882,8 @@ int Textblock::hyphenateWord (int wordIndex)
       
       PRINTF ("[%p]       %d words ...\n", this, words->size ());
       words->insert (wordIndex, numBreaks);
+      for (int i = 0; i < numBreaks; i++)
+         initWord (wordIndex + i);
       PRINTF ("[%p]       ... => %d words\n", this, words->size ());
 
       // Adjust anchor indexes.
@@ -883,8 +895,7 @@ int Textblock::hyphenateWord (int wordIndex)
       
       for (int i = 0; i < numBreaks + 1; i++) {
          Word *w = words->getRef (wordIndex + i);
-
-         fillWord (w, wordSize[i].width, wordSize[i].ascent,
+         fillWord (wordIndex + i, wordSize[i].width, wordSize[i].ascent,
                    wordSize[i].descent, false, origWord.style);
 
          // TODO There should be a method fillText0.
@@ -923,7 +934,7 @@ int Textblock::hyphenateWord (int wordIndex)
             PRINTF ("      [%d] + hyphen\n", wordIndex + i);
          } else {
             if (origWord.content.space) {
-               fillSpace (w, origWord.spaceStyle);
+               fillSpace (wordIndex + i, origWord.spaceStyle);
                PRINTF ("      [%d] + space\n", wordIndex + i);
             } else {
                PRINTF ("      [%d] + nothing\n", wordIndex + i);
@@ -1102,8 +1113,8 @@ void Textblock::initLine1Offset (int wordIndex)
             /* don't use text-indent when nesting blocks */
          } else {
             if (core::style::isPerLength(getStyle()->textIndent)) {
-               indent = misc::roundInt(this->availWidth *
-                        core::style::perLengthVal (getStyle()->textIndent));
+               indent = core::style::multiplyWithPerLengthRounded
+                           (this->availWidth, getStyle()->textIndent);
             } else {
                indent = core::style::absLengthVal (getStyle()->textIndent);
             }
