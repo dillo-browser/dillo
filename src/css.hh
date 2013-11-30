@@ -37,6 +37,8 @@ typedef enum {
                                    'margin-*-width'). */
    CSS_TYPE_SIGNED_LENGTH,      /* As CSS_TYPE_LENGTH but may be negative. */
    CSS_TYPE_LENGTH_PERCENTAGE_NUMBER,  /* <length> or <percentage>, or <number> */
+   CSS_TYPE_AUTO,               /* Represented as CssLength of type
+                                   CSS_LENGTH_TYPE_AUTO */
    CSS_TYPE_COLOR,              /* Represented as integer. */
    CSS_TYPE_FONT_WEIGHT,        /* this very special and only used by
                                    'font-weight' */

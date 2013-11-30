@@ -205,7 +205,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
     Css_font_variant_enum_vals},
    {"font-weight", {CSS_TYPE_ENUM, CSS_TYPE_FONT_WEIGHT, CSS_TYPE_UNUSED},
     Css_font_weight_enum_vals},
-   {"height", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
+   {"height", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_AUTO, CSS_TYPE_UNUSED}, NULL},
    {"left", {CSS_TYPE_UNUSED}, NULL},
    {"letter-spacing", {CSS_TYPE_ENUM, CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED},
     Css_letter_spacing_enum_vals},
@@ -250,7 +250,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"vertical-align",{CSS_TYPE_ENUM, CSS_TYPE_UNUSED},Css_vertical_align_vals},
    {"visibility", {CSS_TYPE_UNUSED}, NULL},
    {"white-space", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_white_space_vals},
-   {"width", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
+   {"width", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_AUTO, CSS_TYPE_UNUSED}, NULL},
    {"word-spacing", {CSS_TYPE_ENUM, CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED},
     Css_word_spacing_enum_vals},
    {"z-index", {CSS_TYPE_UNUSED}, NULL},
@@ -721,9 +721,12 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
             return false;
          // Fall Through
       case CSS_TYPE_SIGNED_LENGTH:
-         if (ttype == CSS_TK_DECINT ||
-             ttype == CSS_TK_FLOAT ||
-             (ttype == CSS_TK_SYMBOL && dStrAsciiCasecmp(tval, "auto") == 0))
+         if (ttype == CSS_TK_DECINT || ttype == CSS_TK_FLOAT)
+            return true;
+         break;
+
+      case CSS_TYPE_AUTO:
+         if (ttype == CSS_TK_SYMBOL && dStrAsciiCasecmp(tval, "auto") == 0)
             return true;
          break;
 
@@ -953,11 +956,14 @@ bool CssParser::parseValue(CssPropertyName prop,
             ret = true;
 
          val->intVal = CSS_CREATE_LENGTH(fval, lentype);
-      } else if (ttype == CSS_TK_SYMBOL && !dStrAsciiCasecmp(tval, "auto")) {
-         ret = true;
-         val->intVal = CSS_LENGTH_TYPE_AUTO;
-         nextToken();
       }
+      break;
+
+   case CSS_TYPE_AUTO:
+      assert (ttype == CSS_TK_SYMBOL && !dStrAsciiCasecmp(tval, "auto"));
+      ret = true;
+      val->intVal = CSS_LENGTH_TYPE_AUTO;
+      nextToken();
       break;
 
    case CSS_TYPE_COLOR:
