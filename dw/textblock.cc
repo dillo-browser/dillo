@@ -1620,8 +1620,6 @@ void Textblock::calcTextSize (const char *text, size_t len,
                               core::style::Style *style,
                               core::Requisition *size, bool isStart, bool isEnd)
 {
-   int requiredAscent, requiredDescent;
-
    size->width = textWidth (text, 0, len, style, isStart, isEnd);
    size->ascent = style->font->ascent;
    size->descent = style->font->descent;
@@ -1661,10 +1659,10 @@ void Textblock::calcTextSize (const char *text, size_t len,
     * potentially the line's height.
     */
    if (style->valign == core::style::VALIGN_SUB) {
-      requiredDescent = style->font->descent + style->font->ascent / 3;
+      int requiredDescent = style->font->descent + style->font->ascent / 3;
       size->descent = misc::max (size->descent, requiredDescent);
    } else if (style->valign == core::style::VALIGN_SUPER) {
-      requiredAscent = style->font->ascent + style->font->ascent / 2;
+      int requiredAscent = style->font->ascent + style->font->ascent / 2;
       size->ascent = misc::max (size->ascent, requiredAscent);
    }
 }
