@@ -20,6 +20,7 @@
 
 
 #include "tablecell.hh"
+#include "../lout/debug.hh"
 #include <stdio.h>
 
 namespace dw {
@@ -29,6 +30,7 @@ int TableCell::CLASS_ID = -1;
 TableCell::TableCell (TableCell *ref, bool limitTextWidth):
    AlignedTextblock (limitTextWidth)
 {
+   DBG_OBJ_CREATE ("dw::TableCell");
    registerName ("dw::TableCell", &CLASS_ID);
 
    /** \bug ignoreLine1OffsetSometimes does not work? */

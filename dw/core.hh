@@ -44,6 +44,7 @@ class ResourceFactory;
 #include "types.hh"
 #include "events.hh"
 #include "imgbuf.hh"
+#include "imgrenderer.hh"
 #include "style.hh"
 #include "view.hh"
 #include "platform.hh"

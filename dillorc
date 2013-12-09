@@ -14,9 +14,14 @@
 # geometry=650x545+0+20
 #geometry=780x580
 
-# Change this if you want to have text-only browsing from the start.
-# (While browsing, this can be changed from the tools/settings menu.)
+# Change this (and the following option) if you want to have text-only browsing
+# from the start. (While browsing, this can be changed from the tools/settings
+# menu.)
 #load_images=YES
+
+# Change this if you do not want background images to be loaded initially.
+# (While browsing, this can be changed from the tools/settings menu.)
+#load_background_images=YES
 
 # Change this if you want to disable loading of CSS stylesheets initially.
 # (While browsing, this can be changed from the tools/settings menu.)

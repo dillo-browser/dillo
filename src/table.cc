@@ -114,7 +114,7 @@ void Html_tag_open_table(DilloHtml *html, const char *tag, int tagsize)
          BUG_MSG("<table> bgcolor attribute is obsolete.\n");
    }
 
-   html->styleEngine->style (); // evaluate now, so we can build non-css hints for the cells
+   html->style (); // evaluate now, so we can build non-css hints for the cells
 
    /* The style for the cells */
    html->styleEngine->clearNonCssHints ();
@@ -155,10 +155,10 @@ void Html_tag_content_table(DilloHtml *html, const char *tag, int tagsize)
 {
    dw::core::Widget *table;
 
-   HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
+   HT2TB(html)->addParbreak (0, html->wordStyle ());
    table = new dw::Table(prefs.limit_text_width);
-   HT2TB(html)->addWidget (table, html->styleEngine->style ());
-   HT2TB(html)->addParbreak (0, html->styleEngine->wordStyle ());
+   HT2TB(html)->addWidget (table, html->style ());
+   HT2TB(html)->addParbreak (0, html->wordStyle ());
 
    S_TOP(html)->table_mode = DILLO_HTML_TABLE_MODE_TOP;
    S_TOP(html)->table_border_mode = DILLO_HTML_TABLE_BORDER_SEPARATE;
@@ -221,7 +221,7 @@ void Html_tag_content_tr(DilloHtml *html, const char *tag, int tagsize)
    case DILLO_HTML_TABLE_MODE_TOP:
    case DILLO_HTML_TABLE_MODE_TR:
    case DILLO_HTML_TABLE_MODE_TD:
-      ((dw::Table*)S_TOP(html)->table)->addRow (html->styleEngine->style ());
+      ((dw::Table*)S_TOP(html)->table)->addRow (html->style ());
    default:
       break;
    }
@@ -302,10 +302,10 @@ static void Html_set_collapsing_border_model(DilloHtml *html, Widget *col_tb)
    int borderWidth, marginWidth;
 
    tableStyle = ((dw::Table*)S_TOP(html)->table)->getStyle ();
-   borderWidth = html->styleEngine->style ()->borderWidth.top;
+   borderWidth = html->style ()->borderWidth.top;
    marginWidth = tableStyle->margin.top;
 
-   collapseCellAttrs = *(html->styleEngine->style ());
+   collapseCellAttrs = *(html->style ());
    collapseCellAttrs.margin.setVal (0);
    collapseCellAttrs.borderWidth.left = 0;
    collapseCellAttrs.borderWidth.top = 0;
@@ -344,7 +344,7 @@ static void Html_set_separate_border_model(DilloHtml *html, Widget *col_tb)
    dw::core::style::Style *separateStyle;
    dw::core::style::StyleAttrs separateCellAttrs;
 
-   separateCellAttrs = *(html->styleEngine->style ());
+   separateCellAttrs = *(html->style ());
    /* CSS2 17.5: Internal table elements do not have margins */
    separateCellAttrs.margin.setVal (0);
    separateStyle = Style::create(&separateCellAttrs);
@@ -443,7 +443,7 @@ static void Html_tag_content_table_cell(DilloHtml *html,
       /* TODO: check errors? */
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rowspan")))
          rowspan = MAX(1, strtol (attrbuf, NULL, 10));
-      if (html->styleEngine->style ()->textAlign
+      if (html->style ()->textAlign
           == TEXT_ALIGN_STRING)
          col_tb = new dw::TableCell (
                      ((dw::Table*)S_TOP(html)->table)->getCellRef (),
@@ -451,7 +451,7 @@ static void Html_tag_content_table_cell(DilloHtml *html,
       else
          col_tb = new Textblock (prefs.limit_text_width);
 
-      if (html->styleEngine->style()->borderCollapse == BORDER_MODEL_COLLAPSE){
+      if (html->style()->borderCollapse == BORDER_MODEL_COLLAPSE){
          Html_set_collapsing_border_model(html, col_tb);
       } else {
          Html_set_separate_border_model(html, col_tb);

@@ -20,6 +20,7 @@
 
 
 #include "listitem.hh"
+#include "../lout/debug.hh"
 #include <stdio.h>
 
 namespace dw {
@@ -29,6 +30,7 @@ int ListItem::CLASS_ID = -1;
 ListItem::ListItem (ListItem *ref, bool limitTextWidth):
    AlignedTextblock (limitTextWidth)
 {
+   DBG_OBJ_CREATE ("dw::ListItem");
    registerName ("dw::ListItem", &CLASS_ID);
    setRefTextblock (ref);
 }

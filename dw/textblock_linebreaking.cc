@@ -432,6 +432,16 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    //printf (": ");
    //words->getRef(line->lastWord)->badnessAndPenalty.print ();
    //printf ("\n");
+
+   int xWidget = line->offsetCompleteWidget;
+   for (int i = firstWord; i <= lastWord; i++) {
+      Word *word = words->getRef (i);
+      if (word->wordImgRenderer)
+         word->wordImgRenderer->setData (xWidget, lines->size () - 1);
+      if (word->spaceImgRenderer)
+         word->spaceImgRenderer->setData (xWidget, lines->size () - 1);
+      xWidget += word->size.width + word->effSpace;
+   }
    
    line->finished = true;
 
@@ -1026,6 +1036,8 @@ int Textblock::hyphenateWord (int wordIndex)
       
       PRINTF ("[%p]       %d words ...\n", this, words->size ());
       words->insert (wordIndex, numBreaks);
+      for (int i = 0; i < numBreaks; i++)
+         initWord (wordIndex + i);
       PRINTF ("[%p]       ... => %d words\n", this, words->size ());
 
       if (containingBlock->outOfFlowMgr)
@@ -1041,8 +1053,7 @@ int Textblock::hyphenateWord (int wordIndex)
       
       for (int i = 0; i < numBreaks + 1; i++) {
          Word *w = words->getRef (wordIndex + i);
-
-         fillWord (w, wordSize[i].width, wordSize[i].ascent,
+         fillWord (wordIndex + i, wordSize[i].width, wordSize[i].ascent,
                    wordSize[i].descent, false, origWord.style);
 
          // TODO There should be a method fillText0.
@@ -1081,7 +1092,7 @@ int Textblock::hyphenateWord (int wordIndex)
             PRINTF ("      [%d] + hyphen\n", wordIndex + i);
          } else {
             if (origWord.content.space) {
-               fillSpace (w, origWord.spaceStyle);
+               fillSpace (wordIndex + i, origWord.spaceStyle);
                PRINTF ("      [%d] + space\n", wordIndex + i);
             } else {
                PRINTF ("      [%d] + nothing\n", wordIndex + i);

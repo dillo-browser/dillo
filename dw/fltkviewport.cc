@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include "../lout/msg.h"
+#include "../lout/debug.hh"
 
 using namespace lout;
 using namespace lout::object;
@@ -53,6 +54,8 @@ public:
 FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
    FltkWidgetView (X, Y, W, H, label)
 {
+   DBG_OBJ_CREATE ("dw::fltk::FltkViewport");
+
    hscrollbar = new CustScrollbar (x (), y (), 1, 1);
    hscrollbar->type(FL_HORIZONTAL);
    hscrollbar->callback (hscrollbarCallback, this);

@@ -22,6 +22,7 @@
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 #include "../lout/unicode.hh"
+#include "../lout/debug.hh"
 
 #include <stdio.h>
 #include <math.h> // remove again?
@@ -41,6 +42,103 @@ using namespace lout::unicode;
 namespace dw {
 
 int Textblock::CLASS_ID = -1;
+
+Textblock::WordImgRenderer::WordImgRenderer (Textblock *textblock,
+                                             int wordNo)
+{
+   //printf ("new WordImgRenderer %p\n", this);
+
+   this->textblock = textblock;
+   this->wordNo = wordNo;
+   dataSet = false;
+}
+
+Textblock::WordImgRenderer::~WordImgRenderer ()
+{
+   //printf ("delete WordImgRenderer %p\n", this);
+}
+
+void Textblock::WordImgRenderer::setData (int xWordWidget, int lineNo)
+{
+   dataSet = true;
+   this->xWordWidget = xWordWidget;
+   this->lineNo = lineNo;
+}
+
+bool Textblock::WordImgRenderer::readyToDraw ()
+{
+   //print ();
+   //printf ("\n");
+
+   return dataSet && textblock->wasAllocated ()
+      && wordNo < textblock->words->size()
+      && lineNo < textblock->lines->size();
+}
+
+void Textblock::WordImgRenderer::getBgArea (int *x, int *y, int *width,
+                                            int *height)
+{
+   // TODO Subtract margin and border (padding box)?
+   Line *line = textblock->lines->getRef (lineNo);
+   *x = textblock->allocation.x + this->xWordWidget;
+   *y = textblock->lineYOffsetCanvas (line);
+   *width = textblock->words->getRef(wordNo)->size.width;
+   *height = line->boxAscent + line->boxDescent;
+}
+
+void Textblock::WordImgRenderer::getRefArea (int *xRef, int *yRef,
+                                             int *widthRef, int *heightRef)
+{
+   // See comment in Widget::drawBox about the reference area.
+   textblock->getPaddingArea (xRef, yRef, widthRef, heightRef);
+}
+
+core::style::Style *Textblock::WordImgRenderer::getStyle ()
+{
+   return textblock->words->getRef(wordNo)->style;
+}
+
+void Textblock::WordImgRenderer::draw (int x, int y, int width, int height)
+{
+   textblock->queueDrawArea (x - textblock->allocation.x,
+                             y - textblock->allocation.y, width, height);
+
+}
+
+void Textblock::WordImgRenderer::print ()
+{
+   printf ("%p: word #%d, ", this, wordNo);
+   if (wordNo < textblock->words->size())
+      textblock->printWordShort (textblock->words->getRef(wordNo));
+   else
+      printf ("<word %d does not exist>", wordNo);
+   printf (", data set: %s", dataSet ? "yes" : "no");
+}
+
+void Textblock::SpaceImgRenderer::getBgArea (int *x, int *y, int *width,
+                                             int *height)
+{
+   WordImgRenderer::getBgArea (x, y, width, height);
+   *x += *width;
+   *width = textblock->words->getRef(wordNo)->effSpace;
+}
+
+core::style::Style *Textblock::SpaceImgRenderer::getStyle ()
+{
+   return textblock->words->getRef(wordNo)->spaceStyle;
+}
+
+void Textblock::SpaceImgRenderer::print ()
+{
+   printf ("%p: word FOR SPACE #%d, ", this, wordNo);
+   if (wordNo < textblock->words->size())
+      textblock->printWordShort (textblock->words->getRef(wordNo));
+   else
+      printf ("<word %d does not exist>", wordNo);
+   printf (", data set: %s", dataSet ? "yes" : "no");
+}
+
+// ----------------------------------------------------------------------
 
 Textblock::DivChar Textblock::divChars[NUM_DIV_CHARS] = {
    // soft hyphen (U+00AD)
@@ -125,6 +223,7 @@ void Textblock::setStretchabilityFactor (int stretchabilityFactor)
 
 Textblock::Textblock (bool limitTextWidth)
 {
+   DBG_OBJ_CREATE ("dw::Textblock");
    registerName ("dw::Textblock", &CLASS_ID);
    setFlags (BLOCK_LEVEL);
    setFlags (USES_HINTS);
@@ -195,9 +294,14 @@ Textblock::~Textblock ()
 
    for (int i = 0; i < words->size(); i++) {
       Word *word = words->getRef (i);
+
       if (word->content.type == core::Content::WIDGET_IN_FLOW)
          delete word->content.widget;
       /** \todo Widget references? What about texts? */
+
+      removeWordImgRenderer (i);
+      removeSpaceImgRenderer (i);
+
       word->style->unref ();
       word->spaceStyle->unref ();
    }
@@ -1528,14 +1632,77 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
                                      short flags, core::style::Style *style)
 {
    words->increase ();
-   Word *word = words->getLastRef ();
-   fillWord (word, width, ascent, descent, flags, style);
-   return word;
+   int wordNo = words->size () - 1;
+   initWord (wordNo);
+   fillWord (wordNo, width, ascent, descent, flags, style);
+   return words->getRef (wordNo);;
 }
 
-void Textblock::fillWord (Word *word, int width, int ascent, int descent,
+/**
+ * Basic initialization, which is neccessary before fillWord.
+ */
+void Textblock::initWord (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   word->style = word->spaceStyle = NULL;
+   word->wordImgRenderer = NULL;
+   word->spaceImgRenderer = NULL;
+}
+
+void Textblock::removeWordImgRenderer (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   if (word->style && word->wordImgRenderer) {
+      word->style->backgroundImage->removeExternalImgRenderer
+         (word->wordImgRenderer);
+      delete word->wordImgRenderer;
+      word->wordImgRenderer = NULL;
+   }
+}
+
+void Textblock::setWordImgRenderer (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   if (word->style->backgroundImage) {
+      word->wordImgRenderer = new WordImgRenderer (this, wordNo);
+      word->style->backgroundImage->putExternalImgRenderer
+         (word->wordImgRenderer);
+   } else
+      word->wordImgRenderer = NULL;
+}
+
+void Textblock::removeSpaceImgRenderer (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   if (word->spaceStyle && word->spaceImgRenderer) {
+      word->spaceStyle->backgroundImage->removeExternalImgRenderer
+         (word->spaceImgRenderer);
+      delete word->spaceImgRenderer;
+      word->spaceImgRenderer = NULL;
+   }
+}
+
+void Textblock::setSpaceImgRenderer (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   if (word->spaceStyle->backgroundImage) {
+      word->spaceImgRenderer = new SpaceImgRenderer (this, wordNo);
+      word->spaceStyle->backgroundImage->putExternalImgRenderer
+         (word->spaceImgRenderer);
+   } else
+      word->spaceImgRenderer = NULL;
+}
+
+void Textblock::fillWord (int wordNo, int width, int ascent, int descent,
                           short flags, core::style::Style *style)
 {
+   Word *word = words->getRef (wordNo);
+
    word->size.width = width;
    word->size.ascent = ascent;
    word->size.descent = descent;
@@ -1545,8 +1712,15 @@ void Textblock::fillWord (Word *word, int width, int ascent, int descent,
    word->content.space = false;
    word->flags = flags;
 
+   removeWordImgRenderer (wordNo);
+   removeSpaceImgRenderer (wordNo);
+
    word->style = style;
    word->spaceStyle = style;
+
+   setWordImgRenderer (wordNo);
+   setSpaceImgRenderer (wordNo);
+
    style->ref ();
    style->ref ();
 }
@@ -1622,8 +1796,6 @@ void Textblock::calcTextSize (const char *text, size_t len,
                               core::style::Style *style,
                               core::Requisition *size, bool isStart, bool isEnd)
 {
-   int requiredAscent, requiredDescent;
-
    size->width = textWidth (text, 0, len, style, isStart, isEnd);
    size->ascent = style->font->ascent;
    size->descent = style->font->descent;
@@ -1663,10 +1835,10 @@ void Textblock::calcTextSize (const char *text, size_t len,
     * potentially the line's height.
     */
    if (style->valign == core::style::VALIGN_SUB) {
-      requiredDescent = style->font->descent + style->font->ascent / 3;
+      int requiredDescent = style->font->descent + style->font->ascent / 3;
       size->descent = misc::max (size->descent, requiredDescent);
    } else if (style->valign == core::style::VALIGN_SUPER) {
-      requiredAscent = style->font->ascent + style->font->ascent / 2;
+      int requiredAscent = style->font->ascent + style->font->ascent / 2;
       size->ascent = misc::max (size->ascent, requiredAscent);
    }
 }
@@ -2052,7 +2224,7 @@ void Textblock::addSpace (core::style::Style *style)
 {
    int wordIndex = words->size () - 1;
    if (wordIndex >= 0) {
-      fillSpace (words->getRef(wordIndex), style);
+      fillSpace (wordIndex, style);
       accumulateWordData (wordIndex);
       correctLastWordExtremes ();
    }
@@ -2074,7 +2246,7 @@ void Textblock::addBreakOption (core::style::Style *style, bool forceBreak)
    }
 }
 
-void Textblock::fillSpace (Word *word, core::style::Style *style)
+void Textblock::fillSpace (int wordNo, core::style::Style *style)
 {
    // Old comment:
    // 
@@ -2089,6 +2261,8 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
    //     bar
    //
    // TODO: Re-evaluate again.
+
+   Word *word = words->getRef (wordNo);
 
    // TODO: This line does not work: addBreakOption (word, style);
 
@@ -2109,9 +2283,14 @@ void Textblock::fillSpace (Word *word, core::style::Style *style)
       //DBG_OBJ_ARRSET_NUM (this, "words.%d.content.space", wordIndex,
       //                    word->content.space);
 
+
+      removeSpaceImgRenderer (wordNo);
+
       word->spaceStyle->unref ();
       word->spaceStyle = style;
       style->ref ();
+      
+      setSpaceImgRenderer (wordNo);
    }
 }
 

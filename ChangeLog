@@ -23,6 +23,8 @@ dillo-3.0.4 [not released yet]
  - Some linebreaking fixes, and optimization for non-justified text, including
    new preference stretchability_factor.
  - Added white_bg_replacement preference.
+ - Implemented background images (except 'background-attachment'), added
+   load_background_images preference, as well as a new entry in the tools menu.
    Patches: Sebastian Geerken
 +- Fix a set of bugs reported by Oulu Univ. Secure Programming Group
    (HTML parsing, URL resolution, GIF processing, etc.)

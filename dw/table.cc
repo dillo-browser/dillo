@@ -22,6 +22,7 @@
 #include "table.hh"
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
+#include "../lout/debug.hh"
 
 using namespace lout;
 
@@ -31,6 +32,7 @@ int Table::CLASS_ID = -1;
 
 Table::Table(bool limitTextWidth)
 {
+   DBG_OBJ_CREATE ("dw::Table");
    registerName ("dw::Table", &CLASS_ID);
    setFlags (BLOCK_LEVEL);
    setFlags (USES_HINTS);

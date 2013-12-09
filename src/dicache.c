@@ -276,7 +276,8 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
 
    /* BUG: there's just one image-type now */
    #define I_RGB 0
-   DicEntry->v_imgbuf = a_Imgbuf_new(Image->dw, I_RGB, width, height, gamma);
+   DicEntry->v_imgbuf =
+      a_Imgbuf_new(Image->layout, I_RGB, width, height, gamma);
 
    DicEntry->TotalSize = width * height * 3;
    DicEntry->width = width;
@@ -402,7 +403,8 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    dReturn_val_if_fail(MimeType && Ptr, NULL);
 
    if (!web->Image) {
-      web->Image = a_Image_new(NULL, web->bgColor);
+      web->Image =
+         a_Image_new_with_dw(web->bw->render_layout, NULL, web->bgColor);
       a_Image_ref(web->Image);
    }
 
@@ -429,7 +431,7 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    *Data = DicEntry->DecoderData;
    *Call = (CA_Callback_t) a_Dicache_callback;
 
-   return (web->Image->dw);
+   return (a_Image_get_dw (web->Image));
 }
 
 /*
@@ -516,8 +518,11 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
             Image->ScanNumber = DicEntry->ScanNumber;
          }
       }
-   } else if (Op == CA_Close || Op == CA_Abort) {
+   } else if (Op == CA_Close) {
       a_Image_close(Image);
+      a_Bw_close_client(Web->bw, Client->Key);
+   } else if (Op == CA_Abort) {
+      a_Image_abort(Image);
       a_Bw_close_client(Web->bw, Client->Key);
    }
 }

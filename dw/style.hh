@@ -7,6 +7,8 @@
 #   error Do not include this file directly, use "core.hh" instead.
 #endif
 
+#include "../lout/signal.hh"
+
 namespace dw {
 namespace core {
 
@@ -226,6 +228,18 @@ enum BorderStyle {
    BORDER_RIDGE,
    BORDER_INSET,
    BORDER_OUTSET
+};
+
+enum BackgroundRepeat {
+   BACKGROUND_REPEAT,
+   BACKGROUND_REPEAT_X,
+   BACKGROUND_REPEAT_Y,
+   BACKGROUND_NO_REPEAT
+};
+
+enum BackgroundAttachment {
+   BACKGROUND_ATTACHMENT_SCROLL,
+   BACKGROUND_ATTACHMENT_FIXED
 };
 
 enum TextAlignType {
@@ -482,9 +496,10 @@ public:
    }
 };
 
+class Tooltip;
 class Font;
 class Color;
-class Tooltip;
+class StyleImage;
 
 /**
  * \sa dw::core::style
@@ -496,6 +511,11 @@ public:
    int textDecoration; /* No TextDecoration because of problems converting
                         * TextDecoration <-> int */
    Color *color, *backgroundColor;
+   StyleImage *backgroundImage;
+   BackgroundRepeat backgroundRepeat;
+   BackgroundAttachment backgroundAttachment;
+   Length backgroundPositionX; // "left" defined by "0%" etc. (see CSS spec)
+   Length backgroundPositionY; // "top" defined by "0%" etc. (see CSS spec)
 
    TextAlignType textAlign;
    VAlignType valign;
@@ -561,7 +581,8 @@ public:
    }
    inline int boxDiffHeight () { return boxOffsetY () + boxRestHeight (); }
 
-   inline bool hasBackground () { return backgroundColor != NULL; }
+   inline bool hasBackground ()
+   { return backgroundColor != NULL || backgroundImage != NULL; }
 
    bool equals (lout::object::Object *other);
    int hashValue ();
@@ -734,12 +755,139 @@ public:
    { if (--refCount == 0) delete this; }
 };
 
-void drawBorder (View *view, Rectangle *area,
+
+class StyleImage: public lout::signal::ObservedObject
+{
+private:
+   class StyleImgRenderer: public ImgRenderer
+   {
+   private:
+      StyleImage *image;
+
+   public:
+      inline StyleImgRenderer (StyleImage *image) { this->image = image; }
+
+      void setBuffer (core::Imgbuf *buffer, bool resize);
+      void drawRow (int row);
+      void finish ();
+      void fatal ();
+   };
+
+   int refCount, tilesX, tilesY;
+   Imgbuf *imgbufSrc, *imgbufTiled;
+   ImgRendererDist *imgRendererDist;
+   StyleImgRenderer *styleImgRenderer;
+
+   StyleImage ();
+   ~StyleImage ();
+
+public:
+   /**
+    * \brief Useful (but not mandatory) base class for updates of
+    *    areas with background images.
+    */
+   class ExternalImgRenderer: public ImgRenderer
+   {
+   public:
+      void setBuffer (core::Imgbuf *buffer, bool resize);
+      void drawRow (int row);
+      void finish ();
+      void fatal ();
+
+      /**
+       * \brief If this method returns false, nothing is done at all.
+       */
+      virtual bool readyToDraw () = 0;
+
+      /**
+       * \brief Return the area covered by the background image.
+       */
+      virtual void getBgArea (int *x, int *y, int *width, int *height) = 0;
+
+      /**
+       * \brief Return the "reference area".
+       *
+       * See comment of "drawBackground".
+       */
+      virtual void getRefArea (int *xRef, int *yRef, int *widthRef,
+                               int *heightRef) = 0;
+
+      virtual StyleImage *getBackgroundImage () = 0;
+      virtual BackgroundRepeat getBackgroundRepeat () = 0;
+      virtual BackgroundAttachment getBackgroundAttachment () = 0;
+      virtual Length getBackgroundPositionX () = 0;
+      virtual Length getBackgroundPositionY () = 0;
+
+      /**
+       * \brief Draw (or queue for drawing) an area, which is given in
+       *    canvas coordinates.
+       */
+      virtual void draw (int x, int y, int width, int height) = 0;
+   };
+
+   /**
+    * \brief Suitable for widgets and parts of widgets.
+    */
+   class ExternalWidgetImgRenderer: public ExternalImgRenderer
+   {
+   public:
+      void getPaddingArea (int *x, int *y, int *width, int *height);
+      
+      StyleImage *getBackgroundImage ();
+      BackgroundRepeat getBackgroundRepeat ();
+      BackgroundAttachment getBackgroundAttachment ();
+      Length getBackgroundPositionX ();
+      Length getBackgroundPositionY ();
+
+      /**
+       * \brief Return the style this background image is part of.
+       */
+      virtual Style *getStyle () = 0;
+   };
+
+   static StyleImage *create () { return new StyleImage (); }
+
+   inline void ref () { refCount++; }
+   inline void unref ()
+   { if (--refCount == 0) delete this; }
+
+   inline Imgbuf *getImgbufSrc () { return imgbufSrc; }
+   inline Imgbuf *getImgbufTiled (bool repeatX, bool repeatY)
+   { return (imgbufTiled && repeatX && repeatY) ? imgbufTiled : imgbufSrc; }
+   inline int getTilesX (bool repeatX, bool repeatY)
+   { return (imgbufTiled && repeatX && repeatY) ? tilesX : 1; }
+   inline int getTilesY (bool repeatX, bool repeatY)
+   { return (imgbufTiled && repeatX && repeatY) ? tilesY : 1; }
+   inline ImgRenderer *getMainImgRenderer () { return imgRendererDist; }
+
+   /**
+    * \brief Add an additional ImgRenderer, especially used for
+    *    drawing.
+    */
+   inline void putExternalImgRenderer (ImgRenderer *ir)
+   { imgRendererDist->put (ir); }
+
+   /**
+    * \brief Remove a previously added additional ImgRenderer.
+    */
+   inline void removeExternalImgRenderer (ImgRenderer *ir)
+   { imgRendererDist->remove (ir); }
+};
+
+void drawBorder (View *view, Layout *layout, Rectangle *area,
                  int x, int y, int width, int height,
                  Style *style, bool inverse);
-void drawBackground (View *view, Rectangle *area,
+void drawBackground (View *view, Layout *layout, Rectangle *area,
                      int x, int y, int width, int height,
-                     Style *style, bool inverse);
+                     int xRef, int yRef, int widthRef, int heightRef,
+                     Style *style, bool inverse, bool atTop);
+void drawBackgroundImage (View *view, StyleImage *backgroundImage,
+                          BackgroundRepeat backgroundRepeat,
+                          BackgroundAttachment backgroundAttachment,
+                          Length backgroundPositionX,
+                          Length backgroundPositionY,
+                          int x, int y, int width, int height,
+                          int xRef, int yRef, int widthRef, int heightRef);
 void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType);
 
 } // namespace style

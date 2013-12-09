@@ -178,6 +178,19 @@ public:
    virtual int getRootWidth () = 0;
    virtual int getRootHeight () = 0;
 
+
+   /**
+    * Creates an image buffer with same parameters (type, gamma etc.)
+    * except size.
+    */
+   virtual Imgbuf *createSimilarBuf (int width, int height) = 0;
+
+   /**
+    * Copies another image buffer into this image buffer.
+    */
+   virtual void copyTo (Imgbuf *dest, int xDestRoot, int yDestRoot,
+                        int xSrc, int ySrc, int widthSrc, int heightSrc) = 0;
+
    /*
     * Reference counting.
     */

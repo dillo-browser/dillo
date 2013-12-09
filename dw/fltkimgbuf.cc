@@ -143,7 +143,7 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
          scaledBuffers = new lout::container::typed::List <FltkImgbuf> (true);
       else
          scaledBuffers = NULL;
-      
+
       if (!isRoot()) {
          // Scaling
          for (int row = 0; row < root->height; row++) {
@@ -228,31 +228,33 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
 {
    int sr1 = scaledY (row);
    int sr2 = scaledY (row + 1);
+   bool allRootRows = false;
 
-   for (int sr = sr1; sr < sr2; sr++)
-      copiedRows->set (sr, true);
+   // Don't rescale rows!
+   if (copiedRows->get(sr1)) return;
 
-   if (height > root->height)
+   if (height > root->height) {
       scaleBuffer (data, root->width, 1,
                    rawdata + sr1 * width * bpp, width, sr2 - sr1,
                    bpp, gamma);
-   else {
-      assert (sr1 ==sr2 || sr1 + 1 == sr2);
+      // Mark scaled rows done
+      for (int sr = sr1; sr < sr2 || sr == sr1; sr++)
+         copiedRows->set (sr, true);
+   } else {
+      assert (sr1 == sr2 || sr1 + 1 == sr2);
       int row1 = backscaledY(sr1), row2 = backscaledY(sr1 + 1);
 
-      // Draw only when all original lines are retrieved (speed).
-      bool allRootRows = true;
-      for (int r = row1; allRootRows && r < row2; r++)
-         allRootRows = allRootRows && root->copiedRows->get(r);
-
-      if (allRootRows)
-         // We have to access root->rawdata (which has to be up to
-         // date), since a larger area than the single row is accessed
-         // here.
+      // Check all the necessary root lines already arrived,
+      // a larger area than a single row may be accessed here.
+      for (int r=row1; (allRootRows=root->copiedRows->get(r)) && ++r < row2; );
+      if (allRootRows) {
          scaleBuffer (root->rawdata + row1 * root->width * bpp,
                       root->width, row2 - row1,
                       rawdata + sr1 * width * bpp, width, 1,
                       bpp, gamma);
+         // Mark scaled row done
+         copiedRows->set (sr1, true);
+      }
    }
 }
 
@@ -295,7 +297,7 @@ inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
          int yo1 = y * srcHeight / destHeight;
          int yo2 = lout::misc::max ((y + 1) * srcHeight / destHeight, yo1 + 1);
          int n = (xo2 - xo1) * (yo2 - yo1);
-         
+
          int v[bpp];
          for(int i = 0; i < bpp; i++)
             v[i] = 0;
@@ -328,7 +330,7 @@ void FltkImgbuf::copyRow (int row, const core::byte *data)
       for (Iterator <FltkImgbuf> it = scaledBuffers->iterator();
            it.hasNext(); ) {
          FltkImgbuf *sb = it.getNext ();
-         sb->scaleRow(row, data);
+         sb->scaleRow (row, data);
       }
    }
 }
@@ -425,6 +427,37 @@ int FltkImgbuf::getRootWidth ()
 int FltkImgbuf::getRootHeight ()
 {
    return root ? root->height : height;
+}
+
+core::Imgbuf *FltkImgbuf::createSimilarBuf (int width, int height)
+{
+   return new FltkImgbuf (type, width, height, gamma);
+}
+
+void FltkImgbuf::copyTo (Imgbuf *dest, int xDestRoot, int yDestRoot,
+                         int xSrc, int ySrc, int widthSrc, int heightSrc)
+{
+   FltkImgbuf *fDest = (FltkImgbuf*)dest;
+   assert (bpp == fDest->bpp);
+
+   int xSrc2 = lout::misc::min (xSrc + widthSrc, fDest->width - xDestRoot);
+   int ySrc2 = lout::misc::min (ySrc + heightSrc, fDest->height - yDestRoot);
+
+   //printf ("copying from (%d, %d), %d x %d to (%d, %d) (root) => "
+   //        "xSrc2 = %d, ySrc2 = %d\n",
+   //        xSrc, ySrc, widthSrc, heightSrc, xDestRoot, yDestRoot,
+   //        xSrc2, ySrc2);
+
+   for (int x = xSrc; x < xSrc2; x++)
+      for (int y = ySrc; y < ySrc2; y++) {
+         int iSrc = x + width * y;
+         int iDest = xDestRoot + x + fDest->width * (yDestRoot + y);
+
+         //printf ("   (%d, %d): %d -> %d\n", x, y, iSrc, iDest);
+
+         for (int b = 0; b < bpp; b++)
+            fDest->rawdata[bpp * iDest + b] = rawdata[bpp * iSrc + b];
+      }
 }
 
 void FltkImgbuf::ref ()

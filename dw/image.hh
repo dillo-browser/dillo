@@ -116,7 +116,7 @@ public:
  *
  * \sa\ref dw-images-and-backgrounds
  */
-class Image: public core::Widget
+class Image: public core::Widget, public core::ImgRenderer
 {
 private:
    char *altText;
@@ -156,6 +156,9 @@ public:
    void setBuffer (core::Imgbuf *buffer, bool resize = false);
 
    void drawRow (int row);
+
+   void finish ();
+   void fatal ();
 
    void setIsMap ();
    void setUseMap (ImageMapsList *list, Object *key);

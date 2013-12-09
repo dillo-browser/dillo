@@ -20,6 +20,7 @@
 
 
 #include "core.hh"
+#include "../lout/debug.hh"
 
 #include <string.h>
 
@@ -45,6 +46,8 @@ namespace core {
 
 SelectionState::SelectionState ()
 {
+   DBG_OBJ_CREATE ("dw::core::SelectionState");
+
    layout = NULL;
 
    selectionState = NONE;

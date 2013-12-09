@@ -90,10 +90,9 @@ void a_Imgbuf_unref(void *v_imgbuf)
 /*
  * Create a new Imgbuf
  */
-void *a_Imgbuf_new(void *v_dw, int img_type, uint_t width, uint_t height,
+void *a_Imgbuf_new(void *layout, int img_type, uint_t width, uint_t height,
                    double gamma)
 {
-   Layout *layout = ((Widget*)v_dw)->getLayout();
    if (!layout) {
       MSG_ERR("a_Imgbuf_new: layout is NULL.\n");
       exit(1);
@@ -104,7 +103,8 @@ void *a_Imgbuf_new(void *v_dw, int img_type, uint_t width, uint_t height,
       linebuf = (uchar_t*) dRealloc(linebuf, linebuf_size);
    }
 
-   return (void*)layout->createImgbuf(Imgbuf::RGB, width, height, gamma);
+   return (void*)((Layout*)layout)->createImgbuf(Imgbuf::RGB, width, height,
+                                                 gamma);
 }
 
 /*

@@ -679,6 +679,18 @@ static void Menu_imgload_toggle_cb(Fl_Widget *wid, void*)
 }
 
 /*
+ * Toggle loading of background images.
+ */
+static void Menu_bgimg_load_toggle_cb(Fl_Widget *wid, void*)
+{
+   Fl_Menu_Item *item = (Fl_Menu_Item*) wid;
+
+   item->flags ^= FL_MENU_VALUE;
+   prefs.load_background_images = item->flags & FL_MENU_VALUE ? 1 : 0;
+   a_UIcmd_repush(popup_bw);
+}
+
+/*
  * Tools popup menu (construction & popup)
  */
 void a_Menu_tools_popup(BrowserWindow *bw, int x, int y)
@@ -691,6 +703,8 @@ void a_Menu_tools_popup(BrowserWindow *bw, int x, int y)
       {"Use embedded CSS", 0, Menu_embedded_css_cb, 0,
        FL_MENU_TOGGLE|FL_MENU_DIVIDER,0,0,0,0},
       {"Load images", 0, Menu_imgload_toggle_cb, 0,
+       FL_MENU_TOGGLE,0,0,0,0},
+      {"Load background images", 0, Menu_bgimg_load_toggle_cb, 0,
        FL_MENU_TOGGLE|FL_MENU_DIVIDER,0,0,0,0},
       {"Panel size", 0, Menu_nop_cb, (void*)"Submenu1", FL_SUBMENU,0,0,0,0},
          {"tiny",  0,Menu_panel_change_cb,(void*)0,FL_MENU_RADIO,0,0,0,0},
@@ -713,8 +727,10 @@ void a_Menu_tools_popup(BrowserWindow *bw, int x, int y)
       pm[1].set();
    if (prefs.load_images)
       pm[2].set();
-   pm[4+cur_panelsize].setonly();
-   cur_smallicons ? pm[7].set() : pm[7].clear();
+   if (prefs.load_background_images)
+      pm[3].set();
+   pm[5+cur_panelsize].setonly();
+   cur_smallicons ? pm[8].set() : pm[8].clear();
 
    item = pm->popup(x, y);
    if (item) {

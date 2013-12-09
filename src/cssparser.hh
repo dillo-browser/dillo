@@ -2,7 +2,8 @@
 #define __CSSPARSER_HH__
 
 #include "css.hh"
-#include "html_common.hh"
+
+class DilloHtml;
 
 class CssParser {
    private:
