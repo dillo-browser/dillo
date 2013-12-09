@@ -66,6 +66,7 @@ int Widget::CLASS_ID = -1;
 
 Widget::Widget ()
 {
+   DBG_OBJ_CREATE ("dw::core::Widget");
    registerName ("dw::core::Widget", &CLASS_ID);
 
    flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED | HAS_CONTENTS);
@@ -146,7 +147,8 @@ void Widget::setParent (Widget *parent)
    if (!buttonSensitiveSet)
       buttonSensitive = parent->buttonSensitive;
 
-   //DBG_OBJ_ASSOC (widget, parent);
+   DBG_OBJ_ASSOC_PARENT (parent);
+
    //printf ("The %s %p becomes a child of the %s %p\n",
    //        getClassName(), this, parent->getClassName(), parent);
 }
@@ -212,9 +214,9 @@ void Widget::sizeRequest (Requisition *requisition)
       this->requisition = *requisition;
       unsetFlags (NEEDS_RESIZE);
 
-      DBG_OBJ_SET_NUM (this, "requisition->width", requisition->width);
-      DBG_OBJ_SET_NUM (this, "requisition->ascent", requisition->ascent);
-      DBG_OBJ_SET_NUM (this, "requisition->descent", requisition->descent);
+      DBG_OBJ_SET_NUM ("requisition.width", requisition->width);
+      DBG_OBJ_SET_NUM ("requisition.ascent", requisition->ascent);
+      DBG_OBJ_SET_NUM ("requisition.descent", requisition->descent);
    } else
       *requisition = this->requisition;
 }
@@ -229,8 +231,8 @@ void Widget::getExtremes (Extremes *extremes)
       this->extremes = *extremes;
       unsetFlags (EXTREMES_CHANGED);
 
-      DBG_OBJ_SET_NUM (this, "extremes->minWidth", extremes->minWidth);
-      DBG_OBJ_SET_NUM (this, "extremes->maxWidth", extremes->maxWidth);
+      DBG_OBJ_SET_NUM ("extremes.minWidth", extremes->minWidth);
+      DBG_OBJ_SET_NUM ("extremes.maxWidth", extremes->maxWidth);
    } else
       *extremes = this->extremes;
 }
@@ -273,11 +275,11 @@ void Widget::sizeAllocate (Allocation *allocation)
 
       resizeDrawImpl ();
 
-      DBG_OBJ_SET_NUM (this, "allocation.x", this->allocation.x);
-      DBG_OBJ_SET_NUM (this, "allocation.y", this->allocation.y);
-      DBG_OBJ_SET_NUM (this, "allocation.width", this->allocation.width);
-      DBG_OBJ_SET_NUM (this, "allocation.ascent", this->allocation.ascent);
-      DBG_OBJ_SET_NUM (this, "allocation.descent", this->allocation.descent);
+      DBG_OBJ_SET_NUM ("allocation.x", this->allocation.x);
+      DBG_OBJ_SET_NUM ("allocation.y", this->allocation.y);
+      DBG_OBJ_SET_NUM ("allocation.width", this->allocation.width);
+      DBG_OBJ_SET_NUM ("allocation.ascent", this->allocation.ascent);
+      DBG_OBJ_SET_NUM ("allocation.descent", this->allocation.descent);
    }
 
    /*unsetFlags (NEEDS_RESIZE);*/

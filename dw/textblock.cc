@@ -22,6 +22,7 @@
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 #include "../lout/unicode.hh"
+#include "../lout/debug.hh"
 
 #include <stdio.h>
 #include <math.h>
@@ -221,6 +222,7 @@ void Textblock::setStretchabilityFactor (int stretchabilityFactor)
 
 Textblock::Textblock (bool limitTextWidth)
 {
+   DBG_OBJ_CREATE ("dw::Textblock");
    registerName ("dw::Textblock", &CLASS_ID);
    setFlags (BLOCK_LEVEL);
    setFlags (USES_HINTS);

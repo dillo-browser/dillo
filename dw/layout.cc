@@ -245,7 +245,7 @@ Layout::Layout (Platform *platform)
    topLevel = NULL;
    widgetAtPoint = NULL;
 
-   DBG_OBJ_CREATE (this, "DwRenderLayout");
+   DBG_OBJ_CREATE ("dw::core::Layout");
 
    bgColor = NULL;
    bgImage = NULL;
@@ -270,8 +270,8 @@ Layout::Layout (Platform *platform)
 
    textZone = new misc::ZoneAllocator (16 * 1024);
 
-   DBG_OBJ_ASSOC (&findtextState, this);
-   DBG_OBJ_ASSOC (&selectionState, this);
+   DBG_OBJ_ASSOC_CHILD (&findtextState);
+   DBG_OBJ_ASSOC_CHILD (&selectionState);
 
    platform->setLayout (this);
 
@@ -354,6 +354,8 @@ void Layout::removeWidget ()
 
 void Layout::setWidget (Widget *widget)
 {
+   DBG_OBJ_ASSOC_CHILD (widget);
+
    widgetAtPoint = NULL;
    if (topLevel) {
       Widget *w = topLevel;
@@ -376,6 +378,8 @@ void Layout::attachView (View *view)
 {
    if (this->view)
       MSG_ERR("attachView: Multiple views for layout!\n");
+
+   DBG_OBJ_ASSOC_CHILD (view);
 
    this->view = view;
    platform->attachView (view);

@@ -30,7 +30,7 @@
 
 
 /*
- * Following is experimental, and will be explained soon.
+ * See <http://www.dillo.org/~sgeerken/rtfl/>.
  */
 
 #ifdef DBG_RTFL
@@ -38,111 +38,138 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#define DBG_MSG(obj, aspect, prio, msg) \
+#define RTFL_PREFIX_FMT  "[rtfl]%s:%d:%d:"
+#define RTFL_PREFIX_ARGS __FILE__, __LINE__, getpid()
+
+#define DBG_OBJ_MSG(aspect, prio, msg) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:msg:%p:%s:%d:%s\n", \
-              __FILE__, __LINE__, getpid(), obj, aspect, prio, msg); \
+      printf (RTFL_PREFIX_FMT "obj-msg:%p:%s:%d:%s\n", \
+              RTFL_PREFIX_ARGS, this, aspect, prio, msg); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_MSGF(obj, aspect, prio, fmt, ...) \
+#define DBG_OBJ_MSGF(aspect, prio, fmt, ...) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:msg:%p:%s:%d:" fmt "\n", \
-              __FILE__, __LINE__, getpid(), obj, aspect, prio, __VA_ARGS__); \
+      printf (RTFL_PREFIX_FMT "obj-msg:%p:%s:%d:" fmt "\n", \
+              RTFL_PREFIX_ARGS, this, aspect, prio, __VA_ARGS__); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_MSG_START(obj) \
+#define DBG_OBJ_MSG_START() \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:msg-start:%p\n", \
-              __FILE__, __LINE__, getpid(), obj); \
+      printf (RTFL_PREFIX_FMT "obj-msg-start:%p\n", \
+              RTFL_PREFIX_ARGS, this); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_MSG_END(obj) \
+#define DBG_OBJ_MSG_END() \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:msg-end:%p\n", \
-              __FILE__, __LINE__, getpid(), obj); \
+      printf (RTFL_PREFIX_FMT "obj-msg-end:%p\n", \
+              RTFL_PREFIX_ARGS, this); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_CREATE(obj, klass) \
+#define DBG_OBJ_CREATE(klass) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:obj-create:%p:%s\n", \
-              __FILE__, __LINE__, getpid(), obj, klass); \
+      printf (RTFL_PREFIX_FMT "obj-create:%p:%s\n", \
+              RTFL_PREFIX_ARGS, this, klass); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_ASSOC(child, parent) \
+#define DBG_OBJ_BASECLASS(klass) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:obj-assoc:%p:%p\n", \
-              __FILE__, __LINE__, getpid(), child, parent); \
+      printf (RTFL_PREFIX_FMT "obj-ident:%p:%p\n", \
+              RTFL_PREFIX_ARGS, this, (klass*)this); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_SET_NUM(obj, var, val) \
+#define DBG_OBJ_ASSOC(parent, child) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:obj-set:%p:%s:%d\n", \
-              __FILE__, __LINE__, getpid(), obj, var, val); \
+      printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
+              RTFL_PREFIX_ARGS, parent, child); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_SET_STR(obj, var, val) \
+#define DBG_OBJ_ASSOC_PARENT(parent) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:obj-set:%p:%s:%s\n", \
-              __FILE__, __LINE__, getpid(), obj, var, val); \
+      printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
+              RTFL_PREFIX_ARGS, parent, this); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_SET_PTR(obj, var, val) \
+#define DBG_OBJ_ASSOC_CHILD(child) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:obj-set:%p:%s:%p\n", \
-              __FILE__, __LINE__, getpid(), obj, var, val); \
+      printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
+              RTFL_PREFIX_ARGS, this, child); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_ARRSET_NUM(obj, var, ind, val) \
+#define DBG_OBJ_SET_NUM(var, val) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:obj-set:%p:" var ":%d\n", \
-              __FILE__, __LINE__, getpid(), obj, ind, val); \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s:%d\n", \
+              RTFL_PREFIX_ARGS, this, var, val); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_ARRSET_STR(obj, var, ind, val) \
+#define DBG_OBJ_SET_STR(var, val) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:obj-set:%p:" var ":%s\n", \
-              __FILE__, __LINE__, getpid(), obj, ind, val); \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s:%s\n", \
+              RTFL_PREFIX_ARGS, this, var, val); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_ARRSET_PTR(obj, var, ind, val) \
+#define DBG_OBJ_SET_PTR(var, val) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:obj-set:%p:" var ":%p\n", \
-              __FILE__, __LINE__, getpid(), obj, ind, val); \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s:%p\n", \
+              RTFL_PREFIX_ARGS, this, var, val); \
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_COLOR(klass, color) \
+#define DBG_OBJ_ARRSET_NUM(var, ind, val) \
    D_STMT_START { \
-      printf ("[rtfl]%s:%d:%d:obj-color:%s:%s\n", \
-              __FILE__, __LINE__, getpid(), klass, color); \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:" var ".%d:%d\n", \
+              RTFL_PREFIX_ARGS, this, ind, val); \
+      fflush (stdout); \
+   } D_STMT_END
+
+#define DBG_OBJ_ARRSET_STR(var, ind, val) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:" var ".%d:%s\n", \
+              RTFL_PREFIX_ARGS, this, ind, val); \
+      fflush (stdout); \
+   } D_STMT_END
+
+#define DBG_OBJ_ARRSET_PTR(var, ind, val) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:" var ".%d:%p\n", \
+              RTFL_PREFIX_ARGS, this, ind, val); \
+      fflush (stdout); \
+   } D_STMT_END
+
+#define DBG_OBJ_COLOR(color, klass) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-color:%s:%s\n", \
+              RTFL_PREFIX_ARGS, color, klass); \
       fflush (stdout); \
    } D_STMT_END
 
 #else /* DBG_RTFL */
 
-#define DBG_MSG(obj, aspect, prio, msg)
-#define DBG_MSGF(obj, aspect, prio, fmt, ...)
-#define DBG_MSG_START(obj)
-#define DBG_MSG_END(obj)
-#define DBG_OBJ_CREATE(obj, klass)
-#define DBG_OBJ_ASSOC(child, parent)
-#define DBG_OBJ_SET_NUM(obj, var, val)
-#define DBG_OBJ_SET_STR(obj, var, val)
-#define DBG_OBJ_SET_PTR(obj, var, val)
-#define DBG_OBJ_ARRSET_NUM(obj, var, ind, val)
-#define DBG_OBJ_ARRSET_STR(obj, var, ind, val)
-#define DBG_OBJ_ARRSET_PTR(obj, var, ind, val)
+#define DBG_OBJ_MSG(aspect, prio, msg)
+#define DBG_OBJ_MSGF(aspect, prio, fmt, ...)
+#define DBG_OBJ_MSG_START(obj)
+#define DBG_OBJ_MSG_END(obj)
+#define DBG_OBJ_CREATE(klass)
+#define DBG_OBJ_BASECLASS(klass)
+#define DBG_OBJ_ASSOC_PARENT(parent)
+#define DBG_OBJ_ASSOC_CHILD(child)
+#define DBG_OBJ_ASSOC(parent, child)
+#define DBG_OBJ_SET_NUM(var, val)
+#define DBG_OBJ_SET_STR(var, val)
+#define DBG_OBJ_SET_PTR(var, val)
+#define DBG_OBJ_ARRSET_NUM(var, ind, val)
+#define DBG_OBJ_ARRSET_STR(var, ind, val)
+#define DBG_OBJ_ARRSET_PTR(var, ind, val)
 #define DBG_OBJ_COLOR(klass, color)
 
 #endif /* DBG_RTFL */

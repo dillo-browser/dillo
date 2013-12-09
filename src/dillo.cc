@@ -53,6 +53,7 @@
 #include "domain.h"
 #include "auth.h"
 
+#include "lout/debug.hh"
 #include "dw/fltkcore.hh"
 #include "dw/textblock.hh"
 
@@ -375,6 +376,10 @@ static DilloUrl *makeStartUrl(char *str, bool local)
  */
 int main(int argc, char **argv)
 {
+   DBG_OBJ_COLOR("#c0ff80", "dw::*");
+   DBG_OBJ_COLOR("#c0c0ff", "dw::fltk::*");
+   DBG_OBJ_COLOR("#ffa0a0", "dw::core::*");
+
    uint_t opt_id;
    uint_t options_got = 0;
    uint32_t xid = 0;

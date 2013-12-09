@@ -22,6 +22,7 @@
 #include "image.hh"
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
+#include "../lout/debug.hh"
 
 namespace dw {
 
@@ -143,6 +144,7 @@ int Image::CLASS_ID = -1;
 
 Image::Image(const char *altText)
 {
+   DBG_OBJ_CREATE ("dw::Image");
    registerName ("dw::Image", &CLASS_ID);
    this->altText = altText ? strdup (altText) : NULL;
    altTextWidth = -1; // not yet calculated

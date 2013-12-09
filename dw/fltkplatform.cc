@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #include "../lout/msg.h"
+#include "../lout/debug.hh"
 #include "fltkcore.hh"
 
 #include <FL/fl_draw.H>
@@ -454,6 +455,8 @@ core::ui::RadioButtonResource
 
 FltkPlatform::FltkPlatform ()
 {
+   DBG_OBJ_CREATE ("dw::fltk::FltkPlatform");
+
    layout = NULL;
    idleQueue = new container::typed::List <IdleFunc> (true);
    idleFuncRunning = false;
@@ -476,6 +479,7 @@ FltkPlatform::~FltkPlatform ()
 void FltkPlatform::setLayout (core::Layout *layout)
 {
    this->layout = layout;
+   DBG_OBJ_ASSOC_CHILD (layout);
 }
 
 
