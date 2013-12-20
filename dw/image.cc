@@ -164,6 +164,8 @@ Image::~Image()
       buffer->unref ();
    if (mapKey)
       delete mapKey;
+
+   DBG_OBJ_DELETE ();
 }
 
 void Image::sizeRequestImpl (core::Requisition *requisition)

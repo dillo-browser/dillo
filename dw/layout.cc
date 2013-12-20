@@ -307,6 +307,8 @@ Layout::~Layout ()
    delete view;
    delete anchorsTable;
    delete textZone;
+
+   DBG_OBJ_DELETE ();
 }
 
 void Layout::addWidget (Widget *widget)

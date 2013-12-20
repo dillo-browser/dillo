@@ -85,6 +85,8 @@ FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma)
 FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma,
                         FltkImgbuf *root)
 {
+   DBG_OBJ_CREATE ("dw::fltk::FltkImgbuf");
+
    _MSG("FltkImgbuf: new scaled %p, root is %p\n", this, root);
    init (type, width, height, gamma, root);
 }
@@ -156,8 +158,6 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
 
 FltkImgbuf::~FltkImgbuf ()
 {
-   _MSG("~FltkImgbuf[%s %p] deleted\n", isRoot() ? "root":"scaled", this);
-
    if (!isRoot())
       root->detachScaledBuf (this);
 
@@ -166,6 +166,8 @@ FltkImgbuf::~FltkImgbuf ()
 
    if (scaledBuffers)
       delete scaledBuffers;
+
+   DBG_OBJ_DELETE ();
 }
 
 /**
@@ -386,6 +388,8 @@ core::Imgbuf* FltkImgbuf::getScaledBuf (int width, int height)
    // This size is not yet used, so a new buffer has to be created.
    FltkImgbuf *sb = new FltkImgbuf (type, width, height, gamma, this);
    scaledBuffers->append (sb);
+   DBG_OBJ_ASSOC_CHILD (sb);
+
    return sb;
 }
 

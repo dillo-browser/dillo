@@ -76,6 +76,13 @@
       fflush (stdout); \
    } D_STMT_END
 
+#define DBG_OBJ_DELETE() \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-delete:%p\n", \
+              RTFL_PREFIX_ARGS, this); \
+      fflush (stdout); \
+   } D_STMT_END
+
 #define DBG_OBJ_BASECLASS(klass) \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-ident:%p:%p\n", \
@@ -85,9 +92,11 @@
 
 #define DBG_OBJ_ASSOC(parent, child) \
    D_STMT_START { \
-      printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
-              RTFL_PREFIX_ARGS, parent, child); \
-      fflush (stdout); \
+      if (child) { \
+         printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
+                 RTFL_PREFIX_ARGS, parent, child); \
+         fflush (stdout); \
+      } \
    } D_STMT_END
 
 #define DBG_OBJ_ASSOC_PARENT(parent) \
@@ -99,9 +108,11 @@
 
 #define DBG_OBJ_ASSOC_CHILD(child) \
    D_STMT_START { \
-      printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
-              RTFL_PREFIX_ARGS, this, child); \
-      fflush (stdout); \
+      if (child) { \
+         printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
+                 RTFL_PREFIX_ARGS, this, child); \
+         fflush (stdout); \
+      } \
    } D_STMT_END
 
 #define DBG_OBJ_SET_NUM(var, val) \
@@ -160,6 +171,7 @@
 #define DBG_OBJ_MSG_START(obj)
 #define DBG_OBJ_MSG_END(obj)
 #define DBG_OBJ_CREATE(klass)
+#define DBG_OBJ_DELETE()
 #define DBG_OBJ_BASECLASS(klass)
 #define DBG_OBJ_ASSOC_PARENT(parent)
 #define DBG_OBJ_ASSOC_CHILD(child)

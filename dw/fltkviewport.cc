@@ -85,6 +85,7 @@ FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
 FltkViewport::~FltkViewport ()
 {
    delete gadgets;
+   DBG_OBJ_DELETE ();
 }
 
 void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()

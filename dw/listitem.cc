@@ -37,6 +37,7 @@ ListItem::ListItem (ListItem *ref, bool limitTextWidth):
 
 ListItem::~ListItem()
 {
+   DBG_OBJ_DELETE ();
 }
 
 void ListItem::initWithWidget (core::Widget *widget,

@@ -379,6 +379,7 @@ int main(int argc, char **argv)
    DBG_OBJ_COLOR("#c0ff80", "dw::*");
    DBG_OBJ_COLOR("#c0c0ff", "dw::fltk::*");
    DBG_OBJ_COLOR("#ffa0a0", "dw::core::*");
+   DBG_OBJ_COLOR("#ffe0a0", "dw::core::style::*");
 
    uint_t opt_id;
    uint_t options_got = 0;

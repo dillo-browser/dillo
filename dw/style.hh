@@ -8,6 +8,7 @@
 #endif
 
 #include "../lout/signal.hh"
+#include "../lout/debug.hh"
 
 namespace dw {
 namespace core {
@@ -660,7 +661,10 @@ private:
    static Font *create0 (Layout *layout, FontAttrs *attrs, bool tryEverything);
 
 protected:
-   inline Font () { refCount = 0; }
+   inline Font () {
+      DBG_OBJ_CREATE ("dw::core::style::Font");
+      refCount = 0;
+   }
    virtual ~Font ();
 
    void copyAttrs (FontAttrs *attrs);
@@ -712,7 +716,9 @@ private:
 
 protected:
    inline Color (int color): ColorAttrs (color) {
-      refCount = 0; }
+      DBG_OBJ_CREATE ("dw::core::style::Color");
+      refCount = 0;
+   }
    virtual ~Color ();
 
 public:

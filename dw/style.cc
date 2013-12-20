@@ -237,7 +237,19 @@ container::typed::HashTable <StyleAttrs, Style> * Style::styleTable =
 
 Style::Style (StyleAttrs *attrs)
 {
+   DBG_OBJ_CREATE ("dw::core::style::Style");
+
    copyAttrs (attrs);
+
+   DBG_OBJ_ASSOC_CHILD (font);
+   DBG_OBJ_ASSOC_CHILD (color);
+   DBG_OBJ_ASSOC_CHILD (backgroundColor);
+   DBG_OBJ_ASSOC_CHILD (backgroundImage);
+   DBG_OBJ_ASSOC_CHILD (borderColor.top);
+   DBG_OBJ_ASSOC_CHILD (borderColor.bottom);
+   DBG_OBJ_ASSOC_CHILD (borderColor.left);
+   DBG_OBJ_ASSOC_CHILD (borderColor.right);
+   DBG_OBJ_ASSOC_CHILD (x_tooltip);
 
    refCount = 1;
 
@@ -285,6 +297,8 @@ Style::~Style ()
 
    styleTable->remove (this);
    totalRef--;
+
+   DBG_OBJ_DELETE ();
 }
 
 void Style::copyAttrs (StyleAttrs *attrs)
@@ -356,6 +370,7 @@ int FontAttrs::hashValue()
 Font::~Font ()
 {
    free ((char*)name);
+   DBG_OBJ_DELETE ();
 }
 
 void Font::copyAttrs (FontAttrs *attrs)
@@ -399,6 +414,7 @@ int ColorAttrs::hashValue()
 
 Color::~Color ()
 {
+   DBG_OBJ_DELETE ();
 }
 
 int Color::shadeColor (int color, int d)
@@ -482,6 +498,8 @@ void StyleImage::StyleImgRenderer::setBuffer (core::Imgbuf *buffer, bool resize)
    image->imgbufTiled = NULL;
 
    image->imgbufSrc = buffer;
+   DBG_OBJ_ASSOC_CHILD (image->imgbufSrc);
+
    if (image->imgbufSrc) {
       image->imgbufSrc->ref ();
 
@@ -506,6 +524,8 @@ void StyleImage::StyleImgRenderer::setBuffer (core::Imgbuf *buffer, bool resize)
             image->imgbufSrc->createSimilarBuf
                (image->tilesX * image->imgbufSrc->getRootWidth(),
                 image->tilesY * image->imgbufSrc->getRootHeight());
+
+         DBG_OBJ_ASSOC_CHILD (image->imgbufTiled);
       }
    }
 }
@@ -546,7 +566,7 @@ void StyleImage::StyleImgRenderer::fatal ()
 
 StyleImage::StyleImage ()
 {
-   //printf ("new StyleImage %p\n", this);
+   DBG_OBJ_CREATE ("dw::core::style::Color");
 
    refCount = 0;
    imgbufSrc = NULL;
@@ -559,8 +579,6 @@ StyleImage::StyleImage ()
 
 StyleImage::~StyleImage ()
 {
-   //printf ("delete StyleImage %p\n", this);
-
    if (imgbufSrc)
       imgbufSrc->unref ();
    if (imgbufTiled)
@@ -568,6 +586,8 @@ StyleImage::~StyleImage ()
 
    delete imgRendererDist;
    delete styleImgRenderer;
+
+   DBG_OBJ_DELETE ();
 }
 
 void StyleImage::ExternalImgRenderer::setBuffer (core::Imgbuf *buffer,

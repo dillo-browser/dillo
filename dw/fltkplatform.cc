@@ -474,6 +474,8 @@ FltkPlatform::~FltkPlatform ()
       Fl::remove_idle (generalStaticIdle, (void*)this);
    delete idleQueue;
    delete resources;
+
+   DBG_OBJ_DELETE ();
 }
 
 void FltkPlatform::setLayout (core::Layout *layout)

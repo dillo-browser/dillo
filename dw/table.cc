@@ -98,6 +98,8 @@ Table::~Table()
    delete baseline;
    delete rowStyle;
    delete colPercents;
+
+   DBG_OBJ_DELETE ();
 }
 
 void Table::sizeRequestImpl (core::Requisition *requisition)

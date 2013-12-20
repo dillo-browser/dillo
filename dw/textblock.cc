@@ -313,7 +313,7 @@ Textblock::~Textblock ()
       parent class destructor. (???) */
    words = NULL;
 
-   //DBG_OBJ_SET_NUM(this, "num_lines", lines->size ());
+   DBG_OBJ_DELETE ();
 }
 
 /**
@@ -1932,6 +1932,7 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
 
    Word *word = addWord (size->width, size->ascent, size->descent,
                          flags, style);
+   DBG_OBJ_ASSOC_CHILD (style);
    word->content.type = core::Content::TEXT;
    word->content.text = layout->textZone->strndup(text, len);
 
@@ -2200,6 +2201,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
    }
 
    word = addWord (0, 0, 0, 0, style);
+   DBG_OBJ_ASSOC_CHILD (style);
    word->content.type = core::Content::BREAK;
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = space;
@@ -2222,6 +2224,8 @@ void Textblock::addLinebreak (core::style::Style *style)
    else
       // ... otherwise, it has no size (and does not enlarge the line).
       word = addWord (0, 0, 0, 0, style);
+
+   DBG_OBJ_ASSOC_CHILD (style);
 
    word->content.type = core::Content::BREAK;
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);

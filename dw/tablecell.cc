@@ -42,6 +42,7 @@ TableCell::TableCell (TableCell *ref, bool limitTextWidth):
 
 TableCell::~TableCell()
 {
+   DBG_OBJ_DELETE ();
 }
 
 bool TableCell::wordWrap(int wordIndex, bool wrapAll)
