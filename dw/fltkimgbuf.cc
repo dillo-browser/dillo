@@ -78,6 +78,8 @@ void FltkImgbuf::freeall ()
 
 FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma)
 {
+   DBG_OBJ_CREATE ("dw::fltk::FltkImgbuf");
+
    _MSG("FltkImgbuf: new root %p\n", this);
    init (type, width, height, gamma, NULL);
 }
@@ -123,6 +125,9 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
       this->width = width;
       this->height = height;
       this->gamma = gamma;
+
+      DBG_OBJ_SET_NUM ("width", width);
+      DBG_OBJ_SET_NUM ("height", height);
 
       // TODO: Maybe this is only for root buffers
       switch (type) {

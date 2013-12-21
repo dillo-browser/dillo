@@ -437,6 +437,8 @@ void Image::setBuffer (core::Imgbuf *buffer, bool resize)
       buffer->ref ();
    }
 
+   DBG_OBJ_ASSOC_CHILD (this->buffer);
+
    if (oldBuf)
       oldBuf->unref ();
 }

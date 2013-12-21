@@ -5,6 +5,8 @@
 #   error Do not include this file directly, use "core.hh" instead.
 #endif
 
+#include "../lout/debug.hh"
+
 namespace dw {
 namespace core {
 
@@ -160,6 +162,12 @@ class Imgbuf: public lout::object::Object, public lout::signal::ObservedObject
 {
 public:
    enum Type { RGB, RGBA, GRAY, INDEXED, INDEXED_ALPHA };
+
+   inline Imgbuf () {
+      DBG_OBJ_CREATE ("dw::core::Imgbuf");
+      DBG_OBJ_BASECLASS (lout::object::Object);
+      DBG_OBJ_BASECLASS (lout::signal::ObservedObject);
+   }
 
    /*
     * Methods called from the image decoding
