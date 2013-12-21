@@ -566,7 +566,7 @@ void StyleImage::StyleImgRenderer::fatal ()
 
 StyleImage::StyleImage ()
 {
-   DBG_OBJ_CREATE ("dw::core::style::Color");
+   DBG_OBJ_CREATE ("dw::core::style::StyleImage");
 
    refCount = 0;
    imgbufSrc = NULL;
