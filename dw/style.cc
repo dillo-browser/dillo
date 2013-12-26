@@ -249,7 +249,7 @@ Style::Style (StyleAttrs *attrs)
    DBG_OBJ_ASSOC_CHILD (borderColor.bottom);
    DBG_OBJ_ASSOC_CHILD (borderColor.left);
    DBG_OBJ_ASSOC_CHILD (borderColor.right);
-   DBG_OBJ_ASSOC_CHILD (x_tooltip);
+   //DBG_OBJ_ASSOC_CHILD (x_tooltip);
 
    refCount = 1;
 
@@ -498,7 +498,7 @@ void StyleImage::StyleImgRenderer::setBuffer (core::Imgbuf *buffer, bool resize)
    image->imgbufTiled = NULL;
 
    image->imgbufSrc = buffer;
-   DBG_OBJ_ASSOC_CHILD (image->imgbufSrc);
+   DBG_OBJ_ASSOC (image, image->imgbufSrc);
 
    if (image->imgbufSrc) {
       image->imgbufSrc->ref ();
@@ -525,7 +525,7 @@ void StyleImage::StyleImgRenderer::setBuffer (core::Imgbuf *buffer, bool resize)
                (image->tilesX * image->imgbufSrc->getRootWidth(),
                 image->tilesY * image->imgbufSrc->getRootHeight());
 
-         DBG_OBJ_ASSOC_CHILD (image->imgbufTiled);
+         DBG_OBJ_ASSOC (image, image->imgbufTiled);
       }
    }
 }
