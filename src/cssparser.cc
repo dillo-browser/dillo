@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "lout/debug.hh"
 #include "msg.h"
 #include "colors.h"
 #include "html_common.hh"
@@ -27,7 +28,6 @@
 
 using namespace dw::core::style;
 
-#define DEBUG_MSG(A, B, ...) _MSG(B, __VA_ARGS__)
 #define MSG_CSS(A, ...) MSG(A, __VA_ARGS__)
 #define DEBUG_TOKEN_LEVEL   0
 #define DEBUG_PARSE_LEVEL   0
