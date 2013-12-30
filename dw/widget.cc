@@ -169,6 +169,10 @@ void Widget::queueResize (int ref, bool extremesChanged)
 {
    assert (!queueResizeEntered ());
    
+   DBG_OBJ_MSGF ("resize", 0, "<b>queueResize</b> (%d, %s)",
+                 ref, extremesChanged ? "true" : "false");
+   DBG_OBJ_MSG_START ();
+
    enterQueueResize ();
 
    Widget *widget2, *child;
@@ -225,6 +229,8 @@ void Widget::queueResize (int ref, bool extremesChanged)
       layout->queueResize ();
 
    leaveQueueResize ();
+
+   DBG_OBJ_MSG_END ();
 }
 
 
@@ -235,6 +241,9 @@ void Widget::queueResize (int ref, bool extremesChanged)
 void Widget::sizeRequest (Requisition *requisition)
 {
    assert (!queueResizeEntered ());
+
+   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequest</b>");
+   DBG_OBJ_MSG_START ();
 
    enterSizeRequest ();
 
@@ -269,6 +278,8 @@ void Widget::sizeRequest (Requisition *requisition)
    //        requisition->width, requisition->ascent, requisition->descent);
 
    leaveSizeRequest ();
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
@@ -277,6 +288,9 @@ void Widget::sizeRequest (Requisition *requisition)
 void Widget::getExtremes (Extremes *extremes)
 {
    assert (!queueResizeEntered ());
+
+   DBG_OBJ_MSG ("resize", 0, "<b>getExtremes</b>");
+   DBG_OBJ_MSG_START ();
 
    enterGetExtremes ();
 
@@ -300,6 +314,8 @@ void Widget::getExtremes (Extremes *extremes)
       *extremes = this->extremes;
 
    leaveGetExtremes ();
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
@@ -312,6 +328,11 @@ void Widget::sizeAllocate (Allocation *allocation)
    assert (!sizeRequestEntered ());
    assert (!getExtremesEntered ());
    assert (resizeIdleEntered ());
+
+   DBG_OBJ_MSGF ("resize", 0, "<b>sizeAllocate</b> ((%d, %d; %d * (%d + %d))",
+                 allocation->x, allocation->y, allocation->width,
+                 allocation->ascent, allocation->descent);
+   DBG_OBJ_MSG_START ();
 
    enterSizeAllocate ();
 
@@ -367,6 +388,8 @@ void Widget::sizeAllocate (Allocation *allocation)
    /*unsetFlags (NEEDS_RESIZE);*/
 
    leaveSizeAllocate ();
+
+   DBG_OBJ_MSG_END ();
 }
 
 bool Widget::buttonPress (EventButton *event)

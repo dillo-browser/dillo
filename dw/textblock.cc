@@ -254,14 +254,10 @@ Textblock::Textblock (bool limitTextWidth)
    anchors = new misc::SimpleVector <Anchor> (1);
    outOfFlowMgr = NULL;
 
-   //DBG_OBJ_SET_NUM(this, "num_lines", num_lines);
-
    wrapRefLines = wrapRefParagraphs = -1;
 
-   //DBG_OBJ_SET_NUM(this, "last_line_width", last_line_width);
-   //DBG_OBJ_SET_NUM(this, "last_line_par_min", last_line_par_min);
-   //DBG_OBJ_SET_NUM(this, "last_line_par_max", last_line_par_max);
-   //DBG_OBJ_SET_NUM(this, "wrap_ref", wrap_ref);
+   DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);     
+   DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);     
 
    hoverLink = -1;
 
@@ -610,6 +606,9 @@ void Textblock::resizeDrawImpl ()
 
 void Textblock::markSizeChange (int ref)
 {
+   DBG_OBJ_MSGF ("resize", 1, "<b>markSizeChange</b> (%d)", ref);
+   DBG_OBJ_MSG_START ();
+
    if (OutOfFlowMgr::isRefOutOfFlow (ref)) {
       assert (outOfFlowMgr != NULL);
       outOfFlowMgr->markSizeChange (ref);
@@ -630,7 +629,7 @@ void Textblock::markSizeChange (int ref)
                                       OutOfFlowMgr::getLineNoFromRef (ref));
       }
 
-      PRINTF ("       ... => %d\n", wrapRefLine);
+      DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
       
       // It seems that sometimes (even without floats) the lines
       // structure is changed, so that wrapRefLines may refers to a
@@ -639,11 +638,14 @@ void Textblock::markSizeChange (int ref)
       // a workaround.
       markExtremesChange (ref);
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Textblock::markExtremesChange (int ref)
 {
-   PRINTF ("[%p] MARK_SIZE_CHANGE (%d): %d => ...\n", this, ref, wrapRefLines);
+   DBG_OBJ_MSGF ("resize", 1, "<b>markExtremesChange</b> (%d)", ref);
+   DBG_OBJ_MSG_START ();
 
    if (OutOfFlowMgr::isRefOutOfFlow (ref)) {
       assert (outOfFlowMgr != NULL);
@@ -666,8 +668,10 @@ void Textblock::markExtremesChange (int ref)
                           OutOfFlowMgr::getLineNoFromRef (ref));
       }
 
-      PRINTF ("       ... => %d\n", wrapRefParagraphs);
+      DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Textblock::notifySetAsTopLevel()
@@ -725,43 +729,43 @@ void Textblock::setWidth (int width)
    /* If limitTextWidth is set to YES, a queueResize() may also be
     * necessary. */
    if (availWidth != width || limitTextWidth) {
-      //DEBUG_MSG(DEBUG_REWRAP_LEVEL,
-      //          "setWidth: Calling queueResize, "
-      //          "in page with %d word(s)\n",
-      //          words->size());
+      DBG_OBJ_MSGF ("resize", 0, "<b>setWidth</b> (%d)", width);
+      DBG_OBJ_MSG_START ();
 
       availWidth = width;
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
       redrawY = 0;
+
+      DBG_OBJ_MSG_END ();
    }
 }
 
 void Textblock::setAscent (int ascent)
 {
    if (availAscent != ascent) {
-      //DEBUG_MSG(DEBUG_REWRAP_LEVEL,
-      //          "setAscent: Calling queueResize, "
-      //          "in page with %d word(s)\n",
-      //          words->size());
+      DBG_OBJ_MSGF ("resize", 0, "<b>setAscent</b> (%d)", ascent);
+      DBG_OBJ_MSG_START ();
 
       availAscent = ascent;
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
+
+      DBG_OBJ_MSG_END ();
    }
 }
 
 void Textblock::setDescent (int descent)
 {
    if (availDescent != descent) {
-      //DEBUG_MSG(DEBUG_REWRAP_LEVEL,
-      //          "setDescent: Calling queueResize, "
-      //          "in page with %d word(s)\n",
-      //          words->size());
+      DBG_OBJ_MSGF ("resize", 0, "<b>setDescent</b> (%d)", descent);
+      DBG_OBJ_MSG_START ();
 
       availDescent = descent;
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
+
+      DBG_OBJ_MSG_END ();
    }
 }
 
@@ -2134,8 +2138,10 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    PRINTF ("adding the %s %p to %p (word %d) ...\n",
            widget->getClassName(), widget, this, words->size());
 
-   if (containingBlock->outOfFlowMgr == NULL)
+   if (containingBlock->outOfFlowMgr == NULL) {
       containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
+      DBG_OBJ_ASSOC (containingBlock, containingBlock->outOfFlowMgr);
+   }
       
    if (OutOfFlowMgr::isWidgetHandledByOOFM (widget)) {
       PRINTF ("   -> out of flow.\n");
@@ -2514,12 +2520,14 @@ void Textblock::handOverBreak (core::style::Style *style)
  */
 void Textblock::flush ()
 {
-   PRINTF ("[%p] FLUSH => %s (parentRef = %d)\n",
-           this, mustQueueResize ? "true" : "false", parentRef);
-
    if (mustQueueResize) {
+      DBG_OBJ_MSG ("resize", 0, "<b>flush</b> (mustQueueResize set)");
+      DBG_OBJ_MSG_START ();
+
       queueResize (-1, true);
       mustQueueResize = false;
+
+      DBG_OBJ_MSG_END ();
    }
 }
 
@@ -2626,11 +2634,12 @@ void Textblock::setVerticalOffset (int verticalOffset)
  */
 void Textblock::borderChanged (int y, Widget *vloat)
 {
-   PRINTF ("[%p] BORDER_CHANGED: %d (float %s %p, with generator %p)\n",
-           this, y, vloat->getClassName(), vloat, vloat->getGenerator());
+   DBG_OBJ_MSGF ("resize", 0, "<b>borderChanged</b> (%d, %p)", y, vloat);
+   DBG_OBJ_MSG_START ();
 
    int lineIndex = findLineIndex (y);
-   PRINTF ("   Line index: %d (of %d).\n", lineIndex, lines->size ());
+   DBG_OBJ_MSGF ("resize", 1, "Line index: %d (of %d).",
+                 lineIndex, lines->size ());
 
    // Nothing to do at all, when lineIndex >= lines->size (),
    // i. e. the change is below the bottom of this widget.
@@ -2642,8 +2651,8 @@ void Textblock::borderChanged (int y, Widget *vloat)
       else
          wrapLineIndex = lineIndex;
       
-      PRINTF ("   Rewrapping from line %d (of %d).\n",
-              wrapLineIndex, lines->size ());
+      DBG_OBJ_MSGF ("resize", 1, "Rewrapping from line %d (of %d).",
+                    wrapLineIndex, lines->size ());
 
       if (vloat->getGenerator() == this) {
          bool found = false;
@@ -2727,11 +2736,13 @@ void Textblock::borderChanged (int y, Widget *vloat)
             printBorderChangedErrorAndAbort (y, vloat, wrapLineIndex);
       }      
 
-      PRINTF ("   Corrected to line %d.\n", wrapLineIndex);
+      DBG_OBJ_MSGF ("resize", 1, "Corrected to line %d.", wrapLineIndex);
             
       queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex), true);
       lastWordDrawn = lines->getRef(wrapLineIndex)->firstWord;
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Textblock::printBorderChangedErrorAndAbort (int y, Widget *vloat,

@@ -38,7 +38,9 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#define RTFL_PREFIX_FMT  "[rtfl]%s:%d:%d:"
+// "\n" at the beginning just in case that the previous line is not finished
+// yet.
+#define RTFL_PREFIX_FMT  "\n[rtfl]%s:%d:%d:"
 #define RTFL_PREFIX_ARGS __FILE__, __LINE__, getpid()
 
 #define DBG_OBJ_MSG(aspect, prio, msg) \

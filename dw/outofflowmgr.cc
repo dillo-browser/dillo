@@ -20,6 +20,7 @@
 
 #include "outofflowmgr.hh"
 #include "textblock.hh"
+#include "../lout/debug.hh"
 
 using namespace lout::object;
 using namespace lout::container::typed;
@@ -301,7 +302,7 @@ OutOfFlowMgr::AbsolutelyPositioned::AbsolutelyPositioned (OutOfFlowMgr *oofm,
 
 OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 {
-   //printf ("OutOfFlowMgr::OutOfFlowMgr\n");
+   DBG_OBJ_CREATE ("dw::OutOfFlowMgr");
 
    this->containingBlock = containingBlock;
 
@@ -354,15 +355,15 @@ OutOfFlowMgr::~OutOfFlowMgr ()
 
 void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>sizeAllocateStart</b>");
    this->containingBlockAllocation = *containingBlockAllocation;
    containingBlockWasAllocated = true;
 }
 
 void OutOfFlowMgr::sizeAllocateEnd ()
 {
-   //printf ("[%p] SIZE_ALLOCATE_END: leftFloatsMark = %d, "
-   //        "rightFloatsMark = %d\n",
-   //        containingBlock, leftFloatsMark, rightFloatsMark);
+   DBG_OBJ_MSG ("resize", 0, "<b>sizeAllocateStart</b>");
+   DBG_OBJ_MSG_START ();
 
    // 1. Move floats from GB lists to the one CB list.
    moveFromGBToCB (LEFT);
@@ -434,6 +435,8 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       tbInfo->width = width;
       tbInfo->height = height;
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
@@ -529,6 +532,9 @@ void OutOfFlowMgr::checkChangedFloatSizes ()
 
 void OutOfFlowMgr::checkChangedFloatSizes (SortedFloatsVector *list)
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>checkChangedFloatSizes</b>");
+   DBG_OBJ_MSG_START ();             
+
    // TODO (i) Comment (ii) linear search?
    for (int i = 0; i < list->size(); i++) {
       // TODO binary search
@@ -566,6 +572,8 @@ void OutOfFlowMgr::checkChangedFloatSizes (SortedFloatsVector *list)
          vloat->sizeChangedSinceLastAllocation = false;
       }
    }
+
+   DBG_OBJ_MSG_END ();             
 }
 
 void OutOfFlowMgr::moveFromGBToCB (Side side)
@@ -934,6 +942,10 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
 
 void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>tellFloatPosition</b> (%p, %d)",
+                 widget, yReq);
+   DBG_OBJ_MSG_START ();
+
    assert (yReq >= 0);
 
    Float *vloat = findFloatByWidget(widget);
@@ -1015,11 +1027,16 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
       }
    }
 
+   DBG_OBJ_MSGF ("resize", 1, "oldY = %d, vloat->yReq = %d, vloat->yReal = %d",
+                 oldY, vloat->yReq, vloat->yReal);
+
    // No call neccessary when yReal has not changed. (Notice that
    // checking for yReq is wrong: yReq may remain the same, when yReal
    // changes, e. g. when previous float has changes its size.
    if (vloat->yReal != oldY)
       checkCoveragePosChanged (vloat, oldY);
+
+   DBG_OBJ_MSG_END ();
 }
 
 bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
@@ -1051,6 +1068,11 @@ bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
 
 void OutOfFlowMgr::checkCoveragePosChanged (Float *vloat, int oldY)
 {
+   DBG_OBJ_MSGF ("resize", 0,
+                 "<b>checkCoveragePosChanged</b> (<widget: %p>, %d)",
+                 vloat->widget, oldY);
+   DBG_OBJ_MSG_START ();             
+
    // Only this float has been changed (see tellFloatPosition), so
    // only this float has to be tested against all textblocks.
    if (wasAllocated (vloat->generatingBlock)) {
@@ -1081,6 +1103,8 @@ void OutOfFlowMgr::checkCoveragePosChanged (Float *vloat, int oldY)
          }
       }
    }
+
+   DBG_OBJ_MSG_END ();             
 }
 
 void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,

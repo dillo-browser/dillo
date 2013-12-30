@@ -23,6 +23,7 @@
 #include "textblock.hh"
 #include "hyphenator.hh"
 #include "../lout/msg.h"
+#include "../lout/debug.hh"
 #include "../lout/misc.hh"
 
 #include <stdio.h>
@@ -1409,6 +1410,7 @@ void Textblock::rewrap ()
 
    /* Next time, the page will not have to be rewrapped. */
    wrapRefLines = -1;
+   DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
 }
 
 /**
@@ -1456,6 +1458,7 @@ void Textblock::fillParagraphs ()
       handleWordExtremes (i);
 
    wrapRefParagraphs = -1;
+   DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);     
 }
 
 void Textblock::initNewLine ()

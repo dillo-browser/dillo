@@ -787,6 +787,9 @@ void Layout::setBgImage (style::StyleImage *bgImage,
 
 void Layout::resizeIdle ()
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>resizeIdle</b>");
+   DBG_OBJ_MSG_START ();
+   
    enterQueueResize ();
 
    //static int calls = 0;
@@ -828,6 +831,8 @@ void Layout::resizeIdle ()
       Allocation allocation;
 
       topLevel->sizeRequest (&requisition);
+      DBG_OBJ_MSGF ("resize", 1, "toplevel size: %d * (%d + %d)",
+                    requisition.width, requisition.ascent, requisition.descent);
 
       // This method is triggered by Widget::queueResize, which will,
       // in any case, set NEEDS_ALLOCATE (indirectly, as
@@ -869,12 +874,12 @@ void Layout::resizeIdle ()
       }
 
       // views are redrawn via Widget::resizeDrawImpl ()
-
    }
 
    updateAnchor ();
 
-   //printf ("Layout::resizeIdle end\n");
+   DBG_OBJ_MSGF ("resize", 1, "resizeIdleId = %d", resizeIdleId);
+   DBG_OBJ_MSG_END ();
 
    leaveQueueResize ();
 }
