@@ -256,6 +256,8 @@ Textblock::Textblock (bool limitTextWidth)
 
    wrapRefLines = wrapRefParagraphs = -1;
 
+   DBG_OBJ_SET_NUM ("lines.size", lines->size ());
+   DBG_OBJ_SET_NUM ("words.size", words->size ());
    DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);     
    DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);     
 
@@ -1636,6 +1638,7 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
                                      short flags, core::style::Style *style)
 {
    words->increase ();
+   DBG_OBJ_SET_NUM ("words.size", words->size ());
    int wordNo = words->size () - 1;
    initWord (wordNo);
    fillWord (wordNo, width, ascent, descent, flags, style);
@@ -2113,6 +2116,10 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
    word->content.type = core::Content::TEXT;
    word->content.text = layout->textZone->strndup(text, len);
 
+   DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1, "type", "TEXT");
+   DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1,
+                           "text/widget/breakSpace", word->content.text);
+
    // The following debug message may be useful to identify the
    // different textblocks.
 
@@ -2154,6 +2161,11 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       word->content.type = core::Content::WIDGET_OOF_REF;
       word->content.widget = widget;
       word->style = style;
+
+      DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1, "type",
+                              "WIDGET_OOF_REF");
+      DBG_OBJ_ARRATTRSET_PTR ("words", words->size () - 1,
+                               "text/widget/breakSpace", word->content.widget);
    } else {
       PRINTF ("   -> within flow.\n");
 
@@ -2166,10 +2178,14 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 
       core::Requisition size;
       calcWidgetSize (widget, &size);
-      Word *word =
-         addWord (size.width, size.ascent, size.descent, 0, style);
+      Word *word = addWord (size.width, size.ascent, size.descent, 0, style);
       word->content.type = core::Content::WIDGET_IN_FLOW;
       word->content.widget = widget;
+
+      DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1, "type",
+                              "WIDGET_IN_FLOW");
+      DBG_OBJ_ARRATTRSET_PTR ("words", words->size () - 1,
+                               "text/widget/breakSpace", word->content.widget);
    }
 
    processWord (words->size () - 1);
@@ -2413,6 +2429,11 @@ void Textblock::addParbreak (int space, core::style::Style *style)
    word->content.type = core::Content::BREAK;
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = space;
+
+   DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1, "type", "BREAK");
+   DBG_OBJ_ARRATTRSET_NUM ("words", words->size () - 1,
+                           "text/widget/breakSpace", word->content.breakSpace);
+
    processWord (words->size () - 1);
 }
 
@@ -2436,6 +2457,11 @@ void Textblock::addLinebreak (core::style::Style *style)
    word->content.type = core::Content::BREAK;
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = 0;
+
+   DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1, "type", "BREAK");
+   DBG_OBJ_ARRATTRSET_NUM ("words", words->size () - 1,
+                           "text/widget/breakSpace", word->content.breakSpace);
+
    processWord (words->size () - 1);
 }
 

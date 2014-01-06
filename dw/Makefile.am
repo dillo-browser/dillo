@@ -1,7 +1,7 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
-	-DDILLO_LIBDIR='"$(pkglibdir)/"'
-
+	-DDILLO_LIBDIR='"$(pkglibdir)/"' \
+	-DCUR_WORKING_DIR='"@BASE_CUR_WORKING_DIR@/dw"'
 
 noinst_LIBRARIES = \
 	libDw-core.a \

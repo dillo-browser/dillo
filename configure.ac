@@ -56,6 +56,14 @@ AC_TYPE_UINT16_T
 AC_TYPE_INT32_T
 AC_TYPE_UINT32_T
 
+dnl -----------------------------------------------------------------
+dnl Check for absolute path of working directory.
+dnl This is needed for RTFL, to get full the full paths of the source
+dnl file names
+dnl -----------------------------------------------------------------
+dnl
+BASE_CUR_WORKING_DIR=`pwd`
+
 dnl --------------------------------------
 dnl Check whether to add /usr/local or not
 dnl (this is somewhat a religious problem)
@@ -482,6 +490,7 @@ if eval "test x$GCC = xyes"; then
   CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter -fno-rtti -fno-exceptions"
 fi
 
+AC_SUBST(BASE_CUR_WORKING_DIR)
 AC_SUBST(LIBJPEG_LIBS)
 AC_SUBST(LIBJPEG_LDFLAGS)
 AC_SUBST(LIBJPEG_CPPFLAGS)

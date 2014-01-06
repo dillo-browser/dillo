@@ -41,7 +41,7 @@
 // "\n" at the beginning just in case that the previous line is not finished
 // yet.
 #define RTFL_PREFIX_FMT  "\n[rtfl]%s:%d:%d:"
-#define RTFL_PREFIX_ARGS __FILE__, __LINE__, getpid()
+#define RTFL_PREFIX_ARGS CUR_WORKING_DIR "/" __FILE__, __LINE__, getpid()
 
 #define DBG_OBJ_MSG(aspect, prio, msg) \
    D_STMT_START { \
@@ -129,22 +129,43 @@
 
 #define DBG_OBJ_ARRSET_NUM(var, ind, val) \
    D_STMT_START { \
-      printf (RTFL_PREFIX_FMT "obj-set:%p:" var ".%d:%d\n", \
-              RTFL_PREFIX_ARGS, this, ind, val); \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d:%d\n", \
+              RTFL_PREFIX_ARGS, this, var, ind, val); \
       fflush (stdout); \
    } D_STMT_END
 
 #define DBG_OBJ_ARRSET_STR(var, ind, val) \
    D_STMT_START { \
-      printf (RTFL_PREFIX_FMT "obj-set:%p:" var ".%d:%s\n", \
-              RTFL_PREFIX_ARGS, this, ind, val); \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d:%s\n", \
+              RTFL_PREFIX_ARGS, this, var, ind, val); \
       fflush (stdout); \
    } D_STMT_END
 
 #define DBG_OBJ_ARRSET_PTR(var, ind, val) \
    D_STMT_START { \
-      printf (RTFL_PREFIX_FMT "obj-set:%p:" var ".%d:%p\n", \
-              RTFL_PREFIX_ARGS, this, ind, val); \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d:%p\n", \
+              RTFL_PREFIX_ARGS, this, var, ind, val); \
+      fflush (stdout); \
+   } D_STMT_END
+
+#define DBG_OBJ_ARRATTRSET_NUM(var, ind, attr, val) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d.%s:%d\n", \
+              RTFL_PREFIX_ARGS, this, var, ind, attr, val); \
+      fflush (stdout); \
+   } D_STMT_END
+
+#define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d.%s:%s\n", \
+              RTFL_PREFIX_ARGS, this, var, ind, attr, val); \
+      fflush (stdout); \
+   } D_STMT_END
+
+#define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d.%s:%p\n", \
+              RTFL_PREFIX_ARGS, this, var, ind, attr, val); \
       fflush (stdout); \
    } D_STMT_END
 
@@ -172,6 +193,9 @@
 #define DBG_OBJ_ARRSET_NUM(var, ind, val)
 #define DBG_OBJ_ARRSET_STR(var, ind, val)
 #define DBG_OBJ_ARRSET_PTR(var, ind, val)
+#define DBG_OBJ_ARRATTRSET_NUM(var, ind, attr, val)
+#define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val)
+#define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val)
 #define DBG_OBJ_COLOR(klass, color)
 
 #endif /* DBG_RTFL */

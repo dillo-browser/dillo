@@ -325,9 +325,10 @@ void Textblock::justifyLine (Line *line, int diff)
 Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
                                      bool temporary)
 {
-   PRINTF ("[%p] ADD_LINE (%d, %d) => %d\n",
-           this, firstWord, lastWord, lines->size ());
-
+   DBG_OBJ_MSGF ("construct.line", 0, "<b>addLine</b> (%d, %d) => %d",
+                 firstWord, lastWord, lines->size ());
+   DBG_OBJ_MSG_START ();
+   
    //for (int i = firstWord; i <= lastWord; i++) {
    //   printf ("      word %d: ", i);
    //   printWord (words->getRef (i));
@@ -448,6 +449,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 
    initNewLine ();
 
+   DBG_OBJ_MSG_END ();
    return line;
 }
 
@@ -524,8 +526,9 @@ void Textblock::processWord (int wordIndex)
  */
 bool Textblock::wordWrap (int wordIndex, bool wrapAll)
 {
-   PRINTF ("[%p] WORD_WRAP (%d, %s)\n",
-           this, wordIndex, wrapAll ? "true" : "false");
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>wordWrap</b> (%d, %s)",
+                 wordIndex, wrapAll ? "true" : "false");
+   DBG_OBJ_MSG_START ();
 
    if (!wrapAll)
       removeTemporaryLines ();
@@ -541,19 +544,28 @@ bool Textblock::wordWrap (int wordIndex, bool wrapAll)
    //printWord (word);
    //printf ("\n");
 
+   bool b;
    switch (word->content.type) {
    case core::Content::WIDGET_OOF_REF:
-      return wrapWordOofRef (wordIndex, wrapAll);
+      b = wrapWordOofRef (wordIndex, wrapAll);
       break;
 
    default:
-      return wrapWordInFlow (wordIndex, wrapAll);
+      b = wrapWordInFlow (wordIndex, wrapAll);
       break;
    }
+
+   DBG_OBJ_MSG_END ();
+
+   return b;
 }
 
 bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>wrapWordInFlow</b> (%d, %s)",
+                 wordIndex, wrapAll ? "true" : "false");
+   DBG_OBJ_MSG_START ();
+
    Word *word = words->getRef (wordIndex);
    bool wordListChanged = false;
 
@@ -732,6 +744,8 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
       }
    }
 
+   DBG_OBJ_MSG_END ();
+
    return wordListChanged;
 }
 
@@ -759,6 +773,10 @@ void Textblock::checkPossibleLineHeightChange (int wordIndex)
 
 bool Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>wrapWordOofRef</b> (%d, %s)",
+                 wordIndex, wrapAll ? "true" : "false");
+   DBG_OBJ_MSG_START ();
+
    assert (containingBlock->outOfFlowMgr);
 
    int y = yOffsetOfPossiblyMissingLine (lines->size ());
@@ -773,6 +791,9 @@ bool Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
    bool right = containingBlock->outOfFlowMgr->affectsRightBorder (widget);
    if (left || right)
       updateBorders (wordIndex, left, right);
+
+
+   DBG_OBJ_MSG_END ();
 
    return false; // Actually, the words list is never changed here.
 }
@@ -1037,6 +1058,15 @@ int Textblock::hyphenateWord (int wordIndex)
       
       PRINTF ("[%p]       %d words ...\n", this, words->size ());
       words->insert (wordIndex, numBreaks);
+
+#ifdef DBG_RTFL
+      // TODO Must be corrected.
+      for (int i = wordIndex + numBreaks; i < words->size (); i++) {
+         DBG_OBJ_ARRATTRSET_STR ("words", i, "type", "???");
+         DBG_OBJ_ARRATTRSET_STR ("words", i, "text/widget/breakSpace", "???");
+      }
+#endif      
+
       for (int i = 0; i < numBreaks; i++)
          initWord (wordIndex + i);
       PRINTF ("[%p]       ... => %d words\n", this, words->size ());
@@ -1067,6 +1097,10 @@ int Textblock::hyphenateWord (int wordIndex)
             layout->textZone->strndup (origWord.content.text + start,
                                        end - start);
          PRINTF ("      [%d] -> '%s'\n", wordIndex + i, w->content.text);
+
+         DBG_OBJ_ARRATTRSET_STR ("words", wordIndex + i, "type", "TEXT");
+         DBG_OBJ_ARRATTRSET_STR ("words", wordIndex + i,
+                                 "text/widget/breakSpace", w->content.text);
 
          // Note: there are numBreaks + 1 word parts.
          if (i == 0)
@@ -1377,6 +1411,7 @@ void Textblock::rewrap ()
    /* All lines up from wrapRef will be rebuild from the word list,
     * the line list up from this position is rebuild. */
    lines->setSize (wrapRefLines);
+   DBG_OBJ_SET_NUM ("lines.size", lines->size ());
    nonTemporaryLines = misc::min (nonTemporaryLines, wrapRefLines);
 
    initNewLine ();
@@ -1518,6 +1553,7 @@ void Textblock::showMissingLines ()
 void Textblock::removeTemporaryLines ()
 {
    lines->setSize (nonTemporaryLines);
+   DBG_OBJ_SET_NUM ("lines.size", lines->size ());
 }
 
 int Textblock::getSpaceShrinkability(struct Word *word)
