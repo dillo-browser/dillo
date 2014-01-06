@@ -548,6 +548,8 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                   attrs->backgroundImage->connectDeletion
                      (new StyleImageDeletionReceiver (clientKey));
                }
+
+               a_Url_free (imgUrl);
             }
             break;            
          case CSS_PROPERTY_BACKGROUND_POSITION:
