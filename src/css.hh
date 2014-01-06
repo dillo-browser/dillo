@@ -293,6 +293,7 @@ class CssProperty {
          switch (type) {
             case CSS_TYPE_STRING:
             case CSS_TYPE_SYMBOL:
+            case CSS_TYPE_URI:
                dFree (value.strVal);
                break;
             case CSS_TYPE_BACKGROUND_POSITION:
