@@ -393,6 +393,19 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       // (i) Check allocation change of textblocks.
       if ((!tbInfo->wasAllocated || tbInfo->xCB != xCB || tbInfo->yCB != yCB ||
            tbInfo->width != width || tbInfo->height != height)) {
+         if (tbInfo->wasAllocated)
+            DBG_OBJ_MSGF ("resize.floats", 1,
+                          "%p: old allocation (within CB): %d, %d; %d * %d",
+                          tb, tbInfo->xCB, tbInfo->yCB, tbInfo->width,
+                          tbInfo->height);
+         else
+            DBG_OBJ_MSGF ("resize.floats", 0, "%p: not allocated before", tb);
+
+         DBG_OBJ_MSGF ("resize.floats", 1,
+                       "%p: new allocation (within CB): %d, %d; %d * %d",
+                       tb, xCB, yCB, width, height);
+            
+
          // Changed: change borders when covered by floats.
          int oldPos, newPos;
          Widget *oldFloat, *newFloat;
@@ -411,7 +424,7 @@ void OutOfFlowMgr::sizeAllocateEnd ()
          int c2 = isTextblockCoveredByFloats (tb, tbAllocation->x,
                                               tbAllocation->y, width,
                                               height, &newPos, &newFloat);
-         DBG_OBJ_MSGF ("resize.floats", 0, "%p covered? then: %s, now: %s.",
+         DBG_OBJ_MSGF ("resize.floats", 1, "%p covered? then: %s, now: %s.",
                        tb, c1 ? "yes" : "no", c2 ? "yes" : "no");
 
          if (c1 || c2) {
