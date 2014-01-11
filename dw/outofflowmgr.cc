@@ -390,6 +390,7 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       int width = tbAllocation->width;
       int height = tbAllocation->ascent + tbAllocation->descent;
 
+#if 0
       // (i) Check allocation change of textblocks.
       if ((!tbInfo->wasAllocated || tbInfo->xCB != xCB || tbInfo->yCB != yCB ||
            tbInfo->width != width || tbInfo->height != height)) {
@@ -405,7 +406,6 @@ void OutOfFlowMgr::sizeAllocateEnd ()
                        "%p: new allocation (within CB): %d, %d; %d * %d",
                        tb, xCB, yCB, width, height);
             
-
          // Changed: change borders when covered by floats.
          int oldPos, newPos;
          Widget *oldFloat, *newFloat;
@@ -440,19 +440,231 @@ void OutOfFlowMgr::sizeAllocateEnd ()
             }
          }
       }
+#else         
+      int minFloatPos;
+      Widget *minFloat;
+      if (hasRelationChanged (tbInfo, &minFloatPos, &minFloat))
+         tb->borderChanged (minFloatPos, minFloat);
+#endif
 
       // TODO Comment and re-number.
       checkChangedFloatSizes ();
+   }
 
-      // (ii) store some information for later use.
+   // (ii) Store some information for later use.
+   for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
+           tbInfosByTextblock->iterator ();
+        it.hasNext (); ) {
+      TypedPointer <Textblock> *key = it.getNext ();
+      TBInfo *tbInfo = tbInfosByTextblock->get (key);
+      Textblock *tb = key->getTypedValue();
+      Allocation *tbAllocation = getAllocation (tb);
+
       tbInfo->wasAllocated = true;
-      tbInfo->xCB = xCB;
-      tbInfo->yCB = yCB;
-      tbInfo->width = width;
-      tbInfo->height = height;
+      tbInfo->xCB = tbAllocation->x - containingBlockAllocation.x;;
+      tbInfo->yCB = tbAllocation->y - containingBlockAllocation.y;;
+      tbInfo->width = tbAllocation->width;
+      tbInfo->height = tbAllocation->ascent + tbAllocation->descent;
+      tbInfo->availWidth = tb->getAvailWidth ();
    }
 
    DBG_OBJ_MSG_END ();
+}
+
+bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, int *minFloatPos,
+                                       Widget **minFloat)
+{
+   int leftMinPos, rightMinPos;
+   Widget *leftMinFloat, *rightMinFloat;
+   bool c1 =
+      hasRelationChanged (tbInfo, LEFT, &leftMinPos, &leftMinFloat);
+   bool c2 =
+      hasRelationChanged (tbInfo, RIGHT, &rightMinPos, &rightMinFloat);
+   if (c1 || c2) {
+      if (!c1) {
+         *minFloatPos = rightMinPos;
+         *minFloat = rightMinFloat;
+      } else if (!c2) {
+         *minFloatPos = leftMinPos;
+         *minFloat = leftMinFloat;
+      } else {
+         if (leftMinPos < rightMinPos) {
+            *minFloatPos = leftMinPos;
+            *minFloat = leftMinFloat;
+         } else{ 
+            *minFloatPos = rightMinPos;
+            *minFloat = rightMinFloat;
+         }
+      }
+   }
+
+   return c1 || c2;
+}
+
+bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
+                                       int *minFloatPos, Widget **minFloat)
+{
+   SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   bool covered = false;
+                                      
+   for (int i = 0; i < list->size(); i++) {
+      // TODO binary search?
+      Float *vloat = list->get(i);
+      int floatPos;
+
+      // TODO Clarify the old condition: tb != v->generatingBlock. Neccessary?
+      if (tbInfo->textblock != vloat->generatingBlock) {
+         Allocation *tba = getAllocation (tbInfo->textblock);
+         Allocation *gba = getAllocation (vloat->generatingBlock);
+         TBInfo *gbInfo = getTextblock (vloat->generatingBlock);
+
+         int oldFlx, oldFly, newFlx, newFly;
+
+         if (gbInfo->wasAllocated) {
+            oldFlx= calcFloatX (vloat, side, gbInfo->xCB, gbInfo->width,
+                                gbInfo->availWidth);
+            oldFly = gbInfo->xCB + vloat->yReal;
+         } else
+            oldFlx = oldFly = 0;
+
+         newFlx =
+            calcFloatX (vloat, side,
+                        vloat->generatingBlock->getAllocation()->x
+                        - containingBlockAllocation.x,
+                        gba->width, vloat->generatingBlock->getAvailWidth ());
+         newFly = vloat->generatingBlock->getAllocation()->y
+            - containingBlockAllocation.y + vloat->yReal;
+         
+         DBG_OBJ_MSGF ("resize.floats", 0,
+                       "Has relation changed between textblock %p and "
+                       "float %p?", tbInfo->textblock, vloat->widget);
+         DBG_OBJ_MSG_START ();
+         
+         if (hasRelationChanged (tbInfo->wasAllocated,
+                                 tbInfo->xCB, tbInfo->yCB, tbInfo->width,
+                                 tbInfo->height,
+                                 tba->x - containingBlockAllocation.x,
+                                 tba->y - containingBlockAllocation.x,
+                                 tba->width, tba->ascent + tba->descent,
+                                 gbInfo->wasAllocated,
+                                 oldFlx, oldFly, vloat->size.width,
+                                 vloat->size.ascent + vloat->size.descent,
+                                 newFlx, newFly, vloat->size.width,
+                                 vloat->size.ascent + vloat->size.descent,
+                                 side, &floatPos)) {
+            if (!covered || floatPos < *minFloatPos) {
+               *minFloatPos = floatPos;
+               *minFloat = vloat->widget;
+            }
+            covered = true;
+
+            DBG_OBJ_MSG ("resize.floats", 0, "Yes.");
+         } else
+            DBG_OBJ_MSG ("resize.floats", 0, "No.");
+
+         DBG_OBJ_MSG_END ();
+      }
+
+      // All floarts are searched, to find the minimum. TODO: Are
+      // floats sorted, so this can be shortened? (The first is the
+      // minimum?)
+   }
+
+   return covered;
+}
+
+/**
+ * \brief ...
+ *
+ * All coordinates are given relative to the CB. *floatPos is relative
+ * to the TB, and may be negative.
+ */
+bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
+                                       int oldTBx, int oldTBy, int oldTBw,
+                                       int oldTBh, int newTBx, int newTBy,
+                                       int newTBw, int newTBh,
+                                       bool oldFlAlloc,
+                                       int oldFlx, int oldFly, int oldFlw,
+                                       int oldFlh, int newFlx, int newFly,
+                                       int newFlw, int newFlh,
+                                       Side side, int *floatPos)
+{
+   DBG_OBJ_MSG ("resize.floats", 0, "<b>hasRelationChanged</b> (...)");
+   DBG_OBJ_MSG_START ();
+
+   if (oldTBAlloc)
+      DBG_OBJ_MSGF ("resize.floats", 0, "old TB: %d, %d; %d * %d",
+                    oldTBx, oldTBy, oldTBw, oldTBh);
+   else
+      DBG_OBJ_MSG ("resize.floats", 0, "old TB: undefined");
+   DBG_OBJ_MSGF ("resize.floats", 0, "new TB: %d, %d; %d * %d",
+                 newTBx, newTBy, newTBw, newTBh);
+
+   if (oldFlAlloc)
+      DBG_OBJ_MSGF ("resize.floats", 0, "old Fl: %d, %d; %d * %d",
+                    oldFlx, oldFly, oldFlw, oldFlh);
+   else
+      DBG_OBJ_MSG ("resize.floats", 0, "old Fl: undefined");
+   DBG_OBJ_MSGF ("resize.floats", 0, "new Fl: %d, %d; %d * %d",
+                 newFlx, newFly, newFlw, newFlh);
+
+   bool result;
+   if (oldTBAlloc && oldFlAlloc) {
+      bool oldCov = newFly + newFlh > newTBy && newFly < newTBy + newTBh;
+      bool newCov = newFly + newFlh > newTBy && newFly < newTBy + newTBh;
+
+      if (oldCov && newCov) {
+         int yOld = oldFly - oldTBy, yNew = newFly - newTBy;
+         if (yOld == yNew) {
+            // Float position has not changed, but perhaps the amout
+            // how far the float reaches into the TB. (TODO:
+            // Generally, not only here, it could be tested whether
+            // the float reaches into the TB at all.)
+            int wOld, wNew;
+            if (side == LEFT) {
+               wOld = oldFlx + oldFlw - oldTBx;
+               wNew = newFlx + newFlw - newTBx;
+            } else {
+               wOld = oldTBx + oldTBw - oldFlx;
+               wNew = newTBx + newTBw - newFlx;
+            }
+            
+            if (wOld == wNew) {
+               if (oldFlh == newFlh)
+                  result = false;
+               else {
+                  // Only heights of floats changed. Relevant only
+                  // from bottoms of float.
+                  result = min (yOld + oldFlh, yNew + newFlh);
+               }
+            } else {
+               *floatPos = yOld;
+               result = true;
+            }
+         } else {
+            *floatPos = min (yOld, yNew);
+            result = true;
+         }
+      } else if (oldCov) {
+         *floatPos = oldFly - oldTBy;
+         result = true;
+      } else if (newCov) {
+         *floatPos = newFly - newTBy;
+         result = true;
+      } else
+         result = false;
+   } else {
+      // Not allocated before: ignore all old values, only check whether
+      // TB is covered by Float.
+      if (newFly + newFlh > newTBy && newFly < newTBy + newTBh) {
+         *floatPos = newFly - newTBy;
+         result = true;
+      } else
+         result = false;
+   }
+
+   DBG_OBJ_MSG_END ();
+   return result;
 }
 
 bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
@@ -654,33 +866,12 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side)
 
       Allocation *gbAllocation = getAllocation(vloat->generatingBlock);
       Allocation *cbAllocation = getAllocation(containingBlock);
-      // In some cases, the actual (allocated) width is too large; we
-      // use the "available" width here.
-      int gbWidth =
-         min (gbAllocation->width, vloat->generatingBlock->getAvailWidth());
 
       Allocation childAllocation;
-
-      switch (side) {
-      case LEFT:
-         // Left floats are always aligned on the left side of the
-         // generator (content, not allocation).
-         childAllocation.x = gbAllocation->x
-            + vloat->generatingBlock->getStyle()->boxOffsetX();
-         break;
-
-      case RIGHT:
-         // Similar for right floats, but in this case, floats are
-         // shifted to the right when they are too big (instead of
-         // shifting the generator to the right).
-         childAllocation.x =
-            max (gbAllocation->x + gbWidth - vloat->size.width
-                 - vloat->generatingBlock->getStyle()->boxRestWidth(),
-                 // Do not exceed CB allocation:
-                 cbAllocation->x);
-         break;
-      }
-
+      childAllocation.x = cbAllocation->x +
+         calcFloatX (vloat, side, gbAllocation->x - cbAllocation->x,
+                     gbAllocation->width,
+                     vloat->generatingBlock->getAvailWidth());
       childAllocation.y = gbAllocation->y + vloat->yReal;
       childAllocation.width = vloat->size.width;
       childAllocation.ascent = vloat->size.ascent;
@@ -695,6 +886,42 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side)
    }
 }
 
+
+/**
+ * \brief ...
+ *
+ * gbX is given relative to the CB, as is the return value.
+ */
+int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
+                              int gbAvailWidth)
+{
+   int gbActualWidth;
+
+   switch (side) {
+   case LEFT:
+      // Left floats are always aligned on the left side of the
+      // generator (content, not allocation).
+      return gbX + vloat->generatingBlock->getStyle()->boxOffsetX();
+         break;
+         
+   case RIGHT:
+      // In some cases, the actual (allocated) width is too large; we
+      // use the "available" width here.
+      gbActualWidth = min (gbWidth, gbAvailWidth);
+
+      // Similar for right floats, but in this case, floats are
+      // shifted to the right when they are too big (instead of
+      // shifting the generator to the right).
+      return max (gbX + gbActualWidth - vloat->size.width
+                  - vloat->generatingBlock->getStyle()->boxRestWidth(),
+                  // Do not exceed CB allocation:
+                  0);
+         
+   default:
+      assertNotReached ();
+      return 0;
+   }
+}
 
 
 void OutOfFlowMgr::draw (View *view, Rectangle *area)

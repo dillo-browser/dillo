@@ -128,9 +128,9 @@ private:
    public:
       bool wasAllocated;
       int xCB, yCB; // relative to the containing block
-      int width, height;
+      int width, height, availWidth;
       int index; // position within "tbInfos"
-      Textblock *textblock; // for debugging; may be removed again
+      Textblock *textblock; // for debugging; may be removed again (?)
 
       TBInfo *parent;
       int parentExtIndex;
@@ -199,6 +199,21 @@ private:
 
    void moveFromGBToCB (Side side);
    void sizeAllocateFloats (Side side);
+   int calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
+                   int gbAvailWidth);
+
+   bool hasRelationChanged (TBInfo *tbInfo,int *minFloatPos,
+                            core::Widget **minFloat);
+   bool hasRelationChanged (TBInfo *tbInfo, Side side, int *minFloatPos,
+                            core::Widget **minFloat);
+   bool hasRelationChanged (bool oldTBAlloc,
+                            int oldTBx, int oldTBy, int oldTBw, int oldTBh,
+                            int newTBx, int newTBy, int newTBw, int newTBh,
+                            bool oldFlAlloc,
+                            int oldFlx, int oldFly, int oldFlw, int oldFlh,
+                            int newFlx, int newFly, int newFlw, int newFlh,
+                            Side side, int *floatPos);
+
    bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
                                     int tbWidth, int tbHeight, int *minFloatPos,
                                     core::Widget **minFloat);
@@ -208,6 +223,7 @@ private:
    bool isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
                                    int tbx, int tby, int tbWidth, int tbHeight,
                                    int *floatPos);
+
    void checkChangedFloatSizes ();
    void checkChangedFloatSizes (SortedFloatsVector *list);
    
