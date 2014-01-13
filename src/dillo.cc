@@ -380,6 +380,14 @@ int main(int argc, char **argv)
    DBG_OBJ_COLOR("#c0c0ff", "dw::fltk::*");
    DBG_OBJ_COLOR("#ffa0a0", "dw::core::*");
 
+   DBG_OBJ_COLOR ("#80ffa0", "dw::Image");
+   DBG_OBJ_COLOR ("#f0ff80", "dw::Textblock");
+   DBG_OBJ_COLOR ("#d0ff80", "dw::OutOfFlowMgr");
+   DBG_OBJ_COLOR ("#e0ff80", "dw::AlignedTextblock");
+   DBG_OBJ_COLOR ("#b0ff80", "dw::ListItem");
+   DBG_OBJ_COLOR ("#80ff80", "dw::TableCell");
+   DBG_OBJ_COLOR ("#80ffc0", "dw::Table");
+
    uint_t opt_id;
    uint_t options_got = 0;
    uint32_t xid = 0;
