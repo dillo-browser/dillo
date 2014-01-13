@@ -170,8 +170,8 @@
 
 #define DBG_OBJ_MSG(aspect, prio, msg)
 #define DBG_OBJ_MSGF(aspect, prio, fmt, ...)
-#define DBG_OBJ_MSG_START(obj)
-#define DBG_OBJ_MSG_END(obj)
+#define DBG_OBJ_MSG_START()
+#define DBG_OBJ_MSG_END()
 #define DBG_OBJ_CREATE(klass)
 #define DBG_OBJ_DELETE()
 #define DBG_OBJ_BASECLASS(klass)
