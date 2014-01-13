@@ -1632,7 +1632,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                              Textblock *lastGB, int lastExtIndex)
 {
    DBG_OBJ_MSGF_O ("border", 0, textblock,
-                   "<b>getBorder</b> (%s, %d, %d, %p, %d)\n",
+                   "<b>getBorder</b> (%s, %d, %d, %p, %d)",
                    side == LEFT ? "LEFT" : "RIGHT", y, h, lastGB, lastExtIndex);
    DBG_OBJ_MSG_START_O (textblock);
 
@@ -1643,9 +1643,9 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
    DBG_OBJ_MSG_START_O (textblock);
 
    for (int i = 0; i < list->size(); i++) {
-      DBG_OBJ_MSGF_O ("border", 1, textblock, "%d: %s\n",
+      DBG_OBJ_MSGF_O ("border", 1, textblock, "%d: %s",
                       i, list->get(i)->toString());
-      DBG_OBJ_MSGF_O ("border", 1, textblock, "(widget at (%d, %d))\n",
+      DBG_OBJ_MSGF_O ("border", 1, textblock, "(widget at (%d, %d))",
                       list->get(i)->widget->getAllocation()->x,
                       list->get(i)->widget->getAllocation()->y);
    }
@@ -1655,7 +1655,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
    
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
    
-   DBG_OBJ_MSGF_O ("border", 1, textblock, "first = %d\n", first);
+   DBG_OBJ_MSGF_O ("border", 1, textblock, "first = %d", first);
    
    if (first == -1) {
       // No float.
@@ -1671,7 +1671,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
       for (int i = first; covers && i < list->size(); i++) {
          Float *vloat = list->get(i);
          covers = vloat->covers (textblock, y, h);
-         DBG_OBJ_MSGF_O ("border", 1, textblock, "float %d: %s; covers? %s.\n",
+         DBG_OBJ_MSGF_O ("border", 1, textblock, "float %d: %s; covers? %s.",
                          i, vloat->toString(), covers ? "yes" : "no");
          
          if (covers) {
@@ -1680,7 +1680,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                vloat->generatingBlock->getStyle()->boxOffsetX() :
                vloat->generatingBlock->getStyle()->boxRestWidth();
             border = max (border, vloat->size.width + borderIn + borderDiff);
-            DBG_OBJ_MSGF_O ("border", 1, textblock, "=> border = %d\n", border);
+            DBG_OBJ_MSGF_O ("border", 1, textblock, "=> border = %d", border);
          }
       }
       
