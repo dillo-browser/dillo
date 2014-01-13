@@ -50,6 +50,15 @@
       fflush (stdout); \
    } D_STMT_END
 
+// Variant which does not use "this", but an explicitly passed
+// object. Should be applied to other macros. (Also, for use in C.)
+#define DBG_OBJ_MSG_O(aspect, prio, obj, msg) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-msg:%p:%s:%d:%s\n", \
+              RTFL_PREFIX_ARGS, obj, aspect, prio, msg); \
+      fflush (stdout); \
+   } D_STMT_END
+
 #define DBG_OBJ_MSGF(aspect, prio, fmt, ...) \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-msg:%p:%s:%d:" fmt "\n", \
@@ -57,8 +66,7 @@
       fflush (stdout); \
    } D_STMT_END
 
-// Variant which does not use "this", but an explicitly passed
-// object. Should be applied to other macros. (Also, for use in C.)
+// See DBG_OBJ_MSG_O.
 #define DBG_OBJ_MSGF_O(aspect, prio, obj, fmt, ...) \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-msg:%p:%s:%d:" fmt "\n", \
@@ -73,10 +81,26 @@
       fflush (stdout); \
    } D_STMT_END
 
+// See DBG_OBJ_MSG_O.
+#define DBG_OBJ_MSG_START_O(obj) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-msg-start:%p\n", \
+              RTFL_PREFIX_ARGS, obj); \
+      fflush (stdout); \
+   } D_STMT_END
+
 #define DBG_OBJ_MSG_END() \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-msg-end:%p\n", \
               RTFL_PREFIX_ARGS, this); \
+      fflush (stdout); \
+   } D_STMT_END
+
+// See DBG_OBJ_MSG_O.
+#define DBG_OBJ_MSG_END_O(obj) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-msg-end:%p\n", \
+              RTFL_PREFIX_ARGS, obj); \
       fflush (stdout); \
    } D_STMT_END
 
@@ -188,10 +212,13 @@
 #else /* DBG_RTFL */
 
 #define DBG_OBJ_MSG(aspect, prio, msg)
+#define DBG_OBJ_MSG_O(aspect, prio, obj, msg)
 #define DBG_OBJ_MSGF(aspect, prio, fmt, ...)
 #define DBG_OBJ_MSGF_O(aspect, prio, obj, fmt, ...)
-#define DBG_OBJ_MSG_START(obj)
-#define DBG_OBJ_MSG_END(obj)
+#define DBG_OBJ_MSG_START()
+#define DBG_OBJ_MSG_START_O(obj)
+#define DBG_OBJ_MSG_END()
+#define DBG_OBJ_MSG_END_O(obj)
 #define DBG_OBJ_CREATE(klass)
 #define DBG_OBJ_BASECLASS(klass)
 #define DBG_OBJ_ASSOC_PARENT(parent)

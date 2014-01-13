@@ -1631,29 +1631,37 @@ int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h,
 int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                              Textblock *lastGB, int lastExtIndex)
 {
-   //printf ("[%p] GET_BORDER (%p (allocated: %s), %s, %d, %d, %p, %d)\n",
-   //        containingBlock, textblock,
-   //        wasAllocated (textblock) ? "true" : "false",
-   //        side == LEFT ? "LEFT" : "RIGHT", y, h, lastGB, lastExtIndex);
+   DBG_OBJ_MSGF_O ("border", 0, textblock,
+                   "<b>getBorder</b> (%s, %d, %d, %p, %d)\n",
+                   side == LEFT ? "LEFT" : "RIGHT", y, h, lastGB, lastExtIndex);
+   DBG_OBJ_MSG_START_O (textblock);
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
 
-   //printf ("   searching in list:\n");
-   //for (int i = 0; i < list->size(); i++) {
-   //   printf ("      %d: %s\n", i, list->get(i)->toString());
-   //   //printf ("         (widget at (%d, %d))\n",
-   //   //        list->get(i)->widget->getAllocation()->x,
-   //   //        list->get(i)->widget->getAllocation()->y);
-   //}
+#ifdef RTFL_ENABLED
+   DBG_OBJ_MSG_O ("border", 1, textblock, "searching in list:");
+   DBG_OBJ_MSG_START_O (textblock);
+
+   for (int i = 0; i < list->size(); i++) {
+      DBG_OBJ_MSGF_O ("border", 1, textblock, "%d: %s\n",
+                      i, list->get(i)->toString());
+      DBG_OBJ_MSGF_O ("border", 1, textblock, "(widget at (%d, %d))\n",
+                      list->get(i)->widget->getAllocation()->x,
+                      list->get(i)->widget->getAllocation()->y);
+   }
+
+   DBG_OBJ_MSG_END_O (textblock);
+#endif
    
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
    
-   //printf ("   first = %d\n", first);
+   DBG_OBJ_MSGF_O ("border", 1, textblock, "first = %d\n", first);
    
-   if (first == -1)
+   if (first == -1) {
       // No float.
+      DBG_OBJ_MSG_END_O (textblock);
       return 0;
-   else {
+   } else {
       // It is not sufficient to find the first float, since a line
       // (with height h) may cover the region of multiple float, of
       // which the widest has to be choosen.
@@ -1663,8 +1671,8 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
       for (int i = first; covers && i < list->size(); i++) {
          Float *vloat = list->get(i);
          covers = vloat->covers (textblock, y, h);
-         //printf ("   float %d: %s; covers? %s.\n",
-         //        i, vloat->toString(), covers ? "yes" : "no");
+         DBG_OBJ_MSGF_O ("border", 1, textblock, "float %d: %s; covers? %s.\n",
+                         i, vloat->toString(), covers ? "yes" : "no");
          
          if (covers) {
             int borderDiff = getBorderDiff (textblock, vloat, side);
@@ -1672,10 +1680,11 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                vloat->generatingBlock->getStyle()->boxOffsetX() :
                vloat->generatingBlock->getStyle()->boxRestWidth();
             border = max (border, vloat->size.width + borderIn + borderDiff);
-            //printf ("   => border = %d\n", border);
+            DBG_OBJ_MSGF_O ("border", 1, textblock, "=> border = %d\n", border);
          }
       }
       
+      DBG_OBJ_MSG_END_O (textblock);
       return border;
    }
 }
