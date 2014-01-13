@@ -759,16 +759,31 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
  */
 void Textblock::checkPossibleLineHeightChange (int wordIndex)
 {
+   DBG_OBJ_MSGF ("construct.line.border", 0,
+                 "<b>checkPossibleLineHeightChange</b> (%d)", wordIndex);
+   DBG_OBJ_MSG_START ();
+
    Word *w = words->getRef (wordIndex);
    bool heightIncreased =
       containingBlock->outOfFlowMgr &&
-      (w->size.ascent > newLineAscent || w->size.descent >= newLineDescent);
+      (w->size.ascent > newLineAscent || w->size.descent > newLineDescent);
+
+   DBG_OBJ_MSGF ("construct.line.border", 1,
+                 "(old) line height = %d + %d, word height = %d + %d",
+                 newLineAscent, newLineDescent, w->size.ascent,
+                 w->size.descent);
 
    newLineAscent = misc::max (newLineAscent, w->size.ascent);
    newLineDescent = misc::max (newLineDescent, w->size.descent);
 
+   DBG_OBJ_MSGF ("construct.line.border", 1,
+                 "height increased? %s. (new) line height = %d + %d",
+                 heightIncreased ? "yes" : "no", newLineAscent, newLineDescent);
+
    if (heightIncreased)
       updateBorders (wordIndex, true, true);
+
+   DBG_OBJ_MSG_END ();
 }
 
 bool Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
@@ -803,6 +818,11 @@ bool Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
  */
 void Textblock::updateBorders (int wordIndex, bool left, bool right)
 {
+   DBG_OBJ_MSGF ("construct.line.border", 0,
+                 "<b>updateBorders</b> (%d, %s, %s)",
+                 wordIndex, left ? "true" : "false", right ? "true" : "false");
+   DBG_OBJ_MSG_START ();
+
    assert (left || right);
    
    int y = yOffsetOfPossiblyMissingLine (lines->size ());
@@ -835,6 +855,8 @@ void Textblock::updateBorders (int wordIndex, bool left, bool right)
 
    for (int i = firstIndex; i <= wordIndex; i++)
       accumulateWordData (i);
+
+   DBG_OBJ_MSG_END ();
 }
 
 int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,

@@ -1608,7 +1608,8 @@ int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h,
                                  Textblock *lastGB, int lastExtIndex)
 {
    int b = getBorder (textblock, LEFT, y, h, lastGB, lastExtIndex);
-   //printf ("getLeftBorder (%p, %d, %d) => %d\n", textblock, y, h, b);
+   DBG_OBJ_MSGF_O ("border", 0, textblock,
+                   "left border (y = %d, h = %d) => %d\n", y, h, b);
    return b;
 }
 
@@ -1622,7 +1623,8 @@ int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h,
                                   Textblock *lastGB, int lastExtIndex)
 {
    int b = getBorder (textblock, RIGHT, y, h, lastGB, lastExtIndex);
-   //printf ("getRightBorder (%p, %d, %d) => %d\n", textblock, y, h, b);
+   DBG_OBJ_MSGF_O ("border", 0, textblock,
+                   "right border (y = %d, h = %d) => %d\n", y, h, b);
    return b;
 }
 

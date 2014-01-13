@@ -57,6 +57,15 @@
       fflush (stdout); \
    } D_STMT_END
 
+// Variant which does not use "this", but an explicitly passed
+// object. Should be applied to other macros. (Also, for use in C.)
+#define DBG_OBJ_MSGF_O(aspect, prio, obj, fmt, ...) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-msg:%p:%s:%d:" fmt "\n", \
+              RTFL_PREFIX_ARGS, obj, aspect, prio, __VA_ARGS__); \
+      fflush (stdout); \
+   } D_STMT_END
+
 #define DBG_OBJ_MSG_START() \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-msg-start:%p\n", \
@@ -180,6 +189,7 @@
 
 #define DBG_OBJ_MSG(aspect, prio, msg)
 #define DBG_OBJ_MSGF(aspect, prio, fmt, ...)
+#define DBG_OBJ_MSGF_O(aspect, prio, obj, fmt, ...)
 #define DBG_OBJ_MSG_START(obj)
 #define DBG_OBJ_MSG_END(obj)
 #define DBG_OBJ_CREATE(klass)
