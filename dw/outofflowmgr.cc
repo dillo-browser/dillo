@@ -606,25 +606,28 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
    DBG_OBJ_MSG_START ();
 
    if (oldTBAlloc)
-      DBG_OBJ_MSGF ("resize.floats", 0, "old TB: %d, %d; %d * %d",
+      DBG_OBJ_MSGF ("resize.floats", 1, "old TB: %d, %d; %d * %d",
                     oldTBx, oldTBy, oldTBw, oldTBh);
    else
-      DBG_OBJ_MSG ("resize.floats", 0, "old TB: undefined");
-   DBG_OBJ_MSGF ("resize.floats", 0, "new TB: %d, %d; %d * %d",
+      DBG_OBJ_MSG ("resize.floats", 1, "old TB: undefined");
+   DBG_OBJ_MSGF ("resize.floats", 1, "new TB: %d, %d; %d * %d",
                  newTBx, newTBy, newTBw, newTBh);
 
    if (oldFlAlloc)
-      DBG_OBJ_MSGF ("resize.floats", 0, "old Fl: %d, %d; %d * %d",
+      DBG_OBJ_MSGF ("resize.floats", 1, "old Fl: %d, %d; %d * %d",
                     oldFlx, oldFly, oldFlw, oldFlh);
    else
-      DBG_OBJ_MSG ("resize.floats", 0, "old Fl: undefined");
-   DBG_OBJ_MSGF ("resize.floats", 0, "new Fl: %d, %d; %d * %d",
+      DBG_OBJ_MSG ("resize.floats", 1, "old Fl: undefined");
+   DBG_OBJ_MSGF ("resize.floats", 1, "new Fl: %d, %d; %d * %d",
                  newFlx, newFly, newFlw, newFlh);
 
    bool result;
    if (oldTBAlloc && oldFlAlloc) {
       bool oldCov = newFly + newFlh > newTBy && newFly < newTBy + newTBh;
       bool newCov = newFly + newFlh > newTBy && newFly < newTBy + newTBh;
+
+      DBG_OBJ_MSGF ("resize.floats", 0, "covered? then: %s, now: %s.",
+                    oldCov ? "yes" : "no", newCov ? "yes" : "no");
 
       if (oldCov && newCov) {
          int yOld = oldFly - oldTBy, yNew = newFly - newTBy;
