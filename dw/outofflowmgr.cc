@@ -623,7 +623,7 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
 
    bool result;
    if (oldTBAlloc && oldFlAlloc) {
-      bool oldCov = newFly + newFlh > newTBy && newFly < newTBy + newTBh;
+      bool oldCov = oldFly + oldFlh > oldTBy && oldFly < oldTBy + oldTBh;
       bool newCov = newFly + newFlh > newTBy && newFly < newTBy + newTBh;
 
       DBG_OBJ_MSGF ("resize.floats", 0, "covered? then: %s, now: %s.",
