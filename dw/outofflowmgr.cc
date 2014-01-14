@@ -66,7 +66,7 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->appendInt (yReal);
    sb->append (", size = { ");
    sb->appendInt (size.width);
-   sb->append (", ");
+   sb->append (" * ");
    sb->appendInt (size.ascent);
    sb->append (" + ");
    sb->appendInt (size.descent);
@@ -113,25 +113,38 @@ int OutOfFlowMgr::Float::yForContainer (int y)
 
 bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
 {
+   DBG_OBJ_MSGF_O ("border", 0, textblock, "<b>covers</b> (%d, %d) [vloat: %p]",
+                   y, h, widget);
+   DBG_OBJ_MSG_START_O (textblock);
+   
    int reqy, fly; // either widget or canvas coordinates
    if (oofm->wasAllocated (generatingBlock)) {
       assert (oofm->wasAllocated (textblock));
       reqy = oofm->getAllocation(textblock)->y + y;
       fly = oofm->getAllocation(generatingBlock)->y + yReal;
+      DBG_OBJ_MSGF_O ("border", 1, textblock,
+                      "allocated: reqy = %d + %d = %d, fly = %d + %d = %d",
+                      oofm->getAllocation(textblock)->y, y, reqy,
+                      oofm->getAllocation(generatingBlock)->y, yReal, fly);
    } else {
       assert (textblock == generatingBlock);
       reqy = y;
       fly = yReal;
+      DBG_OBJ_MSGF_O ("border", 1, textblock,
+                      "not allocated: reqy = %d, fly = %d", reqy, fly);
    }
 
    oofm->ensureFloatSize (this);
 
-   //printf ("[%p] COVERS (%p, %d, %d) => %d + %d + %d > %d && %d < %d + %d? "
-   //        "%s.\n", oofm->containingBlock, textblock, y, h, fly, size.ascent,
-   //        size.descent, reqy, fly, reqy, h,
-   //        (fly + size.ascent + size.descent > reqy && fly < reqy + h) ?
-   //        "yes" : "no");
+   DBG_OBJ_MSGF_O ("border", 1, textblock,
+                   "%d + (%d + %d) > %d? %s / %d < %d + %d? %s",
+                   fly, size.ascent, size.descent, reqy,
+                   fly + size.ascent + size.descent > reqy ?
+                   "<i>yes</i>" : "no",
+                   fly, reqy, h, fly < reqy + h ? "<i>yes</i>" : "no");
    
+   DBG_OBJ_MSG_END_O (textblock);
+
    return fly + size.ascent + size.descent > reqy && fly < reqy + h;
 }
 
@@ -1638,16 +1651,27 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
 
-#ifdef RTFL_ENABLED
+#ifdef DBG_RTFL
    DBG_OBJ_MSG_O ("border", 1, textblock, "searching in list:");
    DBG_OBJ_MSG_START_O (textblock);
 
    for (int i = 0; i < list->size(); i++) {
-      DBG_OBJ_MSGF_O ("border", 1, textblock, "%d: %s",
-                      i, list->get(i)->toString());
-      DBG_OBJ_MSGF_O ("border", 1, textblock, "(widget at (%d, %d))",
-                      list->get(i)->widget->getAllocation()->x,
-                      list->get(i)->widget->getAllocation()->y);
+      //DBG_OBJ_MSGF_O ("border", 1, textblock, "%d: %s",
+      //                i, list->get(i)->toString());
+      //DBG_OBJ_MSGF_O ("border", 1, textblock, "(widget at (%d, %d))",
+      //                list->get(i)->widget->getAllocation()->x,
+      //                list->get(i)->widget->getAllocation()->y);
+
+      Float *f = list->get(i);
+      DBG_OBJ_MSGF_O ("border", 1, textblock,
+                      "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d), "
+                      "%s, %s); widget at (%d, %d)",
+                      i, f->widget, f->index, f->sideSpanningIndex, f->yReq,
+                      f->yReal, f->size.width, f->size.ascent, f->size.descent,
+                      f->dirty ? "dirty" : "clean",
+                      f->sizeChangedSinceLastAllocation ? "scsla" : "sNcsla",
+                      f->widget->getAllocation()->x,
+                      f->widget->getAllocation()->y);
    }
 
    DBG_OBJ_MSG_END_O (textblock);
@@ -1671,8 +1695,8 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
       for (int i = first; covers && i < list->size(); i++) {
          Float *vloat = list->get(i);
          covers = vloat->covers (textblock, y, h);
-         DBG_OBJ_MSGF_O ("border", 1, textblock, "float %d: %s; covers? %s.",
-                         i, vloat->toString(), covers ? "yes" : "no");
+         DBG_OBJ_MSGF_O ("border", 1, textblock, "float %d (%p) covers? %s.",
+                         i, vloat->widget, covers ? "<b>yes</b>" : "no");
          
          if (covers) {
             int borderDiff = getBorderDiff (textblock, vloat, side);
