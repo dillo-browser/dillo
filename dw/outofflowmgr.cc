@@ -397,68 +397,10 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       TBInfo *tbInfo = tbInfosByTextblock->get (key);
       Textblock *tb = key->getTypedValue();
 
-      Allocation *tbAllocation = getAllocation (tb);
-      int xCB = tbAllocation->x - containingBlockAllocation.x;
-      int yCB = tbAllocation->y - containingBlockAllocation.y;
-      int width = tbAllocation->width;
-      int height = tbAllocation->ascent + tbAllocation->descent;
-
-#if 0
-      // (i) Check allocation change of textblocks.
-      if ((!tbInfo->wasAllocated || tbInfo->xCB != xCB || tbInfo->yCB != yCB ||
-           tbInfo->width != width || tbInfo->height != height)) {
-         if (tbInfo->wasAllocated)
-            DBG_OBJ_MSGF ("resize.floats", 1,
-                          "%p: old allocation (within CB): %d, %d; %d * %d",
-                          tb, tbInfo->xCB, tbInfo->yCB, tbInfo->width,
-                          tbInfo->height);
-         else
-            DBG_OBJ_MSGF ("resize.floats", 0, "%p: not allocated before", tb);
-
-         DBG_OBJ_MSGF ("resize.floats", 1,
-                       "%p: new allocation (within CB): %d, %d; %d * %d",
-                       tb, xCB, yCB, width, height);
-            
-         // Changed: change borders when covered by floats.
-         int oldPos, newPos;
-         Widget *oldFloat, *newFloat;
-         // To calculate the minimum, both allocations, old and new,
-         // have to be tested.
-      
-         // Old allocation:
-         bool c1 = isTextblockCoveredByFloats (tb,
-                                               tbInfo->xCB
-                                               + containingBlockAllocation.x,
-                                               tbInfo->yCB
-                                               + containingBlockAllocation.y,
-                                               tbInfo->width, tbInfo->height,
-                                               &oldPos, &oldFloat);
-         // new allocation:
-         int c2 = isTextblockCoveredByFloats (tb, tbAllocation->x,
-                                              tbAllocation->y, width,
-                                              height, &newPos, &newFloat);
-         DBG_OBJ_MSGF ("resize.floats", 1, "%p covered? then: %s, now: %s.",
-                       tb, c1 ? "yes" : "no", c2 ? "yes" : "no");
-
-         if (c1 || c2) {
-            if (!c1)
-               tb->borderChanged (newPos, newFloat);
-            else if (!c2)
-               tb->borderChanged (oldPos, oldFloat);
-            else {
-               if (oldPos < newPos)
-                  tb->borderChanged (oldPos, oldFloat);
-               else
-                  tb->borderChanged (newPos, newFloat);
-            }
-         }
-      }
-#else         
       int minFloatPos;
       Widget *minFloat;
       if (hasRelationChanged (tbInfo, &minFloatPos, &minFloat))
          tb->borderChanged (minFloatPos, minFloat);
-#endif
 
       // TODO Comment and re-number.
       checkChangedFloatSizes ();
@@ -681,72 +623,6 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
 
    DBG_OBJ_MSG_END ();
    return result;
-}
-
-bool OutOfFlowMgr::isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
-                                               int tbWidth, int tbHeight,
-                                               int *minFloatPos,
-                                               Widget **minFloat)
-{
-   int leftMinPos, rightMinPos;
-   Widget *leftMinFloat, *rightMinFloat;
-   bool c1 = isTextblockCoveredByFloats (leftFloatsCB, tb, tbx, tby,
-                                         tbWidth, tbHeight, &leftMinPos,
-                                         &leftMinFloat);
-   bool c2 = isTextblockCoveredByFloats (rightFloatsCB, tb, tbx, tby,
-                                         tbWidth, tbHeight, &rightMinPos,
-                                         &rightMinFloat);
-   if (c1 || c2) {
-      if (!c1) {
-         *minFloatPos = rightMinPos;
-         *minFloat = rightMinFloat;
-      } else if (!c2) {
-         *minFloatPos = leftMinPos;
-         *minFloat = leftMinFloat;
-      } else {
-         if (leftMinPos < rightMinPos) {
-            *minFloatPos = leftMinPos;
-            *minFloat = leftMinFloat;
-         } else{ 
-            *minFloatPos = rightMinPos;
-            *minFloat = rightMinFloat;
-         }
-      }
-   }
-
-   return c1 || c2;
-}
-
-bool OutOfFlowMgr::isTextblockCoveredByFloats (SortedFloatsVector *list,
-                                               Textblock *tb, int tbx, int tby,
-                                               int tbWidth, int tbHeight,
-                                               int *minFloatPos,
-                                               Widget **minFloat)
-{
-   bool covered = false;
-
-   for (int i = 0; i < list->size(); i++) {
-      // TODO binary search
-      Float *vloat = list->get(i);
-      int floatPos;
-
-      // TODO Clarify the old condition: tb != v->generatingBlock. Neccessary?
-      if (tb != vloat->generatingBlock &&
-          isTextblockCoveredByFloat (vloat, tb, tbx, tby, tbWidth, tbHeight,
-                                     &floatPos)) {
-         if (!covered || floatPos < *minFloatPos) {
-            *minFloatPos = floatPos;
-            *minFloat = vloat->widget;
-         }
-         covered = true;
-      }
-
-      // All floarts are searched, to find the minimum. TODO: Are
-      // floats sorted, so this can be shortened? (The first is the
-      // minimum?)
-   }
-
-   return covered;
 }
 
 bool OutOfFlowMgr::isTextblockCoveredByFloat (Float *vloat, Textblock *tb,

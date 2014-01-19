@@ -214,12 +214,6 @@ private:
                             int newFlx, int newFly, int newFlw, int newFlh,
                             Side side, int *floatPos);
 
-   bool isTextblockCoveredByFloats (Textblock *tb, int tbx, int tby,
-                                    int tbWidth, int tbHeight, int *minFloatPos,
-                                    core::Widget **minFloat);
-   bool isTextblockCoveredByFloats (SortedFloatsVector *list, Textblock *tb,
-                                    int tbx, int tby, int tbWidth, int tbHeight,
-                                    int *minFloatPos, core::Widget **minFloat);
    bool isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
                                    int tbx, int tby, int tbWidth, int tbHeight,
                                    int *floatPos);
