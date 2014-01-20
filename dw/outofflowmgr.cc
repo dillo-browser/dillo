@@ -647,7 +647,7 @@ bool OutOfFlowMgr::isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
 void OutOfFlowMgr::checkChangedFloatSizes ()
 {
    DBG_OBJ_MSG ("resize.floats", 0, "<b>checkChangedFloatSizes</b>");
-   DBG_OBJ_MSG_START ();             
+   DBG_OBJ_MSG_START ();
 
    checkChangedFloatSizes (leftFloatsCB);
    checkChangedFloatSizes (rightFloatsCB);
