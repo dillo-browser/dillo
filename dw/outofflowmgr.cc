@@ -461,7 +461,7 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
 {
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    bool covered = false;
-                                      
+   
    for (int i = 0; i < list->size(); i++) {
       // TODO binary search?
       Float *vloat = list->get(i);
@@ -652,7 +652,7 @@ void OutOfFlowMgr::checkChangedFloatSizes ()
    checkChangedFloatSizes (leftFloatsCB);
    checkChangedFloatSizes (rightFloatsCB);
 
-   DBG_OBJ_MSG_END ();             
+   DBG_OBJ_MSG_END ();
 }
 
 void OutOfFlowMgr::checkChangedFloatSizes (SortedFloatsVector *list)
@@ -698,7 +698,7 @@ void OutOfFlowMgr::checkChangedFloatSizes (SortedFloatsVector *list)
       }
    }
 
-   DBG_OBJ_MSG_END ();             
+   DBG_OBJ_MSG_END ();
 }
 
 void OutOfFlowMgr::moveFromGBToCB (Side side)
@@ -857,7 +857,7 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
    return
       widget->getStyle()->vloat != core::style::FLOAT_NONE ||
       widget->getStyle()->position == core::style::POSITION_ABSOLUTE ||
-      widget->getStyle()->position == core::style::POSITION_FIXED;      
+      widget->getStyle()->position == core::style::POSITION_FIXED;
 }
 
 bool OutOfFlowMgr::isWidgetHandledByOOFM (core::Widget *widget)
@@ -1251,7 +1251,7 @@ void OutOfFlowMgr::checkCoveragePosChanged (Float *vloat, int oldY)
       }
    }
 
-   DBG_OBJ_MSG_END ();             
+   DBG_OBJ_MSG_END ();
 }
 
 void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
