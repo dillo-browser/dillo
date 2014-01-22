@@ -1095,7 +1095,8 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    //printf ("   this float: %s\n", vloat->toString());
 
    SortedFloatsVector *listSame, *listOpp;
-   getFloatsLists (vloat, &listSame, &listOpp);
+   Side side;
+   getFloatsListsAndSide (vloat, &listSame, &listOpp, &side);
    ensureFloatSize (vloat);
    //printf ("   ensured size: %s\n", vloat->toString());
 
@@ -1175,7 +1176,7 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    // checking for yReq is wrong: yReq may remain the same, when yReal
    // changes, e. g. when previous float has changes its size.
    if (vloat->yReal != oldY)
-      checkCoveragePosChanged (vloat, oldY);
+      checkRelationPosChanged (vloat, side, oldY);
 
    DBG_OBJ_MSG_END ();
 }
@@ -1207,10 +1208,10 @@ bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
    return false;
 }
 
-void OutOfFlowMgr::checkCoveragePosChanged (Float *vloat, int oldY)
+void OutOfFlowMgr::checkRelationPosChanged (Float *vloat, Side side, int oldY)
 {
    DBG_OBJ_MSGF ("resize.floats", 0,
-                 "<b>checkCoveragePosChanged</b> (<widget: %p>, %d)",
+                 "<b>checkRelationPosChanged</b> (<widget: %p>, %d)",
                  vloat->widget, oldY);
    DBG_OBJ_MSG_START ();
 
@@ -1226,27 +1227,29 @@ void OutOfFlowMgr::checkCoveragePosChanged (Float *vloat, int oldY)
          if (textblock != vloat->generatingBlock && wasAllocated (textblock)) {
             Allocation *tba = getAllocation (textblock);
             Allocation *gba = getAllocation (vloat->generatingBlock);
-            int tby1 = tba->y;
-            int tby2 = tba->y + tba->ascent + tba->descent;
+            TBInfo *gbInfo = getTextblock (vloat->generatingBlock);
+            int tbx = tba->x - containingBlockAllocation.x,
+               tby = tba->y - containingBlockAllocation.y, tbw = tba->width,
+               tbh = tba->ascent + tba->descent;
+            // ensureFloatSize is not called; we take the old size
+            // here.  Potential changes are handled later. Notice that
+            // calcFloatX does not call ensureFloatSize.
+            int flx = calcFloatX (vloat, side,
+                                  gba->x - containingBlockAllocation.x,
+                                  gba->width, gbInfo->availWidth),
+               flyOld = oldY + gba->x - containingBlockAllocation.y,
+               flyNew = vloat->yReal + gba->x - containingBlockAllocation.y,
+               flw = vloat->size.width,
+               flh = vloat->size.ascent + vloat->size.descent;
+            int pos;
 
-            int flh =
-               vloat->dirty ? 0 : vloat->size.ascent + vloat->size.descent;
-            int y1old = gba->y + oldY, y2old = y1old + flh;
-            int y1new = gba->y + vloat->yReal, y2new = y1new + flh;
-
-            bool covered =
-               (y2old > tby1 && y1old < tby2) || (y2new > tby1 && y1new < tby2);
-
-            DBG_OBJ_MSGF ("resize.floats", 0,
-                          "%p covered: (%d > %d && %d < %d) || "
-                          "(%d > %d && %d < %d? %s.\n",
-                          textblock, y2old, tby1, y1old, tby2, y2new, tby1,
-                          y1new,tby2, covered ? "Yes" : "No");
-
-            if (covered) {
-               int yTextblock = gba->y + min (oldY, vloat->yReal) - tba->y;
-               textblock->borderChanged (yTextblock, vloat->widget);
-            }
+            if (hasRelationChanged (true, tbx, tby, tbw, tbh,
+                                    tbx, tby, tbw, tbh,
+                                    true, flx, flyOld, flh, flw,
+                                    flx, flyNew, flh, flw, side, &pos))
+               textblock->borderChanged (pos + containingBlockAllocation.y
+                                         - tba->y,
+                                         vloat->widget);
          }
       }
    }
@@ -1254,8 +1257,10 @@ void OutOfFlowMgr::checkCoveragePosChanged (Float *vloat, int oldY)
    DBG_OBJ_MSG_END ();
 }
 
-void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
-                                   SortedFloatsVector **listOpp)
+void OutOfFlowMgr::getFloatsListsAndSide (Float *vloat,
+                                          SortedFloatsVector **listSame,
+                                          SortedFloatsVector **listOpp,
+                                          Side *side)
 {
    TBInfo *tbInfo = getTextblock (vloat->generatingBlock);
       
@@ -1268,6 +1273,7 @@ void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
          if (listSame) *listSame = tbInfo->leftFloatsGB;
          if (listOpp) *listOpp = tbInfo->rightFloatsGB;
       }
+      if (side) *side = LEFT;
       break;
 
    case FLOAT_RIGHT:
@@ -1278,6 +1284,7 @@ void OutOfFlowMgr::getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
          if (listSame) *listSame = tbInfo->rightFloatsGB;
          if (listOpp) *listOpp = tbInfo->leftFloatsGB;
       }
+      if (side) *side = RIGHT;
       break;
 
    default:

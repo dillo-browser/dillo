@@ -229,10 +229,10 @@ private:
    core::Widget *getAbsolutelyPositionedWidgetAtPoint (int x, int y, int level);
 
    bool collides (Float *vloat, Float *other, int *yReal);
-   void checkCoveragePosChanged (Float *vloat, int oldY);
+   void checkRelationPosChanged (Float *vloat, Side side, int oldY);
 
-   void getFloatsLists (Float *vloat, SortedFloatsVector **listSame,
-                        SortedFloatsVector **listOpp);
+   void getFloatsListsAndSide (Float *vloat, SortedFloatsVector **listSame,
+                               SortedFloatsVector **listOpp, Side *side);
 
    void getFloatsSize (SortedFloatsVector *list, Side side, int *width,
                        int *height);
