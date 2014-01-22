@@ -387,9 +387,10 @@ void OutOfFlowMgr::sizeAllocateEnd ()
    for (int i = 0; i < rightFloatsCB->size (); i++)
       ensureFloatSize (rightFloatsCB->get (i));
 
-   // Textblocks have already been allocated, but we (i) check
-   // allocation change of textblocks, and (ii) store some information
-   // for later use.
+   // Textblocks have already been allocated here.
+
+   // Check changes of both textblocks and floats allocation. (All is checked
+   // by hasRelationChanged (...).)
    for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
            tbInfosByTextblock->iterator ();
         it.hasNext (); ) {
@@ -401,9 +402,6 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       Widget *minFloat;
       if (hasRelationChanged (tbInfo, &minFloatPos, &minFloat))
          tb->borderChanged (minFloatPos, minFloat);
-
-      // TODO Comment and re-number.
-      checkChangedFloatSizes ();
    }
   
    // Floats and absolutely positioned blocks have to be allocated
@@ -476,23 +474,14 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
       if (tbInfo->textblock != vloat->generatingBlock) {
          Allocation *tba = getAllocation (tbInfo->textblock);
          Allocation *gba = getAllocation (vloat->generatingBlock);
-         TBInfo *gbInfo = getTextblock (vloat->generatingBlock);
+         Allocation *fla = vloat->widget->getAllocation ();
 
-         int oldFlx, oldFly, newFlx, newFly;
-
-         if (gbInfo->wasAllocated) {
-            oldFlx= calcFloatX (vloat, side, gbInfo->xCB, gbInfo->width,
-                                gbInfo->availWidth);
-            oldFly = gbInfo->xCB + vloat->yReal;
-         } else
-            oldFlx = oldFly = 0;
-
-         newFlx =
+         int newFlx =
             calcFloatX (vloat, side,
                         vloat->generatingBlock->getAllocation()->x
                         - containingBlockAllocation.x,
                         gba->width, vloat->generatingBlock->getAvailWidth ());
-         newFly = vloat->generatingBlock->getAllocation()->y
+         int newFly = vloat->generatingBlock->getAllocation()->y
             - containingBlockAllocation.y + vloat->yReal;
          
          DBG_OBJ_MSGF ("resize.floats", 0,
@@ -506,9 +495,13 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
                                  tba->x - containingBlockAllocation.x,
                                  tba->y - containingBlockAllocation.x,
                                  tba->width, tba->ascent + tba->descent,
-                                 gbInfo->wasAllocated,
-                                 oldFlx, oldFly, vloat->size.width,
-                                 vloat->size.ascent + vloat->size.descent,
+                                 vloat->widget->wasAllocated (),
+                                 // When not allocated before, these values
+                                 // are undefined, but this does not matter,
+                                 // since they are neither used.
+                                 fla->x - containingBlockAllocation.x,
+                                 fla->y - containingBlockAllocation.y,
+                                 fla->width, fla->ascent + fla->descent,
                                  newFlx, newFly, vloat->size.width,
                                  vloat->size.ascent + vloat->size.descent,
                                  side, &floatPos)) {
