@@ -378,16 +378,16 @@ void OutOfFlowMgr::sizeAllocateEnd ()
    DBG_OBJ_MSG ("resize.floats", 0, "<b>sizeAllocateEnd</b>");
    DBG_OBJ_MSG_START ();
 
-   // 1. Move floats from GB lists to the one CB list.
+   // Move floats from GB lists to the one CB list.
    moveFromGBToCB (LEFT);
    moveFromGBToCB (RIGHT);
-      
-   // 2. Floats and absolutely positioned blocks have to be allocated
-   sizeAllocateFloats (LEFT);
-   sizeAllocateFloats (RIGHT);
-   sizeAllocateAbsolutelyPositioned ();
+   
+   for (int i = 0; i < leftFloatsCB->size (); i++)
+      ensureFloatSize (leftFloatsCB->get (i));
+   for (int i = 0; i < rightFloatsCB->size (); i++)
+      ensureFloatSize (rightFloatsCB->get (i));
 
-   // 3. Textblocks have already been allocated, but we (i) check
+   // Textblocks have already been allocated, but we (i) check
    // allocation change of textblocks, and (ii) store some information
    // for later use.
    for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
@@ -405,8 +405,13 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       // TODO Comment and re-number.
       checkChangedFloatSizes ();
    }
+  
+   // Floats and absolutely positioned blocks have to be allocated
+   sizeAllocateFloats (LEFT);
+   sizeAllocateFloats (RIGHT);
+   sizeAllocateAbsolutelyPositioned ();
 
-   // (ii) Store some information for later use.
+   // Store some information for later use.
    for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
            tbInfosByTextblock->iterator ();
         it.hasNext (); ) {
@@ -750,11 +755,8 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side)
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
 
    for (int i = 0; i < list->size(); i++) {
-      // TODO Missing: check newly calculated positions, collisions,
-      // and queue resize, when neccessary. TODO: See step 2?
-
       Float *vloat = list->get(i);
-      ensureFloatSize (vloat);
+      // "ensureFloatSize (vloat)" was already called before.
 
       Allocation *gbAllocation = getAllocation(vloat->generatingBlock);
       Allocation *cbAllocation = getAllocation(containingBlock);
@@ -770,11 +772,6 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side)
       childAllocation.descent = vloat->size.descent;
       
       vloat->widget->sizeAllocate (&childAllocation);
-
-      //printf ("   allocate %s float #%d -> (%d, %d), %d x (%d + %d)\n",
-      //        side == LEFT ? "left" : "right", i, childAllocation.x,
-      //        childAllocation.y, childAllocation.width,
-      //        childAllocation.ascent, childAllocation.descent);
    }
 }
 
