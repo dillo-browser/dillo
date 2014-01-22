@@ -1480,9 +1480,12 @@ void Textblock::fillParagraphs ()
 
    // Notice that wrapRefParagraphs refers to the lines, not to the paragraphs.
    int firstWordOfLine;
-   if (lines->size () > 0 && wrapRefParagraphs > 0)
-      firstWordOfLine = lines->getRef(wrapRefParagraphs - 1)->lastWord + 1;
-   else
+   if (lines->size () > 0 && wrapRefParagraphs > 0) {
+      // Sometimes, wrapRefParagraphs is larger than lines->size(), due to
+      // floats? (Has to be clarified.)
+      int lineNo = misc::min (wrapRefParagraphs, lines->size ()) - 1;
+      firstWordOfLine = lines->getRef(lineNo)->lastWord + 1;
+   } else
       firstWordOfLine = 0;
 
    int parNo;
