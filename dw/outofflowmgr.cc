@@ -441,6 +441,12 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       tbInfo->availWidth = tb->getAvailWidth ();
    }
 
+   for (int i = 0; i < leftFloatsCB->size(); i++)
+      leftFloatsCB->get(i)->updateAllocation ();
+
+   for (int i = 0; i < rightFloatsCB->size(); i++)
+      rightFloatsCB->get(i)->updateAllocation ();
+
    DBG_OBJ_MSG_END ();
 }
 
