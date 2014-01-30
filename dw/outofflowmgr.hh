@@ -12,6 +12,8 @@ class Textblock;
  */
 class OutOfFlowMgr
 {
+   friend class WidgetInfo;
+
 private:
    enum Side { LEFT, RIGHT };
 
@@ -20,16 +22,52 @@ private:
    // These two values are set by sizeAllocateStart(), and they are
    // accessable also within sizeAllocateEnd(), and also for the
    // containing block, for which allocation and WAS_ALLOCATED is set
-   // *after* sizeAllocateEnd(). See the two inline functions below
+   // *after* sizeAllocateEnd(). See the two inline functions
+   // wasAllocated(Widget*) and getAllocation(Widget*) (further down)
    // for usage.
    core::Allocation containingBlockAllocation;
    bool containingBlockWasAllocated;
 
-   class Float: public lout::object::Comparable
+   class WidgetInfo: public lout::object::Comparable
    {
    private:
+      bool wasAllocated;
+      int xCB, yCB; // relative to the containing block
+      int width, height;
+
       OutOfFlowMgr *oofm;
+      core::Widget *widget;
+
+   protected:
+      OutOfFlowMgr *getOutOfFlowMgr () { return oofm; }
+
+   public:
+      WidgetInfo (OutOfFlowMgr *oofm, core::Widget *widget);
+
+      int compareTo(Comparable *other);
       
+      inline bool wasThenAllocated () { return wasAllocated; }
+      inline int getOldXCB () { return xCB; }
+      inline int getOldYCB () { return yCB; }
+      inline int getOldWidth () { return width; }
+      inline int getOldHeight () { return height; }
+
+      inline bool isNowAllocated () { return widget->wasAllocated (); }
+      inline int getNewXCB () { return widget->getAllocation()->x -
+            oofm->containingBlockAllocation.x; }
+      inline int getNewYCB () { return widget->getAllocation()->y -
+            oofm->containingBlockAllocation.y; }
+      inline int getNewWidth () { return widget->getAllocation()->width; }
+      inline int getNewHeight () { return widget->getAllocation()->ascent +
+            widget->getAllocation()->descent; }
+      
+      void updateAllocation ();
+
+      inline core::Widget *getWidget () { return widget; }
+   };
+
+   class Float: public WidgetInfo
+   {
    public:
       class CompareSideSpanningIndex: public lout::object::Comparator
       {
@@ -46,7 +84,6 @@ private:
          int compare(Object *o1, Object *o2);
       };
 
-      core::Widget *widget;
       Textblock *generatingBlock;
       int externalIndex;
       int yReq, yReal; // relative to generator, not container
@@ -123,14 +160,11 @@ private:
       { lout::container::typed::Vector<Float>::clear (); }
    };
 
-   class TBInfo: public lout::object::Object
+   class TBInfo: public WidgetInfo
    {
    public:
-      bool wasAllocated;
-      int xCB, yCB; // relative to the containing block
-      int width, height, availWidth;
+      int availWidth;
       int index; // position within "tbInfos"
-      Textblock *textblock; // for debugging; may be removed again (?)
 
       TBInfo *parent;
       int parentExtIndex;
@@ -142,6 +176,8 @@ private:
       TBInfo (OutOfFlowMgr *oofm, Textblock *textblock,
               TBInfo *parent, int parentExtIndex);
       ~TBInfo ();
+
+      inline Textblock *getTextblock () { return (Textblock*)getWidget (); }
    };
 
    class AbsolutelyPositioned: public lout::object::Object
@@ -371,9 +407,9 @@ public:
 
    inline core::Widget *getWidget (int i) {
       if (i < leftFloatsAll->size())
-         return leftFloatsAll->get(i)->widget;
+         return leftFloatsAll->get(i)->getWidget ();
       else if (i < leftFloatsAll->size() + rightFloatsAll->size())
-         return rightFloatsAll->get(i - leftFloatsAll->size())->widget;
+         return rightFloatsAll->get(i - leftFloatsAll->size())->getWidget ();
       else
          return absolutelyPositioned->get(i - (leftFloatsAll->size() +
                                                rightFloatsAll->size()))->widget;

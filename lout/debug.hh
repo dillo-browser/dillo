@@ -17,6 +17,8 @@
 #define D_STMT_START      do
 #define D_STMT_END        while (0)
 
+#define D_STMT_NOP        D_STMT_START { } D_STMT_END
+
 # ifdef DEBUG_LEVEL
 #    define DEBUG_MSG(level, ...)                     \
         D_STMT_START {                                \
@@ -211,28 +213,28 @@
 
 #else /* DBG_RTFL */
 
-#define DBG_OBJ_MSG(aspect, prio, msg)
-#define DBG_OBJ_MSG_O(aspect, prio, obj, msg)
-#define DBG_OBJ_MSGF(aspect, prio, fmt, ...)
-#define DBG_OBJ_MSGF_O(aspect, prio, obj, fmt, ...)
-#define DBG_OBJ_MSG_START()
-#define DBG_OBJ_MSG_START_O(obj)
-#define DBG_OBJ_MSG_END()
-#define DBG_OBJ_MSG_END_O(obj)
-#define DBG_OBJ_CREATE(klass)
-#define DBG_OBJ_BASECLASS(klass)
-#define DBG_OBJ_ASSOC_PARENT(parent)
-#define DBG_OBJ_ASSOC_CHILD(child)
-#define DBG_OBJ_ASSOC(parent, child)
-#define DBG_OBJ_SET_NUM(var, val)
-#define DBG_OBJ_SET_STR(var, val)
-#define DBG_OBJ_SET_PTR(var, val)
-#define DBG_OBJ_ARRSET_NUM(var, ind, val)
-#define DBG_OBJ_ARRSET_STR(var, ind, val)
-#define DBG_OBJ_ARRSET_PTR(var, ind, val)
-#define DBG_OBJ_ARRATTRSET_NUM(var, ind, attr, val)
-#define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val)
-#define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val)
+#define DBG_OBJ_MSG(aspect, prio, msg)               D_STMT_NOP
+#define DBG_OBJ_MSG_O(aspect, prio, obj, msg)        D_STMT_NOP
+#define DBG_OBJ_MSGF(aspect, prio, fmt, ...)         D_STMT_NOP
+#define DBG_OBJ_MSGF_O(aspect, prio, obj, fmt, ...)  D_STMT_NOP
+#define DBG_OBJ_MSG_START()                          D_STMT_NOP
+#define DBG_OBJ_MSG_START_O(obj)                     D_STMT_NOP
+#define DBG_OBJ_MSG_END()                            D_STMT_NOP
+#define DBG_OBJ_MSG_END_O(obj)                       D_STMT_NOP
+#define DBG_OBJ_CREATE(klass)                        D_STMT_NOP
+#define DBG_OBJ_BASECLASS(klass)                     D_STMT_NOP
+#define DBG_OBJ_ASSOC_PARENT(parent)                 D_STMT_NOP
+#define DBG_OBJ_ASSOC_CHILD(child)                   D_STMT_NOP
+#define DBG_OBJ_ASSOC(parent, child)                 D_STMT_NOP
+#define DBG_OBJ_SET_NUM(var, val)                    D_STMT_NOP
+#define DBG_OBJ_SET_STR(var, val)                    D_STMT_NOP
+#define DBG_OBJ_SET_PTR(var, val)                    D_STMT_NOP
+#define DBG_OBJ_ARRSET_NUM(var, ind, val)            D_STMT_NOP
+#define DBG_OBJ_ARRSET_STR(var, ind, val)            D_STMT_NOP
+#define DBG_OBJ_ARRSET_PTR(var, ind, val)            D_STMT_NOP
+#define DBG_OBJ_ARRATTRSET_NUM(var, ind, attr, val)  D_STMT_NOP
+#define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val)  D_STMT_NOP
+#define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val)  D_STMT_NOP
 #define DBG_OBJ_COLOR(klass, color)
 
 #endif /* DBG_RTFL */
