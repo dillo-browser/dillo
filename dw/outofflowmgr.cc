@@ -412,9 +412,10 @@ void OutOfFlowMgr::sizeAllocateEnd ()
    sizeAllocateFloats (RIGHT);
    sizeAllocateAbsolutelyPositioned ();
 
-   // Textblocks have already been allocated, but we (i) check
-   // allocation change of textblocks, and (ii) store some information
-   // for later use.
+   // Textblocks have already been allocated here.
+
+   // Check changes of both textblocks and floats allocation. (All is checked
+   // by hasRelationChanged (...).)
    for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
            tbInfosByTextblock->iterator ();
         it.hasNext (); ) {
@@ -426,9 +427,6 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       Widget *minFloat;
       if (hasRelationChanged (tbInfo, &minFloatPos, &minFloat))
          tb->borderChanged (minFloatPos, minFloat);
-
-      // TODO Comment and re-number.
-      checkChangedFloatSizes ();
    }
   
    // Store some information for later use.
@@ -512,6 +510,9 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
                                  tbInfo->getNewWidth (),
                                  tbInfo->getNewHeight (),
                                  vloat->wasThenAllocated (),
+                                 // When not allocated before, these values
+                                 // are undefined, but this does not matter,
+                                 // since they are neither used.
                                  vloat->getOldXCB (), vloat->getOldYCB (),
                                  vloat->getOldWidth (), vloat->getOldHeight (),
                                  newFlx, newFly, vloat->size.width,
