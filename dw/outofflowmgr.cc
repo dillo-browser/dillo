@@ -44,13 +44,21 @@ int OutOfFlowMgr::WidgetInfo::compareTo(Comparable *other)
    return 0;
 }
 
+
+void OutOfFlowMgr::WidgetInfo::update (bool wasAllocated, int xCB, int yCB,
+                                       int width, int height)
+{
+   this->wasAllocated = wasAllocated;
+   this->xCB = xCB;
+   this->yCB = yCB;
+   this->width = width;
+   this->height = height;
+}
+
 void OutOfFlowMgr::WidgetInfo::updateAllocation ()
 {
-   wasAllocated = isNowAllocated ();
-   xCB = getNewXCB ();
-   yCB = getNewYCB ();
-   width = getNewWidth ();
-   height = getNewHeight ();
+   update (isNowAllocated (), getNewXCB (), getNewYCB (), getNewWidth (),
+           getNewHeight ());
 }
 
 // ----------------------------------------------------------------------
@@ -1225,41 +1233,47 @@ void OutOfFlowMgr::checkRelationPosChanged (Float *vloat, Side side, int oldY)
 
    // Only this float has been changed (see tellFloatPosition), so
    // only this float has to be tested against all textblocks.
-   if (wasAllocated (vloat->generatingBlock)) {
+   if (vloat->isNowAllocated ()) {
       // TODO This (and similar code) is not very efficient.
+      Allocation *gba = getAllocation (vloat->generatingBlock);
+      TBInfo *gbInfo = getTextblock (vloat->generatingBlock);
+      int newFlx = calcFloatX (vloat, side,
+                               gba->x - containingBlockAllocation.x,
+                               gba->width, gbInfo->availWidth),
+         newFly = vloat->yReal + gba->x - containingBlockAllocation.y;
+
       for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
               tbInfosByTextblock->iterator (); it.hasNext (); ) {
          TypedPointer <Textblock> *key = it.getNext ();
          Textblock *textblock = key->getTypedValue();
+         // ensureFloatSize is not called; we take the old size
+         // here.  Potential changes are handled later. Notice that
+         // calcFloatX does not call ensureFloatSize.
 
          if (textblock != vloat->generatingBlock && wasAllocated (textblock)) {
             Allocation *tba = getAllocation (textblock);
-            Allocation *gba = getAllocation (vloat->generatingBlock);
-            TBInfo *gbInfo = getTextblock (vloat->generatingBlock);
             int tbx = tba->x - containingBlockAllocation.x,
                tby = tba->y - containingBlockAllocation.y, tbw = tba->width,
                tbh = tba->ascent + tba->descent;
-            // ensureFloatSize is not called; we take the old size
-            // here.  Potential changes are handled later. Notice that
-            // calcFloatX does not call ensureFloatSize.
-            int flx = calcFloatX (vloat, side,
-                                  gba->x - containingBlockAllocation.x,
-                                  gba->width, gbInfo->availWidth),
-               flyOld = oldY + gba->x - containingBlockAllocation.y,
-               flyNew = vloat->yReal + gba->x - containingBlockAllocation.y,
-               flw = vloat->size.width,
-               flh = vloat->size.ascent + vloat->size.descent;
             int pos;
 
             if (hasRelationChanged (true, tbx, tby, tbw, tbh,
                                     tbx, tby, tbw, tbh,
-                                    true, flx, flyOld, flh, flw,
-                                    flx, flyNew, flh, flw, side, &pos))
+                                    vloat->wasThenAllocated (),
+                                    vloat->getOldXCB (), vloat->getOldYCB (),
+                                    vloat->getOldWidth (),
+                                    vloat->getOldHeight (),
+                                    newFlx, newFly, vloat->size.width,
+                                    vloat->size.ascent + vloat->size.descent,
+                                    side, &pos))
                textblock->borderChanged (pos + containingBlockAllocation.y
                                          - tba->y,
                                          vloat->getWidget ());
          }
       }
+      
+      vloat->update (true, newFlx, newFly, vloat->size.width,
+                     vloat->size.ascent + vloat->size.descent);
    }
 
    DBG_OBJ_MSG_END ();

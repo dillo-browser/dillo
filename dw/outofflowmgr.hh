@@ -61,6 +61,7 @@ private:
       inline int getNewHeight () { return widget->getAllocation()->ascent +
             widget->getAllocation()->descent; }
       
+      void update (bool wasAllocated, int xCB, int yCB, int width, int height);
       void updateAllocation ();
 
       inline core::Widget *getWidget () { return widget; }
