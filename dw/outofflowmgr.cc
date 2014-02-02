@@ -513,7 +513,7 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
          
          DBG_OBJ_MSGF ("resize.floats", 0,
                        "Has relation changed between textblock %p and "
-                       "float %p?", tbInfo->textblock, vloat->widget);
+                       "float %p?", tbInfo->getWidget (), vloat->getWidget ());
          DBG_OBJ_MSG_START ();
          
          if (hasRelationChanged (tbInfo->wasThenAllocated (),
@@ -694,7 +694,7 @@ void OutOfFlowMgr::checkChangedFloatSizes (SortedFloatsVector *list)
       if (vloat->sizeChangedSinceLastAllocation &&
           wasAllocated (vloat->generatingBlock)) {
          DBG_OBJ_MSGF ("resize.floats", 1, "float %p: checking textblocks",
-                       vloat->widget);
+                       vloat->getWidget ());
          DBG_OBJ_MSG_START ();
 
          for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
