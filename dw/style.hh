@@ -448,7 +448,7 @@ inline int multiplyWithRelLength(int x, Length l) {
    return x * relLengthVal(l);
 }
 
-                                       
+
 enum {
    /** \brief Represents "auto" lengths. */
    LENGTH_AUTO = 0
@@ -813,7 +813,7 @@ public:
    {
    public:
       void getPaddingArea (int *x, int *y, int *width, int *height);
-      
+
       StyleImage *getBackgroundImage ();
       BackgroundRepeat getBackgroundRepeat ();
       BackgroundAttachment getBackgroundAttachment ();

@@ -1382,7 +1382,7 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
  * by closing them before opening another.
  * This is not an HTML SPEC restriction , but it avoids lots of trouble
  * inside dillo (concurrent inputs), and makes almost no sense to have.
- */ 
+ */
 static void Html_tag_cleanup_nested_inputs(DilloHtml *html, int new_idx)
 {
    static int i_BUTTON = a_Html_tag_index("button"),
@@ -1695,9 +1695,9 @@ static void Html_tag_close_head(DilloHtml *html)
          /* match for the well formed start of HEAD section */
          if (html->Num_TITLE == 0)
             BUG_MSG("HEAD section lacks the TITLE element\n");
-   
+
          html->InFlags &= ~IN_HEAD;
-   
+
          /* charset is already set, load remote stylesheets now */
          for (int i = 0; i < html->cssUrls->size(); i++) {
             a_Html_load_stylesheet(html, html->cssUrls->get(i));

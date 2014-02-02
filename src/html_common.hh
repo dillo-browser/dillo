@@ -233,7 +233,7 @@ public:
    { return styleEngine->wordStyle (bw, base_url); }
 
    inline void restyle () { styleEngine->restyle (bw, base_url); }
-   
+
 };
 
 /*

@@ -551,7 +551,7 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
 
                a_Url_free (imgUrl);
             }
-            break;            
+            break;
          case CSS_PROPERTY_BACKGROUND_POSITION:
             computeLength (&attrs->backgroundPositionX, p->value.posVal->posX,
                            attrs->font);

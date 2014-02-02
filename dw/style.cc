@@ -546,7 +546,7 @@ void StyleImage::StyleImgRenderer::drawRow (int row)
 
       int w = image->imgbufSrc->getRootWidth ();
       int h = image->imgbufSrc->getRootHeight ();
-      
+
       for (int x = 0; x < image->tilesX; x++)
          for (int y = 0; y < image->tilesX; y++)
             image->imgbufSrc->copyTo (image->imgbufTiled, x * w, y * h,
@@ -602,20 +602,20 @@ void StyleImage::ExternalImgRenderer::drawRow (int row)
       StyleImage *backgroundImage;
       if (readyToDraw () && (backgroundImage = getBackgroundImage ())) {
          // All single rows are drawn.
-         
+
          Imgbuf *imgbuf = backgroundImage->getImgbufSrc();
          int imgWidth = imgbuf->getRootWidth ();
          int imgHeight = imgbuf->getRootHeight ();
-         
+
          int x, y, width, height;
          getBgArea (&x, &y, &width, &height);
-         
+
          int xRef, yRef, widthRef, heightRef;
          getRefArea (&xRef, &yRef, &widthRef, &heightRef);
-         
+
          bool repeatX, repeatY, doDraw;
          int origX, origY, tileX1, tileX2, tileY1, tileY2;
-         
+
          calcBackgroundRelatedValues (backgroundImage,
                                       getBackgroundRepeat (),
                                       getBackgroundAttachment (),
@@ -635,7 +635,7 @@ void StyleImage::ExternalImgRenderer::drawRow (int row)
             for (int tileY = tileY1; tileY <= tileY2; tileY++) {
                int x1 = misc::max (origX + tileX1 * imgWidth, x);
                int x2 = misc::min (origX + (tileX2 + 1) * imgWidth, x + width);
-               
+
                int yt = origY + tileY * imgHeight + row;
                if (yt >= y && yt < y + height)
                   draw (x1, yt, x2 - x1, 1);
@@ -1196,7 +1196,7 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
                                  Color::SHADING_INVERSE : Color::SHADING_NORMAL,
                                  true, intersection.x, intersection.y,
                                  intersection.width, intersection.height);
-         
+
          if (bgImage)
             drawBackgroundImage (view, style->backgroundImage,
                                  style->backgroundRepeat,
@@ -1206,7 +1206,7 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
                                  intersection.x, intersection.y,
                                  intersection.width, intersection.height,
                                  xRef, yRef, widthRef, heightRef);
-                                   
+
       }
    }
 }
@@ -1225,7 +1225,7 @@ void drawBackgroundImage (View *view, StyleImage *backgroundImage,
 
    bool repeatX, repeatY, doDraw;
    int origX, origY, tileX1, tileX2, tileY1, tileY2;
-   
+
    calcBackgroundRelatedValues (backgroundImage, backgroundRepeat,
                                 backgroundAttachment, backgroundPositionX,
                                 backgroundPositionY, x, y, width, height,
@@ -1258,8 +1258,8 @@ void drawBackgroundImage (View *view, StyleImage *backgroundImage,
             int yt = origY + tileY * imgHeightS;
             int y1 = misc::max (yt, y);
             int y2 = misc::min (yt + imgHeightT, y + height);
-            
-            view->drawImage (imgbufT, xt, yt, x1 - xt, y1 - yt, 
+
+            view->drawImage (imgbufT, xt, yt, x1 - xt, y1 - yt,
                              x2 - x1, y2 - y1);
          }
    }
@@ -1285,7 +1285,7 @@ void calcBackgroundRelatedValues (StyleImage *backgroundImage,
       backgroundRepeat == BACKGROUND_REPEAT_X;
    *repeatY = backgroundRepeat == BACKGROUND_REPEAT ||
       backgroundRepeat == BACKGROUND_REPEAT_Y;
-   
+
    *origX = xRef +
       (isPerLength (backgroundPositionX) ?
        multiplyWithPerLength (widthRef - imgWidth, backgroundPositionX) :
@@ -1294,7 +1294,7 @@ void calcBackgroundRelatedValues (StyleImage *backgroundImage,
       (isPerLength (backgroundPositionY) ?
        multiplyWithPerLength (heightRef - imgHeight, backgroundPositionY) :
        absLengthVal (backgroundPositionY));
-   
+
    *tileX1 = xDraw < *origX ?
       - (*origX - xDraw + imgWidth - 1) / imgWidth :
       (xDraw - *origX) / imgWidth;
@@ -1307,7 +1307,7 @@ void calcBackgroundRelatedValues (StyleImage *backgroundImage,
    *tileY2 = *origY < yDraw + heightDraw ?
       (yDraw + heightDraw - *origY - 1) / imgHeight :
       - (*origY - (yDraw + heightDraw) + imgHeight - 1) / imgHeight;
-   
+
    *doDraw = true;
    if (!*repeatX) {
       // Only center tile (tileX = 0) is drawn, ...
@@ -1318,7 +1318,7 @@ void calcBackgroundRelatedValues (StyleImage *backgroundImage,
          // ... but is not visible.
          *doDraw = false;
    }
-   
+
    if (!*repeatY) {
       // Analogue.
       if (*tileY1 <= 0 && *tileY2 >= 0)

@@ -1072,7 +1072,7 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
             for (int col = 0; col < numCols; col++) {
                if (core::style::isPerLength (colPercents->get(col))) {
                   // This could cause rounding errors:
-                  // 
+                  //
                   // int d =
                   //    core::dw::multiplyWithPerLength (extraWidth,
                   //                                     colPercents->get(col))

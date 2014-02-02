@@ -114,7 +114,7 @@ private:
    private:
       Vector *vector;
       int index;
-      
+
    public:
       VectorIterator(Vector *vector) { this->vector = vector; index = -1; }
       bool hasNext();
