@@ -492,7 +492,7 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
                                        int *minFloatPos, Widget **minFloat)
 {
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
-   bool covered = false;
+   bool changed = false;
    
    for (int i = 0; i < list->size(); i++) {
       // TODO binary search?
@@ -532,13 +532,13 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
                                  newFlx, newFly, vloat->size.width,
                                  vloat->size.ascent + vloat->size.descent,
                                  side, &floatPos)) {
-            if (!covered || floatPos < *minFloatPos) {
+            DBG_OBJ_MSGF ("resize.floats", 0, "Yes: floatPos = %d.", floatPos);
+
+            if (!changed || floatPos < *minFloatPos) {
                *minFloatPos = floatPos;
                *minFloat = vloat->getWidget ();
             }
-            covered = true;
-
-            DBG_OBJ_MSG ("resize.floats", 0, "Yes.");
+            changed = true;
          } else
             DBG_OBJ_MSG ("resize.floats", 0, "No.");
 
@@ -550,7 +550,7 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
       // minimum?)
    }
 
-   return covered;
+   return changed;
 }
 
 /**
