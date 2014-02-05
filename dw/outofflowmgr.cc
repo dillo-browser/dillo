@@ -512,8 +512,9 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
             - containingBlockAllocation.y + vloat->yReal;
          
          DBG_OBJ_MSGF ("resize.floats", 0,
-                       "Has relation changed between textblock %p and "
-                       "float %p?", tbInfo->getWidget (), vloat->getWidget ());
+                       "Has relation changed between textblock %p and %s "
+                       "float %p?", tbInfo->getWidget (),
+                       side == LEFT ? "left" : "right", vloat->getWidget ());
          DBG_OBJ_MSG_START ();
          
          if (hasRelationChanged (tbInfo->wasThenAllocated (),
@@ -593,12 +594,17 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
       bool oldCov = oldFly + oldFlh > oldTBy && oldFly < oldTBy + oldTBh;
       bool newCov = newFly + newFlh > newTBy && newFly < newTBy + newTBh;
 
-      DBG_OBJ_MSGF ("resize.floats", 0, "covered? then: %s, now: %s.",
+      DBG_OBJ_MSGF ("resize.floats", 1, "covered? then: %s, now: %s.",
                     oldCov ? "yes" : "no", newCov ? "yes" : "no");
+      DBG_OBJ_MSG_START ();
 
       if (oldCov && newCov) {
          int yOld = oldFly - oldTBy, yNew = newFly - newTBy;
          if (yOld == yNew) {
+            DBG_OBJ_MSGF ("resize.floats", 2,
+                          "old (%d - %d) and new (%d - %d) position equal: %d",
+                          oldFly, oldTBy, newFly, newTBy, yOld);
+
             // Float position has not changed, but perhaps the amout
             // how far the float reaches into the TB. (TODO:
             // Generally, not only here, it could be tested whether
@@ -611,7 +617,10 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
                wOld = oldTBx + oldTBw - oldFlx;
                wNew = newTBx + newTBw - newFlx;
             }
-            
+
+            DBG_OBJ_MSGF ("resize.floats", 2, "wOld = %d, wNew = %d\n",
+                          wOld, wNew);
+          
             if (wOld == wNew) {
                if (oldFlh == newFlh)
                   result = false;
@@ -631,11 +640,19 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
       } else if (oldCov) {
          *floatPos = oldFly - oldTBy;
          result = true;
+         DBG_OBJ_MSGF ("resize.floats", 2,
+                       "returning old position: %d - %d = %d", oldFly, oldTBy,
+                       *floatPos);
       } else if (newCov) {
          *floatPos = newFly - newTBy;
          result = true;
+         DBG_OBJ_MSGF ("resize.floats", 2,
+                       "returning new position: %d - %d = %d", newFly, newTBy,
+                       *floatPos);
       } else
          result = false;
+
+      DBG_OBJ_MSG_END ();
    } else {
       // Not allocated before: ignore all old values, only check whether
       // TB is covered by Float.
