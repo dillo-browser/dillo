@@ -1,0 +1,39 @@
+/** \page dw-out-of-flow-2 Handling Elements Out Of Flow (cont.)
+
+(Some notes, to be integrated into \ref dw-out-of-flow.)
+
+Constructing a page with floats
+-------------------------------
+...
+
+
+Float changes its size
+----------------------
+The float itself will call queueResize, which will result in a call of
+markSizeChange for the *containing* block, which will then call
+dw::OutOfFlowMgr::markSizeChange. Here, the vloat is only *marked* as
+dirty; the size will be calculated later (in
+dw::OutOfFlowMgr::ensureFloatSize).
+
+This will trigger the resize idle function, so sizeRequest and
+sizeAllocate for all floats and textblocks. In this run,
+dw::OutOfFlowMgr::hasRelationChanged will return *true*, and so result
+in a call of dw::Textblock::borderChanged, and trigger a second run of
+the resize idle function, dealing correctly with the new size.
+
+(This case is handles in a not perfectly optimal way, since two runs
+of the resize idle function are neccessary; but size changes of floats
+is not a very common case.
+
+When a page is constructed (see above), a changing size of a float
+currently constructed typically only affects the most bottom
+textblock; the other textblocks are not covered by this float.)
+
+**Error:** In this case, new collisions are not yet considered.
+
+
+Changing the pages width
+------------------------
+...
+
+*/
