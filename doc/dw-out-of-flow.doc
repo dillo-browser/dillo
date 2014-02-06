@@ -10,7 +10,7 @@ padding: 0.5em 1em; background-color: #ffffe0"><b>Info:</b>
 Should be incorporated into dw::Textblock.</div>
 
 This texts deals with both floats and absolute positions, which have
-in common, that there is a distinction between generating block and
+in common that there is a distinction between generating block and
 containing block (we are here using the same notation as in the
 CSS&nbsp;2 specification). Consider this snippet (regarding floats):
 
