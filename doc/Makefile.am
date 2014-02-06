@@ -14,6 +14,7 @@ EXTRA_DIST = \
 	fltk-problems.doc \
 	rounding-errors.doc \
 	uml-legend.doc \
+	dw-line-breaking.doc \
 	dw-example-screenshot.png \
 	dw-viewport-without-scrollbar.png \
 	dw-viewport-with-scrollbar.png \
@@ -26,6 +27,7 @@ EXTRA_DIST = \
 	dw-textblock-collapsing-spaces-1-2.png \
 	dw-textblock-collapsing-spaces-2-1.png \
 	dw-textblock-collapsing-spaces-2-2.png \
+	not-so-simple-container.png \
 	Cache.txt \
 	Cookies.txt \
 	Dillo.txt \
@@ -37,6 +39,7 @@ EXTRA_DIST = \
 	NC_design.txt \
 	Selection.txt \
 	Dpid.txt \
+	CCCwork.txt \
 	README \
 	dillo.1.in
 
