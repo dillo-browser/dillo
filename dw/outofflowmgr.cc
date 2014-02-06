@@ -1732,6 +1732,11 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
        // relative float width may also be necessary.
        (isPerLength (vloat->getWidget()->getStyle()->width) &&
         vloat->cbAvailWidth != containingBlock->getAvailWidth ())) {
+      DBG_OBJ_MSGF ("resize.floats", 0,
+                    "<b>ensureFloatSize</b> (%p): recalculation",
+                    vloat->getWidget ());
+      DBG_OBJ_MSG_START ();
+
       // TODO Ugly. Soon to be replaced by cleaner code? See also
       // comment in Textblock::calcWidgetSize.
       if (vloat->getWidget()->usesHints ()) {
@@ -1788,7 +1793,12 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       vloat->cbAvailWidth = containingBlock->getAvailWidth ();
       vloat->dirty = false;
 
+      DBG_OBJ_MSGF ("resize.floats", 1, "new size: %d * (%d + %d)",
+                    vloat->size.width, vloat->size.ascent, vloat->size.descent);
+
       // "sizeChangedSinceLastAllocation" is reset in sizeAllocateEnd()
+
+      DBG_OBJ_MSG_END ();
    }
 }
 
