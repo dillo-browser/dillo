@@ -1,11 +1,28 @@
 /** \page dw-out-of-flow-2 Handling Elements Out Of Flow (cont.)
 
-(Some notes, to be integrated into \ref dw-out-of-flow.)
+(Some notes, to be integrated into \ref dw-out-of-flow; focus mainly
+on performance aspects.)
 
 Constructing a page with floats
 -------------------------------
-...
+When a page is constructed (dw::Textblock::addWord), the *generating*
+block tells the positions of floats (or, generally, widgets out of
+flow) via dw::OutOfFlowMgr::tellPosition. This method considers
+already collisions (with previous floats; floats following this float
+are not considered); after the call, dw::OutOfFlowMgr::getBorder will
+return correct values.
 
+dw::OutOfFlowMgr::tellPosition also checks for overlaps of this float
+with other textblocks, except this textblock (the *generator*, which
+is just constructed, so nothing has to be done). The fact that the
+position of the float is the top, and so the float has only an
+allocation below this position, leads to the effect that only the
+textblocks following the generator are affected. (**Check:** Can the
+search be limited here?) When a page is constructed, no textblocks
+should be following the generating block, so no textblocks are
+affected.
+
+**Todo:** Clarify details of line breaking (\ref dw-line-breaking).
 
 Float changes its size
 ----------------------
