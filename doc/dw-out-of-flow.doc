@@ -112,6 +112,10 @@ For details see:
 Implementation overview
 =======================
 
+<div style="border: 2px solid #ff4040; margin-bottom: 0.5em;
+padding: 0.5em 1em; background-color: #fff0f0"><b>Warning:</b>
+This complete section must be reviewed.</div>
+
 Widget level
 ------------
 The terms _generating block_ and _containing block_ have been raised
