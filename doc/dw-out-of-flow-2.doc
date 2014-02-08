@@ -8,9 +8,9 @@ Constructing a page with floats
 When a page is constructed (dw::Textblock::addWord), the *generating*
 block tells the positions of floats (or, generally, widgets out of
 flow) via dw::OutOfFlowMgr::tellPosition. This method considers
-already collisions (with previous floats; floats following this float
-are not considered); after the call, dw::OutOfFlowMgr::getBorder will
-return correct values.
+already collisions with other floats (only previous floats; floats
+following this float are not considered); after the call,
+dw::OutOfFlowMgr::getBorder will return correct values.
 
 dw::OutOfFlowMgr::tellPosition also checks for overlaps of this float
 with other textblocks, except this textblock (the *generator*, which
@@ -49,8 +49,22 @@ textblock; the other textblocks are not covered by this float.)
 **Error:** In this case, new collisions are not yet considered.
 
 
-Changing the pages width
-------------------------
-...
+Changing the width of the page
+------------------------------
+
+When the page width is changed, this will result in a reconstruction
+of the page; see *Constructing a page with floats*. Anyway, checking
+for overlaps will play a more important role. This is handled in an
+optimal way by dw::OutOfFlowMgr::hasRelationChanged.
+
+**Check:** Are "cascades" avoided, like this:
+
+1. All textblocks are constructed. A float in textblock 1 overlaps
+   with textblock 2, so dw::Textblock::borderChanged is called for
+   textblock 2.
+2. In another resize idle run, textblock 2 is constructed again. A
+   float in textblock 2 overlaps with textblock 3, so that
+   dw::Textblock::borderChanged is called for textblock 3.
+3. Etc.
 
 */
