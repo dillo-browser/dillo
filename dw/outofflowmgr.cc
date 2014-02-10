@@ -466,6 +466,11 @@ void OutOfFlowMgr::sizeAllocateEnd ()
 bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, int *minFloatPos,
                                        Widget **minFloat)
 {
+   DBG_OBJ_MSGF ("resize.floats", 0,
+                 "<b>hasRelationChanged</b> (<i>widget:</i> %p, ...)",
+                 tbInfo->getWidget ());
+   DBG_OBJ_MSG_START ();
+
    int leftMinPos, rightMinPos;
    Widget *leftMinFloat, *rightMinFloat;
    bool c1 =
@@ -490,12 +495,25 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, int *minFloatPos,
       }
    }
 
+   if (c1 || c2)
+      DBG_OBJ_MSGF ("resize.floats", 1,
+                    "has changed: minFloatPos = %d, minFloat = %p",
+                    *minFloatPos, *minFloat);
+   else
+      DBG_OBJ_MSG ("resize.floats", 1, "has not changed");
+   
+   DBG_OBJ_MSG_END ();
    return c1 || c2;
 }
 
 bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
                                        int *minFloatPos, Widget **minFloat)
 {
+   DBG_OBJ_MSGF ("resize.floats", 0,
+                 "<b>hasRelationChanged</b> (<i>widget:</i> %p, %s, ...)",
+                 tbInfo->getWidget (), side == LEFT ? "LEFT" : "RIGHT");
+   DBG_OBJ_MSG_START ();
+
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    bool changed = false;
    
@@ -504,8 +522,11 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
       Float *vloat = list->get(i);
       int floatPos;
 
-      // TODO Clarify the old condition: tb != v->generatingBlock. Neccessary?
-      if (tbInfo->getTextblock () != vloat->generatingBlock) {
+      if (tbInfo->getTextblock () == vloat->generatingBlock)
+         DBG_OBJ_MSGF ("resize.floats", 1,
+                       "not checking (generating!) textblock %p against float "
+                       "%p", tbInfo->getWidget (), vloat->getWidget ());
+      else {
          Allocation *gba = getAllocation (vloat->generatingBlock);
 
          int newFlx =
@@ -516,10 +537,9 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
          int newFly = vloat->generatingBlock->getAllocation()->y
             - containingBlockAllocation.y + vloat->yReal;
          
-         DBG_OBJ_MSGF ("resize.floats", 0,
-                       "Has relation changed between textblock %p and %s "
-                       "float %p?", tbInfo->getWidget (),
-                       side == LEFT ? "left" : "right", vloat->getWidget ());
+         DBG_OBJ_MSGF ("resize.floats", 1,
+                       "checking textblock %p against float %p",
+                       tbInfo->getWidget (), vloat->getWidget ());
          DBG_OBJ_MSG_START ();
          
          if (hasRelationChanged (tbInfo->wasThenAllocated (),
@@ -538,8 +558,6 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
                                  newFlx, newFly, vloat->size.width,
                                  vloat->size.ascent + vloat->size.descent,
                                  side, &floatPos)) {
-            DBG_OBJ_MSGF ("resize.floats", 0, "Yes: floatPos = %d.", floatPos);
-
             if (!changed || floatPos < *minFloatPos) {
                *minFloatPos = floatPos;
                *minFloat = vloat->getWidget ();
@@ -556,6 +574,14 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
       // minimum?)
    }
 
+   if (changed)
+      DBG_OBJ_MSGF ("resize.floats", 1,
+                    "has changed: minFloatPos = %d, minFloat = %p",
+                    *minFloatPos, *minFloat);
+   else
+      DBG_OBJ_MSG ("resize.floats", 1, "has not changed");
+   
+   DBG_OBJ_MSG_END ();
    return changed;
 }
 
@@ -575,7 +601,9 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
                                        int newFlw, int newFlh,
                                        Side side, int *floatPos)
 {
-   DBG_OBJ_MSG ("resize.floats", 0, "<b>hasRelationChanged</b> (...)");
+   DBG_OBJ_MSGF ("resize.floats", 0,
+                 "<b>hasRelationChanged</b> (<i>see below</i>, %s, ...)",
+                 side == LEFT ? "LEFT" : "RIGHT");
    DBG_OBJ_MSG_START ();
 
    if (oldTBAlloc)
@@ -668,7 +696,14 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
          result = false;
    }
 
+   if (result)
+      DBG_OBJ_MSGF ("resize.floats", 1, "has changed: floatPos = %d",
+                    *floatPos);
+   else
+      DBG_OBJ_MSG ("resize.floats", 1, "has not changed");
+
    DBG_OBJ_MSG_END ();
+
    return result;
 }
 
@@ -1249,7 +1284,7 @@ bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
 void OutOfFlowMgr::checkRelationPosChanged (Float *vloat, Side side, int oldY)
 {
    DBG_OBJ_MSGF ("resize.floats", 0,
-                 "<b>checkRelationPosChanged</b> (<widget: %p>, %d)",
+                 "<b>checkRelationPosChanged</b> (<i>widget:</i> %p, %d)",
                  vloat->getWidget(), oldY);
    DBG_OBJ_MSG_START ();
 
