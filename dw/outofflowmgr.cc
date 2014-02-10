@@ -53,6 +53,11 @@ void OutOfFlowMgr::WidgetInfo::update (bool wasAllocated, int xCB, int yCB,
    this->yCB = yCB;
    this->width = width;
    this->height = height;
+
+   DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.xCB", xCB);
+   DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.yCB", yCB);
+   DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.width", width);
+   DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.height", height);
 }
 
 void OutOfFlowMgr::WidgetInfo::updateAllocation ()
