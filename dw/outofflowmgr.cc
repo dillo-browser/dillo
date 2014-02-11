@@ -1311,7 +1311,18 @@ void OutOfFlowMgr::checkRelationPosChanged (Float *vloat, Side side, int oldY)
          // here.  Potential changes are handled later. Notice that
          // calcFloatX does not call ensureFloatSize.
 
-         if (textblock != vloat->generatingBlock && wasAllocated (textblock)) {
+         if (textblock == vloat->generatingBlock)
+            DBG_OBJ_MSGF ("resize.floats", 1,
+                          "not checking (generating!) textblock %p against "
+                          "this float ", textblock);
+         else if (!wasAllocated (textblock))
+            DBG_OBJ_MSGF ("resize.floats", 1,
+                          "not checking (not allocated!) textblock %p against "
+                          "this float ", textblock);
+         else {
+            DBG_OBJ_MSGF ("resize.floats", 1,
+                          "checking textblock %p against float %p",
+                          textblock, vloat->getWidget ());
             Allocation *tba = getAllocation (textblock);
             int tbx = tba->x - containingBlockAllocation.x,
                tby = tba->y - containingBlockAllocation.y, tbw = tba->width,
