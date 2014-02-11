@@ -667,6 +667,10 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
                result = true;
             }
          } else {
+            DBG_OBJ_MSGF ("resize.floats", 2,
+                          "old (%d - %d = %d) and new (%d - %d = %d) position "
+                          "different",
+                          oldFly, oldTBy, yOld, newFly, newTBy, yNew);
             *floatPos = min (yOld, yNew);
             result = true;
          }
