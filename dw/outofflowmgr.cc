@@ -1252,8 +1252,8 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    // No call neccessary when yReal has not changed. (Notice that
    // checking for yReq is wrong: yReq may remain the same, when yReal
    // changes, e. g. when previous float has changes its size.
-   if (vloat->yReal != oldY)
-      checkRelationPosChanged (vloat, side, oldY);
+   //if (vloat->yReal != oldY)
+   //   checkRelationPosChanged (vloat, side, oldY);
 
    DBG_OBJ_MSG_END ();
 }
