@@ -38,13 +38,6 @@ OutOfFlowMgr::WidgetInfo::WidgetInfo (OutOfFlowMgr *oofm, Widget *widget)
    xCB = yCB = width = height = -1;
 }
 
-int OutOfFlowMgr::WidgetInfo::compareTo(Comparable *other)
-{
-   assertNotReached ();
-   return 0;
-}
-
-
 void OutOfFlowMgr::WidgetInfo::update (bool wasAllocated, int xCB, int yCB,
                                        int width, int height)
 {
@@ -116,19 +109,6 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->append (" }");
 }
 
-int OutOfFlowMgr::Float::compareTo(Comparable *other)
-{
-   Float *otherFloat = (Float*)other;
-
-   if (getOutOfFlowMgr()->wasAllocated (generatingBlock)) {
-      assert (getOutOfFlowMgr()->wasAllocated (otherFloat->generatingBlock));
-      return yForContainer() - otherFloat->yForContainer();
-   } else {
-      assert (generatingBlock == otherFloat->generatingBlock);
-      return yReal - otherFloat->yReal;
-   }
-}
-
 int OutOfFlowMgr::Float::yForTextblock (Textblock *textblock, int y)
 {
    if (getOutOfFlowMgr()->wasAllocated (generatingBlock)) {
@@ -186,13 +166,26 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
    return fly + size.ascent + size.descent > reqy && fly < reqy + h;
 }
 
-int OutOfFlowMgr::Float::CompareSideSpanningIndex::compare(Object *o1,
-                                                           Object *o2)
+int OutOfFlowMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
+{
+   Float *fl1 = (Float*)o1, *fl2 = (Float*)o2;
+
+   if (oofm->wasAllocated (fl1->generatingBlock)) {
+      assert (oofm->wasAllocated (fl2->generatingBlock));
+      return fl1->yForContainer() - fl2->yForContainer();
+   } else {
+      assert (fl1->generatingBlock == fl2->generatingBlock);
+      return fl1->yReal - fl2->yReal;
+   }
+}
+
+int OutOfFlowMgr::Float::CompareSideSpanningIndex::compare (Object *o1,
+                                                            Object *o2)
 {
    return ((Float*)o1)->sideSpanningIndex - ((Float*)o2)->sideSpanningIndex;
 }
 
-int OutOfFlowMgr::Float::CompareGBAndExtIndex::compare(Object *o1, Object *o2)
+int OutOfFlowMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
 {
    Float *f1 = (Float*)o1, *f2 = (Float*)o2;
 
@@ -237,8 +230,8 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
                                                       int lastExtIndex)
 {
    Float key (oofm, NULL, lastGB, lastExtIndex);
-   Float::CompareGBAndExtIndex cmp (oofm);
-   int i = bsearch (&key, false, &cmp);
+   Float::CompareGBAndExtIndex comparator (oofm);
+   int i = bsearch (&key, false, &comparator);
   
    // At position i is the next larger element, so element i should
    // not included, but i - 1 returned; except if the exact element is
@@ -248,7 +241,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
       r = i - 1;
    else {
       Float *f = get (i);
-      if (cmp.compare (f, &key) == 0)
+      if (comparator.compare (f, &key) == 0)
          r = i;
       else
          r = i - 1;
@@ -276,7 +269,8 @@ int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
    Float key (oofm, NULL, NULL, 0);
    key.generatingBlock = textblock;
    key.yReal = y;
-   return bsearch (&key, false, start, end);
+   Float::ComparePosition comparator (oofm, textblock);
+   return bsearch (&key, false, start, end, &comparator);
 }
 
 int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,

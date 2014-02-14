@@ -28,7 +28,7 @@ private:
    core::Allocation containingBlockAllocation;
    bool containingBlockWasAllocated;
 
-   class WidgetInfo: public lout::object::Comparable
+   class WidgetInfo: public lout::object::Object
    {
    private:
       bool wasAllocated;
@@ -43,9 +43,7 @@ private:
 
    public:
       WidgetInfo (OutOfFlowMgr *oofm, core::Widget *widget);
-
-      int compareTo(Comparable *other);
-      
+     
       inline bool wasThenAllocated () { return wasAllocated; }
       inline int getOldXCB () { return xCB; }
       inline int getOldYCB () { return yCB; }
@@ -70,8 +68,21 @@ private:
    class Float: public WidgetInfo
    {
    public:
+      class ComparePosition: public lout::object::Comparator
+      {
+      private:
+         OutOfFlowMgr *oofm;
+         Textblock *refTB;
+
+      public:
+         ComparePosition (OutOfFlowMgr *oofm, Textblock *refTB)
+         { this->oofm = oofm; this->refTB = refTB; }
+         int compare(Object *o1, Object *o2);
+      };
+
       class CompareSideSpanningIndex: public lout::object::Comparator
       {
+      public:
          int compare(Object *o1, Object *o2);
       };
 
@@ -108,7 +119,6 @@ private:
              Textblock *generatingBlock, int externalIndex);
 
       void intoStringBuffer(lout::misc::StringBuffer *sb);
-      int compareTo(Comparable *other);
 
       int yForTextblock (Textblock *textblock, int y);
       inline int yForTextblock (Textblock *textblock)
