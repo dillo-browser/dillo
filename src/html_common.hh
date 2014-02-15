@@ -87,8 +87,9 @@ typedef enum {
    IN_MAP         = 1 << 9,
    IN_PRE         = 1 << 10,
    IN_LI          = 1 << 11,
-   IN_META_HACK   = 1 << 12,
-   IN_EOF         = 1 << 13,
+   IN_MEDIA       = 1 << 12,
+   IN_META_HACK   = 1 << 13,
+   IN_EOF         = 1 << 14,
 } DilloHtmlProcessingState;
 
 /*
