@@ -347,8 +347,8 @@ CssRule::~CssRule () {
    props->unref ();
 }
 
-void CssRule::apply (CssPropertyList *props,
-                     Doctree *docTree, const DoctreeNode *node, MatchCache *matchCache) {
+void CssRule::apply (CssPropertyList *props, Doctree *docTree,
+                     const DoctreeNode *node, MatchCache *matchCache) const {
    if (selector->match (docTree, node, matchCache))
       this->props->apply (props);
 }
@@ -429,9 +429,9 @@ void CssStyleSheet::addRule (CssRule *rule) {
  * match at the given node in the document tree.
  */
 void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree,
-                           const DoctreeNode *node, MatchCache *matchCache) {
+                        const DoctreeNode *node, MatchCache *matchCache) const {
    static const int maxLists = 32;
-   RuleList *ruleList[maxLists];
+   const RuleList *ruleList[maxLists];
    int numLists = 0, index[maxLists] = {0};
 
    if (node->id) {
@@ -475,7 +475,7 @@ void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree,
       int minSpecIndex = -1;
 
       for (int i = 0; i < numLists; i++) {
-         RuleList *rl = ruleList[i];
+         const RuleList *rl = ruleList[i];
 
          if (rl && rl->size () > index[i] &&
             (rl->get(index[i])->specificity () < minSpec ||

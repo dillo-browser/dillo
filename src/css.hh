@@ -435,7 +435,7 @@ class CssRule {
       ~CssRule ();
 
       void apply (CssPropertyList *props, Doctree *docTree,
-                  const DoctreeNode *node, MatchCache *matchCache);
+                  const DoctreeNode *node, MatchCache *matchCache) const;
       inline bool isSafe () {
          return !selector->checksPseudoClass () || props->isSafe ();
       };
@@ -490,7 +490,7 @@ class CssStyleSheet {
       CssStyleSheet () { matchCacheOffset = 0; }
       void addRule (CssRule *rule);
       void apply (CssPropertyList *props, Doctree *docTree,
-                  const DoctreeNode *node, MatchCache *matchCache);
+                  const DoctreeNode *node, MatchCache *matchCache) const;
 };
 
 /**
