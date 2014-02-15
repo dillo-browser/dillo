@@ -2003,7 +2003,7 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
    html->styleEngine->setPseudoLink ();
 
    /* create new image and add it to the button */
-   a_Html_image_attrs(html, tag, tagsize);
+   a_Html_common_image_attrs(html, tag, tagsize);
    if ((Image = a_Html_image_new(html, tag, tagsize))) {
       // At this point, we know that Image->ir represents an image
       // widget. Notice that the order of the casts matters, because

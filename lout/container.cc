@@ -208,7 +208,7 @@ int Vector::bsearch(Object *key, bool mustExist)
    // new implementation.
    if (numElements == 0)
       return mustExist ? -1 : 0;
-   
+
    int high = numElements - 1, low = 0;
 
    while (true) {
@@ -230,7 +230,7 @@ int Vector::bsearch(Object *key, bool mustExist)
             low = index + 1;
       }
    }
-   
+
 
    /*
    void *result = ::bsearch (&key, array, numElements, sizeof (Object*),
@@ -562,7 +562,7 @@ HashTable::~HashTable()
                PRINTF ("- deleting value: %s\n", value->toString());
                delete value;
             }
-         }         
+         }
       }
    }
 }
@@ -596,7 +596,7 @@ void HashTable::intoStringBuffer(misc::StringBuffer *sb)
          node->object->intoStringBuffer(sb);
 
          sb->append(" => ");
-         
+
          Object *value = ((KeyValuePair*)node)->value;
          if (value)
              value->intoStringBuffer(sb);

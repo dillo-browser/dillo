@@ -474,10 +474,11 @@ class CssStyleSheet {
                <lout::object::ConstString, RuleList > (true, true, 256) {};
       };
 
-      static const int ntags = 90 + 10; // \todo don't hardcode
+      static const int ntags = 90 + 14; // \todo don't hardcode
       /* 90 is the full number of html4 elements, including those which we have
-       * implemented. From html 5, let's add: article, header, footer, mark,
-       * nav, section, aside, figure, figcaption, wbr.
+       * implemented. From html5, let's add: article, header, footer, mark,
+       * nav, section, aside, figure, figcaption, wbr, audio, video, source,
+       * embed.
        */
 
       RuleList elementTable[ntags], anyTable;

@@ -87,8 +87,9 @@ typedef enum {
    IN_MAP         = 1 << 9,
    IN_PRE         = 1 << 10,
    IN_LI          = 1 << 11,
-   IN_META_HACK   = 1 << 12,
-   IN_EOF         = 1 << 13,
+   IN_MEDIA       = 1 << 12,
+   IN_META_HACK   = 1 << 13,
+   IN_EOF         = 1 << 14,
 } DilloHtmlProcessingState;
 
 /*
@@ -233,7 +234,7 @@ public:
    { return styleEngine->wordStyle (bw, base_url); }
 
    inline void restyle () { styleEngine->restyle (bw, base_url); }
-   
+
 };
 
 /*
@@ -257,7 +258,7 @@ DilloUrl *a_Html_url_new(DilloHtml *html,
                          const char *url_str, const char *base_url,
                          int use_base_url);
 
-void a_Html_image_attrs(DilloHtml *html, const char *tag, int tagsize);
+void a_Html_common_image_attrs(DilloHtml *html, const char *tag, int tagsize);
 DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize);
 
 char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize);

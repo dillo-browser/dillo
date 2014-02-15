@@ -716,7 +716,7 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
               dStrAsciiCasecmp(tval, "right") == 0 ||
               dStrAsciiCasecmp(tval, "top") == 0 ||
               dStrAsciiCasecmp(tval, "bottom") == 0))
-            return true;            
+            return true;
          // Fall Through (lenght and percentage)
       case CSS_TYPE_LENGTH_PERCENTAGE:
       case CSS_TYPE_LENGTH_PERCENTAGE_NUMBER:

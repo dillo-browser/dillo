@@ -1382,7 +1382,7 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
  * by closing them before opening another.
  * This is not an HTML SPEC restriction , but it avoids lots of trouble
  * inside dillo (concurrent inputs), and makes almost no sense to have.
- */ 
+ */
 static void Html_tag_cleanup_nested_inputs(DilloHtml *html, int new_idx)
 {
    static int i_BUTTON = a_Html_tag_index("button"),
@@ -1695,9 +1695,9 @@ static void Html_tag_close_head(DilloHtml *html)
          /* match for the well formed start of HEAD section */
          if (html->Num_TITLE == 0)
             BUG_MSG("HEAD section lacks the TITLE element\n");
-   
+
          html->InFlags &= ~IN_HEAD;
-   
+
          /* charset is already set, load remote stylesheets now */
          for (int i = 0; i < html->cssUrls->size(); i++) {
             a_Html_load_stylesheet(html, html->cssUrls->get(i));
@@ -2083,13 +2083,13 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Read image-associated tag attributes and create new image.
  */
-void a_Html_image_attrs(DilloHtml *html, const char *tag, int tagsize)
+void a_Html_common_image_attrs(DilloHtml *html, const char *tag, int tagsize)
 {
    char *width_ptr, *height_ptr;
    const char *attrbuf;
    CssLength l_w  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
    CssLength l_h  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
-   int space, border, w = 0, h = 0;
+   int w = 0, h = 0;
 
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
@@ -2125,7 +2125,8 @@ void a_Html_image_attrs(DilloHtml *html, const char *tag, int tagsize)
       dFree(width_ptr);
       dFree(height_ptr);
       width_ptr = height_ptr = NULL;
-      MSG("a_Html_image_attrs: suspicious image size request %d x %d\n", w, h);
+      MSG("a_Html_common_image_attrs: suspicious image size request %d x %d\n",
+          w, h);
    } else {
       if (CSS_LENGTH_TYPE(l_w) != CSS_LENGTH_TYPE_AUTO)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
@@ -2141,55 +2142,6 @@ void a_Html_image_attrs(DilloHtml *html, const char *tag, int tagsize)
    if ((width_ptr && !height_ptr) || (height_ptr && !width_ptr))
       [...]
    */
-
-   /* Spacing to the left and right */
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "hspace"))) {
-      space = strtol(attrbuf, NULL, 10);
-      if (space > 0) {
-         space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_LEFT,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_RIGHT,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
-      }
-   }
-
-   /* Spacing at the top and bottom */
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vspace"))) {
-      space = strtol(attrbuf, NULL, 10);
-      if (space > 0) {
-         space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_TOP,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_BOTTOM,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
-      }
-   }
-
-   /* Border */
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border"))) {
-      border = strtol(attrbuf, NULL, 10);
-      if (border >= 0) {
-         border = CSS_CREATE_LENGTH(border, CSS_LENGTH_TYPE_PX);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
-
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
-                                           CSS_TYPE_ENUM, BORDER_SOLID);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
-                                           CSS_TYPE_ENUM, BORDER_SOLID);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_STYLE,
-                                           CSS_TYPE_ENUM, BORDER_SOLID);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_STYLE,
-                                           CSS_TYPE_ENUM, BORDER_SOLID);
-      }
-   }
 
    /* x_img is an index to a list of {url,image} pairs.
     * We know a_Html_image_new() will use size() as its next index */
@@ -2271,7 +2223,60 @@ static bool Html_load_image(BrowserWindow *bw, DilloUrl *url,
 
 static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_image_attrs(html, tag, tagsize);
+   int space, border;
+   const char *attrbuf;
+
+   a_Html_common_image_attrs(html, tag, tagsize);
+
+   /* Spacing to the left and right */
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "hspace"))) {
+      space = strtol(attrbuf, NULL, 10);
+      if (space > 0) {
+         space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_LEFT,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_RIGHT,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+      }
+   }
+
+   /* Spacing at the top and bottom */
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vspace"))) {
+      space = strtol(attrbuf, NULL, 10);
+      if (space > 0) {
+         space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_TOP,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_BOTTOM,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+      }
+   }
+
+   /* Border */
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border"))) {
+      border = strtol(attrbuf, NULL, 10);
+      if (border >= 0) {
+         border = CSS_CREATE_LENGTH(border, CSS_LENGTH_TYPE_PX);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+      }
+   }
+
 }
 
 /*
@@ -2512,6 +2517,139 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
       HT2TB(html)->addText("[OBJECT]", html->wordStyle ());
    }
    a_Url_free(base_url);
+}
+
+/*
+ * <VIDEO>
+ * Provide a link to the video.
+ */
+static void Html_tag_open_video(DilloHtml *html, const char *tag, int tagsize)
+{
+   DilloUrl *url;
+   const char *attrbuf;
+
+   if (html->InFlags & IN_MEDIA) {
+      MSG("<video> not handled when already inside a media element.\n");
+      return;
+   }
+   /* TODO: poster attr */
+
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src"))) {
+      url = a_Html_url_new(html, attrbuf, NULL, 0);
+      dReturn_if_fail ( url != NULL );
+
+      if (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached) {
+         html->styleEngine->setPseudoVisited ();
+      } else {
+         html->styleEngine->setPseudoLink ();
+      }
+
+      html->styleEngine->setNonCssHint(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
+                                       Html_set_new_link(html, &url));
+
+      HT2TB(html)->addText("[VIDEO]", html->wordStyle ());
+   }
+   html->InFlags |= IN_MEDIA;
+}
+
+/*
+ * <AUDIO>
+ * Provide a link to the audio.
+ */
+static void Html_tag_open_audio(DilloHtml *html, const char *tag, int tagsize)
+{
+   DilloUrl *url;
+   const char *attrbuf;
+
+   if (html->InFlags & IN_MEDIA) {
+      MSG("<audio> not handled when already inside a media element.\n");
+      return;
+   }
+
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src"))) {
+      url = a_Html_url_new(html, attrbuf, NULL, 0);
+      dReturn_if_fail ( url != NULL );
+
+      if (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached) {
+         html->styleEngine->setPseudoVisited ();
+      } else {
+         html->styleEngine->setPseudoLink ();
+      }
+
+      html->styleEngine->setNonCssHint(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
+                                       Html_set_new_link(html, &url));
+
+      HT2TB(html)->addText("[AUDIO]", html->wordStyle ());
+   }
+   html->InFlags |= IN_MEDIA;
+}
+
+/*
+ * <SOURCE>
+ * Media resource; provide a link to its address.
+ */
+static void Html_tag_open_source(DilloHtml *html, const char *tag,
+                                    int tagsize)
+{
+   const char *attrbuf;
+
+   if (!(html->InFlags & IN_MEDIA)) {
+      BUG_MSG("<source> element not inside a media element.\n");
+      return;
+   }
+   if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "src"))) {
+      BUG_MSG("src attribute is required in <source> element.\n");
+      return;
+   } else {
+      DilloUrl *url = a_Html_url_new(html, attrbuf, NULL, 0);
+
+      dReturn_if_fail ( url != NULL );
+
+      if (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached) {
+         html->styleEngine->setPseudoVisited ();
+      } else {
+         html->styleEngine->setPseudoLink ();
+      }
+
+      html->styleEngine->setNonCssHint(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
+                                       Html_set_new_link(html, &url));
+
+      HT2TB(html)->addText("[MEDIA SOURCE]", html->wordStyle ());
+   }
+}
+
+/*
+ * Media (AUDIO/VIDEO) close function
+ */
+static void Html_tag_close_media(DilloHtml *html)
+{
+   html->InFlags &= ~IN_MEDIA;
+}
+
+/*
+ * <EMBED>
+ * Provide a link to embedded content.
+ */
+static void Html_tag_open_embed(DilloHtml *html, const char *tag, int tagsize)
+{
+   const char *attrbuf;
+
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src"))) {
+      DilloUrl *url = a_Html_url_new(html, attrbuf, NULL, 0);
+
+      dReturn_if_fail ( url != NULL );
+
+      if (a_Capi_get_flags_with_redirection(url) & CAPI_IsCached) {
+         html->styleEngine->setPseudoVisited ();
+      } else {
+         html->styleEngine->setPseudoLink ();
+      }
+
+      html->styleEngine->setNonCssHint(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
+                                       Html_set_new_link(html, &url));
+
+      HT2TB(html)->addText("[EMBED]", html->wordStyle ());
+   }
 }
 
 /*
@@ -3279,6 +3417,7 @@ const TagInfo Tags[] = {
                             NULL},
  {"article", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"aside", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"audio", B8(011101),'R',2, Html_tag_open_audio, NULL, Html_tag_close_media},
  {"b", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"base", B8(100001),'F',0, Html_tag_open_base, NULL, NULL},
  /* basefont 010001 -- obsolete in HTML5 */
@@ -3305,6 +3444,7 @@ const TagInfo Tags[] = {
  {"dl", B8(011010),'R',2, Html_tag_open_dl, NULL, Html_tag_close_par},
  {"dt", B8(010110),'O',1, Html_tag_open_dt, NULL, Html_tag_close_par},
  {"em", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
+ {"embed", B8(010001),'F',0, Html_tag_open_embed, NULL, NULL},
  /* fieldset */
  {"figcaption", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"figure", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
@@ -3363,6 +3503,7 @@ const TagInfo Tags[] = {
  {"section", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"select", B8(010101),'R',2, Html_tag_open_select,NULL,Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
+ {"source", B8(010001),'F',0, Html_tag_open_source, NULL, NULL},
  {"span", B8(010101),'R',2, Html_tag_open_span, NULL, NULL},
  {"strike", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"strong", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
@@ -3387,6 +3528,7 @@ const TagInfo Tags[] = {
  {"u", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"ul", B8(011010),'R',2, Html_tag_open_ul, NULL, NULL},
  {"var", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
+ {"video", B8(011101),'R',2, Html_tag_open_video, NULL, Html_tag_close_media},
  {"wbr", B8(010101),'F',0, Html_tag_open_default, Html_tag_content_wbr, NULL}
 };
 #define NTAGS (sizeof(Tags)/sizeof(Tags[0]))

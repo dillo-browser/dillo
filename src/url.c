@@ -688,14 +688,14 @@ static uint_t Url_host_public_internal_dots(const char *host)
 
       if (tld_len > 0) {
          /* These TLDs were chosen by examining the current publicsuffix list
-          * in September 2013 and picking out those where it was simplest for
+          * in February 2014 and picking out those where it was simplest for
           * them to describe the situation by beginning with a "*.[tld]" rule
           * or every rule was "[something].[tld]".
           */
-         const char *const tlds[] = {"au","bd","bn","ck","cy","er","et","fj",
-                                     "fk","gn","gu","il","jm","ke","kh","kp",
-                                     "kw","lb","lr","mm","mt","mz","ni","np",
-                                     "nz","pg","tr","uk","ye","za","zm","zw"};
+         const char *const tlds[] = {"bd","bn","ck","cy","er","et","fj","fk",
+                                     "gu","il","jm","ke","kh","kw","mm","mz",
+                                     "ni","np","nz","pg","tr","uk","ye","za",
+                                     "zm","zw"};
          uint_t i, tld_num = sizeof(tlds) / sizeof(tlds[0]);
 
          for (i = 0; i < tld_num; i++) {

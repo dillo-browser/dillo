@@ -393,7 +393,7 @@ void FltkViewport::scrollTo (int x, int y)
    }
 
    /* multiple calls to scroll can happen before a redraw occurs.
-    * scrollDX / scrollDY can therefore be non-zero here.
+    * scrollDX and scrollDY can therefore be non-zero here.
     */
    updateCanvasWidgets (x - scrollX, y - scrollY);
    scrollDX += x - scrollX;

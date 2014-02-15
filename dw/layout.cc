@@ -88,7 +88,7 @@ void Layout::LayoutImgRenderer::draw (int x, int y, int width, int height)
 {
    layout->queueDraw (x, y, width, height);
 }
-   
+
 // ----------------------------------------------------------------------
 
 void Layout::Receiver::canvasSizeChanged (int width, int ascent, int descent)
@@ -753,10 +753,10 @@ void Layout::setBgImage (style::StyleImage *bgImage,
 
    if (bgImage)
       bgImage->ref ();
-   
+
    if (this->bgImage)
       this->bgImage->unref ();
-   
+
    this->bgImage = bgImage;
    this->bgRepeat = bgRepeat;
    this->bgAttachment = bgAttachment;
@@ -784,33 +784,33 @@ void Layout::resizeIdle ()
    // Reset already here, since in this function, queueResize() may be
    // called again.
    resizeIdleId = -1;
-   
+
    if (topLevel) {
       Requisition requisition;
       Allocation allocation;
-      
+
       topLevel->sizeRequest (&requisition);
-      
+
       allocation.x = allocation.y = 0;
       allocation.width = requisition.width;
       allocation.ascent = requisition.ascent;
       allocation.descent = requisition.descent;
       topLevel->sizeAllocate (&allocation);
-      
+
       canvasWidth = requisition.width;
       canvasAscent = requisition.ascent;
       canvasDescent = requisition.descent;
-      
+
       emitter.emitCanvasSizeChanged (canvasWidth, canvasAscent, canvasDescent);
-      
+
       // Tell the view about the new world size.
       view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
       //  view->queueDrawTotal (false);
-      
+
       if (usesViewport) {
          int currHThickness = currHScrollbarThickness();
          int currVThickness = currVScrollbarThickness();
-         
+
          if (!canvasHeightGreater &&
              canvasAscent + canvasDescent
              > viewportHeight - currHThickness) {
@@ -818,7 +818,7 @@ void Layout::resizeIdle ()
             setSizeHints ();
             /* May queue a new resize. */
             }
-         
+
          // Set viewport sizes.
          view->setViewportSize (viewportWidth, viewportHeight,
                                 currHThickness, currVThickness);
