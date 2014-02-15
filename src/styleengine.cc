@@ -65,7 +65,6 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    doctree = new Doctree ();
    stack = new lout::misc::SimpleVector <Node> (1);
    cssContext = new CssContext ();
-   buildUserAgentStyle ();
    buildUserStyle ();
    this->layout = layout;
    importDepth = 0;
@@ -939,7 +938,7 @@ void StyleEngine::parse (DilloHtml *html, DilloUrl *url, const char *buf,
  * The user agent style defines how dillo renders HTML in the absence of
  * author or user styles.
  */
-void StyleEngine::buildUserAgentStyle () {
+void StyleEngine::init () {
    const char *cssBuf =
       "body  {margin: 5px}"
       "big {font-size: 1.17em}"
@@ -996,7 +995,8 @@ void StyleEngine::buildUserAgentStyle () {
        */
       "table, caption {font-size: medium; font-weight: normal}";
 
-   CssParser::parse (NULL, NULL, cssContext, cssBuf, strlen (cssBuf),
+   CssContext context;
+   CssParser::parse (NULL, NULL, &context, cssBuf, strlen (cssBuf),
                      CSS_ORIGIN_USER_AGENT);
 }
 

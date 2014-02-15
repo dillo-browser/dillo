@@ -38,7 +38,6 @@ class StyleEngine {
 
       void stackPush ();
       void stackPop ();
-      void buildUserAgentStyle ();
       void buildUserStyle ();
       dw::core::style::Style *style0 (int i, BrowserWindow *bw, DilloUrl *url);
       dw::core::style::Style *wordStyle0 (BrowserWindow *bw, DilloUrl *url);
@@ -64,6 +63,8 @@ class StyleEngine {
                                dw::core::style::Font *font);
 
    public:
+      static void init ();
+
       StyleEngine (dw::core::Layout *layout);
       ~StyleEngine ();
 

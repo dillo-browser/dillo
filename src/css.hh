@@ -498,6 +498,7 @@ class CssStyleSheet {
  */
 class CssContext {
    private:
+      static CssStyleSheet userAgentSheet;
       CssStyleSheet sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
       MatchCache matchCache[CSS_PRIMARY_USER_IMPORTANT + 1];
       int pos;

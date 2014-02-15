@@ -498,8 +498,11 @@ void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree,
    }
 }
 
+CssStyleSheet CssContext::userAgentSheet;
+
 CssContext::CssContext () {
    pos = 0;
+   matchCache[CSS_PRIMARY_USER_AGENT].setSize (userAgentSheet.matchCacheOffset, -1);
 }
 
 /**
@@ -516,8 +519,8 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *tagStyleImportant,
          CssPropertyList *nonCssHints) {
 
-   sheet[CSS_PRIMARY_USER_AGENT].apply (props, docTree, node,
-                                        &matchCache[CSS_PRIMARY_USER_AGENT]);
+   userAgentSheet.apply (props, docTree, node,
+                         &matchCache[CSS_PRIMARY_USER_AGENT]);
    sheet[CSS_PRIMARY_USER].apply (props, docTree, node,
                                   &matchCache[CSS_PRIMARY_USER]);
 
@@ -551,6 +554,9 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
            !rule->isSafe ()) {
          MSG_WARN ("Ignoring unsafe author style that might reveal browsing history\n");
          delete rule;
+      } else if (order == CSS_PRIMARY_USER_AGENT) {
+         userAgentSheet.addRule (rule);
+         matchCache[CSS_PRIMARY_USER_AGENT].setSize (userAgentSheet.matchCacheOffset, -1);
       } else { 
          sheet[order].addRule (rule);
          matchCache[order].setSize (sheet[order].matchCacheOffset, -1);
