@@ -412,7 +412,7 @@ void HashSet::clearNode(HashSet::Node *node)
    }
 }
 
-HashSet::Node *HashSet::findNode(Object *object)
+HashSet::Node *HashSet::findNode(Object *object) const
 {
    int h = calcHashValue(object);
    for (Node *node = table[h]; node; node = node->next) {
@@ -446,7 +446,7 @@ void HashSet::put(Object *object)
    insertNode (object);
 }
 
-bool HashSet::contains(Object *object)
+bool HashSet::contains(Object *object) const
 {
    int h = calcHashValue(object);
    for (Node *n = table[h]; n; n = n->next) {
@@ -616,7 +616,7 @@ void HashTable::put(Object *key, Object *value)
    node->value = value;
 }
 
-Object *HashTable::get(Object *key)
+Object *HashTable::get(Object *key) const
 {
    Node *node = findNode(key);
    if (node)

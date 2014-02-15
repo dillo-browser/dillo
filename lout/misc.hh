@@ -116,9 +116,9 @@ public:
    /**
     * \brief Return the number of elements put into this vector.
     */
-   inline int size() { return this->num; }
+   inline int size() const { return this->num; }
 
-   inline T* getArray() { return array; }
+   inline T* getArray() const { return array; }
 
    inline T* detachArray() {
       T* arr = array;
@@ -163,7 +163,7 @@ public:
     *
     * \sa misc::SimpleVector::get
     */
-   inline T* getRef (int i) {
+   inline T* getRef (int i) const {
       assert (i >= 0 && this->num - i > 0);
       return array + i;
    }
@@ -174,7 +174,7 @@ public:
     * The element is copied, so for complex elements, you should rather used
     * misc::SimpleVector::getRef.
     */
-   inline T get (int i) {
+   inline T get (int i) const {
       assert (i >= 0 && this->num - i > 0);
       return this->array[i];
    }
@@ -182,7 +182,7 @@ public:
    /**
     * \brief Return the reference of the first element (convenience method).
     */
-   inline T* getFirstRef () {
+   inline T* getFirstRef () const {
       assert (this->num > 0);
       return this->array;
    }
@@ -190,7 +190,7 @@ public:
    /**
     * \brief Return the first element, explicitly.
     */
-   inline T getFirst () {
+   inline T getFirst () const {
       assert (this->num > 0);
       return this->array[0];
    }
@@ -198,7 +198,7 @@ public:
    /**
     * \brief Return the reference of the last element (convenience method).
     */
-   inline T* getLastRef () {
+   inline T* getLastRef () const {
       assert (this->num > 0);
       return this->array + this->num - 1;
    }
@@ -206,7 +206,7 @@ public:
    /**
     * \brief Return the last element, explicitly.
     */
-   inline T getLast () {
+   inline T getLast () const {
       assert (this->num > 0);
       return this->array[this->num - 1];
    }
@@ -352,7 +352,7 @@ public:
          free (this->arrayExtra2);
    }
 
-   inline int size() { return this->numMain + this->numExtra; }
+   inline int size() const { return this->numMain + this->numExtra; }
 
    inline void increase() { setSize(size() + 1); }
 
@@ -419,7 +419,7 @@ public:
     *
     * \sa misc::SimpleVector::get
     */
-   inline T* getRef (int i)
+   inline T* getRef (int i) const
    {
       if (this->startExtra == -1)
          return this->arrayMain + i;
@@ -439,7 +439,7 @@ public:
     * The element is copied, so for complex elements, you should rather used
     * misc::SimpleVector::getRef.
     */
-   inline T get (int i)
+   inline T get (int i) const
    {
       return *(this->getRef(i));
    }
@@ -447,7 +447,7 @@ public:
    /**
     * \brief Return the reference of the first element (convenience method).
     */
-   inline T* getFirstRef () {
+   inline T* getFirstRef () const {
       assert (size () > 0);
       return this->getRef(0);
    }
@@ -455,14 +455,14 @@ public:
    /**
     * \brief Return the first element, explicitly.
     */
-   inline T getFirst () {
+   inline T getFirst () const {
       return *(this->getFirstRef());
    }
 
    /**
     * \brief Return the reference of the last element (convenience method).
     */
-   inline T* getLastRef () {
+   inline T* getLastRef () const {
       assert (size () > 0);
       return this->getRef(size () - 1);
    }
@@ -470,7 +470,7 @@ public:
    /**
     * \brief Return the last element, explicitly.
     */
-   inline T getLast () {
+   inline T getLast () const {
       return *(this->getLastRef());
    }
 
@@ -536,7 +536,7 @@ public:
    BitSet(int initBits);
    ~BitSet();
    void intoStringBuffer(misc::StringBuffer *sb);
-   bool get(int i);
+   bool get(int i) const;
    void set(int i, bool val);
    void clear();
 };

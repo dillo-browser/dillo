@@ -141,7 +141,7 @@ public:
    { insert (newElement, bsearch (newElement, false)); }
 
    void remove(int pos);
-   inline object::Object *get(int pos)
+   inline object::Object *get(int pos) const
    { return (pos >= 0 && pos < numElements) ? array[pos] : NULL; }
    inline int size() { return numElements; }
    void clear();
@@ -196,10 +196,10 @@ public:
    { return remove0(element, true, false); }
    inline bool detachRef(object::Object *element)
    { return remove0(element, false, true); }
-   inline int size() { return numElements; }
-   inline bool isEmpty() { return numElements == 0; }
-   inline object::Object *getFirst() { return first->object; }
-   inline object::Object *getLast() { return last->object; }
+   inline int size() const { return numElements; }
+   inline bool isEmpty() const { return numElements == 0; }
+   inline object::Object *getFirst() const { return first->object; }
+   inline object::Object *getLast() const { return last->object; }
 };
 
 
@@ -221,7 +221,7 @@ protected:
    int tableSize;
    bool ownerOfObjects;
 
-   inline int calcHashValue(object::Object *object)
+   inline int calcHashValue(object::Object *object) const
    {
       return abs(object->hashValue()) % tableSize;
    }
@@ -229,7 +229,7 @@ protected:
    virtual Node *createNode();
    virtual void clearNode(Node *node);
 
-   Node *findNode(object::Object *object);
+   Node *findNode(object::Object *object) const;
    Node *insertNode(object::Object *object);
 
    AbstractIterator* createIterator();
@@ -255,7 +255,7 @@ public:
    ~HashSet();
 
    void put (object::Object *object);
-   bool contains (object::Object *key);
+   bool contains (object::Object *key) const;
    bool remove (object::Object *key);
    //Object *getReference (object::Object *object);
 };
@@ -284,7 +284,7 @@ public:
    void intoStringBuffer(misc::StringBuffer *sb);
 
    void put (object::Object *key, object::Object *value);
-   object::Object *get (object::Object *key);
+   object::Object *get (object::Object *key) const;
 };
 
 /**
@@ -328,9 +328,9 @@ public:
 
    void push (object::Object *object);
    void pushUnder (object::Object *object);
-   inline object::Object *getTop () { return top ? top->object : NULL; }
+   inline object::Object *getTop () const { return top ? top->object : NULL; }
    void pop ();
-   inline int size() { return numElements; }
+   inline int size() const { return numElements; }
 };
 
 } // namespace untyped
@@ -409,9 +409,9 @@ public:
    inline void insertSorted(T *newElement)
    { ((untyped::Vector*)this->base)->insertSorted(newElement); }
    inline void remove(int pos) { ((untyped::Vector*)this->base)->remove(pos); }
-   inline T *get(int pos)
+   inline T *get(int pos) const
    { return (T*)((untyped::Vector*)this->base)->get(pos); }
-   inline int size() { return ((untyped::Vector*)this->base)->size(); }
+   inline int size() const { return ((untyped::Vector*)this->base)->size(); }
    inline void clear() { ((untyped::Vector*)this->base)->clear(); }
    inline void sort() { ((untyped::Vector*)this->base)->sort(); }
    inline int bsearch(T *key, bool mustExist)
@@ -438,12 +438,12 @@ public:
    inline bool detachRef(T *element) {
       return ((untyped::List*)this->base)->detachRef(element); }
 
-   inline int size() { return ((untyped::List*)this->base)->size(); }
-   inline bool isEmpty()
+   inline int size() const { return ((untyped::List*)this->base)->size(); }
+   inline bool isEmpty() const
    { return ((untyped::List*)this->base)->isEmpty(); }
-   inline T *getFirst()
+   inline T *getFirst() const
    { return (T*)((untyped::List*)this->base)->getFirst(); }
-   inline T *getLast()
+   inline T *getLast() const
    { return (T*)((untyped::List*)this->base)->getLast(); }
 };
 
@@ -461,7 +461,7 @@ public:
 
    inline void put(T *object)
    { return ((untyped::HashSet*)this->base)->put(object); }
-   inline bool contains(T *object)
+   inline bool contains(T *object) const
    { return ((untyped::HashSet*)this->base)->contains(object); }
    inline bool remove(T *object)
    { return ((untyped::HashSet*)this->base)->remove(object); }
@@ -481,7 +481,7 @@ public:
 
    inline void put(K *key, V *value)
    { return ((untyped::HashTable*)this->base)->put(key, value); }
-   inline V *get(K *key)
+   inline V *get(K *key) const
    { return (V*)((untyped::HashTable*)this->base)->get(key); }
 };
 
@@ -498,10 +498,10 @@ public:
       ((untyped::Stack*)this->base)->push (object); }
    inline void pushUnder (T *object)
    { ((untyped::Stack*)this->base)->pushUnder (object); }
-   inline T *getTop ()
+   inline T *getTop () const
    { return (T*)((untyped::Stack*)this->base)->getTop (); }
    inline void pop () { ((untyped::Stack*)this->base)->pop (); }
-   inline int size() {  return ((untyped::Stack*)this->base)->size(); }
+   inline int size() const { return ((untyped::Stack*)this->base)->size(); }
 };
 
 } // namespace untyped
