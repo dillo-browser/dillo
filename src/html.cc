@@ -2532,6 +2532,7 @@ static void Html_tag_open_video(DilloHtml *html, const char *tag, int tagsize)
       MSG("<video> not handled when already inside a media element.\n");
       return;
    }
+   /* TODO: poster attr */
 
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "src"))) {
       url = a_Html_url_new(html, attrbuf, NULL, 0);
