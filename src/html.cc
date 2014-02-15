@@ -2083,13 +2083,13 @@ static void Html_tag_open_abbr(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Read image-associated tag attributes and create new image.
  */
-void a_Html_image_attrs(DilloHtml *html, const char *tag, int tagsize)
+void a_Html_common_image_attrs(DilloHtml *html, const char *tag, int tagsize)
 {
    char *width_ptr, *height_ptr;
    const char *attrbuf;
    CssLength l_w  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
    CssLength l_h  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
-   int space, border, w = 0, h = 0;
+   int w = 0, h = 0;
 
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
@@ -2125,7 +2125,8 @@ void a_Html_image_attrs(DilloHtml *html, const char *tag, int tagsize)
       dFree(width_ptr);
       dFree(height_ptr);
       width_ptr = height_ptr = NULL;
-      MSG("a_Html_image_attrs: suspicious image size request %d x %d\n", w, h);
+      MSG("a_Html_common_image_attrs: suspicious image size request %d x %d\n",
+          w, h);
    } else {
       if (CSS_LENGTH_TYPE(l_w) != CSS_LENGTH_TYPE_AUTO)
          html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
@@ -2141,55 +2142,6 @@ void a_Html_image_attrs(DilloHtml *html, const char *tag, int tagsize)
    if ((width_ptr && !height_ptr) || (height_ptr && !width_ptr))
       [...]
    */
-
-   /* Spacing to the left and right */
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "hspace"))) {
-      space = strtol(attrbuf, NULL, 10);
-      if (space > 0) {
-         space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_LEFT,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_RIGHT,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
-      }
-   }
-
-   /* Spacing at the top and bottom */
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vspace"))) {
-      space = strtol(attrbuf, NULL, 10);
-      if (space > 0) {
-         space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_TOP,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_BOTTOM,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
-      }
-   }
-
-   /* Border */
-   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border"))) {
-      border = strtol(attrbuf, NULL, 10);
-      if (border >= 0) {
-         border = CSS_CREATE_LENGTH(border, CSS_LENGTH_TYPE_PX);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
-                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
-
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
-                                           CSS_TYPE_ENUM, BORDER_SOLID);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
-                                           CSS_TYPE_ENUM, BORDER_SOLID);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_STYLE,
-                                           CSS_TYPE_ENUM, BORDER_SOLID);
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_STYLE,
-                                           CSS_TYPE_ENUM, BORDER_SOLID);
-      }
-   }
 
    /* x_img is an index to a list of {url,image} pairs.
     * We know a_Html_image_new() will use size() as its next index */
@@ -2271,7 +2223,60 @@ static bool Html_load_image(BrowserWindow *bw, DilloUrl *url,
 
 static void Html_tag_open_img(DilloHtml *html, const char *tag, int tagsize)
 {
-   a_Html_image_attrs(html, tag, tagsize);
+   int space, border;
+   const char *attrbuf;
+
+   a_Html_common_image_attrs(html, tag, tagsize);
+
+   /* Spacing to the left and right */
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "hspace"))) {
+      space = strtol(attrbuf, NULL, 10);
+      if (space > 0) {
+         space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_LEFT,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_RIGHT,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+      }
+   }
+
+   /* Spacing at the top and bottom */
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "vspace"))) {
+      space = strtol(attrbuf, NULL, 10);
+      if (space > 0) {
+         space = CSS_CREATE_LENGTH(space, CSS_LENGTH_TYPE_PX);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_TOP,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_MARGIN_BOTTOM,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, space);
+      }
+   }
+
+   /* Border */
+   if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "border"))) {
+      border = strtol(attrbuf, NULL, 10);
+      if (border >= 0) {
+         border = CSS_CREATE_LENGTH(border, CSS_LENGTH_TYPE_PX);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE, border);
+
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_TOP_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_BOTTOM_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_LEFT_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_BORDER_RIGHT_STYLE,
+                                           CSS_TYPE_ENUM, BORDER_SOLID);
+      }
+   }
+
 }
 
 /*
