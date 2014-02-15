@@ -1,7 +1,7 @@
 /*
  * File: css.cc
  *
- * Copyright 2008-2009 Johannes Hofmann <Johannes.Hofmann@gmx.de>
+ * Copyright 2008-2014 Johannes Hofmann <Johannes.Hofmann@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,12 +108,12 @@ CssSelector::CssSelector () {
    struct CombinatorAndSelector *cs;
 
    refCount = 0;
+   matchCacheOffset = -1;
    selectorList = new lout::misc::SimpleVector
                                   <struct CombinatorAndSelector> (1);
    selectorList->increase ();
    cs = selectorList->getRef (selectorList->size () - 1);
 
-   cs->notMatchingBefore = -1;
    cs->combinator = COMB_NONE;
    cs->selector = new CssSimpleSelector ();
 }
@@ -128,7 +128,8 @@ CssSelector::~CssSelector () {
  * \brief Return whether selector matches at a given node in the document tree.
  */
 bool CssSelector::match (Doctree *docTree, const DoctreeNode *node,
-                         int i, Combinator comb) {
+                         int i, Combinator comb, MatchCache *matchCache) {
+   int *matchCacheEntry;
    assert (node);
 
    if (i < 0)
@@ -148,14 +149,16 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node,
          break;
       case COMB_DESCENDANT:
          node = docTree->parent (node);
+         matchCacheEntry = matchCache->getRef(matchCacheOffset + i);
 
          for (const DoctreeNode *n = node;
-              n && n->num > cs->notMatchingBefore; n = docTree->parent (n))
-            if (sel->match (n) && match (docTree, n, i - 1, cs->combinator))
+              n && n->num > *matchCacheEntry; n = docTree->parent (n))
+            if (sel->match (n) &&
+                match (docTree, n, i - 1, cs->combinator, matchCache))
                return true;
 
          if (node) // remember that it didn't match to avoid future tests
-            cs->notMatchingBefore = node->num;
+            *matchCacheEntry = node->num;
 
          return false;
          break;
@@ -167,17 +170,17 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node,
       return false;
 
    // tail recursion should be optimized by the compiler
-   return match (docTree, node, i - 1, cs->combinator);
+   return match (docTree, node, i - 1, cs->combinator, matchCache);
 }
 
 void CssSelector::addSimpleSelector (Combinator c) {
    struct CombinatorAndSelector *cs;
 
+   assert (matchCacheOffset == -1);
    selectorList->increase ();
    cs = selectorList->getRef (selectorList->size () - 1);
 
    cs->combinator = c;
-   cs->notMatchingBefore = -1;
    cs->selector = new CssSimpleSelector ();
 }
 
@@ -345,8 +348,8 @@ CssRule::~CssRule () {
 }
 
 void CssRule::apply (CssPropertyList *props,
-                     Doctree *docTree, const DoctreeNode *node) {
-   if (selector->match (docTree, node))
+                     Doctree *docTree, const DoctreeNode *node, MatchCache *matchCache) {
+   if (selector->match (docTree, node, matchCache))
       this->props->apply (props);
 }
 
@@ -410,6 +413,8 @@ void CssStyleSheet::addRule (CssRule *rule) {
    }
 
    if (ruleList) {
+      rule->selector->setMatchCacheOffset (matchCacheOffset);
+      matchCacheOffset += rule->selector->size ();
       ruleList->insert (rule);
    } else {
       assert (top->getElement () == CssSimpleSelector::ELEMENT_NONE);
@@ -423,8 +428,8 @@ void CssStyleSheet::addRule (CssRule *rule) {
  * The properties are set as defined by the rules in the stylesheet that
  * match at the given node in the document tree.
  */
-void CssStyleSheet::apply (CssPropertyList *props,
-                           Doctree *docTree, const DoctreeNode *node) {
+void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree,
+                           const DoctreeNode *node, MatchCache *matchCache) {
    static const int maxLists = 32;
    RuleList *ruleList[maxLists];
    int numLists = 0, index[maxLists] = {0};
@@ -484,8 +489,8 @@ void CssStyleSheet::apply (CssPropertyList *props,
       }
 
       if (minSpecIndex >= 0) {
-         ruleList[minSpecIndex]->get (index[minSpecIndex])->apply
-                                                        (props, docTree, node);
+         CssRule *rule = ruleList[minSpecIndex]->get (index[minSpecIndex]);
+         rule->apply(props, docTree, node, matchCache);
          index[minSpecIndex]++;
       } else {
          break;
@@ -511,23 +516,28 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *tagStyleImportant,
          CssPropertyList *nonCssHints) {
 
-   sheet[CSS_PRIMARY_USER_AGENT].apply (props, docTree, node);
-   sheet[CSS_PRIMARY_USER].apply (props, docTree, node);
+   sheet[CSS_PRIMARY_USER_AGENT].apply (props, docTree, node,
+                                        &matchCache[CSS_PRIMARY_USER_AGENT]);
+   sheet[CSS_PRIMARY_USER].apply (props, docTree, node,
+                                  &matchCache[CSS_PRIMARY_USER]);
 
    if (nonCssHints)
         nonCssHints->apply (props);
 
-   sheet[CSS_PRIMARY_AUTHOR].apply (props, docTree, node);
+   sheet[CSS_PRIMARY_AUTHOR].apply (props, docTree, node,
+                                    &matchCache[CSS_PRIMARY_AUTHOR]);
 
    if (tagStyle)
         tagStyle->apply (props);
 
-   sheet[CSS_PRIMARY_AUTHOR_IMPORTANT].apply (props, docTree, node);
+   sheet[CSS_PRIMARY_AUTHOR_IMPORTANT].apply (props, docTree, node,
+                                     &matchCache[CSS_PRIMARY_AUTHOR_IMPORTANT]);
 
    if (tagStyleImportant)
         tagStyleImportant->apply (props);
 
-   sheet[CSS_PRIMARY_USER_IMPORTANT].apply (props, docTree, node);
+   sheet[CSS_PRIMARY_USER_IMPORTANT].apply (props, docTree, node,
+                                     &matchCache[CSS_PRIMARY_USER_IMPORTANT]);
 }
 
 void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
@@ -541,8 +551,9 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
            !rule->isSafe ()) {
          MSG_WARN ("Ignoring unsafe author style that might reveal browsing history\n");
          delete rule;
-      } else {
+      } else { 
          sheet[order].addRule (rule);
+         matchCache[order].setSize (sheet[order].matchCacheOffset, -1);
       }
    }
 }

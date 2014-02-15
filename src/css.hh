@@ -364,6 +364,11 @@ class CssSimpleSelector {
       void print ();
 };
 
+class MatchCache : public lout::misc::SimpleVector <int> {
+   public:
+      MatchCache() : lout::misc::SimpleVector <int> (0) {};
+};
+
 /**
  * \brief CSS selector class.
  *
@@ -380,15 +385,15 @@ class CssSelector {
 
    private:
       struct CombinatorAndSelector {
-         int notMatchingBefore; // used for optimizing CSS selector matching
          Combinator combinator;
          CssSimpleSelector *selector;
       };
 
-      int refCount;
+      int refCount, matchCacheOffset;
       lout::misc::SimpleVector <struct CombinatorAndSelector> *selectorList;
 
-      bool match (Doctree *dt, const DoctreeNode *node, int i, Combinator comb);
+      bool match (Doctree *dt, const DoctreeNode *node, int i, Combinator comb,
+                  MatchCache *matchCache);
 
    public:
       CssSelector ();
@@ -398,8 +403,13 @@ class CssSelector {
          return selectorList->getRef (selectorList->size () - 1)->selector;
       };
       inline int size () { return selectorList->size (); };
-      inline bool match (Doctree *dt, const DoctreeNode *node) {
-         return match (dt, node, selectorList->size () - 1, COMB_NONE);
+      inline bool match (Doctree *dt, const DoctreeNode *node,
+                         MatchCache *matchCache) {
+         return match (dt, node, selectorList->size () - 1, COMB_NONE,
+                       matchCache);
+      };
+      inline void setMatchCacheOffset (int mo) {
+         matchCacheOffset = mo;
       };
       int specificity ();
       bool checksPseudoClass ();
@@ -424,8 +434,8 @@ class CssRule {
       CssRule (CssSelector *selector, CssPropertyList *props, int pos);
       ~CssRule ();
 
-      void apply (CssPropertyList *props,
-                  Doctree *docTree, const DoctreeNode *node);
+      void apply (CssPropertyList *props, Doctree *docTree,
+                  const DoctreeNode *node, MatchCache *matchCache);
       inline bool isSafe () {
          return !selector->checksPseudoClass () || props->isSafe ();
       };
@@ -474,9 +484,12 @@ class CssStyleSheet {
       RuleMap idTable, classTable;
 
    public:
+      int matchCacheOffset;
+
+      CssStyleSheet () { matchCacheOffset = 0; }
       void addRule (CssRule *rule);
-      void apply (CssPropertyList *props,
-                  Doctree *docTree, const DoctreeNode *node);
+      void apply (CssPropertyList *props, Doctree *docTree,
+                  const DoctreeNode *node, MatchCache *matchCache);
 };
 
 /**
@@ -485,6 +498,7 @@ class CssStyleSheet {
 class CssContext {
    private:
       CssStyleSheet sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
+      MatchCache matchCache[CSS_PRIMARY_USER_IMPORTANT + 1];
       int pos;
 
    public:
