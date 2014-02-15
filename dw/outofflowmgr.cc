@@ -1243,12 +1243,6 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
                  "oldY = %d, vloat->yReq = %d, vloat->yReal = %d",
                  oldY, vloat->yReq, vloat->yReal);
 
-   // No call neccessary when yReal has not changed. (Notice that
-   // checking for yReq is wrong: yReq may remain the same, when yReal
-   // changes, e. g. when previous float has changes its size.
-   //if (vloat->yReal != oldY)
-   //   checkRelationPosChanged (vloat, side, oldY);
-
    DBG_OBJ_MSG_END ();
 }
 
@@ -1277,72 +1271,6 @@ bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
    }
 
    return false;
-}
-
-void OutOfFlowMgr::checkRelationPosChanged (Float *vloat, Side side, int oldY)
-{
-   DBG_OBJ_MSGF ("resize.floats", 0,
-                 "<b>checkRelationPosChanged</b> (<i>widget:</i> %p, %d)",
-                 vloat->getWidget(), oldY);
-   DBG_OBJ_MSG_START ();
-
-   // Only this float has been changed (see tellFloatPosition), so
-   // only this float has to be tested against all textblocks.
-   if (vloat->isNowAllocated ()) {
-      // TODO This (and similar code) is not very efficient.
-      Allocation *gba = getAllocation (vloat->generatingBlock);
-      TBInfo *gbInfo = getTextblock (vloat->generatingBlock);
-      int newFlx = calcFloatX (vloat, side,
-                               gba->x - containingBlockAllocation.x,
-                               gba->width, gbInfo->availWidth),
-         newFly = vloat->yReal + gba->x - containingBlockAllocation.y;
-
-      for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-              tbInfosByTextblock->iterator (); it.hasNext (); ) {
-         TypedPointer <Textblock> *key = it.getNext ();
-         Textblock *textblock = key->getTypedValue();
-         // ensureFloatSize is not called; we take the old size
-         // here.  Potential changes are handled later. Notice that
-         // calcFloatX does not call ensureFloatSize.
-
-         if (textblock == vloat->generatingBlock)
-            DBG_OBJ_MSGF ("resize.floats", 1,
-                          "not checking (generating!) textblock %p against "
-                          "this float ", textblock);
-         else if (!wasAllocated (textblock))
-            DBG_OBJ_MSGF ("resize.floats", 1,
-                          "not checking (not allocated!) textblock %p against "
-                          "this float ", textblock);
-         else {
-            DBG_OBJ_MSGF ("resize.floats", 1,
-                          "checking textblock %p against float %p",
-                          textblock, vloat->getWidget ());
-            Allocation *tba = getAllocation (textblock);
-            int tbx = tba->x - containingBlockAllocation.x,
-               tby = tba->y - containingBlockAllocation.y, tbw = tba->width,
-               tbh = tba->ascent + tba->descent;
-            int pos;
-
-            if (hasRelationChanged (true, tbx, tby, tbw, tbh,
-                                    tbx, tby, tbw, tbh,
-                                    vloat->wasThenAllocated (),
-                                    vloat->getOldXCB (), vloat->getOldYCB (),
-                                    vloat->getOldWidth (),
-                                    vloat->getOldHeight (),
-                                    newFlx, newFly, vloat->size.width,
-                                    vloat->size.ascent + vloat->size.descent,
-                                    side, &pos))
-               textblock->borderChanged (pos + containingBlockAllocation.y
-                                         - tba->y,
-                                         vloat->getWidget ());
-         }
-      }
-      
-      vloat->update (true, newFlx, newFly, vloat->size.width,
-                     vloat->size.ascent + vloat->size.descent);
-   }
-
-   DBG_OBJ_MSG_END ();
 }
 
 void OutOfFlowMgr::getFloatsListsAndSide (Float *vloat,
