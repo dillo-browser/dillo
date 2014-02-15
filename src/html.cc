@@ -2513,10 +2513,15 @@ static void Html_tag_open_object(DilloHtml *html, const char *tag, int tagsize)
 
       html->styleEngine->setNonCssHint(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
                                        Html_set_new_link(html, &url));
-
-      HT2TB(html)->addText("[OBJECT]", html->wordStyle ());
    }
    a_Url_free(base_url);
+}
+
+static void Html_tag_content_object(DilloHtml *html, const char *tag,
+                                    int tagsize)
+{
+   if (a_Html_get_attr(html, tag, tagsize, "data"))
+      HT2TB(html)->addText("[OBJECT]", html->wordStyle ());
 }
 
 /*
@@ -2610,12 +2615,16 @@ static void Html_tag_open_source(DilloHtml *html, const char *tag,
       } else {
          html->styleEngine->setPseudoLink ();
       }
-
       html->styleEngine->setNonCssHint(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
                                        Html_set_new_link(html, &url));
-
-      HT2TB(html)->addText("[MEDIA SOURCE]", html->wordStyle ());
    }
+}
+
+static void Html_tag_content_source(DilloHtml *html, const char *tag,
+                                    int tagsize)
+{
+   if ((html->InFlags & IN_MEDIA) && a_Html_get_attr(html, tag, tagsize,"src"))
+      HT2TB(html)->addText("[MEDIA SOURCE]", html->wordStyle ());
 }
 
 /*
@@ -2647,9 +2656,13 @@ static void Html_tag_open_embed(DilloHtml *html, const char *tag, int tagsize)
 
       html->styleEngine->setNonCssHint(PROPERTY_X_LINK, CSS_TYPE_INTEGER,
                                        Html_set_new_link(html, &url));
-
-      HT2TB(html)->addText("[EMBED]", html->wordStyle ());
    }
+}
+
+static void Html_tag_content_embed(DilloHtml *html,const char *tag,int tagsize)
+{
+   if (a_Html_get_attr(html, tag, tagsize, "src"))
+      HT2TB(html)->addText("[EMBED]", html->wordStyle ());
 }
 
 /*
@@ -3444,7 +3457,7 @@ const TagInfo Tags[] = {
  {"dl", B8(011010),'R',2, Html_tag_open_dl, NULL, Html_tag_close_par},
  {"dt", B8(010110),'O',1, Html_tag_open_dt, NULL, Html_tag_close_par},
  {"em", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"embed", B8(010001),'F',0, Html_tag_open_embed, NULL, NULL},
+ {"embed", B8(010001),'F',0, Html_tag_open_embed, Html_tag_content_embed,NULL},
  /* fieldset */
  {"figcaption", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"figure", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
@@ -3488,7 +3501,8 @@ const TagInfo Tags[] = {
  {"nav", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  /* noframes 1011 -- obsolete in HTML5 */
  /* noscript 1011 */
- {"object", B8(111101),'R',2, Html_tag_open_object, NULL, NULL},
+ {"object", B8(111101),'R',2, Html_tag_open_object, Html_tag_content_object,
+                              NULL},
  {"ol", B8(011010),'R',2, Html_tag_open_ol, NULL, NULL},
  {"optgroup", B8(010101),'O',1, Html_tag_open_optgroup, NULL,
                                 Html_tag_close_optgroup},
@@ -3503,7 +3517,8 @@ const TagInfo Tags[] = {
  {"section", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"select", B8(010101),'R',2, Html_tag_open_select,NULL,Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"source", B8(010001),'F',0, Html_tag_open_source, NULL, NULL},
+ {"source", B8(010001),'F',0, Html_tag_open_source, Html_tag_content_source,
+                              NULL},
  {"span", B8(010101),'R',2, Html_tag_open_span, NULL, NULL},
  {"strike", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"strong", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
