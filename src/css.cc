@@ -109,19 +109,16 @@ CssSelector::CssSelector () {
 
    refCount = 0;
    matchCacheOffset = -1;
-   selectorList = new lout::misc::SimpleVector
-                                  <struct CombinatorAndSelector> (1);
-   selectorList->increase ();
-   cs = selectorList->getRef (selectorList->size () - 1);
+   selectorList.increase ();
+   cs = selectorList.getRef (selectorList.size () - 1);
 
    cs->combinator = COMB_NONE;
    cs->selector = new CssSimpleSelector ();
 }
 
 CssSelector::~CssSelector () {
-   for (int i = selectorList->size () - 1; i >= 0; i--)
-      delete selectorList->getRef (i)->selector;
-   delete selectorList;
+   for (int i = selectorList.size () - 1; i >= 0; i--)
+      delete selectorList.getRef (i)->selector;
 }
 
 /**
@@ -135,7 +132,7 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node,
    if (i < 0)
       return true;
 
-   struct CombinatorAndSelector *cs = selectorList->getRef (i);
+   struct CombinatorAndSelector *cs = selectorList.getRef (i);
    CssSimpleSelector *sel = cs->selector;
 
    switch (comb) {
@@ -177,16 +174,16 @@ void CssSelector::addSimpleSelector (Combinator c) {
    struct CombinatorAndSelector *cs;
 
    assert (matchCacheOffset == -1);
-   selectorList->increase ();
-   cs = selectorList->getRef (selectorList->size () - 1);
+   selectorList.increase ();
+   cs = selectorList.getRef (selectorList.size () - 1);
 
    cs->combinator = c;
    cs->selector = new CssSimpleSelector ();
 }
 
 bool CssSelector::checksPseudoClass () {
-   for (int i = 0; i < selectorList->size (); i++)
-      if (selectorList->getRef (i)->selector->getPseudoClass ())
+   for (int i = 0; i < selectorList.size (); i++)
+      if (selectorList.getRef (i)->selector->getPseudoClass ())
          return true;
    return false;
 }
@@ -200,18 +197,18 @@ bool CssSelector::checksPseudoClass () {
 int CssSelector::specificity () {
    int spec = 0;
 
-   for (int i = 0; i < selectorList->size (); i++)
-      spec += selectorList->getRef (i)->selector->specificity ();
+   for (int i = 0; i < selectorList.size (); i++)
+      spec += selectorList.getRef (i)->selector->specificity ();
 
    return spec;
 }
 
 void CssSelector::print () {
-   for (int i = 0; i < selectorList->size (); i++) {
-      selectorList->getRef (i)->selector->print ();
+   for (int i = 0; i < selectorList.size (); i++) {
+      selectorList.getRef (i)->selector->print ();
 
-      if (i < selectorList->size () - 1) {
-         switch (selectorList->getRef (i + 1)->combinator) {
+      if (i < selectorList.size () - 1) {
+         switch (selectorList.getRef (i + 1)->combinator) {
             case COMB_CHILD:
                fprintf (stderr, "> ");
                break;

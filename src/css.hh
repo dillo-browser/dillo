@@ -390,7 +390,7 @@ class CssSelector {
       };
 
       int refCount, matchCacheOffset;
-      lout::misc::SimpleVector <struct CombinatorAndSelector> *selectorList;
+      lout::misc::SimpleVector <struct CombinatorAndSelector> selectorList;
 
       bool match (Doctree *dt, const DoctreeNode *node, int i, Combinator comb,
                   MatchCache *matchCache);
@@ -400,12 +400,12 @@ class CssSelector {
       ~CssSelector ();
       void addSimpleSelector (Combinator c);
       inline CssSimpleSelector *top () {
-         return selectorList->getRef (selectorList->size () - 1)->selector;
+         return selectorList.getRef (selectorList.size () - 1)->selector;
       };
-      inline int size () { return selectorList->size (); };
+      inline int size () { return selectorList.size (); };
       inline bool match (Doctree *dt, const DoctreeNode *node,
                          MatchCache *matchCache) {
-         return match (dt, node, selectorList->size () - 1, COMB_NONE,
+         return match (dt, node, selectorList.size () - 1, COMB_NONE,
                        matchCache);
       };
       inline void setMatchCacheOffset (int mo) {
