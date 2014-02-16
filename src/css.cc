@@ -230,17 +230,13 @@ void CssSelector::print () {
 
 CssSimpleSelector::CssSimpleSelector () {
    element = ELEMENT_ANY;
-   klass = NULL;
    id = NULL;
    pseudo = NULL;
 }
 
 CssSimpleSelector::~CssSimpleSelector () {
-   if (klass) {
-      for (int i = 0; i < klass->size (); i++)
-         dFree (klass->get (i));
-      delete klass;
-   }
+   for (int i = 0; i < klass.size (); i++)
+      dFree (klass.get (i));
    dFree (id);
    dFree (pseudo);
 }
@@ -248,10 +244,8 @@ CssSimpleSelector::~CssSimpleSelector () {
 void CssSimpleSelector::setSelect (SelectType t, const char *v) {
    switch (t) {
       case SELECT_CLASS:
-         if (klass == NULL)
-            klass = new lout::misc::SimpleVector <char *> (1);
-         klass->increase ();
-         klass->set (klass->size () - 1, dStrdup (v));
+         klass.increase ();
+         klass.set (klass.size () - 1, dStrdup (v));
          break;
       case SELECT_PSEUDO_CLASS:
          if (pseudo == NULL)
@@ -279,20 +273,18 @@ bool CssSimpleSelector::match (const DoctreeNode *n) {
       return false;
    if (id != NULL && (n->id == NULL || dStrAsciiCasecmp (id, n->id) != 0))
       return false;
-   if (klass != NULL) {
-      for (int i = 0; i < klass->size (); i++) {
-         bool found = false;
-         if (n->klass != NULL) {
-            for (int j = 0; j < n->klass->size (); j++) {
-               if (dStrAsciiCasecmp (klass->get(i), n->klass->get(j)) == 0) {
-                  found = true;
-                  break;
-               }
+   for (int i = 0; i < klass.size (); i++) {
+      bool found = false;
+      if (n->klass != NULL) {
+         for (int j = 0; j < n->klass->size (); j++) {
+            if (dStrAsciiCasecmp (klass.get(i), n->klass->get(j)) == 0) {
+               found = true;
+               break;
             }
          }
-         if (! found)
-            return false;
       }
+      if (! found)
+         return false;
    }
 
    return true;
@@ -308,8 +300,7 @@ int CssSimpleSelector::specificity () {
 
    if (id)
       spec += 1 << 20;
-   if (klass)
-      spec += klass->size() << 10;
+   spec += klass.size() << 10;
    if (pseudo)
       spec += 1 << 10;
    if (element != ELEMENT_ANY)
@@ -321,11 +312,9 @@ int CssSimpleSelector::specificity () {
 void CssSimpleSelector::print () {
    fprintf (stderr, "Element %d, pseudo %s, id %s ",
       element, pseudo, id);
-   if (klass != NULL) {
-      fprintf (stderr, "class ");
-      for (int i = 0; i < klass->size (); i++)
-         fprintf (stderr, ".%s", klass->get (i));
-   }
+   fprintf (stderr, "class ");
+   for (int i = 0; i < klass.size (); i++)
+      fprintf (stderr, ".%s", klass.get (i));
 }
 
 CssRule::CssRule (CssSelector *selector, CssPropertyList *props, int pos) {
