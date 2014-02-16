@@ -208,6 +208,11 @@ first row (*queueResize*) defines also the rules for
 *markExtremesChanges* and *markExtremesChanges*, and in the second row
 (*sizeAllocate*), even *sizeRequest* has to be considered.
 
+<div style="border: 2px solid #ff4040; margin-bottom: 0.5em;
+padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
+Not up to date: *queueResize* can now be called recursively (so to
+speak). See code there.</div>
+
 <table>
    <tr>
       <th>Within call of ... ↓

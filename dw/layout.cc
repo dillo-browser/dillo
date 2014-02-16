@@ -245,6 +245,7 @@ Layout::Layout (Platform *platform)
    topLevel = NULL;
    widgetAtPoint = NULL;
 
+   queueQueueResizeList = new typed::Vector<QueueResizeItem> (4, true);
    queueResizeList = new typed::Vector<Widget> (4, false);
 
    DBG_OBJ_CREATE ("dw::core::Layout");
@@ -308,6 +309,8 @@ Layout::~Layout ()
       topLevel = NULL;
       delete w;
    }
+
+   delete queueQueueResizeList;
    delete queueResizeList;
    delete platform;
    delete view;

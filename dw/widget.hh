@@ -164,6 +164,8 @@ private:
     */
    bool buttonSensitiveSet;
 
+   void actualQueueResize (int ref, bool extremesChanged);
+
 public:
    /**
     * \brief This value is defined by the parent widget, and used for

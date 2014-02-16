@@ -167,6 +167,25 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
  */
 void Widget::queueResize (int ref, bool extremesChanged)
 {
+   // queueResize() can be called recursively; calls are queued, so
+   // that actualQueueResize() is clean.
+
+   if (queueResizeEntered ())
+      layout->queueQueueResizeList->put (new Layout::QueueResizeItem
+                                         (this, ref, extremesChanged));
+   else {
+      actualQueueResize (ref, extremesChanged);
+      
+      while (layout != NULL && layout->queueQueueResizeList->size () > 0) {
+         Layout::QueueResizeItem *item = layout->queueQueueResizeList->get (0);
+         item->widget->actualQueueResize (item->ref, item->extremesChanged);
+         layout->queueQueueResizeList->remove (0); // hopefully not too large
+      }
+   }
+}
+
+void Widget::actualQueueResize (int ref, bool extremesChanged)
+{
    assert (!queueResizeEntered ());
    
    DBG_OBJ_MSGF ("resize", 0, "<b>queueResize</b> (%d, %s)",

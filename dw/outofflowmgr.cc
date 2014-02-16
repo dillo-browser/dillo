@@ -1100,12 +1100,10 @@ void OutOfFlowMgr::markSizeChange (int ref)
       
       vloat->dirty = vloat->sizeChangedSinceLastAllocation = true;
 
-      // There should be something like this:
-      // 
-      // vloat->generatingBlock->borderChanged (vloat->yReal,
-      //                                        vloat->getWidget ());
-      //
-      // But that does not work.
+      // The generating block is told directly about this. (Others later, in
+      // sizeAllocateEnd.) Could be faster (cf. hasRelationChanged, which
+      // differentiates many special cases), but the size is not known yet,
+      vloat->generatingBlock->borderChanged (vloat->yReal, vloat->getWidget ());
    } else if (isRefAbsolutelyPositioned (ref)) {
       int i = getAbsolutelyPositionedIndexFromRef (ref);
       absolutelyPositioned->get(i)->dirty = true;
