@@ -608,7 +608,7 @@ void Textblock::resizeDrawImpl ()
 
 void Textblock::markSizeChange (int ref)
 {
-   DBG_OBJ_MSGF ("resize", 1, "<b>markSizeChange</b> (%d)", ref);
+   DBG_OBJ_MSGF ("resize", 0, "<b>markSizeChange</b> (%d)", ref);
    DBG_OBJ_MSG_START ();
 
    if (OutOfFlowMgr::isRefOutOfFlow (ref)) {

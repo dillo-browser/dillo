@@ -298,7 +298,6 @@ private:
    int getClearPosition (Textblock *tb, Side side);
 
    void ensureFloatSize (Float *vloat);
-   int getBorderDiff (Textblock *textblock, Float *vloat, Side side);
 
    void tellFloatPosition (core::Widget *widget, int yReq);
 

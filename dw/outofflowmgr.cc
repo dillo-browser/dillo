@@ -133,49 +133,58 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
    DBG_OBJ_MSGF_O ("border", 0, textblock, "<b>covers</b> (%d, %d) [vloat: %p]",
                    y, h, getWidget ());
    DBG_OBJ_MSG_START_O (textblock);
-   
+
    int reqy, fly; // either widget or canvas coordinates
-   if (getOutOfFlowMgr()->wasAllocated (generatingBlock)) {
-      assert (getOutOfFlowMgr()->wasAllocated (textblock));
-      reqy = getOutOfFlowMgr()->getAllocation(textblock)->y + y;
-      fly = getOutOfFlowMgr()->getAllocation(generatingBlock)->y + yReal;
-      DBG_OBJ_MSGF_O ("border", 1, textblock,
-                      "allocated: reqy = %d + %d = %d, fly = %d + %d = %d",
-                      getOutOfFlowMgr()->getAllocation(textblock)->y, y, reqy,
-                      getOutOfFlowMgr()->getAllocation(generatingBlock)->y,
-                      yReal, fly);
-   } else {
-      assert (textblock == generatingBlock);
+   int flh;
+
+   if (textblock == generatingBlock) {
       reqy = y;
       fly = yReal;
+      getOutOfFlowMgr()->ensureFloatSize (this);
+      flh = size.ascent + size.descent;
+
       DBG_OBJ_MSGF_O ("border", 1, textblock,
-                      "not allocated: reqy = %d, fly = %d", reqy, fly);
+                      "for generator: reqy = %d, fly = %d, flh = %d + %d = %d",
+                      reqy, fly, size.ascent, size.descent, flh);
+   } else {
+      assert (getOutOfFlowMgr()->wasAllocated (generatingBlock));
+      assert (getOutOfFlowMgr()->wasAllocated (textblock));
+      assert (getWidget()->wasAllocated ());
+
+      Allocation *tba = getOutOfFlowMgr()->getAllocation(textblock),
+         *gba = getOutOfFlowMgr()->getAllocation(generatingBlock),
+         *fla = getWidget()->getAllocation ();
+      reqy = tba->y + y;
+      fly = gba->y + yReal;
+      flh = fla->ascent + fla->descent;
+
+      DBG_OBJ_MSGF_O ("border", 1, textblock,
+                      "not generator (allocated): reqy = %d + %d = %d, "
+                      "fly = %d + %d = %d, flh = %d + %d = %d",
+                      tba->y, y, reqy, gba->y, yReal, fly, fla->ascent,
+                      fla->descent, flh);
    }
 
-   getOutOfFlowMgr()->ensureFloatSize (this);
-
    DBG_OBJ_MSGF_O ("border", 1, textblock,
-                   "%d + (%d + %d) > %d? %s / %d < %d + %d? %s",
-                   fly, size.ascent, size.descent, reqy,
-                   fly + size.ascent + size.descent > reqy ?
-                   "<i>yes</i>" : "no",
+                   "%d + %d > %d? %s / %d < %d + %d? %s",
+                   fly, flh, reqy, fly + flh > reqy ? "<i>yes</i>" : "no",
                    fly, reqy, h, fly < reqy + h ? "<i>yes</i>" : "no");
    
    DBG_OBJ_MSG_END_O (textblock);
 
-   return fly + size.ascent + size.descent > reqy && fly < reqy + h;
+   return fly + flh > reqy && fly < reqy + h;
 }
 
 int OutOfFlowMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
 {
    Float *fl1 = (Float*)o1, *fl2 = (Float*)o2;
 
-   if (oofm->wasAllocated (fl1->generatingBlock)) {
+   if (fl1->generatingBlock == fl2->generatingBlock)
+      return fl1->yReal - fl2->yReal;
+   else {
+      assert (oofm->wasAllocated (fl1->generatingBlock));
       assert (oofm->wasAllocated (fl2->generatingBlock));
       return fl1->yForContainer() - fl2->yForContainer();
-   } else {
-      assert (fl1->generatingBlock == fl2->generatingBlock);
-      return fl1->yReal - fl2->yReal;
    }
 }
 
@@ -1070,7 +1079,8 @@ OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
 
 void OutOfFlowMgr::markSizeChange (int ref)
 {
-   //printf ("[%p] MARK_SIZE_CHANGE (%d)\n", containingBlock, ref);
+   DBG_OBJ_MSGF ("resize", 0, "<b>markSizeChange</b> (%d)", ref);
+   DBG_OBJ_MSG_START ();
 
    if (isRefFloat (ref)) {
       Float *vloat;
@@ -1089,13 +1099,20 @@ void OutOfFlowMgr::markSizeChange (int ref)
       }
       
       vloat->dirty = vloat->sizeChangedSinceLastAllocation = true;
-      
-      // Effects take place in ensureFloatSize.
+
+      // There should be something like this:
+      // 
+      // vloat->generatingBlock->borderChanged (vloat->yReal,
+      //                                        vloat->getWidget ());
+      //
+      // But that does not work.
    } else if (isRefAbsolutelyPositioned (ref)) {
       int i = getAbsolutelyPositionedIndexFromRef (ref);
       absolutelyPositioned->get(i)->dirty = true;
    } else
       assertNotReached();
+
+   DBG_OBJ_MSG_END ();
 }
 
 
@@ -1160,24 +1177,12 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    assert (yReq >= 0);
 
    Float *vloat = findFloatByWidget(widget);
-
-   //printf ("[%p] TELL_FLOAT_POSITION (%p (%s), %d)\n",
-   //        containingBlock, widget, widget->getClassName (), yReq);
-   //printf ("   this float: %s\n", vloat->toString());
+   int oldY = vloat->yReal;
 
    SortedFloatsVector *listSame, *listOpp;
    Side side;
    getFloatsListsAndSide (vloat, &listSame, &listOpp, &side);
    ensureFloatSize (vloat);
-   //printf ("   ensured size: %s\n", vloat->toString());
-
-   //printf ("   all floats on same side (%s):\n",
-   //        listSame->type == SortedFloatsVector::GB ? "GB" : "CB");
-   //for (int i = 0; i < listSame->size(); i++)
-   //   printf ("      %d: %p, %s\n", i, listSame->get(i),
-   //           listSame->get(i)->toString());
-
-   int oldY = vloat->yReal;
 
    // "yReal" may change due to collisions (see below).
    vloat->yReq = vloat->yReal = yReq;
@@ -1187,7 +1192,6 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    if (vloat->index >= 1 &&
        collides (vloat, listSame->get (vloat->index - 1), &yRealNew)) {
       vloat->yReal = yRealNew;
-      //printf ("   collides; yReal = %d\n", vloat->yReal);
    }
 
    // Test collisions (on the opposite side). Search the last float on
@@ -1248,24 +1252,28 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
 
 bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
 {
-   ensureFloatSize (other);
-   int otherH = other->size.ascent + other->size.descent;
+   if (vloat->generatingBlock == other->generatingBlock) {
+      ensureFloatSize (other);
+      int otherBottomGB =
+         other->yReal + other->size.ascent + other->size.descent;
 
-   if (wasAllocated (other->generatingBlock)) {
-      assert (wasAllocated (vloat->generatingBlock));
-      
-      if (getAllocation(vloat->generatingBlock)->y + vloat->yReal <
-          getAllocation(other->generatingBlock)->y + other->yReal + otherH) {
-         *yReal =
-            getAllocation(other->generatingBlock)->y + other->yReal
-            + otherH - getAllocation(vloat->generatingBlock)->y;
+      if (vloat->yReal <  + otherBottomGB) {
+         *yReal = other->yReal + otherBottomGB;
          return true;
       }
    } else {
-      assert (vloat->generatingBlock == other->generatingBlock);
-      
-      if (vloat->yReal < other->yReal + otherH) {
-         *yReal = other->yReal + otherH;
+      assert (wasAllocated (vloat->generatingBlock));
+      assert (vloat->getWidget()->wasAllocated ());
+      assert (other->getWidget()->wasAllocated ());
+
+      Allocation *gba = getAllocation (vloat->generatingBlock),
+         *fla = vloat->getWidget()->getAllocation (),
+         *flaOther = other->getWidget()->getAllocation ();
+      int otherBottomCanvas =
+         flaOther->y + flaOther->ascent + flaOther->descent;
+
+      if (fla->y < otherBottomCanvas) {
+         *yReal = otherBottomCanvas - gba->y;
          return true;
       }
    }
@@ -1601,11 +1609,24 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                          i, vloat->getWidget(), covers ? "<b>yes</b>" : "no");
          
          if (covers) {
-            int borderDiff = getBorderDiff (textblock, vloat, side);
-            int borderIn = side == LEFT ?
-               vloat->generatingBlock->getStyle()->boxOffsetX() :
-               vloat->generatingBlock->getStyle()->boxRestWidth();
-            border = max (border, vloat->size.width + borderIn + borderDiff);
+            int thisBorder;
+            if (vloat->generatingBlock == textblock) {
+               int borderIn = side == LEFT ?
+                  vloat->generatingBlock->getStyle()->boxOffsetX() :
+                  vloat->generatingBlock->getStyle()->boxRestWidth();
+               thisBorder = vloat->size.width + borderIn;
+            } else {
+               assert (wasAllocated (vloat->generatingBlock));
+               assert (vloat->getWidget()->wasAllocated ());
+
+               Allocation *tba = getAllocation(textblock),
+                  *fla = vloat->getWidget()->getAllocation ();
+               thisBorder = side == LEFT ?
+                  fla->x + fla->width - tba->x :
+                  tba->x + tba->width - fla->x;
+            }
+
+            border = max (border, thisBorder);
             DBG_OBJ_MSGF_O ("border", 1, textblock, "=> border = %d", border);
          }
       }
@@ -1776,39 +1797,6 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       // "sizeChangedSinceLastAllocation" is reset in sizeAllocateEnd()
 
       DBG_OBJ_MSG_END ();
-   }
-}
-
-/**
- * Return the difference between generator and calling textblock. Used
- * in getBorder() to determine the difference between calling
- * textblock and float (which position is defined relative to the
- * generator).
- */
-int OutOfFlowMgr::getBorderDiff (Textblock *textblock, Float *vloat, Side side)
-{
-   if (textblock == vloat->generatingBlock)
-      return 0;
-   else {
-      assert (wasAllocated (textblock) &&
-              wasAllocated (vloat->generatingBlock));
-      
-      switch (side) {
-      case LEFT:
-         return getAllocation(vloat->generatingBlock)->x
-            - getAllocation(textblock)->x;
-
-      case RIGHT:
-         return
-            getAllocation(textblock)->x + getAllocation(textblock)->width
-            - (getAllocation(vloat->generatingBlock)->x +
-               min (getAllocation(vloat->generatingBlock)->width,
-                    vloat->generatingBlock->getAvailWidth()));
-
-      default:
-         assertNotReached();
-         return 0;
-      }
    }
 }
 
