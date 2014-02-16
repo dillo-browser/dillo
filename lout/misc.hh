@@ -92,7 +92,7 @@ private:
    }
 
 public:
-   inline SimpleVector (int initAlloc)
+   inline SimpleVector (int initAlloc = 1)
    {
       this->num = 0;
       this->numAlloc = initAlloc;
