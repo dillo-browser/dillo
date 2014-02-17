@@ -111,52 +111,53 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
 
 bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
 {
-   DBG_OBJ_MSGF_O ("border", 0, textblock, "<b>covers</b> (%d, %d) [vloat: %p]",
-                   y, h, getWidget ());
-   DBG_OBJ_MSG_START_O (textblock);
+   DBG_OBJ_MSGF_O ("border", 0, getOutOfFlowMgr (),
+                   "<b>covers</b> (%p, %d, %d) [vloat: %p]",
+                   textblock, y, h, getWidget ());
+   DBG_OBJ_MSG_START_O (getOutOfFlowMgr ());
 
-   int reqy, fly; // either widget or canvas coordinates
-   int flh;
+   bool b;
 
    if (textblock == generatingBlock) {
-      reqy = y;
-      fly = yReal;
+      int reqyGB = y;
+      int flyGB = yReal;
       getOutOfFlowMgr()->ensureFloatSize (this);
-      flh = size.ascent + size.descent;
+      int flh = size.ascent + size.descent;
+      b = flyGB + flh > reqyGB && flyGB < reqyGB + h;
 
-      DBG_OBJ_MSGF_O ("border", 1, textblock,
-                      "for generator: reqy = %d, fly = %d, flh = %d + %d = %d",
-                      reqy, fly, size.ascent, size.descent, flh);
+      DBG_OBJ_MSGF_O ("border", 1, getOutOfFlowMgr (),
+                      "for generator: reqyGB = %d, flyGB = %d, "
+                      "flh = %d + %d = %d => %s",
+                      reqyGB, flyGB, size.ascent, size.descent, flh,
+                      b ? "true" : "false");
    } else {
       assert (getOutOfFlowMgr()->wasAllocated (generatingBlock));
       assert (getOutOfFlowMgr()->wasAllocated (textblock));
 
-      if (!getWidget()->wasAllocated ())
-         return false;
-      else {
+      if (!getWidget()->wasAllocated ()) {
+         DBG_OBJ_MSG_O ("border", 1, getOutOfFlowMgr (),
+                        "not generator (not allocated) => false");
+         b = false;
+      } else {
          Allocation *tba = getOutOfFlowMgr()->getAllocation(textblock),
             *gba = getOutOfFlowMgr()->getAllocation(generatingBlock),
             *fla = getWidget()->getAllocation ();
-         reqy = tba->y + y;
-         fly = gba->y + yReal;
-         flh = fla->ascent + fla->descent;
+         int reqyCanv = tba->y + y;
+         int flyCanv = gba->y + yReal;
+         int flh = fla->ascent + fla->descent;
+         b = flyCanv + flh > reqyCanv && flyCanv < reqyCanv + h;
          
-         DBG_OBJ_MSGF_O ("border", 1, textblock,
-                         "not generator (allocated): reqy = %d + %d = %d, "
-                         "fly = %d + %d = %d, flh = %d + %d = %d",
-                         tba->y, y, reqy, gba->y, yReal, fly, fla->ascent,
-                         fla->descent, flh);
+         DBG_OBJ_MSGF_O ("border", 1, getOutOfFlowMgr (),
+                         "not generator (allocated): reqyCanv = %d + %d = %d, "
+                         "flyCanv = %d + %d = %d, flh = %d + %d = %d = %s",
+                         tba->y, y, reqyCanv, gba->y, yReal, flyCanv,
+                         fla->ascent, fla->descent, flh, b ? "true" : "false");
       }
    }
 
-   DBG_OBJ_MSGF_O ("border", 1, textblock,
-                   "%d + %d > %d? %s / %d < %d + %d? %s",
-                   fly, flh, reqy, fly + flh > reqy ? "<i>yes</i>" : "no",
-                   fly, reqy, h, fly < reqy + h ? "<i>yes</i>" : "no");
-   
-   DBG_OBJ_MSG_END_O (textblock);
+   DBG_OBJ_MSG_END_O (getOutOfFlowMgr ());
 
-   return fly + flh > reqy && fly < reqy + h;
+   return b;
 }
 
 int OutOfFlowMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
@@ -1531,8 +1532,8 @@ int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h,
                                  Textblock *lastGB, int lastExtIndex)
 {
    int b = getBorder (textblock, LEFT, y, h, lastGB, lastExtIndex);
-   DBG_OBJ_MSGF_O ("border", 0, textblock,
-                   "left border (y = %d, h = %d) => %d\n", y, h, b);
+   DBG_OBJ_MSGF ("border", 0, "left border (%p, %d, %d, %p, %d) => %d",
+                 textblock, y, h, lastGB, lastExtIndex, b);
    return b;
 }
 
@@ -1546,54 +1547,48 @@ int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h,
                                   Textblock *lastGB, int lastExtIndex)
 {
    int b = getBorder (textblock, RIGHT, y, h, lastGB, lastExtIndex);
-   DBG_OBJ_MSGF_O ("border", 0, textblock,
-                   "right border (y = %d, h = %d) => %d\n", y, h, b);
+   DBG_OBJ_MSGF ("border", 0, "right border (%p, %d, %d, %p, %d) => %d",
+                 textblock, y, h, lastGB, lastExtIndex, b);
    return b;
 }
 
 int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                              Textblock *lastGB, int lastExtIndex)
 {
-   DBG_OBJ_MSGF_O ("border", 0, textblock,
-                   "<b>getBorder</b> (%s, %d, %d, %p, %d)",
-                   side == LEFT ? "LEFT" : "RIGHT", y, h, lastGB, lastExtIndex);
-   DBG_OBJ_MSG_START_O (textblock);
+   DBG_OBJ_MSGF ("border", 0, "<b>getBorder</b> (%p, %s, %d, %d, %p, %d)",
+                 textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
+                 lastGB, lastExtIndex);
+   DBG_OBJ_MSG_START ();
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
 
 #ifdef DBG_RTFL
-   DBG_OBJ_MSG_O ("border", 1, textblock, "searching in list:");
-   DBG_OBJ_MSG_START_O (textblock);
+   DBG_OBJ_MSG ("border", 1, "searching in list:");
+   DBG_OBJ_MSG_START ();
 
    for (int i = 0; i < list->size(); i++) {
-      //DBG_OBJ_MSGF_O ("border", 1, textblock, "%d: %s",
-      //                i, list->get(i)->toString());
-      //DBG_OBJ_MSGF_O ("border", 1, textblock, "(widget at (%d, %d))",
-      //                list->get(i)->getWidget()->getAllocation()->x,
-      //                list->get(i)->getWidget()->getAllocation()->y);
-
       Float *f = list->get(i);
-      DBG_OBJ_MSGF_O ("border", 1, textblock,
-                      "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d), "
-                      "%s, %s); widget at (%d, %d)",
-                      i, f->getWidget (), f->index, f->sideSpanningIndex,
-                      f->yReq, f->yReal, f->size.width, f->size.ascent,
-                      f->size.descent, f->dirty ? "dirty" : "clean",
-                      f->sizeChangedSinceLastAllocation ? "scsla" : "sNcsla",
-                      f->getWidget()->getAllocation()->x,
-                      f->getWidget()->getAllocation()->y);
+      DBG_OBJ_MSGF ("border", 1,
+                    "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d), "
+                    "%s, %s); widget at (%d, %d)",
+                    i, f->getWidget (), f->index, f->sideSpanningIndex,
+                    f->yReq, f->yReal, f->size.width, f->size.ascent,
+                    f->size.descent, f->dirty ? "dirty" : "clean",
+                    f->sizeChangedSinceLastAllocation ? "scsla" : "sNcsla",
+                    f->getWidget()->getAllocation()->x,
+                    f->getWidget()->getAllocation()->y);
    }
 
-   DBG_OBJ_MSG_END_O (textblock);
+   DBG_OBJ_MSG_END ();
 #endif
    
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
    
-   DBG_OBJ_MSGF_O ("border", 1, textblock, "first = %d", first);
+   DBG_OBJ_MSGF ("border", 1, "first = %d", first);
    
    if (first == -1) {
       // No float.
-      DBG_OBJ_MSG_END_O (textblock);
+      DBG_OBJ_MSG_END ();
       return 0;
    } else {
       // It is not sufficient to find the first float, since a line
@@ -1605,8 +1600,8 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
       for (int i = first; covers && i < list->size(); i++) {
          Float *vloat = list->get(i);
          covers = vloat->covers (textblock, y, h);
-         DBG_OBJ_MSGF_O ("border", 1, textblock, "float %d (%p) covers? %s.",
-                         i, vloat->getWidget(), covers ? "<b>yes</b>" : "no");
+         DBG_OBJ_MSGF ("border", 1, "float %d (%p) covers? %s.",
+                       i, vloat->getWidget(), covers ? "<b>yes</b>" : "no");
          
          if (covers) {
             int thisBorder;
@@ -1627,11 +1622,11 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
             }
 
             border = max (border, thisBorder);
-            DBG_OBJ_MSGF_O ("border", 1, textblock, "=> border = %d", border);
+            DBG_OBJ_MSGF ("border", 1, "=> border = %d", border);
          }
       }
       
-      DBG_OBJ_MSG_END_O (textblock);
+      DBG_OBJ_MSG_END ();
       return border;
    }
 }
