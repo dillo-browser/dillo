@@ -120,11 +120,6 @@ private:
 
       void intoStringBuffer(lout::misc::StringBuffer *sb);
 
-      int yForTextblock (Textblock *textblock, int y);
-      inline int yForTextblock (Textblock *textblock)
-      { return yForTextblock (textblock, yReal); }
-      int yForContainer (int y);
-      inline int yForContainer () { return yForContainer (yReal); }
       bool covers (Textblock *textblock, int y, int h);
    };
 

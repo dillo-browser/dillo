@@ -2765,7 +2765,12 @@ void Textblock::borderChanged (int y, Widget *vloat)
       DBG_OBJ_MSGF ("resize", 1, "Corrected to line %d.", wrapLineIndex);
             
       queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex), true);
-      lastWordDrawn = lines->getRef(wrapLineIndex)->firstWord;
+
+      // Notice that the line no. wrapLineIndex may not exist yet.
+      if (wrapLineIndex == 0)
+         lastWordDrawn = 0;
+      else
+         lastWordDrawn = lines->getRef(wrapLineIndex - 1)->lastWord + 1;
    }
 
    DBG_OBJ_MSG_END ();

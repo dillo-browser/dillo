@@ -109,25 +109,6 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->append (" }");
 }
 
-int OutOfFlowMgr::Float::yForTextblock (Textblock *textblock, int y)
-{
-   if (getOutOfFlowMgr()->wasAllocated (generatingBlock)) {
-      assert (getOutOfFlowMgr()->wasAllocated (textblock));
-      return getOutOfFlowMgr()->getAllocation(generatingBlock)->y + y
-         - getOutOfFlowMgr()->getAllocation(textblock)->y;
-   } else {
-      assert (textblock == generatingBlock);
-      return y;
-   }
-}
-
-int OutOfFlowMgr::Float::yForContainer (int y)
-{
-   assert (getOutOfFlowMgr()->wasAllocated (generatingBlock));
-   return y + getOutOfFlowMgr()->getAllocation(generatingBlock)->y -
-      getOutOfFlowMgr()->getAllocation(getOutOfFlowMgr()->containingBlock)->y;
-}
-
 bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
 {
    DBG_OBJ_MSGF_O ("border", 0, textblock, "<b>covers</b> (%d, %d) [vloat: %p]",
@@ -149,20 +130,23 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
    } else {
       assert (getOutOfFlowMgr()->wasAllocated (generatingBlock));
       assert (getOutOfFlowMgr()->wasAllocated (textblock));
-      assert (getWidget()->wasAllocated ());
 
-      Allocation *tba = getOutOfFlowMgr()->getAllocation(textblock),
-         *gba = getOutOfFlowMgr()->getAllocation(generatingBlock),
-         *fla = getWidget()->getAllocation ();
-      reqy = tba->y + y;
-      fly = gba->y + yReal;
-      flh = fla->ascent + fla->descent;
-
-      DBG_OBJ_MSGF_O ("border", 1, textblock,
-                      "not generator (allocated): reqy = %d + %d = %d, "
-                      "fly = %d + %d = %d, flh = %d + %d = %d",
-                      tba->y, y, reqy, gba->y, yReal, fly, fla->ascent,
-                      fla->descent, flh);
+      if (!getWidget()->wasAllocated ())
+         return false;
+      else {
+         Allocation *tba = getOutOfFlowMgr()->getAllocation(textblock),
+            *gba = getOutOfFlowMgr()->getAllocation(generatingBlock),
+            *fla = getWidget()->getAllocation ();
+         reqy = tba->y + y;
+         fly = gba->y + yReal;
+         flh = fla->ascent + fla->descent;
+         
+         DBG_OBJ_MSGF_O ("border", 1, textblock,
+                         "not generator (allocated): reqy = %d + %d = %d, "
+                         "fly = %d + %d = %d, flh = %d + %d = %d",
+                         tba->y, y, reqy, gba->y, yReal, fly, fla->ascent,
+                         fla->descent, flh);
+      }
    }
 
    DBG_OBJ_MSGF_O ("border", 1, textblock,
@@ -179,12 +163,30 @@ int OutOfFlowMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
 {
    Float *fl1 = (Float*)o1, *fl2 = (Float*)o2;
 
-   if (fl1->generatingBlock == fl2->generatingBlock)
+   if (refTB == fl1->generatingBlock && refTB == fl2->generatingBlock)
       return fl1->yReal - fl2->yReal;
    else {
       assert (oofm->wasAllocated (fl1->generatingBlock));
       assert (oofm->wasAllocated (fl2->generatingBlock));
-      return fl1->yForContainer() - fl2->yForContainer();
+
+      if (fl1->generatingBlock != fl2->generatingBlock)
+         return oofm->getAllocation(fl1->generatingBlock)->y
+            -  oofm->getAllocation(fl2->generatingBlock)->y;
+      else {
+         // Floats may not yet been allocated (but the generators
+         // are). Non-allocated floats do not have an effect yet.
+         bool a1 = fl1->getWidget()->wasAllocated (),
+            a2 = fl2->getWidget()->wasAllocated ();
+         if (a1 && a2)
+            return fl1->getWidget()->getAllocation()->y
+               - fl2->getWidget()->getAllocation()->y;
+         else if (a1 && !a2)
+            return -1;
+         else if (!a1 && a2)
+            return +1;
+         else // if (!a1 && !a2)
+            return 0;
+      }
    }
 }
 
@@ -1665,7 +1667,7 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
    //printf ("[%p] hasFloat (%p, %s, %d, %d, %p, %d)\n",
    //        containingBlock, textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
    //        lastGB, lastExtIndex);
-   SortedFloatsVector *list = getFloatsListForTextblock(textblock, side);
+   SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
    return list->findFirst (textblock, y, h, lastGB, lastExtIndex) != -1;
 }
 
