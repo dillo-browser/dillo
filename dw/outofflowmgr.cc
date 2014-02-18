@@ -294,11 +294,12 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
    assert (last < size());
    int i = find (textblock, y, 0, last);
 
-   //printf ("[%p] FIND (%s, %p, allocated: %s, %d, %p, %d) => last = %d, "
-   //        "result = %d (of %d)\n", oofm->containingBlock,
-   //        type == GB ? "GB" : "CB", textblock,
-   //        oofm->wasAllocated (textblock) ? "true" : "false", y, lastGB,
-   //        lastExtIndex, last, i, size());
+   DBG_OBJ_MSGF_O ("border", 1, oofm,
+                   "find (%s, %p, allocated: %s, %d, %p, %d) => last = %d, "
+                   "result = %d (of %d)\n",
+                   type == GB ? "GB" : "CB", textblock,
+                   oofm->wasAllocated (textblock) ? "true" : "false", y, lastGB,
+                   lastExtIndex, last, i, size());
 
    // Note: The smallest value of "i" is 0, which means that "y" is before or
    // equal to the first float. The largest value is "last + 1", which means
