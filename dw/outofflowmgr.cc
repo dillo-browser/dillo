@@ -180,40 +180,37 @@ int OutOfFlowMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
       assert (oofm->wasAllocated (fl1->generatingBlock));
       assert (oofm->wasAllocated (fl2->generatingBlock));
 
-      if (fl1->generatingBlock != fl2->generatingBlock) {
-         int y1 = oofm->getAllocation(fl1->generatingBlock)->y,
-            y2 = oofm->getAllocation(fl2->generatingBlock)->y;
-         DBG_OBJ_MSGF_O ("border", 2, oofm,
-                         "floats have different generators, %p and %p; "
-                         "y diff = %d - %d",
-                         fl1->generatingBlock, fl2->generatingBlock, y1, y2);
-         r = y1 - y2;
-      } else {
-         // Floats may not yet been allocated (but the generators
-         // are). Non-allocated floats do not have an effect yet.
-         DBG_OBJ_MSGF_O ("border", 2, oofm, "floats have same generator, %p",
-                         fl1->generatingBlock);
-         
-         bool a1 = fl1->getWidget()->wasAllocated (),
-            a2 = fl2->getWidget()->wasAllocated ();
+      DBG_OBJ_MSGF_O ("border", 2, oofm, "generators are %p and %p",
+                      fl1->generatingBlock, fl2->generatingBlock);
+      
+      // (i) Floats may not yet been allocated (although the
+      // generators are). Non-allocated floats do not have an effect
+      // yet, they are considered "at the end" of the list.
 
-         DBG_OBJ_MSGF_O ("border", 2, oofm,
-                         "float 1 allocated. %s; float 2 allocated: %s",
-                         a1 ? "yes" : "no", a2 ? "yes" : "no");
+      // (ii) Float::widget for the key used for binary search. In
+      // this case, Float::yReal is used instead (which is set in
+      // SortedFloatsVector::find).
 
-         if (a1 && a2) {
-            r = fl1->getWidget()->getAllocation()->y
-               - fl2->getWidget()->getAllocation()->y;
-            DBG_OBJ_MSGF_O ("border", 2, oofm, "y diff = %d - %d",
-                            fl1->getWidget()->getAllocation()->y,
-                            fl2->getWidget()->getAllocation()->y);
-         } else if (a1 && !a2)
-            r = -1;
-         else if (!a1 && a2)
-            r = +1;
-         else // if (!a1 && !a2)
-            return 0;
-      }
+      bool a1 = fl1->getWidget () ? fl1->getWidget()->wasAllocated () : true;
+      bool a2 = fl2->getWidget () ? fl2->getWidget()->wasAllocated () : true;
+
+      DBG_OBJ_MSGF_O ("border", 2, oofm,
+                      "float 1 allocated: %s; float 2 allocated: %s",
+                      a1 ? "yes" : "no", a2 ? "yes" : "no");
+      
+      if (a1 && a2) {
+         int fly1 = fl1->getWidget() ? fl1->getWidget()->getAllocation()->y :
+            oofm->getAllocation(fl2->generatingBlock)->y + fl1->yReal;
+         int fly2 = fl2->getWidget() ? fl2->getWidget()->getAllocation()->y :
+            oofm->getAllocation(fl2->generatingBlock)->y + fl2->yReal;
+         DBG_OBJ_MSGF_O ("border", 2, oofm, "y diff = %d - %d", fly1, fly2);
+         r = fly1 - fly2;
+      } else if (a1 && !a2)
+         r = -1;
+      else if (!a1 && a2)
+         r = +1;
+      else // if (!a1 && !a2)
+         return 0;
 
       DBG_OBJ_MSG_END_O (oofm);
    }
