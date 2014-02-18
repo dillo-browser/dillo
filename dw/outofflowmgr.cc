@@ -149,7 +149,7 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
          
          DBG_OBJ_MSGF_O ("border", 1, getOutOfFlowMgr (),
                          "not generator (allocated): reqyCanv = %d + %d = %d, "
-                         "flyCanv = %d + %d = %d, flh = %d + %d = %d = %s",
+                         "flyCanv = %d + %d = %d, flh = %d + %d = %d => %s",
                          tba->y, y, reqyCanv, gba->y, yReal, flyCanv,
                          fla->ascent, fla->descent, flh, b ? "true" : "false");
       }
