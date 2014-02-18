@@ -163,32 +163,64 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
 int OutOfFlowMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
 {
    Float *fl1 = (Float*)o1, *fl2 = (Float*)o2;
+   int r;
 
-   if (refTB == fl1->generatingBlock && refTB == fl2->generatingBlock)
-      return fl1->yReal - fl2->yReal;
-   else {
+   DBG_OBJ_MSGF_O ("border", 1, oofm,
+                   "<b>ComparePosition::compare</b> (#%d, #%d) [refTB = %p]",
+                   fl1->index, fl2->index, refTB);
+   DBG_OBJ_MSG_START_O (oofm);
+   
+   if (refTB == fl1->generatingBlock && refTB == fl2->generatingBlock) {
+      DBG_OBJ_MSG_O ("border", 2, oofm, "refTB is generating both floats");
+      r = fl1->yReal - fl2->yReal;
+   } else {
+      DBG_OBJ_MSG_O ("border", 2, oofm, "refTB is not generating both floats");
+      DBG_OBJ_MSG_START_O (oofm);
+
       assert (oofm->wasAllocated (fl1->generatingBlock));
       assert (oofm->wasAllocated (fl2->generatingBlock));
 
-      if (fl1->generatingBlock != fl2->generatingBlock)
-         return oofm->getAllocation(fl1->generatingBlock)->y
-            -  oofm->getAllocation(fl2->generatingBlock)->y;
-      else {
+      if (fl1->generatingBlock != fl2->generatingBlock) {
+         int y1 = oofm->getAllocation(fl1->generatingBlock)->y,
+            y2 = oofm->getAllocation(fl2->generatingBlock)->y;
+         DBG_OBJ_MSGF_O ("border", 2, oofm,
+                         "floats have different generators, %p and %p; "
+                         "y diff = %d - %d",
+                         fl1->generatingBlock, fl2->generatingBlock, y1, y2);
+         r = y1 - y2;
+      } else {
          // Floats may not yet been allocated (but the generators
          // are). Non-allocated floats do not have an effect yet.
+         DBG_OBJ_MSGF_O ("border", 2, oofm, "floats have same generator, %p",
+                         fl1->generatingBlock);
+         
          bool a1 = fl1->getWidget()->wasAllocated (),
             a2 = fl2->getWidget()->wasAllocated ();
-         if (a1 && a2)
-            return fl1->getWidget()->getAllocation()->y
+
+         DBG_OBJ_MSGF_O ("border", 2, oofm,
+                         "float 1 allocated. %s; float 2 allocated: %s",
+                         a1 ? "yes" : "no", a2 ? "yes" : "no");
+
+         if (a1 && a2) {
+            r = fl1->getWidget()->getAllocation()->y
                - fl2->getWidget()->getAllocation()->y;
-         else if (a1 && !a2)
-            return -1;
+            DBG_OBJ_MSGF_O ("border", 2, oofm, "y diff = %d - %d",
+                            fl1->getWidget()->getAllocation()->y,
+                            fl2->getWidget()->getAllocation()->y);
+         } else if (a1 && !a2)
+            r = -1;
          else if (!a1 && a2)
-            return +1;
+            r = +1;
          else // if (!a1 && !a2)
             return 0;
       }
+
+      DBG_OBJ_MSG_END_O (oofm);
    }
+
+   DBG_OBJ_MSGF_O ("border", 1, oofm, "result: %d", r);
+   DBG_OBJ_MSG_END_O (oofm);
+   return r;
 }
 
 int OutOfFlowMgr::Float::CompareSideSpanningIndex::compare (Object *o1,
@@ -281,6 +313,7 @@ int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
    Float key (oofm, NULL, NULL, 0);
    key.generatingBlock = textblock;
    key.yReal = y;
+   key.index = -1; // for debugging
    Float::ComparePosition comparator (oofm, textblock);
    return bsearch (&key, false, start, end, &comparator);
 }
@@ -971,6 +1004,9 @@ void OutOfFlowMgr::addWidgetInFlow (Textblock *textblock,
 void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
                                  int externalIndex)
 {
+   DBG_OBJ_MSGF ("construct.oofm", 0, "<b>addWidgetOOF</b> (%p, %p, %d)",
+                 widget, generatingBlock, externalIndex);
+
    if (isWidgetFloat (widget)) {
       TBInfo *tbInfo = getTextblock (generatingBlock);
 
