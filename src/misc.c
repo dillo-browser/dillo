@@ -115,6 +115,7 @@ static const ContentType_t MimeTypes[] = {
 
 typedef enum {
    DT_OCTET_STREAM = 0,
+   DT_PLACEHOLDER,
    DT_TEXT_HTML,
    DT_TEXT_PLAIN,
    DT_IMAGE_GIF,
