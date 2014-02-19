@@ -284,6 +284,9 @@ Layout::Layout (Platform *platform)
       getExtremesCounter = 0;
 
    layoutImgRenderer = NULL;
+
+   resizeIdleCounter = queueResizeCounter = sizeAllocateCounter
+      = sizeRequestCounter = getExtremesCounter = 0;
 }
 
 Layout::~Layout ()
