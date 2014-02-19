@@ -793,7 +793,7 @@ void Layout::resizeIdle ()
    DBG_OBJ_MSG ("resize", 0, "<b>resizeIdle</b>");
    DBG_OBJ_MSG_START ();
    
-   enterQueueResize ();
+   enterResizeIdle ();
 
    //static int calls = 0;
    //printf ("Layout::resizeIdle calls = %d\n", ++calls);
@@ -884,7 +884,7 @@ void Layout::resizeIdle ()
    DBG_OBJ_MSGF ("resize", 1, "resizeIdleId = %d", resizeIdleId);
    DBG_OBJ_MSG_END ();
 
-   leaveQueueResize ();
+   leaveResizeIdle ();
 }
 
 void Layout::setSizeHints ()

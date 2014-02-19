@@ -260,8 +260,8 @@ private:
    int resizeIdleCounter, queueResizeCounter, sizeAllocateCounter,
       sizeRequestCounter, getExtremesCounter;
 
-   void enterQueueResize () { resizeIdleCounter++; }
-   void leaveQueueResize () { resizeIdleCounter--; }
+   void enterResizeIdle () { resizeIdleCounter++; }
+   void leaveResizeIdle () { resizeIdleCounter--; }
 
 public:
    Layout (Platform *platform);
