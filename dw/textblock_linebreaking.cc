@@ -328,15 +328,12 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    DBG_OBJ_MSGF ("construct.line", 0, "<b>addLine</b> (%d, %d) => %d",
                  firstWord, lastWord, lines->size ());
    DBG_OBJ_MSG_START ();
-   
-   //for (int i = firstWord; i <= lastWord; i++) {
-   //   printf ("      word %d: ", i);
-   //   printWord (words->getRef (i));
-   //   printf ("\n");
-   //}
-
+  
    int lineWidth;
    if (lastWord >= firstWord) {
+      DBG_MSG_WORD ("construct.line", 1, "<i>first word:</i> ", firstWord, "");
+      DBG_MSG_WORD ("construct.line", 1, "<i>last word:</i> ", lastWord, "");
+
       Word *lastWordOfLine = words->getRef(lastWord);
       PRINTF ("   words[%d]->totalWidth = %d\n", lastWord,
               lastWordOfLine->totalWidth);
