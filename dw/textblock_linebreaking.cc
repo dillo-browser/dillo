@@ -1082,12 +1082,8 @@ int Textblock::hyphenateWord (int wordIndex)
       words->insert (wordIndex, numBreaks);
 
       DBG_IF_RTFL {
-         // TODO Must be corrected.
-         for (int i = wordIndex + numBreaks; i < words->size (); i++) {
-            DBG_OBJ_ARRATTRSET_SYM ("words", i, "type", "???");
-            DBG_OBJ_ARRATTRSET_STR ("words", i, "text/widget/breakSpace",
-                                    "???");
-         }
+         for (int i = wordIndex + numBreaks; i < words->size (); i++)
+            DBG_SET_WORD (i);
       }
 
       for (int i = 0; i < numBreaks; i++)

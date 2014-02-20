@@ -773,6 +773,35 @@ public:
    inline int getAvailDescent () { return availDescent; }
 };
 
+#define DBG_SET_WORD(n) \
+   D_STMT_START { \
+      switch (words->getRef(n)->content.type) { \
+      case ::dw::core::Content::TEXT: \
+         DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "TEXT"); \
+         DBG_OBJ_ARRATTRSET_STR ("words", n, "text/widget/breakSpace", \
+                                 words->getRef(n)->content.text); \
+         break; \
+      case ::dw::core::Content::WIDGET_IN_FLOW: \
+         DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "WIDGET_IN_FLOW"); \
+         DBG_OBJ_ARRATTRSET_PTR ("words", n, "text/widget/breakSpace", \
+                                 words->getRef(n)->content.widget); \
+         break; \
+      case ::dw::core::Content::WIDGET_OOF_REF: \
+         DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "WIDGET_OOF_REF"); \
+         DBG_OBJ_ARRATTRSET_PTR ("words", n, "text/widget/breakSpace", \
+                                 words->getRef(n)->content.widget); \
+         break; \
+      case ::dw::core::Content::BREAK: \
+         DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "TEXT"); \
+         DBG_OBJ_ARRATTRSET_NUM ("words", n, "text/widget/breakSpace", \
+                                 words->getRef(n)->content.breakSpace); \
+         break; \
+      default: \
+         DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "???"); \
+         DBG_OBJ_ARRATTRSET_SYM ("words", n, "text/widget/breakSpace", "???"); \
+      } \
+   } D_STMT_END
+
 } // namespace dw
 
 #endif // __DW_TEXTBLOCK_HH__
