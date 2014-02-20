@@ -51,9 +51,9 @@ namespace dw {
  *
  *      \image html dw-textblock-collapsing-spaces-1-1.png
  *
- *       are combined like this:
+ *      are combined like this:
  *
- *       \image html dw-textblock-collapsing-spaces-1-2.png
+ *      \image html dw-textblock-collapsing-spaces-1-2.png
  *
  * <li> a) If one paragraph is the first paragraph within another, the upper
  *      space of these paragraphs collapse. b) The analogue is the case for the
@@ -77,9 +77,9 @@ namespace dw {
  *      automatically. See the code of dw::Textblock::addParBreak.
  *
  *  <li> To collapse spaces according to rule 2b,
- *        dw::Textblock::addParBreak::handOverBreak must be called for
- *        the \em inner widget. The HTML parser does this in
- *        Html_eventually_pop_dw.
+ *       dw::Textblock::addParBreak::handOverBreak must be called for
+ *       the \em inner widget. The HTML parser does this in
+ *       Html_eventually_pop_dw.
  * </ul>
  *
  *
