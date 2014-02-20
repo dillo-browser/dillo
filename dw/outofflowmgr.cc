@@ -1287,14 +1287,29 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
 
 bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
 {
+   DBG_OBJ_MSGF ("resize.floats", 0,
+                 "<b>collides</b> (#%d [%p], #%d [%p], ...)",
+                 vloat->index, vloat->getWidget (), other->index,
+                 other->getWidget ());
+   DBG_OBJ_MSG_START ();
+
+   bool result = false;
+
+   DBG_OBJ_MSGF ("resize.floats", 1, "initial yReal = %d", vloat->yReal);
+
    if (vloat->generatingBlock == other->generatingBlock) {
       ensureFloatSize (other);
       int otherBottomGB =
          other->yReal + other->size.ascent + other->size.descent;
 
-      if (vloat->yReal <  + otherBottomGB) {
-         *yReal = other->yReal + otherBottomGB;
-         return true;
+      DBG_OBJ_MSGF ("resize.floats", 1,
+                    "same generators: otherBottomGB = %d + (%d + %d) = %d",
+                    other->yReal, other->size.ascent, other->size.descent,
+                    otherBottomGB);
+
+      if (vloat->yReal <  otherBottomGB) {
+         *yReal = otherBottomGB;
+         result = true;
       }
    } else {
       assert (wasAllocated (vloat->generatingBlock));
@@ -1307,13 +1322,25 @@ bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
       int otherBottomCanvas =
          flaOther->y + flaOther->ascent + flaOther->descent;
 
+      DBG_OBJ_MSGF ("resize.floats", 1,
+                    "different generators: this float at %d, "
+                    "otherBottomCanvas = %d + (%d + %d) = %d",
+                    fla->y, flaOther->y, flaOther->ascent, flaOther->descent,
+                    otherBottomCanvas);
+
       if (fla->y < otherBottomCanvas) {
          *yReal = otherBottomCanvas - gba->y;
-         return true;
+         result = true;
       }
    }
 
-   return false;
+   if (result)
+      DBG_OBJ_MSGF ("resize.floats", 1, "collides: new yReal = %d", *yReal);
+   else
+      DBG_OBJ_MSG ("resize.floats", 1, "does not collide");
+
+   DBG_OBJ_MSG_END ();
+   return result;
 }
 
 void OutOfFlowMgr::getFloatsListsAndSide (Float *vloat,
