@@ -2116,7 +2116,7 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
    word->content.type = core::Content::TEXT;
    word->content.text = layout->textZone->strndup(text, len);
 
-   DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1, "type", "TEXT");
+   DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type", "TEXT");
    DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1,
                            "text/widget/breakSpace", word->content.text);
 
@@ -2162,7 +2162,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       word->content.widget = widget;
       word->style = style;
 
-      DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1, "type",
+      DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type",
                               "WIDGET_OOF_REF");
       DBG_OBJ_ARRATTRSET_PTR ("words", words->size () - 1,
                                "text/widget/breakSpace", word->content.widget);
@@ -2182,7 +2182,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       word->content.type = core::Content::WIDGET_IN_FLOW;
       word->content.widget = widget;
 
-      DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1, "type",
+      DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type",
                               "WIDGET_IN_FLOW");
       DBG_OBJ_ARRATTRSET_PTR ("words", words->size () - 1,
                                "text/widget/breakSpace", word->content.widget);
@@ -2430,7 +2430,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = space;
 
-   DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1, "type", "BREAK");
+   DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type", "BREAK");
    DBG_OBJ_ARRATTRSET_NUM ("words", words->size () - 1,
                            "text/widget/breakSpace", word->content.breakSpace);
 
@@ -2458,7 +2458,7 @@ void Textblock::addLinebreak (core::style::Style *style)
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = 0;
 
-   DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1, "type", "BREAK");
+   DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type", "BREAK");
    DBG_OBJ_ARRATTRSET_NUM ("words", words->size () - 1,
                            "text/widget/breakSpace", word->content.breakSpace);
 

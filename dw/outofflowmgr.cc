@@ -1623,25 +1623,25 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
 
-#ifdef DBG_RTFL
-   DBG_OBJ_MSG ("border", 1, "searching in list:");
-   DBG_OBJ_MSG_START ();
-
-   for (int i = 0; i < list->size(); i++) {
-      Float *f = list->get(i);
-      DBG_OBJ_MSGF ("border", 1,
-                    "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d), "
-                    "%s, %s); widget at (%d, %d)",
-                    i, f->getWidget (), f->index, f->sideSpanningIndex,
-                    f->yReq, f->yReal, f->size.width, f->size.ascent,
-                    f->size.descent, f->dirty ? "dirty" : "clean",
-                    f->sizeChangedSinceLastAllocation ? "scsla" : "sNcsla",
-                    f->getWidget()->getAllocation()->x,
-                    f->getWidget()->getAllocation()->y);
+   DBG_IF_RTFL {
+      DBG_OBJ_MSG ("border", 1, "searching in list:");
+      DBG_OBJ_MSG_START ();
+      
+      for (int i = 0; i < list->size(); i++) {
+         Float *f = list->get(i);
+         DBG_OBJ_MSGF ("border", 1,
+                       "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d), "
+                       "%s, %s); widget at (%d, %d)",
+                       i, f->getWidget (), f->index, f->sideSpanningIndex,
+                       f->yReq, f->yReal, f->size.width, f->size.ascent,
+                       f->size.descent, f->dirty ? "dirty" : "clean",
+                       f->sizeChangedSinceLastAllocation ? "scsla" : "sNcsla",
+                       f->getWidget()->getAllocation()->x,
+                       f->getWidget()->getAllocation()->y);
+      }
+      
+      DBG_OBJ_MSG_END ();
    }
-
-   DBG_OBJ_MSG_END ();
-#endif
    
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
    

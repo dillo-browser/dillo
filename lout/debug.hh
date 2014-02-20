@@ -40,6 +40,8 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#define DBG_IF_RTFL if(1)
+
 // "\n" at the beginning just in case that the previous line is not finished
 // yet.
 #define RTFL_PREFIX_FMT  "\n[rtfl]%s:%d:%d:"
@@ -155,9 +157,16 @@
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_SET_STR(var, val) \
+#define DBG_OBJ_SET_SYM(var, val) \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-set:%p:%s:%s\n", \
+              RTFL_PREFIX_ARGS, this, var, val); \
+      fflush (stdout); \
+   } D_STMT_END
+
+#define DBG_OBJ_SET_STR(var, val) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s:\"%s\"\n", \
               RTFL_PREFIX_ARGS, this, var, val); \
       fflush (stdout); \
    } D_STMT_END
@@ -176,9 +185,16 @@
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_ARRSET_STR(var, ind, val) \
+#define DBG_OBJ_ARRSET_SYM(var, ind, val) \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d:%s\n", \
+              RTFL_PREFIX_ARGS, this, var, ind, val); \
+      fflush (stdout); \
+   } D_STMT_END
+
+#define DBG_OBJ_ARRSET_STR(var, ind, val) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d:\"%s\"\n", \
               RTFL_PREFIX_ARGS, this, var, ind, val); \
       fflush (stdout); \
    } D_STMT_END
@@ -197,9 +213,16 @@
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val) \
+#define DBG_OBJ_ARRATTRSET_SYM(var, ind, attr, val) \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d.%s:%s\n", \
+              RTFL_PREFIX_ARGS, this, var, ind, attr, val); \
+      fflush (stdout); \
+   } D_STMT_END
+
+#define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d.%s:\"%s\"\n", \
               RTFL_PREFIX_ARGS, this, var, ind, attr, val); \
       fflush (stdout); \
    } D_STMT_END
@@ -220,6 +243,8 @@
 
 #else /* DBG_RTFL */
 
+#define DBG_IF_RTFL if(0)
+
 #define DBG_OBJ_MSG(aspect, prio, msg)               D_STMT_NOP
 #define DBG_OBJ_MSG_O(aspect, prio, obj, msg)        D_STMT_NOP
 #define DBG_OBJ_MSGF(aspect, prio, fmt, ...)         D_STMT_NOP
@@ -235,12 +260,15 @@
 #define DBG_OBJ_ASSOC(parent, child)                 D_STMT_NOP
 #define DBG_OBJ_SET_NUM(var, val)                    D_STMT_NOP
 #define DBG_OBJ_SET_NUM_O(obj, var, val)             D_STMT_NOP
+#define DBG_OBJ_SET_SYM(var, val)                    D_STMT_NOP
 #define DBG_OBJ_SET_STR(var, val)                    D_STMT_NOP
 #define DBG_OBJ_SET_PTR(var, val)                    D_STMT_NOP
 #define DBG_OBJ_ARRSET_NUM(var, ind, val)            D_STMT_NOP
+#define DBG_OBJ_ARRSET_SYM(var, ind, val)            D_STMT_NOP
 #define DBG_OBJ_ARRSET_STR(var, ind, val)            D_STMT_NOP
 #define DBG_OBJ_ARRSET_PTR(var, ind, val)            D_STMT_NOP
 #define DBG_OBJ_ARRATTRSET_NUM(var, ind, attr, val)  D_STMT_NOP
+#define DBG_OBJ_ARRATTRSET_SYM(var, ind, attr, val)  D_STMT_NOP
 #define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val)  D_STMT_NOP
 #define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val)  D_STMT_NOP
 #define DBG_OBJ_COLOR(klass, color)

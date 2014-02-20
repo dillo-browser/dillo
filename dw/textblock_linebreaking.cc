@@ -1081,13 +1081,14 @@ int Textblock::hyphenateWord (int wordIndex)
       PRINTF ("[%p]       %d words ...\n", this, words->size ());
       words->insert (wordIndex, numBreaks);
 
-#ifdef DBG_RTFL
-      // TODO Must be corrected.
-      for (int i = wordIndex + numBreaks; i < words->size (); i++) {
-         DBG_OBJ_ARRATTRSET_STR ("words", i, "type", "???");
-         DBG_OBJ_ARRATTRSET_STR ("words", i, "text/widget/breakSpace", "???");
+      DBG_IF_RTFL {
+         // TODO Must be corrected.
+         for (int i = wordIndex + numBreaks; i < words->size (); i++) {
+            DBG_OBJ_ARRATTRSET_SYM ("words", i, "type", "???");
+            DBG_OBJ_ARRATTRSET_STR ("words", i, "text/widget/breakSpace",
+                                    "???");
+         }
       }
-#endif      
 
       for (int i = 0; i < numBreaks; i++)
          initWord (wordIndex + i);
@@ -1120,7 +1121,7 @@ int Textblock::hyphenateWord (int wordIndex)
                                        end - start);
          PRINTF ("      [%d] -> '%s'\n", wordIndex + i, w->content.text);
 
-         DBG_OBJ_ARRATTRSET_STR ("words", wordIndex + i, "type", "TEXT");
+         DBG_OBJ_ARRATTRSET_SYM ("words", wordIndex + i, "type", "TEXT");
          DBG_OBJ_ARRATTRSET_STR ("words", wordIndex + i,
                                  "text/widget/breakSpace", w->content.text);
 
