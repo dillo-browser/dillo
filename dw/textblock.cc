@@ -2876,19 +2876,40 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
  */
 int Textblock::yOffsetOfPossiblyMissingLine (int lineNo)
 {
-   if (lineNo == 0)
-      return verticalOffset + getStyle()->boxOffsetY();
-   else {
+   DBG_OBJ_MSGF ("line.yoffset", 0, "<b>yOffsetOfPossiblyMissingLine</b> (%d)",
+                 lineNo);
+   DBG_OBJ_MSG_START ();
+
+   int result;
+
+   if (lineNo == 0) {
+      result = verticalOffset + getStyle()->boxOffsetY();
+      DBG_OBJ_MSGF ("line.yoffset", 1, "first line: %d + %d = %d",
+                    verticalOffset, getStyle()->boxOffsetY(), result);
+   } else {
       Line *prevLine = lines->getRef (lineNo - 1);
-      return verticalOffset +
+      result = verticalOffset + getStyle()->boxOffsetY() +
          prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
-         prevLine->breakSpace + getStyle()->boxOffsetY();
+         prevLine->breakSpace;
+      DBG_OBJ_MSGF ("line.yoffset", 1,
+                    "other line: %d + %d + %d + (%d + %d) + %d = %d",
+                    verticalOffset, getStyle()->boxOffsetY(),
+                    prevLine->top, prevLine->boxAscent, prevLine->boxDescent,
+                    prevLine->breakSpace, result);
    }
+
+   DBG_OBJ_MSG_END ();
+
+   return result;
 }
 
 int Textblock::heightOfPossiblyMissingLine (int lineNo)
 {
-   PRINTF ("[%p] HEIGHT_OF_POSSIBLY_MISSING_LINE (%d)\n", this, lineNo);
+   DBG_OBJ_MSGF ("line.height", 0, "<b>heightOfPossiblyMissingLine</b> (%d)",
+                 lineNo);
+   DBG_OBJ_MSG_START ();
+
+   int result;
    
    if (lineNo < lines->size()) {
       // An existing line.
@@ -2901,13 +2922,14 @@ int Textblock::heightOfPossiblyMissingLine (int lineNo)
       // accumulate the heights then.
 
       if (line->finished) {
-         PRINTF ("   Exists and is finished; height = %d + %d = %d\n",
-                 line->boxAscent, line->boxDescent,
-                 line->boxAscent + line->boxDescent);
-         return line->boxAscent + line->boxDescent;
+         DBG_OBJ_MSGF ("line.height", 1,
+                       "exists and is finished; height = %d + %d = %d",
+                       line->boxAscent, line->boxDescent,
+                       line->boxAscent + line->boxDescent);
+         result = line->boxAscent + line->boxDescent;
       } else {
-         PRINTF ("   Exist but is not finished.\n");
-         return misc::max (1, newLineAscent + newLineDescent);
+         DBG_OBJ_MSG ("line.height", 1, "exist but is not finished");
+         result = misc::max (1, newLineAscent + newLineDescent);
       }
    } else if (lineNo == lines->size()) {
       // The line to be constructed: some words exist, but not the
@@ -2916,10 +2938,15 @@ int Textblock::heightOfPossiblyMissingLine (int lineNo)
       // Old comment: Furthermore, this is in some cases incomplete:
       // see doc/dw-out-of-flow.doc. -- Still the case?
 
-      PRINTF ("   Does not exist.\n");
-      return misc::max (1, newLineAscent + newLineDescent);
+      DBG_OBJ_MSG ("line.height", 1, "does not exist");
+      result = misc::max (1, newLineAscent + newLineDescent);
    } else
-      return 1;
+      result = 1;
+
+   DBG_OBJ_MSGF ("line.height", 0, "result = %d", result);
+   DBG_OBJ_MSG_END ();
+
+   return result;
 }
 
 } // namespace dw

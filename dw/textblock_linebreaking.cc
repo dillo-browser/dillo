@@ -410,18 +410,17 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
                  + (lineIndex == 0 ? line1OffsetEff : 0))
       + line->leftOffset;
 
-   PRINTF ("   line[%d].top = %d\n", lines->size () - 1, line->top);
-   PRINTF ("   line[%d].boxAscent = %d\n", lines->size () - 1, line->boxAscent);
-   PRINTF ("   line[%d].boxDescent = %d\n",
-           lines->size () - 1, line->boxDescent);
-   PRINTF ("   line[%d].contentAscent = %d\n", lines->size () - 1,
-           line->contentAscent);
-   PRINTF ("   line[%d].contentDescent = %d\n",
-           lines->size () - 1, line->contentDescent);
-   PRINTF ("   line[%d].maxLineWidth = %d (lineWidth = %d)\n",
-           lines->size () - 1, line->maxLineWidth, lineWidth);
-   PRINTF ("   line[%d].offsetCompleteWidget = %d\n",
-           lines->size () - 1, line->offsetCompleteWidget);
+   DBG_OBJ_MSGF ("construct.line", 1, "top = %d\n", line->top);
+   //DBG_OBJ_MSGF ("construct.line", 1, "boxAscent = %d\n", line->boxAscent);
+   //DBG_OBJ_MSGF ("construct.line", 1, "boxDescent = %d\n", line->boxDescent);
+   //DBG_OBJ_MSGF ("construct.line", 1, "contentAscent = %d\n",
+   //              line->contentAscent);
+   //DBG_OBJ_MSGF ("construct.line", 1, "contentDescent = %d\n",
+   //              line->contentDescent);
+   //DBG_OBJ_MSGF ("construct.line", 1, "maxLineWidth = %d (lineWidth = %d)\n",
+   //              line->maxLineWidth, lineWidth);
+   //DBG_OBJ_MSGF ("construct.line", 1, "offsetCompleteWidget = %d\n",
+   //              line->offsetCompleteWidget);
 
    mustQueueResize = true;
 

@@ -140,17 +140,17 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
          b = false;
       } else {
          Allocation *tba = getOutOfFlowMgr()->getAllocation(textblock),
-            *gba = getOutOfFlowMgr()->getAllocation(generatingBlock),
+            //*gba = getOutOfFlowMgr()->getAllocation(generatingBlock),
             *fla = getWidget()->getAllocation ();
          int reqyCanv = tba->y + y;
-         int flyCanv = gba->y + yReal;
+         int flyCanv = fla->y;
          int flh = fla->ascent + fla->descent;
          b = flyCanv + flh > reqyCanv && flyCanv < reqyCanv + h;
          
          DBG_OBJ_MSGF_O ("border", 1, getOutOfFlowMgr (),
                          "not generator (allocated): reqyCanv = %d + %d = %d, "
-                         "flyCanv = %d + %d = %d, flh = %d + %d = %d => %s",
-                         tba->y, y, reqyCanv, gba->y, yReal, flyCanv,
+                         "flyCanv = %d, flh = %d + %d = %d => %s",
+                         tba->y, y, reqyCanv, flyCanv,
                          fla->ascent, fla->descent, flh, b ? "true" : "false");
       }
    }
@@ -1630,7 +1630,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
       for (int i = 0; i < list->size(); i++) {
          Float *f = list->get(i);
          DBG_OBJ_MSGF ("border", 1,
-                       "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d), "
+                       "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d)), "
                        "%s, %s); widget at (%d, %d)",
                        i, f->getWidget (), f->index, f->sideSpanningIndex,
                        f->yReq, f->yReal, f->size.width, f->size.ascent,
