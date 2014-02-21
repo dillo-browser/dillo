@@ -2768,9 +2768,10 @@ void Textblock::borderChanged (int y, Widget *vloat)
 
       // Notice that the line no. wrapLineIndex may not exist yet.
       if (wrapLineIndex == 0)
-         lastWordDrawn = 0;
+         lastWordDrawn = misc::min (lastWordDrawn, -1);
       else
-         lastWordDrawn = lines->getRef(wrapLineIndex - 1)->lastWord + 1;
+         lastWordDrawn = misc::min (lastWordDrawn,
+                                    lines->getRef(wrapLineIndex - 1)->lastWord);
    }
 
    DBG_OBJ_MSG_END ();
