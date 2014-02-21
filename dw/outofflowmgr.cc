@@ -200,7 +200,7 @@ int OutOfFlowMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
       
       if (a1 && a2) {
          int fly1 = fl1->getWidget() ? fl1->getWidget()->getAllocation()->y :
-            oofm->getAllocation(fl2->generatingBlock)->y + fl1->yReal;
+            oofm->getAllocation(fl1->generatingBlock)->y + fl1->yReal;
          int fly2 = fl2->getWidget() ? fl2->getWidget()->getAllocation()->y :
             oofm->getAllocation(fl2->generatingBlock)->y + fl2->yReal;
          DBG_OBJ_MSGF_O ("border", 2, oofm, "y diff = %d - %d", fly1, fly2);
