@@ -22,6 +22,7 @@
 
 #include "container.hh"
 #include "misc.hh"
+#include "debug.hh"
 
 namespace lout {
 
@@ -209,41 +210,51 @@ int Vector::bsearch(Object *key, bool mustExist, int start, int end,
    // The case !mustExist is not handled by bsearch(3), so here is a
    // new implementation.
 
-   if (start > end)
-      return mustExist ? -1 : start;
-   
-   int low = start, high = end;
+   DBG_OBJ_MSGF ("container", 0,
+                 "<b>bsearch</b> (<i>key</i>, %s, %d, %d, <i>comparator</i>",
+                 mustExist ? "true" : "false", start, end);
+   DBG_OBJ_MSG_START ();
 
-   while (true) {
-      int index = (low + high) / 2;
-      int c = comparator->compare (key, array[index]);
-      if (c == 0)
-         return index;
-      else {
-         if (low >= high) {
-            if (mustExist)
-               return -1;
+   int result;
+
+   if (start > end) {
+      DBG_OBJ_MSG ("container", 1, "empty");
+      result = mustExist ? -1 : start;
+   } else {
+      int low = start, high = end;
+      bool found = false;
+
+      while (!found) {       
+         int index = (low + high) / 2;
+         int c = comparator->compare (key, array[index]);
+         DBG_OBJ_MSGF ("container", 1,
+                       "searching within %d and %d; compare key with #%d => %d",
+                       low, start, index, c);
+         if (c == 0) {
+            found = true;
+            result = index;
+         } else {
+            if (low >= high) {
+               if (mustExist) {
+                  found = true;
+                  result = -1;
+               } else {
+                  found = true;
+                  result = c > 0 ? index + 1 : index;
+               }
+            }
+            
+            if (c < 0)
+               high = index - 1;
             else
-               return c > 0 ? index + 1 : index;
+               low = index + 1;
          }
-
-         if (c < 0)
-            high = index - 1;
-         else
-            low = index + 1;
       }
-   }
-   
+   }  
 
-   /*
-   Comparator::compareFunComparator = comparator;
-   void *result = ::bsearch (&key, array, numElements, sizeof (Object*),
-                             Comparable::compareFun);
-   if (result)
-      return (Object**)result - array;
-   else
-      return -1;
-   */
+   DBG_OBJ_MSGF ("container", 1, "result = %d", result);
+   DBG_OBJ_MSG_END ();
+   return result;
 }
 
 Object *Vector::VectorIterator::getNext()

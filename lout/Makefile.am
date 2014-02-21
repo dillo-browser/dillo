@@ -1,5 +1,6 @@
 AM_CPPFLAGS = \
-	-I$(top_srcdir)
+	-I$(top_srcdir) \
+	-DCUR_WORKING_DIR='"@BASE_CUR_WORKING_DIR@/lout"'
 
 noinst_LIBRARIES = liblout.a
 
