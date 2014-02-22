@@ -275,8 +275,7 @@ private:
    void getFloatsListsAndSide (Float *vloat, SortedFloatsVector **listSame,
                                SortedFloatsVector **listOpp, Side *side);
 
-   void getFloatsSize (SortedFloatsVector *list, Side side, int *width,
-                       int *height);
+   void getFloatsSize (Side side, int *width, int *height);
    void accumExtremes (SortedFloatsVector *list, Side side, int *oofMinWidth,
                        int *oofMaxWidth);
    int getMinBorderDiff (Float *vloat, Side side);
@@ -382,9 +381,8 @@ public:
 
    void tellPosition (core::Widget *widget, int yReq);
 
-   void getSize (int cbWidth, int cbHeight, int *oofWidth, int *oofHeight);
-   void getExtremes (int cbMinWidth, int cbMaxWidth, int *oofMinWidth,
-                     int *oofMaxWidth);
+   void getSize (int *oofWidth, int *oofHeight);
+   void getExtremes (int *oofMinWidth, int *oofMaxWidth);
 
    int getLeftBorder (Textblock *textblock, int y, int h, Textblock *lastGB,
                       int lastExtIndex);
