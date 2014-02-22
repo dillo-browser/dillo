@@ -1600,7 +1600,7 @@ int OutOfFlowMgr::getLeftBorder (Textblock *textblock, int y, int h,
 
 /**
  * Get the right border for the vertical position of *y*, for a height
- * of *h", based on floats.
+ * of *h*, based on floats.
  *
  * See also getLeftBorder(int, int);
  */
@@ -1708,23 +1708,35 @@ OutOfFlowMgr::SortedFloatsVector *OutOfFlowMgr::getFloatsListForTextblock
 bool OutOfFlowMgr::hasFloatLeft (Textblock *textblock, int y, int h,
                                  Textblock *lastGB, int lastExtIndex)
 {
-   return hasFloat (textblock, LEFT, y, h, lastGB, lastExtIndex);
+   bool b = hasFloat (textblock, LEFT, y, h, lastGB, lastExtIndex);
+   DBG_OBJ_MSGF ("border", 0, "has float left (%p, %d, %d, %p, %d) => %s",
+                 textblock, y, h, lastGB, lastExtIndex, b ? "true" : "false");
+   return b;
 }
 
 bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h,
                                   Textblock *lastGB, int lastExtIndex)
 {
-   return hasFloat (textblock, RIGHT, y, h, lastGB, lastExtIndex);
+   bool b = hasFloat (textblock, RIGHT, y, h, lastGB, lastExtIndex);
+   DBG_OBJ_MSGF ("border", 0, "has float right (%p, %d, %d, %p, %d) => %s",
+                 textblock, y, h, lastGB, lastExtIndex, b ? "true" : "false");
+   return b;
 }
 
 bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
                              Textblock *lastGB, int lastExtIndex)
 {
-   //printf ("[%p] hasFloat (%p, %s, %d, %d, %p, %d)\n",
-   //        containingBlock, textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
-   //        lastGB, lastExtIndex);
+   DBG_OBJ_MSGF ("border", 0, "<b>getBorder</b> (%p, %s, %d, %d, %p, %d)",
+                 textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
+                 lastGB, lastExtIndex);
+   DBG_OBJ_MSG_START ();
+
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
-   return list->findFirst (textblock, y, h, lastGB, lastExtIndex) != -1;
+   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
+
+   DBG_OBJ_MSGF ("border", 1, "first = %d", first);
+   DBG_OBJ_MSG_END ();
+   return first != -1;
 }
 
 /**
