@@ -526,6 +526,8 @@ bool Textblock::wordWrap (int wordIndex, bool wrapAll)
                  wordIndex, wrapAll ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
+   DBG_MSG_WORD ("construct.word", 1, "<i>wrapped word:</i> ", wordIndex, "");
+
    if (!wrapAll)
       removeTemporaryLines ();
 
@@ -582,11 +584,19 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
       // lines empty does not make sense without floats, since there will
       // be no possibility with more space anymore.)
 
-      bool thereWillBeMoreSpace = 
-         mustBorderBeRegarded (lines->size ()) ?
+      bool regardBorder =  mustBorderBeRegarded (lines->size ());
+      bool thereWillBeMoreSpace = regardBorder ?
          newLineHasFloatLeft || newLineHasFloatRight :
          false;
 
+      DBG_OBJ_MSGF ("construct.word", 1,
+                    "thereWillBeMoreSpace = %s ? %s || %s : false = %s",
+                    regardBorder ? "true" : "false",
+                    newLineHasFloatLeft ? "true" : "false",
+                    newLineHasFloatRight ? "true" : "false",
+                    thereWillBeMoreSpace ? "true" : "false");
+      
+                    
       bool tempNewLine = false;
       int firstIndex =
          lines->size() == 0 ? 0 : lines->getLastRef()->lastWord + 1;
@@ -601,14 +611,14 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
          newLine = true;
          searchUntil = wordIndex;
          tempNewLine = true;
-         PRINTF ("   NEW LINE: last word\n");
+         DBG_OBJ_MSG ("construct.word", 1, "<b>new line:</b> last word");
       } else if (wordIndex >= firstIndex &&
                  // TODO: lineMustBeBroken should be independent of
                  // the penalty index?
                  word->badnessAndPenalty.lineMustBeBroken (penaltyIndex)) {
          newLine = true;
          searchUntil = wordIndex;
-         PRINTF ("   NEW LINE: forced break\n");
+         DBG_OBJ_MSG ("construct.word", 1, "<b>new line:</b> forced break");
       } else {
          // Break the line when too tight, but only when there is a
          // possible break point so far. (TODO: I've forgotten the
@@ -630,7 +640,8 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
              && word->badnessAndPenalty.lineTooTight ()) {
             newLine = true;
             searchUntil = wordIndex - 1;
-            PRINTF ("   NEW LINE: line too tight\n");
+            DBG_OBJ_MSG ("construct.word", 1,
+                         "<b>new line:</b> line too tight");
          } else
             newLine = false;
       }
@@ -664,16 +675,16 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                int breakPos =
                   searchMinBap (firstIndex, searchUntil, penaltyIndex, wrapAll);
                int hyphenatedWord = considerHyphenation (firstIndex, breakPos);
-               
-               //printf ("[%p] breakPos = %d (", this, breakPos);
-               //printWordShort (words->getRef (breakPos));
-               //printf ("), hyphenatedWord = %d", hyphenatedWord);
-               //if (hyphenatedWord != -1) {
-               //   printf (" (");
-               //   printWordShort (words->getRef (hyphenatedWord));
-               //   printf (")");
-               //}
-               //printf ("\n");
+      
+               DBG_OBJ_MSGF ("construct.word", 1, "breakPos = %d", breakPos);
+               DBG_MSG_WORD ("construct.word", 1, "<i>break at word:</i> ",
+                             breakPos, "");
+               DBG_OBJ_MSGF ("construct.word", 1, "hyphenatedWord = %d",
+                             hyphenatedWord);
+               if (hyphenatedWord != -1)
+                  DBG_MSG_WORD ("construct.word", 1,
+                                "<i>hyphenate at word:</i> ",
+                                hyphenatedWord, "");
                
                if(hyphenatedWord == -1) {
                   addLine (firstIndex, breakPos, tempNewLine);
@@ -689,13 +700,14 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                   // run, with !word->canBeHyphenated, is unnecessary.
                   // TODO Update: for this, searchUntil == 0 should be
                   // checked.
-                  PRINTF ("[%p] old searchUntil = %d ...\n", this, searchUntil);
+                  DBG_OBJ_MSGF ("construct.word", 1, "old searchUntil = %d",
+                                searchUntil);
                   int n = hyphenateWord (hyphenatedWord);
                   searchUntil += n;
                   if (hyphenatedWord <= wordIndex)
                      wordIndexEnd += n;
-                  PRINTF ("[%p] -> new searchUntil = %d ...\n",
-                          this, searchUntil);
+                  DBG_OBJ_MSGF ("construct.word", 1, "new searchUntil = %d",
+                                searchUntil);
                   lineAdded = false;
                
                   // update word pointer as hyphenateWord() can trigger a
@@ -706,8 +718,9 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                      wordListChanged = true;
                }
                
-               PRINTF ("[%p]       accumulating again from %d to %d\n",
-                       this, breakPos + 1, wordIndexEnd);
+               DBG_OBJ_MSGF ("construct.word", 1,
+                             "accumulating again from %d to %d\n",
+                             breakPos + 1, wordIndexEnd);
                for(int i = breakPos + 1; i <= wordIndexEnd; i++)
                   accumulateWordData (i);
             }
