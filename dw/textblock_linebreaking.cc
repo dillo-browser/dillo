@@ -626,15 +626,33 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
          
          // Exception of the latter rule: thereWillBeMoreSpace; see
          // above, where it is defined.
+         
+         DBG_OBJ_MSGF ("construct.word", 1,
+                       "possible line break between %d and %d?",
+                       firstIndex, wordIndex - 1);
+         DBG_OBJ_MSG_START ();
 
          bool possibleLineBreak = false;
          for (int i = firstIndex;
               !(thereWillBeMoreSpace || possibleLineBreak)
                  && i <= wordIndex - 1;
-              i++)
+              i++) {
+            DBG_OBJ_MSGF ("construct.word", 2, "examining word %d", i);
             if (words->getRef(i)->badnessAndPenalty
-                .lineCanBeBroken (penaltyIndex))
+                .lineCanBeBroken (penaltyIndex)) {
+               DBG_MSG_WORD ("construct.word", 2, "break possible for word:",
+                             i, "");
                possibleLineBreak = true;
+            }
+         }
+
+         DBG_OBJ_MSG_END ();
+         DBG_OBJ_MSGF ("construct.word", 1, "=> %s",
+                       possibleLineBreak ? "true" : "false");
+
+         DBG_OBJ_MSGF ("construct.word", 1, "word->... too tight: %s",
+                       word->badnessAndPenalty.lineTooTight () ?
+                       "true" : "false");
 
          if ((thereWillBeMoreSpace || possibleLineBreak)
              && word->badnessAndPenalty.lineTooTight ()) {
@@ -642,8 +660,10 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
             searchUntil = wordIndex - 1;
             DBG_OBJ_MSG ("construct.word", 1,
                          "<b>new line:</b> line too tight");
-         } else
+         } else {
+            DBG_OBJ_MSG ("construct.word", 1, "no <b>new line</b>");
             newLine = false;
+         }
       }
 
       if(!newLine && !wrapAll)
@@ -665,13 +685,19 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 
          bool lineAdded;
          do {
+            DBG_OBJ_MSG ("construct.word", 1, "<i>line adding loop cycle</i>");
+            DBG_OBJ_MSG_START ();
+
             if (firstIndex > searchUntil) {
                // empty line
+               DBG_OBJ_MSG ("construct.word", 1, "empty line");
                assert (searchUntil == firstIndex - 1);
                addLine (firstIndex, firstIndex - 1, tempNewLine);
                lineAdded = true;
                penaltyIndex = calcPenaltyIndexForNewLine ();
             } else {
+               DBG_OBJ_MSG ("construct.word", 1, "non-empty line");
+
                int breakPos =
                   searchMinBap (firstIndex, searchUntil, penaltyIndex, wrapAll);
                int hyphenatedWord = considerHyphenation (firstIndex, breakPos);
@@ -724,6 +750,8 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                for(int i = breakPos + 1; i <= wordIndexEnd; i++)
                   accumulateWordData (i);
             }
+
+            DBG_OBJ_MSG_END ();
          } while(!lineAdded);
       }
    } while (newLine);
@@ -1254,6 +1282,10 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
 
 void Textblock::accumulateWordData (int wordIndex)
 {
+   DBG_OBJ_MSGF ("construct.word", 1, "<b>accumulateWordData</b> (%d)",
+                 wordIndex);
+   DBG_OBJ_MSG_START ();
+
    // Typically, the word in question is in the last line; in any case
    // quite at the end of the text, so that linear search is actually
    // the fastest option.
@@ -1268,14 +1300,14 @@ void Textblock::accumulateWordData (int wordIndex)
       firstWordOfLine = lines->getRef(lineIndex - 1)->lastWord + 1;
 
    Word *word = words->getRef (wordIndex);
-   PRINTF ("[%p] ACCUMULATE_WORD_DATA (%d); lineIndex = %d: ...\n",
-           this, wordIndex, lineIndex);
+   DBG_OBJ_MSGF ("construct.word", 2, "lineIndex = %d", lineIndex);
 
    int availWidth = calcAvailWidth (lineIndex);
 
-   PRINTF ("      (%s existing line %d starts with word %d)\n",
-           lineIndex < lines->size () ? "already" : "not yet",
-           lineIndex, firstWordOfLine);
+   DBG_OBJ_MSGF ("construct.word", 2,
+                 "(%s existing line %d starts with word %d; availWidth = %d)",
+                 lineIndex < lines->size () ? "already" : "not yet",
+                 lineIndex, firstWordOfLine, availWidth);
 
    if (wordIndex == firstWordOfLine) {
       // first word of the (not neccessarily yet existing) line
@@ -1309,12 +1341,15 @@ void Textblock::accumulateWordData (int wordIndex)
    //printf ("      => ");
    //printWord (word);
    //printf ("\n");
+
+   DBG_OBJ_MSG_END ();
 }
 
 int Textblock::calcAvailWidth (int lineIndex)
 {
-   PRINTF ("[%p] CALC_AVAIL_WIDTH (%d of %d) ...\n",
-           this, lineIndex, lines->size());
+   DBG_OBJ_MSGF ("construct.word", 1, "<b>calcAvailWidth</b> (%d <i>of %d</i>)",
+                 lineIndex, lines->size());
+   DBG_OBJ_MSG_START ();
 
    int availWidth = this->availWidth - innerPadding;
    if (limitTextWidth &&
@@ -1338,11 +1373,11 @@ int Textblock::calcAvailWidth (int lineIndex)
 
    availWidth -= (leftBorder + rightBorder);
 
-   PRINTF ("[%p] CALC_AVAIL_WIDTH (%d of %d) => %d - %d - (%d + %d)"
-           " = %d\n", this, lineIndex, lines->size(), this->availWidth, 
-           innerPadding, leftBorder, rightBorder,
-           availWidth);
+   DBG_OBJ_MSGF ("construct.word", 2, "=> %d - %d - (%d + %d) = %d\n",
+                 this->availWidth, innerPadding, leftBorder, rightBorder,
+                 availWidth);
 
+   DBG_OBJ_MSG_END ();
    return availWidth;
 }
 
@@ -1529,6 +1564,9 @@ void Textblock::fillParagraphs ()
 
 void Textblock::initNewLine ()
 {
+   DBG_OBJ_MSG ("construct.line", 0, "<b>initNewLine</b> ()");
+   DBG_OBJ_MSG_START ();
+
    // At the very beginning, in Textblock::Textblock, where this
    // method is called, containingBlock is not yet defined.
 
@@ -1556,18 +1594,21 @@ void Textblock::initNewLine ()
          containingBlock->outOfFlowMgr->getRightBorder (this, y, h, this,
                                                         lastRef);
 
-      PRINTF ("[%p] INIT_NEW_LINE: %d (%s) / %d (%s), at %d (%d), until %d\n",
-              this, newLineLeftBorder, newLineHasFloatLeft ? "true" : "false",
-              newLineRightBorder, newLineHasFloatRight ? "true" : "false",
-              y, h, lastRef);
+      DBG_OBJ_MSGF ("construct.line", 0,
+                    "%d (%s) / %d (%s), at %d (%d), until %d\n",
+                    newLineLeftBorder, newLineHasFloatLeft ? "true" : "false",
+                    newLineRightBorder, newLineHasFloatRight ? "true" : "false",
+                    y, h, lastRef);
    } else {
       newLineHasFloatLeft = newLineHasFloatRight = false;
       newLineLeftBorder = newLineRightBorder = 0;
 
-      PRINTF ("[%p] INIT_NEW_LINE: no CB or OOFM\n", this);
+      DBG_OBJ_MSG ("construct.line", 0, "<i>no CB of OOFM</i>");
    }
 
    newLineAscent = newLineDescent = 0;
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Textblock::showMissingLines ()
