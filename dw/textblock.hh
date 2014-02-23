@@ -7,8 +7,8 @@
 #include "outofflowmgr.hh"
 #include "../lout/misc.hh"
 
-// These were used when improved line breaking and hyphenation were
-// implemented. Should be cleaned up; perhaps reactivate RTFL again.
+// These were used when improved line breaking and hyphenation were implemented.
+// Should be, bit by bit, replaced by RTFL (see ../lout/debug.hh).
 #define PRINTF(fmt, ...)
 #define PUTCHAR(ch)
 
