@@ -2874,8 +2874,9 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
  */
 int Textblock::yOffsetOfPossiblyMissingLine (int lineNo)
 {
-   DBG_OBJ_MSGF ("line.yoffset", 0, "<b>yOffsetOfPossiblyMissingLine</b> (%d)",
-                 lineNo);
+   DBG_OBJ_MSGF ("line.yoffset", 0,
+                 "<b>yOffsetOfPossiblyMissingLine</b> (%d <i>of %d</i>)",
+                 lineNo, lines->size());
    DBG_OBJ_MSG_START ();
 
    int result;
@@ -2903,8 +2904,9 @@ int Textblock::yOffsetOfPossiblyMissingLine (int lineNo)
 
 int Textblock::heightOfPossiblyMissingLine (int lineNo)
 {
-   DBG_OBJ_MSGF ("line.height", 0, "<b>heightOfPossiblyMissingLine</b> (%d)",
-                 lineNo);
+   DBG_OBJ_MSGF ("line.height", 0,
+                 "<b>heightOfPossiblyMissingLine</b> (%d <i>of %d</i>)",
+                 lineNo, lines->size());
    DBG_OBJ_MSG_START ();
 
    int result;

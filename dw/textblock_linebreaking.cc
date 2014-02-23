@@ -693,6 +693,7 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                DBG_OBJ_MSG ("construct.word", 1, "empty line");
                assert (searchUntil == firstIndex - 1);
                addLine (firstIndex, firstIndex - 1, tempNewLine);
+               checkPossibleLineHeightChange (firstIndex);
                lineAdded = true;
                penaltyIndex = calcPenaltyIndexForNewLine ();
             } else {
