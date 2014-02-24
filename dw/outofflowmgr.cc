@@ -1894,12 +1894,4 @@ void OutOfFlowMgr::sizeAllocateAbsolutelyPositioned ()
    }
 }
 
-// TODO Latest change: Check also Textblock::borderChanged: looks OK,
-// but the comment ("... (i) with canvas coordinates ...") looks wrong
-// (and looks as having always been wrong).
-
-// Another issue: does it make sense to call Textblock::borderChanged
-// for generators, when the respective widgets have not been called
-// yet?
-
 } // namespace dw
