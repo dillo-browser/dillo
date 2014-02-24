@@ -1274,7 +1274,7 @@ bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, int *yReal)
          DBG_OBJ_MSGF ("resize.oofm", 1,
                        "different generators: "
                        "otherBottomGB = %d + (%d + %d) - %d = %d",
-                       flaOther->y, flaOther->ascent, flaOther->descent, gby->y,
+                       flaOther->y, flaOther->ascent, flaOther->descent, gba->y,
                        otherBottomGB);
 
          if (vloat->yReal <  otherBottomGB) {
