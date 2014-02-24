@@ -767,63 +767,6 @@ bool OutOfFlowMgr::isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
       return false;
 }
 
-void OutOfFlowMgr::checkChangedFloatSizes ()
-{
-   DBG_OBJ_MSG ("resize.oofm", 0, "<b>checkChangedFloatSizes</b>");
-   DBG_OBJ_MSG_START ();
-
-   checkChangedFloatSizes (leftFloatsCB);
-   checkChangedFloatSizes (rightFloatsCB);
-
-   DBG_OBJ_MSG_END ();
-}
-
-void OutOfFlowMgr::checkChangedFloatSizes (SortedFloatsVector *list)
-{
-   DBG_OBJ_MSG ("resize.oofm", 0,
-                "<b>checkChangedFloatSizes</b> (<i>list</i>)");
-   DBG_OBJ_MSG_START ();
-
-   // TODO (i) Comment (ii) linear search?
-   for (int i = 0; i < list->size(); i++) {
-      // TODO binary search
-      Float *vloat = list->get(i);
-
-      if (vloat->sizeChangedSinceLastAllocation &&
-          wasAllocated (vloat->generatingBlock)) {
-         DBG_OBJ_MSGF ("resize.oofm", 1, "float %p: checking textblocks",
-                       vloat->getWidget ());
-         DBG_OBJ_MSG_START ();
-
-         for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-                 tbInfosByTextblock->iterator ();
-              it.hasNext (); ) {
-            Textblock *tb = it.getNext()->getTypedValue();
-            if (wasAllocated (tb)) {
-               Allocation *tba = getAllocation (tb);
-               int floatPos;
-
-               if (isTextblockCoveredByFloat
-                   (vloat, tb, tba->x - containingBlockAllocation.x,
-                    tba->y - containingBlockAllocation.y,
-                    tba->width, tba->ascent + tba->descent, &floatPos)) {
-                  DBG_OBJ_MSGF ("resize.oofm", 2, "%p: covereds", tb);
-                  tb->borderChanged (floatPos, vloat->getWidget ());
-               } else
-                  DBG_OBJ_MSGF ("resize.oofm", 2, "%p: not covered", tb);
-            } else
-               DBG_OBJ_MSGF ("resize.oofm", 2, "%p: not allocated", tb);
-         }
-
-         vloat->sizeChangedSinceLastAllocation = false;
-
-         DBG_OBJ_MSG_END ();
-      }
-   }
-
-   DBG_OBJ_MSG_END ();
-}
-
 void OutOfFlowMgr::moveFromGBToCB (Side side)
 {
    SortedFloatsVector *dest = side == LEFT ? leftFloatsCB : rightFloatsCB;

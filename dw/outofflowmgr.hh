@@ -259,10 +259,7 @@ private:
    bool isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
                                    int tbx, int tby, int tbWidth, int tbHeight,
                                    int *floatPos);
-
-   void checkChangedFloatSizes ();
-   void checkChangedFloatSizes (SortedFloatsVector *list);
-   
+ 
    void drawFloats (SortedFloatsVector *list, core::View *view,
                     core::Rectangle *area);
    void drawAbsolutelyPositioned (core::View *view, core::Rectangle *area);
