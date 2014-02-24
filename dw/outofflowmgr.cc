@@ -1155,7 +1155,6 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    assert (yReq >= 0);
 
    Float *vloat = findFloatByWidget(widget);
-   int oldY = vloat->yReal;
 
    SortedFloatsVector *listSame, *listOpp;
    Side side;
@@ -1168,7 +1167,7 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    // Test collisions (on this side). Only previous float is relevant.
    int yRealNew;
    if (vloat->index >= 1 &&
-       collides (vloat, listSame->get (vloat->index - 1), &yRealNew)) {
+       collidesV (vloat, listSame->get (vloat->index - 1), &yRealNew)) {
       vloat->yReal = yRealNew;
    }
 
@@ -1178,7 +1177,7 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
       listOpp->findLastBeforeSideSpanningIndex (vloat->sideSpanningIndex);
    if (lastOppFloat >= 0) {
       Float *last = listOpp->get (lastOppFloat);
-      if (collides (vloat, last, &yRealNew)) {
+      if (collidesV (vloat, last, &yRealNew)) {
          // Here, test also horizontal values.
          bool collidesH;
          if (vloat->generatingBlock == last->generatingBlock)
@@ -1221,22 +1220,25 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
       }
    }
 
-   DBG_OBJ_MSGF ("resize.oofm", 1,
-                 "oldY = %d, vloat->yReq = %d, vloat->yReal = %d",
-                 oldY, vloat->yReq, vloat->yReal);
+   DBG_OBJ_MSGF ("resize.oofm", 1, "vloat->yReq = %d, vloat->yReal = %d",
+                 vloat->yReq, vloat->yReal);
 
    DBG_OBJ_MSG_END ();
 }
 
-bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
+bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, int *yReal)
 {
+   // Only checks vertical (possible) collisions, and only refers to
+   // vloat->yReal; never to vloat->allocation, even when the GBs are
+   // different. Used only in tellPosition.
+
    DBG_OBJ_MSGF ("resize.oofm", 0,
                  "<b>collides</b> (#%d [%p], #%d [%p], ...)",
                  vloat->index, vloat->getWidget (), other->index,
                  other->getWidget ());
    DBG_OBJ_MSG_START ();
 
-   bool result = false;
+   bool result;
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "initial yReal = %d", vloat->yReal);
 
@@ -1253,27 +1255,33 @@ bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
       if (vloat->yReal <  otherBottomGB) {
          *yReal = otherBottomGB;
          result = true;
-      }
+      } else
+         result = false;
    } else {
       assert (wasAllocated (vloat->generatingBlock));
-      assert (vloat->getWidget()->wasAllocated ());
-      assert (other->getWidget()->wasAllocated ());
+      assert (wasAllocated (other->generatingBlock));
 
-      Allocation *gba = getAllocation (vloat->generatingBlock),
-         *fla = vloat->getWidget()->getAllocation (),
-         *flaOther = other->getWidget()->getAllocation ();
-      int otherBottomCanvas =
-         flaOther->y + flaOther->ascent + flaOther->descent;
+      // If the other float is not allocated, there is no collision. The
+      // allocation of this float (vloat) is not used at all.
+      if (!other->getWidget()->wasAllocated ())
+         result = false;
+      else {
+         Allocation *gba = getAllocation (vloat->generatingBlock),
+            *flaOther = other->getWidget()->getAllocation ();
+         int otherBottomGB =
+            flaOther->y + flaOther->ascent + flaOther->descent - gba->y;
 
-      DBG_OBJ_MSGF ("resize.oofm", 1,
-                    "different generators: this float at %d, "
-                    "otherBottomCanvas = %d + (%d + %d) = %d",
-                    fla->y, flaOther->y, flaOther->ascent, flaOther->descent,
-                    otherBottomCanvas);
+         DBG_OBJ_MSGF ("resize.oofm", 1,
+                       "different generators: "
+                       "otherBottomGB = %d + (%d + %d) - %d = %d",
+                       flaOther->y, flaOther->ascent, flaOther->descent, gby->y,
+                       otherBottomGB);
 
-      if (fla->y < otherBottomCanvas) {
-         *yReal = otherBottomCanvas - gba->y;
-         result = true;
+         if (vloat->yReal <  otherBottomGB) {
+            *yReal = otherBottomGB;
+            result = true;
+         } else
+            result = false;
       }
    }
 
@@ -1281,7 +1289,7 @@ bool OutOfFlowMgr::collides (Float *vloat, Float *other, int *yReal)
       DBG_OBJ_MSGF ("resize.oofm", 1, "collides: new yReal = %d", *yReal);
    else
       DBG_OBJ_MSG ("resize.oofm", 1, "does not collide");
-
+   
    DBG_OBJ_MSG_END ();
    return result;
 }
