@@ -215,7 +215,7 @@ int Vector::bsearch(Object *key, bool mustExist, int start, int end,
                  mustExist ? "true" : "false", start, end);
    DBG_OBJ_MSG_START ();
 
-   int result;
+   int result = -123; // Compiler happiness: GCC 4.7 does not handle this?
 
    if (start > end) {
       DBG_OBJ_MSG ("container", 1, "empty");
@@ -229,7 +229,7 @@ int Vector::bsearch(Object *key, bool mustExist, int start, int end,
          int c = comparator->compare (key, array[index]);
          DBG_OBJ_MSGF ("container", 1,
                        "searching within %d and %d; compare key with #%d => %d",
-                       low, start, index, c);
+                       low, high, index, c);
          if (c == 0) {
             found = true;
             result = index;
