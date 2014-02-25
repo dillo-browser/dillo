@@ -229,42 +229,59 @@ int OutOfFlowMgr::Float::CompareSideSpanningIndex::compare (Object *o1,
 int OutOfFlowMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
 {
    Float *f1 = (Float*)o1, *f2 = (Float*)o2;
+   int r = -123; // Compiler happiness: GCC 4.7 does not handle this?;
 
-   //printf ("[%p] comparing (%p, %d) with (%p, %d) ...\n",
-   //        oofm->containingBlock, f1->generatingBlock, f1->externalIndex,
-   //        f2->generatingBlock, f2->externalIndex);
+   DBG_OBJ_MSGF_O ("border", 1, oofm,
+                   "<b>CompareGBAndExtIndex::compare</b> (#%d -> %p/%d, "
+                   "#%d -> %p/#%d)",
+                   f1->index, f1->generatingBlock, f1->externalIndex,
+                   f2->index, f2->generatingBlock, f2->externalIndex);
+   DBG_OBJ_MSG_START_O (oofm);
 
    if (f1->generatingBlock == f2->generatingBlock) {
-      //printf ("   (a) generating blocks equal => %d - %d = %d\n",
-      //        f1->externalIndex, f2->externalIndex,
-      //        f1->externalIndex - f2->externalIndex);
-      return f1->externalIndex - f2->externalIndex;
+      r = f1->externalIndex - f2->externalIndex;
+      DBG_OBJ_MSGF_O ("border", 2, oofm,
+                      "(a) generating blocks equal => %d - %d = %d",
+                      f1->externalIndex, f2->externalIndex, r);
    } else {
       TBInfo *t1 = oofm->getTextblock (f1->generatingBlock),
          *t2 = oofm->getTextblock (f2->generatingBlock);
+      bool rdef = false;
 
       for (TBInfo *t = t1; t != NULL; t = t->parent)
          if (t->parent == t2) {
-            //printf ("   (b) %p is an achestor of %p; direct child is %p (%d)"
-            //        " => %d - %d = %d\n", t2->textblock, t1->textblock,
-            //        t->textblock, t->parentExtIndex, t->parentExtIndex,
-            //        f2->externalIndex, t->parentExtIndex - f2->externalIndex);
-            return t->parentExtIndex - f2->externalIndex;
+            rdef = true;
+            r = t->parentExtIndex - f2->externalIndex;
+            DBG_OBJ_MSGF_O ("border", 2, oofm,
+                            "(b) %p is an achestor of %p; direct child is "
+                            "%p (%d) => %d - %d = %d\n",
+                            t2->getTextblock (), t1->getTextblock (),
+                            t->getTextblock (), t->parentExtIndex,
+                            t->parentExtIndex, f2->externalIndex, r);
          }
-
-      for (TBInfo *t = t2; t != NULL; t = t->parent)
+         
+      for (TBInfo *t = t2; !rdef && t != NULL; t = t->parent)
          if (t->parent == t1) {
-            //printf ("   (c) %p is an achestor of %p; direct child is %p (%d)"
-            //        " => %d - %d = %d\n", t1->textblock, t2->textblock,
-            //        t->textblock, t->parentExtIndex, f1->externalIndex,
-            //        t->parentExtIndex, f1->externalIndex - t->parentExtIndex);
-            return f1->externalIndex - t->parentExtIndex;
+            r = f1->externalIndex - t->parentExtIndex;
+            rdef = true;
+            DBG_OBJ_MSGF_O ("border", 2, oofm,
+                            "(c) %p is an achestor of %p; direct child is %p "
+                            "(%d) => %d - %d = %d\n",
+                            t1->getTextblock (), t2->getTextblock (),
+                            t->getTextblock (), t->parentExtIndex,
+                            f1->externalIndex, t->parentExtIndex, r);
          }
 
-      //printf ("   (d) other => %d - %d = %d\n",
-      //        t1->index, t2->index, t1->index - t2->index);
-      return t1->index - t2->index;
+      if (!rdef) {
+         r = t1->index - t2->index;
+         DBG_OBJ_MSGF_O ("border", 2, oofm, "(d) other => %d - %d = %d",
+                         t1->index, t2->index, r);
+      }
    }
+
+   DBG_OBJ_MSGF_O ("border", 2, oofm, "result: %d", r);
+   DBG_OBJ_MSG_END_O (oofm);
+   return r;
 }
 
 int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
@@ -275,6 +292,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
    DBG_OBJ_MSG_START_O (oofm);
 
    Float key (oofm, NULL, lastGB, lastExtIndex);
+   key.index = -1; // for debugging
    Float::CompareGBAndExtIndex comparator (oofm);
    int i = bsearch (&key, false, &comparator);
   
@@ -337,6 +355,26 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
    DBG_OBJ_MSGF_O ("border", 0, oofm, "<b>findFirst</b> (%p, %d, %d, %p, %d)",
                    textblock, y, h, lastGB, lastExtIndex);
    DBG_OBJ_MSG_START_O (oofm);
+
+   DBG_IF_RTFL {
+      DBG_OBJ_MSG_O ("border", 2, oofm, "searching in list:");
+      DBG_OBJ_MSG_START_O (oofm);
+      
+      for (int i = 0; i < size(); i++) {
+         Float *f = get(i);
+         DBG_OBJ_MSGF_O ("border", 2, oofm,
+                         "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d)), "
+                         "%s, %s); widget at (%d, %d)",
+                         i, f->getWidget (), f->index, f->sideSpanningIndex,
+                         f->yReq, f->yReal, f->size.width, f->size.ascent,
+                         f->size.descent, f->dirty ? "dirty" : "clean",
+                         f->sizeChangedSinceLastAllocation ? "scsla" : "sNcsla",
+                         f->getWidget()->getAllocation()->x,
+                         f->getWidget()->getAllocation()->y);
+      }
+      
+      DBG_OBJ_MSG_END_O (oofm);
+   }
 
    int last = findFloatIndex (lastGB, lastExtIndex);
    DBG_OBJ_MSGF_O ("border", 1, oofm, "last = %d", last);
@@ -1549,28 +1587,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                  lastGB, lastExtIndex);
    DBG_OBJ_MSG_START ();
 
-   SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
-
-   DBG_IF_RTFL {
-      DBG_OBJ_MSG ("border", 1, "searching in list:");
-      DBG_OBJ_MSG_START ();
-      
-      for (int i = 0; i < list->size(); i++) {
-         Float *f = list->get(i);
-         DBG_OBJ_MSGF ("border", 1,
-                       "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d)), "
-                       "%s, %s); widget at (%d, %d)",
-                       i, f->getWidget (), f->index, f->sideSpanningIndex,
-                       f->yReq, f->yReal, f->size.width, f->size.ascent,
-                       f->size.descent, f->dirty ? "dirty" : "clean",
-                       f->sizeChangedSinceLastAllocation ? "scsla" : "sNcsla",
-                       f->getWidget()->getAllocation()->x,
-                       f->getWidget()->getAllocation()->y);
-      }
-      
-      DBG_OBJ_MSG_END ();
-   }
-   
+   SortedFloatsVector *list = getFloatsListForTextblock (textblock, side); 
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
    
    DBG_OBJ_MSGF ("border", 1, "first = %d", first);

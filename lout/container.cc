@@ -211,8 +211,9 @@ int Vector::bsearch(Object *key, bool mustExist, int start, int end,
    // new implementation.
 
    DBG_OBJ_MSGF ("container", 0,
-                 "<b>bsearch</b> (<i>key</i>, %s, %d, %d, <i>comparator</i>",
-                 mustExist ? "true" : "false", start, end);
+                 "<b>bsearch</b> (<i>key</i>, %s, %d, %d, <i>comparator</i>) "
+                 "[size is %d]",
+                 mustExist ? "true" : "false", start, end, size ());
    DBG_OBJ_MSG_START ();
 
    int result = -123; // Compiler happiness: GCC 4.7 does not handle this?
