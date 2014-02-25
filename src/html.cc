@@ -3147,8 +3147,11 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
          } else {
             sprintf(delay_str, ".");
          }
-         /* Skip to anything after "URL=" */
-         while (*content && *(content++) != '=') ;
+         /* Skip to anything after "URL=" or ";" if "URL=" is not found */
+         if ((p = dStriAsciiStr(content, "url=")))
+            content = p + strlen("url=");
+         else if ((p = strstr(content, ";")))
+            content = p + strlen(";");
          /* Handle the case of a quoted URL */
          if (*content == '"' || *content == '\'') {
             if ((p = strchr(content + 1, *content)))
