@@ -364,11 +364,12 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
          Float *f = get(i);
          DBG_OBJ_MSGF_O ("border", 2, oofm,
                          "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d)), "
-                         "%s, %s); widget at (%d, %d)",
+                         "%s, %s, ext = %d, GB = %p); widget at (%d, %d)",
                          i, f->getWidget (), f->index, f->sideSpanningIndex,
                          f->yReq, f->yReal, f->size.width, f->size.ascent,
                          f->size.descent, f->dirty ? "dirty" : "clean",
                          f->sizeChangedSinceLastAllocation ? "scsla" : "sNcsla",
+                         f->externalIndex, f->generatingBlock,
                          f->getWidget()->getAllocation()->x,
                          f->getWidget()->getAllocation()->y);
       }
