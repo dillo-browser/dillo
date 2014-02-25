@@ -270,6 +270,10 @@ int OutOfFlowMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
 int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
                                                       int lastExtIndex)
 {
+   DBG_OBJ_MSGF_O ("border", 0, oofm, "<b>findFloatIndex</b> (%p, %d)",
+                   lastGB, lastExtIndex);
+   DBG_OBJ_MSG_START_O (oofm);
+
    Float key (oofm, NULL, lastGB, lastExtIndex);
    Float::CompareGBAndExtIndex comparator (oofm);
    int i = bsearch (&key, false, &comparator);
@@ -301,18 +305,28 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
    //           get(i)->externalIndex);
    //}
 
+   DBG_OBJ_MSGF_O ("border", 1, oofm, "=> r = %d", r);
+   DBG_OBJ_MSG_END_O (oofm);
    return r;
 }
 
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
                                             int start, int end)
 {
+   DBG_OBJ_MSGF_O ("border", 0, oofm, "<b>find</b> (%p, %d, %d, %d)",
+                   textblock, y, start, end);
+   DBG_OBJ_MSG_START_O (oofm);
+
    Float key (oofm, NULL, NULL, 0);
    key.generatingBlock = textblock;
    key.yReal = y;
    key.index = -1; // for debugging
    Float::ComparePosition comparator (oofm, textblock);
-   return bsearch (&key, false, start, end, &comparator);
+   int result = bsearch (&key, false, start, end, &comparator);
+
+   DBG_OBJ_MSGF_O ("border", 1, oofm, "=> result = %d", result);
+   DBG_OBJ_MSG_END_O (oofm);
+   return result;
 }
 
 int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
@@ -320,16 +334,15 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
                                                  Textblock *lastGB,
                                                  int lastExtIndex)
 {
-   int last = findFloatIndex (lastGB, lastExtIndex);
-   assert (last < size());
-   int i = find (textblock, y, 0, last);
+   DBG_OBJ_MSGF_O ("border", 0, oofm, "<b>findFirst</b> (%p, %d, %d, %p, %d)",
+                   textblock, y, h, lastGB, lastExtIndex);
+   DBG_OBJ_MSG_START_O (oofm);
 
-   DBG_OBJ_MSGF_O ("border", 1, oofm,
-                   "find (%s, %p, allocated: %s, %d, %p, %d) => last = %d, "
-                   "result = %d (of %d)\n",
-                   type == GB ? "GB" : "CB", textblock,
-                   oofm->wasAllocated (textblock) ? "true" : "false", y, lastGB,
-                   lastExtIndex, last, i, size());
+   int last = findFloatIndex (lastGB, lastExtIndex);
+   DBG_OBJ_MSGF_O ("border", 1, oofm, "last = %d", last);
+   assert (last < size());
+   int i = find (textblock, y, 0, last), result;
+   DBG_OBJ_MSGF_O ("border", 1, oofm, "i = %d", i);
 
    // Note: The smallest value of "i" is 0, which means that "y" is before or
    // equal to the first float. The largest value is "last + 1", which means
@@ -338,11 +351,15 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
    // at the search position, are candidates.
 
    if (i > 0 && get(i - 1)->covers (textblock, y, h))
-      return i - 1;
+      result = i - 1;
    else if (i <= last && get(i)->covers (textblock, y, h))
-      return i;
+      result = i;
    else
-      return -1;
+      result = -1;
+
+   DBG_OBJ_MSGF_O ("border", 1, oofm, "=> result = %d", result);
+   DBG_OBJ_MSG_END_O (oofm);
+   return result;
 }
 
 int OutOfFlowMgr::SortedFloatsVector::findLastBeforeSideSpanningIndex
@@ -1637,7 +1654,7 @@ bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h,
 bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
                              Textblock *lastGB, int lastExtIndex)
 {
-   DBG_OBJ_MSGF ("border", 0, "<b>getBorder</b> (%p, %s, %d, %d, %p, %d)",
+   DBG_OBJ_MSGF ("border", 0, "<b>hasFloat</b> (%p, %s, %d, %d, %p, %d)",
                  textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
                  lastGB, lastExtIndex);
    DBG_OBJ_MSG_START ();
