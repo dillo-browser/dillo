@@ -814,6 +814,9 @@ void Textblock::checkPossibleLineHeightChange (int wordIndex)
    newLineAscent = misc::max (newLineAscent, w->size.ascent);
    newLineDescent = misc::max (newLineDescent, w->size.descent);
 
+   DBG_OBJ_SET_NUM ("newLineAscent", newLineAscent);
+   DBG_OBJ_SET_NUM ("newLineDescent", newLineDescent);
+
    DBG_OBJ_MSGF ("construct.line.border", 1,
                  "height increased? %s. (new) line height = %d + %d",
                  heightIncreased ? "yes" : "no", newLineAscent, newLineDescent);
@@ -1608,6 +1611,9 @@ void Textblock::initNewLine ()
    }
 
    newLineAscent = newLineDescent = 0;
+
+   DBG_OBJ_SET_NUM ("newLineAscent", newLineAscent);
+   DBG_OBJ_SET_NUM ("newLineDescent", newLineDescent);
 
    DBG_OBJ_MSG_END ();
 }
