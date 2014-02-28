@@ -352,10 +352,9 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    accumulateWordExtremes (firstWord, lastWord, &maxOfMinWidth,
                            &sumOfMaxWidth);
 
-   PRINTF ("[%p] ##### LINE ADDED: %d, from %d to %d #####\n",
-           this, lines->size (), firstWord, lastWord);
-
    lines->increase ();
+   DBG_OBJ_SET_NUM ("lines.size", lines->size ());
+
    if(!temporary) {
       // If the last line was temporary, this will be temporary, too, even
       // if not requested.
@@ -1625,13 +1624,25 @@ void Textblock::showMissingLines ()
 {
    DBG_OBJ_MSG ("construct.line", 0, "<b>showMissingLines</b> ()");
    DBG_OBJ_MSG_START ();
-   int firstWordToWrap = lines->size () > 0 ?
-      lines->getRef(lines->size () - 1)->lastWord + 1 : 0;
+   int firstWordToWrap =
+      lines->size () > 0 ? lines->getLastRef()->lastWord + 1 : 0;
    DBG_OBJ_MSGF ("construct.line", 1, "firstWordToWrap = %d (of %d)",
-                 firstWordToWrap, words->size () - 1);
+                 firstWordToWrap, words->size ());
 
    for (int i = firstWordToWrap; i < words->size (); i++)
       wordWrap (i, true);
+
+   // In some cases, there are some words of type WIDGET_OOF_REF left, which
+   // are not added to line, since addLine() is only called within
+   // wrapWordInFlow(), but not within wrapWordOofRef(). The missing line
+   // is created here.
+
+   int firstWordNotInLine =
+      lines->size () > 0 ? lines->getLastRef()->lastWord + 1: 0;
+   DBG_OBJ_MSGF ("construct.line", 1, "firstWordNotInLine = %d (of %d)",
+                 firstWordNotInLine, words->size ());
+   if (firstWordNotInLine < words->size ())
+      addLine (firstWordNotInLine, words->size () -1, true);
 
    DBG_OBJ_MSG_END ();
 }
