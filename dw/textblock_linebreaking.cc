@@ -1469,50 +1469,53 @@ void Textblock::alignLine (int lineIndex)
  */
 void Textblock::rewrap ()
 {
-   PRINTF ("[%p] REWRAP: wrapRefLines = %d\n", this, wrapRefLines);
+   DBG_OBJ_MSG ("construct.line", 0, "<b>rewrap</b> ()");
+   DBG_OBJ_MSG_START ();
 
    if (wrapRefLines == -1)
-      /* page does not have to be rewrapped */
-      return;
-
-   /* All lines up from wrapRef will be rebuild from the word list,
-    * the line list up from this position is rebuild. */
-   lines->setSize (wrapRefLines);
-   DBG_OBJ_SET_NUM ("lines.size", lines->size ());
-   nonTemporaryLines = misc::min (nonTemporaryLines, wrapRefLines);
-
-   initNewLine ();
-
-   int firstWord;
-   if (lines->size () > 0) {
-      Line *lastLine = lines->getLastRef();
-      firstWord = lastLine->lastWord + 1;
-   } else
-      firstWord = 0;
-
-   PRINTF ("   starting with word %d\n", firstWord);
-
-   for (int i = firstWord; i < words->size (); i++) {
-      Word *word = words->getRef (i);
-
-      if (word->content.type == core::Content::WIDGET_IN_FLOW)
-         calcWidgetSize (word->content.widget, &word->size);
+      DBG_OBJ_MSG ("construct.line", 0, "does not have to be rewrapped");
+   else {
+      // All lines up from wrapRef will be rebuild from the word list,
+      // the line list up from this position is rebuild.
+      lines->setSize (wrapRefLines);
+      DBG_OBJ_SET_NUM ("lines.size", lines->size ());
+      nonTemporaryLines = misc::min (nonTemporaryLines, wrapRefLines);
       
-      wordWrap (i, false);
+      initNewLine ();
+      
+      int firstWord;
+      if (lines->size () > 0) {
+         Line *lastLine = lines->getLastRef();
+         firstWord = lastLine->lastWord + 1;
+      } else
+         firstWord = 0;
+      
+      DBG_OBJ_MSGF ("construct.line", 0, "starting with word %d", firstWord);
 
-      // Somewhat historical, but still important, note:
-      //
-      // For the case that something else is done with this word, it
-      // is important that wordWrap() may insert some new words; since
-      // NotSoSimpleVector is used for the words list, the internal
-      // structure may have changed, so getRef() must be called again.
-      //
-      // So this is necessary: word = words->getRef (i);
+      for (int i = firstWord; i < words->size (); i++) {
+         Word *word = words->getRef (i);
+         
+         if (word->content.type == core::Content::WIDGET_IN_FLOW)
+            calcWidgetSize (word->content.widget, &word->size);
+         
+         wordWrap (i, false);
+         
+         // Somewhat historical, but still important, note:
+         //
+         // For the case that something else is done with this word, it
+         // is important that wordWrap() may insert some new words; since
+         // NotSoSimpleVector is used for the words list, the internal
+         // structure may have changed, so getRef() must be called again.
+         //
+         // So this is necessary: word = words->getRef (i);
+      }
+
+      // Next time, the page will not have to be rewrapped.
+      wrapRefLines = -1;
+      DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
    }
-
-   /* Next time, the page will not have to be rewrapped. */
-   wrapRefLines = -1;
-   DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
+      
+   DBG_OBJ_MSG_END ();
 }
 
 /**
@@ -1620,12 +1623,17 @@ void Textblock::initNewLine ()
 
 void Textblock::showMissingLines ()
 {
+   DBG_OBJ_MSG ("construct.line", 0, "<b>showMissingLines</b> ()");
+   DBG_OBJ_MSG_START ();
    int firstWordToWrap = lines->size () > 0 ?
       lines->getRef(lines->size () - 1)->lastWord + 1 : 0;
-   PRINTF ("[%p] SHOW_MISSING_LINES: wrap from %d to %d\n",
-           this, firstWordToWrap, words->size () - 1);
+   DBG_OBJ_MSGF ("construct.line", 1, "firstWordToWrap = %d (of %d)",
+                 firstWordToWrap, words->size () - 1);
+
    for (int i = firstWordToWrap; i < words->size (); i++)
       wordWrap (i, true);
+
+   DBG_OBJ_MSG_END ();
 }
 
 
