@@ -753,7 +753,8 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
                else {
                   // Only heights of floats changed. Relevant only
                   // from bottoms of float.
-                  result = min (yOld + oldFlh, yNew + newFlh);
+                  *floatPos = min (yOld + oldFlh, yNew + newFlh);
+                  result = true;
                }
             } else {
                *floatPos = yOld;
