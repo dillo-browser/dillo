@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "lout/debug.hh"
 #include "msg.h"
 #include "colors.h"
 #include "html_common.hh"
@@ -27,7 +28,6 @@
 
 using namespace dw::core::style;
 
-#define DEBUG_MSG(A, B, ...) _MSG(B, __VA_ARGS__)
 #define MSG_CSS(A, ...) MSG(A, __VA_ARGS__)
 #define DEBUG_TOKEN_LEVEL   0
 #define DEBUG_PARSE_LEVEL   0
@@ -287,7 +287,7 @@ typedef struct {
       CSS_SHORTHAND_BORDER,     /* special, used for 'border' */
       CSS_SHORTHAND_FONT,       /* special, used for 'font' */
    } type;
-   const CssPropertyName * properties;/* CSS_SHORTHAND_MULTIPLE:
+   const CssPropertyName *properties; /* CSS_SHORTHAND_MULTIPLE:
                                        *   must be terminated by -1
                                        * CSS_SHORTHAND_DIRECTIONS:
                                        *   must have length 4
@@ -728,7 +728,7 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
               dStrAsciiCasecmp(tval, "right") == 0 ||
               dStrAsciiCasecmp(tval, "top") == 0 ||
               dStrAsciiCasecmp(tval, "bottom") == 0))
-            return true;            
+            return true;
          // Fall Through (lenght and percentage)
       case CSS_TYPE_LENGTH_PERCENTAGE:
       case CSS_TYPE_LENGTH_PERCENTAGE_NUMBER:
@@ -871,7 +871,7 @@ bool CssParser::parseRgbColor(int32_t *c) {
 
 bool CssParser::parseValue(CssPropertyName prop,
                            CssValueType type,
-                           CssPropertyValue * val)
+                           CssPropertyValue *val)
 {
    CssLengthType lentype;
    bool found, ret = false;
@@ -1199,8 +1199,8 @@ static int Css_shorthand_info_cmp(const void *a, const void *b)
                       ((CssShorthandInfo *) b)->symbol);
 }
 
-void CssParser::parseDeclaration(CssPropertyList * props,
-                                 CssPropertyList * importantProps)
+void CssParser::parseDeclaration(CssPropertyList *props,
+                                 CssPropertyList *importantProps)
 {
    CssPropertyInfo pi = {NULL, {CSS_TYPE_UNUSED}, NULL}, *pip;
    CssShorthandInfo *sip;
@@ -1715,7 +1715,7 @@ void CssParser::ignoreStatement()
    }
 }
 
-void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext * context,
+void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext *context,
                       const char *buf,
                       int buflen, CssOrigin origin)
 {

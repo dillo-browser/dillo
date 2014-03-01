@@ -52,10 +52,10 @@ uchar *FltkImgbuf::findGammaCorrectionTable (double gamma)
    }
 
    _MSG("Creating new table for gamma = %g\n", gamma);
-   
+
    GammaCorrectionTable *gct = new GammaCorrectionTable();
    gct->gamma = gamma;
-   
+
    for (int i = 0; i < 256; i++)
       gct->map[i] = 255 * pow((double)i / 255, gamma);
 
@@ -78,6 +78,8 @@ void FltkImgbuf::freeall ()
 
 FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma)
 {
+   DBG_OBJ_CREATE ("dw::fltk::FltkImgbuf");
+
    _MSG("FltkImgbuf: new root %p\n", this);
    init (type, width, height, gamma, NULL);
 }
@@ -85,6 +87,8 @@ FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma)
 FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma,
                         FltkImgbuf *root)
 {
+   DBG_OBJ_CREATE ("dw::fltk::FltkImgbuf");
+
    _MSG("FltkImgbuf: new scaled %p, root is %p\n", this, root);
    init (type, width, height, gamma, root);
 }
@@ -103,7 +107,7 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
    } else if (width > MAX_WIDTH) {
       // Too large dimensions cause dangerous overflow errors, so we
       // limit dimensions to harmless values.
-      // 
+      //
       // Example: 65535 * 65536 / 65536 (see scaling below) results in
       // the negative value -1.
 
@@ -122,6 +126,9 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
       this->height = height;
       this->gamma = gamma;
 
+      DBG_OBJ_SET_NUM ("width", width);
+      DBG_OBJ_SET_NUM ("height", height);
+
       // TODO: Maybe this is only for root buffers
       switch (type) {
       case RGBA: bpp = 4; break;
@@ -133,11 +140,11 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
       rawdata = new uchar[bpp * width * height];
       // Set light-gray as interim background color.
       memset(rawdata, 222, width*height*bpp);
-      
+
       refCount = 1;
       deleteOnUnref = true;
       copiedRows = new lout::misc::BitSet (height);
-      
+
       // The list is only used for root buffers.
       if (isRoot())
          scaledBuffers = new lout::container::typed::List <FltkImgbuf> (true);
@@ -156,8 +163,6 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
 
 FltkImgbuf::~FltkImgbuf ()
 {
-   _MSG("~FltkImgbuf[%s %p] deleted\n", isRoot() ? "root":"scaled", this);
-
    if (!isRoot())
       root->detachScaledBuf (this);
 
@@ -166,6 +171,8 @@ FltkImgbuf::~FltkImgbuf ()
 
    if (scaledBuffers)
       delete scaledBuffers;
+
+   DBG_OBJ_DELETE ();
 }
 
 /**
@@ -301,15 +308,15 @@ inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
          int v[bpp];
          for(int i = 0; i < bpp; i++)
             v[i] = 0;
-         
+
          for(int xo = xo1; xo < xo2; xo++)
             for(int yo = yo1; yo < yo2; yo++) {
                const core::byte *ps = src + bpp * (yo * srcWidth + xo);
                for(int i = 0; i < bpp; i++)
-                  v[i] += 
+                  v[i] +=
                      (scaleMode == BEAUTIFUL_GAMMA ? gammaMap2[ps[i]] : ps[i]);
             }
-         
+
          core::byte *pd = dest + bpp * (y * destWidth + x);
          for(int i = 0; i < bpp; i++)
             pd[i] =
@@ -325,7 +332,7 @@ void FltkImgbuf::copyRow (int row, const core::byte *data)
       // Flag the row done and copy its data.
       copiedRows->set (row, true);
       memcpy(rawdata + row * width * bpp, data, width * bpp);
-      
+
       // Update all the scaled buffers of this root image.
       for (Iterator <FltkImgbuf> it = scaledBuffers->iterator();
            it.hasNext(); ) {
@@ -386,6 +393,8 @@ core::Imgbuf* FltkImgbuf::getScaledBuf (int width, int height)
    // This size is not yet used, so a new buffer has to be created.
    FltkImgbuf *sb = new FltkImgbuf (type, width, height, gamma, this);
    scaledBuffers->append (sb);
+   DBG_OBJ_ASSOC_CHILD (sb);
+
    return sb;
 }
 
@@ -408,7 +417,7 @@ void FltkImgbuf::getRowArea (int row, dw::core::Rectangle *area)
          // scaled buffer
          int sr1 = scaledY (row);
          int sr2 = scaledY (row + 1);
-         
+
          area->x = 0;
          area->y = sr1;
          area->width = width;
@@ -524,7 +533,7 @@ int FltkImgbuf::scaledY(int ySrc)
 int FltkImgbuf::backscaledY(int yScaled)
 {
    assert (root != NULL);
-   
+
    // Notice that rounding errors because of integers do not play a
    // role. This method cannot be the exact inverse of scaledY, since
    // scaleY is not bijective, and so not invertible. Instead, both

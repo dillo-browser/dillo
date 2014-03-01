@@ -1,7 +1,7 @@
 /*
  * File: css.cc
  *
- * Copyright 2008-2009 Johannes Hofmann <Johannes.Hofmann@gmx.de>
+ * Copyright 2008-2014 Johannes Hofmann <Johannes.Hofmann@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,33 +108,31 @@ CssSelector::CssSelector () {
    struct CombinatorAndSelector *cs;
 
    refCount = 0;
-   selectorList = new lout::misc::SimpleVector
-                                  <struct CombinatorAndSelector> (1);
-   selectorList->increase ();
-   cs = selectorList->getRef (selectorList->size () - 1);
+   matchCacheOffset = -1;
+   selectorList.increase ();
+   cs = selectorList.getRef (selectorList.size () - 1);
 
-   cs->notMatchingBefore = -1;
    cs->combinator = COMB_NONE;
    cs->selector = new CssSimpleSelector ();
 }
 
 CssSelector::~CssSelector () {
-   for (int i = selectorList->size () - 1; i >= 0; i--)
-      delete selectorList->getRef (i)->selector;
-   delete selectorList;
+   for (int i = selectorList.size () - 1; i >= 0; i--)
+      delete selectorList.getRef (i)->selector;
 }
 
 /**
  * \brief Return whether selector matches at a given node in the document tree.
  */
 bool CssSelector::match (Doctree *docTree, const DoctreeNode *node,
-                         int i, Combinator comb) {
+                         int i, Combinator comb, MatchCache *matchCache) {
+   int *matchCacheEntry;
    assert (node);
 
    if (i < 0)
       return true;
 
-   struct CombinatorAndSelector *cs = selectorList->getRef (i);
+   struct CombinatorAndSelector *cs = selectorList.getRef (i);
    CssSimpleSelector *sel = cs->selector;
 
    switch (comb) {
@@ -148,14 +146,16 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node,
          break;
       case COMB_DESCENDANT:
          node = docTree->parent (node);
+         matchCacheEntry = matchCache->getRef(matchCacheOffset + i);
 
          for (const DoctreeNode *n = node;
-              n && n->num > cs->notMatchingBefore; n = docTree->parent (n))
-            if (sel->match (n) && match (docTree, n, i - 1, cs->combinator))
+              n && n->num > *matchCacheEntry; n = docTree->parent (n))
+            if (sel->match (n) &&
+                match (docTree, n, i - 1, cs->combinator, matchCache))
                return true;
 
          if (node) // remember that it didn't match to avoid future tests
-            cs->notMatchingBefore = node->num;
+            *matchCacheEntry = node->num;
 
          return false;
          break;
@@ -167,23 +167,23 @@ bool CssSelector::match (Doctree *docTree, const DoctreeNode *node,
       return false;
 
    // tail recursion should be optimized by the compiler
-   return match (docTree, node, i - 1, cs->combinator);
+   return match (docTree, node, i - 1, cs->combinator, matchCache);
 }
 
 void CssSelector::addSimpleSelector (Combinator c) {
    struct CombinatorAndSelector *cs;
 
-   selectorList->increase ();
-   cs = selectorList->getRef (selectorList->size () - 1);
+   assert (matchCacheOffset == -1);
+   selectorList.increase ();
+   cs = selectorList.getRef (selectorList.size () - 1);
 
    cs->combinator = c;
-   cs->notMatchingBefore = -1;
    cs->selector = new CssSimpleSelector ();
 }
 
 bool CssSelector::checksPseudoClass () {
-   for (int i = 0; i < selectorList->size (); i++)
-      if (selectorList->getRef (i)->selector->getPseudoClass ())
+   for (int i = 0; i < selectorList.size (); i++)
+      if (selectorList.getRef (i)->selector->getPseudoClass ())
          return true;
    return false;
 }
@@ -197,18 +197,18 @@ bool CssSelector::checksPseudoClass () {
 int CssSelector::specificity () {
    int spec = 0;
 
-   for (int i = 0; i < selectorList->size (); i++)
-      spec += selectorList->getRef (i)->selector->specificity ();
+   for (int i = 0; i < selectorList.size (); i++)
+      spec += selectorList.getRef (i)->selector->specificity ();
 
    return spec;
 }
 
 void CssSelector::print () {
-   for (int i = 0; i < selectorList->size (); i++) {
-      selectorList->getRef (i)->selector->print ();
+   for (int i = 0; i < selectorList.size (); i++) {
+      selectorList.getRef (i)->selector->print ();
 
-      if (i < selectorList->size () - 1) {
-         switch (selectorList->getRef (i + 1)->combinator) {
+      if (i < selectorList.size () - 1) {
+         switch (selectorList.getRef (i + 1)->combinator) {
             case COMB_CHILD:
                fprintf (stderr, "> ");
                break;
@@ -230,17 +230,13 @@ void CssSelector::print () {
 
 CssSimpleSelector::CssSimpleSelector () {
    element = ELEMENT_ANY;
-   klass = NULL;
    id = NULL;
    pseudo = NULL;
 }
 
 CssSimpleSelector::~CssSimpleSelector () {
-   if (klass) {
-      for (int i = 0; i < klass->size (); i++)
-         dFree (klass->get (i));
-      delete klass;
-   }
+   for (int i = 0; i < klass.size (); i++)
+      dFree (klass.get (i));
    dFree (id);
    dFree (pseudo);
 }
@@ -248,10 +244,8 @@ CssSimpleSelector::~CssSimpleSelector () {
 void CssSimpleSelector::setSelect (SelectType t, const char *v) {
    switch (t) {
       case SELECT_CLASS:
-         if (klass == NULL)
-            klass = new lout::misc::SimpleVector <char *> (1);
-         klass->increase ();
-         klass->set (klass->size () - 1, dStrdup (v));
+         klass.increase ();
+         klass.set (klass.size () - 1, dStrdup (v));
          break;
       case SELECT_PSEUDO_CLASS:
          if (pseudo == NULL)
@@ -279,20 +273,18 @@ bool CssSimpleSelector::match (const DoctreeNode *n) {
       return false;
    if (id != NULL && (n->id == NULL || dStrAsciiCasecmp (id, n->id) != 0))
       return false;
-   if (klass != NULL) {
-      for (int i = 0; i < klass->size (); i++) {
-         bool found = false;
-         if (n->klass != NULL) {
-            for (int j = 0; j < n->klass->size (); j++) {
-               if (dStrAsciiCasecmp (klass->get(i), n->klass->get(j)) == 0) {
-                  found = true;
-                  break;
-               }
+   for (int i = 0; i < klass.size (); i++) {
+      bool found = false;
+      if (n->klass != NULL) {
+         for (int j = 0; j < n->klass->size (); j++) {
+            if (dStrAsciiCasecmp (klass.get(i), n->klass->get(j)) == 0) {
+               found = true;
+               break;
             }
          }
-         if (! found)
-            return false;
       }
+      if (! found)
+         return false;
    }
 
    return true;
@@ -308,8 +300,7 @@ int CssSimpleSelector::specificity () {
 
    if (id)
       spec += 1 << 20;
-   if (klass)
-      spec += klass->size() << 10;
+   spec += klass.size() << 10;
    if (pseudo)
       spec += 1 << 10;
    if (element != ELEMENT_ANY)
@@ -321,11 +312,9 @@ int CssSimpleSelector::specificity () {
 void CssSimpleSelector::print () {
    fprintf (stderr, "Element %d, pseudo %s, id %s ",
       element, pseudo, id);
-   if (klass != NULL) {
-      fprintf (stderr, "class ");
-      for (int i = 0; i < klass->size (); i++)
-         fprintf (stderr, ".%s", klass->get (i));
-   }
+   fprintf (stderr, "class ");
+   for (int i = 0; i < klass.size (); i++)
+      fprintf (stderr, ".%s", klass.get (i));
 }
 
 CssRule::CssRule (CssSelector *selector, CssPropertyList *props, int pos) {
@@ -344,9 +333,9 @@ CssRule::~CssRule () {
    props->unref ();
 }
 
-void CssRule::apply (CssPropertyList *props,
-                     Doctree *docTree, const DoctreeNode *node) {
-   if (selector->match (docTree, node))
+void CssRule::apply (CssPropertyList *props, Doctree *docTree,
+                     const DoctreeNode *node, MatchCache *matchCache) const {
+   if (selector->match (docTree, node, matchCache))
       this->props->apply (props);
 }
 
@@ -410,6 +399,8 @@ void CssStyleSheet::addRule (CssRule *rule) {
    }
 
    if (ruleList) {
+      rule->selector->setMatchCacheOffset (matchCacheOffset);
+      matchCacheOffset += rule->selector->size ();
       ruleList->insert (rule);
    } else {
       assert (top->getElement () == CssSimpleSelector::ELEMENT_NONE);
@@ -423,10 +414,10 @@ void CssStyleSheet::addRule (CssRule *rule) {
  * The properties are set as defined by the rules in the stylesheet that
  * match at the given node in the document tree.
  */
-void CssStyleSheet::apply (CssPropertyList *props,
-                           Doctree *docTree, const DoctreeNode *node) {
+void CssStyleSheet::apply (CssPropertyList *props, Doctree *docTree,
+                        const DoctreeNode *node, MatchCache *matchCache) const {
    static const int maxLists = 32;
-   RuleList *ruleList[maxLists];
+   const RuleList *ruleList[maxLists];
    int numLists = 0, index[maxLists] = {0};
 
    if (node->id) {
@@ -470,7 +461,7 @@ void CssStyleSheet::apply (CssPropertyList *props,
       int minSpecIndex = -1;
 
       for (int i = 0; i < numLists; i++) {
-         RuleList *rl = ruleList[i];
+         const RuleList *rl = ruleList[i];
 
          if (rl && rl->size () > index[i] &&
             (rl->get(index[i])->specificity () < minSpec ||
@@ -484,8 +475,8 @@ void CssStyleSheet::apply (CssPropertyList *props,
       }
 
       if (minSpecIndex >= 0) {
-         ruleList[minSpecIndex]->get (index[minSpecIndex])->apply
-                                                        (props, docTree, node);
+         CssRule *rule = ruleList[minSpecIndex]->get (index[minSpecIndex]);
+         rule->apply(props, docTree, node, matchCache);
          index[minSpecIndex]++;
       } else {
          break;
@@ -493,8 +484,11 @@ void CssStyleSheet::apply (CssPropertyList *props,
    }
 }
 
+CssStyleSheet CssContext::userAgentSheet;
+
 CssContext::CssContext () {
    pos = 0;
+   matchCache[CSS_PRIMARY_USER_AGENT].setSize (userAgentSheet.matchCacheOffset, -1);
 }
 
 /**
@@ -511,23 +505,28 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *tagStyleImportant,
          CssPropertyList *nonCssHints) {
 
-   sheet[CSS_PRIMARY_USER_AGENT].apply (props, docTree, node);
-   sheet[CSS_PRIMARY_USER].apply (props, docTree, node);
+   userAgentSheet.apply (props, docTree, node,
+                         &matchCache[CSS_PRIMARY_USER_AGENT]);
+   sheet[CSS_PRIMARY_USER].apply (props, docTree, node,
+                                  &matchCache[CSS_PRIMARY_USER]);
 
    if (nonCssHints)
         nonCssHints->apply (props);
 
-   sheet[CSS_PRIMARY_AUTHOR].apply (props, docTree, node);
+   sheet[CSS_PRIMARY_AUTHOR].apply (props, docTree, node,
+                                    &matchCache[CSS_PRIMARY_AUTHOR]);
 
    if (tagStyle)
         tagStyle->apply (props);
 
-   sheet[CSS_PRIMARY_AUTHOR_IMPORTANT].apply (props, docTree, node);
+   sheet[CSS_PRIMARY_AUTHOR_IMPORTANT].apply (props, docTree, node,
+                                     &matchCache[CSS_PRIMARY_AUTHOR_IMPORTANT]);
 
    if (tagStyleImportant)
         tagStyleImportant->apply (props);
 
-   sheet[CSS_PRIMARY_USER_IMPORTANT].apply (props, docTree, node);
+   sheet[CSS_PRIMARY_USER_IMPORTANT].apply (props, docTree, node,
+                                     &matchCache[CSS_PRIMARY_USER_IMPORTANT]);
 }
 
 void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
@@ -541,8 +540,12 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
            !rule->isSafe ()) {
          MSG_WARN ("Ignoring unsafe author style that might reveal browsing history\n");
          delete rule;
-      } else {
+      } else if (order == CSS_PRIMARY_USER_AGENT) {
+         userAgentSheet.addRule (rule);
+         matchCache[CSS_PRIMARY_USER_AGENT].setSize (userAgentSheet.matchCacheOffset, -1);
+      } else { 
          sheet[order].addRule (rule);
+         matchCache[order].setSize (sheet[order].matchCacheOffset, -1);
       }
    }
 }

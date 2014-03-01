@@ -44,6 +44,7 @@ Embed::Embed(Resource *resource)
 Embed::~Embed()
 {
    delete resource;
+   DBG_OBJ_DELETE ();
 }
 
 void Embed::sizeRequestImpl (Requisition *requisition)

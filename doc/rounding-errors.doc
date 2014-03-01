@@ -19,6 +19,17 @@ avoided by transforming the formula into
 
 Of corse, when all \f$y_i\f$ are calculated in a sequence,
 \f$\sum_{j=0}^{j=i} x_j\f$ and \f$\sum_{j=0}^{j=i-1} y_j\f$ can be
-accumulated in the same loop.
+accumulated in the same loop. Regard this as sample:
+
+\code
+int n, x[n], a, b; // Should all be initialized.
+int y[n], cumX = 0, cumY = 0;
+
+for (int i = 0; i < n; i++) {
+   cumX += x[i]
+   y[i] = (cumX * a) / b - cumY;
+   cumY += y[i];
+}
+\endcode
 
 */

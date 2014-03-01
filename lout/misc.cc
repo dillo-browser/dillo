@@ -151,7 +151,7 @@ void BitSet::intoStringBuffer(misc::StringBuffer *sb)
    sb->append("]");
 }
 
-bool BitSet::get(int i)
+bool BitSet::get(int i) const
 {
    if (8 * i >= numBytes)
       return false;

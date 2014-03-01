@@ -293,6 +293,7 @@ class CssProperty {
          switch (type) {
             case CSS_TYPE_STRING:
             case CSS_TYPE_SYMBOL:
+            case CSS_TYPE_URI:
                dFree (value.strVal);
                break;
             case CSS_TYPE_BACKGROUND_POSITION:
@@ -335,7 +336,7 @@ class CssSimpleSelector {
    private:
       int element;
       char *pseudo, *id;
-      lout::misc::SimpleVector <char *> *klass;
+      lout::misc::SimpleVector <char *> klass;
 
    public:
       enum {
@@ -354,13 +355,18 @@ class CssSimpleSelector {
       ~CssSimpleSelector ();
       inline void setElement (int e) { element = e; };
       void setSelect (SelectType t, const char *v);
-      inline lout::misc::SimpleVector <char *> *getClass () { return klass; };
+      inline lout::misc::SimpleVector <char *> *getClass () { return &klass; };
       inline const char *getPseudoClass () { return pseudo; };
       inline const char *getId () { return id; };
       inline int getElement () { return element; };
       bool match (const DoctreeNode *node);
       int specificity ();
       void print ();
+};
+
+class MatchCache : public lout::misc::SimpleVector <int> {
+   public:
+      MatchCache() : lout::misc::SimpleVector <int> (0) {};
 };
 
 /**
@@ -379,26 +385,31 @@ class CssSelector {
 
    private:
       struct CombinatorAndSelector {
-         int notMatchingBefore; // used for optimizing CSS selector matching
          Combinator combinator;
          CssSimpleSelector *selector;
       };
 
-      int refCount;
-      lout::misc::SimpleVector <struct CombinatorAndSelector> *selectorList;
+      int refCount, matchCacheOffset;
+      lout::misc::SimpleVector <struct CombinatorAndSelector> selectorList;
 
-      bool match (Doctree *dt, const DoctreeNode *node, int i, Combinator comb);
+      bool match (Doctree *dt, const DoctreeNode *node, int i, Combinator comb,
+                  MatchCache *matchCache);
 
    public:
       CssSelector ();
       ~CssSelector ();
       void addSimpleSelector (Combinator c);
       inline CssSimpleSelector *top () {
-         return selectorList->getRef (selectorList->size () - 1)->selector;
+         return selectorList.getRef (selectorList.size () - 1)->selector;
       };
-      inline int size () { return selectorList->size (); };
-      inline bool match (Doctree *dt, const DoctreeNode *node) {
-         return match (dt, node, selectorList->size () - 1, COMB_NONE);
+      inline int size () { return selectorList.size (); };
+      inline bool match (Doctree *dt, const DoctreeNode *node,
+                         MatchCache *matchCache) {
+         return match (dt, node, selectorList.size () - 1, COMB_NONE,
+                       matchCache);
+      };
+      inline void setMatchCacheOffset (int mo) {
+         matchCacheOffset = mo;
       };
       int specificity ();
       bool checksPseudoClass ();
@@ -423,8 +434,8 @@ class CssRule {
       CssRule (CssSelector *selector, CssPropertyList *props, int pos);
       ~CssRule ();
 
-      void apply (CssPropertyList *props,
-                  Doctree *docTree, const DoctreeNode *node);
+      void apply (CssPropertyList *props, Doctree *docTree,
+                  const DoctreeNode *node, MatchCache *matchCache) const;
       inline bool isSafe () {
          return !selector->checksPseudoClass () || props->isSafe ();
       };
@@ -463,19 +474,23 @@ class CssStyleSheet {
                <lout::object::ConstString, RuleList > (true, true, 256) {};
       };
 
-      static const int ntags = 90 + 10; // \todo don't hardcode
+      static const int ntags = 90 + 14; // \todo don't hardcode
       /* 90 is the full number of html4 elements, including those which we have
-       * implemented. From html 5, let's add: article, header, footer, mark,
-       * nav, section, aside, figure, figcaption, wbr.
+       * implemented. From html5, let's add: article, header, footer, mark,
+       * nav, section, aside, figure, figcaption, wbr, audio, video, source,
+       * embed.
        */
 
       RuleList elementTable[ntags], anyTable;
       RuleMap idTable, classTable;
 
    public:
+      int matchCacheOffset;
+
+      CssStyleSheet () { matchCacheOffset = 0; }
       void addRule (CssRule *rule);
-      void apply (CssPropertyList *props,
-                  Doctree *docTree, const DoctreeNode *node);
+      void apply (CssPropertyList *props, Doctree *docTree,
+                  const DoctreeNode *node, MatchCache *matchCache) const;
 };
 
 /**
@@ -483,7 +498,9 @@ class CssStyleSheet {
  */
 class CssContext {
    private:
+      static CssStyleSheet userAgentSheet;
       CssStyleSheet sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
+      MatchCache matchCache[CSS_PRIMARY_USER_IMPORTANT + 1];
       int pos;
 
    public:

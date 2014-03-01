@@ -164,6 +164,8 @@ Image::~Image()
       buffer->unref ();
    if (mapKey)
       delete mapKey;
+
+   DBG_OBJ_DELETE ();
 }
 
 void Image::sizeRequestImpl (core::Requisition *requisition)
@@ -434,6 +436,8 @@ void Image::setBuffer (core::Imgbuf *buffer, bool resize)
       this->buffer = buffer;
       buffer->ref ();
    }
+
+   DBG_OBJ_ASSOC_CHILD (this->buffer);
 
    if (oldBuf)
       oldBuf->unref ();

@@ -108,6 +108,8 @@ Widget::~Widget ()
       parent->removeChild (this);
    else
       layout->removeWidget ();
+
+   DBG_OBJ_DELETE ();
 }
 
 
@@ -460,6 +462,8 @@ void Widget::setStyle (style::Style *style)
       sizeChanged = true;
 
    this->style = style;
+
+   DBG_OBJ_ASSOC_CHILD (style);
 
    if (style && style->backgroundImage) {
       // Create instance of WidgetImgRenderer when needed. Until this

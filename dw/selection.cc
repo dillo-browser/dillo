@@ -61,6 +61,7 @@ SelectionState::SelectionState ()
 SelectionState::~SelectionState ()
 {
    reset ();
+   DBG_OBJ_DELETE ();
 }
 
 void SelectionState::reset ()

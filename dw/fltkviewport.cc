@@ -85,6 +85,7 @@ FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
 FltkViewport::~FltkViewport ()
 {
    delete gadgets;
+   DBG_OBJ_DELETE ();
 }
 
 void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
@@ -392,7 +393,7 @@ void FltkViewport::scrollTo (int x, int y)
    }
 
    /* multiple calls to scroll can happen before a redraw occurs.
-    * scrollDX / scrollDY can therefore be non-zero here.
+    * scrollDX and scrollDY can therefore be non-zero here.
     */
    updateCanvasWidgets (x - scrollX, y - scrollY);
    scrollDX += x - scrollX;

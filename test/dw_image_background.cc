@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 
    image1 = StyleImage::create ();
    image1->connectDeletion (&isdr);
-   layout->setBgImage (image1, BACKGROUND_REPEAT_Y, 
+   layout->setBgImage (image1, BACKGROUND_REPEAT_Y,
                        BACKGROUND_ATTACHMENT_SCROLL, createPerLength (0.5),
                        createAbsLength (30));
 

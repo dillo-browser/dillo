@@ -115,6 +115,13 @@
       fflush (stdout); \
    } D_STMT_END
 
+#define DBG_OBJ_DELETE() \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-delete:%p\n", \
+              RTFL_PREFIX_ARGS, this); \
+      fflush (stdout); \
+   } D_STMT_END
+
 #define DBG_OBJ_BASECLASS(klass) \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-ident:%p:%p\n", \
@@ -124,9 +131,11 @@
 
 #define DBG_OBJ_ASSOC(parent, child) \
    D_STMT_START { \
-      printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
-              RTFL_PREFIX_ARGS, parent, child); \
-      fflush (stdout); \
+      if (child) { \
+         printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
+                 RTFL_PREFIX_ARGS, parent, child); \
+         fflush (stdout); \
+      } \
    } D_STMT_END
 
 #define DBG_OBJ_ASSOC_PARENT(parent) \
@@ -138,9 +147,11 @@
 
 #define DBG_OBJ_ASSOC_CHILD(child) \
    D_STMT_START { \
-      printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
-              RTFL_PREFIX_ARGS, this, child); \
-      fflush (stdout); \
+      if (child) { \
+         printf (RTFL_PREFIX_FMT "obj-assoc:%p:%p\n", \
+                 RTFL_PREFIX_ARGS, this, child); \
+         fflush (stdout); \
+      } \
    } D_STMT_END
 
 #define DBG_OBJ_SET_NUM(var, val) \
@@ -254,6 +265,7 @@
 #define DBG_OBJ_MSG_END()                            D_STMT_NOP
 #define DBG_OBJ_MSG_END_O(obj)                       D_STMT_NOP
 #define DBG_OBJ_CREATE(klass)                        D_STMT_NOP
+#define DBG_OBJ_DELETE()                             D_STMT_NOP
 #define DBG_OBJ_BASECLASS(klass)                     D_STMT_NOP
 #define DBG_OBJ_ASSOC_PARENT(parent)                 D_STMT_NOP
 #define DBG_OBJ_ASSOC_CHILD(child)                   D_STMT_NOP
@@ -271,7 +283,7 @@
 #define DBG_OBJ_ARRATTRSET_SYM(var, ind, attr, val)  D_STMT_NOP
 #define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val)  D_STMT_NOP
 #define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val)  D_STMT_NOP
-#define DBG_OBJ_COLOR(klass, color)
+#define DBG_OBJ_COLOR(klass, color)                  D_STMT_NOP
 
 #endif /* DBG_RTFL */
 

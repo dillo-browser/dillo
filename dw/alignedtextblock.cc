@@ -81,6 +81,7 @@ void AlignedTextblock::setRefTextblock (AlignedTextblock *ref)
 AlignedTextblock::~AlignedTextblock()
 {
    list->unref (listPos);
+   DBG_OBJ_DELETE ();
 }
 
 void AlignedTextblock::updateValue ()

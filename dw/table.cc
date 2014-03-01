@@ -98,6 +98,8 @@ Table::~Table()
    delete baseline;
    delete rowStyle;
    delete colPercents;
+
+   DBG_OBJ_DELETE ();
 }
 
 void Table::sizeRequestImpl (core::Requisition *requisition)
@@ -1070,7 +1072,7 @@ void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
             for (int col = 0; col < numCols; col++) {
                if (core::style::isPerLength (colPercents->get(col))) {
                   // This could cause rounding errors:
-                  // 
+                  //
                   // int d =
                   //    core::dw::multiplyWithPerLength (extraWidth,
                   //                                     colPercents->get(col))

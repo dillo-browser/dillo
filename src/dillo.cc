@@ -52,6 +52,7 @@
 #include "cookies.h"
 #include "domain.h"
 #include "auth.h"
+#include "styleengine.hh"
 
 #include "lout/debug.hh"
 #include "dw/fltkcore.hh"
@@ -379,6 +380,7 @@ int main(int argc, char **argv)
    DBG_OBJ_COLOR("#c0ff80", "dw::*");
    DBG_OBJ_COLOR("#c0c0ff", "dw::fltk::*");
    DBG_OBJ_COLOR("#ffa0a0", "dw::core::*");
+   DBG_OBJ_COLOR("#ffe0a0", "dw::core::style::*");
 
    DBG_OBJ_COLOR ("#80ffa0", "dw::Image");
    DBG_OBJ_COLOR ("#f0ff80", "dw::Textblock");
@@ -479,6 +481,7 @@ int main(int argc, char **argv)
    a_Cookies_init();
    a_Auth_init();
    a_UIcmd_init();
+   StyleEngine::init();
 
    dw::Textblock::setPenaltyHyphen (prefs.penalty_hyphen);
    dw::Textblock::setPenaltyHyphen2 (prefs.penalty_hyphen_2);

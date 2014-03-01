@@ -47,6 +47,8 @@ FindtextState::~FindtextState ()
       delete iterator;
    if (hlIterator)
       delete hlIterator;
+
+   DBG_OBJ_DELETE ();
 }
 
 void FindtextState::setWidget (Widget *widget)
