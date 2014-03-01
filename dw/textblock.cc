@@ -332,7 +332,8 @@ Textblock::~Textblock ()
  */
 void Textblock::sizeRequestImpl (core::Requisition *requisition)
 {
-   PRINTF ("[%p] SIZE_REQUEST: ...\n", this);
+   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequestImpl</b> ()");
+   DBG_OBJ_MSG_START ();
 
    rewrap ();
    showMissingLines ();
@@ -340,18 +341,18 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    if (lines->size () > 0) {
       Line *lastLine = lines->getRef (lines->size () - 1);
       requisition->width = lastLine->maxLineWidth;
+      
+      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->maxLineWidth = %d",
+                    lines->size () - 1, lastLine->maxLineWidth);
 
-      PRINTF ("[%p] SIZE_REQUEST: lastLine->maxLineWidth = %d\n",
-              this, lastLine->maxLineWidth);
-
-      PRINTF ("[%p] SIZE_REQUEST: lines[0]->boxAscent = %d\n",
-              this, lines->getRef(0)->boxAscent);
-      PRINTF ("[%p] SIZE_REQUEST: lines[%d]->top = %d\n", 
-              this, lines->size () - 1, lastLine->top);
-      PRINTF ("[%p] SIZE_REQUEST: lines[%d]->boxAscent = %d\n", 
-              this, lines->size () - 1, lastLine->boxAscent);
-      PRINTF ("[%p] SIZE_REQUEST: lines[%d]->boxDescent = %d\n", 
-              this, lines->size () - 1, lastLine->boxDescent);
+      DBG_OBJ_MSGF ("resize", 1, "lines[0]->boxAscent = %d",
+                    lines->getRef(0)->boxAscent);
+      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->top = %d",
+                    lines->size () - 1, lastLine->top);
+      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->boxAscent = %d", 
+                    lines->size () - 1, lastLine->boxAscent);
+      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->boxDescent = %d", 
+                    lines->size () - 1, lastLine->boxDescent);
 
       /* Note: the breakSpace of the last line is ignored, so breaks
          at the end of a textblock are not visible. */
@@ -365,8 +366,8 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
       requisition->descent = 0;
    }
 
-   PRINTF ("[%p] SIZE_REQUEST: inner padding = %d, boxDiffWidth = %d\n",
-           this, innerPadding, getStyle()->boxDiffWidth ());
+   DBG_OBJ_MSGF ("resize", 1, "inner padding = %d, boxDiffWidth = %d",
+                 innerPadding, getStyle()->boxDiffWidth ());
 
    requisition->width += innerPadding + getStyle()->boxDiffWidth ();
    requisition->ascent += verticalOffset + getStyle()->boxOffsetY ();
@@ -377,6 +378,9 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    // role (currently) and caring about them (for the future) would
    // cause too much problems.
 
+   DBG_OBJ_MSGF ("resize", 1, "before considering OOF widgets: %d * %d + %d",
+                 requisition->width, requisition->ascent, requisition->descent);
+
    if (outOfFlowMgr) {
       int oofWidth, oofHeight;
       outOfFlowMgr->getSize (&oofWidth, &oofHeight);
@@ -385,11 +389,19 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
          requisition->descent = oofHeight - requisition->ascent;
    }   
 
-   if (requisition->width < availWidth)
-      requisition->width = availWidth;
+   DBG_OBJ_MSGF ("resize", 1, "before considering availWidth: %d * %d + %d",
+                 requisition->width, requisition->ascent, requisition->descent);
 
-   PRINTF ("[%p] SIZE_REQUEST: %d x %d + %d\n", this, requisition->width,
-           requisition->ascent, requisition->descent);
+   if (requisition->width < availWidth) {
+      requisition->width = availWidth;
+      DBG_OBJ_MSGF ("resize", 1, "adjusting to availWidth => %d",
+                    requisition->width);
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d * %d + %d",
+                 requisition->width, requisition->ascent, requisition->descent);
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
@@ -427,7 +439,8 @@ void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
 
 void Textblock::getExtremesImpl (core::Extremes *extremes)
 {
-   PRINTF ("[%p] GET_EXTREMES ...\n", this);
+   DBG_OBJ_MSG ("resize", 0, "<b>getExtremesImpl</b>");
+   DBG_OBJ_MSG_START ();
 
    fillParagraphs ();
 
@@ -449,16 +462,18 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       int oofMinWidth, oofMaxWidth;
       outOfFlowMgr->getExtremes (&oofMinWidth, &oofMaxWidth);
       
-      //printf ("[%p] extremes: %d / %d, corrected: %d / %d\n",
-      //        this, extremes->minWidth, extremes->maxWidth,
-      //        oofMinWidth, oofMaxWidth);
+      DBG_OBJ_MSGF ("resize", 1, "extremes: %d / %d, corrected: %d / %d",
+                    extremes->minWidth, extremes->maxWidth,
+                    oofMinWidth, oofMaxWidth);
 
       extremes->minWidth = misc::max (extremes->minWidth, oofMinWidth);
       extremes->maxWidth = misc::max (extremes->maxWidth, oofMaxWidth);     
    }   
 
-   PRINTF ("[%p] GET_EXTREMES => %d / %d\n",
-           this, extremes->minWidth, extremes->maxWidth);
+   DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
+                 extremes->minWidth, extremes->maxWidth);
+
+   DBG_OBJ_MSG_END ();
 }
 
 
