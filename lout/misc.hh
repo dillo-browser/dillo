@@ -421,14 +421,17 @@ public:
     */
    inline T* getRef (int i) const
    {
-      if (this->startExtra == -1)
+      if (this->startExtra == -1) {
+         assert (i >= 0 && i < this->numMain);
          return this->arrayMain + i;
-      else {
-         if (i < this->startExtra)
+      } else {
+         if (i < this->startExtra) {
+            assert (i >= 0);
             return this->arrayMain + i;
-         else if (i >= this->startExtra + this->numExtra)
+         } else if (i >= this->startExtra + this->numExtra) {
+            assert (i < this->numMain + this->numExtra);
             return this->arrayMain + i - this->numExtra;
-         else
+         } else
             return this->arrayExtra1 + i - this->startExtra;
       }
    }
