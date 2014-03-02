@@ -203,6 +203,8 @@ private:
 
    enum ButtonEventType { BUTTON_PRESS, BUTTON_RELEASE, MOTION_NOTIFY };
 
+   void detachWidget (Widget *widget);
+
    Widget *getWidgetAtPoint (int x, int y);
    void moveToWidget (Widget *newWidgetAtPoint, ButtonState state);
 

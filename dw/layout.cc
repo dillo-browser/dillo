@@ -308,9 +308,7 @@ Layout::~Layout ()
    if (bgImage)
       bgImage->unref ();
    if (topLevel) {
-      // Sometimes, the toplevel widget does some stuff after the
-      // layout has been deleted.
-      topLevel->layout = NULL;
+      detachWidget (topLevel);
       Widget *w = topLevel;
       topLevel = NULL;
       delete w;
@@ -324,6 +322,26 @@ Layout::~Layout ()
    delete textZone;
 
    DBG_OBJ_DELETE ();
+}
+
+void Layout::detachWidget (Widget *widget)
+{  
+   // Called form ~Layout. Sometimes, the widgets (not only the toplevel widget)
+   // do some stuff after the layout has been deleted, so *all* widgets have to
+   // be detached, and check "layout != NULL" at relevant points.
+
+   // Could be replaced by a virtual method in Widget, like getWidgetAtPoint,
+   // if performace were really a problem.
+
+   widget->layout = NULL;
+   Iterator *it =
+      widget->iterator ((Content::Type)
+                        (Content::WIDGET_IN_FLOW | Content::WIDGET_OOF_CONT),
+                        false);
+   while (it->next ())
+      detachWidget (it->getContent()->widget);
+
+   it->unref ();
 }
 
 void Layout::addWidget (Widget *widget)
