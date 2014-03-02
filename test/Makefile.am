@@ -1,5 +1,7 @@
 AM_CPPFLAGS = \
-	-I$(top_srcdir)
+	-I$(top_srcdir) \
+	-DCUR_WORKING_DIR='"@BASE_CUR_WORKING_DIR@/test"'
+
 AM_CFLAGS = @LIBFLTK_CFLAGS@
 AM_CXXFLAGS = @LIBFLTK_CXXFLAGS@
 
