@@ -169,28 +169,37 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
  */
 void Widget::queueResize (int ref, bool extremesChanged)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>queueResize</b> (%d, %s)",
+                 ref, extremesChanged ? "true" : "false");
+   DBG_OBJ_MSG_START ();
+
    // queueResize() can be called recursively; calls are queued, so
    // that actualQueueResize() is clean.
 
-   if (queueResizeEntered ())
+   if (queueResizeEntered ()) {
+      DBG_OBJ_MSG ("resize", 1, "put into queue");
       layout->queueQueueResizeList->put (new Layout::QueueResizeItem
                                          (this, ref, extremesChanged));
-   else {
+   } else {
       actualQueueResize (ref, extremesChanged);
       
       while (layout != NULL && layout->queueQueueResizeList->size () > 0) {
          Layout::QueueResizeItem *item = layout->queueQueueResizeList->get (0);
+         DBG_OBJ_MSGF ("resize", 1, "taken out of queue queue (size = %d)",
+                      layout->queueQueueResizeList->size ());
          item->widget->actualQueueResize (item->ref, item->extremesChanged);
          layout->queueQueueResizeList->remove (0); // hopefully not too large
       }
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Widget::actualQueueResize (int ref, bool extremesChanged)
 {
    assert (!queueResizeEntered ());
    
-   DBG_OBJ_MSGF ("resize", 0, "<b>queueResize</b> (%d, %s)",
+   DBG_OBJ_MSGF ("resize", 0, "<b>actualQueueResize</b> (%d, %s)",
                  ref, extremesChanged ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
