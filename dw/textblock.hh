@@ -658,10 +658,16 @@ protected:
    {
       if (lines->size() == 0)
          return 0;
-      else
-         return
-            (words->getRef(lines->getLastRef()->lastWord)->flags &
-             (Word::DIV_CHAR_AT_EOL | Word::PERM_DIV_CHAR)) ? 1 : 0;
+      else {
+         Line *line = lines->getLastRef();
+         if (line->firstWord <= line->lastWord)
+            return
+               (words->getRef(line->lastWord)->flags &
+                (Word::DIV_CHAR_AT_EOL | Word::PERM_DIV_CHAR)) ? 1 : 0;
+         else
+            // empty line
+            return 0;
+      }
    }
 
    Textblock *getTextblockForLine (Line *line);

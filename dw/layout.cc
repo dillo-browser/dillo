@@ -308,6 +308,9 @@ Layout::~Layout ()
    if (bgImage)
       bgImage->unref ();
    if (topLevel) {
+      // Sometimes, the toplevel widget does some stuff after the
+      // layout has been deleted.
+      topLevel->layout = NULL;
       Widget *w = topLevel;
       topLevel = NULL;
       delete w;

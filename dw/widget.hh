@@ -252,7 +252,7 @@ protected:
    { layout->changeAnchor (this, name, y); }
 
    inline void removeAnchor (char* name)
-   { layout->removeAnchor (this, name); }
+   { if (layout) layout->removeAnchor (this, name); }
 
    //inline void updateBgColor () { layout->updateBgColor (); }
 

@@ -106,7 +106,7 @@ Widget::~Widget ()
 
    if (parent)
       parent->removeChild (this);
-   else
+   else if (layout)
       layout->removeWidget ();
 
    DBG_OBJ_DELETE ();
