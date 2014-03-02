@@ -1421,43 +1421,47 @@ void Textblock::alignLine (int lineIndex)
 {
    Line *line = lines->getRef (lineIndex);
    int availWidth = calcAvailWidth (lineIndex);
-   Word *firstWord = words->getRef (line->firstWord);
-   Word *lastWord = words->getRef (line->lastWord);
-
-   for (int i = line->firstWord; i < line->lastWord; i++)
-      words->getRef(i)->origSpace = words->getRef(i)->effSpace;
-
-   if (firstWord->content.type != core::Content::BREAK) {
-      switch (firstWord->style->textAlign) {
-      case core::style::TEXT_ALIGN_LEFT:
-      case core::style::TEXT_ALIGN_STRING:   /* handled elsewhere (in the
-                                              * future)? */
-         line->leftOffset = 0;
-         break;
-      case core::style::TEXT_ALIGN_JUSTIFY:  /* see some lines above */
-         line->leftOffset = 0;
-         if(lastWord->content.type != core::Content::BREAK &&
-            line->lastWord != words->size () - 1) {
-            PRINTF ("      justifyLine => %d vs. %d\n",
-                    lastWord->totalWidth, availWidth);
-            justifyLine (line, availWidth - lastWord->totalWidth);
+   if (line->firstWord <= line->lastWord) {
+      Word *firstWord = words->getRef (line->firstWord);
+      Word *lastWord = words->getRef (line->lastWord);
+      
+      for (int i = line->firstWord; i < line->lastWord; i++)
+         words->getRef(i)->origSpace = words->getRef(i)->effSpace;
+      
+      if (firstWord->content.type != core::Content::BREAK) {
+         switch (firstWord->style->textAlign) {
+         case core::style::TEXT_ALIGN_LEFT:
+         case core::style::TEXT_ALIGN_STRING:   /* handled elsewhere (in the
+                                                 * future)? */
+            line->leftOffset = 0;
+            break;
+         case core::style::TEXT_ALIGN_JUSTIFY:  /* see some lines above */
+            line->leftOffset = 0;
+            if(lastWord->content.type != core::Content::BREAK &&
+               line->lastWord != words->size () - 1) {
+               PRINTF ("      justifyLine => %d vs. %d\n",
+                       lastWord->totalWidth, availWidth);
+               justifyLine (line, availWidth - lastWord->totalWidth);
+            }
+            break;
+         case core::style::TEXT_ALIGN_RIGHT:
+            line->leftOffset = availWidth - lastWord->totalWidth;
+            break;
+         case core::style::TEXT_ALIGN_CENTER:
+            line->leftOffset = (availWidth - lastWord->totalWidth) / 2;
+            break;
+         default:
+            /* compiler happiness */
+            line->leftOffset = 0;
          }
-         break;
-      case core::style::TEXT_ALIGN_RIGHT:
-         line->leftOffset = availWidth - lastWord->totalWidth;
-         break;
-      case core::style::TEXT_ALIGN_CENTER:
-         line->leftOffset = (availWidth - lastWord->totalWidth) / 2;
-         break;
-      default:
-         /* compiler happiness */
-         line->leftOffset = 0;
-      }
 
-      /* For large lines (images etc), which do not fit into the viewport: */
-      if (line->leftOffset < 0)
-         line->leftOffset = 0;
-   }
+         /* For large lines (images etc), which do not fit into the viewport: */
+         if (line->leftOffset < 0)
+            line->leftOffset = 0;
+      }
+   } else
+      // empty line
+      line->leftOffset = 0;
 }
 
 /**
