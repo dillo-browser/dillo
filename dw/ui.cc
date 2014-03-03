@@ -39,6 +39,7 @@ Embed::Embed(Resource *resource)
    registerName ("dw::core::ui::Embed", &CLASS_ID);
    this->resource = resource;
    resource->setEmbed (this);
+   DBG_OBJ_ASSOC_CHILD (resource);
 }
 
 Embed::~Embed()
@@ -180,6 +181,7 @@ void Resource::ActivateEmitter::emitLeave (Resource *resource)
 
 Resource::~Resource ()
 {
+   DBG_OBJ_DELETE ();
 }
 
 void Resource::setEmbed (Embed *embed)
@@ -276,6 +278,7 @@ void ComplexButtonResource::LayoutReceiver::canvasSizeChanged (int width,
 
 ComplexButtonResource::ComplexButtonResource ()
 {
+   DBG_OBJ_CREATE ("dw::core::ui::ComplexButtonResource");
    layout = NULL;
    layoutReceiver.resource = this;
    click_x = click_y = -1;
@@ -287,6 +290,7 @@ void ComplexButtonResource::init (Widget *widget)
 
    layout = new Layout (createPlatform ());
    setLayout (layout);
+   DBG_OBJ_ASSOC_CHILD (layout);
    layout->setWidget (widget);
    layout->connect (&layoutReceiver);
 }
@@ -302,6 +306,7 @@ void ComplexButtonResource::setEmbed (Embed *embed)
 ComplexButtonResource::~ComplexButtonResource ()
 {
    delete layout;
+   DBG_OBJ_DELETE ();
 }
 
 void ComplexButtonResource::sizeRequest (Requisition *requisition)

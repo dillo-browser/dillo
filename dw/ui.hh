@@ -329,7 +329,8 @@ protected:
       clickedEmitter.emitClicked (this, event); }
 
 public:
-   inline Resource () { embed = NULL; }
+   inline Resource ()
+   { embed = NULL; DBG_OBJ_CREATE ("dw::core::ui::Resource"); }
 
    virtual ~Resource ();
 
