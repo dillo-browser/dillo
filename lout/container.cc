@@ -104,6 +104,8 @@ void Collection::intoStringBuffer(misc::StringBuffer *sb)
 
 Vector::Vector(int initSize, bool ownerOfObjects)
 {
+   DBG_OBJ_CREATE ("lout::container::untyped::Vector");
+
    numAlloc = initSize == 0 ? 1 : initSize;
    this->ownerOfObjects = ownerOfObjects;
    numElements = 0;
@@ -114,6 +116,8 @@ Vector::~Vector()
 {
    clear();
    free(array);
+
+   DBG_OBJ_DELETE ();
 }
 
 void Vector::put(Object *newElement, int newPos)
