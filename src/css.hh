@@ -143,6 +143,7 @@ inline float CSS_LENGTH_VALUE (CssLength l) {
 }
 
 typedef enum {
+   CSS_PROPERTY_END = -1, // used as terminator in CssShorthandInfo
    CSS_PROPERTY_BACKGROUND_ATTACHMENT,
    CSS_PROPERTY_BACKGROUND_COLOR,
    CSS_PROPERTY_BACKGROUND_IMAGE,
