@@ -452,6 +452,11 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       Paragraph *lastPar = paragraphs->getLastRef ();
       extremes->minWidth = lastPar->maxParMin;
       extremes->maxWidth = lastPar->maxParMax;
+
+      DBG_OBJ_MSGF ("resize", 1, "paragraphs[%d]->maxParMin = %d",
+                    paragraphs->size () - 1, lastPar->maxParMin);
+      DBG_OBJ_MSGF ("resize", 1, "paragraphs[%d]->maxParMax = %d",
+                    paragraphs->size () - 1, lastPar->maxParMax);
    }
 
    int diff = innerPadding + getStyle()->boxDiffWidth ();

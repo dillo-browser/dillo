@@ -1009,13 +1009,18 @@ void Textblock::handleWordExtremes (int wordIndex)
 {
    // TODO Overall, clarify penalty index.
 
+   DBG_OBJ_MSGF ("construct.paragraph", 0,
+                 "<b>handleWordExtremes</b> (%d)", wordIndex);
+   DBG_OBJ_MSG_START ();
+
    Word *word = words->getRef (wordIndex);
+   DBG_MSG_WORD ("construct.paragraph", 1,
+                 "<i>handled word:</i> ", wordIndex, "");
+
    core::Extremes wordExtremes;
    getWordExtremes (word, &wordExtremes);
-
-   //printf ("[%p] HANDLE_WORD_EXTREMES (%d): ", this, wordIndex);
-   //printWordWithFlags (word);
-   //printf (" => %d / %d\n", wordExtremes.minWidth, wordExtremes.maxWidth);
+   DBG_OBJ_MSGF ("construct.paragraph", 1, "extremes: %d / %d",
+                 wordExtremes.minWidth, wordExtremes.maxWidth);
 
    if (wordIndex == 0) {
       wordExtremes.minWidth += line1Offset;
@@ -1040,10 +1045,12 @@ void Textblock::handleWordExtremes (int wordIndex)
       } else
          par->maxParMin = par->maxParMax = 0;
 
-      PRINTF ("      new par: %d\n", paragraphs->size() - 1);
+      DBG_OBJ_MSGF ("construct.paragraph", 1, "new par: %d",
+                    paragraphs->size() - 1);
    }
 
-   PRINTF ("      last par: %d\n", paragraphs->size() - 1);
+   DBG_OBJ_MSGF ("construct.paragraph", 1, "last par: %d",
+                 paragraphs->size() - 1);
    Paragraph *lastPar = paragraphs->getLastRef();
 
    int corrDiffMin, corrDiffMax;
@@ -1059,8 +1066,10 @@ void Textblock::handleWordExtremes (int wordIndex)
    } else
       corrDiffMin = corrDiffMax = 0;
 
-   PRINTF ("      (lastPar from %d to %d; corrDiffMin = %d, corDiffMax = %d)\n",
-           lastPar->firstWord, lastPar->lastWord, corrDiffMin, corrDiffMax);
+   DBG_OBJ_MSGF ("construct.paragraph", 1,
+                 "(lastPar from %d to %d; corrDiffMin = %d, corDiffMax = %d)",
+                 lastPar->firstWord, lastPar->lastWord, corrDiffMin,
+                 corrDiffMax);
 
    // Minimum: between two *possible* breaks.
    // Shrinkability could be considered, but really does not play a role.
@@ -1074,11 +1083,13 @@ void Textblock::handleWordExtremes (int wordIndex)
    lastPar->parMax += wordExtremes.maxWidth + word->hyphenWidth + corrDiffMax;
    lastPar->maxParMax = misc::max (lastPar->maxParMax, lastPar->parMax);
 
-   PRINTF ("   => parMin = %d (max = %d), parMax = %d (max = %d)\n",
-           lastPar->parMin, lastPar->maxParMin, lastPar->parMax,
-           lastPar->maxParMax);
+   DBG_OBJ_MSGF ("construct.paragraph", 1,
+                 "=> parMin = %d (max = %d), parMax = %d (max = %d)",
+                 lastPar->parMin, lastPar->maxParMin, lastPar->parMax,
+                 lastPar->maxParMax);
 
    lastPar->lastWord = wordIndex;
+   DBG_OBJ_MSG_END ();
 }
 
 /**
@@ -1526,6 +1537,9 @@ void Textblock::rewrap ()
  */
 void Textblock::fillParagraphs ()
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>fillParagraphs</b>");
+   DBG_OBJ_MSG_START ();
+
    if (wrapRefParagraphs == -1)
       return;
 
@@ -1570,6 +1584,8 @@ void Textblock::fillParagraphs ()
 
    wrapRefParagraphs = -1;
    DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);     
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Textblock::initNewLine ()

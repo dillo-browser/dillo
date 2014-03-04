@@ -456,6 +456,9 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    leftFloatsAll = new Vector<Float> (1, true);
    rightFloatsAll = new Vector<Float> (1, true);
 
+   DBG_OBJ_SET_NUM ("leftFloatsAll.size", leftFloatsAll->size());
+   DBG_OBJ_SET_NUM ("rightFloatsAll.size", rightFloatsAll->size());
+
    floatsByWidget = new HashTable <TypedPointer <Widget>, Float> (true, false);
 
    tbInfos = new Vector<TBInfo> (1, false);
@@ -1016,6 +1019,7 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
       switch (widget->getStyle()->vloat) {
       case FLOAT_LEFT:
          leftFloatsAll->put (vloat);
+         DBG_OBJ_SET_NUM ("leftFloatsAll.size", leftFloatsAll->size());
          widget->parentRef = createRefLeftFloat (leftFloatsAll->size() - 1);
          tbInfo->leftFloatsGB->put (vloat);
 
@@ -1039,6 +1043,7 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
 
       case FLOAT_RIGHT:
          rightFloatsAll->put (vloat);
+         DBG_OBJ_SET_NUM ("rightFloatsAll.size", rightFloatsAll->size());
          widget->parentRef = createRefRightFloat (rightFloatsAll->size() - 1);
          tbInfo->rightFloatsGB->put (vloat);
 
