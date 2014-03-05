@@ -315,8 +315,15 @@ Textblock::~Textblock ()
    delete words;
    delete anchors;
 
-   if(outOfFlowMgr)
+   if(outOfFlowMgr) {
+      // I feel more comfortable by letting the textblock delete these
+      // widgets, instead of doing this in ~OutOfFlowMgr.
+
+      for (int i = 0; i < outOfFlowMgr->getNumWidgets (); i++)
+         delete outOfFlowMgr->getWidget (i);
+
       delete outOfFlowMgr;
+   }
 
    /* Make sure we don't own widgets anymore. Necessary before call of
       parent class destructor. (???) */

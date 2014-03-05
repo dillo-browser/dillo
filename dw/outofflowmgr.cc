@@ -498,6 +498,8 @@ OutOfFlowMgr::~OutOfFlowMgr ()
    delete rightFloatsAll;
 
    delete absolutelyPositioned;
+
+   DBG_OBJ_DELETE ();
 }
 
 void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
