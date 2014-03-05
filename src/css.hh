@@ -402,16 +402,20 @@ class CssSelector {
       void addSimpleSelector (Combinator c);
       inline CssSimpleSelector *top () {
          return selectorList.getRef (selectorList.size () - 1)->selector;
-      };
+      }
       inline int size () { return selectorList.size (); };
       inline bool match (Doctree *dt, const DoctreeNode *node,
                          MatchCache *matchCache) {
          return match (dt, node, selectorList.size () - 1, COMB_NONE,
                        matchCache);
-      };
+      }
       inline void setMatchCacheOffset (int mo) {
-         matchCacheOffset = mo;
-      };
+         if (matchCacheOffset == -1)
+            matchCacheOffset = mo;
+      }
+      inline int getRequiredMatchCache () {
+         return matchCacheOffset + size ();
+      }
       int specificity ();
       bool checksPseudoClass ();
       void print ();
@@ -484,14 +488,14 @@ class CssStyleSheet {
 
       RuleList elementTable[ntags], anyTable;
       RuleMap idTable, classTable;
+      int requiredMatchCache;
 
    public:
-      int matchCacheOffset;
-
-      CssStyleSheet () { matchCacheOffset = 0; }
+      CssStyleSheet () { requiredMatchCache = 0; }
       void addRule (CssRule *rule);
       void apply (CssPropertyList *props, Doctree *docTree,
                   const DoctreeNode *node, MatchCache *matchCache) const;
+      int getRequiredMatchCache () { return requiredMatchCache; }
 };
 
 /**
@@ -501,7 +505,7 @@ class CssContext {
    private:
       static CssStyleSheet userAgentSheet;
       CssStyleSheet sheet[CSS_PRIMARY_USER_IMPORTANT + 1];
-      MatchCache matchCache[CSS_PRIMARY_USER_IMPORTANT + 1];
+      MatchCache matchCache;
       int pos;
 
    public:
