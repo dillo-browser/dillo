@@ -201,7 +201,7 @@ void Hyphenator::insertException (char *s)
    noHyphens[j] = 0;
 
    exceptions->put (new String (noHyphens), breaks);
-   delete noHyphens;
+   delete[] noHyphens;
 }
 
 /**
