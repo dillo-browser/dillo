@@ -1025,6 +1025,8 @@ core::Iterator *Textblock::iterator (core::Content::Type mask, bool atEnd)
  */
 void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>calcWidgetSize</b> (%p, ...)", widget);
+
    core::Requisition requisition;
    int availWidth, availAscent, availDescent;
    core::style::Style *wstyle = widget->getStyle();
@@ -1051,16 +1053,22 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
             misc::max (availWidth - (newLineLeftBorder + newLineRightBorder),
                        0);
 
-      PRINTF ("setWidth (%d) for the %s %p\n",
-              corrAvailWidth, widget->getClassName(), widget);
+      DBG_OBJ_MSGF ("resize", 1, "setting hints: %d, %d, %d",
+                    corrAvailWidth, availAscent, availDescent);
       widget->setWidth (corrAvailWidth);
       widget->setAscent (availAscent);
       widget->setDescent (availDescent);
       widget->sizeRequest (size);
+      DBG_OBJ_MSGF ("resize", 1, "sizeRequest => %d * (%d + %d)",
+                    size->width, size->ascent, size->descent);
    } else {
       if (wstyle->width == core::style::LENGTH_AUTO ||
-          wstyle->height == core::style::LENGTH_AUTO)
+          wstyle->height == core::style::LENGTH_AUTO) {
          widget->sizeRequest (&requisition);
+         DBG_OBJ_MSGF ("resize", 1, "AUTO; sizeRequest => %d * (%d + %d)",
+                       requisition.width, requisition.ascent,
+                       requisition.descent);
+      }
 
       if (wstyle->width == core::style::LENGTH_AUTO)
          size->width = requisition.width;
@@ -1093,6 +1101,10 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
    /* ascent and descent in words do not contain margins. */
    size->ascent -= wstyle->margin.top;
    size->descent -= wstyle->margin.bottom;
+
+   DBG_OBJ_MSGF ("resize", 1, "result: %d * (%d + %d)",
+                 size->width, size->ascent, size->descent);
+   DBG_OBJ_MSG_END ();
 }
 
 /*

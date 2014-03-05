@@ -335,18 +335,24 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       DBG_MSG_WORD ("construct.line", 1, "<i>last word:</i> ", lastWord, "");
 
       Word *lastWordOfLine = words->getRef(lastWord);
-      PRINTF ("   words[%d]->totalWidth = %d\n", lastWord,
-              lastWordOfLine->totalWidth);
       // Word::totalWidth includes the hyphen (which is what we want here).
       lineWidth = lastWordOfLine->totalWidth;
-   } else
+      DBG_OBJ_MSGF ("construct.line", 1, "lineWidth (from last word): %d",
+                    lineWidth);
+   } else {
       // empty line
       lineWidth = 0;
+      DBG_OBJ_MSGF ("construct.line", 1, "lineWidth (empty line): %d",
+                    lineWidth);
+   }
 
    // "lineWidth" is relative to leftOffset, so we may have to add
    // "line1OffsetEff" (remember: this is, for list items, negative).
-   if (lines->size () == 0)
+   if (lines->size () == 0) {
       lineWidth += line1OffsetEff;
+      DBG_OBJ_MSGF ("construct.line", 1, "lineWidth (line1OffsetEff): %d",
+                    lineWidth);
+   }
 
    int maxOfMinWidth, sumOfMaxWidth;
    accumulateWordExtremes (firstWord, lastWord, &maxOfMinWidth,
@@ -380,6 +386,9 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    for (int i = line->firstWord; i < line->lastWord; i++) {
       Word *word = words->getRef (i);
       lineWidth += (word->effSpace - word->origSpace);
+      DBG_OBJ_MSGF ("construct.line", 1,
+                    "lineWidth (corrected space after word %d): %d",
+                    i, lineWidth);
    }
   
    if (lines->size () == 1) {
@@ -410,16 +419,16 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       + line->leftOffset;
 
    DBG_OBJ_MSGF ("construct.line", 1, "top = %d\n", line->top);
-   //DBG_OBJ_MSGF ("construct.line", 1, "boxAscent = %d\n", line->boxAscent);
-   //DBG_OBJ_MSGF ("construct.line", 1, "boxDescent = %d\n", line->boxDescent);
-   //DBG_OBJ_MSGF ("construct.line", 1, "contentAscent = %d\n",
-   //              line->contentAscent);
-   //DBG_OBJ_MSGF ("construct.line", 1, "contentDescent = %d\n",
-   //              line->contentDescent);
-   //DBG_OBJ_MSGF ("construct.line", 1, "maxLineWidth = %d (lineWidth = %d)\n",
-   //              line->maxLineWidth, lineWidth);
-   //DBG_OBJ_MSGF ("construct.line", 1, "offsetCompleteWidget = %d\n",
-   //              line->offsetCompleteWidget);
+   DBG_OBJ_MSGF ("construct.line", 1, "boxAscent = %d\n", line->boxAscent);
+   DBG_OBJ_MSGF ("construct.line", 1, "boxDescent = %d\n", line->boxDescent);
+   DBG_OBJ_MSGF ("construct.line", 1, "contentAscent = %d\n",
+                 line->contentAscent);
+   DBG_OBJ_MSGF ("construct.line", 1, "contentDescent = %d\n",
+                 line->contentDescent);
+   DBG_OBJ_MSGF ("construct.line", 1, "maxLineWidth = %d (lineWidth = %d)\n",
+                 line->maxLineWidth, lineWidth);
+   DBG_OBJ_MSGF ("construct.line", 1, "offsetCompleteWidget = %d\n",
+                 line->offsetCompleteWidget);
 
    mustQueueResize = true;
 
@@ -1330,6 +1339,11 @@ void Textblock::accumulateWordData (int wordIndex)
       word->maxDescent = word->size.descent;
       word->totalSpaceStretchability = 0;
       word->totalSpaceShrinkability = 0;
+
+      DBG_OBJ_MSGF ("construct.word", 1,
+                    "first word of line: words[%d].totalWidth = %d + %d = %d",
+                    wordIndex, word->size.width, word->hyphenWidth,
+                    word->totalWidth);
    } else {
       Word *prevWord = words->getRef (wordIndex - 1);
 
@@ -1342,6 +1356,13 @@ void Textblock::accumulateWordData (int wordIndex)
          prevWord->totalSpaceStretchability + getSpaceStretchability(prevWord);
       word->totalSpaceShrinkability =
          prevWord->totalSpaceShrinkability + getSpaceShrinkability(prevWord);
+
+      DBG_OBJ_MSGF ("construct.word", 1,
+                    "not first word of line: words[%d].totalWidth = %d + %d - "
+                    "%d + %d + %d = %d",
+                    wordIndex, prevWord->totalWidth, prevWord->origSpace,
+                    prevWord->hyphenWidth, word->size.width,
+                    word->hyphenWidth, word->totalWidth);
    }
 
    int totalStretchability =
