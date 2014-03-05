@@ -579,6 +579,7 @@ protected:
 
    Word *addWord (int width, int ascent, int descent, short flags,
                   core::style::Style *style);
+   void breakAdded ();
    void initWord (int wordNo);
    void removeWordImgRenderer (int wordNo);
    void setWordImgRenderer (int wordNo);

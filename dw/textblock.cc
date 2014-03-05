@@ -2465,6 +2465,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
    DBG_OBJ_ARRATTRSET_NUM ("words", words->size () - 1,
                            "text/widget/breakSpace", word->content.breakSpace);
 
+   breakAdded ();
    processWord (words->size () - 1);
 }
 
@@ -2495,7 +2496,35 @@ void Textblock::addLinebreak (core::style::Style *style)
    DBG_OBJ_ARRATTRSET_NUM ("words", words->size () - 1,
                            "text/widget/breakSpace", word->content.breakSpace);
 
+   breakAdded ();
    processWord (words->size () - 1);
+}
+
+/**
+ * Called directly after a (line or paragraph) break has been added.
+ */
+void Textblock::breakAdded ()
+{
+   assert (words->size () >= 1);
+   assert (words->getRef(words->size () - 1)->content.type
+           == core::Content::BREAK);
+
+   // Any space before is removed. It is not used; on the other hand,
+   // this snippet (an example from a real-world debugging session)
+   // would cause problems:
+   //
+   // <input style="width: 100%" .../>
+   // <button ...>...</button>
+   //
+   // (Notice the space between <input> and <button>, and also that
+   // the HTML parser will insert a BREAK between them.) The <input>
+   // would be given the available width ("width: 100%"), but the
+   // actual width (Word::totalWidth) would include the space, so that
+   // the width of the line is larger than the available width.
+
+   if (words->size () >= 2)
+      words->getRef(words->size () - 2)->origSpace =
+         words->getRef(words->size () - 2)->effSpace = 0;
 }
 
 /**
