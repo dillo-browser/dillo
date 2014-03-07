@@ -275,9 +275,6 @@ private:
    void getFloatsSize (Side side, int *width, int *height);
    void getFloatsExtremes (Side side, int *minWidth, int *maxWidth);
 
-   int getMinBorderDiff (Float *vloat, Side side);
-   int getMaxBorderDiff (Float *vloat, Side side);
-
    TBInfo *getTextblock (Textblock *textblock);
    int getBorder (Textblock *textblock, Side side, int y, int h,
                   Textblock *lastGB, int lastExtIndex);
