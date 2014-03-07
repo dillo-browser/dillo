@@ -273,8 +273,8 @@ private:
                                SortedFloatsVector **listOpp, Side *side);
 
    void getFloatsSize (Side side, int *width, int *height);
-   void accumExtremes (SortedFloatsVector *list, Side side, int *oofMinWidth,
-                       int *oofMaxWidth);
+   void getFloatsExtremes (Side side, int *minWidth, int *maxWidth);
+
    int getMinBorderDiff (Float *vloat, Side side);
    int getMaxBorderDiff (Float *vloat, Side side);
 
@@ -293,6 +293,7 @@ private:
    void tellFloatPosition (core::Widget *widget, int yReq);
 
    void getAbsolutelyPositionedSize (int *oofWidthAbsPos, int *oofHeightAbsPos);
+   void getAbsolutelyPositionedExtremes (int *minWidth, int *maxWidth);
    void ensureAbsolutelyPositionedSizeAndPosition (AbsolutelyPositioned
                                                    *abspos);
    int calcValueForAbsolutelyPositioned (AbsolutelyPositioned *abspos,

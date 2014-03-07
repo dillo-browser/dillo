@@ -1483,16 +1483,33 @@ void OutOfFlowMgr::getFloatsSize (Side side, int *width, int *height)
 
 void OutOfFlowMgr::getExtremes (int *oofMinWidth, int *oofMaxWidth)
 {
-   *oofMinWidth = *oofMaxWidth = 0;
-   accumExtremes (leftFloatsCB, LEFT, oofMinWidth, oofMaxWidth);
-   accumExtremes (rightFloatsCB, RIGHT, oofMinWidth, oofMaxWidth);
-   // TODO Absolutely positioned elements
+   DBG_OBJ_MSG ("resize.oofm", 0, "<b>getExtremes</b> ()");
+   DBG_OBJ_MSG_START ();
+   
+   int oofMinWidthAbsPos, oofMaxWidthAbsPos;
+   getAbsolutelyPositionedExtremes (&oofMinWidthAbsPos, &oofMaxWidthAbsPos);
+
+   int oofMinWidthtLeft, oofMinWidthRight, oofMaxWidthLeft, oofMaxWidthRight;
+   getFloatsExtremes (LEFT, &oofMinWidthtLeft, &oofMaxWidthLeft);
+   getFloatsExtremes (RIGHT, &oofMinWidthRight, &oofMaxWidthRight);
+
+   *oofMinWidth = max (oofMinWidthtLeft, oofMinWidthRight, oofMinWidthAbsPos);
+   *oofMaxWidth = max (oofMaxWidthLeft, oofMaxWidthRight, oofMaxWidthAbsPos);
+
+   DBG_OBJ_MSGF ("resize.oofm", 1,
+                 "=> (a: %d, l: %d, r: %d => %d) * (a: %d, l: %d, r: %d => %d)",
+                 oofMinWidthAbsPos, oofMinWidthtLeft, oofMinWidthRight,
+                 *oofMinWidth, oofMaxWidthAbsPos, oofMaxWidthLeft,
+                 oofMaxWidthRight, *oofMaxWidth);
+   DBG_OBJ_MSG_END ();
 }
 
-void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, Side side,
-                                  int *oofMinWidth, int *oofMaxWidth)
+void OutOfFlowMgr::getFloatsExtremes (Side side, int *minWidth, int *maxWidth)
 {
    // Idea for a faster implementation: use incremental resizing?
+   *minWidth = *maxWidth = 0;
+
+   SortedFloatsVector *list = getFloatsListForTextblock (containingBlock, side);
 
    DBG_OBJ_MSGF ("resize", 0, "<b>accumExtremes</b> (..., %s, ...)",
                  side == LEFT ? "LEFT" : "RIGHT");
@@ -1511,10 +1528,10 @@ void OutOfFlowMgr::accumExtremes (SortedFloatsVector *list, Side side,
                     extr.maxWidth, maxBorderDiff);
       
 
-      *oofMinWidth = max (*oofMinWidth, extr.minWidth + minBorderDiff);
-      *oofMaxWidth = max (*oofMaxWidth, extr.maxWidth + maxBorderDiff);
+      *minWidth = max (*minWidth, extr.minWidth + minBorderDiff);
+      *maxWidth = max (*maxWidth, extr.maxWidth + maxBorderDiff);
 
-      DBG_OBJ_MSGF ("resize", 1, "=> %d / %d", *oofMinWidth, *oofMaxWidth);
+      DBG_OBJ_MSGF ("resize", 1, "=> %d / %d", *minWidth, *maxWidth);
    }
 
    DBG_OBJ_MSG_END ();
@@ -1901,14 +1918,15 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 void OutOfFlowMgr::getAbsolutelyPositionedSize (int *oofWidthAbsPos,
                                                 int *oofHeightAbsPos)
 {
+   // TODO
    *oofWidthAbsPos = *oofHeightAbsPos = 0;
+}
 
-   for (int i = 0; i < absolutelyPositioned->size(); i++) {
-      AbsolutelyPositioned *abspos = absolutelyPositioned->get (i);
-      ensureAbsolutelyPositionedSizeAndPosition (abspos);
-      *oofWidthAbsPos = max (*oofWidthAbsPos, abspos->xCB + abspos->width);
-      *oofHeightAbsPos = max (*oofHeightAbsPos, abspos->yCB + abspos->height);
-   }
+void OutOfFlowMgr::getAbsolutelyPositionedExtremes (int *minWidth,
+                                                    int *maxWidth)
+{
+   // TODO
+   *minWidth = *maxWidth = 0;
 }
 
 void OutOfFlowMgr::ensureAbsolutelyPositionedSizeAndPosition
