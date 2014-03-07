@@ -629,8 +629,7 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
 
          int newFlx =
             calcFloatX (vloat, side,
-                        vloat->generatingBlock->getAllocation()->x
-                        - containingBlockAllocation.x,
+                        gba->x - containingBlockAllocation.x,
                         gba->width, vloat->generatingBlock->getAvailWidth ());
          int newFly = vloat->generatingBlock->getAllocation()->y
             - containingBlockAllocation.y + vloat->yReal;
