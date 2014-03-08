@@ -1500,7 +1500,7 @@ void OutOfFlowMgr::getFloatsExtremes (Side side, int *minWidth, int *maxWidth)
          int rightDiff =
             (containingBlockAllocation.x + containingBlockAllocation.width)
             - (gba->x - gba->width)
-            + vloat->generatingBlock->getStyle()->boxOffsetX();
+            + vloat->generatingBlock->getStyle()->boxRestWidth();
 
          // TODO: Or zero (instead of rightDiff) for right floats?
          *minWidth = max (*minWidth,
