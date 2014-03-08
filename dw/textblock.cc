@@ -390,7 +390,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
 
    if (outOfFlowMgr) {
       int oofWidth, oofHeight;
-      outOfFlowMgr->getSize (&oofWidth, &oofHeight);
+      outOfFlowMgr->getSize (requisition, &oofWidth, &oofHeight);
       requisition->width = misc::max (requisition->width, oofWidth);
       if (oofHeight > requisition->ascent + requisition->descent)
          requisition->descent = oofHeight - requisition->ascent;
@@ -472,7 +472,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
 
    if (outOfFlowMgr) {
       int oofMinWidth, oofMaxWidth;
-      outOfFlowMgr->getExtremes (&oofMinWidth, &oofMaxWidth);
+      outOfFlowMgr->getExtremes (extremes, &oofMinWidth, &oofMaxWidth);
       
       DBG_OBJ_MSGF ("resize", 1, "extremes: %d / %d, corrected: %d / %d",
                     extremes->minWidth, extremes->maxWidth,

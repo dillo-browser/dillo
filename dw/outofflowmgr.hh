@@ -272,8 +272,10 @@ private:
    void getFloatsListsAndSide (Float *vloat, SortedFloatsVector **listSame,
                                SortedFloatsVector **listOpp, Side *side);
 
-   void getFloatsSize (Side side, int *width, int *height);
-   void getFloatsExtremes (Side side, int *minWidth, int *maxWidth);
+   void getFloatsSize (core::Requisition *cbReq, Side side, int *width,
+                       int *height);
+   void getFloatsExtremes (core::Extremes *cbExtr, Side side, int *minWidth,
+                           int *maxWidth);
 
    TBInfo *getTextblock (Textblock *textblock);
    int getBorder (Textblock *textblock, Side side, int y, int h,
@@ -289,8 +291,10 @@ private:
 
    void tellFloatPosition (core::Widget *widget, int yReq);
 
-   void getAbsolutelyPositionedSize (int *oofWidthAbsPos, int *oofHeightAbsPos);
-   void getAbsolutelyPositionedExtremes (int *minWidth, int *maxWidth);
+   void getAbsolutelyPositionedSize (core::Requisition *cbReq, int *width,
+                                     int *height);
+   void getAbsolutelyPositionedExtremes (core::Extremes *cbExtr, int *minWidth,
+                                         int *maxWidth);
    void ensureAbsolutelyPositionedSizeAndPosition (AbsolutelyPositioned
                                                    *abspos);
    int calcValueForAbsolutelyPositioned (AbsolutelyPositioned *abspos,
@@ -376,8 +380,9 @@ public:
 
    void tellPosition (core::Widget *widget, int yReq);
 
-   void getSize (int *oofWidth, int *oofHeight);
-   void getExtremes (int *oofMinWidth, int *oofMaxWidth);
+   void getSize (core::Requisition *cbReq, int *oofWidth, int *oofHeight);
+   void getExtremes (core::Extremes *cbExtr,
+                     int *oofMinWidth, int *oofMaxWidth);
 
    int getLeftBorder (Textblock *textblock, int y, int h, Textblock *lastGB,
                       int lastExtIndex);

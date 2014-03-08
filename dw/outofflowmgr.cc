@@ -435,7 +435,7 @@ OutOfFlowMgr::TBInfo::~TBInfo ()
 }
 
 OutOfFlowMgr::AbsolutelyPositioned::AbsolutelyPositioned (OutOfFlowMgr *oofm,
-                                                          core::Widget *widget,
+                                                          Widget *widget,
                                                           Textblock
                                                           *generatingBlock,
                                                           int externalIndex)
@@ -950,7 +950,7 @@ void OutOfFlowMgr::drawFloats (SortedFloatsVector *list, View *view,
    // found below the area.
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
-      core::Rectangle childArea;
+      Rectangle childArea;
       if (vloat->getWidget()->intersects (area, &childArea))
          vloat->getWidget()->draw (view, &childArea);
    }
@@ -960,7 +960,7 @@ void OutOfFlowMgr::drawAbsolutelyPositioned (View *view, Rectangle *area)
 {
    for (int i = 0; i < absolutelyPositioned->size(); i++) {
       AbsolutelyPositioned *abspos = absolutelyPositioned->get(i);
-      core::Rectangle childArea;
+      Rectangle childArea;
       if (abspos->widget->intersects (area, &childArea))
          abspos->widget->draw (view, &childArea);
    }
@@ -971,15 +971,15 @@ void OutOfFlowMgr::drawAbsolutelyPositioned (View *view, Rectangle *area)
  * dillo, so that the containing block is determined correctly, which
  * leads sometimes to a cleaner rendering.
  */
-bool OutOfFlowMgr::isWidgetOutOfFlow (core::Widget *widget)
+bool OutOfFlowMgr::isWidgetOutOfFlow (Widget *widget)
 {
    return
-      widget->getStyle()->vloat != core::style::FLOAT_NONE ||
-      widget->getStyle()->position == core::style::POSITION_ABSOLUTE ||
-      widget->getStyle()->position == core::style::POSITION_FIXED;
+      widget->getStyle()->vloat != FLOAT_NONE ||
+      widget->getStyle()->position == POSITION_ABSOLUTE ||
+      widget->getStyle()->position == POSITION_FIXED;
 }
 
-bool OutOfFlowMgr::isWidgetHandledByOOFM (core::Widget *widget)
+bool OutOfFlowMgr::isWidgetHandledByOOFM (Widget *widget)
 {
    // May be extended for fixed (and relative?) positions.
    return isWidgetFloat (widget);
@@ -1392,17 +1392,17 @@ void OutOfFlowMgr::getFloatsListsAndSide (Float *vloat,
    }
 }
 
-void OutOfFlowMgr::getSize (int *oofWidth, int *oofHeight)
+void OutOfFlowMgr::getSize (Requisition *cbReq, int *oofWidth, int *oofHeight)
 {
    DBG_OBJ_MSG ("resize.oofm", 0, "<b>getSize</b> ()");
    DBG_OBJ_MSG_START ();
 
    int oofWidthAbsPos, oofHeightAbsPos;
-   getAbsolutelyPositionedSize (&oofWidthAbsPos, &oofHeightAbsPos);
+   getAbsolutelyPositionedSize (cbReq, &oofWidthAbsPos, &oofHeightAbsPos);
 
    int oofWidthtLeft, oofWidthRight, oofHeightLeft, oofHeightRight;
-   getFloatsSize (LEFT, &oofWidthtLeft, &oofHeightLeft);
-   getFloatsSize (RIGHT, &oofWidthRight, &oofHeightRight);
+   getFloatsSize (cbReq, LEFT, &oofWidthtLeft, &oofHeightLeft);
+   getFloatsSize (cbReq, RIGHT, &oofWidthRight, &oofHeightRight);
 
    *oofWidth = max (oofWidthtLeft, oofWidthRight, oofWidthAbsPos);
    *oofHeight = max (oofHeightLeft, oofHeightRight, oofHeightAbsPos);
@@ -1414,7 +1414,8 @@ void OutOfFlowMgr::getSize (int *oofWidth, int *oofHeight)
    DBG_OBJ_MSG_END ();
 }
 
-void OutOfFlowMgr::getFloatsSize (Side side, int *width, int *height)
+void OutOfFlowMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
+                                  int *height)
 {
    DBG_OBJ_MSGF ("resize.oofm", 0, "<b>getFloatsSize</b> (%s, ...)",
                  side == LEFT ? "LEFT" : "RIGHT");
@@ -1454,17 +1455,19 @@ void OutOfFlowMgr::getFloatsSize (Side side, int *width, int *height)
    DBG_OBJ_MSG_END ();
 }
 
-void OutOfFlowMgr::getExtremes (int *oofMinWidth, int *oofMaxWidth)
+void OutOfFlowMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
+                                int *oofMaxWidth)
 {
    DBG_OBJ_MSG ("resize.oofm", 0, "<b>getExtremes</b> ()");
    DBG_OBJ_MSG_START ();
    
    int oofMinWidthAbsPos, oofMaxWidthAbsPos;
-   getAbsolutelyPositionedExtremes (&oofMinWidthAbsPos, &oofMaxWidthAbsPos);
+   getAbsolutelyPositionedExtremes (cbExtr, &oofMinWidthAbsPos,
+                                    &oofMaxWidthAbsPos);
 
    int oofMinWidthtLeft, oofMinWidthRight, oofMaxWidthLeft, oofMaxWidthRight;
-   getFloatsExtremes (LEFT, &oofMinWidthtLeft, &oofMaxWidthLeft);
-   getFloatsExtremes (RIGHT, &oofMinWidthRight, &oofMaxWidthRight);
+   getFloatsExtremes (cbExtr, LEFT, &oofMinWidthtLeft, &oofMaxWidthLeft);
+   getFloatsExtremes (cbExtr, RIGHT, &oofMinWidthRight, &oofMaxWidthRight);
 
    *oofMinWidth = max (oofMinWidthtLeft, oofMinWidthRight, oofMinWidthAbsPos);
    *oofMaxWidth = max (oofMaxWidthLeft, oofMaxWidthRight, oofMaxWidthAbsPos);
@@ -1477,7 +1480,8 @@ void OutOfFlowMgr::getExtremes (int *oofMinWidth, int *oofMaxWidth)
    DBG_OBJ_MSG_END ();
 }
 
-void OutOfFlowMgr::getFloatsExtremes (Side side, int *minWidth, int *maxWidth)
+void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
+                                      int *minWidth, int *maxWidth)
 {
    // Idea for a faster implementation: use incremental resizing?
    *minWidth = *maxWidth = 0;
@@ -1676,10 +1680,10 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb)
    if (tb->getStyle()) {
       bool left = false, right = false;
       switch (tb->getStyle()->clear) {
-      case core::style::CLEAR_NONE: break;
-      case core::style::CLEAR_LEFT: left = true; break;
-      case core::style::CLEAR_RIGHT: right = true; break;
-      case core::style::CLEAR_BOTH: left = right = true; break;
+      case CLEAR_NONE: break;
+      case CLEAR_LEFT: left = true; break;
+      case CLEAR_RIGHT: right = true; break;
+      case CLEAR_BOTH: left = right = true; break;
       default: assertNotReached ();
       }
       
@@ -1828,14 +1832,15 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
    }
 }
 
-void OutOfFlowMgr::getAbsolutelyPositionedSize (int *oofWidthAbsPos,
-                                                int *oofHeightAbsPos)
+void OutOfFlowMgr::getAbsolutelyPositionedSize (Requisition *cbReq, int *width,
+                                                int *height)
 {
    // TODO
-   *oofWidthAbsPos = *oofHeightAbsPos = 0;
+   *width = *height = 0;
 }
 
-void OutOfFlowMgr::getAbsolutelyPositionedExtremes (int *minWidth,
+void OutOfFlowMgr::getAbsolutelyPositionedExtremes (Extremes *cbExtr,
+                                                    int *minWidth,
                                                     int *maxWidth)
 {
    // TODO
