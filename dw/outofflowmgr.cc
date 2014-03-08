@@ -1428,13 +1428,22 @@ void OutOfFlowMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
 
-      if (wasAllocated (vloat->generatingBlock)) {
+      if (vloat->generatingBlock == containingBlock ||
+          wasAllocated (vloat->generatingBlock)) {
          ensureFloatSize (vloat);
-         Allocation *gba = getAllocation(vloat->generatingBlock);
-         int x = calcFloatX (vloat, side,
-                             gba->x - containingBlockAllocation.x, gba->width,
-                             vloat->generatingBlock->getAvailWidth ());
-         int y = gba->y - containingBlockAllocation.y + vloat->yReal;
+         int x, y;
+
+         if (vloat->generatingBlock == containingBlock) {
+            x = calcFloatX (vloat, side, 0, cbReq->width,
+                            vloat->generatingBlock->getAvailWidth ());
+            y = vloat->yReal;
+         } else {
+            Allocation *gba = getAllocation(vloat->generatingBlock);
+            x = calcFloatX (vloat, side,
+                            gba->x - containingBlockAllocation.x, gba->width,
+                            vloat->generatingBlock->getAvailWidth ());
+            y = gba->y - containingBlockAllocation.y + vloat->yReal;
+         }
          
          *width = max (*width, x +  vloat->size.width);
          *height = max (*height, y + vloat->size.ascent + vloat->size.descent);
@@ -1483,7 +1492,6 @@ void OutOfFlowMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
 void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
                                       int *minWidth, int *maxWidth)
 {
-   // Idea for a faster implementation: use incremental resizing?
    *minWidth = *maxWidth = 0;
 
    SortedFloatsVector *list = getFloatsListForTextblock (containingBlock, side);
@@ -1495,16 +1503,24 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
 
-      if (wasAllocated (vloat->generatingBlock)) {
+      if (vloat->generatingBlock == containingBlock ||
+          wasAllocated (vloat->generatingBlock)) {
          Extremes extr;
          vloat->getWidget()->getExtremes (&extr);
-         Allocation *gba = getAllocation(vloat->generatingBlock);
-         int leftDiff = gba->x - containingBlockAllocation.x
-            + vloat->generatingBlock->getStyle()->boxOffsetX();
-         int rightDiff =
-            (containingBlockAllocation.x + containingBlockAllocation.width)
-            - (gba->x - gba->width)
-            + vloat->generatingBlock->getStyle()->boxRestWidth();
+         int leftDiff, rightDiff;
+
+         if (vloat->generatingBlock == containingBlock) {
+            leftDiff = vloat->generatingBlock->getStyle()->boxOffsetX();
+            rightDiff = vloat->generatingBlock->getStyle()->boxRestWidth();
+         } else {
+            Allocation *gba = getAllocation(vloat->generatingBlock);
+            leftDiff = gba->x - containingBlockAllocation.x
+               + vloat->generatingBlock->getStyle()->boxOffsetX();
+            rightDiff =
+               (containingBlockAllocation.x + containingBlockAllocation.width)
+               - (gba->x - gba->width)
+               + vloat->generatingBlock->getStyle()->boxRestWidth();
+         }
 
          // TODO: Or zero (instead of rightDiff) for right floats?
          *minWidth = max (*minWidth,
