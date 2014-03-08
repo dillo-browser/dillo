@@ -1495,10 +1495,12 @@ void OutOfFlowMgr::getFloatsExtremes (Side side, int *minWidth, int *maxWidth)
          Extremes extr;
          vloat->getWidget()->getExtremes (&extr);
          Allocation *gba = getAllocation(vloat->generatingBlock);
-         int leftDiff = gba->x - containingBlockAllocation.x;
+         int leftDiff = gba->x - containingBlockAllocation.x
+            + vloat->generatingBlock->getStyle()->boxOffsetX();
          int rightDiff =
             (containingBlockAllocation.x + containingBlockAllocation.width)
-            - (gba->x - gba->width);
+            - (gba->x - gba->width)
+            + vloat->generatingBlock->getStyle()->boxOffsetX();
 
          // TODO: Or zero (instead of rightDiff) for right floats?
          *minWidth = max (*minWidth,
