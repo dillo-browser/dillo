@@ -759,6 +759,7 @@ void Textblock::setWidth (int width)
       DBG_OBJ_MSG_START ();
 
       availWidth = width;
+      DBG_OBJ_SET_NUM ("availWidth", availWidth);
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
       redrawY = 0;
@@ -774,6 +775,7 @@ void Textblock::setAscent (int ascent)
       DBG_OBJ_MSG_START ();
 
       availAscent = ascent;
+      DBG_OBJ_SET_NUM ("availAscent", availAscent);
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
 
@@ -788,6 +790,7 @@ void Textblock::setDescent (int descent)
       DBG_OBJ_MSG_START ();
 
       availDescent = descent;
+      DBG_OBJ_SET_NUM ("availDescent", availDescent);
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
 
