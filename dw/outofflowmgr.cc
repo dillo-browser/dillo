@@ -1417,7 +1417,9 @@ void OutOfFlowMgr::getSize (Requisition *cbReq, int *oofWidth, int *oofHeight)
 void OutOfFlowMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
                                   int *height)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>getFloatsSize</b> (%s, ...)",
+   DBG_OBJ_MSGF ("resize.oofm", 0,
+                 "<b>getFloatsSize</b> ((%d * (%d + %d), %s, ...)",
+                 cbReq->width, cbReq->ascent, cbReq->descent,
                  side == LEFT ? "LEFT" : "RIGHT");
    DBG_OBJ_MSG_START ();
 
@@ -1496,7 +1498,8 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
 
    SortedFloatsVector *list = getFloatsListForTextblock (containingBlock, side);
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>accumExtremes</b> (..., %s, ...)",
+   DBG_OBJ_MSGF ("resize", 0, "<b>getFloatsExtremes</b> ((%d / %d), %s, ...)",
+                 cbExtr->minWidth, cbExtr->maxWidth,
                  side == LEFT ? "LEFT" : "RIGHT");
    DBG_OBJ_MSG_START ();
 
