@@ -1529,7 +1529,7 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
                + vloat->generatingBlock->getStyle()->boxOffsetX();
             rightDiff =
                (containingBlockAllocation.x + containingBlockAllocation.width)
-               - (gba->x - gba->width)
+               - (gba->x + gba->width)
                + vloat->generatingBlock->getStyle()->boxRestWidth();
             DBG_OBJ_MSGF ("resize.oofm", 1,
                           "GB != CB => leftDiff = %d - %d + %d = %d, "
