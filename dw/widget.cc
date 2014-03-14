@@ -359,7 +359,7 @@ void Widget::sizeAllocate (Allocation *allocation)
    assert (!getExtremesEntered ());
    assert (resizeIdleEntered ());
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>sizeAllocate</b> ((%d, %d; %d * (%d + %d))",
+   DBG_OBJ_MSGF ("resize", 0, "<b>sizeAllocate</b> (%d, %d; %d * (%d + %d))",
                  allocation->x, allocation->y, allocation->width,
                  allocation->ascent, allocation->descent);
    DBG_OBJ_MSG_START ();

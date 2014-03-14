@@ -1676,12 +1676,18 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
 Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
                                      short flags, core::style::Style *style)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addWord</b> (%d * (%d + %d), %d, %p)",
+                 width, ascent, descent, flags, style);
+   DBG_OBJ_MSG_START ();
+
    words->increase ();
    DBG_OBJ_SET_NUM ("words.size", words->size ());
    int wordNo = words->size () - 1;
    initWord (wordNo);
    fillWord (wordNo, width, ascent, descent, flags, style);
-   return words->getRef (wordNo);;
+
+   DBG_OBJ_MSG_END ();
+   return words->getRef (wordNo);
 }
 
 /**

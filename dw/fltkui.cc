@@ -213,7 +213,7 @@ void FltkResource::detachView (FltkView *view)
 
 void FltkResource::sizeAllocate (core::Allocation *allocation)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>sizeAllocate</b> ((%d, %d; %d * (%d + %d))",
+   DBG_OBJ_MSGF ("resize", 0, "<b>sizeAllocate</b> (%d, %d; %d * (%d + %d))",
                  allocation->x, allocation->y, allocation->width,
                  allocation->ascent, allocation->descent);
 
@@ -705,7 +705,7 @@ void FltkEntryResource::sizeAllocate (core::Allocation *allocation)
       FltkResource::sizeAllocate(allocation);
    } else {
       DBG_OBJ_MSGF ("resize", 0,
-                    "<b>sizeAllocate</b> ((%d, %d; %d * (%d + %d))",
+                    "<b>sizeAllocate</b> (%d, %d; %d * (%d + %d))",
                     allocation->x, allocation->y, allocation->width,
                     allocation->ascent, allocation->descent);
 
