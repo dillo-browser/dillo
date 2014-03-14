@@ -90,17 +90,32 @@ bool Embed::buttonPressImpl (core::EventButton *event)
 
 void Embed::setWidth (int width)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>setWidth</b> (%d)", width);
+   DBG_OBJ_MSG_START ();
+
    resource->setWidth (width);
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Embed::setAscent (int ascent)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>setAscent</b> (%d)", ascent);
+   DBG_OBJ_MSG_START ();
+
    resource->setAscent (ascent);
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Embed::setDescent (int descent)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>setDescent</b> (%d)", descent);
+   DBG_OBJ_MSG_START ();
+
    resource->setDescent (descent);
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Embed::setDisplayed (bool displayed)
@@ -353,17 +368,32 @@ void ComplexButtonResource::sizeAllocate (Allocation *allocation)
 
 void ComplexButtonResource::setWidth (int width)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>setWidth</b> (%d)", width);
+   DBG_OBJ_MSG_START ();
+
    childWidget->setWidth (width - 2 * reliefXThickness ());
+
+   DBG_OBJ_MSG_END ();
 }
 
 void ComplexButtonResource::setAscent (int ascent)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>setAscent</b> (%d)", ascent);
+   DBG_OBJ_MSG_START ();
+
    childWidget->setAscent (ascent - reliefYThickness ());
+
+   DBG_OBJ_MSG_END ();
 }
 
 void ComplexButtonResource::setDescent (int descent)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>setDescent</b> (%d)", descent);
+   DBG_OBJ_MSG_START ();
+
    childWidget->setDescent (descent - reliefYThickness ());
+
+   DBG_OBJ_MSG_END ();
 }
 
 Iterator *ComplexButtonResource::iterator (Content::Type mask, bool atEnd)

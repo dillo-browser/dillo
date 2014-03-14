@@ -907,7 +907,8 @@ void Layout::resizeIdle ()
 
    updateAnchor ();
 
-   DBG_OBJ_MSGF ("resize", 1, "resizeIdleId = %d", resizeIdleId);
+   DBG_OBJ_MSGF ("resize", 1,
+                 "after resizeIdle: resizeIdleId = %d", resizeIdleId);
    DBG_OBJ_MSG_END ();
 
    leaveResizeIdle ();
@@ -961,11 +962,17 @@ void Layout::queueDrawExcept (int x, int y, int width, int height,
 
 void Layout::queueResize ()
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>queueResize</b>");
+   DBG_OBJ_MSG_START ();
+
    if (resizeIdleId == -1) {
       view->cancelQueueDraw ();
 
       resizeIdleId = platform->addIdle (&Layout::resizeIdle);
+      DBG_OBJ_MSGF ("resize", 1, "setting resizeIdleId = %d", resizeIdleId);
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 
