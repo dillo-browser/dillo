@@ -409,7 +409,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
                     requisition->width);
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d * %d + %d",
+   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
 
    DBG_OBJ_MSG_END ();
