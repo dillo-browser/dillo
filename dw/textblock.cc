@@ -268,6 +268,10 @@ Textblock::Textblock (bool limitTextWidth)
    availAscent = 100;
    availDescent = 0;
 
+   DBG_OBJ_SET_NUM ("availWidth", availWidth);
+   DBG_OBJ_SET_NUM ("availAscent", availAscent);
+   DBG_OBJ_SET_NUM ("availDescent", availDescent);
+
    verticalOffset = 0;
 
    this->limitTextWidth = limitTextWidth;
