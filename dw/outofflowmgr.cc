@@ -1834,7 +1834,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       }
       if (width > extremes.maxWidth) {
          width = extremes.maxWidth;
-          DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to maxWidth: %d", width);
+         DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to maxWidth: %d", width);
       }
 
       DBG_OBJ_MSG_END ();
