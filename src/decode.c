@@ -86,6 +86,20 @@ static void Decode_chunked_free(Decode *dc)
    dStr_free(dc->leftover, 1);
 }
 
+static void Decode_compression_free(Decode *dc)
+{
+   (void)inflateEnd((z_stream *)dc->state);
+
+   dFree(dc->state);
+   dFree(dc->buffer);
+}
+
+/*
+ * BUG: A fair amount of duplicated code exists in the gzip/deflate decoding,
+ * but an attempt to pull out the common code left everything too contorted
+ * for what it accomplished.
+ */
+
 /*
  * Decode gzipped data
  */
@@ -122,12 +136,92 @@ static Dstr *Decode_gzip(Decode *dc, const char *instr, int inlen)
    return output;
 }
 
-static void Decode_gzip_free(Decode *dc)
+/*
+ * Decode (raw) deflated data
+ */
+static Dstr *Decode_raw_deflate(Decode *dc, const char *instr, int inlen)
 {
-   (void)inflateEnd((z_stream *)dc->state);
+   int rc = Z_OK;
 
-   dFree(dc->state);
-   dFree(dc->buffer);
+   z_stream *zs = (z_stream *)dc->state;
+
+   int inputConsumed = 0;
+   Dstr *output = dStr_new("");
+
+   while ((rc == Z_OK) && (inputConsumed < inlen)) {
+      zs->next_in = (Bytef *)instr + inputConsumed;
+      zs->avail_in = inlen - inputConsumed;
+
+      zs->next_out = (Bytef *)dc->buffer;
+      zs->avail_out = bufsize;
+
+      rc = inflate(zs, Z_SYNC_FLUSH);
+
+      dStr_append_l(output, dc->buffer, zs->total_out);
+
+      if ((rc == Z_OK) || (rc == Z_STREAM_END)) {
+         // Z_STREAM_END at end of file
+
+         inputConsumed += zs->total_in;
+         zs->total_out = 0;
+         zs->total_in = 0;
+      } else if (rc == Z_DATA_ERROR) {
+         MSG_ERR("raw deflate decompression also failed\n");
+      }
+   }
+   return output;
+}
+
+/*
+ * Decode deflated data, initially presuming that the required zlib wrapper
+ * is there. On data error, switch to Decode_raw_deflate().
+ */
+static Dstr *Decode_deflate(Decode *dc, const char *instr, int inlen)
+{
+   int rc = Z_OK;
+
+   z_stream *zs = (z_stream *)dc->state;
+
+   int inputConsumed = 0;
+   Dstr *output = dStr_new("");
+
+   while ((rc == Z_OK) && (inputConsumed < inlen)) {
+      zs->next_in = (Bytef *)instr + inputConsumed;
+      zs->avail_in = inlen - inputConsumed;
+
+      zs->next_out = (Bytef *)dc->buffer;
+      zs->avail_out = bufsize;
+
+      rc = inflate(zs, Z_SYNC_FLUSH);
+
+      dStr_append_l(output, dc->buffer, zs->total_out);
+
+      if ((rc == Z_OK) || (rc == Z_STREAM_END)) {
+         // Z_STREAM_END at end of file
+
+         inputConsumed += zs->total_in;
+         zs->total_out = 0;
+         zs->total_in = 0;
+      } else if (rc == Z_DATA_ERROR) {
+         MSG_WARN("Deflate decompression error. Certain servers illegally fail"
+                 " to send data in a zlib wrapper. Let's try raw deflate.\n");
+         dStr_free(output, 1);
+         (void)inflateEnd(zs);
+         dFree(dc->state);
+         dc->state = zs = dNew(z_stream, 1);;
+         zs->zalloc = NULL;
+         zs->zfree = NULL;
+         zs->next_in = NULL;
+         zs->avail_in = 0;
+         dc->decode = Decode_raw_deflate;
+
+         // Negative value means that we want raw deflate.
+         inflateInit2(zs, -MAX_WBITS);
+
+         return Decode_raw_deflate(dc, instr, inlen);
+      }
+   }
+   return output;
 }
 
 /*
@@ -204,36 +298,50 @@ Decode *a_Decode_transfer_init(const char *format)
    return dc;
 }
 
+static Decode *Decode_content_init_common()
+{
+   z_stream *zs = dNew(z_stream, 1);
+   Decode *dc = dNew(Decode, 1);
+
+   zs->zalloc = NULL;
+   zs->zfree = NULL;
+   zs->next_in = NULL;
+   zs->avail_in = 0;
+   dc->state = zs;
+   dc->buffer = dNew(char, bufsize);
+
+   dc->free = Decode_compression_free;
+   dc->leftover = NULL; /* not used */
+   return dc;
+}
+
 /*
- * Initialize content decoder. Currently handles gzip.
- *
- * zlib is also capable of handling "deflate"/zlib-encoded data, but web
- * servers have not standardized on whether to send such data with a header.
+ * Initialize content decoder. Currently handles 'gzip' and 'deflate'.
  */
 Decode *a_Decode_content_init(const char *format)
 {
+   z_stream *zs;
    Decode *dc = NULL;
 
    if (format && *format) {
       if (!dStrAsciiCasecmp(format, "gzip") ||
           !dStrAsciiCasecmp(format, "x-gzip")) {
-         z_stream *zs;
-         _MSG("gzipped data!\n");
+         MSG("gzipped data!\n");
 
-         dc = dNew(Decode, 1);
-         dc->buffer = dNew(char, bufsize);
-         dc->state = zs = dNew(z_stream, 1);
-         zs->zalloc = NULL;
-         zs->zfree = NULL;
-         zs->next_in = NULL;
-         zs->avail_in = 0;
-
+         dc = Decode_content_init_common();
+         zs = (z_stream *)dc->state;
          /* 16 is a magic number for gzip decoding */
          inflateInit2(zs, MAX_WBITS+16);
 
          dc->decode = Decode_gzip;
-         dc->free = Decode_gzip_free;
-         dc->leftover = NULL; /* not used */
+      } else if (!dStrAsciiCasecmp(format, "deflate")) {
+         MSG("deflated data!\n");
+
+         dc = Decode_content_init_common();
+         zs = (z_stream *)dc->state;
+         inflateInit(zs);
+
+         dc->decode = Decode_deflate;
       } else {
          MSG("Content-Encoding '%s' not recognized.\n", format);
       }

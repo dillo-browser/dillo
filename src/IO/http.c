@@ -297,7 +297,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "Connection: close\r\n"
          "Accept: text/*,image/*,*/*;q=0.2\r\n"
          "Accept-Charset: utf-8,*;q=0.8\r\n"
-         "Accept-Encoding: gzip\r\n"
+         "Accept-Encoding: gzip, deflate\r\n"
          "%s" /* language */
          "%s" /* auth */
          "DNT: 1\r\n"
@@ -323,7 +323,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "Connection: close\r\n"
          "Accept: text/*,image/*,*/*;q=0.2\r\n"
          "Accept-Charset: utf-8,*;q=0.8\r\n"
-         "Accept-Encoding: gzip\r\n"
+         "Accept-Encoding: gzip, deflate\r\n"
          "%s" /* language */
          "%s" /* auth */
          "DNT: 1\r\n"
