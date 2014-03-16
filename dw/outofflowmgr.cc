@@ -1767,24 +1767,34 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
                     vloat->getWidget ());
       DBG_OBJ_MSG_START ();
 
+      Extremes extremes;
+      vloat->getWidget()->getExtremes (&extremes);
+      DBG_OBJ_MSGF ("resize.oofm", 1, "getExtremes => %d / %d",
+                    extremes.minWidth, extremes.maxWidth);
+
       // TODO Ugly. Soon to be replaced by cleaner code? See also
       // comment in Textblock::calcWidgetSize.
+
       if (vloat->getWidget()->usesHints ()) {
+         // For widths defined by CSS, similar adjustments (extremes
+         // etc.) like below are necessary, to prevent CPU hogging.
          if (isAbsLength (vloat->getWidget()->getStyle()->width)) {
             int width = absLengthVal (vloat->getWidget()->getStyle()->width);
-            vloat->getWidget()->setWidth (width);
-            DBG_OBJ_MSGF ("resize.oofm", 1, "setting absolute width: %d",
+            DBG_OBJ_MSGF ("resize.oofm", 1, "about to set absolute width: %d",
                           width);
+            width = adjustFloatWidth (width, &extremes);
+            vloat->getWidget()->setWidth (width);
          } else if (isPerLength (vloat->getWidget()->getStyle()->width)) {
             int width =
                multiplyWithPerLength (containingBlock->getAvailWidth(),
                                       vloat->getWidget()->getStyle()->width);
-            vloat->getWidget()->setWidth (width);
             DBG_OBJ_MSGF ("resize.oofm", 1,
-                          "setting percentage width: %d * %g = %d",
+                          "about to set percentage width: %d * %g = %d",
                           containingBlock->getAvailWidth(),
                           perLengthVal (vloat->getWidget()->getStyle()->width),
                           width);
+            width = adjustFloatWidth (width, &extremes);
+            vloat->getWidget()->setWidth (width);
          } else
             DBG_OBJ_MSG ("resize.oofm", 1, "setting no width: not defined");
       } else
@@ -1805,13 +1815,9 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       // If the call of setWidth not is neccessary, the second call
       // will read the size from the cache, so no redundant
       // calculation is necessary.
-
+      //
       // Furthermore, extremes are considered; especially, floats are too
       // wide, sometimes.
-      Extremes extremes;
-      vloat->getWidget()->getExtremes (&extremes);
-      DBG_OBJ_MSGF ("resize.oofm", 1, "getExtremes => %d / %d",
-                    extremes.minWidth, extremes.maxWidth);
 
       vloat->getWidget()->sizeRequest (&vloat->size);
       DBG_OBJ_MSGF ("resize.oofm", 1, "sizeRequest (1) => %d * (%d + %d)",
@@ -1820,25 +1826,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       // Set width  ...
       int width = vloat->size.width;
       DBG_OBJ_MSGF ("resize.oofm", 1, "new width: %d", width);
-      DBG_OBJ_MSG_START ();
-
-      // Consider the available width of the containing block (when set):
-      if (width > containingBlock->getAvailWidth()) {
-         width = containingBlock->getAvailWidth();
-         DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to availWidth: %d", width);
-      }
-      // Finally, consider extremes (as described above).
-      if (width < extremes.minWidth) {
-          width = extremes.minWidth;
-          DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to minWidth: %d", width);
-      }
-      if (width > extremes.maxWidth) {
-         width = extremes.maxWidth;
-         DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to maxWidth: %d", width);
-      }
-
-      DBG_OBJ_MSG_END ();
-          
+      width = adjustFloatWidth (width, &extremes);
       vloat->getWidget()->setWidth (width);
       vloat->getWidget()->sizeRequest (&vloat->size);
       DBG_OBJ_MSGF ("resize.oofm", 1, "sizeRequest (2) => %d * (%d + %d)",
@@ -1861,6 +1849,35 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 
       DBG_OBJ_MSG_END ();
    }
+}
+
+int OutOfFlowMgr::adjustFloatWidth (int width, Extremes *extremes)
+{
+   DBG_OBJ_MSGF ("resize.oofm", 0,
+                 "<b>adjustFloatWidth</b> (%d, (%d, %d)) [CB->availWidth = %d]",
+                 width, extremes->minWidth, extremes->maxWidth,
+                 containingBlock->getAvailWidth());
+   DBG_OBJ_MSG_START ();
+
+   // Consider the available width of the containing block (when set):
+   if (width > containingBlock->getAvailWidth()) {
+      width = containingBlock->getAvailWidth();
+      DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to availWidth: %d", width);
+   }
+   // Finally, consider extremes (as described above).
+   if (width < extremes->minWidth) {
+      width = extremes->minWidth;
+      DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to minWidth: %d", width);
+   }
+   if (width > extremes->maxWidth) {
+      width = extremes->maxWidth;
+      DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to maxWidth: %d", width);
+   }
+
+   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %d", width);
+   DBG_OBJ_MSG_END ();
+
+   return width;
 }
 
 void OutOfFlowMgr::getAbsolutelyPositionedSize (Requisition *cbReq, int *width,
