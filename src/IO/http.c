@@ -270,8 +270,9 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
         *proxy_auth = dStr_new("");
 
    /* BUG: dillo doesn't actually understand application/xml yet */
-   const char *accept_hdr_value = web_flags & WEB_Image ?
-      "image/png,image/*;q=0.8,*/*;q=0.5" :
+   const char *accept_hdr_value =
+      web_flags & WEB_Image ? "image/png,image/*;q=0.8,*/*;q=0.5" :
+      web_flags & WEB_Stylesheet ? "text/css,*/*;q=0.1" :
       "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
 
    if (use_proxy) {

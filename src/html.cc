@@ -3257,6 +3257,7 @@ void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
       /* Fill a Web structure for the cache query */
       int ClientKey;
       DilloWeb *Web = a_Web_new(html->bw, url, html->page_url);
+      Web->flags |= WEB_Stylesheet;
       if ((ClientKey = a_Capi_open_url(Web, Html_css_load_callback, NULL))) {
          ++html->bw->NumPendingStyleSheets;
          a_Bw_add_client(html->bw, ClientKey, 0);
